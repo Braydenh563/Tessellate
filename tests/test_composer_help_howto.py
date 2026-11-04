@@ -83,6 +83,14 @@ CASES = [
     ("how do I delete a tag", "tag-manager", "Rename a tag, merge it"),
     ("how do I remove a tag from a note", "tag-manager", "Rename a tag, merge it"),
     ("how do I rename a mind map", "mind-map-import-export", "With a map open"),
+    ("removing a note", "undo-bin", BIN),
+    ("is deleting a note reversible", "undo-bin", BIN),
+    ("is deleting a note permanent", "undo-bin", BIN),
+    ("relocate a note", "tags-categories", MOVE),
+    ("how do i change a note's title", "links", RENAME),
+    ("how do i edit a note's name", "links", RENAME),
+    ("how do i rename a board", "whiteboard-selection", "Rename a board"),
+    ("how do i delete all my notes", "delete-data", "A deleted note, document or reminder goes to the bin first"),
     ("how do I rename a chat", "ask-chat", "Conversations save and rename"),
 ]
 
@@ -99,6 +107,7 @@ NEEDS_HELP_TEXT = [
     "how do I rename a category",
     "how do I move a document to another space",
     "how do I move a reminder",
+    "how do i move a board",
     "how do I delete a space",
     "how do I delete a category",
 ]

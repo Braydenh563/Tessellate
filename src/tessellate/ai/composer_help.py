@@ -122,7 +122,8 @@ _HELP_DOING: dict[str, frozenset[str]] = {
     for group in (
         frozenset({"make", "create", "add", "new", "set", "start", "type"}),
         frozenset({"delete", "remove", "bin", "trash", "clear", "erase", "discard", "throw", "toss"}),
-        frozenset({"change", "switch", "pick", "choose", "edit"}),
+        frozenset({"move", "relocate", "shift", "transfer", "file", "refile"}),
+        frozenset({"change", "switch", "pick", "choose", "edit", "rename", "retitle"}),
         frozenset({"find", "search", "look", "open"}),
         frozenset({"stop", "disable", "pause", "off", "hide"}),
         frozenset({"see", "view", "show", "list", "read"}),
@@ -165,6 +166,9 @@ def _help_ask(question: str, topic: dict) -> dict:
     verb = _help_verb(question)
     named = set(_words(str(topic.get("id", "")).replace("-", " "))) - {verb}
     doing = {verb, *_HELP_DOING.get(verb, ())} if verb else set()
+    if _RETITLING.search(question):
+        doing |= {"rename", "retitle"}
+        wanted = (wanted - {"title", "name", "titles", "names"}) | {"rename"}
     if _RESTORING.search(question) and not re.search(r"\bback ?ups?\b", question, re.I):
         doing |= {"delete", "bin"}
     return {"wanted": wanted, "named": named, "pairs": _help_pairs(question), "doing": doing, "asked_exception": bool(_EXCEPTION_ASKED.search(question)), "listed": bool(_EXCEPTION_LISTED.search(question)), "emptying": bool(_EMPTYING.search(question)), "direct": _direct_object(question, verb)}
@@ -239,7 +243,7 @@ _HELP_ACTS: dict[str, tuple[str, ...]] = {
     "share": ("share", "publish", "send"),
     "delete": ("delete", "remove", "trash", "bin", "erase", "discard", "throw", "toss"),
     "restore": ("restore", "recover", "undelete"),
-    "move": ("move", "drag", "reorder"),
+    "move": ("move", "drag", "reorder", "relocate", "shift"),
     "rename": ("rename", "retitle"),
     "attach": ("attach", "upload"),
     "pin": ("pin", "unpin", "star", "favourite", "favorite"),
@@ -253,6 +257,9 @@ def _help_act_stems() -> dict[str, frozenset[str]]:
     (tests/test_engine_budgets.py)."""
     return {act: frozenset(_stem(w) for w in words) for act, words in _HELP_ACTS.items()}
 
+
+#: "change a note's title": a rename said without its verb.
+_RETITLING = re.compile(r"\b(?:change|edit|set|update|fix)\b.{0,20}\b(?:title|name)s?\b", re.I)
 
 #: "get a note back", "bring it back": a restore said without its verb.
 _BACK_PHRASE = re.compile(

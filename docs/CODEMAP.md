@@ -14242,30 +14242,30 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `_act_lead` | src/tessellate/ai/composer_help.py:340 |
-| `_act_score` | src/tessellate/ai/composer_help.py:279 |
-| `_act_sentence` | src/tessellate/ai/composer_help.py:348 |
-| `_clauses` | src/tessellate/ai/composer_help.py:413 |
-| `_direct_object` | src/tessellate/ai/composer_help.py:178 |
+| `_act_lead` | src/tessellate/ai/composer_help.py:347 |
+| `_act_score` | src/tessellate/ai/composer_help.py:286 |
+| `_act_sentence` | src/tessellate/ai/composer_help.py:355 |
+| `_clauses` | src/tessellate/ai/composer_help.py:420 |
+| `_direct_object` | src/tessellate/ai/composer_help.py:182 |
 | `_feature_help` | src/tessellate/ai/composer_help.py:43 |
 | `_feature_instead` | src/tessellate/ai/composer_help.py:67 |
-| `_help_act` | src/tessellate/ai/composer_help.py:267 |
-| `_help_act_stems` | src/tessellate/ai/composer_help.py:250 |
+| `_help_act` | src/tessellate/ai/composer_help.py:274 |
+| `_help_act_stems` | src/tessellate/ai/composer_help.py:254 |
 | `_help_answer` | src/tessellate/ai/composer_help.py:97 |
-| `_help_ask` | src/tessellate/ai/composer_help.py:156 |
-| `_help_best` | src/tessellate/ai/composer_help.py:215 |
-| `_help_have` | src/tessellate/ai/composer_help.py:188 |
-| `_help_one` | src/tessellate/ai/composer_help.py:196 |
-| `_help_pairs` | src/tessellate/ai/composer_help.py:148 |
-| `_help_shared` | src/tessellate/ai/composer_help.py:201 |
-| `_help_verb` | src/tessellate/ai/composer_help.py:138 |
-| `_in_window` | src/tessellate/ai/composer_help.py:458 |
+| `_help_ask` | src/tessellate/ai/composer_help.py:157 |
+| `_help_best` | src/tessellate/ai/composer_help.py:219 |
+| `_help_have` | src/tessellate/ai/composer_help.py:192 |
+| `_help_one` | src/tessellate/ai/composer_help.py:200 |
+| `_help_pairs` | src/tessellate/ai/composer_help.py:149 |
+| `_help_shared` | src/tessellate/ai/composer_help.py:205 |
+| `_help_verb` | src/tessellate/ai/composer_help.py:139 |
+| `_in_window` | src/tessellate/ai/composer_help.py:465 |
 | `_may_name_a_tool` | src/tessellate/ai/composer_help.py:36 |
-| `_result` | src/tessellate/ai/composer_help.py:431 |
-| `_semicolon_parts` | src/tessellate/ai/composer_help.py:401 |
-| `_subject_fit` | src/tessellate/ai/composer_help.py:323 |
-| `_utility` | src/tessellate/ai/composer_help.py:448 |
-| `help_line` | src/tessellate/ai/composer_help.py:369 |
+| `_result` | src/tessellate/ai/composer_help.py:438 |
+| `_semicolon_parts` | src/tessellate/ai/composer_help.py:408 |
+| `_subject_fit` | src/tessellate/ai/composer_help.py:330 |
+| `_utility` | src/tessellate/ai/composer_help.py:455 |
+| `help_line` | src/tessellate/ai/composer_help.py:376 |
 | `offered` | src/tessellate/ai/composer_help.py:83 |
 
 ### src/tessellate/ai/composer_intent.py (16)
@@ -15613,9 +15613,9 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `did_you_mean` | src/tessellate/ai/guide_aliases.py:148 |
-| `intents` | src/tessellate/ai/guide_aliases.py:117 |
-| `topic_ids` | src/tessellate/ai/guide_aliases.py:123 |
+| `did_you_mean` | src/tessellate/ai/guide_aliases.py:150 |
+| `intents` | src/tessellate/ai/guide_aliases.py:119 |
+| `topic_ids` | src/tessellate/ai/guide_aliases.py:125 |
 
 ### src/tessellate/ai/guide_intent.py (7)
 

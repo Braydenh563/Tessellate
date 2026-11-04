@@ -2062,8 +2062,8 @@ HELP_TOPICS.extend(
                 "the back or front, Ctrl+G groups, Ctrl+Shift+G ungroups, Ctrl+Alt+C and Ctrl+Alt+V copy "
                 "and paste a style, Delete (or a bin drop) removes, Esc cancels a drag."
                 " Double-click empty board for a text box, double-click a closed shape (or select "
-                "it and press Enter) to write in it, right-click (or hold on touch) for the menu, double-"
-                "click a line to bend it, and select a connector and press Label in its bar (or Enter) to"
+                "it and press Enter) to write in it, right-click (or hold) for the menu, double-"
+                "click a line to bend it, select a connector and press Label (or Enter) to"
                 " label it. A frame's title drags it and what is inside it, its top handle turns both; a click on a panel's body or a frame's edge selects it; its "
                 "menu exports it or fits it to its contents, and a double-click on a resize "
                 "handle fits that edge to what it holds; a note, text box or picture fits its content. Ctrl+Shift+L "
@@ -2071,7 +2071,7 @@ HELP_TOPICS.extend(
                 "Comment…, starts a thread. View, Present frames: one frame at a "
                 "time, the bar lists pages; ? shows every key; Ctrl+K finds any board action by name. Menus: Insert, Edit, "
                 "Arrange opens as submenus: Order, Align, Distribute, Tidy, Group, View (panels, background, grid, "
-                "snap, zoom) and Board (rename, new, export)."
+                "snap, zoom) and Board (new, export). Rename a board: Board, Rename."
             ),
             "badge": {"label": "Library", "tab": "library"},
         },
