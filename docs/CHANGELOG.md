@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Desktop companion on Windows: a see-through figure of Atlas walks along the bottom of the screen (turns at the edges, sits then sleeps when idle, looks at the pointer, waves, can be picked up and dropped), and a click opens the quick panel beside it; hides for fullscreen, still under reduced motion, the card window stays the fallback (INBOX 1645, 1638, 1633; not yet run on Windows).
 - Desktop companion: Hide from its own menu clears the tray's tick at once, and a panel's resize or a drag is set in physical pixels like the first show (INBOX 1642, 1633).
 - Diagram builder: the picture and the blocks pane share one height, and the picture zooms (bar, Ctrl+wheel, pinch, + - 0, arrows, drag to pan) (INBOX 1614).
 - Desktop companion: asks for a minimum no bigger than itself, so pywebview's 200 by 100 default no longer widens it into a dark card with the character in its right half (INBOX 1633).

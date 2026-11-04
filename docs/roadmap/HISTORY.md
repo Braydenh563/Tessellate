@@ -52401,3 +52401,14 @@ Built: R1 in 324f174 (merge be41265), R2 in 4d3afd9 and 455d3c5 (merge 606730c);
 - **R2 (1614) Shared height and zoom.**
   - Work: first reproduce on both mounts (the dialog, where a grid already stretches both panes, and the Documents page, where `.dgm {height:100%}` sits in `#doc-preview`) and record the numbers in the row. Then the stage fills the pane height, plus zoom, pan and fit (section 3), the listener list, and `diagram-view.js`.
   - Check: at container widths of 600 px and up, `.dgm-picture` and the blocks pane heights match within 1 px at three sizes, on both mounts. Below 600 px, the picture is its own measurement (26vh). Ctrl+wheel changes the image width by a measured step; Fit leaves the box inside the pane with an 8 px margin; zoom survives an edit and resets on a kind change.
+
+## Moved from the plans, 2026-11-04 (overlay-1104: BACKLOG 16 O1 to O4, INBOX 1645)
+
+Built here, not yet run on Windows (the sandbox has none); the owner's check is O5.
+
+  - O1 `core/overlay/win32.py`, `host.py`: the window, message loop (`MsgWaitForMultipleObjectsEx` or `SetTimer`), `WM_APP` queue from other threads, stop joins in 1 s; topmost re-asserted only on `TaskbarCreated`, work-area and display change, resume. Check: fake-win32 tests (argtypes, premultiply, callback kept alive, stop join); owner log `overlay: layered window ok`.
+  - O2 `core/overlay/sprites.py` and frames: Atlas's frames (stand, blink, look, walk cycle, sit, sleep, wave, held, fall, land, hop; both looks) rendered here with Playwright (`omit_background`) from the live figure into shipped PNGs, mirrored and scaled per dpi in Python. Check: frame count, partial alpha present, halo ring clear, size budget.
+  - O3 `core/overlay/engine.py`: a pure state machine (fake clock): walk the work area's floor, turn at edges, sit then sleep when idle, notice the pointer (2 Hz poll only while roaming), drag with a 4 px threshold, fall on release, reduced motion still; no fixed tick while standing. Check: fake-clock tests per state and wake counts.
+  - O4 wiring: `desk_companion.py` picks the overlay on Windows, the card as fallback with a warning; a click opens the quick panel window beside the pet; tray tick and Hide as now; fullscreen (`SHQueryUserNotificationState`) hides it. Help, Settings copy and `tests/test_manual_parity.py` move with it.
+
+Measured: 2 looks x 16 frames = 436 KB (limit 1.5 MB), 205x241 and 179x249 px at 2x; 152 tests across host, sprites, engine, runner, wiring and the card window.

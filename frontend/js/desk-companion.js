@@ -34,6 +34,12 @@
 
   const card = new URLSearchParams(location.search).has("card");
   document.body.classList.toggle("desk-card", card);
+  //: The overlay's quick panel (core/overlay): the figure walks the desktop on its
+  //: own, so this window is only the menu and panels, beside it; no pet here, and
+  //: the pet's 152 and its gap come off every size.
+  const overlay = new URLSearchParams(location.search).has("overlay");
+  document.body.classList.toggle("desk-overlay", overlay);
+  const OVERLAY_TRIM = 160;
 
   //: What the app's window saved in this browser's storage (the window shares it).
   const token = () => prefs.get("token", "");
@@ -98,7 +104,8 @@
     document.body.dataset.size = SIZES[next].join("x");
     for (const id of new Set(Object.values(PANELS))) $(id).classList.toggle("hidden", PANELS[next] !== id);
     $("desk-pet").setAttribute("aria-expanded", String(next === "menu" || next === "context"));
-    ask("set_size", SIZES[next][0], SIZES[next][1]);
+    if (overlay && next === "rest") return;
+    ask("set_size", SIZES[next][0], SIZES[next][1] - (overlay ? OVERLAY_TRIM : 0));
   }
 
   function item(label, icon, onClick) {
@@ -120,7 +127,7 @@
     const rows = [];
     if (kind === "context") {
       rows.push(item("Settings", "gear", () => leave(() => ask("open_app", "settings"))));
-      rows.push(item("Hide", "eye-slash", () => ask("hide_companion")));
+      rows.push(item("Hide", "eye-slash", () => (overlay ? leave(() => ask("hide_companion")) : ask("hide_companion"))));
     } else if (locked) {
       const note = document.createElement("p");
       note.className = "muted desk-note";
@@ -142,6 +149,7 @@
   //: coming forward, and a panel left open would be there when it returns.
   function leave(action) {
     show("rest");
+    if (overlay) ask("hide_panel");
     action();
   }
 
@@ -153,7 +161,8 @@
 
   function rest() {
     show("rest");
-    $("desk-pet").focus();
+    if (overlay) ask("hide_panel");
+    else $("desk-pet").focus();
   }
 
   // --- Quick note --------------------------------------------------------------
@@ -348,4 +357,10 @@
   document.addEventListener("visibilitychange", () => {
     if (!document.hidden) probe();
   });
+  //: The overlay asks for the menu (left click) or the settings menu (right click)
+  //: each time it shows this window, and the first time it opens on the menu.
+  if (overlay) {
+    window.addEventListener("desk-open", (event) => openMenu(event.detail === "context" ? "context" : "menu"));
+    openMenu("menu");
+  }
 })();

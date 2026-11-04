@@ -1,6 +1,5 @@
 # Backlog: the numbered sections
 
-
 > **The other three:** [ROADMAP.md](../ROADMAP.md) (live work) · [BACKLOG.md](BACKLOG.md) (§1–§29) · [ANALYSIS.md](ANALYSIS.md) (§30–§34, including the licence constraint, AGPL-3.0 now) · [HISTORY.md](HISTORY.md) (already built).
 
 Split out of `ROADMAP.md`, which had reached 4,500 lines and 47 sections. This
@@ -296,7 +295,6 @@ Checked against the running app, not assumed:
   target, persisted per-document (`docWordGoal:<id>` in localStorage), with
   progress shown against it.
 - **AI chat bar inside the document**, **Pointer:** [DOCUMENTS_PLAN.md](DOCUMENTS_PLAN.md) "Placed from INBOX, 2026-10-03 (INBOX 409)" closed the bar's design; the conversational shape (ask without proposing an edit) is `scratchpad/audit1005/features.md` section 11 Phase G. Partly there. `doc-ai-panel` already
-
 
 1480. **The owner, 2026-10-31 15:03 local (screenshots, no words, the same reference app):** a Model comparison popup (Mode: Blind, Parallel, Shuffle, Save, Reset as tile buttons; Type: Chat, Agent, Search, Research; a row per model with an x and "+ Add model"; a timeout field, Scoreboard, Start), then the run: columns "Model A" and "Model B" each with its time, expand, an inference-settings drop (Thinking, Temperature, Max tokens) and close, the same prompt in each, "Vote A" and "Vote B" under them, and Score, Tie, Reveal, Reset in a row above the composer, whose "Chat prompts" button opens grouped sample prompts (Featured, Visual, Visual explain). Recommendation taken: Tessellate's model comparison (grep "compare" in CODEMAP; the bench) takes the blind A and B with votes and reveal, the settings drop per column, and the grouped sample prompts. Placed here at triage to keep INBOX under twenty.
 
@@ -867,7 +865,6 @@ is, the next optimisation is a guess.
 
 [hr]: https://github.com/headroomlabs-ai/headroom
 
-
 **Why.** Asked: "make sure all the code, processes, and AI usage is fully
 optimised and efficient", and "more ways to make the program and AI more
 accurate, usable, capable, and faster".
@@ -1205,11 +1202,7 @@ palettes."
   **Next:** pywebview has no global hotkey, so this needs a new Python dependency (a `keyboard`-style hook) and the tray's `_new_note` (`__main__.py:2046`) as the target; a new dependency is the owner's call (FIX_COMMON rule 2). The tray's "New note" already does the one-click half.
   **The owner, 2026-10-27, verbatim** (screenshots: the ChatGPT desktop pet, a small pixel creature at the screen corner over the taskbar, with a Settings / Hide Mini menu): "is it possible to have the companion be like a corner thing that can actually show on the user's main screen outside of the app if they dont have th ewindow open?? like the chatgpt pets and then if the user clicks it they there can be a window to quick add a note, quick searchm or to open the app window." Plan: a second pywebview window in `--desktop` mode (frameless, on top, transparent where the platform allows, else a small rounded card), shown while the main window is in the tray; it draws the chosen companion; a click opens Quick note, Quick search, Open Tessellate; right-click Settings, Hide. **Built 2026-10-31 (INBOX 1464, desktop-1031), see HISTORY.md, "Moved from the plans, 2026-10-31 (desktop companion)".** **Next:** a Windows check (transparency, on top, DPI, the taskbar edge) and click-through outside the character's outline (a native window region; the resting window is only the character's box, 112 by 152).
   **Goose-style overlay (INBOX 1633, 1638, 1645; design note from the 2026-11-04 design workflow, run wrl41y7om; the full note's facts are cited in the rows' commits):** the card window is a web view and cannot be truly transparent on WinForms; the overlay is a native layered window (`WS_POPUP`, `WS_EX_LAYERED | TOOLWINDOW | TOPMOST | NOACTIVATE`, `UpdateLayeredWindow` with premultiplied BGRA from Pillow, alpha below 8/255 zeroed so the clear parts let clicks through), one window the size of the sprite, on its own thread with per-monitor-V2 awareness, private `ctypes.WinDLL` instances with argtypes on every call (never the shared `windll.user32` pywebview uses). RealEmmettS/goose is PolyForm Noncommercial: ideas only, no code.
-  - O1 `core/overlay/win32.py`, `host.py`: the window, message loop (`MsgWaitForMultipleObjectsEx` or `SetTimer`), `WM_APP` queue from other threads, stop joins in 1 s; topmost re-asserted only on `TaskbarCreated`, work-area and display change, resume. Check: fake-win32 tests (argtypes, premultiply, callback kept alive, stop join); owner log `overlay: layered window ok`.
-  - O2 `core/overlay/sprites.py` and frames: Atlas's frames (stand, blink, look, walk cycle, sit, sleep, wave, held, fall, land, hop; both looks) rendered here with Playwright (`omit_background`) from the live figure into shipped PNGs, mirrored and scaled per dpi in Python. Check: frame count, partial alpha present, halo ring clear, size budget.
-  - O3 `core/overlay/engine.py`: a pure state machine (fake clock): walk the work area's floor, turn at edges, sit then sleep when idle, notice the pointer (2 Hz poll only while roaming), drag with a 4 px threshold, fall on release, reduced motion still; no fixed tick while standing. Check: fake-clock tests per state and wake counts.
-  - O4 wiring: `desk_companion.py` picks the overlay on Windows, the card as fallback with a warning; a click opens the quick panel window beside the pet; tray tick and Hide as now; fullscreen (`SHQueryUserNotificationState`) hides it. Help, Settings copy and `tests/test_manual_parity.py` move with it.
-  - O5 owner check: shown, transparent, walks, panel opens, no focus stolen, CPU under 2 percent walking.
+  - O1 to O4 built (HISTORY, "Moved from the plans, 2026-11-04 (overlay-1104)"; remaining list `agent-remaining/overlay-1104.md`). O5 owner check: shown, transparent, walks, panel opens, no focus stolen, CPU under 2 percent walking.
 
 ---
 
@@ -2048,7 +2041,6 @@ recognition (no stylus-first workflow in evidence), image trace/pattern
 fills/mesh gradients (print-design-tier, no tie to this app's use case).
 
 ---
-
 
 ## 29b. Carried out of the §40 audit
 
@@ -3943,7 +3935,6 @@ restated.
 Both items built (the per-agent launcher is `scratchpad/ui-sweeps/serve.sh`; the
 phone and dark runs are in `all.sh`); moved to HISTORY.md 2026-10-04.
 
-
 ## 115. After PR 144: professional use (the owner's stated next block, 2026-09-14)
 
 "After this pr I intend to do a full lot of fixes and refinements for
@@ -4190,7 +4181,6 @@ Entries are the owner's words, then the recommendation. Nothing here has a brief
 - "Is it possible to create custom libraries like the ones vendored that are really good and extensive in their purpose, which can be open sourced and used across projects?? Maybe?? Maybe too much idk."
   Recommendation: a later idea: a small, separately licensed library package built from the vendored engines, after the engine lands under Brief 39. Not scheduled.
 
-
 ## Placed from Brief 40, 2026-10-10 (research and placement)
 
 Each row is a recommendation taken (standing order 3); the evidence is in
@@ -4311,7 +4301,6 @@ Passed with a number, no row needed: the frontend lint set, three serial runs of
 
 - **Live refresh across devices** (INBOX 881, the owner 2026-10-11: "what if I make a change on my phone?? does it live update??"). A save on one device does not refresh another device's open list or note. Recommendation: an `entries` event on the existing jobs stream; the list re-fetches, and an open note that has no unsaved edits takes the new text, while one with edits keeps the 409 Keep mine / theirs prompt.
 
-
 ## Placed from INBOX, 2026-10-12 (grammar in digest answers)
 
 - INBOX 1299. **The owner, 2026-10-12, verbatim.** "this response from the ask subtab
@@ -4360,7 +4349,6 @@ First, in order:
 - Splash (owner, 2026-10-12): the expanded log now sits under the step list (`scripts/splash.ps1` `Set-Layout`); not run on Windows from here. The log box's scrollbar is the system's white one against the dark card; a dark custom scrollbar needs a RichTextBox or an owner-drawn bar.
 - Hugging Face token (owner, 2026-10-12): Settings, Models (where models are pulled) and Search and index each get a section with a text field and a button for a Hugging Face access token, stored securely (the OS keychain where one exists, else the encrypted settings store; never in plain text, never logged, never in exports or backups), shown masked, and manageable: add, update, edit, delete, with a "Saved" state and a test button that checks it against the Hub without leaving the machine otherwise. Gated downloads (private or licence-gated repos) and the embedding model pull read it; a lint that no route returns it.
 
-
 - A full lag sweep and optimisation pass (owner, 2026-10-12): collapsing and uncollapsing notes in the list is glitchy and laggy, and many actions across the app feel slow. Measure first: record frame times and long tasks (PerformanceObserver `longtask`, `event` timing for INP) for the note list collapse, tab switches, the editor keystroke path, graph and mind map pan with a panel open, and dashboard load; rank by cost; fix the worst ten (layout thrash from per-note height reads, backdrop blur on moving surfaces, per-keystroke passes, animation on width and height), each with a before and after number and a ratchet test.
 \n
 - Whiteboard template zones (owner, 2026-10-12, screenshots: a "Cues" zone with sub-writing "Questions and key words"): double-clicking the sub-writing to edit it replaced its text with the zone's title ("Cues"), clicking off kept the change, and Undo did not bring the words back. Three faults: the edit box opens on the wrong string (the title, not the subtitle), the commit is not an undo step, and the commit saved the wrong field. Reproduce on a Cornell-style template zone first; the commit must push one undo entry with the field it edited.
@@ -4401,7 +4389,6 @@ Owner's list, in one place (each is also logged above where it has detail):
 - Facts change over time (owner, 2026-10-12): the notebook, the AI and the composer must treat what a note says as true as of when it was written, so a newer note about the same thing supersedes an older one instead of confusing the answer. Example: a note on which days are uni days and which classes are taken this semester, then a similar note next semester; "what are my uni days" must answer from the newest, and mention the older only when comparing, noting the change, or being asked for it ("last semester you had Tuesday and Thursday; now Monday and Wednesday"). What exists to build on: `as_of` and `as_of_revisions` in the stream meta (answer as of a past date), `composer._disagreements` (names two notes that may disagree), the cadence and date facts in `composer_digest`, note `created_at`/`updated_at` and revisions. Plan: (1) recognise a recurring subject, a "state note" (schedule, address, job, plan, price, goal, routine, a list of current items), by shared entities, title shape and category across notes (embedding similarity plus the shared nouns), and link the pair as "supersedes" with a confidence; (2) retrieval ranks the newest of a superseding set first and marks older ones as past ("from March, since replaced"), never silently dropping them; (3) the composer answers with the current one, adds one line when an older one conflicts ("An older note, from semester 1, says Tuesday and Thursday"), and compares on request ("what changed since last semester": a rule-built diff of the two notes' lines); (4) the model is handed the dates with every note and the instruction to prefer the newest and to say when it is using an older one; (5) validity words in a note ("this semester", "until June", "as of 3 Oct", "from next week") are parsed into a validity window the engine uses to mark a note current, upcoming or past, and the notebook surfaces a gentle "this looks out of date" prompt when a window has ended or a newer similar note exists, with Merge, Keep both and Archive as the choices; (6) a timeline view per subject ("your uni days over time"). Measure with fixtures: pairs of state notes a semester apart plus questions whose right answer is the new one, the old one, or the change; check that the stale answer never appears unmarked.
 - Companion double-click leaves it floating (owner, 2026-10-12): double-clicking the companion to resize it leaves it stuck at that spot on the screen and floating, no longer perched on whatever it was perched on (a card, a bar, the dock). Reproduce with the double-click on a perched companion, then read the perch state (`companion-*.js`: where the anchor is kept, what the resize path writes: likely an absolute left/top that replaces the perch's anchor and is never handed back). Fix: resizing must keep the anchor and re-derive the position from it (perch offset in the anchor's frame), or re-perch on the nearest surface after the resize settles; add a sweep (perch, double-click, resize, scroll the anchor, check it follows).
 - Mind map pan with a node selected (owner, 2026-10-12, "insanely laggy ... maybe even more so now"): measured and fixed. A 120-topic map, a wheel pan with a topic selected, 4x CPU throttle: 71.8 s for 80 steps, 65 s of it in `wbUpdateSelectionBar` (rects, the topic's rendered size, the strip refilled, one forced layout of the board per frame); my first fix (hold the bar's measures) made a slow pan worse because every wheel gesture end re-measured in full. Now: the bar's measures and the selection box are held for the whole pan and the exact placement runs once, 250 ms after the pan goes quiet: 3.8 s, the same as with nothing selected, bar cost 24 ms. Not verified: a real GPU window (blurred panels over the canvas are not costed in a headless run), a drag pan with the Pan tool, and a pinch zoom.
-
 
 ## Owner's list, 2026-10-13 (one batch, in one place)
 
