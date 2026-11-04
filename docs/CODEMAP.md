@@ -2,7 +2,7 @@
 
 Generated 2026-11-04 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7810, frontend ids 2644, CSS sections 522, backend routes 644, backend modules 8797, test files 2066, tests 17442, plan headings 1003, app scripts 28, boot scripts 37, script files 256.
+Counts: frontend functions 7810, frontend ids 2644, CSS sections 522, backend routes 644, backend modules 8797, test files 2066, tests 17445, plan headings 1003, app scripts 28, boot scripts 37, script files 256.
 
 ## Frontend functions (7810)
 
@@ -3183,7 +3183,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `wire` | frontend/js/diagram-edge-pick.js:40 |
+| `wire` | frontend/js/diagram-edge-pick.js:49 |
 
 ### frontend/js/diagram-edges.js (2)
 
@@ -12297,7 +12297,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/dash-night-lazy.css | 29 |
 | frontend/css/dash-orphans-lazy.css | 57 |
 | frontend/css/desk-companion-lazy.css | 226 |
-| frontend/css/diagram-lazy.css | 1348 |
+| frontend/css/diagram-lazy.css | 1377 |
 | frontend/css/file-drop-lazy.css | 51 |
 | frontend/css/first-run-lazy.css | 140 |
 | frontend/css/forced-colors-lazy.css | 28 |
@@ -24068,7 +24068,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (17442)
+## Tests (17445)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -24612,7 +24612,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_diagram_document.py | 7 |
 | tests/test_diagram_door_panel.py | 2 |
 | tests/test_diagram_doors_1588.py | 5 |
-| tests/test_diagram_edge_pick.py | 7 |
+| tests/test_diagram_edge_pick.py | 10 |
 | tests/test_diagram_embed.py | 10 |
 | tests/test_diagram_kinds.py | 30 |
 | tests/test_diagram_library_1594.py | 8 |

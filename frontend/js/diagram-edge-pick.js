@@ -35,6 +35,15 @@
       }
       return best;
     },
+    //: Moves one end (`"from"` or `"to"`) of an arrow to the block or group `to`, keeping its words, line and arrow. The new arrow is
+    //: joined before the old one is taken out, so a refusal leaves the old one where it was. The new arrow, or why not.
+    reconnect: (ops, m, edge, end, to) => {
+      if (to === edge[end]) return "same";
+      const [from, dest] = end === "from" ? [to, edge.to] : [edge.from, to];
+      if (from === dest) return "self";
+      const next = ops.join(m, from, dest, { label: edge.label, style: edge.style, arrow: edge.arrow });
+      return next ? (ops.unjoin(m, edge), next) : "twin";
+    },
   };
 
   function wire(S, h) {
@@ -59,17 +68,30 @@
     line.setAttribute("class", "dgm-edge-on");
     svg.append(line);
     layer.append(svg);
+    //: The two ends of the picked arrow, a dot each: drag one to another block or a group to move that end there (slice 4).
+    const ends = ["from", "to"].map((end) => {
+      const dot = document.createElement("button");
+      dot.type = "button";
+      dot.className = "dgm-end hidden";
+      dot.dataset.end = end;
+      dot.tabIndex = -1;
+      dot.setAttribute("aria-label", `Drag to move the ${end === "from" ? "start" : "end"} of this connector to another block`);
+      layer.append(dot);
+      return dot;
+    });
     //: The picked arrow's Mermaid id (`L_<from>_<to>_<n>`): looked up again on every draw, since an undo rebuilds the model.
     let picked = "";
 
     const draw = () => {
       const mine = picked && S.hit?.edges?.find((e) => e.id === picked);
       const r = rect();
-      if (!mine || !r || !edgeOf(picked)) return line.removeAttribute("d");
+      if (!mine || !r || !edgeOf(picked)) return line.removeAttribute("d"), ends.forEach((dot) => dot.classList.add("hidden"));
       const home = layer.getBoundingClientRect();
       const [vx, vy, vw, vh] = S.hit.vb;
       const sx = r.width / vw;
       const sy = r.height / vh;
+      const at = (pt) => `translate(${r.left - home.left + (pt[0] - vx) * sx}px, ${r.top - home.top + (pt[1] - vy) * sy}px)`;
+      ends.forEach((dot, i) => ((dot.style.transform = at(mine.pts[i ? mine.pts.length - 1 : 0])), dot.classList.remove("hidden")));
       line.setAttribute("d", mine.d);
       line.setAttribute("transform", `matrix(${sx} 0 0 ${sy} ${r.left - home.left - vx * sx} ${r.top - home.top - vy * sy})`);
     };
@@ -84,7 +106,7 @@
     fig.addEventListener("scroll", draw, { passive: true });
     fig.addEventListener("load", draw, true);
     //: A click anywhere in the pane but on the picture lets go (the list, its bar).
-    S.root.addEventListener("click", (event) => picked && !fig.contains(event.target) && pick(""));
+    S.root.addEventListener("click", (event) => picked && !fig.contains(event.target) && !event.target.closest?.(".dgm-end") && pick(""));
 
     fig.addEventListener("click", (event) => {
       if (!S.hit || !rect() || event.target.closest(".dock, .dgm-handle, .dgm-rename")) return;
@@ -114,9 +136,49 @@
     });
     wireLongPress(fig, (event, point) => menu(event, point.x, point.y));
 
+    let drag = null;
+    const targetAt = (x, y) => nodeAt(x, y) || (S.hit && rect() ? overlay.clusterAt(S.hit, rect(), x, y) : "");
+    //: The block or group a drop would land on takes the accent outline (`dgm-target`, as the connect drag does).
+    const mark = (id) => {
+      for (const box of layer.querySelectorAll(".dgm-box")) box.classList.toggle("dgm-target", Boolean(id) && (box.dataset.node || box.dataset.group) === id);
+    };
+    const drop = () => ((drag = null), mark(""), draw());
+    for (const dot of ends) {
+      dot.addEventListener("pointerdown", (event) => {
+        if (event.button) return;
+        event.preventDefault();
+        dot.setPointerCapture?.(event.pointerId);
+        drag = { end: dot.dataset.end, id: event.pointerId };
+      });
+      dot.addEventListener("pointermove", (event) => {
+        if (!drag || event.pointerId !== drag.id) return;
+        const home = layer.getBoundingClientRect();
+        const to = targetAt(event.clientX, event.clientY);
+        mark(to);
+        dot.style.transform = `translate(${event.clientX - home.left}px, ${event.clientY - home.top}px)`;
+      });
+      dot.addEventListener("pointerup", (event) => {
+        if (!drag || event.pointerId !== drag.id) return;
+        const { end } = drag;
+        const to = targetAt(event.clientX, event.clientY);
+        const edge = edgeOf(picked);
+        drop();
+        if (!edge || !to) return;
+        const next = math.reconnect(h.ops, S.m, edge, end, to);
+        if (next === "twin") return h.say(S, `${nameOf(end === "from" ? to : edge.from)} is already connected to ${nameOf(end === "from" ? edge.to : to)}.`);
+        if (next === "self") return h.say(S, "A block cannot connect to itself.");
+        if (next === "same") return;
+        picked = "";
+        h.commit(S, `Moved the connector: ${nameOf(next.from)} to ${nameOf(next.to)}.`);
+      });
+      dot.addEventListener("pointercancel", drop);
+    }
+    //: Escape in the middle of a drag puts the end back and leaves the arrow picked.
+    window.addEventListener("keydown", (event) => event.key === "Escape" && drag && drop());
+
     fig.addEventListener("keydown", (event) => {
       const edge = picked && edgeOf(picked);
-      if (!edge || event.target !== fig || event.ctrlKey || event.metaKey || event.altKey) return;
+      if (!edge || drag || event.target !== fig || event.ctrlKey || event.metaKey || event.altKey) return;
       if (event.key === "Escape") pick("");
       else if (event.key === "Enter") S.renameEdge?.(edge);
       else if (event.key === "Delete" || event.key === "Backspace") {

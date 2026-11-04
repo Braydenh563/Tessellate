@@ -1346,3 +1346,32 @@
   vector-effect: non-scaling-stroke;
   pointer-events: none;
 }
+
+/* The two ends of a picked arrow (diagram-edge-pick.js): 12px dots in the accent on the modal surface, 44px under a coarse pointer. */
+.dgm-end {
+  position: absolute;
+  inset: 0 auto auto 0;
+  z-index: 2;
+  inline-size: 12px;
+  block-size: 12px;
+  margin: -6px 0 0 -6px;
+  padding: 0;
+  border: 2px solid var(--accent);
+  border-radius: var(--radius-pill);
+  background: var(--modal-bg);
+  pointer-events: auto;
+  touch-action: none;
+  cursor: grab;
+}
+
+.dgm-end.hidden {
+  display: none;
+}
+
+@media (pointer: coarse) {
+  .dgm-end {
+    inline-size: 44px;
+    block-size: 44px;
+    margin: -22px 0 0 -22px;
+  }
+}

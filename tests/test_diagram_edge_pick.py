@@ -89,3 +89,51 @@ def test_a_picked_arrow_is_drawn_two_pixels_in_the_accent_and_deletes_in_one_com
     # The picked arrow is looked up by Mermaid's id on every draw, so an undo that rebuilds the model cannot leave a stale one.
     assert "edgeId(S.m" in PICK
     assert "S.renameEdge = renameEdge" in (JS / "diagram-edges.js").read_text(encoding="utf-8")
+
+
+MODEL = "{nodes: [{id:'A',text:'A'},{id:'B',text:'B'},{id:'E',text:'E'}], subgraphs: [], edges: [{from:'E',to:'B',label:'yes',style:'dotted',arrow:true}], kept: []}"
+
+
+def _ops(expr: str):
+    script = (
+        "const vm=require('vm');const ctx={diagramModel:{},document:{},requestAnimationFrame(){},cancelAnimationFrame(){}};vm.createContext(ctx);"
+        f"for (const f of ['diagram-ops.js','diagram-picture.js','diagram-overlay.js','diagram-edges.js','diagram-edge-pick.js']) vm.runInContext(require('fs').readFileSync({json.dumps(str(JS))}+'/'+f,'utf8'),ctx);"
+        f"const p=ctx.diagramModel.edgepick.math;const ops=ctx.diagramModel.ops;const m={MODEL};"
+        f"process.stdout.write(JSON.stringify({expr}));"
+    )
+    return json.loads(subprocess.run(["node", "-e", script], capture_output=True, text=True, check=True).stdout)
+
+
+@needs_node
+def test_moving_an_arrows_end_is_one_arrow_out_and_one_in_with_its_words_line_and_arrow_kept():
+    # E --> B becomes E --> A: the edge count is unchanged, the words survive, the old arrow is gone.
+    out = _ops("(() => { const r = p.reconnect(ops, m, m.edges[0], 'to', 'A'); return [r, m.edges]; })()")
+    assert out[0] == {"from": "E", "to": "A", "label": "yes", "style": "dotted", "arrow": True}
+    assert out[1] == [out[0]]
+    start = _ops("(() => { p.reconnect(ops, m, m.edges[0], 'from', 'A'); return m.edges.map((e) => e.from + e.to + e.label); })()")
+    assert start == ["ABYes".replace("Y", "y")]
+
+
+@needs_node
+def test_a_refused_reconnect_leaves_the_old_arrow_where_it_was():
+    same = _ops("(() => [p.reconnect(ops, m, m.edges[0], 'to', 'B'), m.edges.length])()")
+    assert same == ["same", 1]
+    loop = _ops("(() => [p.reconnect(ops, m, m.edges[0], 'to', 'E'), m.edges.length, m.edges[0].to])()")
+    assert loop == ["self", 1, "B"]
+    twin = _ops(
+        "(() => { m.edges.push({from:'E',to:'A',label:'yes',style:'dotted',arrow:true}); return [p.reconnect(ops, m, m.edges[0], 'to', 'A'), m.edges.length, m.edges[0].to]; })()"
+    )
+    assert twin == ["twin", 2, "B"]
+
+
+def test_an_arrow_end_drags_to_another_block_and_the_reconnect_is_one_change():
+    assert ".dgm-end" in PICK and "dot.dataset.end = end" in PICK
+    assert PICK.count("h.commit(") == 2  # Delete, and the reconnect: each one change, one undo step
+    assert "math.reconnect(h.ops, S.m, edge, end, to)" in PICK
+    # Joined first with the old words, style and arrow, so a refusal leaves the old arrow where it was.
+    assert PICK.index("ops.join(m,") < PICK.index("ops.unjoin(m,")
+    assert "label: edge.label, style: edge.style, arrow: edge.arrow" in PICK
+    assert "is already connected to" in PICK and '"Escape"' in PICK and "setPointerCapture" in PICK
+    end = CSS[CSS.index(".dgm-end {") : CSS.index("}", CSS.index(".dgm-end {"))]
+    assert "pointer-events: auto;" in end and "touch-action: none;" in end and "inline-size: 12px;" in end
+    assert "inline-size: 44px;" in CSS[CSS.index("@media (pointer: coarse) {\n  .dgm-end {") :][:120]
