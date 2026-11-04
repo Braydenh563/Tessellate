@@ -1508,7 +1508,7 @@ def list_media(
     def _unplaced(u: MediaUpload) -> bool:
         # SEC-A2: with a private note locked, an upload no readable note names
         # may be that note's picture; its readings stay back until unlock.
-        return usage_incomplete and not used.get(u.filename)
+        return usage_incomplete and u.in_private_note and not used.get(u.filename)
 
     return [
         MediaUploadOut(
@@ -4139,7 +4139,7 @@ def vision_ocr_media(
 
 
 @media_router.get("/media/{filename}")
-def get_media(filename: str) -> FileResponse:
+def get_media(filename: str, session: Session = Depends(get_session)) -> FileResponse:
     """Serve generic uploaded media.
 
     The suffix is checked again on the way out, not only on the way in. Upload
@@ -4153,6 +4153,9 @@ def get_media(filename: str) -> FileResponse:
     path = deps.get_config().data_dir / "media" / name
     if not path.is_file():
         raise HTTPException(status_code=404, detail="That media file could not be found.")
+    # SEC-A2: a picture only a locked private note uses is part of that note.
+    if media_gc.sealed_only(session, name):
+        raise HTTPException(status_code=403, detail="Unlock first.")
     # `nosniff` is already set globally, but the header below is the one that
     # decides whether a PDF opens in the page or downloads, and an inline PDF
     # viewer is a script host. Nothing here needs to render in-place: markdown

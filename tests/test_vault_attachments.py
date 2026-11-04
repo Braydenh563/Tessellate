@@ -56,10 +56,60 @@ def test_files_come_back_once_unlocked(client, session, sealed_attachment):
     vault.close()
 
 
-def test_the_media_list_hides_the_text_of_uploads_it_cannot_place_while_locked(client, session, sealed_attachment):
+PNG = (
+    b"\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01\x00\x00\x00\x01\x08\x06\x00\x00\x00\x1f\x15\xc4\x89"
+    b"\x00\x00\x00\rIDATx\x9cc\xf8\xff\xff?\x00\x05\xfe\x02\xfe\xa7\x9a\xa0\xa0\x00\x00\x00\x00IEND\xaeB`\x82"
+)
+
+
+def _sealed_image(client, session, *, also_plain=False):
+    """A picture embedded in a private note (and optionally a readable one), vault locked."""
+    from tessellate.core import vault
     from tessellate.core.database import MediaUpload
 
-    session.add(MediaUpload(filename="abc123.png", original_name="x.png", ocr_text="MEDIASECRET", caption="MEDIACAP"))
+    vault.close()
+    vault.create(session, PASSPHRASE)
     session.commit()
-    rows = client.get("/media").json()
-    assert rows and "MEDIASECRET" not in str(rows) and "MEDIACAP" not in str(rows)
+    up = client.post("/media/upload", files={"file": ("p.png", PNG, "image/png")})
+    assert up.status_code in (200, 201), up.text
+    url = up.json()["url"]
+    row = session.query(MediaUpload).filter_by(filename=url.rsplit("/", 1)[-1]).one()
+    row.ocr_text = "IMGSECRET"
+    session.commit()
+    note = client.post("/entries", json={"content": f"private pic ![]({url})"}).json()
+    assert client.post(f"/entries/{note['id']}/privacy", json={"private": True}).status_code == 200
+    if also_plain:
+        assert client.post("/entries", json={"content": f"plain pic ![]({url})"}).status_code == 201
+    vault.close()
+    return url
+
+
+def test_a_locked_private_notes_picture_is_not_served(client, session):
+    url = _sealed_image(client, session)
+    assert client.get(url).status_code == 403
+
+
+def test_a_picture_a_readable_note_also_uses_stays_served(client, session):
+    url = _sealed_image(client, session, also_plain=True)
+    assert client.get(url).status_code == 200
+
+
+def test_the_picture_comes_back_once_unlocked(client, session):
+    from tessellate.core import vault
+
+    url = _sealed_image(client, session)
+    vault.open_with(session, PASSPHRASE)
+    assert client.get(url).status_code == 200
+    vault.close()
+
+
+def test_the_media_list_blanks_only_pictures_of_sealed_notes(client, session):
+    from tessellate.core.database import MediaUpload
+
+    url = _sealed_image(client, session)
+    session.add(MediaUpload(filename="orphan1.png", original_name="o.png", ocr_text="ORPHANTEXT"))
+    session.commit()
+    text = str(client.get("/media").json())
+    assert "IMGSECRET" not in text
+    assert "ORPHANTEXT" in text
+    assert url

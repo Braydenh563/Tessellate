@@ -207,6 +207,9 @@ def usage_map(session: Session) -> tuple[dict[str, list[dict]], bool]:
             # stops it being deleted; only the wording is withheld.
             if entry.is_private:
                 note(name, "note", entry.id, "Private note")
+                # Notes made private before the flag existed are marked the
+                # first time they are read here with the vault open.
+                manager.flag_private_media(session, content)
                 continue
             # `plain_label`, not the raw first line: a chip cannot render
             # markdown, and one that tries shows `# Title ![alt](/media/…)`
@@ -262,3 +265,17 @@ def delete_orphaned_media(session: Session, media_dir) -> tuple[list[dict], bool
         session.delete(upload)
     session.commit()
     return deleted, False
+
+
+def sealed_only(session: Session, filename: str) -> bool:
+    """Whether this upload's only users are locked private notes: a private
+    note embeds it, no readable one does, and the vault is shut to this caller."""
+    from tessellate.core import vault
+
+    if vault.key() is not None:
+        return False
+    flagged = session.scalar(select(MediaUpload.in_private_note).where(MediaUpload.filename == filename))
+    if not flagged:
+        return False
+    used, _incomplete = usage_map(session)
+    return not used.get(filename)
