@@ -4867,6 +4867,8 @@ Link to another note with [[its first few words]]."></textarea>
               <button id="doc-new-template" class="ghost small icon-only" type="button"
                 title="New from a template" aria-label="New document from a template"
                 aria-haspopup="dialog" aria-controls="doc-template-dialog"><i class="ph ph-layout" aria-hidden="true"></i></button>
+              <button id="doc-new-diagram" class="ghost small icon-only" type="button"
+                title="New diagram" aria-label="New diagram"><i class="ph ph-flow-arrow" aria-hidden="true"></i></button>
             </span>
           </div>
           <div class="help-body hidden" id="doc-list-help" role="dialog" aria-label="About the documents list">
@@ -4875,7 +4877,7 @@ Link to another note with [[its first few words]]."></textarea>
             <p>New starts an empty document, and the arrow on it starts an empty file of
               another type (Documents, Data or Code). The layout button beside it starts one
               from a template (a meeting, a plan, a lecture and more, or a code
-              file). All in Library opens every document, where you can search,
+              file). The flow arrow beside that is the diagram button: it opens the Diagram builder on an empty diagram. All in Library opens every document, where you can search,
               sort and manage them.</p>
           </div>
           <ul id="doc-list" data-holds-notebook class="doc-list"></ul>
@@ -5263,6 +5265,8 @@ Link to another note with [[its first few words]]."></textarea>
                 <button id="doc-export-md" class="menu-item doc-dock-menu-item" type="button"
                   title="Download as a .md file"><i class="ph ph-download-simple ph-lead" aria-hidden="true"></i> Download as .md</button>
                 <!-- A diagram's picture (DOCUMENTS_PLAN 22, R10): shown for a diagram only, drawn by the lazy export file. -->
+                <button id="doc-export-svg" class="menu-item doc-dock-menu-item hidden" type="button"
+                  title="Download the diagram as an SVG picture"><i class="ph ph-file-svg ph-lead" aria-hidden="true"></i> Download as .svg</button>
                 <button id="doc-export-picture" class="menu-item doc-dock-menu-item hidden" type="button"
                   title="Download the diagram as a PNG picture"><i class="ph ph-file-png ph-lead" aria-hidden="true"></i> Download as .png</button>
                 <button id="doc-copy-picture" class="menu-item doc-dock-menu-item hidden" type="button"

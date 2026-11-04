@@ -236,6 +236,10 @@ function syncDocFileType({ prose = true } = {}) {
   const code = !type.previewable;
   docBoxEl()?.classList.toggle("doc-content-code", code);
   $("tab-documents")?.classList.toggle("doc-is-code", code);
+  //: A diagram's page is its own (INBOX 1679): the prose editor's Format, Assistant, Snippets, How to edit and Focus go (library-lazy.css), and the
+  //: preview, which holds the builder, is no tab stop of its own, so Tab runs title, the seg, About, More, Add box, first block.
+  $("tab-documents")?.classList.toggle("doc-is-diagram", type.ext === "mmd");
+  $("doc-preview").tabIndex = type.ext === "mmd" ? -1 : 0;
   //: The code panel (INBOX 788) comes back with a code file if it was open,
   //: and the sections tab with a prose document (INBOX 904 B18); its words
   //: and way in follow the type either way.
@@ -258,7 +262,7 @@ function syncDocFileType({ prose = true } = {}) {
   // markup puts in front of the words.
   setLabel($("doc-export-md"), `ph:download-simple Download as .${type.ext}`);
   $("doc-export-md").title = `Download as a .${type.ext} file`;
-  for (const id of ["doc-export-picture", "doc-copy-picture"]) $(id)?.classList.toggle("hidden", type.ext !== "mmd");
+  for (const id of ["doc-export-svg", "doc-export-picture", "doc-copy-picture"]) $(id)?.classList.toggle("hidden", type.ext !== "mmd");
 
   //: **The prose check depends on the type, so a type change has to re-run
   //: it.** `openDocument` gets this through `renderDocTools`; changing the
@@ -291,6 +295,15 @@ syncDocFileType.diagramSeg = function (seg) {
     button.addEventListener("click", () => setDocView(mode));
     seg.append(button);
   }
+  seg.addEventListener("keydown", (event) => {
+    const step = { ArrowRight: 1, ArrowLeft: -1 }[event.key];
+    const all = [...seg.children];
+    const next = step && all[all.indexOf(document.activeElement) + step];
+    if (!next) return;
+    event.preventDefault();
+    next.focus();
+    next.click();
+  });
 };
 
 // The dock's kebab closes when you pick something from it, and when you click
@@ -476,7 +489,7 @@ window.addEventListener(
 //: ninth row, behind the layout switches. The rows keep their markup order;
 //: the group is moved, so ids and handlers are untouched.
 const docDownloadGroup = foldDocMenuGroup("ph:download-simple Download or print", [
-  "doc-export-md", "doc-export-picture", "doc-copy-picture", "doc-export-html", "doc-export-zip", "doc-export-docx", "doc-export-pdf",
+  "doc-export-md", "doc-export-svg", "doc-export-picture", "doc-copy-picture", "doc-export-html", "doc-export-zip", "doc-export-docx", "doc-export-pdf",
 ]);
 docDownloadGroup?.parentElement?.prepend(docDownloadGroup);
 foldDocMenuGroup("ph:layout Editor and layout", [
@@ -1013,7 +1026,12 @@ function setDocView(mode, { persist = true } = {}) {
     const on = button.dataset.docViewGroup === "edit" ? docView !== "rendered" : mode === "canvas" || mode === "blocks" ? docView === "rendered" && docViewState.layout === mode : mode === docView;
     button.classList.toggle("active", on);
     button.setAttribute("aria-pressed", String(on));
+    //: A diagram's Canvas, Blocks and Source are one tab stop (the chosen one), the arrows move between them.
+    if (button.closest("#doc-diagram-seg")) button.tabIndex = on ? 0 : -1;
   }
+  //: A view with none of the three on (Split) still leaves the seg reachable.
+  const diagramSeg = $("doc-diagram-seg");
+  if (diagramSeg?.firstElementChild && !diagramSeg.querySelector('[tabindex="0"]')) diagramSeg.firstElementChild.tabIndex = 0;
 
   if (docPreviewShowing()) {
     renderDocPreview();
@@ -7945,6 +7963,8 @@ $("doc-code-snippets-open")?.addEventListener("click", () => docCodeSideFrom("sn
 $("doc-code-assist-open")?.addEventListener("click", () => docCodeSideFrom("assist"));
 $("doc-new").addEventListener("click", () => createDocument());
 $("doc-new-template")?.addEventListener("click", openDocTemplateDialog);
+//: The Diagram builder's one door (documents-mermaid.js), as a button beside New: it was a row behind New's caret, two clicks and easy to miss (INBOX 1679).
+$("doc-new-diagram")?.addEventListener("click", () => diagramModel.door({ doc: true }));
 $("doc-template-list")?.addEventListener("keydown", docTemplateListKeys);
 $("doc-template-use")?.addEventListener("click", useDocTemplate);
 // Searching and sorting every document lives in the Library now (§36G), with
@@ -9806,7 +9826,7 @@ $("doc-copy-link").addEventListener("click", () => {
 $("doc-export-md").addEventListener("click", exportDocumentMarkdown);
 $("doc-export-html").addEventListener("click", exportDocumentHtml);
 //: A diagram's picture from the open page (R10): the editor's own text, so an unsaved change is in it.
-for (const [id, how] of [["doc-export-picture", "png"], ["doc-copy-picture", "picture"]]) {
+for (const [id, how] of [["doc-export-svg", "svg"], ["doc-export-picture", "png"], ["doc-copy-picture", "picture"]]) {
   $(id).addEventListener("click", async () => {
     $("doc-dock-menu")?.removeAttribute("open");
     if (await ensureModule("diagramEmbed")) diagramModel.embed.out(how, docText(), currentDoc?.title);

@@ -8482,3 +8482,28 @@ input[type="color"].wb-mixed {
 .doc-comment-resolved .doc-comment-body {
   color: var(--muted);
 }
+
+/* A diagram's page is its own (INBOX 1679): the prose editor's Format, Assistant, Snippets, How to edit and Focus mode, and the phone menu's rows that press them, are not there. */
+#tab-documents.doc-is-diagram .doc-actions > :is(#doc-code-format, #doc-code-assist-open, #doc-code-snippets-open, #doc-focus-toggle),
+#tab-documents.doc-is-diagram .doc-view-cluster > .doc-view-menu,
+#tab-documents.doc-is-diagram .doc-dock-menu-item[data-click-proxy] {
+  display: none;
+}
+/* And the builder takes the page's room: the rendered-document gutter above it is 24px, a document's margin and not a drawing's. */
+#tab-documents.doc-is-diagram #doc-preview {
+  padding-top: var(--space-2);
+}
+
+/* The documents list head on a phone (INBOX 1679, with the diagram button beside New): the heading and its help are one line, New, the template and the diagram buttons the next, where three controls and the heading had wrapped anywhere. */
+@media (max-width: 599.98px) {
+  #doc-sidebar-list > .sidebar-head {
+    flex-wrap: wrap;
+    row-gap: var(--space-2);
+  }
+  #doc-sidebar-list > .sidebar-head > .row {
+    display: contents;
+  }
+  #doc-sidebar-list > .sidebar-head > h2 {
+    flex: 1 0 calc(100% - var(--sidebar-toggle-size) - var(--space-3));
+  }
+}
