@@ -44,7 +44,7 @@ def test_the_card_fits_its_content_and_the_panes_share_one_cell() -> None:
 def test_scientific_lays_its_keys_beside_the_digits() -> None:
     """Stacked, Scientific was 767px tall and scrolled at 1024 by 768; side by side it is 669px."""
     assert 'pane.classList.toggle("is-sci", on)' in KIT
-    block = KIT_CSS.split("@media (min-width: 40rem) {", 1)[1].split("\n}\n\n", 1)[0]
+    block = KIT_CSS.split("@media (min-width: 600px) {", 1)[1].split("\n}\n\n", 1)[0]
     assert ".calc-pane.is-sci" in block and "grid-template-columns: 1fr 1fr" in block
     assert re.search(r"\.calc-keys-sci \{\s*grid-column: 1;", block)
     assert re.search(r"\.calc-keys:not\(\.calc-keys-sci\) \{\s*grid-column: 2;", block)

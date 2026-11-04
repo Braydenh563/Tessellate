@@ -213,8 +213,8 @@
   overflow-y: auto;
 }
 
-/* **Scientific beside the digits** (INBOX 1622): the function keys in the left column and the keypad in the right, so the card is as tall as Standard's (684px, not 767) and a 1024 by 768 window needs no scroll. Below 40rem the keys stack as they did. */
-@media (min-width: 40rem) {
+/* **Scientific beside the digits** (INBOX 1622): the function keys in the left column and the keypad in the right, so the card is as tall as Standard's (684px, not 767) and a 1024 by 768 window needs no scroll. Below 600px the keys stack as they did. */
+@media (min-width: 600px) {
   .sheet-card.calc-card:has(.calc-pane.is-sci) {
     width: min(40rem, 94vw);
     max-width: min(40rem, 94vw);
