@@ -314,3 +314,7 @@ do this, and what is the one measurement that proves we match it.*
 1427. Built: moved to HISTORY.md ("Moved from the plans, 2026-10-28 (panels 1427)").
 
 1429. Built: moved to HISTORY.md ("Moved from the plans, 2026-10-28 (companion 1429)").
+
+## Placed from INBOX, 2026-11-04
+
+- **Owner, 2026-11-04 (two asks):** "I heard about a repo named glisse which is a react library for liquid glass components, anything interesting we can use?" and "also I wanna took at, deep analyse and see what we cna incorporate from Granola AI notebook". Glisse (0kzh/glisse, MIT, React only): answered in chat; the app already carries the specular lip and refused the displacement half on cost (`00-tokens-shell.css:3867`), so nothing to import; ideas only (a segmented control and switch thumb that stretch while dragged), placed if the owner wants them. Granola (closed source, ideas only): recommendation, a Sonnet comparison of Granola's notepad (your rough lines kept and the transcript filling in under them, your words and the added words told apart), per-type meeting templates applied automatically, recipes (saved prompts run on one meeting or a folder: follow-up email, action items with owners), chat over a folder with citations, against `meetings.js`, `entry/meetings.py` and `ai/meeting_summary.py`, then rows in the meetings plan; the comparison runs at the next free agent slot and lands its rows here.
