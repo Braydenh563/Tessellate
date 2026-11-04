@@ -1,5 +1,5 @@
 mode: continue
-status: stopped (context)
+status: running
 pr: 212
 max-continues: 40
 max-idle-minutes: 60
