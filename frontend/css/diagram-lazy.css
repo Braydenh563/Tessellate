@@ -627,6 +627,8 @@
 /* What the drop will do, in words under the target ("After Save", "Into Frontend", "Connect to Save"; 1679 slice 12). */
 .dgm-drop-word {
   position: fixed;
+  /* Above the builder dialog's overlay (1010): most drags happen inside it. */
+  z-index: 1100;
   padding: var(--space-1) var(--space-3);
   border: 1px solid var(--accent);
   border-radius: var(--radius-sm);

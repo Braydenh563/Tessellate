@@ -215,9 +215,11 @@
       overlay.remove();
       if (returnFocus?.isConnected) returnFocus.focus?.();
     };
+    //: True when leaving may go ahead: nothing changed, or the person confirmed they do not want the changes.
+    const mayDiscard = async () => history[at] === first || (await confirmDialog("Close without keeping your changes to this diagram?", { confirmLabel: "Discard changes", cancelLabel: "Keep editing" }));
     const finish = async (done) => {
       if (closing) return;
-      if (!done && history[at] !== first && !(await confirmDialog("Close without keeping your changes to this diagram?", { confirmLabel: "Discard changes", cancelLabel: "Keep editing" }))) return;
+      if (!done && !(await mayDiscard())) return;
       leave();
       if (done && onDone) onDone(history[at], history[at] !== first);
     };
@@ -228,7 +230,8 @@
     //: The door's dialog also opens a diagram that exists (1679 slice 9): `existing.pick()` answers a row or nothing, `existing.open(row)` shows it.
     const known = existing ? smallButton("ph:folder-open Open an existing diagram", "Leave this one and open a diagram you already made", async () => {
       const row = await existing.pick();
-      if (!row) return;
+      //: Opening another diagram leaves this one, so it asks as Cancel does (a reviewer found it dropped edits silently).
+      if (!row || closing || !(await mayDiscard())) return;
       leave();
       existing.open(row);
     }, false) : null;

@@ -8,6 +8,7 @@ browser; docs/roadmap/HISTORY.md names the numbers.
 from __future__ import annotations
 
 import json
+import re
 import shutil
 import subprocess
 from pathlib import Path
@@ -115,4 +116,21 @@ def test_the_target_says_what_the_drop_will_do_in_a_caption_on_the_accent_tint()
     assert "dgm-drop-word" in POINTER and "aria-hidden" in POINTER[POINTER.index("dgm-drop-word") :][:300]
     rule = CSS[CSS.index(".dgm-drop-word {") :].split("}", 1)[0]
     assert "var(--text-xs)" in rule and "var(--accent-soft)" in rule and "position: fixed" in rule and "pointer-events: none" in rule
+    # It sits above the builder dialog's overlay (1010), where most drags happen: a caption under it is never seen.
+    assert int(re.search(r"z-index:\s*(\d+)", rule).group(1)) > 1010
 
+
+@needs_node
+def test_over_empty_space_a_box_gets_no_target_a_tile_and_a_group_do():
+    """Runs `over` (slice 12): a node dragged to empty picture is cancelled (null), a palette tile adds, a group lifts to the top."""
+    script = (
+        "const vm=require('vm');const layer={};const stage={contains:()=>true,querySelector:()=>layer};"
+        "const ctx={diagramModel:{},document:{elementFromPoint:()=>({closest:()=>null})},requestAnimationFrame(){},cancelAnimationFrame(){}};vm.createContext(ctx);"
+        f"for (const f of ['diagram-picture.js','diagram-overlay.js','diagram-canvas.js']) vm.runInContext(require('fs').readFileSync({json.dumps(str(JS))}+'/'+f,'utf8'),ctx);"
+        "const S={fig:{parentElement:stage,querySelector:()=>null},hit:null};const h={};"
+        "const run=(key,tile)=>ctx.diagramModel.canvas.over({S,key,tile,x:1,y:1},h);"
+        "const t=run('n:A',null),a=run('n:A',{dataset:{}}),g=run('g:G',null);"
+        "process.stdout.write(JSON.stringify({node:t,tile:a&&a.word,group:g&&g.word}));"
+    )
+    out = json.loads(subprocess.run(["node", "-e", script], capture_output=True, text=True, check=True).stdout)
+    assert out == {"node": None, "tile": "Add here", "group": "To the top level"}

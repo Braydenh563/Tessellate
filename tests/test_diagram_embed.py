@@ -142,3 +142,10 @@ def test_a_press_on_the_picture_finds_a_node_even_though_mermaid_12_prefixes_the
     code = "globalThis.diagramModel = {};\n" + picture + f"\nconsole.log(JSON.stringify(diagramModel.picture.boxes({json.dumps(svg)})));"
     found = json.loads(subprocess.run([node, "-e", code], capture_output=True, text=True, check=True).stdout)
     assert [b["id"] for b in found["boxes"]] == ["A", "B"] and found["boxes"][0]["w"] == 152 and found["vb"] == [4, 4, 168, 228]
+
+
+def test_opening_an_existing_diagram_asks_before_it_drops_changes_like_cancel_does():
+    """1679 slice 9 review: the button left the dialog with no confirm, so edits were lost; it shares Cancel's `mayDiscard`."""
+    assert "const mayDiscard = async" in EMBED and "!(await mayDiscard())" in EMBED
+    open_btn = EMBED[EMBED.index("const known = existing") :][:700]
+    assert "mayDiscard()" in open_btn and open_btn.index("mayDiscard()") < open_btn.index("leave();")
