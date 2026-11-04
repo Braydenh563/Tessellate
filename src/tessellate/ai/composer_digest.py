@@ -1311,7 +1311,9 @@ def _picture_fact(view: composer.NoteView, shown: list, read: list) -> Fact:
     #: its name, a picture beside words as "its picture".
     name = _your_note(view)
     subject = "its picture" if not mostly else name if name.startswith("your picture") else f"the picture in {name}"
-    body = f"{subject} shows {_fragment(what, set())}" if what else ""
+    #: A caption with its own verb is quoted whole, not spliced after "shows" (INBOX 1599).
+    whole, said = composer_threads.caption_form(shown[0].text.strip()) if shown else (False, "")
+    body = (f"{subject} is described as “{said}”" if whole else f"{subject} shows {_fragment(what, set())}") if what else ""
     if words:
         body = f"{body}, reading {words}" if body else f"{subject} reads {words}"
     return Fact(view, (shown or read)[0], "", body, "")
