@@ -1611,7 +1611,7 @@ def _add_system_routes(app: FastAPI, locked: list) -> None:
         )
 
     @app.get("/health", tags=["system"])
-    def health(request: Request) -> dict[str, str | bool]:
+    async def health(request: Request) -> dict[str, str | bool]:
         from tessellate.core import reminder_notifier
 
         #: The desktop shell and its notifier belong to this computer. A phone

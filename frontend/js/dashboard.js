@@ -2740,9 +2740,38 @@ async function renderDigestWidget(outer) {
   //: drawn while the day's lines were still in flight, so a revisit swapped in
   //: a 119px body that grew to 259px a fetch later and pushed every card below.
   const dayDrawn = renderDayDigest(dayBox);
-  const showDigest = (text) => {
+  //: **The week under its own label, its source as a footnote** (the owner, 2026-11-04: "clicking
+  //: generate this week's digest only shows the line, from your notes, no ai"). The week was all
+  //: there, under the card's fold, and its first line was the source caption at body size, so the
+  //: one line in view read as the whole answer. Now "This week" labels it, the caption is a muted
+  //: footnote, and a click scrolls the card to the week.
+  const weekParts = (text) => {
+    const source = "From your notes, no AI.";
+    const trimmed = String(text || "").trimStart();
+    return trimmed.startsWith(source) ? { words: trimmed.slice(source.length).trimStart(), source } : { words: trimmed, source: "" };
+  };
+  const weekHead = () => {
+    const head = document.createElement("p");
+    head.className = "eyebrow";
+    head.textContent = "This week";
+    return head;
+  };
+  const toWeek = (head) => {
+    for (let el = body.parentElement; el && el !== document.body; el = el.parentElement) {
+      if (el.scrollHeight > el.clientHeight + 1 && /auto|scroll/.test(getComputedStyle(el).overflowY)) {
+        el.scrollTop += head.getBoundingClientRect().top - el.getBoundingClientRect().top;
+        return;
+      }
+    }
+  };
+  const showDigest = (text, scroll = false) => {
+    const { words, source } = weekParts(text);
+    const head = weekHead();
     const out = document.createElement("div");
-    renderMarkdown(out, text);
+    renderMarkdown(out, words);
+    const note = document.createElement("small");
+    note.className = "muted";
+    note.textContent = source;
     const controls = document.createElement("div");
     controls.className = "row";
     controls.appendChild(
@@ -2751,7 +2780,8 @@ async function renderDigestWidget(outer) {
         runGeneration();
       })
     );
-    body.replaceChildren(out, controls);
+    body.replaceChildren(...[head, out, source ? note : null, controls].filter(Boolean));
+    if (scroll) toWeek(head);
   };
 
   const runGeneration = () => {
@@ -2762,20 +2792,21 @@ async function renderDigestWidget(outer) {
     // Live-render the text as it streams in; the ring stays until the first
     // token arrives, then the words take over.
     const live = document.createElement("div");
+    const liveHead = weekHead();
     let started = false;
     generateDigest((soFar) => {
       if (!body.isConnected) return;
+      renderMarkdown(live, weekParts(soFar).words);
       if (!started) {
         started = true;
-        body.replaceChildren(live);
+        body.replaceChildren(liveHead, live);
+        toWeek(liveHead);
       }
-      renderMarkdown(live, soFar);
-      body.scrollTop = body.scrollHeight;
     })
       .then((text) => {
         // The widget may have been left/re-rendered while we waited, 
         // only paint if this exact body is still on screen.
-        if (body.isConnected) showDigest(text);
+        if (body.isConnected) showDigest(text, true);
       })
       .catch((error) => {
         if (!body.isConnected) return;

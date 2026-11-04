@@ -629,6 +629,18 @@ mm_port_is_memorymap() {
   return 1
 }
 
+# The pid in this notebook's instance.lock (one line of JSON, pid first), when
+# that process is alive and its lock names this port: the copy holding the
+# port is ours. Empty otherwise.
+mm_lock_pid() {
+  local lock="$MM_DATA_DIR/instance.lock" pid port
+  [ -f "$lock" ] || return 0
+  pid="$(sed -n 's/.*"pid": *\([0-9][0-9]*\).*/\1/p' "$lock" 2>/dev/null | head -n 1)"
+  port="$(sed -n 's/.*"port": *\([0-9][0-9]*\).*/\1/p' "$lock" 2>/dev/null | head -n 1)"
+  [ -n "$pid" ] && [ "$port" = "$MM_PORT" ] && kill -0 "$pid" 2>/dev/null && echo "$pid"
+  return 0
+}
+
 # $2 names what to open it with, for the machine that has neither `open` nor
 # `xdg-open` and gets told to do it by hand. It exists because this function
 # has two callers and they open different kinds of thing: telling someone to
@@ -915,6 +927,41 @@ fi
 # a subset of --doctor on purpose: the rest of that table costs network
 # round trips, and nobody wants to wait for an Ollama probe to open their
 # notebook.
+# **A Tessellate that holds the port and does not answer (INBOX 1637)** was
+# reported as "another program": the copy just closed (still shutting down)
+# or one that hung. Ours (instance.lock names a live pid on this port) is
+# waited for, about 25 seconds, then offered for stopping on a keypress.
+MM_STUCK_PID=""
+if mm_port_open "$MM_PORT" && ! mm_port_is_memorymap "$MM_PORT"; then
+  MM_STUCK_PID="$(mm_lock_pid)"
+  if [ -n "$MM_STUCK_PID" ]; then
+    echo " ${TEAL}[..]${RESET} Tessellate is already on port $MM_PORT and has not answered yet. Waiting for it..."
+    for _ in 1 2 3 4 5; do
+      sleep 2
+      if ! mm_port_open "$MM_PORT" || mm_port_is_memorymap "$MM_PORT"; then MM_STUCK_PID=""; break; fi
+    done
+  fi
+fi
+if [ -n "$MM_STUCK_PID" ]; then
+  echo " ${YELLOW}[!]${RESET} Tessellate is already running on port $MM_PORT but is not answering."
+  echo "        It may have frozen, or still be closing."
+  MM_STOP_ANSWER=""
+  if [ -t 0 ]; then
+    read -r -t 60 -p "        Press s to stop it and start again, or c to cancel: " MM_STOP_ANSWER || true
+  fi
+  case "$MM_STOP_ANSWER" in
+    s|S)
+      kill "$MM_STUCK_PID" 2>/dev/null || true
+      for _ in 1 2 3 4 5; do sleep 1; kill -0 "$MM_STUCK_PID" 2>/dev/null || break; done
+      kill -9 "$MM_STUCK_PID" 2>/dev/null || true
+      for _ in 1 2 3 4 5; do mm_port_open "$MM_PORT" || break; sleep 1; done
+      ;;
+    *)
+      mm_fail "Tessellate is already running on port $MM_PORT but is not answering (pid $MM_STUCK_PID)." \
+              "Run this again and press s to stop it, or end that process: kill $MM_STUCK_PID"
+      ;;
+  esac
+fi
 if mm_port_open "$MM_PORT"; then
   if mm_port_is_memorymap "$MM_PORT"; then
     echo " ${TEAL}[ok]${RESET} Tessellate is already running on port $MM_PORT - opening it."

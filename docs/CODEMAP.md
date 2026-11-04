@@ -2,7 +2,7 @@
 
 Generated 2026-11-04 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7747, frontend ids 2637, CSS sections 522, backend routes 641, backend modules 8594, test files 1992, tests 16673, plan headings 999, app scripts 28, boot scripts 37, script files 245.
+Counts: frontend functions 7747, frontend ids 2637, CSS sections 522, backend routes 641, backend modules 8594, test files 1994, tests 16683, plan headings 999, app scripts 28, boot scripts 37, script files 245.
 
 ## Frontend functions (7747)
 
@@ -1406,22 +1406,22 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `activityActorName` | frontend/js/dashboard.js:3833 |
-| `activityUndoControl` | frontend/js/dashboard.js:3911 |
-| `activityUndoPlanText` | frontend/js/dashboard.js:3840 |
-| `activityUndoStarts` | frontend/js/dashboard.js:3896 |
+| `activityActorName` | frontend/js/dashboard.js:3864 |
+| `activityUndoControl` | frontend/js/dashboard.js:3942 |
+| `activityUndoPlanText` | frontend/js/dashboard.js:3871 |
+| `activityUndoStarts` | frontend/js/dashboard.js:3927 |
 | `afterFrames` | frontend/js/dashboard.js:1966 |
 | `applyDashDensity` | frontend/js/dashboard.js:1272 |
 | `cachedGreetingPhrase` | frontend/js/dashboard.js:314 |
 | `closeFeatures` | frontend/js/dashboard.js:1552 |
-| `dashActionRow` | frontend/js/dashboard.js:3626 |
-| `dashActivityItems` | frontend/js/dashboard.js:3744 |
+| `dashActionRow` | frontend/js/dashboard.js:3657 |
+| `dashActivityItems` | frontend/js/dashboard.js:3775 |
 | `dashContinueNote` | frontend/js/dashboard.js:1398 |
 | `dashCustomiseItems` | frontend/js/dashboard.js:1447 |
 | `dashDensity` | frontend/js/dashboard.js:1140 |
 | `dashDensityChosen` | frontend/js/dashboard.js:1146 |
 | `dashDragOverCard` | frontend/js/dashboard.js:22 |
-| `dashEmpty` | frontend/js/dashboard.js:3679 |
+| `dashEmpty` | frontend/js/dashboard.js:3710 |
 | `dashEntries` | frontend/js/dashboard.js:488 |
 | `dashFillingSkeleton` | frontend/js/dashboard.js:1977 |
 | `dashFillingSkeletonDone` | frontend/js/dashboard.js:2025 |
@@ -1435,7 +1435,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `dashReminders` | frontend/js/dashboard.js:468 |
 | `dashStatsButton` | frontend/js/dashboard.js:2329 |
 | `dashStreak` | frontend/js/dashboard.js:2317 |
-| `dashTensionRow` | frontend/js/dashboard.js:4115 |
+| `dashTensionRow` | frontend/js/dashboard.js:4146 |
 | `dashWidgetRow` | frontend/js/dashboard.js:2081 |
 | `dashWidgetToggle` | frontend/js/dashboard.js:2055 |
 | `dashWidgetsSummary` | frontend/js/dashboard.js:2193 |
@@ -1447,13 +1447,13 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `fetchDashGraph` | frontend/js/dashboard.js:448 |
 | `fetchDashStats` | frontend/js/dashboard.js:423 |
 | `firstNoteImage` | frontend/js/dashboard.js:2411 |
-| `focusChime` | frontend/js/dashboard.js:3380 |
-| `focusRing` | frontend/js/dashboard.js:3314 |
-| `focusStep` | frontend/js/dashboard.js:3455 |
-| `focusTimeLabel` | frontend/js/dashboard.js:3296 |
-| `focusTimerEnded` | frontend/js/dashboard.js:3401 |
-| `focusTimerTick` | frontend/js/dashboard.js:3369 |
-| `focusTodaySeconds` | frontend/js/dashboard.js:3303 |
+| `focusChime` | frontend/js/dashboard.js:3411 |
+| `focusRing` | frontend/js/dashboard.js:3345 |
+| `focusStep` | frontend/js/dashboard.js:3486 |
+| `focusTimeLabel` | frontend/js/dashboard.js:3327 |
+| `focusTimerEnded` | frontend/js/dashboard.js:3432 |
+| `focusTimerTick` | frontend/js/dashboard.js:3400 |
+| `focusTodaySeconds` | frontend/js/dashboard.js:3334 |
 | `generateDigest` | frontend/js/dashboard.js:2676 |
 | `greetingBlock` | frontend/js/dashboard.js:254 |
 | `greetingCacheSlot` | frontend/js/dashboard.js:301 |
@@ -1469,8 +1469,8 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `paintDashClock` | frontend/js/dashboard.js:390 |
 | `paintDashEmblem` | frontend/js/dashboard.js:1202 |
 | `paintDashFace` | frontend/js/dashboard.js:1189 |
-| `paintFadedNotes` | frontend/js/dashboard.js:3097 |
-| `paintFocusTimer` | frontend/js/dashboard.js:3338 |
+| `paintFadedNotes` | frontend/js/dashboard.js:3128 |
+| `paintFocusTimer` | frontend/js/dashboard.js:3369 |
 | `quickLinkButton` | frontend/js/dashboard.js:1340 |
 | `quickTintColours` | frontend/js/dashboard.js:1334 |
 | `quickTintKey` | frontend/js/dashboard.js:1323 |
@@ -1479,10 +1479,10 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `refreshAiGreeting` | frontend/js/dashboard.js:334 |
 | `refreshArtForTheme` | frontend/js/dashboard.js:2294 |
 | `refreshDashWidgets` | frontend/js/dashboard.js:1742 |
-| `renderActivityWidget` | frontend/js/dashboard.js:3757 |
-| `renderBoardsWidget` | frontend/js/dashboard.js:3700 |
-| `renderBookmarksWidget` | frontend/js/dashboard.js:3979 |
-| `renderCategoriesWidget` | frontend/js/dashboard.js:2996 |
+| `renderActivityWidget` | frontend/js/dashboard.js:3788 |
+| `renderBoardsWidget` | frontend/js/dashboard.js:3731 |
+| `renderBookmarksWidget` | frontend/js/dashboard.js:4010 |
+| `renderCategoriesWidget` | frontend/js/dashboard.js:3027 |
 | `renderDashGlance` | frontend/js/dashboard.js:708 |
 | `renderDashMore` | frontend/js/dashboard.js:1507 |
 | `renderDashSubmessage` | frontend/js/dashboard.js:504 |
@@ -1490,49 +1490,49 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `renderDashboard` | frontend/js/dashboard.js:1771 |
 | `renderDashboardGreeting` | frontend/js/dashboard.js:566 |
 | `renderDigestWidget` | frontend/js/dashboard.js:2735 |
-| `renderDocumentsWidget` | frontend/js/dashboard.js:3942 |
+| `renderDocumentsWidget` | frontend/js/dashboard.js:3973 |
 | `renderFeatures` | frontend/js/dashboard.js:1616 |
 | `renderFirstStepsLazy` | frontend/js/dashboard.js:1670 |
-| `renderFocusTimerWidget` | frontend/js/dashboard.js:3465 |
-| `renderHeatmapWidget` | frontend/js/dashboard.js:2859 |
+| `renderFocusTimerWidget` | frontend/js/dashboard.js:3496 |
+| `renderHeatmapWidget` | frontend/js/dashboard.js:2890 |
 | `renderMostLinkedWidget` | frontend/js/dashboard.js:2582 |
 | `renderMostOpenedWidget` | frontend/js/dashboard.js:2545 |
 | `renderMostUsedWidget` | frontend/js/dashboard.js:2571 |
 | `renderNameNudge` | frontend/js/dashboard.js:772 |
-| `renderOnThisDayWidget` | frontend/js/dashboard.js:4173 |
-| `renderPaceWidget` | frontend/js/dashboard.js:4248 |
+| `renderOnThisDayWidget` | frontend/js/dashboard.js:4204 |
+| `renderPaceWidget` | frontend/js/dashboard.js:4279 |
 | `renderPinnedWidget` | frontend/js/dashboard.js:2540 |
 | `renderQuestionsWidget` | frontend/js/dashboard.js:2631 |
-| `renderQuickCaptureWidget` | frontend/js/dashboard.js:2809 |
-| `renderRandomNoteWidget` | frontend/js/dashboard.js:3069 |
-| `renderRandomShuffle` | frontend/js/dashboard.js:3152 |
+| `renderQuickCaptureWidget` | frontend/js/dashboard.js:2840 |
+| `renderRandomNoteWidget` | frontend/js/dashboard.js:3100 |
+| `renderRandomShuffle` | frontend/js/dashboard.js:3183 |
 | `renderRecentNotesWidget` | frontend/js/dashboard.js:2601 |
-| `renderRemindersWidget` | frontend/js/dashboard.js:2821 |
+| `renderRemindersWidget` | frontend/js/dashboard.js:2852 |
 | `renderReviewWidget` | frontend/js/dashboard.js:2550 |
 | `renderStatsWidget` | frontend/js/dashboard.js:2367 |
 | `renderStreakWidget` | frontend/js/dashboard.js:2335 |
-| `renderTagCloudWidget` | frontend/js/dashboard.js:3256 |
-| `renderTensionsWidget` | frontend/js/dashboard.js:4053 |
+| `renderTagCloudWidget` | frontend/js/dashboard.js:3287 |
+| `renderTensionsWidget` | frontend/js/dashboard.js:4084 |
 | `renderTopTagsWidget` | frontend/js/dashboard.js:2610 |
-| `renderUnfinishedWidget` | frontend/js/dashboard.js:4005 |
+| `renderUnfinishedWidget` | frontend/js/dashboard.js:4036 |
 | `saveDashLayout` | frontend/js/dashboard.js:217 |
 | `saveQuickAccess` | frontend/js/dashboard.js:1371 |
 | `saveQuickTints` | frontend/js/dashboard.js:1380 |
-| `setFocusTimer` | frontend/js/dashboard.js:3444 |
+| `setFocusTimer` | frontend/js/dashboard.js:3475 |
 | `sizeDashWidgetSpan` | frontend/js/dashboard.js:828 |
 | `sizeDashWidgets` | frontend/js/dashboard.js:832 |
 | `skillRunTimes` | frontend/js/dashboard.js:995 |
 | `startDashClock` | frontend/js/dashboard.js:363 |
-| `startFocusTimer` | frontend/js/dashboard.js:3424 |
+| `startFocusTimer` | frontend/js/dashboard.js:3455 |
 | `stopArt` | frontend/js/dashboard.js:2291 |
 | `stopDashClock` | frontend/js/dashboard.js:358 |
-| `stopFocusTimer` | frontend/js/dashboard.js:3433 |
+| `stopFocusTimer` | frontend/js/dashboard.js:3464 |
 | `streamDigest` | frontend/js/dashboard.js:2695 |
 | `todayStamp` | frontend/js/dashboard.js:2658 |
 | `toggleDashWidgetHidden` | frontend/js/dashboard.js:228 |
 | `toggleDashWidgetWide` | frontend/js/dashboard.js:236 |
-| `truncateMarkdownSafe` | frontend/js/dashboard.js:3054 |
-| `undoActorFrom` | frontend/js/dashboard.js:3858 |
+| `truncateMarkdownSafe` | frontend/js/dashboard.js:3085 |
+| `undoActorFrom` | frontend/js/dashboard.js:3889 |
 | `watchDashWidgets` | frontend/js/dashboard.js:859 |
 | `wireDashDensity` | frontend/js/dashboard.js:1308 |
 | `withDisplayName` | frontend/js/dashboard.js:278 |
@@ -23662,7 +23662,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (16673)
+## Tests (16683)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -24195,6 +24195,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_dialogue_b8.py | 1 |
 | tests/test_dictation_options.py | 8 |
 | tests/test_digest_structure.py | 24 |
+| tests/test_digest_week_label_1639.py | 3 |
 | tests/test_digest_week_lines.py | 4 |
 | tests/test_disclosure_marker.py | 5 |
 | tests/test_dispatch_guards.py | 8 |
@@ -24654,6 +24655,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_lan.py | 126 |
 | tests/test_launch_splash.py | 25 |
 | tests/test_launch_status.py | 25 |
+| tests/test_launcher_port_stuck_1637.py | 7 |
 | tests/test_launcher_scripts.py | 97 |
 | tests/test_launcher_update_settings.py | 27 |
 | tests/test_lazy_bundle_calls.py | 8 |
@@ -26368,7 +26370,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Phases 0 to 2: built 2026-09-09 | docs/roadmap/DOCUMENTS_PLAN.md:119 |
 | Phases 0 to 6: built | docs/roadmap/UI_MODERNISATION_PLAN.md:216 |
 | Phases, each with the gate it is finished against | docs/roadmap/MINDMAP_PLAN.md:1296 |
-| Placed (last 20, newest first) | docs/roadmap/INBOX.md:158 |
+| Placed (last 20, newest first) | docs/roadmap/INBOX.md:160 |
 | Placed from Brief 40, 2026-10-10 (does the MCP server work) | docs/roadmap/AGENT_SKILLS_REFORM.md:345 |
 | Placed from Brief 40, 2026-10-10 (research and placement) | docs/roadmap/BACKLOG.md:4188 |
 | Placed from Brief 40, 2026-10-10 (the phone over HTTPS) | docs/roadmap/WORLD_CLASS_PLAN.md:3128 |

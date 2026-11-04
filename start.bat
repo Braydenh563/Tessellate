@@ -382,6 +382,9 @@ REM  subset of --doctor on purpose: the rest of that table costs network
 REM  round trips, and nobody wants to wait for an Ollama probe to open their
 REM  notebook.
 call :port_check
+set "MM_PORT_CANCELLED="
+if defined MM_PORT_STUCK call :port_stop_stuck
+if defined MM_PORT_CANCELLED goto :cancelled
 if defined MM_PORT_MINE goto :already_running
 if defined MM_PORT_BUSY (
   set "MM_FAIL_MSG=Port !MM_PORT! is already in use by another program."
@@ -923,8 +926,16 @@ REM  right thing to do about a Tessellate that is already running is to open
 REM  it, not to report a conflict.
 echo  !ESC![1;38;5;73m[ok]!ESC![0m Tessellate is already running on port !MM_PORT! - opening it.
 call :log "already running on port !MM_PORT!, opened it"
-if "!MM_NO_BROWSER!"=="0" start "" "!MM_URL!"
 if defined MM_SPLASH_FILE del /q "!MM_SPLASH_FILE!" >nul 2>nul
+REM  The desktop app's double-click brings its window forward (or opens a
+REM  window onto it), as __main__.py's single-instance hand-off does, rather
+REM  than a browser tab beside a running desktop app (INBOX 1637).
+if defined MM_DESKTOP if exist ".venv\Scripts\python.exe" (
+  ".venv\Scripts\python.exe" -m tessellate --desktop
+  endlocal
+  exit /b 0
+)
+if "!MM_NO_BROWSER!"=="0" start "" "!MM_URL!"
 endlocal
 exit /b 0
 
@@ -1104,6 +1115,10 @@ call :row warn "Port !MM_PORT!" "could not check, netstat is not on PATH"
 goto :doctor_updates
 :doctor_port_busy
 if defined MM_PORT_MINE goto :doctor_port_mine
+if defined MM_PORT_STUCK (
+  call :row x "Port !MM_PORT!" "Tessellate is running (pid !MM_PORT_PID!) but not answering" "Start it again and press S to stop the stuck copy, or end that pid in Task Manager"
+  goto :doctor_updates
+)
 call :row x "Port !MM_PORT!" "in use by something else" "Close that program, or start on another port: start.bat --port 8010"
 goto :doctor_updates
 :doctor_port_mine
@@ -1330,19 +1345,92 @@ REM  as "the port is free".
 set "MM_PORT_BUSY="
 set "MM_PORT_MINE="
 set "MM_PORT_UNKNOWN="
+set "MM_PORT_STUCK="
+set "MM_PORT_PID="
+set "MM_PORT_WAITS=0"
 where netstat >nul 2>nul
 if errorlevel 1 (
   set "MM_PORT_UNKNOWN=1"
   exit /b 0
 )
+:port_check_again
+set "MM_PORT_BUSY="
 REM  LISTENING narrows this to a server socket, so a remote address that
-REM  happens to end in the same port number cannot be mistaken for one.
-for /f "delims=" %%L in ('netstat -an -p TCP 2^>nul ^| findstr /C:":!MM_PORT! " ^| findstr /I /C:"LISTENING"') do set "MM_PORT_BUSY=1"
+REM  happens to end in the same port number cannot be mistaken for one. -o
+REM  adds the owning process id as the fifth column.
+for /f "tokens=5" %%L in ('netstat -ano -p TCP 2^>nul ^| findstr /C:":!MM_PORT! " ^| findstr /I /C:"LISTENING"') do (
+  set "MM_PORT_BUSY=1"
+  set "MM_PORT_PID=%%L"
+)
 if not defined MM_PORT_BUSY exit /b 0
 where curl >nul 2>nul
 if errorlevel 1 exit /b 0
 REM  Tessellate, or a copy started before the rename (brand: keep-next)
 for /f "delims=" %%H in ('curl -fsS --max-time 3 "http://127.0.0.1:!MM_PORT!/health" 2^>nul ^| findstr /C:"Tessellate" /C:"MemoryMap AI"') do set "MM_PORT_MINE=1"
+if defined MM_PORT_MINE exit /b 0
+REM  **A Tessellate that holds the port and does not answer (INBOX 1637).**
+REM  "Port 8000 is already in use by another program" was the launch the
+REM  owner saw "sometimes": the program was the copy they had just closed
+REM  (still shutting down) or one that had hung, and the message sent them
+REM  looking for some other program. The holder is ours when it is the pid in
+REM  this notebook's instance.lock, or its command line names the app. Ours
+REM  is waited for (up to five more tries, about 25 seconds: a copy closing
+REM  lets go of the port, a busy one answers); another program is not, and
+REM  keeps the old message.
+call :port_pid_is_ours
+if not defined MM_PORT_OURS exit /b 0
+if !MM_PORT_WAITS! GEQ 5 (
+  set "MM_PORT_STUCK=1"
+  exit /b 0
+)
+set /a MM_PORT_WAITS+=1
+if !MM_PORT_WAITS! EQU 1 echo  !ESC![1;38;5;73m[..]!ESC![0m Tessellate is already on port !MM_PORT! and has not answered yet. Waiting for it...
+call :log "port !MM_PORT! held by Tessellate (pid !MM_PORT_PID!), not answering, wait !MM_PORT_WAITS!"
+ping -n 3 127.0.0.1 >nul 2>nul
+goto :port_check_again
+
+REM  Whether MM_PORT_PID is this app: the notebook's own instance.lock names
+REM  it (one line of JSON, pid first), or its command line says tessellate.
+REM  A process another user owns has no readable command line, so it reads
+REM  as not ours and is never offered for stopping.
+:port_pid_is_ours
+set "MM_PORT_OURS="
+if not defined MM_PORT_PID exit /b 0
+set "MM_LOCK_PID="
+if exist "!MM_DATA_DIR!\instance.lock" for /f "tokens=2 delims=:," %%A in ('type "!MM_DATA_DIR!\instance.lock" 2^>nul') do if not defined MM_LOCK_PID set /a MM_LOCK_PID=%%A 2>nul
+if "!MM_LOCK_PID!"=="!MM_PORT_PID!" (
+  set "MM_PORT_OURS=1"
+  exit /b 0
+)
+for /f "delims=" %%R in ('powershell -NoProfile -Command "(Get-CimInstance Win32_Process -Filter ProcessId=!MM_PORT_PID!).CommandLine" 2^>nul ^| findstr /I /C:"tessellate" /C:"memorymap"') do set "MM_PORT_OURS=1"
+exit /b 0
+
+REM  The answer to a stuck copy: stop it, on a keypress, and carry on. Never
+REM  without asking (it may hold an unsaved edit in its window), and the
+REM  default after a minute is to cancel. taskkill /T takes its window and
+REM  tray with it; SQLite's journal keeps the notebook whole.
+:port_stop_stuck
+REM  The splash would sit over the question; closing it shows the console.
+if defined MM_SPLASH_FILE del /q "!MM_SPLASH_FILE!" >nul 2>nul
+echo.
+echo  !ESC![1;33m[!]!ESC![0m Tessellate is already running on port !MM_PORT! but is not answering.
+echo         It may have frozen, or still be closing.
+choice /C SC /N /T 60 /D C /M "        Press S to stop it and start again, or C to cancel: "
+if errorlevel 2 (
+  call :log "stuck copy on port !MM_PORT! (pid !MM_PORT_PID!) left running, cancelled"
+  set "MM_PORT_CANCELLED=1"
+  exit /b 0
+)
+call :log "stopping the stuck copy on port !MM_PORT! (pid !MM_PORT_PID!)"
+taskkill /PID !MM_PORT_PID! /T /F >nul 2>nul
+set "MM_STOP_TRIES=0"
+:port_stop_wait
+ping -n 2 127.0.0.1 >nul 2>nul
+call :port_check
+if not defined MM_PORT_BUSY exit /b 0
+if defined MM_PORT_MINE exit /b 0
+set /a MM_STOP_TRIES+=1
+if !MM_STOP_TRIES! LSS 10 goto :port_stop_wait
 exit /b 0
 
 REM  One doctor row: %1 ok, x or warn, %2 label, %3 value, %4 what to try.

@@ -6,6 +6,8 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Dashboard digest: the generated week has a "This week" label, its source line is a footnote, and the card scrolls to it, so it no longer looks like one line (INBOX 1639).
+- Launcher: a Tessellate that holds the port without answering (closing, or hung) is waited for and offered for stopping, not called another program; the desktop app's second double-click brings its window forward (INBOX 1637).
 - Companion: an act's leave rides inside its enter's one blend change, so a wave to hop forces 4 layouts instead of 6 (INBOX 1560).
 - Desktop companion: it also shows while the window is minimised, not only in the tray, and its show logs each step (INBOX 1636, 1633).
 - Companion throw: one layout read per landing instead of three, and the page no longer scrolls under a wheel or key press while the companion is carried or flying (INBOX 1634, part).
