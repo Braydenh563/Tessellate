@@ -52397,6 +52397,8 @@ From DOCUMENTS_PLAN.md and WHITEBOARD_PLAN.md "Placed from INBOX, 2026-11-03", b
 
 1648. **Owner, 2026-11-04 12:34 local (screenshot: the Create panel docked at the left, its foot covering the bottom bar's left end and its top over the top bar):** "if a panel is docked, it shouldnt cover the top or bottom bar". Recommendation (taken): a docked panel's box runs from the top bar's bottom to the bottom bar's top (the same insets the docked chat and side panels use), at every width.
 
+1640. **Owner, 2026-11-04 (INBOX 1640, screenshots: Atlas standing in open air in the middle of the dashboard's "Most used" widget over its note titles; Atlas in the middle of the Constellation widget's canvas):** "it now just floats on my screen when on the app and doesnt actually perch", then "the companion just floats on the dashbaord :(". **Fixed (this commit).** Measured (throwsettle1402.js, 1324x1000, real flicks, dashboard and notes, Atlas and You): float at rest 4 of 7 before, 0 of 28 after; a slow drop of Atlas at (1000,300) floated over the Constellation canvas before, hangs from the top bar after.
+
 ## Moved from the plans, 2026-11-04 (DOCUMENTS_PLAN 22, R1 and R2)
 
 Built: R1 in 324f174 (merge be41265), R2 in 4d3afd9 and 455d3c5 (merge 606730c); numbers in `agent-remaining/diagram-r1-1104.md` and `diagram-r2-1104.md`.

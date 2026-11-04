@@ -1215,13 +1215,7 @@ palettes."
 
 ## 17. Use cases the app can't serve yet
 
-- ~~**Meeting notes**~~ **record → transcribe → note built (a
-  `#meeting-overlay`, `/voice/transcribe-meeting`, review-before-save, a
-  `meeting` tag); action-item extraction still open**, needs a real model
-  call parsing free text into multiple structured reminders, a different
-  shape from the single-phrase parser `POST /reminders/parse` does, and
-  this sandbox has neither faster-whisper nor a running Ollama to verify a
-  new prompt against. See HISTORY.md for what was and wasn't verified live.
+- ~~**Meeting notes**~~ **record → transcribe → note built (a `#meeting-overlay`, `/voice/transcribe-meeting`, review-before-save, a `meeting` tag); action-item extraction still open**, needs a real model call parsing free text into multiple structured reminders, a different shape from the single-phrase parser `POST /reminders/parse` does, and this sandbox has neither faster-whisper nor a running Ollama to verify a new prompt against. See HISTORY.md for what was and wasn't verified live.
   **Built since, in part:** `ai/librarian.py:1128` (`summarize_meeting`) extracts decisions and action items into a block on the saved note (section 106). **Next:** turning each action item into a reminder is `saveMeetingNote()` offering one `POST /reminders/parse` per item as a checklist the person ticks before saving; the parser already resolves "in 2 hours" by rule (section 22), so no new model call.
 - ~~**Reading and research**~~ **Built, see `frontend/js/note-cards.js` (the "from the web" badge, `Entry.source_url`) and the selection menu's "Save with its source" (`selection.js`).** The Browse section (§3) plus highlights saved as
   notes back-linked to their source
