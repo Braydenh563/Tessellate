@@ -7438,10 +7438,16 @@ function nameMarkBuddyAct(act, ms) {
   //: so the mood's chin hand gives way to it (INBOX 1589: it was a cheer's
   //: third arm). Kept while another such act's class is on, whichever of the
   //: two blends lands first.
-  if (was) nameMarkBuddyBlend(buddy, () => {
+  //: **One hand-over for the leave and the enter** (INBOX 1634): two blends were two reads
+  //: of every part before and one after each (6 layouts for a wave to a hop at 4x); the leave
+  //: now waits and is written inside the enter's change. The same act twice, and a land
+  //: after a throw (no enter blend), keep their own.
+  const leave = () => {
     buddy.classList.remove(`nmb-act-${was}`);
     if (![...buddy.classList].some((c) => c.startsWith("nmb-act-") && !NMB_FACELESS_ACTS.includes(c.slice(8)))) buddy.classList.remove("nmb-arms");
-  });
+  };
+  let joined = !!was && !!act && act !== was;
+  if (was && !joined) nameMarkBuddyBlend(buddy, leave);
   if (was === "lie" && act !== "lie" && !buddy.classList.contains("nmb-sleep")) nameMarkBuddyGetUp(buddy);
   if (act !== "emerge") buddy.classList.remove("nmb-duck");
   if (was === "turn" || was === "glance") delete buddy.dataset.turn;
@@ -7484,7 +7490,11 @@ function nameMarkBuddyAct(act, ms) {
   //: A class removed and added in one frame does not restart its animation,
   //: so the same act twice in a row (a second cheer) forces one style pass;
   //: any other act does not, since each style pass here is measurable.
-  if (act === was) void buddy.offsetWidth;
+  if (act === was) {
+    if (joined) nameMarkBuddyBlend(buddy, leave);
+    joined = false;
+    void buddy.offsetWidth;
+  }
   if (NMB_SCENE_ACTS.includes(act)) nameMarkBuddyScene(buddy);
   if (act === "lie") nameMarkBuddyLieDown(buddy, lieSide);
   //: **Never the same twice running** (the owner: "also state variations,
@@ -7503,8 +7513,10 @@ function nameMarkBuddyAct(act, ms) {
   //: where they were. Down from a throw nothing swings (its loops restart
   //: with the flight's end), so the land skips the 8 to 40ms read.
   const into = () => buddy.classList.add(`nmb-act-${act}`, ...(NMB_FACELESS_ACTS.includes(act) ? [] : ["nmb-arms"]));
-  if (act === "land" && nmb.afterLand) into();
-  else nameMarkBuddyBlend(buddy, into, NMB_BLEND_IN_MS);
+  if (act === "land" && nmb.afterLand) {
+    if (joined) nameMarkBuddyBlend(buddy, leave);
+    into();
+  } else nameMarkBuddyBlend(buddy, joined ? () => (leave(), into()) : into, NMB_BLEND_IN_MS);
   //: A new act starts with its arms (INBOX 469): a small lift and back.
   if (act !== was && !NMB_FACELESS_ACTS.includes(act) && !NMB_RESTING_ACTS.has(act) && !nameMarkBuddyStill()) nameMarkBuddyLimbs(buddy, "cue", 420);
   nmb.mind?.start(buddy, act, ms || spec?.ms || 1200);

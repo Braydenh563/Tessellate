@@ -1315,8 +1315,9 @@ def test_an_act_is_eased_into_as_well_as_out_of():
     # hand-over's reads were that frame's 8 to 40ms).
     # (INBOX 1589: with the act's class, `nmb-arms` goes on and off in the same hand-over.)
     assert "const into = () => buddy.classList.add(`nmb-act-${act}`, " in AVATARS
-    assert 'if (act === "land" && nmb.afterLand) into();\n  else nameMarkBuddyBlend(buddy, into, NMB_BLEND_IN_MS);' in AVATARS
-    assert "if (was) nameMarkBuddyBlend(buddy, () => {\n    buddy.classList.remove(`nmb-act-${was}`);" in AVATARS
+    # (INBOX 1634: the leave and the enter are one hand-over, the leave written inside the enter's change.)
+    assert 'if (act === "land" && nmb.afterLand) {' in AVATARS and "into();\n  } else nameMarkBuddyBlend(buddy, joined ? () => (leave(), into()) : into, NMB_BLEND_IN_MS);" in AVATARS
+    assert "const leave = () => {\n    buddy.classList.remove(`nmb-act-${was}`);" in AVATARS
     ms = int(re.search(r"const NMB_BLEND_IN_MS = (\d+);", AVATARS).group(1))
     assert 250 <= ms <= 500
 
