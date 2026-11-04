@@ -8,7 +8,7 @@ started: 2026-11-04 03:40Z
 tier: pro (weekly 75%: one agent, Sonnet or Haiku, targeted tests); never Fable; owner away golfing about 2 hours, 2026-11-04
 
 ## 2026-11-04b away queue (HANDOVER Now 2026-11-04c)
-- [ ] Merge blink and E2E agent (INBOX 1644; editor-keys.spec.js:190 heading card innerText ""); resolve 1644, CHANGELOG, push
+- [x] Merge blink and E2E agent (INBOX 1644; editor-keys.spec.js:190 heading card innerText ""); resolve 1644, CHANGELOG, push
 - [ ] INBOX 1641 rest: Settings "Running copies" row (list other running app copies, Shut down each); help, parity
 - [ ] INBOX 1649: "I want to edit a note" gets how-to and act answers, never a mid-sentence quote; "word for word" and "quote my X note" fall-throughs (composer agent's finding)
 - [ ] INBOX 1643: graph gcRequestDraw 54 calls/s at rest; plus the owner's 03:08Z lag: input 1432 ms pointerout #dash-start-menu, frame 1416 ms atlas.js setTimeout forced layout 29 ms
