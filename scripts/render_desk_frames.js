@@ -40,6 +40,13 @@ const FRAMES = [
   //: no tumble of its own, so this one is a transform of an existing pose).
   { name: "tumble", pose: "stand", classes: ["nmb-act-startle"], at: 0.25, spin: 115 },
 ];
+//: The idle cycle (`idle0` to `idle11`, engine.IDLE_FRAMES): the rig's own standing
+//: motion sampled at fixed times, one full beat of the tail (`atlasTailBend` with
+//: the sway act's own numbers, `atlas-life.js`) and one breath (`atlasBreathFrame`'s
+//: raised cosine on the torso, plus a small rise of the whole figure so the
+//: breath shows at this size), so the loop closes on itself.
+const IDLE_N = 12;
+FRAMES.push(...Array.from({ length: IDLE_N }, (_, i) => ({ name: `idle${i}`, pose: "stand", classes: [], idle: i / IDLE_N })));
 const LOOKS = ["masculine", "feminine"];
 //: The capture box around the figure, in CSS pixels: roomy, cropped later.
 const BOX = { width: 220, height: 260, left: 120, top: 60 };
@@ -134,6 +141,23 @@ const BOX = { width: 220, height: 260, left: 120, top: 60 };
         const put = (el, t, origin) => { el.style.setProperty("transform", t, "important"); if (origin) el.style.setProperty("transform-origin", origin, "important"); };
         const char = b.querySelector(".nm-buddy-char");
         if (frame.spin) put(char, `rotate(${frame.spin}deg)`, "50% 45%");
+        if (frame.idle !== undefined) {
+          const w = frame.idle * 2 * Math.PI;
+          const box = [...b.querySelectorAll("*")].find((el) => el.atlasTail);
+          if (!box) throw new Error("no live tail to sample");
+          const tail = box.atlasTail;
+          //: Stop the live loop and the compositor sway so nothing redraws over the sample.
+          clearTimeout(tail.raf); cancelAnimationFrame(tail.raf); tail.raf = 0;
+          if (tail.sway) { tail.sway.cancel(); tail.sway = null; }
+          tail.svg.style.removeProperty("transform");
+          const p = Object.fromEntries(Object.entries(ATLAS_TAIL_ACTS.sway).map(([k, v]) => [k, v]));
+          atlasTailDraw(tail, (s) => atlasTailBend(s, p, w, w, 0, 2 * w), () => 1 + 0.03 * Math.cos(2 * w));
+          const k = (1 - Math.cos(w)) / 2;
+          for (const el of box.querySelectorAll(".atl-layer-body .nmb-torso")) el.style.setProperty("scale", `${(1 + ATLAS_BREATH_SWELL[0] * k).toFixed(4)} ${(1 + ATLAS_BREATH_SWELL[1] * k).toFixed(4)}`);
+          put(char, `translateY(${(-1.5 * k).toFixed(2)}px)`, "50% 90%");
+          const lower = b.querySelectorAll(".nm-atlas.atl-layer-lower").length ? ".nm-atlas.atl-layer-lower" : ".atl-lw-lower";
+          for (const low of b.querySelectorAll(lower)) put(low, `skewX(${(3 * Math.sin(w - 1.5)).toFixed(2)}deg)`, "50% 55%");
+        }
         if (frame.float !== undefined) {
           const w = frame.float * 2 * Math.PI;
           put(char, `translateY(${(-6 * Math.sin(w)).toFixed(2)}px) rotate(4deg)`, "50% 90%");

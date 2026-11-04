@@ -25,6 +25,10 @@ from typing import Any, NamedTuple
 logger = logging.getLogger(__name__)
 
 LOOKS = ("masculine", "feminine")
+#: The idle cycle a standing figure draws at 8 a second (`engine.IDLE_FRAMES` of them):
+#: tail beat and breath sampled from the live rig by `scripts/render_desk_frames.js`.
+IDLE_COUNT = 12
+IDLE_FRAMES = tuple(f"idle{i}" for i in range(IDLE_COUNT))
 #: Every frame of a look, in the order they are rendered. Walking is `walk0` to
 #: `walk5`; the others are what the engine's states draw. `card0` and `card1` are the
 #: figure holding a reminder's card (`scripts/render_card_frames.py`, Pillow, from
@@ -34,6 +38,7 @@ FRAME_NAMES = (
     "walk0", "walk1", "walk2", "walk3", "walk4", "walk5",
     "sit", "sleep", "wave", "held", "fall", "land", "hop", "hang", "tumble",
     "card0", "card1",
+    *IDLE_FRAMES,
 )
 #: Drawn by `scripts/render_card_frames.py`, not captured from the app.
 CARD_FRAMES = ("card0", "card1")

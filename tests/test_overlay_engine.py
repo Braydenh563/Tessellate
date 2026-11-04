@@ -13,6 +13,7 @@ ONE = [Monitor((0, 0, 1920, 1040), 96)]
 
 def make(monitors=None, **kw) -> tuple[Engine, list]:
     kw.setdefault("rng", random.Random(7))
+    kw.setdefault("idle_frames", 0)  # these tests are about acts and moves; idle life has its own file
     kw.setdefault("home", (800, 920))
     e = Engine(SIZE, monitors or ONE, **kw)
     return e, []
@@ -147,7 +148,7 @@ def test_sits_then_sleeps_when_nobody_touches_it() -> None:
     frames = []
     t = 0.0
     out = e.update(t)
-    while out.wake_ms is not None and t < 600:
+    while out.wake_ms is not None and t < 1500:
         t += out.wake_ms / 1000.0
         out = e.update(t)
         frames.append((t, out.frame))

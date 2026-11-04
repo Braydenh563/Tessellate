@@ -66,6 +66,11 @@ def main() -> int:
         total = 0
         for look in sprites.LOOKS:
             images = {name: Image.open(Path(raw) / look / f"{name}.png").convert("RGBA") for name in sprites.FRAME_NAMES if name not in sprites.CARD_FRAMES}
+            #: A capture can come out blank (seen once on a cold page: eight idle frames
+            #: of one look): refuse to ship it rather than a figure that vanishes.
+            blank = [n for n, im in images.items() if sum(im.getchannel("A").histogram()[128:]) < 1000]
+            if blank:
+                raise SystemExit(f"{look}: blank captures {blank}; run it again")
             box = crop_box(list(images.values()))
             target = out / look
             if target.exists():

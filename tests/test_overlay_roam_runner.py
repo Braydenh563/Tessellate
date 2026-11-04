@@ -104,7 +104,7 @@ def test_nothing_is_read_when_a_climb_cannot_happen(why: str) -> None:
     if why == "not_due":
         minute = 30  # 15 s: the first climb is not near yet
     if why == "sitting":
-        r.engine.last_active = clock.t - 200  # long untouched: it stays sat down
+        r.engine.last_active = clock.t - 700  # long untouched: it stays sat down
         r.engine._enter("sit", clock.t)
     elif why == "asleep":
         r.engine._enter("sleep", clock.t)

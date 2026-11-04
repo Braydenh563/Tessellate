@@ -160,6 +160,7 @@
         why.textContent = `Standing still: ${STILL_WHY[motion.reason] || "movement is off"}.`;
         rows.push(why);
       }
+      if (overlay) rows.push(item("Companion", "user-switch", openCompanion));
       rows.push(item("Settings", "gear", () => leave(() => ask("open_app", "settings"))));
       if (!locked && motion?.still && motion.reason !== "avatar") rows.push(item("Let it walk", "person-simple-walk", () => leave(() => ask("let_it_walk"))));
       //: Roam over windows: a switch, not a one-way action, so it says which way it is
@@ -186,6 +187,40 @@
     menu.replaceChildren(...rows);
     show(kind);
     rows.find((row) => row.tagName === "BUTTON")?.focus();
+  }
+
+  //: The right-click menu's "Companion": every choice the app's Appearance offers
+  //: (Atlas masculine or feminine, matching your faces, You, the chat's persona, your
+  //: own character, each saved companion), the current one marked. A choice is written
+  //: to the app's own prefs by the host and the figure restarts with the new look. The
+  //: figure on the desktop is Atlas, so the others are listed but cannot be picked here.
+  async function openCompanion() {
+    const got = await Promise.resolve(ask("companion_choices")).catch(() => null);
+    const rows = [item("Back", "caret-left", () => openMenu("context"))];
+    const note = (text) => {
+      const p = document.createElement("p");
+      p.className = "muted desk-note";
+      p.textContent = text;
+      return p;
+    };
+    if (got?.locked) rows.push(note("Tessellate is locked. Open it to unlock, then choose."));
+    else if (!got?.options?.length) rows.push(note("Tessellate did not answer. Open it and try again."));
+    let group = "";
+    for (const option of got?.options || []) {
+      if (option.group !== group) {
+        group = option.group;
+        rows.push(note(group));
+      }
+      const row = item(option.label, option.current ? "check-circle" : "circle", () => leave(() => ask("choose_companion", option.key)));
+      row.setAttribute("role", "menuitemradio");
+      row.setAttribute("aria-checked", String(!!option.current));
+      row.disabled = !option.enabled;
+      if (!option.enabled) row.title = "Shows in the app only";
+      rows.push(row);
+    }
+    $("desk-menu").replaceChildren(...rows);
+    show("context");
+    rows.find((row) => row.tagName === "BUTTON" && !row.disabled)?.focus();
   }
 
   //: Run `action` first, then rest: the click that brought the app forward is the
@@ -369,7 +404,7 @@
   });
   //: A menu's rows are walked with the arrows, as every menu in the app is.
   $("desk-menu").addEventListener("keydown", (event) => {
-    const rows = [...$("desk-menu").querySelectorAll("[role=menuitem]")];
+    const rows = [...$("desk-menu").querySelectorAll("[role^=menuitem]:not(:disabled)")];
     const at = rows.indexOf(document.activeElement);
     const to = { ArrowDown: at + 1, ArrowUp: at - 1, Home: 0, End: rows.length - 1 }[event.key];
     if (to === undefined || !rows.length) return;
