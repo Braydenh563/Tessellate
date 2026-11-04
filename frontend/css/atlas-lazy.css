@@ -277,3 +277,38 @@
   --atl-star: inherit;
   --atl-tilt: inherit;
 }
+/* **The lower body lives at rest** (INBOX 1680, the owner: "it never changes,
+   even when it is sleeping, it still sticks up"). The rig's pose boxes
+   (`.atl-lw-pose`, atlas-life.js) set `transform` by state; these loops run
+   on `rotate` and `scale` beside it, on the compositor, so nothing is
+   scripted per frame. One slow swing down the chain: the dress or cloak
+   first, the wisps a beat behind and wider, the tail's root last and
+   widest (the delays are the lag). Asleep it breathes slower, shallower
+   and lower. Same gates as the other loops (avatar motion off or reduced:
+   still); paused with them when away, off screen or carried. */
+@keyframes atl-lw-sway-lower { from { rotate: -2.6deg; scale: 1 0.985; } to { rotate: 2.6deg; scale: 1 1.02; } }
+@keyframes atl-lw-sway-wisps { from { rotate: -4deg; scale: 1 0.97; } to { rotate: 4deg; scale: 1 1.03; } }
+@keyframes atl-lw-sway-tail { from { rotate: -6deg; scale: 1 0.98; } to { rotate: 6deg; scale: 1 1.05; } }
+@keyframes atl-lw-sleep-lower { from { rotate: -1.4deg; scale: 1 0.97; } to { rotate: 1.4deg; scale: 1 1.01; } }
+@keyframes atl-lw-sleep-wisps { from { rotate: -2.2deg; scale: 1 0.96; } to { rotate: 2.2deg; scale: 1 1.015; } }
+@keyframes atl-lw-sleep-tail { from { rotate: -3deg; scale: 1 0.96; } to { rotate: 3deg; scale: 1 1.02; } }
+@media all {
+  :is(
+    :root:not([data-avatar-motion="off"]):not([data-motion="reduced"]) .nm-live,
+    :root[data-buddy-motion="full"]:not([data-avatar-motion="off"]) #nm-buddy .nm-live
+  ) {
+    & .atl-lw-pose-lower { animation: atl-lw-sway-lower 6.4s ease-in-out -3.2s infinite alternate; }
+    & :is(.atl-lw-pose-wisps, .atl-lw-pose-wisps-back, .atl-lw-pose-glint-a, .atl-lw-pose-glint-b) { animation: atl-lw-sway-wisps 6.4s ease-in-out -2.4s infinite alternate; }
+    & .atl-lw-pose-tail { animation: atl-lw-sway-tail 6.4s ease-in-out -1.5s infinite alternate; }
+  }
+  #nm-buddy:is(.nmb-sleep, .nmb-act-nap, .nmb-act-lie, [data-pose^="lie"], [data-pose^="curl"]) .nm-live {
+    & .atl-lw-pose-lower { animation-name: atl-lw-sleep-lower; animation-duration: 10.5s; }
+    & :is(.atl-lw-pose-wisps, .atl-lw-pose-wisps-back, .atl-lw-pose-glint-a, .atl-lw-pose-glint-b) { animation-name: atl-lw-sleep-wisps; animation-duration: 10.5s; }
+    & .atl-lw-pose-tail { animation-name: atl-lw-sleep-tail; animation-duration: 10.5s; }
+  }
+}
+:root[data-atlas-lite] .atl-figure-box .atl-lw-pose,
+#nm-buddy.nmb-away .atl-lw-pose,
+#nm-buddy.nm-buddy-dragging .atl-lw-pose,
+.atl-figure-box.atl-off .atl-lw-pose,
+:root[data-atlas-hidden] .atl-lw-pose { animation-play-state: paused !important; }

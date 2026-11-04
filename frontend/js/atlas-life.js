@@ -797,13 +797,17 @@ const ATLAS_LOWER_STATES = {
   happy: { ms: 380, ease: "cubic-bezier(0.25, 1.8, 0.5, 1)", v: [[-6, 1.02, 0.94, 5, -10], [5, 1.02, 0.95, -5, -14], [-4, 1.03, 0.93, 3, -8]] },
   sad: { ms: 800, ease: "cubic-bezier(0.5, 0, 0.6, 1)", v: [[1.5, 0.96, 1.07, -1, 16], [-1.5, 0.97, 1.06, 1, 20], [0.5, 0.95, 1.08, -2, 24]] },
   startle: { ms: 260, ease: "cubic-bezier(0.2, 2, 0.4, 1)", v: [[-4, 0.94, 0.9, 4, -18], [-3, 0.95, 0.92, 5, -22], [3, 0.93, 0.91, -4, -14]] },
+  //: Asleep (INBOX 1680, the owner: "even when it is sleeping, it still sticks
+  //: up"): the lower body curls and droops, a slow ease, shorter and wider
+  //: than a lie, the tail wrapped round (a turn well past a lie's).
+  curl: { ms: 1600, ease: "cubic-bezier(0.45, 0, 0.35, 1)", v: [[4, 1.1, 0.74, -6, 38], [-3, 1.12, 0.72, 6, -34], [5, 1.08, 0.76, -5, 44]] },
 };
 //: The hair's turn about the crown and the nebula stream's [turn, width,
 //: height] about the figure's middle, per state (INBOX 575, the owner:
 //: "both atlas avatars have a tail as well, same with the hair, and the
 //: nebular stream ... dynamically animated and changed"), a variant each
 //: as the lower body's; a walk's turn takes the way it goes.
-const ATLAS_HAIR_STATES = { idle: [0, 1.6, -1.4, 0.8], walk: [-5, -4, -6], sit: [2, 1, 3], lie: [4, 5, 3], gesture: [-3, -2, -4], think: [2.5, 1.5, 3.5], happy: [-3.5, -2.5, -4], sad: [4, 5, 6], startle: [-6, -7, -5] };
+const ATLAS_HAIR_STATES = { idle: [0, 1.6, -1.4, 0.8], walk: [-5, -4, -6], sit: [2, 1, 3], lie: [4, 5, 3], gesture: [-3, -2, -4], think: [2.5, 1.5, 3.5], happy: [-3.5, -2.5, -4], sad: [4, 5, 6], startle: [-6, -7, -5], curl: [6, 8, 7] };
 const ATLAS_NEB_STATES = {
   idle: [[0, 1, 1], [2, 1.02, 0.98], [-2, 0.98, 1.02], [1, 1.01, 1]],
   walk: [[-4, 1.05, 0.95], [-3, 1.06, 0.94], [-5, 1.04, 0.96]],
@@ -814,6 +818,7 @@ const ATLAS_NEB_STATES = {
   happy: [[-3, 1.04, 1.04], [3, 1.05, 1.03], [-2, 1.03, 1.05]],
   sad: [[2, 0.97, 0.94], [-1, 0.96, 0.95], [1, 0.95, 0.96]],
   startle: [[-6, 1.08, 1.08], [-5, 1.1, 1.06], [-7, 1.07, 1.09]],
+  curl: [[8, 1.05, 0.82], [-6, 1.07, 0.8], [10, 1.04, 0.83]],
 };
 //: The rig's lower body (atlas.js, `atlasRigAttach`, which makes the rest of
 //: the rig at once): the boxes the state's pose turns, attached when this
@@ -845,10 +850,11 @@ function atlasRigLowerAttach(box) {
 function atlasRigLower(rig, now, live, buddy) {
   const low = rig.lower;
   if (!low || !(low.boxes.length || low.tails.length || low.hair.length)) return;
-  const state = atlasLowerState(buddy, rig.box);
+  const base = atlasLowerState(buddy, rig.box);
+  const state = base === "lie" && atlasRigLower.asleep(buddy) ? "curl" : base;
   const spec = ATLAS_LOWER_STATES[state];
   const fresh = state !== low.state;
-  if (fresh || (live && state === "idle" && now >= low.at)) {
+  if (fresh || (live && atlasRigLower.rests.has(state) && now >= low.at)) {
     //: Reduced motion keeps each state's first pose and no idle variation.
     const pick = live ? Math.floor(Math.random() * spec.v.length) : 0;
     //: Never the one it took the last time it was in this state (Brief 88:
@@ -868,7 +874,7 @@ function atlasRigLower(rig, now, live, buddy) {
     if (document.hidden || rig.box.classList.contains("atl-off")) low.timer = setTimeout(next, 4000);
     else atlasRigLower(rig, performance.now(), atlasMotionOK(rig.box), buddy);
   };
-  if (live && state === "idle") low.timer = setTimeout(next, low.at - now + 10);
+  if (live && atlasRigLower.rests.has(state)) low.timer = setTimeout(next, low.at - now + 10);
   const way = state === "walk" ? (parseFloat(buddy?.style.getPropertyValue("--nmb-lean")) < 0 ? -1 : 1) : 1;
   const [rot, sx, sy, skew, tail] = spec.v[low.variant] || spec.v[0];
   const hairs = ATLAS_HAIR_STATES[state];
@@ -897,3 +903,7 @@ function atlasRigLower(rig, now, live, buddy) {
   //: The stream's two halves move as one ribbon.
   for (const el of low.neb) go(el, `rotate(${atlasFix(neb * way)}deg) scale(${nsx}, ${nsy})`, 120);
 }
+//: The states that rest: a new variant every 8 to 14 s (INBOX 1680: only standing did, so a sat or sleeping figure held one pose for minutes).
+atlasRigLower.rests = new Set(["idle", "sit", "lie", "curl", "think", "sad"]);
+//: Asleep: the sleeping class, a nap, or a lying or curled pose (a property, not a global: `tests/test_global_scope_ratchet.py`).
+atlasRigLower.asleep = (buddy) => !!buddy && (buddy.classList.contains("nmb-sleep") || buddy.classList.contains("nmb-act-nap") || /^(lie|curl)/.test(buddy.dataset.pose || ""));
