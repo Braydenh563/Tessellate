@@ -1556,3 +1556,7 @@ Rows: T3 (learnaudit); T1, T2 and T4 are built (HISTORY.md, "Moved from the plan
 
 ## Placed from INBOX, 2026-11-03
 
+
+## Placed from INBOX, 2026-11-04 (1657, what the two lag rounds left)
+
+- **1657 left.** At 4x CPU on the dashboard with Atlas walking: the tail beat is 1.85 to 2.2 ms a call (target under 1 ms, or the sway as a group transform on the compositor); the buddy arrival (`nameMarkBuddyArrive`, avatars.js, 216 ms) and shell-reminders.js (156 ms) are the first layout flush after other boot code dirtied the page, so the fix is to find the writer, not the reader; keydown max 136 ms over 22 keys (the owner's 1848 ms did not reproduce). Check: the same measures from `/tmp/lagw/lag.js` (copy it into `scratchpad/ui-sweeps/` first) with each under its target.
