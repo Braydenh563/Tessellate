@@ -165,7 +165,7 @@ def _help_ask(question: str, topic: dict) -> dict:
     verb = _help_verb(question)
     named = set(_words(str(topic.get("id", "")).replace("-", " "))) - {verb}
     doing = {verb, *_HELP_DOING.get(verb, ())} if verb else set()
-    return {"wanted": wanted, "named": named, "pairs": _help_pairs(question), "doing": doing}
+    return {"wanted": wanted, "named": named, "pairs": _help_pairs(question), "doing": doing, "asked_exception": bool(_EXCEPTION_ASKED.search(question))}
 
 
 def _help_have(line: str, doing: set[str]) -> set[str]:
@@ -254,7 +254,32 @@ def _act_score(line: str, at: int, ask: set, stems: set[str], topic: dict, place
     named = 2.0 if stems & {_stem(w) for w in str(topic.get("id", "")).split("-")} else 0.0
     early = 1.5 if at < 5 else 0.75 if at < 12 else 0.0
     long = 1.0 if len(line.split()) > _HELP_LEAD_WORDS else 0.0
-    return _help_shared(line, ask) + named + early - long - 0.15 * place[0] - 0.05 * place[1]
+    return _help_shared(line, ask) + named + early - long - 0.15 * place[0] - 0.05 * place[1] + _subject_fit(line, ask)
+
+
+#: A sentence that lists what the thing cannot do, not how to do it.
+_EXCEPTION = re.compile(r"\b(?:no undo|except|cannot|can't|never|nothing)\b", re.I)
+
+#: The ask is about the exception itself ("why is there no undo", "permanently").
+_EXCEPTION_ASKED = re.compile(r"\b(?:no undo|except\w*|cannot|can't|never|for good|permanent\w*|empty|why)\b", re.I)
+
+#: Where a sentence's subject ends: its first verb or clause break.
+_SUBJECT_END = re.compile(r"\s(?:goes|go|is|are|has|have|keeps|makes|lets|shows|says|covers|opens)\b|[,;:]")
+
+
+def _subject_fit(line: str, ask: dict) -> float:
+    """INBOX 1653: what a sentence is about outweighs a word it shares. A
+    sentence whose subject carries the asked doing ("A deleted note ... goes to
+    the bin") and the asked object leads; a list of exceptions ("Four things
+    have no Undo") ranks below it unless the ask is about the exception."""
+    head = _SUBJECT_END.split(line, maxsplit=1)[0]
+    words = re.findall(r"[a-z]+", head.lower())
+    #: delete, deleted and deleting are one doing here (`_help_one`).
+    said = any(_help_one(d, w) for d in ask["doing"] for w in words)
+    subject = {_stem(w) for w in words}
+    objects = {_stem(w) for w in ask["wanted"] if w not in ask["doing"]}
+    bonus = 2.5 if said and objects & subject else 0.0
+    return bonus - (1.5 if _EXCEPTION.search(line) and not ask["asked_exception"] else 0.0)
 
 
 def _act_lead(lead: str, stems: set[str], question: str, topic_id: str) -> str:
