@@ -637,3 +637,4 @@ INBOX 1400 and 1306, measured with `gm.js` (numbers in `agent-remaining/graph-10
 ## Placed from INBOX, 2026-11-04 (audit Rank 36, hover decision)
 
 - Decision needed from the owner (INBOX is at its cap of 19, so it lives here): graph hover p50 is about 50 ms against a 16 ms target at 500 notes and 4x CPU; the hover card's refill on each new note is about 17 ms of it. Recommendation (taken unless the owner says otherwise): refill the card only once the pointer rests, keep the highlight instant, then re-measure on an idle machine with a real GPU. Check: hover p50 at 4x CPU before and after, and the card still appears on rest.
+- Still open from audit row 19 (2,000 notes, 4x): the worker's own settle is 11 to 14 s (the d3 charge and collide are most of a tick), and wheel and hover at rest cost the at-rest scene repaint (true strokes, 21 ms of raster at 1x). Label fades are done (`gcDrawLabels.frame`, 4.6 ms a frame against 14).
