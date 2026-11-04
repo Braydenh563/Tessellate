@@ -86,7 +86,9 @@ def test_connect_to_is_on_every_row_and_in_the_menu_and_the_picker_can_make_the_
 
 def test_the_empty_list_and_the_space_under_the_blocks_say_what_to_do_next():
     builder = _read("diagram-builder.js")
-    assert "Press a shape in Add, or press N, to add the first block. Then press Connect to… on a block" in builder
+    # 1615 f (DOCUMENTS_PLAN 22.4 R4): the empty pane's sentence became three numbered steps, in diagram-steps.js.
+    assert "diagramModel.steps.build(S" in builder
+    assert '"Add a shape"' in _read("diagram-steps.js")
     render = builder.split("function render(S) {", 1)[1].split("\n  }\n", 1)[0]
     assert "S.next.textContent" in render and "Press Connect to… on a block, or drag its grip onto another block" in render
     assert 'S.pane.append(S.tree, S.next, S.empty' in builder

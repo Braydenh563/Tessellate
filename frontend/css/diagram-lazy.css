@@ -189,6 +189,29 @@
   grid-template-columns: minmax(0, 1fr);
 }
 
+/* The divider (diagram-split.js, 1615 e): the list column is a variable, the handle is the column between, as wide
+   as the gap it replaces. The list never takes the last 240px from the picture; the default is the old 22rem. */
+.dgm-body.dgm-split {
+  --dgm-list: 22rem;
+  grid-template-columns: minmax(14rem, min(var(--dgm-list), calc(100% - 240px - var(--space-5)))) var(--space-5) minmax(0, 1fr);
+  column-gap: 0;
+}
+
+.dgm-plain .dgm-body.dgm-split {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.dgm-split-handle.sidebar-resize {
+  position: static;
+  height: auto;
+  width: auto;
+  align-self: stretch;
+}
+
+.dgm-plain .dgm-split-handle {
+  display: none;
+}
+
 .dgm-pane {
   position: relative;
   min-block-size: 12rem;
@@ -434,7 +457,9 @@
   color: var(--accent-text);
 }
 
-.dgm-connect .ph-text {
+/* The words show on every row of a list wide enough for them; a tight list (diagram-split.js, under 19rem) and a
+   phone keep the arrow, and the chosen row, the pointed-at row and the focused one still show them. */
+.dgm-tight .dgm-connect .ph-text {
   display: none;
 }
 
@@ -517,6 +542,55 @@
 
 .dgm-suggest .ph {
   color: var(--accent-text);
+}
+
+/* The word over the four direction arrows: the group stacks the caption on its arrows. */
+.dock-group:has(> .dgm-dirs-caption) {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0;
+}
+
+.dgm-dirs-caption {
+  display: block;
+  margin-bottom: var(--space-1);
+  font-size: var(--text-xs);
+  color: var(--muted);
+}
+
+/* The empty pane: three numbered lines, each with its button (1615 f). */
+.dgm-steps {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin: 0 0 var(--space-4);
+  padding: 0;
+  list-style: none;
+  align-self: stretch;
+}
+
+.dgm-step {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.dgm-step-n {
+  flex: none;
+  inline-size: 1.5rem;
+  block-size: 1.5rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-pill);
+  background: var(--accent-soft);
+  color: var(--accent-text);
+  font-weight: 600;
+}
+
+.dgm-step-text {
+  flex: 1 1 auto;
+  min-width: 0;
 }
 
 /* The empty pane: one sentence over the filled action (the empty state recipe). */
@@ -674,9 +748,16 @@
 }
 
 @container (max-width: 599.98px) {
-  .dgm-body {
+  .dgm-body,
+  .dgm-body.dgm-split {
     grid-template-columns: minmax(0, 1fr);
     grid-template-rows: auto minmax(0, 1fr);
+    row-gap: var(--space-5);
+  }
+
+  /* One column: there is nothing to divide. */
+  .dgm-split-handle {
+    display: none;
   }
 
   .dgm-picture,
@@ -701,7 +782,12 @@
     order: 1;
   }
 
-  /* Suggest keeps its sparkle and loses its word, like the tiles. */
+  .dgm-connect .ph-text {
+    display: none;
+  }
+
+  /* Suggest, Undo and Redo keep their icon and lose their word, like the tiles. */
+  .dgm-hist .ph-text,
   .dgm-suggest .ph-text {
     display: none;
   }
@@ -822,11 +908,13 @@
 }
 
 .dgm-dialog[data-view="source"] .dgm-dock,
+.dgm-dialog[data-view="source"] .dgm-split-handle,
 .dgm-dialog[data-view="source"] .dgm-pane {
   display: none;
 }
 
-.dgm-dialog[data-view="source"] .dgm-body {
+.dgm-dialog[data-view="source"] .dgm-body,
+.dgm-dialog[data-view="source"] .dgm-body.dgm-split {
   grid-template-columns: minmax(0, 1fr);
 }
 

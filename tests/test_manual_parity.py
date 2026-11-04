@@ -453,3 +453,20 @@ def test_the_diagram_picture_zoom_is_in_the_guide_in_the_controls_words() -> Non
     view = (FRONTEND / "js" / "diagram-view.js").read_text(encoding="utf-8")
     for label in ('"Zoom in"', '"Zoom out"', '"Fit"', '"100%"', "event.ctrlKey", "ArrowLeft"):
         assert label in view, label
+
+
+def test_the_diagram_divider_direction_caption_and_walkthrough_are_in_the_guide_in_the_controls_words() -> None:
+    """DOCUMENTS_PLAN 22.4 R3 and R4: the divider, the Direction caption and the three empty-state steps."""
+    from tessellate.ai.help_chat import HELP_TOPICS
+
+    body = str(next(t["body"] for t in HELP_TOPICS if t["id"] == "diagram-blocks"))
+    assert len(body) < 1900
+    for words in ("A divider sizes the blocks and the picture", "Shift for more", "Direction sets the flow", "Add a shape, Name it, Connect it"):
+        assert words in body, words
+    js = FRONTEND / "js"
+    builder = (js / "diagram-builder.js").read_text(encoding="utf-8")
+    assert '"Direction"' in builder
+    steps = (js / "diagram-steps.js").read_text(encoding="utf-8")
+    for label in ('"Add a shape"', '"Name it"', '"Connect it"'):
+        assert label in steps, label
+    assert "Resize the blocks list" in (js / "diagram-split.js").read_text(encoding="utf-8")

@@ -52450,3 +52450,15 @@ chips, composer follow-ups while a model runs
 (`composer-everywhere-1006.md`), `composer-model-1006.md`,
 `bgprogress-1006.md` (autonomous pass with no model, night pairing speed),
 `autoinstall-1006.md`; then WHITEBOARD_PLAN "Placed from INBOX, 2026-10-07" (edge arrows on rotate, resize and drag; template connectors following their shapes; Reset style), DOCUMENTS_PLAN's live code blocks with completion, the Windows installer's frozen optional-packages step (`windows-packaging-1005.md`), then INBOX 727 to 745.
+
+## Moved from the plans, 2026-11-04 (DOCUMENTS_PLAN 22, R3 and R4)
+
+Built: R3 and R4 (without the blind-tester pass, which stays in the plan). New lazy files `diagram-split.js` and `diagram-steps.js`; the builder stays under its 12,000 byte gzip target (11,861). Measured at 1440 by Playwright against `serve.sh` on port 8833.
+
+- **R3 (1615 e) Divider.**
+  - Work: `.sidebar-resize` plus `trackSeparatorValue` and `prefs` on `.dgm-body`, which is a grid (`minmax(14rem, 22rem) minmax(0, 1fr)`, diagram-lazy.css:180-186), so the handle sets a column variable. Keys 12 px, Shift 40 px, as the existing handle. Recipe row and lint.
+  - Check: a drag changes the column by the drag distance within 1 px; the stage keeps 240 px; reload restores; `tests/test_ui_recipes.py` passes.
+- **R4 (1615 c, d, f) Labels, walkthrough, blind-tester pass.**
+  - Work: the top row gets words. The four direction buttons (`S.dirs`, title only, diagram-builder.js:480-496) get a visible caption "Direction", and Undo and Redo (:508, icon-only) show their words at widths that fit. "Connect to" shows its label on every row at widths that fit (the `aria-label` is already there, :195-199). Then the empty-state walkthrough (section 1). Then the `blind-tester` runs "make a flowchart with a decision and two branches, then rearrange it"; its list goes to INBOX in order and R6 takes it.
+  - Check: measured visible text, not accessible names: the caption is non-empty and sits above the direction buttons; "Connect to" has non-empty visible text on a wide row; the walkthrough's three buttons each do their step in Playwright; the tester's list exists, each item placed in a row or INBOX.
+- **Measured:** a drag of -60 and of +80 px moved the blocks column by -60 and +80 px (352 to 292 to 372); a huge drag leaves the picture 240.2 px and a tiny one the list 224 px; arrows 12 px and Shift 40 px; a reload restored 284 px of 284 (pref `diagramListWidth`); at 390 the handle is `display: none`. The caption "Direction" ends at y 170.2 and the arrows start at y 174.2; Undo and Redo read "Undo" and "Redo" (84 and 83 px wide) and lose the word below 600 px; "Connect to…" reads in full on every row of a 352 px list (121 px wide, the name keeps 111); the three steps read "1 Add a shape", "2 Name it", "3 Connect it", and each button works from the empty diagram (Add a Box makes `A["Step"]` and the pane leaves; Type a name opens the label editor on a new Box; Draw an arrow opens "Connect Step to").
