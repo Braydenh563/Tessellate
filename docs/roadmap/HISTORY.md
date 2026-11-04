@@ -52211,3 +52211,5 @@ From DOCUMENTS_PLAN.md and WHITEBOARD_PLAN.md "Placed from INBOX, 2026-11-03", b
 
 1628. **Owner, 2026-11-04 (screenshot: the present mode's ring pointer with its pulse halo):** "that pulsing on the ring option for the whiteboard and mindmap presenter mode should be like the trail in that it can be toggled on or off". Recommendation taken: a Pulse switch beside Trail in the present mode's pointer options (boards and mind maps), on by default, remembered like Trail; off draws the ring alone; Help and the Guide topic name it (order 13).
 
+1623. **Owner, 2026-11-03 (math editor):** "I can delete solely the superscript for a superscript equation piece, but if I do then it leaves the base number as a regular number, which is fine but if i delete that number it appears with the empty box which I also have to delete but the box shouldnt appear now because it is only a regular number and not a superscriped number". Recommendation: deleting a superscript unwraps its base into plain text (no empty placeholder left behind), so a later Backspace deletes the number like any character; check subscript, fraction and root for the same leftover box.
+

@@ -131,6 +131,28 @@ check("nothing changed is the same answer", mathFieldSlots("a", "a", [[0, 1, "",
     assert not _failed(results), _failed(results)
 
 
+def test_a_base_whose_script_was_deleted_is_plain_text(tmp_path: Path) -> None:
+    """INBOX 1623, the owner: deleting the superscript left the base "as a regular number, which
+    is fine but if i delete that number it appears with the empty box". The base's slot goes
+    with its script; while the script stands, the base still comes back as a box (1584 d)."""
+    driver = r"""
+const BOX = "\\placeholder{}";
+for (const [name, mark] of [["superscript", "^"], ["subscript", "_"]]) {
+  const tpl = BOX + mark + "{" + BOX + "}";
+  const base = mathFieldSlots(tpl, "2" + mark + "{" + BOX + "}", [], {});
+  check(name + ": the typed base is a slot", base.slots.length === 1, JSON.stringify(base.slots));
+  const bare = mathFieldSlots("2" + mark + "{" + BOX + "}", "2", base.slots, {});
+  check(name + ": its script deleted lets the slot go", bare.slots.length === 0, JSON.stringify(bare.slots));
+  const gone = mathFieldSlots("2", "", bare.slots, {});
+  check(name + ": then the number deletes to nothing", gone.tex === "" && gone.at === -1, gone.tex);
+  const held = mathFieldSlots("2" + mark + "{3}", BOX.slice(0, 0) + mark + "{3}", base.slots, {});
+  check(name + ": with the script standing, the base is a box again", held.tex === BOX + mark + "{3}", held.tex);
+}
+"""
+    results = _node(FIELD_CORE, driver, tmp_path)
+    assert not _failed(results), _failed(results)
+
+
 def test_the_pane_runs_the_slot_rules_on_every_edit_and_starts_over_on_a_write() -> None:
     pane = FIELD.split("function mathFieldPane", 1)[1].split("\n}\n", 1)[0]
     assert "mathFieldSlots(settled, latex, slots" in pane

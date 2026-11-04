@@ -108,6 +108,9 @@ function mathFieldSlots(prev, next, slots, { collapsed = true, restore = true } 
   for (const slot of slots) {
     const [a, b, open = "", close = ""] = slot;
     if (q < a || (q === a && p < q)) kept.push([a + delta, b + delta, open, close]);
+    //: A script's base whose script this edit removed is plain text now, not a box's stand-in, so deleting it later
+    //: leaves nothing (INBOX 1623, the owner: "the box shouldnt appear now because it is only a regular number").
+    else if (p === b && q > p && /[_^]/.test(was[b]) && !/[_^]/.test(now[b] || "")) continue;
     else if (p > b || (p === b && q > p)) kept.push(slot);
     else if (p >= a && q <= b) {
       if (b + delta > a) kept.push([a, b + delta, open, close]);
