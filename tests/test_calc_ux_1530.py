@@ -166,11 +166,11 @@ def test_the_dialog_has_one_head_help_and_the_editor_has_none_of_its_own() -> No
     assert "math-editor-help" not in editor and "mathEditorHelp" not in editor and "initHelpToggles" not in editor
 
 
-def test_inline_and_display_are_a_seg_of_pressed_buttons() -> None:
+def test_inline_and_display_are_a_tab_strip() -> None:
     editor = _read("math-editor.js")
     modes = editor.split("function mathEditorModes(", 1)[1].split("\n}\n", 1)[0]
-    assert 'className = "seg math-editor-mode"' in modes and 'setAttribute("role", "group")' in modes
-    assert "aria-pressed" in modes and "tablist" not in modes and '"tab"' not in modes
+    assert 'className = "tabs-line popup-kinds math-editor-mode"' in modes and 'setAttribute("role", "tablist")' in modes
+    assert "aria-selected" in modes and "aria-pressed" not in modes
 
 
 # --- a preview that says so, and a live region that waits (L1) ----------------------

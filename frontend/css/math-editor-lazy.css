@@ -20,6 +20,19 @@
   font-size: var(--text-xs);
 }
 
+/* **Inline and Display look different in the field** (INBOX 1622, the owner: "I dont see a difference between the calculator inline and display options"): an inline equation is text-sized and sits at the start of the line, as it will in a sentence; a display one is larger and centred, as it will be on a line of its own. The strip above it is the control, this is the proof. */
+.math-editor[data-display="false"] math-field.math-field {
+  font-size: var(--text-lg);
+}
+
+.math-editor[data-display="true"] math-field.math-field {
+  font-size: var(--text-h1);
+}
+
+.math-editor[data-display="true"] math-field.math-field::part(content) {
+  justify-content: center;
+}
+
 /* The line under the head: the hint, and the LaTeX button that shows the TeX. */
 .math-editor-lede-row {
   display: flex;

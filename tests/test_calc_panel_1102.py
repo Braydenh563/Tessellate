@@ -65,12 +65,13 @@ def test_the_panel_opens_tall_enough_for_the_keypad() -> None:
     (measured at 1280x720, where the card was 475px and the pane scrolled), so
     the card must be 544px or more at 720 and still 544px at 900 and above."""
     body = _rule(KIT_CSS, ".sheet-card.calc-card")
-    match = re.search(r"height:\s*min\((\d+)dvh,\s*(\d+(?:\.\d+)?)rem\)", body)
+    match = re.search(r"max-height:\s*min\((\d+)dvh,\s*(\d+(?:\.\d+)?)rem\)", body)
     assert match, body
     share, cap = int(match.group(1)), float(match.group(2))
+    assert "height: auto" in body, "INBOX 1622: the card fits its content"
     assert share / 100 * 720 >= 560, f"{share}dvh is {share * 7.2:.0f}px at 720, the Sum pane scrolls"
-    assert cap * 16 >= 640, "the cap leaves a 900px window with a short card"
-    assert share <= 90, "the foot must not run under the screen's edge"
+    assert cap * 16 >= 688, "the cap leaves Standard (688px) scrolling in a tall window"
+    assert share <= 96, "the foot must not run under the screen's edge"
 
 
 # --- 1538: an emptied box shows its box again ------------------------------------------
@@ -109,8 +110,8 @@ def test_the_inline_display_pill_has_the_chosen_class_the_glide_reads() -> None:
     """`glideStrip` places the indicator on `:scope > .active` or `aria-selected`;
     `aria-pressed` alone left it without one (shell-reminders.js GLIDE_CHOSEN)."""
     modes = EDITOR.split("function mathEditorModes", 1)[1].split("\n}\n", 1)[0]
-    assert 'classList.toggle("active"' in modes, "the pressed segment never gets .active, so the pill does not glide"
-    assert 'className = "seg math-editor-mode"' in modes
+    assert 'classList.toggle("active"' in modes, "the chosen tab never gets .active"
+    assert 'className = "tabs-line popup-kinds math-editor-mode"' in modes
 
 
 def test_every_segmented_control_the_panel_builds_marks_its_chosen_option() -> None:

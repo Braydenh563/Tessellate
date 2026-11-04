@@ -353,20 +353,17 @@ function mathEditorPalette(list, query) {
   list.replaceChildren(...parts);
 }
 
-//: **Inline or Display is a `.seg`** (DESIGN.md: two short exclusive choices,
-//: always in view; INBOX 1530 g L3 - it was a `.tabs-line`, which is for a
-//: popup that chooses a kind of thing, and read as a fourth tab of the
-//: dialog): `aria-pressed`, two ordinary Tab stops.
+//: **Inline or Display is a `.tabs-line`** (INBOX 1622, over the `.seg` of INBOX 1530 g L3: no pills in a popup, and the field shows which is chosen).
 function mathEditorModes(display, onChange) {
   const seg = document.createElement("div");
-  seg.className = "seg math-editor-mode";
-  //: Alone on its line, so it spans the row in equal segments (DESIGN.md, "A `.seg` alone on its line"), not a pill thrown to one side.
-  seg.classList.add("seg-fill");
-  seg.setAttribute("role", "group");
+  //: A `.tabs-line.popup-kinds` (no pills in a popup, INBOX 715 and 1622); the field under it shows the difference (`[data-display]` on the editor, math-editor-lazy.css).
+  seg.className = "tabs-line popup-kinds math-editor-mode";
+  seg.setAttribute("role", "tablist");
   seg.setAttribute("aria-label", "Inline or display");
-  const buttons = [["inline", "Inline", "In the sentence"], ["display", "Display", "On its own line, centred"]].map(([value, label, title]) => {
+  const buttons = [["inline", "Inline", "Sits in the sentence, at the size of the text"], ["display", "Display", "Its own line, centred and larger"]].map(([value, label, title]) => {
     const b = document.createElement("button");
     b.type = "button";
+    b.setAttribute("role", "tab");
     b.dataset.value = value;
     b.textContent = label;
     b.title = title;
@@ -374,13 +371,23 @@ function mathEditorModes(display, onChange) {
     return b;
   });
   const sync = (on) => {
-    //: `.active` as well as `aria-pressed`: the glide (shell-reminders.js `glideStrip`) places its sliding fill on `.active` (INBOX 1540: the pill jumped).
+    //: `.active` and `aria-selected` on the chosen tab (the strip draws its 2px line from either).
     for (const b of buttons) {
       const chosen = (b.dataset.value === "display") === on;
-      b.setAttribute("aria-pressed", String(chosen));
+      b.setAttribute("aria-selected", String(chosen));
       b.classList.toggle("active", chosen);
+      b.tabIndex = chosen ? 0 : -1;
     }
+    //: The editor says which it is writing: the field is centred and larger for a display equation, left and text-sized for an inline one.
+    seg.closest(".math-editor")?.setAttribute("data-display", String(on));
   };
+  seg.addEventListener("keydown", (event) => {
+    if (!["ArrowLeft", "ArrowRight", "Home", "End"].includes(event.key) || !buttons.includes(document.activeElement)) return;
+    event.preventDefault();
+    const to = event.key === "Home" || event.key === "ArrowLeft" ? buttons[0] : buttons[1];
+    to.click();
+    to.focus();
+  });
   seg.append(...buttons);
   sync(display);
   return { seg, sync };
@@ -531,6 +538,7 @@ function mathEditorMount({ host, target = null, done = () => {}, note = null, on
     if (refocus) pane.focus();
   });
 
+  host.dataset.display = String(display);
   const list = document.createElement("div");
   list.className = "math-editor-list";
   const search = mathEditorSearch(() => draw());

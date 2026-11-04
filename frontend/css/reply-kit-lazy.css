@@ -173,13 +173,15 @@
    head, strip and action row 219px and the History bar 44px, so 588px; 86dvh is 619px at 720 and the
    cap 42rem (672px) keeps a tall window's card from outgrowing its panes. */
 .sheet-card.calc-card {
-  height: min(86dvh, 42rem);
-  /* A sheet is two thirds of the window at most (10-responsive.css); this one is the exception the owner asked for. */
-  max-height: min(86dvh, 42rem);
+  /* **Fits its content** (INBOX 1622, the owner: "fix the sizing of the calculator window to fit the calculator"): the card is as tall as its tallest pane in the chosen kind, so Standard has no dead space under the keypad. A sheet is two thirds of the window at most (10-responsive.css); this one is the exception the owner asked for, and only a window too short for its keypad scrolls the panes. */
+  height: auto;
+  max-height: min(94dvh, 48rem);
   overflow: hidden;
 }
 
+/* The panes share one grid cell, so the card is as tall as the tallest of them and a tab never moves the strip (INBOX 1530 g M2); a hidden pane keeps its box and drops out of sight and the Tab order. */
 .calc-panes {
+  display: grid;
   flex: 1 1 auto;
   min-height: 0;
   overflow-y: auto;
@@ -192,6 +194,49 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-3);
+  grid-area: 1 / 1;
+}
+
+.calc-pane.is-off {
+  display: flex;
+  visibility: hidden;
+}
+
+/* A pane's rows keep their own height; the pane scrolls when it must (a result box squeezed to its min-height let its Copy button run past it). */
+.calc-pane > * {
+  flex-shrink: 0;
+}
+
+/* The Equation editor is taller than any keypad (2668px with its palette): it takes the row the other panes set and scrolls inside it, so it never sets the card's height. */
+.calc-pane.calc-equation {
+  contain: size;
+  overflow-y: auto;
+}
+
+/* **Scientific beside the digits** (INBOX 1622): the function keys in the left column and the keypad in the right, so the card is as tall as Standard's (684px, not 767) and a 1024 by 768 window needs no scroll. Below 40rem the keys stack as they did. */
+@media (min-width: 40rem) {
+  .sheet-card.calc-card:has(.calc-pane.is-sci) {
+    width: min(40rem, 94vw);
+    max-width: min(40rem, 94vw);
+  }
+
+  .calc-pane.is-sci {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    align-items: start;
+  }
+
+  .calc-pane.is-sci > * {
+    grid-column: 1 / -1;
+  }
+
+  .calc-pane.is-sci > .calc-keys-sci {
+    grid-column: 1;
+  }
+
+  .calc-pane.is-sci > .calc-keys:not(.calc-keys-sci) {
+    grid-column: 2;
+  }
 }
 
 /* **The action row** (`replyCalcActions`): where Insert writes, then Copy, Insert as equation and the one filled Insert, the same on every tab. */
@@ -295,7 +340,9 @@
 .calc-figure-row {
   display: flex;
   flex-wrap: wrap;
-  align-items: baseline;
+  /* **The figure and the Copy button share one centre line** (INBOX 1622, "are that = and 36 aligned??"): baseline alignment hung the 22px figure at the top of the row beside the 28px button, 3px above its centre, and the button ran 2px past the box. The row is the button's height, so the box is one height with or without Copy. */
+  align-items: center;
+  min-height: var(--control-h);
   gap: var(--space-2);
 }
 
@@ -334,14 +381,16 @@
   gap: var(--space-3);
 }
 
+/* The kind and the angle unit are `.tabs-line` strips (INBOX 1622: no pills in a popup). In the head row they carry no hairline of their own (the Sum strip above is the line), and a tab gives up the strip's side room and floor so the row holds at 390. The ring is the strip's `:focus-visible` one, never a press. */
 .calc-head .calc-seg {
   flex: none;
   margin: 0;
+  box-shadow: none;
 }
 
-/* A ring is the keyboard's: after a press with the pointer the segment keeps no ring. */
-.calc-seg.is-pointer button:focus-visible {
-  outline-color: transparent;
+.calc-head .calc-seg > button {
+  min-width: 0;
+  padding-inline: var(--space-3);
 }
 
 .calc-memory {
