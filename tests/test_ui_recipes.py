@@ -7454,4 +7454,5 @@ def test_the_edge_handle_and_the_rename_input_are_the_recipe():
     assert "var(--accent)" in rule
     handle = css[css.index(".dgm-handle {") : css.index("}", css.index(".dgm-handle {"))]
     assert "var(--modal-bg)" in handle and "var(--shadow-md)" in handle
+    assert "dataset.side" in edges and 'dgm-handle[data-side="left"]' in css  # INBOX 1679: one handle a side
     assert "An edge handle and an input on a picture" in (ROOT / "docs" / "DESIGN.md").read_text(encoding="utf-8")

@@ -39,14 +39,20 @@
     const nodeAt = (x, y) => (S.hit && rect() ? overlay().at(S.hit, rect(), x, y) : "");
     const groupAt = (x, y) => (S.hit && rect() ? overlay().clusterAt(S.hit, rect(), x, y) : "");
 
-    const handle = smallButton("ph:arrow-bend-down-right", "Connect to another block. Drag it to a block, or press it and click one", () => {});
-    handle.className = "dgm-handle hidden";
-    handle.type = "button";
-    layer.append(handle);
+    //: Four handles, one a side, so a connection can leave any edge and the picked block reads as connectable (INBOX 1679).
+    const handles = ["top", "right", "bottom", "left"].map((side) => {
+      const b = smallButton("ph:arrow-bend-down-right", "Connect to another block. Drag it to a block, or press it and click one", () => {});
+      b.className = "dgm-handle ghost small hidden";
+      b.dataset.side = side;
+      b.type = "button";
+      layer.append(b);
+      return b;
+    });
     let hover = "";
     let hideTimer = 0;
     let conn = null;
     let armed = "";
+    let armedSide = "right";
     let editing = null;
     //: What to ask next, once the picture shows it: `{ node: id }` or `{ edge }` (the model's arrow).
     const want = [];
@@ -56,13 +62,20 @@
       return on.length === 1 ? on[0].dataset.node : "";
     };
     const current = () => conn?.from || armed || hover || sole();
+    //: Where a side's handle sits on a placed block, and where its arrow leaves from.
+    const anchor = (at, side) => [at.x + (side === "left" ? 0 : side === "right" ? at.w : at.w / 2), at.y + (side === "top" ? 0 : side === "bottom" ? at.h : at.h / 2)];
     const showHandle = () => {
       const id = current();
       const at = id && place().find((b) => b.id === id);
-      handle.classList.toggle("hidden", !at || Boolean(editing));
+      const only = conn?.side || (armed && armedSide);
+      for (const handle of handles) handle.classList.toggle("hidden", !at || Boolean(editing) || Boolean(only && only !== handle.dataset.side));
       if (!at) return;
-      const size = handle.offsetWidth || 24;
-      handle.style.transform = `translate(${at.x + at.w - size / 2}px, ${at.y + at.h / 2 - size / 2}px)`;
+      //: Shown first, measured once, then placed: a read between writes would lay the page out four times.
+      const size = handles[0].offsetWidth || 24;
+      for (const handle of handles) {
+        const [x, y] = anchor(at, handle.dataset.side);
+        handle.style.transform = `translate(${x - size / 2}px, ${y - size / 2}px)`;
+      }
     };
     const leave = () => {
       clearTimeout(hideTimer);
@@ -157,9 +170,7 @@
       if (id) (hover = id), clearTimeout(hideTimer), showHandle();
       else if (hover) leave();
     });
-    fig.addEventListener("pointerleave", (event) => event.relatedTarget !== handle && hover && leave());
-    handle.addEventListener("pointerenter", () => clearTimeout(hideTimer));
-    handle.addEventListener("pointerleave", () => !conn && hover && leave());
+    fig.addEventListener("pointerleave", (event) => !handles.includes(event.relatedTarget) && hover && leave());
 
     //: Connects `from` to what is at the point: a block or a group, or (nothing there) a new block, in the group under it.
     function connect(from, x, y) {
@@ -187,8 +198,7 @@
       const home = layer.getBoundingClientRect();
       const at = place().find((b) => b.id === conn.from);
       if (!at) return;
-      const x0 = at.x + at.w;
-      const y0 = at.y + at.h / 2;
+      const [x0, y0] = anchor(at, conn.side);
       const dx = x - home.left - x0;
       const dy = y - home.top - y0;
       line.style.width = `${Math.hypot(dx, dy)}px`;
@@ -201,40 +211,52 @@
       line.classList.add("hidden");
       for (const box of layer.querySelectorAll(".dgm-box.dgm-target")) box.classList.remove("dgm-target");
       conn = null;
+      showHandle();
     };
-    handle.addEventListener("pointerdown", (event) => {
-      const from = current();
-      if (event.button || !from) return;
-      event.preventDefault();
-      handle.setPointerCapture?.(event.pointerId);
-      conn = { id: event.pointerId, from, x: event.clientX, y: event.clientY, moved: false };
-    });
-    handle.addEventListener("pointermove", (event) => {
-      if (!conn || event.pointerId !== conn.id) return;
-      if (!conn.moved && Math.hypot(event.clientX - conn.x, event.clientY - conn.y) < 6) return;
-      conn.moved = true;
-      line.classList.remove("hidden");
-      aim(event.clientX, event.clientY);
-    });
-    handle.addEventListener("pointerup", (event) => {
-      if (!conn || event.pointerId !== conn.id) return;
-      const { from, moved } = conn;
-      finish();
-      if (moved) connect(from, event.clientX, event.clientY);
-      else arm(from);
-    });
-    handle.addEventListener("pointercancel", finish);
-    //: Enter or Space on the handle (a click with no pointer) arms it too.
-    handle.addEventListener("click", (event) => event.detail === 0 && arm(current()));
+    for (const handle of handles) {
+      const side = handle.dataset.side;
+      handle.addEventListener("pointerenter", () => clearTimeout(hideTimer));
+      handle.addEventListener("pointerleave", () => !conn && hover && leave());
+      handle.addEventListener("pointerdown", (event) => {
+        const from = current();
+        if (event.button || !from) return;
+        event.preventDefault();
+        handle.setPointerCapture?.(event.pointerId);
+        conn = { id: event.pointerId, from, side, x: event.clientX, y: event.clientY, moved: false };
+      });
+      handle.addEventListener("pointermove", (event) => {
+        if (!conn || event.pointerId !== conn.id) return;
+        if (!conn.moved && Math.hypot(event.clientX - conn.x, event.clientY - conn.y) < 6) return;
+        conn.moved = true;
+        line.classList.remove("hidden");
+        aim(event.clientX, event.clientY);
+        showHandle();
+      });
+      handle.addEventListener("pointerup", (event) => {
+        if (!conn || event.pointerId !== conn.id) return;
+        const { from, moved } = conn;
+        finish();
+        if (moved) connect(from, event.clientX, event.clientY);
+        else arm(from, side);
+      });
+      handle.addEventListener("pointercancel", finish);
+      //: Enter or Space on the handle (a click with no pointer) arms it too.
+      handle.addEventListener("click", (event) => event.detail === 0 && arm(current(), side));
+    }
 
-    function arm(from) {
+    function arm(from, side) {
       armed = from;
-      handle.setAttribute("aria-pressed", "true");
+      armedSide = side;
+      for (const handle of handles) {
+        if (handle.dataset.side === side) handle.setAttribute("aria-pressed", "true");
+        else handle.removeAttribute("aria-pressed");
+      }
+      showHandle();
       h.say(S, "Click the block to connect to, or empty space for a new one. Escape cancels.");
     }
     const disarm = () => {
       armed = "";
-      handle.removeAttribute("aria-pressed");
+      for (const handle of handles) handle.removeAttribute("aria-pressed");
       showHandle();
     };
     fig.addEventListener("click", (event) => {
