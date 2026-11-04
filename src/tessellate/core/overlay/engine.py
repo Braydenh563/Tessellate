@@ -1103,7 +1103,10 @@ class Engine:
         self.x += self.vx * dt
         self.y += self.vy * dt
         speed = math.hypot(self.vx, self.vy)
-        self.slow_for = self.slow_for + dt if speed < FLY_SPIN_MIN * scale else 0.0
+        if self.slow_for >= FLY_REST_DWELL:
+            pass  # laid down: a floater's pull back to its hover can creep its speed over the line again, so it stays down until the next throw
+        else:
+            self.slow_for = self.slow_for + dt if speed < FLY_SPIN_MIN * scale else 0.0
         self.angle += self.spin_dir * SPIN_RATE * min(1.0, speed / (THROW_MAX * 0.4 * scale)) * dt
         # the walls are of what is drawn: the tumble's widest frame, not the window around it
         ux0, ux1, uy0, uy1 = self._ride_limits("fly")

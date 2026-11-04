@@ -322,3 +322,74 @@ def test_a_straight_up_throw_tumbles_through_the_apex_without_flipping_to_the_he
     # a held run between two tumbles, however short, is the flip (and it resizes the window)
     flips = [i for i in range(1, len(kinds) - 1) if kinds[i] == "held" and "spin" in kinds[:i] and "spin" in kinds[i:]]
     assert not flips, (look, gait, vx, flips[:3])
+
+
+@pytest.mark.parametrize("look", LOOKS)
+def test_no_state_flip_flops_inside_200_ms_sampled_every_frame_not_every_wake(look: str) -> None:
+    # the wake can be 500 ms, which cannot see a flip; sample at 60 fps with the pointer about
+    for gait in ("walk", "float"):
+        for seed in range(4):
+            e, _s = make(look, gait, seed)
+            r, t, ptr = random.Random(seed), 0.0, (900, 900)
+            log: list[tuple[float, str]] = []
+            for i in range(6000):
+                t += 1 / 60
+                if i % 20 == 0:
+                    ptr = (int(ptr[0] + r.uniform(-90, 90)), int(ptr[1] + r.uniform(-60, 60)))
+                e.update(t, ptr)
+                if not log or log[-1][1] != e.state:
+                    log.append((t, e.state))
+            flips = [(a, b, c) for (ta, a), (tb, b), (tc, c) in zip(log, log[1:], log[2:]) if tc - ta < 0.2 and a == c and a != b]
+            assert not flips, (look, gait, seed, flips[:3])
+
+
+@pytest.mark.parametrize("look", LOOKS)
+def test_a_thrown_figure_never_swaps_between_tumble_and_held_pose_inside_300_ms(look: str) -> None:
+    # frame size follows the frame: a spin frame is a bigger canvas, so a swap is a resize
+    for gait in ("walk", "float"):
+        for seed in range(6):
+            e, _s = make(look, gait, seed)
+            r, t, kinds = random.Random(seed), 0.0, []
+            for i in range(5000):
+                t += 1 / 60
+                if e.state in ("stand", "sit", "walk", "drift") and i % 120 == 0:
+                    sx, sy = int(e.x + e.size[0] / 2), int(e.y + e.size[1] / 2)
+                    e.update(t, (sx, sy), ("down", sx, sy))
+                    for k in range(1, 5):
+                        t += 0.016
+                        e.update(t, event=("move", sx + k * int(r.uniform(-90, 90)), sy + k * int(r.uniform(-90, 10))))
+                    t += 0.016
+                    e.update(t, event=("up", sx, sy))
+                o = e.update(t)
+                kinds.append((t, "spin" if o.frame.startswith("spin") else (o.frame if e.state == "fly" else "other")))
+            for j in range(1, len(kinds) - 1):
+                ta, a = kinds[j - 1]
+                if a == "spin" and kinds[j][1] == "held":
+                    back = next((tb for tb, b in kinds[j:] if b == "spin"), None)
+                    assert back is None or back - ta >= 0.3, (look, gait, seed, round(ta, 2), round(back - ta, 2))
+
+
+@pytest.mark.parametrize("look", LOOKS)
+def test_a_bobbing_floater_moves_only_at_the_bobs_speed_and_keeps_its_window(look: str) -> None:
+    # Spec, stated: while a floater bobs, y is allowed to change with the frame unchanged, but
+    # only by the bob's own speed per redraw, never more; the window's size follows the frame.
+    e, s = make(look, "float")
+    boxes = s.metrics(96)
+    e._enter("stand", 0.0)
+    e.state_until = math.inf
+    e.next_ambient = math.inf
+    e.last_active = math.inf
+    t, prev, gaps = 0.0, e.update(0.0), []
+    limit = 2 * math.pi * eng.BOB_HZ * eng.BOB * eng.BOB_TICK * 1.3 + 0.6  # peak speed times one tick
+    for _ in range(1500):
+        t += 1 / 60
+        o = e.update(t)
+        if o.frame == prev.frame and o.flip == prev.flip:
+            assert abs(o.y - prev.y) <= limit, (o.y - prev.y, limit)
+            assert abs(o.x - prev.x) <= 6.0
+        prev = o
+        gaps.append(AREA[3] - (o.y + boxes[(o.frame, o.flip)][3]))
+    # and the owner's "floats high" bar, measured while it bobs: feet above the bottom by at
+    # most the bob's height plus the hover, never below the bottom
+    assert min(gaps) >= -1.5, min(gaps)
+    assert max(gaps) <= eng.BOB + eng.HOVER[1] + 1.5, max(gaps)
