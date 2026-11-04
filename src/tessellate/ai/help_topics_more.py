@@ -3224,7 +3224,7 @@ MORE_TOPICS.extend([
             "Source and Split show text; Ctrl+Z undoes "
             "either. Add shows the last shape you used: press it to add one, or press its arrow "
             "for every shape and its key. Connect to... on a block draws an "
-            "arrow from it: pick a block, or type a new name to make it; a decision's second arrow asks for words. Drag a block: "
+            "arrow from it: pick a block, or type a new name to make it; a decision's arrows ask for yes or no. Drag a block: "
             "another's top or bottom puts it before or after, its middle joins "
             "them, a group's body takes it inside. A connector shows under "
             "the block it leaves as Start to Next and its label. The shape swatch "

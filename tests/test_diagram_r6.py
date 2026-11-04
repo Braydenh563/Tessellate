@@ -54,8 +54,14 @@ def test_r6_3_a_second_arrow_out_of_a_decision_asks_for_its_words():
     assert got["result"] == [True, False]  # the second branch, unlabelled; the first has its words
     box = _script("flowchart TD\n  A[One]\n  B[Two]\n  C[Three]\n  A --> B\n", "const e = o.join(m, 'A', 'C'); return o.needsLabel(m, e);")
     assert box["result"] is False  # only a decision's branches are asked about
+    # INBOX 1679 moved the intent: the FIRST arrow out of a decision asks too (it was "one arrow out is not a branch yet", and
+    # a six-block task ended with one silent branch and a user who did not know it needed words).
     first = _script("flowchart TD\n  D{Q}\n  Y[Ship]\n", "const e = o.join(m, 'D', 'Y'); return o.needsLabel(m, e);")
-    assert first["result"] is False  # one arrow out is not a branch yet
+    assert first["result"] is True
+    word = _script(src, "const e = o.join(m, 'D', 'N'); return [o.branchWord(m, e), o.branchWord(m, m.edges[0])];")
+    assert word["result"] == ["no", "yes"]  # yes is taken by the first branch, so the second is offered no; the first is offered yes
+    bare = _script("flowchart TD\n  D{Q}\n  Y[Ship]\n", "const e = o.join(m, 'D', 'Y'); return o.branchWord(m, e);")
+    assert bare["result"] == "yes"
     assert "needsLabel" in JOINS and "promptDialog" in JOINS
 
 

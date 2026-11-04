@@ -83,7 +83,7 @@
     };
 
     //: One input over a box, a title or an arrow's middle.
-    function open(at, was, done, wide = 0) {
+    function open(at, was, done, wide = 0, guess = false) {
       editing?.cancel();
       const input = document.createElement("input");
       input.className = "dgm-rename";
@@ -108,7 +108,7 @@
         event.stopPropagation();
         if (event.key === "Enter" || event.key === "Escape") event.preventDefault(), end(event.key === "Enter");
       });
-      input.addEventListener("blur", () => end(true));
+      input.addEventListener("blur", () => end(!guess || input.value !== was));
       showHandle();
       input.focus();
       input.select();
@@ -133,7 +133,9 @@
     const renameEdge = (edge) => {
       const at = place(S.hit.edges).find((b) => b.id === math.edgeId(S.m, edge));
       if (!at) return false;
-      open({ ...at, w: 0, h: 0 }, edge.label, (text) => text !== edge.label && ((edge.label = text), h.commit(S, text ? `Labelled the connector ${text}.` : "Cleared the connector label.")));
+      //: A decision's arrow with no words opens on the offer (yes, then no), selected: Enter answers, typing replaces, Escape or a click away leaves it bare.
+      const offer = h.ops.needsLabel(S.m, edge) ? h.ops.branchWord(S.m, edge) : edge.label;
+      open({ ...at, w: 0, h: 0 }, offer, (text) => text !== edge.label && ((edge.label = text), h.commit(S, text ? `Labelled the connector ${text}.` : "Cleared the connector label.")), 0, offer !== edge.label);
       return true;
     };
 

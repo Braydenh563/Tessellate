@@ -2,9 +2,9 @@
 
 Generated 2026-11-04 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7807, frontend ids 2644, CSS sections 522, backend routes 644, backend modules 8796, test files 2058, tests 17380, plan headings 1003, app scripts 28, boot scripts 37, script files 255.
+Counts: frontend functions 7809, frontend ids 2644, CSS sections 522, backend routes 644, backend modules 8796, test files 2058, tests 17381, plan headings 1003, app scripts 28, boot scripts 37, script files 255.
 
-## Frontend functions (7807)
+## Frontend functions (7809)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -3201,16 +3201,17 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `svgOf` | frontend/js/diagram-embed.js:19 |
 | `swapRange` | frontend/js/diagram-embed.js:87 |
 
-### frontend/js/diagram-joins.js (6)
+### frontend/js/diagram-joins.js (7)
 
 | Name | File:line |
 |---|---|
-| `ask` | frontend/js/diagram-joins.js:83 |
+| `ask` | frontend/js/diagram-joins.js:94 |
 | `items` | frontend/js/diagram-joins.js:22 |
 | `menu` | frontend/js/diagram-joins.js:50 |
 | `nameOf` | frontend/js/diagram-joins.js:20 |
-| `pick` | frontend/js/diagram-joins.js:91 |
+| `pick` | frontend/js/diagram-joins.js:102 |
 | `titleOf` | frontend/js/diagram-joins.js:19 |
+| `words` | frontend/js/diagram-joins.js:83 |
 
 ### frontend/js/diagram-kinds.js (62)
 
@@ -3293,12 +3294,13 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 |---|---|
 | `wire` | frontend/js/diagram-multi.js:14 |
 
-### frontend/js/diagram-ops.js (27)
+### frontend/js/diagram-ops.js (28)
 
 | Name | File:line |
 |---|---|
 | `dgbAddGroup` | frontend/js/diagram-ops.js:146 |
 | `dgbAddNode` | frontend/js/diagram-ops.js:138 |
+| `dgbBranchWord` | frontend/js/diagram-ops.js:324 |
 | `dgbDuplicate` | frontend/js/diagram-ops.js:278 |
 | `dgbEdit` | frontend/js/diagram-ops.js:82 |
 | `dgbFreshId` | frontend/js/diagram-ops.js:26 |
@@ -24059,7 +24061,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (17380)
+## Tests (17381)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -24596,7 +24598,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_diagram_1596.py | 4 |
 | tests/test_diagram_1661a.py | 6 |
 | tests/test_diagram_1661b.py | 8 |
-| tests/test_diagram_blind_fixes.py | 5 |
+| tests/test_diagram_blind_fixes.py | 6 |
 | tests/test_diagram_builder.py | 20 |
 | tests/test_diagram_d3.py | 2 |
 | tests/test_diagram_deep_1588.py | 5 |
