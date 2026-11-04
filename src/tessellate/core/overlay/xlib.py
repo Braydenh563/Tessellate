@@ -18,10 +18,10 @@ from __future__ import annotations
 
 import ctypes
 import ctypes.util
+import hashlib
 import logging
 import os
 import threading
-import zlib
 from typing import Any
 
 logger = logging.getLogger(__name__)
@@ -138,6 +138,33 @@ def _sig(fn: Any, restype: Any, *argtypes: Any) -> Any:
     return fn
 
 
+class XErrorEvent(c.Structure):
+    _fields_ = [("type", c.c_int), ("display", c.c_void_p), ("resourceid", c.c_ulong), ("serial", c.c_ulong),
+                ("error_code", c.c_ubyte), ("request_code", c.c_ubyte), ("minor_code", c.c_ubyte)]
+
+
+# Xlib's default handler calls exit(), so one window closing between a scan's list and its
+# query would end the whole process. The handler only records; the failing call returns an
+# error status that its caller already treats as "gone".
+RECENT_ERRORS: list[tuple[int, int, int]] = []
+_ERROR_HANDLER_TYPE = c.CFUNCTYPE(c.c_int, c.c_void_p, c.POINTER(XErrorEvent))
+
+
+def _on_x_error(_dpy: Any, event: Any) -> int:
+    e = event.contents
+    RECENT_ERRORS.append((int(e.error_code), int(e.request_code), int(e.resourceid)))
+    del RECENT_ERRORS[:-32]
+    return 0
+
+
+_ERROR_HANDLER = _ERROR_HANDLER_TYPE(_on_x_error)  # kept alive for the life of the process
+
+
+def shape_key(alpha: bytes, width: int, height: int) -> bytes:
+    """A cut-shape cache key that cannot collide in practice (a 32-bit crc could)."""
+    return hashlib.blake2b(alpha, digest_size=16, salt=width.to_bytes(4, "little") + height.to_bytes(4, "little")).digest()
+
+
 def libraries_present() -> bool:
     """True when libX11 can be loaded (the rest are optional)."""
     return bool(ctypes.util.find_library("X11"))
@@ -160,9 +187,14 @@ class XConn:
         self._cmap = 0
         self._gc: dict[int, Any] = {}
         self._rr_event_base: int | None = None
-        self._shape_cache: dict[int, int] = {}
+        self._shape_cache: dict[bytes, int] = {}
         self._last: dict[int, tuple[bytes, int, int]] = {}
         self.compositor = False
+
+    @property
+    def errors(self) -> list[tuple[int, int, int]]:
+        """Recent X errors as (error code, request code, resource id)."""
+        return RECENT_ERRORS
 
     # --- opening ---------------------------------------------------------------------
 
@@ -175,6 +207,8 @@ class XConn:
             x.XInitThreads()
         except Exception:  # noqa: BLE001 - an old libX11: the lock alone is what is left
             logger.debug("xlib: XInitThreads missing", exc_info=True)
+        _sig(x.XSetErrorHandler, c.c_void_p, _ERROR_HANDLER_TYPE)
+        x.XSetErrorHandler(_ERROR_HANDLER)
         _sig(x.XOpenDisplay, c.c_void_p, c.c_char_p)
         dpy = x.XOpenDisplay(name.encode() if name else None)
         if not dpy:
@@ -475,7 +509,7 @@ class XConn:
         if shape is None:
             return
         alpha = bgra[3::4]
-        key = zlib.crc32(alpha) ^ (width << 20) ^ (height << 8)
+        key = shape_key(alpha, width, height)
         pix = self._shape_cache.get(key)
         if pix is None:
             bits = alpha_bitmap(alpha, width, height)

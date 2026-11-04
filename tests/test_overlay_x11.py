@@ -5,6 +5,7 @@ half. A real X server (Xvfb) is used where one is installed (`test_on_a_real_ser
 from __future__ import annotations
 
 import os
+import sys
 import shutil
 import subprocess
 import time
@@ -487,6 +488,34 @@ def test_on_a_real_server_the_window_is_placed_shaped_to_the_figure_and_the_desk
     finally:
         proc.kill()
         proc.wait()
+
+
+def test_on_a_real_server_a_destroyed_window_is_an_error_value_not_a_process_exit() -> None:
+    """Xlib's default error handler calls exit(); the runner scans windows that can close at any moment."""
+    code = (
+        "import sys; from tessellate.core.overlay import xlib\n"
+        "c = xlib.XConn.open(sys.argv[1])\n"
+        "gone = 0x600001\n"
+        "assert c.prop(gone, '_NET_WM_STATE') is None\n"
+        "assert c.geometry(gone) is None\n"
+        "c.window_xy(gone)\n"
+        "assert c.errors and c.errors[0][0] == 3\n"
+        "print('survived')\n"
+    )
+    proc, display = _xvfb()
+    try:
+        env = dict(os.environ, PYTHONPATH=os.pathsep.join(sys.path))
+        out = subprocess.run([sys.executable, "-c", code, display], capture_output=True, text=True, timeout=30, env=env)
+        assert "survived" in out.stdout, (out.returncode, out.stderr)
+    finally:
+        proc.kill()
+        proc.wait()
+
+
+def test_two_different_frames_never_share_a_cut_shape_key() -> None:
+    a, b = bytes(range(256)) * 4, bytes(reversed(range(256))) * 4
+    assert xlib.shape_key(a[3::4], 16, 16) != xlib.shape_key(b[3::4], 16, 16)
+    assert xlib.shape_key(a[3::4], 16, 16) != xlib.shape_key(a[3::4], 8, 32)
 
 
 # --- the companion's wiring on Linux ----------------------------------------------------------------------
