@@ -29,26 +29,39 @@
   <main class="desk-root">
     <section class="desk-panel hidden" id="desk-menu" role="menu" aria-label="Companion"></section>
     <section class="desk-panel hidden" id="desk-note" role="dialog" aria-labelledby="desk-note-title">
-      <header class="desk-head">
+      <header class="dialog-head desk-head">
         <h1 id="desk-note-title" class="desk-title">Quick note</h1>
-        <button type="button" class="icon-only ghost small desk-close" data-desk-close aria-label="Close"><i class="ph ph-x" aria-hidden="true"></i></button>
+        <div class="dialog-head-actions">
+          <button type="button" class="icon-only ghost small dialog-head-btn desk-close" data-desk-close title="Close" aria-label="Close"><i class="ph ph-x" aria-hidden="true"></i></button>
+        </div>
       </header>
       <label class="visually-hidden" for="desk-note-text">Your note</label>
       <textarea id="desk-note-text" rows="5" maxlength="4000" placeholder="A thought, a link, a reminder"></textarea>
-      <p id="desk-note-status" class="status" role="status" aria-live="polite">Enter saves it, Shift+Enter starts a new line.</p>
-      <div class="row gap desk-actions">
-        <button id="desk-note-save" type="button">Save</button>
+      <div class="desk-foot">
+        <p id="desk-note-status" class="status desk-status" role="status" aria-live="polite">Enter saves it, Shift+Enter starts a new line.</p>
+        <div class="row gap desk-actions">
+          <button id="desk-note-save" type="button">Save</button>
+        </div>
       </div>
     </section>
     <section class="desk-panel hidden" id="desk-search" role="dialog" aria-labelledby="desk-search-title">
-      <header class="desk-head">
+      <header class="dialog-head desk-head">
         <h1 id="desk-search-title" class="desk-title">Quick search</h1>
-        <button type="button" class="icon-only ghost small desk-close" data-desk-close aria-label="Close"><i class="ph ph-x" aria-hidden="true"></i></button>
+        <div class="dialog-head-actions">
+          <button type="button" class="icon-only ghost small dialog-head-btn desk-close" data-desk-close title="Close" aria-label="Close"><i class="ph ph-x" aria-hidden="true"></i></button>
+        </div>
       </header>
-      <label class="visually-hidden" for="desk-search-text">Search your notes</label>
-      <input id="desk-search-text" type="search" maxlength="200" autocomplete="off" placeholder="Search your notes">
-      <p id="desk-search-status" class="status" role="status" aria-live="polite"></p>
-      <ul id="desk-search-hits" class="desk-hits"></ul>
+      <div class="search-field desk-search-field">
+        <i class="ph ph-magnifying-glass search-field-icon" aria-hidden="true"></i>
+        <label class="visually-hidden" for="desk-search-text">Search your notes</label>
+        <input id="desk-search-text" type="search" class="search-field-input" maxlength="200" autocomplete="off" placeholder="Search your notes" aria-controls="desk-search-hits">
+      </div>
+      <p id="desk-search-status" class="status desk-status" role="status" aria-live="polite"></p>
+      <div id="desk-search-empty" class="empty-state desk-empty">
+        <p id="desk-search-empty-title" class="empty-title">Search your notes</p>
+        <p id="desk-search-empty-hint" class="muted">Enter opens the first match.</p>
+      </div>
+      <ul id="desk-search-hits" class="desk-hits" aria-label="Results"></ul>
     </section>
     <button type="button" class="desk-pet" id="desk-pet" aria-haspopup="menu" aria-expanded="false" aria-label="Your companion. Click for the menu, right-click for settings, drag to move it.">
       <span class="desk-figure" id="desk-figure"></span>

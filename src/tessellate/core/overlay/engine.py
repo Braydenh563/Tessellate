@@ -110,6 +110,11 @@ TRIP_FIRST = (300.0, 700.0)
 AWAY = 40.0
 #: Following the pointer at a polite distance, for a while.
 FOLLOW_GAP = 240.0
+#: "Come here" (the menu): it stops this close to the pointer, and keeps company this long.
+COME_GAP = 70.0
+COME_FOR = 20.0
+#: A "Go somewhere else" is at least this far (logical px), when the work area allows.
+WANDER_MIN = 420.0
 FOLLOW_FOR = (10.0, 18.0)
 GREET_AFTER = 420.0
 #: Under a busy pointer it waits instead of passing (px ahead / height of the path / seconds).
@@ -396,6 +401,8 @@ class Engine:
         self.home_x: float | None = None
         self.trip_ready = now + self.rng.uniform(*TRIP_FIRST)
         self.follow_until = 0.0
+        self.follow_close_until = 0.0
+        self.nap_after_land = False
         self.follow_check = 0.0
         self.yield_since: float | None = None
         self.pointer_busy_at = -1e9
@@ -944,6 +951,8 @@ class Engine:
             self._enter("wave", now)
         elif then == "clock":
             self._start_act("ponder" if self.rng.random() < 0.5 else "look_around", now)
+        elif then == "settle":  # "Go somewhere else": the new spot is home now
+            self._set_home()
         else:
             self._start_act("lie_down" if self.gait == "walk" else "curl_up", now)
 
@@ -957,7 +966,8 @@ class Engine:
             return False
         k = self._scale()
         side = -1 if p[0] > self.x + self.size[0] / 2 else 1
-        gx = min(max(p[0] - self.size[0] / 2 + side * FOLLOW_GAP * k, m.area[0]), m.area[2] - self.size[0])
+        gap = COME_GAP if now < self.follow_close_until else FOLLOW_GAP
+        gx = min(max(p[0] - self.size[0] / 2 + side * gap * k, m.area[0]), m.area[2] - self.size[0])
         gx = tv.out_of_middle(gx, m.area, self.size[0])  # the goal it will be given, so "close enough" is judged on that
         if abs(gx - self.x) < 60 * k:  # close enough: keep it company, small things
             self._start_act(self.mind.pick(self.rng, now, self.gait, self.hour), now)
@@ -1011,6 +1021,124 @@ class Engine:
             self._enter("sleep", now)
         else:
             self._start_act(self.mind.pick(self.rng, now, self.gait, self.hour, "perch" if self.perch else ""), now)
+
+    # --- asked from the menu (INBOX 1670, row C) ----------------------------------------------
+
+    #: What the menu can ask for; `command` says whether it was done.
+    COMMANDS = ("wave", "come", "wander", "nap", "wake", "perch", "stay", "roam")
+    #: The states a request may break into; anything else (carried, thrown, falling, leaping) is left alone.
+    _FREE = ("stand", "sit", "sleep", "walk", "drift", "act", "crouch", "wave", "notice", "startle", "land", "hop", "card")
+
+    def command(self, name: str, now: float) -> bool:
+        """A choice from the companion's menu, on the engine's own thread. True when it took
+        effect; False when it cannot be done now (carried, no window to sit on, motion off)."""
+        if name == "stay":
+            return self._stay(now)
+        if name == "roam":
+            return self._roam(now)
+        if not self._free_for_command(now):
+            return False
+        self.last_active = now
+        if name == "wave":
+            self._enter("sit" if self.reduced else "wave", now)
+        elif name == "nap":
+            self._nap(now)
+        elif name == "wake":
+            self._wake_up(now)
+        elif self.reduced:
+            return False
+        elif name == "come":
+            return self._come(now)
+        elif name == "wander":
+            return self._wander(now)
+        elif name == "perch":
+            return self._sit_on_window(now)
+        else:
+            return False
+        return True
+
+    def _stay(self, now: float) -> bool:
+        self.roam = False
+        self.follow_until = 0.0
+        if self.state in ("walk", "drift", "crouch") and not self.reduced:
+            self._enter("stand", now)
+        return True
+
+    def _roam(self, now: float) -> bool:
+        self.roam = True
+        self.last_active = now
+        if self.state == "sit" and not self.reduced:
+            self._enter("stand", now)
+        return True
+
+    def _free_for_command(self, now: float) -> bool:
+        """Bring a peeking or hanging figure back to its feet; False in a state a request may not break."""
+        if self.state in ("peek", "emerge") and not self.reduced:
+            self._enter("stand", now)
+            return True
+        if self.state == "hang" and not self.reduced:
+            self._let_go()
+            return True
+        return self.state in self._FREE
+
+    def _nap(self, now: float) -> None:
+        if self.perch is not None and not self.reduced and self.gait == "walk":
+            self.nap_after_land = True  # it never sleeps on a window: down first, then to sleep
+            self._leave_perch(now, hop=False)
+            return
+        self.perch = None
+        self._enter("sit" if self.reduced else "sleep", now)
+
+    def _wake_up(self, now: float) -> None:
+        if not self.reduced:
+            self._wake_for(now)
+            if self.state == "stand":
+                self._start_act("stretch", now)
+
+    def _wake_for(self, now: float) -> None:
+        if self.state in ("sleep", "sit"):
+            self._enter("stand", now)
+
+    def _come(self, now: float) -> bool:
+        """Walk to the pointer and keep close for a while. False when the pointer is not on this screen."""
+        if self.pointer is None:
+            return False
+        self._wake_for(now)
+        self.follow_until = now + COME_FOR
+        self.follow_close_until = self.follow_until
+        if self.perch is not None:
+            self._leave_perch(now, hop=True)
+            return True
+        if self._follow(now):
+            return True
+        self.follow_until = self.follow_close_until = 0.0
+        return False
+
+    def _wander(self, now: float) -> bool:
+        """Go to another part of the work area, far from here, and make it home."""
+        self._wake_for(now)
+        if self.perch is not None:
+            self._leave_perch(now, hop=True)
+            return True
+        m = self.current_monitor()
+        k = self._scale()
+        lo, hi = m.area[0], m.area[2] - self.size[0]
+        far = [x for x in (lo + (hi - lo) * i / 10 for i in range(11)) if abs(x - self.x) >= WANDER_MIN * k]
+        pool = far or [lo if self.x - lo > hi - self.x else hi]
+        gx = self.rng.choice(pool)
+        if abs(gx - self.x) < 12 * k:
+            return False
+        self._go((gx, self.ground_y(m)), "settle", now)
+        return True
+
+    def _sit_on_window(self, now: float) -> bool:
+        """Climb to a window's top edge the last scan found. False when there is none to sit on."""
+        if not (self.roam_windows and self.roam) or self.perch is not None or not self._candidates():
+            return False
+        self._wake_for(now)
+        self.climb_ready = 0.0
+        self._climb(now)
+        return True
 
     # --- window tops (roam) ------------------------------------------------------------
 
@@ -1646,7 +1774,7 @@ class Engine:
             self._enter("stand", now)
             if then == "rest":
                 self.state_until = now + self.rng.uniform(*REST_FOR)
-            if then in ("clock", "nap", "greet"):
+            if then in ("clock", "nap", "greet", "settle"):
                 self._arrive_trip(then, now)
 
     def _do_stand(self, now: float, dt: float) -> None:
@@ -1679,6 +1807,10 @@ class Engine:
         if now >= self.state_until:
             if self.mind.event == "startled" and not self.reduced and now - self.mind.event_at < 20.0:
                 self.mind.feel("proud", now)  # a little pleased with the landing; the landing was the one settle
+            if self.nap_after_land and not self.reduced:
+                self.nap_after_land = False
+                self._enter("sleep", now)
+                return
             self._enter("sit" if self.reduced else "stand", now)
 
     def _do_hop(self, now: float, dt: float) -> None:

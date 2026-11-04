@@ -18,14 +18,15 @@ class FakeRunner:
     started: list["FakeRunner"] = []
 
     def __init__(
-        self, *, look, home, on_click, on_settle, on_died=None, on_card=None, roam_windows=True, ok=True, reduced=None,
-        reduced_reason="",
+        self, *, look, home, on_click, on_settle, on_died=None, on_card=None, roam_windows=True, stay=False, ok=True,
+        reduced=None, reduced_reason="",
     ):
         self.look, self.home, self.on_click, self.on_settle, self.on_died = look, home, on_click, on_settle, on_died
         self.on_card, self.roam_windows = on_card, roam_windows
         self.monitors: list = []
         self.cards: list = []
         self.roam_calls: list = []
+        self.stay, self.stay_calls, self.commands = stay, [], []
         self.reduced, self.reduced_reason = reduced, reduced_reason
         self.ok = ok
         self.calls: list[str] = []
@@ -49,6 +50,13 @@ class FakeRunner:
 
     def set_roam(self, on):
         self.roam_calls.append(on)
+
+    def set_stay(self, on):
+        self.stay_calls.append(on)
+
+    def command(self, name):
+        self.commands.append(name)
+        return True
 
 
 @pytest.fixture()
@@ -281,14 +289,14 @@ def test_the_overlay_follows_the_apps_resolved_motion_and_logs_it(over, caplog):
     runner = FakeRunner.started[0]
     assert runner.reduced is True and runner.reduced_reason == "app"
     assert any("overlay started" in r.getMessage() and "motion=still (app)" in r.getMessage() for r in caplog.records)
-    assert dc.DeskApi(over).panel_motion() == {"still": True, "reason": "app", "roam": True}
+    assert dc.DeskApi(over).panel_motion() == {"still": True, "reason": "app", "roam": True, "stay": False, "asleep": False, "figure": True}
 
 
 def test_a_full_answer_moves_and_no_answer_leaves_it_to_the_windows_flag(over):
     over.main_window.evaluate_js = _says(mode="full")
     over.set_main_hidden(True)
     assert FakeRunner.started[0].reduced is False
-    assert dc.DeskApi(over).panel_motion() == {"still": False, "reason": "", "roam": True}
+    assert dc.DeskApi(over).panel_motion() == {"still": False, "reason": "", "roam": True, "stay": False, "asleep": False, "figure": True}
     over.set_main_hidden(False)
     over.close()
     over.closing = False
@@ -428,6 +436,10 @@ def test_1658_the_panel_is_made_once_ahead_and_a_click_shows_it_with_one_placeme
     assert panel.calls.index(("show",)) > max(i for i, c in enumerate(panel.calls) if c[0] in ("resize", "move"))
 
 
+# The menu window is 248 wide since the 1670 menu rows (long labels); read it from the source.
+MENU_W = dc.PANEL_SIZES["menu"][0]
+
+
 def test_1658_the_pages_height_report_after_show_places_nothing_and_is_kept_for_next_time(over):
     over.set_main_hidden(True)
     runner = FakeRunner.started[0]
@@ -436,12 +448,12 @@ def test_1658_the_pages_height_report_after_show_places_nothing_and_is_kept_for_
     placed = list(panel.calls)
     api = dc.DeskApi(over)
     for _ in range(10):  # the owner's log: ten alternating placements in two seconds
-        api.set_size(208, 154, "menu")
+        api.set_size(MENU_W, 154, "menu")
     assert panel.calls == placed and over.size == dc.PANEL_SIZES["menu"]
     runner.on_click("left", (1000, 800, 200, 240), 96)  # closes
     panel.calls.clear()
     runner.on_click("left", (1000, 800, 200, 240), 96)
-    assert [c[1:] for c in panel.calls if c[0] == "resize"] == [(208, 154)]
+    assert [c[1:] for c in panel.calls if c[0] == "resize"] == [(MENU_W, 154)]
     assert _count(panel, "show") == 1 and _count(panel, "resize") == 1
 
 
@@ -452,5 +464,5 @@ def test_1658_a_note_opened_from_the_menu_is_still_a_real_resize_and_back(over):
     api = dc.DeskApi(over)
     api.set_size(320, 376, "note")
     assert panel.calls[-2][1:] == (320, 376)
-    api.set_size(208, 154, "menu")
-    assert panel.calls[-2][1:] == (208, 154)
+    api.set_size(MENU_W, 154, "menu")
+    assert panel.calls[-2][1:] == (MENU_W, 154)
