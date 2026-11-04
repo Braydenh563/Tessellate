@@ -1071,7 +1071,10 @@ function libraryActions(item) {
       }),
       //: A diagram's picture (DOCUMENTS_PLAN 22, R10): drawn in the frame on the press, by the lazy export file.
       ...(item.kind === "diagram" ? [["ph:file-svg Save as SVG", "svg"], ["ph:file-png Save as PNG", "png"], ["ph:image Copy as picture", "picture"]].map(([label, how]) =>
-        makeMenuItem(label, "", () => ensureModule("diagramEmbed").then((ok) => ok && diagramModel.embed.outDoc(item.id, how)))) : []),
+        makeMenuItem(label, "", async () => {
+          //: diagram-embed.js hangs itself on `diagramModel` (documents-mermaid.js, the library bundle), so that bundle comes first; opened from the Library on a fresh boot it is not there yet.
+          if ((await ensureModule("library")) && (await ensureModule("diagramEmbed"))) diagramModel.embed.outDoc(item.id, how);
+        })) : []),
       //: The shared "act on this" rows (INBOX 393): every object can be taken
       //: to the chat that answers about it.
       makeMenuItem("ph:graph Show in graph", "Open the graph centred on this document", () =>

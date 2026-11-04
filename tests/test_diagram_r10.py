@@ -50,3 +50,10 @@ def test_the_mmd_export_round_trips_byte_for_byte(ai_client):
 def test_the_mmd_download_is_the_stored_text():
     # The shelf's Download .mmd goes through the export route, which returns the row's content unchanged.
     assert "downloadFromApi(`/documents/${item.id}/export.md`" in LIBRARY
+
+
+def test_the_library_rows_load_the_bundle_that_defines_diagram_model_first():
+    # diagram-embed.js assigns diagramModel.embed; on a fresh boot only the library bundle defines diagramModel.
+    row = LIBRARY[LIBRARY.index("Save as SVG") : LIBRARY.index("Show in graph")]
+    assert row.index('ensureModule("library")') < row.index('ensureModule("diagramEmbed")')
+    assert "diagramModel" in (JS / "documents-mermaid.js").read_text(encoding="utf-8")
