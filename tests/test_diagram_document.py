@@ -85,11 +85,11 @@ def test_an_mmd_document_opens_in_blocks_and_its_view_is_never_stored():
     docs = (JS / "documents.js").read_text(encoding="utf-8")
     state = docs[docs.index("const docViewState = {") :]
     state = state[: state.index("\n};")]
-    assert 'type.ext === "mmd" && (mode === "split" || mode === "rendered")' in state and "type.previewable" in state
+    assert 'type.ext === "mmd" && ["split", "rendered", "canvas", "blocks"].includes(mode)' in state and "type.previewable" in state
     sync = docs[docs.index("function syncDocFileType(") :]
     sync = sync[: sync.index("\n  docCmSyncFileType();")]
-    assert 'setDocView(type.ext === "mmd" ? "rendered" : "source")' in sync and "docViewState.allows(type, docView)" in sync
-    assert '"Blocks"' in sync and "A diagram has Blocks, Split and Source." in sync
+    assert 'setDocView(type.ext === "mmd" ? "canvas" : "source")' in sync and "docViewState.allows(type, docView)" in sync
+    assert "A diagram has Canvas, Blocks, Split and Source." in sync
     setter = docs[docs.index("function setDocView(") :]
     setter = setter[: setter.index("\n}\n")]
     # held means "not written to the prefs a markdown document reads".

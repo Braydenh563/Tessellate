@@ -88,6 +88,7 @@
       }
       buttons.out.disabled = state.scale <= math.MIN * f * 1.001;
       buttons.in.disabled = state.scale >= math.MAX * f * 0.999;
+      for (const after of fig.onzoom || []) after();
     };
     //: Zoom to `next` keeping the point under (cx, cy) where it is.
     const zoomTo = (next, cx, cy) => {

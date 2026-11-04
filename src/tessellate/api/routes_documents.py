@@ -218,7 +218,8 @@ def _summary(document: Document) -> dict:
         "words": cjk.word_count(document.content),
         #: What describes a code file better than its words (1031 CE8: "19
         #: words just now" for a script); the card says lines and type.
-        "lines": (document.content or "").count("\n") + 1 if document.content else 0,
+        #: A last newline ends a line, it does not start one: the status bar counts this way, so the two agree.
+        "lines": (document.content or "").count("\n") + (0 if (document.content or "").endswith("\n") else 1) if document.content else 0,
         "preview": _preview(document.content),
         # Normalised on the way out as well as in: a row written before this
         # column existed, or by a restore from an older backup, can hold
