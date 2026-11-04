@@ -2125,7 +2125,11 @@ def _attach_desk_companion(webview, window, tray_icon):  # noqa: ANN001
             window.evaluate_js(script)
 
     return desk_companion.attach(
-        webview, window, _open_main, lambda: f"http://{page_host()}:{PORT}/desktop-companion.html"
+        webview,
+        window,
+        _open_main,
+        lambda: f"http://{page_host()}:{PORT}/desktop-companion.html",
+        on_change=getattr(tray_icon, "update_menu", None),
     )
 
 

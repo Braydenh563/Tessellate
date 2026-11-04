@@ -341,6 +341,34 @@ def raise_on_desktop(window: Any, rect: tuple[int, int, int, int] | None = None)
         return False
 
 
+def place_on_screen(window: Any, rect: tuple[int, int, int, int]) -> bool:
+    """Windows only: move and size the window to a logical `rect`, set in
+    physical pixels at the window's own dpi, without a show or a z-order change."""
+    if sys.platform != "win32":
+        return False
+    handle = window_handle(window)
+    if not handle:
+        return False
+    try:
+        import ctypes
+
+        user32 = ctypes.windll.user32
+        try:
+            dpi = int(user32.GetDpiForWindow(handle)) or 96
+        except Exception:  # noqa: BLE001 - before Windows 10 1607
+            dpi = _system_dpi()
+        x, y, width, height = physical_rect(rect, dpi)
+        swp_nozorder = 0x0004
+        user32.SetWindowPos(handle, 0, x, y, width, height, (SWP_PLACE & ~0x0040) | swp_nozorder)
+        timer = threading.Timer(0.5, _log_placed, (handle, (x, y, width, height), dpi))
+        timer.daemon = True
+        timer.start()
+        return True
+    except Exception:  # noqa: BLE001
+        logger.debug("could not place the companion window", exc_info=True)
+        return False
+
+
 def _log_placed(handle: int, want: tuple[int, int, int, int], dpi: int) -> None:
     """Log the window's real rectangle against the one asked for (physical pixels)."""
     try:
@@ -451,6 +479,11 @@ class DeskCompanion:
         self.size = REST_SIZE
         self.corner: tuple[int, int] | None = None
         self.shown = False
+        #: The tray's own refresh (pystray `Icon.update_menu`): its menu is
+        #: built once on Windows, so a tick it shows is only as fresh as the
+        #: last rebuild (INBOX 1642: hidden from its own menu, still ticked).
+        self.on_change: Callable[[], Any] | None = None
+        self._ticked: bool | None = None
 
     # --- where it is -----------------------------------------------------------
 
@@ -477,8 +510,7 @@ class DeskCompanion:
             corner = self.corner or self._home()
             self.corner = clamp_corner(corner, self.size, _screen_area(self.webview, corner))
             if self.window is not None:
-                self.window.resize(width, height)
-                self.window.move(*self.top_left())
+                self._place()
             return self.size
 
     def move_to(self, x: int, y: int) -> bool:
@@ -487,7 +519,7 @@ class DeskCompanion:
                 return False
             corner = (x + self.size[0], y + self.size[1])
             self.corner = clamp_corner(corner, self.size, _screen_area(self.webview, corner))
-            self.window.move(*self.top_left())
+            self._place()
             return True
 
     def remember_place(self) -> bool:
@@ -542,7 +574,11 @@ class DeskCompanion:
             logger.warning("the desktop companion is still busy with its last show or hide; this one is skipped")
             return
         try:
-            due = enabled() and self.main_hidden and not self.closing
+            on = enabled()
+            if on != self._ticked:
+                self._ticked = on
+                self._refresh_tray()
+            due = on and self.main_hidden and not self.closing
             #: One line a step (INBOX 1633: the owner could not see it; the log says where it stopped).
             logger.info("desk companion: due=%s (on=%s, window away=%s, shown=%s)", due, enabled(), self.main_hidden, self.shown)
             try:
@@ -584,6 +620,25 @@ class DeskCompanion:
             logger.warning("the companion could not open the app window", exc_info=True)
             return False
 
+    def _place(self) -> None:
+        """Size and place it. On Windows in physical pixels straight to the
+        window (pywebview's `resize` and `move` scale them, and WinForms may
+        scale the size again: the owner's log asked 224 by 304 and read back
+        232 by 233, INBOX 1633); elsewhere pywebview's own calls."""
+        rect = (*self.top_left(), *self.size)
+        if place_on_screen(self.window, rect):
+            return
+        self.window.resize(*self.size)
+        self.window.move(*rect[:2])
+
+    def _refresh_tray(self) -> None:
+        if self.on_change is None:
+            return
+        try:
+            self.on_change()
+        except Exception:  # noqa: BLE001 - a stale tick beats a failed hide
+            logger.debug("could not refresh the tray menu", exc_info=True)
+
     def turn_off(self) -> bool:
         """Its own Hide: off until the tray item or Settings turns it on again."""
         _set_pref(PREF, False)
@@ -616,6 +671,7 @@ def attach(
     url: Callable[[], str],
     *,
     transparent: bool | None = None,
+    on_change: Callable[[], Any] | None = None,
 ) -> DeskCompanion:
     """Make the companion for `main_window` and follow it into and out of the
     tray. `transparent` defaults to every platform but Windows, where a frameless
@@ -628,6 +684,7 @@ def attach(
         url,
         transparent=(sys.platform != "win32") if transparent is None else transparent,
     )
+    companion.on_change = on_change
     followed = _follow(main_window, companion)
     with _lock:
         _active = companion

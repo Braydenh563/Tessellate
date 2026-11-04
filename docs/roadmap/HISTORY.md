@@ -52389,6 +52389,8 @@ From DOCUMENTS_PLAN.md and WHITEBOARD_PLAN.md "Placed from INBOX, 2026-11-03", b
 
 1613. **Owner, 2026-11-03 (screenshots, Diagram builder):** "those shape icons are incorrect and I feel I should be able to click the shape on each object row and be able to change it". The row's shape menu (Box, Rounded, Pill, Circle, Decision, Hexagon) shows an empty checkbox beside every shape and a tick on the chosen one, not the shapes; the row's own shape swatch (a rounded box beside "Step") does nothing on a click. Recommendation (taken): each menu row draws its shape (a small outline of that shape, the chosen one marked by the menu's check recipe), and the row's swatch is the button that opens that menu, with its shape's name as its label; one test over every shape that the swatch and the menu icon match the drawn node.
 
+1642. **Owner, 2026-11-04 (screenshot: the tray menu, "Show desktop companion" still ticked after hiding the companion from its own menu):** "also if I hide the desktop companion, it should update in the system tray as well". Recommendation (taken): the tray item's `checked` reads the preference each time the menu opens, and Hide from the companion's menu writes that preference.
+
 ## Moved from the plans, 2026-11-04 (DOCUMENTS_PLAN 22, R1 and R2)
 
 Built: R1 in 324f174 (merge be41265), R2 in 4d3afd9 and 455d3c5 (merge 606730c); numbers in `agent-remaining/diagram-r1-1104.md` and `diagram-r2-1104.md`.

@@ -664,3 +664,31 @@ def test_the_window_asks_for_a_minimum_no_wider_than_its_resting_size(made, pref
 def test_the_place_read_back_never_raises_where_there_is_no_win32():
     # A log line only: off Windows (no ctypes.windll) it logs at debug and returns.
     assert dc._log_placed(1, (0, 0, 224, 304), 192) is None
+
+
+def test_hiding_it_from_its_own_menu_refreshes_the_tray_tick(made, prefs):
+    # INBOX 1642: pystray builds the Windows menu once, so the tick stayed on
+    # after Hide until the tray was told to rebuild it.
+    refreshed = []
+    made.on_change = lambda: refreshed.append(dc.enabled())
+    prefs[dc.PREF] = True
+    made.main_window.hide()
+    made.webview.made[0].options["js_api"].hide_companion()
+    assert refreshed[-1] is False
+    calls = len(refreshed)
+    made.sync()
+    assert len(refreshed) == calls  # no rebuild when nothing changed
+
+
+def test_a_panel_resize_goes_to_the_window_in_physical_pixels_where_it_can(made, prefs, monkeypatch):
+    # INBOX 1633: pywebview's resize scaled the size again on a 200% display.
+    placed = []
+    monkeypatch.setattr(dc, "place_on_screen", lambda window, rect: placed.append(rect) or True)
+    prefs[dc.PREF] = True
+    made.main_window.hide()
+    window = made.webview.made[0]
+    made.resize(208, 312)
+    assert placed and placed[-1][2:] == (208, 312)
+    assert dc.place_on_screen(window, (0, 0, 1, 1)) is True  # patched
+    monkeypatch.undo()
+    assert dc.place_on_screen(window, (0, 0, 1, 1)) is False  # off Windows
