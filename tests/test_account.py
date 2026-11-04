@@ -131,6 +131,18 @@ def test_lock_all_ends_every_session(client):
     assert client.get("/auth/account", headers=headers).status_code == 401
 
 
+def test_lock_all_also_kills_a_reminder_notification_token(client):
+    """SEC-A5: a notification left on screen cannot act after the panic button."""
+    from tessellate.core import deps, reminder_token
+
+    headers = _setup(client)
+    data_dir = deps.get_config().data_dir
+    token = reminder_token.mint(7, now=1_000_000, data_dir=data_dir)["token"]
+    assert reminder_token.verify(token, 7, "done", now=1_000_001, data_dir=data_dir)
+    assert client.post("/auth/lock-all", headers=headers).status_code == 200
+    assert not reminder_token.verify(token, 7, "done", now=1_000_001, data_dir=data_dir)
+
+
 def test_rotate_vault_key_invalidates_old_tokens_and_unlock_still_works(client):
     headers = _setup(client)
     other = client.post("/auth/unlock", json={"password": "first-pass"}).json()

@@ -2269,6 +2269,8 @@ def reset(
 def lock_all(request: Request, response: Response) -> dict:
     """End every session, including this one. The panic button."""
     ended = len(_active_tokens)
+    # SEC-A5: as `/auth/lock`, a notification left on screen must not act.
+    reminder_token.rotate(get_config().data_dir)
     _active_tokens.clear()
     _media_tickets.clear()
     _revoke_media(request, response)
