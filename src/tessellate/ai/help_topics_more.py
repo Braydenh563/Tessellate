@@ -3209,7 +3209,10 @@ MORE_TOPICS.extend([
             "opens the builder empty, and Done saves it as a new diagram file. Cancel changes nothing. "
             "On a flowchart, the picture outlines the block you point at and the ones picked. "
             "You can drag a shape from the Add strip onto the picture (onto a block to add it after that block and connect them), "
-            "drag a block on the picture to move it, and hold Shift and drag on empty space to pick the blocks you touch."
+            "drag a block on the picture to move it, and hold Shift and drag on empty space to pick the blocks you touch. "
+            "Drop onto a group's box to add or move into it. Point at a block and drag the round handle on its right edge to another block "
+            "or a group to connect them, or to empty space for a new connected block (press the handle, then click, if you cannot drag; Escape cancels). "
+            "Double-click a block, an arrow or a group's title to rename it where it sits."
         ),
         "badge": {"label": "Documents", "tab": "documents"},
     },

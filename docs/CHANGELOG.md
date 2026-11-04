@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Diagram builder: connect and rename on the canvas (INBOX 1621, R8c): point at a block and drag the round handle on its right edge to another block or a group to connect them, or to empty space for a new connected block; drop a shape onto a group's box to put it inside; double-click a block, an arrow or a group's title to rename it where it sits, and a second branch off a decision asks for its words the same way.
 - Diagram builder: the canvas takes gestures (INBOX 1621, R8b): drag a shape from the Add strip onto a block to add it after that block and connect them, or onto empty space to add an unconnected one; drag a block on the picture to move it (onto another block puts it after that one, onto empty space at the end); Shift and drag on empty space picks the blocks it touches. Feedback is on the overlay only, and the picture redraws once, on the drop.
 - Security: a private note put back to an earlier version marks the pictures that version embeds, so a locked session cannot fetch them (the SEC-A2 follow-up's restore gap).
 - Atlas at rest moves where you can see it (INBOX 1659): the nebula stream flows and turns (about 1 px of travel to 4), the skirt and tail sway wider, and the resting tail takes a new shape every 5 to 9 s instead of 9 to 18; all still on the compositor.

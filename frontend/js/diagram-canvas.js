@@ -10,6 +10,7 @@
   const overlay = () => diagramModel.overlay.math;
   const math = {
     nodeAt: (hit, img, x, y) => overlay().at(hit, img, x, y),
+    groupAt: (hit, img, x, y) => overlay().clusterAt(hit, img, x, y),
     //: The ids of the nodes a client rectangle touches (corners in any order), in drawing order.
     sweep: (hit, img, rect) => {
       const l = Math.min(rect.left, rect.right);
@@ -24,6 +25,7 @@
   };
 
   const imageOf = (S) => S.fig.querySelector(".md-mermaid-img");
+  const groupBox = (S, id) => [...S.root.querySelectorAll(".dgm-cluster")].find((b) => b.dataset.group === id) || null;
   const boxOf = (S, id) => [...S.root.querySelectorAll(".dgm-box")].find((b) => b.dataset.node === id) || null;
 
   //: The node under a press on the picture, for the drag seed: `{ S, id, box }`, or null (a modified press, a press off a node).
@@ -47,6 +49,13 @@
     const layer = stage.querySelector(".dgm-overlay");
     const img = imageOf(S);
     const id = img && S.hit ? math.nodeAt(S.hit, img.getBoundingClientRect(), g.x, g.y) : "";
+    //: Over a group's box and no node: into that group (R8c). Not into a dragged group, or into one inside it.
+    const cl = !id && img && S.hit ? math.groupAt(S.hit, img.getBoundingClientRect(), g.x, g.y) : "";
+    if (cl && h.ops.group(S.m, cl)) {
+      const held = key && S.picked?.size > 1 && S.picked.has(key) ? [...S.picked] : key ? [key] : [];
+      if (held.some((p) => p[0] === "g" && h.ops.inside(S.m, cl, p.slice(2)))) return null;
+      return { canvas: true, op: "into", key: h.ops.key("g", cl), group: cl, before: null, card: groupBox(S, cl) };
+    }
     if (!id || !h.ops.node(S.m, id)) return { canvas: true, op: "into", group: null, before: null, card: layer };
     const target = h.ops.key("n", id);
     const set = key && S.picked?.size > 1 && S.picked.has(key) ? [...S.picked] : key ? [key] : [];

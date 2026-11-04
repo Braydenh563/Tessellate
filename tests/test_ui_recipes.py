@@ -7442,3 +7442,15 @@ def test_a_split_inside_a_dialog_or_page_is_the_sidebar_handle_on_a_grid():
         if js.name.startswith("diagram-") and js.name != "diagram-split.js":
             assert 'className = "sidebar-resize' not in js.read_text(encoding="utf-8"), js.name
     assert "A split inside a dialog or page" in (ROOT / "docs" / "DESIGN.md").read_text(encoding="utf-8")
+
+
+def test_the_edge_handle_and_the_rename_input_are_the_recipe():
+    """DESIGN.md, "An edge handle and an input on a picture": a smallButton on the overlay, tokens only, a 44px touch target."""
+    edges = (ROOT / "frontend" / "js" / "diagram-edges.js").read_text(encoding="utf-8")
+    css = (ROOT / "frontend" / "css" / "diagram-lazy.css").read_text(encoding="utf-8")
+    assert 'smallButton("ph:arrow-bend-down-right"' in edges and "dgm-rename" in edges and "dgm-rubber" in edges
+    rule = css[css.index(".dgm-rubber {") : css.index("}", css.index(".dgm-rubber {"))]
+    assert "var(--accent)" in rule
+    handle = css[css.index(".dgm-handle {") : css.index("}", css.index(".dgm-handle {"))]
+    assert "var(--modal-bg)" in handle and "var(--shadow-md)" in handle
+    assert "An edge handle and an input on a picture" in (ROOT / "docs" / "DESIGN.md").read_text(encoding="utf-8")

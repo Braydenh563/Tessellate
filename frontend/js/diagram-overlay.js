@@ -10,18 +10,27 @@
   //: The pure half (tested under node). `img` is the image's rectangle, `origin` the overlay's, both client coordinates.
   const math = {
     //: Each node's box in the overlay's own pixels, from its drawing units.
-    place: (hit, img, origin) => {
-      if (!hit || !img.width || !img.height) return [];
+    place: (hit, img, origin, list = hit?.boxes) => {
+      if (!hit || !list || !img.width || !img.height) return [];
       const [vx, vy, vw, vh] = hit.vb;
       const sx = img.width / vw;
       const sy = img.height / vh;
-      return hit.boxes.map((b) => ({
+      return list.map((b) => ({
         id: b.id,
         x: img.left - origin.left + (b.x - vx - b.w / 2) * sx,
         y: img.top - origin.top + (b.y - vy - b.h / 2) * sy,
         w: b.w * sx,
         h: b.h * sy,
       }));
+    },
+    //: The innermost group under a client point, or "" (a group inside a group is the smaller box).
+    clusterAt: (hit, img, px, py) => {
+      if (!hit?.clusters || !img.width || !img.height) return "";
+      const [vx, vy, vw, vh] = hit.vb;
+      const x = vx + ((px - img.left) / img.width) * vw;
+      const y = vy + ((py - img.top) / img.height) * vh;
+      const over = hit.clusters.filter((b) => Math.abs(x - b.x) <= b.w / 2 && Math.abs(y - b.y) <= b.h / 2);
+      return over.sort((a, b) => a.w * a.h - b.w * b.h)[0]?.id || "";
     },
     //: The id of the node under a client point, or "".
     at: (hit, img, px, py) => {
@@ -42,6 +51,7 @@
     layer.setAttribute("aria-hidden", "true");
     stage.append(layer);
     const boxes = new Map();
+    const groups = new Map();
     let hover = "";
 
     //: The picked ids: the primary block and every block of the pick, as the list marks them.
@@ -57,6 +67,24 @@
         box.classList.toggle("hover", id === hover);
       }
     };
+    //: One element per box of a list, kept by id; a group's lies under the nodes' (styled lower).
+    const sync = (found, kept, attr, extra) => {
+      const live = new Set(found.map((b) => b.id));
+      for (const [id, box] of kept) if (!live.has(id)) box.remove(), kept.delete(id);
+      for (const b of found) {
+        let box = kept.get(b.id);
+        if (!box) {
+          box = document.createElement("span");
+          box.className = "dgm-box" + extra;
+          box.dataset[attr] = b.id;
+          layer.append(box);
+          kept.set(b.id, box);
+        }
+        box.style.transform = `translate(${b.x}px, ${b.y}px)`;
+        box.style.width = `${b.w}px`;
+        box.style.height = `${b.h}px`;
+      }
+    };
     const draw = () => {
       const img = fig.querySelector(".md-mermaid-img");
       //: Over the figure's padding box, so a box that scrolls out of the pane is clipped with the picture.
@@ -65,21 +93,9 @@
       layer.style.width = `${fig.clientWidth}px`;
       layer.style.height = `${fig.clientHeight}px`;
       const found = img && S.hit ? math.place(S.hit, img.getBoundingClientRect(), layer.getBoundingClientRect()) : [];
-      const live = new Set(found.map((b) => b.id));
-      for (const [id, box] of boxes) if (!live.has(id)) box.remove(), boxes.delete(id);
-      for (const b of found) {
-        let box = boxes.get(b.id);
-        if (!box) {
-          box = document.createElement("span");
-          box.className = "dgm-box";
-          box.dataset.node = b.id;
-          layer.append(box);
-          boxes.set(b.id, box);
-        }
-        box.style.transform = `translate(${b.x}px, ${b.y}px)`;
-        box.style.width = `${b.w}px`;
-        box.style.height = `${b.h}px`;
-      }
+      const rect = img && S.hit ? img.getBoundingClientRect() : null;
+      sync(rect ? math.place(S.hit, rect, layer.getBoundingClientRect(), S.hit.clusters) : [], groups, "group", " dgm-cluster");
+      sync(found, boxes, "node", "");
       mark();
     };
 

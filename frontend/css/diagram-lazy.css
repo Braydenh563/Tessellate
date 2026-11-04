@@ -1123,3 +1123,65 @@
   background: var(--accent-soft);
   pointer-events: none;
 }
+
+/* Groups, the edge handle and the in-place input (diagram-overlay.js, diagram-edges.js; R8c). A group's box lies under the
+   nodes'; the handle, the input and the rubber band are the only parts of the overlay that take a press. */
+.dgm-box.dgm-cluster {
+  z-index: 0;
+}
+
+.dgm-box.dgm-cluster.dgm-target {
+  border-color: var(--accent);
+}
+
+.dgm-handle {
+  position: absolute;
+  inset: 0 auto auto 0;
+  z-index: 2;
+  inline-size: calc(var(--space-6) * 1.5);
+  block-size: calc(var(--space-6) * 1.5);
+  padding: 0;
+  border-radius: var(--radius-pill);
+  background: var(--modal-bg);
+  box-shadow: var(--shadow-md);
+  pointer-events: auto;
+  touch-action: none;
+  cursor: crosshair;
+}
+
+.dgm-handle.hidden {
+  display: none;
+}
+
+.dgm-handle[aria-pressed="true"] {
+  background: var(--accent-soft);
+}
+
+@media (pointer: coarse) {
+  .dgm-handle {
+    inline-size: 44px;
+    block-size: 44px;
+  }
+}
+
+.dgm-rubber {
+  position: absolute;
+  inset: 0 auto auto 0;
+  block-size: 2px;
+  transform-origin: 0 50%;
+  background: var(--accent);
+  pointer-events: none;
+}
+
+.dgm-rubber.hidden {
+  display: none;
+}
+
+.dgm-rename {
+  position: absolute;
+  inset: 0 auto auto 0;
+  z-index: 2;
+  box-sizing: border-box;
+  inline-size: 120px;
+  pointer-events: auto;
+}

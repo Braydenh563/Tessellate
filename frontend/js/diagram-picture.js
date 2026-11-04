@@ -38,7 +38,34 @@
         h: num(rect, "height") || (ys.length ? Math.max(...ys) - Math.min(...ys) : 0) || r || span?.[1] || 40,
       });
     }
-    return found.length ? { vb, boxes: found } : null;
+    return found.length ? { vb, boxes: found, ...extras(svg) } : null;
+  }
+
+  //: The groups' boxes and the arrows' midpoints (R8c), in the same units and the same `{id, x, y, w, h}` shape (x, y the centre;
+  //: an arrow has no size). A group is Mermaid's `cluster` group, its id the picture's own id then the subgraph's; an arrow is
+  //: its path with the id Mermaid gives it, `L_<from>_<to>_<n>`, placed at the middle point of the path.
+  function extras(svg) {
+    const lead = /<svg\b[^>]*\bid="([^"]+)"/.exec(svg)?.[1];
+    const clusters = [];
+    for (const g of svg.matchAll(/<g\b[^>]*\bclass="cluster"[^>]*>\s*<rect\b[^>]*>/g)) {
+      const id = /\bid="([^"]+)"/.exec(g[0])?.[1];
+      const rect = g[0].slice(g[0].indexOf("<rect"));
+      const [x, y, w, h] = ["x", "y", "width", "height"].map((name) => Number(new RegExp("\\s" + name + '="(-?[\\d.]+)"').exec(rect)?.[1]));
+      if (id && [x, y, w, h].every(Number.isFinite)) clusters.push({ id: lead && id.startsWith(lead + "-") ? id.slice(lead.length + 1) : id, x: x + w / 2, y: y + h / 2, w, h });
+    }
+    const edges = [];
+    for (const p of svg.matchAll(/<path\b[^>]*\bdata-id="(L_[^"]+)"[^>]*>/g)) {
+      const d = /\sd="([^"]+)"/.exec(p[0])?.[1].match(/-?\d*\.?\d+/g)?.map(Number) || [];
+      const pts = [];
+      for (let i = 0; i + 1 < d.length; i += 2) pts.push([d[i], d[i + 1]]);
+      //: Half way along the points' own polyline (a corner's control point counts as a point).
+      const len = pts.slice(1).map((q, i) => Math.hypot(q[0] - pts[i][0], q[1] - pts[i][1]));
+      let rest = len.reduce((a, b) => a + b, 0) / 2;
+      let i = 0;
+      while (i < len.length - 1 && rest > len[i]) rest -= len[i++];
+      if (pts.length > 1) edges.push({ id: p[1], x: pts[i][0] + ((pts[i + 1][0] - pts[i][0]) * rest) / (len[i] || 1), y: pts[i][1] + ((pts[i + 1][1] - pts[i][1]) * rest) / (len[i] || 1), w: 0, h: 0 });
+    }
+    return { clusters, edges };
   }
 
   //: The id of the node drawn under a press on the picture, or "". Not a drag: the picture is not a handle.
