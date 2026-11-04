@@ -969,8 +969,19 @@ if mm_port_open "$MM_PORT"; then
     mm_splash_done
     exit 0
   fi
-  mm_fail "Port $MM_PORT is already in use by another program." \
-          "Close it, or start on another port: ./start.sh --port 8010"
+  # INBOX 1641: the next free port of the 20 above it, for this launch.
+  MM_PORT_WAS="$MM_PORT"
+  for step in $(seq 1 20); do
+    MM_PORT=$((MM_PORT_WAS + step))
+    mm_port_open "$MM_PORT" || break
+  done
+  if mm_port_open "$MM_PORT"; then
+    mm_fail "Port $MM_PORT_WAS and the next 20 are in use by other programs." \
+            "Close one, or start on another port: ./start.sh --port 9000"
+  fi
+  export TESSELLATE_PORT="$MM_PORT"
+  MM_URL="${MM_URL%:"$MM_PORT_WAS"}:$MM_PORT"
+  echo " ${TEAL}[..]${RESET} Port $MM_PORT_WAS is in use by another program, so this time Tessellate uses port $MM_PORT."
 fi
 
 MM_FREE_KB="$(df -Pk "$(dirname "$MM_DATA_DIR")" 2>/dev/null | awk 'NR==2 {print $4}')"

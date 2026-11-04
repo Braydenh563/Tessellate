@@ -52,7 +52,7 @@ def test_bat_keeps_crlf_and_no_em_dash():
 
 def test_sh_waits_for_its_own_copy_and_asks_before_stopping():
     start = SH.index("A Tessellate that holds the port")
-    pre = SH[start:SH.index('mm_fail "Port $MM_PORT is already in use', start)]
+    pre = SH[start:SH.index("INBOX 1641: the next free port", start)]
     assert "mm_lock_pid" in pre and "read -r -t 60" in pre
     assert pre.index("read -r -t 60") < pre.index('kill "$MM_STUCK_PID"')
     assert "mm_lock_pid()" in SH and "kill -0" in SH
@@ -64,3 +64,13 @@ def test_health_answers_on_the_event_loop():
     app = (ROOT / "src/tessellate/api/app.py").read_text(encoding="utf-8")
     i = app.index('@app.get("/health"')
     assert "async def health(" in app[i:i + 120]
+
+
+def test_a_port_held_by_another_program_moves_to_the_next_free_one():
+    """INBOX 1641: "it should be able to auto go to another port"."""
+    pre = BAT[BAT.index("--- Preflight"):BAT.index(":preflight_disk_done")]
+    assert pre.index("call :port_next_free") < pre.index("goto :fail", pre.index("call :port_next_free"))
+    step = BAT[BAT.index("\n:port_next_free\n"):BAT.index("\n:port_pid_is_ours\n")]
+    assert "set /a MM_PORT=MM_PORT_WAS+%%P" in step and "call :port_listening" in step
+    assert 'set "TESSELLATE_PORT=!MM_PORT!"' in step and "MM_URL" in step and "tasklist" in step
+    assert "seq 1 20" in SH and 'export TESSELLATE_PORT="$MM_PORT"' in SH

@@ -386,9 +386,10 @@ set "MM_PORT_CANCELLED="
 if defined MM_PORT_STUCK call :port_stop_stuck
 if defined MM_PORT_CANCELLED goto :cancelled
 if defined MM_PORT_MINE goto :already_running
+if defined MM_PORT_BUSY call :port_next_free
 if defined MM_PORT_BUSY (
-  set "MM_FAIL_MSG=Port !MM_PORT! is already in use by another program."
-  set "MM_FAIL_FIX=Close it, or start on another port: start.bat --port 8010"
+  set "MM_FAIL_MSG=Port !MM_PORT! and the next 20 are in use by other programs."
+  set "MM_FAIL_FIX=Close one, or start on another port: start.bat --port 9000"
   goto :fail
 )
 
@@ -1388,6 +1389,36 @@ if !MM_PORT_WAITS! EQU 1 echo  !ESC![1;38;5;73m[..]!ESC![0m Tessellate is alread
 call :log "port !MM_PORT! held by Tessellate (pid !MM_PORT_PID!), not answering, wait !MM_PORT_WAITS!"
 ping -n 3 127.0.0.1 >nul 2>nul
 goto :port_check_again
+
+REM  The port is held by something that is not a Tessellate answering on it
+REM  (INBOX 1641, the owner: "it should be able to auto go to another port").
+REM  The next free one of the 20 above it is taken for this launch, and what
+REM  held the old one goes to the log (image name and pid), so a copy that
+REM  outlived its window can be found. The app and the browser read the new
+REM  port from TESSELLATE_PORT and MM_URL.
+:port_next_free
+set "MM_PORT_WAS=!MM_PORT!"
+set "MM_PORT_HOLDER="
+for /f "tokens=1" %%I in ('tasklist /FI "PID eq !MM_PORT_PID!" /NH 2^>nul ^| findstr /V /C:"INFO:"') do if not defined MM_PORT_HOLDER set "MM_PORT_HOLDER=%%I"
+call :log "port !MM_PORT_WAS! held by !MM_PORT_HOLDER! (pid !MM_PORT_PID!), looking for a free port"
+for /l %%P in (1,1,20) do if defined MM_PORT_BUSY (
+  set /a MM_PORT=MM_PORT_WAS+%%P
+  call :port_listening
+)
+if defined MM_PORT_BUSY (
+  set "MM_PORT=!MM_PORT_WAS!"
+  exit /b 0
+)
+set "TESSELLATE_PORT=!MM_PORT!"
+call set "MM_URL=%%MM_URL::!MM_PORT_WAS!=:!MM_PORT!%%"
+echo  !ESC![1;38;5;73m[..]!ESC![0m Port !MM_PORT_WAS! is in use by another program, so this time Tessellate uses port !MM_PORT!.
+call :log "port !MM_PORT_WAS! busy, using !MM_PORT!"
+exit /b 0
+
+:port_listening
+set "MM_PORT_BUSY="
+for /f "tokens=5" %%L in ('netstat -ano -p TCP 2^>nul ^| findstr /C:":!MM_PORT! " ^| findstr /I /C:"LISTENING"') do set "MM_PORT_BUSY=1"
+exit /b 0
 
 REM  Whether MM_PORT_PID is this app: the notebook's own instance.lock names
 REM  it (one line of JSON, pid first), or its command line says tessellate.
