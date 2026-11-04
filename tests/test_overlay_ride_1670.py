@@ -294,3 +294,31 @@ def test_no_state_flip_flops_inside_200_ms_with_the_pointer_about(look: str) -> 
                 (a, b, c) for (ta, a), (tb, b), (tc, c) in zip(log, log[1:], log[2:]) if tc - ta < 0.2 and a == c and a != b
             ]
             assert not flips, (look, gait, seed, flips[:3])
+
+
+# --- review round: the apex of a vertical throw, and sharper flicker bars ---------------------
+
+def _fly_log(look: str, gait: str, vx: float, vy: float, ticks: int = 400) -> list[tuple[str, tuple[int, int], tuple[float, float]]]:
+    """Throw from mid-screen and record (frame, window size, y) at 60 fps until it lands or hangs."""
+    e, s = make(look, gait)
+    e.y = 600.0
+    e._start_fly(vx, vy)
+    t, rows = 0.0, []
+    for _ in range(ticks):
+        t += 1 / 60
+        o = e.update(t)
+        if e.state not in ("fly", "hop"):
+            break
+        rows.append((o.frame, e.size, (o.x, o.y)))
+    return rows
+
+
+@pytest.mark.parametrize("look", LOOKS)
+@pytest.mark.parametrize("gait", ["walk", "float"])
+@pytest.mark.parametrize("vx", [0.0, 40.0, -300.0])
+def test_a_straight_up_throw_tumbles_through_the_apex_without_flipping_to_the_held_pose(look, gait, vx) -> None:
+    rows = _fly_log(look, gait, vx, -1100.0)
+    kinds = ["spin" if f.startswith("spin") else f for f, _s, _p in rows]
+    # a held run between two tumbles, however short, is the flip (and it resizes the window)
+    flips = [i for i in range(1, len(kinds) - 1) if kinds[i] == "held" and "spin" in kinds[:i] and "spin" in kinds[i:]]
+    assert not flips, (look, gait, vx, flips[:3])

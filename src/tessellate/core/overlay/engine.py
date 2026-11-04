@@ -109,6 +109,10 @@ BONK_FOR = 0.3
 #: Radians per second of spin at full throw speed, and the angles the frames come in.
 #: Slower than this (px per second at 96 dpi) a thrown figure stops tumbling.
 FLY_SPIN_MIN = 60.0
+#: It lays the tumble down only after being this slow for this long (s): a vertical throw is
+#: under FLY_SPIN_MIN for a few frames at its apex, and the held pose (a smaller canvas) in
+#: between flickered the window's size and offset (review of INBOX 1670).
+FLY_REST_DWELL = 0.3
 SPIN_RATE = 9.0
 SPIN_STEPS = 8
 SPIN_FRAMES_ENGINE = tuple(f"spin{i}" for i in range(SPIN_STEPS))
@@ -299,6 +303,7 @@ class Engine:
         self.bonk_until = 0.0
         self.angle = 0.0
         self.spin_dir = 1
+        self.slow_for = 0.0  # seconds a thrown figure has been under FLY_SPIN_MIN
         self.heading = 0.0
         self.goal: tuple[float, float] | None = None
         self.then = "stand"
@@ -356,7 +361,7 @@ class Engine:
     def _fly_frame(self) -> str:
         """What a thrown figure shows: the tumble while it has speed, a limp upright pose
         (the held one, same foot offset) once it drifts to rest, so the settle is no step."""
-        if math.hypot(self.vx, self.vy) < FLY_SPIN_MIN * self._scale():
+        if self.slow_for >= FLY_REST_DWELL:
             return "held"
         return f"spin{int(round(self.angle / (2 * math.pi / SPIN_STEPS))) % SPIN_STEPS}"
 
@@ -1098,6 +1103,7 @@ class Engine:
         self.x += self.vx * dt
         self.y += self.vy * dt
         speed = math.hypot(self.vx, self.vy)
+        self.slow_for = self.slow_for + dt if speed < FLY_SPIN_MIN * scale else 0.0
         self.angle += self.spin_dir * SPIN_RATE * min(1.0, speed / (THROW_MAX * 0.4 * scale)) * dt
         # the walls are of what is drawn: the tumble's widest frame, not the window around it
         ux0, ux1, uy0, uy1 = self._ride_limits("fly")
@@ -1197,6 +1203,7 @@ class Engine:
 
     def _start_fly(self, vx: float, vy: float) -> None:
         self.vx, self.vy = vx, vy
+        self.slow_for = 0.0
         self.y += self._dy(self._frame(self.now)) - self._dy("spin0")  # drawn where it was
         self.spin_dir = 1 if vx >= 0 else -1
         if abs(vx) > 1:
