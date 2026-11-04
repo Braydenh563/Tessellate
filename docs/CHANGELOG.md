@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Desktop companion: placed in logical pixels at each monitor's own scale, so on a scaled display (125%, 150%) it sits in the corner instead of past the screen's edge (INBOX 1633).
 - Diagram builder: each shape in the shape menu draws itself with a check on the chosen one, and the row's shape swatch is a button that opens it (INBOX 1613, DOCUMENTS_PLAN 22 R1).
 - Dashboard digest: the generated week has a "This week" label, its source line is a footnote, and the card scrolls to it, so it no longer looks like one line (INBOX 1639).
 - Launcher: a Tessellate that holds the port without answering (closing, or hung) is waited for and offered for stopping, not called another program; the desktop app's second double-click brings its window forward (INBOX 1637).

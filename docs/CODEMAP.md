@@ -2,7 +2,7 @@
 
 Generated 2026-11-04 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7750, frontend ids 2637, CSS sections 522, backend routes 641, backend modules 8594, test files 1994, tests 16685, plan headings 999, app scripts 28, boot scripts 37, script files 245.
+Counts: frontend functions 7750, frontend ids 2637, CSS sections 522, backend routes 641, backend modules 8596, test files 1994, tests 16688, plan headings 999, app scripts 28, boot scripts 37, script files 245.
 
 ## Frontend functions (7750)
 
@@ -12872,7 +12872,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:164 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (8594)
+## Backend modules (8596)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -21046,30 +21046,32 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `reset_app_state` | src/tessellate/core/deps.py:267 |
 | `store_quietly` | src/tessellate/core/deps.py:587 |
 
-### src/tessellate/core/desk_companion.py (20)
+### src/tessellate/core/desk_companion.py (22)
 
 | Name | File:line |
 |---|---|
-| `DeskApi` | src/tessellate/core/desk_companion.py:303 |
-| `DeskCompanion` | src/tessellate/core/desk_companion.py:336 |
+| `DeskApi` | src/tessellate/core/desk_companion.py:343 |
+| `DeskCompanion` | src/tessellate/core/desk_companion.py:376 |
 | `_config` | src/tessellate/core/desk_companion.py:64 |
-| `_follow` | src/tessellate/core/desk_companion.py:539 |
+| `_follow` | src/tessellate/core/desk_companion.py:584 |
 | `_pref` | src/tessellate/core/desk_companion.py:77 |
-| `_screen_area` | src/tessellate/core/desk_companion.py:160 |
+| `_screen_area` | src/tessellate/core/desk_companion.py:200 |
 | `_set_pref` | src/tessellate/core/desk_companion.py:89 |
-| `attach` | src/tessellate/core/desk_companion.py:514 |
-| `clamp_corner` | src/tessellate/core/desk_companion.py:176 |
-| `clean_size` | src/tessellate/core/desk_companion.py:268 |
-| `companion_ex_style` | src/tessellate/core/desk_companion.py:193 |
+| `_system_dpi` | src/tessellate/core/desk_companion.py:115 |
+| `attach` | src/tessellate/core/desk_companion.py:557 |
+| `clamp_corner` | src/tessellate/core/desk_companion.py:216 |
+| `clean_size` | src/tessellate/core/desk_companion.py:308 |
+| `companion_ex_style` | src/tessellate/core/desk_companion.py:233 |
 | `enabled` | src/tessellate/core/desk_companion.py:85 |
-| `hit_script` | src/tessellate/core/desk_companion.py:280 |
-| `monitor_areas` | src/tessellate/core/desk_companion.py:115 |
-| `pick_area` | src/tessellate/core/desk_companion.py:148 |
-| `raise_on_desktop` | src/tessellate/core/desk_companion.py:223 |
-| `shutdown` | src/tessellate/core/desk_companion.py:572 |
-| `tray_menu_item` | src/tessellate/core/desk_companion.py:580 |
-| `window_handle` | src/tessellate/core/desk_companion.py:212 |
-| `work_area` | src/tessellate/core/desk_companion.py:96 |
+| `hit_script` | src/tessellate/core/desk_companion.py:320 |
+| `monitor_areas` | src/tessellate/core/desk_companion.py:144 |
+| `pick_area` | src/tessellate/core/desk_companion.py:188 |
+| `raise_on_desktop` | src/tessellate/core/desk_companion.py:263 |
+| `shutdown` | src/tessellate/core/desk_companion.py:621 |
+| `to_logical` | src/tessellate/core/desk_companion.py:96 |
+| `tray_menu_item` | src/tessellate/core/desk_companion.py:629 |
+| `window_handle` | src/tessellate/core/desk_companion.py:252 |
+| `work_area` | src/tessellate/core/desk_companion.py:125 |
 
 ### src/tessellate/core/desktop_dialog.py (2)
 
@@ -23665,7 +23667,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (16685)
+## Tests (16688)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -24175,7 +24177,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_density_height.py | 4 |
 | tests/test_dependency_audit.py | 3 |
 | tests/test_derived_facts.py | 14 |
-| tests/test_desk_companion.py | 49 |
+| tests/test_desk_companion.py | 52 |
 | tests/test_desk_counts_63.py | 5 |
 | tests/test_desktop_fullscreen.py | 5 |
 | tests/test_desktop_launcher.py | 17 |

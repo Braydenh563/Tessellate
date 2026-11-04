@@ -93,9 +93,38 @@ def _set_pref(key: str, value: Any) -> None:
         logger.warning("could not save %s", key, exc_info=True)
 
 
+def to_logical(area: tuple[int, int, int, int], dpi: Any) -> tuple[int, int, int, int]:
+    """A Win32 rectangle (physical pixels: pywebview makes the process DPI aware)
+    in the logical pixels pywebview's `create_window` and `move` take, which it
+    multiplies by the display's scale (winforms.py, `Location` and `move`).
+
+    **Why the companion was never seen** (the owner, 2026-11-04, INBOX 1633: the
+    log said "window made at (2436, 1340)", "shown", "raised above the desktop:
+    True"): that corner was physical, pywebview scaled it again, and at 125% or
+    150% the window sat past the screen's right edge. A dpi that is missing or
+    not sane reads as 96 (no scaling)."""
+    try:
+        scale = float(dpi) / 96.0
+    except (TypeError, ValueError):
+        scale = 1.0
+    if not 0.5 <= scale <= 5.0:
+        scale = 1.0
+    return tuple(int(round(v / scale)) for v in area)  # type: ignore[return-value]
+
+
+def _system_dpi() -> int:
+    try:
+        import ctypes
+
+        return int(ctypes.windll.user32.GetDpiForSystem())
+    except Exception:  # noqa: BLE001 - before Windows 10 1607
+        logger.debug("could not read the system dpi", exc_info=True)
+        return 96
+
+
 def work_area() -> tuple[int, int, int, int] | None:
-    """The screen minus the taskbar, as (left, top, right, bottom), or None
-    where it cannot be asked (every platform but Windows)."""
+    """The screen minus the taskbar, as (left, top, right, bottom) in logical
+    pixels, or None where it cannot be asked (every platform but Windows)."""
     if sys.platform != "win32":
         return None
     try:
@@ -106,15 +135,16 @@ def work_area() -> tuple[int, int, int, int] | None:
         # SPI_GETWORKAREA: what a window may use without covering the taskbar.
         if not ctypes.windll.user32.SystemParametersInfoW(48, 0, ctypes.byref(rect), 0):
             return None
-        return rect.left, rect.top, rect.right, rect.bottom
+        return to_logical((rect.left, rect.top, rect.right, rect.bottom), _system_dpi())
     except Exception:  # noqa: BLE001
         logger.debug("could not read the work area", exc_info=True)
         return None
 
 
 def monitor_areas() -> list[tuple[int, int, int, int]]:
-    """Every connected monitor's work area (left, top, right, bottom), primary
-    first; empty where it cannot be asked (every platform but Windows)."""
+    """Every connected monitor's work area (left, top, right, bottom) in logical
+    pixels at that monitor's own scale, primary first; empty where it cannot be
+    asked (every platform but Windows)."""
     if sys.platform != "win32":
         return []
     try:
@@ -133,10 +163,20 @@ def monitor_areas() -> list[tuple[int, int, int, int]]:
             info.cbSize = ctypes.sizeof(_MonitorInfo)
             if user32.GetMonitorInfoW(monitor, ctypes.byref(info)):
                 work = info.rcWork
-                area = (work.left, work.top, work.right, work.bottom)
+                area = to_logical((work.left, work.top, work.right, work.bottom), _monitor_dpi(monitor))
                 # MONITORINFOF_PRIMARY (1) goes first.
                 found.insert(0, area) if info.dwFlags & 1 else found.append(area)
             return 1
+
+        def _monitor_dpi(monitor: Any) -> int:
+            dpi_x, dpi_y = wt.UINT(96), wt.UINT(96)
+            try:
+                # MDT_EFFECTIVE_DPI (0): the scale Settings, Display sets.
+                if ctypes.windll.shcore.GetDpiForMonitor(monitor, 0, ctypes.byref(dpi_x), ctypes.byref(dpi_y)) == 0:
+                    return int(dpi_x.value)
+            except Exception:  # noqa: BLE001 - before Windows 8.1
+                logger.debug("could not read a monitor's dpi", exc_info=True)
+            return _system_dpi()
 
         user32.EnumDisplayMonitors(None, None, callback_type(_each), 0)
         return found
@@ -454,7 +494,10 @@ class DeskCompanion:
             try:
                 if due and self.window is None:
                     self.window = self._make()
-                    logger.info("desk companion: window made at %s, size %s", self.top_left(), self.size)
+                    logger.info(
+                        "desk companion: window made at %s, size %s, in %s (logical pixels)",
+                        self.top_left(), self.size, _screen_area(self.webview, self.corner),
+                    )
                 if self.window is None or due == self.shown:
                     return
                 (self.window.show if due else self.window.hide)()
@@ -530,14 +573,17 @@ def attach(
         url,
         transparent=(sys.platform != "win32") if transparent is None else transparent,
     )
-    _follow(main_window, companion)
+    followed = _follow(main_window, companion)
     with _lock:
         _active = companion
+    #: At start, so a log with no later companion line still says it was wired (INBOX 1633).
+    logger.info("desk companion: attached (on=%s, follows %s)", enabled(), ", ".join(followed))
     return companion
 
 
-def _follow(main_window: Any, companion: DeskCompanion) -> None:
-    """Wrap the main window's `show` and `hide` so the companion follows them."""
+def _follow(main_window: Any, companion: DeskCompanion) -> list[str]:
+    """Wrap the main window's `show` and `hide` so the companion follows them.
+    The window events it also follows, by name."""
     show, hide = main_window.show, main_window.hide
 
     def shown(*args: Any, **kwargs: Any) -> Any:
@@ -555,6 +601,7 @@ def _follow(main_window: Any, companion: DeskCompanion) -> None:
     #: companion show even when I still have the application open but
     #: minimised?"). pywebview's window events, where this version has them.
     events = getattr(main_window, "events", None)
+    followed = ["show", "hide"]
     for name, away in (("minimized", True), ("restored", False), ("maximized", False)):
         event = getattr(events, name, None)
         if event is None:
@@ -565,8 +612,10 @@ def _follow(main_window: Any, companion: DeskCompanion) -> None:
 
         try:
             event += follow
+            followed.append(name)
         except TypeError:
             logger.debug("desk companion: the window has no %s event to follow", name)
+    return followed
 
 
 def shutdown() -> None:

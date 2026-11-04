@@ -596,3 +596,37 @@ def test_a_window_without_those_events_still_follows_the_tray(made, prefs):
     prefs[dc.PREF] = True
     made.main_window.hide()
     assert made.shown
+
+
+# --- INBOX 1633: the window was placed past the screen's edge -------------------
+# The owner's log: "window made at (2436, 1340), size (112, 152)", "shown",
+# "raised above the desktop: True", and nothing on screen. Win32 work areas are
+# physical pixels; pywebview's create_window and move take logical pixels and
+# multiply them by the display's scale, so at 150% the corner landed at 3654.
+
+
+def test_a_work_area_is_turned_into_the_logical_pixels_pywebview_takes():
+    assert dc.to_logical((0, 0, 2560, 1552), 144) == (0, 0, 1707, 1035)
+    assert dc.to_logical((0, 0, 2560, 1552), 120) == (0, 0, 2048, 1242)
+    assert dc.to_logical((0, 0, 1920, 1040), 96) == (0, 0, 1920, 1040)
+    # A second monitor to the right keeps its place in the same units.
+    assert dc.to_logical((2560, 0, 4480, 1040), 96) == (2560, 0, 4480, 1040)
+
+
+def test_a_dpi_that_is_missing_or_not_sane_is_no_scaling():
+    for dpi in (None, "x", 0, 10_000):
+        assert dc.to_logical((0, 0, 1920, 1040), dpi) == (0, 0, 1920, 1040)
+
+
+def test_at_150_percent_the_window_lands_on_the_screen_once_pywebview_scales_it(monkeypatch):
+    scale = 1.5
+    physical = (0, 0, 2560, 1552)
+    monkeypatch.setattr(dc, "monitor_areas", lambda: [dc.to_logical(physical, 96 * scale)])
+    monkeypatch.setattr(dc, "_pref", lambda key, default: default)
+    companion = dc.DeskCompanion(object(), object(), lambda s="": None, lambda: "http://x")
+    companion.corner = companion._home()
+    x, y = companion.top_left()
+    w, h = companion.size
+    # What pywebview's WinForms backend does with them (Location = x * scale).
+    right, bottom = (x + w) * scale, (y + h) * scale
+    assert 0 <= x * scale and right <= physical[2] and bottom <= physical[3]
