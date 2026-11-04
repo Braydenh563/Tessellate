@@ -18584,36 +18584,36 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `_asks_change` | src/tessellate/api/chat_turn.py:442 |
-| `_chat_reply` | src/tessellate/api/chat_turn.py:70 |
-| `_checks_grounding` | src/tessellate/api/chat_turn.py:307 |
-| `_cited_scope` | src/tessellate/api/chat_turn.py:281 |
-| `_composes_offline` | src/tessellate/api/chat_turn.py:117 |
-| `_detect_intent` | src/tessellate/api/chat_turn.py:37 |
-| `_engine_answers` | src/tessellate/api/chat_turn.py:317 |
-| `_facts_turn` | src/tessellate/api/chat_turn.py:363 |
-| `_fold_event` | src/tessellate/api/chat_turn.py:487 |
-| `_insight_level` | src/tessellate/api/chat_turn.py:129 |
-| `_insight_memory` | src/tessellate/api/chat_turn.py:260 |
-| `_is_composing` | src/tessellate/api/chat_turn.py:332 |
-| `_live_grounder` | src/tessellate/api/chat_turn.py:511 |
-| `_log_question` | src/tessellate/api/chat_turn.py:49 |
-| `_may_digest` | src/tessellate/api/chat_turn.py:274 |
-| `_meaning_loading` | src/tessellate/api/chat_turn.py:139 |
-| `_model_stream_events` | src/tessellate/api/chat_turn.py:186 |
-| `_names_a_note_word` | src/tessellate/api/chat_turn.py:616 |
-| `_note_kind` | src/tessellate/api/chat_turn.py:477 |
-| `_note_with_hint` | src/tessellate/api/chat_turn.py:585 |
-| `_notes_first` | src/tessellate/api/chat_turn.py:633 |
-| `_notes_messages` | src/tessellate/api/chat_turn.py:156 |
-| `_relay_events` | src/tessellate/api/chat_turn.py:525 |
-| `_searched_question` | src/tessellate/api/chat_turn.py:299 |
-| `_social_line` | src/tessellate/api/chat_turn.py:626 |
-| `_trim_answer` | src/tessellate/api/chat_turn.py:567 |
-| `_uncut` | src/tessellate/api/chat_turn.py:359 |
-| `_verdicts` | src/tessellate/api/chat_turn.py:248 |
-| `_why` | src/tessellate/api/chat_turn.py:591 |
-| `_will_answer` | src/tessellate/api/chat_turn.py:346 |
+| `_asks_change` | src/tessellate/api/chat_turn.py:452 |
+| `_chat_reply` | src/tessellate/api/chat_turn.py:80 |
+| `_checks_grounding` | src/tessellate/api/chat_turn.py:317 |
+| `_cited_scope` | src/tessellate/api/chat_turn.py:291 |
+| `_composes_offline` | src/tessellate/api/chat_turn.py:127 |
+| `_detect_intent` | src/tessellate/api/chat_turn.py:38 |
+| `_engine_answers` | src/tessellate/api/chat_turn.py:327 |
+| `_facts_turn` | src/tessellate/api/chat_turn.py:373 |
+| `_fold_event` | src/tessellate/api/chat_turn.py:497 |
+| `_insight_level` | src/tessellate/api/chat_turn.py:139 |
+| `_insight_memory` | src/tessellate/api/chat_turn.py:270 |
+| `_is_composing` | src/tessellate/api/chat_turn.py:342 |
+| `_live_grounder` | src/tessellate/api/chat_turn.py:521 |
+| `_log_question` | src/tessellate/api/chat_turn.py:59 |
+| `_may_digest` | src/tessellate/api/chat_turn.py:284 |
+| `_meaning_loading` | src/tessellate/api/chat_turn.py:149 |
+| `_model_stream_events` | src/tessellate/api/chat_turn.py:196 |
+| `_names_a_note_word` | src/tessellate/api/chat_turn.py:626 |
+| `_note_kind` | src/tessellate/api/chat_turn.py:487 |
+| `_note_with_hint` | src/tessellate/api/chat_turn.py:595 |
+| `_notes_first` | src/tessellate/api/chat_turn.py:643 |
+| `_notes_messages` | src/tessellate/api/chat_turn.py:166 |
+| `_relay_events` | src/tessellate/api/chat_turn.py:535 |
+| `_searched_question` | src/tessellate/api/chat_turn.py:309 |
+| `_social_line` | src/tessellate/api/chat_turn.py:636 |
+| `_trim_answer` | src/tessellate/api/chat_turn.py:577 |
+| `_uncut` | src/tessellate/api/chat_turn.py:369 |
+| `_verdicts` | src/tessellate/api/chat_turn.py:258 |
+| `_why` | src/tessellate/api/chat_turn.py:601 |
+| `_will_answer` | src/tessellate/api/chat_turn.py:356 |
 
 ### src/tessellate/api/chat_web.py (11)
 
