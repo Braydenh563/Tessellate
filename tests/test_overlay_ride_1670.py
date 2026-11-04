@@ -251,14 +251,19 @@ def test_a_rise_to_a_hang_is_one_smooth_path_of_what_is_drawn_and_never_leaves_t
 
 
 @pytest.mark.parametrize("look", LOOKS)
-def test_letting_go_of_a_hang_keeps_the_window_where_it_was_drawn(look: str) -> None:
+def test_letting_go_of_a_hang_drops_it_with_all_of_it_on_screen_and_does_not_catch_it_again(look: str) -> None:
     for gait in ("walk", "float"):
-        e, _s = make(look, gait)
+        e, s = make(look, gait)
+        boxes = s.metrics(96)
         t = run_until(e, "hang", drag(e, (960, 30)))
-        before = e.update(t + 0.016)
         e._let_go()
-        after = e.update(t + 0.032)
-        assert abs(after.y - before.y) <= 3, (gait, before.y, after.y)
+        top = 1e9
+        for i in range(60):
+            t += 0.016
+            o = e.update(t)
+            top = min(top, o.y + boxes[(o.frame, o.flip)][1])
+        assert e.state not in ("hang", "rise"), (gait, e.state)
+        assert top >= -1, (gait, top)
 
 
 @pytest.mark.parametrize("look", LOOKS)

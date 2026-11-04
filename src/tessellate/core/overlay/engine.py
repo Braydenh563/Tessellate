@@ -111,6 +111,7 @@ BONK_FOR = 0.3
 FLY_SPIN_MIN = 60.0
 SPIN_RATE = 9.0
 SPIN_STEPS = 8
+SPIN_FRAMES_ENGINE = tuple(f"spin{i}" for i in range(SPIN_STEPS))
 #: A floater: hover height range above the floor, speed, turn rate, air drag,
 #: and the pull back to its hover height (per second squared per pixel).
 #: Its rest line: a hand's breadth above the work area's bottom, so the feet are on the
@@ -368,15 +369,18 @@ class Engine:
         return left + right - self.size[0]
 
     def _ride_box(self, frame: str) -> tuple[float, float, float, float]:
-        """The drawn box of a frame (or all the tumble's frames) from the engine's x and y."""
-        if frame.startswith("spin"):
-            boxes = [self._box(f"spin{i}", fl) for i in range(SPIN_STEPS) for fl in (False, True)]
-            left, top = min(b[0] for b in boxes), min(b[1] for b in boxes)
-            right, bottom = max(b[2] for b in boxes), max(b[3] for b in boxes)
-        else:
-            left, top, right, bottom = self._box(frame)
-        dx, dy = self._flip_dx(frame, self.facing < 0), self._dy(frame)
-        return left + dx, top + dy, right + dx, bottom + dy
+        """The drawn box of a frame (or of every frame a thrown figure may show, for "fly"),
+        from the engine's x and y: its foot offset and mirror shift included."""
+        flip = self.facing < 0
+        names = ("held", "hop", *SPIN_FRAMES_ENGINE) if frame == "fly" else (frame,)
+        boxes = []
+        for n in names:
+            left, top, right, bottom = self._box(n, flip)
+            dx, dy = self._flip_dx(n, flip), self._dy("held" if frame == "fly" else n)
+            boxes.append((left + dx, top + dy, right + dx, bottom + dy))
+        return (
+            min(b[0] for b in boxes), min(b[1] for b in boxes), max(b[2] for b in boxes), max(b[3] for b in boxes),
+        )
 
     def _default_home(self) -> tuple[int, int]:
         m = self.monitors[0]
@@ -1045,6 +1049,10 @@ class Engine:
     def _let_go(self) -> None:
         """Off the ceiling: a walker falls, a floater drifts down to its hover height."""
         self._start_fall(0.0)
+        # the pose it drops in is taller than the hang: keep all of it on the screen
+        m = self.current_monitor()
+        if self._open_side(m, "top"):
+            self.y = max(self.y, self._ride_limits("fly" if self.state == "fly" else self.state)[2])
 
     def _peek_depth(self, t: float) -> float:
         plan = PEEK_PLAN
@@ -1092,17 +1100,23 @@ class Engine:
         speed = math.hypot(self.vx, self.vy)
         self.angle += self.spin_dir * SPIN_RATE * min(1.0, speed / (THROW_MAX * 0.4 * scale)) * dt
         # the walls are of what is drawn: the tumble's widest frame, not the window around it
-        ux0, ux1, uy0, uy1 = self._ride_limits(self._fly_frame())
+        ux0, ux1, uy0, uy1 = self._ride_limits("fly")
         if self.x < ux0 and self._open_side(m, "left"):
             self.x, self.vx = ux0, abs(self.vx) * BOUNCE_DAMP
             self.bonk_until = now + BONK_FOR
         elif self.x > ux1 and self._open_side(m, "right"):
             self.x, self.vx = ux1, -abs(self.vx) * BOUNCE_DAMP
             self.bonk_until = now + BONK_FOR
-        if self.y <= max(top - self._lift(), uy0) and self._open_side(m, "top"):
-            self.y, self.vx, self.vy = top - self._lift(), 0.0, 0.0
-            self.angle = 0.0
-            self._enter("hang", now)
+        if self.vy < 0 and self.y < uy0 and self._open_side(m, "top"):
+            self.y = uy0  # a step may carry it past the top: the drawn box stops at the edge
+        if self.vy < 0 and self.y <= max(top - self._lift(), uy0) and self._open_side(m, "top"):
+            hang_y, drawn = top - self._lift(), self.y + self._dy("held")
+            self.vx = self.vy = self.angle = 0.0
+            if abs(drawn - hang_y) > 4.0 * scale:  # caught above where the hands go: reach up to it
+                self._rise((self.x, hang_y), "hang", now, drawn_from=drawn)
+            else:
+                self.y = hang_y
+                self._enter("hang", now)
             return
         floor = min(self.floor_y(m), uy1) if self._open_side(m, "bottom") else self.floor_y(m)
         if floater:
