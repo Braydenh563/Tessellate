@@ -2,7 +2,7 @@
 
 Generated 2026-11-04 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7751, frontend ids 2641, CSS sections 522, backend routes 644, backend modules 8657, test files 2007, tests 16850, plan headings 998, app scripts 28, boot scripts 37, script files 246.
+Counts: frontend functions 7751, frontend ids 2641, CSS sections 522, backend routes 644, backend modules 8657, test files 2007, tests 16852, plan headings 998, app scripts 28, boot scripts 37, script files 246.
 
 ## Frontend functions (7751)
 
@@ -2258,7 +2258,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `atlasTurnAbout` | frontend/js/atlas.js:968 |
 | `atlasWake` | frontend/js/atlas.js:3813 |
 | `atlasWatchFigure` | frontend/js/atlas.js:3335 |
-| `charactersArrived` | frontend/js/atlas.js:3900 |
+| `charactersArrived` | frontend/js/atlas.js:3903 |
 | `setAtlasMood` | frontend/js/atlas.js:3613 |
 
 ### frontend/js/attach-to.js (4)
@@ -23776,7 +23776,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (16850)
+## Tests (16852)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -23859,7 +23859,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_atlas_composite_1101.py | 4 |
 | tests/test_atlas_cover_1587.py | 8 |
 | tests/test_atlas_face_inherit_1591.py | 4 |
-| tests/test_atlas_frame_reads.py | 5 |
+| tests/test_atlas_frame_reads.py | 7 |
 | tests/test_atlas_idle_cost_1031.py | 6 |
 | tests/test_atlas_lids_1301.py | 7 |
 | tests/test_atlas_lite_mood_1565.py | 1 |
