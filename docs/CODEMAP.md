@@ -2,9 +2,9 @@
 
 Generated 2026-11-04 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7755, frontend ids 2641, CSS sections 522, backend routes 644, backend modules 8689, test files 2021, tests 17030, plan headings 999, app scripts 28, boot scripts 37, script files 248.
+Counts: frontend functions 7756, frontend ids 2641, CSS sections 522, backend routes 644, backend modules 8689, test files 2023, tests 17039, plan headings 1000, app scripts 28, boot scripts 37, script files 248.
 
-## Frontend functions (7755)
+## Frontend functions (7756)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -3054,29 +3054,30 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `dateFieldShift` | frontend/js/date-field.js:11 |
 | `dateFieldWire` | frontend/js/date-field.js:13 |
 
-### frontend/js/desk-companion.js (22)
+### frontend/js/desk-companion.js (23)
 
 | Name | File:line |
 |---|---|
 | `$` | frontend/js/desk-companion.js:20 |
 | `ask` | frontend/js/desk-companion.js:56 |
 | `call` | frontend/js/desk-companion.js:48 |
-| `deskClip` | frontend/js/desk-companion.js:293 |
+| `deskClip` | frontend/js/desk-companion.js:315 |
 | `draw` | frontend/js/desk-companion.js:74 |
-| `hitRow` | frontend/js/desk-companion.js:306 |
+| `fit` | frontend/js/desk-companion.js:117 |
+| `hitRow` | frontend/js/desk-companion.js:328 |
 | `host` | frontend/js/desk-companion.js:55 |
-| `item` | frontend/js/desk-companion.js:138 |
-| `leave` | frontend/js/desk-companion.js:231 |
-| `menuHeight` | frontend/js/desk-companion.js:119 |
-| `noteStatus` | frontend/js/desk-companion.js:253 |
-| `openCompanion` | frontend/js/desk-companion.js:197 |
-| `openMenu` | frontend/js/desk-companion.js:151 |
-| `openPanel` | frontend/js/desk-companion.js:240 |
-| `plain` | frontend/js/desk-companion.js:299 |
+| `item` | frontend/js/desk-companion.js:160 |
+| `leave` | frontend/js/desk-companion.js:253 |
+| `noteStatus` | frontend/js/desk-companion.js:275 |
+| `openCompanion` | frontend/js/desk-companion.js:219 |
+| `openMenu` | frontend/js/desk-companion.js:173 |
+| `openPanel` | frontend/js/desk-companion.js:262 |
+| `panelHeight` | frontend/js/desk-companion.js:135 |
+| `plain` | frontend/js/desk-companion.js:321 |
 | `probe` | frontend/js/desk-companion.js:84 |
-| `rest` | frontend/js/desk-companion.js:246 |
-| `runSearch` | frontend/js/desk-companion.js:333 |
-| `saveNote` | frontend/js/desk-companion.js:259 |
+| `rest` | frontend/js/desk-companion.js:268 |
+| `runSearch` | frontend/js/desk-companion.js:355 |
+| `saveNote` | frontend/js/desk-companion.js:281 |
 | `seed` | frontend/js/desk-companion.js:66 |
 | `show` | frontend/js/desk-companion.js:101 |
 | `token` | frontend/js/desk-companion.js:45 |
@@ -5650,26 +5651,26 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `closeMathInPlace` | frontend/js/math-field.js:367 |
-| `mathFieldAllowStyles` | frontend/js/math-field.js:176 |
+| `closeMathInPlace` | frontend/js/math-field.js:448 |
+| `mathFieldAllowStyles` | frontend/js/math-field.js:204 |
 | `mathFieldBoxes` | frontend/js/math-field.js:70 |
-| `mathFieldChange` | frontend/js/math-field.js:148 |
-| `mathFieldConfigure` | frontend/js/math-field.js:197 |
-| `mathFieldCreate` | frontend/js/math-field.js:222 |
-| `mathFieldFoot` | frontend/js/math-field.js:385 |
+| `mathFieldChange` | frontend/js/math-field.js:176 |
+| `mathFieldConfigure` | frontend/js/math-field.js:225 |
+| `mathFieldCreate` | frontend/js/math-field.js:250 |
+| `mathFieldFoot` | frontend/js/math-field.js:466 |
 | `mathFieldGroupEnd` | frontend/js/math-field.js:26 |
-| `mathFieldKeys` | frontend/js/math-field.js:450 |
-| `mathFieldLatexBox` | frontend/js/math-field.js:244 |
-| `mathFieldOwns` | frontend/js/math-field.js:363 |
-| `mathFieldPane` | frontend/js/math-field.js:265 |
-| `mathFieldPlace` | frontend/js/math-field.js:373 |
-| `mathFieldRead` | frontend/js/math-field.js:235 |
+| `mathFieldHollow` | frontend/js/math-field.js:151 |
+| `mathFieldKeys` | frontend/js/math-field.js:531 |
+| `mathFieldLatexBox` | frontend/js/math-field.js:268 |
+| `mathFieldOwns` | frontend/js/math-field.js:444 |
+| `mathFieldPane` | frontend/js/math-field.js:289 |
+| `mathFieldPlace` | frontend/js/math-field.js:454 |
+| `mathFieldRead` | frontend/js/math-field.js:263 |
 | `mathFieldSlots` | frontend/js/math-field.js:85 |
 | `mathFieldStored` | frontend/js/math-field.js:60 |
-| `mathFieldTouch` | frontend/js/math-field.js:160 |
+| `mathFieldTouch` | frontend/js/math-field.js:188 |
 | `mathFieldUnplace` | frontend/js/math-field.js:43 |
-| `mathFieldWrite` | frontend/js/math-field.js:239 |
-| `openMathInPlace` | frontend/js/math-field.js:402 |
+| `openMathInPlace` | frontend/js/math-field.js:483 |
 
 ### frontend/js/meaning.js (18)
 
@@ -12198,7 +12199,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/companion-travel-lazy.css | 106 |
 | frontend/css/dash-night-lazy.css | 29 |
 | frontend/css/dash-orphans-lazy.css | 57 |
-| frontend/css/desk-companion-lazy.css | 154 |
+| frontend/css/desk-companion-lazy.css | 176 |
 | frontend/css/diagram-lazy.css | 975 |
 | frontend/css/file-drop-lazy.css | 51 |
 | frontend/css/first-run-lazy.css | 140 |
@@ -21098,39 +21099,39 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `DeskApi` | src/tessellate/core/desk_companion.py:622 |
-| `DeskCompanion` | src/tessellate/core/desk_companion.py:679 |
-| `_config` | src/tessellate/core/desk_companion.py:167 |
-| `_default_overlay_factory` | src/tessellate/core/desk_companion.py:1372 |
-| `_follow` | src/tessellate/core/desk_companion.py:1413 |
-| `_log_placed` | src/tessellate/core/desk_companion.py:569 |
-| `_pref` | src/tessellate/core/desk_companion.py:180 |
-| `_read_back` | src/tessellate/core/desk_companion.py:558 |
-| `_screen_area` | src/tessellate/core/desk_companion.py:305 |
-| `_set_pref` | src/tessellate/core/desk_companion.py:192 |
-| `_system_dpi` | src/tessellate/core/desk_companion.py:218 |
-| `attach` | src/tessellate/core/desk_companion.py:1382 |
-| `carry_due` | src/tessellate/core/desk_companion.py:1450 |
-| `clamp_corner` | src/tessellate/core/desk_companion.py:321 |
-| `clean_size` | src/tessellate/core/desk_companion.py:587 |
-| `companion_ex_style` | src/tessellate/core/desk_companion.py:395 |
-| `companion_options` | src/tessellate/core/desk_companion.py:138 |
-| `enabled` | src/tessellate/core/desk_companion.py:188 |
-| `hit_script` | src/tessellate/core/desk_companion.py:599 |
-| `monitor_areas` | src/tessellate/core/desk_companion.py:247 |
-| `monitor_for` | src/tessellate/core/desk_companion.py:343 |
-| `panel_corner` | src/tessellate/core/desk_companion.py:330 |
-| `panel_placement` | src/tessellate/core/desk_companion.py:355 |
-| `physical_rect` | src/tessellate/core/desk_companion.py:430 |
-| `pick_area` | src/tessellate/core/desk_companion.py:293 |
-| `place_on_screen` | src/tessellate/core/desk_companion.py:507 |
-| `place_physical` | src/tessellate/core/desk_companion.py:533 |
-| `raise_on_desktop` | src/tessellate/core/desk_companion.py:447 |
-| `shutdown` | src/tessellate/core/desk_companion.py:1471 |
-| `to_logical` | src/tessellate/core/desk_companion.py:199 |
-| `tray_menu_item` | src/tessellate/core/desk_companion.py:1479 |
-| `window_handle` | src/tessellate/core/desk_companion.py:414 |
-| `work_area` | src/tessellate/core/desk_companion.py:228 |
+| `DeskApi` | src/tessellate/core/desk_companion.py:628 |
+| `DeskCompanion` | src/tessellate/core/desk_companion.py:685 |
+| `_config` | src/tessellate/core/desk_companion.py:173 |
+| `_default_overlay_factory` | src/tessellate/core/desk_companion.py:1389 |
+| `_follow` | src/tessellate/core/desk_companion.py:1430 |
+| `_log_placed` | src/tessellate/core/desk_companion.py:575 |
+| `_pref` | src/tessellate/core/desk_companion.py:186 |
+| `_read_back` | src/tessellate/core/desk_companion.py:564 |
+| `_screen_area` | src/tessellate/core/desk_companion.py:311 |
+| `_set_pref` | src/tessellate/core/desk_companion.py:198 |
+| `_system_dpi` | src/tessellate/core/desk_companion.py:224 |
+| `attach` | src/tessellate/core/desk_companion.py:1399 |
+| `carry_due` | src/tessellate/core/desk_companion.py:1467 |
+| `clamp_corner` | src/tessellate/core/desk_companion.py:327 |
+| `clean_size` | src/tessellate/core/desk_companion.py:593 |
+| `companion_ex_style` | src/tessellate/core/desk_companion.py:401 |
+| `companion_options` | src/tessellate/core/desk_companion.py:144 |
+| `enabled` | src/tessellate/core/desk_companion.py:194 |
+| `hit_script` | src/tessellate/core/desk_companion.py:605 |
+| `monitor_areas` | src/tessellate/core/desk_companion.py:253 |
+| `monitor_for` | src/tessellate/core/desk_companion.py:349 |
+| `panel_corner` | src/tessellate/core/desk_companion.py:336 |
+| `panel_placement` | src/tessellate/core/desk_companion.py:361 |
+| `physical_rect` | src/tessellate/core/desk_companion.py:436 |
+| `pick_area` | src/tessellate/core/desk_companion.py:299 |
+| `place_on_screen` | src/tessellate/core/desk_companion.py:513 |
+| `place_physical` | src/tessellate/core/desk_companion.py:539 |
+| `raise_on_desktop` | src/tessellate/core/desk_companion.py:453 |
+| `shutdown` | src/tessellate/core/desk_companion.py:1488 |
+| `to_logical` | src/tessellate/core/desk_companion.py:205 |
+| `tray_menu_item` | src/tessellate/core/desk_companion.py:1496 |
+| `window_handle` | src/tessellate/core/desk_companion.py:420 |
+| `work_area` | src/tessellate/core/desk_companion.py:234 |
 
 ### src/tessellate/core/desktop_dialog.py (2)
 
@@ -22138,7 +22139,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `OverlayRunner` | src/tessellate/core/overlay/runner.py:60 |
+| `OverlayRunner` | src/tessellate/core/overlay/runner.py:61 |
 
 ### src/tessellate/core/overlay/sprites.py (8)
 
@@ -23827,7 +23828,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (17030)
+## Tests (17039)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -24345,6 +24346,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_derived_facts.py | 14 |
 | tests/test_desk_companion.py | 63 |
 | tests/test_desk_counts_63.py | 5 |
+| tests/test_desk_look_locked_1670.py | 5 |
 | tests/test_desk_overlay_companion.py | 10 |
 | tests/test_desk_overlay_roam.py | 15 |
 | tests/test_desk_overlay_wiring.py | 36 |
@@ -24965,6 +24967,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_markdown_export_import.py | 11 |
 | tests/test_markdown_link_schemes.py | 3 |
 | tests/test_marquee_cost.py | 4 |
+| tests/test_math_delete_1664.py | 2 |
 | tests/test_math_editor.py | 6 |
 | tests/test_math_field.py | 5 |
 | tests/test_math_leftovers_1103.py | 3 |
@@ -25159,11 +25162,11 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_overlay_float.py | 6 |
 | tests/test_overlay_hang.py | 11 |
 | tests/test_overlay_host.py | 25 |
-| tests/test_overlay_idle.py | 8 |
+| tests/test_overlay_idle.py | 9 |
 | tests/test_overlay_moves.py | 26 |
 | tests/test_overlay_roam.py | 19 |
 | tests/test_overlay_roam_runner.py | 10 |
-| tests/test_overlay_runner.py | 21 |
+| tests/test_overlay_runner.py | 22 |
 | tests/test_overlay_sprites.py | 16 |
 | tests/test_overview_counts_1524.py | 3 |
 | tests/test_owner_typos.py | 21 |
@@ -25855,7 +25858,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_zoom_frame_1508.py | 3 |
 | tests/test_zoom_wheel_delta.py | 3 |
 
-## Plan headings (999)
+## Plan headings (1000)
 
 Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, except the HISTORY.md archive. Sorted by heading.
 
@@ -26562,7 +26565,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Phases 0 to 2: built 2026-09-09 | docs/roadmap/DOCUMENTS_PLAN.md:119 |
 | Phases 0 to 6: built | docs/roadmap/UI_MODERNISATION_PLAN.md:216 |
 | Phases, each with the gate it is finished against | docs/roadmap/MINDMAP_PLAN.md:1296 |
-| Placed (last 20, newest first) | docs/roadmap/INBOX.md:179 |
+| Placed (last 20, newest first) | docs/roadmap/INBOX.md:177 |
 | Placed from Brief 40, 2026-10-10 (does the MCP server work) | docs/roadmap/AGENT_SKILLS_REFORM.md:345 |
 | Placed from Brief 40, 2026-10-10 (research and placement) | docs/roadmap/BACKLOG.md:4178 |
 | Placed from Brief 40, 2026-10-10 (the phone over HTTPS) | docs/roadmap/WORLD_CLASS_PLAN.md:3128 |
@@ -26674,6 +26677,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from INBOX, 2026-11-03 (chat; CHAT_PLAN is at its cap) | docs/roadmap/BACKLOG.md:4435 |
 | Placed from INBOX, 2026-11-03b | docs/roadmap/BACKLOG.md:4445 |
 | Placed from INBOX, 2026-11-04 | docs/roadmap/MINDMAP_PLAN.md:1902 |
+| Placed from INBOX, 2026-11-04 | docs/roadmap/PLAN.md:318 |
 | Placed from INBOX, 2026-11-04 | docs/roadmap/WHITEBOARD_PLAN.md:1728 |
 | Placed from INBOX, 2026-11-04 (1657, what the two lag rounds left) | docs/roadmap/UI_MODERNISATION_PLAN.md:1560 |
 | Placed from INBOX, built (pointers) | docs/roadmap/UI_MODERNISATION_PLAN.md:1062 |
