@@ -62,8 +62,8 @@ def test_the_widget_list_is_driven_from_the_registry():
 def test_the_clock_and_the_calculator_mount_through_the_popups_own_build():
     clock = _read("utility-tools.js")
     assert clock.count("function clockPanelBuild(") == 1
-    assert "openClockPanel.inline = (tab, host) =>" in clock
-    assert "clockPanelBuild(host, tab, { inline: true })" in clock
+    assert "openClockPanel.inline = (tab, host, { only = false } = {}) =>" in clock
+    assert "clockPanelBuild(host, tab, { inline: true, only })" in clock
     assert "clockPanelBuild(card, tab)" in clock
     kit = _read("reply-kit.js")
     assert kit.count("function replyCalcBuild(") == 1

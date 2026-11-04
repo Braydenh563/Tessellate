@@ -168,6 +168,9 @@ const DASH_OPT_IN = ["activity", "night", "week"];
 {
   const POPUP_WIDGETS = {
     clock: { title: "ph:timer Clock", description: "Timers, a stopwatch and an alarm, drawn here. They keep running when you leave the page.", module: "utilities", mount: (body) => openClockPanel.inline("timer", body) },
+    //: One tab each, with no strip (INBOX 1617): a Stopwatch and an Alarm of their own beside the Clock, over the same running clocks and the same reminders.
+    stopwatch: { title: "ph:timer Stopwatch", description: "A stopwatch with Start, Pause, Lap and Reset, and the laps listed. It keeps running when you leave the page.", module: "utilities", mount: (body) => openClockPanel.inline("stopwatch", body, { only: true }) },
+    alarm: { title: "ph:bell-ringing Alarm", description: "A time of day and a label. It is an ordinary reminder, so it rings with the reminder sound and notification and is kept.", module: "utilities", mount: (body) => openClockPanel.inline("alarm", body, { only: true }) },
     calculator: { title: "ph:calculator Calculator", description: "Sums, percentages and unit conversions, worked out here with no model.", module: "replyKit", mount: (body) => openCalculator.inline(body, "work") },
   };
   for (const [id, kind] of Object.entries(POPUP_WIDGETS)) {

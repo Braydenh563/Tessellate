@@ -487,3 +487,9 @@ button.stats-tile.is-link:is(:focus-visible, :has(:focus-visible)) {
 .clock-inline .clock-list {
   max-height: min(16rem, 40dvh);
 }
+
+/* **A single clock tab as a widget** (the Stopwatch and the Alarm, INBOX 1617): no strip, and the stopwatch's time is the largest thing on it, as the Focus timer's is. */
+.clock-only .clock-time {
+  font-size: var(--text-h1);
+  font-weight: 700;
+}

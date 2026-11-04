@@ -1144,14 +1144,14 @@ const POPUP_TOOLS = [
     guide: "timer", open: () => ensureModule("utilities").then(() => openClockPanel("timer")),
   },
   {
-    id: "stopwatch", name: "Start a stopwatch", icon: "ph:timer", group: "Plan & focus", widget: "clock",
+    id: "stopwatch", name: "Start a stopwatch", icon: "ph:timer", group: "Plan & focus", widget: "stopwatch",
     keywords: "stopwatch count up",
     about: "Opens the Clock.",
     keys: "Ctrl+K", where: "Start a stopwatch",
     guide: "timer", open: () => ensureModule("utilities").then(() => openClockPanel("stopwatch")),
   },
   {
-    id: "alarm", name: "Set an alarm", icon: "ph:alarm", group: "Plan & focus", widget: "clock",
+    id: "alarm", name: "Set an alarm", icon: "ph:alarm", group: "Plan & focus", widget: "alarm",
     keywords: "alarm",
     about: "Opens the Clock.",
     keys: "Ctrl+K", where: "Set an alarm",
