@@ -68,6 +68,7 @@ def test_out_of_the_way_of_the_boards_panels_and_calmer_there():
     board = float(re.search(r"^const NMB_BOARD_WANDER = ([\d.]+);$", AV, re.M).group(1))
     # INBOX 1429: it wanders less often everywhere (0.35 to 0.12); a board is still the calmer.
     assert board < float(re.search(r"^const NMB_WANDER_ODDS = ([\d.]+);$", AV, re.M).group(1))
-    assert "nmb.onBoard ? NMB_BOARD_WANDER : NMB_WANDER_ODDS" in _fn(AV, "nameMarkBuddyWander")
+    #: 1673: its mind decides when to stroll; the stroll still rolls the board's calmer share of it.
+    assert "nmb.onBoard ? NMB_BOARD_WANDER / NMB_WANDER_ODDS : 1" in _fn(AV, "nameMarkBuddyWander")
     assert 'act === "hop" && nmb.onBoard' in _fn(AV, "nameMarkBuddyDecide")
     assert "nmb.onBoard = nameMarkBuddyOnBoard();" in _fn(AV, "nameMarkBuddyTick")

@@ -93,5 +93,6 @@ def test_the_system_answer_is_laid_out_with_its_path_steps_and_link():
     assert "**Where:** Settings, Appearance, Atlas and faces, Corner companion" in text
     assert "\n1. Open Settings, Appearance" in text
     assert system["open"] == {"label": "Corner companion", "section": "appearance", "target": "avatar-buddy-row"}
-    # Never "a feature within the Ask tab": the companion lives on the page.
-    assert "not in any tab" in topics[0]["body"]
+    # Never "a feature within the Ask tab": the companion lives on the page. Since 1673 it keeps a
+    # place of its own (a page and a spot), so the body says that instead of "not in any tab".
+    assert "Ask tab" not in topics[0]["body"] and "a place of its own" in topics[0]["body"]

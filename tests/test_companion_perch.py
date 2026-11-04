@@ -126,6 +126,8 @@ def _check(since_last: int):
             "function nameMarkBuddySupported() { return false; }",
             "function nameMarkBuddyIndexReset() {}",
             "function placeNameMarkBuddy() { placed.push(1); }",
+            #: 1673: a lost perch falls, steps or walks (nameMarkBuddyPerchGone) instead of a re-place; still one move.
+            "function nameMarkBuddyPerchGone() { placed.push(1); }",
             "function nameMarkBuddyObstacles() { return []; }",
             "function nameMarkBuddyYoursObstacles(o) { return o; }",
             "function nameMarkBuddyHits() { return false; }",
