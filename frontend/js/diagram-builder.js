@@ -485,7 +485,7 @@
   // --- suggestions (diagram-suggest.js, lazy) ---------------------------------------
   //: Templates, From my notes and Describe it. What comes back lands as blocks (D8): on an
   //: empty diagram it becomes the diagram, otherwise it arrives as ghosts to take or drop.
-  const helpers = { label: SHAPE_LABEL, el, say, commit, blockEl, stops, suggest, add: addBlock, panes, name: nameOf };
+  const helpers = { label: SHAPE_LABEL, el, say, commit, blockEl, stops, suggest, add: addBlock, panes, name: nameOf, items: blockItems, select };
   async function suggest(S, how) {
     if (!(await ensureModule("diagramSuggest"))) return say(S, "The suggestions did not load.");
     return diagramModel.suggest[how](S, helpers);
@@ -661,6 +661,7 @@
     if (S && !S.k && (await ensureModule("diagramMulti"))) diagramModel.multi.wire(S, helpers);
     if (S && !S.k && (await ensureModule("diagramCanvas"))) diagramModel.canvas.wire(S, helpers);
     if (S && !S.k && (await ensureModule("diagramEdges"))) diagramModel.edges.wire(S, helpers);
+    if (S && !S.k && (await ensureModule("diagramEdgePick"))) diagramModel.edgepick.wire(S, helpers);
     //: The divider between the blocks and the picture (diagram-split.js, 1615 e).
     if (S && (await ensureModule("diagramSplit"))) diagramModel.split.wire(S);
     if (told && S) say(S, told);

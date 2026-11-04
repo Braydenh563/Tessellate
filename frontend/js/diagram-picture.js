@@ -42,7 +42,7 @@
   }
 
   //: The groups' boxes and the arrows' midpoints (R8c), in the same units and the same `{id, x, y, w, h}` shape (x, y the centre;
-  //: an arrow has no size). A group is Mermaid's `cluster` group, its id the picture's own id then the subgraph's; an arrow is
+  //: an arrow has no size, but keeps its path: `pts` the polyline, `d` the drawn path, for diagram-edge-pick.js). A group is Mermaid's `cluster` group, its id the picture's own id then the subgraph's; an arrow is
   //: its path with the id Mermaid gives it, `L_<from>_<to>_<n>`, placed at the middle point of the path.
   function extras(svg) {
     const lead = /<svg\b[^>]*\bid="([^"]+)"/.exec(svg)?.[1];
@@ -55,7 +55,8 @@
     }
     const edges = [];
     for (const p of svg.matchAll(/<path\b[^>]*\bdata-id="(L_[^"]+)"[^>]*>/g)) {
-      const d = /\sd="([^"]+)"/.exec(p[0])?.[1].match(/-?\d*\.?\d+/g)?.map(Number) || [];
+      const raw = /\sd="([^"]+)"/.exec(p[0])?.[1] || "";
+      const d = raw.match(/-?\d*\.?\d+/g)?.map(Number) || [];
       const pts = [];
       for (let i = 0; i + 1 < d.length; i += 2) pts.push([d[i], d[i + 1]]);
       //: Half way along the points' own polyline (a corner's control point counts as a point).
@@ -63,7 +64,7 @@
       let rest = len.reduce((a, b) => a + b, 0) / 2;
       let i = 0;
       while (i < len.length - 1 && rest > len[i]) rest -= len[i++];
-      if (pts.length > 1) edges.push({ id: p[1], x: pts[i][0] + ((pts[i + 1][0] - pts[i][0]) * rest) / (len[i] || 1), y: pts[i][1] + ((pts[i + 1][1] - pts[i][1]) * rest) / (len[i] || 1), w: 0, h: 0 });
+      if (pts.length > 1) edges.push({ id: p[1], x: pts[i][0] + ((pts[i + 1][0] - pts[i][0]) * rest) / (len[i] || 1), y: pts[i][1] + ((pts[i + 1][1] - pts[i][1]) * rest) / (len[i] || 1), w: 0, h: 0, pts, d: raw });
     }
     return { clusters, edges };
   }

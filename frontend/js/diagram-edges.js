@@ -262,6 +262,8 @@
     }
     //: The walkthrough's third step (diagram-steps.js) arms the handle on the right of the picked block, as pressing it would.
     S.arm = (from) => arm(from, "right");
+    //: And the pick (diagram-edge-pick.js) opens a picked arrow's words on Enter.
+    S.renameEdge = renameEdge;
     const disarm = () => {
       armed = "";
       for (const handle of handles) handle.removeAttribute("aria-pressed");
