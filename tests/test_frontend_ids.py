@@ -45,6 +45,12 @@ RUNTIME_IDS = {
     "health-missing",
     "health-selfcheck",
     "health-selfcheck-run",
+    #: The diagram's New and .svg controls, built by documents.js `buildDiagramControls`, and the Library's New diagram
+    #: pair, built by library.js `libraryDocsNewMount` (INBOX 1679; the boot element cap).
+    "doc-new-diagram",
+    "doc-export-svg",
+    "library-docs-new-diagram",
+    "library-docs-empty-diagram",
 }
 
 

@@ -68,7 +68,7 @@
       list.classList.add("dgm-listbtn");
       list.setAttribute("aria-haspopup", "dialog");
       actions.prepend(list);
-      S.root.classList.add("dgm-listsheet");
+      S.root.classList.add("dgm-phonelist");
     }
     if (actions && !S.root.querySelector(".dgm-addsplit")) {
       const add = smallButton("ph:plus Add", "Choose a shape to add as a block", () => addSheet(S.root, add), false);

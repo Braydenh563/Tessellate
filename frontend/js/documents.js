@@ -471,7 +471,7 @@ window.addEventListener(
 //: The diagram's two document controls are made here, not in index.html (CI: the boot document is capped at a
 //: fixed element count and slice 8's button and row, with their icons, were four over). Same ids, classes, labels and
 //: places as the markup had: New diagram right after New from a template, Download as .svg right before .png.
-function buildDiagramControls() {
+(function buildDiagramControls() {
   const add = (anchor, where, el) => anchor?.[where](el);
   if (!$("doc-new-diagram")) {
     const b = document.createElement("button");
@@ -495,8 +495,7 @@ function buildDiagramControls() {
     setLabel(row, "ph:file-svg Download as .svg");
     add($("doc-export-picture"), "before", row);
   }
-}
-buildDiagramControls();
+})();
 
 //: **Three groups, because fourteen rows do not fit on a laptop.** Reported
 //: twice: first that the menu "goes off the page", and after the downloads

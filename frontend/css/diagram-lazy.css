@@ -935,25 +935,25 @@
   }
 
   /* With an arrow drawn the list is a sheet (diagram-touch.js) and the picture takes the page. */
-  .dgm-listsheet.dgm-listless .dgm-body > .dgm-pane {
+  .dgm-phonelist.dgm-listless .dgm-body > .dgm-pane {
     display: none;
   }
 
-  .dgm-listsheet.dgm-listless .dgm-body {
+  .dgm-phonelist.dgm-listless .dgm-body {
     grid-template-rows: minmax(0, 1fr);
   }
 
-  .dgm.dgm-listsheet.dgm-listless :is(.dgm-picture, .dgm-stage) {
+  .dgm.dgm-phonelist.dgm-listless :is(.dgm-picture, .dgm-stage) {
     block-size: auto;
     min-block-size: 0;
   }
 
   /* Basis 0: the drawing's own height must not set the picture's, or the stage outgrows the body (measured 506 in 375). */
-  .dgm.dgm-listsheet.dgm-listless .dgm-stage > .dgm-picture {
+  .dgm.dgm-phonelist.dgm-listless .dgm-stage > .dgm-picture {
     flex: 1 1 0;
   }
 
-  .dgm-listsheet.dgm-listless .dgm-stage > .dgm-picture {
+  .dgm-phonelist.dgm-listless .dgm-stage > .dgm-picture {
     block-size: auto;
   }
 
@@ -1231,7 +1231,7 @@
 /* The list is a sheet, so the page gives the picture its height: the preview is tall enough that the stage fills the body
    (1679, slice 11: at 390 the stage was 60dvh in a 375 px body and lay over the Documents list). */
 @media (max-width: 599.98px) {
-  #doc-preview:has(> .dgm-listsheet.dgm-listless) {
+  #doc-preview:has(> .dgm-phonelist.dgm-listless) {
     min-block-size: 80dvh;
   }
 }
@@ -1452,6 +1452,13 @@
     block-size: 44px;
     margin: -22px 0 0 -22px;
   }
+
+  /* Held: a 12 px dot under the finger, so the block it is aimed at stays in view. */
+  .dgm-end.dgm-held {
+    inline-size: 12px;
+    block-size: 12px;
+    margin: -6px 0 0 -6px;
+  }
 }
 
 /* A mouse can aim at a dense row: the list is one 28 px line a block and one line of arrows under it, so ten blocks and
@@ -1485,6 +1492,6 @@
   display: none;
 }
 
-.dgm-listsheet .dgm-listbtn {
+.dgm-phonelist .dgm-listbtn {
   display: inline-flex;
 }

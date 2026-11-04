@@ -137,3 +137,23 @@ def test_an_arrow_end_drags_to_another_block_and_the_reconnect_is_one_change():
     end = CSS[CSS.index(".dgm-end {") : CSS.index("}", CSS.index(".dgm-end {"))]
     assert "pointer-events: auto;" in end and "touch-action: none;" in end and "inline-size: 12px;" in end
     assert "inline-size: 44px;" in CSS[CSS.index("@media (pointer: coarse) {\n  .dgm-end {") :][:120]
+
+
+@needs_node
+def test_two_handles_closer_than_a_finger_are_pushed_apart_along_the_line():
+    # 1679 review item: on a phone a short arrow stacked its two 44 px handles. Far enough apart: no move; touching: 48 px between them.
+    far = _run("p.apart([0, 0], [60, 0], 48)")
+    assert far == [[0, 0], [0, 0]]
+    near = _run("p.apart([10, 10], [10, 30], 48)")
+    assert near == [[0, -14], [0, 14]]  # 20 apart, so 14 each way makes 48
+    same = _run("p.apart([5, 5], [5, 5], 48)")
+    assert same == [[-24, 0], [24, 0]]  # coincident: sideways
+
+
+def test_a_held_end_handle_shrinks_to_its_dot_so_it_does_not_cover_the_block_it_aims_at():
+    assert "hold(dot, true)" in PICK and 'classList.toggle("dgm-held", on)' in PICK and "hold(dot, false)" in PICK
+    assert "math.apart(here[0], here[1]" in PICK and '"(pointer: coarse)"' in PICK
+    held = CSS[CSS.index(".dgm-end.dgm-held {") :].split("}", 1)[0]
+    assert "inline-size: 12px" in held and "block-size: 12px" in held
+    # It sits inside the coarse query, after the 44 px rule it overrides.
+    assert CSS.index("@media (pointer: coarse) {\n  .dgm-end {") < CSS.index(".dgm-end.dgm-held {")

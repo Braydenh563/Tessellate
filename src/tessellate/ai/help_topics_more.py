@@ -3197,7 +3197,7 @@ MORE_TOPICS.extend([
         "body": (
             "The Diagram builder makes a flowchart, mind map, timeline or sequence diagram from "
             "blocks. Mermaid is only its file format (.mmd). Every door is the same row, "
-            "Diagram builder, with the same icon; in Documents it is the flow arrow button beside New. Ctrl+K, Diagram builder, and Find anything, Tools "
+            "Diagram builder, with the same icon; in Documents and the Library's document list it is the flow arrow button beside New. Ctrl+K, Diagram builder, and Find anything, Tools "
             "and features and Quick access list it too. Over a note, a document or a Chat box, "
             "Insert (or / then diagram) opens the builder and Done saves a diagram file and writes a link to it, "
             "[[Title]] after a !, which draws the diagram. Over a board or a mind map, Insert, Diagram, Diagram builder adds a diagram object "

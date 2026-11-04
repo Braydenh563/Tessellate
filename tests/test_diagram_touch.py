@@ -62,12 +62,12 @@ def test_a_drag_scrolls_the_pane_and_the_page_around_it_at_the_edge_of_what_is_o
 def test_a_phone_keeps_the_picture_and_opens_the_blocks_list_as_a_sheet_once_there_is_an_arrow():
     # 1679 slice 11: the list moves into an openSheet card and back; the empty walkthrough stays in the page until the first arrow.
     assert 'label: "Blocks"' in TOUCH and 'name: "diagram-blocks"' in TOUCH and "card.append(S.pane)" in TOUCH
-    assert "home.insertBefore(S.pane, before)" in TOUCH and "dgm-listbtn" in TOUCH and "dgm-listsheet" in TOUCH
+    assert "home.insertBefore(S.pane, before)" in TOUCH and "dgm-listbtn" in TOUCH and "dgm-phonelist" in TOUCH
     steps = (JS / "diagram-steps.js").read_text(encoding="utf-8")
     assert 'S.root.classList.toggle("dgm-listless", m.edges.length > 0)' in steps
-    rule = CSS[CSS.index(".dgm-listsheet.dgm-listless .dgm-body > .dgm-pane") :].split("}", 1)[0]
+    rule = CSS[CSS.index(".dgm-phonelist.dgm-listless .dgm-body > .dgm-pane") :].split("}", 1)[0]
     assert "display: none" in rule
-    assert ".dgm-listsheet.dgm-listless .dgm-body {" in CSS and "grid-template-rows: minmax(0, 1fr)" in CSS and ".sheet-card > .dgm-pane" in CSS
+    assert ".dgm-phonelist.dgm-listless .dgm-body {" in CSS and "grid-template-rows: minmax(0, 1fr)" in CSS and ".sheet-card > .dgm-pane" in CSS
 
 
 def test_grips_are_44_pixels_on_a_touch_screen():
