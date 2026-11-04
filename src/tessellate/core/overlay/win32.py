@@ -85,7 +85,9 @@ DWMWA_CLOAKED = 14
 DPI_PER_MONITOR_V2 = -4
 #: SHQueryUserNotificationState: busy, a fullscreen Direct3D game, a presentation.
 QUNS_BUSY, QUNS_D3D_FULL_SCREEN, QUNS_PRESENTATION = 2, 3, 4
-QUNS_HIDE = frozenset({QUNS_BUSY, QUNS_D3D_FULL_SCREEN, QUNS_PRESENTATION})
+#: Not QUNS_BUSY: Windows reports it for an ordinary maximised window too, and the figure
+#: blinked out for two seconds every half minute (INBOX 1670, owner's log 12:17Z).
+QUNS_HIDE = frozenset({QUNS_D3D_FULL_SCREEN, QUNS_PRESENTATION})
 
 LRESULT = ctypes.c_ssize_t
 WPARAM = ctypes.c_size_t

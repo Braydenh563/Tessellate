@@ -121,6 +121,22 @@ def test_a_drop_reports_where_it_settled() -> None:
     r.stop()
 
 
+def test_busy_state_alone_does_not_hide_it() -> None:
+    """INBOX 1670 (12:17Z log): a maximised browser reports QUNS_BUSY (2) and the figure
+    blinked out for 2 s every 30 s. Only a Direct3D game or a presentation hides it."""
+    r, fake, clock, *_ = make()
+    assert r.start()
+    r.show()
+    assert wait_for(lambda: r.host.visible)
+    fake.notification = k.QUNS_BUSY
+    for _ in range(3):
+        clock.t += 5
+        fake.post(k.WM_TIMER)
+    time.sleep(0.2)
+    assert not r.busy and r.host.visible
+    r.stop()
+
+
 def test_fullscreen_hides_it_and_leaving_shows_it_again(caplog) -> None:
     caplog.set_level("INFO", logger=runner_mod.logger.name)
     r, fake, clock, *_ = make()
