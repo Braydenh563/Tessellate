@@ -20,8 +20,8 @@ function objInField(el) {
   return el?.closest?.("input, textarea, select, [contenteditable='true'], .cm-editor") ?? null;
 }
 
-const OBJ_KINDS = ["note", "document", "board", "map", "image", "file"];
-const OBJ_NOUN = { note: "Note", document: "Document", board: "Board", map: "Mind map", image: "Image", file: "File" };
+const OBJ_KINDS = ["note", "document", "diagram", "board", "map", "image", "file"];
+const OBJ_NOUN = { note: "Note", document: "Document", diagram: "Diagram", board: "Board", map: "Mind map", image: "Image", file: "File" };
 
 //: Where a card says what it is, nearest first wins. `key` returns "kind:id".
 const OBJ_CARD_SOURCES = [
@@ -91,6 +91,8 @@ function objRefFromCard(target) {
 function objLinkText(ref) {
   const name = ref.title.replace(/[[\]|]/g, " ").replace(/\s+/g, " ").trim();
   if (ref.kind === "note" || ref.kind === "document") return `[[${name}]]`;
+  //: Draws in place (1621 D5).
+  if (ref.kind === "diagram") return `![[${name}]]`;
   if (ref.kind === "board" || ref.kind === "map") return `![[${ref.kind}:${ref.id}|${name}]]`;
   if (!ref.url) return name;
   return ref.kind === "image" ? `![${name}](${ref.url})` : `[${name}](${ref.url})`;
@@ -145,6 +147,11 @@ const OBJ_STAGED = {
   file: (ref) => attachedFiles.some((row) => row.id === ref.id),
   image: (ref) => attachedImages.some((row) => String(row.id) === String(ref.id)),
 };
+
+
+//: A diagram is a document of the `mmd` type, so it stages as one.
+OBJ_STAGE.diagram = OBJ_STAGE.document;
+OBJ_STAGED.diagram = OBJ_STAGED.document;
 
 //: Text goes in through the browser's edit pipeline, so the field's own Ctrl+Z
 //: still works and a note or document editor sees an `input` event (its dirty

@@ -81,7 +81,7 @@ def test_connect_to_is_on_every_row_and_in_the_menu_and_the_picker_can_make_the_
     assert "Connect ${nameOf(h, S, key)} to" in joins
     # Making the block and the connector is one change, so one undo.
     add = builder.split("function addBlock(", 1)[1].split("function relabel", 1)[0]
-    assert "if (from) diagramOps.join(m, from, id);" in add and add.count("commit(S,") == 1
+    assert "if (from) diagramOps.join(m, from, id, { label });" in add and add.count("commit(S,") == 1
 
 
 def test_the_empty_list_and_the_space_under_the_blocks_say_what_to_do_next():
