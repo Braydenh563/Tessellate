@@ -314,3 +314,52 @@ class SpriteSet:
         turned = canvas.rotate(-step * 360.0 / SPIN_STEPS, resample=Image.Resampling.BICUBIC)
         clear = clear_faint_alpha(turned)
         return Frame(side, side, premultiplied_bgra(clear), pad_x, pad_y, _drawn_box(clear))
+
+
+#: Alpha under this share of the picture is gone altogether: no faint ghost, and no click lands on it.
+FADE_CLEAR = 0.06
+#: The portal's ring (nebula violet, a lighter rim) and the puff's smoke (soft grey-white).
+PORTAL_RING = (150, 110, 255)
+PORTAL_RIM = (210, 190, 255)
+PUFF_SMOKE = (236, 238, 244)
+
+
+def effect(frame: Frame, fx: tuple[str, float, int] | None, alpha: float) -> Frame:
+    """The frame as a vanish or an arrival shows it (INBOX 1670): the figure's alpha scaled by `alpha`
+    (clear below FADE_CLEAR), with a portal ring or a puff of smoke over it. `fx` is (kind, strength 0..1,
+    facing); the plain fade is `fx` None. Straight alpha through Pillow, then the halo guard, so a faint
+    edge takes no click. The box stays the figure's own (the quick panel is placed from it)."""
+    if fx is None and alpha >= 1.0:
+        return frame
+    from PIL import Image, ImageDraw, ImageFilter
+
+    w, h = frame.width, frame.height
+    image = Image.frombytes("RGBA", (w, h), frame.bgra, "raw", "BGRa")
+    share = 0.0 if alpha < FADE_CLEAR else max(0.0, min(1.0, alpha))
+    if share < 1.0:
+        image.putalpha(image.getchannel("A").point(lambda a: int(a * share)))
+    if fx is not None and fx[1] > 0.0:
+        kind, strength, face = fx
+        left, top, right, bottom = frame.box if frame.box[2] else (0, 0, w, h)
+        cx, cy = (left + right) / 2.0, (top + bottom) / 2.0
+        bw, bh = right - left, bottom - top
+        layer = Image.new("RGBA", (w, h), (0, 0, 0, 0))
+        draw = ImageDraw.Draw(layer)
+        if kind == "portal":
+            ox = (1 if face >= 0 else -1) * bw * 0.18
+            rx, ry = bw * 0.30 * (0.5 + 0.5 * strength), bh * 0.62 * (0.6 + 0.4 * strength)
+            box = (cx + ox - rx, cy - ry, cx + ox + rx, cy + ry)
+            tone = max(1, int(220 * strength))
+            for grow, rgb in ((10, PORTAL_RING), (5, PORTAL_RING), (0, PORTAL_RIM)):
+                draw.ellipse((box[0] - grow, box[1] - grow, box[2] + grow, box[3] + grow), outline=(*rgb, tone // (1 + grow // 5)), width=3)
+            layer = layer.filter(ImageFilter.GaussianBlur(1.5))
+        else:
+            tone = max(1, int(200 * strength))
+            for dx, dy, rad in ((-0.3, 0.25, 0.30), (0.3, 0.2, 0.28), (0.0, -0.1, 0.36), (-0.2, -0.3, 0.24), (0.25, -0.3, 0.22)):
+                r = max(bw, bh) * rad * (0.4 + 0.8 * strength)
+                x, y = cx + dx * bw, cy + dy * bh
+                draw.ellipse((x - r, y - r, x + r, y + r), fill=(*PUFF_SMOKE, tone))
+            layer = layer.filter(ImageFilter.GaussianBlur(max(2.0, bw * 0.04)))
+        image = Image.alpha_composite(image, layer)
+    clear = clear_faint_alpha(image)
+    return Frame(w, h, premultiplied_bgra(clear), frame.pad_x, frame.pad_y, frame.box)

@@ -27,6 +27,9 @@ def run(e: Engine, t: float, seconds: float, pointer=None, step: float | None = 
     return outs, t
 
 
+BOB_EASE_CHECK = eng.BOB_EASE_OUT * 1.2
+
+
 def calm(e: Engine) -> Engine:
     e.big_ready = e.trip_ready = math.inf
     return e
@@ -36,8 +39,11 @@ def calm(e: Engine) -> Engine:
 
 
 @pytest.mark.parametrize("look", LOOKS)
-def test_the_idle_bob_has_a_period_of_three_to_five_seconds_and_an_amplitude_of_a_few_px(look: str) -> None:
-    e, _s = make(look, "float")
+def test_the_bob_is_only_while_travelling_and_eases_out_in_about_a_second(look: str) -> None:
+    # Intent moved (INBOX 1670: "why does it bob up and down so much, it is floating"): it used to be a
+    # 3 to 5 s breath at rest. At rest the window now stays on one row; a floater bobs only while it travels
+    # and the bob eases out over BOB_EASE_OUT after it arrives.
+    e, _s = make(look, "float", plain=True)
     e._enter("stand", 0.0)
     e.state_until = math.inf
     e.next_ambient = math.inf
@@ -46,16 +52,28 @@ def test_the_idle_bob_has_a_period_of_three_to_five_seconds_and_an_amplitude_of_
     t, ys = 0.0, []
     for _ in range(30 * 20):
         t += 1 / 30
-        e.update(t)  # the frame's own foot offset (`_dy`) is not the bob; take the bob alone
+        e.update(t)
         ys.append(round(e._bobbed(e.x, e.y, t)[1]))
-    assert 1 <= max(ys) - min(ys) <= eng.BOB_REST + 1
-    lo = min(ys)  # the top of the bob: one entry into that level per breath
-    ups = [i / 30 for i in range(1, len(ys)) if ys[i] == lo and ys[i - 1] > lo]
-    assert 3.0 <= 1 / eng.BOB_HZ <= 5.0
-    assert len(ups) >= 3, "it bobs"
-    firsts = [u for i, u in enumerate(ups) if i == 0 or u - ups[i - 1] > 1.5]  # a quantised trough can touch twice
-    gaps = [b - a for a, b in zip(firsts, firsts[1:])]
-    assert gaps and all(3.0 <= g <= 5.0 for g in gaps), gaps
+    assert max(ys) == min(ys), "no bob at rest"
+    assert e.bob_gain == 0.0
+    e.state_until = 0.0
+    e.goal, e.then, e.trip = (e.x + 500.0, e.y - 60.0), "stand", True
+    e._enter("drift", t)
+    e.goal, e.trip, e.state_until = (e.x + 500.0, e.y - 60.0), True, math.inf
+    moving = []
+    for _ in range(30 * 4):
+        t += 1 / 30
+        e.update(t)
+        moving.append(e.bob_gain)
+    assert max(moving) > 0.5, "it bobs while travelling"
+    e._enter("stand", t)
+    e.state_until = math.inf
+    e.next_ambient = math.inf
+    end = t + BOB_EASE_CHECK
+    while t < end:
+        t += 1 / 30
+        e.update(t)
+    assert e.bob_gain < 0.05, e.bob_gain
 
 
 # --- (6) only Atlas floats ----------------------------------------------------------------------
@@ -80,7 +98,7 @@ def test_a_ground_companion_never_bobs_in_the_air_and_floating_acts_are_not_its_
 def test_it_leans_into_the_way_it_travels_and_left_looks_unlike_right(gait: str) -> None:
     seen = {}
     for way in (1, -1):
-        e, _s = make("masculine", gait)
+        e, _s = make("masculine", gait, plain=True)
         calm(e)
         e.x = 900.0
         e._go((900.0 + way * 300, e.ground_y()), "stand", 0.0)
@@ -96,7 +114,7 @@ def test_it_leans_into_the_way_it_travels_and_left_looks_unlike_right(gait: str)
 
 
 def test_it_never_moonwalks_and_turns_through_a_sliver_before_going_back() -> None:
-    e, _s = make("masculine", "walk")
+    e, _s = make("masculine", "walk", plain=True)
     calm(e)
     e._go((1300.0, e.ground_y()), "stand", 0.0)
     t, last_facing, squeezed, wrong, x0 = 0.0, e.facing, 1.0, 0, e.x
@@ -236,7 +254,9 @@ def test_a_click_makes_it_happy_and_a_second_pat_makes_it_purr() -> None:
     assert e.state == "act" and e.act == "sway"
 
 
-def test_being_dropped_startles_then_it_shakes_off_and_is_proud() -> None:
+def test_being_dropped_startles_then_it_lands_and_stays_put() -> None:
+    # Intent moved (INBOX 1670: after a landing, at most one settle and no vertical motion beyond 2 px
+    # within 3 s): the shake-off after a drop is gone; it lands, and the next thing is a long stand.
     e, _s = make("masculine", "walk")
     calm(e)
     t = drag(e, (700, 600), release=True)
@@ -246,7 +266,8 @@ def test_being_dropped_startles_then_it_shakes_off_and_is_proud() -> None:
         t += 0.016
         e.update(t)
         seen.add((e.state, e.act))
-    assert ("act", "shake_off") in seen and e.mind.event == "proud"
+    assert ("act", "shake_off") not in seen
+    assert {s for s, _a in seen} <= {"fall", "land", "stand"}
 
 
 @pytest.mark.parametrize("hour,mood", [(3, "sleepy"), (14, "bored")])
@@ -295,19 +316,22 @@ def test_an_activity_is_not_repeated_within_a_few_minutes_and_the_mix_is_varied(
     assert len({n for _t, n in picks}) >= 15
 
 
-def test_micro_things_are_weighted_not_all_at_once() -> None:
+def test_micro_things_are_weighted_not_all_at_once(monkeypatch) -> None:
+    monkeypatch.setattr(eng, "IDLE_SIT", math.inf)  # the person is about
+    monkeypatch.setattr(eng, "IDLE_SLEEP", math.inf)
     acts = []
-    t = 0.0
-    e2, _s = make("masculine", "float")
-    calm(e2)
-    prev = None
-    out = e2.update(0.0)
-    while t < 600:
-        t += max(0.016, (out.wake_ms or 1000) / 1000)
-        out = e2.update(t)
-        if e2.state == "act" and e2.act != prev:
-            acts.append(e2.act)
-        prev = e2.act if e2.state == "act" else None
+    for seed in range(2, 8):  # six figures of ten hours each: a settled buddy decides about every six minutes (INBOX 1670)
+        t = 0.0
+        e2, _s = make("masculine", "float", seed)
+        calm(e2)
+        prev = None
+        out = e2.update(0.0)
+        while t < 36000:
+            t += max(0.016, (out.wake_ms or 1000) / 1000)
+            out = e2.update(t)
+            if e2.state == "act" and e2.act != prev:
+                acts.append(e2.act)
+            prev = e2.act if e2.state == "act" else None
     assert len(acts) >= 15 and len(set(acts)) >= 8
     assert max(acts.count(a) for a in set(acts)) <= len(acts) * 0.4
 
@@ -319,7 +343,7 @@ def test_micro_things_are_weighted_not_all_at_once() -> None:
 def test_close_range_is_a_step_middle_a_walk_far_a_crouch_then_a_run_and_a_landing(gait: str) -> None:
     modes = {}
     for dist in (40, 220, 900):
-        e, _s = make("masculine", gait)
+        e, _s = make("masculine", gait, plain=True)
         calm(e)
         e.x = 400.0
         e._go((400.0 + dist, e.ground_y()), "home", 0.0)
@@ -339,7 +363,7 @@ def test_close_range_is_a_step_middle_a_walk_far_a_crouch_then_a_run_and_a_landi
 
 
 def test_a_leg_eases_in_and_out_with_no_dart() -> None:
-    e, _s = make("masculine", "walk")
+    e, _s = make("masculine", "walk", plain=True)
     calm(e)
     e._go((e.x + 400, e.ground_y()), "stand", 0.0)
     e.state_until = math.inf
@@ -405,7 +429,7 @@ def test_it_waits_rather_than_passing_under_a_busy_pointer() -> None:
 
 
 def test_a_trip_goes_home_afterwards() -> None:
-    e, _s = make("masculine", "walk")
+    e, _s = make("masculine", "walk", plain=True)
     calm(e)
     home = e.home_x
     e.trip_ready = 0.0
@@ -416,7 +440,7 @@ def test_a_trip_goes_home_afterwards() -> None:
         t += 0.05
         e.update(t, (300, 500))
         far = max(far, abs(e.x - home))
-    assert far > 100 and abs(e.x - home) <= eng.AWAY * 2, (far, e.x, home)
+    assert far > 100 and abs(e.x - e.home_x) <= eng.AWAY * 2, (far, e.x, e.home_x)  # home may have moved to an edge
 
 
 def test_the_screens_middle_is_not_where_it_spends_its_time() -> None:

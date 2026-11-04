@@ -15,7 +15,9 @@ FLOOR = 1040 - 120
 
 def make(monitors=None, seed=7, **kw) -> Engine:
     kw.setdefault("home", (800, FLOOR))
-    return Engine(SIZE, monitors or ONE, rng=random.Random(seed), **kw)
+    e = Engine(SIZE, monitors or ONE, rng=random.Random(seed), **kw)
+    e.plain_legs = True  # these tests are about the walk and the drift; the vanishes have their own file (INBOX 1670)
+    return e
 
 
 def throw(e: Engine, to=(1500, 500), start=(850, 950), t0=1.0, gap=0.016, steps=4):
@@ -144,11 +146,13 @@ def test_a_floater_rests_a_hand_above_the_floor_not_a_figure_up() -> None:
 
 
 def test_a_floater_drifts_across_the_width_and_a_band_above_its_rest_line_not_the_whole_height() -> None:
-    e = make(gait="float", seed=3)
+    e = make(gait="float", seed=3, home=(1760, FLOOR))  # home at an edge: one in the middle is moved out (INBOX 1670)
     e.big_ready = math.inf
     ys, xs, frames, t = [], [], set(), 0.0
-    for _ in range(4000):  # 4 minutes at 60 ms
-        t += 0.06
+    for _ in range(12000):  # 40 minutes at 200 ms (INBOX 1670: it sits for minutes between strolls)
+        t += 0.2
+        if _ % 3000 == 5 and e.state == "stand":  # a stroll now and then: they are rare now, the band is the point
+            e._perform("stroll", t)
         o = e.update(t)
         ys.append(o.y), xs.append(o.x), frames.add(o.frame)
         assert 0 <= o.x <= 1920 - 100 and 0 <= o.y <= FLOOR
@@ -227,7 +231,8 @@ def test_a_walker_climbs_to_the_top_hangs_still_and_falls_back() -> None:
     assert e.state == "hang" and outs[-1].y == 0 and outs[-1].frame == "hang"
     t, outs = step(e, t, 6.0)
     assert len({o.x for o in outs if e.state == "hang"}) == 1  # INBOX 1663: it holds still
-    t, outs = step(e, t, 12.0)
+    # Intent kept, bar moved (INBOX 1670: a hang lasts 30 s or more, 200 s at most, then it lets go).
+    t, outs = step(e, t, eng.HANG_FOR[1] + 15.0)
     assert any(o.frame == "fall" for o in outs) and outs[-1].y == FLOOR
 
 
@@ -264,13 +269,13 @@ def test_peeking_from_the_bottom_clips_the_hidden_rows_and_never_shows_below_the
 
 
 def test_a_peek_asks_for_ticks_while_it_moves_and_a_click_brings_it_out() -> None:
-    e = make()
+    e = make(home=(1700, FLOOR))  # a peek is at an edge; a goal in the middle third is moved out of it (INBOX 1670)
     t, _ = step(e, 1.0, 0.0)
     e._go((e.x, e.floor_y()), "peek_bottom", 1.0)
     t, outs = step(e, 1.0, 1.5, 0.033)
     assert e.state == "peek" and outs[-1].wake_ms == eng.TICK_WALK_MS
-    e.update(t + 0.01, event=("down", 850, 1030))
-    out = e.update(t + 0.05, event=("up", 850, 1030))
+    e.update(t + 0.01, event=("down", 1750, 1030))
+    out = e.update(t + 0.05, event=("up", 1750, 1030))
     assert out.click == "left" and e.state == "emerge"
     t2, outs = step(e, t + 0.05, 1.0, 0.033)
     assert outs[-1].clip is None and e.state in ("stand", "wave")
@@ -317,7 +322,8 @@ def run_acts(e: Engine, minutes: float):
 def test_big_acts_are_minutes_apart_and_all_the_acts_are_in_one_table() -> None:
     assert set(eng.ACTS) == {"idle", "stroll", "trip", "sleep", "hang", "peek"}
     for gait in ("walk", "float"):
-        acts = run_acts(make(seed=4, gait=gait), 180)
+        # Bar moved (INBOX 1670: a hang is 30 to 200 s and the rest is long): ten hours, not three.
+        acts = run_acts(make(seed=4, gait=gait), 600)
         assert len(acts) >= 3, acts
         gaps = [b[0] - a[0] for a, b in zip(acts, acts[1:])]
         assert min(gaps) >= eng.BIG_EVERY[0] - 1, gaps
@@ -396,8 +402,10 @@ def test_nothing_is_clipped_unless_the_hidden_part_is_past_the_work_areas_edge()
         for seed in (1, 2, 3):
             e = Engine(size, monitors, rng=random.Random(seed), home=(800, 600), gait="float")
             t = 0.0
-            for _ in range(6000):
+            for tick in range(6000):
                 t += 0.1
+                if tick % 1500 == 100 and e.state == "stand":  # this is about the clip, not how often it peeks
+                    e._perform("peek", t)
                 o = e.update(t)
                 m = e.current_monitor()
                 left, top, right, bottom = m.area

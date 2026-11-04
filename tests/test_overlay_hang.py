@@ -24,6 +24,7 @@ def make(seed=2, **kw) -> Engine:
     kw.setdefault("gait", "float")
     e = Engine(SIZE, ONE, rng=random.Random(seed), home=(800, 920), hang_top=SHARE, **kw)
     e.climb_ready = float("inf")
+    e.plain_legs = True  # the trip to the edge is the plain drift here; the vanishes have their own file (INBOX 1670)
     return e
 
 

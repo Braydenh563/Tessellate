@@ -28,6 +28,18 @@ NEED_FULL = {"rest": 1500.0, "curiosity": 700.0, "play": 1100.0}
 MOODS = ("happy", "curious", "sleepy", "startled", "proud", "bored")
 #: How long an event keeps a mood in front (seconds).
 MOOD_FOR = 25.0
+#: The lively ones (a bounce, a wiggle, a sway, a loop, a dance, a wave) are chosen acts, rare (INBOX
+#: 1670, 13:15Z: "it can't sit still, it has like ADHD"): the first one comes no sooner than
+#: `FIDGET_FIRST` seconds in, then one at most every `FIDGET_GAP`, so about two an hour at most.
+FIDGETS = frozenset({"bounce", "wiggle", "sway", "float_loop", "little_dance", "wave_idle", "shake_off"})
+FIDGET_FIRST = 600.0
+FIDGET_GAP = 1800.0
+#: How long a hang lasts by mood (INBOX 1670, 13:28Z: "it doesn't hang for a while"): tens of seconds to
+#: a few minutes. A tired one lets go sooner, a curious or bored one stays and looks about.
+HANG_BY_MOOD = {
+    "sleepy": (30.0, 60.0), "startled": (30.0, 50.0), "happy": (60.0, 140.0), "proud": (50.0, 120.0),
+    "curious": (80.0, 170.0), "bored": (90.0, 200.0),
+}
 
 
 class Pose(NamedTuple):
@@ -159,6 +171,7 @@ class Mind:
         self.event_at = -1e9
         self.done: dict[str, float] = {}
         self.at = now
+        self.fidget_ready = now + FIDGET_FIRST
 
     def tick(self, now: float, hour: int = 12) -> None:
         dt = min(max(now - self.at, 0.0), 30.0)
@@ -175,27 +188,38 @@ class Mind:
 
     def did(self, name: str, now: float) -> None:
         self.done[name] = now
+        if name in FIDGETS:
+            self.fidget_ready = now + FIDGET_GAP
         for need, delta in ACTIVITIES[name].feeds if name in ACTIVITIES else ():
             self.needs[need] = min(1.0, max(0.0, self.needs[need] + delta))
 
     def weights(self, now: float, gait: str, hour: int = 12, where: str = "") -> list[tuple[str, float]]:
         mood = self.mood(now, hour)
+        tired = mood == "sleepy" or self.needs["rest"] > 0.6
+        content = mood in ("proud", "bored") or self.needs["play"] < 0.15
         out = []
         for name, act in ACTIVITIES.items():
             if act.gait not in ("any", gait) or (act.where and act.where != where):
                 continue
+            if name in FIDGETS and (now < self.fidget_ready or tired):
+                continue  # a fidget is a rare, chosen act; a tired one does not
             if now - self.done.get(name, -1e9) < NO_REPEAT and name not in ("breathe", "shift_weight", "slow_blink", "tail_flick"):
                 continue  # quiet micro things may recur; the rest wait their turn
-            w = float(BASE_WEIGHT.get(name, 2))
-            for need, delta in act.feeds:
-                if delta < 0:
-                    w *= 1.0 + 3.0 * self.needs[need]
-            if act.likes == mood:
-                w *= 2.5
-            if name in ("doze", "curl_up", "lie_down", "sit_down") and self.needs["rest"] < 0.3 and not (hour >= 23 or hour < 6):
-                w *= 0.2
-            out.append((name, w))
+            out.append((name, self._weight(name, act, mood, content, hour)))
         return out
+
+    def _weight(self, name: str, act: Activity, mood: str, content: bool, hour: int) -> float:
+        w = float(BASE_WEIGHT.get(name, 2))
+        for need, delta in act.feeds:
+            if delta < 0:
+                w *= 1.0 + 3.0 * self.needs[need]
+        if act.likes == mood:
+            w *= 2.5
+        if name in FIDGETS and content:
+            w *= 0.4  # content, it has less to burn off
+        if name in ("doze", "curl_up", "lie_down", "sit_down") and self.needs["rest"] < 0.3 and not (hour >= 23 or hour < 6):
+            w *= 0.2
+        return w
 
     def pick(self, rng: random.Random, now: float, gait: str, hour: int = 12, where: str = "") -> str:
         table = self.weights(now, gait, hour, where)

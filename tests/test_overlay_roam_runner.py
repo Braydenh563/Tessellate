@@ -141,6 +141,7 @@ def test_a_wanted_scan_caps_the_wake_so_the_next_read_is_on_time() -> None:
     r, fake, clock, _ = started()
     due(r, clock)
     r.engine.next_ambient = 1e9  # nothing else is picked: it stays standing
+    r.engine.relocate_at = None  # (its home is in the middle third: the move to an edge is not this test)
     r.engine.state_until = 1e9
     r.engine.big_ready = 1e9
     tick(r, clock, 0.1)

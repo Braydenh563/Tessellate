@@ -47,6 +47,8 @@ class FakeWin32:
         #: Visible windows, topmost first, as the shell reports them:
         #: {hwnd: {"rect", "title", "pid", "ex", "iconic", "zoomed", "cloaked", "visible"}}.
         self.window_list: dict[int, dict[str, Any]] = {}
+        #: The foreground window's text caret: (client rect, the client area's screen origin), or None for none.
+        self.caret: tuple[tuple[int, int, int, int], tuple[int, int]] | None = None
         for name in ("user32", "gdi32", "kernel32", "shcore", "shell32", "dwmapi"):
             setattr(self, name, FakeDll(self, name))
 
@@ -168,7 +170,28 @@ class FakeWin32:
     def _GetWindowTextLengthW(self, hwnd: Any) -> int:
         return len(self._win(hwnd).get("title", "x"))
 
+    def _GetForegroundWindow(self) -> int:
+        return 900
+
+    def _GetGUIThreadInfo(self, _thread: int, ref: Any) -> int:
+        info = ref._obj
+        if self.caret is None:
+            info.hwndCaret = None
+            return 1
+        (left, top, right, bottom), _origin = self.caret
+        info.hwndCaret = 901
+        info.rcCaret.left, info.rcCaret.top, info.rcCaret.right, info.rcCaret.bottom = left, top, right, bottom
+        return 1
+
+    def _ClientToScreen(self, _hwnd: Any, ref: Any) -> int:
+        ox, oy = self.caret[1] if self.caret else (0, 0)
+        ref._obj.x += ox
+        ref._obj.y += oy
+        return 1
+
     def _GetWindowThreadProcessId(self, hwnd: Any, pid_ref: Any) -> int:
+        if pid_ref is None:
+            return 77
         pid_ref._obj.value = self._win(hwnd).get("pid", 4242)
         return 1
 

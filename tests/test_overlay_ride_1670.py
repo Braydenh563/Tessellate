@@ -21,7 +21,7 @@ WIN = Perch(11, 500, 300, 1100)
 RESTING = tuple(n for n in FRAME_NAMES if n not in ("hang", "tumble", "fall", "hop", "held"))
 
 
-def make(look: str = "masculine", gait: str = "float", seed: int = 2) -> tuple[Engine, SpriteSet]:
+def make(look: str = "masculine", gait: str = "float", seed: int = 2, plain: bool = False) -> tuple[Engine, SpriteSet]:
     s = SpriteSet(look)
     size = s.size(96)
     e = Engine(
@@ -31,6 +31,7 @@ def make(look: str = "masculine", gait: str = "float", seed: int = 2) -> tuple[E
     e.set_metrics(s.metrics(96))
     e.climb_ready = math.inf
     e.big_ready = math.inf
+    e.plain_legs = plain  # True: every leg is the plain walk or drift (the older tests); False: the full repertoire
     return e, s
 
 
