@@ -2,7 +2,7 @@
 
 Generated 2026-11-04 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7755, frontend ids 2641, CSS sections 522, backend routes 644, backend modules 8676, test files 2014, tests 16978, plan headings 999, app scripts 28, boot scripts 37, script files 248.
+Counts: frontend functions 7755, frontend ids 2641, CSS sections 522, backend routes 644, backend modules 8676, test files 2016, tests 16994, plan headings 999, app scripts 28, boot scripts 37, script files 248.
 
 ## Frontend functions (7755)
 
@@ -22104,11 +22104,11 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `Engine` | src/tessellate/core/overlay/engine.py:220 |
-| `Monitor` | src/tessellate/core/overlay/engine.py:184 |
-| `Output` | src/tessellate/core/overlay/engine.py:191 |
-| `Perch` | src/tessellate/core/overlay/engine.py:175 |
-| `_adjoins` | src/tessellate/core/overlay/engine.py:209 |
+| `Engine` | src/tessellate/core/overlay/engine.py:239 |
+| `Monitor` | src/tessellate/core/overlay/engine.py:203 |
+| `Output` | src/tessellate/core/overlay/engine.py:210 |
+| `Perch` | src/tessellate/core/overlay/engine.py:194 |
+| `_adjoins` | src/tessellate/core/overlay/engine.py:228 |
 
 ### src/tessellate/core/overlay/host.py (2)
 
@@ -23814,7 +23814,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (16978)
+## Tests (16994)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -25140,12 +25140,14 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_output_forms.py | 7 |
 | tests/test_outside_text_taints_chat.py | 3 |
 | tests/test_overlay_engine.py | 30 |
+| tests/test_overlay_float.py | 5 |
+| tests/test_overlay_hang.py | 10 |
 | tests/test_overlay_host.py | 25 |
 | tests/test_overlay_idle.py | 8 |
 | tests/test_overlay_moves.py | 25 |
 | tests/test_overlay_roam.py | 19 |
 | tests/test_overlay_roam_runner.py | 10 |
-| tests/test_overlay_runner.py | 19 |
+| tests/test_overlay_runner.py | 20 |
 | tests/test_overlay_sprites.py | 13 |
 | tests/test_overview_counts_1524.py | 3 |
 | tests/test_owner_typos.py | 21 |

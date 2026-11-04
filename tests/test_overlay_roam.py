@@ -181,7 +181,8 @@ def test_a_floater_floats_down_onto_a_window_top_and_drifts_off_when_it_closes()
     e.set_windows([], t)
     assert e.perch is None and e.state == "fly"
     t, _ = step(e, t, 6.0)
-    assert e.state == "stand" and abs(e.y - e.ground_y()) < 5
+    # Back in the air and travelling again (INBOX 1658: a floater rests only a moment).
+    assert e.state in ("stand", "drift") and e.y <= e.ground_y() + 5
 
 
 # --- a reminder's card --------------------------------------------------------------------------
