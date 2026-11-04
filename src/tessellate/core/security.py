@@ -45,11 +45,12 @@ def _origin_of(url: str) -> tuple[str, str, int | None] | None:
     """(scheme, host, port) for a URL, or None if it isn't one we can judge."""
     try:
         parts = urlsplit(url)
+        # `.port` raises on a non-numeric or out-of-range port (SEC-A4).
+        port = parts.port
     except ValueError:
         return None
     if parts.scheme not in ("http", "https") or not parts.hostname:
         return None
-    port = parts.port
     if port is None:
         port = 443 if parts.scheme == "https" else 80
     return (parts.scheme, parts.hostname.lower(), port)

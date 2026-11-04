@@ -131,6 +131,48 @@ def test_lock_all_ends_every_session(client):
     assert client.get("/auth/account", headers=headers).status_code == 401
 
 
+def test_lock_all_also_kills_a_reminder_notification_token(client):
+    """SEC-A5: a notification left on screen cannot act after the panic button."""
+    from tessellate.core import deps, reminder_token
+
+    headers = _setup(client)
+    data_dir = deps.get_config().data_dir
+    token = reminder_token.mint(7, now=1_000_000, data_dir=data_dir)["token"]
+    assert reminder_token.verify(token, 7, "done", now=1_000_001, data_dir=data_dir)
+    assert client.post("/auth/lock-all", headers=headers).status_code == 200
+    assert not reminder_token.verify(token, 7, "done", now=1_000_001, data_dir=data_dir)
+
+
+def test_an_open_jobs_stream_ends_when_its_session_is_locked(client, monkeypatch):
+    """SEC-A6: the stream was gated only when it opened. Driven without the
+    HTTP client, which serialises requests and cannot lock mid-stream."""
+    import asyncio
+
+    from starlette.requests import Request
+
+    from tessellate.api import routes_auth, routes_tasks
+
+    monkeypatch.setattr(routes_tasks, "_STREAM_POLL_SECONDS", 0.01)
+    token = _setup(client)["X-Auth-Token"]
+    scope = {"type": "http", "method": "GET", "path": "/jobs/stream", "headers": [], "query_string": b"",
+             "app": client.app, "client": ("127.0.0.1", 1), "server": ("testserver", 80)}
+
+    async def never() -> dict:
+        await asyncio.sleep(3600)
+        return {}
+
+    async def run() -> int:
+        response = await routes_tasks.jobs_stream(Request(scope, never), seconds=30, limit=5, x_auth_token=token)
+        chunks = 0
+        async for _chunk in response.body_iterator:
+            chunks += 1
+            if chunks == 1:
+                routes_auth._active_tokens.clear()
+        return chunks
+
+    assert asyncio.run(asyncio.wait_for(run(), 10)) >= 1
+
+
 def test_rotate_vault_key_invalidates_old_tokens_and_unlock_still_works(client):
     headers = _setup(client)
     other = client.post("/auth/unlock", json={"password": "first-pass"}).json()

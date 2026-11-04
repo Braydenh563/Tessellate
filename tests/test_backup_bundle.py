@@ -179,3 +179,37 @@ def test_a_zip_of_too_many_files_or_too_few_free_bytes_is_refused_first(tmp_path
     with pytest.raises(backup_bundle.BundleError, match="Not enough free space to restore that backup: free up"):
         backup_bundle.restore_zip(archive, db, tmp_path / "data", keep=3)
     assert not db.exists() and not (tmp_path / "data" / "media").exists()
+
+
+def test_a_restored_zip_cannot_move_this_computer_only_settings(client, tmp_path):
+    """SEC-A1: backup_copy_dir, the model name and the update/console switches
+    are this computer's own; a zip from someone else does not set them."""
+    import json
+
+    good = client.get("/export/backup").content
+    keys = {
+        "backup_copy_dir": str(tmp_path),
+        "voice_model": "evil/model",
+        "update_channel": "beta",
+        "update_beta": True,
+        "semantic_auto_install": True,
+        "desktop_companion": True,
+        "show_console_on_startup": True,
+        "close_to_tray": True,
+        "tools_enabled": ["x"],
+        "theme": "dark",
+    }
+    evil = io.BytesIO()
+    with zipfile.ZipFile(io.BytesIO(good)) as source, zipfile.ZipFile(evil, "w") as zf:
+        for name in source.namelist():
+            if name != backup_bundle.PREFERENCES_MEMBER:
+                zf.writestr(name, source.read(name))
+        zf.writestr(backup_bundle.PREFERENCES_MEMBER, json.dumps(keys))
+    before = deps.get_config().all_preferences()
+    reply = client.post("/backups/bundle/restore", files={"file": ("x.zip", evil.getvalue())})
+    assert reply.status_code == 200, reply.text
+    prefs = deps.get_config().all_preferences()
+    for key in keys:
+        if key != "theme":
+            assert prefs.get(key) == before.get(key), key
+    assert prefs.get("theme") == "dark"
