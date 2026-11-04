@@ -1116,7 +1116,6 @@ class Engine:
         pull to its hover height). Bounces off the outer walls, hangs from the ceiling."""
         scale = self._scale()
         m = self.current_monitor()
-        left, top, right, _b = m.area
         floater = self.gait == "float"
         if floater:
             decay = math.exp(-FLOAT_DRAG * dt)

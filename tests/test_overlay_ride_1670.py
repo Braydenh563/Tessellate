@@ -70,7 +70,7 @@ def feet(e: Engine, s: SpriteSet, out: eng.Output) -> float:
 def test_a_drag_released_near_the_top_edge_hangs_anywhere_along_it(gait: str, x: int) -> None:
     e, _s = make(gait=gait)
     t = drag(e, (x, 30))
-    t = run_until(e, "hang", t)
+    run_until(e, "hang", t)
     assert e.state == "hang"
     assert e.y + e.hang_top * e.size[1] == pytest.approx(0.0, abs=1.0)
     assert e.hang_on is None
