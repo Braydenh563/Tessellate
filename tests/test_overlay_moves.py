@@ -141,7 +141,7 @@ def test_a_floater_rests_at_a_hover_height_between_24_and_80_px() -> None:
         assert e.y == e.ground_y()
 
 
-def test_a_floater_drifts_over_the_whole_work_area_not_just_the_bottom() -> None:
+def test_a_floater_drifts_across_the_width_and_a_band_above_its_rest_line_not_the_whole_height() -> None:
     e = make(gait="float", seed=3)
     e.big_ready = math.inf
     ys, xs, frames, t = [], [], set(), 0.0
@@ -150,7 +150,8 @@ def test_a_floater_drifts_over_the_whole_work_area_not_just_the_bottom() -> None
         o = e.update(t)
         ys.append(o.y), xs.append(o.x), frames.add(o.frame)
         assert 0 <= o.x <= 1920 - 100 and 0 <= o.y <= FLOOR
-    assert max(ys) - min(ys) > 300 and max(xs) - min(xs) > 500
+    # INBOX 1663 ("wayyy to high"): the height it uses is about its own, no more.
+    assert 40 < max(ys) - min(ys) <= eng.FLOAT_BAND * e.size[1] + eng.HOVER[1] + 2 and max(xs) - min(xs) > 500
     assert {"walk0", "walk3"} <= frames
 
 
@@ -210,15 +211,14 @@ def test_the_walker_stays_on_the_floor_when_big_acts_are_off() -> None:
 
 # --- hang ---------------------------------------------------------------------------------
 
-def test_a_walker_climbs_to_the_top_hangs_sways_and_falls_back() -> None:
+def test_a_walker_climbs_to_the_top_hangs_still_and_falls_back() -> None:
     e = make()
     e._perform("hang", 1.0)
     assert e.state == "rise"
     t, outs = step(e, 1.0, 1.2)
     assert e.state == "hang" and outs[-1].y == 0 and outs[-1].frame == "hang"
     t, outs = step(e, t, 6.0)
-    assert len({o.x for o in outs if e.state == "hang"}) > 5  # it sways
-    assert max(abs(o.x - 800) for o in outs) <= eng.SWAY + 1
+    assert len({o.x for o in outs if e.state == "hang"}) == 1  # INBOX 1663: it holds still
     t, outs = step(e, t, 12.0)
     assert any(o.frame == "fall" for o in outs) and outs[-1].y == FLOOR
 
@@ -360,14 +360,50 @@ def test_grabbing_a_peeking_figure_moves_it_by_the_pointer_not_by_its_sink() -> 
     assert (e.x, e.y) == (x0 + 10, y0)  # the pointer's own 10 px, no jump by the sunk rows
 
 
-def test_grabbing_a_swaying_hang_moves_it_by_the_pointer_not_by_its_sway() -> None:
+def test_grabbing_a_hang_moves_it_by_the_pointer() -> None:
     e = make()
     e.update(1.0)
     e._enter("hang", 1.0)
     e.x, e.y = 800.0, 0.0
-    t = 1.0 + 0.5 / eng.SWAY_HZ / 2  # near the sway's widest
+    t = 1.4
     e.update(t)
     x0, y0 = e.x, e.y
     e.update(t + 0.01, event=("down", 850, 20))
     e.update(t + 0.02, event=("move", 860, 20))
     assert (e.x, e.y) == (x0 + 10, y0)
+
+
+def test_nothing_is_clipped_unless_the_hidden_part_is_past_the_work_areas_edge() -> None:
+    """INBOX 1663 ("cut in half"): across seeded runs at several dpi and on mixed monitors, every
+    tick with a clip hides only a strip that lies outside the monitor's work area, in the same
+    physical space the window is placed in; and an unclipped window sits fully inside it."""
+    layouts = [
+        ([Monitor((0, 0, 1920, 1040), 96)], (156, 178)),
+        ([Monitor((0, 0, 1920, 1040), 120)], (194, 222)),
+        ([Monitor((0, 0, 1920, 1040), 144)], (233, 266)),
+        ([Monitor((0, 0, 1920, 1040), 144), Monitor((1920, 0, 3840, 1040), 96)], (233, 266)),
+    ]
+    clipped_ticks = 0
+    for monitors, size in layouts:
+        for seed in (1, 2, 3):
+            e = Engine(size, monitors, rng=random.Random(seed), home=(800, 600), gait="float")
+            t = 0.0
+            for _ in range(6000):
+                t += 0.1
+                o = e.update(t)
+                m = e.current_monitor()
+                left, top, right, bottom = m.area
+                w, h = size
+                if o.clip is None or o.clip == (0, 0, w, h):  # a full clip hides nothing
+                    assert left <= o.x and o.x + w <= right and top <= o.y and o.y + h <= bottom, (seed, e.state, o)
+                    continue
+                clipped_ticks += 1
+                cl, ct, cr, cb = o.clip
+                hidden = [(o.x, o.y, o.x + cl, o.y + h)] if cl > 0 else []
+                hidden += [(o.x + cr, o.y, o.x + w, o.y + h)] if cr < w else []
+                hidden += [(o.x, o.y + cb, o.x + w, o.y + h)] if cb < h else []
+                assert hidden, (seed, o)
+                for hx0, hy0, hx1, hy1 in hidden:
+                    outside = hx1 <= left or hx0 >= right or hy0 >= bottom or hy1 <= top
+                    assert outside, (seed, e.state, o, m.area)
+    assert clipped_ticks > 0  # the runs do include peeks, so the check is not vacuous

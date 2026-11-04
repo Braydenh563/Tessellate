@@ -79,3 +79,29 @@ def test_the_bob_never_leaves_the_work_area_or_enters_a_window_it_rests_on() -> 
         t += 0.033
         o = e.update(t)
         assert 0 <= o.x <= WIDTH and 0 <= o.y <= 1040 - SIZE[1]
+
+
+def test_a_wandering_floater_keeps_to_a_band_about_its_own_height_above_its_rest_line() -> None:
+    """INBOX 1663: "it floats wayyy to high". Wandering legs aim within FLOAT_BAND figure
+    heights of the rest line, at every dpi, on one monitor and on mixed ones."""
+    from tessellate.core.overlay.engine import FLOAT_BAND
+
+    layouts = [
+        ([Monitor((0, 0, 1920, 1040), 144)], (233, 266)),
+        ([Monitor((0, 0, 1920, 1040), 120)], (194, 222)),
+        ([Monitor((0, 0, 1920, 1040), 144), Monitor((1920, 0, 3840, 1040), 96)], (233, 266)),
+    ]
+    for monitors, size in layouts:
+        for seed in range(1, 4):
+            e = Engine(size, monitors, rng=random.Random(seed), home=(800, 700), gait="float")
+            e.big_ready = float("inf")
+            e.climb_ready = float("inf")
+            t, out, worst = 0.0, e.update(0.0), 0.0
+            while out.wake_ms is not None and t < 300.0:
+                t += out.wake_ms / 1000.0
+                out = e.update(t)
+                if e.state in ("stand", "drift"):
+                    rest = e.ground_y(e.current_monitor())
+                    worst = max(worst, rest - e.y)
+            slack = 2.0  # rounding only: the clamp holds the band
+            assert worst <= FLOAT_BAND * size[1] + slack, (monitors[0].dpi, seed, worst)

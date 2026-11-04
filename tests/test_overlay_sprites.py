@@ -154,3 +154,28 @@ def test_the_nebula_stream_is_in_every_frame_soft_but_visible() -> None:
             soft = [a for a in alpha.getdata() if sprites.ALPHA_FLOOR <= a < 250]
             assert len(soft) >= 1500, (look, name, len(soft))
             assert sum(soft) / len(soft) >= 0.35 * 255, (look, name, sum(soft) / len(soft))
+
+
+def test_no_shipped_frame_is_cut_by_its_own_edge() -> None:
+    """INBOX 1663: the feminine hang, hop, land, tumble and idle frames were captured through a
+    clip narrower than the figure and shipped with a straight edge (half an Atlas)."""
+    for look in sprites.LOOKS:
+        for name in sprites.FRAME_NAMES:
+            im = Image.open(DIR / look / f"{name}.png").convert("RGBA")
+            box = im.getchannel("A").point(lambda a: 255 if a >= sprites.ALPHA_FLOOR else 0).getbbox()
+            assert box is not None
+            assert box[0] > 0 and box[2] < im.width and box[3] < im.height, (look, name, box, im.size)
+
+
+def test_every_frame_and_spin_frame_draws_inside_its_bitmap_at_every_dpi() -> None:
+    for look in sprites.LOOKS:
+        spr = sprites.SpriteSet(look)
+        for dpi in (96, 120, 144, 192):
+            for flip in (False, True):
+                for name in (*sprites.FRAME_NAMES, *sprites.SPIN_FRAMES):
+                    f = spr.frame(name, dpi, flip)
+                    left, top, right, bottom = f.box
+                    assert 0 < left and 0 < top and right < f.width and bottom < f.height, (look, dpi, flip, name, f.box, (f.width, f.height))
+                    # The recorded box is the real one: the first and last drawn rows are inside it.
+                    a = Image.frombytes("RGBA", (f.width, f.height), f.bgra, "raw", "BGRA").getchannel("A")
+                    assert a.point(lambda v: 255 if v else 0).getbbox() == f.box, (look, dpi, flip, name)

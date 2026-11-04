@@ -2,7 +2,7 @@
 
 Generated 2026-11-04 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7755, frontend ids 2641, CSS sections 522, backend routes 644, backend modules 8684, test files 2020, tests 17018, plan headings 999, app scripts 28, boot scripts 37, script files 248.
+Counts: frontend functions 7755, frontend ids 2641, CSS sections 522, backend routes 644, backend modules 8685, test files 2020, tests 17025, plan headings 999, app scripts 28, boot scripts 37, script files 248.
 
 ## Frontend functions (7755)
 
@@ -12899,7 +12899,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:164 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (8684)
+## Backend modules (8685)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -21097,16 +21097,16 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `DeskApi` | src/tessellate/core/desk_companion.py:622 |
 | `DeskCompanion` | src/tessellate/core/desk_companion.py:679 |
 | `_config` | src/tessellate/core/desk_companion.py:167 |
-| `_default_overlay_factory` | src/tessellate/core/desk_companion.py:1367 |
-| `_follow` | src/tessellate/core/desk_companion.py:1408 |
+| `_default_overlay_factory` | src/tessellate/core/desk_companion.py:1372 |
+| `_follow` | src/tessellate/core/desk_companion.py:1413 |
 | `_log_placed` | src/tessellate/core/desk_companion.py:569 |
 | `_pref` | src/tessellate/core/desk_companion.py:180 |
 | `_read_back` | src/tessellate/core/desk_companion.py:558 |
 | `_screen_area` | src/tessellate/core/desk_companion.py:305 |
 | `_set_pref` | src/tessellate/core/desk_companion.py:192 |
 | `_system_dpi` | src/tessellate/core/desk_companion.py:218 |
-| `attach` | src/tessellate/core/desk_companion.py:1377 |
-| `carry_due` | src/tessellate/core/desk_companion.py:1445 |
+| `attach` | src/tessellate/core/desk_companion.py:1382 |
+| `carry_due` | src/tessellate/core/desk_companion.py:1450 |
 | `clamp_corner` | src/tessellate/core/desk_companion.py:321 |
 | `clean_size` | src/tessellate/core/desk_companion.py:587 |
 | `companion_ex_style` | src/tessellate/core/desk_companion.py:395 |
@@ -21122,9 +21122,9 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `place_on_screen` | src/tessellate/core/desk_companion.py:507 |
 | `place_physical` | src/tessellate/core/desk_companion.py:533 |
 | `raise_on_desktop` | src/tessellate/core/desk_companion.py:447 |
-| `shutdown` | src/tessellate/core/desk_companion.py:1466 |
+| `shutdown` | src/tessellate/core/desk_companion.py:1471 |
 | `to_logical` | src/tessellate/core/desk_companion.py:199 |
-| `tray_menu_item` | src/tessellate/core/desk_companion.py:1474 |
+| `tray_menu_item` | src/tessellate/core/desk_companion.py:1479 |
 | `window_handle` | src/tessellate/core/desk_companion.py:414 |
 | `work_area` | src/tessellate/core/desk_companion.py:228 |
 
@@ -22110,11 +22110,11 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `Engine` | src/tessellate/core/overlay/engine.py:239 |
-| `Monitor` | src/tessellate/core/overlay/engine.py:203 |
-| `Output` | src/tessellate/core/overlay/engine.py:210 |
-| `Perch` | src/tessellate/core/overlay/engine.py:194 |
-| `_adjoins` | src/tessellate/core/overlay/engine.py:228 |
+| `Engine` | src/tessellate/core/overlay/engine.py:241 |
+| `Monitor` | src/tessellate/core/overlay/engine.py:205 |
+| `Output` | src/tessellate/core/overlay/engine.py:212 |
+| `Perch` | src/tessellate/core/overlay/engine.py:196 |
+| `_adjoins` | src/tessellate/core/overlay/engine.py:230 |
 
 ### src/tessellate/core/overlay/host.py (2)
 
@@ -22136,17 +22136,18 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 |---|---|
 | `OverlayRunner` | src/tessellate/core/overlay/runner.py:60 |
 
-### src/tessellate/core/overlay/sprites.py (7)
+### src/tessellate/core/overlay/sprites.py (8)
 
 | Name | File:line |
 |---|---|
 | `Frame` | src/tessellate/core/overlay/sprites.py:59 |
-| `SpriteSet` | src/tessellate/core/overlay/sprites.py:117 |
-| `clear_faint_alpha` | src/tessellate/core/overlay/sprites.py:101 |
-| `clipped` | src/tessellate/core/overlay/sprites.py:70 |
-| `frames_dir` | src/tessellate/core/overlay/sprites.py:89 |
-| `look_for` | src/tessellate/core/overlay/sprites.py:96 |
-| `premultiplied_bgra` | src/tessellate/core/overlay/sprites.py:112 |
+| `SpriteSet` | src/tessellate/core/overlay/sprites.py:127 |
+| `_drawn_box` | src/tessellate/core/overlay/sprites.py:116 |
+| `clear_faint_alpha` | src/tessellate/core/overlay/sprites.py:105 |
+| `clipped` | src/tessellate/core/overlay/sprites.py:74 |
+| `frames_dir` | src/tessellate/core/overlay/sprites.py:93 |
+| `look_for` | src/tessellate/core/overlay/sprites.py:100 |
+| `premultiplied_bgra` | src/tessellate/core/overlay/sprites.py:122 |
 
 ### src/tessellate/core/overlay/win32.py (27)
 
@@ -23822,7 +23823,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (17018)
+## Tests (17025)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -24338,7 +24339,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_density_height.py | 4 |
 | tests/test_dependency_audit.py | 3 |
 | tests/test_derived_facts.py | 14 |
-| tests/test_desk_companion.py | 62 |
+| tests/test_desk_companion.py | 63 |
 | tests/test_desk_counts_63.py | 5 |
 | tests/test_desk_overlay_companion.py | 10 |
 | tests/test_desk_overlay_roam.py | 15 |
@@ -25150,15 +25151,15 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_output_forms.py | 7 |
 | tests/test_outside_text_taints_chat.py | 3 |
 | tests/test_overlay_engine.py | 30 |
-| tests/test_overlay_float.py | 5 |
-| tests/test_overlay_hang.py | 10 |
+| tests/test_overlay_float.py | 6 |
+| tests/test_overlay_hang.py | 11 |
 | tests/test_overlay_host.py | 25 |
 | tests/test_overlay_idle.py | 8 |
-| tests/test_overlay_moves.py | 25 |
+| tests/test_overlay_moves.py | 26 |
 | tests/test_overlay_roam.py | 19 |
 | tests/test_overlay_roam_runner.py | 10 |
-| tests/test_overlay_runner.py | 20 |
-| tests/test_overlay_sprites.py | 14 |
+| tests/test_overlay_runner.py | 21 |
+| tests/test_overlay_sprites.py | 16 |
 | tests/test_overview_counts_1524.py | 3 |
 | tests/test_owner_typos.py | 21 |
 | tests/test_p5_only_with_art_1530.py | 5 |
@@ -26435,7 +26436,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | E4 · The honest positives, so the section is not one-sided (read) | docs/roadmap/MODERNISATION_AUDIT.md:676 |
 | Earlier morning summary (2026-10-30) | docs/roadmap/HANDOVER.md:35 |
 | Earlier morning summary (away run 2026-10-18b) | docs/roadmap/HANDOVER.md:54 |
-| Earlier sessions | docs/roadmap/HANDOVER.md:486 |
+| Earlier sessions | docs/roadmap/HANDOVER.md:488 |
 | Expert audit, 2026-10-10 | docs/roadmap/BACKLOG.md:4272 |
 | F. Agent harness: what "ultimate" needs that is not there | docs/roadmap/AUDIT.md:113 |
 | F. Performance and perceived speed | docs/roadmap/MODERNISATION_AUDIT.md:685 |
@@ -26556,7 +26557,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Phases 0 to 2: built 2026-09-09 | docs/roadmap/DOCUMENTS_PLAN.md:119 |
 | Phases 0 to 6: built | docs/roadmap/UI_MODERNISATION_PLAN.md:216 |
 | Phases, each with the gate it is finished against | docs/roadmap/MINDMAP_PLAN.md:1296 |
-| Placed (last 20, newest first) | docs/roadmap/INBOX.md:170 |
+| Placed (last 20, newest first) | docs/roadmap/INBOX.md:172 |
 | Placed from Brief 40, 2026-10-10 (does the MCP server work) | docs/roadmap/AGENT_SKILLS_REFORM.md:345 |
 | Placed from Brief 40, 2026-10-10 (research and placement) | docs/roadmap/BACKLOG.md:4178 |
 | Placed from Brief 40, 2026-10-10 (the phone over HTTPS) | docs/roadmap/WORLD_CLASS_PLAN.md:3128 |

@@ -122,16 +122,18 @@ REACHED = 6.0
 #: out it bobs (up to BOB logical px) and sways (FLOAT_SWAY), redrawn every BOB_TICK s.
 FLOAT_LEG = (0.35, 0.8)
 FLOAT_STAND_FOR = (0.8, 2.0)
+#: A wandering leg aims within this many figure heights above the rest line (INBOX 1663:
+#: "floats wayyy to high"); only a trip to a window or an edge goes higher.
+FLOAT_BAND = 1.0
 FLOAT_MOVE_WEIGHT = 150
 BOB = 7.0
 BOB_HZ = 0.55
 FLOAT_SWAY = 5.0
 FLOAT_SWAY_HZ = 0.37
 BOB_TICK = 0.05
-#: Hang from the top edge, sway, and the climb up to it.
+#: Hang from the top edge, and the climb up to it. The window holds still while it hangs
+#: (INBOX 1663: "slides a little from side to side"): any life is in the frames.
 HANG_FOR = (8.0, 16.0)
-SWAY = 6.0
-SWAY_HZ = 0.4
 #: What a hang takes hold of (INBOX 1660: "it thinks its hanging but its just ... hanging in
 #: mid air"): the top of the work area, or the bottom edge of a window's title bar
 #: (`TITLE_BAR` logical px under its top). The hands are `hang_top` of the frame's height
@@ -753,10 +755,10 @@ class Engine:
             self._enter("stand", now)
             self.state_until = now + self.rng.uniform(*REST_FOR)
             return
-        # A wind spirit rests low, or up near the top.
+        # A wind spirit rests low, or a little higher: never up near the top (INBOX 1663: "wayyy to high").
         m = self.current_monitor()
         high = self.rng.random() < 0.4
-        gy = m.area[1] + 20 * self._scale() if high else self.ground_y(m)
+        gy = max(m.area[1] + 20 * self._scale(), self.ground_y(m) - FLOAT_BAND * self.size[1]) if high else self.ground_y(m)
         self._go((self.rng.uniform(m.area[0], m.area[2] - self.size[0]), gy), "rest", now)
 
     def _hang(self, now: float) -> None:
@@ -906,7 +908,8 @@ class Engine:
         left, top, right, _b = m.area
         scale = self._scale()
         if self.goal is None:
-            self.goal = (self._leg_x(left, right), self.rng.uniform(top, self.ground_y(m)))
+            rest = self.ground_y(m)
+            self.goal = (self._leg_x(left, right), self.rng.uniform(max(top, rest - FLOAT_BAND * self.size[1]), rest))
             wandering = True
         else:
             wandering = not self.trip
@@ -929,6 +932,8 @@ class Engine:
         speed = FLOAT_SPEED * scale * max(0.3, min(1.0, dist / (60 * scale)))
         self.x = min(max(self.x + math.cos(self.heading) * speed * dt, left), right - self.size[0])
         high = top - (self._lift() if self.then == "hang" and self.trip else 0.0)
+        if not self.trip:  # a wander turns wide, so the band is held by the clamp too, not only by the goal
+            high = max(high, self.ground_y(m) - FLOAT_BAND * self.size[1])
         self.y = min(max(self.y + math.sin(self.heading) * speed * dt, high), self.floor_y(m))
         if abs(math.cos(self.heading)) > 0.3:
             self.facing = 1 if math.cos(self.heading) > 0 else -1
@@ -1303,8 +1308,7 @@ class Engine:
 
     def _display(self) -> tuple[float, float, tuple[int, int, int, int] | None]:
         """Where the window is drawn and which part of the frame shows: the rest
-        position, less the sink behind an edge, plus the sway of a hang and the bob
-        and sway of a floater."""
+        position, less the sink behind an edge, plus the bob and sway of a floater."""
         w, h = self.size
         x, y = self.x, self.y
         if self._bobbing():
@@ -1312,8 +1316,6 @@ class Engine:
             tau = 2 * math.pi * self.now
             y = max(m.area[1], y - BOB * k * (0.5 + 0.5 * math.sin(tau * BOB_HZ)))
             x = min(max(x + FLOAT_SWAY * k * math.sin(tau * FLOAT_SWAY_HZ + 1.3), m.area[0]), m.area[2] - w)
-        if self.state == "hang":
-            x += math.sin((self.now - self.phase_started) * 2 * math.pi * SWAY_HZ) * SWAY * self._scale()
         if self.sink <= 0 or self.peek_edge is None:
             return x, y, None
         if self.peek_edge == "bottom":

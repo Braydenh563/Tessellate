@@ -765,3 +765,21 @@ def test_the_overlay_page_reports_a_blur_and_asks_for_the_first_menu():
     assert 'ask("panel_kind")' in js and 'ask("panel_blur")' in js
     assert 'addEventListener("blur"' in js and "if (!focused) return;" in js
     assert "pywebviewready" in js
+
+
+def test_the_panels_near_edge_sits_within_the_gap_of_the_figures_drawn_box_on_both_sides() -> None:
+    """INBOX 1663: placed from the figure's drawn alpha box (runner.drawn_rect), in physical pixels."""
+    from tessellate.core.desk_companion import PANEL_GAP, panel_placement
+    from tessellate.core.overlay import sprites as sp
+
+    spr = sp.SpriteSet("feminine")
+    area = (0, 0, 3000, 1600)
+    for dpi in (96, 144, 192):
+        gap = round(PANEL_GAP * dpi / 96)
+        for flip in (False, True):
+            f = spr.frame("stand", dpi, flip)
+            for wx in (1500, 20):  # roomy, then against the left monitor edge (panel flips right)
+                pet = (wx + f.box[0], 900 + f.box[1], f.box[2] - f.box[0], f.box[3] - f.box[1])
+                (px, _py, pw, _ph), _ = panel_placement(pet, (360, 420), [(area, dpi)], dpi)
+                near = pet[0] - (px + pw) if px + pw <= pet[0] else px - (pet[0] + pet[2])
+                assert near == gap, (dpi, flip, wx, near)

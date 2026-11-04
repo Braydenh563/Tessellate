@@ -342,14 +342,26 @@ class OverlayRunner:
             host.move(out.x - pad.pad_x, out.y - pad.pad_y)
             self._last_pos = (out.x, out.y)
         if out.click:
-            width, height = spr.size(self.dpi)
-            self._hand_off("overlay-click", lambda: self.on_click and self.on_click(out.click, (out.x, out.y, width, height), self.dpi))
+            rect = self.drawn_rect(out.x, out.y, out.frame, out.flip)
+            self._hand_off("overlay-click", lambda: self.on_click and self.on_click(out.click, rect, self.dpi))
         if out.settled:
             self._hand_off("overlay-settle", lambda: self.on_settle and self.on_settle(out.x, out.y))
         if out.card is not None:
             token = out.card
             self._hand_off("overlay-card", lambda: self.on_card and self.on_card(token))
         return self._scan_wake(out.wake_ms)
+
+    def drawn_rect(self, x: int, y: int, frame: str | None = None, flip: bool | None = None, dpi: int | None = None) -> tuple[int, int, int, int]:
+        """The figure's drawn box (x, y, width, height, physical pixels) for a window at
+        (x, y), not the window's own: the quick panel sits beside the figure (INBOX 1663).
+        Defaults to the frame last drawn."""
+        spr = self.sprites
+        assert spr is not None
+        dpi = int(dpi or self.dpi)
+        name, mirror = (frame, flip) if frame is not None else (self._last_key[0], self._last_key[2]) if self._last_key else ("stand", False)
+        f = spr.frame(name, dpi, bool(mirror))
+        left, top, right, bottom = f.box
+        return x - f.pad_x + left, y - f.pad_y + top, right - left, bottom - top
 
     def _hand_off(self, name: str, call: Callable[[], Any]) -> None:
         try:

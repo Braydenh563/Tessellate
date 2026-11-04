@@ -358,3 +358,22 @@ def test_the_engine_is_given_the_hang_frames_measured_top_margin() -> None:
         assert r.engine.hang_top == pytest.approx(r.sprites.top_share("hang")) and 0.1 < r.engine.hang_top < 0.3
     finally:
         r.stop()
+
+
+def test_the_click_rect_is_the_figures_drawn_box_not_the_window() -> None:
+    """INBOX 1663: the quick panel sat 30 to 160 px from the figure because it was placed from
+    the window cell, whose transparent margin varies by pose and mirror."""
+    r, fake, clock, clicks, _ = make(look="feminine")
+    assert r.start()
+    spr = r.sprites
+    cell = spr.size(96)
+    for flip in (False, True):
+        x, y, w, h = r.drawn_rect(1000, 500, "stand", flip)
+        f = spr.frame("stand", 96, flip)
+        assert (w, h) == (f.box[2] - f.box[0], f.box[3] - f.box[1])
+        assert (x - 1000, y - 500) == (f.box[0], f.box[1])
+        assert w < cell[0] * 0.75 and x + w <= 1000 + cell[0]
+    left = r.drawn_rect(1000, 500, "stand", False)[0] - 1000
+    right = r.drawn_rect(1000, 500, "stand", True)[0] - 1000
+    assert left != right  # the margin really swings with the mirror
+    r.stop()

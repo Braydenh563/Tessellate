@@ -65,6 +65,10 @@ class Frame(NamedTuple):
     #: rotated frame is on a bigger canvas, so the window moves back by this much.
     pad_x: int = 0
     pad_y: int = 0
+    #: The drawn pixels' box in this picture (left, top, right, bottom; alpha at the floor
+    #: or more), so the quick panel is placed from the figure, not from the window around it
+    #: (INBOX 1663: the figure's margin varies by pose and mirror, 8 to 110 px).
+    box: tuple[int, int, int, int] = (0, 0, 0, 0)
 
 
 def clipped(frame: Frame, clip: tuple[int, int, int, int] | None) -> Frame:
@@ -107,6 +111,12 @@ def clear_faint_alpha(image: Any) -> Any:
     image.putalpha(alpha)
     mask = alpha.point(lambda a: 255 if a else 0)
     return Image.composite(image, Image.new("RGBA", image.size, (0, 0, 0, 0)), mask)
+
+
+def _drawn_box(image: Any) -> tuple[int, int, int, int]:
+    """(left, top, right, bottom) of the pixels a click lands on; the whole picture when empty."""
+    box = image.getchannel("A").point(lambda a: 255 if a >= ALPHA_FLOOR else 0).getbbox()
+    return tuple(box) if box else (0, 0, image.size[0], image.size[1])  # type: ignore[return-value]
 
 
 def premultiplied_bgra(image: Any) -> bytes:
@@ -175,7 +185,8 @@ class SpriteSet:
             built = self._spun(image, SPIN_FRAMES.index(name), width, height)
             self._cache[key] = built
             return built
-        built = Frame(width, height, premultiplied_bgra(clear_faint_alpha(image)))
+        clear = clear_faint_alpha(image)
+        built = Frame(width, height, premultiplied_bgra(clear), box=_drawn_box(clear))
         self._cache[key] = built
         return built
 
@@ -192,4 +203,5 @@ class SpriteSet:
         pad_x, pad_y = (side - width) // 2, (side - height) // 2
         canvas.paste(image, (pad_x, pad_y))
         turned = canvas.rotate(-step * 360.0 / SPIN_STEPS, resample=Image.Resampling.BICUBIC)
-        return Frame(side, side, premultiplied_bgra(clear_faint_alpha(turned)), pad_x, pad_y)
+        clear = clear_faint_alpha(turned)
+        return Frame(side, side, premultiplied_bgra(clear), pad_x, pad_y, _drawn_box(clear))
