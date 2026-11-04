@@ -2,7 +2,7 @@
 
 Generated 2026-11-04 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7755, frontend ids 2641, CSS sections 522, backend routes 644, backend modules 8684, test files 2020, tests 17018, plan headings 999, app scripts 28, boot scripts 37, script files 248.
+Counts: frontend functions 7755, frontend ids 2641, CSS sections 522, backend routes 644, backend modules 8684, test files 2021, tests 17020, plan headings 999, app scripts 28, boot scripts 37, script files 248.
 
 ## Frontend functions (7755)
 
@@ -5650,26 +5650,26 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `closeMathInPlace` | frontend/js/math-field.js:367 |
-| `mathFieldAllowStyles` | frontend/js/math-field.js:176 |
+| `closeMathInPlace` | frontend/js/math-field.js:448 |
+| `mathFieldAllowStyles` | frontend/js/math-field.js:204 |
 | `mathFieldBoxes` | frontend/js/math-field.js:70 |
-| `mathFieldChange` | frontend/js/math-field.js:148 |
-| `mathFieldConfigure` | frontend/js/math-field.js:197 |
-| `mathFieldCreate` | frontend/js/math-field.js:222 |
-| `mathFieldFoot` | frontend/js/math-field.js:385 |
+| `mathFieldChange` | frontend/js/math-field.js:176 |
+| `mathFieldConfigure` | frontend/js/math-field.js:225 |
+| `mathFieldCreate` | frontend/js/math-field.js:250 |
+| `mathFieldFoot` | frontend/js/math-field.js:466 |
 | `mathFieldGroupEnd` | frontend/js/math-field.js:26 |
-| `mathFieldKeys` | frontend/js/math-field.js:450 |
-| `mathFieldLatexBox` | frontend/js/math-field.js:244 |
-| `mathFieldOwns` | frontend/js/math-field.js:363 |
-| `mathFieldPane` | frontend/js/math-field.js:265 |
-| `mathFieldPlace` | frontend/js/math-field.js:373 |
-| `mathFieldRead` | frontend/js/math-field.js:235 |
+| `mathFieldHollow` | frontend/js/math-field.js:151 |
+| `mathFieldKeys` | frontend/js/math-field.js:531 |
+| `mathFieldLatexBox` | frontend/js/math-field.js:268 |
+| `mathFieldOwns` | frontend/js/math-field.js:444 |
+| `mathFieldPane` | frontend/js/math-field.js:289 |
+| `mathFieldPlace` | frontend/js/math-field.js:454 |
+| `mathFieldRead` | frontend/js/math-field.js:263 |
 | `mathFieldSlots` | frontend/js/math-field.js:85 |
 | `mathFieldStored` | frontend/js/math-field.js:60 |
-| `mathFieldTouch` | frontend/js/math-field.js:160 |
+| `mathFieldTouch` | frontend/js/math-field.js:188 |
 | `mathFieldUnplace` | frontend/js/math-field.js:43 |
-| `mathFieldWrite` | frontend/js/math-field.js:239 |
-| `openMathInPlace` | frontend/js/math-field.js:402 |
+| `openMathInPlace` | frontend/js/math-field.js:483 |
 
 ### frontend/js/meaning.js (18)
 
@@ -23822,7 +23822,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (17018)
+## Tests (17020)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -24959,6 +24959,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_markdown_export_import.py | 11 |
 | tests/test_markdown_link_schemes.py | 3 |
 | tests/test_marquee_cost.py | 4 |
+| tests/test_math_delete_1664.py | 2 |
 | tests/test_math_editor.py | 6 |
 | tests/test_math_field.py | 5 |
 | tests/test_math_leftovers_1103.py | 3 |
@@ -26435,7 +26436,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | E4 · The honest positives, so the section is not one-sided (read) | docs/roadmap/MODERNISATION_AUDIT.md:676 |
 | Earlier morning summary (2026-10-30) | docs/roadmap/HANDOVER.md:35 |
 | Earlier morning summary (away run 2026-10-18b) | docs/roadmap/HANDOVER.md:54 |
-| Earlier sessions | docs/roadmap/HANDOVER.md:486 |
+| Earlier sessions | docs/roadmap/HANDOVER.md:488 |
 | Expert audit, 2026-10-10 | docs/roadmap/BACKLOG.md:4272 |
 | F. Agent harness: what "ultimate" needs that is not there | docs/roadmap/AUDIT.md:113 |
 | F. Performance and perceived speed | docs/roadmap/MODERNISATION_AUDIT.md:685 |
@@ -26556,7 +26557,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Phases 0 to 2: built 2026-09-09 | docs/roadmap/DOCUMENTS_PLAN.md:119 |
 | Phases 0 to 6: built | docs/roadmap/UI_MODERNISATION_PLAN.md:216 |
 | Phases, each with the gate it is finished against | docs/roadmap/MINDMAP_PLAN.md:1296 |
-| Placed (last 20, newest first) | docs/roadmap/INBOX.md:170 |
+| Placed (last 20, newest first) | docs/roadmap/INBOX.md:174 |
 | Placed from Brief 40, 2026-10-10 (does the MCP server work) | docs/roadmap/AGENT_SKILLS_REFORM.md:345 |
 | Placed from Brief 40, 2026-10-10 (research and placement) | docs/roadmap/BACKLOG.md:4178 |
 | Placed from Brief 40, 2026-10-10 (the phone over HTTPS) | docs/roadmap/WORLD_CLASS_PLAN.md:3128 |

@@ -141,6 +141,34 @@ function mathFieldSlots(prev, next, slots, { collapsed = true, restore = true } 
   return { tex, slots: moved, at };
 }
 
+//: **Whether a structure's boxes are all empty** (Word's rule: Backspace in an empty box selects the structure when
+//: nothing is typed in any box, and a second press removes it). `tex` is the structure's own TeX and `skeletons` the
+//: palette's templates (`#@` and `#?` are its boxes): a template's own fixed text, the `=1` of "sum from 1 to n" or
+//: the `\infty` of a limit, is not typed content, so a structure that reads like a template with every box empty is
+//: empty. Both are reduced to one shape (spaces, braces and the spelling of a bracket gone, a box a `P`). Without a
+//: template, a structure of only the plain frame commands and boxes (a fraction made with `/`, a script's boxes) is
+//: empty too; `strict` leaves that out, for a box that only stands beside a structure.
+function mathFieldHollow(tex, skeletons = [], strict = false) {
+  const shaped = (text) =>
+    String(text || "")
+      .replace(/\\(left|right)\s*(\\[a-zA-Z]+|\\.|.)/g, "$1")
+      .replace(/\\placeholder(\[[^\]]*\])?/g, "P")
+      .replace(/#[@?]/g, "P")
+      .replace(/\\\\/g, "|")
+      .replace(/\\[,;: ]|[\s{}]/g, "");
+  const shape = shaped(tex);
+  if (!shape.includes("P")) return false;
+  if (skeletons.some((skeleton) => shaped(skeleton) === shape)) return true;
+  if (strict) return false;
+  const rest = String(tex)
+    .replace(/\\placeholder(\[[^\]]*\])?\{\}/g, "")
+    .replace(/\\(begin|end)\{[a-zA-Z*]+\}/g, "")
+    .replace(/\\(left|right)\s*(\\[a-zA-Z]+|\\.|.)/g, "")
+    .replace(/\\(frac|dfrac|tfrac|binom|sqrt|text|mathrm)(?![a-zA-Z])/g, "")
+    .replace(/[\s{}_^&[\]]|\\\\/g, "");
+  return rest === "";
+}
+
 //: The change that writes `tex` over the equation `span` (`{from, to, delim}`)
 //: in `source`: `{from, to, insert}`, or null when the text there is no longer
 //: that equation (an edit elsewhere moved it) or nothing changed. An emptied
@@ -236,10 +264,6 @@ function mathFieldRead(field) {
   return mathFieldStored(field.getValue("latex"));
 }
 
-function mathFieldWrite(field, tex) {
-  field.setValue(mathFieldBoxes(tex), { silenceNotifications: true });
-}
-
 //: The LaTeX box and the button that shows it.
 function mathFieldLatexBox() {
   const toggle = document.createElement("button");
@@ -268,12 +292,60 @@ function mathFieldPane({ tex = "", label = "Equation", onChange = () => {}, onKe
   const field = mathFieldCreate(label);
   const { toggle, box } = mathFieldLatexBox();
   el.append(field, box);
+  //: The palette's templates as TeX, for `mathFieldHollow` (the palette's file is loaded with the editor, so none without it).
+  const skeletons = () => {
+    return typeof MATH_EDITOR_TEMPLATES === "undefined" ? [] : MATH_EDITOR_TEMPLATES.flatMap(([, , items]) => items.map((item) => item[1]));
+  };
+
+  //: **The structure a delete key is about to take apart, when every box in it is empty** (Word's equation editor: the
+  //: first Backspace in an empty box selects the whole structure, the second removes it; INBOX 1664, the owner: "I cant
+  //: delete these in the equations"). Returns `[from, to]` to select, or null when the key should do what it does: a
+  //: structure with something typed in, a lone box, a selection of more than a box, or the structure already selected.
+  //: The model is MathLive's own tree: an atom at offset `k` takes `(offset of the atom before it, k]`, boxes and
+  //: scripts and all, and a big operator's body is a box beside it, so the two are one structure.
+  const hollowRange = (backward) => {
+    const model = field._mathfield?.model;
+    if (!model) return null;
+    const [from, to] = field.selection.ranges[0] || [0, 0];
+    const isBox = (atom) => atom?.type === "placeholder";
+    const tex = (a, b) => field.getValue(a, b, "latex");
+    const start = (atom) => model.offsetOf(atom.leftSibling ?? atom);
+    let atom;
+    if (to > from) {
+      if (to - from !== 1 || !isBox(model.at(to))) return null;
+      atom = model.at(to);
+    } else atom = model.at(backward ? to : to + 1);
+    if (!atom) return null;
+    //: A caret at the start of an empty branch is in its box; a box inside a structure stands for the structure.
+    if (atom.type === "first" && atom.parent?.type !== "root") atom = atom.parent;
+    if (isBox(atom) && atom.parent?.type !== "root") atom = atom.parent;
+    if (!atom || atom.type === "first" || atom.type === "root") return null;
+    if (!isBox(atom) && !tex(start(atom), model.offsetOf(atom)).includes("\\placeholder")) return null;
+    //: The structure is a run of atoms beside each other that reads like a template with its boxes empty (a script is its base box and the script; a big operator its body box, and an integral's differential): the longest such run through the atom.
+    const left = [];
+    for (let at = atom.leftSibling; at && at.type !== "first" && left.length < 8; at = at.leftSibling) left.unshift(at);
+    const right = [];
+    for (let at = atom.rightSibling; at && right.length < 8; at = at.rightSibling) right.push(at);
+    let best = null;
+    for (let i = 0; i <= left.length; i += 1) {
+      for (let j = 0; j <= right.length; j += 1) {
+        const first = i ? left[left.length - i] : atom;
+        const last = j ? right[j - 1] : atom;
+        const a = start(first);
+        const b = model.offsetOf(last);
+        if (best && best.size >= i + j) continue;
+        if (mathFieldHollow(tex(a, b), skeletons(), true)) best = { a, b, size: i + j };
+      }
+    }
+    if (!best && !isBox(atom) && mathFieldHollow(tex(start(atom), model.offsetOf(atom)))) best = { a: start(atom), b: model.offsetOf(atom) };
+    return !best || (best.a === from && best.b === to) ? null : [best.a, best.b];
+  };
   //: The TeX as last settled and the boxes that were typed into (`mathFieldSlots`); a write from outside starts them over.
   let settled = "";
   let slots = [];
   let collapsed = true;
   const write = (next) => {
-    mathFieldWrite(field, next);
+    field.setValue(mathFieldBoxes(next), { silenceNotifications: true });
     settled = field.getValue("latex");
     slots = [];
   };
@@ -293,6 +365,15 @@ function mathFieldPane({ tex = "", label = "Equation", onChange = () => {}, onKe
   box.value = tex;
   field.addEventListener("beforeinput", (event) => {
     collapsed = field.selectionIsCollapsed;
+    //: A delete in an empty box, or beside a structure whose boxes are all empty, selects that structure first; the next one removes it.
+    if (/^delete(Content|Word|Soft|Hard)?(Backward|Forward)$/.test(event.inputType || "")) {
+      const range = hollowRange(/Backward$/.test(event.inputType));
+      if (range) {
+        event.preventDefault();
+        field.selection = { ranges: [range] };
+        return;
+      }
+    }
     //: MathLive can deliver an edit's `input` after the next edit has begun (a slow frame), so a character typed and deleted at once was never seen. For a deletion the TeX at this point is what the earlier edit made, so it is taken in first (a typing's own `beforeinput` comes mid-edit and says nothing). A selected box reads as empty here, so that moment is left to the `input` after it.
     if (!/^delete/.test(event.inputType || "")) return;
     const [from, to] = field.selection.ranges[0] || [0, 0];
