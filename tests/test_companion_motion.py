@@ -866,7 +866,7 @@ def test_its_reactions_come_and_go_gradually_and_it_gets_bored() -> None:
     assert "now - nmb.home.at > 30000" in wander
     # Asked near where it was, its own perch won every time (wander.js): it
     # looks a few widths off, towards the middle.
-    assert "const away = nameMarkBuddyChoose(tab, obstacles, [nmb.x + off, nmb.y], 4, true);"  # INBOX 1674: the far branch is the visit in wander
+    assert "const away = nameMarkBuddyChoose(tab, obstacles, [nmb.x + off, nmb.y], 4, true);" in wander  # INBOX 1674: the far branch is the visit
     assert "nameMarkBuddyWarmthAt(nmb.feel, now)" in _fn("nameMarkBuddyDecide")
 
 

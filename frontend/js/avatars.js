@@ -3409,6 +3409,33 @@ const nmb = {
     const wide = whim < 0.5 ? ["hang", "bar"] : ["bar", "hang"];
     return [...wide, ...base.filter((kind) => !wide.includes(kind))];
   },
+  //: The window's own hang or bar perch at `NMB_FIT_SCALE`, for a resting cat on a page whose controls fill the
+  //: edges at full size; null when none is clear there either.
+  windowFit: (tab, obstacles) => {
+    const saved = nmb.scale || 1;
+    if (saved <= NMB_FIT_SCALE + 0.05) return null;
+    nmb.fitting = true;
+    nmb.scale = NMB_FIT_SCALE;
+    nmbCoverCache = new Map();
+    try {
+      nameMarkBuddyIndexReset();
+      let tried = 0;
+      for (const perch of nameMarkBuddyPerches(tab, null, false)) {
+        if (perch.kind !== "hang" && perch.kind !== "bar") break;
+        if (perch.x < 0 || perch.y < 0 || perch.y + NMB_H > innerHeight + 2) continue;
+        tried += 1;
+        if (tried > 60) break;
+        if (nameMarkBuddyHits(perch.x, perch.y, perch.pose, obstacles, perch.legs)) continue;
+        if (nameMarkBuddyWordsUnder(perch.x, perch.y, perch.pose, perch.legs) <= NMB_WORDS_PX) return { ...perch, fit: NMB_FIT_SCALE };
+      }
+      return null;
+    } finally {
+      nmb.scale = saved;
+      nmb.fitting = false;
+      nmbCoverCache = null;
+      nameMarkBuddyIndexReset();
+    }
+  },
 };
 
 //: The companion's own reading of reduced motion and Avatar animation Off:
@@ -4451,13 +4478,19 @@ function nameMarkBuddyChoose(tab, obstacles, near = null, per = 12, visit = fals
     if ((!near && perch.rank === 0) || scored >= (near ? 120 : 36)) break;
   }
   nmbCoverCache = null;
-  if (best) return best;
+  //: **A resting cat does not settle on a tab's own dock or card** (INBOX 1674, the reviewer's rapid run: a
+  //: Library or Timeline page left the window's perches over words or controls, the clean card won, and
+  //: every tab change after it cut the cat). Below, it takes the window's own tuck behind the bottom bar
+  //: (eyes over the page, on every tab, clear of controls) or the hang/bar at the smaller size, and keeps
+  //: the tab's perch only when neither is clear. A visit (`visit`) is the one thing that goes to the tab's own.
+  const settling = !!best && !visit && !nmb.fitting && ["dock", "card", "under"].includes(best.kind);
+  if (best && !settling) return best;
   //: **Smaller where space is small** (the owner, 2026-09-27: "size and
   //: proportion depend on the perch; it scales down where space is small
   //: and never overlaps text"). Nothing clean at its own size: the same
   //: search at `NMB_FIT_SCALE`, and a clean edge found so is taken with
   //: that size (`spot.fit`, applied by `nameMarkBuddyMoveTo`, eased).
-  if (!nmb.fitting && (nmb.scale || 1) > NMB_FIT_SCALE + 0.05) {
+  if (!settling && !nmb.fitting && (nmb.scale || 1) > NMB_FIT_SCALE + 0.05) {
     const saved = nmb.scale || 1;
     nmb.fitting = true;
     nmb.scale = NMB_FIT_SCALE;
@@ -4482,6 +4515,12 @@ function nameMarkBuddyChoose(tab, obstacles, near = null, per = 12, visit = fals
   const fallbacks = [];
   if (bottom) {
     for (let x = innerWidth - NMB_GUTTER - NMB_W; x >= NMB_GUTTER; x -= 96) fallbacks.push({ kind: "bar", pose: "sit", legs: "peek", x, y: bottom.top - NMB_SEAT, edge: { el: document.getElementById("status-bar"), type: "top", kind: "bar", y: bottom.top } });
+  }
+  if (settling) {
+    nmbCoverCache = new Map();
+    const tuck = (near ? [...fallbacks].sort((a, b) => Math.abs(a.x - near[0]) - Math.abs(b.x - near[0])) : fallbacks).find((spot) => spot.legs === "peek" && !nameMarkBuddyHits(spot.x, spot.y, spot.pose, obstacles, spot.legs) && nameMarkBuddyWordsUnder(spot.x, spot.y, spot.pose, spot.legs) <= NMB_WORDS_PX);
+    nmbCoverCache = null;
+    return tuck || nmb.windowFit(tab, obstacles) || best;
   }
   const corner = { kind: "corner", pose: "stand", legs: "", x: innerWidth - NMB_GUTTER - NMB_W, y: (bottom ? bottom.top : innerHeight) - NMB_FEET - NMB_GUTTER };
   fallbacks.push(corner);
@@ -4721,7 +4760,7 @@ function nameMarkBuddyDrop(x, y, reach = 48) {
   //: go (the chooser, a toss's weight of 4, never over words). Only a tab
   //: with no perch at all (the chooser has none) leaves it in open air, as
   //: before: stepped aside from a control, or just above the bar's buttons.
-  const near = nameMarkBuddyChoose(tab, obstacles, [x, y], 4);
+  const near = nameMarkBuddyChoose(tab, obstacles, [x, y], 4, true);
   if (near) return near;
   const at = { kind: "yours", pose: "float", legs: "", x, y: Math.min(y, lowest) };
   if (!nameMarkBuddyHits(at.x, at.y, "float", obstacles)) return at;
@@ -7245,6 +7284,7 @@ function nameMarkBuddyMind(buddy) {
       //: Its panel is scrolled out of sight: it is not drawn, and comes in from the window's edge.
       if (nmb.ride) nameMarkBuddyRide(null);
       nmb.away = true;
+      nmb.absentAt = Date.now();
       nmb.absent = true;
       buddy.classList.add("nmb-away");
       nmb.cameFrom = 0;
