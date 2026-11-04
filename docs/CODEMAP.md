@@ -2,9 +2,9 @@
 
 Generated 2026-11-04 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7753, frontend ids 2641, CSS sections 522, backend routes 644, backend modules 8657, test files 2008, tests 16862, plan headings 998, app scripts 28, boot scripts 37, script files 248.
+Counts: frontend functions 7759, frontend ids 2641, CSS sections 522, backend routes 644, backend modules 8657, test files 2008, tests 16865, plan headings 998, app scripts 28, boot scripts 37, script files 248.
 
-## Frontend functions (7753)
+## Frontend functions (7759)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -205,9 +205,9 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `dialogHead` | frontend/js/selection.js:105 |
 | `fieldSelection` | frontend/js/selection.js:457 |
 | `hideSelectionPopup` | frontend/js/selection.js:613 |
-| `initSelectionPopup` | frontend/js/selection.js:787 |
+| `initSelectionPopup` | frontend/js/selection.js:790 |
 | `noteFieldPickButton` | frontend/js/selection.js:331 |
-| `openSelectionMenuFromKeyboard` | frontend/js/selection.js:887 |
+| `openSelectionMenuFromKeyboard` | frontend/js/selection.js:890 |
 | `pickEntryDialog` | frontend/js/selection.js:297 |
 | `pickerDialog` | frontend/js/selection.js:131 |
 | `pickerEmpty` | frontend/js/selection.js:215 |
@@ -219,9 +219,9 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `selectionIsActionable` | frontend/js/selection.js:734 |
 | `selectionMenuItems` | frontend/js/selection.js:502 |
 | `selectionNoteId` | frontend/js/selection.js:495 |
-| `selectionPointInRange` | frontend/js/selection.js:848 |
+| `selectionPointInRange` | frontend/js/selection.js:851 |
 | `selectionPopup` | frontend/js/selection.js:604 |
-| `selectionRestoreOnContextMenu` | frontend/js/selection.js:857 |
+| `selectionRestoreOnContextMenu` | frontend/js/selection.js:860 |
 | `selectionSource` | frontend/js/selection.js:10 |
 | `showSelectionPopupAt` | frontend/js/selection.js:658 |
 | `syncSelectionPopup` | frontend/js/selection.js:748 |
@@ -2102,27 +2102,33 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 |---|---|
 | `assistantEmblemInto` | frontend/js/assistant-avatar.js:18 |
 
-### frontend/js/atlas-life.js (17)
+### frontend/js/atlas-life.js (23)
 
 | Name | File:line |
 |---|---|
-| `atlasBreathFrame` | frontend/js/atlas-life.js:596 |
-| `atlasFrameBudget` | frontend/js/atlas-life.js:264 |
-| `atlasPropLoops` | frontend/js/atlas-life.js:521 |
-| `atlasPropsFrame` | frontend/js/atlas-life.js:549 |
-| `atlasRigLower` | frontend/js/atlas-life.js:694 |
-| `atlasRigLowerAttach` | frontend/js/atlas-life.js:670 |
+| `atlasBreathFrame` | frontend/js/atlas-life.js:713 |
+| `atlasFrameBudget` | frontend/js/atlas-life.js:381 |
+| `atlasPropLoops` | frontend/js/atlas-life.js:638 |
+| `atlasPropsFrame` | frontend/js/atlas-life.js:666 |
+| `atlasRigLower` | frontend/js/atlas-life.js:811 |
+| `atlasRigLowerAttach` | frontend/js/atlas-life.js:787 |
 | `atlasRingLoops` | frontend/js/atlas-life.js:20 |
-| `atlasTailAttach` | frontend/js/atlas-life.js:154 |
+| `atlasTailAttach` | frontend/js/atlas-life.js:271 |
 | `atlasTailBend` | frontend/js/atlas-life.js:105 |
-| `atlasTailCalm` | frontend/js/atlas-life.js:391 |
-| `atlasTailDraw` | frontend/js/atlas-life.js:448 |
-| `atlasTailFrame` | frontend/js/atlas-life.js:290 |
-| `atlasTailPaths` | frontend/js/atlas-life.js:140 |
-| `atlasTailPick` | frontend/js/atlas-life.js:228 |
-| `atlasTailRest` | frontend/js/atlas-life.js:411 |
+| `atlasTailCalm` | frontend/js/atlas-life.js:508 |
+| `atlasTailCentre` | frontend/js/atlas-life.js:168 |
+| `atlasTailCentreOf` | frontend/js/atlas-life.js:238 |
+| `atlasTailDraw` | frontend/js/atlas-life.js:565 |
+| `atlasTailFrame` | frontend/js/atlas-life.js:407 |
+| `atlasTailMemo` | frontend/js/atlas-life.js:148 |
+| `atlasTailNum` | frontend/js/atlas-life.js:189 |
+| `atlasTailPaths` | frontend/js/atlas-life.js:249 |
+| `atlasTailPick` | frontend/js/atlas-life.js:345 |
+| `atlasTailRest` | frontend/js/atlas-life.js:528 |
 | `atlasTailShape` | frontend/js/atlas-life.js:115 |
-| `atlasTailUnrest` | frontend/js/atlas-life.js:426 |
+| `atlasTailSmooth` | frontend/js/atlas-life.js:198 |
+| `atlasTailStem` | frontend/js/atlas-life.js:215 |
+| `atlasTailUnrest` | frontend/js/atlas-life.js:543 |
 
 ### frontend/js/atlas-micro.js (8)
 
@@ -23788,7 +23794,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (16862)
+## Tests (16865)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -23871,7 +23877,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_atlas_composite_1101.py | 4 |
 | tests/test_atlas_cover_1587.py | 8 |
 | tests/test_atlas_face_inherit_1591.py | 4 |
-| tests/test_atlas_frame_reads.py | 7 |
+| tests/test_atlas_frame_reads.py | 10 |
 | tests/test_atlas_idle_cost_1031.py | 6 |
 | tests/test_atlas_lids_1301.py | 7 |
 | tests/test_atlas_lite_mood_1565.py | 1 |

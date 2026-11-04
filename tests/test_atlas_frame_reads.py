@@ -203,3 +203,81 @@ def test_lag_1657_character_jobs_run_one_task_each():
     body = atlas[atlas.index("function charactersArrived()"):]
     assert "const step = () => {" in body and "setTimeout(step, 0)" in body
     assert "for (const fn of waiting)" not in body
+
+
+TAIL_FNS = ("atlasTailNum", "atlasTailMemo", "atlasTailCentre", "atlasTailSmooth", "atlasTailStem", "atlasTailCentreOf", "atlasTailPaths")
+ATLAS_JS = (JS / "atlas.js").read_text(encoding="utf-8")
+
+
+def _tail_script(body: str) -> str:
+    parts = [
+        "const atlasFix = (v) => Math.round(v * 100) / 100;",
+        "const ATLAS_TAIL_SAMPLES = 1;",
+        *(_fn(ATLAS_JS, n) for n in ("atlasStemSides", "atlasSmooth", "atlasStem")),
+        *(_fn(LIFE, n) for n in TAIL_FNS),
+        body,
+    ]
+    return "\n".join(parts)
+
+
+@needs_node
+def test_lag_1657_tail_numbers_as_text_match_atlas_fix():
+    """INBOX 1657 round 2: `atlasTailNum` writes the tail's ~2,700 numbers a draw
+    without the double-to-string conversion (1.3 of 1.6 ms at 4x CPU); the same text."""
+    out = _node(_tail_script("""
+let bad = 0;
+for (let i = 0; i < 400000; i += 1) {
+  const v = (Math.sin(i * 12.9898) * 43758.5453 % 1) * (i % 7 ? 400 : 0.02) * (i % 2 ? 1 : -1);
+  if (String(atlasFix(v)) !== atlasTailNum(v)) bad += 1;
+}
+for (const v of [0, -0, 0.004, -0.004, 0.005, 0.5, -0.5, 1, 10, 100, 0.1, 0.01, 1.005, 99.995, -99.995]) if (String(atlasFix(v)) !== atlasTailNum(v)) bad += 1;
+process.stdout.write(JSON.stringify({ bad }));
+"""))
+    assert out["bad"] == 0
+
+
+@needs_node
+def test_lag_1657_tail_paths_share_one_centreline_and_match_atlas_stem():
+    """INBOX 1657 round 2: the body, stream, silk and filaments are cut from one
+    centreline and memoised widths; at the old two samples a curve their text is
+    `atlasStem`'s byte for byte, and the default filaments (always two) are too."""
+    out = _node(_tail_script("""
+const w = (t) => 3.6 + 4.8 * Math.sin(Math.PI * Math.min(1, 0.22 + 0.86 * t)) - 2.9 * t ** 6;
+const spec = { tailWidth: w, tailFilaments: [0.3, -0.4], tailRound: true };
+const N = 32;
+let bad = 0, n = 0;
+for (let k = 0; k < 120; k += 1) {
+  const segs = Array.from({ length: N }, (_, i) => {
+    const x = i * 3, a = Math.sin(k * 0.7 + i * 0.3) * 2, b = Math.cos(k * 0.4 + i * 0.2) * 2;
+    return [x, a, x + 1, a + b, x + 2, b - a, x + 3, Math.sin(k * 0.7 + (i + 1) * 0.3) * 2];
+  });
+  const s = 2;
+  const old = {
+    body: atlasStem(segs, w, { samples: s, round: true }),
+    stream: atlasStem(segs, (t) => w(t) * 0.26, { samples: s, shift: (t) => w(t) * 0.22 * Math.sin(Math.PI * 2.6 * t) }),
+    silk: atlasStem(segs, (t) => w(t) * 0.24, { samples: s, shift: (t) => -w(t) * 0.3 * Math.sin(Math.PI * 2.6 * t + 1.1) }),
+    filaments: spec.tailFilaments.map((f) => {
+      const pts = atlasStemSides(segs, () => 0, s, (t) => (w(t) / 2) * f).left;
+      const run = pts.slice(Math.round(pts.length * 0.18), Math.round(pts.length * 0.92));
+      return `M${atlasFix(run[0][0])} ${atlasFix(run[0][1])}${atlasSmooth(run)}`;
+    }).join(""),
+  };
+  const two = atlasTailPaths(spec, segs, 2);
+  const one = atlasTailPaths(spec, segs);
+  n += 1;
+  for (const key of ["body", "stream", "silk", "filaments"]) if (old[key] !== two[key]) bad += 1;
+  if (old.filaments !== one.filaments) bad += 1;
+  if (one.body.length > old.body.length * 0.6) bad += 1000;
+}
+process.stdout.write(JSON.stringify({ bad, n }));
+"""))
+    assert out["bad"] == 0, out
+
+
+def test_lag_1657_selection_popup_does_not_read_text_of_a_caret():
+    """INBOX 1657 round 2: `selection.toString()` lays the page out; a caret
+    (every focus change and key on the body) paid that to find nothing selected:
+    706 ms of a 22-key run at 4x CPU. Collapsed is asked first."""
+    sel = (JS / "selection.js").read_text(encoding="utf-8")
+    body = sel[sel.index("function syncSelectionPopup()"):sel.index("function initSelectionPopup()")]
+    assert body.index("!selection.isCollapsed ? selection.toString()") > 0
