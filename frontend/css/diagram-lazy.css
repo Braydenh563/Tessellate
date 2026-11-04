@@ -199,7 +199,9 @@
   background: var(--surface-1);
 }
 
-.dgm-picture {
+/* Two classes, not one: mermaid-lazy.css loads after this file and gives `.md-mermaid` a block margin, which
+   left the picture 19px (1.2rem) shorter than the blocks pane beside it (INBOX 1614, measured at 1440x900). */
+.dgm .dgm-picture {
   margin: 0;
   min-width: 0;
   overflow: auto;
