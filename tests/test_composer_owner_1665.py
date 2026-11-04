@@ -154,6 +154,12 @@ def test_d_the_answer_and_the_card_agree_on_the_missed_bus_note(answer):
         ("I have to hand it in on friday", "2026-11-03", "2026-11-06"),
         ("my uni days this week are on tuesday and thursday", "2026-11-03", "2026-11-03"),
         ("The exam is on friday", "2026-11-03", "2026-11-06"),
+        ("I booked the dentist on Friday", "2026-11-04", "2026-11-06"),
+        ("I got tickets for the gig on Friday", "2026-11-04", "2026-11-06"),
+        ("I made plans for dinner on friday", "2026-11-04", "2026-11-06"),
+        ("I did say I would come on Friday", "2026-11-04", "2026-11-06"),
+        ("I was told the exam is on Friday", "2026-11-04", "2026-11-06"),
+        ("I paid for the course, which starts on Friday", "2026-11-04", "2026-11-06"),
     ],
 )
 def test_e_a_weekday_in_a_note_that_says_it_happened_is_the_past_one(note, written, day):
