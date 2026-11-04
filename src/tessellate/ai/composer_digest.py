@@ -44,7 +44,7 @@ from functools import lru_cache, wraps
 from pathlib import Path
 
 from tessellate.ai import composer, composer_doings, composer_done, composer_frame, composer_threads, composer_lists, composer_money, composer_slots, composer_sum, composer_tables, filed_name, glossary, question_noise, realise, verdicts
-from tessellate.ai import composer_answer
+from tessellate.ai import composer_answer, composer_brief
 from tessellate.ai import composer_ask
 from tessellate.ai import composer_read
 from tessellate.ai import composer_select
@@ -347,10 +347,10 @@ def _ago(day: date, today: date) -> str:
         return ("today", "yesterday")[max(gap, 0)]
     if gap < 7:
         return f"{realise.count_word(gap)} days ago"
-    if gap < 14:
-        return "a week ago"
     if gap < 35:
-        return f"{realise.count_word(gap // 7)} weeks ago"
+        #: The card's rounding (`realise.weeks_gone`), so 27 days is four weeks on both.
+        weeks = realise.weeks_gone(gap)
+        return "a week ago" if weeks == 1 else f"{realise.count_word(weeks)} weeks ago"
     #: Whole months gone, as people count them: 109 days is "three months ago".
     months = int(gap / 30.44)
     if months < 12:
@@ -1390,9 +1390,13 @@ def _pieces_of(body: str) -> list[tuple[str, str]]:
     return [(body, "")]
 
 
-def _cue_for(piece: str, fixed: str, label: str, own: bool, note_label: str) -> str:
+def _cue_for(piece: str, fixed: str, label: str, own: bool, note_label: str, parts: bool = True) -> str:
+    """The label a fact goes under. A weak cue ("How it went") only tells the
+    parts of one note apart: a note that is one event heads itself, and the
+    label read as the outcome of the note before it (INBOX 1668)."""
     strong = next((name for name, cue in _CUES[:_STRONG_CUES] if cue.search(piece)), "")
-    return fixed or (label if own else "") or strong or note_label or next((name for name, cue in _CUES if cue.search(piece)), "")
+    weak = next((name for name, cue in _CUES if cue.search(piece)), "") if parts else ""
+    return fixed or (label if own else "") or strong or note_label or weak
 
 
 def _said_piece(piece: str, cue: str, written: date | None, pinned, last: bool, asked: bool = False) -> str:  # noqa: ANN001
@@ -1438,7 +1442,7 @@ def _sentence_facts(view: composer.NoteView, s, split: _Split, note_label: str, 
             #: "Uni starts back next week.": true on the day it was
             #: written, and misleading said now with no day.
             continue
-        cue = _cue_for(piece, fixed, split.label, split.own, note_label)
+        cue = _cue_for(piece, fixed, split.label, split.own, note_label, len(pieces) > 1 or len(view.sentences) > 1)
         asked = s.kind == "item" and str(s.text).rstrip().endswith("?")
         said = _said_piece(piece, cue, view.written, pinned, n == len(pieces) - 1, asked)
         if said:
@@ -1646,8 +1650,13 @@ def _shared_tags(members: list[composer.NoteView]) -> list[str]:
 
 
 def _named_category(q: str, members: list[composer.NoteView]) -> str:
-    """The first member's category that the question names, or empty."""
-    return next((str(v.note.get("category")) for v in members if str(v.note.get("category") or "").lower() in q.lower() and v.note.get("category")), "")
+    """The first member's category that the question names, or empty. "&" and
+    "and" are one word: "courses and study" names "Courses & Study" (INBOX 1665)."""
+    def plain(text: str) -> str:
+        return " ".join(re.sub(r"\s*&\s*", " and ", text.lower()).split())
+
+    asked = plain(q)
+    return next((str(v.note.get("category")) for v in members if v.note.get("category") and plain(str(v.note["category"])) in asked), "")
 
 
 #: "the plan for December", "my gifts for Mum": a thing for something, both
@@ -2084,13 +2093,28 @@ def asks_for_a_topic(question: str) -> bool:
     return not re.match(rf"\s*{intent._REQUEST_FRAME}\b", question or "", re.IGNORECASE)
 
 
-def whole_clause(text: str) -> str:
+def _sentence_ends(held: list[Fact]) -> frozenset[str]:
+    """The last word of each sentence a line is made from, as the person
+    wrote it ("I didnt lock in 😔" ends on "in")."""
+    ends = set()
+    for f in held:
+        words = [w for w in (re.sub(r"[^\w']+$", "", t) for t in f.sentence.text.split()) if w]
+        if words:
+            ends.add(words[-1].lower())
+    return frozenset(ends)
+
+
+def whole_clause(text: str, whole_ends: frozenset[str] = frozenset()) -> str:
     """The text without a dangling tail ("... the footer and" is "... the
     footer"), cut back to its last whole clause; "" when under three words
-    are left, so the caller drops the item rather than quote a fragment."""
+    are left, so the caller drops the item rather than quote a fragment. A
+    last word that a whole sentence of the note ends on (`whole_ends`) is not
+    dangling: "lock in" is the person's own phrase, not a cut one (INBOX 1665)."""
     said = text.rstrip()
     ended = said.rstrip(" ,;:-").rsplit(None, 1)
     if said.endswith((".", "!", "?", ")", "\"", "\u201d", "`")) or not ended or ended[-1].lower().strip(",;:") not in _DANGLING:
+        return text
+    if ended[-1].lower().strip(",;:") in whole_ends:
         return text
     words = said.rstrip(" ,;:-").split()
     while words and words[-1].lower().strip(",;:") in _DANGLING:
@@ -2118,7 +2142,7 @@ def _lines(out: _Out, facts: list[Fact], limit: int, skip: set[tuple] | None = N
         if written:
             seen_days.append(written)
         said = said[:1].upper() + said[1:] if label == PHRASES["also"] else said
-        if not (said := whole_clause(said)):
+        if not (said := whole_clause(said, _sentence_ends(held))):
             continue
         listed = _clause_list(said)
         (out.lines if i < limit else out.more).append(
@@ -3067,6 +3091,10 @@ def _second_said(view: composer.NoteView, chosen: list[Fact], said: dict[int, st
         keep.discard(b)
     elif re.match(r"we\s", said[b], re.I):
         said[b] = "you" + said[b][2:]
+    elif _VERB_FIRST.match(said[b][:1].lower() + said[b][1:]):
+        #: "Finished your final assignment" after "you put down that uni is
+        #: done" has no one doing it (INBOX 1665 g).
+        said[b] = _own_subject(said[b][:1].lower() + said[b][1:])
 
 
 def _list_gist(view: composer.NoteView, items: list[Fact]) -> list[Fact]:
@@ -3164,6 +3192,15 @@ def _schedule(view: composer.NoteView, own: list[Fact]) -> list[Fact]:
     return [Fact(view, (head or held[0]).sentence, "", first), Fact(view, held[0].sentence, "", detail[:1].upper() + detail[1:])]
 
 
+def _chosen_facts(chosen: list[Fact]) -> tuple[list[Fact], bool]:
+    """A long note is told by its gist: its first sentence, briefly (INBOX 1665 c).
+    A picture's caption is another thing the note holds, not a second sentence."""
+    long_note = sum(len(f.body.split()) for f in chosen) > composer_brief.BRIEF_WORDS
+    if len(chosen) == 2 and long_note and all(getattr(f.sentence, "kind", "prose") == "prose" for f in chosen):
+        chosen = chosen[:1]
+    return chosen, long_note
+
+
 def _gist(view: composer.NoteView, own: list[Fact]) -> list[Fact]:
     """One note's facts cut to its gist (see `_QUOTED`), in the note's order:
     labelled facts (its own headings, a to-do, a picture) as they were; the
@@ -3175,9 +3212,9 @@ def _gist(view: composer.NoteView, own: list[Fact]) -> list[Fact]:
     material = any(_QUOTED.match(f.body) for f in own)
     sort = _sorted(own, heads)
     guide = bool(shape) or material
-    chosen = sort.plain[: 1 if (shape or sort.tasks) else 2]
+    chosen, long_note = _chosen_facts(sort.plain[: 1 if (shape or sort.tasks) else 2])
     keep = {id(f) for f in chosen}
-    said = {id(f): _title_said(view, f.body.rstrip(":").strip()) for f in chosen}
+    said = {id(f): composer_brief.brief(_title_said(view, f.body.rstrip(":").strip()), squeeze=long_note) for f in chosen}
     if chosen and not sort.labelled:
         said[id(chosen[0])] = _first_said(view, said[id(chosen[0])], guide)
     if len(chosen) == 2:
@@ -3256,12 +3293,23 @@ def _framed(out: _Out, question: str, members, facts, today: date, groups: list)
             shelf[at] = composer_frame.group_line(group, notes, topic, _heading_said, n, again)
 
 
+def _in_named_category(question: str, members) -> set[int]:  # noqa: ANN001
+    """The members filed in the category the question names."""
+    named = (_named_category(clean(question), members) or "").strip().lower()
+    return {v.id for v in members if named and str(v.note.get("category") or "").strip().lower() == named}
+
+
 def _counted_groups(question: str, members, kind: str) -> tuple[list, list | None]:  # noqa: ANN001
     """The frame's groups, and the members the count is of: notes the frame
     calls "more loosely related" are listed as that and not counted, so the
-    count and the list share one set (audit 1030 Z9)."""
+    count and the list share one set (audit 1030 Z9). A note the question's
+    own category holds is never loose: it is in the pool, so it is counted
+    and told like the rest (INBOX 1665 a: "seven notes" over eleven)."""
     groups = composer_frame.groups([v.note for v in members]) if kind == "overview" and not _GOING.search(question) else []
-    loose = {i for g in groups if g.band == "loose" for i in g.ids}
+    held = _in_named_category(question, members)
+    for g in groups:
+        g.in_topic = g.band == "loose" and set(g.ids) <= held
+    loose = {i for g in groups if g.band == "loose" and not g.in_topic for i in g.ids}
     return groups, ([v for v in members if v.id not in loose] if loose else None)
 
 
@@ -4536,12 +4584,23 @@ def insight_bar(learned) -> float:  # noqa: ANN001
     return min(1.0, INSIGHT_BAR + INSIGHT_STEP * dismissed)
 
 
+def _restates(item, said: str) -> bool:  # noqa: ANN001
+    """Whether an insight quotes a note the answer has already told: "Since 9
+    August, no later note picks up this plan: need to lock-in for my
+    assignments" after the line that said it says one note twice (INBOX 1665 f)."""
+    payload = str((getattr(item, "slots", None) or {}).get("plan") or str(getattr(item, "text", "")).split(". ")[0].rpartition(": ")[2]).lower()
+    words = set(re.findall(r"[a-z]{4,}", payload))
+    return len(words) >= 3 and sum(w in said for w in words) / len(words) >= 0.6
+
+
 def _old_news(item, members, said: str) -> bool:  # noqa: ANN001
     """Whether the opening already said what `item` says: "you have written
     about uni 4 times" after "You have four notes about uni" says nothing
     new, and a "N times" that is not the opening's count would be a second,
     disagreeing count of the same subject (C6). A hobby forming is the one
     exception to the first: the count is old news, the hobby is not."""
+    if _restates(item, said):
+        return True
     if item.rule not in ("recurrence", "streak"):
         return False
     if item.slots.get("hedge") == composer_tables.INSIGHT_HEDGES["hobby"]:
@@ -4621,7 +4680,7 @@ def _volunteer(out: _Out, asked: str, members, notes: list[dict], today: date, l
     own = [{**v.note, "id": v.note.get("source_id", v.id), "created_at": v.written.isoformat()} if v.written else v.note for v in members]
     topic = _topic(asked, members)
     found = [*insights.for_subject(topic, own, today, asked), *insights.drift(own, today), *insights.contrast(own, today)]
-    said = " ".join(out.lines).lower()
+    said = " ".join([*out.lines, *out.more]).lower()
     for _, item in _scored_insights(found, ids, members, said, learned)[: 1 if level == "one" else 3]:
         row = insights.as_row(item, learned)
         if not row["confirmed"]:
@@ -5055,6 +5114,18 @@ def _polish_out(out: _Out, kind: str) -> None:
         lines[:] = [composer_threads.own_words(polish(line, keep), pool) for line in lines]
     if out.offer and out.offer.get("label"):
         out.offer = {**out.offer, "label": polish(str(out.offer["label"]), keep)}
+    _rows_as_polished(out)
+
+
+def _rows_as_polished(out: _Out) -> None:
+    """A row is the sentence as the answer now reads it ("tuesday" became
+    "Tuesday"), else the card cannot find its words in the text (INBOX 1665 f)."""
+    whole = "\n".join([*out.lines, *out.more, *out.closing, *out.next])
+    for row in out.rows:
+        said = str(row.get("sentence") or "")
+        found = re.search(re.escape(said), whole, re.IGNORECASE) if said and said not in whole else None
+        if found:
+            row["sentence"] = found.group(0)
 
 
 #: Shapes whose chips are their own (a web answer, a "more" turn).

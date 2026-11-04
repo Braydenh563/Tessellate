@@ -115,7 +115,12 @@ _ITEM = re.compile(r"^(\s*(?:[-*+]|\d{1,3}[.)])\s+|\s*(?=\[[ xX]\]\s))(\[[ xX]\]
 #: bracket closing it), a space, and a capital or a digit. Misses some
 #: abbreviations; never merges two sentences, the safer direction here.
 #: A full-width stop ends a sentence with no space after it (audit 1031 C10).
-_SPLIT = re.compile(r"(?:([.!?][\"”’)]?)\s+(?=[\"“‘(]?[A-Z0-9])|([。！？][」』”’)]?)\s*)")
+#: A chat sign-off closes a sentence the writer did not capitalise after
+#: ("...at work lol. need to lock-in"), so a stop after one splits too
+#: (INBOX 1665 f: two sentences run into "at work need to lock-in").
+_SPLIT = re.compile(
+    r"(?:([.!?][\"”’)]?)\s+(?=[\"“‘(]?[A-Z0-9])|([。！？][」』”’)]?)\s*"
+    r"|(\b(?:lol|lmao|lmfao|rofl|haha+|hehe+)[.!?]+)\s+(?=[a-z]))")
 
 
 #: The lead-ins a person opens a sentence with that carry no claim, the tested
@@ -493,6 +498,42 @@ def _open_item(view: NoteView, line: str, line_start: int, before: int) -> tuple
     return before, line_start + item.end(), view.sentences[-1].kind, view.sentences[-1].done
 
 
+#: A title that says something ("Uni is done!!") rather than names the note.
+_SAYS = re.compile(r"\b(?:is|are|was|were|am|has|have|had)\b|[!?]\s*$", re.I)
+#: A body that leans on a word the title gives ("... but it's done").
+_LEANS = re.compile(r"\b(?:it|that|this)(?:'s|\u2019s| is| was)\b", re.I)
+_TITLE_EMOTICON = re.compile(r"\s*(?:[:;=][-']?[()DPpOo/|\\]+|<3)\s*$")
+
+
+def title_is_content(title: str, body: str) -> bool:
+    """Whether a note's title is part of what it says (INBOX 1665 g: "Uni is
+    done!!" over "... but it's done haha!"): the title says something, and
+    the body leans on "it" or "that" and never says the title's subject."""
+    if not title or not _SAYS.search(title) or not _LEANS.search(body):
+        return False
+    subject = next(iter(_words(title)), None)
+    return subject is not None and subject not in set(_words(body))
+
+
+def _title_unit(view: NoteView, content: str, line_start: int, line: str) -> None:
+    """The title line, read as the first sentence of the note."""
+    lead = _HEADING_LEAD.match(line)
+    start = line_start + (lead.end() if lead else 0)
+    raw = line[(lead.end() if lead else 0):].rstrip("\r\n")
+    raw = _TITLE_EMOTICON.sub("", raw)
+    unit = _unit(view, content, start, start + len(raw), "prose", None)
+    if unit:
+        view.sentences.append(unit)
+
+
+def _read_title(view: NoteView, content: str, front: int, body_start: int, title: str) -> None:
+    """The title line is a sentence of its own when it says the note's point."""
+    if view.titled and view.kind == "note" and title_is_content(title, content[body_start:]):
+        lines = content[front:].splitlines(keepends=True)
+        if lines:
+            _title_unit(view, content, front, lines[0])
+
+
 def read_note(note: dict, rank: int) -> NoteView | None:
     """A note as its units: prose split into sentences, each list item one."""
     content = str(note.get("content") or "")
@@ -523,6 +564,7 @@ def read_note(note: dict, rank: int) -> NoteView | None:
     in_pictures = False
     item_open: tuple[int, int, str, bool | None] | None = None
     offset = 0
+    _read_title(view, content, front, body_start, title)
     for line in content.splitlines(keepends=True):
         line_start, offset = offset, offset + len(line)
         if line_start < body_start:
@@ -571,7 +613,8 @@ def _line_units(view: NoteView, content: str, line_start: int, line: str) -> Non
     body = line_start + (len(line) - len(line.lstrip(" >")))
     cursor = body
     for match in _SPLIT.finditer(content, body, line_end):
-        unit = _unit(view, content, cursor, match.end(1) if match.group(1) else match.end(2), "prose", None)
+        stop = match.end(1) if match.group(1) else match.end(2) if match.group(2) else match.end(3)
+        unit = _unit(view, content, cursor, stop, "prose", None)
         if unit:
             view.sentences.append(unit)
         cursor = match.end()

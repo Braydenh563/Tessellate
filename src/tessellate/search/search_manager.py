@@ -1353,6 +1353,36 @@ def _match_info(entries: list[Entry], sem_scores: dict, kw_terms) -> dict:  # no
     return info
 
 
+#: A match on meaning alone, with no word, tag or category of the question's,
+#: must score at least this share of the best meaning score, and never below
+#: `MEANING_FLOOR` (INBOX 1665 h: a guide, a party and a joke listed under
+#: "courses & study" on a 0.3 to 0.5 cosine).
+MEANING_SHARE = 0.85
+MEANING_FLOOR = 0.5
+#: Only once this many notes matched by a word does the floor apply: a question
+#: with no word match is answered by meaning alone, as before.
+MEANING_MIN_ANCHORS = 3
+
+
+def meaning_floor(entries: list[Entry], match_info: dict, kw_terms) -> list[Entry]:  # noqa: ANN001
+    """`entries` without the weak meaning-only matches. A note stays when a
+    word of the question is in it, its tags name one, or its score is near the
+    best meaning score; the shown score is the one that ranked it."""
+    anchored = [e for e in entries if match_info.get(e.id, {}).get("terms")]
+    if len(anchored) < MEANING_MIN_ANCHORS:
+        return entries
+    scores = [match_info[e.id]["score"] for e in entries if match_info.get(e.id, {}).get("type") == "semantic"]
+    floor = max(MEANING_FLOOR, MEANING_SHARE * max(scores)) if scores else MEANING_FLOOR
+
+    def tagged(entry: Entry) -> bool:
+        return any(t in str(entry.tags or "").lower() for t in kw_terms)
+
+    return [
+        e for e in entries
+        if match_info.get(e.id, {}).get("type") != "semantic" or match_info[e.id]["score"] >= floor or tagged(e)
+    ]
+
+
 def _append_connected(session: Session, entries: list[Entry], match_info: dict, found: dict) -> None:
     # Appended, never interleaved: a connected note is context and a match is
     # an answer, and a prompt that has to drop something should drop the
@@ -1504,6 +1534,7 @@ def _retrieve(
 
     entries = _without_private(entries)
     match_info = _match_info(entries, sem_scores, kw_terms)
+    entries = meaning_floor(entries, match_info, kw_terms)
     #: Not across a scope: a neighbour from another category is exactly the
     #: stray a question about one category must not be answered with.
     if expand_graph and entries and scope is None:

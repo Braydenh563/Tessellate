@@ -211,6 +211,14 @@ def count_word(n: int) -> str:
     return _NUMBERS[n] if 0 <= n < len(_NUMBERS) else str(n)
 
 
+def weeks_gone(days: int) -> int:
+    """Weeks a gap of `days` is, rounded as the note card rounds it
+    (`relativeTime`, sheets-selects.js: `Math.round(days / 7)`): the one
+    reader of "N weeks ago", so an answer and a card never say 3 and 4 of the
+    same note (INBOX 1665 d). Half rounds up, as JavaScript does."""
+    return int(days / 7 + 0.5)
+
+
 def relative_day(day: date, today: date) -> str:
     """`day` said against `today`, the way a person would: the exact date is
     the citation's to give."""
@@ -230,7 +238,7 @@ def relative_day(day: date, today: date) -> str:
     if -13 <= delta <= -7:
         return "next week"
     if 14 <= delta <= 34:
-        return f"{count_word(delta // 7)} weeks ago"
+        return f"{count_word(weeks_gone(delta))} weeks ago"
     if day.year == today.year:
         return f"on {day.day} {_MONTHS[day.month - 1]}"
     return f"on {day.day} {_MONTHS[day.month - 1]} {day.year}"

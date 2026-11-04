@@ -327,7 +327,7 @@ def test_a_who_line_says_how_far_back_not_a_bare_date(question, first):
 
 
 @pytest.mark.parametrize("question, said", [
-    ("what's the latest on baking", "written two weeks ago, on 12 October"),
+    ("what's the latest on baking", "written three weeks ago, on 12 October"),
     ("what's the latest on the Atlas project", "written three weeks ago, on 9 October"),
     ("what's the latest on Atlas", "written today"),
     ("what is the newest on running", "written last Sunday"),
