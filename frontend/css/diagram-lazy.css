@@ -233,6 +233,8 @@
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
   background: var(--surface-1);
+  /* A press and drag on the picture pans it; it must not smear a text selection over the drawing (R6.2). */
+  user-select: none;
 }
 
 .dgm-picture .md-mermaid-img {
@@ -245,6 +247,7 @@
 .dgm-picture > :not(.md-mermaid-img) {
   flex: 1 1 auto;
   min-width: 0;
+  user-select: text;
 }
 
 /* The stage (diagram-view.js): the picture, which scrolls, and the zoom bar, which stays in its corner. */
@@ -489,6 +492,11 @@
 .dgm-next {
   margin: var(--space-3) var(--space-2) 0;
   font-size: var(--text-xs);
+  /* In a short pane (a document's embedded editor) the hint stays at the pane's foot instead of being cut off below it (R6.12). */
+  position: sticky;
+  inset-block-end: 0;
+  padding-block: var(--space-1);
+  background: var(--surface-1);
 }
 
 /* A group's blocks sit in it, one step in, behind a rule. */
@@ -780,13 +788,26 @@
   .dgm-stage {
     order: -1;
     /* A fixed height, not a cap: a picture that grows with each change pushed the blocks
-       down under a drag in progress (measured at 390: the pane moved 53px between drops). */
-    block-size: 26vh;
+       down under a drag in progress (measured at 390: the pane moved 53px between drops). 38dvh, not the old quarter-height
+       that drew a three-block flowchart at 48% with 6 px text (R6.1). */
+    block-size: 38dvh;
   }
 
-  /* Wrapped in its stage, the picture is the stage's height rather than 26vh of its own. */
+  /* Wrapped in its stage, the picture is the stage's height less the zoom bar, which is a row under it: over the
+     picture it covered the lower node (R6.1). */
+  .dgm-stage {
+    flex-direction: column;
+    gap: var(--space-1);
+  }
+
   .dgm-stage > .dgm-picture {
     block-size: auto;
+  }
+
+  .dgm-zoom {
+    position: static;
+    align-self: flex-end;
+    box-shadow: none;
   }
 
   .dgm-pane {
@@ -861,11 +882,14 @@
 }
 
 /* The sheet's rows give every glyph about the same width, so the names line up. */
-.sheet-row > .dgm-shape {
-  margin-inline: calc(var(--space-1) / 2);
+.dgm-add-glyph {
+  flex: none;
+  display: inline-grid;
+  place-items: center;
+  inline-size: 1.5rem;
 }
 
-.sheet-row > .dgm-group-icon {
+.dgm-add-glyph > .dgm-group-icon {
   font-size: var(--text-h3);
 }
 
@@ -989,4 +1013,42 @@
 
 .dgm-shape-row > .dgm-shape-check {
   margin-inline-start: auto;
+}
+
+/* A connector menu row's line kind, drawn: the stroke (solid, dotted, thick) and the head (R6.4). */
+.dgm-link {
+  position: relative;
+  flex: none;
+  inline-size: 1.25rem;
+  block-size: 0;
+  border-block-start: 2px solid currentColor;
+}
+
+.dgm-link[data-style="dotted"] {
+  border-block-start-style: dotted;
+}
+
+.dgm-link[data-style="thick"] {
+  border-block-start-width: 4px;
+}
+
+.dgm-link[data-arrow="true"]::after {
+  content: "";
+  position: absolute;
+  inset-inline-end: -1px;
+  inset-block-start: -5px;
+  border-block: 4px solid transparent;
+  border-inline-start: 6px solid currentColor;
+}
+
+.dgm-example {
+  margin-block-start: var(--space-3);
+}
+
+/* A touch screen's controls are 44 px (R6.10); the narrow rule above makes them 36. */
+@media (pointer: coarse) {
+  .dgm-dirs button,
+  .dgm-dock .dock-actions button:not(.dgm-add) {
+    inline-size: 2.75rem;
+  }
 }

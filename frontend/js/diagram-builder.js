@@ -1,19 +1,12 @@
-// diagram-builder.js: the block pane of a diagram (1546 P2, DOCUMENTS_PLAN
-// "1546 design" D5 to D10). Lazy: `LAZY_MODULES.diagramBuilder`, registered at
-// the foot of documents-mermaid.js, so nothing of it is in the boot scripts.
+// diagram-builder.js: the block pane of a diagram (1546 P2, DOCUMENTS_PLAN "1546 design" D5 to D10). Lazy:
+// `LAZY_MODULES.diagramBuilder`, registered at the foot of documents-mermaid.js.
 //
-// A diagram is edited as blocks, never as text first: an Add library of shapes and a
-// group, a tree of cards (a node is a card, a group is a card holding cards),
-// the connectors as rows under the card they leave, and the live picture beside
-// it. Every gesture is one change to the model (`diagramModel`, documents-
-// mermaid.js) printed to the whole source and handed to `io.set`, so the
-// source is the only state and the document's own history is the undo.
-// The pure part is diagram-ops.js (node-tested, tests/test_diagram_builder.py),
-// the Add library is diagram-library.js and the drag mode diagram-pointer.js
-// (1594: all three come with `show`, so this file stays under its size target);
-// the rest is the DOM, made with createElement and textContent.
-//
-// One closure, one export: `diagramModel.builder` (no new global name).
+// A diagram is edited as blocks: the Add library, a tree of cards (a group holds cards), the connectors as rows under
+// the card they leave, and the live picture beside it. Every gesture is one change to the model (`diagramModel`)
+// printed to the whole source and handed to `io.set`, so the source is the only state and the document's history is
+// the undo. The pure part is diagram-ops.js (node-tested), the Add library diagram-library.js and the drag mode
+// diagram-pointer.js; the rest is the DOM, made with createElement and textContent. New behaviour goes in lazy files
+// (this one is held to 12 KB gzipped). One closure, one export: `diagramModel.builder`.
 (() => {
   //: The pure half (diagram-ops.js, fetched with this file): keys name blocks, every change is one call, none draws.
   let diagramOps;
@@ -71,8 +64,7 @@
     S.drawTimer = setTimeout(() => {
       const source = S.source;
       const stamp = ++S.drawn;
-      //: A kind the blocks cannot read (S.plain) still has its picture. Empty is a source with no block and nothing but
-      //: its header: a kept line the reader could not place is still drawn, so the picture says why it cannot (INBOX 1596 b).
+      //: Empty is a source with no block and nothing but its header; a kept line is still drawn, so the picture says why (INBOX 1596 b).
       const blank = S.k ? S.k.blank(S.m) : S.m && !S.m.nodes.length;
       const bare = diagramModel.front(source.replace(/\r/g, "")).rest.split("\n").every((l) => !l.trim() || /^\s*(%%|flowchart\b|graph\b|mindmap\b|timeline\b|sequenceDiagram\b)/i.test(l));
       const empty = !source.trim() || (!S.plain && blank && bare);
@@ -104,8 +96,7 @@
     const live = blockKeys(layout);
     if (S.sel && !live.includes(S.sel)) S.sel = null;
     S.rendered?.(live);
-    //: A block whose words, shape and connectors are unchanged keeps its element, and the tree keeps what it already
-    //: holds in place (`reconcile`), so a change lays out only the rows it touched.
+    //: A block unchanged keeps its element, and `reconcile` keeps it in place: a change lays out only the rows it touched.
     const fresh = new Map();
     S.cache ||= new Map();
     const rows = layout.map((item) => buildBlock(S, item, 1, edgesFrom, fresh));
@@ -155,7 +146,7 @@
     return glyph;
   }
 
-  //: The shapes a block can take, as the menu words them. `setLabel` takes only `ph:` icons, so a row that draws the shape is made by `shapeRow`.
+  //: The shapes a block can take; `shapeRow` draws each (`setLabel` takes only `ph:` icons).
   function shapeItems(S, key) {
     const id = diagramOps.split(key)[1];
     return diagramOps.SHAPES.map((shape) => ({
@@ -201,7 +192,7 @@
       const r = button.getBoundingClientRect();
       const items = shapeItems(S, key);
       openMenuAtPoint(items.map((item) => ({ label: SHAPE_LABEL[item.shape], run: item.run })), `Shape of ${text}`, r.left, r.bottom, button);
-      //: The menu opens as plain rows and each is swapped for the drawn one, so the keyboard walk and the close are the menu's own.
+      //: Opened as plain rows, each swapped for the drawn one: the keyboard walk and the close stay the menu's own.
       const menu = document.querySelector(".action-menu:not(.hidden):not(.submenu)");
       menu?.querySelectorAll(":scope > .menu-item").forEach((row, i) => row.replaceWith(shapeRow(items[i])));
       menu?.querySelector(".menu-item")?.focus({ preventScroll: true });
@@ -258,7 +249,7 @@
     grip.append(dots);
     const label = el("span", "dgm-label", text);
     card.append(grip, isGroup ? groupGlyph() : shapeButton(S, key, data.shape, text), label);
-    //: Connecting is one act on every row; the words show on the chosen row, the arrow is always there.
+    //: The arrow is on every row, its words on the chosen one.
     const connect = smallButton("ph:arrow-bend-down-right Connect to…", "Draw an arrow from this block to another", () => joinPick(S, key));
     connect.classList.add("dgm-connect");
     connect.setAttribute("aria-label", `Connect to…, from ${text}`);
@@ -300,12 +291,8 @@
     if (edge.label) chip.append(el("span", "dgm-join-label muted", edge.label));
     chip.title = "Change this connector: its line, its label, or remove it";
     chip.setAttribute("aria-label", `Connector from ${from} to ${to}${edge.label ? `, labelled ${edge.label}` : ""}. Opens its menu.`);
-    chip.addEventListener("click", async () => {
-      const r = chip.getBoundingClientRect();
-      //: The row is kept across changes, so the connector is read from the model when pressed, not when drawn.
-      const rows = await joins(S, "items", S.m.edges[index] || edge);
-      if (rows) openMenuAtPoint(rows, "This connector", r.left, r.bottom, chip);
-    });
+    //: The row is kept across changes, so the connector is read from the model when pressed, not when drawn.
+    chip.addEventListener("click", () => joins(S, "menu", { edge: S.m.edges[index] || edge, chip }));
     return chip;
   }
 
@@ -350,7 +337,7 @@
   //: A shape, or a group, added after the block `after`, inside the group `into`,
   //: or (neither) after the selection. `edit` opens its label for typing.
   //: `from` is a block id to connect to the new one, in the same change (Connect to…, A new block).
-  function addBlock(S, { shape = S.shape, group = false, after = S.sel, into = null, before = undefined, edit = true, text = SHAPE_TEXT[shape], from = null } = {}) {
+  function addBlock(S, { shape = S.shape, group = false, after = S.sel, into = null, before = undefined, edit = true, text = SHAPE_TEXT[shape], from = null, label = "" } = {}) {
     const m = S.m;
     const sel = after && !into ? after : null;
     const parent = into ? diagramOps.split(into)[1] : sel ? diagramOps.parentOf(m, sel) : null;
@@ -362,7 +349,7 @@
     if (!group) S.shape = shape;
     const key = diagramOps.key(group ? "g" : "n", id);
     S.sel = key;
-    if (from) diagramOps.join(m, from, id);
+    if (from) diagramOps.join(m, from, id, { label });
     commit(S, `Added ${group ? "a group" : `a ${SHAPE_LABEL[shape].toLowerCase()}`}${sel ? ` after ${nameOf(S, sel)}` : ""}${from ? ` and connected ${titleOf(S, from)} to it` : ""}.`);
     if (edit) relabel(S, key);
     return key;
@@ -466,17 +453,18 @@
       return act();
     }
     if (mod) return;
+    //: N adds a Box, Shift+N repeats the selected shape (R6.13); a letter reads the same with or without Shift otherwise.
+    const low = event.key.length === 1 ? event.key.toLowerCase() : event.key;
     const plain = {
       ArrowDown: () => go(all[at + 1]), ArrowUp: () => go(all[at - 1]), Home: () => go(all[0]), End: () => go(all.at(-1)),
       ArrowLeft: () => go(block.parentElement.closest(".dgm-block")), ArrowRight: () => go(block.querySelector(".dgm-block")),
       Enter: () => relabel(S, key), F2: () => relabel(S, key),
-      Insert: () => addBlock(S, { after: key }), n: () => addBlock(S, { after: key }), N: () => addBlock(S, { after: key }),
-      g: () => addBlock(S, { after: key, group: true }), G: () => addBlock(S, { after: key, group: true }),
-      c: () => key[0] !== "k" && joinPick(S, key), C: () => key[0] !== "k" && joinPick(S, key),
-      j: () => key[0] !== "k" && joinPick(S, key), J: () => key[0] !== "k" && joinPick(S, key),
+      Insert: () => addBlock(S, { after: key, shape: "rect" }), n: () => addBlock(S, { after: key, shape: event.shiftKey && diagramOps.node(S.m, diagramOps.split(key)[1])?.shape || "rect" }),
+      g: () => addBlock(S, { after: key, group: true }),
+      c: () => key[0] !== "k" && joinPick(S, key), j: () => key[0] !== "k" && joinPick(S, key),
       Delete: () => removeBlock(S, key), Backspace: () => removeBlock(S, key),
       ContextMenu: () => menuAt(S, block), F10: () => event.shiftKey && menuAt(S, block),
-    }[event.key];
+    }[low];
     if (!plain || (event.shiftKey && event.key.length > 1 && event.key !== "F10")) return;
     event.preventDefault();
     plain();
@@ -586,7 +574,7 @@
     const start = smallButton("ph:layout Start from a template", "Pick a starting flowchart", () => suggest(S, "templates"), false);
     start.classList.add("accent");
     //: The three-step walkthrough (diagram-steps.js, 1615 f); each button reaches the pane through these.
-    S.empty.append(diagramModel.steps.build(S, { el, add: addBlock, rename: relabel, connect: joinPick }), start);
+    S.empty.append(diagramModel.steps.build(S, { el, commit, add: addBlock, rename: relabel, connect: joinPick }), start);
     S.ghosts = el("div", "dgm-ghosts hidden");
     S.drop = el("div", "dgm-drop hidden");
     S.pane = el("div", "dgm-pane");
@@ -629,7 +617,7 @@
     S.pane.addEventListener("keydown", (event) => {
       if (event.target !== S.pane || !/^[nNgG]$|^Insert$/.test(event.key)) return;
       event.preventDefault();
-      addBlock(S, { after: null, group: /^[gG]$/.test(event.key) });
+      addBlock(S, { after: null, group: /^[gG]$/.test(event.key), shape: "rect" });
     });
     sync(host, text, S);
     return S;

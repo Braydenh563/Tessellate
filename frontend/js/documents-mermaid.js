@@ -490,7 +490,8 @@
     //: the last document and no builder. Cancel makes nothing.
     if (!box) {
       return openDiagramBuilder({
-        source: diagramModel.starter,
+        //: Empty, so the walkthrough shows (R6.8); its "Start from an example" button loads the starter.
+        source: "flowchart TD",
         title: "Diagram builder",
         onDone: async (next) => {
           const made = await apiJson("/documents", { method: "POST", body: JSON.stringify({ title: "Diagram", content: next, file_type: "mmd" }) }).catch(() => null);

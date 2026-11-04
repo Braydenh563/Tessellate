@@ -174,6 +174,8 @@
     document.body.append(overlay);
     view("blocks");
     await show();
+    //: Focus goes into the dialog, to the first step or block (R6.5): it stayed on the button behind, and the first Tab reached Close.
+    (host.querySelector(".dgm-steps button, .dgm-block[tabindex='0']") || dialog.querySelector(".dgm-pane") || dialog).focus?.({ preventScroll: true });
     return dialog;
   }
 

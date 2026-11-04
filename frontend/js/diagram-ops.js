@@ -318,8 +318,11 @@
     return null;
   }
 
+  //: A branch off a decision needs words (yes, no): an arrow with none that is the second or later out of a diamond (R6.3).
+  const dgbNeedsLabel = (m, edge) => Boolean(edge) && !edge.label && dgbNode(m, edge.from)?.shape === "diamond" && m.edges.filter((e) => e.from === edge.from).length >= 2;
+
   const diagramOps = {
-    layout: dgbLayout, key: dgbKey, split: dgbSplit, node: dgbNode, group: dgbGroup, sisters: dgbSisters, parentOf: dgbParentOf,
+    needsLabel: dgbNeedsLabel, layout: dgbLayout, key: dgbKey, split: dgbSplit, node: dgbNode, group: dgbGroup, sisters: dgbSisters, parentOf: dgbParentOf,
     addNode: dgbAddNode, addGroup: dgbAddGroup, move: dgbMove, remove: dgbRemove, join: dgbJoin, unjoin: dgbUnjoin,
     relabel: dgbRelabel, roots: dgbRoots, moveMany: dgbMoveMany, duplicate: dgbDuplicate, wrap: dgbWrap, step: dgbStep, nest: dgbNest, lift: dgbLift, inside: dgbInside, SHAPES: DGB_SHAPES, MAX: DGB_MAX, PLAIN: DGB_PLAIN,
   };

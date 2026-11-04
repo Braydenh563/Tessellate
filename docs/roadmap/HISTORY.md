@@ -52472,3 +52472,24 @@ Built: R5. New lazy file `diagram-multi.js` (the picked set, its keys and the ba
   - Check: `tests/test_diagram_builder.py` cases (order kept, a node under a selected group not moved twice, no drop into itself, `DGB_MAX` 120 respected, diagram-ops.js:15, duplicate keeps inner edges only); the kinds panes' tests still pass; a Playwright pass: Shift+click three rows, drag one grip, the source line order matches.
 - **Measured** (Playwright against `serve.sh` on port 8851, 1440 and 390 wide, light and dark, no console or page errors, no sideways scroll): Shift+click on three rows picked A, B and C (`aria-selected` on exactly those three, "3 selected"); dragging the grip of A to the bottom half of D reordered the source to D, A, B, C at 1440 and at 390 (3 rows carried the lift class during the drag); Duplicate made 7 blocks and 5 joins (3 original, 2 copied, none across the edge); Group into a box left 1 group holding 3 blocks; Ctrl+A picked 8 rows and Escape hid the bar. The bar is sticky inside the list's scroller: 337 by 124 px at 1440 (three rows of 32 px buttons), 284 by 109 px at 390 (icons only, 44 px buttons).
 - **Not verified:** a touch drag of a picked group on a real phone; Shift+arrow extend and the bar's Shape menu in a browser (read in the code and node-tested only).
+
+## Moved from the plans, 2026-11-04 (DOCUMENTS_PLAN 22, R6)
+
+Built: R6.1 to R6.13, one test each in `tests/test_diagram_r6.py`. Decisions taken (standing order 3): R6.8 the walkthrough wins for a new diagram from Create (the door opens empty; the walkthrough gains a "Start from an example" button that loads `diagramModel.starter`; the text-box fence path keeps the starter); R6.13 N always adds a Box, Shift+N repeats the selected shape. New code is in lazy files (`diagram-joins.js` menu and label prompt, `diagram-steps.js` example button, `diagram-ops.js` `needsLabel`); the builder is 11,874 bytes gzipped at level 9 against 12,000 (it was 11,990; comments were shortened to make room). Measured by Playwright against `serve.sh` on port 8852, 1440 and 390 wide, light and dark, no console or page errors, no sideways scroll.
+
+- **R6.1** At 390 the stage is 38dvh (321 px) instead of 26vh, and the zoom bar is a row under the picture instead of a layer over it: picture 308x263 (was 308x219), Fit 59% (was 48%), bar and picture do not intersect. At 1440 the bar stays in the corner. A tall three-block flowchart is still small on a phone; Fit is by height.
+- **R6.2** The list reorder prints the source and draws the picture again (the picture changes only when Mermaid's layout does, D1). A press and drag on the picture no longer selects text (`user-select: none`, 1440 and 390). Moving a node in the picture is R8b.
+- **R6.3** A second or later arrow out of a decision with no words asks for them (a prompt; Cancel keeps the arrow); "A new block" from a decision asks before the block is made. Measured: Ready? to Start with "retry" printed `B -->|"retry"| A`.
+- **R6.4** The connector menu hangs from its row's right edge: at 1280, menu x=286 to 486 under a row at x=164 to 477 (was x=8 to 208); at 390 x=150 to 350 under a row at 72 to 341. The six line kinds are drawn (`dgm-link`: solid, dotted 2 px and 4 px, with or without a head).
+- **R6.5** Focus goes to the first walkthrough step (or first block) when the dialog opens; measured inside `.dgm-dialog`.
+- **R6.6** Up and Down walk the Create dialog (note, document, code, back to document).
+- **R6.7** The empty Library says "Make a document, a diagram, a board or a map, or upload a file." (measured on an empty data dir).
+- **R6.8** See the decisions above. Create opens the walkthrough (3 steps, 0 blocks); the example button gives A, B, C and the starter source.
+- **R6.9** The Connect picker shows a shape icon and the shape word per block (Box, Decision), and on a touch screen focus rests on the dialog, not the search field (measured at 390: `DIV.card`).
+- **R6.10** On a touch screen the dock buttons are 44 x 44 (were 36 wide); each Connect to… button keeps its `aria-label` and title and shows its words on the chosen row only, by design.
+- **R6.11** Add sheet labels all start at x=61 at 390 (were 57, 54, 56): each glyph sits in a 1.5rem slot.
+- **R6.12** The "Drag a grip…" hint is sticky at the pane's foot: at 1280x600 it sits at y=443 to 487 inside a pane ending at 491 (was 510 to 548, below it). The Library's line count now ends a line at a last newline, as the status bar does (3 lines for a 3-line file).
+- **R6.13** Measured at 390: N after Ready? added `D["Step"]`, Shift+N after it added `E{"Question?"}`.
+- **Help:** the `diagram-blocks` topic names the example button, the decision's words, N and Shift+N (1893 characters); `diagram-builder` says Create opens empty.
+- **Not verified:** a real phone's keyboard behaviour in the picker (a touch-emulated context only); dragging a node in the picture (R8b).
+
