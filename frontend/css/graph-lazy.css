@@ -485,8 +485,10 @@
    DESIGN.md "A growing field is capped"). The popup scrolls itself, so a long
    note put Save below its fold: at 390x844 the panel's bottom was y=765 and
    Save sat at 796 to 840, reachable only by scrolling the panel. The row is
-   pinned to the foot of the panel's scroll, the way Capture's commit row is. */
-.graph-popup-saverow:has(#graph-popup-save:not(.hidden)),
+   pinned to the foot of the panel's scroll, the way Capture's commit row is.
+   The note's own panel (`#graph-popup`) needs no sticky row: it is a column
+   whose body scrolls and whose Save row is a fixed row above the dock
+   (04-chat-dock-appearance.css, INBOX 1630). */
 #graph-new .row:has(#graph-new-save) {
   position: sticky;
   bottom: 0;

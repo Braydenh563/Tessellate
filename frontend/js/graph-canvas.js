@@ -2141,7 +2141,11 @@ function gcFadeStep(s, still) {
   const last = s.fadeLast || 0;
   s.fadeLast = now;
   const ms = gcTokens.fadeMs ?? GC_FADE_MS;
-  if (still || !ms) return 1;
+  if (still || !ms || s.fadeSnap) {
+    s.fadeSnap = false;
+    s.hoverEase = 1;
+    return 1;
+  }
   const dt = now - last > 100 ? 16.7 : Math.min(now - last, 64);
   return dt / ms;
 }
@@ -3539,6 +3543,22 @@ function gcDraw(s = gcTab) {
   //: A fade of the whole map keeps painting whole frames; a hover's ease, or
   //: anything the hover layer moves, asks for a composed one.
   const cheap = over || !busy;
+  //: **A frame that asks for itself has an end** (INBOX 1630, "raf 278ms on
+  //: graph ... 53 calls/s" while still): a fade or a hover ease lasts under a
+  //: fifth of a second, so a map still asking for its own next frame after
+  //: 300 of them in a row has a value that is not landing. The next
+  //: frame lands every fade at once (`s.fadeSnap`); if it is still asking
+  //: after that, the loop stops and waits for the next real change.
+  if ((easing || fading) && !gliding && !s.bornPending) {
+    s.selfFrames = (s.selfFrames || 0) + 1;
+    if (s.selfFrames === 300) s.fadeSnap = true;
+    else if (s.selfFrames > 300) {
+      s.selfFrames = 0;
+      return;
+    }
+  } else {
+    s.selfFrames = 0;
+  }
   if (cheap && (easing || busy)) gcRequestDraw(s, true);
   else if (easing || fading || gliding || s.bornPending) gcRequestDraw(s);
 }
@@ -5103,10 +5123,22 @@ function gcHoverCardFrame(s) {
   const w = card._w || 0;
   const h = card._h || 0;
   const gap = 12;
+  //: **Inside what can be seen** (INBOX 1630, "the graph popup gets covered by
+  //: the top bar"): the map's box can start under the app's top bar, so the
+  //: card's floor is the bar's bottom, not the box's top. When centring beside
+  //: the dot would cross that floor the card goes below the dot instead.
+  const bar = document.getElementById("top-bar");
+  const seen = bar && bar.offsetParent !== null ? bar.getBoundingClientRect().bottom - s.canvas.getBoundingClientRect().top : 0;
+  const floor = Math.max(gap, seen + gap);
   let left = sx + r + gap;
   if (left + w > s.dims.w - gap) left = sx - r - gap - w;
+  let top = sy - h / 2;
+  if (top < floor) {
+    top = sy + r + gap;
+    left = sx - w / 2;
+  }
   left = Math.max(gap, Math.min(left, s.dims.w - w - gap));
-  const top = Math.max(gap, Math.min(sy - h / 2, s.dims.h - h - gap));
+  top = Math.max(floor, Math.min(top, s.dims.h - h - gap));
   const at = `${Math.round(left)},${Math.round(top)}`;
   if (card._at === at) return;
   card._at = at;

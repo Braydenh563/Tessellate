@@ -1696,7 +1696,7 @@ body.scroll-top-visible #tab-notes .layout > .tab-main {
   align-items: center;
   justify-content: center;
   margin-inline: calc(-1 * var(--graph-popup-pad));
-  margin-bottom: calc(-1 * var(--graph-popup-pad));
+  margin-bottom: 0;
   padding-inline: var(--graph-popup-pad);
   padding-bottom: var(--graph-popup-pad);
   border-bottom-left-radius: var(--radius);
@@ -1714,13 +1714,9 @@ body.scroll-top-visible #tab-notes .layout > .tab-main {
      because these carry no label to widen them. */
   --control-h: var(--control-h-lg);
   /* **Pinned at the panel's foot** (the owner, 2026-10-11: "the graph
-     popups get cut off now at the bottom"): a long note scrolls under it,
-     so the dock is always whole and in reach. Sticky against the panel's
-     own scrollport; the chip tint over the panel's opaque ground, so text
-     scrolling under it does not show through. */
-  position: sticky;
-  bottom: calc(-1 * var(--graph-popup-pad));
-  z-index: 1;
+     popups get cut off now at the bottom"): the body scrolls above it, so
+     the dock is always whole and in reach (the panel is a column, INBOX
+     1630). The chip tint over the panel's opaque ground. */
   background: linear-gradient(var(--chip-bg) 0 0), var(--modal-bg-opaque);
 }
 
@@ -1830,6 +1826,43 @@ body.scroll-top-visible #tab-notes .layout > .tab-main {
 /* A long note makes this tall; it scrolls itself rather than overflowing the
    map. max-height is set in JS from the real box height. */
 .graph-popup {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+/* **The detail panel scrolls its body only** (INBOX 1630: "the scrollbar goes
+   the whole height and there can be a gap below the bottom dock"). The panel
+   is a column: the head, then `.graph-popup-body` (the one scroller), then the
+   save row and the dock, which are the column's own last rows rather than
+   sticky rows inside a scroller, so no scrollbar runs beside the dock and the
+   dock ends at the panel's bottom edge (no bottom padding on the panel). */
+#graph-popup {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding-bottom: 0;
+}
+#graph-popup.hidden {
+  display: none;
+}
+#graph-popup > .graph-popup-head,
+#graph-popup > .graph-popup-saverow,
+#graph-popup > .graph-popup-actions {
+  flex: 0 0 auto;
+}
+/* The resize grip is the shared recipe's last row; on this panel it would be a
+   28px strip under the dock (the "gap below the bottom dock"). It is pulled up
+   over the dock's own right end by its height, so the dock is flush at the
+   foot, and the dock keeps that end free so the grip never covers a button. */
+#graph-popup > button.panel-grip {
+  margin-top: calc(-1 * var(--target-min));
+}
+#graph-popup > .graph-popup-actions {
+  padding-inline-end: calc(var(--target-min) + var(--space-1));
+}
+.graph-popup-body {
+  flex: 1 1 auto;
+  min-height: 0;
   overflow-y: auto;
   overscroll-behavior: contain;
 }
