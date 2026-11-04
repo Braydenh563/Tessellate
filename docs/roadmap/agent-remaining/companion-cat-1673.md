@@ -21,3 +21,11 @@ Review fixes (second pass): Call back unhides (probe: away/hidden before, visibl
 Decisions logged: Come off means the cat stays on its own page (Call back and Stay here are the ways to see it); Fewer (the default) never goes out and settles 1.5x longer, by the existing Reduce actions rule.
 Rejected: finding 3 (opacity 0 on a hang perch): 4 further Dashboard boots, all opacity 1 at 14 s on the same hang, enter-down route; not reproduced, so no change.
 Still unverified: wheel run with the cat present, document-scroll glue.held, real 5 to 15 minute come, afield, perch removal, reduced motion, GPU, phone, Windows.
+
+Blind-tester pass (third, no code change; probe `p7b.js` in the session scratchpad, port 8807, 1440x900, "You" companion):
+- Tab-away vanish (tester 1): kept. The one-frame cut with the tab is the owner's own decision (08-consistency.css, `.nmb-away` comment, 2026-09-27: a 200ms fade stood on the new tab for eleven frames, "stayed visible, vanished, then came back"); 1673 narrows it only by making the cat stay on its own page. A per-tab dock cat is therefore gone on other tabs until its mind brings it (5 to 15 min), Call back, or its tab. Owner call, for the INBOX with a recommendation: prefer window-level perches (hang, bar) over per-tab docks for a resting cat so most pages show it. Not changed, because it would remake the perch rule.
+- Call back lands at a new spot, not where it left: intended (it comes in by the walk-in).
+- Double-click (tester 3): not a bug. It opens the enlarged viewer (INBOX 443c, `openNameMarkViewer` visit); the host moved (0,774) to (688,423) within one 100 ms sample, then held. A walk into the viewer is not built; low value.
+- Corner drop (tester 4): not reproduced. Drop at (1435,895): splat at x=1376, floor at y=774 within 0.8 s, opacity 1 throughout, settled at x=1296 by 1.1 s (a 79 px slide on landing). No vanish.
+- Window resize clamp (tester 5): a user act, refit after 150 ms (`nameMarkBuddyRefit`); left.
+- Still not run: 12 min idle, real 5 to 15 min come, go-out, "fades"/"still" in a browser, keyboard access to the cat, phone, GPU, Windows.
