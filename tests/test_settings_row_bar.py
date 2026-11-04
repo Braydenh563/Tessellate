@@ -35,3 +35,18 @@ def test_the_where_line_is_the_last_line_of_its_fold():
     assert "margin: 0 0 0 var(--space-7)" in rule
     assert "border-top: 0" in rule
     assert "p.help-topic-links" not in (CSS / "04-chat-dock-appearance.css").read_text(encoding="utf-8")
+
+
+def test_a_selection_bar_keeps_a_gap_to_its_list_and_takes_the_pane_heads_box():
+    """INBOX 1605: the bar touched the first row (0px, now 8) and, in a Settings
+    group, stuck over the pane head offset 17px and 34px narrower."""
+    shell = (CSS / "00-tokens-shell.css").read_text(encoding="utf-8")
+    i = shell.index(".library-contextbar {")
+    assert "margin-block: var(--space-4) var(--space-3)" in shell[i : shell.index("}", i)]
+    lazy = (CSS / "settings-controls-lazy.css").read_text(encoding="utf-8")
+    assert "#settings-modal .settings-group > .selectbar {\n  margin-inline: calc(-1rem - 1px);" in lazy
+
+
+def test_the_drag_grip_steps_off_a_cards_own_tick():
+    js = (CSS.parent / "js" / "obj-drag.js").read_text(encoding="utf-8")
+    assert 'next.querySelectorAll(\'input[type="checkbox"]\')' in js
