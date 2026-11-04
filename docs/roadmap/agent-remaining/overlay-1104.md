@@ -22,7 +22,13 @@ Nothing here ran on Windows.
 - The look is read from the app window once per show (`evaluate_js` with a 1.5 s limit, last look kept); unverified on a hidden WebView2.
 - Mixed-DPI panel placement uses the figure's dpi only.
 
+- Non-Atlas companions in the overlay: frames rendered from the app window, walking gait (`SpriteSet.gait` is "walk"; the engine's walker path is built and tested, only Atlas frames ship).
+- Throw, float, hang, peek (owner, 2026-11-04) are built in the engine (`throw`: `_throw_velocity`, state `fly`; `float`: `drift`; `hang`, `rise`, `peek`, `emerge`; `ACTS` table, `quiet`) and drawn by the runner (`spin0` to `spin7` rotated copies of "tumble" per dpi in sprites.py, `Output.clip`, `sprites.clipped`). Not done: climbing up a screen side, standing on window tops (stage 2; never other apps' windows), a tuned feel (speeds, bounce damping, peek timing are first guesses).
+- Big acts (hang, peek) are 2 to 4 minutes apart, but the existing idle rule still sits it at 3 minutes untouched and sleeps it at 6, so an untouched figure does about one before it sits; touching it or moving the pointer near wakes it. Whether to let big acts keep it up is the owner's call.
+
 ## Unverified (all of it, on Windows)
+
+- Throw feel and the 100 ms velocity window with real mouse events (the host may deliver fewer than 30 moves a second); spin frames and clipped frames drawn by UpdateLayeredWindow (the canvas changes size when it spins); GetLastInputInfo and GetTickCount (new, typed in signatures()); that a peeking figure's cleared rows really take no clicks and sit over the taskbar; how Atlas's float cycle looks drifting.
 
 - Layered window creation, UpdateLayeredWindow draw, click-through of clear pixels, topmost over the taskbar, per-monitor-V2 on the overlay thread, WNDPROC callback lifetime, SHQueryUserNotificationState, the look hand-off, CPU use, the panel taking focus.
 
