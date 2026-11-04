@@ -2,7 +2,7 @@
 
 Generated 2026-11-04 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7789, frontend ids 2644, CSS sections 522, backend routes 644, backend modules 8765, test files 2051, tests 17294, plan headings 1001, app scripts 28, boot scripts 37, script files 253.
+Counts: frontend functions 7789, frontend ids 2644, CSS sections 522, backend routes 644, backend modules 8765, test files 2051, tests 17295, plan headings 1001, app scripts 28, boot scripts 37, script files 253.
 
 ## Frontend functions (7789)
 
@@ -23990,7 +23990,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (17294)
+## Tests (17295)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -24512,7 +24512,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_desk_companion.py | 63 |
 | tests/test_desk_counts_63.py | 5 |
 | tests/test_desk_look_locked_1670.py | 5 |
-| tests/test_desk_menu_1670.py | 22 |
+| tests/test_desk_menu_1670.py | 23 |
 | tests/test_desk_overlay_companion.py | 10 |
 | tests/test_desk_overlay_roam.py | 15 |
 | tests/test_desk_overlay_wiring.py | 36 |

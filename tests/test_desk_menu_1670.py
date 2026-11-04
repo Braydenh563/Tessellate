@@ -240,3 +240,11 @@ def test_sit_on_a_window_reads_the_window_list_at_once() -> None:
     tick(r, clock, 0.1)
     assert scans(fake) > before and r.last_command[0] == "perch"
     r.stop()
+
+
+def test_a_failed_search_refits_the_window_for_its_status_line() -> None:
+    """The error line adds a row to the panel; the overlay window must be asked to grow with it."""
+    js = (ROOT / "frontend" / "js" / "desk-companion.js").read_text(encoding="utf-8")
+    body = js[js.index("async function runSearch()") :]
+    catch = body[body.index("} catch (error) {") : body.index("// --- the companion itself")]
+    assert "if (overlay) fit();" in catch

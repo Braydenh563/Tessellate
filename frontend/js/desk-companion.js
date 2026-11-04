@@ -436,7 +436,9 @@
       searchEmpty(body.hits?.length ? "hits" : "none", q);
       if (overlay) fit();
     } catch (error) {
-      if (mine === searchSeq) $("desk-search-status").textContent = error.message || "Search is not available right now.";
+      if (mine !== searchSeq) return;
+      $("desk-search-status").textContent = error.message || "Search is not available right now.";
+      if (overlay) fit();
     }
   }
 
