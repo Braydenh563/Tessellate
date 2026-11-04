@@ -184,6 +184,11 @@ function nameMarkViewerActs(buddy) {
     const spec = NAME_MARK_BUDDY_ACTS[act];
     if (!spec || !spec.poses.includes(nmb.pose) || (spec.atlas && !atlas)) continue;
     row.appendChild(chip(label, "nm-viewer-act", () => {
+      //: Asked for an act, Atlas opens its eyes for it, in 0.6s. Its face dozes on its own mood (atlas.js), which the
+      //: body's sleep does not cover, so a drowsy Atlas waved and cheered with its eyes shut (the owner, 2026-11-04).
+      //: First, so the body's wake below finds it already waking and does not slow it to 2.4s. No typeof guard:
+      //: this file loads after the characters bundle (atlas.js), and `atlas` is true only with Atlas drawn.
+      if (atlas) atlasWake(600);
       if (nameMarkBuddyAsleep(buddy)) nameMarkBuddyWake(true);
       nameMarkBuddyAct(act);
     }));

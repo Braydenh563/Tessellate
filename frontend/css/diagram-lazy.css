@@ -514,6 +514,16 @@
   display: inline;
 }
 
+/* A name being typed has the row (the owner: "the text box got crushed"; a 241 px row left the box 15 px beside the words). */
+.dgm-card:has(> .dgm-editing) .dgm-connect .ph-text {
+  display: none;
+}
+
+/* In a tight list a pointed-at or focused row keeps its name: the words show there only on a drop (the arrow keeps its title). */
+.dgm-tight .dgm-card:is(:hover, :focus-within):not(.dgm-connecting) .dgm-connect .ph-text {
+  display: none;
+}
+
 /* The next step, one line under the blocks. */
 .dgm-next {
   margin: var(--space-3) var(--space-2) 0;

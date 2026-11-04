@@ -3810,10 +3810,11 @@ for (const type of ["pointerdown", "keydown"]) {
 
 //: Sleepy to calm over `ATLAS_WAKE_MS`, then awake for at least
 //: `ATLAS_AWAKE_HOLD_MS` before the resting mood may be sleepy again.
-function atlasWake() {
+//: `easeMs` is shorter when it is asked for something (the large view's acts).
+function atlasWake(easeMs = ATLAS_WAKE_MS) {
   atlasLastInput = Date.now();
-  atlasAwakeUntil = Date.now() + ATLAS_WAKE_MS + ATLAS_AWAKE_HOLD_MS;
-  if (atlasMoodNow === "sleepy") setAtlasMood("calm", 0, { quiet: true, easeMs: ATLAS_WAKE_MS });
+  atlasAwakeUntil = Date.now() + easeMs + ATLAS_AWAKE_HOLD_MS;
+  if (atlasMoodNow === "sleepy") setAtlasMood("calm", 0, { quiet: true, easeMs });
 }
 
 setInterval(() => {

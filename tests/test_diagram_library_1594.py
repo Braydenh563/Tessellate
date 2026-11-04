@@ -116,3 +116,14 @@ def test_the_builder_is_under_its_size_target_because_its_lazy_halves_are_files_
     html = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
     for file in ("diagram-library.js", "diagram-pointer.js", "diagram-ops.js"):
         assert file not in html, file
+
+
+def test_a_name_being_typed_keeps_its_row_and_a_tight_list_shows_connects_words_only_on_a_drop():
+    # The owner, 2026-11-04 ("the text box got crushed in the diagram builder"): renaming a block focuses its row, which showed
+    # Connect to…'s words (121 px), and in a 241 px row the box being typed in was left 15 px. Measured with
+    # scratchpad dgm-rename.js at 1440 and 900. While a name is typed the words go; in a tight list they show only on a drop.
+    assert ".dgm-card:has(> .dgm-editing) .dgm-connect .ph-text {\n  display: none;" in CSS
+    assert ".dgm-tight .dgm-card:is(:hover, :focus-within):not(.dgm-connecting) .dgm-connect .ph-text {\n  display: none;" in CSS
+    # After the rule that shows them, so they win at equal or higher specificity.
+    shows = CSS.index(".dgm-card:is(:hover, :focus-within, .dgm-connecting) .dgm-connect .ph-text")
+    assert CSS.index(".dgm-card:has(> .dgm-editing) .dgm-connect .ph-text") > shows

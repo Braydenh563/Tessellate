@@ -205,6 +205,9 @@ def test_the_large_view_asks_for_an_act() -> None:
     assert 'chip(label, "nm-viewer-act", () => {' in acts
     assert "spec.poses.includes(nmb.pose)" in acts and "(spec.atlas && !atlas)" in acts
     assert "if (nameMarkBuddyAsleep(buddy)) nameMarkBuddyWake(true);" in acts and "nameMarkBuddyAct(act);" in acts
+    # The owner, 2026-11-04: "if atlas is sleeping, when I choose to do the expressions in the enlarged window, it't eyes
+    # stay shut". Atlas's face dozes on its own mood, so the chip wakes that too, quickly, before the body's slow wake.
+    assert acts.index('if (atlas) atlasWake(600);') < acts.index("if (nameMarkBuddyAsleep(buddy))")
     assert 'row.setAttribute("role", "group");' in acts
     assert 'if (home) card.appendChild(nameMarkViewerActs(document.getElementById("nm-buddy")));' in MENU
     assert ".nm-viewer-acts { display: flex; flex-wrap: wrap;" in CSS

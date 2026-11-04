@@ -2,7 +2,7 @@
 
 Generated 2026-11-04 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7806, frontend ids 2644, CSS sections 522, backend routes 644, backend modules 8796, test files 2056, tests 17363, plan headings 1001, app scripts 28, boot scripts 37, script files 255.
+Counts: frontend functions 7806, frontend ids 2644, CSS sections 522, backend routes 644, backend modules 8796, test files 2056, tests 17364, plan headings 1001, app scripts 28, boot scripts 37, script files 255.
 
 ## Frontend functions (7806)
 
@@ -2256,9 +2256,9 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `atlasTuneSegs` | frontend/js/atlas.js:1053 |
 | `atlasTuneStyle` | frontend/js/atlas.js:2838 |
 | `atlasTurnAbout` | frontend/js/atlas.js:968 |
-| `atlasWake` | frontend/js/atlas.js:3813 |
+| `atlasWake` | frontend/js/atlas.js:3814 |
 | `atlasWatchFigure` | frontend/js/atlas.js:3335 |
-| `charactersArrived` | frontend/js/atlas.js:3903 |
+| `charactersArrived` | frontend/js/atlas.js:3904 |
 | `setAtlasMood` | frontend/js/atlas.js:3613 |
 
 ### frontend/js/attach-to.js (4)
@@ -2887,25 +2887,25 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `companionPathAt` | frontend/js/companion-menu.js:1035 |
-| `companionPathEase` | frontend/js/companion-menu.js:1027 |
-| `companionPathKind` | frontend/js/companion-menu.js:1051 |
-| `companionPathPeak` | frontend/js/companion-menu.js:1058 |
-| `companionPathPlan` | frontend/js/companion-menu.js:1068 |
-| `mountBuddyPresets` | frontend/js/companion-menu.js:604 |
-| `nameMarkBuddyApplyPreset` | frontend/js/companion-menu.js:584 |
-| `nameMarkBuddyHome` | frontend/js/companion-menu.js:979 |
-| `nameMarkBuddyKeepPresets` | frontend/js/companion-menu.js:553 |
-| `nameMarkBuddyMenu` | frontend/js/companion-menu.js:211 |
-| `nameMarkBuddyPresets` | frontend/js/companion-menu.js:545 |
-| `nameMarkBuddySavePreset` | frontend/js/companion-menu.js:561 |
-| `nameMarkBuddyVisit` | frontend/js/companion-menu.js:909 |
+| `companionPathAt` | frontend/js/companion-menu.js:1040 |
+| `companionPathEase` | frontend/js/companion-menu.js:1032 |
+| `companionPathKind` | frontend/js/companion-menu.js:1056 |
+| `companionPathPeak` | frontend/js/companion-menu.js:1063 |
+| `companionPathPlan` | frontend/js/companion-menu.js:1073 |
+| `mountBuddyPresets` | frontend/js/companion-menu.js:609 |
+| `nameMarkBuddyApplyPreset` | frontend/js/companion-menu.js:589 |
+| `nameMarkBuddyHome` | frontend/js/companion-menu.js:984 |
+| `nameMarkBuddyKeepPresets` | frontend/js/companion-menu.js:558 |
+| `nameMarkBuddyMenu` | frontend/js/companion-menu.js:216 |
+| `nameMarkBuddyPresets` | frontend/js/companion-menu.js:550 |
+| `nameMarkBuddySavePreset` | frontend/js/companion-menu.js:566 |
+| `nameMarkBuddyVisit` | frontend/js/companion-menu.js:914 |
 | `nameMarkViewerActs` | frontend/js/companion-menu.js:177 |
-| `nameMarkViewerBlinks` | frontend/js/companion-menu.js:523 |
-| `nameMarkViewerFace` | frontend/js/companion-menu.js:504 |
-| `nameMarkViewerFit` | frontend/js/companion-menu.js:416 |
-| `nameMarkViewerFollow` | frontend/js/companion-menu.js:458 |
-| `nameMarkViewerNear` | frontend/js/companion-menu.js:499 |
+| `nameMarkViewerBlinks` | frontend/js/companion-menu.js:528 |
+| `nameMarkViewerFace` | frontend/js/companion-menu.js:509 |
+| `nameMarkViewerFit` | frontend/js/companion-menu.js:421 |
+| `nameMarkViewerFollow` | frontend/js/companion-menu.js:463 |
+| `nameMarkViewerNear` | frontend/js/companion-menu.js:504 |
 | `openNameMarkViewer` | frontend/js/companion-menu.js:34 |
 
 ### frontend/js/companion-remark.js (1)
@@ -12288,7 +12288,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/dash-night-lazy.css | 29 |
 | frontend/css/dash-orphans-lazy.css | 57 |
 | frontend/css/desk-companion-lazy.css | 226 |
-| frontend/css/diagram-lazy.css | 1285 |
+| frontend/css/diagram-lazy.css | 1295 |
 | frontend/css/file-drop-lazy.css | 51 |
 | frontend/css/first-run-lazy.css | 140 |
 | frontend/css/forced-colors-lazy.css | 28 |
@@ -24058,7 +24058,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (17363)
+## Tests (17364)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -24602,7 +24602,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_diagram_doors_1588.py | 5 |
 | tests/test_diagram_embed.py | 10 |
 | tests/test_diagram_kinds.py | 30 |
-| tests/test_diagram_library_1594.py | 7 |
+| tests/test_diagram_library_1594.py | 8 |
 | tests/test_diagram_model.py | 12 |
 | tests/test_diagram_multi_r5.py | 17 |
 | tests/test_diagram_object_kind.py | 2 |
