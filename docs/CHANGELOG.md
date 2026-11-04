@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Atlas blinks with both eyes in the idle blink, in both looks (INBOX 1644).
 - Stopwatch: the Lap button stays under the pointer while laps are added (the laps area holds its height from the first lap), and the diagram picture's zoom label shows the true scale after every zoom (INBOX 1651, 1652).
 - Desktop companion: a first show that Windows rescaled to a smaller square is placed once more at its real size (INBOX 1650).
 - Composer: a picture's caption reads as English ("shows a green fox", or a full sentence quoted as described), and a quote reads as plain answer text, with a wrapped list item kept whole (CHAT_PLAN 1599, 1602).

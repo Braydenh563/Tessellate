@@ -2794,7 +2794,9 @@ function nameMarkIdleAct(el, pick = "") {
       { translate: `${-side * 1.6}px 0`, offset: 0.7 }, { translate: "0 0" },
     ], { duration: 2600, easing: "ease-in-out" });
   } else if (act === "blink") {
-    part(".nm-blinks")?.animate([
+    //: Every `.nm-blinks` group, not the first: Atlas draws one per eye (INBOX 1644,
+    //: the owner: only one eye blinks), the generated faces one group for both.
+    for (const lid of el.querySelectorAll(".nm-blinks")) lid.animate([
       { transform: "scaleY(1)" }, { transform: "scaleY(0.1)", offset: 0.12 }, { transform: "scaleY(1)", offset: 0.3 },
       { transform: "scaleY(0.1)", offset: 0.45 }, { transform: "scaleY(1)", offset: 0.62 }, { transform: "scaleY(1)" },
     ], { duration: 800, easing: "linear" });
