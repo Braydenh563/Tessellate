@@ -243,9 +243,13 @@ def test_a_moving_figure_keeps_asking_for_ticks_and_changes_frame_or_place() -> 
     assert wait_for(lambda: r.host.visible)
     seen = {r._last_key}
     places = {r._last_pos}
-    _pump(r, fake, clock, 60.0, until=lambda: len({key[0] for key in seen if key}) > 1 or len(places) > 1)
-    seen.add(r._last_key)
-    places.add(r._last_pos)
+
+    def changed() -> bool:  # looked at on every tick: a blink is back to a stand by the end (INBOX 1670: it sits still)
+        seen.add(r._last_key)
+        places.add(r._last_pos)
+        return len({key[0] for key in seen if key}) > 1 or len(places) > 1
+
+    _pump(r, fake, clock, 120.0, until=changed)
     assert len({key[0] for key in seen if key}) > 1 or len(places) > 1, (seen, places)
     r.stop()
 

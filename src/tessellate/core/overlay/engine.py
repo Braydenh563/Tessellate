@@ -54,15 +54,24 @@ import math
 import random
 from typing import Any, NamedTuple
 
+from . import behaviour as bh
+from . import travel as tv
+
 #: Seconds.
 MAX_DT = 0.1
 #: One ambient moment (a blink, now and then a look) this far apart: each costs two
 #: wakes (start and end), so 60 s of standing is at most 20 (about 14).
-AMBIENT_EVERY = (6.0, 11.0)
+AMBIENT_EVERY = (25.0, 45.0)
 LOOK_SHARE = 0.25
 BLINK_FOR = 0.18
 LOOK_FOR = 1.2
 STAND_FOR = (3.0, 8.0)
+#: A settled spell (INBOX 1670, 13:15Z: "it can't sit still"): standing, it stays put this long before it
+#: so much as picks something to do (median about six minutes); a blink or a tail beat does not break it.
+SETTLE_FOR = (200.0, 520.0)
+#: Standing, the idle cycle (a tail beat and a breath, `IDLE_FRAMES` frames) plays once in a while, not
+#: all the time: a still figure costs no redraws between.
+IDLE_BURST = (20.0, 40.0)
 WALK_FOR = (4.0, 12.0)
 SIT_FOR = (8.0, 20.0)
 WAVE_FOR = 1.4
@@ -80,24 +89,54 @@ IDLE_SLEEP = 1200.0
 #: figure draws these at `IDLE_FPS` so the parts move; reduced or typing-quiet it
 #: is the one `stand` frame and costs no wake.
 IDLE_FRAMES = 12
-IDLE_FPS = 8.0
+IDLE_FPS = 3.0
 
 #: Logical pixels (scaled by the monitor's dpi).
 WALK_SPEED = 55.0
+#: A unhurried pace, by distance (INBOX 1670: "a buddy, not a nuisance"): close range is a step,
+#: the middle distance a walk, far a run (a swoop for a floater), each eased in and out.
+STEP_UNDER = 60.0
+DASH_OVER = 420.0
+STEP_K, DASH_K = 0.6, 1.7
+EASE_IN = 0.7
+EASE_OUT = 70.0
+CROUCH_FOR = 0.25
+TURN_FOR = 0.24
+#: Home: where it was left. Most of its time is spent there; strolls stay within STROLL px of it,
+#: a trip away comes at most every TRIP_EVERY seconds (a few an hour), then it goes home.
+STROLL = 150.0
+TRIP_EVERY = (520.0, 1100.0)
+TRIP_FIRST = (300.0, 700.0)
+AWAY = 40.0
+#: Following the pointer at a polite distance, for a while.
+FOLLOW_GAP = 240.0
+FOLLOW_FOR = (10.0, 18.0)
+GREET_AFTER = 420.0
+#: Under a busy pointer it waits instead of passing (px ahead / height of the path / seconds).
+YIELD_NEAR = 130.0
+YIELD_MAX = 4.0
+LEAN_MAX = 0.07
+POSE_RATE = 14.0
+POSE_OFF = ("held", "pressed", "fly", "fall", "rise", "peek", "emerge", "leap", "hop", "card")
+#: Logical px of travel per walk frame (six frames a stride).
+STRIDE = 7.0
+TAIL_TICK_MS = 50
 GRAVITY = 2200.0
 NOTICE_NEAR = 120.0
 NOTICE_VERY_NEAR = 40.0
 #: Physical pixels the pointer may move between press and release for it to be a click.
 CLICK_SLOP = 4
 #: A resting spot in from the right edge, away from the tray's flyouts.
-HOME_INSET = 160.0
+HOME_INSET = 100.0
+#: A home found in the middle third of the work area moves to an edge after this long (s).
+RELOCATE_AFTER = 120.0
 
 #: How long each state holds: a range (random) or a fixed time; the others set theirs in `_on_<state>`.
-HOLD_RANGES = {"stand": STAND_FOR, "sit": SIT_FOR}
+HOLD_RANGES = {"stand": SETTLE_FOR, "sit": SIT_FOR}
 HOLD_FIXED = {"wave": WAVE_FOR, "land": LAND_FOR, "hop": HOP_FOR, "notice": NOTICE_FOR, "startle": STARTLE_FOR}
 
 #: States drawn with a frame of another name.
-FRAME_OF = {"pressed": "stand", "leap": "hop", "notice": "look", "startle": "hop", "hop": "hop", "held": "held", "hang": "hang", "emerge": "stand"}
+FRAME_OF = {"pressed": "stand", "leap": "hop", "notice": "look", "startle": "hop", "hop": "hop", "held": "held", "hang": "hang", "emerge": "stand", "warp": "stand"}
 
 #: Throw: the pointer's last THROW_WINDOW seconds decide the velocity. Logical
 #: px per second (scaled by dpi): slower than THROW_MIN is a plain drop.
@@ -121,37 +160,45 @@ SPIN_FRAMES_ENGINE = tuple(f"spin{i}" for i in range(SPIN_STEPS))
 #: Its rest line: a hand's breadth above the work area's bottom, so the feet are on the
 #: taskbar (INBOX 1670: "it still sits like 20px above the bottom bar"). The bob lifts it
 #: from there; it never sinks below. Was (24, 80), a figure's height up.
-HOVER = (1.0, 2.0)
+HOVER = (0.0, 0.0)
 #: How fast the bob and sway fade in and out (share of full per second), so a state that
 #: ends the bob eases it away and never snaps the figure by its height (INBOX 1670: "jolting").
 BOB_EASE = 3.0
+#: ... and how fast it fades when it arrives: about a second (INBOX 1670, 13:25Z: "why does it bob up and
+#: down so much, it is floating"). It bobs only while it travels; at rest it is still.
+BOB_EASE_OUT = 1.0
 #: How far below the work area's top a released figure's head may be and still take hold.
 HANG_REACH = 0.3
-FLOAT_SPEED = 130.0
+FLOAT_SPEED = 85.0
 FLOAT_TURN = 1.8
 FLOAT_DRAG = 3.0
 FLOAT_PULL = 3.0
-REACHED = 6.0
+REACHED = 2.0
 #: A floater travels (INBOX 1658: "it just floats there"): each leg is at least this share
 #: of the work area's width, it rests only a moment between legs, and while it is
-#: out it bobs (up to BOB logical px) and sways (FLOAT_SWAY), redrawn every BOB_TICK s.
+#: out it bobs (up to BOB logical px) and sways (FLOAT_SWAY), redrawn when it moves a pixel.
 FLOAT_LEG = (0.35, 0.8)
 FLOAT_STAND_FOR = (0.8, 2.0)
 #: A wandering leg aims within this many figure heights above the rest line (INBOX 1663:
 #: "floats wayyy to high"); only a trip to a window or an edge goes higher.
-FLOAT_BAND = 1.0
+FLOAT_BAND = 0.35
 FLOAT_MOVE_WEIGHT = 150
-#: The bob is the only vertical float: 4 px at 0.22 Hz (INBOX 1670: "bobbing really fast"; it was
-#: 7 px at 0.55 Hz on top of 9.7 px at 1.33 Hz baked into the drift frames and 1.6 px at 0.67 Hz
-#: in the idle ones, all of them in step).
+#: The bob is slow and small (INBOX 1670: "bobs up and down quite fast"): a 4 s period, 2 px at rest
+#: on the floor (so the feet are within 2 px of the taskbar), up to 4 px well off it.
 BOB = 4.0
-BOB_HZ = 0.22
-FLOAT_SWAY = 5.0
-FLOAT_SWAY_HZ = 0.37
-BOB_TICK = 0.125
+BOB_REST = 2.0
+BOB_HZ = 0.25
+FLOAT_SWAY = 2.0
+FLOAT_SWAY_HZ = 0.18
 #: Hang from the top edge, and the climb up to it. The window holds still while it hangs
 #: (INBOX 1663: "slides a little from side to side"): any life is in the frames.
-HANG_FOR = (8.0, 16.0)
+HANG_FOR = (45.0, 120.0)
+#: A hang swings from its grip like a pendulum (the lower body lags by this many px, `Pose.drag`), a
+#: slow one, and glances about now and then (INBOX 1670, 13:28Z: "it basically doesn't move while it is
+#: hanging"). The window itself holds still: only the picture swings.
+HANG_SWING = 9.0
+HANG_PERIOD = 5.6
+HANG_GLANCE = (11.0, 26.0)
 #: What a hang takes hold of (INBOX 1660: "it thinks its hanging but its just ... hanging in
 #: mid air"): the top of the work area, or the bottom edge of a window's title bar
 #: (`TITLE_BAR` logical px under its top). The hands are `hang_top` of the frame's height
@@ -169,17 +216,16 @@ PEEK_SIDE = 0.55
 PEEK_PLAN = ((0.0, 0.0), (0.8, 1.0), (3.0, 1.0), (3.4, 2.0), (5.0, 2.0), (5.5, 1.0), (7.0, 1.0), (7.8, 0.0))
 EMERGE_FOR = 0.4
 #: Big acts (hang, peek) are at least this far apart (seconds): calm, minutes.
-BIG_EVERY = (120.0, 240.0)
+BIG_EVERY = (700.0, 1300.0)
 #: The first one comes sooner, inside the minutes before it sits down for good.
-BIG_FIRST = (60.0, 150.0)
+BIG_FIRST = (300.0, 700.0)
 #: While the person is busy (typing, presenting) it asks again this often.
 QUIET_RECHECK = 5.0
 REST_FOR = (8.0, 20.0)
 #: The ambient choice, one table: act -> (weight, big). `sleep` needs SLEEP_AFTER idle.
 ACTS = {
-    "move": (55, False), "rest": (12, False), "wave": (6, False), "sit": (10, False),
-    "stand": (6, False), "sleep": (2, False), "hang": (5, True), "peek": (6, True),
-    "climb": (8, False),
+    "idle": (62, False), "stroll": (3, False), "trip": (16, False), "sleep": (2, False),
+    "hang": (4, True), "peek": (5, True),
 }
 SLEEP_AFTER = 60.0
 
@@ -189,7 +235,7 @@ SLEEP_AFTER = 60.0
 #: that moves more than `PERCH_MOVED` physical px has moved.
 CLIMB_FIRST = 40.0
 CLIMB_EVERY = (180.0, 420.0)
-PERCH_FOR = (25.0, 70.0)
+PERCH_FOR = (20.0, 50.0)
 PERCH_MIN_RISE = 48.0
 PERCH_MOVED = 3.0
 LEAP_BASE = 0.45
@@ -204,6 +250,7 @@ CARD_STAND = ("stand", "walk", "drift", "sit", "sleep", "land", "wave", "notice"
 
 TICK_WALK_MS = 33
 TICK_FALL_MS = 16
+#: A visit to a window is not a rest spot: the first leg to a window top stays under a minute.
 #: Sitting and sleeping look at the pointer this often (a wake each).
 POLL_QUIET_MS = 2000
 MIN_WAKE_MS = 30
@@ -243,6 +290,14 @@ class Output(NamedTuple):
     clip: tuple[int, int, int, int] | None = None
     #: The token of the reminder whose card was just clicked (None otherwise).
     card: Any = None
+    #: Body language over the frame, `(sx, sy, lean, drag)` on the cache grid (`behaviour.quantised`),
+    #: or None for the plain frame.
+    pose: tuple[float, float, float, float] | None = None
+    #: A travel effect over the frame, `(kind, amount, side)`: a "portal" ring or a "puff" of nebula
+    #: (amount 0 to 1, on the side the figure faces), or None.
+    fx: tuple[str, float, int] | None = None
+    #: How much of the figure shows (1 whole, 0 gone): a vanish or a step through a ring.
+    alpha: float = 1.0
 
 
 def _adjoins(a: Rect, b: Rect, side: str) -> bool:
@@ -326,6 +381,52 @@ class Engine:
         self.card_until = 0.0
         self.card_clicked: Any = None
         self.sink = 0.0
+        #: Mind, home, and the body's follow-through (INBOX 1670, row B).
+        self.mind = bh.Mind(now)
+        self.tail = bh.Trail()
+        self.hour = 12
+        self.act: str | None = None
+        self.act_started = now
+        self.act_len = 1.0
+        self.mode = "walk"
+        self.pending: tuple[tuple[float, float], str] | None = None
+        self.turn_to = 0
+        self.turn_started = -1e9
+        self.vx_px = 0.0
+        self.home_x: float | None = None
+        self.trip_ready = now + self.rng.uniform(*TRIP_FIRST)
+        self.follow_until = 0.0
+        self.follow_check = 0.0
+        self.yield_since: float | None = None
+        self.pointer_busy_at = -1e9
+        self.last_pointer: tuple[int, int] | None = None
+        self.last_click = -1e9
+        self.moving_since = now
+        self.act_turned = -1.0
+        self.placed = False
+        self.greet_at = 0.0
+        self.pose_goal = bh.NEUTRAL
+        self.cur = bh.NEUTRAL
+        self.last_x = 0.0
+        self.travel = 0.0
+        self.trips = 0
+        self.greet_pending = False
+        #: The text caret of the foreground window (physical px) and when it was read, or None. While
+        #: there is one, or the person is typing, the figure is busy: no trip, and it keeps clear of it.
+        self.caret: Rect | None = None
+        self.evade_ready = 0.0
+        self.warp: dict[str, Any] | None = None
+        self.edge_plan: tuple[tuple[float, float], str] | None = None
+        #: What it did to get about: `modes` the chosen ones, `legs` every move `(mode, x0, x1, t)`.
+        self.modes: list[str] = []
+        self.legs: list[tuple[str, float, float, float]] = []
+        self.hang_started = now
+        self.hang_phase = 0.0
+        self.hang_glance_at = math.inf
+        self.burst_start = 0.0
+        self.burst_until = -1e9
+        self.plain_legs = False  # tests: every leg is the plain walk or drift, no vanish, no glide
+        self.relocate_at: float | None = None
         #: The drawn box of every frame, `(name, mirrored) -> (left, top, right, bottom)` in px
         #: from where the window is placed (`SpriteSet.metrics`); empty means "the whole window".
         self.metrics: dict[tuple[str, bool], tuple[float, float, float, float]] = {}
@@ -340,7 +441,10 @@ class Engine:
         x, y = home if home is not None else self._default_home()
         self.x, self.y = float(x), float(y)
         self._place_on_floor()
+        self.home_x = self.x
+        self.last_x = self.x
         self._enter("stand" if not reduced else "sit", now)
+        self._maybe_relocate(now)
 
     # --- geometry ------------------------------------------------------------------
 
@@ -454,6 +558,16 @@ class Engine:
     def home(self) -> tuple[int, int]:
         return int(round(self.x)), int(round(self.y))
 
+    @property
+    def busy(self) -> bool:
+        """The person is working: typing, or a text caret in the foreground window."""
+        return self.quiet or self.caret is not None
+
+    def set_caret(self, rect: Rect | None) -> None:
+        """The foreground window's caret rectangle in screen px (None: no caret). Read by the runner at
+        about 0.5 Hz; the figure steps off it on the next tick."""
+        self.caret = rect
+
     def resume(self, now: float) -> None:
         """After a suspend or a long stall: no jump, no catching up."""
         self.now = now
@@ -468,16 +582,18 @@ class Engine:
     def _enter(self, state: str, now: float) -> None:
         self.state = state
         self.flash = None
-        if state not in ("hang", "drift", "rise"):
+        if state not in ("hang", "drift", "rise", "crouch"):
             self.hang_on = None
         if state not in ("peek", "emerge"):
             self.sink, self.peek_edge = 0.0, None
-        if state not in ("walk", "drift"):
+        if state not in ("walk", "drift", "crouch"):
             self.goal = None
+        if state != "act":
+            self.act = None
         self.trip = False
-        if state == "stand" and self.gait == "float" and self.perch is None:
-            self.state_until = now + self.rng.uniform(*FLOAT_STAND_FOR)
-        elif state in HOLD_RANGES:
+        if state != "warp":
+            self.warp = None
+        if state in HOLD_RANGES:
             self.state_until = now + self.rng.uniform(*HOLD_RANGES[state])
         elif state in HOLD_FIXED:
             self.state_until = now + HOLD_FIXED[state]
@@ -485,12 +601,25 @@ class Engine:
             self.state_until = math.inf
         else:
             getattr(self, f"_on_{state}", lambda _now: None)(now)
+        if state == "stand" and self.perch is not None:  # a visit to a window ends when its time does
+            self.state_until = min(self.state_until, max(now + 1.0, self.perch_until))
+
+    def _on_warp(self, now: float) -> None:
+        self.bob_gain = 0.0
+        self.state_until = math.inf
 
     def _on_walk(self, now: float) -> None:
         self.state_until = now + self.rng.uniform(*WALK_FOR)
         self.walk_started = now
-        if self.rng.random() < 0.3:
-            self.facing = -self.facing
+
+    def _on_act(self, now: float) -> None:
+        act = bh.ACTIVITIES[self.act or "breathe"]
+        self.act_started, self.act_len = now, self.rng.uniform(*act.seconds)
+        self.act_turned = -1.0
+        self.state_until = now + self.act_len
+
+    def _on_crouch(self, now: float) -> None:
+        self.state_until = now + CROUCH_FOR
 
     def _on_drift(self, now: float) -> None:
         self.state_until = now + self.rng.uniform(*WALK_FOR)
@@ -500,8 +629,10 @@ class Engine:
 
     def _on_hang(self, now: float) -> None:
         self.bob_gain = 0.0  # hands on an edge hold still
-        self.state_until = now + self.rng.uniform(*HANG_FOR)
-        self.phase_started = now
+        self.state_until = now + self.rng.uniform(*bh.HANG_BY_MOOD.get(self.mind.mood(now, self.hour), HANG_FOR))
+        self.phase_started = self.hang_started = now
+        self.hang_phase = self.rng.uniform(0.0, 2 * math.pi)
+        self.hang_glance_at = now + self.rng.uniform(*HANG_GLANCE)
 
     def _on_rise(self, now: float) -> None:
         self.state_until = now + RISE_FOR
@@ -541,19 +672,104 @@ class Engine:
         self.settled_now = False
         self.card_clicked = None
         if pointer is not None:
+            if self.pointer is None or math.hypot(pointer[0] - self.pointer[0], pointer[1] - self.pointer[1]) > 3:
+                if now - self.pointer_busy_at > GREET_AFTER:  # it is back after a long quiet: say hello
+                    self.greet_pending, self.greet_at = True, now
+                self.pointer_busy_at = now
             self.pointer = pointer
+        self.mind.tick(now, self.hour)
         if event is not None:
+            if event[0] == "down" and self.state == "warp":
+                self._finish_warp(now)  # taken hold of mid-vanish: it is where it was going
             self._input(event, now)
         if self.state not in ("held", "pressed"):
             self._advance(now, dt, pointer)
+        if self.caret is not None and self.state not in ("held", "pressed", "fly", "fall", "warp"):
+            self._keep_off_caret(now)
+        if self.turn_to:  # a turn begun in an act or a stand still finishes
+            self._turning(now)
         self._ease_bob(dt)
+        self._follow_through(now, dt)
+        if self.settled_now and self.placed:  # where the person left it is home
+            self.home_x, self.placed = self.x, False
+            self._maybe_relocate(now)
         return self._output(now)
+
+    def _follow_through(self, now: float, dt: float) -> None:
+        """The tail and the lower wisp lag the body (a spring chain thrown by its acceleration),
+        and the pose eases toward its target (no state change snaps the body's shape)."""
+        if dt <= 0:
+            return
+        vx = (self.x - self.last_x) / dt
+        self.travel += abs(self.x - self.last_x)
+        self.last_x = self.x
+        self.tail.step(dt, vx if self.state not in ("held", "pressed") else 0.0)
+        target = self.pose_goal = self._target_pose(now)
+        k = min(1.0, dt * POSE_RATE)
+        self.cur = bh.Pose(*(a + (b - a) * k for a, b in zip(self.cur, target)))
+        self.vx_px = vx
+
+    def _target_pose(self, now: float) -> bh.Pose:
+        """What the body shape wants now: the act's keyframes, a turn's squeeze, a lean into the
+        way it travels, a crouch or a landing's squash, a mood's carriage, and the tail's lag."""
+        sx = sy = 1.0
+        lean = 0.0
+        drag = self.tail.tip
+        s_ = self.state
+        if self.reduced:
+            return bh.NEUTRAL
+        if s_ == "hang":  # a slow pendulum from the grip: the lower body swings, the hands do not move
+            t = now - self.hang_started
+            amp = bh.smooth(t / 1.5) * (0.65 + 0.35 * math.sin(2 * math.pi * t / 41.0 + self.hang_phase))
+            drag = HANG_SWING * amp * math.sin(2 * math.pi * t / HANG_PERIOD + self.hang_phase)
+        elif s_ == "warp" and self.warp is not None and self.warp["kind"] == "portal":
+            squeeze = self._warp_view(now)[2]
+            sx, sy = 1.0 - 0.8 * squeeze, 1.0 - 0.2 * squeeze
+        elif s_ == "act":
+            p = bh.sample(bh.ACTIVITIES[self.act or "breathe"].keys, (now - self.act_started) / max(0.01, self.act_len))
+            sx, sy, lean = p.sx, p.sy, p.lean * (1 if self.facing > 0 else -1)
+        else:
+            sx, sy, lean = self._ground_pose(now, s_)
+        if self.turn_to != 0:
+            u = (now - self.turn_started) / TURN_FOR
+            sx *= max(0.12, abs(math.cos(math.pi * min(1.0, u))))
+        return bh.Pose(sx, sy, lean, drag)
+
+    def _ground_pose(self, now: float, s_: str) -> tuple[float, float, float]:
+        """The squash and lean of a crouch, a landing, a step or a mood's stand."""
+        sx = sy = 1.0
+        lean = 0.0
+        if s_ == "crouch":
+            sy, sx = 1.0 - 0.12 * bh.smooth((now - (self.state_until - CROUCH_FOR)) / CROUCH_FOR), 1.03
+        elif s_ == "land":
+            u = 1.0 - max(0.0, self.state_until - now) / LAND_FOR
+            sy = 1.0 - 0.12 * math.sin(min(1.0, u) * math.pi)
+            sx = 1.0 + 0.06 * math.sin(min(1.0, u) * math.pi)
+        elif s_ in ("walk", "drift") and self.turn_to == 0:
+            speed = min(1.0, abs(self.vx_px) / (WALK_SPEED * self._scale() * 1.2))
+            lean = LEAN_MAX * speed * (1 if self.vx_px > 0 else -1) * (1.6 if self.mode == "dash" else 1.0)
+            if self.gait == "walk":  # a ground companion bounces with its steps
+                sy = 1.0 + 0.012 * math.sin(self.travel / self._scale() * 2 * math.pi / STRIDE)
+        elif s_ == "stand":
+            mood = self.mind.mood(now, self.hour)
+            sy = {"sleepy": 0.975, "proud": 1.035, "bored": 0.985, "startled": 1.05}.get(mood, 1.0)
+        return sx, sy, lean
+
+    def _pose(self) -> tuple[float, float, float, float] | None:
+        """The body pose to draw over the frame; none while it is carried, thrown, falling or at an
+        edge (those frames carry their own shape, and a spin sits on a bigger canvas)."""
+        if self.state in POSE_OFF:
+            return None
+        q = bh.quantised(self.cur)
+        return None if q is None else (q.sx, q.sy, q.lean, q.drag)
 
     def _ease_bob(self, dt: float) -> None:
         """The bob's strength follows whether it should bob, at `BOB_EASE` a second."""
         want = 1.0 if self._bobbing() else 0.0
-        step = BOB_EASE * dt
-        self.bob_gain = min(want, self.bob_gain + step) if want > self.bob_gain else max(want, self.bob_gain - step)
+        if want > self.bob_gain:
+            self.bob_gain = min(want, self.bob_gain + BOB_EASE * dt)
+        else:
+            self.bob_gain = max(want, self.bob_gain - BOB_EASE_OUT * dt)
 
     def _advance(self, now: float, dt: float, pointer: tuple[int, int] | None) -> None:
         handler = getattr(self, f"_do_{self.state}")
@@ -572,66 +788,229 @@ class Engine:
         if self.flash and now >= self.flash[1]:
             self.flash = None
         if self.flash is None and now >= self.next_ambient:
-            look = self.rng.random() < LOOK_SHARE
-            self.flash = ("look", now + LOOK_FOR) if look else ("blink", now + BLINK_FOR)
+            roll = self.rng.random()
+            if roll < LOOK_SHARE:
+                self.flash = ("look", now + LOOK_FOR)
+            elif roll < LOOK_SHARE + 0.12 and self.idle_frames > 0:  # one tail beat and breath, then still
+                self.burst_start, self.burst_until = now, now + self.idle_frames / IDLE_FPS
+            else:
+                self.flash = ("blink", now + BLINK_FOR)
             self.next_ambient = now + self.rng.uniform(*AMBIENT_EVERY)
 
     def _after_stand(self, now: float) -> None:
         idle = now - self.last_active
-        if self.card is not None and self.card_settled:  # carried off its place: it waits again
-            self._enter("card", now) if now < self.card_until else self._put_card_down(now)
+        if self._stand_fixed(now, idle):
             return
-        if self.reduced or not self.roam:
-            if idle >= IDLE_SIT:
-                self._enter("sit", now)
-            return
-        if idle >= IDLE_SIT:
-            if self.perch is not None:  # never sleeps on a window
-                self._leave_perch(now, hop=False)
-            else:
-                self._enter("sit", now)
+        if self.relocate_at is not None and now >= self.relocate_at and self.perch is None and not self.busy:
+            self._relocate(now)
+        elif idle >= IDLE_SIT:
+            self._after_long_idle(now)
         elif self.perch is not None and now >= self.perch_until and self.gait == "walk":
             self._leave_perch(now, hop=self.rng.random() < 0.5)
         elif now >= self.state_until:
-            if self.quiet:
-                self.state_until = now + QUIET_RECHECK
-                return
-            self._perform(self._pick_act(now, idle), now)
+            self._decide(now, idle)
+
+    def _stand_fixed(self, now: float, idle: float) -> bool:
+        """The cases where a stand does not lead to a roam: a card, reduced motion, no roaming."""
+        if self.card is not None and self.card_settled:  # carried off its place: it waits again
+            self._enter("card", now) if now < self.card_until else self._put_card_down(now)
+            return True
+        if self.reduced or not self.roam:
+            if idle >= IDLE_SIT:
+                self._enter("sit", now)
+            return True
+        return False
+
+    def _after_long_idle(self, now: float) -> None:
+        if self._away() and self.perch is None and not self.busy:
+            self._go_home(now)  # it rests at its home spot, not wherever a stroll ended
+        elif self.perch is not None:  # never sleeps on a window
+            self._leave_perch(now, hop=False)
+        else:
+            self._enter("sit", now)
+
+    def _decide(self, now: float, idle: float) -> None:
+        """A settled spell is over: follow, go home, or do the next thing."""
+        if self.busy:
+            self.state_until = now + QUIET_RECHECK
+            return
+        if self.follow_until > now and self._follow(now):
+            return
+        if self._away() and self.perch is None:
+            self._go_home(now)
+            return
+        self._perform(self._pick_act(now, idle), now)
+
+    # --- home, trips, and what to do in place (INBOX 1670, row B) ------------------------
+
+    def _away(self) -> bool:
+        """Further from home than a stroll's end, or off the floor line: it goes back."""
+        if self.home_x is None or self.card is not None:
+            return False
+        if abs(self.x - self.home_x) > AWAY * self._scale():
+            return True
+        return self.gait == "float" and self.y < self.ground_y() - 6 * self._scale()
+
+    def _go_home(self, now: float) -> None:
+        m = self.current_monitor()
+        assert self.home_x is not None
+        self._go((min(max(self.home_x, m.area[0]), m.area[2] - self.size[0]), self.ground_y(m)), "home", now)
+
+    def _set_home(self) -> None:
+        self.home_x = self.x
+
+    def _start_act(self, name: str, now: float) -> None:
+        self.mind.did(name, now)
+        self.act = name
+        self._enter("act", now)
+
+    def _do_act(self, now: float, dt: float) -> None:
+        act = bh.ACTIVITIES[self.act or "breathe"]
+        u = (now - self.act_started) / max(0.01, self.act_len)
+        for t in act.turns:
+            if u >= t and self.act_turned < t:
+                self.act_turned = t
+                self._face(-self.facing, now)
+        if now >= self.state_until:
+            self._enter("stand", now)
+
+    def _do_crouch(self, now: float, dt: float) -> None:
+        if now >= self.state_until:
+            self._begin_go(now)
+
+    def _trip_ok(self, now: float) -> bool:
+        return (
+            self.roam and not self.reduced and not self.busy and self.perch is None and now >= self.trip_ready
+            and self.card is None
+        )
+
+    def _stroll(self, now: float) -> None:
+        """A short wander near home: a few steps either way, never across the screen."""
+        m = self.current_monitor()
+        k = self._scale()
+        hx = self.home_x if self.home_x is not None else self.x
+        off = self.rng.uniform(25, STROLL) * k * self.rng.choice((-1, 1))
+        gx = min(max(hx + off, m.area[0]), m.area[2] - self.size[0])
+        if tv.in_edge_zone(hx, m.area, self.size[0], k):  # a stroll from an edge spot stays by that edge
+            side = tv.nearest_edge(hx, m.area, self.size[0])
+            near, far_ = sorted((tv.edge_x(side, m.area, self.size[0], 6 * k), tv.edge_x(side, m.area, self.size[0], tv.EDGE_ZONE * k)))
+            gx = min(max(gx, near), far_)
+        if abs(gx - self.x) < 12 * k:
+            self._start_act(self.mind.pick(self.rng, now, self.gait, self.hour), now)
+            return
+        self._go((gx, self.ground_y(m)), "stand", now)
+
+    def _start_trip(self, now: float) -> None:
+        """A rare, short, purposeful trip: to a window it is curious about, to greet the pointer
+        after a long idle, to the clock corner, to follow the pointer a while, or to nap at an edge.
+        Afterwards `_after_stand` brings it home."""
+        self.trip_ready = now + self.rng.uniform(*TRIP_EVERY)
+        self.trips += 1
+        m = self.current_monitor()
+        k = self._scale()
+        if self.greet_pending and self.pointer is not None and now - self.greet_at < 240.0:
+            self.greet_pending = False
+            px = min(max(self.pointer[0] - self.size[0] / 2 - FOLLOW_GAP * k * (1 if self.pointer[0] > self.x else -1), m.area[0]), m.area[2] - self.size[0])
+            self._go((px, self.ground_y(m)), "greet", now)
+            return
+        pick = self._trip_pick()
+        if pick == "window":
+            self.climb_ready = 0.0
+            self._climb(now)
+        elif pick == "follow":
+            self.follow_until = now + self.rng.uniform(*FOLLOW_FOR)
+            self._follow(now) or self._enter("stand", now)
+        elif pick == "clock":
+            self._go((m.area[2] - self.size[0] - 6 * k, self.ground_y(m)), "clock", now)
+        else:  # nap: the nearer outer edge
+            left = self.x - m.area[0] < m.area[2] - self.size[0] - self.x
+            self._go((m.area[0] + 4 * k if left else m.area[2] - self.size[0] - 4 * k, self.ground_y(m)), "nap", now)
+
+    def _trip_pick(self) -> str:
+        table = [("clock", 2.0), ("nap", 2.0 if self.mind.needs["rest"] > 0.5 else 0.3)]
+        if self.pointer is not None:
+            table.append(("follow", 2.0))
+        if self.roam_windows and self._candidates():
+            table.append(("window", 4.0))
+        roll = self.rng.random() * sum(w for _n, w in table)
+        for name, w in table:
+            roll -= w
+            if roll < 0:
+                return name
+        return table[-1][0]
+
+    def _arrive_trip(self, then: str, now: float) -> None:
+        if then == "greet":
+            self._enter("wave", now)
+        elif then == "clock":
+            self._start_act("ponder" if self.rng.random() < 0.5 else "look_around", now)
+        else:
+            self._start_act("lie_down" if self.gait == "walk" else "curl_up", now)
+
+    def _follow(self, now: float) -> bool:
+        """Keep a polite distance from the pointer for a while, then lose interest. False when
+        there is nothing to follow (the pointer is not on this screen)."""
+        p = self.pointer
+        m = self.current_monitor()
+        if p is None or not (m.area[0] <= p[0] <= m.area[2]):
+            self.follow_until = 0.0
+            return False
+        k = self._scale()
+        side = -1 if p[0] > self.x + self.size[0] / 2 else 1
+        gx = min(max(p[0] - self.size[0] / 2 + side * FOLLOW_GAP * k, m.area[0]), m.area[2] - self.size[0])
+        gx = tv.out_of_middle(gx, m.area, self.size[0])  # the goal it will be given, so "close enough" is judged on that
+        if abs(gx - self.x) < 60 * k:  # close enough: keep it company, small things
+            self._start_act(self.mind.pick(self.rng, now, self.gait, self.hour), now)
+            return True
+        self._go((gx, self.ground_y(m)), "follow", now)
+        return True
 
     def _pick_act(self, now: float, idle: float) -> str:
-        """One weighted choice from `ACTS`: a big act only when `big_ready` has passed,
-        sleep only after a while untouched."""
-        up = self.perch is not None
-        climb = self._can_climb(now)
-        table = [
-            (act, FLOAT_MOVE_WEIGHT if act == "move" and self.gait == "float" else w) for act, (w, big) in ACTS.items()
-            if not (big and (now < self.big_ready or up)) and not (act == "sleep" and (idle < SLEEP_AFTER or up))
-            and not (act == "climb" and not climb)
-        ]
+        """One weighted choice from `ACTS`: a big act only when `big_ready` has passed, a trip only
+        when `trip_ready` has, sleep only after a while untouched and when tired."""
+        table = self._act_table(now, idle)
         roll = self.rng.random() * sum(w for _a, w in table)
         for act, w in table:
             roll -= w
             if roll < 0:
                 return act
-        return "stand"
+        return "idle"
+
+    def _act_table(self, now: float, idle: float) -> list[tuple[str, float]]:
+        up = self.perch is not None
+        mood = self.mind.mood(now, self.hour)
+        table = []
+        for act, (w, big) in ACTS.items():
+            if big and (now < self.big_ready or up):
+                continue
+            if act == "sleep" and (idle < SLEEP_AFTER or up or self.mind.needs["rest"] < 0.4):
+                continue
+            if (act == "trip" and not self._trip_ok(now)) or (act == "stroll" and up):
+                continue
+            if act in ("stroll", "trip") and mood == "bored":
+                w *= 2
+            table.append((act, w))
+        return table
 
     def _perform(self, act: str, now: float) -> None:
         if self.perch is not None and self.gait == "float":
             self.perch = None  # a floater rests on a window, it does not stay on it
         if act in ("hang", "peek"):
             self.big_ready = now + self.rng.uniform(*BIG_EVERY)
-        if act == "move":
-            self._enter("drift" if self.gait == "float" else "walk", now)
-        elif act == "rest":
-            self._rest(now)
+        if act == "stroll":
+            self._stroll(now)
+        elif act == "trip":
+            self._start_trip(now)
         elif act == "hang":
             self._hang(now)
         elif act == "peek":
             self._peek(now)
         elif act == "climb":
             self._climb(now)
-        else:  # wave, sit, stand, sleep
-            self._enter(act, now)
+        elif act == "sleep":
+            self._enter("sleep", now)
+        else:
+            self._start_act(self.mind.pick(self.rng, now, self.gait, self.hour, "perch" if self.perch else ""), now)
 
     # --- window tops (roam) ------------------------------------------------------------
 
@@ -675,8 +1054,9 @@ class Engine:
         if cur is None or not self.roam_windows or abs(cur.top - p.top) > PERCH_MOVED:
             return None
         c, w = self.x + self.size[0] / 2, self.size[0]
-        if self.state == "drift":  # on the way: it is the goal that must be over it
-            c = (self.goal[0] if self.goal else self.x) + w / 2
+        if self.state in ("drift", "crouch"):  # on the way: it is the goal that must be over it
+            goal = self.goal or (self.pending[0] if self.pending else None)
+            c = (goal[0] if goal else self.x) + w / 2
         return cur if cur.left + HANG_HANDS * w <= c <= cur.right - HANG_HANDS * w else None
 
     def _check_hang(self, now: float) -> None:
@@ -684,14 +1064,14 @@ class Engine:
         moves or no longer lies under the hands: it lets go, or stops short."""
         p = self.hang_on
         assert p is not None
-        cur = self._hold_of(p) if self.state in ("hang", "drift") else None
+        cur = self._hold_of(p) if self.state in ("hang", "drift", "crouch") else None
         if cur is not None:
             self.hang_on = cur
         elif self.state == "hang":
             self.hang_on = None
             self._let_go()
-        elif self.state == "drift" and self.then == "hang":
-            self.hang_on, self.goal, self.then = None, None, "stand"
+        elif self.state in ("drift", "crouch") and self.then == "hang":
+            self.hang_on, self.goal, self.then, self.pending = None, None, "stand", None
             self._enter("stand", now)
 
     def _arrive_hang(self, now: float, m: Monitor) -> None:
@@ -706,7 +1086,7 @@ class Engine:
 
     def _can_climb(self, now: float) -> bool:
         return (
-            self.roam_windows and self.roam and not self.reduced and not self.quiet and self.perch is None
+            self.roam_windows and self.roam and not self.reduced and not self.busy and self.perch is None
             and now >= self.climb_ready and bool(self._candidates())
         )
 
@@ -728,6 +1108,8 @@ class Engine:
         return found
 
     def _climb(self, now: float) -> None:
+        """Up to a window's top: a walker standing under it jumps, one beside it climbs its side edge
+        onto the top, and a floater glides there; when the walk would cross the middle it is a portal."""
         cand = self._candidates()
         if not cand:
             self._enter("stand", now)
@@ -736,12 +1118,42 @@ class Engine:
         self.climb_ready = now + self.rng.uniform(*CLIMB_EVERY)
         self.target = p
         m = self.current_monitor()
-        lo, hi = max(p.left, m.area[0]), min(p.right, m.area[2])
-        x = self.rng.uniform(lo, hi - self.size[0])
-        if self.gait == "float":
-            self._go((x, p.top - self.size[1]), "perch", now)
-        else:
-            self._go((x, self.floor_y(m)), "climb", now)
+        area, (w, h) = m.area, self.size
+        lo, hi = max(p.left, area[0]), min(p.right, area[2]) - w
+        top = p.top - h
+        if self.gait == "float" or not (abs(self.y - self.floor_y(m)) < 8 * self._scale()):
+            x = min(max(tv.out_of_middle(min(max(self.x, lo), hi), area, w), lo), hi)
+            if not self.plain_legs and (tv.crosses_middle(self.x, x, area, w) or tv.far(self.x, x, area)):
+                self._start_warp("portal" if self.rng.random() < 0.6 else "puff", (x, top), "perch", now)
+            else:
+                self.modes.append("glide")
+                self._go((x, top), "perch", now, plain=True)
+            return
+        if lo <= self.x <= hi:  # underneath it: straight up
+            self.modes.append("jump")
+            self._arrive_at("climb", now)
+            return
+        sides = self._climb_sides(p, area, w)
+        if sides:
+            sx = min(sides, key=lambda v: abs(v - self.x))
+            self.modes.append("climb")
+            self._go((sx, self.floor_y(m)), "climbside", now, plain=True)
+            return
+        x = min(max(tv.out_of_middle(self.x, area, w), lo), hi)
+        self._start_warp("portal" if self.rng.random() < 0.6 else "puff", (x, top), "perch", now)
+
+    def _climb_sides(self, p: Perch, area: tuple, w: float) -> list[float]:
+        """Where it could stand beside a window to climb its side: reachable without the middle."""
+        sides = []
+        if p.left - w >= area[0]:
+            sides.append(p.left - w)
+        if p.right <= area[2] - w:
+            sides.append(float(p.right))
+        return [sx for sx in sides if not tv.crosses_middle(self.x, sx, area, w) and not tv.far(self.x, sx, area)]
+
+    def _arrive_at(self, then: str, now: float) -> None:
+        self.then = then
+        self._arrive(now)
 
     def _target_here(self) -> Perch | None:
         """The window being climbed to, as the last scan has it (None: it is gone)."""
@@ -758,6 +1170,7 @@ class Engine:
     def _leave_perch(self, now: float, hop: bool) -> None:
         """Off a window: a walker hops or falls to the floor, a floater drifts down."""
         self.perch, self.target = None, None
+        self.legs.append(("jump", self.x, self.x, now))
         if self.gait == "float":
             self._start_fly(0.0, 0.0)
             return
@@ -827,17 +1240,6 @@ class Engine:
             else:
                 self._stand_on(p, now)
 
-    def _rest(self, now: float) -> None:
-        if self.gait == "walk":
-            self._enter("stand", now)
-            self.state_until = now + self.rng.uniform(*REST_FOR)
-            return
-        # A wind spirit rests low, or a little higher: never up near the top (INBOX 1663: "wayyy to high").
-        m = self.current_monitor()
-        high = self.rng.random() < 0.4
-        gy = max(m.area[1] + 20 * self._scale(), self.ground_y(m) - FLOAT_BAND * self.size[1]) if high else self.ground_y(m)
-        self._go((self.rng.uniform(m.area[0], m.area[2] - self.size[0]), gy), "rest", now)
-
     def _hang(self, now: float) -> None:
         m = self.current_monitor()
         left, top, right, _b = m.area
@@ -880,22 +1282,299 @@ class Engine:
         gx = m.area[0] if edge == "left" else m.area[2] - self.size[0]
         self._go((gx, self.y if self.gait == "float" else self.floor_y(m)), f"peek_{edge}", now)
 
-    def _go(self, goal: tuple[float, float], then: str, now: float) -> None:
-        """Travel to a point (walking along the floor, or drifting), then `then`."""
+    def _go(self, goal: tuple[float, float], then: str, now: float, plain: bool = False) -> None:
+        """Travel to a point, then `then`. By distance: close range a step, the middle a walk, far a
+        run or (a floater) a swoop that crouches first; each eased in and out, and it turns before
+        it goes the other way."""
+        self.then = then
+        if not plain:
+            m = self.current_monitor()
+            gx = goal[0] if then == "card" else tv.out_of_middle(goal[0], m.area, self.size[0])
+            goal = self._clear_of_caret(gx, goal[1])
+        dist = abs(goal[0] - self.x) if self.gait == "walk" else math.hypot(goal[0] - self.x, goal[1] - self.y)
+        if self.gait == "walk" and dist < 1.0:
+            self._arrive(now)
+            return
+        if not plain and dist > 12 * self._scale():
+            mode = self._leg_mode(goal, then)
+            if mode == "edge":  # walks off one edge, comes in from the other (a warp only for the slip itself)
+                self.modes.append(mode)
+                self._start_edge(goal, then, now)
+                return
+            if mode in tv.WARPS:
+                self._start_warp(mode, goal, then, now)
+                return
+            self.modes.append(mode)
+        far = dist / self._scale()
+        self.mode = "step" if far < STEP_UNDER else "dash" if far >= DASH_OVER else "walk"
+        self.pending = (goal, then)
+        if self.mode == "dash" and not self.reduced and self.gait == "walk":
+            self._enter("crouch", now)  # a crouch before a long run
+            self.pending = (goal, then)
+            return
+        self._begin_go(now)
+
+    def _begin_go(self, now: float) -> None:
+        assert self.pending is not None
+        goal, then = self.pending
+        self.pending = None
         self.then = then
         if self.gait == "walk":
-            if abs(goal[0] - self.x) < 1.0:
-                self._arrive(now)
-                return
             self._enter("walk", now)
             self.goal = goal
-            self.facing = 1 if goal[0] >= self.x else -1
+            self._face(1 if goal[0] >= self.x else -1, now)
         else:
             self.goal = goal
             self._enter("drift", now)
             self.heading = math.atan2(goal[1] - self.y, goal[0] - self.x)
+            if math.hypot(goal[0] - self.x, goal[1] - self.y) > 80 * self._scale():  # a glide sails in an arc
+                self.heading += self.rng.choice((-0.8, 0.8))
+            if abs(math.cos(self.heading)) > 0.3:
+                self._face(1 if math.cos(self.heading) > 0 else -1, now)
         self.trip = True
         self.state_until = math.inf
+        self.legs.append(("walk" if self.gait == "walk" else "glide", self.x, goal[0], now))
+
+    # --- the repertoire: portal, puff, glide, edge walk, jump, climb (INBOX 1670, 13:22Z to 13:32Z) ----
+
+    def _leg_mode(self, goal: tuple[float, float], then: str) -> str:
+        """How to get to `goal`: a leg longer than a third of the work area, or through its middle third,
+        is never walked; a portal, a puff or a walk off one edge and in from the other. Short ones near
+        an edge are walked (glided), with the odd portal or puff for variety."""
+        if self.reduced:
+            return "fade"
+        if self.plain_legs:
+            return "walk"
+        m = self.current_monitor()
+        area, w = m.area, self.size[0]
+        long_leg = tv.far(self.x, goal[0], area) or tv.crosses_middle(self.x, goal[0], area, w)
+        flat = abs(goal[1] - self.ground_y(m)) < 8 * self._scale() and abs(self.y - self.ground_y(m)) < 8 * self._scale()
+        opposite = (self.x + w / 2 - (area[0] + area[2]) / 2) * (goal[0] + w / 2 - (area[0] + area[2]) / 2) < 0
+        mode = tv.pick_mode(
+            self.rng, gait=self.gait, long_leg=long_leg, mood=self.mind.mood(self.now, self.hour),
+            recent=self.modes[-3:], edge_ok=flat and opposite and self.perch is None,
+        )
+        return mode
+
+    def _box_at(self, x: float, y: float, frame: str = "stand") -> tv.Rect:
+        """The drawn box of `frame` for a window at (x, y), in screen px."""
+        flip = self.facing < 0
+        left, top, right, bottom = self._box(frame, flip)
+        dx, dy = self._flip_dx(frame, flip), self._dy(frame)
+        return x + left + dx, y + top + dy, x + right + dx, y + bottom + dy
+
+    def _clear_of_caret(self, gx: float, gy: float) -> tuple[float, float]:
+        """A goal that is not over the text box: the nearer screen edge if it is."""
+        if self.caret is None:
+            return gx, gy
+        k, m = self._scale(), self.current_monitor()
+        keep = tv.padded(self.caret, tv.CARET_MARGIN * k)
+        if not tv.overlaps(self._box_at(gx, gy), keep):
+            return gx, gy
+        for side in sorted((-1, 1), key=lambda sd: abs(tv.edge_x(sd, m.area, self.size[0]) - gx)):
+            x = tv.edge_x(side, m.area, self.size[0], 4 * k)
+            if not tv.overlaps(self._box_at(x, gy), keep):
+                return x, gy
+        return gx, gy
+
+    def _keep_off_caret(self, now: float) -> None:
+        """Over the foreground window's text box (padded): step aside to the nearest edge on the taskbar
+        line, in a puff (a fade when reduced), inside a second."""
+        if now < self.evade_ready or self.caret is None:
+            return
+        k, m = self._scale(), self.current_monitor()
+        frame = self._frame(now)
+        x, y, _clip = self._display(frame)
+        left, top, right, bottom = self._box(frame, self.facing < 0)
+        keep = tv.padded(self.caret, tv.CARET_MARGIN * k)
+        if not tv.overlaps((x + left, y + top, x + right, y + bottom), keep):
+            return
+        self.evade_ready = now + 1.0
+        ground = self.ground_y(m) if self.perch is None else m.area[3] - self.size[1]
+        for side in sorted((-1, 1), key=lambda sd: abs(tv.edge_x(sd, m.area, self.size[0]) - self.x)):
+            tx = tv.edge_x(side, m.area, self.size[0], 4 * k)
+            if not tv.overlaps(self._box_at(tx, ground), keep):
+                self.perch = self.target = None
+                self._start_warp("fade" if self.reduced else "puff", (tx, ground), "evade", now)
+                return
+
+    def _start_warp(self, mode: str, dest: tuple[float, float], then: str, now: float) -> None:
+        """Vanish here and appear at `dest`, then do `then`. A portal opens a ring of nebula beside it,
+        it steps in and the ring closes; a puff is a cloud; a fade is only the picture (reduced motion);
+        an edge walk slips off the near edge of the screen and comes in from the far one."""
+        src = (self.x, self.y)
+        wp = tv.warp_for(mode, self.rng)
+        side = tv.nearest_edge(self.x, self.current_monitor().area, self.size[0])
+        self._enter("warp", now)
+        self.then = then
+        self.legs.append((mode, src[0], dest[0], now))
+        if mode != "edge":
+            self.modes.append(mode)
+        self.warp = {
+            "kind": mode, "t0": now, "w": wp, "src": src, "dst": dest, "moved": False, "side": side,
+            "face": self.facing,
+        }
+        self.state_until = now + wp.total
+        if mode == "edge":
+            self.peek_edge = "left" if side < 0 else "right"
+            self.facing = side
+
+    def _warp_view(self, now: float) -> tuple[tuple[str, float, int] | None, float, float]:
+        """(fx, alpha, squeeze) of the warp at `now`: its effect, how much of the picture shows, and how
+        far it has stepped into the ring."""
+        w = self.warp
+        if w is None:
+            return None, 1.0, 0.0
+        wp, kind = w["w"], w["kind"]
+        t = now - w["t0"]
+        if t < wp.out:
+            phase, u = "out", t / wp.out
+        elif t < wp.out + wp.gap:
+            phase, u = "gap", 1.0
+        else:
+            phase, u = "in", min(1.0, (t - wp.out - wp.gap) / wp.back)
+        if phase == "gap":
+            return None, 0.0, 1.0
+        v = u if phase == "out" else 1.0 - u  # the way back is the way out, backwards
+        if kind == "portal":
+            ring = bh.smooth(v / 0.35) * (1.0 - bh.smooth((v - 0.8) / 0.2))
+            alpha = 1.0 - bh.smooth((v - 0.35) / 0.5)
+            squeeze = bh.smooth((v - 0.2) / 0.6)
+            fx = ("portal", ring, w["face"] if phase == "out" else self.facing)
+        elif kind == "puff":
+            alpha = 1.0 - bh.smooth(v / 0.6)
+            squeeze = 0.0
+            fx = ("puff", math.sin(math.pi * min(1.0, u)), 0)
+        elif kind == "fade":
+            alpha, squeeze, fx = 1.0 - bh.smooth(v), 0.0, None
+        else:
+            alpha, squeeze, fx = 1.0, 0.0, None
+        return fx, alpha, squeeze
+
+    def _do_warp(self, now: float, dt: float) -> None:
+        w = self.warp
+        if w is None:
+            self._enter("stand", now)
+            return
+        wp, kind = w["w"], w["kind"]
+        t = now - w["t0"]
+        if not w["moved"] and t >= wp.out:
+            w["moved"] = True
+            self.x, self.y = w["dst"]
+            if kind == "edge":
+                self.peek_edge = "right" if w["side"] < 0 else "left"  # in from the far edge
+                self.facing = -w["side"]
+        if kind == "edge":
+            self.sink = bh.smooth(t / wp.out) if t < wp.out else 1.0 if t < wp.out + wp.gap else 1.0 - bh.smooth((t - wp.out - wp.gap) / wp.back)
+        if t >= wp.total:
+            self._finish_warp(now)
+
+    def _finish_warp(self, now: float) -> None:
+        w = self.warp
+        if w is None:
+            return
+        self.x, self.y = w["dst"]
+        self.sink, self.peek_edge, self.warp = 0.0, None, None
+        self.goal = None
+        self._arrive(now)
+
+    def _start_edge(self, dest: tuple[float, float], then: str, now: float) -> None:
+        """Walk to the near edge, slip off it, come in from the far edge already walking."""
+        m = self.current_monitor()
+        side = tv.nearest_edge(self.x, m.area, self.size[0])
+        y = self.ground_y(m)
+        self.edge_plan = (dest, then)
+        exit_x = tv.edge_x(side, m.area, self.size[0])
+        if abs(exit_x - self.x) > 6 * self._scale():
+            self._go((exit_x, y), "edgeexit", now, plain=True)
+        else:
+            self.then = "edgeexit"
+            self._arrive(now)
+
+    def _arrive_edge(self, now: float, exiting: bool) -> None:
+        plan = self.edge_plan
+        if plan is None:
+            self._enter("stand", now)
+            return
+        m = self.current_monitor()
+        if exiting:
+            side = tv.nearest_edge(self.x, m.area, self.size[0])
+            self._start_warp("edge", (tv.edge_x(-side, m.area, self.size[0]), self.ground_y(m)), "edgein", now)
+        else:
+            self.edge_plan = None
+            self._go(plan[0], plan[1], now, plain=True)
+
+    # --- relocation: a home is by an edge, never the middle ----------------------------------
+
+    def _maybe_relocate(self, now: float) -> None:
+        if self.roam and not self.reduced and self.home_x is not None and self.perch is None:
+            m = self.current_monitor()
+            if tv.in_middle(self.home_x, m.area, self.size[0]) and self.relocate_at is None:
+                self.relocate_at = now + RELOCATE_AFTER
+                if self.state == "stand":
+                    self.state_until = min(self.state_until, self.relocate_at)
+
+    def _relocate(self, now: float) -> None:
+        m = self.current_monitor()
+        self.relocate_at = None
+        if self.home_x is not None and tv.in_middle(self.home_x, m.area, self.size[0]):
+            side = tv.nearest_edge(self.home_x, m.area, self.size[0])
+            self.home_x = tv.edge_x(side, m.area, self.size[0], HOME_INSET * self._scale())
+        if self._away():
+            self._go_home(now)
+
+    def _face(self, direction: int, now: float) -> None:
+        """Turn to face a way: a squeeze to a sliver and back (`TURN_FOR`), never a snap. The
+        facing itself changes at the narrowest point."""
+        if self.turn_to != 0:  # a turn under way: the latest word wins, it never ends facing a stale way
+            if direction == self.facing:
+                self.turn_to = 0
+            elif direction != self.turn_to:
+                self.turn_to, self.turn_started = direction, now
+            return
+        if direction == self.facing:
+            return
+        if not self.reduced and self.metrics and self.state not in ("held", "fly", "fall"):
+            self.turn_to, self.turn_started = direction, now
+        else:
+            self.facing = direction
+
+    def _turning(self, now: float) -> bool:
+        if self.turn_to == 0:
+            return False
+        u = (now - self.turn_started) / TURN_FOR
+        if u >= 0.5 and self.facing != self.turn_to:
+            self.facing = self.turn_to
+        if u >= 1.0:
+            self.turn_to = 0
+            return False
+        return True
+
+    def _pace(self, now: float, left: float | None) -> float:
+        """The share of full speed now: eased in over EASE_IN s from the start of a leg, and eased
+        out over the last EASE_OUT px to its goal; a step is slower, a dash faster."""
+        k = {"step": STEP_K, "dash": DASH_K}.get(self.mode, 1.0)
+        rise = bh.smooth((now - self.walk_started) / EASE_IN)
+        fall = 1.0 if left is None else bh.smooth(left / (EASE_OUT * self._scale()))
+        return k * max(0.12, min(rise, max(0.2, fall)))
+
+    def _yields(self, now: float, ahead: float) -> bool:
+        """Wait, rather than pass under a busy pointer: the pointer within YIELD_NEAR px of the path
+        ahead and moved lately. Never longer than YIELD_MAX s, then it goes on."""
+        p = self.pointer
+        busy = p is not None and now - self.pointer_busy_at < 1.0
+        if p is None or not busy:
+            self.yield_since = None
+            return False
+        k = self._scale()
+        cx = self.x + self.size[0] / 2
+        near = abs(p[0] - (cx + ahead)) < YIELD_NEAR * k and abs(p[1] - (self.y + self.size[1] / 2)) < self.size[1]
+        if not near:
+            self.yield_since = None
+            return False
+        if self.yield_since is None:
+            self.yield_since = now
+        return now - self.yield_since < YIELD_MAX
 
     def _rise(self, to: tuple[float, float], then: str, now: float, drawn_from: float | None = None) -> None:
         """Move smoothly to a point. The path is of where it is drawn, so the swap of frames
@@ -910,40 +1589,65 @@ class Engine:
     def _arrive(self, now: float) -> None:
         """At the goal of a trip: what it came for."""
         then, self.goal = self.then, None
-        m = self.current_monitor()
         if then == "card":
             self._arrive_card(now)
-        elif then == "climb":
-            if self._target_here() is None:
-                self.target = None
-                self._enter("stand", now)
-            else:
-                self.target = self._target_here()
-                self._enter("leap", now)
-        elif then == "perch":
-            p = self._target_here()
-            if p is None:
-                self.target = None
-                self._enter("stand", now)
-            else:
-                self._stand_on(p, now)
-                self.perch_until = now + self.rng.uniform(*REST_FOR)
-                self._enter("stand", now)
-                self.state_until = self.perch_until
+        elif then in ("edgeexit", "edgein"):
+            self._arrive_edge(now, then == "edgeexit")
+        elif then in ("climbside", "climbtop", "climb", "perch"):
+            self._arrive_climb(then, now)
         elif then == "hang":
-            self._arrive_hang(now, m)
+            self._arrive_hang(now, self.current_monitor())
         elif then.startswith("peek_"):
-            self.peek_edge = then[5:]
-            self.sink_max = PEEK_HEAD if self.peek_edge == "bottom" else PEEK_SIDE
-            if self.peek_edge == "left":
-                self.facing = 1
-            elif self.peek_edge == "right":
-                self.facing = -1
-            self._enter("peek", now)
+            self._arrive_peek(then[5:], now)
+        else:
+            self._arrive_plain(then, now)
+
+    def _arrive_climb(self, then: str, now: float) -> None:
+        """The steps of getting onto a window top: up its side, over its edge, a leap, the stand."""
+        p = self._target_here()
+        if p is None:  # the window went while it was on the way
+            self.target = None
+            if then == "climbtop":
+                self._start_fall(0.0)
+            else:
+                self._enter("stand", now)
+        elif then == "climbside":
+            self.legs.append(("climb", self.x, self.x, now))
+            self._rise((self.x, p.top - self.size[1]), "climbtop", now)
+        elif then == "climbtop":
+            inner = min(max(self.x + (self.size[0] * 0.6 if self.x < p.left else -self.size[0] * 0.6), p.left), p.right - self.size[0])
+            self._rise((inner, p.top - self.size[1]), "perch", now)
+        elif then == "climb":
+            self.target = p
+            self.legs.append(("jump", self.x, self.x, now))
+            self._enter("leap", now)
+        else:
+            self._stand_on(p, now)
+            self.perch_until = now + self.rng.uniform(*REST_FOR)
+            self._enter("stand", now)
+            self.state_until = self.perch_until
+
+    def _arrive_peek(self, edge: str, now: float) -> None:
+        self.peek_edge = edge
+        self.sink_max = PEEK_HEAD if edge == "bottom" else PEEK_SIDE
+        if edge == "left":
+            self.facing = 1
+        elif edge == "right":
+            self.facing = -1
+        self._enter("peek", now)
+
+    def _arrive_plain(self, then: str, now: float) -> None:
+        if then == "follow":
+            self._enter("stand", now)
+            self.state_until = now + 1.5
+        elif then == "home":
+            self._enter("land" if self.mode == "dash" else "stand", now)
         else:
             self._enter("stand", now)
             if then == "rest":
                 self.state_until = now + self.rng.uniform(*REST_FOR)
+            if then in ("clock", "nap", "greet"):
+                self._arrive_trip(then, now)
 
     def _do_stand(self, now: float, dt: float) -> None:
         self._ambient(now)
@@ -973,6 +1677,8 @@ class Engine:
 
     def _do_land(self, now: float, dt: float) -> None:
         if now >= self.state_until:
+            if self.mind.event == "startled" and not self.reduced and now - self.mind.event_at < 20.0:
+                self.mind.feel("proud", now)  # a little pleased with the landing; the landing was the one settle
             self._enter("sit" if self.reduced else "stand", now)
 
     def _do_hop(self, now: float, dt: float) -> None:
@@ -1011,14 +1717,17 @@ class Engine:
         else:
             diff = (want - self.heading + math.pi) % (2 * math.pi) - math.pi
             self.heading += max(-FLOAT_TURN * dt, min(FLOAT_TURN * dt, diff))
-        speed = FLOAT_SPEED * scale * max(0.3, min(1.0, dist / (60 * scale)))
+        if self._turning(now) or self._yields(now, math.cos(self.heading) * 90 * scale):
+            self.walk_started = now  # the pace eases in from when it moves, not from when it was told
+            return
+        speed = FLOAT_SPEED * scale * self._pace(now, dist)
         self.x = min(max(self.x + math.cos(self.heading) * speed * dt, left), right - self.size[0])
         high = top - (self._lift() if self.then == "hang" and self.trip else 0.0)
         if not self.trip:  # a wander turns wide, so the band is held by the clamp too, not only by the goal
             high = max(high, self.ground_y(m) - FLOAT_BAND * self.size[1])
         self.y = min(max(self.y + math.sin(self.heading) * speed * dt, high), self.floor_y(m))
-        if abs(math.cos(self.heading)) > 0.3:
-            self.facing = 1 if math.cos(self.heading) > 0 else -1
+        if abs(math.cos(self.heading)) > 0.5:
+            self._face(1 if math.cos(self.heading) > 0 else -1, now)
         if wandering and now >= self.state_until:
             self.goal = None
             self._enter("stand", now)
@@ -1051,8 +1760,26 @@ class Engine:
             self._arrive(now)
 
     def _do_hang(self, now: float, dt: float) -> None:
+        """Hanging is alive: the picture swings from the grip (`_target_pose`), and now and then it glances
+        round (a turn). It lets go by its own choice: climbs up onto the window's edge, or drops."""
+        if now >= self.hang_glance_at and now < self.state_until - 3.0:
+            self._face(-self.facing, now)
+            self.hang_glance_at = now + self.rng.uniform(*HANG_GLANCE)
         if now >= self.state_until:
-            self._let_go()
+            self._end_hang(now)
+
+    def _end_hang(self, now: float) -> None:
+        held = self._hold_of(self.hang_on) if self.hang_on is not None else None
+        mood = self.mind.mood(now, self.hour)
+        if held is not None and mood in ("curious", "happy", "proud", "bored") and self.rng.random() < 0.7:
+            w, h = self.size
+            x = min(max(self.x, held.left), held.right - w)
+            if held.top - h >= self.current_monitor().area[1]:
+                self.target = held
+                self.legs.append(("climb", self.x, x, now))
+                self._rise((x, held.top - h), "perch", now)
+                return
+        self._let_go()
 
     def _let_go(self) -> None:
         """Off the ceiling: a walker falls, a floater drifts down to its hover height."""
@@ -1170,9 +1897,16 @@ class Engine:
             self._enter("land", now)
 
     def _do_walk(self, now: float, dt: float) -> None:
-        step = WALK_SPEED * self._scale() * dt * self.facing
+        if self._turning(now):
+            self.walk_started = now
+            return
+        left = abs(self.goal[0] - self.x) if self.goal is not None else None
+        if self._yields(now, self.facing * 90 * self._scale()):
+            self.walk_started = now
+            return
+        step = WALK_SPEED * self._scale() * dt * self.facing * self._pace(now, left)
         nx = self.x + step
-        if self.goal is not None and abs(self.goal[0] - self.x) <= abs(step):
+        if self.goal is not None and abs(self.goal[0] - self.x) <= max(abs(step), 0.75):
             self.x = self.goal[0]
             self._arrive(now)
             return
@@ -1186,7 +1920,7 @@ class Engine:
             if self.perch is not None:  # the end of the window: hop or fall off it
                 self._leave_perch(now, hop=self.rng.random() < 0.5)
                 return
-            self.facing = -self.facing
+            self._face(-self.facing, now)
         else:
             self.x = nx
             floor = self.floor_y(bounds)
@@ -1314,6 +2048,8 @@ class Engine:
             self._clicked(now)
             return
         self.carrying = False
+        self.placed = True
+        self.mind.feel("startled", now)
         m = self.current_monitor()
         x0, x1, _y0, _y1 = self._ride_limits("held")
         self.x = min(max(self.x, max(x0, m.area[0] - self._ride_box("held")[0])), min(x1, m.area[2] - self._ride_box("held")[2]))
@@ -1354,6 +2090,7 @@ class Engine:
         _gap, hold, edge = best
         self._rise((self.x, edge - self._lift()), "hang", now, drawn_from=self.y + self._dy("held"))
         self.hang_on = hold
+        self.home_x, self.placed = self.x, False
         return True
 
     def _clicked(self, now: float) -> None:
@@ -1370,7 +2107,12 @@ class Engine:
         elif self.pre_press == "hang" and not self.reduced:
             self._let_go()
         else:
-            self._enter(reply, now)
+            self.mind.feel("happy", now)
+            if now - self.last_click < 4.0 and not self.reduced:  # a second pat: it purrs
+                self._start_act("sway", now)
+            else:
+                self._enter(reply, now)
+            self.last_click = now
 
     def _drop(self, now: float) -> None:
         """Let go without a throw: sit at once when reduced, land when on the floor, else fall."""
@@ -1410,12 +2152,14 @@ class Engine:
 
     def _frame(self, now: float) -> str:
         s = self.state
-        if self.card is not None and s in ("walk", "drift"):
-            return f"card{int((now - self.walk_started) / CARD_WALK_SWAP) % 2}"
-        if s == "card":
-            return f"card{int(now / CARD_SWAP) % 2}"
-        if s in ("walk", "drift"):
-            return f"walk{int((now - self.walk_started) / 0.125) % 6}"
+        if s in ("card", "walk", "drift"):
+            return self._step_frame(now, s)
+        if s == "act":
+            return bh.activity_frame(bh.ACTIVITIES[self.act or "breathe"], (now - self.act_started) / max(0.01, self.act_len))
+        if s == "crouch":
+            return "land"
+        if s == "warp" and self.warp is not None and self.warp["kind"] == "edge":
+            return f"walk{int((now - self.warp['t0']) / 0.125) % 6}"
         if s in FRAME_OF:
             return FRAME_OF[s]
         if s == "fly":
@@ -1425,6 +2169,13 @@ class Engine:
         if s == "stand":
             return self._stand_frame(now)
         return s  # sit, sleep, wave, fall, land
+
+    def _step_frame(self, now: float, s: str) -> str:
+        if s == "card":
+            return f"card{int(now / CARD_SWAP) % 2}"
+        if self.card is not None:
+            return f"card{int((now - self.walk_started) / CARD_WALK_SWAP) % 2}"
+        return f"walk{int(self.travel / (STRIDE * self._scale())) % 6}"
 
     def _edge_frame(self, now: float) -> str:
         if self.state == "rise":
@@ -1442,10 +2193,10 @@ class Engine:
     def _idling(self) -> bool:
         """Standing with life in its parts: not reduced, frames present. Typing keeps it in
         place, not lifeless (INBOX 1670: "it is also not animated")."""
-        return self.state == "stand" and not self.reduced and self.idle_frames > 0
+        return self.state == "stand" and not self.reduced and self.idle_frames > 0 and self.now < self.burst_until
 
     def _idle_index(self, now: float) -> int:
-        return int(now * IDLE_FPS + 1e-6) % self.idle_frames
+        return int((now - self.burst_start) * IDLE_FPS + 1e-6) % self.idle_frames
 
     def _wake(self, now: float) -> int | None:
         s = self.state
@@ -1453,8 +2204,13 @@ class Engine:
             return max(MIN_WAKE_MS, min(int(CARD_SWAP * 1000), int(math.ceil((self.state_until - now) * 1000))))
         if self.reduced:
             return None
-        if s in ("walk", "held", "drift", "hang", "rise", "peek", "emerge"):
-            return TICK_WALK_MS
+        if s in ("walk", "held", "drift", "hang", "rise", "peek", "emerge", "crouch", "warp") or self.turn_to:
+            return self._moving_wake(s)
+        if s == "act":
+            soonest = min(self.state_until, self._next_pose_change(now, 0.5))
+            return max(MIN_WAKE_MS, int(math.ceil((soonest - now) * 1000)) + 1)
+        if self._follow_moving():  # the tail still swings, or the body is easing to its pose
+            return TAIL_TICK_MS
         if s in ("fall", "hop", "fly", "leap"):
             return TICK_FALL_MS
         if s == "pressed":
@@ -1463,11 +2219,26 @@ class Engine:
             return TICK_WALK_MS
         if s in ("sleep", "sit"):
             return POLL_QUIET_MS
+        return self._wake_at_rest(now, s)
+
+    def _wake_at_rest(self, now: float, s: str) -> int | None:
         due = self._due(now)
         soonest = min(due)
+        if s == "stand" and not self.reduced and self.roam:  # it looks at the pointer now and then
+            soonest = min(soonest, now + POLL_QUIET_MS / 1000.0)
         if soonest == math.inf:
             return None
         return max(MIN_WAKE_MS, int(math.ceil((soonest - now) * 1000)) + 1)
+
+    def _moving_wake(self, s: str) -> int:
+        if s in ("walk", "drift") and not self.turn_to and self.card is None:  # a redraw per pixel or so
+            return TICK_WALK_MS if abs(self.vx_px) < 15 else int(min(100, max(TICK_WALK_MS, 1500.0 / abs(self.vx_px))))
+        return TICK_WALK_MS
+
+    def _follow_moving(self) -> bool:
+        if not self.tail.settled():
+            return True
+        return max(abs(a - b) for a, b in zip(self.cur, self.pose_goal)) > 0.006
 
     def _due(self, now: float) -> list[float]:
         """The times a calm state next needs a redraw: its end, an ambient act, a bob step, an idle frame."""
@@ -1477,9 +2248,9 @@ class Engine:
             due += [self.flash[1]] if self.flash else [self.next_ambient]
             due.append(self.last_active + IDLE_SIT)
         if self._bobbing() or self.bob_gain > 0:  # the next bob step (or the end of one)
-            due.append(now + BOB_TICK)
+            due.append(self._next_bob_step(now))
         if self._idling():  # the next idle frame: a redraw only when the index changes
-            due.append((math.floor(now * IDLE_FPS + 1e-6) + 1) / IDLE_FPS)
+            due.append(min(self.burst_until, self.burst_start + (math.floor((now - self.burst_start) * IDLE_FPS + 1e-6) + 1) / IDLE_FPS))
         return due
 
     def _bobbing(self) -> bool:
@@ -1487,9 +2258,42 @@ class Engine:
         and sways (never on a window it rests on, or while reduced; typing keeps it in place
         but still bobbing, INBOX 1670)."""
         return (
-            self.gait == "float" and self.state in ("stand", "drift") and not self.reduced
+            self.gait == "float" and self.state == "drift" and not self.reduced
             and self.perch is None and self.sink <= 0 and not (self.trip and self.then.split("_")[0] in ("hang", "peek"))
         )
+
+    def _bobbed(self, x: float, y: float, at: float) -> tuple[float, float]:
+        """The rest position with the bob and sway of time `at` (a slow breath, `BOB_HZ`)."""
+        m, k, w = self.current_monitor(), self._scale(), self.size[0]
+        tau, g = 2 * math.pi * at, self.bob_gain
+        air = min(1.0, max(0.0, (self.ground_y(m) - self.y) / (30 * k)))
+        amp = BOB_REST + (BOB - BOB_REST) * air
+        y = max(m.area[1], y - g * amp * k * (0.5 + 0.5 * math.sin(tau * BOB_HZ)))
+        x = min(max(x + g * FLOAT_SWAY * k * math.sin(tau * FLOAT_SWAY_HZ + 1.3), m.area[0]), m.area[2] - w)
+        return x, y
+
+    def _next_bob_step(self, now: float) -> float:
+        """The next time the bob moves the drawn window by a whole pixel (up to a second away):
+        a redraw before that would draw the same thing."""
+        here = self._bobbed(self.x, self.y, now)
+        base = (round(here[0]), round(here[1]))
+        t = now
+        while t < now + 1.0:
+            t += 0.05
+            there = self._bobbed(self.x, self.y, t)
+            if (round(there[0]), round(there[1])) != base:
+                return t
+        return now + 1.0
+
+    def _next_pose_change(self, now: float, horizon: float = 1.0) -> float:
+        """The next time the body pose crosses a step of the cache grid, looking ahead."""
+        base = bh.quantised(self.cur)
+        t = now
+        while t < now + horizon:
+            t += 0.05
+            if bh.quantised(self._target_pose(t)) != base:
+                return t
+        return now + horizon
 
     def _display(self, frame: str) -> tuple[float, float, tuple[int, int, int, int] | None]:
         """Where the window is drawn and which part of the frame shows: the rest
@@ -1497,10 +2301,7 @@ class Engine:
         w, h = self.size
         x, y = self.x, self.y
         if self.bob_gain > 0:
-            m, k = self.current_monitor(), self._scale()
-            tau, g = 2 * math.pi * self.now, self.bob_gain
-            y = max(m.area[1], y - g * BOB * k * (0.5 + 0.5 * math.sin(tau * BOB_HZ)))
-            x = min(max(x + g * FLOAT_SWAY * k * math.sin(tau * FLOAT_SWAY_HZ + 1.3), m.area[0]), m.area[2] - w)
+            x, y = self._bobbed(x, y, self.now)
         # a bonk shows the startle frame in mid-air: no foot offset of its own
         y += self._dy("held" if self.state == "fly" else frame)
         x += self._flip_dx(frame, self.facing < 0)
@@ -1518,7 +2319,8 @@ class Engine:
     def _output(self, now: float) -> Output:
         frame = self._frame(now)
         x, y, clip = self._display(frame)
+        fx, alpha, _squeeze = self._warp_view(now) if self.state == "warp" else (None, 1.0, 0.0)
         return Output(
             frame, int(round(x)), int(round(y)), self.facing < 0, self._wake(now),
-            self.click_now, self.settled_now, clip, self.card_clicked,
+            self.click_now, self.settled_now, clip, self.card_clicked, self._pose(), fx, round(alpha * 16) / 16.0,
         )

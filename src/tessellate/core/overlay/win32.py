@@ -106,6 +106,14 @@ class LASTINPUTINFO(ctypes.Structure):
     _fields_ = [("cbSize", wintypes.UINT), ("dwTime", wintypes.DWORD)]
 
 
+class GUITHREADINFO(ctypes.Structure):
+    _fields_ = [
+        ("cbSize", wintypes.DWORD), ("flags", wintypes.DWORD), ("hwndActive", wintypes.HWND),
+        ("hwndFocus", wintypes.HWND), ("hwndCapture", wintypes.HWND), ("hwndMenuOwner", wintypes.HWND),
+        ("hwndMoveSize", wintypes.HWND), ("hwndCaret", wintypes.HWND), ("rcCaret", wintypes.RECT),
+    ]
+
+
 class POINT(ctypes.Structure):
     _fields_ = [("x", ctypes.c_long), ("y", ctypes.c_long)]
 
@@ -184,6 +192,9 @@ def signatures() -> dict[str, dict[str, tuple[Any, list[Any]]]]:
             "ReleaseDC": (INT, [H, H]),
             "GetCursorPos": (B, [P(POINT)]),
             "GetLastInputInfo": (B, [P(LASTINPUTINFO)]),
+            "GetForegroundWindow": (H, []),
+            "GetGUIThreadInfo": (B, [wintypes.DWORD, P(GUITHREADINFO)]),
+            "ClientToScreen": (B, [H, P(POINT)]),
             "SetCapture": (H, [H]),
             "ReleaseCapture": (B, []),
             "LoadCursorW": (H, [H, ctypes.c_void_p]),
@@ -435,6 +446,58 @@ def last_input_age(w: Any) -> float | None:
     except Exception:  # noqa: BLE001
         logger.debug("overlay: last input unknown", exc_info=True)
         return None
+
+
+def caret_rect(w: Any) -> tuple[int, int, int, int] | None:
+    """The text caret of the foreground window in screen px (left, top, right, bottom), or None when
+    there is none or it cannot be read. GetGUIThreadInfo gives `rcCaret` in the caret window's client
+    space, ClientToScreen maps its two corners. Only where the caret is, never what is typed."""
+    try:
+        hwnd = w.user32.GetForegroundWindow()
+        if not hwnd:
+            return None
+        info = GUITHREADINFO()
+        info.cbSize = ctypes.sizeof(GUITHREADINFO)
+        if not w.user32.GetGUIThreadInfo(w.user32.GetWindowThreadProcessId(hwnd, None), ctypes.byref(info)):
+            return None
+        if not info.hwndCaret:
+            return None
+        rc = info.rcCaret
+        if rc.right <= rc.left and rc.bottom <= rc.top:
+            return None
+        a, b = POINT(rc.left, rc.top), POINT(rc.right, rc.bottom)
+        if not (w.user32.ClientToScreen(info.hwndCaret, ctypes.byref(a)) and w.user32.ClientToScreen(info.hwndCaret, ctypes.byref(b))):
+            return None
+        return int(a.x), int(a.y), max(int(b.x), int(a.x) + 1), max(int(b.y), int(a.y) + 1)
+    except Exception:  # noqa: BLE001
+        logger.debug("overlay: caret unknown", exc_info=True)
+        return None
+
+
+#: Where a chat box sits when the app shows no system caret (Chromium, Electron, a browser canvas):
+#: the bottom of the foreground window, in its middle, so the side edges stay free to step to.
+TEXT_ZONE_HEIGHT = 170
+TEXT_ZONE_SIDE = 0.15
+
+
+def text_zone(w: Any) -> tuple[int, int, int, int] | None:
+    """A stand-in for the caret while the person types in an app that exposes none: the bottom band of
+    the foreground window's frame (its middle 70% across), in screen px, or None when unreadable or
+    too small to hold a text box. Only a rectangle, never what is typed."""
+    try:
+        hwnd = w.user32.GetForegroundWindow()
+        frame = _frame_rect(w, hwnd) if hwnd else None
+    except Exception:  # noqa: BLE001
+        logger.debug("overlay: text zone unknown", exc_info=True)
+        return None
+    if frame is None:
+        return None
+    left, top, right, bottom = frame
+    width = right - left
+    if width < 240 or bottom - top < 2 * TEXT_ZONE_HEIGHT:
+        return None
+    side = int(width * TEXT_ZONE_SIDE)
+    return left + side, bottom - TEXT_ZONE_HEIGHT, right - side, bottom
 
 
 def animations_enabled(w: Any) -> bool:

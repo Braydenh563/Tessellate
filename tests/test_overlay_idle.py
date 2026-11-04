@@ -27,24 +27,28 @@ def test_the_engine_and_the_frames_agree_on_the_cycle() -> None:
     assert all(n in sprites.FRAME_NAMES for n in sprites.IDLE_FRAMES)
 
 
-def test_standing_cycles_through_every_idle_frame_at_about_eight_a_second() -> None:
+def test_standing_cycles_through_every_idle_frame_at_about_three_a_second() -> None:
     e = make()
     seen, t = [], 0.0
+    e.burst_start, e.burst_until = 0.0, 100.0  # INBOX 1670: the cycle plays in a burst now, not all the time
     out = e.update(t)
-    while t < 1.6:
+    # Intent moved (INBOX 1670: "bobs up and down quite fast ... more slow and graceful"): the
+    # cycle plays at IDLE_FPS = 3 a second (a 4 s breath), no longer 8.
+    while t < 4.3:
         seen.append(out.frame)
-        assert out.wake_ms is not None and out.wake_ms <= 126
+        assert out.wake_ms is not None and out.wake_ms <= 340
         t += out.wake_ms / 1000.0
         e.flash = None  # blinks have their own test
         out = e.update(t)
     idles = [f for f in seen if f.startswith("idle")]
     assert set(idles) == set(sprites.IDLE_FRAMES)
-    assert 11 <= len(idles) <= 14  # one cycle is 1.5 s, so about twelve frames in 1.6 s
+    assert 11 <= len(idles) <= 14  # one cycle is 4 s, so about twelve frames in 4.3 s
 
 
 def test_a_wake_lands_on_a_new_frame_not_the_same_one_again() -> None:
     e = make()
     out, t = e.update(0.0), 0.0
+    e.burst_start, e.burst_until = 0.0, 100.0  # a burst of the tail cycle (INBOX 1670)
     for _ in range(40):
         before = out.frame
         t += out.wake_ms / 1000.0
@@ -102,15 +106,18 @@ def test_untouched_it_sits_at_ten_minutes_and_sleeps_at_twenty() -> None:
     assert first_sleep is not None and 1200 <= first_sleep < 1210
 
 
-def test_a_roaming_figure_still_does_acts_after_three_minutes_away() -> None:
+def test_a_roaming_figure_still_does_acts_after_three_minutes_away(monkeypatch) -> None:
+    monkeypatch.setattr(eng, "IDLE_SIT", float("inf"))  # the person is about: it would sleep after 20 minutes
+    monkeypatch.setattr(eng, "IDLE_SLEEP", float("inf"))
     e = make(roam=True, home=(100, 920))
     e.last_active = 0.0
-    t, frames = 0.0, set()
-    while t < 400:
-        t += 0.1
+    t, frames, states = 0.0, set(), set()
+    while t < 4000:  # INBOX 1670: a settled buddy; a stroll or a trip is a rare thing
+        t += 0.2
         frames.add(e.update(t).frame)
-    assert any(f.startswith("walk") for f in frames)
-    assert "sit" not in frames
+        states.add(e.state)
+    assert any(f.startswith("walk") for f in frames) or "warp" in states  # a trip may be a vanish now
+    assert "sit" not in states  # the sit_down act shows the sit frame in state act; the long-idle sit is a state
 
 
 def test_typing_keeps_it_in_place_but_its_idle_frames_still_play() -> None:
@@ -118,6 +125,7 @@ def test_typing_keeps_it_in_place_but_its_idle_frames_still_play() -> None:
     e.quiet = True
     e._enter("stand", 0.0)
     e.state_until = 1e9
+    e.burst_start, e.burst_until = 0.0, 100.0  # in a burst of the tail cycle (INBOX 1670)
     frames, t = set(), 0.0
     for _ in range(40):
         out = e.update(t)

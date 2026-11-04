@@ -21,7 +21,7 @@ WIN = Perch(11, 500, 300, 1100)
 RESTING = tuple(n for n in FRAME_NAMES if n not in ("hang", "tumble", "fall", "hop", "held"))
 
 
-def make(look: str = "masculine", gait: str = "float", seed: int = 2) -> tuple[Engine, SpriteSet]:
+def make(look: str = "masculine", gait: str = "float", seed: int = 2, plain: bool = False) -> tuple[Engine, SpriteSet]:
     s = SpriteSet(look)
     size = s.size(96)
     e = Engine(
@@ -31,6 +31,7 @@ def make(look: str = "masculine", gait: str = "float", seed: int = 2) -> tuple[E
     e.set_metrics(s.metrics(96))
     e.climb_ready = math.inf
     e.big_ready = math.inf
+    e.plain_legs = plain  # True: every leg is the plain walk or drift (the older tests); False: the full repertoire
     return e, s
 
 
@@ -380,7 +381,7 @@ def test_a_bobbing_floater_moves_only_at_the_bobs_speed_and_keeps_its_window(loo
     e.next_ambient = math.inf
     e.last_active = math.inf
     t, prev, gaps = 0.0, e.update(0.0), []
-    limit = 2 * math.pi * eng.BOB_HZ * eng.BOB * eng.BOB_TICK * 1.3 + 0.6  # peak speed times one tick
+    limit = 2 * math.pi * eng.BOB_HZ * eng.BOB * (1 / 60) * 1.3 + 1.0  # peak speed times one tick, and the one-pixel step of rounding
     for _ in range(1500):
         t += 1 / 60
         o = e.update(t)
@@ -392,4 +393,4 @@ def test_a_bobbing_floater_moves_only_at_the_bobs_speed_and_keeps_its_window(loo
     # and the owner's "floats high" bar, measured while it bobs: feet above the bottom by at
     # most the bob's height plus the hover, never below the bottom
     assert min(gaps) >= -1.5, min(gaps)
-    assert max(gaps) <= eng.BOB + eng.HOVER[1] + 1.5, max(gaps)
+    assert max(gaps) <= eng.BOB_REST + eng.HOVER[1] + 1.0, max(gaps)  # INBOX 1670: within 2 px of the bar at rest

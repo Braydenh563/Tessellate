@@ -37,45 +37,61 @@ def follow(e: Engine, seconds: float):
     return changed / max(1, ticks), max(xs) - min(xs), ticks
 
 
-def test_the_floater_changes_frame_or_place_on_over_90_percent_of_ticks() -> None:
+def test_a_settled_floater_does_not_move_between_its_small_things() -> None:
+    # Intent reversed (INBOX 1670: "cant sit still", "why does it bob up and down so much, it is
+    # floating"): it used to be tested as never still for more than a second. A settled floater now
+    # stays on one spot; what changes is the picture (a blink, a look, an act), never the place.
     for seed in range(1, 9):
-        share, _extent, ticks = follow(make(seed), 60.0)
-        assert ticks > 100 and share > 0.9, (seed, share)
+        e = make(seed)
+        e._enter("stand", 0.0)
+        e.state_until = 1e9
+        e.next_ambient = 1e9
+        e.trip_ready = e.climb_ready = float("inf")
+        t, out, places = 0.0, e.update(0.0), set()
+        while out.wake_ms is not None and t < 120.0:
+            t += out.wake_ms / 1000.0
+            out = e.update(t)
+            places.add((out.x, out.y))
+        assert len(places) == 1, (seed, places)
 
 
-def test_the_floater_covers_over_40_percent_of_the_work_area_width_in_60_seconds() -> None:
+def test_the_floater_stays_by_its_home_and_does_not_cross_the_screen_in_a_minute() -> None:
+    # Intent moved (INBOX 1670, 11:02Z "a buddy, not a nuisance"): it was 40 percent of the width
+    # in 60 s (1658, "it just floats there"). Now it lives by its home spot; a trip is rare.
     for seed in range(1, 9):
         _share, extent, _ticks = follow(make(seed), 60.0)
-        assert extent > 0.4 * WIDTH, (seed, extent)
+        assert extent <= 2 * eng.STROLL + 2 * eng.FLOAT_SWAY + 4, (seed, extent)
 
 
-def test_a_resting_floater_still_bobs_and_sways_and_plays_the_idle_cycle() -> None:
+def test_a_resting_floater_does_not_bob_and_plays_the_idle_cycle_only_in_a_burst() -> None:
+    # Intent moved (INBOX 1670): no bob or sway at rest; the tail cycle plays now and then, in place.
     e = make(3)
     e._enter("stand", 0.0)
     e.state_until = 1e9
+    e.next_ambient = 1e9
+    e.burst_start, e.burst_until = 0.0, 4.0
     seen, frames, t = set(), set(), 0.0
     for _ in range(120):
         t += 0.066
         o = e.update(t)
         seen.add((o.x, o.y))
         frames.add(o.frame)
-    # 4 px at 0.22 Hz (the owner asked for slow and graceful, INBOX 1670) is five whole-pixel rows
-    assert len({y for _x, y in seen}) >= 4 and len({x for x, _y in seen}) >= 6
+    assert len(seen) == 1
     assert any(f.startswith("idle") for f in frames)
+    assert o.frame == "stand"  # the burst is over: a plain stand again
 
 
-def test_a_reduced_floater_does_not_bob_and_a_typing_one_bobs_in_place() -> None:
-    # Typing moved from "no bob" to "bobs in place" 2026-11-04: the owner's "it is also
-    # not animated" (INBOX 1670). It still does not travel: x stays within the sway.
+def test_a_reduced_floater_does_not_bob_and_neither_does_a_typing_one() -> None:
+    # Was "a typing one bobs in place" (INBOX 1670, "it is also not animated"); the bob is gone for
+    # everyone now ("it is floating"), so typing keeps the place and only the picture can change.
     r = Engine(SIZE, ONE, rng=random.Random(3), home=(800, 920), gait="float", reduced=True)
     assert len({(o.x, o.y) for o in (r.update(0.1 * i) for i in range(1, 40))}) == 1
     q = make(3)
     q.quiet = True
     q._enter("stand", 0.0)
     q.state_until = 1e9
-    seen = [(o.x, o.y) for o in (q.update(0.1 * i) for i in range(1, 40))]
-    assert len({y for _x, y in seen}) > 1
-    assert max(x for x, _y in seen) - min(x for x, _y in seen) <= 2 * eng.FLOAT_SWAY + 2
+    q.next_ambient = 1e9
+    assert len({(o.x, o.y) for o in (q.update(0.1 * i) for i in range(1, 40))}) == 1
 
 
 def test_the_bob_never_leaves_the_work_area_or_enters_a_window_it_rests_on() -> None:

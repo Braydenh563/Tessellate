@@ -89,6 +89,7 @@ class OverlayRunner:
         self.roam_windows = roam_windows
         self.w = w
         self.clock = clock
+        self.clock_hour: int | None = None
         self.frames = frames
         self._dispatch = dispatch or jobs.thread
         self.host: host_mod.OverlayHost | None = None
@@ -106,7 +107,7 @@ class OverlayRunner:
         self._ptr_moved_at = -math.inf
         self._stopped = False
         self._resume = False
-        self._last_key: tuple[str, int, bool, tuple[int, int, int, int] | None] | None = None
+        self._last_key: tuple | None = None
         self._last_pos: tuple[int, int] | None = None
         self._next_busy_check = 0.0
         self._next_scan = 0.0
@@ -230,7 +231,7 @@ class OverlayRunner:
             return False
         if e.perch is not None or e.target is not None or e.state in ("pressed", "held"):
             return True  # carried: a title bar under it may be taken hold of
-        return e.state in ("stand", "walk", "drift") and now >= e.climb_ready - SCAN_SLACK
+        return e.state in ("stand", "walk", "drift", "act", "crouch") and now >= e.trip_ready - SCAN_SLACK
 
     def _scan(self, now: float) -> None:
         engine = self.engine
@@ -263,6 +264,22 @@ class OverlayRunner:
         due = max(30, int((self._next_scan - self.clock()) * 1000))
         return due if wake is None else min(wake, due)
 
+    def _cap_wake(self, wake: int | None) -> int | None:
+        """No sleep longer than the busy check, so the caret and the typing are read at 0.5 Hz."""
+        cap = int(BUSY_EVERY * 1000)
+        return cap if wake is None else min(wake, cap)
+
+    def _read_typing(self, now: float) -> None:
+        """Whether keys are going in, and where: the caret, else (an app with none) the window's bottom band."""
+        age = k.last_input_age(self.w)
+        engine = self.engine
+        if engine is None:  # typing: it stays put (nothing big); the mouse alone is not typing
+            return
+        engine.quiet = age is not None and age < TYPING_AGE and now - self._ptr_moved_at > age
+        # at BUSY_EVERY (0.5 Hz); Chromium and Electron give no caret (INBOX 1670 13:22Z)
+        caret = k.caret_rect(self.w)
+        engine.set_caret(caret if caret is not None or not engine.quiet else k.text_zone(self.w))
+
     def _busy_gate(self, now: float, pointer: tuple[int, int] | None = None) -> int | None:
         """Hide while something fullscreen is in the way; None when free to move."""
         if now < self._next_busy_check and not self.busy:
@@ -272,10 +289,7 @@ class OverlayRunner:
             if self._busy_ptr is not None and pointer != self._busy_ptr:
                 self._ptr_moved_at = now
             self._busy_ptr = pointer
-        age = k.last_input_age(self.w)
-        engine = self.engine
-        if engine is not None:  # typing: it stays put (nothing big); the mouse alone is not typing
-            engine.quiet = age is not None and age < TYPING_AGE and now - self._ptr_moved_at > age
+        self._read_typing(now)
         state = k.notification_state(self.w)
         away = state in k.QUNS_HIDE
         if away and not self.busy:
@@ -345,9 +359,11 @@ class OverlayRunner:
             engine.set_monitors(self.monitors, spr.size(dpi))
             engine.set_metrics(spr.metrics(dpi))
             self._last_key = None
-        key = (out.frame, self.dpi, out.flip, out.clip)
+        engine.hour = time.localtime().tm_hour if self.clock_hour is None else self.clock_hour
+        key = (out.frame, self.dpi, out.flip, out.clip, out.pose, out.fx, out.alpha)
         if key != self._last_key:
-            frame = sprites.clipped(spr.frame(out.frame, self.dpi, out.flip), out.clip)
+            posed = spr.posed(out.frame, self.dpi, out.flip, out.pose) if out.pose else spr.frame(out.frame, self.dpi, out.flip)
+            frame = sprites.effect(sprites.clipped(posed, out.clip), out.fx, out.alpha)
             host.present(frame.bgra, frame.width, frame.height, out.x - frame.pad_x, out.y - frame.pad_y)
             self._last_key, self._last_pos = key, (out.x, out.y)
         elif (out.x, out.y) != self._last_pos:
@@ -363,7 +379,7 @@ class OverlayRunner:
         if out.card is not None:
             token = out.card
             self._hand_off("overlay-card", lambda: self.on_card and self.on_card(token))
-        return self._scan_wake(out.wake_ms)
+        return self._cap_wake(self._scan_wake(out.wake_ms))
 
     def drawn_rect(self, x: int, y: int, frame: str | None = None, flip: bool | None = None, dpi: int | None = None) -> tuple[int, int, int, int]:
         """The figure's drawn box (x, y, width, height, physical pixels) for a window at
