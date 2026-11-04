@@ -135,3 +135,4 @@ date | item | type | rung | rework | note
 2026-11-04 | CI ratchets: background registry, HANDOVER cap, CODEMAP | ci-fix | opus | 0 | 
 2026-11-04 | 1641 running copies review fixes | review-fix | sonnet | 1 | 
 2026-11-04 | 1649 composer app requests | bugfix | sonnet | 1 | 
+2026-11-04 | overlay gaps: click-away, runner death, panel follows drop, first-open right click | feature | sonnet | 1 | 
