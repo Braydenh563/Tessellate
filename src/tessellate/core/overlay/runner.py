@@ -50,6 +50,8 @@ logger = logging.getLogger(__name__)
 BUSY_EVERY = 2.0
 #: Input this recent means the person is typing or working: no acts, only standing.
 TYPING_AGE = 2.5
+#: How long a foreground window's text band is trusted before it is read again.
+ZONE_EVERY = 30.0
 #: The window scan is at most this often (seconds); it starts this long before a
 #: climb is due, so the first read is in hand when it is.
 SCAN_EVERY = 1.0
@@ -110,6 +112,8 @@ class OverlayRunner:
         self._last_key: tuple | None = None
         self._last_pos: tuple[int, int] | None = None
         self._next_busy_check = 0.0
+        #: The foreground window's text band, kept per window: (hwnd, read at, band).
+        self._zone: tuple[int, float, tuple[int, int, int, int] | None] | None = None
         self._next_scan = 0.0
         self._cards: collections.deque[Any] = collections.deque()
         self._scan_failed = False
@@ -278,7 +282,21 @@ class OverlayRunner:
         engine.quiet = age is not None and age < TYPING_AGE and now - self._ptr_moved_at > age
         # at BUSY_EVERY (0.5 Hz); Chromium and Electron give no caret (INBOX 1670 13:22Z)
         caret = k.caret_rect(self.w)
-        engine.set_caret(caret if caret is not None or not engine.quiet else k.text_zone(self.w))
+        engine.set_caret(caret if caret is not None or not engine.quiet else self._text_zone(now))
+
+    def _text_zone(self, now: float) -> tuple[int, int, int, int] | None:
+        """The text band, read again only when the foreground window changes or every ZONE_EVERY s
+        (a window rarely moves while someone types in it), so typing costs one frame read, not one per check."""
+        try:
+            hwnd = int(self.w.user32.GetForegroundWindow() or 0)
+        except Exception:  # noqa: BLE001
+            return None
+        kept = self._zone
+        if kept is not None and kept[0] == hwnd and now - kept[1] < ZONE_EVERY:
+            return kept[2]
+        band = k.text_zone(self.w, hwnd) if hwnd else None
+        self._zone = (hwnd, now, band)
+        return band
 
     def _busy_gate(self, now: float, pointer: tuple[int, int] | None = None) -> int | None:
         """Hide while something fullscreen is in the way; None when free to move."""

@@ -14,6 +14,7 @@ pytest.importorskip("PIL")
 from tessellate.core.overlay import engine as eng  # noqa: E402
 from tessellate.core.overlay import perches  # noqa: E402
 from tessellate.core.overlay import win32 as k  # noqa: E402
+from tessellate.core.overlay import runner  # noqa: E402
 from tests._overlay_fake import FakeWin32  # noqa: E402
 from tests.test_overlay_runner import make, wait_for  # noqa: E402
 
@@ -115,7 +116,13 @@ def test_nothing_is_read_when_a_climb_cannot_happen(why: str) -> None:
     before = len(fake.calls)
     tick(r, clock, 0.5, minute)
     assert scans(fake) == 0
-    assert not any(fn in ("EnumWindows", "DwmGetWindowAttribute", "IsWindowVisible") for _d, fn, _a in fake.calls[before:])
+    calls = [fn for _d, fn, _a in fake.calls[before:]]
+    assert not any(fn in ("EnumWindows", "IsWindowVisible") for fn in calls)
+    #: 1670 13:22Z added one read while typing: the foreground window's frame, for the text band an app
+    #: with no caret leaves bare. It is not a climb read, and it is kept per window, so a typing minute
+    #: costs at most one frame read every runner.ZONE_EVERY s; every other case still reads none.
+    frames = calls.count("DwmGetWindowAttribute")
+    assert frames <= (1 + int(minute * 0.5 // runner.ZONE_EVERY) if why == "typing" else 0)
     r.stop()
 
 

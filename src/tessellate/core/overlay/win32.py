@@ -480,12 +480,12 @@ TEXT_ZONE_HEIGHT = 170
 TEXT_ZONE_SIDE = 0.15
 
 
-def text_zone(w: Any) -> tuple[int, int, int, int] | None:
+def text_zone(w: Any, hwnd: int | None = None) -> tuple[int, int, int, int] | None:
     """A stand-in for the caret while the person types in an app that exposes none: the bottom band of
     the foreground window's frame (its middle 70% across), in screen px, or None when unreadable or
     too small to hold a text box. Only a rectangle, never what is typed."""
     try:
-        hwnd = w.user32.GetForegroundWindow()
+        hwnd = hwnd or w.user32.GetForegroundWindow()
         frame = _frame_rect(w, hwnd) if hwnd else None
     except Exception:  # noqa: BLE001
         logger.debug("overlay: text zone unknown", exc_info=True)
