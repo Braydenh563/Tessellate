@@ -3014,7 +3014,8 @@ const NAME_MARK_BUDDY_NEVER_COVER = [
   ".toast", ".modal-card", ".action-menu", "video", "iframe",
 ].join(", ");
 
-//: The order each tab prefers its perches in. **The page's own panels
+//: The order each tab prefers its perches in **for a visit** (INBOX 1674: a resting cat
+//: takes the window's hang and bar first, `nmb.restOrder`). **The page's own panels
 //: first, on every tab** (round 7, INBOX 430, the owner: "perch and ride
 //: on UI elements on every tab and scroll with them, as it does on the
 //: Dashboard"). Measured before (companiontabs.js, 1440 by 900, a fresh
@@ -3398,6 +3399,42 @@ const nmb = {
         else fn();
       });
     }, 1);
+  },
+  //: **A resting cat chooses the window's perches** (INBOX 1674, the owner's blind run: "teleports and
+  //: appears and disappears"): the top edge hang and the bottom bar/dock line are on every tab, so a
+  //: tab change leaves it in view; a tab's own dock or card is for a short visit it chose
+  //: (`nameMarkBuddyWander`), where the tab's own order leads. Which of the two leads is the cat's
+  //: temper (`whim`), so it is not always the same one.
+  restOrder: (base, whim = 0) => {
+    const wide = whim < 0.5 ? ["hang", "bar"] : ["bar", "hang"];
+    return [...wide, ...base.filter((kind) => !wide.includes(kind))];
+  },
+  //: The window's own hang or bar perch at `NMB_FIT_SCALE`, for a resting cat on a page whose controls fill the
+  //: edges at full size; null when none is clear there either.
+  windowFit: (tab, obstacles) => {
+    const saved = nmb.scale || 1;
+    if (saved <= NMB_FIT_SCALE + 0.05) return null;
+    nmb.fitting = true;
+    nmb.scale = NMB_FIT_SCALE;
+    nmbCoverCache = new Map();
+    try {
+      nameMarkBuddyIndexReset();
+      let tried = 0;
+      for (const perch of nameMarkBuddyPerches(tab, null, false)) {
+        if (perch.kind !== "hang" && perch.kind !== "bar") break;
+        if (perch.x < 0 || perch.y < 0 || perch.y + NMB_H > innerHeight + 2) continue;
+        tried += 1;
+        if (tried > 60) break;
+        if (nameMarkBuddyHits(perch.x, perch.y, perch.pose, obstacles, perch.legs)) continue;
+        if (nameMarkBuddyWordsUnder(perch.x, perch.y, perch.pose, perch.legs) <= NMB_WORDS_PX) return { ...perch, fit: NMB_FIT_SCALE };
+      }
+      return null;
+    } finally {
+      nmb.scale = saved;
+      nmb.fitting = false;
+      nmbCoverCache = null;
+      nameMarkBuddyIndexReset();
+    }
   },
 };
 
@@ -4320,7 +4357,7 @@ function nameMarkBuddyStances(edge, x) {
 //: kind at a few places along it from the right-hand end, every stance.
 //: `focus`, an x: the places along each edge nearest it instead of from its
 //: right-hand end (a toss comes down somewhere in particular).
-function nameMarkBuddyPerches(tab, focus = null) {
+function nameMarkBuddyPerches(tab, focus = null, visit = false) {
   const { top } = nameMarkBuddyLedges();
   const floor = top ? top.bottom : 0;
   const lo = NMB_GUTTER;
@@ -4336,7 +4373,8 @@ function nameMarkBuddyPerches(tab, focus = null) {
     return xs;
   };
   const edges = nameMarkBuddyEdges(tab);
-  const order = NAME_MARK_BUDDY_ORDER[tab] || ["bar", "hang", "dock", "card", "under"];
+  const own = NAME_MARK_BUDDY_ORDER[tab] || ["bar", "hang", "dock", "card", "under"];
+  const order = visit ? own : nmb.restOrder(own, nmb.temper?.whim);
   const out = [];
   order.forEach((kind, rank) => {
     let i = 0;
@@ -4379,7 +4417,7 @@ function nameMarkBuddyPerches(tab, focus = null) {
 //: machine, so the choice does not change with the load) or, for a machine where each is slow, 250ms.
 //: The retry at the smaller size gets its own, smaller, budget.
 //: (`nmb.budget`: the numbers, and what is left of them.)
-function nameMarkBuddyChoose(tab, obstacles, near = null, per = 12) {
+function nameMarkBuddyChoose(tab, obstacles, near = null, per = 12, visit = false) {
   let best = null;
   let soiled = null;
   let scored = 0;
@@ -4394,7 +4432,7 @@ function nameMarkBuddyChoose(tab, obstacles, near = null, per = 12) {
   queueMicrotask(() => {
     nmb.wordsCache = null;
   });
-  for (const perch of nameMarkBuddyPerches(tab, near && per < 12 ? near[0] : null)) {
+  for (const perch of nameMarkBuddyPerches(tab, near && per < 12 ? near[0] : null, visit)) {
     if (scored > 0 && (nmb.budget.left <= 0 || performance.now() > nmb.budget.until)) break;
     if (perch.x < 0 || perch.y < 0 || perch.y + NMB_H > innerHeight + 2) continue;
     const here = perch.kind === nmb.perch && perch.pose === nmb.pose && Math.abs(perch.x - nmb.x) < 24 && Math.abs(perch.y - nmb.y) < 24;
@@ -4440,13 +4478,19 @@ function nameMarkBuddyChoose(tab, obstacles, near = null, per = 12) {
     if ((!near && perch.rank === 0) || scored >= (near ? 120 : 36)) break;
   }
   nmbCoverCache = null;
-  if (best) return best;
+  //: **A resting cat does not settle on a tab's own dock or card** (INBOX 1674, the reviewer's rapid run: a
+  //: Library or Timeline page left the window's perches over words or controls, the clean card won, and
+  //: every tab change after it cut the cat). Below, it takes the window's own tuck behind the bottom bar
+  //: (eyes over the page, on every tab, clear of controls) or the hang/bar at the smaller size, and keeps
+  //: the tab's perch only when neither is clear. A visit (`visit`) is the one thing that goes to the tab's own.
+  const settling = !!best && !visit && !nmb.fitting && ["dock", "card", "under"].includes(best.kind);
+  if (best && !settling) return best;
   //: **Smaller where space is small** (the owner, 2026-09-27: "size and
   //: proportion depend on the perch; it scales down where space is small
   //: and never overlaps text"). Nothing clean at its own size: the same
   //: search at `NMB_FIT_SCALE`, and a clean edge found so is taken with
   //: that size (`spot.fit`, applied by `nameMarkBuddyMoveTo`, eased).
-  if (!nmb.fitting && (nmb.scale || 1) > NMB_FIT_SCALE + 0.05) {
+  if (!settling && !nmb.fitting && (nmb.scale || 1) > NMB_FIT_SCALE + 0.05) {
     const saved = nmb.scale || 1;
     nmb.fitting = true;
     nmb.scale = NMB_FIT_SCALE;
@@ -4455,7 +4499,7 @@ function nameMarkBuddyChoose(tab, obstacles, near = null, per = 12) {
       nameMarkBuddyIndexReset();
       nmb.budget.until = performance.now() + nmb.budget.fitMs;
       nmb.budget.left = nmb.budget.fitHits;
-      small = nameMarkBuddyChoose(tab, obstacles, near, per);
+      small = nameMarkBuddyChoose(tab, obstacles, near, per, visit);
     } finally {
       nmb.scale = saved;
       nmb.fitting = false;
@@ -4471,6 +4515,12 @@ function nameMarkBuddyChoose(tab, obstacles, near = null, per = 12) {
   const fallbacks = [];
   if (bottom) {
     for (let x = innerWidth - NMB_GUTTER - NMB_W; x >= NMB_GUTTER; x -= 96) fallbacks.push({ kind: "bar", pose: "sit", legs: "peek", x, y: bottom.top - NMB_SEAT, edge: { el: document.getElementById("status-bar"), type: "top", kind: "bar", y: bottom.top } });
+  }
+  if (settling) {
+    nmbCoverCache = new Map();
+    const tuck = (near ? [...fallbacks].sort((a, b) => Math.abs(a.x - near[0]) - Math.abs(b.x - near[0])) : fallbacks).find((spot) => spot.legs === "peek" && !nameMarkBuddyHits(spot.x, spot.y, spot.pose, obstacles, spot.legs) && nameMarkBuddyWordsUnder(spot.x, spot.y, spot.pose, spot.legs) <= NMB_WORDS_PX);
+    nmbCoverCache = null;
+    return tuck || nmb.windowFit(tab, obstacles) || best;
   }
   const corner = { kind: "corner", pose: "stand", legs: "", x: innerWidth - NMB_GUTTER - NMB_W, y: (bottom ? bottom.top : innerHeight) - NMB_FEET - NMB_GUTTER };
   fallbacks.push(corner);
@@ -4710,7 +4760,7 @@ function nameMarkBuddyDrop(x, y, reach = 48) {
   //: go (the chooser, a toss's weight of 4, never over words). Only a tab
   //: with no perch at all (the chooser has none) leaves it in open air, as
   //: before: stepped aside from a control, or just above the bar's buttons.
-  const near = nameMarkBuddyChoose(tab, obstacles, [x, y], 4);
+  const near = nameMarkBuddyChoose(tab, obstacles, [x, y], 4, true);
   if (near) return near;
   const at = { kind: "yours", pose: "float", legs: "", x, y: Math.min(y, lowest) };
   if (!nameMarkBuddyHits(at.x, at.y, "float", obstacles)) return at;
@@ -5216,12 +5266,16 @@ function nameMarkBuddyCatchUp(buddy, dx, dy, eased, riding) {
 //: (one box read every 700ms; it was two seconds, in the air all that time,
 //: INBOX 521) catches only what changes with nothing announcing it
 //: (content arriving above the panel), eased rather than jumped.
-const nmbFollow = { animAt: 0, movingAt: 0, pm: { el: null, at: -1e9, val: false }, moving: false, frame: 0, until: 0, poll: 0, observer: null, scrollAt: 0, recheck: 0, support: 0, nap: 0, rest: 0 };
+const nmbFollow = { animAt: 0, movingAt: 0, pm: { el: null, at: -1e9, val: false }, moving: false, frame: 0, until: 0, poll: 0, observer: null, scrollAt: 0, recheck: 0, support: 0, nap: 0, rest: 0, timer: 0 };
 function nameMarkBuddyKeepUp(ms = 1500, wake = true) {
   if (!nmb.glue) return;
-  if (wake) nmbFollow.nap = nmbFollow.rest = 0;
+  if (wake) {
+    nmbFollow.nap = nmbFollow.rest = 0;
+    clearTimeout(nmbFollow.timer);
+    nmbFollow.timer = 0;
+  }
   nmbFollow.until = Math.max(nmbFollow.until, performance.now() + ms);
-  if (!nmbFollow.frame) nmbFollow.frame = requestAnimationFrame(nameMarkBuddyFollowFrame);
+  if (!nmbFollow.frame && !nmbFollow.timer) nmbFollow.frame = requestAnimationFrame(nameMarkBuddyFollowFrame);
 }
 //: A panel that has held still for three reads is read at 8Hz, not every
 //: frame, until something announces a move (`nameMarkBuddyKeepUp` with
@@ -5253,9 +5307,21 @@ function nameMarkBuddyFollowFrame(now) {
     const [x, y] = [nmb.x, nmb.y];
     nameMarkBuddyFollow();
     nmbFollow.rest = nmb.x === x && nmb.y === y ? nmbFollow.rest + 1 : 0;
-    nmbFollow.nap = nmbFollow.rest >= 3 && !nmbFollow.moving ? now + 120 : 0;
+    nmbFollow.nap = nmbFollow.rest >= 3 && !nmbFollow.moving ? now + (nmb.ride ? 300 : 120) : 0;
   }
-  if (nmb.glue && (now < nmbFollow.until || nmbFollow.moving)) nmbFollow.frame = requestAnimationFrame(nameMarkBuddyFollowFrame);
+  //: **No frames while it is still** (INBOX 1667, the owner's log: `nameMarkBuddyKeepUp` in rAF at 33
+  //: calls a second, 5.7ms each): once it has held still for three looks and nothing it rides is
+  //: moving, the loop does not ask for a frame at all until its nap is over; a timer asks then (a
+  //: frame callback that returns at once still wakes the page sixty times a second). A cat riding its
+  //: area's scroll is carried by the browser and looked at every 300ms, not 120.
+  if (nmb.glue && (now < nmbFollow.until || nmbFollow.moving)) {
+    if (nmbFollow.nap > now && !nmbFollow.moving) {
+      nmbFollow.timer = setTimeout(() => {
+        nmbFollow.timer = 0;
+        nameMarkBuddyKeepUp(0, false);
+      }, Math.max(16, nmbFollow.nap - performance.now()));
+    } else nmbFollow.frame = requestAnimationFrame(nameMarkBuddyFollowFrame);
+  }
   //: Its panel came to rest somewhere new: a floating button may be over it
   //: now (INBOX 521: content grew above a Library card, and it rode the
   //: card under New document).
@@ -5554,14 +5620,29 @@ function nameMarkBuddyWatch() {
     }
   }
   clearInterval(nmbFollow.poll);
+  //: **The slow look reads a clean page, and only when the page was written to** (INBOX 1667, the
+  //: owner's log: `avatars.js setInterval 207ms of forced layout`; probe at 4x CPU, 1.4 looks a
+  //: second, max 85 to 209ms forced, each a box and a visibility read on whatever the figure's own
+  //: paced steps had dirtied). A look is taken after a frame has drawn (`nmb.afterClean`), skipped
+  //: while a page is arriving, and, when no tab page has been written to since the last look
+  //: (`nmb.pageAt`), only every fourth time (2.8s): what moves a panel with nothing announcing it
+  //: is nearly always a write to the page.
   nmbFollow.poll = g ? setInterval(() => {
-    if (document.hidden || nmbFollow.frame) return;
-    const was = `${nmb.x},${nmb.y}`;
-    nameMarkBuddyFollow(true);
-    //: Carried somewhere new by content moving its panel: under a bar or a
-    //: control now, it looks again (INBOX 521: on the phone, a card pushed
-    //: under the tab dock took it along, head showing over the tabs).
-    if (`${nmb.x},${nmb.y}` !== was) queueNameMarkBuddyCheck();
+    if (document.hidden || nmbFollow.frame || nmbFollow.pollWait || performance.now() < (window.uiSettlingUntil || 0)) return;
+    nmbFollow.pollSkip = (nmbFollow.pollSkip || 0) + 1;
+    if (nmb.pageAt <= nmbFollow.pollAt && nmbFollow.pollSkip % 4) return;
+    nmbFollow.pollWait = 1;
+    nmb.afterClean(() => {
+      nmbFollow.pollWait = 0;
+      if (!nmb.glue || document.hidden || nmbFollow.frame) return;
+      nmbFollow.pollAt = performance.now();
+      const was = `${nmb.x},${nmb.y}`;
+      nameMarkBuddyFollow(true);
+      //: Carried somewhere new by content moving its panel: under a bar or a
+      //: control now, it looks again (INBOX 521: on the phone, a card pushed
+      //: under the tab dock took it along, head showing over the tabs).
+      if (`${nmb.x},${nmb.y}` !== was) queueNameMarkBuddyCheck();
+    });
   }, 700) : 0;
 }
 //: **An area that only began to scroll after the perch** (B29's neighbour,
@@ -6352,7 +6433,10 @@ function nameMarkBuddyHover(dwellMs) {
     nameMarkBuddyWake(true);
   } else if (how === "brighten") {
     if (nmb.pointer) nameMarkBuddyAim(nmb.pointer, true);
-    if (!nmb.act) nameMarkBuddyAct("blink");
+    //: Not inside the pointer event (INBOX 1667: `BUTTON.onpointerenter` 99ms of forced layout, 150ms at 4x):
+    //: the :hover the pointer just set dirtied the figure's style, and the blink's hand-over reads it. The
+    //: blink starts once a frame has drawn that (`nmb.afterClean`), still only if nothing else began.
+    if (!nmb.act) nmb.afterClean(() => { if (!nmb.act && !nmb.away) nameMarkBuddyAct("blink"); });
     if (!nmb.expr || nmb.expr === "calm") nameMarkBuddyExpress("happy", 1800);
   }
 }
@@ -7009,7 +7093,9 @@ function nameMarkBuddyTabChanged() {
     nmb.away = false;
     nmb.absent = false;
     buddy.classList.remove("nmb-away");
-    nameMarkBuddyFollow();
+    //: Not a read inside the tab press (INBOX 1667: `nameMarkBuddyFollow` 229 to 485ms of forced layout
+    //: at 4x, billed to the click): the follow loop looks once the arriving page has settled.
+    nameMarkBuddyKeepUp(600);
     if (!nmb.tab) nameMarkBuddyQueuePlace();
     //: One look that its perch is still there, once the page has settled.
     if (was) {
@@ -7026,6 +7112,7 @@ function nameMarkBuddyTabChanged() {
   if (!nmb.mind) ensureModule("companionMenu");
   nmb.lonelyTouch(true);
   nmb.away = true;
+  if (!nmb.absent) nmb.absentAt = Date.now();
   nmb.absent = true;
   buddy.classList.add("nmb-away");
   nmb.cameFrom = nameMarkBuddyTabSide(nmb.tab, tab);
@@ -7102,6 +7189,8 @@ function nameMarkBuddyAppear(buddy, walk = false) {
     nmb.away = false;
     nmb.absent = false;
     nmb.owed = "";
+    //: Back on a window-level perch (the order above): a visit it left with its page is over.
+    nmb.home = null;
     if (nmb.afield) nmb.lastAfield = Date.now();
     nmb.afield = null;
     //: It has come to you: no longer lonely, and a new temper for the next while.
@@ -7164,6 +7253,8 @@ function nameMarkBuddyMind(buddy) {
     userSettled: now - moved, roomSeen, awake: away || !nameMarkBuddyAsleep(buddy), blocked: !!blocked, idle: now - nmb.lastInput,
     mode: nameMarkBuddyNoTravel() ? "reduced" : "full", actions: nameMarkBuddyActions(),
     afieldOn: !nameMarkBuddyActOff("afield"), comeOn: !nameMarkBuddyActOff("come"), lastAfield: nmb.lastAfield || 0, afield: nmb.afield,
+    //: Left behind on a tab's own dock by a page change during a visit it chose (INBOX 1674): it walks back to a window-level perch within about a minute.
+    homeSick: away && !!nmb.absent && !nmb.afield, absentMs: now - (nmb.absentAt || now),
   }, Math.random());
   if (decided.kind === "none") return false;
   //: A stroll the board's or the activity switch refuses has not moved it: no count, a new roll next tick.
@@ -7193,6 +7284,7 @@ function nameMarkBuddyMind(buddy) {
       //: Its panel is scrolled out of sight: it is not drawn, and comes in from the window's edge.
       if (nmb.ride) nameMarkBuddyRide(null);
       nmb.away = true;
+      nmb.absentAt = Date.now();
       nmb.absent = true;
       buddy.classList.add("nmb-away");
       nmb.cameFrom = 0;
@@ -8222,8 +8314,21 @@ function nameMarkBuddyDecide(now = Date.now(), hour = new Date().getHours()) {
 
 //: The one timer: every few seconds, one decision, and a check that its
 //: perch is still clear.
-function nameMarkBuddyTick() {
+function nameMarkBuddyTick(clean = false) {
   nmb.timer = 0;
+  //: **On a page a frame has drawn** (INBOX 1667: `avatars.js TimerHandler:setTimeout 336ms (forced
+  //: layout 193ms)`; 163ms with 134 forced at 4x in the probe): the tick reads boxes, and a timer lands
+  //: between the page's writes and its frame. One look is waiting at most.
+  if (clean !== true) {
+    if (!nmb.tickWait) {
+      nmb.tickWait = true;
+      nmb.afterClean(() => {
+        nmb.tickWait = false;
+        nameMarkBuddyTick(true);
+      });
+    }
+    return;
+  }
   const buddy = document.getElementById("nm-buddy");
   if (!buddy || document.hidden) return;
   //: Fades only (reduced motion): no acts, but a cat hidden with its page still comes over by its mind, in a 400ms crossfade (INBOX 1673).
@@ -9101,7 +9206,8 @@ function nameMarkBuddyWander(now, decided = false) {
   //: Somewhere a few of its own widths off, towards the middle of the
   //: window: asked near where it is, its own perch won every time.
   const off = NMB_W * Math.max(0.7, nmb.scale || 1) * 4 * (nmb.x > innerWidth / 2 ? -1 : 1);
-  const away = nameMarkBuddyChoose(tab, obstacles, [nmb.x + off, nmb.y], 4);
+  //: A visit: the tab's own docks and cards lead, for half a minute, then home (`nmb.home`).
+  const away = nameMarkBuddyChoose(tab, obstacles, [nmb.x + off, nmb.y], 4, true);
   if (!away || (Math.abs(away.x - nmb.x) < 24 && Math.abs(away.y - nmb.y) < 24)) return false;
   nmb.home = { ...spot, x: nmb.x, y: nmb.y, pose: nmb.pose, legs: nmb.legs, tab, at: now };
   nmb.moveWhy = "bored: wandering off";
@@ -9346,6 +9452,8 @@ function nameMarkBuddyBellErrand() {
 
 function nameMarkBuddyChatErrand() {
   if (nameMarkBuddyTab() !== "chat") return false;
+  //: Only a cat already in view is pulled to the composer (INBOX 1674, design 9): one in another room is not fetched by a stream.
+  if (nmb.away || nmb.absent || nmb.afield || nmb.outOfSight) return false;
   const input = document.getElementById("chat-input");
   const dock = input?.closest(".chat-dock") || input?.closest("form, .chat-composer, .card") || input;
   const box = dock && nameMarkBuddyShown(dock);
@@ -9401,8 +9509,11 @@ const NMB_PROP_WORDS = [
 ];
 function nameMarkBuddyNameProps(buddy, face) {
   const words = NMB_PROP_WORDS.filter(([cls]) => buddy.classList.contains(cls)).map(([, said]) => said);
-  const cap = buddy.querySelector(".nmp-nightcap");
-  if (cap && Number(getComputedStyle(cap).opacity) > 0.5) words.push(nameMarkBuddyHasAtlas(buddy) ? "a moon on its ear: it is resting" : "a night cap: it is resting");
+  //: Asked of the classes that show the cap (08-consistency.css, `.nmp-nightcap`), not of its computed
+  //: opacity: that read settled the whole figure's pending style (INBOX 1667: `BUTTON.onpointerenter`
+  //: 99ms of forced layout; 210ms at 4x CPU in the probe).
+  const capShown = '.nmb-night:is([data-pose="sit"], [data-pose^="curl"], .nmb-act-lie), :is(.nmb-act-lie, :is([data-pose="sit"], [data-pose^="curl"]):is(.nmb-sleep, .nmb-act-nap)):not(.nmb-cap-off)';
+  if (buddy.querySelector(".nmp-nightcap") && buddy.matches(capShown)) words.push(nameMarkBuddyHasAtlas(buddy) ? "a moon on its ear: it is resting" : "a night cap: it is resting");
   if (words.length) face.title = `${buddy.dataset.seed || "Your companion"}: ${words.join("; ")}`;
   else face.removeAttribute("title");
 }

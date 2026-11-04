@@ -111,5 +111,5 @@ def test_atlas_and_the_others_share_the_decisions_with_traits() -> None:
     #: 1673: the mind decides the stroll; the traits still scale how often it goes.
     assert "Math.min(1, nameMarkBuddyTraits().wander)" in wander
     # Off across the page only once you have left it alone a minute; a few steps along its edge any time.
-    assert wander.index("if (now - nmb.lastInput < NMB_WANDER_FAR_IDLE_MS) return false;") < wander.index("nameMarkBuddyChoose(tab, obstacles, [nmb.x + off, nmb.y], 4)")
+    assert wander.index("if (now - nmb.lastInput < NMB_WANDER_FAR_IDLE_MS) return false;") < wander.index("nameMarkBuddyChoose(tab, obstacles, [nmb.x + off, nmb.y], 4, true)")
     assert int(re.search(r"^const NMB_WANDER_FAR_IDLE_MS = (\d+);$", AV, re.M).group(1)) >= 60000
