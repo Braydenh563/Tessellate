@@ -1593,3 +1593,7 @@ Critique points rejected or changed:
 - Point 3, "undo": agreed on the shared history. Not verified: `docUndo` behaviour inside the dialog mount, which uses its own `io` (diagram-embed.js:96-97).
 
 - Audit 160 D23 (open, L): docCmTheme is its own file (documents-cm-theme.js, 1,075 lines); docLivePlugin is still one 1,720-line function in documents-cm.js (1,748 lines now), to be split by responsibility (build, patch, widgets) in a later step.
+
+## Placed from INBOX, 2026-11-04
+
+1679. **Owner, 2026-11-04 16:50Z, verbatim (names Fable for this task):** "also can you get fable to take a quick look at and do a deep dive on the diagram builder?? it si still not really learnable and is still quite unintuitive and it feels like it lacks key design features and utility and it just feels very demo and not a complete feature or smth that it usable and easy to understand". One Fable agent, read-only deep dive, findings in `docs/roadmap/agent-remaining/diagram-fable-1679.md`, then ranked slices built by Sonnet.
