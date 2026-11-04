@@ -65,7 +65,7 @@ def test_the_cover_is_asked_of_the_buddy_and_not_in_its_large_view() -> None:
 
 def test_every_timer_that_reads_the_page_asks_the_cover_first() -> None:
     timers = _timer_functions()
-    assert {"nameMarkBuddyBeat", "nameMarkBuddyDodge", "nameMarkBuddyUnheld", "nameMarkBuddyTempo", "nameMarkBuddyTick"} <= timers
+    assert {"nameMarkBuddyBeat", "nameMarkBuddyDodge", "nameMarkBuddyTempo", "nameMarkBuddyTick"} <= timers
     unguarded = []
     for name in sorted(timers):
         body = _fn(AV, name)

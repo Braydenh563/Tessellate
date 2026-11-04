@@ -99,7 +99,7 @@ def test_a_scroll_or_a_moved_panel_is_not_a_reason_to_choose_again() -> None:
 
 
 def test_pinned_on_every_page_means_it_never_moves_on_its_own() -> None:
-    for name in ("nameMarkBuddyCheck", "nameMarkBuddyQueuePlace", "nameMarkBuddyBeat", "nameMarkBuddyErrand", "nameMarkBuddyUnheld"):
+    for name in ("nameMarkBuddyCheck", "nameMarkBuddyQueuePlace", "nameMarkBuddyBeat", "nameMarkBuddyErrand"):
         assert "nmb.pinned" in _fn(name), name
     menu = _fn("nameMarkBuddyMenu")
     assert '"*": {' in menu and "keep: 1" in menu and 'kind: "pinned"' in menu
@@ -214,9 +214,9 @@ def test_it_rides_its_panels_scroll_and_leaves_with_it() -> None:
     assert "getBoundingClientRect" not in riding and "nameMarkBuddyPut" not in riding
     # Not on a bar that sticks: it ignores the scroll the rider follows.
     assert 'pos === "sticky" || pos === "fixed"' in _fn("nameMarkBuddyScrollsWith")
-    # Out of sight, it waits for the page to be still and then its own beat.
+    # Out of sight it is not re-placed (INBOX 1673): its time out of sight is its loneliness, and a perch that went is looked at when it is seen.
     seen = _fn("nameMarkBuddySeen")
-    assert "nameMarkBuddyQueuePlace()" in seen and "nmbFollow.scrollAt" in seen
+    assert "nameMarkBuddyQueuePlace()" in seen and "nmb.lonelyTouch(!seen)" in seen and "setTimeout" not in seen
 
 
 def test_a_jump_it_must_make_is_a_poof_under_half_a_second() -> None:
@@ -254,7 +254,7 @@ def test_its_menu_holds_it_where_it_is() -> None:
     # another. Measured (companionmenu.js): with the menu open, its own
     # behaviours moved it 338px away before; now nothing moves it until the
     # menu closes, and a panel carrying it carries the menu.
-    for name in ("nameMarkBuddyBeat", "nameMarkBuddyErrand", "nameMarkBuddyUnheld", "nameMarkBuddyCheck", "nameMarkBuddyTick"):
+    for name in ("nameMarkBuddyBeat", "nameMarkBuddyErrand", "nameMarkBuddyCheck", "nameMarkBuddyTick"):
         assert "nameMarkBuddyMenuOpen()" in _fn(name), name
     assert "if (nmb.menuPlace && nameMarkBuddyMenuOpen()) nmb.menuPlace();" in _fn("nameMarkBuddyPut")
     menu = _fn("nameMarkBuddyMenu")
@@ -572,7 +572,8 @@ def test_it_follows_a_tab_change_only_once_you_stay_and_comes_in_smoothly():
     # climb or a materialise, and leaving by a dissolve.
     changed = _fn("nameMarkBuddyTabChanged")
     assert 'buddy.classList.add("nmb-away");' in changed
-    assert "NMB_DWELL_MS + Math.random() * NMB_DWELL_JITTER_MS" in changed
+    # INBOX 1673 overturns the 1.3 to 2.5s follow: nothing is armed on a switch, its own mind brings it over minutes later.
+    assert "nmb.absent = true;" in changed and "NMB_DWELL" not in changed
     assert "if (!nmb.tab || tab === nmb.tab)" in changed
     enter = _fn("nameMarkBuddyEnter")
     # The ways it can come (INBOX 501 made the choice varied; see the test
@@ -641,8 +642,8 @@ def test_it_is_never_drawn_before_its_place_and_never_jumps_after_it() -> None:
     assert build.index('buddy.classList.add("nmb-away");') < build.index("nameMarkBuddySetSize(")
     # ... and brought in the way it comes to a tab, once the page is still.
     sync = _fn("syncNameMarkBuddy")
-    assert "nameMarkBuddyArrive(buddy);" in sync and "placeNameMarkBuddy(buddy, true)" not in sync
-    assert "nameMarkBuddySettle(tab, (spot) => {" in _fn("nameMarkBuddyArrive")
+    assert "nameMarkBuddyAppear(buddy);" in sync and "placeNameMarkBuddy(buddy, true)" not in sync
+    assert "nameMarkBuddySettle(tab, (spot) => {" in _fn("nameMarkBuddyAppear")
     settle = _fn("nameMarkBuddySettle")
     assert "NMB_SETTLE_QUIET_MS" in settle and "NMB_SETTLE_MAX_MS" in settle
     assert "if (moved) choose();" in settle
@@ -854,7 +855,7 @@ def test_its_reactions_come_and_go_gradually_and_it_gets_bored() -> None:
     assert 'nameMarkBuddyAct("yawn", 1700);' in wake and 'setTimeout(() => nameMarkBuddyAct("wake"), 1800)' in wake
     assert "nmb.awakeUntil = Date.now() + NMB_AWAKE_MS;" in wake
     tick = _fn("nameMarkBuddyTick")
-    assert "if (idle > NMB_SLEEP_MS && !awake) {" in tick and "if (nameMarkBuddyWander(Date.now())) {" in tick
+    assert "if (idle > NMB_SLEEP_MS && !awake) {" in tick and "if ((nmb.home && nameMarkBuddyWander(Date.now())) || nameMarkBuddyMind(buddy)) {" in tick
     build = _fn("nameMarkBuddyBuild")
     assert "const how = nameMarkBuddyClickReaction(wasAsleep, wasAsleep ? 1 : nmb.pokes.length, sinceLast, groggy, lastHow);" in build
     assert "nameMarkBuddyHover(0);" in build
@@ -1204,9 +1205,9 @@ def test_out_of_sight_never_cancels_the_tab_follow() -> None:
     # left it away for 5s and more, because `nameMarkBuddySeen` cleared the
     # tab follow's timer. After: on Notes 3s later.
     seen = _fn("nameMarkBuddySeen")
-    assert "awayTimer" not in seen and "nmb.sightTimer = setTimeout(wait, 1600);" in seen
+    assert "awayTimer" not in seen and "setTimeout" not in seen
     assert "if (nmb.away) return;" in seen
-    assert "clearTimeout(nmb.sightTimer);" in _fn("nameMarkBuddyGone")
+    assert "clearTimeout(nmb.appearTimer);" in _fn("nameMarkBuddyGone")
 
 
 def test_perches_are_top_edges_outside_card_content_and_measured_for_words() -> None:
@@ -1716,7 +1717,7 @@ def test_the_first_entrance_after_an_unlock_is_a_drop_once() -> None:
     # it, and Reduce motion / Avatar animation off return before it.
     enter = _fn("nameMarkBuddyEnter")
     assert "unlockDrop: true" in AV
-    drop = enter.index("if (nmb.unlockDrop && !hangs) {")
+    drop = enter.index("if (nmb.unlockDrop && !hangs && !visit) {")
     assert enter.index("if (nameMarkBuddyNoTravel()) {") < drop, "the reduced-motion fade must come first"
     assert "nmb.unlockDrop = false;" in enter[drop:]
     assert 'translate: "0px 0px", opacity: 1 }' in enter[drop:], "it ends at rest, with no jump"
