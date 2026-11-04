@@ -1124,7 +1124,7 @@
        decision 25): the documents' template dialog recipe, its rows built by
        `wbOpenTemplateGallery` (whiteboard-library.js), its preview the same
        thumbnail the library's tile draws. -->
-  <!-- Insert, Mermaid, draw.io or board SVG (W5; whiteboard-interchange.js). -->
+  <!-- Insert, Diagram, Mermaid, draw.io or board SVG (W5; whiteboard-interchange.js). -->
   <dialog id="wb-import-dialog" class="card space-dialog wb-import-dialog" aria-labelledby="wb-import-title">
     <div class="dialog-head">
       <h2 id="wb-import-title" class="dialog-head-title"><i class="ph ph-tree-structure pop-glyph" aria-hidden="true"></i>Bring in a diagram</h2>
@@ -6923,12 +6923,16 @@ Link to another note with [[its first few words]]."></textarea>
               <button type="button" class="wb-menu-item" data-wb-insert="text"><i class="ph ph-text-t ph-lead" aria-hidden="true"></i><span>Text box</span><kbd>T</kbd></button>
               <button type="button" class="wb-menu-item" data-wb-insert="frame" data-wb-surface="board"><i class="ph ph-frame-corners ph-lead" aria-hidden="true"></i><span>Frame</span><kbd>F</kbd></button>
               <button type="button" class="wb-menu-item" data-wb-cmd="insert-table" data-wb-surface="board"><i class="ph ph-table ph-lead" aria-hidden="true"></i><span>Table</span></button>
-              <button type="button" class="wb-menu-item" data-wb-cmd="insert-diagram"><i class="ph ph-flow-arrow ph-lead" aria-hidden="true"></i><span>Diagram builder…</span></button>
+              <div class="wb-menu-section" data-wb-submenu="ph:flow-arrow Diagram" data-wb-submenu-title="Build one, or bring in Mermaid, draw.io or a board SVG">
+                <button type="button" class="wb-menu-item" data-wb-cmd="insert-diagram"><i class="ph ph-flow-arrow ph-lead" aria-hidden="true"></i><span>Diagram builder…</span></button>
+                <button type="button" class="wb-menu-item" data-wb-cmd="import-diagram" data-wb-surface="board"><i class="ph ph-flow-arrow ph-lead" aria-hidden="true"></i><span>Mermaid, draw.io or board SVG…</span></button>
+              </div>
+              <div class="wb-menu-section" data-wb-submenu="ph:shapes Shapes and icons" data-wb-submenu-title="The shape library, emoji and icons">
+                <button type="button" class="wb-menu-item" data-wb-cmd="open-library"><i class="ph ph-shapes ph-lead" aria-hidden="true"></i><span>Shapes, icons and frames…</span></button>
+                <button type="button" class="wb-menu-item" data-wb-cmd="insert-sticker"><i class="ph ph-smiley-sticker ph-lead" aria-hidden="true"></i><span>Emoji and icons…</span></button>
+              </div>
               <button type="button" class="wb-menu-item" data-wb-insert="image"><i class="ph ph-image ph-lead" aria-hidden="true"></i><span>Image from a file…</span><kbd>I</kbd></button>
               <button type="button" class="wb-menu-item" data-wb-insert="note"><i class="ph ph-note-pencil ph-lead" aria-hidden="true"></i><span>A note from the library</span></button>
-              <button type="button" class="wb-menu-item" data-wb-cmd="open-library"><i class="ph ph-shapes ph-lead" aria-hidden="true"></i><span>Shapes, icons and frames…</span></button>
-              <button type="button" class="wb-menu-item" data-wb-cmd="insert-sticker"><i class="ph ph-smiley-sticker ph-lead" aria-hidden="true"></i><span>Emoji and icons…</span></button>
-              <button type="button" class="wb-menu-item" data-wb-cmd="import-diagram" data-wb-surface="board"><i class="ph ph-flow-arrow ph-lead" aria-hidden="true"></i><span>Mermaid, draw.io or board SVG…</span></button>
             </div>
             <div class="wb-menu-section">
               <span class="wb-panel-group-label">Draw</span>
@@ -6953,9 +6957,11 @@ Link to another note with [[its first few words]]."></textarea>
               <button type="button" class="wb-menu-item" data-wb-cmd="cut" data-wb-surface="board"><i class="ph ph-scissors ph-lead" aria-hidden="true"></i><span>Cut</span><kbd>Ctrl+X</kbd></button>
               <button type="button" class="wb-menu-item" data-wb-cmd="copy" data-wb-surface="board"><i class="ph ph-copy-simple ph-lead" aria-hidden="true"></i><span>Copy</span><kbd>Ctrl+C</kbd></button>
               <button type="button" class="wb-menu-item" data-wb-cmd="paste" data-wb-surface="board"><i class="ph ph-clipboard ph-lead" aria-hidden="true"></i><span>Paste</span><kbd>Ctrl+V</kbd></button>
-              <button type="button" class="wb-menu-item" data-wb-cmd="paste-special"><i class="ph ph-clipboard-text ph-lead" aria-hidden="true"></i><span>Paste special</span></button>
-              <button type="button" class="wb-menu-item" data-wb-cmd="paste-into-shape" data-wb-surface="board"><i class="ph ph-clipboard-text ph-lead" aria-hidden="true"></i><span>Paste into the shape's text</span></button>
-              <button type="button" class="wb-menu-item" data-wb-cmd="paste-no-comments" data-wb-surface="board"><i class="ph ph-clipboard ph-lead" aria-hidden="true"></i><span>Paste without comments</span><kbd>Ctrl+Alt+Shift+V</kbd></button>
+              <div class="wb-menu-section" data-wb-submenu="ph:clipboard-text Paste in other ways" data-wb-submenu-title="Paste special, into the shape's text, or without comments">
+                <button type="button" class="wb-menu-item" data-wb-cmd="paste-special"><i class="ph ph-clipboard-text ph-lead" aria-hidden="true"></i><span>Paste special</span></button>
+                <button type="button" class="wb-menu-item" data-wb-cmd="paste-into-shape" data-wb-surface="board"><i class="ph ph-clipboard-text ph-lead" aria-hidden="true"></i><span>Paste into the shape's text</span></button>
+                <button type="button" class="wb-menu-item" data-wb-cmd="paste-no-comments" data-wb-surface="board"><i class="ph ph-clipboard ph-lead" aria-hidden="true"></i><span>Paste without comments</span><kbd>Ctrl+Alt+Shift+V</kbd></button>
+              </div>
               <button type="button" class="wb-menu-item" data-wb-cmd="duplicate"><i class="ph ph-copy ph-lead" aria-hidden="true"></i><span>Duplicate</span><kbd>Ctrl+D</kbd></button>
               <button type="button" class="wb-menu-item" data-wb-cmd="delete"><i class="ph ph-trash ph-lead" aria-hidden="true"></i><span>Delete</span><kbd>Del</kbd></button>
             </div>
@@ -7130,7 +7136,7 @@ Link to another note with [[its first few words]]."></textarea>
               <button id="wb-rename-board" type="button" class="wb-menu-item" title="Rename this board"><i class="ph ph-pencil-simple ph-lead" aria-hidden="true"></i><span>Rename this board</span></button>
               <button id="wb-new-board" type="button" class="wb-menu-item" title="Create a new board"><i class="ph ph-plus ph-lead" aria-hidden="true"></i><span>New board</span></button>
             </div>
-            <div class="wb-menu-section" role="group" aria-label="Workshop" data-wb-surface="board">
+            <div class="wb-menu-section" data-wb-submenu="ph:users-three Workshop" data-wb-submenu-title="Vote dots and a timer" data-wb-surface="board">
               <button type="button" class="wb-menu-item" data-wb-cmd="vote"><i class="ph ph-circle ph-lead" aria-hidden="true"></i><span>Add a vote dot</span></button>
               <button type="button" class="wb-menu-item" data-wb-cmd="clear-votes"><i class="ph ph-eraser ph-lead" aria-hidden="true"></i><span>Clear all vote dots</span></button>
               <button type="button" class="wb-menu-item" data-wb-cmd="timer"><i class="ph ph-timer ph-lead" aria-hidden="true"></i><span>Workshop timer…</span></button>
@@ -7149,7 +7155,6 @@ Link to another note with [[its first few words]]."></textarea>
               <span class="wb-panel-group-label">This board</span>
               <button type="button" class="wb-menu-item" data-wb-cmd="history"><i class="ph ph-clock-counter-clockwise ph-lead" aria-hidden="true"></i><span>History…</span></button>
               <button type="button" class="wb-menu-item" data-wb-cmd="snapshots"><i class="ph ph-camera ph-lead" aria-hidden="true"></i><span>Snapshots…</span></button>
-              <button id="wb-export" data-wb-closes type="button" class="wb-menu-item" title="Export this board"><i class="ph ph-download-simple ph-lead" aria-hidden="true"></i><span>Export…</span></button>
               <!-- Which kind of board this is, changeable. Reported: "when I
                    press the boards dropdown to change boards, I cant tell
                    which one is a whiteboard and which one is a mindmap". The
@@ -7160,22 +7165,26 @@ Link to another note with [[its first few words]]."></textarea>
                    taken a `type` all along; this is the control it never
                    had. -->
               <button id="wb-board-kind" type="button" class="wb-menu-item" title="Switch between a whiteboard and a mind map"><i class="ph ph-tree-structure ph-lead" aria-hidden="true"></i><span id="wb-board-kind-label">Turn into a mind map</span></button>
-              <!-- INBOX 309, the owner: "there is also no way to attach a
-                   whiteboard or mindmap to a note as like an object in the
-                   notes". Two doorways were asked for, and this is the one
-                   that starts from the board: the other is the "/" menu's
-                   own "Board or mind map" inside a note. -->
-              <button id="wb-add-to-note" data-wb-closes type="button" class="wb-menu-item" title="Put this board in a note as an object"><i class="ph ph-note-pencil ph-lead" aria-hidden="true"></i><span>Add to a note…</span></button>
-              <!-- A map's outline as a document (audit brief M5): headings by
-                   depth, then lists, notes as paragraphs, the map's card at
-                   the head. Maps only. -->
-              <button id="wb-map-to-doc" data-wb-closes data-wb-surface="map" type="button" class="wb-menu-item" title="Write this map as a new document: its branches as headings, the rest as lists"><i class="ph ph-file-text ph-lead" aria-hidden="true"></i><span>Write as a document</span></button>
               <!-- Study the map (MINDMAP_PLAN decision 36): each branch hidden
                    until recalled, full screen. Maps only. -->
               <button id="wb-map-study" data-wb-surface="map" type="button" class="wb-menu-item" title="Recall what is under each branch before it is shown; your marks are kept for this map on this device"><i class="ph ph-student ph-lead" aria-hidden="true"></i><span>Study the map</span></button>
-              <button id="wb-copy-link" data-wb-closes type="button" class="wb-menu-item" title="Copy this board's or mind map's address to open it in the app"><i class="ph ph-link ph-lead" aria-hidden="true"></i><span>Copy app link</span></button>
-              <!-- The whole board into the library as a template (decision 25). -->
-              <button type="button" class="wb-menu-item" data-wb-cmd="save-template"><i class="ph ph-squares-four ph-lead" aria-hidden="true"></i><span>Save this board as a template…</span></button>
+              <!-- Share and save as one submenu (INBOX 1627, the owner: "should you turn some of the things in the other whiteboard top bar menus into sub menus like you did for the arrange one??"). -->
+              <div class="wb-menu-section" data-wb-submenu="ph:share-network Share and save" data-wb-submenu-title="Export, put in a note, copy a link or save as a template">
+                <button id="wb-export" data-wb-closes type="button" class="wb-menu-item" title="Export this board"><i class="ph ph-download-simple ph-lead" aria-hidden="true"></i><span>Export…</span></button>
+                <!-- INBOX 309, the owner: "there is also no way to attach a
+                     whiteboard or mindmap to a note as like an object in the
+                     notes". Two doorways were asked for, and this is the one
+                     that starts from the board: the other is the "/" menu's
+                     own "Board or mind map" inside a note. -->
+                <button id="wb-add-to-note" data-wb-closes type="button" class="wb-menu-item" title="Put this board in a note as an object"><i class="ph ph-note-pencil ph-lead" aria-hidden="true"></i><span>Add to a note…</span></button>
+                <!-- A map's outline as a document (audit brief M5): headings by
+                     depth, then lists, notes as paragraphs, the map's card at
+                     the head. Maps only. -->
+                <button id="wb-map-to-doc" data-wb-closes data-wb-surface="map" type="button" class="wb-menu-item" title="Write this map as a new document: its branches as headings, the rest as lists"><i class="ph ph-file-text ph-lead" aria-hidden="true"></i><span>Write as a document</span></button>
+                <button id="wb-copy-link" data-wb-closes type="button" class="wb-menu-item" title="Copy this board's or mind map's address to open it in the app"><i class="ph ph-link ph-lead" aria-hidden="true"></i><span>Copy app link</span></button>
+                <!-- The whole board into the library as a template (decision 25). -->
+                <button type="button" class="wb-menu-item" data-wb-cmd="save-template"><i class="ph ph-squares-four ph-lead" aria-hidden="true"></i><span>Save this board as a template…</span></button>
+              </div>
             </div>
             <div class="wb-menu-section">
               <span class="wb-panel-group-label">Help</span>

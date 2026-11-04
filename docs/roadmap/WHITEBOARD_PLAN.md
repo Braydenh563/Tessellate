@@ -1727,5 +1727,3 @@ Dropped, as before: glass, text shadow, SVG image styles. Subscript and superscr
 
 ## Placed from INBOX, 2026-11-04
 
-1627. **Owner, 2026-11-04 (screenshots: the board's Edit, View, Board and Insert menus, the Edit menu with a scrollbar):** "should you turn some of the things in the other whiteboard top bar menus into sub menus like you did for the arrange one?? like paste should probably be grouped or the special pastes". Recommendation taken (the U15 Arrange pattern, `.menu-nested`): Edit gets one Paste row with a submenu (Paste special, Paste into the shape's text, Paste without comments), so it fits without a scrollbar at 900px high; Board gets a Workshop submenu (vote dot, clear vote dots, timer) and a Share and save submenu (Export, Add to a note, Write as a document, Copy app link, Save as a template); Insert gets a Diagram submenu (Diagram builder, Mermaid, draw.io or board SVG) and one Shapes and icons row; View stays two columns, its zoom rows a Zoom submenu only if it still scrolls. Every command keeps its keys; the phone's More sheet stays flat. Measure each menu's height and rows before and after.
-

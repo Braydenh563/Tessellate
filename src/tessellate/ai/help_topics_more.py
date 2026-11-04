@@ -341,7 +341,7 @@ MORE_TOPICS: list[dict] = [
             "With no model, two places make a diagram. Library tab, Create, New mind map "
             "opens a map you type into (Tab adds a child, Enter a sibling), and its "
             "templates, Trip plan among them, start you with branches in place. "
-            "Insert, Mermaid diagram on a board takes a few lines of text and draws a "
+            "Insert, Diagram, Mermaid diagram on a board takes a few lines of text and draws a "
             "flowchart, sequence, state, Gantt or pie chart live. A note's menu, under AI actions, "
             "Make a mind map, builds a map from that note's headings and lists. "
             "The Writing room's diagram needs a model for anything beyond a rule-made "
@@ -2736,10 +2736,10 @@ TOPIC_META: dict[str, dict] = {
     "board-library-saving": {"title": "Saving to the board's library", "path": "A board, Ctrl+Shift+S or right-click, Library"},
     "board-templates": {"title": "Board and map templates", "path": "Library tab, Boards & maps, New's arrow, From a template"},
     "board-format": {"title": "The board's Format panel", "path": "A board, Ctrl+Shift+P or the selection's More menu"},
-    "board-connectors": {"title": "Connector bends, connection points and importing diagrams", "path": "A board, Insert, Mermaid, draw.io or board SVG"},
+    "board-connectors": {"title": "Connector bends, connection points and importing diagrams", "path": "A board, Insert, Diagram, Mermaid, draw.io or board SVG"},
     "board-workshop": {"title": "Voting dots and a workshop timer", "path": "A board, Board menu, Workshop"},
     "board-diagram-tools": {"title": "Diagram tools: zoom to the selection, tidy as a tree, change a shape, link a shape, shrink text to fit", "path": "A board, Arrange, View, or a selection's More"},
-    "board-paste": {"title": "Paste on a board or map: options and Paste special", "path": "A board, Edit, Paste special"},
+    "board-paste": {"title": "Paste on a board or map: options and Paste special", "path": "A board, Edit, Paste in other ways, Paste special"},
     "mind-map-controls": {"title": "Mind map keys and controls", "path": "Library tab, Boards & maps"},
     "documents-controls": {"title": "Document editor keys and controls", "path": "Library tab, Documents"},
     "documents-replace": {"title": "Replace in every document", "path": "Library tab, Documents, document menu"},
@@ -3143,7 +3143,7 @@ MORE_TOPICS.extend([
             "diagram fill", "diagram opacity", "solid diagram boxes",
         ),
         "body": (
-            "A live Mermaid diagram on a board: Insert, Diagram builder... opens the "
+            "A live Mermaid diagram on a board: Insert, Diagram, Diagram builder... opens the "
             "block editor on a sample; Done places it at its drawing's shape. "
             "It is any Mermaid diagram (flowchart, sequence, class, state, Gantt, pie "
             "and the rest), drawn as a note draws it and redrawn with the theme. "
@@ -3153,7 +3153,7 @@ MORE_TOPICS.extend([
             "a mistake shows the reason in the "
             "box instead of a picture. Turn into shapes, in the editor's ... menu, replaces "
             "a flowchart, state, class or sequence diagram with shapes and connectors "
-            "you can move one by one (Ctrl+Z puts the diagram back). Insert, Mermaid, "
+            "you can move one by one (Ctrl+Z puts the diagram back). Insert, Diagram, Mermaid, "
             "draw.io or board SVG brings a diagram in as shapes straight away."
         ),
         "badge": {"label": "Library", "tab": "library"},
@@ -3170,7 +3170,7 @@ MORE_TOPICS.extend([
             "Diagram builder, with the same icon. Ctrl+K, Diagram builder, and Find anything, Tools "
             "and features and Quick access list it too. Over a note, a document or a Chat box, "
             "Insert (or / then diagram) opens the builder and Done writes the diagram there as a "
-            "code block. Over a board or a mind map, Insert, Diagram builder adds a diagram object "
+            "code block. Over a board or a mind map, Insert, Diagram, Diagram builder adds a diagram object "
             "to double-click later. Anywhere else, and in the Library's Create, New, Diagram, it "
             "opens the builder, and Done saves it as a new diagram file. Cancel changes nothing."
         ),
@@ -3309,7 +3309,7 @@ TOPIC_META.update({
     "board-edit-data": {"title": "Edit data on a board item", "path": "A board's Format panel, Data"},
     "board-colours": {"title": "Fill, border and recent colours on a board", "path": "A shape's bar, Fill or Border"},
     "board-tables": {"title": "Tables on a board", "path": "A board's Insert menu, Table"},
-    "board-mermaid": {"title": "Live Mermaid diagrams on a board", "path": "A board's Insert menu, Diagram builder..."},
+    "board-mermaid": {"title": "Live Mermaid diagrams on a board", "path": "A board's Insert menu, Diagram, Diagram builder..."},
     "diagram-builder": {"title": "The Diagram builder", "path": "Ctrl+K, Diagram builder; Insert in a note, a document or a board; Library, Create, New diagram"},
     "diagram-blocks": {"title": "Editing a diagram as blocks", "path": "A diagram document, Blocks"},
     "diagram-kinds": {"title": "Mind maps, timelines and sequence diagrams as blocks", "path": "A diagram document, Blocks"},

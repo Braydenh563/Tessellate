@@ -325,7 +325,7 @@ HELP_TOPICS: list[dict] = [
             "The whiteboard (Library, Boards & maps) is a pannable canvas for "
             "freehand sketches and note cards together. Hover (or focus) a Library tile to see a larger preview beside the sidebar; Escape or starting a drag hides it. Freehand sketches also "
             "appear in the Library's Images sub-tab. A board's background colour "
-            "and image are kept with the board. Board, Export saves a PNG (1x, 2x "
+            "and image are kept with the board. Board, Share and save, Export saves a PNG (1x, 2x "
             "or 3x, with a transparent background if you like), JPG, WebP, SVG or PDF named "
             "after the board, or Copy image puts the picture on the clipboard (also Copy as an image in Ctrl+K), or Copy as SVG in Ctrl+K puts the SVG on the clipboard as text (right-click a selection for Export selection, Copy as image and Copy as SVG). Paste text from another app onto a board: a link "
             "becomes a link box, one line a text box, a list a grid of stickies. "
@@ -2426,7 +2426,7 @@ HELP_TOPICS.extend(
                 "one or many, zero or many). With one shape or text box selected, the four arrows round it "
                 "(or Alt+Shift and an arrow key) copy it that way and join facing sides with an elbow; "
                 "a note card's arrows make a new note there instead, joined and ready to type. With two or more selected, Arrange, Tidy and connect joins them in a line or all to the first picked. Measure with a dimension line shows its length. Select a connector and drag a square at either end onto another shape to re-point it. "
-                "Insert, Mermaid, draw.io or board SVG brings in a Mermaid flowchart, state, class or "
+                "Insert, Diagram, Mermaid, draw.io or board SVG brings in a Mermaid flowchart, state, class or "
                 "sequence diagram, a .drawio file (pages and swimlanes as frames) or an SVG a board "
                 "here exported, as shapes and connectors; Export writes an Outline, a Mermaid flowchart or a .drawio file."
             ),

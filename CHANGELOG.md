@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Board menus (INBOX 1627): Edit's three special pastes are one "Paste in other ways" submenu, Insert has Diagram and Shapes and icons submenus, Board has Workshop and Share and save submenus (the Arrange pattern; every row keeps its keys). Measured at 1440x900: Edit 785px with a scrollbar to 707px without, Board 785px with a scrollbar to 576px, Insert 631px to 551px; View fits (427px), so it stays as it was. Help names the new paths.
 - Math editor (INBOX 1623): a superscript or subscript deleted leaves its base as plain text, so deleting the base afterwards leaves nothing, not an empty box (measured in the editor: `2` then Backspace gave `\placeholder{}`, now empty); while the script stands, an emptied base is still a box.
 - Present mode (INBOX 1628): the ring pointer's pulse is a switch like the trail (Pulse: on / off in the pointer's menu while the look is Ring, kept with the other choices; measured: animation wb-laser-pulse on, none off).
 - Desktop companion (INBOX 1631): the Settings, About switch shows in a browser tab on the computer Tessellate runs on (it was only in the desktop window), with a line saying it takes effect while the desktop app runs; another device still has no row.

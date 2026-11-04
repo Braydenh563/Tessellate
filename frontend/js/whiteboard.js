@@ -14274,7 +14274,7 @@ async function wbImportOutlineFile(event) {
 async function wbExportSvg(scope) {
   let { svg } = wbBuildExportSvg(scope);
   //: **The board rides inside the picture** (W5, draw.io's re-editable SVG):
-  //: its rows in `<metadata>`, which Insert, Mermaid, draw.io or board SVG brings back
+  //: its rows in `<metadata>`, which Insert, Diagram, Mermaid, draw.io or board SVG brings back
   //: as shapes and connectors. A map's topics are a tree, not rows to drop.
   if (!wbIsMap()) svg = svg.replace(/(<svg[^>]*>)/, `$1${wbBoardSvgMetadata(wbExportRows(scope))}`);
   await saveFile(wbExportFileName(scope, "svg"), new Blob([await wbInlineSvgImages(svg)], { type: "image/svg+xml" }));
@@ -14899,6 +14899,8 @@ function wbFoldMenuSubmenus(menu) {
     //: Named once for the close below (a flyout sets it on each open too).
     panel._escapedOpener = group.firstElementChild;
     panel._escapedOpener.title = section.dataset.wbSubmenuTitle;
+    //: A whiteboard-only group (Board, Workshop; INBOX 1627) hides on a map as its section did.
+    if (section.dataset.wbSurface) group.dataset.wbSurface = section.dataset.wbSurface;
     section.replaceWith(group);
   }
 }
