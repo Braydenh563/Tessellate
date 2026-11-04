@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Diagram builder: the picture has an overlay (INBOX 1621, R8a): a box over each drawn node that outlines on hover and stays outlined for the picked blocks, in step with the list through zoom, pan and redraw (within 0.6 px at four zooms); a pill-shaped node now takes its real size, and a node without a shape no longer borrows its neighbour's.
 - Atlas at rest moves where you can see it (INBOX 1659): the nebula stream flows and turns (about 1 px of travel to 4), the skirt and tail sway wider, and the resting tail takes a new shape every 5 to 9 s instead of 9 to 18; all still on the compositor.
 - Diagram page: a diagram in Documents has Canvas, Blocks and Source (Canvas gives the picture the room, and opens first), the same three in the dialog, and Done from an editor saves a diagram file and writes a link that draws it.
 - Diagram builder: the blind tester's list. Phone picture 38dvh with the zoom bar under it, a connector menu that opens under its row with drawn line kinds, a decision's second arrow asks for its words, "Start from an example" on the empty walkthrough (Create opens empty), N adds a Box and Shift+N repeats the shape, 44 px touch controls, arrow keys in the Create dialog, the empty Library names diagrams, and a document's line count agrees with its status bar (DOCUMENTS_PLAN 22 R6).

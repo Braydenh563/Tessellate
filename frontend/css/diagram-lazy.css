@@ -294,6 +294,32 @@
   margin: 0;
 }
 
+/* The overlay (diagram-overlay.js): one box over each drawn node, never a target for a press. Its position is the
+   figure's padding box, set from script; a box is placed by a transform so a zoom or a scroll moves no layout. */
+.dgm-overlay {
+  position: absolute;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.dgm-box {
+  position: absolute;
+  inset: 0 auto auto 0;
+  box-sizing: border-box;
+  border: 2px solid transparent;
+  border-radius: var(--radius-sm);
+  transition: border-color var(--ui-fast) var(--ease-out), background-color var(--ui-fast) var(--ease-out);
+}
+
+.dgm-box.hover {
+  border-color: var(--accent);
+}
+
+.dgm-box.on {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
 .dgm-tree {
   display: flex;
   flex-direction: column;

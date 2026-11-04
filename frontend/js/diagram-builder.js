@@ -683,6 +683,8 @@
     if (S && matchMedia(COMPACT).matches && (await ensureModule("diagramTouch"))) diagramModel.touch.wire(S);
     //: Zoom, pan and fit for the picture, in every window (diagram-view.js, 1614).
     if (S && (await ensureModule("diagramView"))) diagramModel.view.wire(S);
+    //: One box over each drawn node: hover and the picked blocks, in step with `S.sel` (diagram-overlay.js, R8a).
+    if (S && !S.k && (await ensureModule("diagramOverlay"))) diagramModel.overlay.wire(S);
     //: Several blocks at once (diagram-multi.js, 1615 a).
     if (S && !S.k && (await ensureModule("diagramMulti"))) diagramModel.multi.wire(S, helpers);
     //: The divider between the blocks and the picture (diagram-split.js, 1615 e).

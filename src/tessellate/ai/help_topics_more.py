@@ -3206,7 +3206,8 @@ MORE_TOPICS.extend([
             "Insert (or / then diagram) opens the builder and Done saves a diagram file and writes a link to it, "
             "[[Title]] after a !, which draws the diagram. Over a board or a mind map, Insert, Diagram, Diagram builder adds a diagram object "
             "to double-click later. Anywhere else, and in the Library's Create, New, Diagram, it "
-            "opens the builder empty, and Done saves it as a new diagram file. Cancel changes nothing."
+            "opens the builder empty, and Done saves it as a new diagram file. Cancel changes nothing. "
+            "On a flowchart, the picture outlines the block you point at and the ones picked."
         ),
         "badge": {"label": "Documents", "tab": "documents"},
     },
