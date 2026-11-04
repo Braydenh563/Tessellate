@@ -6912,7 +6912,8 @@ def test_a_diagram_is_edited_as_blocks():
     seed = seed[: seed.index("\n}\n")]
     assert "OBJ_MODES[name].seed?.(event)" in seed
     assert seed.index("OBJ_MODES[name].seed?.(event)") < seed.index("OBJ_MODES[name].grab?.(hit)")
-    assert 'dataset.dockName = "diagram"' in code, "the palette is a dock"
+    # 1661 D2: the toolbar is built in diagram-bar.js (lazy), still one dock named "diagram".
+    assert (ROOT / "frontend" / "js" / "diagram-bar.js").read_text(encoding="utf-8").count('dataset.dockName = "diagram"') == 1, "the palette is a dock"
     css = (ROOT / "frontend" / "css" / "diagram-lazy.css").read_text(encoding="utf-8")
     assert "var(--row-h)" in css and "var(--row-gap)" in css, "the cards sit on the list-row tokens"
 

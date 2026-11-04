@@ -112,10 +112,7 @@
     const stop = blockEl(S, S.sel) || S.tree.querySelector(".dgm-block");
     stops(S, stop);
     if (had && document.activeElement !== stop) stop?.focus();
-    for (const b of S.dirs.querySelectorAll("button")) {
-      b.classList.toggle("active", b.dataset.dir === S.m.dir);
-      b.setAttribute("aria-pressed", String(b.dataset.dir === S.m.dir));
-    }
+    diagramModel.bar.sync(S);
   }
 
   //: The one tab stop and the selected row: an attribute is written only where it differs, so a long list is not restyled.
@@ -453,13 +450,19 @@
       return act();
     }
     if (mod) return;
-    //: N adds a Box, Shift+N repeats the selected shape (R6.13); a letter reads the same with or without Shift otherwise.
+    //: N adds a Box, Shift+N the last shape used (1661 D2; R6.13 had the selected block's shape); a letter reads the same with or without Shift otherwise.
     const low = event.key.length === 1 ? event.key.toLowerCase() : event.key;
+    //: 1 to 7 add a shape, Shift+N the last one used (diagram-bar.js, 1661 D2).
+    const picked = diagramModel.bar.key(event);
+    if (picked && event.key !== "N") {
+      event.preventDefault();
+      return addBlock(S, { after: key, ...picked });
+    }
     const plain = {
       ArrowDown: () => go(all[at + 1]), ArrowUp: () => go(all[at - 1]), Home: () => go(all[0]), End: () => go(all.at(-1)),
       ArrowLeft: () => go(block.parentElement.closest(".dgm-block")), ArrowRight: () => go(block.querySelector(".dgm-block")),
       Enter: () => relabel(S, key), F2: () => relabel(S, key),
-      Insert: () => addBlock(S, { after: key, shape: "rect" }), n: () => addBlock(S, { after: key, shape: event.shiftKey && diagramOps.node(S.m, diagramOps.split(key)[1])?.shape || "rect" }),
+      Insert: () => addBlock(S, { after: key, shape: "rect" }), n: () => addBlock(S, { after: key, ...(diagramModel.bar.key(event) || { shape: "rect" }) }),
       g: () => addBlock(S, { after: key, group: true }),
       c: () => key[0] !== "k" && joinPick(S, key), j: () => key[0] !== "k" && joinPick(S, key),
       Delete: () => removeBlock(S, key), Backspace: () => removeBlock(S, key),
@@ -504,60 +507,16 @@
   //: exports. They run from diagram-embed.js, fetched on the first press.
   function more(S) {
     const rows = [["ph:file-svg Save as SVG", "svg"], ["ph:file-png Save as PNG", "png"], ["ph:image Copy as picture", "picture"], ["ph:copy Copy as Mermaid", "mermaid"], ["ph:code Copy as SVG", "svgtext"]];
-    //: Where the four direction buttons do not fit (a phone, a touch screen) they fold into this menu: a dock folds by width.
-    const fold = S.dirs && matchMedia(COMPACT).matches ? [{ label: "ph:compass Direction", items: DIRS.map(([dir, arrow, name]) => ({ label: `${arrow} ${name}`, run: () => S.dirs.querySelector(`[data-dir="${dir}"]`).click() })), group: "view" }] : [];
-    //: With the direction, Suggest folds in here too: Add, Undo, Redo and this menu are one row at 320 (INBOX 1596 d).
+    const fold = [];
+    //: Suggest folds in here on a phone: Add, Undo, Redo and this menu are one row at 320 (INBOX 1596 d).
     if (S.suggestBtn && matchMedia(COMPACT).matches) fold.push({ label: "ph:sparkle Suggest…", group: "edit", run: () => suggestMenu(S, S.root.querySelector(".dgm-more button") || S.suggestBtn) });
     const menu = kebabMenu([...(S.io.menu || []), ...fold, ...rows.map(([label, how]) => makeMenuItem(label, "", () => ensureModule("diagramEmbed").then((ok) => ok && diagramModel.embed.out(how, S.source, S.io.name))))], "More for this diagram");
     menu.classList.add("dgm-more");
     return menu;
   }
 
-  function buildPalette(S) {
-    const bar = el("div", "dock dgm-dock");
-    bar.dataset.dockName = "diagram";
-    bar.setAttribute("role", "toolbar");
-    bar.setAttribute("aria-label", "Diagram blocks");
-    //: The Add library (diagram-library.js): the shapes grouped by meaning, each with its hint.
-    const library = diagramModel.library;
-    const shapes = library.build(library.flow({ glyph: shapeGlyph, groupGlyph, label: SHAPE_LABEL, add: (options) => addBlock(S, options) }));
-    S.dirs = el("div", "seg dgm-dirs");
-    S.dirs.setAttribute("role", "group");
-    S.dirs.setAttribute("aria-label", "Direction of the diagram");
-    for (const [dir, arrow, name] of DIRS) {
-      const b = el("button");
-      b.type = "button";
-      b.dataset.dir = dir;
-      b.title = name;
-      b.setAttribute("aria-label", name);
-      const icon = el("i", `ph ${arrow.replace(":", "-")}`);
-      icon.setAttribute("aria-hidden", "true");
-      b.append(icon);
-      b.addEventListener("click", () => {
-        S.m.dir = dir;
-        commit(S, `${name}.`);
-      });
-      S.dirs.append(b);
-    }
-    const actions = el("div", "dock-actions");
-    S.suggestBtn = smallButton("ph:sparkle Suggest", "Start from a template, your notes or a description", () => suggestMenu(S, S.suggestBtn));
-    S.suggestBtn.classList.add("dgm-suggest");
-    S.suggestBtn.setAttribute("aria-haspopup", "menu");
-    actions.append(S.suggestBtn);
-    for (const [icon, label, run] of [["ph:arrow-counter-clockwise", "Undo", () => S.io.undo()], ["ph:arrow-clockwise", "Redo", () => S.io.redo()]]) {
-      //: Words with the icon; the narrow rule in diagram-lazy.css takes the word off where the row does not fit.
-      const b = smallButton(`${icon} ${label}`, label, run);
-      b.classList.add("dgm-hist");
-      actions.append(b);
-    }
-    actions.append(more(S));
-    bar.append(shapes, el("div", "dock-group"), actions, shapes.hint);
-    //: A caption over the four arrows (1615 f): the arrows alone do not say what they set.
-    const caption = el("span", "dgm-dirs-caption", "Direction");
-    caption.setAttribute("aria-hidden", "true");
-    bar.children[1].append(caption, S.dirs);
-    return bar;
-  }
+  //: The toolbar is diagram-bar.js (lazy, 1661 D2): one row, built from these.
+  const buildPalette = (S) => diagramModel.bar.build(S, { ...helpers, DIRS, label: SHAPE_LABEL, glyph: shapeGlyph, groupGlyph, smallButton, more, commit, suggestMenu });
 
   function mount(host, io, text) {
     host.replaceChildren();
@@ -669,7 +628,7 @@
     if (typeof OBJ_MODES === "object" && !OBJ_MODES.diagram) OBJ_MODES.diagram = diagramModel.pointer.make(helpers);
     kit.dropMark ||= diagramModel.pointer.dropMark;
     const kind = kindOf(text);
-    if (kind === "flowchart" && !(await ensureModule("diagramSteps"))) return host.replaceChildren(el("p", "muted", "The block editor did not load. Source still works."));
+    if (kind === "flowchart" && !((await ensureModule("diagramBar")) && (await ensureModule("diagramSteps")))) return host.replaceChildren(el("p", "muted", "The block editor did not load. Source still works."));
     let S;
     if (kind !== "flowchart") {
       if (!(await ensureModule("diagramKinds"))) return host.replaceChildren(el("p", "muted", "The block editor for this kind did not load. Source still works."));
