@@ -2,9 +2,9 @@
 
 Generated 2026-11-04 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7810, frontend ids 2646, CSS sections 522, backend routes 644, backend modules 8797, test files 2067, tests 17451, plan headings 1003, app scripts 28, boot scripts 37, script files 256.
+Counts: frontend functions 7813, frontend ids 2646, CSS sections 522, backend routes 644, backend modules 8797, test files 2068, tests 17457, plan headings 1003, app scripts 28, boot scripts 37, script files 257.
 
-## Frontend functions (7810)
+## Frontend functions (7813)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -3126,45 +3126,45 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `addBlock` | frontend/js/diagram-builder.js:338 |
-| `beginEdit` | frontend/js/diagram-builder.js:369 |
+| `addBlock` | frontend/js/diagram-builder.js:341 |
+| `beginEdit` | frontend/js/diagram-builder.js:372 |
 | `blockEl` | frontend/js/diagram-builder.js:42 |
-| `blockItems` | frontend/js/diagram-builder.js:297 |
+| `blockItems` | frontend/js/diagram-builder.js:300 |
 | `blockKeys` | frontend/js/diagram-builder.js:137 |
 | `buildBlock` | frontend/js/diagram-builder.js:201 |
-| `buildPalette` | frontend/js/diagram-builder.js:527 |
-| `buildRow` | frontend/js/diagram-builder.js:212 |
+| `buildPalette` | frontend/js/diagram-builder.js:530 |
+| `buildRow` | frontend/js/diagram-builder.js:214 |
 | `commit` | frontend/js/diagram-builder.js:47 |
 | `drawPicture` | frontend/js/diagram-builder.js:62 |
 | `el` | frontend/js/diagram-builder.js:26 |
-| `groupGlyph` | frontend/js/diagram-builder.js:273 |
-| `joinChip` | frontend/js/diagram-builder.js:280 |
-| `joinPick` | frontend/js/diagram-builder.js:499 |
-| `joins` | frontend/js/diagram-builder.js:495 |
-| `kindOf` | frontend/js/diagram-builder.js:624 |
-| `menuAt` | frontend/js/diagram-builder.js:479 |
-| `more` | frontend/js/diagram-builder.js:516 |
-| `mount` | frontend/js/diagram-builder.js:529 |
+| `groupGlyph` | frontend/js/diagram-builder.js:276 |
+| `joinChip` | frontend/js/diagram-builder.js:283 |
+| `joinPick` | frontend/js/diagram-builder.js:502 |
+| `joins` | frontend/js/diagram-builder.js:498 |
+| `kindOf` | frontend/js/diagram-builder.js:627 |
+| `menuAt` | frontend/js/diagram-builder.js:482 |
+| `more` | frontend/js/diagram-builder.js:519 |
+| `mount` | frontend/js/diagram-builder.js:532 |
 | `nameOf` | frontend/js/diagram-builder.js:40 |
-| `nestBlock` | frontend/js/diagram-builder.js:411 |
-| `onKey` | frontend/js/diagram-builder.js:433 |
+| `nestBlock` | frontend/js/diagram-builder.js:414 |
+| `onKey` | frontend/js/diagram-builder.js:436 |
 | `reconcile` | frontend/js/diagram-builder.js:129 |
-| `relabel` | frontend/js/diagram-builder.js:356 |
-| `removeBlock` | frontend/js/diagram-builder.js:419 |
+| `relabel` | frontend/js/diagram-builder.js:359 |
+| `removeBlock` | frontend/js/diagram-builder.js:422 |
 | `render` | frontend/js/diagram-builder.js:91 |
 | `say` | frontend/js/diagram-builder.js:33 |
-| `select` | frontend/js/diagram-builder.js:324 |
+| `select` | frontend/js/diagram-builder.js:327 |
 | `shapeButton` | frontend/js/diagram-builder.js:180 |
 | `shapeGlyph` | frontend/js/diagram-builder.js:139 |
 | `shapeItems` | frontend/js/diagram-builder.js:147 |
 | `shapeRow` | frontend/js/diagram-builder.js:160 |
-| `show` | frontend/js/diagram-builder.js:634 |
-| `stepBlock` | frontend/js/diagram-builder.js:405 |
+| `show` | frontend/js/diagram-builder.js:637 |
+| `stepBlock` | frontend/js/diagram-builder.js:408 |
 | `stops` | frontend/js/diagram-builder.js:119 |
-| `styleDo` | frontend/js/diagram-builder.js:501 |
-| `suggest` | frontend/js/diagram-builder.js:489 |
-| `suggestMenu` | frontend/js/diagram-builder.js:507 |
-| `sync` | frontend/js/diagram-builder.js:599 |
+| `styleDo` | frontend/js/diagram-builder.js:504 |
+| `suggest` | frontend/js/diagram-builder.js:492 |
+| `suggestMenu` | frontend/js/diagram-builder.js:510 |
+| `sync` | frontend/js/diagram-builder.js:602 |
 | `titleOf` | frontend/js/diagram-builder.js:39 |
 
 ### frontend/js/diagram-canvas.js (7)
@@ -3207,17 +3207,18 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `svgOf` | frontend/js/diagram-embed.js:19 |
 | `swapRange` | frontend/js/diagram-embed.js:87 |
 
-### frontend/js/diagram-joins.js (7)
+### frontend/js/diagram-joins.js (8)
 
 | Name | File:line |
 |---|---|
-| `ask` | frontend/js/diagram-joins.js:94 |
-| `items` | frontend/js/diagram-joins.js:22 |
-| `menu` | frontend/js/diagram-joins.js:50 |
-| `nameOf` | frontend/js/diagram-joins.js:20 |
-| `pick` | frontend/js/diagram-joins.js:102 |
-| `titleOf` | frontend/js/diagram-joins.js:19 |
-| `words` | frontend/js/diagram-joins.js:83 |
+| `ask` | frontend/js/diagram-joins.js:102 |
+| `items` | frontend/js/diagram-joins.js:30 |
+| `lastTarget` | frontend/js/diagram-joins.js:11 |
+| `menu` | frontend/js/diagram-joins.js:58 |
+| `nameOf` | frontend/js/diagram-joins.js:28 |
+| `pick` | frontend/js/diagram-joins.js:110 |
+| `titleOf` | frontend/js/diagram-joins.js:27 |
+| `words` | frontend/js/diagram-joins.js:91 |
 
 ### frontend/js/diagram-kinds.js (62)
 
@@ -3332,6 +3333,13 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `dgbUnits` | frontend/js/diagram-ops.js:68 |
 | `dgbUnjoin` | frontend/js/diagram-ops.js:184 |
 | `dgbWrap` | frontend/js/diagram-ops.js:311 |
+
+### frontend/js/diagram-outline.js (2)
+
+| Name | File:line |
+|---|---|
+| `flow` | frontend/js/diagram-outline.js:9 |
+| `order` | frontend/js/diagram-outline.js:33 |
 
 ### frontend/js/diagram-overlay.js (1)
 
@@ -12299,7 +12307,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/dash-night-lazy.css | 29 |
 | frontend/css/dash-orphans-lazy.css | 57 |
 | frontend/css/desk-companion-lazy.css | 226 |
-| frontend/css/diagram-lazy.css | 1383 |
+| frontend/css/diagram-lazy.css | 1424 |
 | frontend/css/file-drop-lazy.css | 51 |
 | frontend/css/first-run-lazy.css | 140 |
 | frontend/css/forced-colors-lazy.css | 28 |
@@ -15803,8 +15811,8 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `_act_topic` | src/tessellate/ai/help_topics_more.py:3370 |
-| `_slash_commands_topic` | src/tessellate/ai/help_topics_more.py:3498 |
+| `_act_topic` | src/tessellate/ai/help_topics_more.py:3385 |
+| `_slash_commands_topic` | src/tessellate/ai/help_topics_more.py:3513 |
 
 ### src/tessellate/ai/help_words.py (2)
 
@@ -24070,7 +24078,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (17451)
+## Tests (17457)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -24621,6 +24629,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_diagram_model.py | 12 |
 | tests/test_diagram_multi_r5.py | 17 |
 | tests/test_diagram_object_kind.py | 2 |
+| tests/test_diagram_outline_1679.py | 6 |
 | tests/test_diagram_page_1679.py | 6 |
 | tests/test_diagram_r10.py | 6 |
 | tests/test_diagram_r6.py | 13 |

@@ -55,7 +55,8 @@ def test_the_phone_add_sheet_lists_the_same_groups_with_a_hint_on_every_row():
 def test_a_connector_reads_as_start_to_next_with_its_label_and_is_not_a_chip():
     builder = _read("diagram-builder.js")
     chip = builder.split("function joinChip(S, edge, index) {", 1)[1].split("\n  }\n", 1)[0]
-    assert '`${from} to ${to}`' in chip and "edge.label" in chip and "dgm-join-label" in chip
+    # 1679 slice 6: the row hangs under its source, so it reads "to Next, words" (the full sentence stays in the aria-label).
+    assert 'el("span", "dgm-join-to", to)' in chip and "edge.label" in chip and "dgm-join-label" in chip
     assert "Connector from ${from} to ${to}" in chip and "Change this connector" in chip
     row = CSS.split(".dgm-join {", 1)[1].split("}", 1)[0]
     assert "border-radius: var(--radius-pill)" not in row and "border-inline-start: 2px solid" in row

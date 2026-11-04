@@ -2859,7 +2859,7 @@ HELP_GROUPS: list[tuple[str, tuple[str, ...]]] = [
         "contradictions", "skills", "personas", "answer-style", "memory", "learned", "open-questions",
     )),
     ("Documents and code", (
-        "documents", "documents-controls", "diagram-builder", "diagram-blocks", "diagram-kinds", "diagram-elsewhere", "documents-replace", "live-view-marks", "documents-features", "documents-paste", "documents-comments", "documents-turn-into", "callouts", "equation-editor", "document-history", "writing-checks", "code-files", "code-completions", "code-run",
+        "documents", "documents-controls", "diagram-builder", "diagram-blocks", "diagram-reading", "diagram-kinds", "diagram-elsewhere", "documents-replace", "live-view-marks", "documents-features", "documents-paste", "documents-comments", "documents-turn-into", "callouts", "equation-editor", "document-history", "writing-checks", "code-files", "code-completions", "code-run",
         "debugger", "code-panel", "margin-reader",
     )),
     ("Boards and maps", (
@@ -3252,6 +3252,20 @@ MORE_TOPICS.extend([
         "badge": {"label": "Documents", "tab": "documents"},
     },
     {
+        "id": "diagram-reading",
+        "keywords": (
+            "diagram list order", "flow order", "diagram indent", "connector rows", "org chart blocks",
+            "diagram too small", "turn it sideways", "diagram direction", "diagram fit",
+        ),
+        "body": (
+            "Reading a diagram. The blocks list is drawn in flow order: a block sits under the one that points at it, "
+            "indented a step, and a block made by Connect to... lands under its siblings, so an org chart reads like the chart. "
+            "The printed source keeps its own order, and Alt+Up and Alt+Down still move a block among its siblings there. "
+            "A block's arrows share one line under it, each as an arrow to the block it reaches and its words; press one for its menu."
+        ),
+        "badge": {"label": "Documents", "tab": "documents"},
+    },
+    {
         "id": "diagram-kinds",
         "keywords": (
             "mind map blocks", "timeline blocks", "sequence diagram blocks", "mermaid mind map",
@@ -3356,6 +3370,7 @@ TOPIC_META.update({
     "board-mermaid": {"title": "Live Mermaid diagrams on a board", "path": "A board's Insert menu, Diagram, Diagram builder..."},
     "diagram-builder": {"title": "The Diagram builder", "path": "Ctrl+K, Diagram builder; Insert in a note, a document or a board; Library, Create, New diagram"},
     "diagram-blocks": {"title": "Editing a diagram as blocks", "path": "A diagram document, Blocks"},
+    "diagram-reading": {"title": "Reading a diagram: list order, fit and direction", "path": "A diagram document, Blocks"},
     "diagram-kinds": {"title": "Mind maps, timelines and sequence diagrams as blocks", "path": "A diagram document, Blocks"},
     "diagram-elsewhere": {"title": "Editing a diagram in a document, on a board or from a reply, and saving its picture", "path": "A diagram in Live view, Edit as blocks"},
     "board-hand-drawn": {"title": "The hand-drawn look", "path": "A board's View menu, Hand-drawn look"},

@@ -423,8 +423,8 @@
    (solid, dashed or thick). It is not a pill, so it never looks like a block (1594). */
 .dgm-joins {
   display: flex;
-  flex-direction: column;
-  gap: var(--space-1);
+  flex-wrap: wrap;
+  gap: 0 var(--space-3);
   padding-inline-start: var(--space-8);
 }
 
@@ -476,11 +476,32 @@
 }
 
 .dgm-join-label::before {
-  content: "“";
+  content: "· ";
 }
 
-.dgm-join-label::after {
-  content: "”";
+/* A block a flow step under the one that points at it is indented a step (diagram-outline.js, 1679 slice 6). */
+.dgm-block[data-depth="1"] {
+  margin-inline-start: calc(1 * var(--space-4));
+}
+
+.dgm-block[data-depth="2"] {
+  margin-inline-start: calc(2 * var(--space-4));
+}
+
+.dgm-block[data-depth="3"] {
+  margin-inline-start: calc(3 * var(--space-4));
+}
+
+.dgm-block[data-depth="4"] {
+  margin-inline-start: calc(4 * var(--space-4));
+}
+
+.dgm-block[data-depth="5"] {
+  margin-inline-start: calc(5 * var(--space-4));
+}
+
+.dgm-block[data-depth="6"] {
+  margin-inline-start: calc(6 * var(--space-4));
 }
 
 /* Connect to… is on every row: the arrow always, its words on the chosen row, the pointed-at row and the focused one. */
@@ -1379,5 +1400,25 @@
     inline-size: 44px;
     block-size: 44px;
     margin: -22px 0 0 -22px;
+  }
+}
+
+/* A mouse can aim at a dense row: the list is one 28 px line a block and one line of arrows under it, so ten blocks and
+   their arrows fit the pane without a scroll (1679, slice 6). A touch screen keeps its 44 px rows. */
+@media (pointer: fine) {
+  .dgm-tree {
+    gap: var(--space-1);
+  }
+
+  .dgm-tree .dgm-card {
+    min-height: var(--control-h-dense);
+  }
+
+  .dgm-tree .dgm-block {
+    gap: 0;
+  }
+
+  .dgm-tree .dgm-join {
+    min-height: calc(var(--control-h-dense) - var(--space-1));
   }
 }

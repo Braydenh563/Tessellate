@@ -7,6 +7,14 @@
 //
 // One closure, one export: `diagramModel.joins`. `h` is the builder's helpers (`say`, `commit`, `ops`, `blockEl`).
 (() => {
+  //: The block after the source's run of targets, so a new target lands under its siblings (the order they were added), not above them (1679, slice 6).
+  function lastTarget(h, S, key, from) {
+    const keys = h.ops.sisters(S.m, key)?.keys || [];
+    let at = keys.indexOf(key) + 1;
+    while (at < keys.length && S.m.edges.some((e) => e.from === from && e.to === keys[at].slice(2))) at++;
+    return keys[at] ?? null;
+  }
+
   //: The six link kinds, as the connector row's menu words them.
   const LINKS = [
     ["solid", true, "Arrow"], ["solid", false, "Line"], ["dotted", true, "Dotted arrow"],
@@ -127,7 +135,7 @@
         const ahead = { ...S.m, edges: [...S.m.edges, probe] };
         const said = h.ops.needsLabel(ahead, probe) ? await words(h, ahead, probe, "Words for the new arrow") : "";
         //: A box, not the shape in hand: from a decision the next block was a decision too.
-        return h.add(S, { after: key, from, shape: "rect", text: typed || undefined, label: said, edit: !typed });
+        return h.add(S, { after: key, from, shape: "rect", text: typed || undefined, label: said, edit: !typed, before: lastTarget(h, S, key, from) });
       }
       const edge = h.ops.join(S.m, from, to);
       const name = titleOf(h, S, to);
