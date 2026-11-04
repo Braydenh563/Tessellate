@@ -476,7 +476,7 @@ def test_it_is_made_frameless_on_top_and_unfocused(made, prefs):
 
 def test_each_show_reasserts_the_stacking_where_it_can(made, prefs, monkeypatch):
     raised = []
-    monkeypatch.setattr(dc, "raise_on_desktop", lambda window: raised.append(window))
+    monkeypatch.setattr(dc, "raise_on_desktop", lambda window, rect=None: raised.append(window))
     prefs[dc.PREF] = True
     made.main_window.hide()
     made.main_window.show()
@@ -630,3 +630,22 @@ def test_at_150_percent_the_window_lands_on_the_screen_once_pywebview_scales_it(
     # What pywebview's WinForms backend does with them (Location = x * scale).
     right, bottom = (x + w) * scale, (y + h) * scale
     assert 0 <= x * scale and right <= physical[2] and bottom <= physical[3]
+
+
+def test_the_place_after_a_show_is_set_in_physical_pixels():
+    """The owner, 2026-11-04, 200%: a card twice its size running off the right
+    edge, its left edge right. WinForms scales the form's size again on its first
+    show; the companion's own SetWindowPos after every show sets size and place."""
+    assert dc.physical_rect((1156, 588, 112, 152), 192) == (2312, 1176, 224, 304)
+    assert dc.physical_rect((10, 20, 112, 152), 96) == (10, 20, 112, 152)
+    assert dc.physical_rect((10, 20, 112, 152), None) == (10, 20, 112, 152)
+    assert not dc.SWP_PLACE & 0x0003  # neither NOSIZE nor NOMOVE
+    assert dc.SWP_PLACE & 0x4000 and dc.SWP_PLACE & 0x0010  # async, no activate
+
+
+def test_every_show_hands_its_rect_to_the_raise(made, prefs, monkeypatch):
+    seen = []
+    monkeypatch.setattr(dc, "raise_on_desktop", lambda window, rect=None: seen.append(rect) or True)
+    prefs[dc.PREF] = True
+    made.main_window.hide()
+    assert seen and seen[-1] == (*made.top_left(), *made.size)

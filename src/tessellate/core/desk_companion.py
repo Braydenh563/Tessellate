@@ -260,7 +260,29 @@ def window_handle(window: Any) -> int | None:
         return None
 
 
-def raise_on_desktop(window: Any) -> bool:
+#: SetWindowPos for an exact place: no activate, show, async (never waits on the
+#: window's own thread); size and position both applied.
+SWP_PLACE = 0x0010 | 0x0040 | 0x4000
+
+
+def physical_rect(rect: tuple[int, int, int, int], dpi: Any) -> tuple[int, int, int, int]:
+    """A logical (x, y, width, height) in the physical pixels SetWindowPos takes.
+
+    **Why it is set by hand** (the owner, 2026-11-04, 200% scaling: the companion
+    showed as a card twice its size running off the screen's right edge, its
+    left edge in the right place): pywebview sets the form's size in physical
+    pixels and WinForms' `AutoScaleMode.Dpi` scales it again when the form first
+    shows. The place after every show is the one this returns."""
+    try:
+        scale = float(dpi) / 96.0
+    except (TypeError, ValueError):
+        scale = 1.0
+    if not 0.5 <= scale <= 5.0:
+        scale = 1.0
+    return tuple(int(round(v * scale)) for v in rect)  # type: ignore[return-value]
+
+
+def raise_on_desktop(window: Any, rect: tuple[int, int, int, int] | None = None) -> bool:
     """Windows only: make the shown window a tool window (no taskbar button),
     topmost and not minimised, and put it back above the other topmost windows.
 
@@ -298,7 +320,15 @@ def raise_on_desktop(window: Any) -> bool:
         if user32.IsIconic(handle):
             user32.ShowWindowAsync(handle, SW_RESTORE)
         user32.ShowWindowAsync(handle, SW_SHOWNOACTIVATE)
-        user32.SetWindowPos(handle, HWND_TOPMOST, 0, 0, 0, 0, SWP_FLAGS)
+        if rect is None:
+            user32.SetWindowPos(handle, HWND_TOPMOST, 0, 0, 0, 0, SWP_FLAGS)
+        else:
+            try:
+                dpi = int(user32.GetDpiForWindow(handle)) or 96
+            except Exception:  # noqa: BLE001 - before Windows 10 1607
+                dpi = _system_dpi()
+            x, y, width, height = physical_rect(rect, dpi)
+            user32.SetWindowPos(handle, HWND_TOPMOST, x, y, width, height, SWP_PLACE)
         return True
     except Exception:  # noqa: BLE001
         logger.debug("could not raise the companion window", exc_info=True)
@@ -511,7 +541,8 @@ class DeskCompanion:
                     if fixed != self.corner:
                         self.corner = fixed
                         self.window.move(*self.top_left())
-                    logger.info("desk companion: raised above the desktop: %s", raise_on_desktop(self.window))
+                    rect = (*self.top_left(), *self.size)
+                    logger.info("desk companion: raised above the desktop at %s: %s", rect, raise_on_desktop(self.window, rect))
             except Exception:  # noqa: BLE001 - a companion that fails never takes the app with it
                 logger.warning("the desktop companion window failed", exc_info=True)
         finally:
