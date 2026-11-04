@@ -4089,9 +4089,14 @@ html.modal-open body {
   gap: var(--space-1);
 }
 .focus-step-value {
-  min-width: 3.5em;
+  width: 4.5em;
+  min-width: 0;
+  margin: 0;
   text-align: center;
   font-variant-numeric: tabular-nums;
+  font-size: var(--text-sm);
+}
+.focus-step-unit {
   font-size: var(--text-sm);
 }
 .focus-today {
