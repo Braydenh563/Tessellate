@@ -12,7 +12,13 @@ from __future__ import annotations
 
 import pytest
 
-from tessellate.ai import commands, composer_help, help_chat, intent, reading  # noqa: F401  (the act reader)
+import importlib
+
+from tessellate.ai import composer_help, help_chat, intent
+
+#: The act reader registers itself on import (`commands`, `reading`).
+for _reader in ("commands", "reading"):
+    importlib.import_module(f"tessellate.ai.{_reader}")
 
 BIN = "A deleted note, board, document"
 EMPTY = "Empty the bin, in the bin's strip"
