@@ -425,17 +425,23 @@ def test_an_x_connection_that_cannot_be_opened_fails_the_start_so_the_in_app_com
 # --- a real X server -------------------------------------------------------------------------------------
 
 
-def _xvfb() -> Any:
+def _xvfb(attempt: int = 0) -> Any:
+    # An explicit display number per process, not `-displayfd` alone: with no number, Xvfb scans from :0 and
+    # binds each candidate's socket before it checks the lock, unlinking the socket of a sibling server that
+    # already owns that number (CI, Python 3.13 on 3fe47f5: three tries in a row on :0, "cannot open the X
+    # display"). Given a number, Xvfb checks the lock first and exits if it is taken, so a clash costs a retry.
     if not (shutil.which("Xvfb") and xlib.libraries_present()):
         pytest.skip("Xvfb or libX11 is not installed")
+    number = 1000 + (os.getpid() * 37 + attempt * 7919) % 30000
     rd, wr = os.pipe()
-    proc = subprocess.Popen(["Xvfb", "-displayfd", str(wr), "-screen", "0", "1024x768x24", "-nolisten", "tcp"], pass_fds=(wr,), stderr=subprocess.DEVNULL)
+    proc = subprocess.Popen(["Xvfb", f":{number}", "-displayfd", str(wr), "-screen", "0", "1024x768x24", "-nolisten", "tcp"], pass_fds=(wr,), stderr=subprocess.DEVNULL)
     os.close(wr)
     num = os.read(rd, 16).decode().strip()
     os.close(rd)
     if not num:
         proc.kill()
-        pytest.skip("Xvfb did not start")
+        proc.wait()
+        return None, f":{number}"
     return proc, f":{num}"
 
 
@@ -461,14 +467,21 @@ def _server() -> Any:
 def _server_at() -> Any:
     """(process, connection, display name), with `_server`'s retry."""
     last: Exception | None = None
-    for _ in range(3):
-        proc, display = _xvfb()
+    started = False
+    for attempt in range(3):
+        proc, display = _xvfb(attempt)
+        if proc is None:
+            last = OSError(f"Xvfb did not start on {display}")
+            continue
+        started = True
         try:
             return proc, _connect(display), display
         except OSError as exc:
             last = exc
             proc.kill()
             proc.wait()
+    if not started:
+        pytest.skip(f"Xvfb did not start: {last}")
     raise AssertionError(f"no X server could be reached: {last}")
 
 
