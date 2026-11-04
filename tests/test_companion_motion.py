@@ -1916,3 +1916,35 @@ def test_the_feminine_atlas_casts_her_stars_instead_of_wearing_them_1576() -> No
     rule = re.search(r"\.nm-atlas \.atl-cast-star \{([^}]*)\}", css)
     assert rule and "opacity: 0" in rule.group(1) and "transform-box: fill-box" in rule.group(1) and "fill: white" in rule.group(1)
     assert re.search(r'html\[data-motion="reduced"\][^{]*\.atl-cast-star[^{]*\{ display: none', css)
+
+
+def test_the_size_handle_is_reachable_in_every_pose_1624() -> None:
+    # The owner: "it is hard to resize the companion when it is hanging from
+    # the top bar". Hanging, the handle stood 8px up under the bar, half off
+    # screen at the right edge, and a pull moved the size 6 times as fast as
+    # standing (the hang point is 29px from the handle, the soles 107px).
+    grip = CSS08[CSS08.index("#nm-buddy .nmb-size-grip {") :]
+    grip = grip[: grip.index("}")]
+    assert "right: 2px;" in grip and "right: -" not in grip
+    assert '#nm-buddy[data-pose="hang"] .nmb-size-grip { top: 8px; }' in CSS08
+    # A pull sizes at one rate: the reference length is never under 100px.
+    assert "Math.max(from, 100)" in frontend_text("avatars.js")
+
+
+def test_a_board_object_or_map_node_is_a_perch_1629() -> None:
+    # The owner: "atlas cant properly sit on mindmap nodes as it can on the
+    # whiteboard diagram". One edge per `.wb-object` at its drawn top (the
+    # crown of an oval or a pill, from its radius), held by the glue as a
+    # share of the object's width so a zoom keeps it on the object, and let
+    # go by the support check when the object folds or goes. Measured
+    # (/tmp scratch node2.js): feet within 0.8px of the node's top through a
+    # pan and zooms of 0.45 to 1.6, centred on it.
+    js = frontend_text("avatars.js")
+    edges = js[js.index("nmb.boardEdges = (") :]
+    edges = edges[: edges.index("\n};\n")]
+    assert '.wb-object' in edges and 'kind: "node"' in edges and "borderTopLeftRadius" in edges
+    assert "nmb.boardEdges(floor, ceiling)" in js
+    assert 'el.matches(".wb-object")) ? nameMarkBuddyPerchShown(el)' in js
+    assert "g.dx = g.fx * box.width - NMB_W / 2" in js
+    # The chooser never walks to one by itself: no tab's order lists it.
+    assert '"node"' not in js[js.index("const NAME_MARK_BUDDY_ORDER") : js.index("const NAME_MARK_BUDDY_ORDER") + 900]

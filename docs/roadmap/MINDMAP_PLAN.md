@@ -1901,4 +1901,3 @@ Left: search inside topics' notes (10-19 item 13), rainbow every level (item 10)
 
 ## Placed from INBOX, 2026-11-04
 
-1629. **Owner, 2026-11-04:** "atlas cant properly sit on mindmap nodes as it can on the whiteboard diagram". Recommendation taken: the companion's perch finder treats a mind map node like a board shape (its drawn top edge, an ellipse's or pill's crown, not its box), follows it on pan, zoom and relayout, and lets go when the node folds or is deleted; measure the companion's seat against the node's top edge on each node shape.

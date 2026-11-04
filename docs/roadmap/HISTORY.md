@@ -52223,3 +52223,7 @@ From DOCUMENTS_PLAN.md and WHITEBOARD_PLAN.md "Placed from INBOX, 2026-11-03", b
 
 1635. **Owner, 2026-11-04:** "it says the companion is not responding on the task bar and I can no longer right click the desktop tray icon, I think it is frozen (I closed the app without shutting it down so it is still running)". Cause: `raise_on_desktop` set WinForms `ShowInTaskbar` on a worker thread, which re-made the form's handle on a thread with no message loop; the next show waited on it holding the lock the tray toggle takes. Fix: no `ShowInTaskbar` (the extended style removes the button), async Win32 calls only, a timed lock, the tray toggle and Hide run on a worker.
 
+1624. **Owner, 2026-11-03 (companion resize):** "also it is hard to resize the companion when it is hanging from the top bar". Recommendation: a companion hanging from the top bar keeps a resize grip it can reach (its lower corner, or the hang point's edge), with the same hit size as when it stands; measure the grip's box and the pointer target while hanging.
+
+1629. **Owner, 2026-11-04:** "atlas cant properly sit on mindmap nodes as it can on the whiteboard diagram". Recommendation taken: the companion's perch finder treats a mind map node like a board shape (its drawn top edge, an ellipse's or pill's crown, not its box), follows it on pan, zoom and relayout, and lets go when the node folds or is deleted; measure the companion's seat against the node's top edge on each node shape.
+
