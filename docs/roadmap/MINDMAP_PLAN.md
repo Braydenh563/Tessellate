@@ -1902,3 +1902,5 @@ Left: search inside topics' notes (10-19 item 13), rainbow every level (item 10)
 ## Placed from INBOX, 2026-11-04
 
 1626. **Owner, 2026-11-04 (screenshot, the radial menu's More open as a menu):** "also if I click a button like on the mindmap radial and a popup menu shows, if I click that button again, I expect the popup menu to close". Recommendation: fix the class: every button that opens a menu or popover toggles it (a second press closes it and keeps focus on the button), the radial's More first; a lint finds openers that only open.
+
+1629. **Owner, 2026-11-04:** "atlas cant properly sit on mindmap nodes as it can on the whiteboard diagram". Recommendation taken: the companion's perch finder treats a mind map node like a board shape (its drawn top edge, an ellipse's or pill's crown, not its box), follows it on pan, zoom and relayout, and lets go when the node folds or is deleted; measure the companion's seat against the node's top edge on each node shape.
