@@ -131,6 +131,146 @@ Away run 2026-10-27, branch claude/loving-edison-4d0din, PR 204, head bc27f5d; s
 
 `composer_lists.clean` reads "whens" as "when's" and drops a trailing repair ("no the new one", "I mean the moved one"), asking "now". `composer_money._bare_total` reads "how much desk all up" word by word, "money back" as refunds. `composer_slots._counted` answers "how many grocery items are checked off" and "how many are still open" with the count and the items. `composer.superseded` (moved from the digest) halves a note a newer correction outdates in the plain composer's ranking too, when the question asks for the value now (otherwise both are said, older "but" newer). Tests: `tests/test_composer_informal_1030.py`.
 
+## Moved from the plans, 2026-11-04 (DOCUMENTS_PLAN sections 4 and 5, phases 0 to 2)
+
+Moved to keep DOCUMENTS_PLAN under its line cap when section 22 (the diagram builder design note) came in. All built by 2026-09-09.
+
+### 4. The decision to make first: the editing surface
+
+Three options. The plan below is written for **B**; A is its first step
+either way; C is recorded so the next session does not re-derive it.
+
+**A: Keep the textarea, add a backdrop (one session).** The
+"highlight-within-textarea" technique: a `div` behind a transparent-ink
+textarea, same font, same padding, same wrapping, holding the text with
+`<mark>`s where the findings are. Underlines appear in Source; a click
+lands in the textarea, sets the caret, and the existing findings menu opens
+for the finding at that offset (`docFindingAtOffset` already does this).
+Cheap, offline, and it answers the sentence in the instruction directly.
+What it does not give: inline widgets, block handles, a single model for
+Live and Source, decent tables. **Do this first regardless**, it is the
+bridge, and it is measurable in a day.
+
+**B: CodeMirror 6, vendored (recommended).** MIT-licensed, no build step
+needed (a single prebuilt bundle under `frontend/vendor/`, ~350 KB, the
+licence file beside it, the same way `d3.v7.min.js` and `p5` are vendored
+today). It gives, natively and offline: decorations (underlines that are
+clickable, widgets, block backgrounds), a real undo history, search and
+replace, folding, syntax highlighting for every file type this editor
+already opens, line numbers, IME and mobile input that a hand-rolled
+contenteditable never gets right, and a plugin API. **Live preview becomes
+decorations over the markdown source**, headings rendered as headings,
+`**bold**` shown bold with the markers hidden until the caret enters them,
+links as chips, images and embeds as widgets, which is exactly Obsidian's
+architecture and the one with the most published prior art. Markdown stays
+the single source of truth; every existing endpoint, revision, export and
+AI action keeps working unchanged. Source view is the same editor with the
+decoration set switched off. Split and Read stay as they are.
+Cost: the D2/D3 work in flight is partly superseded (CM6 has its own undo
+and selection API: D2's toolbar is kept as the *UI*, re-pointed at CM6's
+`dispatch`), and `EDITOR_SURFACES`' textarea assumptions in `editor.js`
+have to be re-pointed at one adapter (`docSurface()`: get/set text,
+selection, replace range): which is also what finally lets the note
+composer and the documents editor share one implementation.
+
+**C: A block editor over `contenteditable` (Notion's model).** Rejected
+for this app. It needs a second document model (blocks) beside the
+markdown one, a serialiser both ways, and it makes every existing feature
+that reads offsets (selection → chat, revisions, the AI edit, exports)
+a translation problem. The Notion-style features people actually want
+(a `/` menu, drag handles, callouts, toggles, columns) are all achievable
+as decorations and widgets in B.
+
+**Made in this document: B, with A as Phase 0.** The ROADMAP entry should
+not be started until a session has read CM6's licence into
+`frontend/vendor/` and confirmed the bundle loads under this app's CSP
+(no `eval`, no inline styles: CM6 injects a stylesheet through the CSSOM,
+which the CSP allows; verify before building on it).
+
+
+### Phase 0: the bridge: click an underline, see suggestions (1 session)
+
+1. **Backdrop underlines in Source** (§4 A). Findings from `docProseFound`
+   drawn as `<mark class="doc-finding doc-finding-{kind}">` behind the
+   textarea; the mark's kind decides the underline (spelling: wavy red;
+   style: wavy blue; repeated word: dotted), the same three the Live view
+   already uses so the two views agree.
+2. **One click opens the suggestions.** `click` (not only double- or
+   right-click) on a finding opens the existing menu at the caret, with the
+   suggestions **ranked**: the dictionary's nearest words by edit distance,
+   then the notebook's own vocabulary (`docCompleteWords`), then "Add to
+   dictionary" and "Ignore in this document". Keyboard: `Alt+Enter` on a
+   finding opens the same menu (the VS Code gesture).
+3. **A findings count that is a control.** The status bar's "No
+   suggestions" becomes a chip, `3 suggestions`, that opens the panel;
+   `F8` / `Shift+F8` step through findings (VS Code again). The switches
+   (Autocorrect, Suggestions) leave the status bar for Settings → Documents
+   and the ⋯ menu; a status bar states, it does not configure.
+4. **Suggestions explain themselves.** Every finding carries a one-line
+   *why* ("'their' here is probably 'there'": only when a rule is certain;
+   "this sentence is 61 words") and the panel groups by kind with counts.
+   Acceptance: in Chromium, type a misspelt word in Source → an underline
+   appears within 300 ms → one click opens a menu whose first item replaces
+   the word → `F8` moves to the next finding; the same in Live.
+
+### Phase 1: chrome: three questions, three places (1 session)
+
+1. **Header = identity.** Left: a breadcrumb (`Documents › Design system
+   notes`) that is also the title field; right: save state as one word
+   with a timestamp on hover, the view control, one ⋯. The file-type select
+   moves into the ⋯ (it changes once per document); AI edit and extract
+   become items in the selection toolbar and the ⋯. Target: **≤ 5 controls
+   in the header**, one height (`--control-h-lg`), one baseline.
+2. **View = one segmented control, two options in the row, two behind
+   it.** Edit / Read as the segment; Split and Source as choices inside
+   Edit's menu (a small chevron), remembered per document. Rationale:
+   Live is what people mean by "edit"; Source and Split are modes, not
+   destinations. (Obsidian: Edit / Read, with Source as a setting.)
+3. **Formatting = for a selection, or by `/`.** The 26-control strip is
+   retired as a permanent row. D2's floating toolbar is the formatting UI
+   (bold, italic, strikethrough, code, link, highlight ▾, heading ▾, quote,
+   list ▾, AI ▾); block insertion is the `/` menu with a visible "＋" at the
+   start of an empty line (Notion's affordance). The strip survives as an
+   opt-in "Always show formatting" setting for people who want it, which is
+   what `#doc-toolbar-mode` already remembers.
+4. **Status bar = facts and one action.** `22 words · 5 min` on the left,
+   `3 suggestions` (a chip) and the goal ring in the middle, `Ln 7, Col 45`
+   on the right. Nothing else.
+5. **Sidebar = one list, one outline, one panel width.** Documents / Outline
+   / Backlinks as three tabs with counts, a collapse that remembers, and at
+   ≤ 1100px it becomes a sheet from the left (§5 Phase 6). "Recent" is the
+   default sort of the Documents list, not a section of its own.
+   Acceptance: `surfaces.js`'s document family reports header ≤ 44px,
+   one control height, chrome above the first line ≤ 96px at 1280
+   (PLAN D1's own gate), and at 820px the sidebar's labels are unclipped
+   (scrollWidth = clientWidth on every sidebar label).
+
+### Phase 2: the engine: CodeMirror 6 as the surface (2 sessions)
+
+1. Vendor CM6 (`@codemirror/state`, `view`, `commands`, `search`,
+   `language`, `lang-markdown`, the languages the file editor already
+   detects) as one bundle under `frontend/vendor/codemirror/` with its
+   `LICENSE`; a `tests/test_vendor_licences.py` that asserts the licence
+   file exists beside every vendored bundle.
+2. `docSurface()`, the one adapter every existing feature talks to: text
+   get/set, selection get/set, `replaceRange`, `onChange`, `coordsAt`. Every
+   `$("doc-content")` read in documents.js and editor.js goes through it.
+3. **Live preview as decorations**: headings, emphasis, code, links as
+   chips, task checkboxes that toggle, block quotes and callouts with a
+   left bar, images and embeds as widgets, hidden markers that reveal when
+   the caret enters the range. Source = the same editor with the decoration
+   set off.
+4. Findings as CM6 decorations (Phase 0's backdrop retired), undo as CM6
+   history (D3 retired), find/replace via CM6's search panel restyled onto
+   the app's field recipe, folding on headings, the gutters via CM6's line
+   numbers. The existing `/` menu, `[[` autocomplete and selection → chat
+   re-pointed at the adapter.
+   Acceptance: `editor.js` sweep: type in Live, switch to Source, Ctrl+Z
+   undoes the Live edit (D3's own gate); a 20k-word document keeps keydown
+   → paint < 30 ms (PLAN P4's gate, measurable now); every existing
+   documents test passes; `node --check` and the DOM lints green.
+
+
 ## Moved from the plans, 2026-11-03 (a31k-1103: 1565 quiet motion)
 
 From UI_MODERNISATION_PLAN.md "Placed from INBOX, 2026-11-03", the 1565 row, built (9ba5bda, 6d7b9b6). The owner's words, verbatim, were: "also I LOVE the subtle animation upon hover when that info panel card shows when hovering over graph nodes ... I want the same professional animations that are cheap but make the application feel really refined to be used application wide, not necessarily the same animation, but the the concept of using animations like that to take the edge and unclean feel from its ui and ux".

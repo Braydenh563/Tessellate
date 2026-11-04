@@ -107,55 +107,7 @@ Everything else is a menu, a palette or a setting.
 
 ## 4. The decision to make first: the editing surface
 
-Three options. The plan below is written for **B**; A is its first step
-either way; C is recorded so the next session does not re-derive it.
-
-**A: Keep the textarea, add a backdrop (one session).** The
-"highlight-within-textarea" technique: a `div` behind a transparent-ink
-textarea, same font, same padding, same wrapping, holding the text with
-`<mark>`s where the findings are. Underlines appear in Source; a click
-lands in the textarea, sets the caret, and the existing findings menu opens
-for the finding at that offset (`docFindingAtOffset` already does this).
-Cheap, offline, and it answers the sentence in the instruction directly.
-What it does not give: inline widgets, block handles, a single model for
-Live and Source, decent tables. **Do this first regardless**, it is the
-bridge, and it is measurable in a day.
-
-**B: CodeMirror 6, vendored (recommended).** MIT-licensed, no build step
-needed (a single prebuilt bundle under `frontend/vendor/`, ~350 KB, the
-licence file beside it, the same way `d3.v7.min.js` and `p5` are vendored
-today). It gives, natively and offline: decorations (underlines that are
-clickable, widgets, block backgrounds), a real undo history, search and
-replace, folding, syntax highlighting for every file type this editor
-already opens, line numbers, IME and mobile input that a hand-rolled
-contenteditable never gets right, and a plugin API. **Live preview becomes
-decorations over the markdown source**, headings rendered as headings,
-`**bold**` shown bold with the markers hidden until the caret enters them,
-links as chips, images and embeds as widgets, which is exactly Obsidian's
-architecture and the one with the most published prior art. Markdown stays
-the single source of truth; every existing endpoint, revision, export and
-AI action keeps working unchanged. Source view is the same editor with the
-decoration set switched off. Split and Read stay as they are.
-Cost: the D2/D3 work in flight is partly superseded (CM6 has its own undo
-and selection API: D2's toolbar is kept as the *UI*, re-pointed at CM6's
-`dispatch`), and `EDITOR_SURFACES`' textarea assumptions in `editor.js`
-have to be re-pointed at one adapter (`docSurface()`: get/set text,
-selection, replace range): which is also what finally lets the note
-composer and the documents editor share one implementation.
-
-**C: A block editor over `contenteditable` (Notion's model).** Rejected
-for this app. It needs a second document model (blocks) beside the
-markdown one, a serialiser both ways, and it makes every existing feature
-that reads offsets (selection → chat, revisions, the AI edit, exports)
-a translation problem. The Notion-style features people actually want
-(a `/` menu, drag handles, callouts, toggles, columns) are all achievable
-as decorations and widgets in B.
-
-**Made in this document: B, with A as Phase 0.** The ROADMAP entry should
-not be started until a session has read CM6's licence into
-`frontend/vendor/` and confirmed the bundle loads under this app's CSP
-(no `eval`, no inline styles: CM6 injects a stylesheet through the CSSOM,
-which the CSP allows; verify before building on it).
+Decided and built (CodeMirror 6 under the editor). The text moved to HISTORY.md "Moved from the plans, 2026-11-04 (DOCUMENTS_PLAN sections 4 and 5, phases 0 to 2)".
 
 ## 5. The phases
 
@@ -164,87 +116,9 @@ says what was not verified. Measurements use the Chromium sandbox; the
 editor sweep is `scratchpad/ui-sweeps/editor.js` (from the D2/D3 branch),
 extended per phase.
 
-### Phase 0: the bridge: click an underline, see suggestions (1 session)
+### Phases 0 to 2: built 2026-09-09
 
-1. **Backdrop underlines in Source** (§4 A). Findings from `docProseFound`
-   drawn as `<mark class="doc-finding doc-finding-{kind}">` behind the
-   textarea; the mark's kind decides the underline (spelling: wavy red;
-   style: wavy blue; repeated word: dotted), the same three the Live view
-   already uses so the two views agree.
-2. **One click opens the suggestions.** `click` (not only double- or
-   right-click) on a finding opens the existing menu at the caret, with the
-   suggestions **ranked**: the dictionary's nearest words by edit distance,
-   then the notebook's own vocabulary (`docCompleteWords`), then "Add to
-   dictionary" and "Ignore in this document". Keyboard: `Alt+Enter` on a
-   finding opens the same menu (the VS Code gesture).
-3. **A findings count that is a control.** The status bar's "No
-   suggestions" becomes a chip, `3 suggestions`, that opens the panel;
-   `F8` / `Shift+F8` step through findings (VS Code again). The switches
-   (Autocorrect, Suggestions) leave the status bar for Settings → Documents
-   and the ⋯ menu; a status bar states, it does not configure.
-4. **Suggestions explain themselves.** Every finding carries a one-line
-   *why* ("'their' here is probably 'there'": only when a rule is certain;
-   "this sentence is 61 words") and the panel groups by kind with counts.
-   Acceptance: in Chromium, type a misspelt word in Source → an underline
-   appears within 300 ms → one click opens a menu whose first item replaces
-   the word → `F8` moves to the next finding; the same in Live.
-
-### Phase 1: chrome: three questions, three places (1 session)
-
-1. **Header = identity.** Left: a breadcrumb (`Documents › Design system
-   notes`) that is also the title field; right: save state as one word
-   with a timestamp on hover, the view control, one ⋯. The file-type select
-   moves into the ⋯ (it changes once per document); AI edit and extract
-   become items in the selection toolbar and the ⋯. Target: **≤ 5 controls
-   in the header**, one height (`--control-h-lg`), one baseline.
-2. **View = one segmented control, two options in the row, two behind
-   it.** Edit / Read as the segment; Split and Source as choices inside
-   Edit's menu (a small chevron), remembered per document. Rationale:
-   Live is what people mean by "edit"; Source and Split are modes, not
-   destinations. (Obsidian: Edit / Read, with Source as a setting.)
-3. **Formatting = for a selection, or by `/`.** The 26-control strip is
-   retired as a permanent row. D2's floating toolbar is the formatting UI
-   (bold, italic, strikethrough, code, link, highlight ▾, heading ▾, quote,
-   list ▾, AI ▾); block insertion is the `/` menu with a visible "＋" at the
-   start of an empty line (Notion's affordance). The strip survives as an
-   opt-in "Always show formatting" setting for people who want it, which is
-   what `#doc-toolbar-mode` already remembers.
-4. **Status bar = facts and one action.** `22 words · 5 min` on the left,
-   `3 suggestions` (a chip) and the goal ring in the middle, `Ln 7, Col 45`
-   on the right. Nothing else.
-5. **Sidebar = one list, one outline, one panel width.** Documents / Outline
-   / Backlinks as three tabs with counts, a collapse that remembers, and at
-   ≤ 1100px it becomes a sheet from the left (§5 Phase 6). "Recent" is the
-   default sort of the Documents list, not a section of its own.
-   Acceptance: `surfaces.js`'s document family reports header ≤ 44px,
-   one control height, chrome above the first line ≤ 96px at 1280
-   (PLAN D1's own gate), and at 820px the sidebar's labels are unclipped
-   (scrollWidth = clientWidth on every sidebar label).
-
-### Phase 2: the engine: CodeMirror 6 as the surface (2 sessions)
-
-1. Vendor CM6 (`@codemirror/state`, `view`, `commands`, `search`,
-   `language`, `lang-markdown`, the languages the file editor already
-   detects) as one bundle under `frontend/vendor/codemirror/` with its
-   `LICENSE`; a `tests/test_vendor_licences.py` that asserts the licence
-   file exists beside every vendored bundle.
-2. `docSurface()`, the one adapter every existing feature talks to: text
-   get/set, selection get/set, `replaceRange`, `onChange`, `coordsAt`. Every
-   `$("doc-content")` read in documents.js and editor.js goes through it.
-3. **Live preview as decorations**: headings, emphasis, code, links as
-   chips, task checkboxes that toggle, block quotes and callouts with a
-   left bar, images and embeds as widgets, hidden markers that reveal when
-   the caret enters the range. Source = the same editor with the decoration
-   set off.
-4. Findings as CM6 decorations (Phase 0's backdrop retired), undo as CM6
-   history (D3 retired), find/replace via CM6's search panel restyled onto
-   the app's field recipe, folding on headings, the gutters via CM6's line
-   numbers. The existing `/` menu, `[[` autocomplete and selection → chat
-   re-pointed at the adapter.
-   Acceptance: `editor.js` sweep: type in Live, switch to Source, Ctrl+Z
-   undoes the Live edit (D3's own gate); a 20k-word document keeps keydown
-   → paint < 30 ms (PLAN P4's gate, measurable now); every existing
-   documents test passes; `node --check` and the DOM lints green.
+The bridge, the chrome and the engine. The text, with every acceptance line, moved to HISTORY.md "Moved from the plans, 2026-11-04 (DOCUMENTS_PLAN sections 4 and 5, phases 0 to 2)".
 
 ### Phase 3: blocks and structure: built, 2026-09-12
 
@@ -1587,3 +1461,136 @@ Read from the code against Notion and Obsidian. Sizes S, M, L. Nothing here is b
 - INBOX 1408 (focus-mode sidebars resizable): built 2026-10-27, see HISTORY.md "Moved from the plans, 2026-10-27 (docs-1027)".
 
 - INBOX 1562: built 2026-11-03, see HISTORY.md "Moved from the plans, 2026-11-03 (a31d-1103)".
+
+## 22. The diagram builder redesign: design note, 2026-11-04 (INBOX 1613 to 1615, 1621)
+
+Design only. Nothing here was run or rendered; the line cites are from a read of HEAD on 2026-11-04 and the disputed ones were re-checked. Every decision is taken (standing order 3); a build row cites it as "1621 D`n`". Two points are decisions this note makes where the owner's words left a gap (D7 and the chat chip); they are listed under Risks so the owner can overturn them. 1621 supersedes 1546 D9 ("the block pane is a tree, not a canvas") and the dialog-only part of D6; R7 records the retraction in HISTORY.
+
+### 22.0 Verified present at HEAD (do not rebuild)
+
+- Ctrl+Z and Ctrl+Y in the blocks list (diagram-builder.js:403-408); Undo and Redo buttons (:508). On a Documents page `io` is `docUndo()` / `docRedo()` (documents.js:4049), so history, versions and the bin come with it (1546 D5). There is one history; this note adds no second.
+- Enter and F2 rename (:411), double-click rename (:548-552), Alt+arrow reorder and nest (:409-416).
+- Row-to-row connect: dropping a grip on a block's middle makes a join (`dropAt` op `join`, diagram-pointer.js:78-79).
+- A Blocks | Source `.seg` in the dialog (diagram-embed.js:121-127).
+- The Documents page already mounts the builder inline for `mmd`: Blocks, Split and Source (documents.js:204-212, :4049); Library Open goes there (library.js:1765); Create already goes through the door (library.js:2283-2287).
+- A live reference in notes and documents: `![[Title]]` on an `.mmd` document draws through `mermaidFill.embed` (markdown.js:583; test_diagram_embed.py:111). "Open as a diagram" on chat replies (mermaid-draw.js:504-507).
+- The shelf: `{key: "diagram", label: "Diagrams"}` (library.js:392), Download .mmd (:1061-1070).
+- A splitter recipe: `.sidebar-resize`, `role="separator"`, `tabindex=0`, `trackSeparatorValue` (sheets-selects.js:317, :338-372), `prefs.set` for per-browser memory, arrows 12 px and Shift 40 px (:454).
+- Selection bars with "N selected" (library.js:3772, :8799, :10988) and the recipe row "A list you manage" (DESIGN.md:680).
+
+### 22.1 The model a person must hold (1615 f)
+
+Four things, each made in one gesture, in the dialog and on the page:
+
+- **Shapes** (Box, Rounded, Pill, Circle, Decision, Hexagon): drag one from the Add strip onto the canvas, or press N. Change one by pressing its swatch on the row or its handle on the canvas.
+- **Connections** (arrows between shapes): drag from the dot on a shape's edge to another shape, or drop a row's grip on another row. The "Connect to" button does the same by menu.
+- **Labels** (the words on a shape or an arrow): double-click, or select and press Enter or F2.
+- **Direction** (which way the diagram flows): the four arrows in the top row, which get a caption "Direction" (R4).
+
+Empty-state walkthrough, replacing "Start a diagram" (diagram-builder.js:531-534): three numbered lines inside the dialog, each with its button. "1 Add a shape" (drops a Box), "2 Name it" (opens the label), "3 Connect it" (starts a connection from that shape). It leaves once the diagram has a block.
+
+### 22.2 The model in code
+
+- **D1 The Mermaid source stays the single truth; the canvas is a view of it.**
+  - Today the source is the only state: blocks are a parse of it (`diagramModel` parse/print, documents-mermaid.js:247 and :222) and every edit prints the whole source back (diagram-builder.js:54-66).
+  - Boards store only `data.mermaid`, capped at 20,000 chars (wb_model.py:242-247, validated at :950); notes store a fenced block (documents-mermaid.js:306).
+  - Cost: Mermaid owns the layout. The canvas edits structure (add, move, nest, connect, relabel, reshape), not free x/y (Risks).
+- **D2 A diagram object is the existing `documents` row with `file_type` "mmd".** The Library lists it as `kind: "diagram"` (routes_library.py:238-239; filetypes.py:76). No new table, no migration.
+- **D3 Reference by destination.**
+  - Notes and documents: `![[Title]]`, which already draws live. Nothing new in the renderer. A fenced `mermaid` block stays inline text and is never silently turned into a link.
+  - Boards: a diagram object keeps `data.mermaid` as a snapshot and gains `data.diagram_id` (int, ge=1, valid for `DIAGRAM_KIND` only). It is not `ref_id`, which is `MAP_REFERENCE_KINDS` only (wb_model.py:500-506), is stripped on board-library save and import (whiteboard-library.js:1231; routes_board_library.py:253), and routes_graph.py:535-548 warns that ids must be keyed by kind.
+  - Snapshot rule: the board redraws from the library row when it can, and when the row's source differs it rewrites `data.mermaid` as an ordinary silent object save. If the row is gone it draws the snapshot, says "The linked diagram was deleted", and drops the link on the next edit. The validator does not check existence, because a deleted row is a valid state.
+  - Board-library save and import strip `diagram_id` as they strip `ref_id`: a template does not point at a notebook row.
+  - Chat: a reference chip that opens the diagram's page. The model sees the source text (D7).
+- **D4 Nothing already embedded is rewritten.** Fences, board objects and `.mmd` rows keep drawing. New and opt-in: "Save to Library" on a fence's menu (beside "Edit as blocks", documents-mermaid.js:402) and on a board diagram object (`wbEditDiagram`, whiteboard-interchange.js:1355). It creates the `mmd` row and offers to swap the fence for `![[Title]]`, or the object for a linked one.
+- **D5 Entry stays the one door** (`diagramDoor`, documents-mermaid.js:482). Done semantics by mount: the dialog from a fence or board keeps Done, which writes once; the Documents page autosaves (the document's own save). From the door inside an editor, Done creates the `mmd` row and inserts `![[Title]]` (today it writes a fence, documents-mermaid.js:505-510). The slash menu's Flowchart keeps inserting a starter fence (editor.js:958); Edit as blocks and Save to Library lift it into the library.
+- **D6 The diagram's own page is the Documents page's `mmd` mount, in a diagram layout.** No new route and no boot bytes (the router and `lazy-entries.js` are at their caps). What the layout changes: default view Canvas, the file chrome that means nothing for a diagram hidden, the title and an Export menu in the head. Library Open keeps going to `openDocumentFromNote`.
+- **D7 Decisions this note makes where the owner's words left a gap.** (a) The canvas is structural, not free x/y. (b) Copy as picture puts a PNG on the clipboard; pasting it into a note, document or chat uses the existing image-paste path, and on a board it makes an image object (a frozen picture), not a diagram object. (c) The chat chip gives the model the source text, within the cap chat already applies to an attached document (R9c reads it from the chat code; the board's 20,000 is not that cap).
+
+### 22.3 The builder page
+
+One view `.seg` in both mounts: **Canvas | Blocks | Source**. It replaces the dialog's Blocks | Source seg (diagram-embed.js:121-127), so there are never three overlapping toggles.
+
+- **Canvas (wide):** the stage in the centre, the blocks list kept at the left as the side menu, both driven by the one `S.sel` (diagram-builder.js:105-106) and the row cache (`reconcile` :139-145). Blocks is today's layout (read-only picture beside the list). Source is today's.
+- **Stage:** a wrapper `.dgm-stage` holding the figure `S.fig` and an overlay positioned from `picture.boxes` (diagram-picture.js:10) through the image rect. The overlay is a sibling of `S.fig`, not a child: `mermaidFill` and the empty state call `S.fig.replaceChildren` and would wipe it.
+- **Paint hooks:** `fig.onpaint` is a single slot (assigned in diagram-touch.js:60, called at diagram-builder.js:89). It becomes a listener list so zoom and overlay both run.
+- **Add strip (top, collapsible):** the labelled tiles of diagram-library.js (`FLOW` :29, `build` :46; `.dgm-tile`, diagram-lazy.css:94).
+- **Phone:** the seg gives Canvas the whole width (the fixed 26vh stacked picture, diagram-lazy.css:632-636, is for Blocks only). Pinch exists (diagram-touch.js:46). `wireLongPress` (already on the tree, :566) is also put on the stage: long press selects a node and opens the bar. Edge handles are at least 44 px. The splitter is hidden.
+
+Gestures, one each, with the piece reused or the new piece named:
+
+- **Add:** drag a tile onto the stage. `dropAt` returns null outside `S.pane` (diagram-pointer.js:62) and `dropMark` draws in pane scroll coordinates (:21-29), so the stage gets its own target function `canvasTarget` (stage coordinates, node under the point). A drop on a node adds after it and connects; on empty space an unconnected block (`addBlock` :302).
+- **Move:** drag a node; it reorders or nests (`stepBlock` :368, `nestBlock` :374) with feedback on the overlay only. The picture redraws once, on drop (`drawPicture` :69).
+- **Pan and marquee:** drag on empty space pans; Shift+drag on empty space is the marquee. Space+drag also pans.
+- **Select:** click, Shift range, Ctrl add, Ctrl+A. The bar follows DESIGN.md:680 and the Library's "N selected" bars: N selected, Delete, Duplicate, Shape, Group into a box, Undo, Done.
+- **Connect:** drag from an edge handle to a node (new recipe), or row to row (present). Both use `joins` (diagram-joins.js).
+- **Rename:** an input over the box calling `beginEdit` (:332) and `relabel` (:320).
+- **Shape:** the row swatch and the node's handle open the shape menu (`menuAt` :434, `blockItems` :257).
+- **Zoom, pan, fit (1614):** Fit is the default. Zoom in, zoom out, Fit and 100% in a `.dock` corner bar. Ctrl+wheel and pinch zoom about the pointer, arrow keys pan when the stage has focus. Range 0.25 to 5 times fit (5 is `MAX_ZOOM`, diagram-touch.js:8). Zoom resets to fit when the diagram kind changes, not on each edit. `zoomable` (diagram-touch.js:46) is not exported and zooms by `img.style.width` plus scroll, not a transform; the new lazy `diagram-view.js` replaces it and keeps that technique (the overlay maps through the image rect either way). It does not call `wbZoom*` (the diagram files are lazy and d3 may be absent).
+
+New keys: Ctrl+A, Shift+arrows extend, +, -, 0 for zoom, Space to pan, Enter on a handle starts a connection, Esc cancels it. Existing keys stay as in section 0.
+
+New recipes (order 11, recipe row and lint in the same commit, `tests/test_ui_recipes.py`):
+
+- **Edge handle** (connect by dragging). None in the builder; the whiteboard's connectors are sketches on a canvas, a different model (whiteboard-commands.js:255-256, :899).
+- **Divider between the blocks and the stage:** not new. It reuses `.sidebar-resize`; only a recipe-index row for "a split inside a dialog or page" is added.
+- **Zoom bar:** plain `.dock` first; a variant only if it fails.
+
+### 22.4 Phased rows
+
+Each row is one Sonnet-high agent session, ships alone, and is gated with targeted tests plus `scripts/gate.sh`. R1 to R4 are independent in what they need but share diagram-builder.js and diagram-lazy.css, so they merge one at a time. diagram-builder.js is 646 lines and over its 12 KB target: R5 and R8 move code into new lazy files, each a wrapped IIFE with one export on `diagramModel`, a `LAZY_MODULES` row at the foot of documents-mermaid.js, and no new global names (GLOBAL_NAMES_CAP 9706, GUARDS_CAP 270). A boot caller of a lazy bundle gets a stand-in, not a `typeof` guard.
+
+- **R1 (1613) Shape menu and swatch.**
+  - Work: menu rows draw their shape and the chosen one carries the check. `setLabel` takes only `ph:` icons (app.js:1123-1148), so the route is a lazy-only menu builder in a new lazy file that makes the rows itself with the `.dgm-shape` glyph (`shapeGlyph` :149; CSS diagram-lazy.css:119-159) and a trailing `ph:check`. It first checks whether `makeMenuItem` takes an element icon; it does not edit app.js or sheets-selects.js (at APP_JS_CAP 14,300 and TOTAL_CAP 260,620). The swatch becomes a button named by `SHAPE_LABEL` (:22) that opens the menu; the row click (:551-555) must not swallow it.
+  - Check: a table test, for all six `DGB_SHAPES`, of shape to the Mermaid brackets from `print()` (`[]`, `()`, `([])`, `(())`, `{}`, `{{}}`) against `data-shape` and the glyph in both the swatch and the menu row; swatch hit box at least 24 px by `getBoundingClientRect`; a visible focus ring; click opens the menu.
+- **R2 (1614) Shared height and zoom.**
+  - Work: first reproduce on both mounts (the dialog, where a grid already stretches both panes, and the Documents page, where `.dgm {height:100%}` sits in `#doc-preview`) and record the numbers in the row. Then the stage fills the pane height, plus zoom, pan and fit (section 3), the listener list, and `diagram-view.js`.
+  - Check: at container widths of 600 px and up, `.dgm-picture` and the blocks pane heights match within 1 px at three sizes, on both mounts. Below 600 px, the picture is its own measurement (26vh). Ctrl+wheel changes the image width by a measured step; Fit leaves the box inside the pane with an 8 px margin; zoom survives an edit and resets on a kind change.
+- **R3 (1615 e) Divider.**
+  - Work: `.sidebar-resize` plus `trackSeparatorValue` and `prefs` on `.dgm-body`, which is a grid (`minmax(14rem, 22rem) minmax(0, 1fr)`, diagram-lazy.css:180-186), so the handle sets a column variable. Keys 12 px, Shift 40 px, as the existing handle. Recipe row and lint.
+  - Check: a drag changes the column by the drag distance within 1 px; the stage keeps 240 px; reload restores; `tests/test_ui_recipes.py` passes.
+- **R4 (1615 c, d, f) Labels, walkthrough, blind-tester pass.**
+  - Work: the top row gets words. The four direction buttons (`S.dirs`, title only, diagram-builder.js:480-496) get a visible caption "Direction", and Undo and Redo (:508, icon-only) show their words at widths that fit. "Connect to" shows its label on every row at widths that fit (the `aria-label` is already there, :195-199). Then the empty-state walkthrough (section 1). Then the `blind-tester` runs "make a flowchart with a decision and two branches, then rearrange it"; its list goes to INBOX in order and R6 takes it.
+  - Check: measured visible text, not accessible names: the caption is non-empty and sits above the direction buttons; "Connect to" has non-empty visible text on a wide row; the walkthrough's three buttons each do their step in Playwright; the tester's list exists, each item placed in a row or INBOX.
+- **R5 (1615 a, b) Multiselect and group drag.**
+  - Work: `S.sel` stays the one primary key, because diagram-kinds.js (8 places), diagram-suggest.js (4), diagram-joins.js, diagram-pointer.js and `kit.select` read it. A new ordered `S.picked` set holds the rest. The bar as in section 3; the grip of any selected row carries all of them. New pure functions in `diagramOps`: group-move, duplicate (fresh ids, inner edges kept) and wrap (group into a box).
+  - Check: `tests/test_diagram_builder.py` cases (order kept, a node under a selected group not moved twice, no drop into itself, `DGB_MAX` 120 respected, diagram-ops.js:15, duplicate keeps inner edges only); the kinds panes' tests still pass; a Playwright pass: Shift+click three rows, drag one grip, the source line order matches.
+- **R6 (R4's list) What the tester finds.** Present already (section 0): rename, undo and redo, keyboard reorder, row-to-row connect. Expected left: a search over blocks and edge labels edited in place. Check: one test per item in R4's list.
+- **R7 (1621 D5, D6) The diagram page.** The diagram layout of the Documents mount, the Canvas | Blocks | Source seg in both mounts, the door's Done inserting `![[Title]]`, the HISTORY retraction of 1546 D9. Check: Create, Open, edit, reload gives the same source; existing `mmd` rows open unchanged (fixture test); the dialog path still passes its tests; `tests/test_static_compression.py` shows zero boot bytes; a real-browser check that the frame draws on the page (a CSP refusal is silent).
+- **R8a (1621) Overlay and select.** The stage wrapper, the overlay from `boxes`, click and hover select kept in step with `S.sel`. Needs R2 (zoom mapping) and R5 (`S.picked`). Check: overlay boxes match `boxes()` within 1 px at three zoom levels.
+- **R8b (1621) Palette drop and move.** `canvasTarget`, tile drop, node move, marquee. Flowchart only; mind map, timeline and sequence (`diagram-kinds.js`, 1118 lines) stay blocks-first. Check: a drag keeps overlay updates at 30 fps with no `mermaidRequest` (mermaid-draw.js:403) call before the drop, counted; the printed source matches.
+- **R8c (1621) Edge handle and rename.** `boxes()` reads only `flowchart-<id>-<n>` node groups, so this row first adds cluster boxes and edge positions to it (a pure function, tested on a recorded SVG). Until then dropping into a group and in-place edge labels stay in Blocks. Check: a Playwright script builds the decision-and-two-branches flowchart with canvas gestures only, in fewer than 12, and the printed source matches.
+- **R9a (1621) Object kind and tray.** Add `diagram` to `OBJ_KINDS`, `OBJ_NOUN` and `OBJ_ICON` (obj-ref.js:23-24, obj-drag.js:28), so `objRef("diagram", ...)` stops returning null, and to the `objCarryDrop` destinations. The note and document destination writes `![[Title]]`. `OBJ_MODES` is the drag-mode registry and `OBJ_MODES.diagram` is already the block-drag mode (diagram-builder.js:623), so the card needs no mode of its own. Tray: `objTrayAdd` (obj-tray.js:52), `objTrayPaste` (:182), `objTrayDestination` (:176). Check: a Library diagram card drags into a note and writes `![[Title]]`; the tray holds and pastes it; boot bytes within the caps.
+- **R9b (1621) Board link.** `data.diagram_id` and its validator (wb_model.py:950; object routes wb_items.py:225, :269), the snapshot rule (D3), the strip on library save and import. Check: 0, negative and non-int ids rejected; the key rejected on other kinds; a deleted row falls back to the snapshot; a library save strips it.
+- **R9c (1621) Chat chip and Save to Library.** The chip, the cap read from the chat code, and D4's menu items. Check: a reference redraws after the source is edited in the builder (fake transport); the swap offer replaces a fence with `![[Title]]`.
+- **R10 (1621) Export and Copy as picture.** Export from the page head and the shelf menu: PNG (`pngOf`, diagram-embed.js:28), SVG (`svgOf`), .mmd (library.js:1061-1070); the builder already offers them (diagram-builder.js:466-468). Copy as picture per D7(b). Check: the SVG parses; the PNG is twice the SVG viewBox (`Math.ceil(box[2]) * 2`, test_diagram_embed.py:117); the .mmd round-trips byte for byte.
+
+Order: R1 to R4, then R5, R6, R7; R8a after R2 and R5, then R8b, R8c; R9a any time, then R9b; R9c after R9a and R7; R10 after R7.
+
+Mapping: 1613 = R1; 1614 = R2; 1615 (a)(b) = R5, (c)(d) = R4 and R6, (e) = R3, (f) = section 1 and R4; 1621 = R7 to R10.
+
+Help moves with each row (order 13): `ai/help_chat.py`, `ai/help_topics_more.py`, `tests/test_manual_parity.py`. Each row adds its CHANGELOG line and resolves its INBOX entry.
+
+### 22.5 Risks and out of scope
+
+- **Layout is Mermaid's (D1).** "Drag things into place" is delivered as structural placement. This is the main reading the owner could overturn; free positions need a stored layout and a renderer, a separate design.
+- **The chat chip and Copy as picture (D7)** are this note's decisions, not owner asks.
+- **Render latency.** Drawing goes through a hidden frame (`mermaidRequest` mermaid-draw.js:403; `/mermaid-frame`, app.py:1592-1607), so a drag uses the overlay and redraws once on drop (R8b check).
+- **Frame policy.** `MERMAID_FRAME_CSP` (security.py:547) was written for the dialog and the fence; R7 needs a real-browser check (CLAUDE.md section 6).
+- **Lazy kinds.** Mind map, timeline and sequence keep blocks-first; no canvas gestures promised.
+- **Two writers.** A row can be edited while a note shows it; last write wins, as for any document.
+- **Size limits.** `DGB_MAX` 120 blocks and 20,000 chars on boards bound the canvas; a larger diagram gets a message, not a silent cut.
+- **Unverified.** Every provider test uses a fake transport; real rendering and drag feel are unverified until each row is driven in the app (CLAUDE.md section 5).
+- **Out of scope:** free x/y layout; real-time multi-user editing; new diagram engines or import from images; AI generation (`diagram-suggest.js` untouched); version history beyond the document's own; full Mermaid syntax coverage in blocks.
+
+---
+
+Critique points rejected or changed:
+
+- Point 7, "choose Phosphor icons or a lazy menu builder": chose the lazy builder, but R1 first checks whether `makeMenuItem` already takes an element icon. I did not verify that.
+- Point 13, "cite the Library bars instead of a fresh `.dock`": kept a `.dock` for the zoom bar only (the corner bar is a different recipe from a selection bar). The selection bar itself follows DESIGN.md:680.
+- Point 9, split of R7 into R7a and R7b: not split. Create already goes through the door (library.js:2283-2287) and Open already reaches the Documents page, so the page is one row once D6 drops the new route.
+- Point 2, "use key steps 12 and 40, not 16": kept (12, and Shift 40 at sheets-selects.js:454). I did not confirm the Home and double-click reset the critique lists, so the note does not promise them.
+- Point 4, "say what the own page changes": adopted with a different answer from the critique's options. It is the Documents mount in a diagram layout, with no new route. The draft's "full page" mount was dropped.
+- Point 6, "a new Canvas | Blocks seg makes three toggles": resolved with a single Canvas | Blocks | Source seg instead of dropping the canvas toggle.
+- Point 3, "undo": agreed on the shared history. Not verified: `docUndo` behaviour inside the dialog mount, which uses its own `io` (diagram-embed.js:96-97).
