@@ -228,8 +228,8 @@ class OverlayRunner:
         e = self.engine
         if e is None or not self.roam_windows or e.reduced or not e.roam or e.quiet:
             return False
-        if e.perch is not None or e.target is not None:
-            return True
+        if e.perch is not None or e.target is not None or e.state in ("pressed", "held"):
+            return True  # carried: a title bar under it may be taken hold of
         return e.state in ("stand", "walk", "drift") and now >= e.climb_ready - SCAN_SLACK
 
     def _scan(self, now: float) -> None:
@@ -306,6 +306,7 @@ class OverlayRunner:
         dpi = self.engine.monitor_at(self.engine.x, self.engine.y).dpi
         self.dpi = dpi
         self.engine.set_monitors(self.monitors, self.sprites.size(dpi))
+        self.engine.set_metrics(self.sprites.metrics(dpi))
         self._last_key = None
 
     def _ready(self) -> None:
@@ -326,6 +327,7 @@ class OverlayRunner:
         self.engine = eng.Engine(
             spr.size(first.dpi), self.monitors, home=self.home, reduced=reduced, roam_windows=self.roam_windows, gait=spr.gait, hang_top=spr.top_share("hang"), idle_frames=sprites.IDLE_COUNT, now=self.clock(),
         )
+        self.engine.set_metrics(spr.metrics(first.dpi))
         out = self.engine.update(self.clock())
         self._apply(out)
         logger.info(
@@ -341,6 +343,7 @@ class OverlayRunner:
         if dpi != self.dpi:
             self.dpi = dpi
             engine.set_monitors(self.monitors, spr.size(dpi))
+            engine.set_metrics(spr.metrics(dpi))
             self._last_key = None
         key = (out.frame, self.dpi, out.flip, out.clip)
         if key != self._last_key:
@@ -355,7 +358,8 @@ class OverlayRunner:
             rect = self.drawn_rect(out.x, out.y, out.frame, out.flip)
             self._hand_off("overlay-click", lambda: self.on_click and self.on_click(out.click, rect, self.dpi))
         if out.settled:
-            self._hand_off("overlay-settle", lambda: self.on_settle and self.on_settle(out.x, out.y))
+            home = engine.home()  # where it stands, not where its window is drawn (feet are planted)
+            self._hand_off("overlay-settle", lambda: self.on_settle and self.on_settle(*home))
         if out.card is not None:
             token = out.card
             self._hand_off("overlay-card", lambda: self.on_card and self.on_card(token))

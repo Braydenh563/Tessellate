@@ -134,10 +134,12 @@ def test_a_dropped_hang_click_lets_go() -> None:
 
 # --- float -----------------------------------------------------------------------------
 
-def test_a_floater_rests_at_a_hover_height_between_24_and_80_px() -> None:
+def test_a_floater_rests_a_hand_above_the_floor_not_a_figure_up() -> None:
+    # Intent moved (INBOX 1670: "it still sits like 20px above the bottom bar"): was 24 to 80 px
+    # (INBOX 1658); the rest line is now 1 to 2 px, and the bob lifts it from there.
     for seed in range(8):
         e = make(seed=seed, gait="float")
-        assert 24 <= e.floor_y() - e.y <= 80
+        assert eng.HOVER[0] <= e.floor_y() - e.y <= eng.HOVER[1]
         assert e.y == e.ground_y()
 
 
@@ -151,7 +153,7 @@ def test_a_floater_drifts_across_the_width_and_a_band_above_its_rest_line_not_th
         ys.append(o.y), xs.append(o.x), frames.add(o.frame)
         assert 0 <= o.x <= 1920 - 100 and 0 <= o.y <= FLOOR
     # INBOX 1663 ("wayyy to high"): the height it uses is about its own, no more.
-    assert 40 < max(ys) - min(ys) <= eng.FLOAT_BAND * e.size[1] + eng.HOVER[1] + 2 and max(xs) - min(xs) > 500
+    assert 40 < max(ys) - min(ys) <= eng.FLOAT_BAND * e.size[1] + eng.HOVER[1] + eng.BOB + 2 and max(xs) - min(xs) > 500
     assert {"walk0", "walk3"} <= frames
 
 
@@ -181,7 +183,7 @@ def test_a_thrown_floater_slows_by_drag_and_drifts_back_to_its_hover_height() ->
     assert speeds[-1] < speeds[0] * 0.2
     assert "fall" not in frames and "land" not in frames
     assert e.state == "stand" and settled
-    assert abs(e.y - e.ground_y()) < 1 and 24 <= e.floor_y() - e.y <= 80
+    assert abs(e.y - e.ground_y()) < 1 and eng.HOVER[0] <= e.floor_y() - e.y <= eng.HOVER[1]  # rest line moved, INBOX 1670
 
 
 def test_a_floater_let_go_gently_does_not_fall_hard() -> None:
