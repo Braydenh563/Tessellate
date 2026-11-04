@@ -15,7 +15,7 @@ import re
 from dataclasses import dataclass, field
 from typing import Any
 
-from tessellate.ai import question_noise, recognise as rec, when as when_words
+from tessellate.ai import question_noise, recognise as rec, repair_turn, when as when_words
 from tessellate.ai.composer_ask import _stem, _words, classify, rephrase, subject_terms
 from tessellate.ai.composer_body import _BRIEF, _FULL, _NOTE_NOUNS, _asked_span
 from tessellate.ai.composer_phrases import PHRASES
@@ -349,7 +349,8 @@ def _follow_ordinal(text: str, previous: str, last: dict, turns: list[dict]) -> 
 
 def _follow_correction(text: str, previous: str, last: dict, turns: list[dict]) -> Any:
     correction = _CORRECTION.match(text)
-    if not correction:
+    #: "no, that's wrong" complains; it names no note to prefer (INBOX 1668 b).
+    if not correction or repair_turn.is_repair(text):
         return _NOT_THIS
     #: The second alternative ("I meant the dentist note") fills x2, not x.
     said = (correction.group("x") or correction.group("x2") or "").rstrip(" \t.?!")

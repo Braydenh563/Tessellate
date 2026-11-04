@@ -8,7 +8,7 @@ from __future__ import annotations
 import hashlib
 import re
 
-from tessellate.ai import realise
+from tessellate.ai import realise, repair_turn
 from tessellate.search import query as query_understanding
 
 #: After a ping's own line: was it a search, and how many notes would answer.
@@ -80,6 +80,19 @@ def read_as(last: dict) -> str:
     if "search the web" in low or "web search" in low or "search service" in low:
         return "a web search"
     return "small talk" if answer and len(answer) <= 160 else ""
+
+
+def bare_no(message: str, last: dict) -> bool:
+    """A bare "no" or "nope" after a reply that asked nothing says the reply
+    missed (INBOX 1668 b); after a question it is that question's answer."""
+    bare = " ".join(re.findall(r"[a-z]+", (message or "").lower())) in ("no", "nope", "nah", "no no", "nope nope")
+    return bare and not str(last.get("answer") or "").rstrip().endswith("?")
+
+
+def repaired_turn(history: list[dict], last: dict) -> dict:
+    """The turn a correction is about: the last that was not itself a
+    correction, so a second complaint repairs the ask, not the first complaint."""
+    return next((t for t in reversed(history) if not repair_turn.is_repair(str(t.get("question") or ""))), last)
 
 
 def repair(asked: str, last: dict, better: str, voice: str = "natural", seed: str = "") -> str:

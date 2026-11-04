@@ -36,7 +36,7 @@ import re
 from tessellate.core.lazyre import lazy_compile
 from collections import Counter
 
-from tessellate.ai import act_registry, spelling
+from tessellate.ai import act_registry, repair_turn, spelling
 from tessellate.ai.spelling import distance  # noqa: F401 - re-exported: the speller owns it, so the two modules do not import each other
 
 # --- 1. slang and text-speak ----------------------------------------------------
@@ -548,17 +548,7 @@ SOCIAL_PHRASES: dict[str, str] = {
     "oh no": "reaction", "oh wow": "reaction", "no way": "reaction", "thats great": "reaction",
     "that's great": "reaction", "nice one": "thanks", "well done": "reaction", "oh dear": "reaction",
     "who are you": "who", "whats your name": "who", "what's your name": "who",
-    #: A repair: the last reply missed (INBOX 1485). Owned and read again,
-    #: never searched for ("not what I asked" found "not asked").
-    "not what i asked": "repair", "thats not what i asked": "repair", "that's not what i asked": "repair",
-    "that is not what i asked": "repair", "not what i meant": "repair", "thats not what i meant": "repair",
-    "that's not what i meant": "repair", "not what i said": "repair", "thats wrong": "repair",
-    "that's wrong": "repair", "that is wrong": "repair", "wrong answer": "repair", "no i meant": "repair",
-    "you misunderstood": "repair", "you misunderstood me": "repair", "you got it wrong": "repair",
-    "you got that wrong": "repair", "thats not right": "repair", "that's not right": "repair",
-    "that is not right": "repair", "you misread": "repair", "you misread me": "repair",
-    "i didnt ask that": "repair", "i didn't ask that": "repair", "i did not ask that": "repair",
-    "not what i was asking": "repair", "thats not it": "repair", "that's not it": "repair",
+    #: A repair ("not what I asked") is read by class, `repair_turn.is_repair` (INBOX 1668).
 }
 
 #: One-word turns that are not in `SOCIAL` above: reactions and confusion.
@@ -2165,14 +2155,20 @@ def _word_kinds(words: list[str]) -> list[str] | None:
     return kinds
 
 
+def _spoken_to_kind(message: str) -> str | None:
+    """"who" for a question about what it is talking to, "repair" for "not
+    what I asked" (INBOX 1668 b), whatever else the message could be."""
+    if asks_identity(message):
+        return "who"
+    return "repair" if repair_turn.is_repair(message) else addressed_kind(message)
+
+
 def social_kind(message: str) -> str | None:
     """The kind of conversational turn a message is when every part of it is
     one ("ty", "lol", "ok thx", "right ok", "wait what", "how r u", an emoji
     alone), else None: a turn with a question in it is a question. A question
     about what it is talking to is "who", whatever leads into it."""
-    if asks_identity(message):
-        return "who"
-    if kind := addressed_kind(message):
+    if kind := _spoken_to_kind(message):
         return kind
     raw = destretch(drop_filler((message or "").strip()))
     if raw and not strip_symbols(raw):
