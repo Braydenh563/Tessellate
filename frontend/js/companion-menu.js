@@ -817,7 +817,7 @@ const NMB_MIND = {
   //: view, or boredom) past its own threshold, a calm moment, you settled for
   //: 45 seconds (no tab change, no scroll), awake, and a dice roll of one in
   //: two so it is not a clock. Pure: the caller reads the page.
-  K: { floor: 180000, company: 240000, settled: 45000, half: 180000, quietIdle: 8000, afieldIdle: 180000, afieldGap: 900000 },
+  K: { floor: 180000, company: 240000, settled: 45000, half: 180000, quietIdle: 8000, afieldIdle: 180000, afieldGap: 900000, homeAfter: 30000, homeSettled: 8000 },
   //: Loneliness: it grows while the cat is out of your view and halves every 3 minutes while it is seen.
   lonelyStep(lonely, dt, seen, sociability) {
     if (seen) return Math.max(0, lonely * 0.5 ** (dt / NMB_MIND.K.half));
@@ -879,6 +879,8 @@ const NMB_MIND = {
     if (o.blocked || !o.awake || o.actions === "off" || o.mode === "off") return none;
     const K = NMB_MIND.K;
     //: Out for a while: back at the first calm moment after its time.
+    //: Left on a tab's own dock by a page change in a visit: back to a window-level perch in view within about a minute (30 s gone, a calm moment, the tick's own beat), no settle floor, no dice.
+    if (o.homeSick) return o.absentMs >= K.homeAfter && o.calm && o.userSettled >= K.homeSettled ? { kind: "come", why: "back from a visit" } : none;
     if (o.afield) return o.now >= o.afield.until && o.calm && o.userSettled >= K.settled ? { kind: "return", why: "back from out" } : none;
     if (o.now - o.settledAt < NMB_MIND.floor(o) || !o.calm || o.userSettled < K.settled) return none;
     //: With no motion to draw, only after a quiet spell on this page.

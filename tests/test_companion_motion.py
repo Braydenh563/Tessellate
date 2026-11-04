@@ -432,7 +432,7 @@ def test_it_can_be_petted_tossed_and_watches_a_near_pointer() -> None:
     pet = _fn("nameMarkBuddyPet")
     assert "nameMarkBuddyStill()" in pet and "15000" in pet
     assert "spots[tab] = nameMarkBuddySpotFor(spot);" in _fn("nameMarkBuddyThrowLand")
-    assert "nameMarkBuddyPerches(tab, near && per < 12 ? near[0] : null)" in _fn("nameMarkBuddyChoose")
+    assert "nameMarkBuddyPerches(tab, near && per < 12 ? near[0] : null, visit)" in _fn("nameMarkBuddyChoose")  # INBOX 1674: the visit flag
     notice = _fn("nameMarkBuddyNotice")
     assert 'document.documentElement.dataset.avatarFollow !== "off"' in notice
     assert "const near = follows && dist < NMB_EYES_NEAR * reach;" in notice
@@ -866,7 +866,7 @@ def test_its_reactions_come_and_go_gradually_and_it_gets_bored() -> None:
     assert "now - nmb.home.at > 30000" in wander
     # Asked near where it was, its own perch won every time (wander.js): it
     # looks a few widths off, towards the middle.
-    assert "const away = nameMarkBuddyChoose(tab, obstacles, [nmb.x + off, nmb.y], 4);" in wander
+    assert "const away = nameMarkBuddyChoose(tab, obstacles, [nmb.x + off, nmb.y], 4, true);"  # INBOX 1674: the far branch is the visit in wander
     assert "nameMarkBuddyWarmthAt(nmb.feel, now)" in _fn("nameMarkBuddyDecide")
 
 
