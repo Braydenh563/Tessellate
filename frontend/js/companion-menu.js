@@ -807,6 +807,88 @@ const NMB_MIND = {
     }
     return "";
   },
+  //: **A house cat's own mind** (INBOX 1673, the owner: "the companion
+  //: should have its own like, like a house cat that is there but has a mind
+  //: of its own"). Switching pages moves nothing: the cat stays in its room
+  //: and is simply not drawn when the room is not in view. It relocates only
+  //: here, from the tick, when all of these hold: the settle floor since its
+  //: last move (3 minutes, its own factor in 0.9 to 1.6, doubled under
+  //: reduced motion, 1.5x under Fewer), a want (`lonely` while out of your
+  //: view, or boredom) past its own threshold, a calm moment, you settled for
+  //: 45 seconds (no tab change, no scroll), awake, and a dice roll of one in
+  //: two so it is not a clock. Pure: the caller reads the page.
+  K: { floor: 180000, company: 240000, settled: 45000, half: 180000, quietIdle: 8000, afieldIdle: 180000, afieldGap: 900000 },
+  //: Loneliness: it grows while the cat is out of your view and halves every 3 minutes while it is seen.
+  lonelyStep(lonely, dt, seen, sociability) {
+    if (seen) return Math.max(0, lonely * 0.5 ** (dt / NMB_MIND.K.half));
+    return Math.min(3, lonely + (dt * (0.5 + sociability)) / NMB_MIND.K.company);
+  },
+  floor(o) {
+    return NMB_MIND.K.floor * (o.stay || 1) * (o.mode === "full" ? 1 : 2) * (o.actions === "fewer" ? 1.5 : 1);
+  },
+  //: How long it stays out when it goes out: 90 seconds to 4 minutes, a tired cat longer.
+  awayFor: (energy, jitter) => Math.round(90000 + (1 - Math.max(0, Math.min(1, energy))) * 150000 + jitter * 20000),
+  //: A walk in or out of `px` at 6 to 11 ms a pixel (90 to 170 px/s), never under 1.2 s or over 12 (a wide window is still walked at its pace).
+  walkMs: (px, roll) => Math.round(Math.max(1200, Math.min(12000, px * (6 + 5 * roll)))),
+  //: **Out for a while** (INBOX 1673, "a house cat ... has a mind of its own").
+  //: Only with Reduce actions on Normal, full motion, and you away from the
+  //: keys for 3 minutes. A moment's look at the way out, then on foot off the
+  //: nearest side along its own line, away for 90 seconds to 4 minutes
+  //: (`NMB_MIND.awayFor`), and back by `nameMarkBuddyAppear(buddy, true)` at the
+  //: first calm moment after, on whatever page you are on.
+  afield(buddy) {
+    if (typeof buddy.animate !== "function") return;
+    const dx = nmb.x > innerWidth / 2 ? innerWidth - nmb.x + 12 : -(nmb.x + NMB_W + 12);
+    const ms = NMB_MIND.walkMs(Math.abs(dx), Math.random());
+    nmb.leaving = true;
+    nmb.lastAfield = Date.now();
+    nameMarkBuddyAim([nmb.x + dx, nmb.y + NMB_H / 2]);
+    setTimeout(() => {
+      nmb.leaving = false;
+      if (!buddy.isConnected || nmb.away || nmb.pinned || nmb.visit || nameMarkBuddyMenuOpen() || buddy.classList.contains("nm-buddy-dragging") || nameMarkBuddyAsleep(buddy)) return;
+      nameMarkBuddyAct("");
+      nmb.anim?.cancel();
+      nameMarkBuddyWay(buddy, dx > 0 ? "1" : "-1");
+      buddy.dataset.turn = dx > 0 ? "r" : "l";
+      nameMarkBuddyBlend(buddy, () => buddy.classList.add("nmb-walking"), NMB_BLEND_IN_MS);
+      nmbTempo.seen = 0;
+      clearTimeout(nmbTempo.timer);
+      nmbTempo.timer = setTimeout(nameMarkBuddyTempo, 0);
+      const walk = buddy.animate([{ translate: "0px 0px" }, { translate: `${dx}px 0px` }], { duration: ms, easing: "cubic-bezier(0.4, 0, 0.7, 1)", fill: "forwards" });
+      nmb.anim = walk;
+      let over = false;
+      const end = (gone) => {
+        if (over) return;
+        over = true;
+        nameMarkBuddyBlend(buddy, () => buddy.classList.remove("nmb-walking"));
+        delete buddy.dataset.turn;
+        if (!gone) return;
+        nmb.away = true;
+        nmb.absent = true;
+        buddy.classList.add("nmb-away");
+        walk.cancel();
+        nmb.lonelyTouch(true);
+        nmb.afield = { until: Date.now() + NMB_MIND.awayFor(nmb.mood.energy, Math.random()) };
+      };
+      walk.onfinish = () => end(true);
+      walk.oncancel = () => end(false);
+    }, 1500 + Math.random() * 1500);
+  },
+  move(o, roll) {
+    const none = { kind: "none", why: "" };
+    if (o.blocked || !o.awake || o.actions === "off" || o.mode === "off") return none;
+    const K = NMB_MIND.K;
+    //: Out for a while: back at the first calm moment after its time.
+    if (o.afield) return o.now >= o.afield.until && o.calm && o.userSettled >= K.settled ? { kind: "return", why: "back from out" } : none;
+    if (o.now - o.settledAt < NMB_MIND.floor(o) || !o.calm || o.userSettled < K.settled) return none;
+    //: With no motion to draw, only after a quiet spell on this page.
+    if (o.mode !== "full" && o.idle < K.quietIdle) return none;
+    const want = Math.max(o.lonely, o.bored);
+    if (want < 1 + 0.8 * o.whim || roll >= 0.5) return none;
+    if (!o.roomSeen) return o.comeOn ? { kind: "come", why: "keeps you company" } : none;
+    if (o.mode === "full" && o.actions === "normal" && o.afieldOn && o.idle >= K.afieldIdle && o.now - o.lastAfield >= K.afieldGap) return { kind: "afield", why: "goes out" };
+    return { kind: "stroll", why: "bored" };
+  },
 };
 Object.assign(NAME_MARK_BUDDY_ACTS, NMB_MIND_ACTS);
 Object.assign(NMB_LIMB_MOVES, {

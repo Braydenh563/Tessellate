@@ -92,8 +92,6 @@ const { boot, PW } = require('./lib.js');
     }
     nameMarkBuddyBeat();
     nameMarkBuddyCheck();
-    nmb.heldTimer = 0;
-    nameMarkBuddyUnheld();
     if (typeof nameMarkBuddyBellErrand === 'function') nameMarkBuddyBellErrand();
     if (typeof nameMarkBuddyChatErrand === 'function') nameMarkBuddyChatErrand();
     nameMarkBuddySeen(false);

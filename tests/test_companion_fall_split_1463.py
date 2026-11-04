@@ -54,8 +54,9 @@ def test_every_move_and_every_entrance_is_drawn_aloft():
     move = _body("nameMarkBuddyMoveTo")
     go = move.index("nameMarkBuddyGo(buddy, dx, dy, spot, poseChanged, was, underway);")
     assert "nameMarkBuddyAloft()" in move[go:], "a move re-glues to the destination's band before it plays"
-    arrive = _body("nameMarkBuddyArrive")
-    assert re.search(r"nmb\.enteredBy = nameMarkBuddyEnter\(buddy, spot\);\s*nameMarkBuddyAloft\(\);", arrive)
+    # `nameMarkBuddyArrive` became `nameMarkBuddyAppear` (INBOX 1673): the boot way or its own mind's walk-in, both drawn aloft.
+    arrive = _body("nameMarkBuddyAppear")
+    assert re.search(r"nmb\.enteredBy = walk \? nameMarkBuddyWalkEnter\(buddy, spot\) : nameMarkBuddyEnter\(buddy, spot\);\s*nameMarkBuddyAloft\(\);", arrive)
 
 
 def test_a_landing_restores_the_clip_only_when_no_newer_move_is_flying():

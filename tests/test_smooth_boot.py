@@ -70,7 +70,7 @@ def test_the_nod_keeps_the_head_at_its_resting_size():
 
 
 def test_the_companion_waits_for_the_curtain():
-    arrive = _fn(AVATARS, "nameMarkBuddyArrive")
+    arrive = _fn(AVATARS, "nameMarkBuddyAppear")
     assert arrive.index("nameMarkBuddyCurtained()") < arrive.index("nameMarkBuddySettle(")
     curtained = _fn(AVATARS, "nameMarkBuddyCurtained")
     for what in ('"boot-splash"', '"shell-curtain"', '"lock-overlay"'):
@@ -184,7 +184,7 @@ def test_the_companion_never_sits_on_the_air():
     assert "el.closest(NMB_CANVAS)" in supported, "what is drawn on a canvas is never a perch"
     check = _fn(AVATARS, "nameMarkBuddyCheck")
     assert check.index("!nameMarkBuddySupported()") < check.index("nameMarkBuddyObstacles(tab)")
-    assert "placeNameMarkBuddy(buddy, false, [nmb.x, nmb.y]);" in check
+    assert "nameMarkBuddyPerchGone(buddy, tab);" in check
     assert "if (!nameMarkBuddySupported()) return false;" in _fn(AVATARS, "nameMarkBuddyStillGood")
     # Asked again after a pan or zoom on a canvas, a release, and while it rests.
     assert 'document.addEventListener("wheel", nameMarkBuddySupportSoon' in AVATARS
