@@ -7791,15 +7791,17 @@ function nameMarkBuddyAct(act, ms) {
   //: **The next act starts on a page a frame has drawn** (INBOX 1667: `avatars.js:7792` up to 84ms of forced
   //: layout at 4x): ending an act hands its parts over (`nameMarkBuddyBlend` reads them), and the timer lands
   //: between the page's writes and its frame. Still the same act a frame on, or it was already replaced.
-  nmb.timer = setTimeout(() => nmb.afterClean(() => {
-    if (nmb.act !== act) return;
+  //: A restart, a halt or a hide clears or replaces `nmb.timer` but not a chain already queued, so the chain
+  //: ends the act only while its own timer is still the current one (the same act twice ended twice).
+  const own = (nmb.timer = setTimeout(() => nmb.afterClean(() => {
+    if (nmb.act !== act || nmb.timer !== own) return;
     const next = act === "land" && nmb.afterLand ? "look" : nmb.mind?.after(buddy, act) || "";
     if (act === "land") nmb.afterLand = false;
     nameMarkBuddyAct(next);
     //: Held a while, it shakes itself off once it has landed (INBOX 1581).
     if (act === "land" && nmb.carriedMs >= 2500) setTimeout(() => nameMarkBuddyReact("carried"), 250);
     if (act === "land") nmb.carriedMs = 0;
-  }), (ms || spec?.ms || 1200) * (act === "land" ? 1 : 1 + Math.random() * 0.3));
+  }), (ms || spec?.ms || 1200) * (act === "land" ? 1 : 1 + Math.random() * 0.3)));
 }
 
 //: Room to lie down: standing (not tucked, not peeking) on a flat place,
@@ -9768,6 +9770,7 @@ function dropAnimations(root) {
 function nameMarkBuddyGone() {
   nmbTempo.anims = [];
   clearTimeout(nmb.timer);
+  nmb.timer = 0;
   clearTimeout(nmb.placeTimer);
   clearTimeout(nmb.appearTimer);
   nmb.away = false;

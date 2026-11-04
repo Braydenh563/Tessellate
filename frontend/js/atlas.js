@@ -3669,7 +3669,12 @@ function setAtlasMood(mood, forMs = 0, { quiet = false, easeMs = 0, backEaseMs =
   const lite = document.documentElement.hasAttribute("data-atlas-lite");
   //: **And on a page a frame has drawn** (INBOX 1667: `atlas.js:3677` 100ms of forced layout at 4x): a mood
   //: timer lands between the page's writes and its frame, and the hand-over's first read paid for them.
-  if (boxes.length && !lite) setTimeout(() => nmb.afterClean(() => nameMarkBuddyBlend(boxes, apply, 700), 6, apply), Math.max(0, settling + 20));
+  //: Each call has its own chain and a chain on a dirty page is longer, so a newer mood's shorter chain
+  //: could land first and the older one then overwrite it: only the newest call's chain applies. A hidden
+  //: tab has no frames to wait for, so it applies at once.
+  const seq = (setAtlasMood.seq = (setAtlasMood.seq || 0) + 1);
+  const latest = () => seq === setAtlasMood.seq && apply();
+  if (boxes.length && !lite && !document.hidden) setTimeout(() => seq === setAtlasMood.seq && nmb.afterClean(() => nameMarkBuddyBlend(boxes, latest, 700), 6, latest), Math.max(0, settling + 20));
   else apply();
   if (next === "surprised" && forMs > 2000) {
     //: A failure startles first, then worries until it has passed.
