@@ -6,10 +6,11 @@ These pin the rest loops at a size a person can see, still on the
 compositor (rotate, translate, skew on layer roots and boxes only)."""
 
 import re
+from pathlib import Path
 
 from tests._app_js import app_js_text
 
-CSS = open("frontend/css/08-consistency.css", encoding="utf-8").read()
+CSS = Path("frontend/css/08-consistency.css").read_text(encoding="utf-8")
 JS = app_js_text()
 
 
