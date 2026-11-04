@@ -250,3 +250,36 @@ def test_the_apps_shutdown_stops_the_notifier_before_the_job_pool_waits_on_it():
     rn.stop_running()  # nothing running: a no-op
     app = (Path(__file__).resolve().parents[1] / "src" / "tessellate" / "api" / "app.py").read_text(encoding="utf-8")
     assert app.index("reminder_notifier.stop_running()") < app.index("jobs.shutdown(deadline=_JOB_SHUTDOWN_SECONDS)")
+
+
+def test_a_due_reminder_is_told_to_the_hook_once_and_early_alerts_and_locked_notebooks_are_not(client, tmp_path, monkeypatch):
+    freeze_reminder_clock(monkeypatch, notifier=True)
+    told = []
+    notifier = rn.ReminderNotifier(
+        rn.FiredStore(tmp_path / rn.STORE_NAME), "osascript", run=lambda argv, **kw: None, on_due=told.append,
+    )
+    due = FIXED_NOW + timedelta(minutes=1)
+    rid = client.post("/reminders", json={"text": "Stretch", "due_at": due.isoformat()}).json()["id"]
+    later = due.replace(tzinfo=None) + timedelta(seconds=1)
+    notifier.tick(later)
+    notifier.tick(later + timedelta(seconds=30))
+    assert [[d.reminder_id for d in batch] for batch in told] == [[rid]]
+    locked = rn.ReminderNotifier(
+        rn.FiredStore(tmp_path / "other.json"), "osascript", notebook_open=lambda s: False, on_due=told.append,
+    )
+    locked.tick(later)
+    assert len(told) == 1
+
+
+def test_a_failing_hook_never_stops_the_notifier(client, tmp_path, monkeypatch):
+    freeze_reminder_clock(monkeypatch, notifier=True)
+
+    def boom(_due):
+        raise RuntimeError("no companion")
+
+    notifier = rn.ReminderNotifier(
+        rn.FiredStore(tmp_path / rn.STORE_NAME), "osascript", run=lambda argv, **kw: None, on_due=boom,
+    )
+    due = FIXED_NOW + timedelta(minutes=1)
+    client.post("/reminders", json={"text": "Stretch", "due_at": due.isoformat()})
+    notifier.tick(due.replace(tzinfo=None) + timedelta(seconds=1))  # no exception

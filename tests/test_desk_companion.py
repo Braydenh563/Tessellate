@@ -273,7 +273,7 @@ def test_a_bad_hit_opens_the_app_with_no_script(made, prefs):
 
 def test_the_page_can_ask_for_nothing_else():
     public = {name for name in dir(dc.DeskApi) if not name.startswith("_")}
-    assert public == {"open_app", "open_hit", "set_size", "drag_start", "drag_to", "drag_end", "hide_companion", "hide_panel", "panel_blur", "panel_kind", "panel_motion", "let_it_walk"}
+    assert public == {"open_app", "open_hit", "set_size", "drag_start", "drag_to", "drag_end", "hide_companion", "hide_panel", "panel_blur", "panel_kind", "panel_motion", "let_it_walk", "set_roam"}
 
 
 def test_hide_turns_the_preference_off_and_hides_the_window(made, prefs):

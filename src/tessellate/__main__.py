@@ -2166,8 +2166,14 @@ def _start_reminder_notifier(window, icon_path: Path, data_dir: Path):  # noqa: 
     try:
         from tessellate.core import reminder_notifier
 
+        from tessellate.core import desk_companion
+
         notifier = reminder_notifier.start(
-            data_dir, on_open=_open, icon=str(icon_path) if icon_path.is_file() else None
+            data_dir,
+            on_open=_open,
+            icon=str(icon_path) if icon_path.is_file() else None,
+            # The desktop companion's overlay fetches a card for each reminder that falls due.
+            on_due=desk_companion.carry_due,
         )
     except Exception as exc:  # noqa: BLE001  # notifications never stop the window
         logger.warning("reminder notifications are off: %s", exc)

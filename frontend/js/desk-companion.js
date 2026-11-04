@@ -162,6 +162,14 @@
       }
       rows.push(item("Settings", "gear", () => leave(() => ask("open_app", "settings"))));
       if (!locked && motion?.still && motion.reason !== "avatar") rows.push(item("Let it walk", "person-simple-walk", () => leave(() => ask("let_it_walk"))));
+      //: Roam over windows: a switch, not a one-way action, so it says which way it is
+      //: (a checked menu item) and flips it.
+      if (overlay && motion && typeof motion.roam === "boolean") {
+        const roam = item("Roam over windows", motion.roam ? "check-square" : "square", () => leave(() => ask("set_roam", !motion.roam)));
+        roam.setAttribute("role", "menuitemcheckbox");
+        roam.setAttribute("aria-checked", String(motion.roam));
+        rows.push(roam);
+      }
       rows.push(item("Hide", "eye-slash", () => (overlay ? leave(() => ask("hide_companion")) : ask("hide_companion"))));
     } else if (locked) {
       const note = document.createElement("p");

@@ -327,11 +327,14 @@ def test_the_desktop_companion_row_is_named_as_a_this_computer_setting():
     # switch, which test_motion_resolved keeps out of the pages.
     # The owner's report of 2026-11-04 moved this: Atlas floats (others walk), can be thrown,
     # hangs from the top and peeks from behind the taskbar, in both places.
-    for words in ("floats like a wind spirit", "sleeps", "thrown", "hangs from the top", "peeks up from behind the taskbar", "animation effects"):
+    # The roam request of the same day: window tops, the switch and a reminder's card.
+    for words in ("floats like a wind spirit", "sleeps", "thrown", "hangs from the top", "peeks up from behind the taskbar", "animation effects",
+                  "climbs onto the top of a window", "Roam over windows", "a card when a reminder falls due"):
         assert words in " ".join(popover.split()), words
     for topic in named:
         flat = " ".join(topic["body"].split())
-        for words in ("floats like a wind spirit", "thrown", "hangs from the top", "peeks up from behind the taskbar", "animation effects"):
+        for words in ("floats like a wind spirit", "thrown", "hangs from the top", "peeks up from behind the taskbar", "animation effects",
+                      "climbs onto the top of a window", "Roam over windows", "a card to click"):
             assert words in flat, (topic["id"], words)
     settings = (FRONTEND / "js" / "settings.js").read_text(encoding="utf-8")
     assert 'const onThisComputer = isDesktop || (await healthFacts())?.this_computer !== false;' in settings
