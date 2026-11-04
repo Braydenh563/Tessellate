@@ -2,7 +2,7 @@
 
 Generated 2026-11-04 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7755, frontend ids 2641, CSS sections 522, backend routes 644, backend modules 8676, test files 2016, tests 16994, plan headings 999, app scripts 28, boot scripts 37, script files 248.
+Counts: frontend functions 7755, frontend ids 2641, CSS sections 522, backend routes 644, backend modules 8676, test files 2016, tests 16995, plan headings 999, app scripts 28, boot scripts 37, script files 248.
 
 ## Frontend functions (7755)
 
@@ -23814,7 +23814,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (16994)
+## Tests (16995)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -25148,7 +25148,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_overlay_roam.py | 19 |
 | tests/test_overlay_roam_runner.py | 10 |
 | tests/test_overlay_runner.py | 20 |
-| tests/test_overlay_sprites.py | 13 |
+| tests/test_overlay_sprites.py | 14 |
 | tests/test_overview_counts_1524.py | 3 |
 | tests/test_owner_typos.py | 21 |
 | tests/test_p5_only_with_art_1530.py | 5 |

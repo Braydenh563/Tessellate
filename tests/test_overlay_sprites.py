@@ -142,3 +142,15 @@ def test_clipping_clears_the_hidden_rows_and_columns_and_leaves_the_rest() -> No
     assert all(cols.bgra[(r * 4 + c) * 4] == (255 if 1 <= c < 3 else 0) for r in range(4) for c in range(4))
     assert set(sprites.clipped(f, (0, 0, 4, 0)).bgra) == {0}
     assert sprites.clipped(f, None) is f and sprites.clipped(f, (0, 0, 4, 4)) is f
+
+
+def test_the_nebula_stream_is_in_every_frame_soft_but_visible() -> None:
+    """INBOX 1660 ("the desktop companion is also missing the nebular stream"): the stream is the
+    translucent part of a frame (alpha above the click guard's floor and below solid). It is
+    there in every frame, and its pixels are at least 35 percent opaque on average."""
+    for look in sprites.LOOKS:
+        for name in sprites.FRAME_NAMES:
+            alpha = Image.open(DIR / look / f"{name}.png").convert("RGBA").getchannel("A")
+            soft = [a for a in alpha.getdata() if sprites.ALPHA_FLOOR <= a < 250]
+            assert len(soft) >= 1500, (look, name, len(soft))
+            assert sum(soft) / len(soft) >= 0.35 * 255, (look, name, sum(soft) / len(soft))

@@ -19,7 +19,7 @@ import sys
 import tempfile
 from pathlib import Path
 
-from PIL import Image
+from PIL import Image, ImageChops
 
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "src"))
@@ -45,6 +45,27 @@ def solidify(a: int) -> int:
     return min(255, (a - SOLID_LO) * 255 // (SOLID_HI - SOLID_LO))
 
 
+#: The nebula stream (INBOX 1660): `render_desk_frames.js` captures each frame twice, without
+#: (`<name>.png`) and with (`<name>.neb.png`) the app's nebula washes. What the second adds
+#: to the first is the stream; it is kept as its own soft layer under the solid body, at
+#: `STREAM_SOFT` of its alpha (a pale veil, not a second body), and anything fainter than
+#: `STREAM_LO` is dropped (the click guard would clear it anyway).
+STREAM_LO = 10
+STREAM_SOFT = 0.85
+
+
+def with_stream(body: Image.Image, neb: Image.Image) -> Image.Image:
+    """`body` (the capture without the nebula) solidified, with the stream the `neb`
+    capture adds under it. Both are RGBA captures of the same frame."""
+    extra = ImageChops.subtract(neb.getchannel("A"), body.getchannel("A"))
+    extra = extra.point(lambda a: 0 if a < STREAM_LO else min(255, round(a * STREAM_SOFT)))
+    veil = neb.copy()
+    veil.putalpha(extra)
+    solid = body.copy()
+    solid.putalpha(body.getchannel("A").point(solidify))
+    return Image.alpha_composite(veil, solid)
+
+
 def crop_box(images: list[Image.Image]) -> tuple[int, int, int, int]:
     left = top = 10**9
     right = bottom = 0
@@ -62,13 +83,16 @@ def main() -> int:
     with tempfile.TemporaryDirectory() as raw:
         env = {**os.environ, "BASE": os.environ.get("BASE", "http://127.0.0.1:8828"), "SCRATCH": raw}
         env.setdefault("PLAYWRIGHT_BROWSERS_PATH", "/opt/pw-browsers")
-        subprocess.run(["node", str(ROOT / "scripts" / "render_desk_frames.js"), raw], check=True, env=env, cwd=ROOT)
+        if not os.environ.get("DESK_RAW"):  # DESK_RAW: reuse the captures of an earlier run (a folder of <look>/<frame>.png and .neb.png)
+            subprocess.run(["node", str(ROOT / "scripts" / "render_desk_frames.js"), raw], check=True, env=env, cwd=ROOT)
+        raw = os.environ.get("DESK_RAW") or raw
         total = 0
         for look in sprites.LOOKS:
-            images = {name: Image.open(Path(raw) / look / f"{name}.png").convert("RGBA") for name in sprites.FRAME_NAMES if name not in sprites.CARD_FRAMES}
+            captured = {name: Image.open(Path(raw) / look / f"{name}.png").convert("RGBA") for name in sprites.FRAME_NAMES if name not in sprites.CARD_FRAMES}
+            images = {name: with_stream(im, Image.open(Path(raw) / look / f"{name}.neb.png").convert("RGBA")) for name, im in captured.items()}
             #: A capture can come out blank (seen once on a cold page: eight idle frames
             #: of one look): refuse to ship it rather than a figure that vanishes.
-            blank = [n for n, im in images.items() if sum(im.getchannel("A").histogram()[128:]) < 1000]
+            blank = [n for n, im in captured.items() if sum(im.getchannel("A").histogram()[128:]) < 1000]
             if blank:
                 raise SystemExit(f"{look}: blank captures {blank}; run it again")
             box = crop_box(list(images.values()))
@@ -78,8 +102,6 @@ def main() -> int:
             target.mkdir(parents=True)
             for name, im in images.items():
                 im = im.crop(box)
-                alpha = im.getchannel("A").point(solidify)
-                im.putalpha(alpha)
                 small = im.quantize(colors=COLOURS, method=Image.Quantize.FASTOCTREE, dither=Image.Dither.NONE)
                 small.save(target / f"{name}.png", optimize=True)
                 total += (target / f"{name}.png").stat().st_size
