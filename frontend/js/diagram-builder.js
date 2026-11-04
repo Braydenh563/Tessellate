@@ -557,6 +557,7 @@
     host.append(root);
     panes.set(root, S);
     S.tree.addEventListener("keydown", (event) => onKey(S, event));
+    root.addEventListener("keydown", (event) => diagramModel.bar.rootKey(S, event, { add: addBlock, style: styleDo }));
     S.tree.addEventListener("click", (event) => {
       const block = event.target.closest(".dgm-block");
       if (block && !event.target.closest(".menu-wrap, .dgm-join, .dgm-connect, .dgm-swatch")) select(S, block.dataset.key);
@@ -630,12 +631,15 @@
   let told = "";
 
   async function show(host, io, text) {
+    //: The picture's renderer and the flowchart's toolbar start fetching with the first batch, not after it (R11: cold start).
+    const kind = kindOf(text);
+    ensureModule("mermaid");
+    const early = kind === "flowchart" ? Promise.all([ensureModule("diagramBar"), ensureModule("diagramSteps")]) : Promise.resolve([true]);
     await Promise.all(["/css/objmove-lazy.css", "/js/obj-ref.js", "/js/obj-drag.js", "/js/diagram-picture.js", "/js/diagram-library.js", "/js/diagram-pointer.js", "/js/diagram-ops.js"].map((file) => lazyScript(file)));
     diagramOps = helpers.ops = diagramModel.ops;
     if (typeof OBJ_MODES === "object" && !OBJ_MODES.diagram) OBJ_MODES.diagram = diagramModel.pointer.make(helpers);
     kit.dropMark ||= diagramModel.pointer.dropMark;
-    const kind = kindOf(text);
-    if (kind === "flowchart" && !((await ensureModule("diagramBar")) && (await ensureModule("diagramSteps")))) return host.replaceChildren(el("p", "muted", "The block editor did not load. Source still works."));
+    if (kind === "flowchart" && !(await early).every(Boolean)) return host.replaceChildren(el("p", "muted", "The block editor did not load. Source still works."));
     let S;
     if (kind !== "flowchart") {
       if (!(await ensureModule("diagramKinds"))) return host.replaceChildren(el("p", "muted", "The block editor for this kind did not load. Source still works."));

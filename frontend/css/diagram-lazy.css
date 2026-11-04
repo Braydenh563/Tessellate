@@ -1230,3 +1230,39 @@
   columns: 1;
   max-height: 60dvh;
 }
+
+/* A menu row with a shortcut (kebabMenu `keys`): the name on the left, the key on the right. */
+.action-menu .menu-item:has(> .menu-keys) {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-5);
+}
+
+.menu-keys {
+  color: var(--muted);
+  font: inherit;
+  font-size: var(--text-sm);
+  font-weight: 400;
+}
+
+/* The blocks list hidden (the toolbar's list button): the picture takes the room, keys still work from it. */
+.dgm-no-outline .dgm-pane,
+.dgm-no-outline .dgm-split-handle {
+  display: none;
+}
+
+.dgm-no-outline .dgm-body,
+.dgm-no-outline .dgm-body.dgm-split {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+/* Targets are 44 px on a touch screen and on a phone-width window (the swatch, Connect and the connector rows measured 24, 40 and 40). */
+@media (pointer: coarse), (max-width: 599.98px) {
+  .dgm-swatch,
+  .dgm-card > button.dgm-connect,
+  .dgm-join {
+    min-block-size: 2.75rem;
+    min-inline-size: 2.75rem;
+  }
+}

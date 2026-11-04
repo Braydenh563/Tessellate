@@ -13,13 +13,21 @@
   const WORD = { TD: "Down", LR: "Right", BT: "Up", RL: "Left" };
   diagramModel.keys = KEYS;
 
-  const hintOf = (shape) => (shape === "group" ? "G" : Object.keys(KEYS).find((k) => /\d/.test(k) && KEYS[k] === shape));
+  //: A Box answers to N as well as 1, so both show.
+  const hintOf = (shape) => (shape === "group" ? "G" : shape === "rect" ? "N or 1" : Object.keys(KEYS).find((k) => /\d/.test(k) && KEYS[k] === shape));
   const last = () => {
     const saved = prefs.get(LAST, "rect");
     return ORDER.includes(saved) ? saved : "rect";
   };
   const optionsOf = (shape) => (shape === "group" ? { group: true } : shape === "note" ? { shape: "round", text: "Note" } : { shape });
   const nameOf = (shape, h) => (shape === "group" ? "Group" : shape === "note" ? "Note" : h.label[shape]);
+
+  const OUTLINE = "diagram.outline";
+  function paintOutline(S, button) {
+    const on = prefs.get(OUTLINE) !== "0";
+    S.root.classList.toggle("dgm-no-outline", !on);
+    button.setAttribute("aria-pressed", String(on));
+  }
 
   //: Refreshes what depends on the model: the Direction button's arrow and word.
   function sync(S) {
@@ -53,7 +61,7 @@
       const shape = last();
       const name = nameOf(shape, h);
       main.replaceChildren(shape === "group" ? h.groupGlyph() : h.glyph(shape === "note" ? "round" : shape), el("span", "dgm-addname", `Add ${name.toLowerCase()}`));
-      main.title = `Add a ${name.toLowerCase()} (${hintOf(shape) || "N"})`;
+      main.title = `Add a ${name.toLowerCase()} (${hintOf(shape)})`;
     };
     const add = (shape) => {
       prefs.set(LAST, shape);
@@ -63,7 +71,7 @@
     main.addEventListener("click", () => add(last()));
     const caret = h.smallButton("ph:caret-down", "Choose a shape to add", () => {
       const r = split.getBoundingClientRect();
-      const rows = ORDER.map((shape) => ({ label: `${nameOf(shape, h)}  ${hintOf(shape)}`, title: hints.get(nameOf(shape, h)) || "", run: () => add(shape) }));
+      const rows = ORDER.map((shape) => ({ label: nameOf(shape, h), keys: hintOf(shape), title: hints.get(nameOf(shape, h)) || "", run: () => add(shape) }));
       openMenuAtPoint(rows, "Add to the diagram", r.left, r.bottom, caret);
     });
     caret.classList.add("dgm-addcaret");
@@ -91,8 +99,16 @@
       b.classList.add("dgm-hist");
       return b;
     });
+    //: The outline (the blocks list) can be hidden, leaving the picture and the toolbar; the choice is kept.
+    const outline = h.smallButton("ph:sidebar-simple", "Show or hide the list of blocks", () => {
+      prefs.set(OUTLINE, prefs.get(OUTLINE) === "0" ? "1" : "0");
+      paintOutline(S, outline);
+    });
+    outline.setAttribute("aria-label", "Blocks list");
+    outline.classList.add("dgm-outline-toggle");
+    paintOutline(S, outline);
     const actions = el("div", "dock-actions");
-    actions.append(suggest, ...hist, h.more(S));
+    actions.append(suggest, ...hist, outline, h.more(S));
     bar.append(split, S.dirs, actions);
     sync(S);
     //: One Tab stop for the whole toolbar, Left and Right between its buttons (documents.js; 17 stops to the first block before).
@@ -109,5 +125,18 @@
     return optionsOf(shape);
   }
 
-  diagramModel.bar = { build, sync, key, last };
+  //: The same keys from the picture, the toolbar or the outline's edge (the block handler only hears a focused block):
+  //: 1 to 7, N, Shift+N, G add after the selected block, K colours, ? opens the sheet. Typing in a field is left alone.
+  function rootKey(S, event, h) {
+    const t = event.target;
+    if (event.defaultPrevented || event.altKey || event.ctrlKey || event.metaKey || t.isContentEditable || t.closest?.(".dgm-tree, .menu-wrap, input, textarea, select")) return;
+    const low = event.key.toLowerCase();
+    const picked = key(event) || (low === "n" && !event.shiftKey ? { shape: "rect" } : low === "g" ? { group: true } : null);
+    const run = picked ? () => h.add(S, { after: S.sel, ...picked }) : low === "k" ? () => h.style(S, "colour", S.sel) : event.key === "?" ? () => h.style(S, "shortcuts") : null;
+    if (!run) return;
+    event.preventDefault();
+    run();
+  }
+
+  diagramModel.bar = { build, sync, key, last, rootKey };
 })();

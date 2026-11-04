@@ -67,3 +67,24 @@ def test_the_sheets_are_lazy_and_read_the_key_table():
     assert not re.search(r"\b(Box|Rounded|Decision)\b.*\b[1-7]\b", STYLE)
     assert "diagramModel.style" in BUILDER and '"?"' in BUILDER
     assert "Keyboard shortcuts" in BUILDER
+
+
+def test_a_duplicate_keeps_the_colour():
+    from tests.test_diagram_builder import _script
+
+    got = _script("flowchart TD\n  A[One]\n", "m.nodes[0].fill = '#387fe3'; const r = o.duplicate(m, ['n:A']); return [r.keys, m.nodes.map((n) => n.fill)];")
+    assert got["result"][1] == ["#387fe3", "#387fe3"]
+
+
+def test_the_shape_keys_work_from_the_picture_and_the_toolbar_and_the_menu_shows_them_as_keys():
+    # The review of 1661 B: the keys were heard only by a focused block, and the menu rows put the key in the label.
+    assert "rootKey" in BAR and "diagramModel.bar.rootKey" in BUILDER
+    assert 'keys: hintOf(shape)' in BAR and '"N or 1"' in BAR
+    selects = (JS / "sheets-selects.js").read_text(encoding="utf-8")
+    assert 'kbd' in selects and "aria-keyshortcuts" in selects
+
+
+def test_the_blocks_list_can_be_hidden_and_the_choice_is_kept():
+    assert 'dgm-outline-toggle' in BAR and 'aria-pressed' in BAR
+    css = (ROOT / "frontend" / "css" / "diagram-lazy.css").read_text(encoding="utf-8")
+    assert ".dgm-no-outline .dgm-pane" in css
