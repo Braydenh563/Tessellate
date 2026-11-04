@@ -714,6 +714,33 @@ TODAY_SCRIPT = (
 )
 
 
+class _SnoozeTimer:
+    """The snooze countdown as a listed thread Job (`jobs.thread`) with the `threading.Timer` surface
+    (`start`, `cancel`, `join`, `is_alive`): cancel wakes the wait at once, so closing never lingers."""
+
+    def __init__(self, delay: float, fire: Callable[[], None]) -> None:
+        self._delay, self._fire = delay, fire
+        self._cancelled = threading.Event()
+        self._thread: threading.Thread | None = None
+
+    def start(self) -> None:
+        self._thread = jobs.thread("desk-snooze", self._run, stop=self._cancelled.set)
+
+    def _run(self) -> None:
+        if not self._cancelled.wait(self._delay):
+            self._fire()
+
+    def cancel(self) -> None:
+        self._cancelled.set()
+
+    def join(self, timeout: float | None = None) -> None:
+        if self._thread is not None:
+            self._thread.join(timeout)
+
+    def is_alive(self) -> bool:
+        return self._thread is not None and self._thread.is_alive()
+
+
 class DeskApi:
     """What the companion's page may ask of its window. Only public methods
     are exposed to the page (pywebview), and each validates what it is given:
@@ -1111,8 +1138,7 @@ class DeskCompanion:
         """"Hide for 10 minutes": the figure goes now and comes back by itself, as long as it is
         still turned on and the app window is still away. The clock is the injected one."""
         self.snooze_until = self._now() + SNOOZE_MINUTES * 60
-        timer = threading.Timer(SNOOZE_MINUTES * 60 + 1, lambda: self._dispatch("desk-companion", self.sync))
-        timer.daemon = True
+        timer = _SnoozeTimer(SNOOZE_MINUTES * 60 + 1, lambda: self._dispatch("desk-companion", self.sync))
         with _lock:
             old, self._snooze_timer = self._snooze_timer, timer
         if old is not None:

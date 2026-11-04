@@ -44,7 +44,7 @@ const ctx = {
   atlasTailWake() {}, atlasFix: (n) => +n.toFixed(2), atlasArmPath: () => "M0 0", atlasArmHand: () => "", atlasState: {},
   ATLAS_LOOKS: {},
   nmb: { flight: null },
-  nameMarkBuddyActOff: () => false,
+  nameMarkBuddyActOff: () => false, nameMarkBuddyBehindCover: () => false,  // 1667: the rig holds its reads behind a dialog
 };
 vm.createContext(ctx);
 vm.runInContext(process.argv[1] + "\n;globalThis.__wake = atlasRigWake;", ctx);

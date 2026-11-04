@@ -351,10 +351,8 @@ window.addEventListener("pointerdown", objDragArm, true);
     window.addEventListener("scroll", hide, { capture: true, passive: true });
   }
 
-  //: **One look a frame, not one per `pointerover`** (INBOX 1667: `#document.onpointerover` 14 to 40ms of
-  //: forced layout, 59 calls in a 6s wheel at 4x): a scroll under a resting pointer sends one for every
-  //: card that passes it, and `show` reads the card's box, the grip's size and what is on top there.
-  //: The last target of the frame is the one looked at.
+  //: **One look a frame, not one per `pointerover`** (INBOX 1667: 14 to 40ms of forced layout a call, 59
+  //: calls in a 6s wheel at 4x): `show` reads boxes. The last target of the frame is looked at.
   let over = null;
   let overFrame = 0;
   const look = () => {
@@ -369,34 +367,30 @@ window.addEventListener("pointerdown", objDragArm, true);
       timer = setTimeout(settle, 160);
     }
   };
-  //: Not for a card that scrolled under a resting pointer (INBOX 1667: 59 calls in a wheel, 1.5s of forced
-  //: layout at 4x; a scroll lays the page out again after every frame, so any read pays for it). The
-  //: pointer's place is kept, and once the scroll has been still for 200ms the card under it is looked at
-  //: once, so a grip still appears under a resting pointer without a move.
+  //: Nor for a card that scrolled under a resting pointer (INBOX 1667: 1.5s of forced layout in a wheel
+  //: at 4x). The pointer's place is kept; once the scroll is still for 200ms the card under it is looked at once.
   let scrolledAt = 0;
   let rest = null;
   let restTimer = 0;
   const restLook = () => {
-    restTimer = 0;
     if (!rest || performance.now() - scrolledAt < 200) return;
     over = document.elementFromPoint(rest.x, rest.y);
     rest = null;
     look();
   };
+  const armRest = () => {
+    clearTimeout(restTimer);
+    restTimer = setTimeout(restLook, 220);
+  };
   window.addEventListener("scroll", () => {
     scrolledAt = performance.now();
-    if (rest) {
-      clearTimeout(restTimer);
-      restTimer = setTimeout(restLook, 220);
-    }
+    if (rest) armRest();
   }, { capture: true, passive: true });
   document.addEventListener("pointerover", (event) => {
     if (event.pointerType === "touch") return;
     if (performance.now() - scrolledAt < 200) {
       rest = { x: event.clientX, y: event.clientY };
-      clearTimeout(restTimer);
-      restTimer = setTimeout(restLook, 220);
-      return;
+      return armRest();
     }
     rest = null;
     if (event.target === grip || grip?.contains(event.target)) {
@@ -405,7 +399,10 @@ window.addEventListener("pointerdown", objDragArm, true);
     }
     over = event.target;
     //: A timer after the frame, so the read is not the one that pays for the frame's own layout.
-    if (!overFrame) overFrame = requestAnimationFrame(() => setTimeout(look));
+    if (!overFrame) {
+      overFrame = 1;
+      afterFrames(() => setTimeout(look), 1);
+    }
   }, true);
   document.addEventListener("focusin", (event) => {
     const next = movable(event.target);

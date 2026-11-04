@@ -43,6 +43,7 @@ import time
 from typing import Any, Callable
 
 from tessellate.core import jobs
+from tessellate.core.subproc import NO_WINDOW
 from tessellate.core.overlay import pacing, xlib
 from tessellate.core.overlay.win32 import WinInfo
 
@@ -172,6 +173,7 @@ def dpi_at_point(w: Any, x: int, y: int) -> int | None:
     try:
         return int(round(_scale(w)))
     except Exception:  # noqa: BLE001 - the runner has its own list to fall back on
+        logger.debug("overlay: x11 scale unreadable", exc_info=True)
         return None
 
 
@@ -200,7 +202,7 @@ def animations_enabled(w: Any) -> bool:
     try:
         out = subprocess.run(
             ["gsettings", "get", "org.gnome.desktop.interface", "enable-animations"],
-            capture_output=True, text=True, timeout=1.5, check=False,
+            capture_output=True, text=True, timeout=1.5, check=False, creationflags=NO_WINDOW,
         ).stdout.strip()
     except (OSError, subprocess.SubprocessError):
         return True

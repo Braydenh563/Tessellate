@@ -2,7 +2,7 @@
 
 Generated 2026-11-04 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7809, frontend ids 2644, CSS sections 522, backend routes 644, backend modules 8796, test files 2064, tests 17426, plan headings 1003, app scripts 28, boot scripts 37, script files 255.
+Counts: frontend functions 7809, frontend ids 2644, CSS sections 522, backend routes 644, backend modules 8797, test files 2064, tests 17426, plan headings 1003, app scripts 28, boot scripts 37, script files 255.
 
 ## Frontend functions (7809)
 
@@ -1100,68 +1100,68 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `buildSettingsJumpList` | frontend/js/phone-shell.js:1799 |
-| `clearAppCache` | frontend/js/phone-shell.js:2268 |
-| `closeNotePageIfGone` | frontend/js/phone-shell.js:1118 |
-| `dockArrangeLabel` | frontend/js/phone-shell.js:1962 |
-| `dockArrangeSlot` | frontend/js/phone-shell.js:1951 |
-| `dockChatAttachments` | frontend/js/phone-shell.js:1250 |
-| `dockChatTools` | frontend/js/phone-shell.js:1308 |
-| `dockPhoneStatus` | frontend/js/phone-shell.js:813 |
-| `dockShown` | frontend/js/phone-shell.js:2041 |
-| `dockTabBar` | frontend/js/phone-shell.js:652 |
-| `dockTight` | frontend/js/phone-shell.js:2048 |
-| `dropRepeatedTitle` | frontend/js/phone-shell.js:1046 |
-| `echoSettingsPaneTitle` | frontend/js/phone-shell.js:1791 |
+| `buildSettingsJumpList` | frontend/js/phone-shell.js:1790 |
+| `clearAppCache` | frontend/js/phone-shell.js:2259 |
+| `closeNotePageIfGone` | frontend/js/phone-shell.js:1109 |
+| `dockArrangeLabel` | frontend/js/phone-shell.js:1953 |
+| `dockArrangeSlot` | frontend/js/phone-shell.js:1942 |
+| `dockChatAttachments` | frontend/js/phone-shell.js:1241 |
+| `dockChatTools` | frontend/js/phone-shell.js:1299 |
+| `dockPhoneStatus` | frontend/js/phone-shell.js:804 |
+| `dockShown` | frontend/js/phone-shell.js:2032 |
+| `dockTabBar` | frontend/js/phone-shell.js:643 |
+| `dockTight` | frontend/js/phone-shell.js:2039 |
+| `dropRepeatedTitle` | frontend/js/phone-shell.js:1037 |
+| `echoSettingsPaneTitle` | frontend/js/phone-shell.js:1782 |
 | `emblemArt` | frontend/js/phone-shell.js:86 |
 | `emblemHsl` | frontend/js/phone-shell.js:36 |
 | `emblemPalette` | frontend/js/phone-shell.js:57 |
 | `emblemSetBusy` | frontend/js/phone-shell.js:134 |
-| `fitDock` | frontend/js/phone-shell.js:2168 |
-| `floatPrimaryActions` | frontend/js/phone-shell.js:1889 |
+| `fitDock` | frontend/js/phone-shell.js:2159 |
+| `floatPrimaryActions` | frontend/js/phone-shell.js:1880 |
 | `focusTabPage` | frontend/js/phone-shell.js:388 |
-| `foldDockActions` | frontend/js/phone-shell.js:2114 |
-| `foldDockArrange` | frontend/js/phone-shell.js:2059 |
-| `foldSiblingsIntoMenu` | frontend/js/phone-shell.js:2006 |
-| `foldZoneIntoMenu` | frontend/js/phone-shell.js:1974 |
-| `forceReloadApp` | frontend/js/phone-shell.js:2283 |
-| `initBottomTabBar` | frontend/js/phone-shell.js:683 |
-| `initDockFolding` | frontend/js/phone-shell.js:2181 |
-| `initHeaderHeightToken` | frontend/js/phone-shell.js:564 |
-| `initKeyboardInset` | frontend/js/phone-shell.js:1712 |
-| `initNotePage` | frontend/js/phone-shell.js:1123 |
-| `initNotesSubtabHeightToken` | frontend/js/phone-shell.js:598 |
-| `initOcrPhonePage` | frontend/js/phone-shell.js:1210 |
-| `initPhoneChatRow` | frontend/js/phone-shell.js:1363 |
-| `initPhoneHeaderMore` | frontend/js/phone-shell.js:727 |
-| `initPhoneStatus` | frontend/js/phone-shell.js:849 |
-| `initPrimaryFab` | frontend/js/phone-shell.js:1915 |
-| `initRowSwipe` | frontend/js/phone-shell.js:944 |
-| `mountPhoneSidebarOpeners` | frontend/js/phone-shell.js:883 |
-| `nameFoldedButton` | frontend/js/phone-shell.js:1994 |
-| `ocrPhonePage` | frontend/js/phone-shell.js:1174 |
-| `openNotePage` | frontend/js/phone-shell.js:1056 |
-| `openSheet` | frontend/js/phone-shell.js:1403 |
-| `phoneMoreDueCount` | frontend/js/phone-shell.js:1665 |
-| `phoneMoreRunCount` | frontend/js/phone-shell.js:1630 |
-| `phoneSheetDialogs` | frontend/js/phone-shell.js:1229 |
-| `quitApp` | frontend/js/phone-shell.js:2235 |
-| `refreshNotePage` | frontend/js/phone-shell.js:1104 |
+| `foldDockActions` | frontend/js/phone-shell.js:2105 |
+| `foldDockArrange` | frontend/js/phone-shell.js:2050 |
+| `foldSiblingsIntoMenu` | frontend/js/phone-shell.js:1997 |
+| `foldZoneIntoMenu` | frontend/js/phone-shell.js:1965 |
+| `forceReloadApp` | frontend/js/phone-shell.js:2274 |
+| `initBottomTabBar` | frontend/js/phone-shell.js:674 |
+| `initDockFolding` | frontend/js/phone-shell.js:2172 |
+| `initHeaderHeightToken` | frontend/js/phone-shell.js:555 |
+| `initKeyboardInset` | frontend/js/phone-shell.js:1703 |
+| `initNotePage` | frontend/js/phone-shell.js:1114 |
+| `initNotesSubtabHeightToken` | frontend/js/phone-shell.js:589 |
+| `initOcrPhonePage` | frontend/js/phone-shell.js:1201 |
+| `initPhoneChatRow` | frontend/js/phone-shell.js:1354 |
+| `initPhoneHeaderMore` | frontend/js/phone-shell.js:718 |
+| `initPhoneStatus` | frontend/js/phone-shell.js:840 |
+| `initPrimaryFab` | frontend/js/phone-shell.js:1906 |
+| `initRowSwipe` | frontend/js/phone-shell.js:935 |
+| `mountPhoneSidebarOpeners` | frontend/js/phone-shell.js:874 |
+| `nameFoldedButton` | frontend/js/phone-shell.js:1985 |
+| `ocrPhonePage` | frontend/js/phone-shell.js:1165 |
+| `openNotePage` | frontend/js/phone-shell.js:1047 |
+| `openSheet` | frontend/js/phone-shell.js:1394 |
+| `phoneMoreDueCount` | frontend/js/phone-shell.js:1656 |
+| `phoneMoreRunCount` | frontend/js/phone-shell.js:1621 |
+| `phoneSheetDialogs` | frontend/js/phone-shell.js:1220 |
+| `quitApp` | frontend/js/phone-shell.js:2226 |
+| `refreshNotePage` | frontend/js/phone-shell.js:1095 |
 | `releaseDetachedEmblems` | frontend/js/phone-shell.js:170 |
 | `releaseEmblem` | frontend/js/phone-shell.js:153 |
 | `renderBrandLogo` | frontend/js/phone-shell.js:220 |
 | `renderEmblem` | frontend/js/phone-shell.js:176 |
 | `renderEmblemWhenShown` | frontend/js/phone-shell.js:257 |
-| `renderExportsList` | frontend/js/phone-shell.js:2294 |
-| `sheetRow` | frontend/js/phone-shell.js:1604 |
+| `renderExportsList` | frontend/js/phone-shell.js:2285 |
+| `sheetRow` | frontend/js/phone-shell.js:1595 |
 | `syncEmblemBusy` | frontend/js/phone-shell.js:122 |
-| `syncPhoneMoreButton` | frontend/js/phone-shell.js:1674 |
-| `syncPhoneMoreRuns` | frontend/js/phone-shell.js:1639 |
-| `tabFromTop` | frontend/js/phone-shell.js:498 |
+| `syncPhoneMoreButton` | frontend/js/phone-shell.js:1665 |
+| `syncPhoneMoreRuns` | frontend/js/phone-shell.js:1630 |
+| `tabFromTop` | frontend/js/phone-shell.js:489 |
 | `tabPageScroller` | frontend/js/phone-shell.js:404 |
-| `toggleAutonomousPanel` | frontend/js/phone-shell.js:2330 |
+| `toggleAutonomousPanel` | frontend/js/phone-shell.js:2321 |
 | `watchEmblemVisibility` | frontend/js/phone-shell.js:16 |
-| `watchStatusBarIdle` | frontend/js/phone-shell.js:795 |
+| `watchStatusBarIdle` | frontend/js/phone-shell.js:786 |
 
 ### frontend/js/wiring.js (33)
 
@@ -12991,7 +12991,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:164 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (8796)
+## Backend modules (8797)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -21208,15 +21208,16 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `reset_app_state` | src/tessellate/core/deps.py:267 |
 | `store_quietly` | src/tessellate/core/deps.py:587 |
 
-### src/tessellate/core/desk_companion.py (38)
+### src/tessellate/core/desk_companion.py (39)
 
 | Name | File:line |
 |---|---|
-| `DeskApi` | src/tessellate/core/desk_companion.py:717 |
-| `DeskCompanion` | src/tessellate/core/desk_companion.py:784 |
+| `DeskApi` | src/tessellate/core/desk_companion.py:744 |
+| `DeskCompanion` | src/tessellate/core/desk_companion.py:811 |
+| `_SnoozeTimer` | src/tessellate/core/desk_companion.py:717 |
 | `_config` | src/tessellate/core/desk_companion.py:178 |
-| `_default_overlay_factory` | src/tessellate/core/desk_companion.py:1527 |
-| `_follow` | src/tessellate/core/desk_companion.py:1577 |
+| `_default_overlay_factory` | src/tessellate/core/desk_companion.py:1553 |
+| `_follow` | src/tessellate/core/desk_companion.py:1603 |
 | `_linux_areas` | src/tessellate/core/desk_companion.py:283 |
 | `_log_placed` | src/tessellate/core/desk_companion.py:651 |
 | `_look_answer` | src/tessellate/core/desk_companion.py:209 |
@@ -21227,8 +21228,8 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_screen_area` | src/tessellate/core/desk_companion.py:387 |
 | `_set_pref` | src/tessellate/core/desk_companion.py:203 |
 | `_system_dpi` | src/tessellate/core/desk_companion.py:273 |
-| `attach` | src/tessellate/core/desk_companion.py:1542 |
-| `carry_due` | src/tessellate/core/desk_companion.py:1614 |
+| `attach` | src/tessellate/core/desk_companion.py:1568 |
+| `carry_due` | src/tessellate/core/desk_companion.py:1640 |
 | `clamp_corner` | src/tessellate/core/desk_companion.py:403 |
 | `clean_size` | src/tessellate/core/desk_companion.py:669 |
 | `companion_ex_style` | src/tessellate/core/desk_companion.py:477 |
@@ -21237,7 +21238,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `hit_script` | src/tessellate/core/desk_companion.py:681 |
 | `monitor_areas` | src/tessellate/core/desk_companion.py:327 |
 | `monitor_for` | src/tessellate/core/desk_companion.py:425 |
-| `overlay_support` | src/tessellate/core/desk_companion.py:1510 |
+| `overlay_support` | src/tessellate/core/desk_companion.py:1536 |
 | `panel_corner` | src/tessellate/core/desk_companion.py:412 |
 | `panel_placement` | src/tessellate/core/desk_companion.py:437 |
 | `physical_rect` | src/tessellate/core/desk_companion.py:512 |
@@ -21245,9 +21246,9 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `place_on_screen` | src/tessellate/core/desk_companion.py:589 |
 | `place_physical` | src/tessellate/core/desk_companion.py:615 |
 | `raise_on_desktop` | src/tessellate/core/desk_companion.py:529 |
-| `shutdown` | src/tessellate/core/desk_companion.py:1635 |
+| `shutdown` | src/tessellate/core/desk_companion.py:1661 |
 | `to_logical` | src/tessellate/core/desk_companion.py:254 |
-| `tray_menu_item` | src/tessellate/core/desk_companion.py:1643 |
+| `tray_menu_item` | src/tessellate/core/desk_companion.py:1669 |
 | `window_handle` | src/tessellate/core/desk_companion.py:496 |
 | `work_area` | src/tessellate/core/desk_companion.py:305 |
 
@@ -22259,9 +22260,9 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `OverlayHost` | src/tessellate/core/overlay/host.py:118 |
+| `OverlayHost` | src/tessellate/core/overlay/host.py:121 |
 | `PaceTimer` | src/tessellate/core/overlay/host.py:61 |
-| `premultiplied_dib_bytes` | src/tessellate/core/overlay/host.py:113 |
+| `premultiplied_dib_bytes` | src/tessellate/core/overlay/host.py:116 |
 
 ### src/tessellate/core/overlay/pacing.py (1)
 
@@ -22357,33 +22358,33 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `X11Host` | src/tessellate/core/overlay/x11.py:307 |
-| `_clip_to_struts` | src/tessellate/core/overlay/x11.py:132 |
-| `_clip_to_workarea` | src/tessellate/core/overlay/x11.py:138 |
-| `_current_desktop` | src/tessellate/core/overlay/x11.py:214 |
-| `_end_struts` | src/tessellate/core/overlay/x11.py:124 |
-| `_frame_rect` | src/tessellate/core/overlay/x11.py:253 |
-| `_kinds` | src/tessellate/core/overlay/x11.py:248 |
-| `_on_desktop` | src/tessellate/core/overlay/x11.py:219 |
-| `_perchable` | src/tessellate/core/overlay/x11.py:261 |
-| `_read_window` | src/tessellate/core/overlay/x11.py:273 |
-| `_scale` | src/tessellate/core/overlay/x11.py:94 |
-| `_side_struts` | src/tessellate/core/overlay/x11.py:116 |
-| `_stack` | src/tessellate/core/overlay/x11.py:210 |
-| `_state` | src/tessellate/core/overlay/x11.py:226 |
-| `_struts` | src/tessellate/core/overlay/x11.py:105 |
-| `animations_enabled` | src/tessellate/core/overlay/x11.py:197 |
-| `caret_rect` | src/tessellate/core/overlay/x11.py:187 |
-| `cursor_pos` | src/tessellate/core/overlay/x11.py:178 |
-| `dpi_at_point` | src/tessellate/core/overlay/x11.py:171 |
-| `last_input_age` | src/tessellate/core/overlay/x11.py:182 |
-| `load` | src/tessellate/core/overlay/x11.py:86 |
-| `monitors` | src/tessellate/core/overlay/x11.py:164 |
-| `notification_state` | src/tessellate/core/overlay/x11.py:231 |
-| `support` | src/tessellate/core/overlay/x11.py:73 |
-| `text_zone` | src/tessellate/core/overlay/x11.py:193 |
-| `windows` | src/tessellate/core/overlay/x11.py:287 |
-| `work_areas` | src/tessellate/core/overlay/x11.py:153 |
+| `X11Host` | src/tessellate/core/overlay/x11.py:309 |
+| `_clip_to_struts` | src/tessellate/core/overlay/x11.py:133 |
+| `_clip_to_workarea` | src/tessellate/core/overlay/x11.py:139 |
+| `_current_desktop` | src/tessellate/core/overlay/x11.py:216 |
+| `_end_struts` | src/tessellate/core/overlay/x11.py:125 |
+| `_frame_rect` | src/tessellate/core/overlay/x11.py:255 |
+| `_kinds` | src/tessellate/core/overlay/x11.py:250 |
+| `_on_desktop` | src/tessellate/core/overlay/x11.py:221 |
+| `_perchable` | src/tessellate/core/overlay/x11.py:263 |
+| `_read_window` | src/tessellate/core/overlay/x11.py:275 |
+| `_scale` | src/tessellate/core/overlay/x11.py:95 |
+| `_side_struts` | src/tessellate/core/overlay/x11.py:117 |
+| `_stack` | src/tessellate/core/overlay/x11.py:212 |
+| `_state` | src/tessellate/core/overlay/x11.py:228 |
+| `_struts` | src/tessellate/core/overlay/x11.py:106 |
+| `animations_enabled` | src/tessellate/core/overlay/x11.py:199 |
+| `caret_rect` | src/tessellate/core/overlay/x11.py:189 |
+| `cursor_pos` | src/tessellate/core/overlay/x11.py:180 |
+| `dpi_at_point` | src/tessellate/core/overlay/x11.py:172 |
+| `last_input_age` | src/tessellate/core/overlay/x11.py:184 |
+| `load` | src/tessellate/core/overlay/x11.py:87 |
+| `monitors` | src/tessellate/core/overlay/x11.py:165 |
+| `notification_state` | src/tessellate/core/overlay/x11.py:233 |
+| `support` | src/tessellate/core/overlay/x11.py:74 |
+| `text_zone` | src/tessellate/core/overlay/x11.py:195 |
+| `windows` | src/tessellate/core/overlay/x11.py:289 |
+| `work_areas` | src/tessellate/core/overlay/x11.py:154 |
 
 ### src/tessellate/core/overlay/xlib.py (18)
 

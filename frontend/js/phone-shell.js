@@ -391,7 +391,7 @@ function focusTabPage(button) {
       if (document.activeElement !== button) return;
       const target = tabPageScroller(button.dataset.tab);
       if (!target) return;
-      if (target.tabIndex < 0 && !target.hasAttribute("tabindex")) target.tabIndex = -1;
+      if (target.tabIndex < 0) target.tabIndex = -1;
       target.focus({ preventScroll: true });
     };
     if (typeof nmb === "object") nmb.afterClean(focus);
@@ -403,12 +403,12 @@ function focusTabPage(button) {
 //: scrolling region inside it (Notes and the Library scroll a list).
 function tabPageScroller(tab) {
   const page = $(`tab-${tab}`);
-  if (!page || !page.getClientRects().length) return null;
+  if (!page?.getClientRects().length) return null;
   //: The size test first: a hidden or short box fails it without a style lookup.
   const scrolls = (el) => el.scrollHeight > el.clientHeight + 1 &&
     /(auto|scroll)/.test(getComputedStyle(el).overflowY);
-  let target = scrolls(page) ? page : null;
-  if (!target) {
+  let target = page;
+  if (!scrolls(page)) {
     //: The page's biggest scrolling region: a tab whose own box does not
     //: scroll (Notes, the Library) scrolls a list inside it. Every one is
     //: within three levels (`.layout > .tab-main`, a Library section, the
@@ -427,7 +427,7 @@ function tabPageScroller(tab) {
     };
     walk(page, 1);
   }
-  return target || page;
+  return target;
 }
 // Arrow keys walk the tablist; Home/End jump to the ends (Wave L).
 //
@@ -452,10 +452,7 @@ $("tab-bar").addEventListener("keydown", (e) => {
   if (!buttons.length) return;
   const names = buttons.map((b) => b.dataset.tab);
   const index = Math.max(0, names.indexOf(prefs.get("activeTab", null) || "notes"));
-  let next;
-  if (e.key === "Home") next = 0;
-  else if (e.key === "End") next = names.length - 1;
-  else next = (index + keys[e.key] + names.length) % names.length;
+  const next = e.key === "Home" ? 0 : e.key === "End" ? names.length - 1 : (index + keys[e.key] + names.length) % names.length;
   switchTab(names[next]);
   buttons[next].focus();
 });
@@ -475,18 +472,12 @@ document.addEventListener("keydown", (e) => {
   if (!(e.key in keys)) return;
   const tab = e.target.closest?.('[role="tab"]');
   const list = tab?.closest('[role="tablist"]');
-  if (!tab || !list || list.id === "tab-bar") return;
-  const tabs = [...list.querySelectorAll('[role="tab"]')].filter(
-    (t) => !t.disabled && !t.hidden && t.offsetParent !== null
-  );
+  if (!list || list.id === "tab-bar") return;
+  const tabs = [...list.querySelectorAll('[role="tab"]')].filter((t) => !t.disabled && !t.hidden && t.offsetParent);
   if (tabs.length < 2) return;
   e.preventDefault();
   const index = tabs.indexOf(tab);
-  let next;
-  if (e.key === "Home") next = 0;
-  else if (e.key === "End") next = tabs.length - 1;
-  else next = (index + keys[e.key] + tabs.length) % tabs.length;
-  const target = tabs[next];
+  const target = tabs[e.key === "Home" ? 0 : e.key === "End" ? tabs.length - 1 : (index + keys[e.key] + tabs.length) % tabs.length];
   target.click();
   target.focus();
 });
@@ -1493,7 +1484,7 @@ function openSheet({ label, sub = "", name, build, variant = "", modal = true, r
     //: Arrows, Home and End walk a sheet's rows (WCAG 2.1.1).
     const rowKeys = { ArrowDown: 1, ArrowUp: -1, Home: "first", End: "last" };
     if (event.key in rowKeys && event.target?.closest?.(".sheet-row") && card.contains(event.target)) {
-      const rows = [...card.querySelectorAll(".sheet-row")].filter((r) => !r.disabled && r.offsetParent !== null);
+      const rows = [...card.querySelectorAll(".sheet-row")].filter((r) => !r.disabled && r.offsetParent);
       const at = rows.indexOf(event.target.closest(".sheet-row"));
       const step = rowKeys[event.key];
       const next = step === "first" ? 0 : step === "last" ? rows.length - 1 : Math.min(Math.max(at + step, 0), rows.length - 1);
