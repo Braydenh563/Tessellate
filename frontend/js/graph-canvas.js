@@ -2331,8 +2331,8 @@ function gcCameraStill(s) {
 //: each, back to back, and the worker's start and first tick waited behind
 //: them (first tick at 25 s). The fit draws (`gcRevealAfterBalance`), and so
 //: does `gcReveal`, whatever shows the map.
-//: Frames in a row the draw may ask for by itself (about 5 s at 60 fps).
-const GC_SELF_FRAMES = 300;
+//: Frames in a row the draw may ask for by itself (about 5 s at 60 fps); a property, not a global.
+gcRequestDraw.selfCap = 300;
 const gcUnframed = (s) => s.canvas?.style.opacity === "0" && !s.fittedOnce;
 
 //: `cheap`: only the camera or the hover changed, so the frame may be composed
@@ -2630,7 +2630,7 @@ function gcDrawComposed(s) {
   s.composed = true;
   //: A composed frame that is still moving asks for itself like any other:
   //: it counts toward the same bound (INBOX 1643).
-  if (moving && (s.selfFrames = (s.selfFrames || 0) + 1) <= GC_SELF_FRAMES) {
+  if (moving && (s.selfFrames = (s.selfFrames || 0) + 1) <= gcRequestDraw.selfCap) {
     s.drawAsking = true;
     try {
       gcRequestDraw(s, true);
@@ -3571,11 +3571,11 @@ function gcDraw(s = gcTab) {
   //: is never cut short; only a chain the draw keeps going alone is.
   if (easing || fading || gliding || s.bornPending) {
     s.selfFrames = (s.selfFrames || 0) + 1;
-    if (s.selfFrames === GC_SELF_FRAMES) {
+    if (s.selfFrames === gcRequestDraw.selfCap) {
       s.fadeSnap = true;
       gcGlideFinish(s);
       for (const node of s.nodes) node._born = undefined;
-    } else if (s.selfFrames > GC_SELF_FRAMES) {
+    } else if (s.selfFrames > gcRequestDraw.selfCap) {
       s.selfFrames = 0;
       return;
     }

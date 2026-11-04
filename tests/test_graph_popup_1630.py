@@ -92,8 +92,8 @@ def test_the_corner_is_a_square_and_an_edge_is_the_rest():
 
 def test_a_self_requested_frame_has_an_end():
     draw = frontend_text("js/graph-canvas.js")
-    assert "if (s.selfFrames === GC_SELF_FRAMES) {" in draw and "s.fadeSnap = true;" in draw
+    assert "if (s.selfFrames === gcRequestDraw.selfCap) {" in draw and "s.fadeSnap = true;" in draw
     step = _fn(draw, "gcFadeStep")
     assert "s.fadeSnap" in step and "s.hoverEase = 1;" in step
     tail = draw[draw.index("s.selfFrames = (s.selfFrames || 0) + 1;") :]
-    assert tail.index("s.selfFrames > GC_SELF_FRAMES") < tail.index("gcRequestDraw(s, true)")
+    assert tail.index("s.selfFrames > gcRequestDraw.selfCap") < tail.index("gcRequestDraw(s, true)")

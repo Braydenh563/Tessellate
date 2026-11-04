@@ -18,13 +18,13 @@ def _fn(src: str, name: str) -> str:
 
 def test_the_draw_loop_rearms_only_on_motion_and_is_bounded():
     src = frontend_text("js/graph-canvas.js")
-    assert "const GC_SELF_FRAMES = 300;" in src
+    assert "gcRequestDraw.selfCap = 300;" in src
     draw = _fn(src, "gcDraw")
     # All four things a frame asks for itself count; none is exempt.
     assert "if (easing || fading || gliding || s.bornPending) {" in draw
     assert "!gliding && !s.bornPending) {" not in draw
     tail = draw[draw.index("s.selfFrames = (s.selfFrames || 0) + 1;") :]
-    stop = tail.index("s.selfFrames > GC_SELF_FRAMES")
+    stop = tail.index("s.selfFrames > gcRequestDraw.selfCap")
     # The bound is checked before any self-request, and the requests are
     # still guarded by the motion flags (no unconditional re-arm).
     assert stop < tail.index("gcRequestDraw(s, true)") < tail.index("gcRequestDraw(s);")
@@ -34,7 +34,7 @@ def test_the_draw_loop_rearms_only_on_motion_and_is_bounded():
 
 def test_the_composed_hover_frame_counts_toward_the_same_bound():
     composed = _fn(frontend_text("js/graph-canvas.js"), "gcDrawComposed")
-    assert "moving && (s.selfFrames = (s.selfFrames || 0) + 1) <= GC_SELF_FRAMES" in composed
+    assert "moving && (s.selfFrames = (s.selfFrames || 0) + 1) <= gcRequestDraw.selfCap" in composed
     assert "gcRequestDraw(s, true);" in composed
     assert "s.drawAsking = true;" in composed
 
