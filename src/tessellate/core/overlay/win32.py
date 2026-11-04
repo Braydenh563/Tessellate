@@ -474,6 +474,32 @@ def caret_rect(w: Any) -> tuple[int, int, int, int] | None:
         return None
 
 
+#: Where a chat box sits when the app shows no system caret (Chromium, Electron, a browser canvas):
+#: the bottom of the foreground window, in its middle, so the side edges stay free to step to.
+TEXT_ZONE_HEIGHT = 170
+TEXT_ZONE_SIDE = 0.15
+
+
+def text_zone(w: Any) -> tuple[int, int, int, int] | None:
+    """A stand-in for the caret while the person types in an app that exposes none: the bottom band of
+    the foreground window's frame (its middle 70% across), in screen px, or None when unreadable or
+    too small to hold a text box. Only a rectangle, never what is typed."""
+    try:
+        hwnd = w.user32.GetForegroundWindow()
+        frame = _frame_rect(w, hwnd) if hwnd else None
+    except Exception:  # noqa: BLE001
+        logger.debug("overlay: text zone unknown", exc_info=True)
+        return None
+    if frame is None:
+        return None
+    left, top, right, bottom = frame
+    width = right - left
+    if width < 240 or bottom - top < 2 * TEXT_ZONE_HEIGHT:
+        return None
+    side = int(width * TEXT_ZONE_SIDE)
+    return left + side, bottom - TEXT_ZONE_HEIGHT, right - side, bottom
+
+
 def animations_enabled(w: Any) -> bool:
     """SPI_GETCLIENTAREAANIMATION: False when the person turned animations off."""
     flag = wintypes.BOOL(1)

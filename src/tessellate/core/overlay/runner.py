@@ -269,6 +269,17 @@ class OverlayRunner:
         cap = int(BUSY_EVERY * 1000)
         return cap if wake is None else min(wake, cap)
 
+    def _read_typing(self, now: float) -> None:
+        """Whether keys are going in, and where: the caret, else (an app with none) the window's bottom band."""
+        age = k.last_input_age(self.w)
+        engine = self.engine
+        if engine is None:  # typing: it stays put (nothing big); the mouse alone is not typing
+            return
+        engine.quiet = age is not None and age < TYPING_AGE and now - self._ptr_moved_at > age
+        # at BUSY_EVERY (0.5 Hz); Chromium and Electron give no caret (INBOX 1670 13:22Z)
+        caret = k.caret_rect(self.w)
+        engine.set_caret(caret if caret is not None or not engine.quiet else k.text_zone(self.w))
+
     def _busy_gate(self, now: float, pointer: tuple[int, int] | None = None) -> int | None:
         """Hide while something fullscreen is in the way; None when free to move."""
         if now < self._next_busy_check and not self.busy:
@@ -278,11 +289,7 @@ class OverlayRunner:
             if self._busy_ptr is not None and pointer != self._busy_ptr:
                 self._ptr_moved_at = now
             self._busy_ptr = pointer
-        age = k.last_input_age(self.w)
-        engine = self.engine
-        if engine is not None:  # typing: it stays put (nothing big); the mouse alone is not typing
-            engine.quiet = age is not None and age < TYPING_AGE and now - self._ptr_moved_at > age
-            engine.set_caret(k.caret_rect(self.w))  # at BUSY_EVERY (0.5 Hz): where the person is typing
+        self._read_typing(now)
         state = k.notification_state(self.w)
         away = state in k.QUNS_HIDE
         if away and not self.busy:

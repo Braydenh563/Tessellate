@@ -12,6 +12,7 @@ import random
 
 import pytest
 
+from tessellate.core.overlay import behaviour as bh
 from tessellate.core.overlay import engine as eng
 from tessellate.core.overlay import sprites, travel as tv
 from tessellate.core.overlay import win32 as k
@@ -53,7 +54,7 @@ def test_at_rest_the_drawn_feet_do_not_move_and_it_starts_few_things(gait: str, 
 
 @pytest.mark.parametrize(("gait", "seed"), CASES)
 def test_the_idle_wakes_stay_at_or_below_the_old_rate(gait: str, seed: int) -> None:
-    assert hour(gait, seed)["wakes_per_min"] <= 420.0  # row B measured about 350 a minute
+    assert hour(gait, seed)["wakes_per_min"] <= 240.0  # row B measured about 350 a minute; this tree 70 to 220 (the sim steps at most 1 s, so 60 is its floor)
 
 
 def test_fidgets_are_at_most_two_an_hour() -> None:
@@ -102,6 +103,12 @@ def test_a_hang_is_long_and_the_picture_changes_every_few_seconds() -> None:
     lengths = sorted(a for a, _b in spans)
     assert lengths[len(lengths) // 2] >= 30.0, lengths
     assert max(b for _a, b in spans) <= 5.0, spans
+
+
+def test_every_planned_hang_lasts_at_least_half_a_minute_whatever_the_mood() -> None:
+    # The sim above sees few hangs in an hour (a different seed can show none), so the plan itself is pinned.
+    assert all(lo >= 30.0 and hi <= 200.0 for lo, hi in bh.HANG_BY_MOOD.values())
+    assert eng.HANG_FOR[0] >= 30.0
 
 
 def test_after_a_landing_there_is_at_most_one_settle_and_no_vertical_motion() -> None:
@@ -248,5 +255,40 @@ def test_the_runner_reads_the_caret_at_most_twice_a_second_and_hands_it_to_the_e
         r._busy_gate(now + 1000.0)
         assert r.engine.caret is None
         assert r._cap_wake(None) == int(2.0 * 1000) and r._cap_wake(500) == 500
+    finally:
+        r.stop()
+
+
+# --- an app with no system caret (Chromium, Electron): the window's bottom band stands in ------
+
+
+def test_the_text_zone_is_the_bottom_middle_of_the_foreground_window() -> None:
+    fake = FakeWin32()
+    fake.window_list[900] = {"rect": (0, 0, 1000, 800)}
+    assert k.text_zone(fake) == (150, 630, 850, 800)
+    fake.window_list[900] = {"rect": (0, 0, 1000, 200)}  # too short to hold a chat box and its history
+    assert k.text_zone(fake) is None
+    fake.window_list[900] = {"rect": (0, 0, 200, 800)}
+    assert k.text_zone(fake) is None
+
+
+def test_typing_without_a_caret_keeps_it_off_the_bottom_of_the_window_and_stopping_frees_it() -> None:
+    from tests.test_overlay_runner import make as make_runner
+
+    r, fake, *_ = make_runner(reduced=False)
+    assert r.start()
+    try:
+        fake.caret = None
+        fake.window_list[900] = {"rect": (0, 0, 1000, 800)}
+        fake.last_input = (5000, 4000)  # a key a second ago
+        r._busy_gate(1000.0)
+        assert r.engine.quiet and r.engine.caret == (150, 630, 850, 800)
+        fake.last_input = (50000, 4000)  # nothing for 46 s
+        r._busy_gate(1100.0)
+        assert not r.engine.quiet and r.engine.caret is None
+        fake.last_input = (5000, 4000)
+        fake.caret = ((10, 20, 12, 40), (300, 400))  # a real caret wins over the stand-in
+        r._busy_gate(1200.0)
+        assert r.engine.caret == (310, 420, 312, 440)
     finally:
         r.stop()

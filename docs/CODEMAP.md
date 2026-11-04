@@ -2,7 +2,7 @@
 
 Generated 2026-11-04 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7781, frontend ids 2644, CSS sections 522, backend routes 644, backend modules 8744, test files 2050, tests 17251, plan headings 1001, app scripts 28, boot scripts 37, script files 253.
+Counts: frontend functions 7781, frontend ids 2644, CSS sections 522, backend routes 644, backend modules 8745, test files 2050, tests 17254, plan headings 1001, app scripts 28, boot scripts 37, script files 253.
 
 ## Frontend functions (7781)
 
@@ -12953,7 +12953,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:164 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (8744)
+## Backend modules (8745)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -22269,7 +22269,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `pick_mode` | src/tessellate/core/overlay/travel.py:139 |
 | `warp_for` | src/tessellate/core/overlay/travel.py:60 |
 
-### src/tessellate/core/overlay/win32.py (29)
+### src/tessellate/core/overlay/win32.py (30)
 
 | Name | File:line |
 |---|---|
@@ -22290,17 +22290,18 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_listed` | src/tessellate/core/overlay/win32.py:374 |
 | `_monitor_dpi` | src/tessellate/core/overlay/win32.py:313 |
 | `_read_window` | src/tessellate/core/overlay/win32.py:379 |
-| `animations_enabled` | src/tessellate/core/overlay/win32.py:477 |
+| `animations_enabled` | src/tessellate/core/overlay/win32.py:503 |
 | `apply_signatures` | src/tessellate/core/overlay/win32.py:250 |
 | `caret_rect` | src/tessellate/core/overlay/win32.py:451 |
 | `cursor_pos` | src/tessellate/core/overlay/win32.py:418 |
 | `dpi_at_point` | src/tessellate/core/overlay/win32.py:326 |
-| `last_error` | src/tessellate/core/overlay/win32.py:488 |
+| `last_error` | src/tessellate/core/overlay/win32.py:514 |
 | `last_input_age` | src/tessellate/core/overlay/win32.py:437 |
 | `load` | src/tessellate/core/overlay/win32.py:272 |
 | `monitors` | src/tessellate/core/overlay/win32.py:292 |
 | `notification_state` | src/tessellate/core/overlay/win32.py:424 |
 | `signatures` | src/tessellate/core/overlay/win32.py:167 |
+| `text_zone` | src/tessellate/core/overlay/win32.py:483 |
 | `windows` | src/tessellate/core/overlay/win32.py:396 |
 
 ### src/tessellate/core/passes.py (21)
@@ -23956,7 +23957,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (17251)
+## Tests (17254)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -25313,7 +25314,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_overlay_idle.py | 9 |
 | tests/test_overlay_life_1670.py | 25 |
 | tests/test_overlay_moves.py | 26 |
-| tests/test_overlay_rest_1670.py | 18 |
+| tests/test_overlay_rest_1670.py | 21 |
 | tests/test_overlay_ride_1670.py | 16 |
 | tests/test_overlay_roam.py | 19 |
 | tests/test_overlay_roam_runner.py | 10 |
