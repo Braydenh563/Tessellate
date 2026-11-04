@@ -25,6 +25,10 @@ from typing import Any, NamedTuple
 logger = logging.getLogger(__name__)
 
 LOOKS = ("masculine", "feminine")
+#: The idle cycle a standing figure draws at 8 a second (`engine.IDLE_FRAMES` of them):
+#: tail beat and breath sampled from the live rig by `scripts/render_desk_frames.js`.
+IDLE_COUNT = 12
+IDLE_FRAMES = tuple(f"idle{i}" for i in range(IDLE_COUNT))
 #: Every frame of a look, in the order they are rendered. Walking is `walk0` to
 #: `walk5`; the others are what the engine's states draw. `card0` and `card1` are the
 #: figure holding a reminder's card (`scripts/render_card_frames.py`, Pillow, from
@@ -34,6 +38,7 @@ FRAME_NAMES = (
     "walk0", "walk1", "walk2", "walk3", "walk4", "walk5",
     "sit", "sleep", "wave", "held", "fall", "land", "hop", "hang", "tumble",
     "card0", "card1",
+    *IDLE_FRAMES,
 )
 #: Drawn by `scripts/render_card_frames.py`, not captured from the app.
 CARD_FRAMES = ("card0", "card1")
@@ -129,6 +134,15 @@ class SpriteSet:
             with Image.open(self.directory / f"{name}.png") as im:
                 self._source[name] = im.convert("RGBA")
         return self._source[name]
+
+    def top_share(self, name: str = "hang") -> float:
+        """How much of a frame's height is clear above its first drawn row, measured from
+        the shipped picture at load (INBOX 1660: the hang frame's hands start 57 px below
+        its top, so a hang at the frame's top held nothing). A share, so it holds at any
+        dpi; 0.0 when the frame is empty."""
+        image = self._load(name)
+        box = image.getchannel("A").point(lambda a: 255 if a >= ALPHA_FLOOR else 0).getbbox()
+        return box[1] / image.size[1] if box else 0.0
 
     def scale_for(self, dpi: int) -> float:
         """Pixels of the window per pixel of the shipped frame at this dpi."""

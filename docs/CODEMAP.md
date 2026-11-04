@@ -2,9 +2,9 @@
 
 Generated 2026-11-04 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7754, frontend ids 2641, CSS sections 522, backend routes 644, backend modules 8683, test files 2016, tests 16978, plan headings 999, app scripts 28, boot scripts 37, script files 248.
+Counts: frontend functions 7755, frontend ids 2641, CSS sections 522, backend routes 644, backend modules 8684, test files 2020, tests 17018, plan headings 999, app scripts 28, boot scripts 37, script files 248.
 
-## Frontend functions (7754)
+## Frontend functions (7755)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -3054,28 +3054,29 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `dateFieldShift` | frontend/js/date-field.js:11 |
 | `dateFieldWire` | frontend/js/date-field.js:13 |
 
-### frontend/js/desk-companion.js (21)
+### frontend/js/desk-companion.js (22)
 
 | Name | File:line |
 |---|---|
 | `$` | frontend/js/desk-companion.js:20 |
 | `ask` | frontend/js/desk-companion.js:56 |
 | `call` | frontend/js/desk-companion.js:48 |
-| `deskClip` | frontend/js/desk-companion.js:258 |
+| `deskClip` | frontend/js/desk-companion.js:293 |
 | `draw` | frontend/js/desk-companion.js:74 |
-| `hitRow` | frontend/js/desk-companion.js:271 |
+| `hitRow` | frontend/js/desk-companion.js:306 |
 | `host` | frontend/js/desk-companion.js:55 |
 | `item` | frontend/js/desk-companion.js:138 |
-| `leave` | frontend/js/desk-companion.js:196 |
+| `leave` | frontend/js/desk-companion.js:231 |
 | `menuHeight` | frontend/js/desk-companion.js:119 |
-| `noteStatus` | frontend/js/desk-companion.js:218 |
+| `noteStatus` | frontend/js/desk-companion.js:253 |
+| `openCompanion` | frontend/js/desk-companion.js:197 |
 | `openMenu` | frontend/js/desk-companion.js:151 |
-| `openPanel` | frontend/js/desk-companion.js:205 |
-| `plain` | frontend/js/desk-companion.js:264 |
+| `openPanel` | frontend/js/desk-companion.js:240 |
+| `plain` | frontend/js/desk-companion.js:299 |
 | `probe` | frontend/js/desk-companion.js:84 |
-| `rest` | frontend/js/desk-companion.js:211 |
-| `runSearch` | frontend/js/desk-companion.js:298 |
-| `saveNote` | frontend/js/desk-companion.js:224 |
+| `rest` | frontend/js/desk-companion.js:246 |
+| `runSearch` | frontend/js/desk-companion.js:333 |
+| `saveNote` | frontend/js/desk-companion.js:259 |
 | `seed` | frontend/js/desk-companion.js:66 |
 | `show` | frontend/js/desk-companion.js:101 |
 | `token` | frontend/js/desk-companion.js:45 |
@@ -12898,7 +12899,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:164 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (8683)
+## Backend modules (8684)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -21089,42 +21090,43 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `reset_app_state` | src/tessellate/core/deps.py:267 |
 | `store_quietly` | src/tessellate/core/deps.py:587 |
 
-### src/tessellate/core/desk_companion.py (32)
+### src/tessellate/core/desk_companion.py (33)
 
 | Name | File:line |
 |---|---|
-| `DeskApi` | src/tessellate/core/desk_companion.py:557 |
-| `DeskCompanion` | src/tessellate/core/desk_companion.py:608 |
-| `_config` | src/tessellate/core/desk_companion.py:102 |
-| `_default_overlay_factory` | src/tessellate/core/desk_companion.py:1210 |
-| `_follow` | src/tessellate/core/desk_companion.py:1251 |
-| `_log_placed` | src/tessellate/core/desk_companion.py:504 |
-| `_pref` | src/tessellate/core/desk_companion.py:115 |
-| `_read_back` | src/tessellate/core/desk_companion.py:493 |
-| `_screen_area` | src/tessellate/core/desk_companion.py:240 |
-| `_set_pref` | src/tessellate/core/desk_companion.py:127 |
-| `_system_dpi` | src/tessellate/core/desk_companion.py:153 |
-| `attach` | src/tessellate/core/desk_companion.py:1220 |
-| `carry_due` | src/tessellate/core/desk_companion.py:1288 |
-| `clamp_corner` | src/tessellate/core/desk_companion.py:256 |
-| `clean_size` | src/tessellate/core/desk_companion.py:522 |
-| `companion_ex_style` | src/tessellate/core/desk_companion.py:330 |
-| `enabled` | src/tessellate/core/desk_companion.py:123 |
-| `hit_script` | src/tessellate/core/desk_companion.py:534 |
-| `monitor_areas` | src/tessellate/core/desk_companion.py:182 |
-| `monitor_for` | src/tessellate/core/desk_companion.py:278 |
-| `panel_corner` | src/tessellate/core/desk_companion.py:265 |
-| `panel_placement` | src/tessellate/core/desk_companion.py:290 |
-| `physical_rect` | src/tessellate/core/desk_companion.py:365 |
-| `pick_area` | src/tessellate/core/desk_companion.py:228 |
-| `place_on_screen` | src/tessellate/core/desk_companion.py:442 |
-| `place_physical` | src/tessellate/core/desk_companion.py:468 |
-| `raise_on_desktop` | src/tessellate/core/desk_companion.py:382 |
-| `shutdown` | src/tessellate/core/desk_companion.py:1309 |
-| `to_logical` | src/tessellate/core/desk_companion.py:134 |
-| `tray_menu_item` | src/tessellate/core/desk_companion.py:1317 |
-| `window_handle` | src/tessellate/core/desk_companion.py:349 |
-| `work_area` | src/tessellate/core/desk_companion.py:163 |
+| `DeskApi` | src/tessellate/core/desk_companion.py:622 |
+| `DeskCompanion` | src/tessellate/core/desk_companion.py:679 |
+| `_config` | src/tessellate/core/desk_companion.py:167 |
+| `_default_overlay_factory` | src/tessellate/core/desk_companion.py:1367 |
+| `_follow` | src/tessellate/core/desk_companion.py:1408 |
+| `_log_placed` | src/tessellate/core/desk_companion.py:569 |
+| `_pref` | src/tessellate/core/desk_companion.py:180 |
+| `_read_back` | src/tessellate/core/desk_companion.py:558 |
+| `_screen_area` | src/tessellate/core/desk_companion.py:305 |
+| `_set_pref` | src/tessellate/core/desk_companion.py:192 |
+| `_system_dpi` | src/tessellate/core/desk_companion.py:218 |
+| `attach` | src/tessellate/core/desk_companion.py:1377 |
+| `carry_due` | src/tessellate/core/desk_companion.py:1445 |
+| `clamp_corner` | src/tessellate/core/desk_companion.py:321 |
+| `clean_size` | src/tessellate/core/desk_companion.py:587 |
+| `companion_ex_style` | src/tessellate/core/desk_companion.py:395 |
+| `companion_options` | src/tessellate/core/desk_companion.py:138 |
+| `enabled` | src/tessellate/core/desk_companion.py:188 |
+| `hit_script` | src/tessellate/core/desk_companion.py:599 |
+| `monitor_areas` | src/tessellate/core/desk_companion.py:247 |
+| `monitor_for` | src/tessellate/core/desk_companion.py:343 |
+| `panel_corner` | src/tessellate/core/desk_companion.py:330 |
+| `panel_placement` | src/tessellate/core/desk_companion.py:355 |
+| `physical_rect` | src/tessellate/core/desk_companion.py:430 |
+| `pick_area` | src/tessellate/core/desk_companion.py:293 |
+| `place_on_screen` | src/tessellate/core/desk_companion.py:507 |
+| `place_physical` | src/tessellate/core/desk_companion.py:533 |
+| `raise_on_desktop` | src/tessellate/core/desk_companion.py:447 |
+| `shutdown` | src/tessellate/core/desk_companion.py:1466 |
+| `to_logical` | src/tessellate/core/desk_companion.py:199 |
+| `tray_menu_item` | src/tessellate/core/desk_companion.py:1474 |
+| `window_handle` | src/tessellate/core/desk_companion.py:414 |
+| `work_area` | src/tessellate/core/desk_companion.py:228 |
 
 ### src/tessellate/core/desktop_dialog.py (2)
 
@@ -22108,11 +22110,11 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `Engine` | src/tessellate/core/overlay/engine.py:213 |
-| `Monitor` | src/tessellate/core/overlay/engine.py:177 |
-| `Output` | src/tessellate/core/overlay/engine.py:184 |
-| `Perch` | src/tessellate/core/overlay/engine.py:168 |
-| `_adjoins` | src/tessellate/core/overlay/engine.py:202 |
+| `Engine` | src/tessellate/core/overlay/engine.py:239 |
+| `Monitor` | src/tessellate/core/overlay/engine.py:203 |
+| `Output` | src/tessellate/core/overlay/engine.py:210 |
+| `Perch` | src/tessellate/core/overlay/engine.py:194 |
+| `_adjoins` | src/tessellate/core/overlay/engine.py:228 |
 
 ### src/tessellate/core/overlay/host.py (2)
 
@@ -22138,13 +22140,13 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `Frame` | src/tessellate/core/overlay/sprites.py:54 |
-| `SpriteSet` | src/tessellate/core/overlay/sprites.py:112 |
-| `clear_faint_alpha` | src/tessellate/core/overlay/sprites.py:96 |
-| `clipped` | src/tessellate/core/overlay/sprites.py:65 |
-| `frames_dir` | src/tessellate/core/overlay/sprites.py:84 |
-| `look_for` | src/tessellate/core/overlay/sprites.py:91 |
-| `premultiplied_bgra` | src/tessellate/core/overlay/sprites.py:107 |
+| `Frame` | src/tessellate/core/overlay/sprites.py:59 |
+| `SpriteSet` | src/tessellate/core/overlay/sprites.py:117 |
+| `clear_faint_alpha` | src/tessellate/core/overlay/sprites.py:101 |
+| `clipped` | src/tessellate/core/overlay/sprites.py:70 |
+| `frames_dir` | src/tessellate/core/overlay/sprites.py:89 |
+| `look_for` | src/tessellate/core/overlay/sprites.py:96 |
+| `premultiplied_bgra` | src/tessellate/core/overlay/sprites.py:112 |
 
 ### src/tessellate/core/overlay/win32.py (27)
 
@@ -23820,7 +23822,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (16978)
+## Tests (17018)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -24338,8 +24340,9 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_derived_facts.py | 14 |
 | tests/test_desk_companion.py | 62 |
 | tests/test_desk_counts_63.py | 5 |
+| tests/test_desk_overlay_companion.py | 10 |
 | tests/test_desk_overlay_roam.py | 15 |
-| tests/test_desk_overlay_wiring.py | 33 |
+| tests/test_desk_overlay_wiring.py | 36 |
 | tests/test_desktop_fullscreen.py | 5 |
 | tests/test_desktop_launcher.py | 17 |
 | tests/test_device_sizes.py | 11 |
@@ -25147,12 +25150,15 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_output_forms.py | 7 |
 | tests/test_outside_text_taints_chat.py | 3 |
 | tests/test_overlay_engine.py | 30 |
+| tests/test_overlay_float.py | 5 |
+| tests/test_overlay_hang.py | 10 |
 | tests/test_overlay_host.py | 25 |
-| tests/test_overlay_moves.py | 23 |
+| tests/test_overlay_idle.py | 8 |
+| tests/test_overlay_moves.py | 25 |
 | tests/test_overlay_roam.py | 19 |
 | tests/test_overlay_roam_runner.py | 10 |
-| tests/test_overlay_runner.py | 19 |
-| tests/test_overlay_sprites.py | 13 |
+| tests/test_overlay_runner.py | 20 |
+| tests/test_overlay_sprites.py | 14 |
 | tests/test_overview_counts_1524.py | 3 |
 | tests/test_owner_typos.py | 21 |
 | tests/test_p5_only_with_art_1530.py | 5 |
@@ -26017,7 +26023,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | 20. A model per feature (asked for directly, 2026-09-21) | docs/roadmap/WORLD_CLASS_PLAN.md:2213 |
 | 20. Backend | docs/roadmap/BACKLOG.md:1309 |
 | 20. The 2026-10-05 feature audit: decisions | docs/roadmap/DOCUMENTS_PLAN.md:956 |
-| 2026-09-08, the third night: read this block first, whoever you are | docs/roadmap/HANDOVER.md:92 |
+| 2026-09-08, the third night: read this block first, whoever you are | docs/roadmap/HANDOVER.md:58 |
 | 21. Every failure names its way out (INBOX 272 part 1, 2026-09-21) | docs/roadmap/WORLD_CLASS_PLAN.md:2283 |
 | 21. Skills: rebuilt; what is left | docs/roadmap/BACKLOG.md:1445 |
 | 21. The code editor against VS Code, and writing checks everywhere (INBOX 646) | docs/roadmap/DOCUMENTS_PLAN.md:299 |
@@ -26428,15 +26434,15 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | E3 · Model calls are scattered across request handlers, background threads and module singletons, High (read) | docs/roadmap/MODERNISATION_AUDIT.md:666 |
 | E4 · The honest positives, so the section is not one-sided (read) | docs/roadmap/MODERNISATION_AUDIT.md:676 |
 | Earlier morning summary (2026-10-30) | docs/roadmap/HANDOVER.md:35 |
-| Earlier morning summary (away run 2026-10-18b, branch claude/magical-feynman-7bgj7j, PR 192, 0.6.0) | docs/roadmap/HANDOVER.md:54 |
-| Earlier sessions | docs/roadmap/HANDOVER.md:520 |
+| Earlier morning summary (away run 2026-10-18b) | docs/roadmap/HANDOVER.md:54 |
+| Earlier sessions | docs/roadmap/HANDOVER.md:486 |
 | Expert audit, 2026-10-10 | docs/roadmap/BACKLOG.md:4272 |
 | F. Agent harness: what "ultimate" needs that is not there | docs/roadmap/AUDIT.md:113 |
 | F. Performance and perceived speed | docs/roadmap/MODERNISATION_AUDIT.md:685 |
 | F1 · Boot is ~1 s and tab switches are ~10–50 ms. The app is not slow; it is *heavy*: Medium | docs/roadmap/MODERNISATION_AUDIT.md:687 |
 | F2 · Fourteen requests in sixty idle seconds, from three separate timers, High | docs/roadmap/MODERNISATION_AUDIT.md:708 |
 | F3 · List rendering is solved; list *fetching* is not, Medium | docs/roadmap/MODERNISATION_AUDIT.md:733 |
-| Fable's working notes for Opus (2026-09-09 05:10 UTC) | docs/roadmap/HANDOVER.md:244 |
+| Fable's working notes for Opus (2026-09-09 05:10 UTC) | docs/roadmap/HANDOVER.md:210 |
 | Found by an agent while measuring something else (2026-09-08, graph) | docs/roadmap/CHAT_PLAN.md:578 |
 | G. Mobile and responsive | docs/roadmap/MODERNISATION_AUDIT.md:743 |
 | G. Test-suite gaps | docs/roadmap/AUDIT.md:123 |
@@ -26463,7 +26469,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Harness robustness, 2026-10-04 (INBOX 527) | docs/roadmap/AGENT_SKILLS_REFORM.md:202 |
 | Harper (Automattic) | docs/roadmap/ANALYSIS.md:1783 |
 | Headroom: evaluated, not adopted | docs/roadmap/BACKLOG.md:729 |
-| How far each plan actually is (honest, as of 2026-10-03) | docs/roadmap/HANDOVER.md:380 |
+| How far each plan actually is (honest, as of 2026-10-03) | docs/roadmap/HANDOVER.md:346 |
 | How to proceed after PR 149 (written 2026-09-14; the live order is CLAUDE.md standing order 1 and HANDOVER's Now line) | docs/ROADMAP.md:295 |
 | How to read the evidence in here | docs/roadmap/MODERNISATION_AUDIT.md:23 |
 | How to work on this repo | docs/ROADMAP.md:364 |
@@ -26481,7 +26487,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Ideas | docs/roadmap/CHAT_PLAN.md:912 |
 | Ideas | docs/roadmap/DOCUMENTS_PLAN.md:1389 |
 | Ideas | docs/roadmap/WORLD_CLASS_PLAN.md:3117 |
-| If Opus is the orchestrator (no Fable available) | docs/roadmap/HANDOVER.md:102 |
+| If Opus is the orchestrator (no Fable available) | docs/roadmap/HANDOVER.md:68 |
 | Image notes and the Library, against photocraft and lightcraft | docs/roadmap/ANALYSIS.md:3955 |
 | Is its backend better designed? No: and it says so about itself | docs/roadmap/ANALYSIS.md:810 |
 | KnowNote (MrSibe) | docs/roadmap/ANALYSIS.md:1932 |
@@ -26505,7 +26511,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Order and dependencies | docs/roadmap/WORLD_CLASS_PLAN.md:1360 |
 | Owner's list, 2026-10-13 (one batch, in one place) | docs/roadmap/BACKLOG.md:4387 |
 | PDF viewer and OCR workspace, against pdfcraft | docs/roadmap/ANALYSIS.md:3922 |
-| PR 144 is done when (the owner's checklist, 2026-09-09 05:30 UTC) | docs/roadmap/HANDOVER.md:141 |
+| PR 144 is done when (the owner's checklist, 2026-09-09 05:30 UTC) | docs/roadmap/HANDOVER.md:107 |
 | Parity matrix, 2026-10-10 | docs/roadmap/ANALYSIS.md:3703 |
 | Performance on small laptops, measured 2026-09-08 23:30 UTC (Chromium, 1366x768, no GPU) | docs/roadmap/WHITEBOARD_PLAN.md:679 |
 | Phase 10: the Liquid Glass adoptions (½ session) | docs/roadmap/UI_MODERNISATION_PLAN.md:561 |
@@ -26726,9 +26732,9 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Six repositories read for Tessellate, 2026-09-20 | docs/roadmap/ANALYSIS.md:1760 |
 | Sources | docs/roadmap/MINDMAP_PLAN.md:280 |
 | Speech, four projects read by name, and what this app already does | docs/roadmap/ANALYSIS.md:3102 |
-| Standing orders for this session (whoever the model is) | docs/roadmap/HANDOVER.md:316 |
+| Standing orders for this session (whoever the model is) | docs/roadmap/HANDOVER.md:282 |
 | Start of the next PR (the owner, 2026-10-12, "log everything I've mentioned") | docs/roadmap/BACKLOG.md:4312 |
-| State of the branch (`claude/notes-flow-rebuild`, PR #162) | docs/roadmap/HANDOVER.md:400 |
+| State of the branch (`claude/notes-flow-rebuild`, PR #162) | docs/roadmap/HANDOVER.md:366 |
 | Steps | docs/roadmap/UI_MODERNISATION_PLAN.md:1048 |
 | Steps | docs/roadmap/WORLD_CLASS_PLAN.md:1524 |
 | Still open | docs/roadmap/WORLD_CLASS_PLAN.md:2260 |

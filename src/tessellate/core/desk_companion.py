@@ -91,10 +91,75 @@ WALK_SCRIPT = (
     "(function(){try{prefs.set('avatar-buddy-motion','always');"
     "if(typeof nameMarkBuddyMotionApply==='function')nameMarkBuddyMotionApply();return true}catch(e){return false}})()"
 )
+#: What the right-click "Companion" panel needs of the app window: whether it is locked
+#: and the choices the app's own menu and Appearance keep (`avatar-buddy`: off, me,
+#: persona, atlas, custom; `atlas-look`; the saved companions in `avatar-buddy-presets`).
+COMPANION_LOCK = (
+    "const lk=document.getElementById('lock-overlay');"
+    "if(lk&&!lk.classList.contains('hidden'))return 'locked';"
+)
+COMPANION_SCRIPT = (
+    "(function(){try{const lk=document.getElementById('lock-overlay');"
+    "const locked=!!(lk&&!lk.classList.contains('hidden'));let presets=[];"
+    "try{const l=prefs.json('avatar-buddy-presets',[]);if(Array.isArray(l))presets=l.map(function(p){"
+    "const v=(p&&p.values)||{};return {name:String((p&&p.name)||'').slice(0,30),who:String(v['avatar-buddy']||''),look:String(v['atlas-look']||'')}})}catch(e){}"
+    "return JSON.stringify({locked:locked,who:prefs.get('avatar-buddy',null)||'off',"
+    "look:typeof appearancePref==='function'?appearancePref('atlas-look'):'auto',presets:presets})}catch(e){return ''}})()"
+)
+#: Writes the app's own prefs for an Atlas choice, as its Companion menu does (the select's
+#: change handlers: `avatar-buddy`, then the custom row, the corner companion and the size row
+#: follow; `atlas-look` repaints), and says "ok". A locked app is refused.
+COMPANION_ATLAS = (
+    "(function(){try{" + COMPANION_LOCK + "prefs.set('avatar-buddy','atlas');prefs.set('atlas-look',%s);"
+    "if(typeof mountBuddyCustom==='function')mountBuddyCustom();"
+    "if(typeof atlasRepaint==='function')atlasRepaint();"
+    "if(typeof syncNameMarkBuddy==='function')syncNameMarkBuddy();"
+    "if(typeof nameMarkBuddySizeSelect==='function')nameMarkBuddySizeSelect();return 'ok'}catch(e){return 'error'}})()"
+)
+#: A saved companion applied by its own function when the app has loaded it; else its two
+#: prefs the overlay shows are written at once and the rest follows when the module loads.
+COMPANION_PRESET = (
+    "(function(){try{" + COMPANION_LOCK + "const p=(prefs.json('avatar-buddy-presets',[])||[])[%d];"
+    "if(!p||p.name!==%s)return 'gone';const v=p.values||{};"
+    "if(typeof nameMarkBuddyApplyPreset==='function'){nameMarkBuddyApplyPreset(p);return 'ok'}"
+    "prefs.set('avatar-buddy',v['avatar-buddy']||'off');"
+    "if(v['atlas-look'])prefs.set('atlas-look',v['atlas-look']);else prefs.remove('atlas-look');"
+    "if(typeof syncNameMarkBuddy==='function')syncNameMarkBuddy();"
+    "if(typeof ensureModule==='function')ensureModule('companionMenu').then(function(){"
+    "if(typeof nameMarkBuddyApplyPreset==='function')nameMarkBuddyApplyPreset(p)});return 'ok'}catch(e){return 'error'}})()"
+)
+_CHOICE_KEY = re.compile(r"atlas:(masculine|feminine|auto)|preset:\d{1,2}")
 MOTION_MODES = ("full", "fades", "still")
 MOTION_REASONS = ("", "os", "app", "setting", "avatar", "perf-ignored", "app-ignored", "os-ignored")
 
 _KIND = re.compile(r"[a-z]{1,16}")
+
+
+def companion_options(data: Any) -> list[dict[str, Any]]:
+    """The right-click "Companion" panel's rows from what the app window said (`COMPANION_SCRIPT`):
+    every choice the app offers, the current one marked. The overlay draws Atlas, so only Atlas
+    rows (and a saved companion that is Atlas) can be chosen; the others are listed as
+    "shows in the app only" until frames for them can be made (overlay-1104.md, Remaining)."""
+    if not isinstance(data, dict):
+        return []
+    who, look = str(data.get("who") or "off"), str(data.get("look") or "auto")
+    rows: list[dict[str, Any]] = [
+        {"key": f"atlas:{name}", "label": label, "group": "Atlas", "current": who == "atlas" and look == name, "enabled": True}
+        for name, label in (("masculine", "Atlas, masculine"), ("feminine", "Atlas, feminine"), ("auto", "Atlas, match your faces"))
+    ]
+    for kind, label in (("me", "You, from your name"), ("persona", "The chat's persona"), ("custom", "Your own character")):
+        rows.append({"key": kind, "label": label, "group": "Shows in the app only", "current": who == kind, "enabled": False})
+    presets = data.get("presets")
+    for index, preset in enumerate(presets[:12] if isinstance(presets, list) else []):
+        name = str(preset.get("name") or "")[:30] if isinstance(preset, dict) else ""
+        if not name:
+            continue
+        atlas = preset.get("who") == "atlas"
+        rows.append({
+            "key": f"preset:{index}", "label": name, "group": "Saved companions" if atlas else "Shows in the app only",
+            "current": False, "enabled": atlas,
+        })
+    return rows
 _lock = threading.RLock()
 _active: DeskCompanion | None = None
 
@@ -568,8 +633,8 @@ class DeskApi:
     def open_hit(self, kind: Any, ident: Any) -> bool:
         return self._owner.open_main(hit_script(kind, ident))
 
-    def set_size(self, width: Any, height: Any) -> list[int]:
-        return list(self._owner.resize(*clean_size(width, height)))
+    def set_size(self, width: Any, height: Any, state: Any = "") -> list[int]:
+        return list(self._owner.resize(*clean_size(width, height), state=state if isinstance(state, str) else ""))
 
     def drag_start(self) -> list[int]:
         return list(self._owner.top_left())
@@ -603,6 +668,12 @@ class DeskApi:
 
     def set_roam(self, on: Any) -> bool:
         return self._owner.set_roam(on is True)
+
+    def companion_choices(self) -> dict[str, Any]:
+        return self._owner.companion_choices()
+
+    def choose_companion(self, key: Any) -> str:
+        return self._owner.choose_companion(key if isinstance(key, str) else "")
 
 
 class DeskCompanion:
@@ -653,6 +724,9 @@ class DeskCompanion:
         #: "Let it walk" when the app window could not be written to: the choice
         #: stands for the session.
         self._walk_forced = False
+        #: The saved companions' names the "Companion" panel last listed, by key: a choice
+        #: names its saved companion by place, and is refused if the name there changed.
+        self._choice_names: dict[str, str] = {}
         #: The figure's rectangle (logical pixels) at the last click, and whether
         #: `window` is the quick panel beside it rather than the card.
         self.pet_rect: tuple[int, int, int, int] | None = None
@@ -663,6 +737,13 @@ class DeskCompanion:
         #: Which menu the panel page opens on when it first asks (a right click
         #: on a new page cannot be sent: the page is not listening yet).
         self._pending_kind = "menu"
+        #: The one source of the menu panel's height (INBOX 1658: the click and the page
+        #: each asked a height, 336 and 308 physical, and the window flipped between
+        #: them ten times in two seconds). Python places the panel before it is shown, at
+        #: `panel_size(kind)`; the page only reports what it measured, which is kept here
+        #: for the next open. `_panel_state` is the page's panel now showing.
+        self._panel_heights: dict[str, int] = {}
+        self._panel_state = ""
         #: The figure's size in physical pixels and dpi at the last click.
         self._pet_phys: tuple[int, int, int] | None = None
         #: The figure's physical rectangle at the last click or drop, and where the
@@ -687,10 +768,26 @@ class DeskCompanion:
         corner = self.corner or self._home()
         return corner[0] - self.size[0], corner[1] - self.size[1]
 
-    def resize(self, width: int, height: int) -> tuple[int, int]:
+    def panel_size(self, kind: str) -> tuple[int, int]:
+        """The quick panel's size for a menu kind: the page's last measured height
+        when there is one, else the starting guess."""
+        width, height = PANEL_SIZES[kind]
+        return width, self._panel_heights.get(kind, height)
+
+    def resize(self, width: int, height: int, state: str = "") -> tuple[int, int]:
         """Resize about the bottom-right corner, so a panel opens up and to the
-        left of the companion rather than off the screen's edge."""
+        left of the companion rather than off the screen's edge. The overlay panel's
+        menu and context heights are only learned while that menu is the open panel
+        (see `_panel_heights`): the window was placed at that size before it was
+        shown. It moves again only for a panel the person opens from it (note,
+        search) or back from one."""
         with _lock:
+            if self.panel and state in PANEL_SIZES:
+                self._panel_heights[state] = height
+                if self._panel_state in PANEL_SIZES or not self._panel_state:
+                    return self.size
+            if self.panel and state:
+                self._panel_state = state
             self.size = (width, height)
             corner = self.corner or self._home()
             if self.panel and self.pet_rect is not None:
@@ -909,11 +1006,17 @@ class DeskCompanion:
         """The menu's "Let it walk": the app's Companion movement set to Always
         (through its own window), and the figure restarted moving."""
         done = self._ask_main(WALK_SCRIPT, "the walk setting") is True
+        return self._restart_shown("let it walk", walk_forced=not done)
+
+    def _restart_shown(self, what: str, walk_forced: bool | None = None) -> bool:
+        """The runner restarted for whatever the app window now says (look, motion), where
+        it stood, and shown again when it was; a failed start falls back to the card."""
         if not _lock.acquire(timeout=LOCK_WAIT):
-            logger.warning("desk companion: busy, let it walk was skipped")
+            logger.warning("desk companion: busy, %s was skipped", what)
             return False
         try:
-            self._walk_forced = not done
+            if walk_forced is not None:
+                self._walk_forced = walk_forced
             if self.closing or self.runner is None:
                 return False
             before = self.runner
@@ -923,13 +1026,51 @@ class DeskCompanion:
                 return False
             if self.runner is not before and self.shown:
                 self.runner.show()
-            logger.info("desk companion: let it walk (setting written: %s)", done)
+            logger.info("desk companion: %s, restarted", what)
             return True
         except Exception:  # noqa: BLE001 - the figure stays as it was
-            logger.warning("desk companion: let it walk failed", exc_info=True)
+            logger.warning("desk companion: %s failed", what, exc_info=True)
             return False
         finally:
             _lock.release()
+
+    def companion_choices(self) -> dict[str, Any]:
+        """The right-click "Companion" panel: `{"locked": bool, "options": [...]}`. Nothing
+        is listed while the app is locked or does not answer."""
+        answer = self._ask_main(COMPANION_SCRIPT, "the companion choices")
+        try:
+            data = json.loads(answer) if isinstance(answer, str) and answer.startswith("{") else None
+        except ValueError:
+            data = None
+        if not isinstance(data, dict):
+            self._choice_names = {}
+            return {"locked": False, "options": []}
+        if data.get("locked") is True:
+            self._choice_names = {}
+            return {"locked": True, "options": []}
+        options = companion_options(data)
+        self._choice_names = {o["key"]: o["label"] for o in options if o["key"].startswith("preset:")}
+        return {"locked": False, "options": options}
+
+    def choose_companion(self, key: str) -> str:
+        """A choice from that panel, written to the app's own prefs through its window (as
+        `let_it_walk` writes its setting), then the figure restarts with the new look.
+        "ok", "locked" (refused while the app is locked), "gone" (a saved companion that is
+        no longer there), "unknown" or "error"."""
+        if not _CHOICE_KEY.fullmatch(key):
+            return "unknown"
+        if key.startswith("atlas:"):
+            script = COMPANION_ATLAS % json.dumps(key.split(":", 1)[1])
+        else:
+            name = self._choice_names.get(key)
+            if name is None:
+                return "gone"
+            script = COMPANION_PRESET % (int(key.split(":", 1)[1]), json.dumps(name))
+        answer = self._ask_main(script, "the companion choice")
+        if answer != "ok":
+            logger.info("desk companion: the companion choice was not applied (%s)", answer)
+            return answer if answer in ("locked", "gone") else "error"
+        return "ok" if self._restart_shown("companion choice") else "error"
 
     def _stop_runner(self) -> None:
         runner, self.runner = self.runner, None
@@ -952,6 +1093,7 @@ class DeskCompanion:
             self.runner.show()
             self.shown = True
             logger.info("desk companion: overlay shown")
+            self._make_panel()
             return True
         if self.runner is not None and self.shown:
             self.runner.hide()
@@ -959,6 +1101,22 @@ class DeskCompanion:
             self.shown = False
             logger.info("desk companion: overlay hidden")
         return self.runner is not None
+
+    def _make_panel(self) -> None:
+        """The quick panel's window, made once and kept hidden, so a click only
+        places and shows it (INBOX 1658: it was made at click time and the figure
+        lagged). A failure leaves it to the first click."""
+        if self.window is not None:
+            return
+        try:
+            self.panel = True
+            self.size = self.panel_size("menu")
+            self.window = self._make()
+            logger.info("desk companion: quick panel made hidden")
+        except Exception:  # noqa: BLE001 - the first click tries again
+            logger.warning("desk companion: the quick panel could not be made ahead", exc_info=True)
+            self.panel = False
+            self.window = None
 
     def _hide_panel_window(self) -> None:
         if self.window is not None and self.panel_shown:
@@ -1081,22 +1239,21 @@ class DeskCompanion:
             self._pending_kind = "context" if kind == "right" else "menu"
             area = _screen_area(self.webview, (self.pet_rect[0], self.pet_rect[1] + self.pet_rect[3]))
             self.panel = True
-            self.size = PANEL_SIZES[self._pending_kind]
+            self._panel_state = self._pending_kind
+            self.size = self.panel_size(self._pending_kind)
             self.corner = panel_corner(self.pet_rect, self.size, area)
             self._update_panel_box()
-            fresh = self.window is None
-            if fresh:
+            if self.window is None:
                 self.window = self._make()
                 logger.info("desk companion: quick panel made beside the figure at %s", self.top_left())
-            else:
-                self._place()
+            # The one placement of the click, before the window is shown; nothing
+            # resizes or moves it after (the page's own height report is only kept).
+            self._place()
             self.window.show()
             self.panel_shown = True
-            self._place()
-            if not fresh:
-                self.window.evaluate_js(
-                    "window.dispatchEvent(new CustomEvent('desk-open',{detail:%s}))" % json.dumps("context" if kind == "right" else "menu")
-                )
+            self.window.evaluate_js(
+                "window.dispatchEvent(new CustomEvent('desk-open',{detail:%s}))" % json.dumps("context" if kind == "right" else "menu")
+            )
             logger.info("desk companion: quick panel shown (%s)", kind)
         except Exception:  # noqa: BLE001 - a panel that fails leaves the figure walking
             logger.warning("desk companion: the quick panel failed", exc_info=True)

@@ -349,3 +349,12 @@ def test_typing_keeps_the_engine_quiet_and_an_unknown_input_age_does_not() -> No
     r._busy_gate(clock.t)
     assert r.engine.quiet is False
     r.stop()
+
+
+def test_the_engine_is_given_the_hang_frames_measured_top_margin() -> None:
+    r, *_ = make()
+    assert r.start()
+    try:
+        assert r.engine.hang_top == pytest.approx(r.sprites.top_share("hang")) and 0.1 < r.engine.hang_top < 0.3
+    finally:
+        r.stop()

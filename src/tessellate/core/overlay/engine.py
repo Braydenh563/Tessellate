@@ -71,9 +71,16 @@ HOP_FOR = 0.4
 NOTICE_FOR = 1.5
 STARTLE_FOR = 0.5
 NOTICE_COOLDOWN = 8.0
-#: Not touched for this long: sits, then sleeps.
-IDLE_SIT = 180.0
-IDLE_SLEEP = 360.0
+#: Not touched for this long: sits, then sleeps. Ten and twenty minutes (the owner's
+#: open call, taken): it keeps doing small acts while the person is away from the
+#: keyboard, since the big acts (hang, peek) come two to four minutes apart.
+IDLE_SIT = 600.0
+IDLE_SLEEP = 1200.0
+#: The idle cycle (`idle0` to `idle11`, one tail beat and one breath): a standing
+#: figure draws these at `IDLE_FPS` so the parts move; reduced or typing-quiet it
+#: is the one `stand` frame and costs no wake.
+IDLE_FRAMES = 12
+IDLE_FPS = 8.0
 
 #: Logical pixels (scaled by the monitor's dpi).
 WALK_SPEED = 55.0
@@ -105,15 +112,34 @@ SPIN_STEPS = 8
 #: A floater: hover height range above the floor, speed, turn rate, air drag,
 #: and the pull back to its hover height (per second squared per pixel).
 HOVER = (24.0, 80.0)
-FLOAT_SPEED = 45.0
-FLOAT_TURN = 0.9
+FLOAT_SPEED = 130.0
+FLOAT_TURN = 1.8
 FLOAT_DRAG = 3.0
 FLOAT_PULL = 3.0
 REACHED = 6.0
+#: A floater travels (INBOX 1658: "it just floats there"): each leg is at least this share
+#: of the work area's width, it rests only a moment between legs, and while it is
+#: out it bobs (up to BOB logical px) and sways (FLOAT_SWAY), redrawn every BOB_TICK s.
+FLOAT_LEG = (0.35, 0.8)
+FLOAT_STAND_FOR = (0.8, 2.0)
+FLOAT_MOVE_WEIGHT = 150
+BOB = 7.0
+BOB_HZ = 0.55
+FLOAT_SWAY = 5.0
+FLOAT_SWAY_HZ = 0.37
+BOB_TICK = 0.05
 #: Hang from the top edge, sway, and the climb up to it.
 HANG_FOR = (8.0, 16.0)
 SWAY = 6.0
 SWAY_HZ = 0.4
+#: What a hang takes hold of (INBOX 1660: "it thinks its hanging but its just ... hanging in
+#: mid air"): the top of the work area, or the bottom edge of a window's title bar
+#: (`TITLE_BAR` logical px under its top). The hands are `hang_top` of the frame's height
+#: below the frame's top (measured from the hang frame at load), so the frame is lifted by
+#: that much; the hands need `HANG_HANDS` of the figure's width either side of its centre
+#: to be over the window's edge.
+TITLE_BAR = 32.0
+HANG_HANDS = 0.3
 RISE_FOR = 0.9
 #: Peek: the figure sinks behind an edge. Hidden share of the figure (0 shown, 1 gone).
 PEEK_HEAD = 0.65
@@ -221,15 +247,22 @@ class Engine:
         reduced: bool = False,
         roam_windows: bool = True,
         gait: str = "walk",
+        hang_top: float = 0.0,
+        idle_frames: int = IDLE_FRAMES,
         rng: random.Random | None = None,
         now: float = 0.0,
     ) -> None:
         self.size = size
+        self.idle_frames = max(0, int(idle_frames))
         self.monitors = list(monitors) or [Monitor((0, 0, 1920, 1040))]
         self.roam = roam
         self.reduced = reduced
         self.rng = rng or random.Random()
         self.gait = "float" if gait == "float" else "walk"
+        #: The share of the hang frame's height that is clear above the hands.
+        self.hang_top = min(max(float(hang_top), 0.0), 0.5)
+        #: The window whose title bar a hang (or the trip to one) takes hold of.
+        self.hang_on: Perch | None = None
         #: True while the person is typing or presenting: it only stands.
         self.quiet = False
         self.now = now
@@ -339,6 +372,7 @@ class Engine:
         m = self.current_monitor()
         left, top, right, bottom = m.area
         self.x = min(max(self.x, left), right - self.size[0])
+        top -= self._lift() if self.state in ("hang", "rise") else 0.0
         self.y = min(max(self.y, top), bottom - self.size[1])
         moving = ("held", "fall", "hop", "fly", "hang", "rise", "peek", "emerge", "leap", "drift", "walk")
         if self.gait == "float" and self.state in moving:
@@ -363,12 +397,16 @@ class Engine:
     def _enter(self, state: str, now: float) -> None:
         self.state = state
         self.flash = None
+        if state not in ("hang", "drift", "rise"):
+            self.hang_on = None
         if state not in ("peek", "emerge"):
             self.sink, self.peek_edge = 0.0, None
         if state not in ("walk", "drift"):
             self.goal = None
         self.trip = False
-        if state in HOLD_RANGES:
+        if state == "stand" and self.gait == "float" and self.perch is None:
+            self.state_until = now + self.rng.uniform(*FLOAT_STAND_FOR)
+        elif state in HOLD_RANGES:
             self.state_until = now + self.rng.uniform(*HOLD_RANGES[state])
         elif state in HOLD_FIXED:
             self.state_until = now + HOLD_FIXED[state]
@@ -487,7 +525,7 @@ class Engine:
         up = self.perch is not None
         climb = self._can_climb(now)
         table = [
-            (act, w) for act, (w, big) in ACTS.items()
+            (act, FLOAT_MOVE_WEIGHT if act == "move" and self.gait == "float" else w) for act, (w, big) in ACTS.items()
             if not (big and (now < self.big_ready or up)) and not (act == "sleep" and (idle < SLEEP_AFTER or up))
             and not (act == "climb" and not climb)
         ]
@@ -523,6 +561,8 @@ class Engine:
         (or floats down) when that window is gone or no longer under it, and
         keeps up when it moves."""
         self.windows = list(windows)
+        if self.hang_on is not None:
+            self._check_hang(now)
         if self.perch is None:
             return
         cur = next((p for p in self.windows if p.key == self.perch.key), None)
@@ -544,6 +584,46 @@ class Engine:
                     self._enter("hop", now)
         else:
             self.perch = cur
+
+    def _lift(self) -> float:
+        """How far the frame's top is above the hands that hold an edge."""
+        return self.hang_top * self.size[1]
+
+    def _hold_of(self, p: Perch) -> Perch | None:
+        """The window `p` as the runner last read it, when its title bar is still where it
+        was and the hands are still over it; else None."""
+        cur = next((q for q in self.windows if q.key == p.key), None)
+        if cur is None or not self.roam_windows or abs(cur.top - p.top) > PERCH_MOVED:
+            return None
+        c, w = self.x + self.size[0] / 2, self.size[0]
+        if self.state == "drift":  # on the way: it is the goal that must be over it
+            c = (self.goal[0] if self.goal else self.x) + w / 2
+        return cur if cur.left + HANG_HANDS * w <= c <= cur.right - HANG_HANDS * w else None
+
+    def _check_hang(self, now: float) -> None:
+        """A hang on a window's title bar (or the trip to it) ends when the window goes,
+        moves or no longer lies under the hands: it lets go, or stops short."""
+        p = self.hang_on
+        assert p is not None
+        cur = self._hold_of(p) if self.state in ("hang", "drift") else None
+        if cur is not None:
+            self.hang_on = cur
+        elif self.state == "hang":
+            self.hang_on = None
+            self._let_go()
+        elif self.state == "drift" and self.then == "hang":
+            self.hang_on, self.goal, self.then = None, None, "stand"
+            self._enter("stand", now)
+
+    def _arrive_hang(self, now: float, m: Monitor) -> None:
+        """At the edge a hang came for: hands on it, or (its window went on the way) a stand."""
+        held = self._hold_of(self.hang_on) if self.hang_on is not None else None
+        if self.hang_on is not None and held is None:
+            self._enter("stand", now)
+            return
+        self.y = (held.top + TITLE_BAR * self._scale() if held else m.area[1]) - self._lift()
+        self._enter("hang", now)
+        self.hang_on = held
 
     def _can_climb(self, now: float) -> bool:
         return (
@@ -681,11 +761,35 @@ class Engine:
 
     def _hang(self, now: float) -> None:
         m = self.current_monitor()
-        top = m.area[1]
-        if self.gait == "float":
-            self._go((self.rng.uniform(m.area[0], m.area[2] - self.size[0]), top), "hang", now)
-        else:
-            self._rise((self.x, top), "hang", now)
+        left, top, right, _b = m.area
+        lift = self._lift()
+        if self.gait != "float":
+            self._rise((self.x, top - lift), "hang", now)
+            return
+        x, hold = self.rng.uniform(left, right - self.size[0]), None
+        y = top - lift  # the work area's top is always an edge under the hands
+        spots = self._title_bars(m)
+        if spots and self.rng.random() < 0.5:
+            hold, x = spots[self.rng.randrange(len(spots))]
+            y = hold.top + TITLE_BAR * self._scale() - lift
+        self._go((x, y), "hang", now)
+        self.hang_on = hold
+
+    def _title_bars(self, m: Monitor) -> list[tuple[Perch, float]]:
+        """The windows a hang may take hold of on this monitor, each with an x for the
+        figure that puts its hands over the window's edge: [(window, x)]."""
+        if not (self.roam_windows and self.roam):
+            return []
+        left, top, right, _b = m.area
+        w, k = self.size[0], self._scale()
+        found = []
+        for p in self.windows:
+            lo, hi = max(left + w / 2, p.left + HANG_HANDS * w), min(right - w / 2, p.right - HANG_HANDS * w)
+            edge = p.top + TITLE_BAR * k
+            if hi - lo < 0.2 * w or p.top < top or edge > self.floor_y(m) - self._lift():
+                continue
+            found.append((p, self.rng.uniform(lo, hi) - w / 2))
+        return found
 
     def _peek(self, now: float) -> None:
         m = self.current_monitor()
@@ -743,8 +847,7 @@ class Engine:
                 self._enter("stand", now)
                 self.state_until = self.perch_until
         elif then == "hang":
-            self.y = m.area[1]
-            self._enter("hang", now)
+            self._arrive_hang(now, m)
         elif then.startswith("peek_"):
             self.peek_edge = then[5:]
             self.sink_max = PEEK_HEAD if self.peek_edge == "bottom" else PEEK_SIDE
@@ -803,7 +906,7 @@ class Engine:
         left, top, right, _b = m.area
         scale = self._scale()
         if self.goal is None:
-            self.goal = (self.rng.uniform(left, right - self.size[0]), self.rng.uniform(top, self.ground_y(m)))
+            self.goal = (self._leg_x(left, right), self.rng.uniform(top, self.ground_y(m)))
             wandering = True
         else:
             wandering = not self.trip
@@ -825,12 +928,26 @@ class Engine:
             self.heading += max(-FLOAT_TURN * dt, min(FLOAT_TURN * dt, diff))
         speed = FLOAT_SPEED * scale * max(0.3, min(1.0, dist / (60 * scale)))
         self.x = min(max(self.x + math.cos(self.heading) * speed * dt, left), right - self.size[0])
-        self.y = min(max(self.y + math.sin(self.heading) * speed * dt, top), self.floor_y(m))
+        high = top - (self._lift() if self.then == "hang" and self.trip else 0.0)
+        self.y = min(max(self.y + math.sin(self.heading) * speed * dt, high), self.floor_y(m))
         if abs(math.cos(self.heading)) > 0.3:
             self.facing = 1 if math.cos(self.heading) > 0 else -1
         if wandering and now >= self.state_until:
             self.goal = None
             self._enter("stand", now)
+
+    def _leg_x(self, left: float, right: float) -> float:
+        """The far end of a drift leg: a good way across the work area (FLOAT_LEG of its
+        width), toward the side with more room, never a short shuffle."""
+        span = right - left - self.size[0]
+        room_l, room_r = self.x - left, right - self.size[0] - self.x
+        go_right = self.rng.random() < room_r / max(1.0, room_l + room_r)
+        room = room_r if go_right else room_l
+        want = self.rng.uniform(*FLOAT_LEG) * span
+        if room < FLOAT_LEG[0] * span:  # not enough that way: the other
+            go_right, room = not go_right, room_l if go_right else room_r
+        step = min(want, room)
+        return self.x + step if go_right else self.x - step
 
     def _do_rise(self, now: float, dt: float) -> None:
         t = min(1.0, (now - self.phase_started) / RISE_FOR)
@@ -899,8 +1016,8 @@ class Engine:
         elif self.x > right - self.size[0] and self._open_side(m, "right"):
             self.x, self.vx = right - self.size[0], -abs(self.vx) * BOUNCE_DAMP
             self.bonk_until = now + BONK_FOR
-        if self.y <= top and self._open_side(m, "top"):
-            self.y, self.vx, self.vy = top, 0.0, 0.0
+        if self.y <= top - self._lift() and self._open_side(m, "top"):
+            self.y, self.vx, self.vy = top - self._lift(), 0.0, 0.0
             self.angle = 0.0
             self._enter("hang", now)
             return
@@ -1011,8 +1128,7 @@ class Engine:
         kind, px, py = event
         if kind == "down":
             self.press = (px, py)
-            dx, dy = self._display_pos()
-            self.grab = (px - dx, py - dy)
+            self.grab = (px - self.x, py - self.y)
             self.carrying = False
             self.trail = [(now, px, py)]
             self.pre_press = self.state
@@ -1127,13 +1243,28 @@ class Engine:
             if now < self.bonk_until:
                 return "hop"
             return f"spin{int(round(self.angle / (2 * math.pi / SPIN_STEPS))) % SPIN_STEPS}"
-        if s == "rise":
-            return "hop" if self.gait == "walk" else f"walk{int((now - self.phase_started) / 0.125) % 6}"
-        if s == "peek":
-            return "stand" if self.sink < self.sink_max * 0.5 or now - self.peek_started < 0.8 else "look"
+        if s in ("rise", "peek"):
+            return self._edge_frame(now)
         if s == "stand":
-            return self.flash[0] if self.flash else "stand"
+            return self._stand_frame(now)
         return s  # sit, sleep, wave, fall, land
+
+    def _edge_frame(self, now: float) -> str:
+        if self.state == "rise":
+            return "hop" if self.gait == "walk" else f"walk{int((now - self.phase_started) / 0.125) % 6}"
+        return "stand" if self.sink < self.sink_max * 0.5 or now - self.peek_started < 0.8 else "look"
+
+    def _stand_frame(self, now: float) -> str:
+        if self.flash:
+            return self.flash[0]
+        return f"idle{self._idle_index(now)}" if self._idling() else "stand"
+
+    def _idling(self) -> bool:
+        """Standing with life in its parts: not reduced, not typing-quiet, frames present."""
+        return self.state == "stand" and not self.reduced and not self.quiet and self.idle_frames > 0
+
+    def _idle_index(self, now: float) -> int:
+        return int(now * IDLE_FPS + 1e-6) % self.idle_frames
 
     def _wake(self, now: float) -> int | None:
         s = self.state
@@ -1153,16 +1284,34 @@ class Engine:
         if s == "stand":
             due += [self.flash[1]] if self.flash else [self.next_ambient]
             due.append(self.last_active + IDLE_SIT)
+        if self._bobbing():  # the next bob step
+            due.append(now + BOB_TICK)
+        if self._idling():  # the next idle frame: a redraw only when the index changes
+            due.append((math.floor(now * IDLE_FPS + 1e-6) + 1) / IDLE_FPS)
         soonest = min(due)
         if soonest == math.inf:
             return None
-        return max(MIN_WAKE_MS, int(math.ceil((soonest - now) * 1000)))
+        return max(MIN_WAKE_MS, int(math.ceil((soonest - now) * 1000)) + 1)
+
+    def _bobbing(self) -> bool:
+        """A floater out in the air, standing or drifting, with motion allowed: it bobs
+        and sways (never on a window it rests on, or while reduced or typing-quiet)."""
+        return (
+            self.gait == "float" and self.state in ("stand", "drift") and not self.reduced and not self.quiet
+            and self.perch is None and self.sink <= 0
+        )
 
     def _display(self) -> tuple[float, float, tuple[int, int, int, int] | None]:
         """Where the window is drawn and which part of the frame shows: the rest
-        position, less the sink behind an edge, plus the sway of a hang."""
+        position, less the sink behind an edge, plus the sway of a hang and the bob
+        and sway of a floater."""
         w, h = self.size
         x, y = self.x, self.y
+        if self._bobbing():
+            m, k = self.current_monitor(), self._scale()
+            tau = 2 * math.pi * self.now
+            y = max(m.area[1], y - BOB * k * (0.5 + 0.5 * math.sin(tau * BOB_HZ)))
+            x = min(max(x + FLOAT_SWAY * k * math.sin(tau * FLOAT_SWAY_HZ + 1.3), m.area[0]), m.area[2] - w)
         if self.state == "hang":
             x += math.sin((self.now - self.phase_started) * 2 * math.pi * SWAY_HZ) * SWAY * self._scale()
         if self.sink <= 0 or self.peek_edge is None:
@@ -1174,10 +1323,6 @@ class Engine:
         if self.peek_edge == "left":
             return x - hidden, y, (hidden, 0, w, h)
         return x + hidden, y, (0, 0, w - hidden, h)
-
-    def _display_pos(self) -> tuple[float, float]:
-        x, y, _clip = self._display()
-        return x, y
 
     def _output(self, now: float) -> Output:
         x, y, clip = self._display()
