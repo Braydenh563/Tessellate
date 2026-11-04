@@ -34,6 +34,8 @@ logger = logging.getLogger(__name__)
 
 #: How often to ask whether something fullscreen is in the way (seconds).
 BUSY_EVERY = 2.0
+#: Input this recent means the person is typing or working: no acts, only standing.
+TYPING_AGE = 2.5
 
 
 class OverlayRunner:
@@ -75,7 +77,7 @@ class OverlayRunner:
         self.paused = False
         self._stopped = False
         self._resume = False
-        self._last_key: tuple[str, int, bool] | None = None
+        self._last_key: tuple[str, int, bool, tuple[int, int, int, int] | None] | None = None
         self._last_pos: tuple[int, int] | None = None
         self._next_busy_check = 0.0
 
@@ -166,6 +168,10 @@ class OverlayRunner:
         if now < self._next_busy_check and not self.busy:
             return None
         self._next_busy_check = now + BUSY_EVERY
+        age = k.last_input_age(self.w)
+        engine = self.engine
+        if engine is not None:  # typing or working: it only stands (nothing big)
+            engine.quiet = age is not None and age < TYPING_AGE
         state = k.notification_state(self.w)
         away = state in k.QUNS_HIDE
         if away and not self.busy:
@@ -213,7 +219,9 @@ class OverlayRunner:
         self.reduced = reduced
         first = self.monitors[0]
         self.dpi = first.dpi
-        self.engine = eng.Engine(spr.size(first.dpi), self.monitors, home=self.home, reduced=reduced, now=self.clock())
+        self.engine = eng.Engine(
+            spr.size(first.dpi), self.monitors, home=self.home, reduced=reduced, gait=spr.gait, now=self.clock(),
+        )
         out = self.engine.update(self.clock())
         self._apply(out)
         logger.info(
@@ -230,13 +238,14 @@ class OverlayRunner:
             self.dpi = dpi
             engine.set_monitors(self.monitors, spr.size(dpi))
             self._last_key = None
-        key = (out.frame, self.dpi, out.flip)
+        key = (out.frame, self.dpi, out.flip, out.clip)
         if key != self._last_key:
-            frame = spr.frame(out.frame, self.dpi, out.flip)
-            host.present(frame.bgra, frame.width, frame.height, out.x, out.y)
+            frame = sprites.clipped(spr.frame(out.frame, self.dpi, out.flip), out.clip)
+            host.present(frame.bgra, frame.width, frame.height, out.x - frame.pad_x, out.y - frame.pad_y)
             self._last_key, self._last_pos = key, (out.x, out.y)
         elif (out.x, out.y) != self._last_pos:
-            host.move(out.x, out.y)
+            pad = spr.frame(out.frame, self.dpi, out.flip)
+            host.move(out.x - pad.pad_x, out.y - pad.pad_y)
             self._last_pos = (out.x, out.y)
         if out.click:
             width, height = spr.size(self.dpi)

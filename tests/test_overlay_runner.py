@@ -170,7 +170,7 @@ def test_a_display_change_rereads_monitors_and_rescales_the_frames() -> None:
     assert wait_for(lambda: r.dpi == 192)
     assert r.engine.size == r.sprites.size(192) != first
     assert wait_for(lambda: fake.layered[-1]["size"] == r.sprites.size(192))
-    assert r.engine.y == 1400 - r.engine.size[1]
+    assert r.engine.y == r.engine.ground_y() == 1400 - r.engine.size[1] - r.engine.hover * 2
     r.stop()
 
 
@@ -246,10 +246,10 @@ def test_a_drop_in_mid_air_falls_with_ticks_to_the_floor() -> None:
     fake.post(k.WM_MOUSEMOVE)
     assert wait_for(lambda: r.engine.state == "held")
     fake.post(k.WM_LBUTTONUP)
-    assert wait_for(lambda: r.engine.state == "fall")
+    assert wait_for(lambda: r.engine.state in ("fall", "fly"))
     assert wait_for(lambda: fake.timers.get(1) is not None)  # a fall asks for ticks
     _pump(r, fake, clock, 10.0, until=lambda: bool(settled))
-    assert settled and r.engine.y == r.engine.floor_y()
+    assert settled and abs(r.engine.y - r.engine.ground_y()) < 1  # Atlas hovers: its rest height
     r.stop()
 
 
@@ -266,7 +266,7 @@ def test_a_still_figure_dropped_in_mid_air_is_on_the_floor_at_once() -> None:
     assert wait_for(lambda: r.engine.state == "held")
     fake.post(k.WM_LBUTTONUP)
     assert wait_for(lambda: settled)
-    assert r.engine.y == r.engine.floor_y() and settled[0][1] == r.engine.floor_y()
+    assert r.engine.y == r.engine.ground_y() and abs(settled[0][1] - r.engine.ground_y()) < 1
     r.stop()
 
 
@@ -304,3 +304,48 @@ def test_a_stop_before_the_thread_reports_its_end_is_never_a_death() -> None:
     r._exited()
     time.sleep(0.05)
     assert died == []
+
+
+def test_a_thrown_figure_is_drawn_rotated_on_a_bigger_canvas_and_a_peek_is_drawn_clipped() -> None:
+    r, fake, clock, *_ = make(reduced=False)
+    assert r.start()
+    r.show()
+    assert wait_for(lambda: r.host.visible)
+    assert r.engine.gait == "float"  # Atlas
+    r.paused = True  # the test drives the engine itself, not the window's timer
+    engine = r.engine
+    w, h = r.sprites.size(96)
+    engine.y = 100.0
+    engine._enter("fly", clock.t)
+    engine.vx = engine.vy = 0.0
+    engine.angle = 1.0
+    r._apply(engine.update(clock.t + 0.01))
+    side = r.sprites.frame("spin1", 96)
+    assert r._last_key[0].startswith("spin") and side.width > w
+    assert wait_for(lambda: fake.layered[-1]["size"] == (side.width, side.height))
+    # sunk behind the bottom edge: the hidden rows are drawn clear
+    engine._enter("peek", clock.t)
+    engine.peek_edge, engine.sink_max, engine.peek_started = "bottom", 0.65, clock.t - 1.5
+    engine.y = engine.floor_y()
+    out = engine.update(clock.t + 0.02)
+    r._apply(out)
+    assert out.clip == (0, 0, w, h - round(0.65 * h)) and r._last_key[3] == out.clip
+    r.stop()
+
+
+def test_typing_keeps_the_engine_quiet_and_an_unknown_input_age_does_not() -> None:
+    r, fake, clock, *_ = make(reduced=False)
+    assert r.start()
+    r.show()
+    assert wait_for(lambda: r.host.visible)
+    assert r.engine.quiet is False  # the fake cannot say: not quiet
+    fake.last_input = (10_000, 9_000)  # tick, last input: 1 s ago
+    clock.t += 5
+    r._next_busy_check = 0.0
+    r._busy_gate(clock.t)
+    assert r.engine.quiet is True
+    fake.last_input = (10_000, 1_000)
+    r._next_busy_check = 0.0
+    r._busy_gate(clock.t)
+    assert r.engine.quiet is False
+    r.stop()

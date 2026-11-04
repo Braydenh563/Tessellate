@@ -213,9 +213,11 @@ def test_let_go_in_the_air_it_falls_to_the_floor_then_lands_and_settles() -> Non
     e, _ = make()
     e.update(1.0, event=("down", 850, 950))
     e.update(1.01, event=("move", 1010, 300))
-    out = e.update(1.02, event=("up", 1010, 300))
+    # The pointer rests before it lets go: a slow release is a plain drop, not a
+    # throw (a quick one is, since the owner's report on 2026-11-04).
+    out = e.update(1.5, event=("up", 1010, 300))
     assert out.frame == "fall"
-    t, ys, settled = 1.02, [], None
+    t, ys, settled = 1.5, [], None
     while t < 4 and out.frame == "fall":
         t += 0.016
         out = e.update(t)

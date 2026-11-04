@@ -42,6 +42,8 @@ class FakeWin32:
         self.monitor_list: list[tuple[tuple[int, int, int, int], int]] = [((0, 0, 1920, 1040), 96)]
         self.notification = 5  # QUNS_ACCEPTS_NOTIFICATIONS
         self.animations = 1
+        #: (GetTickCount, last input tick); None answers "unknown" like a failed call.
+        self.last_input: tuple[int, int] | None = None
         for name in ("user32", "gdi32", "kernel32", "shcore", "shell32"):
             setattr(self, name, FakeDll(self, name))
 
@@ -138,6 +140,15 @@ class FakeWin32:
     def _GetDpiForMonitor(self, hmon: Any, _kind: int, x_ref: Any, y_ref: Any) -> int:
         x_ref._obj.value = y_ref._obj.value = self.monitor_list[int(hmon) - 100][1]
         return 0
+
+    def _GetLastInputInfo(self, ref: Any) -> int:
+        if self.last_input is None:
+            return 0
+        ref._obj.dwTime = self.last_input[1]
+        return 1
+
+    def _GetTickCount(self) -> int:
+        return self.last_input[0] if self.last_input else 0
 
     def _SHQueryUserNotificationState(self, ref: Any) -> int:
         ref._obj.value = self.notification

@@ -33,6 +33,13 @@ FRAME_NAMES = (
     "sit", "sleep", "wave", "held", "fall", "land", "hop", "hang", "tumble",
 )
 WALK_FRAMES = tuple(f"walk{i}" for i in range(6))
+#: Rotated copies of the "tumble" frame, for a thrown figure: `spin0` to `spin7`
+#: are 45 degree steps. Built once per dpi (and flip) with Pillow, then cached.
+SPIN_STEPS = 8
+SPIN_FRAMES = tuple(f"spin{i}" for i in range(SPIN_STEPS))
+SPIN_BASE = "tumble"
+#: "float" (Atlas, a wisp for a lower body: hovers and drifts) or "walk".
+GAITS = {"masculine": "float", "feminine": "float"}
 #: Alpha under this is clear: the click-through guard.
 ALPHA_FLOOR = 8
 #: The shipped frames are at twice the CSS pixel size.
@@ -44,6 +51,29 @@ class Frame(NamedTuple):
     height: int
     #: Premultiplied BGRA, top-down, `width * height * 4` bytes.
     bgra: bytes
+    #: How far the picture's origin is up and left of the figure's own box: a
+    #: rotated frame is on a bigger canvas, so the window moves back by this much.
+    pad_x: int = 0
+    pad_y: int = 0
+
+
+def clipped(frame: Frame, clip: tuple[int, int, int, int] | None) -> Frame:
+    """The frame with everything outside `clip` (left, top, right, bottom) clear.
+    Clear pixels take no clicks (the halo guard's rule), so a figure sunk behind
+    an edge cannot be clicked where it is hidden. Byte slicing, no Pillow."""
+    if clip is None:
+        return frame
+    w, h = frame.width, frame.height
+    left, top = max(0, clip[0]), max(0, clip[1])
+    right, bottom = min(w, clip[2]), min(h, clip[3])
+    if (left, top, right, bottom) == (0, 0, w, h):
+        return frame
+    out = bytearray(w * h * 4)
+    if right > left and bottom > top:
+        for row in range(top, bottom):
+            a, b = (row * w + left) * 4, (row * w + right) * 4
+            out[a:b] = frame.bgra[a:b]
+    return frame._replace(bgra=bytes(out))
 
 
 def frames_dir() -> Path:
@@ -79,6 +109,7 @@ class SpriteSet:
 
     def __init__(self, look: str, directory: Path | None = None) -> None:
         self.look = look_for(look)
+        self.gait = GAITS[self.look]
         self.directory = (directory or frames_dir()) / self.look
         self._source: dict[str, Any] = {}
         self._cache: dict[tuple[str, int, bool], Frame] = {}
@@ -107,7 +138,7 @@ class SpriteSet:
     def frame(self, name: str, dpi: int = 96, flip: bool = False) -> Frame:
         """The frame as premultiplied BGRA at the dpi, mirrored when `flip`
         (the shipped frames face right; walking left is the mirror)."""
-        if name not in FRAME_NAMES:
+        if name not in FRAME_NAMES and name not in SPIN_FRAMES:
             raise KeyError(name)
         key = (name, int(dpi), bool(flip))
         cached = self._cache.get(key)
@@ -115,12 +146,31 @@ class SpriteSet:
             return cached
         from PIL import Image, ImageOps
 
-        image = self._load(name)
+        image = self._load(SPIN_BASE if name in SPIN_FRAMES else name)
         if flip:
             image = ImageOps.mirror(image)
         width, height = self.size(dpi)
         if (width, height) != image.size:
             image = image.resize((width, height), Image.Resampling.LANCZOS)
+        if name in SPIN_FRAMES:
+            built = self._spun(image, SPIN_FRAMES.index(name), width, height)
+            self._cache[key] = built
+            return built
         built = Frame(width, height, premultiplied_bgra(clear_faint_alpha(image)))
         self._cache[key] = built
         return built
+
+    def _spun(self, image: Any, step: int, width: int, height: int) -> Frame:
+        """The picture turned by `step` x 45 degrees on a square canvas big enough
+        for any angle (the diagonal), so no corner is cut; the pad tells the window
+        where the figure's own box sits in it."""
+        import math
+
+        from PIL import Image
+
+        side = math.ceil(math.hypot(width, height))
+        canvas = Image.new("RGBA", (side, side), (0, 0, 0, 0))
+        pad_x, pad_y = (side - width) // 2, (side - height) // 2
+        canvas.paste(image, (pad_x, pad_y))
+        turned = canvas.rotate(-step * 360.0 / SPIN_STEPS, resample=Image.Resampling.BICUBIC)
+        return Frame(side, side, premultiplied_bgra(clear_faint_alpha(turned)), pad_x, pad_y)

@@ -91,6 +91,10 @@ WNDPROC = _FUNC(LRESULT, wintypes.HWND, wintypes.UINT, WPARAM, LPARAM)
 MONITORENUMPROC = _FUNC(wintypes.BOOL, wintypes.HANDLE, wintypes.HDC, ctypes.POINTER(wintypes.RECT), LPARAM)
 
 
+class LASTINPUTINFO(ctypes.Structure):
+    _fields_ = [("cbSize", wintypes.UINT), ("dwTime", wintypes.DWORD)]
+
+
 class POINT(ctypes.Structure):
     _fields_ = [("x", ctypes.c_long), ("y", ctypes.c_long)]
 
@@ -168,6 +172,7 @@ def signatures() -> dict[str, dict[str, tuple[Any, list[Any]]]]:
             "GetDC": (H, [H]),
             "ReleaseDC": (INT, [H, H]),
             "GetCursorPos": (B, [P(POINT)]),
+            "GetLastInputInfo": (B, [P(LASTINPUTINFO)]),
             "SetCapture": (H, [H]),
             "ReleaseCapture": (B, []),
             "LoadCursorW": (H, [H, ctypes.c_void_p]),
@@ -186,6 +191,7 @@ def signatures() -> dict[str, dict[str, tuple[Any, list[Any]]]]:
         },
         "kernel32": {
             "GetModuleHandleW": (H, [wintypes.LPCWSTR]),
+            "GetTickCount": (wintypes.DWORD, []),
         },
         "shcore": {
             "GetDpiForMonitor": (ctypes.c_long, [H, INT, P(U), P(U)]),
@@ -300,6 +306,20 @@ def notification_state(w: Any) -> int | None:
         return int(state.value) if fn(ctypes.byref(state)) == 0 else None
     except Exception:  # noqa: BLE001
         logger.debug("overlay: notification state unknown", exc_info=True)
+        return None
+
+
+def last_input_age(w: Any) -> float | None:
+    """Seconds since the last key or mouse input anywhere (GetLastInputInfo), or
+    None when it cannot be read. Only the age is read, never what was typed."""
+    info = LASTINPUTINFO(ctypes.sizeof(LASTINPUTINFO), 0)
+    try:
+        if not w.user32.GetLastInputInfo(ctypes.byref(info)) or not info.dwTime:
+            return None
+        now = int(w.kernel32.GetTickCount()) & 0xFFFFFFFF
+        return ((now - info.dwTime) & 0xFFFFFFFF) / 1000.0
+    except Exception:  # noqa: BLE001
+        logger.debug("overlay: last input unknown", exc_info=True)
         return None
 
 
