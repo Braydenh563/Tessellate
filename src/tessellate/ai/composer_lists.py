@@ -16,7 +16,7 @@ from __future__ import annotations
 import re
 from datetime import date, timedelta
 
-from tessellate.ai import composer, composer_done, composer_versus, filed_name, note_rank, note_recency, realise, recognise, utilities
+from tessellate.ai import composer, composer_done, composer_versus, filed_name, note_recency, realise, recognise, utilities
 from tessellate.ai import composer_body
 
 #: At most this many lines under the opening; the rest are on the right.
@@ -313,6 +313,8 @@ def _find(views: list, subject: str, today: date, tense: str):  # noqa: ANN202
     #: The note titled as the subject first, then one whose title holds it
     #: (note_rank's order): "the dentist" is the Dentist note, not the
     #: "Call the dentist" to-do that happens to name tomorrow.
+    from tessellate.ai import note_rank  # at the call: note_rank reads the composer, so a module import closes a cycle
+
     for view in note_rank.lead_by(sorted(views, key=lambda v: v.rank), subject, lambda v: v.note):
         if not wanted <= {composer._stem(w) for w in composer._words(str(view.note.get("content") or ""))}:
             continue
