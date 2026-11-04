@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Companion: an act's leave rides inside its enter's one blend change, so a wave to hop forces 4 layouts instead of 6 (INBOX 1560).
 - Desktop companion: it also shows while the window is minimised, not only in the tray, and its show logs each step (INBOX 1636, 1633).
 - Companion throw: one layout read per landing instead of three, and the page no longer scrolls under a wheel or key press while the companion is carried or flying (INBOX 1634, part).
 - Focus timer: type any minutes from 1 to 180, steps of 1 under 10 and 5 above, and a 60 preset; new Stopwatch (laps), Alarm (a reminder at a time of day) and Convert (units, currency, time zones offline) widgets (INBOX 1617).
