@@ -479,7 +479,7 @@ def test_the_diagram_divider_direction_caption_and_walkthrough_are_in_the_guide_
 
     body = str(next(t["body"] for t in HELP_TOPICS if t["id"] == "diagram-blocks"))
     assert len(body) < 1900
-    for words in ("A divider sizes the blocks and the picture", "Shift for more", "Direction (one button) turns the flow", "Add a shape, Name it, Connect it"):
+    for words in ("A divider sizes the blocks and the picture", "Shift for more", "Direction (a menu) turns the flow", "Add a shape, Name it, Connect it"):
         assert words in body, words
     js = FRONTEND / "js"
     # 1661 D2: the caption over four arrows became one button that says "Direction: Down" (diagram-bar.js).

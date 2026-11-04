@@ -40,8 +40,8 @@
     word.textContent = WORD[dir];
     S.dirs.dataset.dir = dir;
     S.dirs.replaceChildren(icon, word);
-    S.dirs.setAttribute("aria-label", `Direction: ${WORD[dir]}. Press to turn it.`);
-    S.dirs.title = `${name}. Press to turn it, Shift to turn it back.`;
+    S.dirs.setAttribute("aria-label", `Direction: ${WORD[dir]}. Choose a direction.`);
+    S.dirs.title = `${name}. Choose a direction, or Shift to turn it back one step.`;
   }
 
   function build(S, h) {
@@ -80,14 +80,19 @@
     paint();
     split.append(main, caret);
 
-    //: Direction: one button that turns the diagram Down, Right, Up, Left; Shift turns it back.
+    //: Direction: a press opens the four with their arrows; Shift turns it back one step, as the single button did.
+    S.turn = (dir) => {
+      S.m.dir = dir;
+      h.commit(S, `${DIRS.find(([d]) => d === dir)[2]}.`);
+    };
     S.dirs = el("button", "ghost small dgm-dirs");
     S.dirs.type = "button";
+    S.dirs.setAttribute("aria-haspopup", "menu");
     S.dirs.addEventListener("click", (event) => {
       const at = DIRS.findIndex(([d]) => d === S.m.dir);
-      const to = DIRS[(at + (event.shiftKey ? DIRS.length - 1 : 1)) % DIRS.length];
-      S.m.dir = to[0];
-      h.commit(S, `${to[2]}.`);
+      if (event.shiftKey) return S.turn(DIRS[(at + DIRS.length - 1) % DIRS.length][0]);
+      const r = S.dirs.getBoundingClientRect();
+      openMenuAtPoint(DIRS.map(([d, icon, name]) => ({ label: `${icon} ${name}`, run: () => S.turn(d) })), "Direction", r.right, r.bottom, S.dirs);
     });
 
     const suggest = h.smallButton("ph:sparkle Suggest", "Start from a template, your notes or a description", () => h.suggestMenu(S, suggest));

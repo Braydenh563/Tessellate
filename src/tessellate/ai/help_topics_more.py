@@ -3231,7 +3231,7 @@ MORE_TOPICS.extend([
             "them, a group's body takes it inside. A connector shows under "
             "the block it leaves as Start to Next and its label. The shape swatch "
             "picks it. A divider sizes the blocks and the picture (drag, or "
-            "arrows; Shift for more). Direction (one button) turns the flow. An empty one lists "
+            "arrows; Shift for more). Direction (a menu) turns the flow. An empty one lists "
             "three steps: Add a shape, Name it, Connect it, ticked as you go, or Start from an example. "
             "The corner bar zooms (Zoom in, Zoom out, Fit), as do Ctrl+wheel "
             "and a pinch; its last button reads the zoom now, and 100% is the drawing's own size; arrow keys pan. "
@@ -3261,7 +3261,8 @@ MORE_TOPICS.extend([
             "Reading a diagram. The blocks list is drawn in flow order: a block sits under the one that points at it, "
             "indented a step, and a block made by Connect to... lands under its siblings, so an org chart reads like the chart. "
             "The printed source keeps its own order, and Alt+Up and Alt+Down still move a block among its siblings there. "
-            "A block's arrows share one line under it, each as an arrow to the block it reaches and its words; press one for its menu."
+            "A block's arrows share one line under it, each as an arrow to the block it reaches and its words; press one for its menu. "
+            "Fit stops at readable text (11 px) and the picture scrolls past it. A tall chart in a wide pane offers Turn it sideways once; Direction is a menu of Down, Right, Up and Left, and Shift turns it back one step."
         ),
         "badge": {"label": "Documents", "tab": "documents"},
     },

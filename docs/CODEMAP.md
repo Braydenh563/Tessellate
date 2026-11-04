@@ -2,9 +2,9 @@
 
 Generated 2026-11-04 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7813, frontend ids 2646, CSS sections 522, backend routes 644, backend modules 8797, test files 2068, tests 17457, plan headings 1003, app scripts 28, boot scripts 37, script files 257.
+Counts: frontend functions 7814, frontend ids 2646, CSS sections 522, backend routes 644, backend modules 8797, test files 2068, tests 17460, plan headings 1003, app scripts 28, boot scripts 37, script files 257.
 
-## Frontend functions (7813)
+## Frontend functions (7814)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -3114,12 +3114,12 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 |---|---|
 | `build` | frontend/js/diagram-bar.js:47 |
 | `hintOf` | frontend/js/diagram-bar.js:17 |
-| `key` | frontend/js/diagram-bar.js:121 |
+| `key` | frontend/js/diagram-bar.js:126 |
 | `last` | frontend/js/diagram-bar.js:18 |
 | `nameOf` | frontend/js/diagram-bar.js:23 |
 | `optionsOf` | frontend/js/diagram-bar.js:22 |
 | `paintOutline` | frontend/js/diagram-bar.js:26 |
-| `rootKey` | frontend/js/diagram-bar.js:131 |
+| `rootKey` | frontend/js/diagram-bar.js:136 |
 | `sync` | frontend/js/diagram-bar.js:33 |
 
 ### frontend/js/diagram-builder.js (40)
@@ -3334,11 +3334,12 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `dgbUnjoin` | frontend/js/diagram-ops.js:184 |
 | `dgbWrap` | frontend/js/diagram-ops.js:311 |
 
-### frontend/js/diagram-outline.js (2)
+### frontend/js/diagram-outline.js (3)
 
 | Name | File:line |
 |---|---|
 | `flow` | frontend/js/diagram-outline.js:9 |
+| `offer` | frontend/js/diagram-outline.js:53 |
 | `order` | frontend/js/diagram-outline.js:33 |
 
 ### frontend/js/diagram-overlay.js (1)
@@ -3417,8 +3418,8 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `kindWord` | frontend/js/diagram-view.js:37 |
-| `wire` | frontend/js/diagram-view.js:44 |
+| `kindWord` | frontend/js/diagram-view.js:42 |
+| `wire` | frontend/js/diagram-view.js:49 |
 
 ### frontend/js/documents-ai.js (15)
 
@@ -12307,7 +12308,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/dash-night-lazy.css | 29 |
 | frontend/css/dash-orphans-lazy.css | 57 |
 | frontend/css/desk-companion-lazy.css | 226 |
-| frontend/css/diagram-lazy.css | 1424 |
+| frontend/css/diagram-lazy.css | 1437 |
 | frontend/css/file-drop-lazy.css | 51 |
 | frontend/css/first-run-lazy.css | 140 |
 | frontend/css/forced-colors-lazy.css | 28 |
@@ -15811,8 +15812,8 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `_act_topic` | src/tessellate/ai/help_topics_more.py:3385 |
-| `_slash_commands_topic` | src/tessellate/ai/help_topics_more.py:3513 |
+| `_act_topic` | src/tessellate/ai/help_topics_more.py:3386 |
+| `_slash_commands_topic` | src/tessellate/ai/help_topics_more.py:3514 |
 
 ### src/tessellate/ai/help_words.py (2)
 
@@ -24078,7 +24079,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (17457)
+## Tests (17460)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -24643,7 +24644,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_diagram_split_r3_r4.py | 8 |
 | tests/test_diagram_suggest.py | 21 |
 | tests/test_diagram_touch.py | 4 |
-| tests/test_diagram_view_1614.py | 7 |
+| tests/test_diagram_view_1614.py | 10 |
 | tests/test_dialogue_b8.py | 1 |
 | tests/test_dictation_options.py | 8 |
 | tests/test_digest_structure.py | 24 |
