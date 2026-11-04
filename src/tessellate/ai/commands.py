@@ -315,7 +315,7 @@ def _as_typed_case(said: str, rest: str) -> str:
 def _bare_reminder(head: str) -> dict | None:
     """"set a reminder" alone is asked what and when (INBOX 1507); "ping me"
     alone is not yet a request, and the bare word lists them (INBOX 1357 B)."""
-    if "reminder" not in head or head.strip(" .").lower() in ("reminder", "reminders", "a reminder"):
+    if "remind" not in head or head.strip(" .").lower() in ("reminder", "reminders", "a reminder"):
         return None
     return {"intent": "reminder", "text": "", "said": "", "due_at": None, "time_given": False, "no_subject": ""}
 

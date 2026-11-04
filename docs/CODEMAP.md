@@ -2,7 +2,7 @@
 
 Generated 2026-11-04 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7822, frontend ids 2644, CSS sections 522, backend routes 644, backend modules 8797, test files 2068, tests 17477, plan headings 1003, app scripts 28, boot scripts 37, script files 257.
+Counts: frontend functions 7822, frontend ids 2644, CSS sections 522, backend routes 644, backend modules 8800, test files 2069, tests 17484, plan headings 1003, app scripts 28, boot scripts 37, script files 257.
 
 ## Frontend functions (7822)
 
@@ -13014,7 +13014,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:164 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (8797)
+## Backend modules (8800)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -15038,25 +15038,26 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `pick` | src/tessellate/ai/composer_study.py:106 |
 | `topic_notes` | src/tessellate/ai/composer_study.py:149 |
 
-### src/tessellate/ai/composer_suggest.py (15)
+### src/tessellate/ai/composer_suggest.py (16)
 
 | Name | File:line |
 |---|---|
 | `Option` | src/tessellate/ai/composer_suggest.py:95 |
-| `_app_tool` | src/tessellate/ai/composer_suggest.py:325 |
+| `_app_tool` | src/tessellate/ai/composer_suggest.py:333 |
+| `_bare_kind` | src/tessellate/ai/composer_suggest.py:166 |
 | `_catalogue` | src/tessellate/ai/composer_suggest.py:116 |
 | `_cosine` | src/tessellate/ai/composer_suggest.py:143 |
-| `_pick` | src/tessellate/ai/composer_suggest.py:256 |
+| `_pick` | src/tessellate/ai/composer_suggest.py:264 |
 | `_stem` | src/tessellate/ai/composer_suggest.py:102 |
 | `_tokens` | src/tessellate/ai/composer_suggest.py:109 |
-| `_unfilled` | src/tessellate/ai/composer_suggest.py:191 |
+| `_unfilled` | src/tessellate/ai/composer_suggest.py:199 |
 | `closest` | src/tessellate/ai/composer_suggest.py:124 |
-| `fill_slot` | src/tessellate/ai/composer_suggest.py:232 |
+| `fill_slot` | src/tessellate/ai/composer_suggest.py:240 |
 | `open_ended` | src/tessellate/ai/composer_suggest.py:152 |
-| `pending_kind` | src/tessellate/ai/composer_suggest.py:221 |
-| `reference` | src/tessellate/ai/composer_suggest.py:210 |
-| `reply` | src/tessellate/ai/composer_suggest.py:292 |
-| `unknown_action` | src/tessellate/ai/composer_suggest.py:341 |
+| `pending_kind` | src/tessellate/ai/composer_suggest.py:229 |
+| `reference` | src/tessellate/ai/composer_suggest.py:218 |
+| `reply` | src/tessellate/ai/composer_suggest.py:300 |
+| `unknown_action` | src/tessellate/ai/composer_suggest.py:349 |
 
 ### src/tessellate/ai/composer_sum.py (16)
 
@@ -17105,28 +17106,30 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `explain_pair` | src/tessellate/ai/relations.py:255 |
 | `recognise` | src/tessellate/ai/relations.py:192 |
 
-### src/tessellate/ai/reminder_parser.py (18)
+### src/tessellate/ai/reminder_parser.py (20)
 
 | Name | File:line |
 |---|---|
-| `_drop_please` | src/tessellate/ai/reminder_parser.py:186 |
-| `_extract_json` | src/tessellate/ai/reminder_parser.py:114 |
-| `_fallback` | src/tessellate/ai/reminder_parser.py:109 |
-| `_task_before` | src/tessellate/ai/reminder_parser.py:360 |
-| `_tidy` | src/tessellate/ai/reminder_parser.py:35 |
-| `_unslanged` | src/tessellate/ai/reminder_parser.py:355 |
-| `_wished` | src/tessellate/ai/reminder_parser.py:371 |
-| `_with_clock` | src/tessellate/ai/reminder_parser.py:45 |
-| `_without_trailing_hedges` | src/tessellate/ai/reminder_parser.py:252 |
-| `heard` | src/tessellate/ai/reminder_parser.py:221 |
-| `in_passing` | src/tessellate/ai/reminder_parser.py:380 |
-| `parse_relative` | src/tessellate/ai/reminder_parser.py:57 |
-| `parse_reminder` | src/tessellate/ai/reminder_parser.py:126 |
-| `read_by_rule` | src/tessellate/ai/reminder_parser.py:91 |
-| `reminder_head` | src/tessellate/ai/reminder_parser.py:303 |
-| `unhedged` | src/tessellate/ai/reminder_parser.py:231 |
-| `without_conditions` | src/tessellate/ai/reminder_parser.py:264 |
-| `worded` | src/tessellate/ai/reminder_parser.py:274 |
+| `_drop_please` | src/tessellate/ai/reminder_parser.py:187 |
+| `_extract_json` | src/tessellate/ai/reminder_parser.py:115 |
+| `_fallback` | src/tessellate/ai/reminder_parser.py:110 |
+| `_is_reminder_word` | src/tessellate/ai/reminder_parser.py:314 |
+| `_task_before` | src/tessellate/ai/reminder_parser.py:398 |
+| `_tidy` | src/tessellate/ai/reminder_parser.py:36 |
+| `_unslanged` | src/tessellate/ai/reminder_parser.py:393 |
+| `_wished` | src/tessellate/ai/reminder_parser.py:409 |
+| `_with_clock` | src/tessellate/ai/reminder_parser.py:46 |
+| `_without_trailing_hedges` | src/tessellate/ai/reminder_parser.py:253 |
+| `canonical_ask` | src/tessellate/ai/reminder_parser.py:321 |
+| `heard` | src/tessellate/ai/reminder_parser.py:222 |
+| `in_passing` | src/tessellate/ai/reminder_parser.py:418 |
+| `parse_relative` | src/tessellate/ai/reminder_parser.py:58 |
+| `parse_reminder` | src/tessellate/ai/reminder_parser.py:127 |
+| `read_by_rule` | src/tessellate/ai/reminder_parser.py:92 |
+| `reminder_head` | src/tessellate/ai/reminder_parser.py:340 |
+| `unhedged` | src/tessellate/ai/reminder_parser.py:232 |
+| `without_conditions` | src/tessellate/ai/reminder_parser.py:265 |
+| `worded` | src/tessellate/ai/reminder_parser.py:275 |
 
 ### src/tessellate/ai/reminder_suggest.py (3)
 
@@ -24085,7 +24088,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (17477)
+## Tests (17484)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -24499,6 +24502,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_composer_regex_linear_1029.py | 3 |
 | tests/test_composer_register_1031.py | 12 |
 | tests/test_composer_relevance_1310.py | 10 |
+| tests/test_composer_reminder_ask_1668.py | 7 |
 | tests/test_composer_requests_1649.py | 6 |
 | tests/test_composer_resize_zoom_1508.py | 1 |
 | tests/test_composer_review_1031.py | 7 |

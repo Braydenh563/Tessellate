@@ -160,19 +160,27 @@ def open_ended(question: str) -> str:
     if _VAGUE.match(q):
         return "" if capability.asks(q) else "vague"
     m = _BARE.match(q)
-    if m:
-        kind = _VERB_KIND[m.group("verb").lower()]
-        #: "show my reminders" names its object: the Reminders, read or
-        #: opened, never "What should I look for?" (audit 1028 E28).
-        if kind in ("find", "open") and (m.group("noun") or "").lower().startswith("reminder"):
-            return ""
-        #: "new notes" is the newest notes, not the start of making one
-        #: (INBOX 1532); only the singular "new note" is unfinished.
-        if m.group("verb").lower() == "new" and (m.group("noun") or "").lower() == "notes":
-            return ""
-        #: "make me a" and "add" alone are unfinished, not requests.
-        return kind if (m.group("noun") or m.group("verb").lower() in ("open", "find", "search")) else ""
-    return ""
+    return _bare_kind(m) if m else ""
+
+
+def _bare_kind(m: re.Match) -> str:
+    """The act a bare verb (with or without its noun) starts, or "" when the
+    words are a request already (`open_ended`)."""
+    verb, noun = m.group("verb").lower(), (m.group("noun") or "").lower()
+    kind = _VERB_KIND[verb]
+    #: "show my reminders" names its object: the Reminders, read or
+    #: opened, never "What should I look for?" (audit 1028 E28).
+    if kind in ("find", "open") and noun.startswith("reminder"):
+        return ""
+    #: "make me a reminder" starts a reminder, not a note (INBOX 1668).
+    if kind == "new" and noun.startswith("reminder"):
+        return "reminder"
+    #: "new notes" is the newest notes, not the start of making one
+    #: (INBOX 1532); only the singular "new note" is unfinished.
+    if verb == "new" and noun == "notes":
+        return ""
+    #: "make me a" and "add" alone are unfinished, not requests.
+    return kind if (noun or verb in ("open", "find", "search")) else ""
 
 
 # --- the answer to "Which note?" (INBOX 1570) -----------------------------------------------

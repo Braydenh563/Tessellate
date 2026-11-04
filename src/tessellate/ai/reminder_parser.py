@@ -12,6 +12,7 @@ every relative reminder hours out.
 
 from __future__ import annotations
 
+import difflib
 import json
 import re
 from datetime import datetime, timedelta
@@ -300,9 +301,46 @@ _REMINDER_HEADS = (
 )
 
 
+#: Words that may stand before "reminder" in an ask to start one (INBOX 1668):
+#: "help me set a reminder", "can u help me make a remindr", "i want to add a
+#: reminder", "please create a new reminder". At least one of `_ASK_VERBS`.
+_ASK_VERBS = frozenset({"set", "make", "add", "create", "get", "schedule", "help", "put", "start", "new", "need", "want", "give", "do", "setup"})
+_ASK_FILLER = frozenset({
+    "me", "to", "with", "can", "could", "would", "will", "you", "u", "please", "pls", "plz", "i", "id", "like", "a", "an", "some",
+    "my", "hey", "hi", "ok", "okay", "so", "um", "umm", "lets", "let", "s", "us", "up", "new", "another", "assist", "d", "ll", "just",
+})
+
+
+def _is_reminder_word(word: str) -> bool:
+    """"reminder" or "reminders", typos included ("remindr", "remnder")."""
+    return word.startswith("remind") and word not in ("remind", "reminded", "reminding") or bool(
+        difflib.get_close_matches(word, ("reminder", "reminders"), n=1, cutoff=0.8)
+    )
+
+
+def canonical_ask(text: str) -> str:
+    """"help me set a reminder (for X)" and its class (any lead of ask words,
+    any spelling of reminder) as "set a reminder (for X)"; `text` unchanged
+    when it is not an ask to start a reminder. What follows the word is kept
+    as typed, so the existing readers take the what and the when from it."""
+    words = text.split()
+    for at, word in enumerate(words[:8]):
+        if not _is_reminder_word(re.sub(r"[^\w]", "", word.lower())):
+            continue
+        lead = [w for w in re.split(r"[^a-z]+", " ".join(words[:at]).lower().replace("'", " ")) if w]
+        #: "I set a reminder yesterday" reports; "I want to set one" asks.
+        reports = lead[:1] == ["i"] and (lead[1:2] or ["want"])[0] not in ("want", "need", "d", "ll", "like")
+        if lead and not reports and set(lead) <= (_ASK_VERBS | _ASK_FILLER) and set(lead) & _ASK_VERBS:
+            rest = " ".join(words[at + 1:])
+            return f"set a reminder {rest}".strip()
+        return text
+    return text
+
+
 def reminder_head(text: str) -> tuple[str, str | None]:
     """The text with a time said first moved last (where the time readers
     look), and the reminder phrase it opens with, or None."""
+    text = canonical_ask(text)
     low = text.lower()
     cut = low.find(" remind me ")
     if 0 < cut <= 40 and low.startswith(_TIME_FIRST):
