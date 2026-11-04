@@ -105,8 +105,35 @@
     for (const id of new Set(Object.values(PANELS))) $(id).classList.toggle("hidden", PANELS[next] !== id);
     $("desk-pet").setAttribute("aria-expanded", String(next === "menu" || next === "context"));
     if (overlay && next === "rest") return;
-    ask("set_size", SIZES[next][0], SIZES[next][1] - (overlay ? OVERLAY_TRIM : 0));
+    let height = SIZES[next][1] - (overlay ? OVERLAY_TRIM : 0);
+    if (overlay && (next === "menu" || next === "context")) height = menuHeight(height);
+    ask("set_size", SIZES[next][0], height);
   }
+
+  //: The menu's own height in CSS pixels: its rows plus its padding and border,
+  //: plus the page's padding round it, so a two or three row menu never shows a
+  //: scrollbar at any Windows scale (the owner, 2026-11-04: the fixed 108 was too
+  //: small for two rows). The panel is a flex item that takes its content's
+  //: height when it fits, so its scrollHeight is the content's either way.
+  //: `fallback` is used only when the page has no layout to measure.
+  function menuHeight(fallback) {
+    const panel = $("desk-menu");
+    const root = panel.parentElement;
+    if (!panel.scrollHeight || !root) return fallback;
+    const style = getComputedStyle(root);
+    const pad = (parseFloat(style.paddingTop) || 0) + (parseFloat(style.paddingBottom) || 0);
+    const wanted = Math.ceil(panel.scrollHeight + (panel.offsetHeight - panel.clientHeight) + pad);
+    // Capped to the screen; the panel scrolls inside if it cannot fit.
+    return Math.min(wanted, Math.max(fallback, Math.floor((window.screen.availHeight || wanted) * 0.9)));
+  }
+
+  //: Why the figure stands still, for the right-click menu's one muted line.
+  const STILL_WHY = {
+    os: "Windows animation effects are off",
+    app: "Motion is Off in Appearance",
+    setting: "Companion movement is Fades only",
+    avatar: "Avatar animation is off",
+  };
 
   function item(label, icon, onClick) {
     const button = document.createElement("button");
@@ -126,7 +153,23 @@
     const menu = $("desk-menu");
     const rows = [];
     if (kind === "context") {
+      const motion = overlay ? await Promise.resolve(ask("panel_motion")).catch(() => null) : null;
+      if (motion?.still) {
+        const why = document.createElement("p");
+        why.className = "muted desk-note";
+        why.textContent = `Standing still: ${STILL_WHY[motion.reason] || "movement is off"}.`;
+        rows.push(why);
+      }
       rows.push(item("Settings", "gear", () => leave(() => ask("open_app", "settings"))));
+      if (!locked && motion?.still && motion.reason !== "avatar") rows.push(item("Let it walk", "person-simple-walk", () => leave(() => ask("let_it_walk"))));
+      //: Roam over windows: a switch, not a one-way action, so it says which way it is
+      //: (a checked menu item) and flips it.
+      if (overlay && motion && typeof motion.roam === "boolean") {
+        const roam = item("Roam over windows", motion.roam ? "check-square" : "square", () => leave(() => ask("set_roam", !motion.roam)));
+        roam.setAttribute("role", "menuitemcheckbox");
+        roam.setAttribute("aria-checked", String(motion.roam));
+        rows.push(roam);
+      }
       rows.push(item("Hide", "eye-slash", () => (overlay ? leave(() => ask("hide_companion")) : ask("hide_companion"))));
     } else if (locked) {
       const note = document.createElement("p");
@@ -145,12 +188,18 @@
     rows.find((row) => row.tagName === "BUTTON")?.focus();
   }
 
-  //: Run `action`, then rest: the window is about to be hidden by the app's own
-  //: coming forward, and a panel left open would be there when it returns.
-  function leave(action) {
-    show("rest");
-    if (overlay) ask("hide_panel");
-    action();
+  //: Run `action` first, then rest: the click that brought the app forward is the
+  //: one Windows lets this process raise a window for, and hiding this window
+  //: before asking could lose that right (the owner, 2026-11-04: Settings hid the
+  //: panel and the app came forward by hand, seconds later). The panel is left
+  //: open only until the action answers, which is at once.
+  async function leave(action) {
+    try {
+      await action();
+    } finally {
+      show("rest");
+      if (overlay) ask("hide_panel");
+    }
   }
 
   async function openPanel(kind) {
@@ -361,6 +410,9 @@
   //: each time it shows this window, and the first time it opens on the menu.
   if (overlay) {
     window.addEventListener("desk-open", (event) => openMenu(event.detail === "context" ? "context" : "menu"));
+    //: Python hides the window on a second click on the figure; what it showed is
+    //: cleared first so the next open does not flash the last menu's size.
+    window.addEventListener("desk-close", () => show("rest"));
     //: The first open: Python holds which click made this window, asked once
     //: when the bridge is ready; the quick menu if it never answers.
     let opened = false;
@@ -392,6 +444,7 @@
     window.addEventListener("blur", () => {
       if (!focused) return;
       focused = false;
+      show("rest");
       ask("panel_blur");
     });
   }

@@ -59,15 +59,40 @@ MARGIN = 12
 #: The overlay's saved place: its top-left in physical pixels (the card's POS_PREF
 #: is a logical bottom-right corner, a different thing).
 OVERLAY_POS_PREF = "desktop_companion_overlay_pos"
+#: "Roam over windows" (right-click menu): on by default, a pref the person can turn off.
+ROAM_PREF = "desktop_companion_roam"
+#: What a click on a reminder's card runs in the app window: the Reminders tab, behind
+#: the same lock guard as the tray's items and a notification's own click.
+REMINDERS_SCRIPT = (
+    "if (document.getElementById('lock-overlay')?.classList.contains('hidden')"
+    " && typeof switchTab === 'function') { switchTab('reminders'); }"
+)
 #: The quick panel opened by a click on the overlay figure, and its gap to it.
-PANEL_SIZE = (208, 312)
+#: The size the panel window is made and shown at, by the click that opened it: the
+#: page then measures its own menu and asks for the exact height (`menuHeight` in
+#: desk-companion.js), so this only has to be close, never the other menu's size.
+PANEL_SIZES = {"menu": (208, 168), "context": (208, 124)}
 PANEL_GAP = 8
 LOOK_WAIT = 1.5
 #: A click on the figure this soon after the panel closed itself on losing focus
 #: is the press that took the focus: it closes the panel, it does not reopen it.
 BLUR_GRACE = 0.6
-#: Asks the app window which Atlas look it draws; empty when it cannot say.
-LOOK_SCRIPT = "(function(){try{return typeof atlasLook==='function'?atlasLook():''}catch(e){return ''}})()"
+#: Asks the app window which Atlas look it draws and how the companion may move
+#: (Appearance > Companion movement, resolved by `nameMarkBuddyMotion`), in one
+#: round trip; empty when it cannot say. A bare look string is still understood.
+LOOK_SCRIPT = (
+    "(function(){try{return JSON.stringify({"
+    "look:typeof atlasLook==='function'?atlasLook():'',"
+    "motion:typeof nameMarkBuddyMotion==='function'?nameMarkBuddyMotion():null})}catch(e){return ''}})()"
+)
+#: "Let it walk": the app's own setting set to Always, as its menu would, then the
+#: setting's hint refreshed. True when the app window did it.
+WALK_SCRIPT = (
+    "(function(){try{prefs.set('avatar-buddy-motion','always');"
+    "if(typeof nameMarkBuddyMotionApply==='function')nameMarkBuddyMotionApply();return true}catch(e){return false}})()"
+)
+MOTION_MODES = ("full", "fades", "still")
+MOTION_REASONS = ("", "os", "app", "setting", "avatar", "perf-ignored", "app-ignored", "os-ignored")
 
 _KIND = re.compile(r"[a-z]{1,16}")
 _lock = threading.RLock()
@@ -250,6 +275,50 @@ def panel_corner(
     return clamp_corner((right, y + h), size, area)
 
 
+def monitor_for(
+    point: tuple[int, int], monitors: list[tuple[tuple[int, int, int, int], int]]
+) -> tuple[tuple[int, int, int, int], int]:
+    """The (physical work area, dpi) holding a physical point, else the nearest."""
+    def gap(m: tuple[tuple[int, int, int, int], int]) -> int:
+        left, top, right, bottom = m[0]
+        dx, dy = max(left - point[0], 0, point[0] - right + 1), max(top - point[1], 0, point[1] - bottom + 1)
+        return dx * dx + dy * dy
+
+    return min(monitors, key=gap)
+
+
+def panel_placement(
+    pet: tuple[int, int, int, int],
+    size: tuple[int, int],
+    monitors: list[tuple[tuple[int, int, int, int], int]],
+    dpi: int | None = None,
+) -> tuple[tuple[int, int, int, int], int]:
+    """Where the quick panel goes, in physical pixels: ((x, y, width, height), dpi).
+
+    `pet` is the figure's physical rectangle, `size` the panel's logical size,
+    `monitors` each work area (physical) with its dpi, and `dpi` the scale of the
+    monitor the panel lands on when Windows said (MonitorFromPoint, then
+    GetDpiForMonitor); without it the monitor list's own dpi for that monitor is
+    used. **Why all in physical pixels** (the owner asked for mixed-dpi screens): a
+    logical corner means one scale for the whole desktop, but a 100 percent monitor
+    left of a 150 percent primary has no single one, and the panel's own window
+    reports the scale of the monitor it last sat on, not the one it lands on. The
+    panel is beside the figure, left when that fits on the monitor, else right,
+    bottoms level, and held inside that monitor's work area."""
+    x, y, w, h = pet
+    area, own = monitor_for((x + w // 2, y + h), monitors)
+    scale = (dpi or own or 96) / 96.0
+    pw, ph = max(1, round(size[0] * scale)), max(1, round(size[1] * scale))
+    gap = round(PANEL_GAP * scale)
+    right = x - gap
+    if right - pw < area[0]:
+        right = x + w + gap + pw
+    bottom = y + h
+    right = min(max(right, area[0] + pw), area[2])
+    bottom = min(max(bottom, area[1] + ph), area[3])
+    return (right - pw, bottom - ph, pw, ph), int(round(scale * 96))
+
+
 #: Win32 extended window styles. A tool window has no taskbar button and no
 #: Alt+Tab entry; no-activate means showing it never steals the keyboard from
 #: what the person is typing in. APPWINDOW would force a taskbar button back.
@@ -396,6 +465,31 @@ def place_on_screen(window: Any, rect: tuple[int, int, int, int]) -> bool:
         return False
 
 
+def place_physical(window: Any, box: tuple[int, int, int, int]) -> bool:
+    """Windows only: move and size the window to a physical (x, y, width, height)
+    exactly, without a show or a z-order change. Done twice: the first move puts the
+    window on the monitor it is going to, which can change its dpi and rescale it;
+    the second sets the size and place at that dpi, and a read-back later sets them
+    once more if they did not hold (a window crossing monitors of different scale)."""
+    if sys.platform != "win32":
+        return False
+    handle = window_handle(window)
+    if not handle:
+        return False
+    try:
+        import ctypes
+
+        user32 = ctypes.windll.user32
+        flags = (SWP_PLACE & ~0x0040) | 0x0004
+        user32.SetWindowPos(handle, 0, *box, flags)
+        user32.SetWindowPos(handle, 0, *box, flags)
+        _read_back(handle, box, 0, again=True)
+        return True
+    except Exception:  # noqa: BLE001
+        logger.debug("could not place the quick panel", exc_info=True)
+        return False
+
+
 def _read_back(handle: int, want: tuple[int, int, int, int], dpi: int, again: bool = False) -> None:
     """Read the window's place back half a second on, on a listed thread (the
     move is posted, so it lands a moment later)."""
@@ -501,6 +595,15 @@ class DeskApi:
     def panel_kind(self) -> str:
         return self._owner.panel_kind()
 
+    def panel_motion(self) -> dict[str, Any]:
+        return self._owner.panel_motion()
+
+    def let_it_walk(self) -> bool:
+        return self._owner.let_it_walk()
+
+    def set_roam(self, on: Any) -> bool:
+        return self._owner.set_roam(on is True)
+
 
 class DeskCompanion:
     """The second window and when it is shown (see the module's docstring)."""
@@ -544,6 +647,12 @@ class DeskCompanion:
         self.runner: Any = None
         self.overlay_failed = False
         self.look = "masculine"
+        #: How the companion may move, as the app window last said: None until it
+        #: answers (then the runner falls back to the Windows animation flag).
+        self.motion: tuple[bool, str] | None = None
+        #: "Let it walk" when the app window could not be written to: the choice
+        #: stands for the session.
+        self._walk_forced = False
         #: The figure's rectangle (logical pixels) at the last click, and whether
         #: `window` is the quick panel beside it rather than the card.
         self.pet_rect: tuple[int, int, int, int] | None = None
@@ -556,6 +665,10 @@ class DeskCompanion:
         self._pending_kind = "menu"
         #: The figure's size in physical pixels and dpi at the last click.
         self._pet_phys: tuple[int, int, int] | None = None
+        #: The figure's physical rectangle at the last click or drop, and where the
+        #: panel went from it: ((x, y, width, height), dpi) in physical pixels.
+        self._pet_box: tuple[int, int, int, int] | None = None
+        self.panel_box: tuple[tuple[int, int, int, int], int] | None = None
 
     # --- where it is -----------------------------------------------------------
 
@@ -582,11 +695,30 @@ class DeskCompanion:
             corner = self.corner or self._home()
             if self.panel and self.pet_rect is not None:
                 self.corner = panel_corner(self.pet_rect, self.size, _screen_area(self.webview, corner))
+                self._update_panel_box()
             else:
                 self.corner = clamp_corner(corner, self.size, _screen_area(self.webview, corner))
             if self.window is not None:
                 self._place()
             return self.size
+
+    def _update_panel_box(self) -> None:
+        """Where the panel goes in physical pixels, at the dpi of the monitor it lands
+        on (`panel_placement`); None when the runner cannot say (the logical corner is used)."""
+        runner = self.runner
+        monitors = [(tuple(m.area), int(m.dpi)) for m in (getattr(runner, "monitors", None) or [])]
+        if self._pet_box is None or not monitors:
+            self.panel_box = None
+            return
+        x, y, w, h = self._pet_box
+        dpi = None
+        ask = getattr(runner, "dpi_at", None)
+        if callable(ask):
+            try:
+                dpi = ask(x + w // 2, y + h)
+            except Exception:  # noqa: BLE001 - the monitor list's dpi then
+                logger.debug("desk companion: dpi under the figure unknown", exc_info=True)
+        self.panel_box = panel_placement(self._pet_box, self.size, monitors, dpi)  # type: ignore[arg-type]
 
     def move_to(self, x: int, y: int) -> bool:
         with _lock:
@@ -610,7 +742,7 @@ class DeskCompanion:
     def _make(self) -> Any:
         """The window, hidden, made the first time it is due."""
         url = self._url() + ("?card=1&overlay=1" if self.panel else "" if self.transparent else "?card=1")
-        self.size = PANEL_SIZE if self.panel else REST_SIZE
+        self.size = self.size if self.panel else REST_SIZE
         self.corner = self.corner if self.panel and self.corner else self._home()
         x, y = self.top_left()
         options: dict[str, Any] = {
@@ -645,24 +777,49 @@ class DeskCompanion:
 
     # --- the overlay (Windows) ---------------------------------------------------
 
-    def _read_look(self) -> str:
-        """Which Atlas look the app window draws, asked of it (its choice lives in
-        that window's storage). Bounded: a hidden window may not answer, and then
-        the last look stands."""
+    def _ask_main(self, script: str, what: str) -> Any:
+        """One script run in the app window on a worker, waited for at most
+        LOOK_WAIT: a hidden window may not answer, and no click may wait on it."""
         found: list[Any] = []
 
         def ask() -> None:
             try:
-                found.append(self.main.evaluate_js(LOOK_SCRIPT))
-            except Exception:  # noqa: BLE001 - the last look stands
-                logger.debug("desk companion: could not ask the app window for its look", exc_info=True)
+                found.append(self.main.evaluate_js(script))
+            except Exception:  # noqa: BLE001 - the last answer stands
+                logger.debug("desk companion: could not ask the app window for %s", what, exc_info=True)
 
         worker = jobs.thread("desk-look", ask)
         worker.join(LOOK_WAIT)
-        if found and found[0] in ("masculine", "feminine"):
-            return found[0]
-        logger.info("desk companion: the app window gave no look, keeping %s", self.look)
-        return self.look
+        return found[0] if found else None
+
+    def _read_look(self) -> tuple[str, tuple[bool, str] | None]:
+        """Which Atlas look the app window draws and whether the companion may
+        move, asked of it in one round trip (the choices live in that window's
+        storage). Bounded; no answer keeps the last look and leaves the motion
+        to the last motion answer (the Windows flag before any)."""
+        answer = self._ask_main(LOOK_SCRIPT, "its look and motion")
+        look, motion = self.look, self.motion
+        data: Any = None
+        if isinstance(answer, str) and answer.startswith("{"):
+            try:
+                data = json.loads(answer)
+            except ValueError:
+                data = None
+        elif answer in ("masculine", "feminine"):
+            data = {"look": answer}
+        if isinstance(data, dict):
+            motion = None  # an answer without a motion block hands it back to the Windows flag
+            if data.get("look") in ("masculine", "feminine"):
+                look = data["look"]
+            m = data.get("motion")
+            if isinstance(m, dict) and m.get("mode") in MOTION_MODES:
+                reason = m.get("reason") if m.get("reason") in MOTION_REASONS else ""
+                motion = (m["mode"] != "full", str(reason))
+        else:
+            logger.info("desk companion: the app window gave no look, keeping %s", self.look)
+        if self._walk_forced and (motion is None or motion[0]):
+            motion = (False, "")
+        return look, motion
 
     def _overlay_home(self) -> tuple[int, int] | None:
         saved = _pref(OVERLAY_POS_PREF, None)
@@ -671,20 +828,27 @@ class DeskCompanion:
         return None
 
     def _start_overlay(self) -> bool:
-        """The runner for the look in force, made when first due and again if the
-        look changed; False (a warning logged) when it cannot start."""
-        look = self._read_look()
-        if self.runner is not None and self.look == look:
+        """The runner for the look and motion in force, made when first due and
+        again if either changed; False (a warning logged) when it cannot start."""
+        look, motion = self._read_look()
+        if self.runner is not None and self.look == look and self.motion == motion:
             return True
-        self.look = look
+        place = self._runner_place()
+        self.look, self.motion = look, motion
         self._stop_runner()
+        kw: dict[str, Any] = {}
+        if motion is not None:
+            kw = {"reduced": motion[0], "reduced_reason": motion[1]}
         try:
             runner = self._overlay_factory(  # type: ignore[misc]
                 look=look,
-                home=self._overlay_home(),
+                home=place or self._overlay_home(),
                 on_click=self._overlay_click,
                 on_settle=self._overlay_settle,
                 on_died=self._overlay_died,
+                on_card=self._overlay_card,
+                roam_windows=bool(_pref(ROAM_PREF, True)),
+                **kw,
             )
             started = runner.start()
         except Exception:  # noqa: BLE001 - any failure means the card window instead
@@ -695,8 +859,77 @@ class DeskCompanion:
             logger.warning("desk companion: the overlay could not start, using the card window instead")
             return False
         self.runner = runner
-        logger.info("desk companion: overlay started, look=%s", look)
+        logger.info(
+            "desk companion: overlay started, look=%s, motion=%s (%s)",
+            look, "unknown, the system flag decides" if motion is None else "still" if motion[0] else "moving", motion[1] if motion else "",
+        )
         return True
+
+    def _runner_place(self) -> tuple[int, int] | None:
+        """Where the running figure is, so a restart does not send it home."""
+        engine = getattr(self.runner, "engine", None)
+        x, y = getattr(engine, "x", None), getattr(engine, "y", None)
+        if isinstance(x, (int, float)) and isinstance(y, (int, float)):
+            return int(x), int(y)
+        return None
+
+    def panel_motion(self) -> dict[str, Any]:
+        """Whether the figure is standing still and why, for the right-click menu."""
+        with _lock:
+            runner = self.runner
+            still = bool(getattr(runner, "reduced", False)) if runner is not None else False
+            reason = getattr(runner, "reduced_reason", "") if still else ""
+        return {"still": still, "reason": str(reason or ""), "roam": bool(_pref(ROAM_PREF, True))}
+
+    def set_roam(self, on: bool) -> bool:
+        """The menu's "Roam over windows": saved, and the running figure follows."""
+        _set_pref(ROAM_PREF, bool(on))
+        runner = self.runner
+        if runner is not None and hasattr(runner, "set_roam"):
+            runner.set_roam(bool(on))
+        return True
+
+    def carry_reminder(self, token: Any) -> bool:
+        """A reminder fell due: the figure fetches it as a card, when the overlay is
+        showing (the card window has no such thing, and a hidden figure has no one
+        to show it to; the system notification still comes). False when not."""
+        runner = self.runner
+        if runner is None or not self.shown or not hasattr(runner, "bring_card"):
+            return False
+        runner.bring_card(token)
+        return True
+
+    def _overlay_card(self, token: Any) -> None:
+        """The card was clicked (on a worker): the reminder opens in the app, as a
+        click on its notification does."""
+        logger.info("desk companion: a reminder's card was clicked")
+        self.open_main(REMINDERS_SCRIPT)
+
+    def let_it_walk(self) -> bool:
+        """The menu's "Let it walk": the app's Companion movement set to Always
+        (through its own window), and the figure restarted moving."""
+        done = self._ask_main(WALK_SCRIPT, "the walk setting") is True
+        if not _lock.acquire(timeout=LOCK_WAIT):
+            logger.warning("desk companion: busy, let it walk was skipped")
+            return False
+        try:
+            self._walk_forced = not done
+            if self.closing or self.runner is None:
+                return False
+            before = self.runner
+            if not self._start_overlay():
+                self.shown = False
+                self._sync_card(enabled() and self.main_hidden)
+                return False
+            if self.runner is not before and self.shown:
+                self.runner.show()
+            logger.info("desk companion: let it walk (setting written: %s)", done)
+            return True
+        except Exception:  # noqa: BLE001 - the figure stays as it was
+            logger.warning("desk companion: let it walk failed", exc_info=True)
+            return False
+        finally:
+            _lock.release()
 
     def _stop_runner(self) -> None:
         runner, self.runner = self.runner, None
@@ -729,6 +962,17 @@ class DeskCompanion:
 
     def _hide_panel_window(self) -> None:
         if self.window is not None and self.panel_shown:
+            window = self.window
+
+            def clear() -> None:
+                try:
+                    # The page clears its menu, so the next open does not show the last one.
+                    window.evaluate_js("window.dispatchEvent(new CustomEvent('desk-close'))")
+                except Exception:  # noqa: BLE001 - hiding matters more than tidying
+                    logger.debug("desk companion: the quick panel page did not clear", exc_info=True)
+
+            # On a worker: callers hold _lock, and a stuck page must not hold it.
+            jobs.thread("desk-panel-clear", clear)
             self.window.hide()
             self.panel_shown = False
 
@@ -752,9 +996,17 @@ class DeskCompanion:
             if self.closing or self.window is None or not self.panel_shown:
                 return
             width, height, dpi = self._pet_phys
+            ask, spr = getattr(self.runner, "dpi_at", None), getattr(self.runner, "sprites", None)
+            if callable(ask) and spr is not None:  # dropped on a monitor of another scale
+                landed = ask(int(x) + width // 2, int(y) + height // 2)
+                if landed and landed != dpi:
+                    (width, height), dpi = spr.size(landed), int(landed)
+                    self._pet_phys = (width, height, dpi)
+            self._pet_box = (int(x), int(y), width, height)
             self.pet_rect = to_logical((int(x), int(y), width, height), dpi)
             area = _screen_area(self.webview, (self.pet_rect[0], self.pet_rect[1] + self.pet_rect[3]))
             self.corner = panel_corner(self.pet_rect, self.size, area)
+            self._update_panel_box()
             self._place()
         except Exception:  # noqa: BLE001 - the panel stays where it was
             logger.warning("desk companion: the quick panel did not follow the figure", exc_info=True)
@@ -825,11 +1077,13 @@ class DeskCompanion:
                 return
             self.pet_rect = to_logical(rect, dpi)
             self._pet_phys = (rect[2], rect[3], int(dpi) if isinstance(dpi, (int, float)) and dpi > 0 else 96)
+            self._pet_box = (int(rect[0]), int(rect[1]), int(rect[2]), int(rect[3]))
             self._pending_kind = "context" if kind == "right" else "menu"
             area = _screen_area(self.webview, (self.pet_rect[0], self.pet_rect[1] + self.pet_rect[3]))
             self.panel = True
-            self.size = PANEL_SIZE
+            self.size = PANEL_SIZES[self._pending_kind]
             self.corner = panel_corner(self.pet_rect, self.size, area)
+            self._update_panel_box()
             fresh = self.window is None
             if fresh:
                 self.window = self._make()
@@ -911,6 +1165,8 @@ class DeskCompanion:
         window (pywebview's `resize` and `move` scale them, and WinForms may
         scale the size again: the owner's log asked 224 by 304 and read back
         232 by 233, INBOX 1633); elsewhere pywebview's own calls."""
+        if self.panel and self.panel_box is not None and place_physical(self.window, self.panel_box[0]):
+            return
         rect = (*self.top_left(), *self.size)
         if place_on_screen(self.window, rect):
             return
@@ -1027,6 +1283,27 @@ def _follow(main_window: Any, companion: DeskCompanion) -> list[str]:
         except TypeError:
             logger.debug("desk companion: the window has no %s event to follow", name)
     return followed
+
+
+def carry_due(due: list[Any]) -> int:
+    """Reminders that just fell due (`reminder_notifier.Due`): the active companion's
+    overlay fetches a card for each, by reminder id. How many it took; 0 with no
+    companion, or none showing. Never raises: the notifier calls it."""
+    with _lock:
+        companion = _active
+    if companion is None:
+        return 0
+    taken = 0
+    for item in due:
+        token = getattr(item, "reminder_id", None)
+        if token is None:
+            continue
+        try:
+            if companion.carry_reminder(token):
+                taken += 1
+        except Exception:  # noqa: BLE001 - a card is not worth the notifier's thread
+            logger.warning("desk companion: a reminder's card could not be queued", exc_info=True)
+    return taken
 
 
 def shutdown() -> None:

@@ -10,6 +10,16 @@ A click on the figure is handed to `on_click(kind, rect, dpi)` on a worker
 and its creation waits on the UI thread. `on_settle(x, y)` says where a drop
 landed (the place worth saving).
 
+**Roam and carry** (owner, 2026-11-04). While it is shown and free to move the
+runner reads the top edges of the other windows (`win32.windows`, then
+`perches.top_edges`) at most once a second, on the overlay thread in its own step
+before the engine's (the thread whose DPI awareness makes the coordinates
+physical; never in the draw path), and hands them to the engine. It reads only
+when a climb could happen soon or the figure is on a window (`_wants_scan`):
+a figure that is sitting, asleep, typing-quiet, still, or switched off reads
+nothing. `bring_card(token)` (any thread) queues a reminder for the engine; a
+click on the card comes back as `on_card(token)` on a worker.
+
 Fullscreen and "do not disturb" (`SHQueryUserNotificationState`: busy, a
 fullscreen Direct3D game, a presentation) hide the window and stop it moving;
 asked every 2 s while it runs, and while it is hidden for that.
@@ -19,7 +29,9 @@ Not run on Windows (the sandbox has none): the tests drive a fake `win32`.
 
 from __future__ import annotations
 
+import collections
 import logging
+import os
 import time
 from pathlib import Path
 from typing import Any, Callable
@@ -27,6 +39,7 @@ from typing import Any, Callable
 from tessellate.core import jobs
 from tessellate.core.overlay import engine as eng
 from tessellate.core.overlay import host as host_mod
+from tessellate.core.overlay import perches
 from tessellate.core.overlay import sprites
 from tessellate.core.overlay import win32 as k
 
@@ -34,6 +47,14 @@ logger = logging.getLogger(__name__)
 
 #: How often to ask whether something fullscreen is in the way (seconds).
 BUSY_EVERY = 2.0
+#: Input this recent means the person is typing or working: no acts, only standing.
+TYPING_AGE = 2.5
+#: The window scan is at most this often (seconds); it starts this long before a
+#: climb is due, so the first read is in hand when it is.
+SCAN_EVERY = 1.0
+SCAN_SLACK = 1.0
+#: Room past the figure's width a top edge needs to be stood on (logical px, at 96 dpi).
+PERCH_ROOM = 20
 
 
 class OverlayRunner:
@@ -41,22 +62,30 @@ class OverlayRunner:
         self,
         *,
         look: str = "masculine",
-        reduced: bool = False,
+        reduced: bool | None = None,
+        reduced_reason: str = "",
         home: tuple[int, int] | None = None,
         on_click: Callable[[str, tuple[int, int, int, int], int], Any] | None = None,
         on_settle: Callable[[int, int], Any] | None = None,
         on_died: Callable[[], Any] | None = None,
+        on_card: Callable[[Any], Any] | None = None,
+        roam_windows: bool = True,
         w: Any = None,
         clock: Callable[[], float] = time.monotonic,
         frames: Path | None = None,
         dispatch: Callable[[str, Callable[[], None]], Any] | None = None,
     ) -> None:
         self.look = sprites.look_for(look)
+        #: True or False is the app's answer (Appearance > Companion movement);
+        #: None means it gave none, and the Windows animation flag decides in `_ready`.
         self.reduced = reduced
+        self.reduced_reason = reduced_reason
         self.home = home
         self.on_click = on_click
         self.on_settle = on_settle
         self.on_died = on_died
+        self.on_card = on_card
+        self.roam_windows = roam_windows
         self.w = w
         self.clock = clock
         self.frames = frames
@@ -71,9 +100,12 @@ class OverlayRunner:
         self.paused = False
         self._stopped = False
         self._resume = False
-        self._last_key: tuple[str, int, bool] | None = None
+        self._last_key: tuple[str, int, bool, tuple[int, int, int, int] | None] | None = None
         self._last_pos: tuple[int, int] | None = None
         self._next_busy_check = 0.0
+        self._next_scan = 0.0
+        self._cards: collections.deque[Any] = collections.deque()
+        self._scan_failed = False
 
     # --- life (any thread) ------------------------------------------------------------
 
@@ -106,6 +138,29 @@ class OverlayRunner:
         if self.host:
             self.host.show()
             self.host.wake(1)
+
+    def bring_card(self, token: Any) -> None:
+        """A reminder fell due (any thread): the figure fetches it on its next tick."""
+        self._cards.append(token)
+        if self.host:
+            self.host.wake(1)
+
+    def set_roam(self, on: bool) -> None:
+        """The "Roam over windows" switch: takes effect on the next tick."""
+        self.roam_windows = bool(on)
+        if self.host:
+            self.host.wake(1)
+
+    def dpi_at(self, x: int, y: int) -> int:
+        """The dpi of the monitor under a physical point (MonitorFromPoint, then
+        GetDpiForMonitor); the monitor list's, then 96, when Windows cannot say."""
+        found = k.dpi_at_point(self.w, x, y) if self.w is not None else None
+        if found:
+            return found
+        for area, dpi in ((m.area, m.dpi) for m in list(self.monitors)):
+            if area[0] <= x < area[2] and area[1] <= y < area[3]:
+                return dpi
+        return 96
 
     def hide(self) -> None:
         self.visible = False
@@ -153,15 +208,64 @@ class OverlayRunner:
             hold = self._busy_gate(now)
             if hold is not None:
                 return hold
+            while self._cards:
+                engine.bring_card(self._cards.popleft(), now)
+            self._scan(now)
         if kind not in ("tick", "display"):
             return None
         return self._apply(engine.update(now, pointer))
+
+    # --- other windows' tops ------------------------------------------------------------
+
+    def _wants_scan(self, now: float) -> bool:
+        """Only when a climb could come soon or the figure stands on a window."""
+        e = self.engine
+        if e is None or not self.roam_windows or e.reduced or not e.roam or e.quiet:
+            return False
+        if e.perch is not None or e.target is not None:
+            return True
+        return e.state in ("stand", "walk", "drift") and now >= e.climb_ready - SCAN_SLACK
+
+    def _scan(self, now: float) -> None:
+        engine = self.engine
+        assert engine is not None
+        engine.roam_windows = self.roam_windows
+        if not self.roam_windows:
+            if engine.windows or engine.perch is not None:
+                engine.set_windows([], now)
+            return
+        if now < self._next_scan or not self._wants_scan(now):
+            return
+        self._next_scan = now + SCAN_EVERY
+        try:
+            wins = k.windows(
+                self.w, os.getpid(), self.host.hwnd if self.host else None, [m.area for m in self.monitors],
+            )
+        except Exception:  # noqa: BLE001 - no window list means no roaming, never a crash
+            if not self._scan_failed:
+                logger.warning("overlay: the windows could not be listed", exc_info=True)
+            self._scan_failed = True
+            wins = []
+        scale = max(m.dpi for m in self.monitors) / 96.0 if self.monitors else 1.0
+        edges = perches.top_edges(wins, int(engine.size[0] + PERCH_ROOM * scale))
+        engine.set_windows(edges, now)
+
+    def _scan_wake(self, wake: int | None) -> int | None:
+        """The engine's wake, but no later than the next scan while one is wanted."""
+        if not self._wants_scan(self.clock()):
+            return wake
+        due = max(30, int((self._next_scan - self.clock()) * 1000))
+        return due if wake is None else min(wake, due)
 
     def _busy_gate(self, now: float) -> int | None:
         """Hide while something fullscreen is in the way; None when free to move."""
         if now < self._next_busy_check and not self.busy:
             return None
         self._next_busy_check = now + BUSY_EVERY
+        age = k.last_input_age(self.w)
+        engine = self.engine
+        if engine is not None:  # typing or working: it only stands (nothing big)
+            engine.quiet = age is not None and age < TYPING_AGE
         state = k.notification_state(self.w)
         away = state in k.QUNS_HIDE
         if away and not self.busy:
@@ -202,15 +306,22 @@ class OverlayRunner:
         if spr.missing():
             raise OSError(f"overlay frames missing: {spr.missing()[:3]}")
         self.sprites = spr
-        reduced = self.reduced or not k.animations_enabled(self.w)
+        reduced = self.reduced
+        if reduced is None:
+            reduced = not k.animations_enabled(self.w)
+            self.reduced_reason = "os" if reduced else ""
+        self.reduced = reduced
         first = self.monitors[0]
         self.dpi = first.dpi
-        self.engine = eng.Engine(spr.size(first.dpi), self.monitors, home=self.home, reduced=reduced, now=self.clock())
+        self.engine = eng.Engine(
+            spr.size(first.dpi), self.monitors, home=self.home, reduced=reduced, roam_windows=self.roam_windows, gait=spr.gait, now=self.clock(),
+        )
         out = self.engine.update(self.clock())
         self._apply(out)
         logger.info(
-            "overlay: ready, look=%s, monitors=%s, frames=%d at %s px, reduced=%s",
+            "overlay: ready, look=%s, monitors=%s, frames=%d at %s px, reduced=%s%s",
             self.look, [(m.area, m.dpi) for m in self.monitors], len(sprites.FRAME_NAMES), spr.size(first.dpi), reduced,
+            f" ({self.reduced_reason})" if reduced and self.reduced_reason else "",
         )
 
     def _apply(self, out: eng.Output) -> int | None:
@@ -221,20 +332,24 @@ class OverlayRunner:
             self.dpi = dpi
             engine.set_monitors(self.monitors, spr.size(dpi))
             self._last_key = None
-        key = (out.frame, self.dpi, out.flip)
+        key = (out.frame, self.dpi, out.flip, out.clip)
         if key != self._last_key:
-            frame = spr.frame(out.frame, self.dpi, out.flip)
-            host.present(frame.bgra, frame.width, frame.height, out.x, out.y)
+            frame = sprites.clipped(spr.frame(out.frame, self.dpi, out.flip), out.clip)
+            host.present(frame.bgra, frame.width, frame.height, out.x - frame.pad_x, out.y - frame.pad_y)
             self._last_key, self._last_pos = key, (out.x, out.y)
         elif (out.x, out.y) != self._last_pos:
-            host.move(out.x, out.y)
+            pad = spr.frame(out.frame, self.dpi, out.flip)
+            host.move(out.x - pad.pad_x, out.y - pad.pad_y)
             self._last_pos = (out.x, out.y)
         if out.click:
             width, height = spr.size(self.dpi)
             self._hand_off("overlay-click", lambda: self.on_click and self.on_click(out.click, (out.x, out.y, width, height), self.dpi))
         if out.settled:
             self._hand_off("overlay-settle", lambda: self.on_settle and self.on_settle(out.x, out.y))
-        return out.wake_ms
+        if out.card is not None:
+            token = out.card
+            self._hand_off("overlay-card", lambda: self.on_card and self.on_card(token))
+        return self._scan_wake(out.wake_ms)
 
     def _hand_off(self, name: str, call: Callable[[], Any]) -> None:
         try:

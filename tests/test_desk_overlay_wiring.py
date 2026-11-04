@@ -17,8 +17,16 @@ from tests.test_desk_companion import FakeWebview, FakeWindow, prefs  # noqa: F4
 class FakeRunner:
     started: list["FakeRunner"] = []
 
-    def __init__(self, *, look, home, on_click, on_settle, on_died=None, ok=True):
+    def __init__(
+        self, *, look, home, on_click, on_settle, on_died=None, on_card=None, roam_windows=True, ok=True, reduced=None,
+        reduced_reason="",
+    ):
         self.look, self.home, self.on_click, self.on_settle, self.on_died = look, home, on_click, on_settle, on_died
+        self.on_card, self.roam_windows = on_card, roam_windows
+        self.monitors: list = []
+        self.cards: list = []
+        self.roam_calls: list = []
+        self.reduced, self.reduced_reason = reduced, reduced_reason
         self.ok = ok
         self.calls: list[str] = []
         FakeRunner.started.append(self)
@@ -35,6 +43,12 @@ class FakeRunner:
 
     def stop(self):
         self.calls.append("stop")
+
+    def bring_card(self, token):
+        self.cards.append(token)
+
+    def set_roam(self, on):
+        self.roam_calls.append(on)
 
 
 @pytest.fixture()
@@ -247,3 +261,147 @@ def test_item4_a_right_click_on_a_first_open_is_remembered_for_the_page_to_ask(o
 def test_item4_a_left_click_first_open_asks_for_the_menu(over):
     _open(over, "left")
     assert dc.DeskApi(over).panel_kind() == "menu"
+
+
+# --- owner reports 2026-11-04 (a, b): the overlay follows Companion movement ----------------
+
+import json  # noqa: E402
+
+
+def _says(look="masculine", mode="full", reason=""):
+    return lambda script: json.dumps({"look": look, "motion": {"mode": mode, "reason": reason}})
+
+
+def test_the_overlay_follows_the_apps_resolved_motion_and_logs_it(over, caplog):
+    caplog.set_level("INFO", logger=dc.logger.name)
+    over.main_window.evaluate_js = _says(mode="fades", reason="app")
+    over.set_main_hidden(True)
+    runner = FakeRunner.started[0]
+    assert runner.reduced is True and runner.reduced_reason == "app"
+    assert any("overlay started" in r.getMessage() and "motion=still (app)" in r.getMessage() for r in caplog.records)
+    assert dc.DeskApi(over).panel_motion() == {"still": True, "reason": "app", "roam": True}
+
+
+def test_a_full_answer_moves_and_no_answer_leaves_it_to_the_windows_flag(over):
+    over.main_window.evaluate_js = _says(mode="full")
+    over.set_main_hidden(True)
+    assert FakeRunner.started[0].reduced is False
+    assert dc.DeskApi(over).panel_motion() == {"still": False, "reason": "", "roam": True}
+    over.set_main_hidden(False)
+    over.close()
+    over.closing = False
+    over.runner = None
+    over.main_window.evaluate_js = lambda script: ""
+    over.look, over.motion = "masculine", None  # no earlier answer: the Windows flag decides
+    over.set_main_hidden(True)
+    assert FakeRunner.started[-1].reduced is None
+
+
+def test_a_change_of_motion_restarts_the_runner_where_it_stood(over):
+    over.main_window.evaluate_js = _says(mode="fades", reason="setting")
+    over.set_main_hidden(True)
+    first = FakeRunner.started[0]
+    first.engine = SimpleNamespace(x=700, y=900)
+    over.main_window.evaluate_js = _says(mode="full")
+    over.set_main_hidden(False)
+    over.set_main_hidden(True)
+    second = FakeRunner.started[1]
+    assert "stop" in first.calls and second.reduced is False and second.home == (700, 900)
+
+
+def test_let_it_walk_sets_the_apps_setting_and_restarts_the_figure_moving(over):
+    seen = []
+
+    def app(script):
+        seen.append(script)
+        if script == dc.WALK_SCRIPT:
+            over.main_window.evaluate_js = _says(mode="full", reason="app-ignored")
+            return True
+        return _says(mode="fades", reason="os")(script)
+
+    over.main_window.evaluate_js = app
+    over.set_main_hidden(True)
+    first = FakeRunner.started[0]
+    assert first.reduced is True
+    assert dc.DeskApi(over).let_it_walk() is True
+    second = FakeRunner.started[1]
+    assert dc.WALK_SCRIPT in seen and "avatar-buddy-motion" in dc.WALK_SCRIPT and "nameMarkBuddyMotionApply" in dc.WALK_SCRIPT
+    assert "stop" in first.calls and second.reduced is False and second.calls == ["start", "show"]
+
+
+def test_let_it_walk_holds_for_the_session_when_the_app_window_cannot_be_written(over):
+    def app(script):
+        if script == dc.WALK_SCRIPT:
+            raise RuntimeError("hidden")
+        return _says(mode="fades", reason="app")(script)
+
+    over.main_window.evaluate_js = app
+    over.set_main_hidden(True)
+    assert dc.DeskApi(over).let_it_walk() is True
+    assert FakeRunner.started[1].reduced is False
+
+
+# --- owner report 2026-11-04 (c): the right click opens at its own size ----------------------
+
+
+def test_a_right_click_makes_and_shows_the_panel_at_the_context_size_not_the_menus(over):
+    over.set_main_hidden(True)
+    FakeRunner.started[0].on_click("right", (1000, 800, 200, 240), 96)
+    panel = over.webview.made[0]
+    assert (panel.options["width"], panel.options["height"]) == dc.PANEL_SIZES["context"]
+    assert dc.PANEL_SIZES["context"][1] < dc.PANEL_SIZES["menu"][1]
+    assert all(c[1:] == dc.PANEL_SIZES["context"] for c in panel.calls if c[0] == "resize")
+
+
+def test_a_later_click_of_the_other_kind_is_sized_before_it_is_shown(over):
+    over.set_main_hidden(True)
+    runner = FakeRunner.started[0]
+    runner.on_click("left", (1000, 800, 200, 240), 96)
+    runner.on_click("left", (1000, 800, 200, 240), 96)  # closes
+    panel = over.webview.made[0]
+    panel.calls.clear()
+    runner.on_click("right", (1000, 800, 200, 240), 96)
+    shown_at = panel.calls.index(("show",))
+    first_resize = next(i for i, c in enumerate(panel.calls) if c[0] == "resize")
+    assert first_resize < shown_at and panel.calls[first_resize][1:] == dc.PANEL_SIZES["context"]
+
+
+def test_the_menu_is_measured_by_its_content_not_a_fixed_height():
+    from pathlib import Path
+
+    js = (Path(__file__).resolve().parent.parent / "frontend" / "js" / "desk-companion.js").read_text(encoding="utf-8")
+    assert "function menuHeight(" in js and "panel.scrollHeight" in js
+    show = js.split("function show(next)")[1].split("\n  }\n")[0]
+    assert "menuHeight(height)" in show and 'next === "context"' in show
+
+
+def test_an_unanswered_read_keeps_the_last_motion_answer(over):
+    over.main_window.evaluate_js = _says(mode="full")
+    over.set_main_hidden(True)
+    assert over.motion == (False, "")
+    over.main_window.evaluate_js = lambda script: ""
+    over.set_main_hidden(False)
+    over.set_main_hidden(True)
+    assert len(FakeRunner.started) == 1 and over.motion == (False, "")
+
+
+def test_hiding_the_panel_never_waits_on_its_page(over):
+    import threading
+    import time
+
+    release = threading.Event()
+    over.window = FakeWindow()
+    over.window.evaluate_js = lambda script: release.wait(5)
+    over.panel_shown = True
+    t0 = time.monotonic()
+    over._hide_panel_window()  # noqa: SLF001
+    assert time.monotonic() - t0 < 0.5 and over.panel_shown is False
+    release.set()
+
+
+def test_the_menu_height_is_capped_and_walk_is_not_offered_when_locked():
+    from pathlib import Path
+
+    js = (Path(__file__).resolve().parent.parent / "frontend" / "js" / "desk-companion.js").read_text(encoding="utf-8")
+    assert "screen.availHeight" in js.split("function menuHeight(")[1].split("\n  }\n")[0]
+    assert "!locked && motion?.still" in js

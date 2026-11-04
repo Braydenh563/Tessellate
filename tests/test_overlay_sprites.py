@@ -19,7 +19,7 @@ def test_every_look_has_every_frame() -> None:
     for look in sprites.LOOKS:
         files = sorted(p.stem for p in (DIR / look).glob("*.png"))
         assert files == sorted(sprites.FRAME_NAMES), look
-    assert len(sprites.FRAME_NAMES) == 16 and len(sprites.WALK_FRAMES) == 6
+    assert len(sprites.FRAME_NAMES) == 20 and len(sprites.WALK_FRAMES) == 6
 
 
 def test_frames_of_a_look_share_one_size_and_stay_small() -> None:
@@ -108,8 +108,37 @@ def test_look_names_and_missing_frames() -> None:
     assert sprites.look_for("Feminine") == "feminine"
     assert sprites.look_for("auto") == "masculine" and sprites.look_for(None) == "masculine"
     assert sprites.SpriteSet("masculine", DIR).missing() == []
-    assert len(sprites.SpriteSet("masculine", DIR / "nowhere").missing()) == 16
+    assert len(sprites.SpriteSet("masculine", DIR / "nowhere").missing()) == len(sprites.FRAME_NAMES)
 
 
 def test_the_shipped_frames_are_loadable_with_the_default_directory() -> None:
     assert sprites.frames_dir().resolve() == DIR.resolve()
+
+
+def test_spin_frames_are_rotated_copies_on_a_canvas_that_fits_any_angle_cached_once() -> None:
+    import math
+
+    spr = sprites.SpriteSet("masculine", DIR)
+    assert spr.gait == "float"
+    w, h = spr.size(96)
+    side = math.ceil(math.hypot(w, h))
+    a, b = spr.frame("spin0", 96), spr.frame("spin3", 96)
+    assert (a.width, a.height) == (side, side) == (b.width, b.height)
+    assert (a.pad_x, a.pad_y) == ((side - w) // 2, (side - h) // 2)
+    assert a.bgra != b.bgra and len(a.bgra) == side * side * 4
+    assert spr.frame("spin3", 96) is b  # built once, not per frame
+    assert spr.frame("spin3", 96, flip=True) is not b
+    # the halo guard still holds on a rotated frame
+    alphas = set(a.bgra[3::4])
+    assert not any(0 < v < sprites.ALPHA_FLOOR for v in alphas)
+    assert spr.missing() == []  # spin frames are made, not shipped files
+
+
+def test_clipping_clears_the_hidden_rows_and_columns_and_leaves_the_rest() -> None:
+    f = sprites.Frame(4, 4, bytes([255] * 64))
+    rows = sprites.clipped(f, (0, 0, 4, 2))
+    assert rows.bgra[: 2 * 16] == bytes([255] * 32) and set(rows.bgra[32:]) == {0}
+    cols = sprites.clipped(f, (1, 0, 3, 4))
+    assert all(cols.bgra[(r * 4 + c) * 4] == (255 if 1 <= c < 3 else 0) for r in range(4) for c in range(4))
+    assert set(sprites.clipped(f, (0, 0, 4, 0)).bgra) == {0}
+    assert sprites.clipped(f, None) is f and sprites.clipped(f, (0, 0, 4, 4)) is f

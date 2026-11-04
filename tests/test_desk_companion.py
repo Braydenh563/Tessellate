@@ -12,6 +12,7 @@ staying above the taskbar, and the position on a scaled screen.
 from __future__ import annotations
 
 import re
+import time
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -272,7 +273,7 @@ def test_a_bad_hit_opens_the_app_with_no_script(made, prefs):
 
 def test_the_page_can_ask_for_nothing_else():
     public = {name for name in dir(dc.DeskApi) if not name.startswith("_")}
-    assert public == {"open_app", "open_hit", "set_size", "drag_start", "drag_to", "drag_end", "hide_companion", "hide_panel", "panel_blur", "panel_kind"}
+    assert public == {"open_app", "open_hit", "set_size", "drag_start", "drag_to", "drag_end", "hide_companion", "hide_panel", "panel_blur", "panel_kind", "panel_motion", "let_it_walk", "set_roam"}
 
 
 def test_hide_turns_the_preference_off_and_hides_the_window(made, prefs):
@@ -317,12 +318,47 @@ def test_the_launcher_attaches_it_only_where_there_is_a_tray(monkeypatch, prefs)
 def test_open_tessellate_brings_the_window_forward_and_runs_the_checked_script(monkeypatch, prefs):
     import tessellate.__main__ as launcher
 
-    monkeypatch.setattr(launcher, "_focus_window", lambda window: window.calls.append(("focus",)))
+    monkeypatch.setattr(launcher, "_focus_window", lambda window: window.calls.append(("show",)) or window.calls.append(("focus",)))
     main = FakeWindow()
+    main.restore = lambda: main.calls.append(("restore",))
     companion = launcher._attach_desk_companion(FakeWebview(), main, object())
     companion._dispatch = lambda name, fn: fn()  # noqa: SLF001
     assert companion.open_main("x = 1")
-    assert main.calls == [("show",), ("focus",), ("js", "x = 1")]
+    _wait(lambda: ("js", "x = 1") in main.calls)
+    # Owner report 2026-11-04 (d): restored (it may be minimised), shown and focused
+    # before the script; the script now runs on a worker, so it is last.
+    assert main.calls == [("restore",), ("show",), ("focus",), ("js", "x = 1")]
+
+
+def _wait(cond, timeout=2.0):
+    end = time.monotonic() + timeout
+    while time.monotonic() < end and not cond():
+        time.sleep(0.005)
+
+
+def test_a_slow_app_window_script_never_holds_the_click(monkeypatch, prefs):
+    """Owner report 2026-11-04 (d): Settings took 5 to 10 seconds. `evaluate_js` on a
+    window that is not drawn yet can wait; the click must not."""
+    import threading
+
+    import tessellate.__main__ as launcher
+
+    monkeypatch.setattr(launcher, "_focus_window", lambda window: None)
+    gate = threading.Event()
+    main = FakeWindow()
+    main.evaluate_js = lambda script: gate.wait(5) and main.calls.append(("js", script))
+    companion = launcher._attach_desk_companion(FakeWebview(), main, object())
+    started = time.monotonic()
+    assert dc.DeskApi(companion).open_app("settings")
+    assert time.monotonic() - started < 0.5
+    gate.set()
+    _wait(lambda: any(call[0] == "js" for call in main.calls))
+
+
+def test_the_page_opens_the_app_before_it_hides_the_panel():
+    js = (ROOT / "frontend" / "js" / "desk-companion.js").read_text(encoding="utf-8")
+    leave = js.split("async function leave(action)")[1].split("\n  }\n")[0]
+    assert leave.index("await action()") < leave.index('ask("hide_panel")')
 
 
 def test_the_launcher_wires_the_attach_and_the_tray_item():

@@ -19,7 +19,14 @@ const FRAMES = [
   { name: "stand", pose: "stand", classes: [] },
   { name: "blink", pose: "stand", classes: ["nmb-act-blink"], at: 0.12 },
   { name: "look", pose: "stand", classes: ["nmb-act-look"], at: 1.1 },
-  ...[0, 1, 2, 3, 4, 5].map((i) => ({ name: `walk${i}`, pose: "stand", classes: ["nmb-walking"], phase: i / 6 })),
+  //: Atlas has a wisp for a lower body: its "walk" is a float cycle, not steps.
+  //: The app's own glide (`atl-glide`, 2px) and wisp sway are too small at this
+  //: size, so each frame sets exaggerated transforms inline (see `floatFrame`):
+  //: the body bobs 6px and leans into its travel, the tail swings about its
+  //: root and the lower wisp skews, in a wave that travels down it (each part
+  //: a little behind the one above). No `nmb-walking` class: its animations
+  //: would otherwise be paused mid-way and fight the inline values.
+  ...[0, 1, 2, 3, 4, 5].map((i) => ({ name: `walk${i}`, pose: "stand", classes: [], float: i / 6 })),
   { name: "sit", pose: "sit", classes: [] },
   { name: "sleep", pose: "sit", classes: ["nmb-sleep"], at: 1.0 },
   { name: "wave", pose: "stand", classes: ["nmb-act-wave"], at: 0.45 },
@@ -27,6 +34,11 @@ const FRAMES = [
   { name: "fall", pose: "stand", classes: ["nmb-act-startle"], at: 0.25 },
   { name: "land", pose: "stand", classes: ["nmb-act-land"], at: 0.1 },
   { name: "hop", pose: "stand", classes: ["nmb-act-hop"], at: 0.3 },
+  //: The rig's own hanging pose: both arms raised to an edge above it.
+  { name: "hang", pose: "hang", classes: [] },
+  //: A throw's mid-spin: the startled pose turned about its middle (the rig has
+  //: no tumble of its own, so this one is a transform of an existing pose).
+  { name: "tumble", pose: "stand", classes: ["nmb-act-startle"], at: 0.25, spin: 115 },
 ];
 const LOOKS = ["masculine", "feminine"];
 //: The capture box around the figure, in CSS pixels: roomy, cropped later.
@@ -55,13 +67,33 @@ const BOX = { width: 220, height: 260, left: 120, top: 60 };
       const clone = real; // the live element, not a copy: its eyes and rig are driven by the page
       //: CSSOM, not a <style> element: the page's CSP refuses inline style text.
       const put = (el, props) => { for (const [k, v] of Object.entries(props)) el.style.setProperty(k, v, "important"); };
+      //: Glass off (Performance mode's root attribute, docs/DESIGN.md "Turning it
+      //: off"): over a desktop there is nothing to blur, so the body takes its
+      //: solid fallbacks instead of translucent fills that read as a ghost.
+      document.documentElement.setAttribute("data-glass", "off");
+      //: Over a wallpaper the figure's atmosphere has nothing to sit on and reads
+      //: as a pale ghost: the nebula washes, the big aura ellipse, the orbit
+      //: rings and the ground shadow are left out, and the layers that are the
+      //: character itself (body, tail, face, front) are drawn at full opacity.
+      //: insertRule, not a <style> element: the page's CSP refuses inline style text.
+      const sheet = document.styleSheets[0];
+      for (const rule of [
+        "#nm-buddy :is(.atl-lw-neb, .atl-lw-neb-front, .atl-layer-neb, .atl-layer-neb-fr, .atl-aura, .atl-orbits, .atl-rings, .atl-ring-frame, .nmp-bubble) { display: none !important; }",
+        "#nm-buddy::before, #nm-buddy::after, #nm-buddy .nm-buddy-face::before, #nm-buddy .nm-buddy-face::after { display: none !important; }",
+        "#nm-buddy :is(.atl-layer-back, .atl-layer-front, .atl-layer-body, .atl-layer-tail) { opacity: 1 !important; }",
+      ]) sheet.insertRule(rule, sheet.cssRules.length);
       put(document.documentElement, { background: "transparent" });
       put(document.body, { background: "transparent" });
       for (const el of document.body.children) put(el, { visibility: "hidden" });
+      //: A mask's or clip path's content inherits `visibility` from where it is
+      //: defined, not from the figure that uses it. Hiding the page left every
+      //: mask and clip painting nothing (no torso below the head, the irises
+      //: clipped away to blank white eyes), so they are made visible themselves.
+      for (const el of document.querySelectorAll("mask, clipPath")) put(el, { visibility: "visible" });
       put(clone, { transform: "translate(" + (box.left + 78) + "px, " + (box.top + 80) + "px)", visibility: "visible" });
       //: The companion in the app may be tucked behind a bar (`data-legs="peek"`
       //: clips it): keep only the gait, and set the pose per frame.
-      for (const name of clone.getAttributeNames()) if (name.startsWith("data-") && name !== "data-gait") clone.removeAttribute(name);
+      for (const name of clone.getAttributeNames()) if (name.startsWith("data-") && !["data-gait", "data-atlas-variant"].includes(name)) clone.removeAttribute(name);
       return { look: atlasLook(), rect: JSON.stringify(clone.getBoundingClientRect()) };
     }, BOX);
     report[look] = got;
@@ -72,7 +104,8 @@ const BOX = { width: 220, height: 260, left: 120, top: 60 };
         const b = document.getElementById("nm-buddy");
         //: Every frame from the same neutral start: the page's idle timer would
         //: otherwise make it drowsy (`data-feel`, a nightcap) part-way through.
-        for (const name of b.getAttributeNames()) if (name.startsWith("data-") && name !== "data-gait" && name !== "data-seed") b.removeAttribute(name);
+        for (const name of b.getAttributeNames()) if (name.startsWith("data-") && !["data-gait", "data-seed", "data-atlas-variant"].includes(name)) b.removeAttribute(name);
+        for (const el of b.querySelectorAll(".nm-buddy-char, .atl-lw-tail, .atl-lw-lower, .nm-atlas.atl-layer-lower")) { el.style.removeProperty("transform"); el.style.removeProperty("transform-origin"); }
         b.className = frame.classes.join(" ");
         b.dataset.pose = frame.pose;
         b.dataset.feel = "calm";
@@ -83,12 +116,30 @@ const BOX = { width: 220, height: 260, left: 120, top: 60 };
         //: frame's moment; the page's own (WAAPI eyes, drift) are frozen where
         //: they are, not rewound, so the eyes stay as they were.
         for (const a of document.getAnimations()) {
+          //: A CSS transition (the iris's opacity, a part's pose change) is
+          //: paused at its START by the freeze below, which left the irises and
+          //: the torso at the old value: white blank eyes and a missing body.
+          //: A transition is finished instead, so the frame shows where it went.
+          if (a.transitionProperty) { a.finish(); continue; }
           a.pause();
           if (!a.animationName || (frame.phase === undefined && frame.at === undefined)) continue;
           const t = a.effect.getComputedTiming();
           const cycle = (t.duration || 0) * (String(t.direction).startsWith("alternate") ? 2 : 1);
           const start = Math.max(0, t.delay || 0);
           a.currentTime = frame.phase !== undefined ? cycle * frame.phase + start : frame.at * 1000 + start;
+        }
+      }, f);
+      await page.evaluate((frame) => {
+        const b = document.getElementById("nm-buddy");
+        const put = (el, t, origin) => { el.style.setProperty("transform", t, "important"); if (origin) el.style.setProperty("transform-origin", origin, "important"); };
+        const char = b.querySelector(".nm-buddy-char");
+        if (frame.spin) put(char, `rotate(${frame.spin}deg)`, "50% 45%");
+        if (frame.float !== undefined) {
+          const w = frame.float * 2 * Math.PI;
+          put(char, `translateY(${(-6 * Math.sin(w)).toFixed(2)}px) rotate(4deg)`, "50% 90%");
+          for (const tail of b.querySelectorAll(".atl-lw-tail")) put(tail, `rotate(${(11 * Math.sin(w - 1.0)).toFixed(2)}deg)`, "40% 35%");
+          const lower = b.querySelectorAll(".nm-atlas.atl-layer-lower").length ? ".nm-atlas.atl-layer-lower" : ".atl-lw-lower";
+          for (const low of b.querySelectorAll(lower)) put(low, `skewX(${(9 * Math.sin(w - 2.0)).toFixed(2)}deg)`, "50% 55%");
         }
       }, f);
       await page.waitForTimeout(40);

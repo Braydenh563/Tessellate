@@ -53,7 +53,7 @@ def test_start_builds_everything_on_the_overlay_thread_and_draws_the_first_frame
     assert r.start()
     assert r.engine is not None and r.sprites is not None and fake.layered
     assert fake.layered[0]["flags"] == k.ULW_ALPHA
-    assert any("overlay: ready, look=masculine" in rec.getMessage() and "frames=16" in rec.getMessage() for rec in caplog.records)
+    assert any("overlay: ready, look=masculine" in rec.getMessage() and f"frames={len(runner_mod.sprites.FRAME_NAMES)}" in rec.getMessage() for rec in caplog.records)
     assert not r.visible and "ShowWindow" not in fake.names()
     r.stop()
 
@@ -170,7 +170,7 @@ def test_a_display_change_rereads_monitors_and_rescales_the_frames() -> None:
     assert wait_for(lambda: r.dpi == 192)
     assert r.engine.size == r.sprites.size(192) != first
     assert wait_for(lambda: fake.layered[-1]["size"] == r.sprites.size(192))
-    assert r.engine.y == 1400 - r.engine.size[1]
+    assert r.engine.y == r.engine.ground_y() == 1400 - r.engine.size[1] - r.engine.hover * 2
     r.stop()
 
 
@@ -180,6 +180,93 @@ def test_reduced_motion_follows_the_system_animation_setting() -> None:
     r, *_ = make(fake)
     assert r.start()
     assert r.engine.reduced and r.engine.update(101.0).frame == "sit"
+    r.stop()
+
+
+def test_the_apps_answer_beats_the_windows_flag_and_no_answer_falls_back_to_it() -> None:
+    fake = FakeWin32()
+    fake.animations = 0
+    r, *_ = make(fake, reduced=False)  # the app says it may move
+    assert r.start() and not r.engine.reduced
+    r.stop()
+    fake = FakeWin32()
+    r, *_ = make(fake, reduced=True, reduced_reason="app")
+    assert r.start() and r.engine.reduced and r.reduced_reason == "app"
+    r.stop()
+    fake = FakeWin32()
+    fake.animations = 0
+    r, *_ = make(fake)  # None: no answer
+    assert r.start() and r.engine.reduced and r.reduced_reason == "os"
+    r.stop()
+
+
+def _pump(r, fake, clock, seconds: float, until=None) -> float:
+    """Fire the timer the overlay asked for, in fake time: each WM_TIMER is posted
+    after the clock moved by the asked-for wait. Returns the fake seconds used."""
+    used = 0.0
+    while used < seconds:
+        if not wait_for(lambda: fake.timers.get(1) is not None, 0.5):
+            break
+        ms = fake.timers.pop(1)
+        clock.t += ms / 1000
+        used += ms / 1000
+        fake.post(k.WM_TIMER)
+        time.sleep(0.01)
+        if until and until():
+            break
+    return used
+
+
+def test_a_moving_figure_keeps_asking_for_ticks_and_changes_frame_or_place() -> None:
+    """Owner report 2026-11-04 (a, b): rule out that the moving path is also stuck.
+    After start and show the host must be asked for a wake, and each answer must
+    ask for the next, so within a few fake seconds the figure blinks, looks or walks."""
+    r, fake, clock, *_ = make(reduced=False)
+    assert r.start()
+    r.show()
+    assert wait_for(lambda: r.host.visible)
+    seen = {r._last_key}
+    places = {r._last_pos}
+    _pump(r, fake, clock, 60.0, until=lambda: len({key[0] for key in seen if key}) > 1 or len(places) > 1)
+    seen.add(r._last_key)
+    places.add(r._last_pos)
+    assert len({key[0] for key in seen if key}) > 1 or len(places) > 1, (seen, places)
+    r.stop()
+
+
+def test_a_drop_in_mid_air_falls_with_ticks_to_the_floor() -> None:
+    r, fake, clock, clicks, settled = make(reduced=False)
+    assert r.start()
+    r.show()
+    assert wait_for(lambda: r.host.visible)
+    fake.cursor = (850, 950)
+    fake.post(k.WM_LBUTTONDOWN)
+    assert wait_for(lambda: r.engine.state == "pressed")
+    fake.cursor = (900, 300)
+    fake.post(k.WM_MOUSEMOVE)
+    assert wait_for(lambda: r.engine.state == "held")
+    fake.post(k.WM_LBUTTONUP)
+    assert wait_for(lambda: r.engine.state in ("fall", "fly"))
+    assert wait_for(lambda: fake.timers.get(1) is not None)  # a fall asks for ticks
+    _pump(r, fake, clock, 10.0, until=lambda: bool(settled))
+    assert settled and abs(r.engine.y - r.engine.ground_y()) < 1  # Atlas hovers: its rest height
+    r.stop()
+
+
+def test_a_still_figure_dropped_in_mid_air_is_on_the_floor_at_once() -> None:
+    r, fake, clock, clicks, settled = make(reduced=True, reduced_reason="setting")
+    assert r.start()
+    r.show()
+    assert wait_for(lambda: r.host.visible)
+    fake.cursor = (850, 950)
+    fake.post(k.WM_LBUTTONDOWN)
+    assert wait_for(lambda: r.engine.state == "pressed")
+    fake.cursor = (900, 300)
+    fake.post(k.WM_MOUSEMOVE)
+    assert wait_for(lambda: r.engine.state == "held")
+    fake.post(k.WM_LBUTTONUP)
+    assert wait_for(lambda: settled)
+    assert r.engine.y == r.engine.ground_y() and abs(settled[0][1] - r.engine.ground_y()) < 1
     r.stop()
 
 
@@ -217,3 +304,48 @@ def test_a_stop_before_the_thread_reports_its_end_is_never_a_death() -> None:
     r._exited()
     time.sleep(0.05)
     assert died == []
+
+
+def test_a_thrown_figure_is_drawn_rotated_on_a_bigger_canvas_and_a_peek_is_drawn_clipped() -> None:
+    r, fake, clock, *_ = make(reduced=False)
+    assert r.start()
+    r.show()
+    assert wait_for(lambda: r.host.visible)
+    assert r.engine.gait == "float"  # Atlas
+    r.paused = True  # the test drives the engine itself, not the window's timer
+    engine = r.engine
+    w, h = r.sprites.size(96)
+    engine.y = 100.0
+    engine._enter("fly", clock.t)
+    engine.vx = engine.vy = 0.0
+    engine.angle = 1.0
+    r._apply(engine.update(clock.t + 0.01))
+    side = r.sprites.frame("spin1", 96)
+    assert r._last_key[0].startswith("spin") and side.width > w
+    assert wait_for(lambda: fake.layered[-1]["size"] == (side.width, side.height))
+    # sunk behind the bottom edge: the hidden rows are drawn clear
+    engine._enter("peek", clock.t)
+    engine.peek_edge, engine.sink_max, engine.peek_started = "bottom", 0.65, clock.t - 1.5
+    engine.y = engine.floor_y()
+    out = engine.update(clock.t + 0.02)
+    r._apply(out)
+    assert out.clip == (0, 0, w, h - round(0.65 * h)) and r._last_key[3] == out.clip
+    r.stop()
+
+
+def test_typing_keeps_the_engine_quiet_and_an_unknown_input_age_does_not() -> None:
+    r, fake, clock, *_ = make(reduced=False)
+    assert r.start()
+    r.show()
+    assert wait_for(lambda: r.host.visible)
+    assert r.engine.quiet is False  # the fake cannot say: not quiet
+    fake.last_input = (10_000, 9_000)  # tick, last input: 1 s ago
+    clock.t += 5
+    r._next_busy_check = 0.0
+    r._busy_gate(clock.t)
+    assert r.engine.quiet is True
+    fake.last_input = (10_000, 1_000)
+    r._next_busy_check = 0.0
+    r._busy_gate(clock.t)
+    assert r.engine.quiet is False
+    r.stop()

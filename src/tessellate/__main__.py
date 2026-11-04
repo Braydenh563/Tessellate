@@ -2119,10 +2119,22 @@ def _attach_desk_companion(webview, window, tray_icon):  # noqa: ANN001
     from tessellate.core import desk_companion
 
     def _open_main(script: str = "") -> None:
-        window.show()
-        _focus_window(window)
+        # The same way a second launch brings the window forward: restored if it
+        # was minimised (a bare `show` leaves it minimised on some backends; the
+        # owner's Settings click did nothing visible, 2026-11-04), then shown and
+        # focused. The script runs on a worker once it is up: `evaluate_js` on a
+        # window that is not yet drawn can wait, and no click may wait on that.
+        _bring_forward(window)
         if script:
-            window.evaluate_js(script)
+            from tessellate.core import jobs
+
+            def run() -> None:
+                try:
+                    window.evaluate_js(script)
+                except Exception as exc:  # noqa: BLE001 - the window still came forward
+                    logger.warning("the companion's script did not run in the app window: %s", exc)
+
+            jobs.thread("desk-open-script", run)
 
     return desk_companion.attach(
         webview,
@@ -2154,8 +2166,14 @@ def _start_reminder_notifier(window, icon_path: Path, data_dir: Path):  # noqa: 
     try:
         from tessellate.core import reminder_notifier
 
+        from tessellate.core import desk_companion
+
         notifier = reminder_notifier.start(
-            data_dir, on_open=_open, icon=str(icon_path) if icon_path.is_file() else None
+            data_dir,
+            on_open=_open,
+            icon=str(icon_path) if icon_path.is_file() else None,
+            # The desktop companion's overlay fetches a card for each reminder that falls due.
+            on_due=desk_companion.carry_due,
         )
     except Exception as exc:  # noqa: BLE001  # notifications never stop the window
         logger.warning("reminder notifications are off: %s", exc)

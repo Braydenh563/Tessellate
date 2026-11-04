@@ -325,11 +325,17 @@ def test_the_desktop_companion_row_is_named_as_a_this_computer_setting():
     # BACKLOG 16 O4: the see-through figure that walks, and the words for it, in both places.
     # Windows' own setting is named ("animation effects"): "reduce motion" was the app's old
     # switch, which test_motion_resolved keeps out of the pages.
-    for words in ("walks along the bottom", "sleeps", "picked up and dropped", "animation effects"):
-        assert words in popover.replace("\n", " ").replace("  ", " ") or words in " ".join(popover.split()), words
+    # The owner's report of 2026-11-04 moved this: Atlas floats (others walk), can be thrown,
+    # hangs from the top and peeks from behind the taskbar, in both places.
+    # The roam request of the same day: window tops, the switch and a reminder's card.
+    for words in ("floats like a wind spirit", "sleeps", "thrown", "hangs from the top", "peeks up from behind the taskbar", "animation effects",
+                  "climbs onto the top of a window", "Roam over windows", "a card when a reminder falls due"):
+        assert words in " ".join(popover.split()), words
     for topic in named:
         flat = " ".join(topic["body"].split())
-        assert "walks along the bottom" in flat and "picked up and dropped" in flat and "animation effects" in flat, topic["id"]
+        for words in ("floats like a wind spirit", "thrown", "hangs from the top", "peeks up from behind the taskbar", "animation effects",
+                      "climbs onto the top of a window", "Roam over windows", "a card to click"):
+            assert words in flat, (topic["id"], words)
     settings = (FRONTEND / "js" / "settings.js").read_text(encoding="utf-8")
     assert 'const onThisComputer = isDesktop || (await healthFacts())?.this_computer !== false;' in settings
     assert '$("desktop-companion-row")?.classList.toggle("hidden", !onThisComputer);' in settings
