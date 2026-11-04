@@ -360,7 +360,14 @@ def restore_bundle(request: Request, file: UploadFile = File(...), password: str
         _unlink_quietly(upload_path, zip_path)
     # The settings the zip carried (Audit 2026-10-10, item 1), merged over the
     # live ones: a key the zip lacks keeps its value here.
-    config.merge_preferences(result.get("preferences") or {})
+    # SEC-A1: each one through the checks `PUT /preferences` applies; a value
+    # that fails is dropped and only its key name is logged.
+    from tessellate.api import routes_settings
+
+    kept, dropped = routes_settings.checked_restored_preferences(result.get("preferences") or {})
+    if dropped:
+        logging.getLogger(__name__).warning("A restored backup's settings were dropped: %s", ", ".join(sorted(dropped)))
+    config.merge_preferences(kept)
     session = deps.get_db().session()
     try:
         manager.log_action(session, "restored", "data", detail="full backup file")

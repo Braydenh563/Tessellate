@@ -2043,6 +2043,12 @@ class MediaUpload(Base, WorkspaceMixin):
     #: `list_media` backfills any NULL it finds once, from a real `stat()`,
     #: and never stats again after that.
     size_bytes: Mapped[int | None] = mapped_column(Integer, default=None)
+    #: True once a private note has embedded this file (SEC-A2). A locked
+    #: note's text is ciphertext, so nothing else says which files are its
+    #: pictures; the flag is what lets a locked session refuse the file and
+    #: its readings. Only ever set, never cleared: a stale True costs a
+    #: readable-note-less file staying sealed until unlock, never a leak.
+    in_private_note: Mapped[bool] = mapped_column(Boolean, default=False)
 
 
 class JobRun(Base):
@@ -2419,7 +2425,8 @@ class DatabaseManager:
                 # Either may write; `or` would skip the second once the first did.
                 boards = search_index.reconcile_boards(session)
                 late = search_index.reconcile_sources(session)
-                if boards or late:
+                private_files = search_index.reconcile_private_files(session)
+                if boards or late or private_files:
                     session.commit()
             return
         # Only on the one startup that creates the table: every write after

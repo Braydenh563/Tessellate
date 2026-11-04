@@ -72,6 +72,27 @@ that answers "has this been done?" before anyone starts.
 **Now (2026-11-01b, owner at work, away run, branch claude/sharp-thompson-45hngp, PR 211, head 3ffaed1):** merged motion-1101 (1506), rank4-1101 (rows 7, 8, 11, 12, 13, 52); fixed 1507 (casual acts), 1508 part (composer resize), the Guide E2E flake (a press adopted the sheet and moved it 20px; 55b870c). Running: board-1101 (1510b, 1509, 1510a), perf-1101 (1508 rest), rank5-1101 (rows 17, 23 CE3). Next: merge each, rows 35 to 37, plans, OPEN.md, odysseus.
 
 **Now (2026-11-01a, owner awake, branch claude/sharp-thompson-45hngp, PR 211, head 479794a):** merged ux-1031 (rows 25 to 33, 47 to 50, 14, 15), red-1031 (the 17 CI failures), ui-1101 (INBOX 1503 to 1505); fixed BK8 swallowing DC8's message (`Said`), row 24 (complexity), boot CSS 14 bytes over. Running: motion-1101 (INBOX 1506: motion choice separate from the browser's reduced motion, then one motion vocabulary), rank4-1101 (rows 7, 8, 11, 12, 13, 52). Next: merge both, rows 36 and 37 (god modules, global scope) and GR4 leaders, then plans, OPEN.md, odysseus.
+## Moved from HANDOVER, 2026-11-04 (line cap)
+
+**And its twin, learned the same hour, in the other direction.** A staged
+file is not yours either: `git add` leaves it in the index, and the next
+agent to run a plain `git commit` in the shared worktree takes it. The
+`--staged` change above landed inside an agent's commit `3ef6b9b` ("The
+line numbers go away with the box they number") for exactly that reason,
+which is why that commit also carries `scripts/gate.sh`, `CLAUDE.md` and
+this file. The content is right and the attribution is not; rewriting a
+shared branch's history to fix that would cost more than it is worth.
+**Stage and commit in one step, and never leave the index populated.**
+In practice that means `git commit -m ... -- <paths>`, which commits
+those paths directly and leaves the index alone, rather than `git add`
+followed by `git commit`. It happened three times in one evening before
+the habit changed, each time putting the orchestrator's work inside an
+agent's unrelated commit: `scripts/gate.sh` went in with a preview
+gutter fix, and `ai/learning.py` with a picture-card note. Nothing was
+lost either time, and the history now says things it does not mean,
+which is its own slow cost when the next session reads it. The same three symptoms in the
+console are the signature: one real error, then `X is not defined` and
+`Cannot access Y before initialization` from everything declared after it.
 
 ## Moved from HANDOVER, 2026-11-02 (session record past 600 lines)
 

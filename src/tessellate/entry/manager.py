@@ -22,6 +22,7 @@ from pathlib import Path
 from tessellate.core.database import (
     LIKE_ESCAPE,
     Attachment,
+    MediaUpload,
     Category,
     ChunkVector,
     EmbeddingRecord,
@@ -703,6 +704,7 @@ def _update_entry_fields(
         stored = content_for_entry(entry, content)
         if stored is None:
             raise PermissionError("The encryption key isn't loaded.")
+        flag_private_media(session, content)
         content = stored
     if content is not None and content != entry.content:
         entry.content = content
@@ -2736,6 +2738,16 @@ def content_for_entry(entry: Entry, text: str) -> str | None:
     return crypto.encrypt(key, text) if entry.is_private else crypto.decrypt(key, text)
 
 
+def flag_private_media(session: Session, text: str) -> None:
+    """Mark the uploads a private note's readable text embeds (SEC-A2), so a
+    locked session can tell them from plain orphans (`MediaUpload.in_private_note`)."""
+    names = importlib.import_module("tessellate.core.media_gc").referenced_names(text or "")
+    if names:
+        session.execute(
+            update(MediaUpload).where(MediaUpload.filename.in_(names)).values(in_private_note=True)
+        )
+
+
 def _encrypt_history(session: Session, entry: Entry, key: bytes) -> None:
     """Encrypt what the note's history already holds in the clear.
 
@@ -2998,6 +3010,7 @@ def set_private(session: Session, entry: Entry, private: bool) -> bool:
         if not crypto.is_encrypted(entry.content):
             # Before the text is sealed: the redaction looks for its sentences.
             _redact_answers_quoting(session, entry.id, entry.content)
+            flag_private_media(session, entry.content)
             entry.content = crypto.encrypt(key, entry.content)
         entry.is_private = True
         session.execute(delete(EmbeddingRecord).where(EmbeddingRecord.entry_id == entry.id))
@@ -3036,6 +3049,11 @@ def set_private(session: Session, entry: Entry, private: bool) -> bool:
         entry.is_private = False
         record_dates(session, entry)  # readable again, so it can be read again
         _unseal_link_reasons(session, entry)
+    # SEC-A2: its files' search rows follow the note (a private note's files
+    # are not indexed, `search/index._attachment_row`).
+    search_index = importlib.import_module("tessellate.search.index")
+    for attachment_id in session.scalars(select(Attachment.id).where(Attachment.entry_id == entry.id)).all():
+        search_index.touch(session, "attachments", attachment_id)
     # The payload carries the content as it now stands (ciphertext when the
     # note was just made private), so a replay of this note's events rebuilds
     # what is actually in the column rather than the plaintext it stopped

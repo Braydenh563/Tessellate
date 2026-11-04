@@ -1155,7 +1155,7 @@ def set_provider(body: ProviderBody, session: Session = Depends(get_session)) ->
         session,
         "edited",
         "preferences",
-        detail=f"llm_provider={body.provider} base_url={base_url or '(default)'}",
+        detail=f"llm_provider={body.provider} base_url={security.without_userinfo(base_url) or '(default)'}",
     )
     session.commit()
     return {

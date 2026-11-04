@@ -27,7 +27,7 @@ import json
 import logging
 import time
 
-from fastapi import APIRouter, Depends, HTTPException, Query, Request
+from fastapi import APIRouter, Depends, Header, HTTPException, Query, Request
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
 
@@ -645,6 +645,7 @@ async def jobs_stream(
     request: Request,
     seconds: float = Query(default=_STREAM_MAX_SECONDS, ge=0, le=_STREAM_MAX_SECONDS),
     limit: int = Query(default=50, ge=1, le=500),
+    x_auth_token: str | None = Header(default=None),
 ) -> StreamingResponse:
     """Server-sent events: the `/jobs` list, sent at once and again on every
     change (`jobstore.version`), plus a comment line every 15 s so a proxy
@@ -680,6 +681,11 @@ async def jobs_stream(
         while time.monotonic() - started < seconds:
             await asyncio.sleep(_STREAM_POLL_SECONDS)
             if await request.is_disconnected():
+                return
+            # SEC-A6: the opening check ran once; a lock or sign-out ends the stream.
+            from tessellate.api import routes_auth
+
+            if not await asyncio.to_thread(routes_auth.session_still_open, request, x_auth_token):
                 return
             ticks += 1
             #: Every `_STREAM_TASKS_EVERY` looks: the rows are built from
