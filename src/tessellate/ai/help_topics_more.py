@@ -1840,14 +1840,14 @@ MORE_TOPICS.extend(
                 "sort notes", "recently edited", "a to z", "copy link", "copy wiki link", "copy app link",
                 "connections column", "beside the list", "forgotten", "close to this",
                 "backlinks", "unlinked mentions", "mentioned, not linked", "linked mentions",
-                "most used", "note order", "f2",
+                "most used", "note order", "f2", "edit a note", "edit note", "change a note", "open a note", "write in a note",
             ),
             "body": (
                 "Sort notes: Newest first, Oldest first, Recently edited, A to Z "
                 "(\"note 2\" before \"note 10\"), Most used or Forgotten first; "
                 "the choice is remembered. A note's menu has Copy wiki link to "
                 "paste a [[link]] to it into another note, and Copy app link for "
-                "an address that opens it in the app. Editing a note has the title, "
+                "an address that opens it in the app. To edit a note, open its More menu and press Edit (or press F2 on a focused note), change it in place, then Save. Editing a note has the title, "
                 "a line of properties and the text in one box: the category is its "
                 "chip with a menu, tags are chips after it (Add tag: Enter or a "
                 "comma adds one, pressing one removes it), and the formatting "

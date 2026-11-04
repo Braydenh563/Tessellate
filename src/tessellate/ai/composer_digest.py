@@ -2070,6 +2070,35 @@ def _clause_list(said: str) -> str:
     return "\n".join(f"- {c[:1].upper() + c[1:]}" for c in clauses)
 
 
+#: Words a clause cannot end on: a line cut after one was cut mid-sentence
+#: (INBOX 1649: an "Also:" item ended "... hub-finish-ui and").
+_DANGLING = frozenset("and or but nor so then the a an to of with for in on at by as from into that which who if when while because than".split())
+
+
+def asks_for_a_topic(question: str) -> bool:
+    """False for a request or an act ("I want to edit my pasta note", "can I
+    open the pasta note"): "so far this is your only note on it" claims a
+    topic's coverage, and a request has no topic (INBOX 1649)."""
+    from tessellate.ai import intent
+
+    return not re.match(rf"\s*{intent._REQUEST_FRAME}\b", question or "", re.IGNORECASE)
+
+
+def whole_clause(text: str) -> str:
+    """The text without a dangling tail ("... the footer and" is "... the
+    footer"), cut back to its last whole clause; "" when under three words
+    are left, so the caller drops the item rather than quote a fragment."""
+    said = text.rstrip()
+    ended = said.rstrip(" ,;:-").rsplit(None, 1)
+    if said.endswith((".", "!", "?", ")", "\"", "\u201d", "`")) or not ended or ended[-1].lower().strip(",;:") not in _DANGLING:
+        return text
+    words = said.rstrip(" ,;:-").split()
+    while words and words[-1].lower().strip(",;:") in _DANGLING:
+        words.pop()
+    kept = " ".join(words).rstrip(" ,;:-")
+    return kept if len(kept.split()) >= 3 else ""
+
+
 def _lines(out: _Out, facts: list[Fact], limit: int, skip: set[tuple] | None = None, by_day: date | None = None, more: bool = False, weave: bool = False) -> int:
     """Facts grouped under their labels, oldest note first, one line a label;
     the line carries its first note for its one citation mark."""
@@ -2089,6 +2118,8 @@ def _lines(out: _Out, facts: list[Fact], limit: int, skip: set[tuple] | None = N
         if written:
             seen_days.append(written)
         said = said[:1].upper() + said[1:] if label == PHRASES["also"] else said
+        if not (said := whole_clause(said)):
+            continue
         listed = _clause_list(said)
         (out.lines if i < limit else out.more).append(
             (f"**{label}:**\n{listed}" if listed and not heading else listed or (f"{said}." if heading else f"**{label}:** {said}.")))
@@ -3718,7 +3749,7 @@ def _single_close(out: _Out, kind: str, rest: list[Fact], members, question: str
         out.closing.append(_vary("mixed").format(score=score.group(1)))
     #: One note chosen from a topic many notes carry is not "the only note"
     #: (second eye F10): the closing counts the notes that hold the topic.
-    if len(members) == 1 and kind in ("fact", "opinion") and len(_scored_members(_subject(question), _VIEWS.get())) <= 1:
+    if len(members) == 1 and kind in ("fact", "opinion") and asks_for_a_topic(question) and len(_scored_members(_subject(question), _VIEWS.get())) <= 1:
         word = _reviewed_word(question, members) if kind == "opinion" else ""
         noun = f"{word} review" if word else "note"
         out.lines.append(PHRASES["only_note"] if noun == "note" else PHRASES["only_kind"].format(noun=noun))
@@ -4255,7 +4286,8 @@ def _compose_body(out: _Out, kind: str, asked: str, members: list, facts: list[F
     elif kind in ("overview", "likes") and (told := _narrate(out, members[0], facts, today)):
         #: One note with an event: told as what happened, then the rest.
         _lines(out, [f for f in facts if f.sentence.key not in told], 2)
-        out.lines.append(PHRASES["only_note"])
+        if asks_for_a_topic(asked):
+            out.lines.append(PHRASES["only_note"])
     elif kind in ("overview", "likes"):
         _single(out, "fact", asked, members, facts, today)
     else:

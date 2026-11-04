@@ -101,7 +101,10 @@ def _help_answer(question: str) -> dict | None:
     None when no topic matches."""
     from tessellate.ai import help_chat
 
-    best = help_line(question, help_chat.topics_for(question or ""))
+    from tessellate.ai import intent
+
+    question = intent.request_core(question or "")
+    best = help_line(question, help_chat.topics_for(question))
     if best is None:
         return None
     #: The topic's sentence is the protected span; the pointer after it varies
