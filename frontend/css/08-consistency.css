@@ -7355,8 +7355,8 @@ svg.atl-defs { position: absolute; width: 0; height: 0; overflow: hidden; }
    about the chest and a breath of opacity, compositor only. */
 .nm-atlas:is(.atl-layer-neb, .atl-layer-neb-front) { transform-origin: 31px 52px; will-change: transform, opacity; }
 @keyframes atl-neb-drift {
-  from { transform: rotate(-1.6deg) translate(-0.6px, 0.4px) scale(0.99); opacity: 0.86; }
-  to { transform: rotate(1.8deg) translate(0.8px, -0.6px) scale(1.02); opacity: 1; }
+  from { transform: rotate(-4deg) translate(-2px, 1px) scale(0.97); opacity: 0.84; }
+  to { transform: rotate(4deg) translate(2px, -1px) scale(1.04); opacity: 1; }
 }
 /* Reading: the open book of light under the figure. */
 .nm-atlas .atl-prop-page { fill: white; opacity: 0.82; }
@@ -7647,8 +7647,8 @@ html[data-motion="reduced"]:not([data-buddy-motion="full"]) .nm-atlas .atl-cast-
   to { rotate: 2deg; translate: 0 -1.2px; }
 }
 @keyframes atl-skirt-idle {
-  from { transform: skewX(1.6deg); }
-  to { transform: skewX(-1.8deg); }
+  from { transform: skewX(4deg); }
+  to { transform: skewX(-4deg); }
 }
 /* The walk's, the carry's and the kick's swing of the lower body: shears
    about the join (INBOX 615), the hem swinging and the waist staying under
@@ -8243,12 +8243,12 @@ html[data-motion="reduced"]:not([data-buddy-motion="full"]) .nm-atlas .atl-cast-
   to { rotate: 1.6deg; }
 }
 @keyframes atl-tail-flow {
-  from { rotate: -1.6deg; }
-  to { rotate: 1.2deg; }
+  from { rotate: -4deg; }
+  to { rotate: 3deg; }
 }
 @keyframes atl-neb-flow {
-  from { translate: -0.5px 0.7px; }
-  to { translate: 0.6px -0.8px; }
+  from { translate: -2px 1.5px; rotate: -2.5deg; }
+  to { translate: 2px -1.5px; rotate: 2.5deg; }
 }
 @keyframes atl-swish {
   0%, 100% { transform: rotate(0deg); }

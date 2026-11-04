@@ -2,7 +2,7 @@
 
 Generated 2026-11-04 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7754, frontend ids 2641, CSS sections 522, backend routes 644, backend modules 8675, test files 2012, tests 16955, plan headings 999, app scripts 28, boot scripts 37, script files 248.
+Counts: frontend functions 7754, frontend ids 2641, CSS sections 522, backend routes 644, backend modules 8675, test files 2013, tests 16958, plan headings 999, app scripts 28, boot scripts 37, script files 248.
 
 ## Frontend functions (7754)
 
@@ -22160,17 +22160,17 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_listed` | src/tessellate/core/overlay/win32.py:361 |
 | `_monitor_dpi` | src/tessellate/core/overlay/win32.py:300 |
 | `_read_window` | src/tessellate/core/overlay/win32.py:366 |
-| `animations_enabled` | src/tessellate/core/overlay/win32.py:439 |
+| `animations_enabled` | src/tessellate/core/overlay/win32.py:438 |
 | `apply_signatures` | src/tessellate/core/overlay/win32.py:237 |
-| `cursor_pos` | src/tessellate/core/overlay/win32.py:406 |
+| `cursor_pos` | src/tessellate/core/overlay/win32.py:405 |
 | `dpi_at_point` | src/tessellate/core/overlay/win32.py:313 |
-| `last_error` | src/tessellate/core/overlay/win32.py:450 |
-| `last_input_age` | src/tessellate/core/overlay/win32.py:425 |
+| `last_error` | src/tessellate/core/overlay/win32.py:449 |
+| `last_input_age` | src/tessellate/core/overlay/win32.py:424 |
 | `load` | src/tessellate/core/overlay/win32.py:259 |
 | `monitors` | src/tessellate/core/overlay/win32.py:279 |
-| `notification_state` | src/tessellate/core/overlay/win32.py:412 |
+| `notification_state` | src/tessellate/core/overlay/win32.py:411 |
 | `signatures` | src/tessellate/core/overlay/win32.py:157 |
-| `windows` | src/tessellate/core/overlay/win32.py:384 |
+| `windows` | src/tessellate/core/overlay/win32.py:383 |
 
 ### src/tessellate/core/passes.py (21)
 
@@ -23812,7 +23812,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (16955)
+## Tests (16958)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -23901,6 +23901,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_atlas_lite_mood_1565.py | 1 |
 | tests/test_atlas_micro.py | 10 |
 | tests/test_atlas_rest_1402.py | 10 |
+| tests/test_atlas_rest_motion.py | 3 |
 | tests/test_atlas_shape.py | 51 |
 | tests/test_atlas_sleep_z.py | 2 |
 | tests/test_atlas_stars.py | 7 |
@@ -25841,7 +25842,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | 0. Performance and "not device heavy" (cross-cutting, first) | docs/roadmap/PLAN.md:26 |
 | 0. The diagnosis in one page | docs/roadmap/WORLD_CLASS_PLAN.md:25 |
 | 0. The operating protocol (read every session, it is short) | docs/roadmap/SESSION_BRIEFS.md:17 |
-| 0.6.01 bug-document pass (2026-10-22, branch claude/project-thread-ol5yuv) | docs/roadmap/HANDOVER.md:45 |
+| 0.6.01 bug-document pass (2026-10-22, branch claude/project-thread-ol5yuv) | docs/roadmap/HANDOVER.md:46 |
 | 1. Format panel, Style tab | docs/roadmap/WHITEBOARD_PLAN.md:978 |
 | 1. Live log console (started, not finished) | docs/roadmap/BACKLOG.md:31 |
 | 1. Research read, 2026-10-10, and what each changes here | docs/roadmap/CHAT_PLAN.md:1553 |
@@ -26415,9 +26416,9 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | E2 · The complexity of the AI path is where the next bug will be, High (read) | docs/roadmap/MODERNISATION_AUDIT.md:653 |
 | E3 · Model calls are scattered across request handlers, background threads and module singletons, High (read) | docs/roadmap/MODERNISATION_AUDIT.md:666 |
 | E4 · The honest positives, so the section is not one-sided (read) | docs/roadmap/MODERNISATION_AUDIT.md:676 |
-| Earlier morning summary (2026-10-30) | docs/roadmap/HANDOVER.md:34 |
-| Earlier morning summary (away run 2026-10-18b, branch claude/magical-feynman-7bgj7j, PR 192, 0.6.0) | docs/roadmap/HANDOVER.md:53 |
-| Earlier sessions | docs/roadmap/HANDOVER.md:597 |
+| Earlier morning summary (2026-10-30) | docs/roadmap/HANDOVER.md:35 |
+| Earlier morning summary (away run 2026-10-18b, branch claude/magical-feynman-7bgj7j, PR 192, 0.6.0) | docs/roadmap/HANDOVER.md:54 |
+| Earlier sessions | docs/roadmap/HANDOVER.md:538 |
 | Expert audit, 2026-10-10 | docs/roadmap/BACKLOG.md:4272 |
 | F. Agent harness: what "ultimate" needs that is not there | docs/roadmap/AUDIT.md:113 |
 | F. Performance and perceived speed | docs/roadmap/MODERNISATION_AUDIT.md:685 |
@@ -26478,7 +26479,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Looked at and deliberately not taken | docs/roadmap/ANALYSIS.md:713 |
 | Looked at and not recommended | docs/roadmap/ANALYSIS.md:882 |
 | Mind map, against designcraft's canvas and MINDMAP_PLAN's references | docs/roadmap/ANALYSIS.md:3769 |
-| Morning summary | docs/roadmap/HANDOVER.md:24 |
+| Morning summary | docs/roadmap/HANDOVER.md:25 |
 | Next PR, first (the owner, 2026-10-05: "maybe push these to next pr at the top of the roadmap") | docs/ROADMAP.md:212 |
 | Next up, ranked by what it unlocks | docs/ROADMAP.md:344 |
 | Next: weeks 5–8: "a small model can finish a job, and so can the app" | docs/roadmap/MODERNISATION_AUDIT.md:1049 |
@@ -26538,7 +26539,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Phases 0 to 2: built 2026-09-09 | docs/roadmap/DOCUMENTS_PLAN.md:119 |
 | Phases 0 to 6: built | docs/roadmap/UI_MODERNISATION_PLAN.md:216 |
 | Phases, each with the gate it is finished against | docs/roadmap/MINDMAP_PLAN.md:1296 |
-| Placed (last 20, newest first) | docs/roadmap/INBOX.md:169 |
+| Placed (last 20, newest first) | docs/roadmap/INBOX.md:173 |
 | Placed from Brief 40, 2026-10-10 (does the MCP server work) | docs/roadmap/AGENT_SKILLS_REFORM.md:345 |
 | Placed from Brief 40, 2026-10-10 (research and placement) | docs/roadmap/BACKLOG.md:4178 |
 | Placed from Brief 40, 2026-10-10 (the phone over HTTPS) | docs/roadmap/WORLD_CLASS_PLAN.md:3128 |

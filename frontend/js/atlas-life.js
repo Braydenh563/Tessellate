@@ -368,7 +368,7 @@ function atlasTailPick(tail, state, now) {
   tail.act = act;
   tail.state = state;
   const calm = !base.ms && atlasTailCalm(tail, tail.box);
-  tail.until = now + (base.ms || (calm ? 9000 + Math.random() * 9000 : 4000 + Math.random() * 5000));
+  tail.until = now + (base.ms || (calm ? 5000 + Math.random() * 4000 : 4000 + Math.random() * 5000));
   tail.settle = now + ATLAS_TAIL_SETTLE_MS;
 }
 //: **A frame budget** (audit AI1, 2026-10-31: at 4x CPU the companion at
@@ -520,7 +520,7 @@ function atlasTailCalm(tail, box) {
 //: own layer root about its root, a Web Animation of `transform` only (the
 //: companion's pacer leaves layer roots alone), the act's swing and period
 //: from its table, so a curl sways slow and small and a sway wide. Calm acts
-//: hold 9 to 18s here, not 4 to 9, so the redraws are rare; a new act, a new
+//: hold 5 to 9s (9 to 18 read as never changing, INBOX 1659), the sway 4 to 10 degrees; a new act, a new
 //: state, the large view or a walk takes the live loop back, the layer
 //: easing home from wherever its sway was. `data-atl-tail` says which.
 const ATLAS_TAIL_SETTLE_MS = 1600;
@@ -537,7 +537,7 @@ function atlasTailRest(tail, p) {
   const vb = svg.viewBox?.baseVal;
   const [rx, ry] = tail.rest[0];
   if (vb?.width) svg.style.transformOrigin = `${atlasFix(((rx - vb.x) / vb.width) * 100)}% ${atlasFix(((ry - vb.y) / vb.height) * 100)}%`;
-  const deg = atlasFix(Math.min(7, Math.max(1.5, (p.amp * 180) / Math.PI * 0.3)));
+  const deg = atlasFix(Math.min(10, Math.max(4, (p.amp * 180) / Math.PI * 0.6)));
   const at = ([d, k]) => ({ transform: `rotate(${d}deg) scale(${k})` });
   tail.swayKeys = [[0, 1], [deg, 1.015], [0, 1], [-deg, 0.99], [0, 1]];
   tail.sway = svg.animate(tail.swayKeys.map(at), {
