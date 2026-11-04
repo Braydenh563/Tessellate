@@ -7616,7 +7616,14 @@ async function wbMapSetNodeStyle(node, patch, { undo = true, rows = null } = {})
   if (undo) wbPushUndo({ action: "move", kind: "object", id: node.id, before: WB_KIND_INFO.object.payload(node) });
   node.data = { ...node.data, ...patch };
   const el = document.querySelector(`.wb-object[data-id="${node.id}"]`);
-  if (el) wbPaintMapNodeStyle(el, node);
+  if (el) {
+    wbPaintMapNodeStyle(el, node);
+    //: Painted outside the render, so the render's paint key (`_wbPaintKey`)
+    //: no longer describes what the element shows. Left as it was, an Undo
+    //: that put the data back to the key's old value was skipped as "nothing
+    //: changed" and the glow stayed on screen (INBOX 1625).
+    el._wbPaintKey = null;
+  }
   //: A selection passes `rows` and saves them once (BD2: one request, not one per topic).
   if (rows) rows.push({ kind: "object", item: node });
   else await wbSaveObject(node);
