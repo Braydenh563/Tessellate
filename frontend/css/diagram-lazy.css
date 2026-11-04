@@ -1223,3 +1223,10 @@
   inline-size: 120px;
   pointer-events: auto;
 }
+
+/* The shortcuts sheet (diagram-style.js) borrows the whiteboard help rows; this sets the one column width they read. */
+.dgm-keys {
+  --wb-help-keys-w: 9rem;
+  columns: 1;
+  max-height: 60dvh;
+}

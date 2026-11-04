@@ -1555,6 +1555,12 @@ Each row is one Sonnet-high agent session, ships alone, and is gated with target
 
 - **R11 (blind test, 2026-11-04) left:** `/diagram` and Insert open a starter, not an existing diagram (add a "pick an existing diagram" row); Done creates a document silently; first paint blank about 1 s; 27 Tab stops to the first block; 390 px: tap scrolls the toolbar under the header and targets (tabs 28, grips 14x19, swatches 24, Connect 44x40) are under 44 px; chat chip says "Document" and the list "17 words" for a diagram; export items missing from the document's own menu; Boards empty state links only New mind map.
 
+- **R12 (1661 B, find):** Ctrl+F filters the outline and boxes get `dgm-found`, Enter walking matches (`listFilter`, DESIGN row 714).
+- **R13 (1661 B, layout):** curve (straight, curved, stepped) and spacing in a View popover, written to the kept `%%{init}%%` line (previews row 751).
+- **R14 (1661 B):** double-headed arrows (`<-->`) and the unread shapes (cylinder, parallelogram) in the shape menu and connector kinds.
+- **R15 (1661 B, only if a diagram routinely overflows the stage):** a corner minimap, a plain `.dock`.
+- **R16 (1661 B left):** edge colour (`linkStyle N` lines regenerated in canonical edge order, same swatch picker, arrow menu); six more flowchart templates plus a `listFilter` in the picker; colour in the multi-select bar. Block colour and the shortcuts sheet are built (`diagram-style.js`). Declined: align and distribute (Mermaid owns layout).
+
 Order: R1 to R4, then R5, R6, R7; R8a after R2 and R5, then R8b, R8c; R9a any time, then R9b; R9c after R9a and R7; R10 after R7.
 
 Mapping: 1613 = R1; 1614 = R2; 1615 (a)(b) = R5, (c)(d) = R4 and R6, (e) = R3, (f) = section 1 and R4; 1621 = R7 to R10.

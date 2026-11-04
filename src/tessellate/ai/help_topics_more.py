@@ -3245,7 +3245,7 @@ MORE_TOPICS.extend([
             "Duplicate, Group into a box, Done, and any picked grip moves all. "
             "A block's ... menu (long press on a phone) does the same. Keys on "
             "a block: arrows walk, Enter renames, N adds a Box, 1 to 7 the other shapes, Shift+N the last one, G adds a group, C or J joins, "
-            "Delete removes, Alt+Up and Alt+Down reorder, Alt+Right nests, Alt+Left lifts out. "
+            "K colours, ? lists keys, Delete removes, Alt+Up and Alt+Down reorder, Alt+Right nests, Alt+Left lifts out. "
             "Suggest (in the ... menu on a phone) starts a diagram: "
             "Templates (then Use this template), "
             "From my notes "

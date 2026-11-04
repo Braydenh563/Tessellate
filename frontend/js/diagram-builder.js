@@ -300,6 +300,7 @@
     const items = [
       { label: "ph:pencil-simple Rename", run: () => relabel(S, key), group: "edit" },
       { label: "ph:arrow-bend-down-right Connect to…", run: () => joinPick(S, key), group: "edit" },
+      ...(isNode ? [{ label: "ph:palette Colour…", run: () => styleDo(S, "colour", key), group: "edit" }] : []),
       { label: isNode ? "ph:plus Add block after" : "ph:plus Add block inside", run: () => addBlock(S, { after: isNode ? key : null, into: isNode ? null : key }), group: "edit" },
     ];
     if (isNode) {
@@ -464,6 +465,7 @@
       Enter: () => relabel(S, key), F2: () => relabel(S, key),
       Insert: () => addBlock(S, { after: key, shape: "rect" }), n: () => addBlock(S, { after: key, ...(diagramModel.bar.key(event) || { shape: "rect" }) }),
       g: () => addBlock(S, { after: key, group: true }),
+      k: () => key[0] === "n" && styleDo(S, "colour", key), "?": () => styleDo(S, "shortcuts"),
       c: () => key[0] !== "k" && joinPick(S, key), j: () => key[0] !== "k" && joinPick(S, key),
       Delete: () => removeBlock(S, key), Backspace: () => removeBlock(S, key),
       ContextMenu: () => menuAt(S, block), F10: () => event.shiftKey && menuAt(S, block),
@@ -482,7 +484,7 @@
   // --- suggestions (diagram-suggest.js, lazy) ---------------------------------------
   //: Templates, From my notes and Describe it. What comes back lands as blocks (D8): on an
   //: empty diagram it becomes the diagram, otherwise it arrives as ghosts to take or drop.
-  const helpers = { el, say, commit, blockEl, stops, suggest, add: addBlock, panes, name: nameOf };
+  const helpers = { label: SHAPE_LABEL, el, say, commit, blockEl, stops, suggest, add: addBlock, panes, name: nameOf };
   async function suggest(S, how) {
     if (!(await ensureModule("diagramSuggest"))) return say(S, "The suggestions did not load.");
     return diagramModel.suggest[how](S, helpers);
@@ -494,6 +496,11 @@
     return diagramModel.joins[how](S, arg, helpers);
   }
   const joinPick = (S, key) => joins(S, "pick", key);
+  //: Colour and the shortcuts sheet (diagram-style.js, lazy, 1661 B).
+  async function styleDo(S, how, key) {
+    if (!(await ensureModule("diagramStyle"))) return void say(S, "That did not load.");
+    return diagramModel.style[how](S, helpers, key);
+  }
 
   //: The Suggest button's menu is made by the lazy file, so it is fetched on the press.
   async function suggestMenu(S, button) {
@@ -510,7 +517,7 @@
     const fold = [];
     //: Suggest folds in here on a phone: Add, Undo, Redo and this menu are one row at 320 (INBOX 1596 d).
     if (S.suggestBtn && matchMedia(COMPACT).matches) fold.push({ label: "ph:sparkle Suggest…", group: "edit", run: () => suggestMenu(S, S.root.querySelector(".dgm-more button") || S.suggestBtn) });
-    const menu = kebabMenu([...(S.io.menu || []), ...fold, ...rows.map(([label, how]) => makeMenuItem(label, "", () => ensureModule("diagramEmbed").then((ok) => ok && diagramModel.embed.out(how, S.source, S.io.name))))], "More for this diagram");
+    const menu = kebabMenu([...(S.io.menu || []), ...fold, makeMenuItem("ph:keyboard Keyboard shortcuts", "", () => styleDo(S, "shortcuts")), ...rows.map(([label, how]) => makeMenuItem(label, "", () => ensureModule("diagramEmbed").then((ok) => ok && diagramModel.embed.out(how, S.source, S.io.name))))], "More for this diagram");
     menu.classList.add("dgm-more");
     return menu;
   }
