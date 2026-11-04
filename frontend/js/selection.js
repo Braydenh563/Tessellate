@@ -768,7 +768,10 @@ function syncSelectionPopup() {
   }
 
   const selection = window.getSelection();
-  const text = (selection?.toString() || "").trim();
+  //: Collapsed first: `toString()` lays the page out to produce the text, so a
+  //: caret (every focus change, every key on the body) paid a forced layout to
+  //: learn there was nothing selected (INBOX 1657: 706 ms of one 22-key run at 4x).
+  const text = selection && !selection.isCollapsed ? selection.toString().trim() : "";
   if (!text || selection.isCollapsed || !selectionIsActionable(selection)) {
     // Don't yank the popup away while its own menu is open, the selection is
     // often cleared as a side effect of interacting with the menu.
