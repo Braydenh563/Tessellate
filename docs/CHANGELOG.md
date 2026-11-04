@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Desktop companion: the overlay frames are re-rendered solid with pupils, no aura or ghost (the capture hid the page with visibility, which blanked every mask and clip path), Atlas walks as a float cycle, and two frames are added, hang and tumble.
 - Desktop companion: the figure now follows Appearance > Companion movement (it stood still because Windows animation effects were off, and a drop hung in mid-air; a still figure now lands on the floor, and its right-click menu says why and offers Let it walk), the right-click menu opens at its own size and is sized by its content (no scrollbar), and Settings and Open Tessellate restore the app window first and no longer wait on it; tested through fakes only, not run on Windows (overlay-1104).
 - Desktop companion: the quick panel beside the walking figure closes when you click elsewhere, follows the figure when you drop it, opens on the settings menu after a first right click, and a window thread that dies brings the card window back; tested through fakes only, not run on Windows (overlay-1104).
 - Graph: every frame the map asks for by itself (a hover ease, a fade, a glide, a fade-in, a composed hover frame) now counts toward one 300-frame bound, which an outside request restarts; idle was already 0 calls a second after the layout settled at 36 and 336 notes, and the stuck state did not reproduce (INBOX 1643).

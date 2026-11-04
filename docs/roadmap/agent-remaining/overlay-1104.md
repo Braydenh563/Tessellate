@@ -6,7 +6,7 @@ Nothing here ran on Windows.
 ## Done
 
 - O1 win32.py + host.py, O2 frames + sprites.py, O3 engine.py, O4 runner.py + wiring (core/desk_companion.py `_sync_overlay`, `_overlay_click`, `panel_corner`, `hide_panel`; desk-companion.js `?overlay=1`; help, Settings popover, manual parity). See git log.
-- Frames: 2 looks x 16 frames, 436 KB (limit 1.5 MB), 205x241 and 179x249 px at 2x.
+- Frames: 2 looks x 18 frames (adds hang, tumble), 284 KB (limit 1.5 MB), 226x291 and 230x295 px at 2x. Re-rendered solid (opaque share 84 percent, was 14 to 29), eyes with pupils, no aura; Atlas walk0 to walk5 are a float cycle (bob, lean, tail wave).
 - Tests: 152 pass (host 24, sprites 11, engine ~35, runner 11, wiring 12, card window 66 plus the page-API whitelist gained `hide_panel`).
 
 ## Built since (unverified on Windows, tests through the fakes only)

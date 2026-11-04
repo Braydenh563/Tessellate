@@ -53,7 +53,7 @@ def test_start_builds_everything_on_the_overlay_thread_and_draws_the_first_frame
     assert r.start()
     assert r.engine is not None and r.sprites is not None and fake.layered
     assert fake.layered[0]["flags"] == k.ULW_ALPHA
-    assert any("overlay: ready, look=masculine" in rec.getMessage() and "frames=16" in rec.getMessage() for rec in caplog.records)
+    assert any("overlay: ready, look=masculine" in rec.getMessage() and f"frames={len(runner_mod.sprites.FRAME_NAMES)}" in rec.getMessage() for rec in caplog.records)
     assert not r.visible and "ShowWindow" not in fake.names()
     r.stop()
 

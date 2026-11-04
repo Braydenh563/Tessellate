@@ -5,7 +5,7 @@
 Boots nothing itself: `BASE` is a running app (`bash scratchpad/ui-sweeps/serve.sh
 8828 <dir>`). `scripts/render_desk_frames.js` captures every frame of Atlas, both
 looks, with a transparent background at device scale 2; this script zeroes the
-faint alpha (the halo guard `sprites.py` also applies), crops every frame of a
+faint alpha (the halo guard `sprites.py` also applies) and stretches the rest so the figure is solid (`solidify`), crops every frame of a
 look to the same box (so they stay registered), and writes
 `frontend/img/desk/<look>/<frame>.png`. Needs Pillow (the `desktop` extra).
 """
@@ -28,6 +28,18 @@ from tessellate.core.overlay import sprites  # noqa: E402
 PAD = 2
 #: Fewer colours with their alpha kept: a quarter of the bytes for frames that are soft gradients.
 COLOURS = 256
+#: The figure's glass, glow and wisp fades come out of the capture as soft
+#: translucent washes that read as a pale ghost over a wallpaper. Alpha is
+#: stretched so what is at least `SOLID_HI` is fully opaque and what is under
+#: `SOLID_LO` is clear, with a short ramp between: a solid body with a soft edge.
+SOLID_LO = 24
+SOLID_HI = 120
+
+
+def solidify(a: int) -> int:
+    if a <= SOLID_LO:
+        return 0
+    return min(255, (a - SOLID_LO) * 255 // (SOLID_HI - SOLID_LO))
 
 
 def crop_box(images: list[Image.Image]) -> tuple[int, int, int, int]:
@@ -58,7 +70,7 @@ def main() -> int:
             target.mkdir(parents=True)
             for name, im in images.items():
                 im = im.crop(box)
-                alpha = im.getchannel("A").point(lambda a: 0 if a < sprites.ALPHA_FLOOR else a)
+                alpha = im.getchannel("A").point(solidify)
                 im.putalpha(alpha)
                 small = im.quantize(colors=COLOURS, method=Image.Quantize.FASTOCTREE, dither=Image.Dither.NONE)
                 small.save(target / f"{name}.png", optimize=True)

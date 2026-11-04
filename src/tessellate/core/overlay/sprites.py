@@ -30,7 +30,7 @@ LOOKS = ("masculine", "feminine")
 FRAME_NAMES = (
     "stand", "blink", "look",
     "walk0", "walk1", "walk2", "walk3", "walk4", "walk5",
-    "sit", "sleep", "wave", "held", "fall", "land", "hop",
+    "sit", "sleep", "wave", "held", "fall", "land", "hop", "hang", "tumble",
 )
 WALK_FRAMES = tuple(f"walk{i}" for i in range(6))
 #: Alpha under this is clear: the click-through guard.

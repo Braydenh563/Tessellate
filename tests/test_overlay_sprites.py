@@ -19,7 +19,7 @@ def test_every_look_has_every_frame() -> None:
     for look in sprites.LOOKS:
         files = sorted(p.stem for p in (DIR / look).glob("*.png"))
         assert files == sorted(sprites.FRAME_NAMES), look
-    assert len(sprites.FRAME_NAMES) == 16 and len(sprites.WALK_FRAMES) == 6
+    assert len(sprites.FRAME_NAMES) == 18 and len(sprites.WALK_FRAMES) == 6
 
 
 def test_frames_of_a_look_share_one_size_and_stay_small() -> None:
@@ -108,7 +108,7 @@ def test_look_names_and_missing_frames() -> None:
     assert sprites.look_for("Feminine") == "feminine"
     assert sprites.look_for("auto") == "masculine" and sprites.look_for(None) == "masculine"
     assert sprites.SpriteSet("masculine", DIR).missing() == []
-    assert len(sprites.SpriteSet("masculine", DIR / "nowhere").missing()) == 16
+    assert len(sprites.SpriteSet("masculine", DIR / "nowhere").missing()) == len(sprites.FRAME_NAMES)
 
 
 def test_the_shipped_frames_are_loadable_with_the_default_directory() -> None:
