@@ -34,6 +34,8 @@ _ROWS: tuple[tuple[str, str, tuple[str, ...]], ...] = (
     ("empty-bin", r"\bempt(?:y|ying|ied)\b.{0,15}\b(?:bin|trash|recycle bin)\b|\b(?:clear|purge|wipe|clean out|clean up)\b.{0,12}\b(?:the |my )?(?:bin|trash|recycle bin)\b", ("undo-bin",)),
     ("cant-undo", r"\b(?:can'?t|cannot|can not|couldn'?t|unable to|won'?t|never|not)\b.{0,15}\b(?:undo|undone|undid|recover\w*|restor\w*|reversed?|get (?:\w+ ){0,2}back|brought back)\b|\bno undo\b|\birreversible\b", ("undo-bin",)),
     ("bin-restore", r"\b(?:delet\w*|remov\w*|trash\w*|eras\w*)\b.{0,25}\b(?:revers\w*|recoverable|undoable|permanent\w*|temporar\w*|for good|forever)\b|\b(?:restore|recover|undelete|retrieve|resurrect|salvage)\b.{0,30}\b(?:notes?|documents?|boards?|reminders?|attachments?|pictures?|files?|recordings?|maps?|diagrams?|spaces?|tags?)\b(?!.{0,40}\bbackups?\b)|\b(?:get|bring|put|have|take)\b.{0,30}\b(?:notes?|documents?|boards?|reminders?|attachments?|pictures?|files?|recordings?|maps?|diagrams?)\b.{0,12}\bback\b|\b(?:take|get|pull|bring)\b.{0,20}\b(?:out of|from)\b.{0,10}\b(?:bin|trash)\b|\b(?:bring|get) back\b.{0,25}\b(?:notes?|documents?|boards?|reminders?|attachments?|files?|recordings?|maps?|deleted)\b", ("undo-bin",)),
+    #: Ordering a list is the card drag, not filing: "put my notes in my own order" read as a move (blindux 1031 I5).
+    ("own-order", r"\b(?:re-?order\w*|re-?arrang\w*)\b(?!.{0,25}\b(?:dashboard|widgets?|panels?|sidebar|tabs?|toolbar|layout|home|screen|status bar|board|map)s?\b)|\b(?:put|move|sort|arrange|order|keep|get|drag)\b.{0,30}\b(?:in|into|to)\b\s+(?:\w+ ){0,2}order\b(?! to\b)|\b(?:my own|custom|manual) (?:order|sort)\b", ("object-move",)),
     ("move-note", r"\b(?:move|file|refile|put|shift|relocate|transfer)\b.{0,12}\b(?:\w+ ){0,2}notes?\b(?!.{0,30}\b(?:computer|laptop|pc|machine|mac|device|phone|obsidian|notion|evernote|app|import|export|link|chat|graph|map|board)\w*)", ("tags-categories", "spaces")),
     ("rename-note", r"\b(?:rename|retitle|re-title|re-name)\b.{0,12}\b(?:\w+ ){0,2}notes?\b|\b(?:change|edit|set|update)\b.{0,15}\b(?:title|name)\b.{0,12}\b(?:of |for )?(?:\w+ ){0,2}notes?\b", ("links",)),
     ("retitle-note", r"\b(?:change|edit|set|update|fix)\b.{0,20}\bnotes?(?:'s)?\s+(?:title|name)\b", ("links",)),
@@ -109,7 +111,7 @@ HARD = frozenset(
         "pdf-out", "edit-question", "regenerate", "attach-chat", "stop-ai", "delete-all", "model-for-laptop",
         "ram-need", "ai-slow", "app-slow", "use-chatgpt", "no-answer", "export-chat", "clear-chat", "fork-chat",
         "delete-account", "delete-note", "connect-model", "switch-model",
-        "empty-bin", "cant-undo", "bin-restore", "move-note", "retitle-note", "rename-board",
+        "empty-bin", "cant-undo", "bin-restore", "own-order", "move-note", "retitle-note", "rename-board",
     }
 )
 

@@ -97,8 +97,10 @@ def test_the_model_reads_an_attached_diagrams_source_and_the_edited_one_next_tur
     assert any("A --> B" in m["content"] for m in sent)
     # The builder's Done writes the row; the reference and the next turn both read it back.
     edited = f"{SRC}\n  B --> C"
-    assert ai_client.put(f"/documents/{row['id']}", json={"content": edited}).status_code == 200
-    assert ai_client.get(f"/documents/{row['id']}").json()["content"] == edited
+    saved = ai_client.put(f"/documents/{row['id']}", json={"content": edited})
+    assert saved.status_code == 200
+    read = ai_client.get(f"/documents/{row['id']}")
+    assert read.json()["content"] == edited
     ai_client.post("/chat", json={"question": "and now, what changed?", "document_ids": [row["id"]]})
     sent = next(c for c in reversed(fake_ollama.chat_calls) if any("and now, what changed?" in m["content"] for m in c))
     assert any("B --> C" in m["content"] for m in sent)

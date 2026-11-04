@@ -27,7 +27,8 @@ def test_copy_as_picture_writes_a_png_and_falls_back_to_a_download():
 def test_the_builders_menu_offers_it_and_a_shelf_row_exports_by_id():
     assert "Copy as picture" in BUILDER and '"picture"' in BUILDER
     assert "async function outDoc" in EMBED and "apiJson(`/documents/${id}`)" in EMBED
-    assert "diagramModel.embed = { open, out, outDoc }" in EMBED
+    #: The export list grew with R9c (save, swapRange, link); the intent is that outDoc is exported.
+    assert "outDoc" in EMBED.split("diagramModel.embed = {", 1)[1].split("}", 1)[0]
     assert "diagramModel.embed.outDoc(item.id, how)" in LIBRARY and 'item.kind === "diagram" ? [["ph:file-svg Save as SVG"' in LIBRARY
     for row in ("Save as PNG", "Copy as picture"):
         assert row in LIBRARY, row
