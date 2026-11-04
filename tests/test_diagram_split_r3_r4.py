@@ -60,9 +60,11 @@ def test_the_divider_sets_a_column_variable_and_is_gone_on_a_phone():
     assert ".dgm-split-handle" in CSS[CSS.index('.dgm-dialog[data-view="source"] .dgm-dock') :][:300]
 
 
-def test_the_direction_buttons_have_a_visible_caption_above_them():
-    assert '"dgm-dirs-caption"' in BUILDER and '"Direction"' in BUILDER
-    assert ".dgm-dirs-caption" in CSS
+def test_the_direction_button_names_its_state_in_words():
+    # 1661 D2 replaced the caption over four arrows with one cycling button that shows the arrow and the word.
+    bar = (JS / "diagram-bar.js").read_text(encoding="utf-8")
+    assert "Direction: ${WORD[dir]}. Press to turn it." in bar and "dgm-dirword" in bar
+    assert ".dgm-dirs-caption" not in CSS
 
 
 def test_undo_and_redo_keep_their_words_where_the_row_fits_and_connect_to_shows_its_text_on_wide_rows():

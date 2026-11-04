@@ -594,18 +594,51 @@
   color: var(--accent-text);
 }
 
-/* The word over the four direction arrows: the group stacks the caption on its arrows. */
-.dock-group:has(> .dgm-dirs-caption) {
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 0;
+/* The flowchart's toolbar (diagram-bar.js, 1661 D2): ONE row at every width. Add is a split (the last shape, then a
+   caret), Direction one button that turns the diagram; the dock never wraps, so a narrow host drops words, not rows. */
+.dgm-dock {
+  flex-wrap: nowrap;
+  align-items: center;
+  min-inline-size: 0;
 }
 
-.dgm-dirs-caption {
-  display: block;
-  margin-bottom: var(--space-1);
-  font-size: var(--text-xs);
-  color: var(--muted);
+.dgm-addsplit {
+  display: inline-flex;
+  flex: none;
+}
+
+.dgm-addmain {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  border-start-end-radius: 0;
+  border-end-end-radius: 0;
+}
+
+.dgm-addcaret {
+  border-start-start-radius: 0;
+  border-end-start-radius: 0;
+  border-inline-start: 0;
+}
+
+.dgm-dirs {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+/* The flowchart's dock stays one row on a phone: the actions follow Add and Direction (the kinds' docks lead with them), and
+   the gaps shrink so Add, caret, Direction, Undo, Redo and the menu fit 298 px at 44 px each. */
+.dgm-dock:has(> .dgm-addsplit) {
+  column-gap: var(--space-1);
+
+  .dock-actions {
+    order: 0;
+    flex-wrap: nowrap;
+    gap: var(--space-1);
+    margin-left: auto;
+  }
 }
 
 /* The empty pane: three numbered lines, each with its button (1615 f). */
@@ -852,11 +885,12 @@
 
   /* Suggest, Undo and Redo keep their icon and lose their word, like the tiles. */
   .dgm-hist .ph-text,
+  .dgm-addname,
+  .dgm-dirword,
   .dgm-suggest .ph-text {
     display: none;
   }
 
-  .dgm-dirs button,
   .dgm-dock .dock-actions button:not(.dgm-add) {
     inline-size: 2.25rem;
     min-inline-size: 0;
@@ -1073,9 +1107,13 @@
 
 /* A touch screen's controls are 44 px (R6.10); the narrow rule above makes them 36. */
 @media (pointer: coarse) {
-  .dgm-dirs button,
+  .dgm-dirs,
+  .dgm-addmain,
+  .dgm-addcaret,
   .dgm-dock .dock-actions button:not(.dgm-add) {
-    inline-size: 2.75rem;
+    min-block-size: 2.75rem;
+    min-inline-size: 2.75rem;
+    inline-size: auto;
   }
 }
 

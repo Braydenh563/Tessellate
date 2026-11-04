@@ -49,7 +49,8 @@
     S.root.dataset.touch = "1";
     S.root.classList.add("dgm-compact");
     const actions = S.root.querySelector(".dgm-dock .dock-actions");
-    if (actions) {
+    //: The flowchart's toolbar has its own Add split (diagram-bar.js); the kinds' palettes still open this sheet.
+    if (actions && !S.root.querySelector(".dgm-addsplit")) {
       const add = smallButton("ph:plus Add", "Choose a shape to add as a block", () => addSheet(S.root, add), false);
       add.classList.add("dgm-add");
       add.setAttribute("aria-haspopup", "dialog");
