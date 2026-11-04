@@ -468,6 +468,35 @@ window.addEventListener(
   true
 );
 
+//: The diagram's two document controls are made here, not in index.html (CI: the boot document is capped at a
+//: fixed element count and slice 8's button and row, with their icons, were four over). Same ids, classes, labels and
+//: places as the markup had: New diagram right after New from a template, Download as .svg right before .png.
+(() => {
+  const add = (anchor, where, el) => anchor?.[where](el);
+  if (!$("doc-new-diagram")) {
+    const b = document.createElement("button");
+    b.id = "doc-new-diagram";
+    b.className = "ghost small icon-only";
+    b.type = "button";
+    b.title = "New diagram";
+    b.setAttribute("aria-label", "New diagram");
+    const i = document.createElement("i");
+    i.className = "ph ph-flow-arrow";
+    i.setAttribute("aria-hidden", "true");
+    b.append(i);
+    add($("doc-new-template"), "after", b);
+  }
+  if (!$("doc-export-svg")) {
+    const row = document.createElement("button");
+    row.id = "doc-export-svg";
+    row.className = "menu-item doc-dock-menu-item hidden";
+    row.type = "button";
+    row.title = "Download the diagram as an SVG picture";
+    setLabel(row, "ph:file-svg Download as .svg");
+    add($("doc-export-picture"), "before", row);
+  }
+})();
+
 //: **Three groups, because fourteen rows do not fit on a laptop.** Reported
 //: twice: first that the menu "goes off the page", and after the downloads
 //: were folded, that it "is still almost off the bottom of the screen".

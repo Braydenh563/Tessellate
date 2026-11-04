@@ -45,6 +45,10 @@ RUNTIME_IDS = {
     "health-missing",
     "health-selfcheck",
     "health-selfcheck-run",
+    #: The diagram's New button and Download as .svg row, built by documents.js at load beside
+    #: doc-new-template and doc-export-picture (INBOX 1679 slice 8; the boot element cap).
+    "doc-new-diagram",
+    "doc-export-svg",
 }
 
 
