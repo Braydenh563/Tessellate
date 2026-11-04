@@ -127,6 +127,7 @@ KIND_LANES: dict[str, str] = {
     # Asking the model server what a model can do: a short HTTP call, no
     # model loaded, so it waits behind nothing on the I/O-shaped lane.
     "model-info": "cpu",
+    "model-poll": "cpu",
     #: Installing, removing or reinstalling optional extras, one package or
     #: a bundle (`core/extras.py`, INBOX 595).
     "extras": "install",
@@ -172,15 +173,19 @@ PENDING_ROWS_PER_KIND = 10
 #: `pull` and `autonomous` (Brief 9) have their own rows too
 #: (`model_manager.pull_statuses`, `autonomous.is_running`).
 QUIET_KINDS = frozenset({
-    "ledger", "maintenance", "warm", "model-info", "reindex", "extras", "embed-switch", "reminder-notifier",
+    "ledger", "maintenance", "warm", "model-info", "model-poll", "reindex", "extras", "embed-switch", "reminder-notifier",
     "pull", "autonomous",
 })
 
 #: Pool kinds whose work opens its own `jobruns` run or reports its own
 #: ending (a pass, the bench, a re-index), or never ends (the reminder
 #: loop): the pool does not open a second ledger run around them.
+#:
+#: `model-poll` (the loaded-models read behind `/models/status`, asked every thirty seconds when
+#: idle) opens none: a row in the Tasks history every poll, "Model info: loaded models", filled it
+#: (INBOX 1620, 1560).
 OWN_RUN_KINDS = frozenset({
-    "pass", "maintenance", "bench", "tidy-link-reasons", "redate", "reindex", "embed-switch", "extras",
+    "model-poll", "pass", "maintenance", "bench", "tidy-link-reasons", "redate", "reindex", "embed-switch", "extras",
     "reminder-notifier", "ledger", "pull", "autonomous", "import",
 })
 

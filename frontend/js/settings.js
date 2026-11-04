@@ -496,7 +496,24 @@ async function loadChangelog() {
   const paint = () => {
     if (fold.dataset.rendered) return;
     fold.dataset.rendered = "1";
-    renderMarkdown(body, data.markdown);
+    //: **Sixty lines at a time** (INBOX 1620: the fold's `toggle` 259ms in the owner's log, and
+    //: `closeSettingsModal` 208ms after it): the whole file is 1.7MB, 11,650 elements and a
+    //: 444,000px page at once. At 4x CPU the toggle was 1,576ms and closing Settings 2,116ms.
+    //: A part ends at an entry or a version heading.
+    const lines = data.markdown.split("\n");
+    let at = 0;
+    const more = Object.assign(document.createElement("button"), { type: "button", className: "ghost small", textContent: "Show older changes" });
+    more.addEventListener("click", () => {
+      let end = Math.min(lines.length, at + 60);
+      while (end < lines.length && !/^(- |## )/.test(lines[end])) end += 1;
+      const part = document.createElement("div");
+      more.before(part);
+      renderMarkdown(part, lines.slice(at, end).join("\n"));
+      at = end;
+      more.classList.toggle("hidden", at >= lines.length);
+    });
+    body.append(more);
+    more.click();
   };
   if (fold.open) paint(); // already open from a previous visit
   fold.addEventListener("toggle", () => {
@@ -569,19 +586,33 @@ function settingsSectionText(section) {
   if (!settingsTextObserver) {
     const modal = $("settings-modal");
     if (modal) {
-      settingsTextObserver = new MutationObserver(() => {
+      settingsTextObserver = new MutationObserver((records) => {
         // One flag rather than a per-section diff: working out which
         // sections a mutation touched costs more than re-reading the one
         // section the next search actually asks about.
-        settingsTextCacheStale = true;
+        //: A pane's findable rows (settings-find.js `settingRowsScan`, INBOX 1620) go stale with the
+        //: pane, by the same records; a pane's own hidden flip, which every search makes, is neither.
+        for (const rec of records) {
+          const at = rec.target.nodeType === 1 ? rec.target : rec.target.parentElement;
+          if (rec.type === "attributes") {
+            if (at?.classList.contains("settings-section")) continue;
+          } else {
+            settingsTextCacheStale = true;
+          }
+          const pane = at?.closest(".settings-section");
+          if (pane) window.settingRowsScan?.panes.delete(pane);
+        }
       });
       settingsTextObserver.observe(modal, {
         childList: true,
         subtree: true,
         characterData: true,
+        attributes: true,
+        attributeFilter: ["class", "hidden", "open", "title", "aria-label", "aria-hidden", "data-keys", "data-find", "data-synonyms"],
       });
     }
   }
+  if (!section) return "";
   if (settingsTextCacheStale) {
     settingsTextCache = new WeakMap();
     settingsTextCacheStale = false;

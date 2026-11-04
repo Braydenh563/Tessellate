@@ -3545,7 +3545,7 @@ function nameMarkBuddyTab() {
 
 function nameMarkBuddyShown(el) {
   if (!el) return null;
-  const box = el.getBoundingClientRect();
+  const box = nmbPlace.rect(el);
   return box.width > 0 && box.height > 0 && box.bottom > 0 && box.top < innerHeight && box.right > 0 && box.left < innerWidth ? box : null;
 }
 
@@ -4780,15 +4780,15 @@ function nameMarkBuddyRideClip(r) {
 //: the panel scrolls away). `fresh` measures the bars again (a placement);
 //: otherwise the insets found then are kept and only the area's own box is
 //: read.
-function nameMarkBuddyRideBox(x = nmb.x, y = nmb.y, fresh = false) {
+function nameMarkBuddyRideBox(x = nmb.x, y = nmb.y, fresh = false, pose = undefined) {
   const r = nmb.ride;
   const band = document.getElementById("nm-buddy-band");
   if (!r || !band) return;
-  const box = r.el.getBoundingClientRect();
+  const box = nmbPlace.rect(r.el);
   let lines = null;
   if (fresh || r.insetTop === undefined) {
     const { lo, hi } = nameMarkBuddyBand(r.el, nmb.glue?.el);
-    const over = nameMarkBuddyOverhang();
+    const over = nameMarkBuddyOverhang(pose);
     r.insetTop = Math.min(lo, y - over.top) - box.top;
     r.insetBottom = box.bottom - Math.max(hi, y + NMB_H + over.bottom);
     r.insetLeft = Math.min(box.left + r.el.clientLeft, x - over.left) - box.left;
@@ -4833,12 +4833,13 @@ function nameMarkBuddyRideBox(x = nmb.x, y = nmb.y, fresh = false) {
 //: often lands while the figure is mid-way through its appear, and a rect
 //: read then is the small one. `ART_REACH` is the drawing's own reach past
 //: its box at size 1, rings and glow included.
-function nameMarkBuddyOverhang() {
+function nameMarkBuddyOverhang(poseNow = undefined) {
   const buddy = document.getElementById("nm-buddy");
   const ART_REACH = 10;
   const s = Math.max(0.7, nmb.scale || 1);
-  const pose = buddy?.dataset.pose;
-  const edge = buddy ? parseFloat(getComputedStyle(buddy).getPropertyValue("--nmb-edge")) : NaN;
+  const pose = poseNow ?? buddy?.dataset.pose;
+  //: The JS value is the one written to `--nmb-edge` (MoveTo); asking the style for it restyled the drawing.
+  const edge = buddy ? nmb.edgeLine : NaN;
   const oy = pose === "hang" ? 5 : pose === "float" ? NMB_H / 2 : Number.isFinite(edge) ? edge : NMB_H - 20;
   const reach = ART_REACH * s;
   const grow = (n) => Math.ceil(Math.max(0, n) + reach);
@@ -4891,12 +4892,12 @@ function nameMarkBuddyBand(scroller, el = null) {
   const { top, bottom } = nameMarkBuddyLedges();
   let lo = top ? top.bottom : 0;
   let hi = bottom ? bottom.top : innerHeight;
-  const box = scroller?.getBoundingClientRect();
+  const box = scroller ? nmbPlace.rect(scroller) : undefined;
   if (box && box.height) {
     lo = Math.max(lo, box.top);
     hi = Math.min(hi, box.bottom);
   }
-  const mine = el?.getBoundingClientRect();
+  const mine = el ? nmbPlace.rect(el) : undefined;
   for (let node = el; mine && node && node !== scroller && node !== document.body; node = node.parentElement) {
     for (let sib = node.previousElementSibling, n = 0; sib && n < 12; sib = sib.previousElementSibling, n += 1) {
       const cs = getComputedStyle(sib);
@@ -4909,6 +4910,39 @@ function nameMarkBuddyBand(scroller, el = null) {
   return { lo, hi };
 }
 
+//: **A placement reads its panel's boxes before it writes** (INBOX 1620: `avatars.js` setTimeout
+//: 2249ms, 2167 of it forced layout). `nameMarkBuddyMoveTo` set the figure's size, put it and
+//: toggled the band, and only then did `nameMarkBuddyGlue` and `nameMarkBuddyRideBox` read the
+//: panel's and its scroller's rects, so each paid for a whole page layout the writes had dirtied
+//: (two of 130 to 150ms at 4x CPU a placement). `nmbPlace.read` takes them first, and
+//: the readers below answer from it until the placement's stack unwinds (the panel itself does
+//: not move in a placement: only the figure and its band do).
+const nmbPlace = {
+  boxes: null,
+  rect(el) {
+    return this.boxes?.get(el) || el.getBoundingClientRect();
+  },
+  glueEl(spot) {
+    return spot.kind === "pinned" ? null : spot.anchor || (spot.edge && !["bar", "hang"].includes(spot.edge.kind) ? spot.edge.el : null);
+  },
+  read(spot) {
+    this.boxes = new Map();
+    queueMicrotask(() => {
+      this.boxes = null;
+    });
+    //: The two ledges the band is cut by (`nameMarkBuddyLedges`).
+    for (const id of ["top-bar", "phone-tab-dock", "status-bar"]) {
+      const bar = document.getElementById(id);
+      if (bar) this.boxes.set(bar, bar.getBoundingClientRect());
+    }
+    const el = this.glueEl(spot);
+    if (!el?.isConnected) return;
+    this.boxes.set(el, el.getBoundingClientRect());
+    const scroller = nameMarkBuddyScroller(el);
+    if (scroller) this.boxes.set(scroller, scroller.getBoundingClientRect());
+  },
+};
+
 //: **Held to its perch** (INBOX 426 g, m, n, o; the owner: "if it is
 //: sitting on a pannel and I scroll or that panel moves it might fall or
 //: move with the panel. it needs to be smooth, unintrusive"). A perch on a
@@ -4920,8 +4954,8 @@ function nameMarkBuddyBand(scroller, el = null) {
 //: nothing: they do not move.
 function nameMarkBuddyGlue(spot, x, y) {
   //: A drop carries its edge rather than an anchor; the bars hold nothing.
-  const el = spot.kind === "pinned" ? null : spot.anchor || (spot.edge && !["bar", "hang"].includes(spot.edge.kind) ? spot.edge.el : null);
-  const box = el?.isConnected ? el.getBoundingClientRect() : null;
+  const el = nmbPlace.glueEl(spot);
+  const box = el?.isConnected ? nmbPlace.rect(el) : null;
   if (!box || (!box.width && !box.height)) {
     nmb.glue = null;
     nameMarkBuddyRide(null, x, y);
@@ -5616,6 +5650,7 @@ function nameMarkBuddyMoveTo(buddy, spot, instant = false) {
   //: The board's box is a layout read: before the writes below, not after
   //: them, where it paid for the restyle they caused (a landing, 20 to 30ms).
   const board = nameMarkBuddyCanvasAt(spot, x, y);
+  nmbPlace.read(spot);
   nmb.liftAnim?.cancel();
   nmb.glideAnim?.cancel();
   nmb.glideAnim = null;
@@ -5625,11 +5660,18 @@ function nameMarkBuddyMoveTo(buddy, spot, instant = false) {
   nmb.canvas = !!board;
   document.getElementById("nm-buddy-band")?.classList.toggle("nmb-canvas", nmb.canvas);
   const size = board ? nameMarkBuddyScaleSaved() * nameMarkBuddyCanvasScale(board.__zoom?.k) : spot.fit || nameMarkBuddyScaleSaved();
+  //: **Its size is written after the placement's reads** (INBOX 1620): `--nmb-scale` restyles the
+  //: whole drawing, and the glue and the band below read the page, so written first it was a 110
+  //: to 150ms restyle inside their reads (4x CPU). `nmb.scale` is what they read, so it is set now.
+  let resize = null;
   if (Math.abs(size - (nmb.scale || 1)) > 0.01) {
-    buddy.classList.add("nmb-fitting");
-    clearTimeout(nmb.fitTimer);
-    nmb.fitTimer = setTimeout(() => buddy.classList.remove("nmb-fitting"), 900);
-    nameMarkBuddySetSize(size, false);
+    nmb.scale = size;
+    resize = () => {
+      buddy.classList.add("nmb-fitting");
+      clearTimeout(nmb.fitTimer);
+      nmb.fitTimer = setTimeout(() => buddy.classList.remove("nmb-fitting"), 900);
+      nameMarkBuddySetSize(size, false);
+    };
   }
   //: A new place: nothing to be bored of yet (a wander sets its own).
   if (spot.kind !== nmb.perch || Math.abs(was.x - x) > 8 || Math.abs(was.y - y) > 8) {
@@ -5647,10 +5689,16 @@ function nameMarkBuddyMoveTo(buddy, spot, instant = false) {
   nmb.edgeType = spot.edge?.type || "";
   //: Where its panel's top edge crosses it, for peeking from behind it.
   nmb.edgeLine = spot.pose === "sit" ? NMB_SEAT : NMB_FEET - 1;
+  //: The band was sized by the glue above, before this spot's pose and pivot were set, so for the
+  //: pose it had before (arriving hanging, it was measured with the hang's pivot and a standing
+  //: figure lost its rings to it). Once more, now they are this spot's: **before the writes below**
+  //: (INBOX 1620), which restyle the whole drawing (`--nmb-edge` and the pose are in most of its
+  //: rules, 100 to 150ms at 4x CPU a write), so the band's reads no longer pay for them.
+  const poseChanged = buddy.dataset.pose !== spot.pose;
+  if (nmb.ride && poseChanged) nameMarkBuddyRideBox(x, y, true, spot.pose);
   buddy.style.setProperty("--nmb-edge", `${nmb.edgeLine}px`);
   buddy.dataset.perch = nmb.perch;
   nameMarkBuddyGait(buddy);
-  const poseChanged = buddy.dataset.pose !== spot.pose;
   buddy.dataset.pose = spot.pose;
   const dx = was.x - x;
   const dy = was.y - y;
@@ -5661,11 +5709,7 @@ function nameMarkBuddyMoveTo(buddy, spot, instant = false) {
   nmb.pose = spot.pose;
   nmb.legs = spot.legs || "";
   nameMarkBuddyKeepFrame(buddy);
-  //: The band was sized by the glue above, before this spot's pose and
-  //: pivot were set, so for the pose it had before (arriving hanging, it
-  //: was measured with the hang's pivot and a standing figure lost its
-  //: rings to it). Once more, now they are this spot's.
-  if (nmb.ride && poseChanged) nameMarkBuddyRideBox(x, y, true);
+  resize?.();
   if (!Number.isFinite(dx) || !Number.isFinite(dy) || (Math.abs(dx) < 1 && Math.abs(dy) < 1)) return;
   nmb.anim?.cancel();
   nmb.hopAnim?.cancel();
