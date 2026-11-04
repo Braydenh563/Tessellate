@@ -49,3 +49,8 @@ def test_the_capability_probe_is_a_pool_job(monkeypatch):
     routes_models._warm_capabilities(Client(), "tiny-model")
     assert seen == ["model-info"]
     assert "model-info" in jobs.QUIET_KINDS and "reindex" in jobs.QUIET_KINDS
+
+
+def test_the_loaded_models_poll_leaves_no_history_row():
+    #: INBOX 1620: it ran every thirty seconds and each run was a "Model info: loaded models" row.
+    assert "model-poll" in jobs.QUIET_KINDS and "model-poll" in jobs.OWN_RUN_KINDS

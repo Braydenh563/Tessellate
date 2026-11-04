@@ -877,7 +877,7 @@ def loaded_snapshot() -> set[str] | None:
         finished.set()
 
     try:
-        jobs.enqueue("model-info", run, name="loaded models")
+        jobs.enqueue("model-poll", run, name="loaded models")
     except Exception:  # noqa: BLE001  # never leave the gate shut behind a job that did not start
         with _installed_lock:
             _loaded_state["busy"] = False
