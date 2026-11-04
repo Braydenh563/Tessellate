@@ -3362,9 +3362,9 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `dropMark` | frontend/js/diagram-pointer.js:28 |
-| `make` | frontend/js/diagram-pointer.js:59 |
-| `mark` | frontend/js/diagram-pointer.js:34 |
+| `dropMark` | frontend/js/diagram-pointer.js:30 |
+| `make` | frontend/js/diagram-pointer.js:61 |
+| `mark` | frontend/js/diagram-pointer.js:36 |
 | `word` | frontend/js/diagram-pointer.js:12 |
 
 ### frontend/js/diagram-split.js (1)
@@ -12314,7 +12314,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/dash-night-lazy.css | 29 |
 | frontend/css/dash-orphans-lazy.css | 57 |
 | frontend/css/desk-companion-lazy.css | 226 |
-| frontend/css/diagram-lazy.css | 1536 |
+| frontend/css/diagram-lazy.css | 1534 |
 | frontend/css/file-drop-lazy.css | 51 |
 | frontend/css/first-run-lazy.css | 140 |
 | frontend/css/forced-colors-lazy.css | 28 |
