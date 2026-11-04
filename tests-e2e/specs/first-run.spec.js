@@ -13,6 +13,9 @@ test.describe.configure({ mode: "serial" });
 // three steps, ticked as each is done; the sample notebook, offered once,
 // answered from with no model, and taken away again to the bin.
 test("a new notebook starts in three steps, and the sample notebook comes and goes", async ({ page }) => {
+  //: The sample load alone is allowed a minute (below), so the default 90 s
+  //: left the last menu click a few seconds on a slow runner (CI 2026-11-04).
+  test.setTimeout(150_000);
   const errors = watchErrors(page);
   await openApp(page);
   // A new notebook asks once whether to check for updates: this walk says no.
@@ -51,7 +54,16 @@ test("a new notebook starts in three steps, and the sample notebook comes and go
     }).toPass({ timeout: 30_000 });
     return item;
   };
-  await (await firstStepsMenu("Try a sample notebook")).click();
+  //: The dashboard redraws First steps when the notebook changes, which can
+  //: replace the open menu between finding the item and clicking it (CI
+  //: 2026-11-04: visible, then the click waited out the test). Open and
+  //: click as one step, retried.
+  const pickFirstStep = async (name) => {
+    await expect(async () => {
+      await (await firstStepsMenu(name)).click({ timeout: 3_000 });
+    }).toPass({ timeout: 40_000 });
+  };
+  await pickFirstStep("Try a sample notebook");
   // Eight saves, the first loading the search model: allowed a minute.
   await expect.poll(async () => (await api(page, "/help/sample-notebook")).live, { timeout: 60_000 }).toBe(8);
 
@@ -66,7 +78,7 @@ test("a new notebook starts in three steps, and the sample notebook comes and go
   await openTab(page, "dashboard");
   // Your name and an answer; the sample notes are not your first note.
   await expect(steps.locator(".start-step.is-done")).toHaveCount(2);
-  await (await firstStepsMenu("Remove the sample notes")).click();
+  await pickFirstStep("Remove the sample notes");
   await expect.poll(async () => (await api(page, "/help/sample-notebook")).live).toBe(0);
   // Offered once: not again on this notebook.
   await expect(await firstStepsMenu("Try a sample notebook", { present: false })).toHaveCount(0);
