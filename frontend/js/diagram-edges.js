@@ -73,10 +73,17 @@
       for (const handle of handles) handle.classList.toggle("hidden", !at || Boolean(editing) || Boolean(only && only !== handle.dataset.side));
       if (!at) return;
       //: Shown first, measured once, then placed: a read between writes would lay the page out four times.
-      const size = handles[0].offsetWidth || 24;
+      //: A handle is never wider than half the block it leaves, so a zoomed-out block or a phone's small one is not hidden under four of them (1679 m); 14 px is the least that still shows its arrow.
+      const coarse = matchMedia("(pointer: coarse)").matches;
+      const full = coarse ? 44 : 24;
+      const size = overlay().handleSize(at, full, coarse ? 24 : 14);
       for (const handle of handles) {
+        handle.style.inlineSize = handle.style.blockSize = `${size}px`;
         const [x, y] = anchor(at, handle.dataset.side);
-        handle.style.transform = `translate(${x - size / 2}px, ${y - size / 2}px)`;
+        //: A shrunk handle leans out of its edge so no more than a sixth of the block's smaller side is under it.
+        const lean = size < full ? Math.max(0, size / 2 - Math.min(at.w, at.h) / 6) : 0;
+        const [ox, oy] = { top: [0, -1], bottom: [0, 1], left: [-1, 0], right: [1, 0] }[handle.dataset.side];
+        handle.style.transform = `translate(${x - size / 2 + ox * lean}px, ${y - size / 2 + oy * lean}px)`;
       }
     };
     const leave = () => {

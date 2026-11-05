@@ -44,11 +44,8 @@
       const next = dir > 0 ? Math.floor(r + 1e-6) + 1 : Math.ceil(r - 1e-6) - 1;
       return Math.min(MAX * fit, Math.max(MIN * fit, fit * Math.pow(STEP, next)));
     },
-    //: True where a press in that direction would not be a whole step (a button goes grey there).
-    atEnd: (scale, fit, dir) => {
-      const r = Math.log(scale / fit) / Math.log(STEP);
-      return dir > 0 ? r >= Math.floor(Math.log(MAX) / Math.log(STEP)) - 1e-6 : r <= Math.ceil(Math.log(MIN) / Math.log(STEP)) + 1e-6;
-    },
+    //: True where a press in that direction has nowhere to go: the same ends the wheel and a pinch clamp to, so + and Ctrl+wheel stop at one number (1679 m: the last press is a short step, where the button used to go grey at 477% and the wheel went on to 500%).
+    atEnd: (scale, fit, dir) => (dir > 0 ? scale >= MAX * fit * (1 - 1e-6) : scale <= MIN * fit * (1 + 1e-6)),
     //: A mouse notch (whole, 50 or more), a line-mode wheel and a pinch (Ctrl) zoom; a trackpad's two-finger scroll (small, fractional, sideways) and Shift pan natively.
     zooms: (e) => !e.shiftKey && (e.ctrlKey || e.deltaMode === 1 || (e.deltaX === 0 && Math.abs(e.deltaY) >= 50 && Number.isInteger(e.deltaY))),
     //: The scale factor of one wheel event: a notch is STEP, a pinch's small deltas are continuous.
@@ -82,6 +79,13 @@
     let lastTap = 0;
     let travel = 0;
     let trail = [];
+    //: A drag on a picture that already fits moves nothing; a line says why (1679 m), once a drag has gone 24 px.
+    let wasted = 0;
+    let noteTimer = 0;
+    const note = document.createElement("p");
+    note.className = "dgm-pan-note muted hidden";
+    note.setAttribute("role", "status");
+    note.textContent = "The whole diagram is in view, so there is nothing to move. Zoom in to pan.";
     let f = 1;
 
     const stage = document.createElement("div");
@@ -118,7 +122,7 @@
     };
     //: The 100% button is also the live readout (INBOX 1652): it names the zoom now and a press goes to 100%.
     const readout = (scale) => {
-      //: A button is grey where a press would not be a whole step; the aimed scale decides while a gesture is in motion.
+      //: A button is grey where a press has nowhere to go; the aimed scale decides while a gesture is in motion.
       buttons.out.disabled = math.atEnd(scale, f, -1);
       buttons.in.disabled = math.atEnd(scale, f, 1);
       const words = `${math.percent(scale)}%`;
@@ -246,6 +250,7 @@
     group.append(buttons.out, buttons.in, buttons.fit, buttons.actual);
     bar.append(group);
     stage.append(bar);
+    stage.append(note);
 
     (fig.onpaint ||= []).push(paint);
     new ResizeObserver(paint).observe(fig);
@@ -279,7 +284,7 @@
     const roomy = () => fig.scrollWidth > fig.clientWidth + 1 || fig.scrollHeight > fig.clientHeight + 1;
     fig.addEventListener("pointerdown", (event) => {
       if (event.button) return;
-      if (!points.size) travel = 0;
+      if (!points.size) (travel = 0), (wasted = 0);
       cancelGlide();
       trail = [{ t: event.timeStamp, x: event.clientX, y: event.clientY }];
       points.set(event.pointerId, { x: event.clientX, y: event.clientY });
@@ -303,6 +308,13 @@
         trail.push({ t: event.timeStamp, x: event.clientX, y: event.clientY });
         if (trail.length > 8) trail.shift();
         if (travel > 12 && event.pointerType !== "touch") fig.setPointerCapture?.(event.pointerId);
+      } else if (points.size === 1 && image()) {
+        wasted += Math.abs(event.clientX - last.x) + Math.abs(event.clientY - last.y);
+        if (wasted > 24 && note.classList.contains("hidden")) {
+          note.classList.remove("hidden");
+          clearTimeout(noteTimer);
+          noteTimer = setTimeout(() => note.classList.add("hidden"), 3500);
+        }
       }
     });
     const lift = (event) => {
