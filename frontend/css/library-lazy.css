@@ -4109,6 +4109,8 @@ button.ghost.doc-template-choice.wb-template-choice {
   display: inline-flex;
   align-items: stretch;
   height: var(--control-h);
+  /* One control at its own width: a row that runs short squeezes the words beside it, never the pill. */
+  flex: none;
 }
 
 .split-button > .split-button-main,
@@ -4125,6 +4127,9 @@ button.ghost.doc-template-choice.wb-template-choice {
 
 .split-button > .split-button-slot {
   display: inline-flex;
+  /* Never squeezed: in a narrow bar the slot shrank to 7px under its 28px caret, which then lay over the
+     next button (the owner, 2026-11-05: "no gap between the templates and new arrow button"). */
+  flex: none;
 }
 
 .split-button > .split-button-slot:empty {

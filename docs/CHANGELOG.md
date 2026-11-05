@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Documents sidebar (owner, 2026-11-05): a long outline heading ends in an ellipsis and keeps its task count in view; the New pill and its arrow keep their width and the list head wraps its controls under "Recent" on a narrow sidebar, so the arrow no longer lies over the template button.
 - Letting go of the companion no longer lays the page out twice (INBOX 1667, the owner's log: release 62 ms, 51 of them forced layout): the last pull is worked out without being drawn and the flip back starts after the world is read.
 - Connect arrows sit on the outline (INBOX 1679, owner 2026-11-05): a pill, diamond or other drawn shape whose label carries its own background box took that small box as its size, so the four connect handles and the hover outline hugged the words; the shape is now read from the text before the label group.
 - Drag feedback that tells the truth (INBOX 1679, slice 12): a box dragged to empty space on the picture no longer moves to the end of the list, it snaps back with no change (a group still lifts to the top level), and a caption under the target says what the drop will do (After Two, Into Team, Connect to Two, Before Two; 12 px on the accent tint) within one frame (16 to 17 ms, measured in dark and light at 1440 and 390).

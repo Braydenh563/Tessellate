@@ -3722,7 +3722,12 @@ function renderDocOutline() {
     const button = document.createElement("button");
     button.type = "button";
     button.className = "outline-link";
-    button.textContent = heading.text;
+    //: The words in their own box, so a long heading ends in an ellipsis and its task count keeps its room
+    //: (the owner, 2026-11-05: "outlines just get cut off with no ellipsis and the numbers on the right dont even show").
+    const words = document.createElement("span");
+    words.className = "outline-text";
+    words.textContent = heading.text;
+    button.appendChild(words);
     button.title = `Jump to “${heading.text}”`;
     if (heading.tasks) {
       const chip = document.createElement("span");
