@@ -487,6 +487,7 @@ class Engine:
         self.wob_t0 = 0.0
         self.wob = 0.0  # the scrabble or flail angle added to the true one this tick
         self.passed_at = -math.inf  # when a hard smack last carried it out of one edge and in at the other
+        self.wrapping: dict[str, Any] | None = None  # that crossing while it runs: its side, far edge and phase
         self.air_t0 = 0.0  # when the drop since the last upward motion began
         self.laid = False  # upright and slow: the held pose, for good until the next throw
         self.ground_mon: Monitor | None = None  # the screen a walker's tumble landed on
@@ -740,7 +741,9 @@ class Engine:
         self.flash = None
         if state not in ("hang", "drift", "rise", "crouch"):
             self.hang_on = None
-        if state not in ("peek", "emerge"):
+        if state != "fly":
+            self.wrapping = None
+        if state not in ("peek", "emerge") and self.wrapping is None:
             self.sink, self.peek_edge = 0.0, None
         if state not in ("walk", "drift", "crouch"):
             self.goal = None
@@ -2433,6 +2436,9 @@ class Engine:
     def _do_fly(self, now: float, dt: float) -> None:
         """Thrown: ballistic (gravity for a walker; for a floater air drag and a gentle
         pull to its hover height). Bounces off the outer walls, hangs from the ceiling."""
+        if self.wrapping is not None:
+            self._wrap_step(dt)
+            return
         scale = self._scale()
         m = self.ground_mon if self.grounded and self.ground_mon else self.current_monitor()
         floater = self.gait == "float"
@@ -2488,8 +2494,7 @@ class Engine:
         still) goes out of the edge and in at the far one (INBOX 1683 k)."""
         verdict = "bounce" if self.gait == "float" else ld.smack(abs(self.vx), self._scale(), self.rng)
         if verdict == "through":
-            self.x, self.vx, self.outcome = far, self.vx * 0.9, "through"
-            self.passed_at = now
+            self._start_wrap(side, edge, far, now)
             return
         self.x = edge
         self.bonk_until = now + BONK_FOR
@@ -2500,6 +2505,38 @@ class Engine:
             return
         self.vx = -side * abs(self.vx) * BOUNCE_DAMP
         self._spin_contact(float(-side))
+
+    def _start_wrap(self, side: int, edge: float, far: float, now: float) -> None:
+        """Out of one side and in at the other without a cut (INBOX 1683 i, j): the old jump put the figure at the far
+        edge in one draw. Now it keeps its speed and slides out under the edge's clip (the `sink` of a peek), then
+        in under the far edge's clip, so every draw moves it by its own velocity and no more."""
+        self.x, self.vx, self.outcome = edge, self.vx * 0.9, "through"
+        self.passed_at = now
+        self.wrapping = {"side": side, "far": far, "phase": "out"}
+        self.peek_edge, self.sink = ("left" if side < 0 else "right"), 0.0
+
+    def _wrap_step(self, dt: float) -> None:
+        """Advance the crossing by the distance the figure travels in `dt` (gravity and the spin run as in a throw)."""
+        w = self.wrapping
+        if w is None:
+            return
+        scale = self._scale()
+        if self.gait != "float":
+            self.vy += GRAVITY * scale * dt
+        self.y += self.vy * dt
+        self._spin(dt, math.hypot(self.vx, self.vy))
+        width = max(1.0, self._box(self._fly_frame())[2])
+        step = max(abs(self.vx) * dt, 1.0) / width
+        if w["phase"] == "out":
+            self.sink = min(1.0, self.sink + step)
+            if self.sink >= 1.0:
+                w["phase"] = "in"
+                self.x = w["far"]
+                self.peek_edge = "right" if w["side"] < 0 else "left"
+        else:
+            self.sink = max(0.0, self.sink - step)
+            if self.sink <= 0.0:
+                self.sink, self.peek_edge, self.wrapping = 0.0, None, None
 
     def _air_wobble(self, now: float, dt: float) -> None:
         """The scrabble against a wall, or a flail once a drop has gone on a while with the tumble spent."""
@@ -2994,7 +3031,7 @@ class Engine:
             return max(MIN_WAKE_MS, min(int(CARD_SWAP * 1000), int(math.ceil((self.state_until - now) * 1000))))
         if self.reduced:
             return None
-        if s in ("walk", "held", "drift", "hang", "rise", "peek", "emerge", "crouch", "warp") or self.turn_to:
+        if s in ("walk", "held", "drift", "hang", "rise", "peek", "emerge", "crouch", "warp", "land") or self.turn_to:  # land: its squash eases at 60 Hz (INBOX 1683 j: one 170 ms draw jumped it 18 px)
             return self._moving_wake(s)
         if s == "act":
             soonest = min(self.state_until, self._next_pose_change(now, 0.5))
@@ -3066,6 +3103,8 @@ class Engine:
             hidden = round(self.sink * h)
             # cut where the work area ends, not where the (lower) window does
             return x, y + hidden, (0, 0, w, max(0, h - hidden - round(self._dy(frame))))
+        if self.wrapping is not None:
+            w = max(w, round(self._box(self._fly_frame())[2]))  # a tumble's canvas is wider than the window
         hidden = round(self.sink * w)
         if self.peek_edge == "left":
             return x - hidden, y, (hidden, 0, w, h)

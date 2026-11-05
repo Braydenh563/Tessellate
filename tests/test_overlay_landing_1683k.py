@@ -124,9 +124,33 @@ def test_a_harder_smack_can_pass_through_and_come_out_the_other_side(monkeypatch
     monkeypatch.setattr(ld, "smack", lambda speed, scale, rng: "through")
     e, t = dropped(0.0, vx=-2600.0, y=300.0)
     e.x = 200.0
-    t, _ = run(e, t, 0.6, until=lambda en: en.outcome == "through")
+    # Intent unchanged (out of one side, in at the other, speed kept); only the moment it is checked moved: the
+    # crossing is now a slide under each edge's clip (INBOX 1683 i), so "came out" is when the crossing has ended.
+    t, _ = run(e, t, 0.6, until=lambda en: en.outcome == "through" and en.wrapping is None)
     assert e.outcome == "through" and e.vx < -1500  # still going the way it was
     assert e.x > AREA[2] - 400  # out of the right edge's side now
+    assert e.sink == 0.0 and e.peek_edge is None  # and whole again
+
+
+def test_a_wrap_moves_by_its_own_speed_every_draw_never_a_jump(monkeypatch: pytest.MonkeyPatch) -> None:
+    """INBOX 1683 (i), (j): the old crossing put the figure at the far edge in one draw (a jump of the whole screen).
+    The drawn part's leading edge now moves by about speed times the step, going out and coming in."""
+    monkeypatch.setattr(ld, "smack", lambda speed, scale, rng: "through")
+    e, t = dropped(0.0, vx=-2600.0, y=300.0)
+    e.x = 200.0
+    xs, saw_out, saw_in = [], False, False
+    for _ in range(120):
+        t += STEP
+        out = e.update(t)
+        if e.wrapping is not None:
+            saw_out |= e.wrapping["phase"] == "out"
+            saw_in |= e.wrapping["phase"] == "in"
+            xs.append(out.x)  # the picture's own position: it slides under the clip, so this is its motion
+        elif xs:
+            break
+    assert saw_out and saw_in and len(xs) >= 3
+    steps = [abs(b - a) for a, b in zip(xs, xs[1:]) if abs(b - a) < AREA[2] / 2]  # the one change of edge is made fully hidden
+    assert steps and max(steps) <= 2600.0 * STEP * 1.6 + 4, max(steps)
 
 
 def test_a_soft_hit_and_a_floater_still_bounce(monkeypatch: pytest.MonkeyPatch) -> None:

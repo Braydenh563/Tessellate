@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Companion pose pops (INBOX 1683 e, i, j): a landing's squash was drawn on a 170 ms wake and snapped 15 to 18 px in one draw (now every 16 ms, no landing jump in seeded hours; 262 joint jumps over 4 px in six hours before, 1 to 6 a seeded hour of 25000 draws after); a hard throw through a side no longer jumps to the far edge in one draw (about 1800 px): it slides out under the edge's clip and in under the far one at its own speed (40 px a draw at 2600 px/s); the idle frame render holds the live tail loop off its sample. Not done: the shipped idle frames are not re-shot, so the idle loop still wraps with a step 8x the median (a strict xfail test says so); real Windows unverified.
 
 ## [0.7.0] - 2026-11-05
 - Desk companion (INBOX 1683 w): on a real desktop the taskbar was the only place it went. A maximised window is kept as a hang spot (its title bar), a floating window's bottom edge is one and its top a perch, a hang is a trip with its own weight (it hangs a while, then pulls up or lets go), the taskbar is one choice among those in reach, and no destination comes three times running; the scan log counts hang spots. 200 seeded trips, 1920x1080 at 150 percent with a maximised window, the taskbar and a floating window: floor 54, window 46, hang 0 percent before; 38, 33, 29 after at the real trip cadence (maximised window and taskbar only: floor 100 before; floor 58, hang 42 after). Real Windows unverified.
