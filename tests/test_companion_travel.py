@@ -95,7 +95,8 @@ def test_walking_off_an_edge_needs_a_short_enough_way_to_the_edges() -> None:
 def test_weights_favour_the_quieter_moves_and_walking_is_kept_for_near() -> None:
     script = PURE + "\nconsole.log(JSON.stringify(companionTravelWeights(" + json.dumps(_o(y0=800, x0=900, x1=100, dx=800)) + ")));"
     w = json.loads(subprocess.run(["node", "-e", script], capture_output=True, text=True, check=True).stdout)
-    assert w["walk"] < w["smoke"] and w["walk"] < w["portal"]
+    # INBOX 1683 u: the puff (smoke) is the rare one now, the owner saw only puffs; it was walk < smoke.
+    assert w["smoke"] < w["walk"] < w["portal"]
     assert all(v >= 0 for v in w.values())
 
 

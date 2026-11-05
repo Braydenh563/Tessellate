@@ -2,7 +2,7 @@
 
 Generated 2026-11-05 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7823, frontend ids 2644, CSS sections 522, backend routes 644, backend modules 8824, test files 2084, tests 17600, plan headings 1004, app scripts 28, boot scripts 37, script files 257.
+Counts: frontend functions 7823, frontend ids 2644, CSS sections 522, backend routes 644, backend modules 8823, test files 2085, tests 17606, plan headings 1004, app scripts 28, boot scripts 37, script files 257.
 
 ## Frontend functions (7823)
 
@@ -2968,12 +2968,12 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `companionTravelAt` | frontend/js/companion-travel.js:109 |
-| `companionTravelChoose` | frontend/js/companion-travel.js:53 |
-| `companionTravelEnd` | frontend/js/companion-travel.js:93 |
-| `companionTravelFx` | frontend/js/companion-travel.js:73 |
-| `companionTravelPlay` | frontend/js/companion-travel.js:197 |
-| `companionTravelSteps` | frontend/js/companion-travel.js:115 |
+| `companionTravelAt` | frontend/js/companion-travel.js:110 |
+| `companionTravelChoose` | frontend/js/companion-travel.js:54 |
+| `companionTravelEnd` | frontend/js/companion-travel.js:94 |
+| `companionTravelFx` | frontend/js/companion-travel.js:74 |
+| `companionTravelPlay` | frontend/js/companion-travel.js:198 |
+| `companionTravelSteps` | frontend/js/companion-travel.js:116 |
 | `companionTravelWeights` | frontend/js/companion-travel.js:39 |
 
 ### frontend/js/connections.js (7)
@@ -13015,7 +13015,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:164 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (8824)
+## Backend modules (8823)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -22303,11 +22303,11 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `Engine` | src/tessellate/core/overlay/engine.py:395 |
-| `Monitor` | src/tessellate/core/overlay/engine.py:346 |
-| `Output` | src/tessellate/core/overlay/engine.py:353 |
-| `Perch` | src/tessellate/core/overlay/engine.py:337 |
-| `_adjoins` | src/tessellate/core/overlay/engine.py:384 |
+| `Engine` | src/tessellate/core/overlay/engine.py:399 |
+| `Monitor` | src/tessellate/core/overlay/engine.py:350 |
+| `Output` | src/tessellate/core/overlay/engine.py:357 |
+| `Perch` | src/tessellate/core/overlay/engine.py:341 |
+| `_adjoins` | src/tessellate/core/overlay/engine.py:388 |
 
 ### src/tessellate/core/overlay/host.py (3)
 
@@ -22355,25 +22355,24 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `mix` | src/tessellate/core/overlay/sprites.py:514 |
 | `premultiplied_bgra` | src/tessellate/core/overlay/sprites.py:153 |
 
-### src/tessellate/core/overlay/travel.py (15)
+### src/tessellate/core/overlay/travel.py (14)
 
 | Name | File:line |
 |---|---|
-| `Warp` | src/tessellate/core/overlay/travel.py:39 |
-| `_by_mood` | src/tessellate/core/overlay/travel.py:122 |
-| `_by_recent` | src/tessellate/core/overlay/travel.py:130 |
-| `crosses_middle` | src/tessellate/core/overlay/travel.py:74 |
-| `edge_x` | src/tessellate/core/overlay/travel.py:105 |
-| `far` | src/tessellate/core/overlay/travel.py:96 |
-| `in_edge_zone` | src/tessellate/core/overlay/travel.py:109 |
-| `in_middle` | src/tessellate/core/overlay/travel.py:81 |
-| `middle` | src/tessellate/core/overlay/travel.py:67 |
-| `nearest_edge` | src/tessellate/core/overlay/travel.py:100 |
-| `out_of_middle` | src/tessellate/core/overlay/travel.py:87 |
-| `overlaps` | src/tessellate/core/overlay/travel.py:114 |
-| `padded` | src/tessellate/core/overlay/travel.py:118 |
-| `pick_mode` | src/tessellate/core/overlay/travel.py:138 |
-| `warp_for` | src/tessellate/core/overlay/travel.py:60 |
+| `Warp` | src/tessellate/core/overlay/travel.py:36 |
+| `_by_mood` | src/tessellate/core/overlay/travel.py:119 |
+| `crosses_middle` | src/tessellate/core/overlay/travel.py:71 |
+| `edge_x` | src/tessellate/core/overlay/travel.py:102 |
+| `far` | src/tessellate/core/overlay/travel.py:93 |
+| `in_edge_zone` | src/tessellate/core/overlay/travel.py:106 |
+| `in_middle` | src/tessellate/core/overlay/travel.py:78 |
+| `middle` | src/tessellate/core/overlay/travel.py:64 |
+| `nearest_edge` | src/tessellate/core/overlay/travel.py:97 |
+| `out_of_middle` | src/tessellate/core/overlay/travel.py:84 |
+| `overlaps` | src/tessellate/core/overlay/travel.py:111 |
+| `padded` | src/tessellate/core/overlay/travel.py:115 |
+| `pick_mode` | src/tessellate/core/overlay/travel.py:131 |
+| `warp_for` | src/tessellate/core/overlay/travel.py:57 |
 
 ### src/tessellate/core/overlay/win32.py (30)
 
@@ -24118,7 +24117,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (17600)
+## Tests (17606)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -25499,6 +25498,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_overlay_idle.py | 9 |
 | tests/test_overlay_life_1670.py | 25 |
 | tests/test_overlay_moves.py | 26 |
+| tests/test_overlay_nap_1683u.py | 6 |
 | tests/test_overlay_pace_1683.py | 5 |
 | tests/test_overlay_perch_1683.py | 8 |
 | tests/test_overlay_rest_1670.py | 21 |
