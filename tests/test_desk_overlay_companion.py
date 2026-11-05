@@ -131,13 +131,15 @@ def test_the_page_api_has_the_two_new_calls(over) -> None:  # noqa: F811
     assert {"companion_choices", "choose_companion"} <= public
 
 
-def test_the_panel_page_lists_the_choices_marks_the_current_and_disables_what_the_overlay_cannot_draw() -> None:
+def test_the_panel_page_lists_the_choices_marks_the_current_and_guards_rows_the_host_refuses() -> None:
     from pathlib import Path
 
     js = (Path(__file__).resolve().parent.parent / "frontend" / "js" / "desk-companion.js").read_text(encoding="utf-8")
     body = js.split("async function openCompanion()", 1)[1].split("//: Run `action` first", 1)[0]
     assert 'ask("companion_choices")' in body and 'ask("choose_companion", option.key)' in body
     assert 'role", "menuitemradio"' in body and "aria-checked" in body and "row.disabled = !option.enabled" in body
-    assert "Shows in the app only" in body and 'item("Back"' in body
+    # 1684 moved the intent: the overlay now draws every companion, so no row says "Shows in the app only";
+    # the disabled-row guards stay as harmless dead code for a choice the host may still refuse.
+    assert "Shows in the app only" not in body and 'item("Back"' in body
     assert 'item("Companion", "user-switch", openCompanion)' in js and "if (overlay)" in js.split('item("Companion"', 1)[0].splitlines()[-1]
     assert "[role^=menuitem]:not(:disabled)" in js  # the arrows skip the rows that cannot be chosen
