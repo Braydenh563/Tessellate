@@ -122,6 +122,38 @@ for (const [slow, url] of [["the tags arrive", /\/tags(\?|$)/], ["the list's cod
 });
 });
 
+// The third late arrival (BACKLOG 1682): not an answer but the keyboard. A
+// change poll redraws the list, the form's row is carried through it, and
+// `restoreFocusTo` gives the tags field back the focus it lost with the
+// move; that focus took the "a tag was just entered" flag away and opened the
+// list over Save, every 15 s, under load. The redraw is made here by hand
+// (blur, then the same call) so the order is certain.
+test("a focus the app gives back after a redraw does not open the tag list over Save", async ({ page }) => {
+  await openApp(page);
+  const id = await captureNote(page, `Tag restore ${Date.now()}: ring the plumber about the boiler`);
+  const row = await noteRow(page, id);
+  await row.locator('button[aria-label="Edit this entry"]').click();
+  const input = row.locator(".note-edit-tag-input");
+  await input.click();
+  await expect(page.locator(".tag-suggest:not(.hidden)")).toHaveCount(1);
+  await page.keyboard.press("Escape");
+  await page.keyboard.insertText("zzqqnomatch");
+  await page.keyboard.press("Enter");
+  await expect(row.locator(".note-edit-tags")).toContainText("zzqqnomatch");
+  await expect(page.locator(".tag-suggest:not(.hidden)")).toHaveCount(0);
+  await page.evaluate(() => {
+    const field = document.querySelector(".note-edit-tag-input");
+    field.blur();
+    restoreFocusTo(field);
+  });
+  await expect(input).toBeFocused();
+  await page.evaluate(() => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))));
+  await expect(page.locator(".tag-suggest:not(.hidden)")).toHaveCount(0);
+  // A person's press in the same field still opens it.
+  await input.click();
+  await expect(page.locator(".tag-suggest:not(.hidden)")).toHaveCount(1);
+});
+
 // And the guard above keeps the list itself: a press in an empty tags field,
 // with the tags slow to come, still opens it once they do.
 test("a press in an empty tags field shows the tags already used", async ({ page }) => {
