@@ -2105,24 +2105,24 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `atlasBreathFrame` | frontend/js/atlas-life.js:747 |
-| `atlasFrameBudget` | frontend/js/atlas-life.js:413 |
-| `atlasPropLoops` | frontend/js/atlas-life.js:672 |
-| `atlasPropsFrame` | frontend/js/atlas-life.js:700 |
-| `atlasRigLower` | frontend/js/atlas-life.js:865 |
-| `atlasRigLowerAttach` | frontend/js/atlas-life.js:841 |
+| `atlasBreathFrame` | frontend/js/atlas-life.js:769 |
+| `atlasFrameBudget` | frontend/js/atlas-life.js:434 |
+| `atlasPropLoops` | frontend/js/atlas-life.js:694 |
+| `atlasPropsFrame` | frontend/js/atlas-life.js:722 |
+| `atlasRigLower` | frontend/js/atlas-life.js:887 |
+| `atlasRigLowerAttach` | frontend/js/atlas-life.js:863 |
 | `atlasRingLoops` | frontend/js/atlas-life.js:20 |
-| `atlasTailAttach` | frontend/js/atlas-life.js:303 |
+| `atlasTailAttach` | frontend/js/atlas-life.js:324 |
 | `atlasTailBend` | frontend/js/atlas-life.js:105 |
-| `atlasTailCalm` | frontend/js/atlas-life.js:540 |
-| `atlasTailDraw` | frontend/js/atlas-life.js:599 |
+| `atlasTailCalm` | frontend/js/atlas-life.js:562 |
+| `atlasTailDraw` | frontend/js/atlas-life.js:621 |
 | `atlasTailFollow` | frontend/js/atlas-life.js:115 |
-| `atlasTailFrame` | frontend/js/atlas-life.js:439 |
-| `atlasTailKit` | frontend/js/atlas-life.js:176 |
-| `atlasTailPick` | frontend/js/atlas-life.js:377 |
-| `atlasTailRest` | frontend/js/atlas-life.js:562 |
-| `atlasTailShape` | frontend/js/atlas-life.js:143 |
-| `atlasTailUnrest` | frontend/js/atlas-life.js:577 |
+| `atlasTailFrame` | frontend/js/atlas-life.js:460 |
+| `atlasTailKit` | frontend/js/atlas-life.js:197 |
+| `atlasTailPick` | frontend/js/atlas-life.js:398 |
+| `atlasTailRest` | frontend/js/atlas-life.js:584 |
+| `atlasTailShape` | frontend/js/atlas-life.js:164 |
+| `atlasTailUnrest` | frontend/js/atlas-life.js:599 |
 
 ### frontend/js/atlas-micro.js (8)
 
@@ -12303,7 +12303,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/appearance-panel-lazy.css | 323 |
 | frontend/css/appearance-panel-own-lazy.css | 86 |
 | frontend/css/ask-compose-lazy.css | 263 |
-| frontend/css/atlas-lazy.css | 331 |
+| frontend/css/atlas-lazy.css | 376 |
 | frontend/css/captions-lazy.css | 95 |
 | frontend/css/capture-card-lazy.css | 202 |
 | frontend/css/chat-private-lazy.css | 18 |
