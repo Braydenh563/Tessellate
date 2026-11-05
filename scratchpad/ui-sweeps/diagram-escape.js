@@ -506,4 +506,138 @@ const W = Number(process.argv[3] || 1440);
 })();
 
 };
+modes["pan-zoom"] = () => {
+// Slice 13 (1679 k, l): input-to-paint latency and zoom-step evenness of the picture pane. node diagram-escape.js pan-zoom [width]; THEME=dark for dark.
+const W = Number(process.argv[3] || 1440), touch = W < 600;
+const small = "flowchart TD\n  A[Start]-->B[Check]\n  B-->C[Done]\n";
+const big = "flowchart TD\n  A0[Start]\n" + Array.from({ length: 59 }, (_, i) => `  A${i + 1}[Step ${i + 1}]\n  A${Math.floor(i / 2)}-->A${i + 1}`).join("\n") + "\n";
+(async () => {
+  const { browser, page } = await boot({ viewport: { width: W, height: touch ? 844 : 900 }, ...(touch ? { hasTouch: true, isMobile: true } : {}) });
+  const open = async (c) => {
+    await page.evaluate(async (c) => {
+      const r = await api("/documents", { method: "POST", body: JSON.stringify({ title: "PZ " + Date.now() + ".mmd", content: c, file_type: "mmd" }) });
+      const doc = await r.json();
+      switchTab("documents");
+      await openDocument(doc.id);
+      setDocView("canvas", { persist: false });
+    }, c);
+    await page.waitForSelector(".dgm-block", { state: "attached", timeout: 15000 });
+    await page.waitForTimeout(2500);
+  };
+  const probe = () => page.evaluate(() => {
+    window.__lat = []; window.__sync = [];
+    const fig = document.querySelector(".dgm-picture");
+    const mc = new MessageChannel();
+    let t0 = 0;
+    fig.addEventListener("wheel", () => { t0 = performance.now(); }, true);
+    fig.addEventListener("pointermove", () => { t0 = performance.now(); }, true);
+    document.body.addEventListener("wheel", () => { window.__sync.push(performance.now() - t0); }, false); document.body.addEventListener("pointermove", () => { window.__sync.push(performance.now() - t0); }, false);
+    const after = () => requestAnimationFrame(() => { mc.port2.postMessage(0); });
+    mc.port1.onmessage = () => { window.__lat.push(performance.now() - t0); };
+    for (const t of ["wheel", "pointermove"]) window.addEventListener(t, () => { if (document.querySelector(".dgm-picture").contains(event.target)) after(); }, false);
+  });
+  const stats = (a) => { const s = [...a].sort((x, y) => x - y); return { n: s.length, med: +(s[Math.floor(s.length / 2)] || 0).toFixed(1), p95: +(s[Math.floor(s.length * 0.95)] || 0).toFixed(1), max: +(s[s.length - 1] || 0).toFixed(1) }; };
+  const out = { W, theme: process.env.THEME || "light" };
+  for (const [name, src] of [["small", small], ["big", big]]) {
+    await open(src);
+    await probe();
+    const box = await page.evaluate(() => { const r = document.querySelector(".dgm-picture").getBoundingClientRect(); const top = Math.max(r.top, 0), bot = Math.min(r.bottom, innerHeight); return { x: r.x + r.width / 2, y: (top + bot) / 2 }; });
+    await page.mouse.move(box.x, box.y);
+    const w0 = () => page.evaluate(() => document.querySelector(".dgm-picture .md-mermaid-img").getBoundingClientRect().width);
+    const before = await w0();
+    // 12 wheel notches (ctrl+wheel as a pinch; plain wheel too), 50 ms apart
+    await page.keyboard.down("Control");
+    for (let i = 0; i < 12; i++) { await page.mouse.wheel(0, -100); await page.waitForTimeout(50); }
+    await page.keyboard.up("Control");
+    const afterCtrl = await w0();
+    for (let i = 0; i < 12; i++) { await page.mouse.wheel(0, -100); await page.waitForTimeout(50); }
+    const afterPlain = await w0();
+    // drag pan: 30 moves
+    await page.mouse.down();
+    for (let i = 0; i < 30; i++) { await page.mouse.move(box.x - i * 6, box.y - i * 3); await page.waitForTimeout(8); }
+    await page.mouse.up();
+    await page.waitForTimeout(600);
+    const lat = await page.evaluate(() => ({ lat: window.__lat, sync: window.__sync }));
+    // zoom steps with the + button: widths ratio per press, from Fit
+    await page.click(".dgm-zoom button[title='Fit the diagram to the pane']");
+    await page.waitForTimeout(200);
+    const widths = [await w0()];
+    let presses = 0;
+    for (let i = 0; i < 9; i++) { if (await page.$eval(".dgm-zoom button[aria-label='Zoom in']", (b) => b.disabled)) break; await page.click(".dgm-zoom button[aria-label='Zoom in']"); presses++; await page.waitForTimeout(60); widths.push(await w0()); }
+    const ratios = widths.slice(1).map((w, i) => +(w / widths[i]).toFixed(3));
+    // pan reach at fit and a drag at fit
+    await page.click(".dgm-zoom button[title='Fit the diagram to the pane']");
+    await page.waitForTimeout(200);
+    const fig0 = await page.evaluate(() => { const f = document.querySelector(".dgm-picture"); const i = f.querySelector(".md-mermaid-img").getBoundingClientRect(); return [Math.round(i.x), Math.round(i.y)]; });
+    await page.mouse.move(box.x, box.y); await page.mouse.down(); await page.mouse.move(box.x + 80, box.y + 40, { steps: 5 }); await page.mouse.up();
+    const fig1 = await page.evaluate(() => { const i = document.querySelector(".dgm-picture .md-mermaid-img").getBoundingClientRect(); return [Math.round(i.x), Math.round(i.y)]; });
+    // a plain wheel (three notches) from Fit, and a fast drag then release: how far the picture keeps going
+    await page.click(".dgm-zoom button[title='Fit the diagram to the pane']");
+    await page.waitForTimeout(300);
+    await page.mouse.move(box.x, box.y);
+    const wFit = await w0();
+    for (let i = 0; i < 3; i++) { await page.mouse.wheel(0, -100); await page.waitForTimeout(30); }
+    await page.waitForTimeout(350);
+    const plain = +((await w0()) / wFit).toFixed(3);
+    await page.mouse.move(box.x + 150, box.y);
+    const sl = () => page.evaluate(() => document.querySelector(".dgm-picture").scrollLeft);
+    await page.mouse.down();
+    const s0 = await sl();
+    for (let i = 0; i < 12; i++) { await page.mouse.move(box.x + 150 - i * 12, box.y); await page.waitForTimeout(8); }
+    const s1 = await sl();
+    await page.mouse.up();
+    await page.waitForTimeout(700);
+    const glide = [s1 - s0, (await sl()) - s1];
+    await page.click(".dgm-zoom button[title='Fit the diagram to the pane']");
+    await page.waitForTimeout(300);
+    out[name] = { w: [Math.round(before), Math.round(afterCtrl), Math.round(afterPlain)], latency: stats(lat.lat), sync: stats(lat.sync), ratios, evenness: +(Math.max(...ratios) / Math.min(...ratios)).toFixed(3), presses, plain, glide, dragAtFitMoved: [fig1[0] - fig0[0], fig1[1] - fig0[1]] };
+  }
+  console.log(JSON.stringify(out));
+  await browser.close();
+})();
+
+};
+modes["panel"] = () => {
+// Slice 14 (1679 k): the blocks pane on first use. node diagram-escape.js panel [width]; THEME=dark for dark.
+const W = Number(process.argv[3] || 1440), touch = W < 600;
+const src = "flowchart TD\n  A[Start]-->B{Check}\n  B-->|yes|C[Done]\n  B-->|no|D[Retry]\n  D-->B\n";
+(async () => {
+  const { browser, page } = await boot({ viewport: { width: W, height: touch ? 844 : 900 }, ...(touch ? { hasTouch: true, isMobile: true } : {}) });
+  await page.evaluate(async (c) => {
+    const r = await api("/documents", { method: "POST", body: JSON.stringify({ title: "Panel " + Date.now() + ".mmd", content: c, file_type: "mmd" }) });
+    const doc = await r.json();
+    switchTab("documents");
+    await openDocument(doc.id);
+    setDocView("canvas", { persist: false });
+  }, src);
+  await page.waitForSelector(".dgm-block", { state: "attached", timeout: 15000 });
+  await page.waitForTimeout(2500);
+  if (touch) { const b = await page.$(".dgm-listbtn"); if (b) { await b.click(); await page.waitForTimeout(800); } }
+  const rest = await page.evaluate(() => {
+    const pane = document.querySelector(".dgm-pane");
+    const rows = [...pane.querySelectorAll(".dgm-card")];
+    const last = rows[rows.length - 1];
+    const joins = [...pane.querySelectorAll(".dgm-join")];
+    const worded = [...pane.querySelectorAll("button")].filter((b) => (b.textContent || "").trim().length > 1 && getComputedStyle(b).display !== "none");
+    const addBtns = [...document.querySelectorAll("button")].filter((b) => /^\s*Add\b/.test(b.textContent || "") && b.offsetParent && !b.closest(".dgm-card"));
+    const lb = last.getBoundingClientRect().bottom;
+    const near = Math.min(...addBtns.map((b) => Math.abs(b.getBoundingClientRect().top - lb)));
+    const iconOnlyPerRow = rows.slice(0, 1).map((r) => [...r.querySelectorAll("button")].filter((b) => !(b.textContent || "").trim() || getComputedStyle(b.querySelector(".ph-text") || b).display === "none").length);
+    return { purpose: pane.querySelector(".dgm-purpose")?.textContent || null, foot: [...pane.querySelectorAll(".dgm-foot button")].map((b) => b.textContent.trim()), paneW: Math.round(pane.getBoundingClientRect().width), paneH: Math.round(pane.getBoundingClientRect().height), nearestAddOrConnect: Math.round(near), iconOnlyOnRow1: iconOnlyPerRow[0], scrollOk: pane.scrollHeight <= pane.clientHeight + 1 || getComputedStyle(pane).overflowY !== "visible" };
+  });
+  const tips = {};
+  if (!touch) for (const [name, sel] of [["grip", ".dgm-grip"], ["shape", ".dgm-swatch"], ["label", ".dgm-label"], ["connect", ".dgm-connect"], ["menu", ".dgm-menu button, .dgm-menu"], ["join", ".dgm-join"], ["add", ".dgm-foot button >> nth=0"]]) {
+    const el = await page.$(sel.includes(">>") ? sel : sel);
+    if (!el) { tips[name] = null; continue; }
+    await el.hover();
+    await page.waitForTimeout(120);
+    tips[name] = await page.evaluate(() => document.querySelector(".dgm-purpose")?.textContent || null);
+  }
+  // keyboard: focus lands on a grip-less row; Tab to Connect and read the line
+  console.log(JSON.stringify({ W, theme: process.env.THEME || "light", rest, tips }));
+  await page.screenshot({ path: (process.env.SCRATCH || ".") + `/panel-${W}-${process.env.THEME || "light"}${process.env.TAG || ""}.png` });
+  await browser.close();
+})();
+
+};
 (modes[process.argv[2]] || (() => { console.log("modes: " + Object.keys(modes).join(", ")); process.exit(2); }))();

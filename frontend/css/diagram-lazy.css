@@ -303,6 +303,12 @@
   display: none;
 }
 
+/* While a zoom is in motion (diagram-view.js) the picture is only a transform: the boxes, handles and the picked arrow
+   sit at the old size, so they hide until the real width lands (140 ms after the last input), then draw once. */
+.dgm-stage.dgm-gesturing > :is(.dgm-overlay, .dgm-edge-svg, .dgm-end) {
+  visibility: hidden;
+}
+
 .dgm-picture > .md-mermaid-reason {
   margin: 0;
 }
@@ -555,6 +561,36 @@
 
 /* In a tight list a pointed-at or focused row keeps its name: the words show there only on a drop (the arrow keeps its title). */
 .dgm-tight .dgm-card:is(:hover, :focus-within):not(.dgm-connecting) .dgm-connect .ph-text {
+  display: none;
+}
+
+/* The pane's purpose line and foot (diagram-steps.js `frame`, 1679 k). The line holds two lines of room so the list does not
+   jump when a control's words replace it; the foot sticks to the pane's bottom edge and, in a short list, sits right under it. */
+.dgm-purpose {
+  margin: 0 var(--space-2) var(--space-2);
+  min-block-size: calc(2 * 1.4em);
+  font-size: var(--text-xs);
+  line-height: 1.4;
+}
+
+.dgm-purpose.dgm-purpose-live {
+  color: var(--text);
+}
+
+.dgm-foot {
+  position: sticky;
+  inset-block-end: 0;
+  z-index: 1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-block-start: var(--space-2);
+  padding: var(--space-2);
+  border-block-start: 1px solid var(--border);
+  background: var(--surface-1);
+}
+
+.dgm-foot.hidden {
   display: none;
 }
 
