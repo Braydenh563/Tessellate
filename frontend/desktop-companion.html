@@ -35,13 +35,12 @@
           <button type="button" class="icon-only ghost small dialog-head-btn desk-close" data-desk-close title="Close" aria-label="Close"><i class="ph ph-x" aria-hidden="true"></i></button>
         </div>
       </header>
-      <label class="visually-hidden" for="desk-note-text">Your note</label>
-      <textarea id="desk-note-text" rows="5" maxlength="4000" placeholder="A thought, a link, a reminder"></textarea>
+      <!-- The Notes tab's capture card (capture-card.js, lazy), opened straight into this bar: the
+           same title, words or to-do list, tags and Save as the dashboard's Quick capture (INBOX 1688). -->
+      <div id="desk-capture" class="capture-bar" role="group" aria-label="Add a note"></div>
       <div class="desk-foot">
-        <p id="desk-note-status" class="status desk-status" role="status" aria-live="polite">Enter saves it, Shift+Enter starts a new line.</p>
-        <div class="row gap desk-actions">
-          <button id="desk-note-save" type="button">Save</button>
-        </div>
+        <p id="desk-note-status" class="status desk-status" role="status" aria-live="polite"></p>
+        <div class="row gap desk-actions"></div>
       </div>
     </section>
     <section class="desk-panel hidden" id="desk-search" role="dialog" aria-labelledby="desk-search-title">

@@ -1370,6 +1370,10 @@ class Engine:
             if now - c["t0"] >= COME_WAIT or math.hypot(p[0] - c["p0"][0], p[1] - c["p0"][1]) > COME_MOVED * k:
                 c["phase"], c["until"] = "go", now + COME_FOR
             return
+        self._come_move(c, p, now)
+
+    def _come_move(self, c: dict, p: tuple[int, int], now: float) -> None:
+        """Come here once the pointer has left the menu: go to it, arrive with a wave, keep company, then stop."""
         if self.state not in ("stand", "act") or self.busy:
             return
         if self.perch is not None:
@@ -1388,13 +1392,15 @@ class Engine:
             self.come = None
             return
         c["phase"], c["to"] = "go", want
+        self._come_go(want, now)
+
+    def _come_go(self, want: tuple, now: float) -> None:
         if want[0] == "perch":
             self._climb(now, want[1])
         elif self.perch is not None:
             self._leave_perch(now, hop=True)
         else:
-            m = self.current_monitor()
-            self._go((want[1], self.ground_y(m)), "come", now, plain=True)
+            self._go((want[1], self.ground_y(self.current_monitor())), "come", now, plain=True)
 
     def _come_target(self, p: tuple[int, int]) -> tuple:
         """A window top when the pointer is high over one it could stand on, else a spot on the ground by the pointer."""

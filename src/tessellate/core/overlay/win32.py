@@ -397,6 +397,16 @@ def _unlisted(w: Any, hwnd: Any, ignore: Any) -> str | None:
     return None
 
 
+def _framed(w: Any, hwnd: Any, ex: int) -> tuple[Any, str]:
+    """The window's frame rectangle, or None and why: click-through (another overlay) or no frame."""
+    if ex & WS_EX_TRANSPARENT and ex & WS_EX_LAYERED:
+        return None, "click-through"
+    rect = _frame_rect(w, hwnd)
+    if rect is None or rect[2] <= rect[0] or rect[3] <= rect[1]:
+        return None, "no frame"
+    return rect, ""
+
+
 def _read_window(
     w: Any, hwnd: Any, own_pid: int, ignore: Any, monitors_: list[tuple[int, int, int, int]], tally: Counter | None = None,
 ) -> "WinInfo | None":
@@ -411,12 +421,9 @@ def _read_window(
         note(why)
         return None
     ex = int(w.user32.GetWindowLongW(hwnd, GWL_EXSTYLE))
-    rect = _frame_rect(w, hwnd)
-    if ex & WS_EX_TRANSPARENT and ex & WS_EX_LAYERED:  # click-through: another overlay
-        note("click-through")
-        return None
-    if rect is None or rect[2] <= rect[0] or rect[3] <= rect[1]:
-        note("no frame")
+    rect, why = _framed(w, hwnd, ex)
+    if rect is None:
+        note(why)
         return None
     pid = wintypes.DWORD(0)
     w.user32.GetWindowThreadProcessId(hwnd, ctypes.byref(pid))
