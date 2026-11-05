@@ -9,6 +9,8 @@ that answers "has this been done?" before anyone starts.
 
 ## Moved from the plans, 2026-11-05 (CHAT_PLAN B3, B4 and B8)
 
+- **B4, verbatim:** "also when fullscreen or docked to the main window, the bottom footer of te popup agent is really really tall which it shouldnt be" (screenshot: the status row then about 270 px of empty footer). Recommendation (taken): the footer is its content's height in every mode (floating, docked, full screen), measured. **Built:** a docked, maximised or resized agent card gives its height to the conversation (or the starters), `flex: 1 1 auto` with no 25rem cap, in panel-movable-lazy.css. At 1440 by 900 the card is 803px docked; under the status row 378px before, 29px (the grip row) after; the foot 45px floating, docked left, docked right and maximised (`tests/test_agent_foot_height.py`).
+
 - **B8, the owner 2026-11-05 02:23Z, verbatim:** "sometimes when I close a minimised tab for a window, the window flashes for a split second". Recommendation (taken): closing a minimised window from its tab never shows the window (no restore before the close, no transition on a hidden window), for every window kind that minimises to a tab. **Built:** the pill's x presses Close while the window is still `data-panel-min` (hidden, no transition or animation), and the mark comes off once it is gone; a held close (a confirm) shows it again after 700ms. Frames with the window on screen during the close, measured over 700ms: agent 8 to 0, Guide 8 to 0, Settings 4 to 0 (`tests/test_panel_min_close_quiet.py`).
 
 ## Moved from the plans, 2026-11-05 (CHAT_PLAN, the Ask sub-tab of 2026-09-21)

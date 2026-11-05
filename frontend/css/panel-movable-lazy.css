@@ -15,6 +15,14 @@
   .panel-movable-on[style*="width"] {
     flex-shrink: 0;
   }
+  /* A docked, maximised or resized agent gives its height to the conversation
+     (CHAT_PLAN B4, the owner: "the bottom footer of te popup agent is really
+     really tall"): the card took the zone's 803px and its rows kept their
+     floating 453px, so 350px sat empty under the status row. */
+  .command-palette-card.panel-movable-on[style*="height"] > :is(.command-palette-results, .command-palette-intro):not(.hidden) {
+    flex: 1 1 auto;
+    max-height: none;
+  }
   .panel-movable-on .panel-drag-head {
     cursor: grab;
     user-select: none;

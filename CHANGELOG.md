@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- The popup agent's foot is one control high when docked or maximised (CHAT_PLAN B4, the owner 2026-11-05): the conversation takes the panel's height, so the space under the status row went from 378px to the grip's 29px (foot 45px floating, docked left and right, maximised).
 - Closing a minimised window from its pill no longer flashes it (CHAT_PLAN B8, the owner 2026-11-05): Close is pressed while the window is still hidden, with no transition; frames shown during the close went from 8, 8 and 4 (agent, Guide, Settings) to 0.
 - Companion: hanging, the size handle is at its bottom-right corner, away from the bar and its hands (the owner, 2026-11-05).
 - CI fix: two composer test files pin the day (the reply seed carries it, so "ticked off" was worded differently on 2026-11-05); Open a diagram says when the list failed to load instead of showing "No diagrams yet"; the documents sidebar's new rules moved to the lazy library stylesheet (boot CSS back under its cap); a test helper imported by its package name.
