@@ -235,6 +235,7 @@ def signatures() -> dict[str, dict[str, tuple[Any, list[Any]]]]:
             "CancelWaitableTimer": (B, [ctypes.c_void_p]),
             "WaitForSingleObject": (wintypes.DWORD, [ctypes.c_void_p, wintypes.DWORD]),
             "CloseHandle": (B, [ctypes.c_void_p]),
+            "GetSystemPowerStatus": (B, [P(_PowerStatus)]),
         },
         "shcore": {
             "GetDpiForMonitor": (ctypes.c_long, [H, INT, P(U), P(U)]),

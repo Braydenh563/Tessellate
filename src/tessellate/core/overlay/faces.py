@@ -209,30 +209,40 @@ def draw(
     whole = Image.frombytes("RGBA", (base.width, base.height), base.bgra, "raw", "BGRa")
     patch = whole.crop((left, top, right, bottom)).resize(((right - left) * UP, (bottom - top) * UP), Image.Resampling.LANCZOS)
     g = ImageDraw.Draw(patch)
-    u = k * UP  # shipped px to patch px
-    ox, oy = (cx - left) * UP, (cy - top) * UP
+    _features(g, patch, ((cx - left) * UP, (cy - top) * UP), k * UP, look, f, flip)
+    here = patch.resize((right - left, bottom - top), Image.Resampling.LANCZOS)
+    done = whole.crop((left, top, right, bottom))
+    done.alpha_composite(here)
+    return _splice(base, sp.premultiplied_bgra(sp.clear_faint_alpha(done)), left, top, right, bottom)
+
+
+def _features(g: Any, patch: Any, at: tuple[float, float], u: float, look: Look, f: float, flip: bool) -> None:
+    """The eyes, brows and mouth of `look` at strength `f`, drawn on the 4x patch about `at` (u: shipped px to patch px)."""
+    ox, oy = at
     gap = 10.0  # each eye's centre, px from the middle (the lid box's quarter points)
     skin = _skin(patch, ox, oy)
     ink = (*INK, int(230 * min(1.0, f + 0.2)))
     sign = -1 if flip else 1
     for side in (-1, 1):
         ex = ox + side * gap * u
-        eye_side = side * sign  # -1 is the figure's own left
         if look.arc * f > 0.3 or look.lid * f > 0.05:
             _lid(g, ex, oy, u, look, f, skin, ink)
-        brow_y = oy - (BROW_UP + look.lift * f + (look.askew * f if eye_side > 0 else 0.0)) * u
-        inner = -side  # toward the nose
-        tilt = look.brow * f * u
-        x_in, x_out = ex + inner * 0.2 * BROW_LEN * u, ex - inner * 0.55 * BROW_LEN * u
         if look.brow or look.lift or look.askew:
-            g.line((x_out, brow_y + tilt * 0.0, x_in, brow_y - tilt), fill=ink, width=max(2, int(1.5 * u)))
+            _brow(g, ex, oy, u, side, side * sign > 0, look, f, ink)
     if look.smile or look.open or look.blush:
         _mouth(g, ox, oy + MOUTH_DOWN * u, u, look, f, skin, ink)
-    here = patch.resize((right - left, bottom - top), Image.Resampling.LANCZOS)
-    done = whole.crop((left, top, right, bottom))
-    done.alpha_composite(here)
-    rows = sp.premultiplied_bgra(sp.clear_faint_alpha(done))
-    out = bytearray(base.bgra)  # only the head's rectangle is rewritten: every other byte is the base's own
+
+
+def _brow(g: Any, ex: float, oy: float, u: float, side: int, raised_side: bool, look: Look, f: float, ink: tuple) -> None:
+    brow_y = oy - (BROW_UP + look.lift * f + (look.askew * f if raised_side else 0.0)) * u
+    tilt = look.brow * f * u
+    x_in, x_out = ex - side * 0.2 * BROW_LEN * u, ex + side * 0.55 * BROW_LEN * u
+    g.line((x_out, brow_y, x_in, brow_y - tilt), fill=ink, width=max(2, int(1.5 * u)))
+
+
+def _splice(base: sp.Frame, rows: bytes, left: int, top: int, right: int, bottom: int) -> sp.Frame:
+    """`base` with only the head's rectangle rewritten from `rows`: every other byte is the base's own."""
+    out = bytearray(base.bgra)
     for y in range(bottom - top):
         a = ((top + y) * base.width + left) * 4
         out[a:a + (right - left) * 4] = rows[y * (right - left) * 4:(y + 1) * (right - left) * 4]

@@ -212,21 +212,21 @@ def feed(e: eng.Engine, t: float, path: list[tuple[int, int]], dt: float = 0.05)
 
 def centre(e: eng.Engine) -> tuple[int, int]:
     x, y, _c = e._display(e._frame(e.now))
-    l, top, r, b = e._box(e._frame(e.now))
-    return int(x + (l + r) / 2), int(y + (top + b) / 2)
+    lx, top, r, b = e._box(e._frame(e.now))
+    return int(x + (lx + r) / 2), int(y + (top + b) / 2)
 
 
 def box(e: eng.Engine) -> tuple[int, int, int, int]:
     x, y, _c = e._display(e._frame(e.now))
-    l, top, r, b = e._box(e._frame(e.now))
-    return int(x + l), int(y + top), int(x + r), int(y + b)
+    lx, top, r, b = e._box(e._frame(e.now))
+    return int(x + lx), int(y + top), int(x + r), int(y + b)
 
 
 def run_gesture(kind: str, seed: int = 2) -> str | None:
     e, _s, t = still(seed=seed)
-    l, top, r, b = box(e)
-    cx, cy = (l + r) // 2, (top + b) // 2
-    w = r - l
+    lx, top, r, b = box(e)
+    cx, cy = (lx + r) // 2, (top + b) // 2
+    w = r - lx
     if kind == "pat":
         path = [(cx, top + 8), (cx, top + 26), (cx, top + 8), (cx, top + 26), (cx, top + 8), (cx, top + 26)]
     elif kind == "rub":
@@ -234,7 +234,7 @@ def run_gesture(kind: str, seed: int = 2) -> str | None:
     elif kind == "poke":
         path = [(cx + 400, cy), (cx + 330, cy), (cx + 200, cy), (cx + 60, cy), (cx + 12, cy), (cx + 10, cy), (cx + 10, cy)]
     elif kind == "flip":
-        path = [(l - 160, cy), (l - 80, cy), (l, cy), (cx, cy), (r, cy), (r + 80, cy), (r + 160, cy)]
+        path = [(lx - 160, cy), (lx - 80, cy), (lx, cy), (cx, cy), (r, cy), (r + 80, cy), (r + 160, cy)]
     elif kind == "flinch":
         path = [(cx + w * 2 + 100, top - 60), (cx + w * 2, top - 55), (cx + w + 60, top - 50), (cx + w + 10, top - 45)]
     elif kind == "hover":
@@ -260,7 +260,7 @@ def test_a_poke_is_answered_by_mood() -> None:
     for mood in ("happy", "sleepy", "bored"):
         e, _s, t = still()
         e.mind.feel(mood, t)
-        l, top, r, b = box(e)
+        lx, top, r, b = box(e)
         cy = (top + b) // 2
         feed(e, t, [(r + 400, cy), (r + 330, cy), (r + 200, cy), (r + 60, cy), (r - 10, cy), (r - 12, cy), (r - 12, cy)], 0.04)
         answers.add((mood, e.ex.last[-1] if e.ex.last else None))
@@ -269,11 +269,11 @@ def test_a_poke_is_answered_by_mood() -> None:
 
 def test_a_pointer_that_only_passes_or_rests_far_away_is_not_a_gesture() -> None:
     e, _s, t = still()
-    l, top, r, b = box(e)
+    lx, top, r, b = box(e)
     cy = (top + b) // 2
-    t = feed(e, t, [(l - 400 + i * 12, cy - 300) for i in range(60)], 0.05)  # a slow drift well above it
-    t = feed(e, t, [(l - 500, cy)] * 40, 0.05)
-    t = feed(e, t, [(l + (i * 7), cy + 200) for i in range(40)], 0.05)  # under it, slowly
+    t = feed(e, t, [(lx - 400 + i * 12, cy - 300) for i in range(60)], 0.05)  # a slow drift well above it
+    t = feed(e, t, [(lx - 500, cy)] * 40, 0.05)
+    t = feed(e, t, [(lx + (i * 7), cy + 200) for i in range(40)], 0.05)  # under it, slowly
     assert e.ex.last == []
 
 
@@ -281,8 +281,8 @@ def test_a_gesture_is_not_answered_while_typing_or_in_a_card_or_when_still() -> 
     for quiet in ("quiet", "reduced"):
         e, _s, t = still()
         setattr(e, quiet, True)
-        l, top, r, b = box(e)
-        cx = (l + r) // 2
+        lx, top, r, b = box(e)
+        cx = (lx + r) // 2
         feed(e, t, [(cx, top + 8), (cx, top + 26)] * 4, 0.05)
         assert e.ex.last == [], quiet
 
@@ -290,8 +290,8 @@ def test_a_gesture_is_not_answered_while_typing_or_in_a_card_or_when_still() -> 
 def test_a_gesture_turns_it_to_the_pointer_and_wakes_a_sleeper() -> None:
     e, _s, t = still()
     e._enter("sleep", t)
-    l, top, r, b = box(e)
-    cx, cy = (l + r) // 2, (top + b) // 2
+    lx, top, r, b = box(e)
+    cx, cy = (lx + r) // 2, (top + b) // 2
     t = feed(e, t, [(cx - 25, cy), (cx + 25, cy)] * 4, 0.05)
     assert e.ex.last and e.state != "sleep"
 
@@ -307,9 +307,9 @@ def test_the_reaction_shows_in_the_very_next_picture() -> None:
 
 def test_the_pointer_is_watched_close_up_and_not_far_off() -> None:
     e, _s, t = still()
-    l, top, r, b = box(e)
-    assert e.update(t + 0.1, (l - 30, top + 20)).wake_ms <= extras.WATCH_MS
-    assert e.update(t + 0.3, (l - 3000, top)).wake_ms > extras.WATCH_MS
+    lx, top, r, b = box(e)
+    assert e.update(t + 0.1, (lx - 30, top + 20)).wake_ms <= extras.WATCH_MS
+    assert e.update(t + 0.3, (lx - 3000, top)).wake_ms > extras.WATCH_MS
 
 
 # --- the screen --------------------------------------------------------------------------------
@@ -372,9 +372,10 @@ def test_the_screen_watch_says_what_changed() -> None:
     bat[0] = (5, True)  # on mains: never
     w.poll(16.0, 10, 1)
     files[0] = 4
-    assert w.poll(18.0, 10, 1) == ["download_done"]
+    assert w.poll(18.0, 10, 1) == [], "the folder is read every ten seconds, not every poll (a huge folder costs a bounded read)"
+    assert w.poll(20.0, 10, 1) == ["download_done"]
     files[0] = None
-    assert w.poll(20.0, 10, 1) == []
+    assert w.poll(30.0, 10, 1) == []
 
 
 def test_downloads_count_skips_files_still_being_written(tmp_path) -> None:
@@ -398,3 +399,45 @@ def test_an_hour_awake_shows_many_more_acts_and_pictures_and_still_barely_moves(
     assert r["pictures"] >= 700, r  # was 331 to 800 an hour
     assert r["moving_share"] <= 0.012, r  # travel is still rare: 0.3 to 1 percent of the hour by seed, 0.55 on average (was 0.5)
     assert 70 <= r["wakes_per_min"] <= 700, r
+
+
+@pytest.mark.parametrize("seed", [1, 3, 4])
+def test_a_tremor_on_a_pointer_resting_on_the_figure_is_not_a_pat_or_a_rub(seed: int) -> None:
+    """Review of the first build: 2 px of jitter a frame, resting on the figure, fired pat and rub."""
+    e, _s, t = still(seed=seed)
+    lx, top, r, b = box(e)
+    rng = random.Random(seed)
+    x, y = (lx + r) / 2, top + (b - top) * 0.3
+    for _ in range(int(60 / 0.016)):
+        t += 0.016
+        x += rng.uniform(-2, 2)
+        y += rng.uniform(-2, 2)
+        e.update(t, (int(x), int(y)))
+    assert not {"pat", "rub"} & set(e.ex.last), e.ex.last
+
+
+def test_an_act_never_starts_the_instant_the_figure_is_free_or_after_a_stall() -> None:
+    e, _s, t = still()
+    e.ex.act_ready = 0.0
+    e.ex.life(t + 500.0)  # the clock jumped (a suspend): the next act is re-timed, not fired
+    assert e.state == "stand" and e.ex.act_ready > t + 500.0
+    e.quiet = True
+    e.ex.life(t + 501.0)
+    assert e.ex.act_ready >= t + 501.0 + extras.LIFE_SETTLE, "typing holds the next act back for a while"
+
+
+def test_the_screen_events_read_nothing_while_it_sleeps_sits_or_stays() -> None:
+    from tests.test_overlay_roam_runner import started, tick
+
+    for how in ("sleep", "sit", "stay"):
+        r, fake, clock, _ = started()
+        if how == "stay":
+            r.engine.command("stay", clock.t)
+        else:
+            r.engine.last_active = clock.t - 700  # long untouched, as the climb guard's own test does
+            r.engine._enter(how, clock.t)
+        before = len(fake.calls)
+        tick(r, clock, 3.0, 5)
+        asked = [fn for _d, fn, _a in fake.calls[before:] if fn in ("GetSystemPowerStatus", "EnumWindows")]  # (the foreground window is also read for fullscreen)
+        assert asked == [], (how, asked)
+        r.stop()

@@ -21,20 +21,29 @@ from . import behaviour as bh
 from . import faces, props
 
 #: In-place acts while it stands: one every this many seconds, in the mind's own weighing (`mind.pick`).
-LIFE_EVERY = (28.0, 80.0)
+LIFE_EVERY = (50.0, 130.0)
 MIN_WAKE_MS = 16
+#: Seconds after one of its acts before the next blink or look may come.
+AFTER_ACT_QUIET = 2.0
+#: An act whose pose swings less than this is drawn at the rest pace.
+CALM_AMPLITUDE = 0.1
+#: A gap in the ticks longer than this is a stall (a suspend, a test's clock jump): the next act is re-timed. And the
+#: least wait after the figure was busy with something else.
+LIFE_STALL, LIFE_SETTLE = 10.0, 8.0
 #: The pointer is watched at this pace while it is near the figure (a gesture needs 15 samples a second).
-WATCH_MS = 60
+WATCH_MS = 100
 WATCH_REACH = 3.0  # box widths
 #: ... and for this long after it last moved (a hover has to be seen as still, a rub as it begins).
-WATCH_FOR = 1.0
+WATCH_FOR = 0.7
 SAMPLE_KEEP = 1.6
 #: Gesture thresholds, logical px (scaled by the figure's size) and seconds.
-PAT_DIP, PAT_REVERSALS, PAT_WINDOW, HEAD_ZONE = 7.0, 2, 1.0, 0.42
-RUB_SWING, RUB_REVERSALS, RUB_WINDOW, RUB_FLAT = 9.0, 3, 1.4, 0.7
+PAT_DIP, PAT_REVERSALS, PAT_WINDOW, HEAD_ZONE = 11.0, 2, 1.0, 0.42
+RUB_SWING, RUB_REVERSALS, RUB_WINDOW, RUB_FLAT = 14.0, 3, 1.4, 0.7
 POKE_SPEED, POKE_REST, POKE_WINDOW = 800.0, 260.0, 0.4
 SWIPE_SPEED, FLINCH_REACH = 1500.0, 150.0
 HOVER_FOR, HOVER_STILL = 1.2, 80.0
+#: A stroke's travel over its distance: more than this is a tremor, not a pat.
+STROKE_WASTE = 1.3
 #: States a reaction may break into, and the few more a touch may.
 SCREEN_FREE = ("stand", "act", "notice", "wave", "land")
 TOUCH_FREE = (*SCREEN_FREE, "sit", "sleep", "startle")
@@ -116,6 +125,10 @@ def register() -> None:
             faces.ACT_FACES[r.act] = r.face
 
 
+def _in_box(s: tuple[float, float, float], box: tuple[float, float, float, float], pad: float) -> bool:
+    return box[0] - pad <= s[1] <= box[2] + pad and box[1] - pad <= s[2] <= box[3] + pad
+
+
 class Pointer:
     """A classifier of the pointer's last second and a half: the gesture it just made, if any."""
 
@@ -142,58 +155,75 @@ class Pointer:
         return path / max(0.016, pts[-1][0] - pts[0][0])
 
     def reversals(self, pts: list[tuple[float, float, float]], axis: int, swing: float) -> int:
-        """Turns of direction along an axis (1 x, 2 y), each after at least `swing` px of travel."""
-        n, direction, anchor = 0, 0, pts[0][axis] if pts else 0.0
-        for p in pts[1:]:
+        """Turns of direction along an axis (1 x, 2 y), each after a stroke of at least `swing` px that went there
+        fairly straight (the travel at most `STROKE_WASTE` times the distance), so a hand's tremor does not count."""
+        n, direction, anchor, travel = 0, 0, pts[0][axis] if pts else 0.0, 0.0
+        for prev, p in zip(pts, pts[1:]):
+            travel += abs(p[axis] - prev[axis])
             d = p[axis] - anchor
             if abs(d) >= swing:
                 sign = 1 if d > 0 else -1
-                if direction and sign != direction:
-                    n += 1
-                direction, anchor = sign, p[axis]
-            elif direction and (p[axis] - anchor) * direction > 0:
-                anchor = p[axis]
+                if travel <= STROKE_WASTE * abs(d):
+                    n += 1 if direction and sign != direction else 0
+                    direction = sign
+                anchor, travel = p[axis], 0.0
+            elif direction and d * direction > 0:
+                anchor, travel = p[axis], 0.0
         return n
 
     def classify(self, now: float, box: tuple[float, float, float, float], k: float, mood: str) -> str | None:
         """`pat`, `rub`, `poke`, `flip`, `flinch`, `hover` or None, from the samples and the figure's drawn box."""
         if len(self.samples) < 2:
             return None
-        l, t, r, b = box
         pad = 6.0 * k
-
-        def inside(s: tuple[float, float, float]) -> bool:
-            return l - pad <= s[1] <= r + pad and t - pad <= s[2] <= b + pad
-
         last = self.samples[-1]
-        quick = [s for s in self.samples if now - s[0] <= 0.3]
-        fast = self.speed(now, 0.3)
-        if fast >= SWIPE_SPEED * k and len(quick) >= 2:
-            xs = [s[1] for s in quick]
-            if min(xs) < l and max(xs) > r and all(t <= s[2] <= b for s in quick if l <= s[1] <= r):
-                return "flip"
-        pts_in = [s for s in self.samples if inside(s)]
-        if inside(last):
-            self.inside_since = self.inside_since if self.inside_since is not None else last[0]
-        else:
+        if self._flipped(now, box, k):
+            return "flip"
+        if not _in_box(last, box, pad):
             self.inside_since = None
-        if inside(last):
-            before = [s for s in self.samples if POKE_WINDOW >= now - s[0] > 0.12]
-            peak = max((self._leg(a, c) for a, c in zip(self.samples, list(self.samples)[1:]) if now - c[0] <= POKE_WINDOW), default=0.0)
-            if before and not inside(before[0]) and peak >= POKE_SPEED * k and self.speed(now, 0.12) <= POKE_REST * k:
-                return "poke"
-            head = [s for s in pts_in if now - s[0] <= PAT_WINDOW and s[2] <= t + HEAD_ZONE * (b - t)]
-            if len(head) >= 4 and self.reversals(head, 2, PAT_DIP * k) >= PAT_REVERSALS and self._spread(head, 1) <= (r - l):
-                return "pat"
-            body = [s for s in pts_in if now - s[0] <= RUB_WINDOW]
-            if len(body) >= 6 and self.reversals(body, 1, RUB_SWING * k) >= RUB_REVERSALS and self._spread(body, 2) <= RUB_FLAT * (b - t):
-                return "rub"
-            if self.inside_since is not None and now - self.inside_since >= HOVER_FOR and self.speed(now, HOVER_FOR) <= HOVER_STILL * k:
-                return "hover"
-        elif self._swipe_ended(now, k):
-            cx, cy = (l + r) / 2, (t + b) / 2
-            if math.hypot(last[1] - cx, last[2] - cy) <= FLINCH_REACH * k + (r - l) / 2:
-                return "flinch"
+            return self._flinch(now, box, k, last)
+        self.inside_since = self.inside_since if self.inside_since is not None else last[0]
+        return self._poke(now, box, k, pad) or self._stroke(now, box, k, pad) or self._hover(now, k)
+
+    def _flipped(self, now: float, box: tuple[float, float, float, float], k: float) -> bool:
+        """A fast swipe straight across the figure, from outside one side to outside the other."""
+        lx, t, r, b = box
+        quick = [s for s in self.samples if now - s[0] <= 0.3]
+        if self.speed(now, 0.3) < SWIPE_SPEED * k or len(quick) < 2:
+            return False
+        xs = [s[1] for s in quick]
+        return min(xs) < lx and max(xs) > r and all(t <= s[2] <= b for s in quick if lx <= s[1] <= r)
+
+    def _flinch(self, now: float, box: tuple[float, float, float, float], k: float, last: tuple[float, float, float]) -> str | None:
+        lx, t, r, b = box
+        if self._swipe_ended(now, k) and math.hypot(last[1] - (lx + r) / 2, last[2] - (t + b) / 2) <= FLINCH_REACH * k + (r - lx) / 2:
+            return "flinch"
+        return None
+
+    def _poke(self, now: float, box: tuple[float, float, float, float], k: float, pad: float) -> str | None:
+        """A quick jab into the figure that stops there."""
+        before = [s for s in self.samples if POKE_WINDOW >= now - s[0] > 0.12]
+        pts = list(self.samples)
+        peak = max((self._leg(a, c) for a, c in zip(pts, pts[1:]) if now - c[0] <= POKE_WINDOW), default=0.0)
+        if before and not _in_box(before[0], box, pad) and peak >= POKE_SPEED * k and self.speed(now, 0.12) <= POKE_REST * k:
+            return "poke"
+        return None
+
+    def _stroke(self, now: float, box: tuple[float, float, float, float], k: float, pad: float) -> str | None:
+        """Strokes on the figure: dips on the head are a pat, sweeps along the body a rub."""
+        lx, t, r, b = box
+        inside = [s for s in self.samples if _in_box(s, box, pad)]
+        head = [s for s in inside if now - s[0] <= PAT_WINDOW and s[2] <= t + HEAD_ZONE * (b - t)]
+        if len(head) >= 4 and self.reversals(head, 2, PAT_DIP * k) >= PAT_REVERSALS and self._spread(head, 1) <= (r - lx):
+            return "pat"
+        body = [s for s in inside if now - s[0] <= RUB_WINDOW]
+        if len(body) >= 6 and self.reversals(body, 1, RUB_SWING * k) >= RUB_REVERSALS and self._spread(body, 2) <= RUB_FLAT * (b - t):
+            return "rub"
+        return None
+
+    def _hover(self, now: float, k: float) -> str | None:
+        if self.inside_since is not None and now - self.inside_since >= HOVER_FOR and self.speed(now, HOVER_FOR) <= HOVER_STILL * k:
+            return "hover"
         return None
 
     def _swipe_ended(self, now: float, k: float) -> bool:
@@ -236,7 +266,8 @@ class Extras:
         self.micro = faces.Micro(random.Random(engine.life_rng.getstate()[1][2]), 0.0)
         self.pointer_state = Pointer()
         #: When the next in-place act may start; `inf` stops them (tests that want a still stand).
-        self.act_ready = engine.now + self.rng.uniform(*LIFE_EVERY)
+        self.seen_at = 0.0
+        self.act_ready: float | None = None  # set on the first stand it sees: the engine's clock starts when it is first updated
         self.cool: dict[str, float] = {}
         self.over: tuple[str, float, float] | None = None
         self.hold: float | None = None
@@ -281,24 +312,25 @@ class Extras:
             return None
         return kind, lv
 
+    @staticmethod
+    def calm(act: str | None) -> bool:
+        """A prop or plain act whose pose barely moves (a breath, a page turn): it is drawn at the rest pace
+        (`REST_DRAW_MS`), not at the walk's, so a minute of reading costs what a minute of standing does."""
+        return (act in props.PROP_ACTS or act in props.PLAIN_ACTS) and bh.AMPLITUDE.get(act, 1.0) < CALM_AMPLITUDE
+
+    def _marks(self, now: float) -> list[float]:
+        """The moments after `now` a reaction's face next steps. The micro-expressions' and the acts' own steps are
+        0.2 s or more apart and the streams' tick (`FLOW_TICK_MS`) already looks six times a second, so they ride it
+        and cost no wake of their own (measured: +50 wakes a minute when each had one)."""
+        if self.over is None:
+            return []
+        return [m for m in ease_marks(self.over[1], self.over[2]) if m > now]
+
     def wake_ms(self, now: float) -> int | None:
         """How soon to look again for the sake of the face, the prop and the pointer, or None."""
-        e = self.e
-        if e.reduced:
+        if self.e.reduced:
             return None
-        soon: list[float] = []
-        if self.over is not None:
-            soon += [m for m in ease_marks(self.over[1], self.over[2]) if m > now]
-        if e.state == "act" and e.act:
-            length = max(0.01, e.act_len)
-            if e.act in faces.ACT_FACES:
-                soon += [m for m in ease_marks(e.act_started, length) if m > now]
-            step = props.next_step(e.act, (now - e.act_started) / length, length, now - e.act_started)
-            if step is not None:
-                soon.append(now + step)
-        if e.state in ("stand", "sit"):
-            soon.append(self.micro.next_change(now))
-        soon = [m for m in soon if m < math.inf]
+        soon = self._marks(now)
         ms = None if not soon else max(MIN_WAKE_MS, int(math.ceil((min(soon) - now) * 1000)) + 1)
         if self.near and now - self.moved_at < WATCH_FOR:
             ms = WATCH_MS if ms is None else min(ms, WATCH_MS)
@@ -311,8 +343,8 @@ class Extras:
         e = self.e
         frame = e._frame(now)
         x, y, _clip = e._display(frame)
-        l, t, r, b = e._box(frame)
-        box = (x + l, y + t, x + r, y + b)
+        lx, t, r, b = e._box(frame)
+        box = (x + lx, y + t, x + r, y + b)
         k = e._scale()
         w = box[2] - box[0]
         self.near = (box[0] - WATCH_REACH * w <= pointer[0] <= box[2] + WATCH_REACH * w
@@ -337,16 +369,21 @@ class Extras:
 
     # --- reactions ---------------------------------------------------------------------------
 
-    def fire(self, kind: str, now: float, toward: float | None = None) -> bool:
-        """Play a reaction if it is allowed now (state, cooldown, nobody typing). True when it started."""
+    def _allowed(self, r: Reaction | None, kind: str, now: float) -> bool:
+        """Whether a reaction may start now: the state, the cooldown, nobody typing, no card, no running reaction."""
         e = self.e
-        r = REACTIONS.get(kind)
         if r is None or e.reduced or e.quiet or e.busy or e.card is not None or now < self.cool.get(kind, -1e9):
             return False
         if e.state not in (TOUCH_FREE if r.touch else SCREEN_FREE):
             return False
-        if e.state == "act" and e.act in REACT_ACTS and not r.touch:
-            return False  # a screen event never breaks a reaction that is running
+        return not (e.state == "act" and e.act in REACT_ACTS and not r.touch)  # a screen event never breaks a reaction
+
+    def fire(self, kind: str, now: float, toward: float | None = None) -> bool:
+        """Play a reaction if it is allowed now (state, cooldown, nobody typing). True when it started."""
+        e = self.e
+        r = REACTIONS.get(kind)
+        if r is None or not self._allowed(r, kind, now):
+            return False
         self.cool[kind] = now + r.cooldown
         self.last = [*self.last[-7:], kind]
         if r.feel:
@@ -377,20 +414,35 @@ class Extras:
             e = self.e
             if e.state == "stand" and self.hold > now:
                 e.state_until = min(e.state_until, self.hold)
+            e.next_ambient = max(e.next_ambient, now + AFTER_ACT_QUIET)  # no blink on the heels of a short act
             self.hold = None
 
     # --- life while it stands ----------------------------------------------------------------
 
-    def life(self, now: float) -> None:
-        """Now and then, while it stands with nothing else to do, it does something in place."""
+    def _free(self) -> bool:
+        """Standing with nothing else going on: no trip, card, caret, typing or turn."""
         e = self.e
-        if now < self.act_ready or e.state != "stand" or e.reduced or e.quiet or e.busy or e.card is not None or e.turn_to:
+        if e.state != "stand" or e.reduced or e.quiet or e.busy or e.card is not None or e.turn_to:
+            return False
+        return not (e.trip or e.target is not None or e.caret is not None or e.pending is not None)
+
+    def life(self, now: float) -> None:
+        """Now and then, while it stands with nothing else to do, it does something in place. Asked every tick: a
+        tick that is not a free stand (a trip, a card, a stall of the clock) holds the next one back, so an act never
+        starts the instant the figure is free again."""
+        e = self.e
+        if self.act_ready is None or now - self.seen_at > LIFE_STALL:
+            self.act_ready = now + self.rng.uniform(*LIFE_EVERY)
+        self.seen_at = now
+        if not self._free():
+            self.act_ready = max(self.act_ready, now + LIFE_SETTLE)
             return
-        if e.trip or e.target is not None or e.caret is not None or e.pending is not None:
+        if now < self.act_ready:
             return
         self.act_ready = now + self.rng.uniform(*LIFE_EVERY)
         name = e.mind.pick(self.rng, now, e.gait, e.hour, "perch" if e.perch else "")
         if self.hold is None:
             self.hold = e.state_until
+        kept = e.rng.getstate()  # the act's own length is drawn from the engine's stream: put it back, so a seed's trips are unchanged
         e._start_act(name, now)
-
+        e.rng.setstate(kept)

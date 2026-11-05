@@ -941,8 +941,7 @@ class Engine:
         handler(now, dt)
         if self.card is not None or self.card_queue:
             self._card_step(now)
-        if self.state == "stand":
-            self.ex.life(now)
+        self.ex.life(now)
         if pointer is not None and not self.reduced:
             if not self.ex.pointer(now, pointer):
                 self._notice(now, pointer)
@@ -2711,7 +2710,7 @@ class Engine:
             return self._moving_wake(s)
         if s == "act":
             soonest = min(self.state_until, self._next_pose_change(now, 0.5))
-            return max(TICK_WALK_MS, int(math.ceil((soonest - now) * 1000)) + 1)
+            return max(REST_DRAW_MS if self.ex.calm(self.act) else TICK_WALK_MS, int(math.ceil((soonest - now) * 1000)) + 1)
         if s in ("fall", "hop", "fly", "leap"):  # before the tail: it swings through a fall, and the window moves fastest here
             return TICK_FALL_MS
         if self._follow_moving():  # the tail still swings, or the body is easing to its pose

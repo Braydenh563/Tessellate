@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import logging
 import os
+from itertools import islice
 from pathlib import Path
 from typing import Any, Callable
 
@@ -17,6 +18,8 @@ EVERY = 2.0
 #: Battery percent that is low, and the one it must climb back past before it can say so again.
 LOW, RECOVERED = 20, 30
 #: A download folder entry still being written ends in one of these.
+#: The folder is looked at this many entries deep and this often (a huge folder costs a bounded read, rarely).
+SCAN_CAP, DOWNLOADS_EVERY = 3000, 10.0
 PARTIAL = (".crdownload", ".part", ".tmp", ".download", ".partial")
 
 
@@ -25,7 +28,7 @@ def downloads_count(folder: Path | None = None) -> int | None:
     folder = folder or Path.home() / "Downloads"
     try:
         with os.scandir(folder) as it:
-            return sum(1 for e in it if e.is_file() and not e.name.lower().endswith(PARTIAL))
+            return sum(1 for e in islice(it, SCAN_CAP) if e.is_file() and not e.name.lower().endswith(PARTIAL))
     except OSError:
         return None
 
@@ -57,6 +60,7 @@ class ScreenWatch:
         self.hour: int | None = None
         self.low = False
         self.files: int | None = None
+        self.files_at = 0.0
 
     def windows_seen(self, keys: Any) -> list[str]:
         """The window list a scan read: what opened and closed since the last one (the first is only remembered)."""
@@ -82,7 +86,7 @@ class ScreenWatch:
         if self.hour is None or minute < 2:
             self.hour = hour
         out += self._battery()
-        out += self._downloads()
+        out += self._downloads(now)
         return out
 
     def _foreground(self) -> list[str]:
@@ -116,7 +120,10 @@ class ScreenWatch:
             return ["battery_low"]
         return []
 
-    def _downloads(self) -> list[str]:
+    def _downloads(self, now: float) -> list[str]:
+        if now < self.files_at:
+            return []
+        self.files_at = now + DOWNLOADS_EVERY
         n = self.downloads()
         out = ["download_done"] if n is not None and self.files is not None and n > self.files else []
         self.files = n

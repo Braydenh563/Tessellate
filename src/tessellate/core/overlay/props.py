@@ -12,7 +12,6 @@ is `(name, phase, size)` with the size 1 to 3), and the prop's own motion (a pag
 
 from __future__ import annotations
 
-import math
 from typing import Any, NamedTuple
 
 from . import behaviour as bh
@@ -166,14 +165,14 @@ def draw(frame: sp.Frame, prop: tuple[str, int, int], flip: bool) -> sp.Frame:
     spec = next((s for s, _a, _w in PROP_ACTS.values() if s.prop == name), None)
     if spec is None or frame.box[2] <= frame.box[0]:
         return frame
-    l, t, r, b = frame.box
+    lx, t, r, b = frame.box
     h = max(1.0, float(b - t))
     d = -1 if flip else 1
     k = SIZES[size]
     layer = Image.new("RGBA", (frame.width * S, frame.height * S), (0, 0, 0, 0))
     g = ImageDraw.Draw(layer)
     u = h / 100.0 * S * k
-    ax = ((l + r) / 2.0 + d * spec.at[0] * h) * S
+    ax = ((lx + r) / 2.0 + d * spec.at[0] * h) * S
     ay = (t + spec.at[1] * h) * S
     {
         "book": _book, "beanbag": _beanbag, "rod": _rod, "mat": _mat, "map": _map, "lantern": _lantern,

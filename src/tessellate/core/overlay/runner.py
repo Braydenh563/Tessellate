@@ -68,8 +68,6 @@ ZONE_EVERY = 30.0
 #: The window scan is at most this often (seconds); it starts this long before a
 #: climb is due, so the first read is in hand when it is.
 SCAN_EVERY = 1.0
-#: The window list is read this often for the screen events when no scan has read it (counts and ids only).
-WATCH_WINDOWS_EVERY = 6.0
 #: Pictures with a face or a prop kept built (a prop act cycles a few phases for a minute).
 DECOR_KEEP = 48
 SCAN_RIDING = 0.25
@@ -164,9 +162,7 @@ class OverlayRunner:
             foreground=(lambda: self.k.foreground(self.w)) if hasattr(self.k, "foreground") else None,
             battery=(lambda: self.k.battery(self.w)) if hasattr(self.k, "battery") else None,
         )
-        self._scanned_at = -math.inf
         self._decor: dict[tuple, sprites.Frame] = {}
-        self._next_watch = 0.0
         try:  # a backend that can count why windows were left out (win32); a fake may not
             self._tallies = "tally" in inspect.signature(self.k.windows).parameters
         except (TypeError, ValueError):
@@ -319,6 +315,19 @@ class OverlayRunner:
         # A window is climbed to by a trip or by the climb act, so the list is wanted before either is due.
         return e.state in ("stand", "walk", "drift", "act", "crouch") and now >= min(e.trip_ready, e.climb_ready) - SCAN_SLACK
 
+    def _list_windows(self, tally: Counter) -> list:
+        """The window list, or [] when it cannot be read (no list means no roaming, never a crash)."""
+        try:
+            return self.k.windows(
+                self.w, os.getpid(), self.host.hwnd if self.host else None, [m.area for m in self.monitors],
+                **({"tally": tally} if self._tallies else {}),
+            )
+        except Exception:  # noqa: BLE001
+            if not self._scan_failed:
+                logger.warning("overlay: the windows could not be listed", exc_info=True)
+            self._scan_failed = True
+            return []
+
     def _scan(self, now: float, force: bool = False) -> None:
         engine = self.engine
         assert engine is not None
@@ -332,37 +341,24 @@ class OverlayRunner:
         # On a window it rides it: a dragged window is followed four times a second, not once.
         self._next_scan = now + (SCAN_RIDING if engine.perch is not None else SCAN_EVERY)
         tally: Counter = Counter()
-        try:
-            wins = self.k.windows(
-                self.w, os.getpid(), self.host.hwnd if self.host else None, [m.area for m in self.monitors],
-                **({"tally": tally} if self._tallies else {}),
-            )
-        except Exception:  # noqa: BLE001 - no window list means no roaming, never a crash
-            if not self._scan_failed:
-                logger.warning("overlay: the windows could not be listed", exc_info=True)
-            self._scan_failed = True
-            wins = []
+        wins = self._list_windows(tally)
+        if wins:  # an empty list is a failed read, not every window closing
+            self._answer(self._watch.windows_seen(win.key for win in wins), now)
         scale = max(m.dpi for m in self.monitors) / 96.0 if self.monitors else 1.0
         edges = perches.top_edges(wins, int(engine.size[0] + PERCH_ROOM * scale))
         engine.set_windows(edges, now)
-        self._scanned_at = now
-        self._answer(self._watch.windows_seen(win.key for win in wins), now)
         self._log_scan(len(wins), len(edges), len(engine._candidates()), tally)
 
     def _screen_events(self, now: float) -> None:
         """What happened on the screen since the last tick, handed to the engine to answer (INBOX 1683, M6): the
-        window list when no scan has read it lately (counts and ids only), the app changing, the hour, the battery,
-        a finished download. Never while the figure is hidden or the person is typing (the engine checks both)."""
+        app changing, the hour, the battery, a finished download (window opens and closes come from the climb scan's
+        own list; the window list is never read just for them). Read only while the figure is up, awake and the person
+        is not typing (the same conditions the scan keeps), so a hidden or sleeping figure reads nothing."""
         engine = self.engine
-        if engine is None or engine.reduced:
+        if engine is None or engine.reduced or not engine.roam or engine.quiet or engine.busy:
             return
-        if now - self._scanned_at > WATCH_WINDOWS_EVERY and now >= self._next_watch:
-            self._next_watch = now + WATCH_WINDOWS_EVERY
-            try:
-                wins = self.k.windows(self.w, os.getpid(), self.host.hwnd if self.host else None, [m.area for m in self.monitors])
-                self._answer(self._watch.windows_seen(win.key for win in wins), now)
-            except Exception:  # noqa: BLE001 - no window list is no event, never a crash
-                logger.debug("overlay: windows unreadable for the screen events", exc_info=True)
+        if engine.state in ("sit", "sleep", "pressed", "held", "warp"):
+            return
         local = time.localtime()
         hour = local.tm_hour if self.clock_hour is None else self.clock_hour
         self._answer(self._watch.poll(now, hour, local.tm_min), now)
