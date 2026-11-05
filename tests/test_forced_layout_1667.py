@@ -96,4 +96,5 @@ def test_the_first_run_toast_poll_reads_no_layout() -> None:
     body = _body(_src("onboarding.js"), "function firstRunToastsGone")
     code = "\n".join(line for line in body.splitlines() if not line.strip().startswith("//"))
     assert "getClientRects" not in code and "getBoundingClientRect" not in code
-    assert ".toast:not(.is-leaving)" in body
+    for hidden in (".is-leaving", ".is-folded", ".is-behind", ".toast-more"):
+        assert hidden in body.split("querySelector(")[1].split(")")[0], hidden

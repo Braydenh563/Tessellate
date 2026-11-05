@@ -6296,21 +6296,21 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `closeOnboarding` | frontend/js/onboarding.js:442 |
-| `firstRunPump` | frontend/js/onboarding.js:379 |
+| `closeOnboarding` | frontend/js/onboarding.js:443 |
+| `firstRunPump` | frontend/js/onboarding.js:380 |
 | `firstRunSurfaceOpen` | frontend/js/onboarding.js:328 |
 | `firstRunToastsGone` | frontend/js/onboarding.js:348 |
-| `firstRunTurn` | frontend/js/onboarding.js:364 |
-| `firstRunWelcomeDue` | frontend/js/onboarding.js:371 |
+| `firstRunTurn` | frontend/js/onboarding.js:365 |
+| `firstRunWelcomeDue` | frontend/js/onboarding.js:372 |
 | `loadOnboardingDiagnostics` | frontend/js/onboarding.js:68 |
-| `maybeShowConsoleViewIntro` | frontend/js/onboarding.js:496 |
-| `onboardingBack` | frontend/js/onboarding.js:478 |
-| `onboardingNext` | frontend/js/onboarding.js:459 |
-| `openOnboarding` | frontend/js/onboarding.js:429 |
+| `maybeShowConsoleViewIntro` | frontend/js/onboarding.js:497 |
+| `onboardingBack` | frontend/js/onboarding.js:479 |
+| `onboardingNext` | frontend/js/onboarding.js:460 |
+| `openOnboarding` | frontend/js/onboarding.js:430 |
 | `renderOnboardingActions` | frontend/js/onboarding.js:129 |
 | `renderOnboardingSlide` | frontend/js/onboarding.js:240 |
-| `showOnboarding` | frontend/js/onboarding.js:434 |
-| `showOnboardingTurn` | frontend/js/onboarding.js:412 |
+| `showOnboarding` | frontend/js/onboarding.js:435 |
+| `showOnboardingTurn` | frontend/js/onboarding.js:413 |
 | `whenFirstRunClear` | frontend/js/onboarding.js:341 |
 
 ### frontend/js/panel-movable.js (65)
