@@ -303,6 +303,12 @@
   display: none;
 }
 
+/* While a zoom is in motion (diagram-view.js) the picture is only a transform: the boxes, handles and the picked arrow
+   sit at the old size, so they hide until the real width lands (140 ms after the last input), then draw once. */
+.dgm-stage.dgm-gesturing > :is(.dgm-overlay, .dgm-edge-svg, .dgm-end) {
+  visibility: hidden;
+}
+
 .dgm-picture > .md-mermaid-reason {
   margin: 0;
 }

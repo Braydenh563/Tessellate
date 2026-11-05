@@ -1,8 +1,8 @@
 # Code map
 
-Generated 2026-11-04 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
+Generated 2026-11-05 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7822, frontend ids 2644, CSS sections 522, backend routes 644, backend modules 8797, test files 2069, tests 17478, plan headings 1003, app scripts 28, boot scripts 37, script files 257.
+Counts: frontend functions 7822, frontend ids 2644, CSS sections 522, backend routes 644, backend modules 8797, test files 2070, tests 17485, plan headings 1003, app scripts 28, boot scripts 37, script files 257.
 
 ## Frontend functions (7822)
 
@@ -3424,8 +3424,8 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `kindWord` | frontend/js/diagram-view.js:42 |
-| `wire` | frontend/js/diagram-view.js:49 |
+| `kindWord` | frontend/js/diagram-view.js:68 |
+| `wire` | frontend/js/diagram-view.js:75 |
 
 ### frontend/js/documents-ai.js (15)
 
@@ -12314,7 +12314,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/dash-night-lazy.css | 29 |
 | frontend/css/dash-orphans-lazy.css | 57 |
 | frontend/css/desk-companion-lazy.css | 226 |
-| frontend/css/diagram-lazy.css | 1534 |
+| frontend/css/diagram-lazy.css | 1540 |
 | frontend/css/file-drop-lazy.css | 51 |
 | frontend/css/first-run-lazy.css | 140 |
 | frontend/css/forced-colors-lazy.css | 28 |
@@ -15818,8 +15818,8 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `_act_topic` | src/tessellate/ai/help_topics_more.py:3388 |
-| `_slash_commands_topic` | src/tessellate/ai/help_topics_more.py:3516 |
+| `_act_topic` | src/tessellate/ai/help_topics_more.py:3389 |
+| `_slash_commands_topic` | src/tessellate/ai/help_topics_more.py:3517 |
 
 ### src/tessellate/ai/help_words.py (2)
 
@@ -24085,7 +24085,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (17478)
+## Tests (17485)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -24638,6 +24638,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_diagram_object_kind.py | 2 |
 | tests/test_diagram_outline_1679.py | 8 |
 | tests/test_diagram_page_1679.py | 7 |
+| tests/test_diagram_panzoom.py | 7 |
 | tests/test_diagram_r10.py | 6 |
 | tests/test_diagram_r6.py | 13 |
 | tests/test_diagram_r7.py | 5 |

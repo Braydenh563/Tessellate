@@ -44,7 +44,8 @@ def test_the_picture_pinches_pans_and_fits_on_a_double_tap_and_keeps_its_zoom_ac
     #: a width on the image, put back by the paint listeners, and the figure's own scroll).
     view = (JS / "diagram-view.js").read_text(encoding="utf-8")
     assert "zoomable" not in TOUCH and "MAX_ZOOM" not in TOUCH and "fig.onpaint" not in TOUCH
-    for needle in ('event.pointerType !== "touch"', "start.scale * (now.d / start.d)", "fig.scrollLeft -=", "zoomTo(f * 2", "img.style.width"):
+    # 1679 l: a pinch and a double tap aim a scale (painted as a transform next frame, committed after) instead of calling zoomTo.
+    for needle in ('event.pointerType !== "touch"', "start.scale * (mid.d / start.d)", "fig.scrollLeft -=", "aim(f * 2", "img.style.width"):
         assert needle in view, needle
     assert "(fig.onpaint ||= []).push(paint)" in view and "for (const paint of S.fig.onpaint || []) paint();" in BUILDER
     assert ".dgm-compact .dgm-picture {\n  touch-action: none;" in CSS
