@@ -223,6 +223,10 @@ SQUASH_FOR = 0.35
 RIGHT_SPEED = 150.0
 RIGHT_W = 2.6
 RIGHT_RAMP = 0.4
+#: INBOX 1683 (v, "it keeps turning even after it lands"): from the first touch of the floor the turn is paid out as one
+#: eased move (a cubic Hermite from the angle and rate at the touch to upright and still) over this many seconds, so a
+#: figure is upright and laid within it whatever it landed with, and nothing on the floor adds turn again.
+LAND_RIGHT_FOR = 0.5
 SPIN_STEPS = 48
 SPIN_FRAMES_ENGINE = tuple(f"spin{i}" for i in range(SPIN_STEPS))
 #: A floater: hover height range above the floor, speed, turn rate, air drag,
@@ -473,6 +477,10 @@ class Engine:
         self.kick = 0.0  # the change of turn rate a contact has still to pay out (`_spin`)
         self.omega = 0.0  # a thrown figure's turn rate, rad/s
         self.right_t = 0.0  # seconds it has been righting itself
+        self.touch_at: float | None = None  # when the thrown figure first touched the floor (INBOX 1683 v)
+        self.touch_s = 0.0  # seconds since, while the touch pays the turn out
+        self.touch_from = (0.0, 0.0)  # the turn error and rate at the touch
+        self.touch_y = 0.0  # where it touched: the tumble's box limit sits above the rest line, so it eases down to it
         self.grounded = False  # a walker's tumble that has reached the floor
         self.laid = False  # upright and slow: the held pose, for good until the next throw
         self.ground_mon: Monitor | None = None  # the screen a walker's tumble landed on
@@ -2427,17 +2435,27 @@ class Engine:
             return
         floor = min(self.floor_y(m), uy1) if self._open_side(m, "bottom") else self.floor_y(m)
         if floater:
-            self.y = min(self.y, floor)
-            # at the drawn-box limit counts as down: the tumble's box is taller than the figure, so the
-            # limit can sit above the rest line, and it hung there in the limp pose (INBOX 1670)
-            if speed < 25 * scale and self._righted() and (abs(self.ground_y(m) - self.y) < 4 * scale or self.y >= floor - 0.5):
-                self.vx = self.vy = 0.0
-                self.y = self.ground_y(m)
-                self.settled_now = True
-                self.squash_at = now  # INBOX 1683: the settle ends in a small squash (`_ground_pose`), then the stand
-                self._enter("stand", now)
+            self._float_down(m, floor, speed, now)
         elif self.y >= floor:
             self._land_tumble(m, floor, dt, now)
+
+    def _float_down(self, m: Monitor, floor: float, speed: float, now: float) -> None:
+        """A thrown floater nears its rest line: touch, ease down, then settle into the stand."""
+        scale = self._scale()
+        self.y = min(self.y, floor)
+        if self.touch_at is None and self.vy >= 0 and (self.y >= floor - 0.5 or self.y >= self.ground_y(m) - 4 * scale):
+            self._touch(now)  # on its rest line: the same landing as a walker's
+        if self.touch_at is not None:
+            self.vy = 0.0
+            self.y = self._land_y(self.ground_y(m))
+        # at the drawn-box limit counts as down: the tumble's box is taller than the figure, so the
+        # limit can sit above the rest line, and it hung there in the limp pose (INBOX 1670)
+        if speed < 25 * scale and self._righted() and (self.touch_at is None or self.laid) and (abs(self.ground_y(m) - self.y) < 4 * scale or self.y >= floor - 0.5):
+            self.vx = self.vy = 0.0
+            self.y = self.ground_y(m)
+            self.settled_now = True
+            self.squash_at = now  # INBOX 1683: the settle ends in a small squash (`_ground_pose`), then the stand
+            self._enter("stand", now)
 
     def _fly_walls(self, m: Monitor, now: float) -> tuple[float, float]:
         """Bounce off an open side wall (the walls are of what is drawn: the tumble's widest frame, not the
@@ -2459,10 +2477,11 @@ class Engine:
         if not self.grounded:
             self.grounded = True
             self.ground_mon = m  # the slide stays on the screen it landed on: a seam would jump the floor under it
-            self._spin_contact(1.0 if self.vx >= 0 else -1.0)
+            self._touch(now)
         self.vx *= math.exp(-6.0 * dt)
         self.x = min(max(self.x, m.area[0]), m.area[2] - self.size[0])
-        if self._righted() and abs(self.vx) < 20 * self._scale():
+        self.y = self._land_y(self.floor_y(m))
+        if self.laid and abs(self.vx) < 20 * self._scale():
             self.vx = 0.0
             self.y = self.floor_y(m)
             self.settled_now = True
@@ -2557,6 +2576,9 @@ class Engine:
     def _spin(self, dt: float, speed: float) -> None:
         """One step of the turn: its own drag, and once the flight is slow (or on the floor) an eased turn
         to the nearest upright."""
+        if self.touch_at is not None:
+            self._spin_landing(dt)
+            return
         self.omega *= math.exp(-SPIN_DRAG * dt)
         if self.kick:  # a contact's change of rate is paid out over a few ticks, not taken in one
             part = self.kick * (1.0 - math.exp(-SPIN_EASE * dt))
@@ -2573,6 +2595,36 @@ class Engine:
         if self.slow_for >= FLY_REST_DWELL and self._righted():
             self.laid = True  # laid down for good until the next throw: the held pose never swaps back to the tumble
 
+    def _touch(self, now: float) -> None:
+        """The thrown figure reaches the floor: from here its turn is the landing's eased move to upright, no more
+        kicks (INBOX 1683 v)."""
+        if self.touch_at is not None:
+            return
+        self.touch_at, self.touch_s = now, 0.0
+        err = self.angle - round(self.angle / (2 * math.pi)) * 2 * math.pi
+        self.touch_from = (err, self.omega + self.kick)
+        self.touch_y = self.y
+        if abs(err) < 0.012 and abs(self.touch_from[1]) < 0.15:  # nothing to turn: down at once, as a righted landing always was
+            self.touch_s = LAND_RIGHT_FOR
+            self._spin_landing(0.0)
+        self.kick = 0.0
+
+    def _land_y(self, rest: float) -> float:
+        """Where the landing has brought it: from where it touched (the tumble's box limit) to the rest line, in step
+        with the turn, so the held pose's feet end on the floor and nothing steps at the stand (INBOX 1683 v)."""
+        return self.touch_y + (rest - self.touch_y) * bh.smooth(min(1.0, self.touch_s / LAND_RIGHT_FOR))
+
+    def _spin_landing(self, dt: float) -> None:
+        a0, w0 = self.touch_from
+        self.touch_s += dt
+        s = min(1.0, self.touch_s / LAND_RIGHT_FOR)
+        d = LAND_RIGHT_FOR
+        self.angle = a0 * (2 * s**3 - 3 * s**2 + 1) + d * w0 * (s**3 - 2 * s**2 + s)
+        self.omega = a0 * (6 * s**2 - 6 * s) / d + w0 * (3 * s**2 - 4 * s + 1)
+        if s >= 1.0:
+            self.angle = self.omega = 0.0
+            self.laid = True  # upright and still on the floor: the held pose, whatever the slide has left
+
     def _righted(self) -> bool:
         """Upright and still turning no more than a drift: safe to lay down."""
         err = self.angle - round(self.angle / (2 * math.pi)) * 2 * math.pi
@@ -2580,13 +2632,16 @@ class Engine:
 
     def _spin_contact(self, push: float) -> None:
         """A bounce takes some of the turn, reverses it and adds the kick of the surface (`push` -1 to 1)."""
+        if self.touch_at is not None:  # on the floor the landing's move owns the turn
+            return
         hi = SPIN_OMEGA[1]
         self.kick = max(-hi, min(hi, -SPIN_CONTACT * self.omega + SPIN_SWIRL * 0.5 * push)) - self.omega
 
     def _start_fly(self, vx: float, vy: float, swirl: float = 0.0) -> None:
         self.vx, self.vy = vx, vy
         self.launch = (vx, vy)
-        self.slow_for = self.right_t = 0.0
+        self.slow_for = self.right_t = self.touch_s = 0.0
+        self.touch_at = None
         self.grounded = self.laid = False
         self.y += self._dy(self._frame(self.now)) - self._dy("spin0")  # drawn where it was
         self.angle, self.omega, self.kick = 0.0, self._launch_spin(vx, vy, swirl), 0.0
