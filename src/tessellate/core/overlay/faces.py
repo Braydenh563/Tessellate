@@ -274,7 +274,6 @@ def _mouth(g: Any, mx: float, my: float, u: float, look: Look, f: float, skin: t
         h = look.open * f * u
         g.ellipse((mx - 2.6 * u, my - h * 0.4, mx + 2.6 * u, my + h * 0.6), fill=(*INK, 235))
     elif abs(s) > 0.3 * u:
-        top, bot = (my - 1.5 * u, my + s) if s > 0 else (my + s * 0.3, my - s * 0.2)
         if s > 0:
             g.arc((mx - w, my - s * 1.6, mx + w, my + s * 0.7), 20, 160, fill=ink, width=max(2, int(1.3 * u)))
         else:

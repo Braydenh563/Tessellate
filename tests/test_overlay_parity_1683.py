@@ -273,7 +273,7 @@ def test_a_pointer_that_only_passes_or_rests_far_away_is_not_a_gesture() -> None
     cy = (top + b) // 2
     t = feed(e, t, [(lx - 400 + i * 12, cy - 300) for i in range(60)], 0.05)  # a slow drift well above it
     t = feed(e, t, [(lx - 500, cy)] * 40, 0.05)
-    t = feed(e, t, [(lx + (i * 7), cy + 200) for i in range(40)], 0.05)  # under it, slowly
+    feed(e, t, [(lx + (i * 7), cy + 200) for i in range(40)], 0.05)  # under it, slowly
     assert e.ex.last == []
 
 
@@ -292,7 +292,7 @@ def test_a_gesture_turns_it_to_the_pointer_and_wakes_a_sleeper() -> None:
     e._enter("sleep", t)
     lx, top, r, b = box(e)
     cx, cy = (lx + r) // 2, (top + b) // 2
-    t = feed(e, t, [(cx - 25, cy), (cx + 25, cy)] * 4, 0.05)
+    feed(e, t, [(cx - 25, cy), (cx + 25, cy)] * 4, 0.05)
     assert e.ex.last and e.state != "sleep"
 
 

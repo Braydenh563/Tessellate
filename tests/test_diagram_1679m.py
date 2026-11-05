@@ -9,7 +9,6 @@ from pathlib import Path
 
 import pytest
 
-from tests._app_js import app_js_text  # noqa: F401  (the helper every frontend test reads through)
 from tests.test_mermaid_frame import FRAME_JS, _run_region
 
 ROOT = Path(__file__).resolve().parents[1]
