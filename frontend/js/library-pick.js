@@ -44,7 +44,7 @@ function libraryPickAbout(kind, row) {
 //: source first; the others after it, one at a time, so each tab carries its
 //: count (what matches the words typed, or everything) and opens at once. A
 //: slow fetch that lands after the tab changed paints nothing.
-function pickLibraryItemDialog(message, { sources = null } = {}) {
+function pickLibraryItemDialog(message, { sources = null, noUploads = false } = {}) {
   const available = LIBRARY_PICK_SOURCES.filter((source) =>
     sources ? sources.includes(source.kind) : !source.optIn
   );
@@ -73,8 +73,9 @@ function pickLibraryItemDialog(message, { sources = null } = {}) {
       if (cache[kind]) return cache[kind];
       const source = available.find((s) => s.kind === kind);
       //: The gallery is paged (tests/test_gallery_paging.py); the rest answer once.
-      const read = source.path === "/files/gallery"
-        ? apiPagedList(source.path, 200, { silent: true })
+      //: Files are both tables (`fileRows`); a map's reference names a note's attachment only, so it asks `noUploads`.
+      const read = source.kind === "file"
+        ? pickLibraryItemDialog.fileRows({ silent: true }, !noUploads)
         : apiJson(source.path, { silent: true });
       //: A failed read is not remembered as an empty source: the next visit to the tab asks again.
       const rows = await read.catch(() => null);
@@ -116,7 +117,7 @@ function pickLibraryItemDialog(message, { sources = null } = {}) {
           icon: typeof source.icon === "function" ? source.icon(row) : source.icon,
           label,
           about: libraryPickAbout(source.kind, row),
-          value: { kind: source.kind, id: row.id, label: clipText(label, 70), row },
+          value: { kind: row.store === "media" ? "upload" : source.kind, id: row.mediaId ?? row.id, label: clipText(label, 70), row },
         }));
       const empty = typeof source.icon === "function" ? source.empty : source.icon;
       box.fill(items, term, pickerEmpty(source.label.toLowerCase(), term, empty, source.hint));
@@ -264,3 +265,22 @@ function pickMediaDialog() {
       .catch(() => say("Couldn't load your library."));
   });
 }
+
+//: **Every file the Library holds, for every picker** (INBOX 1687): a note's attachments
+//: (`store: "file"`) and the Library's uploads (`store: "media"`), pictures left out. The two
+//: tables number rows apart, so an upload's row id is `m<id>`: never equal to a note attachment's, in every staged list and tick. An upload only a locked
+//: private note holds is left out, as `GET /media` blanks its readings. Null when both reads fail.
+pickLibraryItemDialog.fileRows = async (opts, withUploads = true) => {
+  const [notes, uploads] = await Promise.all([
+    apiPagedList("/files/gallery", 200, opts).catch(() => null),
+    withUploads ? apiPagedList("/media", 200, opts).catch(() => null) : [],
+  ]);
+  if (notes == null && uploads == null) return null;
+  const image = /\.(png|jpe?g|gif|webp|bmp|svg|avif|heic|heif)$/i;
+  return [
+    ...(notes || []).filter((row) => !(row.mime || "").startsWith("image/")).map((row) => ({ ...row, store: "file" })),
+    ...(uploads || [])
+      .filter((row) => !image.test(row.original_name || row.url || "") && !(row.usage_incomplete && !(row.used_by || []).length))
+      .map((row) => ({ ...row, mediaId: row.id, id: `m${row.id}`, store: "media", page: `/media/pdf-page/${encodeURIComponent((row.url || "").split("/").pop())}/0` })),
+  ];
+};

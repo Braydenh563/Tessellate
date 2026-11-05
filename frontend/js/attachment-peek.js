@@ -27,7 +27,7 @@
       walk(tree?.roots || []);
       if (topics.length) entry = { content: topics.join(" · "), category: "Mind map" };
     }
-    if (item.kind === "file") {
+    if (item.kind === "file" && Number.isInteger(item.id) && !item.store) {
       const file = await apiJson(`/files/${item.id}/text`).catch(() => null);
       if (file?.text) entry = { content: file.text.slice(0, 1200), category: "File" };
     }

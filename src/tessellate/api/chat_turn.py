@@ -132,7 +132,7 @@ def _composes_offline(body: ChatRequest) -> bool:
     pictures, or with a model running, goes the model's way."""
     if body.image_media_ids or deps.get_ollama().is_running():
         return False
-    kind = _detect_intent(body.question, False, body.note_ids, body.document_ids, body.file_ids, body.board_ids)
+    kind = _detect_intent(body.question, False, body.note_ids, body.document_ids, body.file_ids, body.media_file_ids, body.board_ids)
     return kind not in (intent.SMALLTALK, intent.ABOUT_APP)
 
 

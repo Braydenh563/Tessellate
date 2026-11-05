@@ -62,7 +62,8 @@ def test_a_nap_on_a_window_comes_down_first() -> None:
 def test_come_here_walks_to_the_pointer_and_stops_close() -> None:
     e, _ = ready()
     k = e._scale()
-    assert e.command("come", 1.0) and e.state in ("walk", "crouch")
+    # Intent moved (INBOX 1683 t): the menu is opened on the figure, so it first waits for the pointer to leave.
+    assert e.command("come", 1.0) and e.come["phase"] == "wait"
     run(e, 1.0, 14.0, pointer=(1500, 900), step=0.033)
     near = abs((e.x + e.size[0] / 2) - 1500)
     assert near <= (eng.COME_GAP + 40) * k + e.size[0] / 2, near

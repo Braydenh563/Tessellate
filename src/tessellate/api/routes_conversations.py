@@ -19,6 +19,7 @@ from sqlalchemy.orm import Session
 
 from tessellate.core import deps
 from tessellate.core.database import LIKE_ESCAPE, Conversation, like_escape, utcnow
+from tessellate.repo import uploads as uploads_repo
 from tessellate.core.deps import get_session
 from tessellate.ai.grounding import support as grounding_support
 from tessellate.entry.manager import log_action
@@ -105,6 +106,8 @@ class TurnBody(BaseModel):
     #: files, which is the shape this field's two neighbours were both added
     #: to fix.
     file_ids: list[int] | None = None
+    #: Library uploads this turn attached (a MediaUpload row: its ids are not an Attachment's, INBOX 1687).
+    media_file_ids: list[int] | None = None
     #: Notes clipped to this question with the paperclip. Reported: *"if the
     #: user attaches a note to a chat message how does it show that that note
     #: is attached to that message??"*, it did not, anywhere. The ids were
@@ -182,6 +185,8 @@ def _user_message(turn: TurnBody, asked: datetime) -> dict:
         user["document_ids"] = turn.document_ids
     if turn.file_ids:
         user["file_ids"] = turn.file_ids
+    if turn.media_file_ids:
+        user["media_file_ids"] = turn.media_file_ids
     if turn.note_ids:
         user["note_ids"] = turn.note_ids
     if turn.board_ids:
@@ -478,7 +483,7 @@ def _hydrate_attachments(session: Session, messages: list[dict]) -> None:
     which is what happened before this existed. Nothing here 404s.
     """
     #: In the order a bubble shows them: pictures, documents, files, notes, maps.
-    keys = ("image_media_ids", "document_ids", "file_ids", "note_ids", "board_ids")
+    keys = ("image_media_ids", "document_ids", "file_ids", "media_file_ids", "note_ids", "board_ids")
     wanted = {key: {i for m in messages for i in (m.get(key) or [])} for key in keys}
     if not any(wanted.values()):
         return
@@ -487,6 +492,7 @@ def _hydrate_attachments(session: Session, messages: list[dict]) -> None:
         "image_media_ids": _media_cards(session, wanted["image_media_ids"]),
         "document_ids": _document_cards(session, wanted["document_ids"]),
         "file_ids": _file_cards(session, wanted["file_ids"]),
+        "media_file_ids": _upload_cards(session, wanted["media_file_ids"]),
         "note_ids": notes,
         "board_ids": maps,
     }
@@ -497,8 +503,6 @@ def _hydrate_attachments(session: Session, messages: list[dict]) -> None:
 
 
 def _media_cards(session: Session, ids: set) -> dict:
-    from tessellate.core.database import MediaUpload
-
     return {
         upload.id: {
             "id": upload.id,
@@ -510,7 +514,7 @@ def _media_cards(session: Session, ids: set) -> dict:
             "caption": upload.caption or "",
             "text": (upload.vision_ocr_text or upload.ocr_text or "").strip(),
         }
-        for upload in (session.query(MediaUpload).filter(MediaUpload.id.in_(ids)).all() if ids else [])
+        for upload in uploads_repo.by_ids(session, ids)
     }
 
 
@@ -525,6 +529,11 @@ def _file_cards(session: Session, ids: set) -> dict:
 
     rows = session.query(Attachment).filter(Attachment.id.in_(ids)).all() if ids else []
     return {a.id: {"id": a.id, "kind": "file", "name": a.filename} for a in rows}
+
+
+def _upload_cards(session: Session, ids: set) -> dict:
+    rows = uploads_repo.by_ids(session, ids)
+    return {u.id: {"id": u.id, "kind": "file", "store": "media", "name": u.original_name} for u in rows}
 
 
 def _entry_cards(session: Session, note_ids: set, board_ids: set) -> tuple[dict, dict]:

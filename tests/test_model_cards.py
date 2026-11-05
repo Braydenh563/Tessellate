@@ -286,9 +286,23 @@ def test_an_installed_model_is_offered_only_the_uses_its_kind_has(entry, uses):
     assert model_cards.installed_uses(entry) == uses
 
 
+def _wait_for_pull(client, name: str, timeout: float = 5.0) -> dict:
+    import time
+
+    deadline = time.monotonic() + timeout
+    while time.monotonic() < deadline:
+        body = client.get("/models/status").json()
+        if body["pulls"].get(name, {}).get("status") == "success":
+            return body
+        time.sleep(0.05)
+    raise AssertionError(f"timed out waiting for the pull of {name}")
+
+
 def test_the_status_poll_carries_each_installed_models_uses(ai_client, fake_ollama):
     ai_client.post("/models/pull", json={"name": "nomic-embed-text"})
-    status = ai_client.get("/models/status").json()
+    # The pull runs on the job pool; read the status once it has landed, as test_models_api does (a bare read raced
+    # it and failed on one CI runner with StopIteration).
+    status = _wait_for_pull(ai_client, "nomic-embed-text")
     embedder = next(m for m in status["installed_models"] if m["name"].startswith("nomic-embed-text"))
     assert embedder["uses"] == ["embeddings"]
 

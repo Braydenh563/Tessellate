@@ -11,19 +11,19 @@
        app's companion drawing (avatars.js, atlas*.js) as they are, with
        desk-env.js standing in for the few app globals they read, and signs in
        with the app's own token like capture.html. No inline script. -->
-  <script src="/js/theme-boot.js?v=0.6.2"></script>
+  <script src="/js/theme-boot.js?v=0.7.0"></script>
   <link rel="stylesheet" href="/vendor/phosphor/style.css">
-  <link rel="stylesheet" href="/css/00-tokens-shell.css?v=0.6.2">
-  <link rel="stylesheet" href="/css/01-forms-settings.css?v=0.6.2">
-  <link rel="stylesheet" href="/css/02-chat-graph.css?v=0.6.2">
-  <link rel="stylesheet" href="/css/03-dashboard-widgets.css?v=0.6.2">
-  <link rel="stylesheet" href="/css/04-chat-dock-appearance.css?v=0.6.2">
-  <link rel="stylesheet" href="/css/05-sidebars-themes.css?v=0.6.2">
-  <link rel="stylesheet" href="/css/06-timeline-dialogs.css?v=0.6.2">
-  <link rel="stylesheet" href="/css/07-whiteboard-misc.css?v=0.6.2">
-  <link rel="stylesheet" href="/css/08-consistency.css?v=0.6.2">
-  <link rel="stylesheet" href="/css/atlas-lazy.css?v=0.6.2">
-  <link rel="stylesheet" href="/css/desk-companion-lazy.css?v=0.6.2">
+  <link rel="stylesheet" href="/css/00-tokens-shell.css?v=0.7.0">
+  <link rel="stylesheet" href="/css/01-forms-settings.css?v=0.7.0">
+  <link rel="stylesheet" href="/css/02-chat-graph.css?v=0.7.0">
+  <link rel="stylesheet" href="/css/03-dashboard-widgets.css?v=0.7.0">
+  <link rel="stylesheet" href="/css/04-chat-dock-appearance.css?v=0.7.0">
+  <link rel="stylesheet" href="/css/05-sidebars-themes.css?v=0.7.0">
+  <link rel="stylesheet" href="/css/06-timeline-dialogs.css?v=0.7.0">
+  <link rel="stylesheet" href="/css/07-whiteboard-misc.css?v=0.7.0">
+  <link rel="stylesheet" href="/css/08-consistency.css?v=0.7.0">
+  <link rel="stylesheet" href="/css/atlas-lazy.css?v=0.7.0">
+  <link rel="stylesheet" href="/css/desk-companion-lazy.css?v=0.7.0">
 </head>
 <body class="desk-page" data-state="rest" data-locked="1">
   <main class="desk-root">
@@ -35,13 +35,12 @@
           <button type="button" class="icon-only ghost small dialog-head-btn desk-close" data-desk-close title="Close" aria-label="Close"><i class="ph ph-x" aria-hidden="true"></i></button>
         </div>
       </header>
-      <label class="visually-hidden" for="desk-note-text">Your note</label>
-      <textarea id="desk-note-text" rows="5" maxlength="4000" placeholder="A thought, a link, a reminder"></textarea>
+      <!-- The Notes tab's capture card (capture-card.js, lazy), opened straight into this bar: the
+           same title, words or to-do list, tags and Save as the dashboard's Quick capture (INBOX 1688). -->
+      <div id="desk-capture" class="capture-bar" role="group" aria-label="Add a note"></div>
       <div class="desk-foot">
-        <p id="desk-note-status" class="status desk-status" role="status" aria-live="polite">Enter saves it, Shift+Enter starts a new line.</p>
-        <div class="row gap desk-actions">
-          <button id="desk-note-save" type="button">Save</button>
-        </div>
+        <p id="desk-note-status" class="status desk-status" role="status" aria-live="polite"></p>
+        <div class="row gap desk-actions"></div>
       </div>
     </section>
     <section class="desk-panel hidden" id="desk-search" role="dialog" aria-labelledby="desk-search-title">
@@ -67,13 +66,13 @@
       <span class="desk-figure" id="desk-figure"></span>
     </button>
   </main>
-  <script src="/js/prefs.js?v=0.6.2"></script>
-  <script src="/js/desk-env.js?v=0.6.2"></script>
-  <script src="/js/avatars.js?v=0.6.2"></script>
-  <script src="/js/atlas.js?v=0.6.2"></script>
-  <script src="/js/atlas-motion.js?v=0.6.2"></script>
-  <script src="/js/atlas-life.js?v=0.6.2"></script>
-  <script src="/js/standalone-undo.js?v=0.6.2"></script>
-  <script src="/js/desk-companion.js?v=0.6.2"></script>
+  <script src="/js/prefs.js?v=0.7.0"></script>
+  <script src="/js/desk-env.js?v=0.7.0"></script>
+  <script src="/js/avatars.js?v=0.7.0"></script>
+  <script src="/js/atlas.js?v=0.7.0"></script>
+  <script src="/js/atlas-motion.js?v=0.7.0"></script>
+  <script src="/js/atlas-life.js?v=0.7.0"></script>
+  <script src="/js/standalone-undo.js?v=0.7.0"></script>
+  <script src="/js/desk-companion.js?v=0.7.0"></script>
 </body>
 </html>

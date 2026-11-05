@@ -8,7 +8,7 @@
 const { chromium } = require('/opt/node22/lib/node_modules/playwright');
 const BASE = process.env.BASE || 'http://127.0.0.1:8806';
 const PW = 'testpassword123';
-const SIZES = { rest: [112, 152], menu: [248, 312], context: [248, 268], note: [320, 376], search: [340, 440] };
+const SIZES = { rest: [112, 152], menu: [248, 312], context: [248, 268], note: [320, 500], search: [340, 440] };
 const out = [];
 const say = (k, v) => { out.push(`${k}: ${JSON.stringify(v)}`); };
 (async () => {
@@ -56,8 +56,10 @@ const say = (k, v) => { out.push(`${k}: ${JSON.stringify(v)}`); };
   say('note state', await page.evaluate(() => document.body.dataset.state));
   say('note overflow', await fit('note'));
   const stamp = 'deskcompanion sweep ' + Date.now();
-  await page.fill('#desk-note-text', stamp);
-  await page.press('#desk-note-text', 'Enter');
+  //: The note card is the Notes tab's capture card (capture-card.js): its words, then Ctrl+Enter.
+  say('note card', await page.evaluate(() => { const r = (s) => { const e = document.querySelector(s); if (!e) return null; const b = e.getBoundingClientRect(); return [Math.round(b.x), Math.round(b.y), Math.round(b.width), Math.round(b.height)]; }; return { card: r('#desk-capture .capture-card'), body: r('[data-cc=body]'), title: r('[data-cc=title]'), tags: r('[data-cc=tags]'), save: r('[data-cc=save]'), close: r('[data-cc=close]'), seg: r('.capture-card-modes') }; }));
+  await page.fill('[data-cc=body]', stamp);
+  await page.press('[data-cc=body]', 'Control+Enter');
   await page.waitForTimeout(1500);
   say('note status', await page.textContent('#desk-note-status'));
   const list = await (await ctx.request.get(BASE + '/entries?limit=5', { headers: { 'X-Auth-Token': token } })).json();

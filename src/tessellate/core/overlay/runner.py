@@ -327,15 +327,17 @@ class OverlayRunner:
             self._scan_failed = True
             wins = []
         scale = max(m.dpi for m in self.monitors) / 96.0 if self.monitors else 1.0
-        edges = perches.top_edges(wins, int(engine.size[0] + PERCH_ROOM * scale))
-        engine.set_windows(edges, now)
-        self._log_scan(len(wins), len(edges), len(engine._candidates()), tally)
+        room = int(engine.size[0] + PERCH_ROOM * scale)
+        edges = perches.top_edges(wins, room)
+        hangs = perches.hang_spots(wins, room)
+        engine.set_windows(edges, now, hangs)
+        self._log_scan(len(wins), len(edges), len(engine._candidates()), tally, len(edges) + len(hangs))
 
-    def _log_scan(self, listed: int, edges: int, candidates: int, tally: Counter) -> None:
+    def _log_scan(self, listed: int, edges: int, candidates: int, tally: Counter, hangs: int = 0) -> None:
         """One INFO line when what the window list returns changes (counts and reasons, never a title), so a
         companion that never perches can be read off the log (INBOX 1683 g)."""
         parts = ", ".join(f"{n} {why}" for why, n in sorted(tally.items(), key=lambda kv: (-kv[1], kv[0])))
-        line = f"overlay: windows listed {listed}, standable top edges {edges}, worth the trip {candidates}" + (f" ({parts})" if parts else "")
+        line = f"overlay: windows listed {listed}, standable top edges {edges}, worth the trip {candidates}, hang spots {hangs}" + (f" ({parts})" if parts else "")
         if line != self._last_scan_line:
             self._last_scan_line = line
             logger.info(line)

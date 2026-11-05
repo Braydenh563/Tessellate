@@ -171,6 +171,10 @@ class ChatRequest(BaseModel):
     # is extracted at request time by the same `core.docview` the file viewer
     # uses, so what the model reads is what the Files tab shows.
     file_ids: list[int] = Field(default_factory=list, max_length=4)
+    # Files uploaded in the Library (a `MediaUpload` row, not an `Attachment`).
+    # The two tables number their rows separately, so these ids cannot ride in
+    # `file_ids` (INBOX 1687). Same cap, same extraction.
+    media_file_ids: list[int] = Field(default_factory=list, max_length=4)
     # Mind maps attached by hand (MINDMAP_PLAN.md §5 item 11: "a map can be
     # attached to a note, a document and a chat message, exactly as a file can
     # today: routes_chat.py's `file_ids` is the pattern to copy"). A map is a

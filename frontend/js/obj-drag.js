@@ -25,7 +25,7 @@ const OBJ_TOUCH_MS = 350;
 const OBJ_GRIP = "[data-obj-grip]";
 //: Where a press never starts a drag: the card's own controls.
 const OBJ_NO_GRAB = "input, select, textarea, [contenteditable='true'], button, a[href], summary, [draggable='true'], .chip-interactive, .menu-wrap, label";
-const OBJ_ICON = { note: "ph-note", document: "ph-file-text", diagram: "ph-flow-arrow", board: "ph-squares-four", map: "ph-tree-structure", image: "ph-image", file: "ph-file", block: "ph-squares-four" };
+const OBJ_ICON = { note: "ph-note", document: "ph-file-text", diagram: "ph-flow-arrow", board: "ph-squares-four", map: "ph-tree-structure", image: "ph-image", file: "ph-file", upload: "ph-file", block: "ph-squares-four" };
 
 //: The gesture in progress (armed or live), or null.
 let objDragNow = null;

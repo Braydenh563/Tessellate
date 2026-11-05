@@ -155,7 +155,7 @@
       if (glideFrame) cancelAnimationFrame(glideFrame);
       glideFrame = 0;
     };
-    const reduced = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const reduced = () => reducedMotionWanted();
     const show = () => {
       if (!g) return;
       g.frame = 0;

@@ -129,7 +129,8 @@ def _conversation_referenced_ids(session: Session) -> set[int]:
         except ValueError:
             continue
         for message in messages:
-            for media_id in message.get("image_media_ids") or []:
+            #: A Library file sent with a message is kept the same way (INBOX 1687).
+            for media_id in [*(message.get("image_media_ids") or []), *(message.get("media_file_ids") or [])]:
                 if isinstance(media_id, int):
                     ids.add(media_id)
     return ids

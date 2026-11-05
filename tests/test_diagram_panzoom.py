@@ -97,4 +97,4 @@ def test_the_picture_takes_the_wheel_the_keyboard_and_a_glide():
     assert "math.rung(" in VIEW and 'event.key === "1"' in VIEW
     assert "math.velocity(" in VIEW and "math.decay(" in VIEW
     assert "cancelGlide" in VIEW  # a press, a wheel or a key stops it
-    assert "prefers-reduced-motion" in VIEW
+    assert "reducedMotionWanted()" in VIEW  # the shared motion read (test_motion_resolved), not a raw query
