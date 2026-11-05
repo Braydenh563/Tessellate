@@ -1361,9 +1361,15 @@ async function cmdPaletteAsk(text, { plan = null } = {}) {
         if (thinkingBox) thinkingBox.open = false;
         addStep(event);
         //: A page the model read, or the results of its search, open in place under its step (INBOX 1300 C06).
-        const under = stepsFold.nextElementSibling;
-        if (event.ok && event.tool === "read_url") drawAnswerPanels(stepsHolder, [{ web: event.sources, read: true }], under);
-        if (event.ok && event.tool === "web_search") drawAnswerPanels(stepsHolder, [{ web: event.sources }], under);
+        //: The card is drawn by a lazy module, so its place is held now by a
+        //: marker put where the step arrived; the next card's marker goes
+        //: after it, so a read stays under the search that found it.
+        if (event.ok && (event.tool === "read_url" || event.tool === "web_search")) {
+          const panel = { web: event.sources, read: event.tool === "read_url" };
+          const spot = document.createComment("web card");
+          placeStep(spot);
+          drawAnswerPanels(stepsHolder, [panel], spot).then(() => spot.remove());
+        }
         keepAtBottom(cmdPaletteResults);
         // Something visible while a tool runs, so a long silence reads as
         // work rather than as nothing happening.

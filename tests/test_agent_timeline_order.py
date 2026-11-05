@@ -60,3 +60,18 @@ def test_the_popup_agent_places_each_step_where_it_arrived():
     #: Copy, citations and the reply finish see every box.
     assert "finishReply(answerBoxes," in palette
     assert "addInlineCitations(answerBoxes," in palette
+
+
+def test_web_cards_in_one_group_keep_their_arrival_order():
+    """Review of B5: with the cards anchored on the node after the steps
+    fold, a read_url card drawn after a web_search card went above it, since
+    the search card was by then the node after the fold (a paced stream at
+    1440 px: TOOLS > READPANEL > SEARCHPANEL > TEXT1). Each card now holds
+    its place with a marker put down when its step arrives, through
+    `placeStep`, and is drawn before that marker however late the lazy
+    module draws it."""
+    palette = (JS / "palette.js").read_text(encoding="utf-8")
+    assert "stepsFold.nextElementSibling" not in palette
+    assert "const spot = document.createComment(" in palette
+    assert "placeStep(spot);" in palette
+    assert "drawAnswerPanels(stepsHolder, [panel], spot).then(() => spot.remove())" in palette
