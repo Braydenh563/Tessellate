@@ -1676,15 +1676,10 @@ cards as the answer's shape), Raycast (answer and act in place).
 
 | # | Kind | Row | Measure | Rules |
 | --- | --- | --- | --- | --- |
-| 1 | fix | The head's three buttons: built | Built by Brief 88; moved to HISTORY.md ("Moved from the plans, 2026-10-10 (CHAT_PLAN 8 and 9, Brief 88)"); overlaps 3 to 0 at 1440 and 390 | |
-| 2 | fix | Source cards and the head: built | Built by Brief 88; moved to HISTORY.md ("Moved from the plans, 2026-10-10 (CHAT_PLAN 8 and 9, Brief 88)"); 47 and 78 to 0 (folded cards, never painted), small targets 51 and 17 to 0 | |
 | 3 | expansion | Every object kind answers: "what is due this week", "my documents about the harbor", "boards from June" | a 30-question cross-kind set at 1.0 | 2, 6 |
 | 4 | expansion | The answer's shape follows the question: a count in one line, a list as a list, a comparison as a table (decision 58's structure column) | the maxims lint 0 on the set | 10, 11 |
-| 5 | fix | Chat's writes on the undo bar: built | Built by Brief 88; moved to HISTORY.md ("Moved from the plans, 2026-10-10 (CHAT_PLAN 8 and 9, Brief 88)"); `undo.js` chat 1/5 to 4/5 (Send is the composer's), `chatundo88.js` 4/4 | |
-| 6 | optimisation | Click to composer at 390: built | Built by Brief 88; moved to HISTORY.md ("Moved from the plans, 2026-10-10 (CHAT_PLAN 8 and 9, Brief 88)"); switchTab to composer 293 to 370 ms down to 197 to 202 ms; the 1,913 not reproduced | |
-| 7 | expansion | A source opens its note at the quoted line: built | Built by Brief 88; moved to HISTORY.md ("Moved from the plans, 2026-10-10 (CHAT_PLAN 8 and 9, Brief 88)"); span marked 0 to 1 at 1440 and 390 | |
 
-**Briefs.** 84 (rows 3, 4), 88 (rows 1, 2, 5 to 7).
+**Briefs.** 84 (rows 3, 4). Built by Brief 88 and moved to HISTORY.md ("Moved from the plans, 2026-10-10 (CHAT_PLAN 8 and 9, Brief 88)"): section 8 rows 1, 2 and 5 to 7, section 9 rows 2 and 3.
 
 ### 9. Deepened 2026-10-10: the Guide (Brief 72b, decisions 59 and 71)
 
@@ -1705,13 +1700,11 @@ item lights), Raycast's and Notion's in-app help, Apple Tips.
 | # | Kind | Row | Measure | Rules |
 | --- | --- | --- | --- | --- |
 | 1 | fix | The answer first, in one line from the reading; the preface goes (decision 59, F5) | preface 8/8 to 0; the first sentence answers on the 60-question set | 12, 10 |
-| 2 | fix | Each topic's open button lands on a control, lit: built | Built by Brief 88; moved to HISTORY.md ("Moved from the plans, 2026-10-10 (CHAT_PLAN 8 and 9, Brief 88)"); topics landing lit and seen 9 to 140 of 140 at 1440, 9 to 139 at 390 | |
-| 3 | fix | A palette row "Ask the Guide": built | Built by Brief 88; moved to HISTORY.md ("Moved from the plans, 2026-10-10 (CHAT_PLAN 8 and 9, Brief 88)"); "guide" finds it first; More, Guide 2 taps at 390 | |
 | 4 | expansion | Topics for the trust surfaces: Activity and Stop, Health, undo, the iPhone on the LAN, desktop notifications | 0 of the 60 questions on a wrong topic | 6 |
 | 5 | expansion | One unused feature a week, from the usage counts (82 unused in 90 days on this fixture) | the offer appears once a week | 6 |
 | 6 | fix | Typos through the word list (VC15) | VC15's count | 4 |
 
-**Briefs.** 37 (row 5), 75 (row 6), 84 (rows 1, 4), 88 (rows 2, 3).
+**Briefs.** 37 (row 5), 75 (row 6), 84 (rows 1, 4); rows 2 and 3 built (above).
 
 ### Vendored capabilities to use, 2026-10-10 (Brief 75)
 
@@ -1894,11 +1887,10 @@ The owner: "composer_money seems very specific, what if the user asks about othe
 
 - **A1, the owner 2026-11-05 02:12Z (screenshot: Ask at about 2000 px, the answer column's "Atlas" head and model chip beside "Matching records" and its chip), verbatim:** "these panels in the ask tab dont start at the same height or have matching font sizes". Measured: the answer head's name is 12px (`.msg-role`), "Matching records" 16px (`.panel-head`); the answer box sits about 12px above the first record. Recommendation (taken): the two `.chat-half` heads are one recipe, the same height (`--control-h-lg`), the same title size and weight, chips the same size, and the first box under each starts at the same y (within 1px) at 1024, 1440 and 2000, measured with and without a Thinking fold.
 - **A2, the owner 2026-11-05 02:14Z (screenshot: a closed "Thinking" fold as a small pill above the full-width answer), verbatim:** "also im not sure about this but I think some of the dropfown boxes like the thinking boxes that expand to full width when opened should still be full width when closed". Recommendation (taken): a fold that is full width when open is full width when closed (its summary a full-width row with the chevron at the end), by class for every fold in Chat, Ask, the guide and the agent steps, so opening it never moves the layout sideways; DESIGN.md's fold recipe says so and a lint holds it.
-- **B1, the owner 2026-11-05 02:20Z (screenshots: Ask, the whole answer inside a "145 words" card under Thinking, then the same card collapsed to one line), verbatim:** "also the whole response from my ai model just got placed in a dropdown collapsed box" (pasted: the model's "Thinking Process:" text, numbered steps, no tags). Recommendation (taken): find the class (an untagged "Thinking Process:" preamble, the reasoning split, or the long-answer card folding the answer itself) with a fake-transport stream of exactly that shape; the answer is never inside a fold or a collapsed card, the reasoning is, in Ask, Chat and the popup agent.
+- **B1 and B5: built 2026-11-05** (41d42ef, f30176e), moved to HISTORY.md ("Moved from the plans, 2026-11-05 (CHAT_PLAN B1 and B5)"): the answer is never folded, the reasoning is; the popup agent keeps arrival order.
 - **B2, the same message, verbatim:** "I also think the way in which all the metadata and other stuff that appears below all ask searches, chat messages, popup agent stuff needs to be redesigne or rearranged better, individually they are fine but when they stack up below it gets a little unprofessional and like the features are just piling up below with no thought for design or presentation." (screenshots: under Ask's answer "Grounded in", "4 of 5 from your notes", "From your notes", "Why this answer" as four loose rows; under the agent's reply a question fold, "Sources: 12 notes", a stats row, "Why this answer", then copy and retry.) Recommendation (taken): one answer-foot recipe for Ask, Chat and the popup agent: one compact row (sources count, grounding, why, stats) of the same chips, details opening below it on demand, actions in the head, nothing repeated; a recipe in DESIGN.md and a lint.
 - **B3, verbatim:** "I also cant type in the text box while the popup agent is respondning (check the guide as well) and I cant draft, queue or edit/delete queued messages like in chat for the popup agent." Recommendation (taken): the popup agent and the guide take Chat's composer behaviour: typing stays open while a turn runs, Enter queues, the queue shows with edit and delete, drafts are kept per surface; one shared queue component.
 - **B4, verbatim:** "also when fullscreen or docked to the main window, the bottom footer of te popup agent is really really tall which it shouldnt be" (screenshot: the status row then about 270 px of empty footer). Recommendation (taken): the footer is its content's height in every mode (floating, docked, full screen), measured.
-- **B5, verbatim:** "also in that test request the search appeared after the generated text when it happened before that text was written out." Recommendation (taken): steps and text keep the order they happened in (one timeline ordered by event arrival), in the agent, Chat and the guide; a test with a fake stream of text, tool call, text.
 - **B6, verbatim:** "also I still dont understand why the ai model context windows are so small, cna they be larger?? they need to properly adapt to the model." Recommendation (taken): the context window is read from the model (GGUF metadata or the server's reported n_ctx), set as large as the model and memory allow (a bounded share of free RAM or VRAM), shown in Settings with why; prompt budgets scale from it; fake-transport tests for a 4k, 32k and 128k model.
 - **B7, the owner 2026-11-05 02:22Z (screenshot: the activity panel's Running now card: the model line, the agent card, its time and Stop, "What it's doing", a progress bar, each touching), verbatim:** "also there is no vertical spacing for these agent run elements". Recommendation (taken): the run card's rows on the spacing tokens (the card recipe's gap), measured.
 - **B8, the owner 2026-11-05 02:23Z, verbatim:** "sometimes when I close a minimised tab for a window, the window flashes for a split second". Recommendation (taken): closing a minimised window from its tab never shows the window (no restore before the close, no transition on a hidden window), for every window kind that minimises to a tab.

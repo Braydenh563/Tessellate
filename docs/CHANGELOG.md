@@ -6,6 +6,8 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- A model's answer is never folded (CHAT_PLAN B1, the owner, 2026-11-05): an untagged "Thinking Process:" preamble streams into the Thinking fold, and the long-block fold applies to composed replies only (measured: 1 to 0 answer folds in Ask, Chat and the popup agent).
+- The popup agent keeps steps and text in arrival order (CHAT_PLAN B5, the owner, 2026-11-05): a search after the first words sits after them and the next words open a new box (measured: TOOL > TEXT1 to TEXT1 > TOOL > TEXT2).
 - Companion: hanging, the size handle is at its bottom-right corner, away from the bar and its hands (the owner, 2026-11-05).
 - CI fix: two composer test files pin the day (the reply seed carries it, so "ticked off" was worded differently on 2026-11-05); Open a diagram says when the list failed to load instead of showing "No diagrams yet"; the documents sidebar's new rules moved to the lazy library stylesheet (boot CSS back under its cap); a test helper imported by its package name.
 - Documents sidebar (owner, 2026-11-05): a long outline heading ends in an ellipsis and keeps its task count in view; the New pill and its arrow keep their width and the list head wraps its controls under "Recent" on a narrow sidebar, so the arrow no longer lies over the template button.
