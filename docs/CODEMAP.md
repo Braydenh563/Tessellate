@@ -2,7 +2,7 @@
 
 Generated 2026-11-05 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7841, frontend ids 2644, CSS sections 522, backend routes 644, backend modules 8892, test files 2098, tests 17723, plan headings 1004, app scripts 28, boot scripts 37, script files 259.
+Counts: frontend functions 7841, frontend ids 2644, CSS sections 522, backend routes 644, backend modules 8892, test files 2098, tests 17725, plan headings 1004, app scripts 28, boot scripts 37, script files 259.
 
 ## Frontend functions (7841)
 
@@ -15897,28 +15897,28 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_holds` | src/tessellate/ai/insights.py:100 |
 | `_leisure` | src/tessellate/ai/insights.py:115 |
 | `_own_plan` | src/tessellate/ai/insights.py:167 |
-| `_retire` | src/tessellate/ai/insights.py:455 |
+| `_retire` | src/tessellate/ai/insights.py:462 |
 | `_said` | src/tessellate/ai/insights.py:341 |
 | `_said_now` | src/tessellate/ai/insights.py:369 |
 | `_stems` | src/tessellate/ai/insights.py:325 |
 | `_week` | src/tessellate/ai/insights.py:106 |
 | `_written` | src/tessellate/ai/insights.py:92 |
 | `after_lead` | src/tessellate/ai/insights.py:281 |
-| `as_row` | src/tessellate/ai/insights.py:506 |
+| `as_row` | src/tessellate/ai/insights.py:513 |
 | `confirm` | src/tessellate/ai/insights.py:418 |
 | `confirmed_line` | src/tessellate/ai/insights.py:358 |
 | `contrast` | src/tessellate/ai/insights.py:202 |
-| `dismiss` | src/tessellate/ai/insights.py:443 |
-| `done` | src/tessellate/ai/insights.py:475 |
+| `dismiss` | src/tessellate/ai/insights.py:450 |
+| `done` | src/tessellate/ai/insights.py:482 |
 | `drift` | src/tessellate/ai/insights.py:175 |
 | `for_subject` | src/tessellate/ai/insights.py:253 |
 | `from_session` | src/tessellate/ai/insights.py:298 |
 | `key` | src/tessellate/ai/insights.py:330 |
 | `load` | src/tessellate/ai/insights.py:227 |
 | `memory` | src/tessellate/ai/insights.py:392 |
-| `notebook` | src/tessellate/ai/insights.py:517 |
+| `notebook` | src/tessellate/ai/insights.py:524 |
 | `recurrence` | src/tessellate/ai/insights.py:122 |
-| `retire_followed` | src/tessellate/ai/insights.py:490 |
+| `retire_followed` | src/tessellate/ai/insights.py:497 |
 | `short` | src/tessellate/ai/insights.py:268 |
 | `streak` | src/tessellate/ai/insights.py:140 |
 
@@ -24245,7 +24245,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (17723)
+## Tests (17725)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -25250,7 +25250,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_input_normalise_1029.py | 11 |
 | tests/test_insert_catalogue_1102.py | 6 |
 | tests/test_insight_b11.py | 8 |
-| tests/test_insight_verdicts.py | 12 |
+| tests/test_insight_verdicts.py | 14 |
 | tests/test_insights.py | 15 |
 | tests/test_insights_api.py | 30 |
 | tests/test_install_doc_setup_file.py | 1 |

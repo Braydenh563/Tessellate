@@ -5,6 +5,7 @@ away over twenty runs, in chat and in the Patterns line."""
 
 from __future__ import annotations
 
+import json
 from datetime import timedelta
 
 from sqlalchemy import select
@@ -75,13 +76,39 @@ def test_confirm_on_the_route_answers_the_next_turn_as_a_fact(client, session):
     line = done.json()["line"]
     assert line.startswith("Golf is a hobby of yours, as you told me on ")
     row = session.scalars(select(DerivedFact).where(DerivedFact.kind == "confirmed")).one()
-    assert row.model == "you" and row.edited_by_user and row.original_text == pattern["text"]
+    #: The person's own sentence, not an edit of the measurement: the measurement is the
+    #: payload's, so Reset (only for a row edited later) puts this sentence back.
+    assert row.model == "you" and not row.edited_by_user and row.original_text is None
+    assert json.loads(row.payload)["measured"] == pattern["text"]
     #: The Patterns line now says it as confirmed, with no buttons.
     again = _golf(client)
     assert again["confirmed"] and again["text"] == line
     #: The next chat turn answers the matching question with it, first.
     out = _ask(client, "tell me about golf", use_tools=False)
     assert out["text"].startswith(line), out["text"][:200]
+
+
+def test_confirming_twice_keeps_one_confirmed_row(client, session):
+    """Two Confirms on one pattern (a double press, the line drawn twice) are one fact."""
+    _golf_notebook(session)
+    pattern = _golf(client)
+    first = client.post("/insights/confirm", json=pattern).json()
+    second = client.post("/insights/confirm", json=pattern).json()
+    assert second["id"] == first["id"] and second["line"] == first["line"]
+    assert len(client.get("/learned?kind=confirmed").json()["items"]) == 1
+
+
+def test_reset_on_an_edited_confirmed_row_puts_the_sentence_back(client, session):
+    """Settings, What it learned: Edit then Reset on a confirmed pattern is the
+    sentence it was confirmed as, never the raw measurement it came from."""
+    _golf_notebook(session)
+    pattern = _golf(client)
+    done = client.post("/insights/confirm", json=pattern).json()
+    listed = client.get("/learned?kind=confirmed").json()["items"][0]
+    assert not listed["edited_by_user"]
+    client.patch(f"/learned/{done['id']}", json={"text": "Golf is my weekend thing."})
+    back = client.post(f"/learned/{done['id']}/reset").json()
+    assert back["text"] == done["line"] != pattern["text"]
 
 
 def test_not_right_on_the_route_keeps_it_and_its_variants_away(client, session):
