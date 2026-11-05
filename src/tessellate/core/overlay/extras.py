@@ -107,15 +107,14 @@ REACT_ACTS: dict[str, bh.Activity] = {
     "cheer": bh.Activity("hop", (1.6, 2.2), _k((0, 1, 1, 0), (0.15, 1.04, 0.86, 0), (0.3, 0.96, 1.12, 0), (0.5, 1.04, 0.88, 0), (0.65, 0.96, 1.12, 0), (0.85, 1.02, 0.94, 0), (1, 1, 1, 0)), (("play", -0.3),), where="react"),
     "perk_up": bh.Activity("look", (1.2, 1.6), _k((0, 1, 1, 0), (0.15, 0.97, 1.06, 0.02), (0.8, 0.98, 1.03, 0.02), (1, 1, 1, 0)), (), where="react"),
 }
-_registered = False
+_REGISTERED: set[str] = set()
 
 
 def register() -> None:
     """Add the prop and the plain acts and the reactions' own to the mind's tables, once."""
-    global _registered
-    if _registered:
+    if _REGISTERED:
         return
-    _registered = True
+    _REGISTERED.add(__name__)
     props.register()
     for name, act in REACT_ACTS.items():
         bh.ACTIVITIES[name] = act

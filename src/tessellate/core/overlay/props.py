@@ -101,15 +101,14 @@ PLAIN_ACTS: dict[str, tuple[bh.Activity, int, str]] = {
     "puzzle": (_act("look", (5.0, 9.0), ((0, 1, 1, 0), (0.2, 0.98, 0.99, -0.04), (0.55, 0.98, 0.99, 0.04), (1, 1, 1, 0)), (("curiosity", -0.2),), "curious"), 2, "focus"),
 }
 #: Act name -> the face it wears for its length (the props' and the plain ones'), added to `faces.ACT_FACES`.
-_registered = False
+_REGISTERED: set[str] = set()
 
 
 def register() -> None:
     """Add the acts to the mind's tables once (the engine calls it at import)."""
-    global _registered
-    if _registered:
+    if _REGISTERED:
         return
-    _registered = True
+    _REGISTERED.add(__name__)
     for name, (spec, act, weight) in PROP_ACTS.items():
         _add(name, act, weight, spec.face)
     for name, (act, weight, face) in PLAIN_ACTS.items():
