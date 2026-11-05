@@ -42,7 +42,10 @@ from typing import Any, Callable
 from tessellate.core import jobs
 from tessellate.core.overlay import engine as eng
 from tessellate.core.overlay import host as host_mod
+from tessellate.core.overlay import faces
 from tessellate.core.overlay import perches
+from tessellate.core.overlay import props
+from tessellate.core.overlay import screenwatch
 from tessellate.core.overlay import sprites
 from tessellate.core.overlay import win32
 
@@ -65,6 +68,8 @@ ZONE_EVERY = 30.0
 #: The window scan is at most this often (seconds); it starts this long before a
 #: climb is due, so the first read is in hand when it is.
 SCAN_EVERY = 1.0
+#: Pictures with a face or a prop kept built (a prop act cycles a few phases for a minute).
+DECOR_KEEP = 48
 SCAN_RIDING = 0.25
 SCAN_SLACK = 1.0
 #: Room past the figure's width a top edge needs to be stood on (logical px, at 96 dpi).
@@ -152,6 +157,12 @@ class OverlayRunner:
         self.last_command: tuple[str, bool] | None = None
         self._scan_failed = False
         self._last_scan_line = ""
+        #: Screen events the figure answers (a window opening, the app changing, the hour, the battery, a download).
+        self._watch = screenwatch.ScreenWatch(
+            foreground=(lambda: self.k.foreground(self.w)) if hasattr(self.k, "foreground") else None,
+            battery=(lambda: self.k.battery(self.w)) if hasattr(self.k, "battery") else None,
+        )
+        self._decor: dict[tuple, sprites.Frame] = {}
         try:  # a backend that can count why windows were left out (win32); a fake may not
             self._tallies = "tally" in inspect.signature(self.k.windows).parameters
         except (TypeError, ValueError):
@@ -277,6 +288,7 @@ class OverlayRunner:
                 engine.bring_card(self._cards.popleft(), now)
             self._run_commands(engine, now)
             self._scan(now)
+            self._screen_events(now)
         if kind not in ("tick", "display"):
             return None
         return self._apply(engine.update(now, pointer))
@@ -303,6 +315,19 @@ class OverlayRunner:
         # A window is climbed to by a trip or by the climb act, so the list is wanted before either is due.
         return e.state in ("stand", "walk", "drift", "act", "crouch") and now >= min(e.trip_ready, e.climb_ready) - SCAN_SLACK
 
+    def _list_windows(self, tally: Counter) -> list:
+        """The window list, or [] when it cannot be read (no list means no roaming, never a crash)."""
+        try:
+            return self.k.windows(
+                self.w, os.getpid(), self.host.hwnd if self.host else None, [m.area for m in self.monitors],
+                **({"tally": tally} if self._tallies else {}),
+            )
+        except Exception:  # noqa: BLE001
+            if not self._scan_failed:
+                logger.warning("overlay: the windows could not be listed", exc_info=True)
+            self._scan_failed = True
+            return []
+
     def _scan(self, now: float, force: bool = False) -> None:
         engine = self.engine
         assert engine is not None
@@ -316,26 +341,40 @@ class OverlayRunner:
         # On a window it rides it: a dragged window is followed four times a second, not once.
         self._next_scan = now + (SCAN_RIDING if engine.perch is not None else SCAN_EVERY)
         tally: Counter = Counter()
-        try:
-            wins = self.k.windows(
-                self.w, os.getpid(), self.host.hwnd if self.host else None, [m.area for m in self.monitors],
-                **({"tally": tally} if self._tallies else {}),
-            )
-        except Exception:  # noqa: BLE001 - no window list means no roaming, never a crash
-            if not self._scan_failed:
-                logger.warning("overlay: the windows could not be listed", exc_info=True)
-            self._scan_failed = True
-            wins = []
+        wins = self._list_windows(tally)
+        if wins:  # an empty list is a failed read, not every window closing
+            self._answer(self._watch.windows_seen(win.key for win in wins), now)
         scale = max(m.dpi for m in self.monitors) / 96.0 if self.monitors else 1.0
-        edges = perches.top_edges(wins, int(engine.size[0] + PERCH_ROOM * scale))
-        engine.set_windows(edges, now)
-        self._log_scan(len(wins), len(edges), len(engine._candidates()), tally)
+        room = int(engine.size[0] + PERCH_ROOM * scale)
+        edges = perches.top_edges(wins, room)
+        hangs = perches.hang_spots(wins, room)
+        engine.set_windows(edges, now, hangs)
+        self._log_scan(len(wins), len(edges), len(engine._candidates()), tally, len(edges) + len(hangs))
 
-    def _log_scan(self, listed: int, edges: int, candidates: int, tally: Counter) -> None:
+    def _screen_events(self, now: float) -> None:
+        """What happened on the screen since the last tick, handed to the engine to answer (INBOX 1683, M6): the
+        app changing, the hour, the battery, a finished download (window opens and closes come from the climb scan's
+        own list; the window list is never read just for them). Read only while the figure is up, awake and the person
+        is not typing (the same conditions the scan keeps), so a hidden or sleeping figure reads nothing."""
+        engine = self.engine
+        if engine is None or engine.reduced or not engine.roam or engine.quiet or engine.busy:
+            return
+        if engine.state in ("sit", "sleep", "pressed", "held", "warp"):
+            return
+        local = time.localtime()
+        hour = local.tm_hour if self.clock_hour is None else self.clock_hour
+        self._answer(self._watch.poll(now, hour, local.tm_min), now)
+
+    def _answer(self, kinds: list[str], now: float) -> None:
+        for kind in kinds:
+            if self.engine is not None and self.engine.react(kind, now):
+                logger.info("overlay: it answered %s", kind)
+
+    def _log_scan(self, listed: int, edges: int, candidates: int, tally: Counter, hangs: int = 0) -> None:
         """One INFO line when what the window list returns changes (counts and reasons, never a title), so a
         companion that never perches can be read off the log (INBOX 1683 g)."""
         parts = ", ".join(f"{n} {why}" for why, n in sorted(tally.items(), key=lambda kv: (-kv[1], kv[0])))
-        line = f"overlay: windows listed {listed}, standable top edges {edges}, worth the trip {candidates}" + (f" ({parts})" if parts else "")
+        line = f"overlay: windows listed {listed}, standable top edges {edges}, worth the trip {candidates}, hang spots {hangs}" + (f" ({parts})" if parts else "")
         if line != self._last_scan_line:
             self._last_scan_line = line
             logger.info(line)
@@ -464,7 +503,7 @@ class OverlayRunner:
         engine.hour = time.localtime().tm_hour if self.clock_hour is None else self.clock_hour
         # a thrown figure's true angle is part of the picture (INBOX 1683): every tick of a spin is a new one
         turn = None if out.angle is None else round(math.degrees(out.angle) / sprites.SPIN_QUANT) % round(360.0 / sprites.SPIN_QUANT)
-        key = (out.frame, self.dpi, out.flip, out.clip, out.pose, out.fx, out.alpha, turn, out.flow)
+        key = (out.frame, self.dpi, out.flip, out.clip, out.pose, out.fx, out.alpha, turn, out.flow, out.prop, out.face)
         blending = False
         if key != self._last_key:
             blending = self._new_picture(out, key)
@@ -497,12 +536,31 @@ class OverlayRunner:
             posed = spr.spun_at(out.angle, self.dpi, out.flip)
         else:
             posed = spr.posed(out.frame, self.dpi, out.flip, out.pose or eng.bh.NEUTRAL, out.flow) if out.pose or out.flow else spr.frame(out.frame, self.dpi, out.flip)
+        posed = self._decorated(posed, out, key)
         frame = sprites.effect(sprites.clipped(posed, out.clip), out.fx, out.alpha)
         self._blend = (self._target, self.clock()) if self._blends(self._last_key, key, self._target, frame) else None
         self._blend_s = BLEND_LOOK_S if self._last_key and "look" in (self._last_key[0], key[0]) else BLEND_S
         self._target, self._blend_step = frame, -1
         self._last_key = key
         return self._show(frame, out, True)
+
+    def _decorated(self, posed: sprites.Frame, out: eng.Output, key: tuple) -> sprites.Frame:
+        """The face and the prop drawn over the posed frame (`faces.draw`, `props.draw`), kept by picture: a prop
+        act repeats a few phases for a minute, so each is built once."""
+        spr = self.sprites
+        if (out.face is None and out.prop is None) or spr is None or out.angle is not None:
+            return posed
+        built = self._decor.pop(key, None)
+        if built is None:
+            built = posed
+            if out.face is not None:
+                built = faces.draw(spr, out.frame, built, out.flip, out.pose, out.face, spr.frame(out.frame, self.dpi, out.flip))
+            if out.prop is not None:
+                built = props.draw(built, out.prop, out.flip)
+        self._decor[key] = built
+        while len(self._decor) > DECOR_KEEP:
+            del self._decor[next(iter(self._decor))]
+        return built
 
     def _blends(self, before: tuple | None, after: tuple, prev: sprites.Frame | None, frame: sprites.Frame) -> bool:
         """A pose change dissolves (INBOX 1670: "framey"): standing to walking, sitting up, a wave, a landing.

@@ -45,3 +45,26 @@ def top_edges(wins: Iterable[WinInfo], min_width: int) -> list[Perch]:
             a, b = max(spans, key=lambda s: s[1] - s[0])
             found.append(Perch(win.key, a, top, b))
     return found
+
+
+def hang_spots(wins: Iterable[WinInfo], min_width: int) -> list[Perch]:
+    """Edges worth hanging from that are not a window's top: a maximised window's title bar (its top edge, kind
+    "bar") and the bottom edge of a window that can be stood on (kind "bottom", the key negated so it never meets
+    the window's own). Each is the widest stretch no window above it covers (INBOX 1683 w)."""
+    ordered = list(wins)
+    found: list[Perch] = []
+    for i, win in enumerate(ordered):
+        if not (win.hang or win.perch):
+            continue
+        left, top, right, bottom = win.rect
+        kind, line, key = ("bar", top, win.key) if win.hang else ("bottom", bottom, -win.key)
+        spans = [(left, right)]
+        for above in ordered[:i]:
+            al, at, ar, ab = above.rect
+            if at <= line < ab:
+                spans = _cut(spans, al, ar)
+        spans = [s for s in spans if s[1] - s[0] >= min_width]
+        if spans:
+            a, b = max(spans, key=lambda s: s[1] - s[0])
+            found.append(Perch(key, a, line, b, kind))
+    return found

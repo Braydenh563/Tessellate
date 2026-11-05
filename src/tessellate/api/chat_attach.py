@@ -21,6 +21,7 @@ from tessellate.core import deps, docview
 from tessellate.core.config import days_from_today
 from tessellate.core.database import Attachment, Entry, MediaUpload
 from tessellate.repo import documents as documents_repo
+from tessellate.repo import uploads as uploads_repo
 from tessellate.repo.documents import Document
 from tessellate.core.imagesize import image_size
 from tessellate.entry import manager
@@ -223,7 +224,7 @@ def _attached_media_files(session: Session, media_ids: list[int]) -> list[dict]:
     found: list[dict] = []
     media_dir = deps.get_config().data_dir / "media"
     for media_id in dict.fromkeys(media_ids):
-        upload = session.get(MediaUpload, media_id)
+        upload = uploads_repo.get(session, media_id)
         if upload is None or _upload_is_sealed(session, upload, None):
             continue
         try:

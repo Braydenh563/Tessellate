@@ -78,7 +78,9 @@
   width: var(--swatch-dot);
   height: var(--swatch-dot);
 }
-/* In the dashboard's Quick capture card the composer is the card's content: no second frame, and in the card's flow. */
+/* In the dashboard's Quick capture card the composer is the card's content: no second frame, and in the card's flow.
+   The desktop companion's Quick note panel (desk-companion.js) takes the same card the same way (INBOX 1688). */
+.desk-panel .capture-card,
 .dash-widget .capture-card {
   position: static;
   z-index: auto;

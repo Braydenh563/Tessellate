@@ -235,6 +235,7 @@ def signatures() -> dict[str, dict[str, tuple[Any, list[Any]]]]:
             "CancelWaitableTimer": (B, [ctypes.c_void_p]),
             "WaitForSingleObject": (wintypes.DWORD, [ctypes.c_void_p, wintypes.DWORD]),
             "CloseHandle": (B, [ctypes.c_void_p]),
+            "GetSystemPowerStatus": (B, [P(_PowerStatus)]),
         },
         "shcore": {
             "GetDpiForMonitor": (ctypes.c_long, [H, INT, P(U), P(U)]),
@@ -349,11 +350,13 @@ def dpi_at_point(w: Any, x: int, y: int) -> int | None:
 
 class WinInfo(NamedTuple):
     """One visible top-level window, in z-order from the top: its frame in physical
-    pixels, and whether its top edge is a place to stand (`perch`)."""
+    pixels, whether its top edge is a place to stand (`perch`), and whether it is a maximised window whose
+    title bar is a place to hang from (`hang`, INBOX 1683 w)."""
 
     key: int
     rect: tuple[int, int, int, int]
     perch: bool
+    hang: bool = False
 
 
 def _frame_rect(w: Any, hwnd: Any) -> tuple[int, int, int, int] | None:
@@ -395,6 +398,16 @@ def _unlisted(w: Any, hwnd: Any, ignore: Any) -> str | None:
     return None
 
 
+def _framed(w: Any, hwnd: Any, ex: int) -> tuple[Any, str]:
+    """The window's frame rectangle, or None and why: click-through (another overlay) or no frame."""
+    if ex & WS_EX_TRANSPARENT and ex & WS_EX_LAYERED:
+        return None, "click-through"
+    rect = _frame_rect(w, hwnd)
+    if rect is None or rect[2] <= rect[0] or rect[3] <= rect[1]:
+        return None, "no frame"
+    return rect, ""
+
+
 def _read_window(
     w: Any, hwnd: Any, own_pid: int, ignore: Any, monitors_: list[tuple[int, int, int, int]], tally: Counter | None = None,
 ) -> "WinInfo | None":
@@ -409,12 +422,9 @@ def _read_window(
         note(why)
         return None
     ex = int(w.user32.GetWindowLongW(hwnd, GWL_EXSTYLE))
-    rect = _frame_rect(w, hwnd)
-    if ex & WS_EX_TRANSPARENT and ex & WS_EX_LAYERED:  # click-through: another overlay
-        note("click-through")
-        return None
-    if rect is None or rect[2] <= rect[0] or rect[3] <= rect[1]:
-        note("no frame")
+    rect, why = _framed(w, hwnd, ex)
+    if rect is None:
+        note(why)
         return None
     pid = wintypes.DWORD(0)
     w.user32.GetWindowThreadProcessId(hwnd, ctypes.byref(pid))
@@ -426,7 +436,10 @@ def _read_window(
     )
     why = next((name for name, hit in reasons if hit), None)
     note(why or "perch")
-    return WinInfo(int(hwnd), rect, why is None)
+    # A maximised window is no place to stand but its title bar is a place to hang from; a tool window, the app's
+    # own and one without a title are neither (INBOX 1683 w: with a maximised window up, only the taskbar was left).
+    hang = reasons[2][1] and not (reasons[0][1] or reasons[1][1] or reasons[4][1])
+    return WinInfo(int(hwnd), rect, why is None, hang)
 
 
 def windows(
@@ -435,7 +448,7 @@ def windows(
     """Visible, un-minimised, un-cloaked top-level windows, topmost first. Read only:
     nothing here moves, focuses or messages a window. `perch` is False for a tool
     window, a window with no title, this process's own windows (the app's, the
-    panel), a maximised one, and one that fills a monitor's work area (full screen).
+    panel), a maximised one (which is `hang`: its title bar can be held), and one that fills a monitor's work area (full screen).
     `ignore` is the overlay's own window (never in the list). `tally`, when given, is filled with the
     count of windows by outcome (the first reason each was left out), for the log."""
     found: list[WinInfo] = []
@@ -486,6 +499,34 @@ def last_input_age(w: Any) -> float | None:
         return ((now - info.dwTime) & 0xFFFFFFFF) / 1000.0
     except Exception:  # noqa: BLE001
         logger.debug("overlay: last input unknown", exc_info=True)
+        return None
+
+
+def foreground(w: Any) -> int | None:
+    """The foreground window's handle as a number (only that it changed is used), or None."""
+    try:
+        return int(w.user32.GetForegroundWindow() or 0) or None
+    except Exception:  # noqa: BLE001
+        logger.debug("overlay: foreground window unknown", exc_info=True)
+        return None
+
+
+class _PowerStatus(ctypes.Structure):
+    _fields_ = [
+        ("ACLineStatus", ctypes.c_ubyte), ("BatteryFlag", ctypes.c_ubyte), ("BatteryLifePercent", ctypes.c_ubyte),
+        ("SystemStatusFlag", ctypes.c_ubyte), ("BatteryLifeTime", ctypes.c_ulong), ("BatteryFullLifeTime", ctypes.c_ulong),
+    ]
+
+
+def battery(w: Any) -> tuple[int, bool] | None:
+    """`(percent, on mains power)`, or None for a desktop with no battery (flag 128) or an unknown level (255)."""
+    status = _PowerStatus()
+    try:
+        if not w.kernel32.GetSystemPowerStatus(ctypes.byref(status)) or status.BatteryFlag == 128 or status.BatteryLifePercent > 100:
+            return None
+        return int(status.BatteryLifePercent), status.ACLineStatus == 1
+    except Exception:  # noqa: BLE001
+        logger.debug("overlay: battery unknown", exc_info=True)
         return None
 
 

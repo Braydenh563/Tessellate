@@ -19,6 +19,7 @@ from sqlalchemy.orm import Session
 
 from tessellate.core import deps
 from tessellate.core.database import LIKE_ESCAPE, Conversation, like_escape, utcnow
+from tessellate.repo import uploads as uploads_repo
 from tessellate.core.deps import get_session
 from tessellate.ai.grounding import support as grounding_support
 from tessellate.entry.manager import log_action
@@ -502,8 +503,6 @@ def _hydrate_attachments(session: Session, messages: list[dict]) -> None:
 
 
 def _media_cards(session: Session, ids: set) -> dict:
-    from tessellate.core.database import MediaUpload
-
     return {
         upload.id: {
             "id": upload.id,
@@ -515,7 +514,7 @@ def _media_cards(session: Session, ids: set) -> dict:
             "caption": upload.caption or "",
             "text": (upload.vision_ocr_text or upload.ocr_text or "").strip(),
         }
-        for upload in (session.query(MediaUpload).filter(MediaUpload.id.in_(ids)).all() if ids else [])
+        for upload in uploads_repo.by_ids(session, ids)
     }
 
 
@@ -533,9 +532,7 @@ def _file_cards(session: Session, ids: set) -> dict:
 
 
 def _upload_cards(session: Session, ids: set) -> dict:
-    from tessellate.core.database import MediaUpload
-
-    rows = session.query(MediaUpload).filter(MediaUpload.id.in_(ids)).all() if ids else []
+    rows = uploads_repo.by_ids(session, ids)
     return {u.id: {"id": u.id, "kind": "file", "store": "media", "name": u.original_name} for u in rows}
 
 

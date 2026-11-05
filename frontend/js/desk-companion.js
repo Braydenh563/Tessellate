@@ -24,7 +24,7 @@
     rest: [112, 152],
     menu: [248, 312],
     context: [248, 268],
-    note: [320, 376],
+    note: [320, 500],
     search: [340, 440],
   };
   const PANELS = { menu: "desk-menu", context: "desk-menu", note: "desk-note", search: "desk-search" };
@@ -283,7 +283,6 @@
       row.setAttribute("role", "menuitemradio");
       row.setAttribute("aria-checked", String(!!option.current));
       row.disabled = !option.enabled;
-      if (!option.enabled) row.title = "Shows in the app only";
       rows.push(row);
     }
     $("desk-menu").replaceChildren(...rows);
@@ -308,7 +307,8 @@
   async function openPanel(kind) {
     if (!(await probe())) return openMenu("menu");
     show(kind);
-    $(kind === "note" ? "desk-note-text" : "desk-search-text").focus();
+    if (kind === "note") return openNoteCard();
+    $("desk-search-text").focus();
   }
 
   function rest() {
@@ -318,40 +318,47 @@
   }
 
   // --- Quick note --------------------------------------------------------------
+  //: The Notes tab's capture card, the one the dashboard's Quick capture opens (capture-card.js,
+  //: fetched on first use): title, words or a to-do list, tags, Ctrl+Enter or Save. It saves
+  //: through the two functions it asks the page for (`createNoteSafely`, `announceSavedNote`),
+  //: answered here with this window's own request and its Undo (INBOX 1688).
   const noteStatus = (text, isError = false) => {
     $("desk-note-status").textContent = text;
     $("desk-note-status").classList.toggle("error", isError);
   };
-  let saving = false;
 
-  async function saveNote() {
-    const content = $("desk-note-text").value.trim();
-    if (!content || saving) return;
-    saving = true;
-    $("desk-note-save").disabled = true;
-    noteStatus("Saving…");
-    try {
-      const response = await call("/entries", "POST", { content });
-      if (response.status === 401) {
-        await probe();
-        return openMenu("menu");
-      }
-      if (!response.ok) throw new Error("Couldn't save that note.");
-      const made = await response.json().catch(() => null);
-      $("desk-note-text").value = "";
-      noteStatus("Saved and being filed.");
-      //: The app's window puts it on its Undo stack when it answers; with no
-      //: answer this window offers the Undo itself.
-      const taken = made?.id != null && (await window.standaloneUndo.announce(made, "Captured a note"));
-      if (taken || made?.id == null) setTimeout(() => state === "note" && rest(), 900);
-      else window.standaloneUndo.offer({ id: made.id, send: call, status: noteStatus, row: document.querySelector(".desk-actions") });
-    } catch (error) {
-      noteStatus(error.message || "Couldn't save that note.", true);
-    } finally {
-      saving = false;
-      $("desk-note-save").disabled = false;
-    }
+  async function openNoteCard() {
+    noteStatus("");
+    document.querySelector(".desk-actions").replaceChildren();
+    if (!(await ensureModule("captureCard"))) return noteStatus("Couldn't open the note card.", true);
+    openCaptureCard($("desk-capture"), "focusin");
+    focusCaptureCard();
+    fit();  // the card is in the DOM now: measuring forces the layout, so no frame wait (and no new wake source)
   }
+
+  const createNote = async (body) => {
+    const response = await call("/entries", "POST", { defer_filing: true, inline_tags: true, ...body });
+    if (response.status === 401) {
+      await probe();
+      openMenu("menu");
+    }
+    if (!response.ok) throw new Error("Couldn't save that note.");
+    return { saved: await response.json() };
+  };
+
+  const announceSaved = async (made) => {
+    noteStatus("Saved and being filed.");
+    fit();
+    //: The app's window puts it on its Undo stack when it answers; with no
+    //: answer this window offers the Undo itself.
+    const taken = made?.id != null && (await window.standaloneUndo.announce(made, "Captured a note"));
+    if (taken || made?.id == null) setTimeout(() => state === "note" && rest(), 900);
+    else window.standaloneUndo.offer({ id: made.id, send: call, status: noteStatus, row: document.querySelector(".desk-actions") });
+    fit();
+  };
+
+  //: Named on the window because the card, a file of the app's, asks for them by these names.
+  Object.assign(window, { createNoteSafely: createNote, announceSavedNote: announceSaved });
 
   // --- Quick search ------------------------------------------------------------
   //: This page loads no chat.js, so it spells the cap itself: chat.js's
@@ -499,13 +506,13 @@
   });
   for (const button of document.querySelectorAll("[data-desk-close]")) button.addEventListener("click", rest);
 
-  $("desk-note-save").addEventListener("click", saveNote);
-  $("desk-note-text").addEventListener("keydown", (event) => {
-    if (event.key === "Enter" && !event.shiftKey && !event.isComposing) {
-      event.preventDefault();
-      saveNote();
-    }
-  });
+  //: The card closes itself (Close, Escape); the panel goes with it. Capture phase: the card
+  //: stops the Escape it handles, and keeps its draft either way.
+  const capture = $("desk-capture");
+  capture.addEventListener("click", (event) => event.target.closest('[data-cc="close"]') && rest(), true);
+  capture.addEventListener("keydown", (event) => event.key === "Escape" && rest(), true);
+  //: The card changes its own height (a to-do list, the tags): the window follows.
+  document.addEventListener("mm:controls-changed", fit);
   $("desk-search-text").addEventListener("input", () => {
     clearTimeout(searchTimer);
     searchTimer = setTimeout(() => {

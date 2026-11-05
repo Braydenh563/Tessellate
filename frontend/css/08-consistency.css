@@ -7104,6 +7104,9 @@ svg.atl-defs { position: absolute; width: 0; height: 0; overflow: hidden; }
 #nm-buddy:is(.nmb-act-bell, .nmb-act-lantern) .atl-figure .nmb-arm-r { transform: rotate(-70deg); }
 #nm-buddy.nmb-act-wave .atl-figure .nmb-arm-r { transform: rotate(-120deg); }
 #nm-buddy.nmb-act-wave .atl-figure[data-atlas-look="feminine"] .nmb-arm-r { transform: rotate(-130deg); }
+/* The desk's wave frame (scripts/render_desk_frames.js, INBOX 1688): the right arm's hand
+   vanishes into the hair of the same tint, so the frame waves the left, in the clear. */
+#nm-buddy.nmb-desk-wave .atl-figure .nmb-arm-l { transform: rotate(120deg); }
 #nm-buddy.nmb-act-shrug .atl-figure .nmb-arm-r { transform: rotate(-40deg); }
 #nm-buddy.nmb-act-shrug .atl-figure .nmb-arm-l { transform: rotate(40deg); }
 /* A facepalm is the chin hand brought up over the eyes, not the arm thrown
@@ -10783,6 +10786,7 @@ header#top-bar button.space-switcher-btn:focus-visible {
   visibility: hidden;
 }
 /* On the dashboard the same bar sits inside the Quick capture card (INBOX 1592): the card is the zone, so no rule above it, and an open composer takes the row's place instead of floating over what is below. */
+.desk-panel .capture-bar,
 .dash-widget .capture-bar {
   margin: 0;
   padding-top: 0;

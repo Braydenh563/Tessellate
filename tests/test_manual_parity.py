@@ -335,14 +335,15 @@ def test_the_desktop_companion_row_is_named_as_a_this_computer_setting():
     for words in ("floats like a wind spirit", "sleeps", "thrown", "hangs from the top", "peeks up from behind the taskbar", "animation effects",
                   "climbs onto the top of a window", "Roam over windows", "a card when a reminder falls due",
                   "alive in place", "walking, running", "out at one edge and in at the other", "through a portal", "swings down or lets go with a start",
-                  "right-click for Companion (Atlas masculine or feminine, or a saved Atlas companion)"):
+                  "right-click for Companion (Atlas masculine or feminine, your own or a saved one, drawn once)"):
         assert words in " ".join(popover.split()), words
     for topic in named:
         flat = " ".join(topic["body"].split())
         for words in ("floats like a wind spirit", "thrown", "hangs from the top", "peeks up from behind the taskbar", "animation effects",
                       "climbs onto the top of a window", "Roam over windows", "a card to click",
                       "alive in place", "walking, running", "out at one edge and in at the other", "through a portal", "swings down or lets go with a start",
-                      "Right-click it for Companion (Atlas masculine or feminine, or a saved Atlas companion; the rest show in the app only)"):
+                      #: Changed on purpose (INBOX 1684): every companion shows on the desk, so "the rest show in the app only" is gone.
+                      "Right-click it for Companion (Atlas masculine or feminine, your own or a saved one, drawn once)"):
             assert words in flat, (topic["id"], words)
             assert len(topic["body"]) < 1900, topic["id"]
     settings = (FRONTEND / "js" / "settings.js").read_text(encoding="utf-8")
@@ -423,7 +424,8 @@ def test_the_diagram_kinds_are_in_the_guide_in_the_controls_words() -> None:
     body = str(next(t["body"] for t in HELP_TOPICS if t["id"] == "diagram-kinds"))
     for words in ("flowcharts, mind maps, timelines and sequence diagrams", "a branch and a leaf (B and N)",
                   "a section, a period and an event (S, P and E)",
-                  "actor, participant, message, reply, async, lost, note, loop, alt and opt (A, P, M, R, Y, X, T, L, G and O)",
+                  # 1679 m: the tiles grew by Parallel, Critical and Break (U, C, B); the sentence still lists every tile with its key.
+                  "actor, participant, message, reply, async, lost, note, loop, alt, opt, parallel, critical and break (A, P, M, R, Y, X, T, L, G, O, U, C and B)",
                   "opens in Source with its picture", "of another kind says so and is left out", "replaces a blank one"):
         assert words in body, words
     assert "diagram-kinds" in TOPIC_META and "diagram-kinds" in dict(HELP_GROUPS)["Documents and code"]
@@ -498,10 +500,10 @@ def test_the_diagram_multiselect_is_in_the_guide_in_the_controls_words() -> None
 
     body = str(next(t["body"] for t in HELP_TOPICS if t["id"] == "diagram-blocks"))
     assert len(body) < 1900
-    for words in ("Shift+click picks a range", "Ctrl+click adds one", "Duplicate", "Group into a box", "any picked grip moves all"):
+    for words in ("Shift+click picks a range", "Ctrl+click adds one", "Duplicate", "Box them", "any picked grip moves all"):
         assert words in body, words
     multi = (FRONTEND / "js" / "diagram-multi.js").read_text(encoding="utf-8")
-    for label in ('"ph:trash Delete"', '"ph:copy Duplicate"', '"ph:diamond Shape"', '"ph:stack Group into a box"', '"Done"'):
+    for label in ('"ph:trash Delete"', '"ph:copy Duplicate"', '"ph:diamond Shape"', '"ph:stack Box them"', '"Done"'):
         assert label in multi, label
 
 

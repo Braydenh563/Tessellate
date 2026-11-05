@@ -136,6 +136,16 @@ def test_a_frame_loop_is_named_by_the_first_script_that_is_not_the_watcher(stack
     assert run(f"lagStackOwner({json.dumps(stack)})", ("diag-report.js", "lag-watch.js")) == owner
 
 
+def test_an_apijson_wrapper_is_not_named_as_the_caller():
+    """INBOX 1667: whiteboard-history.js wraps window.apiJson; the caller is the next frame."""
+    stack = (
+        "Error\n    at lagApi (http://h/js/lag-watch.js:5:5)\n    at apiJson (http://h/js/lag-watch.js:9:5)\n"
+        "    at window.apiJson (http://h/js/whiteboard-history.js:379:5)\n"
+        "    at async window.apiJson (http://h/js/whiteboard-history.js:66:5)\n    at loadDoc (http://h/js/documents.js:40:3)"
+    )
+    assert run(f"lagStackOwner({json.dumps(stack)}, lagApi.skip)", ("diag-report.js", "lag-watch.js")) == "documents.js loadDoc"
+
+
 def test_errors_are_deduped_by_message_and_stack_and_the_table_is_capped():
     out = run(
         """(() => { for (let i = 0; i < 500; i++) lagNoteError("same", "at a (x.js:1:1)"); for (let i = 0; i < 200; i++) lagNoteError("m" + i, ""); return [LAG.errors.size, [...LAG.errors.values()][0].n]; })()""",
