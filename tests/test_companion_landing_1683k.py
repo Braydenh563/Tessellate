@@ -19,8 +19,9 @@ from tests.test_companion_throw_fates import AV, THROW, _fn
 
 def landing_js(src: str) -> str:
     """The landing's functions and constants, for the older harnesses that run `nameMarkBuddyFlightStep` on its own."""
-    consts = "\n".join(m.group(0) for m in re.finditer(r"^const COMPANION_THROW_(?:FEET|SINK|SLEW|FLAIL) = .*;$", src, re.M))
-    return consts + "\n" + "\n".join(_fn(src, n) for n in ("companionThrowTurn", "companionThrowSlew", "companionThrowLie", "companionThrowLand"))
+    start = src.index("const companionThrowLand = {")
+    return src[start : src.index("\n};\n", start) + 4]
+
 
 
 needs_node = pytest.mark.skipif(not shutil.which("node"), reason="needs node")
@@ -42,7 +43,7 @@ function throwOne(seed) {
     steps += 1;
     const d = Math.abs(wrap(s.rot - was.rot));
     if (d > 30 && !s.splat && !was.splat && !s.wrap && !was.wrap) rawSnaps += 1;
-    const next = companionThrowSlew(shown, s.rot, 16);
+    const next = companionThrowLand.ease(shown, s.rot, 16);
     if (Math.abs(wrap(next - shown)) > 30) snaps += 1;
     shown = next;
     const pose = s.lying || s.splat || s.wrap || (s.fate && /hang|climb|grab|slip/.test(s.fate.kind));
@@ -89,7 +90,7 @@ def test_200_seeded_throws_land_by_outcome_with_no_snap_and_no_held_tilt() -> No
 
 @needs_node
 def test_the_drawn_lean_never_turns_faster_than_a_tumble() -> None:
-    out = run("[companionThrowSlew(0, 170, 16), companionThrowSlew(170, -170, 16), companionThrowSlew(10, 12, 16), companionThrowSlew(0, 90, 32)]")
+    out = run("[companionThrowLand.ease(0, 170, 16), companionThrowLand.ease(170, -170, 16), companionThrowLand.ease(10, 12, 16), companionThrowLand.ease(0, 90, 32)]")
     assert out[0] == pytest.approx(13.6) and out[1] == pytest.approx(170 + 13.6) and out[2] == 12 and out[3] == pytest.approx(27.2)
 
 
@@ -102,9 +103,9 @@ def test_a_landing_on_the_back_or_belly_rests_on_the_floor_and_gets_up() -> None
         " return { seen, rest: s.rest, lie: s.lie }; })()"
     )
     assert out["lie"] == 90 and out["rest"]
-    rots = [r for r, _sink, _l in out["seen"]]
+    rots = [r for r, _sink, _lying in out["seen"]]
     assert max(_sink for _r, _sink, _l in out["seen"]) == pytest.approx(14, abs=0.6)  # the body lies on the floor, not above it
-    assert any(l for _r, _s, l in out["seen"])
+    assert any(lying for _r, _s, lying in out["seen"])
     assert abs(rots[-1]) < 1.5  # and got up
     assert max(abs(b - a) for a, b in zip(rots, rots[1:])) < 30
 
@@ -112,7 +113,7 @@ def test_a_landing_on_the_back_or_belly_rests_on_the_floor_and_gets_up() -> None
 def test_the_sink_is_half_the_height_less_half_the_width() -> None:
     w = int(re.search(r"^const NMB_W = (\d+);", AV, re.M).group(1))
     h = int(re.search(r"^const NMB_H = (\d+);", AV, re.M).group(1))
-    assert (h - w) / 2 == float(re.search(r"^const COMPANION_THROW_SINK = ([\d.]+);", THROW, re.M).group(1))
+    assert (h - w) / 2 == float(re.search(r"^  sink: ([\d.]+),", THROW, re.M).group(1))
 
 
 if __name__ == "__main__":

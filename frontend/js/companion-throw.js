@@ -94,22 +94,21 @@ function companionThrowStep(s, dt, world, k, base, rand) {
 //: want it to always get caught ... on exactly what is above or below it").
 //: Falling on to one under `CATCH[0]` px per ms it lands; over `CATCH[1]` it
 //: passes in front of it; between, rolled once a ledge. Passing within
-//: `GLANCE` of an end, it glances off outwards, slowed. The base step sees
+//: `CATCH[2]` px of an end, it glances off outwards, slowed. The base step sees
 //: only the ledges that caught it. Gone up off the top: no top bar.
-const COMPANION_THROW_CATCH = [0.9, 1.6];
-const COMPANION_THROW_GLANCE = 28;
+const COMPANION_THROW_CATCH = [0.9, 1.6, 28];
 function companionThrowLedges(s, dt, world, k, rand) {
   const room = s.sky ? { ...world, top: -Infinity } : world;
   if (s.on || s.vy <= 0 || !world.ledges?.length) return [s, room];
   const vy = s.vy + k.g * dt;
   const y = s.y + vy * dt;
   const x = s.x + s.vx * dt;
-  const [lo, hi] = COMPANION_THROW_CATCH;
+  const [lo, hi, glance] = COMPANION_THROW_CATCH;
   let m = s;
   const keep = [];
   for (const l of world.ledges) {
     const key = `p${Math.round(l.left)},${Math.round(l.y)}`;
-    const over = x >= l.left - COMPANION_THROW_GLANCE && x <= l.right + COMPANION_THROW_GLANCE;
+    const over = x >= l.left - glance && x <= l.right + glance;
     if (s.y >= l.y || y < l.y || !over || m.tried?.[key] === "catch") {
       keep.push(l);
       continue;
@@ -122,7 +121,7 @@ function companionThrowLedges(s, dt, world, k, rand) {
       continue;
     }
     const left = x - l.left < l.right - x;
-    if ((left ? x - l.left : l.right - x) < COMPANION_THROW_GLANCE) m = { ...m, vx: m.vx + (left ? -0.5 : 0.5), vy: m.vy * 0.55 };
+    if ((left ? x - l.left : l.right - x) < glance) m = { ...m, vx: m.vx + (left ? -0.5 : 0.5), vy: m.vy * 0.55 };
   }
   return [m, keep.length === world.ledges.length ? room : { ...room, ledges: keep }];
 }
@@ -419,48 +418,51 @@ function companionThrowAtTime(path, ms) {
 //: turning. A hard landing may carry it over the other way. On its back or belly it keeps the slide it landed with, lies
 //: `k.lieMs`, then pushes up with a slower turn. Measured over 200 seeded throws: feet 200 before; see
 //: tests/test_companion_landing_1683k.py.
-const COMPANION_THROW_FEET = 40;
-//: Half the height less half the width: a body lying down turns about its middle and would hang this far above the floor.
-const COMPANION_THROW_SINK = 14;
-//: The turn a drawn frame may make, degrees per ms: a tumble's own top rate, so no catch or contact that sets the lean
-//: in one step shows as a snap.
-const COMPANION_THROW_SLEW = 0.85;
-//: A fall that has gone on this long (ms) with no tumble in it flails, up to this many degrees either side.
-const COMPANION_THROW_FLAIL = [450, 22];
-function companionThrowTurn(a) {
-  return (((a + 180) % 360) + 360) % 360 - 180;
-}
-//: The lean to draw: `to` approached from `from` by the shorter way, no faster than `COMPANION_THROW_SLEW`.
-function companionThrowSlew(from, to, dt) {
-  const d = companionThrowTurn(to - from);
-  const cap = COMPANION_THROW_SLEW * Math.max(1, dt);
-  return Math.abs(d) <= cap ? to : from + Math.sign(d) * cap;
-}
-function companionThrowLie(n, k) {
-  const r = companionThrowTurn(n.rot);
-  if (Math.abs(r) <= COMPANION_THROW_FEET) return 0;
-  let side = Math.abs(r) < 135 ? Math.sign(r) : Math.sign(n.vx || r);
-  if (n.hit > 1.2 && (k.over ?? 1) < 0.4) side = -side;
-  return side * 90;
-}
-//: One step on the floor or a ledge: down, it turns to its place and gets up from it.
-function companionThrowLand(n, dt, k) {
-  if (n.lie === undefined) {
-    n.dir = n.vx >= 0 ? 1 : -1;
-    n.lie = companionThrowLie(n, k);
-    n.lieT = 0;
-  }
-  n.lieT += dt;
-  n.rot = companionThrowTurn(n.rot);
-  if (!n.lie) {
-    n.rot -= n.rot * Math.min(1, dt / 110);
-    return;
-  }
-  const down = n.lieT < (k.lieMs ?? 600) + 90;
-  n.rot += ((down ? n.lie : 0) - n.rot) * Math.min(1, dt / (down ? 60 : 150));
-  n.lying = down && Math.abs(n.rot - n.lie) < 6;
-  n.sink = Math.abs(Math.sin((n.rot * Math.PI) / 180)) * COMPANION_THROW_SINK;
-}
+const companionThrowLand = {
+  feet: 40,
+  //: Half the height less half the width: a body lying down turns about its middle and would hang this far above the floor.
+  sink: 14,
+  //: The turn a drawn frame may make, degrees per ms: a tumble's own top rate, so no catch or contact that sets the lean
+  //: in one step shows as a snap.
+  slew: 0.85,
+  //: A fall that has gone on this long (ms) with no tumble in it flails, up to this many degrees either side.
+  flail: [450, 22],
+  turn(a) {
+    return (((a + 180) % 360) + 360) % 360 - 180;
+  },
+  //: The lean to draw: `to` approached from `from` by the shorter way, no faster than `slew`.
+  ease(from, to, dt) {
+    const d = companionThrowLand.turn(to - from);
+    const cap = companionThrowLand.slew * Math.max(1, dt);
+    return Math.abs(d) <= cap ? to : from + Math.sign(d) * cap;
+  },
+  lie(n, k) {
+    const r = companionThrowLand.turn(n.rot);
+    if (Math.abs(r) <= companionThrowLand.feet) return 0;
+    let side = Math.abs(r) < 135 ? Math.sign(r) : Math.sign(n.vx || r);
+    if (n.hit > 1.2 && (k.over ?? 1) < 0.4) side = -side;
+    return side * 90;
+  },
+  //: One step on the floor or a ledge: down, it turns to its place and gets up from it.
+  step(n, dt, k) {
+    const L = companionThrowLand;
+    if (n.lie === undefined) {
+      n.dir = n.vx >= 0 ? 1 : -1;
+      n.lie = L.lie(n, k);
+      n.lieT = 0;
+    }
+    n.lieT += dt;
+    n.rot = L.turn(n.rot);
+    if (!n.lie) {
+      n.rot -= n.rot * Math.min(1, dt / 110);
+      return;
+    }
+    const down = n.lieT < (k.lieMs ?? 600) + 90;
+    n.rot += ((down ? n.lie : 0) - n.rot) * Math.min(1, dt / (down ? 60 : 150));
+    n.lying = down && Math.abs(n.rot - n.lie) < 6;
+    n.sink = Math.abs(Math.sin((n.rot * Math.PI) / 180)) * L.sink;
+  },
+};
 
 //: The throw itself (moved here from avatars.js, INBOX 882): `plan` from
 //: `companionThrowPlan` (made here when a sweep throws it), drawn a frame
@@ -530,7 +532,7 @@ function nameMarkBuddyThrow(buddy, vx, vy, world, plan = companionThrowPlan(nmb.
     const s = flown >= end.t ? end : companionThrowAtTime(path, flown);
     nameMarkBuddyPut(buddy, Math.round(s.x), Math.round(s.y + (s.sink || 0)));
     //: The lean drawn follows the path's no faster than a tumble turns: a catch that zeroes it is eased, not snapped.
-    shown = companionThrowSlew(shown, s.rot, gap);
+    shown = companionThrowLand.ease(shown, s.rot, gap);
     if (char) char.style.rotate = `${shown.toFixed(1)}deg`;
     nameMarkBuddySway(buddy, Math.max(-28, Math.min(28, -s.vx * 10)));
     if (hit > 0.5 && char && typeof char.animate === "function") {
@@ -652,7 +654,7 @@ function nameMarkBuddyFlightStep(s, dt, world, k = NMB_THROW) {
   const ease = Math.min(1, dt / 90);
   if (n.on) {
     n.vx *= Math.exp(-k.ground * dt);
-    companionThrowLand(n, dt, k);
+    companionThrowLand.step(n, dt, k);
   } else {
     n.vy += k.g * dt;
     const drag = Math.exp(-k.air * dt);
@@ -665,7 +667,7 @@ function nameMarkBuddyFlightStep(s, dt, world, k = NMB_THROW) {
     else {
       //: A long fall with no tumble in it: it flails, windmilling about its lean.
       n.fall = n.vy > 0 ? (n.fall || 0) + dt : 0;
-      const [after, amp] = COMPANION_THROW_FLAIL;
+      const [after, amp] = companionThrowLand.flail;
       n.flail = n.fall > after ? amp * Math.min(1, (n.fall - after) / 200) * Math.sin(n.fall * 0.019) : 0;
       n.rot += (Math.max(-40, Math.min(40, n.vx * k.tilt)) + n.flail - n.rot) * ease;
     }

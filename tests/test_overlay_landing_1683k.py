@@ -108,7 +108,7 @@ def test_a_hard_wall_smack_can_stick_and_slide_down_scrabbling(monkeypatch: pyte
     wobbled, vys = 0.0, []
     for _ in range(60):
         t += STEP
-        out = e.update(t)
+        e.update(t)
         if e.grounded:
             break
         assert e.x == pytest.approx(ux0)

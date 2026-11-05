@@ -2,9 +2,9 @@
 
 Generated 2026-11-05 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7827, frontend ids 2644, CSS sections 522, backend routes 644, backend modules 8821, test files 2083, tests 17583, plan headings 1003, app scripts 28, boot scripts 37, script files 257.
+Counts: frontend functions 7823, frontend ids 2644, CSS sections 522, backend routes 644, backend modules 8821, test files 2083, tests 17583, plan headings 1003, app scripts 28, boot scripts 37, script files 257.
 
-## Frontend functions (7827)
+## Frontend functions (7823)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -2934,39 +2934,35 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `repaintOwnFace` | frontend/js/companion-settings.js:43 |
 | `syncProfileLook` | frontend/js/companion-settings.js:168 |
 
-### frontend/js/companion-throw.js (29)
+### frontend/js/companion-throw.js (25)
 
 | Name | File:line |
 |---|---|
-| `companionThrowAim` | frontend/js/companion-throw.js:334 |
-| `companionThrowArrive` | frontend/js/companion-throw.js:134 |
-| `companionThrowAt` | frontend/js/companion-throw.js:281 |
-| `companionThrowAtTime` | frontend/js/companion-throw.js:405 |
-| `companionThrowClimb` | frontend/js/companion-throw.js:599 |
-| `companionThrowDown` | frontend/js/companion-throw.js:253 |
-| `companionThrowFlat` | frontend/js/companion-throw.js:579 |
-| `companionThrowHold` | frontend/js/companion-throw.js:273 |
-| `companionThrowLand` | frontend/js/companion-throw.js:447 |
-| `companionThrowLedges` | frontend/js/companion-throw.js:101 |
-| `companionThrowLie` | frontend/js/companion-throw.js:439 |
-| `companionThrowLift` | frontend/js/companion-throw.js:354 |
-| `companionThrowPick` | frontend/js/companion-throw.js:326 |
-| `companionThrowPlan` | frontend/js/companion-throw.js:367 |
+| `companionThrowAim` | frontend/js/companion-throw.js:333 |
+| `companionThrowArrive` | frontend/js/companion-throw.js:133 |
+| `companionThrowAt` | frontend/js/companion-throw.js:280 |
+| `companionThrowAtTime` | frontend/js/companion-throw.js:404 |
+| `companionThrowClimb` | frontend/js/companion-throw.js:601 |
+| `companionThrowDown` | frontend/js/companion-throw.js:252 |
+| `companionThrowFlat` | frontend/js/companion-throw.js:581 |
+| `companionThrowHold` | frontend/js/companion-throw.js:272 |
+| `companionThrowLedges` | frontend/js/companion-throw.js:100 |
+| `companionThrowLift` | frontend/js/companion-throw.js:353 |
+| `companionThrowPick` | frontend/js/companion-throw.js:325 |
+| `companionThrowPlan` | frontend/js/companion-throw.js:366 |
 | `companionThrowRng` | frontend/js/companion-throw.js:61 |
-| `companionThrowSettle` | frontend/js/companion-throw.js:297 |
-| `companionThrowSettleSoon` | frontend/js/companion-throw.js:617 |
-| `companionThrowSide` | frontend/js/companion-throw.js:165 |
-| `companionThrowSlew` | frontend/js/companion-throw.js:434 |
-| `companionThrowSlide` | frontend/js/companion-throw.js:206 |
+| `companionThrowSettle` | frontend/js/companion-throw.js:296 |
+| `companionThrowSettleSoon` | frontend/js/companion-throw.js:619 |
+| `companionThrowSide` | frontend/js/companion-throw.js:164 |
+| `companionThrowSlide` | frontend/js/companion-throw.js:205 |
 | `companionThrowStep` | frontend/js/companion-throw.js:78 |
-| `companionThrowTurn` | frontend/js/companion-throw.js:430 |
-| `companionThrowUp` | frontend/js/companion-throw.js:226 |
-| `companionThrowWrapOn` | frontend/js/companion-throw.js:188 |
-| `nameMarkBuddyFlightStep` | frontend/js/companion-throw.js:649 |
-| `nameMarkBuddyThrow` | frontend/js/companion-throw.js:469 |
-| `nameMarkBuddyThrowFeel` | frontend/js/companion-throw.js:630 |
-| `nameMarkBuddyThrowLand` | frontend/js/companion-throw.js:731 |
-| `nameMarkBuddyThrowSpot` | frontend/js/companion-throw.js:720 |
+| `companionThrowUp` | frontend/js/companion-throw.js:225 |
+| `companionThrowWrapOn` | frontend/js/companion-throw.js:187 |
+| `nameMarkBuddyFlightStep` | frontend/js/companion-throw.js:651 |
+| `nameMarkBuddyThrow` | frontend/js/companion-throw.js:471 |
+| `nameMarkBuddyThrowFeel` | frontend/js/companion-throw.js:632 |
+| `nameMarkBuddyThrowLand` | frontend/js/companion-throw.js:733 |
+| `nameMarkBuddyThrowSpot` | frontend/js/companion-throw.js:722 |
 
 ### frontend/js/companion-travel.js (7)
 
