@@ -516,7 +516,7 @@
       try {
         all = await apiPagedList("/documents", 200);
       } catch (error) {
-        toast(`Could not load your diagrams: ${error?.message || error}`, "info");
+        toast(`Couldn't load your diagrams: ${error?.message || error}`, "info");
         return null;
       }
     }
