@@ -453,7 +453,7 @@ def test_a_library_upload_only_a_locked_private_note_holds_is_refused(client, se
     from tessellate.api.chat_attach import _attached_media_files
 
     private = _library_upload(session, "diary.txt", "secret", in_private_note=True)
-    monkeypatch.setattr("tessellate.entry.manager.note_is_sealed", lambda is_private: bool(is_private))
+    monkeypatch.setattr("tessellate.entry.manager.note_is_sealed", bool)
     assert _attached_media_files(session, [private.id]) == []
 
 

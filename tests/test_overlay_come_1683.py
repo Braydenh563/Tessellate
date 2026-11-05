@@ -76,7 +76,7 @@ def test_company_ends_after_come_for_and_a_second_come_stops_it() -> None:
     assert e.command("come", t)
     assert e.come is None
     x = e.x
-    t = run(e, t, 3.0, (200, 600))
+    run(e, t, 3.0, (200, 600))
     assert abs(e.x - x) < 400  # no longer tracking the pointer
     e2 = start()
     e2.command("come", T0)

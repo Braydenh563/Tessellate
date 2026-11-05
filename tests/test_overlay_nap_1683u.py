@@ -52,7 +52,7 @@ def test_a_nap_is_still_asleep_after_ten_minutes_when_it_is_not_its_own_long_nap
     e.nap_until = t + 700.0  # a long sleeper: roam, trip, ambient and follow timers must not end it in 10 minutes
     e.roam = True
     e.trip_ready = e.climb_ready = 0.0
-    t = _run(e, t, 600.0, step=0.2)
+    _run(e, t, 600.0, step=0.2)
     assert e.state == "sleep"
 
 
@@ -82,7 +82,7 @@ def test_a_poke_and_a_command_wake_a_nap(how: str) -> None:
         e.update(t + 0.1, (px, py), ("up", px, py))
     else:
         e.command(how, t + 0.05)
-    t = _run(e, t + 0.1, 0.5)
+    _run(e, t + 0.1, 0.5)
     assert e.state != "sleep", how
     assert e.nap_until == 0.0
 
@@ -95,7 +95,7 @@ def test_it_settles_out_of_the_middle_before_it_sleeps() -> None:
     e._place_on_floor()
     e.command("nap", t)
     assert e.state in ("walk", "crouch")
-    t = _run(e, t, 12.0)
+    _run(e, t, 12.0)
     assert e.state == "sleep"
     assert not tv.in_middle(e.x, AREA, e.size[0])
 
