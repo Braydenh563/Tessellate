@@ -143,7 +143,7 @@ def test_an_apijson_wrapper_is_not_named_as_the_caller():
         "    at window.apiJson (http://h/js/whiteboard-history.js:379:5)\n"
         "    at async window.apiJson (http://h/js/whiteboard-history.js:66:5)\n    at loadDoc (http://h/js/documents.js:40:3)"
     )
-    assert run(f"lagStackOwner({json.dumps(stack)}, LAG_API_SKIP)", ("diag-report.js", "lag-watch.js")) == "documents.js loadDoc"
+    assert run(f"lagStackOwner({json.dumps(stack)}, lagApi.skip)", ("diag-report.js", "lag-watch.js")) == "documents.js loadDoc"
 
 
 def test_errors_are_deduped_by_message_and_stack_and_the_table_is_capped():

@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Lag log (INBOX 1667, the owner's third and fourth logs): the lag report names the real caller of an `apiJson` answer, not whiteboard-history.js (its wrapper, `window.apiJson`, was not skipped; the stack owner now skips any frame ending in apiJson), and the welcome's 250 ms wait for toasts to clear no longer asks `getClientRects()` (a forced layout each poll: onboarding.js tick 86 ms with 82 ms of it forced layout at 4x CPU, gone in the same probe). Measured, not fixed: at 4x CPU in a 150-section document the tab switches cost 20 to 100 ms of style a batch in 7 to 20 batches, the open's script is 180 of 840 ms (the rest is style, layout and paint), and atlasRigFrame did not run at rest on Documents, so the 313 ms atlas loop and the 183 ms documents timer (the deferred panels sum to 59 ms at 4x here) did not reproduce.
 
 ## [0.7.0] - 2026-11-05
 - Desk companion: "Come here" now means follow me (INBOX 1683 t): it waits for the pointer to leave the menu, then goes to it wherever it is (the ground, or onto a window top the pointer is over), reacts happily and keeps company for 20 s; a second "Come here" stops it.

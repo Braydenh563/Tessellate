@@ -91,11 +91,11 @@ const LAG_API = [];
 //: A wrapper around `apiJson` is not the caller. whiteboard-history.js installs `window.apiJson
 //: = async (...) =>`, which V8 names "window.apiJson", so every call read as that file (INBOX
 //: 1667): a frame whose function ends in apiJson is skipped, whatever its prefix.
-const LAG_API_SKIP = /lag-watch\.js|at (?:async )?(?:[\w$]+\.)*apiJson /;
+lagApi.skip = /lag-watch\.js|at (?:async )?(?:[\w$]+\.)*apiJson /;
 
 function lagApi(path) {
   Error.stackTraceLimit = 8;
-  const who = lagStackOwner(new Error().stack, LAG_API_SKIP);
+  const who = lagStackOwner(new Error().stack, lagApi.skip);
   Error.stackTraceLimit = 10;
   return (data) => {
     LAG_API.push({ t: performance.now(), label: `${String(path).split("?")[0]} from ${who}` });

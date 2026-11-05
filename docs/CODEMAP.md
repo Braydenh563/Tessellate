@@ -2,9 +2,9 @@
 
 Generated 2026-11-05 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7823, frontend ids 2644, CSS sections 522, backend routes 644, backend modules 8823, test files 2085, tests 17606, plan headings 1004, app scripts 28, boot scripts 37, script files 257.
+Counts: frontend functions 7827, frontend ids 2644, CSS sections 522, backend routes 644, backend modules 8823, test files 2086, tests 17620, plan headings 1004, app scripts 28, boot scripts 37, script files 258.
 
-## Frontend functions (7823)
+## Frontend functions (7827)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -3114,57 +3114,57 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 |---|---|
 | `build` | frontend/js/diagram-bar.js:47 |
 | `hintOf` | frontend/js/diagram-bar.js:17 |
-| `key` | frontend/js/diagram-bar.js:126 |
+| `key` | frontend/js/diagram-bar.js:127 |
 | `last` | frontend/js/diagram-bar.js:18 |
 | `nameOf` | frontend/js/diagram-bar.js:23 |
 | `optionsOf` | frontend/js/diagram-bar.js:22 |
 | `paintOutline` | frontend/js/diagram-bar.js:26 |
-| `rootKey` | frontend/js/diagram-bar.js:136 |
+| `rootKey` | frontend/js/diagram-bar.js:137 |
 | `sync` | frontend/js/diagram-bar.js:33 |
 
 ### frontend/js/diagram-builder.js (40)
 
 | Name | File:line |
 |---|---|
-| `addBlock` | frontend/js/diagram-builder.js:341 |
-| `beginEdit` | frontend/js/diagram-builder.js:372 |
+| `addBlock` | frontend/js/diagram-builder.js:343 |
+| `beginEdit` | frontend/js/diagram-builder.js:374 |
 | `blockEl` | frontend/js/diagram-builder.js:42 |
-| `blockItems` | frontend/js/diagram-builder.js:300 |
-| `blockKeys` | frontend/js/diagram-builder.js:137 |
-| `buildBlock` | frontend/js/diagram-builder.js:201 |
-| `buildPalette` | frontend/js/diagram-builder.js:531 |
-| `buildRow` | frontend/js/diagram-builder.js:214 |
+| `blockItems` | frontend/js/diagram-builder.js:302 |
+| `blockKeys` | frontend/js/diagram-builder.js:139 |
+| `buildBlock` | frontend/js/diagram-builder.js:203 |
+| `buildPalette` | frontend/js/diagram-builder.js:533 |
+| `buildRow` | frontend/js/diagram-builder.js:216 |
 | `commit` | frontend/js/diagram-builder.js:47 |
 | `drawPicture` | frontend/js/diagram-builder.js:62 |
 | `el` | frontend/js/diagram-builder.js:26 |
-| `groupGlyph` | frontend/js/diagram-builder.js:276 |
-| `joinChip` | frontend/js/diagram-builder.js:283 |
-| `joinPick` | frontend/js/diagram-builder.js:503 |
-| `joins` | frontend/js/diagram-builder.js:499 |
-| `kindOf` | frontend/js/diagram-builder.js:629 |
-| `menuAt` | frontend/js/diagram-builder.js:483 |
-| `more` | frontend/js/diagram-builder.js:520 |
-| `mount` | frontend/js/diagram-builder.js:533 |
+| `groupGlyph` | frontend/js/diagram-builder.js:278 |
+| `joinChip` | frontend/js/diagram-builder.js:285 |
+| `joinPick` | frontend/js/diagram-builder.js:505 |
+| `joins` | frontend/js/diagram-builder.js:501 |
+| `kindOf` | frontend/js/diagram-builder.js:631 |
+| `menuAt` | frontend/js/diagram-builder.js:485 |
+| `more` | frontend/js/diagram-builder.js:522 |
+| `mount` | frontend/js/diagram-builder.js:535 |
 | `nameOf` | frontend/js/diagram-builder.js:40 |
-| `nestBlock` | frontend/js/diagram-builder.js:415 |
-| `onKey` | frontend/js/diagram-builder.js:437 |
-| `reconcile` | frontend/js/diagram-builder.js:129 |
-| `relabel` | frontend/js/diagram-builder.js:359 |
-| `removeBlock` | frontend/js/diagram-builder.js:423 |
-| `render` | frontend/js/diagram-builder.js:91 |
+| `nestBlock` | frontend/js/diagram-builder.js:417 |
+| `onKey` | frontend/js/diagram-builder.js:439 |
+| `reconcile` | frontend/js/diagram-builder.js:131 |
+| `relabel` | frontend/js/diagram-builder.js:361 |
+| `removeBlock` | frontend/js/diagram-builder.js:425 |
+| `render` | frontend/js/diagram-builder.js:93 |
 | `say` | frontend/js/diagram-builder.js:33 |
-| `select` | frontend/js/diagram-builder.js:327 |
-| `shapeButton` | frontend/js/diagram-builder.js:180 |
-| `shapeGlyph` | frontend/js/diagram-builder.js:139 |
-| `shapeItems` | frontend/js/diagram-builder.js:147 |
-| `shapeRow` | frontend/js/diagram-builder.js:160 |
-| `show` | frontend/js/diagram-builder.js:639 |
-| `stepBlock` | frontend/js/diagram-builder.js:408 |
-| `stops` | frontend/js/diagram-builder.js:119 |
-| `styleDo` | frontend/js/diagram-builder.js:505 |
-| `suggest` | frontend/js/diagram-builder.js:493 |
-| `suggestMenu` | frontend/js/diagram-builder.js:511 |
-| `sync` | frontend/js/diagram-builder.js:604 |
+| `select` | frontend/js/diagram-builder.js:329 |
+| `shapeButton` | frontend/js/diagram-builder.js:182 |
+| `shapeGlyph` | frontend/js/diagram-builder.js:141 |
+| `shapeItems` | frontend/js/diagram-builder.js:149 |
+| `shapeRow` | frontend/js/diagram-builder.js:162 |
+| `show` | frontend/js/diagram-builder.js:641 |
+| `stepBlock` | frontend/js/diagram-builder.js:410 |
+| `stops` | frontend/js/diagram-builder.js:121 |
+| `styleDo` | frontend/js/diagram-builder.js:507 |
+| `suggest` | frontend/js/diagram-builder.js:495 |
+| `suggestMenu` | frontend/js/diagram-builder.js:513 |
+| `sync` | frontend/js/diagram-builder.js:606 |
 | `titleOf` | frontend/js/diagram-builder.js:39 |
 
 ### frontend/js/diagram-canvas.js (7)
@@ -3221,23 +3221,31 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `titleOf` | frontend/js/diagram-joins.js:29 |
 | `words` | frontend/js/diagram-joins.js:101 |
 
+### frontend/js/diagram-kindbar.js (3)
+
+| Name | File:line |
+|---|---|
+| `choose` | frontend/js/diagram-kindbar.js:40 |
+| `fresh` | frontend/js/diagram-kindbar.js:18 |
+| `mount` | frontend/js/diagram-kindbar.js:25 |
+
 ### frontend/js/diagram-kinds.js (62)
 
 | Name | File:line |
 |---|---|
-| `addTile` | frontend/js/diagram-kinds.js:806 |
-| `buildBlock` | frontend/js/diagram-kinds.js:683 |
-| `buildPalette` | frontend/js/diagram-kinds.js:973 |
-| `buildRow` | frontend/js/diagram-kinds.js:693 |
-| `dropApply` | frontend/js/diagram-kinds.js:932 |
-| `dropAt` | frontend/js/diagram-kinds.js:904 |
-| `fieldsOf` | frontend/js/diagram-kinds.js:676 |
-| `find` | frontend/js/diagram-kinds.js:618 |
-| `ghostSpec` | frontend/js/diagram-kinds.js:1083 |
-| `glyph` | frontend/js/diagram-kinds.js:623 |
-| `icon` | frontend/js/diagram-kinds.js:613 |
-| `itemsFor` | frontend/js/diagram-kinds.js:756 |
-| `keysOf` | frontend/js/diagram-kinds.js:652 |
+| `addTile` | frontend/js/diagram-kinds.js:810 |
+| `buildBlock` | frontend/js/diagram-kinds.js:687 |
+| `buildPalette` | frontend/js/diagram-kinds.js:977 |
+| `buildRow` | frontend/js/diagram-kinds.js:697 |
+| `dropApply` | frontend/js/diagram-kinds.js:936 |
+| `dropAt` | frontend/js/diagram-kinds.js:908 |
+| `fieldsOf` | frontend/js/diagram-kinds.js:680 |
+| `find` | frontend/js/diagram-kinds.js:622 |
+| `ghostSpec` | frontend/js/diagram-kinds.js:1088 |
+| `glyph` | frontend/js/diagram-kinds.js:627 |
+| `icon` | frontend/js/diagram-kinds.js:617 |
+| `itemsFor` | frontend/js/diagram-kinds.js:760 |
+| `keysOf` | frontend/js/diagram-kinds.js:656 |
 | `kxAdd` | frontend/js/diagram-kinds.js:318 |
 | `kxAddWho` | frontend/js/diagram-kinds.js:498 |
 | `kxCount` | frontend/js/diagram-kinds.js:269 |
@@ -3271,22 +3279,22 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `kxUid` | frontend/js/diagram-kinds.js:30 |
 | `kxWalk` | frontend/js/diagram-kinds.js:263 |
 | `kxWithin` | frontend/js/diagram-kinds.js:283 |
-| `menuAt` | frontend/js/diagram-kinds.js:884 |
-| `mount` | frontend/js/diagram-kinds.js:1001 |
-| `nameOf` | frontend/js/diagram-kinds.js:619 |
-| `nestBlock` | frontend/js/diagram-kinds.js:830 |
-| `onKey` | frontend/js/diagram-kinds.js:849 |
-| `pickWho` | frontend/js/diagram-kinds.js:742 |
-| `relabel` | frontend/js/diagram-kinds.js:793 |
-| `removeBlock` | frontend/js/diagram-kinds.js:836 |
-| `render` | frontend/js/diagram-kinds.js:656 |
-| `seedBlock` | frontend/js/diagram-kinds.js:891 |
-| `show` | frontend/js/diagram-kinds.js:1106 |
-| `stepBlock` | frontend/js/diagram-kinds.js:824 |
-| `sync` | frontend/js/diagram-kinds.js:1061 |
-| `whoLabel` | frontend/js/diagram-kinds.js:620 |
-| `withinNode` | frontend/js/diagram-kinds.js:926 |
-| `words` | frontend/js/diagram-kinds.js:639 |
+| `menuAt` | frontend/js/diagram-kinds.js:888 |
+| `mount` | frontend/js/diagram-kinds.js:1005 |
+| `nameOf` | frontend/js/diagram-kinds.js:623 |
+| `nestBlock` | frontend/js/diagram-kinds.js:834 |
+| `onKey` | frontend/js/diagram-kinds.js:853 |
+| `pickWho` | frontend/js/diagram-kinds.js:746 |
+| `relabel` | frontend/js/diagram-kinds.js:797 |
+| `removeBlock` | frontend/js/diagram-kinds.js:840 |
+| `render` | frontend/js/diagram-kinds.js:660 |
+| `seedBlock` | frontend/js/diagram-kinds.js:895 |
+| `show` | frontend/js/diagram-kinds.js:1111 |
+| `stepBlock` | frontend/js/diagram-kinds.js:828 |
+| `sync` | frontend/js/diagram-kinds.js:1066 |
+| `whoLabel` | frontend/js/diagram-kinds.js:624 |
+| `withinNode` | frontend/js/diagram-kinds.js:930 |
+| `words` | frontend/js/diagram-kinds.js:643 |
 
 ### frontend/js/diagram-library.js (3)
 
@@ -3335,10 +3343,11 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `dgbUnjoin` | frontend/js/diagram-ops.js:184 |
 | `dgbWrap` | frontend/js/diagram-ops.js:311 |
 
-### frontend/js/diagram-outline.js (4)
+### frontend/js/diagram-outline.js (5)
 
 | Name | File:line |
 |---|---|
+| `box` | frontend/js/diagram-outline.js:80 |
 | `flow` | frontend/js/diagram-outline.js:9 |
 | `offer` | frontend/js/diagram-outline.js:55 |
 | `order` | frontend/js/diagram-outline.js:35 |
@@ -3348,7 +3357,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `wire` | frontend/js/diagram-overlay.js:45 |
+| `wire` | frontend/js/diagram-overlay.js:47 |
 
 ### frontend/js/diagram-picture.js (3)
 
@@ -3425,8 +3434,8 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `kindWord` | frontend/js/diagram-view.js:68 |
-| `wire` | frontend/js/diagram-view.js:75 |
+| `kindWord` | frontend/js/diagram-view.js:65 |
+| `wire` | frontend/js/diagram-view.js:72 |
 
 ### frontend/js/documents-ai.js (15)
 
@@ -5327,29 +5336,29 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `lagApi` | frontend/js/lag-watch.js:91 |
-| `lagApiWho` | frontend/js/lag-watch.js:102 |
-| `lagErrorsStart` | frontend/js/lag-watch.js:331 |
+| `lagApi` | frontend/js/lag-watch.js:96 |
+| `lagApiWho` | frontend/js/lag-watch.js:107 |
+| `lagErrorsStart` | frontend/js/lag-watch.js:336 |
 | `lagFile` | frontend/js/lag-watch.js:66 |
-| `lagFlush` | frontend/js/lag-watch.js:166 |
-| `lagFrame` | frontend/js/lag-watch.js:173 |
-| `lagFrameWhy` | frontend/js/lag-watch.js:183 |
-| `lagInput` | frontend/js/lag-watch.js:207 |
-| `lagNote` | frontend/js/lag-watch.js:108 |
-| `lagNoteError` | frontend/js/lag-watch.js:318 |
-| `lagObserve` | frontend/js/lag-watch.js:224 |
-| `lagRafClose` | frontend/js/lag-watch.js:271 |
-| `lagRafInstall` | frontend/js/lag-watch.js:290 |
-| `lagRafOwner` | frontend/js/lag-watch.js:245 |
-| `lagRafTop` | frontend/js/lag-watch.js:264 |
-| `lagRequest` | frontend/js/lag-watch.js:216 |
+| `lagFlush` | frontend/js/lag-watch.js:171 |
+| `lagFrame` | frontend/js/lag-watch.js:178 |
+| `lagFrameWhy` | frontend/js/lag-watch.js:188 |
+| `lagInput` | frontend/js/lag-watch.js:212 |
+| `lagNote` | frontend/js/lag-watch.js:113 |
+| `lagNoteError` | frontend/js/lag-watch.js:323 |
+| `lagObserve` | frontend/js/lag-watch.js:229 |
+| `lagRafClose` | frontend/js/lag-watch.js:276 |
+| `lagRafInstall` | frontend/js/lag-watch.js:295 |
+| `lagRafOwner` | frontend/js/lag-watch.js:250 |
+| `lagRafTop` | frontend/js/lag-watch.js:269 |
+| `lagRequest` | frontend/js/lag-watch.js:221 |
 | `lagScriptCause` | frontend/js/lag-watch.js:72 |
-| `lagSnapshot` | frontend/js/lag-watch.js:352 |
-| `lagStackOwner` | frontend/js/lag-watch.js:231 |
-| `lagStart` | frontend/js/lag-watch.js:387 |
+| `lagSnapshot` | frontend/js/lag-watch.js:357 |
+| `lagStackOwner` | frontend/js/lag-watch.js:236 |
+| `lagStart` | frontend/js/lag-watch.js:392 |
 | `lagTarget` | frontend/js/lag-watch.js:58 |
 | `lagView` | frontend/js/lag-watch.js:51 |
-| `lagWireSettings` | frontend/js/lag-watch.js:374 |
+| `lagWireSettings` | frontend/js/lag-watch.js:379 |
 
 ### frontend/js/lan-watch.js (19)
 
@@ -5953,8 +5962,8 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | Name | File:line |
 |---|---|
 | `mermaidFrameAccepts` | frontend/js/mermaid-frame.js:21 |
-| `mermaidFrameConfigure` | frontend/js/mermaid-frame.js:82 |
-| `mermaidFrameDraw` | frontend/js/mermaid-frame.js:102 |
+| `mermaidFrameConfigure` | frontend/js/mermaid-frame.js:91 |
+| `mermaidFrameDraw` | frontend/js/mermaid-frame.js:111 |
 | `mermaidFrameSized` | frontend/js/mermaid-frame.js:58 |
 | `mermaidFrameVariables` | frontend/js/mermaid-frame.js:29 |
 | `mermaidReasonLine` | frontend/js/mermaid-frame.js:44 |
@@ -6287,21 +6296,21 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `closeOnboarding` | frontend/js/onboarding.js:440 |
-| `firstRunPump` | frontend/js/onboarding.js:377 |
+| `closeOnboarding` | frontend/js/onboarding.js:442 |
+| `firstRunPump` | frontend/js/onboarding.js:379 |
 | `firstRunSurfaceOpen` | frontend/js/onboarding.js:328 |
 | `firstRunToastsGone` | frontend/js/onboarding.js:348 |
-| `firstRunTurn` | frontend/js/onboarding.js:362 |
-| `firstRunWelcomeDue` | frontend/js/onboarding.js:369 |
+| `firstRunTurn` | frontend/js/onboarding.js:364 |
+| `firstRunWelcomeDue` | frontend/js/onboarding.js:371 |
 | `loadOnboardingDiagnostics` | frontend/js/onboarding.js:68 |
-| `maybeShowConsoleViewIntro` | frontend/js/onboarding.js:494 |
-| `onboardingBack` | frontend/js/onboarding.js:476 |
-| `onboardingNext` | frontend/js/onboarding.js:457 |
-| `openOnboarding` | frontend/js/onboarding.js:427 |
+| `maybeShowConsoleViewIntro` | frontend/js/onboarding.js:496 |
+| `onboardingBack` | frontend/js/onboarding.js:478 |
+| `onboardingNext` | frontend/js/onboarding.js:459 |
+| `openOnboarding` | frontend/js/onboarding.js:429 |
 | `renderOnboardingActions` | frontend/js/onboarding.js:129 |
 | `renderOnboardingSlide` | frontend/js/onboarding.js:240 |
-| `showOnboarding` | frontend/js/onboarding.js:432 |
-| `showOnboardingTurn` | frontend/js/onboarding.js:410 |
+| `showOnboarding` | frontend/js/onboarding.js:434 |
+| `showOnboardingTurn` | frontend/js/onboarding.js:412 |
 | `whenFirstRunClear` | frontend/js/onboarding.js:341 |
 
 ### frontend/js/panel-movable.js (65)
@@ -12315,7 +12324,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/dash-night-lazy.css | 29 |
 | frontend/css/dash-orphans-lazy.css | 57 |
 | frontend/css/desk-companion-lazy.css | 226 |
-| frontend/css/diagram-lazy.css | 1570 |
+| frontend/css/diagram-lazy.css | 1629 |
 | frontend/css/file-drop-lazy.css | 51 |
 | frontend/css/first-run-lazy.css | 140 |
 | frontend/css/forced-colors-lazy.css | 28 |
@@ -15830,8 +15839,8 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `_act_topic` | src/tessellate/ai/help_topics_more.py:3394 |
-| `_slash_commands_topic` | src/tessellate/ai/help_topics_more.py:3522 |
+| `_act_topic` | src/tessellate/ai/help_topics_more.py:3397 |
+| `_slash_commands_topic` | src/tessellate/ai/help_topics_more.py:3525 |
 
 ### src/tessellate/ai/help_words.py (2)
 
@@ -24117,7 +24126,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (17606)
+## Tests (17620)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -24654,11 +24663,12 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_desktop_fullscreen.py | 5 |
 | tests/test_desktop_launcher.py | 17 |
 | tests/test_device_sizes.py | 11 |
-| tests/test_diag_report.py | 13 |
+| tests/test_diag_report.py | 14 |
 | tests/test_diagnostics_1430.py | 9 |
 | tests/test_diagram_1596.py | 4 |
 | tests/test_diagram_1661a.py | 6 |
 | tests/test_diagram_1661b.py | 9 |
+| tests/test_diagram_1679m.py | 12 |
 | tests/test_diagram_blind_fixes.py | 6 |
 | tests/test_diagram_builder.py | 20 |
 | tests/test_diagram_d3.py | 2 |
@@ -24926,7 +24936,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_followups.py | 19 |
 | tests/test_font_matrix.py | 6 |
 | tests/test_forced_colors_s15.py | 2 |
-| tests/test_forced_layout_1667.py | 10 |
+| tests/test_forced_layout_1667.py | 11 |
 | tests/test_foreign_browser_errors.py | 2 |
 | tests/test_foreign_keys_indexed.py | 1 |
 | tests/test_forgot_password.py | 29 |
@@ -26795,7 +26805,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | E4 · The honest positives, so the section is not one-sided (read) | docs/roadmap/MODERNISATION_AUDIT.md:676 |
 | Earlier morning summary (2026-10-30) | docs/roadmap/HANDOVER.md:35 |
 | Earlier morning summary (away run 2026-10-18b) | docs/roadmap/HANDOVER.md:54 |
-| Earlier sessions | docs/roadmap/HANDOVER.md:494 |
+| Earlier sessions | docs/roadmap/HANDOVER.md:496 |
 | Expert audit, 2026-10-10 | docs/roadmap/BACKLOG.md:4272 |
 | F. Agent harness: what "ultimate" needs that is not there | docs/roadmap/AUDIT.md:113 |
 | F. Performance and perceived speed | docs/roadmap/MODERNISATION_AUDIT.md:685 |
