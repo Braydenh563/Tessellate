@@ -335,14 +335,15 @@ def test_the_desktop_companion_row_is_named_as_a_this_computer_setting():
     for words in ("floats like a wind spirit", "sleeps", "thrown", "hangs from the top", "peeks up from behind the taskbar", "animation effects",
                   "climbs onto the top of a window", "Roam over windows", "a card when a reminder falls due",
                   "alive in place", "walking, running", "out at one edge and in at the other", "through a portal", "swings down or lets go with a start",
-                  "right-click for Companion (Atlas masculine or feminine, or a saved Atlas companion)"):
+                  "right-click for Companion (Atlas masculine or feminine, your own or a saved one, drawn once)"):
         assert words in " ".join(popover.split()), words
     for topic in named:
         flat = " ".join(topic["body"].split())
         for words in ("floats like a wind spirit", "thrown", "hangs from the top", "peeks up from behind the taskbar", "animation effects",
                       "climbs onto the top of a window", "Roam over windows", "a card to click",
                       "alive in place", "walking, running", "out at one edge and in at the other", "through a portal", "swings down or lets go with a start",
-                      "Right-click it for Companion (Atlas masculine or feminine, or a saved Atlas companion; the rest show in the app only)"):
+                      #: Changed on purpose (INBOX 1684): every companion shows on the desk, so "the rest show in the app only" is gone.
+                      "Right-click it for Companion (Atlas masculine or feminine, your own or a saved one, drawn once)"):
             assert words in flat, (topic["id"], words)
             assert len(topic["body"]) < 1900, topic["id"]
     settings = (FRONTEND / "js" / "settings.js").read_text(encoding="utf-8")

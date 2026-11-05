@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Desk companion (INBOX 1684, owner: "why cant the companion be the regular ones"): the right-click Companion list now draws every companion the app offers on the desktop, not only Atlas: you from your name, the chat's persona, your own character and saved companions. The app window draws the figure's 48 frames itself (desk-frames.js, the build script's poses done in the page from a copy of the live figure, which is never touched), the overlay keeps them per figure under the data folder (desk_frames, newest 6) and Atlas stands in until they land; the look handoff now carries which companion and a hash of how it looks, so a change to the name, parts or size draws a new set. Measured in Chromium: 48 frames in 15 s, 995 KB a set; unverified on a real Windows WebView2.
 - Companion: every mind map node is a perch (INBOX 1686, the owner: it could sit only on the central node). The Outline look draws branches plain (no box) and the board's perch list skipped every plain shape; a plain or underlined node is now a perch at the top of its words, kept through zoom. Measured on a 13-topic map in Outline: 0 perches before, 12 after; seats within 0.4px of the words' top through 118 to 260px node widths.
 
 ## [0.7.0] - 2026-11-05
