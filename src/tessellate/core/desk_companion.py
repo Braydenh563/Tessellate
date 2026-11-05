@@ -531,6 +531,33 @@ def physical_rect(rect: tuple[int, int, int, int], dpi: Any) -> tuple[int, int, 
     return tuple(int(round(v * scale)) for v in rect)  # type: ignore[return-value]
 
 
+#: Click-away without focus (INBOX 1689): the panel closes on losing focus, but a click on the figure
+#: (a no-activate overlay) need not hand it the focus, so it never lost any and stayed open. While it is
+#: shown, a mouse press that starts outside its rectangle closes it too; read this often, Windows only.
+CLICK_AWAY_POLL = 0.05
+VK_LBUTTON, VK_RBUTTON, VK_MBUTTON = 0x01, 0x02, 0x04
+
+
+def mouse_down(user32: Any) -> bool:
+    return any(user32.GetAsyncKeyState(vk) & 0x8000 for vk in (VK_LBUTTON, VK_RBUTTON, VK_MBUTTON))
+
+
+def press_outside(user32: Any, handle: int, was_down: bool) -> tuple[bool, bool]:
+    """(a press began outside the window, the button state now): only a press that starts after the last
+    read counts, so the click that opened the panel, still held, does not close it."""
+    import ctypes
+    from ctypes import wintypes
+
+    down = mouse_down(user32)
+    if not down or was_down:
+        return False, down
+    point, rect = wintypes.POINT(), wintypes.RECT()
+    if not user32.GetCursorPos(ctypes.byref(point)) or not user32.GetWindowRect(handle, ctypes.byref(rect)):
+        return False, down
+    inside = rect.left <= point.x < rect.right and rect.top <= point.y < rect.bottom
+    return not inside, down
+
+
 def raise_on_desktop(window: Any, rect: tuple[int, int, int, int] | None = None) -> bool:
     """Windows only: make the shown window a tool window (no taskbar button),
     topmost and not minimised, and put it back above the other topmost windows.
@@ -891,6 +918,7 @@ class DeskCompanion:
         #: The figure's physical rectangle at the last click or drop, and where the
         #: panel went from it: ((x, y, width, height), dpi) in physical pixels.
         self._pet_box: tuple[int, int, int, int] | None = None
+        self._away_watch: threading.Thread | None = None
         self.panel_box: tuple[tuple[int, int, int, int], int] | None = None
 
     # --- where it is -----------------------------------------------------------
@@ -1371,6 +1399,33 @@ class DeskCompanion:
         finally:
             _lock.release()
 
+    def _watch_click_away(self) -> None:
+        """Windows: close the shown panel on a press outside it, focus or not (`press_outside`)."""
+        if sys.platform != "win32" or getattr(self, "_away_watch", None) is not None:
+            return
+        handle = window_handle(self.window)
+        if handle is None:
+            return
+        import ctypes
+
+        user32 = ctypes.windll.user32
+        self._away_watch = threading.Thread(target=self._click_away_loop, args=(user32, handle), name="desk-click-away", daemon=True)
+        self._away_watch.start()
+
+    def _click_away_loop(self, user32: Any, handle: int) -> None:
+        down = mouse_down(user32)
+        try:
+            while self.panel_shown and not self.closing:
+                time.sleep(CLICK_AWAY_POLL)
+                away, down = press_outside(user32, handle, down)
+                if away:
+                    self.panel_blur()
+                    break
+        except Exception:  # noqa: BLE001 - the focus path still closes it
+            logger.debug("desk companion: the click-away watch stopped", exc_info=True)
+        finally:
+            self._away_watch = None
+
     def panel_blur(self) -> bool:
         """The panel page lost focus to something else: close it."""
         with _lock:
@@ -1427,6 +1482,7 @@ class DeskCompanion:
             self.window.evaluate_js(
                 "window.dispatchEvent(new CustomEvent('desk-open',{detail:%s}))" % json.dumps("context" if kind == "right" else "menu")
             )
+            self._watch_click_away()
             logger.info("desk companion: quick panel shown (%s)", kind)
         except Exception:  # noqa: BLE001 - a panel that fails leaves the figure walking
             logger.warning("desk companion: the quick panel failed", exc_info=True)

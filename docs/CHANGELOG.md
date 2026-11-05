@@ -7,6 +7,8 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 
+- Desk companion: a click away from the open desk menu closes it, even when the menu never had focus (Windows; INBOX 1689, not verified on real Windows).
+
 ## [0.7.0] - 2026-11-05
 - Desk companion (INBOX 1683 w): on a real desktop the taskbar was the only place it went. A maximised window is kept as a hang spot (its title bar), a floating window's bottom edge is one and its top a perch, a hang is a trip with its own weight (it hangs a while, then pulls up or lets go), the taskbar is one choice among those in reach, and no destination comes three times running; the scan log counts hang spots. 200 seeded trips, 1920x1080 at 150 percent with a maximised window, the taskbar and a floating window: floor 54, window 46, hang 0 percent before; 38, 33, 29 after at the real trip cadence (maximised window and taskbar only: floor 100 before; floor 58, hang 42 after). Real Windows unverified.
 - Desk Quick note is the dashboard's Quick capture card (INBOX 1688 c): the panel opens the Notes tab's capture card (title, words or a to-do list, tags, Note and To-do, Close, Save; Ctrl+Enter saves) instead of a plain box, through the same file, styles and draft, saving and offering Undo through the companion's own request; the colour, bell and picture extras stay in the app. Measured card 296 by 262 px beside the dashboard's 306 wide, with the same colours, radius and fonts.
