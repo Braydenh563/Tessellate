@@ -98,3 +98,25 @@ def test_a_pill_drawn_as_one_path_takes_its_size_from_the_path_not_the_default()
     d, e = got
     assert (d["w"], d["h"]) == pytest.approx((136, 44))  # 68 to -68 wide; the pill's own height
     assert (e["w"], e["h"]) == (30, 20)  # the next node's rect is not read for D
+
+
+@needs_node
+def test_a_pill_with_a_label_rect_takes_the_outline_not_the_label():
+    """The owner, 2026-11-05 (screenshot): the four connect arrows sat on the text of a pill, not its outline. Mermaid
+    draws the label's own background as a <rect> inside the node, and that small rect was read before the pill's path."""
+    svg = (
+        '<svg viewBox="0 0 300 200"><g id="m-flowchart-D-1" transform="translate(100, 50)"><path d="M-63.5 -22 C-19 -22, 23 -22, 63.5 -22 '
+        'C66 -21, 67 -20, 68 -10 C68 0, 68 10, 63.5 22 C20 22, -20 22, -63.5 22 C-68 10, -68 -10, -63.5 -22" fill="none"/>'
+        '<g class="label"><rect width="40" height="24"/><foreignObject width="40" height="24"><div>test</div></foreignObject></g></g>'
+        '<g id="m-flowchart-F-3" transform="translate(220, 120)"><polygon points="0,-30 30,0 0,30 -30,0"/>'
+        '<g class="label"><rect width="20" height="18"/></g></g></svg>'
+    )
+    script = (
+        "const vm=require('vm');const ctx={diagramModel:{}};vm.createContext(ctx);"
+        f"vm.runInContext(require('fs').readFileSync({json.dumps(str(JS / 'diagram-picture.js'))},'utf8'),ctx);"
+        f"process.stdout.write(JSON.stringify(ctx.diagramModel.picture.boxes({json.dumps(svg)}).boxes));"
+    )
+    got = json.loads(subprocess.run(["node", "-e", script], capture_output=True, text=True, check=True).stdout)
+    d, f = got
+    assert (d["w"], d["h"]) == pytest.approx((136, 44))  # the pill's outline, not the 40 by 24 label
+    assert (f["w"], f["h"]) == pytest.approx((60, 60))  # a diamond's polygon, not its label

@@ -17,7 +17,11 @@
       if (!at) continue;
       //: This node's own text: up to the next node's group, so a shape-less node never borrows its neighbour's rect.
       const rest = svg.slice(g.index + g[0].length);
-      const own = rest.slice(0, rest.search(/\bid="[^"]*flowchart-/) >= 0 ? rest.search(/\bid="[^"]*flowchart-/) : 8000);
+      const whole = rest.slice(0, rest.search(/\bid="[^"]*flowchart-/) >= 0 ? rest.search(/\bid="[^"]*flowchart-/) : 8000);
+      //: The shape is drawn before the label, and the label carries a small <rect> of its own (its background): read the
+      //: shape from the text before the label group, so the handles sit on the outline, not the words (owner, 2026-11-05).
+      const cut = whole.search(/\bclass="(?:[^"]*\s)?label(?:\s[^"]*)?"/);
+      const own = cut > 0 && /<(?:rect|polygon|circle|path)\b/.test(whole.slice(0, cut)) ? whole.slice(0, cut) : whole;
       const tail = own.slice(0, 900);
       const rect = /<rect\b[^>]*>/.exec(tail)?.[0] || "";
       const poly = /<polygon\b[^>]*\bpoints="([^"]+)"/.exec(tail)?.[1].trim().split(/[ ,]+/).map(Number) || [];
