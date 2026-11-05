@@ -39,7 +39,8 @@
 
   function choose(S, h, here, to) {
     if (to === here) return;
-    const blank = !S.source.trim() || (S.k ? S.k.blank(S.m) : !S.m?.nodes.length && !S.m?.subgraphs.length && !S.m?.edges.length);
+    //: A source the blocks cannot read (a Gantt, say) is content, not blank: the Undo line must say so.
+    const blank = !S.source.trim() || (S.plain ? false : S.k ? S.k.blank(S.m) : !S.m?.nodes.length && !S.m?.subgraphs.length && !S.m?.edges.length);
     diagramModel.builder.tell(blank ? `A new ${NOUN[to]}.` : `A new ${NOUN[to]}. Undo, Ctrl+Z, brings the ${NOUN[here]} back.`);
     S.io.set(fresh(S.source, to));
   }

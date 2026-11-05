@@ -114,3 +114,13 @@ def test_a_sequence_diagram_adds_parallel_critical_and_break_boxes():
 
     body = str(next(t["body"] for t in HELP_TOPICS if t["id"] == "diagram-kinds"))
     assert "parallel, critical and break (A, P, M, R, Y, X, T, L, G, O, U, C and B)" in body and "Sequence, Mind map and Timeline buttons" in body
+
+
+def test_the_kind_switcher_hides_for_a_source_blocks_cannot_draw_and_never_calls_it_blank():
+    # Reviewer: a Gantt showed Flowchart pressed, and Sequence wiped it with no Undo line (S.m is empty for it).
+    assert ".dgm-plain .dgm-kinds" in CSS and "display: none" in CSS.split(".dgm-plain .dgm-kinds")[1][:40]
+    assert "S.plain ? false" in KINDBAR
+
+
+def test_the_kind_switcher_buttons_share_one_row_on_a_phone():
+    assert ".dgm-kinds button" in CSS and "flex: 1 1 0" in CSS.split(".dgm-kinds button")[1][:120]
