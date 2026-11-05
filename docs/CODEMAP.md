@@ -22366,13 +22366,13 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `Extras` | src/tessellate/core/overlay/extras.py:259 |
-| `Pointer` | src/tessellate/core/overlay/extras.py:132 |
+| `Extras` | src/tessellate/core/overlay/extras.py:258 |
+| `Pointer` | src/tessellate/core/overlay/extras.py:131 |
 | `Reaction` | src/tessellate/core/overlay/extras.py:53 |
-| `_in_box` | src/tessellate/core/overlay/extras.py:128 |
+| `_in_box` | src/tessellate/core/overlay/extras.py:127 |
 | `_k` | src/tessellate/core/overlay/extras.py:87 |
-| `ease` | src/tessellate/core/overlay/extras.py:245 |
-| `ease_marks` | src/tessellate/core/overlay/extras.py:255 |
+| `ease` | src/tessellate/core/overlay/extras.py:244 |
+| `ease_marks` | src/tessellate/core/overlay/extras.py:254 |
 | `register` | src/tessellate/core/overlay/extras.py:113 |
 
 ### src/tessellate/core/overlay/faces.py (13)
@@ -22421,21 +22421,21 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 |---|---|
 | `Spec` | src/tessellate/core/overlay/props.py:28 |
 | `_act` | src/tessellate/core/overlay/props.py:39 |
-| `_add` | src/tessellate/core/overlay/props.py:119 |
-| `_beanbag` | src/tessellate/core/overlay/props.py:206 |
-| `_book` | src/tessellate/core/overlay/props.py:192 |
+| `_add` | src/tessellate/core/overlay/props.py:118 |
+| `_beanbag` | src/tessellate/core/overlay/props.py:205 |
+| `_book` | src/tessellate/core/overlay/props.py:191 |
 | `_breath` | src/tessellate/core/overlay/props.py:43 |
-| `_cup` | src/tessellate/core/overlay/props.py:257 |
-| `_dumbbell` | src/tessellate/core/overlay/props.py:250 |
-| `_journal` | src/tessellate/core/overlay/props.py:266 |
-| `_lantern` | src/tessellate/core/overlay/props.py:241 |
-| `_map` | src/tessellate/core/overlay/props.py:230 |
-| `_mat` | src/tessellate/core/overlay/props.py:224 |
-| `_rod` | src/tessellate/core/overlay/props.py:213 |
-| `draw` | src/tessellate/core/overlay/props.py:160 |
-| `next_step` | src/tessellate/core/overlay/props.py:138 |
+| `_cup` | src/tessellate/core/overlay/props.py:256 |
+| `_dumbbell` | src/tessellate/core/overlay/props.py:249 |
+| `_journal` | src/tessellate/core/overlay/props.py:265 |
+| `_lantern` | src/tessellate/core/overlay/props.py:240 |
+| `_map` | src/tessellate/core/overlay/props.py:229 |
+| `_mat` | src/tessellate/core/overlay/props.py:223 |
+| `_rod` | src/tessellate/core/overlay/props.py:212 |
+| `draw` | src/tessellate/core/overlay/props.py:159 |
+| `next_step` | src/tessellate/core/overlay/props.py:137 |
 | `register` | src/tessellate/core/overlay/props.py:107 |
-| `view` | src/tessellate/core/overlay/props.py:126 |
+| `view` | src/tessellate/core/overlay/props.py:125 |
 
 ### src/tessellate/core/overlay/runner.py (2)
 
@@ -26937,7 +26937,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | E4 · The honest positives, so the section is not one-sided (read) | docs/roadmap/MODERNISATION_AUDIT.md:676 |
 | Earlier morning summary (2026-10-30) | docs/roadmap/HANDOVER.md:35 |
 | Earlier morning summary (away run 2026-10-18b) | docs/roadmap/HANDOVER.md:54 |
-| Earlier sessions | docs/roadmap/HANDOVER.md:496 |
+| Earlier sessions | docs/roadmap/HANDOVER.md:503 |
 | Expert audit, 2026-10-10 | docs/roadmap/BACKLOG.md:4272 |
 | F. Agent harness: what "ultimate" needs that is not there | docs/roadmap/AUDIT.md:113 |
 | F. Performance and perceived speed | docs/roadmap/MODERNISATION_AUDIT.md:685 |

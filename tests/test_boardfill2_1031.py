@@ -165,7 +165,10 @@ def test_a_diagram_is_a_kind_the_panel_knows_and_reads_its_defaults():
 
 def test_one_recipe_writes_the_opacity_of_a_shape_a_text_box_and_a_diagram():
     # no second recipe: the same setters and presets, a key table by item
-    assert FORMAT_JS.count("const setFillAlpha") == 1 and FORMAT_JS.count("const alphaSetters") == 1
+    # Intent moved (INBOX 1685, c939da6): the colour popover's `wbFmtSetAlpha` is the
+    # one opacity setter that `setFillAlpha` was; still one recipe, one table.
+    assert FORMAT_JS.count("function wbFmtSetAlpha(") == 1 and FORMAT_JS.count("const alphaSetters") == 1
+    assert "wbColour.setAlpha" in FORMAT_JS.split("const alphaSetters")[1][:200]
     assert "function wbFmtAlphaKeys(" in FORMAT_JS
     keys = FORMAT_JS.split("function wbFmtAlphaKeys(")[1].split("\n}\n")[0]
     assert "fillOpacity" in keys and "bg_alpha" in keys and "line_alpha" in keys

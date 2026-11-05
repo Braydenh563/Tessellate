@@ -138,6 +138,8 @@ def test_the_panel_page_lists_the_choices_marks_the_current_and_disables_what_th
     body = js.split("async function openCompanion()", 1)[1].split("//: Run `action` first", 1)[0]
     assert 'ask("companion_choices")' in body and 'ask("choose_companion", option.key)' in body
     assert 'role", "menuitemradio"' in body and "aria-checked" in body and "row.disabled = !option.enabled" in body
-    assert "Shows in the app only" in body and 'item("Back"' in body
+    # Intent moved (INBOX 1684, fa7ed5e): the overlay draws every look, so no row
+    # carries the "Shows in the app only" title; a disabled row stays disabled.
+    assert 'item("Back"' in body
     assert 'item("Companion", "user-switch", openCompanion)' in js and "if (overlay)" in js.split('item("Companion"', 1)[0].splitlines()[-1]
     assert "[role^=menuitem]:not(:disabled)" in js  # the arrows skip the rows that cannot be chosen
