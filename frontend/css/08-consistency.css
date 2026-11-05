@@ -5347,10 +5347,8 @@ body .chip.item-label,
   visibility: visible;
   transition-delay: 0s;
 }
-/* INBOX 1624: hanging, the corner is the top bar's own strip; the handle
-   drops below it, and sits inside the figure's width so a companion at
-   the window's right edge keeps all of it on screen. */
-#nm-buddy[data-pose="hang"] .nmb-size-grip { top: 8px; }
+/* Hanging: bottom right, off the bar (the owner, 2026-11-05). */
+#nm-buddy[data-pose="hang"] .nmb-size-grip { top: auto; bottom: 2px; }
 @media (hover: none) {
   #nm-buddy .nmb-size-grip { display: none; }
 }

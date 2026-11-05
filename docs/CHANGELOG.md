@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Companion: hanging, the size handle is at its bottom-right corner, away from the bar and its hands (the owner, 2026-11-05).
 - CI fix: two composer test files pin the day (the reply seed carries it, so "ticked off" was worded differently on 2026-11-05); Open a diagram says when the list failed to load instead of showing "No diagrams yet"; the documents sidebar's new rules moved to the lazy library stylesheet (boot CSS back under its cap); a test helper imported by its package name.
 - Documents sidebar (owner, 2026-11-05): a long outline heading ends in an ellipsis and keeps its task count in view; the New pill and its arrow keep their width and the list head wraps its controls under "Recent" on a narrow sidebar, so the arrow no longer lies over the template button.
 - Letting go of the companion no longer lays the page out twice (INBOX 1667, the owner's log: release 62 ms, 51 of them forced layout): the last pull is worked out without being drawn and the flip back starts after the world is read.
