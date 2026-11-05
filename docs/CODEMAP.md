@@ -2,7 +2,7 @@
 
 Generated 2026-11-05 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7823, frontend ids 2644, CSS sections 522, backend routes 644, backend modules 8823, test files 2085, tests 17606, plan headings 1004, app scripts 28, boot scripts 37, script files 257.
+Counts: frontend functions 7823, frontend ids 2644, CSS sections 522, backend routes 644, backend modules 8824, test files 2087, tests 17620, plan headings 1004, app scripts 28, boot scripts 37, script files 257.
 
 ## Frontend functions (7823)
 
@@ -13015,7 +13015,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:164 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (8823)
+## Backend modules (8824)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -22303,11 +22303,11 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `Engine` | src/tessellate/core/overlay/engine.py:399 |
-| `Monitor` | src/tessellate/core/overlay/engine.py:350 |
-| `Output` | src/tessellate/core/overlay/engine.py:357 |
-| `Perch` | src/tessellate/core/overlay/engine.py:341 |
-| `_adjoins` | src/tessellate/core/overlay/engine.py:388 |
+| `Engine` | src/tessellate/core/overlay/engine.py:409 |
+| `Monitor` | src/tessellate/core/overlay/engine.py:360 |
+| `Output` | src/tessellate/core/overlay/engine.py:367 |
+| `Perch` | src/tessellate/core/overlay/engine.py:348 |
+| `_adjoins` | src/tessellate/core/overlay/engine.py:398 |
 
 ### src/tessellate/core/overlay/host.py (3)
 
@@ -22323,11 +22323,12 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 |---|---|
 | `Pacer` | src/tessellate/core/overlay/pacing.py:33 |
 
-### src/tessellate/core/overlay/perches.py (2)
+### src/tessellate/core/overlay/perches.py (3)
 
 | Name | File:line |
 |---|---|
 | `_cut` | src/tessellate/core/overlay/perches.py:18 |
+| `hang_spots` | src/tessellate/core/overlay/perches.py:50 |
 | `top_edges` | src/tessellate/core/overlay/perches.py:31 |
 
 ### src/tessellate/core/overlay/runner.py (2)
@@ -22390,24 +22391,24 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `WNDCLASSEXW` | src/tessellate/core/overlay/win32.py:137 |
 | `Win32` | src/tessellate/core/overlay/win32.py:252 |
 | `WinInfo` | src/tessellate/core/overlay/win32.py:350 |
-| `_cloaked` | src/tessellate/core/overlay/win32.py:373 |
-| `_frame_rect` | src/tessellate/core/overlay/win32.py:359 |
+| `_cloaked` | src/tessellate/core/overlay/win32.py:375 |
+| `_frame_rect` | src/tessellate/core/overlay/win32.py:361 |
 | `_monitor_dpi` | src/tessellate/core/overlay/win32.py:323 |
-| `_read_window` | src/tessellate/core/overlay/win32.py:398 |
-| `_unlisted` | src/tessellate/core/overlay/win32.py:384 |
-| `animations_enabled` | src/tessellate/core/overlay/win32.py:544 |
+| `_read_window` | src/tessellate/core/overlay/win32.py:400 |
+| `_unlisted` | src/tessellate/core/overlay/win32.py:386 |
+| `animations_enabled` | src/tessellate/core/overlay/win32.py:549 |
 | `apply_signatures` | src/tessellate/core/overlay/win32.py:260 |
-| `caret_rect` | src/tessellate/core/overlay/win32.py:492 |
-| `cursor_pos` | src/tessellate/core/overlay/win32.py:459 |
+| `caret_rect` | src/tessellate/core/overlay/win32.py:497 |
+| `cursor_pos` | src/tessellate/core/overlay/win32.py:464 |
 | `dpi_at_point` | src/tessellate/core/overlay/win32.py:336 |
-| `last_error` | src/tessellate/core/overlay/win32.py:555 |
-| `last_input_age` | src/tessellate/core/overlay/win32.py:478 |
+| `last_error` | src/tessellate/core/overlay/win32.py:560 |
+| `last_input_age` | src/tessellate/core/overlay/win32.py:483 |
 | `load` | src/tessellate/core/overlay/win32.py:282 |
 | `monitors` | src/tessellate/core/overlay/win32.py:302 |
-| `notification_state` | src/tessellate/core/overlay/win32.py:465 |
+| `notification_state` | src/tessellate/core/overlay/win32.py:470 |
 | `signatures` | src/tessellate/core/overlay/win32.py:172 |
-| `text_zone` | src/tessellate/core/overlay/win32.py:524 |
-| `windows` | src/tessellate/core/overlay/win32.py:432 |
+| `text_zone` | src/tessellate/core/overlay/win32.py:529 |
+| `windows` | src/tessellate/core/overlay/win32.py:437 |
 
 ### src/tessellate/core/overlay/x11.py (27)
 
@@ -24117,7 +24118,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (17606)
+## Tests (17620)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -25489,10 +25490,12 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_overlay_alive_1670.py | 12 |
 | tests/test_overlay_bob_1670.py | 3 |
 | tests/test_overlay_come_1683.py | 5 |
+| tests/test_overlay_dest_1683.py | 10 |
 | tests/test_overlay_engine.py | 30 |
 | tests/test_overlay_float.py | 6 |
 | tests/test_overlay_hang.py | 11 |
 | tests/test_overlay_hang_end_1683.py | 5 |
+| tests/test_overlay_hang_spots_1683.py | 4 |
 | tests/test_overlay_hang_throw_1670.py | 3 |
 | tests/test_overlay_host.py | 25 |
 | tests/test_overlay_idle.py | 9 |
@@ -26916,7 +26919,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Phases 0 to 2: built 2026-09-09 | docs/roadmap/DOCUMENTS_PLAN.md:119 |
 | Phases 0 to 6: built | docs/roadmap/UI_MODERNISATION_PLAN.md:216 |
 | Phases, each with the gate it is finished against | docs/roadmap/MINDMAP_PLAN.md:1296 |
-| Placed (last 20, newest first) | docs/roadmap/INBOX.md:173 |
+| Placed (last 20, newest first) | docs/roadmap/INBOX.md:176 |
 | Placed from Brief 40, 2026-10-10 (does the MCP server work) | docs/roadmap/AGENT_SKILLS_REFORM.md:345 |
 | Placed from Brief 40, 2026-10-10 (research and placement) | docs/roadmap/BACKLOG.md:4178 |
 | Placed from Brief 40, 2026-10-10 (the phone over HTTPS) | docs/roadmap/WORLD_CLASS_PLAN.md:3128 |
