@@ -619,7 +619,7 @@ const src = "flowchart TD\n  A[Start]-->B{Check}\n  B-->|yes|C[Done]\n  B-->|no|
     const last = rows[rows.length - 1];
     const joins = [...pane.querySelectorAll(".dgm-join")];
     const worded = [...pane.querySelectorAll("button")].filter((b) => (b.textContent || "").trim().length > 1 && getComputedStyle(b).display !== "none");
-    const addBtns = [...document.querySelectorAll(".dgm button")].filter((b) => /^\s*Add\b/.test(b.textContent || "") && b.offsetParent && !b.closest(".dgm-card"));
+    const addBtns = [...document.querySelectorAll("button")].filter((b) => /^\s*Add\b/.test(b.textContent || "") && b.offsetParent && !b.closest(".dgm-card"));
     const lb = last.getBoundingClientRect().bottom;
     const near = Math.min(...addBtns.map((b) => Math.abs(b.getBoundingClientRect().top - lb)));
     const iconOnlyPerRow = rows.slice(0, 1).map((r) => [...r.querySelectorAll("button")].filter((b) => !(b.textContent || "").trim() || getComputedStyle(b.querySelector(".ph-text") || b).display === "none").length);

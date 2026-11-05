@@ -3259,7 +3259,8 @@ MORE_TOPICS.extend([
             "diagram too small", "turn it sideways", "diagram direction", "diagram fit", "blocks list phone",
         ),
         "body": (
-            "Reading a diagram. The blocks list is drawn in flow order: a block sits under the one that points at it, "
+            "Reading a diagram. The list's first line says what it is for (Your blocks, in the order the chart flows) and, under the pointer or in focus, what that control does; its foot has Add block and Connect. "
+            "The blocks list is drawn in flow order:a block sits under the one that points at it, "
             "indented where it branches (a straight run of steps stays flush), and a block made by Connect to... lands under its siblings, so an org chart reads like the chart. "
             "The printed source keeps its own order, and Alt+Up and Alt+Down move a block among its siblings in the source, and say so when the list would not change; drag a grip to move it in the list. "
             "A block's arrows share one line under it, each as an arrow to the block it reaches and its words; press one for its menu. The menu changes the line (an arrow, a line, dotted, thick, or Both ways with a head at each end) and has Colour…, which draws that arrow in one of twelve hues. "

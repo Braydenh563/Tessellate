@@ -554,6 +554,7 @@
     //: The next step, one line under the list (and the space under it): it follows what the diagram has so far.
     S.next = el("p", "muted dgm-next");
     S.pane.append(S.tree, S.next, S.empty, S.ghosts, S.drop);
+    diagramModel.steps.frame(S, { add: addBlock, connect: joinPick });
     S.fig = el("figure", "dgm-picture");
     const body = el("div", "dgm-body");
     body.append(S.pane, S.fig);

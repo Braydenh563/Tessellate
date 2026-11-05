@@ -41,10 +41,42 @@
     return both;
   }
 
+  const PURPOSE = "Your blocks, in the order the chart flows. Pick one to find it in the picture.";
+  const LABEL_WORDS = "Double-click the name, or press Enter, to rename it.";
+
+  //: The pane's frame (1679 k): the purpose line above the list, and a foot under it with the two things a first use wants where the
+  //: eye ends, Add block and Connect. Under the pointer or in focus, the line says what that control does (its own title, so a
+  //: hover and a screen reader never disagree); it goes back to the purpose when the pointer or the focus leaves.
+  //: `use` is the builder's `add(S, options)` and `connect(S, key)`.
+  function frame(S, use) {
+    const line = document.createElement("p");
+    line.className = "dgm-purpose muted";
+    line.textContent = PURPOSE;
+    const foot = document.createElement("div");
+    foot.className = "dgm-foot";
+    S.foot = foot;
+    const add = smallButton("ph:plus Add block", "Add a block after the picked one", () => use.add(S, { edit: true }));
+    const connect = smallButton("ph:arrow-bend-down-right Connect", "Draw an arrow from the picked block to another", () => use.connect(S, S.sel || S.tree.querySelector(".dgm-block")?.dataset.key));
+    foot.append(add, connect);
+    S.tree.before(line);
+    S.tree.after(foot);
+    const say = (target) => {
+      const control = target?.closest?.(".dgm-label, [title]");
+      const words = control?.classList.contains("dgm-label") ? LABEL_WORDS : control?.title;
+      line.textContent = words || PURPOSE;
+      line.classList.toggle("dgm-purpose-live", Boolean(words));
+    };
+    for (const [on, off] of [["pointerover", "pointerleave"], ["focusin", "focusout"]]) {
+      S.pane.addEventListener(on, (event) => say(event.target));
+      S.pane.addEventListener(off, () => say(null));
+    }
+  }
+
   //: Called by every render: the list shows until the first arrow, each done step ticked; the example and the template button go with the first block.
   function sync(S, blocks) {
     const m = S.m;
     S.empty.classList.toggle("hidden", m.edges.length > 0);
+    S.foot?.classList.toggle("hidden", !blocks);
     S.empty.classList.toggle("dgm-started", Boolean(blocks));
     //: A phone with an arrow keeps the picture and gets the list as a sheet (diagram-touch.js); before that the steps stay in the page.
     S.root.classList.toggle("dgm-listless", m.edges.length > 0);
@@ -59,5 +91,5 @@
     });
   }
 
-  diagramModel.steps = { build, sync };
+  diagramModel.steps = { build, sync, frame };
 })();

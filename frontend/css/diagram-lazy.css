@@ -564,6 +564,36 @@
   display: none;
 }
 
+/* The pane's purpose line and foot (diagram-steps.js `frame`, 1679 k). The line holds two lines of room so the list does not
+   jump when a control's words replace it; the foot sticks to the pane's bottom edge and, in a short list, sits right under it. */
+.dgm-purpose {
+  margin: 0 var(--space-2) var(--space-2);
+  min-block-size: calc(2 * 1.4em);
+  font-size: var(--text-xs);
+  line-height: 1.4;
+}
+
+.dgm-purpose.dgm-purpose-live {
+  color: var(--text);
+}
+
+.dgm-foot {
+  position: sticky;
+  inset-block-end: 0;
+  z-index: 1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-block-start: var(--space-2);
+  padding: var(--space-2);
+  border-block-start: 1px solid var(--border);
+  background: var(--surface-1);
+}
+
+.dgm-foot.hidden {
+  display: none;
+}
+
 /* The next step, one line under the blocks. */
 .dgm-next {
   margin: var(--space-3) var(--space-2) 0;
