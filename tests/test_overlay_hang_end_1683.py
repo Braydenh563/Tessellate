@@ -92,3 +92,41 @@ def test_no_hang_in_a_seeded_hour_ends_in_a_plain_fall() -> None:
             m = simulate(gait, seed)
             hangs = [leg for leg in m["legs"] if leg[0].startswith("hang_")]
             assert all(leg[0] in ("hang_pull", "hang_swing", "hang_react") for leg in hangs)
+
+
+def _first_hang_end(gait: str, seed: int, scene: str) -> str:
+    win = Perch(11, 300, 400, 1000)
+    if scene == "title bar":
+        e = make(seed=seed, gait=gait, hang_top=0.195)
+        e.plain_legs = True
+        e.climb_ready = float("inf")
+        e.set_windows([win], 0.0)
+        e.x, e.y = 600.0, win.top
+        e.hang_on = win
+        e._enter("hang", 1.0)
+        e.hang_on = win
+        t = 1.0
+    else:
+        e, t = hang_at_ceiling(seed, [], gait)
+        if scene == "window below":
+            e.set_windows([win], t)
+    e.state_until = t
+    n = len(e.legs)
+    e.update(t + 0.016)
+    for _ in range(2000):
+        t += 0.016
+        e.update(t)
+        e.set_windows([] if scene == "ceiling" else [win], t)
+    return next(leg[0] for leg in e.legs[n:] if leg[0].startswith("hang_"))
+
+
+@pytest.mark.parametrize("gait", ["walk", "float"])
+def test_forced_hang_ends_take_the_choice_that_the_scene_offers(gait: str) -> None:
+    """A hang is rare in a seeded hour, so this forces 100 ends per scene (measured: walker window below 68 swing /
+    32 react, title bar 70 pull / 30 react; floater window below 54 / 46, title bar 70 / 30; a bare ceiling is all
+    react, since there is nothing to pull onto or drop to). The let-go is the owner's third ending, with a startled beat."""
+    for scene, option in (("window below", "hang_swing"), ("title bar", "hang_pull")):
+        ends = [_first_hang_end(gait, seed, scene) for seed in range(100)]
+        assert set(ends) <= {option, "hang_react"}, set(ends)
+        assert ends.count(option) >= 40, (scene, ends.count(option))  # the offered way out is the likelier one
+    assert {_first_hang_end(gait, seed, "ceiling") for seed in range(20)} == {"hang_react"}

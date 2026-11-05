@@ -2,7 +2,7 @@
 
 Generated 2026-11-05 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7822, frontend ids 2644, CSS sections 522, backend routes 644, backend modules 8797, test files 2072, tests 17495, plan headings 1003, app scripts 28, boot scripts 37, script files 257.
+Counts: frontend functions 7822, frontend ids 2644, CSS sections 522, backend routes 644, backend modules 8797, test files 2072, tests 17496, plan headings 1003, app scripts 28, boot scripts 37, script files 257.
 
 ## Frontend functions (7822)
 
@@ -24085,7 +24085,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (17495)
+## Tests (17496)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -25450,7 +25450,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_overlay_engine.py | 30 |
 | tests/test_overlay_float.py | 6 |
 | tests/test_overlay_hang.py | 11 |
-| tests/test_overlay_hang_end_1683.py | 4 |
+| tests/test_overlay_hang_end_1683.py | 5 |
 | tests/test_overlay_hang_throw_1670.py | 3 |
 | tests/test_overlay_host.py | 25 |
 | tests/test_overlay_idle.py | 9 |

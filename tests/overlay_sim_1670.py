@@ -160,9 +160,11 @@ def _run(gait, seed, secs, setup, pointer, look) -> dict:
     def on_window(x, y) -> bool:
         return any(w.left <= x + e.size[0] / 2 <= w.right and -80 <= y + e.size[1] - w.top <= 30 for w in WINDOWS)
 
-    def under_window(x) -> bool:
-        # Where it lands after hopping off a window it visited: on the floor under that window (INBOX 1683 g).
-        return any(w.left <= x + e.size[0] / 2 <= w.right for w in WINDOWS)
+    def under_window(x, y) -> bool:
+        # Where it lands after hopping off a window it visited: down in the floor band under that window
+        # (INBOX 1683 g), not mid-air or beside it; a rest higher than two edge zones over the floor still counts.
+        low = y >= e.floor_y() - 2 * tv.EDGE_ZONE * k
+        return low and any(w.left <= x + e.size[0] / 2 <= w.right and y >= w.top + e.size[1] for w in WINDOWS)
 
     rests = [(x, y) for x, y, d, p in spell_at if d >= 30.0 and not p and not on_window(x, y)]
     floor = e.floor_y()
@@ -189,7 +191,7 @@ def _run(gait, seed, secs, setup, pointer, look) -> dict:
         ],
         "rest_spots_off_edge": [
             (x, y) for x, y in rests
-            if not (tv.in_edge_zone(x, area, e.size[0], k) or abs(y - floor) <= tv.EDGE_ZONE * k or under_window(x))
+            if not (tv.in_edge_zone(x, area, e.size[0], k) or abs(y - floor) <= tv.EDGE_ZONE * k or under_window(x, y))
         ],
         "rest_spots_in_middle": [(x, y) for x, y in rests if tv.in_middle(x, area, e.size[0])],
         "rest_spots": len(rests),

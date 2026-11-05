@@ -1881,7 +1881,7 @@ class Engine:
             self.legs.append(("jump", self.x, self.x, now))
             self._enter("leap", now)
         else:
-            self._stand_on(p, now)  # stays for PERCH_FOR (20 to 50 s): long enough to be seen (it was 8 to 20)
+            self._stand_on(p, now)  # stays for PERCH_FOR (45 to 120 s): long enough to be seen (it was 8 to 20, then 20 to 50)
             self._enter("stand", now)
             self.state_until = self.perch_until
 
