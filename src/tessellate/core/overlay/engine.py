@@ -2934,7 +2934,7 @@ class Engine:
             return None
         if self.state in FLOW_FROZEN:
             return self._flow_held
-        self._flow_held = self.flow.view(now, calm=self.reduced)
+        self._flow_held = self.flow.view(now, calm=self.reduced, frame=frame or "stand")
         return self._flow_held
 
     def _wake(self, now: float) -> int | None:
