@@ -6236,9 +6236,10 @@ function wbFillContextBar() {
     }
     if (which === "shape") {
       document.getElementById("wb-prop-shapefill").value = parsed.fill || "#3355ff";
-      document.getElementById("wb-prop-shapefill-on").checked = Boolean(parsed.fill);
+      const filled = wbColour.fillIsOn("sketch", parsed);
+      document.getElementById("wb-prop-shapefill-on").checked = filled;
       //: Dimmed, not disabled: a fill picked from its well turns it on.
-      document.getElementById("wb-prop-shapefill").classList.toggle("wb-colour-off", !parsed.fill);
+      document.getElementById("wb-prop-shapefill").classList.toggle("wb-colour-off", !filled);
     }
     return;
   }
@@ -16226,23 +16227,18 @@ async function initWhiteboard() {
     wbScheduleRender();
   });
   document.getElementById("wb-prop-shapefill")?.addEventListener("change", async (e) => {
-    const sketch = wbSelectedSketchOrNull();
-    if (!sketch) return;
-    const before = WB_KIND_INFO.sketch.payload(sketch);
-    wbPushUndo({ action: "move", kind: "sketch", id: sketch.id, before });
     document.getElementById("wb-prop-shapefill-on").checked = true;
     document.getElementById("wb-prop-shapefill").classList.remove("wb-colour-off");
-    await wbSaveSketchProps(sketch, { fill: e.target.value, fillOpacity: 1 });
-    wbScheduleRender();
+    await wbFmtApply("fill", (entry) => (entry.kind === "sketch" ? wbColour.fillColour("sketch", wbFmtSketch(entry), e.target.value) : null), "Fill colour changed.");
   });
+  //: The same toggle as the Format panel's (`wbFillTogglePatch`): off keeps the
+  //: shape's colour, on brings it back (INBOX 1685).
   document.getElementById("wb-prop-shapefill-on")?.addEventListener("change", async (e) => {
-    const sketch = wbSelectedSketchOrNull();
-    if (!sketch) return;
-    const before = WB_KIND_INFO.sketch.payload(sketch);
-    wbPushUndo({ action: "move", kind: "sketch", id: sketch.id, before });
     document.getElementById("wb-prop-shapefill").classList.toggle("wb-colour-off", !e.target.checked);
-    await wbSaveSketchProps(sketch, { fill: e.target.checked ? document.getElementById("wb-prop-shapefill").value : undefined });
-    wbScheduleRender();
+    const colour = document.getElementById("wb-prop-shapefill").value;
+    await wbFmtApply("fill", (entry) => (entry.kind === "sketch" ? wbColour.fillToggle("sketch", wbFmtSketch(entry), e.target.checked, colour) : null),
+      e.target.checked ? "Filled." : "Fill taken off.");
+    wbUpdateContextBar();
   });
   document.getElementById("wb-prop-fontsize")?.addEventListener("change", async (e) => {
     const obj = wbSelectedTextObjectOrNull();
