@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Companion: every mind map node is a perch (INBOX 1686, the owner: it could sit only on the central node). The Outline look draws branches plain (no box) and the board's perch list skipped every plain shape; a plain or underlined node is now a perch at the top of its words, kept through zoom. Measured on a 13-topic map in Outline: 0 perches before, 12 after; seats within 0.4px of the words' top through 118 to 260px node widths.
 
 ## [0.7.0] - 2026-11-05
 - Desk companion: "Come here" now means follow me (INBOX 1683 t): it waits for the pointer to leave the menu, then goes to it wherever it is (the ground, or onto a window top the pointer is over), reacts happily and keeps company for 20 s; a second "Come here" stops it.
