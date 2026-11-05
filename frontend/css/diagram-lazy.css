@@ -1161,6 +1161,12 @@
   max-height: none;
 }
 
+/* The kind of diagram (diagram-kindbar.js, 1679 m): one `.seg` well above the toolbar, as wide as its four words. */
+.dgm-kinds {
+  align-self: flex-start;
+  flex: none;
+}
+
 /* Blocks and Source wait at the foot's start, so the title keeps its room on a phone. */
 .dgm-views {
   margin-inline-end: auto;

@@ -305,7 +305,7 @@
     const items = [
       { label: "ph:pencil-simple Rename", run: () => relabel(S, key), group: "edit" },
       { label: "ph:arrow-bend-down-right Connect to…", run: () => joinPick(S, key), group: "edit" },
-      ...(isNode ? [{ label: "ph:palette Colour…", run: () => styleDo(S, "colour", key), group: "edit" }] : []),
+      ...(isNode ? [{ label: "ph:palette Colour…", run: () => styleDo(S, "colour", key), group: "edit" }, { label: "ph:stack Box this block", run: () => diagramModel.outline.box(S, helpers, key), group: "edit" }] : []),
       { label: isNode ? "ph:plus Add block after" : "ph:plus Add block inside", run: () => addBlock(S, { after: isNode ? key : null, into: isNode ? null : key }), group: "edit" },
     ];
     if (isNode) {
@@ -642,7 +642,7 @@
     //: The picture's renderer and the flowchart's toolbar start fetching with the first batch, not after it (R11: cold start).
     const kind = kindOf(text);
     ensureModule("mermaid");
-    const early = kind === "flowchart" ? Promise.all([ensureModule("diagramBar"), ensureModule("diagramSteps"), ensureModule("diagramOutline")]) : Promise.resolve([true]);
+    const early = Promise.all([ensureModule("diagramKindbar"), ...(kind === "flowchart" ? [ensureModule("diagramBar"), ensureModule("diagramSteps"), ensureModule("diagramOutline")] : [])]);
     await Promise.all(["/css/objmove-lazy.css", "/js/obj-ref.js", "/js/obj-drag.js", "/js/diagram-picture.js", "/js/diagram-library.js", "/js/diagram-pointer.js", "/js/diagram-ops.js"].map((file) => lazyScript(file)));
     diagramOps = helpers.ops = diagramModel.ops;
     if (typeof OBJ_MODES === "object" && !OBJ_MODES.diagram) OBJ_MODES.diagram = diagramModel.pointer.make(helpers);

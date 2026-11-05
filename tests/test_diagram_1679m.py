@@ -68,3 +68,49 @@ def test_the_first_step_says_box_in_lower_case_and_the_buttons_leave_once_the_fo
 def test_a_drag_on_a_picture_that_fits_says_why_nothing_moved():
     assert "dgm-pan-note" in VIEW and "Zoom in to pan" in VIEW and ".dgm-pan-note" in CSS
     assert "wasted > 24" in VIEW
+
+
+KINDBAR = (JS / "diagram-kindbar.js").read_text(encoding="utf-8")
+
+
+def test_the_kinds_are_four_worded_buttons_mounted_by_both_toolbars():
+    # Before: a sequence diagram, mind map or timeline was only reachable through Suggest's templates.
+    for word in ('"Flowchart"', '"Sequence"', '"Mind map"', '"Timeline"', '"sequenceDiagram"'):
+        assert word in KINDBAR, word
+    assert "diagramModel.kindbar?.mount(S, h)" in (JS / "diagram-bar.js").read_text(encoding="utf-8")
+    assert "diagramModel.kindbar?.mount(S, kit)" in (JS / "diagram-kinds.js").read_text(encoding="utf-8")
+    assert 'diagramKindbar: ["/js/diagram-kindbar.js"]' in (JS / "documents-mermaid.js").read_text(encoding="utf-8")
+    assert 'ensureModule("diagramKindbar")' in BUILDER and ".dgm-kinds" in CSS
+    assert "Undo, Ctrl+Z" in KINDBAR
+
+
+@needs_node
+def test_a_new_kind_starts_from_its_header_and_keeps_the_front_matter():
+    script = (
+        "const vm=require('vm');const ctx={diagramModel:{}};vm.createContext(ctx);"
+        f"vm.runInContext(require('fs').readFileSync({json.dumps(str(JS / 'documents-mermaid.js'))},'utf8').split('\\n').join('\\n'),ctx);"
+    )
+    del script  # the kind bar reads the model's `front`; a stub of it is enough here
+    run = (
+        "const vm=require('vm');const ctx={diagramModel:{front:(t)=>{const m=/^---[ \\t]*\\n[\\s\\S]*?\\n---[ \\t]*(?:\\n|$)/.exec(t);return {front:m?m[0].replace(/\\n$/,'').split('\\n'):[],rest:m?t.slice(m[0].length):t}}}};vm.createContext(ctx);"
+        f"vm.runInContext(require('fs').readFileSync({json.dumps(str(JS / 'diagram-kindbar.js'))},'utf8'),ctx);"
+        "const f=ctx.diagramModel.kindbar.fresh;process.stdout.write(JSON.stringify([f('flowchart TD\\nA-->B\\n','sequence'),f('---\\ntitle: T\\n---\\nmindmap\\n  root\\n','timeline'),f('','flowchart')]));"
+    )
+    out = json.loads(subprocess.run(["node", "-e", run], capture_output=True, text=True, check=True).stdout)
+    assert out == ["sequenceDiagram\n", "---\ntitle: T\n---\ntimeline\n", "flowchart TD\n"]
+
+
+def test_a_block_can_be_boxed_from_its_menu_and_the_bar_says_box_them():
+    assert "Box this block" in BUILDER and "diagramModel.outline.box(S, helpers, key)" in BUILDER
+    assert "function box(S, h, key)" in (JS / "diagram-outline.js").read_text(encoding="utf-8")
+    assert "ph:stack Box them" in (JS / "diagram-multi.js").read_text(encoding="utf-8")
+
+
+def test_a_sequence_diagram_adds_parallel_critical_and_break_boxes():
+    kinds = (JS / "diagram-kinds.js").read_text(encoding="utf-8")
+    for tile in ('id: "par"', 'id: "critical"', 'id: "break"', '{ kw: "and", text: "Meanwhile" }'):
+        assert tile in kinds, tile
+    from tessellate.ai.help_chat import HELP_TOPICS
+
+    body = str(next(t["body"] for t in HELP_TOPICS if t["id"] == "diagram-kinds"))
+    assert "parallel, critical and break (A, P, M, R, Y, X, T, L, G, O, U, C and B)" in body and "Sequence, Mind map and Timeline buttons" in body
