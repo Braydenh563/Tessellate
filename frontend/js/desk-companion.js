@@ -283,7 +283,6 @@
       row.setAttribute("role", "menuitemradio");
       row.setAttribute("aria-checked", String(!!option.current));
       row.disabled = !option.enabled;
-      if (!option.enabled) row.title = "Shows in the app only";
       rows.push(row);
     }
     $("desk-menu").replaceChildren(...rows);
@@ -334,7 +333,7 @@
     if (!(await ensureModule("captureCard"))) return noteStatus("Couldn't open the note card.", true);
     openCaptureCard($("desk-capture"), "focusin");
     focusCaptureCard();
-    requestAnimationFrame(fit);
+    fit();  // the card is in the DOM now: measuring forces the layout, so no frame wait (and no new wake source)
   }
 
   const createNote = async (body) => {

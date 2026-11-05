@@ -640,4 +640,41 @@ const src = "flowchart TD\n  A[Start]-->B{Check}\n  B-->|yes|C[Done]\n  B-->|no|
 })();
 
 };
+modes["kinds"] = () => {
+// 1679 m: the kind switcher (four worded buttons), a switch with blocks in it and Undo, and the block menu's Box this block.
+const W = Number(process.argv[3] || 1440);
+(async () => {
+  const { browser, page } = await boot({ viewport: { width: W, height: 900 } });
+  const src = "flowchart TD\n  A[One] --> B[Two]\n";
+  await page.evaluate(async (c) => {
+    const r = await api("/documents", { method: "POST", body: JSON.stringify({ title: "Kinds " + Date.now() + ".mmd", content: c, file_type: "mmd" }) });
+    const doc = await r.json();
+    switchTab("documents");
+    await openDocument(doc.id);
+    setDocView("canvas", { persist: false });
+  }, src);
+  await page.waitForSelector(".dgm-picture .md-mermaid-img", { timeout: 15000 });
+  const text = () => page.evaluate(() => (typeof docText === "function" ? docText() : currentDoc?.content));
+  const read = async () => ({
+    kinds: await page.evaluate(() => [...document.querySelectorAll(".dgm-kinds button")].map((b) => b.textContent + (b.getAttribute("aria-pressed") === "true" ? "*" : ""))),
+    head: (await text()).split("\n")[0],
+    box: await page.evaluate(() => document.querySelector(".dgm-kinds")?.getBoundingClientRect().toJSON()),
+  });
+  const out = { start: await read() };
+  await page.click('.dgm-kinds button[data-kind="sequence"]');
+  await page.waitForTimeout(1500);
+  out.sequence = await read();
+  await page.keyboard.press("Control+z");
+  await page.waitForTimeout(1500);
+  out.undone = await read();
+  await page.click(".dgm-tree .dgm-block .dgm-menu button").catch(() => {});
+  await page.waitForTimeout(300);
+  out.menu = await page.evaluate(() => [...document.querySelectorAll(".action-menu:not(.hidden) [role=menuitem]")].map((b) => b.textContent.trim()));
+  await page.evaluate(() => [...document.querySelectorAll(".action-menu:not(.hidden) [role=menuitem]")].find((b) => /Box this block/.test(b.textContent))?.click());
+  await page.waitForTimeout(800);
+  out.boxed = await text();
+  console.log(JSON.stringify(out));
+  await browser.close();
+})();
+};
 (modes[process.argv[2]] || (() => { console.log("modes: " + Object.keys(modes).join(", ")); process.exit(2); }))();

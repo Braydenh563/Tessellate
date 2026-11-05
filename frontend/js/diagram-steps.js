@@ -22,7 +22,7 @@
       else use.connect(S, key);
     };
     const steps = [
-      ["Add a shape", "ph:plus Add a Box", "Add a Box to the diagram", () => use.add(S, { shape: "rect", edit: true })],
+      ["Add a shape", "ph:plus Add a box", "Add a box to the diagram", () => use.add(S, { shape: "rect", edit: true })],
       ["Name it", "ph:pencil-simple Type a name", "Type the name of the first block", () => use.rename(S, first())],
       ["Connect it", "ph:arrow-bend-down-right Draw an arrow", "Start an arrow from the first block", connect],
     ];

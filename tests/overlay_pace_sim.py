@@ -178,7 +178,9 @@ def rest_wakes_per_minute(timer: Timer, seed: int = 4, look: str = "masculine", 
         rng = random.Random(seed + 7)
         t, px = 0.0, 400
         out = e.update(t, (px, 600))
-        moving = ("walk", "drift", "rise", "leap", "fly", "fall", "hop", "crouch", "held", "pressed", "warp")
+        # A hang swings from its grip and is paced as a moving state (`Engine._moving_wake`, HANG_TICK_MS); the sim
+        # saw none until the hang spots (INBOX 1683 w, g) made it a destination, so it is listed with the travel.
+        moving = ("walk", "drift", "rise", "leap", "fly", "fall", "hop", "crouch", "held", "pressed", "warp", "hang")
         rest_ticks, rest_secs = 0, 0.0
         while t < secs:
             wait = min(max(0.016, (out.wake_ms or 1000) / 1000.0), 1.0)
