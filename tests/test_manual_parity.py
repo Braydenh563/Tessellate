@@ -512,12 +512,12 @@ def test_confirmed_patterns_are_managed_where_the_guide_and_the_help_say():
     from tessellate.ai import help_chat
 
     topics = {t["id"]: t["body"] for t in help_chat.HELP_TOPICS}
-    for words in ("Edit", "Not right", "Remove", "Undo", "Settings, What it remembers"):
+    for words in ("Edit", "Not right", "Remove", "Undo", "Settings, What it remembers", "its tag still reaches it"):
         assert words in topics["patterns"], words
     assert "patterns you confirmed" in topics["memory"]
     html = (FRONTEND / "index.html").read_text(encoding="utf-8")
     help_body = html[html.index('id="memory-help"') :][:2400]
-    for words in ("Confirmed patterns", "Edit", "Remove", "Not right", "Undo"):
+    for words in ("Confirmed patterns", "Edit", "Remove", "Not right", "Undo", "its tag still"):
         assert words in help_body, words
     menu = (FRONTEND / "js" / "confirmed-patterns.js").read_text(encoding="utf-8")
     for label in ('"ph:pencil-simple Edit"', 'item.verdict === "dismiss").label', '"ph:trash Remove"'):

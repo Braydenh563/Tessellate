@@ -3515,8 +3515,8 @@ MORE_TOPICS.append({
         "it again. A plan still open also has Done: it removes your Confirm and "
         "never shows that plan again, and a later note that shares the plan's "
         "words does the same on its own. A confirmed pattern's ... menu has Edit "
-        "(your own words, or what it is about), Not right and Remove, with an "
-        "Undo; Settings, What it remembers lists every confirmed pattern with "
+        "(your own words, or what it is about; its tag still reaches it), Not right "
+        "and Remove, each with an Undo, and a plan's Done; Settings, What it remembers lists every confirmed pattern with "
         "the day you confirmed it and its notes, to manage them in one place."
     ),
     "badge": {"label": "Dashboard", "tab": "dashboard"},

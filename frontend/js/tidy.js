@@ -169,18 +169,25 @@ async function tidyPatterns(state) {
   //: One line per pattern, each with Confirm and Not right (decision 60); a
   //: confirmed one is said as the person's word and carries Edit, Not right
   //: and Remove in its ⋯ instead (B9), redrawn from the server after each.
+  //: A confirmed plan's Done is in that same menu, as on the dashboard.
   const redraw = () => tidyPatterns(state);
   state.patterns.replaceChildren(
     ...body.patterns.map((pattern) => {
-      const said = pattern.confirmed && pattern.rule !== "drift";
-      const line = said ? document.createElement("p") : insightLine(pattern, `Patterns: ${pattern.text}`, (row, verdict) => (verdict === "confirmed" ? redraw() : row.remove()));
-      if (said) {
-        line.className = "insight-line";
-        const words = line.appendChild(document.createElement("span"));
-        words.className = "insight-text";
-        words.textContent = `Patterns: ${pattern.text}`;
-      }
-      if (pattern.confirmed_id) line.append(kebabMenu(confirmedPatternItems(pattern, redraw), "Manage this pattern"));
+      if (!pattern.confirmed_id) return insightLine(pattern, `Patterns: ${pattern.text}`, (row, verdict) => (verdict === "confirmed" ? redraw() : row.remove()));
+      const line = document.createElement("p");
+      line.className = "insight-line";
+      const words = line.appendChild(document.createElement("span"));
+      words.className = "insight-text";
+      words.textContent = `Patterns: ${pattern.text}`;
+      const done = insightVerdictItems(pattern).map((item) => ({
+        label: item.label,
+        title: item.title,
+        run: () =>
+          insightSend(pattern, item.verdict)
+            .then(redraw)
+            .catch((error) => toast(error.message, true)),
+      }));
+      line.append(kebabMenu([...done, ...confirmedPatternItems(pattern, redraw)], "Manage this pattern"));
       return line;
     })
   );

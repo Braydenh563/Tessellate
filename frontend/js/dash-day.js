@@ -123,7 +123,7 @@ function dashPatternBit(bit, pattern) {
   }
   //: A confirmed one carries Edit, Not right and Remove (B9) where its pair was.
   lazyScript("/js/confirmed-patterns.js").then(() =>
-    bit.appendChild(kebabMenu([...items, ...confirmedPatternItems(pattern, () => renderDashSubmessage())], "Manage this pattern"))
+    bit.appendChild(kebabMenu([...items, ...confirmedPatternItems(pattern)], "Manage this pattern"))
   );
 }
 

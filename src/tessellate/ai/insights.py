@@ -392,37 +392,47 @@ CONFIRMED_KIND = "confirmed"
 def memory(session) -> Memory:  # noqa: ANN001
     """The confirmations (`derived_facts`, kind "confirmed", not deleted) and
     the dismissals (`learning`, "dismiss_insight") of this notebook."""
-    import json
-
-    from sqlalchemy import select
-
     from tessellate.ai import learning
-    from tessellate.core.database import DerivedFact
 
     dismissed = {str(c.subject.get("key") or "") for c in learning.corrections(session, "dismiss_insight")}
     confirmed: dict[str, dict] = {}
-    for row in session.scalars(_shown_confirmed(select(DerivedFact))):
-        try:
-            payload = json.loads(row.payload or "{}")
-        except ValueError:
-            continue
+    for row in shown_confirmed(session):
+        payload = _payload(row)
         if payload.get("key"):
-            info = {"line": _said_now(row.text), "id": row.id, "measured": payload.get("measured", ""), "note_ids": payload.get("note_ids") or []}
-            #: A subject the person renamed (B9) answers under its new word too.
-            for the_key in (payload["key"], *payload.get("aliases", [])):
-                confirmed[the_key] = info
+            info = {"line": _said_now(row.text), "id": row.id, "measured": payload.get("measured", ""), "note_ids": payload.get("note_ids") or [],
+                    "subject": payload.get("subject", "")}
+            #: A subject the person renamed (B9) answers under its new word
+            #: too; newest first, so the newest row holds a shared key.
+            for the_key in _keys(payload):
+                confirmed.setdefault(the_key, info)
     return Memory(frozenset(dismissed - set(confirmed)), confirmed)
 
 
-def _shown_confirmed(query):  # noqa: ANN001, ANN202  # a select() of DerivedFact
-    """Confirmed facts on notes the person can open: joined to the note, so a
-    note made private or binned, or in another space (the note's own filter),
-    takes its confirmed pattern with it (B9; `facts._visible`'s rule)."""
+def _keys(payload: dict) -> list[str]:
+    """Every key a confirmed fact answers under: its own and the subject it was renamed to."""
+    return [k for k in (payload.get("key"), *payload.get("aliases", [])) if k]
+
+
+def _confirmed_rows(session, *, removed: bool = False, fact_id: int | None = None) -> list:  # noqa: ANN001
+    """Confirmed facts (or removed ones) the person can open, newest first:
+    at least one note the pattern rests on is not binned, not private and in
+    this space (the workspace filter rides on `Entry`). Any one, not the
+    newest (`entry_id`): binning one golf note of four keeps its
+    confirmation (review of B9). All of them hidden
+    takes the pattern with them (`facts._visible`'s rule)."""
+    from sqlalchemy import select
+
     from tessellate.core.database import DerivedFact, Entry
 
-    return query.join(Entry, Entry.id == DerivedFact.entry_id).where(
-        DerivedFact.kind == CONFIRMED_KIND, DerivedFact.deleted_at.is_(None), Entry.is_deleted.is_(False), Entry.is_private.is_(False),
-    )
+    gone = DerivedFact.deleted_at.is_not(None) if removed else DerivedFact.deleted_at.is_(None)
+    query = select(DerivedFact).where(DerivedFact.kind == CONFIRMED_KIND, gone)
+    if fact_id is not None:
+        query = query.where(DerivedFact.id == fact_id)
+    rows = list(session.scalars(query.order_by(DerivedFact.computed_at.desc(), DerivedFact.id.desc())))
+    rests_on = {row.id: {int(i) for i in _payload(row).get("note_ids") or []} | {row.entry_id} for row in rows}
+    wanted = set().union(*rests_on.values()) if rows else set()
+    can_open = set(session.scalars(select(Entry.id).where(Entry.id.in_(wanted), Entry.is_deleted.is_(False), Entry.is_private.is_(False)))) if wanted else set()
+    return [row for row in rows if rests_on[row.id] & can_open]
 
 
 def _from_payload(body: dict) -> Insight:
@@ -442,6 +452,11 @@ def confirm(session, body: dict, today: date) -> dict:  # noqa: ANN001
         raise ValueError("That insight names no notes, so there is nothing to confirm.")
     line = confirmed_line(_said(insight), today)
     the_key = key(insight)
+    #: Already confirmed (a second Confirm from a stale page, or Tidy after a
+    #: binned note): the one row stands, so Settings never lists it twice.
+    held = memory(session).confirmed.get(the_key)
+    if held:
+        return {"id": held["id"], "key": the_key, "line": held["line"]}
     row = DerivedFact(
         entry_id=max(insight.note_ids), kind=CONFIRMED_KIND, text=line, model="you", confidence=1.0,
         edited_by_user=True, original_text=insight.text,
@@ -526,7 +541,7 @@ def as_row(insight: Insight, known: Memory | None = None) -> dict:
     return {
         "rule": insight.rule, "key": the_key, "text": confirmed["line"] if confirmed else insight.text,
         "short": short(insight), "note_ids": insight.note_ids, "slots": insight.slots, "confirmed": bool(confirmed),
-        "confirmed_id": confirmed["id"] if confirmed else None,
+        "confirmed_id": confirmed["id"] if confirmed else None, "confirmed_subject": confirmed.get("subject", "") if confirmed else "",
     }
 
 
@@ -549,28 +564,28 @@ def _payload(row) -> dict:  # noqa: ANN001
 
 def shown_confirmed(session, fact_id: int | None = None) -> list:  # noqa: ANN001
     """The confirmed facts the person can open, newest first (or the one)."""
-    from sqlalchemy import select
-
-    from tessellate.core.database import DerivedFact
-
-    query = _shown_confirmed(select(DerivedFact)).order_by(DerivedFact.computed_at.desc(), DerivedFact.id.desc())
-    if fact_id is not None:
-        query = query.where(DerivedFact.id == fact_id)
-    return list(session.scalars(query))
+    return _confirmed_rows(session, fact_id=fact_id)
 
 
 def removed_confirmed(session, fact_id: int):  # noqa: ANN001, ANN201
     """A removed confirmed fact on a note the person can still open: Undo's way back."""
-    from sqlalchemy import select
+    found = _confirmed_rows(session, removed=True, fact_id=fact_id)
+    return found[0] if found else None
 
-    from tessellate.core.database import DerivedFact, Entry
 
-    return session.scalars(
-        select(DerivedFact).join(Entry, Entry.id == DerivedFact.entry_id).where(
-            DerivedFact.id == fact_id, DerivedFact.kind == CONFIRMED_KIND, DerivedFact.deleted_at.is_not(None),
-            Entry.is_deleted.is_(False), Entry.is_private.is_(False),
-        )
-    ).first()
+def restore_confirmed(session, row) -> list[int]:  # noqa: ANN001
+    """Undo of Remove or Not right: the fact is back. A row confirmed again
+    in between under the same key goes (soft delete), so the pattern is
+    listed once and keeps the wording it had; their ids are returned."""
+    from tessellate.core.database import utcnow
+
+    keys = set(_keys(_payload(row)))
+    newer = [other for other in shown_confirmed(session) if keys & set(_keys(_payload(other)))]
+    for other in newer:
+        other.deleted_at = utcnow()
+    row.deleted_at = None
+    session.flush()
+    return [other.id for other in newer]
 
 
 def confirmed_json(session, row) -> dict:  # noqa: ANN001
@@ -614,7 +629,10 @@ def _notes_behind(session, ids: list) -> list[dict]:  # noqa: ANN001
 
 def edit_confirmed(session, row, sentence: str | None = None, subject: str | None = None) -> None:  # noqa: ANN001
     """Edit: the person's own wording (said as it is, with the day it was
-    first confirmed) or the subject it also answers under. Their word:
+    first confirmed) or what it is about. A new subject replaces the one
+    before (review of B9: three renames left all three answering while
+    Settings named one); the tag it was found under keeps answering, since
+    its Patterns line is measured under that key. Their word:
     `edited_by_user` stays set, so no run rewrites it."""
     import json
 
@@ -629,7 +647,7 @@ def edit_confirmed(session, row, sentence: str | None = None, subject: str | Non
             raise ValueError("Only a pattern about a subject can be given another one.")
         alias = f"{rule}:{_stems(subject)}"
         payload["subject"] = subject
-        payload["aliases"] = [a for a in payload.get("aliases", []) if a != alias] + ([alias] if alias != payload.get("key") else [])
+        payload["aliases"] = [alias] if alias != payload.get("key") else []
         row.payload = json.dumps(payload)
     if sentence:
         told = _TOLD.match(_said_now(row.text))
@@ -647,8 +665,7 @@ def dismiss_confirmed(session, row) -> list[int]:  # noqa: ANN001
 
     payload = _payload(row)
     row.deleted_at = utcnow()
-    keys = [k for k in (payload.get("key"), *payload.get("aliases", [])) if k]
-    ids = [learning.record(session, kind="dismiss_insight", subject={"key": k}, from_value=row.text, excerpt=row.text).id for k in keys]
+    ids = [learning.record(session, kind="dismiss_insight", subject={"key": k}, from_value=row.text, excerpt=row.text).id for k in _keys(payload)]
     session.flush()
     return ids
 

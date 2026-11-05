@@ -15,7 +15,7 @@ from sqlalchemy import select
 
 from tessellate.ai import insights
 from tessellate.core.database import DerivedFact, Entry
-from tests._app_js import with_pieces
+from tests._app_js import MOVED_OUT, frontend_text, with_pieces
 from tests.test_composer_route_688 import _ask
 from tests.test_insight_verdicts import _golf, _golf_notebook
 
@@ -114,6 +114,62 @@ def test_a_private_note_hides_its_confirmed_pattern(client, session):
     assert not insights.memory(session).confirmed
 
 
+def test_binning_or_hiding_one_note_keeps_the_confirmation(client, session):
+    """Review of B9: a confirmation rests on all its notes, not the newest
+    one, so binning (or making private) one of four keeps it and offers no
+    second Confirm. Only when none of them can be opened is it hidden."""
+    item = _confirmed(client, session)
+    newest = max(note["id"] for note in item["notes"])
+    session.get(Entry, newest).is_deleted = True
+    session.commit()
+    items = client.get("/insights/confirmed").json()["items"]
+    assert [i["id"] for i in items] == [item["id"]] and len(items[0]["notes"]) == 3
+    assert _golf(client)["confirmed"] and _golf(client)["confirmed_id"] == item["id"]
+    session.get(Entry, newest).is_deleted = False
+    session.get(Entry, newest).is_private = True
+    session.commit()
+    listed = client.get("/insights/confirmed").json()["items"]
+    edited = client.patch(f"/insights/confirmed/{item['id']}", json={"sentence": "Golf is mine"})
+    assert [i["id"] for i in listed] == [item["id"]] and edited.status_code == 200
+
+
+def test_confirm_again_writes_no_second_row(client, session):
+    item = _confirmed(client, session)
+    again = client.post("/insights/confirm", json={**_golf(client), "confirmed": False})
+    assert again.status_code == 201 and again.json()["id"] == item["id"]
+    assert len(session.scalars(select(DerivedFact).where(DerivedFact.kind == "confirmed")).all()) == 1
+
+
+def test_undo_of_remove_after_a_new_confirm_leaves_one_row(client, session):
+    """Remove, Confirm again from Tidy, then Ctrl+Z on the Remove: the old
+    row (with its own wording) is back and the newer one goes, so one row."""
+    item = _confirmed(client, session)
+    client.patch(f"/insights/confirmed/{item['id']}", json={"sentence": "Golf is how I unwind"})
+    removed = client.delete(f"/insights/confirmed/{item['id']}")
+    assert removed.status_code == 200
+    newer = client.post("/insights/confirm", json=_golf(client)).json()["id"]
+    assert newer != item["id"]
+    back = client.post(f"/insights/confirmed/{item['id']}/restore")
+    listed = client.get("/insights/confirmed").json()["items"]
+    assert back.status_code == 200 and back.json()["sentence"] == "Golf is how I unwind"
+    assert [i["id"] for i in listed] == [item["id"]]
+    assert _golf(client)["confirmed_id"] == item["id"]
+
+
+def test_a_new_subject_replaces_the_one_before(client, session):
+    """Change what it is about names it anew: the word before stops
+    answering; the tag it was found under still does (its Patterns line)."""
+    item = _confirmed(client, session)
+    for word in ("disc golf", "frisbee"):
+        renamed = client.patch(f"/insights/confirmed/{item['id']}", json={"subject": word})
+        assert renamed.status_code == 200
+    subjects = insights.memory(session).subjects()
+    assert "frisbee" in subjects and "golf" in subjects and "disc golf" not in subjects
+    #: Back to the tag's own word: nothing extra answers.
+    client.patch(f"/insights/confirmed/{item['id']}", json={"subject": "golf"})
+    assert set(insights.memory(session).subjects()) == {"golf"}
+
+
 def test_another_space_neither_lists_nor_reaches_it(client, session):
     item = _confirmed(client, session)
     space = client.post("/spaces", json={"name": "Uni"})
@@ -140,15 +196,24 @@ def test_settings_lists_them_as_their_own_group_with_the_three_actions():
 
 
 def test_one_set_of_actions_for_settings_tidy_and_the_dashboard():
-    status = with_pieces("status.js")
-    items = status[status.index("function confirmedPatternItems(") :][:3200]
+    #: Its own lazy file, not a piece moved out of status.js.
+    assert "confirmed-patterns.js" not in MOVED_OUT["status.js"]
+    status = frontend_text("confirmed-patterns.js")
+    items = status[status.index("function confirmedPatternItems(") :][:3600]
     #: Not right is the pair's own item (one wording, `INSIGHT_VERDICT_ITEMS`).
     for label in ("ph:pencil-simple Edit", 'item.verdict === "dismiss").label', "ph:trash Remove"):
         assert label in items, label
     #: Remove and Not right each go on the undo stack (the history menu).
     assert items.count("offerUndo(") >= 2
+    #: A subject change goes on the undo stack too, and every change redraws
+    #: the dashboard's Patterns line wherever it was made.
+    assert 'field === "sentence" &&' not in items and "pushRequestUndo(" in items
+    assert "renderDashSubmessage()" in items
     tidy = with_pieces("tidy.js")
-    assert "kebabMenu(confirmedPatternItems(" in tidy
+    #: A confirmed plan's Done is in the same menu, not a button beside it.
+    patterns = tidy[tidy.index("async function tidyPatterns(") :][:2400]
+    assert "kebabMenu([...done, ...confirmedPatternItems(" in patterns
+    assert 'pattern.rule !== "drift"' not in patterns
     day = with_pieces("dash-day.js")
     assert "confirmedPatternItems(" in day[day.index("function dashPatternBit(") :][:1600]
     #: Lazy (the boot gzip budget): each caller loads it before drawing one.

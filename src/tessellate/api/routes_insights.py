@@ -561,8 +561,8 @@ def done_insight(body: InsightVerdict, session: Session = Depends(get_session)) 
 # --- Confirmed patterns, managed (CHAT_PLAN B9) --------------------------------------------
 # The owner, 2026-11-05: "also is there a way to edit or managed confirmed
 # patterns??". Settings, What it remembers lists them; the Patterns line's
-# menu reaches the same four routes. Every one reads through the note it
-# rests on, so a private note, a binned one or another space's is a 404.
+# menu reaches the same four routes. Every one reads through the notes it
+# rests on, so when none can be opened (private, binned, another space) it is a 404.
 
 
 class ConfirmedEdit(BaseModel):
@@ -616,15 +616,16 @@ def remove_confirmed(fact_id: int, session: Session = Depends(get_session)) -> d
 
 @router.post("/confirmed/{fact_id}/restore")
 def restore_confirmed(fact_id: int, session: Session = Depends(get_session)) -> dict:
-    """Undo of Remove and of Not right: the confirmed fact is back."""
+    """Undo of Remove and of Not right: the confirmed fact is back, and one
+    confirmed again under the same key in between goes (`replaced`)."""
     from tessellate.ai import insights
 
     row = insights.removed_confirmed(session, fact_id)
     if row is None:
         raise HTTPException(status_code=404, detail="That confirmed pattern is not removed.")
-    row.deleted_at = None
+    replaced = insights.restore_confirmed(session, row)
     session.commit()
-    return insights.confirmed_json(session, row)
+    return {**insights.confirmed_json(session, row), "replaced": replaced}
 
 
 @router.post("/confirmed/{fact_id}/dismiss", status_code=201)

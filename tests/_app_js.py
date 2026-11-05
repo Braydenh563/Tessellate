@@ -81,7 +81,7 @@ MOVED_OUT = {
     "chat.js": ("chat-turn.js", "answer-kit.js"),
     "capture-ask.js": ("ask-compose.js", "answer-kit.js", "citation-peek.js"),
     "agent-activity.js": ("answer-kit.js",),
-    "status.js": ("status-panels.js", "answer-kit.js", "confirmed-patterns.js"),
+    "status.js": ("status-panels.js", "answer-kit.js"),
     "wiring.js": ("answer-kit.js",),
     "skills.js": ("answer-kit.js",),
     "shell-reminders.js": ("scroll-row.js",),
