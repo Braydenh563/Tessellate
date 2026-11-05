@@ -356,15 +356,16 @@ function noteFieldPickButton(input, after) {
 //: `empty` is the source's own glyph for its empty state. `hint` is that
 //: state's sentence: where this kind of thing comes from.
 const LIBRARY_PICK_SOURCES = [
+
   { kind: "note", label: "Notes", icon: "ph:note", placeholder: "Search your notes…", hint: "Notes you write show up here." },
   {
     kind: "document", label: "Documents", icon: "ph:file-text", path: "/documents",
     placeholder: "Search your documents…", hint: "Documents you write in the Library show up here.",
   },
   {
-    kind: "file", label: "Files", path: "/files/gallery", placeholder: "Search your files…",
+    kind: "file", label: "Files", placeholder: "Search your files…",
     icon: (row) => `ph:${(attachmentIconClass("", row?.original_name || row?.filename || "file") || "ph-file").slice(3)}`,
-    empty: "ph:paperclip", hint: "Files you attach to notes show up here.",
+    empty: "ph:paperclip", hint: "Files you upload or attach to notes show up here.",
   },
   {
     kind: "link", label: "Bookmarks", path: "/bookmarks", placeholder: "Search your bookmarks…",

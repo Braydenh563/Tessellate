@@ -1061,6 +1061,7 @@ async function streamChatEvents({
   imageMediaIds,
   documentIds,
   fileIds,
+  mediaFileIds,
   boardIds,
   skill,
   skillInputs,
@@ -1146,15 +1147,10 @@ async function streamChatEvents({
   // for drag-and-drop images: see `_resolve_chat_images` (routes_chat.py)
   // for how an id becomes a data URI the provider actually sends.
   if (imageMediaIds && imageMediaIds.length) body.image_media_ids = imageMediaIds;
-  //: **Documents and files were staged, drawn, persisted -- and never sent
-  //: here.** `streamChat` took `noteIds` and `imageMediaIds` and nothing else,
-  //: so an attached document reached `/chat` (the non-streaming path, used by
-  //: Ask) and never `/chat/stream`, which is the path the Chat tab actually
-  //: uses. The chip appeared on the message, the id was saved on the
-  //: conversation, and the model was never given a word of it -- the same
-  //: failure `document_ids` shipped once before, one layer further out.
+  //: Documents and files must be sent here too: `/chat/stream` is the path the Chat tab uses, and a chip that never reached the model was a shipped bug.
   if (documentIds && documentIds.length) body.document_ids = documentIds;
   if (fileIds && fileIds.length) body.file_ids = fileIds;
+  if (mediaFileIds && mediaFileIds.length) body.media_file_ids = mediaFileIds;
   //: A mind map attached by hand (MINDMAP_PLAN.md §5 item 11). Its own
   //: field, not folded into `note_ids`, because a board's `content` is the
   //: single line `# My map`, sent as a note the model would get a heading

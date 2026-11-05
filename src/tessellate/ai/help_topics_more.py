@@ -1627,7 +1627,10 @@ MORE_TOPICS.extend(
                 "and a reopened chat draws the same. Press a card, or Tab to it and "
                 "press Enter, for a preview with an Open button (Open note, Open "
                 "document, Open mind map, Open file); Escape closes the preview and "
-                "returns to the card."
+                "returns to the card. The Attach panel's Files tab lists both files "
+                "you uploaded in the Library and files attached to notes, and "
+                "anything you drag in from the tray is already ticked there; "
+                "untick a row to take it off."
             ),
             "badge": {"label": "Chat", "tab": "chat"},
         },

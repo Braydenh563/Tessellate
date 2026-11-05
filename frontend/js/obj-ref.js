@@ -20,8 +20,8 @@ function objInField(el) {
   return el?.closest?.("input, textarea, select, [contenteditable='true'], .cm-editor") ?? null;
 }
 
-const OBJ_KINDS = ["note", "document", "diagram", "board", "map", "image", "file"];
-const OBJ_NOUN = { note: "Note", document: "Document", diagram: "Diagram", board: "Board", map: "Mind map", image: "Image", file: "File" };
+const OBJ_KINDS = ["note", "document", "diagram", "board", "map", "image", "file", "upload"];
+const OBJ_NOUN = { note: "Note", document: "Document", diagram: "Diagram", board: "Board", map: "Mind map", image: "Image", file: "File", upload: "File" };
 
 //: Where a card says what it is, nearest first wins. `key` returns "kind:id".
 const OBJ_CARD_SOURCES = [
@@ -127,6 +127,7 @@ const OBJ_STAGE = {
   board: (ref) => attachBoardToChat(ref.id, ref.title),
   map: (ref) => attachBoardToChat(ref.id, ref.title),
   file: (ref) => attachLibraryFile(ref.id, ref.title),
+  upload: (ref) => attachLibraryFile(`m${ref.id}`, ref.title),
   image: (ref) => {
     if (attachedImages.some((row) => String(row.id) === String(ref.id))) return true;
     if (attachedImages.length >= 4) return false;
@@ -145,6 +146,7 @@ const OBJ_STAGED = {
   board: (ref) => attachedBoards.some((row) => row.id === ref.id),
   map: (ref) => attachedBoards.some((row) => row.id === ref.id),
   file: (ref) => attachedFiles.some((row) => row.id === ref.id),
+  upload: (ref) => attachedFiles.some((row) => row.id === `m${ref.id}`),
   image: (ref) => attachedImages.some((row) => String(row.id) === String(ref.id)),
 };
 
