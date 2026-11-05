@@ -1430,11 +1430,11 @@ MORE_TOPICS: list[dict] = [
         ),
         "body": (
             "In the desktop app on Windows and Linux (X11) the companion can live on your desktop while the Tessellate window is "
-            "minimised or in the tray, and go away when it is open. Atlas floats like a wind spirit (others walk the bottom), sits "
-            "and then sleeps when you have been away, can be picked up and thrown, "
+            "minimised or in the tray. Atlas floats like a wind spirit, sits "
+            "and sleeps when you have been away, can be picked up and thrown, "
             "hangs from the top, and peeks up from behind the taskbar or a screen edge. It keeps to a home spot by an "
             "edge and stays there for minutes, alive in place, and makes "
-            "a few trips an hour: walking, running, out at one edge and in at the other, or through a portal. "
+            "trips: walking, running, out at one edge and in at the other, or through a portal. "
             "Let go gently near a title bar and it hangs, then pulls itself up, "
             "swings down or lets go with a start; it also hangs from a maximised title bar or a window's bottom edge. Sometimes it climbs onto the top of a window, rides it when you move it and hops off "
             "if you close it (Roam over windows turns that off), and"
@@ -1444,9 +1444,9 @@ MORE_TOPICS: list[dict] = [
             "minimised or in the tray, or the tray icon's menu; it takes effect while the desktop app runs. Click it for Quick note, "
             "Quick search, New reminder, Open today, Open Tessellate, Wave, Come here, Go somewhere else, Take a nap, Sit on a window"
             " or Hide for 10 minutes. Come here follows your pointer a while; a nap lasts minutes or until you click it. Right-click it for Companion (Atlas masculine or feminine, or a saved Atlas companion; the rest"
-            " show in the app only), Stay here or Roam, Settings or Turn off. Drag it; it remembers the spot. While Tessellate is "
+            " show in the app only), Stay here or Roam, Settings or Turn off. Drag it to move it. While Tessellate is "
             "locked it shows only the companion and Open Tessellate. On Wayland, which cannot place a window above others, it stays "
-            "in the app. It also lounges, answers a pat and glances at new windows."
+            "in the app. It lounges, answers a pat and glances at new windows."
         ),
         "badge": {"label": "Desktop companion", "section": "appearance", "target": "desktop-companion-row"},
     },
