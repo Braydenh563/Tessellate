@@ -2,7 +2,7 @@
 
 Generated 2026-11-05 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7822, frontend ids 2644, CSS sections 522, backend routes 644, backend modules 8797, test files 2069, tests 17479, plan headings 1003, app scripts 28, boot scripts 37, script files 257.
+Counts: frontend functions 7822, frontend ids 2644, CSS sections 522, backend routes 644, backend modules 8797, test files 2069, tests 17480, plan headings 1003, app scripts 28, boot scripts 37, script files 257.
 
 ## Frontend functions (7822)
 
@@ -2393,7 +2393,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `nameMarkBuddyHalt` | frontend/js/avatars.js:8087 |
 | `nameMarkBuddyHasAtlas` | frontend/js/avatars.js:8036 |
 | `nameMarkBuddyHeadAt` | frontend/js/avatars.js:9322 |
-| `nameMarkBuddyHint` | frontend/js/avatars.js:10476 |
+| `nameMarkBuddyHint` | frontend/js/avatars.js:10480 |
 | `nameMarkBuddyHits` | frontend/js/avatars.js:4023 |
 | `nameMarkBuddyHold` | frontend/js/avatars.js:8559 |
 | `nameMarkBuddyHover` | frontend/js/avatars.js:6446 |
@@ -2428,7 +2428,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `nameMarkBuddyNoteOpen` | frontend/js/avatars.js:8711 |
 | `nameMarkBuddyNoteOpened` | frontend/js/avatars.js:8704 |
 | `nameMarkBuddyNotice` | frontend/js/avatars.js:9332 |
-| `nameMarkBuddyNudge` | frontend/js/avatars.js:10363 |
+| `nameMarkBuddyNudge` | frontend/js/avatars.js:10367 |
 | `nameMarkBuddyObstacles` | frontend/js/avatars.js:3667 |
 | `nameMarkBuddyOnBoard` | frontend/js/avatars.js:5760 |
 | `nameMarkBuddyOrigin` | frontend/js/avatars.js:3979 |
@@ -2563,7 +2563,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `queueNameMarkBuddyCheck` | frontend/js/avatars.js:6944 |
 | `registerCharacter` | frontend/js/avatars.js:1209 |
 | `setOwnNameMarkStyle` | frontend/js/avatars.js:294 |
-| `syncNameMarkBuddy` | frontend/js/avatars.js:10374 |
+| `syncNameMarkBuddy` | frontend/js/avatars.js:10378 |
 | `watchNameMark` | frontend/js/avatars.js:1096 |
 
 ### frontend/js/batch-space.js (7)
@@ -24085,7 +24085,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (17479)
+## Tests (17480)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -24392,7 +24392,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_companion_ride_late_scroller.py | 2 |
 | tests/test_companion_stacking.py | 4 |
 | tests/test_companion_state_1463.py | 5 |
-| tests/test_companion_throw.py | 8 |
+| tests/test_companion_throw.py | 9 |
 | tests/test_companion_throw_fates.py | 15 |
 | tests/test_companion_throw_scroll.py | 4 |
 | tests/test_companion_throw_smooth.py | 16 |

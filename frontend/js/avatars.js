@@ -10077,11 +10077,14 @@ function nameMarkBuddyBuild() {
   });
   const release = (event) => {
     nmb.grabbed = false;
-    if (drag?.flipped) nameMarkBuddyFlip(buddy, false);
+    const flipped = drag?.flipped;
     if (drag?.moved) {
       cancelAnimationFrame(dragFrame);
       dragFrame = 0;
-      follow();
+      //: The last pull, worked out but not drawn: the translate is cleared below anyway, and a write here
+      //: made the world read under it a forced layout (the owner's log, 2026-11-05: release 62 ms, 51 of them layout).
+      drag.dx = Math.min(Math.max(-drag.box.left, drag.x - drag.sx), innerWidth - drag.box.right);
+      drag.dy = Math.min(Math.max(-drag.box.top, drag.y - drag.sy), innerHeight - drag.box.bottom);
       //: Where it is let go is where it was picked up plus the pull: no read of the page.
       const b = drag.box;
       const box = { left: b.left + (drag.dx || 0), top: b.top + (drag.dy || 0), right: b.right + (drag.dx || 0), bottom: b.bottom + (drag.dy || 0), width: b.width, height: b.height };
@@ -10095,6 +10098,7 @@ function nameMarkBuddyBuild() {
       //: Let go too slowly to fly, it comes down the same way: near, or straight down.
       const landed = !thrown && nameMarkBuddyMeasureOnce(() => nameMarkBuddyLandNear(box.left, box.top, nameMarkBuddyDrop(Math.round(box.left), Math.round(box.top))));
       buddy.style.translate = "";
+      if (flipped) nameMarkBuddyFlip(buddy, false);
       buddy.classList.remove("nm-buddy-dragging");
       clearTimeout(drag.settle);
       nameMarkBuddySway(buddy, 0);
@@ -10125,7 +10129,7 @@ function nameMarkBuddyBuild() {
       spots[nameMarkBuddyTab()] = nameMarkBuddySpotFor(landed);
       nameMarkBuddyKeepSpots(spots);
       face.dataset.dragged = "1";
-    }
+    } else if (flipped) nameMarkBuddyFlip(buddy, false);
     drag = null;
   };
   face.addEventListener("pointerup", release);
