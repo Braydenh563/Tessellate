@@ -1966,7 +1966,7 @@ MORE_TOPICS.extend(
             ),
             "body": (
                 "When an answer in Chat or Ask draws on a note with pictures or "
-                "sketches, the note's numbered chip under Grounded in has up to "
+                "sketches, the note's numbered chip under Cites (the row under the answer) has up to "
                 "three small pictures beside it (a +n says there are more). The "
                 "chip opens the note; a picture opens in the image viewer, with "
                 "its caption and the text read off it. Atlas can also place a "
@@ -2080,11 +2080,14 @@ MORE_TOPICS.extend(
                 "why this answer", "how was this answered", "how did you get that",
                 "where did this answer come from", "which model answered",
                 "how long did it take", "what did it search", "explain the answer",
-                "transparent", "process lines",
+                "transparent", "process lines", "chips under the answer", "answer foot",
             ),
             "body": (
                 "Under an answer in Ask, in a Chat reply and in the popup agent's "
-                "answer, Why this answer opens the lines that "
+                "answer is one row of chips (Sources, Cites, how many sentences "
+                "your notes back, Why this answer) with the time and model at "
+                "its end; each chip opens its part below, one at a time. "
+                "Why this answer opens the lines that "
                 "made it, each with the seconds since you asked: what the "
                 "question was read as, what was searched and how many notes "
                 "matched, who wrote it (Atlas from your notes with no model, "
@@ -2827,7 +2830,7 @@ TOPIC_META: dict[str, dict] = {
     "follow-up-trail": {"title": "Where a follow-up came from", "path": "Chat tab, or Ask in the Notes tab, under an answer"},
     "why-this-answer": {"title": "Why this answer", "path": "Chat tab, the popup agent, or Ask in the Notes tab, under an answer"},
     "line-verdicts": {"title": "Wrong fact and Pin as true", "path": "Ask or Chat, a numbered mark in an answer"},
-    "answer-pictures": {"title": "Pictures in answers", "path": "Chat tab, or Ask in the Notes tab, Grounded in"},
+    "answer-pictures": {"title": "Pictures in answers", "path": "Chat tab, or Ask in the Notes tab, Cites under the answer"},
     "library-skills": {"title": "AI skills in the Library", "path": "Library tab, AI skills"},
     "object-move": {"title": "Moving, copying and carrying cards", "path": "Notes tab, or Library tab, drag a card or press Ctrl+C; the tray in the status bar"},
     "ocr-engine": {"title": "Tesseract and the reading language", "path": "The OCR workspace, the reader button"},

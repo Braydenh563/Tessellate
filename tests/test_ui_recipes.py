@@ -7500,3 +7500,37 @@ def test_the_ask_column_heads_are_one_recipe():
     assert m and "min-height: var(--control-h-lg)" in m.group(1)
     m = re.search(r"\.answer-head \.msg-role\s*\{([^}]*)\}", strip("frontend/css/08-consistency.css"))
     assert m and "font-size: var(--text-body)" in m.group(1)
+
+
+#: A fold the answer surfaces draw that is not under the answer: the long
+#: answer's own card (inside the answer) and a web page read in the run's
+#: steps (`timeline.holder`). Every other fold is a part of the answer's foot.
+NOT_FOOT_FOLDS = {"long-fold", "web-fold"}
+#: A fold the row finds by its holder, so its class stays named by its one
+#: builder (`test_why_this_answer_is_one_fold_built_once`, B30).
+FOOT_HOLDERS = {"why-trail": "why-fold"}
+
+
+def test_what_an_answer_carries_is_one_foot_row() -> None:
+    """CHAT_PLAN B2, the owner: "when they stack up below it gets a little
+    unprofessional". DESIGN.md "What an answer carries under it": one
+    `.answer-foot-bar` of chips, built only by `answerFootGather`, from the
+    parts in `ANSWER_FOOT_PARTS`. A new fold under an answer joins that list
+    (or NOT_FOOT_FOLDS, with why), never a row of its own."""
+    js = ROOT / "frontend" / "js"
+    kit = (js / "answer-kit.js").read_text(encoding="utf-8")
+    parts = kit[kit.index("const ANSWER_FOOT_PARTS = [") :]
+    parts = parts[: parts.index("\n  ];\n")]
+    finds = set(re.findall(r'find: "\.([\w-]+)', parts))
+    finds |= {FOOT_HOLDERS[f] for f in finds if f in FOOT_HOLDERS}
+    folds = set()
+    for name in ("answer-kit.js", "ask-compose.js", "chat-turn.js", "palette.js", "reply-kit.js"):
+        for classes in re.findall(r'className = "([^"]*-fold[^"]*)"', (js / name).read_text(encoding="utf-8")):
+            folds |= {c for c in classes.split() if c.endswith("-fold")}
+    loose = folds - finds - NOT_FOOT_FOLDS
+    assert not loose, f"a fold under an answer that is not a foot part: {sorted(loose)}"
+    makers = [p.name for p in JS if '"answer-foot-bar"' in p.read_text(encoding="utf-8")]
+    assert makers == ["answer-kit.js"], makers
+    assert kit.count('bar.className = "answer-foot-bar"') == 1
+    design = (ROOT / "docs" / "DESIGN.md").read_text(encoding="utf-8")
+    assert "**An answer's foot**" in design and "`answerFootGather`" in design

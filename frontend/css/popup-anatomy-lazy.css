@@ -127,6 +127,34 @@
   z-index: 1;
   padding-top: var(--space-4);
 }
+/* **Running now's rows on the card's two gaps** (CHAT_PLAN B7, the owner:
+   "there is no vertical spacing for these agent run elements"). Measured at
+   1440 with one agent job and one filing job: the model line, the job's name
+   row, "What it's doing" and the bar sat 11, 0 and 6px apart, and a detail
+   line 2px under its name. A job's rows are one group (`--space-3`), the
+   model line and each job are groups (`--space-4`), each row's own margin
+   zeroed so the gap is the only space. */
+.activity-running .pop-card-body,
+.activity-running .entry-list > li {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+.activity-running .pop-card-body {
+  gap: var(--space-4);
+}
+.activity-running .pop-card-body > *,
+.activity-running .entry-list > li > * {
+  margin-block: 0;
+}
+.activity-running .entry-list > li {
+  margin-bottom: 0;
+}
+.activity-running .entry-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
 
 /* --- The reference's glass, the parts that keep the words readable --------
    The owner asked how a reference app does glass (INBOX 1478): a 32% panel
