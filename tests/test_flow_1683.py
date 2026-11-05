@@ -260,8 +260,6 @@ def test_a_move_throws_the_streams_and_they_settle_after_the_stop():
 
 @pytest.mark.parametrize("look", LOOKS)
 def test_a_drag_and_a_throw_keep_one_flow_so_no_warp_is_built_a_frame(look):
-    from tests.test_overlay_ride_1670 import drag
-
     e, _ = make(look)
     t = 1.0
     for _ in range(60):  # let the streams be mid-sway before the grab
