@@ -7477,13 +7477,13 @@ def test_a_panel_fold_is_a_full_width_row_closed_as_open():
     for name, sel, body in every:
         for one in sel.split(","):
             one = one.strip()
-            if one.endswith(".fold-summary") and "[open]" not in one:
+            if one.endswith((".fold-summary", ".agent-step-group-summary", ".chat-sources-summary")) and "[open]" not in one:
                 m = re.search(r"(?<![-\w])(?:max-)?width\s*:\s*([^;]+)", body)
                 assert not m or m.group(1).strip() in {"100%", "auto"}, (name, one, m.group(0))
     chat = (ROOT / "frontend/css/02-chat-graph.css").read_text(encoding="utf-8")
-    assert re.search(r"\.fold-summary::after\s*\{\s*margin-inline-start:\s*auto", chat)
+    assert re.search(r"\.chat-sources-summary::before\s*\{\s*order:\s*1;\s*margin-inline-start:\s*auto", chat)
     disclosure = (ROOT / "frontend/css/08-consistency.css").read_text(encoding="utf-8")
-    assert ".fold-summary::after" in disclosure
+    assert ":is(.fold-summary, .agent-step-group-summary)::after" in disclosure
     for name, sel, body in every:
         if "[open] > .fold-summary" in sel and ".thinking-fold" in sel + ".thinking-fold":
             assert "width: auto" not in body, (name, sel, "an open-only width means closed differs")
@@ -7493,7 +7493,9 @@ def test_the_ask_column_heads_are_one_recipe():
     """INBOX A1: the answer head and the Matching records head share a height
     (`--control-h-lg`) and a title size (`--text-body`), so the first box under
     each column starts at the same y."""
-    strip = lambda p: re.sub(r"/\*.*?\*/", "", (ROOT / p).read_text(encoding="utf-8"), flags=re.S)
+    def strip(p):
+        return re.sub(r"/\*.*?\*/", "", (ROOT / p).read_text(encoding="utf-8"), flags=re.S)
+
     m = re.search(r"\.chat-half h3\s*\{([^}]*)\}", strip("frontend/css/01-forms-settings.css"))
     assert m and "min-height: var(--control-h-lg)" in m.group(1)
     m = re.search(r"\.answer-head \.msg-role\s*\{([^}]*)\}", strip("frontend/css/08-consistency.css"))

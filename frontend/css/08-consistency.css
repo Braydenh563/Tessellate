@@ -396,7 +396,7 @@
 .advanced-css > summary:not(.icon-only):not(.icon-button)::before,
 .task-log > summary:not(.icon-only):not(.icon-button)::before,
 .chat-sources > .chat-sources-summary::before,
-.fold-summary::after {
+:is(.fold-summary, .agent-step-group-summary)::after {
   content: "\e136"; /* ph-caret-down, as `.contents-caret` */
   display: inline-block;
   flex: none;
@@ -425,7 +425,7 @@ details[open] > .about-whats-new::before,
 .advanced-css[open] > summary:not(.icon-only):not(.icon-button)::before,
 .task-log[open] > summary:not(.icon-only):not(.icon-button)::before,
 .chat-sources[open] > .chat-sources-summary::before,
-details[open] > .fold-summary::after {
+details[open] > :is(.fold-summary, .agent-step-group-summary)::after {
   transform: none;
 }
 /* Hover is the only state that fills. Restated because the flat rule above
