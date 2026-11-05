@@ -1901,3 +1901,4 @@ Left: search inside topics' notes (10-19 item 13), rainbow every level (item 10)
 
 ## Placed from INBOX, 2026-11-04
 
+1686. **Owner, 2026-11-05 (screenshot: Atlas on the central node of a mind map with a dozen branch nodes), verbatim:** "also the companion cant sit on any other mindmap nodes other than the central one". Recommendation (taken): every drawn node of a board, mind map and diagram is a perch (its top edge, in screen space, after pan and zoom), picked by the same perch list the companion uses for other ledges, re-measured on pan, zoom and layout; a branch node too narrow for it is a lean or a hang instead.
