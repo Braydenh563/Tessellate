@@ -55,6 +55,7 @@ import random
 from typing import Any, NamedTuple
 
 from . import behaviour as bh
+from . import landing as ld
 from . import travel as tv
 
 #: Seconds.
@@ -203,8 +204,11 @@ SQUASH_FOR = 0.35
 #: eased turn (a critically damped spring to the nearest upright, `RIGHT_W` rad/s, ramped in over `RIGHT_RAMP`
 #: s so the turn rate stays continuous) and is laid down only when upright.
 RIGHT_SPEED = 150.0
-RIGHT_W = 2.6
+RIGHT_W = 4.2
 RIGHT_RAMP = 0.4
+RIGHT_SPENT = 0.5
+#: A throw reaching the ceiling takes hold only within this much of upright (rad, about 26 degrees, under the 30 a snap is counted at): hanging would snap it.
+CEIL_TILT = 0.45
 SPIN_STEPS = 48
 SPIN_FRAMES_ENGINE = tuple(f"spin{i}" for i in range(SPIN_STEPS))
 #: A floater: hover height range above the floor, speed, turn rate, air drag,
@@ -439,6 +443,16 @@ class Engine:
         self.omega = 0.0  # a thrown figure's turn rate, rad/s
         self.right_t = 0.0  # seconds it has been righting itself
         self.grounded = False  # a walker's tumble that has reached the floor
+        self.outcome: str | None = None  # how the last throw came to rest: feet, belly, back (`landing.decide`)
+        self.lie_goal: float | None = None  # the quarter turn a body on its back or belly settles to (None: upright)
+        self.lie_until = 0.0  # when it gets up, once it lies still
+        self.lying = False  # down on its back or belly: not a held tilt, a pose
+        self.wall = 0  # -1 or 1 while it slides down a side wall it smacked
+        self.wob_kind: str | None = None  # a scrabble or a flail drawn over the true angle (`landing.wobble`)
+        self.wob_t0 = 0.0
+        self.wob = 0.0  # the scrabble or flail angle added to the true one this tick
+        self.passed_at = -math.inf  # when a hard smack last carried it out of one edge and in at the other
+        self.air_t0 = 0.0  # when the drop since the last upward motion began
         self.laid = False  # upright and slow: the held pose, for good until the next throw
         self.ground_mon: Monitor | None = None  # the screen a walker's tumble landed on
         self.slow_for = 0.0  # seconds a thrown figure has been under FLY_SPIN_MIN
@@ -568,7 +582,7 @@ class Engine:
         (the held one, same foot offset) once it drifts to rest, so the settle is no step."""
         if self.laid:
             return "held"
-        return f"spin{int(round(self.angle / (2 * math.pi / SPIN_STEPS))) % SPIN_STEPS}"
+        return f"spin{int(round((self.angle + self.wob) / (2 * math.pi / SPIN_STEPS))) % SPIN_STEPS}"
 
     def _flip_dx(self, frame: str, flip: bool) -> float:
         """The sideways shift that keeps a mirrored figure where it stood (the frames are not
@@ -2179,9 +2193,20 @@ class Engine:
         return True
 
     def _ceiling_holds(self) -> bool:
-        """Whether the throw now reaching the top was hard and mostly upward (see `CEIL_CATCH`)."""
+        """Whether the throw now reaching the top was hard and mostly upward (see `CEIL_CATCH`) and the body is near
+        upright: head over heels it cannot take hold, it smacks the ceiling and drops."""
+        return self._ceiling_fast() and abs(ld.wrap(self.angle)) <= CEIL_TILT
+
+    def _ceiling_fast(self) -> bool:
         vx, vy = self.launch
         return -vy >= CEIL_CATCH * self._scale() and -vy >= CEIL_UPWARD * math.hypot(vx, vy)
+
+    def _reaching(self) -> bool:
+        """Rising hard towards a top it would take hold of, a few tenths of a second away: it turns to reach for it."""
+        m = self.current_monitor()
+        if self.vy >= 0 or self.grounded or not self._open_side(m, "top") or not self._ceiling_fast():
+            return False
+        return self.y - (m.area[1] - self._lift()) < -self.vy * ld.REACH_AHEAD
 
     def _track_rest(self, speed: float, dt: float) -> None:
         """Count how long a thrown figure has been slow. Once it has been long enough it is laid
@@ -2200,6 +2225,8 @@ class Engine:
             decay = math.exp(-FLOAT_DRAG * dt)
             self.vx *= decay
             self.vy = self.vy * decay + FLOAT_PULL * (self.ground_y(m) - self.y) * dt
+        elif self.wall:  # sliding down a wall: it drags, and it scrabbles (`_air_wobble`)
+            self.vy = min(self.vy + GRAVITY * ld.WALL_GRIP * scale * dt, ld.WALL_SLIDE * scale)
         else:
             self.vy += GRAVITY * scale * dt
         self.x += self.vx * dt
@@ -2207,6 +2234,7 @@ class Engine:
         speed = math.hypot(self.vx, self.vy)
         self._track_rest(speed, dt)
         self._spin(dt, speed)
+        self._air_wobble(now, dt)
         uy0, uy1 = self._fly_walls(m, now)
         if self._hit_ceiling(m, uy0, now):
             return
@@ -2221,37 +2249,93 @@ class Engine:
                 self.settled_now = True
                 self.squash_at = now  # INBOX 1683: the settle ends in a small squash (`_ground_pose`), then the stand
                 self._enter("stand", now)
-        elif self.y >= floor:
+        elif self.y >= floor or self.grounded:
             self._land_tumble(m, floor, dt, now)
 
     def _fly_walls(self, m: Monitor, now: float) -> tuple[float, float]:
-        """Bounce off an open side wall (the walls are of what is drawn: the tumble's widest frame, not the
-        window around it); returns the drawn box's top and bottom limits."""
+        """The side walls (of what is drawn: the tumble's widest frame, not the window around it); returns the
+        drawn box's top and bottom limits. A hard hit smacks (`_smack`); a soft one bounces; on the floor it stops."""
         ux0, ux1, uy0, uy1 = self._ride_limits("fly")
-        if self.x < ux0 and self._open_side(m, "left"):
-            self.x, self.vx = ux0, abs(self.vx) * BOUNCE_DAMP
-            self.bonk_until = now + BONK_FOR
-            self._spin_contact(1.0)
-        elif self.x > ux1 and self._open_side(m, "right"):
-            self.x, self.vx = ux1, -abs(self.vx) * BOUNCE_DAMP
-            self.bonk_until = now + BONK_FOR
-            self._spin_contact(-1.0)
+        if self.grounded or self.wall:
+            ex0, ex1 = self._ride_limits(self._fly_frame())[:2] if self.grounded else (ux0, ux1)
+            if self.wall:
+                self.x, self.vx = (ex0 if self.wall < 0 else ex1), 0.0
+            elif not ex0 <= self.x <= ex1:
+                self.x, self.vx = min(max(self.x, ex0), ex1), 0.0
+            return uy0, uy1
+        side = -1 if self.x < ux0 and self._open_side(m, "left") else (1 if self.x > ux1 and self._open_side(m, "right") else 0)
+        if side:
+            self._smack(side, ux0 if side < 0 else ux1, ux1 if side < 0 else ux0, now)
         return uy0, uy1
 
+    def _smack(self, side: int, edge: float, far: float, now: float) -> None:
+        """A wall hit: soft or a floater's, it bounces; hard, a walker sticks and slides down scrabbling, or (harder
+        still) goes out of the edge and in at the far one (INBOX 1683 k)."""
+        verdict = "bounce" if self.gait == "float" else ld.smack(abs(self.vx), self._scale(), self.rng)
+        if verdict == "through":
+            self.x, self.vx, self.outcome = far, self.vx * 0.9, "through"
+            self.passed_at = now
+            return
+        self.x = edge
+        self.bonk_until = now + BONK_FOR
+        if verdict == "slide":
+            self.wall, self.vx, self.vy, self.outcome = side, 0.0, self.vy * 0.4, "slide"
+            self.wob_kind, self.wob_t0 = "scrabble", now
+            self._spin_contact(float(-side))
+            return
+        self.vx = -side * abs(self.vx) * BOUNCE_DAMP
+        self._spin_contact(float(-side))
+
+    def _air_wobble(self, now: float, dt: float) -> None:
+        """The scrabble against a wall, or a flail once a drop has gone on a while with the tumble spent."""
+        kind = "scrabble" if self.wall else None
+        if self.vy <= 0 or self.grounded:
+            self.air_t0 = now
+        elif not self.wall and self.gait != "float" and now - self.air_t0 > ld.FLAIL_AFTER and abs(self.omega) < 1.5:
+            kind = "flail"
+        if kind != self.wob_kind:
+            self.wob_kind, self.wob_t0 = kind, now
+        # a low-pass, so a flail that ends at the floor or turns into a scrabble fades, never steps
+        self.wob += (ld.wobble(self.wob_kind, now - self.wob_t0) - self.wob) * (1.0 - math.exp(-25.0 * dt))
+
+    def _pose_floor(self, m: Monitor, floor: float) -> float:
+        """Where the engine's y rests the picture now shown on the floor: a body lying down is shorter than the
+        tumble's tallest frame, so it lies on the floor, not above it."""
+        if not self._open_side(m, "bottom"):
+            return floor
+        return min(self.floor_y(m), m.area[3] - self._ride_box(self._fly_frame())[3])
+
     def _land_tumble(self, m: Monitor, floor: float, dt: float, now: float) -> None:
-        """A walker's tumble reaches the floor: it slides to a stop and rights itself there, then lands."""
-        self.y, self.vy = floor, 0.0
+        """A walker's tumble reaches the floor and comes to rest by outcome (`landing.decide`): stumbling onto its
+        feet, or down on its back or belly, skidding, lying a moment, then getting up with an eased turn."""
         if not self.grounded:
-            self.grounded = True
+            self.grounded, self.wall = True, 0
             self.ground_mon = m  # the slide stays on the screen it landed on: a seam would jump the floor under it
+            self.outcome, goal = ld.decide(self.angle, self.omega, 1 if self.facing >= 0 else -1, self.vy > 0 and abs(self.launch[1]) > 600 * self._scale(), self.rng)
+            self.lie_goal = goal if self.outcome != "feet" else None
             self._spin_contact(1.0 if self.vx >= 0 else -1.0)
-        self.vx *= math.exp(-6.0 * dt)
+        self.vy = 0.0
+        self.vx *= math.exp(-(ld.STUMBLE_K if self.lie_goal is None else ld.SKID_K) * dt)
         self.x = min(max(self.x, m.area[0]), m.area[2] - self.size[0])
-        if self._righted() and abs(self.vx) < 20 * self._scale():
+        self.y = self._pose_floor(m, floor)
+        if self.lie_goal is not None:
+            self._lie_down(now)
+        elif self._righted() and abs(self.vx) < 20 * self._scale():
             self.vx = 0.0
             self.y = self.floor_y(m)
             self.settled_now = True
-            self._enter("land", now)
+            if self.outcome == "feet":
+                self._enter("land", now)
+            else:
+                self._start_act("shake_off", now)  # it picks itself up and shakes it off, miffed
+
+    def _lie_down(self, now: float) -> None:
+        """Down on its back or belly: once it has stopped turning and sliding it lies a moment, then gets up."""
+        if not self.lying:
+            if abs(self._turn_err()) < 0.06 and abs(self.omega) < 0.4 and abs(self.vx) < 40 * self._scale():
+                self.lying, self.lie_until = True, now + ld.rest_for(self.rng)
+        elif now >= self.lie_until:
+            self.lying, self.lie_goal = False, None
 
     def _do_fall(self, now: float, dt: float) -> None:
         scale = self._scale()
@@ -2343,24 +2427,51 @@ class Engine:
         """One step of the turn: its own drag, and once the flight is slow (or on the floor) an eased turn
         to the nearest upright."""
         self.omega *= math.exp(-SPIN_DRAG * dt)
-        if self.kick:  # a contact's change of rate is paid out over a few ticks, not taken in one
-            part = self.kick * (1.0 - math.exp(-SPIN_EASE * dt))
-            self.omega, self.kick = self.omega + part, self.kick - part
-            if abs(self.kick) < 0.02:
-                self.omega, self.kick = self.omega + self.kick, 0.0
-        slow = speed < RIGHT_SPEED * self._scale() or self.grounded
-        self.right_t = self.right_t + dt if slow else 0.0
-        if self.right_t > 0.0:
-            gain = bh.smooth(min(1.0, self.right_t / RIGHT_RAMP))
-            err = self.angle - round(self.angle / (2 * math.pi)) * 2 * math.pi
-            self.omega -= gain * (RIGHT_W * RIGHT_W * err + 2 * RIGHT_W * self.omega) * dt
+        self._pay_kick(dt)
+        self._right_step(dt, speed)
         self.angle += self.omega * dt
         if self.slow_for >= FLY_REST_DWELL and self._righted():
             self.laid = True  # laid down for good until the next throw: the held pose never swaps back to the tumble
 
+    def _pay_kick(self, dt: float) -> None:
+        """A contact's change of rate is paid out over a few ticks, not taken in one."""
+        if not self.kick:
+            return
+        part = self.kick * (1.0 - math.exp(-SPIN_EASE * dt))
+        self.omega, self.kick = self.omega + part, self.kick - part
+        if abs(self.kick) < 0.02:
+            self.omega, self.kick = self.omega + self.kick, 0.0
+
+    def _right_step(self, dt: float, speed: float) -> None:
+        """The eased turn to the nearest upright; a spent tumble rights itself too, not only a slow flight: a floater's
+        drag kept it over the speed line while the turn had died down, so it hung tilted (INBOX 1683 k: a held 45 degrees)."""
+        reach = self._reaching()
+        slow = speed < RIGHT_SPEED * self._scale() or self.grounded or self.wall != 0 or abs(self.omega) < RIGHT_SPENT or reach
+        self.right_t = self.right_t + dt if slow else 0.0
+        if self.right_t <= 0.0:
+            return
+        # on the floor the turn starts at once: the long ramp held a 45 degree tilt still for most of a second
+        quick = self.grounded or reach
+        gain = bh.smooth(min(1.0, self.right_t / (ld.GROUND_RAMP if quick else RIGHT_RAMP)))
+        w = self._right_w(reach)
+        self.omega -= gain * (w * w * self._turn_err() + 2 * w * self.omega) * dt
+
+    def _right_w(self, reach: bool) -> float:
+        if self.lie_goal is not None and not self.lying:
+            return ld.THUMP_W
+        return ld.GETUP_W if self.grounded else (ld.REACH_W if reach else RIGHT_W)
+
+    def _turn_err(self) -> float:
+        """How far the angle is from where it settles: the nearest upright, or the quarter turn it lies at."""
+        if self.lie_goal is None:
+            return ld.wrap(self.angle)
+        return ld.wrap(self.angle - self.lie_goal)
+
     def _righted(self) -> bool:
         """Upright and still turning no more than a drift: safe to lay down."""
-        err = self.angle - round(self.angle / (2 * math.pi)) * 2 * math.pi
+        if self.lie_goal is not None:
+            return False
+        err = ld.wrap(self.angle)
         return abs(err) < 0.012 and abs(self.omega) < 0.15  # 0.7 degrees: the snap to the upright stand is under one (review of 1683)
 
     def _spin_contact(self, push: float) -> None:
@@ -2372,7 +2483,9 @@ class Engine:
         self.vx, self.vy = vx, vy
         self.launch = (vx, vy)
         self.slow_for = self.right_t = 0.0
-        self.grounded = self.laid = False
+        self.grounded = self.laid = self.lying = False
+        self.outcome = self.lie_goal = self.wob_kind = None
+        self.wall, self.wob, self.air_t0 = 0, 0.0, self.now
         self.y += self._dy(self._frame(self.now)) - self._dy("spin0")  # drawn where it was
         self.angle, self.omega, self.kick = 0.0, self._launch_spin(vx, vy, swirl), 0.0
         if abs(vx) > 1:
@@ -2727,5 +2840,5 @@ class Engine:
         return Output(
             frame, int(round(x)), int(round(y)), self.facing < 0, self._wake(now),
             self.click_now, self.settled_now, clip, self.card_clicked, self._pose(), fx, round(alpha * 16) / 16.0,
-            self.angle if frame.startswith("spin") and self.state == "fly" else None,
+            self.angle + self.wob if frame.startswith("spin") and self.state == "fly" else None,
         )

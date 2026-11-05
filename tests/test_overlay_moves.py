@@ -93,7 +93,9 @@ def test_a_thrown_walker_flies_under_gravity_and_lands_on_the_floor() -> None:
     assert land.frame == "land" and 0 <= land.x <= 1920 - 100
 
 
-def test_a_throw_bounces_off_the_wall_with_damping_and_a_short_startle() -> None:
+def test_a_throw_bounces_off_the_wall_with_damping_and_a_short_startle(monkeypatch) -> None:
+    # INBOX 1683 k: a hard hit may now stick and slide or pass through (`landing.smack`); this reads the bounce
+    monkeypatch.setattr(eng.ld, "smack", lambda *_a: "bounce")
     e = make()
     throw(e, to=(1800, 600), start=(850, 950))
     assert e.state == "fly" and e.vx > 0
