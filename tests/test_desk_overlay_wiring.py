@@ -445,11 +445,15 @@ def test_1658_the_pages_height_report_after_show_places_nothing_and_is_kept_for_
     runner = FakeRunner.started[0]
     panel = over.webview.made[0]
     runner.on_click("left", (1000, 800, 200, 240), 96)
-    placed = list(panel.calls)
     api = dc.DeskApi(over)
+    # Intent kept, one case moved (INBOX 1683, the first open was short): the page's FIRST height for a kind that
+    # differs from the placed guess by more than REFIT_PX refits the window once; the flip-flop this test is about
+    # (ten alternating placements in two seconds) is every report after it, which still places nothing.
+    api.set_size(MENU_W, 154, "menu")
+    placed = list(panel.calls)
     for _ in range(10):  # the owner's log: ten alternating placements in two seconds
         api.set_size(MENU_W, 154, "menu")
-    assert panel.calls == placed and over.size == dc.PANEL_SIZES["menu"]
+    assert panel.calls == placed and over.size == (MENU_W, 154)
     runner.on_click("left", (1000, 800, 200, 240), 96)  # closes
     panel.calls.clear()
     runner.on_click("left", (1000, 800, 200, 240), 96)

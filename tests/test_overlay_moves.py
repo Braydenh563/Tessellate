@@ -101,8 +101,10 @@ def test_a_throw_bounces_off_the_wall_with_damping_and_a_short_startle() -> None
     while t < 3.0:
         before = e.vx
         t += 0.016
-        out = e.update(t)
-        if out.frame == "hop" and bonk is None:
+        e.update(t)
+        # intent kept (INBOX 1683): the bonk is the contact, read from the engine; a thrown figure is no longer
+        # swapped for the startled hop in the middle of its spin (that swap was the snap), only once laid down
+        if e.bonk_until > t and bonk is None:
             bonk, vx_in, vx_out = t, before, e.vx
     assert bonk is not None and vx_in > 0 > vx_out
     assert abs(vx_out) <= abs(vx_in) * eng.BOUNCE_DAMP * 1.2

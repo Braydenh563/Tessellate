@@ -463,7 +463,9 @@ class OverlayRunner:
             engine.set_metrics(spr.metrics(dpi))
             self._last_key, self._blend, self._target = None, None, None
         engine.hour = time.localtime().tm_hour if self.clock_hour is None else self.clock_hour
-        key = (out.frame, self.dpi, out.flip, out.clip, out.pose, out.fx, out.alpha)
+        # a thrown figure's true angle is part of the picture (INBOX 1683): every tick of a spin is a new one
+        turn = None if out.angle is None else round(math.degrees(out.angle) / sprites.SPIN_QUANT) % round(360.0 / sprites.SPIN_QUANT)
+        key = (out.frame, self.dpi, out.flip, out.clip, out.pose, out.fx, out.alpha, turn)
         blending = False
         if key != self._last_key:
             blending = self._new_picture(out, key)
@@ -492,7 +494,10 @@ class OverlayRunner:
         the slow head turn), and present it. True while the dissolve has more to come."""
         spr = self.sprites
         assert spr is not None
-        posed = spr.posed(out.frame, self.dpi, out.flip, out.pose) if out.pose else spr.frame(out.frame, self.dpi, out.flip)
+        if out.angle is not None:
+            posed = spr.spun_at(out.angle, self.dpi, out.flip)
+        else:
+            posed = spr.posed(out.frame, self.dpi, out.flip, out.pose) if out.pose else spr.frame(out.frame, self.dpi, out.flip)
         frame = sprites.effect(sprites.clipped(posed, out.clip), out.fx, out.alpha)
         self._blend = (self._target, self.clock()) if self._blends(self._last_key, key, self._target, frame) else None
         self._blend_s = BLEND_LOOK_S if self._last_key and "look" in (self._last_key[0], key[0]) else BLEND_S
