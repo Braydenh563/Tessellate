@@ -7,6 +7,64 @@ Split out of `ROADMAP.md`. Kept, not deleted, for one reason: **three sessions
 have independently rebuilt something that already existed.** This is the file
 that answers "has this been done?" before anyone starts.
 
+## Moved from the plans, 2026-11-05 (CHAT_PLAN B3, B4 and B8)
+
+- **B8, the owner 2026-11-05 02:23Z, verbatim:** "sometimes when I close a minimised tab for a window, the window flashes for a split second". Recommendation (taken): closing a minimised window from its tab never shows the window (no restore before the close, no transition on a hidden window), for every window kind that minimises to a tab. **Built:** the pill's x presses Close while the window is still `data-panel-min` (hidden, no transition or animation), and the mark comes off once it is gone; a held close (a confirm) shows it again after 700ms. Frames with the window on screen during the close, measured over 700ms: agent 8 to 0, Guide 8 to 0, Settings 4 to 0 (`tests/test_panel_min_close_quiet.py`).
+
+## Moved from the plans, 2026-11-05 (CHAT_PLAN, the Ask sub-tab of 2026-09-21)
+
+**All four built, 2026-09-21.** One pass, because they are one screen and
+four separate fixes would have meant four rounds of the same measurement.
+The probe is `scratchpad/ui-sweeps/asktab.js` (registered in
+`scripts/gate.sh`'s sweep list); it measures rather than captures, and it
+drives a real stream through `scratchpad/fake_answer_server.py`, which now
+takes `FAKE_DELAY_MS` so a stream lasts long enough to poll. The full record
+is in HISTORY.md, "INBOX resolved, 2026-09-21".
+
+~~297. Gaps between an attached file and the badges, and badges that do not
+all show.~~ **Built.** The gap: 0.0px to 6.4px, at 1440, 1024, 820 and 390.
+The badges: not a truncation and not a wrap (every badge the data implies
+was drawn at every width, none clipped, 0px of the lane scrolled out), but a
+condition that never fired: `clickableResult` passed `entryItem` no options,
+so every chip gated on `options.actions` was missing from a read-only row.
+The same note: 2 badges in the Ask column before, 4 after, against 5 in
+Browse, the fifth being the one chip decision 16 keeps off a result row.
+
+~~298. No generating animation while the model is thinking and streaming.~~
+**Built.** Frames with the answer actually streaming: 250 before, 0 of them
+showing anything moving; 63 after, 63 of them showing something. Across the
+whole turn: 120 of 372 before, 243 of 243 after. Two existing components
+(`progressLine`, `.is-generating`) called from a surface that never called
+either, not a new control.
+
+~~299. Number the matching records to match the inline referencing.~~
+**Built.** Records numbered: 0 of 5 before, 5 of 5 after, from
+`citationNumbers`, the map the prose marks, the "Grounded in" chips and the
+Sources panel already share. Marks whose row disagrees with them: 0. Numbers
+drawn over a row's own text: 0 (6.4px of clear gutter on every row).
+
+~~300. The sources button reads as a banner and describes a place.~~
+**Built.** 525px of a 525px column (100%) before, 204px (38.9%) after;
+"Sources: 5 notes, on the right" before, "Show the 5 notes used" after; and
+a press now moves the first cited record from 328px below the top of the
+window to 72px.
+
+### The four reports, verbatim
+
+297. **The owner, 2026-09-21, verbatim:** "in the ask subtab in notes, make
+    sure there are appropriate gaps between uploaded files and attachments
+    and the badges and make sure all the badges show."
+
+298. **The owner, 2026-09-21, verbatim:** "there's no generating animation
+    while the model is thinking and streaming in the ask tab either."
+
+299. **The owner, 2026-09-21, verbatim:** "can the notes in the matching
+    records that appear in the ask tab be numbered accordingly to match the
+    inline referencing??"
+
+300. **The owner, 2026-09-21, verbatim:** "fix the ui of this sources button
+    in the ask tab."
+
 ## Session record 2026-11-01 to 03 (Now lines moved from HANDOVER 2026-11-04)
 
 **Now (2026-11-03e, owner active, budget mode (weekly 70%: one agent, Sonnet or Haiku, targeted tests), branch claude/next-queue-1102, PR 212):** merged 1568 OCR, 1591 lag (route warm, forced layouts), U15 Arrange submenus; fixed 1601 AI switch, 1600 bare toggles, 1597 suggested tag chip (not yet measured in the app). Merged a31q (Atlas: the focus-ring transition kept the follow loop awake, mood restyle 879 to 470 elements, lite mood hand-over; 1598 and 1606 not reproduced, need the owner's window size; MoveTo read hoist and the rest in a31q-1103.md). No agent running. Queue, owner bugs first: 1603 tray (a popup stuck open with no close, first; every status-bar popover gets a close head; drop into the open popup; no page scroll over the tray; row body drags; spacing; shortcut via 1604), 1605 selection bars (Settings and Library), 1610 and 1612 settings alignment and Help where lines, 1609 logs search icon, 1608 logs (show hidden, refresh, older on scroll), 1611 desktop companion switch into Appearance, 1604 quick nav rows, 1613 diagram shape menu and swatch, 1614 picture pane height plus zoom and pan, 1615 blocks multiselect, group drag, labels and a blind-tester pass (DOCUMENTS_PLAN; one Diagram builder pass, resizable panes and a design note first), 1617 Focus timer upgrade plus Stopwatch, Alarm and Convert widgets (UI_MODERNISATION_PLAN), 1599 and 1602 composer caption grammar and quote rendering, 1607 masculine Atlas design pass, 1560 lag lines; then D30, "tell me about this", leftovers, audits, plans, BACKLOG. CI fixed in 13b65ec (META_EDGED counts an outline edge, obj-grip hover twin, board menus get `.menu-nested` instead of a `:has()` anchor); check PR 212's run on 13b65ec first. Retro done. Context past 290k a turn: next session starts fresh.

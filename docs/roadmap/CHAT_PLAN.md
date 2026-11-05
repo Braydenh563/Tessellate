@@ -607,57 +607,7 @@ shadow 2px by 8px against a 52.8px gap.
 
 ## Placed from INBOX, 2026-09-21 (the Ask sub-tab, four reports in one pass)
 
-**All four built, 2026-09-21.** One pass, because they are one screen and
-four separate fixes would have meant four rounds of the same measurement.
-The probe is `scratchpad/ui-sweeps/asktab.js` (registered in
-`scripts/gate.sh`'s sweep list); it measures rather than captures, and it
-drives a real stream through `scratchpad/fake_answer_server.py`, which now
-takes `FAKE_DELAY_MS` so a stream lasts long enough to poll. The full record
-is in HISTORY.md, "INBOX resolved, 2026-09-21".
-
-~~297. Gaps between an attached file and the badges, and badges that do not
-all show.~~ **Built.** The gap: 0.0px to 6.4px, at 1440, 1024, 820 and 390.
-The badges: not a truncation and not a wrap (every badge the data implies
-was drawn at every width, none clipped, 0px of the lane scrolled out), but a
-condition that never fired: `clickableResult` passed `entryItem` no options,
-so every chip gated on `options.actions` was missing from a read-only row.
-The same note: 2 badges in the Ask column before, 4 after, against 5 in
-Browse, the fifth being the one chip decision 16 keeps off a result row.
-
-~~298. No generating animation while the model is thinking and streaming.~~
-**Built.** Frames with the answer actually streaming: 250 before, 0 of them
-showing anything moving; 63 after, 63 of them showing something. Across the
-whole turn: 120 of 372 before, 243 of 243 after. Two existing components
-(`progressLine`, `.is-generating`) called from a surface that never called
-either, not a new control.
-
-~~299. Number the matching records to match the inline referencing.~~
-**Built.** Records numbered: 0 of 5 before, 5 of 5 after, from
-`citationNumbers`, the map the prose marks, the "Grounded in" chips and the
-Sources panel already share. Marks whose row disagrees with them: 0. Numbers
-drawn over a row's own text: 0 (6.4px of clear gutter on every row).
-
-~~300. The sources button reads as a banner and describes a place.~~
-**Built.** 525px of a 525px column (100%) before, 204px (38.9%) after;
-"Sources: 5 notes, on the right" before, "Show the 5 notes used" after; and
-a press now moves the first cited record from 328px below the top of the
-window to 72px.
-
-### The four reports, verbatim
-
-297. **The owner, 2026-09-21, verbatim:** "in the ask subtab in notes, make
-    sure there are appropriate gaps between uploaded files and attachments
-    and the badges and make sure all the badges show."
-
-298. **The owner, 2026-09-21, verbatim:** "there's no generating animation
-    while the model is thinking and streaming in the ask tab either."
-
-299. **The owner, 2026-09-21, verbatim:** "can the notes in the matching
-    records that appear in the ask tab be numbered accordingly to match the
-    inline referencing??"
-
-300. **The owner, 2026-09-21, verbatim:** "fix the ui of this sources button
-    in the ask tab."
+All four built 2026-09-21; moved to HISTORY.md ("Moved from the plans, 2026-11-05 (CHAT_PLAN, the Ask sub-tab of 2026-09-21)").
 
 ## Placed from INBOX, 2026-10-03 (the chat stutter, INBOX 413)
 
@@ -1901,6 +1851,6 @@ The owner: "composer_money seems very specific, what if the user asks about othe
 - **B5, verbatim:** "also in that test request the search appeared after the generated text when it happened before that text was written out." Recommendation (taken): steps and text keep the order they happened in (one timeline ordered by event arrival), in the agent, Chat and the guide; a test with a fake stream of text, tool call, text.
 - **B6, verbatim:** "also I still dont understand why the ai model context windows are so small, cna they be larger?? they need to properly adapt to the model." Recommendation (taken): the context window is read from the model (GGUF metadata or the server's reported n_ctx), set as large as the model and memory allow (a bounded share of free RAM or VRAM), shown in Settings with why; prompt budgets scale from it; fake-transport tests for a 4k, 32k and 128k model.
 - **B7, the owner 2026-11-05 02:22Z (screenshot: the activity panel's Running now card: the model line, the agent card, its time and Stop, "What it's doing", a progress bar, each touching), verbatim:** "also there is no vertical spacing for these agent run elements". Recommendation (taken): the run card's rows on the spacing tokens (the card recipe's gap), measured.
-- **B8, the owner 2026-11-05 02:23Z, verbatim:** "sometimes when I close a minimised tab for a window, the window flashes for a split second". Recommendation (taken): closing a minimised window from its tab never shows the window (no restore before the close, no transition on a hidden window), for every window kind that minimises to a tab.
+- **B8**: built 2026-11-05, moved to HISTORY.md ("Moved from the plans, 2026-11-05 (CHAT_PLAN B3, B4 and B8)").
 
 - **B9, the owner 2026-11-05 02:25Z (screenshot: three "Patterns: ... as you told me on ..." lines), verbatim:** "also is there a way to edit or managed confirmed patterns??". Found: no; a Confirm writes a `derived_facts` row of kind "confirmed" (ai/insights.py), and Settings' "What it remembers" (`GET /settings/memory`, routes_settings.py:1638) lists preferences only. Recommendation (taken): confirmed patterns join "What it remembers" as their own group, each with its sentence, the date confirmed and the notes behind it, and Edit (the subject or wording, kept as the person's own word), Remove (soft delete, with Undo) and Not right (the dismiss path); the Patterns line gets the same three in its row menu; Help and the Guide topic say where they are managed.

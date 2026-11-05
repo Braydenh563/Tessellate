@@ -140,6 +140,8 @@ dialog[data-panel-moved]::backdrop {
 [data-panel-min] {
   visibility: hidden;
   pointer-events: none;
+  transition: none;
+  animation: none;
 }
 /* A manual popover: the top layer puts the pills above the page without a
    z-index, and it is shown only while there is a pill. */
