@@ -22329,8 +22329,8 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `OverlayRunner` | src/tessellate/core/overlay/runner.py:85 |
-| `default_backend` | src/tessellate/core/overlay/runner.py:75 |
+| `OverlayRunner` | src/tessellate/core/overlay/runner.py:84 |
+| `default_backend` | src/tessellate/core/overlay/runner.py:74 |
 
 ### src/tessellate/core/overlay/sprites.py (10)
 

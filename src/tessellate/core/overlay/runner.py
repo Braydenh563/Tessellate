@@ -29,14 +29,13 @@ Not run on Windows (the sandbox has none): the tests drive a fake `win32`.
 
 from __future__ import annotations
 
-import collections
 import inspect
 import logging
 import math
 import os
 import sys
 import time
-from collections import Counter
+from collections import Counter, deque
 from pathlib import Path
 from typing import Any, Callable
 
@@ -147,8 +146,8 @@ class OverlayRunner:
         #: The foreground window's text band, kept per window: (hwnd, read at, band).
         self._zone: tuple[int, float, tuple[int, int, int, int] | None] | None = None
         self._next_scan = 0.0
-        self._cards: collections.deque[Any] = collections.deque()
-        self._commands: collections.deque[str] = collections.deque()
+        self._cards: deque[Any] = deque()
+        self._commands: deque[str] = deque()
         #: The result of the last menu request the engine took, for the tests and the log.
         self.last_command: tuple[str, bool] | None = None
         self._scan_failed = False
