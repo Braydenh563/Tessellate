@@ -1,8 +1,8 @@
 # Code map
 
-Generated 2026-11-04 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
+Generated 2026-11-05 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7822, frontend ids 2644, CSS sections 522, backend routes 644, backend modules 8797, test files 2069, tests 17478, plan headings 1003, app scripts 28, boot scripts 37, script files 257.
+Counts: frontend functions 7822, frontend ids 2644, CSS sections 522, backend routes 644, backend modules 8797, test files 2070, tests 17483, plan headings 1003, app scripts 28, boot scripts 37, script files 257.
 
 ## Frontend functions (7822)
 
@@ -22273,11 +22273,11 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `Engine` | src/tessellate/core/overlay/engine.py:353 |
-| `Monitor` | src/tessellate/core/overlay/engine.py:309 |
-| `Output` | src/tessellate/core/overlay/engine.py:316 |
-| `Perch` | src/tessellate/core/overlay/engine.py:300 |
-| `_adjoins` | src/tessellate/core/overlay/engine.py:342 |
+| `Engine` | src/tessellate/core/overlay/engine.py:354 |
+| `Monitor` | src/tessellate/core/overlay/engine.py:310 |
+| `Output` | src/tessellate/core/overlay/engine.py:317 |
+| `Perch` | src/tessellate/core/overlay/engine.py:301 |
+| `_adjoins` | src/tessellate/core/overlay/engine.py:343 |
 
 ### src/tessellate/core/overlay/host.py (3)
 
@@ -22339,7 +22339,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `out_of_middle` | src/tessellate/core/overlay/travel.py:87 |
 | `overlaps` | src/tessellate/core/overlay/travel.py:114 |
 | `padded` | src/tessellate/core/overlay/travel.py:118 |
-| `pick_mode` | src/tessellate/core/overlay/travel.py:139 |
+| `pick_mode` | src/tessellate/core/overlay/travel.py:138 |
 | `warp_for` | src/tessellate/core/overlay/travel.py:60 |
 
 ### src/tessellate/core/overlay/win32.py (30)
@@ -24085,7 +24085,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (17478)
+## Tests (17483)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -25464,6 +25464,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_overlay_smooth_1670.py | 11 |
 | tests/test_overlay_sprites.py | 17 |
 | tests/test_overlay_throw_ceiling_1670.py | 6 |
+| tests/test_overlay_travel_1683.py | 5 |
 | tests/test_overlay_tumble_1670.py | 6 |
 | tests/test_overlay_x11.py | 38 |
 | tests/test_overview_counts_1524.py | 3 |

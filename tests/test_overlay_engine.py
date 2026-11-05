@@ -89,7 +89,9 @@ def test_walks_along_the_floor_and_cycles_twelve_frames() -> None:
     # the ease-in, from the second half of the walk.
     half = outs[len(outs) // 2 :]
     speed = (half[-1].x - half[0].x) / (len(half) * 0.033)
-    assert 50 <= speed <= 60
+    # Intent moved (INBOX 1683 f, the owner: it must travel by its body at a lively pace, not crawl): the walk is
+    # WALK_SPEED 130 px/s now (was 55), so the pace read here is 125 to 135.
+    assert 120 <= speed <= 140
 
 
 def test_walking_left_mirrors_the_frame_and_moves_left() -> None:
@@ -358,4 +360,5 @@ def test_walking_speed_scales_with_the_monitors_dpi() -> None:
     outs = run(e, 3.0)
     half = outs[len(outs) // 2 :]  # after the ease-in
     speed = (half[-1].x - half[0].x) / (len(half) * 0.033)
-    assert 105 <= speed <= 120
+    # Intent kept, number moved (INBOX 1683 f): twice 130 px/s at 192 dpi, was twice 55.
+    assert 245 <= speed <= 270

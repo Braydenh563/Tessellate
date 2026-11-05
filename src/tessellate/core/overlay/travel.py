@@ -3,13 +3,13 @@
 Pure data and small pure functions: no clock, no randomness of its own (the engine passes its seeded
 `rng`), no Win32.
 
-**Never the middle.** A leg of a trip that is longer than a third of the work area, or that would pass
-through the middle third of it, is not walked: the person's work is there, and a slow crawl across the
-screen was the complaint. Such a leg is a portal, a puff, or a walk off one edge and in from the other.
-A short leg near an edge may be walked or glided.
+**By its body first** (INBOX 1683 f, the owner: "all it does is sit on the taskbar and poof"). A leg is
+walked (a floater glides) at a lively pace, a run when it is long, whatever it crosses; the older rule that
+refused to walk a leg longer than a third of the width, or through the middle third, is gone. A portal, a
+puff or an edge walk is a rare flourish (about one leg in ten when the leg is long, one in thirty when it is
+short). Where it comes to *rest* is still never the middle third (`in_middle`, `out_of_middle`).
 
-**A repertoire.** The mode is chosen by distance, mood and gait, and the one used last (and the one
-before) is less likely, so the same one rarely repeats; never more than three times running.
+**A repertoire.** The mode is chosen by distance, mood and gait; a flourish used last (or the one before) is less likely.
 
 **Keeping clear of the text box.** The caret's rectangle (from the foreground window, padded by
 `CARET_MARGIN`) is somewhere the figure's drawn box does not rest or go.
@@ -26,7 +26,7 @@ Rect = tuple[float, float, float, float]
 MODES = ("walk", "glide", "portal", "puff", "edge", "jump", "climb", "fade")
 #: Jumps over the middle: the ones that do not pass through it.
 LEAPS = ("portal", "puff", "edge")
-#: A leg longer than this share of the work area's width is never walked.
+#: A leg longer than this share of the work area's width is a long one (a run; a little likelier to flourish).
 FAR_SHARE = 1.0 / 3.0
 #: Rest spots lie within this many logical px of a screen edge (or on the taskbar line).
 EDGE_ZONE = 120.0
@@ -127,30 +127,30 @@ def _by_mood(table: dict[str, float], mood: str) -> None:
             table[mode] *= 1.8
 
 
-def _by_recent(table: dict[str, float], recent: list[str]) -> None:
-    if recent:
+def _by_recent(table: dict[str, float], recent: list[str], body: str) -> None:
+    """The same flourish twice running is less likely; the body (walk or glide) may repeat freely."""
+    if recent and recent[-1] != body:
         table[recent[-1]] = table.get(recent[-1], 0.0) * 0.25
-    if len(recent) > 1 and recent[-2] in table:
+    if len(recent) > 1 and recent[-2] != body and recent[-2] in table:
         table[recent[-2]] *= 0.6
-    if len(recent) >= 3 and recent[-1] == recent[-2] == recent[-3]:
-        table.pop(recent[-1], None)
 
 
 def pick_mode(
     rng: random.Random, *, gait: str, long_leg: bool, mood: str, recent: list[str], edge_ok: bool,
 ) -> str:
-    """One mode for a leg. A long leg (or one through the middle) is a portal, a puff or an edge walk;
-    a short one is mostly walked or glided, with the odd portal or puff. What was used last is less
-    likely, and nothing is used four times running."""
+    """One mode for a leg: nearly always the body (walk, or glide for a floater), with a portal, a puff or
+    an edge walk now and then, a little more often on a long leg. What was used last is less likely, and
+    nothing is used four times running."""
+    body = "glide" if gait == "float" else "walk"
     if long_leg:
-        table = {"portal": 3.0, "puff": 2.2, "edge": 2.4 if edge_ok else 0.0}
+        table = {body: 9.0, "portal": 0.45, "puff": 0.35, "edge": 0.4 if edge_ok else 0.0}
     else:
-        table = {"glide" if gait == "float" else "walk": 4.0, "portal": 0.9, "puff": 0.9}
+        table = {body: 9.0, "portal": 0.12, "puff": 0.18}
     _by_mood(table, mood)
-    _by_recent(table, recent)
+    _by_recent(table, recent, body)
     live = [(m, w) for m, w in table.items() if w > 0]
     if not live:
-        return "puff"
+        return body
     roll = rng.random() * sum(w for _m, w in live)
     for mode, w in live:
         roll -= w

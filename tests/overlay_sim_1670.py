@@ -83,7 +83,8 @@ def _run(gait, seed, secs, setup, pointer, look) -> dict:
     rest_t = rest_win = rest_feet = rest_changed = moving_t = 0.0
     starts: Counter = Counter()
     spells: list[float] = []
-    spell_at: list[tuple[float, float, float]] = []
+    spell_at: list[tuple[float, float, float, bool]] = []
+    on_perch = False
     spell = 0.0
     last_act_start, wakes = None, 0
     hang_spans: list[tuple[float, float]] = []  # (length, longest stretch with no change of the picture)
@@ -118,10 +119,11 @@ def _run(gait, seed, secs, setup, pointer, look) -> dict:
             rest_changed += step if f != prev_feet else 0.0
         if s in SETTLED and (out.x, f) == (prev[0], prev_feet):
             spell += step
+            on_perch = e.perch is not None
         else:
             if spell > 0:
                 spells.append(spell)
-                spell_at.append((prev[0], prev[1], spell))
+                spell_at.append((prev[0], prev[1], spell, on_perch))
             spell = 0.0
         if s == "hang":
             if hang_t0 is None:
@@ -151,10 +153,18 @@ def _run(gait, seed, secs, setup, pointer, look) -> dict:
         prev, prev_state, prev_feet = (out.x, out.y), s, f
     if spell > 0:
         spells.append(spell)
-        spell_at.append((prev[0], prev[1], spell))
+        spell_at.append((prev[0], prev[1], spell, on_perch))
     k = e._scale()
     area = e.current_monitor().area
-    rests = [(x, y) for x, y, d in spell_at if d >= 30.0]
+    # A rest on a window top is a visit (INBOX 1683 g), not a rest spot of the screen: counted apart.
+    def on_window(x, y) -> bool:
+        return any(w.left <= x + e.size[0] / 2 <= w.right and -80 <= y + e.size[1] - w.top <= 30 for w in WINDOWS)
+
+    def under_window(x) -> bool:
+        # Where it lands after hopping off a window it visited: on the floor under that window (INBOX 1683 g).
+        return any(w.left <= x + e.size[0] / 2 <= w.right for w in WINDOWS)
+
+    rests = [(x, y) for x, y, d, p in spell_at if d >= 30.0 and not p and not on_window(x, y)]
     floor = e.floor_y()
     legs = list(getattr(e, "legs", []))
     modes = list(getattr(e, "modes", []))
@@ -179,7 +189,7 @@ def _run(gait, seed, secs, setup, pointer, look) -> dict:
         ],
         "rest_spots_off_edge": [
             (x, y) for x, y in rests
-            if not (tv.in_edge_zone(x, area, e.size[0], k) or abs(y - floor) <= tv.EDGE_ZONE * k)
+            if not (tv.in_edge_zone(x, area, e.size[0], k) or abs(y - floor) <= tv.EDGE_ZONE * k or under_window(x))
         ],
         "rest_spots_in_middle": [(x, y) for x, y in rests if tv.in_middle(x, area, e.size[0])],
         "rest_spots": len(rests),

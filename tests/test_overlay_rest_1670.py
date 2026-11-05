@@ -69,16 +69,18 @@ def test_fidgets_are_at_most_two_an_hour() -> None:
 # --- it travels in its own ways, never across the middle ---------------------------------------
 
 
-def test_trips_vary_and_none_crosses_the_middle_third_on_foot() -> None:
+def test_trips_vary_and_it_rests_out_of_the_middle_third() -> None:
+    # Intent moved (INBOX 1683 f, the owner: "all it does is sit on the taskbar and poof"): a leg may now be walked
+    # across the middle third, so the walked-through-the-middle and three-in-a-row bars are gone; where it comes
+    # to REST is still never the middle, and a flourish (puff, portal, edge) is not repeated more than three times.
     seen: set[str] = set()
     for gait in GAITS:
         for seed in SEEDS:
             m = hour(gait, seed)
             seen |= set(m["modes"])
-            assert runs(m["modes"]) <= 3, m["modes"]
-            assert not m["walked_through_middle"], m["walked_through_middle"]
+            assert runs([x for x in m["modes"] if x in tv.WARPS]) <= 3, m["modes"]
             assert not m["rest_spots_in_middle"], m["rest_spots_in_middle"]
-    assert len(seen) >= 4, seen  # portal, puff, glide, jump, climb, walk or the edge walk across the runs
+    assert len(seen) >= 3, seen  # walk, glide, jump, climb, and now and then a puff, portal or the edge walk
 
 
 def test_a_portal_or_a_puff_takes_between_four_tenths_and_one_and_a_fifth_seconds() -> None:

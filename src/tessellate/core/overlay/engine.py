@@ -114,12 +114,13 @@ IDLE_FRAMES = 24
 IDLE_FPS = 6.0
 
 #: Logical pixels (scaled by the monitor's dpi).
-WALK_SPEED = 55.0
+#: Lively, not a crawl (INBOX 1683 f: "all it does is poof"); was 55, so a 1,500 px leg took 16 s at a dash.
+WALK_SPEED = 130.0
 #: A unhurried pace, by distance (INBOX 1670: "a buddy, not a nuisance"): close range is a step,
 #: the middle distance a walk, far a run (a swoop for a floater), each eased in and out.
 STEP_UNDER = 60.0
 DASH_OVER = 420.0
-STEP_K, DASH_K = 0.6, 1.7
+STEP_K, DASH_K = 0.6, 2.0
 EASE_IN = 0.7
 EASE_OUT = 70.0
 CROUCH_FOR = 0.25
@@ -210,7 +211,7 @@ HANG_REACH = 0.3
 #: other throw bounces off the top like a side wall.
 CEIL_CATCH = 2000.0
 CEIL_UPWARD = 0.8
-FLOAT_SPEED = 85.0
+FLOAT_SPEED = 170.0
 FLOAT_TURN = 1.8
 FLOAT_DRAG = 3.0
 FLOAT_PULL = 3.0
@@ -1323,7 +1324,7 @@ class Engine:
 
     def _climb(self, now: float) -> None:
         """Up to a window's top: a walker standing under it jumps, one beside it climbs its side edge
-        onto the top, and a floater glides there; when the walk would cross the middle it is a portal."""
+        onto the top, and a floater glides there. Whatever lies between is crossed on foot (INBOX 1683 f)."""
         cand = self._candidates()
         if not cand:
             self._enter("stand", now)
@@ -1336,12 +1337,9 @@ class Engine:
         lo, hi = max(p.left, area[0]), min(p.right, area[2]) - w
         top = p.top - h
         if self.gait == "float" or not (abs(self.y - self.floor_y(m)) < 8 * self._scale()):
-            x = min(max(tv.out_of_middle(min(max(self.x, lo), hi), area, w), lo), hi)
-            if not self.plain_legs and (tv.crosses_middle(self.x, x, area, w) or tv.far(self.x, x, area)):
-                self._start_warp("portal" if self.rng.random() < 0.6 else "puff", (x, top), "perch", now)
-            else:
-                self.modes.append("glide")
-                self._go((x, top), "perch", now, plain=True)
+            x = min(max(self.x, lo), hi)  # straight to the nearest part of its top, over whatever is between (INBOX 1683 f)
+            self.modes.append("glide")
+            self._go((x, top), "perch", now, plain=True)
             return
         if lo <= self.x <= hi:  # underneath it: straight up
             self.modes.append("jump")
@@ -1353,17 +1351,17 @@ class Engine:
             self.modes.append("climb")
             self._go((sx, self.floor_y(m)), "climbside", now, plain=True)
             return
-        x = min(max(tv.out_of_middle(self.x, area, w), lo), hi)
+        x = min(max(self.x, lo), hi)  # a window with no floor beside it (it spans the screen): a puff up, the one way
         self._start_warp("portal" if self.rng.random() < 0.6 else "puff", (x, top), "perch", now)
 
     def _climb_sides(self, p: Perch, area: tuple, w: float) -> list[float]:
-        """Where it could stand beside a window to climb its side: reachable without the middle."""
+        """Where it could stand beside a window to climb its side (on the screen, with the figure's width clear)."""
         sides = []
         if p.left - w >= area[0]:
             sides.append(p.left - w)
         if p.right <= area[2] - w:
             sides.append(float(p.right))
-        return [sx for sx in sides if not tv.crosses_middle(self.x, sx, area, w) and not tv.far(self.x, sx, area)]
+        return sides
 
     def _arrive_at(self, then: str, now: float) -> None:
         self.then = then
@@ -2254,6 +2252,8 @@ class Engine:
     def _notice(self, now: float, pointer: tuple[int, int]) -> None:
         if self.state not in ("stand", "walk", "drift", "sit", "sleep") or now < self.notice_ready:
             return
+        if self.trip and self.state in ("walk", "drift"):
+            return  # on its way: a look at the pointer would end the trip mid-screen (INBOX 1683 f, trips are common now)
         cx, cy = self.x + self.size[0] / 2, self.y + self.size[1] / 2
         dist = math.hypot(pointer[0] - cx, pointer[1] - cy)
         scale = self._scale()
