@@ -9483,6 +9483,10 @@ header#top-bar:has(.ai-status-wrap:hover, .ai-status:focus-visible, .ai-status-p
   letter-spacing: 0.01em;
   margin-bottom: 0;
 }
+.answer-head .msg-role {
+  /* The same title size as "Matching records" beside it (h3.panel-head). */
+  font-size: var(--text-body);
+}
 .help-chat-msg.is-assistant > .msg-role {
   margin-bottom: var(--space-2);
   font-style: normal;

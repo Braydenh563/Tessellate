@@ -1069,6 +1069,10 @@ progress {
   align-items: center;
   flex-wrap: wrap;
   gap: 0.4rem;
+  /* One head height for both columns (INBOX A1): the answer's has 32px
+     action buttons, so the records head took the same floor rather than
+     sitting 8px short. */
+  min-height: var(--control-h-lg);
 }
 /* **The answer head does not wrap: the badge shrinks instead.**
    Two reports, one shape. First: "at 100% and 95% zoom on my laptop, the ai
