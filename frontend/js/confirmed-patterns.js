@@ -18,7 +18,7 @@ function confirmedPatternItems(about, onChange) {
     const next = (await promptDialog(question, now, { confirmLabel: "Save" })).trim();
     if (!next || next === now) return;
     await call(at, "PATCH", { [field]: next })
-      .then(() => field === "sentence" && pushRequestUndo("Edited a confirmed pattern", at, "PATCH", { sentence: now }, { sentence: next }, onChange))
+      .then(() => pushRequestUndo(field === "sentence" ? "Edited a confirmed pattern" : "Changed what a pattern is about", at, "PATCH", { [field]: now }, { [field]: next }, onChange))
       .catch(fail);
   };
   let undoIds = [];

@@ -394,14 +394,12 @@ def memory(session) -> Memory:  # noqa: ANN001
     the dismissals (`learning`, "dismiss_insight") of this notebook."""
     import json
 
-    from sqlalchemy import select
-
     from tessellate.ai import learning
     from tessellate.core.database import DerivedFact
 
     dismissed = {str(c.subject.get("key") or "") for c in learning.corrections(session, "dismiss_insight")}
     confirmed: dict[str, dict] = {}
-    for row in session.scalars(_shown_confirmed(select(DerivedFact))):
+    for row in _confirmed_rows(session, DerivedFact.deleted_at.is_(None)):
         try:
             payload = json.loads(row.payload or "{}")
         except ValueError:
@@ -414,15 +412,21 @@ def memory(session) -> Memory:  # noqa: ANN001
     return Memory(frozenset(dismissed - set(confirmed)), confirmed)
 
 
-def _shown_confirmed(query):  # noqa: ANN001, ANN202  # a select() of DerivedFact
-    """Confirmed facts on notes the person can open: joined to the note, so a
-    note made private or binned, or in another space (the note's own filter),
-    takes its confirmed pattern with it (B9; `facts._visible`'s rule)."""
+def _confirmed_rows(session, *where) -> list:  # noqa: ANN001
+    """Confirmed facts, newest first, that rest on at least one note the person
+    can open: a note binned, made private or in another space (the note's own
+    filter) is not one, so a pattern goes with the last of its notes, never
+    with its newest alone (B9 review: one binned note made it be offered to
+    confirm again while three notes still measured it)."""
+    from sqlalchemy import select
+
     from tessellate.core.database import DerivedFact, Entry
 
-    return query.join(Entry, Entry.id == DerivedFact.entry_id).where(
-        DerivedFact.kind == CONFIRMED_KIND, DerivedFact.deleted_at.is_(None), Entry.is_deleted.is_(False), Entry.is_private.is_(False),
-    )
+    rows = list(session.scalars(select(DerivedFact).where(DerivedFact.kind == CONFIRMED_KIND, *where).order_by(DerivedFact.computed_at.desc(), DerivedFact.id.desc())))
+    behind = {row.id: {int(i) for i in _payload(row).get("note_ids") or [row.entry_id]} for row in rows}
+    wanted = set().union(*behind.values())
+    seen = set(session.scalars(select(Entry.id).where(Entry.id.in_(wanted), Entry.is_deleted.is_(False), Entry.is_private.is_(False)))) if wanted else set()
+    return [row for row in rows if behind[row.id] & seen]
 
 
 def _from_payload(body: dict) -> Insight:
@@ -536,6 +540,9 @@ def as_row(insight: Insight, known: Memory | None = None) -> dict:
 _TOLD = re.compile(r"^(?P<said>.*), as you told me on (?P<on>\d{1,2} [A-Z][a-z]+)\.$", re.S)
 #: The rules whose key is a subject the person may rename.
 SUBJECT_RULES = ("recurrence", "streak")
+#: That tail typed into Edit (any case, after a comma or a stop): the day is
+#: the one it was first confirmed, said once.
+_TOLD_TYPED = re.compile(r"[\s,.;]*as you told me on \d{1,2} [A-Za-z]+[\s.]*$", re.I)
 
 
 def _payload(row) -> dict:  # noqa: ANN001
@@ -549,28 +556,16 @@ def _payload(row) -> dict:  # noqa: ANN001
 
 def shown_confirmed(session, fact_id: int | None = None) -> list:  # noqa: ANN001
     """The confirmed facts the person can open, newest first (or the one)."""
-    from sqlalchemy import select
-
     from tessellate.core.database import DerivedFact
 
-    query = _shown_confirmed(select(DerivedFact)).order_by(DerivedFact.computed_at.desc(), DerivedFact.id.desc())
-    if fact_id is not None:
-        query = query.where(DerivedFact.id == fact_id)
-    return list(session.scalars(query))
+    return _confirmed_rows(session, DerivedFact.deleted_at.is_(None), *([] if fact_id is None else [DerivedFact.id == fact_id]))
 
 
 def removed_confirmed(session, fact_id: int):  # noqa: ANN001, ANN201
     """A removed confirmed fact on a note the person can still open: Undo's way back."""
-    from sqlalchemy import select
+    from tessellate.core.database import DerivedFact
 
-    from tessellate.core.database import DerivedFact, Entry
-
-    return session.scalars(
-        select(DerivedFact).join(Entry, Entry.id == DerivedFact.entry_id).where(
-            DerivedFact.id == fact_id, DerivedFact.kind == CONFIRMED_KIND, DerivedFact.deleted_at.is_not(None),
-            Entry.is_deleted.is_(False), Entry.is_private.is_(False),
-        )
-    ).first()
+    return next(iter(_confirmed_rows(session, DerivedFact.id == fact_id, DerivedFact.deleted_at.is_not(None))), None)
 
 
 def confirmed_json(session, row) -> dict:  # noqa: ANN001
@@ -619,7 +614,7 @@ def edit_confirmed(session, row, sentence: str | None = None, subject: str | Non
     import json
 
     payload = _payload(row)
-    sentence = " ".join(str(sentence or "").split()).rstrip(" .")
+    sentence = _TOLD_TYPED.sub("", " ".join(str(sentence or "").split())).rstrip(" .,")
     subject = " ".join(str(subject or "").split())
     if not sentence and not subject:
         raise ValueError("Say what it should say, or what it is about.")
@@ -629,7 +624,10 @@ def edit_confirmed(session, row, sentence: str | None = None, subject: str | Non
             raise ValueError("Only a pattern about a subject can be given another one.")
         alias = f"{rule}:{_stems(subject)}"
         payload["subject"] = subject
-        payload["aliases"] = [a for a in payload.get("aliases", []) if a != alias] + ([alias] if alias != payload.get("key") else [])
+        #: The new word replaces the last one (the review: three renames left
+        #: all three answering, and Not right hid each for good); the key the
+        #: pattern was measured under always stays.
+        payload["aliases"] = [alias] if alias != payload.get("key") else []
         row.payload = json.dumps(payload)
     if sentence:
         told = _TOLD.match(_said_now(row.text))

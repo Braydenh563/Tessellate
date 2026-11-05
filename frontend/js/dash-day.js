@@ -122,9 +122,11 @@ function dashPatternBit(bit, pattern) {
     return;
   }
   //: A confirmed one carries Edit, Not right and Remove (B9) where its pair was.
-  lazyScript("/js/confirmed-patterns.js").then(() =>
-    bit.appendChild(kebabMenu([...items, ...confirmedPatternItems(pattern, () => renderDashSubmessage())], "Manage this pattern"))
-  );
+  //: A failed load (false) keeps the pair's own items.
+  lazyScript("/js/confirmed-patterns.js").then((ready) => {
+    const all = [...items, ...(ready ? confirmedPatternItems(pattern, () => renderDashSubmessage()) : [])];
+    if (all.length) bit.appendChild(kebabMenu(all, "Manage this pattern"));
+  });
 }
 
 //: The composed line under the greeting (`/insights/today-line`,
