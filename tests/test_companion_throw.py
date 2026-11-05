@@ -21,6 +21,8 @@ from pathlib import Path
 
 import pytest
 
+from tests.test_companion_landing_1683k import landing_js
+
 ROOT = Path(__file__).resolve().parents[1]
 #: The companion's code: the throw itself moved to the lazy companion-throw.js (INBOX 1301 D6).
 AV = "\n".join((ROOT / "frontend" / "js" / n).read_text(encoding="utf-8") for n in ("avatars.js", "companion-throw.js"))
@@ -35,6 +37,7 @@ def _fn(name: str) -> str:
 def _run(body: str):
     consts = re.search(r"^const NMB_THROW = .*;$", AV, re.M).group(0)
     src = "\n".join(_fn(n) for n in ("nameMarkBuddyReleaseVelocity", "nameMarkBuddyFlightStep", "nameMarkBuddyThrowFeel"))
+    src = landing_js(AV) + "\n" + src  # INBOX 1683 k: the step lands by outcome (companion-throw.js)
     world = "const W = { left: 0, right: 1376, top: 48, floor: 780, ledges: [] };"
     fly = (
         "function fly(vx, vy, x = 200, y = 400, world = W, k = NMB_THROW) {"
@@ -129,7 +132,7 @@ def test_the_flight_is_one_frame_loop_on_transforms_and_lands_as_a_drop() -> Non
     # place, drawn by `nameMarkBuddyPut` (a transform) and a rotate.
     assert throw.count("requestAnimationFrame(") == 1
     assert "Math.min(32, Math.max(0, now - then))" in throw
-    assert "nameMarkBuddyPut(buddy, Math.round(s.x), Math.round(s.y));" in throw
+    assert "nameMarkBuddyPut(buddy, Math.round(s.x), Math.round(s.y + (s.sink || 0)));" in throw  # INBOX 1683 k: a body lying down is drawn on the floor, not above it
     assert ".style.left" not in throw and ".style.top" not in throw
     # Reduce motion: the same flight worked out at once, then a crossfade.
     assert "const still = nameMarkBuddyNoTravel();" in _fn("companionThrowPlan") and "if (plan.still) {" in throw
