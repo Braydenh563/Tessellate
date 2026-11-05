@@ -9,9 +9,13 @@
 
 let chatConv = { id: null, turns: [] }; // the open conversation
 let chatController = null;
-//: Messages sent while an answer streams, oldest first (INBOX 1321).
-const chatQueue = [];
-const chatQueueState = { held: false };
+//: Chat's composer queue (CHAT_PLAN B3), made one by palette.js's `composerQueue`, off the boot bytes.
+const chatQueue = {
+  input: () => $("chat-input"),
+  busy: () => !$("chat-stop").classList.contains("hidden"),
+  send: (text) => sendChatMessage(text, { keepBox: true }),
+  before: () => $("chat-input").parentElement,
+};
 let lastChatQuestion = ""; // powers Regenerate / Edit & resend
 // Set while an `ask` card (renderAgentQuestion) is on screen waiting for a
 // reply. Covers typing a free-text answer into the composer, not just

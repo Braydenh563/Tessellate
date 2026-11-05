@@ -1151,33 +1151,26 @@ function chatTidyTyped(text) {
 }
 
 //: **A message sent while the answer on screen is still coming waits its
-//: turn** (INBOX 1321, the owner: "queue messages, and edit or delete/bring
-//: back queued messages"). Stop shows exactly while that answer streams; a
-//: Stop pressed holds the queue until the next send (`chatQueueState.held`).
+//: turn** (INBOX 1321) in the composer queue (chat.js). Stop shows exactly
+//: while that answer streams.
 async function sendChatMessage(preset, opts = {}) {
   const input = $("chat-input");
-  if (!$("chat-stop").classList.contains("hidden")) {
-    const typed = chatTidyTyped((preset ?? input.value).trim());
-    if (typed) chatQueue.push(typed);
+  if (chatQueue.busy()) {
+    chatQueue.take(chatTidyTyped((preset ?? input.value).trim()));
     if (preset == null) {
       input.value = "";
       input.dispatchEvent(new Event("input"));
     }
-    return chatQueueShow();
+    return;
   }
-  chatQueueState.held = false;
+  chatQueue.held = false;
   try {
     //: The turn itself is lazy (chat-turn.js, warmed when the box takes focus).
     if (!(await ensureModule("chatTurn"))) return lazyLoadFailed();
     return await chatSendTurn(preset, opts);
   } finally {
-    if (!chatQueueState.held && chatQueue.length && $("chat-stop").classList.contains("hidden")) sendChatMessage(chatQueue.shift());
-    chatQueueShow();
+    chatQueue.next();
   }
-}
-
-function chatQueueShow() {
-  if (chatQueue.length || document.querySelector(".chat-queue")) ensureModule("replyKit").then(() => chatQueuePaint()).catch(() => {});
 }
 
 //: **A bare "undo" or "redo" typed in chat runs the app's own** (audit 1028

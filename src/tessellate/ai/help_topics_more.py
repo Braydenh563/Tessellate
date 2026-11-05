@@ -1611,6 +1611,23 @@ MORE_TOPICS.extend(
             "badge": {"label": "Chat", "tab": "chat"},
         },
         {
+            "id": "queued-messages",
+            "keywords": (
+                "queue a message", "queued messages", "type while it answers", "type while it is answering",
+                "send while generating", "edit a queued message", "remove a queued message",
+                "cant type while it answers", "message waiting", "the box is locked",
+            ),
+            "body": (
+                "In Chat, the popup agent and the Guide the box stays open while a "
+                "reply is being written. Press Enter and what you typed waits in a "
+                "list by the box; each one goes, oldest first, when the reply before "
+                "it ends. Edit puts a waiting message back in the box, and the x "
+                "removes it. Stop holds the list until you send again, and what you "
+                "are typing stays in the box while the list sends."
+            ),
+            "badge": {"label": "Chat", "tab": "chat"},
+        },
+        {
             "id": "chat-attach-cards",
             "keywords": (
                 "attached note", "attached a note", "attach a note to chat", "note card in chat",
@@ -2809,6 +2826,7 @@ TOPIC_META: dict[str, dict] = {
     "chat-attach-cards": {"title": "Notes and files attached to a chat message", "path": "Chat, above the box and above a sent message"},
     "chat-model-picker": {"title": "Choosing the model for a box", "path": "Chat, Ask and Writing, beside the mode buttons"},
     "chat-list": {"title": "Finding and sorting your saved chats", "path": "Chat tab, the Chats list"},
+    "queued-messages": {"title": "Messages that wait their turn", "path": "Chat, the popup agent or the Guide, the box while a reply is written"},
     "filing": {"title": "How a note is filed", "path": "A note's card, beside its category"},
     "suggested-tags": {"title": "Suggested tags", "path": "A note's card"},
     "tag-manager": {"title": "Managing tags", "path": "Notes tab, the ... menu, Manage tags"},
@@ -2856,7 +2874,7 @@ HELP_GROUPS: list[tuple[str, tuple[str, ...]]] = [
         "tags-categories", "filing", "suggested-tags", "tag-manager", "manage-categories", "tidy",
     )),
     ("Asking Atlas", (
-        "ask-chat", "answers-from-notes", "chat-controls", "chat-context", "chat-private", "chat-attach-cards", "chat-model-picker", "chat-list", "wrap-lines", "slash-commands", "chat-acts", "tasks", "nicknames", "follow-up-trail", "why-this-answer", "line-verdicts", "answer-pictures", "time-and-recency", "notebook-questions", "studyhelp",
+        "ask-chat", "answers-from-notes", "chat-controls", "chat-context", "chat-private", "chat-attach-cards", "chat-model-picker", "chat-list", "queued-messages", "wrap-lines", "slash-commands", "chat-acts", "tasks", "nicknames", "follow-up-trail", "why-this-answer", "line-verdicts", "answer-pictures", "time-and-recency", "notebook-questions", "studyhelp",
         "contradictions", "skills", "personas", "answer-style", "memory", "learned", "open-questions",
     )),
     ("Documents and code", (

@@ -7456,3 +7456,16 @@ def test_the_edge_handle_and_the_rename_input_are_the_recipe():
     assert "var(--modal-bg)" in handle and "var(--shadow-md)" in handle
     assert "dataset.side" in edges and 'dgm-handle[data-side="left"]' in css  # INBOX 1679: one handle a side
     assert "An edge handle and an input on a picture" in (ROOT / "docs" / "DESIGN.md").read_text(encoding="utf-8")
+
+
+def test_a_message_sent_mid_reply_waits_in_the_composer_queue():
+    """DESIGN.md, "One composer queue" (CHAT_PLAN B3): every chat surface makes its queue from `composerQueue`, none disables its box mid-reply, one painter."""
+    js = ROOT / "frontend" / "js"
+    texts = {p.name: p.read_text(encoding="utf-8") for p in js.glob("*.js")}
+    for name, made in (("palette.js", 'composerQueue("chat", chatQueue)'), ("palette.js", 'composerQueue("agent", {'), ("help-chat.js", 'composerQueue("guide", {')):
+        assert made in texts[name], name
+    assert [n for n, t in texts.items() if "composerQueue.paint = " in t] == ["reply-kit.js"]
+    assert [n for n, t in texts.items() if 'className = "chat-queue"' in t] == ["reply-kit.js"]
+    for name, box in (("palette.js", "cmdPaletteInput"), ("help-chat.js", '$("help-chat-input")'), ("chat-turn.js", "input")):
+        assert f"{box}.disabled = true" not in texts[name] and f"{box}.disabled = busy" not in texts[name], name
+    assert "One composer queue" in (ROOT / "docs" / "DESIGN.md").read_text(encoding="utf-8")

@@ -1967,25 +1967,33 @@ function replyNoteCard(id, name) {
   return card;
 }
 
-//: **The chat's queue** (INBOX 1321, `sendChatMessage`): each message sent
-//: while an answer streams, above the box, with Edit (back into the box,
-//: out of the queue) and Remove. They go in order as each answer ends.
-function chatQueuePaint() {
-  const input = $("chat-input");
-  const row = input.parentElement;
-  let list = document.querySelector(".chat-queue");
-  if (!chatQueue.length) {
-    list?.remove();
+//: **One queue for every composer** (`composerQueue`, palette.js; INBOX 1321 for
+//: Chat; CHAT_PLAN B3, the owner: "I cant type in the text box while the popup
+//: agent is respondning (check the guide as well) and I cant draft, queue or
+//: edit/delete queued messages like in chat"). Chat, the popup agent and the
+//: Guide keep the box open while a reply runs; a send then waits, oldest
+//: first, listed by the box with Edit (back into the box, out of the queue) and
+//: Remove, and goes as each reply ends. Stop holds it until the next send; a
+//: queued send leaves the box to what is being typed. A surface gives
+//: `{ input(), busy(), send(text), before() }`, the list going just before `before()`; `composerQueue(name)` reads
+//: its queue back. A list moved out of the page with its sheet is drawn again
+//: in the same place.
+composerQueue.paint = (q) => {
+  const input = q.input();
+  if (!q.items.length) {
+    q.list?.remove();
+    q.list = null;
     return;
   }
-  if (!list) {
-    list = document.createElement("ul");
-    list.className = "chat-queue";
-    list.setAttribute("aria-label", "Queued messages");
-    row.parentElement.insertBefore(list, row);
+  if (!q.list?.isConnected) {
+    q.list = document.createElement("ul");
+    q.list.className = "chat-queue";
+    q.list.setAttribute("aria-label", "Queued messages");
+    q.before().before(q.list);
   }
-  list.replaceChildren(
-    ...chatQueue.map((text, i) => {
+  const join = input.tagName === "TEXTAREA" ? "\n" : " ";
+  q.list.replaceChildren(
+    ...q.items.map((text, i) => {
       const li = document.createElement("li");
       li.className = "chat-queue-item";
       const words = document.createElement("span");
@@ -1993,15 +2001,15 @@ function chatQueuePaint() {
       words.textContent = text;
       words.title = text;
       const edit = smallButton("ph:pencil-simple", "Edit: back into the box", () => {
-        chatQueue.splice(i, 1);
-        input.value = input.value.trim() ? `${text}\n${input.value}` : text;
+        q.items.splice(i, 1);
+        input.value = input.value.trim() ? `${text}${join}${input.value}` : text;
         input.dispatchEvent(new Event("input"));
         input.focus();
-        chatQueuePaint();
+        composerQueue.paint(q);
       });
       const remove = smallButton("ph:x", "Remove from the queue", () => {
-        chatQueue.splice(i, 1);
-        chatQueuePaint();
+        q.items.splice(i, 1);
+        composerQueue.paint(q);
         input.focus();
       });
       for (const b of [edit, remove]) b.classList.add("icon-only");
@@ -2009,4 +2017,4 @@ function chatQueuePaint() {
       return li;
     })
   );
-}
+};

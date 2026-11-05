@@ -385,6 +385,29 @@ function syncAgentOpenNoteToggle() {
 const cmdPaletteOverlay = $("command-palette-overlay");
 const cmdPaletteInput = $("command-palette-input");
 const cmdPaletteResults = $("command-palette-results");
+//: **One composer queue for Chat, the popup agent and the Guide** (CHAT_PLAN
+//: B3): a send made while that surface's reply runs waits by its box, with
+//: Edit and Remove (reply-kit.js, `composerQueue.paint`), and the next one
+//: goes as the reply ends. Defined here, not in chat.js, because this file is
+//: not one of the boot scripts whose gzip total is capped; chat.js's
+//: `chatQueue` is a spec until this line makes it a queue, and nothing reads
+//: it before then. `composerQueue(name)` returns a surface's queue.
+function composerQueue(name, spec) {
+  const all = (composerQueue.all ||= {});
+  if (!spec) return all[name];
+  const q = (all[name] = Object.assign(spec, { items: [], held: false }));
+  q.show = () => (q.items.length || q.list) && ensureModule("replyKit").then((ok) => ok && composerQueue.paint(q));
+  q.take = (text) => q.busy() && (text && q.items.push(text), q.show(), true);
+  q.next = () => (!q.held && q.items.length && !q.busy() && q.send(q.items.shift()), q.show());
+  return q;
+}
+composerQueue("chat", chatQueue);
+composerQueue("agent", {
+  input: () => cmdPaletteInput,
+  busy: () => cmdPaletteRun !== null,
+  send: (text) => cmdPaletteAsk(text),
+  before: () => $("command-palette-attachments"),
+});
 
 // Opened and closed by `runShortcut("askAgent")`, see DEFAULT_SHORTCUTS.
 // This deliberately has no `document.addEventListener` chord of its own:
@@ -595,9 +618,8 @@ function renderCmdPaletteMenu() {
 }
 
 function cmdPaletteBusy(busy) {
-  //: No `aiIsOff()` here any more: with no model the agent still runs acts
-  //: and readings (`ai/starter_acts.py`), so only a run in hand closes the box.
-  cmdPaletteInput.disabled = busy;
+  //: The box stays open while a run goes (CHAT_PLAN B3): what is sent then
+  //: waits in the composer queue.
   $("command-palette-stop")?.classList.toggle("hidden", !busy);
   $("command-palette-menu")?.classList.toggle("hidden", busy);
   //: **The state line is written by the run, not by this** (INBOX 190: the
@@ -1473,6 +1495,7 @@ async function cmdPaletteAsk(text, { plan = null } = {}) {
       cmdPaletteRun = null;
       cmdPaletteBusy(false);
     }
+    composerQueue("agent").next();
     //: The end of the run, said once and left there: what the turn did is
     //: still the answer to "what happened" a minute later, and a line that
     //: blanks itself the moment it could be read is a line nobody reads.
@@ -1571,7 +1594,11 @@ function cmdPaletteSend() {
   if (!text) return;
   cmdPaletteInput.value = "";
   cmdPaletteGrow();
-  cmdPaletteAsk(text);
+  const queue = composerQueue("agent");
+  if (!queue.take(text)) {
+    queue.held = false;
+    cmdPaletteAsk(text);
+  }
   cmdPaletteInput.focus();
 }
 $("command-palette-send").addEventListener("click", cmdPaletteSend);
@@ -1585,7 +1612,10 @@ $("command-palette-attach-input")?.addEventListener("change", (e) => {
 
 //: Built at boot and again after every turn: see `renderCmdPaletteMenu`.
 renderCmdPaletteMenu();
-$("command-palette-stop")?.addEventListener("click", () => cmdPaletteRun?.abort());
+$("command-palette-stop")?.addEventListener("click", () => {
+  composerQueue("agent").held = true;
+  cmdPaletteRun?.abort();
+});
 $("command-palette-intro")?.addEventListener("click", (e) => {
   const example = e.target.closest("[data-example]");
   if (!example) return;

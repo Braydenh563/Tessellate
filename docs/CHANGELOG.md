@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- The popup agent and the Guide keep their box open while a reply runs, like Chat (CHAT_PLAN B3, the owner 2026-11-05): Enter queues, the list by the box has Edit and Remove, each goes when the reply before it ends, Stop holds it, and a queued send keeps what is being typed (Chat's queue cleared it); one `composerQueue` replaces Chat's own queue. Measured: box disabled mid-run true to false (agent), 2 queued, Edit back, sends in order, queue 0 at the end, in Chat, the agent and the Guide.
 - The popup agent's foot is one control high when docked or maximised (CHAT_PLAN B4, the owner 2026-11-05): the conversation takes the panel's height, so the space under the status row went from 378px to the grip's 29px (foot 45px floating, docked left and right, maximised).
 - Closing a minimised window from its pill no longer flashes it (CHAT_PLAN B8, the owner 2026-11-05): Close is pressed while the window is still hidden, with no transition; frames shown during the close went from 8, 8 and 4 (agent, Guide, Settings) to 0.
 - Companion: hanging, the size handle is at its bottom-right corner, away from the bar and its hands (the owner, 2026-11-05).
