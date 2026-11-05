@@ -517,7 +517,8 @@
       const [a, b] = m.participants;
       const step = () => (a && b ? [kxMake(m, "m", { from: a.id, to: b.id, arrow: "->>", act: "", text: "Message" })] : []);
       if (!block.steps.length) block.steps.push(...step());
-      if (block.kw === "alt") block.steps.push(kxMake(m, "d", { kw: "else", text: "Otherwise" }), ...step());
+      //: A parallel box holds two lanes, joined by `and`, as an alt holds two ways joined by `else`.
+      if (block.kw === "alt" || block.kw === "par") block.steps.push(kxMake(m, "d", block.kw === "alt" ? { kw: "else", text: "Otherwise" } : { kw: "and", text: "Meanwhile" }), ...step());
       return block;
     },
     //: The fields a tile's block starts with. A message needs two participants, so a diagram with
@@ -582,6 +583,9 @@
       { id: "loop", group: "Notes and boxes", name: "Loop", icon: "repeat", key: "l", type: "b", fields: { kw: "loop", text: "Repeat" }, about: "a loop around steps" },
       { id: "alt", group: "Notes and boxes", name: "Alt", icon: "shuffle", key: "g", type: "b", fields: { kw: "alt", text: "Condition" }, about: "an alt, one way or the other" },
       { id: "opt", group: "Notes and boxes", name: "Opt", icon: "question", key: "o", type: "b", fields: { kw: "opt", text: "Optional" }, about: "an optional step" },
+      { id: "par", group: "Notes and boxes", name: "Parallel", icon: "arrows-split", key: "u", type: "b", fields: { kw: "par", text: "At the same time" }, about: "a parallel box, two lanes at once" },
+      { id: "critical", group: "Notes and boxes", name: "Critical", icon: "warning", key: "c", type: "b", fields: { kw: "critical", text: "Must happen" }, about: "a critical step that must happen" },
+      { id: "break", group: "Notes and boxes", name: "Break", icon: "hand-palm", key: "b", type: "b", fields: { kw: "break", text: "Stop here" }, about: "a break, where the flow stops" },
     ],
     primary: "message",
     spare: 2,
@@ -1024,6 +1028,7 @@
     body.append(S.pane, S.fig);
     S.note = kit.el("p", "muted dgm-hint hidden", "");
     root.append(buildPalette(S), S.note, body, S.live);
+    diagramModel.kindbar?.mount(S, kit);
     host.append(root);
     panes.set(root, S);
     S.tree.addEventListener("keydown", (event) => onKey(S, event));
