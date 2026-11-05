@@ -1069,6 +1069,10 @@ progress {
   align-items: center;
   flex-wrap: wrap;
   gap: 0.4rem;
+  /* One head height for both columns (INBOX A1): the answer's has 32px
+     action buttons, so the records head took the same floor rather than
+     sitting 8px short. */
+  min-height: var(--control-h-lg);
 }
 /* **The answer head does not wrap: the badge shrinks instead.**
    Two reports, one shape. First: "at 100% and 95% zoom on my laptop, the ai
@@ -1132,8 +1136,7 @@ progress {
    surface (the inset tier, a hairline, the card radius); closed, it is the
    summary alone, as every fold is. The reasoning is Markdown now
    (`thinkingPaint`), so its paragraphs and lists keep their own spacing. */
-.thinking-fold[open],
-.why-fold[open] {
+.thinking-fold[open] {
   background: var(--surface-2);
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
@@ -1141,38 +1144,13 @@ progress {
 /* Open, the summary is the panel's head, not a second box inside it: the
    quiet-button face every summary takes (07-whiteboard-misc.css) drew a
    bordered pill within the panel's own border. */
-.thinking-fold[open] > .fold-summary:not(.icon-only):not(.icon-button),
-.why-fold[open] > .fold-summary:not(.icon-only):not(.icon-button) {
-  width: auto;
+.thinking-fold[open] > .fold-summary {
   border: 0;
   border-radius: var(--radius-md) var(--radius-md) 0 0;
   padding: var(--space-2) var(--space-3);
 }
-.thinking-fold[open] > .fold-summary:not(.icon-only):not(.icon-button):not(:hover):not(:focus-visible),
-.why-fold[open] > .fold-summary:not(.icon-only):not(.icon-button):not(:hover):not(:focus-visible) {
+.thinking-fold[open] > .fold-summary:not(:hover):not(:focus-visible) {
   background: transparent;
-}
-/* "Why this answer" (B30): a job's lines, the seconds in a fixed column so
-   the words start on one edge. */
-.why-fold {
-  margin-top: var(--space-2);
-}
-.why-lines {
-  margin: 0;
-  padding: 0 var(--space-3) var(--space-2);
-  list-style: none;
-  font-size: var(--text-sm);
-  color: var(--muted);
-}
-.why-lines > li {
-  display: grid;
-  grid-template-columns: 4.5em 1fr;
-  gap: var(--space-2);
-  padding: var(--space-1) 0;
-}
-.why-at {
-  font-variant-numeric: tabular-nums;
-  text-align: end;
 }
 /* The Markdown inside the body, reached from the fold (the body keeps its
    one rule, `test_ui_recipes.py`): the body is the fold's last child. */
