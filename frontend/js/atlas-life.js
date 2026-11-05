@@ -134,6 +134,27 @@ function atlasTailFollow(tail, dt, x) {
 }
 //: On the function, not the shared scope (test_global_scope_ratchet): only it reads them.
 atlasTailFollow.springs = { links: 3, stiff: 90, damp: 9, kick: 0.8, max: 26, bend: 0.55 };
+//: **The streams follow the body** (INBOX 1683 c): the tail's three-link chain (`atlasTailFollow`) also
+//: carries the lower body and the wisps a little way, each on its own link and gain, so they lag a start,
+//: swing past a stop and settle a beat apart (the nebula's halves have the lean's spring). It is the
+//: `translate` of their pose boxes (nothing else animates it there: the pose is `transform`, the loops
+//: `rotate` and `scale`),
+//: written only when it moves a twentieth of a px, and cleared when the chain is at rest.
+atlasTailFollow.strands = (box, tail) => {
+  const low = box.atlasRig?.lower;
+  const pos = tail.follow?.pos;
+  if (!low || !pos) return;
+  const put = (els, link, gain) => {
+    els.forEach((el, i) => {
+      const v = Math.round(pos[link] * gain * (1 + 0.15 * i) * 20) / 20;
+      if (el.atlasPushed === v) return;
+      el.atlasPushed = v;
+      el.style.translate = v ? `${v}px 0` : "";
+    });
+  };
+  put(low.boxes, 0, 0.04);
+  put(low.wisps, 1, 0.07);
+};
 //: The tail's centreline bent as `bend(s)` says, as a run of cubics
 //: through the bent points (Catmull-Rom), each an equal share of the
 //: length as `atlasStemSides` samples them; and each sample's turn, for
@@ -504,6 +525,7 @@ function atlasTailFrame(tail, now) {
   }
   const secs = (now - tail.t0) / 1000;
   const follow = live ? atlasTailFollow(tail, dt, typeof nmb !== "undefined" ? nmb.x : NaN) : 0;
+  if (live) atlasTailFollow.strands(box, tail);
   const p = Object.fromEntries(Object.entries(tail.p).map(([k, j]) => [k, live ? j.x : k === "curl" || k === "amp" ? 0 : j.x]));
   const drift = live ? 0.13 * Math.sin((2 * Math.PI * secs) / 11.3) + 0.08 * Math.sin((2 * Math.PI * secs) / 17.9 + 1.3) : 0;
   //: The ripple's clock also draws the tail out and back along its length

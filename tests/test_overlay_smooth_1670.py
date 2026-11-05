@@ -11,6 +11,7 @@ import random
 import threading
 import time
 
+from tessellate.core.overlay import engine as eng
 from tessellate.core.overlay import host as host_mod
 from tessellate.core.overlay import pacing, sprites
 from tessellate.core.overlay import win32 as k
@@ -108,10 +109,10 @@ def test_idle_wakes_at_rest_stay_under_the_redraw_cap() -> None:
     # Intent moved (INBOX 1670, 15:40Z): rest lives in place now (the cycle at 6 a second, blinks), so the bar is the
     # rest redraw cap of 12 a second, not the old burst-only rate.
     assert wakes <= 480, wakes  # measured 383 (6 a second standing); the cap is a ceiling, this holds the rate (review: CPU)
-    # and a still figure asks for nothing at all
+    # and a still figure asks for the slow stream drift only, once a second (intent moved, INBOX 1683 c: nothing faster)
     e, _s = sim.make("masculine", "float", 2)
     e.reduced = True
-    assert e.update(0.0).wake_ms is None
+    assert e.update(0.0).wake_ms == eng.FLOW_CALM_MS
 
 
 # --- the host: the next-frame ask is paced, the rest keeps SetTimer -----------------------------

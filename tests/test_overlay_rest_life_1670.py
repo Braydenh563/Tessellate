@@ -58,7 +58,8 @@ def test_reduced_motion_keeps_a_still_figure(state: str) -> None:
     e, _s = make("masculine", "float", 1)
     e.reduced = True
     e._enter(state, 0.0)
-    assert e.update(1.0).wake_ms is None  # it asks for no wake at all
+    # Intent moved (INBOX 1683 c): the picture, pose and window stay still, but the wisps drift slowly, so one wake a second.
+    assert e.update(1.0).wake_ms == eng.FLOW_CALM_MS
 
 
 def test_a_blink_and_a_glance_come_while_standing() -> None:

@@ -89,6 +89,17 @@ Q_BREATH = 0.005
 #: A drifting floater breathes in the figure (share of height, period s) now that the window does not bob.
 DRIFT_BREATH = 0.012
 DRIFT_BREATH_S = 4.4
+#: The wisps and the nebula streams (INBOX 1683 c) are redrawn at least this often, so none is still for a second:
+#: 10 a second (the picture itself changes only as a strand crosses a step of `behaviour.FLOW_Q`); a slow drift
+#: under reduced motion, once a second. A body's speed over this (px per second at 96 dpi) is a jump, not a move.
+FLOW_TICK_MS = 170
+#: A sleeper's streams drift slower (its breath is the only quick thing), a third of the pictures.
+FLOW_SLEEP_MS = 340
+FLOW_CALM_MS = 1000
+FLOW_SPEED_MAX = 900.0
+#: States in which the streams keep their last picture: held, thrown, falling or hopping move the window every
+#: display frame, and a mesh warp each would cost a quarter of the frame at 96 dpi (measured 5.7 ms).
+FLOW_FROZEN = ("pressed", "held", "fly", "fall", "hop", "leap")
 #: A rest redraw is at most this often: 12 a second.
 REST_DRAW_MS = 84
 STAND_FAMILY = ("stand", "blink", "look")
@@ -363,6 +374,8 @@ class Output(NamedTuple):
     #: The true angle of a thrown figure's tumble, radians (clockwise on screen positive), or None. `frame` is
     #: then the nearest of the `SPIN_STEPS` pictures (its box, its name); the runner draws `angle` itself.
     angle: float | None = None
+    #: The wisps' and streams' own motion over the frame (`behaviour.Flow.view`, small integers), or None.
+    flow: tuple[int, ...] | None = None
 
 
 def _adjoins(a: Rect, b: Rect, side: str) -> bool:
@@ -464,6 +477,10 @@ class Engine:
         #: Mind, home, and the body's follow-through (INBOX 1670, row B).
         self.mind = bh.Mind(now)
         self.tail = bh.Trail()
+        #: The wisps and the nebula streams (INBOX 1683 c): always swaying, thrown by the body's moves.
+        self.flow = bh.Flow()
+        self._flow_held: tuple[int, ...] | None = None
+        self.last_y = 0.0
         self.hour = 12
         self.act: str | None = None
         self.act_started = now
@@ -525,6 +542,7 @@ class Engine:
         self._place_on_floor()
         self.home_x = self.x
         self.last_x = self.x
+        self.last_y = self.y
         self._enter("stand" if not reduced else "sit", now)
         self._maybe_relocate(now)
 
@@ -801,6 +819,11 @@ class Engine:
         self.travel += abs(self.x - self.last_x)
         self.last_x = self.x
         self.tail.step(dt, vx if self.state not in ("held", "pressed") else 0.0)
+        vy = (self.y - self.last_y) / dt
+        self.last_y = self.y
+        px = FLOW_SPEED_MAX * self._scale()  # a vanish or a hop of the window is no speed
+        scale = self._scale()
+        self.flow.step(dt, max(-px, min(px, vx)) / scale, max(-px, min(px, vy)) / scale)
         target = self.pose_goal = self._target_pose(now)
         k = min(1.0, dt * POSE_RATE)
         self.cur = bh.Pose(*(a + (b - a) * k for a, b in zip(self.cur, target)))
@@ -2637,7 +2660,28 @@ class Engine:
     def _idle_index(self, now: float) -> int:
         return int((now - self.idle_start) * self._idle_fps() + 1e-6) % self.idle_frames
 
+    def _flow_view(self, now: float, frame: str = "") -> tuple[int, ...] | None:
+        """What the wisps and streams are doing at `now`; under reduced motion a slow drift only. While the
+        person has hold of it or it is thrown or falling the last view is kept (review of 1683: a new flow is a
+        new picture, and a warp a frame on the drag is the lag the owner complained of); a tumble frame takes
+        none (its picture is the same with any)."""
+        if frame.startswith("spin"):
+            return None
+        if self.state in FLOW_FROZEN:
+            return self._flow_held
+        self._flow_held = self.flow.view(now, calm=self.reduced)
+        return self._flow_held
+
     def _wake(self, now: float) -> int | None:
+        """When to draw next: the state's own pace, and never later than the streams' (`FLOW_TICK_MS`, a calm
+        drift's `FLOW_CALM_MS` under reduced motion), so no part of the figure is still for a second."""
+        wake = self._wake_state(now)
+        if self.state == "pressed" or self.state == "warp":
+            return wake
+        tick = FLOW_CALM_MS if self.reduced else FLOW_SLEEP_MS if self.state == "sleep" else FLOW_TICK_MS
+        return tick if wake is None else min(wake, tick)
+
+    def _wake_state(self, now: float) -> int | None:
         s = self.state
         if s == "card":  # waiting with a card, even when still: it swaps and it runs out
             return max(MIN_WAKE_MS, min(int(CARD_SWAP * 1000), int(math.ceil((self.state_until - now) * 1000))))
@@ -2728,4 +2772,5 @@ class Engine:
             frame, int(round(x)), int(round(y)), self.facing < 0, self._wake(now),
             self.click_now, self.settled_now, clip, self.card_clicked, self._pose(), fx, round(alpha * 16) / 16.0,
             self.angle if frame.startswith("spin") and self.state == "fly" else None,
+            self._flow_view(now, frame) if fx is None else None,
         )

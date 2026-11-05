@@ -464,7 +464,7 @@ class OverlayRunner:
         engine.hour = time.localtime().tm_hour if self.clock_hour is None else self.clock_hour
         # a thrown figure's true angle is part of the picture (INBOX 1683): every tick of a spin is a new one
         turn = None if out.angle is None else round(math.degrees(out.angle) / sprites.SPIN_QUANT) % round(360.0 / sprites.SPIN_QUANT)
-        key = (out.frame, self.dpi, out.flip, out.clip, out.pose, out.fx, out.alpha, turn)
+        key = (out.frame, self.dpi, out.flip, out.clip, out.pose, out.fx, out.alpha, turn, out.flow)
         blending = False
         if key != self._last_key:
             blending = self._new_picture(out, key)
@@ -496,7 +496,7 @@ class OverlayRunner:
         if out.angle is not None:
             posed = spr.spun_at(out.angle, self.dpi, out.flip)
         else:
-            posed = spr.posed(out.frame, self.dpi, out.flip, out.pose) if out.pose else spr.frame(out.frame, self.dpi, out.flip)
+            posed = spr.posed(out.frame, self.dpi, out.flip, out.pose or eng.bh.NEUTRAL, out.flow) if out.pose or out.flow else spr.frame(out.frame, self.dpi, out.flip)
         frame = sprites.effect(sprites.clipped(posed, out.clip), out.fx, out.alpha)
         self._blend = (self._target, self.clock()) if self._blends(self._last_key, key, self._target, frame) else None
         self._blend_s = BLEND_LOOK_S if self._last_key and "look" in (self._last_key[0], key[0]) else BLEND_S

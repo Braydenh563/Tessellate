@@ -19,6 +19,7 @@ Pillow is in the `desktop` extra, not the base install: imported here on use.
 from __future__ import annotations
 
 import logging
+import math
 from pathlib import Path
 from typing import Any, NamedTuple
 
@@ -288,19 +289,20 @@ class SpriteSet:
         self._cache[key] = built
         return built
 
-    def posed(self, name: str, dpi: int, flip: bool, pose: tuple[float, float, float, float]) -> Frame:
+    def posed(self, name: str, dpi: int, flip: bool, pose: tuple[float, float, float, float], flow: tuple[int, ...] | None = None) -> Frame:
         """The frame with a body pose over it: `pose` is (sx, sy, lean, drag), see
         `behaviour.Pose`. A bottom-anchored squash or stretch, a turn-about squeeze about the
         middle, a lean (the head moves by `lean` of the height, the feet stay) and a lag of the
         lower part (the tail and wisp trail by `drag` px, growing toward the bottom), by a mesh of
         horizontal strips. Cached by the pose, `POSED_KEEP` of them; the plain frame when the pose is."""
         sx, sy, lean, drag = pose
-        if (sx, sy, lean, drag) == (1.0, 1.0, 0.0, 0.0):
+        flow = flow if flow and name not in SPIN_FRAMES and any(flow) else None
+        if (sx, sy, lean, drag) == (1.0, 1.0, 0.0, 0.0) and flow is None:
             return self.frame(name, dpi, flip)
-        key = (name, int(dpi), bool(flip), (sx, sy, lean, drag))
+        key = (name, int(dpi), bool(flip), (sx, sy, lean, drag), flow)
         hit = self._posed.pop(key, None)
         if hit is None:
-            hit = self._warp(self.frame(name, dpi, flip), self._pose_image(name, dpi, flip), sx, sy, lean, drag)
+            hit = self._warp(self.frame(name, dpi, flip), self._pose_image(name, dpi, flip), sx, sy, lean, drag, flow)
         self._posed[key] = hit  # most recent last
         while len(self._posed) > POSED_KEEP:
             del self._posed[next(iter(self._posed))]
@@ -315,8 +317,11 @@ class SpriteSet:
         width, height = self.size(dpi)
         return image.resize((width, height), Image.Resampling.LANCZOS) if (width, height) != image.size else image
 
-    def _warp(self, base: Frame, image: Any, sx: float, sy: float, lean: float, drag: float) -> Frame:
+    def _warp(self, base: Frame, image: Any, sx: float, sy: float, lean: float, drag: float, flow: tuple[int, ...] | None = None) -> Frame:
         from PIL import Image
+
+        if flow is not None:
+            return self._flowed(base, image, sx, sy, lean, drag, flow)
 
         w, h = image.size
         scale = w / (self._load("stand").size[0])  # px of this dpi per px of the shipped frame
@@ -333,6 +338,39 @@ class SpriteSet:
             a, b = mid + (0 - mid - shift) / sx, mid + (w - mid - shift) / sx
             mesh.append(((0, y0, w, y1), (a, sy0, a, sy1, b, sy1, b, sy0)))
         warped = image.transform((w, h), Image.Transform.MESH, mesh, Image.Resampling.BILINEAR)
+        clear = clear_faint_alpha(warped)
+        return Frame(w, h, premultiplied_bgra(clear), box=_drawn_box(clear))
+
+    def _flowed(self, base: Frame, image: Any, sx: float, sy: float, lean: float, drag: float, flow: tuple[int, ...]) -> Frame:
+        """`_warp` with the wisps and streams moving (INBOX 1683 c): the same strips cut into one column per
+        strand across the drawn box, every corner moved by `flow_offsets` (the lower body from the waist down
+        and the outer streams at any height; the head and the torso's middle stay put), then the nebula's
+        sparkle (`_glint`). Sub-pixel, bilinear."""
+        from PIL import Image
+
+        w, h = image.size
+        scale = w / (self._load("stand").size[0])
+        left, top, right, bottom = base.box if base.box[2] else (0, 0, w, h)
+        feet = bottom or h
+        mid = (left + right) / 2
+        bands = len(flow) // FLOW_FIELDS
+        edges = [0.0] + [float(round(left + (right - left) * j / bands)) for j in range(1, bands)] + [float(w)]  # whole px: the cut and the map agree
+        rows = [round(i * h / POSE_STRIPS) for i in range(POSE_STRIPS)] + [h]
+        field = flow_offsets(flow, edges, rows, (left, top, right, feet), scale)
+        mesh = []
+        for i in range(POSE_STRIPS):
+            y0, y1 = rows[i], rows[i + 1]
+            ym = (y0 + y1) / 2
+            shift = lean * (feet - ym) * 0.9 - drag * scale * (ym / h) ** 2
+            for b in range(bands):
+                src = []
+                for side, yi, yd in ((0, i, y0), (0, i + 1, y1), (1, i + 1, y1), (1, i, y0)):
+                    xd = edges[b + side]
+                    fdx, fdy = field[yi][b + side]
+                    src += [mid + (xd - mid - shift) / sx - fdx, feet + (yd - feet) / sy - fdy]
+                mesh.append(((int(edges[b]), y0, int(edges[b + 1]), y1), tuple(src)))
+        warped = image.transform((w, h), Image.Transform.MESH, mesh, Image.Resampling.BILINEAR)
+        warped = _glint(warped, flow, (left, top, right, feet))
         clear = clear_faint_alpha(warped)
         return Frame(w, h, premultiplied_bgra(clear), box=_drawn_box(clear))
 
@@ -395,6 +433,74 @@ class SpriteSet:
         turned = canvas.rotate(-step * 360.0 / SPIN_STEPS, resample=Image.Resampling.BICUBIC)
         clear = clear_faint_alpha(turned)
         return Frame(side, side, premultiplied_bgra(clear), pad_x, pad_y, _drawn_box(clear))
+
+
+#: Numbers a strand takes in a flow view (`behaviour.Flow.view`); the lower body starts at this share of the drawn
+#: height, the torso's middle (share of the half width: still inside the first, free past the second) never sways,
+#: and the outer streams take this share of a strand's sway at any height.
+FLOW_FIELDS = 5
+FLOW_WAIST = 0.5
+FLOW_CORE = (0.3, 0.6)
+FLOW_RIBBON = 0.8
+FLOW_Q = 8.0
+FLOW_GLINT = 0.30
+
+
+def _smooth(x: float) -> float:
+    x = max(0.0, min(1.0, x))
+    return x * x * (3 - 2 * x)
+
+
+def flow_offsets(flow: tuple[int, ...], edges: list[float], rows: list[int], box: tuple[int, int, int, int], scale: float) -> list[list[tuple[float, float]]]:
+    """Where each mesh corner (row boundary, column edge) moves, px of the picture: the strands' own values (a
+    quadratic from nothing at the waist through the middle's lead to the tip's), a corner between two strands
+    taking their mean, so the picture bends and never tears. The head and the torso's middle: nothing."""
+    left, top, right, feet = box
+    bands = len(flow) // FLOW_FIELDS
+    half = max(1.0, (right - left) / 2)
+    mid = (left + right) / 2
+    waist = top + (feet - top) * FLOW_WAIST
+    out = []
+    for y in rows:
+        u = max(0.0, min(1.0, (y - waist) / max(1.0, feet - waist)))
+        below = y > waist
+        line = []
+        for j, x in enumerate(edges):
+            near = [flow[k * FLOW_FIELDS:(k + 1) * FLOW_FIELDS] for k in (j - 1, j) if 0 <= k < bands]
+            tip, middle, rise = (sum(n[f] for n in near) / len(near) / FLOW_Q * scale for f in range(3))
+            lead, curve = 4 * middle - tip, 2 * tip - 4 * middle  # v(u) = lead u + curve u^2: 0, middle, tip at 0, 1/2, 1
+            free = _smooth((abs(x - mid) / half - FLOW_CORE[0]) / (FLOW_CORE[1] - FLOW_CORE[0]))
+            ribbon = FLOW_RIBBON * free * (1 - u) * (lead / 2 + curve / 4)
+            line.append((lead * u + curve * u * u + ribbon if below else ribbon, rise * u + 0.3 * rise * free * (1 - u)))
+        out.append(line)
+    return out
+
+
+def _glint(image: Any, flow: tuple[int, ...], box: tuple[int, int, int, int]) -> Any:
+    """The nebula's sparkle: each strand's brightest parts take a wave of light toward white that runs down it
+    (`flow`'s sine and cosine, tenths), so the particles glimmer along each stream instead of holding one
+    value. Straight Pillow blends at C speed; the alpha is untouched, so no edge appears or goes."""
+    from PIL import Image, ImageChops
+
+    left, top, right, feet = box
+    bands = len(flow) // FLOW_FIELDS
+    if right <= left or feet <= top:
+        return image
+    rows = 12
+    grid = Image.new("L", (bands, rows))
+    px = grid.load()
+    for b in range(bands):
+        s, c = flow[b * FLOW_FIELDS + 3] / 10.0, flow[b * FLOW_FIELDS + 4] / 10.0
+        free = _smooth((abs((b + 0.5) / bands * 2 - 1) - FLOW_CORE[0] * 1.2) / 0.3)  # the outer streams, above the waist too
+        for r in range(rows):
+            k = 2 * math.pi * 1.3 * r / (rows - 1)
+            own = _smooth((r / (rows - 1) - FLOW_WAIST) / 0.12 + 0.5)  # the lower body's
+            px[b, r] = round(255 * FLOW_GLINT * max(own, 0.6 * free) * (0.5 + 0.5 * (s * math.cos(k) - c * math.sin(k))))
+    mask = Image.new("L", image.size, 0)
+    mask.paste(grid.resize((right - left, feet - top), Image.Resampling.BICUBIC), (left, top))
+    gate = ImageChops.multiply(mask, image.convert("L"))
+    r, g, b, a = image.split()
+    return Image.merge("RGBA", (ImageChops.screen(r, gate), ImageChops.screen(g, gate), ImageChops.screen(b, gate), a))
 
 
 #: Alpha under this share of the picture is gone altogether: no faint ghost, and no click lands on it.

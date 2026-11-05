@@ -2,7 +2,7 @@
 
 Generated 2026-11-05 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7823, frontend ids 2644, CSS sections 522, backend routes 644, backend modules 8816, test files 2081, tests 17569, plan headings 1003, app scripts 28, boot scripts 37, script files 257.
+Counts: frontend functions 7823, frontend ids 2644, CSS sections 522, backend routes 644, backend modules 8821, test files 2082, tests 17585, plan headings 1004, app scripts 28, boot scripts 37, script files 257.
 
 ## Frontend functions (7823)
 
@@ -2105,24 +2105,24 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `atlasBreathFrame` | frontend/js/atlas-life.js:747 |
-| `atlasFrameBudget` | frontend/js/atlas-life.js:413 |
-| `atlasPropLoops` | frontend/js/atlas-life.js:672 |
-| `atlasPropsFrame` | frontend/js/atlas-life.js:700 |
-| `atlasRigLower` | frontend/js/atlas-life.js:865 |
-| `atlasRigLowerAttach` | frontend/js/atlas-life.js:841 |
+| `atlasBreathFrame` | frontend/js/atlas-life.js:769 |
+| `atlasFrameBudget` | frontend/js/atlas-life.js:434 |
+| `atlasPropLoops` | frontend/js/atlas-life.js:694 |
+| `atlasPropsFrame` | frontend/js/atlas-life.js:722 |
+| `atlasRigLower` | frontend/js/atlas-life.js:887 |
+| `atlasRigLowerAttach` | frontend/js/atlas-life.js:863 |
 | `atlasRingLoops` | frontend/js/atlas-life.js:20 |
-| `atlasTailAttach` | frontend/js/atlas-life.js:303 |
+| `atlasTailAttach` | frontend/js/atlas-life.js:324 |
 | `atlasTailBend` | frontend/js/atlas-life.js:105 |
-| `atlasTailCalm` | frontend/js/atlas-life.js:540 |
-| `atlasTailDraw` | frontend/js/atlas-life.js:599 |
+| `atlasTailCalm` | frontend/js/atlas-life.js:562 |
+| `atlasTailDraw` | frontend/js/atlas-life.js:621 |
 | `atlasTailFollow` | frontend/js/atlas-life.js:115 |
-| `atlasTailFrame` | frontend/js/atlas-life.js:439 |
-| `atlasTailKit` | frontend/js/atlas-life.js:176 |
-| `atlasTailPick` | frontend/js/atlas-life.js:377 |
-| `atlasTailRest` | frontend/js/atlas-life.js:562 |
-| `atlasTailShape` | frontend/js/atlas-life.js:143 |
-| `atlasTailUnrest` | frontend/js/atlas-life.js:577 |
+| `atlasTailFrame` | frontend/js/atlas-life.js:460 |
+| `atlasTailKit` | frontend/js/atlas-life.js:197 |
+| `atlasTailPick` | frontend/js/atlas-life.js:398 |
+| `atlasTailRest` | frontend/js/atlas-life.js:584 |
+| `atlasTailShape` | frontend/js/atlas-life.js:164 |
+| `atlasTailUnrest` | frontend/js/atlas-life.js:599 |
 
 ### frontend/js/atlas-micro.js (8)
 
@@ -12304,7 +12304,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/appearance-panel-lazy.css | 323 |
 | frontend/css/appearance-panel-own-lazy.css | 86 |
 | frontend/css/ask-compose-lazy.css | 263 |
-| frontend/css/atlas-lazy.css | 331 |
+| frontend/css/atlas-lazy.css | 376 |
 | frontend/css/captions-lazy.css | 95 |
 | frontend/css/capture-card-lazy.css | 202 |
 | frontend/css/chat-private-lazy.css | 18 |
@@ -13015,7 +13015,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:164 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (8816)
+## Backend modules (8821)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -22278,15 +22278,17 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `reset_for_tests` | src/tessellate/core/origin.py:71 |
 | `run_deferred` | src/tessellate/core/origin.py:58 |
 
-### src/tessellate/core/overlay/behaviour.py (11)
+### src/tessellate/core/overlay/behaviour.py (13)
 
 | Name | File:line |
 |---|---|
 | `Activity` | src/tessellate/core/overlay/behaviour.py:88 |
+| `Flow` | src/tessellate/core/overlay/behaviour.py:330 |
 | `Mind` | src/tessellate/core/overlay/behaviour.py:165 |
 | `Pose` | src/tessellate/core/overlay/behaviour.py:45 |
 | `Trail` | src/tessellate/core/overlay/behaviour.py:247 |
 | `_amplitude` | src/tessellate/core/overlay/behaviour.py:291 |
+| `_frac` | src/tessellate/core/overlay/behaviour.py:326 |
 | `_k` | src/tessellate/core/overlay/behaviour.py:105 |
 | `activity_frame` | src/tessellate/core/overlay/behaviour.py:234 |
 | `mood_of` | src/tessellate/core/overlay/behaviour.py:150 |
@@ -22298,11 +22300,11 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `Engine` | src/tessellate/core/overlay/engine.py:379 |
-| `Monitor` | src/tessellate/core/overlay/engine.py:332 |
-| `Output` | src/tessellate/core/overlay/engine.py:339 |
-| `Perch` | src/tessellate/core/overlay/engine.py:323 |
-| `_adjoins` | src/tessellate/core/overlay/engine.py:368 |
+| `Engine` | src/tessellate/core/overlay/engine.py:392 |
+| `Monitor` | src/tessellate/core/overlay/engine.py:343 |
+| `Output` | src/tessellate/core/overlay/engine.py:350 |
+| `Perch` | src/tessellate/core/overlay/engine.py:334 |
+| `_adjoins` | src/tessellate/core/overlay/engine.py:381 |
 
 ### src/tessellate/core/overlay/host.py (3)
 
@@ -22332,20 +22334,23 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `OverlayRunner` | src/tessellate/core/overlay/runner.py:84 |
 | `default_backend` | src/tessellate/core/overlay/runner.py:74 |
 
-### src/tessellate/core/overlay/sprites.py (10)
+### src/tessellate/core/overlay/sprites.py (13)
 
 | Name | File:line |
 |---|---|
-| `Frame` | src/tessellate/core/overlay/sprites.py:89 |
-| `SpriteSet` | src/tessellate/core/overlay/sprites.py:157 |
-| `_drawn_box` | src/tessellate/core/overlay/sprites.py:146 |
-| `clear_faint_alpha` | src/tessellate/core/overlay/sprites.py:135 |
-| `clipped` | src/tessellate/core/overlay/sprites.py:104 |
-| `effect` | src/tessellate/core/overlay/sprites.py:427 |
-| `frames_dir` | src/tessellate/core/overlay/sprites.py:123 |
-| `look_for` | src/tessellate/core/overlay/sprites.py:130 |
-| `mix` | src/tessellate/core/overlay/sprites.py:408 |
-| `premultiplied_bgra` | src/tessellate/core/overlay/sprites.py:152 |
+| `Frame` | src/tessellate/core/overlay/sprites.py:90 |
+| `SpriteSet` | src/tessellate/core/overlay/sprites.py:158 |
+| `_drawn_box` | src/tessellate/core/overlay/sprites.py:147 |
+| `_glint` | src/tessellate/core/overlay/sprites.py:479 |
+| `_smooth` | src/tessellate/core/overlay/sprites.py:449 |
+| `clear_faint_alpha` | src/tessellate/core/overlay/sprites.py:136 |
+| `clipped` | src/tessellate/core/overlay/sprites.py:105 |
+| `effect` | src/tessellate/core/overlay/sprites.py:533 |
+| `flow_offsets` | src/tessellate/core/overlay/sprites.py:454 |
+| `frames_dir` | src/tessellate/core/overlay/sprites.py:124 |
+| `look_for` | src/tessellate/core/overlay/sprites.py:131 |
+| `mix` | src/tessellate/core/overlay/sprites.py:514 |
+| `premultiplied_bgra` | src/tessellate/core/overlay/sprites.py:153 |
 
 ### src/tessellate/core/overlay/travel.py (15)
 
@@ -24110,7 +24115,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (17569)
+## Tests (17585)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -24908,6 +24913,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_first_steps_ask_count.py | 1 |
 | tests/test_fixa2_1025.py | 5 |
 | tests/test_flaw_class_lints.py | 2 |
+| tests/test_flow_1683.py | 16 |
 | tests/test_focus_feedback_1029.py | 8 |
 | tests/test_focus_timer.py | 7 |
 | tests/test_folder_roundtrip.py | 8 |
@@ -26198,7 +26204,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_zoom_frame_1508.py | 3 |
 | tests/test_zoom_wheel_delta.py | 3 |
 
-## Plan headings (1003)
+## Plan headings (1004)
 
 Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, except the HISTORY.md archive. Sorted by heading.
 
@@ -26905,7 +26911,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Phases 0 to 2: built 2026-09-09 | docs/roadmap/DOCUMENTS_PLAN.md:119 |
 | Phases 0 to 6: built | docs/roadmap/UI_MODERNISATION_PLAN.md:216 |
 | Phases, each with the gate it is finished against | docs/roadmap/MINDMAP_PLAN.md:1296 |
-| Placed (last 20, newest first) | docs/roadmap/INBOX.md:172 |
+| Placed (last 20, newest first) | docs/roadmap/INBOX.md:174 |
 | Placed from Brief 40, 2026-10-10 (does the MCP server work) | docs/roadmap/AGENT_SKILLS_REFORM.md:345 |
 | Placed from Brief 40, 2026-10-10 (research and placement) | docs/roadmap/BACKLOG.md:4178 |
 | Placed from Brief 40, 2026-10-10 (the phone over HTTPS) | docs/roadmap/WORLD_CLASS_PLAN.md:3128 |
@@ -27023,6 +27029,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from INBOX, 2026-11-04 | docs/roadmap/WHITEBOARD_PLAN.md:1728 |
 | Placed from INBOX, 2026-11-04 (1657, what the two lag rounds left) | docs/roadmap/UI_MODERNISATION_PLAN.md:1560 |
 | Placed from INBOX, 2026-11-04 (audit Rank 36, hover decision) | docs/roadmap/GRAPH_PLAN.md:637 |
+| Placed from INBOX, 2026-11-05 (the Ask columns and folds) | docs/roadmap/CHAT_PLAN.md:1893 |
 | Placed from INBOX, built (pointers) | docs/roadmap/UI_MODERNISATION_PLAN.md:1062 |
 | Placed from INBOX: 107d, the segmented mini bars | docs/roadmap/DOCUMENTS_PLAN.md:385 |
 | Placed from INBOX: the composer everywhere (the owner, 2026-10-06) | docs/roadmap/CHAT_PLAN.md:689 |

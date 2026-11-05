@@ -57,7 +57,9 @@ def test_default_home_is_in_from_the_right_edge_on_the_floor() -> None:
 def test_standing_sleeps_to_the_next_blink_or_look_not_a_fixed_tick() -> None:
     e, _ = make(roam=False)
     count, outs = wakes(e, 60)
-    assert count <= 40, count  # INBOX 1670, 15:40Z: a blink every 3 to 7 s (was 25 to 45), two wakes each
+    # Bar moved (INBOX 1683 c): the streams redraw at least every FLOW_TICK_MS, so the cap is the stream tick plus the
+    # blinks (INBOX 1670, 15:40Z: a blink every 3 to 7 s, two wakes each), not 40 a minute.
+    assert count <= 60_000 // eng.FLOW_TICK_MS + 40, count
     assert {o.frame for o in outs} <= {"stand", "blink", "look"}
     assert all(o.wake_ms >= eng.MIN_WAKE_MS for o in outs if o.wake_ms)
 
@@ -65,7 +67,8 @@ def test_standing_sleeps_to_the_next_blink_or_look_not_a_fixed_tick() -> None:
 def test_sixty_seconds_of_standing_is_at_most_forty_wakes_for_any_seed() -> None:
     for seed in range(60):
         e, _ = make(roam=False, rng=random.Random(seed))
-        assert wakes(e, 60)[0] <= 40, seed  # blinks every 3 to 7 s now (INBOX 1670, 15:40Z)
+        # Bar moved (INBOX 1683 c): the stream tick plus the blinks (every 3 to 7 s, INBOX 1670, 15:40Z), not 40 a minute.
+        assert wakes(e, 60)[0] <= 60_000 // eng.FLOW_TICK_MS + 40, seed
 
 
 def test_blink_and_look_appear_while_standing() -> None:
@@ -176,7 +179,8 @@ def test_sleeping_breathes_in_place_at_most_twelve_wakes_a_second() -> None:
     e._enter("sleep", 0.0)
     e.last_active = -1000.0
     count, outs = wakes(e, 60)
-    assert 20 <= count <= 12 * 60 // 4 and all(o.frame == "sleep" for o in outs)
+    # Bar moved (INBOX 1683 c): add the sleeper's streams, one picture every FLOW_SLEEP_MS (about three a second).
+    assert 20 <= count <= 12 * 60 // 4 + 60_000 // eng.FLOW_SLEEP_MS and all(o.frame == "sleep" for o in outs)
     assert len({(o.x, o.y) for o in outs}) == 1
 
 
@@ -300,10 +304,10 @@ def test_walking_stops_at_the_last_monitor_not_in_the_gap_between_non_overlappin
 def test_reduced_motion_never_moves_blinks_or_asks_to_be_woken() -> None:
     e, _ = make(reduced=True)
     first = e.update(0.0)
-    assert first.frame == "sit" and first.wake_ms is None
+    assert first.frame == "sit" and first.wake_ms == eng.FLOW_CALM_MS  # 1683 c: only the wisps drift, once a second
     outs = run(e, 60.0, step=1.0)
     assert {(o.x, o.y) for o in outs} == {(first.x, first.y)}
-    assert {o.frame for o in outs} == {"sit"} and all(o.wake_ms is None for o in outs)
+    assert {o.frame for o in outs} == {"sit"} and all(o.wake_ms == eng.FLOW_CALM_MS for o in outs)
     assert e.update(61.0, pointer=(e.x + 50, e.y + 60)).frame == "sit"  # does not notice
 
 
@@ -314,7 +318,7 @@ def test_reduced_motion_still_clicks_and_carries_and_a_drop_lands_on_the_floor_a
     e.update(2.01, event=("move", 1000, 400))
     out = e.update(2.02, event=("up", 1000, 400))
     # Owner report 2026-11-04 (b): a drop used to stay where it was let go, in mid-air.
-    assert out.frame == "sit" and out.settled and out.y == e.floor_y() and out.wake_ms is None
+    assert out.frame == "sit" and out.settled and out.y == e.floor_y() and out.wake_ms == eng.FLOW_CALM_MS
     assert run(e, 5.0, t0=2.02)[-1].y == out.y
 
 

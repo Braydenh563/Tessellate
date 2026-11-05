@@ -359,7 +359,8 @@ def test_a_moving_floater_asks_for_ticks_and_a_resting_one_asks_for_none() -> No
     e._enter("drift", 0.0)
     assert e.update(0.1).wake_ms == eng.TICK_WALK_MS
     r = make(gait="float", reduced=True)
-    assert r.update(0.1).wake_ms is None
+    # Intent moved (INBOX 1683 c): a resting figure still asks for the slow stream drift, once a second, nothing faster.
+    assert r.update(0.1).wake_ms == eng.FLOW_CALM_MS
 
 
 # --- grabbing a figure that is drawn away from where it is (review2, low) -------------------
