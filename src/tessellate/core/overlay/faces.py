@@ -131,7 +131,8 @@ _anchors: dict[tuple[str, str], tuple[int, int] | None] = {}
 def eye_anchor(spr: Any, name: str) -> tuple[float, float] | None:
     """The eyes' centre in the shipped frame `name` (px of the source art), or None where the face does not
     sit like `stand`'s (the frame is not one of `FACE_FRAMES`, or no match is close)."""
-    if name not in FACE_FRAMES:
+    # A captured figure (INBOX 1690 b) has no charted eye box: no face, rather than a KeyError that kills the overlay.
+    if name not in FACE_FRAMES or spr.look not in sp.LID_EYES:
         return None
     x0, y0, x1, y1 = sp.LID_EYES[spr.look]
     key = (spr.look, name)

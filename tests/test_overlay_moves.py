@@ -127,14 +127,17 @@ def test_a_throw_that_hits_the_ceiling_hangs_then_lets_go_and_falls() -> None:
     assert e.y == FLOOR
 
 
-def test_a_dropped_hang_click_lets_go() -> None:
+def test_a_hang_click_keeps_the_hang() -> None:
+    # Intent moved (INBOX 1690 c, the owner: "if the desktop companion is hanging and i clcik it
+    # sho show a popup menu, it stops visibly hanging and just floats there"): a click opens the
+    # menu, so the hanger keeps its grip; a drag still takes it off.
     e = make()
     e.y = 0.0
     e._enter("hang", 1.0)
     e.update(1.0)
     e.update(1.1, event=("down", 850, 20))
     out = e.update(1.2, event=("up", 850, 20))
-    assert out.click == "left" and e.state == "fall"
+    assert out.click == "left" and e.state == "hang"
 
 
 # --- float -----------------------------------------------------------------------------

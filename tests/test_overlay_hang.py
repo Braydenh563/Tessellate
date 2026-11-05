@@ -187,3 +187,22 @@ def test_a_hang_holds_still_x_never_changes_while_hanging() -> None:
                 xs.add(o.x)
                 ys.add(o.y)
         assert len(xs) == 1 and len(ys) == 1, (seed, xs, ys)
+
+
+@pytest.mark.parametrize("gait", ["float", "walk"])
+def test_a_click_on_a_hanger_opens_the_menu_and_it_keeps_hanging(gait: str) -> None:
+    """INBOX 1690 c: "if the desktop companion is hanging and i click it to show a
+    popup menu, it stops visibly hanging and just floats there"."""
+    e = make(gait=gait)
+    e._perform("hang", 1.0)
+    t = run_to(e, "hang")
+    x, y = e.x, e.y
+    cx, cy = int(e.x + 40), int(e.y + 60)
+    down = e.update(t + 0.02, event=("down", cx, cy))
+    assert down.frame == "hang"  # the press itself keeps the hang pose
+    out = e.update(t + 0.06, event=("up", cx, cy))
+    assert out.click == "left"
+    for i in range(200):  # the menu stays open about three seconds
+        out = e.update(t + 0.1 + i * 0.016)
+        assert e.state == "hang" and out.frame == "hang"
+    assert (e.x, e.y) == pytest.approx((x, y)) and hands(e) == pytest.approx(0.0)

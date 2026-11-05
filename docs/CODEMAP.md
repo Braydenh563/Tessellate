@@ -2,7 +2,7 @@
 
 Generated 2026-11-05 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7841, frontend ids 2644, CSS sections 522, backend routes 644, backend modules 8893, test files 2098, tests 17723, plan headings 1004, app scripts 28, boot scripts 37, script files 259.
+Counts: frontend functions 7841, frontend ids 2644, CSS sections 522, backend routes 644, backend modules 8893, test files 2099, tests 17725, plan headings 1004, app scripts 28, boot scripts 37, script files 259.
 
 ## Frontend functions (7841)
 
@@ -22381,16 +22381,16 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 |---|---|
 | `Look` | src/tessellate/core/overlay/faces.py:33 |
 | `Micro` | src/tessellate/core/overlay/faces.py:91 |
-| `_brow` | src/tessellate/core/overlay/faces.py:236 |
-| `_features` | src/tessellate/core/overlay/faces.py:219 |
-| `_lid` | src/tessellate/core/overlay/faces.py:252 |
-| `_match` | src/tessellate/core/overlay/faces.py:144 |
-| `_mouth` | src/tessellate/core/overlay/faces.py:265 |
-| `_skin` | src/tessellate/core/overlay/faces.py:183 |
-| `_splice` | src/tessellate/core/overlay/faces.py:243 |
-| `draw` | src/tessellate/core/overlay/faces.py:189 |
+| `_brow` | src/tessellate/core/overlay/faces.py:237 |
+| `_features` | src/tessellate/core/overlay/faces.py:220 |
+| `_lid` | src/tessellate/core/overlay/faces.py:253 |
+| `_match` | src/tessellate/core/overlay/faces.py:145 |
+| `_mouth` | src/tessellate/core/overlay/faces.py:266 |
+| `_skin` | src/tessellate/core/overlay/faces.py:184 |
+| `_splice` | src/tessellate/core/overlay/faces.py:244 |
+| `draw` | src/tessellate/core/overlay/faces.py:190 |
 | `eye_anchor` | src/tessellate/core/overlay/faces.py:131 |
-| `head_point` | src/tessellate/core/overlay/faces.py:162 |
+| `head_point` | src/tessellate/core/overlay/faces.py:163 |
 | `level_at` | src/tessellate/core/overlay/faces.py:84 |
 
 ### src/tessellate/core/overlay/host.py (3)
@@ -24246,7 +24246,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (17723)
+## Tests (17725)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -25627,8 +25627,9 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_overlay_come_1683.py | 5 |
 | tests/test_overlay_dest_1683.py | 10 |
 | tests/test_overlay_engine.py | 30 |
+| tests/test_overlay_faces.py | 1 |
 | tests/test_overlay_float.py | 6 |
-| tests/test_overlay_hang.py | 11 |
+| tests/test_overlay_hang.py | 12 |
 | tests/test_overlay_hang_end_1683.py | 5 |
 | tests/test_overlay_hang_spots_1683.py | 4 |
 | tests/test_overlay_hang_throw_1670.py | 3 |
@@ -27058,7 +27059,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Phases 0 to 2: built 2026-09-09 | docs/roadmap/DOCUMENTS_PLAN.md:119 |
 | Phases 0 to 6: built | docs/roadmap/UI_MODERNISATION_PLAN.md:216 |
 | Phases, each with the gate it is finished against | docs/roadmap/MINDMAP_PLAN.md:1296 |
-| Placed (last 20, newest first) | docs/roadmap/INBOX.md:182 |
+| Placed (last 20, newest first) | docs/roadmap/INBOX.md:183 |
 | Placed from Brief 40, 2026-10-10 (does the MCP server work) | docs/roadmap/AGENT_SKILLS_REFORM.md:345 |
 | Placed from Brief 40, 2026-10-10 (research and placement) | docs/roadmap/BACKLOG.md:4178 |
 | Placed from Brief 40, 2026-10-10 (the phone over HTTPS) | docs/roadmap/WORLD_CLASS_PLAN.md:3128 |

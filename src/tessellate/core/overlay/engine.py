@@ -2813,7 +2813,7 @@ class Engine:
         return True
 
     def _clicked(self, now: float) -> None:
-        """A press that was never a drag: open a card, bring a peeker out, let a hanger go, or wave."""
+        """A press that was never a drag: open a card, bring a peeker out, keep a hanger hanging, or wave."""
         reply = "sit" if self.reduced else "wave"
         if self.pre_press == "card" and self.card is not None:
             self.card_clicked = self.card  # the reminder opens; the card is set down
@@ -2823,8 +2823,10 @@ class Engine:
         self.click_now = "left"
         if self.pre_press in ("peek", "emerge") and self.peek_edge and not self.reduced:
             self._enter("emerge", now)  # a click brings a peeking figure out
-        elif self.pre_press == "hang" and not self.reduced:
-            self._let_go()
+        elif self.pre_press == "hang":
+            # INBOX 1690 c: the click opens the menu; the hanger keeps its grip
+            # (letting go here left a floater drifting mid-air beside the menu).
+            self.state = "hang"
         else:
             self.mind.feel("happy", now)
             if now - self.last_click < 4.0 and not self.reduced:  # a second pat: it purrs
@@ -2879,6 +2881,8 @@ class Engine:
             return "land"
         if s == "warp" and self.warp is not None and self.warp["kind"] == "edge":
             return f"walk{int((now - self.warp['t0']) / (0.75 / self.walk_frames)) % self.walk_frames}"
+        if s == "pressed" and self.pre_press == "hang":
+            return "hang"  # a press on a hanger keeps the hang pose until it is dragged
         if s in FRAME_OF:
             return FRAME_OF[s]
         if s == "fly":
