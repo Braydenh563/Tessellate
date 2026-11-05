@@ -138,8 +138,12 @@ class FakeWin32:
         ref._obj.x, ref._obj.y = self.cursor
         return 1
 
-    def _GetWindowRect(self, _hwnd: Any, ref: Any) -> int:
-        ref._obj.left, ref._obj.top, ref._obj.right, ref._obj.bottom = 10, 20, 110, 170
+    def _GetWindowRect(self, hwnd: Any, ref: Any) -> int:
+        """The overlay's own window is 10,20,110,170. Another window's rectangle includes the 7 px invisible resize
+        border of Windows 10 and 11 that its extended frame bounds (`rect`) leave out: a test gives it as `outer`."""
+        win = self.window_list.get(int(hwnd)) if isinstance(hwnd, int) else None
+        box = win.get("outer", win["rect"]) if win else (10, 20, 110, 170)
+        ref._obj.left, ref._obj.top, ref._obj.right, ref._obj.bottom = box
         return 1
 
     def _CreateDIBSection(self, _dc: Any, info_ref: Any, _usage: int, bits_ref: Any, _sec: Any, _off: int) -> int:
@@ -227,7 +231,7 @@ class FakeWin32:
     def _DwmGetWindowAttribute(self, hwnd: Any, attr: int, ref: Any, _size: int) -> int:
         win = self._win(hwnd)
         if attr == k.DWMWA_CLOAKED:
-            ref._obj.value = int(win.get("cloaked", False))
+            ref._obj.value = int(win.get("cloaked", False))  # real values: 1 app, 2 shell, 4 inherited
         else:
             r = ref._obj
             r.left, r.top, r.right, r.bottom = win["rect"]

@@ -114,12 +114,13 @@ IDLE_FRAMES = 24
 IDLE_FPS = 6.0
 
 #: Logical pixels (scaled by the monitor's dpi).
-WALK_SPEED = 55.0
+#: Lively, not a crawl (INBOX 1683 f: "all it does is poof"); was 55, so a 1,500 px leg took 16 s at a dash.
+WALK_SPEED = 130.0
 #: A unhurried pace, by distance (INBOX 1670: "a buddy, not a nuisance"): close range is a step,
 #: the middle distance a walk, far a run (a swoop for a floater), each eased in and out.
 STEP_UNDER = 60.0
 DASH_OVER = 420.0
-STEP_K, DASH_K = 0.6, 1.7
+STEP_K, DASH_K = 0.6, 2.0
 EASE_IN = 0.7
 EASE_OUT = 70.0
 CROUCH_FOR = 0.25
@@ -210,7 +211,7 @@ HANG_REACH = 0.3
 #: other throw bounces off the top like a side wall.
 CEIL_CATCH = 2000.0
 CEIL_UPWARD = 0.8
-FLOAT_SPEED = 85.0
+FLOAT_SPEED = 170.0
 FLOAT_TURN = 1.8
 FLOAT_DRAG = 3.0
 FLOAT_PULL = 3.0
@@ -231,6 +232,14 @@ HANG_FOR = (45.0, 120.0)
 #: slow one, and glances about now and then (INBOX 1670, 13:28Z: "it basically doesn't move while it is
 #: hanging"). The window itself holds still: only the picture swings.
 HANG_SWING = 9.0
+#: A hang ends by its own choice (INBOX 1683 h), never a plain fall on a timer: it pulls itself up onto the
+#: window it holds, swings (a bigger pendulum for `SWING_FOR` s) and drops to a window top within `SWING_REACH`
+#: logical px, or lets go after a startled beat of `REACT_FOR` s.
+SWING_FOR = 1.5
+SWING_BOOST = 1.7
+SWING_REACH = 520.0
+REACT_FOR = 0.6
+HANG_ENDS = {"pull": 5.0, "swing": 4.0, "react": 2.0}
 HANG_PERIOD = 5.6
 HANG_GLANCE = (11.0, 26.0)
 #: What a hang takes hold of (INBOX 1660: "it thinks its hanging but its just ... hanging in
@@ -259,7 +268,7 @@ REST_FOR = (8.0, 20.0)
 #: The ambient choice, one table: act -> (weight, big). `sleep` needs SLEEP_AFTER idle.
 ACTS = {
     "idle": (62, False), "stroll": (3, False), "trip": (16, False), "sleep": (2, False),
-    "hang": (4, True), "peek": (5, True),
+    "hang": (4, True), "peek": (5, True), "climb": (90, False),
 }
 SLEEP_AFTER = 60.0
 
@@ -268,8 +277,10 @@ SLEEP_AFTER = 60.0
 #: `PERCH_MIN_RISE` logical px above the floor to be worth the leap; a window top
 #: that moves more than `PERCH_MOVED` physical px has moved.
 CLIMB_FIRST = 40.0
-CLIMB_EVERY = (180.0, 420.0)
-PERCH_FOR = (20.0, 50.0)
+#: The `climb` act was missing from `ACTS` (so `_can_climb` was never called and a window came only with a rare
+#: trip, one in thirty minutes or so): the owner on Windows had never seen it perch (INBOX 1683 g).
+CLIMB_EVERY = (90.0, 240.0)
+PERCH_FOR = (45.0, 120.0)  # long enough to be seen and to count as a settled spell (was 20 to 50)
 PERCH_MIN_RISE = 48.0
 PERCH_MOVED = 3.0
 LEAP_BASE = 0.45
@@ -382,6 +393,10 @@ class Engine:
         self.hang_top = min(max(float(hang_top), 0.0), 0.5)
         #: The window whose title bar a hang (or the trip to one) takes hold of.
         self.hang_on: Perch | None = None
+        #: The window a swinging hang will drop to, when it started swinging, and a startled beat before letting go.
+        self.swing_to: Perch | None = None
+        self.swing_at = 0.0
+        self.releasing = False
         #: True while the person is typing or presenting: it only stands.
         self.quiet = False
         self.now = now
@@ -699,6 +714,7 @@ class Engine:
         self.phase_started = self.hang_started = now
         self.hang_phase = self.rng.uniform(0.0, 2 * math.pi)
         self.hang_glance_at = now + self.rng.uniform(*HANG_GLANCE)
+        self.swing_to, self.releasing = None, False
 
     def _on_rise(self, now: float) -> None:
         self.state_until = now + RISE_FOR
@@ -785,6 +801,8 @@ class Engine:
         if s_ == "hang":  # a slow pendulum from the grip: the lower body swings, the hands do not move
             t = now - self.hang_started
             amp = bh.smooth(t / 1.5) * (0.65 + 0.35 * math.sin(2 * math.pi * t / 41.0 + self.hang_phase))
+            if self.swing_to is not None:  # winding up to let go toward a window: the swing grows
+                amp *= 1.0 + SWING_BOOST * bh.smooth((now - self.swing_at) / SWING_FOR)
             drag = HANG_SWING * amp * math.sin(2 * math.pi * t / HANG_PERIOD + self.hang_phase)
         elif s_ == "warp" and self.warp is not None and self.warp["kind"] == "portal":
             squeeze = self._warp_view(now)[2]
@@ -1072,16 +1090,25 @@ class Engine:
                 return act
         return "idle"
 
-    def _act_table(self, now: float, idle: float) -> list[tuple[str, float]]:
+    def _act_blocked(self, act: str, big: bool, now: float, idle: float) -> bool:
+        """An act that cannot happen now: a big one too soon or off the floor, a sleep too early, a trip or a
+        climb with nowhere to go, a stroll from a window."""
         up = self.perch is not None
+        if big and (now < self.big_ready or up):
+            return True
+        if act == "sleep":
+            return idle < SLEEP_AFTER or up or self.mind.needs["rest"] < 0.4
+        if act == "trip":
+            return not self._trip_ok(now)
+        if act == "climb":
+            return not self._can_climb(now)
+        return act == "stroll" and up
+
+    def _act_table(self, now: float, idle: float) -> list[tuple[str, float]]:
         mood = self.mind.mood(now, self.hour)
         table = []
         for act, (w, big) in ACTS.items():
-            if big and (now < self.big_ready or up):
-                continue
-            if act == "sleep" and (idle < SLEEP_AFTER or up or self.mind.needs["rest"] < 0.4):
-                continue
-            if (act == "trip" and not self._trip_ok(now)) or (act == "stroll" and up):
+            if self._act_blocked(act, big, now, idle):
                 continue
             if act in ("stroll", "trip") and mood == "bored":
                 w *= 2
@@ -1238,24 +1265,45 @@ class Engine:
         if self.perch is None:
             return
         cur = next((p for p in self.windows if p.key == self.perch.key), None)
+        if cur is not None and self.roam_windows:
+            self._ride_sideways(cur)
         cx = self.x + self.size[0] / 2
         if cur is None or not self.roam_windows or not cur.left <= cx < cur.right:
-            self._leave_perch(now, hop=False)
+            # Closed, minimised or dragged from under it: a hop off with a push, now and then a plain step off.
+            self._leave_perch(now, hop=cur is None and self.rng.random() < 0.6)
         elif abs(cur.top - self.perch.top) > PERCH_MOVED:
-            lower = cur.top > self.perch.top
-            if self.gait == "float":  # it drifts to the new resting height
-                self.perch = cur
-                self._start_fly(0.0, 0.0)
-            elif lower:
-                self.perch = None
-                self._start_fall(0.0)
-            else:
-                self.perch = cur
-                if self.state in ("stand", "walk", "wave", "notice", "startle", "land"):
-                    self.hop_from = self.y
-                    self._enter("hop", now)
+            self._follow_top(cur, now)
         else:
             self.perch = cur
+
+    def _follow_top(self, cur: Perch, now: float) -> None:
+        """The window under it moved up or down: a floater drifts to the new height, a walker steps up, or
+        falls when it went lower."""
+        if self.gait == "float":  # it drifts to the new resting height
+            self.perch = cur
+            self._start_fly(0.0, 0.0)
+        elif cur.top > self.perch.top:
+            self.perch = None
+            self._start_fall(0.0)
+        else:
+            self.perch = cur
+            if self.state in ("stand", "walk", "wave", "notice", "startle", "land"):
+                self.hop_from = self.y
+                self._enter("hop", now)
+            elif self.state not in ("hop", "rise", "leap"):
+                self.y = cur.top - self.size[1]  # carried up with it, whatever it was doing
+
+    def _ride_sideways(self, cur: Perch) -> None:
+        """A window dragged along: the figure keeps its place on it (the same width, moved by more than a
+        few px), so it rides rather than being left in the air or dropped (INBOX 1683 g)."""
+        old = self.perch
+        if old is None or self.state in ("held", "pressed"):
+            return
+        dx = cur.left - old.left
+        if abs(dx) > PERCH_MOVED and abs((cur.right - cur.left) - (old.right - old.left)) <= PERCH_MOVED:
+            self.x += dx
+            if self.state == "walk" and self.goal is not None:
+                self.goal = (self.goal[0] + dx, self.goal[1])
 
     def _lift(self) -> float:
         """How far the frame's top is above the hands that hold an edge."""
@@ -1323,7 +1371,7 @@ class Engine:
 
     def _climb(self, now: float) -> None:
         """Up to a window's top: a walker standing under it jumps, one beside it climbs its side edge
-        onto the top, and a floater glides there; when the walk would cross the middle it is a portal."""
+        onto the top, and a floater glides there. Whatever lies between is crossed on foot (INBOX 1683 f)."""
         cand = self._candidates()
         if not cand:
             self._enter("stand", now)
@@ -1336,12 +1384,9 @@ class Engine:
         lo, hi = max(p.left, area[0]), min(p.right, area[2]) - w
         top = p.top - h
         if self.gait == "float" or not (abs(self.y - self.floor_y(m)) < 8 * self._scale()):
-            x = min(max(tv.out_of_middle(min(max(self.x, lo), hi), area, w), lo), hi)
-            if not self.plain_legs and (tv.crosses_middle(self.x, x, area, w) or tv.far(self.x, x, area)):
-                self._start_warp("portal" if self.rng.random() < 0.6 else "puff", (x, top), "perch", now)
-            else:
-                self.modes.append("glide")
-                self._go((x, top), "perch", now, plain=True)
+            x = min(max(self.x, lo), hi)  # straight to the nearest part of its top, over whatever is between (INBOX 1683 f)
+            self.modes.append("glide")
+            self._go((x, top), "perch", now, plain=True)
             return
         if lo <= self.x <= hi:  # underneath it: straight up
             self.modes.append("jump")
@@ -1353,17 +1398,17 @@ class Engine:
             self.modes.append("climb")
             self._go((sx, self.floor_y(m)), "climbside", now, plain=True)
             return
-        x = min(max(tv.out_of_middle(self.x, area, w), lo), hi)
+        x = min(max(self.x, lo), hi)  # a window with no floor beside it (it spans the screen): a puff up, the one way
         self._start_warp("portal" if self.rng.random() < 0.6 else "puff", (x, top), "perch", now)
 
     def _climb_sides(self, p: Perch, area: tuple, w: float) -> list[float]:
-        """Where it could stand beside a window to climb its side: reachable without the middle."""
+        """Where it could stand beside a window to climb its side (on the screen, with the figure's width clear)."""
         sides = []
         if p.left - w >= area[0]:
             sides.append(p.left - w)
         if p.right <= area[2] - w:
             sides.append(float(p.right))
-        return [sx for sx in sides if not tv.crosses_middle(self.x, sx, area, w) and not tv.far(self.x, sx, area)]
+        return sides
 
     def _arrive_at(self, then: str, now: float) -> None:
         self.then = then
@@ -1836,8 +1881,7 @@ class Engine:
             self.legs.append(("jump", self.x, self.x, now))
             self._enter("leap", now)
         else:
-            self._stand_on(p, now)
-            self.perch_until = now + self.rng.uniform(*REST_FOR)
+            self._stand_on(p, now)  # stays for PERCH_FOR (45 to 120 s): long enough to be seen (it was 8 to 20, then 20 to 50)
             self._enter("stand", now)
             self.state_until = self.perch_until
 
@@ -1985,20 +2029,75 @@ class Engine:
             self._face(-self.facing, now)
             self.hang_glance_at = now + self.rng.uniform(*HANG_GLANCE)
         if now >= self.state_until:
-            self._end_hang(now)
+            if self.swing_to is not None:
+                self._release_swing(now)
+            elif self.releasing:
+                self.releasing = False
+                self._let_go()
+            else:
+                self._end_hang(now)
 
     def _end_hang(self, now: float) -> None:
+        """The hang is over, by its own choice: pull up onto the edge it holds, swing and drop to a window top,
+        or let go after a startled beat. Never a plain fall on a timer (INBOX 1683 h)."""
         held = self._hold_of(self.hang_on) if self.hang_on is not None else None
-        mood = self.mind.mood(now, self.hour)
-        if held is not None and mood in ("curious", "happy", "proud", "bored") and self.rng.random() < 0.7:
-            w, h = self.size
+        w, h = self.size
+        table: dict[str, float] = {"react": HANG_ENDS["react"]}
+        if held is not None and held.top - h >= self.current_monitor().area[1]:
+            table["pull"] = HANG_ENDS["pull"]
+        drop = self._drop_target()
+        if drop is not None:
+            table["swing"] = HANG_ENDS["swing"]
+        roll = self.rng.random() * sum(table.values())
+        pick = "react"
+        for name, wt in table.items():
+            roll -= wt
+            if roll < 0:
+                pick = name
+                break
+        self.legs.append(("hang_" + pick, self.x, self.x, now))
+        if pick == "pull" and held is not None:
             x = min(max(self.x, held.left), held.right - w)
-            if held.top - h >= self.current_monitor().area[1]:
-                self.target = held
-                self.legs.append(("climb", self.x, x, now))
-                self._rise((x, held.top - h), "perch", now)
-                return
-        self._let_go()
+            self.target = held
+            self.legs.append(("climb", self.x, x, now))
+            self._rise((x, held.top - h), "perch", now)
+        elif pick == "swing" and drop is not None:
+            self.swing_to, self.swing_at = drop, now
+            self.state_until = now + SWING_FOR
+        else:
+            self.releasing = True  # a startled beat (a glance, the mood) and then it lets go
+            self.mind.feel("startled", now)
+            self._face(-self.facing, now)
+            self.state_until = now + REACT_FOR
+
+    def _drop_target(self) -> Perch | None:
+        """A window top below the hands that a swing from here can reach (the nearest by sideways distance)."""
+        k, (w, h) = self._scale(), self.size
+        hands = self.y + self._lift()
+        best, best_dx = None, SWING_REACH * k
+        for p in self._candidates():
+            if p.top - h < hands + 40 * k:  # not clearly below
+                continue
+            if self.hang_on is not None and p.key == self.hang_on.key:
+                continue
+            x = min(max(self.x, p.left), p.right - w)
+            if abs(x - self.x) <= best_dx:
+                best, best_dx = p, abs(x - self.x)
+        return best
+
+    def _release_swing(self, now: float) -> None:
+        """At the top of the swing: let go and drop onto the window top chosen when it began (if it is still
+        there and still below); else the plain letting go with its startled beat."""
+        p = next((q for q in self.windows if self.swing_to is not None and q.key == self.swing_to.key), None)
+        self.swing_to = None
+        if p is None or p.top - self.size[1] < self.y + self._lift():
+            self.releasing = False
+            self._let_go()
+            return
+        x = min(max(self.x, p.left), p.right - self.size[0])
+        self.target, self.hang_on = p, None
+        self.legs.append(("drop", self.x, x, now))
+        self._rise((x, p.top - self.size[1]), "perch", now)
 
     def _let_go(self) -> None:
         """Off the ceiling: a walker falls, a floater drifts down to its hover height."""
@@ -2254,6 +2353,8 @@ class Engine:
     def _notice(self, now: float, pointer: tuple[int, int]) -> None:
         if self.state not in ("stand", "walk", "drift", "sit", "sleep") or now < self.notice_ready:
             return
+        if self.trip and self.state in ("walk", "drift"):
+            return  # on its way: a look at the pointer would end the trip mid-screen (INBOX 1683 f, trips are common now)
         cx, cy = self.x + self.size[0] / 2, self.y + self.size[1] / 2
         dist = math.hypot(pointer[0] - cx, pointer[1] - cy)
         scale = self._scale()
