@@ -89,3 +89,11 @@ def test_the_card_grip_ignores_a_pointerover_a_scroll_made() -> None:
 def test_the_atlas_rig_does_not_read_behind_a_dialog() -> None:
     body = _body(_src("atlas-motion.js"), "function atlasRigFrame(")
     assert "nameMarkBuddyBehindCover()" in body[: body.index("const look =")]
+
+
+def test_the_first_run_toast_poll_reads_no_layout() -> None:
+    """The welcome waits for toasts to clear every 250 ms; a `getClientRects()` there laid the page out each time."""
+    body = _body(_src("onboarding.js"), "function firstRunToastsGone")
+    code = "\n".join(line for line in body.splitlines() if not line.strip().startswith("//"))
+    assert "getClientRects" not in code and "getBoundingClientRect" not in code
+    assert ".toast:not(.is-leaving)" in body
