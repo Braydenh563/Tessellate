@@ -692,6 +692,27 @@ _THINK_WORDS = ("think", "thinking", "thought", "reason", "reasoning")
 _THINK_OPEN_RE = re.compile(r"<\s*(?:%s)\s*>" % "|".join(_THINK_WORDS), re.I)
 _THINK_CLOSE_RE = re.compile(r"<\s*/\s*(?:%s)\s*>" % "|".join(_THINK_WORDS), re.I)
 
+#: **An untagged reasoning header is an open tag** (CHAT_PLAN B1, the owner:
+#: "the whole response from my ai model just got placed in a dropdown
+#: collapsed box"). A template that opens the thought in the prompt leaves
+#: the model writing "Thinking Process:", numbered steps and only the close
+#: tag; streamed, all of it was the answer. A first line that is one of these
+#: headers alone (marks and a colon allowed, nothing after it) opens the
+#: thought; a word that merely starts a sentence does not.
+_THINK_HEADERS = ("thinking process:", "thought process:", "reasoning process:", "thinking:", "reasoning:")
+_THINK_HEADER_LONGEST = 40
+
+
+def _think_header(text: str) -> str:
+    """"yes", "no" or "wait": is `text`'s first line a reasoning header?"""
+    first, newline, _ = text.partition("\n")
+    core = re.sub(r"[*_#]", "", first).strip().lower()
+    if newline:
+        return "yes" if core in _THINK_HEADERS else "no"
+    if len(first) > _THINK_HEADER_LONGEST:
+        return "no"
+    return "wait" if any(h.startswith(core) for h in _THINK_HEADERS) else "no"
+
 
 class _ThinkTagSplitter:
     """Routes streamed content into thinking and answer pieces.
@@ -722,6 +743,8 @@ class _ThinkTagSplitter:
     def __init__(self) -> None:
         self._buffer = ""
         self._mode = "start"  # start → thinking? → answer
+        #: The thought began at a header, not a tag, and nothing has closed it.
+        self._implied = ""
 
     @staticmethod
     def _leading(text: str, tags: tuple[str, ...]) -> str | None:
@@ -750,55 +773,79 @@ class _ThinkTagSplitter:
     def feed(self, chunk: str) -> list[dict]:
         self._buffer += chunk
         pieces: list[dict] = []
-
-        if self._mode == "start":
-            candidate = self._buffer.lstrip()
-            opening = self._leading(candidate, self.OPENS)
-            if opening:
-                self._mode = "thinking"
-                self._buffer = candidate[len(opening) :]
-            elif self._could_become(candidate, self.OPENS):
-                return pieces  # could still become an opening tag, wait
-            else:
-                self._mode = "answer"
-
-        if self._mode == "thinking":
-            at, size = self._find_close(self._buffer)
-            if at != -1:
-                pieces.append({"thinking_delta": self._buffer[:at]})
-                self._buffer = self._buffer[at + size :]
-                self._mode = "answer"
-            else:
-                # Keep enough back that a half-arrived closing tag is not
-                # emitted as thinking text.
-                safe = len(self._buffer) - (self._LONGEST_CLOSE - 1)
-                if safe > 0:
-                    pieces.append({"thinking_delta": self._buffer[:safe]})
-                    self._buffer = self._buffer[safe:]
-                return pieces
-
+        if self._mode == "start" and not self._start():
+            return pieces  # could still become an opening tag or header, wait
+        if self._mode == "thinking" and not self._thinking(pieces):
+            return pieces
         if self._mode == "answer" and self._buffer:
-            # A close with no open before it: drop the tag, keep the text.
-            while True:
-                at, size = self._find_close(self._buffer)
-                if at == -1:
-                    break
-                self._buffer = self._buffer[:at] + self._buffer[at + size :]
-            hold = 0
-            for length in range(1, min(self._LONGEST_CLOSE, len(self._buffer) + 1)):
-                if self._could_become(self._buffer[-length:], self.CLOSES):
-                    hold = length
-            if hold:
-                emit, self._buffer = self._buffer[:-hold], self._buffer[-hold:]
-            else:
-                emit, self._buffer = self._buffer, ""
-            if emit:
-                pieces.append({"content_delta": emit})
+            self._answer(pieces)
         return pieces
+
+    def _start(self) -> bool:
+        """Decide what the reply opens with; False while it cannot be told yet."""
+        candidate = self._buffer.lstrip()
+        opening = self._leading(candidate, self.OPENS)
+        header = _think_header(candidate)
+        if opening:
+            self._mode = "thinking"
+            self._buffer = candidate[len(opening) :]
+        elif self._could_become(candidate, self.OPENS) or header == "wait":
+            return False
+        elif header == "yes":
+            self._mode = "thinking"
+            self._buffer = candidate.partition("\n")[2].lstrip("\n")
+            self._implied = candidate[: len(candidate) - len(self._buffer)]
+        else:
+            self._mode = "answer"
+        return True
+
+    def _thinking(self, pieces: list[dict]) -> bool:
+        """Emit thought up to a close tag; True once the answer has begun."""
+        at, size = self._find_close(self._buffer)
+        if at != -1:
+            pieces.append({"thinking_delta": self._buffer[:at]})
+            self._buffer = self._buffer[at + size :]
+            self._mode = "answer"
+            self._implied = ""
+            return True
+        # Keep enough back that a half-arrived closing tag is not
+        # emitted as thinking text.
+        safe = len(self._buffer) - (self._LONGEST_CLOSE - 1)
+        if safe > 0:
+            if self._implied:
+                self._implied += self._buffer[:safe]
+            pieces.append({"thinking_delta": self._buffer[:safe]})
+            self._buffer = self._buffer[safe:]
+        return False
+
+    def _answer(self, pieces: list[dict]) -> None:
+        # A close with no open before it: drop the tag, keep the text.
+        while True:
+            at, size = self._find_close(self._buffer)
+            if at == -1:
+                break
+            self._buffer = self._buffer[:at] + self._buffer[at + size :]
+        hold = 0
+        for length in range(1, min(self._LONGEST_CLOSE, len(self._buffer) + 1)):
+            if self._could_become(self._buffer[-length:], self.CLOSES):
+                hold = length
+        if hold:
+            emit, self._buffer = self._buffer[:-hold], self._buffer[-hold:]
+        else:
+            emit, self._buffer = self._buffer, ""
+        if emit:
+            pieces.append({"content_delta": emit})
 
     def flush(self) -> list[dict]:
         """The stream ended: emit whatever is left."""
         leftover, self._buffer = self._buffer, ""
+        if self._mode == "start":
+            self._mode = "answer"  # a reply shorter than a header, all answer
+        if self._implied:
+            #: A header that nothing closed: no mark says where the answer
+            #: starts, so the whole text is the answer too, never lost to the fold.
+            implied, self._implied = self._implied + leftover, ""
+            return [{"thinking_delta": leftover}, {"content_delta": implied}] if leftover else [{"content_delta": implied}]
         if not leftover:
             return []
         key = "thinking_delta" if self._mode == "thinking" else "content_delta"
@@ -1343,6 +1390,9 @@ def split_thinking(text: str) -> tuple[str, str | None]:
         thoughts.append(text[opened.end() : closing.start()])
         position = closing.end()
     thinking = "\n\n".join(part.strip() for part in thoughts if part.strip()).strip()
+    #: The header a stream reads as the open tag (B1) is the fold's own label.
+    if _think_header(thinking) == "yes":
+        thinking = thinking.partition("\n")[2].strip()
     return "".join(answer).strip(), thinking or None
 
 

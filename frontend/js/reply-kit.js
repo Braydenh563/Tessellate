@@ -1609,7 +1609,8 @@ function replyFinish(answers, opts = {}) {
 
   const list = (answers instanceof Element ? [answers] : [...(answers || [])]).filter((el) => el?.isConnected);
   if (!list.length) return;
-  for (const answer of list) replyFoldLong(answer);
+  //: A composed reply only (B1): a model's own answer is never folded.
+  if (opts.composed) for (const answer of list) replyFoldLong(answer);
   replyNotePreviews(list);
   if (opts.head && list.some((answer) => answer.textContent.trim())) replyByline(opts.head, opts);
   if (opts.composed) replyReveal(list);
@@ -1819,7 +1820,9 @@ function replyReveal(answers) {
 //: shut, whose summary is its gist: the first sentence cut to a line, and how
 //: long the whole is. Open, it reads in an inset panel capped and scrolling,
 //: as the web reader does. The words are all still there, for copy and for
-//: find; nothing is rewritten.
+//: find; nothing is rewritten. **Text the composer wrote, never a model's
+//: answer** (CHAT_PLAN B1, the owner: "the whole response from my ai model
+//: just got placed in a dropdown collapsed box": one 145-word paragraph).
 const REPLY_FOLD_CHARS = 600;
 
 function replyGist(text) {

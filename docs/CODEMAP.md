@@ -2,7 +2,7 @@
 
 Generated 2026-11-05 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7823, frontend ids 2644, CSS sections 522, backend routes 644, backend modules 8821, test files 2082, tests 17585, plan headings 1004, app scripts 28, boot scripts 37, script files 257.
+Counts: frontend functions 7823, frontend ids 2644, CSS sections 522, backend routes 644, backend modules 8822, test files 2083, tests 17593, plan headings 1004, app scripts 28, boot scripts 37, script files 257.
 
 ## Frontend functions (7823)
 
@@ -6538,15 +6538,15 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | Name | File:line |
 |---|---|
 | `calcFigure` | frontend/js/reply-kit.js:1021 |
-| `chatQueuePaint` | frontend/js/reply-kit.js:1973 |
+| `chatQueuePaint` | frontend/js/reply-kit.js:1976 |
 | `openCalculator` | frontend/js/reply-kit.js:432 |
 | `renderRelatedElsewhere` | frontend/js/reply-kit.js:68 |
 | `renderReplyPanel` | frontend/js/reply-kit.js:23 |
-| `renderToolsUnsupportedNotice` | frontend/js/reply-kit.js:1645 |
-| `replyByHelpPanel` | frontend/js/reply-kit.js:1696 |
-| `replyByHover` | frontend/js/reply-kit.js:1717 |
-| `replyByline` | frontend/js/reply-kit.js:1749 |
-| `replyBylineFacts` | frontend/js/reply-kit.js:1674 |
+| `renderToolsUnsupportedNotice` | frontend/js/reply-kit.js:1646 |
+| `replyByHelpPanel` | frontend/js/reply-kit.js:1697 |
+| `replyByHover` | frontend/js/reply-kit.js:1718 |
+| `replyByline` | frontend/js/reply-kit.js:1750 |
+| `replyBylineFacts` | frontend/js/reply-kit.js:1675 |
 | `replyCalcActions` | frontend/js/reply-kit.js:585 |
 | `replyCalcBuild` | frontend/js/reply-kit.js:460 |
 | `replyCalcConvertPane` | frontend/js/reply-kit.js:1471 |
@@ -6562,19 +6562,19 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `replyDrawAll` | frontend/js/reply-kit.js:34 |
 | `replyFillMeters` | frontend/js/reply-kit.js:193 |
 | `replyFinish` | frontend/js/reply-kit.js:1592 |
-| `replyFoldLong` | frontend/js/reply-kit.js:1830 |
-| `replyGist` | frontend/js/reply-kit.js:1825 |
+| `replyFoldLong` | frontend/js/reply-kit.js:1833 |
+| `replyGist` | frontend/js/reply-kit.js:1828 |
 | `replyMeter` | frontend/js/reply-kit.js:160 |
 | `replyMonthName` | frontend/js/reply-kit.js:201 |
-| `replyNoteCard` | frontend/js/reply-kit.js:1923 |
-| `replyNoteEntry` | frontend/js/reply-kit.js:1872 |
-| `replyNoteId` | frontend/js/reply-kit.js:1867 |
-| `replyNotePreviews` | frontend/js/reply-kit.js:1876 |
+| `replyNoteCard` | frontend/js/reply-kit.js:1926 |
+| `replyNoteEntry` | frontend/js/reply-kit.js:1875 |
+| `replyNoteId` | frontend/js/reply-kit.js:1870 |
+| `replyNotePreviews` | frontend/js/reply-kit.js:1879 |
 | `replyPanelShell` | frontend/js/reply-kit.js:44 |
-| `replyPeekLink` | frontend/js/reply-kit.js:1895 |
-| `replyRecordReasons` | frontend/js/reply-kit.js:1627 |
-| `replyReveal` | frontend/js/reply-kit.js:1795 |
-| `replyRevealWanted` | frontend/js/reply-kit.js:1790 |
+| `replyPeekLink` | frontend/js/reply-kit.js:1898 |
+| `replyRecordReasons` | frontend/js/reply-kit.js:1628 |
+| `replyReveal` | frontend/js/reply-kit.js:1796 |
+| `replyRevealWanted` | frontend/js/reply-kit.js:1791 |
 | `replySpark` | frontend/js/reply-kit.js:136 |
 | `replyStatCard` | frontend/js/reply-kit.js:104 |
 | `replyStatCards` | frontend/js/reply-kit.js:206 |
@@ -13015,7 +13015,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:164 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (8821)
+## Backend modules (8822)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -15830,8 +15830,8 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `_act_topic` | src/tessellate/ai/help_topics_more.py:3391 |
-| `_slash_commands_topic` | src/tessellate/ai/help_topics_more.py:3519 |
+| `_act_topic` | src/tessellate/ai/help_topics_more.py:3392 |
+| `_slash_commands_topic` | src/tessellate/ai/help_topics_more.py:3520 |
 
 ### src/tessellate/ai/help_words.py (2)
 
@@ -16625,44 +16625,45 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `proofread` | src/tessellate/ai/proofread.py:48 |
 | `said` | src/tessellate/ai/proofread.py:120 |
 
-### src/tessellate/ai/provider.py (35)
+### src/tessellate/ai/provider.py (36)
 
 | Name | File:line |
 |---|---|
 | `Provider` | src/tessellate/ai/provider.py:338 |
 | `ProviderError` | src/tessellate/ai/provider.py:67 |
 | `ToolsUnsupportedError` | src/tessellate/ai/provider.py:71 |
-| `_ThinkTagSplitter` | src/tessellate/ai/provider.py:696 |
-| `_ToolTextGate` | src/tessellate/ai/provider.py:808 |
-| `_balanced_json_objects` | src/tessellate/ai/provider.py:861 |
-| `_bare_json_calls` | src/tessellate/ai/provider.py:1159 |
-| `_call_end` | src/tessellate/ai/provider.py:1038 |
-| `_calls_in_blob` | src/tessellate/ai/provider.py:1113 |
-| `_close_open_json` | src/tessellate/ai/provider.py:1362 |
-| `_first_json_object_after` | src/tessellate/ai/provider.py:1027 |
-| `_json_too_deep` | src/tessellate/ai/provider.py:1391 |
-| `_literal_keywords` | src/tessellate/ai/provider.py:1063 |
-| `_named_calls` | src/tessellate/ai/provider.py:1177 |
-| `_ns_to_ms` | src/tessellate/ai/provider.py:1298 |
-| `_prose_read_calls` | src/tessellate/ai/provider.py:1216 |
-| `_python_calls` | src/tessellate/ai/provider.py:1203 |
-| `_python_style_calls` | src/tessellate/ai/provider.py:1076 |
+| `_ThinkTagSplitter` | src/tessellate/ai/provider.py:717 |
+| `_ToolTextGate` | src/tessellate/ai/provider.py:855 |
+| `_balanced_json_objects` | src/tessellate/ai/provider.py:908 |
+| `_bare_json_calls` | src/tessellate/ai/provider.py:1206 |
+| `_call_end` | src/tessellate/ai/provider.py:1085 |
+| `_calls_in_blob` | src/tessellate/ai/provider.py:1160 |
+| `_close_open_json` | src/tessellate/ai/provider.py:1412 |
+| `_first_json_object_after` | src/tessellate/ai/provider.py:1074 |
+| `_json_too_deep` | src/tessellate/ai/provider.py:1441 |
+| `_literal_keywords` | src/tessellate/ai/provider.py:1110 |
+| `_named_calls` | src/tessellate/ai/provider.py:1224 |
+| `_ns_to_ms` | src/tessellate/ai/provider.py:1345 |
+| `_prose_read_calls` | src/tessellate/ai/provider.py:1263 |
+| `_python_calls` | src/tessellate/ai/provider.py:1250 |
+| `_python_style_calls` | src/tessellate/ai/provider.py:1123 |
 | `_squash_separators` | src/tessellate/ai/provider.py:211 |
-| `_tagged_calls` | src/tessellate/ai/provider.py:1138 |
-| `_unfence` | src/tessellate/ai/provider.py:1350 |
+| `_tagged_calls` | src/tessellate/ai/provider.py:1185 |
+| `_think_header` | src/tessellate/ai/provider.py:706 |
+| `_unfence` | src/tessellate/ai/provider.py:1400 |
 | `context_from_catalog_entry` | src/tessellate/ai/provider.py:267 |
 | `detect_provider` | src/tessellate/ai/provider.py:313 |
-| `extract_text_tool_calls` | src/tessellate/ai/provider.py:1256 |
+| `extract_text_tool_calls` | src/tessellate/ai/provider.py:1303 |
 | `first_chat_model` | src/tessellate/ai/provider.py:305 |
 | `is_transient_server_error` | src/tessellate/ai/provider.py:118 |
 | `known_context` | src/tessellate/ai/provider.py:226 |
-| `loads_lenient` | src/tessellate/ai/provider.py:1414 |
-| `normalise_tool_calls` | src/tessellate/ai/provider.py:1453 |
-| `offered_tool_names` | src/tessellate/ai/provider.py:1487 |
-| `resolve_tool_name` | src/tessellate/ai/provider.py:953 |
+| `loads_lenient` | src/tessellate/ai/provider.py:1464 |
+| `normalise_tool_calls` | src/tessellate/ai/provider.py:1503 |
+| `offered_tool_names` | src/tessellate/ai/provider.py:1537 |
+| `resolve_tool_name` | src/tessellate/ai/provider.py:1000 |
 | `set_sampling_overrides_getter` | src/tessellate/ai/provider.py:61 |
-| `set_write_tools` | src/tessellate/ai/provider.py:1105 |
-| `split_thinking` | src/tessellate/ai/provider.py:1306 |
+| `set_write_tools` | src/tessellate/ai/provider.py:1152 |
+| `split_thinking` | src/tessellate/ai/provider.py:1353 |
 | `tools_unsupported_message` | src/tessellate/ai/provider.py:92 |
 
 ### src/tessellate/ai/provider_http.py (17)
@@ -24115,7 +24116,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (17585)
+## Tests (17593)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -24158,6 +24159,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_alembic_full_chain.py | 3 |
 | tests/test_all_spaces_indexes.py | 2 |
 | tests/test_announce_saved_note_z7.py | 4 |
+| tests/test_answer_never_folded.py | 8 |
 | tests/test_answer_pictures_502.py | 11 |
 | tests/test_answer_support.py | 10 |
 | tests/test_answer_support_cleared.py | 1 |
