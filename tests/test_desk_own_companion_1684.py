@@ -161,6 +161,7 @@ def test_a_captured_set_loads_as_a_look_that_walks(tmp_path, monkeypatch) -> Non
     key = capture.key_for("c")
     capture.write_set(key, fetch(FakePage()), root=tmp_path)
     monkeypatch.setattr(capture, "cache_root", lambda: tmp_path)
+    monkeypatch.setattr(sprites, "captured_root", lambda: tmp_path)  # where a SpriteSet finds it (no import cycle)
     assert sprites.look_for(key) == key and sprites.look_for("FEMININE") == "feminine" and sprites.look_for("c-zz") == "masculine"
     spr = sprites.SpriteSet(key)
     assert spr.gait == "walk" and spr.missing() == [] and spr.walk_count() == 12 and spr.idle_count() == 24

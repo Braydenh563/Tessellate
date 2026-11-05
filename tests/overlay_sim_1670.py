@@ -86,7 +86,7 @@ def _run(gait, seed, secs, setup, pointer, look) -> dict:
     spell_at: list[tuple[float, float, float, bool]] = []
     on_perch = False
     spell = 0.0
-    last_act_start, wakes = None, 0
+    last_act_start, wakes, hang_wakes = None, 0, 0
     hang_spans: list[tuple[float, float]] = []  # (length, longest stretch with no change of the picture)
     hang_t0 = hang_last = hang_gap = hang_pose = None
     warps: dict[str, list[float]] = {}
@@ -103,6 +103,7 @@ def _run(gait, seed, secs, setup, pointer, look) -> dict:
         out = e.update(t, (px, 600) if pointer else None)
         wakes += 1
         s = e.state
+        hang_wakes += s == "hang"
         if s == "act":
             if e.act_started != last_act_start:
                 last_act_start = e.act_started
@@ -180,6 +181,7 @@ def _run(gait, seed, secs, setup, pointer, look) -> dict:
         "spell_median": statistics.median(spells) if spells else 0.0,
         "moving_share": moving_t / secs,
         "wakes_per_min": wakes / (secs / 60.0),
+        "hang_wakes_per_min": hang_wakes / (secs / 60.0),
         "hangs": hang_spans,
         "trips": e.trips,
         "warps": warps,

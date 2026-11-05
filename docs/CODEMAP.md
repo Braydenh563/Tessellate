@@ -2,7 +2,7 @@
 
 Generated 2026-11-05 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7841, frontend ids 2644, CSS sections 522, backend routes 644, backend modules 8892, test files 2098, tests 17723, plan headings 1004, app scripts 28, boot scripts 37, script files 259.
+Counts: frontend functions 7841, frontend ids 2644, CSS sections 522, backend routes 644, backend modules 8893, test files 2098, tests 17723, plan headings 1004, app scripts 28, boot scripts 37, script files 259.
 
 ## Frontend functions (7841)
 
@@ -12356,7 +12356,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/inbox-lazy.css | 306 |
 | frontend/css/key-grid-lazy.css | 55 |
 | frontend/css/lan-lazy.css | 131 |
-| frontend/css/library-lazy.css | 8639 |
+| frontend/css/library-lazy.css | 8640 |
 | frontend/css/lightbox-lazy.css | 425 |
 | frontend/css/manual-lazy.css | 161 |
 | frontend/css/math-editor-lazy.css | 169 |
@@ -13044,7 +13044,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:164 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (8892)
+## Backend modules (8893)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -21298,8 +21298,8 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `DeskCompanion` | src/tessellate/core/desk_companion.py:867 |
 | `_SnoozeTimer` | src/tessellate/core/desk_companion.py:773 |
 | `_config` | src/tessellate/core/desk_companion.py:193 |
-| `_default_overlay_factory` | src/tessellate/core/desk_companion.py:1673 |
-| `_follow` | src/tessellate/core/desk_companion.py:1723 |
+| `_default_overlay_factory` | src/tessellate/core/desk_companion.py:1672 |
+| `_follow` | src/tessellate/core/desk_companion.py:1722 |
 | `_linux_areas` | src/tessellate/core/desk_companion.py:312 |
 | `_log_placed` | src/tessellate/core/desk_companion.py:707 |
 | `_look_answer` | src/tessellate/core/desk_companion.py:224 |
@@ -21310,8 +21310,8 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_screen_area` | src/tessellate/core/desk_companion.py:416 |
 | `_set_pref` | src/tessellate/core/desk_companion.py:218 |
 | `_system_dpi` | src/tessellate/core/desk_companion.py:302 |
-| `attach` | src/tessellate/core/desk_companion.py:1688 |
-| `carry_due` | src/tessellate/core/desk_companion.py:1760 |
+| `attach` | src/tessellate/core/desk_companion.py:1687 |
+| `carry_due` | src/tessellate/core/desk_companion.py:1759 |
 | `clamp_corner` | src/tessellate/core/desk_companion.py:432 |
 | `clean_size` | src/tessellate/core/desk_companion.py:725 |
 | `companion_ex_style` | src/tessellate/core/desk_companion.py:506 |
@@ -21322,7 +21322,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `monitor_areas` | src/tessellate/core/desk_companion.py:356 |
 | `monitor_for` | src/tessellate/core/desk_companion.py:454 |
 | `mouse_down` | src/tessellate/core/desk_companion.py:565 |
-| `overlay_support` | src/tessellate/core/desk_companion.py:1656 |
+| `overlay_support` | src/tessellate/core/desk_companion.py:1655 |
 | `panel_corner` | src/tessellate/core/desk_companion.py:441 |
 | `panel_placement` | src/tessellate/core/desk_companion.py:466 |
 | `physical_rect` | src/tessellate/core/desk_companion.py:541 |
@@ -21331,9 +21331,9 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `place_physical` | src/tessellate/core/desk_companion.py:671 |
 | `press_outside` | src/tessellate/core/desk_companion.py:569 |
 | `raise_on_desktop` | src/tessellate/core/desk_companion.py:585 |
-| `shutdown` | src/tessellate/core/desk_companion.py:1781 |
+| `shutdown` | src/tessellate/core/desk_companion.py:1780 |
 | `to_logical` | src/tessellate/core/desk_companion.py:283 |
-| `tray_menu_item` | src/tessellate/core/desk_companion.py:1789 |
+| `tray_menu_item` | src/tessellate/core/desk_companion.py:1788 |
 | `window_handle` | src/tessellate/core/desk_companion.py:525 |
 | `work_area` | src/tessellate/core/desk_companion.py:334 |
 
@@ -22341,16 +22341,16 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_frame_of` | src/tessellate/core/overlay/capture.py:76 |
 | `_started` | src/tessellate/core/overlay/capture.py:97 |
 | `cache_root` | src/tessellate/core/overlay/capture.py:144 |
-| `common_box` | src/tessellate/core/overlay/capture.py:190 |
-| `complete` | src/tessellate/core/overlay/capture.py:151 |
-| `decode` | src/tessellate/core/overlay/capture.py:178 |
-| `draw_card` | src/tessellate/core/overlay/capture.py:157 |
+| `common_box` | src/tessellate/core/overlay/capture.py:188 |
+| `complete` | src/tessellate/core/overlay/capture.py:149 |
+| `decode` | src/tessellate/core/overlay/capture.py:176 |
+| `draw_card` | src/tessellate/core/overlay/capture.py:155 |
 | `fetch_frames` | src/tessellate/core/overlay/capture.py:109 |
 | `is_key` | src/tessellate/core/overlay/capture.py:140 |
 | `key_for` | src/tessellate/core/overlay/capture.py:131 |
-| `prune` | src/tessellate/core/overlay/capture.py:247 |
-| `touches_edge` | src/tessellate/core/overlay/capture.py:204 |
-| `write_set` | src/tessellate/core/overlay/capture.py:210 |
+| `prune` | src/tessellate/core/overlay/capture.py:245 |
+| `touches_edge` | src/tessellate/core/overlay/capture.py:202 |
+| `write_set` | src/tessellate/core/overlay/capture.py:208 |
 
 ### src/tessellate/core/overlay/engine.py (5)
 
@@ -22452,23 +22452,24 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `battery_sysfs` | src/tessellate/core/overlay/screenwatch.py:36 |
 | `downloads_count` | src/tessellate/core/overlay/screenwatch.py:26 |
 
-### src/tessellate/core/overlay/sprites.py (13)
+### src/tessellate/core/overlay/sprites.py (14)
 
 | Name | File:line |
 |---|---|
 | `Frame` | src/tessellate/core/overlay/sprites.py:91 |
-| `SpriteSet` | src/tessellate/core/overlay/sprites.py:163 |
-| `_drawn_box` | src/tessellate/core/overlay/sprites.py:152 |
-| `_glint` | src/tessellate/core/overlay/sprites.py:491 |
-| `_smooth` | src/tessellate/core/overlay/sprites.py:461 |
-| `clear_faint_alpha` | src/tessellate/core/overlay/sprites.py:141 |
+| `SpriteSet` | src/tessellate/core/overlay/sprites.py:171 |
+| `_drawn_box` | src/tessellate/core/overlay/sprites.py:160 |
+| `_glint` | src/tessellate/core/overlay/sprites.py:497 |
+| `_smooth` | src/tessellate/core/overlay/sprites.py:467 |
+| `captured_root` | src/tessellate/core/overlay/sprites.py:125 |
+| `clear_faint_alpha` | src/tessellate/core/overlay/sprites.py:149 |
 | `clipped` | src/tessellate/core/overlay/sprites.py:106 |
-| `effect` | src/tessellate/core/overlay/sprites.py:545 |
-| `flow_offsets` | src/tessellate/core/overlay/sprites.py:466 |
-| `frames_dir` | src/tessellate/core/overlay/sprites.py:125 |
-| `look_for` | src/tessellate/core/overlay/sprites.py:132 |
-| `mix` | src/tessellate/core/overlay/sprites.py:526 |
-| `premultiplied_bgra` | src/tessellate/core/overlay/sprites.py:158 |
+| `effect` | src/tessellate/core/overlay/sprites.py:551 |
+| `flow_offsets` | src/tessellate/core/overlay/sprites.py:472 |
+| `frames_dir` | src/tessellate/core/overlay/sprites.py:133 |
+| `look_for` | src/tessellate/core/overlay/sprites.py:140 |
+| `mix` | src/tessellate/core/overlay/sprites.py:532 |
+| `premultiplied_bgra` | src/tessellate/core/overlay/sprites.py:166 |
 
 ### src/tessellate/core/overlay/travel.py (14)
 

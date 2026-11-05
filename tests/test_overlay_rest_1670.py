@@ -61,7 +61,11 @@ def test_at_rest_the_drawn_feet_do_not_move_and_it_starts_few_things(gait: str, 
 def test_the_idle_wakes_stay_at_or_below_the_old_rate(gait: str, seed: int) -> None:
     # Intent moved (INBOX 1670, 15:40Z): the old bar was 240 a minute with the cycle in bursts. The figure now lives in place
     # without pause (the cycle at 6 a second, a blink every 3 to 7 s), so the bar is the redraw cap: 12 a second.
-    assert hour(gait, seed)["wakes_per_min"] <= 480  # measured about 380 (review: hold the rate, not the cap)
+    # Intent moved (INBOX 1683 w, g; edba405): a hang is drawn at its own moving pace (HANG_TICK_MS), budgeted with the moving
+    # states in tests/overlay_pace_sim.py, so it is left out here; a seed that hangs (walk 3 after the 1684 acts) measured
+    # 496 with it and 413 without. The rest the figure spends in place keeps the old bar.
+    h = hour(gait, seed)
+    assert h["wakes_per_min"] - h["hang_wakes_per_min"] <= 480, h["hang_wakes_per_min"]  # measured about 380 to 440
 
 
 def test_fidgets_are_at_most_two_an_hour() -> None:

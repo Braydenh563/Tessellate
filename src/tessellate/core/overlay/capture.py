@@ -142,10 +142,8 @@ def is_key(look: Any) -> bool:
 
 
 def cache_root() -> Path:
-    """`desk_frames` in the data folder."""
-    from tessellate.core.config import resolved_data_dir
-
-    return resolved_data_dir() / "desk_frames"
+    """`desk_frames` in the data folder (`sprites.captured_root`)."""
+    return sprites.captured_root()
 
 
 def complete(key: str, root: Path | None = None) -> bool:

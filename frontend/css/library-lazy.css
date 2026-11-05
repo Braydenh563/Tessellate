@@ -8634,6 +8634,7 @@ input[type="color"].wb-mixed {
   border-radius: var(--radius-pill);
   cursor: pointer;
 }
-.wb-context .wb-snap-label:hover {
+.wb-context .wb-snap-label:hover,
+.wb-context .wb-snap-label:is(:focus-visible, :has(:focus-visible)) {
   background: var(--row-hover-bg);
 }

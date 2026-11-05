@@ -37,8 +37,10 @@ def test_the_colour_row_opens_the_existing_well_not_a_new_one() -> None:
     row_at = body.index("Topic colour")
     row = body[row_at : row_at + 500]
     assert 'getElementById("wb-map-strip-color")' in row
-    assert "showPicker" in row
-    assert ".click()" in row, "a browser without showPicker() needs the fallback"
+    # Intent moved (INBOX 1685, 88274b7): the well's click opens the app's own colour popover, so the row
+    # clicks it and never asks for the browser's native picker.
+    assert "showPicker" not in row
+    assert ".click()" in row
 
 
 def test_no_second_colour_input_was_added() -> None:

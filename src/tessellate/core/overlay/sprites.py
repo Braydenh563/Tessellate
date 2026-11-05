@@ -122,6 +122,14 @@ def clipped(frame: Frame, clip: tuple[int, int, int, int] | None) -> Frame:
     return frame._replace(bgra=bytes(out))
 
 
+def captured_root() -> Path:
+    """`desk_frames` in the data folder, where `capture` writes a captured companion's set; here, not in
+    `capture`, which reads this module's frame names, so the two do not import each other."""
+    from tessellate.core.config import resolved_data_dir
+
+    return resolved_data_dir() / "desk_frames"
+
+
 def frames_dir() -> Path:
     """`frontend/img/desk`, in a checkout or a bundled build."""
     from tessellate.api.app import FRONTEND_DIR
@@ -168,9 +176,7 @@ class SpriteSet:
         #: A captured companion (name, persona, saved) has legs: it walks; Atlas floats.
         self.gait = GAITS.get(self.look, "walk")
         if directory is None and self.look not in LOOKS:
-            from tessellate.core.overlay import capture
-
-            directory = capture.cache_root()
+            directory = captured_root()
         self.directory = (directory or frames_dir()) / self.look
         self._source: dict[str, Any] = {}
         self._cache: dict[tuple[str, int, bool], Frame] = {}
