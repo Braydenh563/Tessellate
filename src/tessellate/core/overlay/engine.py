@@ -2490,9 +2490,7 @@ class Engine:
         if s in FRAME_OF:
             return FRAME_OF[s]
         if s == "fly":
-            # a bonk shows the startled hop only when the figure is not turning: a picture swap in the middle of a
-            # spin was the snap (INBOX 1683); the contact is felt in the turn rate instead
-            return "hop" if now < self.bonk_until and self.laid else self._fly_frame()
+            return self._flying_frame(now)
         if s in ("rise", "peek"):
             return self._edge_frame(now)
         if s == "stand":
@@ -2500,6 +2498,11 @@ class Engine:
         if s == "sit" and self.flash:  # eyelids over the sat figure's eyes (`SpriteSet` derives the frame)
             return "sitblink"
         return s  # sit, sleep, wave, fall, land
+
+    def _flying_frame(self, now: float) -> str:
+        """A bonk shows the startled hop only when the figure is not turning: a picture swap in the middle of a
+        spin was the snap (INBOX 1683); the contact is felt in the turn rate instead."""
+        return "hop" if now < self.bonk_until and self.laid else self._fly_frame()
 
     def _step_frame(self, now: float, s: str) -> str:
         if s == "card":
