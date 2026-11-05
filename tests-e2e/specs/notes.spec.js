@@ -123,12 +123,13 @@ for (const [slow, url] of [["the tags arrive", /\/tags(\?|$)/], ["the list's cod
 });
 
 // The third late arrival (BACKLOG 1682): not an answer but the keyboard. A
-// change poll redraws the list, the form's row is carried through it, and
-// `restoreFocusTo` gives the tags field back the focus it lost with the
-// move; that focus took the "a tag was just entered" flag away and opened the
-// list over Save, every 15 s, under load. The redraw is made here by hand
-// (blur, then the same call) so the order is certain.
-test("a focus the app gives back after a redraw does not open the tag list over Save", async ({ page }) => {
+// change poll redraws the list, the form's row is carried through it and the
+// tags field loses the keyboard with the move. Two things followed under load:
+// keys typed before the next frame went to the page, not the field, and the
+// focus the app then gave back took the "a tag was just entered" flag away and
+// opened the list over Save. The redraw is the app's own (`renderEntries` with
+// the `loadEntries` hold and restore), not a hand-made blur.
+test("a redraw of the list leaves the tags field focused at once and its list shut", async ({ page }) => {
   await openApp(page);
   const id = await captureNote(page, `Tag restore ${Date.now()}: ring the plumber about the boiler`);
   const row = await noteRow(page, id);
@@ -141,16 +142,18 @@ test("a focus the app gives back after a redraw does not open the tag list over 
   await page.keyboard.press("Enter");
   await expect(row.locator(".note-edit-tags")).toContainText("zzqqnomatch");
   await expect(page.locator(".tag-suggest:not(.hidden)")).toHaveCount(0);
-  await page.evaluate(() => {
-    const field = document.querySelector(".note-edit-tag-input");
-    field.blur();
-    restoreFocusTo(field);
+  const heldAfterRedraw = await page.evaluate(async () => {
+    const held = heldNoteControl();
+    await renderEntries();
+    restoreNoteControl(held);
+    // No frame waited: a key typed now must land in the field.
+    return document.activeElement?.classList.contains("note-edit-tag-input") ?? false;
   });
-  await expect(input).toBeFocused();
+  expect(heldAfterRedraw).toBe(true);
   await page.evaluate(() => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))));
   await expect(page.locator(".tag-suggest:not(.hidden)")).toHaveCount(0);
   // A person's press in the same field still opens it.
-  await input.click();
+  await page.locator(".note-edit-tag-input").click();
   await expect(page.locator(".tag-suggest:not(.hidden)")).toHaveCount(1);
 });
 

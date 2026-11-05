@@ -309,8 +309,8 @@ function renderEditForm(li, entry) {
     //: next key or press in the field, rather than opening every tag over Save.
     tagEntry.dataset.tagged = "1";
   };
-  //: A focus from nowhere (the app giving the keyboard back after a redraw) is no press (1682).
-  for (const type of ["focus", "pointerdown"]) tagEntry.addEventListener(type, (e) => (e.type === "focus" && !e.relatedTarget) || delete tagEntry.dataset.tagged);
+  //: The app giving focus back after a redraw is no press (1682).
+  for (const type of ["focus", "pointerdown"]) tagEntry.addEventListener(type, (e) => (e.type === "focus" && restoreFocusTo.giving) || delete tagEntry.dataset.tagged);
   function drawTagChips() {
     for (const old of tagField.querySelectorAll(".chip")) old.remove();
     for (const tag of tagList()) {
