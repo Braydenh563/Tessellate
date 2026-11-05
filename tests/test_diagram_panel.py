@@ -53,3 +53,22 @@ def test_the_new_rules_use_tokens_only_and_no_em_dashes():
 
 def test_the_guide_says_the_pane_in_the_controls_words():
     assert "Add block" in HELP and "Your blocks, in the order the chart flows" in HELP
+
+
+def test_the_foot_and_the_checklist_do_not_say_the_same_thing_twice():
+    # 1679 blind pass: after the first block the checklist and the foot both offered a box and an arrow.
+    assert 'S.footConnect?.classList.toggle("hidden", m.edges.length === 0 && Boolean(S.steps))' in STEPS
+    assert 'S.steps?.firstElementChild?.classList.toggle("hidden", m.nodes.length > 0)' in STEPS
+    assert "Add a Box" not in STEPS  # sentence case: "Add a box"
+
+
+def test_handles_shrink_on_a_small_block_an_empty_name_puts_the_label_back_and_the_hint_goes_when_drawing_starts():
+    edges = (JS / "diagram-edges.js").read_text(encoding="utf-8")
+    assert "Math.max(0.4, Math.min(1, Math.min(at.w, at.h) / (size * 2)))" in edges and "scale(${k.toFixed(2)})" in edges
+    assert "label.textContent = nameOf(S, key)), render(S)" in BUILDER
+    assert 'S.fig.querySelector(":scope > .dgm-hint")?.remove();' in BUILDER
+
+
+def test_a_quote_or_hash_code_is_not_drawn_as_its_entity():
+    draw = (JS / "mermaid-draw.js").read_text(encoding="utf-8")
+    assert '["#quot;", "\\ue001", "&quot;"]' in draw and "text.split(stand).join(mark), result.svg)" in draw

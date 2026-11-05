@@ -70,6 +70,7 @@
       const empty = !source.trim() || (!S.plain && blank && bare);
       S.fig.classList.toggle("dgm-picture-empty", empty);
       if (empty) return S.fig.replaceChildren(el("p", "muted dgm-hint", "The picture appears here as you add blocks."));
+      S.fig.querySelector(":scope > .dgm-hint")?.remove();
       ensureModule("mermaid").then((ok) => {
         if (!ok || stamp !== S.drawn) return;
         const began = performance.now();
@@ -362,7 +363,7 @@
     const label = b.querySelector(":scope > .dgm-card > .dgm-label");
     beginEdit(S, label, nameOf(S, key), (text) => {
       //: An empty name is refused; the list would keep showing it empty while the picture says the old one, so draw it back.
-      if (!diagramOps.relabel(S.m, key, text)) return render(S);
+      if (!diagramOps.relabel(S.m, key, text)) return (label.textContent = nameOf(S, key)), render(S);
       if (text === nameOf(S, key) && S.source === diagramModel.print(S.m)) return render(S);
       commit(S, `Renamed to ${text}.`);
     }, key);

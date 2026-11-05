@@ -400,7 +400,10 @@ mermaidFailure.note = (error, source) => {
   return note;
 };
 
+//: Mermaid writes a `#quot;` or `#35;` code in a label as `&amp;quot;` and may wrap the line inside it, so the picture showed the
+//: entity's text, not the mark (1679 blind pass). These three codes go to it as private-use letters and come back as the marks.
 function mermaidRequest(source, look = null) {
+  const marks = [["#quot;", "\ue001", "&quot;"], ["#35;", "\ue002", "#"], ["#124;", "\ue003", "|"]];
   const theme = mermaidThemeNow(look);
   const key = mermaidCacheKey(theme.key, source);
   const hit = mermaidState.cache.get(key);
@@ -418,12 +421,13 @@ function mermaidRequest(source, look = null) {
         resolve(result);
       });
       mermaidState.frame.contentWindow.postMessage(
-        { type: "render", id, source, themeVariables: theme.variables },
+        { type: "render", id, source: marks.reduce((text, [code, stand]) => text.split(code).join(stand), source), themeVariables: theme.variables },
         location.origin
       );
     });
   }).then((result) => {
     if (result.svg) {
+      result.svg = marks.reduce((text, [, stand, mark]) => text.split(stand).join(mark), result.svg);
       result.key = theme.key;
       mermaidState.cache.set(key, result);
       if (mermaidState.cache.size > MERMAID_CACHE_MAX) mermaidState.cache.delete(mermaidState.cache.keys().next().value);

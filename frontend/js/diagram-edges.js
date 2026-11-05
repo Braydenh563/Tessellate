@@ -74,9 +74,11 @@
       if (!at) return;
       //: Shown first, measured once, then placed: a read between writes would lay the page out four times.
       const size = handles[0].offsetWidth || 24;
+      //: A small block (a zoomed-out picture, a phone) gets smaller handles, down to 0.4, so they do not cover its words (1679 blind pass).
+      const k = Math.max(0.4, Math.min(1, Math.min(at.w, at.h) / (size * 2)));
       for (const handle of handles) {
         const [x, y] = anchor(at, handle.dataset.side);
-        handle.style.transform = `translate(${x - size / 2}px, ${y - size / 2}px)`;
+        handle.style.transform = `translate(${x - size / 2}px, ${y - size / 2}px)${k < 1 ? ` scale(${k.toFixed(2)})` : ""}`;
       }
     };
     const leave = () => {

@@ -2,7 +2,7 @@
 
 Generated 2026-11-05 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7823, frontend ids 2644, CSS sections 522, backend routes 644, backend modules 8797, test files 2071, tests 17490, plan headings 1003, app scripts 28, boot scripts 37, script files 257.
+Counts: frontend functions 7823, frontend ids 2644, CSS sections 522, backend routes 644, backend modules 8797, test files 2071, tests 17494, plan headings 1003, app scripts 28, boot scripts 37, script files 257.
 
 ## Frontend functions (7823)
 
@@ -3126,45 +3126,45 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `addBlock` | frontend/js/diagram-builder.js:341 |
-| `beginEdit` | frontend/js/diagram-builder.js:372 |
+| `addBlock` | frontend/js/diagram-builder.js:342 |
+| `beginEdit` | frontend/js/diagram-builder.js:373 |
 | `blockEl` | frontend/js/diagram-builder.js:42 |
-| `blockItems` | frontend/js/diagram-builder.js:300 |
-| `blockKeys` | frontend/js/diagram-builder.js:137 |
-| `buildBlock` | frontend/js/diagram-builder.js:201 |
-| `buildPalette` | frontend/js/diagram-builder.js:531 |
-| `buildRow` | frontend/js/diagram-builder.js:214 |
+| `blockItems` | frontend/js/diagram-builder.js:301 |
+| `blockKeys` | frontend/js/diagram-builder.js:138 |
+| `buildBlock` | frontend/js/diagram-builder.js:202 |
+| `buildPalette` | frontend/js/diagram-builder.js:532 |
+| `buildRow` | frontend/js/diagram-builder.js:215 |
 | `commit` | frontend/js/diagram-builder.js:47 |
 | `drawPicture` | frontend/js/diagram-builder.js:62 |
 | `el` | frontend/js/diagram-builder.js:26 |
-| `groupGlyph` | frontend/js/diagram-builder.js:276 |
-| `joinChip` | frontend/js/diagram-builder.js:283 |
-| `joinPick` | frontend/js/diagram-builder.js:503 |
-| `joins` | frontend/js/diagram-builder.js:499 |
-| `kindOf` | frontend/js/diagram-builder.js:629 |
-| `menuAt` | frontend/js/diagram-builder.js:483 |
-| `more` | frontend/js/diagram-builder.js:520 |
-| `mount` | frontend/js/diagram-builder.js:533 |
+| `groupGlyph` | frontend/js/diagram-builder.js:277 |
+| `joinChip` | frontend/js/diagram-builder.js:284 |
+| `joinPick` | frontend/js/diagram-builder.js:504 |
+| `joins` | frontend/js/diagram-builder.js:500 |
+| `kindOf` | frontend/js/diagram-builder.js:630 |
+| `menuAt` | frontend/js/diagram-builder.js:484 |
+| `more` | frontend/js/diagram-builder.js:521 |
+| `mount` | frontend/js/diagram-builder.js:534 |
 | `nameOf` | frontend/js/diagram-builder.js:40 |
-| `nestBlock` | frontend/js/diagram-builder.js:415 |
-| `onKey` | frontend/js/diagram-builder.js:437 |
-| `reconcile` | frontend/js/diagram-builder.js:129 |
-| `relabel` | frontend/js/diagram-builder.js:359 |
-| `removeBlock` | frontend/js/diagram-builder.js:423 |
-| `render` | frontend/js/diagram-builder.js:91 |
+| `nestBlock` | frontend/js/diagram-builder.js:416 |
+| `onKey` | frontend/js/diagram-builder.js:438 |
+| `reconcile` | frontend/js/diagram-builder.js:130 |
+| `relabel` | frontend/js/diagram-builder.js:360 |
+| `removeBlock` | frontend/js/diagram-builder.js:424 |
+| `render` | frontend/js/diagram-builder.js:92 |
 | `say` | frontend/js/diagram-builder.js:33 |
-| `select` | frontend/js/diagram-builder.js:327 |
-| `shapeButton` | frontend/js/diagram-builder.js:180 |
-| `shapeGlyph` | frontend/js/diagram-builder.js:139 |
-| `shapeItems` | frontend/js/diagram-builder.js:147 |
-| `shapeRow` | frontend/js/diagram-builder.js:160 |
-| `show` | frontend/js/diagram-builder.js:639 |
-| `stepBlock` | frontend/js/diagram-builder.js:408 |
-| `stops` | frontend/js/diagram-builder.js:119 |
-| `styleDo` | frontend/js/diagram-builder.js:505 |
-| `suggest` | frontend/js/diagram-builder.js:493 |
-| `suggestMenu` | frontend/js/diagram-builder.js:511 |
-| `sync` | frontend/js/diagram-builder.js:604 |
+| `select` | frontend/js/diagram-builder.js:328 |
+| `shapeButton` | frontend/js/diagram-builder.js:181 |
+| `shapeGlyph` | frontend/js/diagram-builder.js:140 |
+| `shapeItems` | frontend/js/diagram-builder.js:148 |
+| `shapeRow` | frontend/js/diagram-builder.js:161 |
+| `show` | frontend/js/diagram-builder.js:640 |
+| `stepBlock` | frontend/js/diagram-builder.js:409 |
+| `stops` | frontend/js/diagram-builder.js:120 |
+| `styleDo` | frontend/js/diagram-builder.js:506 |
+| `suggest` | frontend/js/diagram-builder.js:494 |
+| `suggestMenu` | frontend/js/diagram-builder.js:512 |
+| `sync` | frontend/js/diagram-builder.js:605 |
 | `titleOf` | frontend/js/diagram-builder.js:39 |
 
 ### frontend/js/diagram-canvas.js (7)
@@ -3379,7 +3379,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 |---|---|
 | `build` | frontend/js/diagram-steps.js:14 |
 | `frame` | frontend/js/diagram-steps.js:51 |
-| `sync` | frontend/js/diagram-steps.js:76 |
+| `sync` | frontend/js/diagram-steps.js:77 |
 
 ### frontend/js/diagram-style.js (5)
 
@@ -3425,8 +3425,8 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `kindWord` | frontend/js/diagram-view.js:68 |
-| `wire` | frontend/js/diagram-view.js:75 |
+| `kindWord` | frontend/js/diagram-view.js:69 |
+| `wire` | frontend/js/diagram-view.js:76 |
 
 ### frontend/js/documents-ai.js (15)
 
@@ -5921,29 +5921,29 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 |---|---|
 | `mermaidAltFor` | frontend/js/mermaid-draw.js:53 |
 | `mermaidCacheKey` | frontend/js/mermaid-draw.js:335 |
-| `mermaidDrawBlock` | frontend/js/mermaid-draw.js:496 |
-| `mermaidDrawIn` | frontend/js/mermaid-draw.js:516 |
+| `mermaidDrawBlock` | frontend/js/mermaid-draw.js:500 |
+| `mermaidDrawIn` | frontend/js/mermaid-draw.js:520 |
 | `mermaidEnsureFrame` | frontend/js/mermaid-draw.js:107 |
 | `mermaidFaded` | frontend/js/mermaid-draw.js:189 |
 | `mermaidFailure` | frontend/js/mermaid-draw.js:349 |
-| `mermaidFill` | frontend/js/mermaid-draw.js:462 |
+| `mermaidFill` | frontend/js/mermaid-draw.js:466 |
 | `mermaidFillShare` | frontend/js/mermaid-draw.js:168 |
 | `mermaidFills` | frontend/js/mermaid-draw.js:179 |
 | `mermaidHex` | frontend/js/mermaid-draw.js:158 |
 | `mermaidHue` | frontend/js/mermaid-draw.js:205 |
 | `mermaidInkOn` | frontend/js/mermaid-draw.js:199 |
-| `mermaidInlineForExport` | frontend/js/mermaid-draw.js:577 |
+| `mermaidInlineForExport` | frontend/js/mermaid-draw.js:581 |
 | `mermaidKnown` | frontend/js/mermaid-draw.js:342 |
 | `mermaidLook` | frontend/js/mermaid-draw.js:312 |
 | `mermaidLuma` | frontend/js/mermaid-draw.js:192 |
 | `mermaidMix` | frontend/js/mermaid-draw.js:163 |
 | `mermaidOnMessage` | frontend/js/mermaid-draw.js:92 |
-| `mermaidRedrawAll` | frontend/js/mermaid-draw.js:589 |
-| `mermaidRequest` | frontend/js/mermaid-draw.js:403 |
+| `mermaidRedrawAll` | frontend/js/mermaid-draw.js:593 |
+| `mermaidRequest` | frontend/js/mermaid-draw.js:405 |
 | `mermaidResultAccepts` | frontend/js/mermaid-draw.js:23 |
 | `mermaidRgba` | frontend/js/mermaid-draw.js:144 |
-| `mermaidSettled` | frontend/js/mermaid-draw.js:489 |
-| `mermaidShow` | frontend/js/mermaid-draw.js:442 |
+| `mermaidSettled` | frontend/js/mermaid-draw.js:493 |
+| `mermaidShow` | frontend/js/mermaid-draw.js:446 |
 | `mermaidTheme` | frontend/js/mermaid-draw.js:222 |
 | `mermaidThemeNow` | frontend/js/mermaid-draw.js:323 |
 | `mermaidTokenColour` | frontend/js/mermaid-draw.js:215 |
@@ -24086,7 +24086,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (17490)
+## Tests (17494)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -24639,8 +24639,8 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_diagram_object_kind.py | 2 |
 | tests/test_diagram_outline_1679.py | 8 |
 | tests/test_diagram_page_1679.py | 7 |
-| tests/test_diagram_panel.py | 5 |
-| tests/test_diagram_panzoom.py | 7 |
+| tests/test_diagram_panel.py | 8 |
+| tests/test_diagram_panzoom.py | 8 |
 | tests/test_diagram_r10.py | 6 |
 | tests/test_diagram_r6.py | 13 |
 | tests/test_diagram_r7.py | 5 |
