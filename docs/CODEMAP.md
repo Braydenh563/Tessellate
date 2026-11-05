@@ -2,7 +2,7 @@
 
 Generated 2026-11-05 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7823, frontend ids 2644, CSS sections 522, backend routes 644, backend modules 8823, test files 2085, tests 17606, plan headings 1004, app scripts 28, boot scripts 37, script files 257.
+Counts: frontend functions 7823, frontend ids 2644, CSS sections 522, backend routes 644, backend modules 8825, test files 2086, tests 17612, plan headings 1004, app scripts 28, boot scripts 37, script files 257.
 
 ## Frontend functions (7823)
 
@@ -13015,7 +13015,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:164 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (8823)
+## Backend modules (8825)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -13025,68 +13025,70 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 |---|---|
 | `_adopt_old_environment` | src/tessellate/__init__.py:12 |
 
-### src/tessellate/__main__.py (58)
+### src/tessellate/__main__.py (60)
 
 | Name | File:line |
 |---|---|
-| `_ancestor_console_hwnds` | src/tessellate/__main__.py:1365 |
-| `_apply_console_visibility` | src/tessellate/__main__.py:1496 |
-| `_attach_desk_companion` | src/tessellate/__main__.py:2107 |
+| `_ancestor_console_hwnds` | src/tessellate/__main__.py:1413 |
+| `_apply_console_visibility` | src/tessellate/__main__.py:1544 |
+| `_attach_desk_companion` | src/tessellate/__main__.py:2152 |
 | `_boot_and_swap` | src/tessellate/__main__.py:1029 |
 | `_bootloader_splash` | src/tessellate/__main__.py:682 |
-| `_bring_forward` | src/tessellate/__main__.py:1696 |
-| `_capture` | src/tessellate/__main__.py:2724 |
+| `_bring_forward` | src/tessellate/__main__.py:1744 |
+| `_capture` | src/tessellate/__main__.py:2769 |
 | `_claim_notebook` | src/tessellate/__main__.py:1008 |
 | `_close_bootloader_splash` | src/tessellate/__main__.py:720 |
 | `_close_launch_splash` | src/tessellate/__main__.py:779 |
-| `_console_window_targets` | src/tessellate/__main__.py:1481 |
+| `_console_window_targets` | src/tessellate/__main__.py:1529 |
 | `_desktop_port` | src/tessellate/__main__.py:952 |
 | `_ensure_std_streams` | src/tessellate/__main__.py:453 |
-| `_existing_instance` | src/tessellate/__main__.py:1707 |
-| `_export_markdown` | src/tessellate/__main__.py:2563 |
+| `_existing_instance` | src/tessellate/__main__.py:1751 |
+| `_export_markdown` | src/tessellate/__main__.py:2608 |
 | `_finish_splash_start_step` | src/tessellate/__main__.py:808 |
-| `_focus_window` | src/tessellate/__main__.py:1082 |
-| `_get_console_hwnd` | src/tessellate/__main__.py:1114 |
-| `_hand_off_to_running` | src/tessellate/__main__.py:1721 |
+| `_focus_window` | src/tessellate/__main__.py:1129 |
+| `_get_console_hwnd` | src/tessellate/__main__.py:1162 |
+| `_hand_off_to_running` | src/tessellate/__main__.py:1765 |
 | `_loading_html` | src/tessellate/__main__.py:388 |
 | `_loading_motion` | src/tessellate/__main__.py:341 |
 | `_mark_start_step_done` | src/tessellate/__main__.py:878 |
-| `_maybe_relaunch_hidden` | src/tessellate/__main__.py:1326 |
-| `_open_window_onto` | src/tessellate/__main__.py:1753 |
-| `_password_exists` | src/tessellate/__main__.py:2602 |
+| `_maybe_relaunch_hidden` | src/tessellate/__main__.py:1374 |
+| `_open_window_onto` | src/tessellate/__main__.py:1797 |
+| `_password_exists` | src/tessellate/__main__.py:2647 |
 | `_port_from_env` | src/tessellate/__main__.py:45 |
 | `_port_holder` | src/tessellate/__main__.py:894 |
 | `_push_status_to_window` | src/tessellate/__main__.py:861 |
-| `_pythonw_path` | src/tessellate/__main__.py:1132 |
+| `_pythonw_path` | src/tessellate/__main__.py:1180 |
+| `_reassert_window_state` | src/tessellate/__main__.py:1110 |
 | `_recolour_loading_page` | src/tessellate/__main__.py:354 |
-| `_relaunch_argv` | src/tessellate/__main__.py:1238 |
-| `_repair_install` | src/tessellate/__main__.py:2685 |
-| `_replace_process` | src/tessellate/__main__.py:1572 |
-| `_reset_password` | src/tessellate/__main__.py:2615 |
-| `_run_desktop` | src/tessellate/__main__.py:1780 |
-| `_run_mcp` | src/tessellate/__main__.py:2537 |
+| `_relaunch_argv` | src/tessellate/__main__.py:1286 |
+| `_repair_install` | src/tessellate/__main__.py:2730 |
+| `_replace_process` | src/tessellate/__main__.py:1620 |
+| `_reset_password` | src/tessellate/__main__.py:2660 |
+| `_run_desktop` | src/tessellate/__main__.py:1824 |
+| `_run_mcp` | src/tessellate/__main__.py:2582 |
 | `_run_server` | src/tessellate/__main__.py:480 |
-| `_run_server_holding_lock` | src/tessellate/__main__.py:2850 |
+| `_run_server_holding_lock` | src/tessellate/__main__.py:2895 |
 | `_serve_with_lan` | src/tessellate/__main__.py:561 |
 | `_serves_this_notebook` | src/tessellate/__main__.py:935 |
-| `_spawn_desktop` | src/tessellate/__main__.py:1143 |
-| `_spawn_detached` | src/tessellate/__main__.py:1256 |
+| `_spawn_desktop` | src/tessellate/__main__.py:1191 |
+| `_spawn_detached` | src/tessellate/__main__.py:1304 |
 | `_splash_status` | src/tessellate/__main__.py:705 |
 | `_start_frozen_splash` | src/tessellate/__main__.py:738 |
-| `_start_reminder_notifier` | src/tessellate/__main__.py:2148 |
-| `_start_tray` | src/tessellate/__main__.py:2184 |
-| `_stop_background_work` | src/tessellate/__main__.py:1532 |
+| `_start_reminder_notifier` | src/tessellate/__main__.py:2193 |
+| `_start_tray` | src/tessellate/__main__.py:2229 |
+| `_stop_background_work` | src/tessellate/__main__.py:1580 |
 | `_stop_lingering_worker_threads` | src/tessellate/__main__.py:617 |
-| `_wait_for_exit` | src/tessellate/__main__.py:1311 |
+| `_track_window_state` | src/tessellate/__main__.py:1085 |
+| `_wait_for_exit` | src/tessellate/__main__.py:1359 |
 | `_wait_for_server` | src/tessellate/__main__.py:653 |
 | `_wait_for_server_with_progress` | src/tessellate/__main__.py:980 |
-| `_warn_webview2_missing` | src/tessellate/__main__.py:1662 |
-| `_webview2_runtime_missing` | src/tessellate/__main__.py:1598 |
-| `_window_class_name` | src/tessellate/__main__.py:1465 |
-| `main` | src/tessellate/__main__.py:2742 |
+| `_warn_webview2_missing` | src/tessellate/__main__.py:1710 |
+| `_webview2_runtime_missing` | src/tessellate/__main__.py:1646 |
+| `_window_class_name` | src/tessellate/__main__.py:1513 |
+| `main` | src/tessellate/__main__.py:2787 |
 | `page_host` | src/tessellate/__main__.py:35 |
-| `restart_app` | src/tessellate/__main__.py:1287 |
-| `restart_in_console_mode` | src/tessellate/__main__.py:1215 |
+| `restart_app` | src/tessellate/__main__.py:1335 |
+| `restart_in_console_mode` | src/tessellate/__main__.py:1263 |
 
 ### src/tessellate/ai/act_registry.py (11)
 
@@ -24117,7 +24119,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (17606)
+## Tests (17612)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -26189,6 +26191,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_wiki_picker_ranking.py | 4 |
 | tests/test_window_report.py | 10 |
 | tests/test_window_rows.py | 4 |
+| tests/test_window_state_reopen.py | 6 |
 | tests/test_windowed_streams.py | 4 |
 | tests/test_word_count_cjk.py | 4 |
 | tests/test_word_files_b42.py | 4 |
@@ -26916,7 +26919,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Phases 0 to 2: built 2026-09-09 | docs/roadmap/DOCUMENTS_PLAN.md:119 |
 | Phases 0 to 6: built | docs/roadmap/UI_MODERNISATION_PLAN.md:216 |
 | Phases, each with the gate it is finished against | docs/roadmap/MINDMAP_PLAN.md:1296 |
-| Placed (last 20, newest first) | docs/roadmap/INBOX.md:173 |
+| Placed (last 20, newest first) | docs/roadmap/INBOX.md:174 |
 | Placed from Brief 40, 2026-10-10 (does the MCP server work) | docs/roadmap/AGENT_SKILLS_REFORM.md:345 |
 | Placed from Brief 40, 2026-10-10 (research and placement) | docs/roadmap/BACKLOG.md:4178 |
 | Placed from Brief 40, 2026-10-10 (the phone over HTTPS) | docs/roadmap/WORLD_CLASS_PLAN.md:3128 |

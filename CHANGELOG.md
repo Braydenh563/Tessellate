@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Windows: every path that brings the window back (tray, desk companion, reminder card, second launch) keeps a maximised window maximised (INBOX 1688 a): restore() runs only for a minimised window and a maximised one is put back after it, from the window's own maximise/restore/minimise events.
 - Desk companion: "Come here" now means follow me (INBOX 1683 t): it waits for the pointer to leave the menu, then goes to it wherever it is (the ground, or onto a window top the pointer is over), reacts happily and keeps company for 20 s; a second "Come here" stops it.
 - Chat Attach lists every file (INBOX 1687, owner): the Files tab and the Library picker read the Library's own uploads beside a note's attachments, an upload travels as `media_file_ids` (its own table, ids never cross), and what the tray drops into the chat is the ticked row in the panel.
 - Desktop companion (INBOX 1683 u): a nap now holds (the pointer on the menu that asked for it, the caret and the roam timers no longer wake it; a poke, a drag, a menu command or its own 150 to 300 s nap does, with a stretch) after it walks out of the middle third and turns; legs use walk, run, portal, edge wrap or glide, swoop with the puff rare (200 wander legs: walk 90, edge 4, portal 3, puff 3 percent before; walk 35, run 32, edge 17, portal 16, puff 1.5 percent after), and the in-app companion's smoke weight fell the same way.

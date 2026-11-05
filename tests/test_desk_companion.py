@@ -318,9 +318,15 @@ def test_the_launcher_attaches_it_only_where_there_is_a_tray(monkeypatch, prefs)
 def test_open_tessellate_brings_the_window_forward_and_runs_the_checked_script(monkeypatch, prefs):
     import tessellate.__main__ as launcher
 
-    monkeypatch.setattr(launcher, "_focus_window", lambda window: window.calls.append(("show",)) or window.calls.append(("focus",)))
+    def focus(window):
+        launcher._reassert_window_state(window)  # restores only a minimised window (INBOX 1688)
+        window.calls.append(("show",))
+        window.calls.append(("focus",))
+
+    monkeypatch.setattr(launcher, "_focus_window", focus)
     main = FakeWindow()
     main.restore = lambda: main.calls.append(("restore",))
+    launcher._WINDOW_MEMORY[id(main)] = {"maximised": False, "minimised": True}
     companion = launcher._attach_desk_companion(FakeWebview(), main, object())
     companion._dispatch = lambda name, fn: fn()  # noqa: SLF001
     assert companion.open_main("x = 1")
