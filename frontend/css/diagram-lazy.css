@@ -780,6 +780,37 @@
   color: var(--muted);
 }
 
+/* Once there is a block the pane's foot has the worded Add block and Connect, so the list stays as a ticked record and its buttons go (1679 m). */
+.dgm-empty.dgm-started .dgm-step button {
+  display: none;
+}
+
+/* A name left empty in the list says so, in the muted voice, rather than leaving a blank row. */
+.dgm-label:empty::before {
+  content: "Unnamed";
+  color: var(--muted);
+  font-style: italic;
+}
+
+/* The line a drag on an already-fitting picture leaves (diagram-view.js). */
+.dgm-pan-note {
+  position: absolute;
+  inset-block-end: var(--space-5);
+  inset-inline-start: var(--space-5);
+  max-inline-size: 60%;
+  margin: 0;
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--modal-bg);
+  font-size: var(--text-sm);
+  pointer-events: none;
+}
+
+.dgm-pan-note.hidden {
+  display: none;
+}
+
 /* The example and the template button are for an empty page; the list stays, ticked, until the first arrow. */
 .dgm-empty.dgm-started .dgm-example,
 .dgm-empty.dgm-started > button.accent {
@@ -1384,6 +1415,12 @@
 
 .dgm-handle[data-side="left"] > :first-child {
   rotate: 180deg;
+}
+
+.dgm-handle::after {
+  content: "";
+  position: absolute;
+  inset: -8px;
 }
 
 .dgm-handle.hidden {
