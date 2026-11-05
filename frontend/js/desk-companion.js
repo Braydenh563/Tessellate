@@ -267,7 +267,7 @@
   //: (Atlas masculine or feminine, matching your faces, You, the chat's persona, your
   //: own character, each saved companion), the current one marked. A choice is written
   //: to the app's own prefs by the host and the figure restarts with the new look. The
-  //: figure on the desktop is Atlas, so the others are listed but cannot be picked here.
+  //: overlay draws all of them (the app window renders the frames), so every row can be picked.
   async function openCompanion() {
     const got = await Promise.resolve(ask("companion_choices")).catch(() => null);
     const rows = [item("Back", "caret-left", () => openMenu("context"))];
