@@ -1165,6 +1165,22 @@
 .dgm-kinds {
   align-self: flex-start;
   flex: none;
+  max-width: 100%;
+  flex-wrap: nowrap;
+}
+
+/* Four worded buttons share one row on a phone instead of wrapping to a second (measured: 100px tall at 390, 40 at 1440). */
+.dgm-kinds .btn,
+.dgm-kinds button {
+  flex: 1 1 0;
+  min-width: 0;
+  padding-inline: var(--space-1);
+  white-space: nowrap;
+}
+
+/* A source the blocks cannot draw (a Gantt) is not a flowchart: no kind is pressed, so none is offered. */
+.dgm-plain .dgm-kinds {
+  display: none;
 }
 
 /* Blocks and Source wait at the foot's start, so the title keeps its room on a phone. */
