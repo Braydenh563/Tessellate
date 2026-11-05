@@ -18,6 +18,7 @@ import ctypes
 import logging
 import sys
 import ctypes.wintypes
+from collections import Counter
 from typing import Any, NamedTuple
 
 wintypes = ctypes.wintypes
@@ -380,42 +381,73 @@ def _cloaked(w: Any, hwnd: Any) -> bool:
         return False
 
 
-def _listed(w: Any, hwnd: Any, ignore: Any) -> bool:
-    """Visible, not minimised, not cloaked (another desktop, a store app's shell), not our own overlay."""
-    return not (hwnd == ignore or not w.user32.IsWindowVisible(hwnd) or w.user32.IsIconic(hwnd) or _cloaked(w, hwnd))
+def _unlisted(w: Any, hwnd: Any, ignore: Any) -> str | None:
+    """Why a window is not listed: not visible, minimised, cloaked (another desktop, a suspended store app) or
+    our own overlay; None when it is listed."""
+    if hwnd == ignore:
+        return "own overlay"
+    if not w.user32.IsWindowVisible(hwnd):
+        return "invisible"
+    if w.user32.IsIconic(hwnd):
+        return "minimised"
+    if _cloaked(w, hwnd):
+        return "cloaked"
+    return None
 
 
-def _read_window(w: Any, hwnd: Any, own_pid: int, ignore: Any, monitors_: list[tuple[int, int, int, int]]) -> "WinInfo | None":
-    """One window as a WinInfo, or None when it is not listed, click-through or has no frame."""
-    if not _listed(w, hwnd, ignore):
+def _read_window(
+    w: Any, hwnd: Any, own_pid: int, ignore: Any, monitors_: list[tuple[int, int, int, int]], tally: Counter | None = None,
+) -> "WinInfo | None":
+    """One window as a WinInfo, or None when it is not listed, click-through or has no frame. `tally` counts
+    why each window was left out or not made a perch (counts only, never a title)."""
+    def note(why: str) -> None:
+        if tally is not None:
+            tally[why] += 1
+
+    why = _unlisted(w, hwnd, ignore)
+    if why is not None:
+        note(why)
         return None
     ex = int(w.user32.GetWindowLongW(hwnd, GWL_EXSTYLE))
     rect = _frame_rect(w, hwnd)
     if ex & WS_EX_TRANSPARENT and ex & WS_EX_LAYERED:  # click-through: another overlay
+        note("click-through")
         return None
     if rect is None or rect[2] <= rect[0] or rect[3] <= rect[1]:
+        note("no frame")
         return None
     pid = wintypes.DWORD(0)
     w.user32.GetWindowThreadProcessId(hwnd, ctypes.byref(pid))
     full = any(rect[0] <= a[0] and rect[2] >= a[2] and rect[1] <= a[1] and rect[3] >= a[3] for a in monitors_)
-    skip = ex & WS_EX_TOOLWINDOW or int(pid.value) == own_pid or w.user32.IsZoomed(hwnd) or full
-    return WinInfo(int(hwnd), rect, not skip and bool(w.user32.GetWindowTextLengthW(hwnd)))
+    reasons = (
+        ("tool window", bool(ex & WS_EX_TOOLWINDOW)), ("own process", int(pid.value) == own_pid),
+        ("maximised", bool(w.user32.IsZoomed(hwnd))), ("fills a monitor", full),
+        ("no title", not w.user32.GetWindowTextLengthW(hwnd)),
+    )
+    why = next((name for name, hit in reasons if hit), None)
+    note(why or "perch")
+    return WinInfo(int(hwnd), rect, why is None)
 
 
-def windows(w: Any, own_pid: int, ignore: int | None, monitors_: list[tuple[int, int, int, int]]) -> list[WinInfo]:
+def windows(
+    w: Any, own_pid: int, ignore: int | None, monitors_: list[tuple[int, int, int, int]], tally: Counter | None = None,
+) -> list[WinInfo]:
     """Visible, un-minimised, un-cloaked top-level windows, topmost first. Read only:
     nothing here moves, focuses or messages a window. `perch` is False for a tool
     window, a window with no title, this process's own windows (the app's, the
     panel), a maximised one, and one that fills a monitor's work area (full screen).
-    `ignore` is the overlay's own window (never in the list)."""
+    `ignore` is the overlay's own window (never in the list). `tally`, when given, is filled with the
+    count of windows by outcome (the first reason each was left out), for the log."""
     found: list[WinInfo] = []
 
     def each(hwnd: Any, _data: Any) -> int:
         try:
-            info = _read_window(w, hwnd, own_pid, ignore, monitors_)
+            info = _read_window(w, hwnd, own_pid, ignore, monitors_, tally)
             if info is not None:
                 found.append(info)
         except Exception:  # noqa: BLE001 - one odd window never ends the walk
+            if tally is not None:
+                tally["unreadable"] += 1
             logger.debug("overlay: a window could not be read", exc_info=True)
         return 1
 

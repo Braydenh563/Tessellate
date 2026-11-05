@@ -321,7 +321,8 @@ def run_acts(e: Engine, minutes: float):
 
 
 def test_big_acts_are_minutes_apart_and_all_the_acts_are_in_one_table() -> None:
-    assert set(eng.ACTS) == {"idle", "stroll", "trip", "sleep", "hang", "peek"}
+    # Intent kept, table grown (INBOX 1683 g): `climb` was missing, so no ambient run ever called `_can_climb`.
+    assert set(eng.ACTS) == {"idle", "stroll", "trip", "sleep", "hang", "peek", "climb"}
     for gait in ("walk", "float"):
         # Bar moved (INBOX 1670: a hang is 30 to 200 s and the rest is long): ten hours, not three.
         acts = run_acts(make(seed=4, gait=gait), 600)

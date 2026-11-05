@@ -167,7 +167,9 @@ def test_an_ambient_run_climbs_when_windows_are_there_and_stays_off_when_none() 
     got = climbs([WIN])
     # Intent moved (INBOX 1670, a buddy not a nuisance): a window is one purpose of a rare trip,
     # so the bar is three hours and at most one climb per trip interval, not forty minutes.
-    assert 2 <= got <= 3 * 3600 / eng.TRIP_EVERY[0] + 1
+    # Intent moved again (INBOX 1683 g, the owner had never seen it perch): the `climb` act joined the table, so a
+    # climb is no longer limited by the trip interval but by `CLIMB_EVERY` (90 s at the soonest).
+    assert 2 <= got <= 3 * 3600 / eng.CLIMB_EVERY[0] + 1
 
 
 # --- Atlas floats down onto it ------------------------------------------------------------------

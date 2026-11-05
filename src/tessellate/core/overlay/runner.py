@@ -30,11 +30,13 @@ Not run on Windows (the sandbox has none): the tests drive a fake `win32`.
 from __future__ import annotations
 
 import collections
+import inspect
 import logging
 import math
 import os
 import sys
 import time
+from collections import Counter
 from pathlib import Path
 from typing import Any, Callable
 
@@ -64,6 +66,7 @@ ZONE_EVERY = 30.0
 #: The window scan is at most this often (seconds); it starts this long before a
 #: climb is due, so the first read is in hand when it is.
 SCAN_EVERY = 1.0
+SCAN_RIDING = 0.25
 SCAN_SLACK = 1.0
 #: Room past the figure's width a top edge needs to be stood on (logical px, at 96 dpi).
 PERCH_ROOM = 20
@@ -149,6 +152,11 @@ class OverlayRunner:
         #: The result of the last menu request the engine took, for the tests and the log.
         self.last_command: tuple[str, bool] | None = None
         self._scan_failed = False
+        self._last_scan_line = ""
+        try:  # a backend that can count why windows were left out (win32); a fake may not
+            self._tallies = "tally" in inspect.signature(self.k.windows).parameters
+        except (TypeError, ValueError):
+            self._tallies = False
 
     # --- life (any thread) ------------------------------------------------------------
 
@@ -293,7 +301,8 @@ class OverlayRunner:
             return False
         if e.perch is not None or e.target is not None or e.state in ("pressed", "held"):
             return True  # carried: a title bar under it may be taken hold of
-        return e.state in ("stand", "walk", "drift", "act", "crouch") and now >= e.trip_ready - SCAN_SLACK
+        # A window is climbed to by a trip or by the climb act, so the list is wanted before either is due.
+        return e.state in ("stand", "walk", "drift", "act", "crouch") and now >= min(e.trip_ready, e.climb_ready) - SCAN_SLACK
 
     def _scan(self, now: float, force: bool = False) -> None:
         engine = self.engine
@@ -305,10 +314,13 @@ class OverlayRunner:
             return
         if not force and (now < self._next_scan or not self._wants_scan(now)):
             return
-        self._next_scan = now + SCAN_EVERY
+        # On a window it rides it: a dragged window is followed four times a second, not once.
+        self._next_scan = now + (SCAN_RIDING if engine.perch is not None else SCAN_EVERY)
+        tally: Counter = Counter()
         try:
             wins = self.k.windows(
                 self.w, os.getpid(), self.host.hwnd if self.host else None, [m.area for m in self.monitors],
+                **({"tally": tally} if self._tallies else {}),
             )
         except Exception:  # noqa: BLE001 - no window list means no roaming, never a crash
             if not self._scan_failed:
@@ -318,6 +330,16 @@ class OverlayRunner:
         scale = max(m.dpi for m in self.monitors) / 96.0 if self.monitors else 1.0
         edges = perches.top_edges(wins, int(engine.size[0] + PERCH_ROOM * scale))
         engine.set_windows(edges, now)
+        self._log_scan(len(wins), len(edges), len(engine._candidates()), tally)
+
+    def _log_scan(self, listed: int, edges: int, candidates: int, tally: Counter) -> None:
+        """One INFO line when what the window list returns changes (counts and reasons, never a title), so a
+        companion that never perches can be read off the log (INBOX 1683 g)."""
+        parts = ", ".join(f"{n} {why}" for why, n in sorted(tally.items(), key=lambda kv: (-kv[1], kv[0])))
+        line = f"overlay: windows listed {listed}, standable top edges {edges}, worth the trip {candidates}" + (f" ({parts})" if parts else "")
+        if line != self._last_scan_line:
+            self._last_scan_line = line
+            logger.info(line)
 
     def _scan_wake(self, wake: int | None) -> int | None:
         """The engine's wake, but no later than the next scan while one is wanted."""

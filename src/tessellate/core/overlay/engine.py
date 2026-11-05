@@ -260,7 +260,7 @@ REST_FOR = (8.0, 20.0)
 #: The ambient choice, one table: act -> (weight, big). `sleep` needs SLEEP_AFTER idle.
 ACTS = {
     "idle": (62, False), "stroll": (3, False), "trip": (16, False), "sleep": (2, False),
-    "hang": (4, True), "peek": (5, True),
+    "hang": (4, True), "peek": (5, True), "climb": (90, False),
 }
 SLEEP_AFTER = 60.0
 
@@ -269,8 +269,10 @@ SLEEP_AFTER = 60.0
 #: `PERCH_MIN_RISE` logical px above the floor to be worth the leap; a window top
 #: that moves more than `PERCH_MOVED` physical px has moved.
 CLIMB_FIRST = 40.0
-CLIMB_EVERY = (180.0, 420.0)
-PERCH_FOR = (20.0, 50.0)
+#: The `climb` act was missing from `ACTS` (so `_can_climb` was never called and a window came only with a rare
+#: trip, one in thirty minutes or so): the owner on Windows had never seen it perch (INBOX 1683 g).
+CLIMB_EVERY = (90.0, 240.0)
+PERCH_FOR = (45.0, 120.0)  # long enough to be seen and to count as a settled spell (was 20 to 50)
 PERCH_MIN_RISE = 48.0
 PERCH_MOVED = 3.0
 LEAP_BASE = 0.45
@@ -1073,16 +1075,25 @@ class Engine:
                 return act
         return "idle"
 
-    def _act_table(self, now: float, idle: float) -> list[tuple[str, float]]:
+    def _act_blocked(self, act: str, big: bool, now: float, idle: float) -> bool:
+        """An act that cannot happen now: a big one too soon or off the floor, a sleep too early, a trip or a
+        climb with nowhere to go, a stroll from a window."""
         up = self.perch is not None
+        if big and (now < self.big_ready or up):
+            return True
+        if act == "sleep":
+            return idle < SLEEP_AFTER or up or self.mind.needs["rest"] < 0.4
+        if act == "trip":
+            return not self._trip_ok(now)
+        if act == "climb":
+            return not self._can_climb(now)
+        return act == "stroll" and up
+
+    def _act_table(self, now: float, idle: float) -> list[tuple[str, float]]:
         mood = self.mind.mood(now, self.hour)
         table = []
         for act, (w, big) in ACTS.items():
-            if big and (now < self.big_ready or up):
-                continue
-            if act == "sleep" and (idle < SLEEP_AFTER or up or self.mind.needs["rest"] < 0.4):
-                continue
-            if (act == "trip" and not self._trip_ok(now)) or (act == "stroll" and up):
+            if self._act_blocked(act, big, now, idle):
                 continue
             if act in ("stroll", "trip") and mood == "bored":
                 w *= 2
@@ -1239,24 +1250,45 @@ class Engine:
         if self.perch is None:
             return
         cur = next((p for p in self.windows if p.key == self.perch.key), None)
+        if cur is not None and self.roam_windows:
+            self._ride_sideways(cur)
         cx = self.x + self.size[0] / 2
         if cur is None or not self.roam_windows or not cur.left <= cx < cur.right:
-            self._leave_perch(now, hop=False)
+            # Closed, minimised or dragged from under it: a hop off with a push, now and then a plain step off.
+            self._leave_perch(now, hop=cur is None and self.rng.random() < 0.6)
         elif abs(cur.top - self.perch.top) > PERCH_MOVED:
-            lower = cur.top > self.perch.top
-            if self.gait == "float":  # it drifts to the new resting height
-                self.perch = cur
-                self._start_fly(0.0, 0.0)
-            elif lower:
-                self.perch = None
-                self._start_fall(0.0)
-            else:
-                self.perch = cur
-                if self.state in ("stand", "walk", "wave", "notice", "startle", "land"):
-                    self.hop_from = self.y
-                    self._enter("hop", now)
+            self._follow_top(cur, now)
         else:
             self.perch = cur
+
+    def _follow_top(self, cur: Perch, now: float) -> None:
+        """The window under it moved up or down: a floater drifts to the new height, a walker steps up, or
+        falls when it went lower."""
+        if self.gait == "float":  # it drifts to the new resting height
+            self.perch = cur
+            self._start_fly(0.0, 0.0)
+        elif cur.top > self.perch.top:
+            self.perch = None
+            self._start_fall(0.0)
+        else:
+            self.perch = cur
+            if self.state in ("stand", "walk", "wave", "notice", "startle", "land"):
+                self.hop_from = self.y
+                self._enter("hop", now)
+            elif self.state not in ("hop", "rise", "leap"):
+                self.y = cur.top - self.size[1]  # carried up with it, whatever it was doing
+
+    def _ride_sideways(self, cur: Perch) -> None:
+        """A window dragged along: the figure keeps its place on it (the same width, moved by more than a
+        few px), so it rides rather than being left in the air or dropped (INBOX 1683 g)."""
+        old = self.perch
+        if old is None or self.state in ("held", "pressed"):
+            return
+        dx = cur.left - old.left
+        if abs(dx) > PERCH_MOVED and abs((cur.right - cur.left) - (old.right - old.left)) <= PERCH_MOVED:
+            self.x += dx
+            if self.state == "walk" and self.goal is not None:
+                self.goal = (self.goal[0] + dx, self.goal[1])
 
     def _lift(self) -> float:
         """How far the frame's top is above the hands that hold an edge."""
@@ -1834,8 +1866,7 @@ class Engine:
             self.legs.append(("jump", self.x, self.x, now))
             self._enter("leap", now)
         else:
-            self._stand_on(p, now)
-            self.perch_until = now + self.rng.uniform(*REST_FOR)
+            self._stand_on(p, now)  # stays for PERCH_FOR (20 to 50 s): long enough to be seen (it was 8 to 20)
             self._enter("stand", now)
             self.state_until = self.perch_until
 
