@@ -2,7 +2,7 @@
 
 Generated 2026-11-05 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7823, frontend ids 2644, CSS sections 522, backend routes 644, backend modules 8821, test files 2082, tests 17585, plan headings 1004, app scripts 28, boot scripts 37, script files 257.
+Counts: frontend functions 7823, frontend ids 2644, CSS sections 522, backend routes 644, backend modules 8821, test files 2083, tests 17590, plan headings 1004, app scripts 28, boot scripts 37, script files 257.
 
 ## Frontend functions (7823)
 
@@ -22300,11 +22300,11 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `Engine` | src/tessellate/core/overlay/engine.py:392 |
-| `Monitor` | src/tessellate/core/overlay/engine.py:343 |
-| `Output` | src/tessellate/core/overlay/engine.py:350 |
-| `Perch` | src/tessellate/core/overlay/engine.py:334 |
-| `_adjoins` | src/tessellate/core/overlay/engine.py:381 |
+| `Engine` | src/tessellate/core/overlay/engine.py:395 |
+| `Monitor` | src/tessellate/core/overlay/engine.py:346 |
+| `Output` | src/tessellate/core/overlay/engine.py:353 |
+| `Perch` | src/tessellate/core/overlay/engine.py:337 |
+| `_adjoins` | src/tessellate/core/overlay/engine.py:384 |
 
 ### src/tessellate/core/overlay/host.py (3)
 
@@ -24115,7 +24115,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (17585)
+## Tests (17590)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -25485,6 +25485,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_outside_text_taints_chat.py | 3 |
 | tests/test_overlay_alive_1670.py | 12 |
 | tests/test_overlay_bob_1670.py | 3 |
+| tests/test_overlay_come_1683.py | 5 |
 | tests/test_overlay_engine.py | 30 |
 | tests/test_overlay_float.py | 6 |
 | tests/test_overlay_hang.py | 11 |
