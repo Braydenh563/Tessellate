@@ -51,7 +51,7 @@ def test_a_long_heading_ends_in_an_ellipsis_and_keeps_its_task_count():
     from pathlib import Path
 
     root = Path(__file__).resolve().parents[1]
-    css = (root / "frontend" / "css" / "05-sidebars-themes.css").read_text(encoding="utf-8")
+    css = (root / "frontend" / "css" / "library-lazy.css").read_text(encoding="utf-8")
     js = (root / "frontend" / "js" / "documents.js").read_text(encoding="utf-8")
     rule = css[css.index(".outline-text {") :].split("}")[0]
     for want in ("min-width: 0", "text-overflow: ellipsis", "white-space: nowrap", "overflow: hidden"):
@@ -66,7 +66,7 @@ def test_the_documents_head_wraps_its_controls_rather_than_squeezing_the_new_pil
 
     root = Path(__file__).resolve().parents[1]
     lazy = (root / "frontend" / "css" / "library-lazy.css").read_text(encoding="utf-8")
-    side = (root / "frontend" / "css" / "05-sidebars-themes.css").read_text(encoding="utf-8")
+    side = lazy
     assert "flex: none" in lazy[lazy.index(".split-button {") :].split("}")[0]
     assert "flex: none" in lazy[lazy.index(".split-button > .split-button-slot {") :].split("}")[0]
     assert "flex-wrap: wrap" in side[side.index("#doc-sidebar-list > .sidebar-head {") :].split("}")[0]

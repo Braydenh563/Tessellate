@@ -3112,21 +3112,6 @@ button.outline-twist:focus-visible {
   font-size: var(--text-base);
   line-height: 1.45;
 }
-/* The documents list's head holds four controls beside "Recent": on a sidebar too narrow for one line
-   the controls wrap under the word at their own widths, never over each other (the owner, 2026-11-05:
-   "no gap between the templates and new arrow button"; the pill had been squeezed under its caret). */
-#doc-sidebar-list > .sidebar-head {
-  flex-wrap: wrap;
-  row-gap: var(--space-2);
-}
-#doc-sidebar-list > .sidebar-head > .row {
-  flex: 0 1 auto;
-  min-width: 0;
-  flex-wrap: wrap;
-  justify-content: flex-end;
-  row-gap: var(--space-2);
-  margin-inline-start: auto;
-}
 /* The heading's own count, beside the word rather than under it. */
 .doc-outline-count:not(:empty) {
   color: var(--muted);
@@ -5795,15 +5780,6 @@ button.ghost.doc-template-choice[aria-checked="true"] {
    count you have to hunt for. `margin-left: auto` is what does it, against
    the `inline-flex` the bare `button` rule gives every one of these rows, the
    same property the outline's own alignment comment explains. */
-/* A heading longer than the row ends in an ellipsis; its count after it never shrinks (the owner,
-   2026-11-05: long headings were clipped mid-word and their counts pushed out of sight). */
-.outline-text {
-  flex: 0 1 auto;
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
 .outline-tasks {
   margin-left: auto;
   padding-left: var(--space-2);

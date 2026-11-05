@@ -510,9 +510,19 @@
   //: opens the builder and saves a new .mmd document on Done. Cancel changes nothing; Done keeps what the dialog shows.
   //: The `.mmd` rows, in the app's one picker (1679 slice 9): a row opens its page, the same as the Documents list does.
   async function pickExistingDiagram() {
+    //: A list that failed to load says so; it is never shown as "No diagrams yet" (test_load_failed_1028b).
+    let all = Array.isArray(docs) && docs.length ? docs : null;
+    if (!all) {
+      try {
+        all = await apiPagedList("/documents", 200);
+      } catch (error) {
+        toast(`Could not load your diagrams: ${error?.message || error}`, "info");
+        return null;
+      }
+    }
     const shell = pickerDialog({ title: "Open a diagram", placeholder: "Search your diagrams…", searchLabel: "Search your diagrams" });
     const box = pickerListbox(shell, "Diagrams");
-    const rows = (Array.isArray(docs) && docs.length ? docs : await apiPagedList("/documents", 200).catch(() => [])).filter((d) => d.file_type === "mmd");
+    const rows = all.filter((d) => d.file_type === "mmd");
     const paint = () => {
       const needle = shell.search.value.trim().toLowerCase();
       const items = rows.filter((d) => (d.title || "Untitled").toLowerCase().includes(needle)).map((d) => ({ icon: "ph:graph", label: d.title || "Untitled", about: "", value: d }));

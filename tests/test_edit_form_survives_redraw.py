@@ -8,7 +8,7 @@ failed under load because of it.
 
 from __future__ import annotations
 
-from _app_js import app_js_text
+from tests._app_js import app_js_text
 
 
 def test_entry_item_hands_back_the_open_edit_row():

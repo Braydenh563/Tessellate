@@ -40,6 +40,17 @@ _DID_NOTES = [
     ], 1)
 ]
 
+@pytest.fixture(autouse=True)
+def _a_fixed_day(monkeypatch):
+    """The reply's seed carries the day (`chat_said._reply_seed`), so the phrasing picked for "ticked off" moved with
+    the real calendar: on 2026-11-05 it became "Done. Ticked off ...". Tests use a fixed clock (CLAUDE.md section 8)."""
+    import datetime as _dt
+
+    from tessellate.core import clock
+
+    monkeypatch.setattr(clock, "today", lambda: _dt.date(2026, 11, 4))
+
+
 
 @pytest.mark.parametrize(("question", "lead"), [
     # Z19: a plan is not the doing.
