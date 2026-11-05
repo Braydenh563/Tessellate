@@ -570,12 +570,12 @@ def press_outside(user32: Any, handle: int, was_down: bool) -> tuple[bool, bool]
     """(a press began outside the window, the button state now): only a press that starts after the last
     read counts, so the click that opened the panel, still held, does not close it."""
     import ctypes
-    from ctypes import wintypes
+    import ctypes.wintypes
 
     down = mouse_down(user32)
     if not down or was_down:
         return False, down
-    point, rect = wintypes.POINT(), wintypes.RECT()
+    point, rect = ctypes.wintypes.POINT(), ctypes.wintypes.RECT()
     if not user32.GetCursorPos(ctypes.byref(point)) or not user32.GetWindowRect(handle, ctypes.byref(rect)):
         return False, down
     inside = rect.left <= point.x < rect.right and rect.top <= point.y < rect.bottom
