@@ -2871,6 +2871,11 @@ class Engine:
 
     # --- the answer ------------------------------------------------------------------------------------
 
+    def _fixed_frame(self, s: str) -> str:
+        if s == "pressed" and self.pre_press == "hang":
+            return "hang"  # a press on a hanger keeps the hang pose until it is dragged (INBOX 1690 c)
+        return FRAME_OF[s]
+
     def _frame(self, now: float) -> str:
         s = self.state
         if s in ("card", "walk", "drift"):
@@ -2881,10 +2886,8 @@ class Engine:
             return "land"
         if s == "warp" and self.warp is not None and self.warp["kind"] == "edge":
             return f"walk{int((now - self.warp['t0']) / (0.75 / self.walk_frames)) % self.walk_frames}"
-        if s == "pressed" and self.pre_press == "hang":
-            return "hang"  # a press on a hanger keeps the hang pose until it is dragged
         if s in FRAME_OF:
-            return FRAME_OF[s]
+            return self._fixed_frame(s)
         if s == "fly":
             return self._flying_frame(now)
         if s in ("rise", "peek"):
