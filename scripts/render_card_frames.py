@@ -15,21 +15,41 @@ from __future__ import annotations
 import sys
 from pathlib import Path
 
-from PIL import Image
+from PIL import Image, ImageDraw, ImageFilter
 
 ROOT = Path(__file__).resolve().parent.parent
-sys.path.insert(0, str(ROOT / "src"))
-from tessellate.core.overlay import capture  # noqa: E402
-
 DESK = ROOT / "frontend" / "img" / "desk"
-LIFT = capture.CARD_LIFT
+#: Where the card sits as a share of the frame (centre x, centre y) and its size,
+#: in the shipped 2x pixels: held out in front of the body on the figure's right.
+CENTRE = (0.66, 0.60)
+CARD = (46, 58)
+LIFT = (0, -5)
+
+
+def draw_card(base: Image.Image, lift: tuple[int, int]) -> Image.Image:
+    w, h = base.size
+    cx, cy = int(w * CENTRE[0]) + lift[0], int(h * CENTRE[1]) + lift[1]
+    box = (cx - CARD[0] // 2, cy - CARD[1] // 2, cx + CARD[0] // 2, cy + CARD[1] // 2)
+    shadow = Image.new("RGBA", base.size, (0, 0, 0, 0))
+    ImageDraw.Draw(shadow).rounded_rectangle((box[0] + 2, box[1] + 4, box[2] + 2, box[3] + 4), 7, fill=(40, 40, 80, 90))
+    out = Image.alpha_composite(base, shadow.filter(ImageFilter.GaussianBlur(2)))
+    d = ImageDraw.Draw(out)
+    d.rounded_rectangle(box, 7, fill=(250, 248, 240, 255), outline=(120, 110, 170, 255), width=2)
+    # A bell: dome, rim, clapper; and two lines of "text".
+    bx, by = (box[0] + box[2]) // 2, box[1] + 18
+    d.pieslice((bx - 10, by - 10, bx + 10, by + 10), 180, 360, fill=(226, 168, 60, 255))
+    d.rectangle((bx - 10, by, bx + 10, by + 6), fill=(226, 168, 60, 255))
+    d.ellipse((bx - 3, by + 7, bx + 3, by + 13), fill=(180, 120, 30, 255))
+    d.line((box[0] + 9, box[3] - 14, box[2] - 9, box[3] - 14), fill=(150, 145, 190, 255), width=2)
+    d.line((box[0] + 9, box[3] - 8, box[2] - 17, box[3] - 8), fill=(150, 145, 190, 255), width=2)
+    return out
 
 
 def render_look(look: str) -> None:
     folder = DESK / look
     for name, under, lift in (("card0", "stand", (0, 0)), ("card1", "wave", LIFT)):
         base = Image.open(folder / f"{under}.png").convert("RGBA")
-        capture.draw_card(base, lift).save(folder / f"{name}.png", optimize=True)
+        draw_card(base, lift).save(folder / f"{name}.png", optimize=True)
 
 
 def main() -> int:

@@ -96,10 +96,9 @@ def test_untouched_it_sits_at_ten_minutes_and_sleeps_at_twenty() -> None:
     while t < 1300 and out.wake_ms is not None:
         t += max(out.wake_ms, 500) / 1000.0
         out = e.update(t)
-        # the state, not the frame: a sitting prop act (reading a book) also shows the sit frame, for a minute at a time
-        if e.state == "sit" and first_sit is None:
+        if out.frame == "sit" and first_sit is None:
             first_sit = t
-        if e.state == "sleep" and first_sleep is None:
+        if out.frame == "sleep" and first_sleep is None:
             first_sleep = t
     assert first_sit is not None and 600 <= first_sit < 610
     assert first_sleep is not None and 1200 <= first_sleep < 1210

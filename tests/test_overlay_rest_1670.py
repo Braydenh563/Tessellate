@@ -46,14 +46,9 @@ def test_at_rest_the_drawn_feet_do_not_move_and_it_starts_few_things(gait: str, 
     # activity starts per ten minutes, a settled spell of 0.23 s, 5 to 7 percent of the hour moving.
     assert m["rest_feet_dy_per_min"] <= 1.0, m["rest_feet_dy_per_min"]
     assert m["rest_change_share"] <= 0.01
-    # the window row moves by a few px with the frame's own foot line (6 since INBOX 1683: a sitting act swaps frames)
-    assert m["rest_window_dy_per_min"] <= 6.0
-    # Intent moved (INBOX 1683, asks M4/M5: "a lot of actions and activities it can perform while idle"): the in-place acts
-    # (a book, a map, a bean bag) are the point now, about 40 an hour; 3 was the bar when only jitter started things.
-    assert m["starts_per_10min"] <= 9.0, m["starts"]
-    # (INBOX 1683, same move: an in-place act every 60 to 150 s shifts the window a few px with its frame's foot line, which
-    # ends a spell without a single step taken; the figure still keeps to its home, which the feet and the moving share hold.)
-    assert m["spell_median"] >= 45.0, m["spell_median"]
+    assert m["rest_window_dy_per_min"] <= 3.0  # the window row moves by a few px with the frame's own foot line
+    assert m["starts_per_10min"] <= 3.0, m["starts"]
+    assert m["spell_median"] >= 180.0, m["spell_median"]
     assert m["moving_share"] <= 0.03, m["moving_share"]
 
 
@@ -137,7 +132,7 @@ def test_after_a_landing_there_is_at_most_one_settle_and_no_vertical_motion() ->
 @pytest.mark.parametrize("look", ["masculine", "feminine"])
 def test_both_looks_are_still_by_the_feet_line(look: str) -> None:
     m = hour("float", 2, look)
-    assert m["rest_feet_dy_per_min"] <= 1.0 and m["starts_per_10min"] <= 9.0 and m["spell_median"] >= 45.0
+    assert m["rest_feet_dy_per_min"] <= 1.0 and m["starts_per_10min"] <= 3.0 and m["spell_median"] >= 180.0
 
 
 # --- the text bar: never over the caret, and no trip while typing -----------------------------

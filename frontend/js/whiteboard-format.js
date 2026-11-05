@@ -150,7 +150,7 @@ function wbFmtValue(entry, field) {
     case "fillstyle": return WB_FILL_STYLES.includes(s?.fillStyle) ? s.fillStyle : "solid";
     case "gradient": return wbHexColour(s?.gradient?.to) || "#ffffff";
     case "gradient-dir": return s?.gradient && wbHexColour(s.gradient.to) && (s.gradient.dir === "radial" || wbGradientVector(s.gradient.dir)) ? s.gradient.dir : "none";
-    case "fill-on": return wbColour.fillIsOn(s ? "sketch" : kind === "diagram" ? "diagram" : "object", s || o);
+    case "fill-on": return s ? Boolean(s.fill) : kind === "diagram" ? o.bg_alpha !== 0 : Boolean(o.bg && o.bg !== "transparent");
     case "fill": return s ? s.fill || "#3355ff" : kind === "diagram" ? wbDiagramFillColour(o) : (o.bg && o.bg !== "transparent" ? o.bg : "#ffffff");
     case "alpha": return Math.round(((s ? s.alpha : o?.alpha) ?? 1) * 100);
     case "shadow": return Boolean(s ? s.shadow : o?.shadow);
@@ -200,41 +200,33 @@ function wbFmtValue(entry, field) {
 //: `patch(entry, kind)` returns a partial for a sketch's data, an object's
 //: data, or `{row: {...}}` for a row's own columns; null skips the entry.
 async function wbFmtApply(field, patch, said) {
-  //: One apply at a time (INBOX 1685): a pasted rgba() sets the colour and then
-  //: the opacity, and the second must read what the first saved, not the data
-  //: from before it.
-  const run = async () => {
-    const entries = wbFmtEntries().filter((e) => !wbIsLocked(e.kind, e.item));
-    if (!entries.length) return;
-    await wbRecordGesture(async () => {
-      //: Rows and objects are saved together at the end, in one request (perf
-      //: 1031 row 20); a drawn shape still saves as it is changed.
-      const saves = [];
-      for (const entry of entries) {
-        const kind = wbFmtKind(entry);
-        if (!kind || !(WB_FMT_FIELDS[kind] || []).includes(field)) continue;
-        const partial = patch(entry, kind);
-        if (!partial) continue;
-        if (entry.kind === "sketch") {
-          if (wbSketchSetProps(entry.item, partial)) saves.push({ kind: "sketch", item: entry.item });
-        } else if (partial.row) {
-          Object.assign(entry.item, partial.row);
-          saves.push({ kind: entry.kind, item: entry.item });
-        } else if (entry.kind === "object") {
-          entry.item.data = { ...entry.item.data, ...partial };
-          for (const [key, value] of Object.entries(partial)) if (value === undefined) delete entry.item.data[key];
-          saves.push({ kind: "object", item: entry.item });
-        }
+  const entries = wbFmtEntries().filter((e) => !wbIsLocked(e.kind, e.item));
+  if (!entries.length) return;
+  await wbRecordGesture(async () => {
+    //: Rows and objects are saved together at the end, in one request (perf
+    //: 1031 row 20); a drawn shape still saves as it is changed.
+    const saves = [];
+    for (const entry of entries) {
+      const kind = wbFmtKind(entry);
+      if (!kind || !(WB_FMT_FIELDS[kind] || []).includes(field)) continue;
+      const partial = patch(entry, kind);
+      if (!partial) continue;
+      if (entry.kind === "sketch") {
+        if (wbSketchSetProps(entry.item, partial)) saves.push({ kind: "sketch", item: entry.item });
+      } else if (partial.row) {
+        Object.assign(entry.item, partial.row);
+        saves.push({ kind: entry.kind, item: entry.item });
+      } else if (entry.kind === "object") {
+        entry.item.data = { ...entry.item.data, ...partial };
+        for (const [key, value] of Object.entries(partial)) if (value === undefined) delete entry.item.data[key];
+        saves.push({ kind: "object", item: entry.item });
       }
-      await wbSaveMany(saves);
-    });
-    wbScheduleRender();
-    if (said) wbAnnounce(said);
-    wbFormatSyncSoon();
-  };
-  const turn = (wbFmtState.applyChain || Promise.resolve()).then(run);
-  wbFmtState.applyChain = turn.catch((err) => console.error("format apply", err));
-  return turn;
+    }
+    await wbSaveMany(saves);
+  });
+  wbScheduleRender();
+  if (said) wbAnnounce(said);
+  wbFormatSyncSoon();
 }
 
 //: The selection's box, in board units: one item's, or the whole set's.
@@ -725,6 +717,11 @@ function wbFormatLiveRead() {
 //: as one Undo step; a row with no name is not kept.
 const WB_PROP_NAME = /^[A-Za-z][\w .-]{0,39}$/;
 
+function wbFmtProps(entry) {
+  const data = entry.kind === "sketch" ? wbFmtSketch(entry) : entry.item.data || {};
+  return data.props && typeof data.props === "object" ? data.props : {};
+}
+
 function wbFmtPropRow(name = "", value = "") {
   const li = document.createElement("li");
   li.className = "wb-fmt-prop";
@@ -756,9 +753,7 @@ function wbFmtSyncProps(entries) {
   const one = entries.length === 1 && WB_FMT_FIELDS[wbFmtKind(entries[0])]?.includes("props") ? entries[0] : null;
   if (add) add.hidden = !one;
   list.dataset.item = one ? `${one.kind}:${one.id}` : "";
-  //: The item's own properties: a sketch's data, an object's data, or none.
-  const props = one ? ((one.kind === "sketch" ? wbFmtSketch(one) : one.item.data || {}).props) : null;
-  list.replaceChildren(...(one ? Object.entries(props && typeof props === "object" ? props : {}).map(([k, v]) => wbFmtPropRow(k, String(v))) : []));
+  list.replaceChildren(...(one ? Object.entries(wbFmtProps(one)).map(([k, v]) => wbFmtPropRow(k, String(v))) : []));
   if (!one && entries.length > 1) {
     const li = document.createElement("li");
     li.className = "muted wb-lib-note";
@@ -951,8 +946,10 @@ onDomReady(() => {
   on("wb-fmt-dash", "change", (e) => wbFmtApply("dash", () => ({ dash: e.target.value === "solid" ? undefined : e.target.value }), `Line ${e.target.value}.`));
   on("wb-fmt-fill-on", "change", (e) => {
     const colour = document.getElementById("wb-fmt-fill")?.value || "#3355ff";
-    wbFmtApply("fill", (entry) => wbColour.fillToggle(entry.kind === "sketch" ? "sketch" : entry.item.kind === "diagram" ? "diagram" : "object",
-      entry.kind === "sketch" ? wbFmtSketch(entry) : entry.item.data, e.target.checked, colour), e.target.checked ? "Filled." : "Fill taken off.");
+    wbFmtApply("fill", (entry) => (entry.kind === "sketch"
+      ? { fill: e.target.checked ? colour : undefined, fillOpacity: e.target.checked ? 1 : undefined, ...(e.target.checked ? {} : { gradient: undefined, fillStyle: undefined }) }
+      : entry.item.kind === "diagram" ? { bg_alpha: e.target.checked ? undefined : 0 }
+      : { bg: e.target.checked ? colour : "transparent" }), e.target.checked ? "Filled." : "Fill taken off.");
   });
   //: A gradient or a fill style needs a colour to start from, so choosing one
   //: on an unfilled shape fills it first. The two are alternatives: one choice
@@ -982,8 +979,7 @@ onDomReady(() => {
       return { ...fillBase(entry), gradient: { to, dir: dir === "none" ? "s" : dir }, fillStyle: undefined };
     }, "Gradient colour changed.");
   });
-  on("wb-fmt-fill", "change", (e) => wbFmtApply("fill", (entry) => wbColour.fillColour(entry.kind === "sketch" ? "sketch" : entry.item.kind === "diagram" ? "diagram" : "object",
-    entry.kind === "sketch" ? wbFmtSketch(entry) : entry.item.data, e.target.value), "Fill colour changed."));
+  on("wb-fmt-fill", "change", (e) => wbFmtApply("fill", (entry) => (entry.kind === "sketch" ? { fill: e.target.value, fillOpacity: 1 } : { bg: e.target.value }), "Fill colour changed."));
   on("wb-fmt-alpha", "input", (e) => {
     const out = document.getElementById("wb-fmt-alpha-out");
     if (out) out.textContent = `${e.target.value}%`;
@@ -994,7 +990,12 @@ onDomReady(() => {
   });
   //: A fill's opacity on a shape with no fill yet fills it first, so the
   //: slider and the presets always do what they say. 0 is a real answer.
-  const alphaSetters = { fillalpha: (pct) => wbColour.setAlpha("fillalpha", pct), strokealpha: (pct) => wbColour.setAlpha("strokealpha", pct) };
+  const setFillAlpha = (pct) => wbFmtApply("fillalpha", (entry) => ({ ...wbFmtFillFirst(entry), [wbFmtAlphaKeys(entry).fill]: pct / 100 }), `Fill ${pct}% solid.`);
+  const setStrokeAlpha = (pct) => wbFmtApply("strokealpha", (entry) => {
+    const key = wbFmtAlphaKeys(entry).line;
+    return { [key]: key === "opacity" && pct >= 100 ? undefined : pct / 100 };
+  }, `Line ${pct}% solid.`);
+  const alphaSetters = { fillalpha: setFillAlpha, strokealpha: setStrokeAlpha };
   const alphaPct = (value) => Math.max(0, Math.min(100, Number.isFinite(Number(value)) && value !== "" ? Number(value) : 100));
   for (const name of Object.keys(alphaSetters)) {
     on(`wb-fmt-${name}`, "input", (e) => {
@@ -1810,8 +1811,8 @@ function wbTableMenuRows(d) {
 //: rail) opens this popover instead of the browser's dialog: what it is
 //: setting at the top; for a fill and its border, the two side by side with
 //: Same as and Swap; the last eight colours picked on this device; the board
-//: colours; a hex box and R, G, B boxes; an Opacity row; and take a colour
-//: from the board or the screen. The browser's dialog is not used. A pick is written by the field's own `change` handler,
+//: colours; take a colour from the board; and More colours, which is the
+//: browser's dialog. A pick is written by the field's own `change` handler,
 //: so it is the one Undo step it always was.
 const WB_RECENT_COLOURS_KEY = "wb-recent-colours";
 const WB_RECENT_COLOURS_MAX = 8;
@@ -2002,261 +2003,6 @@ function wbColourHeading(words) {
   return head;
 }
 
-//: **The colour kit** (INBOX 1685): what the colour popover and the Filled
-//: switch share, behind one name so the shared scope grows by one rather than
-//: nine. `parse` reads a pasted colour, `fillIsOn`, `fillToggle` and
-//: `fillColour` are the one rule for a fill (bar and Format panel alike),
-//: `setAlpha` the one opacity setter, `opacity` and `fields` the popover's rows.
-const wbColour = (() => {
-  //: What a person may paste into the popover's colour field, as `{hex, alpha}`
-  //: (alpha null when the text carries none) or null: #rgb, #rgba, #rrggbb,
-  //: #rrggbbaa (the # optional), rgb()/rgba() and hsl()/hsla() in the comma or
-  //: the space form, three bare numbers, and any name the browser knows.
-  function wbColourParse(text) {
-    const t = String(text || "").trim().toLowerCase();
-    if (!t) return null;
-    const two = (n) => Math.round(n * 100) / 100;
-    const byte = (n) => Math.max(0, Math.min(255, Math.round(n)));
-    const hexOf = (r, g, b) => `#${[r, g, b].map((n) => byte(n).toString(16).padStart(2, "0")).join("")}`;
-    const hexForm = /^#?([0-9a-f]{3,4}|[0-9a-f]{6}|[0-9a-f]{8})$/.exec(t);
-    if (hexForm) {
-      const h = hexForm[1].length <= 4 ? [...hexForm[1]].map((c) => c + c).join("") : hexForm[1];
-      return { hex: `#${h.slice(0, 6)}`, alpha: h.length === 8 ? two(parseInt(h.slice(6), 16) / 255) : null };
-    }
-    const call = /^(rgba?|hsla?)\(\s*([^)]*?)\s*\)$/.exec(t);
-    const bare = /^\d+(?:\.\d+)?[\s,]+\d+(?:\.\d+)?[\s,]+\d+(?:\.\d+)?$/.test(t);
-    if (call || bare) {
-      const parts = (call ? call[2] : t).split(/[\s,/]+/).filter(Boolean);
-      const num = (p, scale) => (p.endsWith("%") ? (parseFloat(p) / 100) * scale : parseFloat(p));
-      if (parts.length < 3 || parts.length > 4 || parts.slice(0, 3).some((p) => !Number.isFinite(parseFloat(p)))) return null;
-      let alpha = null;
-      if (parts[3] !== undefined) {
-        alpha = num(parts[3], 1);
-        if (!Number.isFinite(alpha)) return null;
-        alpha = two(Math.max(0, Math.min(1, alpha)));
-      }
-      if (call && call[1].startsWith("hsl")) {
-        const h = (((parseFloat(parts[0]) % 360) + 360) % 360) / 60;
-        const s = Math.max(0, Math.min(1, num(parts[1], 1)));
-        const l = Math.max(0, Math.min(1, num(parts[2], 1)));
-        const c = (1 - Math.abs(2 * l - 1)) * s;
-        const x = c * (1 - Math.abs((h % 2) - 1));
-        const [r, g, b] = [[c, x, 0], [x, c, 0], [0, c, x], [0, x, c], [x, 0, c], [c, 0, x]][Math.min(5, Math.floor(h))];
-        const m = l - c / 2;
-        return { hex: hexOf((r + m) * 255, (g + m) * 255, (b + m) * 255), alpha };
-      }
-      return { hex: hexOf(num(parts[0], 255), num(parts[1], 255), num(parts[2], 255)), alpha };
-    }
-    const named = wbHexOf(t);
-    return named ? { hex: named, alpha: null } : null;
-  }
-
-  //: **Is the fill showing, and what flips it** (INBOX 1685: "I unticked filled
-  //: and it switched to blue"). Filled off used to delete the colour, so the
-  //: swatch fell back to the default and Filled on took that. Now off only makes
-  //: the fill see-through (opacity 0, the colour kept) and on brings the same
-  //: colour back, for a drawn shape (`fill`/`fillOpacity`), a text box
-  //: (`bg`/`bg_alpha`) and a diagram (its accent, `bg_alpha`) alike.
-  function wbFillIsOn(kind, data) {
-    const d = data || {};
-    if (kind === "sketch") return Boolean(d.fill) && d.fillOpacity !== 0;
-    if (kind === "diagram") return d.bg_alpha !== 0;
-    return Boolean(d.bg) && d.bg !== "transparent" && d.bg_alpha !== 0;
-  }
-
-  function wbFillTogglePatch(kind, data, on, fallback) {
-    const d = data || {};
-    if (kind === "diagram") return { bg_alpha: on ? undefined : 0 };
-    const hasColour = kind === "sketch" ? Boolean(d.fill) : Boolean(d.bg) && d.bg !== "transparent";
-    if (!on) return hasColour ? (kind === "sketch" ? { fillOpacity: 0 } : { bg_alpha: 0 }) : {};
-    if (kind === "sketch") return { fill: d.fill || fallback, fillOpacity: d.fillOpacity > 0 ? d.fillOpacity : 1 };
-    return { bg: hasColour ? d.bg : fallback, bg_alpha: d.bg_alpha > 0 ? d.bg_alpha : undefined };
-  }
-
-  //: A new fill colour keeps the opacity the fill already had (a 50% fill stays
-  //: 50% when its colour changes) and only brings a hidden fill (opacity 0) back.
-  function wbFillColourPatch(kind, data, colour) {
-    const d = data || {};
-    if (kind === "sketch") return { fill: colour, fillOpacity: d.fillOpacity > 0 ? d.fillOpacity : 1 };
-    if (kind === "diagram") return { bg: colour };
-    return { bg: colour, bg_alpha: d.bg_alpha > 0 ? d.bg_alpha : undefined };
-  }
-
-  //: **One setter for the three opacities** a colour can have: the fill's, the
-  //: line's and the text's. The Format panel's sliders and the colour popover's
-  //: Opacity row both call it, so the two cannot disagree. A fill's opacity on a
-  //: shape with no fill yet fills it first; 0 is a real answer.
-  function wbFmtSetAlpha(field, pct) {
-    if (field === "inkalpha") {
-      const v = Math.max(10, pct);
-      return wbFmtApply("text", (entry, kind) => (kind === "shape" ? { label_alpha: v >= 100 ? undefined : v / 100 } : { text_alpha: v >= 100 ? undefined : v / 100 }), `Text opacity ${v}%.`);
-    }
-    if (field === "fillalpha") return wbFmtApply("fillalpha", (entry) => ({ ...wbFmtFillFirst(entry), [wbFmtAlphaKeys(entry).fill]: pct / 100 }), `Fill ${pct}% solid.`);
-    return wbFmtApply("strokealpha", (entry) => {
-      const key = wbFmtAlphaKeys(entry).line;
-      return { [key]: key === "opacity" && pct >= 100 ? undefined : pct / 100 };
-    }, `Line ${pct}% solid.`);
-  }
-
-  //: **Which opacity a colour field owns** (INBOX 1685: "I cant find where to
-  //: change the transparency in the colours"). A fill colour has the fill's, a
-  //: line or border colour the line's, a text colour the text's, the tool's fill
-  //: the new shapes'. A field with none (the pen's ink, a gradient's end) shows
-  //: no Opacity row rather than a dead one.
-  const WB_COLOUR_ALPHA = {
-    "wb-fmt-fill": "fillalpha", "wb-prop-shapefill": "fillalpha", "wb-prop-bg": "fillalpha",
-    "wb-fmt-stroke": "strokealpha", "wb-prop-color": "strokealpha", "wb-prop-border": "strokealpha",
-    "wb-fmt-ink": "inkalpha", "wb-fill-color": "toolfill",
-  };
-
-  function wbColourAlphaOf(input) {
-    let field = WB_COLOUR_ALPHA[input.id];
-    if (field === "strokealpha" && input.id === "wb-prop-color" && wbColourName(input) === "Text colour") field = "inkalpha";
-    if (field === "toolfill") return document.getElementById("wb-fill-opacity") ? { field, value: () => Number(window.currentFillOpacity ?? 100) } : null;
-    if (!field) return null;
-    const takes = field === "inkalpha" ? "text" : field;
-    const [first] = wbFmtEntries().filter((e) => (WB_FMT_FIELDS[wbFmtKind(e)] || []).includes(takes));
-    return first ? { field, value: () => wbFmtValue(first, field) } : null;
-  }
-
-  //: The Opacity row: a slider and a number box that move together, named where
-  //: the colour is set. Dragging previews in the number; letting go saves, as
-  //: the Format panel's sliders do.
-  function wbColourOpacity(input) {
-    const own = wbColourAlphaOf(input);
-    if (!own) return null;
-    const row = document.createElement("div");
-    row.className = "wb-colour-opacity";
-    const label = document.createElement("span");
-    label.className = "wb-colour-label";
-    label.textContent = "Opacity";
-    const slider = document.createElement("input");
-    slider.type = "range";
-    slider.min = "0";
-    slider.max = "100";
-    slider.step = "5";
-    slider.setAttribute("aria-label", "Opacity");
-    const box = document.createElement("input");
-    box.type = "number";
-    box.min = "0";
-    box.max = "100";
-    box.step = "1";
-    box.setAttribute("aria-label", "Opacity percent");
-    const unit = document.createElement("span");
-    unit.className = "wb-colour-label";
-    unit.textContent = "%";
-    const show = (pct) => {
-      slider.value = String(pct);
-      box.value = String(pct);
-    };
-    const save = (raw) => {
-      //: A cleared box is "no answer", not 0%: put the shown value back.
-      if (String(raw).trim() === "") return show(slider.value);
-      const pct = Math.max(own.field === "inkalpha" ? 10 : 0, Math.min(100, Math.round(Number(raw))));
-      if (!Number.isFinite(pct)) return show(slider.value);
-      show(pct);
-      if (own.field === "toolfill") {
-        const tool = document.getElementById("wb-fill-opacity");
-        tool.value = String(pct);
-        tool.dispatchEvent(new Event("input", { bubbles: true }));
-      } else {
-        wbFmtSetAlpha(own.field, pct);
-      }
-    };
-    slider.addEventListener("input", () => {
-      box.value = slider.value;
-    });
-    slider.addEventListener("change", () => save(slider.value));
-    box.addEventListener("change", () => save(box.value));
-    show(Math.max(0, Math.min(100, Math.round(own.value() ?? 100))));
-    row.append(label, slider, box, unit);
-    row.setValue = save;
-    return row;
-  }
-
-  //: **Type or paste a colour** (INBOX 1685: "easier to enter custom rgb or hex
-  //: codes"): a hex box that takes anything `wbColourParse` does, and R, G, B
-  //: boxes. A change sets the field as a pick does and keeps the popover open,
-  //: so the next number can follow; `onAlpha` is called when the paste carried
-  //: an opacity (#rrggbbaa, rgba(), hsla()). Bad text is said, never ignored.
-  function wbColourFields(input, onAlpha) {
-    const wrap = document.createElement("div");
-    wrap.className = "wb-colour-fields";
-    const chip = document.createElement("span");
-    chip.className = "wb-colour-chip";
-    chip.setAttribute("aria-hidden", "true");
-    const box = (word, full, extra) => {
-      const label = document.createElement("label");
-      label.className = `wb-colour-field ${extra}`;
-      const text = document.createElement("span");
-      text.className = "wb-colour-label";
-      text.textContent = word;
-      const field = document.createElement("input");
-      field.setAttribute("aria-label", full);
-      label.append(text, field);
-      return { label, field };
-    };
-    const hex = box("Hex", "Hex", "wb-colour-hex");
-    hex.field.type = "text";
-    hex.field.placeholder = "#3355ff";
-    hex.field.spellcheck = false;
-    hex.field.autocomplete = "off";
-    hex.field.title = "Paste #rgb, #rrggbb, #rrggbbaa, rgb() or hsl()";
-    const channels = [box("R", "Red", "wb-colour-num"), box("G", "Green", "wb-colour-num"), box("B", "Blue", "wb-colour-num")];
-    for (const channel of channels) {
-      Object.assign(channel.field, { type: "number", min: "0", max: "255", step: "1" });
-    }
-    const hint = document.createElement("p");
-    hint.className = "muted empty-line wb-colour-hint hidden";
-    hint.setAttribute("role", "status");
-    hint.textContent = "Not a colour. Try #3355ff, rgb(51 85 255) or hsl(228 100% 60%).";
-    const paint = (colour) => {
-      chip.style.setProperty("--swatch", colour);
-      hex.field.value = colour;
-      colour.slice(1).match(/../g).forEach((pair, i) => {
-        channels[i].field.value = String(parseInt(pair, 16));
-      });
-      hex.field.removeAttribute("aria-invalid");
-      hint.classList.add("hidden");
-    };
-    wrap.commit = (colour, alpha) => {
-      const ok = wbHexOf(colour);
-      if (!ok) return;
-      wbSetColourField(input, ok);
-      paint(ok);
-      if (alpha != null) onAlpha?.(alpha);
-    };
-    hex.field.addEventListener("change", () => {
-      const parsed = wbColourParse(hex.field.value);
-      if (!parsed) {
-        hex.field.setAttribute("aria-invalid", "true");
-        hint.classList.remove("hidden");
-        return;
-      }
-      wrap.commit(parsed.hex, parsed.alpha);
-    });
-    //: A paste is complete when it lands: no Enter needed.
-    hex.field.addEventListener("paste", () => setTimeout(() => hex.field.dispatchEvent(new Event("change")), 0));
-    for (const channel of channels) {
-      channel.field.addEventListener("change", () => {
-        //: A blank or non-number box puts the colour back; it is not 0.
-        const raw = channels.map((c) => c.field.value.trim());
-        if (raw.some((v) => v === "" || !Number.isFinite(Number(v)))) return paint(wbHexOf(input.value) || "#000000");
-        const parts = raw.map((v) => Math.max(0, Math.min(255, Math.round(Number(v)))));
-        wrap.commit(`#${parts.map((n) => n.toString(16).padStart(2, "0")).join("")}`);
-      });
-    }
-    paint(wbHexOf(input.value) || "#000000");
-    wrap.append(chip, hex.label, ...channels.map((c) => c.label), hint);
-    return wrap;
-  }
-
-  return {
-    parse: wbColourParse, fillIsOn: wbFillIsOn, fillToggle: wbFillTogglePatch, fillColour: wbFillColourPatch,
-    setAlpha: wbFmtSetAlpha, opacity: wbColourOpacity, fields: wbColourFields,
-  };
-})();
-
 //: The popover, built for one field each time it opens (the recent row and
 //: the pair's two colours change between opens).
 async function wbOpenColourMenu(input) {
@@ -2366,11 +2112,6 @@ async function wbOpenColourMenu(input) {
   const byHex = Object.fromEntries(Object.entries(WB_COLOUR_SWATCHES).map(([k, v]) => [v, k]));
   const board = swatchPicker({ label: "Board colours", value: byHex[current] || null, palette: WB_COLOUR_SWATCHES, none: null, onChoose: (key) => pick(WB_COLOUR_SWATCHES[key]) });
   rows.push(board);
-  let opacityRow = null;
-  const custom = wbColour.fields(input, (alpha) => opacityRow?.setValue(Math.round(alpha * 100)));
-  opacityRow = wbColour.opacity(input);
-  rows.push(wbColourHeading("Custom"), custom);
-  if (opacityRow) rows.push(opacityRow);
   const tools = document.createElement("div");
   tools.className = "wb-colour-actions";
   const dropper = wbColourButton("eyedropper", "Pick from the board",
@@ -2380,16 +2121,10 @@ async function wbOpenColourMenu(input) {
     });
   dropper.id = "wb-colour-eyedrop";
   dropper.setAttribute("aria-pressed", "false");
-  //: The browser's own eyedropper reads any pixel on the screen; where it
-  //: does not exist the board one above is all there is.
-  const screen = "EyeDropper" in window ? wbColourButton("eyedropper", "From screen", "Take any colour on the screen", async () => {
-    try {
-      const picked = await new window.EyeDropper().open();
-      custom.commit(picked.sRGBHex);
-    } catch {
-      /* cancelled with Escape: nothing to take */
-    }
-  }) : null;
+  const more = wbColourButton("palette", "More colours", "Any colour, by number or from the screen", () => {
+    closeActionMenus();
+    try { input.showPicker(); } catch { /* the browser has no dialog here */ }
+  });
   //: What a press on a shape takes, said rather than only held under Alt
   //: (a touch screen has no Alt); shown while the eyedropper is on.
   const take = document.createElement("label");
@@ -2405,8 +2140,7 @@ async function wbOpenColourMenu(input) {
   const takeWords = document.createElement("span");
   takeWords.textContent = "Take a shape's border";
   take.append(takeBox, takeWords);
-  tools.append(dropper);
-  if (screen) tools.append(screen);
+  tools.append(dropper, more);
   rows.push(tools, take);
   menu.replaceChildren(...rows);
   closeActionMenus();

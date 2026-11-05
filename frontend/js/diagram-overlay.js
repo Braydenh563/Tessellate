@@ -9,8 +9,6 @@
 (() => {
   //: The pure half (tested under node). `img` is the image's rectangle, `origin` the overlay's, both client coordinates.
   const math = {
-    //: A handle's side: the full size, or half the smaller side of the block it leaves, never under `least` (1679 m).
-    handleSize: (at, full, least) => Math.max(least, Math.min(full, Math.round(Math.min(at.w, at.h) / 2))),
     //: Each node's box in the overlay's own pixels, from its drawing units.
     place: (hit, img, origin, list = hit?.boxes) => {
       if (!hit || !list || !img.width || !img.height) return [];

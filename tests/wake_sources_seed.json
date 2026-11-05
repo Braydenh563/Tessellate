@@ -1,7 +1,6 @@
 {
  "account-recovery.js::mutation-observer": 1,
  "answer-kit.js::interval": 1,
- "answer-kit.js::mutation-observer": 1,
  "answer-kit.js::raf": 2,
  "appearance-panel.js::raf": 1,
  "ask-chart.js::resize-observer": 1,

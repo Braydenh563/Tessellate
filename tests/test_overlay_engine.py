@@ -162,8 +162,7 @@ def test_sits_then_sleeps_when_nobody_touches_it() -> None:
     while out.wake_ms is not None and t < 1500:
         t += out.wake_ms / 1000.0
         out = e.update(t)
-        # the state is kept beside the frame: a sitting prop act (reading a book) also shows the sit frame, in state act
-        frames.append((t, out.frame if e.state != "act" else "act:" + out.frame))
+        frames.append((t, out.frame))
     names = [f for _, f in frames]
     assert "sit" in names and names[-1] == "sleep"
     assert names.index("sit") < names.index("sleep")

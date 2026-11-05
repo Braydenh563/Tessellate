@@ -19,9 +19,7 @@ def test_each_handle_names_its_edge():
 
 
 def test_empty_name_draws_the_old_one_back():
-    # 1679 m: the intent (a refused empty name leaves the old one showing) is unchanged; an unchanged row is not redrawn, so the
-    # label text is also written back by hand, in the same statement.
-    assert "if (!diagramOps.relabel(S.m, key, text)) return (label.textContent = nameOf(S, key)), render(S);" in BUILDER
+    assert "if (!diagramOps.relabel(S.m, key, text)) return render(S);" in BUILDER
 
 
 def test_names_are_capped():

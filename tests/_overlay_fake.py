@@ -206,17 +206,6 @@ class FakeWin32:
     def _GetForegroundWindow(self) -> int:
         return 900
 
-    #: `(percent, on mains)` the fake reports, or None for a desktop with no battery (flag 128), the default.
-    battery: tuple[int, bool] | None = None
-
-    def _GetSystemPowerStatus(self, ref: Any) -> int:
-        status = ref._obj
-        if self.battery is None:
-            status.BatteryFlag = 128
-        else:
-            status.BatteryLifePercent, status.ACLineStatus = self.battery[0], int(self.battery[1])
-        return 1
-
     def _GetGUIThreadInfo(self, _thread: int, ref: Any) -> int:
         info = ref._obj
         if self.caret is None:

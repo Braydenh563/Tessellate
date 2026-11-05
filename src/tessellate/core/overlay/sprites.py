@@ -20,7 +20,6 @@ from __future__ import annotations
 
 import logging
 import math
-import re
 from pathlib import Path
 from typing import Any, NamedTuple
 
@@ -130,12 +129,8 @@ def frames_dir() -> Path:
 
 
 def look_for(name: Any) -> str:
-    """A frame set for a look name: a captured companion's key (`capture.is_key`, INBOX 1684) as it is,
-    else feminine or, for anything else, the masculine set."""
-    text = str(name).strip().lower()
-    if re.fullmatch(r"c-[0-9a-f]{12}", text):
-        return text
-    return "feminine" if text == "feminine" else "masculine"
+    """A frame set for a look name: anything but feminine is the masculine set."""
+    return "feminine" if str(name).strip().lower() == "feminine" else "masculine"
 
 
 def clear_faint_alpha(image: Any) -> Any:
@@ -165,12 +160,7 @@ class SpriteSet:
 
     def __init__(self, look: str, directory: Path | None = None) -> None:
         self.look = look_for(look)
-        #: A captured companion (name, persona, saved) has legs: it walks; Atlas floats.
-        self.gait = GAITS.get(self.look, "walk")
-        if directory is None and self.look not in LOOKS:
-            from tessellate.core.overlay import capture
-
-            directory = capture.cache_root()
+        self.gait = GAITS[self.look]
         self.directory = (directory or frames_dir()) / self.look
         self._source: dict[str, Any] = {}
         self._cache: dict[tuple[str, int, bool], Frame] = {}
@@ -217,8 +207,6 @@ class SpriteSet:
         from PIL import Image, ImageChops, ImageDraw, ImageStat
 
         stand, sit = self._load("stand"), self._load("sit")
-        if self.look not in LID_EYES:  # a captured figure's eyes are not charted: it sits with them open
-            return sit
         box = LID_EYES[self.look]
         ref, best = stand.crop(box), None
         for dy in range(-LID_REACH, LID_REACH + 1):

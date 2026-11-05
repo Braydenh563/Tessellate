@@ -76,13 +76,5 @@
     return diagramModel.ops.step(trial, key, dir) && ids(order(trial, diagramModel.ops.layout(trial))) === ids(order(m, diagramModel.ops.layout(m)));
   }
 
-  //: A box (a Mermaid subgraph) around one block, from its menu (1679 m); around several is the selection bar's "Box them". `h` is the builder's helpers.
-  function box(S, h, key) {
-    const id = diagramModel.ops.wrap(S.m, [key]);
-    if (!id) return h.say(S, "That block could not be boxed.");
-    S.sel = diagramModel.ops.key("g", id);
-    h.commit(S, `Boxed ${h.name(S, key)}. Rename the box to say what it holds.`);
-  }
-
-  diagramModel.outline = { order, offer, stuck, box };
+  diagramModel.outline = { order, offer, stuck };
 })();

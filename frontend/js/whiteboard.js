@@ -6236,10 +6236,9 @@ function wbFillContextBar() {
     }
     if (which === "shape") {
       document.getElementById("wb-prop-shapefill").value = parsed.fill || "#3355ff";
-      const filled = wbColour.fillIsOn("sketch", parsed);
-      document.getElementById("wb-prop-shapefill-on").checked = filled;
+      document.getElementById("wb-prop-shapefill-on").checked = Boolean(parsed.fill);
       //: Dimmed, not disabled: a fill picked from its well turns it on.
-      document.getElementById("wb-prop-shapefill").classList.toggle("wb-colour-off", !filled);
+      document.getElementById("wb-prop-shapefill").classList.toggle("wb-colour-off", !parsed.fill);
     }
     return;
   }
@@ -9533,7 +9532,11 @@ function wbBuildContextMenu(kind) {
         rooted ? "Colours this topic's own card" : "Carries down to everything under this topic",
         () => {
           const well = document.getElementById("wb-map-strip-color");
-          well?.click();
+          try {
+            well?.showPicker();
+          } catch {
+            well?.click();
+          }
         });
     });
 
@@ -9699,7 +9702,11 @@ function wbBuildContextMenu(kind) {
       sub(state.tasks ? "Stop being tasks" : "Make these tasks", "A box to tick on each", () => WB_MAP_MULTI_ACTIONS.task(mapTopics));
       sub("Colour these…", "Carries down each one's branch", () => {
         const well = document.getElementById("wb-mapmulti-color");
-        well?.click();
+        try {
+          well?.showPicker();
+        } catch {
+          well?.click();
+        }
       });
       if (state.branches.length) {
         sub(state.folded ? "Open these branches" : "Fold these branches", "The topics picked that have anything under them", () =>
@@ -16219,18 +16226,23 @@ async function initWhiteboard() {
     wbScheduleRender();
   });
   document.getElementById("wb-prop-shapefill")?.addEventListener("change", async (e) => {
+    const sketch = wbSelectedSketchOrNull();
+    if (!sketch) return;
+    const before = WB_KIND_INFO.sketch.payload(sketch);
+    wbPushUndo({ action: "move", kind: "sketch", id: sketch.id, before });
     document.getElementById("wb-prop-shapefill-on").checked = true;
     document.getElementById("wb-prop-shapefill").classList.remove("wb-colour-off");
-    await wbFmtApply("fill", (entry) => (entry.kind === "sketch" ? wbColour.fillColour("sketch", wbFmtSketch(entry), e.target.value) : null), "Fill colour changed.");
+    await wbSaveSketchProps(sketch, { fill: e.target.value, fillOpacity: 1 });
+    wbScheduleRender();
   });
-  //: The same toggle as the Format panel's (`wbFillTogglePatch`): off keeps the
-  //: shape's colour, on brings it back (INBOX 1685).
   document.getElementById("wb-prop-shapefill-on")?.addEventListener("change", async (e) => {
+    const sketch = wbSelectedSketchOrNull();
+    if (!sketch) return;
+    const before = WB_KIND_INFO.sketch.payload(sketch);
+    wbPushUndo({ action: "move", kind: "sketch", id: sketch.id, before });
     document.getElementById("wb-prop-shapefill").classList.toggle("wb-colour-off", !e.target.checked);
-    const colour = document.getElementById("wb-prop-shapefill").value;
-    await wbFmtApply("fill", (entry) => (entry.kind === "sketch" ? wbColour.fillToggle("sketch", wbFmtSketch(entry), e.target.checked, colour) : null),
-      e.target.checked ? "Filled." : "Fill taken off.");
-    wbUpdateContextBar();
+    await wbSaveSketchProps(sketch, { fill: e.target.checked ? document.getElementById("wb-prop-shapefill").value : undefined });
+    wbScheduleRender();
   });
   document.getElementById("wb-prop-fontsize")?.addEventListener("change", async (e) => {
     const obj = wbSelectedTextObjectOrNull();

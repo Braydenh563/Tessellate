@@ -49,9 +49,7 @@ def test_the_ladder_stops_where_the_range_does_and_the_ends_are_reported():
     assert _math("m.rung(0.8*5,0.8,1)") == pytest.approx(4.0)
     assert _math("m.rung(0.8*0.25,0.8,-1)") == pytest.approx(0.8 * 0.25)
     ends = _math("[m.atEnd(0.8*5,0.8,1),m.atEnd(0.8*1.25**7,0.8,1),m.atEnd(0.8,0.8,1),m.atEnd(0.8*0.25,0.8,-1)]")
-    # 1679 m: the top is the one range end the wheel also clamps to, so the rung below it (4.77 times Fit) is not the end: one short step is left.
-    assert ends == [True, False, False, True]
-    assert _math("[m.atEnd(0.8*1.25**7,0.8,1),m.rung(0.8*1.25**7,0.8,1)/0.8]") == [False, pytest.approx(5.0)]
+    assert ends == [True, True, False, True]
 
 
 @needs_node

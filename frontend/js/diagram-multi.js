@@ -47,7 +47,7 @@
       shapeBtn,
       colourBtn,
       connectBtn,
-      tool("ph:stack Box them", "Draw a labelled box around the selected blocks (a group)", () => wrapAll()),
+      tool("ph:stack Group into a box", "Put the selected blocks in a new group", () => wrapAll()),
       end
     );
     S.pane.prepend(bar);

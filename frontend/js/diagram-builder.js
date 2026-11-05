@@ -70,8 +70,6 @@
       const empty = !source.trim() || (!S.plain && blank && bare);
       S.fig.classList.toggle("dgm-picture-empty", empty);
       if (empty) return S.fig.replaceChildren(el("p", "muted dgm-hint", "The picture appears here as you add blocks."));
-      //: The hint goes now, or it and the pending line show together (1679 m).
-      S.fig.querySelector(":scope > .dgm-hint")?.remove();
       ensureModule("mermaid").then((ok) => {
         if (!ok || stamp !== S.drawn) return;
         const began = performance.now();
@@ -305,7 +303,7 @@
     const items = [
       { label: "ph:pencil-simple Rename", run: () => relabel(S, key), group: "edit" },
       { label: "ph:arrow-bend-down-right Connect to…", run: () => joinPick(S, key), group: "edit" },
-      ...(isNode ? [{ label: "ph:palette Colour…", run: () => styleDo(S, "colour", key), group: "edit" }, { label: "ph:stack Box this block", run: () => diagramModel.outline.box(S, helpers, key), group: "edit" }] : []),
+      ...(isNode ? [{ label: "ph:palette Colour…", run: () => styleDo(S, "colour", key), group: "edit" }] : []),
       { label: isNode ? "ph:plus Add block after" : "ph:plus Add block inside", run: () => addBlock(S, { after: isNode ? key : null, into: isNode ? null : key }), group: "edit" },
     ];
     if (isNode) {
@@ -363,8 +361,8 @@
     if (!b || key[0] === "k") return;
     const label = b.querySelector(":scope > .dgm-card > .dgm-label");
     beginEdit(S, label, nameOf(S, key), (text) => {
-      //: An empty name is refused; an unchanged row is not redrawn, so it gets the old name back by hand (1679 m).
-      if (!diagramOps.relabel(S.m, key, text)) return (label.textContent = nameOf(S, key)), render(S);
+      //: An empty name is refused; the list would keep showing it empty while the picture says the old one, so draw it back.
+      if (!diagramOps.relabel(S.m, key, text)) return render(S);
       if (text === nameOf(S, key) && S.source === diagramModel.print(S.m)) return render(S);
       commit(S, `Renamed to ${text}.`);
     }, key);
@@ -642,7 +640,7 @@
     //: The picture's renderer and the flowchart's toolbar start fetching with the first batch, not after it (R11: cold start).
     const kind = kindOf(text);
     ensureModule("mermaid");
-    const early = Promise.all([ensureModule("diagramKindbar"), ...(kind === "flowchart" ? [ensureModule("diagramBar"), ensureModule("diagramSteps"), ensureModule("diagramOutline")] : [])]);
+    const early = kind === "flowchart" ? Promise.all([ensureModule("diagramBar"), ensureModule("diagramSteps"), ensureModule("diagramOutline")]) : Promise.resolve([true]);
     await Promise.all(["/css/objmove-lazy.css", "/js/obj-ref.js", "/js/obj-drag.js", "/js/diagram-picture.js", "/js/diagram-library.js", "/js/diagram-pointer.js", "/js/diagram-ops.js"].map((file) => lazyScript(file)));
     diagramOps = helpers.ops = diagramModel.ops;
     if (typeof OBJ_MODES === "object" && !OBJ_MODES.diagram) OBJ_MODES.diagram = diagramModel.pointer.make(helpers);

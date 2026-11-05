@@ -60,9 +60,6 @@ CSS_FILES = [
     #: An answer composed from the notes (loaded by ask-compose.js, CHAT_PLAN
     #: decision 33): the quote style of a sentence said from a note.
     CSS_DIR / "ask-compose-lazy.css",
-    #: An answer's foot row (answer-kit.js `answerFootGather`, CHAT_PLAN B2),
-    #: loaded by answer-kit.js itself, after ask-compose-lazy.css's bundle.
-    CSS_DIR / "answer-foot-lazy.css",
     #: The chat context pill's popover (usage-ledger.js loads it).
     CSS_DIR / "usage-lazy.css",
     #: The Guide's streamed bubble (help-chat.js loads it).

@@ -4275,20 +4275,7 @@ nmb.boardEdges = (floor, ceiling) => {
   for (const el of board.querySelectorAll(".wb-object")) {
     if (out.length >= 60) break;
     const b = nameMarkBuddyPerchShown(el);
-    if (!b || b.height < 20) continue;
-    //: A plain topic (the Outline look's branches: `shape: none`) and an underlined one draw no
-    //: box, only their words (INBOX 1686, the owner: "the companion cant sit on any other mindmap
-    //: nodes other than the central one"; every branch was plain and skipped): its seat is the
-    //: top of the words, as wide as they are, so a short label is still a perch.
-    const bare = el.dataset.shape === "none" || el.dataset.shape === "underline";
-    const words = bare ? el.querySelector(".wb-map-text, .wb-text-content") : null;
-    const w = words ? nameMarkBuddyShown(words) : null;
-    if (bare && w) {
-      if (w.width < 24 || w.top <= Math.max(floor, view.top) + 20 || w.top >= Math.min(ceiling, view.bottom) - 20 || w.right <= view.left || w.left >= view.right) continue;
-      out.push({ el, type: "top", kind: "node", y: w.top, left: w.left, right: w.right, top: w.top, bottom: w.bottom });
-      continue;
-    }
-    if (b.width < 44 || el.dataset.shape === "none") continue;
+    if (!b || b.width < 44 || b.height < 20 || el.dataset.shape === "none") continue;
     if (b.top <= Math.max(floor, view.top) + 20 || b.top >= Math.min(ceiling, view.bottom) - 20 || b.right <= view.left || b.left >= view.right) continue;
     const cs = getComputedStyle(el);
     const [ax, ay = ax] = cs.borderTopLeftRadius.split(" ");
@@ -5125,14 +5112,6 @@ function nameMarkBuddyGlue(spot, x, y) {
     //: leaves it standing in the air beside it (INBOX 1629).
     fx: el.matches(".wb-object") && box.width ? (x + NMB_W / 2 - box.left) / box.width : undefined,
   };
-  //: A plain topic is stood on at its words, a few px below its box: that offset scales with the
-  //: zoom too (INBOX 1686), or a zoom out leaves the seat that much above the words.
-  const words = nmb.glue.fx !== undefined && el.matches('[data-shape="none"], [data-shape="underline"]') ? el.querySelector(".wb-map-text, .wb-text-content") : null;
-  if (words) {
-    nmb.glue.ty = words.getBoundingClientRect().top - box.top;
-    nmb.glue.dy0 = nmb.glue.dy - nmb.glue.ty;
-    nmb.glue.w0 = box.width;
-  }
   nameMarkBuddyGlueBand(nmb.glue, y);
   nameMarkBuddyRide(nameMarkBuddyScrollsWith(el, scroller) ? scroller : null, x, y);
   nameMarkBuddyWatch();
@@ -5195,7 +5174,6 @@ function nameMarkBuddyFollow(eased = false) {
   const folded = g.folded;
   const box = g.el.isConnected && !folded ? g.el.getBoundingClientRect() : null;
   if (box && g.fx !== undefined && box.width) g.dx = g.fx * box.width - NMB_W / 2;
-  if (box && g.ty !== undefined && box.width) g.dy = g.dy0 + (g.ty * box.width) / g.w0;
   if (!box || (!box.width && !box.height)) {
     //: Its area gone with its panel (another tab): it lets go of the
     //: scroll where it is in the window, so it does not vanish with the tab.
