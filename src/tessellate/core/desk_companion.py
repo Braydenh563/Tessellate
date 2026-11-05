@@ -81,7 +81,12 @@ REMINDERS_SCRIPT = (
 #: The size the panel window is made and shown at, by the click that opened it: the
 #: page then measures its own menu and asks for the exact height (`menuHeight` in
 #: desk-companion.js), so this only has to be close, never the other menu's size.
-PANEL_SIZES = {"menu": (248, 168), "context": (248, 124)}
+#: INBOX 1683: close was not enough. The guesses were 168 and 124 while the rows measure 516 (11 rows of 38 px and
+#: two separators) and 306 (6 rows), so the first open after a start showed a fraction of the menu; they are the
+#: measured heights now, and the page's first report refits the window if it still differs by `REFIT_PX`.
+PANEL_SIZES = {"menu": (248, 516), "context": (248, 306)}
+#: A first height report this far from what the window was placed at refits it, once per menu kind.
+REFIT_PX = 12
 PANEL_GAP = 8
 LOOK_WAIT = 1.5
 #: A click on the figure this soon after the panel closed itself on losing focus
@@ -920,8 +925,10 @@ class DeskCompanion:
         search) or back from one."""
         with _lock:
             if self.panel and state in PANEL_SIZES:
+                first = state not in self._panel_heights
                 self._panel_heights[state] = height
-                if self._panel_state in PANEL_SIZES or not self._panel_state:
+                refit = first and self.panel_shown and self._panel_state == state and abs(height - self.size[1]) > REFIT_PX
+                if not refit and (self._panel_state in PANEL_SIZES or not self._panel_state):
                     return self.size
             if self.panel and state:
                 self._panel_state = state

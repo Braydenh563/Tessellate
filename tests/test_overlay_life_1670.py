@@ -455,6 +455,7 @@ def test_idle_wakes_a_minute_stay_low(gait: str) -> None:
     per_min = len(outs) / 5.0
     # Bar moved to the 480 a minute redraw cap used elsewhere (INBOX 1683): the path of the seeded draws changed (the climb
     # act, lively travel) and this five-minute window now reads 432 for a floater; measured about 350 before.
+    # The frame-step pose look-ahead (INBOX 1683 a) adds about 4 percent on top; both land under the same 480 cap.
     assert per_min <= 480, per_min  # the old fixed 33 ms bob tick was about 1800 for a floater
 
 

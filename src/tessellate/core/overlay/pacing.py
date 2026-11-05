@@ -15,11 +15,17 @@ tick that ran long skips the missed lines instead of firing a burst to catch up.
 
 from __future__ import annotations
 
+import math
+
 FRAME_S = 1.0 / 60.0
-#: An ask from `PACED_FROM_MS` to `PACED_AT_MS` is "the next frame" (the engine's move tick is 16 ms);
-#: shorter is "now" (the runner's wake of 1 ms after a show) and longer is a slow ask: both keep `SetTimer`.
+#: An ask from `PACED_FROM_MS` to `NEXT_FRAME_MS` is "the next frame" (the engine's move tick is 16 ms);
+#: shorter is "now" (the runner's wake of 1 ms after a show). An ask up to `PACED_AT_MS` is an animation's own
+#: step (a tail settling, a pose easing, a hang's swing, an act): it also lands on a grid line, the first at or
+#: after its time (INBOX 1683: on `SetTimer` these came out as 31 or 47 ms and 62 ms, mean 60 ms, p95 109 ms, std 25 ms,
+#: the wisps and the tail at about 16 frames a second and uneven). Longer is a rest's slow ask and keeps `SetTimer`.
 PACED_FROM_MS = 12
-PACED_AT_MS = 20
+NEXT_FRAME_MS = 20
+PACED_AT_MS = 100
 #: A deadline closer than this to now waits for the line after: the tick that just ran is not a frame early.
 GUARD_S = 0.004
 
@@ -42,5 +48,8 @@ class Pacer:
             return now + max(0, int(wake_ms)) / 1000.0
         if self.anchor is None:
             self.anchor = now
-        lines = int((now + GUARD_S - self.anchor) // self.period) + 1
+        if int(wake_ms) <= NEXT_FRAME_MS:
+            lines = int((now + GUARD_S - self.anchor) // self.period) + 1
+        else:  # the first line at or after the ask (a millisecond of slack so 33 ms is two lines, not three)
+            lines = max(1, math.ceil((now + int(wake_ms) / 1000.0 - 0.001 - self.anchor) / self.period))
         return self.anchor + lines * self.period

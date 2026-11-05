@@ -57,6 +57,12 @@ SPIN_STEPS = 48
 SPIN_COARSE = 8
 SPIN_FRAMES = tuple(f"spin{i}" for i in range(SPIN_STEPS))
 SPIN_BASE = "tumble"
+#: A thrown figure is drawn at its true angle (INBOX 1683: "rotating when thrown ... still horrible"; the 48 steps of
+#: 7.5 degrees held a picture for 2 to 3 ticks and then jumped 7.5 or 15): `spun_at` turns the tumble by any angle,
+#: rounded to `SPIN_QUANT` degrees (a step the eye cannot see), on the same canvas as the `spinN` frames.
+#: Only the last `SPUN_KEEP` are kept, since a spinning figure never shows an angle twice in a row.
+SPIN_QUANT = 0.25
+SPUN_KEEP = 6
 #: The sat figure with its eyes shut (INBOX 1670, 16:40Z: a sit had no blink). Not a shipped file: derived at
 #: load from `sit` with closed lids drawn over its eyes, so the frame set and its byte budget do not move.
 #: Asleep the eyes are already shut. `LID_EYES` is each look's two eyes as one box in shipped px on `stand`;
@@ -158,6 +164,8 @@ class SpriteSet:
         self._source: dict[str, Any] = {}
         self._cache: dict[tuple[str, int, bool], Frame] = {}
         self._posed: dict[tuple[str, int, bool, tuple[float, ...]], Frame] = {}
+        self._spun_at: dict[tuple[int, int, bool], Frame] = {}
+        self._canvas: dict[tuple[int, bool], tuple[Any, int, int]] = {}
 
     def _has(self, name: str) -> bool:
         return (self.directory / f"{name}.png").is_file()
@@ -344,6 +352,33 @@ class SpriteSet:
                 left, top, right, bottom = f.box
                 found[(name, flip)] = (left - f.pad_x, top - f.pad_y, right - f.pad_x, bottom - f.pad_y)
         return found
+
+    def spun_at(self, angle: float, dpi: int = 96, flip: bool = False) -> Frame:
+        """The tumble turned by `angle` radians (clockwise on screen positive), on the canvas of `spin0`.
+        Cached by the angle rounded to `SPIN_QUANT` degrees, the last `SPUN_KEEP` only."""
+        import math
+
+        from PIL import Image
+
+        q = round(math.degrees(angle) / SPIN_QUANT) % round(360.0 / SPIN_QUANT)
+        key = (q, int(dpi), bool(flip))
+        hit = self._spun_at.pop(key, None)
+        if hit is None:
+            base_key = (int(dpi), bool(flip))
+            if base_key not in self._canvas:
+                base = self.frame("spin0", dpi, flip)  # builds the size and pad the canvas shares
+                image = self._pose_image(SPIN_BASE, dpi, flip)
+                canvas = Image.new("RGBA", (base.width, base.height), (0, 0, 0, 0))
+                canvas.paste(image, (base.pad_x, base.pad_y))
+                self._canvas[base_key] = (canvas, base.pad_x, base.pad_y)
+            canvas, pad_x, pad_y = self._canvas[base_key]
+            turned = canvas.rotate(-q * SPIN_QUANT, resample=Image.Resampling.BILINEAR)  # bicubic is 3.4 ms a frame, this 1.3 (a draw budget is 16)
+            clear = clear_faint_alpha(turned)
+            hit = Frame(canvas.width, canvas.height, premultiplied_bgra(clear), pad_x, pad_y, _drawn_box(clear))
+        self._spun_at[key] = hit
+        while len(self._spun_at) > SPUN_KEEP:
+            del self._spun_at[next(iter(self._spun_at))]
+        return hit
 
     def _spun(self, image: Any, step: int, width: int, height: int) -> Frame:
         """The picture turned by `step` of `SPIN_STEPS` turns on a square canvas big enough
