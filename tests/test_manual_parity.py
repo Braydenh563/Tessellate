@@ -503,3 +503,22 @@ def test_the_diagram_multiselect_is_in_the_guide_in_the_controls_words() -> None
     multi = (FRONTEND / "js" / "diagram-multi.js").read_text(encoding="utf-8")
     for label in ('"ph:trash Delete"', '"ph:copy Duplicate"', '"ph:diamond Shape"', '"ph:stack Group into a box"', '"Done"'):
         assert label in multi, label
+
+
+def test_confirmed_patterns_are_managed_where_the_guide_and_the_help_say():
+    """B9 (the owner: "also is there a way to edit or managed confirmed
+    patterns??"): the Patterns topic, the memory topic and What it remembers'
+    own help name the group and its three actions in the controls' words."""
+    from tessellate.ai import help_chat
+
+    topics = {t["id"]: t["body"] for t in help_chat.HELP_TOPICS}
+    for words in ("Edit", "Not right", "Remove", "Undo", "Settings, What it remembers"):
+        assert words in topics["patterns"], words
+    assert "patterns you confirmed" in topics["memory"]
+    html = (FRONTEND / "index.html").read_text(encoding="utf-8")
+    help_body = html[html.index('id="memory-help"') :][:2400]
+    for words in ("Confirmed patterns", "Edit", "Remove", "Not right", "Undo"):
+        assert words in help_body, words
+    menu = (FRONTEND / "js" / "confirmed-patterns.js").read_text(encoding="utf-8")
+    for label in ('"ph:pencil-simple Edit"', 'item.verdict === "dismiss").label', '"ph:trash Remove"'):
+        assert label in menu, label

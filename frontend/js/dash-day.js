@@ -98,7 +98,8 @@ function digestSaidLine(line, opens) {
 //: ("university came up 4 times since 16 July") and open the notes it
 //: counted (its subject, filtered) or Tidy, which lists every pattern whole.
 //: Confirm and Not right (CHAT_PLAN decision 60) stay behind one ⋯, so the
-//: line stays one line; a confirmed one has neither. Lazy, with the day
+//: line stays one line; a confirmed one has its Edit, Not right and Remove
+//: there instead (B9). Lazy, with the day
 //: digest, for the boot gzip budget.
 function dashPatternBit(bit, pattern) {
   const link = bit.appendChild(document.createElement("a"));
@@ -111,17 +112,18 @@ function dashPatternBit(bit, pattern) {
     if (subject) showNotesFilter(subject);
     else openTidySheet();
   });
-  const items = insightVerdictItems(pattern);
-  if (!items.length) return;
   const send = (verdict) =>
     insightSend(pattern, verdict)
       .then(() => renderDashSubmessage())
       .catch((error) => toast(error.message, true));
-  bit.appendChild(
-    kebabMenu(
-      items.map((item) => ({ label: item.label, title: item.title, run: () => send(item.verdict) })),
-      "Is this pattern right?"
-    )
+  const items = insightVerdictItems(pattern).map((item) => ({ label: item.label, title: item.title, run: () => send(item.verdict) }));
+  if (!pattern.confirmed_id) {
+    if (items.length) bit.appendChild(kebabMenu(items, "Is this pattern right?"));
+    return;
+  }
+  //: A confirmed one carries Edit, Not right and Remove (B9) where its pair was.
+  lazyScript("/js/confirmed-patterns.js").then(() =>
+    bit.appendChild(kebabMenu([...items, ...confirmedPatternItems(pattern, () => renderDashSubmessage())], "Manage this pattern"))
   );
 }
 

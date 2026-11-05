@@ -392,7 +392,8 @@ HELP_TOPICS: list[dict] = [
             "Tessellate can pick up small facts and preferences as you write and "
             "chat, always asking first, never assumed. Accept or decline each "
             "suggestion right in the chat, and review or forget anything it has "
-            "learned in Settings, What it remembers."
+            "learned in Settings, What it remembers, which also lists the "
+            "patterns you confirmed, to edit, remove or mark not right."
         ),
         "badge": {"label": "What it remembers", "section": "memory"},
     },
