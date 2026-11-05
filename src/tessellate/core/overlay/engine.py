@@ -1389,20 +1389,23 @@ class Engine:
             self.perch_until = max(self.perch_until, c["until"])
         want = self._come_target(p)
         if self._come_there(want, c["phase"] == "stay"):
-            if c["phase"] == "go":  # arrived: a happy look, then company
-                c["phase"], c["until"] = "stay", now + COME_FOR
-                self.mind.feel("happy", now)
-                self._enter("wave", now)
-            elif now >= c["until"]:
-                self.come = None
+            self._come_arrived(c, now)
             return
         if c["phase"] == "stay" and now >= c["until"]:
             self.come = None
             return
         c["phase"], c["to"] = "go", want
-        self._come_go(want, now)
+        self._come_head(want, now)
 
-    def _come_go(self, want: tuple, now: float) -> None:
+    def _come_arrived(self, c: dict, now: float) -> None:
+        if c["phase"] == "go":  # arrived: a happy look, then company
+            c["phase"], c["until"] = "stay", now + COME_FOR
+            self.mind.feel("happy", now)
+            self._enter("wave", now)
+        elif now >= c["until"]:
+            self.come = None
+
+    def _come_head(self, want: tuple, now: float) -> None:
         if want[0] == "perch":
             self._climb(now, want[1])
         elif self.perch is not None:

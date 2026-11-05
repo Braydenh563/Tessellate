@@ -350,8 +350,9 @@ function firstRunToastsGone(capMs) {
   return new Promise((resolve) => {
     const tick = () => {
       //: Asked of the class, not `getClientRects()`: that laid the page out every 250 ms while a toast
-      //: was up (onboarding.js tick, 82 ms of forced layout at 4x CPU, INBOX 1667).
-      const up = Boolean(document.querySelector(".toast:not(.is-leaving)"));
+      //: was up (onboarding.js tick, 82 ms of forced layout at 4x CPU, INBOX 1667). Folded, behind and
+      //: "+N more" cards are display:none at rest, so they are not waited on.
+      const up = Boolean(document.querySelector(".toast:not(.is-leaving, .is-folded, .is-behind, .toast-more)"));
       return up && Date.now() < until ? setTimeout(tick, 250) : resolve();
     };
     tick();
