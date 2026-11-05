@@ -154,3 +154,22 @@ def test_the_popover_styles_use_tokens_only() -> None:
     block = LAZY[start : LAZY.index(".wb-colour-opacity input[type=\"range\"]", start)]
     assert not re.search(r"#[0-9a-fA-F]{3,8}\b", block)
     assert not re.search(r"\b\d+px\b", block.replace("1px", "").replace("2px", ""))
+
+
+def test_a_blank_number_box_is_ignored_never_read_as_zero() -> None:
+    # Review of 1685: Number("") is 0, so a cleared Opacity hid the fill and a
+    # cleared Red saved black. A blank or non-number box reverts instead.
+    save = _function("wbColourOpacity")
+    assert 'String(raw).trim() === ""' in save
+    fields = _function("wbColourFields")
+    assert "|| 0" not in fields
+    assert "trim()" in fields
+
+
+def test_no_menu_row_opens_the_native_colour_dialog() -> None:
+    # Review of 1685: showPicker() skips the click the popover listens for.
+    assert "showPicker" not in BOARD.replace("`showPicker()`", "")
+
+
+def test_the_swatch_grid_fits_a_phone() -> None:
+    assert re.search(r"\.wb-colour-menu \.swatch-picker \{[^}]*repeat\(auto-fill, var\(--target-min\)\)[^}]*100vw", LAZY)

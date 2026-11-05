@@ -2150,8 +2150,10 @@ const wbColour = (() => {
       box.value = String(pct);
     };
     const save = (raw) => {
+      //: A cleared box is "no answer", not 0%: put the shown value back.
+      if (String(raw).trim() === "") return show(slider.value);
       const pct = Math.max(own.field === "inkalpha" ? 10 : 0, Math.min(100, Math.round(Number(raw))));
-      if (!Number.isFinite(pct)) return;
+      if (!Number.isFinite(pct)) return show(slider.value);
       show(pct);
       if (own.field === "toolfill") {
         const tool = document.getElementById("wb-fill-opacity");
@@ -2237,7 +2239,10 @@ const wbColour = (() => {
     hex.field.addEventListener("paste", () => setTimeout(() => hex.field.dispatchEvent(new Event("change")), 0));
     for (const channel of channels) {
       channel.field.addEventListener("change", () => {
-        const parts = channels.map((c) => Math.max(0, Math.min(255, Math.round(Number(c.field.value) || 0))));
+        //: A blank or non-number box puts the colour back; it is not 0.
+        const raw = channels.map((c) => c.field.value.trim());
+        if (raw.some((v) => v === "" || !Number.isFinite(Number(v)))) return paint(wbHexOf(input.value) || "#000000");
+        const parts = raw.map((v) => Math.max(0, Math.min(255, Math.round(Number(v)))));
         wrap.commit(`#${parts.map((n) => n.toString(16).padStart(2, "0")).join("")}`);
       });
     }

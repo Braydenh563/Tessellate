@@ -6452,7 +6452,10 @@ button.ghost.doc-template-choice.wb-template-choice {
   color: var(--muted);
 }
 .wb-colour-menu .swatch-picker {
-  grid-template-columns: repeat(8, max-content);
+  /* Eight to a row where there is room; a definite width lets a phone wrap
+     to fewer instead of overflowing the popover (no width query needed). */
+  grid-template-columns: repeat(auto-fill, var(--target-min));
+  width: min(calc(8 * var(--target-min) + 7 * var(--space-2) + 2 * var(--space-1)), calc(100vw - 8 * var(--space-4)));
   gap: var(--space-2);
   padding: var(--space-1);
 }

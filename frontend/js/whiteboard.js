@@ -9533,11 +9533,7 @@ function wbBuildContextMenu(kind) {
         rooted ? "Colours this topic's own card" : "Carries down to everything under this topic",
         () => {
           const well = document.getElementById("wb-map-strip-color");
-          try {
-            well?.showPicker();
-          } catch {
-            well?.click();
-          }
+          well?.click();
         });
     });
 
@@ -9703,11 +9699,7 @@ function wbBuildContextMenu(kind) {
       sub(state.tasks ? "Stop being tasks" : "Make these tasks", "A box to tick on each", () => WB_MAP_MULTI_ACTIONS.task(mapTopics));
       sub("Colour these…", "Carries down each one's branch", () => {
         const well = document.getElementById("wb-mapmulti-color");
-        try {
-          well?.showPicker();
-        } catch {
-          well?.click();
-        }
+        well?.click();
       });
       if (state.branches.length) {
         sub(state.folded ? "Open these branches" : "Fold these branches", "The topics picked that have anything under them", () =>
