@@ -120,7 +120,33 @@ PIECE_CAP = 32_000
 #: 2026-11-01, boot diet 3, step 3: 268,118 down to 260,019 (1,949,052 to
 #: 1,857,489 raw): a note's card (`entryItem`, entry-card.js; `renderEntries`
 #: waits for it, the bundles that carry answer-kit.js list it first).
-TOTAL_CAP = 260_300
+#: 2026-11-02, raised 260,300 to 260,350 with a reason: three merged audit rows
+#: put their wiring where it runs at boot (E47 chat list search, E61 the
+#: Plan and Agent gate as aria-disabled, S92 the Notes and Library counts
+#: announced), 26 bytes over together; the next boot diet takes it back.
+#: 2026-11-03, raised to 260,400 with a reason (INBOX 1603): the drag flag drops a
+#: native drag whose dragend was lost (every popover stayed open for good) and the
+#: palette's close x is wired at boot, 3 bytes over; the popover head itself went
+#: to the lazy status-panels.js. The next boot diet takes it back (OPEN.md).
+#: 2026-11-03 later, +40: a card over the open tray is carried, not reordered (the
+#: owner could not drop on it), the grip stays off popups, and an upward popover's
+#: caret no longer scrolls it; same OPEN.md win-back item.
+#: Then +80 (INBOX 1619, 1620): the tag popover closes when its card is redrawn,
+#: the constellation repaints after a resize, the Manage panels scroll as one and
+#: the topic chip names its words; same win-back item.
+#: 2026-11-04, +100 (INBOX 1604, lag 1560): three quick-nav chords (New note, Find
+#: anything, Calculator) and the companion's one-read placement cache, which
+#: took two whole-page layouts out of every placement; same win-back item.
+#: 2026-11-04 later, +140 (INBOX 1672): the status bar sheds its clock, LAN dot
+#: and tray instead of running past its edge from 600 to 820, inside the edge
+#: fade's own observer (no new global, observer or CSS); same win-back item.
+#: 2026-11-04, +40 (R9c): a Library diagram has its own chat card and kind through
+#: attach and send, and the board hands the builder its link target; the save and
+#: link code is in the lazy diagram-embed.js; same win-back item.
+#: 2026-11-04, +20 (INBOX 1679 review): a dialog opened over a sheet (the diagram's Connect
+#: to… picker over the Blocks list) takes the Escape, so one Escape no longer closes both;
+#: one test in phone-shell.js's sheet handler; same win-back item.
+TOTAL_CAP = 260_820
 
 
 def _served_gzip_size(client, name: str) -> int:

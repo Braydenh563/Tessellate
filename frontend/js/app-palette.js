@@ -86,7 +86,7 @@ function paletteAskNotes(query) {
 //: field that had the focus and the text selected in it, caught before the
 //: palette's own box takes the focus, so Count words and Insert template act
 //: on the editor the person was in.
-const paletteCaught = { target: null, selection: "", start: null, end: null, range: null };
+const paletteCaught = { target: null, selection: "", start: null, end: null, range: null, live: false };
 
 //: The usage ledger's counts (core/usage.py, WORLD_CLASS_PLAN H9): with
 //: nothing typed, the commands this person runs most come first.
@@ -108,7 +108,13 @@ function paletteRun(match) {
     if (name) usageCount(name);
     if (name && typed) palettePick(typed, name);
   }
-  match.run();
+  //: The caught box is live for the row's own synchronous start only (`paletteCaughtNow`, settings-panes.js): a row run from the shortcuts dialog or the Guide, long after, finds none (INBOX 1530 g).
+  paletteCaught.live = true;
+  try {
+    match.run();
+  } finally {
+    paletteCaught.live = false;
+  }
 }
 
 async function openPalette() {
@@ -216,7 +222,14 @@ const PALETTE_ASKS = /^(?:how (?:do|does|can|to|should)|where (?:is|are|do|can)|
 
 function paletteMatches(query) {
   const lowered = query.trim().toLowerCase();
-  if (lowered.startsWith(">")) return paletteEditorMatches(lowered.slice(1).trim());
+  if (lowered.startsWith(">")) {
+    const needle = lowered.slice(1).trim();
+    const rows = paletteEditorMatches(needle);
+    //: Nothing in the editor's list is called that: a row carries the words to Find anything, notes only (audit 1028 S62).
+    if (rows.length || !needle) return rows;
+    const typed = query.trim().slice(1).trim();
+    return [{ group: "Search", label: `ph:magnifying-glass Search notes for “${typed}”`, about: "No editor command matches. Find anything searches your notes.", handoff: true, run: () => openFinder(typed, { kind: "note" }) }];
+  }
   //: **The app's own commands get a group name too, now that something can
   //: sit above them.** They had none because they were always first and a
   //: header over the top of a list says nothing; with the editor's group
@@ -304,8 +317,11 @@ function utilityPaletteRows(lowered) {
       rows.push({
         group: "Do it",
         label: `ph:timer Start a timer: ${amount} ${PALETTE_UNITS[unit] === 60 ? "hour" : PALETTE_UNITS[unit] ? "second" : "minute"}${amount === 1 ? "" : "s"}`,
-        about: "Counts down on the status bar and says when the time is up. Press it to stop.",
-        run: () => ensureModule("utilities").then(() => startUtilityTimer(minutes)),
+        about: "Starts it and opens the Clock.",
+        run: () => ensureModule("utilities").then(() => {
+          startUtilityTimer(minutes);
+          openClockPanel("timer");
+        }),
       });
     }
   }
@@ -832,7 +848,7 @@ $("palette-input").addEventListener("input", () => {
   paletteAskNotes($("palette-input").value);
 });
 $("palette-input").addEventListener("keydown", paletteKeydown);
-wireBackdropClose($("palette-overlay"), () => closePalette());
+wireBackdropClose($("palette-overlay"), () => closePalette(), "#palette-close, #palette-close *");
 
 // ---- from palette.js (search-boot-1005): notesPaletteCommands ----
 // Moved whole. Every use is in this file, so it is not needed before this file loads.

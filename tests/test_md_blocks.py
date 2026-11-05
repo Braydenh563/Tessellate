@@ -88,12 +88,18 @@ const rows = [
   { id: "tbl", label: "Table", keywords: ["grid"] },
   { id: "warn", label: "Warning callout", keywords: ["caution", "box"] },
   { id: "cols", label: "Two columns", keywords: ["layout", "side by side"] },
+  { id: "fail", label: "Failure callout", keywords: ["fail"] },
+  { id: "pb", label: "Page break", keywords: ["new page"] },
 ];
 out.rank = {
   table: editorFuzzyRank(rows, "table").map((r) => r.id),
   ta: editorFuzzyRank(rows, "ta").map((r) => r.id),
   toc: editorFuzzyRank(rows, "toc").map((r) => r.id),
   twcl: editorFuzzyRank(rows, "twcl").map((r) => r.id),
+  twc: editorFuzzyRank(rows, "twc").map((r) => r.id),
+  file: editorFuzzyRank(rows, "file").map((r) => r.id),
+  phrase: editorFuzzyRank(rows, "page br").map((r) => r.id),
+  phraseKeyword: editorFuzzyRank(rows, "side by").map((r) => r.id),
   box: editorFuzzyRank(rows, "box").map((r) => r.id),
   zz: editorFuzzyRank(rows, "zz").map((r) => r.id),
   empty: editorFuzzyRank(rows, "").map((r) => r.id),
@@ -188,10 +194,17 @@ def test_fuzzy_rank(result):
     assert rank["ta"][:2] == ["toc", "tbl"], "a prefix of both keeps the menu order"
     assert rank["table"][:2] == ["tbl", "toc"], "a label that is the query ranks above a longer one that starts with it"
     assert rank["toc"][0] == "toc", "a keyword prefix finds the table of contents"
-    assert rank["twcl"] == ["cols"], "letters in order anywhere in the label still match"
+    # DX7 (audit 1102): letters in order is for abbreviations of up to three letters. At four
+    # a word that matched nothing else is a word: "/file" ranked the Failure callout first and
+    # Enter inserted it. (Before: twcl found "cols"; the stated intent moved to three letters.)
+    assert rank["twc"] == ["cols"], "letters in order anywhere in the label still match, to three letters"
+    assert rank["twcl"] == [], "four letters in order are not an abbreviation"
+    assert rank["file"] == [], "an unknown word ranks nothing"
+    assert rank["phrase"] == ["pb"], "two words rank by the phrase at a word boundary"
+    assert rank["phraseKeyword"] == ["cols"], "a keyword phrase finds its row"
     assert rank["box"] == ["warn"]
     assert rank["zz"] == []
-    assert rank["empty"] == ["h2", "toc", "tbl", "warn", "cols"], "no query keeps the order"
+    assert rank["empty"] == ["h2", "toc", "tbl", "warn", "cols", "fail", "pb"], "no query keeps the order"
     assert result["hits"] == [0, 2, 9], "the matched letters, for the highlight"
 
 

@@ -16,7 +16,9 @@ from __future__ import annotations
 import re
 from pathlib import Path
 
-from tessellate.ai import AI_NAME, agent, help_chat, librarian
+from tessellate.ai import AI_NAME, help_chat, librarian
+from tessellate.ai import agent_policy
+from tessellate.ai import agent_turn
 from tests._app_js import app_js_text
 from tests._app_js import frontend_text
 
@@ -43,7 +45,7 @@ def test_the_help_chat_says_it_once():
 
 def test_the_agent_says_it_once(app_state):
     """The agent's own system message, built the way a real turn builds it."""
-    messages = agent.build_agent_messages("what did I write about the roof?", notes=[])
+    messages = agent_turn.build_agent_messages("what did I write about the roof?", notes=[])
     system = messages[0]["content"]
     assert system.startswith(CLAUSE), system[:120]
     assert system.count(AI_NAME) == 1, system
@@ -53,7 +55,7 @@ def test_a_user_persona_is_not_decorated_with_it(app_state):
     """A persona the user wrote is the user speaking, not the app. Prepending
     a name to it would both contradict what they asked for and pay for the
     name twice in the one place nothing trims."""
-    messages = agent.build_agent_messages(
+    messages = agent_turn.build_agent_messages(
         "what did I write about the roof?",
         notes=[],
         persona_prompt="You are a blunt editor. Say what is wrong and stop.",
@@ -68,8 +70,8 @@ def test_the_name_did_not_cost_the_prompt_budget():
     trimmed to the window, so a name that pushed this over would be paid for
     by a 3B model's context on every single message. It does not: the clause
     is shorter than the sentence it replaced."""
-    prose = f"{librarian.DEFAULT_PERSONA} {agent.AGENT_GROUNDING} {agent.TOOLS_GUIDE}"
-    assert len(prose) <= agent.PROSE_BUDGET_CHARS, len(prose)
+    prose = f"{librarian.DEFAULT_PERSONA} {agent_policy.AGENT_GROUNDING} {agent_policy.TOOLS_GUIDE}"
+    assert len(prose) <= agent_policy.PROSE_BUDGET_CHARS, len(prose)
     # A short character since 2026-09-23 (the owner asked for more than a job
     # title); still one sentence's worth, so it cannot grow into a backstory.
     assert len(librarian.DEFAULT_PERSONA) <= 240, librarian.DEFAULT_PERSONA

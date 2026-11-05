@@ -75,6 +75,9 @@ _APOSTROPHES = {
     "shouldnt": "shouldn't", "havent": "haven't", "hasnt": "hasn't", "hadnt": "hadn't", "im": "I'm", "ive": "I've",
     "youre": "you're", "theyre": "they're", "thats": "that's", "whats": "what's", "theres": "there's",
     "youve": "you've", "weve": "we've", "theyve": "they've", "youll": "you'll", "theyll": "they'll",
+    "mustnt": "mustn't", "neednt": "needn't", "aint": "ain't", "itll": "it'll", "thatll": "that'll",
+    "wholl": "who'll", "heres": "here's", "whos": "who's", "wouldve": "would've", "couldve": "could've",
+    "shouldve": "should've", "mightve": "might've", "mustve": "must've", "youd": "you'd", "theyd": "they'd",
 }
 _APOSTROPHE_RE = re.compile(r"(?<![\w'])(" + "|".join(_APOSTROPHES) + r")(?![\w'])", re.I)
 _DOUBLED = re.compile(r"\b(\w{2,})(\s+\1\b)+", re.I)
@@ -212,3 +215,24 @@ def _formal_line(line: str) -> str:
     if marker:
         return lead + marker.group(1).lstrip() + marker.group(2)[:1].upper() + marker.group(2)[1:]
     return lead + said[:1].upper() + said[1:]
+
+
+#: A full stop that is not a sentence's end: a title, an initial, "e.g.".
+_ABBREVIATIONS = ("e.g.", "i.e.", "etc.", "vs.", "mr.", "mrs.", "ms.", "dr.", "st.", "approx.")
+
+
+def sentences(text: str) -> list[str]:
+    """The sentences of a run of prose, in order, as written."""
+    folded = " ".join((text or "").split())
+    if not folded:
+        return []
+    out: list[str] = []
+    buf = ""
+    for piece in re.split(r"(?<=[.!?])\s+", folded):
+        buf = f"{buf} {piece}".strip() if buf else piece
+        if buf.split()[-1].lower() not in _ABBREVIATIONS and not re.search(r"\b[A-Z]\.$", buf):
+            out.append(buf)
+            buf = ""
+    if buf:
+        out.append(buf)
+    return [s for s in out if s.strip()]

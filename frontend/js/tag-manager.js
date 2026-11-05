@@ -236,6 +236,19 @@ const MANAGE_SORTS = [
   ["recent", "Recently used"],
 ];
 
+//: **The tidy suggestions and the list scroll together** (INBOX 1620: "this
+//: split in stuff half way is annoying", a row cut through under the box).
+//: The box was a fixed band above a list that shrank to whatever was left (65px
+//: of 369 at a 560px window), so the box could never scroll away and the list
+//: was clipped at its edge. Both live in one scroller now; the box is first in
+//: the flow and pushes the rows down. Shared by the Tags panel.
+function manageScroll(suggest, list) {
+  const scroll = document.createElement("div");
+  scroll.className = "manage-cat-scroll";
+  scroll.append(suggest, list);
+  return scroll;
+}
+
 function manageStored(key, fallback) {
   try {
     return prefs.get(key, null) || fallback;
@@ -494,7 +507,7 @@ async function openTagsSheet(focusName = null) {
       turnedDown.className = "manage-suggest hidden";
       turnedDown.setAttribute("role", "region");
       turnedDown.setAttribute("aria-label", "Tags turned down often");
-      card.append(sub, helpBody, tools, suggest, list, footer, turnedDown);
+      card.append(sub, helpBody, tools, manageScroll(suggest, list), footer, turnedDown);
       drawTurnedDown(turnedDown);
       initHelpToggles(card);
       function redraw() {
@@ -547,10 +560,11 @@ async function drawTurnedDown(box) {
         await apiJson("/tags/turned-down/offer-again", { method: "POST", body: JSON.stringify({ tag }) });
         toast(`${tag} is suggested again.`);
       } catch (error) {
-        toast(`Could not offer ${tag} again: ${error.message}`, true);
+        toast(`Couldn't offer ${tag} again: ${error.message}`, true);
       }
       drawTurnedDown(box);
     });
+    again.classList.add("quiet");
     again.setAttribute("aria-label", `Offer again: ${tag}`);
     row.append(names, again);
     box.appendChild(row);

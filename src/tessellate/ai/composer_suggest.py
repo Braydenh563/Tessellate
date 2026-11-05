@@ -153,18 +153,112 @@ def open_ended(question: str) -> str:
     """"vague" for a request with no direction, the act's name ("open",
     "find", "delete", "pin", ...) for a bare action with no object, else ""."""
     q = " ".join((question or "").split())
+    #: "can you do anything fun" asks what Atlas can do; it is answered, not
+    #: met with "Cool how?" (INBOX 1561).
+    from tessellate.ai import capability
+
     if _VAGUE.match(q):
-        return "vague"
+        return "" if capability.asks(q) else "vague"
     m = _BARE.match(q)
-    if m:
-        kind = _VERB_KIND[m.group("verb").lower()]
-        #: "show my reminders" names its object: the Reminders, read or
-        #: opened, never "What should I look for?" (audit 1028 E28).
-        if kind in ("find", "open") and (m.group("noun") or "").lower().startswith("reminder"):
-            return ""
-        #: "make me a" and "add" alone are unfinished, not requests.
-        return kind if (m.group("noun") or m.group("verb").lower() in ("open", "find", "search")) else ""
-    return ""
+    return _bare_kind(m) if m else ""
+
+
+def _bare_kind(m: re.Match) -> str:
+    """The act a bare verb (with or without its noun) starts, or "" when the
+    words are a request already (`open_ended`)."""
+    verb, noun = m.group("verb").lower(), (m.group("noun") or "").lower()
+    kind = _VERB_KIND[verb]
+    #: "show my reminders" names its object: the Reminders, read or
+    #: opened, never "What should I look for?" (audit 1028 E28).
+    if kind in ("find", "open") and noun.startswith("reminder"):
+        return ""
+    #: "make me a reminder" starts a reminder, not a note (INBOX 1668).
+    if kind == "new" and noun.startswith("reminder"):
+        return "reminder"
+    #: "new notes" is the newest notes, not the start of making one
+    #: (INBOX 1532); only the singular "new note" is unfinished.
+    if verb == "new" and noun == "notes":
+        return ""
+    #: "make me a" and "add" alone are unfinished, not requests.
+    return kind if (noun or verb in ("open", "find", "search")) else ""
+
+
+# --- the answer to "Which note?" (INBOX 1570) -----------------------------------------------
+#
+# "Pin a note" -> "Which note do you want pinned?" -> "erm, the interesting bean one": the
+# reply is that question's answer, read before anything routes it.
+
+#: Said while thinking or softening, never part of a note's name.
+#: One filler word and its trailing commas and stops; `_unfilled` steps them off the front
+#: one at a time. A repeated group with a trailing `$` was polynomial on runs of blanks
+#: (CodeQL 1997), so the front and the tail are walked, not matched whole.
+_SLOT_FILLER = re.compile(r"(?:erm+|er+|um+|uh+|hmm+|like|so|well|ok|okay|yeah|yes|yep|oh|ah|just|maybe|i guess|i mean|please|pls)\b[ ,.]*", re.I)
+_SLOT_TAIL_WORDS = ("thank you", "please", "thanks", "pls", "then")
+
+
+def _unfilled(said: str) -> str:
+    at = 0
+    while (found := _SLOT_FILLER.match(said, at)) and found.end() > at:
+        at = found.end()
+    said = said[at:].rstrip(" .!")
+    while True:
+        low = said.lower()
+        word = next((w for w in _SLOT_TAIL_WORDS if low.endswith(w) and len(said) > len(w) and said[-len(w) - 1] in " ,."), "")
+        if not word:
+            return said
+        said = said[: -len(word)].rstrip(" ,.")
+#: "the one about X", "the one called X": the note is named after "one".
+_ONE_ABOUT = re.compile(r"^(?:(?:the|that|this|my) )?one (?:about|on|for|called|named|titled|with|that mentions?|mentioning) (?:the |my )?(?P<name>.+)$", re.I)
+#: "the X one", "that X note", "my X one": the note is the words between.
+_THE_ONE = re.compile(r"^(?:(?:the|that|this|my) )?(?P<name>.+?)(?: one| note| entry)?$", re.I)
+_SLOT_KINDS = ("open", "find", "delete", "pin", "unpin", "summarise")
+_BLANK_WORDS = frozenset("one ones note notes it this that them these those thing stuff".split())
+
+
+def reference(text: str) -> str:
+    """The note a reply points at ("erm, the interesting bean one" is "interesting
+    bean"), or "" when it names nothing: only filler, "it", "that one"."""
+    said = _unfilled(" ".join((text or "").split())).strip(" \"'“”")
+    found = _ONE_ABOUT.match(said)
+    name = found.group("name") if found else (_THE_ONE.match(said).group("name") if _THE_ONE.match(said) else said)
+    name = name.strip(" \"'“”,.")
+    words = re.findall(r"[\w'’-]+", name.lower())
+    return "" if not words or all(w in _BLANK_WORDS for w in words) else name
+
+
+def pending_kind(history: list[dict]) -> str:
+    """The act the last answer was asking "which note?" for, else "": the last turn's
+    question was an act with no note, and its answer is the clarifying one (`reply`)."""
+    if not history:
+        return ""
+    last = history[-1]
+    kind = open_ended(str(last.get("question") or ""))
+    answer = " ".join(str(last.get("answer") or "").split())
+    return kind if kind in _SLOT_KINDS and answer in {" ".join(t.split()) for t in _WHICH[kind]} else ""
+
+
+def fill_slot(question: str, history: list[dict], notes: list[tuple[int, str]]) -> str | None:
+    """The act `question` completes, said whole ("Pin note 12"), when it answers the
+    note Atlas just asked for: the reply fills the act's slot before any routing.
+    `notes` are `(id, title)` pairs. None when the reply is its own request."""
+    kind = pending_kind(history)
+    if not kind or open_ended(question) or "?" in question:
+        return None
+    name = reference(question)
+    if not name or len(name.split()) > 8:
+        return None
+    #: A reply that is itself a command ("delete the boiler note") is routed as one.
+    if re.match(rf"^(?:{'|'.join(_VERB_KIND)})\b", name, re.I) and len(name.split()) > 2:
+        return None
+    key = " ".join(name.lower().split())
+    exact = [i for i, title in notes if " ".join(title.lower().split()) == key]
+    verb = _VERB_FOR[kind]
+    #: "Summarise note 12" reads as a topic, so it names the title instead.
+    if len(exact) == 1 and kind != "summarise":
+        return f"{verb} note {exact[0]}"
+    if len(exact) == 1:
+        return f"{verb} the note about {next(t for i, t in notes if i == exact[0])}"
+    return f"{verb} the note about {name}"
 
 
 def _pick(options: list, question: str, seed: str):  # noqa: ANN001, ANN202
@@ -193,6 +287,8 @@ _DETAIL = {
     "reminder": "What should I remind you about, and when? For example: “remind me to call mum on Friday at 9”.",
     "new": "What should the note say? Start with “note:” and the words, for example “note: buy milk and eggs”.",
 }
+#: A bare "new note" offers both readings: making one, or the newest ones (INBOX 1532).
+_DETAIL_ASKS = {"new": ("Show my newest notes",)}
 _VAGUE_TEXT = (
     "I can do a few useful things without a model. What are you in the mood for? Pick one, or say what you have in mind.",
     "Cool how? Here are some things worth trying, or tell me what you are after.",
@@ -218,7 +314,8 @@ def reply(question: str, titles: list[str], *, seed: str = "") -> dict:
             return {"text": text, "asks": ["Summarise my newest notes"] + [f"Summarise the note about {t}" for t in shown[:3]]}
         return {"text": text, "asks": [f"{verb} the note about {t}" for t in shown]}
     if kind in _DETAIL:
-        return {"text": _DETAIL[kind], "asks": []}
+        #: A bare "new note" offers both readings: making one, or the newest ones.
+        return {"text": _DETAIL[kind], "asks": list(_DETAIL_ASKS.get(kind, ()))}
     ideas = list(_TRY) + list(composer_replies.CALL_ASKS)
     ideas = list(dict.fromkeys(ideas))
     start = int(hashlib.sha1(f"ideas|{seed}|{question.lower()}".encode()).hexdigest(), 16) % len(ideas)

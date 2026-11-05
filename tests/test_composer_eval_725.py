@@ -47,9 +47,9 @@ def test_the_first_line_answers_the_question_on_every_question(rows):
 
 def test_nothing_is_said_twice(rows):
     """No two quotes of one answer share as much as a near duplicate does."""
-    from tessellate.ai import composer
+    from tessellate.ai import composer_select
 
-    assert max(row["redundancy"] for row in rows) < composer.NEAR_DUPLICATE
+    assert max(row["redundancy"] for row in rows) < composer_select.NEAR_DUPLICATE
 
 
 def test_answers_read_as_sentences_joined_by_varied_words(rows):

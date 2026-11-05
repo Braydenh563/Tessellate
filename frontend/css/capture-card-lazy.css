@@ -6,6 +6,15 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-3);
+  position: absolute;
+  top: var(--space-4);
+  inset-inline: 0;
+  z-index: 2;
+  padding: var(--space-3);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg);
+  background: var(--modal-bg-opaque);
+  box-shadow: var(--glass-shadow);
 }
 .capture-card[hidden] {
   display: none;
@@ -51,16 +60,34 @@
   font-size: var(--text-h3);
   font-weight: 600;
 }
-/* One row of dots under the card: the eight swatches and None, five a row on a phone. */
+/* One row under the card: the eight swatches and None. It scrolls inside itself when the card is narrower than the row and never wraps, so None is never alone on a line (INBOX 1592; None took `grid-column: 1 / -1` in a grid). The padding is room for the focus ring, which the scroller would clip. */
 .capture-card-colours .swatch-picker {
-  grid-template-columns: repeat(9, max-content);
-  gap: var(--space-2);
-  padding: 0;
+  display: flex;
+  flex-wrap: nowrap;
+  gap: var(--space-1);
+  padding: var(--space-2);
+  overflow-x: auto;
+  scrollbar-width: thin;
 }
-@media (max-width: 599.98px) {
-  .capture-card-colours .swatch-picker {
-    grid-template-columns: repeat(5, max-content);
-  }
+/* 24px dots (the WCAG 2.2 floor, 2.5.8) so the nine fit the dashboard's 306px card without scrolling. */
+.capture-card-colours {
+  --swatch-dot: 1.5rem;
+}
+.capture-card-colours .swatch-option:not(.swatch-auto) {
+  flex: 0 0 auto;
+  width: var(--swatch-dot);
+  height: var(--swatch-dot);
+}
+/* In the dashboard's Quick capture card the composer is the card's content: no second frame, and in the card's flow.
+   The desktop companion's Quick note panel (desk-companion.js) takes the same card the same way (INBOX 1688). */
+.desk-panel .capture-card,
+.dash-widget .capture-card {
+  position: static;
+  z-index: auto;
+  padding: 0;
+  border: 0;
+  background: none;
+  box-shadow: none;
 }
 .capture-card-due {
   white-space: nowrap;

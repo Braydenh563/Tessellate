@@ -42,17 +42,16 @@ from tessellate.api.schemas import (
     LinkOut,
     SimilarOut,
 )
-from tessellate.core import deps, events, jobruns, jobs, vault
+from tessellate.core import cjk, deps, events, jobruns, jobs, vault
 from tessellate.core.events import ACTOR_USER_AND_AI
 from tessellate.core.validation_copy import Said
-from tessellate.core.database import (  # noqa: F401 (EntryLink used in link_suggestions)
+from tessellate.core.database import (
     AuditLog,
     DerivedTension,
     EmbeddingRecord,
     Entry,
     Entity,
     EntityMention,
-    EntryLink,
     EntryRevision,
     MediaUpload,
     WhiteboardNode,
@@ -65,8 +64,10 @@ from tessellate.core.deps import get_session
 from tessellate.entry import duplicates, link_facts, manager
 from tessellate.repo import bookmarks as bookmark_repo
 from tessellate.repo import relation_types
+from tessellate.repo import relations as relations_repo
 from tessellate.repo import content as content_repo
 from tessellate.repo import documents as documents_repo
+from tessellate.repo import tags as tags_repo
 from tessellate.repo.content import NOTES
 from tessellate.entry.mentions import MENTION_MIN_TITLE_CHARS, names_label
 from tessellate.entry import meetings as meeting_shape
@@ -1240,35 +1241,40 @@ def _filing_similar(session: Session, entry) -> dict | None:  # noqa: ANN001
     return {"id": other.id, "preview": _connection_label(other, 60)}
 
 
-def _offered_categories(session: Session, entry, category: str) -> tuple[list[str], dict[str, str], dict | None, dict | None]:  # noqa: ANN001
-    """`(suggestions, reasons, proposal, held)`: up to three categories to offer as
+def _offered_categories(session: Session, entry, category: str) -> tuple[list[str], dict[str, str], dict | None, dict | None, str]:  # noqa: ANN001
+    """`(suggestions, reasons, proposal, held, why)`: up to three categories to offer as
     one-tap choices (INBOX 434), each one's line, a new category the pack proposes
-    (WORLD_CLASS 23, decisions 2, 3 and 6), and a sensitive topic that held it back."""
+    (WORLD_CLASS 23, decisions 2, 3 and 6), a sensitive topic that held it back, and
+    why it waits. The choices are the filing call's own, first and in its order
+    (`lexical_filing.filing_call`, INBOX 1583), so the saved note offers what the
+    Capture hint offered; recent categories fill the row only after them."""
     from tessellate.ai import lexical_filing
 
-    suggestions: list[str] = []
-    reasons: dict[str, str] = {}
+    explained: list[tuple[str, str]] = []
     proposal = None
     held = None
+    why = ""
     try:
         content = manager.readable_content(entry) or ""
-        explained = [
-            (name, reason)
-            for name, reason in lexical_filing.suggest_categories_explained(
-                session, content, exclude_entry_id=entry.id, limit=4,
-            )
-            if name != category
-        ][:3]
-        suggestions = [name for name, _ in explained]
-        reasons = {name: reason for name, reason in explained if reason}
-        decision = lexical_filing.decide(session, content, exclude_entry_id=entry.id)
-        if decision.proposal is not None:
-            proposal = {"name": decision.proposal.name, "why": decision.proposal.why}
-        if decision.held and decision.ranked:
-            held = {"category": decision.ranked[0].name, "topic": decision.sensitive}
+        call = lexical_filing.filing_call(session, content, exclude_entry_id=entry.id)
+        explained = [(name, reason) for name, reason in call.choices if name != category]
+        if len(explained) < 3:
+            taken = {name for name, _ in explained} | {category}
+            for name, reason in lexical_filing.suggest_categories_explained(session, content, exclude_entry_id=entry.id, limit=4):
+                if name not in taken:
+                    explained.append((name, reason))
+                    taken.add(name)
+        explained = explained[:3]
+        if call.proposal is not None:
+            proposal = {"name": call.proposal.name, "why": call.proposal.why}
+        if call.held and call.choices:
+            held = {"category": call.choices[0][0], "topic": call.held}
+        why = call.why
     except Exception:  # noqa: BLE001 - a hint never fails the status
         logger.debug("no category suggestions for entry %s", entry.id, exc_info=True)
-    return suggestions, reasons, proposal, held
+    suggestions = [name for name, _ in explained]
+    reasons = {name: reason for name, reason in explained if reason}
+    return suggestions, reasons, proposal, held, why
 
 
 def _filing_why(session: Session, entry, category: str) -> str:  # noqa: ANN001
@@ -1319,8 +1325,9 @@ def filing_status(entry_id: int, session: Session = Depends(get_session)) -> dic
     why = ""
     proposal = None
     held = None
+    waits = ""
     if (filed_by == "none" and category == manager.UNCATEGORISED) or unsure_pick:
-        suggestions, reasons, proposal, held = _offered_categories(session, entry, category)
+        suggestions, reasons, proposal, held, waits = _offered_categories(session, entry, category)
     elif filed_by == "words" and category != manager.UNCATEGORISED:
         why = _filing_why(session, entry, category)
     return {
@@ -1335,6 +1342,9 @@ def filing_status(entry_id: int, session: Session = Depends(get_session)) -> dic
         "why": why,
         "proposal": proposal,
         "held_sensitive": held,
+        #: Why the words left it waiting ("A close call between Hobbies and
+        #: Study, so it waits for you to choose."), said by the saved line.
+        "waits_why": waits if filed_by == "none" else "",
     }
 
 
@@ -1365,10 +1375,10 @@ def _tag_vocabulary(session: Session) -> list[str]:
 
     Both tag suggesters read this, so a note filed before saving and a note
     refiled afterwards are offered the same vocabulary and cannot drift
-    apart. `manager.all_tags` is cached by notebook fingerprint, so this is
+    apart. `tags_repo.counts` is cached by notebook fingerprint, so this is
     a dictionary lookup rather than a scan on the common path.
     """
-    counts = manager.all_tags(session)
+    counts = tags_repo.counts(session)
     return [tag for tag, _count in sorted(counts.items(), key=lambda row: (-row[1], row[0]))]
 
 
@@ -1381,34 +1391,6 @@ class SuggestTagsBody(BaseModel):
 
 #: Said once per process, not once per keystroke pause.
 _SAID_ONCE: set[str] = set()
-
-
-@router.post("/suggest-category")
-def suggest_category_for_draft(body: SuggestTagsBody, session: Session = Depends(get_session)) -> dict:
-    """The category the notebook's own words point to for a note that is not
-    saved yet, with the reason (INBOX 1330: "a live, inline organization
-    suggestion while typing"). The words only, no model and no write: the
-    same decision filing makes with no model, so what is offered here is what
-    saving would have done. Nothing comes back where it has no reason to give
-    (a recently used category is a filing fallback, not a suggestion), and a
-    sensitive topic is offered like any other: it is a chip to press, and
-    pressing is the person filing it (decision 6)."""
-    from tessellate.ai import lexical_filing
-
-    content = body.content.strip()
-    if body.title.strip() and content:
-        content = f"# {body.title.strip()}\n\n{content}"
-    if not content:
-        return {"category": None, "reason": ""}
-    try:
-        decision = lexical_filing.decide(session, content)
-    except Exception:  # noqa: BLE001 - a hint never fails the form
-        logger.debug("no category suggestion for a draft", exc_info=True)
-        return {"category": None, "reason": ""}
-    pick = decision.filed or next((c for c in decision.ranked if c.score > 0 and c.why), None)
-    if pick is None or not pick.why:
-        return {"category": None, "reason": ""}
-    return {"category": pick.name, "reason": pick.why}
 
 
 @router.post("/suggest-tags")
@@ -1895,8 +1877,8 @@ def link_suggestions(session: Session = Depends(get_session)) -> list[dict]:
 def _already_linked(session: Session, entries: list) -> set[frozenset[int]]:
     """Pairs with nothing left to suggest: linked, parent and child, or dismissed."""
     already_linked: set[frozenset[int]] = set()
-    for link in session.scalars(select(EntryLink)):
-        already_linked.add(frozenset((link.source_entry_id, link.target_entry_id)))
+    for source_id, target_id in relations_repo.pairs(session):
+        already_linked.add(frozenset((source_id, target_id)))
     # Threads are already a connection, don't re-suggest parent/child.
     for entry in entries:
         if entry.parent_id is not None:
@@ -1928,7 +1910,7 @@ def _recognised_pairs(session: Session, entries: list, candidates: dict, already
         similar = search_engine.cached_similar_pairs(
             session, LINK_SUGGESTION_THRESHOLD, only=set(candidates)
         )
-    edges = [(a, b) for a, b in session.execute(select(EntryLink.source_entry_id, EntryLink.target_entry_id))]
+    edges = relations_repo.pairs(session)
     edges += [(e.parent_id, e.id) for e in entries if e.parent_id is not None]
     mentions = [
         (name, entry_id)
@@ -2089,7 +2071,7 @@ def find_tensions(
     # alone deliberately: notes can be linked as "related" *and* disagree,
     # and that is one of the more interesting cases.
     known: set[str] = set(_dismissed_tensions())
-    for link in session.scalars(select(EntryLink).where(EntryLink.link_type == "contradicts")):
+    for link in relations_repo.with_type(session, "contradicts"):
         known.add(_tension_key(link.source_entry_id, link.target_entry_id))
     # WORLD_CLASS_PLAN B4: a pair already in the tensions table (found by an
     # earlier scan or the night shift, whatever became of it) is never asked
@@ -2263,7 +2245,7 @@ def reopen_tension(body: TensionReopen, session: Session = Depends(get_session))
     config.set_preference(TENSION_DISMISSED_KEY, stored)
     removed_link = False
     if body.remove_link:
-        for link in session.scalars(select(EntryLink).where(EntryLink.link_type == "contradicts")).all():
+        for link in relations_repo.with_type(session, "contradicts"):
             if {link.source_entry_id, link.target_entry_id} == pair:
                 manager.delete_link(session, link)
                 removed_link = True
@@ -2421,12 +2403,8 @@ def related_entries(entry_id: int, session: Session = Depends(get_session)) -> l
     #: note (`manager.create_link` refuses both with a 400).
     linked = {
         other_id
-        for pair in session.execute(
-            select(EntryLink.source_entry_id, EntryLink.target_entry_id).where(
-                or_(EntryLink.source_entry_id == entry.id, EntryLink.target_entry_id == entry.id)
-            )
-        )
-        for other_id in pair
+        for link in relations_repo.touching(session, entry.id)
+        for other_id in (link.source_entry_id, link.target_entry_id)
     }
     found = {
         other.id: other
@@ -2498,6 +2476,12 @@ ENTRIES_BY_IDS_MAX = 200
 ENTRIES_PREVIEW_MAX = 2000
 
 
+_TASK_OPEN = re.compile(r"^[ \t]*(?:[-*+]|\d+[.)])[ \t]+\[[ \t]\]", re.M)
+_TASK_DONE = re.compile(r"^[ \t]*(?:[-*+]|\d+[.)])[ \t]+\[[xX]\]", re.M)
+#: The list's own `[[wiki link]]` test (`matchesSearch`, `is:linked`), for the part of a note past the preview.
+_WIKI_LINK = re.compile(r"\[\[[^\]\n]{1,120}\]\]")
+
+
 def _previewed(rows: list[EntryOut], preview: int) -> list[EntryOut]:
     """`rows` with each note's text cut to `preview` characters (0 keeps it
     whole), at the last space before the cut when there is one, and
@@ -2507,7 +2491,16 @@ def _previewed(rows: list[EntryOut], preview: int) -> list[EntryOut]:
     if not preview:
         return rows
     for row in rows:
-        if len(row.content) > preview:
+        #: The numbers a list draws from the whole text (the dashboard's words and open tasks), counted before the cut.
+        row.word_count = cjk.word_count(row.content)
+        row.tasks_open = len(_TASK_OPEN.findall(row.content))
+        row.tasks_done = len(_TASK_DONE.findall(row.content))
+        row.wiki_linked = bool(_WIKI_LINK.search(row.content))
+        #: A meeting's card reads its sections from the whole text (`meetingGlance`), so a meeting is sent whole. So is
+        #: a private note: the index never reads one, so the list's filter box matches it on the text the list holds
+        #: (INBOX 1525 review). Locked, its text is the short placeholder anyway.
+        whole = row.is_private or "meeting" in {v.lower() for v in row.properties.get("type", [])}
+        if len(row.content) > preview and not whole:
             cut = row.content[:preview]
             row.content = (cut.rsplit(None, 1)[0] if " " in cut or "\n" in cut else cut).rstrip()
             row.content_truncated = True
@@ -3211,11 +3204,16 @@ class PrivacyBody(BaseModel):
 HISTORY_PAGE = 50
 
 
-def _stored_form(entry, text: str) -> str:  # noqa: ANN001
-    """A past version's text, in the form this note stores it in now."""
+def _stored_form(entry, text: str, session: Session | None = None) -> str:  # noqa: ANN001
+    """A past version's text, in the form this note stores it in now.
+
+    A private note's restored text marks the pictures it embeds, as an edit
+    does (SEC-A2): a picture only an older version used was served locked."""
     stored = manager.content_for_entry(entry, text or "")
     if stored is None:
         raise HTTPException(status_code=409, detail="Unlock the app first: this version needs the encryption key.")
+    if session is not None and entry.is_private:
+        manager.flag_private_media(session, _readable(stored))
     return stored
 
 
@@ -3709,7 +3707,7 @@ def restore_event(
         )
 
     if "content" in state:
-        restored = _stored_form(entry, state["content"])
+        restored = _stored_form(entry, state["content"], session)
     manager.record_revision(session, entry)
     if "content" in state:
         entry.content = restored
@@ -3749,7 +3747,7 @@ def restore_revision(
     if revision is None or revision.entry_id != entry.id:
         raise HTTPException(status_code=404, detail="That version no longer exists.")
 
-    restored = _stored_form(entry, revision.content)
+    restored = _stored_form(entry, revision.content, session)
     manager.record_revision(session, entry)
     entry.content = restored
     entry.tags = revision.tags
@@ -4156,9 +4154,7 @@ def delete_link(
     entry_id: int, link_id: int, session: Session = Depends(get_session)
 ) -> EntryOut:
     entry = NOTES.writable(session, entry_id)
-    link = session.get(EntryLink, link_id)
-    if link is None or entry.id not in (link.source_entry_id, link.target_entry_id):
-        raise HTTPException(status_code=404, detail="That link could not be found.")
+    link = relations_repo.get_for_note(session, entry.id, link_id)
     manager.delete_link(session, link)
     return _to_out(session, entry)
 
@@ -4170,9 +4166,7 @@ def patch_link(
     """Change a link's type (GRAPH_PLAN KG9), its properties (KG3) or its
     direction (INBOX 693)."""
     entry = NOTES.writable(session, entry_id)
-    link = session.get(EntryLink, link_id)
-    if link is None or entry.id not in (link.source_entry_id, link.target_entry_id):
-        raise HTTPException(status_code=404, detail="That link could not be found.")
+    link = relations_repo.get_for_note(session, entry.id, link_id)
     sent = body.model_fields_set
     if "link_type" in sent:
         if body.link_type is not None and not manager.is_link_type(session, body.link_type):
@@ -4193,9 +4187,7 @@ def update_link_reason(
     with none, one somebody typed, or one `create_link` deduced on its own.
     """
     entry = NOTES.writable(session, entry_id)
-    link = session.get(EntryLink, link_id)
-    if link is None or entry.id not in (link.source_entry_id, link.target_entry_id):
-        raise HTTPException(status_code=404, detail="That link could not be found.")
+    link = relations_repo.get_for_note(session, entry.id, link_id)
     try:
         manager.set_link_reason(session, link, body.reason)
         return _to_out(session, entry)
@@ -4212,9 +4204,7 @@ def generate_link_reason_endpoint(
 ) -> dict:
     """Ask the model to generate a specific reason why these two notes are connected."""
     entry = NOTES.writable(session, entry_id)
-    link = session.get(EntryLink, link_id)
-    if link is None or entry.id not in (link.source_entry_id, link.target_entry_id):
-        raise HTTPException(status_code=404, detail="That link could not be found.")
+    link = relations_repo.get_for_note(session, entry.id, link_id)
 
     source = session.get(Entry, link.source_entry_id)
     target = session.get(Entry, link.target_entry_id)

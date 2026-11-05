@@ -251,3 +251,46 @@ def _lead_act_verb(question: str) -> str | None:
         return None
     #: "add up the budget" is a sum, not a line to add to a note.
     return None if first == "add" and rest.split()[0] in ("up", "together") else first
+
+
+_TAG_ACTS = frozenset({"tag", "untag"})
+_TAG_FILLER = frozenset("my the a an that this one note notes entry".split())
+
+
+def _spoken(tags: list[str]) -> str:
+    named = [f"#{t}" for t in tags]
+    return named[0] if len(named) == 1 else ", ".join(named[:-1]) + " and " + named[-1]
+
+
+def _named_note(question: str, notes: list[dict]) -> tuple[dict | None, list[str]]:
+    """The one note a tag act's words name (every word in its title), and those words."""
+    from tessellate.ai.composer_read import _title
+
+    text = " ".join((question or "").lower().split()).strip(" .!?")
+    for lead in _ACT_LEADS:
+        text = text[len(lead):] if text.startswith(lead) else text
+    named = [w for w in re.findall(r"[a-z0-9']+", text.partition(" ")[2]) if w not in _TAG_FILLER]
+    stems = {_stem(w) for w in named}
+    held = [n for n in notes or [] if stems and stems <= {_stem(w) for w in _words(_title(str(n.get("content") or ""))[0])}]
+    return (held[0] if len(held) == 1 else None), named
+
+
+def tag_gap(verb: str, question: str, notes: list[dict]) -> str:
+    """The question a tag act asks when it names one note and no tag ("untag
+    my gym note", audit 1028 E55): which tag, with the note's own tags as the
+    choices to take off. "" when the words are not one note's name."""
+    from tessellate.ai.composer_read import _title
+
+    if _ACT_VERBS.get(verb) not in _TAG_ACTS:
+        return ""
+    note, named = _named_note(question, notes)
+    if note is None:
+        return ""
+    title = _title(str(note.get("content") or ""))[0].strip()
+    tags = [str(t).strip("#") for t in note.get("tags") or [] if str(t).strip("#")]
+    spoken = f"the {' '.join(named)} note"
+    if verb != "untag":
+        return f"Which tag should I add to “{title}”? Say it like this: tag {spoken} with kitchen."
+    if not tags:
+        return f"“{title}” has no tags to take off."
+    return f"Which tag should I take off “{title}”? It has {_spoken(tags)}. Say it like this: remove the tag {tags[0]} from {spoken}."

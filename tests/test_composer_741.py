@@ -13,6 +13,7 @@ from __future__ import annotations
 import re
 
 from tessellate.ai import composer
+from tessellate.ai import composer_quote
 from tests.test_composer_688 import _note, assert_traceable, TODAY
 
 UNTITLED = [
@@ -61,9 +62,9 @@ def test_a_lowered_quote_after_a_joiner_is_still_the_notes_own_words():
     """"Separately, the hills are steep": only words that are never a name
     have their first letter lowered."""
     s = composer.Sentence(1, 0, 0, 10, "The hills are steep.", ["hill"])
-    assert composer._lowered(s) == "the hills are steep."
+    assert composer_quote._lowered(s) == "the hills are steep."
     for kept in ("Lisbon is hilly.", "I booked it.", "Harbor ships soon.", "TODO list done."):
-        assert composer._lowered(composer.Sentence(1, 0, 0, 10, kept, ["x"])) is None
+        assert composer_quote._lowered(composer.Sentence(1, 0, 0, 10, kept, ["x"])) is None
 
 
 def test_the_eval_has_no_note_says_and_no_lead_in_twice():

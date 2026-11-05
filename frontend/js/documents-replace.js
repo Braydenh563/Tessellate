@@ -22,23 +22,33 @@
 // request (`POST /documents/contents`), and the one undo step writes the
 // originals back the same way, so fifty documents change, or change back,
 // whole. Each changed document keeps the version it replaced in its history.
-const docReplace = { matches: [], skipped: new Set(), timer: 0, pool: null };
+const docReplace = { matches: [], skipped: new Set(), timer: 0, late: 0, pool: null };
 
 function docReplacePattern() {
   const find = $("doc-replace-find").value;
   if (!find) return null;
   const flags = $("doc-replace-case").checked ? "g" : "gi";
-  const source = $("doc-replace-regex").checked ? find : find.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const regex = $("doc-replace-regex").checked;
+  const source = regex ? find : find.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
   //: Whole word by letters in any script, not `\b`, which ends a word at "é" (D29).
   const word = $("doc-replace-word").checked;
-  try {
-    return word ? new RegExp(`(?<![\\p{L}\\p{N}_])(?:${source})(?![\\p{L}\\p{N}_])`, `${flags}u`) : new RegExp(source, flags);
-  } catch (error) {
-    return { error: error.message };
+  const wrapped = word ? `(?<![\\p{L}\\p{N}_])(?:${source})(?![\\p{L}\\p{N}_])` : source;
+  //: A regular expression reads as it does in the find panel it may have come from (D33): `^` and `$` are
+  //: a line's ends (`m`), and `\p{L}` reads (`u`). A pattern only valid without `u` still reads (whole word needs `u`).
+  const tries = regex ? (word ? [`${flags}mu`] : [`${flags}mu`, `${flags}m`]) : [word ? `${flags}u` : flags];
+  let failure = null;
+  for (const set of tries) {
+    try {
+      return new RegExp(wrapped, set);
+    } catch (error) {
+      failure ||= error;
+    }
   }
+  return { error: failure.message };
 }
 
-async function docReplaceOpen() {
+//: `carry` is the find panel's query (D33: one entry point): its words, replacement and three options become the dialog's.
+async function docReplaceOpen(carry = null) {
   if (docDirty) await saveDocument({ silent: true });
   const dialog = $("doc-replace-dialog");
   if (!dialog) return;
@@ -46,6 +56,13 @@ async function docReplaceOpen() {
   const view = docCmView;
   const picked = view && !view.state.selection.main.empty ? view.state.sliceDoc(view.state.selection.main.from, view.state.selection.main.to).split("\n")[0] : "";
   if (picked) $("doc-replace-find").value = picked;
+  if (carry && typeof carry.find === "string" && carry.find) {
+    $("doc-replace-find").value = carry.find;
+    $("doc-replace-with").value = carry.replace || "";
+    $("doc-replace-case").checked = Boolean(carry.caseSensitive);
+    $("doc-replace-regex").checked = Boolean(carry.regexp);
+    $("doc-replace-word").checked = Boolean(carry.wholeWord);
+  }
   $("doc-replace-find").focus();
   $("doc-replace-find").select();
   docReplace.pool = null;
@@ -84,8 +101,11 @@ async function renderDocReplace() {
   list.replaceChildren();
   run.disabled = true;
   docReplace.matches = [];
+  clearTimeout(docReplace.late);
   if (!pattern || pattern.error) {
-    summary.textContent = pattern?.error ? `That pattern does not read: ${pattern.error}` : "Type what to find.";
+    //: A pattern half-typed ("(" , "[a-") is not wrong yet: its error waits for a pause (INBOX 1579).
+    summary.textContent = pattern?.error ? "" : "Type what to find.";
+    if (pattern?.error) docReplace.late = setTimeout(() => (summary.textContent = `That pattern does not read: ${pattern.error}`), 800);
     return;
   }
   summary.textContent = "Searching…";

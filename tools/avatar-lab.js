@@ -60,7 +60,10 @@ const ROOT = location.protocol === "file:" ? "../frontend/" : "/";
       return svg;
     };
     window.watchNameMark = function (svg) { if (svg) svg.dataset.nmKb = "1"; };
-    return script("js/atlas.js");
+    //: atlas-motion.js holds the blink and arm rig and companion-settings.js the
+    //: look pickers since they left atlas.js and avatars.js; the app loads them
+    //: lazily, the lab needs them up front.
+    return script("js/atlas.js").then(() => ensureModule("atlasMotion")).then(() => script("js/companion-settings.js"));
   }).then(() => {
     //: Atlas reads its look from the app's storage first; the lab's choice
     //: must win without touching that storage.

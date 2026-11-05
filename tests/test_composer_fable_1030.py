@@ -278,10 +278,11 @@ def _old(pattern):
 
 
 def _f14_patterns():
-    from tessellate.ai import activity, composer, composer_frame, recognise, task_acts
+    from tessellate.ai import activity, composer_frame, recognise, task_acts
+    from tessellate.ai import composer_ask
 
     return {
-        "compare-than": composer._COMPARE_SIDES[0],
+        "compare-than": composer_ask._COMPARE_SIDES[0],
         "digest-compare": composer_digest._ASKS["compare"],
         "done-tail": task_acts._DONE_TAIL,
         "date-stub": activity._DATE_STUB,
@@ -349,14 +350,14 @@ def test_f13_a_note_with_no_words_has_no_name():
 
 def test_f13_no_second_reader_of_a_notes_name_in_ai():
     """A new `def _title` is a ninth way to name a note: use
-    `composer_frame.note_title`. These three are not readers of a title from
+    `composer_frame.note_title`. These two are not readers of a title from
     text: the engine's split of a note into title and body, the view's own
-    name (it names a title-less list by its filing), and the questions row's
-    first sentence with its stop (pinned by test_quadratic_scans)."""
+    name (it names a title-less list by its filing). The questions row's own
+    reader went to the shared one (F13, closed)."""
     import re
     from pathlib import Path
 
     root = Path(__file__).resolve().parents[1] / "src" / "tessellate" / "ai"
     found = {p.name for p in root.glob("*.py") if re.search(r"^def _title\(", p.read_text(encoding="utf-8"), re.M)}
     # The engine's split moved whole from composer.py to composer_read.py (AR3).
-    assert found == {"composer_read.py", "composer_lists.py", "questions.py"}, found
+    assert found == {"composer_read.py", "composer_lists.py"}, found

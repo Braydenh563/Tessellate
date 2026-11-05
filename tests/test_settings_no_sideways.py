@@ -54,7 +54,7 @@ def _sideways_rules() -> list[str]:
     hits = []
     for path in sorted(CSS_DIR.glob("*.css")):
         text = re.sub(r"/\*.*?\*/", "", path.read_text(encoding="utf-8"), flags=re.S)
-        for m in re.finditer(r"([^{}]+)\{([^{}]*)\}", text):
+        for m in re.finditer(r"(?:(?<=[{}])|\A)([^{}]+)\{([^{}]*)\}", text):
             body = m.group(2)
             sideways = re.search(r"overflow-x\s*:\s*(auto|scroll)", body) or re.search(
                 r"overflow\s*:\s*(auto|scroll)\s+\w", body

@@ -228,36 +228,7 @@ Moved whole to HISTORY.md ("Moved from the plans, 2026-10-05 (docs hygiene befor
 
 ## Phase 7: the reports from the v0.2.2 round that are still open
 
-Each one was triaged against the running app this session; these are the ones
-that need building rather than fixing.
-
-1. **The lightbox is an image viewer showing a document.** Reported: "the
-   lightbox needs improving for file and pdf previews, no sections or info are
-   below it really compared to the images." An image gets caption, read text,
-   badges and usage under it; a PDF gets the page and nothing else. It should
-   carry the same block, plus what only a document has: page count, which pages
-   have been read, and a way into the OCR Workspace at that page.
-2. ~~**Line numbers as a setting, in all three editors.**~~ **Built** (HISTORY.md, "Moved from the plans, 2026-10-05 (docs hygiene before 0.4.0: UI_MODERNISATION_PLAN)"; `mountGutterFor`, `docGutterWanted` in documents.js).
-3. **Captioning for documents, not just photographs.** Reported: "image
-   captioning, how it is done and displayed needs to be refined for pdf
-   documents and other similar documents. with graphs, images and diagrams in
-   them." A page of slides is not a photograph: the caption prompt, and where
-   the answer is shown, both assume one image with one subject. Needs a
-   per-page, per-figure model and a place to show it that is not a single line
-   under a thumbnail.
-4. **Region select → read just that.** Asked as a question, and it is a good
-   one: "can there be a way for the user to manually outline and single out
-   regions on a pdf or similar document and then the ai will read what is in
-   those regions?? like maybe the user can outline a graph or diagram on a pdf
-   slide and then the user cna get the image or ocr model to analyse and caption
-   that thing." The workspace already draws region boxes from Tesseract and
-   already has a page raster; this is a drag-to-draw on that layer, a crop, and
-   the existing read/caption call on the crop. Scoped small, high value.
-5. **The Files sub-tab has to show more than a row can hold.** OCR text for a
-   long document does not fit where a photo's caption fits; the row needs a
-   summary plus a way to open the reading, not a clamped paragraph.
-6. **The agent activity panel**, see
-   [AGENT_SKILLS_REFORM.md](AGENT_SKILLS_REFORM.md) Phase C, which owns it.
+Items 1 to 5 are built (below). Item 6, the agent activity panel, is owned by [AGENT_SKILLS_REFORM.md](AGENT_SKILLS_REFORM.md) Phase C.
 
 ### Built: items 1, 3, 4 and 5
 
@@ -1086,9 +1057,7 @@ and some are rounded squares."
 
 Steps 1 to 4 and 6, and step 5's pickers, built 2026-10-10 (Brief 41): moved to HISTORY.md ("Moved from the plans, 2026-10-10 (UI_MODERNISATION Phase 12)"). Open:
 - 5b, the calendar mode (decision 6): TIMELINE_PLAN section 9, Brief 55.
-- 8, indent guides in the code editor: Brief 42 (DOCUMENTS 25 row 3); the active line is built.
 - 7 on chat bubbles and library cards; 1's panel padding 12 and sidebar gutter 8, not yet measured.
-- One focus ring at 1:1 (Chat, an `.active` button whose ring takes the ground's colour; `focusring.js`).
 
 ## Placed from INBOX, built (pointers)
 
@@ -1208,10 +1177,6 @@ inside a 4,000px section.
 
 ## Placed from the owner's list, 2026-10-10
 
-- **INBOX 760, card dates.** The time floats mid-card on a card the grid stretched taller than its content (about 110px under it on the tallest card, 40px on short ones); "1 week ago· edited" has lost its space. Pin the details line to the card's bottom edge, measured on a row of unequal cards; the space restored. Carddate agent.
-- **INBOX 761, mind maps listed as notes.** The Ask results show a mind map as an Uncategorised note card; check every reader of notes (Ask, Notes, search, graph, timeline, dashboard counts, Find anything, palette) and exclude what a board keeps behind its topics, with a test per reader. Mapnotes agent.
-- **INBOX 762, "just now" on an untouched mind map.** The Library card's modified time moved without the owner; find what writes `updated_at` on a board when it is only opened, listed, indexed, searched or thumbnailed, stop it, and pin it with a test. Mapnotes agent.
-- **INBOX 767, the no-model notice.** One row at 1440 (icon, one short sentence, the action as a link-styled button, the X at the end), wraps to two only under 600px; the five surfaces share it (`renderAiOfflineNotice`). Measured: notice height equals one line height plus padding at 1440; copy under 90 characters. Notice agent.
 
 Entries are the owner's words, then the recommendation. Bugs come first, then design requests.
 
@@ -1230,8 +1195,6 @@ Entries are the owner's words, then the recommendation. Bugs come first, then de
   Recommendation: the PDF viewer shows an install button for its package in place of the document. No brief carries it; Brief 37 (packages progress) is the nearest.
 - "There's overlap on these settings tabs in the sidebar"
   Recommendation: measure the overlap of the settings tabs at the sidebar width, then fix the layout. Also carried by Brief 41 (Settings two-pane).
-- "These elements in the lightbox aren’t the same height"
-  Recommendation: give lightbox controls one height token and measure their heights in the sweep. No brief carries it; Brief 41 (density) is the nearest.
 
 ### Design requests
 
@@ -1516,7 +1479,6 @@ Owners: uipolish (789), polish2 (790 to 792 and 788's design fixes), DOCUMENTS_P
 - INBOX 793, UI, whiteboard, the owner 2026-10-10 22:48Z, two screenshots: "also I think the view and board dropdown menus in the whiteboard need a bit of a redesign and/or restyle" (Board: section heads, plain rows, then label-and-action rows like "Export ... Export...", "This board itself ... Delete"; View: two columns of toggles, the Grid select and shortcut rows.)
 - INBOX 794, UI, whiteboard library, the owner 2026-10-10 22:52Z, screenshot: "also the previews in the library arent vissually accurate to what is actually placed and are a bit misleading" (the Library's General shapes draw grey filled shapes with a light outline; placed shapes take the board's colour, line and fill, e.g. a cyan-outlined triangle.)
 - INBOX 795, UI, the owner 2026-10-10 22:55Z, two screenshots: "just make sure that the app actually recieves a propper ui polish and refinement. there are still some awkward sections. also I think the ui can be redesigned or made better on this panel like with the buttons. and in the popup for individual notes, there should be an option to open the sidebar." (the Connections panel and popup: a full-width bordered button per board and per note.) Owner: uipolish.
-- INBOX 796, bug, graph, the owner 2026-10-10 23:00Z, two screenshots: "dropdown menus in the graph dont close when another is opened causing a visual clash and overlay for all 3 of these buttons" (the ?, settings and ⋯ menus in the graph head open on top of each other.) Owner: graphfeel.
 - INBOX 790 to 793 are built (canvasui-1010): see HISTORY.md, "Moved from the plans, 2026-10-11 (canvasui-1010)".
 
 ## Placed from INBOX, 2026-10-11 (the owner's sweep request)
@@ -1561,12 +1523,9 @@ Rows (owner: voiceup, Opus, after libraryup): V1 to V8, each a commit with a tes
 - INBOX 830, the owner 2026-10-11, verbatim (Tidy's "Category names" review, empty; Patterns rows with Confirm and Not right; "Recent runs (3)"): "this tidy panel is poorly designed and needs a ui/ux fix, redesign and/or restructure. also if I have confirmed a pattern then I cant undo it. also some dropdown menus across the app have wierd gaps at the start and end"
 
 Decisions made:
-- T1. Tidy is one list of reviews with counts; a review opens in place with a back link (not a bordered button beside a small title), its one-line description, and its rows. An empty review says so in one line with no selection bar: All, None and the disabled action show only when there are rows.
-- T2. Recent runs is a quiet disclosure row (DESIGN "Row actions"), not a full-width bordered box.
 - T3. A confirmed or rejected pattern keeps an Undo on its row and in "What it learned" (owner: learnaudit, with decision 68).
-- T4. A menu's first and last items sit one menu padding from its edge, never a group label's or a separator's gap (owner: grammar57, with 813's one dropdown grammar).
 
-Rows: T1 and T2 (owner: voiceup, with V7's dialog work); T3 learnaudit; T4 grammar57.
+Rows: T3 (learnaudit); T1, T2 and T4 are built (HISTORY.md, "Moved from the plans, 2026-11-02 (a30b)").
 
 ## Placed from INBOX, 2026-10-19 (mobile1314)
 
@@ -1594,3 +1553,10 @@ Rows: T1 and T2 (owner: voiceup, with V7's dialog work); T3 learnaudit; T4 gramm
 ## Placed from INBOX, 2026-10-31
 
 - 1351 (the owner, 2026-10-25, verbatim in HISTORY): usable daily for life and uni, fast, reliable, accurate, no bug found in five minutes of use; standing, served by every polish and speed agent.
+
+## Placed from INBOX, 2026-11-03
+
+
+## Placed from INBOX, 2026-11-04 (1657, what the two lag rounds left)
+
+- **1657 left.** At 4x CPU on the dashboard with Atlas walking: the tail beat is 1.85 to 2.2 ms a call (target under 1 ms, or the sway as a group transform on the compositor); the buddy arrival (`nameMarkBuddyArrive`, avatars.js, 216 ms) and shell-reminders.js (156 ms) are the first layout flush after other boot code dirtied the page, so the fix is to find the writer, not the reader; keydown max 136 ms over 22 keys (the owner's 1848 ms did not reproduce). Check: the same measures from `/tmp/lagw/lag.js` (copy it into `scratchpad/ui-sweeps/` first) with each under its target.

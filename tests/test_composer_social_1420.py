@@ -233,10 +233,10 @@ def test_note_names_stay_linear_on_unclosed_marks_and_tabs():
     #: CodeQL alerts 1846 and 1847: a pasted line of unclosed marks or tabs.
     import time
 
-    from tessellate.ai import composer
+    from tessellate.ai import composer_read
 
     started = time.perf_counter()
-    composer.plain_words("__" + "**a" * 20000)
-    composer._title("\t" * 20000 + "x:\nbody")
+    composer_read.plain_words("__" + "**a" * 20000)
+    composer_read._title("\t" * 20000 + "x:\nbody")
     assert time.perf_counter() - started < 1.0
-    assert composer.plain_words("**Phase 1:** the __Opener__") == "Phase 1: the Opener"
+    assert composer_read.plain_words("**Phase 1:** the __Opener__") == "Phase 1: the Opener"

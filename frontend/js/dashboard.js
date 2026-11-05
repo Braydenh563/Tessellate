@@ -72,7 +72,7 @@ const DASH_WIDGETS = {
   questions: { title: "ph:chat-circle Recent questions", description: "The questions you've recently asked the notebook's chat.", render: renderQuestionsWidget },
   "on-this-day": { title: "ph:calendar-blank On this day", description: "What you wrote on this date in earlier months and years.", render: renderOnThisDayWidget },
   digest: { title: "ph:newspaper Digest", description: "Your day from the notes: what is due, open questions, what changed and quiet topics; Atlas writes the week on request.", render: renderDigestWidget },
-  capture: { title: "ph:pencil-simple Quick capture", description: "A one-line box to jot a note without leaving the dashboard.", render: renderQuickCaptureWidget },
+  capture: { title: "ph:pencil-simple Quick capture", description: "The Notes tab's take-a-note bar: a note, a to-do list or a drawing, without leaving the dashboard.", render: renderQuickCaptureWidget },
   reminders: { title: "ph:alarm Reminders", description: "Upcoming and overdue reminders, soonest first.", render: renderRemindersWidget },
   focus: { title: "ph:timer Focus timer", description: "A focus timer with breaks, a chime at the end and today's minutes.", render: renderFocusTimerWidget },
   heatmap: { title: "ph:calendar-check Activity heatmap", description: "A calendar-style heatmap of note activity over the past months.", render: renderHeatmapWidget },
@@ -159,6 +159,27 @@ const DASH_DEFAULT_SHOWN = [
 //: Applied only while a saved layout has never seen the widget: once anybody
 //: adds it, or saves a layout with it hidden, the saved layout decides.
 const DASH_OPT_IN = ["activity", "night", "week"];
+
+//: **The popup tools as widgets** (INBOX 1558, the owner: "cant add the timer,
+//: calculator, converter, stopwatch etc"). A widget draws the tool itself, not
+//: a button that opens it: the Clock and the Calculator mount into the body
+//: through the popup's own build (`host`). A `POPUP_TOOLS` entry (settings-panes.js)
+//: names its widget; a kind no tool names is not listed (tests/test_popup_widgets_1558.py).
+{
+  const POPUP_WIDGETS = {
+    clock: { title: "ph:timer Clock", description: "Timers, a stopwatch and an alarm, drawn here. They keep running when you leave the page.", module: "utilities", mount: (body) => openClockPanel.inline("timer", body) },
+    //: One tab each, with no strip (INBOX 1617): a Stopwatch and an Alarm of their own beside the Clock, over the same running clocks and the same reminders.
+    stopwatch: { title: "ph:timer Stopwatch", description: "A stopwatch with Start, Pause, Lap and Reset, and the laps listed. It keeps running when you leave the page.", module: "utilities", mount: (body) => openClockPanel.inline("stopwatch", body, { only: true }) },
+    alarm: { title: "ph:bell-ringing Alarm", description: "A time of day and a label. It is an ordinary reminder, so it rings with the reminder sound and notification and is kept.", module: "utilities", mount: (body) => openClockPanel.inline("alarm", body, { only: true }) },
+    convert: { title: "ph:ruler Convert", description: "Units, currency and time zones: an amount and two units, or a time and two places, worked out here with no model.", module: "replyKit", mount: (body) => openCalculator.inline(body, "convert", { only: true }) },
+    calculator: { title: "ph:calculator Calculator", description: "Sums, percentages and unit conversions, worked out here with no model.", module: "replyKit", mount: (body) => openCalculator.inline(body, "work") },
+  };
+  for (const [id, kind] of Object.entries(POPUP_WIDGETS)) {
+    if (!POPUP_TOOLS.some((tool) => tool.widget === id)) continue;
+    DASH_WIDGETS[id] = { title: kind.title, description: kind.description, render: (body) => ensureModule(kind.module).then(() => kind.mount(body)) };
+    DASH_OPT_IN.push(id);
+  }
+}
 
 function dashLayout() {
   const saved = (prefsCache && prefsCache.dashboard_layout) || {};
@@ -799,8 +820,13 @@ let dashResizeObserver = null;
 //: height depends on its own content and the column width alone, never on
 //: another card's span, so all of them can be released first, measured
 //: together against one layout, and set together.
-function sizeDashWidgetSpan(card, height, rowUnit, gap) {
-  return `span ${Math.max(1, Math.ceil((height + gap) / (rowUnit + gap)))}`;
+//: **A 1px row unit and no row gap** (unslop 1103, 3). The unit was 8px with a
+//: 16px row gap, so a span could only grow in 24px steps and stacked cards sat
+//: 18 to 36px apart where side-by-side ones sit 16 (33, 18.2, 28.1, 33.2 ...
+//: measured). The gap between stacked cards is now the card gap, added to the
+//: height before it is rounded up to a whole pixel: 16 to 17px, always.
+function sizeDashWidgetSpan(height, rowUnit, rowGap, cardGap) {
+  return `span ${Math.max(1, Math.ceil((height + cardGap + rowGap) / (rowUnit + rowGap)))}`;
 }
 
 function sizeDashWidgets() {
@@ -811,14 +837,19 @@ function sizeDashWidgets() {
   //: (layout shift 0.34). The grid's own fire on showing it measures it right.
   if (!grid || (grid.checkVisibility && !grid.checkVisibility())) return;
   const styles = getComputedStyle(grid);
-  const rowUnit = Number.parseFloat(styles.getPropertyValue("grid-auto-rows")) || 8;
-  const gap = Number.parseFloat(styles.rowGap) || 16;
+  const rowUnit = Number.parseFloat(styles.getPropertyValue("grid-auto-rows")) || 1;
+  const rowGap = Number.parseFloat(styles.rowGap) || 0;
+  const cardGap = Number.parseFloat(styles.columnGap) || 16;
   const cards = [...grid.querySelectorAll(".dash-widget")];
-  // Measure the cards' natural heights, not their grid-constrained ones.
-  for (const card of cards) card.style.gridRowEnd = "span 1";
+  //: **One layout a call, not three** (INBOX 1591: the dashboard's first reads were 85ms of
+  //: forced layout inside the notes response). The grid is `align-items: start`, so a card is
+  //: its content's height whatever span it holds (identical at 1440, 1000, 700 and 390): the
+  //: release to `span 1` before the read only dirtied the layout the read then paid for. And
+  //: the heatmap's refit reads its end, so it goes with the other reads, before any write.
   const heights = cards.map((card) => card.getBoundingClientRect().height);
+  for (const heat of grid.querySelectorAll(".heatmap")) heat.dispatchEvent(new Event("dash-refit"));
   cards.forEach((card, i) => {
-    card.style.gridRowEnd = sizeDashWidgetSpan(card, heights[i], rowUnit, gap);
+    card.style.gridRowEnd = sizeDashWidgetSpan(heights[i], rowUnit, rowGap, cardGap);
   });
   grid.classList.add("spans-ready");
 }
@@ -841,10 +872,12 @@ function watchDashWidgets() {
       sizeDashWidgets();
     });
   });
+  //: Observing fires once for every card, so the first sizing is the observer's, a frame on,
+  //: with the widgets drawn rather than empty: sizing here as well was a whole-page layout
+  //: (46 + 25ms at 4x) inside the response that delivered the notes.
   for (const card of grid.querySelectorAll(".dash-widget")) {
     dashResizeObserver.observe(card);
   }
-  sizeDashWidgets();
 }
 
 // --- the dashboard's menu: everything one press away (INBOX 436) -------------
@@ -1440,8 +1473,8 @@ function dashCustomiseItems() {
   //: The way back from Get started's Hide or Mark all as done (INBOX 1301 D3).
   if (prefs.get("getStartedHidden", null) === "1" || prefs.get("getStartedDone", null) === "1") {
     items.push({
-      label: "ph:list-checks Show Get started",
-      title: "The first steps card and the Get started button, as they were",
+      label: "ph:list-checks Show first steps",
+      title: "The first steps card and button, as they were",
       group: "page",
       run: () => lazyScript("/js/first-run.js").then(() => getStartedShow()),
     });
@@ -1774,17 +1807,14 @@ async function renderDashboard({ refresh = false } = {}) {
   // `entriesEverLoaded` and not just the length: before the first GET /entries
   // comes back these are indistinguishable, and guessing "empty" paints the
   // brand-new-notebook card over a notebook full of notes.
-  if (entriesEverLoaded && !allEntries.length && !dashEditMode) {
-    //: It has nothing to wait for. Left on, `.dash-filling` (added above)
-    //: kept a brand-new notebook's empty grid hidden for good.
-    grid.classList.remove("dash-filling");
-    window.dashSettled = Promise.resolve();
-    return;
-  }
+  //: The one widget that needs no notes stays (unslop 1103, 20): the first screen was
+  //: 349px of nothing under the steps, and Quick capture is the first thing to do.
+  const bare = entriesEverLoaded && !allEntries.length && !dashEditMode;
 
   for (const name of layout.order) {
     const hidden = layout.hidden.includes(name);
     if (hidden && !dashEditMode) continue;
+    if (bare && name !== "capture") continue;
 
     const widget = DASH_WIDGETS[name];
     const isWide = layout.wide.includes(name);
@@ -1915,7 +1945,14 @@ async function renderDashboard({ refresh = false } = {}) {
   //: Every visit, not only the first: a switch back to the dashboard redrew
   //: the widgets the same way, in view (0.26 on 300 notes, measured).
   const settled = (window.dashSettled = Promise.race([Promise.allSettled(drawing), new Promise((r) => setTimeout(r, 1200))]));
-  const outline = dashFillingSkeleton(grid, drawing.length);
+  //: Placed a frame on (INBOX 1591): it reads the grid's box, and read here it laid the whole
+  //: page out inside the script that delivered the notes (46ms at 4x); in the frame callback
+  //: that layout is the one the frame was going to do anyway. Two frames on, the settle takes
+  //: it down, so it is always up before then.
+  let outline = null;
+  afterFrames(() => {
+    if (window.dashSettled === settled && grid.classList.contains("dash-filling")) outline = dashFillingSkeleton(grid, drawing.length);
+  }, 1);
   settled.then(() => afterFrames(() => {
     if (window.dashSettled !== settled) return;
     grid.classList.remove("dash-filling");
@@ -1946,10 +1983,14 @@ function dashFillingSkeleton(grid, count) {
   outline.className = "dash-grid-skeleton";
   outline.setAttribute("aria-hidden", "true");
   const columns = Math.max(1, cs.gridTemplateColumns.split(" ").length);
+  //: Every read before the first write: the append below dirties the layout, and `grid.offsetTop` read after it
+  //: laid the page out a second time (86ms at 4x CPU on 1,200 notes, INBOX 1591). The outline is absolute, so
+  //: the grid does not move for it.
+  const top0 = grid.offsetTop;
   Object.assign(outline.style, {
     position: "absolute",
     left: `${grid.offsetLeft}px`,
-    top: `${grid.offsetTop}px`,
+    top: `${top0}px`,
     width: `${grid.offsetWidth}px`,
     maxHeight: `${Math.max(0, innerHeight - grid.getBoundingClientRect().top)}px`,
     overflow: "hidden",
@@ -1967,7 +2008,6 @@ function dashFillingSkeleton(grid, count) {
   //: 2026-10-12). Cheap: two reads and two writes a frame for a second.
   //: By `translate`, which the compositor moves without a layout: writing
   //: `top` here counted as 0.077 of layout shift at boot.
-  const top0 = grid.offsetTop;
   //: Read after a paint (INBOX 1419): in a timer it landed while the widgets
   //: filling in had left the layout dirty, and each read laid the page out.
   const follow = () => {
@@ -2243,52 +2283,16 @@ function renderDashWidgetsList(filterText = "") {
   }
 }
 
-// --- Wave J: generative art (p5.js, vendored locally) -------------------------------
-// A living "constellation" of the notebook: each category becomes a
-// cluster of drifting stars, more notes, more stars, connected by
-// faint lines in the category's own colour. It's seeded from the real
-// note counts, so the same notebook always grows the same sky (until
-// you hit Regenerate). Purely decorative; nothing depends on it.
-
-let artInstance = null; // the one live p5 instance, if any
-let artNonce = 0; // bumped by "Regenerate" for a fresh arrangement
-//: The drift reads a page-lifetime clock, so a rebuilt sketch (theme change,
-//: INBOX 838) carries on instead of restarting every star's drift at phase 0.
-//: A rest while idle moves it on by the rest, so the stars go on from where
-//: they stopped rather than jumping.
-const artClock = { epoch: performance.now() };
-const artDriftMs = () => performance.now() - artClock.epoch;
-// Bumped on every startArt call. A run that finds it has changed while it was
-// waiting knows it was superseded and must not mount its canvas, see the
-// comment in startArt for the stacking bug this fixes (§35G).
-let artRun = 0;
-// Where the constellation is drawn, kept so a theme change can rebuild it.
-//
-// The sketch reads light-or-dark ONCE, when it is built, and paints its wash
-// from that. Nothing rebuilt it when the mode changed, so toggling to dark left
-// the one panel on the dashboard still wearing the light background until you
-// pressed Regenerate: reported, and listed in IDEAS.md.
-let artHolder = null;
-
-// Stable 0–359 hue from a category name, so a category keeps its colour.
-function hueFor(name) {
-  let hash = 0;
-  for (let i = 0; i < name.length; i++) {
-    hash = (hash * 31 + name.charCodeAt(i)) % 360;
-  }
-  return hash;
+// --- Wave J: the notebook constellation ----------------------------------------------
+//: **Its code is dash-art.js, fetched with the widget** (INBOX 1530 d, audit 1031
+//: row 21): the sketch, its draw and p5's loader were boot bytes for one card.
+//: `renderArtWidget` is a stand-in (lazy-entries.js); these two do nothing
+//: until it has drawn, because nothing is on screen to stop or recolour.
+function stopArt() {
+  window.dashArtStop?.();
 }
-
-//: The constellation paints in hue, so a colour the person chose (Manage
-//: categories, Colour) gives its hue and an automatic one keeps `hueFor`.
-function categoryHue(name) {
-  const hex = categoryColour(name);
-  if (!hex) return hueFor(name);
-  const [r, g, b] = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255);
-  const spread = Math.max(r, g, b) - Math.min(r, g, b);
-  if (!spread) return 0;
-  const sector = Math.max(r, g, b) === r ? ((g - b) / spread) % 6 : Math.max(r, g, b) === g ? (b - r) / spread + 2 : (r - g) / spread + 4;
-  return Math.round(sector * 60 + 360) % 360;
+function refreshArtForTheme() {
+  window.dashArtRefresh?.();
 }
 //: A colour chosen while the dashboard is showing redraws it, after the frames
 //: (INBOX 1516: asked by its class, not by `checkVisibility`, a layout flush
@@ -2297,643 +2301,6 @@ document.addEventListener("categorycolours", () => {
   if (!$("tab-dashboard")?.classList.contains("hidden")) afterFrames(renderDashboard);
 });
 
-// A deterministic seed from the category names + counts: the sky is
-// stable for a given notebook, and shifts only as the notebook changes.
-function artSeed(categories) {
-  let seed = 1;
-  for (const c of categories) {
-    seed = (seed * 31 + hueFor(c.name) + c.count) % 1_000_000;
-  }
-  return seed;
-}
-
-function stopArt() {
-  if (artInstance) {
-    artInstance.remove(); // tears down the canvas + draw loop
-    artInstance = null;
-  }
-}
-
-// Rebuild the constellation for the mode now in force. Safe to call whenever
-// the theme changes: it does nothing unless the widget is actually on screen,
-// and it keeps `artNonce` so the sky stays the same arrangement, this is a
-// recolour, not a reshuffle, and re-rolling someone's picture because they
-// turned on dark mode would be its own bug.
-//: **A theme change cross-fades the picture, it does not swap it** (INBOX 803,
-//: the owner: "the notebook constellation adjusts suddenly or jolts a bit and
-//: doesn't have a smooth fade transition"). Rebuilding for the new mode took
-//: the old canvas away and drew the new one a frame or more later, 98% of the
-//: change landing in one frame (measured, constellationtheme.js). The old
-//: sky is copied onto a veil that stays over the holder, and fades out over
-//: the new one; with interface animations off or less motion asked for there
-//: is no veil and the change is instant, as before.
-function refreshArtForTheme() {
-  if (!artHolder || !artHolder.isConnected) {
-    artHolder = null;
-    return;
-  }
-  const holder = artHolder;
-  const old = holder.querySelector("canvas:not(.art-veil)");
-  const still = reducedMotionWanted() || document.documentElement.dataset.uiMotion === "off";
-  holder.querySelector(".art-veil")?.remove();
-  if (old && !still) {
-    const veil = document.createElement("canvas");
-    veil.className = "art-veil";
-    veil.width = old.width;
-    veil.height = old.height;
-    veil.setAttribute("aria-hidden", "true");
-    veil.getContext("2d").drawImage(old, 0, 0);
-    holder.appendChild(veil);
-    const lift = () => {
-      //: Two frames on, so the new sky has been drawn under it before it goes.
-      afterFrames(() => {
-        veil.classList.add("is-leaving");
-        veil.addEventListener("transitionend", () => veil.remove(), { once: true });
-        setTimeout(() => veil.remove(), 1000);
-      });
-    };
-    startArt(holder).then(lift, lift);
-    return;
-  }
-  startArt(holder);
-}
-
-function buildArtParticles(p, categories, total, width, height) {
-  const groups = categories.length ? categories : [{ name: "Notes", count: 1 }];
-  const particles = [];
-  for (const group of groups) {
-    const hue = categoryHue(group.name);
-    // 3 base stars, plus more for a bigger share of the notebook (capped).
-    const count = Math.max(3, Math.min(16, Math.round((group.count / total) * 70) + 3));
-    const cx = p.random(width * 0.15, width * 0.85);
-    const cy = p.random(height * 0.2, height * 0.8);
-    for (let i = 0; i < count; i++) {
-      particles.push({
-        baseX: cx + p.random(-46, 46),
-        baseY: cy + p.random(-34, 34),
-        x: 0,
-        y: 0,
-        phase: p.random(p.TWO_PI),
-        amp: p.random(2, 9),
-        size: p.random(2, 5),
-        hue,
-        //: Which star this is across a Regenerate (INBOX 686): the n-th star
-        //: of a category glides to where the n-th star of that category goes.
-        cat: group.name,
-        idx: i,
-      });
-    }
-  }
-  return particles;
-}
-
-//: **Regenerate glides (INBOX 686**, the owner: "can you add a smooth
-//: animation for regenerating the notebook constelation??"). It used to tear
-//: the sketch down and mount a new one, so the sky changed in one frame. Now
-//: the live sketch is retargeted: every star eases from where it is drawn to
-//: its place in the new arrangement, a star with no partner fades and grows
-//: in where it lands, one left over fades out where it stands, and the lines
-//: (which read wrong while their stars are travelling) fade out and come back
-//: as the stars settle. A second Regenerate mid-way starts from the drawn
-//: positions, so nothing jumps.
-//:
-//: The bound the owner's ask is measured against: no star moves more than an
-//: eighth of its journey between two frames. A cubic ease-out starts at three
-//: times the average speed, so at the sketch's thirty frames a second over
-//: 800 ms the first frame would be 0.125 of the way, exactly on the line;
-//: the glide runs at sixty (`ART_GLIDE_FPS`) and drops back when it settles,
-//: which halves it. Measured first with the wall clock, the first frame was
-//: still 0.14 of the way: it was drawn 30 to 50 ms after the click, and a
-//: busy machine's late frames did the same mid-glide. Hence the glide's own
-//: clock below. `scratchpad/ui-sweeps/constellation686.js` measures it.
-const ART_GLIDE_MS = 800;
-//: A light-theme star's core lightness: 40, or darker until it is 3:1 on the
-//: well (ledger 934: yellow was 2.1:1, cyan 2.0). Saturation 80, as drawn.
-const artCoreLights = new Map();
-function artCoreLight(hue) {
-  if (artCoreLights.has(hue)) return artCoreLights.get(hue);
-  const lum = (l) => {
-    const a = 0.8 * Math.min(l, 1 - l);
-    const c = (n) => { const k = (n + hue / 30) % 12; const v = l - a * Math.max(-1, Math.min(k - 3, 9 - k, 1)); return v <= 0.04045 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; };
-    return 0.2126 * c(0) + 0.7152 * c(8) + 0.0722 * c(4);
-  };
-  let l = 40;
-  while (l > 20 && 0.83 / (lum(l / 100) + 0.05) < 3) l -= 2;
-  artCoreLights.set(hue, l);
-  return l;
-}
-const ART_GLIDE_FPS = 60;
-//: The most of the glide's clock one frame may spend: 25 ms is three fifths
-//: of an eighth of the journey even at the ease's fastest, its first frame.
-const ART_GLIDE_STEP_MS = 25;
-//: The quick cross-fade that replaces the glide when interface animations are
-//: off or less motion is asked for: a change of picture, not a journey.
-const ART_FADE_MS = 200;
-
-function artEaseOut(u) {
-  const k = 1 - Math.min(1, Math.max(0, u));
-  return 1 - k * k * k;
-}
-
-//: The lines' strength through a glide: from wherever they were (a glide
-//: interrupted while they were half gone starts from half), out by a third
-//: of the way, held out while the stars cross, back in over the last half.
-function artLineFade(from, u) {
-  if (u <= 0.3) return from * (1 - u / 0.3);
-  if (u <= 0.5) return 0;
-  return artEaseOut((u - 0.5) / 0.5);
-}
-
-//: Pair the stars drawn now with the next arrangement's. `shown` carries what
-//: the last frame drew (`x`, `y`, `vis`, `drawSize`); each next star gets a
-//: `from` (a partner's drawn state, or nothing: it grows in where it lands);
-//: unpaired shown stars, and stars still fading from an earlier glide, leave.
-function artRetarget(shown, leaving, next) {
-  const key = (s) => `${s.cat}\u0000${s.idx}`;
-  const drawn = new Map(shown.map((s) => [key(s), s]));
-  for (const star of next) {
-    const was = drawn.get(key(star));
-    star.from = was ? { x: was.x, y: was.y, vis: was.vis ?? 1, size: was.drawSize ?? was.size } : { x: null, y: null, vis: 0, size: 0 };
-    drawn.delete(key(star));
-  }
-  const gone = [...leaving, ...drawn.values()].filter((s) => (s.vis ?? 1) > 0.01);
-  return gone.map((s) => ({ ...s, from: { x: s.x, y: s.y, vis: s.vis ?? 1, size: s.drawSize ?? s.size } }));
-}
-
-async function renderArtWidget(body) {
-  const holder = document.createElement("div");
-  holder.className = "art-holder";
-  body.appendChild(holder);
-
-  // Say what the picture actually means, until now it was pretty but
-  // unlabelled (user asked what the nodes represent).
-  const caption = document.createElement("p");
-  caption.className = "muted art-caption";
-  caption.textContent =
-    "Each cluster of stars is one category; the more notes it holds, the more " +
-    "stars it gets. Lines link stars that drift close together.";
-  body.appendChild(caption);
-
-  const controls = document.createElement("div");
-  controls.className = "row art-controls";
-  controls.appendChild(
-    smallButton("ph:dice-five Regenerate", "A fresh arrangement of the same notes", () => {
-      artNonce += 1;
-      //: The live sketch glides to it (INBOX 686); only a widget with no
-      //: sketch yet (p5 still loading) builds one.
-      if (artInstance) artInstance.regenerate();
-      else startArt(holder);
-    })
-  );
-  controls.appendChild(
-    smallButton("ph:floppy-disk Save PNG", "Save this artwork as an image", () => {
-      if (artInstance) artInstance.saveSettled();
-    })
-  );
-  body.appendChild(controls);
-
-  // A colour key so each cluster is identifiable, matching the hue the
-  // canvas paints each category with.
-  const legend = document.createElement("div");
-  legend.className = "art-legend";
-  body.appendChild(legend);
-  fetchDashStats()
-    .then((stats) => {
-      const cats = (stats.categories || []).slice(0, 8);
-      legend.replaceChildren();
-      for (const cat of cats) {
-        const item = document.createElement("span");
-        item.className = "art-legend-item";
-        const dot = document.createElement("span");
-        dot.className = "art-legend-dot";
-        dot.style.background = categoryColour(cat.name, `hsl(${hueFor(cat.name)}, 70%, 55%)`);
-        item.append(dot, document.createTextNode(`${cat.name} · ${cat.count}`));
-        legend.appendChild(item);
-      }
-    })
-    .catch(() => {});
-
-  return startArt(holder);
-}
-
-//: **One path and one fill per colour, not one per shape** (INBOX 1501's
-//: sweep: `scene` was 7 to 18 ms a frame at 4x, most of it a colour string
-//: and a stroke or two fills for every line and every star, a hundred stars
-//: and a few hundred lines thirty times a second). A line's alpha and a
-//: star's twinkle are cut into steps too fine to see (0.03 and a twelfth), so
-//: the lines and the glows fall into a handful of buckets, each drawn as one
-//: `Path2D` with one `strokeStyle`/`fillStyle`; the nearness test compares
-//: squares, and the bucket's colour string is made once (`ART_CSS`).
-const ART_CSS = new Map();
-const artCss = (hue, sat, light, alpha) => {
-  const key = `${hue}|${sat}|${light}|${alpha}`;
-  let css = ART_CSS.get(key);
-  if (!css) ART_CSS.set(key, (css = `hsla(${hue}, ${sat}%, ${light}%, ${alpha})`));
-  return css;
-};
-const ART_LINK = 70;
-const ART_LINE_STEP = 0.03;
-const ART_TWINKLE_STEPS = 12;
-//: A bucket is one colour's path, made on first use this frame. Its key is a
-//: number (`hue` times 100 plus the step, no string made per line or star);
-//: the bucket keeps the hue and step it stands for.
-const artBucket = (buckets, hue, step) => {
-  const key = hue * 100 + step;
-  let bucket = buckets.get(key);
-  if (!bucket) buckets.set(key, (bucket = { hue, step, path: new Path2D() }));
-  return bucket.path;
-};
-function artDrawLines(ctx, particles, lines, dark) {
-  if (lines <= 0) return;
-  const buckets = new Map();
-  for (let i = 0; i < particles.length; i++) {
-    const a = particles[i];
-    for (let j = i + 1; j < particles.length; j++) {
-      const b = particles[j];
-      const dx = a.x - b.x;
-      const dy = a.y - b.y;
-      const near = dx * dx + dy * dy;
-      if (near >= ART_LINK * ART_LINK) continue;
-      const alpha = 0.45 * (1 - Math.sqrt(near) / ART_LINK) * lines * Math.min(a.vis, b.vis);
-      const path = artBucket(buckets, a.hue, Math.round(alpha / ART_LINE_STEP));
-      path.moveTo(a.x, a.y);
-      path.lineTo(b.x, b.y);
-    }
-  }
-  ctx.lineWidth = 1;
-  for (const { hue, step, path } of buckets.values()) {
-    ctx.strokeStyle = artCss(hue, 65, dark ? 72 : 55, (step * ART_LINE_STEP).toFixed(3));
-    ctx.stroke(path);
-  }
-}
-//: The stars: a soft glow halo under a bright core, twinkling. Every halo is
-//: drawn, then every core, so a neighbour's halo never covers a core.
-function artDrawStars(ctx, dots, t, dark) {
-  const glows = new Map();
-  const cores = new Map();
-  for (const dot of dots) {
-    const twinkle = (0.6 + 0.4 * Math.sin(t * 2 + dot.phase)) * dot.vis;
-    const step = Math.round(twinkle * ART_TWINKLE_STEPS);
-    const glow = artBucket(glows, dot.hue, step);
-    glow.moveTo(dot.x + dot.drawSize * 2, dot.y);
-    glow.arc(dot.x, dot.y, dot.drawSize * 2, 0, Math.PI * 2);
-    const core = artBucket(cores, dot.hue, step);
-    core.moveTo(dot.x + dot.drawSize / 2, dot.y);
-    core.arc(dot.x, dot.y, dot.drawSize / 2, 0, Math.PI * 2);
-  }
-  for (const { hue, step, path } of glows.values()) {
-    ctx.fillStyle = artCss(hue, 75, dark ? 65 : 55, ((0.14 * step) / ART_TWINKLE_STEPS).toFixed(3));
-    ctx.fill(path);
-  }
-  for (const { hue, step, path } of cores.values()) {
-    ctx.fillStyle = artCss(hue, 80, dark ? 78 : artCoreLight(hue), (step / ART_TWINKLE_STEPS).toFixed(3));
-    ctx.fill(path);
-  }
-}
-
-//: What the dashboard's constellation draws at. See `p.setup` below for why
-//: thirty rather than the sixty p5 defaults to.
-const ART_FRAME_RATE = 30;
-//: How long the drift runs after the pointer was last on the card or Regenerate was
-//: pressed, and how long after the sketch mounts (see `attendUntil`).
-const ART_ATTEND_MS = 8000;
-const ART_SETTLE_MS = 1500;
-
-async function startArt(holder) {
-  // Which run this is. `startArt` awaits /insights/stats before it mounts
-  // anything, and `stopArt()` above that await can only remove an instance
-  // that already exists: so two overlapping calls each found `artInstance`
-  // null, each waited, and each mounted a canvas into the same holder. That
-  // is the four-or-five stacked constellations that were screenshotted
-  // (§35G), and the same bug is why Regenerate read as "broken and severely
-  // glitchy": every click added a canvas and `artInstance` only ever tracked
-  // the last one, so nothing could tear the others down.
-  const run = ++artRun;
-  stopArt();
-  artHolder = holder;
-  //: p5 loads after the page (`ensureP5`, phone-shell.js), so a dashboard
-  //: drawn first waits for it rather than reporting it missing.
-  if (typeof p5 === "undefined" && !(await ensureP5())) {
-    holder.textContent = "The art library didn't load.";
-    return;
-  }
-  if (run !== artRun) return;
-  const stats = await fetchDashStats().catch(() => ({
-    categories: [],
-    total_entries: 0,
-  }));
-  const categories = (stats.categories || []).slice(0, 8);
-  const total = Math.max(1, stats.total_entries || 0);
-  //: **Every switch that means "stop moving things", not only the OS hint.**
-  //:
-  //: This read the media query and nothing else, so the two generative
-  //: pictures in the app disagreed about the same question: the background
-  //: art (`startBgArt`, settings.js) resolves motion from the app's own
-  //: Motion setting and from Performance mode as well, and this one
-  //: ignored both. Set Motion to Off and the background froze while this
-  //: widget kept running; turn on Performance mode, which DESIGN.md rule 12
-  //: says stops every animation but the progress indicators, and this was
-  //: the thing that kept going. The background art's own comment notes it
-  //: used to be "the one thing that kept running" under Performance mode;
-  //: this was the second one, and nobody had looked.
-  //:
-  //: Measured on the dashboard: this canvas runs at 59 fps in a 306x220 box,
-  //: and it is what the owner's "theres a flickering just above the bottom
-  //: bar" is looking at (INBOX 226: the pixels change in one column of the
-  //: band above the status bar, with no DOM mutation at all, and the
-  //: *background* art is off; the earlier investigation measured that one).
-  //:
-  //: `reducedMotionWanted` (chat.js) is the OS hint or the app's own switch;
-  //: `perfModeOn` (settings.js) is the machine judgement. Both reached
-  //: through `typeof`, since dashboard.js loads before settings.js and a
-  //: render that somehow beat it should fall back to moving rather than
-  //: throw.
-  //:
-  //: Not `bg-motion`: that control is the background's own, is hidden when
-  //: the background art is off, and would be a surprising place to find the
-  //: switch for a widget.
-  //: Three inputs, not two: Battery-efficient mode joins them (INBOX 260).
-  //: A setting with "battery" in its name that leaves a canvas drawing is a
-  //: setting people read as broken, whatever its help text says.
-  const reduceMotion =
-    reducedMotionWanted() ||
-    (typeof perfModeOn === "function" && perfModeOn()) ||
-    batteryModeOn();
-  // data-mode is always resolved to light or dark, including under "System",
-  // so this no longer has to re-derive it from two sources.
-  const dark = resolvedTheme() === "dark";
-  // The wash used a hardcoded indigo hue, so on any palette that isn't
-  // indigo, Sage, Ocean, Ember, the one generative panel on the dashboard
-  // was the only thing on screen still wearing the old theme's colour.
-  const accentHex = currentAccentHex();
-
-  const sketch = (p) => {
-    let particles = [];
-    let width = 0;
-    const height = 220;
-    //: The glide in hand (INBOX 686): when it began, how strong the lines
-    //: were then, and the stars still fading out. `null` at rest.
-    let glide = null;
-    //: The quick cross-fade's picture of the old sky, and when it began.
-    let fade = null;
-    //: When the card left the view (`sight` below), 0 while it is in view.
-    let hiddenSince = 0;
-    //: **The drift runs while somebody is looking** (INBOX 1501: the scene was
-    //: 60 percent of the script on a Dashboard click at 4x, a loop nothing
-    //: needed). It runs `ART_SETTLE_MS` after the sketch mounts (the Dashboard
-    //: mounts a new one on every visit to the tab), and `ART_ATTEND_MS` after a
-    //: Regenerate and after the pointer last moved over the card, then the sketch
-    //: rests with its last frame on the canvas, no loop and no timer, and a
-    //: pointer over the card, a focus in it or a Regenerate wakes it.
-    let attendUntil = performance.now() + ART_SETTLE_MS;
-    //: The wash's hue and gradient, made once: the accent and the height do not
-    //: change for the life of a sketch (a theme change rebuilds it).
-    let washHue = null;
-    let washGradient = null;
-    const washHueOf = () => p.hue(p.color(accentHex));
-
-    //: `settled` draws the arrangement the glide is heading for, whatever
-    //: point it has reached: what Save PNG saves.
-    const scene = (t, settled = false) => {
-      //: **Drawn on the canvas context, not through p5's colour calls.** Idle
-      //: on the Dashboard at 4x CPU this scene was 527 ms of the 540 ms the
-      //: page was busy in five seconds, 426 ms of it p5 parsing a colour for
-      //: each of 55 wash strips, each connecting line and each star's two
-      //: fills, thirty times a second. One gradient, the accent's hue read once,
-      //: and a colour string per shape say the same thing for a tenth of it.
-      const ctx = p.drawingContext;
-      //: A soft vertical wash instead of a flat fill, more depth (Wave N).
-      //: Light is an off-white well, lightness 95 down to 91, the accent's hue
-      //: faintly in it, as dark is a deep one: it was 250 to 240, which HSL
-      //: clamps to pure white, the same as the card it sat on (INBOX 803).
-      washHue ??= washHueOf();
-      if (!washGradient) {
-        washGradient = ctx.createLinearGradient(0, 0, 0, height);
-        washGradient.addColorStop(0, `hsl(${washHue} 30% ${dark ? 14 : 95}%)`);
-        washGradient.addColorStop(1, `hsl(${washHue} 30% ${dark ? 24 : 91}%)`);
-      }
-      ctx.fillStyle = washGradient;
-      ctx.fillRect(0, 0, width, height);
-      const now = p.millis();
-      //: The glide's own clock, advanced by each drawn frame and by no more
-      //: than `ART_GLIDE_STEP_MS` per frame: it starts at the first frame
-      //: drawn after the click, not at the click, and a late frame (a busy
-      //: machine) stalls the glide rather than jumping it.
-      if (glide && !settled) {
-        if (glide.last !== null) glide.elapsed += Math.min(now - glide.last, ART_GLIDE_STEP_MS);
-        glide.last = now;
-      }
-      const u = glide && !settled ? Math.min(1, glide.elapsed / ART_GLIDE_MS) : 1;
-      const e = artEaseOut(u);
-      //: The drift goes on under the glide: a star eases from where it was
-      //: drawn towards its new place as that place drifts, so it arrives on
-      //: the moving point rather than on a still one and then lurching.
-      for (const dot of particles) {
-        const x = dot.baseX + Math.cos(t + dot.phase) * dot.amp;
-        const y = dot.baseY + Math.sin(t * 1.3 + dot.phase) * dot.amp;
-        const from = u < 1 ? dot.from : null;
-        dot.x = from && from.x !== null ? from.x + (x - from.x) * e : x;
-        dot.y = from && from.y !== null ? from.y + (y - from.y) * e : y;
-        dot.vis = from ? from.vis + (1 - from.vis) * e : 1;
-        dot.drawSize = from ? from.size + (dot.size - from.size) * e : dot.size;
-      }
-      const lines = u < 1 ? artLineFade(glide.lineFrom, u) : 1;
-      artDrawLines(ctx, particles, lines, dark);
-      //: Stars with no place in the new sky fade where they stand, gone by
-      //: six tenths of the way so the arrivals are not crowded by them.
-      const leaving = u < 1 ? glide.leaving : [];
-      const out = artEaseOut(Math.min(1, u / 0.6));
-      for (const dot of leaving) dot.vis = dot.from.vis * (1 - out);
-      artDrawStars(ctx, leaving.concat(particles), t, dark);
-      if (fade && !settled) {
-        const k = 1 - Math.min(1, (now - fade.start) / ART_FADE_MS);
-        ctx.save();
-        ctx.globalAlpha = k;
-        ctx.drawImage(fade.snap, 0, 0, width, height);
-        ctx.restore();
-      }
-    };
-
-    //: Regenerate (INBOX 686): the next arrangement, reached by a glide, or
-    //: by a cross-fade when interface animations are off or less motion is
-    //: asked for (read now, not at build: the switch may have moved since).
-    p.regenerate = () => {
-      if (!width) return;
-      attend();
-      p.randomSeed(artSeed(categories) + artNonce * 997);
-      const next = buildArtParticles(p, categories, total, width, height);
-      const now = p.millis();
-      if (reduceMotion || reducedMotionWanted() || document.documentElement.dataset.uiMotion === "off") {
-        const snap = document.createElement("canvas");
-        snap.width = p.drawingContext.canvas.width;
-        snap.height = p.drawingContext.canvas.height;
-        snap.getContext("2d").drawImage(p.drawingContext.canvas, 0, 0);
-        fade = { snap, start: now };
-        glide = null;
-        particles = next;
-        p.frameRate(ART_FRAME_RATE);
-        p.loop();
-        return;
-      }
-      const u = glide ? Math.min(1, glide.elapsed / ART_GLIDE_MS) : 1;
-      const lineFrom = glide && u < 1 ? artLineFade(glide.lineFrom, u) : 1;
-      const leaving = artRetarget(particles, glide && u < 1 ? glide.leaving : [], next);
-      glide = { elapsed: 0, last: null, lineFrom, leaving };
-      particles = next;
-      p.frameRate(ART_GLIDE_FPS);
-    };
-    //: Save PNG takes the settled sky, then puts the frame in hand back
-    //: before the browser paints, so the save never shows on screen.
-    p.saveSettled = () => {
-      const t = reduceMotion ? 0 : artDriftMs() * 0.0003;
-      scene(t, true);
-      p.saveCanvas("tessellate-constellation", "png");
-      scene(t);
-    };
-    //: What the stars are drawn at, for the sweep that measures the glide.
-    p.artStars = () => particles;
-
-    p.setup = () => {
-      width = holder.clientWidth || 300;
-      p.createCanvas(width, height);
-      p.colorMode(p.HSL, 360, 100, 100, 1);
-      p.randomSeed(artSeed(categories) + artNonce * 997);
-      particles = buildArtParticles(p, categories, total, width, height);
-      //: **Thirty frames a second, for a drift that takes twenty seconds to
-      //: go round.** The motion here is `cos(t + phase) * amp` with `amp`
-      //: between 2 and 9 pixels: at sixty frames a second a star moves about
-      //: a fiftieth of a pixel between frames, which nobody can see and
-      //: everybody's battery pays for. Profiled over fourteen seconds of
-      //: ordinary use, p5 was 248 ms of self time, the largest single thing
-      //: on screen, and this is the sketch doing it.
-      //:
-      //: Halving it is only safe because `scene` is driven by the clock
-      //: below rather than by `frameCount`: a frame counter would have made
-      //: the drift itself run at half speed, which is a behaviour change
-      //: dressed as an optimisation.
-      p.frameRate(ART_FRAME_RATE);
-      if (reduceMotion) {
-        scene(0); // one still frame: no animation for reduced-motion users
-        p.noLoop();
-      }
-    };
-    //: Resting stops the loop and the drift clock with it: the time spent
-    //: resting is added to the epoch on waking, so the stars go on from where
-    //: they stood. `p.rested` is the moment it began, 0 while it draws.
-    const rest = () => {
-      p.noLoop();
-      p.rested ||= performance.now();
-    };
-    const wake = () => {
-      if (!p.rested) return;
-      artClock.epoch += performance.now() - p.rested;
-      p.rested = 0;
-      if (!hiddenSince) p.loop();
-    };
-    //: Somebody is at the card: the window starts again, and a rest ends.
-    const attend = () => {
-      attendUntil = performance.now() + ART_ATTEND_MS;
-      wake();
-    };
-    //: Wall clock, not `frameCount`, so the drift runs at the speed it was
-    //: chosen at whatever the frame rate happens to be, including whatever a
-    //: browser throttles a background tab to. The two are the same number:
-    //: `frameCount * 0.005` at sixty frames a second advanced `t` by 0.3 a
-    //: second, and `millis() * 0.0003` advances it by 0.3 a second full stop.
-    p.draw = () => {
-      if (hiddenSince) {
-        p.noLoop();
-        return;
-      }
-      if (!reduceMotion && !glide && !fade && performance.now() > attendUntil) {
-        rest();
-        return;
-      }
-      scene(reduceMotion ? 0 : artDriftMs() * 0.0003);
-      const now = p.millis();
-      if (glide && glide.elapsed >= ART_GLIDE_MS) {
-        glide = null;
-        p.frameRate(ART_FRAME_RATE);
-      }
-      if (fade && now - fade.start >= ART_FADE_MS) {
-        fade = null;
-        if (reduceMotion) p.noLoop();
-      }
-    };
-    // Was missing entirely: width was measured once at setup and never
-    // re-synced, so this canvas was the one p5 sketch in the app with no
-    // resize handling at all (the sibling in the whiteboard has its own).
-    // Reported as the constellation "keeps disappearing": a second trigger
-    // on top of the theme-change one ARCHITECTURE §10 already documents and
-    // `refreshArtForTheme` already handles. A ResizeObserver on the holder
-    // catches both a real window resize *and* the Edit-layout "Wide" toggle
-    // (which changes the card's width with no window resize event at all), 
-    // `p.windowResized` alone would have missed the second one entirely.
-    //: The width comes from the observer's own entry: it reports after layout,
-    //: so reading `clientWidth` here forced another one when a keystroke or a
-    //: late widget had dirtied the page (INBOX 1465: 64 to 89 ms).
-    const resync = (entries) => {
-      if (!holder.isConnected) return;
-      const next = Math.round(entries?.[0]?.contentRect.width ?? holder.clientWidth);
-      // Guarded the same reason `holder.clientWidth || 300` is in setup: a
-      // transient 0 mid-reflow must not shrink the canvas to nothing.
-      if (!next || next === width) return;
-      width = next;
-      p.resizeCanvas(width, height);
-      glide = null;
-      particles = buildArtParticles(p, categories, total, width, height);
-    };
-    const observer = new ResizeObserver(resync);
-    observer.observe(holder);
-    //: **Rests while scrolled out of view** (audit 1029 row 38: on a long
-    //: Dashboard this scene was 185 ms of every 3 s at 1x with the card off
-    //: screen). The clock moves on by the time away, as after the idle rest,
-    //: so the drift picks up where it was last drawn.
-    const sight = new IntersectionObserver(([entry]) => {
-      if (reduceMotion) return;
-      if (!entry.isIntersecting) {
-        hiddenSince ||= performance.now();
-        return;
-      }
-      if (!hiddenSince) return;
-      //: A sketch that rested before it left the view keeps its rest's own count
-      //: of the time away (`wake`), so the two are not added twice.
-      if (!p.rested) artClock.epoch += performance.now() - hiddenSince;
-      hiddenSince = 0;
-      //: Back in view with the window gone: no frame is drawn, the canvas
-      //: kept its last (a tab click costs the art nothing).
-      if (!p.rested) performance.now() > attendUntil ? rest() : p.loop();
-    });
-    sight.observe(holder);
-    const ATTEND_EVENTS = ["pointerenter", "pointermove", "focusin", "touchstart"];
-    for (const type of ATTEND_EVENTS) holder.addEventListener(type, attend, { passive: true });
-    p.remove = ((original) => () => {
-      observer.disconnect();
-      sight.disconnect();
-      for (const type of ATTEND_EVENTS) holder.removeEventListener(type, attend);
-      original.call(p);
-    })(p.remove);
-  };
-
-  // Superseded while we waited, or the widget was re-rendered out from under
-  // us. Either way this run must not mount: it would be the second canvas.
-  if (run !== artRun || !holder.isConnected) return;
-  // Belt and braces. `stopArt` handles the instance we know about; clearing
-  // the holder removes any canvas a previous version of this bug left behind,
-  // so an already-stacked dashboard heals on the next render rather than
-  // needing a reload.
-  stopArt();
-  //: Everything but a theme change's veil (`refreshArtForTheme`).
-  for (const child of [...holder.children]) if (!child.classList.contains("art-veil")) child.remove();
-  holder.replaceChildren(...holder.querySelectorAll(":scope > .art-veil"));
-  //: p5 arrives on demand (`ensureP5`, app.js); the run check above is
-  //: repeated after the wait, since a second render can have superseded us.
-  if (typeof p5 === "undefined") {
-    const ok = await ensureP5();
-    if (!ok || run !== artRun || !holder.isConnected) return;
-  }
-  artInstance = new p5(sketch, holder);
-}
 
 // Capture streak (Wave K): consecutive days up to today with at least
 // one note, read from the same per-day series the stats strip uses.
@@ -3021,7 +2388,7 @@ async function renderStatsWidget(body) {
   const cats = document.createElement("div");
   cats.className = "entry-meta";
   for (const category of stats.categories.slice(0, 5)) {
-    cats.appendChild(chip(`${category.name} · ${category.count}`));
+    cats.appendChild(chip(`${category.name} · ${category.count}`, "", () => showCategoryNotes(category.name)));
   }
   strip.addEventListener("click", () => openStatistics());
   body.append(cats, dashStatsButton("stats-statistics"));
@@ -3373,9 +2740,38 @@ async function renderDigestWidget(outer) {
   //: drawn while the day's lines were still in flight, so a revisit swapped in
   //: a 119px body that grew to 259px a fetch later and pushed every card below.
   const dayDrawn = renderDayDigest(dayBox);
-  const showDigest = (text) => {
+  //: **The week under its own label, its source as a footnote** (the owner, 2026-11-04: "clicking
+  //: generate this week's digest only shows the line, from your notes, no ai"). The week was all
+  //: there, under the card's fold, and its first line was the source caption at body size, so the
+  //: one line in view read as the whole answer. Now "This week" labels it, the caption is a muted
+  //: footnote, and a click scrolls the card to the week.
+  const weekParts = (text) => {
+    const source = "From your notes, no AI.";
+    const trimmed = String(text || "").trimStart();
+    return trimmed.startsWith(source) ? { words: trimmed.slice(source.length).trimStart(), source } : { words: trimmed, source: "" };
+  };
+  const weekHead = () => {
+    const head = document.createElement("p");
+    head.className = "eyebrow";
+    head.textContent = "This week";
+    return head;
+  };
+  const toWeek = (head) => {
+    for (let el = body.parentElement; el && el !== document.body; el = el.parentElement) {
+      if (el.scrollHeight > el.clientHeight + 1 && /auto|scroll/.test(getComputedStyle(el).overflowY)) {
+        el.scrollTop += head.getBoundingClientRect().top - el.getBoundingClientRect().top;
+        return;
+      }
+    }
+  };
+  const showDigest = (text, scroll = false) => {
+    const { words, source } = weekParts(text);
+    const head = weekHead();
     const out = document.createElement("div");
-    renderMarkdown(out, text);
+    renderMarkdown(out, words);
+    const note = document.createElement("small");
+    note.className = "muted";
+    note.textContent = source;
     const controls = document.createElement("div");
     controls.className = "row";
     controls.appendChild(
@@ -3384,7 +2780,8 @@ async function renderDigestWidget(outer) {
         runGeneration();
       })
     );
-    body.replaceChildren(out, controls);
+    body.replaceChildren(...[head, out, source ? note : null, controls].filter(Boolean));
+    if (scroll) toWeek(head);
   };
 
   const runGeneration = () => {
@@ -3395,29 +2792,25 @@ async function renderDigestWidget(outer) {
     // Live-render the text as it streams in; the ring stays until the first
     // token arrives, then the words take over.
     const live = document.createElement("div");
+    const liveHead = weekHead();
     let started = false;
     generateDigest((soFar) => {
       if (!body.isConnected) return;
+      renderMarkdown(live, weekParts(soFar).words);
       if (!started) {
         started = true;
-        body.replaceChildren(live);
+        body.replaceChildren(liveHead, live);
+        toWeek(liveHead);
       }
-      renderMarkdown(live, soFar);
-      body.scrollTop = body.scrollHeight;
     })
       .then((text) => {
         // The widget may have been left/re-rendered while we waited, 
         // only paint if this exact body is still on screen.
-        if (body.isConnected) showDigest(text);
+        if (body.isConnected) showDigest(text, true);
       })
       .catch((error) => {
         if (!body.isConnected) return;
-        const retry = smallButton(
-          "Generate this week's digest",
-          "",
-          runGeneration,
-          false
-        );
+        const retry = smallButton("ph:sparkle Generate this week's digest", "", runGeneration);
         body.replaceChildren(retry);
         toast(error.message, true);
       });
@@ -3432,64 +2825,28 @@ async function renderDigestWidget(outer) {
     //: Never gated on a model (owner-1026b K3): with none, the server
     //: composes the week from the notes' own rows (`activity.week`), and a
     //: model, once on, writes the next one.
-    const generate = smallButton("Generate this week's digest", "", runGeneration, false);
+    //: Ghost: the Dashboard has one filled button, Save in Quick capture
+    //: (unslop 1103, 11: two at once, 208x32 and 58x32).
+    const generate = smallButton("ph:sparkle Generate this week's digest", "", runGeneration);
     body.append(generate);
   }
   await dayDrawn;
 }
 
+//: **The Notes tab's composer, here** (INBOX 1592, the owner: "like the quick capture section at the
+//: top of your notes page"). The card is a copy of that tab's bar (`captureBar`, notes-list.js) and
+//: opens in place into the same card (capture-card.js): Note, To-do, Draw, pictures, colour, tags,
+//: Ctrl+Enter, one draft and one save path. A redraw while it is open hands it to the new bar.
 async function renderQuickCaptureWidget(body) {
-  const textarea = document.createElement("textarea");
-  //: A placeholder is not a label: it goes as soon as you type, and a
-  //: screen reader reads nothing for the field without one (the a11y sweep).
-  textarea.setAttribute("aria-label", "Quick capture");
-  textarea.rows = 2;
-  // Don't promise AI filing when there's no AI to do it; the note still saves.
-  textarea.placeholder =
-    modelStatus && modelStatus.ollama_running === false
-      ? "Type a thought and press Save (Ctrl+Enter)."
-      : "Type a thought and press Save (Ctrl+Enter), Atlas files it.";
-  const row = document.createElement("div");
-  row.className = "row";
-  const status = document.createElement("span");
-  status.className = "status";
-  row.appendChild(
-    smallButton("Save", "", async () => {
-      const content = textarea.value.trim();
-      if (!content) return;
-      status.textContent = "Saving…";
-      try {
-        //: Saved at once and filed in the background, `#tags` read from the
-        //: text, as Capture's are (INBOX 434). It waited on the model before.
-        //: Held on this device when the server is gone (quick-note.js).
-        const result = await createNoteSafely({ content, tags: [] });
-        if (!result) throw new Error("The server is not answering. Your words are kept here.");
-        textarea.value = "";
-        if (result.queued) {
-          status.textContent = "Saved on this device. It goes in when the server answers.";
-          return;
-        }
-        const saved = result.saved;
-        status.textContent = saved.filing_state === "pending" ? "Saved. Filing it now." : `Filed under “${saved.category}”.`;
-        if (saved.filing_state === "pending") watchFiling(saved);
-        pushEntryCreateUndo(saved, "Saved a note from the dashboard");
-        loadEntries();
-      } catch (error) {
-        status.textContent = error.message;
-      }
-    }, false)
-  );
-  row.appendChild(status);
-  //: Ctrl+Enter (Cmd+Enter) saves, as it does in the capture box on the
-  //: Notes tab and in every multi-line "post" field people use; plain
-  //: Enter stays a new line.
-  textarea.addEventListener("keydown", (event) => {
-    if (event.key === "Enter" && (event.ctrlKey || event.metaKey) && !event.isComposing) {
-      event.preventDefault();
-      row.querySelector("button")?.click();
-    }
-  });
-  body.append(textarea, row);
+  const bar = document.createElement("div");
+  bar.className = "capture-bar";
+  bar.setAttribute("role", "group");
+  bar.setAttribute("aria-label", "Add a note");
+  const row = $("capture-bar-row").cloneNode(true);
+  //: No ids on the copy (two bars on one page): the card finds a bar by class.
+  for (const el of [row, ...row.querySelectorAll("[id]")]) el.removeAttribute("id");
+  bar.append(row);
+  body.append(captureBar(bar));
 }
 
 async function renderRemindersWidget(body) {
@@ -3602,18 +2959,33 @@ async function renderHeatmapWidget(body) {
       cell.title = `${day.toLocaleDateString()}, ${nounCount(count, "note")}`;
       grid.appendChild(cell);
     });
-    // The grid runs oldest → newest, so the interesting end is the right
-    // one. Start scrolled there instead of making the user drag across
-    // empty squares to find today.
-    requestAnimationFrame(() => {
-      grid.scrollLeft = grid.scrollWidth;
-    });
   }
 
-  //: No `ResizeObserver` any more: the grid's own width no longer decides
-  //: how many weeks are drawn (the column width is fixed in CSS), so a
-  //: widget resize has nothing left for a repaint to change.
+  //: **Opens at today, and stays there** (INBOX 1578: it opened at the far
+  //: left of an empty year). The grid runs oldest to newest, so the data is at
+  //: the right. `scrollLeft = scrollWidth` in a frame after the build set
+  //: nothing: the grid is `content-visibility: auto`, and until its cells are
+  //: laid out its `scrollWidth` reads its box (304 of 701 at 1440), so the
+  //: write clamped to 0. The end is read from the last cell's rect instead
+  //: (that read lays the cells out), and re-taken when the grid is laid out
+  //: (the observer, which also fires when a hidden tab shows), when it stops
+  //: being skipped, and on a resize, for as long as the reader has not
+  //: scrolled away from the end.
+  let atEnd = true;
+  function toEnd() {
+    const last = grid.lastElementChild;
+    if (!atEnd || !last) return;
+    grid.scrollLeft += last.getBoundingClientRect().right - grid.getBoundingClientRect().right;
+  }
+  grid.addEventListener("scroll", () => {
+    atEnd = grid.scrollWidth - grid.clientWidth - grid.scrollLeft < 2;
+  }, { passive: true });
+  grid.addEventListener("contentvisibilityautostatechange", toEnd);
+  //: The dashboard's own card observer tells it (`sizeDashWidgets`), so no
+  //: observer of its own.
+  grid.addEventListener("dash-refit", toEnd);
   paint();
+  requestAnimationFrame(toEnd);
 
   const legend = document.createElement("div");
   legend.className = "heat-legend muted";
@@ -3683,13 +3055,7 @@ async function renderCategoriesWidget(body) {
     num.className = "cat-count";
     num.textContent = count;
     row.append(label, track, num);
-    row.addEventListener("click", () => {
-      activeCategory = name;
-      draftsOnly = false;
-      switchTab("notes");
-      renderEntries();
-      renderSidebar();
-    });
+    row.addEventListener("click", () => showCategoryNotes(name));
     list.appendChild(row);
   }
   body.appendChild(list);
@@ -3953,7 +3319,7 @@ async function renderTagCloudWidget(body) {
 //: `unsaved`: seconds focused since the last save to today's count, written
 //: on every pause and end rather than every second.
 let focusTimer = { remaining: 0, total: 25 * 60, running: false, handle: null, mode: "focus", focusTotal: 25 * 60, unsaved: 0 };
-const FOCUS_PRESETS = [5, 15, 25, 50];
+const FOCUS_PRESETS = [5, 15, 25, 50, 60];
 const FOCUS_BREAK_MIN = 5;
 const FOCUS_SVG = "http://www.w3.org/2000/svg";
 const FOCUS_RING_R = 52;
@@ -4016,10 +3382,13 @@ function paintFocusTimer(root = document) {
   const toggle = $("focus-timer-toggle");
   if (toggle) setLabel(toggle, focusTimer.running ? "ph:pause Pause" : focusTimer.remaining ? "ph:play Resume" : "ph:play Start");
   for (const button of root.querySelectorAll(".focus-presets-seg button")) {
-    button.setAttribute("aria-pressed", String(focusTimer.mode === "focus" && Number(button.dataset.minutes) * 60 === focusTimer.focusTotal));
+    const chosen = focusTimer.mode === "focus" && Number(button.dataset.minutes) * 60 === focusTimer.focusTotal;
+    button.setAttribute("aria-pressed", String(chosen));
+    button.classList.toggle("active", chosen);
   }
+  //: Not while it is being typed in: a repaint would put the old figure back under the caret.
   const step = $("focus-step-value");
-  if (step) step.textContent = `${Math.round(focusTimer.focusTotal / 60)} min`;
+  if (step && document.activeElement !== step) step.value = String(Math.round(focusTimer.focusTotal / 60));
   const today = $("focus-today");
   if (today) {
     const seconds = focusTodaySeconds() + focusTimer.unsaved;
@@ -4112,10 +3481,14 @@ function setFocusTimer(minutes) {
   paintFocusTimer();
 }
 
-//: The stepper: five minutes at a time, from 5 to 180.
-function focusStep(by) {
+//: The stepper: one minute at a time below 10, five at a time from there, 1 to 180.
+//: `dir` is 1 for longer, -1 for shorter; from 12, shorter is 10 and longer is 15.
+function focusStep(dir) {
   const now = Math.round(focusTimer.focusTotal / 60);
-  setFocusTimer(Math.max(5, Math.min(180, (by > 0 ? Math.floor(now / 5) : Math.ceil(now / 5)) * 5 + by)));
+  let next;
+  if (dir > 0) next = now < 10 ? now + 1 : (Math.floor(now / 5) + 1) * 5;
+  else next = now <= 10 ? now - 1 : (Math.ceil(now / 5) - 1) * 5;
+  setFocusTimer(Math.max(1, Math.min(180, next)));
 }
 
 // async to match the widget contract in renderDashboard (render() must
@@ -4156,13 +3529,34 @@ async function renderFocusTimerWidget(body) {
   stepper.className = "focus-stepper";
   stepper.setAttribute("role", "group");
   stepper.setAttribute("aria-label", "Any length");
-  const value = document.createElement("span");
+  const value = document.createElement("input");
   value.id = "focus-step-value";
+  value.type = "number";
+  value.min = "1";
+  value.max = "180";
+  value.step = "1";
+  value.inputMode = "numeric";
   value.className = "focus-step-value";
+  value.setAttribute("aria-label", "Minutes, 1 to 180");
+  value.title = "Type any length from 1 to 180 minutes";
+  //: Typed minutes (any 1 to 180): a figure that is not one puts the current length back.
+  const typed = () => {
+    if (value.value.trim() === "" || !Number.isFinite(Number(value.value))) return paintFocusTimer();
+    setFocusTimer(Number(value.value));
+    value.value = String(Math.round(focusTimer.focusTotal / 60));
+  };
+  value.addEventListener("change", typed);
+  value.addEventListener("keydown", (event) => {
+    if (event.key === "Enter") typed();
+  });
+  const unit = document.createElement("span");
+  unit.className = "muted focus-step-unit";
+  unit.textContent = "min";
   stepper.append(
-    smallButton("ph:minus", "Five minutes shorter", () => focusStep(-5)),
+    smallButton("ph:minus", "Shorter: one minute below 10, else five", () => focusStep(-1)),
     value,
-    smallButton("ph:plus", "Five minutes longer", () => focusStep(5))
+    unit,
+    smallButton("ph:plus", "Longer: one minute below 10, else five", () => focusStep(1))
   );
   presets.append(seg, stepper);
   body.appendChild(presets);
@@ -4198,6 +3592,9 @@ async function renderFocusTimerWidget(body) {
   today.id = "focus-today";
   today.className = "muted focus-today";
   body.appendChild(today);
+
+  //: The Clock's line and button (utility-tools.js, INBOX 1551), drawn when that module is in.
+  ensureModule("utilities").then(() => utilityOps.focusRow(body));
 
   paintFocusTimer(body);
 }
@@ -4518,7 +3915,7 @@ async function undoActorFrom(actor, since, byId, rerender) {
     await loadEntries().catch(() => {});
     rerender();
   } catch (error) {
-    toast(error.message || "Couldn't undo that.", true);
+    toast(error.message || `Couldn't undo what ${name} changed.`, true);
   }
 }
 
@@ -4640,15 +4037,16 @@ async function renderUnfinishedWidget(body) {
   const entries = await dashEntries();
   const withTasks = [];
   for (const entry of entries) {
+    //: A list row holds a note's first 300 characters (INBOX 1525), so the server's counts of the whole text come first.
     const content = entry.content || "";
-    if (!content.includes("[")) continue; // cheap reject before two regexes
+    if (entry.tasks_open == null && !content.includes("[")) continue; // cheap reject before two regexes
     // `lastIndex` is shared state on a `g` regex, so these must be reset per
     // note or every second note silently scores zero, the classic one.
     DASH_OPEN_TASK.lastIndex = 0;
     DASH_DONE_TASK.lastIndex = 0;
-    const open = (content.match(DASH_OPEN_TASK) || []).length;
+    const open = entry.tasks_open ?? (content.match(DASH_OPEN_TASK) || []).length;
     if (!open) continue;
-    const done = (content.match(DASH_DONE_TASK) || []).length;
+    const done = entry.tasks_done ?? (content.match(DASH_DONE_TASK) || []).length;
     withTasks.push({ entry, open, done });
   }
   if (!withTasks.length) {
@@ -4785,7 +4183,7 @@ function dashTensionRow(tension, onGone) {
       onGone();
     } catch (error) {
       pressed.disabled = false;
-      toast(error.message || "Couldn't save that.", true);
+      toast(error.message || "Couldn't save that decision.", true);
     }
   };
   actions.append(
@@ -4894,7 +4292,7 @@ function renderPaceWidget(body) {
     if (Number.isNaN(at.getTime()) || at.getTime() < first) continue;
     const index = Math.floor((at.setHours(0, 0, 0, 0) - first) / 86400000);
     if (index < 0 || index >= days.length) continue;
-    days[index].words += wordCount(entry.content);
+    days[index].words += entry.word_count ?? wordCount(entry.content);
   }
   const total = days.reduce((sum, day) => sum + day.words, 0);
   if (!total) {

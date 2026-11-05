@@ -43,9 +43,12 @@ _UNITS = recognise.UNITS
 
 _UNIT_NAMES = "|".join(sorted((re.escape(n) for n in _UNITS), key=len, reverse=True))
 _NUM = r"(-?\d+(?:[.,]\d+)?)"
+#: What a person puts before a conversion: "what is 7000 km in miles" was a web
+#: search while "7000 km in miles" was worked out (INBOX 1550).
+_LEAD = r"(?:convert\s+|(?:what(?:'s|\s+is|\s+are)|whats|how\s+much\s+(?:is|are))\s+)?"
 def _compile_convert() -> tuple:
     return (
-    re.compile(rf"^(?:convert\s+)?{_NUM}\s*({_UNIT_NAMES})\s+(?:to|into|in|as)\s+({_UNIT_NAMES})$", re.I),
+    re.compile(rf"^{_LEAD}{_NUM}\s*({_UNIT_NAMES})\s+(?:to|into|in|as)\s+({_UNIT_NAMES})$", re.I),
     re.compile(rf"^how many\s+({_UNIT_NAMES})\s+(?:is|are|in|make|makes|equals?)\s+(?:a|an|{_NUM})\s*({_UNIT_NAMES})$", re.I),
     re.compile(rf"^how (?:much|far|long|heavy|big|hot|cold) is\s+{_NUM}\s*({_UNIT_NAMES})\s+in\s+({_UNIT_NAMES})$", re.I),
     )
@@ -65,7 +68,7 @@ _CURRENCY_NAMES = recognise.CURRENCY_NAMES
 _MONEY_NAMES = "|".join(sorted((re.escape(n) for n in _CURRENCY_NAMES), key=len, reverse=True))
 def _compile_money() -> tuple:
     return (
-        re.compile(rf"^(?:convert\s+|how much is\s+|what is\s+)?({_MONEY_NAMES})?\s*{_NUM}\s*({_MONEY_NAMES})?\s+(?:to|into|in)\s+({_MONEY_NAMES})$", re.I),
+        re.compile(rf"^{_LEAD}({_MONEY_NAMES})?\s*{_NUM}\s*({_MONEY_NAMES})?\s+(?:to|into|in)\s+({_MONEY_NAMES})$", re.I),
     )
 
 
@@ -89,13 +92,48 @@ _TODAY = lazy_compile(
 )
 _YEAR = lazy_compile(r"^what (?:year|month) is it(?: now)?$", re.I)
 #: "15% of 240" (CHAT_PLAN section 7 row 1: it quoted a note instead of 36).
-_PERCENT = lazy_compile(r"^(?:what(?:'s| is)\s+|work out\s+|calculate\s+)?(-?\d+(?:\.\d+)?)\s*(?:%|percent|per cent)\s+of\s+(-?\d[\d,]*(?:\.\d+)?)$", re.I)
+_PERCENT = lazy_compile(r"^(?:what(?:'s| is)\s+|whats\s+|how much is\s+|work out\s+|calculate\s+)?(-?\d+(?:\.\d+)?)\s*(?:%|percent|per cent)\s+of\s+(-?\d[\d,]*(?:\.\d+)?)$", re.I)
+#: "how many days between 1 March and 2 April" (INBOX 1550): two days the
+#: device can count between, so never the web or the notes.
+_BETWEEN = lazy_compile(r"^(?:how many\s+)?(days|weeks)\s+(?:are there\s+)?(?:between|from)\s+(\S.*?)\s+(?:and|to|until|till)\s+(\S.*)$", re.I)
 _WEEKDAY_OF = lazy_compile(r"^what day(?: of the week)? (?:is|was|will be|falls on) (\S.*)$", re.I)
 _DIE = lazy_compile(r"^(?:roll|throw)\s+(?:a\s+|one\s+|the\s+)?(?:die|dice|d6)$|^roll\s+(\d{1,2})?d(\d{1,3})$", re.I)
 _COIN = lazy_compile(r"^(?:flip|toss)\s+a\s+coin$|^heads or tails$", re.I)
 _PICK = lazy_compile(r"^(?:pick|choose|give me)\s+a\s+(?:random\s+)?number\s+(?:between|from)\s+(-?\d{1,6})\s+(?:and|to)\s+(-?\d{1,6})$", re.I)
 _WEATHER = lazy_compile(r"\b(?:weather|forecast|temperature outside|going to rain|will it rain)\b", re.I)
 _TRANSLATE = lazy_compile(r"^(?:translate|say) \S.* (?:in|into|to) (?:french|spanish|german|italian|portuguese|dutch|japanese|chinese|korean|arabic|russian|hindi|greek|swedish|polish|turkish)$", re.I)
+#: **Generative asks** (audit 1028 E24): a model writes these, the composer
+#: only quotes. One list of verbs and one of things made; a note, a reminder or
+#: a list is the app's own act and is never in it. "Outline" and "report"
+#: are left out: "give me an outline of the databases lecture" is read from the notes.
+GENERATIVE_VERBS = (
+    "write", "draft", "compose", "generate", "create", "make", "produce", "prepare", "come up with", "put together",
+    "build",
+)
+GENERATIVE_THINGS = (
+    "essay", "poem", "story", "song", "lyrics", "speech", "toast", "joke", "haiku", "limerick", "paragraph", "intro", "introduction",
+    "conclusion", "cover letter", "letter", "email", "e-mail", "message", "text message", "caption", "tweet", "bio", "blurb",
+    "article", "blog post", "script", "timetable", "study plan", "revision plan", "revision schedule", "study schedule",
+    "meal plan", "workout plan", "training plan", "lesson plan", "plan", "schedule", "itinerary", "slogan", "pitch", "thank you note",
+)
+_THING = "|".join(sorted((re.escape(t) for t in GENERATIVE_THINGS), key=len, reverse=True))
+#: Words that end the run of adjectives before the thing ("make a note about my essay").
+_NOT_AN_ADJECTIVE = r"(?:note|notes|reminder|reminders|list|checklist|about|of|for|to|on|my|in|from|with|called|that|which)\b"
+_ADJECTIVES = r"(?:(?!" + _NOT_AN_ADJECTIVE + r")[\w'-]+ ){0,3}?"
+#: The verbs that make something (write, draft ...) may leave the article out;
+#: "give me", "get me" and "I need" ask for a thing, so they need "a" or "some"
+#: ("give me my schedule" is the notebook's, not a request to write one).
+_GENERATE = lazy_compile(
+    r"^(?:(?:help me|i need you to|i want you to|i'd like you to) )?(?:"
+    r"(?:" + "|".join(re.escape(v) for v in GENERATIVE_VERBS) + r") (?:me |us )?(?:(?:an?|some) )?" + _ADJECTIVES + r"(?:" + _THING + r")\b"
+    r"|(?:give me|get me|i need|i want|i'd like) (?:an?|some) " + _ADJECTIVES + r"(?:" + _THING + r")\b)",
+    re.I,
+)
+#: "explain the Krebs cycle simply": a plain-words rewrite of knowledge no note holds.
+_EXPLAIN_SIMPLY = lazy_compile(
+    r"^explain \S.*(?:\bsimply$|\bin (?:simple|plain|easy) (?:terms|words|english|language)$|\blike i(?:'m| am) (?:5|five|a (?:child|kid))$|\bto a (?:child|kid|beginner)$|\beli5$)",
+    re.I,
+)
 
 _WEEKDAY_NAMES = ("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday")
 _MONTH_NAMES = ("January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December")
@@ -237,6 +275,26 @@ def _dates(text: str, now: datetime) -> list[tuple] | None:
         return [("computed", f"{found[0].day} {_MONTH_NAMES[found[0].month - 1]} {found[0].year} {verb} a {_WEEKDAY_NAMES[found[0].weekday()]}."),
                 ("computed", f"\nRead as {match.group(1)}{which}.")]
     return None
+
+
+def _between(text: str, today: date) -> tuple[str, tuple[date, date]] | None:
+    """The unit and the two days of "days between A and B", or None."""
+    found = _BETWEEN.match(text)
+    if not found:
+        return None
+    a, b = (when_words.span(found.group(i), today, None) for i in (2, 3))
+    return (found.group(1).lower(), (a[0], b[0])) if a and b and a[2] == b[2] == "day" else None
+
+
+def _between_answer(unit: str, days_: tuple[date, date]) -> list[tuple]:
+    """"1 March to 2 April is 32 days", or in weeks and days when asked so."""
+    a, b = days_
+    days = abs((b - a).days)
+    said = _plural(days, "day")
+    if unit == "weeks":
+        rest = f" and {_plural(days % 7, 'day')}" if days % 7 else ""
+        said = f"{_plural(days // 7, 'week')}{rest}"
+    return [("computed", f"{_day_words(a)} to {_day_words(b)} is {said}."), ("computed", "\nRead as the days from the first to the second.")]
 
 
 def now_day() -> date:
@@ -425,9 +483,18 @@ def _date_kind(text: str) -> str | None:
         #: "how many days until the dentist": the date is in a note, which
         #: the composer reads (`composer._until_note`).
         return "dates" if when_words.span(asked[1], now_day(), asked[0]) else "until_note"
+    if _between(text, now_day()):
+        return "dates"
     if recognise.offset_question(text) or (_WEEKDAY_OF.match(text) and when_words.span(_WEEKDAY_OF.match(text).group(1), now_day(), "future")):
         return "dates"
     return None
+
+
+def _generative(text: str) -> bool:
+    """Whether `text` asks for something written: a verb, then a thing made.
+    "give me a plan" is generative, "give me my schedule" and "make a note"
+    are not (the article, and the notebook's own nouns, decide)."""
+    return bool(_GENERATE.match(text) or _EXPLAIN_SIMPLY.match(text))
 
 
 def _other_kind(text: str) -> str | None:
@@ -435,6 +502,8 @@ def _other_kind(text: str) -> str | None:
         return "chance"
     if _TRANSLATE.match(text):
         return "translate"
+    if _generative(text):
+        return "generate"
     if _web_capability(text):
         return "web"
     if _WEATHER.search(text) and not re.search(r"\b(?:my|notes?|wrote)\b", text, re.I):
@@ -507,6 +576,15 @@ _CLOCK_IN = lazy_compile(
     r"(?:what(?:'s| is) the (?:current )?time|what time is it|whats the time|(?:the |current )?time)"
     r"(?: now| right now)? (?:in|at|over in) (?:the )?(?P<place>[a-z][a-z .'-]{1,40}?)(?: now| right now)?$",
     re.I,
+)
+
+
+#: The places the Units tab offers for a time-zone conversion; each is read by `zone_for` (tests/test_convert_zones_1617.py).
+CONVERT_PLACES = (
+    "London", "Dublin", "Lisbon", "Paris", "Berlin", "Madrid", "Rome", "Athens", "Cairo", "Lagos", "Nairobi",
+    "Johannesburg", "Dubai", "Mumbai", "Bangkok", "Singapore", "Hong Kong", "Beijing", "Seoul", "Tokyo",
+    "Perth", "Sydney", "Auckland", "Honolulu", "Los Angeles", "Denver", "Chicago", "New York", "Toronto",
+    "Mexico City", "Sao Paulo", "Reykjavik",
 )
 
 
@@ -775,9 +853,10 @@ _ANSWERERS = {
     "clock": lambda ask: _clock(ask.text, ask.now),
     "units": lambda ask: _convert(ask.text),
     "currency": lambda ask: _currency(ask.text, ask.rates or RATES, ask.rates_date or RATES_DATE),
-    "dates": lambda ask: _dates(ask.text, ask.now),
+    "dates": lambda ask: _between_answer(*b) if (b := _between(ask.text, ask.now.date())) else _dates(ask.text, ask.now),
     "chance": _answer_chance,
     "translate": lambda ask: [("phrase", "utility_translate")],
+    "generate": lambda ask: [("phrase", "utility_generate")],
     "web": lambda ask: [("phrase", "utility_web_on" if web_on() else "utility_web_off")],
 }
 

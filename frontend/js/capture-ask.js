@@ -196,6 +196,12 @@ function filingOutcomeText(status) {
   if (status.filed_by === "none" && status.held_sensitive?.category) {
     return `Saved in “${status.category}”: it reads as ${status.held_sensitive.topic}, so it waits for you to choose.`;
   }
+  //: The words' own reason for waiting, the same line the hint said
+  //: (INBOX 1583: "A close call between Hobbies and Study, ...").
+  //: The line starts "It", "A" or "Not", never a name, so the lower case is safe.
+  if (status.filed_by === "none" && status.waits_why) {
+    return `Saved in “${status.category}”: ${status.waits_why[0].toLowerCase()}${status.waits_why.slice(1)}`;
+  }
   if (status.filed_by === "none") {
     return aiIsOff()
       ? `Saved in “${status.category}”: no AI model is running to file it.`
@@ -504,32 +510,13 @@ function clearCaptureTagSuggestions() {
   row.classList.add("hidden");
 }
 
-//: **The filing, offered beside the tags** (INBOX 1330, "a live, inline
-//: organization suggestion while typing"): the category the notebook's own words
-//: point to, with its reason, only while Filing is left on Atlas's choice and the
-//: category is one the Filing field lists. Pressing it sets the field; nothing is
-//: saved by it.
-function captureCategoryChip(category) {
-  const select = $("entry-category");
-  if (!category?.category || !select || select.value !== "") return null;
-  const option = [...select.options].find((o) => o.value === category.category);
-  if (!option) return null;
-  const pick = chip(`ph:folder-simple File under ${category.category}`, "tag", () => {
-    select.value = option.value;
-    select.dispatchEvent(new Event("change", { bubbles: true }));
-    pick.remove();
-    const row = $("entry-tag-suggestions");
-    if (!row.querySelector(".chip")) row.classList.add("hidden");
-  });
-  pick.title = category.reason || `File this note under ${category.category}`;
-  return pick;
-}
-
-function renderCaptureTagSuggestions(tags, reasons, category = null) {
+//: The filing is not offered here: the offers row under the box is the one
+//: filing hint (quickadd.js, `lexical_filing.filing_call`, INBOX 1583), where a
+//: chip of this row's own said "File under Hobbies" beside "File in Hobbies".
+function renderCaptureTagSuggestions(tags, reasons) {
   const row = $("entry-tag-suggestions");
   row.replaceChildren();
-  const filing = captureCategoryChip(category);
-  if (!tags.length && !filing) {
+  if (!tags.length) {
     row.classList.add("hidden");
     return;
   }
@@ -537,7 +524,6 @@ function renderCaptureTagSuggestions(tags, reasons, category = null) {
   label.className = "muted";
   label.textContent = "Suggested:";
   row.appendChild(label);
-  if (filing) row.appendChild(filing);
   for (const tag of tags) {
     const tagChip = chip(`ph:plus ${tag}`, "tag", () => {
       const box = $("entry-tags");
@@ -566,12 +552,9 @@ function scheduleCaptureTagSuggestions() {
     const seq = ++captureTagSuggestSeq;
     const tags = $("entry-tags").value.split(",").map((t) => t.trim()).filter(Boolean);
     const draft = JSON.stringify({ content, tags, title: $("entry-title")?.value || "" });
-    const [result, category] = await Promise.all([
-      apiJson("/entries/suggest-tags", { method: "POST", body: draft }).catch(() => ({})),
-      apiJson("/entries/suggest-category", { method: "POST", body: draft, silent: true }).catch(() => null),
-    ]);
+    const result = await apiJson("/entries/suggest-tags", { method: "POST", body: draft }).catch(() => ({}));
     if (seq !== captureTagSuggestSeq) return; // superseded by a later keystroke
-    renderCaptureTagSuggestions(result.suggested_tags || [], result.suggested_tag_reasons, category);
+    renderCaptureTagSuggestions(result.suggested_tags || [], result.suggested_tag_reasons);
   }, 1200);
 }
 
@@ -832,9 +815,21 @@ const SEARCH_MODE_LABELS = {
 
 // Say something to a screen reader without putting anything on screen. Used
 // for changes whose only visible signal is colour or position.
-function announce(message) {
+//: `settle`: wait that long for the last call (a list drawn three times in one
+//: filter says its count once); `once`: not again while the last settled line is
+//: the same, so a redraw of an unchanged list is silent (audit 1028 S92).
+function announce(message, { settle = 0, once = false } = {}) {
   const region = $("live-region");
   if (!region) return;
+  if (settle) {
+    clearTimeout(announce.timer);
+    announce.timer = setTimeout(() => {
+      if (once && announce.said === message) return;
+      announce.said = message;
+      announce(message);
+    }, settle);
+    return;
+  }
   // Clearing first guarantees the change is seen as new even when the same
   // message is announced twice in a row.
   region.textContent = "";
@@ -1053,55 +1048,11 @@ const CITATION_BLOCK = "p, li, blockquote, td, th, h1, h2, h3, h4, h5, h6, dd";
 //: with no passage (a note a tool read mid-turn) shows the note's opening
 //: words. Characters, never rendered Markdown: the slice is taken at
 //: character offsets and can begin mid-emphasis.
-//: Why a source was chosen (I6, row 6): the row's `signals` as bars; an
-//: unmeasured one is left out, never drawn empty. DESIGN.md, "Why a thing was chosen".
-const EVIDENCE_SIGNALS = [
-  ["bm25", "Words"],
-  ["cosine", "Meaning"],
-  ["graph", "Links"],
-];
-const EVIDENCE_VERDICTS = {
-  supported: "Supported by this passage",
-  partly: "Partly supported by this passage",
-};
-
 function evidenceSpan(className, text = "", tag = "span") {
   const el = document.createElement(tag);
   el.className = className;
   el.textContent = text;
   return el;
-}
-
-function evidenceSignals(signals) {
-  const list = evidenceSpan("evidence-signals");
-  for (const [key, label] of EVIDENCE_SIGNALS) {
-    const value = signals ? signals[key] : null;
-    if (typeof value !== "number" || !Number.isFinite(value)) continue;
-    const percent = `${Math.round(Math.max(0, Math.min(1, value)) * 100)}%`;
-    const track = evidenceSpan("evidence-signal-track");
-    track.setAttribute("role", "img");
-    track.setAttribute("aria-label", `${label} ${percent}`);
-    const fill = evidenceSpan("evidence-signal-fill");
-    fill.style.width = percent;
-    track.append(fill);
-    const number = evidenceSpan("evidence-signal-value", percent);
-    number.setAttribute("aria-hidden", "true");
-    const row = evidenceSpan("evidence-signal");
-    row.append(evidenceSpan("evidence-signal-name", label), track, number);
-    list.append(row);
-  }
-  return list.childElementCount ? list : null;
-}
-
-//: Verdict and bars as one block; null for a row saved before they existed.
-function evidenceBlock(source) {
-  const verdict = EVIDENCE_VERDICTS[source?.verdict];
-  const bars = evidenceSignals(source?.signals);
-  if (!verdict && !bars) return null;
-  const block = evidenceSpan("evidence-block");
-  if (verdict) block.append(evidenceSpan(`evidence-verdict evidence-verdict-${source.verdict}`, verdict));
-  if (bars) block.append(bars);
-  return block;
 }
 
 //: **A cited note's pictures beside its citation** (INBOX 502): up to three
@@ -1248,11 +1199,60 @@ const LIVE_RENDER_INTERVAL_MS = 66;
 //: from raw markdown, so anything written into it afterwards (the Ask tab's
 //: citation markers, placed while the answer streams, INBOX 320) has to be
 //: written again each time or it lasts a fifteenth of a second.
+// LIVE-BLOCKS-BEGIN
+//: **Where a streaming answer can be cut into finished blocks** (audit 1028 E34).
+//: Returns the offset of the last line that starts a new block after a blank
+//: line, outside any fence, or `from` when there is none yet, or -1 when the
+//: text holds a construct that spans blank lines or points back at an earlier
+//: block (maths, columns, footnotes, a contents list), which is drawn whole.
+//: A line that may continue the block above (an item, a table row, a quote,
+//: an indented line) never starts one, and neither does a half-typed line.
+//: A property of the renderer, not a name of its own: the shared scope is capped.
+liveMarkdownRenderer.blockBreak = (text, from) => {
+  if (/\[\^|\$\$|\[TOC\]|^\s*:::/im.test(text)) return -1;
+  let best = from;
+  let fenced = false;
+  let blank = false;
+  for (let at = from, end; (end = text.indexOf("\n", at)) !== -1; at = end + 1) {
+    const line = text.slice(at, end);
+    const fence = line.trim().startsWith("```");
+    if (!fenced && blank && line.trim() && (fence || !/^(?:\s|[-*+](?:\s|$)|\d+[.)](?:\s|$)|[|>])/.test(line))) best = at;
+    if (fence) fenced = !fenced;
+    blank = !line.trim();
+  }
+  return best;
+};
+// LIVE-BLOCKS-END
 function liveMarkdownRenderer(box, afterPaint = null) {
   let latest = "";
   let rendered = null;
   let timer = null;
   let lastRun = 0;
+  //: Finished blocks are drawn once and kept (`kept` is their markdown,
+  //: `keptCount` the nodes they made); a flush draws only the text after them
+  //: into a scratch box and swaps it for what followed, so its cost is the
+  //: open block, not the answer so far. Text that no longer starts with
+  //: `kept` (a held-back picture token) or a box emptied by someone else
+  //: starts over from the whole text.
+  let kept = "";
+  let keptCount = 0;
+  const draw = (text) => {
+    const scratch = document.createElement("div");
+    renderMarkdown(scratch, text);
+    box.append(...scratch.childNodes);
+  };
+  const paint = (clean) => {
+    if (!clean.startsWith(kept) || box.childNodes.length < keptCount) [kept, keptCount] = ["", 0];
+    const cut = liveMarkdownRenderer.blockBreak(clean, kept.length);
+    if (cut < 0) [kept, keptCount] = ["", 0];
+    while (box.childNodes.length > keptCount) box.lastChild.remove();
+    if (cut > kept.length) {
+      draw(clean.slice(kept.length, cut));
+      kept = clean.slice(0, cut);
+      keptCount = box.childNodes.length;
+    }
+    draw(clean.slice(kept.length));
+  };
 
   let gap = LIVE_RENDER_INTERVAL_MS;
   const flush = () => {
@@ -1260,7 +1260,7 @@ function liveMarkdownRenderer(box, afterPaint = null) {
     lastRun = performance.now();
     if (latest === rendered) return; // nothing new since last paint
     rendered = latest;
-    renderMarkdown(box, holdPictureTokens(latest));
+    paint(holdPictureTokens(latest));
     afterPaint?.();
     gap = Math.max(LIVE_RENDER_INTERVAL_MS, (performance.now() - lastRun) * 4);
   };
@@ -1292,36 +1292,6 @@ function liveMarkdownRenderer(box, afterPaint = null) {
 
 function stopAnswer() {
   if (askController) askController.abort();
-}
-
-//: **The trail above an Ask answer** (INBOX 490): the questions this one
-//: followed on from, each a link (`followupTrail`, chat-attach.js) that opens
-//: that earlier answer in place under the trail, since Ask shows one answer
-//: at a time and there is no earlier turn on screen to scroll to.
-function renderAskTrail() {
-  const host = $("ask-trail");
-  if (!host) return;
-  const turns = askTrail.map((i) => conversation[i]).filter(Boolean);
-  host.replaceChildren();
-  host.classList.toggle("hidden", !turns.length);
-  if (!turns.length) return;
-  const peek = document.createElement("div");
-  peek.className = "ask-trail-peek answer hidden";
-  peek.id = "ask-trail-peek";
-  let shown = -1;
-  const trail = followupTrail(turns.map((turn) => turn.question), (i, link) => {
-    shown = shown === i ? -1 : i;
-    for (const other of trail.querySelectorAll(".chat-trail-link")) {
-      other.setAttribute("aria-expanded", String(other === link && shown === i));
-    }
-    peek.classList.toggle("hidden", shown === -1);
-    if (shown !== -1) renderMarkdown(peek, turns[i].answer || "");
-  });
-  for (const link of trail.querySelectorAll(".chat-trail-link")) {
-    link.setAttribute("aria-expanded", "false");
-    link.setAttribute("aria-controls", peek.id);
-  }
-  host.append(trail, peek);
 }
 
 function newChat() {

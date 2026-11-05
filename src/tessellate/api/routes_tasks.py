@@ -27,7 +27,7 @@ import json
 import logging
 import time
 
-from fastapi import APIRouter, Depends, Query, Request
+from fastapi import APIRouter, Depends, Header, HTTPException, Query, Request
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
 
@@ -645,6 +645,7 @@ async def jobs_stream(
     request: Request,
     seconds: float = Query(default=_STREAM_MAX_SECONDS, ge=0, le=_STREAM_MAX_SECONDS),
     limit: int = Query(default=50, ge=1, le=500),
+    x_auth_token: str | None = Header(default=None),
 ) -> StreamingResponse:
     """Server-sent events: the `/jobs` list, sent at once and again on every
     change (`jobstore.version`), plus a comment line every 15 s so a proxy
@@ -680,6 +681,11 @@ async def jobs_stream(
         while time.monotonic() - started < seconds:
             await asyncio.sleep(_STREAM_POLL_SECONDS)
             if await request.is_disconnected():
+                return
+            # SEC-A6: the opening check ran once; a lock or sign-out ends the stream.
+            from tessellate.api import routes_auth
+
+            if not await asyncio.to_thread(routes_auth.session_still_open, request, x_auth_token):
                 return
             ticks += 1
             #: Every `_STREAM_TASKS_EVERY` looks: the rows are built from
@@ -887,20 +893,53 @@ def shutdown() -> dict:
       by the code that already knows how. A hard exit would skip all of that
       and leave the orphan it was trying to avoid.
     """
+    stop_process_soon()
+    return {"stopping": True}
+
+
+def stop_process_soon() -> None:
+    """Quit this process after a beat, the way `POST /shutdown` always did
+    (also what another copy's Settings asks for at `POST /instance/shutdown`)."""
     import os
     import signal
-    import threading
+    import time
 
-    from tessellate.core import quit_hook
+    from tessellate.core import jobs, quit_hook
 
     def _stop() -> None:
+        time.sleep(0.15)  # long enough for this reply to leave
         # The desktop window registers its own close (see quit_hook's
         # docstring for why SIGINT alone did nothing there).
         if quit_hook.request_quit():
             return
         os.kill(os.getpid(), signal.SIGINT)
 
-    threading.Timer(0.15, _stop).start()  # long enough for this reply to leave
+    jobs.thread("quit", _stop)
+
+
+@router.get("/running-copies", dependencies=[Depends(this_computer_only)])
+def running_copies_list() -> dict:
+    """Settings, Running copies (INBOX 1641): the copies of this app on this
+    computer, this one marked. Stale records are pruned as it reads."""
+    from tessellate.core import running_copies
+
+    copies = sorted(running_copies.list_copies(), key=lambda c: c.started)
+    return {"copies": [c.public() for c in copies]}
+
+
+@router.post("/running-copies/{pid}/shutdown", dependencies=[Depends(this_computer_only)])
+def running_copies_shutdown(pid: int) -> dict:
+    """Shut another copy down. Never this one (that is Quit), never a pid that
+    is not in this user's records."""
+    from tessellate.core import running_copies
+
+    result = running_copies.shutdown(pid)
+    if result == "this-copy":
+        raise HTTPException(status_code=409, detail="That is this copy. Use Quit to close it.")
+    if result == "unknown":
+        raise HTTPException(status_code=404, detail="No such copy is running.")
+    if result == "failed":
+        raise HTTPException(status_code=502, detail="That copy did not answer, so it was left running.")
     return {"stopping": True}
 
 

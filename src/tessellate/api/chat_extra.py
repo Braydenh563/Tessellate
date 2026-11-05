@@ -5,15 +5,17 @@ stream events. Kept out of `routes_chat.py`, which is large enough."""
 from __future__ import annotations
 
 import logging
+import re
 from datetime import datetime, timedelta
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from tessellate.ai import activity, composer_digest, composer_extra, realise
+from tessellate.ai import activity, composer_digest, composer_extra, composer_suggest, realise
 from tessellate.ai.composer_study import Ctx
 from tessellate.ai.tools._common import _visible
 from tessellate.core.database import Category, Entry
+from tessellate.repo import categories as categories_repo
 from tessellate.repo import reminders as reminder_repo
 
 NOTE_LIMIT = 400
@@ -41,7 +43,7 @@ def events(session: Session, question: str, history: list[dict], *, now: datetim
     #: "Summarise this" and "summarise Travel" read the open note or a whole
     #: category, which the digest does better than a title match here.
     if composer_digest.about_this(question) or composer_digest.named_category(
-        question, list(session.execute(select(Category.name)).scalars())
+        question, categories_repo.names(session)
     ):
         return None
     #: "Summarise my week" is the week's recap (`ai/activity`), not a note's summary.
@@ -147,3 +149,22 @@ def mentioning(session: Session, word: str) -> int:
     except Exception:  # noqa: BLE001  # no index yet: nothing is counted
         log.exception("chat: counting the notes a ping names failed")
         return 0
+
+
+def _turn_label(content: str) -> str:
+    """(Lives here, not in chat_turn: slot_reply reads it and chat_turn imports this
+    module, so the other way round was an import cycle, CodeQL 1998.)
+    A note as a history turn names it (`chatTurnObjects` in chat-attach.js):
+    its first line without heading or list marks, up to the first stop."""
+    first = re.sub(r"^[#*>\-\s]+", "", (content or "").strip().split("\n", 1)[0])
+    return re.split(r"[:.!?]", first)[0].strip()[:80]
+
+
+def slot_reply(session: Session, question: str, history: list[dict]) -> str:
+    """The reply to "Which note do you want pinned?" completes that act before anything
+    routes it ("erm, the interesting bean one" is "Pin note 3"; INBOX 1570). The
+    question itself when the last answer was not asking for a note."""
+    if not composer_suggest.pending_kind(history):
+        return question
+    #: The notes the other readers here read (`_notes`: visible, newest 400), not a query of its own.
+    return composer_suggest.fill_slot(question, history, [(n["id"], _turn_label(n["content"])) for n in _notes(session)]) or question

@@ -21,7 +21,9 @@ def test_new_map_toast_says_what_enter_does_while_typing():
     # dog2 item 12: the canvas keys first, then plainly what Enter does while
     # typing (Ctrl+Enter on a selected topic inserts a parent, so it is named
     # only for the editor).
-    assert "Tab adds a branch, Enter one beside it. While you type a name, Enter is a new line and Ctrl+Enter adds the one beside it." in WB
+    # U41 (the owner, 2026-11-03): the toast is one line with an action; what Enter does while typing
+    # moved behind it, to the Guide's "Mind map keys and controls" topic, which must still say it.
+    assert 'Tab adds a branch, Enter one beside it.`, false, { action: ["All keys", () => askAtlas("Mind map keys and controls")] }' in WB
     assert "Enter a sibling." not in WB
 
 

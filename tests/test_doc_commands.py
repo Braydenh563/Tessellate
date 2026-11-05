@@ -98,4 +98,4 @@ def test_every_row_has_a_chord_or_says_none(table):
     keymap = keymap[: keymap.index("\n}\n")]
     for chord, binding in (("Ctrl+Shift+8", "Mod-Shift-8"), ("Ctrl+Shift+7", "Mod-Shift-7"), ("Ctrl+Shift+9", "Mod-Shift-9")):
         assert f'keys: "{chord}"' in table and f'key: "{binding}"' in keymap
-    assert 'command.keys === "none" ? "" : command.keys' in source
+    assert 'command.keys === "none" ? "" : (command.alt || command.keys)' in source

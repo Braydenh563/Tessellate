@@ -345,9 +345,60 @@ function mermaidKnown(source, look = null) {
 
 //: The one-line reason a source was refused by the parser, remembered so the
 //: Live view can leave that fence as code without asking again.
+// MERMAID-PLAIN-BEGIN
 function mermaidFailure(source) {
   return mermaidState.bad.get(source) || "";
 }
+
+//: **The reason in plain words** (audit 1102 DX17). The parser's own line is a
+//: token list ("Expecting 'AMP', 'COLON', 'PIPE' ...") that tells a writer
+//: nothing; what they need is which line and what is wrong with it. The line
+//: is found in the source, because Mermaid reports the line where it gave up
+//: (often the empty one after a dangling arrow). A reason that is already a
+//: sentence (empty, too long, renderer missing) comes back as it was. A
+//: property of `mermaidFailure`, not a global of its own.
+mermaidFailure.plain = (error, source) => {
+  const raw = String(error || "");
+  if (/No diagram type detected|UnknownDiagramError/i.test(raw)) {
+    return "The first line should name a diagram, such as flowchart TD or sequenceDiagram.";
+  }
+  const found = /^Parse error on line (\d+)/.exec(raw);
+  if (!found) return raw;
+  const lines = String(source || "").split("\n");
+  let at = Math.min(Number(found[1]), lines.length) - 1;
+  while (at > 0 && !lines[at].trim()) at -= 1;
+  const text = (lines[at] || "").replace(/;\s*$/, "").trim();
+  const where = `Line ${at + 1}: `;
+  const count = (open, close) => text.split(open).length - text.split(close).length;
+  if (/(-->|---|==>|===|-\.->|--[ox>]|<-->)$/.test(text)) return `${where}an arrow needs a box after it.`;
+  if (text.split('"').length % 2 === 0) return `${where}a quote is not closed.`;
+  if (count("[", "]") || count("(", ")") || count("{", "}")) return `${where}a bracket is not closed.`;
+  return `${where}this line is not valid here. Check its arrows and brackets.`;
+};
+
+// MERMAID-PLAIN-END
+
+//: The note under a diagram that would not draw, for Read and for the Live
+//: widget alike: the plain sentence, and the parser's own words behind a
+//: disclosure when they differ.
+mermaidFailure.note = (error, source) => {
+  const note = document.createElement("div");
+  note.className = "md-mermaid-reason";
+  note.setAttribute("role", "status");
+  const plain = mermaidFailure.plain(error, source);
+  note.append(`Couldn't draw this diagram. ${plain}`);
+  if (plain !== error) {
+    const more = document.createElement("details");
+    more.className = "md-mermaid-raw";
+    const label = document.createElement("summary");
+    label.textContent = "Details";
+    const raw = document.createElement("code");
+    raw.textContent = error;
+    more.append(label, raw);
+    note.append(more);
+  }
+  return note;
+};
 
 function mermaidRequest(source, look = null) {
   const theme = mermaidThemeNow(look);
@@ -453,15 +504,12 @@ function mermaidDrawBlock(block) {
   return mermaidFill(figure, code.textContent, (result) => {
     if (result.svg) {
       block.remove();
+      if (figure.closest(".step-answer, .answer")) mermaidFill.asDiagram(figure, code.textContent);
       return;
     }
     figure.remove();
     block.dataset.mermaidState = "failed";
-    const reason = document.createElement("p");
-    reason.className = "md-mermaid-reason";
-    reason.setAttribute("role", "status");
-    reason.textContent = `Could not draw this diagram: ${result.error}`;
-    block.after(reason);
+    block.after(mermaidFailure.note(result.error, code.textContent));
   });
 }
 
@@ -469,6 +517,59 @@ function mermaidDrawIn(container) {
   const blocks = [...container.querySelectorAll('.code-block code[data-lang="mermaid"]')].map((c) => c.closest(".code-block"));
   return Promise.all(blocks.map(mermaidDrawBlock));
 }
+
+//: A reply's diagram (Chat, Ask) can become one of its own (1546 D6): "Open as a diagram" makes a Mermaid
+//: diagram document of the fence and opens it in Blocks. Properties of `mermaidFill`, not globals.
+mermaidFill.asDiagram = (figure, source) => {
+  const open = document.createElement("button");
+  open.type = "button";
+  open.className = "linklike md-mermaid-as";
+  open.textContent = "Open as a diagram";
+  open.title = "Make a diagram document of this and edit it as blocks";
+  open.addEventListener("click", async () => {
+    open.disabled = true;
+    try {
+      const doc = await apiJson("/documents", { method: "POST", body: JSON.stringify({ title: mermaidAltFor(source).replace(/:.*/, ""), content: source, file_type: "mmd" }) });
+      switchTab("documents");
+      await openDocument(doc.id);
+      offerCreateUndo(doc);
+    } catch (error) {
+      toast(error.message || "Couldn't make the diagram.", true);
+    } finally {
+      open.disabled = false;
+    }
+  });
+  figure.after(open);
+};
+
+//: `![[a diagram]]` in a note or a document (1546 D6): the diagram document's source is fetched and
+//: drawn as a fence is (`mermaidDrawIn`); a line under it opens the document. A diagram that will not
+//: draw, or has nothing in it, is the document card it was.
+mermaidFill.embed = async (box, doc, name) => {
+  try {
+    const source = String((await apiJson(`/documents/${doc.id}`, { silent: true })).content || "").trim();
+    if (!source) throw new Error("empty");
+    const block = document.createElement("div");
+    block.className = "code-block";
+    const code = block.appendChild(document.createElement("pre")).appendChild(document.createElement("code"));
+    code.dataset.lang = "mermaid";
+    code.textContent = source;
+    box.append(block);
+    await mermaidDrawIn(box);
+    if (!box.querySelector("img")) throw new Error("not drawn");
+    const open = document.createElement("button");
+    open.type = "button";
+    open.className = "linklike diagram-embed-open";
+    open.textContent = `${doc.title || "Diagram"}: open the diagram`;
+    open.addEventListener("click", (event) => {
+      event.stopPropagation();
+      openDocument(doc.id);
+    });
+    box.append(open);
+  } catch {
+    box.replaceChildren(mdDocumentCard(doc, name, true));
+  }
+};
 
 //: A saved HTML file outlives this page's blob: URLs, so the export carries
 //: each picture as a data: URL of its own SVG. `live` and `clone` are the same

@@ -79,6 +79,8 @@ def test_deleting_the_open_space_keeps_its_undo() -> None:
 #: never be in it.
 #: docs-1101: the history dialog's list, texts and open diff moved into documents-history.js's closure,
 #: which lets go of them when the dialog closes, so they are no longer module-level names here.
+#: doc22-1102: docNoteTypes, docNoteTypesAsked and docPropsDrawn (note types per notebook, two flags) moved
+#: into documents-props.js's closure, so they are no longer module-level names here.
 EXEMPT = {
     "uiStateOnServer": "the notebook's mirrored settings",
     "paletteUsage": "which palette commands were used, per notebook",
@@ -91,9 +93,6 @@ EXEMPT = {
     "featureAiTools": "feature list, per notebook",
     "quickEditing": "a flag",
     "docPyStdlibLoad": "a download state",
-    "docNoteTypes": "note types, per notebook",
-    "docNoteTypesAsked": "a flag",
-    "docPropsDrawn": "a flag",
     "docVariantFor": "a document's variant key, cleared with the document",
     "docFocusSavedWatch": "a flag",
     "storageInfo": "disk use of the whole notebook",

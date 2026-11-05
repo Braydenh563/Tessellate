@@ -2,9 +2,9 @@
 
 The owner: "the half lidded eyes on atlas look creepy and like fnaf". The
 lid's edge (atlas.js, `atlasEye`) sits at cy - 4.1 in the eye's middle and
-travels 11px per unit of `--atl-lid`; the masculine look lowers it 0.8px
-more. The eye's white runs from cy - 4.25 to cy + 3.15 (`atlasAlmond`), so
-the share of the eye an upper lid covers is (11 * lid + 0.15 + 0.8) / 7.4.
+travels 11px per unit of `--atl-lid`; since INBOX 1607 the masculine look
+no longer lowers it (it did by 0.8px). The eye's white runs from cy - 4.25 to cy + 3.15 (`atlasAlmond`), so
+the share of the eye an upper lid covers is (11 * lid + 0.15) / 7.4.
 Every rule that sets it keeps that at 30% or less; only a blink (the
 lid's own sweep, `atlasLids`) passes through the middle, and briefly.
 """
@@ -22,7 +22,7 @@ EYE_H = 7.4
 def upper_closed(lid, turn=0.0):
     # A turned lid (`--atl-lid-r`) dips at one side of the middle: measured
     # 3.5px either side of the centre, as scratchpad/ui-sweeps/atlaslids.js does.
-    return max(0.0, 11 * lid + 0.15 + 0.8 + 3.5 * math.sin(math.radians(abs(turn)))) / EYE_H
+    return max(0.0, 11 * lid + 0.15 + 3.5 * math.sin(math.radians(abs(turn)))) / EYE_H
 
 
 def lower_closed(low):
@@ -30,7 +30,7 @@ def lower_closed(low):
 
 
 def _rules():
-    for m in re.finditer(r"([^{}]*)\{([^{}]*--atl-(?:lid|low):[^{}]*)\}", CSS):
+    for m in re.finditer(r"(?:(?<=[{}])|\A)([^{}]*)\{([^{}]*--atl-(?:lid|low):[^{}]*)\}", CSS):
         yield m.group(1).strip(), m.group(2)
 
 
@@ -75,3 +75,21 @@ def test_a_blinks_in_between_frames_pass_quickly():
             stops.append((float(on.group(1)), float(on.group(2))))
         (a1, b1), _, (a3, b3) = stops
         assert (a3 - a1) * ms / 100 <= 350 and (b1 - b3) * ms / 100 <= 350, (name, stops)
+
+
+def test_the_calm_face_rests_its_lids_out_of_sight_1607():
+    # The owner: "its eyes with its lids or smth look creepy". Open and
+    # between blinks, no lid shows: the root, the masculine offset and the
+    # moods that used to rest a lid at 0.04 to 0.1 are all 0 now.
+    assert re.search(r"--atl-eye-s: 1;[^}]*?--atl-lid: 0;|--atl-lid: 0;\s*\n\s*--atl-lid-r: 0deg", CSS)
+    assert 'data-atlas-look="masculine"] .atl-lid { translate: 0 0; }' in CSS
+    for mood in ("confused", "sad", "shy"):
+        bodies = re.findall(r'\.nm-atlas\[data-atlas-mood="%s"\] \{([^}]*)\}' % mood, CSS)
+        assert any("--atl-lid: 0;" in b for b in bodies), mood
+    assert upper_closed(0.0) <= 0.03
+
+
+def test_no_mood_closes_one_eye_alone_1607():
+    # Both eyes blink together (one lid layer holds both); a mood that
+    # shuts only the right eye leaves the left one blinking alone.
+    assert not re.search(r"\.atl-eye-[lr]\s*\{[^}]*--atl-(open|happy|shut|squeeze)", CSS)

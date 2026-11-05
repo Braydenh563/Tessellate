@@ -60,6 +60,9 @@ CSS_FILES = [
     #: An answer composed from the notes (loaded by ask-compose.js, CHAT_PLAN
     #: decision 33): the quote style of a sentence said from a note.
     CSS_DIR / "ask-compose-lazy.css",
+    #: An answer's foot row (answer-kit.js `answerFootGather`, CHAT_PLAN B2),
+    #: loaded by answer-kit.js itself, after ask-compose-lazy.css's bundle.
+    CSS_DIR / "answer-foot-lazy.css",
     #: The chat context pill's popover (usage-ledger.js loads it).
     CSS_DIR / "usage-lazy.css",
     #: The Guide's streamed bubble (help-chat.js loads it).
@@ -74,6 +77,8 @@ CSS_FILES = [
     CSS_DIR / "utilities-lazy.css",
     #: What the app draws into a reply beside its words (reply-kit.js, INBOX 1300 C06).
     CSS_DIR / "reply-kit-lazy.css",
+    #: The keypad recipe (`.key-grid`): the equation editor and the calculator.
+    CSS_DIR / "key-grid-lazy.css",
     #: The staged chip's upload bar (chat-attach.js `attachmentChip` loads it).
     CSS_DIR / "chip-bar-lazy.css",
     #: The composer's model picker (`LAZY_MODULES.modelMenu`, INBOX 1477).
@@ -84,6 +89,8 @@ CSS_FILES = [
     CSS_DIR / "questions-lazy.css",
     #: The voice-note recorder and Library, Recordings (meetings.js, Brief 80).
     CSS_DIR / "meetings-lazy.css",
+    #: What a click shows fades in and out (`LAZY_MODULES.uiReveal`, INBOX 1565).
+    CSS_DIR / "ui-reveal-lazy.css",
     #: The quoted span a source opens at (`LAZY_MODULES.reveal`, Brief 88).
     CSS_DIR / "reveal-lazy.css",
     #: The manual (manual.js loads it, WORLD_CLASS_PLAN 25c).
@@ -104,6 +111,8 @@ CSS_FILES = [
     CSS_DIR / "dash-night-lazy.css",
     CSS_DIR / "inbox-lazy.css",
     CSS_DIR / "lightbox-lazy.css",
+    #: The `m` guide's panel (chord-guide.js, `LAZY_MODULES.chordGuide`).
+    CSS_DIR / "chord-guide-lazy.css",
     CSS_DIR / "quick-access-lazy.css",
     #: Files dragged in from outside the window (settings-wiring.js's dragenter stub).
     CSS_DIR / "file-drop-lazy.css",
@@ -129,6 +138,8 @@ CSS_FILES = [
     CSS_DIR / "math-editor-lazy.css",
     #: Mermaid diagrams: the figure, its placeholder and the hidden frame (mermaid-draw.js).
     CSS_DIR / "mermaid-lazy.css",
+    #: The block pane of a diagram (diagram-builder.js, `LAZY_MODULES.diagramBuilder`, 1546 P2).
+    CSS_DIR / "diagram-lazy.css",
     #: The Writing room: the kind select's room and the diagram preview (lazy `writingDesk`, UX review 1031).
     CSS_DIR / "writing-desk-lazy.css",
     #: Settings, Appearance, Glass controls: icon buttons in glass (lazy-entries.js `glassControls`, INBOX 1409).

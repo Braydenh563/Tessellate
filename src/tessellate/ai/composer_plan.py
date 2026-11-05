@@ -18,9 +18,10 @@ import re
 from dataclasses import dataclass
 from datetime import date, datetime, timedelta
 
-from tessellate.ai import recognise, study
+from tessellate.ai import composer_done, recognise, study
 from tessellate.ai import when as when_words
 from tessellate.ai import composer_compose as compose
+from tessellate.ai import note_rank, reminder_parser
 from tessellate.ai.composer_study import Ctx, Reply, pick
 
 _SENTENCE = re.compile(r"(?<=[.!?])\s+(?=[A-Z0-9*\"“(\[])")
@@ -235,10 +236,16 @@ def lookback(question: str, today: date) -> bool:
 def _reminder_events(ctx: Ctx, start: date, end: date) -> tuple[list[Event], list[Event]]:
     coming: list[Event] = []
     overdue: list[Event] = []
+    seen: set[tuple[str, datetime]] = set()
     for r in ctx.reminders:
         due = r.get("due_at")
         if not isinstance(due, datetime) or r.get("done"):
             continue
+        #: The same words at the same minute are one line (audit 1028 E29).
+        key = (" ".join(str(r.get("text") or "").split()).casefold(), due.replace(second=0, microsecond=0, tzinfo=None))
+        if key in seen:
+            continue
+        seen.add(key)
         at = f"{due:%H:%M}"
         ev = Event(due.date(), str(r.get("text") or "").strip(), "reminder", r.get("entry_id"), "", at, str(r.get("priority") or ""))
         if due.date() < ctx.now.date():
@@ -298,7 +305,10 @@ def _note_days(note: dict, now: datetime) -> tuple[tuple[date, str], ...]:
     if hit is not None:
         return hit
     found: list[tuple[date, str]] = []
+    title = study.title_of(content)
     for sentence in _dated_lines(content):
+        if recognise.logged_day(sentence, title):
+            continue  # "Wednesday bench 60kg." in a gym log: a day gone, not one due (E20)
         if recognise.told_as_past(sentence) and not re.search(r"\d{4}", sentence):
             #: "Slept badly on Tuesday." happened; its day is never ahead (Z26).
             continue
@@ -409,7 +419,27 @@ def _due(ctx: Ctx, win: tuple[date, date, str]) -> Reply | None:
         lines += ["", "**Overdue**"] + [e.line(overdue=True) for e in overdue[:5]]
     if (end - start).days >= 3:
         lines += _next_reminder(ctx, end, found)
-    return Reply("\n".join(lines), asks=["Plan my week"] if (end - start).days >= 3 else [])
+    return Reply("\n".join(lines), asks=[*_item_chips(found, today), *(["Plan my week"] if (end - start).days >= 3 else [])])
+
+
+def _item_chips(found: list[Event], today: date) -> list[str]:
+    """The Next chips an answer's own items give (audit 1028 E67): open the
+    first note listed, and set a reminder for the first dated note line. Each
+    is a sentence the app acts on; a reminder item already is one."""
+    shown = found[:MAX_ITEMS]
+    named = next((e for e in shown if e.kind == "note" and e.note_id is not None and _chip_title(e.title)), None)
+    if named is None:
+        return []
+    title = _chip_title(named.title)
+    when = "today" if named.day == today else "tomorrow" if named.day == today + timedelta(days=1) else f"on {named.day.day} {named.day:%B}"
+    return [f"Open the {title} note", f"Remind me about {title} {when}"]
+
+
+def _chip_title(title: str) -> str:
+    """A note's name as a chip says it, or "" when it is cut short or holds a
+    mark the ask would trip on."""
+    title = " ".join((title or "").split())
+    return "" if not title or title.endswith("…") or len(title) > 40 or re.search(r"[\"“”‘’\[\]#]", title) else title
 
 
 def _overdue(ctx: Ctx) -> Reply:
@@ -556,6 +586,11 @@ def _until(ctx: Ctx, subject: str) -> Reply | None:
     today = ctx.now.date()
     far = today + timedelta(days=900)
     found, _o = events(ctx, today, far)
+    #: The shared ranker orders the events by their note (audit 1029 rank 18):
+    #: the note titled as the subject, then the one that defines it, keep
+    #: their place; reminders and the rest stay in date order.
+    by_id = {n.get("id"): n for n in ctx.notes}
+    found = note_rank.lead_by(found, subject, lambda e: by_id.get(e.note_id) or {"content": ""})
     ev = _event_counting_down_to(found, wanted, today)
     if ev is None:
         return None
@@ -637,7 +672,24 @@ def _open_tasks(ctx: Ctx, limit: int = OPEN_LIMIT) -> list[tuple[str, dict]]:
         out += [(task, note) for task in study.open_tasks(str(note.get("content") or ""))]
         if len(out) >= limit:
             break
-    return out[:limit]
+    return _not_done_later(ctx, out[:limit])
+
+
+def _not_done_later(ctx: Ctx, tasks: list[tuple[str, dict]]) -> list[tuple[str, dict]]:
+    """Leaves out an unticked line a later note records as done: "what is
+    still open" agrees with "is X still on my list" (fable-eye F15). The
+    notes are read only when there is an open line to check."""
+    if not tasks:
+        return tasks
+    from tessellate.ai.composer_read import read_note  # noqa: PLC0415
+
+    views = [v for i, n in enumerate(ctx.notes[:300]) if (v := read_note(n, i))]
+    by_id = {v.note.get("id"): v for v in views}
+    done: set[tuple[object, str]] = set()
+    for nid in {note.get("id") for _, note in tasks}:
+        if view := by_id.get(nid):
+            done |= {(nid, study.clean(re.sub(r"^\s*[-*]?\s*\[[ xX]\]\s*", "", s.text))) for s in view.sentences if composer_done.recorded_later(views, view, s)}
+    return [(task, note) for task, note in tasks if (note.get("id"), task) not in done]
 
 
 def _open_reminders(ctx: Ctx) -> list[dict]:
@@ -736,6 +788,9 @@ def _asks_due(text: str, today: date) -> bool:
 def answer(ctx: Ctx) -> Reply | None:
     text = " ".join((ctx.question or "").split())
     if not text or len(text) > 200:
+        return None
+    #: "schedule a reminder" starts one; it is not a plan to lay out (INBOX 1668 a).
+    if reminder_parser.canonical_ask(text) != text:
         return None
     today = ctx.now.date()
     if _LEFT.match(text):

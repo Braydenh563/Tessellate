@@ -65,7 +65,13 @@ check("plain text is not", mathEditorSpan("hello", 2, 2) === null, span("hello",
 
 // Every symbol draws as its glyph; every template and sample is structure.
 const groups = mathEditorGroups();
-check("seventeen groups", groups.length === 17, groups.map((g) => g.key).join());
+//: INBOX 1579: Word's eleven, then the groups the owner found missing, then the symbols.
+check("twenty-one groups", groups.length === 21, groups.map((g) => g.key).join());
+const labels = groups.map((g) => g.label);
+for (const wanted of ["Greek, lower case", "Greek, upper case", "Relations", "Arrows", "Sets and logic", "Accent", "Decoration", "Limit and log", "Large operator", "Matrix", "Common formulas"]) {
+  check(`group/${wanted}`, labels.includes(wanted), labels.join());
+}
+check("a tile is never in a group twice under one name", new Set(groups.flatMap((g) => g.items.map((i) => `${g.key}/${i.name}`))).size === groups.reduce((n, g) => n + g.items.length, 0), "");
 check("Word's eleven structure groups, in Word's order", groups.slice(0, 11).map((g) => g.label).join() === "Fraction,Script,Radical,Integral,Large operator,Bracket,Function,Accent,Limit and log,Operator,Matrix", groups.slice(0, 11).map((g) => g.label).join());
 const COMMAND_WORDS = /m[io]\((frac|tfrac|sqrt|begin|end|binom|vec|hat|overline|left|right|partial|to|square|lfloor|rfloor|lceil|rceil|langle|rangle|iiint|coprod|tilde)\)/;
 //: A template's boxes, as the stored text has them.
@@ -77,18 +83,30 @@ for (const group of groups) {
       const leaf = tree.kids[0];
       check(`glyph/${item.name}`, leaf.text === item.glyph, `${sketch(tree)} for ${item.glyph}`);
     }
-    if (group.structures) {
+    if (group.structures && group.key !== "formula") {
       check(`template/${item.name}/has a box`, /#[@?]/.test(item.tex), item.tex);
       check(`template/${item.name}/first box takes the selection`, item.tex.includes("#@") || item.tex.startsWith("#@"), item.tex);
     }
+    //: INBOX 1579: every tile inserts LaTeX that is whole (its braces and environments close, no stray `#`) and the
+    //: renderer draws it without having to guess: `problem` is the first thing it could not read.
+    const plain = item.tex.replace(/#[@?]/g, "");
+    let depth = 0;
+    for (const ch of plain.replace(/\\[{}]/g, "")) depth += ch === "{" ? 1 : ch === "}" ? -1 : 0;
+    check(`whole/${item.name}/braces close`, depth === 0, item.tex);
+    check(`whole/${item.name}/environments close`, (plain.match(/\\begin\{/g) || []).length === (plain.match(/\\end\{/g) || []).length, item.tex);
+    check(`whole/${item.name}/no stray box mark`, !plain.includes("#"), item.tex);
     for (const tex of [boxed(item.tex), item.sample].filter(Boolean)) {
       let out;
+      let problem = "";
       try {
-        out = sketch(docMathTree(tex, true));
+        const tree = docMathTree(tex, true);
+        out = sketch(tree);
+        problem = tree.problem;
       } catch (error) {
         out = `threw ${error.message}`;
       }
       check(`structure/${item.name}/${tex}`, !COMMAND_WORDS.test(out) && !out.startsWith("threw"), out);
+      check(`renders/${item.name}/${tex}`, problem === "", problem);
     }
   }
 }
@@ -101,7 +119,7 @@ def core_checks(tmp_path_factory) -> list[dict]:
     node = shutil.which("node")
     if not node:  # pragma: no cover - node is in the sandbox and in CI
         pytest.skip("node is not available")
-    docs = (JS / "documents.js").read_text(encoding="utf-8")
+    docs = (JS / "documents-math.js").read_text(encoding="utf-8")  # the parser moved out of documents.js (DC13 remainder, doc23-1102)
     source = _region(docs, "// DOC-MATH-BEGIN", "// DOC-MATH-END")
     source += _region(EDITOR, "// MATH-EDITOR-CORE-BEGIN", "// MATH-EDITOR-CORE-END")
     script = tmp_path_factory.mktemp("matheditor") / "run.js"
@@ -123,7 +141,7 @@ def test_the_templates_output_and_span(core_checks: list[dict]) -> None:
 def test_one_lazy_module_behind_one_stand_in() -> None:
     entries = (JS / "lazy-entries.js").read_text(encoding="utf-8")
     assert (
-        'mathEditor: ["/css/math-field-lazy.css", "/vendor/mathlive/mathlive.min.js", "/js/math-field.js", '
+        'mathEditor: ["/css/key-grid-lazy.css", "/css/math-field-lazy.css", "/vendor/mathlive/mathlive.min.js", "/js/math-field.js", '
         '"/css/math-editor-lazy.css", "/js/math-editor.js"]'
     ) in entries
     assert 'mathEditor: ["openMathEditor"]' in entries
@@ -146,12 +164,26 @@ def test_every_surface_is_a_thin_caller() -> None:
     assert 'event.code !== "Equal"' in entries and 'box?.id !== "question"' in entries
 
 
-def test_its_help_is_the_popover_recipe_and_a_guide_topic() -> None:
-    assert 'setAttribute("data-help-for", "math-editor-help")' in EDITOR
-    assert 'body.id = "math-editor-help"' in EDITOR
+def test_its_help_is_the_dialogs_head_popover_and_a_guide_topic() -> None:
+    #: One '?' for the dialog, in its head (INBOX 1530 g M6), not one per tab.
+    kit = (JS / "reply-kit.js").read_text(encoding="utf-8")
+    assert 'setAttribute("data-help-for", helpId)' in kit and "Equation: click a dotted box" in kit
+    assert "mathEditorHelp" not in EDITOR
     from tessellate.ai import help_topics_more
 
     topic = next(t for t in help_topics_more.MORE_TOPICS if t["id"] == "equation-editor")
     assert "Alt+=" in topic["body"] and "/equation" in topic["body"]
     assert "LaTeX" in topic["body"] and "dotted box" in topic["body"]
     assert help_topics_more.TOPIC_META["equation-editor"]["title"] == "Equation editor"
+
+
+def test_structure_tiles_size_to_their_formula() -> None:
+    """INBOX 1579: a fixed 4.5rem column clipped the 3x3 matrix's brackets (28 tiles overflowed at 1440 and 390).
+
+    Measured in the running app: every tile's scrollWidth equals its clientWidth, light and dark, at both widths.
+    """
+    css = (ROOT / "frontend" / "css" / "math-editor-lazy.css").read_text(encoding="utf-8")
+    wide = re.search(r"\.math-editor-grid-wide \{([^}]*)\}", css)
+    assert wide and "display: flex" in wide.group(1) and "flex-wrap: wrap" in wide.group(1)
+    tile = re.search(r"\.math-editor \.math-editor-tile \{([^}]*)\}", css)
+    assert tile and "overflow" not in tile.group(1), "a tile that hides its overflow clips a wide formula"

@@ -35,6 +35,9 @@ function atlasBlinkMay(box) {
   const lids = box.querySelector(".atl-layer-lids:not(.atl-layer-lidf)");
   const buddy = box.closest("#nm-buddy");
   if (!lids || box.querySelector(".atl-blinking, .atl-blinking-slow") || box.hasAttribute("data-atl-moving") || buddy?.classList.contains("nmb-act-hide")) return false;
+  //: Not behind a modal (INBOX 1587): unseen, and the read below settled the
+  //: open overlay (237ms at 4x CPU with Settings open).
+  if (buddy && nameMarkBuddyBehindCover()) return false;
   //: A closed-eye mood, or an act that moves the head, sets the layer's
   //: scale to 0 (the CSS): nothing to blink. Read once per mood and set
   //: of classes, not every blink (each read makes the page restyle).
@@ -98,6 +101,8 @@ function atlasLowerState(buddy, box) {
   if (has("nmb-act-startle") || mood === "surprised") return "startle";
   if (/^(lie|curl)/.test(pose) || has("nmb-sleep") || has("nmb-act-nap") || has("nmb-act-lie")) return "lie";
   if (has("nmb-walking") || has("nm-buddy-dragging") || buddy?.dataset.travel) return "walk";
+  const posed = atlasLowerState.acts.find((act) => has(`nmb-act-${act}`)) || (pose === "hang" ? "hang" : "");
+  if (posed) return posed;
   if (pose === "sit" || has("nmb-act-chair") || has("nmb-act-beanbag") || has("nmb-act-meditate")) return "sit";
   if (["wave", "map", "shrug", "bell", "lantern", "carry", "juggle", "scratch", "facepalm", "cheer"].some((a) => has(`nmb-act-${a}`))) return "gesture";
   if (has("nmb-think") || mood === "thinking" || mood === "determined") return "think";
@@ -105,6 +110,8 @@ function atlasLowerState(buddy, box) {
   if (["sad", "sleepy", "worried"].includes(mood) || has("nmb-drowsy")) return "sad";
   return "idle";
 }
+//: The acts that pose the lower body of their own (INBOX 1681, avatars.js, after `NMB_ATLAS_ACTS`); a hang does too, climbing or not (a property, not a global: `tests/test_global_scope_ratchet.py`).
+atlasLowerState.acts = ["crouch", "lounge", "glide", "drift"];
 //: **Away is off** (audit AI1, 2026-10-31: the companion faded out on every
 //: tab but the one it lives on kept about 65 animations running, 540 ms of
 //: main thread per 5 s at 4x CPU): a companion that is away (`nmb-away`,
@@ -217,7 +224,6 @@ function atlasRigGesture(arm, raise, buddy) {
   //: A wave holds the forearm about upright whatever the upper arm does
   //: (his swings to 102 degrees, hers to 146), never over the head.
   if (arm.side === "r" && has("nmb-act-wave")) [el, wr] = [-Math.max(10, Math.min(60, 175 - raise)), -12];
-  else if (arm.side === "r" && has("nmb-act-map")) [el, wr] = [-10, -8];
   else if (arm.side === "r" && (has("nmb-act-bell") || has("nmb-act-lantern") || has("nmb-act-carry"))) [el, wr] = [-8, 0];
   return [Math.max(ATLAS_EL_UP, Math.min(135, el)), wr];
 }
@@ -245,6 +251,13 @@ function atlasRigSpring(j, target, dt, zeta) {
     j.x += j.v * h;
   }
 }
+//: **A wake reads the page one frame later** (the lag log, a tab click:
+//: `atlasRigWake 33ms (forced layout 32ms)`, 108ms at 4x CPU). A wake lands
+//: in the click or the observer's microtask, with the arriving page's class
+//: flips still unsettled; the frame it asked for runs before that frame's
+//: style pass, so its first read of the arm, the lids or a prop's opacity
+//: settled the whole page, forced. The next frame's callback follows the
+//: frame that settled it: the same read, a clean style. One frame (16ms) late.
 function atlasRigWake(host) {
   const box = host?.classList?.contains("atl-figure-box") ? host : host?.querySelector?.(".atl-figure-box");
   const rig = box?.atlasRig;
@@ -259,13 +272,19 @@ function atlasRigWake(host) {
   rig.dirty = true;
   if (!rig.observer && typeof MutationObserver === "function" && box.isConnected) {
     rig.host = box.closest("#nm-buddy") || box;
-    rig.observer = new MutationObserver(() => atlasRigWake(box));
-    const attributes = { attributes: true, attributeFilter: ["class", "data-pose", "data-atlas-variant", "data-atlas-mood", "data-travel", "data-side"] };
+    //: A class record whose value is what it was (a `classList.add` of a class already
+    //: there) changed nothing the CSS can show, so it does not wake the rig (DX1).
+    rig.observer = new MutationObserver((records) => {
+      if (records.some((r) => r.attributeName !== "class" || r.oldValue !== r.target.getAttribute("class"))) atlasRigWake(box);
+    });
+    const attributes = { attributes: true, attributeOldValue: true, attributeFilter: ["class", "data-pose", "data-atlas-variant", "data-atlas-mood", "data-travel", "data-side"] };
     for (const el of new Set([rig.host, box, rig.body])) rig.observer.observe(el, attributes);
   }
   rig.still = 0;
-  if (!rig.raf) rig.raf = requestAnimationFrame((now) => atlasRigFrame(rig, now));
+  if (!rig.raf) rig.raf = atlasRigWake.after((now) => atlasRigFrame(rig, now), 2);
 }
+//: The only place a skipped or settled frame is asked for: `callback` after `frames` frames (2: after the one that draws the page).
+atlasRigWake.after = (callback, frames) => requestAnimationFrame((t) => (frames > 1 ? atlasRigWake.after(callback, frames - 1) : callback(t)));
 //: **Throwing stars** (B88b, the owner, 2026-10-17: "the throwing stars
 //: action for atlas isnt animated"). The juggle turned each star on a CSS
 //: circle about one point over the head while both arms held still. The rig
@@ -405,16 +424,22 @@ function atlasRigFrame(rig, now) {
   }
   const live = atlasMotionOK(box) && !box.classList.contains("atl-off") && !rig.fresh;
   rig.fresh = false;
+  const buddy = rig.host && rig.host.id === "nm-buddy" ? rig.host : null;
+  //: **The corner companion's rig runs at 30 a second, not at the screen's rate** (the lag log:
+  //: `atlasRigFrame 60 calls/s, 3.7ms each (219ms of every second)` on the library, 36 a second
+  //: on the dashboard). A gesture, a walk or an act keeps it busy and each call restyles and
+  //: repaints the body layer, at 64 by 92 pixels where a half-rate step is not seen (the walk
+  //: was drawn every other frame already). A frame under `atlasRigFrame.gapMs` from the last
+  //: one waits for the next; the springs take the longer step (`dt`, capped). Carried, it
+  //: follows the hand every frame; the large view (no companion host) too.
+  if (live && buddy && rig.at && now - rig.at < atlasRigFrame.gapMs && !buddy.classList.contains("nm-buddy-dragging")) {
+    atlasRigFrame.again(rig);
+    return;
+  }
   const dt = rig.at ? Math.min(0.05, (now - rig.at) / 1000) : 1 / 60;
   rig.at = now;
-  const buddy = rig.host && rig.host.id === "nm-buddy" ? rig.host : null;
   const walking = live && !!buddy && buddy.classList.contains("nmb-walking");
   let busy = walking;
-  //: A walk's swing is drawn every other frame (30 a second), as the walk's
-  //: own steps are paced (`nameMarkBuddyTempo`): each one repaints the body
-  //: layer. A change of pose is drawn every frame; it is over in half a second.
-  rig.tick = (rig.tick || 0) + 1;
-  const write = !walking || rig.tick % 2 === 0;
   //: **Every read before any write.** Each arm used to read its probe, then
   //: write its transform, so the next arm's read (and the head's) forced the
   //: page to restyle again, three or four times a frame on top of the
@@ -428,7 +453,15 @@ function atlasRigFrame(rig, now) {
   //: which wakes the rig (`rig.dirty`), or while an animation runs on the
   //: arm; once both arms and the turn have held a quarter second with none
   //: running, the rig works from what it read until the next wake.
-  const look = rig.dirty || !rig.reads;
+  //: **Not the first to read a page that has just flipped** (INBOX 1560's
+  //: found list, a30v): inside `uiSettlingUntil` (a tab, a dialog arriving)
+  //: a read here paid the whole arriving page's restyle, 71 to 262ms at 4x.
+  //: It works from what it read until the page has settled, and stays awake
+  //: until it has read again.
+  //: Nor behind a dialog (INBOX 1667: 30 reads, 858ms forced across six Settings presses at 4x): the
+  //: corner figure is drawn at opacity 0 under it, and its read paid for the open dialog's restyles.
+  const settling = !!rig.reads && (now < (globalThis.uiSettlingUntil || 0) || (!!buddy && nameMarkBuddyBehindCover()));
+  const look = (rig.dirty || !rig.reads) && !settling;
   const reads = look ? rig.arms.map((arm) => ({ ...atlasRigRead(arm), anim: live && arm.running.size > 0 })) : rig.reads;
   const turnMatrix = !look ? rig.turnMatrix : rig.pose && rig.heads.length ? /matrix\(([^)]+)\)/.exec(getComputedStyle(rig.pose).transform) : null;
   if (look) {
@@ -498,13 +531,13 @@ function atlasRigFrame(rig, now) {
     if (moving) busy = true;
     if (live && (got.anim || (arm.antic && now < arm.antic.until))) busy = true;
     const t = `rotate(${atlasFix(j.sh.x)}deg)${Math.abs(j.sy.x - 1) > 0.002 ? ` scale(1, ${j.sy.x.toFixed(3)})` : ""}`;
-    if (write && t !== arm.shown) {
+    if (t !== arm.shown) {
       for (const g of arm.groups) g.style.setProperty("transform", t, "important");
       arm.shown = t;
     }
     const bend = j.el.x * arm.sgn;
     const wrist = j.wr.x * arm.sgn;
-    if (write && (Math.abs(bend - arm.drawn[0]) > 0.1 || Math.abs(wrist - arm.drawn[1]) > 0.1 || (!moving && (bend !== arm.drawn[0] || wrist !== arm.drawn[1])))) {
+    if (Math.abs(bend - arm.drawn[0]) > 0.1 || Math.abs(wrist - arm.drawn[1]) > 0.1 || (!moving && (bend !== arm.drawn[0] || wrist !== arm.drawn[1]))) {
       const d = atlasArmPath(arm.geo, bend, wrist);
       for (const p of arm.paths) p.setAttribute("d", d);
       arm.hand?.setAttribute("transform", atlasArmHand(arm.geo, bend, wrist));
@@ -539,7 +572,13 @@ function atlasRigFrame(rig, now) {
   }
   box.toggleAttribute("data-atl-moving", busy);
   //: Six quiet frames in a row and it sleeps until the next change.
-  rig.still = busy ? 0 : rig.still + 1;
+  rig.still = busy || (settling && rig.dirty) ? 0 : rig.still + 1;
   if (live && rig.still < 6) rig.raf = requestAnimationFrame((t) => atlasRigFrame(rig, t));
   else rig.at = 0;
 }
+//: The shortest gap between two drawn frames of the corner companion's rig (a property, not a global: `tests/test_global_scope_ratchet.py`).
+atlasRigFrame.gapMs = 24;
+//: The same loop's next frame, for a frame skipped under the gap (the frame's end asks for the next one itself).
+atlasRigFrame.again = (rig) => {
+  rig.raf = atlasRigWake.after((t) => atlasRigFrame(rig, t), 1);
+};

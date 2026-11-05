@@ -991,9 +991,14 @@ let wbGuideBoxCache = null;
 //: for a plain drag and the whole selection for a group one. It used to be a
 //: single kind and id, so a group drag would have snapped its own members to
 //: each other, which is why group drags had no guides at all.
-function wbGuideBoxes(excludeKeys) {
+//:
+//: **`at` is the box being moved or sized, and it picks which frames' margins
+//: count** (INBOX 1563): a frame's four margin lines (`wbGuideBoxes.walls`)
+//: are targets only for a box whose centre is inside that frame, so a card
+//: far outside never snaps to a line it cannot see the use of.
+function wbGuideBoxes(excludeKeys, at = null) {
   const key = excludeKeys ? [...excludeKeys].sort().join(",") : "";
-  if (wbGuideBoxCache && wbGuideBoxCache.key === key) return wbGuideBoxCache.boxes;
+  if (wbGuideBoxCache && wbGuideBoxCache.key === key) return wbGuideBoxes.within(wbGuideBoxCache.boxes, at);
   const boxes = [];
   for (const [kind, listName] of [["node", "nodes"], ["object", "objects"]]) {
     for (const item of wbState[listName] || []) {
@@ -1019,9 +1024,73 @@ function wbGuideBoxes(excludeKeys) {
     const box = wbItemBBox("sketch", sketch);
     if (box) boxes.push(box);
   }
+  //: **A frame's margins are targets inside it** (INBOX 1563, the owner: "in
+  //: these frames, I cant align objects with a margin or like the header
+  //: text or have nice spacing between them"). Four zero-thickness boxes, the
+  //: inner left, right, top and bottom lines at the frame's own padding. They
+  //: are ordinary boxes to the alignment and the equal-spacing passes, so a
+  //: card lands on the margin, or the same distance from it as from its
+  //: neighbour, with the guide the canvas already draws.
+  for (const frame of wbState.objects || []) {
+    if (frame.kind !== "frame" || (excludeKeys && excludeKeys.has(wbMultiKey("object", frame.id)))) continue;
+    if (wbItemHidden("object", frame) || wbItemRotation("object", frame)) continue;
+    boxes.push(...wbGuideBoxes.walls(frame, wbGuideBoxes.insets(frame)));
+  }
   wbGuideBoxCache = { key, boxes };
-  return boxes;
+  return wbGuideBoxes.within(boxes, at);
 }
+
+//: The boxes a gesture sees: every box, less the margins of frames the moving
+//: box is not in (its centre outside the frame's outer box).
+wbGuideBoxes.within = (boxes, at) => {
+  if (!at || !boxes.some((b) => b.wall)) return boxes;
+  const cx = at.x + at.w / 2, cy = at.y + at.h / 2;
+  return boxes.filter((b) => !b.wall || (cx >= b.wall.minX && cx <= b.wall.maxX && cy >= b.wall.minY && cy <= b.wall.maxY));
+};
+
+//: A frame's four margin lines as boxes, given its insets (`{left, right,
+//: top, bottom}` from its outer edge); none when the margins leave no room.
+//: `only` names the one edge of a dragged box a line is for (the left line
+//: is for a left edge, not for a centre or a right edge that happens to pass
+//: it), and `wall` the frame's outer box, for `within`. Pure (node-tested).
+wbGuideBoxes.walls = (frame, ins) => {
+  if (!ins) return [];
+  const wall = { minX: frame.x, minY: frame.y, maxX: frame.x + frame.width, maxY: frame.y + frame.height };
+  const l = wall.minX + ins.left, r = wall.maxX - ins.right, t = wall.minY + ins.top, b = wall.maxY - ins.bottom;
+  if (r <= l || b <= t) return [];
+  return [
+    { minX: l, maxX: l, minY: t, maxY: b, only: "left", wall },
+    { minX: r, maxX: r, minY: t, maxY: b, only: "right", wall },
+    { minX: l, maxX: r, minY: t, maxY: t, only: "top", wall },
+    { minX: l, maxX: r, minY: b, maxY: b, only: "bottom", wall },
+  ];
+};
+
+//: How far a frame's margins sit inside its edge, in board units, read from
+//: what is drawn so they are the frame's own tokens and never a copy of them:
+//: the side and bottom margins are `--space-7`, the panel's padding; a
+//: panel's left is its header text's left edge (the title's own padding) and
+//: its top is under the header and the subtitle, a margin below the lower of
+//: the two. A frame whose title hangs above its edge has no header inside.
+//: Null when the frame is not drawn.
+wbGuideBoxes.insets = (frame) => {
+  const node = document.querySelector(`.wb-object[data-id="${frame.id}"]`);
+  if (!node) return null;
+  const probe = document.createElement("div");
+  probe.style.position = "absolute";
+  probe.style.visibility = "hidden";
+  probe.style.width = "var(--space-7)";
+  node.appendChild(probe);
+  const pad = parseFloat(getComputedStyle(probe).width) || 0;
+  probe.remove();
+  if (!node.classList.contains("wb-frame-panel")) return { left: pad, right: pad, top: pad, bottom: pad };
+  const border = parseFloat(getComputedStyle(node).borderLeftWidth) || 0;
+  const title = node.querySelector(".wb-frame-title");
+  const head = node.querySelector(".wb-frame-hint:not([hidden])") || title;
+  const text = title ? title.offsetLeft + (parseFloat(getComputedStyle(title).paddingLeft) || 0) : pad;
+  const below = head ? head.offsetTop + head.offsetHeight : 0;
+  return { left: border + text, right: border + text, top: border + below + pad, bottom: border + pad };
+};
 
 function wbClearGuideBoxCache() {
   wbGuideBoxCache = null;
@@ -1102,7 +1171,7 @@ function wbDragExcludeKeys(d, kind) {
 function wbAlignmentGuides(excludeKeys, x, y, w, h, tol = WB_ALIGN_SNAP_PX) {
   const dragged = { left: x, centerX: x + w / 2, right: x + w, top: y, centerY: y + h / 2, bottom: y + h };
   let bestX = null, bestY = null;
-  const others = wbGuideBoxes(excludeKeys);
+  const others = wbGuideBoxes(excludeKeys, { x, y, w, h });
   {
     for (const box of others) {
       const other = {
@@ -1110,12 +1179,14 @@ function wbAlignmentGuides(excludeKeys, x, y, w, h, tol = WB_ALIGN_SNAP_PX) {
         top: box.minY, centerY: (box.minY + box.maxY) / 2, bottom: box.maxY,
       };
       for (const edge of ["left", "centerX", "right"]) {
+        if (box.only && box.only !== edge) continue;
         const delta = other[edge] - dragged[edge];
         if (Math.abs(delta) <= tol && (!bestX || Math.abs(delta) < Math.abs(bestX.delta))) {
           bestX = { delta, at: other[edge], y1: Math.min(dragged.top, other.top), y2: Math.max(dragged.bottom, other.bottom), kind: edge === "centerX" ? "center" : "edge" };
         }
       }
       for (const edge of ["top", "centerY", "bottom"]) {
+        if (box.only && box.only !== edge) continue;
         const delta = other[edge] - dragged[edge];
         if (Math.abs(delta) <= tol && (!bestY || Math.abs(delta) < Math.abs(bestY.delta))) {
           bestY = { delta, at: other[edge], x1: Math.min(dragged.left, other.left), x2: Math.max(dragged.right, other.right), kind: edge === "centerY" ? "center" : "edge" };
@@ -1158,7 +1229,7 @@ function wbAlignmentGuides(excludeKeys, x, y, w, h, tol = WB_ALIGN_SNAP_PX) {
   // triple: that is what draw.io and PowerPoint show too, and it keeps this
   // O(n) per drag frame like the alignment pass above it, not O(n^2).
   if (!bestX) {
-    const rowMates = others.filter((b) => b.minY < dragged.bottom && b.maxY > dragged.top);
+    const rowMates = others.filter((b) => (!b.only || b.only === "left" || b.only === "right") && b.minY < dragged.bottom && b.maxY > dragged.top);
     const left = rowMates.filter((b) => b.maxX <= dragged.left + tol).sort((a, b) => b.maxX - a.maxX)[0];
     const right = rowMates.filter((b) => b.minX >= dragged.right - tol).sort((a, b) => a.minX - b.minX)[0];
     if (left && right) {
@@ -1184,7 +1255,7 @@ function wbAlignmentGuides(excludeKeys, x, y, w, h, tol = WB_ALIGN_SNAP_PX) {
     }
   }
   if (!bestY) {
-    const colMates = others.filter((b) => b.minX < dragged.right && b.maxX > dragged.left);
+    const colMates = others.filter((b) => (!b.only || b.only === "top" || b.only === "bottom") && b.minX < dragged.right && b.maxX > dragged.left);
     const above = colMates.filter((b) => b.maxY <= dragged.top + tol).sort((a, b) => b.maxY - a.maxY)[0];
     const below = colMates.filter((b) => b.minY >= dragged.bottom - tol).sort((a, b) => a.minY - b.minY)[0];
     if (above && below) {
@@ -1256,7 +1327,7 @@ function wbSpacingSeries(mates, dragged, axis, tol = WB_ALIGN_SNAP_PX) {
 //: `edges` the moving sides ("se", "w"). Pure apart from `wbGuideBoxes`
 //: (node-tested in tests/test_wb_resize_guides.py).
 function wbResizeGuides(excludeKeys, box, edges, { fit = null, grid = 0, min = 1, tol = WB_ALIGN_SNAP_PX } = {}) {
-  const others = wbGuideBoxes(excludeKeys);
+  const others = wbGuideBoxes(excludeKeys, box);
   const out = { x: box.x, y: box.y, w: box.w, h: box.h, guideLines: [] };
   const axis = (horizontal) => {
     const hi = horizontal ? edges.includes("e") : edges.includes("s");
@@ -1281,6 +1352,7 @@ function wbResizeGuides(excludeKeys, box, edges, { fit = null, grid = 0, min = 1
       const a = Math.min(crossLo, other[cMin]) - 20, b = Math.max(crossHi, other[cMax]) + 20;
       offer(other[minK], across(other[minK], a, b, "edge"));
       offer(other[maxK], across(other[maxK], a, b, "edge"));
+      if (other.only) continue; // a frame's margin line: an edge to land on, not a centre or a size
       offer((other[minK] + other[maxK]) / 2, across((other[minK] + other[maxK]) / 2, a, b, "center"));
       const span = other[maxK] - other[minK];
       offer(hi ? fixed + span : fixed - span, [
@@ -3604,7 +3676,7 @@ function wbToggleNavigator(force) {
 // --- Find a card on this board ---------------------------------------------
 
 //: `word` and `regex` are the find bar's two options; they outlive a close.
-const wbBoardSearch = { query: "", matches: [], index: -1, word: false, regex: false, error: "" };
+const wbBoardSearch = { query: "", matches: [], index: -1, word: false, regex: false, error: "", late: 0 };
 
 /**
  * Every searchable string an item carries, lowercased.
@@ -3853,8 +3925,15 @@ function wbUpdateSearchCount() {
   const el = document.getElementById("wb-search-count");
   if (!el) return;
   const total = wbBoardSearch.matches.length;
+  clearTimeout(wbBoardSearch.late);
   if (!wbBoardSearch.query.trim()) {
     el.textContent = "";
+    return;
+  }
+  //: A pattern half-typed is not wrong yet: its error waits for a pause (INBOX 1579).
+  if (!total && wbBoardSearch.error) {
+    el.textContent = "";
+    wbBoardSearch.late = setTimeout(() => (el.textContent = wbBoardSearch.error), 800);
     return;
   }
   // "3 of 12", not a bare number, a screen reader reading this aria-live
@@ -5543,19 +5622,20 @@ async function wbResizeSelectionBy(dw, dh) {
 // where they came from, not just to whatever else in the notebook they
 // happen to resemble. Reuses `wbSelectionEntries()`, same as align/
 // distribute above, rather than a second way of reading the selection.
-function wbExtractNotes() {
+async function wbExtractNotes() {
   const noteEntries = wbSelectionEntries().filter((e) => e.kind === "node");
   if (noteEntries.length === 0) {
     toast("Select at least one note card to extract from.");
     return;
   }
   const entryIds = [...new Set(noteEntries.map((e) => e.item.entry_id))];
-  const byId = new Map(allEntries.map((e) => [e.id, e]));
   // A card whose note isn't in `allEntries` yet (created elsewhere, cache
   // not refreshed) is skipped rather than sent as empty text, it still
-  // counts as a source id, just contributes nothing to read from.
-  const text = entryIds
-    .map((id) => byId.get(id)?.content)
+  // counts as a source id, just contributes nothing to read from. A clipped
+  // row is read whole (`fullEntry`).
+  const rows = await Promise.all(entryIds.map((id) => allEntries.some((e) => e.id === id) ? fullEntry(id).catch(() => null) : null));
+  const text = rows
+    .map((row) => row?.content)
     .filter(Boolean)
     .join("\n\n---\n\n");
   if (!text.trim()) {
@@ -5589,10 +5669,13 @@ let wbNudgeBurst = null; // { key, entry, items: [{kind, item}], timer }
 //: (agent mode there, Ungroup here).
 function wbOwnsChord(e) {
   const view = document.getElementById("library-view-whiteboard");
-  if (!view || view.classList.contains("hidden") || view.offsetParent === null) return false;
+  //: **Read from the markup, never from the layout** (a box or style read; INBOX 1662: the document keydown
+  //: was 143ms, 137 of it forced layout, because this ran right after a click had dirtied the page): a view
+  //: is shown when it and every ancestor lack `.hidden` (tabs hide that way), and a focused element is in the page.
+  if (!view || view.closest(".hidden")) return false;
   const field = document.activeElement;
-  const typing = field && field.offsetParent !== null
-    && (["INPUT", "TEXTAREA"].includes(field.tagName) || field.isContentEditable);
+  const typing = field && (["INPUT", "TEXTAREA"].includes(field.tagName)
+    || field.closest("[contenteditable]:not([contenteditable=false])"));
   if (typing) return false;
   //: Every printable key while a new map topic is on its way: it is the
   //: topic's text (`wbMapTypeahead`), not a shortcut.
@@ -6153,9 +6236,10 @@ function wbFillContextBar() {
     }
     if (which === "shape") {
       document.getElementById("wb-prop-shapefill").value = parsed.fill || "#3355ff";
-      document.getElementById("wb-prop-shapefill-on").checked = Boolean(parsed.fill);
+      const filled = wbColour.fillIsOn("sketch", parsed);
+      document.getElementById("wb-prop-shapefill-on").checked = filled;
       //: Dimmed, not disabled: a fill picked from its well turns it on.
-      document.getElementById("wb-prop-shapefill").classList.toggle("wb-colour-off", !parsed.fill);
+      document.getElementById("wb-prop-shapefill").classList.toggle("wb-colour-off", !filled);
     }
     return;
   }
@@ -6409,14 +6493,16 @@ async function wbMindMapAddCard(parentId, x, y) {
 //: "walk the items" (`wbWalkItems`), which would take the branch key away.
 const wbAddGate = { cardRetypeId: null, renderHold: null, barDeferred: false, barDeferredQueued: false, panBarHold: null, panBarTimer: 0 };
 
-function wbEditNodeText(nodeId, firstKey = "") {
+function wbEditNodeText(nodeId, firstKey = "", whole = null) {
   wbAddGate.cardRetypeId = null;
   const node = wbState.nodes.find((n) => n.id === nodeId);
   if (!node) return;
   const card = document.querySelector(`.node-card[data-id="${nodeId}"]`);
   const content = card?.querySelector(".wb-card-content");
   if (!content) return;
-  const entry = allEntries.find((e) => e.id === node.entry_id);
+  const entry = whole || allEntries.find((e) => e.id === node.entry_id);
+  //: A clipped row is fetched whole first and edited from what `fullEntry` returns: the editor's text is what gets saved.
+  if (entry?.content_truncated) return void fullEntry(entry.id).then((read) => wbEditNodeText(nodeId, firstKey, read), (error) => toast(error.message, true));
   const original = entry?.content || "";
 
   const box = document.createElement("textarea");
@@ -9447,11 +9533,7 @@ function wbBuildContextMenu(kind) {
         rooted ? "Colours this topic's own card" : "Carries down to everything under this topic",
         () => {
           const well = document.getElementById("wb-map-strip-color");
-          try {
-            well?.showPicker();
-          } catch {
-            well?.click();
-          }
+          well?.click();
         });
     });
 
@@ -9617,11 +9699,7 @@ function wbBuildContextMenu(kind) {
       sub(state.tasks ? "Stop being tasks" : "Make these tasks", "A box to tick on each", () => WB_MAP_MULTI_ACTIONS.task(mapTopics));
       sub("Colour these…", "Carries down each one's branch", () => {
         const well = document.getElementById("wb-mapmulti-color");
-        try {
-          well?.showPicker();
-        } catch {
-          well?.click();
-        }
+        well?.click();
       });
       if (state.branches.length) {
         sub(state.folded ? "Open these branches" : "Fold these branches", "The topics picked that have anything under them", () =>
@@ -14192,7 +14270,7 @@ async function wbImportOutlineFile(event) {
 async function wbExportSvg(scope) {
   let { svg } = wbBuildExportSvg(scope);
   //: **The board rides inside the picture** (W5, draw.io's re-editable SVG):
-  //: its rows in `<metadata>`, which Insert, Mermaid, draw.io or board SVG brings back
+  //: its rows in `<metadata>`, which Insert, Diagram, Mermaid, draw.io or board SVG brings back
   //: as shapes and connectors. A map's topics are a tree, not rows to drop.
   if (!wbIsMap()) svg = svg.replace(/(<svg[^>]*>)/, `$1${wbBoardSvgMetadata(wbExportRows(scope))}`);
   await saveFile(wbExportFileName(scope, "svg"), new Blob([await wbInlineSvgImages(svg)], { type: "image/svg+xml" }));
@@ -14631,7 +14709,9 @@ function wbExportBoard() {
   const isMap = wbIsMap();
   const formats = WB_EXPORT_FORMATS.filter((f) => (!f.map || isMap) && (!f.board || !isMap));
   let format = formats[0];
-  let scope = hasSelection ? "selection" : "visible";
+  //: The whole board when nothing is selected (audit 1028 U48): "On screen" put "(view)" in a first export's
+  //: file name and cut off what was past the edge; it stays one press away.
+  let scope = hasSelection ? "selection" : "whole";
 
   const overlay = document.createElement("div");
   overlay.className = "modal-overlay confirm-overlay wb-export-overlay";
@@ -14802,6 +14882,25 @@ function wbExportBoard() {
 //: is a wrapper around a native control (a select, a colour well, a checkbox
 //: in its own label) is `none`, which leaves that control exposed as itself
 //: rather than lying about it being a command.
+//: **The Arrange menu is submenus** (INBOX 1564, U15): each `[data-wb-submenu]`
+//: section ("ph:icon Name") becomes the menu recipe's own group row. The rows
+//: are moved, not rebuilt, so their `data-wb-cmd`, keycaps and ids stay. The
+//: flyout is a `.wb-board-menu` too: the row click, the outside-click test and
+//: the menu looks all find it. Under 820 it is a nested level (`.menu-nested`).
+function wbFoldMenuSubmenus(menu) {
+  for (const section of menu.querySelectorAll("[data-wb-submenu]")) {
+    const group = buildMenuGroupButton(section.dataset.wbSubmenu, [...section.children]);
+    const panel = group.querySelector(".submenu");
+    panel.classList.add("wb-board-menu");
+    //: Named once for the close below (a flyout sets it on each open too).
+    panel._escapedOpener = group.firstElementChild;
+    panel._escapedOpener.title = section.dataset.wbSubmenuTitle;
+    //: A whiteboard-only group (Board, Workshop; INBOX 1627) hides on a map as its section did.
+    if (section.dataset.wbSurface) group.dataset.wbSurface = section.dataset.wbSurface;
+    section.replaceWith(group);
+  }
+}
+
 function wbStampMenuRoles(menu) {
   for (const section of menu.querySelectorAll(".wb-menu-section")) {
     section.setAttribute("role", "group");
@@ -15198,6 +15297,10 @@ async function initWhiteboard() {
   //: hidden in between gave a box of zeroes at click time. Kept for the one
   //: click that follows (a few seconds at most), and copied, so nothing later
   //: can change it under the menu.
+  window.addEventListener("pointerdown", (event) => {
+    const slot = $("wb-radial-more");
+    if (slot) slot._menuWasOpen = event.target.closest?.("#wb-radial-more") ? Boolean(wbCtxMenuEl && !wbCtxMenuEl.classList.contains("hidden")) : undefined;
+  }, true);
   $("wb-radial-more")?.addEventListener("pointerdown", (event) => {
     const slot = event.currentTarget;
     const rect = wbMapRadialSectorRect(slot);
@@ -15217,6 +15320,21 @@ async function initWhiteboard() {
     const ring = document.getElementById("wb-map-radial");
     const box = ring?.getBoundingClientRect();
     if (!node) return;
+    //: **A second press on More closes its menu** (INBOX 1626: "if I click a
+    //: button ... and a popup menu shows, if I click that button again, I
+    //: expect the popup menu to close"). This handler stops the click, so the
+    //: page's outside-click close never sees it. The ring stays, and the
+    //: focus stays on More.
+    //: Read at the press, in the window's capture phase, because the page's
+    //: outside-press close has already hidden the menu by the time this
+    //: click arrives (a keyboard Enter has no press, so its live state).
+    const wasOpen = slot._menuWasOpen ?? (wbCtxMenuEl && !wbCtxMenuEl.classList.contains("hidden"));
+    slot._menuWasOpen = undefined;
+    if (wasOpen) {
+      wbCloseContextMenu();
+      slot.focus({ preventScroll: true });
+      return;
+    }
     //: **The ring stays while its menu is open** (owner: "the referring
     //: radial menu closes when I open the more menu"): the menu is the ring's
     //: own overflow, and the ring is what says which topic it is about. The
@@ -15420,13 +15538,16 @@ async function initWhiteboard() {
       ? `Tidied ${nounCount(moved, "node")}.`
       : "Everything is already where this layout puts it.");
   });
+  //: A card put away leaves its one line on the empty board (`#wb-empty-cue`, audit 1028 B34).
   $("wb-empty-hint-close")?.addEventListener("click", () => {
     $("wb-empty-hint")?.classList.add("hidden");
+    $("wb-empty-cue")?.classList.remove("hidden");
   });
   $("wb-empty-hint-dismiss")?.addEventListener("click", () => {
     prefs.set("wbEmptyHintDismissed", "1");
     wbHintForcedOpen = false;
     $("wb-empty-hint")?.classList.add("hidden");
+    $("wb-empty-cue")?.classList.remove("hidden");
   });
   //: The board's help is its own sheet now (INBOX 566): the Board menu's row
   //: and the empty board's card open it, as "?" does.
@@ -15437,6 +15558,7 @@ async function initWhiteboard() {
     prefs.remove("wbEmptyHintDismissed");
     wbHintForcedOpen = true;
     $("wb-empty-hint")?.classList.remove("hidden");
+    $("wb-empty-cue")?.classList.add("hidden");
   });
   $("wb-empty-hint-keys")?.addEventListener("click", () => wbOpenHelpSheet());
 
@@ -16097,23 +16219,18 @@ async function initWhiteboard() {
     wbScheduleRender();
   });
   document.getElementById("wb-prop-shapefill")?.addEventListener("change", async (e) => {
-    const sketch = wbSelectedSketchOrNull();
-    if (!sketch) return;
-    const before = WB_KIND_INFO.sketch.payload(sketch);
-    wbPushUndo({ action: "move", kind: "sketch", id: sketch.id, before });
     document.getElementById("wb-prop-shapefill-on").checked = true;
     document.getElementById("wb-prop-shapefill").classList.remove("wb-colour-off");
-    await wbSaveSketchProps(sketch, { fill: e.target.value, fillOpacity: 1 });
-    wbScheduleRender();
+    await wbFmtApply("fill", (entry) => (entry.kind === "sketch" ? wbColour.fillColour("sketch", wbFmtSketch(entry), e.target.value) : null), "Fill colour changed.");
   });
+  //: The same toggle as the Format panel's (`wbFillTogglePatch`): off keeps the
+  //: shape's colour, on brings it back (INBOX 1685).
   document.getElementById("wb-prop-shapefill-on")?.addEventListener("change", async (e) => {
-    const sketch = wbSelectedSketchOrNull();
-    if (!sketch) return;
-    const before = WB_KIND_INFO.sketch.payload(sketch);
-    wbPushUndo({ action: "move", kind: "sketch", id: sketch.id, before });
     document.getElementById("wb-prop-shapefill").classList.toggle("wb-colour-off", !e.target.checked);
-    await wbSaveSketchProps(sketch, { fill: e.target.checked ? document.getElementById("wb-prop-shapefill").value : undefined });
-    wbScheduleRender();
+    const colour = document.getElementById("wb-prop-shapefill").value;
+    await wbFmtApply("fill", (entry) => (entry.kind === "sketch" ? wbColour.fillToggle("sketch", wbFmtSketch(entry), e.target.checked, colour) : null),
+      e.target.checked ? "Filled." : "Fill taken off.");
+    wbUpdateContextBar();
   });
   document.getElementById("wb-prop-fontsize")?.addEventListener("change", async (e) => {
     const obj = wbSelectedTextObjectOrNull();
@@ -16229,6 +16346,7 @@ async function initWhiteboard() {
   // shape menu are the ones that were already there, so a tool added to the
   // rail is in the sheet without anybody remembering to add it twice.
   let wbToolsSheetClose = null;
+  let wbToolsWords = [];
   const toolsOpener = document.getElementById("wb-tools-opener");
 
   function wbSyncToolsOpener() {
@@ -16255,6 +16373,32 @@ async function initWhiteboard() {
         body.className = "wb-tools-palette";
         body.appendChild(toolGroup);
         card.appendChild(body);
+        //: **A word under every icon** (audit 1028 U21: 31 icon-only tiles, and
+        //: a touch screen has no tooltip to ask). The word is the button's own
+        //: name without its key, so the accessible name still contains it (WCAG
+        //: 2.5.3), and it is taken out again on close: the rail above 600px is
+        //: icons by design.
+        for (const button of toolGroup.querySelectorAll("button[aria-label], button[title]")) {
+          if (button.textContent.trim()) continue;
+          const full = (button.getAttribute("aria-label") || button.title || "").replace(/\s*\(.*$/, "").replace(/ tool$/i, "").trim();
+          // A name too long for one line of a tile gets its short word; the short word is still inside the full name.
+          const short = {
+            "Upload an image onto the board": "Image",
+            "Emoji and icons": "Emoji",
+            "Lasso select": "Lasso",
+            "Sticky note": "Sticky",
+            "Straight link": "Straight",
+            "Curved link": "Curved",
+          };
+          const name = short[full] || full;
+          if (!name) continue;
+          const word = document.createElement("span");
+          word.className = "wb-tool-word";
+          word.textContent = name;
+          button.appendChild(word);
+          button.classList.add("wb-tool-worded");
+          wbToolsWords.push(word);
+        }
         //: Picking a tool is the end of the errand, so the sheet gets out of
         //: the way and the board is there to draw on. The `close` the recipe
         //: hands `build`, not the variable the call assigns afterwards, and
@@ -16275,6 +16419,11 @@ async function initWhiteboard() {
         );
       },
       onClose: () => {
+        for (const word of wbToolsWords) {
+          word.parentElement?.classList.remove("wb-tool-worded");
+          word.remove();
+        }
+        wbToolsWords = [];
         home.parent.insertBefore(toolGroup, home.next);
         wbToolsSheetClose = null;
         toolsOpener?.setAttribute("aria-expanded", "false");
@@ -16512,6 +16661,7 @@ async function initWhiteboard() {
     .map((wrap) => ({ toggle: wrap.querySelector("[data-wb-menu-toggle]"), menu: wrap.querySelector(".wb-board-menu") }))
     .filter((pair) => pair.toggle && pair.menu);
   for (const { menu, toggle } of boardMenus) {
+    wbFoldMenuSubmenus(menu);
     wbStampMenuRoles(menu);
     //: The arrow keys, Home and End, from the same function every other menu
     //: in the app uses (`wireMenuKeyboard`, app.js). Measured before it was
@@ -16523,9 +16673,18 @@ async function initWhiteboard() {
     wireMenuKeyboard(menu, toggle);
   }
   const closeAllWbMenus = () => {
+    //: A flyout lives at <body> while open, so it is found there, not in a menu.
+    for (const sub of document.querySelectorAll(".submenu.wb-board-menu:not(.hidden)")) {
+      sub.classList.add("hidden");
+      sub._escapedOpener.setAttribute("aria-expanded", "false");
+      restoreEscapedMenu(sub);
+    }
     for (const { toggle, menu } of boardMenus) {
       menu.classList.add("hidden");
       toggle.setAttribute("aria-expanded", "false");
+      //: A nested level (under 820) reopens at the menu's top rows.
+      for (const open of menu.querySelectorAll(".menu-group-open")) open.classList.remove("menu-group-open");
+      menu.classList.remove("menu-nested");
       // Back where it lives, and the stylesheet's own cap back: the next open
       // measures from scratch rather than from a stale number.
       restoreEscapedMenu(menu);
@@ -16610,7 +16769,8 @@ async function initWhiteboard() {
     closeAllWbMenus();
   });
   document.addEventListener("keydown", (e) => {
-    if (e.key !== "Escape") return;
+    //: In a flyout (or a nested level) Escape is the flyout's: it closes back to its row.
+    if (e.key !== "Escape" || document.activeElement.closest(".submenu.wb-board-menu:not(.hidden)")) return;
     //: Escape hands the focus back to the toggle that opened the menu, which
     //: is the half of the contract that was missing: the menu closed and the
     //: focus stayed on the item that had just vanished, so the next Tab
@@ -18542,8 +18702,44 @@ async function initWhiteboard() {
   // directly, and all three funnel through the same upload+place path
   // `handleFileUpload` already established for notes (POST /media/upload,
   // then a placed reference, a board object here instead of markdown text).
+  //: The most the notebook keeps of one upload (`routes_files.MAX_FILE_BYTES`), said before the
+  //: upload starts and not after a 50 MB request fails (audit 1028 B28).
+  const wbPictureCap = 50 * 1024 * 1024;
+  function wbPictureTooBig() {
+    toast("That picture is over 50 MB, the most the notebook keeps. Shrink it and try again.", "info");
+  }
+
+  //: A picture pasted as an address or as markup, not as a file (audit 1028 B28): `text/uri-list`
+  //: naming a picture, or the first `<img>` of `text/html` when the plain text is empty or just
+  //: that address (a paragraph with a picture in it is still a paragraph).
+  function wbPastedPictureAddress(data, html) {
+    const plain = (data?.getData("text/plain") || "").trim();
+    const listed = (data?.getData("text/uri-list") || "").split(/\r?\n/).map((line) => line.trim()).find((line) => line && !line.startsWith("#"));
+    if (listed && /^data:image\/|\.(?:png|jpe?g|gif|webp|avif|bmp|svg)(?:[?#]|$)/i.test(listed)) return listed;
+    if (!html) return "";
+    const src = new DOMParser().parseFromString(html, "text/html").querySelector("img[src]")?.getAttribute("src") || "";
+    return src && (!plain || plain === src) ? src : "";
+  }
+
+  //: A `data:` picture is decoded to a file; one already in the notebook is placed as it is; a web
+  //: address is refused with the reason, since the page may not fetch the web (`connect-src 'self'`).
+  async function wbPlacePastedAddress(src, x, y) {
+    const inline = /^data:(image\/[\w.+-]+);base64,([\s\S]*)$/i.exec(src);
+    if (inline) {
+      if (inline[2].length * 0.75 > wbPictureCap) return wbPictureTooBig();
+      const bytes = Uint8Array.from(atob(inline[2]), (char) => char.charCodeAt(0));
+      //: The upload route reads the type from the name's extension.
+      const ext = inline[1].slice(6).toLowerCase().replace("jpeg", "jpg").replace("svg+xml", "svg");
+      return wbPlaceUploadedImage(new File([bytes], `pasted-picture.${ext}`, { type: inline[1] }), x, y);
+    }
+    const local = src.startsWith(`${location.origin}/media/`) ? src.slice(location.origin.length) : src;
+    if (local.startsWith("/media/")) return wbPlaceImageUrl(local, x, y);
+    toast("This notebook works offline, so a picture from the web is not fetched. Save the picture, then paste or drop the file.");
+  }
+
   async function wbPlaceUploadedImage(file, x, y) {
     if (!file || !file.type?.startsWith("image/")) return;
+    if (file.size > wbPictureCap) return wbPictureTooBig();
     try {
       const formData = new FormData();
       formData.append("file", file);
@@ -18552,18 +18748,26 @@ async function initWhiteboard() {
         headers: authHeaders(),
         body: formData,
       });
+      await wbPlaceImageUrl(uploaded.url, x, y);
+    } catch (err) {
+      toast(err.message || voiceLine("failed", { what: "add that image" }), true);
+    }
+  }
+
+  async function wbPlaceImageUrl(url, x, y) {
+    try {
       const img = new Image();
       const naturalSize = await new Promise((resolve) => {
         img.onload = () => resolve({ w: img.naturalWidth, h: img.naturalHeight });
         img.onerror = () => resolve({ w: 300, h: 200 });
-        img.src = mediaSrc(uploaded.url);
+        img.src = mediaSrc(url);
       });
       //: Its own size, shrunk only to sit inside the view (wbpaste-1026).
       const view = wbVisibleCanvasRect();
       const [vx0, vy0] = wbClientToBoard(view.left, view.top);
       const [vx1, vy1] = wbClientToBoard(view.right, view.bottom);
       const { width, height } = wbPasteImageSize(naturalSize.w, naturalSize.h, vx1 - vx0, vy1 - vy0);
-      await wbCreateObject("image", { url: uploaded.url }, x - width / 2, y - height / 2, width, height);
+      await wbCreateObject("image", { url }, x - width / 2, y - height / 2, width, height);
     } catch (err) {
       toast(err.message || voiceLine("failed", { what: "add that image" }), true);
     }
@@ -18599,6 +18803,13 @@ async function initWhiteboard() {
       e.preventDefault();
       const [x, y] = wbViewCentre();
       files.forEach((file, i) => wbPlaceUploadedImage(file, x + i * WB_GRID_SPACING, y + i * WB_GRID_SPACING));
+      return;
+    }
+    const address = wbPastedPictureAddress(data, html);
+    if (address) {
+      e.preventDefault();
+      const [x, y] = wbViewCentre();
+      wbPlacePastedAddress(address, x, y);
       return;
     }
     const text = data?.getData("text/plain") || "";
@@ -19426,12 +19637,12 @@ async function wbCreateBlankBoard(name, kind) {
       //: `tree-right` placement happened to land it.** Reported: a new map's
       //: first node opened under the top bar. The root is real DOM now
       //: (`renderWhiteboardNow` just ran), so its true rendered box is
-      //: available for `wbCenterOn` (see `createConceptMap`'s matching fix
-      //: and its own comment for why a guessed coordinate cannot do this
-      //: instead: the visible canvas size is neither constant nor known
-      //: until it is actually measured).
+      //: available for `wbCenterOn` (a guessed coordinate cannot do this:
+      //: the visible canvas size is neither constant nor known until it is
+      //: actually measured).
       if (root) wbCenterOn(wbItemBBox("object", root), { animate: false });
-      toast(`Mind map "${board.title}" created. Tab adds a branch, Enter one beside it. While you type a name, Enter is a new line and Ctrl+Enter adds the one beside it.`);
+      //: One line and an action (U41, the owner 2026-11-03): the typing keys are in the Guide's map keys topic.
+      toast(`Mind map "${board.title}" created. Tab adds a branch, Enter one beside it.`, false, { action: ["All keys", () => askAtlas("Mind map keys and controls")] });
     } else {
       toast(`Board "${board.title}" created.`);
     }
@@ -21928,28 +22139,21 @@ function renderWhiteboard() {
   // whole render pass below.
   const entriesById = new Map(allEntries.map((e) => [String(e.id), e]));
 
-  document
-    .getElementById("wb-empty-hint")
-    ?.classList.toggle(
-      "hidden",
-      // Objects count too: a board holding only a text box or an image is
-      // not empty, and left out of this sum the hint sat on top of them.
-      // Asked for directly: an option to turn the hint off entirely, once
-      // it's served its purpose, `localStorage`, the same durability the
-      // onboarding tour's own "don't show again" already uses.
-      // `wbHintForcedOpen` overrides both checks: the "?" help button's way
-      // back after a dismiss, or on a board that already has content.
-      !wbHintForcedOpen &&
-        // A map gets `#wb-map-empty` instead: this panel is the whiteboard's
-        // own help, and on an emptied map it was pens, shapes and the eraser
-        // sitting over a surface none of them apply to.
-        (wbIsMap() ||
-          (wbState.nodes?.length || 0) +
-          (wbState.sketches?.length || 0) +
-          (wbState.objects?.length || 0) >
-            0 ||
-          prefs.get("wbEmptyHintDismissed", null) === "1")
-    );
+  // Objects count too: a board holding only a text box or an image is
+  // not empty, and left out of this sum the hint sat on top of them.
+  const wbBoardHolds = (wbState.nodes?.length || 0) + (wbState.sketches?.length || 0) + (wbState.objects?.length || 0);
+  // Asked for directly: an option to turn the hint off entirely, once
+  // it's served its purpose, `localStorage`, the same durability the
+  // onboarding tour's own "don't show again" already uses.
+  // `wbHintForcedOpen` overrides both checks: the "?" help button's way
+  // back after a dismiss, or on a board that already has content.
+  // A map gets `#wb-map-empty` instead: this panel is the whiteboard's
+  // own help, and on an emptied map it was pens, shapes and the eraser
+  // sitting over a surface none of them apply to.
+  const wbHintHidden = !wbHintForcedOpen && (wbIsMap() || wbBoardHolds > 0 || prefs.get("wbEmptyHintDismissed", null) === "1");
+  document.getElementById("wb-empty-hint")?.classList.toggle("hidden", wbHintHidden);
+  //: A card turned off still leaves one line on an empty board (audit 1028 B34).
+  document.getElementById("wb-empty-cue")?.classList.toggle("hidden", !(wbHintHidden && !wbIsMap() && wbBoardHolds === 0));
 
   // Render Sketches (SVG)
   const svgGroup = d3.select("#wb-zoom-group");
@@ -22245,7 +22449,23 @@ function renderWhiteboard() {
     return crossLinkIds.has(`${parsed?.sourceId}:${parsed?.targetId}`);
   });
 
+  //: **A pen or highlighter stroke is repainted only when its look can have
+  //: changed** (audit 1028 B3, B4): the key is its data plus what decides the
+  //: ink (the board's colour and the light or dark mode), the way
+  //: `wbObjectPaintKey` does for a topic. Null for everything else: a
+  //: connector's path comes from the items at its ends, and a shape has a
+  //: label and a rough look. 300 strokes cost 90ms a render at 4x throttle
+  //: whatever had moved; a gesture that moved a stroke's drawn path and did
+  //: not put it back is caught by the skip's own check of that path.
+  const strokeInk = `${wbBoardBg()}|${document.documentElement.dataset.mode}`;
+  const strokePaintKey = (d) =>
+    typeof d.data === "string" && !d.data.includes("link-") && /"shape":\s*"(?:draw|highlighter)"/.test(d.data)
+      ? `${d.data}|${strokeInk}`
+      : null;
   sketchUpdate.each(function(d) {
+    const strokeKey = strokePaintKey(d);
+    const drawn = this.querySelector(".sketch-path");
+    if (strokeKey && this._wbStrokeKey === strokeKey && drawn?.getAttribute("d") === this._wbStrokeD) return;
     let pathData = d.data;
     let hitboxData = null;
     let stroke = "var(--text-color)";
@@ -22365,6 +22585,8 @@ function renderWhiteboard() {
     // After the path, which the label is laid out from (decision 12).
     wbPaintShapeLabel(this, shapeData, d);
     wbPaintLinkLabel(this, d, linkData);
+    this._wbStrokeKey = strokeKey;
+    this._wbStrokeD = strokeKey ? pathData : null;
   });
 
   sketchSelection.exit().remove();
@@ -22611,7 +22833,7 @@ function renderWhiteboard() {
       // was created *after* the last `loadEntries()` said "Loading…"
       // forever, because nothing here ever fetched it. Every path that
       // creates a note and immediately places it now refreshes that list
-      // first (`wbMindMapAddCard`, `createConceptMap`), which is the real
+      // first (`wbMindMapAddCard`), which is the real
       // fix; this branch is the honest fallback for the case that remains:
       // a card pointing at a note that has actually been deleted.
       card.append("div").attr("class", "wb-card-content muted").node().textContent =
@@ -22645,6 +22867,13 @@ function renderWhiteboard() {
       return;
     }
     renderMarkdown(contentEl, text);
+    //: A clipped row (first 300 characters) is drawn again with the whole note once it arrives.
+    if (entry.content_truncated) fullEntry(entry.id).then((whole) => {
+      if (!contentEl.isConnected || contentEl.querySelector("textarea")) return;
+      contentEl.replaceChildren();
+      renderMarkdown(contentEl, whole.content);
+      wbScheduleCardClampSync();
+    }, () => {});
     //: **Whether a note needs a "Show more" is a question about the box, not
     //: about the note.** This used to ask `text.length > LONG_NOTE_CHARS ||
     //: lines > LONG_NOTE_LINES`, the Notes list's own rule, and returned
@@ -24897,6 +25126,7 @@ function drawLibraryBoardsGallery(listed) {
     return;
   }
   surfaceRecovered(empty);
+  nounCount.dock("library-boards", boards.length, "board or map", "boards and maps");
   // See `createNewBoard`'s own comment: a board with nothing on it yet
   // doesn't come back from the server at all.
   const created = window.wbLastCreatedBoard;
@@ -25124,6 +25354,7 @@ function wbCancelBoardTimers() {
   wbStickyDates.timer = 0;
   wbAddGate.panBarTimer = 0;
   wbMarkMoving.timer = 0;
+  wbMapCache.cancelAll();
   document.getElementById("wb-canvas-view")?.classList.remove("wb-moving");
   return wbFlushNudge();
 }
@@ -25139,6 +25370,9 @@ async function openWhiteboardBoard(boardId) {
   wbLinkParseCache.clear(); // the next board's sketches are other ids
   await new Promise((resolve) => setTimeout(resolve, 60));
   await nudgeSaved;
+  //: A board restored with the page gets here while the Library bundle is still loading; the
+  //: Library side (`wbSideState`, the tiles) is later in it (INBOX 1530 f).
+  await ensureModule("library");
   window.currentBoardId = boardId ?? null;
   wbUpdateUndoRedoButtons();
   // Anything a previous board's selection drag left behind goes now. The
@@ -25238,101 +25472,6 @@ document.getElementById("wb-gestures-dismiss")?.addEventListener("click", () => 
   wbGesturesDismissed = true;
   document.getElementById("wb-gestures")?.classList.add("hidden");
 });
-
-/** A new concept map: a board that opens with a core idea on it, selected
- *  and ready to branch from.
- *
- *  Asked for directly: "I want ways to make custom knowledge graphs that are
- *  like mindmaps where I can add and remove nodes, move them around, change
- *  how they connect and reasons, and just make my own thought process map",
- *  and on where it belongs, "I should be able to make and manage map graphs
- *  (maybe in library??)".
- *
- *  **Deliberately not a new canvas.** Everything a concept map needs already
- *  exists on the whiteboard, freely placed cards whose positions persist, a
- *  link tool, `Tab` for a new branch off the selected card and `Enter` for a
- *  sibling, "Arrange as mind map" to re-tidy, pan/zoom, undo, spaces,
- *  export. A parallel implementation would have been a second set of all of
- *  that, immediately behind on every fix either one got.
- *
- *  So what this adds is the three things that were actually missing, and
- *  they are all about *entry*:
- *
- *  1. **A name.** Nothing in the app said the words "concept map", so the
- *     feature was reachable only through a button called "New board" on a
- *     tab called Whiteboards. A feature nobody can name is a feature nobody
- *     finds: reported as missing while fully built.
- *  2. **A root.** An empty board is a blank rectangle; `Tab` and `Enter` do
- *     nothing until something is selected, so the one gesture that makes
- *     this a mind map was unreachable from the state the board opens in.
- *  3. **The gestures, said out loud, once**, at the moment they apply.
- *
- *  The map is a board, so a concept map exported to the whiteboard is a
- *  concept map: which closes the "maybe with a way to export that into a
- *  visual diagram on the whiteboard" half of the ask by construction rather
- *  than by building an exporter.
- */
-async function createConceptMap() {
-  const name = await promptDialog("What is this map about?", "");
-  if (!name || !name.trim()) return;
-  const title = name.trim();
-  try {
-    const board = await apiJson("/whiteboard/boards", {
-      method: "POST",
-      body: JSON.stringify({ name: title }),
-    });
-    // The root idea is a real note, the same as every other card on a board.
-    // That is the app's own premise rather than a shortcut: an idea here *is*
-    // a short note, which is what lets a map node carry tags, links, search
-    // and everything else a note has. `defer_filing` keeps the AI's
-    // categorisation off the critical path, the map should open now.
-    const root = await apiJson("/entries", {
-      method: "POST",
-      body: JSON.stringify({ content: `# ${title}`, tags: [], defer_filing: true, map_topic: true }),
-    });
-    await apiJson("/whiteboard/nodes", {
-      method: "POST",
-      body: JSON.stringify({
-        // A board-space coordinate the root can call home; the view is
-        // centred on it below once the canvas has actually rendered, so
-        // this number is arbitrary rather than a claim about the viewport.
-        entry_id: root.id,
-        board_id: board.id,
-        x: 400,
-        y: 260,
-        z: 1,
-      }),
-    });
-    window.wbLastCreatedBoard = board;
-    // Same reason as `wbMindMapAddCard`: the root card reads its text out of
-    // `allEntries`, and this note is newer than the last fetch.
-    await refreshEntries([root.id]);
-    await openWhiteboardBoard(board.id);
-    wbBoardMadeStep(board);
-    // Selected, because `Tab`/`Enter` act on the selection and an unselected
-    // root leaves the map's whole point one undiscoverable click away.
-    const placed = wbState.nodes.find((n) => n.entry_id === root.id);
-    if (placed) selectWbItem("node", placed.id);
-    //: **Centred on the root, not on a guessed coordinate.** Reported: a new
-    //: map's first node opened under the top bar rather than in the middle
-    //: of the canvas. The node was placed at a fixed (400, 260) on the
-    //: (correct, sound) theory that an unzoomed, unpanned view puts the
-    //: canvas origin at the container's own top-left, so (400, 260) would
-    //: read as "the middle" - but that assumed a container size that was
-    //: never measured, and the actual visible canvas (the window, minus the
-    //: top bar, the sidebar and the tool rail) is neither the number this
-    //: guessed nor a constant: `wbCenterOn` already exists for exactly this
-    //: (the navigator's own "jump to a match" uses it), reading the
-    //: container's real `getBoundingClientRect()` the way the guess did not.
-    //: Not animated: there is nothing to animate *from*, the board has just
-    //: opened.
-    if (placed) wbCenterOn(wbItemBBox("node", placed), { animate: false });
-    toast(`“${title}”: Tab adds a branch, Enter one beside it. While you type a name, Enter is a new line and Ctrl+Enter adds the one beside it.`);
-  } catch (err) {
-    toast(err.message || voiceLine("failed", { what: "create that map" }), true);
-  }
-}
-window.createConceptMap = createConceptMap;
 
 /** Full screen for the board, asked for directly ("the whiteboard
  *  definately needs a fullscreen mode because it feels too squished").
@@ -25539,16 +25678,20 @@ function wbPresentCaption(at, steps) {
       row?.focus({ preventScroll: true });
       row?.scrollIntoView({ block: "nearest" });
     });
+    //: Kept, as the laser menu's is: an open menu is parked on the body, and
+    //: a row's `run` steps the page (and lands here) before it is back, so a
+    //: lookup through the wrap finds nothing and the rows stay the old page's.
+    wrap.pickMenu = wrap.querySelector(".action-menu");
     slot.replaceChildren(wrap);
   } else {
-    wrap.querySelector(".action-menu")?.replaceChildren(...fresh.querySelector(".action-menu").children);
+    wrap.pickMenu.replaceChildren(...fresh.querySelector(".action-menu").children);
   }
   const opener = wrap.querySelector(":scope > button");
   const words = opener.querySelector(".wb-present-pick-title");
   words.textContent = caption;
   opener.title = caption;
   opener.setAttribute("aria-label", `${caption}. Go to a page`);
-  const rows = [...(wrap.querySelector(".action-menu")?.querySelectorAll(".menu-item") || [])];
+  const rows = [...wrap.pickMenu.querySelectorAll(".menu-item")];
   if (rows[at]) {
     rows[at].setAttribute("aria-current", "step");
     rows[at].classList.add("wb-present-pick-row");
@@ -25570,13 +25713,91 @@ function wbPresentCaption(at, steps) {
 //: **A laser pointer while presenting** (canvasdepth; Excalidraw's and
 //: tldraw's): L or the bar's button; the pointer leaves a short trail that
 //: fades by CSS (`wb-laser-fade`), so no frame loop runs for it, and it
-//: draws nothing on the board.
+//: draws nothing on the board. Beside the button a small `kebabMenu` sets
+//: how it looks (INBOX 1577): the trail on or off, the ring's pulse on or off (1628), a look (dot, trail, ring,
+//: spotlight) and a colour from the board's palette, kept in this browser
+//: like the board's other display choices (`prefs`, key `wb-laser`). The
+//: looks animate with transform and opacity only, and under reduced motion
+//: the trail is off whatever was chosen.
+const wbLaser = {
+  looks: { dot: "Dot", trail: "Trail", ring: "Ring", spotlight: "Spotlight" },
+  prefs() {
+    const saved = prefs.json("wb-laser", {});
+    return {
+      trail: saved.trail !== false,
+      //: The ring's pulse, a switch like the trail (the owner, 2026-11-04, INBOX 1628).
+      pulse: saved.pulse !== false,
+      look: Object.hasOwn(wbLaser.looks, saved.look) ? saved.look : "trail",
+      colour: Object.hasOwn(WB_RUN_SWATCHES, saved.colour) ? saved.colour : "red",
+    };
+  },
+  set(change) {
+    prefs.setJSON("wb-laser", { ...wbLaser.prefs(), ...change });
+    wbLaser.apply();
+    wbLaser.menu();
+  },
+  //: The layer wears the look and the colour as a data attribute and a custom
+  //: property, so a change repaints the head and the tail without rebuilding.
+  apply() {
+    const layer = document.getElementById("wb-laser-layer");
+    if (!layer) return;
+    const { look, colour, pulse } = wbLaser.prefs();
+    layer.dataset.look = look;
+    layer.dataset.pulse = pulse ? "on" : "off";
+    layer.style.setProperty("--wb-laser", colour === "red" ? "var(--error)" : WB_RUN_SWATCHES[colour]);
+  },
+  //: Rows are rebuilt on each change so the chosen ones carry a check, the way
+  //: the page picker marks its current page.
+  menu() {
+    const button = document.getElementById("wb-present-laser");
+    if (!button) return;
+    const now = wbLaser.prefs();
+    const items = [
+      { label: now.trail ? "Trail: on" : "Trail: off", group: "trail", run: () => wbLaser.set({ trail: !now.trail }) },
+      //: Only the ring pulses, so the row shows while the ring is the look.
+      ...(now.look === "ring" ? [{ label: now.pulse ? "Pulse: on" : "Pulse: off", group: "trail", run: () => wbLaser.set({ pulse: !now.pulse }) }] : []),
+      ...Object.entries(wbLaser.looks).map(([key, name]) => ({ label: name, group: "look", run: () => wbLaser.set({ look: key }) })),
+      {
+        label: "Colour",
+        group: "colour",
+        items: Object.keys(WB_RUN_SWATCHES).map((key) => ({
+          label: key[0].toUpperCase() + key.slice(1),
+          run: () => wbLaser.set({ colour: key }),
+        })),
+      },
+    ];
+    const fresh = kebabMenu(items, "Laser pointer options");
+    let wrap = document.getElementById("wb-present-laser-menu");
+    if (!wrap) {
+      wrap = fresh;
+      wrap.id = "wb-present-laser-menu";
+      wrap.querySelector(":scope > button").id = "wb-present-laser-opener";
+      //: Kept, because an open menu is moved to the body and a row's `run`
+      //: fires before it is back, so a lookup through the wrap finds nothing.
+      wrap.laserMenu = wrap.querySelector(".action-menu");
+      button.after(wrap);
+    } else {
+      wrap.laserMenu.replaceChildren(...fresh.querySelector(".action-menu").children);
+    }
+    const chosen = new Set([wbLaser.looks[now.look], now.colour[0].toUpperCase() + now.colour.slice(1)]);
+    for (const row of wrap.laserMenu.querySelectorAll(".menu-item")) {
+      if (!chosen.has(row.textContent.trim())) continue;
+      row.setAttribute("aria-current", "true");
+      const mark = document.createElement("i");
+      mark.className = "ph ph-check wb-present-pick-check";
+      mark.setAttribute("aria-hidden", "true");
+      row.append(mark);
+    }
+  },
+};
+
 function wbPresentLaserButton() {
   if (document.getElementById("wb-present-laser")) return;
   const button = smallButton("ph:cursor-click", "Laser pointer (L)", () => {});
   button.id = "wb-present-laser";
   button.setAttribute("aria-pressed", "false");
   document.getElementById("wb-present-end")?.before(button);
+  wbLaser.menu();
 }
 
 function wbPresentLaser(on = null) {
@@ -25604,6 +25825,7 @@ function wbPresentLaser(on = null) {
     head.hidden = true;
     layer.append(head);
     document.body.append(layer);
+    wbLaser.apply();
     container.addEventListener("pointermove", wbLaserTrail);
     container.addEventListener("pointerleave", wbLaserLeave);
   }
@@ -25625,6 +25847,9 @@ function wbLaserTrail(event) {
     head.style.transform = `translate(${event.clientX}px, ${event.clientY}px)`;
     head.hidden = false;
   }
+  //: reduced motion has no trail, whatever was chosen: the head alone shows
+  //: where the pointer is.
+  if (!wbLaser.prefs().trail || reducedMotionWanted()) return;
   const dot = document.createElement("span");
   dot.className = "wb-laser-dot";
   dot.style.left = `${event.clientX}px`;

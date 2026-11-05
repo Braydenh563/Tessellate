@@ -135,6 +135,13 @@ def _named(key: str, body: str) -> bool:
     two of its keys for a reader ("Alt+Left", "Alt+Up"). A bare key ("/",
     "?") must stand on its own, and a chord must not be the head or tail of a
     longer one ("Ctrl+Z" inside "Ctrl+Shift+Z" is not Ctrl+Z)."""
+    #: A run of numbered chords may be written as a range: "Ctrl+Alt+1 to 6".
+    ranged = re.match(r"(.*\+)(\d)$", key)
+    if ranged and any(
+        int(low) <= int(ranged.group(2)) <= int(high)
+        for low, high in re.findall(rf"{re.escape(ranged.group(1))}(\d) to (\d)(?!\w)", body)
+    ):
+        return True
     shown = key.replace("ArrowLeft", "Left").replace("ArrowRight", "Right")
     shown = shown.replace("↑", "Up").replace("↓", "Down")
     if len(shown) == 1:
@@ -179,7 +186,9 @@ def test_the_m_chord_key_map_is_unchanged_by_the_redesign():
     }
     assert actions == {
         "s": "Settings", "q": "Quick sketch", "v": "Record a meeting", "a": "Guide", "p": "Popup agent",
-        "o": "OCR workspace",
+        "o": "OCR workspace", "y": "Tray",
+        # INBOX 1604: the owner asked whether more belonged here; three acts on free letters.
+        "w": "New note", "f": "Find anything", "k": "Calculator",
     }
     hint = app[app.index("function showTabJumpHint(") :]
     hint = hint[: hint.index("\n}\n")]

@@ -1380,7 +1380,6 @@ body.scroll-top-visible #tab-notes .layout > .tab-main {
 
 .chat-dock .chat-composer #chat-input {
   min-height: var(--composer-h);
-  resize: vertical;
 }
 
 /* The picker wraps its button and the popup panel; without this it stretches
@@ -1517,19 +1516,6 @@ body.scroll-top-visible #tab-notes .layout > .tab-main {
 /* --- graph: depth, halos and legible labels -------------------------------- */
 /* These come after the base .graph-node rules so they win the specificity tie
    and the halo never picks up the node's stroke. */
-.graph-node circle.graph-halo {
-  stroke: none;
-  opacity: 0.16;
-  pointer-events: none;
-  transition: opacity var(--motion-base) var(--ease-out), r var(--motion-base) var(--ease-out);
-}
-
-.graph-node:hover circle.graph-halo,
-.graph-node.graph-focus circle.graph-halo,
-.graph-node:is(:focus-visible, :has(:focus-visible)) circle.graph-halo {
-  opacity: 0.34;
-}
-
 .graph-node text.graph-label {
   font-weight: 500;
   fill: var(--ink);
@@ -1710,10 +1696,9 @@ body.scroll-top-visible #tab-notes .layout > .tab-main {
   align-items: center;
   justify-content: center;
   margin-inline: calc(-1 * var(--graph-popup-pad));
-  margin-bottom: calc(-1 * var(--graph-popup-pad));
+  margin-bottom: 0;
   padding-inline: var(--graph-popup-pad);
   padding-bottom: var(--graph-popup-pad);
-  background: var(--chip-bg);
   border-bottom-left-radius: var(--radius);
   border-bottom-right-radius: var(--radius);
   /* No column gap: the divider's own margins are the space between two
@@ -1729,13 +1714,9 @@ body.scroll-top-visible #tab-notes .layout > .tab-main {
      because these carry no label to widen them. */
   --control-h: var(--control-h-lg);
   /* **Pinned at the panel's foot** (the owner, 2026-10-11: "the graph
-     popups get cut off now at the bottom"): a long note scrolls under it,
-     so the dock is always whole and in reach. Sticky against the panel's
-     own scrollport; the chip tint over the panel's opaque ground, so text
-     scrolling under it does not show through. */
-  position: sticky;
-  bottom: calc(-1 * var(--graph-popup-pad));
-  z-index: 1;
+     popups get cut off now at the bottom"): the body scrolls above it, so
+     the dock is always whole and in reach (the panel is a column, INBOX
+     1630). The chip tint over the panel's opaque ground. */
   background: linear-gradient(var(--chip-bg) 0 0), var(--modal-bg-opaque);
 }
 
@@ -2036,10 +2017,22 @@ body.scroll-top-visible #tab-notes .layout > .tab-main {
   align-items: flex-start;
 }
 
+/* A row whose right side is text (`.setting-control.muted`, not a control row)
+   puts the value on the name's baseline. Centring put it mid-block under a
+   visible hint (10.6px below the name) and top-aligning put it above the name
+   when the help button made the name's line taller (5px); the first baseline of
+   the label is the name's text either way (INBOX 1585). Side by side only: the
+   phone width stacks the row. */
+@media (min-width: 600px) {
+  .setting-row:has(> .setting-control.muted:not(.row)) {
+    align-items: baseline;
+  }
+}
+
 .setting-label {
   display: flex;
   flex-direction: column;
-  gap: 0.1rem;
+  gap: var(--space-1);
   min-width: var(--form-label-col);
 }
 
@@ -2237,7 +2230,7 @@ label.setting-check,
 .setting-check>span {
   display: flex;
   flex-direction: column;
-  gap: 0.1rem;
+  gap: var(--space-1);
   font-size: var(--text-lg);
   font-weight: 600;
 }
@@ -2375,16 +2368,6 @@ label.setting-check,
 .help-accordion p {
   margin: 0 0 0.5rem;
   font-size: var(--text-lg);
-}
-
-/* The "Related:" row under a topic, quick navigation to the settings
-   screen it describes (asked for directly). font-size matches the rest of
-   `.help-accordion p`; only the top border marks it as metadata about the
-   paragraph above rather than more of it. */
-.help-accordion p.help-topic-links {
-  margin: 0.5rem 0 0;
-  padding-top: 0.4rem;
-  border-top: 1px solid var(--border);
 }
 
 /* --- help mini AI chat (item 40's second half) ---------------------------
@@ -2732,7 +2715,7 @@ span > .chip {
   top: 50%;
   transform: translateY(-50%);
   display: flex;
-  gap: 0.15rem;
+  gap: var(--space-1);
   opacity: 0;
   /* Not clickable while invisible, or it would swallow clicks meant for the
      category itself along the right-hand edge of every row. */
@@ -4076,17 +4059,17 @@ span > .chip {
    with a wide empty gutter beside it. The padding is roomier than Split's for
    the same reason: nothing is competing for the width any more. */
 #doc-panes.reading>.doc-preview {
-  /* 46rem is 736px, which is 76 characters of the app's own sans: measured
+  /* The measure is `--doc-measure` (the page is 50em, 736px at this size), which is 76 characters of the app's own sans: measured
      with `scratchpad/ui-sweeps/docreadprint.js`, inside the 45 to 90 every
      typographic reference gives, and a width the owner has already had an
      opinion about twice ("idk why the document rendered views are so
      thin??"). It is left exactly where it is. The serif option, which holds
      93 characters in this same column because the face is narrower, takes its
      own cap in 09-editor.css beside the leading it already adjusts. */
-  max-width: 46rem;
+  max-width: calc(var(--doc-measure) + 2 * var(--doc-gutter));
   margin: 0 auto;
   width: 100%;
-  padding: 1.5rem;
+  padding: 1.5rem var(--doc-gutter);
 }
 
 /* Set by app.js the moment a person drags #doc-content's native resize
@@ -6010,14 +5993,17 @@ button.ghost.tour-row:is(:focus-visible, :has(:focus-visible)) {
   border-color: transparent;
 }
 
-.manage-cat-list {
+.manage-cat-scroll {
   flex: 1 1 auto;
   min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.manage-cat-list {
   margin: 0;
   padding: var(--space-1) 0;
   list-style: none;
-  overflow-y: auto;
-  overscroll-behavior: contain;
 }
 
 .manage-cat-row {

@@ -46,10 +46,17 @@ const MSG_ACTIONS_VISIBLE = 5;
 //: question. `warmMax`: the warm (`/search/warm`) is for a sentence typed on
 //: a pause; a pasted passage is not worth a vector made ahead of Enter, so it
 //: is not sent at all. One object, so no new names in the shared scope.
-const CLIP_LIMITS = ((cap) => ({ cap, warmMax: 500, warm: cap, search: cap, question: cap, followQuestion: cap, followAnswer: 20000 }))(4000);
+const CLIP_LIMITS = ((cap) => ({ cap, warmMax: 500, warm: cap, search: cap, question: cap, followQuestion: 500, followAnswer: 20000 }))(4000);
 
+//: Over the cap, the opening and the end are kept, not the opening alone
+//: (INBOX 1528): a paste with its ask under it reached the server without
+//: the ask, which the server's long-question reading (`long_question.py`)
+//: then could not find. The last quarter of the cap, at most 1,000.
 function clipFor(route, text) {
-  return String(text ?? "").slice(0, CLIP_LIMITS[route]);
+  const all = String(text ?? ""), cap = CLIP_LIMITS[route];
+  if (all.length <= cap) return all;
+  const tail = Math.min(1000, cap >> 2);
+  return `${all.slice(0, cap - tail - 2)}\n\n${all.slice(-tail)}`;
 }
 
 //: **Work that follows an answer waits for the answer's frame** (audit 1031
@@ -534,7 +541,7 @@ function renderWebPanelMenu(engine) {
       items.push({
         label: "ph:stop-circle Stop SearXNG",
         title: "Stop the local SearXNG instance",
-        run: () => setWebSearxngRunning(false),
+        run: () => ensureModule("webClip").then(() => setWebSearxngRunning(false)),
       });
     } else {
       items.push({
@@ -543,7 +550,7 @@ function renderWebPanelMenu(engine) {
           engine.state === "absent"
             ? "Install SearXNG locally and start it, searches then never leave this machine"
             : "Start the local SearXNG instance",
-        run: () => setWebSearxngRunning(true),
+        run: () => ensureModule("webClip").then(() => setWebSearxngRunning(true)),
       });
     }
   }
@@ -563,21 +570,6 @@ function renderWebPanelMenu(engine) {
 }
 
 let webEngineInfo = null;
-
-async function setWebSearxngRunning(start) {
-  try {
-    await apiJson(`/websearch/searxng/${start ? "start" : "stop"}`, { method: "POST" });
-    toast(
-      //: The first-run wait only when there is a first run to wait for.
-      start
-        ? webEngineInfo?.state === "absent" ? "Setting SearXNG up… the first run downloads it, so give it a minute." : "Starting SearXNG…"
-        : "Stopping SearXNG."
-    );
-  } catch (error) {
-    toast(error.message, true);
-  }
-  refreshWebSearxngStrip();
-}
 
 async function refreshWebSearxngStrip() {
   const provider = (prefsCache && prefsCache.search_provider) || "auto";
@@ -835,11 +827,11 @@ async function renderModelSpec(modelName) {
     // cache scales with the window, without both numbers the percentage on
     // each message looks wrong to anyone who knows what the model can hold.
     [
-      "Context window",
+      "Reads at once",
       spec.context_length
-        ? `${compactTokens(spec.usable_context)} in use` +
+        ? `${compactTokens(spec.usable_context)} tokens` +
           (spec.context_length > spec.usable_context
-            ? ` (of ${compactTokens(spec.context_length)} it can hold)`
+            ? ` (it can hold ${compactTokens(spec.context_length)})`
             : "")
         : null,
     ],
@@ -851,7 +843,7 @@ async function renderModelSpec(modelName) {
     // model can still emit inline <think> tags without declaring it, which
     // `split_thinking` picks up and shows. Saying "declared" makes the two
     // facts distinguishable instead of contradictory.
-    ["Thinking mode declared", canDo(spec.supports_thinking)],
+    ["Thinking switch", canDo(spec.supports_thinking)],
     ["Can see images", canDo(spec.supports_vision)],
   ].filter(([, value]) => value != null && value !== "");
 
@@ -1032,7 +1024,7 @@ function personaOptions() {
 function togglePersonaPrompt() {
   const panel = $("persona-peek-panel");
   const showing = panel.classList.toggle("hidden");
-  $("persona-peek").setAttribute("aria-expanded", String(!showing));
+  $("persona-peek").setAttribute("aria-expanded", !showing);
 }
 
 // A running total for the whole conversation. Per-message counts can't tell
@@ -1161,7 +1153,8 @@ function chatTranscriptText() {
   for (const msg of $("chat-messages")?.querySelectorAll(".msg") || []) {
     const who = msg.classList.contains("user") ? "You" : msg.dataset.persona || aiNameNow();
     const body = msg.querySelector(".msg-body, .bubble-answer");
-    const text = body ? bodyTextWithCitations(body) : "";
+    //: A user bubble's words as sent: a long question's body is drawn clipped (`addBubble`).
+    const text = msg.dataset.sent ?? (body ? bodyTextWithCitations(body) : "");
     if (text) parts.push(`**${who}:** ${text}`);
   }
   return parts.join("\n\n");
@@ -1361,8 +1354,8 @@ function aiWritingTrace() {
   nodes.forEach(([cx, cy], index) => {
     const dot = document.createElementNS(NS, "circle");
     dot.setAttribute("class", `ai-writing-node ai-writing-node-${index + 1}`);
-    dot.setAttribute("cx", String(cx));
-    dot.setAttribute("cy", String(cy));
+    dot.setAttribute("cx", cx);
+    dot.setAttribute("cy", cy);
     dot.setAttribute("r", "2");
     svg.append(dot);
   });

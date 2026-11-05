@@ -24,7 +24,8 @@ from __future__ import annotations
 
 import pytest
 
-from tessellate.ai import agent, tools
+from tessellate.ai import tools
+from tessellate.ai import agent_turn
 
 
 # --- "now do it" ---------------------------------------------------------------
@@ -108,14 +109,14 @@ def test_the_recent_text_is_the_last_exchange_and_is_capped(monkeypatch):
         {"question": "old question", "answer": "old answer"},
         {"question": "the latest question", "answer": "the latest answer"},
     ]
-    recent = agent._recent_text(history)
+    recent = agent_turn._recent_text(history)
     assert "the latest answer" in recent
-    assert len(recent) <= agent.FOLLOW_THROUGH_CONTEXT_CHARS
+    assert len(recent) <= agent_turn.FOLLOW_THROUGH_CONTEXT_CHARS
 
     long_history = [{"question": "q", "answer": "x" * 5_000}]
-    assert len(agent._recent_text(long_history)) <= agent.FOLLOW_THROUGH_CONTEXT_CHARS
+    assert len(agent_turn._recent_text(long_history)) <= agent_turn.FOLLOW_THROUGH_CONTEXT_CHARS
 
 
 def test_no_history_is_not_an_error():
-    assert agent._recent_text(None) == ""
-    assert agent._recent_text([]) == ""
+    assert agent_turn._recent_text(None) == ""
+    assert agent_turn._recent_text([]) == ""

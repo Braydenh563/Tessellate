@@ -208,7 +208,7 @@ function atlasStemSides(segs, width, samples, shift) {
   return { left, right };
 }
 
-const atlasFix = (v) => +v.toFixed(2);
+const atlasFix = (v) => Math.round(v * 100) / 100;
 
 //: The point `t` of the way along a run of cubic segments, each segment an
 //: equal share of `t`, as `atlasStemSides` samples them: where a speck sits
@@ -684,7 +684,7 @@ const ATLAS_LOOKS = {
     wisps: [
       { seg: [[34, 47.4, 28, 45.6, 16, 45.8, 12.6, 50.2], [12.6, 50.2, 10.4, 54.6, 16, 58.6, 26, 58.6], [26, 58.6, 36, 58.6, 46, 56.4, 47.4, 60.2], [47.4, 60.2, 48.4, 63.6, 43, 65.6, 37, 65]], back: [[0, 0.25], [0.75, 1]], sparkles: [0.18, 0.34, 0.47, 0.6, 0.7, 0.86], low: true },
       { seg: [[35, 69, 29, 66.6, 19, 67.4, 16.6, 71.4], [16.6, 71.4, 14.6, 75, 19, 78.4, 27, 77.4], [27, 77.4, 35, 76.4, 40.6, 77.6, 39.4, 81], [39.4, 81, 38.4, 83.6, 33.4, 83.4, 28, 81.6]], back: [[0, 0.25], [0.75, 1]], sparkles: [0.2, 0.36, 0.5, 0.64, 0.72, 0.84], low: true },
-      { seg: [[43.4, 31.6, 49.4, 26.4, 56, 29.6, 54.6, 36.4]], sparkles: [0.3, 0.75] },
+      { seg: [[43.4, 31.6, 49.4, 26.4, 56, 29.6, 54.6, 36.4]], sparkles: [] },
     ],
     //: The dress's centreline, from the waist (y 51) down, out to the left
     //: and lifting at its end: INBOX 535's tail, kept (INBOX 559, the owner:
@@ -737,15 +737,15 @@ const ATLAS_LOOKS = {
     //: left does, the upper arm 13 degrees off vertical, a 13 degree bend
     //: at the elbow, the forearm falling straight beside the hip; slimmer
     //: (4.2 to 1.9, `armWidth`). A gesture turns it up from there (its mood
-    //: angles are the old ones less a right angle, the CSS). The seeds she
-    //: sows now drift down from the hanging hand, as the reference's star
-    //: particles fall from her hand.
+    //: angles are the old ones less a right angle, the CSS). The seeds that
+    //: hung off this hand at all times are gone (INBOX 1589, the owner: it
+    //: "still has starts permanently coming from it"): she casts them from it
+    //: now and then, while the arm is her own (`atlasMicroCast`).
     arm: [[35.6, 40.4, 36.6, 43.4, 37.4, 46.6, 37.8, 49.6], [37.8, 49.6, 38.2, 52.6, 38.2, 55, 37.8, 57.2]],
     armL: [[26.4, 40.4, 25.4, 43.4, 24.6, 46.6, 24.2, 49.6], [24.2, 49.6, 23.8, 52.6, 23.8, 55, 24.2, 57.2]],
     armWidth: [4.2, 1.9],
     armPivots: { l: [26.4, 40.6], r: [35.6, 40.6] },
     propHand: [38, 59],
-    seeds: [[40, 60.6, 0.5], [42.2, 62.4, 0.4], [41.2, 65.4, 0.6], [44.2, 66.2, 0.35], [43, 69.2, 0.45], [46, 70.6, 0.35], [44.8, 63.6, 0.3]],
     //: **The hair, drawn full** (the owner, round 5: "flowing, voluminous";
     //: the definitive stand, 63.png, where the hair is a mass the size of
     //: the head rising from the crown and streaming back in thick wavy
@@ -983,7 +983,7 @@ function atlasArmPath(rig, bend, wrist) {
   return atlasStem(bend || wrist ? atlasArmSegs(rig.segs, bend, wrist) : rig.segs, rig.width, { samples: 14, tip: rig.hand });
 }
 //: Where the hand went: the transform that carries what the rest hand
-//: holds (a bell, the seeds) to the bent arm's hand, as an SVG attribute.
+//: holds (a bell, a cast's stars) to the bent arm's hand, as an SVG attribute.
 function atlasArmHand(rig, bend, wrist) {
   const [, s1] = rig.segs;
   const W0 = [s1[6], s1[7]];
@@ -1897,7 +1897,12 @@ function atlasBand(layer, id, part = "back", look = "masculine") {
   for (const [cx, cy, rx, ry, colour] of atlasBandSplit(ATLAS_BAND_CLOUDS, part)) atlasMake("ellipse", { class: `atl-band-cloud atl-band-cloud-${colour}`, cx, cy, rx, ry }, clouds);
   atlasMake("path", { class: "atl-band-stream", d: band.stream }, g);
   atlasMake("path", { class: "atl-band-edge atl-band-edge-soft", d: band.edge }, g);
-  if (look === "feminine") for (const [x, y, r] of atlasBandSplit(ATLAS_BAND_STARS, part)) atlasSpark(g, atlasFix(x), atlasFix(y), atlasFix(r * 2.6), "atl-band-glint");
+  //: **The strand's last stars (past 404 degrees) are not drawn on the feminine
+  //: look** (INBOX 1576, the owner: stars "permanently stuck to the end of the
+  //: feminine atlas ... should instead become a movement or animation or
+  //: behaviour"): they sat at the swirl's loose end by her left hand. She casts
+  //: her own now, from that hand (`atlasMicroCast`, atlas-micro.js).
+  if (look === "feminine") for (const [x, y, r] of atlasBandSplit(ATLAS_BAND_STARS.filter(([deg]) => deg < 404), part)) atlasSpark(g, atlasFix(x), atlasFix(y), atlasFix(r * 2.6), "atl-band-glint");
   else atlasSpecks(g, atlasBandSplit(ATLAS_BAND_STARS, part));
   return g;
 }
@@ -1994,16 +1999,42 @@ function atlasCoilProp(layer) {
   atlasSpecks(coil, [[8, 74, 0.45], [20, 78.6, 0.35], [44, 78, 0.5], [54, 72, 0.35], [36, 65.6, 0.3]]);
   return coil;
 }
+//: **Its seats are its own, sat on** (INBOX 1589, the owner: "it still looks
+//: like it is standing up", "it doesnt even look like it is sitting in the
+//: chair"). The companion's generic chair and beanbag were a 38-unit chair and
+//: a flat dome behind a figure that stood on: Atlas now has a chair and a
+//: beanbag in its own paint, behind the body, drawn where the act's lowering
+//: of the whole figure (the CSS: 6 and 12px) puts the seat under its hips
+//: (59 in the figure's units), and the CSS folds its lower body onto it. A
+//: property, not a global (`tests/test_global_scope_ratchet.py`).
+atlasCoilProp.seats = function (layer) {
+  const chair = atlasGroup(layer, "nmp nmp-chair");
+  atlasMake("path", { class: "atl-prop-seat", d: "M12 59V40Q12 35 17 35H45Q50 35 50 40V59Z" }, chair);
+  for (const x of [12.5, 46.5]) atlasMake("rect", { class: "atl-prop-seat", x, y: 62, width: 3, height: 22, rx: 1.2 }, chair);
+  atlasMake("rect", { class: "atl-prop-seat atl-prop-seat-top", x: 10, y: 57, width: 42, height: 6.5, rx: 2 }, chair);
+  for (const [x, y] of [[15, 41], [47.4, 45.6], [15.6, 51.4]]) atlasMake("circle", { class: "atl-node-dot", cx: x, cy: y, r: 0.6 }, chair);
+  const bag = atlasGroup(layer, "nmp nmp-beanbag");
+  atlasMake("path", { class: "atl-prop-bag", d: "M8 80C0 74 1 57 9 51C14 47 20 50 23 56Q31 61 39 56C42 50 48 47 53 51C61 57 62 74 54 80Z" }, bag);
+  atlasMake("ellipse", { class: "atl-prop-bag-sheen", cx: 12.5, cy: 58, rx: 3.6, ry: 2, transform: "rotate(-40 12.5 58)" }, bag);
+  atlasMake("path", { class: "atl-prop-page-edge", d: "M14 74Q31 79.5 48 74" }, bag);
+  return [chair, bag];
+};
 
-//: The starry map (the grid's `Starry Map` cell): a small panel of night
-//: sky with a constellation on it, at Atlas's right, that it leans on. The
-//: companion's `nmb-act-map` shows it and turns the arm onto it.
+//: The starry map (the grid's `Starry Map` cell): a folded panel of night
+//: sky with two constellations on it. **Held open in front, read** (INBOX
+//: 1589, the owner: "the read a map is like behind half atlas's body and it
+//: doesnt even look at the map"): it was a 30 by 38 panel drawn behind the
+//: body at its right, the arm turned onto it. Now it is drawn over the body
+//: (the front layer, with the book), 23 by 14 at the belly, its lower
+//: corners at the hands (the CSS turns each arm 13 degrees out to them), and
+//: the eyes and the head go down to it.
 function atlasMapProp(layer) {
   const map = atlasGroup(layer, "nmp nmp-map");
-  atlasMake("ellipse", { class: "atl-prop-moon-glow", cx: 57, cy: 74, rx: 20, ry: 16 }, map);
-  atlasMake("path", { class: "atl-prop-map", d: "M43 62.4Q42.6 60.4 44.6 60L70 54.4Q72 54 72 56L70.6 86Q70.5 88 68.5 88.4L44 92.4Q42 92.8 42 90.8Z" }, map);
-  atlasMake("path", { class: "atl-thread", d: "M47.4 70L53.6 64.4L59.4 71.8L65.4 62.6M50 82L56.6 78.4L62.4 84" }, map);
-  for (const [x, y] of [[47.4, 70], [53.6, 64.4], [59.4, 71.8], [65.4, 62.6], [50, 82], [56.6, 78.4], [62.4, 84]]) atlasMake("circle", { class: "atl-node-dot", cx: x, cy: y, r: 0.6 }, map);
+  atlasMake("ellipse", { class: "atl-prop-moon-glow", cx: 31, cy: 55, rx: 14, ry: 9 }, map);
+  atlasMake("path", { class: "atl-prop-map", d: "M20.6 49.4Q20.8 48.2 22 48.2L40 48.2Q41.2 48.2 41.4 49.4L42.8 60.4Q43 61.8 41.6 61.8L20.4 61.8Q19 61.8 19.2 60.4Z" }, map);
+  atlasMake("path", { class: "atl-prop-page-edge", d: "M31 48.6V61.4" }, map);
+  atlasMake("path", { class: "atl-thread", d: "M22.8 57.6L25.8 52.4L29 55.6M33 53.2L36.2 58.2L39.4 52.6" }, map);
+  for (const [x, y] of [[22.8, 57.6], [25.8, 52.4], [29, 55.6], [33, 53.2], [36.2, 58.2], [39.4, 52.6]]) atlasMake("circle", { class: "atl-node-dot", cx: x, cy: y, r: 0.5 }, map);
   return map;
 }
 
@@ -2020,6 +2051,11 @@ function atlasHandProps(armR, armL, look) {
   const grip = (ATLAS_LOOKS[look] || {}).propHand || hand;
   const shift = `translate(${+(grip[0] - hand[0]).toFixed(2)} ${+(grip[1] - hand[1]).toFixed(2)}) `;
   const upright = atlasMake("g", { transform: `${shift}rotate(70 ${hand[0]} ${hand[1]})` }, armR);
+  //: The carry act's note (INBOX 1589): a saved page held up, the classic companion's `nmp-note`.
+  const note = atlasGroup(upright, "nmp nmp-note");
+  atlasMake("path", { class: "atl-prop-page", d: "M44.4 62Q44.4 61.2 45.2 61.2H51.2Q52 61.2 52 62V70.2Q52 71 51.2 71H45.2Q44.4 71 44.4 70.2Z" }, note);
+  atlasMake("path", { class: "atl-prop-page-edge", d: "M46 63.6H50.4M46 65.8H50.4M46 68H48.6" }, note);
+  atlasMake("circle", { class: "atl-node-dot", cx: 50.2, cy: 69, r: 0.9 }, note);
   const bell = atlasGroup(upright, "nmp nmp-bell");
   atlasMake("circle", { class: "atl-prop-moon-glow", cx: 48.2, cy: 66.2, r: 6.5 }, bell);
   atlasMake("path", { class: "atl-prop-bell", d: "M44.2 68C44.2 61.6 52.2 61.6 52.2 68L53.6 69.8H42.8Z" }, bell);
@@ -2248,7 +2284,7 @@ function atlasBody(parent, id, props, look, route = null) {
     }
     if (!edge && props) {
       atlasCoilProp(back.fill);
-      atlasMapProp(back.fill);
+      atlasCoilProp.seats(back.fill);
     }
     //: The mermaid lower body (the feminine look): one ribbon from the
     //: hips sweeping down to the left and curling, in the tail's paint,
@@ -2326,6 +2362,8 @@ function atlasBody(parent, id, props, look, route = null) {
     });
     for (const [side, d] of ATLAS_LIMBS.holds) {
       const hold = atlasGroup(layer, `nmb-hold nmb-hold-${side}`);
+      //: Raised, it turns about the same root as her arm (INBOX 1589), not his: the CSS's origin is his.
+      if (spec.armPivots) hold.style.transformOrigin = spec.armPivots[side].map((v) => `${v}px`).join(" ");
       atlasMake("path", { class: edge ? "atl-edge" : "atl-skin", d }, hold);
       if (!edge) atlasMake("path", { class: "atl-overlay atl-rim-body", d }, hold);
     }
@@ -2401,15 +2439,6 @@ function atlasBody(parent, id, props, look, route = null) {
         //: transition away); the rig reads that angle as the shoulder's
         //: target and eases the drawn arm there.
         if (spec.armRig) atlasMake("g", { class: `nmb-arm nmb-arm-${side} atl-arm-probe` }, layer);
-        //: The galaxy-seed gesture (the female sheets' Seed Sower): star
-        //: seeds drifting up from the open hand.
-        if (side === "r" && spec.seeds) {
-          const seeds = atlasGroup(hand, "atl-seeds");
-          spec.seeds.forEach(([x, y, r], k) => {
-            atlasMake("circle", { class: "atl-seed", cx: x, cy: y, r }, seeds).style.setProperty("--atl-k", String(k));
-          });
-          for (const [k, size] of [[2, 1.4], [5, 1]]) atlasSpark(seeds, spec.seeds[k][0], spec.seeds[k][1], size, "atl-glint atl-seed-star");
-        }
       }
     }
     //: **The shoulders belong to the body** (round 9, the owner: "the part
@@ -2491,6 +2520,7 @@ function atlasBody(parent, id, props, look, route = null) {
   if (props) {
     atlasHandProps(arms.r, arms.l, look);
     atlasBookProp(frontAt.fill);
+    atlasMapProp(frontAt.fill);
     //: Startled, a translucent bubble round the whole figure (the
     //: reference's `startle` cell); the CSS shows it.
     const bubble = atlasGroup(frontAt.fill, "nmp nmp-bubble");
@@ -3264,7 +3294,7 @@ function atlasDressMarks(root = document) {
 //: a figure has no tail to wake before then, so this stays at boot).
 function atlasTailWake(box) {
   const tail = box?.atlasTail;
-  if (tail && !tail.raf) tail.raf = requestAnimationFrame((now) => atlasTailFrame(tail, now));
+  if (tail && !tail.raf) tail.raf = atlasRigWake.after((now) => atlasTailFrame(tail, now), 2);
 }
 
 
@@ -3560,10 +3590,13 @@ const ATLAS_WAKE_MS = 2400;
 const ATLAS_AWAKE_HOLD_MS = 45 * 1000;
 const ATLAS_DOZE_MS = 3000;
 
+//: Sleepy only once nobody has been about for a while: ten minutes by day, three in the small hours. The small hours
+//: used to be sleepy whatever you did, so a woken Atlas dozed again 45 s later while you worked (the owner, 2026-11-04,
+//: about 2:40 am: "atlas always just instantly falls back asleep even when I wake it").
 function atlasRestingMood() {
   if (Date.now() < atlasAwakeUntil) return "calm";
-  const hour = new Date().getHours();
-  return Date.now() - atlasLastInput > 10 * 60 * 1000 || hour < 5 ? "sleepy" : "calm";
+  const quiet = new Date().getHours() < 5 ? 3 : 10;
+  return Date.now() - atlasLastInput > quiet * 60 * 1000 ? "sleepy" : "calm";
 }
 //: The blink's pending timer, the rig's trace when a sweep records one
 //: (`atlasluster.js` sets `rigTrace` to an array and reads it back), and the
@@ -3589,18 +3622,23 @@ function setAtlasMood(mood, forMs = 0, { quiet = false, easeMs = 0, backEaseMs =
   if (!quiet && typeof nameMarkBuddyCue === "function") nameMarkBuddyCue(ATLAS_MOODS[next].cue);
   const marks = [...document.querySelectorAll(".nm-atlas")];
   clearTimeout(atlasState.easeTimer);
-  for (const svg of marks) {
-    if (easeMs) {
-      svg.style.setProperty("--atl-ease", `${easeMs}ms`);
-      svg.classList.add("atl-easing");
-    } else svg.classList.remove("atl-easing");
-  }
-  if (easeMs) {
-    atlasState.easeTimer = setTimeout(() => {
-      for (const svg of document.querySelectorAll(".nm-atlas.atl-easing")) svg.classList.remove("atl-easing");
-    }, easeMs + 100);
-  }
+  //: **The ease is written inside `apply`, after the hand-over has read.**
+  //: `nameMarkBuddyBlend` reads where every part is before the change; the
+  //: ease's class and custom property written first made that read settle
+  //: style on its own, then the change settled it again (a mood's return at
+  //: 4x CPU: two restyles of 160 to 210ms in one timer, INBOX 1534).
   const apply = () => {
+    for (const svg of marks) {
+      if (easeMs) {
+        svg.style.setProperty("--atl-ease", `${easeMs}ms`);
+        svg.classList.add("atl-easing");
+      } else svg.classList.remove("atl-easing");
+    }
+    if (easeMs) {
+      atlasState.easeTimer = setTimeout(() => {
+        for (const svg of document.querySelectorAll(".nm-atlas.atl-easing")) svg.classList.remove("atl-easing");
+      }, easeMs + 100);
+    }
     for (const svg of marks) {
       //: The classic globe draws a mood rather than easing into one.
       if (svg.classList.contains("atl-classic")) svg.replaceWith(atlasClassicMark(Number(svg.getAttribute("width")) || 20, next));
@@ -3616,8 +3654,27 @@ function setAtlasMood(mood, forMs = 0, { quiet = false, easeMs = 0, backEaseMs =
   //: frame). Each part a loop leaves is eased from where it is into what
   //: now moves it, over 0.7s (`nameMarkBuddyBlend`, the companion's own
   //: hand-over), in every layered figure on screen.
-  const boxes = [...document.querySelectorAll(".atl-figure-box:not(.atl-off)")];
-  if (boxes.length) nameMarkBuddyBlend(boxes, apply, 700);
+  //: Not the corner figure while a modal covers it (INBOX 1587): drawn at
+  //: opacity 0, its hand-over is never seen, and its read settled the open
+  //: overlay's whole restyle (251 to 300ms at 4x CPU with Settings open).
+  const hidden = nameMarkBuddyBehindCover() ? document.getElementById("nm-buddy") : null;
+  const boxes = [...document.querySelectorAll(".atl-figure-box:not(.atl-off)")].filter((box) => !hidden?.contains(box));
+  //: **And never the first to read an arriving page** (a30v's found list):
+  //: the blend's read of every part, inside `uiSettlingUntil`, paid the new
+  //: tab's whole restyle; the change waits the few hundred ms to its end.
+  const settling = (window.uiSettlingUntil || 0) - performance.now();
+  //: **Not on a slow machine** (`data-atlas-lite`, atlas-life.js's frame budget): the hand-over reads
+  //: every part before the change and after it, two settles of a page the rig keeps dirty, 222 to
+  //: 282ms of the 255 to 347ms a mood change cost at 4x CPU. A snap is cheaper than the stall.
+  const lite = document.documentElement.hasAttribute("data-atlas-lite");
+  //: **And on a page a frame has drawn** (INBOX 1667: `atlas.js:3677` 100ms of forced layout at 4x): a mood
+  //: timer lands between the page's writes and its frame, and the hand-over's first read paid for them.
+  //: Each call has its own chain and a chain on a dirty page is longer, so a newer mood's shorter chain
+  //: could land first and the older one then overwrite it: only the newest call's chain applies. A hidden
+  //: tab has no frames to wait for, so it applies at once.
+  const seq = (setAtlasMood.seq = (setAtlasMood.seq || 0) + 1);
+  const latest = () => seq === setAtlasMood.seq && apply();
+  if (boxes.length && !lite && !document.hidden) setTimeout(() => seq === setAtlasMood.seq && nmb.afterClean(() => nameMarkBuddyBlend(boxes, latest, 700), 6, latest), Math.max(0, settling + 20));
   else apply();
   if (next === "surprised" && forMs > 2000) {
     //: A failure startles first, then worries until it has passed.
@@ -3635,18 +3692,26 @@ function setAtlasMood(mood, forMs = 0, { quiet = false, easeMs = 0, backEaseMs =
 }
 
 //: A one-off move on every Atlas on the page (a nod, a spin, a hop, a
-//: wave): a class that comes off when it has played. All removed, one
-//: read, all added, so a restart costs one style pass, not one per mark.
+//: wave): a class that comes off when it has played. **Restarted by a frame,
+//: not by a read** (INBOX 1575): it took the class off, read a box to settle
+//: style, and put it back, and the read was the first one after a tab flip
+//: (the arriving page's whole restyle, in a click). The class goes back two
+//: frames on, the first of which restyles without it, so the move starts over;
+//: a newer play of the same move takes over from an older one still waiting.
 function atlasPlay(name, ms = 900) {
   const marks = [...document.querySelectorAll(".nm-atlas")];
   const cls = `atl-play-${name}`;
   for (const svg of marks) svg.classList.remove(cls);
-  if (!marks.length) return;
-  void marks[0].getBoundingClientRect();
-  for (const svg of marks) svg.classList.add(cls);
-  setTimeout(() => {
-    for (const svg of marks) svg.classList.remove(cls);
-  }, ms);
+  if (!marks.length || document.hidden) return;
+  const turns = (atlasPlay.turns ||= {});
+  const turn = (turns[name] = (turns[name] || 0) + 1);
+  afterFrames(() => {
+    if (turns[name] !== turn) return;
+    for (const svg of marks) if (svg.isConnected) svg.classList.add(cls);
+    setTimeout(() => {
+      for (const svg of marks) svg.classList.remove(cls);
+    }, ms);
+  }, 2);
 }
 
 //: App events by name, for the callers that are not a chat turn.
@@ -3660,6 +3725,7 @@ function atlasOn(event) {
     setAtlasMood("happy", 3600, { quiet: true });
     atlasPlay("wave", 1600);
     if (typeof nameMarkBuddyAct === "function" && document.getElementById("nm-buddy")) nameMarkBuddyAct("wave");
+    window.atlasMicroCast?.();
   } else if (event === "streak") {
     setAtlasMood("delighted", 3600);
     atlasPlay("spin", 900);
@@ -3670,6 +3736,8 @@ function atlasOn(event) {
     clearTimeout(atlasDriftState.searchTimer);
     atlasDriftState.searchTimer = setTimeout(() => {
       if (atlasMoodNow === "calm" || atlasMoodNow === "curious") setAtlasMood(event === "found" ? "happy" : "confused", 2600, { quiet: true, backEaseMs: 1200 });
+      //: And the companion's body, whoever it is (INBOX 1581, `NMB_MIND.saw`).
+      nameMarkBuddyReact(event);
     }, 1500);
   }
 }
@@ -3685,16 +3753,26 @@ function atlasOn(event) {
 //: back: curious, pleased, bashful, proud, fond, a laugh, a thought; at
 //: night drowsier ones. Never one of the last two, never on a hidden tab or
 //: behind the lock. One timer, one mood change a minute at most.
+//: **The day has four parts** (INBOX 1581, the owner: "more behaviour and npc
+//: improvements"): bright and curious in the morning, thoughtful in the
+//: afternoon, softer in the evening, drowsy at night, and the drift comes
+//: less often as the day winds down (`atlasDriftState.pace`). The part of the day
+//: is `atlasDriftState.phase(hour)`, which the small moves (atlas-micro.js)
+//: and the companion's energy (avatars.js) read too.
 const ATLAS_DRIFT_POOL = {
-  day: [["curious", 3], ["happy", 3], ["shy", 1.5], ["thinking", 1.2], ["proud", 1], ["love", 0.7], ["laughing", 0.5]],
+  morning: [["curious", 3], ["happy", 3.4], ["proud", 1.1], ["laughing", 0.7], ["shy", 1], ["thinking", 0.7]],
+  afternoon: [["thinking", 2.2], ["curious", 2.6], ["happy", 2.4], ["proud", 1.4], ["shy", 1], ["love", 0.5]],
+  evening: [["happy", 2.4], ["love", 1.3], ["shy", 1.8], ["curious", 1.6], ["thinking", 0.7], ["sleepy", 0.6]],
   night: [["sleepy", 2], ["curious", 1.5], ["happy", 1], ["shy", 1], ["love", 0.5]],
 };
+atlasDriftState.pace = { morning: 0.85, afternoon: 1, evening: 1.15, night: 1.3 };
+atlasDriftState.phase = (hour) => (hour >= 22 || hour < 6 ? "night" : hour < 11 ? "morning" : hour < 17 ? "afternoon" : "evening");
 function atlasDrift() {
-  atlasDriftState.timer = setTimeout(atlasDrift, 35000 + Math.random() * 40000);
+  const phase = atlasDriftState.phase(new Date().getHours());
+  atlasDriftState.timer = setTimeout(atlasDrift, (35000 + Math.random() * 40000) * atlasDriftState.pace[phase]);
   if (document.documentElement.hasAttribute("data-atlas-hidden") || atlasMoodNow !== "calm" || Date.now() - atlasDriftState.changedAt < 20000) return;
   if (!document.querySelector(".nm-atlas")) return;
-  const hour = new Date().getHours();
-  const pool = ATLAS_DRIFT_POOL[hour >= 22 || hour < 6 ? "night" : "day"].filter(([mood]) => !atlasDriftState.recent.includes(mood));
+  const pool = ATLAS_DRIFT_POOL[phase].filter(([mood]) => !atlasDriftState.recent.includes(mood));
   let r = Math.random() * pool.reduce((sum, [, w]) => sum + w, 0);
   let pick = pool[0][0];
   for (const [mood, w] of pool) {
@@ -3741,10 +3819,15 @@ for (const type of ["pointerdown", "keydown"]) {
 
 //: Sleepy to calm over `ATLAS_WAKE_MS`, then awake for at least
 //: `ATLAS_AWAKE_HOLD_MS` before the resting mood may be sleepy again.
-function atlasWake() {
-  atlasLastInput = Date.now();
-  atlasAwakeUntil = Date.now() + ATLAS_WAKE_MS + ATLAS_AWAKE_HOLD_MS;
-  if (atlasMoodNow === "sleepy") setAtlasMood("calm", 0, { quiet: true, easeMs: ATLAS_WAKE_MS });
+//: `easeMs` is shorter when it is asked for something (the large view's acts). Woken again within a quarter of an
+//: hour, it stays up longer each time (45 s, 90 s, 3, 6, then 10 minutes): roused often, it is properly awake.
+function atlasWake(easeMs = ATLAS_WAKE_MS) {
+  const now = Date.now();
+  atlasLastInput = now;
+  atlasWake.recent = (atlasWake.recent || []).filter((t) => now - t < 15 * 60 * 1000).concat(now);
+  const hold = Math.min(10 * 60 * 1000, ATLAS_AWAKE_HOLD_MS * 2 ** (atlasWake.recent.length - 1));
+  atlasAwakeUntil = now + easeMs + hold;
+  if (atlasMoodNow === "sleepy") setAtlasMood("calm", 0, { quiet: true, easeMs });
 }
 
 setInterval(() => {
@@ -3827,14 +3910,23 @@ if (typeof registerCharacter === "function") {
 if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", () => atlasDressMarks());
 else atlasDressMarks();
 
-//: A task of its own, so the files' parse and this are two long tasks, not one.
+//: A task of its own, so the files' parse and this are two long tasks, not one;
+//: and then one task a job, in call order (INBOX 1657: all seven in one task
+//: were 161ms at 4x CPU, 47ms of it forced layout), so a frame can land
+//: between them.
 function charactersArrived() {
   setTimeout(() => {
     charactersLoaded = true;
-    const waiting = [...characterWaiters];
+    const jobs = [...characterWaiters].map((fn) => [fn, []]);
+    for (const [name, args] of characterBacklog) jobs.push([name, args]);
     characterWaiters.clear();
-    for (const fn of waiting) runCharacterJob(fn);
-    for (const [name, args] of characterBacklog) runCharacterJob(window[name], args);
     characterBacklog.clear();
+    const step = () => {
+      const job = jobs.shift();
+      if (!job) return;
+      runCharacterJob(typeof job[0] === "string" ? window[job[0]] : job[0], job[1]);
+      setTimeout(step, 0);
+    };
+    step();
   }, 0);
 }

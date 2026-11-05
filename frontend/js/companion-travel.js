@@ -41,10 +41,11 @@ function companionTravelWeights(o) {
   const s = o.size;
   const d = Math.hypot(o.dx, o.dy);
   const [width] = o.win;
-  const w = { walk: d <= s * 8 ? 3 : 0.6, portal: d > s * 2.5 ? 3 : 0, smoke: d > s * 2 ? 3 : 0, edge: 0 };
+  //: A puff is rare (INBOX 1683 u: the owner saw only puffs); the portal and the edge walk lead, a walk keeps the near.
+  const w = { walk: d <= s * 8 ? 3 : 1.2, portal: d > s * 2.5 ? 3 : 0, smoke: d > s * 2 ? 0.25 : 0, edge: 0 };
   const out = Math.min(o.x0, width - s - o.x0);
   const into = Math.min(o.x1, width - s - o.x1);
-  if (d > s * 3 && out + into + s * 2 <= s * COMPANION_TRAVEL_EDGE_SIZES) w.edge = 2;
+  if (d > s * 3 && out + into + s * 2 <= s * COMPANION_TRAVEL_EDGE_SIZES) w.edge = 2.5;
   if (o.last in w) w[o.last] = 0;
   return w;
 }
@@ -102,8 +103,13 @@ function companionTravelEnd(buddy, anim) {
   nameMarkBuddyTravel(buddy, "");
 }
 
+//: **On a page a frame has drawn** (INBOX 1667: `companion-travel.js:106` 30ms of forced layout at 4x): a
+//: step's `nameMarkBuddyBlend` reads the parts it moves, and a timer lands between the page's writes and
+//: its frame. The step runs a frame on (`nmb.afterClean`), unless the move ended or was cut meanwhile
+//: (the list it was filed in is gone).
 function companionTravelAt(ms, fn) {
-  nmb.travelTimers.push(setTimeout(fn, ms));
+  const list = nmb.travelTimers;
+  list.push(setTimeout(() => nmb.afterClean(() => nmb.travelTimers === list && fn()), ms));
 }
 
 //: Its legs walking from `ms` for `len` ms.

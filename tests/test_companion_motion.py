@@ -99,7 +99,7 @@ def test_a_scroll_or_a_moved_panel_is_not_a_reason_to_choose_again() -> None:
 
 
 def test_pinned_on_every_page_means_it_never_moves_on_its_own() -> None:
-    for name in ("nameMarkBuddyCheck", "nameMarkBuddyQueuePlace", "nameMarkBuddyBeat", "nameMarkBuddyErrand", "nameMarkBuddyUnheld"):
+    for name in ("nameMarkBuddyCheck", "nameMarkBuddyQueuePlace", "nameMarkBuddyBeat", "nameMarkBuddyErrand"):
         assert "nmb.pinned" in _fn(name), name
     menu = _fn("nameMarkBuddyMenu")
     assert '"*": {' in menu and "keep: 1" in menu and 'kind: "pinned"' in menu
@@ -214,9 +214,9 @@ def test_it_rides_its_panels_scroll_and_leaves_with_it() -> None:
     assert "getBoundingClientRect" not in riding and "nameMarkBuddyPut" not in riding
     # Not on a bar that sticks: it ignores the scroll the rider follows.
     assert 'pos === "sticky" || pos === "fixed"' in _fn("nameMarkBuddyScrollsWith")
-    # Out of sight, it waits for the page to be still and then its own beat.
+    # Out of sight it is not re-placed (INBOX 1673): its time out of sight is its loneliness, and a perch that went is looked at when it is seen.
     seen = _fn("nameMarkBuddySeen")
-    assert "nameMarkBuddyQueuePlace()" in seen and "nmbFollow.scrollAt" in seen
+    assert "nameMarkBuddyQueuePlace()" in seen and "nmb.lonelyTouch(!seen)" in seen and "setTimeout" not in seen
 
 
 def test_a_jump_it_must_make_is_a_poof_under_half_a_second() -> None:
@@ -254,7 +254,7 @@ def test_its_menu_holds_it_where_it_is() -> None:
     # another. Measured (companionmenu.js): with the menu open, its own
     # behaviours moved it 338px away before; now nothing moves it until the
     # menu closes, and a panel carrying it carries the menu.
-    for name in ("nameMarkBuddyBeat", "nameMarkBuddyErrand", "nameMarkBuddyUnheld", "nameMarkBuddyCheck", "nameMarkBuddyTick"):
+    for name in ("nameMarkBuddyBeat", "nameMarkBuddyErrand", "nameMarkBuddyCheck", "nameMarkBuddyTick"):
         assert "nameMarkBuddyMenuOpen()" in _fn(name), name
     assert "if (nmb.menuPlace && nameMarkBuddyMenuOpen()) nmb.menuPlace();" in _fn("nameMarkBuddyPut")
     menu = _fn("nameMarkBuddyMenu")
@@ -432,7 +432,7 @@ def test_it_can_be_petted_tossed_and_watches_a_near_pointer() -> None:
     pet = _fn("nameMarkBuddyPet")
     assert "nameMarkBuddyStill()" in pet and "15000" in pet
     assert "spots[tab] = nameMarkBuddySpotFor(spot);" in _fn("nameMarkBuddyThrowLand")
-    assert "nameMarkBuddyPerches(tab, near && per < 12 ? near[0] : null)" in _fn("nameMarkBuddyChoose")
+    assert "nameMarkBuddyPerches(tab, near && per < 12 ? near[0] : null, visit)" in _fn("nameMarkBuddyChoose")  # INBOX 1674: the visit flag
     notice = _fn("nameMarkBuddyNotice")
     assert 'document.documentElement.dataset.avatarFollow !== "off"' in notice
     assert "const near = follows && dist < NMB_EYES_NEAR * reach;" in notice
@@ -542,7 +542,9 @@ def test_it_keeps_out_of_the_tours_ring() -> None:
     assert '"tour-spot", "tour-card"' in re.search(r"^const NMB_POPUP_IDS = \[(.*)\];$", AV, re.M).group(1)
     # (The late look is `look`: `nameMarkBuddyDodge`, or the cheaper typing look for a plain
     # character in a field, audit 1101.)
-    assert "nmbDodgeLate = setTimeout(look, 700);" in AV
+    # Looked after a frame has drawn the press (INBOX 1534): the timer wraps `look` (since INBOX
+    # 1587 through `nmb.afterClean`, a frame and a timer, tests/test_atlas_cover_1587.py).
+    assert "nmbDodgeLate = setTimeout(afterPaint, 700);" in AV and "const afterPaint = () => nmb.afterClean(look);" in AV
     assert "const look = nameMarkBuddyTypingKey(e) ? nameMarkBuddyDodgeTyping : nameMarkBuddyDodge;" in AV
     assert 'buddy.querySelector(".nm-figure")' in _fn("nameMarkBuddyDodge")
 
@@ -570,7 +572,8 @@ def test_it_follows_a_tab_change_only_once_you_stay_and_comes_in_smoothly():
     # climb or a materialise, and leaving by a dissolve.
     changed = _fn("nameMarkBuddyTabChanged")
     assert 'buddy.classList.add("nmb-away");' in changed
-    assert "NMB_DWELL_MS + Math.random() * NMB_DWELL_JITTER_MS" in changed
+    # INBOX 1673 overturns the 1.3 to 2.5s follow: nothing is armed on a switch, its own mind brings it over minutes later.
+    assert "nmb.absent = true;" in changed and "NMB_DWELL" not in changed
     assert "if (!nmb.tab || tab === nmb.tab)" in changed
     enter = _fn("nameMarkBuddyEnter")
     # The ways it can come (INBOX 501 made the choice varied; see the test
@@ -639,8 +642,8 @@ def test_it_is_never_drawn_before_its_place_and_never_jumps_after_it() -> None:
     assert build.index('buddy.classList.add("nmb-away");') < build.index("nameMarkBuddySetSize(")
     # ... and brought in the way it comes to a tab, once the page is still.
     sync = _fn("syncNameMarkBuddy")
-    assert "nameMarkBuddyArrive(buddy);" in sync and "placeNameMarkBuddy(buddy, true)" not in sync
-    assert "nameMarkBuddySettle(tab, (spot) => {" in _fn("nameMarkBuddyArrive")
+    assert "nameMarkBuddyAppear(buddy);" in sync and "placeNameMarkBuddy(buddy, true)" not in sync
+    assert "nameMarkBuddySettle(tab, (spot) => {" in _fn("nameMarkBuddyAppear")
     settle = _fn("nameMarkBuddySettle")
     assert "NMB_SETTLE_QUIET_MS" in settle and "NMB_SETTLE_MAX_MS" in settle
     assert "if (moved) choose();" in settle
@@ -852,7 +855,7 @@ def test_its_reactions_come_and_go_gradually_and_it_gets_bored() -> None:
     assert 'nameMarkBuddyAct("yawn", 1700);' in wake and 'setTimeout(() => nameMarkBuddyAct("wake"), 1800)' in wake
     assert "nmb.awakeUntil = Date.now() + NMB_AWAKE_MS;" in wake
     tick = _fn("nameMarkBuddyTick")
-    assert "if (idle > NMB_SLEEP_MS && !awake) {" in tick and "if (nameMarkBuddyWander(Date.now())) {" in tick
+    assert "if (idle > NMB_SLEEP_MS && !awake) {" in tick and "if ((nmb.home && nameMarkBuddyWander(Date.now())) || nameMarkBuddyMind(buddy)) {" in tick
     build = _fn("nameMarkBuddyBuild")
     assert "const how = nameMarkBuddyClickReaction(wasAsleep, wasAsleep ? 1 : nmb.pokes.length, sinceLast, groggy, lastHow);" in build
     assert "nameMarkBuddyHover(0);" in build
@@ -863,7 +866,7 @@ def test_its_reactions_come_and_go_gradually_and_it_gets_bored() -> None:
     assert "now - nmb.home.at > 30000" in wander
     # Asked near where it was, its own perch won every time (wander.js): it
     # looks a few widths off, towards the middle.
-    assert "const away = nameMarkBuddyChoose(tab, obstacles, [nmb.x + off, nmb.y], 4);" in wander
+    assert "const away = nameMarkBuddyChoose(tab, obstacles, [nmb.x + off, nmb.y], 4, true);" in wander  # INBOX 1674: the far branch is the visit
     assert "nameMarkBuddyWarmthAt(nmb.feel, now)" in _fn("nameMarkBuddyDecide")
 
 
@@ -879,7 +882,9 @@ def test_its_gaze_has_one_reach_for_every_kind_and_drifts_back() -> None:
     assert "const reach = size;" in notice and "if (dist > 220 * reach && !loud) {" in notice
     assert "Math.max(0.7, nmb.scale || 1)];" in _fn("nameMarkBuddyHeadAt")
     release = _fn("nameMarkBuddyRelease")
-    assert 'buddy.style.setProperty("--nmb-ex", "0");' in release
+    # The look is written on the four kinds of element that read it, not on #nm-buddy (the three
+    # properties do not inherit now: one inherited write was 113 ms at 4x CPU, INBOX 1560).
+    assert 'nameMarkBuddyAim.set(buddy, "--nmb-ex", "0");' in release
     assert "#nm-buddy .name-mark .nm-eyes { transition: translate calc(var(--motion-slow) * 3) var(--ease-in-out); }" in CSS08
 
 
@@ -1200,9 +1205,9 @@ def test_out_of_sight_never_cancels_the_tab_follow() -> None:
     # left it away for 5s and more, because `nameMarkBuddySeen` cleared the
     # tab follow's timer. After: on Notes 3s later.
     seen = _fn("nameMarkBuddySeen")
-    assert "awayTimer" not in seen and "nmb.sightTimer = setTimeout(wait, 1600);" in seen
+    assert "awayTimer" not in seen and "setTimeout" not in seen
     assert "if (nmb.away) return;" in seen
-    assert "clearTimeout(nmb.sightTimer);" in _fn("nameMarkBuddyGone")
+    assert "clearTimeout(nmb.appearTimer);" in _fn("nameMarkBuddyGone")
 
 
 def test_perches_are_top_edges_outside_card_content_and_measured_for_words() -> None:
@@ -1221,7 +1226,7 @@ def test_perches_are_top_edges_outside_card_content_and_measured_for_words() -> 
     choose = _fn("nameMarkBuddyChoose")
     assert "const words = nameMarkBuddyWordsUnder(perch.x, perch.y, perch.pose, perch.legs);" in choose
     assert choose.index('legs: "peek"') < choose.index("if (soiled) return soiled;")
-    words = _fn("nameMarkBuddyWordsUnder")
+    words = _fn("nameMarkBuddyWordsUnder") + AV[AV.index("  rootWords(root) {") : AV.index("\n  },", AV.index("  rootWords(root) {"))]  # the walk moved to its helper (INBOX 1575)
     assert "seen < 400" in words and "nameMarkBuddyScroller(root)" in words
 
 
@@ -1553,7 +1558,11 @@ def test_an_act_or_a_walk_is_let_go_not_dropped():
     blend = _fn("nameMarkBuddyBlend")
     assert "nameMarkIdleQuiet()" in blend and "{ ...moved, offset: 0 }" in blend
     assert 'id: "nmb-blend"' in blend
-    assert "nameMarkBuddyBlend(buddy, () => buddy.classList.remove(`nmb-act-${was}`));" in _fn("nameMarkBuddyAct")
+    # (INBOX 1589: the hand-over also takes `nmb-arms` off with the last act that moves the arms.)
+    # (INBOX 1634: the leave is written inside the enter's change, one hand-over for both.)
+    act_fn = _fn("nameMarkBuddyAct")
+    assert "const leave = () => {\n    buddy.classList.remove(`nmb-act-${was}`);" in act_fn
+    assert "joined ? () => (leave(), into()) : into" in act_fn and "nameMarkBuddyBlend(buddy, leave)" in act_fn
     assert 'nameMarkBuddyBlend(buddy, () => buddy.classList.remove("nmb-walking"));' in AV
     assert 'a.id !== "nmb-blend"' in _fn("nameMarkBuddyTempo")
     css = (ROOT / "frontend" / "css" / "08-consistency.css").read_text(encoding="utf-8")
@@ -1708,7 +1717,7 @@ def test_the_first_entrance_after_an_unlock_is_a_drop_once() -> None:
     # it, and Reduce motion / Avatar animation off return before it.
     enter = _fn("nameMarkBuddyEnter")
     assert "unlockDrop: true" in AV
-    drop = enter.index("if (nmb.unlockDrop && !hangs) {")
+    drop = enter.index("if (nmb.unlockDrop && !hangs && !visit) {")
     assert enter.index("if (nameMarkBuddyNoTravel()) {") < drop, "the reduced-motion fade must come first"
     assert "nmb.unlockDrop = false;" in enter[drop:]
     assert 'translate: "0px 0px", opacity: 1 }' in enter[drop:], "it ends at rest, with no jump"
@@ -1781,7 +1790,11 @@ def test_nothing_runs_behind_the_lock_and_an_idle_page_is_not_polled() -> None:
     assert "atlasTailRest(tail, p)" in frame and "tail.resting" in frame
     rest = _fn("atlasTailRest", life)
     assert "svg.animate(" in rest and "transform:" in rest and "setAttribute" not in rest
-    assert "getComputedStyle(svg).transform" in _fn("atlasTailUnrest", life)
+    # It eases home from where the sway was: read from the sway's own timing,
+    # not the style, which settled the page on the rest beat (INBOX 1587).
+    unrest = _fn("atlasTailUnrest", life)
+    assert "getComputedTiming" in unrest and "tail.swayKeys" in unrest and "getComputedStyle" not in unrest
+    assert "tail.swayKeys.map(at)" in rest
     atlas = (ROOT / "frontend" / "js" / "atlas.js").read_text(encoding="utf-8")
     sync = _fn("atlasHiddenSync", atlas)
     assert "lock-overlay" in sync and "atlasTailWake(box)" in sync
@@ -1822,6 +1835,7 @@ def test_the_companions_words_check_counts_only_drawn_text():
     # under Atlas read as 0 over the "You asked:" line.
     js = (ROOT / "frontend" / "js" / "avatars.js").read_text(encoding="utf-8")
     body = js[js.index("function nameMarkBuddyWordsUnder("):].split("\nconst NMB_WORDS_PX", 1)[0]
+    body += js[js.index("  rootWords(root) {") : js.index("\n  },", js.index("  rootWords(root) {"))]  # the walk moved to nmb.rootWords (INBOX 1575)
     assert "checkVisibility()" in body and "FILTER_REJECT" in body
     assert body.index("n.textContent.trim()") < body.index("seen += 1")
 
@@ -1873,3 +1887,70 @@ def test_marks_hold_still_after_two_minutes_without_input_unless_busy() -> None:
     rule = css[css.rindex("\n", 0, at) : css.index("{", at)]
     assert ":not(.is-busy)" in rule and 'data-motion="reduced"' in rule
     assert "NMB_IDLE_MARK_MS = 120000" in AV and 'classList.remove("is-idle")' in AV
+
+
+def test_the_feminine_atlas_casts_her_stars_instead_of_wearing_them_1576() -> None:
+    """INBOX 1576, the owner: "those stars permanently stuck to the end of the
+    feminine atlas are a little awkward being permanently there, I think they
+    should instead become a movement or animation or behaviour (the stars in
+    its left hand)". At rest the swirl's loose end and the wisp by her left hand
+    carry none; a short cast from that hand (on a wave, a cheer, the greeting,
+    now and then on an idle beat) fades a handful in over about a second and
+    takes them off again, on the compositor's properties only, and not at all
+    under reduced motion."""
+    atlas = frontend_text("atlas.js")
+    micro = frontend_text("atlas-micro.js")
+    band = _fn("atlasBand", atlas)
+    assert "ATLAS_BAND_STARS.filter(([deg]) => deg < 404)" in band, "the strand's last stars are not drawn at rest"
+    assert 'atlasBandSplit(ATLAS_BAND_STARS, part));' in band, "the masculine dots are unchanged"
+    # The gestures that cast: the end of a wave or a cheer (INBOX 1589 moved it
+    # from the act's start, where the stars rode a raised arm as a third one),
+    # and the greeting (the corner and the large view's figures alike).
+    act = _fn("nameMarkBuddyAct")
+    assert re.search(r'if \(quiet && \(was === "wave" \|\| was === "cheer"\)\) window\.atlasMicroCast\?\.\(\);', act)
+    assert "window.atlasMicroCast?.();" in _fn("atlasOn", atlas)
+    cast = _fn("atlasMicroCast", micro)
+    # Never a read of the page, a frame loop or an add: it costs the compositor and a few nodes.
+    for banned in ("getBoundingClientRect", "getComputedStyle", "requestAnimationFrame", "composite", "offsetWidth", "getAnimations"):
+        assert banned not in cast, banned
+    assert "atlasMotionOK(box)" in cast and "finished.then(" in cast and ".remove()" in cast
+    # The look of one: a white four-point glint that is invisible until it plays, so a cast that
+    # never started (or ended) leaves nothing on the figure; none under reduced motion.
+    css = (ROOT / "frontend" / "css" / "08-consistency.css").read_text(encoding="utf-8")
+    rule = re.search(r"\.nm-atlas \.atl-cast-star \{([^}]*)\}", css)
+    assert rule and "opacity: 0" in rule.group(1) and "transform-box: fill-box" in rule.group(1) and "fill: white" in rule.group(1)
+    assert re.search(r'html\[data-motion="reduced"\][^{]*\.atl-cast-star[^{]*\{ display: none', css)
+
+
+def test_the_size_handle_is_reachable_in_every_pose_1624() -> None:
+    # The owner: "it is hard to resize the companion when it is hanging from
+    # the top bar". Hanging, the handle stood 8px up under the bar, half off
+    # screen at the right edge, and a pull moved the size 6 times as fast as
+    # standing (the hang point is 29px from the handle, the soles 107px).
+    grip = CSS08[CSS08.index("#nm-buddy .nmb-size-grip {") :]
+    grip = grip[: grip.index("}")]
+    assert "right: 2px;" in grip and "right: -" not in grip
+    # Intent moved (the owner, 2026-11-05): hanging, the handle is at the
+    # bottom-right corner, away from the bar and the hands, still inside the figure.
+    assert '#nm-buddy[data-pose="hang"] .nmb-size-grip { top: auto; bottom: 2px; }' in CSS08
+    # A pull sizes at one rate: the reference length is never under 100px.
+    assert "Math.max(from, 100)" in frontend_text("avatars.js")
+
+
+def test_a_board_object_or_map_node_is_a_perch_1629() -> None:
+    # The owner: "atlas cant properly sit on mindmap nodes as it can on the
+    # whiteboard diagram". One edge per `.wb-object` at its drawn top (the
+    # crown of an oval or a pill, from its radius), held by the glue as a
+    # share of the object's width so a zoom keeps it on the object, and let
+    # go by the support check when the object folds or goes. Measured
+    # (/tmp scratch node2.js): feet within 0.8px of the node's top through a
+    # pan and zooms of 0.45 to 1.6, centred on it.
+    js = frontend_text("avatars.js")
+    edges = js[js.index("nmb.boardEdges = (") :]
+    edges = edges[: edges.index("\n};\n")]
+    assert '.wb-object' in edges and 'kind: "node"' in edges and "borderTopLeftRadius" in edges
+    assert "nmb.boardEdges(floor, ceiling)" in js
+    assert 'el.matches(".wb-object")) ? nameMarkBuddyPerchShown(el)' in js
+    assert "g.dx = g.fx * box.width - NMB_W / 2" in js
+    # The chooser never walks to one by itself: no tab's order lists it.
+    assert '"node"' not in js[js.index("const NAME_MARK_BUDDY_ORDER") : js.index("const NAME_MARK_BUDDY_ORDER") + 900]

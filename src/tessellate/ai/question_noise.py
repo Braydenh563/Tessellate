@@ -36,7 +36,7 @@ import re
 from tessellate.core.lazyre import lazy_compile
 from collections import Counter
 
-from tessellate.ai import act_registry, spelling
+from tessellate.ai import act_registry, repair_turn, spelling
 from tessellate.ai.spelling import distance  # noqa: F401 - re-exported: the speller owns it, so the two modules do not import each other
 
 # --- 1. slang and text-speak ----------------------------------------------------
@@ -451,6 +451,27 @@ def _strip_stray_tail(text: str) -> str:
     return text
 
 
+#: "new notes", "show new notes", "any new notes please", "see new notes about
+#: uni": the newest notes, listed (INBOX 1532: "new notes" was answered with the
+#: prompt for making one). "New" before a plural noun is the order word
+#: "newest", read as the other four are ("latest", "recent" ...); a singular
+#: "new note" with words stays the create act.
+_NEW_NOTES = lazy_compile(
+    r"^(?P<lead>(?:(?:please|pls|can you|could you|would you)\s+)?(?:(?:show|see|list|give|get|display|open|find|view|read)(?:\s+me)?\s+)?"
+    r"(?:(?:any|all|my|the|some|of)\s+)*)new\s+(?P<noun>notes|entries)(?P<tail>(?:\s+(?:about|on|for|from|regarding)\s+\S.*?)?(?:\s+(?:please|pls|now|today))?)[?.!\s]*$",
+    re.I,
+)
+
+
+def new_notes_as_newest(text: str) -> str:
+    """`text` with "new notes" said as "newest notes" when the whole turn asks
+    for them; any other text as it came."""
+    found = _NEW_NOTES.match(text or "")
+    if not found:
+        return text
+    return f"{found.group('lead')}newest {found.group('noun')}{found.group('tail')}"
+
+
 def strip_strays(text: str) -> str:
     """Stray keys off a text's edges and runs of spaces made one; nothing
     else changes (a tool's argument, INBOX 808)."""
@@ -527,17 +548,7 @@ SOCIAL_PHRASES: dict[str, str] = {
     "oh no": "reaction", "oh wow": "reaction", "no way": "reaction", "thats great": "reaction",
     "that's great": "reaction", "nice one": "thanks", "well done": "reaction", "oh dear": "reaction",
     "who are you": "who", "whats your name": "who", "what's your name": "who",
-    #: A repair: the last reply missed (INBOX 1485). Owned and read again,
-    #: never searched for ("not what I asked" found "not asked").
-    "not what i asked": "repair", "thats not what i asked": "repair", "that's not what i asked": "repair",
-    "that is not what i asked": "repair", "not what i meant": "repair", "thats not what i meant": "repair",
-    "that's not what i meant": "repair", "not what i said": "repair", "thats wrong": "repair",
-    "that's wrong": "repair", "that is wrong": "repair", "wrong answer": "repair", "no i meant": "repair",
-    "you misunderstood": "repair", "you misunderstood me": "repair", "you got it wrong": "repair",
-    "you got that wrong": "repair", "thats not right": "repair", "that's not right": "repair",
-    "that is not right": "repair", "you misread": "repair", "you misread me": "repair",
-    "i didnt ask that": "repair", "i didn't ask that": "repair", "i did not ask that": "repair",
-    "not what i was asking": "repair", "thats not it": "repair", "that's not it": "repair",
+    #: A repair ("not what I asked") is read by class, `repair_turn.is_repair` (INBOX 1668).
 }
 
 #: One-word turns that are not in `SOCIAL` above: reactions and confusion.
@@ -2001,9 +2012,17 @@ def is_filler(word: str) -> bool:
     return bool(_FILLER.match(word))
 
 
+#: Adjectives that colour a request and are not what it is about ("anything
+#: interesting", "the cool stuff"): never a subject, so never a search word, a
+#: topic or a follow-on (INBOX 1561). One list for all three.
+PRAISE_WORDS = frozenset(
+    """interesting interested cool fun funny neat nice good great awesome amazing fascinating useful helpful
+    impressive special fancy clever handy exciting notable noteworthy""".split()
+)
+
 #: Words typed around a note, not naming one ("a random ahh note"): a chip
 #: about "random ahh" asks for nothing (INBOX 1496).
-_NO_SUBJECT = frozenset(
+_NO_SUBJECT = PRAISE_WORDS | frozenset(
     "random randomly ahh ahhh ahhhh lol lmao ngl tbh bruh idk whatever some any one thing things stuff something "
     "anything like just really very kinda sorta old new little bit".split()
 )
@@ -2096,14 +2115,29 @@ def addressed_kind(message: str) -> str | None:
     return "who" if _OPINION_ASK.search(text) else None
 
 
+_PHRASE_TABLE: list = []
+
+
+def _phrase_table() -> list:
+    """(phrase, kind, pattern) for every social phrase, longest first, built
+    once. Sorting and compiling the 380-odd patterns on every call, past the
+    `re` cache's 512 entries, was 17 of the dialogue eval's 42 s (CI time
+    1102). Rebuilt if the table grew since."""
+    if len(_PHRASE_TABLE) != len(SOCIAL_PHRASES):
+        _PHRASE_TABLE[:] = [
+            (phrase, SOCIAL_PHRASES[phrase], re.compile(rf"(?:^|\s){re.escape(phrase)}(?=\s|$)"))
+            for phrase in sorted(SOCIAL_PHRASES, key=len, reverse=True)
+        ]
+    return _PHRASE_TABLE
+
+
 def _social_phrases(text: str) -> tuple[list[str], str]:
     """The kinds of the social phrases in `text`, longest first, and the text without them."""
     kinds: list[str] = []
-    for phrase in sorted(SOCIAL_PHRASES, key=len, reverse=True):
-        pattern = rf"(?:^|\s){re.escape(phrase)}(?=\s|$)"
-        if re.search(pattern, text):
-            kinds.append(SOCIAL_PHRASES[phrase])
-            text = re.sub(pattern, " ", text)
+    for phrase, kind, pattern in _phrase_table():
+        if phrase in text and pattern.search(text):  # the substring test skips nearly every pattern
+            kinds.append(kind)
+            text = pattern.sub(" ", text)
     return kinds, text
 
 
@@ -2121,14 +2155,20 @@ def _word_kinds(words: list[str]) -> list[str] | None:
     return kinds
 
 
+def _spoken_to_kind(message: str) -> str | None:
+    """"who" for a question about what it is talking to, "repair" for "not
+    what I asked" (INBOX 1668 b), whatever else the message could be."""
+    if asks_identity(message):
+        return "who"
+    return "repair" if repair_turn.is_repair(message) else addressed_kind(message)
+
+
 def social_kind(message: str) -> str | None:
     """The kind of conversational turn a message is when every part of it is
     one ("ty", "lol", "ok thx", "right ok", "wait what", "how r u", an emoji
     alone), else None: a turn with a question in it is a question. A question
     about what it is talking to is "who", whatever leads into it."""
-    if asks_identity(message):
-        return "who"
-    if kind := addressed_kind(message):
+    if kind := _spoken_to_kind(message):
         return kind
     raw = destretch(drop_filler((message or "").strip()))
     if raw and not strip_symbols(raw):
@@ -2277,6 +2317,17 @@ def _split(word: str) -> str | None:
 _COMMA_RUN = lazy_compile(r"(?<=[A-Za-z]),(?=[A-Za-z])")
 
 
+_SMALL_TALK: dict = {}
+
+
+def _small_talk_words() -> frozenset:
+    """SLANG and SOCIAL's words, built once, not as a new set per question."""
+    size = len(SLANG) + len(SOCIAL)
+    if _SMALL_TALK.get("size") != size:
+        _SMALL_TALK.update(size=size, words=frozenset(SLANG.keys() | SOCIAL.keys()))
+    return _SMALL_TALK["words"]
+
+
 def repair(text: str, report: list | None = None, known=frozenset(), fixed: list | None = None) -> str:  # noqa: ANN001
     """Slang spelled out, asking words put right, run-together words split
     and split words joined, then every other misspelt word read as the word it
@@ -2287,7 +2338,7 @@ def repair(text: str, report: list | None = None, known=frozenset(), fixed: list
     spelled out) is added to `fixed` as (typed, chosen), which is what lets an
     answer say how it read the question."""
     #: A small-talk word is a word: "hi test" was glued into "hitest" (INBOX 1485).
-    tokens = spelling.rejoin(_COMMA_RUN.sub(", ", strip_symbols(text)).split(" "), known, SLANG.keys() | SOCIAL.keys(), fixed)
+    tokens = spelling.rejoin(_COMMA_RUN.sub(", ", strip_symbols(text)).split(" "), known, _small_talk_words(), fixed)
     tokens = [spelling.drop_stray(t, known, fixed) for t in tokens]
     out: list[str] = []
     i = 0

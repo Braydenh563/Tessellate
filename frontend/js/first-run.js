@@ -36,9 +36,12 @@ function firstStepsState() {
 async function firstStepsRead() {
   const named = Boolean(((typeof prefsCache === "object" && prefsCache?.display_name) || "").trim());
   //: An answer from Ask is kept in the Ask history, a chat in the chat list:
-  //: either one is the third step done.
+  //: either one is the third step done. Only a count above 0 is taken from the
+  //: badge: a 0 it read may predate the answer's record (the badge re-reads one
+  //: frame after an answer, which can be before the server has kept it; E2E
+  //: first-run, 2026-11-03), and a stale 0 left the step unticked.
   const [asks, chats, sample] = await Promise.all([
-    askBadgeTotal === null ? apiJson("/ask-history/stats").catch(() => ({ total: 0 })) : { total: askBadgeTotal },
+    askBadgeTotal ? { total: askBadgeTotal } : apiJson("/ask-history/stats").catch(() => ({ total: 0 })),
     apiJson("/conversations?limit=1").catch(() => []),
     apiJson("/help/sample-notebook").catch(() => ({ live: 0, added: true })),
   ]);
@@ -167,7 +170,7 @@ function getStartedHide() {
   $("dash-first-steps")?.replaceChildren();
   $("dash-start")?.replaceChildren();
   renderDashMore();
-  toastAction("Get started is hidden. Settings, Help, Customise or the palette brings it back.", "Show again", getStartedShow);
+  toastAction("First steps are hidden. Settings, Help, Customise or the palette brings them back.", "Show again", getStartedShow);
 }
 
 function getStartedMarkDone() {
@@ -194,7 +197,7 @@ function firstStepsMenuItems(host, state) {
     { label: "ph:compass Take the tour", title: "Two minutes through what is here", group: "help", run: () => openTour("basics") },
     { label: "ph:book-open-text Read the manual", title: "Every help topic on one page", group: "help", run: () => lazyScript("/js/manual.js").then((ok) => ok && openManual()) },
     { label: "ph:checks Mark all as done", title: "Tick every step and put this card away", group: "away", run: getStartedMarkDone },
-    { label: "ph:eye-slash Hide Get started", title: "Hide this card and the Get started button; Settings, Help or Customise shows them again", group: "away", run: getStartedHide }
+    { label: "ph:eye-slash Hide first steps", title: "Hide this card and the First steps button; Settings, Help or Customise shows them again", group: "away", run: getStartedHide }
   );
   return items;
 }
@@ -213,9 +216,9 @@ function firstStepsCard(host, state) {
   head.className = "first-steps-head";
   const title = document.createElement("h2");
   title.id = "first-steps-title";
-  //: Not "Your notebook is empty" again: the hero says so (INBOX 472). The
-  //: dock button's own words, so the card and the button read as one thing.
-  title.textContent = "Get started";
+  //: Not "Your notebook is empty" again: the hero says so (INBOX 472). Says what
+  //: the card is for; the dock button that reopens it is "First steps" (unslop 1103, 16).
+  title.textContent = "Three steps to a working notebook";
   const count = document.createElement("span");
   count.className = "first-steps-count muted";
   count.textContent = `${done} of 3 done`;
@@ -279,6 +282,16 @@ async function renderFirstSteps(host, cardOff = false) {
     host.replaceChildren();
     return;
   }
+  //: A dashboard refresh with nothing changed keeps the card as it is: a
+  //: rebuild closed its open menu and cleared a half-typed name (E2E, PR 212).
+  const key = JSON.stringify([state, prefs.get("firstStepsCollapsed", ""), writeNoteHint()]);
+  if (host.firstChild && host.dataset.stepsKey === key) return;
+  //: Nor while its ⋯ menu is open: a refresh that landed between the menu
+  //: opening and the press removed the item from under the pointer (E2E
+  //: first-run, CI run 41741228993). The key is left stale, so the next
+  //: refresh after the menu closes rebuilds.
+  if (host.querySelector('.kebab-opener[aria-expanded="true"]')) return;
+  host.dataset.stepsKey = key;
   host.replaceChildren(firstStepsCard(host, state));
   //: The greeting's "Add your name" is step one's second door: one is enough.
   document.getElementById("dash-name-nudge")?.remove();
@@ -287,7 +300,7 @@ async function renderFirstSteps(host, cardOff = false) {
 //: **The steps stay reachable** (INBOX 904 B01: a setup popup was closed by
 //: accident and there was no way back). The card above hides itself once
 //: there are notes or Hide is pressed; these two doors never do: the
-//: dashboard's "Get started" menu (`renderGetStarted`, below) and the
+//: dashboard's First steps menu (`renderGetStarted`, below) and the
 //: same checklist as the first row of the notifications panel
 //: (`firstStepsBellRow`, called from `openNotifications`). Both are built
 //: from the steps below, so a step is worded once.
@@ -330,7 +343,7 @@ function getStartedItems(state) {
   if (!(state.named && state.noted && state.asked)) {
     items.push({ label: "ph:checks Mark all as done", title: "Tick every step and put the card away", group: "away", run: getStartedMarkDone });
   }
-  items.push({ label: "ph:eye-slash Hide Get started", title: "Hide this button and the card; Customise shows them again", group: "away", run: getStartedHide });
+  items.push({ label: "ph:eye-slash Hide first steps", title: "Hide this button and the card; Customise shows them again", group: "away", run: getStartedHide });
   return items;
 }
 
@@ -355,7 +368,7 @@ async function firstStepsBellRow() {
   //: Names what is left: "2 of 3 done" with no name set read as wrong to
   //: a blind tester (2026-10-31) when it was true (a note and an answer).
   const todo = steps.filter((step) => !step.done).map((step) => step.label.toLowerCase());
-  title.textContent = `Get started, ${steps.length - left} of ${steps.length} done. Left: ${todo.join(", ")}`;
+  title.textContent = `First steps, ${steps.length - left} of ${steps.length} done. Left: ${todo.join(", ")}`;
   const list = document.createElement("ul");
   list.className = "notif-start-steps";
   for (const step of steps) {
@@ -384,13 +397,13 @@ async function renderGetStarted() {
   if (prefs.get("getStartedHidden", "") === "1") return void slot.replaceChildren();
   const state = await firstStepsState().catch(() => null);
   if (!state) return;
-  const menu = kebabMenu(getStartedItems(state), "Get started: the first steps");
+  const menu = kebabMenu(getStartedItems(state), "First steps");
   const opener = menu.querySelector("button");
   setLabel(opener, "ph:list-checks");
   opener.querySelector("i")?.classList.add("ph-lead");
   const word = document.createElement("span");
   word.className = "dock-word";
-  word.textContent = "Get started";
+  word.textContent = "First steps";
   opener.append(word);
   opener.classList.remove("icon-only");
   opener.classList.add("ghost");

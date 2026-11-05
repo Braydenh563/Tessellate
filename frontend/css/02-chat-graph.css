@@ -34,6 +34,10 @@
 .msg.user {
   align-self: flex-end;
   border-bottom-right-radius: 4px;
+  /* A long message of yours keeps a reading width and its side of the column (the owner,
+     2026-11-03: "long user chat message bubbles go the full screen width"): under the
+     answer's 82%, and a line length a person reads, whichever is narrower. */
+  max-width: min(72%, 42rem);
 }
 .msg.assistant {
   align-self: flex-start;
@@ -334,6 +338,22 @@
 }
 .chat-empty .empty-title {
   margin: 0.4rem 0 0.25rem;
+}
+/* The other search fields are an inset with no edge at rest and an edge on
+   focus (08-consistency.css, `.dock .dock-search`); this was the one still
+   drawn as a form field, a 58% ink edge round white, its words at 12px
+   (unslop 1103, 7). The same three declarations, in a sidebar. */
+.search-field.chat-sidebar-search {
+  margin-bottom: var(--space-2); /* E47: a gap above the list it filters */
+  border-color: transparent;
+  background: var(--field-inset);
+  box-shadow: none;
+}
+.search-field.chat-sidebar-search:focus-within {
+  background: var(--input-bg);
+}
+.search-field.chat-sidebar-search > .search-field-input {
+  font-size: var(--text-md);
 }
 #conversation-list {
   list-style: none;
@@ -859,17 +879,6 @@ details.tool-chip[open] > .tool-chip-body {
    badge, so it reads as a sentence and carries its number. `--ok` and
    `--error` are the two the rest of the app already uses for "this held" and
    "this did not". */
-.skill-verify {
-  font-size: var(--text-md);
-  padding: var(--space-2) 0;
-  color: var(--muted);
-}
-.skill-verify-ok {
-  color: var(--ok);
-}
-.skill-verify-not-ok {
-  color: var(--error);
-}
 .skill-change {
   display: flex;
   align-items: center;
@@ -1189,25 +1198,6 @@ body.graph-fullscreen-on .sidebar-panel {
 .graph-link-panel .confirm-actions {
   justify-content: center;
 }
-/* --- more than one route between the same two notes ------------------------
-   Asked for directly: "allow for multiple paths to be displayed if they
-   exist." All of them are drawn at once, because "is that the only way these
-   connect?" is a question about the picture, switching one at a time would
-   never show you that there are three.
-   Three colours, from tokens that already exist and already mean "a different
-   thing" in this app's charts and badges rather than three new hues invented
-   for one feature. The index wraps at 3 in `drawTrace`, so a fourth route (if
-   `MAX_ALTERNATE_PATHS` is ever raised) reuses the first colour rather than
-   computing one nobody chose. */
-.graph-path-route-0 {
-  stroke: var(--accent);
-}
-.graph-path-route-1 {
-  stroke: var(--ok);
-}
-.graph-path-route-2 {
-  stroke: var(--warn);
-}
 .graph-trace-route-chip {
   display: inline-flex;
   align-items: center;
@@ -1251,29 +1241,6 @@ body.graph-fullscreen-on .sidebar-panel {
 .graph-trace-route-chip[data-route="2"] .graph-trace-route-swatch {
   background: var(--warn);
 }
-.graph-node.graph-on-path .graph-core {
-  stroke: var(--accent);
-  stroke-width: 3.5px;
-  filter: drop-shadow(0 0 6px var(--accent));
-}
-.graph-node.graph-on-path .graph-label {
-  opacity: 1;
-  font-weight: 600;
-}
-/* The two ends of the trace, which are the notes you actually asked about. */
-.graph-node.graph-path-end .graph-core {
-  stroke-width: 5px;
-}
-/* Drag-to-link: the note you are hovering over lights up *before* you let go.
-   Without it the drop is a guess, and every miss makes a link nobody meant. */
-.graph-node.graph-drop-target .graph-core {
-  stroke: var(--ok);
-  stroke-width: 4px;
-  filter: drop-shadow(0 0 8px var(--ok));
-}
-.graph-node.graph-drop-target .graph-halo {
-  opacity: 0.5;
-}
 .graph-node {
   cursor: pointer;
   /* Declared here so the token has a live value of its own, and overridden per
@@ -1283,23 +1250,6 @@ body.graph-fullscreen-on .sidebar-panel {
      node drawn before the script has set its property still grows by about the
      right amount rather than by a number chosen to look harmless. */
   --graph-hover-scale: 1.2;
-}
-/* During an active pan, native `:hover` matching still fires per node the
-   cursor sweeps under even though the JS-level highlight is muted
-   (`graphIsPanning` in graph.js): that hit-testing and the CSS transitions
-   it triggers were a measured, real cost. Node drags never set this class
-   (their own mousedown stops propagation before the pan gesture starts). */
-.graph-panning .graph-node {
-  pointer-events: none;
-}
-/* Soft coloured halo behind each node → depth, and hubs read brighter. */
-.graph-node .graph-halo {
-  opacity: 0.18;
-  filter: blur(2px);
-  pointer-events: none;
-  transform-box: fill-box;
-  transform-origin: center;
-  transition: opacity var(--motion-fast) var(--ease-out), transform var(--motion-base) var(--ease-out);
 }
 /* --- hovering a node --------------------------------------------------------
    Asked for: "can you make graph nodes temporarily expand to fill their glow
@@ -1317,22 +1267,9 @@ body.graph-fullscreen-on .sidebar-panel {
    `transform-box: fill-box` is what makes `transform-origin: center` mean the
    circle's own centre. Without it the origin is the SVG viewport's, and every
    node would fly across the canvas instead of growing in place. */
-.graph-node:hover .graph-halo,
-.graph-node:is(:focus-visible, :has(:focus-visible)) .graph-halo {
-  opacity: 0.31;
-  transform: scale(1.11);
-}
 .graph-node:hover .graph-core,
-.graph-node:hover .graph-orb-shine,
-.graph-node:is(:focus-visible, :has(:focus-visible)) .graph-core,
-.graph-node:is(:focus-visible, :has(:focus-visible)) .graph-orb-shine {
+.graph-node:is(:focus-visible, :has(:focus-visible)) .graph-core {
   transform: scale(var(--graph-hover-scale));
-}
-.graph-node .graph-orb-shine {
-  pointer-events: none;
-  transform-box: fill-box;
-  transform-origin: center;
-  transition: transform var(--motion-base) var(--ease-out);
 }
 .graph-node .graph-core {
   stroke: var(--card);
@@ -1352,13 +1289,8 @@ body.graph-fullscreen-on .sidebar-panel {
    the pointer is on it. Taking the scale away as well would leave a reader who
    has asked for less motion with no hover feedback on the graph at all beyond
    a slightly brighter halo. */
-:where(:root[data-motion="reduced"]) .graph-node .graph-halo,
-:where(:root[data-motion="reduced"]) .graph-node .graph-core,
-:where(:root[data-motion="reduced"]) .graph-node .graph-orb-shine {
+:where(:root[data-motion="reduced"]) .graph-node .graph-core {
   transition: none;
-}
-.graph-node .graph-core.graph-pinned {
-  stroke: var(--warn);
 }
 /* Well-connected "hub" notes get a bright ring so structure is visible. */
 .graph-node .graph-core.graph-hub {
@@ -1505,9 +1437,16 @@ body.graph-fullscreen-on .sidebar-panel {
 #sketch-overlay.hidden {
   display: none;
 }
-#palette-input {
-  width: 100%;
+.palette-head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
   margin-bottom: 0.5rem;
+}
+#palette-input {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
   font-size: var(--text-body);
 }
 /* A rich picker (rich-picker.js, DESIGN.md's recipe index): the list and,
@@ -2329,7 +2268,10 @@ kbd {
 .empty-state.is-failed .empty-title {
   color: var(--warn);
 }
-.empty-icon {
+/* `.ph.empty-icon` too: `.ph` (07) is later and as specific, so an `<i class="ph
+   empty-icon">` drew at 16.9px, not 41.6 (search, pickers, a failed load). */
+.empty-icon,
+.ph.empty-icon {
   font-size: 2.6rem;
   display: block;
   margin-bottom: 0.5rem;
@@ -2804,6 +2746,7 @@ kbd {
     background: none;
   }
   .action-menu.menu-nested > :not(.menu-group-open),
+  .wb-board-menu.menu-nested > :not(.menu-group-open),
   .menu-group-open > .menu-item:first-child {
     display: none;
   }
@@ -2908,11 +2851,6 @@ html {
 .graph-node,
 .graph-edge {
   transition: opacity var(--motion-slow) var(--ease-out);
-}
-.graph-node.graph-match .graph-core {
-  stroke: var(--accent);
-  stroke-width: 3px;
-  filter: drop-shadow(0 0 4px var(--accent-soft));
 }
 .graph-node.graph-held .graph-core {
   stroke: var(--ink);
@@ -4289,12 +4227,12 @@ mark.lightbox-hit {
    fold, an icon and a word, muted, a ground under the pointer (INBOX 457:
    "make sure all the thinking boxes are the same style and consistent"). */
 .agent-step-group-summary,
+.chat-sources-summary,
 .fold-summary {
   display: flex;
   align-items: center;
   min-height: var(--target-min);
   gap: var(--space-2);
-  width: fit-content;
   padding: var(--space-1) var(--space-2);
   border-radius: var(--radius-sm);
   color: var(--muted);
@@ -4305,20 +4243,35 @@ mark.lightbox-hit {
   list-style: none;
 }
 .agent-step-group-summary::-webkit-details-marker,
+.chat-sources-summary::-webkit-details-marker,
 .fold-summary::-webkit-details-marker {
   display: none;
 }
 .agent-step-group-summary:hover,
+.chat-sources-summary:hover,
 .fold-summary:hover,
 .agent-step-group-summary:is(:focus-visible, :has(:focus-visible)),
+.chat-sources-summary:is(:focus-visible, :has(:focus-visible)),
 .fold-summary:is(:focus-visible, :has(:focus-visible)) {
   background: var(--chip-bg);
   color: var(--ink);
 }
-.agent-step-group[open] > .agent-step-group-summary,
-.thinking-fold[open] > .fold-summary,
-.why-fold[open] > .fold-summary {
+details[open] > :is(.agent-step-group-summary, .fold-summary) {
   color: var(--ink);
+}
+/* **A fold that is a full-width panel open is a full-width row closed**
+   (INBOX A2, the owner: the boxes "that expand to full width when opened
+   should still be full width when closed"). Closed, the summary was a
+   fit-content pill (Thinking 82px in a 528px column) that jumped to the whole
+   row on opening. `.fold-summary` is the summary of every such fold (Thinking,
+   Why this answer, Web results, a long block, Grounded in, Requests and
+   answers), so the row is the flex default (no width of its own) and the affordance, the caret,
+   sits at its end (drawn by the one disclosure rule, 08-consistency.css). The steps group and Sources are the same row (the owner: the
+   other chat places too), their caret at the end as well. */
+:is(.fold-summary, .agent-step-group-summary)::after,
+.chat-sources-summary::before {
+  order: 1;
+  margin-inline-start: auto;
 }
 /* While the group is still collecting steps its summary carries the `.spinner`
    ring (the `ph:spin` marker in `groupSummary`, chat-agent.js); a group that
@@ -4342,26 +4295,6 @@ mark.lightbox-hit {
   margin-top: var(--space-3);
   border-top: 1px solid var(--border);
   padding-top: var(--space-2);
-}
-.chat-sources-summary {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  width: fit-content;
-  padding: var(--space-1) var(--space-2);
-  border-radius: var(--radius-sm);
-  color: var(--muted);
-  font-size: var(--text-sm);
-  cursor: pointer;
-  list-style: none;
-}
-.chat-sources-summary::-webkit-details-marker {
-  display: none;
-}
-.chat-sources-summary:hover,
-.chat-sources-summary:is(:focus-visible, :has(:focus-visible)) {
-  background: var(--chip-bg);
-  color: var(--ink);
 }
 .chat-sources-body {
   display: flex;
@@ -4783,10 +4716,17 @@ mark.lightbox-hit {
    entirely from `#chat-messages`, its only flow child), can only ever
    overlap the transcript: `.hidden` toggling this element now changes
    nothing about `.chat-transcript`'s own box. */
+/* **The pill's own strip** (INBOX 1590: it sat over the source cards and the
+   Next chips). A transcript that scrolls keeps this much room under its pane,
+   set by `syncChatJumpLatest`; the pill is anchored to the bottom of that
+   padding, so it is outside the pane's box and cannot cover a card or chip. */
+.chat-transcript.has-jump-gap {
+  padding-bottom: calc(var(--space-9) + var(--space-5));
+}
 .chat-jump-latest {
   position: absolute;
   left: 50%;
-  bottom: var(--space-3);
+  bottom: var(--space-1);
   transform: translateX(-50%);
   z-index: 4;
   display: inline-flex;

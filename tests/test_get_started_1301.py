@@ -64,7 +64,7 @@ def test_hide_and_mark_all_done_are_in_both_menus():
     dock_menu = _body(FIRST, "function getStartedItems(")
     for menu in (card_menu, dock_menu):
         assert "Mark all as done" in menu and "getStartedMarkDone" in menu
-        assert "Hide Get started" in menu and "getStartedHide" in menu
+        assert "Hide first steps" in menu and "getStartedHide" in menu
 
 
 def test_the_choices_persist_and_are_honoured_everywhere():
@@ -84,7 +84,7 @@ def test_the_choices_persist_and_are_honoured_everywhere():
 
 def test_customise_brings_it_back():
     items = _body(DASH, "function dashCustomiseItems(")
-    assert "Show Get started" in items and '.then(() => getStartedShow())' in items
+    assert "Show first steps" in items and '.then(() => getStartedShow())' in items
     #: INBOX 1304: one way back shared by Customise, the hide toast and the palette;
     #: in the lazy first-run.js, loaded first by callers outside it (boot budget).
     show = _body(FIRST, "function getStartedShow(")
@@ -94,7 +94,23 @@ def test_customise_brings_it_back():
 
 def test_help_names_the_new_controls():
     topic = next(t for t in MORE_TOPICS if t["id"] == "first-steps")
-    for words in ("Mark all as done", "Hide Get started", "Show Get started"):
+    for words in ("Mark all as done", "Hide first steps", "Show first steps"):
         assert words in topic["body"], words
     popover = INDEX[INDEX.index('id="dash-help"') :].split("</div>")[0]
-    assert "Show Get started" in popover
+    assert "Show first steps" in popover
+
+
+def test_an_unchanged_card_is_not_rebuilt():
+    """E2E on PR 212: a dashboard refresh rebuilt the card while its menu was
+    open, so "Remove the sample notes" vanished under the click (and a
+    half-typed name would go with it). The card is rebuilt only when what it
+    shows changed."""
+    body = FIRST[FIRST.index("async function renderFirstSteps"):]
+    body = body[: body.index("\n}\n")]
+    keyed = body.index("host.dataset.stepsKey === key")
+    assert "state" in body[body.index("const key = "):keyed]
+    assert '"firstStepsCollapsed"' in body[body.index("const key = "):keyed]
+    assert keyed < body.index("host.replaceChildren(firstStepsCard(host, state))")
+    # An open ⋯ menu holds the card: a rebuild took its item from under a press.
+    held = body.index("""'.kebab-opener[aria-expanded="true"]'""")
+    assert keyed < held < body.index("host.dataset.stepsKey = key")

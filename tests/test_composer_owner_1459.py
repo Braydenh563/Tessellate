@@ -18,7 +18,8 @@ from datetime import datetime
 
 import pytest
 
-from tessellate.ai import commands, composer, intent, question_noise
+from tessellate.ai import commands, intent, question_noise
+from tessellate.ai import composer_smalltalk
 from tessellate.ai import composer_aware as aware
 from tests.test_composer_route_688 import _ask, _seed
 
@@ -45,23 +46,23 @@ def test_a_word_that_is_not_stretched_is_left_alone(word):
 def test_a_stretched_greeting_is_a_greeting(typed):
     assert not intent.is_mash(typed)
     assert intent.classify(typed) == intent.SMALLTALK
-    assert composer.social_kind(typed) == "greeting"
+    assert composer_smalltalk.social_kind(typed) == "greeting"
 
 
 @pytest.mark.parametrize("typed", ["thxxx", "thanksss", "tyyy", "cheersss"])
 def test_stretched_thanks_is_thanks(typed):
-    assert composer.social_kind(typed) == "thanks"
+    assert composer_smalltalk.social_kind(typed) == "thanks"
 
 
 @pytest.mark.parametrize("typed", ["sooo good", "okkk", "yesss", "coool", "niceee"])
 def test_a_stretched_reaction_is_small_talk_not_stray_keys(typed):
     assert intent.classify(typed) == intent.SMALLTALK
-    assert composer.social_kind(typed) not in ("unclear", "test")
+    assert composer_smalltalk.social_kind(typed) not in ("unclear", "test")
 
 
 def test_real_stray_keys_are_still_stray_keys():
     for typed in ("asdfgh", "jkjkjkjk", "kjhgf lkjh"):
-        assert composer.social_kind(typed) == "unclear"
+        assert composer_smalltalk.social_kind(typed) == "unclear"
 
 
 # --- 2. a swear or a frustrated line -------------------------------------------
@@ -72,33 +73,33 @@ FRUSTRATED = ["fuck", "ugh", "wtf", "this is useless", "ffs", "for fucks sake", 
 @pytest.mark.parametrize("typed", FRUSTRATED)
 def test_a_frustrated_line_is_its_own_kind(typed):
     assert intent.classify(typed) == intent.SMALLTALK
-    assert composer.social_kind(typed) == "frustrated"
+    assert composer_smalltalk.social_kind(typed) == "frustrated"
 
 
 @pytest.mark.parametrize("voice", ["natural", "professional"])
 @pytest.mark.parametrize("seed", [f"s{n}" for n in range(8)])
 def test_a_frustrated_line_gets_a_calm_short_offer_of_help(voice, seed):
     for typed in FRUSTRATED:
-        said = composer.social(typed, "smalltalk", previous="I couldn't make that out.", last_question="yooooo", voice=voice, seed=seed)
+        said = composer_smalltalk.social(typed, "smalltalk", previous="I couldn't make that out.", last_question="yooooo", voice=voice, seed=seed)
         assert "Quite something" not in said and "yooooo" not in said
         assert len(said) <= 110 and "!" not in said and chr(0x2014) not in said
         assert said.endswith("?") or any(w in said.lower() for w in ("tell me", "say", "you need"))
 
 
 def test_both_voices_have_eight_frustrated_lines():
-    assert len(composer.SOCIAL["frustrated"]) >= 8
-    assert len(composer.SOCIAL_PROFESSIONAL["frustrated"]) >= 8
+    assert len(composer_smalltalk.SOCIAL["frustrated"]) >= 8
+    assert len(composer_smalltalk.SOCIAL_PROFESSIONAL["frustrated"]) >= 8
 
 
 @pytest.mark.parametrize("before", ["yooooo", "asdfgh", "fuck", "test", "hiii", "lol"])
 @pytest.mark.parametrize("now", ["ok", "lol", "wow", "thanks", "nice"])
 def test_a_follow_on_never_names_a_turn_that_was_not_about_notes(before, now):
-    said = composer.social(now, "smalltalk", previous="Hmm.", last_question=before, seed="x")
+    said = composer_smalltalk.social(now, "smalltalk", previous="Hmm.", last_question=before, seed="x")
     assert f"“{before}”" not in said
 
 
 def test_a_follow_on_still_names_a_subject_that_matched_notes():
-    said = composer.social("thanks", "smalltalk", previous="Ship it on 14 November.", last_question="when is the harbor launch", seed="x")
+    said = composer_smalltalk.social("thanks", "smalltalk", previous="Ship it on 14 November.", last_question="when is the harbor launch", seed="x")
     assert "harbor launch" in said.lower()
 
 

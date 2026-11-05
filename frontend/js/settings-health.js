@@ -1,6 +1,59 @@
 // settings-health.js: Settings, About's health block and the sampling rows, moved out of settings.js on 2026-10-12 for the boot gzip budget. Drawn when their pane opens; `LAZY_ENTRY_POINTS.settingsHealth` (app.js) stands in.
 
 async function renderHealthBlock() {
+  //: Settings, About, Running copies (INBOX 1641): other copies of this app on
+  //: this computer, each with Shut down; this copy is named and has none.
+  async function renderRunningCopies() {
+    const group = $("running-copies-group");
+    const list = $("running-copies-list");
+    if (!group || !list) return;
+    const data = await apiJson("/running-copies", { silent: true }).catch(() => null);
+    if (!data) {
+      group.classList.add("hidden"); // another device, or the notebook is locked
+      return;
+    }
+    group.classList.remove("hidden");
+    list.replaceChildren();
+    const others = data.copies.filter((c) => !c.this_copy);
+    for (const copy of data.copies) {
+      const item = document.createElement("div");
+      item.className = "setting-row";
+      const label = document.createElement("div");
+      label.className = "setting-label";
+      const title = document.createElement("span");
+      title.textContent = copy.this_copy ? `This copy, port ${copy.port}` : `Port ${copy.port}`;
+      const detail = document.createElement("small");
+      detail.className = "muted";
+      const started = new Date(copy.started * 1000);
+      detail.textContent = `Started ${started.toLocaleString()}${copy.data_dir ? ` · ${copy.data_dir}` : ""}`;
+      label.append(title, detail);
+      item.append(label);
+      if (!copy.this_copy) {
+        const stop = document.createElement("button");
+        stop.type = "button";
+        stop.className = "ghost small";
+        stop.textContent = "Shut down";
+        stop.addEventListener("click", async () => {
+          stop.disabled = true;
+          try {
+            await api(`/running-copies/${copy.pid}/shutdown`, { method: "POST" });
+            toast(`Shut down the copy on port ${copy.port}.`);
+          } catch (err) {
+            stop.disabled = false;
+            toast(err?.message || "That copy did not answer, so it was left running.", "info");
+            return;
+          }
+          setTimeout(() => renderRunningCopies().catch(() => {}), 1500);
+        });
+        item.append(stop);
+      }
+      list.append(item);
+    }
+    $("running-copies-note").textContent = others.length
+      ? "Other copies of Tessellate running on this computer."
+      : "No other copies of Tessellate are running on this computer.";
+  }
+  renderRunningCopies().catch(() => {});
   const dbSize = $("health-db-size");
   const counts = $("health-counts");
   const jobs = $("health-jobs");
@@ -43,6 +96,96 @@ async function renderHealthBlock() {
   //: A first count cut short (the folder is large) says "or more"; the next check has the whole.
   $("health-data-dir").textContent = `${formatFileSize(trust.data_dir_bytes) || "0 B"}${trust.data_dir_bytes_partial ? " or more" : ""}${asOf}`;
   paintIntegrity(trust.integrity);
+  //: The data folder's check (INBOX 1573, core/selfcheck.py): what the start
+  //: made again or kept aside, and each note whose attached file is gone, a
+  //: link that opens it.
+  //: Its row is built here, after the integrity row, not shipped in
+  //: index.html: the boot page is at its element cap (tests/test_boot_diet3.py).
+  function selfCheckRow() {
+    if ($("health-selfcheck")) return;
+    const after = $("health-integrity-check")?.closest(".setting-row");
+    if (!after) return;
+    const make = (tag, props = {}) => Object.assign(document.createElement(tag), props);
+    const row = make("div", { className: "setting-row setting-row-stack" });
+    const help = make("button", { type: "button", className: "icon-only ghost small graph-help-toggle", title: "About the data folder check" });
+    help.dataset.helpFor = "health-selfcheck-help";
+    help.setAttribute("aria-controls", "health-selfcheck-help");
+    help.setAttribute("aria-expanded", "false");
+    help.setAttribute("aria-label", "About the data folder check");
+    const mark = make("i", { className: "ph ph-question" });
+    mark.setAttribute("aria-hidden", "true");
+    help.append(mark);
+    const head = make("span", { className: "row help-head", textContent: "Data folder check " });
+    head.append(help);
+    const label = make("div", { className: "setting-label" });
+    label.append(head, make("small", { className: "muted", textContent: "Missing folders made again, missing files listed. Nothing is deleted." }));
+    const body = make("div", { className: "help-body hidden", id: "health-selfcheck-help" });
+    body.setAttribute("role", "dialog");
+    body.setAttribute("aria-label", "About the data folder check");
+    body.append(
+      make("p", { textContent: "Each start checks the data folder. A missing uploads, media or backups folder is made again, empty, and a missing backups folder gets a fresh backup. A settings file the app cannot read is kept beside itself and the defaults are used." }),
+      make("p", { textContent: "A deleted or damaged notebook file is never replaced on its own: the lock screen offers the newest backup that holds notes, and a damaged file is kept aside. Attached files that are gone are listed here with their notes; a full backup file holds them." }),
+    );
+    const control = make("span", { className: "setting-control row" });
+    control.append(
+      make("button", { type: "button", id: "health-selfcheck-run", className: "ghost small", textContent: "Check and repair" }),
+      make("span", { id: "health-selfcheck", className: "muted", textContent: "Not checked yet" }),
+    );
+    row.append(label, body, control, make("ul", { id: "health-missing", className: "muted health-missing hidden" }));
+    after.after(row);
+    initHelpToggles(row);
+  }
+  selfCheckRow();
+  function paintSelfCheck(report) {
+    const line = $("health-selfcheck");
+    const list = $("health-missing");
+    if (!line || !list) return;
+    if (!report || !report.at) {
+      line.textContent = "Not checked yet";
+      list.classList.add("hidden");
+      return;
+    }
+    const missing = report.missing_files || { count: 0, items: [] };
+    const parts = (report.repaired || []).slice();
+    if (missing.count) parts.push(`${nounCount(missing.count, "attached file is", "attached files are")} missing.`);
+    line.textContent = `${parts.length ? parts.join(" ") : "Everything is in place."} ${relativeTime(report.at)}`;
+    list.replaceChildren(
+      ...(missing.items || []).map((item) => {
+        const row = document.createElement("div");
+        if (item.entry_id) {
+          const open = document.createElement("button");
+          open.type = "button";
+          open.className = "link-button";
+          open.textContent = item.note;
+          open.addEventListener("click", () => {
+            closeSettingsModal();
+            flashEntry(item.entry_id);
+          });
+          row.append(open, ` \u00b7 ${item.filename}`);
+        } else row.textContent = `A picture or file in the library \u00b7 ${item.filename}`;
+        return row;
+      }),
+    );
+    if (missing.count > (missing.items || []).length) {
+      const more = document.createElement("div");
+      more.textContent = `and ${missing.count - missing.items.length} more`;
+      list.append(more);
+    }
+    list.classList.toggle("hidden", !missing.count);
+  }
+  paintSelfCheck(trust.self_check);
+  const run = $("health-selfcheck-run");
+  if (run) {
+    run.onclick = async () => {
+      setLabel(run, "ph:spin Checking");
+      try {
+        paintSelfCheck(await apiJson("/debug/health/self-check", { method: "POST" }));
+      } catch (e) {
+        toast(`The data folder check could not run: ${e.message}`, true, { action: ["Try again", () => run.click()] });
+      }
+      setLabel(run, "Check and repair");
+    };
+  }
   const running = trust.running || health.jobs?.running || [];
   jobs.textContent = (running.length ? running.map((job) => job.label).join(", ") : "Nothing running") + asOf;
   const last = trust.last_error || {};

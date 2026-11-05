@@ -127,7 +127,7 @@ async function docIdeCompareMenu() {
   try {
     entries = await apiJson(`/documents/${currentDoc.id}/revisions`);
   } catch (error) {
-    toast(`Could not read this document's history: ${error.message}`, true);
+    toast(`Couldn't read this document's history: ${error.message}`, true);
     return false;
   }
   const items = entries.length

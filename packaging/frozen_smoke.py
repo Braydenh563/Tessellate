@@ -65,6 +65,8 @@ EXTRA_ASSETS = (
     # scripts are named here.
     "/js/mermaid-frame.js",
     "/vendor/mermaid/mermaid.min.js",
+    # The desk companion asks the app window for it by name (overlay/capture.py), not the page.
+    "/js/desk-frames.js",
 )
 
 

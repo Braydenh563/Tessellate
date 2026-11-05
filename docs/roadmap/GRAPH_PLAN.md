@@ -94,43 +94,7 @@ the map's node graph, so the three cannot disagree.
 
 ## 5. Phases
 
-### Phase 1: the canvas renderer and physical drag (1–2 sessions)
-Canvas 2D renderer behind the same `renderGraph()` entry; d3-force in a
-Worker; quadtree hit-testing; drag with `alphaTarget(0.3)` on start and
-decay on end, `forceCollide` from radius, `velocityDecay 0.4`, a weak
-centre force; node radius by degree (`4 + 2·√degree`, clamped); labels by
-zoom (`k > 1.4`) and on hover/selection; hover dims non-neighbours to
-20%; the existing search highlight, trace, focus mode, colour modes, time
-slider and saved views keep working through the new renderer.
-**Gate:** a 2,000-note fixture built by a script (`scratchpad/graph-
-fixture.js`) paints its first frame < 300 ms and holds ≥ 55 fps during a
-2 s drag (Playwright `requestAnimationFrame` counter); no frame > 16 ms
-on a 200-note board; `errors.js` 0.
-
-### Phase 2: the space (½ session)
-The graph fills the tab; the dock, legend, minimap and zoom strip float
-over it on the popover shell; the page does not scroll on Graph; the
-stats line becomes a chip in the dock's identity zone; fullscreen is
-just "hide the app chrome". Dark theme measured with `contrast.js`.
-
-### Phase 3: colour rules and groups (½ session)
-"Colour by" becomes a rule picker (category, tag, space, age, cluster,
-has a map, has a file) plus **groups**: a saved search → a colour, listed
-in the legend, stored with the view. Legend entries toggle visibility.
-
-### Phase 6: the node panel (½ session, INBOX 59)
-The popup that opens on a node is a form with nine equal buttons under it.
-Target: a header (title, category chip, the confidence as a small mark
-beside it, not a chip), one muted meta line (date, links, views), the
-attachment as a compact row, the content editor sized to its text (four
-lines minimum, grows), tags, and a single primary Save that appears only
-when something changed. Actions become one toolbar row of icon buttons
-with tooltips in three groups: read (Open, Similar, Trace), shape (Grow,
-Focus, Link, Remind), keep (Favourite; Bin last, separated, ghost). Open
-is the one filled button. Width and the dock grammar per DESIGN.md; the
-panel scrolls inside, never the page; measured at 1440 and 1024 and on
-390 as a sheet. Gate: `scratchpad/ui-sweeps/graph4b.js` plus a node-panel
-probe that counts buttons per row and the panel's own scrollHeight.
+Phases 1, 2, 3 and 6 are built; their text moved to HISTORY.md ("Moved from the plans, 2026-11-02 (a30b: GRAPH phases 1, 2, 3 and 6)"), beside the Built blocks pointed to below.
 
 ### Phase 5: backend (built; one row deliberately deferred, see below)
 Built 2026-09-09 (HISTORY.md, "Built, Phase 5 (backend)"): the per-node
@@ -669,3 +633,8 @@ INBOX 1400 and 1306, measured with `gm.js` (numbers in `agent-remaining/graph-10
 1306. **The owner, 2026-10-18, verbatim** (screenshots: dark theme graph; a toast "Map settings reset to defaults. Undo" drawn faint and see-through over the colour legend, under the zoom controls; the graph with default settings, about 40 nodes, labels on long note titles crowding the lower half, a brown hub with many crossing edges). "notifications are hard to see on the graph, and my graph is messy and a bit hard to read and these are the default settings."
      Owner: a graph agent (GRAPH_PLAN): the toast over the map must be opaque and clear of the legend and controls (measure contrast and overlap); default layout and labels readable at 40 nodes (label collisions, edge crossings, hub spread), measured before and after.
      **Part fixed** 2026-10-19 (graph1306, c623544): toasts are opaque (dark rgb(24,27,37), about 14:1 text) and lifted clear of the zoom strip, legend and dock on the Graph tab. Default layout measured on a 36-note seed: 0 dot and 0 label overlaps, 77 link crossings (49 at the hub), fills 0.48 of the width; two tunings tried and reverted (no clear win). Open: crossings and hub spokes (graph-worker.js applyGrouping), label density (graph-canvas.js label gate); the owner's crowding did not reproduce without their data. Owner: next graph agent.
+
+## Placed from INBOX, 2026-11-04 (audit Rank 36, hover decision)
+
+- Decision needed from the owner (INBOX is at its cap of 19, so it lives here): graph hover p50 is about 50 ms against a 16 ms target at 500 notes and 4x CPU; the hover card's refill on each new note is about 17 ms of it. Recommendation (taken unless the owner says otherwise): refill the card only once the pointer rests, keep the highlight instant, then re-measure on an idle machine with a real GPU. Check: hover p50 at 4x CPU before and after, and the card still appears on rest.
+- Still open from audit row 19 (2,000 notes, 4x): the worker's own settle is 11 to 14 s (the d3 charge and collide are most of a tick), and wheel and hover at rest cost the at-rest scene repaint (true strokes, 21 ms of raster at 1x). Label fades are done (`gcDrawLabels.frame`, 4.6 ms a frame against 14).

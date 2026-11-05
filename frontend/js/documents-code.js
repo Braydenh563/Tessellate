@@ -2211,13 +2211,13 @@ async function docPyHover(CM, view, pos, side) {
 }
 
 //: **Indentation guides** (INBOX 402): a hairline at each indent step of a
-//: line's leading whitespace, VS Code's guides. One mark per step of the
-//: whitespace (a tab, or the unit's run of spaces), each drawing a
-//: one-pixel line at its own left edge, so a guide sits exactly where the
-//: step starts whatever the face (the code face's space is not its `ch`,
+//: line's leading whitespace, VS Code's guides. A guide sits exactly where
+//: its step starts whatever the face (the code face's space is not its `ch`,
 //: measured: 5.1px against 10.2px, so a background stepped in `ch` drifted
-//: a guide per level) and can never reach past the indentation into the
-//: code. Quiet on purpose: `--border`, the hairline the app uses everywhere.
+//: a guide per level): the step is a fixed 2em of spaces (below) or a tab's
+//: width, both known to the stylesheet. The line draws them all (INBOX
+//: 1562, below). Quiet on purpose: `--border`, the hairline the app uses
+//: everywhere.
 const docIndentGuideCache = new Map();
 
 //: The steps of a line's leading whitespace, as `[from, to]` columns: each
@@ -2256,12 +2256,25 @@ function docIndentGuides(CM, unit) {
   //: so clicks and arrows land where the text is drawn. Tabs are left as
   //: they are.
   const size = unit === "\t" ? 0 : Math.max(1, Math.min(8, unit.length));
-  const mark = Decoration.mark({ class: size ? `cm-indent-guide cm-indent-w${size}` : "cm-indent-guide" });
+  const mark = size ? Decoration.mark({ class: `cm-indent-w${size}` }) : null;
+  //: **The guides are drawn by the line, not by the whitespace** (INBOX 1562:
+  //: "indentation lines arent a single line and are instead individual
+  //: separate lines on each row"). A mark is an inline box: its background
+  //: is as tall as the font's content area, not the line, so every row's
+  //: guide stopped short of the next (76 of 188 pixel rows empty down one
+  //: guide, measured) and a blank or wrapped row had none at all. The line
+  //: element is the whole row box, wrapped rows included, so its background
+  //: is one rule, and a blank line takes the shallower of its neighbours'
+  //: depths so the rule runs through it.
+  const levels = docIndentGuides.levels;
+  const lineMark = Array.from({ length: levels + 1 }, (_, n) =>
+    n ? Decoration.line({ class: `cm-indent-lines cm-indent-${size ? "spaces" : "tabs"} cm-indent-n${n}` }) : null
+  );
   //: The space's width is the face's, so it is measured when the face
   //: changes, not on every geometry change (a key that adds a line is one;
   //: 173 ms of a 20-key run at 4x, audit 1031 CE3).
-  const measureSpace = (view) => {
-    const font = getComputedStyle(view.contentDOM).font;
+  const spaceFont = (view) => getComputedStyle(view.contentDOM).font;
+  const measureSpace = (view, font = spaceFont(view)) => {
     const seen = (docIndentGuides.fonts ||= new WeakMap());
     if (seen.get(view.contentDOM) === font) return;
     seen.set(view.contentDOM, font);
@@ -2271,23 +2284,39 @@ function docIndentGuides(CM, unit) {
   };
   const build = (view) => {
     const found = [];
+    const doc = view.state.doc;
     for (const { from, to } of view.visibleRanges) {
+      //: A blank line at the edge of the view reads past it for its neighbours.
+      const first = Math.max(1, doc.lineAt(from).number - docIndentGuides.reach);
+      const last = Math.min(doc.lines, doc.lineAt(to).number + docIndentGuides.reach);
+      const texts = [];
+      for (let n = first; n <= last; n += 1) texts.push(doc.line(n).text);
+      const depths = docIndentGuides.depths(texts, unit);
       for (let pos = from; pos <= to; ) {
-        const line = view.state.doc.lineAt(pos);
-        const lead = /^[ \t]*/.exec(line.text)[0];
-        for (const [a, b] of docIndentSteps(lead, unit)) found.push(mark.range(line.from + a, line.from + b));
+        const line = doc.lineAt(pos);
+        const depth = depths[line.number - first];
+        if (depth) found.push(lineMark[Math.min(depth, levels)].range(line.from));
+        if (mark) {
+          const lead = /^[ \t]*/.exec(line.text)[0];
+          for (const [a, b] of docIndentSteps(lead, unit)) found.push(mark.range(line.from + a, line.from + b));
+        }
         pos = line.to + 1;
       }
     }
-    return Decoration.set(found);
+    return Decoration.set(found, true);
   };
   const plugin = ViewPlugin.fromClass(
     class {
       constructor(view) {
-        measureSpace(view);
+        //: In the editor's own read phase, not here (INBOX 1530 c): the
+        //: constructor runs inside the open, after it has written, so the font
+        //: read forced the page's style (6 to 17 ms of `openDoc`).
+        view.requestMeasure({ key: measureSpace, read: spaceFont, write: (font, v) => measureSpace(v, font) });
+        view.contentDOM.style.setProperty("--doc-tabs", String(view.state.tabSize));
         this.decorations = build(view);
       }
       update(update) {
+        update.view.contentDOM.style.setProperty("--doc-tabs", String(update.state.tabSize));
         if (update.geometryChanged) measureSpace(update.view);
         if (update.docChanged || update.viewportChanged) this.decorations = build(update.view);
       }
@@ -2297,6 +2326,38 @@ function docIndentGuides(CM, unit) {
   docIndentGuideCache.set(unit, plugin);
   return plugin;
 }
+//: The deepest guide drawn (one stylesheet class each, `docCmTheme`), and how
+//: many lines past the view a blank line reads for the code around it.
+docIndentGuides.levels = 24;
+docIndentGuides.reach = 200;
+//: Each line's guide depth in whole steps, from the lines' texts: a code line's
+//: own steps (0 when its leading whitespace mixes tabs and spaces, which the
+//: editor flags separately), and a blank line the shallower of the code lines
+//: on either side, so the rule runs through it (0 with none on a side).
+docIndentGuides.depths = (texts, unit) => {
+  const spaces = unit !== "\t";
+  const own = texts.map((text) => {
+    if (!/\S/.test(text)) return null;
+    const lead = /^[ \t]*/.exec(text)[0];
+    const steps = docIndentSteps(lead, unit);
+    if (!steps.length) return 0;
+    const stepped = lead.slice(0, steps[steps.length - 1][1]);
+    return (spaces ? !stepped.includes("\t") : !stepped.includes(" ")) ? steps.length : 0;
+  });
+  const before = [];
+  let seen = 0;
+  for (let i = 0; i < own.length; i += 1) {
+    if (own[i] !== null) seen = own[i];
+    before[i] = seen;
+  }
+  const out = [];
+  seen = 0;
+  for (let i = own.length - 1; i >= 0; i -= 1) {
+    if (own[i] !== null) seen = own[i];
+    out[i] = own[i] === null ? Math.min(before[i], seen) : own[i];
+  }
+  return out;
+};
 
 //: **Bracket pair colours** (INBOX 402): `()`, `[]` and `{}` coloured by how
 //: deep they sit, three tones in turn, VS Code's colouriser. A bracket inside
@@ -2737,10 +2798,11 @@ function docShowReferences() {
 
 //: Ctrl+Shift+F: the app's Find anything, on documents, with the selection
 //: (one line of it) or the word at the caret.
-function docFindInDocuments() {
+function docFindInDocuments(typed = "") {
   const view = docCmView;
-  let query = "";
-  if (view) {
+  //: What the find panel holds, when it asked (D33); otherwise the selection or the word at the caret.
+  let query = typeof typed === "string" ? typed.slice(0, 100) : "";
+  if (!query && view) {
     const range = view.state.selection.main;
     if (!range.empty) query = view.state.sliceDoc(range.from, range.to).split("\n")[0].slice(0, 100);
     else query = docWordAt(view.state, range.head)?.name || "";
@@ -4108,7 +4170,7 @@ function docRunRow(level, text, line, into = null, follow = true) {
   }
   const words = document.createElement("span");
   words.className = "cm-run-text";
-  words.textContent = String(text).slice(0, 4000);
+  words.textContent = String(text).length > 4000 ? `${String(text).slice(0, 4000)}\nOutput cut at 4,000 characters.` : String(text);
   row.appendChild(words);
   if (Number.isInteger(line) && line > 0) {
     const link = document.createElement("button");
@@ -4188,7 +4250,7 @@ function docRunTestRow(name, state, ms, text, line) {
   if (text) {
     const why = document.createElement("pre");
     why.className = "cm-run-why";
-    why.textContent = String(text).slice(0, 4000);
+    why.textContent = String(text).length > 4000 ? `${String(text).slice(0, 4000)}\nOutput cut at 4,000 characters.` : String(text);
     row.appendChild(why);
   }
   if (kind === "fail" && Number.isInteger(line) && line > 0) {

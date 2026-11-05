@@ -1,0 +1,158 @@
+/* chord-guide-lazy.css: the `m` guide's panel, loaded with chord-guide.js
+   (app.js `LAZY_MODULES.chordGuide`) rather than at boot, for the gzip budget
+   (tests/test_boot_budget.py). The popover shell it sits on (fill, edge,
+   corner, shadow) stays in 07-whiteboard-misc.css's shared list. */
+/* --- the quick-nav chord's guide -----------------------------------------
+   A mode, not a notification (it was a `.toast` whose pairs wrapped
+   mid-pair): centred over a scrim that says the next key means something.
+   The scrim lets clicks through; the panel takes them, since its rows are
+   buttons (the owner: "make these popup options when I press m, actual
+   clickable nav buttons"). The panel itself is in 08-consistency.css. */
+.chord-guide {
+  position: fixed;
+  inset: 0;
+  /* Above every surface it is meant to navigate out of (modals sit at 1040
+     to 1050, the highest fixed layer at 3000): the chord works while
+     Settings is open, so its guide must not draw under it. */
+  z-index: 3100;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: var(--glass-filter-clear);
+  -webkit-backdrop-filter: var(--glass-filter-clear);
+  pointer-events: none;
+}
+/* --- The m guide: one panel of key rows --- */
+/* The `m` guide as a command overlay (INBOX 484, the owner: "can you redesign
+   this menu to be better, more professional, more modern and more
+   impressive??"). One panel on the popover shell (07-whiteboard-misc.css
+   decides its fill, edge, corner and shadow): a head that says what the app is
+   waiting for with its Close, "Go to" and "Do" side by side as the rich
+   picker's rows (an icon tile, the name, the key in one keycap column), and a
+   hint line at the foot. The page behind is dimmed so it recedes. */
+.chord-guide {
+  background: color-mix(in srgb, var(--scrim) 75%, transparent);
+}
+.chord-guide-panel {
+  pointer-events: auto;
+  display: flex;
+  flex-direction: column;
+  width: min(36rem, calc(100vw - 2 * var(--space-4)));
+  max-height: calc(100dvh - 2 * var(--space-6));
+  overflow: hidden;
+  animation: ui-fade var(--ui-base) var(--ease-out);
+}
+.chord-guide-head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-3) var(--space-3) var(--space-5);
+  border-bottom: 1px solid var(--divider);
+}
+.chord-guide-panel .chord-guide-lead {
+  flex: 1 1 auto;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin: 0;
+  font-size: var(--text-md);
+  font-weight: 600;
+  color: var(--ink);
+}
+.chord-guide-close {
+  margin-inline-start: auto;
+}
+/* A key drawn as a key: the keycap's own edge and type, one size up for the
+   head's `m`, so the mode reads at a glance. */
+.chord-guide-key {
+  display: inline-grid;
+  place-items: center;
+  min-width: 1.5rem;
+  height: 1.5rem;
+  padding: 0 var(--space-2);
+  border: 1px solid var(--border);
+  border-bottom-width: 2px;
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+  font-family: var(--mono, ui-monospace, monospace);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--ink);
+}
+.chord-guide-hint .chord-guide-key {
+  min-width: 1.25rem;
+  height: 1.25rem;
+  font-size: var(--text-xs);
+  font-weight: 500;
+}
+.chord-guide-body {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-3) var(--space-5);
+  padding: var(--space-4) var(--space-4) var(--space-3);
+  overflow-y: auto;
+  min-height: 0;
+}
+@media (max-width: 560px) {
+  .chord-guide-body {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+.chord-guide-panel .chord-guide-group {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: var(--space-1);
+  min-width: 0;
+}
+.chord-guide-panel .chord-guide-title {
+  margin: 0;
+  padding: 0 var(--space-2) var(--space-1);
+  text-align: start;
+  font-size: var(--text-xs);
+  font-weight: 600;
+  color: var(--muted);
+}
+.chord-guide-panel .chord-guide-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  max-width: none;
+}
+/* The rows are the rich picker's; on a mouse they sit at the composers' row
+   height, since these carry one line, not a name over a description. */
+@media (hover: hover) and (pointer: fine) {
+  .chord-guide-panel .chord-guide-row {
+    min-height: var(--control-h-body);
+  }
+}
+/* The key is the point of the row, so its cap is drawn as a key (the head's
+   own cap), every one the same width, so the keys stand in one column. */
+.chord-guide-panel .chord-guide-row .rich-picker-keys {
+  display: inline-grid;
+  place-items: center;
+  min-width: 1.5rem;
+  height: 1.5rem;
+  border-bottom-width: 2px;
+  background: var(--surface-2);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--ink);
+}
+/* Where you are: the tab's own row says so, in the accent, like the tab bar. */
+.chord-guide-panel .chord-guide-row.is-here .rich-picker-label {
+  color: var(--accent-text);
+  font-weight: 600;
+}
+.chord-guide-hint {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1);
+  margin: 0;
+  padding: var(--space-3) var(--space-5);
+  border-top: 1px solid var(--divider);
+  font-size: var(--text-xs);
+  color: var(--muted);
+}

@@ -13,6 +13,16 @@ async function openEntryHistory(entry) {
   list.replaceChildren();
   overlay.classList.remove("hidden");
   $("history-close").focus();
+  //: Put-this-back writes the whole text, so the sheet holds the whole note, not a list preview (INBOX 1525).
+  if (entry.content_truncated) {
+    try {
+      entry = await fullEntry(entry.id);
+    } catch {
+      $("history-status").textContent = "Couldn't read this note.";
+      $("history-status").classList.add("error");
+      return;
+    }
+  }
 
   let history;
   try {
@@ -359,6 +369,6 @@ async function undoSkillRun(span, button, onDone) {
     onDone?.();
     await loadEntries().catch(() => {});
   } catch (error) {
-    toast(error.message || "Couldn't undo that.", true);
+    toast(error.message || "Couldn't undo that run.", true);
   }
 }

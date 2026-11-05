@@ -21,7 +21,7 @@
 [![License: AGPL v3](https://img.shields.io/badge/license-AGPL--3.0-green)](LICENSE)
 
 [![Last commit](https://img.shields.io/github/last-commit/Braydenh563/Tessellate)](https://github.com/Braydenh563/Tessellate/commits/main)
-[![Tests](https://img.shields.io/badge/tests-12%2C400%2B%20offline-brightgreen)](tests)
+[![Tests](https://img.shields.io/badge/tests-17%2C000%2B%20offline-brightgreen)](tests)
 [![Complexity](https://github.com/Braydenh563/Tessellate/actions/workflows/complexity.yml/badge.svg)](https://github.com/Braydenh563/Tessellate/actions/workflows/complexity.yml)
 [![Performance](https://github.com/Braydenh563/Tessellate/actions/workflows/performance.yml/badge.svg)](https://github.com/Braydenh563/Tessellate/actions/workflows/performance.yml)
 
@@ -91,6 +91,19 @@ capture a thought  ->  it files itself  ->  ask a question  ->  an answer, with 
   system's protected store; the password still works everywhere.
 - **More than notes.** Documents, whiteboards and mind maps, a graph of your
   ideas, a timeline and reminders, in one app.
+
+## New in 0.7.0
+
+- **Atlas on your desktop.** On Windows and Linux (X11) the companion can live
+  on the desktop while Tessellate is minimised: it walks, runs, glides and steps
+  through portals, perches on window tops and rides them, hangs from title bars,
+  naps, comes when called and brings you a card when a reminder falls due. Its
+  menu opens a quick note, a quick search or the app.
+- **A diagram builder.** Build a flowchart by pointing at the picture: each
+  block is outlined as you hover, and arrows join blocks by their real outline.
+- **Steadier answers.** Ask's two columns start level with matching heads,
+  every fold (thinking, steps, sources) is full width open or closed, and the
+  chat Attach panel lists your Library uploads as well as note attachments.
 
 ## Features
 
@@ -172,7 +185,8 @@ Open a section for the detail.
   highlighted. A document reopens where you left it.
 - A ```mermaid block draws as a diagram (flowchart, sequence, class, state, Gantt, pie and
   more) in documents, chat and exports, with Mermaid 12.2.0 shipped in the app and loaded on
-  first use, so it works offline.
+  first use, so it works offline. The diagram builder edits a flowchart by
+  pointing at the drawn picture.
 - Equations are drawn as you write them, as in Word: click one in a note or document, or open
   Calculator and equations on its Equation tab (Alt+=), and fill the dotted boxes of a fraction, script, root, integral, sum,
   bracket, function, accent, limit or matrix, or type LaTeX; the file keeps plain TeX between
@@ -210,7 +224,7 @@ Open a section for the detail.
 
 - Thirteen themes, each in light or dark, with your own accent, type, density
   and corners. A drawn face for every person and persona, and an optional
-  corner companion.
+  corner companion that can also live on your desktop (Windows and Linux X11).
 - An Interface animations switch (Settings, Appearance, Effects & accessibility)
   turns the short fades and slides off or on, apart from Motion (Follow the
   system, Always on or Off), which governs the large movement and can ignore a
@@ -483,7 +497,7 @@ share of each against your own notebook.
 | [CHANGELOG](CHANGELOG.md) | What changed, release by release |
 | [SECURITY](SECURITY.md) | How to report a vulnerability |
 
-**Status.** Version 0.6.2. This is a beta (`0.x`). Capture, chat with
+**Status.** Version 0.7.0. This is a beta (`0.x`). Capture, chat with
 checkable answers, the graph, documents, boards and mind maps, the OCR
 workspace, private notes and themes are built and stable, with desktop builds
 for Windows and Linux. Settings, Help has a guided tour of the real controls.
@@ -494,7 +508,7 @@ Contributions are welcome. Read [CONTRIBUTING.md](CONTRIBUTING.md) first: the
 one rule is that every feature must work with no cloud service. In short:
 
 ```
-pytest -n auto                  # 15,000+ tests, fully offline, every AI call faked
+pytest -n auto                  # 17,000+ tests, fully offline, every AI call faked
 bash scripts/gate.sh --changed  # lints, node --check, ruff, and the tests that name your files
 ruff check .                    # what CI lints with
 ```

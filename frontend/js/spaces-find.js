@@ -221,7 +221,7 @@ function spaceIconPicker(container, hiddenInput) {
     const button = document.createElement("button");
     button.type = "button";
     button.setAttribute("role", "radio");
-    button.setAttribute("aria-checked", String(hiddenInput.value === name));
+    button.setAttribute("aria-checked", hiddenInput.value === name);
     button.setAttribute("aria-label", name.replace("ph-", "").replace(/-/g, " "));
     const icon = document.createElement("i");
     icon.className = `ph ${name}`;
@@ -230,7 +230,7 @@ function spaceIconPicker(container, hiddenInput) {
     button.addEventListener("click", () => {
       hiddenInput.value = name;
       for (const sibling of container.children) {
-        sibling.setAttribute("aria-checked", String(sibling === button));
+        sibling.setAttribute("aria-checked", sibling === button);
       }
     });
     container.appendChild(button);
@@ -250,7 +250,7 @@ function spaceMenuOption({ id, name, icon, deletable, hiddenFromAll }) {
   option.className = "space-option-main";
   option.setAttribute("role", "menuitemradio");
   option.dataset.spaceId = id;
-  option.setAttribute("aria-checked", String(id === activeSpaceId()));
+  option.setAttribute("aria-checked", id === activeSpaceId());
   option.title = name;
 
   const glyph = document.createElement("i");
@@ -481,7 +481,7 @@ function initSpaceSwitcher() {
   button.addEventListener("click", (event) => {
     event.stopPropagation();
     const open = button.getAttribute("aria-expanded") === "true";
-    button.setAttribute("aria-expanded", String(!open));
+    button.setAttribute("aria-expanded", !open);
     menu.classList.toggle("hidden", open);
   });
 

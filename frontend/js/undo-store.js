@@ -100,6 +100,39 @@ function undoStoreClear() {
   return undoStoreRequest("readwrite", (table) => table.clear());
 }
 
+//: One record, and any write still waiting for it.
+undoStoreClear.one = (key) => {
+  const name = String(key);
+  clearTimeout(undoStoreTimers.get(name));
+  undoStoreTimers.delete(name);
+  return undoStoreRequest("readwrite", (table) => table.delete(name));
+};
+
+//: **A thing deleted for good takes what this device kept of it** (DX11, audit
+//: 1102): after a purge the server answered 404 and IndexedDB still held
+//: `doc:<id>`, 301 bytes with the typed words in them, until the next lock.
+//: Every purge path (one item, the Library's bulk delete, the bin's own
+//: button, emptying the bin) calls this with the item's kind and id: a
+//: document's undo history, its kept edit and its remembered scroll go; a
+//: note's go too, as a board is a note and keeps its history as `board:<id>`.
+undoStoreClear.purged = (kind, id) => {
+  if (kind === "document") {
+    for (const key of ["doc-edit-drafts", "doc-positions"]) {
+      try {
+        const all = prefs.json(key, {});
+        if (all && typeof all === "object" && String(id) in all) {
+          delete all[String(id)];
+          prefs.setJSON(key, all);
+        }
+      } catch {
+        /* storage blocked: nothing kept to forget */
+      }
+    }
+    return undoStoreClear.one(`doc:${id}`);
+  }
+  return undoStoreClear.one(`board:${id}`);
+};
+
 //: A board's two stacks, trimmed to the last hundred steps each.
 function undoStoreBoardValue(undo, redo) {
   //: A "call" step holds two functions (whiteboard.js `wbPushCall`), which

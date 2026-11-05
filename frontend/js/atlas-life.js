@@ -102,10 +102,59 @@ const ATLAS_TAIL_BY_STATE = {
 //: a point close by; with as many bends as the main waves it cancelled
 //: itself along the length. With it, and the stretch on the same clock
 //: (`atlasTailFrame`), no behaviour holds its tip still over about 0.6s.
-function atlasTailBend(s, p, ph, ph2, drift, ph3 = 0) {
+function atlasTailBend(s, p, ph, ph2, drift, ph3 = 0, follow = 0) {
   const e = s ** 1.5;
-  return (p.curl + drift) * s * s + p.amp * e * Math.sin(ph - p.k * s) + Math.max(0.13, 0.35 * p.amp) * e * Math.sin(ph2 - 1.7 * p.k * s + 0.7) + 0.07 * Math.sqrt(s) * Math.sin(ph3 - 0.8 * s);
+  return (p.curl + drift + follow) * s * s + p.amp * e * Math.sin(ph - p.k * s) + Math.max(0.13, 0.35 * p.amp) * e * Math.sin(ph2 - 1.7 * p.k * s + 0.7) + 0.07 * Math.sqrt(s) * Math.sin(ph3 - 0.8 * s);
 }
+//: **Follow-through** (INBOX 1670, "its tail needs better and more realistic movement and
+//: physics"): a chain of three springs, each pulled toward the one before it and thrown by the
+//: companion's acceleration, so the tail streams behind a start, swings past on a stop and
+//: round a turn, and settles. Its last link (px) becomes a bend (radians) added to the curl,
+//: which the tail's own acts ride on. Same constants as the desktop companion's `Trail`
+//: (`core/overlay/behaviour.py`). At rest it is exactly 0 and costs a few multiplies a draw.
+function atlasTailFollow(tail, dt, x) {
+  const f = (tail.follow ||= { pos: [0, 0, 0], vel: [0, 0, 0], x, v: 0 });
+  if (!Number.isFinite(x) || dt <= 0) return 0;
+  const v = (x - f.x) / dt;
+  const accel = (v - f.v) / dt;
+  f.x = x;
+  f.v = v;
+  const n = Math.max(1, Math.ceil(dt / 0.02));
+  const h = dt / n;
+  const A = atlasTailFollow.springs;
+  for (let k = 0; k < n; k += 1) {
+    let prev = 0;
+    for (let i = 0; i < A.links; i += 1) {
+      f.vel[i] += (A.stiff * (prev - f.pos[i]) - A.damp * f.vel[i] - Math.max(-4000, Math.min(4000, accel)) * A.kick * 0.01 * (1 + i)) * h;
+      f.pos[i] = Math.max(-A.max, Math.min(A.max, f.pos[i] + f.vel[i] * h));
+      prev = f.pos[i];
+    }
+  }
+  return (f.pos[A.links - 1] / A.max) * A.bend;
+}
+//: On the function, not the shared scope (test_global_scope_ratchet): only it reads them.
+atlasTailFollow.springs = { links: 3, stiff: 90, damp: 9, kick: 0.8, max: 26, bend: 0.55 };
+//: **The streams follow the body** (INBOX 1683 c): the tail's three-link chain (`atlasTailFollow`) also
+//: carries the lower body and the wisps a little way, each on its own link and gain, so they lag a start,
+//: swing past a stop and settle a beat apart (the nebula's halves have the lean's spring). It is the
+//: `translate` of their pose boxes (nothing else animates it there: the pose is `transform`, the loops
+//: `rotate` and `scale`),
+//: written only when it moves a twentieth of a px, and cleared when the chain is at rest.
+atlasTailFollow.strands = (box, tail) => {
+  const low = box.atlasRig?.lower;
+  const pos = tail.follow?.pos;
+  if (!low || !pos) return;
+  const put = (els, link, gain) => {
+    els.forEach((el, i) => {
+      const v = Math.round(pos[link] * gain * (1 + 0.15 * i) * 20) / 20;
+      if (el.atlasPushed === v) return;
+      el.atlasPushed = v;
+      el.style.translate = v ? `${v}px 0` : "";
+    });
+  };
+  put(low.boxes, 0, 0.04);
+  put(low.wisps, 1, 0.07);
+};
 //: The tail's centreline bent as `bend(s)` says, as a run of cubics
 //: through the bent points (Catmull-Rom), each an equal share of the
 //: length as `atlasStemSides` samples them; and each sample's turn, for
@@ -137,20 +186,141 @@ function atlasTailShape(rest, bend, stretch) {
 }
 //: The paths the tail is drawn with, for a centreline (the same recipe as
 //: `atlasBuild`'s, sampled finer per curve since there are more of them).
-function atlasTailPaths(spec, segs) {
-  const w = spec.tailWidth;
-  const s = 2;
-  return {
-    body: atlasStem(segs, w, { samples: s, round: !!spec.tailRound }),
-    stream: atlasStem(segs, (t) => w(t) * 0.26, { samples: s, shift: (t) => w(t) * 0.22 * Math.sin(Math.PI * 2.6 * t) }),
-    silk: atlasStem(segs, (t) => w(t) * 0.24, { samples: s, shift: (t) => -w(t) * 0.3 * Math.sin(Math.PI * 2.6 * t + 1.1) }),
-    filaments: (spec.tailFilaments || []).map((k) => {
-      const pts = atlasStemSides(segs, () => 0, s, (t) => (w(t) / 2) * k).left;
-      const run = pts.slice(Math.round(pts.length * 0.18), Math.round(pts.length * 0.92));
-      return `M${atlasFix(run[0][0])} ${atlasFix(run[0][1])}${atlasSmooth(run)}`;
-    }).join(""),
-  };
-}
+//: **One centreline for all of them** (INBOX 1657 round 2: the body, the
+//: stream, the silk and the filaments each re-sampled the same cubics and
+//: normals, 2.7 ms a draw at 4x CPU walking): the samples and the unit
+//: normals are taken once a draw, the widths and shifts, which depend on
+//: `t` alone, once per look (`spec.tailMemo`), and every side is a multiply
+//: and an add on those. The numbers and their order are `atlasStem`'s, so
+//: the path text is the same byte for byte.
+//: One closure, one shared name (the global-names ratchet).
+const atlasTailKit = (() => {
+  const ATLAS_TAIL_SAMPLES = 1;
+  function atlasTailMemo(spec, count) {
+    const kept = spec.tailMemo?.[count];
+    if (kept) return kept;
+    const w = spec.tailWidth;
+    const at = (fn) => Array.from({ length: count }, (_, i) => fn(i / (count - 1)));
+    const wide = at(w);
+    const memo = {
+      body: wide,
+      stream: at((t) => w(t) * 0.26),
+      streamShift: at((t) => w(t) * 0.22 * Math.sin(Math.PI * 2.6 * t)),
+      silk: at((t) => w(t) * 0.24),
+      silkShift: at((t) => -w(t) * 0.3 * Math.sin(Math.PI * 2.6 * t + 1.1)),
+      filaments: (spec.tailFilaments || []).map((k) => at((t) => (w(t) / 2) * k)),
+      buf: Array.from({ length: 4 }, () => new Float64Array(count)),
+      run: Array.from({ length: 2 }, () => new Float64Array(count)),
+    };
+    (spec.tailMemo ||= {})[count] = memo;
+    return memo;
+  }
+  //: The centreline's points and unit normals (`atlasStemSides`' `at`).
+  function atlasTailCentre(segs, c, samples) {
+    const n = segs.length;
+    const total = n * samples;
+    for (let i = 0; i <= total; i += 1) {
+      const k = Math.min(n - 1, Math.floor(i / samples));
+      const s = segs[k];
+      const t = (i - k * samples) / samples;
+      const u = 1 - t;
+      const dx = 3 * u * u * (s[2] - s[0]) + 6 * u * t * (s[4] - s[2]) + 3 * t * t * (s[6] - s[4]);
+      const dy = 3 * u * u * (s[3] - s[1]) + 6 * u * t * (s[5] - s[3]) + 3 * t * t * (s[7] - s[5]);
+      const len = Math.hypot(dx, dy) || 1;
+      c.x[i] = u * u * u * s[0] + 3 * u * u * t * s[2] + 3 * u * t * t * s[4] + t * t * t * s[6];
+      c.y[i] = u * u * u * s[1] + 3 * u * u * t * s[3] + 3 * u * t * t * s[5] + t * t * t * s[7];
+      c.nx[i] = dy / len;
+      c.ny[i] = dx / len;
+    }
+  }
+  //: `atlasFix` as text, without the double-to-string conversion that was
+  //: 1.3 ms of the 1.6 a draw at 4x CPU for the ~2,700 numbers of a tail (the
+  //: same two decimals, no trailing zeros; checked against `atlasFix` over
+  //: two million values).
+  function atlasTailNum(v) {
+    const n = Math.round(v * 100);
+    const a = n < 0 ? -n : n;
+    const fr = a % 100;
+    if (fr === 0) return "" + n / 100;
+    return (n < 0 ? "-" : "") + (a - fr) / 100 + "." + (fr % 10 === 0 ? "" + fr / 10 : fr < 10 ? "0" + fr : "" + fr);
+  }
+  //: `atlasSmooth` over the run `from`..`to` of two coordinate arrays, in
+  //: either direction.
+  function atlasTailSmooth(xs, ys, from, to) {
+    const f = atlasTailNum;
+    const step = to > from ? 1 : -1;
+    const last = Math.max(from, to);
+    const first = Math.min(from, to);
+    let d = "";
+    for (let i = from; i !== to; i += step) {
+      const a = Math.max(first, Math.min(last, i - step));
+      const b = Math.max(first, Math.min(last, i + 2 * step));
+      const j = i + step;
+      d += `C${f(xs[i] + (xs[j] - xs[a]) / 6)} ${f(ys[i] + (ys[j] - ys[a]) / 6)} ${f(xs[j] - (xs[b] - xs[i]) / 6)} ${f(ys[j] - (ys[b] - ys[i]) / 6)} ${f(xs[j])} ${f(ys[j])}`;
+    }
+    return d;
+  }
+  //: One stem (`atlasStem`): its two sides offset from the centreline by half
+  //: the widths `wt`, moved sideways by `sh`, closed with a cap or a half
+  //: circle at either end.
+  function atlasTailStem(c, wt, sh, round, memo) {
+    const [lx, ly, rx, ry] = memo.buf;
+    const f = atlasTailNum;
+    const m = wt.length - 1;
+    for (let i = 0; i <= m; i += 1) {
+      const hw = wt[i] / 2;
+      const s = sh ? sh[i] : 0;
+      const cx = c.x[i] - c.nx[i] * s;
+      const cy = c.y[i] + c.ny[i] * s;
+      lx[i] = cx - c.nx[i] * hw;
+      ly[i] = cy + c.ny[i] * hw;
+      rx[i] = cx + c.nx[i] * hw;
+      ry[i] = cy - c.ny[i] * hw;
+    }
+    const r = Math.hypot(lx[m] - rx[m], ly[m] - ry[m]) / 2;
+    const end = round || r > 0.05 ? `A${f(r)} ${f(r)} 0 0 0 ${f(rx[m])} ${f(ry[m])}` : `L${f(rx[m])} ${f(ry[m])}`;
+    let back = "";
+    if (round) {
+      const r0 = Math.hypot(lx[0] - rx[0], ly[0] - ry[0]) / 2;
+      back = `A${f(r0)} ${f(r0)} 0 0 0 ${f(lx[0])} ${f(ly[0])}`;
+    }
+    return `M${f(lx[0])} ${f(ly[0])}${atlasTailSmooth(lx, ly, 0, m)}${end}${atlasTailSmooth(rx, ry, m, 0)}${back}Z`;
+  }
+  function atlasTailCentreOf(spec, segs, samples) {
+    const count = segs.length * samples + 1;
+    const memo = atlasTailMemo(spec, count);
+    const c = memo.centre || (memo.centre = { x: new Float64Array(count), y: new Float64Array(count), nx: new Float64Array(count), ny: new Float64Array(count) });
+    atlasTailCentre(segs, c, samples);
+    return { memo, c, count };
+  }
+  //: The stems take one sample a curve (the shape's own 32 curves already go
+  //: through its points; a second, between each pair, moved the outline by
+  //: under 0.05 of a unit and doubled the numbers written); the filaments
+  //: keep two, as their run is cut at a fraction of the samples.
+  function atlasTailPaths(spec, segs, samples = ATLAS_TAIL_SAMPLES) {
+    const { memo, c } = atlasTailCentreOf(spec, segs, samples);
+    const out = {
+      body: atlasTailStem(c, memo.body, null, !!spec.tailRound, memo),
+      stream: atlasTailStem(c, memo.stream, memo.streamShift, false, memo),
+      silk: atlasTailStem(c, memo.silk, memo.silkShift, false, memo),
+      filaments: "",
+    };
+    if (!memo.filaments.length) return out;
+    const fine = atlasTailCentreOf(spec, segs, 2);
+    const [fx, fy] = fine.memo.run;
+    out.filaments = fine.memo.filaments.map((wt) => {
+      for (let i = 0; i < fine.count; i += 1) {
+        fx[i] = fine.c.x[i] - fine.c.nx[i] * wt[i];
+        fy[i] = fine.c.y[i] + fine.c.ny[i] * wt[i];
+      }
+      const from = Math.round(fine.count * 0.18);
+      const to = Math.round(fine.count * 0.92) - 1;
+      return `M${atlasTailNum(fx[from])} ${atlasTailNum(fy[from])}${atlasTailSmooth(fx, fy, from, to)}`;
+    }).join("");
+    return out;
+  }
+  return { paths: atlasTailPaths, num: atlasTailNum };
+})();
 function atlasTailAttach(box) {
   const spec = ATLAS_LOOKS[box.dataset.atlasLook];
   const svg = box.querySelector("svg.atl-layer-tail:not(.atl-layer-tail-tip)");
@@ -247,7 +417,7 @@ function atlasTailPick(tail, state, now) {
   tail.act = act;
   tail.state = state;
   const calm = !base.ms && atlasTailCalm(tail, tail.box);
-  tail.until = now + (base.ms || (calm ? 9000 + Math.random() * 9000 : 4000 + Math.random() * 5000));
+  tail.until = now + (base.ms || (calm ? 5000 + Math.random() * 4000 : 4000 + Math.random() * 5000));
   tail.settle = now + ATLAS_TAIL_SETTLE_MS;
 }
 //: **A frame budget** (audit AI1, 2026-10-31: at 4x CPU the companion at
@@ -299,22 +469,27 @@ function atlasTailFrame(tail, now) {
   //: And in the lite set (`atlasFrameBudget`), where they are not played at all.
   const loops = live && !box.closest("#nm-buddy.nm-buddy-dragging") && !document.documentElement.hasAttribute("data-atlas-lite");
   if (live) atlasFrameBudget(now);
-  for (const anim of box.atlasLoops || []) if (loops !== (anim.playState === "running")) loops ? anim.play() : anim.pause();
+  //: **Reads, then the tail's one restyle, then the writes** (INBOX 1534: this
+  //: beat's own writes, the loops' play and pause and the breath's scale,
+  //: made the next read settle style: `atlasPropsFrame` 71ms, the breath's
+  //: rise 107ms and the rest's release 73ms at 4x CPU in 45s of idle). The
+  //: props read first; the rest's release, which reads where the sway is,
+  //: comes before anything is written; the breath and the loops are writes.
   //: Thirty a second: each draw repaints the tail's layer.
   tail.tick += 1;
   //: The props' own loops, while each is shown (`atlasPropsFrame`).
   atlasPropsFrame(box, live, tail.tick);
-  //: And the chest's breath (`atlasBreathFrame`).
-  atlasBreathFrame(box, live, now);
   //: Resting on the compositor (`atlasTailRest`): nothing to draw while the
   //: state holds and the act has not run out; the breath and the props
-  //: above are all this beat does.
-  if (tail.resting) {
-    if (live && atlasTailCalm(tail, box) && atlasLowerState(box.closest("#nm-buddy"), box) === tail.state && now < tail.until) {
-      tail.raf = setTimeout(() => atlasTailFrame(tail, performance.now()), ATLAS_TAIL_REST_BEAT_MS);
-      return;
-    }
-    atlasTailUnrest(tail);
+  //: are all this beat does.
+  const holds = tail.resting && live && atlasTailCalm(tail, box) && atlasLowerState(box.closest("#nm-buddy"), box) === tail.state && now < tail.until;
+  if (tail.resting && !holds) atlasTailUnrest(tail);
+  //: And the chest's breath (`atlasBreathFrame`).
+  atlasBreathFrame(box, live, now);
+  for (const anim of box.atlasLoops || []) if (loops !== (anim.playState === "running")) loops ? anim.play() : anim.pause();
+  if (holds) {
+    tail.raf = setTimeout(() => atlasTailFrame(tail, performance.now()), ATLAS_TAIL_REST_BEAT_MS);
+    return;
   }
   if (live && tail.tick % 2 && tail.drawn && !tail.calm) {
     tail.raf = requestAnimationFrame((t) => atlasTailFrame(tail, t));
@@ -349,6 +524,8 @@ function atlasTailFrame(tail, now) {
     tail.ph3 += (2 * Math.PI * dt) / 1.73;
   }
   const secs = (now - tail.t0) / 1000;
+  const follow = live ? atlasTailFollow(tail, dt, typeof nmb !== "undefined" ? nmb.x : NaN) : 0;
+  if (live) atlasTailFollow.strands(box, tail);
   const p = Object.fromEntries(Object.entries(tail.p).map(([k, j]) => [k, live ? j.x : k === "curl" || k === "amp" ? 0 : j.x]));
   const drift = live ? 0.13 * Math.sin((2 * Math.PI * secs) / 11.3) + 0.08 * Math.sin((2 * Math.PI * secs) / 17.9 + 1.3) : 0;
   //: The ripple's clock also draws the tail out and back along its length
@@ -357,7 +534,7 @@ function atlasTailFrame(tail, now) {
   //: tip one way only, across the tail, and dwells at each turning point
   //: (a stepped 60s of `stiff` read 1.4s still at the tip with bends only).
   const stretch = live ? () => 1 + 0.03 * Math.cos(tail.ph3) : null;
-  atlasTailDraw(tail, (s) => atlasTailBend(s, p, live ? tail.ph : 0, live ? tail.ph2 : 0, drift, live ? tail.ph3 : 0), stretch);
+  atlasTailDraw(tail, (s) => atlasTailBend(s, p, live ? tail.ph : 0, live ? tail.ph2 : 0, drift, live ? tail.ph3 : 0, follow), stretch);
   tail.drawn = true;
   //: **At rest in its corner, fifteen draws a second, not thirty** (Brief 34
   //: decision 7: the companion must never cost the rest of the app).
@@ -381,11 +558,12 @@ function atlasTailFrame(tail, now) {
   } else if (live) tail.raf = requestAnimationFrame((t) => atlasTailFrame(tail, t));
   else tail.at = 0;
 }
-const ATLAS_TAIL_CALM = new Set(["idle", "sit", "lie", "think", "sad"]);
 const ATLAS_TAIL_CALM_MS = 66;
 function atlasTailCalm(tail, box) {
-  return ATLAS_TAIL_CALM.has(tail.state) && !!box.closest("#nm-buddy") && !box.closest(".nm-viewer-figure");
+  return atlasTailCalm.states.has(tail.state) && !!box.closest("#nm-buddy") && !box.closest(".nm-viewer-figure");
 }
+//: On the function, not the shared scope (test_global_scope_ratchet): only it reads them.
+atlasTailCalm.states = new Set(["idle", "sit", "lie", "think", "sad"]);
 //: **At rest the tail goes to the compositor** (Brief 34 continues, step 2;
 //: decision 7, under 1ms a minute beyond the face): fifteen path draws a
 //: second were about 770 layouts and 2s of script a minute at rest in the
@@ -394,7 +572,7 @@ function atlasTailCalm(tail, box) {
 //: own layer root about its root, a Web Animation of `transform` only (the
 //: companion's pacer leaves layer roots alone), the act's swing and period
 //: from its table, so a curl sways slow and small and a sway wide. Calm acts
-//: hold 9 to 18s here, not 4 to 9, so the redraws are rare; a new act, a new
+//: hold 5 to 9s (9 to 18 read as never changing, INBOX 1659), the sway 4 to 10 degrees; a new act, a new
 //: state, the large view or a walk takes the live loop back, the layer
 //: easing home from wherever its sway was. `data-atl-tail` says which.
 const ATLAS_TAIL_SETTLE_MS = 1600;
@@ -411,9 +589,10 @@ function atlasTailRest(tail, p) {
   const vb = svg.viewBox?.baseVal;
   const [rx, ry] = tail.rest[0];
   if (vb?.width) svg.style.transformOrigin = `${atlasFix(((rx - vb.x) / vb.width) * 100)}% ${atlasFix(((ry - vb.y) / vb.height) * 100)}%`;
-  const deg = atlasFix(Math.min(7, Math.max(1.5, (p.amp * 180) / Math.PI * 0.3)));
-  const at = (d, k) => ({ transform: `rotate(${d}deg) scale(${k})` });
-  tail.sway = svg.animate([at(0, 1), at(deg, 1.015), at(0, 1), at(-deg, 0.99), at(0, 1)], {
+  const deg = atlasFix(Math.min(10, Math.max(4, (p.amp * 180) / Math.PI * 0.6)));
+  const at = ([d, k]) => ({ transform: `rotate(${d}deg) scale(${k})` });
+  tail.swayKeys = [[0, 1], [deg, 1.015], [0, 1], [-deg, 0.99], [0, 1]];
+  tail.sway = svg.animate(tail.swayKeys.map(at), {
     duration: Math.round(Math.max(2.4, p.period) * 1000), iterations: Infinity, easing: "ease-in-out",
   });
 }
@@ -422,21 +601,33 @@ function atlasTailUnrest(tail) {
   tail.resting = false;
   box.dataset.atlTail = "live";
   if (!tail.sway) return;
-  const from = getComputedStyle(svg).transform;
+  //: Where the sway is, from its own clock and keyframes, not the style (INBOX
+  //: 1587): this runs on the rest beat's timer, and the computed transform
+  //: read there settled the whole page's style, 567ms at 1x CPU with Settings open
+  //: (a 719-element recalc). `progress` is the eased share of the swing.
+  const keys = tail.swayKeys || [];
+  const share = Number(tail.sway.effect?.getComputedTiming?.().progress);
+  let from = "";
+  if (Number.isFinite(share) && keys.length > 1) {
+    const x = Math.min(1, Math.max(0, share)) * (keys.length - 1);
+    const i = Math.min(keys.length - 2, Math.floor(x));
+    const [[d0, k0], [d1, k1]] = [keys[i], keys[i + 1]];
+    from = `rotate(${atlasFix(d0 + (d1 - d0) * (x - i))}deg) scale(${atlasFix(k0 + (k1 - k0) * (x - i))})`;
+  }
   tail.sway.cancel();
   tail.sway = null;
-  if (from && from !== "none") svg.animate([{ transform: from }, { transform: "none" }], { duration: 400, easing: "cubic-bezier(0.33, 0, 0.2, 1)" });
+  if (from) svg.animate([{ transform: from }, { transform: "none" }], { duration: 400, easing: "cubic-bezier(0.33, 0, 0.2, 1)" });
 }
 function atlasTailDraw(tail, bend, stretch) {
   const { pts, turn, segs } = atlasTailShape(tail.rest, bend, stretch);
-  const d = atlasTailPaths(tail.spec, segs);
+  const d = atlasTailKit.paths(tail.spec, segs);
   const { paths } = tail;
   paths.edge?.setAttribute("d", d.body);
   for (const el of paths.body) el.setAttribute("d", d.body);
   paths.silk?.setAttribute("d", d.silk);
   paths.stream?.setAttribute("d", d.stream);
   if (paths.filaments) paths.filaments.setAttribute("d", d.filaments);
-  const f = atlasFix;
+  const f = atlasTailKit.num;
   //: Each star rides the sample nearest it, turned with it.
   if (tail.specks) {
     tail.specks.setAttribute("d", tail.stars.map(({ x, y, r, i }) => {
@@ -628,13 +819,27 @@ const ATLAS_LOWER_STATES = {
   happy: { ms: 380, ease: "cubic-bezier(0.25, 1.8, 0.5, 1)", v: [[-6, 1.02, 0.94, 5, -10], [5, 1.02, 0.95, -5, -14], [-4, 1.03, 0.93, 3, -8]] },
   sad: { ms: 800, ease: "cubic-bezier(0.5, 0, 0.6, 1)", v: [[1.5, 0.96, 1.07, -1, 16], [-1.5, 0.97, 1.06, 1, 20], [0.5, 0.95, 1.08, -2, 24]] },
   startle: { ms: 260, ease: "cubic-bezier(0.2, 2, 0.4, 1)", v: [[-4, 0.94, 0.9, 4, -18], [-3, 0.95, 0.92, 5, -22], [3, 0.93, 0.91, -4, -14]] },
+  //: Asleep (INBOX 1680, the owner: "even when it is sleeping, it still sticks
+  //: up"): the lower body curls and droops, a slow ease, shorter and wider
+  //: than a lie, the tail wrapped round (a turn well past a lie's).
+  curl: { ms: 1600, ease: "cubic-bezier(0.45, 0, 0.35, 1)", v: [[4, 1.1, 0.74, -6, 38], [-3, 1.12, 0.72, 6, -34], [3.5, 1.08, 0.76, -5, 44]] },
+  //: INBOX 1681 (the owner: "crouching down ... lounging ... gliding ... hanging"): a squat folds the
+  //: lower body short and wide, a lounge lays it out to one side, a glide trails it long and thin behind
+  //: the lean, a drift lets it hang loose and slow, a hang lets it swing from the hips. The act's own
+  //: variant (`data-variant`) picks the row, so the body and the lower body agree; the turn stays
+  //: within 4 degrees (INBOX 615 and 619) and the lean, the tail and the stretch do the posing.
+  crouch: { ms: 700, ease: "cubic-bezier(0.34, 1.15, 0.6, 1)", v: [[2, 1.14, 0.7, -3, -16], [-3, 1.1, 0.74, 4, 12], [1.5, 1.18, 0.66, -2, -22]] },
+  lounge: { ms: 900, ease: "cubic-bezier(0.4, 1.1, 0.6, 1)", v: [[3.5, 1.06, 0.84, -4, 26], [-2, 1.1, 0.8, 2, -20], [2, 1.04, 0.88, -3, 16]] },
+  glide: { ms: 800, ease: "cubic-bezier(0.3, 0.9, 0.5, 1)", v: [[-3.5, 0.9, 1.14, 8, -34], [-2, 0.88, 1.18, 6, -42], [-3.8, 0.92, 1.12, 10, -28]] },
+  drift: { ms: 1400, ease: "cubic-bezier(0.45, 0, 0.35, 1)", v: [[2, 1.02, 1.04, -4, 18], [-3, 1.08, 0.88, 3, -24], [3.8, 1, 1.08, -6, 32]] },
+  hang: { ms: 700, ease: "cubic-bezier(0.34, 1.2, 0.6, 1)", v: [[1.5, 0.96, 1.08, -2, 10], [-2, 0.95, 1.1, 3, -14], [2.5, 0.97, 1.06, -3, 18]] },
 };
 //: The hair's turn about the crown and the nebula stream's [turn, width,
 //: height] about the figure's middle, per state (INBOX 575, the owner:
 //: "both atlas avatars have a tail as well, same with the hair, and the
 //: nebular stream ... dynamically animated and changed"), a variant each
 //: as the lower body's; a walk's turn takes the way it goes.
-const ATLAS_HAIR_STATES = { idle: [0, 1.6, -1.4, 0.8], walk: [-5, -4, -6], sit: [2, 1, 3], lie: [4, 5, 3], gesture: [-3, -2, -4], think: [2.5, 1.5, 3.5], happy: [-3.5, -2.5, -4], sad: [4, 5, 6], startle: [-6, -7, -5] };
+const ATLAS_HAIR_STATES = { idle: [0, 1.6, -1.4, 0.8], walk: [-5, -4, -6], sit: [2, 1, 3], lie: [4, 5, 3], gesture: [-3, -2, -4], think: [2.5, 1.5, 3.5], happy: [-3.5, -2.5, -4], sad: [4, 5, 6], startle: [-6, -7, -5], curl: [6, 8, 7], crouch: [3, 1, 4], lounge: [4, 2, 5], glide: [-7, -9, -6], drift: [3, 5, 2], hang: [2, -2, 3] };
 const ATLAS_NEB_STATES = {
   idle: [[0, 1, 1], [2, 1.02, 0.98], [-2, 0.98, 1.02], [1, 1.01, 1]],
   walk: [[-4, 1.05, 0.95], [-3, 1.06, 0.94], [-5, 1.04, 0.96]],
@@ -645,6 +850,12 @@ const ATLAS_NEB_STATES = {
   happy: [[-3, 1.04, 1.04], [3, 1.05, 1.03], [-2, 1.03, 1.05]],
   sad: [[2, 0.97, 0.94], [-1, 0.96, 0.95], [1, 0.95, 0.96]],
   startle: [[-6, 1.08, 1.08], [-5, 1.1, 1.06], [-7, 1.07, 1.09]],
+  curl: [[8, 1.05, 0.82], [-6, 1.07, 0.8], [10, 1.04, 0.83]],
+  crouch: [[3, 1.06, 0.88], [-3, 1.05, 0.9], [2, 1.08, 0.86]],
+  lounge: [[5, 1.05, 0.9], [-4, 1.06, 0.88], [3, 1.04, 0.92]],
+  glide: [[-6, 1.04, 1.06], [-8, 1.03, 1.08], [-5, 1.05, 1.05]],
+  drift: [[3, 1.02, 1.03], [-4, 1.03, 1.02], [5, 1.01, 1.04]],
+  hang: [[2, 1, 1.03], [-2, 1.01, 1.02], [3, 0.99, 1.04]],
 };
 //: The rig's lower body (atlas.js, `atlasRigAttach`, which makes the rest of
 //: the rig at once): the boxes the state's pose turns, attached when this
@@ -676,10 +887,11 @@ function atlasRigLowerAttach(box) {
 function atlasRigLower(rig, now, live, buddy) {
   const low = rig.lower;
   if (!low || !(low.boxes.length || low.tails.length || low.hair.length)) return;
-  const state = atlasLowerState(buddy, rig.box);
+  const base = atlasLowerState(buddy, rig.box);
+  const state = base === "lie" && atlasRigLower.asleep(buddy) ? "curl" : base;
   const spec = ATLAS_LOWER_STATES[state];
   const fresh = state !== low.state;
-  if (fresh || (live && state === "idle" && now >= low.at)) {
+  if (fresh || (live && atlasRigLower.rests.has(state) && now >= low.at)) {
     //: Reduced motion keeps each state's first pose and no idle variation.
     const pick = live ? Math.floor(Math.random() * spec.v.length) : 0;
     //: Never the one it took the last time it was in this state (Brief 88:
@@ -688,6 +900,9 @@ function atlasRigLower(rig, now, live, buddy) {
     const last = low.last[state] ?? -1;
     low.variant = live && spec.v.length > 1 && pick === last ? (pick + 1 + Math.floor(Math.random() * (spec.v.length - 1))) % spec.v.length : pick;
     low.last[state] = low.variant;
+    //: An act's state takes the act's drawn variant (INBOX 1681), so the figure and its lower body agree.
+    const posed = atlasRigLower.acts.includes(state) ? Number(buddy?.dataset.variant) : NaN;
+    if (Number.isInteger(posed) && posed >= 0 && posed < spec.v.length) low.variant = low.last[state] = posed;
     low.state = state;
     low.at = now + 8000 + Math.random() * 6000;
   }
@@ -699,7 +914,7 @@ function atlasRigLower(rig, now, live, buddy) {
     if (document.hidden || rig.box.classList.contains("atl-off")) low.timer = setTimeout(next, 4000);
     else atlasRigLower(rig, performance.now(), atlasMotionOK(rig.box), buddy);
   };
-  if (live && state === "idle") low.timer = setTimeout(next, low.at - now + 10);
+  if (live && atlasRigLower.rests.has(state)) low.timer = setTimeout(next, low.at - now + 10);
   const way = state === "walk" ? (parseFloat(buddy?.style.getPropertyValue("--nmb-lean")) < 0 ? -1 : 1) : 1;
   const [rot, sx, sy, skew, tail] = spec.v[low.variant] || spec.v[0];
   const hairs = ATLAS_HAIR_STATES[state];
@@ -728,3 +943,9 @@ function atlasRigLower(rig, now, live, buddy) {
   //: The stream's two halves move as one ribbon.
   for (const el of low.neb) go(el, `rotate(${atlasFix(neb * way)}deg) scale(${nsx}, ${nsy})`, 120);
 }
+//: The states that rest: a new variant every 8 to 14 s (INBOX 1680: only standing did, so a sat or sleeping figure held one pose for minutes).
+atlasRigLower.rests = new Set(["idle", "sit", "lie", "curl", "think", "sad", "hang"]);
+//: The states an act poses (INBOX 1681): the act's drawn variant picks the row, so the figure and its lower body agree. They last one act, so none re-rolls on the rest timer.
+atlasRigLower.acts = ["crouch", "lounge", "glide", "drift"];
+//: Asleep: the sleeping class, a nap, or a lying or curled pose (a property, not a global: `tests/test_global_scope_ratchet.py`).
+atlasRigLower.asleep = (buddy) => !!buddy && (buddy.classList.contains("nmb-sleep") || buddy.classList.contains("nmb-act-nap") || /^(lie|curl)/.test(buddy.dataset.pose || ""));

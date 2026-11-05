@@ -61,7 +61,7 @@ async function renderRelatedWhileEditing(li, entry) {
       panel.textContent = "All related notes are linked.";
       return;
     }
-    setLabel(toggle, `${list.hidden ? "ph:caret-right" : "ph:caret-down"} ${n} suggested link${n === 1 ? "" : "s"}`);
+    setLabel(toggle, `${list.hidden ? "ph:caret-right" : "ph:caret-down"} ${nounCount(n, "suggested link")}`);
   };
   toggle.addEventListener("click", () => {
     list.hidden = !list.hidden;
@@ -224,6 +224,9 @@ function noteFormParts(content) {
 function renderEditForm(li, entry) {
   const draft = noteFormDraft && noteFormDraft.id === entry.id ? noteFormDraft : null;
   noteFormDirty = Boolean(draft);
+  //: The form edits the whole text, never a list row's preview (INBOX 1525): an open from a clipped row, or a list
+  //: reload while editing, hands it a row with a part. Every way into the form comes here, so the read is here only.
+  if (entry.content_truncated) return fullEntry(entry.id).then((whole) => renderEditForm(li, whole), (error) => (toast(error.message, true), closeNoteForm()));
   //: **A title field, as Capture has** (INBOX 432: renaming a note meant
   //: finding and editing its "# " line by hand). Not a stored field: the
   //: leading heading is split off into it and put back on save, the shape
@@ -591,7 +594,7 @@ ${textarea.value}`));
   //: when the pressed state is set.
   Promise.resolve(mountGutterFor(textarea)).then(() => requestAnimationFrame(() => applyDocGutter()));
   renderEntryAttachmentChips(textarea, chipsHost);
-  textarea.addEventListener("input", () => renderEntryAttachmentChips(textarea, chipsHost));
+  textarea.addEventListener("input", () => renderEntryAttachmentChips(textarea, chipsHost, { paced: true }));
   renderRelatedWhileEditing(li, entry);
   renderNoteBookmarksWhileEditing(li, entry);
 }
@@ -607,13 +610,13 @@ async function holdNoteEdit(id, body) {
   noteFormDraft = null;
   forgetNoteEditLocally();
   toast("Saved on this device. The change goes into your notebook as soon as the server answers.");
-  renderEntries();
+  await renderEntries();
   focusNoteRow(id);
   return true;
 }
 
 // Moved from notes-list.js (boot gzip): the edit form's Cancel and Escape are its callers.
-function closeNoteForm() {
+async function closeNoteForm() {
   //: The focus goes back to the note (WCAG 2.4.3): the redraw removes the form
   //: that held it.
   const back = editingId;
@@ -623,7 +626,7 @@ function closeNoteForm() {
   noteFormDirty = false;
   noteFormDraft = null;
   forgetNoteEditLocally();
-  renderEntries();
+  await renderEntries();
   if (back != null && wasInside) focusNoteRow(back);
 }
 
@@ -691,6 +694,7 @@ async function offerKeptNoteEdit() {
     //: After the open, which clears any draft for a different note.
     noteFormDraft = { id: kept.id, title: kept.title, content: kept.content, tags: kept.tags, category: kept.category };
     keepNoteEditLocally(noteFormDraft);
+    entryItem.live = null; // the one redraw that must build the form again, from the draft
     renderEntries();
   });
 }

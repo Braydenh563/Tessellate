@@ -53,7 +53,12 @@ def _requested() -> dict[str, set[str]]:
         text = _strip_line_comments(source) if path.suffix == ".js" else source
         #: The two ways this app names an icon: the `ph:name Label` marker
         #: `setLabel` understands, and a literal class in the markup.
-        for pattern in (r"""["'`]ph:([a-z0-9-]+)""", r'''class="ph ph-([a-z0-9-]+)'''):
+        patterns = [r"""["'`]ph:([a-z0-9-]+)""", r'''class="ph ph-([a-z0-9-]+)''']
+        #: A helper that takes the bare icon name first (sketch-pad.js `iconButton(name, ...)`): its
+        #: "Fill only" asked for `square-fill`, not in the subset, and drew an empty button.
+        if "function iconButton(name" in text:
+            patterns.append(r'''iconButton\(\s*"([a-z0-9-]+)"''')
+        for pattern in patterns:
             for match in re.finditer(pattern, text):
                 used.setdefault(match.group(1), set()).add(path.name)
     return {name: where for name, where in used.items() if name not in NOT_ICONS}

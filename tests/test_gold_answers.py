@@ -422,5 +422,7 @@ def test_a_day_line_is_prose_not_a_date_label():
         assert not re.search(r"^\*\*\d{1,2} [A-Z][a-z]+:\*\*", text, re.M), text
     gym = composer_digest.answer("how's the gym going?", NOTES, today=TODAY)["text"]
     #: Composer5-1031 (INBOX 1483, the owner's one date table: relative first, then the date): was "On 8 September, you squatted ...".
-    assert "Four weeks ago, on 8 September, you squatted 80 kg for 5 and benched 60 kg for 5, going on Mondays, Wednesdays and Fridays." in gym
+    #: "Five", not "Four": an answer's "N weeks ago" rounds as the note card does (INBOX 1665 d, ef5c7bb),
+    #: so the 33 days from 8 September is five weeks on both; the intent (relative first, then the date) is unchanged.
+    assert "Five weeks ago, on 8 September, you squatted 80 kg for 5 and benched 60 kg for 5, going on Mondays, Wednesdays and Fridays." in gym
     assert "by 2 October, your squat was up to 90 kg for 5, and your knee felt fine." in gym or "on 2 October, your squat" in gym

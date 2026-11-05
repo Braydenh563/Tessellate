@@ -429,7 +429,10 @@ def test_every_mood_places_the_arms_per_look_in_three_variants():
     assert "{ --atl-v1: 1; --atl-v2: 0; }" in CSS and "{ --atl-v1: 0; --atl-v2: 1; }" in CSS
     assert ".nm-atlas .nmb-arm-r { transform: rotate(calc(var(--atl-ar0) * (1 - var(--atl-v1) - var(--atl-v2))" in CSS
     # The chin hand is a variant's choice, not thinking's alone.
-    assert "#nm-buddy:not([data-pose=\"hang\"], [data-pose=\"sit\"]) .nm-atlas .atl-chin-hand { opacity: var(--atl-chin); }" in CSS
+    # INBOX 1589: and it gives way to the holds, a climb, a drag and every act
+    # that moves the arms (it was the cheer's third arm), test_atlas_acts_1589.py.
+    assert "#nm-buddy:not([data-pose=\"hang\"], [data-pose=\"sit\"], [data-travel=\"climb\"], .nm-buddy-dragging, .nmb-arms) .nm-atlas .atl-chin-hand" in CSS
+    assert ".nm-atlas .atl-chin-hand { opacity: var(--atl-chin); }" in CSS
     # `--atl-chin` is computed where it is read (the right arm and the hand).
     assert ".nm-atlas :where(.nmb-arm-r, .atl-chin-hand) {\n  --atl-chin: calc(" in CSS
 
@@ -494,8 +497,9 @@ def test_the_lie_down_and_curl_frames_are_hooks_with_the_stream_as_a_bed():
     assert '#nm-buddy[data-pose="lie"] :is(.atl-layer-neb, .atl-layer-neb-front) { rotate: calc(84deg - 168deg * var(--atl-v1)); scale:' in CSS
     # Per look: sprawled with an arm behind the head, or curled with hands
     # under the cheek and the skirt drawn up.
-    assert '#nm-buddy[data-pose="lie"] .atl-figure[data-atlas-look="masculine"] .nmb-arm-r { transform: rotate(-172deg); }' in CSS
-    assert '#nm-buddy[data-pose="lie"] .atl-figure[data-atlas-look="feminine"] .nmb-arm-l' in CSS
+    # The look in `:where`, no weight, so an act's arms still outrank the pose's (INBOX 1589).
+    assert '#nm-buddy[data-pose="lie"] .atl-figure:where([data-atlas-look="masculine"]) .nmb-arm-r { transform: rotate(-172deg); }' in CSS
+    assert '#nm-buddy[data-pose="lie"] .atl-figure:where([data-atlas-look="feminine"]) .nmb-arm-l' in CSS
     # INBOX 619 (the owner: "when sleeping etc, her lower body actually
     # rotates halfway off her upperbody which stays mostly upright"): the
     # lower body lies down with the torso, as one chain, not 42 degrees off it.
@@ -768,13 +772,16 @@ def test_a_sleeping_atlas_keeps_its_arms_off_the_rings():
     # INBOX 568: her right arm hangs at rest, so the eye-rub turns it up and
     # across the body to the face from there (atlasarms.js: the hand at 24.2,
     # 25.6, 3% on the rings).
-    for look, ar2 in (("masculine", "150deg"), ("feminine", "140deg")):
+    # INBOX 1589 (the owner: arms "inverted in front of it like it is trying to
+    # cross its arms"): the eye-rub is the hand to the face, the chin hand, in
+    # place of the right arm swung up across the body (150 and 140 degrees in).
+    for look in ("masculine", "feminine"):
         rule = re.search(rf'\[data-atlas-look="{look}"\]\[data-atlas-mood="sleepy"\] \{{([^}}]+)\}}', CSS).group(1)
-        assert f"--atl-ar2: {ar2}" in rule, (look, "the eye-rub crosses the body to the face")
+        assert "--atl-chin2: 1" in rule and "--atl-ar2: 0deg" in rule, (look, "the eye-rub is the hand to the face")
         angles = dict(re.findall(r"--atl-(a[rl]\d): (-?\d+)deg", rule))
         assert abs(int(angles["al0"])) <= 10 and abs(int(angles["al2"])) <= 10, (look, "the left arm hangs")
-    assert '#nm-buddy[data-pose="lie"] .atl-figure[data-atlas-look="feminine"] .nmb-arm-l { transform: rotate(-30deg); }' in CSS
-    assert '#nm-buddy[data-pose="sit"] .atl-figure[data-atlas-look="feminine"][data-atlas-mood="sleepy"] .nmb-arm-r { transform: rotate(-6deg); }' in CSS
+    assert '#nm-buddy[data-pose="lie"] .atl-figure:where([data-atlas-look="feminine"]) .nmb-arm-l { transform: rotate(-30deg); }' in CSS
+    assert '#nm-buddy[data-pose="sit"] .atl-figure:where([data-atlas-look="feminine"][data-atlas-mood="sleepy"]) .nmb-arm-r { transform: rotate(-6deg); }' in CSS
 
 
 def test_the_props_hang_from_each_look_s_own_hand():
@@ -969,7 +976,9 @@ def test_the_feminine_look_has_astral_wisps_that_drift_on_a_box():
     # their own whose box drifts (`rotate` and `translate`, the compositor's
     # on a box, never on an svg root), still under reduced motion.
     feminine = _look("feminine")
-    assert feminine.count("sparkles: [0.") == 3
+    # INBOX 1576: the third wisp, the one by her left hand, keeps no stars at rest (she casts them,
+    # `atlasMicroCast`); the other two keep their trails.
+    assert feminine.count("sparkles: [0.") == 2 and feminine.count("sparkles: []") == 1
     for cls in ("atl-astral-glow", "atl-astral-core", "atl-astral-edge"):
         rule = re.search(r"\.nm-atlas \." + cls + r" \{([^}]*)\}", CSS)
         assert rule and "stroke" not in rule.group(1), cls
@@ -1262,7 +1271,7 @@ def test_the_lower_body_moves_with_the_torso_and_turns_about_the_join():
         assert not re.search(r"rotate|scale\(", rule), (pose, rule)
     # The rig's pose for a state turns the lower body at most 4 degrees.
     states = ATLAS[ATLAS.index("const ATLAS_LOWER_STATES = {"):ATLAS.index("const ATLAS_HAIR_STATES")]
-    for state in ("sit", "lie", "startle"):
+    for state in ("sit", "lie", "startle", "curl"):
         row = re.search(rf"  {state}: \{{.*?v: \[(.*)\] \}},", states).group(1)
         turns = [abs(float(v)) for v in re.findall(r"\[(-?[0-9.]+),", row)]
         assert turns and max(turns) <= 4, (state, turns)
@@ -1304,9 +1313,11 @@ def test_an_act_is_eased_into_as_well_as_out_of():
     # comes off inside one (INBOX 497). The one exception is the land straight
     # after a throw (throwsmooth-1027: nothing is mid-swing there, and the
     # hand-over's reads were that frame's 8 to 40ms).
-    assert "const into = () => buddy.classList.add(`nmb-act-${act}`);" in AVATARS
-    assert 'if (act === "land" && nmb.afterLand) into();\n  else nameMarkBuddyBlend(buddy, into, NMB_BLEND_IN_MS);' in AVATARS
-    assert "if (was) nameMarkBuddyBlend(buddy, () => buddy.classList.remove(`nmb-act-${was}`));" in AVATARS
+    # (INBOX 1589: with the act's class, `nmb-arms` goes on and off in the same hand-over.)
+    assert "const into = () => buddy.classList.add(`nmb-act-${act}`, " in AVATARS
+    # (INBOX 1634: the leave and the enter are one hand-over, the leave written inside the enter's change.)
+    assert 'if (act === "land" && nmb.afterLand) {' in AVATARS and "into();\n  } else nameMarkBuddyBlend(buddy, joined ? () => (leave(), into()) : into, NMB_BLEND_IN_MS);" in AVATARS
+    assert "const leave = () => {\n    buddy.classList.remove(`nmb-act-${was}`);" in AVATARS
     ms = int(re.search(r"const NMB_BLEND_IN_MS = (\d+);", AVATARS).group(1))
     assert 250 <= ms <= 500
 

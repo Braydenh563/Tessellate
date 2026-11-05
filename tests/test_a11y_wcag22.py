@@ -310,7 +310,8 @@ def test_a_disabled_task_box_on_a_note_card_says_why():
     at = js.index('item.className = "entry-task"')
     block = js[at : at + 1400]
     assert "box.disabled = true" in block
-    assert 'box.title = "' in block
+    #: The words carry the reason since unslop 22: the box lets the tap fall through to the card.
+    assert 'item.title = "' in block
 
 
 def test_the_chosen_chat_mode_keeps_a_visible_focus_ring_in_the_ink_palettes():
@@ -362,7 +363,10 @@ def _js(name: str) -> str:
 
 def test_a_reminders_priority_is_a_word_as_well_as_a_coloured_edge():
     js = _js("shell-reminders.js")
-    assert '"High" : "Low"} priority' in js
+    #: Unslop 1103, 13: high has the red edge and the bold words, so its word is
+    #: visually hidden text in the row (no chip repeating the edge); low, which
+    #: has no edge, keeps its chip.
+    assert '"High priority. "' in js and '"ph:flag Low priority"' in js
 
 
 def test_a_toggle_says_it_is_on_to_a_screen_reader_as_well_as_to_the_eye():

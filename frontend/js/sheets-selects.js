@@ -315,15 +315,15 @@ const SIDEBAR_RAIL_NAMES = {
 //: A resize grip says its value (WCAG 4.1.2: a focusable separator requires
 //: `aria-valuenow`). Read by an observer, so every way of resizing reports it.
 function trackSeparatorValue(handle, panel, min, max, axis = "width") {
-  handle.setAttribute("aria-valuemin", String(min));
-  handle.setAttribute("aria-valuemax", String(max));
+  handle.setAttribute("aria-valuemin", min);
+  handle.setAttribute("aria-valuemax", max);
   //: A horizontal separator (the code editor's output panel) reports its height.
   const tall = axis === "height";
   const size = () => (tall ? panel.getBoundingClientRect().height : panel.getBoundingClientRect().width);
   const write = (px) => {
     const now = Math.round(px);
     if (!now) return; // hidden or folded away: keep the last real value
-    handle.setAttribute("aria-valuenow", String(Math.min(Math.max(now, min), max)));
+    handle.setAttribute("aria-valuenow", Math.min(Math.max(now, min), max));
     handle.setAttribute("aria-valuetext", `${now} pixels ${tall ? "tall" : "wide"}`);
   };
   write(size() || min);
@@ -377,7 +377,7 @@ function makeSidebarResizable(aside) {
     // to avoid fighting.
     if (layoutIsStacked()) {
       const open = setSidebarSheet(aside, !aside.classList.contains("sidebar-sheet-open"));
-      collapseBtn.setAttribute("aria-expanded", String(open));
+      collapseBtn.setAttribute("aria-expanded", open);
       return;
     }
     const folded = aside.classList.toggle("sidebar-collapsed");
@@ -842,7 +842,7 @@ function enhanceSelect(select) {
     opener.disabled = select.disabled;
     for (const row of menu.querySelectorAll("[role='option']")) {
       const on = row.dataset.value === select.value;
-      row.setAttribute("aria-selected", String(on));
+      row.setAttribute("aria-selected", on);
       row.classList.toggle("is-chosen", on);
     }
   };
@@ -863,6 +863,15 @@ function enhanceSelect(select) {
     row.setAttribute("role", "option");
     row.dataset.value = option.value;
     row.textContent = option.textContent.trim();
+    //: **A picture before the name** (`data-icon`, a Phosphor name; audit 1028
+    //: U27: the Layout list was ten lines of text for ten shapes). Decorative:
+    //: the name beside it is the label.
+    if (option.dataset.icon) {
+      const glyph = document.createElement("i");
+      glyph.className = `ph ph-${option.dataset.icon} ph-lead`;
+      glyph.setAttribute("aria-hidden", "true");
+      row.prepend(glyph);
+    }
     //: **An option that wants its row drawn its own way** names a class in
     //: `data-menu-class` (Settings' Font list sets each row in its own face,
     //: INBOX 670). The menu is lifted to <body>, so no selector can reach a
@@ -1442,6 +1451,13 @@ function kebabMenu(items, ariaLabel, { vertical = false } = {}) {
     if (item.danger) button.classList.add("menu-danger");
     button.setAttribute("role", "menuitem");
     setLabel(button, item.label);
+    if (item.keys) {
+      const hint = document.createElement("kbd");
+      hint.className = "menu-keys";
+      hint.textContent = item.keys;
+      button.append(hint);
+      button.setAttribute("aria-keyshortcuts", item.keys.replace(/ or /g, " "));
+    }
     if (item.title) button.title = item.title;
     menuRowFits(button, item.title || "");
     // Muted, not `disabled`, a native disabled button also blocks its own
@@ -1793,7 +1809,7 @@ const CHAT_SIDEBAR_SORT_KEY = "chatSidebarSort";
 // the boundary, just below) predates this control and a sort choice
 // shouldn't silently break it. Only the order *within* each of the two
 // groups changes.
-function sortConversations(conversations, mode) {
+function sortConversations(conversations, mode, limit = Infinity) {
   const pinned = conversations.filter((c) => c.pinned);
   const rest = conversations.filter((c) => !c.pinned);
   const byMode = {
@@ -1801,9 +1817,16 @@ function sortConversations(conversations, mode) {
     turns: (a, b) => (b.turns || 0) - (a.turns || 0),
     tokens: (a, b) => (b.tokens || 0) - (a.tokens || 0),
     alpha: (a, b) => a.title.localeCompare(b.title),
-  }[mode] || null;
-  if (!byMode) return conversations; // "recent" is already the server's own order
-  return [...pinned.sort(byMode), ...rest.sort(byMode)];
+  }[mode] || null; // "recent" is already the server's own order
+  if (byMode) {
+    pinned.sort(byMode);
+    rest.sort(byMode);
+  }
+  //: The rows the switcher draws (audit 1028 E46): more than five pinned chats
+  //: used to fill all eight rows and push every recent chat out, so the newest
+  //: three always keep a place; the other pinned ones are in the Library.
+  const pinnedShown = pinned.slice(0, Math.max(limit - Math.min(rest.length, 3), 0));
+  return [...pinnedShown, ...rest.slice(0, Math.max(limit - pinnedShown.length, 0))];
 }
 
 async function loadConversationList() {
@@ -1813,14 +1836,39 @@ async function loadConversationList() {
   showSkeletons(list, 4, "li");
   if (!list.children.length || list.querySelector(".skeleton")) $("conv-empty")?.classList.add("hidden");
   //: A failed read says so with Try again; "No saved chats yet" is for a list that came back empty.
-  const loaded = await loadSurface($("conv-empty"), "your chats", () => apiJson("/conversations"));
+  //: The search box asks the server, which reads titles and message text (E47).
+  const term = $("chat-sidebar-search").value.trim();
+  const asked = (loadConversationList.n = -~loadConversationList.n); // the newest read owns the list
+  const loaded = await loadSurface($("conv-empty"), "your chats", () => apiJson(`/conversations?q=${encodeURIComponent(term)}`));
   clearSkeletons(list);
+  if (asked !== loadConversationList.n) return;
   if (!loaded) return list.replaceChildren();
-  const conversations = sortConversations(loaded, $("chat-sidebar-sort")?.value || "recent").slice(0, RECENT_CHATS_SHOWN);
+  const conversations = sortConversations(loaded, $("chat-sidebar-sort")?.value || "recent", term ? 4 * RECENT_CHATS_SHOWN : RECENT_CHATS_SHOWN);
   list.replaceChildren();
   const empty = $("conv-empty");
   empty.classList.toggle("hidden", conversations.length > 0);
-  empty.textContent = "No saved chats yet. Ask something to start one.";
+  //: The empty-state recipe (icon, title, one sentence, one action), drawn here and not
+  //: shipped in the page (the boot element cap); the grey line it replaces had none of them.
+  if (!conversations.length) {
+    const icon = document.createElement("span");
+    icon.className = "empty-icon";
+    icon.setAttribute("aria-hidden", "true");
+    setLabel(icon, "ph:chats");
+    const title = document.createElement("p");
+    title.className = "empty-title";
+    title.textContent = term ? "No chats match" : "No saved chats yet";
+    const hint = document.createElement("p");
+    hint.textContent = term ? "The search reads titles and what was said." : "Ask something to start one.";
+    empty.replaceChildren(icon, title, hint);
+    if (!term) {
+      const start = document.createElement("button");
+      start.type = "button";
+      start.className = "ghost small";
+      start.dataset.emptyAction = "new-chat";
+      setLabel(start, "ph:plus New chat");
+      empty.appendChild(start);
+    }
+  }
 
   let sawUnpinned = false;
   for (const conversation of conversations) {

@@ -10,7 +10,7 @@
 // and a finger takes the hold itself: still for `OBJ_TOUCH_MS` lifts the card,
 // and the page stops scrolling under it. While live a small ghost card follows the pointer and the
 // current mode (`OBJ_MODES`: obj-reorder.js's `reorder`, obj-carry.js's
-// `carry`) decides what the pointer is over, and may hand the gesture to another
+// `carry`, diagram-builder.js's `diagram`) decides what the pointer is over, and may hand the gesture to another
 // mode (`route`). Escape or a press of another
 // button ends it with no change.
 
@@ -25,7 +25,7 @@ const OBJ_TOUCH_MS = 350;
 const OBJ_GRIP = "[data-obj-grip]";
 //: Where a press never starts a drag: the card's own controls.
 const OBJ_NO_GRAB = "input, select, textarea, [contenteditable='true'], button, a[href], summary, [draggable='true'], .chip-interactive, .menu-wrap, label";
-const OBJ_ICON = { note: "ph-note", document: "ph-file-text", board: "ph-squares-four", map: "ph-tree-structure", image: "ph-image", file: "ph-file" };
+const OBJ_ICON = { note: "ph-note", document: "ph-file-text", diagram: "ph-flow-arrow", board: "ph-squares-four", map: "ph-tree-structure", image: "ph-image", file: "ph-file", upload: "ph-file", block: "ph-squares-four" };
 
 //: The gesture in progress (armed or live), or null.
 let objDragNow = null;
@@ -63,16 +63,28 @@ function objPressInSelection(event) {
 //: The modes' `grab(hit)` may add to it (the reorder mode's surface).
 function objDragSeed(event) {
   if (event.button !== 0 || event.defaultPrevented) return null;
+  //: A mode with its own cards (`seed`: a diagram's blocks, diagram-builder.js) answers before the app's object cards do.
+  for (const name of Object.keys(OBJ_MODES)) {
+    const own = OBJ_MODES[name].seed?.(event);
+    if (own) return { ...own, mode: name, ...OBJ_MODES[name].grab(own) };
+  }
   const grip = objPressOnGrip(event.target);
   const control = event.target.closest?.(OBJ_NO_GRAB);
-  //: A tray item is a button you click to paste and also drag out.
-  if (control && !control.matches(".obj-tray-use") && !grip) return null;
-  if (!grip && objPressInSelection(event)) return null;
-  const hit = objCardAt(event.target);
+  //: A tray item and a chat source card are buttons you click and also drag: a held drag carries the object.
+  if (control && !control.matches(".obj-tray-use, .chat-source-card[data-obj]") && !grip) return null;
+  //: The floating grip (below) is not inside the card it moves; it names it.
+  const hit = objCardAt(event.target.closest?.(OBJ_GRIP)?.objCard || event.target);
+  if (!grip && objPressInSelection(event)) {
+    //: Words a failed try left selected on this card give way to a new hold (INBOX 1595); any other selection is the reader's.
+    if (!hit?.card.objFailed) return null;
+    window.getSelection().removeAllRanges();
+  }
   if (!hit) return null;
+  hit.card.objFailed = false;
   const mode = Object.keys(OBJ_MODES).find((name) => OBJ_MODES[name].grab?.(hit));
-  //: A picture has no text to select, so a press on one is a grip.
-  const quick = grip || (event.pointerType !== "touch" && event.target.tagName === "IMG");
+  //: A picture or a tray row has no text to select, so a press on one is a grip:
+  //: a press that moves carries, a click that does not still pastes (INBOX 1603).
+  const quick = grip || (event.pointerType !== "touch" && (event.target.tagName === "IMG" || Boolean(event.target.closest?.(".obj-tray-use"))));
   return mode ? { ...hit, mode, grip: quick, ...OBJ_MODES[mode].grab(hit) } : null;
 }
 
@@ -146,7 +158,11 @@ function objDragMove(event) {
   g.moved ||= Math.hypot(g.x - g.x0, g.y - g.y0) >= OBJ_DRAG_PX * 3;
   if (!g.live) {
     const verdict = objDragVerdict(g, event);
-    if (verdict === "swipe") return objDragFinish(true, event);
+    if (verdict === "swipe") {
+      //: A mouse press that moved before the hold selects words under it; remember whose, so a press on them can retry.
+      if (!g.touch) g.card.objFailed = true;
+      return objDragFinish(true, event);
+    }
     if (verdict === "wait") return;
     objDragBegin(g);
   }
@@ -155,6 +171,8 @@ function objDragMove(event) {
 
 function objDragBegin(g) {
   g.live = true;
+  //: The shared drag flag (menus.js): no popover closes under a card being carried.
+  dragFlag.hold("obj");
   window.getSelection()?.removeAllRanges();
   document.documentElement.classList.add("obj-dragging");
   document.addEventListener("selectstart", objDragNoNative, true);
@@ -187,14 +205,33 @@ function objDragRoute(g) {
 
 //: A held pointer at a scroller's top or bottom edge keeps scrolling it, so a
 //: long list can be reordered from end to end (no `pointermove` arrives while
-//: the hand is still).
+//: the hand is still). The edge is the part of the box that is on screen, so a pane that runs past
+//: the window has its edge at the window's. A mode with `ancestors` also hands the scroll to the
+//: scrollers around it (the diagram pane inside a short document page, 1546 P2), the inner one
+//: first, and only a scroller that can still move that way.
 function objDragTick(g) {
   if (objDragNow !== g) return;
-  const box = g.scroller?.getBoundingClientRect();
-  const near = box ? Math.max(0, 48 - (g.y - box.top), g.y - (box.bottom - 48)) : 0;
-  if (near > 0) {
-    g.scroller.scrollTop += (g.y < (box.top + box.bottom) / 2 ? -1 : 1) * Math.ceil(near / 6);
+  //: Over the tray's drop zone the page holds still (INBOX 1603: "if I drag something
+  //: over the tray, I dont want the page to scroll"); the status bar sits on the edge.
+  if (objTrayDoor.hit(g.x, g.y)) return objDragSchedule(g);
+  if (g.scroller && !g.edges) {
+    g.edges = [g.scroller];
+    if (OBJ_MODES[g.mode].ancestors) {
+      for (let node = g.scroller.parentElement; node && node !== document.body; node = node.parentElement) {
+        if (/auto|scroll/.test(getComputedStyle(node).overflowY)) g.edges.push(node);
+      }
+    }
+  }
+  for (const el of g.edges || []) {
+    const box = el.getBoundingClientRect();
+    const top = Math.max(box.top, 0);
+    const bottom = Math.min(box.bottom, innerHeight);
+    const near = Math.max(0, 48 - (g.y - top), g.y - (bottom - 48));
+    const way = g.y < (top + bottom) / 2 ? -1 : 1;
+    if (near <= 0 || (OBJ_MODES[g.mode].ancestors && (way < 0 ? el.scrollTop <= 0 : el.scrollTop + el.clientHeight >= el.scrollHeight - 1))) continue;
+    el.scrollTop += way * Math.ceil(near / 6);
     OBJ_MODES[g.mode].update(g);
+    break;
   }
   objDragSchedule(g);
 }
@@ -226,11 +263,156 @@ function objDragFinish(cancel, event) {
   g?.card.classList.remove("obj-armed");
   if (!g?.live) return;
   cancelAnimationFrame(g.tick);
-  OBJ_MODES[g.mode][cancel ? "cancel" : "drop"](g, event);
-  g.ghost.remove();
-  document.removeEventListener("selectstart", objDragNoNative, true);
-  document.documentElement.classList.remove("obj-dragging");
-  objDragSwallowClick();
+  //: In a `finally`: a drop that throws must not leave the flag set, or no popover would ever close again.
+  try {
+    OBJ_MODES[g.mode][cancel ? "cancel" : "drop"](g, event);
+  } finally {
+    dragFlag.release("obj");
+    g.ghost.remove();
+    document.removeEventListener("selectstart", objDragNoNative, true);
+    document.documentElement.classList.remove("obj-dragging");
+    objDragSwallowClick();
+  }
 }
 
 window.addEventListener("pointerdown", objDragArm, true);
+
+//: The grip (INBOX 1595): one handle that floats on the left edge of the card the pointer is
+//: over or that has the keyboard focus, and takes the card at once, with no hold. It is not part
+//: of any card's markup (a card renderer never changes) and names its card in `objCard`, which
+//: `objDragSeed` reads. Closed in a function so it adds no name to the shared scope. A finger has
+//: its own hold, so the stylesheet hides the grip where there is no hover.
+(() => {
+  let grip = null;
+  let card = null;
+  let timer = 0;
+
+  //: The card under `target` that some mode would move, or null.
+  const movable = (target) => {
+    const hit = objDragNow || !target?.closest ? null : objCardAt(target);
+    return hit && Object.keys(OBJ_MODES).some((name) => OBJ_MODES[name].grab?.(hit)) ? hit.card : null;
+  };
+
+  const hide = () => {
+    clearTimeout(timer);
+    card = null;
+    grip?.classList.remove("is-on");
+    window.removeEventListener("scroll", hide, true);
+  };
+
+  //: Keyboard focus keeps the grip after the pointer leaves; nothing else does.
+  const settle = () => {
+    if (card?.querySelector(":focus-visible") || card?.matches(":focus-visible")) return;
+    hide();
+  };
+
+  function show(next) {
+    clearTimeout(timer);
+    if (next === card) return;
+    if (!grip) {
+      grip = document.createElement("span");
+      grip.className = "obj-grip";
+      grip.dataset.objGrip = "";
+      grip.setAttribute("aria-hidden", "true");
+      grip.title = "Drag to move this card";
+      //: Above the cards and their sticky heads, under the drag ghost (3100); set here so it is not a layer in the stylesheets' budget.
+      grip.style.zIndex = "3050";
+      const dots = document.createElement("i");
+      dots.className = "ph ph-dots-six-vertical";
+      grip.append(dots);
+      document.body.append(grip);
+    }
+    const box = next.getBoundingClientRect();
+    //: Half out of the card's left edge, level with the middle of a short card or the first line of a tall one.
+    let left = Math.max(2, box.left - grip.offsetWidth / 2);
+    let top = Math.max(2, box.top + Math.min(box.height, 56) / 2 - grip.offsetHeight / 2);
+    //: A card with its own tick in that corner (INBOX 1605, the owner: "the drag popup and the
+    //: selection boxes clash"): the tick keeps the corner and the grip steps wholly outside the
+    //: card, or under the tick where the card is at the screen's edge. Any checkbox, so every card.
+    const tick = [...next.querySelectorAll('input[type="checkbox"]')].find((t) => {
+      const r = t.getBoundingClientRect();
+      return r.width && r.left < left + grip.offsetWidth && r.right > left && r.top < top + grip.offsetHeight && r.bottom > top;
+    });
+    if (tick) {
+      left = Math.max(2, box.left - grip.offsetWidth - 2);
+      const r = tick.getBoundingClientRect();
+      if (left + grip.offsetWidth > r.left) top = r.bottom + 4;
+    }
+    //: Only where the card's own column is on top: a popup over the card's edge (the
+    //: activity panel, a dialog) keeps the grip off it (owner, 2026-11-03: "the drag icon
+    //: button shows ... in front of popup windows"). The grip is a body layer above them all.
+    const under = document.elementsFromPoint(left + grip.offsetWidth / 2, top + grip.offsetHeight / 2).find((el) => !grip.contains(el));
+    if (under && !under.contains(next) && !next.contains(under)) return hide();
+    card = next;
+    grip.objCard = next;
+    grip.style.left = `${left}px`;
+    grip.style.top = `${top}px`;
+    grip.classList.add("is-on");
+    window.addEventListener("scroll", hide, { capture: true, passive: true });
+  }
+
+  //: **One look a frame, not one per `pointerover`** (INBOX 1667: 14 to 40ms of forced layout a call, 59
+  //: calls in a 6s wheel at 4x): `show` reads boxes. The last target of the frame is looked at.
+  let over = null;
+  let overFrame = 0;
+  const look = () => {
+    overFrame = 0;
+    const target = over;
+    over = null;
+    if (!target?.isConnected) return;
+    const next = movable(target);
+    if (next) return show(next);
+    if (card) {
+      clearTimeout(timer);
+      timer = setTimeout(settle, 160);
+    }
+  };
+  //: Nor for a card that scrolled under a resting pointer (INBOX 1667: 1.5s of forced layout in a wheel
+  //: at 4x). The pointer's place is kept; once the scroll is still for 200ms the card under it is looked at once.
+  let scrolledAt = 0;
+  let rest = null;
+  let restTimer = 0;
+  const restLook = () => {
+    if (!rest || performance.now() - scrolledAt < 200) return;
+    over = document.elementFromPoint(rest.x, rest.y);
+    rest = null;
+    look();
+  };
+  const armRest = () => {
+    clearTimeout(restTimer);
+    restTimer = setTimeout(restLook, 220);
+  };
+  window.addEventListener("scroll", () => {
+    scrolledAt = performance.now();
+    if (rest) armRest();
+  }, { capture: true, passive: true });
+  document.addEventListener("pointerover", (event) => {
+    if (event.pointerType === "touch") return;
+    if (performance.now() - scrolledAt < 200) {
+      rest = { x: event.clientX, y: event.clientY };
+      return armRest();
+    }
+    rest = null;
+    if (event.target === grip || grip?.contains(event.target)) {
+      over = null;
+      return clearTimeout(timer);
+    }
+    over = event.target;
+    //: A timer after the frame, so the read is not the one that pays for the frame's own layout.
+    if (!overFrame) {
+      overFrame = 1;
+      afterFrames(() => setTimeout(look), 1);
+    }
+  }, true);
+  document.addEventListener("focusin", (event) => {
+    const next = movable(event.target);
+    if (next && event.target.matches?.(":focus-visible")) show(next);
+  }, true);
+  document.addEventListener("focusout", () => {
+    if (card) timer = setTimeout(settle, 0);
+  }, true);
+  //: A press on the grip starts the drag; the handle then gets out of the way until the pointer moves on.
+  window.addEventListener("pointerdown", (event) => {
+    if (event.target === grip || grip?.contains(event.target)) hide();
+  }, true);
+})();

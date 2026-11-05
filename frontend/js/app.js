@@ -43,11 +43,7 @@ function recordBrowserLog(level, parts) {
   // `scrollLogToBottom` and `bumpLogErrorBadge` all live in settings.js now
   // (§88.3 item 4; previously later in this same file), which loads after
   // this one: so any `console.*` call during app.js's own early boot,
-  // before settings.js has run, needs the same typeof guard this line
-  // needed even when everything was one file. Confirmed live: this is
-  // exactly the path a `console.warn`/`console.error` fired from app.js's
-  // own startup would take, and it already degrades to "skip the live
-  // push" rather than throwing, same as before the split.
+  // before settings.js has run, skips the live push rather than throwing.
   if (typeof logRecords !== "undefined" && typeof logScreenOpen !== "undefined") {
     logRecords.push({ ...record, source: "browser", logger: "browser", key: `b-live-${Math.random()}` });
     //: The four are settings.js's, beside `logRecords`.
@@ -236,22 +232,6 @@ function refuseStagedUrls(body) {
   );
 }
 
-//: **A mouse wheel's ctrl+notch zooms by a notch, not by five times.** d3-zoom
-//: multiplies a wheel delta by ten while ctrl is held, because a browser
-//: reports a trackpad pinch as ctrl+wheel with deltas of a few pixels. A mouse
-//: wheel notch with ctrl held sends 100 to 120 of them and so got 2^2.4, a
-//: factor of 5.3: two notches took a map from 1x to its 4x ceiling
-//: (maprender.md measured it; unreported, but the likeliest reading of a zoom
-//: that "jumps" on a machine with a real mouse). The delta is clamped to 24
-//: pixels while ctrl is held (a notch is then 1.4x; a pinch is a few pixels
-//: an event and passes through unchanged), then scaled exactly as d3's own
-//: default scales it, so a plain wheel and a pinch zoom as they did.
-function zoomWheelDelta(event) {
-  let pixels = event.deltaY * (event.deltaMode === 1 ? 25 : event.deltaMode ? 500 : 1);
-  if (event.ctrlKey) pixels = Math.max(-24, Math.min(24, pixels));
-  return -pixels * 0.002 * (event.ctrlKey ? 10 : 1);
-}
-
 function mediaSrc(url) {
   //: A staged picture has no server url yet; its bytes are a Blob in this
   //: tab. Resolved here rather than at each `<img>` so every surface that
@@ -306,27 +286,11 @@ function replaceMissingMedia(img) {
   // different situation, and the note may well want it back when the network
   // returns.
   if (!/^\/(media|files)\//.test(src)) return;
-  //: **An image the app addresses by id is hidden, never replaced.** This
-  //: listener was written for the images inside rendered markdown, which are
-  //: built fresh on every render and referred to by nobody: swapping one for a
-  //: placeholder costs nothing. `#ocr-image` is the opposite: one long-lived
-  //: element that the OCR workspace sets a new `src` on for every page of
-  //: every document it opens.
+  //: **An image the app addresses by id is hidden, never replaced.** This listener was written for the images inside rendered markdown, which are built fresh on every render and referred to by nobody: swapping one for a placeholder costs nothing. `#ocr-image` is the opposite: one long-lived element that the OCR workspace sets a new `src` on for every page of every document it opens.
   //:
-  //: Measured. Opening a text file (a .md attachment) in the workspace sets
-  //: `img.src` to that file's own url before the text branch of `ocrLoadPage`
-  //: runs, the browser cannot decode markdown as an image, this listener fired
-  //: and `img.replaceWith(gone)` deleted `#ocr-image` from the document. After
-  //: that the stage held `SPAN.media-missing` and no `<img>` at all, for the
-  //: rest of the session: every later open threw "Cannot set properties of
-  //: null (setting 'src')" at `ocrLoadPage`, so clicking the next file's name
-  //: opened a workspace that never showed the page. CLAUDE.md's own shape: the
-  //: damage lands nowhere near the code that caused it.
+  //: Measured. Opening a text file (a .md attachment) in the workspace sets `img.src` to that file's own url before the text branch of `ocrLoadPage` runs, the browser cannot decode markdown as an image, this listener fired and `img.replaceWith(gone)` deleted `#ocr-image` from the document. After that the stage held `SPAN.media-missing` and no `<img>` at all, for the rest of the session: every later open threw "Cannot set properties of null (setting 'src')" at `ocrLoadPage`, so clicking the next file's name opened a workspace that never showed the page. CLAUDE.md's own shape: the damage lands nowhere near the code that caused it.
   //:
-  //: Hidden rather than replaced, so nothing draws a torn-page glyph and the
-  //: element the app is holding on to is still there. The surfaces that own
-  //: such an image say what happened in their own words (`#ocr-message`), and
-  //: they unhide it themselves the moment a page really loads.
+  //: Hidden rather than replaced, so nothing draws a torn-page glyph and the element the app is holding on to is still there. The surfaces that own such an image say what happened in their own words (`#ocr-message`), and they unhide it themselves the moment a page really loads.
   if (img.id) {
     img.classList.add("hidden");
     return;
@@ -378,19 +342,7 @@ document.addEventListener(
   true,
 );
 
-// A page-load-order bug lived here: this was declared down in the spaces
-// section (appended at the end of the file), and `api()`, called from
-// `initAuth()` at module load, long before that point in the script runs, 
-// reads it via `activeSpaceId()` on every request's headers below. A `const`
-// is in the temporal dead zone until its own declaration executes, so the
-// very first request the app ever made threw `ReferenceError: Cannot access
-// 'SPACE_ALL' before initialization`, caught by api()'s own try/catch and
-// surfaced only as "Can't reach the Tessellate server", the lock screen
-// never appeared, with no console error and no failed network request,
-// because the fetch was never reached. `node --check` cannot catch this: the
-// file is syntactically valid, only wrong in execution order. Declared here,
-// before `api()` is ever callable, so this cannot happen again regardless of
-// what gets appended below.
+// A page-load-order bug lived here: this was declared down in the spaces section (appended at the end of the file), and `api()`, called from `initAuth()` at module load, long before that point in the script runs, reads it via `activeSpaceId()` on every request's headers below. A `const` is in the temporal dead zone until its own declaration executes, so the very first request the app ever made threw `ReferenceError: Cannot access 'SPACE_ALL' before initialization`, caught by api()'s own try/catch and surfaced only as "Can't reach the Tessellate server", the lock screen never appeared, with no console error and no failed network request, because the fetch was never reached. `node --check` cannot catch this: the file is syntactically valid, only wrong in execution order. Declared here, before `api()` is ever callable, so this cannot happen again regardless of what gets appended below.
 const SPACE_ALL = "all";
 
 //: Here and not with the spaces code: `api()` calls it on every request, and
@@ -406,21 +358,7 @@ function activeSpaceId() {
 }
 
 async function api(path, options = {}) {
-  // `silent`: a background poll (model status, reminders): a 401 must not
-  // yank the user to the lock screen mid-session (Wave O fix for a
-  // long-standing intermittent re-lock). Only an explicit user action
-  // shows the lock screen on 401.
-  // `timeoutMs`: opt-in abort so a call can't hang the UI forever (used by the
-  // startup probe). Off by default, so long-running requests, model pulls,
-  // blocking chat: are unaffected.
-  // `ownsAuthErrors`: this call treats 401 as part of its own result rather
-  // than as an expired session. Change-password answers 401 for "that isn't
-  // your current password", a typo there must show a message beside the
-  // field, not throw the user out to the lock screen.
-  // `readOnly`: a POST that writes nothing (the code checker in documents.js
-  // sends a file's text in a body because a query string cannot carry it).
-  // Without it every pause in typing a .py file would empty the read cache
-  // for the whole app, which is a write's job, not a read's.
+  // `silent`: a background poll (model status, reminders): a 401 must not yank the user to the lock screen mid-session (Wave O fix for a long-standing intermittent re-lock). Only an explicit user action shows the lock screen on 401. `timeoutMs`: opt-in abort so a call can't hang the UI forever (used by the startup probe). Off by default, so long-running requests, model pulls, blocking chat: are unaffected. `ownsAuthErrors`: this call treats 401 as part of its own result rather than as an expired session. Change-password answers 401 for "that isn't your current password", a typo there must show a message beside the field, not throw the user out to the lock screen. `readOnly`: a POST that writes nothing (the code checker in documents.js sends a file's text in a body because a query string cannot carry it). Without it every pause in typing a .py file would empty the read cache for the whole app, which is a write's job, not a read's.
   const { silent, timeoutMs, ownsAuthErrors, readOnly, ...fetchOptions } = options;
   refuseStagedUrls(fetchOptions.body);
   // Any write invalidates the read cache above, see clearApiCache().
@@ -571,29 +509,11 @@ api.stream = api;
 
 // --- reading a paged list endpoint whole ---------------------------------------
 //
-// `GET /documents`, `GET /media`, `GET /reminders` and the rest each return a
-// page and an `X-Total-Count` header saying how big the selection really is
-// (INBOX 117; `GET /entries` has worked this way for longer, see
-// `loadEntries`). A caller that needs every row asks for the next page until it
-// has them all, which is the half that makes a cap safe: a cap with no offset
-// makes everything past it permanently unreachable, and that is exactly the
-// failure the old uncapped list was avoiding.
+// `GET /documents`, `GET /media`, `GET /reminders` and the rest each return a page and an `X-Total-Count` header saying how big the selection really is (INBOX 117; `GET /entries` has worked this way for longer, see `loadEntries`). A caller that needs every row asks for the next page until it has them all, which is the half that makes a cap safe: a cap with no offset makes everything past it permanently unreachable, and that is exactly the failure the old uncapped list was avoiding.
 //
-// **It lives here, immediately below `api()`, and that placement is the whole
-// of a crash report.** It used to live in documents.js, whose own comment
-// argued that "both call it from inside a function body, so load order is
-// satisfied either way". That stopped being true the moment app.js called it
-// from boot code: index.html loads app.js first and documents.js ten lines
-// later, so `initNotesSubtabs` running at the bottom of this file reached a
-// function that did not exist yet, and the Notes tab died with
-// `ReferenceError: apiPagedList is not defined` before it drew anything. Six
-// frontend files call this now; the file every one of them is loaded after is
-// this one. `tests/test_frontend_load_order.py` is the rule, so the next
-// shared helper cannot be put somewhere only some callers can see.
+// **It lives here, immediately below `api()`, and that placement is the whole of a crash report.** It used to live in documents.js, whose own comment argued that "both call it from inside a function body, so load order is satisfied either way". That stopped being true the moment app.js called it from boot code: index.html loads app.js first and documents.js ten lines later, so `initNotesSubtabs` running at the bottom of this file reached a function that did not exist yet, and the Notes tab died with `ReferenceError: apiPagedList is not defined` before it drew anything. Six frontend files call this now; the file every one of them is loaded after is this one. `tests/test_frontend_load_order.py` is the rule, so the next shared helper cannot be put somewhere only some callers can see.
 //
-// `options` is passed through to `api()` untouched (library.js wants
-// `{ silent: true }`). A page that comes back empty ends the loop whatever the
-// header says, so a stale or wrong total can never spin forever.
+// `options` is passed through to `api()` untouched (library.js wants `{ silent: true }`). A page that comes back empty ends the loop whatever the header says, so a stale or wrong total can never spin forever.
 async function apiPagedList(path, pageSize, options = {}) {
   const rows = [];
   let total = Infinity; // discovered from the first response's X-Total-Count
@@ -865,21 +785,11 @@ const LOCK_PURGE_IDS = [
 
 //: Empty everything the lock screen is covering.
 //:
-//: **The lock overlay was a visual cover, not a purge**, and the roadmap
-//: ranked auditing it first precisely because it is this app's only privacy
-//: boundary. Measured with the notebook locked: `#entry-list` still held 61
-//: notes and 3,431 characters of their text, `#library-grid` 5,089, the
-//: documents list 6,422: all of it one devtools click, one screen reader,
-//: or one browser extension away from being read.
+//: **The lock overlay was a visual cover, not a purge**, and the roadmap ranked auditing it first precisely because it is this app's only privacy boundary. Measured with the notebook locked: `#entry-list` still held 61 notes and 3,431 characters of their text, `#library-grid` 5,089, the documents list 6,422: all of it one devtools click, one screen reader, or one browser extension away from being read.
 //:
-//: The server side was already right (every endpoint answers 401 while
-//: locked, verified in the same audit), so this closes the client half.
+//: The server side was already right (every endpoint answers 401 while locked, verified in the same audit), so this closes the client half.
 //:
-//: Safe because unlocking runs `startApp()`, which re-fetches and re-renders
-//: all of it. The codebase already reasons this way elsewhere, 
-//: `hideBootSplash` removes itself from the DOM rather than leaving a hidden
-//: overlay, on the same principle that nothing should sit over the viewport
-//: invisibly.
+//: Safe because unlocking runs `startApp()`, which re-fetches and re-renders all of it. The codebase already reasons this way elsewhere, `hideBootSplash` removes itself from the DOM rather than leaving a hidden overlay, on the same principle that nothing should sit over the viewport invisibly.
 function purgeLockedContent() {
   for (const id of LOCK_PURGE_IDS) {
     const el = $(id);
@@ -946,6 +856,7 @@ async function initAuth() {
   }
   if (status.setup_required) {
     showLockScreen(true);
+    showRestoreOffer(status.restore_offer);
     return;
   }
   $("lock-btn").classList.remove("hidden");
@@ -1080,7 +991,7 @@ function startApp() {
       // Wave G: skills chips + the agent-mode toggle read the
       // same prefsCache that loadTemplates just filled.
       loadChatSkills();
-      $("tools-toggle").checked = !prefsCache || prefsCache.tools_enabled !== false;
+      $("tools-toggle").checked = prefsCache?.tools_enabled !== false;
       renderChatModeSeg();
       renderWebSearchToggle();
     })
@@ -1122,21 +1033,8 @@ function startApp() {
   // pile of pre-auth 401s, one endpoint earlier.
   step("watch reminders", startReminderWatch);
 
-  // Re-render whichever tab is on screen. This used to be switchTab() itself,
-  // called at module level before initAuth() has a token, so a tab that
-  // fetches its own data painted itself from a pile of 401s and then never
-  // tried again. On the dashboard that meant an empty grid until you opened
-  // Edit layout and cancelled out of it, which re-ran renderDashboard by hand
-  // (user-reported). Now the module-level call is revealTab(), DOM only,
-  // no fetch: and this is the one place the real data load happens.
-  // *After* the entries land, not alongside them. These two ran concurrently,
-  // so on a cold load the dashboard rendered against an `allEntries` that was
-  // still `[]` and drew its brand-new-notebook card instead of the widgets, 
-  // reported as "the dashboard widgets are missing until I refresh or change
-  // tabs". Every tab wants the notes; none of them wants to guess.
-  //: The view the address names, when the page was opened on one (a reload,
-  //: a bookmark, a pasted link: router.js); it loads its own tab, so the
-  //: Dashboard is not loaded under it first.
+  // Re-render whichever tab is on screen. This used to be switchTab() itself, called at module level before initAuth() has a token, so a tab that fetches its own data painted itself from a pile of 401s and then never tried again. On the dashboard that meant an empty grid until you opened Edit layout and cancelled out of it, which re-ran renderDashboard by hand (user-reported). Now the module-level call is revealTab(), DOM only, no fetch: and this is the one place the real data load happens. *After* the entries land, not alongside them. These two ran concurrently, so on a cold load the dashboard rendered against an `allEntries` that was still `[]` and drew its brand-new-notebook card instead of the widgets, reported as "the dashboard widgets are missing until I refresh or change tabs". Every tab wants the notes; none of them wants to guess.
+  //: The view the address names, when the page was opened on one (a reload, a bookmark, a pasted link: router.js); it loads its own tab, so the Dashboard is not loaded under it first.
   const tabReady = entriesReady.then(() => step("load this tab", async () => {
     if (typeof routerRestore === "function" && (await routerRestore())) return;
     return refreshActiveTab();
@@ -1221,36 +1119,19 @@ async function refreshActiveTab() {
 // model are sentences, and `ph:link` in the middle of one is just noise the
 // reader has to decode.
 const PH_LABEL = /^ph:([a-z0-9-]{1,40})\s*/;
-//: **And one at the end**, for a label that carries its own action mark: a
-//: chip with a "remove" cross on the right is the shape the whole app uses
-//: for "this is attached, take it off", and before this the only way to draw
-//: it was to put the character U+2715 in the string. That reads as the app's
-//: icon set from a distance and is nothing of the kind up close: measured,
-//: the glyph came out system-ui 13.6px at weight 500 beside a Phosphor icon
-//: at 15.6px and weight 400, in the same chip (INBOX 263: "I want to strip
-//: all signs of being vibecoded by an ai from the ui"). One rule in the
-//: label grammar is cheaper than a hand-built chip per call site, which is
-//: standing order 11's whole point.
+//: **And one at the end**, for a label that carries its own action mark: a chip with a "remove" cross on the right is the shape the whole app uses for "this is attached, take it off", and before this the only way to draw it was to put the character U+2715 in the string. That reads as the app's icon set from a distance and is nothing of the kind up close: measured, the glyph came out system-ui 13.6px at weight 500 beside a Phosphor icon at 15.6px and weight 400, in the same chip (INBOX 263: "I want to strip all signs of being vibecoded by an ai from the ui"). One rule in the label grammar is cheaper than a hand-built chip per call site, which is standing order 11's whole point.
 const PH_LABEL_TRAILING = /\s*ph:([a-z0-9-]{1,40})$/;
 
 // Fills `el` with a label, turning a leading `ph:` marker into a real icon
 // element. Returns the element, so it composes.
 function setLabel(el, label) {
   let text = String(label ?? "");
-  //: Taken off before the leading marker is read, so `ph:file-text Name ph:x`
-  //: is an icon, a name and an icon rather than a name ending in "ph:x".
-  //:
-  //: **Only when something comes before it.** Both patterns match a label
-  //: that is nothing but one marker, and the trailing one reading `"ph:x"`
-  //: first turned every icon-only button (`smallButton("ph:x")`) into a
-  //: `ph-trail`, a decoration's margin and opacity on a control.
+  //: Taken off before the leading marker is read, so `ph:file-text Name ph:x` is an icon, a name and an icon rather than a name ending in "ph:x".  **Only when something comes before it.** Both patterns match a label that is nothing but one marker, and the trailing one reading `"ph:x"` first turned every icon-only button (`smallButton("ph:x")`) into a `ph-trail`, a decoration's margin and opacity on a control.
   const tail = PH_LABEL_TRAILING.exec(text);
   if (tail?.index > 0) text = text.slice(0, tail.index);
   else if (tail) tail.length = 0;
   const match = PH_LABEL.exec(text);
-  //: The trailing icon is appended after whatever the rest of this builds, so
-  //: it is the last child in every shape a label can take: text only, icon
-  //: and text, or icon only.
+  //: The trailing icon is appended after whatever the rest of this builds, so it is the last child in every shape a label can take: text only, icon and text, or icon only.
   const withTail = (built) => {
     if (tail?.length) {
       const mark = document.createElement("i");
@@ -1272,17 +1153,9 @@ function setLabel(el, label) {
     icon.setAttribute("aria-hidden", "true");
   }
   const rest = text.slice(match[0].length);
-  // **The gap is a margin, not a space, and it has to be.** A plain " " text
-  // node between the icon and the label is what this did first, and it worked
-  // everywhere except in a flex container, where CSS discards anonymous
-  // whitespace-only children outright. Half the labels in this app live in
-  // flex rows (chips, buttons, status items), so half of them rendered with
-  // the glyph jammed against the first letter and the other half did not,
-  // which reads as a random inconsistency rather than a rule.
+  // **The gap is a margin, not a space, and it has to be.** A plain " " text node between the icon and the label is what this did first, and it worked everywhere except in a flex container, where CSS discards anonymous whitespace-only children outright. Half the labels in this app live in flex rows (chips, buttons, status items), so half of them rendered with the glyph jammed against the first letter and the other half did not, which reads as a random inconsistency rather than a rule.
   //
-  // Only when there IS following text: an icon-only button must stay exactly
-  // as tight as it was, or every icon button in the app gains trailing space
-  // and stops being square.
+  // Only when there IS following text: an icon-only button must stay exactly as tight as it was, or every icon button in the app gains trailing space and stops being square.
   if (rest) icon.classList.add("ph-lead");
   el.replaceChildren(icon);
   if (rest) {
@@ -1294,28 +1167,13 @@ function setLabel(el, label) {
   return withTail(el);
 }
 
-//: **Is the Settings dialog open?** Defined here, in app.js, and not in
-//: settings.js where the rest of that dialog lives. Reported from a real
-//: session, five times in one second:
-//:
-//:     Uncaught ReferenceError: settingsModalOpen is not defined
-//:       at HTMLDocument.<anonymous> (app.js:30278)
-//:
-//: app.js registers its document-wide keydown handler while it parses, and
-//: settings.js is the last script on the page -- so every key pressed in the
-//: window between the two threw, and the handler that runs Escape, "/" and
-//: every other shortcut died with it. One call site already carried a
-//: `typeof ... === "function"` guard, which is the same bug being worked
-//: around one line at a time. A three-line DOM check has no reason to live in
-//: another file; moving it removes the window entirely rather than papering
-//: over it at each caller.
+//: **Is the Settings dialog open?** Defined here, in app.js, and not in settings.js where the rest of that dialog lives. Reported from a real session, five times in one second:  Uncaught ReferenceError: settingsModalOpen is not defined at HTMLDocument.<anonymous> (app.js:30278)  app.js registers its document-wide keydown handler while it parses, and settings.js is the last script on the page -- so every key pressed in the window between the two threw, and the handler that runs Escape, "/" and every other shortcut died with it. One call site already carried a `typeof ... === "function"` guard, which is the same bug being worked around one line at a time. A three-line DOM check has no reason to live in another file; moving it removes the window entirely rather than papering over it at each caller.
 function settingsModalOpen() {
   const modal = $("settings-modal");
   return !!modal && !modal.classList.contains("hidden");
 }
 
-//: A chip's words are always a `.ph-text` span (DESIGN.md, "A chip"): bare
-//: text cannot be trimmed to the x-height band and sits a pixel off its row.
+//: A chip's words are always a `.ph-text` span (DESIGN.md, "A chip"): bare text cannot be trimmed to the x-height band and sits a pixel off its row.
 function chipWords(el, text) {
   el.replaceChildren(Object.assign(document.createElement("span"), { className: "ph-text", textContent: text }));
   return el;
@@ -1343,15 +1201,13 @@ function chip(text, extraClass = "", onClick = null) {
   return span;
 }
 
-//: One filled button per dialog (DESIGN.md, "Buttons: the ramp"): a
-//: stage-gated pair hands the fill from `a` to `b` when b's turn comes.
+//: One filled button per dialog (DESIGN.md, "Buttons: the ramp"): a stage-gated pair hands the fill from `a` to `b` when b's turn comes.
 function stagePrimary(a, b, bTurn) {
   $(a)?.classList.toggle("ghost", !!bTurn);
   $(b)?.classList.toggle("ghost", !bTurn);
 }
 
-//: The one "working" ring (DESIGN.md, "Something is working on it"): in a
-//: label write `ph:spin Working…`. All of it is the `.spinner` class.
+//: The one "working" ring (DESIGN.md, "Something is working on it"): in a label write `ph:spin Working…`. All of it is the `.spinner` class.
 function spinnerEl() {
   const el = document.createElement("span");
   el.className = "spinner";
@@ -1359,8 +1215,7 @@ function spinnerEl() {
   return el;
 }
 
-//: A busy button: disabled, `aria-busy`, the ring first. `label` swaps the
-//: words meanwhile; off puts back exactly what was there. Idempotent.
+//: A busy button: disabled, `aria-busy`, the ring first. `label` swaps the words meanwhile; off puts back exactly what was there. Idempotent.
 function setBusy(button, busy, label = null) {
   if (!button) return;
   if (busy) {
@@ -1392,11 +1247,7 @@ function setBusy(button, busy, label = null) {
 // returns `undefined`, which `if (!confirm(...)) return;` reads as "no", so
 // the button silently did nothing ("the recycle bin empty now button doesn't
 // work either"). This dialog is styled like the app and can mark danger.
-//: `checkbox` (`{label, title, checked}`) adds one optional second decision
-//: ("also take this picture out of the notes that show it") and resolves to
-//: `{ok, checked}`; without it callers still get a plain boolean.
-//: **The button says what it does**, never "OK" where a verb fits: with no
-//: label, the question's first word is used when it is one of these actions.
+//: `checkbox` (`{label, title, checked}`) adds one optional second decision ("also take this picture out of the notes that show it") and resolves to `{ok, checked}`; without it callers still get a plain boolean. **The button says what it does**, never "OK" where a verb fits: with no label, the question's first word is used when it is one of these actions.
 const CONFIRM_VERBS = new Set([
   "delete", "remove", "clear", "discard", "reset", "replace", "archive", "leave",
   "disconnect", "overwrite", "restore", "empty", "forget", "unlink", "stop",
@@ -1431,10 +1282,7 @@ function confirmDialog(message, options = {}) {
     // Blank lines in these messages are deliberate paragraphs, the second is
     // usually the consequence ("This cannot be undone"), which is the part
     // worth reading, so it is not run together with the first.
-    //: With more than one paragraph the first is the question ("Quit
-    //: Tessellate?", "Delete this note?") and is set as the dialog's title,
-    //: the consequence under it in the body voice, the shape every native
-    //: confirm has. One paragraph stays one paragraph.
+    //: With more than one paragraph the first is the question ("Quit Tessellate?", "Delete this note?") and is set as the dialog's title, the consequence under it in the body voice, the shape every native confirm has. One paragraph stays one paragraph.
     const parts = String(message).split(/\n{2,}/);
     parts.forEach((part, index) => {
       const line = document.createElement(index === 0 && parts.length > 1 ? "strong" : "span");
@@ -1486,8 +1334,7 @@ function confirmDialog(message, options = {}) {
     const go = smallButton(confirmLabel, confirmLabel, () => close(true), false);
     if (danger) go.classList.add("danger");
     row.append(cancel, go);
-    //: `insertBefore`, because the checkbox above was appended to the card
-    //: already and the buttons belong under it.
+    //: `insertBefore`, because the checkbox above was appended to the card already and the buttons belong under it.
     card.insertBefore(text, card.firstChild);
     card.appendChild(row);
     overlay.appendChild(card);
@@ -1512,16 +1359,7 @@ function confirmDialog(message, options = {}) {
 //
 // Resolves to the trimmed text, or "" for cancel/empty. "" rather than null so
 // every caller's guard is the same shape as the confirm one.
-//: `segment`, when given, adds **one** segmented control under the field:
-//: `{label, options: [{value, label, title}], value}`. The dialog then
-//: resolves `{text, choice}` instead of a bare string.
-//:
-//: One extra control in the dialog that already exists, rather than a second
-//: dialog after this one. CLAUDE.md records why in as many words: bookmark URL
-//: editing was reported broken five times while working end-to-end every time,
-//: and the fault was never the handler, "a second modal that only appears
-//: *after* you commit the first is a bad way to expose a second field". Naming
-//: a new board and saying what kind of board it is are one decision.
+//: `segment`, when given, adds **one** segmented control under the field: `{label, options: [{value, label, title}], value}`. The dialog then resolves `{text, choice}` instead of a bare string.  One extra control in the dialog that already exists, rather than a second dialog after this one. CLAUDE.md records why in as many words: bookmark URL editing was reported broken five times while working end-to-end every time, and the fault was never the handler, "a second modal that only appears *after* you commit the first is a bad way to expose a second field". Naming a new board and saying what kind of board it is are one decision.
 function promptDialog(message, initial = "", { confirmLabel = "Save", segment = null } = {}) {
   return new Promise((resolve) => {
     const overlay = document.createElement("div");
@@ -1531,16 +1369,7 @@ function promptDialog(message, initial = "", { confirmLabel = "Save", segment = 
 
     const card = document.createElement("div");
     card.className = "card modal-card confirm-card prompt-card";
-    //: **A title row, not a sentence above a field.** Reported as one of two
-    //: dialogs off the modal recipe: this card's first child was a `<p>`, so
-    //: the "New board" dialog had no heading at all while every other dialog
-    //: in the app leads with one. Every `promptDialog` message is a short
-    //: prompt ("Name the new board", "Rename this chat", "Tag to add to the
-    //: selected notes"), which is a title, so all twenty-odd callers are
-    //: right to promote it rather than only this one.
-    //:
-    //: `confirmDialog`'s message stays a `<p>`: that one really is a
-    //: sentence, often two, and a question is body copy.
+    //: **A title row, not a sentence above a field.** Reported as one of two dialogs off the modal recipe: this card's first child was a `<p>`, so the "New board" dialog had no heading at all while every other dialog in the app leads with one. Every `promptDialog` message is a short prompt ("Name the new board", "Rename this chat", "Tag to add to the selected notes"), which is a title, so all twenty-odd callers are right to promote it rather than only this one.  `confirmDialog`'s message stays a `<p>`: that one really is a sentence, often two, and a question is body copy.
     const head = document.createElement("div");
     head.className = "row confirm-head";
     const text = document.createElement("h3");
@@ -1552,29 +1381,12 @@ function promptDialog(message, initial = "", { confirmLabel = "Save", segment = 
     input.value = initial;
     input.setAttribute("aria-label", message);
 
-    //: The optional segmented control. `.seg`, the app's own recipe: the
-    //: same one the Library's Cards/Rows switch and the dashboard's range
-    //: pickers use: so this is a control the user has already met.
+    //: The optional segmented control. `.seg`, the app's own recipe: the same one the Library's Cards/Rows switch and the dashboard's range pickers use: so this is a control the user has already met.
     let chosen = segment?.value ?? segment?.options?.[0]?.value ?? null;
     let segRow = null;
     let segField = null;
     if (segment?.options?.length) {
-      //: **The choice is named, and the two options fill their track.**
-      //: Reported: "also redesign that whiteboard and mindmap toggle in the
-      //: popup, its ugly", with a screenshot of the New board dialog. Two
-      //: things were wrong in it and both are about the track. `.seg` is
-      //: `display: inline-flex`, which in this card (a flex column that
-      //: stretches its children) makes the *track* full width while the two
-      //: buttons keep their content width: the right half of the pill was
-      //: empty, so the control read as a stray bar with two words in it. And
-      //: nothing on screen said what the choice was for, because
-      //: `segment.label` only ever reached `aria-label`, which a sighted
-      //: reader cannot see.
-      //:
-      //: The label is now drawn, the buttons share the track equally (the CSS
-      //: in 06-timeline-dialogs.css), and each option can carry an icon
-      //: through `setLabel`'s "ph:name Label" contract, so Board and Mind map
-      //: are told apart by shape before they are read.
+      //: **The choice is named, and the two options fill their track.** Reported: "also redesign that whiteboard and mindmap toggle in the popup, its ugly", with a screenshot of the New board dialog. Two things were wrong in it and both are about the track. `.seg` is `display: inline-flex`, which in this card (a flex column that stretches its children) makes the *track* full width while the two buttons keep their content width: the right half of the pill was empty, so the control read as a stray bar with two words in it. And nothing on screen said what the choice was for, because `segment.label` only ever reached `aria-label`, which a sighted reader cannot see.  The label is now drawn, the buttons share the track equally (the CSS in 06-timeline-dialogs.css), and each option can carry an icon through `setLabel`'s "ph:name Label" contract, so Board and Mind map are told apart by shape before they are read.
       segField = document.createElement("div");
       segField.className = "confirm-seg-field";
       if (segment.label) {
@@ -1585,6 +1397,7 @@ function promptDialog(message, initial = "", { confirmLabel = "Save", segment = 
       }
       segRow = document.createElement("div");
       segRow.className = "seg seg-compact confirm-seg";
+      segRow.classList.add("seg-fill");
       segRow.setAttribute("role", "group");
       segRow.setAttribute("aria-label", segment.label || message);
       segField.appendChild(segRow);
@@ -1595,13 +1408,13 @@ function promptDialog(message, initial = "", { confirmLabel = "Save", segment = 
         button.dataset.value = option.value;
         button.title = option.title || "";
         button.classList.toggle("active", option.value === chosen);
-        button.setAttribute("aria-pressed", String(option.value === chosen));
+        button.setAttribute("aria-pressed", option.value === chosen);
         button.addEventListener("click", () => {
           chosen = option.value;
           for (const sibling of segRow.querySelectorAll("button")) {
             const on = sibling.dataset.value === chosen;
             sibling.classList.toggle("active", on);
-            sibling.setAttribute("aria-pressed", String(on));
+            sibling.setAttribute("aria-pressed", on);
           }
           // Straight back to the name: choosing the kind is a detour on the
           // way to typing, not the end of the interaction.
@@ -1660,33 +1473,7 @@ function promptDialog(message, initial = "", { confirmLabel = "Save", segment = 
   });
 }
 
-//: Shared by every overlay's backdrop-click-to-close.
-//:
-//: Reported directly: "when I try to highlight text in text boxes in popup
-//: displays, the popup often just closes." `click` fires wherever the mouse
-//: went *up*, not where it went down, so starting a text selection inside
-//: the card and releasing outside it (a completely normal way to select the
-//: last word or two) fires a click whose target is the backdrop, which every
-//: one of these listeners used to read as "the backdrop was clicked" and
-//: close on. Recording where the *mousedown* started tells the two apart: a
-//: real backdrop click starts and ends on the backdrop; a selection drag
-//: starts inside the card.
-//: `alsoBackdrop` is a selector for elements that *look* like empty space
-//: even though they are not the overlay itself, a full-width layout column
-//: whose own box extends well past the thing it is centring.
-//:
-//: Reported: "I cant click off the documents or images to close the lightbox
-//: and the close button doesnt work all the time." Measured with the viewer
-//: open on a 1440x900 window: `.lightbox-column` is **1396px wide and 134px
-//: tall**, so the whole horizontal band either side of the picture belongs to
-//: the column, not the backdrop. The four screen edges did close it, which is
-//: why this reads as intermittent rather than broken: whether a click "off
-//: the image" works depends on whether it landed above or beside it.
-//:
-//: The elements named by the caller are the ones with no content of their
-//: own. `e.target === el` still has to hold for each: a click that lands on
-//: the picture, the caption, a button or any other real child is a click on
-//: that child, and closes nothing.
+//: Shared by every overlay's backdrop-click-to-close.  Reported directly: "when I try to highlight text in text boxes in popup displays, the popup often just closes." `click` fires wherever the mouse went *up*, not where it went down, so starting a text selection inside the card and releasing outside it (a completely normal way to select the last word or two) fires a click whose target is the backdrop, which every one of these listeners used to read as "the backdrop was clicked" and close on. Recording where the *mousedown* started tells the two apart: a real backdrop click starts and ends on the backdrop; a selection drag starts inside the card. `alsoBackdrop` is a selector for elements that *look* like empty space even though they are not the overlay itself, a full-width layout column whose own box extends well past the thing it is centring.  Reported: "I cant click off the documents or images to close the lightbox and the close button doesnt work all the time." Measured with the viewer open on a 1440x900 window: `.lightbox-column` is **1396px wide and 134px tall**, so the whole horizontal band either side of the picture belongs to the column, not the backdrop. The four screen edges did close it, which is why this reads as intermittent rather than broken: whether a click "off the image" works depends on whether it landed above or beside it.  The elements named by the caller are the ones with no content of their own. `e.target === el` still has to hold for each: a click that lands on the picture, the caption, a button or any other real child is a click on that child, and closes nothing.
 function wireBackdropClose(overlay, close, alsoBackdrop = "") {
   const isBackdrop = (target) =>
     target === overlay || (alsoBackdrop && target instanceof Element && target.matches(alsoBackdrop));
@@ -1718,35 +1505,13 @@ function smallButton(label, title, onClick, ghost = true) {
   return button;
 }
 
-//: **A tab's code arrives when the tab does** (WORLD_CLASS_PLAN A1). Measured
-//: on this head before the change: 13 blocking scripts and 1,699 KB of
-//: compressed JS parsed before the first tab could draw, of which whiteboard
-//: (678 KB), documents (640 KB), library (404 KB) and the two graph files
-//: (334 KB) are surfaces most sessions never open. `ensureP5` above is the
-//: same idea for the one decoration that was bigger than all of them.
-//:
-//: Two bundles, not five, because the five files are not five independent
-//: modules: library.js renders the boards gallery from whiteboard.js and the
-//: documents list from documents.js, whiteboard.js calls back into both, and
-//: documents.js renders the library's own filters. That cycle is real (it is
-//: one surface split across three files, not three surfaces), so splitting it
-//: further would only mean loading two thirds of it and waiting for the rest.
-//: The graph pair has no edge into it at all once `formatFileSize` moved to
-//: this file, so it stands alone.
-//:
-//: `async = false` on a dynamically inserted script is what keeps them in
-//: document order: a dynamic script defaults to async, and library.js running
-//: before documents.js would be a different program.
+//: **A tab's code arrives when the tab does** (WORLD_CLASS_PLAN A1). Measured on this head before the change: 13 blocking scripts and 1,699 KB of compressed JS parsed before the first tab could draw, of which whiteboard (678 KB), documents (640 KB), library (404 KB) and the two graph files (334 KB) are surfaces most sessions never open. `ensureP5` above is the same idea for the one decoration that was bigger than all of them.  Two bundles, not five, because the five files are not five independent modules: library.js renders the boards gallery from whiteboard.js and the documents list from documents.js, whiteboard.js calls back into both, and documents.js renders the library's own filters. That cycle is real (it is one surface split across three files, not three surfaces), so splitting it further would only mean loading two thirds of it and waiting for the rest. The graph pair has no edge into it at all once `formatFileSize` moved to this file, so it stands alone.  `async = false` on a dynamically inserted script is what keeps them in document order: a dynamic script defaults to async, and library.js running before documents.js would be a different program.
 const LAZY_MODULES = {
-  //: d3 (90 KB gzipped) comes with the two surfaces that use it, not at boot
-  //: (audit FE-07); `ensureModule` fetches a file once whichever bundle names
-  //: it first.
+  //: d3 (90 KB gzipped) comes with the two surfaces that use it, not at boot (audit FE-07); `ensureModule` fetches a file once whichever bundle names it first.
   graph: ["/vendor/d3.v7.min.js", "/css/graph-lazy.css", "/js/graph.js", "/js/graph-canvas.js"],
-  //: The image viewer (2026-09-27, the boot-script gzip budget): see
-  //: lightbox-view.js's header.
+  //: The image viewer (2026-09-27, the boot-script gzip budget): see lightbox-view.js's header.
   lightbox: ["/css/lightbox-lazy.css", "/js/lightbox-view.js"],
-  //: Run, preview and test for a code document (DOCUMENTS_PLAN 23, D1): the
-  //: protocol and its languages, loaded on the first Run.
+  //: Run, preview and test for a code document (DOCUMENTS_PLAN 23, D1): the protocol and its languages, loaded on the first Run.
   run: ["/js/run-core.js", "/js/run-tests.js", "/js/run-debug.js"],
   editConflict: ["/js/edit-conflict.js"],
   categories: ["/js/categories-panel.js"],
@@ -1770,9 +1535,7 @@ const LAZY_MODULES = {
   attachments: ["/js/attachment-actions.js"],
   //: Tesseract's status line (INBOX 443 (3)): see ocr-engine.js.
   ocrEngine: ["/js/ocr-engine.js"],
-  //: Quick note and the note outbox (INBOX 434): see quick-note.js.
-  //: router-overlays.js rides with the quick note: Back closes an open overlay first, and
-  //: Settings' close settles the address. Both preloaded below; boot code is at its cap.
+  //: Quick note and the note outbox (INBOX 434): see quick-note.js. router-overlays.js rides with the quick note: Back closes an open overlay first, and Settings' close settles the address. Both preloaded below; boot code is at its cap.
   quickNote: ["/js/quick-note.js", "/js/router-overlays.js"],
   fieldClear: ["/js/field-clear.js"],
   //: A date or time field's panel (Phase 12): see date-field.js.
@@ -1806,24 +1569,22 @@ const LAZY_MODULES = {
   webClip: ["/js/web-clip.js", "/js/web-results.js"],
   appImport: ["/js/app-import.js"],
   usageLedger: ["/css/usage-lazy.css", "/js/usage-ledger.js"],
-  //: The Library list without the editors (audit FE-03(c)): they were about
-  //: 900 KB gzipped. A document or a board brings the whole `library` surface.
-  libraryList: ["/css/library-lazy.css", "/js/library.js"],
+  //: The Library list without the editors (audit FE-03(c)): they were about 900 KB gzipped. A document or a board brings the whole `library` surface.
+  libraryList: ["/css/library-lazy.css", "/js/undo-store.js", "/js/library.js"],
   //: The Capture box's template picker (note-templates.js's header).
   noteTemplates: ["/js/note-templates.js"],
   meetings: ["/css/meetings-lazy.css", "/js/meetings.js"],
   quickAdd: ["/css/quickadd-lazy.css", "/js/quickadd.js"],
   //: The Statistics page and This week (statistics.js's header).
   statistics: ["/css/utilities-lazy.css", "/js/ask-chart.js", "/js/statistics.js"],
-  utilities: ["/js/utility-tools.js"],
+  utilities: ["/css/utilities-lazy.css", "/js/utility-tools.js"],
   //: Live captions (captions.js's header; Brief 82).
   captions: ["/css/captions-lazy.css", "/js/captions.js"],
   //: Translate this, the offline translator's sheet (translate.js's header).
   translate: ["/css/utilities-lazy.css", "/js/translate.js"],
   //: The search box, Find anything, and its saved searches (search.js's header).
   search: ["/css/search-lazy.css", "/js/search.js"],
-  //: Atlas's blink and arm rig (atlas-motion.js's header): the drawing is
-  //: boot's, the motion arrives with the first figure that mounts.
+  //: Atlas's blink and arm rig (atlas-motion.js's header): the drawing is boot's, the motion arrives with the first figure that mounts.
   atlasMotion: ["/js/atlas-motion.js"],
   //: Atlas the Guide as a chat (help-chat.js's header), on first ask.
   helpChat: ["/css/help-chat-lazy.css", "/js/citation-peek.js", "/js/entry-card.js", "/js/answer-kit.js", "/js/help-chat.js"],
@@ -1857,31 +1618,28 @@ const LAZY_MODULES = {
   //: Tidy, the reviews with no AI (INBOX 691): tidy.js's header.
   tidy: ["/css/tidy-lazy.css", "/js/tidy.js"],
   semanticNotice: ["/css/semantic-notice-lazy.css", "/js/semantic-notice.js"],
-  //: The order the `<script>` tags had, kept: every cross-file call between
-  //: these three is inside a function rather than at parse time, so it is not
-  //: load-bearing, but it is the order the three files' own headers describe.
-  //: documents-code.js and documents-prose.js were split out of documents.js
-  //: (2026-09-24) and go *before* it, and that position is load-bearing: their
-  //: own top level reads nothing from documents.js, while documents.js's
-  //: top-level wiring names their functions, and each file here is followed
-  //: by a microtask checkpoint before the next one runs. See their headers.
-  //: whiteboard-map.js (the mind map layer, split out of whiteboard.js the
-  //: same day) goes before whiteboard.js on the same terms.
+  //: The order the `<script>` tags had, kept: every cross-file call between these three is inside a function rather than at parse time, so it is not load-bearing, but it is the order the three files' own headers describe. documents-code.js and documents-prose.js were split out of documents.js (2026-09-24) and go *before* it, and that position is load-bearing: their own top level reads nothing from documents.js, while documents.js's top-level wiring names their functions, and each file here is followed by a microtask checkpoint before the next one runs. See their headers. The other documents-*.js files (DC13) go before it likewise, as does whiteboard-map.js before whiteboard.js.
   library: [
-    //: d3 before whiteboard.js, whose top level calls `d3.zoom()`.
-    "/vendor/d3.v7.min.js",
-    //: The styles only this bundle's surfaces draw, out of the boot budget.
-    "/css/library-lazy.css",
-    //: First: the stored undo histories both editors read (undo-store.js).
-    "/js/undo-store.js",
-    //: The Attach picker's row, drawn synchronously by the board pickers.
-    "/js/pick-row.js",
+    "/vendor/d3.v7.min.js", //: Before whiteboard.js, whose top level calls `d3.zoom()`.
+    "/css/library-lazy.css", //: The styles only this bundle's surfaces draw, out of the boot budget.
+    "/js/undo-store.js", //: First: both editors and the list read it.
+    "/js/pick-row.js", //: The Attach picker's row, drawn synchronously by the board pickers.
     "/js/image-layout.js",
     //: Before the editors: it holds the file-type table they read.
     "/js/library.js",
     "/js/documents-code.js",
     "/js/documents-prose.js",
+    "/js/documents-print.js",
+    "/js/documents-outline.js",
     "/js/documents-cm.js",
+    "/js/documents-cm-theme.js",
+    "/js/documents-props.js",
+    "/js/documents-mermaid.js",
+    "/js/documents-math.js",
+    "/js/documents-comments.js",
+    "/js/documents-embeds.js",
+    "/js/documents-tables.js",
+    "/js/documents-columns.js",
     "/js/autocorrect.js",
     "/js/documents.js",
     "/js/margin-reader.js",
@@ -1897,10 +1655,7 @@ const LAZY_MODULES = {
   ],
 };
 
-//: Which bundle a tab needs before its own dispatch runs. `documents` is the
-//: document editor the Library opens, which is why it shares the Library's
-//: bundle rather than having one of its own.
-//: INBOX 519: a boot fetch can answer between two scripts, before dashboard.js.
+//: Which bundle a tab needs before its own dispatch runs. `documents` is the document editor the Library opens, which is why it shares the Library's bundle rather than having one of its own. INBOX 519: a boot fetch can answer between two scripts, before dashboard.js.
 function whenScriptsLoaded() {
   if (document.readyState !== "loading") return Promise.resolve();
   return new Promise((resolve) => document.addEventListener("DOMContentLoaded", resolve, { once: true }));
@@ -1972,18 +1727,7 @@ function ensureModule(name) {
   return lazyModuleLoads.get(name);
 }
 
-//: **The note editor's door, kept at boot.** The rendering editor every note
-//: box gets (documents.js's `NOTE_SURFACES` table and `mountNoteSurface`)
-//: mounts on the box's first focus through a listener *in documents.js*,
-//: which is in the Library bundle now. So on a fresh boot the capture box,
-//: the edit form, the draft and the graph's popup all stayed bare textareas
-//: until the Library tab had been visited once (the owner: "the graph popup
-//: panels no longer auto render the md and images"). This listener is the
-//: half that has to live in the file that is always loaded: it fetches the
-//: bundle on the first focus of a note box and hands the mount over. Once
-//: the bundle is in, its own listener runs on every later focus and this
-//: one steps aside. `NOTE_SURFACE_IDS` mirrors the table's keys, and
-//: `tests/test_note_surface.py` fails when the two drift.
+//: **The note editor's door, kept at boot.** The rendering editor every note box gets (documents.js's `NOTE_SURFACES` table and `mountNoteSurface`) mounts on the box's first focus through a listener *in documents.js*, which is in the Library bundle now. So on a fresh boot the capture box, the edit form, the draft and the graph's popup all stayed bare textareas until the Library tab had been visited once (the owner: "the graph popup panels no longer auto render the md and images"). This listener is the half that has to live in the file that is always loaded: it fetches the bundle on the first focus of a note box and hands the mount over. Once the bundle is in, its own listener runs on every later focus and this one steps aside. `NOTE_SURFACE_IDS` mirrors the table's keys, and `tests/test_note_surface.py` fails when the two drift.
 const NOTE_SURFACE_IDS = new Set([
   "entry-content",
   "entry-edit-content",
@@ -2018,16 +1762,7 @@ document.addEventListener("focusin", (event) => {
   });
 });
 
-//: **Tab indents from the first keystroke** (owner, INBOX 392: "indenting and
-//: dedenting across the app also doesnt come in the form it should"). The
-//: editor that owns Tab and Shift+Tab (documents.js `indentDocSelection`)
-//: arrives with the Library bundle on a note box's first focus, and until it
-//: has, the box is a plain textarea: measured on a fresh boot, "- alpha"
-//: plus Tab moved focus to the tags field instead of indenting. This bridges
-//: that second or two with the same rule the editor applies: whole lines,
-//: two spaces, list items as blocks, Shift+Tab only when there is something
-//: to take off (so a flush-left caret still tabs backwards out of the box).
-//: Once the bundle is in, the textarea is replaced and this never runs.
+//: **Tab indents from the first keystroke** (owner, INBOX 392: "indenting and dedenting across the app also doesnt come in the form it should"). The editor that owns Tab and Shift+Tab (documents.js `indentDocSelection`) arrives with the Library bundle on a note box's first focus, and until it has, the box is a plain textarea: measured on a fresh boot, "- alpha" plus Tab moved focus to the tags field instead of indenting. This bridges that second or two with the same rule the editor applies: whole lines, two spaces, list items as blocks, Shift+Tab only when there is something to take off (so a flush-left caret still tabs backwards out of the box). Once the bundle is in, the textarea is replaced and this never runs.
 document.addEventListener("keydown", (event) => {
   const box = event.target;
   if (event.key !== "Tab" || event.ctrlKey || event.altKey || event.metaKey) return;
@@ -2058,36 +1793,14 @@ document.addEventListener("keydown", (event) => {
 
 //: **The entry points that can be reached before their own file exists.**
 //:
-//: Most calls into a lazy module happen on its own tab, after `switchTab` has
-//: awaited it. These are the ones that do not: a map chip in the note list
-//: opens a board, the command palette opens a document, the notes editor's
-//: bold button is documents.js's `applyMarkdown`, and eight of graph.js's
-//: functions are read as *bare identifiers* by this file's own top-level
-//: wiring (the click listener this file binds on `#graph-popup-close` names
-//: `closeGraphPopup` as a bare identifier), which is evaluated the moment that
-//: line runs and would throw ReferenceError with graph.js absent.
+//: Most calls into a lazy module happen on its own tab, after `switchTab` has awaited it. These are the ones that do not: a map chip in the note list opens a board, the command palette opens a document, the notes editor's bold button is documents.js's `applyMarkdown`, and eight of graph.js's functions are read as *bare identifiers* by this file's own top-level wiring (the click listener this file binds on `#graph-popup-close` names `closeGraphPopup` as a bare identifier), which is evaluated the moment that line runs and would throw ReferenceError with graph.js absent.
 //:
-//: Each name below gets a stand-in that loads the bundle and then calls the
-//: real function, which has replaced the stand-in by then: a top-level
-//: `function foo()` in a classic script rebinds `globalThis.foo`, so no
-//: hand-off is needed beyond looking the name up again.
+//: Each name below gets a stand-in that loads the bundle and then calls the real function, which has replaced the stand-in by then: a top-level `function foo()` in a classic script rebinds `globalThis.foo`, so no hand-off is needed beyond looking the name up again.
 //:
 //: Two rules decide what is on this list, and both matter:
 //:
-//: 1. **Only functions whose return value nobody reads.** A stand-in has to
-//:    return a promise, so a function whose answer is used in the same
-//:    statement cannot have one. `docEventFromCm` is the sharp case: editor.js
-//:    reads it as `if (typeof docEventFromCm === "function" &&
-//:    docEventFromCm(event.target)) return;`, and a promise is truthy, so a
-//:    stand-in there would swallow every keystroke in the note editor. Those
-//:    functions are left off, and their `typeof` guard then means what it
-//:    says: the document surface is not loaded, so this is not one.
-//: 2. **Only functions a person's own gesture reaches.** `loadLibrary` and
-//:    `renderLibrary` are deliberately absent: they are called from "refresh
-//:    the list if it is on screen" guards after an OCR pass or an import
-//:    finishes, and a stand-in would pull 1.7 MB in the background because a
-//:    caption came back. Skipping is the right answer when the Library has
-//:    never been opened; opening it loads and renders it anyway.
+//: 1. **Only functions whose return value nobody reads.** A stand-in has to return a promise, so a function whose answer is used in the same statement cannot have one. `docEventFromCm` is the sharp case: editor.js reads it as `if (typeof docEventFromCm === "function" && docEventFromCm(event.target)) return;`, and a promise is truthy, so a stand-in there would swallow every keystroke in the note editor. Those functions are left off, and their `typeof` guard then means what it says: the document surface is not loaded, so this is not one.
+//: 2. **Only functions a person's own gesture reaches.** `loadLibrary` and `renderLibrary` are deliberately absent: they are called from "refresh the list if it is on screen" guards after an OCR pass or an import finishes, and a stand-in would pull 1.7 MB in the background because a caption came back. Skipping is the right answer when the Library has never been opened; opening it loads and renders it anyway.
 const LAZY_ENTRY_POINTS = {
   //: The palette's Live captions row (captions.js; Brief 82): nobody reads its return.
   captions: ["toggleLiveCaptions"],
@@ -2100,7 +1813,7 @@ const LAZY_ENTRY_POINTS = {
   embedChoices: ["renderEmbedChoices"],
   chordGuide: ["showTabJumpHint"],
   //: A click on Ask, Enter in its box, an example or a recent question; nobody reads its return.
-  askCompose: ["askQuestion"],
+  askCompose: ["askQuestion", "renderAskTrail"],
   //: The icon and emoji picker: reached through `pickIconOrEmoji` (editor.js).
   iconPicker: ["openIconPicker"],
   //: Async, and reached from a Settings pane drawn before the window's own await.
@@ -2167,7 +1880,7 @@ const LAZY_ENTRY_POINTS = {
     "setTracePanelOpen",
     "syncGraphPopupSave",
   ],
-  library: ["applyDocGutter", "applyMarkdown", "closeDocAiPanel", "createConceptMap", "createDocument", "createNewBoard", "expandNoteIntoDocument", "initDocSidebarTabs", "loadDocuments", "markDocDirty", "mountDocToolbarControlsFor", "mountGutterFor", "openDocDictionary", "openDocTemplateDialog", "openDocument", "renderDocStorage", "saveDocument", "showDocSidebarSection", "toggleDocFindBar", "wbOpenBoardSearch", "wbShowBoardsLanding", "wbToggleNavigator", "wireMarkdownToolbar", "wireMdFormatShortcuts", "openWhiteboardBoard", "offerCreateUndo", "offerCreatedDocsUndo", "jumpToDocLine", "renderLibraryBoardsGallery", "renameDocumentWithUndo", "archiveDocumentWithUndo", "deleteDocumentWithUndo"],
+  library: ["applyDocGutter", "applyMarkdown", "closeDocAiPanel", "createDocument", "createNewBoard", "expandNoteIntoDocument", "initDocSidebarTabs", "loadDocuments", "markDocDirty", "mountDocToolbarControlsFor", "mountGutterFor", "openDocDictionary", "openDocTemplateDialog", "openDocument", "renderDocStorage", "saveDocument", "showDocSidebarSection", "toggleDocFindBar", "wbOpenBoardSearch", "wbShowBoardsLanding", "wbToggleNavigator", "wireMarkdownToolbar", "wireMdFormatShortcuts", "openWhiteboardBoard", "offerCreateUndo", "offerCreatedDocsUndo", "jumpToDocLine", "renderLibraryBoardsGallery", "renameDocumentWithUndo", "archiveDocumentWithUndo", "deleteDocumentWithUndo"],
   //: The Library's own list (audit FE-03(c)): library.js alone. A call from
   //: it into a document or a board is one of `library`'s stand-ins above,
   //: which fetches the editors on first use.

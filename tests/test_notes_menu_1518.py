@@ -45,4 +45,6 @@ def test_a_source_card_does_not_say_the_title_twice():
     ask = (root / "citation-peek.js").read_text(encoding="utf-8")
     assert "function citationTitleEnd(text, title)" in ask
     assert "citationPeekText(content, source.start, source.end, title.textContent)" in ask
-    assert "citationPeekText(content, g.start, g.end, title)" in (root / "answer-kit.js").read_text(encoding="utf-8")
+    # The evidence card fills from the row's text, then again from the whole note (INBOX 1525
+    # review, item 7: a passage past the row's 300 characters); both fills pass the title.
+    assert "citationPeekText(text, g.start, g.end, title)" in (root / "answer-kit.js").read_text(encoding="utf-8")

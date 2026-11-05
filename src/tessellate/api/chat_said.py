@@ -20,12 +20,16 @@ from sqlalchemy import func, or_, select, text as sql_text
 from sqlalchemy.orm import Session
 
 from tessellate.ai import capability, composer, composer_aware, composer_digest, composer_lists, composer_open, composer_plan, composer_social, fact_check, filed_name, intent, phrasing, realise
+from tessellate.ai import composer_dialogue
+from tessellate.ai import composer_read
+from tessellate.ai import composer_smalltalk
 from tessellate.ai.ollama_client import OllamaError
 from tessellate.api import chat_extra
 from tessellate.api.chat_request import ChatRequest, _StreamRequest, _Turn, _composed, _meta_event
 from tessellate.core import clock, private_turn
-from tessellate.core.database import AskTurn, Conversation, Entity, Entry, EntryLink, like_escape, LIKE_ESCAPE
+from tessellate.core.database import AskTurn, Conversation, Entity, Entry, like_escape, LIKE_ESCAPE
 from tessellate.repo import documents as documents_repo
+from tessellate.repo import relations as relations_repo
 from tessellate.repo import reminders as reminder_repo
 from tessellate.core.logbuffer import safe_value
 
@@ -371,7 +375,7 @@ def _saved_joke_reply(req: _StreamRequest, seed: str) -> str:
 
 def _ping_offer(req: _StreamRequest, prepared: dict) -> list[dict]:
     """A ping that says "test" offers its notes as a chip (INBOX 1485)."""
-    subject = composer_social.ping_subject(req.question) if composer.social_kind(req.question, prepared["intent"]) == "test" else ""
+    subject = composer_social.ping_subject(req.question) if composer_smalltalk.social_kind(req.question, prepared["intent"]) == "test" else ""
     if not subject or not chat_extra.mentioning(req.session, subject):
         return []
     return [{"type": "offer", "offer": {"kind": "ask", "label": "", "asks": composer_social.ping_asks(subject)}}]
@@ -392,7 +396,7 @@ def _newest_word(session: Session) -> str:
         return ""
     #: Not a word of its title: "Weekly review" is about weekly nothing.
     text = str(newest[0] or "")
-    start = composer._title(text)[1]
+    start = composer_read._title(text)[1]
     for term in query_understanding.search_terms((text[start:] if start else text)[:400]):
         if len(term) >= 4 and term.isalpha() and term not in _NOT_A_SUBJECT and query_understanding.is_topic_word(term) and spelling.is_word(term):
             return term
@@ -424,7 +428,7 @@ def _closing_name(content: str) -> str:
     line, or, for a title-less note whose first words would be cut mid
     sentence, its first sentence whole (audit 1030 Z38; never its date,
     INBOX 1441)."""
-    name, start = composer._title(content)
+    name, start = composer_read._title(content)
     name = name.strip()
     if start == 0 and name.endswith("…"):
         name = re.split(r"(?<=[.!?;])\s|\n", content.strip(), maxsplit=1)[0].strip(" .:;")
@@ -649,8 +653,8 @@ def _asked_before(req: _StreamRequest) -> list[str]:
     """The questions of the last three turns as they stood, a "more" being
     the question it leans on, once each."""
     asked: list[str] = []
-    for turn in composer._standing([t for t in (req.history or [])[-3:] if str(t.get("question") or "").strip()]):
-        if turn["question"] not in asked and not composer._MORE.match(turn["question"]):
+    for turn in composer_dialogue._standing([t for t in (req.history or [])[-3:] if str(t.get("question") or "").strip()]):
+        if turn["question"] not in asked and not composer_dialogue._MORE.match(turn["question"]):
             asked.append(turn["question"])
     return asked
 
@@ -668,12 +672,16 @@ def _open_note_answer(req: _StreamRequest, follow, current: list, today):  # noq
     """The open note's own answer to "what's left", "when is it due", "who is
     involved" (`ai/composer_open.py`): short, and different for every note."""
     opened = req.body.open_note_id
-    if follow or not opened or len(current) != 1 or current[0].get("id") != opened:
+    #: The notes that record the open one's items ride beside it (F15): the
+    #: open note is the one bound, whatever else the context holds.
+    bound = set(req.body.note_ids or [])
+    mine = [n for n in current if n.get("id") in bound] if bound else current
+    if follow or not opened or len(mine) != 1 or mine[0].get("id") != opened:
         return None
-    if not composer_open.reads_note(req.question, current[0]):
+    if not composer_open.reads_note(req.question, mine[0]):
         return None
     dialogue = composer.Dialogue.from_history(req.history)
-    return composer.open_note_answer(req.question, current[0], today=today, salt=dialogue.salt)
+    return composer.open_note_answer(req.question, mine[0], today=today, salt=dialogue.salt)
 
 
 #: What an answer says when it could not answer: its own "missing" lines and the
@@ -703,7 +711,7 @@ def _open_title(session: Session, body: ChatRequest) -> str:
     if body.open_note_id:
         row = session.query(Entry.content).filter(Entry.id == body.open_note_id, *_visible()).first()
         if row:
-            return composer._title(str(row[0] or ""))[0].strip()[:60]
+            return composer_read._title(str(row[0] or ""))[0].strip()[:60]
     return ""
 
 
@@ -784,11 +792,7 @@ def _linked_notes(session: Session, result: dict) -> list[dict]:
     cited = {nid for kind, nid in _cited_ids(result) if kind == "entry"}
     if not cited:
         return []
-    links = session.execute(
-        select(EntryLink.source_entry_id, EntryLink.target_entry_id)
-        .where(or_(EntryLink.source_entry_id.in_(cited), EntryLink.target_entry_id.in_(cited)))
-        .order_by(EntryLink.id.desc())
-    ).all()
+    links = relations_repo.touching_any(session, cited)
     found: list[int] = []
     for pair in links:
         for other in pair:

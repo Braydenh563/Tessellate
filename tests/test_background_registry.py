@@ -45,7 +45,7 @@ __main__.py::_start_tray::thread::1
 ai/autonomous.py::start::thread::1
 ai/embeddings.py::EmbeddingService._maybe_auto_install_missing_package::thread::1
 ai/janitor.py::_chat_within_deadline::thread::1
-ai/tools/__init__.py::prefetch_web::executor::1
+ai/tools/tool_web.py::prefetch_web::executor::1
 api/app.py::_start_searxng_if_asked::thread::1
 api/routes_backups.py::export_bundle::request-task::1
 api/routes_chat.py::_stop_when_gone::task::1
@@ -53,7 +53,6 @@ api/routes_import.py::export_notebook_folder::request-task::1
 api/routes_settings.py::export_backup::request-task::1
 api/routes_settings.py::restart_app::request-task::1
 api/routes_settings.py::set_console_mode::request-task::1
-api/routes_tasks.py::shutdown::timer::1
 api/routes_update.py::apply_update::thread::1
 api/routes_update.py::apply_update::thread::2
 core/embedmodels.py::_spawn_download::thread::1

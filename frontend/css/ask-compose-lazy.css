@@ -2,23 +2,22 @@
    loaded by it (`lazyScript`, app.js) rather than at boot, for the gzip
    budget.
 
-   **A sentence said from a note** (CHAT_PLAN decision 33): the quote style,
-   a left rule and the muted ink, drawn by the page, never quotation marks in
-   the text (which are not the note's and broke grounding). An inset shadow
-   rather than a border, so the rule repeats on every line a long sentence
-   wraps onto (`box-decoration-break: clone`) and takes no width of its own.
-   A sentence said back to the person ("you went", shifted from "I went")
-   takes the softer rule, and its hover text is the note's own words. */
+   **A sentence said from a note** (CHAT_PLAN decision 33, restyled for
+   INBOX 1602): plain reading text in the answer's own ink. It used to be a
+   2px inset rule and the muted ink, which repeated a bar on every line a
+   list item wrapped onto and greyed the note's own words (the owner: "I dont
+   like the way the composer quotes stuff"). The mark stays in the DOM (the
+   citation peek and the hover text of a shifted sentence find it); it draws
+   nothing, because the citation number after the sentence already says where
+   it came from. Never quotation marks in the text (they are not the note's
+   and broke grounding). A sentence said back to the person ("you went",
+   shifted from "I went") keeps the note's own words as its hover text. */
 .said {
-  color: var(--muted);
-  padding-inline-start: var(--space-2);
-  box-shadow: inset 2px 0 0 var(--accent-soft);
-  -webkit-box-decoration-break: clone;
-  box-decoration-break: clone;
+  color: var(--ink);
 }
 
 .said-shifted {
-  box-shadow: inset 2px 0 0 var(--border);
+  cursor: help;
 }
 
 /* **The web pages an answer read** (decisions 37 and 66): one fold in the
@@ -35,7 +34,6 @@
   border-radius: var(--radius-md);
 }
 .web-fold[open] > .fold-summary:not(.icon-only):not(.icon-button) {
-  width: auto;
   border: 0;
   border-radius: var(--radius-md) var(--radius-md) 0 0;
   padding: var(--space-2) var(--space-3);
@@ -202,15 +200,13 @@
 
 /* **Use AI** (K34), lazy with ask-compose.js (boot CSS cap): the AI switch is a checkbox on the app's pill-switch
    recipe (06-timeline-dialogs.css, `.checkbox-label`), in the ask input's
-   control row beside the answer-length select. Compact: the label drops the
-   chip border; disabled (no model) the recipe's own 0.45 opacity reads as
+   control row beside the answer-length select. Compact (the recipe has no resting border, INBOX 1600); disabled (no model) the recipe's own 0.45 opacity reads as
    greyed. The inline padding stays, less at the switch end, whose track is
    already round: at 4px the hover fill's round end touched the track
    (INBOX 1411). */
 .ask-ai-switch {
   flex: 0 0 auto;
   min-height: var(--target-min);
-  border-color: transparent;
   padding-inline: var(--space-2) var(--space-3);
   font-size: var(--text-sm);
   color: var(--ink);
@@ -263,4 +259,43 @@
 .answer-actions button {
   min-height: max(var(--control-h-lg), var(--target-min));
   min-width: max(var(--control-h-lg), var(--target-min));
+}
+
+/* **Why this answer** (B30), moved here from 01-forms-settings.css for the
+   boot CSS budget: only `renderAskWhy` (ask-compose.js) builds it. Open it is
+   the Thinking fold's inset panel. */
+.why-fold[open] {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+}
+.why-fold[open] > .fold-summary {
+  border: 0;
+  border-radius: var(--radius-md) var(--radius-md) 0 0;
+  padding: var(--space-2) var(--space-3);
+}
+.why-fold[open] > .fold-summary:not(:hover):not(:focus-visible) {
+  background: transparent;
+}
+/* "Why this answer" (B30): a job's lines, the seconds in a fixed column so
+   the words start on one edge. */
+.why-fold {
+  margin-top: var(--space-2);
+}
+.why-lines {
+  margin: 0;
+  padding: 0 var(--space-3) var(--space-2);
+  list-style: none;
+  font-size: var(--text-sm);
+  color: var(--muted);
+}
+.why-lines > li {
+  display: grid;
+  grid-template-columns: 4.5em 1fr;
+  gap: var(--space-2);
+  padding: var(--space-1) 0;
+}
+.why-at {
+  font-variant-numeric: tabular-nums;
+  text-align: end;
 }

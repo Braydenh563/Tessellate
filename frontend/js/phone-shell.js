@@ -24,37 +24,6 @@ function watchEmblemVisibility(holder, art) {
   emblemObservers.set(holder, observer);
 }
 
-//: **p5 is fetched the first time an emblem is drawn, not at boot.** It is a
-//: 1,034 KB file (the largest asset the page loads, 18% of all boot JS) and
-//: every use of it here is decoration: the emblem, the dashboard's art, the
-//: background art. Measured 2026-09-13: 13 blocking scripts, 1,698 KB
-//: compressed, before the first tab could draw. Same-origin dynamic scripts
-//: are what the CSP's `script-src 'self'` allows, so this is one element.
-let p5Loading = null;
-function ensureP5() {
-  if (typeof p5 !== "undefined") return Promise.resolve(true);
-  if (!p5Loading) {
-    p5Loading = new Promise((resolve) => {
-      //: After the first paint and the boot fetches, not during them: the
-      //: emblem is drawn while the shell boots, and a dynamic script is off
-      //: the parser's path but still on the network's.
-      const later = window.requestIdleCallback || ((fn) => setTimeout(fn, 800));
-      const start = () =>
-        later(() => {
-          const script = document.createElement("script");
-          script.src = "/vendor/p5.min.js";
-          script.onload = () => resolve(typeof p5 !== "undefined");
-          script.onerror = () => resolve(false);
-          document.head.appendChild(script);
-        });
-      //: After the last script, not at the first idle moment: on a slow load
-      //: p5 finished first and `renderEmblem` threw on settings.js's `ACCENTS`.
-      if (document.readyState === "complete") start();
-      else window.addEventListener("load", start, { once: true });
-    });
-  }
-  return p5Loading;
-}
 
 //: **The mark's colours** (the owner's pick, "C1, Pearl, lifted"), favicon.svg's:
 //: the tile's three stops, the lifted cell's pearl and its shadow. The cells
@@ -259,16 +228,25 @@ function renderBrandLogo() {
     }
     return;
   }
-  for (const [id, size, animate] of EMBLEM_SLOTS) {
-    const holder = document.getElementById(id);
-    if (holder) renderEmblemWhenShown(holder, size, animate);
-  }
-  //: The assistant heads that wear the emblem take the new colour or motion.
-  repaintAssistantAvatars(true);
-  //: The dashboard hero's mark is no slot above (it is sized by the density
-  //: and may be a face), so it was drawn once and kept its old colours until a
-  //: reload (B63).
-  if (typeof dashEmblemDrawn !== "undefined" && dashEmblemDrawn) paintDashEmblem();
+  //: After the frame that shows the change that asked: each slot is asked
+  //: whether it has a box, and asked inside the click it paid for the style the
+  //: click had just written (89ms of a motion choice at 4x, INBOX 1534). Calls
+  //: in one frame are one draw.
+  if (renderBrandLogo.queued) return;
+  renderBrandLogo.queued = 1;
+  afterFrames(() => setTimeout(() => {
+    renderBrandLogo.queued = 0;
+    for (const [id, size, animate] of EMBLEM_SLOTS) {
+      const holder = document.getElementById(id);
+      if (holder) renderEmblemWhenShown(holder, size, animate);
+    }
+    //: The assistant heads that wear the emblem take the new colour or motion.
+    repaintAssistantAvatars(true);
+    //: The dashboard hero's mark is no slot above (it is sized by the density
+    //: and may be a face), so it was drawn once and kept its old colours until a
+    //: reload (B63).
+    if (typeof dashEmblemDrawn !== "undefined" && dashEmblemDrawn) paintDashEmblem();
+  }), 1);
 }
 
 //: **An emblem nobody can see is drawn when it can be** (2026-09-27): a slot
@@ -404,13 +382,20 @@ for (const button of document.querySelectorAll("#tab-bar button")) {
 //: arrival (Chat's composer) keeps that. From the keyboard (`detail` 0) the
 //: focus stays in the strip, where its arrows are expected.
 //: Found two frames on (INBOX 1446): `switchTab` reveals after an await.
+//: **On a page a frame has drawn** (INBOX 1667: `phone-shell.js:399` 116ms of forced layout at 4x on
+//: Graph): the walk reads `scrollHeight` of the page's elements, and the second frame's callback runs
+//: before that frame's own layout; one timer on (`nmb.afterClean`) the page is clean.
 function focusTabPage(button) {
   afterFrames(() => {
-    if (document.activeElement !== button) return;
-    const target = tabPageScroller(button.dataset.tab);
-    if (!target) return;
-    if (target.tabIndex < 0 && !target.hasAttribute("tabindex")) target.tabIndex = -1;
-    target.focus({ preventScroll: true });
+    const focus = () => {
+      if (document.activeElement !== button) return;
+      const target = tabPageScroller(button.dataset.tab);
+      if (!target) return;
+      if (target.tabIndex < 0) target.tabIndex = -1;
+      target.focus({ preventScroll: true });
+    };
+    if (typeof nmb === "object") nmb.afterClean(focus);
+    else focus();
   });
 }
 
@@ -418,12 +403,12 @@ function focusTabPage(button) {
 //: scrolling region inside it (Notes and the Library scroll a list).
 function tabPageScroller(tab) {
   const page = $(`tab-${tab}`);
-  if (!page || !page.getClientRects().length) return null;
+  if (!page?.getClientRects().length) return null;
   //: The size test first: a hidden or short box fails it without a style lookup.
   const scrolls = (el) => el.scrollHeight > el.clientHeight + 1 &&
     /(auto|scroll)/.test(getComputedStyle(el).overflowY);
-  let target = scrolls(page) ? page : null;
-  if (!target) {
+  let target = page;
+  if (!scrolls(page)) {
     //: The page's biggest scrolling region: a tab whose own box does not
     //: scroll (Notes, the Library) scrolls a list inside it. Every one is
     //: within three levels (`.layout > .tab-main`, a Library section, the
@@ -442,7 +427,7 @@ function tabPageScroller(tab) {
     };
     walk(page, 1);
   }
-  return target || page;
+  return target;
 }
 // Arrow keys walk the tablist; Home/End jump to the ends (Wave L).
 //
@@ -467,10 +452,7 @@ $("tab-bar").addEventListener("keydown", (e) => {
   if (!buttons.length) return;
   const names = buttons.map((b) => b.dataset.tab);
   const index = Math.max(0, names.indexOf(prefs.get("activeTab", null) || "notes"));
-  let next;
-  if (e.key === "Home") next = 0;
-  else if (e.key === "End") next = names.length - 1;
-  else next = (index + keys[e.key] + names.length) % names.length;
+  const next = e.key === "Home" ? 0 : e.key === "End" ? names.length - 1 : (index + keys[e.key] + names.length) % names.length;
   switchTab(names[next]);
   buttons[next].focus();
 });
@@ -490,18 +472,12 @@ document.addEventListener("keydown", (e) => {
   if (!(e.key in keys)) return;
   const tab = e.target.closest?.('[role="tab"]');
   const list = tab?.closest('[role="tablist"]');
-  if (!tab || !list || list.id === "tab-bar") return;
-  const tabs = [...list.querySelectorAll('[role="tab"]')].filter(
-    (t) => !t.disabled && !t.hidden && t.offsetParent !== null
-  );
+  if (!list || list.id === "tab-bar") return;
+  const tabs = [...list.querySelectorAll('[role="tab"]')].filter((t) => !t.disabled && !t.hidden && t.offsetParent);
   if (tabs.length < 2) return;
   e.preventDefault();
   const index = tabs.indexOf(tab);
-  let next;
-  if (e.key === "Home") next = 0;
-  else if (e.key === "End") next = tabs.length - 1;
-  else next = (index + keys[e.key] + tabs.length) % tabs.length;
-  const target = tabs[next];
+  const target = tabs[e.key === "Home" ? 0 : e.key === "End" ? tabs.length - 1 : (index + keys[e.key] + tabs.length) % tabs.length];
   target.click();
   target.focus();
 });
@@ -628,7 +604,11 @@ function initNotesSubtabHeightToken() {
     if (!(box > 0)) return;
     const gap = parseFloat(getComputedStyle(strip).marginBottom) || 0;
     const h = `${Math.round(box + gap)}px`;
-    if (page.style.getPropertyValue("--notes-sticky-top") !== h) page.style.setProperty("--notes-sticky-top", h);
+    //: Written after this frame, for the next one to restyle: written here, in the
+    //: observer's report, it restyled the page again in this frame and the
+    //: next reader (`fitDock`) paid for it (47 to 99ms of a Notes press at 4x,
+    //: INBOX 1534).
+    if (page.style.getPropertyValue("--notes-sticky-top") !== h) setTimeout(() => page.style.setProperty("--notes-sticky-top", h));
   };
   //: No first call of its own: an observer reports a new target at once, and
   //: there the layout is clean (a direct read forced the page's first layout).
@@ -1056,7 +1036,10 @@ let notePageClose = null;
 //: clipped head, so a long heading still matches.
 function dropRepeatedTitle(root, title) {
   root.querySelector(".entry-title")?.remove();
-  const first = root.querySelector(".entry-content")?.firstElementChild;
+  const shown = root.querySelector(".entry-content");
+  //: A clipped note's card fills in the whole text once it arrives (`fillWhole`, entry-card.js): its heading again.
+  if (shown && !shown.titled) shown.titled = shown.addEventListener("note-whole", () => dropRepeatedTitle(shown.parentNode, title)) || 1;
+  const first = shown?.firstElementChild;
   const said = (first?.textContent || "").replace(/\s+/g, " ").trim();
   if (first && /^H[1-6]$/.test(first.tagName) && said && title.startsWith(said.slice(0, 80))) first.remove();
 }
@@ -1408,23 +1391,20 @@ initPhoneChatRow();
 //: is a class rather than a second recipe so everything else about a sheet,
 //: the scrim, the tier, the head with its X, Escape and the backdrop press,
 //: stays the one thing it already is.
-function openSheet({ label, sub = "", name, build, variant = "", modal = true, returnFocus = document.activeElement, onClose = null, onGone = null }) {
+function openSheet({ label, sub = "", name, build, variant = "", modal = true, returnFocus = document.activeElement, onClose = null, onGone = null, hasWork = null }) {
   const overlay = document.createElement("div");
   overlay.className = `modal-overlay sheet-overlay${variant ? ` sheet-${variant}` : ""}`;
   overlay.dataset.sheet = name || "";
   overlay.setAttribute("role", "dialog");
-  overlay.setAttribute("aria-modal", "true");
   overlay.setAttribute("aria-label", label);
   //: **Modeless above 600** (`modal: false`, the Guide; guideia): no scrim,
   //: and presses pass through to the app, because the Guide's own answer is
   //: "Open the Reminders tab" and a dimmed app cannot be read against it.
   //: Escape still closes it, from inside it only. Below 600 the sheet is the
   //: window, so it stays modal there.
-  const modeless = modal === false && window.matchMedia("(min-width: 600px)").matches;
-  if (modeless) {
-    overlay.classList.add("sheet-modeless");
-    overlay.removeAttribute("aria-modal");
-  }
+  const modeless = modal === false && matchMedia("(min-width: 600px)").matches;
+  if (modeless) overlay.classList.add("sheet-modeless");
+  else overlay.setAttribute("aria-modal", "true");
   //: **Above whatever it was opened from.** A sheet is a `.modal-overlay`
   //: (1010), and a surface drawn higher than that opened its sheet behind
   //: itself: the lightbox (1020) on a phone, whose ⋯ "does nothing (no
@@ -1434,10 +1414,10 @@ function openSheet({ label, sub = "", name, build, variant = "", modal = true, r
   //: one up, through the CSSOM, which the CSP allows.
   let layer = 0;
   for (let el = returnFocus instanceof Element ? returnFocus : null; el && el !== document.body; el = el.parentElement) {
-    const z = Number.parseInt(getComputedStyle(el).zIndex, 10);
+    const z = parseInt(getComputedStyle(el).zIndex);
     if (Number.isFinite(z)) layer = Math.max(layer, z);
   }
-  if (layer >= 1010) overlay.style.zIndex = String(layer + 1);
+  if (layer >= 1010) overlay.style.zIndex = layer + 1;
 
   const card = document.createElement("div");
   card.className = `card modal-card sheet-card${variant ? ` sheet-card-${variant}` : ""}`;
@@ -1504,7 +1484,7 @@ function openSheet({ label, sub = "", name, build, variant = "", modal = true, r
     //: Arrows, Home and End walk a sheet's rows (WCAG 2.1.1).
     const rowKeys = { ArrowDown: 1, ArrowUp: -1, Home: "first", End: "last" };
     if (event.key in rowKeys && event.target?.closest?.(".sheet-row") && card.contains(event.target)) {
-      const rows = [...card.querySelectorAll(".sheet-row")].filter((r) => !r.disabled && r.offsetParent !== null);
+      const rows = [...card.querySelectorAll(".sheet-row")].filter((r) => !r.disabled && r.offsetParent);
       const at = rows.indexOf(event.target.closest(".sheet-row"));
       const step = rowKeys[event.key];
       const next = step === "first" ? 0 : step === "last" ? rows.length - 1 : Math.min(Math.max(at + step, 0), rows.length - 1);
@@ -1522,7 +1502,8 @@ function openSheet({ label, sub = "", name, build, variant = "", modal = true, r
     //: sheet over the note page, INBOX 392), and every sheet's listener is
     //: on the document, so one Escape closed both. Only the topmost answers.
     const sheets = document.querySelectorAll(".sheet-overlay:not(.sheet-leaving)");
-    if (sheets.length && sheets[sheets.length - 1] !== overlay) return;
+    if ((sheets.length && sheets[sheets.length - 1] !== overlay) || document.querySelector(".confirm-overlay")) return;
+    //: A dialog over this sheet (Connect to… over the Blocks list) takes the Escape too.
     //: A ⋯ menu open over the sheet takes its own Escape (an entity page's).
     //: Not the menu this sheet *is* (`openKebabSheet` moves a ⋯ menu in,
     //: unhidden): counting that one let every phone action sheet ignore
@@ -1531,6 +1512,9 @@ function openSheet({ label, sub = "", name, build, variant = "", modal = true, r
     //: stayed up and the Settings window closed, INBOX 595's sweep).
     const menus = document.querySelectorAll(".action-menu:not(.hidden)");
     if ([...menus].some((menu) => !card.contains(menu))) return;
+    //: A math field in LaTeX mode takes its own Escape, back to the formula (maths1527: the sheet closed first).
+    const field = document.activeElement?.closest?.("math-field");
+    if (field && card.contains(field) && field.mode === "latex") return;
     event.stopPropagation();
     //: An open '?' popover takes the first Escape, the sheet the next.
     if (openHelpPopovers.size) {
@@ -1544,7 +1528,8 @@ function openSheet({ label, sub = "", name, build, variant = "", modal = true, r
   build(card, close);
 
   overlay.appendChild(card);
-  wireBackdropClose(overlay, close);
+  //: A stray press on the scrim does not throw away work the sheet holds (`hasWork`); Escape and the X still close it.
+  wireBackdropClose(overlay, () => hasWork?.() || close());
   document.addEventListener("keydown", onKey, true);
   document.body.appendChild(overlay);
   //: A '?' a sheet builds is wired here, once, for every sheet: the
@@ -1563,27 +1548,47 @@ function openSheet({ label, sub = "", name, build, variant = "", modal = true, r
   //: after the tap). A tap that opened a sheet asked for the sheet, not for
   //: its first choice (nor a slider or a tickbox, which a script focus helps
   //: nobody with); the pointer and the keyboard keep the old landing.
-  const touchOnly = window.matchMedia("(hover: none), (pointer: coarse)").matches;
-  const field = touchOnly
-    ? [...card.querySelectorAll("input:not([type=hidden], [type=range], [type=checkbox], [type=radio]), textarea")].find(
-        (el) => el.offsetParent !== null
-      )
-    : card.querySelector("input:not([type=hidden]), select, textarea");
-  //: The first of these that actually takes focus: a field inside a closed
-  //: fold is `offsetParent`-visible to nobody and refuses the call, and
-  //: leaving the focus on the opener behind the sheet is the other failure.
-  if (!card.hasAttribute("tabindex")) card.tabIndex = -1;
-  for (const target of [
-    field,
-    card.querySelector('.sheet-row[aria-current="true"]'),
-    card.querySelector(".sheet-row"),
-    card.querySelector("button, [href]"),
-    card,
-  ]) {
-    if (!target) continue;
-    target.focus?.();
-    if (document.activeElement === target) break;
-  }
+  //: After the first paint, not in the press that opened it: the focus settled the
+  //: whole page's style and layout, and its focus events (a movable panel adopting
+  //: the sheet) read more (203ms of the Guide button's press at 4x, INBOX 1534). Not
+  //: if the sheet has gone, or focus has gone into it by itself.
+  afterFrames(() => setTimeout(() => {
+    if (!card.isConnected) return;
+    //: Focus already inside still re-measures below: it came in before the
+    //: movable panel re-centred the card, so the focusin check saw Import where it
+    //: was not (E2E import, 2026-11-02: the card itself intercepted the first press).
+    if (!card.contains(document.activeElement)) {
+      const touchOnly = window.matchMedia("(hover: none), (pointer: coarse)").matches;
+      const field = touchOnly
+        ? [...card.querySelectorAll("input:not([type=hidden], [type=range], [type=checkbox], [type=radio]), textarea")].find(
+            (el) => el.offsetParent !== null
+          )
+        : card.querySelector("input:not([type=hidden]), select, textarea");
+      //: The first of these that actually takes focus: a field inside a closed
+      //: fold is `offsetParent`-visible to nobody and refuses the call, and
+      //: leaving the focus on the opener behind the sheet is the other failure.
+      if (!card.hasAttribute("tabindex")) card.tabIndex = -1;
+      for (const target of [
+        field,
+        card.querySelector('.sheet-row[aria-current="true"]'),
+        card.querySelector(".sheet-row"),
+        card.querySelector("button, [href]"),
+        card,
+      ]) {
+        if (!target) continue;
+        target.focus?.();
+        if (document.activeElement === target) break;
+      }
+    }
+    //: Again once focus has settled the card (a movable panel adopts it and it
+    //: re-centres): the focusin check measured Import where it was (E2E import, 2026-11-02).
+    toastYield();
+  }), 1);
+  //: The preview fills in after the sheet opens, so Import moves after every
+  //: check above: CI's probe (5325529) found the yield right when measured just
+  //: before the press, and stale without it. Each change of the card's size re-measures.
+  const toastRefit = new ResizeObserver(() => (card.isConnected ? afterFrames(() => toastYield()) : toastRefit.disconnect()));
+  toastRefit.observe(card);
   return close;
 }
 
@@ -2044,6 +2049,29 @@ function dockTight(dock) {
 }
 
 function foldDockArrange(dock, fold) {
+  //: A dock whose `...` is only ever the fold's destination (`data-dock-more` names
+  //: it) gets the menu when the dock first folds, not in the page (the boot element
+  //: cap; the comments section's shell is the pattern). It sits before the dock's
+  //: last action, the filled one. Inline: a named function is a global.
+  const moreId = dock.dataset.dockMore;
+  const actions = dock.querySelector(":scope > .dock-actions");
+  if (fold && moreId && actions && !document.getElementById(moreId)) {
+    const more = document.createElement("details");
+    more.className = "doc-dock-menu dock-menu dock-more";
+    more.id = moreId;
+    const summary = document.createElement("summary");
+    summary.className = "ghost small icon-only doc-dock-menu-btn";
+    summary.title = "More";
+    summary.setAttribute("aria-label", "More");
+    const glyph = document.createElement("i");
+    glyph.className = "ph ph-dots-three";
+    glyph.setAttribute("aria-hidden", "true");
+    summary.append(glyph);
+    const list = document.createElement("div");
+    list.className = "doc-dock-menu-list dock-menu-list";
+    more.append(summary, list);
+    actions.lastElementChild.before(more);
+  }
   const menu = dock.querySelector(":scope > .dock-actions > .dock-more > .dock-menu-list");
   if (menu) {
     foldZoneIntoMenu(dock, menu, fold);
@@ -2131,6 +2159,10 @@ function foldDockActions(dock, fold) {
 //: answer depends on the width alone and not on what was folded before.
 function fitDock(dock) {
   if (!dock.offsetParent) return; // not on screen: nothing to measure; the observer fires when it shows
+  //: Nothing folded and the row fits: no write, so the read after it settles
+  //: nothing (36ms of style on a Notes press at 4x, INBOX 1534). This runs in
+  //: the observer's report, where the layout is clean.
+  if (!dock.querySelector(".dock-arrange-slot, .dock-action-slot, [data-folded-from]") && !dockTight(dock)) return;
   foldDockArrange(dock, false);
   foldDockActions(dock, false);
   if (!dockTight(dock)) return;
@@ -2293,16 +2325,16 @@ function toggleAutonomousPanel() {
 }
 
 $("semantic-search-toggle")?.addEventListener("change", () => {
-  // `loadEntries`, which is what re-runs the list with the toggle's new
-  // state: this said `loadAllNotes()`, a name no file in frontend/ has ever
-  // defined, so turning semantic search on or off while a search term was in
-  // the box raised a ReferenceError and left the old results on screen.
-  // `tests/test_frontend_symbols.py` is what found it. The same pair, "set
-  // the term, then reload if semantic is on", is written out at the
-  // "Search the notebook" selection action.
+  // `loadEntries` re-runs the list with the toggle's new state (it once
+  // called an undefined name; tests/test_frontend_symbols.py found it).
   if (noteSearch) loadEntries();
+  //: Audit 1028 S83: the closed menu says the filter is on.
+  const on = $("semantic-search-toggle").checked;
+  const summary = $("notes-filter-menu")?.firstElementChild;
+  summary?.classList.toggle("is-on", on);
+  summary?.setAttribute("aria-pressed", String(on));
   //: Turning it on with no engine would otherwise change nothing and say nothing (N25).
-  if ($("semantic-search-toggle").checked && meaningEngineMissing()) toast(MEANING_ENGINE_WORDS, "info");
+  if (on && meaningEngineMissing()) toast(MEANING_ENGINE_WORDS, "info");
 });
 
 // There is no Tags / Recycle bin / Activity shortcut in the notes sidebar, and

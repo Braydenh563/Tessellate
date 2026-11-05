@@ -10,6 +10,17 @@ import pytest
 
 import tests._seed_1031c as seed_c
 
+@pytest.fixture(autouse=True)
+def _a_fixed_day(monkeypatch):
+    """The reply's seed carries the day (`chat_said._reply_seed`), so the phrasing picked for "ticked off" moved with
+    the real calendar: on 2026-11-05 it became "Done. Ticked off ...". Tests use a fixed clock (CLAUDE.md section 8)."""
+    import datetime as _dt
+
+    from tessellate.core import clock
+
+    monkeypatch.setattr(clock, "today", lambda: _dt.date(2026, 11, 4))
+
+
 
 @pytest.fixture
 def notebook(client, session, monkeypatch):
@@ -993,10 +1004,10 @@ def test_a_compare_s_side_headings_start_with_a_capital(notebook, question):
 
 
 def test_no_voice_of_the_compare_openers_claims_a_process():
-    from tessellate.ai import composer
+    from tessellate.ai import composer_phrases
 
     for key in ("of_found", "across_found"):
-        for lead in composer.phrase_options(key):
+        for lead in composer_phrases.phrase_options(key):
             assert not any(p in lead.lower() for p in _PROCESS), lead
 
 

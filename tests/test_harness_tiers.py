@@ -5,7 +5,7 @@ Before: one boolean (`is_small_model`, under 8B) decided the toolbox, the
 schema length, the round cap and the forced first call, and a 1.5B and a 7B
 got the same treatment. Measured on Qwen2.5-1.5B: one "Make a note" turn ran
 948 s to the 2,048-token reply cap, writing the note out in prose, and made no
-call. Now one table (`agent.SIZE_TIERS`) holds every size decision, a small
+call. Now one table (`agent_policy.SIZE_TIERS`) holds every size decision, a small
 model's tool rounds have a reply cap of their own, and prompt bookkeeping the
 model echoes ("similarity 0.54", "note id 3") comes off the answer.
 """
@@ -17,6 +17,8 @@ import re
 import pytest
 
 from tessellate.ai import agent
+from tessellate.ai import agent_policy
+from tessellate.ai import agent_turn
 from tessellate.ai.answer_trim import strip_prompt_metadata, trim_assistant_padding
 
 
@@ -33,7 +35,7 @@ from tessellate.ai.answer_trim import strip_prompt_metadata, trim_assistant_padd
     ],
 )
 def test_a_model_s_name_picks_its_tier(name, tier):
-    assert agent.size_tier(name).name == tier
+    assert agent_policy.size_tier(name).name == tier
 
 
 def test_the_table_is_the_only_place_a_size_decision_lives():
@@ -49,11 +51,11 @@ def test_the_table_is_the_only_place_a_size_decision_lives():
 
 
 def test_the_tiers_differ_where_the_sizes_do():
-    tiny, small, large, unsized = (agent.SIZE_TIERS[n] for n in ("tiny", "small", "large", "unsized"))
+    tiny, small, large, unsized = (agent_policy.SIZE_TIERS[n] for n in ("tiny", "small", "large", "unsized"))
     assert tiny.reply_chars < small.reply_chars and large.reply_chars is None
     assert tiny.narrow_toolbox and small.narrow_toolbox and not large.narrow_toolbox
     assert tiny.force_first_call and not large.force_first_call
-    assert tiny.max_rounds == agent.SMALL_MODEL_MAX_ROUNDS and large.max_rounds is None
+    assert tiny.max_rounds == agent_policy.SMALL_MODEL_MAX_ROUNDS and large.max_rounds is None
     #: A name that says nothing is treated as large: narrowing a capable model
     #: on a guess is the worse mistake (`is_small_model`'s None).
     assert unsized._replace(name="large") == large
@@ -106,7 +108,7 @@ def _ramble(monkeypatch, model):
 
 def test_a_tiny_model_s_tool_round_is_cut_at_its_reply_cap(monkeypatch, app_state):
     fake, text = _ramble(monkeypatch, "qwen2.5-1.5b-instruct")
-    cap = agent.SIZE_TIERS["tiny"].reply_chars
+    cap = agent_policy.SIZE_TIERS["tiny"].reply_chars
     assert fake.sent <= cap + 100, fake.sent
     assert fake.closed
     assert agent.REPLY_CAP_NOTE.strip() in text
@@ -207,7 +209,7 @@ def test_showing_a_picture_in_hand_is_offered_no_board_writes_either(monkeypatch
     called `add_whiteboard_card` for the note and then tried to link cards: a
     write nobody asked for. Showing is not placing."""
     offered = _offered_for(monkeypatch, [_SKETCH_NOTE])
-    assert not set(offered) & agent._CANVAS_TOOLS, offered
+    assert not set(offered) & agent_turn._CANVAS_TOOLS, offered
 
 
 def test_placing_a_picture_on_a_board_still_offers_the_board(monkeypatch, app_state):
@@ -361,7 +363,7 @@ def test_a_forced_first_round_is_offered_the_writes_and_the_finders(monkeypatch,
     assert forced, question
     assert wanted in first, (question, first)
     assert not _HARMLESS_READS & set(first), (question, first)
-    assert set(first) <= agent._WRITE_TOOLS | agent._LOCATING_TOOLS, first
+    assert set(first) <= agent._WRITE_TOOLS | agent_turn._LOCATING_TOOLS, first
 
 
 @pytest.mark.parametrize(

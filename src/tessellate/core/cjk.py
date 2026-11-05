@@ -9,21 +9,22 @@ own while every other script is still counted by its spaces.
 
 from __future__ import annotations
 
-import re
+
+from tessellate.core.lazyre import lazy_compile
 
 #: Han, kana, and the scripts that put no space between words (Thai, Lao,
 #: Khmer, Myanmar); Hangul too, for search only: it has spaces, but its
 #: particles are glued on ("골프를"), so a word is still a substring of a token.
-_UNSEGMENTED = re.compile(
+_UNSEGMENTED = lazy_compile(
     "[က-႟ក-៿฀-໿⺀-⿟぀-ヿ㄰-㆏ㇰ-ㇿ"
     "㐀-䶿一-鿿가-힯豈-﫿ｦ-ﾟ]"
 )
 #: What counts one by one in a word count: Han and kana (Hangul and the
 #: south-east Asian scripts are not counted by character).
-_PER_CHARACTER = re.compile("[⺀-⿟぀-ヿㇰ-ㇿ㐀-䶿一-鿿豈-﫿ｦ-ﾟ]")
+_PER_CHARACTER = lazy_compile("[⺀-⿟぀-ヿㇰ-ㇿ㐀-䶿一-鿿豈-﫿ｦ-ﾟ]")
 #: Ignored: the long-vowel mark, the middle dot, CJK punctuation, and full-width punctuation
 #: (the colon, comma, brackets and so on; full-width letters and digits stay words).
-_IGNORED = re.compile(r"[ー・\u3000-\u303f\uff01-\uff0f\uff1a-\uff20\uff3b-\uff40\uff5b-\uff65]")
+_IGNORED = lazy_compile(r"[ー・\u3000-\u303f\uff01-\uff0f\uff1a-\uff20\uff3b-\uff40\uff5b-\uff65]")
 
 
 def has(text: str) -> bool:

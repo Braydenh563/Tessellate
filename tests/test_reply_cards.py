@@ -74,7 +74,7 @@ def test_the_calculator_works_out_through_the_chat_tools_reader(ai_client):
 def test_every_answer_surface_draws_the_panel_with_one_renderer():
     code = app_js_text()
     assert 'event.type === "panel" && onPanel' in code
-    assert re.search(r'replyKit: \["/css/reply-kit-lazy\.css", "/js/citation-peek\.js", "/js/reply-kit\.js"\]', code)
+    assert re.search(r'replyKit: \["/css/key-grid-lazy\.css", "/css/reply-kit-lazy\.css", "/js/citation-peek\.js", "/js/documents-math\.js", "/js/reply-kit\.js"\]', code)
     kit = (JS / "reply-kit.js").read_text(encoding="utf-8")
     assert "function renderReplyPanel(holder, event)" in kit
     assert "onPanel:" in with_pieces("chat-attach.js")
@@ -116,7 +116,7 @@ def test_the_calculator_is_one_sheet_reached_three_ways():
     assert 'function openCalculator(input = "", mode = "work", { target = null } = {})' in kit and 'name: "calculator"' in kit and "openSheet({" in kit
     #: Accessible: a live result, a keypad that is one Tab stop walked by the
     #: arrows, keys named for what they do, a mode switch that says which is on.
-    assert 'out.setAttribute("aria-live", "polite")' in kit
+    assert 'say.setAttribute("aria-live", "polite")' in kit  # the result is still a live region, now a settled one (INBOX 1530 g L1)
     assert "key.tabIndex = i === 0 ? 0 : -1;" in kit and "ArrowDown: 4" in kit
     assert '"*": "Times"' in kit and 'modes.className = "tabs-line popup-kinds calc-modes";' in kit
     #: The same reader as /calc, and the units from the app's own tables.
@@ -127,7 +127,7 @@ def test_the_calculator_is_one_sheet_reached_three_ways():
     #: The row now comes from the `POPUP_TOOLS` registry (K27), which the
     #: palette, Features, the "/" menus and the Guide all read.
     entry = panes[panes.index('id: "calculator", name: "Calculator and equations"'):][:900]
-    assert "about:" in entry and "popupToolMaths(t ? { target: t } : undefined)" in entry
+    assert "about:" in entry and "popupToolMaths({ target: t || null })" in entry
 
 
 def test_a_note_a_reply_gives_is_previewed_on_every_surface():

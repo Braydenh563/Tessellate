@@ -13,14 +13,17 @@ test.describe.configure({ mode: "serial" });
 // three steps, ticked as each is done; the sample notebook, offered once,
 // answered from with no model, and taken away again to the bin.
 test("a new notebook starts in three steps, and the sample notebook comes and goes", async ({ page }) => {
+  //: The sample load alone is allowed a minute (below), so the default 90 s
+  //: left the last menu click a few seconds on a slow runner (CI 2026-11-04).
+  test.setTimeout(150_000);
   const errors = watchErrors(page);
   await openApp(page);
   // A new notebook asks once whether to check for updates: this walk says no.
   await page.locator(".confirm-overlay button", { hasText: "Don't check" }).click({ timeout: 10_000 }).catch(() => {});
   await openTab(page, "dashboard");
   const steps = page.locator(".first-steps");
-  // The one-row head since INBOX 1301 D2: "Get started", "0 of 3 done".
-  await expect(steps.locator("#first-steps-title")).toHaveText("Get started");
+  // The one-row head since INBOX 1301 D2; its title names what it leads to (unslop 16, was "Get started").
+  await expect(steps.locator("#first-steps-title")).toHaveText("Three steps to a working notebook");
   await expect(steps.locator(".first-steps-count")).toHaveText("0 of 3 done");
   await expect(steps.locator(".start-step.is-done")).toHaveCount(0);
 
@@ -31,11 +34,36 @@ test("a new notebook starts in three steps, and the sample notebook comes and go
 
   // The sample's door is in the card's menu since D2 (it was a row of buttons
   // that changed the card's height).
-  const firstStepsMenu = async (name) => {
-    await steps.locator('button[aria-label="More about the first steps"]').click();
-    return page.locator(".action-menu:not(.hidden) [role=menuitem]", { hasText: name });
+  //: CI only (runs 41741228993, 41751277617; three local passes each): the item
+  //: was found and never visible for a minute. The menu is opened again until
+  //: the item shows, and what the page had is logged for the next reading.
+  const opener = steps.locator('button[aria-label="More about the first steps"]');
+  const firstStepsMenu = async (name, { present = true } = {}) => {
+    const item = page.locator(".action-menu:not(.hidden) [role=menuitem]", { hasText: name });
+    await opener.click();
+    if (!present) return item;
+    await expect(async () => {
+      if (await item.isVisible()) return;
+      console.log("first steps menu not shown:", await page.evaluate(() => [...document.querySelectorAll(".action-menu:not(.hidden)")].map((m) => {
+        const r = m.getBoundingClientRect();
+        return { items: m.textContent.trim().slice(0, 80), rect: [r.x, r.y, r.width, r.height].map(Math.round), connected: m.isConnected, display: getComputedStyle(m).display, visibility: getComputedStyle(m).visibility, expanded: document.querySelector(".first-steps .kebab-opener")?.getAttribute("aria-expanded") };
+      })));
+      await page.keyboard.press("Escape");
+      await opener.click();
+      await expect(item).toBeVisible({ timeout: 2_000 });
+    }).toPass({ timeout: 30_000 });
+    return item;
   };
-  await (await firstStepsMenu("Try a sample notebook")).click();
+  //: The dashboard redraws First steps when the notebook changes, which can
+  //: replace the open menu between finding the item and clicking it (CI
+  //: 2026-11-04: visible, then the click waited out the test). Open and
+  //: click as one step, retried.
+  const pickFirstStep = async (name) => {
+    await expect(async () => {
+      await (await firstStepsMenu(name)).click({ timeout: 3_000 });
+    }).toPass({ timeout: 40_000 });
+  };
+  await pickFirstStep("Try a sample notebook");
   // Eight saves, the first loading the search model: allowed a minute.
   await expect.poll(async () => (await api(page, "/help/sample-notebook")).live, { timeout: 60_000 }).toBe(8);
 
@@ -50,10 +78,10 @@ test("a new notebook starts in three steps, and the sample notebook comes and go
   await openTab(page, "dashboard");
   // Your name and an answer; the sample notes are not your first note.
   await expect(steps.locator(".start-step.is-done")).toHaveCount(2);
-  await (await firstStepsMenu("Remove the sample notes")).click();
+  await pickFirstStep("Remove the sample notes");
   await expect.poll(async () => (await api(page, "/help/sample-notebook")).live).toBe(0);
   // Offered once: not again on this notebook.
-  await expect(await firstStepsMenu("Try a sample notebook")).toHaveCount(0);
+  await expect(await firstStepsMenu("Try a sample notebook", { present: false })).toHaveCount(0);
   await page.keyboard.press("Escape");
   const categories = (await api(page, "/categories")).map((c) => c.name);
   expect(categories, "the sample's categories went with it").not.toContain("Recipes");

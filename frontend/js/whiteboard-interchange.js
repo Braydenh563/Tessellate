@@ -8,11 +8,11 @@
 //
 // - **Mermaid out** (`wbBoardToMermaid`): the board's shapes, text boxes and
 //   cards that a connector joins, as a `flowchart` with the connector labels.
-// - **Mermaid in** (`wbMermaidParse`, `wbMermaidLayout`): the `graph` and
-//   `flowchart` subset people write (rectangles, rounded, diamonds, circles;
-//   `-->`, `---`, `-.->`, `==>`, labels as `|yes|` or `-- yes -->`; chains
-//   and `;`), laid out in rows by depth, placed as shapes and elbow
-//   connectors, one undo step.
+// - **Mermaid in** (`diagramModel.parse` in documents-mermaid.js, 1546 D4: the
+//   one flowchart grammar; `wbMermaidLayout` here): the `graph` and `flowchart`
+//   subset people write (rectangles, rounded, diamonds, circles; `-->`, `---`,
+//   `-.->`, `==>`, labels as `|yes|` or `-- yes -->`; chains and `;`), laid
+//   out in rows by depth, placed as shapes and elbow connectors, one undo step.
 // - **An outline of a free board** (`wbBoardOutline`): its frames in
 //   presentation order, what lies in each in reading order, then the rest;
 //   Markdown a document or another app reads.
@@ -28,18 +28,14 @@ const WB_MERMAID_SHAPES = {
   circle: ["((", "))"],
 };
 
-//: Words safe inside a Mermaid node or edge label: quotes, brackets and the
-//: bar would end it early.
-function wbMermaidText(text) {
-  return String(text || "").replace(/["[\](){}|<>#;]/g, " ").replace(/\s+/g, " ").trim().slice(0, 120) || " ";
-}
-
 //: The board as a Mermaid flowchart: every connector whose two ends are a
 //: shape, a text box or a card, and the things it joins. Pure: reads `state`.
 //: `frameOf(kind, item)` (the board passes one) names the frame an item lies
 //: in, `{id, title}` or null: those items are written inside a `subgraph`
 //: of the frame's title, so frames go out and come back as frames.
 function wbBoardToMermaid(state, cardTitle = (node) => `Note ${node.entry_id}`, frameOf = null) {
+  //: Words safe inside a node or edge label: quotes, brackets and the bar would end it early.
+  const safeWords = (text) => String(text || "").replace(/["[\](){}|<>#;]/g, " ").replace(/\s+/g, " ").trim().slice(0, 120) || " ";
   const ids = new Map();
   const loose = [];
   const framed = new Map();
@@ -70,7 +66,7 @@ function wbBoardToMermaid(state, cardTitle = (node) => `Note ${node.entry_id}`, 
       if (!framed.has(frame.id)) framed.set(frame.id, { title: frame.title, lines: [] });
       bucket = framed.get(frame.id).lines;
     }
-    bucket.push(`${id}${open}"${wbMermaidText(words)}"${close}`);
+    bucket.push(`${id}${open}"${safeWords(words)}"${close}`);
     return id;
   };
   const find = (kind, id) => (state[{ node: "nodes", object: "objects", sketch: "sketches" }[kind]] || []).find((i) => i.id === id);
@@ -87,116 +83,17 @@ function wbBoardToMermaid(state, cardTitle = (node) => `Note ${node.entry_id}`, 
     if (!s || !t) continue;
     const a = declare(sKind, s), b = declare(tKind, t);
     const arrow = (data.endCap && data.endCap !== "none") || data.endStyle === "end" || data.endStyle === "both" ? "-->" : "---";
-    const label = data.label ? `|${wbMermaidText(data.label)}|` : "";
+    const label = data.label ? `|${safeWords(data.label)}|` : "";
     edges.push(`  ${a} ${arrow}${label} ${b}`);
   }
   const lines = ["flowchart TD"];
   let f = 0;
   for (const { title, lines: inside } of framed.values()) {
     f += 1;
-    lines.push(`  subgraph f${f} ["${wbMermaidText(title)}"]`, ...inside.map((l) => `    ${l}`), "  end");
+    lines.push(`  subgraph f${f} ["${safeWords(title)}"]`, ...inside.map((l) => `    ${l}`), "  end");
   }
   lines.push(...loose.map((l) => `  ${l}`), ...edges);
   return lines.join("\n") + "\n";
-}
-
-//: The `graph`/`flowchart` subset, to `{ dir, nodes: [{id, text, shape,
-//: group}], edges: [{from, to, label, arrow}], subgraphs: [{id, title,
-//: parent}] }`. A `subgraph` (nested or not, `subgraph id [Title]`,
-//: `subgraph id`, or `subgraph Some title`) up to its `end` holds every node
-//: first named inside it, and comes in as a frame (wb-phase2 step 2; it was
-//: skipped). An edge may name a subgraph: it joins the frame. Unknown lines
-//: (style, classDef, click, direction) are skipped and counted, never fatal.
-function wbMermaidParse(source) {
-  const out = { dir: "TD", nodes: [], edges: [], subgraphs: [], skipped: 0 };
-  const byId = new Map();
-  const open = [];
-  const node = (id, text = null, shape = null) => {
-    let n = byId.get(id);
-    if (!n) {
-      n = { id, text: id, shape: "rect", group: null };
-      byId.set(id, n);
-      out.nodes.push(n);
-    }
-    if (n.group == null && open.length) n.group = open[open.length - 1];
-    if (text != null) n.text = text;
-    if (shape) n.shape = shape;
-    return n;
-  };
-  //: One node reference: an id with an optional shape and text.
-  const NODE = /^\s*([A-Za-z0-9_]\w*)\s*(\(\(([^)]*)\)\)|\(\[([^\]]*)\]\)|\[\[([^\]]*)\]\]|\[([^\]]*)\]|\(([^)]*)\)|\{([^}]*)\}|>([^\]]*)\])?/;
-  const unquote = (t) => String(t ?? "").trim().replace(/^"(.*)"$/, "$1").trim();
-  const takeNode = (text) => {
-    const m = NODE.exec(text);
-    if (!m) return null;
-    let shape = null, words = null;
-    if (m[3] != null) [shape, words] = ["circle", m[3]];
-    else if (m[4] != null) [shape, words] = ["rect", m[4]];
-    else if (m[5] != null) [shape, words] = ["rect", m[5]];
-    else if (m[6] != null) [shape, words] = ["rect", m[6]];
-    else if (m[7] != null) [shape, words] = ["rect", m[7]];
-    else if (m[8] != null) [shape, words] = ["diamond", m[8]];
-    else if (m[9] != null) [shape, words] = ["rect", m[9]];
-    node(m[1], words == null ? null : unquote(words), shape);
-    return { id: m[1], rest: text.slice(m[0].length) };
-  };
-  //: An edge between two references: the arrow, then an optional label in
-  //: bars, or a label written inside the arrow (`-- yes -->`).
-  const EDGE = /^\s*(?:(--|==|-\.)\s*([^-=.>|][^>]*?)\s*(-->|==>|\.->|---|-\.-)|(-->|---|==>|-\.->|-\.-|===|--o|--x))\s*(?:\|([^|]*)\|)?/;
-  for (const raw of String(source || "").split(/\n|;/)) {
-    const line = raw.replace(/%%.*$/, "").trim();
-    if (!line) continue;
-    const head = /^(graph|flowchart)\s*(TD|TB|BT|LR|RL)?\s*$/i.exec(line);
-    if (head) {
-      out.dir = (head[2] || "TD").toUpperCase().replace("TB", "TD");
-      continue;
-    }
-    const sub = /^subgraph\s+(.+)$/.exec(line);
-    if (sub) {
-      const rest = sub[1].trim();
-      const named = /^([A-Za-z0-9_][\w-]*)\s*\[\s*(.*?)\s*\]$/.exec(rest);
-      const id = named ? named[1] : rest;
-      const title = named ? unquote(named[2]) || id : unquote(rest);
-      if (!out.subgraphs.some((g) => g.id === id)) out.subgraphs.push({ id, title, parent: open.length ? open[open.length - 1] : null });
-      open.push(id);
-      continue;
-    }
-    if (/^end$/.test(line) && open.length) {
-      open.pop();
-      continue;
-    }
-    if (/^(style|classDef|class|click|linkStyle|subgraph|end|direction)\b/.test(line)) {
-      out.skipped += 1;
-      continue;
-    }
-    let first = takeNode(line);
-    if (!first) {
-      out.skipped += 1;
-      continue;
-    }
-    let rest = first.rest;
-    while (rest.trim()) {
-      const e = EDGE.exec(rest);
-      if (!e) {
-        out.skipped += 1;
-        break;
-      }
-      const arrowText = e[3] || e[4] || "";
-      const label = unquote(e[5] ?? e[2] ?? "");
-      const next = takeNode(rest.slice(e[0].length));
-      if (!next) {
-        out.skipped += 1;
-        break;
-      }
-      out.edges.push({ from: first.id, to: next.id, label, arrow: />|o$|x$/.test(arrowText), dashed: /\./.test(arrowText) });
-      first = next;
-      rest = next.rest;
-    }
-  }
-  //: A subgraph named in an edge is the frame, not a node of its own.
-  const groups = new Set(out.subgraphs.map((g) => g.id));
-  out.nodes = out.nodes.filter((n) => !groups.has(n.id));
-  return out;
 }
 
 //: Rows by depth from the nodes nothing points at (a cycle's entry is its
@@ -903,7 +800,7 @@ async function wbImportBoardRows(rows, at = wbViewCentre()) {
 async function wbImportMermaid(source, at = wbViewCentre()) {
   const kind = wbMermaidKind(source) || "flowchart";
   if (kind === "sequence") return wbImportMermaidSequence(source, at);
-  const graph = kind === "state" ? wbMermaidStateParse(source) : kind === "class" ? wbMermaidClassParse(source) : wbMermaidParse(source);
+  const graph = kind === "state" ? wbMermaidStateParse(source) : kind === "class" ? wbMermaidClassParse(source) : diagramModel.parse(source) || { nodes: [], edges: [] };
   if (!graph.nodes.length) {
     toast("No diagram found. Start with a line like: flowchart TD, stateDiagram, classDiagram or sequenceDiagram", "info");
     return 0;
@@ -933,7 +830,7 @@ async function wbImportMermaid(source, at = wbViewCentre()) {
       const data = { type: "link-straight", route: "elbow", sourceId: s, sourceKind: sKind, targetId: t, targetKind: tKind, color: ink, width: 2 };
       if (e.endCap || e.arrow) data.endCap = wbMermaidCap(e.endCap || "arrow");
       if (e.startCap) data.startCap = wbMermaidCap(e.startCap);
-      if (e.dashed) data.dash = "dashed";
+      if (e.dashed || e.style === "dotted") data.dash = "dashed";
       if (e.label) data.label = e.label;
       const link = await apiJson("/whiteboard/sketches", { method: "POST", body: JSON.stringify({ data: JSON.stringify(data), x: 0, y: 0, z: wbStackNewZ("sketch"), board_id: window.currentBoardId ?? null }) });
       wbState.sketches.push(link);
@@ -941,7 +838,9 @@ async function wbImportMermaid(source, at = wbViewCentre()) {
   });
   renderWhiteboardNow();
   const frames = frameIds.size ? ` in ${nounCount(frameIds.size, "frame")}` : "";
-  const said = `Brought in ${graph.nodes.length} shapes${frames} and ${graph.edges.length} connectors${graph.skipped ? `; ${nounCount(graph.skipped, "line")} left out` : ""}.`;
+  //: The model keeps a line it cannot place (`kept`); the other readers count `skipped`.
+  const skipped = graph.skipped || graph.kept?.length || 0;
+  const said = `Brought in ${graph.nodes.length} shapes${frames} and ${graph.edges.length} connectors${skipped ? `; ${nounCount(skipped, "line")} left out` : ""}.`;
   wbAnnounce(said);
   toast(said);
   return graph.nodes.length;
@@ -1366,11 +1265,9 @@ async function wbThumbFlush() {
 // with draw.io into the whiteboard". An object of kind `diagram` keeps its
 // source (`data.mermaid`) and nothing drawn: the notes' own hidden frame
 // (mermaid-draw.js, loaded only when a board has one) draws it, so a theme
-// change redraws it and an edit is one Save. Double-click edits it; "Turn
-// into shapes" hands the source to `wbImportMermaid` for editable shapes.
+// change redraws it and an edit is one Save. Double-click edits it in the block builder; "Turn
+// into shapes" (in its menu) hands the source to `wbImportMermaid` for editable shapes.
 
-const WB_DIAGRAM_SAMPLE = "flowchart TD\n  A[Start] --> B{Ready?}\n  B -->|yes| C[Ship it]";
-const wbDiagramDialogState = { target: null, timer: 0 };
 
 //: The drawing already made for this item's source in the theme in force, as
 //: an image address, or "": export and the thumbnail are synchronous.
@@ -1408,7 +1305,7 @@ function wbDiagramDataUrl(obj) {
 function wbBuildDiagram(el, d) {
   el.attr("role", "img").on("dblclick", (event) => {
     event.stopPropagation();
-    if (!wbIsLocked("object", d)) wbOpenDiagramDialog(d);
+    if (!wbIsLocked("object", d)) wbEditDiagram(d);
   });
 }
 
@@ -1417,6 +1314,22 @@ function wbBuildDiagram(el, d) {
 function wbPaintDiagram(node, d) {
   const source = d.data?.mermaid || "";
   node.setAttribute("aria-label", `Mermaid ${wbMermaidKind(source) || ""} diagram`.replace("  ", " "));
+  //: 1621 D3, the snapshot rule: a linked diagram redraws from its Library row and rewrites `data.mermaid`
+  //: as an ordinary silent save when they differ; a row that is gone draws the snapshot and says so.
+  if (d.data?.diagram_id && !node._wbRow) {
+    node._wbRow = apiJson(`/documents/${d.data.diagram_id}`, { silent: true }).then((row) => {
+      const text = String(row?.content || "").trim();
+      if (row?.file_type !== "mmd" || !text || text === source.trim()) return;
+      d.data = { ...d.data, mermaid: text };
+      wbSaveObject(d);
+      wbPaintDiagram(node, d);
+    }, (error) => {
+      if (error?.status !== 404) return;
+      d._wbGone = true;
+      node.setAttribute("title", "The linked diagram was deleted");
+      wbAnnounce("The linked diagram was deleted");
+    });
+  }
   ensureModule("mermaid").then(() => {
     const key = `${source}\u0000${mermaidThemeNow(wbDiagramLook(d)).key}`;
     if (node._wbDiagramKey === key) return;
@@ -1453,51 +1366,33 @@ async function wbInsertDiagram(source) {
   return made;
 }
 
-//: Insert opens it empty with a sample; double-click opens it on an item.
-function wbOpenDiagramDialog(d = null) {
-  const dialog = document.getElementById("wb-diagram-dialog");
-  const field = document.getElementById("wb-diagram-text");
-  if (!dialog || !field) return;
-  wbDiagramDialogState.target = d;
-  field.value = d?.data?.mermaid || WB_DIAGRAM_SAMPLE;
-  document.getElementById("wb-diagram-title").textContent = d ? "Edit diagram" : "Mermaid diagram";
-  document.getElementById("wb-diagram-save").textContent = d ? "Save" : "Add to board";
-  const shapes = document.getElementById("wb-diagram-shapes");
-  shapes.hidden = !d;
-  shapes.disabled = !wbMermaidKind(field.value);
-  wbDiagramPreview();
-  dialog.showModal();
-  field.focus();
-}
-
-function wbDiagramPreview() {
-  const source = document.getElementById("wb-diagram-text")?.value || "";
-  const well = document.getElementById("wb-diagram-preview");
-  if (!well) return;
-  const shown = { data: { ...(wbDiagramDialogState.target?.data || {}), mermaid: source } };
-  ensureModule("mermaid").then(() => mermaidRequest(source, wbDiagramLook(shown))).then((result) => {
-    if ((document.getElementById("wb-diagram-text")?.value || "") !== source) return;
-    const url = wbDiagramDataUrl(shown);
-    const img = url ? Object.assign(document.createElement("img"), { src: url, alt: "Preview of the diagram" }) : null;
-    well.replaceChildren(img || Object.assign(document.createElement("p"), { className: "muted", textContent: result?.error || "Nothing to draw yet." }));
+//: Insert opens the builder on a sample; a double-click opens it on an item (1546 D6: the one block
+//: editor, in a dialog; the textarea dialog this was is gone). Done saves, Cancel changes nothing.
+function wbEditDiagram(d = null) {
+  openDiagramBuilder({
+    source: d?.data?.mermaid || diagramModel.starter,
+    title: d ? "Edit diagram" : "Diagram builder",
+    shapes: d ? (source) => (wbMermaidKind(source) ? wbDiagramToShapes(d, source) : toast("Shapes cover flowchart, state, class and sequence diagrams.")) : null,
+    //: Save to Library (R9c).
+    offer: d && { link: d },
+    onDone: (source, changed) => wbSaveDiagram(d, source, changed),
   });
 }
 
-async function wbSaveDiagramDialog() {
-  const dialog = document.getElementById("wb-diagram-dialog");
-  const source = (document.getElementById("wb-diagram-text")?.value || "").trim();
-  if (!source) {
-    toast("Write the diagram first, or Cancel.");
-    return;
-  }
-  dialog.close();
-  const d = wbDiagramDialogState.target;
-  if (!d) return wbInsertDiagram(source);
-  if (source === d.data?.mermaid) return;
+//: A diagram opened and closed with no change is not saved at all, so its source stays byte for byte.
+async function wbSaveDiagram(d, source, changed) {
+  const text = String(source).trim();
+  if (d && !changed) return;
+  if (!text) return toast("Write the diagram first, or Cancel.");
+  if (!d) return wbInsertDiagram(text);
+  if (text === d.data?.mermaid) return;
   wbPushUndo({ action: "move", kind: "object", id: d.id, before: WB_KIND_INFO.object.payload(d) });
   //: The new drawing's own shape, about the box's centre.
-  const fit = await wbDiagramSize(source);
-  d.data = { ...d.data, mermaid: source };
+  const fit = await wbDiagramSize(text);
+  d.data = { ...d.data, mermaid: text };
+  //: A live link writes the row too, or the next redraw would put the old source back.
+  if (d._wbGone) delete d.data.diagram_id;
+  else if (d.data.diagram_id) await apiJson(`/documents/${d.data.diagram_id}`, { method: "PUT", body: JSON.stringify({ content: text }), silent: true }).catch(() => { d._wbGone = true; delete d.data.diagram_id; });
   Object.assign(d, { x: Math.round(d.x + (d.width - fit.width) / 2), y: Math.round(d.y + (d.height - fit.height) / 2) }, fit);
   await wbSaveObject(d);
   wbScheduleRender();
@@ -1505,25 +1400,9 @@ async function wbSaveDiagramDialog() {
 }
 
 //: Editable shapes where the diagram stood, as one Undo step.
-async function wbDiagramToShapes() {
-  const d = wbDiagramDialogState.target;
-  const source = document.getElementById("wb-diagram-text")?.value || "";
-  if (!d || !wbMermaidKind(source)) return;
-  document.getElementById("wb-diagram-dialog")?.close();
+async function wbDiagramToShapes(d, source) {
   await wbRecordGesture(async () => {
     const made = await wbImportMermaid(source, [d.x + d.width / 2, d.y + d.height / 2]);
     if (made) await wbDeleteObject(d);
   });
 }
-
-onDomReady(() => {
-  const field = document.getElementById("wb-diagram-text");
-  if (!field) return;
-  field.addEventListener("input", () => {
-    clearTimeout(wbDiagramDialogState.timer);
-    document.getElementById("wb-diagram-shapes").disabled = !wbMermaidKind(field.value);
-    wbDiagramDialogState.timer = setTimeout(wbDiagramPreview, 300);
-  });
-  document.getElementById("wb-diagram-save")?.addEventListener("click", wbSaveDiagramDialog);
-  document.getElementById("wb-diagram-shapes")?.addEventListener("click", wbDiagramToShapes);
-});

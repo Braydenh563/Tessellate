@@ -48,9 +48,9 @@ PROSE_AFTER_PANE = ("then", "and", "where", "which", "or", "with", "but", "so", 
 #: Groups a script draws into a pane, which the static markup does not hold:
 #: (pane id, group text) -> the file whose source carries that text.
 JS_DRAWN = {
-    ("learned", "what may run"): "settings.js",
-    ("learned", "margin reader"): "settings.js",
-    ("learned", "model bench"): "settings.js",
+    ("learned", "what may run"): "settings-controls.js",
+    ("learned", "margin reader"): "settings-controls.js",
+    ("learned", "model bench"): "settings-controls.js",
 }
 
 

@@ -202,27 +202,27 @@ def _found_stems(*words):
 
 
 def test_a_past_form_counts_as_the_word():
-    from tessellate.ai import composer
+    from tessellate.ai import composer_unfound
 
-    assert composer._seen("buy", _found_stems("I", "just", "bought", "mouse"))
+    assert composer_unfound._seen("buy", _found_stems("I", "just", "bought", "mouse"))
 
 
 def test_a_dropped_g_counts_as_the_word():
-    from tessellate.ai import composer
+    from tessellate.ai import composer_unfound
 
-    assert composer._seen("gamin", _found_stems("gaming", "mouse"))
+    assert composer_unfound._seen("gamin", _found_stems("gaming", "mouse"))
 
 
 def test_one_letter_off_counts_as_the_word():
-    from tessellate.ai import composer
+    from tessellate.ai import composer_unfound
 
-    assert composer._seen("mouce", _found_stems("mouse"))
+    assert composer_unfound._seen("mouce", _found_stems("mouse"))
 
 
 def test_a_word_no_note_has_is_still_missing():
-    from tessellate.ai import composer
+    from tessellate.ai import composer_unfound
 
-    assert not composer._seen("hotel", _found_stems("gaming", "mouse"))
+    assert not composer_unfound._seen("hotel", _found_stems("gaming", "mouse"))
 
 
 def test_a_sentence_heading_is_not_wrapped_in_your_note():

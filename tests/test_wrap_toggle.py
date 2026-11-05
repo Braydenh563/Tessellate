@@ -30,7 +30,8 @@ def test_one_builder_makes_the_wrap_toggle_and_it_is_a_pressed_toggle() -> None:
     src = _read(JS / "markdown.js")
     body = src[src.index("function wrapToggle(") :].split("\n}\n", 1)[0]
     assert 'button.setAttribute("aria-label", "Wrap lines")' in body
-    assert 'button.setAttribute("aria-pressed", String(on))' in body
+    #: DX23 (a29j, d285e68) passes the boolean; setAttribute writes "true" or "false" either way.
+    assert 'button.setAttribute("aria-pressed", on)' in body
     assert '"Don\'t wrap"' in body and '"Wrap lines"' in body
     assert "ph:text-align-left" in body
     # The choice is remembered per kind, through the prefs store.

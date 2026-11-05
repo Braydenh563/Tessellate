@@ -4,6 +4,7 @@ obj-tray.js, the mode hand-over in obj-drag.js)."""
 from __future__ import annotations
 
 from tests._objmove_node import JS, needs_node, run
+from pathlib import Path
 
 FILES = ["obj-ref.js", "obj-clip.js", "obj-drag.js", "obj-reorder.js", "obj-carry.js", "obj-tray.js"]
 STUBS = """
@@ -98,7 +99,10 @@ def test_a_carried_card_is_valid_over_fields_that_hold_a_link_and_no_others() ->
 @needs_node
 def test_a_card_leaving_its_list_is_carried_and_coming_back_reorders() -> None:
     out = run(FILES, STUBS + """
-    const list = { getBoundingClientRect: () => ({ left: 0, right: 300, top: 0, bottom: 600 }) };
+    const row = {}, popup = { contains: () => false };
+    const list = { getBoundingClientRect: () => ({ left: 0, right: 300, top: 0, bottom: 600 }), contains: (el) => el === row };
+    let over = row;
+    document.elementFromPoint = () => over;
     const g = { surface: { list, unit: { isConnected: true } }, x: 100, y: 100 };
     const verdicts = [];
     verdicts.push(objReorderRoute(g));
@@ -107,9 +111,11 @@ def test_a_card_leaving_its_list_is_carried_and_coming_back_reorders() -> None:
     verdicts.push(objCarryRoute(g));                // carried, not back yet
     g.x = 200; verdicts.push(objCarryRoute(g));     // back over the list
     verdicts.push(objCarryRoute({ x: 1, y: 1 }));   // no home list: always carried
+    // Inside the list's box but under a popup drawn over it (the open tray): carried.
+    over = popup; verdicts.push(objReorderRoute(g), objCarryRoute(g));
     __out(verdicts);
     """)
-    assert out == ["reorder", "reorder", "carry", "carry", "reorder", "carry"]
+    assert out == ["reorder", "reorder", "carry", "carry", "reorder", "carry", "carry", "carry"]
 
 
 @needs_node
@@ -170,3 +176,15 @@ def test_a_remembered_box_that_is_no_longer_on_screen_is_not_pasted_into() -> No
     __out({ shown, hidden: objTrayDestination() });
     """)
     assert out == {"shown": "chat", "hidden": None}
+
+
+def test_a_row_takes_its_item_out_with_a_minus_not_the_close_x():
+    # INBOX 1647: the row's x read as the popover's close.
+    src = (Path(__file__).resolve().parents[1] / "frontend/js/obj-tray.js").read_text(encoding="utf-8")
+    assert 'smallButton("ph:minus-circle", `Take ${ref.title} out of the tray`' in src
+
+
+def test_an_icon_label_carries_its_own_ellipsis():
+    # INBOX 1646: setLabel's span.ph-text is a flex item, so a control's ellipsis never reached it.
+    css = (Path(__file__).resolve().parents[1] / "frontend/css/08-consistency.css").read_text(encoding="utf-8")
+    assert ".ph-text { min-width: 0; overflow: hidden; text-overflow: ellipsis; }" in css

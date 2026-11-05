@@ -37,7 +37,8 @@ def test_the_clamp_is_one_token_that_density_changes():
     spacious = forms[forms.index(':root[data-density="spacious"]'):]
     assert "--note-preview-lines: 5;" in spacious[: spacious.index("}")]
     rule = _css("06-timeline-dialogs.css")
-    rule = rule[rule.index(".entry-content.entry-clamped {"):]
+    #: A long chat question folds with the same clamp (9ac90c4), so the selector is a list.
+    rule = rule[rule.index(".entry-content.entry-clamped,"):]
     rule = rule[: rule.index("}")]
     assert "-webkit-line-clamp: var(--note-preview-lines);" in rule
 

@@ -2141,7 +2141,11 @@ function gcFadeStep(s, still) {
   const last = s.fadeLast || 0;
   s.fadeLast = now;
   const ms = gcTokens.fadeMs ?? GC_FADE_MS;
-  if (still || !ms) return 1;
+  if (still || !ms || s.fadeSnap) {
+    s.fadeSnap = false;
+    s.hoverEase = 1;
+    return 1;
+  }
   const dt = now - last > 100 ? 16.7 : Math.min(now - last, 64);
   return dt / ms;
 }
@@ -2327,11 +2331,17 @@ function gcCameraStill(s) {
 //: each, back to back, and the worker's start and first tick waited behind
 //: them (first tick at 25 s). The fit draws (`gcRevealAfterBalance`), and so
 //: does `gcReveal`, whatever shows the map.
+//: Frames in a row the draw may ask for by itself (about 5 s at 60 fps); a property, not a global.
+gcRequestDraw.selfCap = 300;
 const gcUnframed = (s) => s.canvas?.style.opacity === "0" && !s.fittedOnce;
 
 //: `cheap`: only the camera or the hover changed, so the frame may be composed
 //: from the scene layers (`gcDrawComposed`); anything else repaints them.
 function gcRequestDraw(s = gcTab, cheap = false) {
+  if (!s.drawAsking) s.selfFrames = 0;
+  //: Anything but the label fade's own next frame means the picture under the
+  //: names may have changed (`gcDrawLabels.frame`).
+  if (!s.labelAsking) s.labelFrame = null;
   if (!cheap) s.sceneStale = true;
   if (s.drawQueued || !s.ctx || gcTabHidden(s) || gcUnframed(s)) return;
   s.drawQueued = true;
@@ -2621,7 +2631,18 @@ function gcDrawComposed(s) {
     s.paintMode = null;
   }
   s.composed = true;
-  if (moving) gcRequestDraw(s, true);
+  //: A composed frame that is still moving asks for itself like any other:
+  //: it counts toward the same bound (INBOX 1643).
+  if (moving && (s.selfFrames = (s.selfFrames || 0) + 1) <= gcRequestDraw.selfCap) {
+    s.drawAsking = true;
+    try {
+      gcRequestDraw(s, true);
+    } finally {
+      s.drawAsking = false;
+    }
+  } else if (!moving) {
+    s.selfFrames = 0;
+  }
   return true;
 }
 
@@ -2721,6 +2742,67 @@ function gcDrawLight(s) {
   ctx.globalAlpha = 1;
 }
 
+//: A copy of the visible canvas as it is now, for `gcDrawLabels.frame`.
+gcDrawLabels.keep = function (s) {
+  const base = s.labelBaseCanvas || (s.labelBaseCanvas = document.createElement("canvas"));
+  if (base.width !== s.canvas.width) base.width = s.canvas.width;
+  if (base.height !== s.canvas.height) base.height = s.canvas.height;
+  const ctx = base.getContext("2d");
+  ctx.globalCompositeOperation = "copy";
+  ctx.drawImage(s.canvas, 0, 0);
+  ctx.globalCompositeOperation = "source-over";
+  return base;
+};
+
+//: **A name fading in or out repaints the names, not the map** (PF10, audit
+//: 1031: the label fades asked for a whole frame per display frame, 6 to 29 a
+//: second at 6 to 28 ms each). The whole frame that starts a label-only fade
+//: keeps the canvas as it stood before the names (`s.labelFrame.base`, taken
+//: in `gcDraw` between the names' update and their paint); each frame after it
+//: copies that back and paints the names alone. Every other request for a draw
+//: drops the copy (`gcRequestDraw`), and a camera, size, theme or hover change
+//: is refused here, so the copy is never shown for a map that has moved on.
+gcDrawLabels.frame = function (s) {
+  const f = s.labelFrame;
+  const t = s.transform || d3.zoomIdentity;
+  if (
+    !f || !s.ctx || s.ctx.canvas !== s.canvas || s.hoveredId != null || s.dragNode || s.layoutRunning ||
+    f.k !== t.k || f.x !== t.x || f.y !== t.y || f.w !== s.dims.w || f.h !== s.dims.h || f.dpr !== s.dpr ||
+    f.tokens !== gcTokens || (s.selfFrames || 0) + 1 >= gcRequestDraw.selfCap
+  ) {
+    return false;
+  }
+  const started = performance.now();
+  const ctx = s.ctx;
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ctx.globalAlpha = 1;
+  ctx.globalCompositeOperation = "copy";
+  ctx.drawImage(f.base, 0, 0);
+  ctx.globalCompositeOperation = "source-over";
+  ctx.setTransform(s.dpr, 0, 0, s.dpr, 0, 0);
+  ctx.save();
+  ctx.translate(t.x, t.y);
+  ctx.scale(t.k, t.k);
+  const fading = gcDrawLabels(ctx, s, f.placed, gcFadeStep(s, gcStill()), t.k);
+  ctx.restore();
+  s.timing.lastFrame = performance.now() - started;
+  s.timing.frames += 1;
+  if (!fading) {
+    s.labelFrame = null;
+    s.selfFrames = 0;
+    s.sceneStale = false;
+    return true;
+  }
+  s.selfFrames = 1 + (s.selfFrames || 0);
+  s.labelAsking = true;
+  try {
+    gcRequestDraw(s, true);
+  } finally {
+    s.labelAsking = false;
+  }
+  return true;
+};
+
 //: **A moving map strokes its thin links as hairlines** (GR1 and GR2 1101).
 //: A link is 1.3 CSS px wide at every zoom, and a stroke wider than one
 //: device pixel is outlined before it is filled: one bucket of 1,879 curved
@@ -2747,6 +2829,7 @@ function gcDraw(s = gcTab) {
   const cam = s.transform || d3.zoomIdentity;
   s.drawnCamera = { x: cam.x, y: cam.y, k: cam.k };
   if (gcLightFrame(s)) return gcDrawLight(s);
+  if (!s.paintMode && gcDrawLabels.frame(s)) return;
   if (!s.paintMode && gcDrawComposed(s)) return;
   s.strokeMoving = Boolean(s.layoutRunning || s.dragNode);
   //: `paintMode` (`gcDrawComposed`): null paints the frame whole; "rest" and
@@ -3439,7 +3522,13 @@ function gcDraw(s = gcTab) {
     book.labelBoxes = placed;
     book.labelsDrawn = placed.length;
   }
-  if (s.paintMode !== "dim" && gcDrawLabels(ctx, s, placedLabels, fadeStep, k)) fading = true;
+  //: A whole frame, on the visible canvas, whose only fade is the names: the
+  //: canvas as it stands before them is kept for the label frames
+  //: (`gcDrawLabels.frame`).
+  const othersFading = fading;
+  const keepable = !s.paintMode && s.ctx.canvas === s.canvas;
+  let labelBase = null;
+  if (s.paintMode !== "dim" && gcDrawLabels(ctx, s, placedLabels, fadeStep, k, keepable && !othersFading ? () => (labelBase = gcDrawLabels.keep(s)) : null)) fading = true;
   if (!over && s.fitCheck > 0) {
     const left = s.fitCheck - 1;
     s.fitCheck = 0;
@@ -3529,6 +3618,12 @@ function gcDraw(s = gcTab) {
   //: costs no frames at all.
   s.pathsStale = gliding && Boolean(s.glideMs);
   const busy = fading || gliding || s.bornPending;
+  const namesOnly =
+    labelBase && !othersFading && !gliding && !s.bornPending && !easing && !s.pillGhost && !s.simScoreLabels.length &&
+    s.hoveredId == null && !s.layoutRunning && !s.dragNode;
+  s.labelFrame = namesOnly
+    ? { base: labelBase, placed: placedLabels, k, x: t.x, y: t.y, w: s.dims.w, h: s.dims.h, dpr: s.dpr, tokens: gcTokens }
+    : null;
   if (!s.paintMode) {
     //: Nothing but the hover is left moving: the next frame can be composed,
     //: from the hover this one showed.
@@ -3539,8 +3634,43 @@ function gcDraw(s = gcTab) {
   //: A fade of the whole map keeps painting whole frames; a hover's ease, or
   //: anything the hover layer moves, asks for a composed one.
   const cheap = over || !busy;
-  if (cheap && (easing || busy)) gcRequestDraw(s, true);
-  else if (easing || fading || gliding || s.bornPending) gcRequestDraw(s);
+  //: **A frame that asks for itself has an end** (INBOX 1630, "raf 278ms on
+  //: graph ... 53 calls/s" while still): a fade or a hover ease lasts under a
+  //: fifth of a second, so a map still asking for its own next frame after
+  //: 300 of them in a row has a value that is not landing. The next
+  //: frame lands every fade at once (`s.fadeSnap`); if it is still asking
+  //: after that, the loop stops and waits for the next real change.
+  //: INBOX 1643 ("54 calls/s" for 10 s after that cap): the cap skipped a
+  //: glide and a fade-in, which are the other two things a frame asks for
+  //: itself, so a value stuck there still drew every frame. All four count
+  //: now, and any request from outside the draw (a tick, a pointer, a
+  //: resize) starts the count again (`gcRequestDraw`), so a tick-driven glide
+  //: is never cut short; only a chain the draw keeps going alone is.
+  if (easing || fading || gliding || s.bornPending) {
+    s.selfFrames = (s.selfFrames || 0) + 1;
+    if (s.selfFrames === gcRequestDraw.selfCap) {
+      s.fadeSnap = true;
+      gcGlideFinish(s);
+      for (const node of s.nodes) node._born = undefined;
+    } else if (s.selfFrames > gcRequestDraw.selfCap) {
+      s.selfFrames = 0;
+      return;
+    }
+  } else {
+    s.selfFrames = 0;
+  }
+  s.drawAsking = true;
+  try {
+    if (cheap && (easing || busy)) gcRequestDraw(s, true);
+    else if (namesOnly) {
+      //: Its own next frame, so the kept canvas stays (`gcRequestDraw`).
+      s.labelAsking = true;
+      gcRequestDraw(s, true);
+    } else if (easing || fading || gliding || s.bornPending) gcRequestDraw(s);
+  } finally {
+    s.labelAsking = false;
+    s.drawAsking = false;
+  }
 }
 
 //: The line under the pointer, drawn again over the rest, wider and in its
@@ -3666,16 +3796,32 @@ function gcDrawEdgeHover(ctx, s, k, fadeStep, curved) {
       ctx.stroke(edge._path2d);
       continue;
     }
-    ctx.moveTo(a.x, a.y);
-    if (curved && !s.tree) {
-      const bow = gcBowPoint(a, b);
-      ctx.quadraticCurveTo(bow.x, bow.y, b.x, b.y);
-    } else ctx.lineTo(b.x, b.y);
+    //: The lit line is drawn over the dots, so it starts and ends at each dot's
+    //: rim, not its centre (the owner, 2026-11-03: "the links visible go to the
+    //: centre and not the edge of the nodes"). Each end is pulled in toward the
+    //: curve's control point, which is the curve's own direction at that end.
+    const bow = curved && !s.tree ? gcBowPoint(a, b) : null;
+    const from = gcDrawEdgeHover.rim(a, bow || b, k);
+    const to = gcDrawEdgeHover.rim(b, bow || a, k);
+    ctx.moveTo(from.x, from.y);
+    if (bow) ctx.quadraticCurveTo(bow.x, bow.y, to.x, to.y);
+    else ctx.lineTo(to.x, to.y);
     ctx.stroke();
   }
   ctx.globalAlpha = 1;
   return fading;
 }
+
+//: Where a line leaving `node` toward `toward` crosses the dot's drawn rim
+//: (its radius with the hover growth, never under the minimum dot size).
+gcDrawEdgeHover.rim = function gcEdgeRim(node, toward, k) {
+  const r = Math.max(node.r + (node._grow || 0), GC_MIN_DOT_PX / k) + 1 / k;
+  const dx = toward.x - node.x;
+  const dy = toward.y - node.y;
+  const len = Math.hypot(dx, dy);
+  if (!(len > r)) return node;
+  return { x: node.x + (dx / len) * r, y: node.y + (dy / len) * r };
+};
 
 //: One similarity score pill, at `alpha` of its full strength.
 function gcDrawPill(ctx, pill, k, alpha) {
@@ -3701,7 +3847,7 @@ function gcDrawPill(ctx, pill, k, alpha) {
 //: ghost of its old self fading out. The collision pass only ever sees this
 //: frame's labels: a name on its way out holds no space. Says whether
 //: anything is still mid-fade.
-function gcDrawLabels(ctx, s, placed, fadeStep, k) {
+function gcDrawLabels(ctx, s, placed, fadeStep, k, beforePaint = null) {
   const lit = s.labelLit || new Map();
   if (!s.labelGhosts) s.labelGhosts = [];
   const next = new Map();
@@ -3746,6 +3892,7 @@ function gcDrawLabels(ctx, s, placed, fadeStep, k) {
     return true;
   });
   s.labelLit = next;
+  if (fading && beforePaint) beforePaint();
   if (!draws.length && !leaving.length) return fading;
   ctx.font = `500 ${12 / k}px ${gcTokens.font}`;
   ctx.textBaseline = "middle";
@@ -4787,7 +4934,7 @@ function gcWireSelectionDock(s = gcTab) {
       body: JSON.stringify({ name, note_ids: [...ids], edges, root_id: picked }),
     }).catch(() => null);
     if (!board?.id) {
-      toast("Could not create the map.");
+      toast("Couldn't create the map.");
       return;
     }
     pushBinPairUndo(`Made the mind map “${name}”`, `/entries/${board.id}`, `/entries/${board.id}/restore`, true, () => (typeof refreshBoardList === "function" ? refreshBoardList() : null));
@@ -5087,10 +5234,22 @@ function gcHoverCardFrame(s) {
   const w = card._w || 0;
   const h = card._h || 0;
   const gap = 12;
+  //: **Inside what can be seen** (INBOX 1630, "the graph popup gets covered by
+  //: the top bar"): the map's box can start under the app's top bar, so the
+  //: card's floor is the bar's bottom, not the box's top. When centring beside
+  //: the dot would cross that floor the card goes below the dot instead.
+  const bar = document.getElementById("top-bar");
+  const seen = bar && bar.offsetParent !== null ? bar.getBoundingClientRect().bottom - s.canvas.getBoundingClientRect().top : 0;
+  const floor = Math.max(gap, seen + gap);
   let left = sx + r + gap;
   if (left + w > s.dims.w - gap) left = sx - r - gap - w;
+  let top = sy - h / 2;
+  if (top < floor) {
+    top = sy + r + gap;
+    left = sx - w / 2;
+  }
   left = Math.max(gap, Math.min(left, s.dims.w - w - gap));
-  const top = Math.max(gap, Math.min(sy - h / 2, s.dims.h - h - gap));
+  top = Math.max(floor, Math.min(top, s.dims.h - h - gap));
   const at = `${Math.round(left)},${Math.round(top)}`;
   if (card._at === at) return;
   card._at = at;
@@ -5258,6 +5417,8 @@ function gcWorkerParams(s = gcTab) {
     //: The lines the worker keeps clear of dots are the lines drawn
     //: (`clearanceForce`, INBOX 693): curved or straight.
     curved: gcCurvedLinks(s),
+    //: Tidy spacing (INBOX 1529): keep dots off the lines, off by default.
+    tidy: prefs.get("graph-tidy", null) === "1",
     //: How the force layout arranges itself (INBOX 693, `#graph-shape`; the
     //: worker's `SHAPES`).
     shape: gcShape(s),
@@ -5761,6 +5922,8 @@ function gcShowEmpty(show, filtered = null) {
   empty.style.display = show ? "grid" : "none";
   empty.classList.toggle("hidden", !show);
   const isFiltered = Boolean(show && filtered);
+  //: Nothing to map means nothing to key or zoom (graph-lazy.css, `.graph-bare`); a map the filters emptied keeps both, they are how it comes back.
+  document.getElementById("tab-graph")?.classList.toggle("graph-bare", Boolean(show && !filtered));
   document.getElementById("graph-empty-fresh")?.classList.toggle("hidden", isFiltered);
   document.getElementById("graph-empty-filtered")?.classList.toggle("hidden", !isFiltered);
   if (!isFiltered) return;

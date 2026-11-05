@@ -21,6 +21,7 @@ function editAndResend(bubble, text) {
   if (bubble.querySelector(".msg-edit")) return; // already editing
   const body = bubble.querySelector(".msg-body");
   const actions = bubble.querySelector(".msg-actions");
+  const more = bubble.querySelector(":scope > .entry-more"); // a long question's Show more (addBubble)
   const original = text;
 
   const editor = document.createElement("div");
@@ -50,6 +51,7 @@ function editAndResend(bubble, text) {
     editor.remove();
     body.classList.remove("hidden");
     actions?.classList.remove("hidden");
+    more?.classList.remove("hidden");
   };
   //: Cancel and Esc give the keyboard back to the button that opened the editor (AI14).
   const cancelEdit = () => {
@@ -72,7 +74,9 @@ function editAndResend(bubble, text) {
     if (edited === original) return close();
 
     const bubbles = [...$("chat-messages").querySelectorAll(".msg")];
-    const turnIndex = Math.floor(bubbles.indexOf(bubble) / 2);
+    //: The turn rides on the bubble (addBubble), not on its place in the DOM: an offer
+    //: card or a skipped bubble after a failed turn would shift a position count.
+    const turnIndex = Number(bubble.dataset.turn);
     //: This turn's answer re-runs with the new wording; if it changed notes,
     //: ask first (confirmRerun, chat.js).
     if (!(await confirmRerun(bubbles[bubbles.indexOf(bubble) + 1]))) return;
@@ -105,6 +109,7 @@ function editAndResend(bubble, text) {
 
   body.classList.add("hidden");
   actions?.classList.add("hidden");
+  more?.classList.add("hidden");
   bubble.appendChild(editor);
   box.focus();
   box.setSelectionRange(box.value.length, box.value.length);
@@ -243,6 +248,10 @@ async function regenerateLast() {
     noteIds: lastChatAttachments,
     imageMediaIds: lastChatImageAttachments.map((img) => img.id),
     documentIds: lastChatDocumentAttachments.map((d) => d.id),
+    //: Files and maps ride along on a retry too, or the new answer loses what the first one read (INBOX 1687).
+    fileIds: lastChatFileAttachments.filter((f) => typeof f.id === "number").map((f) => f.id),
+    mediaFileIds: lastChatFileAttachments.filter((f) => typeof f.id === "string").map((f) => Number(f.id.slice(1))),
+    boardIds: lastChatBoardAttachments.map((b) => b.id),
     attempt: regenerateLastAnswer.retries,
   });
 }
@@ -256,7 +265,7 @@ function questionForBubble(bubble) {
   while (node) {
     node = node.previousElementSibling;
     if (node && node.classList.contains("msg") && node.classList.contains("user")) {
-      return { bubble: node, text: (node.querySelector(".msg-body")?.textContent || "").trim() };
+      return { bubble: node, text: (node.dataset.sent ?? node.querySelector(".msg-body")?.textContent ?? "").trim() };
     }
   }
   return null;

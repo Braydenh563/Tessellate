@@ -15,7 +15,7 @@ import re
 from dataclasses import dataclass, field
 from typing import Any
 
-from tessellate.ai import question_noise, recognise as rec, when as when_words
+from tessellate.ai import question_noise, recognise as rec, repair_turn, when as when_words
 from tessellate.ai.composer_ask import _stem, _words, classify, rephrase, subject_terms
 from tessellate.ai.composer_body import _BRIEF, _FULL, _NOTE_NOUNS, _asked_span
 from tessellate.ai.composer_phrases import PHRASES
@@ -79,7 +79,8 @@ def _subject_pick(question: str, shape: str, terms: list[str]) -> list[tuple] | 
     #: check-up", "sourdough"), asked the other way round in time.
     own = _own_terms(terms)
     subject = _asked_span(question, own)
-    if subject and len(subject.split()) == len(own) <= 3 and shape not in ("status", "recent", "compare"):
+    #: Never a stop word, a pronoun or a piece of a contraction (INBOX 1590: "about ve").
+    if subject and query_understanding.is_chip_subject(subject) and len(subject.split()) == len(own) <= 3 and shape not in ("status", "recent", "compare"):
         prefix = "next_latest_a" if shape == "when" or _pick(question, "next", ["a", "b"]) == "a" else "next_when_a"
         return [("template", PHRASES[prefix]), ("asked", subject), ("template", PHRASES["next_tag_b"])]
     return None
@@ -286,7 +287,8 @@ def follow_on(question: str, history: list[dict] | None) -> FollowOn | None:
     defining = _defining_ask(question, turns)
     if defining is not None:
         return defining
-    if not turns:
+    #: "I don't need that" is a reply, not a question about "that" (INBOX 1668 b).
+    if not turns or repair_turn.is_repair(question):
         return None
     return _follow_one(question, _standing(turns))
 
@@ -348,7 +350,8 @@ def _follow_ordinal(text: str, previous: str, last: dict, turns: list[dict]) -> 
 
 def _follow_correction(text: str, previous: str, last: dict, turns: list[dict]) -> Any:
     correction = _CORRECTION.match(text)
-    if not correction:
+    #: "no, that's wrong" complains; it names no note to prefer (INBOX 1668 b).
+    if not correction or repair_turn.is_repair(text):
         return _NOT_THIS
     #: The second alternative ("I meant the dentist note") fills x2, not x.
     said = (correction.group("x") or correction.group("x2") or "").rstrip(" \t.?!")

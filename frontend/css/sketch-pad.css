@@ -335,6 +335,17 @@
   display: inline-flex;
   gap: var(--space-1);
 }
+/* **Fill only is a filled square, drawn** (the owner: "there's an invisible button here"): it asked for
+   `square-fill`, which the vendored Phosphor subset does not have (fill weights are a separate font), so
+   the button drew nothing. The outline glyph's box, filled with the ink. */
+.sp-mode[data-mode="fill"] > .ph-square::before {
+  content: "";
+  display: block;
+  width: 0.8em;
+  height: 0.8em;
+  border-radius: var(--radius-sm);
+  background: currentColor;
+}
 /* The palette, size and style: on the bar from 820 up, a popover under
    "Colour, size and style" below it (the narrow rules at the end). */
 .sp-style {

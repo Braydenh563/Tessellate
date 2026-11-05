@@ -14,6 +14,8 @@ import json
 import pytest
 
 from tessellate.ai import agent, tools
+from tessellate.ai import fence
+from tessellate.ai import agent_turn
 from tessellate.ai.provider import loads_lenient, normalise_tool_calls
 
 
@@ -215,7 +217,7 @@ def test_a_result_that_fits_is_untouched():
 def test_a_big_page_is_shortened_from_the_back_with_a_note():
     """Measured: a 20-note page of 500-character notes is 11,166 characters
     fenced; the turn had 3,000 left. Before: dropped whole, tools withdrawn."""
-    full = json.dumps(agent.fence.fence_result(_page(), "search_notes"))
+    full = json.dumps(fence.fence_result(_page(), "search_notes"))
     payload = agent._fit_result(_page(), "search_notes", 3000)
     assert payload is not None and len(payload) <= 3000 < len(full)
     data = json.loads(payload)
@@ -281,7 +283,7 @@ def test_no_match_is_not_said_to_be_an_empty_notebook():
     """Qwen2.5-1.5B, four notes saved: "How many notes do I have?" matched
     none by its words, the prompt said "My notebook looks empty", and the
     answer was "There are no notes in your notebook"."""
-    prompt = agent.build_agent_messages("How many notes do I have?", [])[-1]["content"]
+    prompt = agent_turn.build_agent_messages("How many notes do I have?", [])[-1]["content"]
     assert "looks empty" not in prompt
     assert "No notes matched" in prompt and "count_notes" in prompt
 

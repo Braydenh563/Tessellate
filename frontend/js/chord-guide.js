@@ -20,6 +20,9 @@
 // only while the chord is still armed, so a late load after the second key
 // draws nothing.
 
+//: The panel's styles (chord-guide-lazy.css) come with this file, not with the boot sheets.
+lazyScript("/css/chord-guide-lazy.css");
+
 function chordGuideEl() {
   let guide = document.getElementById("chord-guide");
   if (!guide) {

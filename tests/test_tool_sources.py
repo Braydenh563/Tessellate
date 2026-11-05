@@ -14,7 +14,7 @@ change is not a source), and neither does a call that failed.
 
 from __future__ import annotations
 
-from tessellate.ai.agent import SOURCE_SNIPPET_CHARS, _tool_sources
+from tessellate.ai.agent_policy import SOURCE_SNIPPET_CHARS, _tool_sources
 
 
 def test_a_web_search_yields_one_row_per_hit():

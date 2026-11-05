@@ -11,7 +11,6 @@ import importlib
 import json
 import logging
 import re
-import threading
 from datetime import datetime, timedelta
 
 from sqlalchemy import delete, func, or_, select, text, tuple_, update
@@ -23,6 +22,7 @@ from pathlib import Path
 from tessellate.core.database import (
     LIKE_ESCAPE,
     Attachment,
+    MediaUpload,
     Category,
     ChunkVector,
     EmbeddingRecord,
@@ -704,6 +704,7 @@ def _update_entry_fields(
         stored = content_for_entry(entry, content)
         if stored is None:
             raise PermissionError("The encryption key isn't loaded.")
+        flag_private_media(session, content)
         content = stored
     if content is not None and content != entry.content:
         entry.content = content
@@ -1642,245 +1643,6 @@ def rename_attachment(session: Session, attachment: Attachment, new_filename: st
         log_action(session, "renamed", "entry", attachment.entry_id, f"renamed a file to {cleaned}")
         session.commit()
     return attachment
-
-
-# --- tags (tag manager) --------------------------------------------------
-
-
-class _TagCache:
-    """Holds the tag-count cache's mutable state as attributes rather than
-    module globals: CodeQL's `py/unused-global-variable` flags a bare
-    `global NAME` reassignment whose new value is never read again inside
-    the same function (true of both writes below: a cache is written for a
-    *future* call to read, not the one writing it), which is a real pattern
-    for a process-lifetime cache, not a bug. An attribute write sidesteps
-    the check without changing behaviour."""
-
-    def __init__(self) -> None:
-        self.lock = threading.Lock()
-        self.entry: tuple | None = None  # (fingerprint, result), one slot, no LRU needed
-        self.reset_registered = False
-
-
-_tag_cache = _TagCache()
-
-
-def _tag_fingerprint(session: Session) -> tuple:
-    """Cheap signature of everything that can change a tag count: a new
-    entry, an edit, a delete, or a restore. Same shape as routes_graph.py's
-    `_graph_fingerprint`, `Entry.updated_at` has `onupdate=utcnow`, so any
-    tag edit bumps it, and the live-entry count catches soft-delete/restore
-    even on the rare row an edit doesn't touch."""
-    deps = importlib.import_module("tessellate.core.deps")
-
-    live = Entry.is_deleted == False  # noqa: E712
-    return (
-        str(deps.get_config().data_dir),
-        session.scalar(select(func.count(Entry.id)).where(live)) or 0,
-        session.scalar(select(func.max(Entry.updated_at)).where(live)),
-    )
-
-
-def reset_tag_cache() -> None:
-    """Drop the cached tag counts. For the tests, and for a data restore."""
-    with _tag_cache.lock:
-        _tag_cache.entry = None
-
-
-def _ensure_tag_cache_reset_registered() -> None:
-    # `deps` imports (transitively, via ai.embeddings -> ai.model_manager)
-    # back into this module for `log_action`, so `from tessellate.core import
-    # deps` cannot sit at module level here without a circular import at
-    # startup: register lazily, on first use, the same way this file
-    # already imports `deps` inside `record_dates` for the same reason.
-    #
-    # `importlib.import_module` rather than a plain `from ... import deps`
-    # statement even here, deferred as it already is: CodeQL's
-    # py/cyclic-import (three "Note"-severity alerts against this exact
-    # shape, this file, closed together) flags the *import statement*
-    # itself as beginning a cycle in the module dependency graph, it has
-    # no way to know the statement only ever runs after startup, so
-    # function-local didn't clear it. `importlib` performs the identical
-    # deferred lookup with no `import` statement for that static check to
-    # see, which is why `ai/vision_ocr.py` already uses it for this same
-    # module.
-    if _tag_cache.reset_registered:
-        return
-    deps = importlib.import_module("tessellate.core.deps")
-
-    deps.register_cache_reset(reset_tag_cache)
-    _tag_cache.reset_registered = True
-
-
-def all_tags(session: Session) -> dict[str, int]:
-    """Every tag in use with its entry count.
-
-    Was a full non-deleted-entry scan with a per-row `json.loads`, paid on
-    every Library tab open, every `tag_cloud()` call, and every `/tags`
-    call: three call sites, the same O(n) cost each time, and no cap the
-    way every sibling section of the same responses uses (ROADMAP.md
-    "#0 priority"). Cached by notebook fingerprint instead, the same
-    pattern `routes_graph.py` already uses for pagerank/similarity, a
-    fingerprint miss recomputes once; every other caller within the same
-    notebook version gets the cached dict.
-    """
-    _ensure_tag_cache_reset_registered()
-    # Whether the vault is open is part of what the counts say: a locked
-    # private note's tags are not counted (INBOX 1437), so the cache must not
-    # carry an unlocked answer across a lock.
-    fingerprint = (_tag_fingerprint(session), note_is_sealed(True))
-    with _tag_cache.lock:
-        if _tag_cache.entry is not None and _tag_cache.entry[0] == fingerprint:
-            return _tag_cache.entry[1]
-
-    counts: dict[str, int] = {}
-    # One column, not one mapped entity per row. `tags` is the only thing this
-    # loop reads, and a `select(Entry)` here made SQLAlchemy build, and
-    # identity-map: a full `Entry` for every note in the notebook just to
-    # reach `.tags`. That is the same cost `search_manager.semantic_search`
-    # was rewritten to stop paying (see its docstring: ~85% of a search at
-    # 20k+ notes went on materialising entities it then discarded). The
-    # fingerprint cache above keeps this off the hot path most of the time;
-    # this makes the miss itself cheap instead of merely rare.
-    sealed = note_is_sealed(True)
-    for raw in session.scalars(
-        select(Entry.tags).where(
-            Entry.is_deleted == False,  # noqa: E712
-            *([Entry.is_private == False] if sealed else []),  # noqa: E712
-        )
-    ):
-        for tag in tags_from_json(raw):
-            counts[tag] = counts.get(tag, 0) + 1
-    result = dict(sorted(counts.items(), key=lambda kv: (-kv[1], kv[0])))
-
-    with _tag_cache.lock:
-        _tag_cache.entry = (fingerprint, result)
-    return result
-
-
-@events.writes("entry", "edited")
-def _retag_entry(session: Session, entry: Entry, tags: list[str]) -> None:
-    """One note's tags set to `tags`: a revision first, then the edit and its
-    event, the way `PUT /entries/{id}` does it, and no commit (the caller
-    commits the whole batch once, so a batch is one transaction).
-
-    The revision is taken before the scope opens here, by the caller, so it
-    keeps its own `revised` event rather than being folded into this one.
-    """
-    was = events.entry_state(entry)
-    entry.tags = json.dumps(tags)
-    mark_edited(entry)
-    log_action(
-        session,
-        "edited",
-        "entry",
-        entry.id,
-        "tags",
-        payload=events.changed(was, events.entry_state(entry)),
-    )
-
-
-def _retag(session: Session, entries, change) -> dict[int, list[str]]:
-    """Apply `change(entry, tags) -> tags` to each entry, in one transaction.
-
-    Returns `{entry id: the tags it had}` for the notes that actually changed,
-    which is exactly what an undo needs to put back (`restore_tags`). A note
-    whose tags come out the same is left alone: no revision, no event, no
-    `edited_at` bump for a no-op.
-    """
-    before: dict[int, list[str]] = {}
-    for entry in entries:
-        old = entry_tags(entry)
-        new = normalise_tags(change(entry, list(old)), split=False)
-        if new == old:
-            continue
-        record_revision(session, entry)
-        _retag_entry(session, entry, new)
-        before[entry.id] = old
-    session.commit()
-    return before
-
-
-def rename_tags(session: Session, olds: list[str], new: str) -> dict[int, list[str]]:
-    """Rename (or merge, if `new` already exists, or if several `olds` are
-    given) tags everywhere, in one transaction. See `rename_tag`.
-
-    `new` is held to the tag rule (`normalise_tags`): a blank name is refused
-    with ValueError rather than written, because "   " used to arrive here
-    intact and put an empty-string tag on every note that had `old`
-    (measured: four notes). The result on each note is normalised too, so
-    renaming onto a tag the note already has in another case ("Food" onto a
-    note with "food") folds into that one instead of leaving both.
-    """
-    cleaned = normalise_tags([new])
-    if not cleaned:
-        raise ValueError("A tag needs a name.")
-    if len(cleaned) > 1:
-        raise ValueError("A tag name cannot hold a comma. Rename one tag at a time.")
-    new = cleaned[0]
-    wanted = set(olds)
-    if not wanted:
-        return {}
-
-    def change(entry: Entry, tags: list[str]) -> list[str]:
-        if not wanted.intersection(tags):
-            return tags
-        return [t for t in tags if t not in wanted] + [new]
-
-    holders = [e for e in session.scalars(select(Entry)) if wanted.intersection(entry_tags(e))]
-    return _retag(session, holders, change)
-
-
-def rename_tag(session: Session, old: str, new: str) -> int:
-    """Rename (or merge, if `new` already exists) a tag everywhere.
-    Returns how many entries changed. Commits."""
-    return len(rename_tags(session, [old], new))
-
-
-def remove_tags(session: Session, names: list[str]) -> dict[int, list[str]]:
-    """Remove tags from every note that carries them. Notes are untouched."""
-    doomed = set(names)
-    if not doomed:
-        return {}
-    holders = [e for e in session.scalars(select(Entry)) if doomed.intersection(entry_tags(e))]
-    return _retag(session, holders, lambda _e, tags: [t for t in tags if t not in doomed])
-
-
-def delete_tag(session: Session, name: str) -> int:
-    """Remove a tag from every entry. Returns entries changed. Commits."""
-    return len(remove_tags(session, [name]))
-
-
-def edit_tags_on_notes(
-    session: Session, ids: list[int], add: list[str], remove: list[str]
-) -> dict[int, list[str]]:
-    """Add tags to, and remove tags from, the chosen notes, in one transaction.
-
-    Removal is case-insensitive (tags are stored once whatever the case, so
-    "Food" on one note and "food" on another are one tag to the person),
-    and the add runs after it, so a name in both lists ends up added.
-    """
-    drop = {t.casefold() for t in normalise_tags(remove, split=False)}
-    put = normalise_tags(add)
-    if not ids or not (drop or put):
-        return {}
-    entries = list(
-        session.scalars(select(Entry).where(Entry.id.in_(ids), Entry.is_deleted == False))  # noqa: E712
-    )
-
-    def change(entry: Entry, tags: list[str]) -> list[str]:
-        return [t for t in tags if t.casefold() not in drop] + put
-
-    return _retag(session, entries, change)
-
-
-def undo_tag_edit(session: Session, by_id: dict[int, list[str]]) -> dict[int, list[str]]:
-    """Put each note's tags back to the given lists (an undo), in one
-    transaction. Returns what they were, so a redo is the same call."""
-    if not by_id:
-        return {}
-    entries = list(session.scalars(select(Entry).where(Entry.id.in_(list(by_id)))))
-    return _retag(session, entries, lambda entry, _tags: by_id[entry.id])
 
 
 # How close two notes' embeddings must be, cosine-wise, before a link left
@@ -2976,6 +2738,16 @@ def content_for_entry(entry: Entry, text: str) -> str | None:
     return crypto.encrypt(key, text) if entry.is_private else crypto.decrypt(key, text)
 
 
+def flag_private_media(session: Session, text: str) -> None:
+    """Mark the uploads a private note's readable text embeds (SEC-A2), so a
+    locked session can tell them from plain orphans (`MediaUpload.in_private_note`)."""
+    names = importlib.import_module("tessellate.core.media_gc").referenced_names(text or "")
+    if names:
+        session.execute(
+            update(MediaUpload).where(MediaUpload.filename.in_(names)).values(in_private_note=True)
+        )
+
+
 def _encrypt_history(session: Session, entry: Entry, key: bytes) -> None:
     """Encrypt what the note's history already holds in the clear.
 
@@ -3238,6 +3010,7 @@ def set_private(session: Session, entry: Entry, private: bool) -> bool:
         if not crypto.is_encrypted(entry.content):
             # Before the text is sealed: the redaction looks for its sentences.
             _redact_answers_quoting(session, entry.id, entry.content)
+            flag_private_media(session, entry.content)
             entry.content = crypto.encrypt(key, entry.content)
         entry.is_private = True
         session.execute(delete(EmbeddingRecord).where(EmbeddingRecord.entry_id == entry.id))
@@ -3276,6 +3049,11 @@ def set_private(session: Session, entry: Entry, private: bool) -> bool:
         entry.is_private = False
         record_dates(session, entry)  # readable again, so it can be read again
         _unseal_link_reasons(session, entry)
+    # SEC-A2: its files' search rows follow the note (a private note's files
+    # are not indexed, `search/index._attachment_row`).
+    search_index = importlib.import_module("tessellate.search.index")
+    for attachment_id in session.scalars(select(Attachment.id).where(Attachment.entry_id == entry.id)).all():
+        search_index.touch(session, "attachments", attachment_id)
     # The payload carries the content as it now stands (ciphertext when the
     # note was just made private), so a replay of this note's events rebuilds
     # what is actually in the column rather than the plaintext it stopped

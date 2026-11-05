@@ -25,7 +25,9 @@ FRONTEND = ROOT / "frontend"
 #: Routes on `open_router` (no session needed), by path prefix. `/health`
 #: is open by design (app.py: "/auth itself and /health stay open"); the
 #: server-down banner probes it precisely because it needs no session.
-OPEN_ROUTES = ("/logs/client", "/health")
+#: `/vendor/` is the static mount (app.py `RevalidatedStatic`), served with no session
+#: like every css and js file; the PDF export fetches its icon font there (DX13).
+OPEN_ROUTES = ("/logs/client", "/health", "/vendor/")
 
 FETCH = re.compile(r"""fetch\(\s*(["'`])(/[^"'`]*)""")
 

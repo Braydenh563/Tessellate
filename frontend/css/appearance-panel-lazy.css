@@ -15,7 +15,7 @@
 #appearance-panel .settings-section .select-opener,
 #appearance-panel .settings-section summary,
 #appearance-panel .settings-section input[type="text"],
-#appearance-panel .settings-section input[type="search"],
+#appearance-panel .settings-section input[type="search"]:not(.search-field-input),
 #appearance-panel .settings-section input[type="number"],
 #appearance-panel .settings-section input[type="password"],
 #appearance-panel .settings-section input[type="url"] {
@@ -53,7 +53,7 @@
 #appearance-panel .settings-section .row {
   align-items: center;
 }
-#appearance-panel .settings-section .row {
+#appearance-panel .settings-section .row:not(.setting-control) {
   margin-top: var(--space-3);
 }
 #appearance-panel .settings-section .row:first-child {
@@ -169,7 +169,7 @@
   content: "";
   position: absolute;
   inset-block: var(--space-2);
-  inset-inline-start: calc(-1 * var(--space-3));
+  inset-inline-start: calc(-2 * var(--space-3));
   width: 2px;
   border-radius: var(--radius-pill);
   background: var(--accent-text);
@@ -302,4 +302,22 @@
 #appearance-panel .help-head > .check-row > span {
   overflow: visible;
   text-overflow: clip;
+}
+:root:not([data-contrast="on"]) :is(#appearance-panel, #appearance-panel) :is(.settings-section, .settings-group, .settings-pane-title, .dialog-head) button.ghost:not(.icon-only, .icon-button, .danger, .linklike, .quiet, .edged, .split-button-main) {
+  border-color: transparent;
+  background: none;
+  color: var(--accent-text);
+  font-weight: 500;
+  padding-inline: var(--space-3);
+  margin-inline-start: calc(-1 * var(--space-3));
+}
+:root:not([data-contrast="on"]) :is(#appearance-panel, #appearance-panel) :is(.settings-section, .settings-group, .settings-pane-title, .dialog-head) button.ghost:not(.icon-only, .icon-button, .danger, .linklike, .quiet, .edged, .split-button-main):is(:hover, :focus-visible, :has(:focus-visible)) {
+  background: var(--ghost-btn-bg);
+}
+#appearance-panel :is(.check-row, .setting-check, .checkbox-label).setting-modified::before {
+  inset-inline-start: calc(-1 * var(--space-3));
+}
+#appearance-panel .settings-group > .selectbar {
+  margin-inline: calc(-1rem - 1px);
+  padding-inline: calc(1rem + 1px);
 }

@@ -32,16 +32,17 @@ def test_the_readings_still_hold():
 
 
 def test_define_and_command_readings_are_linear_and_hold():
-    from tessellate.ai import composer, composer_digest
+    from tessellate.ai import composer_digest
+    from tessellate.ai import composer_ask
 
     for text in ("define " + "a " * 40000, "define" + " " * 50000 + "x", "the meaning of " + " " * 50000):
         start = time.perf_counter()
-        composer.what_is(text)
+        composer_ask.what_is(text)
         assert time.perf_counter() - start < 0.2
     start = time.perf_counter()
-    composer._without_command("please " * 30000 + "move " + "to the " * 20000)
+    composer_ask._without_command("please " * 30000 + "move " + "to the " * 20000)
     composer_digest._one_name("tell me about " + " " * 50000 + "x", {"x"})
     assert time.perf_counter() - start < 0.5
-    assert composer.what_is("Define sourdough  starter") == "what is sourdough starter"
-    assert composer.what_is("the meaning of kombucha") == "what is kombucha"
-    assert composer.what_is("define") == "define"
+    assert composer_ask.what_is("Define sourdough  starter") == "what is sourdough starter"
+    assert composer_ask.what_is("the meaning of kombucha") == "what is kombucha"
+    assert composer_ask.what_is("define") == "define"

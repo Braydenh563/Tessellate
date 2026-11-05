@@ -2940,7 +2940,12 @@ function graphPanelRoom() {
   const bar = document.getElementById("status-bar");
   const barTop = bar && bar.offsetParent !== null ? bar.getBoundingClientRect().top : innerHeight;
   const bottom = Math.min(box.bottom, barTop, innerHeight);
-  return { box, room: Math.max(0, bottom - box.top) };
+  //: `floor` is the top of what can be seen: the map's box may start under the
+  //: app's top bar (a scrolled page), and anything placed there is covered by
+  //: it (INBOX 1630, "the graph popup gets covered by the top bar").
+  const head = document.getElementById("top-bar");
+  const floor = head && head.offsetParent !== null ? Math.max(0, head.getBoundingClientRect().bottom - box.top) : 0;
+  return { box, room: Math.max(0, bottom - box.top), floor };
 }
 
 //: Placed again whenever it changes size after it was placed (the body's
@@ -2954,6 +2959,8 @@ const graphLate = {
   //: moved it (it then stays where put until closed), `popupDrag` the live gesture.
   popupDragged: false,
   popupDrag: null,
+  //: An edge resize is under way (`placeGraphPopup` waits it out).
+  sizing: false,
 };
 function watchGraphPopupSize(popup, place) {
   if (typeof ResizeObserver !== "function" || popup.dataset.placeWatch) return;
@@ -2987,17 +2994,19 @@ function placeGraphPopup() {
   const popup = $("graph-popup");
   watchGraphPopupSize(popup, placeGraphPopup);
   if (!graphPopupAnchor || popup.classList.contains("hidden")) return;
-  const { box, room } = graphPanelRoom();
-  //: **Save stands above the dock, not under it** (INBOX 1421). Both are pinned
-  //: at the panel's foot and Save is one layer higher, so at `bottom: 0` it was
-  //: drawn over the dock for as tall as the dock is. The dock's own offset
-  //: already has the panel's padding inside it, so that comes off.
-  const dock = popup.querySelector(".graph-popup-actions");
-  const saveRow = $("graph-popup-saverow");
-  if (dock && saveRow) {
-    const pad = parseFloat(getComputedStyle(popup).paddingBottom) || 0;
-    saveRow.style.bottom = `${Math.max(0, dock.offsetHeight - pad)}px`;
+  //: **Not while its edge is being dragged** (INBOX 1630, "the bottom spazams
+  //: as I resize"): the size is the pointer's alone for that gesture. Placing
+  //: it too rewrote the cap and the follow spot on every resize frame, and the
+  //: two disagreed. Once let go, a panel the person sized stays where it is.
+  if (popup.classList.contains("panel-moving")) {
+    graphLate.sizing = true;
+    return;
   }
+  if (graphLate.sizing) {
+    graphLate.sizing = false;
+    graphLate.popupDragged = true;
+  }
+  const { box, room, floor } = graphPanelRoom();
   //: **On a phone the panel is a sheet, and JS has to be the one to say so**
   //: (GRAPH_PLAN Phase 6). The position is inline `left`/`top` written here,
   //: which no stylesheet rule can override without `!important`, so a media
@@ -3019,21 +3028,21 @@ function placeGraphPopup() {
   popup.style.maxHeight = `${graphPopupCap(room, graphLate.popupDragged)}px`;
   const size = popup.getBoundingClientRect();
   const maxLeft = Math.max(8, box.width - size.width - 8);
-  const maxTop = Math.max(8, room - size.height - 8);
+  const maxTop = Math.max(floor + 8, room - size.height - 8);
   let spot = null;
   if (graphLate.popupDragged) {
     //: Where the person put it: only kept inside the map when the map or
     //: the popup changes size.
     spot = { left: parseFloat(popup.style.left) || 8, top: parseFloat(popup.style.top) || 8 };
     spot.left = Math.min(Math.max(spot.left, 0), Math.max(0, box.width - size.width));
-    spot.top = Math.min(Math.max(spot.top, 0), Math.max(0, room - size.height));
+    spot.top = Math.min(Math.max(spot.top, floor), Math.max(floor, room - size.height));
   } else {
-    spot = graphPopupFollowSpot(box, room, size);
+    spot = graphPopupFollowSpot(box, room, size, floor);
   }
   if (!spot) {
     spot = {
       left: Math.min(Math.max(graphPopupAnchor.x - box.left + 12, 8), maxLeft),
-      top: Math.min(Math.max(graphPopupAnchor.y - box.top + 12, 8), maxTop),
+      top: Math.min(Math.max(graphPopupAnchor.y - box.top + 12, floor + 8), maxTop),
     };
   }
   const left = `${Math.round(spot.left)}px`;
@@ -3047,7 +3056,7 @@ function placeGraphPopup() {
 //: is about; it follows the node as the map pans, zooms and settles
 //: (`gcDraw` calls `placeGraphPopup` once a frame, so it costs nothing when
 //: nothing moves) and is hidden (not closed) while the node is out of view.
-function graphPopupFollowSpot(box, room, size) {
+function graphPopupFollowSpot(box, room, size, floor = 0) {
   const popup = $("graph-popup");
   const s = typeof gcTab !== "undefined" ? gcTab : null;
   const node = s && s.byId && graphPopupId != null ? s.byId.get(graphPopupId) : null;
@@ -3063,7 +3072,7 @@ function graphPopupFollowSpot(box, room, size) {
   const w = size.width;
   const h = size.height;
   const clampX = (v) => Math.min(Math.max(v, 8), Math.max(8, box.width - w - 8));
-  const clampY = (v) => Math.min(Math.max(v, 8), Math.max(8, room - h - 8));
+  const clampY = (v) => Math.min(Math.max(v, floor + 8), Math.max(floor + 8, room - h - 8));
   const tries = [
     [sx + r + gap, sy - 20],
     [sx - r - gap - w, sy - 20],
@@ -3096,10 +3105,10 @@ function graphPopupDragMove(ev) {
   const d = graphLate.popupDrag;
   if (!d || d.id !== ev.pointerId) return;
   const popup = $("graph-popup");
-  const { box, room } = graphPanelRoom();
+  const { box, room, floor } = graphPanelRoom();
   const size = popup.getBoundingClientRect();
   const left = Math.min(Math.max(ev.clientX - d.dx - box.left, 0), Math.max(0, box.width - size.width));
-  const top = Math.min(Math.max(ev.clientY - d.dy - box.top, 0), Math.max(0, room - size.height));
+  const top = Math.min(Math.max(ev.clientY - d.dy - box.top, floor), Math.max(floor, room - size.height));
   graphLate.popupDragged = true;
   popup.classList.remove("graph-popup-away");
   popup.style.left = `${Math.round(left)}px`;
@@ -4680,6 +4689,22 @@ function initGraphViews() {
 initGraphDockHeightToken();
 initGraphRailToken();
 initGraphToastClearance();
+//: Tidy spacing (INBOX 1529) is drawn on the first visit, beside Group by
+//: category, not shipped in index.html (the boot element cap, test_boot_diet3).
+(function graphTidyRow() {
+  const group = $("graph-group")?.closest("label");
+  if (!group || $("graph-tidy")) return;
+  const row = document.createElement("label");
+  row.className = group.className;
+  row.title = "Dots move off the lines they would sit on; slower to settle on a large notebook";
+  const name = document.createElement("span");
+  name.textContent = "Tidy spacing";
+  const box = document.createElement("input");
+  box.type = "checkbox";
+  box.id = "graph-tidy";
+  row.append(name, box);
+  group.after(row);
+})();
 
 //: The remembered on-by-default switches, restored when graph.js loads: the
 //: canvas renderer (the default) never ran the SVG render that used to do it,
@@ -4688,7 +4713,7 @@ initGraphToastClearance();
 const GRAPH_STORED_SWITCHES = ["graph-curved", "graph-label-plates", "graph-nebula", "graph-length-score", "graph-group",
   "graph-focus-in", "graph-focus-out", "graph-focus-neighbours", "graph-pane-in", "graph-pane-out", "graph-pane-neighbours", "graph-autofit"];
 //: Off by default, so stored "1" means on; and the sliders' stored values.
-const GRAPH_STORED_OFF = ["graph-arrows"];
+const GRAPH_STORED_OFF = ["graph-arrows", "graph-tidy"];
 const GRAPH_STORED_SLIDERS = ["graph-label-fade", "graph-link-width", "graph-focus-depth", "graph-pane-depth"];
 function graphRestoreSwitches() {
   for (const id of GRAPH_STORED_SWITCHES) {
@@ -4904,6 +4929,11 @@ $("graph-length-score")?.addEventListener("change", (event) => {
   prefs.set("graph-length-score", event.target.checked ? "1" : "0");
   renderGraph();
 });
+//: Tidy spacing changes the forces too (graph-worker.js `tidyOn`).
+$("graph-tidy")?.addEventListener("change", (event) => {
+  prefs.set("graph-tidy", event.target.checked ? "1" : "0");
+  renderGraph();
+});
 //: Group by category changes the forces too (graph-worker.js `applyGrouping`).
 $("graph-group")?.addEventListener("change", (event) => {
   prefs.set("graph-group", event.target.checked ? "1" : "0");
@@ -5003,6 +5033,7 @@ const GRAPH_DEFAULTS = {
   "graph-nebula": true,
   "graph-length-score": true,
   "graph-group": true,
+  "graph-tidy": false,
   "graph-time-slider": "max",
   "graph-minimap-corner": "tl",
   "graph-minimap-size": "sm",

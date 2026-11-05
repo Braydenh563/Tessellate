@@ -283,7 +283,7 @@ async function wbPlaceSticker(choice, at = null) {
   return made;
 }
 
-//: The board's Insert, Emoji and icons…: the picker stays open, so several
+//: The board's Insert, Shapes and icons, Emoji and icons…: the picker stays open, so several
 //: can be placed or dragged; a pick lands in the middle of the view.
 function wbOpenStickerPicker(from = null) {
   const anchor = from?.isConnected ? from : document.querySelector('[aria-controls="wb-insert-menu"]');
@@ -1061,6 +1061,7 @@ function wbLibSelectionPayload({ quiet = false } = {}) {
       const data = { ...(item.data || {}) };
       delete data.comments;
       delete data.library_ref;
+      delete data.diagram_id;
       delete data.locked;
       items.push({
         key, kind: "object", type: item.kind, data,

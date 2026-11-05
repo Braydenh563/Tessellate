@@ -16,7 +16,8 @@ from __future__ import annotations
 import re
 from datetime import date, timedelta
 
-from tessellate.ai import composer, composer_versus, filed_name, note_recency, realise, recognise, utilities
+from tessellate.ai import composer, composer_done, composer_versus, filed_name, note_recency, realise, recognise, utilities
+from tessellate.ai import composer_body
 
 #: At most this many lines under the opening; the rest are on the right.
 SHOWN = 8
@@ -110,6 +111,7 @@ _h = _Helpers()
 
 def bind(day, row, fact, span, name) -> None:  # noqa: ANN001
     _h.day, _h.row, _h.fact, _h.span, _h.name = day, row, fact, span, name
+    composer_done._day = day
 
 
 def list_target(question: str) -> tuple[str, str] | None:
@@ -299,19 +301,21 @@ def _sentence_at(view, at: int):  # noqa: ANN001
 
 
 def _dated(view, today: date, tense: str) -> list[tuple[date, int]]:  # noqa: ANN001
-    return composer._days_named(view, today, tense)
+    return composer_body._days_named(view, today, tense)
 
 
 def _find(views: list, subject: str, today: date, tense: str):  # noqa: ANN202
     """`(view, day, sentence)` of the note that names `subject` with a day
     nearest today on the side `tense` asks ("future", "past" or "any")."""
-    wanted = {composer._stem(w) for w in composer._words(subject) if len(w) > 2} - {composer._stem(w) for w in composer._NOTE_NOUNS}
+    wanted = {composer._stem(w) for w in composer._words(subject) if len(w) > 2} - {composer._stem(w) for w in composer_body._NOTE_NOUNS}
     if not wanted:
         return None
     #: The note titled as the subject first, then one whose title holds it
     #: (note_rank's order): "the dentist" is the Dentist note, not the
     #: "Call the dentist" to-do that happens to name tomorrow.
-    for view in sorted(views, key=lambda v: (v.title_words != wanted, not wanted <= v.title_words, v.rank)):
+    from tessellate.ai import note_rank  # at the call: note_rank reads the composer, so a module import closes a cycle
+
+    for view in note_rank.lead_by(sorted(views, key=lambda v: v.rank), subject, lambda v: v.note):
         if not wanted <= {composer._stem(w) for w in composer._words(str(view.note.get("content") or ""))}:
             continue
         days = _dated(view, today, "future") + _dated(view, today, "past") if tense == "any" else _dated(view, today, tense)

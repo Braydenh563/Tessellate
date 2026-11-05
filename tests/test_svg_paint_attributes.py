@@ -107,7 +107,7 @@ def _painted_classes() -> dict[str, set[str]]:
     """
     text = re.sub(r"/\*.*?\*/", "", css_text(), flags=re.S)
     painted: dict[str, set[str]] = {paint: set() for paint in PAINTS}
-    for selector, body in re.findall(r"([^{}]+)\{([^{}]*)\}", text):
+    for selector, body in re.findall(r"(?:(?<=[{}])|\A)([^{}]+)\{([^{}]*)\}", text):
         for paint in PAINTS:
             if not re.search(rf"(?m)^\s*{paint}\s*:", body):
                 continue

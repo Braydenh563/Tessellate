@@ -276,6 +276,18 @@ Step 1 is built: ANALYSIS.md "Vendor candidates, 2026-10-11" (26 candidates by l
 The owner 2026-10-11, verbatim (screenshots: a faint prop glyph on Atlas; Atlas with the orbit ring): "what is this on the atlas companion?? sometimes when icons appear on atlas it is hard to see them or make them out. and every time I try throwing the companion across the screen, it just bounces off a panel and back to the top, I want it to do that, but vary how much it does that. like I want more life, biological motion, natural motion, movement, transitions, actions and more from the companions and atlas. also more atlas variations for each gesture, movement, position, emotion and more."
 Decisions: (a) a prop or icon on Atlas (`atlasPropsFrame`, atlas-life.js; the props in atlas.js) is drawn at 3:1 against Atlas's body with a dark keyline, at least 14 px, and names itself in the companion's tooltip; measured with `contrast.js` on each prop. (b) A throw keeps its bounce but varies: restitution and friction drawn per throw from a range, spin from the release velocity, a squash on impact scaled by speed, a slide or a tumble on a shallow hit, a settle with a small overshoot; never the same path twice for the same fling (`avatars.js` near 5587 and 6008). (c) Biological motion: breathing, weight shift, follow-through on hair and tail (secondary motion lagging the body), ease curves from DESIGN's motion tokens, idle variety on a schedule with no repeat in a row. (d) Three or more variants per gesture, emotion, movement and pose, chosen without repeating the last. Reduced motion keeps the crossfades. Long tasks at rest held to the census numbers (CHAT_PLAN "Placed from Brief 60").
 
+### Brief 88 continues: behaviours ranked by value over cost (INBOX 1581, 2026-11-03)
+
+The owner: "is there more behaviour and npc improvements we can add". Read against what runs first: a saved note (`nameMarkBuddyCue("carry")`, `atlasOn("saved")`), the streak, a long silence (drowsy at 3 min, asleep at 8, boredom wander, a wave on return), pointer attention (`nameMarkBuddyNotice`), the open view (`nameMarkBuddyGlanceAtPage`), card-edge perches, the peek under the top bar and behind the bottom bar, pokes (five pools, grumpy, pout) and a drag (flip, throw) all exist. Every row: no `pointer-events`, never while a field is typed in (waits 1.5 s, dropped after four tries), transform and opacity only on the existing timers, nothing under `data-motion="reduced"`, layout read once per act at most; behind Settings, Companion, What it does, "Little habits and reactions" (`habits`).
+
+N1 to N7 built: HISTORY.md, "Moved from the plans, 2026-11-03 (a31b-1103: INBOX 1581, companion behaviours N1 to N7)".
+
+| # | Behaviour | What exists | Cost | State |
+| --- | --- | --- | --- | --- |
+| N8 | A menu or dialog opening: a glance at it before it steps aside | it steps aside (`nameMarkBuddyDodge`) | S | open |
+| N9 | A long writing run ends (a minute of typing, then a pause): a stretch | a nod while typing fast | S | open |
+| N10 | Milestones (the 10th, 100th note): a cheer, and Atlas's cast | none; needs the count | M | open |
+
 ## Brief 89 (Sonnet): Add tags on lightly tagged notes (INBOX 836)
 
 Built: HISTORY.md, "Moved from the plans, 2026-10-11 (Brief 89)".

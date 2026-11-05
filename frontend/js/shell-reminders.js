@@ -260,12 +260,7 @@ function syncTabOverflowFade() {
     header.classList.toggle("tabs-wrapped", mode === "wrapped");
     header.classList.toggle("tabs-centred", mode === "centred");
   }
-  // 1px of slack at each end: sub-pixel layout makes scrollWidth exceed
-  // clientWidth by a fraction on plenty of widths where nothing is cut off,
-  // and a scroll offset lands on .5 of a pixel as often as not.
-  const hidden = bar.scrollWidth - bar.clientWidth;
-  bar.classList.toggle("fade-start", hidden > 1 && bar.scrollLeft > 1);
-  bar.classList.toggle("fade-end", hidden - bar.scrollLeft > 1);
+  syncEdgeFade(bar);
 }
 
 // Selecting a tab brings it into view, so the fade is only over a tab you
@@ -281,7 +276,7 @@ function revealActiveTab() {
   syncTabOverflowFade();
 }
 
-window.addEventListener("resize", syncTabOverflowFade, { passive: true });
+window.addEventListener("resize", syncTabOverflowFade);
 //: Once more when the webfont lands: the boot measurement sees fallback
 //: glyphs, and a strip that fit in those can wrap or collide in the real face.
 document.fonts?.ready?.then(() => syncTabOverflowFade());
@@ -290,13 +285,11 @@ document.fonts?.ready?.then(() => syncTabOverflowFade());
 //: measurement had counted as the strip's. Measured at 1240: the boot sync
 //: left the strip unwrapped and 13px under the controls, and the same call
 //: a moment later wrapped it (INBOX 195).
-if (window.ResizeObserver) {
-  const headerWatch = new ResizeObserver(() => syncTabOverflowFade());
-  for (const child of $("top-bar")?.children || []) {
-    if (child.id !== "tab-bar") headerWatch.observe(child);
-  }
+{
+  const headerWatch = new ResizeObserver(syncTabOverflowFade);
+  for (const child of $("top-bar")?.children || []) if (child.id !== "tab-bar") headerWatch.observe(child);
 }
-$("tab-bar")?.addEventListener("scroll", syncTabOverflowFade, { passive: true });
+$("tab-bar")?.addEventListener("scroll", syncTabOverflowFade);
 
 //: **One sliding indicator for every strip** (the owner, 2026-10-04: "a
 //: slight css sliding animation ... cheap but looks professional", and
@@ -366,28 +359,50 @@ function glideStrip(strip) {
   //: closing above the chosen row moves the row and not its size, so neither
   //: observer saw it and the fill stayed where the row had been (measured: 20
   //: px under it after an 18 px insert).
-  //: Placed a frame later, not in the mutation's microtask: there it read
-  //: the new page's layout before the click's own work had finished, and the
-  //: frame laid it out a second time (INBOX 1419: 100 to 250ms at 4x CPU).
-  let queued = 0;
+  //: Placed when the frame's layout is done, by the observer's own report: not
+  //: in the mutation's microtask (it read the new page's layout before the
+  //: click's work had finished: INBOX 1419) and not in a timer (it read a style
+  //: pass dirtied by whatever the press had just shown, 93ms of the Library
+  //: press at 4x: INBOX 1534). Observing the strip afresh reports it once,
+  //: after layout, where the reads in `place` cost nothing.
+  let glide = false;
+  const sized = new ResizeObserver(() => {
+    place(glide);
+    glide = false;
+  });
   new MutationObserver(() => {
-    queued ||= setTimeout(() => ((queued = 0), place(true)), 16);
+    glide = true;
+    sized.unobserve(strip);
+    sized.observe(strip);
   }).observe(strip, {
     attributes: true,
     attributeFilter: ["class", "aria-selected", "aria-current"],
     childList: true,
     subtree: true,
   });
-  if (window.ResizeObserver) {
-    const sized = new ResizeObserver(() => place(false));
-    sized.observe(strip);
-    for (const option of strip.querySelectorAll("button")) sized.observe(option);
+  sized.observe(strip);
+  for (const option of strip.querySelectorAll("button")) sized.observe(option);
+  //: **Wired by the pointer or the focus, it is placed by the observer's first report, not here**
+  //: (INBOX 1575, the owner's `pointerup on button.active in #notes-subtabs` 360ms and `frame
+  //: 274ms ... no source file`): the first `place` read a box in the `pointerover` that reached the
+  //: strip, and that read was the page's first after the last press, so it paid the whole style and
+  //: layout pass of what the press had shown (notes: `shell-reminders.js #document.onpointerover`
+  //: 255ms, 163ms of it forced layout, at 4x). Observing reports once after layout, before paint.
+  if (!strip.glideLater) {
+    document.fonts?.ready?.then(() => place(false));
+    place(false);
   }
-  document.fonts?.ready?.then(() => place(false));
-  place(false);
 }
 for (const type of ["pointerover", "focusin"]) {
-  document.addEventListener(type, (event) => glideStrip(event.target.closest?.(GLIDE_STRIPS)), { passive: true, capture: true });
+  document.addEventListener(
+    type,
+    (event) => {
+      const strip = event.target.closest?.(GLIDE_STRIPS);
+      if (strip && !strip.glide) strip.glideLater = true;
+      glideStrip(strip);
+    },
+    { passive: true, capture: true }
+  );
 }
 glideStrip($("tab-bar"));
 
@@ -397,9 +412,25 @@ glideStrip($("tab-bar"));
 // half of syncTabOverflowFade, reused rather than duplicated.
 function syncEdgeFade(bar) {
   if (!bar) return;
-  const hidden = bar.scrollWidth - bar.clientWidth;
+  // 1px of slack at each end: sub-pixel layout makes scrollWidth exceed
+  // clientWidth by a fraction on plenty of widths where nothing is cut off,
+  // and a scroll offset lands on .5 of a pixel as often as not.
+  //: Only a strip that scrolls is faded; the status bar, which cannot (its AI
+  //: popup would clip), sheds the clock, LAN dot, then tray to fit (1672).
+  const overflow = getComputedStyle(bar).overflowX;
+  if (bar.id === "status-bar") {
+    const shed = ["status-clock", "status-lan", "status-tray"].map($).filter(Boolean);
+    for (const item of shed) item.hidden = false;
+    if (overflow === "visible") for (const item of shed) if (bar.scrollWidth > bar.clientWidth && !item.classList.contains("hidden")) item.hidden = true;
+  }
+  const hidden = overflow === "auto" || overflow === "scroll" ? bar.scrollWidth - bar.clientWidth : 0;
   bar.classList.toggle("fade-start", hidden > 1 && bar.scrollLeft > 1);
   bar.classList.toggle("fade-end", hidden - bar.scrollLeft > 1);
+  //: scroll-row.js, the arrows, is fetched by the first row that overflows.
+  if (bar.matches(".scroll-row")) {
+    if (window.scrollRowArrows) scrollRowArrows(bar, hidden > 1);
+    else if (hidden > 1) lazyScript("/js/scroll-row.js").then(() => syncEdgeFade(bar));
+  }
 }
 
 //: **One recipe for a strip that scrolls** (1031 UX6: the launch row held 760
@@ -411,25 +442,24 @@ function syncEdgeFade(bar) {
 function edgeFadeWire(bar) {
   if (!bar || bar.dataset.fadeWired) return;
   bar.dataset.fadeWired = "1";
-  syncEdgeFade(bar);
-  bar.addEventListener("scroll", () => syncEdgeFade(bar), { passive: true });
+  //: Told by the observer once the strip is laid out (and again when a hidden
+  //: one shows or its content changes width), never measured here: a strip a
+  //: script has just built read its width in the press that built it (21ms of
+  //: style and 14 of layout on a Dashboard press at 4x, INBOX 1534).
+  //: And the status bar's zones, which an item showing resizes.
+  const seen = new ResizeObserver(() => syncEdgeFade(bar));
+  for (const box of [bar, ...bar.querySelectorAll("[data-status-zone]")]) seen.observe(box);
+  bar.addEventListener("scroll", () => syncEdgeFade(bar));
   bar.addEventListener("click", (event) => {
     const pick = event.target.closest?.("button, [role=tab]");
     if (pick && bar.contains(pick) && /(^|\s)fade-(start|end)(\s|$)/.test(bar.className)) pick.scrollIntoView({ block: "nearest", inline: "nearest" });
   });
 }
 
-for (const bar of document.querySelectorAll(".edge-fade")) {
-  edgeFadeWire(bar);
-  if (typeof ResizeObserver !== "undefined") {
-    // Fires when a hidden (0-width) strip becomes visible on tab switch,
-    // same as content changing width, no extra wiring needed per tab.
-    new ResizeObserver(() => syncEdgeFade(bar)).observe(bar);
-  }
-}
-window.addEventListener("resize", () => {
-  document.querySelectorAll(".edge-fade").forEach(syncEdgeFade);
-}, { passive: true });
+// The observer in edgeFadeWire also fires when a hidden (0-width) strip becomes
+// visible on tab switch, same as content changing width.
+for (const bar of document.querySelectorAll(".edge-fade")) edgeFadeWire(bar);
+window.addEventListener("resize", () => document.querySelectorAll(".edge-fade").forEach(syncEdgeFade));
 
 // --- the scroll edge effect (UI_MODERNISATION_PLAN Phase 10, INBOX 100) -----
 //
@@ -663,7 +693,7 @@ function syncScrollEdges() {
   $("phone-tab-dock")?.removeAttribute("data-receded");
 }
 
-window.addEventListener("resize", syncScrollEdges, { passive: true });
+window.addEventListener("resize", syncScrollEdges);
 
 // A tab switch is a class change on the pages, not an event this file
 // publishes, and observing it here keeps the whole effect in one block
@@ -904,9 +934,11 @@ async function loadReminders() {
   //: on screen until the answer replaces it.
   if (!loadReminders.loaded) showSkeletons($("reminder-groups"), 3);
   const all = await apiPagedList("/reminders", 200).catch(() => null);
-  if (all) loadReminders.loaded = true;
   //: A reminder just made or moved is the soonest one: the due timer follows.
-  if (all) armReminderTimer(all);
+  if (all) {
+    loadReminders.loaded = true;
+    armReminderTimer(all);
+  }
   clearSkeletons($("reminder-groups"));
   if (!all) {
     surfaceFailed($("reminders-empty"), "your reminders", loadReminders);
@@ -922,9 +954,7 @@ async function loadReminders() {
   const groupsBox = $("reminder-groups");
   groupsBox.replaceChildren();
 
-  const reminders = all.filter((r) =>
-    reminderFilter === "all" ? true : reminderFilter === "done" ? r.done : !r.done
-  );
+  const reminders = all.filter((r) => reminderFilter === "all" || (reminderFilter === "done" ? r.done : !r.done));
   $("reminders-empty").classList.toggle("hidden", all.length > 0);
   $("reminder-clear-done").classList.toggle("hidden", !all.some((r) => r.done));
   // Surface anything due on the tab itself, from wherever you are.
@@ -1006,17 +1036,13 @@ function updateReminderBadge(reminders) {
   const button = $("tab-btn-reminders");
   if (!button) return;
   const now = new Date();
-  const due = (reminders || []).filter(
-    (r) => !r.done && new Date(r.due_at) <= now
-  ).length;
+  const open = (reminders || []).filter((r) => !r.done);
+  const due = open.filter((r) => new Date(r.due_at) <= now).length;
   // The status bar's reminder slot is fed from here rather than from its own
   // fetch: this function is the one place both callers of /reminders land, so
   // the bar and the tab badge cannot disagree and no second timer exists to
   // drift from the first.
-  reminderCounts = {
-    open: (reminders || []).filter((r) => !r.done).length,
-    due,
-  };
+  reminderCounts = { open: open.length, due };
   renderStatusBar();
   syncPhoneMoreRuns();
 
@@ -1040,7 +1066,7 @@ async function clearDoneReminders() {
   //: To the end, or this clears the first page's done rows and reports that
   //: count as if it were all of them.
   const all = await apiPagedList("/reminders", 200).catch(() => null);
-  if (!all) return toast("Could not load your reminders. Try again.", true, { action: ["Try again", clearDoneReminders] });
+  if (!all) return toast("Couldn't load your reminders. Try again.", true, { action: ["Try again", clearDoneReminders] });
   const done = all.filter((r) => r.done);
   if (!done.length) return;
   if (!(await confirmDialog(`Delete ${done.length} completed reminder${done.length === 1 ? "" : "s"}?`))) {
@@ -1135,10 +1161,17 @@ function reminderItem(reminder, label) {
   //: it to nothing at 320 ("every last Friday of the month" is 118px).
   const when = document.createElement("div");
   when.className = "entry-links";
-  //: The coloured edge and the weight said "high" and nothing said it in
-  //: words (uisweep-1011: a state shown only by colour), so the line does.
-  if (reminder.priority === "high" || reminder.priority === "low") {
-    const level = chip(`ph:flag ${reminder.priority === "high" ? "High" : "Low"} priority`, "tag");
+  //: The coloured edge and the weight say "high" to the eye, so no chip
+  //: repeats it (unslop 1103, 13); the words go to a screen reader in the
+  //: row (uisweep-1011: a state shown only by colour). Low has no edge, only
+  //: a quieter text, so its chip stays.
+  if (reminder.priority === "high") {
+    const said = document.createElement("span");
+    said.className = "visually-hidden";
+    said.textContent = "High priority. ";
+    text.prepend(said);
+  } else if (reminder.priority === "low") {
+    const level = chip("ph:flag Low priority", "tag");
     level.title = "Set in Edit this reminder";
     when.appendChild(level);
   }
@@ -1165,12 +1198,12 @@ function reminderItem(reminder, label) {
   if (!reminder.done) {
     actions.appendChild(
       smallButton("+1h", "Snooze one hour", () =>
-        snoozeReminderTo(reminder, new Date(Date.now() + 60 * 60 * 1000))
+        lazyScript("/js/reminder-edit.js").then(() => snoozeReminderTo(reminder, new Date(Date.now() + 60 * 60 * 1000)))
       )
     );
     actions.appendChild(
       smallButton("ph:arrow-right Tomorrow", "Snooze to tomorrow 9am", () =>
-        snoozeReminderTo(reminder, presetDate("tomorrow"))
+        lazyScript("/js/reminder-edit.js").then(() => snoozeReminderTo(reminder, presetDate("tomorrow")))
       )
     );
   }
@@ -1212,7 +1245,7 @@ function reminderItem(reminder, label) {
   if (!reminder.done) {
     menuItems.push({
       label: "ph:clock-countdown Snooze 10 minutes",
-      run: () => snoozeReminderTo(reminder, new Date(Date.now() + 10 * 60 * 1000)),
+      run: () => lazyScript("/js/reminder-edit.js").then(() => snoozeReminderTo(reminder, new Date(Date.now() + 10 * 60 * 1000))),
       group: "snooze",
     });
   }
@@ -1253,16 +1286,14 @@ function reminderItem(reminder, label) {
   actions.appendChild(kebabMenu(menuItems, `Actions for the reminder “${reminder.text}”`, { vertical: true }));
   row.appendChild(actions);
   li.appendChild(row);
-  if (when.childElementCount) li.appendChild(when);
-
+  //: The note it points at joins the same line as the repeat and the alert:
+  //: three short facts are one row, not three (unslop 1103, 13).
   if (target && (reminder.target_title || reminder.entry_preview)) {
-    const linkRow = document.createElement("div");
-    linkRow.className = "entry-links";
     const noteChip = chip(`${target.icon} ${reminder.target_title || reminder.entry_preview}`, "link", target.open);
     noteChip.title = target.label.replace(/^ph:\S+ /, "");
-    linkRow.appendChild(noteChip);
-    li.appendChild(linkRow);
+    when.appendChild(noteChip);
   }
+  if (when.childElementCount) li.appendChild(when);
   return li;
 }
 
@@ -1466,29 +1497,6 @@ function refreshReminderDefaults() {
     syncPartsFromDue();
     updateDueReadout();
   }
-}
-
-async function snoozeReminderTo(reminder, when) {
-  const before = { due_at: reminder.due_at, done: Boolean(reminder.done) };
-  const put = (body) =>
-    apiJson(`/reminders/${reminder.id}`, { method: "PUT", body: JSON.stringify({ ...body, restore: true }) });
-  await put({ due_at: when.toISOString(), done: false });
-  loadReminders();
-  //: Undo puts the old time and state back (WORLD_CLASS_PLAN row 32, from
-  //: the world-class branch's 2d867a1); `restore` lets a time already past
-  //: through (an overdue reminder is the one that gets snoozed).
-  const back = async () => {
-    await put(before);
-    loadReminders();
-  };
-  const action = pushUndo("Snoozed a reminder", back, async () => {
-    await put({ due_at: when.toISOString(), done: false });
-    loadReminders();
-  });
-  toastAction(`Snoozed to ${whenText(when)}.`, "Undo", async () => {
-    settleUndoFromToast(action);
-    await back();
-  });
 }
 
 //: **Every reminder act undoes** (TIMELINE_PLAN 11 row 1): create, complete

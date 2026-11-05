@@ -129,7 +129,10 @@ UTILITIES = {
     "statistics": ("statistics.js", 'helpBody.id = "stats-help";', "the heatmap's Statistics, the palette's Statistics", "statistics"),
     "timer": ("utility-tools.js", "function startUtilityTimer(minutes = 25)", "the palette's Start a timer, or timer 10 minutes", "timer"),
     "stopwatch": ("utility-tools.js", "function startStopwatch()", "the palette's Start a stopwatch", "timer"),
-    "stop the clock": ("utility-tools.js", '$("status-timer").addEventListener("click", stopUtilityClock);', "the status bar's timer chip", "timer"),
+    #: INBOX 1551: the rows and the chip open one Clock panel (Timer, Stopwatch, Alarm).
+    "open the clock": ("utility-tools.js", '$("status-timer").addEventListener("click", () => openClockPanel(utilityShown()?.kind', "the status bar's timer chip", "timer"),
+    "clock panel": ("utility-tools.js", 'function openClockPanel(tab = "timer")', "the palette's Start a timer, Start a stopwatch and Set an alarm", "timer"),
+    "alarm": ("settings-panes.js", 'id: "alarm", name: "Set an alarm"', "the palette's Set an alarm", "timer"),
     "no-model badge": ("reply-kit.js", "function replyByHelpPanel(kind)", "the From your notes badge", "ask-chat"),
     "calculator": ("reply-kit.js", 'function openCalculator(input = "", mode = "work", { target = null } = {})', "the palette's Calculator and equations, or /calc", "calculator"),
     "convert units": ("settings-panes.js", 'id: "convert", name: "Convert units"', "the palette's Convert units", "calculator"),
@@ -300,3 +303,205 @@ def test_check_what_it_learned_is_in_the_guide_the_panel_help_and_the_skill():
     assert '"Check what it learned"' in help_body and "Undo" in help_body
     assert "Check what it learned</button>" in html
     assert any(item["name"] == "Check what it learned" for item in skills.BUILTIN_SKILLS)
+
+
+def test_the_desktop_companion_row_is_named_as_a_this_computer_setting():
+    """INBOX 1631 (the owner: "the atlas desktop comnpanion toggle is gone??"), which
+    moves 1530 (b): the row shows on the computer Tessellate runs on, in the desktop
+    window or a browser tab, and takes effect while the desktop app runs; another device
+    has none. Every place that names it says so."""
+    from tessellate.ai import help_chat
+
+    named = [t for t in help_chat.HELP_TOPICS if "Show the companion on the desktop" in t["body"]]
+    assert named, "no Guide topic names the row any more"
+    for topic in named:
+        meta = help_chat.TOPIC_META.get(topic["id"], {})
+        body = topic["body"].lower()
+        assert "on the computer tessellate runs on" in body and "while the desktop app runs" in body, topic["id"]
+        assert meta.get("path", "").startswith("On the computer Tessellate runs on"), topic["id"]
+    html = (FRONTEND / "index.html").read_text(encoding="utf-8")
+    popover = html.split('id="desktop-companion-help"', 1)[1].split("</div>", 1)[0]
+    assert "While the desktop app runs" in popover
+    # BACKLOG 16 O4: the see-through figure that walks, and the words for it, in both places.
+    # Windows' own setting is named ("animation effects"): "reduce motion" was the app's old
+    # switch, which test_motion_resolved keeps out of the pages.
+    # The owner's report of 2026-11-04 moved this: Atlas floats (others walk), can be thrown,
+    # hangs from the top and peeks from behind the taskbar, in both places.
+    # The roam request of the same day: window tops, the switch and a reminder's card.
+    # Intent moved (INBOX 1670, 15:40Z): "sits still for minutes at a time" became "alive in place" (it stays put but
+    # breathes, blinks and sways its tail); both places still say how long it stays and that it is not bobbing.
+    # Intent moved (INBOX 1683 u, 2026-11-05): the wander mix is now walk, run, edge wrap and portal with a rare puff
+    # (was 90% walk), so both places name those modes instead of "mostly on foot or gliding".
+    for words in ("floats like a wind spirit", "sleeps", "thrown", "hangs from the top", "peeks up from behind the taskbar", "animation effects",
+                  "climbs onto the top of a window", "Roam over windows", "a card when a reminder falls due",
+                  "alive in place", "walking, running", "out at one edge and in at the other", "through a portal", "swings down or lets go with a start",
+                  "right-click for Companion (Atlas masculine or feminine, your own or a saved one, drawn once)"):
+        assert words in " ".join(popover.split()), words
+    for topic in named:
+        flat = " ".join(topic["body"].split())
+        for words in ("floats like a wind spirit", "thrown", "hangs from the top", "peeks up from behind the taskbar", "animation effects",
+                      "climbs onto the top of a window", "Roam over windows", "a card to click",
+                      "alive in place", "walking, running", "out at one edge and in at the other", "through a portal", "swings down or lets go with a start",
+                      #: Changed on purpose (INBOX 1684): every companion shows on the desk, so "the rest show in the app only" is gone.
+                      "Right-click it for Companion (Atlas masculine or feminine, your own or a saved one, drawn once)"):
+            assert words in flat, (topic["id"], words)
+            assert len(topic["body"]) < 1900, topic["id"]
+    settings = (FRONTEND / "js" / "settings.js").read_text(encoding="utf-8")
+    assert 'const onThisComputer = isDesktop || (await healthFacts())?.this_computer !== false;' in settings
+    assert '$("desktop-companion-row")?.classList.toggle("hidden", !onThisComputer);' in settings
+    note = settings.split('let companionNote = document.getElementById("desktop-companion-note");', 1)[1][:600]
+    assert "while the desktop app runs" in note
+
+
+def test_the_diagram_blocks_keys_menu_and_views_are_in_the_guide() -> None:
+    """1546 P2: what the block pane does by pointer it does by keys and a menu, and the
+    Guide's `diagram-blocks` topic says each of them in the words the controls use. The
+    topic is in the Documents group, the pane's keys are the ones it names, and the Read
+    button reads Blocks for a diagram."""
+    from tessellate.ai.help_chat import HELP_TOPICS
+    from tessellate.ai.help_topics_more import HELP_GROUPS, TOPIC_META
+
+    body = str(next(t["body"] for t in HELP_TOPICS if t["id"] == "diagram-blocks"))
+    for words in ("Blocks", "Source and Split", "Ctrl+Z", "press its arrow", "joins them", "inside",
+                  "Enter renames", "N adds", "G adds a group", "J joins", "Delete removes", "Alt+Up and Alt+Down",
+                  "Alt+Right nests", "Alt+Left lifts", "long press", "shape swatch"):
+        assert words in body, words
+    assert "diagram-blocks" in TOPIC_META
+    assert "diagram-blocks" in dict(HELP_GROUPS)["Documents and code"]
+    builder = (FRONTEND / "js" / "diagram-builder.js").read_text(encoding="utf-8")
+    for key in ("Insert", "Delete", "Backspace", "ContextMenu"):
+        assert key in builder, key
+    docs = (FRONTEND / "js" / "documents.js").read_text(encoding="utf-8")
+    assert "Canvas" in docs and "A diagram has Canvas, Blocks, Split and Source." in docs
+
+
+def test_the_diagram_add_library_and_connect_to_are_in_the_guide_in_the_controls_words() -> None:
+    """INBOX 1594: the Add library's four groups, its hints, the sheet on a phone, Connect to... on a
+    block (pick one, or type a new name), a connector's row and the C key, said in the Guide's
+    `diagram-blocks` topic in the words the pane carries."""
+    from tessellate.ai.help_chat import HELP_TOPICS
+
+    body = str(next(t["body"] for t in HELP_TOPICS if t["id"] == "diagram-blocks"))
+    # 1661 D2: the tile strip became one Add split (the last shape, and a menu of every shape with its key).
+    for words in ("Add shows the last shape you used", "press its arrow", "for every shape and its key", "Connect to... on a block", "type a new name to make it",
+                  "Start to Next and its label", "C or J joins"):
+        assert words in body, words
+    js = FRONTEND / "js"
+    builder = (js / "diagram-builder.js").read_text(encoding="utf-8")
+    library = (js / "diagram-library.js").read_text(encoding="utf-8")
+    joins = (js / "diagram-joins.js").read_text(encoding="utf-8")
+    for label in ("Steps", "Decisions", "Start and end", "Notes and groups"):
+        assert f'["{label}", [' in library, label
+    # 1679 slice 6: the row shows "to Next" under its block; the full "from to" sentence is its aria-label.
+    assert "Connect to…" in builder and "Connector from ${from} to ${to}" in builder and "A new block" in joins
+    assert 'c: () => key[0] !== "k" && joinPick(S, key)' in builder
+
+
+def test_the_diagram_suggestions_are_in_the_guide_in_the_controls_words() -> None:
+    """1546 P3: Suggest and its three ways in, the ghosts and their keys, and the dimmed
+    Describe it, each said in the words the controls carry."""
+    from tessellate.ai.help_chat import HELP_TOPICS
+
+    body = str(next(t["body"] for t in HELP_TOPICS if t["id"] == "diagram-blocks"))
+    for words in ("Suggest", "Templates", "From my notes", "Describe it", "Use this template", "dimmed",
+                  "ghosts", "Tab takes", "Shift+Tab lets it go", "Enter adds", "Escape drops", "Ctrl+Z undoes the whole addition"):
+        assert words in body, words
+    builder = (FRONTEND / "js" / "diagram-builder.js").read_text(encoding="utf-8")
+    suggest = (FRONTEND / "js" / "diagram-suggest.js").read_text(encoding="utf-8")
+    for label in ("Templates", "From my notes", "Describe it", "Suggest"):
+        assert label in builder + suggest, label
+    assert "Use this template" in suggest
+
+
+def test_the_diagram_kinds_are_in_the_guide_in_the_controls_words() -> None:
+    """1546 P4: the mind map, timeline and sequence panes, the letter on each bar button, the
+    two things a suggestion of another kind does, and a source the blocks cannot read, each
+    said in the Guide's `diagram-kinds` topic (its own, so `diagram-blocks` keeps its room) in
+    the words the pane carries."""
+    from tessellate.ai.help_chat import HELP_TOPICS
+    from tessellate.ai.help_topics_more import HELP_GROUPS, TOPIC_META
+
+    body = str(next(t["body"] for t in HELP_TOPICS if t["id"] == "diagram-kinds"))
+    for words in ("flowcharts, mind maps, timelines and sequence diagrams", "a branch and a leaf (B and N)",
+                  "a section, a period and an event (S, P and E)",
+                  # 1679 m: the tiles grew by Parallel, Critical and Break (U, C, B); the sentence still lists every tile with its key.
+                  "actor, participant, message, reply, async, lost, note, loop, alt, opt, parallel, critical and break (A, P, M, R, Y, X, T, L, G, O, U, C and B)",
+                  "opens in Source with its picture", "of another kind says so and is left out", "replaces a blank one"):
+        assert words in body, words
+    assert "diagram-kinds" in TOPIC_META and "diagram-kinds" in dict(HELP_GROUPS)["Documents and code"]
+    assert "next topic" in str(next(t["body"] for t in HELP_TOPICS if t["id"] == "diagram-blocks"))
+    kinds = (FRONTEND / "js" / "diagram-kinds.js").read_text(encoding="utf-8")
+    for label in ("Branch", "Leaf", "Section", "Period", "Event", "Actor", "Participant", "Message", "Reply", "Async", "Lost", "Note", "Loop", "Alt", "Opt"):
+        assert f'name: "{label}"' in kinds, label
+    for letters in ('key: "b"', 'key: "n"', 'key: "s"', 'key: "p"', 'key: "e"', 'key: "m"', 'key: "r"', 'key: "y"', 'key: "x"', 'key: "t"', 'key: "l"', 'key: "g"', 'key: "o"', 'key: "a"'):
+        assert letters in kinds, letters
+
+
+def test_the_diagram_dialog_the_reply_action_and_the_exports_are_in_the_guide_in_the_controls_words() -> None:
+    """1546 P5: Edit as blocks on a Live figure, the board's double-click, Open as a diagram under a reply,
+    `![[name]]`, the ... menu's four rows and Source beside Cancel, each said in the `diagram-elsewhere`
+    topic in the words the controls carry."""
+    from tessellate.ai.help_chat import HELP_TOPICS
+    from tessellate.ai.help_topics_more import HELP_GROUPS, TOPIC_META
+
+    body = str(next(t["body"] for t in HELP_TOPICS if t["id"] == "diagram-elsewhere"))
+    for words in ("Edit as blocks", "double-click a diagram object", "Open as a diagram", "![[name]]", "Done", "Cancel, Escape and the X",
+                  "SVG", "PNG", "Copy as Mermaid", "Copy as SVG", "Source"):
+        assert words in body, words
+    assert "diagram-elsewhere" in TOPIC_META and "diagram-elsewhere" in dict(HELP_GROUPS)["Documents and code"]
+    embed = (FRONTEND / "js" / "diagram-embed.js").read_text(encoding="utf-8")
+    builder = (FRONTEND / "js" / "diagram-builder.js").read_text(encoding="utf-8")
+    draw = (FRONTEND / "js" / "mermaid-draw.js").read_text(encoding="utf-8")
+    mermaid = (FRONTEND / "js" / "documents-mermaid.js").read_text(encoding="utf-8")
+    for label in ("Save as SVG", "Save as PNG", "Copy as Mermaid", "Copy as SVG"):
+        assert label in builder, label
+    assert '"Edit as blocks"' in mermaid and '"Open as a diagram"' in draw
+    #: R9c (1621 D4, D7): Save to Library on a fence and in the menu, the swap offer, and the chat card.
+    for words in ("Save to Library", "replace the fence with a link", "link a board's diagram", "Attach a Library diagram to Chat"):
+        assert words in body, words
+    assert 'smallButton("ph:books", "Save to Library"' in mermaid and "Save to Library" in embed
+    for label in ('"Done"', '"Cancel"', '"Source"', '"Blocks"'):
+        assert label in embed, label
+
+
+def test_the_diagram_picture_zoom_is_in_the_guide_in_the_controls_words() -> None:
+    """INBOX 1614: the corner bar's four buttons, Ctrl+wheel, the pinch and the arrow keys, said in the
+    `diagram-blocks` topic in the words diagram-view.js carries."""
+    from tessellate.ai.help_chat import HELP_TOPICS
+
+    body = str(next(t["body"] for t in HELP_TOPICS if t["id"] == "diagram-blocks"))
+    for words in ("corner bar zooms (Zoom in, Zoom out, Fit)", "reads the zoom now", "100% is the drawing's own size", "Ctrl+wheel", "a pinch", "arrow keys pan"):
+        assert words in body, words
+    view = (FRONTEND / "js" / "diagram-view.js").read_text(encoding="utf-8")
+    for label in ('"Zoom in"', '"Zoom out"', '"Fit"', '"100%"', "event.ctrlKey", "ArrowLeft"):
+        assert label in view, label
+
+
+def test_the_diagram_divider_direction_caption_and_walkthrough_are_in_the_guide_in_the_controls_words() -> None:
+    """DOCUMENTS_PLAN 22.4 R3 and R4: the divider, the Direction caption and the three empty-state steps."""
+    from tessellate.ai.help_chat import HELP_TOPICS
+
+    body = str(next(t["body"] for t in HELP_TOPICS if t["id"] == "diagram-blocks"))
+    assert len(body) < 1900
+    for words in ("A divider sizes the blocks and the picture", "Shift for more", "Direction (a menu) turns the flow", "Add a shape, Name it, Connect it"):
+        assert words in body, words
+    js = FRONTEND / "js"
+    # 1661 D2: the caption over four arrows became one button that says "Direction: Down" (diagram-bar.js).
+    assert "Direction: ${WORD[dir]}" in (js / "diagram-bar.js").read_text(encoding="utf-8")
+    steps = (js / "diagram-steps.js").read_text(encoding="utf-8")
+    for label in ('"Add a shape"', '"Name it"', '"Connect it"'):
+        assert label in steps, label
+    assert "Resize the blocks list" in (js / "diagram-split.js").read_text(encoding="utf-8")
+
+
+def test_the_diagram_multiselect_is_in_the_guide_in_the_controls_words() -> None:
+    """DOCUMENTS_PLAN 22.4 R5: Shift and Ctrl click, the bar's actions and the grip that carries the picked blocks."""
+    from tessellate.ai.help_chat import HELP_TOPICS
+
+    body = str(next(t["body"] for t in HELP_TOPICS if t["id"] == "diagram-blocks"))
+    assert len(body) < 1900
+    for words in ("Shift+click picks a range", "Ctrl+click adds one", "Duplicate", "Box them", "any picked grip moves all"):
+        assert words in body, words
+    multi = (FRONTEND / "js" / "diagram-multi.js").read_text(encoding="utf-8")
+    for label in ('"ph:trash Delete"', '"ph:copy Duplicate"', '"ph:diamond Shape"', '"ph:stack Box them"', '"Done"'):
+        assert label in multi, label

@@ -104,6 +104,7 @@ def search(
     hybrid: bool = Query(default=True, description="False for keyword only"),
     limit: int = Query(default=20, ge=1, le=MAX_LIMIT),
     page: int = Query(default=1, ge=1, le=MAX_PAGE, description="1-based page of `limit` hits"),
+    ids_only: bool = Query(default=False, description="Every note that holds the words, as ids, unranked"),
     session: Session = Depends(get_session),
 ) -> dict:
     """Hits with their three scores and their explanation, best first.
@@ -116,9 +117,14 @@ def search(
     """
     from tessellate.search import search_manager
 
-    #: The first words only (audit 1031 AI9): a 20,000-character query took
+    if ids_only:
+        #: The Notes list's filter box (INBOX 1525): its rows hold a note's first characters, the
+        #: notes table the rest. Literal, so before any reading of the question: `null` says the
+        #: box names no term, and the list keeps its own answer.
+        return {"query": q, "ids": engine.match_ids(session, q)}
+    #: Its ask and distinctive words, not the whole paste (audit 1031 AI9, INBOX 1528): a 20,000-character query took
     #: 2,233 ms to search, and the finder's box can be pasted into.
-    q = search_manager.clip_query(q)
+    q = search_manager.clip_query(session, q)
     kinds = [part.strip() for part in kind.split(",") if part.strip() in search_index.KINDS]
     ctx = _scope_of(entry_id, space)
     #: Paged by ranking deeper and slicing: one more than the page asks for,
@@ -147,17 +153,10 @@ def _with_categories(session: Session, hits: list) -> list[dict]:
     """The page's hits as JSON, each with the name of the category its note is
     filed under (`null` for anything that is not a note), one query for the
     page: a Group by category in Find anything needs it (INBOX 1332)."""
-    from sqlalchemy import select
-
-    from tessellate.core.database import Category, Entry
+    from tessellate.repo import categories as categories_repo
 
     ids = [hit.ref_id for hit in hits if hit.kind == "note"]
-    names: dict[int, str] = {}
-    if ids:
-        rows = session.execute(
-            select(Entry.id, Category.name).join(Category, Category.id == Entry.category_id).where(Entry.id.in_(ids))
-        )
-        names = {entry_id: name for entry_id, name in rows}
+    names = categories_repo.names_by_entry(session, ids)
     return [{**hit.as_dict(), "category": names.get(hit.ref_id) if hit.kind == "note" else None} for hit in hits]
 
 

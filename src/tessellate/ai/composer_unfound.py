@@ -60,13 +60,14 @@ _INSTRUCTION_STEMS = frozenset(
     improve improvement related similar recur recurring older newer oldest newest favourite favorite best worst everything
     summary list top first second third biggest largest smallest cheapest priciest
     gist overview story stuff style preferred prefer relationship give quick rough general overall kind sort type
-    recorded outgoing mean meaning refer referring exact""".split()
+    recorded outgoing mean meaning refer referring exact
+    number figure amount value count tally mark fit archive finish show tell pin flag""".split()
 )
 
 
 #: An adverb says how, not what: "what did I personally think", "is it
 #: actually recorded" are never missing their "personally" (stress run 2026-10-30).
-_MANNER = re.compile(r"(?:ally|ely|ently|antly|ously|ively|edly|icitly)$", re.I)
+_MANNER = re.compile(r"(?:ally|ely|ently|antly|ously|ively|edly|icitly)$|^(?:simply|merely|basically|honestly|truly|mostly|mainly|barely|nearly|hardly)$", re.I)
 
 
 def _quoted_words(out: _Answer, views: list[NoteView]) -> set[str]:
@@ -102,7 +103,11 @@ _FRAME_SHAPES = re.compile(
     r"\bhow (?!to\b)(\w+)"
     r"|\b(?:do|does|did|can|could|should|would|will|have|has|had|am|is|are|was|were) (?:i|we|you) (?:\w+ly )?(?!a\b|an\b|the\b)(\w+)"
     r"|\b(?:i|we)(?:'ve|'d|'ll| have| had| will)? (?!have\b|had\b|am\b|was\b)(\w+)"
-    r"|\bwhat (\w+s) (?:in|into|inside|with|on)\b",
+    r"|\bwhat (\w+s) (?:in|into|inside|with|on)\b"
+    #: An order's verb ("mark what I spent", "give me my", "tell me the") and the
+    #: verb of "what tag fits my budget" (audit 1028 E22).
+    r"|^\s*(?:please\s+|(?:can|could) you\s+)?(\w+)\s+(?:me\s+|us\s+)?(?:what|how|all|every|everything|my|the)\b"
+    r"|\b(?:what|which)\s+\w+\s+(\w+s)\s+(?:my|the|a|an|your|our)\b",
     re.I,
 )
 
@@ -114,9 +119,28 @@ _FRAME_WORDS = frozenset(
 )
 
 
+#: The shape an order asks the answer to take, read from the sentence: "as a
+#: table", "in two snippets", "the top three memos", and after an order verb
+#: "in a haiku", "with a timeline". No list of formats: the position names it
+#: (audit 1029 C37; a bare "in a hotel" with no order verb stays a topic).
+_SHAPE_ASKED = re.compile(
+    r"\bas (?:a |an |the )?(\w+)"
+    r"|\bin (?:\d+|one|two|three|four|five|six|seven|eight|nine|ten|a few|a couple of) (\w+)"
+    r"|\b(?:top|first|last|best|worst|latest|newest|oldest)\s+(?:\d+|one|two|three|four|five|six|seven|eight|nine|ten)\s+(\w+)",
+    re.I,
+)
+_ORDER_SHAPE = re.compile(
+    r"^\s*(?:please\s+|(?:can|could|would) you\s+(?:please\s+)?)?(?:summari[sz]e|give|write|draft|explain|describe|show|tell|list|put|format|turn|sum)\b"
+    r"(?:(?!\b(?:what|which|who|where|when|how|about|my|our)\b).)*?\b(?:in|with) (?:a|an) (\w+)",
+    re.I,
+)
+
+
 @functools.lru_cache(maxsize=256)
 def _frame_stems(question: str) -> frozenset[str]:
     said = {w for m in _FRAME_SHAPES.finditer(question or "") for w in m.groups() if w}
+    said |= {w for m in _SHAPE_ASKED.finditer(question or "") for w in m.groups() if w}
+    said |= {w for m in _ORDER_SHAPE.finditer(question or "") for w in m.groups() if w}
     return frozenset(_stem(w) for w in said) | _FRAME_WORDS
 
 

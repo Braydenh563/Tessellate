@@ -69,6 +69,19 @@ try {
   Add-Type -AssemblyName System.Windows.Forms
   Add-Type -AssemblyName System.Drawing
 
+  # The taskbar groups a window by its process's AppUserModelID; this one is
+  # powershell.exe's, so the splash showed the PowerShell logo (INBOX 1574).
+  # The app's own id (__main__.py, SetCurrentProcessExplicitAppUserModelID)
+  # makes the taskbar use the form's icon and keeps splash and app one button.
+  try {
+    Add-Type -Namespace Tessellate -Name Shell -MemberDefinition @'
+[System.Runtime.InteropServices.DllImport("shell32.dll", CharSet = System.Runtime.InteropServices.CharSet.Unicode)]
+public static extern int SetCurrentProcessExplicitAppUserModelID(string appId);
+'@
+    [void][Tessellate.Shell]::SetCurrentProcessExplicitAppUserModelID("memorymap.desktop.app.1")
+  } catch {
+  }
+
   [System.Windows.Forms.Application]::EnableVisualStyles()
   [System.Windows.Forms.Application]::SetCompatibleTextRenderingDefault($false)
 
@@ -115,6 +128,17 @@ try {
     $rect = New-Object System.Drawing.RectangleF(0, 0, $size, $size)
     $tile = New-Object System.Drawing.Drawing2D.LinearGradientBrush -ArgumentList `
       $rect, ([System.Drawing.Color]::FromArgb(91, 124, 255)), ([System.Drawing.Color]::FromArgb(169, 39, 216)), ([float]45.0)
+    # The mark's three stops (favicon.svg `tile`: #5b7cff, #4f6df5 at 55%, #a927d8).
+    # Two stops spread the violet over half the tile, which read as much pinker
+    # than every other copy of the mark (owner, INBOX 1574).
+    $blend = New-Object System.Drawing.Drawing2D.ColorBlend -ArgumentList 3
+    $blend.Colors = @(
+      [System.Drawing.Color]::FromArgb(91, 124, 255),
+      [System.Drawing.Color]::FromArgb(79, 109, 245),
+      [System.Drawing.Color]::FromArgb(169, 39, 216)
+    )
+    $blend.Positions = @([float]0.0, [float]0.55, [float]1.0)
+    $tile.InterpolationColors = $blend
     $r = 23 * $s
     $tp = New-Object System.Drawing.Drawing2D.GraphicsPath
     $tp.AddArc(0, 0, 2 * $r, 2 * $r, 180, 90)

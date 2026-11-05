@@ -110,7 +110,7 @@ def test_the_inverse_zoom_is_written_onto_the_grips_that_read_it() -> None:
     )
     css_text = re.sub(r"/\*.*?\*/", "", css_text, flags=re.S)
     readers: set[str] = set()
-    for selectors, body in re.findall(r"([^{}]+)\{([^{}]*)\}", css_text):
+    for selectors, body in re.findall(r"(?:(?<=[{}])|\A)([^{}]+)\{([^{}]*)\}", css_text):
         if "var(--wb-inv-zoom)" in body:
             readers.update(s.strip() for s in selectors.split(","))
     listed = re.search(r"const WB_INV_ZOOM_GRIPS = \[(.*?)\];", WB_JS, re.S)

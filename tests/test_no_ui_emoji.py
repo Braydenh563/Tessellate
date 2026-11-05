@@ -80,6 +80,25 @@ ALLOWED: dict[str, list[tuple[str, str]]] = {
             "(\\cdots draws as the midline ellipsis), document content rather than an icon",
         ),
     ],
+    "frontend/js/documents-word.js": [
+        (
+            "new D.TextRun({ text: child.checked ?",
+            "a task's box in the exported .docx (DX9): text inside the Word file, which "
+            "has no Phosphor font, never drawn in the app",
+        ),
+    ],
+    "frontend/js/documents.js": [
+        (
+            "const DOC_RICH_TAGS",
+            "the bullet marks a pasted Word paragraph starts with, matched to read it as "
+            "a list; never drawn",
+        ),
+        (
+            "(?:[·•▪◦‣§Ø]",
+            "the same bullet marks (DX32), matched to make the paragraph an item and "
+            "stripped from its text; never drawn",
+        ),
+    ],
     "frontend/js/documents-prose.js": [
         (
             "block:const DOC_EMOJI_SOURCE",
@@ -98,6 +117,11 @@ ALLOWED: dict[str, list[tuple[str, str]]] = {
             "the icon and emoji picker's curated emoji (MINDMAP_PLAN decision 43): "
             "glyphs a person chooses to put in their own map, board or text, never "
             "the app's own icons",
+        ),
+        (
+            "block:iconPickerState.symbolSource = [",
+            "the picker's Symbols tab (INBOX 1544): characters a person inserts into "
+            "their own text, written as escapes; no Phosphor glyph can stand in",
         ),
         (
             "block:const ICON_KAOMOJI",
@@ -133,15 +157,19 @@ ALLOWED: dict[str, list[tuple[str, str]]] = {
     "frontend/js/notes-list.js": [
         ("block:const LATEX_SYMBOLS", "character data: what `\\rightarrow` means"),
     ],
-    "frontend/js/documents.js": [
+    "frontend/js/documents-math.js": [
         ("block:const DOC_MATH_LETTERS", "character data: what the math macros mean"),
         ("block:const DOC_MATH_OPERATORS", "character data: what the math macros mean"),
+        ('"\\u23de" : "\\u23df"', "character data: the stretchy brace \\overbrace and \\underbrace draw, and the test that finds it again (INBOX 1579)"),
     ],
     "frontend/js/documents-cm.js": [
         (
             r'replace(/\{\s*\}/g, "{\u25a1}")',
             "an empty slot inside a TeX string, drawn by the math renderer (the equation field's dotted box), not the UI",
         ),
+    ],
+    "frontend/js/reply-kit.js": [
+        ('const slot = "\\u25a1"', "an empty slot in the calculator's typeset sum, drawn by the math renderer, not the UI (INBOX 1579)"),
     ],
     "frontend/index.html": [
         ("⋯ menu", "help prose naming the kebab control, which is a word here, not an icon"),

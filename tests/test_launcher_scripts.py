@@ -807,6 +807,23 @@ class TestTheWindowsSplash:
     def text(self) -> str:
         return _read(ROOT / "scripts" / "splash.ps1")
 
+    def test_the_splash_mark_has_the_marks_three_stops_and_the_apps_taskbar_id(self):
+        """INBOX 1574: the splash tile was a two-stop blend, much pinker than the
+        mark everywhere else, and the taskbar showed PowerShell's icon, because
+        the window carried powershell.exe's AppUserModelID."""
+        svg = _read(ROOT / "frontend" / "favicon.svg")
+        tile = svg[svg.index('<linearGradient id="tile"') :]
+        tile = tile[: tile.index("</linearGradient>")]
+        stops = re.findall(r'offset="(\d+)%" stop-color="#([0-9a-f]{6})"', tile)
+        rgb = [tuple(int(h[i : i + 2], 16) for i in (0, 2, 4)) for _, h in stops]
+        blend = self.text[self.text.index("$blend.Colors = @(") :]
+        blend = blend[: blend.index("$tile.InterpolationColors")]
+        assert [tuple(map(int, m)) for m in re.findall(r"FromArgb\((\d+), (\d+), (\d+)\)", blend)] == rgb
+        assert [round(float(m) * 100) for m in re.findall(r"\[float\]([\d.]+)", blend)] == [int(o) for o, _ in stops]
+        app_id = re.search(r'SetCurrentProcessExplicitAppUserModelID\(\s*"([^"]+)"', _read(ROOT / "src" / "tessellate" / "__main__.py")).group(1)
+        assert f'SetCurrentProcessExplicitAppUserModelID("{app_id}")' in self.text
+        assert self.text.index("SetCurrentProcessExplicitAppUserModelID(\"") < self.text.index("$form                 = New-Object")
+
     def test_the_braces_balance(self):
         """The one structural error a read can catch. Counted outside
         strings and comments, which is where every brace in this file that

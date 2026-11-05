@@ -5,7 +5,7 @@
 // draws only after a person picks that action from a note's menu. Loaded on
 // first use by `LAZY_MODULES.attachTo` (app.js), whose stand-ins for
 // `renderAttachToBoard` and `renderAttachToDocument` fetch this file and then
-// call the real one. Their one caller (`renderInlineAction`, lightbox.js)
+// call the real one. Their one caller (`renderInlineAction`, entry-card.js)
 // reads neither's result: both are `async` and fill the `wrap` element it
 // already returned, so the picker appears a moment late on the first use of a
 // session and on time after that.
@@ -235,16 +235,17 @@ async function notePickerRows(source) {
     notePickerCache.maps = boards.filter((b) => b.id != null);
     return notePickerCache.maps;
   }
-  const path = source === "documents" ? "/documents" : source === "files" ? "/files/gallery" : "/media";
+  //: Files are both tables, the one list every picker shares (library-pick.js).
+  if (source === "files") {
+    await lazyScript("/js/library-pick.js");
+    return (notePickerCache.files = await pickLibraryItemDialog.fileRows());
+  }
+  const path = source === "documents" ? "/documents" : "/media";
   //: All three are paged, and `apiPagedList` reads each to the end: a picker
   //: that silently cannot reach half the library is worse than a slow one.
   const rows = await apiPagedList(path, 200).catch(() => null);
   if (rows == null) return null;
   let list = Array.isArray(rows) ? rows : rows.documents || [];
-  //: **Files means files, and a sketch is a picture** ("sketches show in the
-  //: files section"). `/files/gallery` is every note attachment whatever its
-  //: type; the Library splits it on the mime the same way.
-  if (source === "files") list = list.filter((row) => !(row.mime || "").startsWith("image/"));
   //: Images reach both tables, each row marked with the one it came from.
   //: **The two tables number their rows separately**, so an id alone is not a
   //: picture: a note's picture (an Attachment) was pushed onto the images sent
@@ -306,8 +307,10 @@ async function renderNotePickerList() {
   }
   // Attached rows stay on top even when the search would not match them, so
   // ticking one never makes it vanish from under the pointer.
+  //: A note row holds its first 300 characters; the server's literal match reads the whole text (INBOX 1525 review).
+  const served = source === "notes" && query ? noteEngine.literal(noteEngine.pick, query, renderNotePickerList) : null;
   const matches = rows.filter(
-    (row) => shape.isOn(row) || !query || shape.search(row).toLowerCase().includes(query)
+    (row) => shape.isOn(row) || !query || shape.search(row).toLowerCase().includes(query) || served?.has(row.id)
   );
   matches.sort((a, b) => (shape.isOn(a) ? 0 : 1) - (shape.isOn(b) ? 0 : 1));
   if (!matches.length) {

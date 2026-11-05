@@ -788,6 +788,8 @@ def _placed(result: dict, args: dict) -> Said:
 
 def _reminder_set(result: dict, args: dict) -> Said:
     when = _when(result.get("due_at")) or str(result.get("due") or "")
+    if result.get("existing"):
+        return f"You already have that reminder, to {_lower_first(str(result.get('text') or args.get('text') or 'do that'))} on {when}.", "", _chips(("Open Reminders", REMINDERS))
     return f"I'll remind you to {_lower_first(str(result.get('text') or args.get('text') or 'do that'))} on {when}.", "", _chips(("Open Reminders", REMINDERS))
 
 

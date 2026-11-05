@@ -41,8 +41,13 @@ def test_one_question_cap_on_the_page_matches_the_server():
     assert made and int(made.group(2)) == search_query.QUESTION_CAP
     limits = made.group(1)
     assert "warmMax: 500" in limits
-    for route in ("warm", "search", "question", "followQuestion"):
+    for route in ("warm", "search", "question"):
         assert re.search(rf"\b{route}: cap\b", limits), route
+    #: warm12-1101 leftover: the follow-up route shows the model 500 characters of the question, so the page sends
+    #: no more (it sent the 4,000 cap). Changed from `followQuestion: cap`: the route's own read is the number now.
+    from tessellate.ai import followups
+
+    assert f"followQuestion: {followups.FOLLOWUP_QUESTION_CHARS}" in limits
 
 
 def test_the_warm_is_sent_only_for_a_short_question():
@@ -67,7 +72,7 @@ def test_the_warm_route_refuses_past_the_cap_and_clips_what_it_embeds(client, mo
     assert all(len(text.split()) <= search_manager.SEARCH_QUERY_WORDS for text in seen)
 
 
-def test_the_finder_route_reads_the_first_words_of_a_long_query(client, monkeypatch):
+def test_the_finder_route_bounds_what_it_searches_of_a_long_query(client, monkeypatch):
     """GET /search read the whole query: 2,233 ms for 20,000 characters."""
     seen = []
     real = routes_search.engine.search
@@ -87,7 +92,7 @@ def test_the_finder_route_reads_the_first_words_of_a_long_query(client, monkeypa
 SEARCH_CALLS = {
     "app-palette.js": 1,
     "library.js": 1,
-    "notes-lazy.js": 1,
+    "notes-lazy.js": 2,
     "notes-list.js": 2,
     "search.js": 2,
 }
@@ -106,7 +111,8 @@ def test_the_desktop_companion_has_its_own_copy_of_the_cap():
     """Its page loads no chat.js, so `clipFor` is not there."""
     text = _js("desk-companion.js")
     assert re.search(r"const DESK_QUESTION_CAP = (\d+);", text).group(1) == str(search_query.QUESTION_CAP)
-    assert "/search?q=${encodeURIComponent(q.slice(0, DESK_QUESTION_CAP))}" in text
+    # INBOX 1528: the clip keeps the end too, the way chat.js `clipFor` does.
+    assert "/search?q=${encodeURIComponent(deskClip(q))}" in text
     assert "clipFor" not in text
 
 

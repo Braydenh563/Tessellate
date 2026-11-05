@@ -378,7 +378,7 @@ function statsAskBox() {
   for (const starter of STATS_ASK_STARTERS) {
     const chip = document.createElement("button");
     chip.type = "button";
-    chip.className = "ghost small stats-ask-chip";
+    chip.className = "ghost quiet small stats-ask-chip";
     chip.textContent = starter;
     chip.addEventListener("click", () => ask(starter));
     chips.appendChild(chip);

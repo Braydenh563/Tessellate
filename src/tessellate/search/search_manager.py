@@ -23,12 +23,14 @@ from sqlalchemy import func, or_, select, text
 from sqlalchemy.orm import Session
 
 from tessellate.ai import recognise, variants
+from tessellate.ai.note_recency import is_recency_ask
 from tessellate.ai.embeddings import (
     EmbeddingService,
     bytes_to_vector,
 )
 from tessellate.core import cjk
 from tessellate.core.database import LIKE_ESCAPE, EmbeddingRecord, Entry, EntryDate, like_escape, link_strength
+from tessellate.search import long_question
 from tessellate.search import query as query_understanding
 
 # **No `TYPE_CHECKING: import numpy as np` here**, for the reason janitor.py
@@ -459,7 +461,7 @@ def warm(session: Session, query: str, embeddings: EmbeddingService) -> bool:
     if not embeddings.is_ready():
         _load_later(embeddings)
         return False
-    query = clip_query(query)
+    query = clip_query(session, query)
     #: The focus call carries no words: nothing to embed, so nothing to look up
     #: in the database for the user's "today" either.
     if not query:
@@ -1133,30 +1135,6 @@ def _rank_inner(
     return keyword[:limit], "keyword"
 
 
-_RECENCY_ASK = re.compile(
-    r"\b(?:last|latest|newest|most recent|recent)\s+(?:\w+\s+){0,2}?(?:note|notes|entry|entries|thing i (?:wrote|saved|added))\b"
-    r"|\b(?:write|wrote|written|saved|added|captured)\b[^.?!]{0,20}\b(?:last|most recently)$"
-    #: "What have I saved recently?" (INBOX 441): the whole question is the
-    #: verb and the time word, nothing between them to search for. A topic
-    #: in between ("written about golf recently") stays a search.
-    r"|^what\s+(?:have|did|had)\s+i\s+(?:been\s+)?(?:write|wrote|written|writing|save|saved|saving|add|added|adding|capture|captured|capturing|note|noted)\s+(?:down\s+)?(?:recently|lately)$",
-    re.IGNORECASE,
-)
-
-
-def is_recency_ask(query: str) -> bool:
-    r"""Whether a question asks for the newest notes rather than a subject.
-
-    The trailing whitespace and closing marks are stripped here, in code,
-    so the pattern ends on a word and `$` with no quantifier before it:
-    any `\s*` (or `[\s?.!]*`) ahead of `$` backtracks over a run of tabs
-    on every start position `search` tries (CodeQL 443 and 445, the second
-    after a 300-character slice the analysis cannot see). Read on the first
-    300 characters: a recency question is short.
-    """
-    return bool(_RECENCY_ASK.search(query[:300].strip().rstrip("?.! \t\r\n")))
-
-
 #: The words a question about a whole category is made of besides the
 #: category's own name: "Summarise my notes in Health" is nothing but these,
 #: so it asks for the category, not for notes about some subject in it.
@@ -1375,6 +1353,36 @@ def _match_info(entries: list[Entry], sem_scores: dict, kw_terms) -> dict:  # no
     return info
 
 
+#: A match on meaning alone, with no word, tag or category of the question's,
+#: must score at least this share of the best meaning score, and never below
+#: `MEANING_FLOOR` (INBOX 1665 h: a guide, a party and a joke listed under
+#: "courses & study" on a 0.3 to 0.5 cosine).
+MEANING_SHARE = 0.85
+MEANING_FLOOR = 0.5
+#: Only once this many notes matched by a word does the floor apply: a question
+#: with no word match is answered by meaning alone, as before.
+MEANING_MIN_ANCHORS = 3
+
+
+def meaning_floor(entries: list[Entry], match_info: dict, kw_terms) -> list[Entry]:  # noqa: ANN001
+    """`entries` without the weak meaning-only matches. A note stays when a
+    word of the question is in it, its tags name one, or its score is near the
+    best meaning score; the shown score is the one that ranked it."""
+    anchored = [e for e in entries if match_info.get(e.id, {}).get("terms")]
+    if len(anchored) < MEANING_MIN_ANCHORS:
+        return entries
+    scores = [match_info[e.id]["score"] for e in entries if match_info.get(e.id, {}).get("type") == "semantic"]
+    floor = max(MEANING_FLOOR, MEANING_SHARE * max(scores)) if scores else MEANING_FLOOR
+
+    def tagged(entry: Entry) -> bool:
+        return any(t in str(entry.tags or "").lower() for t in kw_terms)
+
+    return [
+        e for e in entries
+        if match_info.get(e.id, {}).get("type") != "semantic" or match_info[e.id]["score"] >= floor or tagged(e)
+    ]
+
+
 def _append_connected(session: Session, entries: list[Entry], match_info: dict, found: dict) -> None:
     # Appended, never interleaved: a connected note is context and a match is
     # an answer, and a prompt that has to drop something should drop the
@@ -1455,16 +1463,18 @@ def _when_nothing_ranked(session: Session, entries: list, asked, mentioned: set,
 #: chat question took 2,000 ms to search over 205 notes, and a 100,000-character
 #: tool query 1,612 ms. The rest of a long question is context for the model,
 #: which still gets all of it; a search over 300 words finds what 2,000 would.
+#: Those words are the question's ask and the paste's distinctive terms
+#: (`long_question`), not its first 300 (INBOX 1528).
 SEARCH_QUERY_WORDS = 300
 SEARCH_QUERY_CHARS = query_understanding.QUESTION_CAP
 
 
-def clip_query(query: str) -> str:
-    """The first `SEARCH_QUERY_WORDS` words of `query`, at most `SEARCH_QUERY_CHARS`."""
-    return _FIRST_WORDS.match(query).group(0)[:SEARCH_QUERY_CHARS]
-
-
-_FIRST_WORDS = re.compile(r"(?:\s*\S{1,%d}){0,%d}" % (SEARCH_QUERY_CHARS, SEARCH_QUERY_WORDS))
+def clip_query(session: Session, query: str) -> str:
+    """What the search reads of `query`: all of it up to `SEARCH_QUERY_WORDS`
+    words and `SEARCH_QUERY_CHARS` characters, else its ask plus the paste's
+    most distinctive words (`long_question`, INBOX 1528), never its opening
+    alone. Every path that narrows a question for search goes through here."""
+    return long_question.search_text(session, query, SEARCH_QUERY_WORDS, SEARCH_QUERY_CHARS)
 
 
 def _retrieve(
@@ -1481,7 +1491,7 @@ def _retrieve(
     # What the question is actually asking. A time phrase becomes a filter
     # instead of search terms, and the question's scaffolding comes off before
     # anything is embedded: see `search/query.py` for why both matter.
-    query = clip_query(query)
+    query = clip_query(session, query)
     asked = query_understanding.understand(query, _user_today(session), locale)
     found["since"] = asked.since
     found["until"] = asked.until
@@ -1524,6 +1534,7 @@ def _retrieve(
 
     entries = _without_private(entries)
     match_info = _match_info(entries, sem_scores, kw_terms)
+    entries = meaning_floor(entries, match_info, kw_terms)
     #: Not across a scope: a neighbour from another category is exactly the
     #: stray a question about one category must not be answered with.
     if expand_graph and entries and scope is None:

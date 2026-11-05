@@ -96,7 +96,7 @@ const WIDTH = Number(process.env.VIEW || 1440);
       if (!s) continue;
       check(`${surface}: in the window, no page scroll`, s.inView && s.pageScrollX <= 0, { box: s.box, x: s.pageScrollX });
       check(`${surface}: nothing spills sideways`, s.spill === 0, s.spill);
-      check(`${surface}: palette`, s.tiles > 60 && s.mathTiles >= 40 && s.groups.split(",").length === 17, { tiles: s.tiles, math: s.mathTiles, groups: s.groups });
+      check(`${surface}: palette`, s.tiles > 60 && s.mathTiles >= 40 && s.groups.split(",").length === 21, { tiles: s.tiles, math: s.mathTiles, groups: s.groups });
       check(`${surface}: palette scrolls in itself`, s.listScrolls && s.listH >= 100, s.listH);
       check(`${surface}: tiles meet the target`, s.tileMin >= 24, s.tileMin);
       check(`${surface}: focus in the field`, s.focus);

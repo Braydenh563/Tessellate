@@ -732,11 +732,18 @@ function renderEvidenceView(view, sentences, support, rawResults, answerEl, numb
       card.type = "button";
       const head = evidenceSpan("citation-peek-head");
       const number = String(numberFor.get(citeKey(g.kind, g.note_id)) || "");
-      const title = noteLabel({ content }, 60);
+      //: The note's name, never its words run together (the owner: "random ahh sketch random ahh sketch").
+      const title = g.title || noteNamePlain(content, 60);
       head.append(evidenceSpan("citation-peek-number", number), evidenceSpan("citation-peek-title", title));
       const quote = evidenceSpan("citation-peek-body answer-evidence-quote");
-      const { before, passage, after } = citationPeekText(content, g.start, g.end, title);
-      quote.append(before, ...(passage ? [evidenceSpan("", passage, "mark")] : []), after);
+      const fill = (text) => {
+        const { before, passage, after } = citationPeekText(text, g.start, g.end, title);
+        quote.replaceChildren(before, ...(passage ? [evidenceSpan("", passage, "mark")] : []), after);
+        return passage;
+      };
+      let passage = fill(content);
+      //: The offsets are into the whole note; a clipped list row holds its first 300 characters (INBOX 1525 review).
+      if (entry?.content_truncated) fullEntry(g.note_id).then((whole) => (passage = fill(whole.content)), () => {});
       card.append(head, quote);
       const evidence = evidenceBlock(g);
       if (evidence) card.append(evidence);
@@ -781,7 +788,7 @@ function answerFigure(entry, n, k, alts, sizes) {
   img.addEventListener("error", () => figure.remove());
   const caption = node("figcaption", "answer-figure-caption", figure);
   if (words) node("span", "muted answer-figure-words", caption, words.split("\n")[0]);
-  const from = node("button", "link-button answer-figure-from", caption, `From note ${n}: ${noteLabel(entry, 40)}`);
+  const from = node("button", "link-button answer-figure-from", caption, `From note ${n}: ${noteNamePlain(entry.content, 40)}`);
   from.type = "button";
   from.addEventListener("click", () => flashEntry(entry.id));
   return figure;
@@ -1054,6 +1061,7 @@ async function streamChatEvents({
   imageMediaIds,
   documentIds,
   fileIds,
+  mediaFileIds,
   boardIds,
   skill,
   skillInputs,
@@ -1095,6 +1103,7 @@ async function streamChatEvents({
   onWebSources,
   onWhy,
   onOffer,
+  onTip,
   peek,
   attempt,
   isPrivate,
@@ -1138,15 +1147,10 @@ async function streamChatEvents({
   // for drag-and-drop images: see `_resolve_chat_images` (routes_chat.py)
   // for how an id becomes a data URI the provider actually sends.
   if (imageMediaIds && imageMediaIds.length) body.image_media_ids = imageMediaIds;
-  //: **Documents and files were staged, drawn, persisted -- and never sent
-  //: here.** `streamChat` took `noteIds` and `imageMediaIds` and nothing else,
-  //: so an attached document reached `/chat` (the non-streaming path, used by
-  //: Ask) and never `/chat/stream`, which is the path the Chat tab actually
-  //: uses. The chip appeared on the message, the id was saved on the
-  //: conversation, and the model was never given a word of it -- the same
-  //: failure `document_ids` shipped once before, one layer further out.
+  //: Documents and files must be sent here too: `/chat/stream` is the path the Chat tab uses, and a chip that never reached the model was a shipped bug.
   if (documentIds && documentIds.length) body.document_ids = documentIds;
   if (fileIds && fileIds.length) body.file_ids = fileIds;
+  if (mediaFileIds && mediaFileIds.length) body.media_file_ids = mediaFileIds;
   //: A mind map attached by hand (MINDMAP_PLAN.md §5 item 11). Its own
   //: field, not folded into `note_ids`, because a board's `content` is the
   //: single line `# My map`, sent as a note the model would get a heading
@@ -1270,6 +1274,8 @@ async function streamChatEvents({
       else if (event.type === "why" && onWhy) onWhy(event);
       //: A counted answer's one acting offer ("Open Statistics ..."), decision 70.
       else if (event.type === "offer" && onOffer) onOffer(event);
+      //: The screen-aware next step, apart from the answer's text (audit 1028 E52).
+      else if (event.type === "tip" && onTip) onTip(event);
       else if (event.type === "ask" && onAsk) onAsk(event);
       else if (event.type === "run_skill" && onRunSkill) onRunSkill(event);
       else if (event.type === "run_plan" && onRunPlan) onRunPlan(event);
@@ -1363,6 +1369,7 @@ function chatMessageActions(actions) {
     button.title = action.title;
     button.setAttribute("aria-label", action.title);
     button.addEventListener("click", action.onClick);
+    if (action.speak) button.dataset.speak = "1"; // speakText flips it to Stop reading (E71)
     return button;
   };
   //: **The row grew past what a row can hold.** An assistant message now
@@ -1375,17 +1382,18 @@ function chatMessageActions(actions) {
   for (const action of actions.slice(0, MSG_ACTIONS_VISIBLE)) row.appendChild(make(action));
   const overflow = actions.slice(MSG_ACTIONS_VISIBLE);
   if (overflow.length) {
-    row.appendChild(
-      kebabMenu(
-        overflow.map((action) => ({
-          label: `${action.label} ${action.title}`,
-          title: action.title,
-          danger: action.danger,
-          run: () => action.onClick({ currentTarget: null }),
-        })),
-        "More actions for this message"
-      )
+    const more = kebabMenu(
+      overflow.map((action) => ({
+        label: `${action.label} ${action.title}`,
+        title: action.title,
+        danger: action.danger,
+        run: () => action.onClick({ currentTarget: null }),
+      })),
+      "More actions for this message"
     );
+    const spoken = overflow.findIndex((action) => action.speak);
+    if (spoken >= 0) more.querySelectorAll(".action-menu .menu-item")[spoken].dataset.speak = "1";
+    row.appendChild(more);
   }
   return row;
 }
@@ -2053,6 +2061,16 @@ function markToolStep(node, step) {
 }
 
 function toolChip(label, ok = true, event = null) {
+  //: A web search that failed because SearXNG is down gets the same row the
+  //: web panel shows (INBOX 1556), told by the event's `reason`, not its words.
+  if (!ok && event?.reason === "searxng_down" && !event.downDrawn) {
+    const chip = toolChip(label, ok, { ...event, downDrawn: true });
+    const wrap = document.createElement("div");
+    wrap.className = "tool-chip-wrap";
+    wrap.append(chip);
+    ensureModule("webClip").then(() => searxngDownRow()).then((row) => wrap.append(row));
+    return markToolStep(wrap, chip.toolStep);
+  }
   const step = {
     kind: "tool",
     label,
@@ -2448,6 +2466,12 @@ function chatSourcesPanel(input) {
     //: An id rather than the index, because the panel caps its rows and the
     //: numbering falls back past the cap.
     if (source.kind === "note" && source.id != null) card.dataset.noteId = String(source.id);
+    //: And a reference, so the card can be carried to the tray, a note or a
+    //: board like any other card (INBOX 1593; obj-drag.js lets this button grab).
+    if (["note", "document", "board", "map"].includes(source.kind) && source.id != null) {
+      card.dataset.obj = `${source.kind}:${source.id}`;
+      card.dataset.objTitle = String(source.label || "");
+    }
     const head = document.createElement("span");
     head.className = "chat-source-head";
     const number = document.createElement("span");
@@ -2665,6 +2689,7 @@ function reattachStreamingTurn() {
   const host = $("chat-messages");
   clearChatEmptyState();
   for (const node of chatStreaming.nodes) host.appendChild(node);
+  if (chatController) host.setAttribute("aria-busy", "true"); // streaming again in view
   chatScrollToEnd();
   return true;
 }
@@ -2786,3 +2811,155 @@ function agentRunTool(run, node) {
   }
   renderAgentRunSummary(run);
 }
+
+//: **One answer foot** (CHAT_PLAN B2; DESIGN.md "An answer's foot"). The
+//: owner, 2026-11-05: "individually they are fine but when they stack up
+//: below it gets a little unprofessional". Every surface's own renderer
+//: still draws its part where it always has (so a re-render, a lazy fold or
+//: a late event needs no new path); this gathers what is there into one row
+//: of chips above them, each chip opening its part below on demand, one at a
+//: time, with the stats line at the row's end. An observer rather than a
+//: call per renderer: half the parts arrive in an `ensureModule().then`, and
+//: a call site missed is a row back in the pile. A closure: nothing here is
+//: called from another file.
+(() => {
+  const ANSWER_FOOT_PARTS = [
+    //: The count, not how it searched: that is the chip's title.
+    {
+      key: "sources",
+      find: ".chat-sources",
+      label: (parts) => {
+        const words = answerFootChipLabel({}, parts).split(" · ");
+        if (words.length > 1 && Object.values(SEARCH_MODE_LABELS).includes(words.at(-1))) words.pop();
+        return words.join(" · ");
+      },
+    },
+    {
+      key: "grounding",
+      find: ".grounding-fold",
+      label: (parts) => {
+        const n = parts[0].querySelectorAll(".answer-grounding-chip").length;
+        return `ph:quotes Cites ${n} ${n === 1 ? "note" : "notes"}`;
+      },
+    },
+    //: A button that opens its own view (`evidenceToggle`): the chip presses it.
+    { key: "evidence", find: ".answer-evidence-toggle", press: true },
+    //: Beside "4 of 5 from your notes", the fold's own "From your notes"
+    //: read as the same claim twice.
+    { key: "notes", find: ".from-notes-fold", label: () => "ph:note Notes-only answer" },
+    { key: "patterns", find: ".insight-line", label: (parts) => `ph:lightbulb ${parts.length} ${parts.length === 1 ? "pattern" : "patterns"} to check` },
+    { key: "related", find: ".answer-related", label: () => "ph:compass Elsewhere in your notebook" },
+    //: By its holders: `renderAskWhy` stays the one file naming the fold (B30).
+    { key: "why", find: ".why-trail > details, #ask-why > details" },
+  ];
+  let answerFootCount = 0;
+
+  //: A fold's chip says what its summary says, icon included.
+  function answerFootChipLabel(spec, parts) {
+    if (spec.label) return spec.label(parts);
+    const from = spec.press ? parts[0] : parts[0].querySelector(":scope > summary");
+    const icon = from?.querySelector("i.ph")?.className.match(/\bph-([a-z0-9-]+)/)?.[1];
+    return `${icon && icon !== "spin" ? `ph:${icon} ` : ""}${(from?.textContent || "").trim()}`;
+  }
+
+  function answerFootGather(scope) {
+    //: A part whose holder is switched off (the evidence row with checks
+    //: off, a cleared Ask) has no chip; a hidden tab around the scope is
+    //: not a switched-off holder.
+    const off = (el) => {
+      const shut = el.parentElement.closest(".hidden");
+      return shut !== scope && scope.contains(shut);
+    };
+    const found = [];
+    for (const spec of ANSWER_FOOT_PARTS) {
+      const parts = [...scope.querySelectorAll(spec.find)].filter((el) => !el.closest(".answer-foot-bar") && !off(el));
+      if (parts.length) found.push({ spec, parts });
+    }
+    let bar = scope.querySelector(":scope > .answer-foot-bar");
+    const stats = [...scope.querySelectorAll(".msg-meta")].find((el) => !el.closest(".answer-foot-bar"));
+    if (!found.length) {
+      if (bar && !bar.querySelector(".msg-meta")) bar.remove();
+      return;
+    }
+    if (!bar) {
+      bar = document.createElement("div");
+      bar.className = "answer-foot-bar";
+      bar.setAttribute("role", "group");
+      bar.setAttribute("aria-label", "About this answer");
+    }
+    //: Above the first part, as a child of the scope: inside a part's holder
+    //: the holder's own `replaceChildren()` would take the row with it.
+    let top = scope.querySelector(found.map((item) => item.spec.find).join());
+    while (top.parentElement !== scope) top = top.parentElement;
+    if (top !== bar && bar.nextElementSibling !== top) scope.insertBefore(bar, top);
+    const open = scope.dataset.footOpen || "";
+    const chips = found.map(({ spec, parts }) => {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "chip chip-interactive answer-foot-chip";
+      button.dataset.foot = spec.key;
+      setLabel(button, answerFootChipLabel(spec, parts));
+      //: The part's own head is hidden while the chip stands for it: its
+      //: words (and the search mode the chip leaves out) are the title.
+      button.title = (parts[0].querySelector(":scope > summary") || parts[0]).textContent.trim();
+      const on = spec.press ? parts[0].getAttribute("aria-expanded") === "true" : open === spec.key;
+      button.setAttribute("aria-expanded", String(on));
+      parts.forEach((part, index) => {
+        if (!part.id) part.id = `answer-foot-${spec.key}-${++answerFootCount}-${index}`;
+        //: Only when missing: a class written again is a mutation, and this
+        //: runs from the observer that would hear it.
+        if (!part.classList.contains("answer-foot-part")) part.classList.add("answer-foot-part");
+        if (spec.press) return;
+        part.hidden = !on;
+        if (on && part.tagName === "DETAILS") part.open = true;
+      });
+      button.setAttribute("aria-controls", parts.map((part) => part.id).join(" "));
+      button.addEventListener("click", () => answerFootToggle(scope, spec.key));
+      return button;
+    });
+    const kept = stats || bar.querySelector(":scope > .msg-meta");
+    const focused = bar.contains(document.activeElement) ? document.activeElement.dataset.foot : null;
+    bar.replaceChildren(...chips, ...(kept ? [kept] : []));
+    if (focused) bar.querySelector(`[data-foot="${focused}"]`)?.focus();
+  }
+
+  //: One part open at a time; the chip that is open shuts it.
+  function answerFootToggle(scope, key) {
+    const was = scope.dataset.footOpen || "";
+    const evidence = [...scope.querySelectorAll(".answer-evidence-toggle")].find((el) => el.getAttribute("aria-expanded") === "true");
+    if (evidence && key !== "evidence") evidence.click();
+    if (key === "evidence") {
+      delete scope.dataset.footOpen;
+      if (!evidence) scope.querySelector(".answer-evidence-toggle")?.click();
+    } else if (was === key) delete scope.dataset.footOpen;
+    else scope.dataset.footOpen = key;
+    answerFootGather(scope);
+  }
+
+  //: `root` is one scope (Ask), or holds one per `scopes` match (Chat's
+  //: thread, the popup agent's list). Changes inside the row are its own.
+  function answerFootWatch(root, scopes = null) {
+    if (!root || root.answerFootWatched) return;
+    root.answerFootWatched = true;
+    if (scopes) root.querySelectorAll(scopes).forEach(answerFootGather);
+    else answerFootGather(root);
+    new MutationObserver((records) => {
+      const dirty = new Set();
+      for (const record of records) {
+        const node = record.target.nodeType === 1 ? record.target : record.target.parentElement;
+        if (!node || node.closest(".answer-foot-bar")) continue;
+        if (!scopes) dirty.add(root);
+        else if (node === root) for (const added of record.addedNodes) added.nodeType === 1 && added.matches(scopes) && dirty.add(added);
+        else if (node.closest(scopes)) dirty.add(node.closest(scopes));
+      }
+      dirty.forEach(answerFootGather);
+    }).observe(root, { childList: true, subtree: true, attributes: true, attributeFilter: ["class", "aria-expanded"] });
+  }
+
+  //: Its own sheet, so every bundle that brings an answer brings the row's
+  //: look, and the boot scripts' gzip budget carries no path for it.
+  lazyScript("/css/answer-foot-lazy.css");
+  answerFootWatch($("ai-answer")?.parentElement);
+  answerFootWatch($("chat-messages"), ".msg.assistant");
+  answerFootWatch($("command-palette-results"), ".msg.assistant");
+})();

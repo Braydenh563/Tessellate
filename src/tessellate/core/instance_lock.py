@@ -35,6 +35,7 @@ opens, and the import cost there is measured (see `_run_server`'s docstring).
 from __future__ import annotations
 
 import json
+import logging
 import os
 import secrets
 import sys
@@ -266,6 +267,25 @@ def request_focus(lock: LockInfo, host: str = "127.0.0.1", timeout: float = 3.0)
     return isinstance(body, dict) and body.get("focused") is True
 
 
+def request_shutdown(port: int, token: str, host: str = "127.0.0.1", timeout: float = 3.0) -> bool:
+    """Ask the copy on `port` to quit (`POST /instance/shutdown`, with that
+    copy's token). True only when it said it is stopping."""
+    import urllib.request
+
+    request = urllib.request.Request(
+        f"http://{host}:{port}/instance/shutdown",
+        data=b"",
+        method="POST",
+        headers={"X-Instance-Token": token},
+    )
+    try:
+        with _opener().open(request, timeout=timeout) as response:
+            body = json.loads(response.read(4096).decode("utf-8", "replace"))
+    except (OSError, ValueError):
+        return False
+    return isinstance(body, dict) and body.get("stopping") is True
+
+
 # --- This process's own claim ------------------------------------------------
 #
 # The server that runs in this process needs the token (to check a focus
@@ -285,7 +305,23 @@ def claim(data_dir: str | os.PathLike[str], port: int) -> LockInfo:
     path = lock_path(data_dir)
     write_lock(path, info)
     _claimed = (path, info)
+    _register_copy(info, data_dir)
     return info
+
+
+def _register_copy(info: LockInfo, data_dir: str | os.PathLike[str]) -> None:
+    """Also list this server for Settings, Running copies (core/
+    run_records.py). A failure there never stops the notebook opening."""
+    try:
+        from tessellate.core import run_records
+
+        run_records.register(
+            run_records.Record(info.pid, info.port, info.token, info.started, str(data_dir))
+        )
+    except Exception as exc:  # noqa: BLE001 - the list is a convenience
+        logging.getLogger(__name__).info(
+            "running copies: this copy is not listed in Settings (%s); restart to try again", exc
+        )
 
 
 def release() -> None:
@@ -296,6 +332,14 @@ def release() -> None:
         return
     path, info = _claimed
     _claimed = None
+    try:
+        from tessellate.core import run_records
+
+        run_records.unregister(info.pid, info.token)
+    except Exception as exc:  # noqa: BLE001
+        logging.getLogger(__name__).info(
+            "running copies: record not removed (%s); the next listing prunes it", exc
+        )
     current = read_lock(path)
     if current is not None and current.token == info.token:
         try:

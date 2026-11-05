@@ -22,6 +22,40 @@ function inlineActionIs(id, kind) {
 //: wheel scroll (27ms on the Library). The collection holds only the menus.
 const ACTION_MENUS = document.getElementsByClassName("action-menu");
 
+
+//: **One drag flag for every kind of drag** (INBOX 1593: the tray closed under
+//: a card being carried to it). A drag that is live registers its kind with
+//: `dragFlag.hold(kind)` (the object drag of obj-drag.js; the browser's own drags
+//: below) and every closer that fires on the page's behalf, not the hand's, asks
+//: `dragFlag.active()` first: the outside click, the scroll of a list the drag is
+//: edge-scrolling, an action menu's scroll close. It stays true for 200 ms after
+//: the last drag ends, because that scroll event arrives a frame late. One name in
+//: the shared scope, with the press tracking beside it: `travelled(click)` is a
+//: press that moved over 6 px (a drag attempt or a text selection, not an outside
+//: click), `pressing()` is the button down on the page or just up, when a scroll
+//: is the browser's selection autoscroll and not a hand scrolling away.
+const dragFlag = (() => {
+  const kinds = new Set();
+  let endedAt = -1e9;
+  let pressAt = null;
+  let pressUntil = 0;
+  const release = (kind) => {
+    if (kinds.delete(kind)) endedAt = performance.now();
+  };
+  document.addEventListener("dragstart", () => kinds.add("native"), true);
+  document.addEventListener("dragend", () => release("native"), true);
+  document.addEventListener("pointerdown", (event) => { kinds.delete("native"); pressAt = { x: event.clientX, y: event.clientY }; pressUntil = Infinity; }, true);
+  for (const type of ["pointerup", "pointercancel"]) document.addEventListener(type, () => { pressUntil = performance.now() + 200; }, true);
+  window.addEventListener("blur", () => { pressUntil = 0; });
+  return {
+    hold: (kind) => kinds.add(kind),
+    release,
+    active: () => kinds.size > 0 || performance.now() - endedAt < 200,
+    travelled: (event) => Boolean(pressAt) && event.detail > 0 && Math.hypot(event.clientX - pressAt.x, event.clientY - pressAt.y) > 6,
+    pressing: () => performance.now() < pressUntil,
+  };
+})();
+
 function closeActionMenusOnScroll(event) {
   const openMenus = [];
   for (const menu of ACTION_MENUS) if (!menu.classList.contains("hidden")) openMenus.push(menu);
@@ -34,6 +68,7 @@ function closeActionMenusOnScroll(event) {
   //: no menu (round 5; the `companionmenu.js` flake). A scroll the reader
   //: makes after the menu is open still closes it.
   if (performance.now() - (window._menuOpenedAt || 0) < 200) return;
+  if (dragFlag.active()) return;
 
   // Trackpads send small deltaX values along with deltaY when scrolling vertically.
   // If a dropdown lacks horizontal scroll, browsers often chain the deltaX to the 
@@ -155,6 +190,9 @@ function nearestScrollParent(el) {
 // its own trigger with a caret pointing back at it, and closed the three
 // ways every other popover here closes.
 function placeHelpPopover(panel, trigger, retry = true) {
+  //: A trigger re-rendered away (a card redrawn while its popover was open) has no
+  //: place to point at: the popover closes rather than land in the window's corner.
+  if (!trigger.isConnected) return [...openHelpPopovers].find((o) => o.panel === panel)?.close();
   const margin = 8;
   const anchor = trigger.getBoundingClientRect();
   //: **The other half of the flicker, which this function did not have.**
@@ -230,6 +268,9 @@ function placeHelpPopover(panel, trigger, retry = true) {
   panel.style.top = `${Math.round(top)}px`;
   panel.style.visibility = "";
   panel.classList.toggle("help-popover-above", above);
+  //: The caret under a popover that opens upwards stuck out of its scroll box and
+  //: gave a short one an 8px scrollbar (the empty tray); one that fits shows it whole.
+  panel.style.overflow = above && panel.scrollHeight <= panel.clientHeight + 12 ? "visible" : "";
   // The caret is positioned against the panel, but it has to point at the
   // trigger: which is only the panel's own centre when nothing clamped it.
   const caretX = Math.min(Math.max(anchor.left + anchor.width / 2 - left, 14), Math.max(box.width - 14, 14));
@@ -253,6 +294,7 @@ function closeHelpPopovers() {
 //: page. These read the open set instead, so wiring a popover costs the two
 //: listeners on its own elements, collected with them.
 document.addEventListener("click", (event) => {
+  if (dragFlag.active() || dragFlag.travelled(event)) return;
   for (const entry of [...openHelpPopovers]) {
     if (entry.panel.contains(event.target) || entry.trigger.contains(event.target)) continue;
     entry.close();
@@ -295,6 +337,7 @@ window.addEventListener("resize", () => {
 // element that actually scrolled; only close a popover for the page moving
 // under its anchor, never for the popover scrolling itself.
 window.addEventListener("scroll", (event) => {
+  if (dragFlag.active() || dragFlag.pressing()) return;
   for (const entry of [...openHelpPopovers]) {
     if (entry.panel.contains(event.target)) continue;
     entry.close();
@@ -490,6 +533,17 @@ function openActionMenu(menu, opener) {
   if (menu._fitCap) {
     menu.style.maxHeight = "";
     menu._fitCap = false;
+  }
+  //: **A menu opens at least as wide as the control that opened it** (INBOX
+  //: 1577: the present bar's page picker, a 320px trigger over a 206px list).
+  //: A labelled menu button reads as a dropdown, and a dropdown narrower than
+  //: its own box looks cut off; an icon-only opener (the ⋯) is a glyph, not a
+  //: box to match. Capped at the menu's own max-width (24rem), because a
+  //: min-width would otherwise win over it.
+  menu.style.minWidth = "";
+  if (opener.getAttribute("aria-haspopup") === "menu" && !opener.classList.contains("icon-only")) {
+    const match = Math.min(Math.round(opener.getBoundingClientRect().width), 384);
+    if (match > 200) menu.style.minWidth = `${match}px`;
   }
   menu.classList.remove("hidden", "action-menu-flip");
   opener.setAttribute("aria-expanded", "true");
@@ -1238,8 +1292,9 @@ async function generateEntryTitle(entry) {
     toast(regenerating ? "Regenerating the title…" : "Generating a title…", false, {
       exempt: true,
     });
+    const was = (await fullEntry(entry.id)).content; // the undo puts back the whole text, not a list row's first 300 characters
     const updated = await apiJson(`/entries/${entry.id}/generate-title`, { method: "POST" });
-    if (updated?.content) pushEntryPutUndo(entry.id, "Titled a note", { content: entry.content }, { content: updated.content });
+    if (updated?.content) pushEntryPutUndo(entry.id, "Titled a note", { content: was }, { content: updated.content });
     await refreshEntries([entry.id]);
     flashEntry(entry.id);
     const title = updated && updated.title;
@@ -1258,8 +1313,9 @@ async function generateEntryTitle(entry) {
 
 async function removeEntryTitle(entry) {
   try {
+    const was = (await fullEntry(entry.id)).content;
     const updated = await apiJson(`/entries/${entry.id}/remove-title`, { method: "POST" });
-    if (updated?.content) pushEntryPutUndo(entry.id, "Removed a title", { content: entry.content }, { content: updated.content });
+    if (updated?.content) pushEntryPutUndo(entry.id, "Removed a title", { content: was }, { content: updated.content });
     await refreshEntries([entry.id]);
     flashEntry(entry.id);
     // Said out loud: it was silent.
@@ -1451,7 +1507,7 @@ function buildMenuGroupButton(label, subItems) {
     submenu.prepend(back);
   };
   const openSubmenu = () => {
-    // One flyout at a time; tracked directly, as a sibling's may live at `<body>`.
+    // One flyout at a time; tracked, as a sibling's may live at `<body>`.
     if (openGroupSubmenu && openGroupSubmenu !== submenu) closeSubmenuState(openGroupSubmenu);
     submenu.classList.remove("hidden");
     trigger.setAttribute("aria-expanded", "true");
@@ -1459,7 +1515,7 @@ function buildMenuGroupButton(label, subItems) {
     if (stacked()) {
       backRow();
       groupWrap.classList.add("menu-group-open");
-      groupWrap.closest(".action-menu")?.classList.add("menu-nested");
+      groupWrap.parentElement.classList.add("menu-nested");
       submenu.firstElementChild.focus();
     } else {
       submenu._escapedHome = { parent: submenu.parentElement, next: submenu.nextSibling };
@@ -1478,7 +1534,7 @@ function buildMenuGroupButton(label, subItems) {
     target.classList.remove("submenu-left");
     const wrap = target.closest(".menu-group-open");
     wrap?.classList.remove("menu-group-open");
-    wrap?.closest(".action-menu")?.classList.remove("menu-nested");
+    wrap?.parentElement.classList.remove("menu-nested");
     wrap?.firstElementChild.setAttribute("aria-expanded", "false");
     if (openGroupSubmenu === target) openGroupSubmenu = null;
   }

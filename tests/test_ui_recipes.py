@@ -48,7 +48,7 @@ KNOWN_GLASS_DRIFT = set()
 
 def _rules(css: str):
     css = re.sub(r"/\*.*?\*/", "", css, flags=re.S)
-    for match in re.finditer(r"([^{}]+)\{([^{}]*)\}", css):
+    for match in re.finditer(r"(?:(?<=[{}])|\A)([^{}]+)\{([^{}]*)\}", css):
         yield match.group(1).strip(), match.group(2)
 
 
@@ -192,6 +192,25 @@ def test_a_submenu_is_a_menu_in_a_menu_with_a_nested_level_where_a_flyout_cannot
     assert re.search(r'Text and description", items: (?:words|menuRows\.filter)', lib), "the picture card's text rows are a flat list again"
     clip = (ROOT / "frontend" / "js" / "obj-clip.js").read_text(encoding="utf-8")
     assert "OBJ_MENU_FOLD = 10" in clip and "buildMenuGroupButton(" in clip, "a card's own rows no longer fold past ten"
+
+
+def test_a_dock_menu_flyout_walks_by_keyboard_and_leaves_with_escape_and_tab() -> None:
+    """Audit D48 (2026-11-02), driven with the keyboard in the Documents editor
+    (3 groups): a flyout's rows are the dock's own buttons and switches, which
+    carry no `role`, so Right on a group row left the focus there; the first
+    Escape in a flyout closed the whole menu from navigation.js's capture
+    handler and left the flyout drawn at `<body>`; and Tab walked off the end
+    of the document. Documents' own wiring (a lazy file, outside the boot gzip
+    ratchet) walks the rows and a `window` capture listener, which runs before
+    the `document` one, closes the flyout first."""
+    docs = documents_text()
+    body = docs.split("function foldDocMenuGroup(", 1)[1].split("const docDownloadGroup", 1)[0]
+    assert "const rowsOf = " in body and "getClientRects().length" in body, "the flyout's rows are not walked by the keyboard"
+    assert 'label:not(.hidden) > input' in body, "a switch row is unreachable by the keyboard again"
+    assert '"ArrowRight", "Enter", " "' in body, "Right on a group row no longer moves the focus into its flyout"
+    assert re.search(r'window\.addEventListener\(\s*"keydown",.*?closeActionMenus\(\);', docs.split("function foldDocMenuGroup(", 1)[1], re.S), (
+        "Escape and Tab no longer close a flyout before the menu's own Escape runs"
+    )
 
 
 def test_a_pointer_anchored_menu_is_the_recipe() -> None:
@@ -1136,6 +1155,10 @@ LIST_ROWS = {
     ".recording-row": ".recordings-list",
     #: A code file's snippets, in the code panel (INBOX 788).
     ".doc-snippet-row": ".doc-snippet-list",
+    #: A diagram's blocks, in the block pane (1546 P2; the tree is the one list, groups nest inside it).
+    ".dgm-card": ".dgm-tree",
+    #: The ghosts a suggestion leaves in that pane, one row each (1546 P3, design D8).
+    ".dgm-ghost": ".dgm-ghosts",
 }
 
 
@@ -2557,7 +2580,7 @@ def _rule_bodies(css: str, selector: str) -> list[str]:
     """
     css = re.sub(r"/\*.*?\*/", "", css, flags=re.S)
     bodies = []
-    for match in re.finditer(r"([^{}]+)\{([^{}]*)\}", css):
+    for match in re.finditer(r"(?:(?<=[{}])|\A)([^{}]+)\{([^{}]*)\}", css):
         selectors = [part.strip() for part in match.group(1).split(",")]
         if any(part.split(":")[0].split(" ")[-1] == selector for part in selectors):
             bodies.append(match.group(2))
@@ -2836,7 +2859,7 @@ def test_code_diagnostics_are_drawn_in_the_apps_ink() -> None:
     #: out of documents.js on 2026-09-24), joined.
     docs = "\n".join(
         (ROOT / "frontend" / "js" / name).read_text(encoding="utf-8")
-        for name in ("documents.js", "documents-code.js", "documents-cm.js")
+        for name in ("documents.js", "documents-code.js", "documents-cm.js", "documents-cm-theme.js")
     )
     theme = docs.split("function docCmTheme(CM) {", 1)[1].split("\nfunction ", 1)[0]
     for selector in (
@@ -3117,7 +3140,6 @@ PILL_CONTROLS = {
     "#entry-list .link-connection>.menu-wrap>button": "the round kebab inside a connection",
     ".entry-links>button.ghost.entry-links-more": "one more link pill in the row of link pills (INBOX 592)",
     ".stepper>.stepper-btn": "a round minus or plus inside the stepper's pill (DESIGN.md 'Stepper')",
-    "#reminder-due-row>details>summary": "Quick set beside the steppers: one corner per row, as the chat composer's (INBOX 464 (17))",
     "body .chip.item-label": "the status label: a tinted pill without an edge, the owner's decision (INBOX 553 (c))",
     ".entry-meta .chip.item-label": "the status label on a note line, the same pill (INBOX 553 (c))",
 }
@@ -4353,6 +4375,25 @@ def test_a_comment_thread_is_one_popover_reached_three_ways() -> None:
     assert "Right-click an item, Comment…" in guide and "Comment… starts a thread" in guide
 
 
+def test_a_document_thread_is_a_sidecar_drawn_in_the_comments_rows() -> None:
+    """DOCUMENTS_PLAN DX24t (DESIGN.md's document-thread row): the thread is a
+    record beside the text and never in it, every save sends it, Reply and
+    Resolve share the head row (a row that grew a line for Reply showed 2
+    remarks where 4 fit), the panel is not redrawn under a reply being typed,
+    and the styles live in the lazy sheet, out of the boot budget."""
+    comments = (ROOT / "frontend" / "js" / "documents-comments.js").read_text(encoding="utf-8")
+    docs = (ROOT / "frontend" / "js" / "documents.js").read_text(encoding="utf-8")
+    lazy = (ROOT / "frontend" / "css" / "library-lazy.css").read_text(encoding="utf-8")
+    boot_css = (ROOT / "frontend" / "css" / "05-sidebars-themes.css").read_text(encoding="utf-8")
+    assert "threads: renderDocComments.threads()" in docs, "every save carries the sidecar"
+    assert "head.append(open, reply, resolve);" in comments
+    assert "if (docCommentReplying && list.contains(document.activeElement)" in comments
+    assert "innerHTML" not in comments[comments.index("function docCommentReplyForm") :], "built with the DOM, never markup"
+    for selector in (".doc-comment-who", ".doc-comment-replies", ".doc-comment-reply-form", ".doc-comments-resolved-toggle"):
+        assert selector + " {" in lazy, selector
+    assert ".doc-comment-item" not in boot_css, "the comments panel's styles are lazy"
+
+
 def test_the_writing_rooms_selects_get_their_own_line_on_a_phone() -> None:
     """OPEN.md, "Writing Room at phone width": one nowrap row held what to
     write, tone, length and Use notes, so each select was 62px wide at 390 with
@@ -4615,11 +4656,11 @@ def test_the_chat_sidebar_head_is_one_quiet_row():
     html = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
     start = html.index('<aside class="card sidebar-panel" id="chat-sidebar">')
     aside = html[start : html.index("</aside>", start)]
-    head = re.sub(r"<!--.*?-->", "", aside[aside.index('class="row space-between sidebar-head"') : aside.index('<p id="conv-empty"')], flags=re.S)
+    head = re.sub(r"<!--.*?-->", "", aside[aside.index('class="row space-between sidebar-head"') : aside.index('<div id="conv-empty"')], flags=re.S)
     #: The empty line sits between the head and the list (the owner,
     #: 2026-10-10: "should that no chats text be at the top not the bottom??").
-    between = aside[aside.index('<p id="conv-empty"') : aside.index('<ul id="conversation-list">')]
-    assert between.rstrip().endswith("</p>") and between.count("<") == 2
+    between = aside[aside.index('<div id="conv-empty"') : aside.index('<ul id="conversation-list">')]
+    assert between.rstrip().endswith("</div>") and between.count("<") == 2
     assert 'id="chat-sidebar-sort"' in head and 'data-select-icon="ph-sort-descending"' in head
     new = re.search(r'<button id="chat-new"[^>]*>', head).group(0)
     assert 'class="ghost small icon-only"' in new and 'aria-label="New chat"' in new
@@ -5261,7 +5302,7 @@ def test_a_note_cards_details_line_ends_the_card_and_keeps_the_space_before_edit
     dates and times". The wiki-link row, the why line and the review answers
     are built after `.entry-meta`, so a card with links showed its time 48px
     (one row) to 113px (three, at 390) above the card's foot against 7.4px on
-    a card with none (`scratchpad/ui-sweeps/carddate.js`). Card view is a
+    a card with none (`scratchpad/ui-sweeps/carddate.js`, retired: `git show 625b385:scratchpad/ui-sweeps/carddate.js`). Card view is a
     column flex whose details line has the last `order`, and the "· edited"
     suffix keeps its space as a no-break space, because a plain leading space
     collapses inside the date's inline flex box."""
@@ -5370,7 +5411,7 @@ def _served_rules():
     for path in CSS:
         served = strip_for_path(path.name, path.read_bytes()).decode("utf-8")
         served = re.sub(r"@(media|supports|container)[^{]*\{", "", served)
-        for m in re.finditer(r"([^{}]+)\{([^{}]*)\}", served):
+        for m in re.finditer(r"(?:(?<=[{}])|\A)([^{}]+)\{([^{}]*)\}", served):
             yield path.name, [s.strip() for s in m.group(1).split(",")], m.group(2)
 
 
@@ -5532,7 +5573,10 @@ def test_a_changed_setting_is_marked_by_the_rows_recipe():
     #: 2026-10-11: an inset bar on the text edge clashed with the label).
     rule = re.search(r"#settings-modal \.setting-modified::before \{([^}]*)\}", css)
     assert rule and "background: var(--accent-text)" in rule.group(1)
-    assert "inset-inline-start: calc(-1 * var(--space-3))" in rule.group(1) and "border:" not in rule.group(1)
+    #: Two gutters from a plain row's text edge; a padded row (switch, check)
+    #: is one padding nearer, so every recipe's bar lands on one x (INBOX
+    #: 1610, tests/test_settings_row_bar.py).
+    assert "inset-inline-start: calc(-2 * var(--space-3))" in rule.group(1) and "border:" not in rule.group(1)
 
 
 def test_one_calendar_grid_of_dom_cells() -> None:
@@ -5660,10 +5704,12 @@ def test_a_ghost_in_a_card_is_quiet() -> None:
     (`:where`), with the same tint under the pointer and the keyboard."""
     css = _forms_css()
     head = ":where(.card) button.ghost:where(:not(:is(dialog, .modal-card, .modal) *))"
-    rest = re.search(re.escape(head) + r" \{([^}]*)\}", css)
+    #: INBOX 1580: the card's ghost and `.quiet` are one rule, and its words are the accent.
+    rest = re.search(re.escape(head) + r",\s*button\.ghost\.quiet \{([^}]*)\}", css)
     assert rest and "border-color: transparent" in rest.group(1) and "background: none" in rest.group(1)
+    assert "color: var(--accent-text)" in rest.group(1)
     assert re.search(
-        re.escape(head) + r":hover,\s*" + re.escape(head) + r":is\(:focus-visible, :has\(:focus-visible\)\) \{[^}]*--ghost-btn-bg",
+        re.escape(head) + r":hover,\s*" + re.escape(head) + r":is\(:focus-visible, :has\(:focus-visible\)\),\s*button\.ghost\.quiet:hover,[^{]*\{[^}]*--ghost-btn-bg",
         css,
     )
     assert css.index(head) > css.index("button.ghost:hover,"), "after the tonal rule, so it wins on order"
@@ -5704,7 +5750,8 @@ def test_a_rows_repeated_action_is_quiet_and_three_fold_into_its_menu() -> None:
         r"button\.ghost\.quiet\.danger:hover,\s*button\.ghost\.quiet\.danger:is\(:focus-visible, :has\(:focus-visible\)\) \{[^}]*color: var\(--error\)",
         css,
     )
-    for name, needle in (("settings.js", "rowActions(acts, "), ("settings-data.js", "rowActions([")):
+    # The learned row (rowActions(acts, ...)) moved to settings-controls.js with the Learned section, 2026-11-02.
+    for name, needle in (("settings-controls.js", "rowActions(acts, "), ("settings-data.js", "rowActions([")):
         assert needle in (ROOT / "frontend" / "js" / name).read_text(encoding="utf-8"), name
 
 
@@ -6274,23 +6321,23 @@ def test_the_foot_under_a_growing_field_is_pinned_to_the_scroll() -> None:
     for sheet, selector in (
         ("library-lazy.css", ".note-edit-foot"),
         ("library-lazy.css", "#capture .capture-commit-row"),
-        ("graph-lazy.css", ".graph-popup-saverow:has(#graph-popup-save:not(.hidden))"),
     ):
         body = _sheet_rule(sheet, selector)
         assert "position: sticky" in body and "bottom: 0" in body, selector
 
 
 def test_the_popups_save_row_stands_above_the_action_dock() -> None:
-    """INBOX 1421: both are sticky at the panel's foot, the Save row one z-index
-    higher, so at `bottom: 0` it was drawn over the dock (Save 36px inside it,
-    measured 567 against a dock top of 531). The offset is the dock's own
-    height, which `placeGraphPopup` writes (CSSOM: a custom property would cost a token)."""
+    """INBOX 1421, then 1630: the detail panel is a column (head, scrolling body,
+    Save row, dock), so the Save row sits above the dock by order and no sticky
+    offset is written by `placeGraphPopup` any more."""
     graph = (ROOT / "frontend" / "js" / "graph.js").read_text(encoding="utf-8")
     place = graph[graph.index("function placeGraphPopup(") :]
     place = place[: place.index("\n}\n")]
-    assert "saveRow.style.bottom" in place and "dock.offsetHeight" in place
+    assert "saveRow.style.bottom" not in place
+    html = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
+    assert html.index('id="graph-popup-saverow"') < html.index('id="graph-popup-actions"')
     dock = _sheet_rule("04-chat-dock-appearance.css", ".graph-popup-actions")
-    assert "position: sticky" in dock and "z-index: 1" in dock
+    assert "position: sticky" not in dock
 
 
 def test_a_text_run_is_the_documented_recipe_and_never_a_style_attribute() -> None:
@@ -6353,8 +6400,9 @@ PANEL_FIXED_JS = {
     "icon-picker.js": "an anchored picker",
     "lightbox-actions.js": "the image viewer's overlays",
     "lightbox-view.js": "the image viewer",
-    "reply-kit.js": "an anchored panel",
     "settings-controls.js": "an anchored control overlay",
+    "companion-settings.js": "a help body (the habits row's popover)",
+    "settings-health.js": "a help body (the data folder check's popover)",
     "sheets-selects.js": "the select popup",
     "skills.js": "an anchored panel",
     "status-panels.js": "an anchored readout (the model offer popover)",
@@ -6488,6 +6536,11 @@ def test_a_card_is_one_reference_and_a_list_reorders_by_drag() -> None:
     assert "`OBJ_MODES.carry`" in design and "`#obj-tray`" in design
     edge = (js / "drag-edge.js").read_text(encoding="utf-8")
     assert "/js/obj-ref.js" in edge and "/css/objmove-lazy.css" in edge
+    # INBOX 1593: one drag flag for every kind of drag, and the tray is a zone with a cue.
+    assert "`dragFlag.active()`" in design and "`objTrayDoor`" in design
+    holders = [p.name for p in js.glob("*.js") if "const dragFlag = " in p.read_text(encoding="utf-8")]
+    assert holders == ["menus.js"], f"the drag flag is defined in {holders}; one flag, one place"
+    assert "html.obj-dragging #status-tray:not(.obj-target)" in css and "dashed" in css
 
 
 def test_a_live_view_mark_reveals_per_span() -> None:
@@ -6645,7 +6698,7 @@ def test_a_popup_head_keeps_its_tools_with_close_at_the_end() -> None:
     assert title and re.search(r"flex:\s*1 1 auto", title.group(1)), "the sheet title must grow so the end group sits together"
     # No shared head recipe may spread its children: the end group would split.
     for path in sorted((ROOT / "frontend" / "css").glob("*.css")):
-        for sel, body in re.findall(r"([^{}]+)\{([^{}]*)\}", path.read_text(encoding="utf-8")):
+        for sel, body in re.findall(r"(?:(?<=[{}])|\A)([^{}]+)\{([^{}]*)\}", path.read_text(encoding="utf-8")):
             names = [s.strip() for s in sel.split(",")]
             if any(re.fullmatch(r"(?:\.[\w-]+ )*\.(?:sheet-head|dialog-head)(?: > \.(?:sheet-head|dialog-head))?", n.split("}")[-1].strip()) for n in names):
                 assert "space-between" not in body, f"{path.name}: {sel.strip()[:60]} spreads a shared popup head"
@@ -6751,7 +6804,7 @@ def test_the_motion_vocabulary_is_one_set() -> None:
     # A plus becomes a minus: the lazy sheet draws it from transforms only, the
     # still sheet removes the turn, and nothing in the frontend uses SMIL.
     lazy = css["library-lazy.css"]
-    pm = [(s, b) for s, b in re.findall(r"([^{}]*\.ui-pm[^{}]*)\{([^{}]*)\}", lazy)]
+    pm = [(s, b) for s, b in re.findall(r"(?:(?<=[{}])|\A)([^{}]*\.ui-pm[^{}]*)\{([^{}]*)\}", lazy)]
     assert len(pm) >= 4, "the .ui-pm recipe moved; point this lint at it"
     for selector, body in pm:
         for m in re.finditer(r"transition:\s*([^;]*);", body):
@@ -6814,3 +6867,670 @@ def test_a_status_line_a_render_fills_is_never_collapsed_behind_a_question_mark(
     # collapsed into a '?' and left that '?' alone on its own line once emptied.
     body = frontend_text("settings.js").split("function collapseLongSettingHints(")[1].split("\n}\n")[0]
     assert 'label small.muted:not([id]), .setting-label small.muted:not([id])' in body
+
+
+def test_a_text_field_beside_a_button_is_one_row_at_one_control_height():
+    """The Clock's timer (the owner, 2026-11-02): the length field measured 41.6px
+    beside a 32px Start. A field and the button beside it are sized by two
+    unrelated rules, so a row that pairs them says the height and both take
+    it: `.row.field-row` (DESIGN.md, "A text field beside a button"). The one
+    expression is the button's own (`max(--target-min, --button-min-h)`), so a
+    coarse pointer lifts the field with the button, and the field zeroes its
+    vertical padding so the text centres in the shorter box. The Clock's
+    timer row uses it. scratchpad/ui-sweeps/inbox1557-field-button-height.js
+    measures the rows in the browser."""
+    css = (ROOT / "frontend" / "css" / "07-whiteboard-misc.css").read_text(encoding="utf-8")
+    floor = "max(var(--target-min), var(--button-min-h))"
+    rules = {sel: body for sel, body in _rules(css) if ".row.field-row" in sel and "min-height" in body}
+    assert rules, "no `.row.field-row` height rule"
+    for body in rules.values():
+        assert f"min-height: {floor}" in body, body
+    names = " ".join(rules)
+    assert ".row.field-row > input" in names and ".row.field-row > button" in names and ".select-opener" in names
+    padding = next(body for sel, body in _rules(css) if sel.strip() == ".row.field-row > input")
+    assert "padding-block: 0" in padding
+    tools = frontend_text("utility-tools.js")
+    assert 'clockEl("form", "row field-row clock-length")' in tools
+
+
+def test_a_diagram_is_edited_as_blocks():
+    """DESIGN.md, "A diagram edited as blocks" (1546 P2): one tree, no `innerHTML`, and the
+    pointer mode answers ahead of `carry`.
+
+    The block pane is a tree of cards a hand drags and a keyboard walks, over the one model
+    the document's source is printed from. Three things keep it from becoming a second
+    editor: it has one tree (a second list of the same blocks would be two states to keep
+    equal), it builds its DOM from nodes (a label is a person's text, and a string of
+    markup is where it would stop being one), and its pointer mode is asked before the
+    generic `carry` grab, which takes every card and would win a press on a block."""
+    code = (ROOT / "frontend" / "js" / "diagram-builder.js").read_text(encoding="utf-8")
+    body = re.sub(r"//.*", "", code)
+    assert body.count('"role", "tree"') == 1
+    assert not re.search(r"innerHTML|insertAdjacentHTML|outerHTML|DOMParser", body)
+    drag = (ROOT / "frontend" / "js" / "obj-drag.js").read_text(encoding="utf-8")
+    seed = drag[drag.index("function objDragSeed(event) {") :]
+    seed = seed[: seed.index("\n}\n")]
+    assert "OBJ_MODES[name].seed?.(event)" in seed
+    assert seed.index("OBJ_MODES[name].seed?.(event)") < seed.index("OBJ_MODES[name].grab?.(hit)")
+    # 1661 D2: the toolbar is built in diagram-bar.js (lazy), still one dock named "diagram".
+    assert (ROOT / "frontend" / "js" / "diagram-bar.js").read_text(encoding="utf-8").count('dataset.dockName = "diagram"') == 1, "the palette is a dock"
+    css = (ROOT / "frontend" / "css" / "diagram-lazy.css").read_text(encoding="utf-8")
+    assert "var(--row-h)" in css and "var(--row-gap)" in css, "the cards sit on the list-row tokens"
+
+
+#: **A grid of keys or tiles, a row's bordered ghost, a `.seg` alone on its line**
+#: (INBOX 1566, the owner: "I dont like excessive use of these glowy grey styled
+#: buttons, they feel vibe coded ... use them intentionally"; "the pill has been
+#: chucked there with no thought"). DESIGN.md's three rows: "A grid of keys or
+#: tiles", "A toolbar's secondary actions, and the foot of a dialog", "A `.seg`
+#: alone on its line". The Calculator and equations panel is the first surface
+#: on them; the others in `docs/roadmap/agent-remaining/a30n-1103.md` are the
+#: next sweep, frozen below so a new one fails and a converted one comes out.
+KEY_GRIDS = {
+    ("reply-kit.js", "calc-keys"): "the Calculator's keypad",
+    ("math-editor.js", "math-editor-grid"): "the equation palette's tiles",
+}
+#: A tile or key still built as a bordered ghost, by file: only falls. Empty: the map templates' tile is `ghost quiet`
+#: (no edge, no face, the tint under the pointer), measured at a 0px border.
+GHOST_TILE_DRIFT: set[tuple[str, str]] = set()
+#: A `.seg` and the row it shares with the control it governs, by (file, id or class string): scripted
+#: (`.className = "seg ..."`) and in index.html's markup alike. A lone one says `seg-fill` instead.
+SEG_SHARES_ROW: dict[tuple[str, str], str] = {
+    ("documents-export.js", "seg"): "the print setup's `.doc-print-row`: the label, then its choices",
+    ("skills.js", "seg seg-compact chat-skill-pace"): "`paceRow`: the label, then Auto and Manual",
+    ("whiteboard.js", "seg seg-compact wb-export-seg"): "a grid of option tiles that spans the dialog's width",
+    ("timeline-calendar.js", "seg seg-compact timeline-cal-span"): "the calendar head, beside the month and its arrows",
+    ("dashboard.js", "seg focus-presets-seg"): "`.focus-presets`, beside the stepper",
+    ("index.html", "doc-history-filter"): "`.doc-history-bar`, beside Name this version",
+    ("index.html", "seg notes-view-toggle"): "the Notes dock, beside Sort and Select",
+    ("index.html", "chat-mode-seg"): "the chat tool row, beside the persona and skill pickers",
+    ("index.html", "timeline-view-seg"): "the Timeline dock",
+    ("index.html", "doc-view-seg"): "the Documents dock, beside the cluster's other controls",
+    ("index.html", "doc-diagram-seg"): "the Documents dock, in place of Edit and Read for a diagram",
+    ("index.html", "reminder-view-toggle"): "the Reminders dock",
+    ("index.html", "library-view"): "the Library dock",
+    ("index.html", "library-boards-view"): "the Library dock",
+    ("index.html", "seg library-media-view"): "the Library files dock",
+    ("index.html", "ocr-view"): "the OCR workspace's toolbar",
+    ("index.html", "theme-seg"): "a Settings row: the label and its help, then the control",
+    ("index.html", "fontsize-seg"): "a Settings row: the label and its help, then the control",
+    ("index.html", "border-style-seg"): "a Settings row: the label and its help, then the control",
+    ("index.html", "motion-seg"): "a Settings row: the label and its help, then the control",
+    ("index.html", "privacy-range"): "the receipt's `.privacy-range-row`, beside its heading",
+    ("index.html", "log-view-toggle"): "the log dock's arrange group",
+}
+#: Row builders held to "at most one bordered ghost, and only beside a filled button".
+ROW_BUILDERS = [
+    ("reply-kit.js", "replyCalcActions"),
+    ("math-editor.js", "mathEditorLede"),
+    ("math-editor.js", "mathEditorMount"),
+    ("math-field.js", "mathFieldLatexBox"),
+]
+
+
+def _rule_exact(css: str, selector: str) -> str:
+    """The body of the rule whose selector is exactly `selector` (comments dropped)."""
+    return "\n".join(body for sel, body in _rules(css) if sel == selector)
+
+
+def _js_function(name: str, fn: str) -> str:
+    text = frontend_text(name)
+    start = text.index(f"function {fn}(")
+    return text[start : text.index("\n}\n", start)]
+
+
+def test_a_grid_of_keys_or_tiles_is_the_quiet_inset_fill_with_no_edge() -> None:
+    css = (ROOT / "frontend" / "css" / "key-grid-lazy.css").read_text(encoding="utf-8")
+    recipe = {sel: body for sel, body in _rules(css) if ".key-grid" in sel}
+    base = recipe[".key-grid > button"]
+    for want in ("border: 0;", "background: var(--chip-bg);", "box-shadow: none;"):
+        assert want in base, f"a key is the quiet inset fill with no edge: {want}"
+    assert "var(--ghost-btn-border)" in recipe[':root[data-contrast="on"] .key-grid > button']
+    filled = [sel for sel, body in recipe.items() if "var(--accent-surface)" in body]
+    assert filled == [".key-grid > button.is-equals"], f"one filled key per grid: {filled}"
+    for (name, grid), what in KEY_GRIDS.items():
+        literals = re.findall(r'["`]([^"`]*)["`]', frontend_text(name))
+        built = [lit.split() for lit in literals if grid in lit.split()]
+        assert built and all("key-grid" in tokens for tokens in built), f"{what} is not on `.key-grid`"
+    # No key or tile is built as a bordered ghost again (a `quiet` one has no edge).
+    drift = set()
+    for path in JS:
+        for classes in re.findall(r'className = [`"]([^`"]*\bghost\b[^`"]*)[`"]', path.read_text(encoding="utf-8")):
+            names = classes.split()
+            if "quiet" in names:
+                continue
+            drift |= {(path.name, n) for n in names if re.search(r"-(?:key|tile)$", n)}
+    assert drift <= GHOST_TILE_DRIFT, f"a grid of ghosts: {sorted(drift - GHOST_TILE_DRIFT)}"
+
+
+def _bordered_ghosts(body: str) -> tuple[list[str], bool]:
+    """Labelled ghost buttons a builder leaves bordered, and whether it has a filled one."""
+    found = []
+    for match in re.finditer(r"(?:const (\w+) = )?smallButton\(([^;]*?)\);", body):
+        var, args = match.groups()
+        label = re.match(r'\s*(["`])(.*?)\1', args)
+        filled = re.search(r",\s*false\s*\)?$", args.strip())
+        if filled or not label or (label.group(2).startswith("ph:") and " " not in label.group(2)):
+            continue
+        if var and re.search(rf'\b{var}\.classList\.add\([^)]*"quiet"', body):
+            continue
+        found.append(label.group(2))
+    for match in re.finditer(r'className = "([^"]*\bghost\b[^"]*)"', body):
+        names = match.group(1).split()
+        if "quiet" not in names and "icon-only" not in names:
+            found.append(match.group(1))
+    return found, bool(re.search(r"smallButton\([^;]*,\s*false\)", body))
+
+
+def test_a_row_has_at_most_one_bordered_ghost_and_only_beside_a_filled_button() -> None:
+    for name, fn in ROW_BUILDERS:
+        found, has_filled = _bordered_ghosts(_js_function(name, fn))
+        assert len(found) <= 1, f"{fn}: a toolbar's secondary actions are `ghost quiet`, not {found}"
+        assert not found or has_filled, f"{fn}: a bordered ghost {found} with no filled button beside it"
+    foot = frontend_text("reply-kit.js")
+    assert 'asEquation.classList.add("quiet", "calc-as-equation")' in foot
+    assert "row.append(asEquation, copy, insert)" in foot, "the one filled Insert is last"
+    css = (ROOT / "frontend" / "css" / "reply-kit-lazy.css").read_text(encoding="utf-8")
+    assert "justify-content: flex-end" in _rule_exact(css, ".calc-actions-buttons"), "a dialog foot sits at the end"
+    assert "margin-inline-end: auto" in _rule_exact(css, ".calc-actions-buttons .calc-as-equation")
+
+
+def test_a_seg_alone_on_its_line_spans_the_row() -> None:
+    css = (ROOT / "frontend" / "css" / "03-dashboard-widgets.css").read_text(encoding="utf-8")
+    well = _rule_exact(css, ".seg.seg-fill")
+    assert "display: flex" in well and "width: 100%" in well
+    assert "flex: 1 1 0" in _rule_exact(css, ".seg.seg-fill > button"), "the segments are equal"
+    judged = set()
+    for path in JS:
+        text = path.read_text(encoding="utf-8")
+        for match in re.finditer(r'\.className = "(seg(?: [^"]*)?)";', text):
+            if "seg-fill" in text[match.end() : match.end() + 300]:
+                continue
+            judged.add((path.name, match.group(1)))
+    # The markup too (index.html): keyed by the element's id, else its class string.
+    html = re.sub(r"<!--.*?-->", "", (ROOT / "frontend" / "index.html").read_text(encoding="utf-8"), flags=re.S)
+    for match in re.finditer(r'<div\b([^>]*)>', html):
+        attrs = match.group(1)
+        cls = re.search(r'\bclass="([^"]*)"', attrs)
+        if not cls or "seg" not in cls.group(1).split() or "seg-fill" in cls.group(1).split():
+            continue
+        ident = re.search(r'\bid="([^"]*)"', attrs)
+        judged.add(("index.html", ident.group(1) if ident else cls.group(1)))
+    assert judged <= set(SEG_SHARES_ROW), (
+        f"a `.seg` alone on its line spans the row (`seg-fill`), or SEG_SHARES_ROW names the row it joins: {sorted(judged - set(SEG_SHARES_ROW))}"
+    )
+    assert not set(SEG_SHARES_ROW) - judged, f"no such `.seg` now, take it out of SEG_SHARES_ROW: {sorted(set(SEG_SHARES_ROW) - judged)}"
+    assert all(len(reason) > 12 for reason in SEG_SHARES_ROW.values())
+    #: Inline and Display is a `.tabs-line` since INBOX 1622 (no pills in a popup), so it is no `.seg` to span.
+    modes = _js_function("math-editor.js", "mathEditorModes")
+    assert "tabs-line popup-kinds" in modes and 'classList.toggle("active"' in modes
+
+
+def test_a_settings_action_is_text_not_a_boxed_ghost() -> None:
+    """INBOX 1566: Settings drew seventeen bordered ghosts on Import & export alone. A ghost in a Settings section is
+    text in the accent with no edge; only `.edged` (a lone secondary beside a filled button) and `.danger` keep one."""
+    css = (ROOT / "frontend" / "css" / "settings-controls-lazy.css").read_text(encoding="utf-8")
+    rules = {sel: body for sel, body in _rules(css) if "button.ghost" in sel and "#settings-modal" in sel}
+    base = next(body for sel, body in rules.items() if ":is(:hover" not in sel and ":first-child" not in sel)
+    for want in ("border-color: transparent;", "background: none;", "color: var(--accent-text);"):
+        assert want in base, want
+    sel = next(sel for sel, body in rules.items() if "border-color: transparent" in body)
+    assert ':not([data-contrast="on"])' in sel and all(f".{keep}" in sel for keep in ("edged", "danger", "icon-only", "quiet"))
+    html = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
+    assert re.findall(r'class="[^"]*\bedged\b[^"]*"', html) == ['class="ghost small edged"'], "`.edged` is for a lone secondary beside a filled one"
+
+
+def test_a_dialog_foot_has_one_bordered_secondary_and_its_third_action_is_quiet() -> None:
+    """INBOX 1566: Manage templates, Choose a file and Turn into shapes sat bordered beside Cancel and a filled button. A
+    foot's third action is `ghost quiet` and waits at the start; the Calculator's History bar, its panel buttons and the
+    chat's Change the model are quiet too. INBOX 1584: the History toggle itself became a `disclosure-row` (the label and its
+    count on the left), and Clear is the one quiet text action on that line."""
+    html = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
+    for ident in ("note-template-manage", "wb-import-choose"):
+        assert re.search(rf'class="ghost quiet small" id="{ident}"', html), ident
+    css = "\n".join(path.read_text(encoding="utf-8") for path in CSS)
+    assert "margin-inline-end: auto" in _rule_exact(css, ".space-dialog-actions > .quiet:first-child")
+    kit = frontend_text("reply-kit.js")
+    for want in ('"ghost small disclosure-row calc-log-toggle"', '"ghost quiet small calc-again"', 'clear.classList.add("quiet")', 'change.classList.add("quiet")'):
+        assert want in kit, want
+    assert kit.count('"ghost quiet small reply-panel-open"') == 2
+
+
+def test_a_radical_leaves_room_between_the_sign_and_the_radicand() -> None:
+    """INBOX 1566: the x in the Radical group, a Live widget and the Read view touched the root sign (one ink component at 4x;
+    the radicand's top and left edge are where the browser draws the bar and the hook). Padding on the radicand is room inside
+    the sign; one boot rule on every `math`, not one per surface (documents-math.js draws all three)."""
+    css = (ROOT / "frontend" / "css" / "05-sidebars-themes.css").read_text(encoding="utf-8")
+    assert "msqrt > *" not in (ROOT / "frontend" / "css" / "math-editor-lazy.css").read_text(encoding="utf-8")
+    body = _rule_exact(css, "math :is(msqrt > *, mroot > :first-child)")
+    assert re.search(r"padding:\s*0\.\d+em 0\.\d+em 0;", body), body
+
+
+def test_an_offer_with_a_dismiss_is_the_split_chip() -> None:
+    """DESIGN.md, "An offer on a thing that is taken or dismissed": a
+    suggested tag is two halves inside one edge, a 24px dismiss half and not
+    `.unlink`'s glyph after the words (INBOX 1583: the x's 28px box hung over
+    the 24px chip, 4px after the words). Each half has its hover and focus
+    twin, and under a finger the dismiss keeps the touch floor."""
+    js = frontend_text("entry-card.js")
+    loop = js[js.index("for (const tag of suggestions) {") :]
+    loop = loop[: loop.index("meta.appendChild(group);")]
+    assert 'discard.className = "suggested-tag-dismiss"' in loop and '"unlink"' not in loop
+    css = (ROOT / "frontend" / "css" / "08-consistency.css").read_text(encoding="utf-8")
+    dismiss = _rule_exact(css, ".entry-meta > .chip.suggested-tag > .suggested-tag-dismiss")
+    assert "width: 1.5rem" in dismiss, dismiss
+    # INBOX 1597 (intent moved, the owner: "these suggested tags still look wierd"): no divider between the
+    # halves and the take's hover tints the whole chip, so it reads as one chip, not two boxes.
+    assert "border-inline-end" not in _rule_exact(css, ".entry-meta > .chip.suggested-tag > .suggested-tag-take")
+    assert "var(--chip-bg)" in _rule_exact(css, ".entry-meta > .chip.suggested-tag:has(> .suggested-tag-take:is(:hover, :focus-visible))")
+    assert "outline: 1px dashed var(--border)" in _rule_exact(css, ".entry-meta > .chip.suggested-tag")
+    assert "border-radius: var(--radius-pill)" in dismiss
+    assert "var(--error)" in _rule_exact(css, ".entry-meta > .chip.suggested-tag > .suggested-tag-dismiss:is(:hover, :focus-visible)")
+    coarse = re.search(r"@media \(max-width: 819\.98px\), \(pointer: coarse\) \{\s*\.entry-meta > \.chip\.suggested-tag > \.suggested-tag-dismiss[^{]*\{([^}]*)\}", css)
+    assert coarse and "width: var(--target-min)" in coarse.group(1) and "margin-inline-end: calc(1.5rem - var(--target-min))" in coarse.group(1)
+
+
+# --- A row of chips that scrolls sideways (INBOX 1578) ------------------------
+
+_SCROLL_ROW_MEMBERS = (".finder-filters", ".library-filters", ".wb-map-templates-row", ".launch-row")
+
+
+def test_a_sideways_chip_row_is_the_scroll_row_recipe() -> None:
+    """Find anything's kind row hid its bar and ran under Sort. The class: a chip
+    row that scrolls on x is `edge-fade scroll-row` (a thin bar on a pointer,
+    the fade, arrows at an end with more behind it), and no rule of its own hides
+    the bar again."""
+    shell = (ROOT / "frontend" / "css" / "00-tokens-shell.css").read_text(encoding="utf-8")
+    assert re.search(r"\.scroll-row \{\s*scrollbar-width: none;", shell)
+    fine = shell.split("@media (hover: hover) and (pointer: fine) {\n  .scroll-row {", 1)[1].split("}", 1)[0]
+    assert "scrollbar-width: thin" in fine
+    # every class list that names scroll-row names edge-fade too (the arrows hang off the fade's classes)
+    seen = 0
+    for path in [ROOT / "frontend" / "index.html", *JS]:
+        for classes in re.findall(r'(?:class="|className = ")([^"]*\bscroll-row\b(?!-)[^"]*)"', path.read_text(encoding="utf-8")):
+            seen += 1
+            assert "edge-fade" in classes.split(), (path.name, classes)
+    assert seen >= 5, seen
+    # no rule for a member of the recipe hides its bar
+    for css in CSS:
+        for sel, body in _rules(css.read_text(encoding="utf-8")):
+            if any(m in sel for m in _SCROLL_ROW_MEMBERS):
+                assert "scrollbar-width: none" not in body, (css.name, sel)
+                if "::-webkit-scrollbar" in sel:
+                    assert "display: none" not in body, (css.name, sel)
+    # the arrows come with the fade, and only for the class
+    fade = (ROOT / "frontend" / "js" / "shell-reminders.js").read_text(encoding="utf-8")
+    sync = fade.split("function syncEdgeFade(", 1)[1].split("\n}\n", 1)[0]
+    assert 'bar.matches(".scroll-row")' in sync and "scrollRowArrows(bar, hidden > 1)" in sync
+    # the arrows are a lazy file the first overflowing row fetches (`lazyScript`), not boot's weight
+    assert 'lazyScript("/js/scroll-row.js")' in sync
+    arrows = (ROOT / "frontend" / "js" / "scroll-row.js").read_text(encoding="utf-8")
+    assert 'button.setAttribute("aria-hidden", "true")' in arrows and "button.tabIndex = -1" in arrows
+    # the finder has no wiring of its own
+    assert "finderSyncFilterEdges" not in app_js_text()
+    assert "`.scroll-row`" in (ROOT / "docs" / "DESIGN.md").read_text(encoding="utf-8")
+
+
+#: INBOX 1580 (the owner, of the Digest's "Generate this week's digest" and the
+#: Calculator's "Insert as equation": "it's kinda hard to tell that its a
+#: button"). A button with no face and no edge says "press me" only by its
+#: colour or its icon. The shared quiet tier (`button.ghost.quiet`, a ghost in a
+#: card) is accent-coloured, so a text action reaching it is a visible action;
+#: these are the other places a borderless `button.ghost` / `.quiet` is drawn,
+#: each led by an icon or standing in a row or bar whose frame is the cue.
+#: May only shrink: give one the accent (or an icon) and delete its row.
+BORDERLESS_ICON_LED = {
+    r"\.dock\b": "the dock: every control leads with its icon (DESIGN.md, the dock)",
+    r"\.sheet-head\b|\.monitor-header-actions": "the controls beside a panel title: icon-only buttons",
+    r"\.entry-actions|\.library-image-actions|\.category-actions": "a card's or a row's actions: an icon each, or a ⋯",
+    r"\.capture-tools-row|\.capture-filing-row": "the capture bar's tools: an icon each",
+    r"\.disclosure-row": "a disclosure: its caret leads",
+    r"\.tour-row|\.doc-template-choice": "a whole row or tile is the target, its icon leads",
+    r"\.graph-link-peek-notes": "a list row in the peek, its note's icon leads",
+}
+
+
+def test_a_borderless_text_button_is_accent_coloured_or_icon_led() -> None:
+    css_all = {path.name: path.read_text(encoding="utf-8") for path in CSS}
+    # The two routes into the quiet tier set the accent themselves.
+    forms = css_all["01-forms-settings.css"]
+    tier = next(body for selector, body in _rules(forms) if selector.startswith(":where(.card) button.ghost:where(:not(:is(dialog") and "button.ghost.quiet" in selector)
+    assert "color: var(--accent-text)" in tier, "the quiet tier lost its accent"
+    offenders = []
+    for name, css in css_all.items():
+        for selector, body in _rules(css):
+            if not re.search(r"border(-color)?:\s*(transparent|none|0)\b", body):
+                continue
+            if not re.search(r"(?<![-\w])background(-color)?:\s*(none|transparent)\b", body):
+                continue
+            if re.search(r"(?<![-\w])color:\s*var\(--accent", body):
+                continue
+            for part in (p.strip() for p in selector.split(",")):
+                if not re.search(r"button\.ghost|\.quiet\b", part):
+                    continue
+                if re.search(r":(hover|focus|active|disabled|where\(:not)|::|icon-only|icon-button|menu-item|kebab|\.danger|\.edged", part):
+                    continue
+                if any(re.search(pattern, part) for pattern in BORDERLESS_ICON_LED):
+                    continue
+                offenders.append(f"{name}: {part[:110]}")
+    assert not offenders, (
+        "A borderless text button is the accent (`color: var(--accent-text)`) or led by an icon, so it reads as a "
+        "button (INBOX 1580; DESIGN.md, text actions):\n  " + "\n  ".join(offenders)
+    )
+    every = "\n".join(css_all.values())
+    unused = [pattern for pattern in BORDERLESS_ICON_LED if not re.search(pattern, every)]
+    assert not unused, f"remove from BORDERLESS_ICON_LED: {unused}"
+
+
+def test_a_cards_one_action_sits_left_with_an_icon_and_a_dialogs_primary_stays_filled() -> None:
+    """INBOX 1580: the Dashboard Digest's button was stretched across its card (`.dash-body` is a
+    flex column) with its words centred; the two named actions lead with an icon; the Calculator's
+    one filled button is still `primary`."""
+    forms = (ROOT / "frontend" / "css" / "01-forms-settings.css").read_text(encoding="utf-8")
+    assert "align-self: flex-start" in _rule_exact(forms, ".dash-body>button")
+    dash = (ROOT / "frontend" / "js" / "dashboard.js").read_text(encoding="utf-8")
+    assert dash.count('smallButton("ph:sparkle Generate this week\'s digest"') == 2
+    kit = (ROOT / "frontend" / "js" / "reply-kit.js").read_text(encoding="utf-8")
+    assert 'smallButton("ph:function Insert as equation"' in kit
+    assert 'insert.classList.add("primary")' in kit and "false);\n  insert.classList.add" in kit
+
+
+#: The popups, menus, tooltips and previews that float and still arrive with no
+#: motion recipe (INBOX 1565). May only shrink: give one its recipe in
+#: ui-reveal-lazy.css (or beside its menu in 10-responsive.css) and delete it
+#: here; a new floating class that is not here must carry a recipe in the same
+#: commit. A preview that is a swatch drawn in place, not a thing that opens,
+#: stays on the list.
+UNMOTIONED_FLOATING = {
+    "theme-preview",
+}
+FLOATING_SUFFIXES = ("menu", "popup", "popover", "tooltip", "hovercard", "dropdown", "suggest", "peek", "preview")
+
+
+def _floating_and_motioned_classes() -> tuple[dict[str, str], set[str]]:
+    """Classes named like a floating thing that are laid out over the page
+    (position absolute or fixed, a z-index or a medium/large shadow in a rule
+    whose last compound selector is the class), and every class that appears in
+    a rule which moves: a `ui-` keyframe or an opacity/transform transition."""
+    class_re = re.compile(r"\.([a-z][a-z0-9]*(?:-[a-z0-9]+)*)")
+    floating: dict[str, str] = {}
+    motioned: set[str] = set()
+    for path in CSS:
+        for selector, body in _rules(path.read_text(encoding="utf-8")):
+            moves = bool(
+                re.search(r"animation(?:-name)?\s*:[^;]*\bui-(?:fade|grow|row)", body)
+                or re.search(r"transition\s*:[^;]*\b(?:opacity|scale|translate|transform)\b", body)
+            )
+            lays_over = bool(re.search(r"position\s*:\s*(?:absolute|fixed)|z-index\s*:|box-shadow\s*:\s*var\(--shadow-(?:md|lg)", body))
+            for part in selector.split(","):
+                part = part.strip()
+                if moves:
+                    motioned.update(class_re.findall(part))
+                if lays_over and part:
+                    for name in class_re.findall(re.split(r"[\s>+~]+", part)[-1]):
+                        if name.endswith(FLOATING_SUFFIXES):
+                            floating.setdefault(name, path.name)
+    return floating, motioned
+
+
+def test_every_floating_popup_menu_tooltip_and_preview_class_carries_a_motion_recipe() -> None:
+    """INBOX 1565, the owner: the graph hover card's fade is the quality wanted
+    app wide. A class named `*-menu`, `*-popup`, `*-popover`, `*-tooltip`,
+    `*-hovercard`, `*-dropdown`, `*-suggest`, `*-peek` or `*-preview` that is
+    laid over the page must be named in a rule that moves (`ui-fade` and
+    `ui-grow`, or a transition of opacity, scale or translate), so a new popup
+    cannot arrive in one frame. `scratchpad/ui-sweeps/motionflag.js` measures
+    what the browser then draws."""
+    floating, motioned = _floating_and_motioned_classes()
+    assert len(floating) >= 20, "the lint found too few floating classes: the suffixes or the detection moved"
+    missing = sorted(name for name in floating if name not in motioned and name not in UNMOTIONED_FLOATING)
+    assert not missing, (
+        "A popup, menu, tooltip or preview class with no motion recipe (add it to a `:is()` list in "
+        "ui-reveal-lazy.css or 10-responsive.css):\n  " + "\n  ".join(f"{n} ({floating[n]})" for n in missing)
+    )
+    stale = sorted(name for name in UNMOTIONED_FLOATING if name not in floating or name in motioned)
+    assert not stale, f"remove from UNMOTIONED_FLOATING (it has a recipe now, or is gone): {stale}"
+
+
+class _SettingRows(HTMLParser):
+    """Every `.setting-row` in the page with its direct children, and whether a
+    child holds a control or any text."""
+
+    CONTROLS = {"input", "select", "textarea", "button", "a", "summary", "canvas", "svg", "img"}
+    VOID = {"input", "br", "img", "meta", "link", "hr", "source"}
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.stack: list[dict] = []
+        self.rows: list[dict] = []
+
+    def handle_starttag(self, tag, attrs):
+        attrs = dict(attrs)
+        node = {"tag": tag, "classes": (attrs.get("class") or "").split(), "id": attrs.get("id"), "kids": [], "controls": False, "text": False}
+        if self.stack:
+            self.stack[-1]["kids"].append(node)
+        if tag in self.CONTROLS:
+            for up in self.stack:
+                up["controls"] = True
+            node["controls"] = True
+        if "setting-row" in node["classes"]:
+            self.rows.append(node)
+        if tag not in self.VOID:
+            self.stack.append(node)
+
+    def handle_endtag(self, tag):
+        for index in range(len(self.stack) - 1, -1, -1):
+            if self.stack[index]["tag"] == tag:
+                del self.stack[index:]
+                break
+
+    def handle_data(self, data):
+        if data.strip():
+            for up in self.stack:
+                up["text"] = True
+
+
+def test_a_settings_row_with_a_text_value_shares_one_alignment() -> None:
+    """INBOX 1585 (the owner: "these arent aligned"): "Model latency" centred its
+    label on the help button while the value sat top-aligned, 5px high; a row with
+    a visible hint centred the value on the whole label block, 10.6px low. A text
+    value is `.setting-control.muted` (the doctor row's recipe too), and a row that
+    holds one aligns the value to the name's baseline, so the two share a line
+    wherever they sit side by side. The sweep reading the centres across Settings
+    at both widths and both themes: `scratchpad/ui-sweeps/settingsvalign.js`."""
+    parser = _SettingRows()
+    parser.feed((ROOT / "frontend" / "index.html").read_text(encoding="utf-8"))
+    plain = []
+    for row in parser.rows:
+        values = [kid for kid in row["kids"] if "setting-label" not in kid["classes"]]
+        if len(values) != 1 or values[0]["controls"] or not values[0]["text"]:
+            continue
+        if "muted" not in values[0]["classes"]:
+            plain.append(values[0]["id"] or " ".join(values[0]["classes"]) or values[0]["tag"])
+    assert not plain, f"a text value on a Settings row is `.setting-control.muted`: {plain}"
+    css = "\n".join(path.read_text(encoding="utf-8") for path in CSS)
+    rule = re.search(r"\.setting-row:has\(>\s*\.setting-control\.muted:not\(\.row\)\)\s*\{([^}]*)\}", css)
+    assert rule, "the text-value row rule is gone (04-chat-dock-appearance.css)"
+    assert re.search(r"align-items:\s*baseline", rule.group(1))
+    doctor = (ROOT / "frontend" / "js" / "settings-controls.js").read_text(encoding="utf-8")
+    assert 'value.className = "setting-control muted"' in doctor
+    assert "A Settings row whose right side is text" in (ROOT / "docs" / "DESIGN.md").read_text(encoding="utf-8")
+
+
+def test_an_inline_toggle_is_a_bare_switch():
+    """INBOX 1600: a switch inside a bordered pill read as two containers; the track is the boundary."""
+    css = re.sub(r"/\*.*?\*/", "", (ROOT / "frontend" / "css" / "06-timeline-dialogs.css").read_text(encoding="utf-8"), flags=re.S)
+    bodies = [b for s, b in re.findall(r"(?:(?<=[{}])|\A)([^{}]+)\{([^{}]*)\}", css) if s.strip() == ".checkbox-label"]
+    assert any("border: 1px solid transparent" in b for b in bodies)
+    assert ".checkbox-label:has(input:checked)" not in css, "the knob says on; a checked fill doubles it"
+
+
+def test_a_status_bar_popover_has_the_one_close_head() -> None:
+    """INBOX 1603: "this tray popup is now showing and I cant close it, there
+    isnt even a minimise or close x button". Every status-bar popover that holds
+    things (Tray, Other devices) builds its head with `popoverHead`, passing its
+    panel so the close x is made; none builds a bare title of its own."""
+    menus = frontend_text("js/menus.js")
+    panels = frontend_text("js/status-panels.js")
+    assert "function popoverHead(" in panels and '"popover-close"' in panels
+    for name, call in (("js/obj-tray.js", 'popoverHead("Tray"'), ("js/lan-watch.js", 'popoverHead("Other devices"')):
+        text = frontend_text(name)
+        assert call in text, name
+        assert 'textContent = "Tray"' not in text and 'textContent = "Other devices"' not in text, name
+    # A lost dragend must not keep the drag flag up (outside presses would never close again).
+    flag = menus[menus.index("const dragFlag"):menus.index("function closeActionMenusOnScroll")]
+    press = flag[flag.index('addEventListener("pointerdown"'):]
+    assert 'kinds.delete("native")' in press[:400]
+    html = frontend_text("index.html")
+    assert 'id="palette-close"' in html
+    assert '"#palette-close, #palette-close *"' in frontend_text("js/app-palette.js")
+
+
+def test_no_settings_field_height_reaches_a_search_fields_input() -> None:
+    """INBOX 1609: "the icon and text in the logs search bar arent aligned". The
+    Settings-wide control height (an id rule) reached the search field recipe's
+    bare input and made it 32px inside a 28px field. A rule that sizes
+    `input[type="search"]` under an id must leave `.search-field-input` out."""
+    offenders = []
+    for path in CSS:
+        text = path.read_text(encoding="utf-8")
+        for m in re.finditer(r"(?:(?<=[{}])|\A)([^{}]+)\{([^{}]*)\}", text):
+            if not re.search(r"(^|[;\s])(height|min-height)\s*:", m.group(2)):
+                continue
+            for sel in m.group(1).split(","):
+                sel = re.sub(r"/\*.*?\*/", "", sel, flags=re.S).strip()
+                if "#" in sel and sel.endswith('input[type="search"]'):
+                    offenders.append(f"{path.name}: {sel}")
+    assert offenders == [], offenders
+
+
+def test_the_diagram_zoom_bar_is_a_plain_corner_dock():
+    """DESIGN.md, "A zoom control on a picture that scrolls": a plain `.dock` over the stage, not a new bar."""
+    view = (ROOT / "frontend" / "js" / "diagram-view.js").read_text(encoding="utf-8")
+    css = (ROOT / "frontend" / "css" / "diagram-lazy.css").read_text(encoding="utf-8")
+    assert 'bar.className = "dock dgm-zoom"' in view and "data-dock-name" not in view and "dockName" not in view
+    # In the stage beside the scrolling figure, so it stays in its corner while the figure scrolls.
+    assert "stage.append(bar)" in view and "stage.append(fig)" in view
+    rule = css[css.index(".dgm-zoom {") : css.index("}", css.index(".dgm-zoom {"))]
+    assert "position: absolute;" in rule and "box-shadow: var(--shadow-md);" in rule and "--modal-bg" in rule
+    # Every control is a button with a title (the icon-only ones become aria-labels).
+    assert view.count("smallButton(") == 4
+    assert "A zoom control on a picture that scrolls" in (ROOT / "docs" / "DESIGN.md").read_text(encoding="utf-8")
+
+
+def test_the_canvas_draws_its_drop_target_and_marquee_on_the_overlay():
+    """DESIGN.md, "A drop target, a lifted shape and a marquee on a picture": classes on overlay boxes, tokens only."""
+    css = (ROOT / "frontend" / "css" / "diagram-lazy.css").read_text(encoding="utf-8")
+    rule = css[css.index(".dgm-marquee {") : css.index("}", css.index(".dgm-marquee {"))]
+    assert "var(--accent)" in rule and "var(--accent-soft)" in rule and "pointer-events: none;" in rule
+    assert ".dgm-box.dgm-target," in css and ".dgm-box.dgm-lifted" in css
+    assert "A drop target, a lifted shape and a marquee on a picture" in (ROOT / "docs" / "DESIGN.md").read_text(encoding="utf-8")
+
+
+def test_a_split_inside_a_dialog_or_page_is_the_sidebar_handle_on_a_grid():
+    """DESIGN.md, "A split inside a dialog or page": `.sidebar-resize` as a grid item, not a handle of its own."""
+    split = (ROOT / "frontend" / "js" / "diagram-split.js").read_text(encoding="utf-8")
+    css = (ROOT / "frontend" / "css" / "diagram-lazy.css").read_text(encoding="utf-8")
+    assert 'className = "sidebar-resize dgm-split-handle"' in split
+    for needle in ('"role", "separator"', '"aria-orientation", "vertical"', '"tabindex", "0"', "trackSeparatorValue(", "prefs.set(", "ArrowLeft", "event.shiftKey"):
+        assert needle in split, needle
+    # A grid item, not the sidebars' absolute strip, and a variable on the grid, not a width on a panel.
+    start = css.index(".dgm-split-handle.sidebar-resize {")
+    assert "position: static;" in css[start : css.index("}", start)]
+    assert "--dgm-list" in css and "minmax(14rem, min(var(--dgm-list)" in css and "240px" in css
+    # The diagram files never build a second handle of their own.
+    for js in JS:
+        if js.name.startswith("diagram-") and js.name != "diagram-split.js":
+            assert 'className = "sidebar-resize' not in js.read_text(encoding="utf-8"), js.name
+    assert "A split inside a dialog or page" in (ROOT / "docs" / "DESIGN.md").read_text(encoding="utf-8")
+
+
+def test_the_edge_handle_and_the_rename_input_are_the_recipe():
+    """DESIGN.md, "An edge handle and an input on a picture": a smallButton on the overlay, tokens only, a 44px touch target."""
+    edges = (ROOT / "frontend" / "js" / "diagram-edges.js").read_text(encoding="utf-8")
+    css = (ROOT / "frontend" / "css" / "diagram-lazy.css").read_text(encoding="utf-8")
+    assert 'smallButton("ph:arrow-bend-down-right"' in edges and "dgm-rename" in edges and "dgm-rubber" in edges
+    rule = css[css.index(".dgm-rubber {") : css.index("}", css.index(".dgm-rubber {"))]
+    assert "var(--accent)" in rule
+    handle = css[css.index(".dgm-handle {") : css.index("}", css.index(".dgm-handle {"))]
+    assert "var(--modal-bg)" in handle and "var(--shadow-md)" in handle
+    assert "dataset.side" in edges and 'dgm-handle[data-side="left"]' in css  # INBOX 1679: one handle a side
+    assert "An edge handle and an input on a picture" in (ROOT / "docs" / "DESIGN.md").read_text(encoding="utf-8")
+
+
+
+def _css_rules(text: str):
+    """(selector, body) pairs of the flat rules in a stylesheet, comments out."""
+    text = re.sub(r"/\*.*?\*/", "", text, flags=re.S)
+    return re.findall(r"([^{}@]+)\{([^{}]*)\}", text)
+
+
+def test_a_panel_fold_is_a_full_width_row_closed_as_open():
+    """INBOX A2: a fold that is a full-width panel open (Thinking, Why this
+    answer, Web results, a long block, Grounded in) is a full-width row
+    closed, so opening never moves the layout sideways. Every one of them
+    wears `.fold-summary`, so no stylesheet may give that summary a width of
+    its own (a `fit-content` pill is the bug), and its caret sits at the end."""
+    every = []
+    for path in CSS:
+        every.extend((path.name, s, b) for s, b in _css_rules(path.read_text(encoding="utf-8")))
+    for name, sel, body in every:
+        for one in sel.split(","):
+            one = one.strip()
+            if one.endswith((".fold-summary", ".agent-step-group-summary", ".chat-sources-summary")) and "[open]" not in one:
+                m = re.search(r"(?<![-\w])(?:max-)?width\s*:\s*([^;]+)", body)
+                assert not m or m.group(1).strip() in {"100%", "auto"}, (name, one, m.group(0))
+    chat = (ROOT / "frontend/css/02-chat-graph.css").read_text(encoding="utf-8")
+    assert re.search(r"\.chat-sources-summary::before\s*\{\s*order:\s*1;\s*margin-inline-start:\s*auto", chat)
+    disclosure = (ROOT / "frontend/css/08-consistency.css").read_text(encoding="utf-8")
+    assert ":is(.fold-summary, .agent-step-group-summary)::after" in disclosure
+    for name, sel, body in every:
+        if "[open] > .fold-summary" in sel and ".thinking-fold" in sel + ".thinking-fold":
+            assert "width: auto" not in body, (name, sel, "an open-only width means closed differs")
+
+
+def test_the_ask_column_heads_are_one_recipe():
+    """INBOX A1: the answer head and the Matching records head share a height
+    (`--control-h-lg`) and a title size (`--text-body`), so the first box under
+    each column starts at the same y."""
+    def strip(p):
+        return re.sub(r"/\*.*?\*/", "", (ROOT / p).read_text(encoding="utf-8"), flags=re.S)
+
+    m = re.search(r"\.chat-half h3\s*\{([^}]*)\}", strip("frontend/css/01-forms-settings.css"))
+    assert m and "min-height: var(--control-h-lg)" in m.group(1)
+    m = re.search(r"\.answer-head \.msg-role\s*\{([^}]*)\}", strip("frontend/css/08-consistency.css"))
+    assert m and "font-size: var(--text-body)" in m.group(1)
+
+
+#: A fold the answer surfaces draw that is not under the answer: the long
+#: answer's own card (inside the answer) and a web page read in the run's
+#: steps (`timeline.holder`). Every other fold is a part of the answer's foot.
+NOT_FOOT_FOLDS = {"long-fold", "web-fold"}
+#: A fold the row finds by its holder, so its class stays named by its one
+#: builder (`test_why_this_answer_is_one_fold_built_once`, B30).
+FOOT_HOLDERS = {"why-trail": "why-fold"}
+
+
+def test_what_an_answer_carries_is_one_foot_row() -> None:
+    """CHAT_PLAN B2, the owner: "when they stack up below it gets a little
+    unprofessional". DESIGN.md "What an answer carries under it": one
+    `.answer-foot-bar` of chips, built only by `answerFootGather`, from the
+    parts in `ANSWER_FOOT_PARTS`. A new fold under an answer joins that list
+    (or NOT_FOOT_FOLDS, with why), never a row of its own."""
+    js = ROOT / "frontend" / "js"
+    kit = (js / "answer-kit.js").read_text(encoding="utf-8")
+    parts = kit[kit.index("const ANSWER_FOOT_PARTS = [") :]
+    parts = parts[: parts.index("\n  ];\n")]
+    finds = set(re.findall(r'find: "\.([\w-]+)', parts))
+    finds |= {FOOT_HOLDERS[f] for f in finds if f in FOOT_HOLDERS}
+    folds = set()
+    for name in ("answer-kit.js", "ask-compose.js", "chat-turn.js", "palette.js", "reply-kit.js"):
+        for classes in re.findall(r'className = "([^"]*-fold[^"]*)"', (js / name).read_text(encoding="utf-8")):
+            folds |= {c for c in classes.split() if c.endswith("-fold")}
+    loose = folds - finds - NOT_FOOT_FOLDS
+    assert not loose, f"a fold under an answer that is not a foot part: {sorted(loose)}"
+    makers = [p.name for p in JS if '"answer-foot-bar"' in p.read_text(encoding="utf-8")]
+    assert makers == ["answer-kit.js"], makers
+    assert kit.count('bar.className = "answer-foot-bar"') == 1
+    design = (ROOT / "docs" / "DESIGN.md").read_text(encoding="utf-8")
+    assert "**An answer's foot**" in design and "`answerFootGather`" in design

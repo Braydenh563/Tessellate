@@ -154,8 +154,13 @@ def _get_model(size: str):  # noqa: ANN202  # faster_whisper types are optional
         if _loaded is None or _loaded[0] != size:
             from faster_whisper import WhisperModel  # imported only when present
 
+            #: An installed model loads from the cache alone (the owner, 2026-11-03: "why did it go
+            #: online for the voice dictation?? I thought it was already installed locally?"):
+            #: without `local_files_only`, faster-whisper asks huggingface.co for the revision on
+            #: every load. Only a size not yet on this computer is downloaded.
+            installed = model_states().get(size, {}).get("installed", False)
             # int8 keeps memory modest on ordinary laptops.
-            _loaded = (size, WhisperModel(size, device="cpu", compute_type="int8"))
+            _loaded = (size, WhisperModel(size, device="cpu", compute_type="int8", local_files_only=installed))
         return _loaded[1]
 
 

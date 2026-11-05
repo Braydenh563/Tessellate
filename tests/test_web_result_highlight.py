@@ -64,7 +64,7 @@ def test_every_row_marks_the_same_terms_including_show_more():
         "for (const result of results.slice(0, INITIAL_SHOWN))"
     )
     row = CHAT[CHAT.index("function buildWebResultRow") :]
-    row = row[: row.index("\n}\n")]
+    row = row[: row.index("\n  }\n")]  # the file is one closure now (INBOX 1556), so a function ends at two spaces
     assert "highlightInto(snippet, result.snippet, webResultTerms)" in row
     # Never `innerHTML`: a snippet is text from the open web.
     assert "innerHTML" not in row

@@ -177,18 +177,42 @@ function docExportEscape(text) {
 //: The meta line is one line and it is the provenance: what this was and when
 //: it was taken. Without it an exported page is undated, and a document that
 //: is edited weekly becomes several undated files with the same name.
-function docExportHtmlDocument(title, bodyHtml, savedOn) {
+function docExportHtmlDocument(title, bodyHtml, savedOn, extraCss = "") {
   const name = docExportEscape(title || "Untitled document");
   const meta = savedOn ? `<p class="doc-export-meta">${docExportEscape(savedOn)}</p>\n` : "";
   return (
     "<!doctype html>\n" +
     '<html lang="en">\n<head>\n<meta charset="utf-8">\n' +
     '<meta name="viewport" content="width=device-width, initial-scale=1">\n' +
-    `<title>${name}</title>\n<style>${DOC_EXPORT_CSS}</style>\n</head>\n` +
+    `<title>${name}</title>\n<style>${DOC_EXPORT_CSS}${extraCss}</style>\n</head>\n` +
     `<body>\n<main>\n${meta}${bodyHtml}\n</main>\n</body>\n</html>\n`
   );
 }
 // DOC-EXPORT-HTML-END
+
+//: **A `:ph-name:` icon travels as its glyph** (INBOX 1545), with the font that
+//: draws it written into the file once, as a `data:` URI, and only when the
+//: page has an icon. Run on the clone before `docExportClean`, which drops the
+//: app's own `i.ph` because its font is not in the file. Returns the CSS to add.
+//: A property of `docExportHtmlDocument`, not a new name in the shared scope.
+//: Every glyph is read first and the swaps made after: reading a pseudo-element
+//: between writes would lay the page out once per icon.
+docExportHtmlDocument.icons = async (root, clone) => {
+  const copies = [...clone.querySelectorAll("i.md-inline-icon")];
+  const glyphs = [...root.querySelectorAll("i.md-inline-icon")].map((icon) => [icon.getAttribute("aria-label"), getComputedStyle(icon, "::before").content.slice(1, -1)]);
+  glyphs.forEach(([label, char], at) => {
+    const glyph = document.createElement("span");
+    glyph.className = "doc-export-icon";
+    glyph.setAttribute("role", "img");
+    glyph.setAttribute("aria-label", label);
+    glyph.textContent = char;
+    copies[at].replaceWith(glyph);
+  });
+  if (!copies.length) return "";
+  const font = await (await fetch("/vendor/phosphor/Phosphor.woff2")).blob();
+  const url = await new Promise((resolve) => Object.assign(new FileReader(), { onload: (e) => resolve(e.target.result) }).readAsDataURL(font));
+  return `@font-face{font-family:"Phosphor";src:url(${url}) format("woff2")}.doc-export-icon{font-family:"Phosphor";font-style:normal;line-height:1}`;
+};
 
 //: Eight megabytes of data URIs is a file that opens; eighty is one that
 //: hangs the tab it is dropped into. Past the budget an image becomes its own
@@ -267,10 +291,11 @@ async function docExportHtmlRun() {
       //: A saved file outlives this page's blob: URLs, so each diagram goes in as
       //: a data: URL of its own SVG, before the image pass below can drop it.
       if (await lazyModuleLoads.get("mermaid")) mermaidInlineForExport($("doc-preview"), clone);
+      const iconCss = await docExportHtmlDocument.icons($("doc-preview"), clone);
       docExportClean(clone);
       const images = await docExportInlineImages(clone);
       const savedOn = `${currentDoc.title || "Untitled"} · exported ${new Date().toLocaleDateString()}`;
-      const html = docExportHtmlDocument(currentDoc.title, clone.innerHTML, savedOn);
+      const html = docExportHtmlDocument(currentDoc.title, clone.innerHTML, savedOn, iconCss);
       await saveFile(docExportName(currentDoc.title, "html"), new Blob([html], { type: "text/html" }));
       if (images.dropped) {
         toast(`Saved. ${images.dropped} image(s) could not be embedded and are named in the text.`);
@@ -337,9 +362,13 @@ function docPrintSetupDialog() {
         b.textContent = words;
         b.dataset.value = value;
         b.setAttribute("aria-pressed", String(setup[key] === value));
+        b.classList.toggle("active", setup[key] === value);
         b.addEventListener("click", () => {
           setup[key] = value;
-          for (const other of group.children) other.setAttribute("aria-pressed", String(other === b));
+          for (const other of group.children) {
+            other.setAttribute("aria-pressed", String(other === b));
+            other.classList.toggle("active", other === b);
+          }
         });
         group.appendChild(b);
       }

@@ -69,8 +69,8 @@ def test_the_empty_dashboard_says_empty_once_and_in_sentences():
     js = frontend_text("dashboard.js") + frontend_text("first-run.js")
     assert "Your notebook is empty," not in js
     #: The card under the hero is the first steps (first-run.js, 25c).
-    #: Named as the dock's button is (INBOX 1301 D2): one thing, one name.
-    assert 'title.textContent = "Get started";' in js
+    #: Says what the card is for; the dock button that reopens it is "First steps" (unslop 1103, 16).
+    assert 'title.textContent = "Three steps to a working notebook";' in js
 
 
 def test_every_library_empty_state_has_a_title_and_one_sentence():

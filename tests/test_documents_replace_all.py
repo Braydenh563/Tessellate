@@ -181,7 +181,92 @@ def test_typing_in_the_find_field_does_not_download_every_document_again():
     js = (JS_DIR / "documents-replace.js").read_text(encoding="utf-8")
     scan = js[js.index("async function docReplaceScan("): js.index("function docReplaceDisarm")]
     assert "if (!docReplace.pool)" in scan
-    opener = js[js.index("async function docReplaceOpen()"): js.index("async function docReplaceScan(")]
+    opener = js[js.index("async function docReplaceOpen("): js.index("async function docReplaceScan(")]
     assert "docReplace.pool = null;" in opener
     assert 'addEventListener("close", () => { docReplace.pool = null; })' in js
     assert "setTimeout(renderDocReplace, 250)" in js
+
+
+def test_the_find_panel_reaches_the_every_document_find_and_replace():
+    """Audit 1028 D33: one entry point. The find panel carries its words, its
+    replacement and its three options to the every-document find and replace,
+    which used to start empty from the document menu."""
+    import json
+    import shutil
+    import subprocess
+
+    import pytest
+
+    from tests._app_js import JS_DIR
+
+    docs = (JS_DIR / "documents.js").read_text(encoding="utf-8")
+    code = (JS_DIR / "documents-code.js").read_text(encoding="utf-8")
+    replace = (JS_DIR / "documents-replace.js").read_text(encoding="utf-8")
+    assert 'name: "all-documents"' in docs and "docFindInDocuments(asked().search)" in docs
+    assert "openDocReplace({ find: q.search, replace: q.replace, caseSensitive: q.caseSensitive, regexp: q.regexp, wholeWord: q.wholeWord })" in docs
+    assert "return docReplaceOpen(carry);" in docs
+    opener = replace[replace.index("async function docReplaceOpen(") : replace.index("async function docReplaceScan(")]
+    for field in ("doc-replace-with", "doc-replace-case", "doc-replace-regex", "doc-replace-word"):
+        assert f'$("{field}")' in opener, field
+    node = shutil.which("node")
+    if not node:  # pragma: no cover - node is in the sandbox and in CI
+        pytest.skip("node is not available")
+    fn = code[code.index("function docFindInDocuments(") : code.index("// --- Run, and its output")]
+    script = fn + """
+let seen = [];
+var openFinder = (q, o) => seen.push([q, o.kind]);
+var docCmView = { state: { selection: { main: { empty: true, head: 0 } } } };
+var docWordAt = () => ({ name: "caret" });
+docFindInDocuments("typed words");
+docFindInDocuments("");
+docFindInDocuments({ type: "click" });
+process.stdout.write(JSON.stringify(seen));
+"""
+    got = json.loads(subprocess.run([node, "-e", script], capture_output=True, text=True, check=True).stdout)
+    assert got == [["typed words", "document"], ["caret", "document"], ["caret", "document"]]
+
+
+def test_a_regular_expression_reads_as_it_does_in_the_find_panel():
+    """Audit 1028 D33 follow-up: the find panel's regexp is multiline and unicode
+    (`^## ` finds every heading, `\\p{L}` reads), and the every-document dialog it
+    carries the pattern to built `g`/`gi` only, so `^## ` matched the first line
+    of a document and `\\p{L}` was an error. A plain find stays plain."""
+    import json
+    import shutil
+    import subprocess
+
+    import pytest
+
+    from tests._app_js import JS_DIR
+
+    if not shutil.which("node"):  # pragma: no cover - node is in the sandbox and in CI
+        pytest.skip("node is not available")
+    js = (JS_DIR / "documents-replace.js").read_text(encoding="utf-8")
+    fn = js[js.index("function docReplacePattern(") : js.index("//: `carry` is the find panel's query")]
+    script = fn + """
+const box = { "doc-replace-find": { value: "" }, "doc-replace-regex": { checked: false }, "doc-replace-case": { checked: false }, "doc-replace-word": { checked: false } };
+const $ = (id) => box[id];
+function ask(find, regex, caseOn = false) {
+  box["doc-replace-find"].value = find;
+  box["doc-replace-regex"].checked = regex;
+  box["doc-replace-case"].checked = caseOn;
+  return docReplacePattern();
+}
+const text = "# One\\n## Two\\ntext\\n## Three";
+const out = {
+  heads: (text.match(ask("^## ", true)) || []).length,
+  letters: ask("\\\\p{L}+", true).error || (text.match(ask("\\\\p{L}+", true)) || []).length,
+  oldEscape: ask("a\\\\-b", true).error || "ok",
+  plainCaret: text.match(ask("^## ", false)) === null,
+  flagsRegex: ask("x", true, true).flags,
+  flagsPlain: ask("x", false).flags,
+};
+process.stdout.write(JSON.stringify(out));
+"""
+    got = json.loads(subprocess.run(["node", "-e", script], capture_output=True, text=True, check=True).stdout)
+    assert got["heads"] == 2, "^ anchors a line, as in the find panel"
+    assert got["letters"] == 4, "a unicode property escape reads"
+    assert got["oldEscape"] == "ok", "a pattern that read before still reads"
+    assert got["plainCaret"], "a plain find is not a pattern"
+    assert got["flagsRegex"] == "gmu"
+    assert got["flagsPlain"] == "gi"

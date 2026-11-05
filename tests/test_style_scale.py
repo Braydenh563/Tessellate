@@ -620,7 +620,7 @@ def test_every_indefinite_animation_answers_reduced_motion():
     # the declaration, since the branch turns the animation *off*.
     offenders = []
     for match in re.finditer(
-        r"([^{}]+)\{[^{}]*animation:[^;]*\binfinite\b[^;]*;[^{}]*\}", css
+        r"(?:(?<=[{}])|\A)([^{}]+)\{[^{}]*animation:[^;]*\binfinite\b[^;]*;[^{}]*\}", css
     ):
         selector = match.group(1).strip().split("\n")[-1].strip()
         if not selector or selector.startswith("@"):
@@ -783,12 +783,14 @@ def test_the_nested_surfaces_are_concentric():
 #: 2026-10-19: the link suggestion rules moved from 03 to inbox-lazy.css (INBOX
 #: 1329): the score bar's 0.375rem moved, the reason field and its old chip's
 #: 1.75rem went to --control-h-dense or away: 22 to 19, 0 to 1.
+#: 2026-11-03: the m guide's rules moved from 08 to chord-guide-lazy.css (the
+#: boot CSS cap, unslop 1103): its three keycap heights moved, 46 to 43 and 0 to 3.
 LITERAL_HEIGHTS = {
     "01-forms-settings.css": 22, "02-chat-graph.css": 34, "03-dashboard-widgets.css": 19,
     "04-chat-dock-appearance.css": 25, "05-sidebars-themes.css": 34, "06-timeline-dialogs.css": 24,
-    "07-whiteboard-misc.css": 44, "08-consistency.css": 46, "09-editor.css": 6, "10-responsive.css": 6,
+    "07-whiteboard-misc.css": 44, "08-consistency.css": 43, "09-editor.css": 6, "10-responsive.css": 6,
     "library-lazy.css": 22, "nav-history-lazy.css": 1, "reply-kit-lazy.css": 1,
-    "inbox-lazy.css": 1,
+    "inbox-lazy.css": 1, "chord-guide-lazy.css": 3,
 }
 LITERAL_HEIGHT = re.compile(r"(?<![-\w])(?:min-|max-)?height:\s*[0-9.]+(?:rem|px)\s*[;}]")
 

@@ -24,6 +24,71 @@ for _loaded in ("tessellate.ai.commands", "tessellate.ai.help_chat"):
     importlib.import_module(_loaded)
 
 
+# --- one dependant per route endpoint, however many apps the tests build -------
+#
+# FastAPI (0.16x) builds an included router's route state on the first request
+# an app routes through it, and every test that makes a `client` builds a new
+# app: the first request then spent about 1.2 s in `get_dependant` and
+# pydantic's TypeAdapters for 633 routes (cProfile, CI time 1102), the same
+# work for the same module-level endpoints in every test. A dependant depends
+# only on the path, the endpoint and its dependencies, not on the app (the
+# overrides are read from the app per request), so one per process is kept.
+# Endpoints defined inside `create_app` (`<locals>`) are new per app and are
+# not kept, or the cache would pin every dead app the way the callable caches
+# below did.
+
+
+def _share_route_dependants() -> None:
+    import fastapi.routing as fastapi_routing
+
+    build = getattr(fastapi_routing, "_build_dependant_with_parameterless_dependencies", None)
+    if build is None or getattr(build, "_shared", False):
+        return  # another FastAPI: nothing to share, the tests run as they are
+    kept: dict = {}
+
+    def per_app(callable_) -> bool:
+        return "<locals>" in getattr(callable_, "__qualname__", "<locals>")
+
+    def shared(*, path, call, dependencies):
+        if per_app(call) or any(per_app(d.dependency) for d in dependencies):
+            return build(path=path, call=call, dependencies=dependencies)
+        try:
+            key = (path, call, tuple(dependencies))
+            found = kept.get(key)
+        except TypeError:  # an unhashable dependency: build it as FastAPI would
+            return build(path=path, call=call, dependencies=dependencies)
+        if found is None:
+            found = kept[key] = build(path=path, call=call, dependencies=dependencies)
+        return found
+
+    shared._shared = True
+    fastapi_routing._build_dependant_with_parameterless_dependencies = shared
+
+    # The response model's field, the other per-route TypeAdapter: only the
+    # plain (name, type, mode) form the route state uses is kept.
+    make_field = getattr(fastapi_routing, "create_model_field", None)
+    if make_field is None:
+        return
+    fields: dict = {}
+
+    def shared_field(name, type_=None, *args, mode="validation", **kwargs):
+        if args or kwargs or per_app(type_):
+            return make_field(name, type_, *args, mode=mode, **kwargs)
+        try:
+            key = (name, type_, mode)
+            found = fields.get(key)
+        except TypeError:
+            return make_field(name, type_, mode=mode)
+        if found is None:
+            found = fields[key] = make_field(name, type_, mode=mode)
+        return found
+
+    fastapi_routing.create_model_field = shared_field
+
+
+_share_route_dependants()
+
+
 # --- one copy of each source file, however many test modules read it ----------
 #
 # About 145 test modules read a frontend file into a module-level constant
@@ -75,6 +140,14 @@ def repo_tree():
 
 
 @pytest.fixture(autouse=True)
+def _own_run_folder(tmp_path, monkeypatch):
+    """A test that starts a server claim writes a running-copies record
+    (core/run_records.py); it goes to the test's folder, never the
+    developer's own per-user one."""
+    monkeypatch.setenv("TESSELLATE_RUN_DIR", str(tmp_path / "_run"))
+
+
+@pytest.fixture(autouse=True)
 def _no_repo_data_folder():
     """A test that builds the app's config without `app_state` falls back to
     `./data`, which is the repo's own folder when pytest runs from the root
@@ -119,6 +192,13 @@ def app_state(tmp_path, monkeypatch):
     # "Installing ... (needle)" in `/tasks`.
     extras.reset_for_tests()
     deps.init_app_state(data_dir=tmp_path / "data")
+    # A sign-in from a new device on the network is held up to 45 s for this
+    # computer's Allow. No test answers it unless it means to, so each one
+    # that reached the hold sat out the whole wait (47 s for the IPv6 throttle
+    # test, CI time 1102). A test about the wait sets its own.
+    from tessellate.api import routes_auth
+
+    monkeypatch.setattr(routes_auth, "DEVICE_WAIT_SECONDS", 0.3)
     yield deps.get_config()
     # A worker the test started (the embedding warm-up after a capture, a
     # caption job after an attach) would otherwise rebuild the app state from
@@ -330,6 +410,21 @@ def _forget_the_docker_probe():
     searxng_docker.forget_docker_daemon_state()
     yield
     searxng_docker.forget_docker_daemon_state()
+
+
+@pytest.fixture(autouse=True)
+def _forget_the_ocr_probe():
+    """`/models/status` remembers the OCR reader question for thirty seconds
+    (routes_models.ocr_probe); a test that fakes a reader must not leave its
+    answer to the next one. Read from `sys.modules`, as the fixture below."""
+    def forget():
+        module = sys.modules.get("tessellate.api.routes_models")
+        if module is not None:
+            module.forget_ocr_probe()
+
+    forget()
+    yield
+    forget()
 
 
 @pytest.fixture(autouse=True)

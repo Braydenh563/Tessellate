@@ -21,6 +21,7 @@ from sqlalchemy import select, text
 
 from tessellate.core.database import DatabaseManager, Entry
 from tessellate.entry import manager
+from tessellate.repo import tags as tags_repo
 
 # The four hot list queries, spelled the way the ORM emits them. Kept as SQL
 # rather than driven through `manager` because EXPLAIN QUERY PLAN needs the
@@ -157,5 +158,5 @@ def test_all_tags_still_honours_the_active_space(tmp_path, app_state):
 
     with database.session() as session:
         session.info["workspace_id"] = "work"
-        manager.reset_tag_cache()
-        assert set(manager.all_tags(session)) == {"work-only"}
+        tags_repo.reset_tag_cache()
+        assert set(tags_repo.counts(session)) == {"work-only"}

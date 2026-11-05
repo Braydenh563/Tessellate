@@ -147,6 +147,11 @@ def parse_followups(reply: str, asked: str = "") -> list[str]:
     return out
 
 
+#: How much of the question the model is shown; the page clips to the same (chat.js `CLIP_LIMITS.followQuestion`,
+#: keeping the end, where a long question's ask sits), so a 4,000-character question is not sent to be cut here.
+FOLLOWUP_QUESTION_CHARS = 500
+
+
 def suggest_followups(
     question: str,
     answer: str,
@@ -176,7 +181,7 @@ def suggest_followups(
                 # turn it is decorating.
                 {
                     "role": "user",
-                    "content": f"QUESTION: {question[:500]}\n\nANSWER:\n{answer[:2000]}",
+                    "content": f"QUESTION: {question[:FOLLOWUP_QUESTION_CHARS]}\n\nANSWER:\n{answer[:2000]}",
                 },
             ],
         )

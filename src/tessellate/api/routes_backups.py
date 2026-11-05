@@ -7,6 +7,7 @@ Split out of `routes_settings.py`'s "backups" section
 from __future__ import annotations
 
 import contextlib
+import logging
 import os
 import shutil
 import tempfile
@@ -19,7 +20,7 @@ from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
 from tessellate.api import routes_auth
-from tessellate.core import backup, backup_bundle, deps, diskspace, extras, jobruns, jobs
+from tessellate.core import backup, backup_bundle, deps, diskspace, extras, jobruns, jobs, selfcheck
 from tessellate.core.deps import get_session
 from tessellate.entry import manager
 from tessellate.api.this_computer import this_computer_only
@@ -108,6 +109,17 @@ def integrity_at_start() -> dict:
     return result
 
 
+@router.get("/backups/summary")
+def backup_summary(name: str) -> dict:
+    """What a restore would bring back, next to what is here now (audit 1028
+    S69), so the confirm names the counts before anything is replaced."""
+    config = deps.get_config()
+    path = backup.backup_path(name, config.data_dir)
+    if path is None or not path.is_file():
+        raise HTTPException(status_code=404, detail="That backup was not found.")
+    return {"backup": backup.notebook_counts(path), "live": backup.notebook_counts(Path(config.db_path))}
+
+
 @router.get("/backups")
 def list_backups() -> list[dict]:
     # Unchanged shape (a plain list): `keep`/the retention bounds live on
@@ -182,6 +194,19 @@ def _jobs_held(request: Request) -> Iterator[None]:
             yield
 
 
+def _recheck_data_folder() -> None:
+    """The data folder's check again, on the notebook just restored: the
+    start's report was about the file it replaced (INBOX 1573)."""
+    selfcheck.forget_offer()
+    session = deps.get_db().session()
+    try:
+        selfcheck.run(deps.get_config(), session)
+    except Exception:  # noqa: BLE001  # a report must not fail a restore that worked
+        logging.getLogger(__name__).warning("the data folder check after a restore did not run", exc_info=True)
+    finally:
+        session.close()
+
+
 class RestoreBody(BaseModel):
     name: str = Field(min_length=1, max_length=120)
 
@@ -214,6 +239,7 @@ def restore_backup(body: RestoreBody, request: Request) -> dict:
     # SEC-07: the restored file has its own vault row (and maybe its own
     # password), so every session ends and the key in memory is dropped; the
     # app shows the lock screen and the password unwraps the restored key.
+    _recheck_data_folder()
     routes_auth.end_every_session()
     return {"restored": body.name, "signed_out": True}
 
@@ -334,7 +360,14 @@ def restore_bundle(request: Request, file: UploadFile = File(...), password: str
         _unlink_quietly(upload_path, zip_path)
     # The settings the zip carried (Audit 2026-10-10, item 1), merged over the
     # live ones: a key the zip lacks keeps its value here.
-    config.merge_preferences(result.get("preferences") or {})
+    # SEC-A1: each one through the checks `PUT /preferences` applies; a value
+    # that fails is dropped and only its key name is logged.
+    from tessellate.api import routes_settings
+
+    kept, dropped = routes_settings.checked_restored_preferences(result.get("preferences") or {})
+    if dropped:
+        logging.getLogger(__name__).warning("A restored backup's settings were dropped: %s", ", ".join(sorted(dropped)))
+    config.merge_preferences(kept)
     session = deps.get_db().session()
     try:
         manager.log_action(session, "restored", "data", detail="full backup file")
@@ -342,5 +375,6 @@ def restore_bundle(request: Request, file: UploadFile = File(...), password: str
     finally:
         session.close()
     # SEC-07, as `restore_backup`: the restored file has its own vault row.
+    _recheck_data_folder()
     routes_auth.end_every_session()
     return {"restored": True, "files": result["files"], "skipped": result["skipped"], "signed_out": True}

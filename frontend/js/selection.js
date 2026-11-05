@@ -301,9 +301,11 @@ function pickEntryDialog(message) {
     const paint = () => {
       const term = shell.search.value.trim();
       const needle = term.toLowerCase();
+      //: A row holds a note's first 300 characters; the server's literal match reads the whole text (INBOX 1525 review).
+      const served = needle ? noteEngine.literal(noteEngine.pick, needle, paint) : null;
       const items = allEntries
         .filter((e) => !e.is_draft && !e.is_deleted)
-        .filter((e) => !needle || (e.content || "").toLowerCase().includes(needle))
+        .filter((e) => !needle || (e.content || "").toLowerCase().includes(needle) || served?.has(e.id))
         .slice(0, 40)
         .map((entry) => ({
           icon: "ph:note",
@@ -315,7 +317,8 @@ function pickEntryDialog(message) {
     };
     shell.search.addEventListener("input", paint);
     paint();
-    shell.open(resolve);
+    //: The list holds previews (INBOX 1525); what is chosen is read whole before any caller writes it back.
+    shell.open((row) => resolve(row ? fullEntry(row.id).catch(() => null) : row));
   });
 }
 
@@ -353,15 +356,16 @@ function noteFieldPickButton(input, after) {
 //: `empty` is the source's own glyph for its empty state. `hint` is that
 //: state's sentence: where this kind of thing comes from.
 const LIBRARY_PICK_SOURCES = [
+
   { kind: "note", label: "Notes", icon: "ph:note", placeholder: "Search your notes…", hint: "Notes you write show up here." },
   {
     kind: "document", label: "Documents", icon: "ph:file-text", path: "/documents",
     placeholder: "Search your documents…", hint: "Documents you write in the Library show up here.",
   },
   {
-    kind: "file", label: "Files", path: "/files/gallery", placeholder: "Search your files…",
+    kind: "file", label: "Files", placeholder: "Search your files…",
     icon: (row) => `ph:${(attachmentIconClass("", row?.original_name || row?.filename || "file") || "ph-file").slice(3)}`,
-    empty: "ph:paperclip", hint: "Files you attach to notes show up here.",
+    empty: "ph:paperclip", hint: "Files you upload or attach to notes show up here.",
   },
   {
     kind: "link", label: "Bookmarks", path: "/bookmarks", placeholder: "Search your bookmarks…",
@@ -765,7 +769,10 @@ function syncSelectionPopup() {
   }
 
   const selection = window.getSelection();
-  const text = (selection?.toString() || "").trim();
+  //: Collapsed first: `toString()` lays the page out to produce the text, so a
+  //: caret (every focus change, every key on the body) paid a forced layout to
+  //: learn there was nothing selected (INBOX 1657: 706 ms of one 22-key run at 4x).
+  const text = selection && !selection.isCollapsed ? selection.toString().trim() : "";
   if (!text || selection.isCollapsed || !selectionIsActionable(selection)) {
     // Don't yank the popup away while its own menu is open, the selection is
     // often cleared as a side effect of interacting with the menu.

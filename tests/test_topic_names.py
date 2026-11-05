@@ -99,6 +99,8 @@ def test_a_note_cards_topic_is_read_in_one_batch(client):
     assert set(body) == {str(ids[0]), str(ids[1])}
     assert body[str(ids[0])]["name"] == "Pottery" and body[str(ids[0])]["size"] == 4
     assert "ids" not in body[str(ids[0])]
+    #: The words that named it, for the chip's hover (INBOX 1620).
+    assert "glazing" in [t.lower() for t in body[str(ids[0])]["terms"]]
     full = client.get(f"/graph/topics/of?ids={ids[0]}&members=1").json()["topics"]
     assert sorted(full[str(ids[0])]["ids"]) == sorted(ids)
     empty = client.get("/graph/topics/of").json()

@@ -132,4 +132,4 @@ def test_a_drag_begun_before_the_edge_scroll_arrives_still_scrolls():
     boot = (FRONTEND / "js" / "selection.js").read_text(encoding="utf-8")
     assert "EDGE_SCROLL_HELD.press = { target: event.target" in boot and 'ensureModule("dragEdge")' in boot
     lazy = (FRONTEND / "js" / "drag-edge.js").read_text(encoding="utf-8")
-    assert "dragEdgeZone(held.target)" in lazy and "d.frame = requestAnimationFrame(dragEdgeTick)" in lazy
+    assert "press: held.target" in lazy and "dragEdgeZone(d.press)" in lazy and "d.frame = requestAnimationFrame(dragEdgeTick)" in lazy

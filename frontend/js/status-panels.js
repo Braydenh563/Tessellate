@@ -211,3 +211,25 @@ function openModelOffer(control) {
   placeHelpPopover(panel, control);
   setUp.focus();
 }
+
+//: A status-bar popover's head (INBOX 1603): name, actions, a close x. A sheet
+//: has its own X, so it passes no panel. Here, not in menus.js, for the boot
+//: budget: the Tray and Other devices load this before they draw.
+function popoverHead(title, extras = [], panel = null) {
+  const head = document.createElement("div");
+  head.className = "popover-head";
+  const name = document.createElement("strong");
+  name.className = "popover-title";
+  name.textContent = title;
+  head.append(name, ...extras);
+  if (panel) {
+    const close = smallButton("ph:x", `Close ${title.toLowerCase()}`, () => {
+      const entry = [...openHelpPopovers].find((open) => open.panel === panel);
+      entry?.close();
+      if (entry?.trigger.isConnected) entry.trigger.focus({ preventScroll: true });
+    });
+    close.classList.add("popover-close");
+    head.append(close);
+  }
+  return head;
+}

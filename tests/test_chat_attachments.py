@@ -247,7 +247,7 @@ def test_the_model_is_told_what_the_pictures_in_an_attached_note_say(session):
     not. A note's content carries `/media/<filename>` and nothing else, so a
     note whose whole point was a photographed whiteboard reached the model as a
     sentence and a link."""
-    from tessellate.api.routes_chat import _media_readings
+    from tessellate.api.chat_attach import _media_readings
     from tessellate.core.database import MediaUpload
 
     session.add(
@@ -270,7 +270,7 @@ def test_a_picture_with_no_reading_yet_contributes_nothing(session):
     """"If they already exist" is the operative half: nothing here generates a
     caption or runs vision OCR. Captioning may not have run, may be off, or may
     have no model: and a chat turn is the worst place to start one."""
-    from tessellate.api.routes_chat import _media_readings
+    from tessellate.api.chat_attach import _media_readings
     from tessellate.core.database import MediaUpload
 
     session.add(MediaUpload(filename="blank.png", original_name="blank.png"))
@@ -287,7 +287,7 @@ def test_the_model_is_told_whats_inside_a_notes_own_attached_file(client, sessio
     separate list on the note. Round-tripped through the real upload route
     so this exercises the same stored_name/uploads_dir path the reader
     uses, not a hand-built row."""
-    from tessellate.api.routes_chat import _attachment_readings
+    from tessellate.api.chat_attach import _attachment_readings
     from tessellate.core.database import Entry
 
     entry = Entry(content="See the attached notes.")
@@ -306,7 +306,7 @@ def test_the_model_is_told_whats_inside_a_notes_own_attached_file(client, sessio
 
 
 def test_a_note_with_no_attachments_gets_no_attachment_reading(session):
-    from tessellate.api.routes_chat import _attachment_readings
+    from tessellate.api.chat_attach import _attachment_readings
     from tessellate.core.database import Entry
 
     entry = Entry(content="Nothing attached here.")
@@ -417,3 +417,64 @@ def test_a_reloaded_note_is_named_by_the_line_the_page_names_it_from(ai_client, 
     assert names[titled.id] == long_title.strip()
     assert names[plain.id] == plain.content
     assert names[blank.id] == ""
+
+
+def _library_upload(session, name, text, **fields):
+    """A Library upload (a MediaUpload row) with its bytes on disk, built the
+    way `/media/upload` leaves it, so the reader finds it by `filename`."""
+    from tessellate.core import deps
+    from tessellate.core.database import MediaUpload
+
+    media_dir = deps.get_config().data_dir / "media"
+    media_dir.mkdir(parents=True, exist_ok=True)
+    stored = f"stored-{name}"
+    (media_dir / stored).write_text(text, encoding="utf-8")
+    row = MediaUpload(filename=stored, original_name=name, **fields)
+    session.add(row)
+    session.commit()
+    return row
+
+
+def test_a_library_upload_reaches_the_model_as_its_own_table(client, session):
+    """INBOX 1687: the Library's uploads (MediaUpload) are not the note
+    attachments `file_ids` reads, and their ids collide with them, so they
+    travel as `media_file_ids` and are read from the upload's own file."""
+    from tessellate.api.chat_attach import _attached_media_files
+
+    row = _library_upload(session, "agenda.txt", "Standup at 10am. Ship the release.")
+    found = _attached_media_files(session, [row.id, row.id, 99999])
+    assert [f["id"] for f in found] == [row.id]
+    assert "File: agenda.txt" in found[0]["content"]
+    assert "Standup at 10am" in found[0]["content"]
+    assert found[0]["from_outside"] is True and found[0]["attached"] is True
+
+
+def test_a_library_upload_only_a_locked_private_note_holds_is_refused(client, session, monkeypatch):
+    from tessellate.api.chat_attach import _attached_media_files
+
+    private = _library_upload(session, "diary.txt", "secret", in_private_note=True)
+    monkeypatch.setattr("tessellate.entry.manager.note_is_sealed", bool)
+    assert _attached_media_files(session, [private.id]) == []
+
+
+def test_a_library_upload_from_another_space_is_refused(client, session):
+    from tessellate.api.chat_attach import _attached_media_files
+
+    other = _library_upload(session, "elsewhere.txt", "x", workspace_id="other")
+    session.info["workspace_id"] = "default"
+    try:
+        assert _attached_media_files(session, [other.id]) == []
+    finally:
+        session.info.pop("workspace_id", None)
+
+
+def test_a_sent_library_file_comes_back_as_a_card_and_is_not_an_orphan(client, session):
+    row = _library_upload(session, "plan.txt", "plan")
+    conversation = _conversation_with(client, media_file_ids=[row.id])
+    user = client.get(f"/conversations/{conversation['id']}").json()["messages"][0]
+    assert user["media_file_ids"] == [row.id]
+    assert user["attachments"][0]["kind"] == "file" and user["attachments"][0]["store"] == "media"
+    assert user["attachments"][0]["name"] == "plan.txt"
+    from tessellate.core import media_gc
+
+    assert row.id in media_gc._conversation_referenced_ids(session)

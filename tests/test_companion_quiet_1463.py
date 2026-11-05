@@ -42,7 +42,7 @@ def test_the_showy_ways_are_off_unless_chosen() -> None:
     assert 'prefs.get("avatar-buddy-entrances", null) === "showy"' in showy
     assert "return false;" in showy
     enter = _fn("nameMarkBuddyEnter")
-    quiet = enter.index("if (!nameMarkBuddyShowy() && !(unlockFirst && hangs)) return nameMarkBuddyQuietEnter(")
+    quiet = enter.index("if (!visit && !nameMarkBuddyShowy() && !(unlockFirst && hangs)) return nameMarkBuddyQuietEnter(")
     # Before any of the showy ways is drawn or played.
     assert quiet < enter.index("let ways;") < enter.index('if (how === "glide") {')
 

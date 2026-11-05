@@ -369,6 +369,30 @@ def verify_copy(path: Path) -> None:
         raise OSError(0, "the backup did not pass its check")
 
 
+def notebook_counts(path: Path) -> dict | None:
+    """The notes and documents a notebook file holds, as the library counts
+    them (not binned, archived, drafts or boards), read-only, so a restore
+    confirm can say what it brings back (audit 1028 S69). None when the file
+    cannot be read: the confirm then says nothing rather than failing."""
+    try:
+        connection = sqlite3.connect(f"file:{path}?mode=ro", uri=True)
+    except sqlite3.Error:
+        return None
+    try:
+        notes = connection.execute(
+            "SELECT COUNT(*) FROM entries WHERE is_deleted = 0 AND archived_at IS NULL"
+            " AND is_draft = 0 AND is_board = 0"
+        ).fetchone()[0]
+        documents = connection.execute(
+            "SELECT COUNT(*) FROM documents WHERE archived_at IS NULL AND deleted_at IS NULL"
+        ).fetchone()[0]
+    except sqlite3.Error:
+        return None
+    finally:
+        connection.close()
+    return {"notes": notes, "documents": documents}
+
+
 #: The notebook file's check at start (WORLD_CLASS 25e), kept so the page can
 #: ask for it without running it again. `quick_check` rather than the full
 #: `integrity_check`: measured on a 5,000-note notebook (scripts/scale_test.py,

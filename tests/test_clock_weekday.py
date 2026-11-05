@@ -30,9 +30,9 @@ WEEKDAYS = ("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", 
 @pytest.fixture()
 def system_prompt(client):
     """The assembled system prompt, reached the way the app reaches it."""
-    from tessellate.ai import agent
+    from tessellate.ai import agent_turn
 
-    return agent.build_agent_messages("what is due?", [])[0]["content"]
+    return agent_turn.build_agent_messages("what is due?", [])[0]["content"]
 
 
 def test_the_prompt_names_the_weekday(system_prompt):

@@ -17,15 +17,18 @@ from collections.abc import Iterator
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from tessellate.ai import composer, composer_digest, composer_lists, composer_slots, context, fence, intent, librarian, question_noise, recognise, verdicts, why
+from tessellate.ai import composer_digest, composer_lists, composer_slots, context, fence, intent, librarian, question_noise, recognise, verdicts, why
+from tessellate.ai import composer_dialogue
 from tessellate.ai.answer_trim import trim_assistant_padding
 from tessellate.ai.grounding import SentenceGrounder
 from tessellate.ai.ollama_client import OllamaError
 from tessellate.api.chat_agent import _starter_read
 from tessellate.api.chat_pool import _Found
+from tessellate.api.chat_extra import _turn_label
 from tessellate.api.chat_request import ChatRequest, _StreamRequest, _Turn, _event, _in_full
 from tessellate.api.chat_said import MODEL_STOPPED_NOTE, _app_answers, _asks_capability, _in_notes
 from tessellate.core import deps, private_turn
+from datetime import datetime
 from tessellate.core.database import Entry, like_escape, LIKE_ESCAPE
 from tessellate.core.logbuffer import safe_value
 from tessellate.entry import manager
@@ -34,6 +37,15 @@ from tessellate.search import chunks as search_chunks
 
 def _detect_intent(question: str, force_notes_intent: bool, *attachments: list) -> str:
     detected = intent.classify(question)
+    #: "i wanna make a note" is the Guide's how-to for a bare question, but in
+    #: the chat it is the act with nothing to say yet, and the reply asks what
+    #: the note says (INBOX 1507; INBOX 1649 had taken it as a how-to).
+    if detected == intent.ABOUT_APP:
+        from tessellate.ai import commands
+
+        bare = commands.read(question, datetime.now())
+        if bare and bare.get("intent") in ("new_note", "reminder") and (bare.get("no_subject") or not bare.get("text", bare.get("content"))):
+            return intent.ACT
     # `body.answering_agent` (Tier 1 section 4): a reply to the agent's own
     # question is about the notebook by construction, however smalltalk-shaped
     # the reply itself reads ("yes", "ok"). Attaching a note (or a document) is
@@ -120,7 +132,7 @@ def _composes_offline(body: ChatRequest) -> bool:
     pictures, or with a model running, goes the model's way."""
     if body.image_media_ids or deps.get_ollama().is_running():
         return False
-    kind = _detect_intent(body.question, False, body.note_ids, body.document_ids, body.file_ids, body.board_ids)
+    kind = _detect_intent(body.question, False, body.note_ids, body.document_ids, body.file_ids, body.media_file_ids, body.board_ids)
     return kind not in (intent.SMALLTALK, intent.ABOUT_APP)
 
 
@@ -192,6 +204,9 @@ def _model_stream_events(req: _StreamRequest, prepared: dict, messages: list) ->
         "notes": len(messages[-1]["content"]) // context.CHARS_PER_TOKEN,
         "tool_schemas": 0,
     }
+    if dropped := librarian.history_dropped(req.history, messages):
+        #: Exchanges the window left out, for the chat's one-line notice (E57).
+        composition_tokens["history_dropped"] = dropped
     if prepared.get("brief"):
         #: The notes' tokens before and after the composer cut them, so the
         #: saving is a number on every turn rather than a claim.
@@ -273,13 +288,6 @@ def _may_digest(prepared: dict, question: str) -> bool:
     return not str(prepared.get("search_mode") or "").endswith("recent") or composer_lists.computed_kind(question) is not None or composer_digest.shows_the_lot(question)
 
 
-def _turn_label(content: str) -> str:
-    """A note as a history turn names it (`chatTurnObjects` in chat-attach.js):
-    its first line without heading or list marks, up to the first stop."""
-    first = re.sub(r"^[#*>\-\s]+", "", (content or "").strip().split("\n", 1)[0])
-    return re.split(r"[:.!?]", first)[0].strip()[:80]
-
-
 def _cited_scope(req: _StreamRequest, follow) -> list[int]:  # noqa: ANN001
     """The note the last answer led with, when this question only leans on it
     ("when is it", "how much does it cost", "what time", "what did we decide
@@ -287,7 +295,7 @@ def _cited_scope(req: _StreamRequest, follow) -> list[int]:  # noqa: ANN001
     keeps its subject, and the slot runs on that note rather than on
     whichever note best matches the bare words."""
     objects = ((req.history or [{}])[-1].get("objects") or []) if req.history else []
-    if not objects or req.body.note_ids or (follow is not None and follow.kind != "pronoun") or not composer.refers_back(req.question):
+    if not objects or req.body.note_ids or (follow is not None and follow.kind != "pronoun") or not composer_dialogue.refers_back(req.question):
         return []
     label = str(objects[0]).strip().lower()
     rows = req.session.execute(
@@ -590,13 +598,16 @@ def _note_with_hint(note: dict) -> str:
     return f"{note.get('content') or ''}{librarian._dates_hint(note)}"
 
 
-def _why(req, prepared, grounding, composing, will_answer, tools_only, ollama_running, shape, marks) -> list[dict]:
-    """B30's lines for this turn (`ai/why.py`)."""
+def _why(req, prepared, grounding, composing, will_answer, tools_only, ollama_running, shape, marks, text="") -> list[dict]:
+    """B30's lines for this turn (`ai/why.py`). A note the answer links is a
+    note it used, whether or not retrieval or a grounding row counted it
+    (audit 1028 E72: a summary read its note and said "nothing matched")."""
+    linked = set(re.findall(r"\(#/notes/(\d+)\)", text or ""))
     return why.lines(
         intent=prepared["intent"],
         mode=prepared.get("search_mode"),
         matched=len(prepared.get("raw_results") or []),
-        used=len({row.get("note_id") for row in grounding if isinstance(row.get("note_id"), int)}),
+        used=len({str(row.get("note_id")) for row in grounding if isinstance(row.get("note_id"), int)} | linked),
         when=prepared.get("when_phrase"),
         scoped=bool(req.body.attached_notes_only or req.body.note_ids),
         composed=composing,
@@ -604,6 +615,7 @@ def _why(req, prepared, grounding, composing, will_answer, tools_only, ollama_ru
         shape=shape,
         context=will_answer and ollama_running and _asks_capability(req, prepared),
         loading=bool(prepared.get("meaning_loading")),
+        read_by=str(prepared.get("read_by") or ""),
         marks=marks,
     )
 

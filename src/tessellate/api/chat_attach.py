@@ -21,6 +21,7 @@ from tessellate.core import deps, docview
 from tessellate.core.config import days_from_today
 from tessellate.core.database import Attachment, Entry, MediaUpload
 from tessellate.repo import documents as documents_repo
+from tessellate.repo import uploads as uploads_repo
 from tessellate.repo.documents import Document
 from tessellate.core.imagesize import image_size
 from tessellate.entry import manager
@@ -194,6 +195,50 @@ def _attached_files(session: Session, file_ids: list[int]) -> list[dict]:
                 "kind": "file",
                 #: A file's words were written by somebody else (audit 1028
                 #: E4): the turn starts tainted, so a write asks first.
+                "from_outside": True,
+                "attached": True,
+                "connected": False,
+                "match_info": None,
+            }
+        )
+    return found
+
+
+def _upload_is_sealed(session: Session, upload: MediaUpload, used: dict | None) -> bool:
+    """A file only a locked private note holds, or one from another space."""
+    from tessellate.core import media_gc
+
+    space = session.info.get("workspace_id")
+    if space and space != "all" and upload.workspace_id != space:
+        return True
+    if not (upload.in_private_note and manager.note_is_sealed(True)):
+        return False
+    return not (used if used is not None else media_gc.usage_map(session)[0]).get(upload.filename)
+
+
+def _attached_media_files(session: Session, media_ids: list[int]) -> list[dict]:
+    """Files uploaded in the Library (`MediaUpload` rows) as the same
+    note-shaped context rows `_attached_files` makes (INBOX 1687: the Library's
+    own uploads never reached chat Attach). Text comes from the same
+    `docview.extract`; a sealed or other-space row is refused."""
+    found: list[dict] = []
+    media_dir = deps.get_config().data_dir / "media"
+    for media_id in dict.fromkeys(media_ids):
+        upload = uploads_repo.get(session, media_id)
+        if upload is None or _upload_is_sealed(session, upload, None):
+            continue
+        try:
+            body = (docview.extract(media_dir / upload.filename, vision_reader=vision_ocr.pdf_reader_or_none()).text or "").strip()
+        except Exception:  # noqa: BLE001 - an unreadable file is still worth naming
+            body = ""
+        body = (body or (upload.ocr_text or "").strip())[:ATTACHED_FILE_CHARS]
+        header = f"File: {upload.original_name}"
+        found.append(
+            {
+                "id": upload.id,
+                "content": f"{header}\n\n{body}" if body else f"{header}\n\n(no readable text)",
+                "category": "File",
+                "kind": "file",
                 "from_outside": True,
                 "attached": True,
                 "connected": False,

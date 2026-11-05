@@ -294,6 +294,7 @@ class ReminderNotifier:
         *,
         on_open: Callable[[], None] | None = None,
         icon: str | None = None,
+        on_due: Callable[[list[Due]], None] | None = None,
         session_source: Callable[[], object] | None = None,
         notebook_open: Callable[[object], bool] = _notebook_open,
         act: Callable[[int, str], None] = apply_action,
@@ -303,6 +304,9 @@ class ReminderNotifier:
         self.backend = backend
         self.on_open = on_open
         self.icon = icon
+        #: Told of each batch of reminders that just fell due (not the early alerts),
+        #: after the notification is posted: the desktop companion fetches a card.
+        self.on_due = on_due
         self.session_source = session_source or self._default_session
         self.notebook_open = notebook_open
         self.act = act
@@ -337,9 +341,18 @@ class ReminderNotifier:
         if fresh:
             self.store.add([d.key for d in fresh])
             self.announce(fresh)
+            self._tell_due([d for d in fresh if not d.early])
         if upcoming is None:
             return MAX_SLEEP_S
         return max(0.25, min(MAX_SLEEP_S, (upcoming - now).total_seconds() + 0.25))
+
+    def _tell_due(self, due: list[Due]) -> None:
+        if not due or self.on_due is None:
+            return
+        try:
+            self.on_due(due)
+        except Exception as exc:  # noqa: BLE001  # a card is never worth the notifier
+            logger.warning("the due-reminder hook failed: %s", exc)
 
     def announce(self, fresh: list[Due]) -> None:
         if len(fresh) == 1:
@@ -460,13 +473,21 @@ def active() -> bool:
     return _running["notifier"] is not None
 
 
-def start(data_dir: Path, *, on_open: Callable[[], None] | None = None, icon: str | None = None):
+def start(
+    data_dir: Path,
+    *,
+    on_open: Callable[[], None] | None = None,
+    icon: str | None = None,
+    on_due: Callable[[list[Due]], None] | None = None,
+):
     """The launcher's entry: None when this machine has no notifier, in which
     case `/health` says so and the page posts its own notification."""
     backend = pick_backend()
     if backend is None:
         logger.info("no system notifier found; the page will notify while it is open")
         return None
-    notifier = ReminderNotifier(FiredStore(Path(data_dir) / STORE_NAME), backend, on_open=on_open, icon=icon)
+    notifier = ReminderNotifier(
+        FiredStore(Path(data_dir) / STORE_NAME), backend, on_open=on_open, icon=icon, on_due=on_due
+    )
     _running["notifier"] = notifier
     return notifier.start()

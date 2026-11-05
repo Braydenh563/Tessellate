@@ -702,6 +702,7 @@ def _startup_maintenance() -> None:
     with jobruns.started_by("start-up"), jobruns.job_run("maintenance") as run:
         steps = (
             ("_check_notebook_file", "Check the notebook file"),
+            ("_check_data_folder", "Check the data folder"),
             ("_purge_expired_bin_entries", "Clear expired notes from the bin"),
             ("_compact_event_log", "Tidy the edit history"),
             ("_backup_if_due", "Back up if today's is due"),
@@ -735,6 +736,20 @@ def _check_notebook_file() -> None:
     a damaged file is never copied over a good backup, because the daily
     backup checks its own copy (`backup.verify_copy`) and refuses it."""
     backup.check_at_boot(deps.get_config().db_path)
+
+
+def _check_data_folder() -> None:
+    """The folders the app owns made again, and the attached files the disk
+    lacks counted (INBOX 1573, `core/selfcheck.py`); Settings, About, Health
+    shows the report. Before the backup, so a missing backups folder is made
+    again and today's copy lands in it."""
+    from tessellate.core import selfcheck
+
+    session = deps.get_db().session()
+    try:
+        selfcheck.run(deps.get_config(), session)
+    finally:
+        session.close()
 
 
 def _backup_if_due() -> None:
@@ -792,6 +807,51 @@ def _start_searxng_if_asked() -> None:
         logging.getLogger("tessellate.startup").warning(
             "SearXNG autostart didn't run this start", exc_info=True
         )
+
+
+def _warm_routes(app) -> None:
+    """Pay FastAPI's one-time route build at launch, not on the first request (INBOX 1591).
+
+    The first dispatch of any request builds the effective routes of every
+    router under one lock: about 0.9 s here for ~240 paths, so the browser's
+    boot burst (`/models/status` among them) all waited on it, 3.9 s on the
+    owner's machine. One in-process `/health` takes that cost while the lock
+    screen is still open. On the pool's thread Jobs, not the event loop; a
+    failure only means the first real request pays as before. Skipped under
+    pytest, where every test app would pay a second for nothing.
+    """
+    if os.environ.get("PYTEST_CURRENT_TEST"):
+        return
+
+    def warm() -> None:
+        import asyncio
+
+        async def receive():
+            return {"type": "http.request", "body": b"", "more_body": False}
+
+        async def send(_message) -> None:
+            return None
+
+        scope = {
+            "type": "http",
+            "asgi": {"version": "3.0"},
+            "http_version": "1.1",
+            "method": "GET",
+            "scheme": "http",
+            "path": "/health",
+            "raw_path": b"/health",
+            "query_string": b"",
+            "root_path": "",
+            "headers": [(b"host", b"127.0.0.1")],
+            "client": ("127.0.0.1", 0),
+            "server": ("127.0.0.1", 80),
+        }
+        try:
+            asyncio.run(app(scope, receive, send))
+        except Exception:  # noqa: BLE001  # a warm-up that fails changes nothing but the first request's time
+            logging.getLogger("tessellate.startup").debug("route warm-up did not run", exc_info=True)
+
+    jobs.thread("route warm", warm)
 
 
 def _start_autonomous_loop() -> None:
@@ -1551,7 +1611,7 @@ def _add_system_routes(app: FastAPI, locked: list) -> None:
         )
 
     @app.get("/health", tags=["system"])
-    def health(request: Request) -> dict[str, str | bool]:
+    async def health(request: Request) -> dict[str, str | bool]:
         from tessellate.core import reminder_notifier
 
         #: The desktop shell and its notifier belong to this computer. A phone
@@ -1609,6 +1669,31 @@ def _add_system_routes(app: FastAPI, locked: list) -> None:
         ):
             raise HTTPException(status_code=403, detail="Not this instance's token.")
         return {"focused": instance_lock.focus()}
+
+    @app.post("/instance/shutdown", include_in_schema=False)
+    def instance_shutdown(
+        request: Request, x_instance_token: str | None = Header(default=None)
+    ) -> dict[str, bool]:
+        """Another copy's Settings, Running copies asking this one to quit
+        (INBOX 1641). Guarded like `/instance/focus` by the token in this
+        copy's `instance.lock` and per-user record (nothing a web page can
+        send or read), and loopback only. The token is the real guard: a
+        DNS-rebound page reaches the loopback port as a same-origin request,
+        but it can never read the token."""
+        from tessellate.api import routes_tasks
+        from tessellate.api.this_computer import is_another_device
+        from tessellate.core import instance_lock
+
+        expected = instance_lock.current_token()
+        if (
+            is_another_device(request)
+            or not expected
+            or not x_instance_token
+            or not hmac.compare_digest(expected.encode(), x_instance_token.encode())
+        ):
+            raise HTTPException(status_code=403, detail="Not this instance's token.")
+        routes_tasks.stop_process_soon()
+        return {"stopping": True}
 
     # GET /update/check, /update/releases, /update/source-status, and
     # POST /update/apply all live in routes_update.py now, this endpoint
@@ -1680,6 +1765,7 @@ def create_app() -> FastAPI:
         # quiet kind, after the server is up (ARCH-19).
         concurrency.apply_worker_limit()
         routes_models.prewarm_installed()
+        _warm_routes(_app)
         afterunlock.defer("maintenance", lambda: jobs.enqueue("maintenance", _startup_maintenance, name="startup maintenance"))
         yield
         # Never raises: `stop_all` swallows per-job failures itself, and a

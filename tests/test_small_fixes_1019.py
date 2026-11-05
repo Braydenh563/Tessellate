@@ -83,12 +83,15 @@ def test_1400_the_timeline_day_strip_name_opens_with_its_face() -> None:
     assert 'button.setAttribute("aria-label", `${face}, ${label}`)' in js
 
 
-def test_1482_empty_chats_line_uses_the_empty_line_recipe() -> None:
-    """Measured at 1440 (pixel-checked bg): 5.91:1 light (102,100,95 on 255), 7.96:1 dark (181,179,173 on 30,30,28), 13.6px."""
+def test_1482_empty_chats_state_is_the_empty_state_recipe_and_the_empty_line_stays_legible() -> None:
+    """Measured at 1440 (pixel-checked bg): 5.91:1 light (102,100,95 on 255), 7.96:1 dark (181,179,173 on 30,30,28), 13.6px.
+
+    The chats sidebar's line became the empty-state recipe (unslop 1103, 17: icon, title, sentence,
+    action, drawn by `loadConversationList`); the line recipe it left is still every other panel's."""
     from pathlib import Path
 
     html = (Path(__file__).resolve().parents[1] / "frontend" / "index.html").read_text(encoding="utf-8")
-    assert re.search(r'<p id="conv-empty" class="muted empty-line">', html)
+    assert re.search(r'<div id="conv-empty" class="empty-state hidden"></div>', html)
     css = (CSS_DIR / "07-whiteboard-misc.css").read_text(encoding="utf-8")
     body = _rules(css, ".empty-line")[0]
     assert "var(--muted)" in body and "var(--text-md)" in body

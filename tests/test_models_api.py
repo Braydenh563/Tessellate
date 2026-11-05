@@ -832,3 +832,23 @@ def test_polls_behind_a_silent_runner_do_not_each_wait_the_budget_again(client, 
     elapsed = time.monotonic() - started
     release.set()
     assert elapsed < 0.4
+
+
+def test_a_finished_download_is_in_the_installed_list_of_the_poll_that_reports_it(ai_client, fake_ollama, monkeypatch):
+    """CI on PR 212 (3.12): the poll that said a pull succeeded still listed the models from before it. A poll
+    waits `INSTALLED_REFRESH_BUDGET` for the runner's list and otherwise serves the last one, so on a loaded
+    machine "Downloaded" arrived beside a list without the model. A runner that answers its list in 0.12 s
+    (over the 0.05 s budget, under the cold 0.2 s) makes that certain."""
+    real = fake_ollama.list_models
+
+    def slow_list():
+        answer = real()  # as of when it was asked, like a runner's own list
+        time.sleep(0.12)
+        return answer
+
+    monkeypatch.setattr(fake_ollama, "list_models", slow_list)
+    _wait_for(ai_client, lambda b: any(m["name"] == "llama3.2:latest" for m in b["installed_models"]))
+    started = ai_client.post("/models/pull", json={"name": "nomic-embed-text"})
+    assert started.status_code == 200
+    body = _wait_for(ai_client, lambda b: b["pulls"].get("nomic-embed-text", {}).get("status") == "success")
+    assert any(m["name"] == "nomic-embed-text" for m in body["installed_models"]), body["installed_models"]

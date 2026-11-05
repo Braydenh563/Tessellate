@@ -163,17 +163,167 @@
 /* **The calculator** (`openCalculator`): the sheet recipe's card, a tab strip
    for its three modes (Work out, Convert units, the Equation editor), the box, the result as a live region (the figure large,
    how it was read muted under it), a four-column keypad of square-ish keys
-   as ghost buttons (operators in the accent's text colour, = the filled one),
-   then the last results as ghost buttons. */
+   as ghost buttons (operators in the accent's text colour, = among them: the filled one is Insert, in the action row),
+   then the last results as ghost buttons. The panes sit in `.calc-panes` and the action row under them. */
+/* **One height for the three tabs** (INBOX 1530 g M2). A bottom sheet grows
+   upward, so a card that took each tab's own height moved the strip 188 px
+   between Sum and Units. The card is one height, the strip and the action row
+   are pinned, and the panes between them scroll. **Tall enough that Sum and
+   Units need no scroll** (INBOX 1537): the keypad's pane is 325px and the
+   head, strip and action row 219px and the History bar 44px, so 588px; 86dvh is 619px at 720 and the
+   cap 42rem (672px) keeps a tall window's card from outgrowing its panes. */
+.sheet-card.calc-card {
+  /* **Fits its content** (INBOX 1622, the owner: "fix the sizing of the calculator window to fit the calculator"): the card is as tall as its tallest pane in the chosen kind, so Standard has no dead space under the keypad. A sheet is two thirds of the window at most (10-responsive.css); this one is the exception the owner asked for, and only a window too short for its keypad scrolls the panes. */
+  height: auto;
+  max-height: min(94dvh, 48rem);
+  overflow: hidden;
+}
+
+/* The panes share one grid cell, so the card is as tall as the tallest of them and a tab never moves the strip (INBOX 1530 g M2); a hidden pane keeps its box and drops out of sight and the Tab order. */
+.calc-panes {
+  display: grid;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  /* Room for a focus ring at the scroll edge, given back by the same margin. */
+  padding: var(--space-1);
+  margin: calc(-1 * var(--space-1));
+}
+
 .calc-pane {
   display: flex;
   flex-direction: column;
   gap: var(--space-3);
+  grid-area: 1 / 1;
 }
+
+.calc-pane.is-off {
+  display: flex;
+  visibility: hidden;
+}
+
+/* A pane's rows keep their own height; the pane scrolls when it must (a result box squeezed to its min-height let its Copy button run past it). */
+.calc-pane > * {
+  flex-shrink: 0;
+}
+
+/* The Equation editor is taller than any keypad (2668px with its palette): it takes the row the other panes set and scrolls inside it, so it never sets the card's height. */
+.calc-pane.calc-equation {
+  contain: size;
+  overflow-y: auto;
+}
+
+/* **Scientific beside the digits** (INBOX 1622): the function keys in the left column and the keypad in the right, so the card is as tall as Standard's (684px, not 767) and a 1024 by 768 window needs no scroll. Below 600px the keys stack as they did. */
+@media (min-width: 600px) {
+  .sheet-card.calc-card:has(.calc-pane.is-sci) {
+    width: min(40rem, 94vw);
+    max-width: min(40rem, 94vw);
+  }
+
+  .calc-pane.is-sci {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    align-items: start;
+  }
+
+  .calc-pane.is-sci > * {
+    grid-column: 1 / -1;
+  }
+
+  .calc-pane.is-sci > .calc-keys-sci {
+    grid-column: 1;
+  }
+
+  .calc-pane.is-sci > .calc-keys:not(.calc-keys-sci) {
+    grid-column: 2;
+  }
+}
+
+/* **The action row** (`replyCalcActions`): where Insert writes, then Copy, Insert as equation and the one filled Insert, the same on every tab. */
+.calc-actions {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding-top: var(--space-2);
+  border-top: 1px solid var(--divider);
+}
+
+/* A short window (a phone on its side, a small laptop) cannot spare a third of itself for a pinned row: the card scrolls as one, the strip with it, and the action row sticks to the bottom so Insert is still in reach. */
+@media (max-height: 640px) {
+  .sheet-card.calc-card {
+    height: auto;
+    overflow: auto;
+  }
+
+  .calc-panes {
+    flex: none;
+    overflow: visible;
+  }
+
+  .calc-actions {
+    position: sticky;
+    bottom: calc(-1 * var(--space-5));
+    margin-bottom: calc(-1 * var(--space-4));
+    padding-bottom: var(--space-4);
+    background: var(--modal-bg-opaque);
+  }
+}
+
+.calc-where {
+  margin: 0;
+  font-size: var(--text-sm);
+  /* Two lines whatever it says, so the buttons under it do not move. */
+  min-height: 2lh;
+}
+
+/* The dialog foot (DESIGN.md, "A dialog foot"): at the end of the row, the one filled button last; the quiet third action takes the start. */
+.calc-actions-buttons {
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--space-2);
+}
+
+/* A button, not a caption (INBOX 1579: "Insert as equation" read as plain text): the keys' quiet fill and a glyph, no edge, so the row still holds one bordered button. */
+.calc-actions-buttons .calc-as-equation {
+  margin-inline-end: auto;
+  background: var(--chip-bg);
+  color: var(--ink);
+}
+
+.calc-actions-buttons .calc-as-equation:is(:hover, :focus-visible) {
+  background: var(--ghost-btn-bg);
+}
+
+.calc-actions-buttons [aria-disabled="true"] {
+  opacity: 0.55;
+}
+
 
 .calc-input {
   font-size: var(--text-lg);
   font-variant-numeric: tabular-nums;
+}
+
+/* The sum as typeset maths, as typed (INBOX 1579): one line the height of its tallest formula, always reserved so
+   the result and the keypad under it do not move when the first key is pressed; a long sum scrolls inside it. */
+.calc-typeset {
+  display: flex;
+  flex: none;
+  min-width: 0;
+  align-items: center;
+  min-height: var(--space-8);
+  padding: 0 var(--space-1);
+  overflow-x: auto;
+  overflow-y: hidden;
+  font-size: var(--text-h3);
+  scrollbar-width: thin;
+}
+
+.calc-typeset math {
+  /* Never wraps: a bracket cut from its sum reads as two sums. */
+  white-space: nowrap;
 }
 
 .calc-result {
@@ -187,20 +337,17 @@
   overflow-wrap: anywhere;
 }
 
-.calc-result-row {
+.calc-figure-row {
   display: flex;
-  align-items: flex-start;
+  flex-wrap: wrap;
+  /* **The figure and the Copy button share one centre line** (INBOX 1622, "are that = and 36 aligned??"): baseline alignment hung the 22px figure at the top of the row beside the 28px button, 3px above its centre, and the button ran 2px past the box. The row is the button's height, so the box is one height with or without Copy. */
+  align-items: center;
+  min-height: var(--control-h);
   gap: var(--space-2);
 }
 
-.calc-result-row .calc-result {
-  flex: 1;
-  min-width: 0;
-}
-
-/* Insert and Insert as equation, under the result when the dialog has a box. */
-.calc-insert-row {
-  flex-wrap: wrap;
+.calc-tag {
+  font-size: var(--text-sm);
 }
 
 .calc-figure {
@@ -222,19 +369,107 @@
 }
 
 .calc-keys {
-  display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: var(--space-2);
+}
+
+/* **One head row** (INBOX 1584, the owner: "poor design"): Standard and Scientific as the `.seg` at the start, the angle
+   unit beside it in Scientific only, the memory's value at the end, one row and never two. The angle unit's
+   words are their short forms (Deg, Rad: the button's name stays the full word), so the row is still one row at 390. */
+.calc-head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+/* The kind and the angle unit are `.tabs-line` strips (INBOX 1622: no pills in a popup). In the head row they carry no hairline of their own (the Sum strip above is the line), and a tab gives up the strip's side room and floor so the row holds at 390. The ring is the strip's `:focus-visible` one, never a press. */
+.calc-head .calc-seg {
+  flex: none;
+  margin: 0;
+  box-shadow: none;
+}
+
+.calc-head .calc-seg > button {
+  min-width: 0;
+  padding-inline: var(--space-3);
+}
+
+.calc-memory {
+  flex: 1 1 0;
+  min-width: 0;
+  overflow: hidden;
+  text-align: end;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--text-sm);
+  font-variant-numeric: tabular-nums;
+}
+
+/* The function keys are words and signs, not digits: a size down from the keypad's, and the same four columns. */
+.calc-keys-sci .calc-key {
+  font-size: var(--text-md);
 }
 
 .calc-key {
   min-height: var(--space-9);
-  font-size: var(--text-md);
+  font-size: var(--text-h3);
   font-variant-numeric: tabular-nums;
 }
 
-.calc-key.is-op {
-  color: var(--accent-text);
+/* **History** (INBOX 1541, 1584): a disclosure row under the pane (`button.ghost.disclosure-row`: the caret, History, the
+   count as a muted badge) with Clear at the end of the same line as the quiet text action; closed until opened so the
+   keypad keeps its room, the rows under it newest first, each a button that puts the row back in the fields, then
+   Copy, Edit and Remove as quiet icons. No filled ground at rest, open or shut. */
+.calc-log {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.calc-log-bar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+button.ghost.disclosure-row.calc-log-toggle {
+  flex: 1 1 auto;
+  width: auto;
+  min-width: 0;
+  gap: var(--space-2);
+  color: var(--ink);
+}
+
+.calc-log-toggle .calc-log-count {
+  min-width: 1.25rem;
+  padding: 0 var(--space-2);
+  border-radius: var(--radius-pill);
+  background: var(--chip-bg);
+  color: var(--muted);
+  font-size: var(--text-sm);
+  font-variant-numeric: tabular-nums;
+  line-height: 1.25rem;
+  text-align: center;
+}
+
+.calc-log-toggle[aria-expanded="false"] .contents-caret {
+  rotate: -90deg;
+}
+
+.calc-log-toggle .contents-caret {
+  transition: rotate var(--ui-base) var(--ease-out);
+}
+
+:where(:root[data-motion="reduced"]) .calc-log-toggle .contents-caret {
+  transition: none;
+}
+
+.calc-log .calc-log-note {
+  margin: 0;
+  font-size: var(--text-sm);
+}
+
+.calc-log .calc-log-note:empty {
+  display: none;
 }
 
 .calc-history {
@@ -242,19 +477,62 @@
   margin: 0;
   padding: 0;
   display: flex;
-  flex-wrap: wrap;
+  flex-direction: column;
   gap: var(--space-1);
 }
 
-.calc-again {
-  font-variant-numeric: tabular-nums;
+.calc-history li {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  border-radius: var(--radius-md);
 }
 
+.calc-history li.is-editing {
+  background: var(--accent-soft);
+}
+
+.calc-again {
+  flex: 1 1 auto;
+  min-width: 0;
+  justify-content: flex-start;
+  text-align: start;
+  font-variant-numeric: tabular-nums;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.calc-history li > .icon-only {
+  flex: none;
+}
+
+/* The copy beside an answer: quiet, in the figure's row, at the far end. */
+.calc-copy {
+  margin-inline-start: auto;
+  align-self: center;
+}
+
+/* The amount on a row of its own and the two units under it, so a unit opener has half the card, not a fifth of it (INBOX 1530 g L5: 86 px at 320 and "kilometres an hour" clipped at 320, 390 and 1280). Under 600 px the units stack, one to a row. */
 .calc-convert-row {
   display: grid;
-  grid-template-columns: minmax(4rem, 1fr) minmax(0, 1.4fr) auto minmax(0, 1.4fr);
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
   gap: var(--space-2);
   align-items: center;
+}
+
+.calc-convert-row .calc-amount {
+  grid-column: 1 / -1;
+}
+
+@media (max-width: 599.98px) {
+  .calc-convert-row {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .calc-convert-row .calc-swap {
+    justify-self: end;
+  }
 }
 
 .calc-convert-row .small-select,
@@ -301,7 +579,6 @@
 }
 
 .long-fold[open] > .fold-summary:not(.icon-only):not(.icon-button) {
-  width: auto;
   border: 0;
   border-radius: var(--radius-md) var(--radius-md) 0 0;
   padding: var(--space-2) var(--space-3);
@@ -413,6 +690,13 @@ button.reply-by {
   line-height: 1;
   transform: rotate(-90deg);
   transition: transform var(--ui-base) var(--ease-out);
+  /* At the row's end, where every full-width fold keeps it (A2). */
+  order: 1;
+  margin-inline-start: auto;
+}
+
+.grounding-fold > .fold-summary::after {
+  content: none;
 }
 
 .grounding-fold[open] > .fold-summary::before {
@@ -550,4 +834,11 @@ button.answer-grounding-thumb:is(:focus-visible, :has(:focus-visible)) {
   text-overflow: ellipsis;
   white-space: nowrap;
   font-size: var(--text-sm);
+}
+
+/* **The Calculator as a dashboard widget** (`openCalculator.inline(host, mode)`; INBOX 1558): the dialog's strip, Sum and Units panes and Copy row in the widget body, which sizes to what is on it. */
+.calc-inline {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
 }

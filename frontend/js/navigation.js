@@ -123,6 +123,8 @@ const ROW_MENU_HOSTS = [
   "#entry-list > li[data-id]",
   "#conversation-list > li",
   "#web-results .web-result",
+  //: A document's snippet rows (OPEN 244).
+  ".doc-snippet-item",
 ].join(", ");
 
 function rowMenuAtEvent(event) {
@@ -629,21 +631,14 @@ function renderMarkdown(container, text, depth = 0) {
       // Map #→h3 … ######→h6 (the app reserves h1/h2 for its own chrome).
       const level = Math.min(6, heading[1].length + 2);
       const el = document.createElement(`h${level}`);
-      //: **And the source level as a class, because the tag has lost it.**
-      //: Demoting by two is right for the document outline and wrong for
-      //: everything else: three source levels (`####`, `#####`, `######`) all
-      //: land on `h6`, and nothing in the stylesheet catches `h5` or `h6` at
-      //: all, so they fall through to the browser's own defaults, which are
-      //: *smaller than body text*. Measured in the rendered pane against a
-      //: 16px paragraph: `# Heading one` 12px, `## Heading two` 16px, `###`
-      //: 13.3px, `####` and `#####` both 10.7px. The document's largest
-      //: heading was its smallest text, and two levels were identical.
-      //:
-      //: The live view of the same document is 28.8 / 24 / 20 / 17.6, so the
-      //: two views of one file disagreed about what a heading is. `md-h1`..
-      //: `md-h6` carry the level the person actually typed, and the
-      //: stylesheet keys the scale off that.
+      //: **The source level as a class and as `aria-level`, because the tag has
+      //: lost it.** Three source levels (`####` to `######`) all land on `h6`,
+      //: which the stylesheet does not catch (the browser's default is smaller
+      //: than body text, and two levels were identical). `md-h1`..`md-h6` carry
+      //: the typed level for the scale; `aria-level` carries the demoted one
+      //: (3 to 8) so a screen reader's heading list keeps six levels (DX23).
       el.classList.add(`md-h${heading[1].length}`);
+      el.setAttribute("aria-level", heading[1].length + 2);
       // An id makes the heading a real jump target, for the outline and for
       // any [](#anchor) link written into the text.
       el.id = mdHeadingId(heading[2], headingIds);
@@ -653,16 +648,9 @@ function renderMarkdown(container, text, depth = 0) {
       continue;
     }
 
-    // Transclusion: a line that is nothing but ![[name]] inlines that note's
-    // text here, rather than linking to it. This is what makes a document
-    // genuinely *composed of* notes instead of merely pointing at them.
-    //
-    // **Notes only, deliberately.** GET /documents returns id/title/words and
-    // no content (routes_documents._summary), so embedding a document would
-    // need a fetch: and renderMarkdown runs on every streamed chat chunk, so
-    // a fetch in this path is a request storm waiting to happen. A document
-    // target therefore renders as a labelled link, and the inline version
-    // waits for a content-bearing endpoint rather than being bolted on here.
+    // Transclusion: a line that is only ![[name]] inlines that note's text.
+    // **Notes only**: a document would need a fetch, and renderMarkdown runs
+    // on every streamed chat chunk, so a document renders as a labelled link.
     const embedded = line.match(/^\s*!\[\[([^[\]]{1,120})\]\]\s*$/);
     if (embedded) {
       closeList();
@@ -831,16 +819,21 @@ const TABS = ["dashboard", "notes", "chat", "graph", "library", "timeline", "rem
 // is active. No network calls here, so this is safe to run before a token
 // exists: see revealTab("dashboard")'s module-level call below, and why
 // it's this instead of a full switchTab().
+//: Tab pages scrolled since `revealTab` last put them at the top; a scroll
+//: event says so without reading any layout (a capture listener, since a
+//: page's own scroll does not bubble). Kept on the function, not in the
+//: shared scope (tests/test_global_scope_ratchet.py).
+revealTab.scrolled = new WeakSet();
+document.addEventListener("scroll", (event) => {
+  if (event.target instanceof Element && event.target.classList.contains("tab-page")) revealTab.scrolled.add(event.target);
+}, { capture: true, passive: true });
+
 function revealTab(name) {
-  //: One attribute on body is what the stylesheets key page-level rules on
-  //: (toast placement). They used `body:has(#tab-x:not(.hidden))`, which made
-  //: the engine re-match that rule against every tab flip (lag-1029.md).
-  document.body.dataset.tab = name;
-  for (const tab of TABS) {
-    $(`tab-${tab}`).classList.toggle("hidden", tab !== name);
-  }
-  scheduleUndoBar();
-  if (name === "notes" && $("entry-list").dataset.stale) renderEntries();
+  //: **The tab buttons first, before the pages flip** (the lag log: `BUTTON#tab-btn-reminders.onclick`
+  //: 95ms, 83 of it forced layout). A button's `tabIndex` write while it holds focus (it was just
+  //: clicked) makes the page settle style to ask whether it is still focusable; after the pages'
+  //: `hidden` flips below, that settled the whole arriving page inside the click (473ms at 4x CPU).
+  //: Done while only the buttons are dirty, it costs the buttons.
   // `documents` is a sub-view of Library, there is no `data-tab="documents"`
   // button in the tab bar, so the name that determines which button is active
   // must be "library" whenever we are showing the documents pane. Without
@@ -852,17 +845,26 @@ function revealTab(name) {
   // inaccessible" was giving them their own section in the Library instead of
   // leaving them inside a catch-all view called "Documents" that showed
   // everything. Worth the note so the next session does not re-derive it.
-  //: The companion finds its perch on the tab it is now on (avatars.js).
-  window.nameMarkBuddyTabChanged?.();
   const activeTabName = name === "documents" ? "library" : name;
   for (const button of document.querySelectorAll("#tab-bar button")) {
     const active = button.dataset.tab === activeTabName;
     button.classList.toggle("active", active);
     // Real tab semantics (Wave L): one tab stop for the whole list
     // (roving tabindex), arrow keys move between tabs.
-    button.setAttribute("aria-selected", String(active));
+    button.setAttribute("aria-selected", active);
     button.tabIndex = active ? 0 : -1;
   }
+  //: One attribute on body is what the stylesheets key page-level rules on
+  //: (toast placement). They used `body:has(#tab-x:not(.hidden))`, which made
+  //: the engine re-match that rule against every tab flip (lag-1029.md).
+  document.body.dataset.tab = name;
+  for (const tab of TABS) {
+    $(`tab-${tab}`).classList.toggle("hidden", tab !== name);
+  }
+  scheduleUndoBar();
+  if (name === "notes" && $("entry-list").dataset.stale) renderEntries();
+  //: The companion finds its perch on the tab it is now on (avatars.js).
+  window.nameMarkBuddyTabChanged?.();
   // When the strip is narrow enough to scroll, the tab you just chose is the
   // one that must be legible, see revealActiveTab.
   revealActiveTab?.();
@@ -872,12 +874,21 @@ function revealTab(name) {
   // A new tab starts at its own top, and the back-to-top button re-evaluates
   // (it stays off the graph). Each page keeps its own scroll position now, so
   // this is a deliberate reset rather than a side effect of one shared one.
-  scrollingPage()?.scrollTo({ top: 0, behavior: "auto" });
+  //: Only a page that scrolled since its last reset is reset (INBOX 1530 c):
+  //: `scrollTo` after the class flips above forced the whole newly shown
+  //: page's style and layout inside the click (15 to 25 ms of `openDoc`), a
+  //: second layout in a frame `openDocument` dirties again. A page that never
+  //: moved is already at its top, so it costs nothing.
+  const page = scrollingPage();
+  if (page && revealTab.scrolled.delete(page)) page.scrollTo({ top: 0, behavior: "auto" });
   scrollTopUpdate?.();
   // Any autogrow box that was measured while hidden gets its real height now
   // that its page is on screen. See autoGrow() for why a hidden measurement is
   // refused rather than applied, and autoGrowVisible() for which boxes that is.
-  autoGrowVisible();
+  //: At the frame, before it paints (INBOX 1530 c): its reads came straight
+  //: after the class flips above and laid the new page out inside the click
+  //: (14 to 47 ms of `openDoc`), which `openDocument` then dirtied again.
+  requestAnimationFrame(autoGrowVisible);
 }
 
 // --- back / forward through the pages you have visited ----------------------
@@ -1666,6 +1677,9 @@ document.addEventListener("click", async (event) => {
     // Going there was the whole action.
   } else if (action === "ask") {
     $("chat-input")?.focus();
+  } else if (action === "new-chat") {
+    newChatConversation();
+    $("chat-input")?.focus(); // from an empty chat a new one changes nothing to see otherwise
   } else if (action === "untagged") {
     showNotesFilter("is:untagged");
   } else if (action === "suggest-links") {
@@ -1952,33 +1966,35 @@ async function switchTab(name) {
     //: The composer paints first (CHAT_PLAN 8 row 6): the welcome and the
     //: starter chips cost 60 to 120 ms of layout at 390 and were drawn
     //: before the frame that showed the box you came to type in.
+    //: The focus too (INBOX 1534: in the press it forced 100 to 140ms of style at 4x).
     requestAnimationFrame(() => setTimeout(() => {
+      if (prefs.get("activeTab", null) !== "chat") return;
+      //: **The composer takes the caret, but not the focus ring, on arrival.**
+      //: Reported as "chat panel shadow". Measured on a freshly loaded Chat tab
+      //: (`scratchpad/ui-sweeps/chatshadow.js`): `.chat-dock` computed
+      //: `box-shadow: rgba(79,109,245,0.14) 0 0 0 3px` with an accent-mixed
+      //: border, and `dockFocusWithin: true` with `#chat-input` as the active
+      //: element, all before anyone had touched anything. It is not a shadow,
+      //: it is `.chat-dock:focus-within`'s accent ring, and the focus that
+      //: lights it is the one below, not the reader's. So every visit to Chat
+      //: opened with a permanent blue halo round the composer, the loudest
+      //: thing on the screen and the only element in the app that rings itself
+      //: on load.
+      //:
+      //: The focus stays (arriving able to type is the point of it); the ring
+      //: waits until the focus is the reader's own. `chatDockArmRing` below
+      //: takes the marker back off at the first key, the first press inside the
+      //: dock, or the moment focus leaves it, so a deliberate click into the
+      //: composer rings exactly as it did.
+      chatDockSuppressRing();
+      $("chat-input").focus({ preventScroll: true });
+      // Nothing in a hidden tab can be measured, so the composer's fit is done
+      // here rather than at startup, the window may well have changed size
+      // since the last time this tab was visible.
+      refitComposer();
       renderChatEmptyState(); // welcome placeholder when the thread is empty
       loadChatSuggestions();
     }));
-    //: **The composer takes the caret, but not the focus ring, on arrival.**
-    //: Reported as "chat panel shadow". Measured on a freshly loaded Chat tab
-    //: (`scratchpad/ui-sweeps/chatshadow.js`): `.chat-dock` computed
-    //: `box-shadow: rgba(79,109,245,0.14) 0 0 0 3px` with an accent-mixed
-    //: border, and `dockFocusWithin: true` with `#chat-input` as the active
-    //: element, all before anyone had touched anything. It is not a shadow,
-    //: it is `.chat-dock:focus-within`'s accent ring, and the focus that
-    //: lights it is the line below, not the reader's. So every visit to Chat
-    //: opened with a permanent blue halo round the composer, the loudest
-    //: thing on the screen and the only element in the app that rings itself
-    //: on load.
-    //:
-    //: The focus stays (arriving able to type is the point of it); the ring
-    //: waits until the focus is the reader's own. `chatDockArmRing` below
-    //: takes the marker back off at the first key, the first press inside the
-    //: dock, or the moment focus leaves it, so a deliberate click into the
-    //: composer rings exactly as it did.
-    chatDockSuppressRing();
-    $("chat-input").focus();
-    // Nothing in a hidden tab can be measured, so the composer's fit is done
-    // here rather than at startup, the window may well have changed size
-    // since the last time this tab was visible.
-    refitComposer();
   }
   //: A return to the tab refreshes what is drawn in place (INBOX 602).
   if (name === "dashboard") whenScriptsLoaded().then(() => renderDashboard({ refresh: true }));
@@ -2337,7 +2353,7 @@ function showNotesSection(name, { focus = false } = {}) {
   for (const button of document.querySelectorAll("#notes-subtabs button")) {
     const active = button.dataset.section === wanted;
     button.classList.toggle("active", active);
-    button.setAttribute("aria-selected", String(active));
+    button.setAttribute("aria-selected", active);
     // Roving tabindex: the strip is one tab stop, arrows move within it.
     button.tabIndex = active ? 0 : -1;
     if (active && focus) button.focus();
@@ -2633,35 +2649,23 @@ function initScrollTopButton() {
   button.addEventListener("click", () => {
     const smooth = !reducedMotionWanted();
     const target = scrollTopTargetEl();
-    //: **In a chat, the thing you have scrolled away from is the bottom.**
-    //: Reported: *"the back to top button in the chat should be a back to
-    //: bottom instead."* A transcript is written downwards and the newest
-    //: message, the one being streamed, is the last one; sending a reader
-    //: to the top sends them to the oldest question in the thread, which is
-    //: the one place nobody scrolled up to look for.
-    const toBottom = button.dataset.mode === "bottom";
-    target?.scrollTo({
-      top: toBottom ? target.scrollHeight : 0,
-      behavior: smooth ? "smooth" : "auto",
-    });
+    target?.scrollTo({ top: 0, behavior: smooth ? "smooth" : "auto" });
     // Send focus somewhere sensible rather than leaving it on a button that
     // is about to hide itself.
-    if (toBottom) $("chat-input")?.focus();
-    else document.querySelector(".tab-page:not(.hidden)")?.focus();
+    document.querySelector(".tab-page:not(.hidden)")?.focus();
   });
   document.body.appendChild(button);
 
   let wasVisible = false;
+  const scrolled = new WeakSet();
   const update = () => {
     const tab = prefs.get("activeTab", null) || "dashboard";
     const target = scrollTopTargetEl();
-    const scrollTop = target?.scrollTop || 0;
-    //: Chat flips the button over: it appears when you have scrolled *up*
-    //: away from the newest message, and it takes you back down. 200px rather
-    //: than 400 because a chat pane is shorter than a page and one message
-    //: scrolled past is already enough to lose the live one.
-    const chat = tab === "chat";
-    const fromBottom = target ? target.scrollHeight - target.clientHeight - scrollTop : 0;
+    //: A scroller that has sent no scroll event is at the top: the read would
+    //: settle the page a press has just shown (101ms of style on a Library
+    //: press at 4x, INBOX 1534). Chat never shows the button (`NO_SCROLL_TOP_TABS`),
+    //: so it has no "jump to the newest" mode and measures no distance from the bottom.
+    const scrollTop = target && scrolled.has(target) ? target.scrollTop : 0;
     //: **The dashboard shows it sooner, and that is the report.** The owner:
     //: "also no back to top button appears on the dashboard??" Measured on a
     //: seeded profile at 1440x900 it does appear, but only past 400px, and
@@ -2672,21 +2676,7 @@ function initScrollTopButton() {
     //: gets you back is still absent. 200px is chat's figure, for the same
     //: reason chat uses it: this pane is scrolled in short movements and one
     //: screen away is already lost.
-    const show = chat
-      ? fromBottom > 200
-      : scrollTop > (tab === "dashboard" ? 200 : 400) && !NO_SCROLL_TOP_TABS.has(tab);
-    //: Written only when they change: this runs on scroll, and a text or
-    //: attribute write on every frame invalidates style that the layout reads
-    //: just below (`coversAFormPrimary`, `positionScrollTopForNested`) then
-    //: have to recompute.
-    const mode = chat ? "bottom" : "top";
-    if (button.dataset.mode !== mode) {
-      button.dataset.mode = mode;
-      setLabel(button, chat ? "ph:arrow-down" : "ph:arrow-up");
-      const label = chat ? "Jump to the newest message" : "Back to top";
-      button.title = label;
-      button.setAttribute("aria-label", label);
-    }
+    const show = scrollTop > (tab === "dashboard" ? 200 : 400) && !NO_SCROLL_TOP_TABS.has(tab);
     const visible = show && !NO_SCROLL_TOP_TABS.has(tab) && !coversAFormPrimary(button);
     button.classList.toggle("visible", visible);
     //: INBOX 33: `--scroll-top-clearance` used to be unconditional
@@ -2730,10 +2720,13 @@ function initScrollTopButton() {
   //: Only the scroller this button follows (INBOX 1465: 28 runs a second): a
   //: capture listener hears every scroller in the page, and a list, a rail or
   //: the timeline scrolling inside the tab has no bearing on the button.
-  document.addEventListener("scroll", (e) => e.target === scrollTopTargetEl() && scheduleUpdate(), { passive: true, capture: true });
+  document.addEventListener("scroll", (e) => e.target === scrollTopTargetEl() && (scrolled.add(e.target), scheduleUpdate()), { passive: true, capture: true });
   window.addEventListener("resize", scheduleUpdate, { passive: true });
   update();
-  return update;
+  //: Callers get the scheduled run (INBOX 1530 c): `revealTab` called this
+  //: straight after flipping the tab classes, and its scroller reads forced
+  //: the newly shown page's layout inside the click (12 to 24 ms of `openDoc`).
+  return scheduleUpdate;
 }
 
 const chatTabNode = $("tab-chat");
@@ -2792,4 +2785,21 @@ function syncScrollLock() {
     (el) => !el.classList.contains("hidden") && el.isConnected
   );
   document.documentElement.classList.toggle("modal-open", anyOpen);
+}
+
+//: Moved from app.js for its gzip cap (INBOX 1573); the graph and the boards call it.
+//: **A mouse wheel's ctrl+notch zooms by a notch, not by five times.** d3-zoom
+//: multiplies a wheel delta by ten while ctrl is held, because a browser
+//: reports a trackpad pinch as ctrl+wheel with deltas of a few pixels. A mouse
+//: wheel notch with ctrl held sends 100 to 120 of them and so got 2^2.4, a
+//: factor of 5.3: two notches took a map from 1x to its 4x ceiling
+//: (maprender.md measured it; unreported, but the likeliest reading of a zoom
+//: that "jumps" on a machine with a real mouse). The delta is clamped to 24
+//: pixels while ctrl is held (a notch is then 1.4x; a pinch is a few pixels
+//: an event and passes through unchanged), then scaled exactly as d3's own
+//: default scales it, so a plain wheel and a pinch zoom as they did.
+function zoomWheelDelta(event) {
+  let pixels = event.deltaY * (event.deltaMode === 1 ? 25 : event.deltaMode ? 500 : 1);
+  if (event.ctrlKey) pixels = Math.max(-24, Math.min(24, pixels));
+  return -pixels * 0.002 * (event.ctrlKey ? 10 : 1);
 }

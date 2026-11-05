@@ -13,7 +13,7 @@ result is what happened.
 from __future__ import annotations
 
 
-from tessellate.ai.agent import TOUCHED_LIMIT, _touched_items
+from tessellate.ai.agent_policy import TOUCHED_LIMIT, _touched_items
 from tests._app_js import app_js_text
 
 

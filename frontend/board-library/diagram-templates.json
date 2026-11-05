@@ -1,0 +1,118 @@
+{
+ "format": "tessellate-diagram-templates",
+ "version": 1,
+ "templates": [
+  {
+   "id": "org-chart",
+   "name": "Org chart",
+   "hint": "One head, three teams, and who reports to whom.",
+   "source": "flowchart TD\n  A[\"Chief executive\"]\n  B[\"Engineering\"]\n  C[\"Design\"]\n  D[\"Sales\"]\n  E[\"Backend\"]\n  F[\"Frontend\"]\n  G[\"Account managers\"]\n  A --> B\n  A --> C\n  A --> D\n  B --> E\n  B --> F\n  D --> G\n"
+  },
+  {
+   "id": "architecture",
+   "name": "System architecture",
+   "hint": "Three layers, left to right, with the data underneath.",
+   "source": "flowchart LR\n  subgraph G1 [\"Clients\"]\n    A([\"Web app\"])\n    B([\"Mobile app\"])\n  end\n  subgraph G2 [\"Services\"]\n    C[\"API gateway\"]\n    D[\"Accounts\"]\n    E[\"Orders\"]\n  end\n  subgraph G3 [\"Data\"]\n    F[\"Database\"]\n    G[\"Queue\"]\n  end\n  A --> C\n  B --> C\n  C --> D\n  C --> E\n  D --> F\n  E --> F\n  E --> G\n"
+  },
+  {
+   "id": "process",
+   "name": "Process",
+   "hint": "Steps in a row, start to done.",
+   "source": "flowchart LR\n  A([\"Start\"])\n  B[\"Step one\"]\n  C[\"Step two\"]\n  D[\"Step three\"]\n  E([\"Done\"])\n  A --> B\n  B --> C\n  C --> D\n  D --> E\n"
+  },
+  {
+   "id": "decision",
+   "name": "Decision",
+   "hint": "One question with a yes and a no.",
+   "source": "flowchart TD\n  A([\"Start\"])\n  B{\"Is it ready?\"}\n  C[\"Go ahead\"]\n  D[\"Fix what is missing\"]\n  E([\"Done\"])\n  A --> B\n  B -->|\"Yes\"| C\n  B -->|\"No\"| D\n  D -.-> B\n  C --> E\n"
+  },
+  {
+   "id": "approval",
+   "name": "Approval",
+   "hint": "A request, two reviews and a way back.",
+   "source": "flowchart TD\n  A([\"Submit request\"])\n  B{\"Manager review\"}\n  C{\"Finance review\"}\n  D([\"Approved\"])\n  E[\"Revise the request\"]\n  A --> B\n  B -->|\"Approved\"| C\n  B -->|\"Changes needed\"| E\n  C -->|\"Approved\"| D\n  C -->|\"Changes needed\"| E\n  E -.-> A\n"
+  },
+  {
+   "id": "onboarding",
+   "name": "Onboarding",
+   "hint": "From sign up to a first win.",
+   "source": "flowchart TD\n  A([\"Sign up\"])\n  B[\"Confirm email\"]\n  C(\"Set up a profile\")\n  D{\"Pick a plan\"}\n  E[\"Free tour\"]\n  F[\"Add payment\"]\n  G([\"First task done\"])\n  A --> B\n  B --> C\n  C --> D\n  D -->|\"Free\"| E\n  D -->|\"Paid\"| F\n  E --> G\n  F --> G\n"
+  },
+  {
+   "id": "bug-triage",
+   "name": "Bug triage",
+   "hint": "Reproduce it, rate it, then fix or park it.",
+   "source": "flowchart TD\n  A([\"Bug reported\"])\n  B{\"Can you reproduce it?\"}\n  C[\"Ask for details\"]\n  D{\"How bad is it?\"}\n  E[\"Fix now\"]\n  F[\"Add to the backlog\"]\n  G[\"Verify the fix\"]\n  H([\"Closed\"])\n  A --> B\n  B -->|\"No\"| C\n  C -.-> B\n  B -->|\"Yes\"| D\n  D -->|\"Critical\"| E\n  D -->|\"Minor\"| F\n  E --> G\n  G --> H\n  F --> H\n"
+  },
+  {
+   "id": "user-flow",
+   "name": "User flow",
+   "hint": "A visitor from the landing page to a result.",
+   "source": "flowchart LR\n  A([\"Landing page\"])\n  B{\"Signed in?\"}\n  C[\"Sign in\"]\n  D(\"Dashboard\")\n  E[\"Create an item\"]\n  F([\"See the result\"])\n  A --> B\n  B -->|\"No\"| C\n  C --> D\n  B -->|\"Yes\"| D\n  D --> E\n  E --> F\n"
+  },
+  {
+   "id": "swimlanes",
+   "name": "Swimlanes",
+   "hint": "Who does what, one lane for each team.",
+   "source": "flowchart TD\n  subgraph G1 [\"Customer\"]\n    A([\"Place an order\"])\n    F([\"Order arrives\"])\n  end\n  subgraph G2 [\"Warehouse\"]\n    B[\"Receive the order\"]\n    C{\"In stock?\"}\n    D[\"Pack and ship\"]\n  end\n  subgraph G3 [\"Support\"]\n    E[\"Tell the customer\"]\n  end\n  A --> B\n  B --> C\n  C -->|\"Yes\"| D\n  C -->|\"No\"| E\n  D --> F\n"
+  },
+  {
+   "id": "state-lifecycle",
+   "name": "State lifecycle",
+   "hint": "An item from draft to archived, with a way back.",
+   "source": "flowchart LR\n  A([\"Draft\"])\n  B(\"In review\")\n  C(\"Approved\")\n  D(\"Published\")\n  E([\"Archived\"])\n  A --> B\n  B -->|\"Accept\"| C\n  B -.->|\"Reject\"| A\n  C --> D\n  D --> E\n  D -.->|\"Edit\"| A\n"
+  },
+  {
+   "id": "checklist-flow",
+   "name": "Checklist flow",
+   "hint": "Check each item in turn and stop at the first miss.",
+   "source": "flowchart TD\n  A([\"Start the check\"])\n  B{\"Is the plan agreed?\"}\n  C{\"Is the budget approved?\"}\n  D{\"Is the team free?\"}\n  E([\"All clear\"])\n  F[\"Fix the gap\"]\n  A --> B\n  B -->|\"Yes\"| C\n  B -->|\"No\"| F\n  C -->|\"Yes\"| D\n  C -->|\"No\"| F\n  D -->|\"Yes\"| E\n  D -->|\"No\"| F\n  F -.-> B\n"
+  },
+  {
+   "id": "swimlanes-sideways",
+   "name": "Swimlanes sideways",
+   "hint": "Lanes read left to right, which fits a wide screen.",
+   "source": "flowchart LR\n  subgraph G1 [\"Customer\"]\n    A([\"Place an order\"])\n    F([\"Order arrives\"])\n  end\n  subgraph G2 [\"Warehouse\"]\n    B[\"Receive the order\"]\n    C{\"In stock?\"}\n    D[\"Pack and ship\"]\n  end\n  subgraph G3 [\"Support\"]\n    E[\"Tell the customer\"]\n  end\n  A --> B\n  B --> C\n  C -->|\"Yes\"| D\n  C -->|\"No\"| E\n  D --> F\n"
+  },
+  {
+   "id": "request-loop",
+   "name": "Request and approval with a loop",
+   "hint": "Ask, review, and go round again until it is approved.",
+   "source": "flowchart TD\n  A([\"Send a request\"])\n  B[\"Review it\"]\n  C{\"Approved?\"}\n  D[\"Ask for changes\"]\n  E([\"Done\"])\n  A --> B\n  B --> C\n  C -->|\"Yes\"| E\n  C -->|\"No\"| D\n  D --> B\n"
+  },
+  {
+   "id": "blank",
+   "name": "Blank",
+   "hint": "An empty flowchart to build with the blocks.",
+   "source": "flowchart TD\n"
+  },
+  {
+   "id": "brainstorm",
+   "kind": "mindmap",
+   "name": "Brainstorm",
+   "hint": "A mind map with an idea in the middle and branches around it.",
+   "source": "mindmap\n  root((\"Project idea\"))\n    n1[\"Goals\"]\n      n2[\"What done looks like\"]\n      n3[\"Who it is for\"]\n    n4[\"People\"]\n      n5[\"Who helps\"]\n      n6[\"Who decides\"]\n    n7[\"Risks\"]\n      n8[\"What could go wrong\"]\n    n9[\"Next steps\"]\n"
+  },
+  {
+   "id": "project-plan",
+   "kind": "timeline",
+   "name": "Project plan",
+   "hint": "Periods and what happens in each, grouped in sections.",
+   "source": "timeline\n  title Project plan\n  section Plan\n    Week 1 : Kick off : Agree the goal\n    Week 2 : First draft\n  section Build\n    Week 3 : Review\n    Week 4 : Ship\n"
+  },
+  {
+   "id": "sign-in",
+   "kind": "sequence",
+   "name": "Sign in",
+   "hint": "A user, an app and a server, with a yes and a no.",
+   "source": "sequenceDiagram\n  actor U as User\n  participant A as App\n  participant S as Server\n  U->>A: Enter email and password\n  A->>S: Check the details\n  alt Details match\n    S-->>A: Signed in\n    A-->>U: Show the home page\n  else Details do not match\n    S-->>A: Refuse\n    A-->>U: Show the error\n  end\n"
+  },
+  {
+   "id": "request-reply",
+   "kind": "sequence",
+   "name": "Request and reply",
+   "hint": "A client asks, a server looks it up, the answer comes back.",
+   "source": "sequenceDiagram\n  participant C as Client\n  participant S as Server\n  participant D as Database\n  C->>S: Ask for the page\n  S->>D: Look up the data\n  D-->>S: Return the rows\n  S-->>C: Send the page\n  Note over C,S: The client waits for the reply\n"
+  }
+ ]
+}

@@ -20,8 +20,8 @@ function objInField(el) {
   return el?.closest?.("input, textarea, select, [contenteditable='true'], .cm-editor") ?? null;
 }
 
-const OBJ_KINDS = ["note", "document", "board", "map", "image", "file"];
-const OBJ_NOUN = { note: "Note", document: "Document", board: "Board", map: "Mind map", image: "Image", file: "File" };
+const OBJ_KINDS = ["note", "document", "diagram", "board", "map", "image", "file", "upload"];
+const OBJ_NOUN = { note: "Note", document: "Document", diagram: "Diagram", board: "Board", map: "Mind map", image: "Image", file: "File", upload: "File" };
 
 //: Where a card says what it is, nearest first wins. `key` returns "kind:id".
 const OBJ_CARD_SOURCES = [
@@ -91,6 +91,8 @@ function objRefFromCard(target) {
 function objLinkText(ref) {
   const name = ref.title.replace(/[[\]|]/g, " ").replace(/\s+/g, " ").trim();
   if (ref.kind === "note" || ref.kind === "document") return `[[${name}]]`;
+  //: Draws in place (1621 D5).
+  if (ref.kind === "diagram") return `![[${name}]]`;
   if (ref.kind === "board" || ref.kind === "map") return `![[${ref.kind}:${ref.id}|${name}]]`;
   if (!ref.url) return name;
   return ref.kind === "image" ? `![${name}](${ref.url})` : `[${name}](${ref.url})`;
@@ -100,7 +102,7 @@ function objLinkText(ref) {
 //: What a drop or a paste lands on, by the element under the pointer or the
 //: focus: first match wins, so the specific ones are first.
 const OBJ_DESTS = [
-  { type: "tray", sel: "#status-tray, #obj-tray" },
+  { type: "tray", sel: "#status-tray, .obj-tray" },
   { type: "chat", sel: "#chat-input, .chat-composer, .chat-dock" },
   { type: "reminder", sel: "#reminder-magic, #reminder-compose" },
   { type: "board", sel: "#whiteboard-container" },
@@ -125,6 +127,7 @@ const OBJ_STAGE = {
   board: (ref) => attachBoardToChat(ref.id, ref.title),
   map: (ref) => attachBoardToChat(ref.id, ref.title),
   file: (ref) => attachLibraryFile(ref.id, ref.title),
+  upload: (ref) => attachLibraryFile(`m${ref.id}`, ref.title),
   image: (ref) => {
     if (attachedImages.some((row) => String(row.id) === String(ref.id))) return true;
     if (attachedImages.length >= 4) return false;
@@ -143,8 +146,14 @@ const OBJ_STAGED = {
   board: (ref) => attachedBoards.some((row) => row.id === ref.id),
   map: (ref) => attachedBoards.some((row) => row.id === ref.id),
   file: (ref) => attachedFiles.some((row) => row.id === ref.id),
+  upload: (ref) => attachedFiles.some((row) => row.id === `m${ref.id}`),
   image: (ref) => attachedImages.some((row) => String(row.id) === String(ref.id)),
 };
+
+
+//: A diagram stages as a document, with its own card.
+OBJ_STAGE.diagram = (ref) => attachDocumentToChat(ref.id, ref.title, "diagram");
+OBJ_STAGED.diagram = OBJ_STAGED.document;
 
 //: Text goes in through the browser's edit pipeline, so the field's own Ctrl+Z
 //: still works and a note or document editor sees an `input` event (its dirty

@@ -4,8 +4,8 @@ The owner, 2026-10-31: "can it be used to generate mermaid diagrams??". The
 app already draws every ```mermaid fence (mermaid-draw.js, in notes, chat,
 Ask and documents); this writes the fence, from the shape the words have:
 
-- **steps** (a numbered list, or lines that go "first ... then ... finally")
-  are a `flowchart TD`, one box a step, an arrow between each;
+- **steps** (a numbered list, a checklist, or lines that go "first ... then
+  ... finally") are a `flowchart TD`, one box a step, an arrow between each;
 - **dated lines** ("2 April: tomatoes in"), or notes with the day each was
   written, are a `timeline`, oldest first;
 - **a heading with bullets** (nested or not), or a subject with its notes,
@@ -43,6 +43,8 @@ _DATE = re.compile(
 )
 _HEADING = re.compile(r"^\s{0,3}#{1,6}\s+(.*\S)\s*$")
 _ITEM = re.compile(r"^(\s*)(?:([-*+])|(\d{1,3})[.)])\s+(?:\[[ xX]\]\s+)?(.*\S)\s*$")
+#: A checklist line: a bullet, then a `[ ]` or `[x]` box (1546 P3: a note of tasks is a flow).
+_TASK = re.compile(r"^(\s*)[-*+]\s+\[[ xX]\]\s+(.*\S)\s*$")
 _STEP_WORD = re.compile(r"^(?:first(?:ly)?|then|next|after that|afterwards|finally|lastly|step \d+)\b[,:]?\s*", re.I)
 _THEN = re.compile(r"(?:[,;.]\s*|\s+)(?:and\s+)?(?:then|after that|afterwards|next|finally)\b[,:]?\s+", re.I)
 
@@ -121,6 +123,14 @@ def label(text: str) -> str:
     return f'"{text}"'
 
 
+def mind_label(text: str) -> str:
+    """Words for a mind map box: quoted, with no entity codes (a mind map draws `#35;` as written).
+
+    A quote becomes an apostrophe, and a `#` that would read as the start of a code is left out."""
+    text = re.sub(r"#(?=\w+;)", "", _words(text).replace('"', "'"))
+    return f'"{text}"'
+
+
 def _event(text: str) -> str:
     """Words for a timeline line, whose separators are `:` (and `;`, `#`)."""
     return _words(text).replace(":", " -").replace(";", ",").replace("#", "").replace('"', "'").strip() or "…"
@@ -147,7 +157,8 @@ def _lines(text: str) -> list[tuple[str, int, bool, str]]:
             out.append(("item", len(indents), bool(item.group(3)), item.group(4)))
             continue
         indents = []
-        out.append(("heading", 0, False, heading.group(1)) if heading else ("line", 0, False, raw.strip()))
+        #: A heading's depth is its level (1 to 6), which `tree` nests by.
+        out.append(("heading", len(raw.strip()) - len(raw.strip().lstrip("#")), False, heading.group(1)) if heading else ("line", 0, False, raw.strip()))
     return out
 
 
@@ -169,10 +180,22 @@ def _listed_steps(lines: list) -> list[str]:
     return []
 
 
+def _checklist(text: str) -> list[str]:
+    """The top-level items of a checklist, in order, when there are at least
+    two: tasks are done one after another, so they read as steps."""
+    rows = [m for m in (_TASK.match(raw) for raw in (text or "").replace("\r\n", "\n").split("\n")) if m]
+    if not rows:
+        return []
+    top = min(len(m.group(1).expandtabs(4)) for m in rows)
+    found = [m.group(2) for m in rows if len(m.group(1).expandtabs(4)) == top]
+    return found if len(found) >= 2 else []
+
+
 def steps(text: str) -> list[str]:
-    """The steps the text gives, in order: a numbered list's items, else
-    sentences or clauses joined by "then", when there are at least three."""
-    listed = _listed_steps(_lines(text))
+    """The steps the text gives, in order: a numbered list's items, a
+    checklist's, else sentences or clauses joined by "then", when there are at
+    least three."""
+    listed = _listed_steps(_lines(text)) or _checklist(text)
     if listed:
         return listed
     clauses = [c for s in _sentences(text) for c in _THEN.split(s) if c.strip()]
@@ -211,13 +234,40 @@ def dated(text: str) -> list[tuple[str, str]]:
     return [(when, what) for _key, when, what in found]
 
 
+def _outline_branches(lines: list, base: int) -> list[tuple[int, str]]:
+    """Each sub-heading nests by its level; the points below it sit one step under."""
+    branches: list[tuple[int, str]] = []
+    under = 0  # the depth of the sub-heading the points below belong to
+    first = next(at for at, row in enumerate(lines) if row[0] == "heading")
+    for at, (kind, depth, _n, words) in enumerate(lines):
+        if at == first:
+            continue
+        if kind == "heading":
+            under = max(1, depth - base)
+            branches.append((under, words))
+        elif kind == "item":
+            branches.append((under + depth, words))
+    return branches
+
+
 def tree(text: str) -> tuple[str, list[tuple[int, str]]]:
     """(root, [(depth, words)]) of a heading with bullets, or of the first
-    sentence with the rest as branches."""
+    sentence with the rest as branches. A document with several sections
+    (two or more sub-headings that carry points) is an outline: each
+    sub-heading nests by its level and its points sit under it."""
     lines = _lines(text)
     root = next((w for kind, _d, _n, w in lines if kind == "heading"), "")
-    branches = [(depth, words) for kind, depth, _n, words in lines if kind == "item"]
-    branches += [(1, words) for kind, _d, _n, words in lines if kind == "heading" and words != root]
+    heads = [row for row in lines if row[0] == "heading"]
+    if _outline(lines):
+        branches = _outline_branches(lines, heads[0][1])
+    else:
+        branches = [(depth, words) for kind, depth, _n, words in lines if kind == "item"]
+        branches += [(1, words) for kind, _d, _n, words in lines if kind == "heading" and words != root]
+    return _rooted(text, root, branches)
+
+
+def _rooted(text: str, root: str, branches: list[tuple[int, str]]) -> tuple[str, list[tuple[int, str]]]:
+    """The sentences as branches when nothing else gave any, and a root from the text when it has none."""
     if not branches:
         said = _sentences(text)
         if not root and said:
@@ -228,6 +278,23 @@ def tree(text: str) -> tuple[str, list[tuple[int, str]]]:
 
         root = no_model_text.draft_title(text) or "Notes"
     return root, branches
+
+
+def _outline(lines: list) -> bool:
+    """Whether the lines are sections: after the first heading, two or more
+    sub-headings each followed by at least one point, or headings alone (a
+    document's outline, nothing under them)."""
+    heads = [i for i, row in enumerate(lines) if row[0] == "heading"]
+    if len(heads) < 2:
+        return False
+    rest = lines[heads[0] + 1 :]
+    if not any(row[0] == "item" for row in rest):
+        return True
+    carrying = 0
+    for i, row in enumerate(rest):
+        if row[0] == "heading" and i + 1 < len(rest) and rest[i + 1][0] == "item":
+            carrying += 1
+    return carrying >= 2
 
 
 # --- writing the diagram ----------------------------------------------------------------
@@ -265,11 +332,11 @@ def mindmap(root: str, branches: list[tuple[int, str]]) -> Diagram:
     """The root as a circle, each branch indented under its parent."""
     shown, more = _capped(branches, MAX_NODES - 1)
     top = min((d for d, _w in shown), default=1)
-    lines = ["mindmap", f"  root(({label(root)}))"]
+    lines = ["mindmap", f"  root(({mind_label(root)}))"]
     for i, (depth, words) in enumerate(shown):
-        lines.append("  " * (depth - top + 2) + f"n{i + 1}[{label(words)}]")
+        lines.append("  " * (depth - top + 2) + f"n{i + 1}[{mind_label(words)}]")
     if more:
-        lines.append(f"    n{len(shown) + 1}[{label(f'and {more} more')}]")
+        lines.append(f"    n{len(shown) + 1}[{mind_label(f'and {more} more')}]")
     return Diagram("mindmap", "\n".join(lines), 1 + len(shown) + (1 if more else 0))
 
 
@@ -277,20 +344,78 @@ def fenced(made: Diagram) -> str:
     return f"```mermaid\n{made.source}\n```"
 
 
+#: What a diagram's first line may open with: the kinds Mermaid draws that the
+#: app's frame accepts. Anything else is not a diagram.
+_HEADERS = re.compile(
+    r"^(?:flowchart|graph|mindmap|timeline|sequenceDiagram|classDiagram|stateDiagram(?:-v2)?|erDiagram|journey|gantt|pie|gitGraph|quadrantChart|requirementDiagram|sankey(?:-beta)?|xychart(?:-beta)?|block(?:-beta)?|kanban)\b"
+)
+MAX_SOURCE = 20000
+
+
+def _skip_blank(text: str, at: int) -> int:
+    while at < len(text) and text[at] in " \t":
+        at += 1
+    return at
+
+
+def _fence_body(text: str) -> str | None:
+    """The body of the first ```` ``` ```` or ```` ```mermaid ```` fence that closes, or None.
+    A scan, not a regex: a lazy body before a closing fence with blanks either side
+    is polynomial on a reply of fences and tabs (CodeQL 1996), and the reply is the
+    model's, so its shape is not ours to trust."""
+    start = text.find("```")
+    while start >= 0:
+        at = _skip_blank(text, start + 3)
+        if text.startswith("mermaid", at):
+            at = _skip_blank(text, at + 7)
+        if at < len(text) and text[at] == "\n":
+            line = text.find("\n", at + 1)
+            while line >= 0:
+                if text.startswith("```", _skip_blank(text, line + 1)):
+                    return text[at + 1 : line]
+                line = text.find("\n", line + 1)
+            return None
+        start = text.find("```", start + 3)
+    return None
+
+
+def source_of(reply: str) -> tuple[str, str]:
+    """(the Mermaid source in a model's reply, "") or ("", why it is not one)
+    (1546 P3, D8). The reply is fenced, bare, or broken: a fence that never
+    closes, prose with no diagram, a first line that opens no diagram kind. The
+    reason is one plain sentence for the person; nothing is guessed at."""
+    text = (reply or "").strip()
+    fenced_body = _fence_body(text)
+    if fenced_body is not None:
+        body = fenced_body.strip("\n")
+    elif "```" in text:
+        return "", "The model's diagram was cut off before the fence closed. Try again, or describe fewer steps."
+    else:
+        body = text
+    first = next((line.strip() for line in body.splitlines() if line.strip() and not line.strip().startswith("%%")), "")
+    if not _HEADERS.match(first):
+        return "", "The model answered in words, not a diagram. Try again, or describe the steps in order."
+    if len(body.splitlines()) < 2:
+        return "", "The model's diagram had nothing in it. Try again with more detail."
+    if len(body) > MAX_SOURCE:
+        return "", "The model's diagram is too long to open as blocks. Describe fewer steps."
+    return body.rstrip() + "\n", ""
+
+
 # --- from notes ------------------------------------------------------------------------
 
 
 def _note_day(note: dict) -> date | None:
     """A note's day: an ISO `written` (the Writing room's sources) or
-    `created_at`, else the chat route's `written` words (`composer._written`)."""
+    `created_at`, else the chat route's `written` words (`composer_read._written`)."""
     for raw in (note.get("written"), note.get("created_at")):
         if isinstance(raw, date):
             return raw
         if raw and re.match(r"\d{4}-\d{2}-\d{2}", str(raw)):
             return date.fromisoformat(str(raw)[:10])
-    from tessellate.ai import composer
+    from tessellate.ai import composer_read
 
-    return composer._written(note)
+    return composer_read._written(note)
 
 
 def _day_words(day: date) -> str:
@@ -306,26 +431,39 @@ def _notes_flowchart(named: list) -> Diagram:
     return flowchart([name for name, _n, _d in sorted(named, key=lambda row: row[2] or date.max)])
 
 
-def from_notes(notes: list[dict], want: str | None, subject: str = "") -> Diagram | None:
-    """A diagram of several notes: their days as a timeline, or the subject
-    as a mind map with each note a branch and its key points under it."""
+def _notes_branches(named: list) -> list[tuple[int, str]]:
+    """Each note a branch, its key points one step under it."""
     from tessellate.ai import composer_write
 
-    named = [(composer_write.note_name(n, size=NAME_CHARS), n, _note_day(n)) for n in notes if (n.get("content") or "").strip()]
-    if not named:
-        return None
-    if want == "flowchart":
-        return _notes_flowchart(named)
-    days = [row for row in named if row[2]]
-    if want == "timeline" and days:
-        days.sort(key=lambda row: row[2])
-        return timeline([(_day_words(day), name) for name, _n, day in days], subject)
     branches: list[tuple[int, str]] = []
     for name, note, _day in named:
         branches.append((1, name))
         points = composer_write._note_points(note.get("content") or "", name)[:BRANCH_POINTS]
         branches.extend((2, p) for p in points)
-    return mindmap(subject or "My notes", branches)
+    return branches
+
+
+def _named(notes: list[dict]) -> list[tuple[str, dict, date | None]]:
+    """(name, note, day) for each note that has words."""
+    from tessellate.ai import composer_write
+
+    return [(composer_write.note_name(n, size=NAME_CHARS), n, _note_day(n)) for n in notes if (n.get("content") or "").strip()]
+
+
+def from_notes(notes: list[dict], want: str | None, subject: str = "") -> Diagram | None:
+    """A diagram of several notes: their days as a timeline, or the subject
+    as a mind map with each note a branch and its key points under it."""
+    named = _named(notes)
+    if not named:
+        return None
+    #: One note that is a list of steps or tasks, asked for by no shape, is a flow.
+    if want == "flowchart" or (not want and len(named) == 1 and steps(named[0][1].get("content") or "")):
+        return _notes_flowchart(named)
+    days = [row for row in named if row[2]]
+    if want == "timeline" and days:
+        days.sort(key=lambda row: row[2])
+        return timeline([(_day_words(day), name) for name, _n, day in days], subject)
+    return mindmap(subject or "My notes", _notes_branches(named))
 
 
 # --- the door --------------------------------------------------------------------------

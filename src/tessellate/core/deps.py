@@ -184,20 +184,31 @@ def _init_app_state(data_dir: str | Path | None = None) -> None:
     if _config is None:
         _config = ConfigManager(data_dir=data_dir)
     if _db is None:
+        from tessellate.core import selfcheck
+
+        selfcheck.observe_start(Path(_config.db_path))
         try:
             _db = DatabaseManager(_config.db_path)
         except DatabaseError as exc:
-            # A damaged file stops the app before any page can say so; the
-            # check tells damage apart from a locked or busy file, which
+            # The check tells damage apart from a locked or busy file, which
             # keeps its own error (WORLD_CLASS 25e).
             from tessellate.core import backup, startup_status
 
             if backup.check_at_boot(_config.db_path)["ok"]:
                 raise
-            words = backup.damaged_notebook_words(Path(_config.db_path), Path(_config.data_dir))
-            startup_status.set_phase(words)
-            logging.getLogger("tessellate.startup").error("%s", words)
-            raise backup.DamagedNotebookError(words) from exc
+            # With a backup that holds notes, the damaged file is kept aside
+            # and the lock screen offers the backup (INBOX 1573); without
+            # one the app stops, naming the way back, as before.
+            if selfcheck.restore_offer(Path(_config.db_path), Path(_config.data_dir), has_user=False):
+                selfcheck.set_aside_damaged_database(Path(_config.db_path))
+                selfcheck.forget_offer()
+                backup.forget_boot_check(_config.db_path)
+                _db = DatabaseManager(_config.db_path)
+            else:
+                words = backup.damaged_notebook_words(Path(_config.db_path), Path(_config.data_dir))
+                startup_status.set_phase(words)
+                logging.getLogger("tessellate.startup").error("%s", words)
+                raise backup.DamagedNotebookError(words) from exc
     if _ollama is None:
         _ollama = build_llm_client(_config)
     # `ai/provider.py` reads the user's sampling overrides through a getter
@@ -263,6 +274,9 @@ def _reset_app_state() -> None:
     global _config, _db, _ollama, _model_manager, _embeddings
     if _db is not None:
         _db.engine.dispose()
+    from tessellate.core import selfcheck
+
+    selfcheck.reset_for_tests()
     for drop in _cache_resets:
         drop()
     _config = None

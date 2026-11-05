@@ -409,6 +409,53 @@ _REFER_MORE = re.compile(r"^(?:and |ok |okay )*(?:tell me more|more|go on|what e
 _REFER_SMALL = frozenset("the a an of to in on and or for my your note notes".split())
 
 
+#: A place in the answer ("the second one", "number 2", "the last"), with or
+#: without a verb; what follows it is only a particle and its object ("to Run
+#: log"), so "the second world war" names its own subject and is left alone
+#: (audit 1028 E14).
+_PLACES = {"first": 0, "1st": 0, "second": 1, "2nd": 1, "third": 2, "3rd": 2, "fourth": 3, "4th": 3, "fifth": 4, "5th": 4, "last": -1}
+_REFER_NTH = re.compile(
+    rf"^{_REFER_FILLER}(?:(?P<head>{_REFER_HEAD}|what about|how about)\s+)?(?:the\s+)?"
+    r"(?:(?P<word>first|second|third|fourth|fifth|last|1st|2nd|3rd|4th|5th)|(?:number|no\.?|#)\s*(?P<digit>[1-5]))"
+    r"(?:\s+(?:one|note|result|source|item|entry))?(?P<rest>(?:\s+(?:to|with|as|into|from|and)\b.*)?)$"
+)
+#: "which of those is first", "which one is newest": the cited notes, compared.
+_COMPARE_WORD = {"first": "oldest", "earliest": "oldest", "latest": "newest", "most recent": "newest"}
+_REFER_WHICH = re.compile(
+    rf"^{_REFER_FILLER}which (?:of (?:those|these|them)|one|one of those|one of these) (?:is|was|has) (?:the )?"
+    r"(?P<adj>first|earliest|oldest|newest|latest|most recent|cheapest|biggest|largest|smallest|longest|shortest|cheaper|sooner|older|newer|longer|shorter|bigger|smaller|earlier|later)$"
+    rf"|^{_REFER_FILLER}which (?:is|was) (?P<adj2>cheaper|sooner|older|newer|longer|shorter|bigger|smaller|earlier|later) of (?:those|these|them)$"
+)
+_REFER_GROUP = re.compile(rf"^{_REFER_FILLER}(?P<head>compare)\s+(?:those|them|these|both|the two|the \w+ of them)$")
+
+
+def _joined(titles: list[str], last: str) -> str:
+    return f"{', '.join(titles[:-1])} {last} {titles[-1]}"
+
+
+def _follow_place(low: str, raw: str, titles: list[str]) -> str | None:
+    """"Pin the second one", "the last one", "which of those is first",
+    "compare those": the sentence with the cited notes named."""
+    nth = _REFER_NTH.match(low)
+    if nth:
+        place = _PLACES[nth["word"]] if nth["word"] else int(nth["digit"]) - 1
+        if place == -1 and len(titles) < 2:
+            place = 0
+        if place >= len(titles):
+            return None
+        head = (low[nth.start("head"):nth.end("head")] if nth["head"] else "")
+        head = head if head and head not in ("what about", "how about") else "tell me more about"
+        return f"{head} the {titles[place]} note{raw[nth.start('rest'):]}"
+    group = _REFER_GROUP.match(low)
+    if group and len(titles) > 1:
+        return f"compare {_joined(titles[:4], 'and')}"
+    which = _REFER_WHICH.match(low)
+    if which and len(titles) > 1:
+        adj = which["adj"] or which["adj2"]
+        return f"which is {_COMPARE_WORD.get(adj, adj)}, {_joined(titles[:4], 'or')}"
+    return None
+
+
 def _cited_titles(turns: list[dict]) -> list[str]:
     """The notes the newest turn that cited any named, leading one first."""
     for turn in reversed(turns):
@@ -428,6 +475,9 @@ def _follow_referent(raw: str, low: str, turns: list[dict]) -> str | None:
         return None
     if _REFER_MORE.match(low):
         return f"tell me more about the {titles[0]} note"
+    placed = _follow_place(low, raw, titles)
+    if placed:
+        return placed
     pron = _REFER_IT.match(low)
     if pron:
         head = low[pron.start("head"):pron.end("head")]

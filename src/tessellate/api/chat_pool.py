@@ -16,11 +16,14 @@ from datetime import date
 from sqlalchemy import func, or_, select
 from sqlalchemy.orm import Session
 
-from tessellate.ai import composer, composer_frame, composer_lists, composer_money, composer_slots, composer_sum, composer_versus, glossary, librarian, neighbours, question_noise
+from tessellate.ai import composer, composer_frame, composer_intent, composer_lists, composer_money, composer_slots, composer_sum, composer_versus, glossary, librarian, neighbours, question_noise
+from tessellate.ai import composer_ask
 from tessellate.api.chat_attach import _MEDIA_REF, _attached_boards, _attachment_readings, _media_readings, _mostly_pictures, _named_sources, _picture_alts, _picture_sizes
 from tessellate.core import deps
-from tessellate.core.database import Category, Entry, EntryLink, like_escape, LIKE_ESCAPE, MediaUpload
+from tessellate.core.database import Category, Entry, like_escape, LIKE_ESCAPE, MediaUpload
 from tessellate.repo import documents as documents_repo
+from tessellate.repo import relations as relations_repo
+from tessellate.repo import tags as tags_repo
 from tessellate.entry import manager
 from tessellate.search import engine, search_manager
 
@@ -99,13 +102,8 @@ def _with_neighbours(session: Session, question: str, entries: list, scope: str 
         return _with_open(session, question, entries)
     if not entries or scope or len(entries) > NEIGHBOUR_ROOM or not neighbours.reads_whole(question):
         return entries
-    rows = session.execute(
-        select(Entry.id, Entry.tags)
-        .where(Entry.is_deleted == False, Entry.is_private == False, Entry.is_board == False, Entry.tags != "[]")  # noqa: E712
-        .order_by(Entry.created_at.desc())
-        .limit(2000)
-    ).all()
-    chosen = neighbours.pick([e.id for e in entries[:NEIGHBOUR_SEEDS]], [(i, manager.tags_from_json(t)) for i, t in rows])
+    rows = tags_repo.tagged(session, limit=2000)
+    chosen = neighbours.pick([e.id for e in entries[:NEIGHBOUR_SEEDS]], rows)
     have = {e.id for e in entries}
     extra = [session.get(Entry, i) for i in chosen if i not in have]
     return entries + [e for e in extra if e is not None]
@@ -119,7 +117,7 @@ def _with_open(session: Session, question: str, entries: list) -> list:
     clauses = [Entry.content.like("%- [ ]%"), Entry.content.like("%still to %"), Entry.content.like("%need to %")]
     if re.search(r"\b(buy|shop|get)\b", question, re.I):
         shops = ("grocer", "shopping", "shop list")
-        clauses += [func.lower(Entry.tags).like(f"%{like_escape(w)}%", escape=LIKE_ESCAPE) for w in shops]
+        clauses += tags_repo.mentioning(list(shops))
         named = select(Category.id).where(or_(*(func.lower(Category.name).like(f"%{like_escape(w)}%", escape=LIKE_ESCAPE) for w in shops)))
         clauses.append(Entry.category_id.in_(named))
     found = session.scalars(
@@ -138,7 +136,7 @@ def _by_synonym(session: Session, subject: str) -> list:
     overview (`composer_overview.members`)."""
     found: list = []
     for word in composer.subject_terms(subject)[:3]:
-        for other in sorted(a for a in composer._alternatives(composer._stem(word)) if len(a) >= 3 and a.isalpha()):  # noqa: SLF001
+        for other in sorted(a for a in composer_ask._alternatives(composer._stem(word)) if len(a) >= 3 and a.isalpha()):  # noqa: SLF001
             found += search_manager.keyword_search(session, other, limit=OVERVIEW_LIMIT) + _filed_under(session, [other])
     return found
 
@@ -149,7 +147,7 @@ def _filed_under(session: Session, terms: list[str]) -> list:
     words = [t.lower() for t in terms if len(t) >= 3][:3]
     if not words:
         return []
-    clauses = [func.lower(Entry.tags).like(f'%"{like_escape(w.rstrip("s"))}%', escape=LIKE_ESCAPE) for w in words]
+    clauses = tags_repo.mentioning(words, whole_start=True)
     #: A word at the start of the name or after a space in it ("study" is in "Courses & study").
     said = [like_escape(w.rstrip("s")) for w in words]
     named = select(Category.id).where(or_(*(func.lower(Category.name).like(pattern, escape=LIKE_ESCAPE) for w in said for pattern in (f"{w}%", f"% {w}%"))))
@@ -214,6 +212,8 @@ class _NoteCtx:
     time_words: dict
     files_on: dict
     as_of: "date | None"
+    #: Category names for every entry in one query, not one per note.
+    category_names: dict = field(default_factory=dict)
 
 
 def _in_window(found: _Found, session: Session, asked, question: str) -> None:  # noqa: ANN001
@@ -226,9 +226,9 @@ def _in_window(found: _Found, session: Session, asked, question: str) -> None:  
         #: "How much did I save in October": the question's own verb is no
         #: term, so nothing was searched; the window's notes are the pool the
         #: readers ask (audit 1031 C3).
-        stems = composer.window_verb_stems(question, asked.window_phrase)
+        stems = composer_intent.window_verb_stems(question, asked.window_phrase)
         window = search_manager.entries_between(session, asked.window[0], asked.window[1], limit=1000 if stems else 40, archived=archived)
-        found.entries = [e for e in window if composer.holds_any(stems, e.content or "")][:40] if stems else window
+        found.entries = [e for e in window if composer_intent.holds_any(stems, e.content or "")][:40] if stems else window
     found.mode, found.connected_ids, found.match_info, found.when_phrase = "window", set(), {}, asked.window_phrase
 
 
@@ -286,10 +286,12 @@ def _with_records(session: Session, question: str, entries: list, locale: str | 
     """An open checklist item may be done in a later note ("Renewed my library
     membership today" beside "[ ] Renew library membership"): a question
     about the checklist's state also fetches the notes that name its open
-    items, so the answer reads one state for the item (second eye F3)."""
-    if not composer_slots.asks_open(question):
-        return entries
+    items, so the answer reads one state for the item (second eye F3). So
+    does any answer that may show the checklist: an overview's boxes said
+    "none done" beside a note that records one (F15)."""
     doings = [d for e in entries for d in composer_slots.open_doings(e.content or "")][:6]
+    if not doings:
+        return entries
     merged, seen = list(entries), {e.id for e in entries}
     for doing in doings:
         for entry in search_manager.retrieve_detailed(session, doing, deps.get_embeddings(), limit=2, locale=locale).entries:
@@ -297,6 +299,14 @@ def _with_records(session: Session, question: str, entries: list, locale: str | 
                 seen.add(entry.id)
                 merged.append(entry)
     return merged
+
+
+def _records_beside(session: Session, question: str, attached: list, locale: str | None) -> list:  # noqa: ANN001
+    """A closed set of one named note ("what is in my admin bits note") still
+    reads a box a later note records as done: the notes that name its open
+    items ride beside it, never in its place (second eye F15)."""
+    have = {e.id for e in attached}
+    return [e for e in _with_records(session, question, list(attached), locale) if e.id not in have]
 
 
 _CHECKBOX = re.compile(r"^\s*[-*]\s*\[[ xX]\]", re.M)
@@ -403,11 +413,12 @@ def _stats_out(stats) -> dict | None:  # noqa: ANN001
 
 
 def _raw_results(session: Session, found: _Found) -> list:
-    from tessellate.api.routes_entries import _to_out  # avoids a route-module cycle
+    from tessellate.api.routes_entries import _to_out_bulk  # avoids a route-module cycle
 
     rows = []
-    for entry in found.entries:
-        out = _to_out(session, entry)
+    #: In a fixed number of queries: one `_to_out` per note was five queries
+    #: each, 120 for a 24-note answer (2026-11-02).
+    for entry, out in zip(found.entries, _to_out_bulk(session, list(found.entries)), strict=True):
         if entry.id in found.as_of_then:
             out = out.model_copy(update={"content": found.as_of_then[entry.id].text})
         rows.append(out)
@@ -461,9 +472,7 @@ def _frame_matches(session: Session, question: str, notes: list[dict], match_inf
     if not ids:
         return
     linked: dict[int, list[int]] = {i: [] for i in ids}
-    rows = session.query(EntryLink.source_entry_id, EntryLink.target_entry_id, EntryLink.reason).filter(
-        EntryLink.source_entry_id.in_(ids), EntryLink.target_entry_id.in_(ids)
-    )
+    rows = relations_repo.among(session, ids)
     reasons: dict[int, dict[int, str]] = {i: {} for i in ids}
     for a, b, reason in rows:
         #: Once each: two notes linked both ways are one link to the reader.
@@ -545,7 +554,7 @@ def _matched_rows(session: Session, question: str, skip: set[tuple[str, int]]) -
     partial match does not bring a source in. Read as the named ones are, so
     the answer says the kind ("on your Cloud map"). `skip` holds
     (document or board, id) pairs already in."""
-    terms = [t for t in search_manager._meaningful_terms(question or "") if t not in composer._ASKING_WORDS]  # noqa: SLF001
+    terms = [t for t in search_manager._meaningful_terms(question or "") if t not in composer_ask._ASKING_WORDS]  # noqa: SLF001
     if not terms or len(question or "") > 300:
         return []
     hits = engine.search(session, " ".join(terms), kinds=["board", "map", "document"], limit=8, hybrid=False)

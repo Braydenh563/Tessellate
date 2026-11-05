@@ -7,6 +7,7 @@ had nothing to answer from.
 from datetime import date
 
 from tessellate.ai import composer
+from tessellate.ai import composer_read
 
 NOTES = [{"id": 1, "content": "# Budget October\n\nRent 650. Groceries 180. Phone 20. Spent 45 on a textbook.",
           "created_at": "2026-10-28"}]
@@ -18,7 +19,7 @@ def test_a_word_and_a_figure_is_quoted():
 
 
 def test_a_lone_word_is_still_noise():
-    assert not composer._short_fact("Booked.")
-    assert not composer._short_fact("Ideas")
-    assert composer._short_fact("Rent 650.")
-    assert composer._short_fact("Wifi: hunter2")
+    assert not composer_read._short_fact("Booked.")
+    assert not composer_read._short_fact("Ideas")
+    assert composer_read._short_fact("Rent 650.")
+    assert composer_read._short_fact("Wifi: hunter2")

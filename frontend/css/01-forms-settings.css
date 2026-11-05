@@ -612,26 +612,19 @@ button.ghost:active:not(:disabled) {
    the tint under the pointer or the keyboard. One rule for the family, so
    every card changes at once; `:where()` keeps it at the tonal rule's own
    weight, so a chosen or pressed state written anywhere still wins, and
-   `[data-contrast="on"]` still draws the edge. */
-:where(.card) button.ghost:where(:not(:is(dialog, .modal-card, .modal) *)) {
-  border-color: transparent;
-  background: none;
-  font-weight: 500;
-}
-:where(.card) button.ghost:where(:not(:is(dialog, .modal-card, .modal) *)):hover,
-:where(.card) button.ghost:where(:not(:is(dialog, .modal-card, .modal) *)):is(:focus-visible, :has(:focus-visible)) {
-  border-color: transparent;
-  background: var(--ghost-btn-bg);
-}
-/* The quiet tier by name, for the one place it is not given by a frame: a
-   second action beside a section's one filled button (Help's Replay the
-   welcome beside Start the tour, INBOX 804), and a row's repeated action
-   (DESIGN.md, Row actions). */
+   `[data-contrast="on"]` still draws the edge. The tier is also given by
+   name (`.quiet`: a second action beside a section's one filled button, INBOX
+   804; a row's repeated action). **Its words are the accent** (INBOX 1580, "hard
+   to tell that it's a button"), the hover and focus ground already there. */
+:where(.card) button.ghost:where(:not(:is(dialog, .modal-card, .modal) *)),
 button.ghost.quiet {
   border-color: transparent;
   background: none;
+  color: var(--accent-text);
   font-weight: 500;
 }
+:where(.card) button.ghost:where(:not(:is(dialog, .modal-card, .modal) *)):hover,
+:where(.card) button.ghost:where(:not(:is(dialog, .modal-card, .modal) *)):is(:focus-visible, :has(:focus-visible)),
 button.ghost.quiet:hover,
 button.ghost.quiet:is(:focus-visible, :has(:focus-visible)) {
   border-color: transparent;
@@ -1076,6 +1069,10 @@ progress {
   align-items: center;
   flex-wrap: wrap;
   gap: 0.4rem;
+  /* One head height for both columns (INBOX A1): the answer's has 32px
+     action buttons, so the records head took the same floor rather than
+     sitting 8px short. */
+  min-height: var(--control-h-lg);
 }
 /* **The answer head does not wrap: the badge shrinks instead.**
    Two reports, one shape. First: "at 100% and 95% zoom on my laptop, the ai
@@ -1139,8 +1136,7 @@ progress {
    surface (the inset tier, a hairline, the card radius); closed, it is the
    summary alone, as every fold is. The reasoning is Markdown now
    (`thinkingPaint`), so its paragraphs and lists keep their own spacing. */
-.thinking-fold[open],
-.why-fold[open] {
+.thinking-fold[open] {
   background: var(--surface-2);
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
@@ -1148,38 +1144,13 @@ progress {
 /* Open, the summary is the panel's head, not a second box inside it: the
    quiet-button face every summary takes (07-whiteboard-misc.css) drew a
    bordered pill within the panel's own border. */
-.thinking-fold[open] > .fold-summary:not(.icon-only):not(.icon-button),
-.why-fold[open] > .fold-summary:not(.icon-only):not(.icon-button) {
-  width: auto;
+.thinking-fold[open] > .fold-summary {
   border: 0;
   border-radius: var(--radius-md) var(--radius-md) 0 0;
   padding: var(--space-2) var(--space-3);
 }
-.thinking-fold[open] > .fold-summary:not(.icon-only):not(.icon-button):not(:hover):not(:focus-visible),
-.why-fold[open] > .fold-summary:not(.icon-only):not(.icon-button):not(:hover):not(:focus-visible) {
+.thinking-fold[open] > .fold-summary:not(:hover):not(:focus-visible) {
   background: transparent;
-}
-/* "Why this answer" (B30): a job's lines, the seconds in a fixed column so
-   the words start on one edge. */
-.why-fold {
-  margin-top: var(--space-2);
-}
-.why-lines {
-  margin: 0;
-  padding: 0 var(--space-3) var(--space-2);
-  list-style: none;
-  font-size: var(--text-sm);
-  color: var(--muted);
-}
-.why-lines > li {
-  display: grid;
-  grid-template-columns: 4.5em 1fr;
-  gap: var(--space-2);
-  padding: var(--space-1) 0;
-}
-.why-at {
-  font-variant-numeric: tabular-nums;
-  text-align: end;
 }
 /* The Markdown inside the body, reached from the fold (the body keeps its
    one rule, `test_ui_recipes.py`): the body is the fold's last child. */
@@ -1345,6 +1316,7 @@ input.md-task-inline:disabled,
   vertical-align: middle;
   box-shadow: none;
   cursor: default;
+  pointer-events: none;
 }
 #entry-list .entry-content .entry-task > input[type="checkbox"]:disabled:checked {
   background: var(--muted);
@@ -1845,8 +1817,13 @@ input.md-task-inline:disabled,
    visible keyboard focus ring. */
 .chip-interactive {
   cursor: pointer;
-  min-height: 1.5rem; /* the painted chip: a row of 24px pills */
   position: relative;
+}
+/* The painted chip: a row of 24px pills, and a reminder's facts line the same
+   (unslop 1103, 13: the tag chips were 21.2 beside the note chip's 24). */
+.chip-interactive,
+#reminder-groups .entry-links > .chip {
+  min-height: 1.5rem;
 }
 /* The target is `--target-min` tall whatever the paint (audit FE-14: the
    category and "Add tags" chips were 24px targets under the 28px floor).
@@ -2155,7 +2132,7 @@ button:not(.ghost) > .spinner {
   gap: 0.4rem;
 }
 .entry-actions button {
-  padding: 0.15rem 0.5rem;
+  padding: var(--space-1) var(--space-3);
   font-size: var(--text-base);
 }
 .entry-links {
@@ -3361,7 +3338,7 @@ mark.global-find-hit.global-find-current {
 .modal-nav {
   display: flex;
   flex-direction: column;
-  gap: 0.15rem;
+  gap: var(--space-1);
   /* Long nav on a short window scrolls on its own rather than pushing the
      dialog taller than the viewport. */
   overflow-y: auto;
@@ -3375,7 +3352,7 @@ mark.global-find-hit.global-find-current {
 .modal-nav>div {
   display: flex;
   flex-direction: column;
-  gap: 0.15rem;
+  gap: var(--space-1);
 }
 /* Group labels: quiet enough to scan past, clear enough to orient by. */
 /* Type comes from the eyebrow recipe at the top of this file. */
@@ -3870,10 +3847,13 @@ html.modal-open body {
 #dash-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  grid-auto-rows: 8px;
+  grid-auto-rows: 1px;
   grid-auto-flow: row dense;
   /* pack short widgets into the gaps */
-  gap: 1rem;
+  /* Columns only: a card's span already includes the gap below it, in whole
+     pixels (`sizeDashWidgetSpan`). A row gap on a 1px unit would be added
+     once per spanned row. */
+  gap: 0 var(--space-6);
   /* Neither inset is this grid's to draw: the sides are --page-gutter and the
      bottom is --page-bottom, both already on .tab-page. The 2rem bottom here
      was doubling that, so the dashboard scrolled 4rem past its last widget. */
@@ -3885,9 +3865,9 @@ html.modal-open body {
   flex-direction: column;
 }
 /* Until the spans are measured, cards flow at natural height rather than
-   collapsing to one 8px row. */
+   collapsing to one 1px row. */
 #dash-grid:not(.spans-ready) .dash-widget {
-  grid-row: span 40;
+  grid-row: span 600;
 }
 /* Widgets can span two columns ("wide"), toggled in Edit layout. */
 .dash-widget.wide {
@@ -3933,6 +3913,11 @@ html.modal-open body {
 }
 .dash-body>* {
   margin: 0;
+}
+/* A card's one action sits left under what it acts on (INBOX 1580); the column
+   stretched it across the card with its words centred. */
+.dash-body>button {
+  align-self: flex-start;
 }
 /* Keep one very tall widget (e.g. the weekly digest) from ballooning the row
    and leaving big gaps under its neighbours, cap the body and scroll inside.
@@ -4081,10 +4066,17 @@ html.modal-open body {
   align-items: center;
   gap: var(--space-1);
 }
-.focus-step-value {
-  min-width: 3.5em;
+.focus-presets .focus-step-value {
+  flex: 0 0 5.5em;
+  width: 5.5em;
+  min-width: 0;
+  padding-inline: var(--space-2);
+  margin: 0;
   text-align: center;
   font-variant-numeric: tabular-nums;
+  font-size: var(--text-sm);
+}
+.focus-step-unit {
   font-size: var(--text-sm);
 }
 .focus-today {
@@ -5096,10 +5088,12 @@ select {
 #settings-modal .settings-section .select-opener,
 #settings-modal .settings-section summary,
 #settings-modal .settings-section input[type="text"],
-#settings-modal .settings-section input[type="search"],
+#settings-modal .settings-section input[type="search"]:not(.search-field-input),
 #settings-modal .settings-section input[type="number"],
 #settings-modal .settings-section input[type="password"],
 #settings-modal .settings-section input[type="url"] {
+  /* Not a search field's input (INBOX 1609): its box is the field's, and this
+     32px set its text 3px below the icon in the Logs dock's 28px field. */
   height: var(--settings-control-h);
   min-height: 0;
   padding-block: 0;
@@ -5190,7 +5184,7 @@ select {
    `+` started matching, and 8px appeared out of nowhere the moment you asked
    for help. A margin that does not depend on what is or is not between two
    elements cannot do that. */
-#settings-modal .settings-section .row {
+#settings-modal .settings-section .row:not(.setting-control) {
   margin-top: var(--space-3);
 }
 #settings-modal .settings-section .row:first-child {
@@ -6090,7 +6084,7 @@ select {
   content: "";
   position: absolute;
   inset-block: var(--space-2);
-  inset-inline-start: calc(-1 * var(--space-3));
+  inset-inline-start: calc(-2 * var(--space-3));
   width: 2px;
   border-radius: var(--radius-pill);
   background: var(--accent-text);

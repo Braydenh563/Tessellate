@@ -125,7 +125,7 @@ function attachmentChip({ name, size, thumb, icon, facts: factsText, onOpen, sta
     state === "uploading"
       ? `Uploading ${Math.round(progress * 100)}%`
       : state === "error"
-        ? error || "Could not attach"
+        ? error || "Couldn't attach that file"
         : factsText || [kind, formatFileSize(size)].filter(Boolean).join(" · ");
   facts.textContent = pill && state === "ready" ? `[${(factsText || kind || "File").split(" · ")[0]}]` : factsLine;
   const body = document.createElement("span");
@@ -486,14 +486,14 @@ function renderBoardAttachments() {
 //: document), or the four-attachment ceiling already reached. The caller
 //: decides what to do about it, `docAiReview` falls back to pasting, because
 //: silently asking a question about nothing is the worse failure.
-function attachDocumentToChat(id, name) {
+function attachDocumentToChat(id, name, kind) {
   if (!id) return false;
   if (attachedDocuments.some((d) => d.id === id)) {
     renderDocumentAttachments();
     return true; // already staged: the badge the caller wanted is on screen
   }
   if (attachedDocuments.length >= MAX_CHAT_DOCUMENTS) return false;
-  attachedDocuments.push({ id, name: name || "Document" });
+  attachedDocuments.push({ id, name: name || "Document", kind });
   renderDocumentAttachments();
   announce(`Attached “${name || "document"}”. ${attachedDocuments.length} document(s) attached.`);
   return true;
@@ -506,7 +506,7 @@ function renderDocumentAttachments() {
   box.classList.toggle("hidden", attachedDocuments.length === 0);
   for (const document_ of attachedDocuments) {
     box.appendChild(
-      notebookCard({ kind: "document", id: document_.id, name: document_.name }, {
+      notebookCard({ kind: document_.kind || "document", id: document_.id, name: document_.name }, {
         removeTitle: `Don't send “${document_.name}” with this message`,
         onRemove: () => {
           attachedDocuments = attachedDocuments.filter((d) => d.id !== document_.id);
@@ -641,7 +641,7 @@ function plainText(md) {
 //: only).
 function setActiveChoice(button, on) {
   button.classList.toggle("active", on);
-  button.setAttribute("aria-pressed", String(on));
+  button.setAttribute("aria-pressed", on);
 }
 
 //: **A note's or document's name as plain words**, the one way (INBOX 820: a
@@ -817,7 +817,7 @@ function notePickerShape(source) {
       //: A PDF shows its first page where the server can draw one
       //: (`has_pages`, the Library Files row's own test and URL); the row
       //: puts the glyph back if the page fails to load.
-      face: (row) => (row.has_pages ? notePickerPage(`/files/${row.id}/pdf-page/0`) : null),
+      face: (row) => (row.has_pages ? notePickerPage(row.page || `/files/${row.id}/pdf-page/0`) : null),
       meta: (row) => [notePickerFacts(
         ((row.original_name || "").includes(".") ? row.original_name.split(".").pop().toUpperCase() : (row.mime || "").split("/").pop()),
         row.size_bytes ? formatFileSize(row.size_bytes) : "",
@@ -1020,7 +1020,7 @@ function setNotePickerSource(source, { focus = "search" } = {}) {
   for (const button of document.querySelectorAll("#note-picker-sources [data-picker-source]")) {
     const on = button.dataset.pickerSource === source;
     button.classList.toggle("active", on);
-    button.setAttribute("aria-selected", String(on));
+    button.setAttribute("aria-selected", on);
     button.tabIndex = on ? 0 : -1;
     if (on && focus === "tab") button.focus();
   }
@@ -1234,6 +1234,7 @@ function releaseChatComposer({ announce = true } = {}) {
   //: Called by every way out of a chat: the page it read is that chat's.
   chatWeb.lastUrl = null;
   if (!chatController || !chatStreaming) return;
+  $("chat-messages").removeAttribute("aria-busy"); // this transcript is no longer the one streaming
   const input = $("chat-input");
   input.disabled = false;
   show("chat-send");

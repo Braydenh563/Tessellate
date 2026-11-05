@@ -32,7 +32,7 @@ def _registry() -> list[dict]:
 
 def test_registry_has_the_known_tools():
     ids = {t["id"] for t in _registry()}
-    assert {"calculator", "convert", "timer", "stopwatch"} <= ids
+    assert {"calculator", "convert", "timer", "stopwatch", "diagram"} <= ids
     assert "equation" not in ids, "Equation is the Calculator and equations row now (INBOX 1527)"
 
 

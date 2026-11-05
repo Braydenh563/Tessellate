@@ -30,7 +30,7 @@ def test_extract_text_returns_empty_and_never_raises_when_the_binary_is_missing(
 ):
     ocr._log_binary_missing.cache_clear()  # a previous test may have already "logged" it
     monkeypatch.setattr(ocr.shutil, "which", lambda name: None)
-    with caplog.at_level("INFO", logger="memorymap.ocr"):
+    with caplog.at_level("INFO", logger="tessellate.ocr"):
         assert ocr.extract_text(Path("/does/not/exist.png")) == ""
         assert ocr.extract_text(Path("/does/not/exist2.png")) == ""
     # Logged once, not raised, and not once per call, the "once per

@@ -5,7 +5,7 @@
    It is the Calculator's Equation tab (INBOX 1527), so the card is the sheet's
    and this file only lays out what is inside the pane: the mode, the equation
    field (math-field-lazy.css draws it), the value line, the search, the
-   palette scroller and the foot, in one column that fits a phone. */
+   palette scroller, in one column that fits a phone. */
 
 .math-editor {
   display: flex;
@@ -20,9 +20,17 @@
   font-size: var(--text-xs);
 }
 
-/* The kind strip spans the panel under its head, as the icon picker's does. */
-.math-editor-mode {
-  align-self: stretch;
+/* **Inline and Display look different in the field** (INBOX 1622, the owner: "I dont see a difference between the calculator inline and display options"): an inline equation is text-sized and sits at the start of the line, as it will in a sentence; a display one is larger and centred, as it will be on a line of its own. The strip above it is the control, this is the proof. */
+.math-editor[data-display="false"] math-field.math-field {
+  font-size: var(--text-lg);
+}
+
+.math-editor[data-display="true"] math-field.math-field {
+  font-size: var(--text-h1);
+}
+
+.math-editor[data-display="true"] math-field.math-field::part(content) {
+  justify-content: center;
 }
 
 /* The line under the head: the hint, and the LaTeX button that shows the TeX. */
@@ -44,28 +52,44 @@
   flex: none;
 }
 
-/* The sheet's card scrolls (a bottom sheet is two thirds of the window), so the
-   palette does not scroll again inside it: a scroll in a scroll traps a thumb. */
+/* Pin and LaTeX are the toolbar's quiet buttons (`.quiet`: words, no edge); a switched-on one takes the accent's tint. */
+.math-editor-lede-tools > button[aria-pressed="true"] {
+  background: var(--accent-soft);
+  color: var(--accent-text);
+}
+
+/* The dialog's panes scroll (`.calc-panes`, reply-kit-lazy.css), so the
+   palette does not scroll again inside them: a scroll in a scroll traps a thumb. */
 .math-editor-list {
   min-width: 0;
 }
 
+/* The group's head is the type scale's eyebrow (`.eyebrow`: `--text-sm`, 600, muted, caps), not a size of its own. */
 .math-editor-group {
-  padding: var(--space-2) 0 var(--space-1);
-  color: var(--muted);
-  font-size: var(--text-xs);
-  font-weight: 600;
+  /* A jump lands the heading under the sticky row of groups, not behind it. */
+  scroll-margin-top: calc(var(--space-9) + var(--space-2));
+  padding: var(--space-3) 0 var(--space-2);
 }
 
 .math-editor-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(2.5rem, 1fr));
-  gap: var(--space-1);
+  grid-template-columns: repeat(auto-fill, minmax(2.75rem, 1fr));
 }
 
-/* Structures draw a whole formula, so their tiles are wider. */
+/* Structures draw a whole formula, so each tile is as wide as its formula (INBOX 1579: a fixed 4.5rem column clipped the
+   3x3 matrix's brackets, 28 tiles overflowed): a wrapping row, the tiles growing to fill it, never narrower than a key. */
+/* A function's name (arccos, limsup) is letters, not a glyph: two columns of the symbol grid. */
+.math-editor-grid > .math-editor-tile.is-word {
+  grid-column: span 2;
+}
+
 .math-editor-grid-wide {
-  grid-template-columns: repeat(auto-fill, minmax(4.5rem, 1fr));
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.math-editor-grid-wide > .math-editor-tile {
+  flex: 1 0 auto;
+  min-width: 4.5rem;
 }
 
 .math-editor .math-editor-tile {
@@ -73,9 +97,8 @@
   place-items: center;
   min-width: 0;
   min-height: var(--target-min);
-  padding: var(--space-1);
-  overflow: hidden;
-  font-size: var(--text-base);
+  padding: var(--space-1) var(--space-2);
+  font-size: var(--text-lg);
 }
 
 .math-editor-tile math {
@@ -86,6 +109,61 @@
   line-height: 1;
 }
 
-.math-editor-foot {
-  margin: 0;
+/* **Quicker than scrolling** (INBOX 1539): a row of the groups under the search, which stays in reach at the top of the
+   scrolling pane, jumps to a group and marks the one in view; the palette keeps its groups.
+   **The strip is a band of its own** (INBOX 1584): the band is the sticky, opaque part (the card's own colour, a line under
+   it), so the strip's edge fade runs into that colour and not over the heading or the tiles scrolling under it, and the
+   strip's thin scrollbar is inside the band, under the words, never across the tiles. */
+.math-editor-band {
+  position: sticky;
+  top: calc(-1 * var(--space-1));
+  z-index: 2;
+  margin-inline: calc(-1 * var(--space-1));
+  padding-inline: var(--space-1);
+  background: var(--modal-bg-opaque);
+  box-shadow: inset 0 -1px 0 var(--divider);
+}
+
+.math-editor-band[hidden] {
+  display: none;
+}
+
+.math-editor-jump {
+  display: flex;
+  gap: var(--space-1);
+  padding: 0 0 var(--space-1);
+  overflow-x: auto;
+  /* The one sign that the row runs on, besides the edge fade: a thin bar, no arrows. */
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+
+/* A palette's row is denser than a page's strip: the strip's height and underline, its own side room. */
+.math-editor-jump > button {
+  flex: none;
+  min-width: 0;
+  padding: 0 var(--space-3);
+  white-space: nowrap;
+  transition: color var(--ui-base) var(--ease-out);
+}
+
+/* A pinned tile wears a small mark at its corner; Pin mode says so in its button and in the line above. */
+.math-editor-tile {
+  position: relative;
+}
+
+.math-editor-tile.is-pinned::after {
+  content: "";
+  position: absolute;
+  top: var(--space-1);
+  right: var(--space-1);
+  width: var(--space-1);
+  height: var(--space-1);
+  border-radius: var(--radius-pill);
+  background: var(--accent);
+}
+
+.math-editor-pinning .math-editor-tile {
+  outline: 1px dashed var(--accent);
+  outline-offset: -2px;
 }

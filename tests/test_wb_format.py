@@ -126,8 +126,9 @@ def test_a_multi_selection_shows_what_it_shares_and_says_mixed() -> None:
         assert part in shown, part
     assert "indeterminate = mixed(" in sync
     assert '"mixed"' in sync and '? "Mixed"' in sync
-    # Every edit still goes through the one-gesture writer.
-    assert "await wbRecordGesture(async () => {" in FORMAT[FORMAT.index("async function wbFmtApply(") :][:400]
+    # Every edit still goes through the one-gesture writer. The window grew from 400 when INBOX 1685 put a
+    # comment and the one-at-a-time wrapper ahead of it; the call is unchanged.
+    assert "await wbRecordGesture(async () => {" in FORMAT[FORMAT.index("async function wbFmtApply(") :][:700]
 
 
 # Small whiteboard rows: reset style (INBOX 747) and a panel frame's hint line (INBOX 740).

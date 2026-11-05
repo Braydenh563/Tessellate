@@ -262,7 +262,7 @@ function replyStatsPanel() {
   const { panel, head } = replyPanelShell("reply-stats", "Your notebook", "ph:chart-bar");
   const open = document.createElement("button");
   open.type = "button";
-  open.className = "ghost small reply-panel-open";
+  open.className = "ghost quiet small reply-panel-open";
   setLabel(open, "ph:arrow-square-out Open Statistics");
   open.title = "The Statistics page: notebook, reminders and usage, counted";
   open.addEventListener("click", () => openStatistics());
@@ -316,8 +316,75 @@ function replyTimelinePanel(event) {
 //: it; the result is a live region; the last results come back with a press.
 //: Reached from a sum or a conversion's answer (its panel), /calc with
 //: nothing after it, and the palette's Calculator row.
-//: `tabs`: the dialog's, in order: sums, conversions, and the equation editor.
-const replyCalc = { history: [], units: null, tabs: [["work", "Work out"], ["convert", "Convert units"], ["equation", "Equation"]] };
+//: `tabs`: the dialog's, in order: sums, conversions, and the equation editor, all named for what they hold (INBOX 1530 g L4: a verb, a verb and a noun read as three tools). `opened` numbers the dialogs, for ids that never collide with one still leaving.
+const replyCalc = { units: null, opened: 0, tabs: [["work", "Sum"], ["convert", "Units"], ["equation", "Equation"]],
+  //: **The history, one list per tab** (INBOX 1541), kept in this browser's prefs store as `{work, convert, equation}`; `calcTex.log` holds its rules.
+  load: (tab) => calcTex.log.clean(prefs.json("calc-history", {})[tab]),
+  save: (tab, list) => prefs.setJSON("calc-history", { ...prefs.json("calc-history", {}), [tab]: list }),
+  //: **The scientific keys** (INBOX 1579): four columns like the keypad, each inserting what it shows ("sin(" waits for its number), the last row the memory.
+  sciKeys: [
+    ["sin", "sin("], ["cos", "cos("], ["tan", "tan("], ["π", "pi"],
+    ["sin⁻¹", "asin("], ["cos⁻¹", "acos("], ["tan⁻¹", "atan("], ["e", "e"],
+    ["ln", "ln("], ["log", "log("], ["√", "sqrt("], ["x²", "^2"],
+    ["xʸ", "^"], ["n!", "!"], ["|x|", "abs("], ["eˣ", "exp("],
+    ["MC", "mc"], ["MR", "mr"], ["M+", "m+"], ["M−", "m-"],
+  ],
+  sciNames: {
+    "sin(": "Sine", "cos(": "Cosine", "tan(": "Tangent", pi: "Pi", "asin(": "Inverse sine", "acos(": "Inverse cosine", "atan(": "Inverse tangent", e: "e",
+    "ln(": "Natural logarithm", "log(": "Logarithm, base 10", "sqrt(": "Square root", "^2": "Squared", "^": "To the power of", "!": "Factorial",
+    "abs(": "Absolute value", "exp(": "e to the power of", mc: "Memory clear", mr: "Memory recall", "m+": "Memory add", "m-": "Memory subtract",
+  },
+  //: **A `.tabs-line` of exclusive choices** (DESIGN.md, "A popup that chooses a kind": no pills in popups, INBOX 715 and 1622): words with a 2px line under the chosen one, `role="tab"` and `aria-selected`, one Tab stop with the arrows and Home and End walking it. The ring is `:focus-visible` only (the strip's own rule), so a press with the pointer draws none. `sync(value)` moves the choice.
+  seg(label, choices, value, onChange) {
+    const seg = document.createElement("div");
+    seg.className = "tabs-line popup-kinds calc-seg";
+    seg.setAttribute("role", "tablist");
+    seg.setAttribute("aria-label", label);
+    //: A choice's third element is the short form it shows (Deg, Rad: the head fits one row at 390 with no width query); the full words stay its name and its title.
+    const buttons = choices.map(([key, words, short]) => {
+      const b = document.createElement("button");
+      b.type = "button";
+      b.setAttribute("role", "tab");
+      b.dataset.value = key;
+      b.textContent = short || words;
+      if (short) {
+        b.setAttribute("aria-label", words);
+        b.title = words;
+      }
+      b.addEventListener("click", () => onChange(key));
+      return b;
+    });
+    seg.addEventListener("keydown", (event) => {
+      const at = buttons.indexOf(document.activeElement);
+      const to = { ArrowRight: (at + 1) % buttons.length, ArrowLeft: (at + buttons.length - 1) % buttons.length, Home: 0, End: buttons.length - 1 }[event.key];
+      if (at < 0 || to === undefined) return;
+      event.preventDefault();
+      onChange(buttons[to].dataset.value);
+      buttons[to].focus();
+    });
+    const sync = (now) => {
+      for (const b of buttons) {
+        const chosen = b.dataset.value === now;
+        b.setAttribute("aria-selected", String(chosen));
+        b.classList.toggle("active", chosen);
+        b.tabIndex = chosen ? 0 : -1;
+      }
+    };
+    seg.append(...buttons);
+    sync(value);
+    return { seg, sync };
+  },
+};
+
+//: The head '?' (INBOX 1530 g M6): the dialog is worked out by the app with no model; one line per tab, then where Insert writes.
+const REPLY_CALC_HELP = [
+  "Worked out by the app, with no model.",
+  "Sum: type or key a sum, a percentage or a conversion (12 * (3 + 4), 15% of 80, 5 km to miles). It is drawn as maths under the box as you type, and a preview shows once it is a whole sum; Enter or = keeps it. Scientific adds sine, cosine, tangent and their inverses, logs, powers, roots, a factorial, pi and e, with Degrees or Radians and a memory (MC, MR, M+, M-).",
+  "Units: pick a kind, an amount and two units. Currency rates are set by hand and dated, not today's rate. Time zone takes a time of day and two places (09:00, London, Tokyo) and reads each place's clock from this computer, so it works offline.",
+  "Equation: click a dotted box to fill it; a box you empty again comes back. / makes a fraction, ^ and _ a power or a subscript, and LaTeX such as \\frac or \\alpha turns into the symbol as you type it. Pick a structure or a symbol from the palette; a selection goes into the first box. The row of groups jumps to one; Pin makes a tile a favourite, and Recent shows the last ones used. Inline sits in a sentence, Display on its own line. Click a drawn equation in a note, or open this with the cursor inside one, to edit it.",
+  "History: each tab keeps its last twenty answers on this device. Open History under the keypad, press a row to put it back in the fields, or use Copy, Edit (the next keep replaces that row) and Remove; Clear empties it, and Undo brings it back. Every answer has a Copy button beside it.",
+  "Insert writes into the text box you opened this from (Alt+= in a box, or Ctrl+K over one). With none open, Copy is the way out. Ctrl+Enter inserts an equation.",
+];
 
 const REPLY_CALC_KEYS = [
   ["C", "clear"], ["(", "("], [")", ")"], ["ph:divide", "/"],
@@ -332,7 +399,7 @@ const REPLY_CALC_KEYS = [
 const REPLY_CALC_PAIRS = {
   length: ["kilometres", "miles"], mass: ["kilograms", "pounds"], volume: ["litres", "US gallons"],
   temperature: ["°C", "°F"], speed: ["kilometres an hour", "miles an hour"], area: ["square metres", "square feet"],
-  time: ["hours", "minutes"], data: ["gigabytes", "megabytes"], currency: ["USD", "EUR"],
+  time: ["hours", "minutes"], data: ["gigabytes", "megabytes"], currency: ["USD", "EUR"], timezone: ["London", "Tokyo"],
 };
 
 const REPLY_CALC_NAMES = { clear: "Clear", "/": "Divide", "*": "Times", "-": "Minus", "+": "Plus", "%": "Percent", equals: "Work it out", ".": "Point" };
@@ -341,7 +408,7 @@ function replyCalcPanel(event) {
   const { panel, head } = replyPanelShell("reply-calc", "Calculator", "ph:calculator");
   const open = document.createElement("button");
   open.type = "button";
-  open.className = "ghost small reply-panel-open";
+  open.className = "ghost quiet small reply-panel-open";
   setLabel(open, "ph:arrow-square-out Open the calculator");
   open.title = "Work it out again, change it, or convert units";
   open.addEventListener("click", () => openCalculator(event.input || ""));
@@ -352,7 +419,8 @@ function replyCalcPanel(event) {
 }
 
 async function replyCalcWork(text) {
-  const asked = String(text || "").trim();
+  //: A typeset minus (U+2212), pasted from a note, is the sign the reader knows.
+  const asked = String(text || "").replace(/\u2212/g, "-").trim();
   if (!asked) return null;
   return apiJson(`/utilities/work?q=${encodeURIComponent(asked)}`);
 }
@@ -378,66 +446,227 @@ function openCalculator(input = "", mode = "work", { target = null } = {}) {
   }
   openSheet({
     label: "Calculator and equations",
-    sub: "Sums, conversions and equations, worked out by the app with no model.",
     name: "calculator",
+    //: A half-written equation survives a stray press outside (the popover it replaced ignored one, maths1527).
+    hasWork: () => [...document.querySelectorAll('[data-sheet="calculator"] math-field')].some((f) => f.value?.trim()),
     build: (card, close) => replyCalcBuild(card, input, mode, { target, close }),
   });
 }
 
-function replyCalcBuild(card, input, mode = "work", { target = null, close = () => {} } = {}) {
+//: A dashboard widget's body (INBOX 1558): the Sum and Units tabs drawn into it through the dialog's own build, with no Insert and no focus taken.
+//: `only` draws that one tab with no strip (the Convert widget, INBOX 1617).
+openCalculator.inline = (host, mode = "work", { only = false } = {}) => replyCalcBuild(host, "", mode, { inline: true, only });
+
+function replyCalcBuild(card, input, mode = "work", { target = null, close = () => {}, inline = false, only = false } = {}) {
+  //: One height for all three tabs, the strip and the action row pinned and the panes between them scrolling (INBOX 1530 g M2: on a bottom-anchored sheet the strip moved 188 px between tabs and 4 to 40 px on a result).
+  card.classList.add("calc-card");
+  if (inline) card.classList.add("calc-inline");
+  //: An inline calculator has no Equation tab (the field needs its own bundle and a box to write into).
+  let kinds = inline ? replyCalc.tabs.filter(([key]) => key !== "equation") : replyCalc.tabs;
+  if (!kinds.some(([key]) => key === mode)) mode = "work";
+  if (only) kinds = kinds.filter(([key]) => key === mode);
   //: A tab strip, not a pill (DESIGN.md, "A popup that chooses a kind").
   const modes = document.createElement("div");
   modes.className = "tabs-line popup-kinds calc-modes";
   modes.setAttribute("role", "tablist");
   modes.setAttribute("aria-label", "Calculator mode");
-  const equation = replyCalcEquation(target, close);
-  const panes = { work: replyCalcWorkPane(input, { target, close }), convert: replyCalcConvertPane(), equation: equation.pane };
+  const actions = replyCalcActions(target, close, inline);
+  const equation = inline ? null : replyCalcEquation(target, close, actions);
+  const made = { work: () => replyCalcWorkPane(input, actions), convert: () => replyCalcConvertPane(actions), equation: () => equation.pane };
+  const panes = Object.fromEntries(kinds.map(([key]) => [key, made[key]()]));
+  //: Where focus goes when a tab is chosen with a press; an arrow keeps it on the strip (INBOX 1530 g M4: the first arrow onto Equation put the caret in the math field, so the next arrow moved inside the equation instead of on to the tab after it).
   const focusIn = {
     work: () => panes.work.querySelector(".calc-input")?.focus(),
     convert: () => panes.convert.querySelector(".calc-amount")?.focus(),
-    equation: () => equation.mount(),
+    equation: () => equation?.mount(),
   };
+  const wrap = document.createElement("div");
+  wrap.className = "calc-panes";
+  //: Each tab names its panel and each panel its tab (INBOX 1530 g M3), by ids that carry the dialog's number.
+  const n = replyCalc.opened;
   for (const [key, pane] of Object.entries(panes)) {
     pane.setAttribute("role", "tabpanel");
-    pane.classList.toggle("hidden", key !== mode);
+    pane.id = `calc-panel-${n}-${key}`;
+    pane.setAttribute("aria-labelledby", `calc-tab-${n}-${key}`);
+    pane.classList.toggle("is-off", key !== mode);
   }
-  const tabs = replyCalc.tabs.map(([key, words]) => {
+  const select = (key, { focus = true } = {}) => {
+    for (const other of tabs) {
+      const on = other.dataset.tab === key;
+      other.setAttribute("aria-selected", String(on));
+      other.classList.toggle("active", on);
+      other.tabIndex = on ? 0 : -1;
+    }
+    for (const [name, pane] of Object.entries(panes)) pane.classList.toggle("is-off", name !== key);
+    wrap.scrollTop = 0;
+    actions.show(key);
+    if (focus) focusIn[key]();
+    else if (key === "equation") equation?.mount({ focus: false });
+  };
+  const tabs = kinds.map(([key, words]) => {
     const button = document.createElement("button");
     button.type = "button";
     button.setAttribute("role", "tab");
+    button.id = `calc-tab-${n}-${key}`;
+    button.setAttribute("aria-controls", `calc-panel-${n}-${key}`);
     button.textContent = words;
     button.dataset.tab = key;
-    button.addEventListener("click", () => {
-      for (const other of tabs) {
-        const on = other === button;
-        other.setAttribute("aria-selected", String(on));
-        other.classList.toggle("active", on);
-        other.tabIndex = on ? 0 : -1;
-      }
-      for (const [name, pane] of Object.entries(panes)) pane.classList.toggle("hidden", name !== key);
-      focusIn[key]();
-    });
+    button.addEventListener("click", () => select(key));
     return button;
   });
-  //: Arrows, Home and End walk the strip, which is one Tab stop.
+  //: Arrows, Home and End walk the strip, which is one Tab stop; the panel opens under the focus without taking it.
   modes.addEventListener("keydown", (event) => {
     const at = tabs.indexOf(document.activeElement);
     const to = { ArrowRight: (at + 1) % tabs.length, ArrowLeft: (at + tabs.length - 1) % tabs.length, Home: 0, End: tabs.length - 1 }[event.key];
     if (at < 0 || to === undefined) return;
     event.preventDefault();
-    tabs[to].click();
+    select(tabs[to].dataset.tab, { focus: false });
     tabs[to].focus();
   });
   modes.append(...tabs);
-  card.append(modes, ...Object.values(panes));
-  const first = Math.max(0, replyCalc.tabs.findIndex(([key]) => key === mode));
+  wrap.append(...Object.values(panes));
+  card.append(...(only ? [] : [modes]), wrap, actions.el);
+  //: **The head's '?'** (DESIGN.md, a dialog's head; INBOX 1530 g M6): what each tab does and where Insert writes, behind the title as every dialog's is. It replaces the sub line (a sentence the dialog carried at all times, 32 px of the card) and the Equation tab's own '?'.
+  const head = card.querySelector(".sheet-head");
+  if (head) {
+    const helpId = `calc-help-${n}`;
+    const help = document.createElement("button");
+    help.type = "button";
+    help.className = "icon-only ghost small dialog-head-btn";
+    help.setAttribute("data-help-for", helpId);
+    help.setAttribute("aria-controls", helpId);
+    help.setAttribute("aria-expanded", "false");
+    help.title = "About Calculator and equations";
+    help.setAttribute("aria-label", "About Calculator and equations");
+    const icon = document.createElement("i");
+    icon.className = "ph ph-question";
+    icon.setAttribute("aria-hidden", "true");
+    help.appendChild(icon);
+    const group = document.createElement("span");
+    group.className = "dialog-head-actions";
+    const closeButton = head.querySelector(".sheet-close");
+    if (closeButton) group.appendChild(closeButton);
+    head.querySelector(".sheet-title")?.after(help);
+    head.appendChild(group);
+    const body = document.createElement("div");
+    body.className = "help-body hidden";
+    body.id = helpId;
+    body.setAttribute("role", "dialog");
+    body.setAttribute("aria-label", "About Calculator and equations");
+    for (const line of REPLY_CALC_HELP) {
+      const p = document.createElement("p");
+      p.textContent = line;
+      body.appendChild(p);
+    }
+    head.after(body);
+  }
+  const first = Math.max(0, kinds.findIndex(([key]) => key === mode));
   for (const [i, tab] of tabs.entries()) {
     tab.setAttribute("aria-selected", String(i === first));
     tab.classList.toggle("active", i === first);
     tab.tabIndex = i === first ? 0 : -1;
   }
-  if (first) focusIn[replyCalc.tabs[first][0]]();
+  actions.show(kinds[first][0]);
+  if (inline) return;
+  if (first) focusIn[kinds[first][0]]();
   else requestAnimationFrame(() => focusIn.work());
+}
+
+//: **One action row for all three tabs** (INBOX 1530 g, H2, M1, L2, L6). The
+//: tabs read as three tools because Work out had a left ghost Insert row,
+//: Equation a right filled Insert beside a Cancel and Convert nothing; nothing
+//: said where Insert writes, and a dialog opened with no box had no Insert and
+//: no reason. Now every tab ends in the same row: a line saying where Insert
+//: writes (or that no box is open), then Copy, Insert as equation (Sum and
+//: Units) and the one filled Insert. A button with nothing to act on stays in
+//: the Tab order as `aria-disabled`, is described by that line, and says why
+//: when pressed (Copy on an empty result used to do nothing at all). A pane
+//: hands in what it can do with `provide(key, {ready, text, equation, ...})`.
+function replyCalcActions(target, close, inline = false) {
+  const id = `calc-where-${++replyCalc.opened}`;
+  const el = document.createElement("div");
+  el.className = "calc-actions";
+  const where = document.createElement("p");
+  where.className = "muted calc-where";
+  where.id = id;
+  const row = document.createElement("div");
+  row.className = "row right calc-actions-buttons";
+  const providers = {};
+  let shown = "work";
+  const current = () => providers[shown];
+  //: Where Insert writes, in the words a person would use for the box they were in (by id, as the opener does: `editorSurfaceKind` answers null until the Library bundle has loaded).
+  const kind = target ? EDITOR_SURFACES[target.id] || editorSurfaceKind(target) : null;
+  const name = target?.id === "question" ? "the Ask box" : { note: "the note", document: "the document", chat: "the Chat box", agent: "the Agent box", skill: "the skill steps" }[kind] || "the text box you came from";
+  const blocked = (kind) => {
+    const p = current();
+    if (kind !== "copy" && !target) return "No text box is open, so there is nowhere to insert. Use Copy.";
+    return p?.ready() ? "" : p?.first || "There is nothing here yet.";
+  };
+  const write = async (equation) => {
+    const p = current();
+    const text = equation ? p.equation() : p.text();
+    await ensureModule("mathEditor");
+    if (mathEditorWrite(target, text, { plain: !equation })) close();
+    else toast("Couldn't write into that box.", "info");
+  };
+  const act = (kind) => {
+    const why = blocked(kind);
+    if (why) return toast(why, "info");
+    const p = current();
+    if (kind === "copy") {
+      if (p.copy) return p.copy();
+      return navigator.clipboard?.writeText(p.text()).then(() => toast("Result copied."), () => toast("Couldn't copy the result.", "info"));
+    }
+    if (p.insert) return p.insert();
+    return write(kind === "equation");
+  };
+  const copy = smallButton("Copy", "Copy the result", () => act("copy"));
+  const asEquation = smallButton("ph:function Insert as equation", "Write the sum and its result as an equation", () => act("equation"));
+  const insert = smallButton("Insert", "Write the result into the text", () => act("insert"), false);
+  insert.classList.add("primary");
+  for (const button of [copy, asEquation, insert]) button.setAttribute("aria-describedby", id);
+  //: The dialog foot: the one filled Insert last, Copy the lone bordered secondary beside it, and the third (a different kind of write) a quiet one at the start of the row.
+  asEquation.classList.add("quiet", "calc-as-equation");
+  row.append(asEquation, copy, insert);
+  //: A widget has no Insert, so Copy is alone in its row and takes no edge.
+  if (inline) copy.classList.add("quiet");
+  //: A widget has no box to write into: Copy is its one action, and the line about Insert is not drawn.
+  if (inline) where.classList.add("hidden");
+  el.append(where, row);
+  const sync = () => {
+    const p = current();
+    if (!p) return;
+    const ready = Boolean(p.ready());
+    const label = p.label?.() || "Insert";
+    setLabel(insert, label);
+    copy.title = p.copyTitle;
+    insert.title = p.insertTitle;
+    asEquation.classList.toggle("hidden", inline || !p.equation);
+    insert.classList.toggle("hidden", inline);
+    copy.setAttribute("aria-disabled", String(!ready));
+    insert.setAttribute("aria-disabled", String(!ready || !target));
+    asEquation.setAttribute("aria-disabled", String(!ready || !target));
+    where.textContent = !target
+      ? `No text box is open. Copy ${p.what}, then paste it where you want it.`
+      : ready
+        ? `${label} writes into ${name}.`
+        : `${label} writes into ${name} once there is ${p.needs}.`;
+  };
+  return {
+    el,
+    sync,
+    provide: (key, provider) => { providers[key] = provider; },
+    show: (key) => { shown = key; sync(); },
+    //: What the row does with a worked-out result (Sum and Units): the figure to copy or insert, and the sum with its figure as an equation.
+    result: (read, words) => ({
+      ...words,
+      copyTitle: "Copy the result",
+      insertTitle: "Write the result into the text",
+      ready: () => Boolean(read()),
+      text: () => calcFigure(read().answer, true),
+      equation: () => calcTex.toTex(read().input, calcFigure(read().answer, true)),
+    }),
+  };
 }
 
 // CALC-TEX-BEGIN
@@ -454,6 +683,103 @@ const calcTex = {
     sum = sum.replace(/\^\{([^{}]*)\}/g, "^($1)").replace(/\{/g, "(").replace(/\}/g, ")");
     const plain = /^[0-9+\-*/^().,%\s]+$/.test(sum) && /\d/.test(sum);
     return plain && /[+\-*/^%]/.test(sum.replace(/^\s*-/, "")) ? sum.trim() : null;
+  },
+
+  //: Whether a typed sum is still being written: it ends in a sign, a joining word ("5 km to") or has a bracket left open. Such a sum is not an error yet (INBOX 1579).
+  pending(text) {
+    const sum = String(text || "").trim();
+    if (!sum) return false;
+    const open = (sum.match(/\(/g) || []).length > (sum.match(/\)/g) || []).length;
+    return open || /[-+*/×÷^(√∛]$/.test(sum) || /\b(?:of|to|in|into|as|from|plus|minus|times|over|by|and|per|sin|cos|tan|asin|acos|atan|sinh|cosh|tanh|ln|log|sqrt|cbrt|exp|abs)$/i.test(sum);
+  },
+
+  //: **The sum as typeset maths, as it is typed** (INBOX 1579): `12*(3+4)` as 12 × (3 + 4), `2^10` with a raised 10, `sqrt(16)` under a root, `pi` as π, `sin(30)` upright, words in text. It reads whatever is typed, unfinished or not, and never throws: a sign with nothing after it leaves an empty box, not a failure. The raw text stays in the field; this is only what is drawn under it. Returns TeX, "" for nothing.
+  live(text) {
+    const names = {
+      sin: "\\sin", cos: "\\cos", tan: "\\tan", sinh: "\\sinh", cosh: "\\cosh", tanh: "\\tanh", ln: "\\ln", log: "\\log", lg: "\\lg", exp: "\\exp",
+      asin: "\\arcsin", arcsin: "\\arcsin", acos: "\\arccos", arccos: "\\arccos", atan: "\\arctan", arctan: "\\arctan", log2: "\\log_{2}", log10: "\\log_{10}",
+    };
+    const consts = { pi: "\\pi", π: "\\pi", tau: "\\tau", τ: "\\tau", e: "e" };
+    //: The empty box the math renderer draws where a sign has nothing after it yet.
+    const slot = "\u25a1";
+    //: The bracket that opens at `from`: its inside and where it ends (a bracket still open runs to the end).
+    const inside = (s, from) => {
+      let depth = 0;
+      for (let j = from; j < s.length; j++) {
+        if (s[j] === "(") depth++;
+        else if (s[j] === ")" && !--depth) return [s.slice(from + 1, j), j + 1];
+      }
+      return [s.slice(from + 1), s.length];
+    };
+    //: What a root or a power takes: a bracket, or the number or name right after it.
+    const operand = (s, at) => {
+      if (s[at] === "(") {
+        const [body, end] = inside(s, at);
+        return [walk(body) || slot, end];
+      }
+      const m = /^(?:-?\d[\d.]*|[A-Za-z]+|[πτ])/.exec(s.slice(at));
+      if (!m) return [slot, at];
+      const w = m[0].toLowerCase();
+      return [w in consts ? consts[w] : m[0], at + m[0].length];
+    };
+    const known = (w) => w in names || w in consts || w === "sqrt" || w === "cbrt";
+    const walk = (s) => {
+      let out = "";
+      let word = "";
+      const flush = () => {
+        if (word) out += `${out ? "\\;" : ""}\\text{${word}}\\;`;
+        word = "";
+      };
+      for (let i = 0; i < s.length; ) {
+        const c = s[i];
+        const rest = s.slice(i);
+        let m;
+        if (/\s/.test(c)) i++;
+        else if ((m = /^[A-Za-z]+[0-9]{0,2}|^[πτ]/.exec(rest))) {
+          //: A whole word, or a name with figures run on ("log10", "e2"); never the front of a longer word ("tangent").
+          let w = m[0].toLowerCase();
+          if (!known(w)) w = w.replace(/[0-9]+$/, "");
+          if (!known(w)) {
+            word += `${word ? " " : ""}${m[0]}`;
+            i += m[0].length;
+            continue;
+          }
+          flush();
+          i += w.length;
+          if (w === "sqrt" || w === "cbrt") {
+            const [body, end] = operand(s, i);
+            out += w === "cbrt" ? `\\sqrt[3]{${body}}` : `\\sqrt{${body}}`;
+            i = end;
+          } else out += w in names ? `${names[w]} ` : consts[w];
+        } else {
+          flush();
+          i++;
+          if (/\d|\./.test(c)) {
+            const n = /^(?:\d[\d,]*\.?\d*|\.\d+)/.exec(rest)?.[0] || c;
+            out += n.replace(/,/g, "");
+            i += n.length - 1;
+          } else if ("*×·⋅".includes(c)) out += " \\times ";
+          else if ("/÷".includes(c)) out += " \\div ";
+          else if (c === "−" || c === "-") out += "−";
+          else if ("+=()!".includes(c)) out += c;
+          else if (c === "%") out += "\\%";
+          else if (c === "²" || c === "³") out += c === "²" ? "^{2}" : "^{3}";
+          else if (c === "°") out += "^{\\circ}";
+          else if (c === "^") {
+            const [body, end] = operand(s, i);
+            out += `^{${body}}`;
+            i = end;
+          } else if (c === "√" || c === "∛") {
+            const [body, end] = operand(s, i);
+            out += c === "∛" ? `\\sqrt[3]{${body}}` : `\\sqrt{${body}}`;
+            i = end;
+          } else if (/[^\x00-\x7f]/.test(c)) out += `\\text{${c}}`;
+        }
+      }
+      flush();
+      return out.replace(/(?:\\;)+$/, "").trim();
+    };
+    return walk(String(text || ""));
   },
 
   //: A worked-out sum as an equation to write: "12 * (3 + 4)" and "84" to
@@ -477,17 +803,216 @@ const calcTex = {
     return `${side(String(input || "").trim())} = ${side(String(figure || "").trim())}`;
   },
 };
+
+//: **The scientific reader** (INBOX 1579): a sum with functions, constants and a factorial, read by a small
+//: tokenizer and a recursive descent, never `eval` or `Function`. `evaluate(text, {angle})` answers
+//: `{value, angled}` or throws an `Error` whose `.sci` is true: `.notMath` when the text is not a sum at all
+//: (words, units: the server's reader gets it) and a message otherwise ("divide by zero").
+calcTex.sci = {
+  functions: {
+    sin: "trig", cos: "trig", tan: "trig", asin: "arc", acos: "arc", atan: "arc",
+    sinh: Math.sinh, cosh: Math.cosh, tanh: Math.tanh,
+    ln: Math.log, log: Math.log10, log2: Math.log2, lg: Math.log10, sqrt: Math.sqrt, cbrt: Math.cbrt,
+    abs: Math.abs, exp: Math.exp, floor: Math.floor, ceil: Math.ceil, round: Math.round,
+  },
+  aliases: { arcsin: "asin", arccos: "acos", arctan: "atan", log10: "log", "√": "sqrt", "∛": "cbrt" },
+  constants: { pi: Math.PI, π: Math.PI, e: Math.E, tau: 2 * Math.PI, τ: 2 * Math.PI },
+
+  tokens(text) {
+    const out = [];
+    const src = String(text).replace(/(\d),(?=\d{3}\b)/g, "$1").replace(/²/g, "^2").replace(/³/g, "^3").replace(/[−–]/g, "-").replace(/[×·⋅]/g, "*").replace(/÷/g, "/");
+    const bad = (words, notMath) => Object.assign(new Error(words), { sci: true, notMath });
+    for (let i = 0; i < src.length; ) {
+      const c = src[i];
+      if (/\s/.test(c)) i++;
+      else if (/[0-9.]/.test(c)) {
+        const m = /^(?:\d+\.?\d*|\.\d+)(?:[eE][+-]?\d+(?![\w]))?/.exec(src.slice(i));
+        if (!m) throw bad("A number is not finished.", false);
+        out.push({ n: Number(m[0]) });
+        i += m[0].length;
+      } else if (/[a-zA-Zπτ√∛]/.test(c)) {
+        const word = /^(?:[a-zA-Z]+[0-9]{0,2}|[πτ√∛])/.exec(src.slice(i))[0];
+        const sci = calcTex.sci;
+        const known = (w) => w in sci.functions || w in sci.aliases || w in sci.constants;
+        //: A word may run into what follows ("sin30", "sinpi"): the longest known name first.
+        let cut = word.length;
+        while (cut > 0 && !known(word.slice(0, cut).toLowerCase())) cut--;
+        if (!cut) throw bad("Not a sum.", true);
+        const low = word.slice(0, cut).toLowerCase();
+        out.push(low in sci.constants ? { n: sci.constants[low], c: true } : { f: sci.aliases[low] || low });
+        i += cut;
+      } else if ("+-*/^()!%".includes(c)) {
+        out.push({ op: c });
+        i++;
+      } else throw bad("Not a sum.", true);
+    }
+    return out;
+  },
+
+  evaluate(text, { angle = "deg" } = {}) {
+    const sci = calcTex.sci;
+    const tokens = sci.tokens(text);
+    const bad = (words) => Object.assign(new Error(words), { sci: true });
+    let at = 0;
+    let angled = false;
+    const peek = () => tokens[at];
+    const isOp = (...ops) => peek()?.op !== undefined && ops.includes(peek().op);
+    const starts = (t) => t && (t.n !== undefined || t.f !== undefined || t.op === "(");
+    //: What may follow a value with no sign between ("2pi", "3(4)", "2sin(30)"); two plain numbers side by side are not a product.
+    const joins = (t) => t && (t.c || t.f !== undefined || t.op === "(");
+    const toRad = (x) => (angle === "deg" ? (x * Math.PI) / 180 : x);
+    const fromRad = (x) => (angle === "deg" ? (x * 180) / Math.PI : x);
+    const fact = (x) => {
+      if (!Number.isInteger(x) || x < 0 || x > 170) throw bad("A factorial needs a whole number from 0 to 170.");
+      let r = 1;
+      for (let k = 2; k <= x; k++) r *= k;
+      return r;
+    };
+    const apply = (name, x) => {
+      const f = sci.functions[name];
+      if (!f) throw bad(`${name} is not a function here.`);
+      if (f === "trig") {
+        angled = true;
+        const r = toRad(x);
+        if (name === "tan" && Math.abs(Math.cos(r)) < 1e-12) throw bad("tan is undefined there.");
+        const v = Math[name](r);
+        return Math.abs(v) < 1e-12 ? 0 : v;
+      }
+      if (f === "arc") {
+        angled = true;
+        if (Math.abs(x) > 1 && name !== "atan") throw bad(`${name} needs a number from -1 to 1.`);
+        return fromRad(Math[name](x));
+      }
+      if ((name === "ln" || name === "log" || name === "log2" || name === "lg") && x <= 0) throw bad("A logarithm needs a number above 0.");
+      if (name === "sqrt" && x < 0) throw bad("There is no real square root of a negative number.");
+      return f(x);
+    };
+    const primary = () => {
+      const t = tokens[at++];
+      if (!t) throw bad("The sum is not finished.");
+      if (t.n !== undefined) return t.n;
+      if (t.f) {
+        //: A function takes its bracket, or the one number, constant or function after it ("sin 30", "sqrt16").
+        if (isOp("(")) return apply(t.f, primary());
+        if (starts(peek()) && !isOp("(")) return apply(t.f, postfix(true));
+        throw bad(`${t.f} needs a number after it.`);
+      }
+      if (t.op === "(") {
+        const v = expr();
+        if (!isOp(")")) throw bad("A bracket is not closed.");
+        at++;
+        return v;
+      }
+      throw bad(t.op === ")" ? "A bracket closes with none open." : "The sum is not finished.");
+    };
+    const postfix = (bare = false) => {
+      let v = primary();
+      while (true) {
+        if (isOp("!")) {
+          at++;
+          v = fact(v);
+        } else if (!bare && isOp("%") && !starts(tokens[at + 1])) {
+          at++;
+          v /= 100;
+        } else return v;
+      }
+    };
+    const power = () => {
+      const base = postfix();
+      if (!isOp("^")) return base;
+      at++;
+      return base ** unary();
+    };
+    const unary = () => {
+      if (isOp("-")) return (at++, -unary());
+      if (isOp("+")) return (at++, unary());
+      return power();
+    };
+    const term = () => {
+      let v = unary();
+      while (true) {
+        if (isOp("*")) (at++, (v *= unary()));
+        else if (isOp("/")) {
+          at++;
+          const d = unary();
+          if (d === 0) throw bad("Cannot divide by zero.");
+          v /= d;
+        } else if (isOp("%") && starts(tokens[at + 1])) {
+          at++;
+          const d = unary();
+          if (d === 0) throw bad("Cannot divide by zero.");
+          v %= d;
+        } else if (joins(peek())) v *= unary();
+        else return v;
+      }
+    };
+    const expr = () => {
+      let v = term();
+      while (isOp("+", "-")) v = tokens[at++].op === "+" ? v + term() : v - term();
+      return v;
+    };
+    if (!tokens.length) throw Object.assign(new Error("Nothing to work out."), { sci: true, notMath: true });
+    const value = expr();
+    if (at < tokens.length) throw bad(tokens[at].op === ")" ? "A bracket closes with none open." : "Put a sign between the numbers.");
+    if (!Number.isFinite(value)) throw bad("That is too large to show.");
+    return { value, angled };
+  },
+
+  //: A value in the words the server's reader uses: twelve significant figures, no float dust ("0.1 + 0.2" is 0.3), commas by thousands.
+  format(value) {
+    const v = Number(value.toPrecision(12));
+    if (Math.abs(v) >= 1e15 || (v !== 0 && Math.abs(v) < 1e-6)) return String(v).replace("e+", "e");
+    return v.toLocaleString("en-GB", { maximumFractionDigits: 12 });
+  },
+};
+
+//: **What a history keeps** (INBOX 1541): newest first, twenty rows, a row told from another by its `key` (the words of a sum, the TeX of an equation). `replacing` is the key of a row being edited: the new row takes its place in the list rather than joining the top, and a row that is gone just adds.
+calcTex.log = {
+  max: 20,
+  add(list, entry, replacing = "") {
+    const at = replacing ? list.findIndex((row) => row.key === replacing) : -1;
+    const rest = list.filter((row) => row.key !== entry.key && row.key !== replacing);
+    if (at < 0) return [entry, ...rest].slice(0, calcTex.log.max);
+    rest.splice(list.slice(0, at).filter((row) => row.key !== entry.key && row.key !== replacing).length, 0, entry);
+    return rest.slice(0, calcTex.log.max);
+  },
+  remove: (list, key) => list.filter((row) => row.key !== key),
+  //: What was stored, as a list of rows: anything else (a hand-edited value, an older shape) is no history.
+  clean: (raw) => (Array.isArray(raw) ? raw.filter((row) => row && typeof row.key === "string" && row.key).slice(0, calcTex.log.max) : []),
+};
 // CALC-TEX-END
 
+//: **The result** (INBOX 1530 g L1). The figure is worded as a preview while it
+//: is one ("Preview. Enter keeps it."), not only greyed, and it is not itself
+//: the live region (an `<output>` is one by role, and it spoke on every key):
+//: a visually hidden status is set once the figure settles, at once for Enter
+//: and =, after a pause for typing (`replyCalcShow`).
 function replyCalcResult() {
-  const out = document.createElement("output");
+  const out = document.createElement("div");
   out.className = "calc-result";
-  out.setAttribute("aria-live", "polite");
+  const line = document.createElement("div");
+  line.className = "calc-figure-row";
   const figure = document.createElement("strong");
   figure.className = "calc-figure";
+  const tag = document.createElement("span");
+  tag.className = "muted calc-tag";
+  tag.textContent = "Preview. Enter keeps it.";
+  tag.hidden = true;
+  //: An answer is copied from where it is (INBOX 1541); an equation's value line reads "= 3.5" and copies "3.5".
+  const copy = smallButton("ph:copy", "Copy the result", () => {
+    const text = figure.textContent.replace(/^=\s*/, "");
+    if (text) navigator.clipboard?.writeText(text).then(() => toast("Result copied."), () => toast("Couldn't copy the result.", "info"));
+  });
+  copy.classList.add("calc-copy");
+  copy.hidden = true;
+  line.append(figure, tag, copy);
   const read = document.createElement("span");
   read.className = "muted calc-read";
-  out.append(figure, read);
+  const say = document.createElement("span");
+  say.className = "visually-hidden";
+  say.setAttribute("role", "status");
+  say.setAttribute("aria-live", "polite");
+  out.append(line, read, say);
   return out;
 }
 
@@ -503,23 +1028,32 @@ function calcFigure(answer, dropRates) {
   return j >= 0 ? a.slice(0, j) : a.slice(0, -1);
 }
 
-function replyCalcShow(out, got, { final = false } = {}) {
+function replyCalcShow(out, got, { final = false, now = false } = {}) {
   const figure = out.querySelector(".calc-figure");
   const read = out.querySelector(".calc-read");
+  const say = out.querySelector(".visually-hidden");
   out.classList.toggle("is-error", Boolean(got?.error));
   out.classList.toggle("is-preview", !final);
+  //: Said after a pause, so a key held or a sum typed is one announcement, not one per character.
+  clearTimeout(out._said);
+  const announce = (words) => (now ? (say.textContent = words) : (out._said = setTimeout(() => (say.textContent = words), 800)));
   if (!got) {
     figure.textContent = "";
     read.textContent = "";
-    return;
+    out.querySelector(".calc-tag").hidden = true;
+    out.querySelector(".calc-copy").hidden = true;
+    return announce("");
   }
   //: The figure on its own ("84", not "12*(3+4) is 84."): the sum is in the
   //: box, and how the app read it is the line under.
   figure.textContent = got.error ? "" : calcFigure(got.answer, true);
   read.textContent = got.error ? got.error : got.read_as ? `Read as ${got.read_as}` : "";
+  out.querySelector(".calc-tag").hidden = final || Boolean(got.error);
+  out.querySelector(".calc-copy").hidden = !figure.textContent;
+  announce([figure.textContent, read.textContent].filter(Boolean).join(". ") + (final || got.error ? "" : ". Preview"));
 }
 
-function replyCalcWorkPane(input, { target = null, close = () => {} } = {}) {
+function replyCalcWorkPane(input, actions) {
   const pane = document.createElement("div");
   pane.className = "calc-pane";
   const box = document.createElement("input");
@@ -530,54 +1064,129 @@ function replyCalcWorkPane(input, { target = null, close = () => {} } = {}) {
   box.autocomplete = "off";
   box.spellcheck = false;
   box.value = input;
+  //: **Standard or Scientific** (INBOX 1579): two choices in view, remembered with the angle unit and the memory in this browser's prefs. Scientific adds the function keys and reads sums with trig, logs, powers, roots, a factorial, pi and e (`calcTex.sci`, no `eval`); anything it does not read as a sum (a percentage of, a conversion, a date) still goes to the app's own reader.
+  const saved = prefs.json("calc-sci", {});
+  const mode = { on: saved.on === true, angle: saved.angle === "rad" ? "rad" : "deg", memory: Number.isFinite(saved.memory) ? saved.memory : 0 };
+  const keep = () => prefs.setJSON("calc-sci", mode);
+  //: **One head row** (INBOX 1584): the kind at the start, the angle unit beside it in Scientific only, the memory's value at the end. The angle unit's words shorten to Deg and Rad below 26rem (a third element of a choice) so the row stays one row at 390.
+  const head = document.createElement("div");
+  head.className = "calc-head";
+  const kind = replyCalc.seg("Calculator kind", [["standard", "Standard"], ["scientific", "Scientific"]], mode.on ? "scientific" : "standard", (value) => setMode(value === "scientific"));
+  const angle = replyCalc.seg("Angle unit", [["deg", "Degrees", "Deg"], ["rad", "Radians", "Rad"]], mode.angle, (value) => {
+    mode.angle = value;
+    keep();
+    angle.sync(value);
+    rerun();
+  });
+  const memory = document.createElement("span");
+  memory.className = "muted calc-memory";
+  memory.setAttribute("role", "status");
+  head.append(kind.seg, angle.seg, memory);
+  //: **The sum as typeset maths, as it is typed** (INBOX 1579): × ÷ − and raised powers drawn by the document renderer, under the field. The field keeps the raw text, which is what is edited and read aloud, so this is hidden from a screen reader.
+  const typeset = document.createElement("div");
+  typeset.className = "calc-typeset";
+  typeset.setAttribute("aria-hidden", "true");
+  const paint = () => {
+    const tex = calcTex.live(box.value);
+    let drawn = null;
+    //: `docMathRender` is in this bundle (documents-math.js, listed before this file), never a guard.
+    if (tex) {
+      try {
+        drawn = docMathRender(tex, false);
+      } catch {
+        drawn = null;
+      }
+    }
+    typeset.replaceChildren(...(drawn ? [drawn] : []));
+  };
+  box.addEventListener("input", paint);
+  paint();
   const out = replyCalcResult();
-  const history = document.createElement("ul");
-  history.className = "calc-history";
-  history.setAttribute("aria-label", "Earlier results");
+  //: Restoring puts the sum back in the box (a preview, not a keep), in the kind it was worked out in; Copy writes the figure.
+  const history = replyCalcHistory("work", {
+    label: (row) => `${row.input} = ${calcFigure(row.answer, false)}`,
+    copy: (row) => calcFigure(row.answer, true),
+    restore: (row) => {
+      if (row.sci && !mode.on) setMode(true);
+      box.value = row.input;
+      box.dispatchEvent(new Event("input"));
+      box.focus();
+    },
+  });
   let timer = 0;
   let asked = 0;
-  //: The result on show, for the Insert buttons (drawn only with a box to write into).
+  //: The result on show, for the action row.
   let last = null;
-  //: **Insert and Insert as equation** (INBOX 1527): the result on show goes
-  //: into the box the dialog was opened from, as its figure or as an equation
-  //: ("12 \times (3 + 4) = 84"); the dialog closes and focus is back in the box.
-  let inserts = null;
-  if (target) {
-    const row = document.createElement("div");
-    row.className = "row calc-insert-row";
-    const put = async (equation) => {
-      if (!last) return;
-      const figure = calcFigure(last.answer, true);
-      await ensureModule("mathEditor");
-      if (mathEditorWrite(target, equation ? calcTex.toTex(last.input, figure) : figure, { plain: !equation })) close();
-      else toast("Couldn't write into that box.", "info");
-    };
-    const buttons = [smallButton("Insert", "Write the result into the text", () => put(false)), smallButton("Insert as equation", "Write the sum and its result as an equation", () => put(true))];
-    row.append(...buttons);
-    inserts = { row, sync: () => buttons.forEach((button) => (button.disabled = !last)) };
-    inserts.sync();
-  }
+  //: A sum read by the scientific reader, in the server's shape (`answer` "sin(30) is 0.5."); null when the text is not a sum at all, which the app's reader then takes.
+  const sciRead = (text) => {
+    try {
+      const got = calcTex.sci.evaluate(text, { angle: mode.angle });
+      return { answer: `${text.trim()} is ${calcTex.sci.format(got.value)}.`, read_as: got.angled ? `angles in ${mode.angle === "deg" ? "degrees" : "radians"}` : "" };
+    } catch (error) {
+      if (error.sci) return error.notMath ? null : { error: error.message };
+      throw error;
+    }
+  };
+  const rerun = () => {
+    if (!box.value.trim()) return;
+    clearTimeout(timer);
+    run(false);
+  };
+  const showMemory = () => {
+    memory.textContent = mode.on && mode.memory ? `Memory ${calcTex.sci.format(mode.memory)}` : "";
+  };
+  //: MC clears, MR types the stored number, M+ and M− add or take away the value of what is in the box.
+  const onKey = (act) => {
+    if (act === "mc") mode.memory = 0;
+    else if (act === "mr") return String(mode.memory);
+    else if (act === "m+" || act === "m-") {
+      const got = sciRead(box.value);
+      const value = got && !got.error ? calcTex.sci.evaluate(box.value, { angle: mode.angle }).value : null;
+      if (value === null) {
+        toast("Work out a sum first, then store it.", "info");
+        return false;
+      }
+      mode.memory = Number((mode.memory + (act === "m+" ? value : -value)).toPrecision(12));
+    } else return undefined;
+    keep();
+    showMemory();
+    return false;
+  };
+  actions.provide("work", actions.result(() => last, { what: "the result", needs: "a result", first: "Work out a sum first." }));
   const run = async (final) => {
     const mine = ++asked;
+    clearTimeout(out._late);
+    //: **No error while a sum is being typed** (INBOX 1579, "55*9+" showed "That is not a sum"): a sum that ends in a sign or an open bracket is unfinished, not wrong, so the preview waits for the next key; any other error waits for a pause (about 800 ms with the key delay), or Enter, which says the sum is unfinished.
+    if (!final && calcTex.pending(box.value)) {
+      replyCalcShow(out, null);
+      last = null;
+      return actions.sync();
+    }
     try {
-      const got = await replyCalcWork(box.value);
+      const got = (mode.on && sciRead(box.value)) || (await replyCalcWork(box.value));
       if (mine !== asked) return;
-      replyCalcShow(out, got, { final });
-      last = got?.answer && !got.error ? { input: box.value.trim(), answer: got.answer } : null;
-      inserts?.sync();
-      if (final && got?.answer) {
-        replyCalc.history = [{ input: box.value.trim(), answer: got.answer }, ...replyCalc.history.filter((h) => h.input !== box.value.trim())].slice(0, 5);
-        replyCalcHistory(history, box);
+      if (final && got?.error && calcTex.pending(box.value)) got.error = "That sum is not finished. Add what comes after the last sign.";
+      if (!final && got?.error) {
+        replyCalcShow(out, null);
+        last = null;
+        actions.sync();
+        out._late = setTimeout(() => mine === asked && replyCalcShow(out, got, { final }), 550);
+        return;
       }
+      replyCalcShow(out, got, { final, now: final });
+      last = got?.answer && !got.error ? { input: box.value.trim(), answer: got.answer } : null;
+      actions.sync();
+      if (final && last) history.record({ key: last.input, input: last.input, answer: last.answer, ...(mode.on ? { sci: true } : {}) });
     } catch (error) {
       if (mine !== asked) return;
-      replyCalcShow(out, { error: error.message }, { final });
+      replyCalcShow(out, { error: error.message }, { final, now: final });
       last = null;
-      inserts?.sync();
+      actions.sync();
     }
   };
   box.addEventListener("input", () => {
     clearTimeout(timer);
+    clearTimeout(out._late);
     timer = setTimeout(() => run(false), 250);
   });
   box.addEventListener("keydown", (event) => {
@@ -586,27 +1195,26 @@ function replyCalcWorkPane(input, { target = null, close = () => {} } = {}) {
     clearTimeout(timer);
     run(true);
   });
-  const keys = replyCalcKeypad(box, () => {
+  const equals = () => {
     clearTimeout(timer);
     run(true);
-  });
-  //: Copy sits beside the figure it copies, outside the live region.
-  const foot = document.createElement("div");
-  foot.className = "calc-result-row";
-  const copy = document.createElement("button");
-  copy.type = "button";
-  copy.className = "ghost small icon-only";
-  setLabel(copy, "ph:copy");
-  copy.setAttribute("aria-label", "Copy result");
-  copy.title = "Copy result";
-  copy.addEventListener("click", () => {
-    const text = out.querySelector(".calc-figure").textContent;
-    if (!text) return;
-    navigator.clipboard?.writeText(text).then(() => toast("Result copied."), () => toast("Couldn't copy the result.", "info"));
-  });
-  foot.append(out, copy);
-  pane.append(box, foot, ...(inserts ? [inserts.row] : []), keys, history);
-  replyCalcHistory(history, box);
+  };
+  const keys = replyCalcKeypad(box, equals);
+  const sciKeys = replyCalcKeypad(box, equals, { keys: replyCalc.sciKeys, names: replyCalc.sciNames, label: "Scientific keys", extra: "calc-keys-sci", onKey });
+  const setMode = (on) => {
+    mode.on = on;
+    keep();
+    sciKeys.classList.toggle("hidden", !on);
+    //: Scientific lays the function keys beside the digits when the card is wide enough (reply-kit-lazy.css, `.is-sci`), so its card is no taller than Standard's.
+    pane.classList.toggle("is-sci", on);
+    angle.seg.classList.toggle("hidden", !on);
+    kind.sync(on ? "scientific" : "standard");
+    showMemory();
+    box.placeholder = on ? "sin(30), 2 * pi, sqrt(16), 5!" : "12 * (3 + 4), 15% of 80, 5 km to miles";
+    rerun();
+  };
+  setMode(mode.on);
+  pane.append(box, typeset, head, out, sciKeys, keys, history.el);
   if (input) run(true);
   return pane;
 }
@@ -615,7 +1223,7 @@ function replyCalcWorkPane(input, { target = null, close = () => {} } = {}) {
 //: first time the tab opens (its library is the heavy part), with the value
 //: of an equation made of numbers under the field, worked out by the same
 //: reader as Work out. `mount()` builds it, or puts focus back in it.
-function replyCalcEquation(target, close) {
+function replyCalcEquation(target, close, actions) {
   const pane = document.createElement("div");
   pane.className = "calc-pane calc-equation";
   const note = replyCalcResult();
@@ -624,7 +1232,31 @@ function replyCalcEquation(target, close) {
   let loading = null;
   let timer = 0;
   let asked = 0;
+  //: The history (INBOX 1541): an equation is kept when it is copied or inserted, and a moment after the last change (not for the one the editor opened with).
+  let history = null;
+  let settle = 0;
+  let changed = false;
+  const keep = (auto = false) => {
+    const row = editor?.entry();
+    if (row) history?.record(row, auto);
+  };
+  //: The action row's Copy and Insert are the editor's own (it knows the display mode, the equation being edited and the box).
+  actions.provide("equation", {
+    what: "the equation",
+    needs: "an equation",
+    first: "Type an equation first.",
+    copyTitle: "Copy the equation, between dollar signs",
+    insertTitle: "Write the equation into the text (Ctrl+Enter)",
+    ready: () => Boolean(editor?.ready()),
+    label: () => editor?.label || "Insert",
+    copy: () => (keep(), editor.copy()),
+    insert: () => (keep(), editor.insert()),
+  });
   const onTex = (tex) => {
+    actions.sync();
+    clearTimeout(settle);
+    if (changed) settle = setTimeout(() => keep(true), 2500);
+    changed = true;
     clearTimeout(timer);
     const sum = calcTex.toSum(tex);
     const mine = ++asked;
@@ -649,13 +1281,22 @@ function replyCalcEquation(target, close) {
     line.textContent = words;
     pane.replaceChildren(line);
   };
-  const mount = () => {
-    if (editor) return editor.focus();
+  const mount = ({ focus = true } = {}) => {
+    if (editor) return focus ? editor.focus() : undefined;
     if (!loading) {
       say("Loading the equation editor.");
       loading = ensureModule("mathEditor")
         .then((ok) => {
-          editor = ok && typeof mathEditorMount === "function" ? mathEditorMount({ host: pane, target, done: close, note, onTex }) : null;
+          //: Its rows are drawn by the editor's own tile face, so this waits for the editor to be loaded.
+          history = ok
+            ? replyCalcHistory("equation", {
+                label: (row) => mathEditorTileFace({ sample: row.tex }),
+                copy: (row) => mathEditorOutput(row.tex, row.display),
+                restore: (row) => editor?.load(row),
+              })
+            : null;
+          editor = ok && typeof mathEditorMount === "function" ? mathEditorMount({ host: pane, target, done: close, note, onTex, focus, log: history?.el }) : null;
+          changed = false;
           if (!editor) throw new Error("not loaded");
         })
         .catch(() => {
@@ -671,26 +1312,30 @@ function replyCalcEquation(target, close) {
 //: The keypad: one Tab stop (a roving `tabindex`), the arrows walk its four
 //: columns, Home and End its row; each key says what it does to a screen
 //: reader ("Times", not the icon's name).
-function replyCalcKeypad(box, equals) {
+function replyCalcKeypad(box, equals, { keys: layout = REPLY_CALC_KEYS, names = REPLY_CALC_NAMES, label = "Keypad", extra = "", onKey = null } = {}) {
   const pad = document.createElement("div");
-  pad.className = "calc-keys";
+  pad.className = `key-grid calc-keys ${extra}`.trim();
   pad.setAttribute("role", "group");
-  pad.setAttribute("aria-label", "Keypad");
-  const keys = REPLY_CALC_KEYS.map(([face, act], i) => {
+  pad.setAttribute("aria-label", label);
+  const keys = layout.map(([face, act], i) => {
     const key = document.createElement("button");
     key.type = "button";
-    // = is the pad's one primary action (the app's filled button); the rest are ghosts.
-    key.className = act === "equals" ? "calc-key" : `ghost calc-key${/^[0-9.]$/.test(act) ? "" : " is-op"}`;
+    // A key of a `.key-grid`: the quiet inset fill, operators tinted, and `=` the grid's one filled key (the dialog's own is Insert, in the foot).
+    key.className = `calc-key${/^[-+*/%]$/.test(act) ? " is-op" : ""}${act === "equals" ? " is-equals" : ""}`;
     setLabel(key, face);
     key.tabIndex = i === 0 ? 0 : -1;
-    if (REPLY_CALC_NAMES[act]) key.setAttribute("aria-label", REPLY_CALC_NAMES[act]);
+    if (names[act]) key.setAttribute("aria-label", names[act]);
     key.addEventListener("click", () => {
       if (act === "equals") return equals();
-      if (act === "clear") box.value = "";
+      //: A key with its own work (the memory) answers `false` when it typed nothing, or the text to type instead.
+      const handled = onKey ? onKey(act) : undefined;
+      if (handled === false) return;
+      const text = typeof handled === "string" ? handled : act;
+      if (text === "clear") box.value = "";
       else {
         const start = box.selectionStart ?? box.value.length;
         const end = box.selectionEnd ?? box.value.length;
-        box.setRangeText(act, start, end, "end");
+        box.setRangeText(text, start, end, "end");
       }
       box.dispatchEvent(new Event("input"));
     });
@@ -713,27 +1358,117 @@ function replyCalcKeypad(box, equals) {
   return pad;
 }
 
-function replyCalcHistory(list, box) {
-  list.replaceChildren();
-  list.classList.toggle("hidden", !replyCalc.history.length);
-  for (const row of replyCalc.history) {
-    const item = document.createElement("li");
+//: **A tab's history** (INBOX 1541, the owner: "calculation, conversion and equation history ... an easy way to copy the answers ... if the user clicks on a history thing, they will be reentered in the fields ... clear or edit the history"). A bar under the pane, "History" with its count and Clear, closed until opened (kept per browser) so the keypad keeps its room; the rows newest first, each a button that puts it back in the fields (`restore`), then Copy (`copy` says what), Edit (the same, and the next keep replaces that row instead of adding one) and Remove. Clear and Remove can be undone from the toast. `record(row, auto)` adds a row; `auto` is a row kept after a pause (Units, the Equation), which replaces the last one made within eight seconds so typing does not fill the list.
+function replyCalcHistory(tab, { label, copy, restore }) {
+  let list = replyCalc.load(tab);
+  let replacing = "";
+  let editing = false;
+  let lastKey = "";
+  let lastAt = 0;
+  let open = prefs.bool("calc-history-open", false);
+  const el = document.createElement("div");
+  el.className = "calc-log";
+  const bar = document.createElement("div");
+  bar.className = "calc-log-bar";
+  const toggle = document.createElement("button");
+  toggle.type = "button";
+  toggle.className = "ghost small disclosure-row calc-log-toggle";
+  const count = document.createElement("span");
+  count.className = "calc-log-count";
+  const note = document.createElement("span");
+  note.className = "muted calc-log-note";
+  const clear = smallButton("Clear", "Clear the history", () => {
+    const before = list;
+    set([]);
+    toastAction("History cleared.", "Undo", () => set(before), { ms: 10000, record: false });
+  });
+  clear.classList.add("quiet");
+  const rows = document.createElement("ul");
+  rows.className = "calc-history";
+  rows.id = `calc-history-${tab}-${replyCalc.opened}`;
+  rows.setAttribute("aria-label", "Earlier answers");
+  toggle.setAttribute("aria-controls", rows.id);
+  //: The one disclosure row (DESIGN.md): the caret first, History, its count as a muted badge, and Clear at the end of the same line as the quiet text action.
+  const caret = document.createElement("i");
+  caret.className = "ph ph-caret-down contents-caret";
+  caret.setAttribute("aria-hidden", "true");
+  toggle.append(caret, "History", count);
+  bar.append(toggle, clear);
+  el.append(bar, note, rows);
+  const set = (next) => {
+    list = next;
+    if (!list.some((row) => row.key === replacing)) {
+      replacing = "";
+      editing = false;
+    }
+    replyCalc.save(tab, list);
+    draw();
+  };
+  const row = (item) => {
+    const li = document.createElement("li");
+    li.classList.toggle("is-editing", editing && item.key === replacing);
     const again = document.createElement("button");
     again.type = "button";
-    again.className = "ghost small calc-again";
-    again.textContent = `${row.input} = ${calcFigure(row.answer, false)}`;
-    again.title = "Put this back in the box";
-    again.addEventListener("click", () => {
-      box.value = row.input;
-      box.dispatchEvent(new Event("input"));
-      box.focus();
+    again.className = "ghost quiet small calc-again";
+    again.replaceChildren(label(item));
+    again.title = "Put this back in the fields";
+    again.addEventListener("click", () => restore(item));
+    const text = () => copy(item);
+    const out = smallButton("ph:copy", "Copy this answer", () => navigator.clipboard?.writeText(text()).then(() => toast("Copied."), () => toast("Couldn't copy it.", "info")));
+    const edit = smallButton("ph:pencil-simple", "Edit this one", () => {
+      replacing = item.key;
+      editing = true;
+      restore(item);
+      draw();
     });
-    item.appendChild(again);
-    list.appendChild(item);
+    const drop = smallButton("ph:x", "Remove from the history", () => {
+      const before = list;
+      set(calcTex.log.remove(list, item.key));
+      toastAction("Removed from the history.", "Undo", () => set(before), { ms: 10000, record: false });
+    });
+    li.append(again, out, edit, drop);
+    return li;
+  };
+  function draw() {
+    el.classList.toggle("hidden", !list.length);
+    count.textContent = String(list.length);
+    toggle.setAttribute("aria-expanded", String(open));
+    rows.hidden = !open;
+    clear.hidden = !open;
+    note.textContent = editing && open ? "Editing a saved row: keeping a result replaces it." : "";
+    rows.replaceChildren(...(open ? list.map(row) : []));
   }
+  toggle.addEventListener("click", () => {
+    open = !open;
+    prefs.set("calc-history-open", open ? "1" : "0");
+    draw();
+    //: One setting for the dialog: the other tabs' bars follow (each one's click lands here once, and stops when it matches).
+    for (const other of el.closest(".calc-card")?.querySelectorAll(".calc-log-toggle") || []) {
+      if (other !== toggle && other.getAttribute("aria-expanded") !== String(open)) other.click();
+    }
+  });
+  draw();
+  return {
+    el,
+    record(item, auto = false) {
+      const now = Date.now();
+      //: A row kept after a pause replaces the last one made so, within eight seconds, and a row being edited is replaced where it stands.
+      const prior = auto && lastKey && now - lastAt < 8000 ? lastKey : "";
+      list = calcTex.log.add(list, item, replacing || prior);
+      if (editing && auto) replacing = item.key;
+      else {
+        replacing = "";
+        editing = false;
+      }
+      lastKey = auto ? item.key : "";
+      lastAt = now;
+      replyCalc.save(tab, list);
+      draw();
+    },
+  };
 }
 
-function replyCalcConvertPane() {
+function replyCalcConvertPane(actions) {
   const pane = document.createElement("div");
   pane.className = "calc-pane calc-convert";
   const amount = document.createElement("input");
@@ -764,21 +1499,67 @@ function replyCalcConvertPane() {
     select.replaceChildren(...names.map((name) => new Option(name, name)));
     select.value = names.includes(pick) ? pick : names[0];
   };
+  //: The conversion on show, for the action row (the same shape as Sum's).
+  let last = null;
+  actions.provide("convert", actions.result(() => last, { what: "the result", needs: "a result", first: "Pick an amount and two units first." }));
+  //: Kept a moment after the last change (the conversion runs on every key); a row puts the kind, the amount and both units back.
+  let seen = 0;
+  let settle = 0;
+  //: Nothing is kept for the conversion the pane opens with: only after a press or a change in it.
+  let touched = false;
+  for (const type of ["input", "change", "click"]) pane.addEventListener(type, () => (touched = true), true);
+  const history = replyCalcHistory("convert", {
+    label: (row) => `${row.input} = ${calcFigure(row.answer, false)}`,
+    copy: (row) => calcFigure(row.answer, true),
+    restore: (row) => {
+      if (!replyCalc.units?.[row.kind]) return;
+      kind.value = row.kind;
+      fillKind();
+      [from.value, to.value, amount.value] = [row.from, row.to, row.amount];
+      run();
+    },
+  });
   const run = async () => {
-    if (!from.value || !to.value || amount.value === "") return replyCalcShow(out, null);
+    const mine = ++seen;
+    clearTimeout(settle);
+    last = null;
+    if (!from.value || !to.value || amount.value === "") {
+      replyCalcShow(out, null);
+      return actions.sync();
+    }
+    const asked = `${amount.value} ${from.value} to ${to.value}`;
     try {
-      replyCalcShow(out, await replyCalcWork(`${amount.value} ${from.value} to ${to.value}`), { final: true });
+      const got = await replyCalcWork(asked);
+      if (mine !== seen) return;
+      replyCalcShow(out, got, { final: true });
+      last = got?.answer && !got.error ? { input: asked, answer: got.answer } : null;
+      if (last && touched) {
+        const row = { key: asked, input: asked, answer: got.answer, kind: kind.value, amount: amount.value, from: from.value, to: to.value };
+        settle = setTimeout(() => history.record(row, true), 1500);
+      }
     } catch (error) {
+      if (mine !== seen) return;
       replyCalcShow(out, { error: error.message }, { final: true });
     }
+    actions.sync();
   };
-  const pickKind = () => {
+  const fillKind = () => {
+    //: A time zone takes a time of day, not a number; the type follows the kind and the figure starts at a morning.
+    const zone = kind.value === "timezone";
+    if (zone !== (amount.type === "time")) {
+      amount.type = zone ? "time" : "number";
+      amount.value = zone ? "09:00" : "1";
+      amount.setAttribute("aria-label", zone ? "Time of day" : "Amount");
+    }
     const names = replyCalc.units?.[kind.value] || [];
     const [one, two] = REPLY_CALC_PAIRS[kind.value] || [];
     fill(from, names, one);
     fill(to, names, two || names[1]);
     const dated = new Date(`${replyCalc.units?.rates_date}T12:00`).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
-    note.textContent = kind.value === "currency" ? `Rates from ${dated}, set by hand: not today's rate.` : "";
+    note.textContent = kind.value === "currency" ? `Rates from ${dated}, set by hand: not today's rate.` : zone ? "Today's date, read from this computer's clock." : "";
+  };
+  const pickKind = () => {
+    fillKind();
     run();
   };
   kind.addEventListener("change", pickKind);
@@ -790,12 +1571,12 @@ function replyCalcConvertPane() {
   const row = document.createElement("div");
   row.className = "calc-convert-row";
   row.append(amount, from, swap, to);
-  pane.append(kind, row, out, note);
+  pane.append(kind, row, out, note, history.el);
   (replyCalc.units ? Promise.resolve(replyCalc.units) : apiJson("/utilities/units"))
     .then((units) => {
       replyCalc.units = units;
       const kinds = Object.keys(units).filter((key) => Array.isArray(units[key]));
-      kind.replaceChildren(...kinds.map((key) => new Option(key[0].toUpperCase() + key.slice(1), key)));
+      kind.replaceChildren(...kinds.map((key) => new Option(key === "timezone" ? "Time zone" : key[0].toUpperCase() + key.slice(1), key)));
       kind.value = kinds.includes("length") ? "length" : kinds[0];
       pickKind();
     })
@@ -809,6 +1590,23 @@ function replyCalcConvertPane() {
 //: a reply once its words are final, whoever wrote them: `finishReply`
 //: (capture-ask.js) hands it the answer's element, or a turn's several.
 function replyFinish(answers, opts = {}) {
+  //: **One line under a reply the window cut short** (audit 1028 E57): when a
+  //: long chat no longer fits the model's context, the oldest exchanges are left
+  //: out of the prompt, and a model that "forgot" the start of a chat looked like
+  //: a model that was wrong. The turn's first stats event carries the count
+  //: (`composition.history_dropped`); Compress in the header is the fix, named in
+  //: the line rather than pressed for the person.
+  function renderHistoryTrimmedNotice(container, dropped) {
+    if (!container || !(dropped > 0)) return;
+    const line = document.createElement("p");
+    line.className = "notice notice-warn history-trimmed-notice";
+    line.setAttribute("role", "note");
+    const many = dropped !== 1;
+    setLabel(line, `ph:warning The oldest ${many ? `${dropped} exchanges` : "exchange"} no longer fit the model's window, so this answer was written without ${many ? "them" : "it"}. Compress in the header keeps the gist.`);
+    container.insertBefore(line, container.querySelector(":scope > .msg-meta"));
+  }
+  //: Nested, not a global: the shared scope is capped (test_global_scope_ratchet).
+
   const list = (answers instanceof Element ? [answers] : [...(answers || [])]).filter((el) => el?.isConnected);
   if (!list.length) return;
   for (const answer of list) replyFoldLong(answer);
@@ -816,6 +1614,7 @@ function replyFinish(answers, opts = {}) {
   if (opts.head && list.some((answer) => answer.textContent.trim())) replyByline(opts.head, opts);
   if (opts.composed) replyReveal(list);
   if (opts.unsupported) renderToolsUnsupportedNotice(opts.bubble, opts.unsupported);
+  if (opts.trimmed) renderHistoryTrimmedNotice(opts.bubble, opts.trimmed);
   if (opts.match_info) replyRecordReasons(opts.match_info);
 }
 
@@ -851,11 +1650,11 @@ function renderToolsUnsupportedNotice(container, event) {
   setLabel(line, `ph:warning ${event.message || "This model can't call tools."}`);
   const row = document.createElement("div");
   row.className = "row tools-unsupported-fix-row";
-  row.appendChild(
-    smallButton("ph:gear Change the model", "Open Settings, Models", () => {
-      openSettingsModal("models", "chat-model-select");
-    })
-  );
+  const change = smallButton("ph:gear Change the model", "Open Settings, Models", () => {
+    openSettingsModal("models", "chat-model-select");
+  });
+  change.classList.add("quiet");
+  row.appendChild(change);
   //: Above the turn's facts line, where it was drawn before it moved here.
   container.insertBefore(row, container.querySelector(":scope > .msg-meta"));
   row.before(line);
@@ -1143,7 +1942,8 @@ function replyNoteCard(id, name) {
   title.textContent = content ? noteLabel({ content: head }, 60) : name || "A note";
   const facts = document.createElement("span");
   facts.className = "embed-card-meta";
-  const words = content ? wordCount(plainText(content)) : 0;
+  //: The server's count is over the whole note; a clipped list row holds its first 300 characters.
+  const words = entry?.word_count ?? (content ? wordCount(plainText(content)) : 0);
   facts.textContent = [
     "Note",
     entry?.category,

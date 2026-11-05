@@ -24,13 +24,15 @@ private note, and nothing being auto-fetched.
 from __future__ import annotations
 
 import inspect
+from pathlib import Path
 
-from tessellate.ai import agent
+from tessellate.ai import agent_policy
 from tessellate.ai import tools
 
 
 def test_read_url_labels_its_result_as_data():
-    source = inspect.getsource(tools)
+    # `read_url` lives with the web tools since the split; `files.py` has a different `content_is_data`.
+    source = Path(tools.__file__).with_name("tool_web.py").read_text(encoding="utf-8")
     assert '"content_is_data"' in source, (
         "read_url must tell the model its payload is data, not instructions"
     )
@@ -50,7 +52,7 @@ def test_the_prose_budget_is_still_the_reason_it_lives_on_the_payload():
     # Re-checked 2026-09-23 when it moved to 3,200: the 200 went to the
     # default persona (the owner's ask), leaving the prose at 3,124 of 3,200,
     # so there is still no room for a guard here and it stays on the payload.
-    assert agent.PROSE_BUDGET_CHARS == 3_200, (
+    assert agent_policy.PROSE_BUDGET_CHARS == 3_200, (
         "PROSE_BUDGET_CHARS moved: re-check whether the injection guard "
         "should now also live in AGENT_GROUNDING (see test_injection_guard's "
         "module docstring)"

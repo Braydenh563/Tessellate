@@ -31,7 +31,7 @@ function activityModelLine(model) {
     line.textContent = "No chat model is set.";
     return;
   }
-  const where = model.loaded === true ? "in memory" : model.loaded === false ? "not in memory" : "state unknown";
+  const where = model.loaded === true ? "ready now" : model.loaded === false ? "loads when you ask" : "state unknown";
   line.textContent = `Model: ${model.model}, ${where}.`;
 }
 
@@ -133,7 +133,7 @@ async function stopActivityJob(id) {
     const result = await apiJson(`/activity/${encodeURIComponent(id)}/stop`, { method: "POST" });
     toast(result.detail || (result.stopped ? "Stopping." : "It had already finished."), "info");
   } catch (e) {
-    toastAction(`Could not stop that job: ${e.message}`, "Try again", () => stopActivityJob(id));
+    toastAction(`Couldn't stop that job: ${e.message}`, "Try again", () => stopActivityJob(id));
   }
   renderActivity();
 }
@@ -143,7 +143,7 @@ async function stopActivityModel() {
     const result = await apiJson("/activity/model/stop", { method: "POST" });
     toast(result.detail, "info");
   } catch (e) {
-    toastAction(`Could not stop the model: ${e.message}`, "Try again", stopActivityModel);
+    toastAction(`Couldn't stop the model: ${e.message}`, "Try again", stopActivityModel);
   }
   renderActivity();
 }

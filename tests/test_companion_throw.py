@@ -212,6 +212,16 @@ def test_a_throw_that_comes_down_over_controls_is_never_left_floating_over_them(
     # is not, and the nearest good perch is where it comes down.
     over, clear = _drop("[{ left: 1300, top: 789, right: 1400, bottom: 821 }]")
     assert over["pose"] == "stand" and over["kind"] == "dock", over
-    assert clear["pose"] == "float" and clear["kind"] == "yours", clear
+    assert clear["pose"] == "stand" and clear["kind"] == "dock", clear
     free, _ = _drop("[]")
-    assert free["pose"] == "float", "open air with no control under it still floats where it was let go"
+    assert free["pose"] == "stand", "open air with no control under it is a perch too"
+
+
+def test_a_release_reads_the_page_before_it_writes_to_the_rig():
+    """The owner's log, 2026-11-05: "avatars.js release 62ms (forced layout 51ms)". The release drew the last pull
+    (a translate) and started the flip back before it read the world, so the read laid the page out again."""
+    body = AV[AV.index("const release = (event) => {") :]
+    body = body[: body.index('face.addEventListener("pointerup", release)')]
+    before = body[: body.index("nameMarkBuddyWorld(")]
+    for write in ("follow()", "nameMarkBuddyFlip(", ".style.", "classList.", "nameMarkBuddySway(", "dataset."):
+        assert write not in before, write

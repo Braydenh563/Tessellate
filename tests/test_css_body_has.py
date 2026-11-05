@@ -33,7 +33,7 @@ def test_no_page_wide_has_keyed_on_a_tab():
     bad = []
     for path in sorted(CSS.glob("*.css")):
         text = re.sub(r"/\*.*?\*/", "", path.read_text(encoding="utf-8"), flags=re.S)
-        for rule in re.finditer(r"([^{}]+)\{", text):
+        for rule in re.finditer(r"(?:(?<=[{}])|\A)([^{}]+)\{", text):
             for sel in re.split(r",\s*(?![^()]*\))", rule.group(1)):
                 sel = " ".join(sel.split())
                 head = re.match(r"^(?:@media[^{]*\{\s*)?((?::root|html|body)\b.*)", sel)

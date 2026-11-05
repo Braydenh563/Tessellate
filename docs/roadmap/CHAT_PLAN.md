@@ -1676,15 +1676,10 @@ cards as the answer's shape), Raycast (answer and act in place).
 
 | # | Kind | Row | Measure | Rules |
 | --- | --- | --- | --- | --- |
-| 1 | fix | The head's three buttons: built | Built by Brief 88; moved to HISTORY.md ("Moved from the plans, 2026-10-10 (CHAT_PLAN 8 and 9, Brief 88)"); overlaps 3 to 0 at 1440 and 390 | |
-| 2 | fix | Source cards and the head: built | Built by Brief 88; moved to HISTORY.md ("Moved from the plans, 2026-10-10 (CHAT_PLAN 8 and 9, Brief 88)"); 47 and 78 to 0 (folded cards, never painted), small targets 51 and 17 to 0 | |
 | 3 | expansion | Every object kind answers: "what is due this week", "my documents about the harbor", "boards from June" | a 30-question cross-kind set at 1.0 | 2, 6 |
 | 4 | expansion | The answer's shape follows the question: a count in one line, a list as a list, a comparison as a table (decision 58's structure column) | the maxims lint 0 on the set | 10, 11 |
-| 5 | fix | Chat's writes on the undo bar: built | Built by Brief 88; moved to HISTORY.md ("Moved from the plans, 2026-10-10 (CHAT_PLAN 8 and 9, Brief 88)"); `undo.js` chat 1/5 to 4/5 (Send is the composer's), `chatundo88.js` 4/4 | |
-| 6 | optimisation | Click to composer at 390: built | Built by Brief 88; moved to HISTORY.md ("Moved from the plans, 2026-10-10 (CHAT_PLAN 8 and 9, Brief 88)"); switchTab to composer 293 to 370 ms down to 197 to 202 ms; the 1,913 not reproduced | |
-| 7 | expansion | A source opens its note at the quoted line: built | Built by Brief 88; moved to HISTORY.md ("Moved from the plans, 2026-10-10 (CHAT_PLAN 8 and 9, Brief 88)"); span marked 0 to 1 at 1440 and 390 | |
 
-**Briefs.** 84 (rows 3, 4), 88 (rows 1, 2, 5 to 7).
+**Briefs.** 84 (rows 3, 4). Rows 1, 2 and 5 to 7 built by Brief 88 (HISTORY.md, "Moved from the plans, 2026-10-10 (CHAT_PLAN 8 and 9, Brief 88)").
 
 ### 9. Deepened 2026-10-10: the Guide (Brief 72b, decisions 59 and 71)
 
@@ -1705,13 +1700,11 @@ item lights), Raycast's and Notion's in-app help, Apple Tips.
 | # | Kind | Row | Measure | Rules |
 | --- | --- | --- | --- | --- |
 | 1 | fix | The answer first, in one line from the reading; the preface goes (decision 59, F5) | preface 8/8 to 0; the first sentence answers on the 60-question set | 12, 10 |
-| 2 | fix | Each topic's open button lands on a control, lit: built | Built by Brief 88; moved to HISTORY.md ("Moved from the plans, 2026-10-10 (CHAT_PLAN 8 and 9, Brief 88)"); topics landing lit and seen 9 to 140 of 140 at 1440, 9 to 139 at 390 | |
-| 3 | fix | A palette row "Ask the Guide": built | Built by Brief 88; moved to HISTORY.md ("Moved from the plans, 2026-10-10 (CHAT_PLAN 8 and 9, Brief 88)"); "guide" finds it first; More, Guide 2 taps at 390 | |
 | 4 | expansion | Topics for the trust surfaces: Activity and Stop, Health, undo, the iPhone on the LAN, desktop notifications | 0 of the 60 questions on a wrong topic | 6 |
 | 5 | expansion | One unused feature a week, from the usage counts (82 unused in 90 days on this fixture) | the offer appears once a week | 6 |
 | 6 | fix | Typos through the word list (VC15) | VC15's count | 4 |
 
-**Briefs.** 37 (row 5), 75 (row 6), 84 (rows 1, 4), 88 (rows 2, 3).
+**Briefs.** 37 (row 5), 75 (row 6), 84 (rows 1, 4). Rows 2 and 3 built by Brief 88 (HISTORY.md, same block).
 
 ### Vendored capabilities to use, 2026-10-10 (Brief 75)
 
@@ -1889,3 +1882,17 @@ The owner: "composer_money seems very specific, what if the user asks about othe
 1. **One quantity engine replaces `composer_money`.** Built: sums, money as a dimension, status words of any quantity, differences (HISTORY, 2026-10-30 measures and quantity engine). No pint: it would duplicate `recognise.UNITS`. quantulum3 only if the UNITS reader misses a measured class, then without its classifier. Open: "X compared to Y" and "X versus Y" asks are taken by `composer.compare_sides` before the digest (`composer_digest._kind_if_mine`); a goal with no doing in the ask ("my 10k goal") sums every distance instead of taking the doing from the goal note; a difference whose dimension no unit, doing or comparative names (data-driven choice).
 2. **Nouns weigh above verbs in retrieval.** Built: `composer.COMMON_VERBS` counts as a timing word does (HISTORY, 2026-10-30 measures). Open: vendor simplemma (MIT, English data only) only if a stress run shows the list short.
 3. **Phrasing tests from real conversations, not training data:** CLINC150 (CC BY 3.0) out-of-scope and small talk; Schema-Guided Dialogue (CC BY-SA 4.0) reminder and calendar acts; WildChat (ODC-BY, gated) "how many / did I / when is" questions. The raw sets stay out of the repo; generated fixtures carry attribution in `tests/fixtures/composer/SOURCES.md`.
+
+## Placed from INBOX, 2026-11-05 (the Ask columns and folds)
+
+A1, A2 and the A2 follow-up built; moved to HISTORY.md ("Moved from the plans, 2026-11-05 (CHAT_PLAN A1 and A2)").
+
+B2 and B7 built; moved to HISTORY.md ("Moved from the plans, 2026-11-05 (CHAT_PLAN B2 and B7)").
+
+- **B1, the owner 2026-11-05 02:20Z (screenshots: Ask, the whole answer inside a "145 words" card under Thinking, then the same card collapsed to one line), verbatim:** "also the whole response from my ai model just got placed in a dropdown collapsed box" (pasted: the model's "Thinking Process:" text, numbered steps, no tags). Recommendation (taken): find the class (an untagged "Thinking Process:" preamble, the reasoning split, or the long-answer card folding the answer itself) with a fake-transport stream of exactly that shape; the answer is never inside a fold or a collapsed card, the reasoning is, in Ask, Chat and the popup agent.
+- **B3, verbatim:** "I also cant type in the text box while the popup agent is respondning (check the guide as well) and I cant draft, queue or edit/delete queued messages like in chat for the popup agent." Recommendation (taken): the popup agent and the guide take Chat's composer behaviour: typing stays open while a turn runs, Enter queues, the queue shows with edit and delete, drafts are kept per surface; one shared queue component.
+- **B4, verbatim:** "also when fullscreen or docked to the main window, the bottom footer of te popup agent is really really tall which it shouldnt be" (screenshot: the status row then about 270 px of empty footer). Recommendation (taken): the footer is its content's height in every mode (floating, docked, full screen), measured.
+- **B5, verbatim:** "also in that test request the search appeared after the generated text when it happened before that text was written out." Recommendation (taken): steps and text keep the order they happened in (one timeline ordered by event arrival), in the agent, Chat and the guide; a test with a fake stream of text, tool call, text.
+- **B6, verbatim:** "also I still dont understand why the ai model context windows are so small, cna they be larger?? they need to properly adapt to the model." Recommendation (taken): the context window is read from the model (GGUF metadata or the server's reported n_ctx), set as large as the model and memory allow (a bounded share of free RAM or VRAM), shown in Settings with why; prompt budgets scale from it; fake-transport tests for a 4k, 32k and 128k model. Owner log 02:15Z: "tessellate.agent context budget: 5120 tok window" for gemma-4-E2B (a 128k model).
+- **B8, the owner 2026-11-05 02:23Z, verbatim:** "sometimes when I close a minimised tab for a window, the window flashes for a split second". Recommendation (taken): closing a minimised window from its tab never shows the window (no restore before the close, no transition on a hidden window), for every window kind that minimises to a tab.
+- **B9, the owner 2026-11-05 02:25Z (screenshot: three "Patterns: ... as you told me on ..." lines), verbatim:** "also is there a way to edit or managed confirmed patterns??". Found: no; a Confirm writes a `derived_facts` row of kind "confirmed" (ai/insights.py), and Settings' "What it remembers" (`GET /settings/memory`, routes_settings.py:1638) lists preferences only. Recommendation (taken): confirmed patterns join "What it remembers" as their own group, each with its sentence, the date confirmed and the notes behind it, and Edit (the subject or wording, kept as the person's own word), Remove (soft delete, with Undo) and Not right (the dismiss path); the Patterns line gets the same three in its row menu; Help and the Guide topic say where they are managed.

@@ -31,12 +31,13 @@ Object.assign(LAZY_MODULES, {
   //: The dashboard's Loose ends, While you were away and day digest widgets.
   dashLazy: ["/css/dash-orphans-lazy.css", "/css/dash-night-lazy.css", "/js/dash-orphans.js", "/js/dash-night.js", "/js/dash-day.js"],
   //: What the app draws into a reply beside its words (reply-kit.js's header).
-  replyKit: ["/css/reply-kit-lazy.css", "/js/citation-peek.js", "/js/reply-kit.js"],
+  replyKit: ["/css/key-grid-lazy.css", "/css/reply-kit-lazy.css", "/js/citation-peek.js", "/js/documents-math.js", "/js/reply-kit.js"],
   //: The phone bar's More sheet (phone-more.js's header; INBOX 1314).
   phoneMore: ["/js/phone-more.js"],
   //: The generative background's styles and runtime (bg-art.js, 20 KB gzipped):
   //: only a notebook with the art on, or an open Appearance grid, needs them.
   bgArt: ["/js/bg-art.js"],
+  dashArt: ["/js/dash-art.js"],
   //: The Appearance quick panel (appearance-panel.js, INBOX 1435).
   appearancePanel: ["/css/appearance-panel-lazy.css", "/css/appearance-panel-own-lazy.css", "/js/appearance-panel.js"],
   //: Settings, Appearance, Glass controls: the icon buttons' glass, fetched only while the switch is on.
@@ -47,7 +48,7 @@ Object.assign(LAZY_MODULES, {
   //: the first edit of a rendered `$...$` and the guided equation editor both fetch it.
   mathField: ["/css/math-field-lazy.css", "/vendor/mathlive/mathlive.min.js", "/js/math-field.js"],
   //: The guided equation editor (math-editor.js's header; DOCUMENTS_PLAN 16), on the same field.
-  mathEditor: ["/css/math-field-lazy.css", "/vendor/mathlive/mathlive.min.js", "/js/math-field.js", "/css/math-editor-lazy.css", "/js/math-editor.js"],
+  mathEditor: ["/css/key-grid-lazy.css", "/css/math-field-lazy.css", "/vendor/mathlive/mathlive.min.js", "/js/math-field.js", "/css/math-editor-lazy.css", "/js/math-editor.js"],
   //: The model badge's spec panel, editing an answer, a note's Explain row, the extract preview's Save (gesture-kit.js's header).
   gestureKit: ["/js/gesture-kit.js"],
   //: One chat turn (chat-turn.js): `sendChatMessage` awaits it; the chat box's focus warms it.
@@ -77,9 +78,13 @@ Object.assign(LAZY_MODULES, {
   //: What a person does to the companion on purpose: the Settings controls, Show or
   //: hide, Call back, the Look repaint (companion-settings.js's header; audit AI23).
   companionSettings: ["/js/companion-settings.js"],
+  //: What a click, a hover or a focus brings onto the screen fades in, and out where it floats (INBOX 1565): ui-reveal-lazy.css.
+  uiReveal: ["/css/ui-reveal-lazy.css"],
 });
-setTimeout(() => ["loadFailed", "modelMenu", "entryCard"].forEach(ensureModule), 3000);
+setTimeout(() => ["loadFailed", "modelMenu", "entryCard", "uiReveal"].forEach(ensureModule), 3000);
 installStandIns({
+  //: The lock card's offer of a backup when the notebook file is gone (INBOX 1573).
+  accountRecovery: ["showRestoreOffer"],
   companionSettings: ["mountBuddyCustom", "mountBuddyActivities", "mountProfileLook", "nameMarkBuddyMakeIt", "nameMarkBuddyHide", "nameMarkBuddyToggle", "nameMarkBuddyCallBack", "nameMarkRepaintAll"],
   spaceSwap: ["swapSpace", "spaceEnterFor"],
   companionRemark: ["nameMarkBuddyRemark"],
@@ -90,12 +95,13 @@ installStandIns({
   statusPanels: ["renderSearchEngineHealth", "emailSupportReport", "renderBackendPicker", "openUndoHistoryMenu", "openModelOffer"],
   featureModelSheet: ["openFeatureModelSheet"],
   dashLazy: ["renderOrphanNotesWidget", "renderNightWidget", "renderDayDigest", "dashPatternBit", "dashTodayLine"],
+  dashArt: ["renderArtWidget"],
   phoneMore: ["openPhoneMoreSheet"],
   screenContext: ["screenContext"],
   mathEditor: ["openMathEditor"],
   mathField: ["openMathInPlace"],
   gestureKit: ["openChatModelPanel", "editChatAnswer", "explainNote", "commitExtractPreview"],
-  notesLazy: ["toggleRowExpanded", "nudgeUntaggedNotes", "nudgeReviewQueue", "refreshNoteSearchWhy", "noMatchHint", "liveQueryBar"],
+  notesLazy: ["toggleRowExpanded", "fullEntry", "nudgeUntaggedNotes", "nudgeReviewQueue", "refreshNoteSearchWhy", "loadSemanticEntries", "noMatchHint", "liveQueryBar"],
   quickAdd: ["reminderComposeAdd"],
   featureRows: ["renderQuickLinks"],
   loadFailed: ["surfaceFailed"],
@@ -111,7 +117,8 @@ window.addEventListener("blur", () => { document.altAlone = false; });
 document.addEventListener("keydown", (event) => {
   if (!event.altKey || event.ctrlKey || event.metaKey || event.code !== "Equal") return;
   const box = event.target;
-  const kind = typeof editorSurfaceKind === "function" ? editorSurfaceKind(box) : null;
+  //: By the box's id while the adapters are still on their way (maths1527: about 1 s after a fresh note box's first focus, Alt+= did nothing).
+  const kind = (typeof editorSurfaceKind === "function" ? editorSurfaceKind(box) : null) ?? (typeof EDITOR_SURFACES === "object" ? EDITOR_SURFACES[box?.id] ?? null : null);
   if (box?.id !== "question" && !["note", "document", "chat", "board"].includes(kind)) return;
   event.preventDefault();
   openMathEditor({ target: box });

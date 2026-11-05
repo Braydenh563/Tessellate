@@ -158,13 +158,16 @@ test("toolbar menus close after an item is chosen", async ({ page }) => {
   const errors = watchErrors(page);
   await openNewDoc(page, "Hello");
   await page.keyboard.press("Control+Shift+X");
-  const summary = page.locator('#doc-toolbar summary[aria-label^="Insert"]:visible').first();
+  // Insert is a button that opens the / menu since DX6 (audit 1102); Style is the
+  // strip's menu now, so its Underline is the item chosen.
+  const summary = page.locator('#doc-toolbar summary[aria-label^="Style"]:visible').first();
   const menu = summary.locator("xpath=..");
+  const before = await docText(page);
   await summary.click();
   await expect(menu).toHaveAttribute("open", "");
-  await menu.locator('button[data-md="table"]').click();
-  expect(await docText(page)).toContain("| Column | Column | Column |");
-  await expect(menu, "the Insert menu stayed open after Table").not.toHaveAttribute("open", "");
+  await menu.locator('button[data-md="underline"]').click();
+  await expect.poll(() => docText(page)).not.toBe(before);
+  await expect(menu, "the Style menu stayed open after Underline").not.toHaveAttribute("open", "");
   expect(errors).toEqual([]);
 });
 
@@ -196,8 +199,20 @@ test("a note card shows heading words, not heading hashes", async ({ page }) => 
   await page.fill("#note-search", mark);
   const body = page.locator("#tab-notes .entry-content", { hasText: `Sub heading ${mark}` }).first();
   await expect(body).toBeVisible();
-  const text = await body.innerText();
+  // Two races, both in the read and not in the card: the filter redraws the
+  // list after the first match (the node `body` found is then detached), and
+  // a row below the fold is `content-visibility: auto` (07-whiteboard-misc.css,
+  // INBOX 400), whose box is there for toBeVisible but whose text reads ""
+  // until it nears the window (measured in Chromium). So the card is found
+  // again and scrolled to on every try, in one step, until its text is drawn.
+  const drawn = () => page.evaluate((m) => {
+    const card = [...document.querySelectorAll("#tab-notes .entry-content")].find((el) => el.textContent.includes(`Sub heading ${m}`));
+    if (!card) return "";
+    card.scrollIntoView({ block: "nearest" });
+    return card.innerText;
+  }, mark);
+  await expect.poll(drawn, { message: "the card's text is drawn" }).toContain(`Sub heading ${mark}`);
+  const text = await drawn();
   expect(text, "the card kept the ## of its heading").not.toMatch(/^\s*#/m);
-  expect(text).toContain(`Sub heading ${mark}`);
   expect(errors).toEqual([]);
 });

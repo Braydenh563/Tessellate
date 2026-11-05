@@ -120,14 +120,12 @@ function objTrayList() {
 }
 
 function objTrayDraw(holder) {
+  //: Its head (`popoverHead`) is in the lazy status-panels.js, loaded at wiring.
+  if (typeof popoverHead !== "function") return;
   const rows = objTray.map(objTrayRow);
-  const head = document.createElement("div");
-  head.className = "obj-tray-head";
-  const title = document.createElement("strong");
-  title.textContent = "Tray";
   const clear = smallButton("Clear all", "Take everything out of the tray", objTrayClear);
   clear.disabled = !rows.length;
-  head.append(title, clear);
+  const head = popoverHead("Tray", [clear], holder.id === "obj-tray" ? holder : null);
   const body = document.createElement(rows.length ? "ul" : "p");
   body.className = rows.length ? "obj-tray-list" : "obj-tray-empty muted";
   if (rows.length) body.append(...rows);
@@ -164,7 +162,10 @@ function objTrayRow(ref) {
   use.title = `${ref.title}: paste where you were typing, or drag it out`;
   use.setAttribute("aria-label", `${OBJ_NOUN[ref.kind]}: ${ref.title}`);
   use.addEventListener("click", () => objTrayPaste(ref));
-  const remove = smallButton("ph:x", `Take ${ref.title} out of the tray`, () => objTrayRemove(objKey(ref)));
+  //: A minus, not an x (INBOX 1647, the owner: "the x's for each tray item
+  //: may be confused with the x button to close the tray"): the x is the
+  //: popover's close, a row's own button takes the item out.
+  const remove = smallButton("ph:minus-circle", `Take ${ref.title} out of the tray`, () => objTrayRemove(objKey(ref)));
   li.append(use, remove);
   return li;
 }
@@ -218,7 +219,7 @@ OBJ_RENDERERS.tray = (ref) => {
 
 OBJ_MENU_ROWS.push({ label: "Add to tray", run: (ref) => OBJ_RENDERERS.tray(ref) });
 
-(() => {
+(async () => {
   const button = $("status-tray");
   const panel = $("obj-tray");
   if (!button || !panel) return;
@@ -246,5 +247,6 @@ OBJ_MENU_ROWS.push({ label: "Add to tray", run: (ref) => OBJ_RENDERERS.tray(ref)
   panel.addEventListener("keydown", (event) => {
     if (event.key === "Escape") button.focus();
   });
+  await ensureModule("statusPanels");
   objTrayPaint();
 })();

@@ -17,6 +17,7 @@ from dataclasses import dataclass
 from datetime import date
 
 from tessellate.ai import composer, composer_lists, factgraph, realise, recognise
+from tessellate.ai import composer_body
 
 _SELF = r"(?:do|did|have|has|does) i"
 _ASKS = (
@@ -74,7 +75,7 @@ def _month(rest: str, today: date) -> tuple[int, int] | None:
 
 
 def _day_of(view, s, today: date) -> date | None:  # noqa: ANN001
-    named = [d for d, at in composer._days_named(view, today, "past") if s.start <= at < s.end]  # noqa: SLF001
+    named = [d for d, at in composer_body._days_named(view, today, "past") if s.start <= at < s.end]  # noqa: SLF001
     if not named:
         return view.written
     #: A log kept in one note: "Ran 8 km on 17 October" in a note begun on 3

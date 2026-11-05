@@ -38,7 +38,7 @@ EXEMPT_VALUES = {"0", "auto", "none", "100%", "inherit", "unset", "50%", "initia
 def test_a_toolbar_rule_sizes_its_controls_by_token():
     css = re.sub(r"/\*.*?\*/", "", css_text(), flags=re.S)
     loose = []
-    for rule in re.finditer(r"([^{}]+)\{([^{}]*)\}", css):
+    for rule in re.finditer(r"(?:(?<=[{}])|\A)([^{}]+)\{([^{}]*)\}", css):
         selector, body = " ".join(rule.group(1).split()), rule.group(2)
         if not TARGET.search(selector):
             continue

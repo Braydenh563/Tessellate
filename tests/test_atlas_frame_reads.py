@@ -61,7 +61,7 @@ const ctx = {
   getComputedStyle: () => { reads.cs += 1; return { transform: `matrix(${Math.cos(ang)}, ${Math.sin(ang)}, ${-Math.sin(ang)}, ${Math.cos(ang)}, 0, 0)`, rotate: "none", opacity: "1" }; },
   requestAnimationFrame: (f) => { frames.push(f); return frames.length; },
   atlasTailWake() {}, atlasFix: (n) => +n.toFixed(2), atlasArmPath: () => "M0 0", atlasArmHand: () => "", atlasState: {},
-  ATLAS_LOOKS: {},
+  ATLAS_LOOKS: {}, nameMarkBuddyBehindCover: () => false,  // 1667: the rig holds its reads behind a dialog
 };
 let clock = 0;
 vm.createContext(ctx);
@@ -93,7 +93,7 @@ res.woken = take();
 // An animation on the arm (a gesture's) keeps it reading every frame.
 probeAnims = [{}];
 ctx.__wake(box);
-run(30);
+run(60);
 res.anim = take();
 probeAnims = [];
 run(60);
@@ -106,7 +106,8 @@ process.stdout.write(JSON.stringify(res));
     assert out["walk"]["cs"] <= 3 * 20, f"60 walking frames read style {out['walk']['cs']} times; it reads only until the arms hold still"
     assert out["walk"]["cs"] >= 3, "it reads at least once after a wake"
     assert out["woken"]["cs"] >= 3, "a wake reads the arms again"
-    assert out["anim"]["cs"] >= 3 * 30, "while an animation runs on the arm it reads every frame"
+    # The corner companion's rig draws at 30 a second (every other 60 Hz frame), so 60 frames are 30 drawn ones.
+    assert out["anim"]["cs"] >= 3 * 30, "while an animation runs on the arm it reads every drawn frame"
     assert out["after"]["cs"] <= 3 * 20, "and stops once the animation is over and the arm holds"
 
 
@@ -184,3 +185,102 @@ def test_carried_or_thrown_the_idle_loops_hold() -> None:
     frame = _fn(LIFE, "atlasTailFrame")
     assert 'const loops = live && !box.closest("#nm-buddy.nm-buddy-dragging") && !document.documentElement.hasAttribute("data-atlas-lite");' in frame
     assert "loops ? anim.play() : anim.pause()" in frame
+
+
+def test_lag_1657_tail_path_numbers_are_rounded_with_math_round():
+    """INBOX 1657: the tail's paths are rounded ~3,000 times a draw; `toFixed`
+    plus a unary plus made `atlasTailPaths` 2.8 to 3.9 ms a draw at 4x CPU,
+    `Math.round(v * 100) / 100` 1.7 to 1.8 (same two decimals)."""
+    atlas = (JS / "atlas.js").read_text(encoding="utf-8")
+    assert "const atlasFix = (v) => Math.round(v * 100) / 100;" in atlas
+    assert "toFixed" not in atlas[atlas.index("function atlasStem("):atlas.index("//: **Hands and feet**")]
+
+
+def test_lag_1657_character_jobs_run_one_task_each():
+    """INBOX 1657: the seven jobs the characters' arrival releases were one
+    161 ms task at 4x CPU (47 ms forced layout); each is its own task now."""
+    atlas = (JS / "atlas.js").read_text(encoding="utf-8")
+    body = atlas[atlas.index("function charactersArrived()"):]
+    assert "const step = () => {" in body and "setTimeout(step, 0)" in body
+    assert "for (const fn of waiting)" not in body
+
+
+def _tail_kit(src: str) -> str:
+    """The tail's path helpers, one closure exporting `paths` and `num`."""
+    match = re.search(r"^const atlasTailKit = \(\(\) => \{$.*?^\}\)\(\);$", src, re.S | re.M)
+    assert match, "atlasTailKit"
+    return match.group(0) + "\nconst { paths: atlasTailPaths, num: atlasTailNum } = atlasTailKit;"
+ATLAS_JS = (JS / "atlas.js").read_text(encoding="utf-8")
+
+
+def _tail_script(body: str) -> str:
+    parts = [
+        "const atlasFix = (v) => Math.round(v * 100) / 100;",
+        *(_fn(ATLAS_JS, n) for n in ("atlasStemSides", "atlasSmooth", "atlasStem")),
+        _tail_kit(LIFE),
+        body,
+    ]
+    return "\n".join(parts)
+
+
+@needs_node
+def test_lag_1657_tail_numbers_as_text_match_atlas_fix():
+    """INBOX 1657 round 2: `atlasTailNum` writes the tail's ~2,700 numbers a draw
+    without the double-to-string conversion (1.3 of 1.6 ms at 4x CPU); the same text."""
+    out = _node(_tail_script("""
+let bad = 0;
+for (let i = 0; i < 400000; i += 1) {
+  const v = (Math.sin(i * 12.9898) * 43758.5453 % 1) * (i % 7 ? 400 : 0.02) * (i % 2 ? 1 : -1);
+  if (String(atlasFix(v)) !== atlasTailNum(v)) bad += 1;
+}
+for (const v of [0, -0, 0.004, -0.004, 0.005, 0.5, -0.5, 1, 10, 100, 0.1, 0.01, 1.005, 99.995, -99.995]) if (String(atlasFix(v)) !== atlasTailNum(v)) bad += 1;
+process.stdout.write(JSON.stringify({ bad }));
+"""))
+    assert out["bad"] == 0
+
+
+@needs_node
+def test_lag_1657_tail_paths_share_one_centreline_and_match_atlas_stem():
+    """INBOX 1657 round 2: the body, stream, silk and filaments are cut from one
+    centreline and memoised widths; at the old two samples a curve their text is
+    `atlasStem`'s byte for byte, and the default filaments (always two) are too."""
+    out = _node(_tail_script("""
+const w = (t) => 3.6 + 4.8 * Math.sin(Math.PI * Math.min(1, 0.22 + 0.86 * t)) - 2.9 * t ** 6;
+const spec = { tailWidth: w, tailFilaments: [0.3, -0.4], tailRound: true };
+const N = 32;
+let bad = 0, n = 0;
+for (let k = 0; k < 120; k += 1) {
+  const segs = Array.from({ length: N }, (_, i) => {
+    const x = i * 3, a = Math.sin(k * 0.7 + i * 0.3) * 2, b = Math.cos(k * 0.4 + i * 0.2) * 2;
+    return [x, a, x + 1, a + b, x + 2, b - a, x + 3, Math.sin(k * 0.7 + (i + 1) * 0.3) * 2];
+  });
+  const s = 2;
+  const old = {
+    body: atlasStem(segs, w, { samples: s, round: true }),
+    stream: atlasStem(segs, (t) => w(t) * 0.26, { samples: s, shift: (t) => w(t) * 0.22 * Math.sin(Math.PI * 2.6 * t) }),
+    silk: atlasStem(segs, (t) => w(t) * 0.24, { samples: s, shift: (t) => -w(t) * 0.3 * Math.sin(Math.PI * 2.6 * t + 1.1) }),
+    filaments: spec.tailFilaments.map((f) => {
+      const pts = atlasStemSides(segs, () => 0, s, (t) => (w(t) / 2) * f).left;
+      const run = pts.slice(Math.round(pts.length * 0.18), Math.round(pts.length * 0.92));
+      return `M${atlasFix(run[0][0])} ${atlasFix(run[0][1])}${atlasSmooth(run)}`;
+    }).join(""),
+  };
+  const two = atlasTailPaths(spec, segs, 2);
+  const one = atlasTailPaths(spec, segs);
+  n += 1;
+  for (const key of ["body", "stream", "silk", "filaments"]) if (old[key] !== two[key]) bad += 1;
+  if (old.filaments !== one.filaments) bad += 1;
+  if (one.body.length > old.body.length * 0.6) bad += 1000;
+}
+process.stdout.write(JSON.stringify({ bad, n }));
+"""))
+    assert out["bad"] == 0, out
+
+
+def test_lag_1657_selection_popup_does_not_read_text_of_a_caret():
+    """INBOX 1657 round 2: `selection.toString()` lays the page out; a caret
+    (every focus change and key on the body) paid that to find nothing selected:
+    706 ms of a 22-key run at 4x CPU. Collapsed is asked first."""
+    sel = (JS / "selection.js").read_text(encoding="utf-8")
+    body = sel[sel.index("function syncSelectionPopup()"):sel.index("function initSelectionPopup()")]
+    assert body.index("!selection.isCollapsed ? selection.toString()") > 0

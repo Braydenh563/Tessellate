@@ -60,13 +60,12 @@ def test_hr3_a_transcript_has_a_bound(client):
     assert r.status_code == 200
 
 
-def test_ai9_hr7_the_search_reads_the_first_words_of_a_long_question():
+def test_ai9_hr7_the_search_reads_a_bounded_slice_of_a_long_question(session):
     long_question = " ".join(f"word{i}" for i in range(2000))
-    clipped = search_manager.clip_query(long_question)
-    assert len(clipped.split()) == search_manager.SEARCH_QUERY_WORDS
-    assert clipped == " ".join(f"word{i}" for i in range(search_manager.SEARCH_QUERY_WORDS))
-    assert len(search_manager.clip_query("x" * 100_000)) == search_manager.SEARCH_QUERY_CHARS
-    assert search_manager.clip_query("a short question") == "a short question"
+    clipped = search_manager.clip_query(session, long_question)
+    assert len(clipped.split()) <= search_manager.SEARCH_QUERY_WORDS
+    assert len(search_manager.clip_query(session, "x" * 100_000)) == search_manager.SEARCH_QUERY_CHARS
+    assert search_manager.clip_query(session, "a short question") == "a short question"
 
 
 def test_hr5_the_filing_prompt_fences_the_note_and_the_notes_beside_it(app_state):

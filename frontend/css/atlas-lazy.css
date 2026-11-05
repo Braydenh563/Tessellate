@@ -51,7 +51,7 @@
    in front too, a doorman's stance (INBOX 1402: "a bored or grumpy
    gangster"): now both arms a little out, one further than the other. */
 .nm-atlas[data-atlas-look="masculine"][data-atlas-mood="calm"] { --atl-ar0: -16deg; --atl-al0: 12deg; --atl-ar1: -52deg; --atl-al1: 8deg; --atl-ar2: -24deg; --atl-al2: 30deg; }
-.nm-atlas[data-atlas-look="feminine"][data-atlas-mood="calm"] { --atl-ar0: -26deg; --atl-al0: 8deg; --atl-ar1: -48deg; --atl-al1: 10deg; --atl-ar2: 24deg; --atl-al2: -34deg; }
+.nm-atlas[data-atlas-look="feminine"][data-atlas-mood="calm"] { --atl-ar0: -26deg; --atl-al0: 8deg; --atl-ar1: -48deg; --atl-al1: 10deg; --atl-ar2: 12deg; --atl-al2: -12deg; }
 /* Carried or thrown (B87a), the slow idle loops hold where they are and
    go on from there when it lands. While a main frame is drawn every
    vsync, as it is for the whole carry and flight, Chromium restyles each
@@ -71,4 +71,306 @@
 #nm-buddy.nmb-away :is(.nm-atlas, .nm-atlas *, .atl-lw, .atl-lw-breathe, .atl-figure-box, .atl-orbits *),
 #nm-buddy.nm-buddy-dragging :is(.atl-lw, .atl-lw-breathe, .atl-orbit-arm, .atl-orbiter) { animation-play-state: paused !important; }
 :root[data-atlas-lite] .atl-orbiter :is(.atl-orbiter-glow, .atl-orbiter-swirl) { display: none; }
-
+/* Atlas's acts (INBOX 1589), here with the faces so boot CSS stays under its
+   budget: drawn only once Atlas is, and this sheet comes after
+   08-consistency.css. */
+/* **The eyes and the head go to what it holds** (INBOX 1589, the owner: "it
+   doesnt even look at the map"): down to the map or the book, up to the
+   stars it juggles, out to the bell or the lantern in its right hand. The
+   look at the pointer (`nmb-attend`) gives way while it does. */
+#nm-buddy:is(.nmb-act-map, .nmb-act-read, .nmb-act-juggle, .nmb-act-bell, .nmb-act-lantern) .nm-atlas .atl-iris { translate: none; }
+#nm-buddy:is(.nmb-act-map, .nmb-act-read) .nm-atlas { --atl-head-y: 1px; --atl-tilt: 3deg; --atl-tail: -8deg; }
+#nm-buddy:is(.nmb-act-map, .nmb-act-read) .nm-atlas .atl-pupil { --atl-px: 0px; --atl-py: 1.8px; }
+#nm-buddy.nmb-act-juggle .nm-atlas { --atl-brow-y: -1px; }
+#nm-buddy.nmb-act-juggle .nm-atlas .atl-pupil { --atl-px: 0px; --atl-py: -1.6px; }
+#nm-buddy:is(.nmb-act-bell, .nmb-act-lantern) .nm-atlas { --atl-tilt: 4deg; }
+#nm-buddy:is(.nmb-act-bell, .nmb-act-lantern) .nm-atlas .atl-pupil { --atl-px: 1.6px; --atl-py: 0.6px; }
+/* Its seats (atlas.js, `atlasCoilProp.seats`, INBOX 1589): behind the body,
+   shown by the act, the hands resting on them (the arms, above). A chair of
+   night sky with a lit rim, a beanbag in the strand's lilac. */
+#nm-buddy.nmb-act-chair .atl-figure .nmp-chair,
+#nm-buddy.nmb-act-beanbag .atl-figure .nmp-beanbag { opacity: 1; }
+.nm-atlas .atl-prop-seat { fill: var(--atl-navy); stroke: var(--atl-glow-c); stroke-width: 0.5; }
+.nm-atlas .atl-prop-seat-top { fill: color-mix(in oklab, var(--atl-navy) 80%, var(--atl-glow-c)); }
+.nm-atlas .atl-prop-bag { fill: color-mix(in oklab, var(--atl-lilac) 70%, var(--atl-navy)); stroke: var(--atl-glow-c); stroke-width: 0.5; }
+.nm-atlas .atl-prop-bag-sheen { fill: white; opacity: 0.35; }
+/* **Sat, not stood** (INBOX 1589): on a chair or a beanbag the lower body
+   and the tail fold onto the seat about the hips (their boxes' own pivots),
+   half their height and a little wider, as legs seen from the front are when
+   seated, so the seat shows under them. `scale` on the boxes, the
+   compositor's, beside the loops' `rotate`. */
+#nm-buddy :is(.atl-lw-lower, .atl-lw-tail) { transition: scale calc(var(--motion-slow) * 3) var(--ease-in-out); }
+#nm-buddy:is(.nmb-act-chair, .nmb-act-beanbag) :is(.atl-lw-lower, .atl-lw-tail) { scale: 1.1 0.5; }
+/* **The face's numbers do not inherit either** (INBOX 1591, the owner's lag log: a mood
+   change restyled 600 to 1,244 elements, 450 to 630ms on a slow machine). A mood, an act or
+   a pose writes 57 custom properties (the eyes, the mouth, the brows, the arms'
+   turns, the cues) on each drawing's root, and as inherited properties every one of them
+   restyled the root's whole subtree, the 400 paths of the body that read none of them. They
+   are registered not to inherit and pass down by `inherit` through the groups (any element
+   with children) and the readers named below, so a change restyles those and not the leaves
+   of the drawing. The list of readers is the one the lint
+   (tests/test_atlas_face_inherit_1591.py) keeps: a rule that reads one of these and is not
+   named here would read the initial value. The rule has no weight (`:where`), so a rule that
+   writes the property on a part itself (a pupil's look) still wins. */
+@property --atl-al0 { syntax: "*"; inherits: false; }
+@property --atl-al1 { syntax: "*"; inherits: false; }
+@property --atl-al2 { syntax: "*"; inherits: false; }
+@property --atl-ar0 { syntax: "*"; inherits: false; }
+@property --atl-ar1 { syntax: "*"; inherits: false; }
+@property --atl-ar2 { syntax: "*"; inherits: false; }
+@property --atl-bl-r { syntax: "*"; inherits: false; }
+@property --atl-bl-y { syntax: "*"; inherits: false; }
+@property --atl-br-r { syntax: "*"; inherits: false; }
+@property --atl-br-y { syntax: "*"; inherits: false; }
+@property --atl-brow-y { syntax: "*"; inherits: false; }
+@property --atl-cheek { syntax: "*"; inherits: false; }
+@property --atl-chin0 { syntax: "*"; inherits: false; }
+@property --atl-chin1 { syntax: "*"; inherits: false; }
+@property --atl-chin2 { syntax: "*"; inherits: false; }
+@property --atl-crest { syntax: "*"; inherits: false; }
+@property --atl-doze { syntax: "*"; inherits: false; }
+@property --atl-eye-s { syntax: "*"; inherits: false; }
+@property --atl-fx-bang { syntax: "*"; inherits: false; }
+@property --atl-fx-dots { syntax: "*"; inherits: false; }
+@property --atl-fx-hearts { syntax: "*"; inherits: false; }
+@property --atl-fx-q { syntax: "*"; inherits: false; }
+@property --atl-fx-sparkle { syntax: "*"; inherits: false; }
+@property --atl-fx-sweat { syntax: "*"; inherits: false; }
+@property --atl-fx-tear { syntax: "*"; inherits: false; }
+@property --atl-fx-zz { syntax: "*"; inherits: false; }
+@property --atl-glow { syntax: "*"; inherits: false; }
+@property --atl-halo-o { syntax: "*"; inherits: false; }
+@property --atl-happy { syntax: "*"; inherits: false; }
+@property --atl-head-y { syntax: "*"; inherits: false; }
+@property --atl-hearteye { syntax: "*"; inherits: false; }
+@property --atl-knit { syntax: "*"; inherits: false; }
+@property --atl-lid { syntax: "*"; inherits: false; }
+@property --atl-lid-r { syntax: "*"; inherits: false; }
+@property --atl-low { syntax: "*"; inherits: false; }
+@property --atl-m-big { syntax: "*"; inherits: false; }
+@property --atl-m-cat { syntax: "*"; inherits: false; }
+@property --atl-m-frown { syntax: "*"; inherits: false; }
+@property --atl-m-grin { syntax: "*"; inherits: false; }
+@property --atl-m-hmm { syntax: "*"; inherits: false; }
+@property --atl-m-laugh { syntax: "*"; inherits: false; }
+@property --atl-m-o { syntax: "*"; inherits: false; }
+@property --atl-m-rest { syntax: "*"; inherits: false; }
+@property --atl-m-set { syntax: "*"; inherits: false; }
+@property --atl-m-smile { syntax: "*"; inherits: false; }
+@property --atl-m-smug { syntax: "*"; inherits: false; }
+@property --atl-m-tinyo { syntax: "*"; inherits: false; }
+@property --atl-m-wavy { syntax: "*"; inherits: false; }
+@property --atl-nightcap { syntax: "*"; inherits: false; }
+@property --atl-open { syntax: "*"; inherits: false; }
+@property --atl-ps { syntax: "*"; inherits: false; }
+@property --atl-px { syntax: "*"; inherits: false; }
+@property --atl-py { syntax: "*"; inherits: false; }
+@property --atl-shut { syntax: "*"; inherits: false; }
+@property --atl-squeeze { syntax: "*"; inherits: false; }
+@property --atl-star { syntax: "*"; inherits: false; }
+@property --atl-tilt { syntax: "*"; inherits: false; }
+:where(.nm-atlas :not(:empty),
+  .nm-atlas.atl-layer-lids,
+  .nm-atlas :where(.nmb-arm-r, .atl-chin-hand),
+  .nm-atlas .nmb-arm-r,
+  .nm-atlas .nmb-arm-l,
+  .nm-atlas .atl-aura,
+  .nm-atlas .atl-cheek,
+  .nm-atlas .atl-eye,
+  .nm-atlas .atl-pupil,
+  .nm-atlas .atl-lid,
+  .nm-atlas .atl-lid-low,
+  .nm-atlas :is(.atl-ear-r, .atl-mane, .atl-wisps),
+  .nm-atlas .atl-ear-l,
+  .nm-atlas .atl-brow-l,
+  .nm-atlas .atl-brow-r,
+  .nm-atlas .atl-head,
+  .nm-atlas :is(.atl-tail-core, .atl-ring),
+  .nm-atlas .atl-core,
+  .nm-atlas .atl-star,
+  .nm-atlas .atl-eye-open,
+  .nm-atlas .atl-e-happy,
+  .nm-atlas .atl-e-shut,
+  .nm-atlas .atl-e-doze,
+  .nm-atlas .atl-e-squeeze,
+  .nm-atlas .atl-iris,
+  .nm-atlas .atl-heart-eye,
+  .nm-atlas .atl-m-smile,
+  .nm-atlas .atl-m-grin,
+  .nm-atlas .atl-m-big,
+  .nm-atlas .atl-m-laugh,
+  .nm-atlas .atl-m-o,
+  .nm-atlas .atl-m-tinyo,
+  .nm-atlas .atl-m-rest,
+  .nm-atlas .atl-m-hmm,
+  .nm-atlas .atl-m-wavy,
+  .nm-atlas .atl-m-frown,
+  .nm-atlas .atl-m-smug,
+  .nm-atlas .atl-m-cat,
+  .nm-atlas .atl-m-set,
+  .nm-atlas .atl-fx-sparkle,
+  .nm-atlas .atl-fx-hearts,
+  .nm-atlas .atl-fx-zz,
+  .nm-atlas .atl-nightcap,
+  .nm-atlas .atl-fx-dots,
+  .nm-atlas .atl-fx-q,
+  .nm-atlas .atl-fx-bang,
+  .nm-atlas .atl-fx-tear,
+  .nm-atlas .atl-fx-sweat,
+  .nm-atlas:is(.atl-head, .atl-tiny) .atl-brow-l,
+  .nm-atlas:is(.atl-head, .atl-tiny) .atl-brow-r) {
+  --atl-al0: inherit;
+  --atl-al1: inherit;
+  --atl-al2: inherit;
+  --atl-ar0: inherit;
+  --atl-ar1: inherit;
+  --atl-ar2: inherit;
+  --atl-bl-r: inherit;
+  --atl-bl-y: inherit;
+  --atl-br-r: inherit;
+  --atl-br-y: inherit;
+  --atl-brow-y: inherit;
+  --atl-cheek: inherit;
+  --atl-chin0: inherit;
+  --atl-chin1: inherit;
+  --atl-chin2: inherit;
+  --atl-crest: inherit;
+  --atl-doze: inherit;
+  --atl-eye-s: inherit;
+  --atl-fx-bang: inherit;
+  --atl-fx-dots: inherit;
+  --atl-fx-hearts: inherit;
+  --atl-fx-q: inherit;
+  --atl-fx-sparkle: inherit;
+  --atl-fx-sweat: inherit;
+  --atl-fx-tear: inherit;
+  --atl-fx-zz: inherit;
+  --atl-glow: inherit;
+  --atl-halo-o: inherit;
+  --atl-happy: inherit;
+  --atl-head-y: inherit;
+  --atl-hearteye: inherit;
+  --atl-knit: inherit;
+  --atl-lid: inherit;
+  --atl-lid-r: inherit;
+  --atl-low: inherit;
+  --atl-m-big: inherit;
+  --atl-m-cat: inherit;
+  --atl-m-frown: inherit;
+  --atl-m-grin: inherit;
+  --atl-m-hmm: inherit;
+  --atl-m-laugh: inherit;
+  --atl-m-o: inherit;
+  --atl-m-rest: inherit;
+  --atl-m-set: inherit;
+  --atl-m-smile: inherit;
+  --atl-m-smug: inherit;
+  --atl-m-tinyo: inherit;
+  --atl-m-wavy: inherit;
+  --atl-nightcap: inherit;
+  --atl-open: inherit;
+  --atl-ps: inherit;
+  --atl-px: inherit;
+  --atl-py: inherit;
+  --atl-shut: inherit;
+  --atl-squeeze: inherit;
+  --atl-star: inherit;
+  --atl-tilt: inherit;
+}
+/* **The lower body lives at rest** (INBOX 1680, the owner: "it never changes,
+   even when it is sleeping, it still sticks up"). The rig's pose boxes
+   (`.atl-lw-pose`, atlas-life.js) set `transform` by state; these loops run
+   on `rotate` and `scale` beside it, on the compositor, so nothing is
+   scripted per frame. One slow swing down the chain: the dress or cloak
+   first, the wisps a beat behind and wider, the tail's root last and
+   widest (the delays are the lag). Asleep it breathes slower, shallower
+   and lower. Same gates as the other loops (avatar motion off or reduced:
+   still); paused with them when away, off screen or carried. */
+@keyframes atl-lw-sway-lower { from { rotate: -2.6deg; } to { rotate: 2.6deg; } }
+@keyframes atl-lw-sway-wisps { from { rotate: -4deg; } to { rotate: 4deg; } }
+@keyframes atl-lw-sway-tail { from { rotate: -6deg; } to { rotate: 6deg; } }
+@keyframes atl-lw-bob-lower { from { scale: 1 0.985; } to { scale: 1 1.02; } }
+@keyframes atl-lw-bob-wisps { from { scale: 1 0.97; } to { scale: 1 1.03; } }
+@keyframes atl-lw-bob-tail { from { scale: 1 0.98; } to { scale: 1 1.05; } }
+@keyframes atl-lw-sleep-lower { from { rotate: -1.4deg; } to { rotate: 1.4deg; } }
+@keyframes atl-lw-sleep-wisps { from { rotate: -2.2deg; } to { rotate: 2.2deg; } }
+@keyframes atl-lw-sleep-tail { from { rotate: -3deg; } to { rotate: 3deg; } }
+@keyframes atl-lw-sleep-bob-lower { from { scale: 1 0.97; } to { scale: 1 1.01; } }
+@keyframes atl-lw-sleep-bob-wisps { from { scale: 1 0.96; } to { scale: 1 1.015; } }
+@keyframes atl-lw-sleep-bob-tail { from { scale: 1 0.96; } to { scale: 1 1.02; } }
+/* **Organic, not a clean sinusoid** (INBOX 1681, the 1680 review: "a rigid single sinusoid"). The turn and
+   the stretch are separate loops on separate periods, and no two parts share one (the dress 6.4 s and
+   9.7 s, the wisps 5.3 s and 8.1 s, the tail 4.7 s and 7.3 s), so the pair drifts in and out of step
+   and the figure takes minutes to repeat a pose. Each is a lone property on the compositor. */
+@media all {
+  :is(
+    :root:not([data-avatar-motion="off"]):not([data-motion="reduced"]) .nm-live,
+    :root[data-buddy-motion="full"]:not([data-avatar-motion="off"]) #nm-buddy .nm-live
+  ) {
+    & .atl-lw-pose-lower { animation: atl-lw-sway-lower 6.4s ease-in-out -3.2s infinite alternate, atl-lw-bob-lower 9.7s ease-in-out -6.1s infinite alternate; }
+    & :is(.atl-lw-pose-wisps, .atl-lw-pose-wisps-back, .atl-lw-pose-glint-a, .atl-lw-pose-glint-b) { animation: atl-lw-sway-wisps 5.3s ease-in-out -2.4s infinite alternate, atl-lw-bob-wisps 8.1s ease-in-out -1.7s infinite alternate; }
+    & .atl-lw-pose-tail { animation: atl-lw-sway-tail 4.7s ease-in-out -1.5s infinite alternate, atl-lw-bob-tail 7.3s ease-in-out -4.2s infinite alternate; }
+  }
+  /* Same gates as above: without them a sleeping figure with avatar motion
+     off ran one 10 s sway (the sleep rule only swapped the name, so the
+     iteration count fell back to 1) and then snapped back. Asleep it is
+     slower, shallower and lower, the two periods still unequal. */
+  :is(
+    :root:not([data-avatar-motion="off"]):not([data-motion="reduced"]),
+    :root[data-buddy-motion="full"]:not([data-avatar-motion="off"])
+  ) #nm-buddy:is(.nmb-sleep, .nmb-act-nap, .nmb-act-lie, [data-pose^="lie"], [data-pose^="curl"]) .nm-live {
+    & .atl-lw-pose-lower { animation-name: atl-lw-sleep-lower, atl-lw-sleep-bob-lower; animation-duration: 10.5s, 14.9s; }
+    & :is(.atl-lw-pose-wisps, .atl-lw-pose-wisps-back, .atl-lw-pose-glint-a, .atl-lw-pose-glint-b) { animation-name: atl-lw-sleep-wisps, atl-lw-sleep-bob-wisps; animation-duration: 9.1s, 13.3s; }
+    & .atl-lw-pose-tail { animation-name: atl-lw-sleep-tail, atl-lw-sleep-bob-tail; animation-duration: 8.3s, 12.1s; }
+  }
+}
+:root[data-atlas-lite] .atl-figure-box .atl-lw-pose,
+#nm-buddy.nmb-away .atl-lw-pose,
+#nm-buddy.nm-buddy-dragging .atl-lw-pose,
+.atl-figure-box.atl-off .atl-lw-pose,
+:root[data-atlas-hidden] .atl-lw-pose { animation-play-state: paused !important; }
+/* **Every strand has its own clock** (INBOX 1683 c, the owner: "I still dont see much organic or natural
+   subtle movement with the lower body whisps and the nebular streams"). The loops above are one pair per
+   group, so her four wisps and his stream's two halves moved in step, and the stream had no sway of its
+   own. Her wisps' and glints' drawings (`.atl-lw-pose > svg`, which nothing else animates) and his stream's two pose boxes (`.atl-lw-pose-neb`, `-front`: their own drawings run the stream's drift) now carry three more
+   loops on the compositor, none shared: a drift (`translate`), a curl (`rotate`) and a shimmer (`opacity`,
+   the nebula's light rising and falling along it), each part on its own periods and phases (4.3 to 6.7 s a
+   way, 8.6 to 13.4 s a cycle, never two alike), so the whole drifts in and out of step and does not repeat
+   for minutes. The lower body and the tail keep what they have (INBOX 615 and 619: no more than 4 degrees off the torso). Same gates and the same pause
+   (away, off screen, carried, lite) as the loops above. Reduced motion: the drift only, slower. */
+@keyframes atl-lw-drift { from { translate: -1px -0.6px; } to { translate: 1px 0.6px; } }
+@keyframes atl-lw-curl { from { rotate: -1deg; } to { rotate: 1deg; } }
+@keyframes atl-lw-shimmer { from { opacity: 0.86; } to { opacity: 1; } }
+.atl-lw-pose-wisps > svg { transform-origin: 31px 55.5px; }
+.atl-lw-pose-wisps-back > svg { transform-origin: 31px 55.5px; }
+.atl-lw-pose-glint-a > svg { transform-origin: 31px 55.5px; }
+.atl-lw-pose-glint-b > svg { transform-origin: 31px 55.5px; }
+.atl-lw-pose-neb { transform-origin: 31px 52px; }
+.atl-lw-pose-neb-front { transform-origin: 31px 52px; }
+@media all {
+  :is(
+    :root:not([data-avatar-motion="off"]):not([data-motion="reduced"]) .nm-live,
+    :root[data-buddy-motion="full"]:not([data-avatar-motion="off"]) #nm-buddy .nm-live
+  ) {
+    & .atl-lw-pose-wisps > svg { animation: atl-lw-drift 4.9s ease-in-out -2.1s infinite alternate, atl-lw-curl 6.1s ease-in-out -4.2s infinite alternate, atl-lw-shimmer 3.5s ease-in-out -1.9s infinite alternate; }
+    & .atl-lw-pose-wisps-back > svg { animation: atl-lw-drift 4.5s ease-in-out -3.4s infinite alternate, atl-lw-curl 5.7s ease-in-out -0.6s infinite alternate, atl-lw-shimmer 4.1s ease-in-out -2.7s infinite alternate; }
+    & .atl-lw-pose-glint-a > svg { animation: atl-lw-drift 5.3s ease-in-out -0.7s infinite alternate, atl-lw-curl 4.7s ease-in-out -2.9s infinite alternate, atl-lw-shimmer 3.3s ease-in-out -1.1s infinite alternate; }
+    & .atl-lw-pose-glint-b > svg { animation: atl-lw-drift 4.4s ease-in-out -3.9s infinite alternate, atl-lw-curl 6.7s ease-in-out -5.4s infinite alternate, atl-lw-shimmer 4.7s ease-in-out -3.2s infinite alternate; }
+    & .atl-lw-pose-neb { animation: atl-lw-drift 4.7s ease-in-out -0.9s infinite alternate, atl-lw-curl 6.3s ease-in-out -2.4s infinite alternate, atl-lw-shimmer 5.1s ease-in-out -4.1s infinite alternate; }
+    & .atl-lw-pose-neb-front { animation: atl-lw-drift 5.9s ease-in-out -3.1s infinite alternate, atl-lw-curl 5.3s ease-in-out -1.8s infinite alternate, atl-lw-shimmer 4.3s ease-in-out -0.4s infinite alternate; }
+  }
+  /* Reduced motion: a slow drift only, two and a half times the periods. */
+  :root[data-motion="reduced"]:not([data-avatar-motion="off"]):not([data-buddy-motion="full"]) .nm-live {
+    & .atl-lw-pose-wisps > svg { animation: atl-lw-drift 12.7s ease-in-out -2.1s infinite alternate; }
+    & .atl-lw-pose-wisps-back > svg { animation: atl-lw-drift 11.7s ease-in-out -3.4s infinite alternate; }
+    & .atl-lw-pose-glint-a > svg { animation: atl-lw-drift 13.8s ease-in-out -0.7s infinite alternate; }
+    & .atl-lw-pose-glint-b > svg { animation: atl-lw-drift 11.4s ease-in-out -3.9s infinite alternate; }
+    & .atl-lw-pose-neb { animation: atl-lw-drift 12.2s ease-in-out -0.9s infinite alternate; }
+    & .atl-lw-pose-neb-front { animation: atl-lw-drift 15.3s ease-in-out -3.1s infinite alternate; }
+  }
+}
+:root[data-atlas-lite] .atl-figure-box .atl-lw-pose > svg,
+#nm-buddy.nmb-away .atl-lw-pose > svg,
+#nm-buddy.nm-buddy-dragging .atl-lw-pose > svg,
+.atl-figure-box.atl-off .atl-lw-pose > svg,
+:root[data-atlas-hidden] .atl-lw-pose > svg { animation-play-state: paused !important; }

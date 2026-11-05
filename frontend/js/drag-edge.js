@@ -31,19 +31,33 @@
 //: would not fit the boot script's gzip cap; this file is already preloaded.
 ["/css/objmove-lazy.css", "/js/obj-ref.js"].forEach(lazyScript);
 
-const DRAG_EDGE = { x: 0, y: 0, el: null, frame: 0 };
+//: `press` is the element a held button went down on; its zone is looked up
+//: on the first frame of a drag, not in the press (INBOX 1530 c: the zone's
+//: `getComputedStyle` and `scrollHeight` walk in `mousedown` forced 53 ms of
+//: layout on the click that opens a document, a click that never drags).
+const DRAG_EDGE = { x: 0, y: 0, el: null, press: null, frame: 0 };
 function dragEdgeTick() {
   const d = DRAG_EDGE;
   const sel = window.getSelection();
   d.frame = 0;
-  if (!d.el?.isConnected || sel.isCollapsed || !d.el.contains(sel.anchorNode)) return;
+  if (sel.isCollapsed) return;
+  if (d.press) {
+    d.el = dragEdgeZone(d.press);
+    d.press = null;
+  }
+  if (!d.el?.isConnected || !d.el.contains(sel.anchorNode)) return;
   //: 1 to 12px a frame between 56px and 20px from an edge, the browser's own below.
   const pace = (dist) => (dist > 20 && dist < 56 ? Math.round(1 + (11 * (56 - dist)) / 36) : 0);
   const box = d.el.getBoundingClientRect();
   const step = pace(box.bottom - d.y) || -pace(d.y - box.top);
   const was = d.el.scrollTop;
   d.el.scrollTop = was + step;
-  const at = d.el.scrollTop !== was && document.caretPositionFromPoint?.(d.x, d.y);
+  //: **Asleep unless it moved something** (INBOX 1620: 58 to 61 calls a second, 2.4 to 3.1ms each, on
+  //: Notes with no drag under way): a frame that scrolled nothing (the pointer outside the zones, or
+  //: the list at its end) books no next one, and the next `mousemove` with the button down wakes it.
+  //: Measured, a selection released outside the window: 180 frames in 3 s, then none.
+  if (d.el.scrollTop === was) return;
+  const at = document.caretPositionFromPoint?.(d.x, d.y);
   if (at && d.el.contains(at.offsetNode)) sel.extend(at.offsetNode, at.offset);
   d.frame = requestAnimationFrame(dragEdgeTick);
 }
@@ -56,7 +70,9 @@ function dragEdgeZone(target) {
 function initDragSelectEdgeScroll() {
   const d = DRAG_EDGE;
   document.addEventListener("mousedown", (e) => {
-    d.el = e.button === 0 ? dragEdgeZone(e.target) : null;
+    d.el = null;
+    //: Never the companion's own drag or throw (INBOX 1634): its pull is no text selection.
+    d.press = e.button === 0 && !e.target.closest?.("#nm-buddy") ? e.target : null;
   }, true);
   //: **A drag already under way when this file arrives** (selection.js's
   //: `EDGE_SCROLL_HELD`): the press that fetched it, picked up here so the very
@@ -66,20 +82,29 @@ function initDragSelectEdgeScroll() {
   EDGE_SCROLL_HELD.ready = true;
   const held = EDGE_SCROLL_HELD.press;
   if (held) {
-    Object.assign(d, { el: dragEdgeZone(held.target), x: held.x, y: held.y });
-    if (d.el) d.frame = requestAnimationFrame(dragEdgeTick);
+    Object.assign(d, { press: held.target, x: held.x, y: held.y });
+    d.frame = requestAnimationFrame(dragEdgeTick);
   }
+  //: A button that came up where no `mouseup` reaches the page (outside the window, or a native
+  //: drag took it) is found by the next move with the button up.
+  const release = () => {
+    d.el = null;
+    d.press = null;
+    cancelAnimationFrame(d.frame);
+    d.frame = 0;
+  };
   document.addEventListener("mousemove", (e) => {
-    if (!d.el || !(e.buttons & 1)) return;
+    if (!(e.buttons & 1)) {
+      if (d.el || d.press || d.frame) release();
+      return;
+    }
+    if (!(d.el || d.press)) return;
     d.x = e.clientX;
     d.y = e.clientY;
     d.frame ||= requestAnimationFrame(dragEdgeTick);
   }, true);
-  document.addEventListener("mouseup", () => {
-    d.el = null;
-    cancelAnimationFrame(d.frame);
-    d.frame = 0;
-  }, true);
+  document.addEventListener("mouseup", release, true);
+  window.addEventListener("blur", release);
 }
 
 //: **The lag log rides this bundle** (lag-watch.js): app.js is at its gzip

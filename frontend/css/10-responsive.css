@@ -252,8 +252,11 @@ header#top-bar[data-scrolled="1"],
     scale: 0.94;
   }
 }
-/* A menu's rows arrive one after another (INBOX 1506 B): up to eight, a step
-   (`--ui-step`) apart, each sliding in a space-1 from the left. */
+/* A menu's rows arrive one after another (INBOX 1506 B): up to eight, half a
+   step (`--ui-step`) apart, each sliding in a space-1 from the left. Half, not
+   a whole one (the owner 2026-11-03, "that dropdown looks quite tall and
+   empty"): at a full step the box had grown to its height with rows five to
+   eight still clear for up to 390ms; now the last row is in by 285ms. */
 @keyframes ui-row {
   from {
     opacity: 0;
@@ -290,13 +293,13 @@ header#top-bar[data-scrolled="1"],
 .action-menu:not(.hidden) > :nth-child(-n + 8) {
   animation: ui-row var(--ui-base) var(--ease-out) backwards;
 }
-.action-menu:not(.hidden) > :nth-child(2){animation-delay:var(--ui-step)}
-.action-menu:not(.hidden) > :nth-child(3){animation-delay:calc(var(--ui-step)*2)}
-.action-menu:not(.hidden) > :nth-child(4){animation-delay:calc(var(--ui-step)*3)}
-.action-menu:not(.hidden) > :nth-child(5){animation-delay:calc(var(--ui-step)*4)}
-.action-menu:not(.hidden) > :nth-child(6){animation-delay:calc(var(--ui-step)*5)}
-.action-menu:not(.hidden) > :nth-child(7){animation-delay:calc(var(--ui-step)*6)}
-.action-menu:not(.hidden) > :nth-child(8){animation-delay:calc(var(--ui-step)*7)}
+.action-menu:not(.hidden) > :nth-child(2){animation-delay:calc(var(--ui-step)*0.5)}
+.action-menu:not(.hidden) > :nth-child(3){animation-delay:calc(var(--ui-step)*1)}
+.action-menu:not(.hidden) > :nth-child(4){animation-delay:calc(var(--ui-step)*1.5)}
+.action-menu:not(.hidden) > :nth-child(5){animation-delay:calc(var(--ui-step)*2)}
+.action-menu:not(.hidden) > :nth-child(6){animation-delay:calc(var(--ui-step)*2.5)}
+.action-menu:not(.hidden) > :nth-child(7){animation-delay:calc(var(--ui-step)*3)}
+.action-menu:not(.hidden) > :nth-child(8){animation-delay:calc(var(--ui-step)*3.5)}
 /* --- motion: the floating panels join the menu's recipe (INBOX 1415) -------
    Panels that hang off an opener and show by `.hidden` took no part in the
    fade and grow (audit: `animation: none`), so they take the same two rules.
@@ -452,27 +455,6 @@ header#top-bar[data-scrolled="1"],
 .board-minimap-label-dark {
   fill: #12151c;
   opacity: 1;
-}
-/* --- the quick-nav chord's guide -----------------------------------------
-   A mode, not a notification (it was a `.toast` whose pairs wrapped
-   mid-pair): centred over a scrim that says the next key means something.
-   The scrim lets clicks through; the panel takes them, since its rows are
-   buttons (the owner: "make these popup options when I press m, actual
-   clickable nav buttons"). The panel itself is in 08-consistency.css. */
-.chord-guide {
-  position: fixed;
-  inset: 0;
-  /* Above every surface it is meant to navigate out of (modals sit at 1040
-     to 1050, the highest fixed layer at 3000): the chord works while
-     Settings is open, so its guide must not draw under it. */
-  z-index: 3100;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  backdrop-filter: var(--glass-filter-clear);
-  -webkit-backdrop-filter: var(--glass-filter-clear);
-  pointer-events: none;
 }
 /* The heatmap's gap was costing more than its cells (the owner: "the heatmap
    on the dashboard is a little small"). Measured in a 306px column: 53 weekly
@@ -1792,7 +1774,6 @@ header#top-bar[data-scrolled="1"],
   #tab-library .library-filters {
     flex-wrap: nowrap;
     overflow-x: auto;
-    scrollbar-width: none;
   }
   #tab-library .library-filters > * {
     flex: 0 0 auto;
@@ -2471,6 +2452,13 @@ header#top-bar[data-scrolled="1"],
   }
   .dock[data-dock-name="dashboard"] > .dock-actions {
     flex: 0 0 auto;
+  }
+  /* The doorway has 93px of a 368px row once the menu's four icons are in it,
+     so "Search your notes, documents, files and the app" was cut to "Search
+     your..." (unslop 1103, 4). The scope after the verb is the part that
+     goes; the button's title still names it. */
+  .dash-find-scope {
+    display: none;
   }
   /* Customise keeps its glyph on a phone (INBOX 488); the word stays its
      accessible name through the button's own label. A dock's Filter does the

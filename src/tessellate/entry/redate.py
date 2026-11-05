@@ -29,7 +29,7 @@ logger = logging.getLogger("tessellate.redate")
 
 #: Raised when `timewords` learns to read something new; a notebook whose
 #: stored version is lower is read again.
-VERSION = 2
+VERSION = 3
 DONE_KEY = "dates_read_version"
 CURSOR_KEY = "dates_read_cursor"
 CHUNK = 200
@@ -47,9 +47,11 @@ def _reread(session, entry: Entry) -> bool:
     """Store the dates this note's text yields now. True when it changed."""
     if entry.is_private or not entry.content or entry.created_at is None:
         return False
-    stored = set(session.scalars(select(EntryDate.phrase).where(EntryDate.entry_id == entry.id)))
+    #: The phrase and the day it meant: a weekday read as the coming one
+    #: before `timewords` knew it said it happened is read again (INBOX 1668).
+    stored = {(phrase, at.date()) for phrase, at in session.execute(select(EntryDate.phrase, EntryDate.at).where(EntryDate.entry_id == entry.id))}
     found = timewords.find(entry.content, entry.created_at)
-    if not any(mention.phrase[:60] not in stored for mention in found):
+    if not any((mention.phrase[:60], mention.at) not in stored for mention in found):
         return False
     manager.record_dates(session, entry, now=entry.created_at)
     return True

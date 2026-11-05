@@ -22,7 +22,7 @@ def _css() -> str:
 
 
 def _rules(css: str):
-    for match in re.finditer(r"([^{}]+)\{([^{}]*)\}", css):
+    for match in re.finditer(r"(?:(?<=[{}])|\A)([^{}]+)\{([^{}]*)\}", css):
         yield [s.strip() for s in match.group(1).split(",")], match.group(2)
 
 

@@ -16,7 +16,7 @@
 (() => {
   async function attachmentPeek(item, door, open, keyboard) {
     let entry = item.entry;
-    if (item.kind === "document") {
+    if (item.kind === "document" || item.kind === "diagram") {
       const doc = await apiJson(`/documents/${item.id}`).catch(() => null);
       entry = { content: doc?.content || "", category: "Document", created_at: doc?.updated_at || doc?.created_at };
     }
@@ -27,7 +27,7 @@
       walk(tree?.roots || []);
       if (topics.length) entry = { content: topics.join(" · "), category: "Mind map" };
     }
-    if (item.kind === "file") {
+    if (item.kind === "file" && Number.isInteger(item.id) && !item.store) {
       const file = await apiJson(`/files/${item.id}/text`).catch(() => null);
       if (file?.text) entry = { content: file.text.slice(0, 1200), category: "File" };
     }

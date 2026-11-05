@@ -691,6 +691,8 @@ def _prepare_turn(
             session, question, history, tier, budget, offered, unoffered
         )
     composition_tokens = _composition_tokens(messages, offered)
+    if dropped := librarian.history_dropped(history, messages):
+        composition_tokens["history_dropped"] = dropped
 
     granted, ceiling = _round_limits(max_rounds, earned_rounds, tier)
     return _TurnPlan(
@@ -1021,6 +1023,8 @@ def _tool_event(name: str, arguments: dict, result: dict) -> dict:
         #: Edit re-runs a turn that made a change (INBOX audit E2).
         "wrote": name in _WRITE_TOOLS and "error" not in result,
         "error": result.get("error"),
+        #: Why it failed, when a front end acts on the cause (`searxng_down`).
+        **({"reason": result["reason"]} if result.get("reason") else {}),
         "arguments": arguments,
         #: Titles, addresses and one line each of what was read,
         #: see `_tool_sources`. This is what the Sources panel

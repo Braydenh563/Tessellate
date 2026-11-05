@@ -7,6 +7,7 @@ sentence, never an exception, because the raw results are shown anyway.
 
 from __future__ import annotations
 
+import logging
 import re
 
 from tessellate.ai import AI_NAME, context, fence
@@ -306,6 +307,18 @@ MAX_HISTORY_ANSWER_CHARS = 600
 # what the user watched being written. Reported as "difficult to get the
 # agent to explain something, and then make it as a note".
 LAST_ANSWER_CHARS = 4_000
+
+
+def history_dropped(history: list[dict] | None, messages: list[dict]) -> int:
+    """How many whole exchanges the window budget left out of `messages`
+    (system first, the question last, the history between).
+
+    Audit 1028 E57: `context.fit_history` drops the oldest pairs without a
+    word, so a model that "forgot" the start of a long chat looked wrong. The
+    turn's stats carry this count so the chat can say so. The fixed
+    MAX_HISTORY_TURNS clip is not counted: that is a rule, not an overflow.
+    """
+    return max(0, len(history_messages(history)) - max(0, len(messages) - 2)) // 2
 
 
 def history_messages(history: list[dict] | None) -> list[dict]:
@@ -1521,6 +1534,19 @@ def evidence_note(session, content: str, already: str = "", exclude_entry_id: in
     return "\n".join(out)
 
 
+def _words_candidates(session, content: str, exclude_entry_id: int | None) -> str:
+    """The no-model filer's candidates with their words (INBOX 1583, decision
+    75 parity): the model is handed what the Capture hint shows, so it is
+    never told less than the hint and files at least as well."""
+    from tessellate.ai import lexical_filing
+
+    try:
+        return lexical_filing.candidates_line(lexical_filing.filing_call(session, content, exclude_entry_id=exclude_entry_id))
+    except Exception:  # noqa: BLE001 - a hint for the model never fails the filing
+        logging.getLogger("tessellate.librarian").debug("no word candidates for the filing prompt", exc_info=True)
+        return ""
+
+
 def filing_prompt(
     session, content: str, categories: list[str], exclude_entry_id: int | None = None
 ) -> str:
@@ -1542,6 +1568,9 @@ def filing_prompt(
     evidence = evidence_note(session, content, already=note, exclude_entry_id=exclude_entry_id)
     if evidence:
         parts.append(evidence)
+    words = _words_candidates(session, content, exclude_entry_id)
+    if words:
+        parts.append(words)
     #: Fenced as quoted data, as the answer path fences a note (audit HR5: a
     #: note reading "SYSTEM: ignore all previous instructions" reached the
     #: model verbatim after `Note: `).

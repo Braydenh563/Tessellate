@@ -1845,6 +1845,17 @@ body.has-agent-monitor #timeline-scroll {
 body.scroll-top-visible .library-view-section {
   padding-bottom: var(--scroll-top-clearance);
 }
+/* The ring room (08-consistency.css) is padding with the same negative
+   margin, which only cancels when the box grows into the margin. A page's
+   children are `width: 100%` and centred (`.tab-page > *`), so the margin
+   never widened the section and every card in it sat `--ring-room` in from
+   the sub-tabs above (unslop 1103, 8: L20 / R1420 against L16 / R1424). The
+   width takes the room back; the ceiling grows with it. */
+.tab-page > .library-view-section,
+.tab-page > #library-view-whiteboard:not(.wb-fullscreen) {
+  width: calc(100% + 2 * var(--ring-room));
+  max-width: calc(var(--content-max) + 2 * var(--ring-room));
+}
 /* AI skills overrides the rule above rather than using it: reported "the ai
    skill sidebar isnt 100% height", and it measured true, but only once
    scrolled. `#library-view-skills` is `#skills-sidebar`'s own `100cqh`
@@ -2267,6 +2278,15 @@ body.scroll-top-visible .skills-split > .tab-main {
   margin-top: 0;
   padding-right: 0;
 }
+/* **"Recent" is a short word that must not be the part that gives way.**
+   Measured at 1440 and 1920 (audit 1102 DX20): the text is 53.44px and the box
+   it was shrunk to 53px, so a heading that fits was cut to "Rec...". Its row
+   holds three actions that do not shrink, and the sub-pixel overflow came out
+   of the heading. `flex: none` keeps the heading its own width; the actions
+   are the ones with room to spare here (the column has no collapse lane). */
+#doc-sidebar-list .sidebar-head h2 {
+  flex: none;
+}
 /* Each tab's whole content column, so #doc-outline-wrap's own `flex: 1 1
    auto` below still has a flex context stretching the height the tab strip
    left behind: the same nested-flex-column shape .doc-sidebar itself uses
@@ -2665,6 +2685,10 @@ dialog::backdrop {
   margin-top: var(--space-5);
   gap: var(--space-2);
 }
+/* A third action (Manage templates, Choose a file) is quiet and waits at the start; the lone bordered secondary and the one filled button stay at the end. */
+.space-dialog-actions > .quiet:first-child {
+  margin-inline-end: auto;
+}
 /* Picking an icon from a grid rather than typing "ph-briefcase" into a text
    box, which is what the first version asked for and which nobody outside
    this repo could possibly know how to fill in. */
@@ -2748,7 +2772,7 @@ dialog::backdrop {
 .dash-list-text {
   display: flex;
   flex-direction: column;
-  gap: 0.05rem;
+  gap: 0;
   overflow: hidden;
   min-width: 0;
 }
@@ -2995,9 +3019,28 @@ dialog::backdrop {
 }
 /* The title line: a control height like every other field, with the strip's
    own hairline under it rather than a border of its own. */
+.field-clear-anchor {
+  position: relative;
+  flex: none;
+  height: 0;
+}
+.field-clear-anchor > .field-clear-inline {
+  position: absolute;
+  top: var(--space-2);
+  right: var(--space-2);
+  z-index: 1;
+}
+/* Under a finger the x is 44px, the title row's height: flush to its corner, it stays off the strip below. */
+@media (max-width: 819.98px), (pointer: coarse) {
+  .field-clear-anchor > .field-clear-inline {
+    top: 0;
+    right: 0;
+  }
+}
 .note-composer > #entry-title {
   height: auto;
   padding: var(--space-4) var(--space-4) var(--space-2);
+  padding-right: calc(var(--target-min) + var(--space-3));
   font-size: var(--text-h3);
   font-weight: 600;
 }
@@ -3032,6 +3075,7 @@ dialog::backdrop {
 .note-composer #entry-content {
   min-height: 11rem;
   padding: var(--space-4);
+  padding-right: calc(var(--target-min) + var(--space-3));
 }
 /* The wrap is the box's stand-in inside the surface, so it takes neither the
    `.gutter-wrap` recipe's own bottom margin (which would open a gap inside
@@ -4222,7 +4266,7 @@ summary:not(.icon-only):not(.icon-button):not(.fold-summary, .chat-sources-summa
 .row.field-row > input,
 .row.field-row > button,
 .row.field-row > .select-shell > .select-opener {
-  min-height: var(--control-h-lg);
+  min-height: max(var(--target-min), var(--button-min-h));
 }
 .row.field-row > input {
   padding-block: 0;
@@ -4580,7 +4624,6 @@ summary:not(.icon-only):not(.icon-button):not(.fold-summary, .chat-sources-summa
   display: flex;
   gap: var(--space-1);
   overflow-x: auto;
-  scrollbar-width: thin;
   overscroll-behavior-x: contain;
 }
 /* **The first-open hint** (MINDMAP_PLAN §12.5): the quietest line in the
@@ -4859,13 +4902,13 @@ rect.board-minimap-card,
      Improve): all now on one row with the document picker,
    - where it is **filed** and the act of **committing** it (File under, then
      Save as draft and Save).
-   The spacer is what carries the second half of that: the commit pair sits
+   The growing hint is what carries the second half of that: the commit pair sits
    at the far end of its row, after a gap, so Save is the last control in the
    panel and the only filled one. Nothing was removed, and no control changed
    what it does. */
-.capture-commit-spacer {
+.capture-space-hint {
   flex: 1 1 auto;
-  min-width: var(--space-4);
+  margin: 0 var(--space-2) 0 0;
 }
 .capture-commit-row {
   flex-wrap: wrap;
@@ -7430,6 +7473,18 @@ button.connection-row:is(:hover, :focus-visible) {
   justify-content: space-between;
   gap: var(--space-2);
 }
+/* What an emptied board says once its card is put away (audit 1028 B34): the
+   `p.muted.empty-line` recipe, centred on the canvas and click-through so the
+   board can still be drawn on. */
+.wb-empty-cue {
+  position: absolute;
+  inset-inline: var(--space-8);
+  inset-block-start: 50%;
+  margin: 0;
+  text-align: center;
+  pointer-events: none;
+  z-index: 1;
+}
 /* **The board's help and shortcut sheet** (INBOX 566; UX-03). The dialog
    recipe; what is new is the row. The old card set each row `nowrap` with
    the label and its keys pushed apart by flex, so a long label ran under its
@@ -9190,10 +9245,11 @@ input[type="file"] {
   .library-filters {
     flex-wrap: nowrap;
     overflow-x: auto;
+  }
+  .library-subtabs {
     scrollbar-width: none;
   }
-  .library-subtabs::-webkit-scrollbar,
-  .library-filters::-webkit-scrollbar {
+  .library-subtabs::-webkit-scrollbar {
     display: none;
   }
   .library-filters > * {
@@ -10398,10 +10454,6 @@ header#top-bar {
   .launch-row {
     flex-wrap: nowrap;
     overflow-x: auto;
-    scrollbar-width: none;
-  }
-  .launch-row::-webkit-scrollbar {
-    display: none;
   }
   .launch-row > * {
     flex: 0 0 auto;
@@ -10641,7 +10693,15 @@ header#top-bar {
   height: 100%;
   min-width: 0;
   padding: 0 var(--space-2) 0 var(--space-3);
-  border-radius: var(--radius-inner);
+  /* `--radius-inner` is 0 at the default corner, so this was a square,
+     ink-edged field between round tools (unslop 1103, 5, measured 0px and
+     rgba(31,36,48,.58)): the button corner and the quiet inset every bar's
+     select takes (08-consistency.css, "One inset for anything that takes
+     input"). */
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  background: var(--field-inset);
+  box-shadow: none;
 }
 /* The swatch reads as the pen's nib: a round well of the colour with the same
    ring `#wb-color-picker` has worn since the board panel first had one, so the
@@ -10946,15 +11006,11 @@ header#top-bar {
 .finder-filters {
   flex-wrap: nowrap;
   overflow-x: auto;
-  scrollbar-width: none;
   padding-block: var(--space-1);
   margin-block: calc(var(--space-1) * -1);
   /* A settled height, so nothing the pointer does can resize the row. */
   align-items: center;
   min-height: var(--control-h);
-}
-.finder-filters::-webkit-scrollbar {
-  display: none;
 }
 .finder-sort {
   display: flex;
@@ -11497,7 +11553,8 @@ button.finder-row:is(:focus-visible, :has(:focus-visible)) {
 .entry-list input.note-edit-title {
   width: 100%;
   height: auto;
-  padding: var(--space-4) var(--space-4) var(--space-2);
+  /* Top: the card's own gap, not a second band inside the frame (INBOX 1619). */
+  padding: var(--space-2) var(--space-4) var(--space-1);
   font-size: var(--text-h3);
   font-weight: 600;
 }

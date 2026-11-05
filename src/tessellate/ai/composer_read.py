@@ -104,6 +104,10 @@ _HEADING_LEAD = re.compile(r"[ \t]{0,3}#{1,6}[ \t]+")
 #: A list line, or a checkbox written with no bullet ("[ ] Buy mint.", as
 #: pasted from many apps; stress run 2026-10-30 read those as prose, so an
 #: open task answered "did I" with "Yes").
+#: A line indented under a list item, carrying on its words.
+_CONTINUES = re.compile(r"^(?:\t| {2,})\S")
+
+
 _ITEM = re.compile(r"^(\s*(?:[-*+]|\d{1,3}[.)])\s+|\s*(?=\[[ xX]\]\s))(\[[ xX]\]\s+)?")
 
 
@@ -111,7 +115,12 @@ _ITEM = re.compile(r"^(\s*(?:[-*+]|\d{1,3}[.)])\s+|\s*(?=\[[ xX]\]\s))(\[[ xX]\]
 #: bracket closing it), a space, and a capital or a digit. Misses some
 #: abbreviations; never merges two sentences, the safer direction here.
 #: A full-width stop ends a sentence with no space after it (audit 1031 C10).
-_SPLIT = re.compile(r"(?:([.!?][\"”’)]?)\s+(?=[\"“‘(]?[A-Z0-9])|([。！？][」』”’)]?)\s*)")
+#: A chat sign-off closes a sentence the writer did not capitalise after
+#: ("...at work lol. need to lock-in"), so a stop after one splits too
+#: (INBOX 1665 f: two sentences run into "at work need to lock-in").
+_SPLIT = re.compile(
+    r"(?:([.!?][\"”’)]?)\s+(?=[\"“‘(]?[A-Z0-9])|([。！？][」』”’)]?)\s*"
+    r"|(\b(?:lol|lmao|lmfao|rofl|haha+|hehe+)[.!?]+)\s+(?=[a-z]))")
 
 
 #: The lead-ins a person opens a sentence with that carry no claim, the tested
@@ -250,6 +259,19 @@ def _depth(line: str) -> int:
     return min((len(flat) - len(flat.lstrip(" "))) // 2, 4)
 
 
+#: A subordinating word and a gerund open a clause that needs a main clause.
+_FRAGMENT_OPEN = re.compile(r"(?:after|before|when|while|once|until|upon|by|without|instead of|prior to|in order to|on)\s+[a-z]+ing\b", re.I)
+_OWN_SUBJECT = re.compile(r"\b(?:i|we|you|he|she|they|it|there)\b|[,;:]", re.I)
+
+
+def _dependent_fragment(text: str) -> bool:
+    """A clause with no main clause: opens "after/before/when ... -ing", has no
+    comma and no subject of its own, and is short. "After making coffee, I
+    left." and "Before leaving I locked up." are whole sentences."""
+    words = text.rstrip(".!? ").split()
+    return len(words) <= 10 and bool(_FRAGMENT_OPEN.match(text)) and not _OWN_SUBJECT.search(text)
+
+
 def _unit(view: NoteView, content: str, start: int, end: int, kind: str, done: bool | None) -> Sentence | None:
     """One sentence, trimmed as the rule allows, its offsets moved to match."""
     raw = content[start:end]
@@ -279,6 +301,11 @@ def _unit(view: NoteView, content: str, start: int, end: int, kind: str, done: b
     #: A script with no spaces is one "word" to `split`: its length is its characters.
     thin = len(text.split()) < 3 and not (composer_frame.NON_LATIN.search(text) and len(text) >= 6)
     if not words or (kind == "prose" and thin and not _short_fact(text)):
+        return None
+    #: "After making an initial connection." has no main clause: it is half of
+    #: a sentence a list finishes, and quoted alone it reads as a whole one
+    #: (INBOX 1561 d).
+    if kind == "prose" and _dependent_fragment(text):
         return None
     return Sentence(view.id, view.rank, start, end, text, words, kind, done)
 
@@ -344,7 +371,9 @@ def _picture_groups(line: str) -> dict[str, tuple[str, int]] | None:
 #: contains a text excerpt ..."): read past, so the answer says "a text
 #: excerpt ..." and never "shows The image shows" (INBOX 787).
 _CAPTION_FRAME = re.compile(
-    r"^(?:the|this)\s+(?:image|picture|photo|photograph|screenshot)\s+(?:contains|shows|depicts|is of|is)\s+(?=\S)", re.I
+    r"^(?:(?:the|this)\s+(?:image|picture|photo|photograph|screenshot)\s+(?:contains|shows|depicts|is of|is)"
+    #: "A photo of a grassy hill": said "shows a grassy hill", never "shows A photo of" (INBOX 1555).
+    r"|(?:an?|the|this)\s+(?:image|picture|photo|photograph)\s+of)\s+(?=\S)", re.I
 )
 
 
@@ -437,6 +466,73 @@ def _not_prose(line: str, stripped: str) -> bool:
     return _heading_text(line) is not None or bold_line(line) is not None or stripped.startswith(("![", "|"))
 
 
+def _wrap_item(view: NoteView, content: str, line_start: int, line: str, item_open: tuple[int, int, str, bool | None]) -> bool:
+    """A list item wrapped onto an indented line ("- hub-finish-ui and" /
+    "  O47-merge-wip are in main") is one item, not an item and a sentence cut
+    at the wrap (INBOX 1602). True when `line` was taken into the item."""
+    if not _CONTINUES.match(line) or _ITEM.match(line):
+        return False
+    at, first, kind, done = item_open
+    joined = _unit(view, content, first, line_start + len(line.rstrip("\r\n")), kind, done)
+    if joined and at < len(view.sentences):
+        joined.depth = view.sentences[at].depth
+        view.sentences[at] = joined
+    return True
+
+
+def _read_line(view: NoteView, content: str, line_start: int, line: str, item_open: tuple[int, int, str, bool | None] | None) -> tuple[int, int, str, bool | None] | None:
+    """One body line: taken into the list item above it when it wraps that
+    item, else read as units; returns the list item it leaves open, if any."""
+    if item_open and _wrap_item(view, content, line_start, line, item_open):
+        return item_open
+    before = len(view.sentences)
+    _line_units(view, content, line_start, line)
+    return _open_item(view, line, line_start, before)
+
+
+def _open_item(view: NoteView, line: str, line_start: int, before: int) -> tuple[int, int, str, bool | None] | None:
+    """The list item `line` just made, as `_wrap_item` needs it; None when the line made none."""
+    item = _ITEM.match(line)
+    if not item or len(view.sentences) != before + 1 or view.sentences[-1].kind not in ("item", "task"):
+        return None
+    return before, line_start + item.end(), view.sentences[-1].kind, view.sentences[-1].done
+
+
+#: A title that says something ("Uni is done!!") rather than names the note.
+_SAYS = re.compile(r"\b(?:is|are|was|were|am|has|have|had)\b|[!?]\s*$", re.I)
+#: A body that leans on a word the title gives ("... but it's done").
+_LEANS = re.compile(r"\b(?:it|that|this)(?:'s|\u2019s| is| was)\b", re.I)
+
+
+def title_is_content(title: str, body: str) -> bool:
+    """Whether a note's title is part of what it says (INBOX 1665 g: "Uni is
+    done!!" over "... but it's done haha!"): the title says something, and
+    the body leans on "it" or "that" and never says the title's subject."""
+    if not title or not _SAYS.search(title) or not _LEANS.search(body):
+        return False
+    subject = next(iter(_words(title)), None)
+    return subject is not None and subject not in set(_words(body))
+
+
+def _title_unit(view: NoteView, content: str, line_start: int, line: str) -> None:
+    """The title line, read as the first sentence of the note."""
+    lead = _HEADING_LEAD.match(line)
+    start = line_start + (lead.end() if lead else 0)
+    raw = line[(lead.end() if lead else 0):].rstrip("\r\n")
+    raw = composer_frame.strip_end_emoticon(raw)
+    unit = _unit(view, content, start, start + len(raw), "prose", None)
+    if unit:
+        view.sentences.append(unit)
+
+
+def _read_title(view: NoteView, content: str, front: int, body_start: int, title: str) -> None:
+    """The title line is a sentence of its own when it says the note's point."""
+    if view.titled and view.kind == "note" and title_is_content(title, content[body_start:]):
+        lines = content[front:].splitlines(keepends=True)
+        if lines:
+            _title_unit(view, content, front, lines[0])
+
+
 def read_note(note: dict, rank: int) -> NoteView | None:
     """A note as its units: prose split into sentences, each list item one."""
     content = str(note.get("content") or "")
@@ -465,7 +561,9 @@ def read_note(note: dict, rank: int) -> NoteView | None:
     view.words = set(_words(content))
     in_fence = False
     in_pictures = False
+    item_open: tuple[int, int, str, bool | None] | None = None
     offset = 0
+    _read_title(view, content, front, body_start, title)
     for line in content.splitlines(keepends=True):
         line_start, offset = offset, offset + len(line)
         if line_start < body_start:
@@ -482,8 +580,9 @@ def read_note(note: dict, rank: int) -> NoteView | None:
             in_fence = not in_fence
             continue
         if in_fence or not stripped or _not_prose(line, stripped):
+            item_open = None
             continue
-        _line_units(view, content, line_start, line)
+        item_open = _read_line(view, content, line_start, line, item_open)
     for i, sentence in enumerate(view.sentences):
         sentence.order = i
     return view
@@ -513,7 +612,8 @@ def _line_units(view: NoteView, content: str, line_start: int, line: str) -> Non
     body = line_start + (len(line) - len(line.lstrip(" >")))
     cursor = body
     for match in _SPLIT.finditer(content, body, line_end):
-        unit = _unit(view, content, cursor, match.end(1) if match.group(1) else match.end(2), "prose", None)
+        stop = match.end(1) if match.group(1) else match.end(2) if match.group(2) else match.end(3)
+        unit = _unit(view, content, cursor, stop, "prose", None)
         if unit:
             view.sentences.append(unit)
         cursor = match.end()

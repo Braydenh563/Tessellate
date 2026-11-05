@@ -13,14 +13,15 @@ from pathlib import Path
 
 import pytest
 
-from tessellate.ai import composer, starter_acts
+from tessellate.ai import starter_acts
+from tessellate.ai import composer_phrases
 
 ROOT = Path(__file__).resolve().parents[1]
 FIXTURE = json.loads((ROOT / "tests" / "fixtures" / "composer" / "agent_starters_1010.json").read_text("utf-8"))
 STARTERS = FIXTURE["starters"]
 #: Every wording of nothing found, in both voices (`composer_replies.NOTHING_FAMILIES`).
 FALLBACK = re.compile(
-    "|".join(f"^{re.escape(lead)}" for key in ("none_found", "nothing") for lead in composer.phrase_options(key))
+    "|".join(f"^{re.escape(lead)}" for key in ("none_found", "nothing") for lead in composer_phrases.phrase_options(key))
     + r"|^I could not find|^The model wrote nothing"
 )
 

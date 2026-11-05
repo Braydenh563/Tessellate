@@ -1,0 +1,1629 @@
+/* The block pane of a diagram (diagram-builder.js, loaded with it by
+   LAZY_MODULES.diagramBuilder; 1546 P2, DESIGN.md "A diagram edited as blocks").
+   A palette in one dock row, a tree of cards (the Layers recipe: a row is
+   hover-veiled, the chosen one `--accent-soft`, focus a 2px accent ring) and
+   the live picture beside it. Joins are chips under the card they leave; the
+   picture draws them as lines, the pane stays readable at 120 blocks. */
+
+/* Blocks are not a reading column: the pane takes the width the view has. */
+#doc-panes.reading > #doc-preview:has(> .dgm) {
+  max-width: none;
+}
+
+/* The pane is a size container, so it has no width of its own: a preview that stacks under the editor
+   (a window under 60rem, Split) takes the card's whole width, not the nothing its content asks for. */
+#doc-preview:has(> .dgm) {
+  width: 100%;
+}
+
+.dgm {
+  container-type: inline-size;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  min-height: 0;
+  height: 100%;
+}
+
+.dgm .dock {
+  margin-bottom: 0;
+}
+
+.dgm-palette {
+  flex-wrap: wrap;
+}
+
+/* The Add library (diagram-library.js, 1594): the word Add, then the tiles in groups by meaning, each group
+   headed by its name. It wraps, so the last tile is never cut off; the line under the dock says what the tile
+   under the pointer is for. */
+.dgm-library {
+  align-items: flex-end;
+  row-gap: var(--space-2);
+  column-gap: var(--space-4);
+}
+
+.dgm-lib-title {
+  align-self: center;
+  font-size: var(--text-sm);
+  font-weight: 600;
+}
+
+.dgm-lib-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.dgm-lib-head {
+  font-size: var(--text-xs);
+  color: var(--muted);
+}
+
+.dgm-lib-tiles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+}
+
+.dgm-lib-hint {
+  flex: 1 0 100%;
+  margin: 0;
+  font-size: var(--text-xs);
+  min-height: 1lh;
+}
+
+/* The Add sheet on a phone: a heading for each group, a hint under each name. */
+.dgm-add-head {
+  margin: var(--space-3) var(--space-4) 0;
+  font-size: var(--text-xs);
+}
+
+/* Its groups and hints are taller than a bare list, and the last row must not need a scroll to be found. */
+.sheet-overlay[data-sheet="diagram-add"] .sheet-card {
+  max-height: 88dvh;
+}
+
+.dgm-add-hint {
+  display: block;
+  font-size: var(--text-xs);
+  font-weight: 400;
+}
+
+/* A palette tile: a pressable shape that is also dragged out (a grip, so a
+   quick drag starts at once). */
+.dgm-tile {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: var(--control-h);
+  padding: 0 var(--space-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface-2);
+  color: var(--ink);
+  font-size: var(--text-sm);
+  cursor: grab;
+  touch-action: none;
+}
+
+.dgm-tile:hover {
+  background: var(--hover-veil);
+}
+
+.dgm-tile:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* The shape drawn in miniature: a filled mark, the diagram's own six outlines. */
+.dgm-shape {
+  flex: none;
+  display: inline-block;
+  inline-size: 1rem;
+  block-size: 0.75rem;
+  background: var(--accent-soft);
+  border: 1px solid var(--accent);
+  border-radius: var(--radius-sm);
+}
+
+.dgm-shape[data-shape="round"] {
+  border-radius: var(--radius-md);
+}
+
+.dgm-shape[data-shape="stadium"] {
+  border-radius: var(--radius-pill);
+}
+
+.dgm-shape[data-shape="circle"] {
+  inline-size: 0.8rem;
+  block-size: 0.8rem;
+  border-radius: 50%;
+}
+
+.dgm-shape[data-shape="diamond"] {
+  inline-size: 0.8rem;
+  block-size: 0.8rem;
+  border-radius: 0;
+  transform: rotate(45deg) scale(0.8);
+}
+
+/* A clip-path cuts the border away, so the hexagon is an accent outline with its soft fill laid inside it: the
+   same weight as its neighbours (a solid one read as the selected tile, measured in the Add strip). */
+.dgm-shape[data-shape="hexagon"] {
+  position: relative;
+  border: 0;
+  background: var(--accent);
+  clip-path: polygon(20% 0, 80% 0, 100% 50%, 80% 100%, 20% 100%, 0 50%);
+}
+
+.dgm-shape[data-shape="hexagon"]::after {
+  content: "";
+  position: absolute;
+  inset: 1px;
+  background: linear-gradient(var(--accent-soft), var(--accent-soft)), var(--surface-1);
+  clip-path: polygon(20% 0, 80% 0, 100% 50%, 80% 100%, 20% 100%, 0 50%);
+}
+
+.dgm-group-icon {
+  flex: none;
+  color: var(--accent-text);
+}
+
+.dgm-hint {
+  margin: 0;
+  padding: var(--space-5);
+  text-align: center;
+  font-size: var(--text-sm);
+}
+
+/* The sideways offer (diagram-outline.js): one line under the toolbar, gone once answered. */
+.dgm-sideways {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-sm);
+}
+
+.dgm-sideways.hidden {
+  display: none;
+}
+
+/* The two panes: the blocks, then the picture. */
+.dgm-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(14rem, 22rem) minmax(0, 1fr);
+  gap: var(--space-5);
+}
+
+.dgm-plain .dgm-body {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+/* The divider (diagram-split.js, 1615 e): the list column is a variable, the handle is the column between, as wide
+   as the gap it replaces. The list never takes the last 240px from the picture; the default is the old 22rem. */
+.dgm-body.dgm-split {
+  --dgm-list: 22rem;
+  grid-template-columns: minmax(14rem, min(var(--dgm-list), calc(100% - 240px - var(--space-5)))) var(--space-5) minmax(0, 1fr);
+  column-gap: 0;
+}
+
+.dgm-plain .dgm-body.dgm-split {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.dgm-split-handle.sidebar-resize {
+  position: static;
+  height: auto;
+  width: auto;
+  align-self: stretch;
+}
+
+.dgm-plain .dgm-split-handle {
+  display: none;
+}
+
+.dgm-pane {
+  position: relative;
+  min-block-size: 12rem;
+  overflow: auto;
+  padding: var(--space-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface-1);
+}
+
+/* Two classes, not one: mermaid-lazy.css loads after this file and gives `.md-mermaid` a block margin, which
+   left the picture 19px (1.2rem) shorter than the blocks pane beside it (INBOX 1614, measured at 1440x900). */
+.dgm .dgm-picture {
+  display: flex;
+  margin: 0;
+  min-width: 0;
+  overflow: auto;
+  padding: var(--space-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface-1);
+  /* A press and drag on the picture pans it; it must not smear a text selection over the drawing (R6.2). */
+  user-select: none;
+}
+
+.dgm-picture .md-mermaid-img {
+  flex: none;
+  margin: auto;
+  cursor: pointer;
+}
+
+/* Words and failure notes fill the picture; only the image is centred by its auto margins. */
+.dgm-picture > :not(.md-mermaid-img) {
+  flex: 1 1 auto;
+  min-width: 0;
+  user-select: text;
+}
+
+/* The stage (diagram-view.js): the picture, which scrolls, and the zoom bar, which stays in its corner. */
+.dgm-stage {
+  position: relative;
+  display: flex;
+  min-width: 0;
+  min-height: 0;
+}
+
+.dgm-stage > .dgm-picture {
+  flex: 1 1 auto;
+}
+
+.dgm-picture:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+
+/* A plain .dock as a corner bar: the lightbox dock's surface, small. Hidden until there is a picture to zoom. */
+.dgm-zoom {
+  position: absolute;
+  inset-block-end: var(--space-5);
+  inset-inline-end: var(--space-5);
+  flex-wrap: nowrap;
+  margin: 0;
+  padding: var(--space-1);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--modal-bg);
+  box-shadow: var(--shadow-md);
+}
+
+.dgm-zoom .dock-group {
+  display: flex;
+  gap: var(--space-1);
+}
+
+.dgm-stage:not(.dgm-zoomable) .dgm-zoom {
+  display: none;
+}
+
+/* While a zoom is in motion (diagram-view.js) the picture is only a transform: the boxes, handles and the picked arrow
+   sit at the old size, so they hide until the real width lands (140 ms after the last input), then draw once. */
+.dgm-stage.dgm-gesturing > :is(.dgm-overlay, .dgm-edge-svg, .dgm-end) {
+  visibility: hidden;
+}
+
+.dgm-picture > .md-mermaid-reason {
+  margin: 0;
+}
+
+/* The overlay (diagram-overlay.js): one box over each drawn node, never a target for a press. Its position is the
+   figure's padding box, set from script; a box is placed by a transform so a zoom or a scroll moves no layout. */
+.dgm-overlay {
+  position: absolute;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.dgm-box {
+  position: absolute;
+  inset: 0 auto auto 0;
+  box-sizing: border-box;
+  border: 2px solid transparent;
+  border-radius: var(--radius-sm);
+  transition: border-color var(--ui-fast) var(--ease-out), background-color var(--ui-fast) var(--ease-out);
+}
+
+.dgm-box.hover {
+  border-color: var(--accent);
+}
+
+.dgm-box.on {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.dgm-tree {
+  display: flex;
+  flex-direction: column;
+  gap: var(--row-gap);
+}
+
+.dgm-block {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  border-radius: var(--radius-sm);
+}
+
+.dgm-block:focus {
+  outline: none;
+}
+
+.dgm-card {
+  display: grid;
+  grid-template-columns: auto auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: var(--row-h);
+  padding: 0 var(--space-2);
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  font-size: var(--text-sm);
+  cursor: pointer;
+}
+
+.dgm-card:hover,
+.dgm-card:is(:focus-visible, :has(:focus-visible)) {
+  background: var(--hover-veil);
+}
+
+/* Several blocks picked (R5): the Library's selection bar inside the list's own scroller, pinned at its top. */
+.dgm-selectbar {
+  margin-block: 0 var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  gap: var(--space-2);
+}
+
+.dgm-selectbar.hidden {
+  display: none;
+}
+
+.dgm-block[aria-selected="true"] > .dgm-card {
+  background: var(--accent-soft);
+  font-weight: 600;
+}
+
+.dgm-block:focus-visible > .dgm-card {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+
+.dgm-group > .dgm-card {
+  border-color: var(--border);
+  background: var(--surface-2);
+}
+
+.dgm-grip {
+  color: var(--muted);
+  cursor: grab;
+  touch-action: none;
+}
+
+.dgm-label {
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+/* The other kinds' cards carry one quiet line after the words (who a message is between, a period's date),
+   so their grid has a column for it; it gives way to the label before the label gives way to it. */
+.dgm-card:has(> .dgm-meta) {
+  grid-template-columns: auto auto minmax(0, 1fr) minmax(0, max-content) auto;
+}
+
+.dgm-meta {
+  max-inline-size: 12rem;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-size: var(--text-xs);
+}
+
+.dgm-label.dgm-editing {
+  overflow: visible;
+  text-overflow: clip;
+  padding: 0 var(--space-1);
+  background: var(--surface-1);
+  outline: 2px solid var(--accent);
+  border-radius: var(--radius-sm);
+  cursor: text;
+  user-select: text;
+}
+
+/* A connector is a row under the block it leaves, "Start to Next" and its label, hung on a rule that is its line
+   (solid, dashed or thick). It is not a pill, so it never looks like a block (1594). */
+.dgm-joins {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 var(--space-3);
+  padding-inline-start: var(--space-8);
+}
+
+.dgm-join {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  max-inline-size: 100%;
+  min-height: var(--control-h-dense);
+  padding: 0 var(--space-2);
+  border: 0;
+  border-inline-start: 2px solid var(--accent);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  background: transparent;
+  box-shadow: none;
+  color: var(--ink);
+  font-size: var(--text-sm);
+  font-weight: 400;
+  justify-content: flex-start;
+  text-align: left;
+}
+
+.dgm-join:hover,
+.dgm-join:focus-visible {
+  background: var(--hover-veil);
+}
+
+.dgm-join[data-style="dotted"] {
+  border-inline-start-style: dashed;
+}
+
+.dgm-join[data-style="thick"] {
+  border-inline-start-width: 4px;
+}
+
+.dgm-join-to {
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.dgm-join-label {
+  flex: none;
+  max-inline-size: 40%;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.dgm-join-label::before {
+  content: "· ";
+}
+
+/* A block a flow step under the one that points at it is indented a step (diagram-outline.js, 1679 slice 6). */
+.dgm-block[data-depth="1"] {
+  margin-inline-start: calc(1 * var(--space-4));
+}
+
+.dgm-block[data-depth="2"] {
+  margin-inline-start: calc(2 * var(--space-4));
+}
+
+.dgm-block[data-depth="3"] {
+  margin-inline-start: calc(3 * var(--space-4));
+}
+
+.dgm-block[data-depth="4"] {
+  margin-inline-start: calc(4 * var(--space-4));
+}
+
+.dgm-block[data-depth="5"] {
+  margin-inline-start: calc(5 * var(--space-4));
+}
+
+.dgm-block[data-depth="6"] {
+  margin-inline-start: calc(6 * var(--space-4));
+}
+
+/* Connect to… is on every row: the arrow always, its words on the chosen row, the pointed-at row and the focused one. */
+.dgm-card:has(> .dgm-connect) {
+  grid-template-columns: auto auto minmax(0, 1fr) auto auto;
+}
+
+.dgm-card > button.dgm-connect {
+  min-height: var(--control-h-dense);
+  padding: 0 var(--space-2);
+  border-color: transparent;
+  background: transparent;
+  box-shadow: none;
+  color: var(--accent-text);
+}
+
+/* The words show on every row of a list wide enough for them; a tight list (diagram-split.js, under 19rem) and a
+   phone keep the arrow, and the chosen row, the pointed-at row and the focused one still show them. */
+.dgm-tight .dgm-connect .ph-text {
+  display: none;
+}
+
+/* The bar's words go the same way where the list is tight or the window narrow: icons, each named by its aria-label. */
+.dgm-tight .dgm-selectbar .ph-text {
+  display: none;
+}
+
+/* Over another block's middle a drop connects, and its Connect to… shows its words to say so. The chosen row alone does not
+   (blind test: its 105 px of words cut the name to "S.."); a row that is pointed at or focused does. */
+.dgm-card:is(:hover, :focus-within, .dgm-connecting) .dgm-connect .ph-text {
+  display: inline;
+}
+
+/* A name being typed has the row (the owner: "the text box got crushed"; a 241 px row left the box 15 px beside the words). */
+.dgm-card:has(> .dgm-editing) .dgm-connect .ph-text {
+  display: none;
+}
+
+/* In a tight list a pointed-at or focused row keeps its name: the words show there only on a drop (the arrow keeps its title). */
+.dgm-tight .dgm-card:is(:hover, :focus-within):not(.dgm-connecting) .dgm-connect .ph-text {
+  display: none;
+}
+
+/* The pane's purpose line and foot (diagram-steps.js `frame`, 1679 k). The line holds two lines of room so the list does not
+   jump when a control's words replace it; the foot sticks to the pane's bottom edge and, in a short list, sits right under it. */
+.dgm-purpose {
+  margin: 0 var(--space-2) var(--space-2);
+  min-block-size: calc(2 * 1.4em);
+  font-size: var(--text-xs);
+  line-height: 1.4;
+}
+
+.dgm-purpose.dgm-purpose-live {
+  color: var(--text);
+}
+
+.dgm-foot {
+  position: sticky;
+  inset-block-end: 0;
+  z-index: 1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-block-start: var(--space-2);
+  padding: var(--space-2);
+  border-block-start: 1px solid var(--border);
+  background: var(--surface-1);
+}
+
+.dgm-foot.hidden {
+  display: none;
+}
+
+/* The next step, one line under the blocks. */
+.dgm-next {
+  margin: var(--space-3) var(--space-2) 0;
+  font-size: var(--text-xs);
+  /* In a short pane (a document's embedded editor) the hint stays at the pane's foot instead of being cut off below it (R6.12). */
+  position: sticky;
+  inset-block-end: 0;
+  padding-block: var(--space-1);
+  background: var(--surface-1);
+}
+/* On a phone the pane is a short strip and the sticky hint sat over the row under it, taking its taps (measured at 390: elementFromPoint on a row's menu button was the hint), so it scrolls with the rows there. */
+@media (max-width: 599.98px) {
+  .dgm-next {
+    position: static;
+  }
+}
+
+/* A group's blocks sit in it, one step in, behind a rule. */
+.dgm-kids {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  margin-inline-start: var(--space-4);
+  padding-inline-start: var(--space-3);
+  border-inline-start: 2px solid var(--border);
+}
+
+.dgm-hole {
+  margin: 0;
+  padding: var(--space-3);
+  border: 1px dashed var(--border);
+  border-radius: var(--radius-sm);
+  font-size: var(--text-sm);
+  text-align: center;
+}
+
+/* A line the blocks cannot edit: the source's own words, locked in place. */
+.dgm-kept > .dgm-card {
+  cursor: default;
+  color: var(--muted);
+}
+
+.dgm-kept code {
+  font-size: var(--text-sm);
+}
+
+/* The drag: the lifted block is dimmed, the line says where it will land, a
+   target block (a group to nest into, a block to join) is ringed. */
+.dgm-lifted {
+  opacity: 0.4;
+}
+
+.dgm-drop {
+  position: absolute;
+  block-size: 2px;
+  border-radius: var(--radius-pill);
+  background: var(--accent);
+  pointer-events: none;
+}
+
+.dgm-target {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+  background: var(--accent-soft);
+}
+
+/* What the drop will do, in words under the target ("After Save", "Into Frontend", "Connect to Save"; 1679 slice 12). */
+.dgm-drop-word {
+  position: fixed;
+  padding: var(--space-1) var(--space-3);
+  border: 1px solid var(--accent);
+  border-radius: var(--radius-sm);
+  background: var(--accent-soft);
+  color: var(--text);
+  font-size: var(--text-xs);
+  line-height: 1.4;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.dgm-drop-word.hidden {
+  display: none;
+}
+
+/* Suggest (1546 P3): a worded button in the dock, quiet like the bar around it: no edge,
+   no fill at rest, the tint under the pointer, the sparkle the one cue of colour. */
+.dgm-suggest {
+  border-color: transparent;
+  background: none;
+  box-shadow: none;
+  border-radius: var(--radius-md);
+  font-weight: 500;
+}
+
+.dgm-suggest:hover,
+.dgm-suggest:is(:focus-visible, :has(:focus-visible)),
+.dgm-suggest[aria-expanded="true"] {
+  background: var(--ghost-btn-bg);
+}
+
+.dgm-suggest .ph {
+  color: var(--accent-text);
+}
+
+/* The flowchart's toolbar (diagram-bar.js, 1661 D2): ONE row at every width. Add is a split (the last shape, then a
+   caret), Direction one button that turns the diagram; the dock never wraps, so a narrow host drops words, not rows. */
+.dgm-dock {
+  flex-wrap: nowrap;
+  align-items: center;
+  min-inline-size: 0;
+}
+
+.dgm-addsplit {
+  display: inline-flex;
+  flex: none;
+}
+
+.dgm-addmain {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  border-start-end-radius: 0;
+  border-end-end-radius: 0;
+}
+
+.dgm-addcaret {
+  border-start-start-radius: 0;
+  border-end-start-radius: 0;
+  border-inline-start: 0;
+}
+
+.dgm-dirs {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+/* The flowchart's dock stays one row on a phone: the actions follow Add and Direction (the kinds' docks lead with them), and
+   the gaps shrink so Add, caret, Direction, Undo, Redo and the menu fit 298 px at 44 px each. */
+.dgm-dock:has(> .dgm-addsplit) {
+  column-gap: var(--space-1);
+
+  .dock-actions {
+    order: 0;
+    flex-wrap: nowrap;
+    gap: var(--space-1);
+    margin-left: auto;
+  }
+}
+
+/* The empty pane: three numbered lines, each with its button (1615 f). */
+.dgm-steps {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin: 0 0 var(--space-4);
+  padding: 0;
+  list-style: none;
+  align-self: stretch;
+}
+
+.dgm-step {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.dgm-step-n {
+  flex: none;
+  inline-size: 1.5rem;
+  block-size: 1.5rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-pill);
+  background: var(--accent-soft);
+  color: var(--accent-text);
+  font-weight: 600;
+}
+
+/* A step done: the number gives way to a tick, and the words quiet down. */
+.dgm-step.dgm-done .dgm-step-text {
+  color: var(--muted);
+}
+
+/* Once there is a block the pane's foot has the worded Add block and Connect, so the list stays as a ticked record and its buttons go (1679 m). */
+.dgm-empty.dgm-started .dgm-step button {
+  display: none;
+}
+
+/* A name left empty in the list says so, in the muted voice, rather than leaving a blank row. */
+.dgm-label:empty::before {
+  content: "Unnamed";
+  color: var(--muted);
+  font-style: italic;
+}
+
+/* The line a drag on an already-fitting picture leaves (diagram-view.js). */
+.dgm-pan-note {
+  position: absolute;
+  inset-block-end: var(--space-5);
+  inset-inline-start: var(--space-5);
+  max-inline-size: 60%;
+  margin: 0;
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--modal-bg);
+  font-size: var(--text-sm);
+  pointer-events: none;
+}
+
+.dgm-pan-note.hidden {
+  display: none;
+}
+
+/* The example and the template button are for an empty page; the list stays, ticked, until the first arrow. */
+.dgm-empty.dgm-started .dgm-example,
+.dgm-empty.dgm-started > button.accent {
+  display: none;
+}
+
+.dgm-step-text {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+/* The empty pane: one sentence over the filled action (the empty state recipe). */
+.dgm-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: var(--space-6) var(--space-4);
+  font-size: var(--text-sm);
+}
+
+/* The model or the composer is working: the picture waits, dimmed, never emptied. */
+.dgm-busy .dgm-picture {
+  opacity: 0.6;
+  transition: opacity var(--ui-fast) var(--ease-out);
+}
+
+/* Ghosts: the blocks of a suggestion, in the tree's own place under the real ones. A
+   ghost is a toggle: faded and dashed until taken, then firm (the Ghost topics recipe). */
+.dgm-ghosts {
+  display: flex;
+  flex-direction: column;
+  gap: var(--row-gap);
+  margin-top: var(--space-3);
+  padding: var(--space-3);
+  border: 1px dashed var(--control-edge);
+  border-radius: var(--radius-md);
+  animation: dgm-arrive var(--ui-fast) var(--ease-out);
+}
+
+.dgm-ghosts.hidden {
+  display: none;
+}
+
+@keyframes dgm-arrive {
+  from {
+    opacity: 0;
+    transform: translateY(var(--space-1));
+  }
+}
+
+.dgm-ghost-head {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  font-size: var(--text-sm);
+}
+
+.dgm-ghost-head p {
+  margin: 0;
+}
+
+.dgm-ghost-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.dgm-ghost {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: var(--space-2);
+  min-height: var(--row-h);
+  padding: var(--space-1) var(--space-2);
+  border: 1px dashed var(--control-edge);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--ink);
+  font-size: var(--text-sm);
+  text-align: start;
+  opacity: 0.7;
+  transition: opacity var(--ui-fast) var(--ease-out), background var(--ui-fast) var(--ease-out);
+}
+
+.dgm-ghost[data-level="1"] {
+  margin-inline-start: var(--space-4);
+}
+
+.dgm-ghost[data-level="2"] {
+  margin-inline-start: var(--space-8);
+}
+
+.dgm-ghost[data-level="3"],
+.dgm-ghost[data-level="4"] {
+  margin-inline-start: var(--space-9);
+}
+
+.dgm-ghost:hover,
+.dgm-ghost:focus-visible {
+  opacity: 1;
+  background: var(--hover-veil);
+}
+
+.dgm-ghost:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.dgm-ghost.is-taken {
+  opacity: 1;
+  border-style: solid;
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.dgm-ghost-words {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0 var(--space-2);
+  min-width: 0;
+}
+
+.dgm-ghost-text {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dgm-ghost.is-taken .dgm-ghost-text {
+  font-weight: 600;
+}
+
+.dgm-ghost-joins {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--text-xs);
+}
+
+.dgm-ghost-foot {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-2);
+}
+
+/* The template dialog is the documents' own (doc-template-*): only its preview is a picture. */
+.dgm-template-column {
+  min-width: 0;
+}
+
+.dgm-template-column .list-filter {
+  margin-top: var(--space-4);
+}
+
+.dgm-template-figure {
+  margin: 0;
+  padding: var(--space-3);
+}
+
+.dgm-template-figure .md-mermaid-img {
+  display: block;
+  max-inline-size: 100%;
+  max-block-size: 20rem;
+  margin: 0 auto;
+}
+
+:where(:root[data-motion="reduced"]) .dgm-ghosts {
+  animation: none;
+}
+
+@container (max-width: 599.98px) {
+  .dgm-body,
+  .dgm-body.dgm-split {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto minmax(0, 1fr);
+    row-gap: var(--space-5);
+  }
+
+  /* One column: there is nothing to divide. */
+  .dgm-split-handle {
+    display: none;
+  }
+
+  .dgm-picture,
+  .dgm-stage {
+    order: -1;
+    /* A fixed height, not a cap: a picture that grows with each change pushed the blocks
+       down under a drag in progress (measured at 390: the pane moved 53px between drops). 38dvh, not the old quarter-height
+       that drew a three-block flowchart at 48% with 6 px text (R6.1). */
+    block-size: 38dvh;
+  }
+
+  /* Wrapped in its stage, the picture is the stage's height less the zoom bar, which is a row under it: over the
+     picture it covered the lower node (R6.1). */
+  .dgm-stage {
+    flex-direction: column;
+    gap: var(--space-1);
+  }
+
+  .dgm-stage > .dgm-picture {
+    block-size: auto;
+  }
+
+  .dgm-zoom {
+    position: static;
+    align-self: flex-end;
+    box-shadow: none;
+  }
+
+  .dgm-pane {
+    min-block-size: 10rem;
+  }
+
+  /* With an arrow drawn the list is a sheet (diagram-touch.js) and the picture takes the page. */
+  .dgm-phonelist.dgm-listless .dgm-body > .dgm-pane {
+    display: none;
+  }
+
+  .dgm-phonelist.dgm-listless .dgm-body {
+    grid-template-rows: minmax(0, 1fr);
+  }
+
+  .dgm.dgm-phonelist.dgm-listless :is(.dgm-picture, .dgm-stage) {
+    block-size: auto;
+    min-block-size: 0;
+  }
+
+  /* Basis 0: the drawing's own height must not set the picture's, or the stage outgrows the body (measured 506 in 375). */
+  .dgm.dgm-phonelist.dgm-listless .dgm-stage > .dgm-picture {
+    flex: 1 1 0;
+  }
+
+  .dgm-phonelist.dgm-listless .dgm-stage > .dgm-picture {
+    block-size: auto;
+  }
+
+  /* An empty diagram has nothing to draw: its picture shrinks so the three steps and both example buttons fit above the foot (390: they sat below it). */
+  .dgm-picture.dgm-picture-empty,
+  .dgm-stage:has(> .dgm-picture-empty) {
+    block-size: 6rem;
+  }
+
+  /* A diagram the blocks do not draw: its picture first, the line why under it, so a short pane shows the picture. */
+  .dgm-plain .dgm-hint {
+    order: 1;
+  }
+
+  .dgm-selectbar .ph-text,
+  .dgm-connect .ph-text {
+    display: none;
+  }
+
+  /* Suggest, Undo and Redo keep their icon and lose their word, like the tiles. */
+  .dgm-hist .ph-text,
+  .dgm-addname,
+  .dgm-dirword,
+  .dgm-suggest .ph-text {
+    display: none;
+  }
+
+  .dgm-dock .dock-actions button:not(.dgm-add) {
+    inline-size: 2.25rem;
+    min-inline-size: 0;
+    padding-inline: 0;
+  }
+
+  /* Once diagram-touch.js has run, the shapes are one Add button and a sheet: the dock is one row. */
+  .dgm-compact :is(.dgm-palette, .dgm-lib-hint, .dock-group:has(> .dgm-dirs)) {
+    display: none;
+  }
+
+  .dgm-compact .dgm-add {
+    display: inline-flex;
+  }
+
+  /* Add and the history lead the dock; the direction wraps under them. */
+  .dgm-compact .dock-actions {
+    order: -1;
+    gap: var(--space-1);
+    margin-left: 0;
+    justify-content: flex-start;
+  }
+
+  /* The palette is one row of shapes: the glyph says it, the name is its label. */
+  .dgm-tile-name {
+    display: none;
+  }
+
+  /* Seven tiles share one row at 390 (36px each), the direction and history beside each other. */
+  .dgm .dock {
+    column-gap: var(--space-3);
+  }
+
+  .dgm-palette {
+    gap: var(--space-1);
+  }
+
+  .dgm-tile {
+    justify-content: center;
+    inline-size: 2.25rem;
+    min-inline-size: 0;
+    padding: 0;
+  }
+}
+
+/* Suggest is the ... menu's row on a phone (diagram-builder.js `more`): Add, Undo, Redo and the menu are one row at 320. */
+.dgm-compact .dgm-suggest {
+  display: none;
+}
+
+/* The sheet's rows give every glyph about the same width, so the names line up. */
+.dgm-add-glyph {
+  flex: none;
+  display: inline-grid;
+  place-items: center;
+  inline-size: 1.5rem;
+}
+
+.dgm-add-glyph > .dgm-group-icon {
+  font-size: var(--text-h3);
+}
+
+/* The Add button is the phone's palette (diagram-touch.js); it is there only in a narrow pane. */
+.dgm-add {
+  display: none;
+}
+
+/* The picture on a touch screen: it takes every touch, to pinch it and to pan it itself. */
+.dgm-compact .dgm-picture {
+  touch-action: none;
+}
+
+/* A diagram the blocks cannot read keeps only the ... menu in its bar (its picture can still be saved). */
+.dgm-plain .dgm-dock > :not(.dock-actions),
+.dgm-plain .dock-actions > :not(.dgm-more) {
+  display: none;
+}
+
+/* The builder in a dialog (diagram-embed.js, 1546 D6): the dialog head, the blocks and picture, the foot.
+   The window is large because the pane and the picture are side by side; on a phone it takes the screen. */
+.dgm-dialog {
+  gap: var(--space-4);
+  width: min(76rem, 96vw);
+  height: min(48rem, 92dvh);
+  max-height: none;
+}
+
+/* The kind of diagram (diagram-kindbar.js, 1679 m): one `.seg` well above the toolbar, as wide as its four words. */
+.dgm-kinds {
+  align-self: flex-start;
+  flex: none;
+  max-width: 100%;
+  flex-wrap: nowrap;
+}
+
+/* Four worded buttons share one row on a phone instead of wrapping to a second (measured: 100px tall at 390, 40 at 1440). */
+.dgm-kinds .btn,
+.dgm-kinds button {
+  flex: 1 1 0;
+  min-width: 0;
+  padding-inline: var(--space-1);
+  white-space: nowrap;
+}
+
+/* A source the blocks cannot draw (a Gantt) is not a flowchart: no kind is pressed, so none is offered. */
+.dgm-plain .dgm-kinds {
+  display: none;
+}
+
+/* Blocks and Source wait at the foot's start, so the title keeps its room on a phone. */
+.dgm-views {
+  margin-inline-end: auto;
+}
+
+.dgm-dialog-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  gap: var(--space-5);
+}
+
+.dgm-host {
+  flex: 1 1 0;
+  min-width: 0;
+  min-height: 0;
+}
+
+.dgm-source {
+  display: none;
+  flex: 0 0 min(30rem, 42%);
+  resize: none;
+  font-family: var(--mono, ui-monospace, monospace);
+  font-size: var(--text-sm);
+}
+
+.dgm-dialog[data-view="source"] .dgm-source {
+  display: block;
+}
+
+.dgm-dialog[data-view="source"] .dgm-dock,
+.dgm-dialog[data-view="source"] .dgm-split-handle,
+.dgm-dialog[data-view="source"] .dgm-pane {
+  display: none;
+}
+
+.dgm-dialog[data-view="source"] .dgm-body,
+.dgm-dialog[data-view="source"] .dgm-body.dgm-split {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+/* The pane is its own container, so a container query cannot size it: on a phone a diagram the blocks do not
+   draw grows with its picture and the page scrolls, rather than overflowing a half-height preview. */
+@media (max-width: 599.98px) {
+  .dgm-plain {
+    height: auto;
+  }
+}
+
+@media (max-width: 599.98px) {
+  .dgm-dialog {
+    height: 94dvh;
+  }
+
+  .dgm-dialog-body {
+    flex-direction: column;
+  }
+
+  .dgm-dialog[data-view="source"] .dgm-source {
+    flex: 0 0 9rem;
+  }
+}
+
+/* The row's swatch is a button (1613): the shape stays what it draws, the hit box is the 24 px minimum. */
+.dgm-swatch {
+  display: inline-grid;
+  place-items: center;
+  min-inline-size: 1.5rem;
+  min-block-size: 1.5rem;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  box-shadow: none;
+  cursor: pointer;
+}
+
+.dgm-swatch:hover {
+  background: var(--hover-veil);
+}
+
+.dgm-swatch:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+/* A shape menu row: the drawn shape, its name, and the check at the end for the chosen one. */
+.dgm-shape-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.dgm-shape-row > .dgm-shape-check {
+  margin-inline-start: auto;
+}
+
+/* A connector menu row's line kind, drawn: the stroke (solid, dotted, thick) and the head (R6.4). */
+.dgm-link {
+  position: relative;
+  flex: none;
+  inline-size: 1.25rem;
+  block-size: 0;
+  border-block-start: 2px solid currentColor;
+}
+
+.dgm-link[data-style="dotted"] {
+  border-block-start-style: dotted;
+}
+
+.dgm-link[data-style="thick"] {
+  border-block-start-width: 4px;
+}
+
+.dgm-link[data-arrow="true"]::after,
+.dgm-link[data-arrow="both"]::after {
+  content: "";
+  position: absolute;
+  inset-inline-end: -1px;
+  inset-block-start: -5px;
+  border-block: 4px solid transparent;
+  border-inline-start: 6px solid currentColor;
+}
+
+/* Both ways: a head at the start as well (1679 slice 10). */
+.dgm-link[data-arrow="both"]::before {
+  content: "";
+  position: absolute;
+  inset-inline-start: -1px;
+  inset-block-start: -5px;
+  border-block: 4px solid transparent;
+  border-inline-end: 6px solid currentColor;
+}
+
+.dgm-example {
+  margin-block-start: var(--space-3);
+}
+
+/* A touch screen's controls are 44 px (R6.10); the narrow rule above makes them 36. */
+@media (pointer: coarse) {
+  .dgm-dirs,
+  .dgm-addmain,
+  .dgm-addcaret,
+  .dgm-dock .dock-actions button:not(.dgm-add) {
+    min-block-size: 2.75rem;
+    min-inline-size: 2.75rem;
+    inline-size: auto;
+  }
+}
+
+/* The two layouts of the one view (R7, 1621 D6). Blocks is the list at its old width with the picture beside it. Canvas
+   gives the picture the room: a narrower list, and on a phone a taller picture (on the page, not in the dialog, whose body has no room for it). */
+[data-dgm-layout="canvas"] .dgm-body.dgm-split {
+  --dgm-list: 16rem;
+}
+
+[data-dgm-layout="blocks"] .dgm-body.dgm-split {
+  --dgm-list: 22rem;
+}
+
+@container (max-width: 599.98px) {
+  [data-dgm-layout="canvas"]:not(.dgm-host) .dgm-picture,
+  [data-dgm-layout="canvas"]:not(.dgm-host) .dgm-stage {
+    block-size: 60dvh;
+  }
+
+  [data-dgm-layout="canvas"]:not(.dgm-host) .dgm-stage > .dgm-picture {
+    block-size: auto;
+  }
+}
+
+/* The list is a sheet, so the page gives the picture its height: the preview is tall enough that the stage fills the body
+   (1679, slice 11: at 390 the stage was 60dvh in a 375 px body and lay over the Documents list). */
+@media (max-width: 599.98px) {
+  #doc-preview:has(> .dgm-phonelist.dgm-listless) {
+    min-block-size: 80dvh;
+  }
+}
+
+/* The canvas (diagram-canvas.js): the drop target is an overlay box (or the whole overlay), the marquee a tinted rectangle. */
+.dgm-box.dgm-target,
+.dgm-box.swept {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.dgm-box.dgm-lifted {
+  opacity: 0.4;
+}
+
+.dgm-overlay.dgm-target {
+  outline-offset: -2px;
+  background: transparent;
+}
+
+.dgm-marquee {
+  position: absolute;
+  box-sizing: border-box;
+  border: 1px solid var(--accent);
+  background: var(--accent-soft);
+  pointer-events: none;
+}
+
+/* Groups, the edge handle and the in-place input (diagram-overlay.js, diagram-edges.js; R8c). A group's box lies under the
+   nodes'; the handle, the input and the rubber band are the only parts of the overlay that take a press. */
+.dgm-box.dgm-cluster {
+  z-index: 0;
+}
+
+.dgm-box.dgm-cluster.dgm-target {
+  border-color: var(--accent);
+}
+
+.dgm-handle {
+  position: absolute;
+  inset: 0 auto auto 0;
+  z-index: 2;
+  inline-size: calc(var(--space-6) * 1.5);
+  block-size: calc(var(--space-6) * 1.5);
+  padding: 0;
+  border-radius: var(--radius-pill);
+  background: var(--modal-bg);
+  box-shadow: var(--shadow-md);
+  pointer-events: auto;
+  touch-action: none;
+  cursor: crosshair;
+}
+
+/* The glyph and the ring are the accent, the disc the modal surface: 3:1 or better against the disc and the canvas in both
+   themes (INBOX 1679). Written on the button's own two classes so `ghost small` (kept, for its focus ring) does not win. */
+.dgm-handle.ghost.small {
+  padding: 0;
+  min-inline-size: 0;
+  min-block-size: 0;
+  border: 2px solid var(--accent);
+  background: var(--modal-bg);
+  color: var(--accent-text);
+}
+
+.dgm-handle.ghost.small[aria-pressed="true"] {
+  background: var(--accent-soft);
+}
+
+/* One handle a side; the glyph turns to point out of its own edge. */
+.dgm-handle[data-side="top"] > :first-child {
+  rotate: -90deg;
+}
+
+.dgm-handle[data-side="bottom"] > :first-child {
+  rotate: 90deg;
+}
+
+.dgm-handle[data-side="left"] > :first-child {
+  rotate: 180deg;
+}
+
+.dgm-handle::after {
+  content: "";
+  position: absolute;
+  inset: -8px;
+}
+
+.dgm-handle.hidden {
+  display: none;
+}
+
+@media (pointer: coarse) {
+  .dgm-handle {
+    inline-size: 44px;
+    block-size: 44px;
+  }
+}
+
+.dgm-rubber {
+  position: absolute;
+  inset: 0 auto auto 0;
+  block-size: 2px;
+  transform-origin: 0 50%;
+  background: var(--accent);
+  pointer-events: none;
+}
+
+.dgm-rubber.hidden {
+  display: none;
+}
+
+.dgm-rename {
+  position: absolute;
+  inset: 0 auto auto 0;
+  z-index: 2;
+  box-sizing: border-box;
+  inline-size: 120px;
+  pointer-events: auto;
+}
+
+/* The shortcuts sheet (diagram-style.js) borrows the whiteboard help rows; this sets the one column width they read. */
+.dgm-keys {
+  --wb-help-keys-w: 9rem;
+  columns: 1;
+  max-height: 60dvh;
+}
+
+/* A menu row with a shortcut (kebabMenu `keys`): the name on the left, the key on the right. */
+.action-menu .menu-item:has(> .menu-keys) {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-5);
+}
+
+.menu-keys {
+  color: var(--muted);
+  font: inherit;
+  font-size: var(--text-sm);
+  font-weight: 400;
+}
+
+/* The blocks list hidden (the toolbar's list button): the picture takes the room, keys still work from it. On a phone the
+   list is stacked under the picture and its button leaves the toolbar, so the seven 44 px controls fit one row (390: 338 in 306). */
+.dgm-no-outline .dgm-pane,
+.dgm-no-outline .dgm-split-handle {
+  display: none;
+}
+
+@media (max-width: 599.98px) {
+  .dgm-dock .dgm-outline-toggle {
+    display: none;
+  }
+
+  .dgm-no-outline .dgm-pane {
+    display: block;
+  }
+}
+
+.dgm-no-outline .dgm-body,
+.dgm-no-outline .dgm-body.dgm-split {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+/* Targets are 44 px on a touch screen and on a phone-width window (the swatch, Connect and the connector rows measured 24, 40 and 40). */
+@media (pointer: coarse), (max-width: 599.98px) {
+  .dgm-grip {
+    display: inline-grid;
+    place-items: center;
+    min-inline-size: 2.75rem;
+    min-block-size: 2.75rem;
+  }
+
+  .dgm-swatch,
+  .dgm-card > button.dgm-connect,
+  .dgm-join {
+    min-block-size: 2.75rem;
+    min-inline-size: 2.75rem;
+  }
+}
+
+/* The picked arrow (diagram-edge-pick.js): its drawn path again, 2px in the accent, over the picture; the svg takes no press. */
+.dgm-edge-svg {
+  position: absolute;
+  inset: 0;
+  inline-size: 100%;
+  block-size: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.dgm-edge-on {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 2px;
+  vector-effect: non-scaling-stroke;
+  pointer-events: none;
+}
+
+/* The two ends of a picked arrow (diagram-edge-pick.js): 12px dots in the accent on the modal surface, 44px under a coarse pointer. */
+.dgm-end {
+  position: absolute;
+  inset: 0 auto auto 0;
+  z-index: 2;
+  inline-size: 12px;
+  block-size: 12px;
+  margin: -6px 0 0 -6px;
+  padding: 0;
+  border: 2px solid var(--accent);
+  border-radius: var(--radius-pill);
+  background: var(--modal-bg);
+  pointer-events: auto;
+  touch-action: none;
+  cursor: grab;
+}
+
+.dgm-end.hidden {
+  display: none;
+}
+
+@media (pointer: coarse) {
+  .dgm-end {
+    inline-size: 44px;
+    block-size: 44px;
+    margin: -22px 0 0 -22px;
+  }
+
+  /* Held: a 12 px dot under the finger, so the block it is aimed at stays in view. */
+  .dgm-end.dgm-held {
+    inline-size: 12px;
+    block-size: 12px;
+    margin: -6px 0 0 -6px;
+  }
+}
+
+/* A mouse can aim at a dense row: the list is one 28 px line a block and one line of arrows under it, so ten blocks and
+   their arrows fit the pane without a scroll (1679, slice 6). A touch screen keeps its 44 px rows. */
+@media (pointer: fine) {
+  .dgm-tree {
+    gap: var(--space-1);
+  }
+
+  .dgm-tree .dgm-card {
+    min-height: var(--control-h-dense);
+  }
+
+  .dgm-tree .dgm-block {
+    gap: 0;
+  }
+
+  .dgm-tree .dgm-join {
+    min-height: calc(var(--control-h-dense) - var(--space-1));
+  }
+}
+
+/* The blocks list inside its sheet: the pane's own frame goes, the card is the frame. */
+.sheet-card > .dgm-pane {
+  max-block-size: 60dvh;
+  border: 0;
+  background: transparent;
+}
+
+.dgm-listbtn {
+  display: none;
+}
+
+.dgm-phonelist .dgm-listbtn {
+  display: inline-flex;
+}

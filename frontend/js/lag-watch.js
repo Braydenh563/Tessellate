@@ -43,7 +43,7 @@ const LAG = { queue: [], timer: 0, lastInput: "", lastInputAt: 0, lastAt: {}, ba
 const LAG_RAF_BUDGET_MS = 120;
 const LAG_RAF_SECONDS = 3;
 const LAG_RECENT_MS = 5 * 60 * 1000;
-const LAG_RAF = { on: true, fns: new WeakMap(), bucket: new Map(), hot: new Map(), owners: new Map(), second: 0 };
+const LAG_RAF = { on: true, fns: new WeakMap(), src: new Map(), srcN: 0, bucket: new Map(), hot: new Map(), owners: new Map(), second: 0 };
 const LAG_FRAME_MS = 200;
 const LAG_INPUT_MS = 300;
 const LAG_REQUEST_MS = 3000;
@@ -88,9 +88,14 @@ function lagScriptCause(scripts, frame) {
 //: Each answer is stamped with its path and the first script that asked.
 const LAG_API = [];
 
+//: A wrapper around `apiJson` is not the caller. whiteboard-history.js installs `window.apiJson
+//: = async (...) =>`, which V8 names "window.apiJson", so every call read as that file (INBOX
+//: 1667): a frame whose function ends in apiJson is skipped, whatever its prefix.
+lagApi.skip = /lag-watch\.js|at (?:async )?(?:[\w$]+\.)*apiJson /;
+
 function lagApi(path) {
   Error.stackTraceLimit = 8;
-  const who = lagStackOwner(new Error().stack, /lag-watch\.js|at (?:async )?apiJson /);
+  const who = lagStackOwner(new Error().stack, lagApi.skip);
   Error.stackTraceLimit = 10;
   return (data) => {
     LAG_API.push({ t: performance.now(), label: `${String(path).split("?")[0]} from ${who}` });
@@ -186,7 +191,22 @@ function lagFrameWhy(e) {
   if (!e.renderStart) return "";
   const paint = Math.round(e.startTime + e.duration - e.renderStart);
   const before = Math.round(e.duration) - paint;
-  return before > paint ? `${before}ms of script with no source file, then ${paint}ms rendering` : `rendering and painting ${paint}ms after the scripts`;
+  if (before <= paint) return `rendering and painting ${paint}ms after the scripts`;
+  //: **What "script with no source file" was** (INBOX 1575: 1,340 ms on the dashboard, 256 to 458 ms
+  //: after boot). A frame's `scripts` lists only the ones that ran 5ms or more, and nothing else the
+  //: page does between two renders is a script: traced at 4x CPU on a 2,000-note notebook, these frames
+  //: were style and layout the browser ran on its own (a hit test for a pointer event on a page whose
+  //: tab had just flipped: 327 ms in one `UpdateLayoutTree`, no script), or, in the first seconds,
+  //: parsing and compiling the page's own scripts (`ParseHTML` 246 ms); one 522 ms task left no trace
+  //: event at all (a collection or the machine's load). The row says which it most likely was.
+  const input = e.firstUIEventTimestamp;
+  const owner =
+    e.startTime < 8000
+      ? "the page loading: parsing, compiling, style and layout"
+      : input > 0 && input >= e.startTime && input <= e.startTime + e.duration
+        ? "an input event waiting on style and layout"
+        : "the browser's own style, layout or garbage collection";
+  return `${before}ms before rendering with no script over 5ms in it (${owner}), then ${paint}ms rendering`;
 }
 
 function lagInput(e) {
@@ -222,13 +242,26 @@ function lagStackOwner(stack, skip) {
   return "unknown";
 }
 
+//: **A fresh closure is known by its source** (audit 1102 DX1): CodeMirror asks for a frame
+//: with a new arrow on every key, and a stack per arrow was 14 us at 1x, 1.3 ms of a key at
+//: 4x in the long-document probe. A short source seen before takes its owner; one call in 32
+//: still takes the stack, and a source two files share (the owners differ) is marked "" and
+//: takes the stack every time from then on.
 function lagRafOwner(fn) {
   let owner = LAG_RAF.fns.get(fn);
   if (owner) return owner;
-  const limit = Error.stackTraceLimit;
-  Error.stackTraceLimit = 5;
-  owner = lagStackOwner(new Error().stack);
-  Error.stackTraceLimit = limit;
+  const src = fn instanceof Function ? Function.prototype.toString.call(fn) : "";
+  const kept = src && src.length <= 160 ? LAG_RAF.src.get(src) : "";
+  LAG_RAF.srcN = (LAG_RAF.srcN + 1) % 32;
+  if (kept && LAG_RAF.srcN) owner = kept;
+  else {
+    const limit = Error.stackTraceLimit;
+    Error.stackTraceLimit = 5;
+    owner = lagStackOwner(new Error().stack);
+    Error.stackTraceLimit = limit;
+    if (kept === undefined && LAG_RAF.src.size < 500) LAG_RAF.src.set(src, owner);
+    else if (kept && kept !== owner) LAG_RAF.src.set(src, "");
+  }
   if (fn instanceof Function) LAG_RAF.fns.set(fn, owner);
   return owner;
 }
@@ -312,7 +345,9 @@ function lagErrorsStart() {
     const said = (p) => (typeof p === "string" ? p : p?.message || JSON.stringify(p) || String(p));
     const stack = parts.find((p) => p?.stack)?.stack || new Error().stack;
     lagNoteError(parts.map(said).join(" "), stack.split("\n").filter((l) => !l.includes("lag-watch.js")).join("\n"));
-    original(...parts);
+    //: The app's log turns an Error into "{}" (INBOX 1549: "CodeMirror plugin
+    //: crashed: {}"), so it is handed on as its stack; app.js has no bytes to spare.
+    original(...parts.map((p) => (p instanceof Error ? p.stack || String(p) : p)));
   };
 }
 

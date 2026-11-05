@@ -18,7 +18,8 @@ from pathlib import Path
 from tests._app_js import JS_DIR, LAZY_PIECES, app_js_text
 
 LAYOUT = (JS_DIR / "image-layout.js").read_text(encoding="utf-8")
-DOCUMENTS = (JS_DIR / "documents.js").read_text(encoding="utf-8")
+#: docImageLive moved to documents-embeds.js (DC13 remainder, doc23-1102).
+DOCUMENTS = (JS_DIR / "documents.js").read_text(encoding="utf-8") + "\n" + (JS_DIR / "documents-embeds.js").read_text(encoding="utf-8")
 NOTES_LIST = (JS_DIR / "notes-list.js").read_text(encoding="utf-8")
 TIMELINE_DETAIL = (JS_DIR / "timeline-detail.js").read_text(encoding="utf-8")
 APP = (JS_DIR / "app.js").read_text(encoding="utf-8")
@@ -72,7 +73,7 @@ def test_the_align_menu_offers_what_the_document_editor_offered():
 
 
 def test_the_live_editor_hands_the_shared_control_its_own_write():
-    live = DOCUMENTS[DOCUMENTS.index("function docImageLive(") :][:1500]
+    live = DOCUMENTS[DOCUMENTS.index("function docImageLive(") :][:1800]  # indented two spaces in the closure (doc23-1102)
     assert "imageWireEdit(frame, options, { write, widest })" in live
     # the grip or the align button that had the keys keeps them (WCAG 2.4.3)
     assert "held.kind" in live and "controls.align" in live

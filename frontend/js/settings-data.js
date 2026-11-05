@@ -219,7 +219,7 @@ async function renderStorageBreakdown() {
   legend.replaceChildren();
   if (!storage) {
     bar.setAttribute("aria-label", "Storage could not be read");
-    legend.textContent = "Could not read the sizes.";
+    legend.textContent = "Couldn't read the sizes.";
     return;
   }
   const kinds = STORAGE_KINDS.map(([key, label]) => ({ key, label, bytes: Number(storage[key]) || 0 }));
@@ -354,9 +354,16 @@ async function renderBackups() {
         label: "Restore",
         title: "Roll the notebook back to this backup",
         run: async () => {
+          //: What a restore brings back, next to what is here now (audit 1028 S69);
+          //: nothing when the counts cannot be read.
+          const holds = await apiJson(`/backups/summary?name=${encodeURIComponent(item.name)}`)
+            .then(({ backup, live }) => backup && live
+              ? ` It holds ${nounCount(backup.notes, "note")} and ${nounCount(backup.documents, "document")}; the notebook has ${live.notes} and ${live.documents} now.`
+              : "")
+            .catch(() => "");
           if (
             !(await confirmDialog(
-              "Restore this backup? Your current notebook is snapshotted first, " +
+              `Restore this backup?${holds} Your current notebook is snapshotted first, ` +
                 "then replaced by the backup."
             ))
           )
@@ -1148,7 +1155,7 @@ async function settingsHistoryUndo(change) {
     settleUndoFromToast(action);
     toast(`Undone: ${change.label}`);
   } catch (error) {
-    toast(error.message || "Couldn't undo that.", true);
+    toast(error.message || "Couldn't undo that setting change.", true);
   }
 }
 

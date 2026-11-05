@@ -17,7 +17,7 @@ from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
-from tessellate.ai import drafter, no_model_text
+from tessellate.ai import composer_mermaid, drafter, no_model_text
 from tessellate.core import activity, deps
 from tessellate.core.database import Entry
 
@@ -75,6 +75,20 @@ class TitleBody(BaseModel):
     draft: str = Field(min_length=1, max_length=20000)
 
 
+def _with_diagram(body: ComposeBody, result: dict) -> dict:
+    """A diagram pass (1546 P3, D8) also says what the diagram builder needs:
+    `diagram`, the Mermaid source in the reply, or `diagram_error`, one
+    sentence for why the reply holds none. The Writing room reads `draft`
+    as before; the builder never inserts a reply it could not read."""
+    if body.kind != "diagram":
+        return result
+    #: A pass that did nothing (offline, nothing to draw) answers with its own message.
+    if result.get("message") and not result.get("said"):
+        return {**result, "diagram": "", "diagram_error": result["message"]}
+    source, why = composer_mermaid.source_of(result.get("draft") or "")
+    return {**result, "diagram": source, "diagram_error": why}
+
+
 @router.post("/compose")
 def compose_draft(
     body: ComposeBody, session: Session = Depends(deps.get_session)
@@ -91,10 +105,10 @@ def compose_draft(
     ollama = deps.get_ollama()
     if not ollama.is_running():
         #: With no model the composer does what it can by rule (INBOX 1466).
-        return drafter.composed(
+        return _with_diagram(body, drafter.composed(
             body.thoughts, body.draft, instruction=body.instruction, kind=body.kind,
             tone=body.tone, length=body.length, sources=_sources(session, body.source_ids),
-        )
+        ))
     text, note = drafter.compose(
         body.thoughts,
         body.draft,
@@ -108,13 +122,13 @@ def compose_draft(
     )
     #: Asked, not inferred from a string: see `drafter.was_offline`.
     offline = drafter.was_offline(note)
-    return {
+    return _with_diagram(body, {
         "draft": text,
         # Distinguishes "the model reasoned" from "the model wasn't there".
         "thinking": None if offline else note,
         "message": note if offline else "",
         "ollama_running": not offline,
-    }
+    })
 
 
 @router.post("/compose/stream")

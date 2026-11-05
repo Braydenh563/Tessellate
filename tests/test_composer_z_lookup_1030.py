@@ -78,9 +78,19 @@ def test_z22_how_long_since_takes_a_verb_alone():
 @pytest.mark.parametrize("question", ["how much are the flights", "what is the budget", "when is the beta"])
 def test_z15_also_is_three_facts_at_most_and_starts_with_a_capital(ask, question):
     said = ask(question)[0]
-    also = next((line for line in said.splitlines() if line.startswith("**Also:**")), "")
-    assert also.count(";") <= 2, said
-    assert not also or also.removeprefix("**Also:** ")[:1].isupper(), said
+    lines = said.splitlines()
+    at = next((i for i, line in enumerate(lines) if line.startswith("**Also:**")), None)
+    if at is None:
+        return
+    #: One line of "a; b; c", or since audit 1028 E63 a list under the head: either way three at most, each capitalised.
+    inline = lines[at].removeprefix("**Also:**").strip()
+    items = [x.strip() for x in inline.split(";")] if inline else []
+    for line in lines[at + 1:] if not inline else []:
+        if not line.startswith("- "):
+            break
+        items.append(line[2:].strip())
+    assert 0 < len(items) <= 3, said
+    assert all(item[:1].isupper() for item in items), said
 
 
 @pytest.mark.parametrize("question", ["summarise my notebook", "what is my notebook about", "what are my main themes"])

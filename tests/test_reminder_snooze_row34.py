@@ -36,5 +36,8 @@ def test_a_snooze_has_an_undo_that_may_restore_a_past_time(client):
 
 
 def test_the_snooze_function_pushes_an_undo():
-    body = JS.split("async function snoozeReminderTo(", 1)[1].split("\n}\n", 1)[0]
+    # Moved to the lazy reminder-edit.js (the boot gzip budget, INBOX 1578); the rule is the same.
+    lazy = (Path(__file__).resolve().parents[1] / "frontend" / "js" / "reminder-edit.js").read_text(encoding="utf-8")
+    assert 'lazyScript("/js/reminder-edit.js").then(() => snoozeReminderTo(' in JS
+    body = lazy.split("async function snoozeReminderTo(", 1)[1].split("\n}\n", 1)[0]
     assert "pushUndo(" in body and "restore: true" in body and '"Undo"' in body

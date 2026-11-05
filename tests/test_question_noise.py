@@ -11,6 +11,8 @@ from __future__ import annotations
 import pytest
 
 from tessellate.ai import composer, intent, question_noise
+from tessellate.ai import composer_phrases
+from tessellate.ai import composer_smalltalk
 from tests import _composer_eval as ev
 
 
@@ -56,8 +58,8 @@ def test_a_question_with_small_talk_in_it_is_still_a_question(message):
 
 
 def test_laughter_and_thanks_get_their_own_reply():
-    assert composer.social("lol") in composer.social_surfaces("laugh")
-    assert composer.social("ty") in composer.SOCIAL["thanks"]
+    assert composer_smalltalk.social("lol") in composer_smalltalk.social_surfaces("laugh")
+    assert composer_smalltalk.social("ty") in composer_smalltalk.SOCIAL["thanks"]
 
 
 # --- 2. typo repair -----------------------------------------------------------
@@ -182,7 +184,7 @@ def test_replies_vary_and_never_repeat_twice_running(conversation):
 
 
 def test_an_acknowledgement_offers_the_next_step_on_what_was_being_discussed():
-    reply = composer.social("ok", last_question="What is the latest on the sync rewrite?")
+    reply = composer_smalltalk.social("ok", last_question="What is the latest on the sync rewrite?")
     assert "“sync rewrite”" in reply
 
 
@@ -205,7 +207,7 @@ def test_an_unsure_reading_offers_did_you_mean_and_pressing_it_asks_again():
 def test_nothing_found_asks_a_short_clarifying_question():
     result = composer.compose("What is the capital of Peru?", [{"id": 1, "content": "# Boiler\n\nDue in March.", "created_at": "2026-09-01"}])
     #: Engine probe P1: the words no note found holds are named before the question back.
-    assert result["text"].endswith(tuple(composer.phrase_options("nothing_ask"))) and "“Peru”" in result["text"]
+    assert result["text"].endswith(tuple(composer_phrases.phrase_options("nothing_ask"))) and "“Peru”" in result["text"]
 
 
 def test_noise_nobody_tuned_against_changes_the_kind_rarely(noise_rows):

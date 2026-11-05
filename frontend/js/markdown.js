@@ -578,7 +578,14 @@ function mdFootnotesFinish(container, notes) {
 //: request. The whole card is one button, the board embed's rule: the card is
 //: what the eye and the finger both go for. The Live view draws the same card
 //: (`docEmbedNode`, documents.js).
-function mdDocumentCard(doc, name = "") {
+function mdDocumentCard(doc, name = "", plain = false) {
+  //: A diagram document (1546 D6) is drawn, not carded: its picture, then a line that opens it.
+  if (doc?.file_type === "mmd" && !plain) {
+    const figure = document.createElement("div");
+    figure.className = "md-mermaid-embed";
+    ensureModule("mermaid").then((ok) => (ok ? mermaidFill.embed(figure, doc, name) : figure.replaceChildren(mdDocumentCard(doc, name, true))));
+    return figure;
+  }
   const card = document.createElement("button");
   card.type = "button";
   card.className = "embed-card";
@@ -882,7 +889,7 @@ function wrapToggle(kind, apply, keep = () => true) {
   //: is the sighted reader's hint of what a press does.
   button.setAttribute("aria-label", "Wrap lines");
   const paint = (on) => {
-    button.setAttribute("aria-pressed", String(on));
+    button.setAttribute("aria-pressed", on);
     button.title = on ? "Don't wrap" : "Wrap lines";
   };
   button.addEventListener("click", () => {

@@ -30,7 +30,7 @@ ROOT = Path(__file__).resolve().parents[1]
 #: documents.js, so a test that reads "the documents editor" reads all three.
 DOCUMENTS_JS = tuple(
     ROOT / "frontend" / "js" / name
-    for name in ("documents.js", "documents-code.js", "documents-prose.js", "documents-cm.js")
+    for name in ("documents.js", "documents-code.js", "documents-prose.js", "documents-cm.js", "documents-cm-theme.js", "documents-outline.js")
 )
 
 
@@ -197,7 +197,9 @@ def test_ctrl_slash_has_one_owner_per_surface():
     registry's `editorMenu` wrote "/" over the selection. In a document the
     comment owns the chord; in a note box the blocks menu does."""
     app = app_js_text()
-    assert 'if (id === "editorMenu" && e.defaultPrevented) continue;' in app
+    #: DX16 (a29j, 132bf47) put Ctrl+K's palette on the same guard; the rule
+    #: for Ctrl+/ is unchanged.
+    assert 'if ((id === "editorMenu" || id === "palette") && e.defaultPrevented) continue;' in app
     notes = _function("noteSurfaceKeymap")
     # A note binds Ctrl+/ itself now, ahead of the engine's defaultKeymap,
     # whose own comment toggle wrote `<!--  -->` into a markdown note. The
@@ -269,8 +271,11 @@ def test_guides_and_brackets_are_mounted_for_code_and_drawn_quietly():
     extras = _function("docCompletionExtras")
     assert 'docIndentGuides(CM, type.indent || "  ")' in extras and "docBracketColours(CM)" in extras
     theme = _source().split("function docCmTheme(CM) {", 1)[1].split("\nfunction ", 1)[0]
-    guide = theme.split('".cm-indent-guide"', 1)[1].split("}", 1)[0]
+    # INBOX 1562: the guide is the line's own background (the whole row box),
+    # not an inline mark's (a dash per row). Same hairline, same token.
+    guide = theme.split('".cm-indent-lines"', 1)[1].split("}", 1)[0]
     assert "var(--border)" in guide
+    assert '".cm-indent-guide"' not in theme and "cm-indent-guide" not in _function("docIndentGuides")
     for k in range(3):
         rule = theme.split(f'".cm-bracket-{k}"', 1)[1].split("}", 1)[0]
         assert "color-mix(in srgb, var(--" in rule and "70%, var(--text))" in rule
@@ -293,6 +298,36 @@ def test_indent_steps(lead, unit, steps):
     script = _function("docIndentSteps") + "\nconst a = JSON.parse(process.argv[1]);\nconsole.log(JSON.stringify(docIndentSteps(a[0], a[1])));\n"
     out = subprocess.run(["node", "-e", script, json.dumps([lead, unit])], capture_output=True, text=True, check=True, timeout=60)
     assert json.loads(out.stdout) == steps
+
+
+def _depths(texts, unit):
+    text = _source()
+    start = text.index("docIndentGuides.depths = ")
+    lifted = text[start : text.index("\n};\n", start) + 4]
+    script = _function("docIndentSteps") + "\nconst docIndentGuides = {};\n" + lifted + (
+        "\nconst a = JSON.parse(process.argv[1]);\nconsole.log(JSON.stringify(docIndentGuides.depths(a[0], a[1])));\n"
+    )
+    out = subprocess.run(["node", "-e", script, json.dumps([texts, unit])], capture_output=True, text=True, check=True, timeout=60)
+    return json.loads(out.stdout)
+
+
+@pytest.mark.skipif(shutil.which("node") is None, reason="node is not installed")
+def test_a_blank_line_inside_a_block_keeps_the_guide_and_the_edges_do_not():
+    # INBOX 1562: the rule runs through a blank row at the shallower of the
+    # code lines around it, and a blank before or after all code has none.
+    texts = ["", "def f(x):", "    if x:", "        a = 1", "", "        b = 2", "", "    return a", "", "x = 1", ""]
+    assert _depths(texts, "    ") == [0, 0, 1, 2, 2, 2, 1, 1, 0, 0, 0]
+    # A whitespace-only line is blank; tabs count their own; a mix draws none.
+    assert _depths(["a:", "\tb", "  \t", "\t\tc", "  \tmixed"], "\t") == [0, 1, 1, 2, 0]
+    assert _depths(["a:", "    b", "\tc"], "    ") == [0, 1, 0]
+
+
+def test_the_guides_are_a_line_background_sized_to_the_steps():
+    code = _function("docIndentGuides")
+    assert "Decoration.line(" in code and "cm-indent-n${n}" in code
+    theme = _source().split("function docCmTheme(CM) {", 1)[1].split("\nfunction ", 1)[0]
+    assert "backgroundSize: `calc(${i + 1} * var(--doc-indent-step)) 100%`" in theme
+    assert '".cm-indent-tabs": { "--doc-indent-step"' in theme and '".cm-indent-spaces": { "--doc-indent-step": "2em" }' in theme
 
 
 # --- 7. symbols: the outline and the breadcrumb of a code file ---------------------

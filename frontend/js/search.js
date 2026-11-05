@@ -373,24 +373,10 @@ async function finderFeatureOffer(query) {
 //: itself unpressed to anything reading it, and a keyboard user lost focus to
 //: <body> on every filter change. The row is furniture; only its numbers and
 //: its pressed state change.
-//: Which ends of the kind row can still scroll, so the fade sits only on
-//: an edge with more behind it (the owner, 2026-09-24: the last chip,
-//: Actions, was faded with the row scrolled all the way to it).
-function finderSyncFilterEdges(bar) {
-  const max = bar.scrollWidth - bar.clientWidth;
-  bar.classList.toggle("fade-start", bar.scrollLeft > 1);
-  bar.classList.toggle("fade-end", max - bar.scrollLeft > 1);
-}
-
 function finderRenderFilters() {
   const bar = document.getElementById("finder-filters");
   if (!bar) return;
-  if (!bar.dataset.edgesWired) {
-    bar.dataset.edgesWired = "1";
-    bar.addEventListener("scroll", () => finderSyncFilterEdges(bar), { passive: true });
-    new ResizeObserver(() => finderSyncFilterEdges(bar)).observe(bar);
-  }
-  requestAnimationFrame(() => finderSyncFilterEdges(bar));
+  edgeFadeWire(bar);
   const wanted = [
     { key: "", label: "Everything", count: null },
     ...FINDER_KINDS.map((kind) => ({
@@ -629,21 +615,25 @@ function finderRender() {
 function finderMove(step) {
   const rows = [...document.querySelectorAll("#finder-results .finder-row")];
   if (!rows.length) return;
+  //: **Reads first, then writes** (INBOX 1662: `onkeydown` 160ms, 101 of it forced layout): the row's box was
+  //: read after the class change, so every arrow press laid the list out.
+  const next = (finderState.active + step + rows.length) % rows.length;
+  const row = rows[next];
+  const box = row.parentElement;
+  const top = row.offsetTop;
+  const bottom = top + row.offsetHeight;
+  const seen = { top: box.scrollTop, height: box.clientHeight };
   if (finderState.active >= 0 && rows[finderState.active]) {
     rows[finderState.active].setAttribute("aria-selected", "false");
     rows[finderState.active].classList.remove("is-active");
   }
-  finderState.active = (finderState.active + step + rows.length) % rows.length;
-  const row = rows[finderState.active];
+  finderState.active = next;
   row.setAttribute("aria-selected", "true");
   row.classList.add("is-active");
   //: The list's own `scrollTop`, never `scrollIntoView`, which walks every
   //: scrolling ancestor including the page (DESIGN.md, the recipe index).
-  const box = row.parentElement;
-  const top = row.offsetTop;
-  const bottom = top + row.offsetHeight;
-  if (top < box.scrollTop) box.scrollTop = top;
-  else if (bottom > box.scrollTop + box.clientHeight) box.scrollTop = bottom - box.clientHeight;
+  if (top < seen.top) box.scrollTop = top;
+  else if (bottom > seen.top + seen.height) box.scrollTop = bottom - seen.height;
 }
 
 //: `opts.kind` opens on one kind's filter (the code editor's Ctrl+Shift+F

@@ -55,7 +55,9 @@ for (let b = 0; b < 12; b++) { seq = (seq * 31 + 11) % 42; const a = seq; seq = 
 nodes[9].fx = nodes[9].fy = null;
 const pinned = 20;
 sb.onmessage({ data: { type: "init", epoch: 1, nodes, edges, alpha: 1,
-  params: { gravity: 50, spread: 50, linkForce: 50, lengthByScore: true, groupBy: true, orbit: true, curved: true, shape: "organic" },
+  // Tidy spacing on: these layouts were measured with the clearance pass,
+  // a switch since INBOX 1529.
+  params: { gravity: 50, spread: 50, linkForce: 50, lengthByScore: true, groupBy: true, orbit: true, tidy: true, curved: true, shape: "organic" },
   world: { left: -900, top: -700, right: 900, bottom: 700, aspect: 0.6 } } });
 const run = (code) => vm.runInContext(code, sb);
 for (let t = 0; t < 2000 && run("simulation.alpha() >= simulation.alphaMin()"); t++) run("simulation.tick(); clampToWorld();");
@@ -258,7 +260,9 @@ groups.forEach((g, gi) => { for (let i = 1; i < per; i++) edges.push({ source: g
 let seq = 7;
 for (let b = 0; b < 40; b++) { seq = (seq * 31 + 11) % 150; const a = seq; seq = (seq * 17 + 5) % 150; if (Math.floor(a / per) !== Math.floor(seq / per)) edges.push({ source: a, target: seq, kind: "link" }); }
 sb.onmessage({ data: { type: "init", epoch: 1, nodes, edges, alpha: 1,
-  params: { gravity: 50, spread: 50, linkForce: 50, lengthByScore: true, groupBy: true, orbit: true, curved: true, shape: "organic" },
+  // Tidy spacing on: these layouts were measured with the clearance pass,
+  // a switch since INBOX 1529.
+  params: { gravity: 50, spread: 50, linkForce: 50, lengthByScore: true, groupBy: true, orbit: true, tidy: true, curved: true, shape: "organic" },
   world: { left: -1400, top: -1000, right: 1400, bottom: 1000, aspect: 0.6 } } });
 const run = (code) => vm.runInContext(code, sb);
 for (let t = 0; t < 2000 && run("simulation.alpha() >= simulation.alphaMin()"); t++) run("simulation.tick(); clampToWorld();");

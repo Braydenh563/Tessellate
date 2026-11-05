@@ -507,7 +507,7 @@ const TOUR_SECTIONS = [
         side: "left",
         settings: "appearance",
         title: "A companion",
-        text: "Turn on a small character that finds a free spot on each page and reacts to what you do.",
+        text: "Turn on a small character that keeps its own place and reacts to what you do.",
       },
       {
         target: "#settings-nav-models",

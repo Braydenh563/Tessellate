@@ -6,6 +6,7 @@ edited)."""
 import time
 from pathlib import Path
 
+from tessellate.ai import note_recency
 from tessellate.search import search_manager
 
 
@@ -17,9 +18,9 @@ def test_a_recency_question_is_read_as_an_order():
         "what did I write last?",
         "newest note about the garden",
     ):
-        assert search_manager.is_recency_ask(q), q
+        assert note_recency.is_recency_ask(q), q
     for q in ("the last time I went running", "notes about my entry visa", "what did I write about bread"):
-        assert not search_manager.is_recency_ask(q), q
+        assert not note_recency.is_recency_ask(q), q
 
 
 def test_the_newest_note_is_first(client, session):
@@ -64,7 +65,7 @@ def test_the_recency_pattern_stays_linear_on_long_whitespace():
     # CodeQL 443: `\s*[?.!]?\s*$` backtracked polynomially on a run of tabs.
     import time
 
-    from tessellate.search.search_manager import _RECENCY_ASK, is_recency_ask
+    from tessellate.ai.note_recency import _RECENCY_ASK, is_recency_ask
 
     # CodeQL 445: the same after "what did I add lately" and a run of tabs.
     for hostile in ("wrote last" + "\t" * 20000 + "x", "what\tdid\ti\tadd\tlately" + "\t" * 20000 + "x"):
@@ -85,9 +86,9 @@ def test_saved_recently_is_a_recency_question():
         "What have I been writing recently?",
         "what have I added recently",
     ):
-        assert search_manager.is_recency_ask(q), q
+        assert note_recency.is_recency_ask(q), q
     for q in ("what have I written about golf recently?", "recently I saved money on bread"):
-        assert not search_manager.is_recency_ask(q), q
+        assert not note_recency.is_recency_ask(q), q
 
 
 def test_a_notes_time_words_reach_the_model_with_their_dates():

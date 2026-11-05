@@ -44,7 +44,9 @@ def test_a_zero_percent_slider_is_not_read_as_a_hundred():
     # `Number(0) || 100` turned "see through" into "solid" the moment it was chosen.
     line = next(row for row in FORMAT_JS.splitlines() if "const alphaPct" in row)
     assert "|| 100" not in line and "Number.isFinite" in line
-    assert "Math.max(5," not in FORMAT_JS.split("const setFillAlpha")[1][:900]
+    # Intent moved (INBOX 1685, c939da6): the fill setter is now `wbFmtSetAlpha`.
+    fill = FORMAT_JS.split("function wbFmtSetAlpha(")[1].split("\n  }\n")[0]
+    assert '"fillalpha"' in fill and "Math.max(5," not in fill
 
 
 def test_the_line_opacity_row_is_offered_to_shapes_and_lines_and_stored_as_opacity():

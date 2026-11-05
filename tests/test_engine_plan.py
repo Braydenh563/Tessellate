@@ -11,6 +11,7 @@ from pathlib import Path
 import pytest
 
 from tessellate.ai import composer, intent, utilities
+from tessellate.ai import composer_smalltalk
 from tessellate.core import deps
 from tessellate.core.config import user_now
 from tessellate.entry import manager
@@ -54,8 +55,8 @@ def test_the_router(message, expected):
     [("tell me a joke", "joke"), ("asdfgh", "unclear"), ("are you an ai", "who")],
 )
 def test_the_reply_kind(message, kind):
-    assert composer.social_kind(message, intent.classify(message)) == kind
-    assert composer.social(message, intent.classify(message)) in composer.social_surfaces(kind)
+    assert composer_smalltalk.social_kind(message, intent.classify(message)) == kind
+    assert composer_smalltalk.social(message, intent.classify(message)) in composer_smalltalk.social_surfaces(kind)
 
 
 @pytest.mark.parametrize(

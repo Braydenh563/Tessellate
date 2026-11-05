@@ -25,7 +25,7 @@ JS = Path(__file__).resolve().parent.parent / "frontend" / "js"
 
 
 def test_picture_alts_come_from_the_caption_then_the_reading(session):
-    from tessellate.api.routes_chat import _picture_alts
+    from tessellate.api.chat_attach import _picture_alts
     from tessellate.core.database import Entry, MediaUpload
 
     session.add_all(
@@ -148,9 +148,9 @@ def test_the_agent_prompt_names_the_pictures_too():
     """INBOX 527, the owner: "does the ai know that it can have images in its
     response??" The tools-on prompt (the default) said nothing about them, so
     only a no-tools chat could place one. Numbered as `raw_results` is."""
-    from tessellate.ai import agent
+    from tessellate.ai import agent_turn
 
-    messages = agent.build_agent_messages(
+    messages = agent_turn.build_agent_messages(
         "what is on the whiteboard?",
         [
             {"id": 4, "content": "words", "category": "Work"},

@@ -155,38 +155,25 @@ _TITLE_PUMPS = {
 
 @pytest.mark.parametrize("text", _TITLE_PUMPS.values(), ids=_TITLE_PUMPS.keys())
 def test_question_title_is_linear_on_a_long_first_line(text):
-    from tessellate.ai.questions import _title
+    #: The questions row names a note with the one shared reader now (second
+    #: eye F13), so the property is pinned on that reader at the same size.
+    from tessellate.ai.composer_frame import note_title
 
-    assert _timed(lambda: _title(text)) < BUDGET
+    assert _timed(lambda: note_title(text, size=60)) < BUDGET
 
 
-def test_question_title_matches_the_old_pattern():
-    from tessellate.ai.questions import _plain, _title
+def test_question_title_is_the_shared_readers_name_cut_at_sixty():
+    #: The byte-equal pin against the old `(.+?[.!?])` loop moved with the code
+    #: (F13: one reader of a note's name, not a questions-only one): what the
+    #: row relies on is the sentence stop, the 60 cut and the marks off.
+    from tessellate.ai.composer_frame import note_title
 
-    def reference(content: str) -> str:
-        #: The title is read as a row shows it (`_plain`: no list marker, no
-        #: `**` or `__`, INBOX 745 b), so the pin reads the same: it moved with
-        #: the code, and the alphabet below now holds the marks it strips.
-        first = _plain((content or "").strip().split("\n", 1)[0].strip().lstrip("#").strip())
-        sentence = re.match(r"(.+?[.!?])(?:\s|$)", first)
-        if sentence and len(sentence.group(1)) <= 60:
-            return sentence.group(1)
-        return first if len(first) <= 60 else first[:59].rstrip() + "…"
-
-    alphabet = ["a", "b", " ", ".", "!", "?", "...", ". ", "\n", "\t", " ", "#", "1.5", "e.g.", "x" * 20, "**", "__", "- ", "* ", "1. ", "2) "]
-    cases = list(_random_strings(alphabet, count=4000, length=14)) + [
-        "",
-        "Plans for the shed. Then the roof.",
-        "A question? Another.",
-        "x" * 59 + ". more",
-        "x" * 58 + ". more",
-        "x" * 60 + ".",
-        "x" * 61 + ". more",
-        ". leading dot",
-        "v1.5 is out",
-        "Done!",
-        "# Heading. rest",
-        "word." + " " + "rest",
-    ]
-    for content in cases:
-        assert _title(content) == reference(content), repr(content)
+    alphabet = ["a", "b", " ", ".", "!", "?", "...", ". ", "\n", "\t", " ", "#", "1.5", "e.g.", "x" * 20, "**", "__", "- ", "* ", "1. ", "2) "]
+    for content in _random_strings(alphabet, count=4000, length=14):
+        name = note_title(content, size=60)
+        assert len(name) <= 61 and "**" not in name and "__" not in name, repr(content)
+    assert note_title("") == ""
+    assert note_title("v1.5 is out", size=60) == "v1.5 is out"
+    assert note_title("Done!", size=60) == "Done!"
+    assert note_title("Plans for the shed. Then the roof.", size=60) == "Plans for the shed"
+    assert note_title("x" * 100, size=60) == "x" * 59 + "\u2026"

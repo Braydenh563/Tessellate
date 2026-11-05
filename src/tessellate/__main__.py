@@ -1079,6 +1079,53 @@ def _boot_and_swap(window) -> None:
             logger.warning("server never came up, and couldn't show that in the window: %s", exc, exc_info=True)
 
 
+_WINDOW_MEMORY: dict[int, dict[str, bool]] = {}
+
+
+def _track_window_state(window) -> None:
+    """Remember whether the window is maximised and whether it is minimised, from
+    pywebview's own events. `restore()` sets the Normal state, so calling it on a
+    maximised window shrank it (INBOX 1688); a hide to the tray keeps the state, a
+    minimise keeps the maximised flag."""
+    mem = {"maximised": False, "minimised": False}  # fresh: an id can be reused
+    _WINDOW_MEMORY[id(window)] = mem
+
+    def on(maximised: bool | None, minimised: bool):
+        def handler() -> None:
+            if maximised is not None:
+                mem["maximised"] = maximised
+            mem["minimised"] = minimised
+
+        return handler
+
+    try:
+        events = window.events
+        events.maximized += on(True, False)
+        events.restored += on(False, False)
+        events.minimized += on(None, True)
+    except Exception as exc:  # noqa: BLE001 - an older pywebview without the events
+        logger.debug("window state events are not available: %s", exc)
+
+
+def _reassert_window_state(window) -> None:
+    """Before the window is shown again: restore only a minimised one, then put a
+    maximised one back to maximised (a restore from minimised on some backends
+    lands on Normal). A window that was never minimised is not touched."""
+    mem = _WINDOW_MEMORY.get(id(window))
+    if not mem or not mem["minimised"]:
+        return
+    was_maximised = mem["maximised"]  # the restore event below clears it
+    try:
+        window.restore()
+    except Exception as exc:  # noqa: BLE001 - optional on older pywebview
+        logger.debug("window.restore() did not work: %s", exc)
+    if was_maximised:
+        try:
+            window.maximize()
+        except Exception as exc:  # noqa: BLE001
+            logger.debug("window.maximize() did not work: %s", exc)
+
+
 def _focus_window(window) -> None:
     """Best-effort: bring the window to the front and give it real input
     focus the moment it swaps from the loading page to the real app. Asked
@@ -1101,6 +1148,7 @@ def _focus_window(window) -> None:
     request outright (some window managers do, by policy), is not worth
     crashing the launcher over.
     """
+    _reassert_window_state(window)
     try:
         window.show()
     except Exception as exc:
@@ -1694,13 +1742,9 @@ def _warn_webview2_missing() -> None:
 
 
 def _bring_forward(window) -> None:
-    """Un-minimise, un-hide and focus the window: what a second launch asks
-    for. `restore` first because a minimised window that is only shown stays
-    minimised on some backends; missing on an older pywebview, and skipped."""
-    try:
-        window.restore()
-    except Exception as exc:  # noqa: BLE001 - optional on older pywebview
-        logger.debug("window.restore() did not work: %s", exc)
+    """Un-minimise, un-hide and focus the window: what a second launch, the tray,
+    a reminder card and the desk companion ask for. `_focus_window` does the state
+    handling, so every path that shows the window keeps it maximised."""
     _focus_window(window)
 
 
@@ -1889,6 +1933,7 @@ def _run_desktop(hidden_relaunch: bool = False) -> None:
         # app once loaded; the loading page has nothing worth selecting.
         text_select=True,
     )
+    _track_window_state(window)
     # The in-app Quit (POST /shutdown) closes this window and ends the
     # process the way the tray's Quit does; SIGINT, the server-mode path,
     # never reaches a main thread inside the window's event loop.
@@ -2119,13 +2164,29 @@ def _attach_desk_companion(webview, window, tray_icon):  # noqa: ANN001
     from tessellate.core import desk_companion
 
     def _open_main(script: str = "") -> None:
-        window.show()
-        _focus_window(window)
+        # The same way a second launch brings the window forward: restored if it
+        # was minimised (a bare `show` leaves it minimised on some backends; the
+        # owner's Settings click did nothing visible, 2026-11-04), then shown and
+        # focused. The script runs on a worker once it is up: `evaluate_js` on a
+        # window that is not yet drawn can wait, and no click may wait on that.
+        _bring_forward(window)
         if script:
-            window.evaluate_js(script)
+            from tessellate.core import jobs
+
+            def run() -> None:
+                try:
+                    window.evaluate_js(script)
+                except Exception as exc:  # noqa: BLE001 - the window still came forward
+                    logger.warning("the companion's script did not run in the app window: %s", exc)
+
+            jobs.thread("desk-open-script", run)
 
     return desk_companion.attach(
-        webview, window, _open_main, lambda: f"http://{page_host()}:{PORT}/desktop-companion.html"
+        webview,
+        window,
+        _open_main,
+        lambda: f"http://{page_host()}:{PORT}/desktop-companion.html",
+        on_change=getattr(tray_icon, "update_menu", None),
     )
 
 
@@ -2150,8 +2211,14 @@ def _start_reminder_notifier(window, icon_path: Path, data_dir: Path):  # noqa: 
     try:
         from tessellate.core import reminder_notifier
 
+        from tessellate.core import desk_companion
+
         notifier = reminder_notifier.start(
-            data_dir, on_open=_open, icon=str(icon_path) if icon_path.is_file() else None
+            data_dir,
+            on_open=_open,
+            icon=str(icon_path) if icon_path.is_file() else None,
+            # The desktop companion's overlay fetches a card for each reminder that falls due.
+            on_due=desk_companion.carry_due,
         )
     except Exception as exc:  # noqa: BLE001  # notifications never stop the window
         logger.warning("reminder notifications are off: %s", exc)

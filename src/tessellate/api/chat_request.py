@@ -30,6 +30,7 @@ from tessellate.api.chat_attach import _attached_boards, _attached_documents, _a
 from tessellate.api.schemas import EntryOut
 from tessellate.core import activity, deps
 from tessellate.core.database import Category, Entry, like_escape, LIKE_ESCAPE, MediaUpload
+from tessellate.repo import categories as categories_repo
 from tessellate.search import query as search_query
 
 
@@ -121,8 +122,12 @@ class ChatRequest(BaseModel):
             return data
         data = {k: v for k, v in data.items() if k != "raw_question"}
         typed = data.get("question")
-        if isinstance(typed, str) and bounds.squeeze_blanks(typed) != typed:
-            data = {**data, "question": bounds.squeeze_blanks(typed), "raw_question": typed}
+        #: A curly apostrophe is read as a straight one by every reader ("I’ve"
+        #: is "I've", INBOX 1590: a phone keyboard types the curly one); the
+        #: model and the saved turn still get what was typed (`raw_question`).
+        scanned = bounds.squeeze_blanks(typed).replace("\u2019", "'") if isinstance(typed, str) else typed
+        if isinstance(typed, str) and scanned != typed:
+            data = {**data, "question": scanned, "raw_question": typed}
         return data
 
     #: Answer from the notebook as it stood at the end of this day
@@ -166,6 +171,10 @@ class ChatRequest(BaseModel):
     # is extracted at request time by the same `core.docview` the file viewer
     # uses, so what the model reads is what the Files tab shows.
     file_ids: list[int] = Field(default_factory=list, max_length=4)
+    # Files uploaded in the Library (a `MediaUpload` row, not an `Attachment`).
+    # The two tables number their rows separately, so these ids cannot ride in
+    # `file_ids` (INBOX 1687). Same cap, same extraction.
+    media_file_ids: list[int] = Field(default_factory=list, max_length=4)
     # Mind maps attached by hand (MINDMAP_PLAN.md §5 item 11: "a map can be
     # attached to a note, a document and a chat message, exactly as a file can
     # today: routes_chat.py's `file_ids` is the pattern to copy"). A map is a
@@ -450,7 +459,7 @@ def _apply_open(session: Session, body: ChatRequest) -> None:
         if opened and composer_open.reads_note(body.question, {"content": opened[0].content}):
             body.note_ids = [body.open_note_id]
     else:
-        names = list(session.execute(select(Category.name)).scalars())
+        names = categories_repo.names(session)
         named = composer_digest.named_category(body.question, names)
         if named:
             body.note_ids = _category_note_ids(session, named)
@@ -729,12 +738,19 @@ class _StreamRequest:
     #: What the message called the assistant ("hey lil bro, ..."), taken off
     #: `question` (`vocative.split`); `call` when that was all it said.
     address: vocative.Address | None = None
-    #: The whole of a question longer than `composer.PLAN_CHARS`, which only the
+    #: The whole of a question longer than `composer_intent.PLAN_CHARS`, which only the
     #: model and the saved turn read; `question` is what the app plans over.
     full_question: str | None = None
     #: Why the web search could not run this turn ("" when it ran): the
     #: reply then names the service and links its setting (`composer_web`).
     web_down: str = ""
+    #: The screen-aware next step ("Shall we carry on with ..."), sent as its
+    #: own `tip` event so it is never part of the answer's saved, copied or
+    #: spoken text (audit 1028 E52).
+    tip: str = ""
+
+    def tip_events(self) -> list[dict]:
+        return [{"type": "tip", "text": self.tip}] if self.tip else []
 
 
 def _in_full(req: _StreamRequest) -> str:

@@ -98,7 +98,7 @@ def test_the_overlay_covers_the_card_and_the_controls_sit_above_it():
         assert re.search(re.escape(host) + r"\s*\{[^}]*position:\s*relative", CSS), host
     # Above it: the ticks, the menus and any link in a preview.
     assert "z-index: 1" in after.group(1)
-    lifted = re.search(r"([^{}]*)\{\s*z-index:\s*2;\s*\}", CSS[CSS.index(".card-open::after") :])
+    lifted = re.search(r"(?:(?<=[{}])|\A)([^{}]*)\{\s*z-index:\s*2;\s*\}", CSS[CSS.index(".card-open::after") :])
     assert lifted, "nothing is lifted above the overlay"
     for control in (".library-card-tick", ".doc-list-tick", ".menu-wrap", ".library-card-preview a"):
         assert control in lifted.group(1), control
@@ -148,8 +148,8 @@ def test_each_fold_help_sits_beside_its_fold_over_a_slot():
         INDEX,
         re.S,
     )
-    # Nine: Effects & accessibility gained the motion help (2026-10-05); Embedding models left the fold list when it moved into Search and index (INBOX 700).
-    assert len(wraps) == 9, len(wraps)
+    # Twelve: Effects & accessibility gained the motion help (2026-10-05); Embedding models left the fold list when it moved into Search and index (INBOX 700); Import a document, Import from another app and Web clipper became folds (audit S68, 2026-11-02).
+    assert len(wraps) == 12, len(wraps)
     for attrs, summary in wraps:
         assert "fold-help" in attrs and "data-help-for=" in attrs, attrs
         assert '<span class="fold-help-slot" aria-hidden="true"></span>' in summary

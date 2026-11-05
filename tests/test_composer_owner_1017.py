@@ -6,6 +6,8 @@ from __future__ import annotations
 import json
 
 from tessellate.ai import composer
+from tessellate.ai import composer_empty
+from tessellate.ai import composer_smalltalk
 from tessellate.entry import manager
 
 
@@ -50,9 +52,9 @@ def test_a_key_mash_is_a_mash_not_a_name_for_the_assistant(ai_client, session):
     _seed(session)
     text = _ask(ai_client, "asdkjhfgs", notes_only=True, use_tools=False)["text"]
     assert "reporting in" not in text.lower() and "asdkjhfgs" not in text.lower(), text
-    from tessellate.ai import composer
+    from tessellate.ai import composer_smalltalk
 
-    assert any(text.startswith(line.split("{")[0]) for line in composer.social_surfaces("unclear")), text
+    assert any(text.startswith(line.split("{")[0]) for line in composer_smalltalk.social_surfaces("unclear")), text
 
 
 def test_a_test_message_is_acknowledged_as_a_test(ai_client, session):
@@ -64,7 +66,7 @@ def test_a_test_message_is_acknowledged_as_a_test(ai_client, session):
         text = _ask(ai_client, message, notes_only=True, use_tools=False)["text"]
         assert "no mention" not in text.lower() and "nothing in your notes" not in text.lower(), (message, text)
         #: The family's line, and (O5) perhaps an ask about the newest note.
-        assert any(text.startswith(line) for line in composer.social_surfaces("test") + composer.social_surfaces("test", True)), (message, text)
+        assert any(text.startswith(line) for line in composer_smalltalk.social_surfaces("test") + composer_smalltalk.social_surfaces("test", True)), (message, text)
 
 
 def test_the_capability_rundown_is_composed_and_sized_to_the_request():
@@ -92,7 +94,7 @@ def test_the_capability_rundown_is_composed_and_sized_to_the_request():
 def test_who_are_you_says_it_is_the_assistant_not_atlas(ai_client, session):
     """B10: the composer is Atlas's assistant; Atlas is the model. Asked who it
     is, it says so, and every identity line stays in that voice."""
-    for table in (composer.SOCIAL, composer.SOCIAL_PROFESSIONAL):
+    for table in (composer_smalltalk.SOCIAL, composer_smalltalk.SOCIAL_PROFESSIONAL):
         for line in table["who"]:
             assert "assistant" in line.lower(), line
         for line in table["who"] + table["about_app"]:
@@ -207,7 +209,7 @@ def test_a_time_with_no_note_in_it_is_said_as_that_with_where_the_notes_are(clie
         assert "couldn't find" not in text and "last month" in text.lower(), (body, text)
         assert "All your notes are from" in text or "Every entry is dated" in text, text
     for voice in ("natural", "professional"):
-        lines = {composer.empty_window("last month", None, None, voice=voice, seed=str(i)) for i in range(60)}
+        lines = {composer_empty.empty_window("last month", None, None, voice=voice, seed=str(i)) for i in range(60)}
         assert len(lines) >= 8, (voice, lines)
         assert all("!" not in line and chr(0x2014) not in line and line[0].isupper() for line in lines), lines
 
@@ -217,14 +219,14 @@ def test_a_hello_ends_on_an_ask_about_the_newest_note(client, session):
     invitation built on a word of the newest note, eight wordings a voice,
     never after an opener that already asks or suggests."""
     for voice in ("natural", "professional"):
-        lines = composer.INVITES[voice]
+        lines = composer_smalltalk.INVITES[voice]
         assert len(set(lines)) >= 8 and all("{subject}" in line and "!" not in line and chr(0x2014) not in line for line in lines)
-    said = {composer.social("good morning", invite="golf", seed=str(i)) for i in range(40)}
+    said = {composer_smalltalk.social("good morning", invite="golf", seed=str(i)) for i in range(40)}
     assert len(said) >= 6 and all("golf" in s or s.endswith("?") for s in said), said
     assert sum("golf" in s for s in said) >= 4, said
     for n in range(20):
-        base = composer.social("asdkjhfgs", seed=str(n))
-        invited = composer.social("asdkjhfgs", invite="golf", seed=str(n))
+        base = composer_smalltalk.social("asdkjhfgs", seed=str(n))
+        invited = composer_smalltalk.social("asdkjhfgs", invite="golf", seed=str(n))
         assert ("golf" in invited) == (not base.endswith("?") and "“" not in base), (base, invited)
     _seed(session)
     texts = [_ask(client, hello, use_tools=False)["text"] for hello in ("hi", "hello", "good morning", "hey there", "morning")]

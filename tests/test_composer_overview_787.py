@@ -19,6 +19,7 @@ from datetime import date, datetime
 import pytest
 
 from tessellate.ai import composer, composer_overview
+from tessellate.ai import composer_dialogue
 from tests._composer_eval import trace_failures
 
 TODAY = date(2026, 10, 10)
@@ -74,6 +75,10 @@ def ask(question: str, notes: list[dict] | None = None, **kwargs) -> dict:
         ("what are my app ideas", "app ideas"),
         ("what is there about games", "games"),
         ("whats there on uni?", "uni"),
+        #: Its frame was once the subject: "There are two notes on what are my sketch" (2026-11-02).
+        ("what are my sketch notes", "sketch"),
+        ("which are my game notes", "game"),
+        ("list my sketch notes", "sketch"),
     ],
 )
 def test_the_frames_that_ask_about_a_topic_as_a_whole(question, subject):
@@ -127,7 +132,7 @@ def test_a_list_note_is_said_as_one_sentence():
 def test_what_links_the_notes_and_what_to_ask_next():
     result = ask("games notes")
     assert any("League" in chip for chip in result["next"])
-    assert all(len(chip) <= composer.NEXT_MAX_CHARS for chip in result["next"])
+    assert all(len(chip) <= composer_dialogue.NEXT_MAX_CHARS for chip in result["next"])
 
 
 def test_one_note_holding_the_whole_subject_is_the_answer_not_an_overview():

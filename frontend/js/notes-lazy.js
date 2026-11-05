@@ -6,6 +6,47 @@
 // (`notesLazy`, lazy-entries.js) fetch this file on first use. The empty-filter hint and the
 // engine query's bar moved here (audit 1031, gzip budget): both draw after a render.
 
+//: **The whole note behind a list row** (INBOX 1525, audit 1031 BK10). The list holds each note's first 300 characters
+//: (`content_truncated`), so an open, an edit or a save reads the text here first. Callers use the object this returns,
+//: never the row they held: a list refresh can replace that row with a clipped one while this is asked. The row in
+//: `allEntries` at the answer is filled in place, so every holder of it sees the text. A whole row is returned as it is.
+//: Asks in one tick go as one request (a board's clipped cards); `GET /entries/{id}` reaches what `?ids=` leaves out
+//: (archived notes, which document backlinks list). Rejects when the note is gone or unreachable.
+function fullEntry(id) {
+  const row = allEntries.find((e) => e.id === id);
+  if (row && !row.content_truncated) return Promise.resolve(row);
+  const asks = (fullEntry.asks ||= new Map());
+  if (!asks.has(id)) {
+    if (!asks.size) queueMicrotask(fullEntry.send);
+    const ask = {};
+    ask.promise = new Promise((resolve, reject) => Object.assign(ask, { resolve, reject }));
+    asks.set(id, ask);
+  }
+  return asks.get(id).promise;
+}
+
+fullEntry.send = async () => {
+  const asks = fullEntry.asks;
+  fullEntry.asks = new Map();
+  const ids = [...asks.keys()];
+  const got = new Map();
+  for (let at = 0; ids.length > 1 && at < ids.length; at += 200) {
+    //: A failed batch is not an empty answer: each id is then read on its own below, and one that fails rejects.
+    try {
+      for (const whole of await apiJson(`/entries?ids=${ids.slice(at, at + 200)}&boards=include`)) got.set(whole.id, whole);
+    } catch {}
+  }
+  await Promise.all(ids.map(async (id) => {
+    try {
+      const whole = got.get(id) || (await apiJson(`/entries/${id}`));
+      const now = allEntries.find((e) => e.id === id);
+      asks.get(id).resolve(now ? Object.assign(now, whole) : whole);
+    } catch (error) {
+      asks.get(id).reject(error?.message ? error : new Error("This note is no longer here."));
+    }
+  }));
+};
+
 function toggleRowExpanded(id) {
   const open = !expandedRows.has(id);
   if (open) {
@@ -35,6 +76,9 @@ function toggleRowExpanded(id) {
   const seen = parts.map((el) => (el.getAnimations().length ? +getComputedStyle(el).opacity : 0));
   for (const el of [li, ...parts]) for (const a of el.getAnimations()) if (a.id === "row") a.cancel();
   li.classList.toggle("row-expanded", open);
+  //: An opened-out row shows the whole note: its card fills itself in place (`fillWhole`, entry-card.js), so its
+  //: Show more stays bound to the text it shows and a list redraw does not cut the opening short (INBOX 1525 review).
+  if (open) li.querySelector(".entry-content")?.fillWhole?.();
   const button = li.querySelector(":scope > .row-expand");
   if (button) {
     button.title = open ? "Show less of this note" : "Show the whole note here";
@@ -129,6 +173,8 @@ async function refreshNoteSearchWhy() {
     // only thing missing, so a failed call leaves the notes alone.
     return;
   }
+  //: A draw that is still waiting for the card file would paint without the reasons.
+  await renderEntries.waiting;
   if (noteSearch !== asked) return;
   noteSearchWhy.clear();
   for (const hit of body?.hits || []) noteSearchWhy.set(hit.id, hit);
@@ -194,4 +240,31 @@ function liveQueryBar(visible) {
     smallButton("ph:table Table", "These notes as a table, their properties as columns", () => openQueryTable(ids)),
     smallButton("ph:graph Show on graph", "Light these notes on the graph", () => showQueryOnGraph(ids)),
   );
+}
+
+//: The Semantic toggle's list (moved out of `_loadEntries` for the gzip budget; INBOX 1525): `asked` is the box text.
+async function loadSemanticEntries(asked, generation) {
+  //: **The Semantic toggle asks the engine** (`GET /search`), the one place
+  //: words, meaning and the links are ranked together, rather than a second
+  //: cosine-only list path (retired). The engine's page
+  //: is at most 50 hits, so nothing here needs paging; the list is then read
+  //: by id, which is also what keeps the bin, the archive and the boards out
+  //: of it (the index holds them, flagged), and put in the engine's order.
+  const found = await apiJson(`/search?q=${encodeURIComponent(clipFor("search", asked))}&kind=note&limit=50`);
+  const order = (found.hits || []).map((hit) => hit.id);
+  const rows = order.length ? await apiJson(`/entries?ids=${order.join(",")}&preview=300`) : [];
+  if (generation !== _entriesLoadGeneration) return; // a newer load took over
+  const byId = new Map(rows.map((row) => [row.id, row]));
+  const results = order.filter((id) => byId.has(id)).map((id) => byId.get(id));
+  noteEngine.semanticFor = asked;
+  noteEngine.rank = new Map(results.map((row, place) => [row.id, place]));
+  allEntries = results;
+  entriesEverLoaded = true;
+  publishNotes(allEntries);
+  renderStatusBar();
+  renderSidebar();
+  loadCategories();
+  renderEntries();
+  ensureMapChipsFor(results, generation);
+  fillCategoryOptions($("entry-category"), null);
 }

@@ -58,6 +58,9 @@ const document = { activeElement: null, documentElement: { dataset: {} },
   createElement: () => el(), createDocumentFragment: () => el(),
   startViewTransition(cb) { pending.push(cb); } };
 const reducedMotionWanted = () => false;
+const prefs = { get: () => null }; // the count line reads the tab (audit 1028 S92)
+function announce() {}
+function nounCount(n, w) { return `${n} ${w}s`; }
 let libraryItems = [], libraryKind = "all", libraryTruncated = {};
 let librarySemanticIds = null, libraryPageSize = "all", libraryCurrentPage = 1;
 let libraryColumnsShown = 1, librarySelection = new Set();

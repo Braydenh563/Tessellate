@@ -228,7 +228,7 @@ const WB_COMMANDS = [
   { id: "insert-frame", group: "Insert", icon: "ph:frame-corners", label: "Frame", keys: "F", surface: "board", run: wbTool("frame") },
   //: canvasdepth2: draw.io's table, rows and columns of text cells.
   { id: "insert-table", group: "Insert", icon: "ph:table", label: "Table", keys: "", surface: "board", run: () => wbInsertTable() },
-  { id: "insert-diagram", group: "Insert", icon: "ph:graph", label: "Mermaid diagram, live", menu: "Mermaid diagram…", keys: "", surface: "board", run: () => wbOpenDiagramDialog() },
+  { id: "insert-diagram", group: "Insert", icon: "ph:flow-arrow", label: "Diagram builder", menu: "Diagram builder…", keys: "", surface: "both", run: () => wbEditDiagram() },
   //: draw.io's Edit data (Ctrl+M): the Format panel's Data tab.
   { id: "edit-data", group: "Edit", icon: "ph:database", label: "Edit data", keys: "", surface: "board", needs: "selection", run: () => wbFormatOpen("data") },
   { id: "insert-image", group: "Insert", icon: "ph:image", label: "Image from a file", keys: "I", surface: "board", run: wbClickId("wb-add-image") },
@@ -427,11 +427,28 @@ function wbRunBoardAct(act) {
 
 //: The shortcut sheet's whiteboard section, from the same table, so the two
 //: cannot disagree. Called by `openShortcuts` (settings-wiring.js).
+//:
+//: **One key, two meanings by surface** (audit 1028 B12: M is "move under" on a
+//: map and the highlighter on a board; Ctrl+Shift+S saves a branch or a
+//: selection). Each command already says which `surface` it is for, and the
+//: sheet ignored it. With a board open it lists that surface's keys only; from
+//: anywhere else it lists all of them and names the surface on a key that two
+//: surfaces share.
 function renderWbShortcutSheet(list) {
   if (!list) return;
   list.replaceChildren();
+  const live = wbCommandsLive();
+  const here = live ? (wbIsMap() ? "map" : "board") : "";
+  const shared = new Set();
+  const seen = new Map();
+  for (const command of WB_COMMANDS) {
+    if (!command.keys || command.surface === "both") continue;
+    if (seen.has(command.keys) && seen.get(command.keys) !== command.surface) shared.add(command.keys);
+    seen.set(command.keys, command.surface);
+  }
   for (const command of WB_COMMANDS) {
     if (!command.keys) continue;
+    if (here && command.surface !== "both" && command.surface !== here) continue;
     const li = document.createElement("li");
     const keys = document.createElement("span");
     keys.className = "shortcut-keys";
@@ -442,7 +459,8 @@ function renderWbShortcutSheet(list) {
       keys.append(kbd);
     }
     const what = document.createElement("span");
-    what.textContent = command.label;
+    const tag = !here && shared.has(command.keys) ? (command.surface === "map" ? " (mind map)" : " (board)") : "";
+    what.textContent = command.label + tag;
     li.append(keys, what);
     list.append(li);
   }
@@ -462,7 +480,11 @@ function wbSyncCommandRows(menu) {
   const pair = [...menu.querySelectorAll("[data-wb-either]")];
   if (pair.length) {
     const live = pair.filter((row) => row.getAttribute("aria-disabled") === "false");
-    pair.forEach((row, i) => { row.hidden = live.length ? !live.includes(row) : i > 0; });
+    //: A row nobody can see is no menu item either: a submenu's arrow keys walk the roles (U15).
+    pair.forEach((row, i) => {
+      row.hidden = live.length ? !live.includes(row) : i > 0;
+      row.setAttribute("role", row.hidden ? "none" : "menuitem");
+    });
   }
 }
 

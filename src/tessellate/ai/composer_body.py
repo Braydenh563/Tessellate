@@ -346,12 +346,29 @@ def _parallel(mine: list[NoteView], side: set[str], theirs: list[NoteView], othe
     return same or mine
 
 
+def _opens_at(view: NoteView, side: set[str]) -> int:
+    """Where in a note's name a side's words first appear (99: nowhere)."""
+    return next((i for i, w in enumerate(_words(view.title)) if _stem(w) in side), 99)
+
+
+def _opening_wins(own: list[list[NoteView]], stems: list[set[str]]) -> list[list[NoteView]]:
+    """A note two sides both name goes to the side its name opens with:
+    "Study plan for November: revise biology on Monday" is the study plan,
+    though "biology" is in its name too (audit 1028 E16). A tie keeps both."""
+    for view in {id(v): v for mine in own for v in mine}.values():
+        at = {i: _opens_at(view, stems[i]) for i, mine in enumerate(own) if any(v is view for v in mine)}
+        best = min(at.values(), default=99)
+        if len(at) > 1 and list(at.values()).count(best) == 1:
+            own = [[v for v in mine if v is not view or at.get(i, best) == best] for i, mine in enumerate(own)]
+    return own
+
+
 def _sides_own(stems: list[set[str]], views: list[NoteView]) -> list[list[NoteView]]:
     """The notes named for each side, of like kind; none when two sides
     claim the same note."""
     n = len(stems)
     others = [set().union(*(st for j, st in enumerate(stems) if j != i)) for i in range(n)]
-    own = [_own_notes(stems[i], others[i], views) for i in range(n)]
+    own = _opening_wins([_own_notes(stems[i], others[i], views) for i in range(n)], stems)
     ids = [set(map(id, mine)) for mine in own]
     if any(ids[i] & ids[j] for i in range(n) for j in range(i)):
         return [[] for _ in stems]
@@ -419,11 +436,24 @@ def _versus_lead(out: _Answer, question: str, own: list[list[NoteView]]) -> bool
     return versus is not None
 
 
+def _said_once(only: list[list], stems: list[set[str]]) -> list[list]:
+    """A line picked for two sides is said under the side it names, with what
+    speaks of both, and not at all when it names neither (audit 1028 E16)."""
+    def twice(s) -> bool:  # noqa: ANN001
+        return sum(any(x is s for x in side) for side in only) > 1
+
+    def names(s) -> list[int]:  # noqa: ANN001
+        return [j for j in range(len(stems)) if stems[j] & set(s.words)]
+
+    return [[s for s in side if not twice(s) or names(s) == [i]] for i, side in enumerate(only)]
+
+
 def _compare_shares(stems, own, picks) -> tuple[list, list]:  # noqa: ANN001
     """What is said of each side only, then what speaks of two or more."""
     n = len(picks)
     others = [set().union(*(stems[j] for j in range(n) if j != i)) for i in range(n)]
     only = [[s for s in picks[i] if own[i] or not (others[i] & set(s.words))][:3] for i in range(n)]
+    only = _said_once(only, stems)
     #: What speaks of two sides is not a line already said under a side.
     said = {id(s) for side in only for s in side}
     both = [s for s in picks[0] if others[0] & set(s.words) and id(s) not in said][:2] if n == 2 else _shared(picks, others, said)
@@ -849,7 +879,9 @@ def _until_note(out: _Answer, question: str, views: list[NoteView], today: date)
     wanted = {_stem(w) for w in _words(asked[1]) if len(w) > 2} - {_stem(w) for w in _NOTE_NOUNS}
     #: The note titled as the subject first (note_rank's order), so "the
     #: dentist" is the Dentist note and not a to-do that says "call the dentist".
-    for view in sorted(views, key=lambda v: (v.title_words != wanted, not wanted <= v.title_words, v.rank)):
+    from tessellate.ai import note_rank  # at the call: note_rank reads the composer, so a module import closes a cycle
+
+    for view in note_rank.lead_by(sorted(views, key=lambda v: v.rank), asked[1], lambda v: v.note):
         if not wanted or not wanted & {_stem(w) for w in _words(str(view.note.get("content") or ""))}:
             continue
         dated = _days_named(view, today, asked[0])

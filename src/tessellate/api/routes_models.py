@@ -169,6 +169,8 @@ def prewarm_installed() -> None:
             if key in _installed_flights or key in _installed_known:
                 return
             _start_flight(client, key)
+        if _ocr_probe_state["value"] is None:
+            bgpool.thread("ocr-probe", _ocr_probe_refresh)  # the first poll then finds the reader known
     except Exception:  # noqa: BLE001  # a warm-up must never stop the launch
         logging.getLogger(__name__).info("model list warm-up skipped; Settings asks again when opened", exc_info=True)
 
@@ -248,6 +250,36 @@ def _run_list_flight(client, key: tuple[str, str], flight: _ListFlight) -> None:
                 _installed_cold_paid.discard(key)
             _installed_flights.pop(key, None)
         flight.done.set()
+
+
+#: A finished download, by name, and when a poll first saw it finish (monotonic). That poll waits, once, up to
+#: `INSTALLED_COLD_BUDGET` for a model list asked after that moment: a poll otherwise serves the list it knows
+#: after `INSTALLED_REFRESH_BUDGET`, and on a busy machine the poll that said "success" listed the models from
+#: before the download (CI on PR 212). A name no longer among the pulls is forgotten, so a second download of it
+#: waits again.
+_pull_done_seen: dict[str, float] = {}
+
+
+def _installed_after_pulls(client, installed: list[dict], pulls: dict[str, dict]) -> list[dict]:  # noqa: ANN001
+    with _installed_lock:
+        for name in [n for n in _pull_done_seen if pulls.get(n, {}).get("status") != "success"]:
+            del _pull_done_seen[name]
+        now = time.monotonic()
+        fresh = [n for n, job in pulls.items() if job.get("status") == "success" and n not in _pull_done_seen]
+        _pull_done_seen.update(dict.fromkeys(fresh, now))
+    if all(_name_matches(name, installed) for name in fresh):
+        return installed
+    key = _flight_key(client)
+    deadline = now + INSTALLED_COLD_BUDGET
+    while time.monotonic() < deadline:
+        with _installed_lock:
+            flight = _installed_flights.get(key) or _start_flight(client, key)
+        flight.done.wait(max(0.0, deadline - time.monotonic()))
+        if not flight.done.is_set():
+            break
+        if flight.started >= now:  # asked after the download finished: its answer, or what was known
+            return flight.result if flight.error is None and flight.result is not None else installed
+    return installed
 
 
 def _name_matches(wanted: str, installed: list[dict]) -> bool:
@@ -469,6 +501,9 @@ def status(session: Session = Depends(get_session)) -> dict:
     known, checking = _installed_state(ollama)
     installed = known if known is not None else []
     running = known is not None
+    pulls = jobs.pull_statuses()
+    if running:
+        installed = _installed_after_pulls(ollama, installed, pulls)
     chat_model = manager.chat_model()
     utility_resolved, utility_reason = manager.utility_resolution()
     # Resolved once. It walks the installed models asking each whether it can
@@ -634,7 +669,7 @@ def status(session: Session = Depends(get_session)) -> dict:
         #: endpoint for one integer would be a second thing to keep in step.
         "index_stale_notes": deps.index_stale_notes(),
         "index_stale_suggest_at": deps.INDEX_STALE_SUGGEST_AT,
-        "pulls": jobs.pull_statuses(),
+        "pulls": pulls,
         # Reported directly: the local-OCR button ("Read text offline") was
         # always shown enabled, so pressing it without the `tesseract` system
         # binary installed (never automatable the way the pip half is, see
@@ -643,9 +678,57 @@ def status(session: Session = Depends(get_session)) -> dict:
         # at all". A `shutil.which` check, cheap enough for every poll.
         #: Any local engine (RapidOCR reads where Tesseract is not ready,
         #: `ocr.engine`); the key keeps the name the frontend reads.
-        "tesseract_available": ocr.local_available(),
-        "ocr_engine": ocr.engine_name(),
+        "tesseract_available": ocr_probe()[0],
+        "ocr_engine": ocr_probe()[1],
     }
+
+
+#: **The OCR reader question is answered from memory** (INBOX 1662, the owner's lag log:
+#: `/models/status` 3287 ms at start-up). Asking it is `shutil.which`, a probe of the
+#: Windows install folders and three `find_spec` disk looks, done twice a poll; the answer
+#: changes only when something is installed. A poll serves the last answer; one older than
+#: this is refreshed on a pool thread for the next. Only the very first poll asks inline.
+OCR_PROBE_TTL = 30.0
+_ocr_probe_state: dict = {"value": None, "at": 0.0, "refreshing": False}
+_ocr_probe_lock = threading.Lock()
+
+
+def _ocr_probe_ask() -> tuple[bool, str]:
+    return bool(ocr.local_available()), ocr.engine_name()
+
+
+def _ocr_probe_refresh() -> None:
+    try:
+        value = _ocr_probe_ask()
+    except Exception:  # noqa: BLE001  # a failed look keeps the last answer
+        logging.getLogger(__name__).info("OCR reader look failed; the last answer stands", exc_info=True)
+        value = _ocr_probe_state["value"]
+    with _ocr_probe_lock:
+        if value is not None:
+            _ocr_probe_state["value"] = value
+        _ocr_probe_state["at"] = time.monotonic()
+        _ocr_probe_state["refreshing"] = False
+
+
+def ocr_probe() -> tuple[bool, str]:
+    """`(a local reader can read, its name)`, remembered for `OCR_PROBE_TTL` seconds."""
+    with _ocr_probe_lock:
+        value = _ocr_probe_state["value"]
+        stale = time.monotonic() - _ocr_probe_state["at"] > OCR_PROBE_TTL
+        refresh = value is not None and stale and not _ocr_probe_state["refreshing"]
+        if refresh:
+            _ocr_probe_state["refreshing"] = True
+    if value is None:
+        _ocr_probe_refresh()
+        return _ocr_probe_state["value"] or (False, "Tesseract")
+    if refresh:
+        bgpool.thread("ocr-probe", _ocr_probe_refresh)
+    return value
+
+
+def forget_ocr_probe() -> None:
+    with _ocr_probe_lock:
+        _ocr_probe_state.update(value=None, at=0.0, refreshing=False)
 
 
 @router.get("/spec")
@@ -844,7 +927,7 @@ def loaded_snapshot() -> set[str] | None:
         finished.set()
 
     try:
-        jobs.enqueue("model-info", run, name="loaded models")
+        jobs.enqueue("model-poll", run, name="loaded models")
     except Exception:  # noqa: BLE001  # never leave the gate shut behind a job that did not start
         with _installed_lock:
             _loaded_state["busy"] = False
@@ -1122,7 +1205,7 @@ def set_provider(body: ProviderBody, session: Session = Depends(get_session)) ->
         session,
         "edited",
         "preferences",
-        detail=f"llm_provider={body.provider} base_url={base_url or '(default)'}",
+        detail=f"llm_provider={body.provider} base_url={security.without_userinfo(base_url) or '(default)'}",
     )
     session.commit()
     return {

@@ -52,14 +52,56 @@ const AUTOCORRECT_TYPOS = {
   libararies: "libraries", workspae: "workspace", smoothlly: "smoothly",
   stlying: "styling", vissually: "visually", utlities: "utilities",
   wierdly: "weirdly", ocnstellation: "constellation",
+
+  //: The contraction family's irregular members (INBOX 1582); the regular
+  //: ones are built below. None is a word, ill, id, cant and wont are not here.
+  aint: "ain't", im: "I'm", ive: "I've", theyre: "they're",
 };
+
+//: **The contraction family** (INBOX 1582, "it didnt pick up my misspell of
+//: havent"): the apostrophe left out, stem plus ending. None is a word (checked
+//: against the vendored list), so each is a sure key. `its`, `lets`, `were`,
+//: `well`, `wed`, `shell` and `hell` are left alone; ill, id, cant and wont are
+//: words, so `autocorrectState.contextual` reads their neighbours.
+for (const [stems, end, mark] of [
+  ["do does did is are was were has have had would could should must need", "nt", "n't"],
+  ["you we they would could should might must", "ve", "'ve"],
+  ["you they it that who", "ll", "'ll"],
+  ["that what there here who", "s", "'s"],
+  ["you they", "d", "'d"],
+]) for (const stem of stems.split(" ")) AUTOCORRECT_TYPOS[stem + end] = stem + mark;
 
 const AUTOCORRECT_SECONDS = 5;
 //: A pointer resting on the underline asks after this long, and not at all
 //: while keys are still going down (the menu takes the focus).
 const AUTOCORRECT_HOVER_MS = 350;
 const AUTOCORRECT_TYPING_MS = 900;
-const autocorrectState = { key: 0 };
+const autocorrectState = {
+  key: 0,
+  //: A contraction that is also a word (ill, id, cant, wont) is corrected only
+  //: where its neighbours say so: `lead` is the text before, `ahead` the text
+  //: after (null while typing, so ill and id wait). "the cant of", "ill health"
+  //: and "his wont" are left alone.
+  contextual(lower, lead, ahead) {
+    const start = /(?:^|[.!?\n][)"'\]]*|^[ \t]*[-*+>][ \t]+)\s*$/.test(lead);
+    const next = /^[ \t]+([A-Za-z]+)/.exec(ahead ?? "")?.[1]?.toLowerCase() ?? "";
+    if (lower === "cant" || lower === "wont") {
+      const subject = /(?:^|[^A-Za-z'])(?:i|you|we|they|he|she|it|who|that|there|one|people)(?:\s+(?:just|also|still|really|even|always|now|only))?\s*$/i;
+      const bare = start && /^(?:be|do|go|see|wait|believe|find|get|make|help|stop|say|think|have|tell|take|afford|use|even|really|just)$/.test(next);
+      return subject.test(lead) || bare ? lower[0] === "c" ? "can't" : "won't" : "";
+    }
+    const opens = /(?:^|[^A-Za-z'])(?:and|but|so|then|if|when|that|because|maybe|think|guess|hope|bet|or|now|yeah|ok|okay|also|probably|sure|suppose|believe|say|said|know|thought|until|once|while|before|after|since|though|unless|perhaps|well)[,;:]?\s*$/i;
+    const verb = /^(?:be|been|have|go|see|get|do|call|send|take|try|let|need|make|just|probably|never|always|also|come|check|bring|text|keep|find|think|tell|give|show|ask|help|look|write|use|start|read|pay|meet|wait|stop|leave|talk|definitely|still|really|then|buy|add|fix|share|reply|update|like|love|rather|better|say|suggest|prefer|guess|imagine|hate|want|expect|agree|actually)$/;
+    return (lower === "ill" || lower === "id") && (start || opens.test(lead)) && verb.test(next) ? lower === "ill" ? "I'll" : "I'd" : "";
+  },
+  //: The same over a whole text (the document check): the contraction, or "".
+  inText(text, at, word) {
+    if (!/^(?:ill|id|cant|wont)$/i.test(word)) return "";
+    const end = at + word.length;
+    const found = autocorrectFind(text.slice(Math.max(0, end - 200), end) + " ", text.slice(end, end + 60));
+    return found ? found.fixed : "";
+  },
+};
 //: The keystrokes that finish a word: the only moment a correction is
 //: unambiguous. Mid-word it would rewrite "teh" on the way to "tehran".
 const AUTOCORRECT_ENDS = /^[\s.,;:!?)\]]$/;
@@ -68,9 +110,11 @@ let autocorrectLast = null, autocorrectBusy = false;
 
 //: The correction the text up to the caret asks for, or null. Pure, so the
 //: rule is tested in node: a finished word, not part of a link, a path, a
-//: tag, a mention or code, not an acronym, in the table, and neither in the
-//: dictionary nor put back already.
-function autocorrectFind(upto) {
+//: tag, a mention or code, not an acronym, in the table (or a word that is
+//: also a contraction, by its neighbours: `ahead` is the text after it when
+//: the whole text is known), and neither in the dictionary nor put back
+//: already.
+function autocorrectFind(upto, ahead = null) {
   const match = /([A-Za-z]+)([\s.,;:!?)\]]{1,2})$/.exec(upto);
   if (!match) return null;
   const typed = match[1];
@@ -81,7 +125,7 @@ function autocorrectFind(upto) {
   if ((before.match(/`/g) || []).length % 2) return null;
   if (typed.length > 1 && typed === typed.toUpperCase()) return null;
   const lower = typed.toLowerCase();
-  const better = Object.hasOwn(AUTOCORRECT_TYPOS, lower) ? AUTOCORRECT_TYPOS[lower] : "";
+  const better = (Object.hasOwn(AUTOCORRECT_TYPOS, lower) ? AUTOCORRECT_TYPOS[lower] : "") || autocorrectState.contextual(lower, before, ahead);
   if (!better || autocorrectRefused.has(lower)) return null;
   if ((prefsCache?.writing_dictionary || []).includes(lower)) return null;
   const fixed = typed[0] === lower[0] ? better : better[0].toUpperCase() + better.slice(1);

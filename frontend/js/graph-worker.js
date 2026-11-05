@@ -258,39 +258,64 @@ carryForce.initialize = () => {};
 //: shape a little: ten 8 unit drags changed the layout's size by 7% at 40 notes
 //: and the notes 150+ units away from the held one moved 3.8px a drag (a
 //: control with no drag moved nothing; tests/test_graph_drag_local_1517.py).
-//: Now the notes beyond the held one's neighbourhood (two links, or
-//: `NUDGE_RADIUS` world units) are held where they stood until the map rests,
-//: by a share of `1 - smoothstep(reach / DRAG_FULL_DISTANCE)`: whole for a
-//: nudge, none once the note has been carried a real distance, so a deliberate
-//: move still reorganises the map around it.
-const NUDGE_RADIUS = 150;
-const NUDGE_HOPS = 2;
-const nudge = { held: [], w: 0, reach: 0 };
-function nudgeStart(node) {
-  nudge.held = [];
-  nudge.reach = 0;
-  nudge.w = 1;
+//: So every note but the held one is held where it stood until the map
+//: rests, by a share of `1 - smoothstep(reach / DRAG_FULL_DISTANCE)`
+//: (`nudge.w`): whole for a nudge, none once the note has been carried a real
+//: distance, so a deliberate move still reorganises the map around it. The
+//: notes it links to are let go on release, to ease round the drop (the page
+//: freezes all the others while the pointer is down, `gcDragBegin`), and a
+//: held note the moving one runs into is let go to the collision. Held
+//: neighbours, not carried ones: carried along, a nudge's neighbourhood
+//: stretched its links to the rest (ten 8 unit drags at 40 notes, mean link
+//: 1.004 to 1.018 by the layout, against 0.995 to 0.997 held).
+//:
+//: **A release that moved nothing leaves the map as it was** (INBOX 1531, a
+//: CI finding: with Tidy spacing off, ten releases with no movement shortened
+//: a 40-note map's links 3.4%, and two links of free neighbourhood shortened
+//: them 3.6% for ten 8 unit drags). A drag whose note never went
+//: `NUDGE_STILL` world units from where it was taken puts every note back
+//: where the drag found it (`nudge.xs`), with no heat and no tick after; and a
+//: release leaves only the heat the drag's reach earns (`nudgeHeat`), so a
+//: nudge settles where it was let go.
+const NUDGE_STILL = 0.5;
+const nudge = { held: [], movers: [], w: 0, reach: 0, xs: null, ys: null };
+function nudgeStart(node, joining) {
   const links = simulation && simulation.force("link") ? simulation.force("link").links() : [];
   const near = new Set([node]);
-  let frontier = [node];
-  for (let hop = 0; hop < NUDGE_HOPS && frontier.length; hop++) {
-    const next = [];
-    for (const link of links) {
-      for (const [a, b] of [[link.source, link.target], [link.target, link.source]]) {
-        if (typeof a !== "object" || typeof b !== "object") continue;
-        if (frontier.includes(a) && !near.has(b)) {
-          near.add(b);
-          next.push(b);
-        }
-      }
-    }
-    frontier = next;
+  for (const link of links) {
+    if (link.source === node && typeof link.target === "object") near.add(link.target);
+    else if (link.target === node && typeof link.source === "object") near.add(link.source);
   }
+  //: A selection moved together sends a start for each note: one drag, one
+  //: snapshot, and none of the moved notes held back.
+  if (joining && nudge.xs && nudge.xs.length === nodes.length) {
+    nudge.held = nudge.held.filter((f) => f.node !== node);
+    for (const f of nudge.held) if (near.has(f.node)) f.linked = true;
+    nudge.movers.push(node);
+    return;
+  }
+  nudge.reach = 0;
+  nudge.w = 1;
+  nudge.xs = Float64Array.from(nodes, (n) => n.x);
+  nudge.ys = Float64Array.from(nodes, (n) => n.y);
+  nudge.held = [];
+  nudge.movers = [node];
   for (const other of nodes) {
-    if (near.has(other) || other.fx != null || !Number.isFinite(other.x)) continue;
-    if (Math.hypot(other.x - node.x, other.y - node.y) <= NUDGE_RADIUS) continue;
-    nudge.held.push({ node: other, x: other.x, y: other.y });
+    if (other === node || other.fx != null || !Number.isFinite(other.x)) continue;
+    nudge.held.push({ node: other, x: other.x, y: other.y, linked: near.has(other) });
   }
+}
+//: Every note back where the drag found it, at rest. A note the reader holds
+//: (a pin, or a carried note not yet let go) keeps its own place.
+function nudgeRestore(released) {
+  if (!nudge.xs || nudge.xs.length !== nodes.length) return;
+  nodes.forEach((n, i) => {
+    if (n.fx != null && n !== released) return;
+    n.x = nudge.xs[i];
+    n.y = nudge.ys[i];
+    n.vx = 0;
+    n.vy = 0;
+  });
 }
 function nudgeReach(distance) {
   nudge.reach = Math.max(nudge.reach, distance);
@@ -299,20 +324,46 @@ function nudgeReach(distance) {
 }
 function nudgeEnd() {
   nudge.held = [];
+  nudge.movers = [];
   nudge.w = 0;
+  nudge.xs = null;
+  nudge.ys = null;
+}
+//: The share of `RELEASE_ALPHA` a release leaves: what the hold gave up. From
+//: the reach, which outlives the hold: a carried note let go after the map
+//: rested still gets its own drag's share.
+function nudgeHeat() {
+  const t = Math.min(1, nudge.reach / DRAG_FULL_DISTANCE);
+  return t * t * (3 - 2 * t);
+}
+//: A held note within collision reach of a moving one (the note in hand, or
+//: one carried with it in a selection) is let go: held, the two would stay
+//: overlapped.
+function nudgeBumped(n) {
+  const r = collideRadius(n);
+  for (const m of nudge.movers) {
+    if (m !== n && Math.hypot(n.x - m.x, n.y - m.y) < r + collideRadius(m)) return true;
+  }
+  return false;
 }
 function nudgeForce() {
   const w = nudge.w;
   if (!w) return;
   const keep = 1 - w;
+  let bumped = false;
   for (const f of nudge.held) {
     const n = f.node;
     if (n.fx != null) continue;
+    if (nudgeBumped(n)) {
+      f.free = bumped = true;
+      continue;
+    }
     n.x = f.x + (n.x - f.x) * keep;
     n.y = f.y + (n.y - f.y) * keep;
     n.vx *= keep;
     n.vy *= keep;
   }
+  if (bumped) nudge.held = nudge.held.filter((f) => !f.free);
 }
 nudgeForce.initialize = () => {};
 let dragOrigin = null;
@@ -497,6 +548,11 @@ function collidePadFor(count) {
   if (n <= 100) return COLLIDE_PAD_MAX;
   if (n >= 300) return COLLIDE_PAD_MIN;
   return COLLIDE_PAD_MAX - ((COLLIDE_PAD_MAX - COLLIDE_PAD_MIN) * Math.log2(n / 100)) / Math.log2(3);
+}
+//: The collision force's radius: at least a radius of air each side (INBOX
+//: 693, "minimum node gap of about 2 node radii").
+function collideRadius(node) {
+  return Math.max((node.r || 8) + COLLIDE_PAD, 2 * (node.r || 8));
 }
 
 //: **How far the map spreads, and why it must depend on how many notes there
@@ -1250,8 +1306,20 @@ const CLEAR_CELL = 40;
 const CLEAR_GRID_MAX = 1 << 18;
 const clearPts = new Float64Array(10);
 const clearInv = new Float64Array(5);
+//: **The first ticks run the force on every second one** (GR1, ranked row
+//: 19): the clearance force was 5.2 s of a 9.9 s init to end on the 2,000-note
+//: fixture (126 calls, 41 ms each), and the hot first 60 ticks only shape the
+//: layout the later ticks and the passes then clear. `clear.lean` counts the
+//: calls left in that lean stretch; an init sets it, every call after is full.
+const CLEAR_LEAN_TICKS = 60;
+//: A tick that runs in the lean stretch pushes twice as hard, for the one it skipped.
+const CLEAR_LEAN_GAIN = 2;
+//: A chord longer than this many cells reads each column's cells as one run.
+const CLEAR_LONG_CELLS = 4;
 const clear = {
   curved: true,
+  lean: 0,
+  gain: 1,
   stamp: 0,
   start: new Int32Array(1),
   items: new Int32Array(0),
@@ -1348,7 +1416,7 @@ function clearPush(node, a, b) {
     nx = -(b.y - a.y) / len;
     ny = (b.x - a.x) / len;
   }
-  const push = (need - dist) * CLEAR_STRENGTH;
+  const push = (need - dist) * CLEAR_STRENGTH * clear.gain;
   // A held note does not move; whoever is free takes the whole step.
   const along = clearNear[3];
   const nodeFree = node.fx == null ? 1 : 0;
@@ -1365,6 +1433,12 @@ function clearPush(node, a, b) {
 }
 
 function clearanceForce() {
+  clear.gain = 1;
+  if (clear.lean > 0) {
+    clear.lean -= 1;
+    if (clear.lean % 2 === 0) return;
+    clear.gain = CLEAR_LEAN_GAIN;
+  }
   const links = simulation && simulation.force("link") ? simulation.force("link").links() : [];
   if (!links.length) return;
   let widest = 0;
@@ -1462,6 +1536,7 @@ function clearanceForce() {
       const dx = clearPts[c * 2] - ax;
       const dy = clearPts[c * 2 + 1] - ay;
       const inv = clearInv[c];
+      const long = Math.abs(dx) > CLEAR_LONG_CELLS * cell || Math.abs(dy) > CLEAR_LONG_CELLS * cell;
       const slope = dx ? dy / dx : 0;
       const lo = Math.min(ax, ax + dx);
       const hi = Math.max(ax, ax + dx);
@@ -1471,8 +1546,12 @@ function clearanceForce() {
         const yb = dx ? ay + slope * (Math.min(hi, (gx + 1) * cell + reach) - ax) : ay + dy;
         const y1 = Math.min(Math.floor((Math.max(ya, yb) + reach + 1) / cell), gy0 + rows - 1);
         const column = (gx - gx0) * rows - gy0;
-        for (let gy = Math.max(Math.floor((Math.min(ya, yb) - reach - 1) / cell), gy0); gy <= y1; gy++) {
-          const end = start[column + gy + 1];
+        const y0 = Math.max(Math.floor((Math.min(ya, yb) - reach - 1) / cell), gy0);
+        //: A long chord's column is read as one run of slots, not cell by cell
+        //: (`CLEAR_LONG_CELLS`): the cells of a column are contiguous in the
+        //: sorted arrays, so the same notes are asked in the same order.
+        for (let gy = y0; gy <= y1; gy += long ? y1 - y0 + 1 : 1) {
+          const end = start[column + (long ? y1 : gy) + 1];
           for (let k = start[column + gy]; k < end; k++) {
             const at = items[k];
             if (at === ai || at === bi || mark[at] === stamp) continue;
@@ -1741,9 +1820,15 @@ function applyGrouping(params) {
     .strength(pull);
 }
 
+//: The Tidy spacing switch, sent in the params (graph-canvas.js `gcWorkerParams`).
+function tidyOn(params) {
+  return !!(params && params.tidy === true);
+}
+
 function applyForces(params) {
   if (!simulation) return;
   applyGrouping(params);
+  simulation.force("clear", tidyOn(params) ? clearanceForce : null);
   const tuned = tuning(params);
   simulation.force("charge").strength(tuned.charge);
   simulation.force("link").distance(tuned.linkDistance).strength(linkStrength);
@@ -2531,7 +2616,7 @@ function* untangleCleanupSteps() {
   untangle.margin = UNTANGLE_CLEAN_MARGIN;
   for (let i = 0; i < nodes.length && !stuck; i++) stuck = untangleOnLine(i);
   const meet = [];
-  const spread = (node) => Math.max((node.r || 8) + COLLIDE_PAD, 2 * (node.r || 8));
+  const spread = collideRadius;
   for (let i = 0; stuck && i < nodes.length; i++) {
     for (let j = i + 1; j < nodes.length; j++) {
       // The collision force's own radii: a smaller gap would be pushed back open by the next tick.
@@ -3523,6 +3608,7 @@ self.onmessage = (event) => {
       ring.on = groupingOn(message.params);
       shuffle.left = 0;
       const tuned = tuning(message.params);
+      clear.lean = CLEAR_LEAN_TICKS;
       simulation = d3
         .forceSimulation(nodes)
         .velocityDecay(VELOCITY_DECAY)
@@ -3577,7 +3663,10 @@ self.onmessage = (event) => {
         .force("groupX", d3.forceX(0).strength(0))
         .force("groupY", d3.forceY(0).strength(0))
         .force("orbit", orbitForce)
-        .force("clear", clearanceForce)
+        //: Tidy spacing (INBOX 1529, off by default): the line-clearance
+        //: pass is 53,000 checks a tick at 2,000 notes, so it runs only when
+        //: the reader turns it on.
+        .force("clear", tidyOn(message.params) ? clearanceForce : null)
         .force("hub", hubForce)
         .force("tether", tetherForce)
         .force("carry", carryForce)
@@ -3588,7 +3677,7 @@ self.onmessage = (event) => {
           "collide",
           // At least a radius of air each side (INBOX 693, "minimum node gap of
           // about 2 node radii"): a big hub was only its pad from its neighbour.
-          d3.forceCollide().radius((d) => Math.max((d.r || 8) + COLLIDE_PAD, 2 * (d.r || 8)))
+          d3.forceCollide().radius(collideRadius)
         )
         // d3 starts its own timer on construction; every tick here is driven
         // by `loop` instead, so that one is turned off immediately.
@@ -3654,6 +3743,7 @@ self.onmessage = (event) => {
       if (index === undefined) break;
       const node = nodes[index];
       if (message.phase === "start") {
+        const joining = dragging;
         dragging = true;
         ramp.n = 0;
         // A note the reader moves is not followed by a reshuffle of others.
@@ -3663,7 +3753,7 @@ self.onmessage = (event) => {
         untangle.holding = false;
         dragOrigin = { x: node.x, y: node.y };
         markFollowers(node, true);
-        nudgeStart(node);
+        nudgeStart(node, joining);
         if (ring.params) applyGrouping(ring.params);
         const heat = dragHeat(message.x, message.y);
         simulation.alphaTarget(heat).alpha(Math.max(simulation.alpha(), heat));
@@ -3684,6 +3774,22 @@ self.onmessage = (event) => {
         // which is what makes the neighbourhood settle after you let go
         // instead of freezing mid-rearrangement.
         simulation.alphaTarget(0);
+        if (nudge.xs && nudge.reach < NUDGE_STILL) {
+          // Moved nothing: the map as the drag found it, no heat (`NUDGE_STILL`).
+          if (!message.keep) {
+            node.fx = null;
+            node.fy = null;
+          }
+          nudgeRestore(node);
+          nudge.held = [];
+          nudge.w = 0;
+          simulation.alpha(0);
+          // No tick after: the forces that act at no heat (the collision, the
+          // tether) would move it again (the loop's `untangle.holding`).
+          untangle.holding = true;
+          run();
+          break;
+        }
         //: **Moved is not pinned** (the owner, 2026-10-11: "moving nodes
         //: keeps them stuck there, they should only be stuck in place if I
         //: double click on them ... if the user moves them, they should
@@ -3696,11 +3802,13 @@ self.onmessage = (event) => {
         if (!message.keep) {
           node.fx = null;
           node.fy = null;
-          simulation.alpha(Math.min(Math.max(simulation.alpha(), RELEASE_ALPHA_MIN), RELEASE_ALPHA));
+          simulation.alpha(Math.min(Math.max(simulation.alpha(), RELEASE_ALPHA_MIN), RELEASE_ALPHA) * nudgeHeat());
           //: A note the reader put somewhere is on its leash no longer: the
           //: tether is a rule for where the layout leaves a note, and it
           //: pulled a dropped one 296px back toward its category.
           node.placed = true;
+          // Its own links ease round where it was put; the rest stay held.
+          nudge.held = nudge.held.filter((f) => !f.linked);
           if (ring.params) applyGrouping(ring.params);
         }
       }

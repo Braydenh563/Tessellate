@@ -626,7 +626,12 @@ select optgroup {
      gate allows, and 64ch puts 77. The margin is fluid between a comfortable
      minimum and 2rem, so the text is never ten pixels from its pane's edge
      again, which is what 17a measured it at. */
-  --doc-measure: 64ch;
+  /* The text column is 50em less the two margins, so the page (column plus
+     margins, which is what the editor and Read both cap) is 736 px at the body
+     size, Read's width since the owner's "so thin" reports; Live was 658
+     (audit 1102 DX25). `em`, not `ch`: the two views draw in different faces,
+     so one `ch` count came to 658 px in one and 669 in the other. */
+  --doc-measure: calc(50em - 2 * var(--doc-gutter));
   --doc-gutter: clamp(var(--space-6), 2.5vw, var(--space-9));
   /* 2rem, the inset five rules had by hand */
   /* Equal to the side gutter -- see `.layout`'s gap for the measurement. */
@@ -1465,6 +1470,51 @@ header#top-bar.tabs-wrapped #tab-bar {
   mask-image: linear-gradient(to right, transparent 0, #000 var(--tab-fade),
       #000 calc(100% - var(--tab-fade)), transparent 100%);
 }
+/* **One recipe for a row of chips or tiles that scrolls sideways** (INBOX
+   1578: Find anything's kind row had no scrollbar and ran under Sort). A
+   `.scroll-row` is an `.edge-fade` row that also says how much is behind the
+   edge: a thin visible scrollbar on a pointer device, and an arrow at each end
+   that has more behind it (`scrollRowArrows`, shell-reminders.js). A touch
+   screen keeps the swipe and no bar. The row's own rules never hide the bar. */
+.scroll-row {
+  scrollbar-width: none;
+}
+@media (hover: hover) and (pointer: fine) {
+  .scroll-row {
+    scrollbar-width: thin;
+    scrollbar-color: var(--muted) transparent;
+  }
+}
+.scroll-row-host {
+  position: relative;
+}
+/* A ghost button over a card-coloured backing (the pseudo-element), so the
+   one hover is the ghost's own and the chips never show through it. */
+button.scroll-row-arrow {
+  position: absolute;
+  z-index: 1;
+  isolation: isolate;
+  transform: translateY(-50%);
+  width: var(--control-h-dense);
+  height: var(--control-h-dense);
+  padding: 0;
+}
+.scroll-row-arrow::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  background: var(--card);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+}
+button.scroll-row-arrow[data-side="end"] {
+  transform: translate(-100%, -50%);
+}
+button.scroll-row-arrow[hidden] {
+  display: none;
+}
 #tab-bar.fade-end {
   -webkit-mask-image: linear-gradient(to right, #000 calc(100% - var(--tab-fade)), transparent 100%);
   mask-image: linear-gradient(to right, #000 calc(100% - var(--tab-fade)), transparent 100%);
@@ -1883,7 +1933,7 @@ header#top-bar.tabs-wrapped #tab-bar {
   align-items: center;
   gap: var(--space-3);
   flex-wrap: wrap;
-  margin-top: var(--space-4);
+  margin-block: var(--space-4) var(--space-3);
   padding: var(--space-3) var(--space-5);
   border: 1px solid var(--accent);
   border-radius: var(--radius-md);
@@ -2523,10 +2573,8 @@ header#top-bar.tabs-wrapped #tab-bar {
    thumbnails is still thumbnails, and full on hover/focus as before.
    (`:has(...[open])` went with the `<details>` menu it was written for, the
    gallery uses the app's own `kebabMenu` now, whose open state lives on a
-   `.action-menu` sibling, and the row no longer fades at all.) */
-.library-image-actions {
-  opacity: 0.6;
-}
+   `.action-menu` sibling, and the row no longer fades at all.) The 0.6 is
+   set in the row's main rule above. */
 /* **The row is a container, so only its buttons may take a click.** Reported:
    "I cant click the select radio buttons in any of the images in the library
    images subtab." Measured with `elementFromPoint` at the centre of each

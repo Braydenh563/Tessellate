@@ -51,11 +51,20 @@ def test_an_edit_after_the_stamp_comes_back_and_an_old_one_does_not(client, monk
     assert last["ids"] == [], "past the overlap, a change is not sent for ever"
 
 
-def test_the_stamp_overlaps_so_a_late_commit_is_asked_about_again(client):
+def test_the_stamp_overlaps_so_a_late_commit_is_asked_about_again(client, monkeypatch):
     """Two seconds behind the newest change: the same id comes back with the
     same `updated_at` in `stamps`, which the client drops as already seen."""
+    from datetime import datetime, timedelta
+
+    from tessellate.api import routes_entries
+
     stamp = client.get("/entries/changes").json()["since"]
     note = _note(client, "late")
+    first = client.get("/entries/changes", params={"since": stamp}).json()
+    # A fixed clock half a second after the write: on the real one a CI runner
+    # slower than the two-second overlap between these calls lost the id.
+    written = datetime.fromisoformat(first["stamps"][str(note["id"])])
+    monkeypatch.setattr(routes_entries, "utcnow", lambda: written + timedelta(seconds=0.5))
     first = client.get("/entries/changes", params={"since": stamp}).json()
     second = client.get("/entries/changes", params={"since": first["since"]}).json()
     assert note["id"] in second["ids"]

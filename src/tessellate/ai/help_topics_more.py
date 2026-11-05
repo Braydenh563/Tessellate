@@ -29,34 +29,35 @@ MORE_TOPICS: list[dict] = [
             "companion size", "the little guy", "rub the companion", "flip the companion",
         ),
         "body": (
-            "The corner companion is a small character that lives on the page, "
-            "not in any tab: it finds a free spot on each page, perches on a "
-            "panel or a toolbar and rides with it as the page scrolls, reacts "
-            "to what you do (you type, it keeps quiet company; you idle, it "
-            "plays), and naps when you are away. It steps out of the "
-            "way of menus, popups and the guided tour. Choose who it is in "
+            "The corner companion is a small character with a place of its own, "
+            "like a house cat: it perches on a panel or a toolbar and rides with it "
+            "as the page scrolls. Switching pages does not move it; it stays with "
+            "its page, out of sight while you are elsewhere. After a few "
+            "minutes apart it may walk over to you, and now and then it "
+            "goes out for a while and comes back (Reduce actions on Normal). Stay "
+            "here on every page in its menu keeps it in view on all of them. It keeps "
+            "quiet company while you type, plays when you idle, naps when you "
+            "are away. Choose who it is in "
             "Settings, Appearance, Atlas and faces, Corner companion: Off, "
             "You, The chat's persona, Atlas, or Your own character (a name and "
             "parts of its own). Companion size is Small, Medium or Large, or "
-            "drag the handle at its corner (double-click or double-tap the handle "
+            "drag the handle at its corner (double-click or double-tap it "
             "for Medium again); the size is marked On this device, so a phone "
             "keeps its own. Drag it onto a panel and that page "
             "keeps it there on this device; Tab to it and an arrow key "
-            "moves it 16 pixels (Shift 64); throw it (let go while moving fast) and it flies, "
-            "bounces off the window's edges and stays put. Move the pointer back and forth over it to rub it "
-            "and it leans into your hand; shake it up and down while you carry "
-            "it and it turns upside down, then lands a little dizzy (each has a "
-            "switch under What it does on its own). When it has "
-            "something on (headphones while a sound plays, a bell for a "
-            "reminder, a moon on its ear as it rests), rest the pointer on it and its "
-            "tooltip says what and why. Its large view (double-click it) has a "
+            "moves it 16 pixels (Shift 64); throw it and it flies and stays put. "
+            "Rub it with the pointer and it leans in; shake it while you carry "
+            "it and it turns upside down (each has a switch under What it does "
+            "on its own). It also crouches, lounges, rests, drifts, glides and "
+            "climbs, three ways each. Rest the pointer on anything it wears for what and why. "
+            "Its large view (double-click it) has a "
             "row of things to ask of it: wave, cheer, hop, stretch, shrug or "
             "wiggle, and Atlas also juggles stars, reads its map and "
             "meditates. Right-click it, or press Shift+F10 on it, for its "
             "menu: Say hello, Enlarge, Stay here on every page, Let it choose "
             "its spot here, a size, Call back and reset its place, and Hide. "
-            "Ctrl+Shift+Y shows or hides it from anywhere, and the command "
-            "palette and Find anything have Show or hide the companion. If it "
+            "Ctrl+Shift+Y, the command palette and Find anything show or hide "
+            "it from anywhere. If it "
             "is ever out of reach, Call back (in the setting, its menu or the palette) brings it back."
         ),
         "badge": {"label": "Corner companion", "section": "appearance", "target": "avatar-buddy-row"},
@@ -82,6 +83,29 @@ MORE_TOPICS: list[dict] = [
         "badge": {"label": "Corner companion", "section": "appearance", "target": "avatar-buddy-row"},
     },
     {
+        "id": "companion-habits",
+        "keywords": (
+            "companion habits", "companion reactions", "companion reacts to search",
+            "companion tilts its head", "companion double take", "companion shakes itself",
+            "companion winces", "atlas looks around", "atlas hums", "companion mood time of day",
+            "stop the companion reacting",
+        ),
+        "body": (
+            "Now and then the corner companion reacts to what you do: a puzzled tilt "
+            "when a search finds nothing and a nod when the next one does, a double "
+            "take when the pointer rushes past it, a shake once you put it down after "
+            "carrying it a while, and a small wince when a note goes to the bin. Atlas "
+            "also has rare habits of its own: a look around, a hum, a settling breath "
+            "and a second look at the pointer, each at most once in three minutes. Its "
+            "moods follow the part of the day, brighter in the morning and quieter in "
+            "the evening. None of it happens while you type, while Motion is reduced, "
+            "or over something else it is doing. To stop it, turn off Little habits and "
+            "reactions in Settings, Appearance, Atlas and faces, Corner companion, What "
+            "it does on its own."
+        ),
+        "badge": {"label": "Corner companion", "section": "appearance", "target": "avatar-buddy-row"},
+    },
+    {
         "id": "companion-travel",
         "keywords": (
             "companion portal", "companion puff of smoke", "companion vanishes",
@@ -96,7 +120,7 @@ MORE_TOPICS: list[dict] = [
             "The corner companion travels rarely and never while you type or "
             "carry it. It never sits on a menu, a popup, the field you are "
             "typing in or the line your caret is on, and when the pointer rests "
-            "on a control beside it, it steps aside. Atlas and the animals "
+            "on a control beside it, it steps aside. Drop it on a board shape or a mind map topic and it sits on its top edge, moving with the pan and zoom. Atlas and the animals "
             "decide the same way: Atlas keeps more room and plays less, a cat "
             "or an owl keeps its distance, a dog or a fox wanders more. When it has somewhere far to go it takes a calm way: it "
             "opens a portal and walks through, vanishes in a puff of smoke, walks "
@@ -318,11 +342,13 @@ MORE_TOPICS: list[dict] = [
             "With no model, two places make a diagram. Library tab, Create, New mind map "
             "opens a map you type into (Tab adds a child, Enter a sibling), and its "
             "templates, Trip plan among them, start you with branches in place. "
-            "Insert, Mermaid diagram on a board takes a few lines of text and draws a "
+            "Insert, Diagram, Mermaid diagram on a board takes a few lines of text and draws a "
             "flowchart, sequence, state, Gantt or pie chart live. A note's menu, under AI actions, "
             "Make a mind map, builds a map from that note's headings and lists. "
             "The Writing room's diagram needs a model for anything beyond a rule-made "
-            "flowchart, timeline or mind map."
+            "flowchart, timeline or mind map. "
+            "A diagram on a board can follow a Library diagram: it redraws from it, and if that "
+            "diagram is deleted the board keeps its last picture and says so."
         ),
         "badge": {"label": "Mind maps", "tab": "library"},
     },
@@ -401,13 +427,13 @@ MORE_TOPICS: list[dict] = [
         "body": (
             (
                 "Settings, Search and index. Search engine: the built-in one (recommended, about 300 MB "
-                "of memory while the app is open) or an Ollama embedding model such as nomic-embed-text. "
+                "of memory while open) or an Ollama model such as nomic-embed-text. "
                 "The built-in one needs the fastembed package (ONNX Runtime, no PyTorch) and a small model "
                 "from huggingface.co, about 130 MB in all. Nothing is downloaded without a yes: the first time a "
                 "save needs it Tessellate asks once, with Download and No thanks, and search uses "
                 "keywords until you say yes. The switch Download search by meaning turns it on later, "
-                "or off again, and Settings, Packages keeps a manual Install. Changing the engine re-reads every note in the background "
-                "(Background tasks shows it, with Stop) and search keeps using the current model until "
+                "or off (downloaded, it reads Repair search by meaning by itself); Settings, Packages keeps a manual Install. Changing the engine re-reads every note in the background "
+                "(Background tasks shows it, with Stop); search uses the current model until "
                 "the new one has read every note. Embedding models lists the choices, from MiniLM "
                 "(smallest, fastest) and BGE Small (the default) to multilingual ones (Multilingual E5, "
                 "BGE M3, Qwen3), with each one's size, languages, context and licence, and its state "
@@ -547,6 +573,26 @@ MORE_TOPICS: list[dict] = [
         "badge": {"label": "About", "section": "about"},
     },
     {
+        "id": "data-folder-check",
+        "keywords": (
+            "deleted files", "deleted a folder", "deleted my data folder", "missing file", "file missing",
+            "data folder check", "check and repair", "repair", "deleted the database", "notebook file missing",
+            "restore after deleting", "preferences.json", "robust",
+        ),
+        "body": (
+            "Each start checks the data folder, and Settings, About, Health, Data "
+            "folder check, Check and repair runs it again. A missing uploads, media "
+            "or backups folder is made again, empty, and a missing backups folder "
+            "gets a fresh backup. A settings file the app cannot read is kept beside "
+            "itself and the defaults are used. A deleted or damaged notebook file is "
+            "never replaced on its own: the lock screen offers the newest backup "
+            "that holds notes, Restore backup or Start a new notebook, and a "
+            "damaged file is kept aside. Attached files that are gone are listed "
+            "with their notes; a full backup file holds them. Nothing is deleted."
+        ),
+        "badge": {"label": "About", "section": "about"},
+    },
+    {
         "id": "maintenance",
         "keywords": (
             "maintenance", "check this computer", "doctor", "doctor.sh", "doctor.bat", "start --doctor",
@@ -591,7 +637,7 @@ MORE_TOPICS: list[dict] = [
             "palette (Activity). Its two tabs carry a glyph and a count, and each part is a card "
             "headed by a glyph and a title. Its Agent runs tab lists each run this session "
             "with its steps, and the log is in its menu. Stop the model, in the "
-            "menu and in Settings, Models beside Use this model, stops any answer "
+            "menu and in Settings, Models, stops any answer "
             "and unloads the model from memory (Ollama drops it at once; the chat's Stop reaches the model too); a server "
             "this app did not start keeps its own model, and the message says so."
         ),
@@ -654,10 +700,14 @@ MORE_TOPICS: list[dict] = [
             "markdown files or a folder (Obsidian frontmatter is understood; a "
             "preview lists the files first, so you can untick any), "
             "or a PDF, Word file or slide deck, one note per chapter or slide. "
+            "The four import groups (Import markdown, Import a document, Import "
+            "from another app, Web clipper) are folded: press a heading to open "
+            "it, and the ? beside it opens it too. "
             "To keep a file whole as a document you can edit instead, open "
             "Library, Documents, the more menu, Import a file as a document. "
             "Backups: Back up now, and how many to keep; one is also taken "
-            "each day the app starts, and restoring snapshots first, so even a "
+            "each day the app starts. Restore first says how many notes and "
+            "documents the backup holds against now, and snapshots first, so even a "
             "restore can be undone. A line above the list gives the schedule, when "
             "it last ran and whether that worked, and when the next is due; in the "
             "desktop app, Also copy each backup to sends a second copy to a folder "
@@ -703,7 +753,9 @@ MORE_TOPICS: list[dict] = [
         "body": (
             "Settings, Logs shows what happened, for when something did not "
             "work: filter by source and level, follow new lines, copy or clear "
-            "them. The ? beside the three dots in its bar says what each control "
+            "them. A filter only hides records, never deletes them: Show them clears "
+            "the filters, scrolling up draws older ones and the circular arrow "
+            "reads the log again now. The ? beside the three dots in its bar says what each control "
             "does. The support bundle collects the logs and the app's state; "
             "Email it opens a message to support with the bundle to attach. "
             "To send the logs for something slow or broken, open the three dots in "
@@ -727,7 +779,9 @@ MORE_TOPICS: list[dict] = [
             "search as a row under Saved searches in the Notes sidebar. Sort has Best "
             "match, Group by category (a note under its category, the rest under "
             "their kind), Newest first and Oldest first. Its '?' lists "
-            "the operators. It lists the command "
+            "the operators. The kind chips under the box scroll sideways when they do "
+            "not fit: a thin bar on a mouse or trackpad, an arrow at the end that has "
+            "more, a swipe on touch. It lists the command "
             "palette's actions too, so \"dark\" finds Toggle light/dark, after the "
             "notes and files. The command palette (Ctrl+K) sends what you type "
             "here: its last row, Search everything for, opens this box with "
@@ -755,7 +809,8 @@ MORE_TOPICS: list[dict] = [
             "and carries on when you come back. Movement sets how much it moves and Intensity "
             "how strong it is. Page background in Theme & colour sets the "
             "colour under it. Performance mode and Battery-efficient mode both "
-            "stop it, and so does Motion off."
+            "stop it, and so does Motion off. The dashboard's constellation "
+            "moves only while it is on; off, it is a still picture."
         ),
         "badge": {"label": "Animated background", "section": "appearance", "target": "bg-style-row"},
     },
@@ -807,7 +862,7 @@ MORE_TOPICS: list[dict] = [
             "everything else in one place. Timeline: everything by date. "
             "Reminders: what is due. Settings (the gear, or Ctrl+,) holds the "
             "rest, and Atlas the guide (this chat) answers how-to questions "
-            "from any tab. Press t then a letter to jump between tabs (o opens the OCR workspace), and "
+            "from any tab. Press t then a letter to jump between tabs (o opens the OCR workspace, y the tray, w a new note, f Find anything, k the calculator), and "
             "Settings, Help starts the guided tour."
         ),
         "badge": {"label": "Help", "section": "help"},
@@ -1077,26 +1132,39 @@ MORE_TOPICS: list[dict] = [
             "calculator and equations", "equation tab", "insert as equation",
         ),
         "body": (
-            "Calculator and equations is one dialog with three tabs: Work out, "
-            "Convert units and Equation. Open it from the command palette "
+            "Calculator and equations is one dialog with three tabs: Sum, "
+            "Units and Equation. Open it from the command palette "
             "(Ctrl+K, Calculator and equations, or Convert units for the "
-            "conversion tab; both are also in the / menu), by typing /calc with "
+            "Units tab; both are also in the / menu), by typing /calc with "
             "nothing after it, with Open the calculator under an answer that "
             "worked something out, or with Alt+= in a note, a document, a "
             "board's text, Chat or Ask, which opens it on the Equation tab over "
-            "that box. Work out takes a sum typed or keyed (12 * (3 + 4), 15% of "
-            "80, 5 km to miles), shows the result as you type and says how it "
-            "read it; Enter or = keeps it in the list of earlier results, and "
-            "Copy result copies it. When the dialog was opened from a text box, "
-            "Insert writes the result there and Insert as equation writes the sum "
-            "with its result as an equation. The keypad is one Tab stop: the "
-            "arrow keys move around it. Convert units picks a kind (length, "
+            "that box. Sum takes a sum typed or keyed (12 * (3 + 4), 15% of "
+            "80, 5 km to miles), shows a preview as you type and says how it "
+            "read it; Enter or = keeps it in History. Scientific adds trig, logs, powers, roots, a "
+            "factorial, pi and e, Degrees or Radians and a memory (MC, MR, "
+            "M+, M-), worked out with no model. "
+            "Each answer has Copy, and each tab has a History under "
+            "its fields (the last twenty, kept on this device): press a row to "
+            "put it back in the fields, or Copy it, Edit it (the next keep "
+            "replaces that row) or Remove it; Clear empties the list and Undo "
+            "brings it back. "
+            "Every tab ends in the same row: a line saying where Insert writes, "
+            "then Copy, Insert as equation (Sum and Units; the sum with its "
+            "result as an equation) and Insert. When the dialog was opened from "
+            "a text box, Insert writes there; with none open the line says so "
+            "and Copy is the way out. The keypad is one Tab stop: the "
+            "arrow keys move around it. Units picks a kind (length, "
             "weight, currency and more), an amount and two units, with a swap "
             "button; currency rates are set by hand and dated, not today's rate. "
+            "Time zone takes a time and two places (09:00, London, Tokyo), "
+            "offline. "
             "The Equation tab is the equation editor (see Equation editor): when "
-            "an equation is made of numbers, its value is shown under it, worked "
-            "out the same way as Work out. The arrow keys, Home and End move "
-            "between the tabs."
+            "an equation is made of numbers, its value is shown under it, as in "
+            "Sum. The arrow keys, Home and End move "
+            "between the tabs. The Dashboard's Calculator widget draws "
+            "Sum and Units on the page, with Copy but no Insert; Convert is "
+            "Units alone."
         ),
         "badge": {"label": "Chat", "tab": "chat"},
     },
@@ -1130,23 +1198,39 @@ MORE_TOPICS: list[dict] = [
         "id": "timer",
         "keywords": (
             "timer", "countdown", "stopwatch", "pomodoro", "set a timer", "start a timer",
-            "stop the timer", "time how long",
+            "stop the timer", "time how long", "clock", "alarm", "set an alarm", "laps", "pause a timer",
+            "lock screen timers", "show reminders on the lock screen",
         ),
         "body": (
-            "Type timer in the command palette (Ctrl+K; its ? at the foot lists "
-            "the timer, the stopwatch and Count words) for Start a timer (25 "
-            "minutes) and Start a stopwatch, or type a length, such as timer 10 "
-            "minutes, 90s timer or countdown 2h, and press Enter. The time runs "
-            "on the status bar (on a phone the bar comes back while it runs); "
-            "press that timer chip in the status bar to stop the one it shows (Undo brings it back). Several "
-            "timers can run at once (the chip shows the one ending first), and they "
-            "come back after a reload. When a timer "
-            "runs out it says so in a message and a notification. The "
-            "Dashboard's Focus timer widget is a separate timer: a ring with "
-            "the time, lengths of 5, 15, 25 or 50 minutes (or minus and plus "
-            "for any other), one Start that becomes Pause, a chime and a "
-            "notification at the end, Breaks for a five-minute break after "
-            "each session, and the minutes focused today."
+            "The Clock is one window for timers, a stopwatch and alarms. Open it "
+            "from the command palette (Ctrl+K): Start a timer, Start a "
+            "stopwatch or Set an alarm, or from the \"/\" menu in Chat, or by "
+            "pressing the timer chip in the status bar, which opens the panel "
+            "and never stops the clock. Type a length in the palette, such as "
+            "timer 10 minutes, 90s timer or countdown 2h, and Enter starts it. "
+            "Drag its title bar to move it or its corner to resize it. "
+            "Timer: press 5, 10, 15, 25 or 45 minutes, or type a length (10, "
+            "90s, 1h30m or 1:30) and press Start. Several timers can run at "
+            "once, each with Pause, Resume, Reset and Stop in the Running list "
+            "(a stopped one comes back with Undo), and they survive a reload. "
+            "When one runs out it says so, notifies and chimes (Sound at the "
+            "end turns the chime off). Stopwatch: Start counts up, Lap writes "
+            "down the time so far and the lap, Pause holds it and Reset puts it "
+            "back to its start. Alarm: pick a time and a label and press Set "
+            "alarm; it makes an ordinary reminder, today or tomorrow. The "
+            "Dashboard's Clock widget (Customise, Widgets) draws the same tabs "
+            "on the page, over the same running clocks; the Stopwatch widget "
+            "is the stopwatch alone (Start, Pause, Lap, Reset, with the laps "
+            "listed) and the Alarm widget is the alarm alone (a time and a "
+            "label, kept as a reminder). The "
+            "Dashboard's Focus timer is a separate ring timer: 5, 15, 25, 50 or "
+            "60 minutes, or type any length from 1 to 180 (minus and plus step "
+            "one minute below 10 and five above), a chime at the end, Breaks, "
+            "and the minutes focused today. While the app is locked nothing is "
+            "announced; a timer that ran out speaks after you unlock. Settings, "
+            "Account & security, Show timers and reminders on the lock screen "
+            "(off by default) lists timers and the next few reminders by "
+            "title and time, except private notes', never a note's text."
         ),
         "badge": {"label": "Dashboard", "tab": "dashboard"},
     },
@@ -1156,10 +1240,10 @@ MORE_TOPICS: list[dict] = [
         "keywords": (
             "first steps", "start in three steps", "sample notebook", "sample notes", "example notes",
             "remove the sample notes", "demo notes", "try it out", "hide these steps", "get started", "setup popup", "closed the welcome", "checklist",
-            "hide get started", "mark all as done", "show get started", "fold the first steps",
+            "hide get started", "mark all as done", "show get started", "hide first steps", "show first steps", "three steps to a working notebook", "fold the first steps",
         ),
         "body": (
-            "A new notebook's Dashboard shows Get started, a checklist of three steps: 1. Your name, "
+            "A new notebook's Dashboard shows First steps, a card titled Three steps to a working notebook with a checklist: 1. Your name, "
             "2. Write a note, 3. Ask your notebook, with a bar showing how many are done. Each is ticked "
             "when it is done, and none of them needs an AI model: Ask answers from your notes' own "
             "words, and saving your first note offers Ask about it beside "
@@ -1168,9 +1252,9 @@ MORE_TOPICS: list[dict] = [
             "linked notes in the Graph); it is offered until you write your own "
             "first note. Remove the sample notes moves them all to the bin, where "
             "Restore brings one back, and takes away the categories they made. The steps leave once all three are done and "
-            "the sample notes are gone. Mark all as done ticks every step and puts the card away; Hide Get started "
-            "hides the card and the dock's Get started button. Settings, Help (Show Get started), Customise, the hide notice's Show again or the palette (Ctrl+K, Show Get started) brings them back. "
-            "Until then the dashboard's Get started menu (beside Customise) lists the same three, ticked as "
+            "the sample notes are gone. Mark all as done ticks every step and puts the card away; Hide first steps "
+            "hides the card and the dock's First steps button. Settings, Help (Show first steps), Customise, the hide notice's Show again or the palette (Ctrl+K, Show first steps) brings them back. "
+            "Until then the dashboard's First steps menu (beside Customise) lists the same three, ticked as "
             "they are done, with Take the tour and Replay the welcome, and the same checklist "
             "is the first row of the notifications bell until all three are done."
         ),
@@ -1239,7 +1323,9 @@ MORE_TOPICS: list[dict] = [
             "words, the characters with and without spaces, and the reading "
             "time, counted the way wc counts. With nothing selected it counts "
             "the whole editor you were in. The Capture box and a document also "
-            "show a running count as you type."
+            "show a running count as you type; a document leaves out its "
+            "Markdown marks, code and comments, and so matches its Document "
+            "statistics."
         ),
         "badge": {"label": "Notes", "tab": "notes"},
     },
@@ -1297,6 +1383,24 @@ MORE_TOPICS: list[dict] = [
         "badge": {"label": "Capture from anywhere", "section": "shortcuts", "target": "capture-anywhere-box"},
     },
     {
+        "id": "running-copies",
+        "keywords": (
+            "running copies", "other copies", "another copy", "second copy",
+            "port in use", "port 8000", "already running", "shut down a copy",
+            "close another copy", "stuck copy", "next free port",
+        ),
+        "body": (
+            "Settings, About, Running copies lists the other copies of "
+            "Tessellate running on this computer, each with its port, when it "
+            "started and its data folder, and says so when there are none. "
+            "Shut down asks that copy to quit the way its own Quit does. This "
+            "copy is marked and has no Shut down; use Quit for it. When the "
+            "launcher finds its usual port taken it uses the next free one, "
+            "so a copy left running in the background is found here."
+        ),
+        "badge": {"label": "Running copies", "section": "about", "target": "running-copies-group"},
+    },
+    {
         "id": "install-app",
         "keywords": (
             "install", "install the app", "install as an app", "add to home screen",
@@ -1325,19 +1429,25 @@ MORE_TOPICS: list[dict] = [
             "companion when the window is closed", "show desktop companion",
         ),
         "body": (
-            "In the desktop app on Windows the companion can sit in the bottom-right "
-            "corner of your screen, above the taskbar, while the Tessellate window is "
-            "in the tray, and go away when the window is open. It is off until you turn "
-            "it on: Settings, About, Show the companion on the desktop while the window "
-            "is in the tray, or Show desktop companion in the tray icon's menu. It is "
-            "whoever you chose in Appearance (Atlas if you chose nobody). Click it for "
-            "Quick note, Quick search or Open Tessellate; a note saved there is filed "
-            "like any other, and a search result opens in the app. Right-click it for "
-            "Settings or Hide (Hide turns the setting off). Drag it to move it; it "
-            "remembers where you left it. While Tessellate is locked it shows only the "
-            "companion and Open Tessellate, never a note or a result."
+            "In the desktop app on Windows and Linux (X11) the companion can live on your desktop while the Tessellate window is "
+            "minimised or in the tray, and go away when it is open. Atlas floats like a wind spirit (others walk), sits "
+            "and then sleeps when you have been away, can be picked up and thrown, "
+            "hangs from the top, and peeks up from behind the taskbar or a screen edge. It keeps to a home spot by an "
+            "edge for minutes, alive in place, and makes "
+            "a few trips an hour: walking, running, out at one edge and in at the other, or through a portal. "
+            "Let go gently near a title bar and it hangs, then pulls itself up, "
+            "swings down or lets go with a start; it also hangs from a maximised title bar or a window's bottom edge. Sometimes it climbs onto the top of a window, rides it when you move it and hops off "
+            "if you close it (Roam over windows turns that off), and"
+            " a due reminder brings you a card to click. It steps aside for full screen and follows Companion movement "
+            "in Appearance: it stands still when that is Fades only or Windows animation effects are off. Turn it on, on the computer"
+            " Tessellate runs on: Settings, Appearance, Corner companion, Show the companion on the desktop while the window is "
+            "minimised or in the tray, or the tray icon's menu; it takes effect while the desktop app runs. Click it for Quick note, "
+            "Quick search, New reminder, Open today, Open Tessellate, Wave, Come here, Go somewhere else, Take a nap, Sit on a window"
+            " or Hide for 10 minutes. Come here follows your pointer; a nap lasts minutes or until you click it. Right-click it for Companion (Atlas masculine or feminine, your own or a saved one, drawn once), Stay here or Roam, Settings or Turn off. Drag it anywhere. Locked, it shows only Open "
+            "Tessellate. On Wayland, which cannot place a window above others, it stays "
+            "in the app. It also lounges, answers a pat and glances at new windows."
         ),
-        "badge": {"label": "Desktop companion", "section": "about", "target": "desktop-companion-row"},
+        "badge": {"label": "Desktop companion", "section": "appearance", "target": "desktop-companion-row"},
     },
 ]
 
@@ -1391,8 +1501,9 @@ MORE_TOPICS.extend(
                 "calendar, and the notice's Show on calendar opens that day), a sum written with a wrong "
                 "answer shows the right one (press it to put it in), and so does a Total: "
                 "line under a column of amounts that does not add up; a name another note "
-                "opens with becomes a [[link]], and File in names the category with its "
-                "reason beside it. Nothing is offered on quoted words: text in quotation "
+                "opens with becomes a [[link]], and File in names the category a save files it "
+                "in, with its reason beside it (on a close call, two or three File in choices "
+                "and why it waits; what you save then says the same). Nothing is offered on quoted words: text in quotation "
                 "marks, a code span or block, or a quote line. At most five show at once. It all "
                 "works with no AI model."
             ),
@@ -1412,11 +1523,14 @@ MORE_TOPICS.extend(
                 "and the note is saved and filed in the background while you stay "
                 "where you were. Escape closes it and keeps the words for next "
                 "time; Open in Capture moves them to the full composer. The "
-                "dashboard's Quick capture saves the same way. A bare link pasted "
+                "dashboard's Quick capture card is the same take-a-note bar as the top of "
+                "the Notes tab: it opens in place into a title, the note or a to-do "
+                "list, tags and a colour, with Draw and pictures, keeps your words as "
+                "a draft, and saves the same way. A bare link pasted "
                 "into Capture or Quick note offers its page as a note through the "
                 "web clipper, only while web search is allowed. \"Clear\" (the eraser "
-                "icon) is in every box you type into: Capture, with its title, tags "
-                "and files, Quick note, Ask, Chat and the popup agent. It shows only "
+                "icon) is in every box you type into: Capture (as Clear all, with its title, tags "
+                "and files; its title and its note also have an x of their own, which clears just that one), Quick note, Ask, Chat and the popup agent. It shows only "
                 "while the box holds something, empties it, and Undo (in the toast, "
                 "or beside the box in a popup) puts it all back."
             ),
@@ -1480,6 +1594,22 @@ MORE_TOPICS.extend(
             "badge": {"label": "Chat", "tab": "chat"},
         },
         {
+            "id": "chat-list",
+            "keywords": (
+                "search chats", "search my chats", "find a chat", "find an old chat", "old chats",
+                "saved chats", "chat list", "chats list", "chat sidebar", "sort chats", "pin a chat",
+            ),
+            "body": (
+                "The Chats list beside the chat shows your last eight saved chats. "
+                "The search box above it finds a chat by its title or by anything "
+                "said in it and lists up to 32 matches. Sort "
+                "puts them Recent, Most turns, Most tokens or A to Z, and a pinned "
+                "chat stays first. Each chat's menu renames, pins, archives or "
+                "deletes it. All in Library opens every chat, with the full search."
+            ),
+            "badge": {"label": "Chat", "tab": "chat"},
+        },
+        {
             "id": "chat-attach-cards",
             "keywords": (
                 "attached note", "attached a note", "attach a note to chat", "note card in chat",
@@ -1496,7 +1626,10 @@ MORE_TOPICS.extend(
                 "and a reopened chat draws the same. Press a card, or Tab to it and "
                 "press Enter, for a preview with an Open button (Open note, Open "
                 "document, Open mind map, Open file); Escape closes the preview and "
-                "returns to the card."
+                "returns to the card. The Attach panel's Files tab lists both files "
+                "you uploaded in the Library and files attached to notes, and "
+                "anything you drag in from the tray is already ticked there; "
+                "untick a row to take it off."
             ),
             "badge": {"label": "Chat", "tab": "chat"},
         },
@@ -1524,10 +1657,10 @@ MORE_TOPICS.extend(
                 "categories as one-tap buttons; a note you filed yourself shows "
                 "Filed by you and no percentage. With no AI model running, a "
                 "note is filed by your other notes and a built-in topic list, "
-                "only into a category you have, and says why (It mentions squat "
-                "(Fitness), like the 9 notes in Gym). Unsure, it stays in "
-                "Uncategorised with one-tap choices, and New: Fitness when none "
-                "fits. Health, money and family notes wait for you unless File "
+                "only into a category you have, not by a stray word, and says "
+                "why (It mentions squat (Fitness), like the 9 notes in Gym). Unsure, "
+                "it stays in Uncategorised with the closest two or three, and New: "
+                "Fitness when none fits. Health, money and family notes wait unless File "
                 "health, money and family notes by their words too is on in "
                 "Settings, Background tasks. While a "
                 "note shows Filing, its chip offers File by meaning now, Leave it "
@@ -1554,8 +1687,8 @@ MORE_TOPICS.extend(
             ),
             "body": (
                 "The tags Atlas suggested when it filed a note stay on the note's "
-                "card as \"+ tag\": one press adds the tag, and its x (Dismiss) stops "
-                "suggesting it (Undo in the notice brings it back, and the note's "
+                "card as a chip of two halves: \"+ tag\" adds the tag, and the x half (Dismiss) "
+                "stops suggesting it (Undo in the notice brings it back, and the note's "
                 "Edit form lists the ones turned down under Not suggested, each "
                 "one press from coming back). With no AI running they come from your own tags: "
                 "the ones the note names (\"stats\" finds statistics), its title and first line "
@@ -1708,14 +1841,14 @@ MORE_TOPICS.extend(
                 "sort notes", "recently edited", "a to z", "copy link", "copy wiki link", "copy app link",
                 "connections column", "beside the list", "forgotten", "close to this",
                 "backlinks", "unlinked mentions", "mentioned, not linked", "linked mentions",
-                "most used", "note order", "f2",
+                "most used", "note order", "f2", "edit a note", "edit note", "change a note", "open a note", "write in a note",
             ),
             "body": (
                 "Sort notes: Newest first, Oldest first, Recently edited, A to Z "
                 "(\"note 2\" before \"note 10\"), Most used or Forgotten first; "
                 "the choice is remembered. A note's menu has Copy wiki link to "
                 "paste a [[link]] to it into another note, and Copy app link for "
-                "an address that opens it in the app. Editing a note has the title, "
+                "an address that opens it in the app. To edit a note, press the pencil on its row (or F2 on a focused note), change it in place, then Save. Editing a note has the title, "
                 "a line of properties and the text in one box: the category is its "
                 "chip with a menu, tags are chips after it (Add tag: Enter or a "
                 "comma adds one, pressing one removes it), and the formatting "
@@ -1833,7 +1966,7 @@ MORE_TOPICS.extend(
             ),
             "body": (
                 "When an answer in Chat or Ask draws on a note with pictures or "
-                "sketches, the note's numbered chip under Grounded in has up to "
+                "sketches, the note's numbered chip under Cites (the row under the answer) has up to "
                 "three small pictures beside it (a +n says there are more). The "
                 "chip opens the note; a picture opens in the image viewer, with "
                 "its caption and the text read off it. Atlas can also place a "
@@ -1947,11 +2080,14 @@ MORE_TOPICS.extend(
                 "why this answer", "how was this answered", "how did you get that",
                 "where did this answer come from", "which model answered",
                 "how long did it take", "what did it search", "explain the answer",
-                "transparent", "process lines",
+                "transparent", "process lines", "chips under the answer", "answer foot",
             ),
             "body": (
                 "Under an answer in Ask, in a Chat reply and in the popup agent's "
-                "answer, Why this answer opens the lines that "
+                "answer is one row of chips (Sources, Cites, how many sentences "
+                "your notes back, Why this answer) with the time and model at "
+                "its end; each chip opens its part below, one at a time. "
+                "Why this answer opens the lines that "
                 "made it, each with the seconds since you asked: what the "
                 "question was read as, what was searched and how many notes "
                 "matched, who wrote it (Atlas from your notes with no model, "
@@ -2079,7 +2215,8 @@ MORE_TOPICS.extend(
                 "starting pick per group. A line above the cards shows the "
                 "memory, free memory and graphics card it detected, and Edit "
                 "corrects them when they are wrong; the badges use the "
-                "corrected numbers and the memory free now. One button downloads it or puts it to "
+                "corrected numbers and the memory free now. One button downloads it (it waits until Ollama is "
+                "installed and running; the cards show what fits either way) or puts it to "
                 "use, with progress and Cancel on the card; Remove and Copy name "
                 "are in its menu. Hide models too big for this computer leaves "
                 "out the ones that will not fit. Download another model takes any "
@@ -2128,14 +2265,14 @@ MORE_TOPICS.extend(
             ),
             "body": (
                 "Drag a card to put a list in your own order: Notes, and Library's "
-                "Documents, Boards and maps, Images and Files. Press and hold a card "
-                "still for a moment, then move; a dashed gap shows where it will land, "
-                "and moving at once selects its text instead. A picture needs no wait, "
+                "Documents, Boards and maps, Images and Files. Take the grip at a card's left "
+                "edge, or press and hold the card still, then move; a dashed gap shows where it lands, "
+                "and moving at once selects its text (press those words and hold to retry). "
+                "A picture needs no wait, "
                 "and on a phone you hold a card until it lifts, then move it. The sort then reads "
                 "Custom order. Drop it where it started, or press Escape, and nothing "
-                "changes. The toast has Undo. While a list is in Custom order a line above "
-                "it says how to move a card, and a card's menu leads with Move up and Move "
-                "down. The sort is in the Sort and view button when the row is narrow. "
+                "changes. The toast has Undo. In Custom order a line above the list and the "
+                "card's menu say how to move a card. "
                 "From the keyboard, focus a card and press "
                 "Alt+Up or Alt+Down to move it one place, or choose Move up or Move "
                 "down in its menu (on a phone too). To copy a card, focus it and "
@@ -2144,13 +2281,16 @@ MORE_TOPICS.extend(
                 "open whiteboard, or writes its link in a note or a document, or its "
                 "title in a reminder. You can also carry a card: press and hold, then drag it "
                 "onto the chat box, an open note or document, a whiteboard, the "
-                "reminder box or the tray, which outline when they would take it; "
+                "reminder box or the tray, which outline when they take it; "
                 "rest on a page tab for half a second to open it without "
                 "letting go. Drop a note on a category or, once the space switcher opens, on a "
-                "space, to file it (with Undo). Escape changes nothing. "
+                "space, to file it (with Undo). "
+                "Chat sources and diagrams carry too (a diagram writes ![[Title]]). "
                 "The tray in the status bar holds cards across pages: "
-                "drop them on it or choose Add to tray, then drag them out or click "
-                "one to paste it where you were typing, or attach it to the chat. In a long card menu a row "
+                "drop one on it (held over, it opens) "
+                "or choose Add to tray, then drag cards out or click "
+                "one to paste it where you were typing, or attach it to the chat. "
+                "In a long card menu a row "
                 "with an arrow (Text and description on a picture, Copy and arrange "
                 "on a board) opens a list beside it: rest the pointer on it, click it, "
                 "or press Right arrow or Enter; Left arrow or Escape goes back. On a "
@@ -2173,7 +2313,7 @@ MORE_TOPICS.extend(
                 "Moving and resizing panels. On a computer with a mouse, any panel "
                 "with a title row (the agent, Find anything, Statistics, Settings "
                 "and the rest) can sit where you want it: drag its head to move it "
-                "and drag the small corner mark at its bottom right to resize it. "
+                "and drag any edge or corner to resize it from that side. "
                 "The head always stays on screen, and the content scrolls inside "
                 "when the panel is small. A moved panel drops the dark backdrop so "
                 "you can see what is beside it. Each panel remembers its place and size "
@@ -2221,7 +2361,9 @@ MORE_TOPICS.extend(
                 "no Ctrl or Alt. A toast steps aside, fading and letting clicks "
                 "through, while the focused control is under it. For a screen "
                 "reader every tab has one main landmark, editors and panels have "
-                "names, and resize grips say how wide a panel is. Settings, "
+                "names, and resize grips say how wide a panel is. After Notes or "
+                "the Library loads or you filter it, one polite line says how "
+                "many are shown, and the window title follows the view. Settings, "
                 "Appearance has High contrast, Motion, Interface animations, "
                 "Text size and Zoom."
             ),
@@ -2304,6 +2446,7 @@ MORE_TOPICS.extend(
             "keywords": (
                 "emoji", "emojis", "icon", "icons", "sticker", "stickers", "emoji picker",
                 "icon picker", "insert an emoji", "insert an icon", "drag an icon", ":ph-",
+                "symbol", "symbols", "insert a symbol", "special characters", "greek letters", "arrows",
             ),
             "body": (
                 "Emoji and icons. One picker holds every Phosphor icon the app ships "
@@ -2317,9 +2460,22 @@ MORE_TOPICS.extend(
                 "as a sticker (no card, resize it like any item), an icon as a shape "
                 "you can recolour; dropped on a map topic, either becomes that "
                 "topic's icon. Each is one Undo step. In a note or a document, the "
-                "smiley in the formatting toolbar (the document's Insert menu) or "
+                "smiley in a note's formatting toolbar, the Insert button or "
                 "Emoji or icon in the / menu puts one at the caret: an emoji as "
-                "itself, an icon as :ph-name:, which reading shows as the icon."
+                "itself, an icon as :ph-name:, which reading, Live and an HTML "
+                "export show as the icon (a name the icon font lacks stays text). "
+                "Symbols is a third tab for characters a keyboard lacks: arrows, "
+                "maths, Greek letters, currency, writing marks and key caps, each "
+                "inserted as the character itself. Every panel has its own doors: "
+                "a document's Insert menu (the same list as /) has Emoji or icon, Symbol, Equation and "
+                "Calculator; Ctrl+K lists Emoji, Icons, Symbols and the calculator "
+                "over any text box (with none, a pick is copied); the chords, in "
+                "a document and in every note box, are Ctrl+; for emoji, "
+                "Ctrl+Shift+; for icons, Ctrl+' for symbols, Alt+= for an equation "
+                "and Ctrl+Shift+' for the calculator, all in the document's "
+                "shortcut sheet; the note editor's strip has Emoji or icon, Symbol "
+                "and Equation. Each opens the same movable panel, which comes up "
+                "where it will stay."
             ),
             "badge": {"label": "Library", "tab": "library"},
         },
@@ -2510,16 +2666,17 @@ TOPIC_META: dict[str, dict] = {
     "usage-ledger": {"title": "What you use", "path": "Settings, General, What you use", "target": "usage-box"},
     "statistics": {"title": "Statistics", "path": "Dashboard, Activity heatmap, Statistics"},
     "chat-private": {"title": "Private chat", "path": "Chat, the gear under the message box, Private chat"},
-    "timer": {"title": "Timer and stopwatch", "path": "Command palette, timer"},
+    "timer": {"title": "Clock: timer, stopwatch and alarm", "path": "Command palette, Start a timer; the status bar's timer"},
     "calculator": {"title": "Calculator and equations", "path": "Command palette, Calculator and equations; Alt+= in a text box; /calc in Chat"},
     "manual": {"title": "The manual", "path": "Settings, Help, Open the manual"},
-    "first-steps": {"title": "First steps and the sample notebook", "path": "Dashboard, Get started"},
+    "first-steps": {"title": "First steps and the sample notebook", "path": "Dashboard, First steps"},
     "live-captions": {"title": "How do I get live captions", "path": "Library, Recordings, Captions"},
     "count-words": {"title": "Count words", "path": "Command palette, Count words"},
     "translate-offline": {"title": "Translate this, offline", "path": "Command palette, Translate this"},
     "insert-template": {"title": "Insert a template", "path": "Command palette, insert template"},
     "capture-anywhere": {"title": "Capture from anywhere", "path": "Settings, Keyboard shortcuts, Capture from anywhere", "target": "capture-anywhere-box"},
     "install-app": {"title": "Install as an app", "path": "Settings, About, Install as an app"},
+    "running-copies": {"title": "Running copies", "path": "Settings, About, Running copies", "target": "running-copies-group"},
     "storage": {"title": "Where your data lives", "path": "Settings, Import & export"},
     "websearch": {"title": "Web search", "path": "Settings, Web search"},
     "privacy": {"title": "Privacy", "path": "Settings, Privacy"},
@@ -2543,7 +2700,8 @@ TOPIC_META: dict[str, dict] = {
     "companion-throw": {"title": "Throwing the companion", "path": "Settings, Appearance, Atlas and faces, Corner companion"},
     "companion-travel": {"title": "How the companion moves", "path": "Settings, Appearance, Atlas and faces, Corner companion"},
     "companion-remarks": {"title": "What the companion says", "path": "Settings, Appearance, Atlas and faces, Corner companion"},
-    "desktop-companion": {"title": "The companion on the desktop", "path": "Settings, About, Show the companion on the desktop"},
+    "companion-habits": {"title": "The companion's habits and reactions", "path": "Settings, Appearance, Atlas and faces, Corner companion"},
+    "desktop-companion": {"title": "The companion on the desktop", "path": "On the computer Tessellate runs on, Settings, Appearance, Corner companion, Show the companion on the desktop"},
     "what-is-atlas": {"title": "What Atlas does", "path": "The Chat tab, or Ctrl+Shift+A over any tab"},
     "atlas-look": {"title": "How Atlas looks", "path": "Settings, Appearance, Atlas and faces, Atlas style and Atlas look"},
     "faces": {"title": "Generated faces", "path": "Settings, Appearance, Atlas and faces"},
@@ -2556,6 +2714,7 @@ TOPIC_META: dict[str, dict] = {
     "answer-style": {"title": "Answer style", "path": "Settings, Personas, Answer style"},
     "background-tasks": {"title": "Background tasks", "path": "Settings, Background tasks"},
     "health": {"title": "Health", "path": "Settings, About, Health"},
+    "data-folder-check": {"title": "Deleted files and the data folder check", "path": "Settings, About, Health, Data folder check"},
     "maintenance": {"title": "Maintenance", "path": "Settings, About, Maintenance", "steps": (
         "Open Settings, About and find Maintenance.", "Check this computer shows one row per check, each with what to do.", "Reinstall on next start rebuilds the app's Python environment when the launcher next opens it; your notes are not touched.", "Uninstall… shows the steps and the command, with Export my notes first.")},
     "activity": {"title": "Activity", "path": "The status bar's job slot, or the palette, Activity"},
@@ -2607,27 +2766,29 @@ TOPIC_META: dict[str, dict] = {
     "mind-maps": {"title": "Mind maps", "path": "Library tab, Boards & maps"},
     "whiteboard-controls": {"title": "Whiteboard keys: tools and moving around", "path": "Library tab, Boards & maps"},
     "whiteboard-selection": {"title": "Whiteboard keys: selection, menus and presenting", "path": "Library tab, Boards & maps"},
+    "board-laser": {"title": "The laser pointer while presenting", "path": "A board or map, View, Present, then the pointer button or L"},
     "board-history": {"title": "A board's history, and putting it back", "path": "A board, Board, History…"},
     "board-library": {"title": "The board's library, layers and pages", "path": "A board, the Sidebar button in its top bar"},
     "board-library-saving": {"title": "Saving to the board's library", "path": "A board, Ctrl+Shift+S or right-click, Library"},
     "board-templates": {"title": "Board and map templates", "path": "Library tab, Boards & maps, New's arrow, From a template"},
     "board-format": {"title": "The board's Format panel", "path": "A board, Ctrl+Shift+P or the selection's More menu"},
-    "board-connectors": {"title": "Connector bends, connection points and importing diagrams", "path": "A board, Insert, Mermaid, draw.io or board SVG"},
+    "board-connectors": {"title": "Connector bends, connection points and importing diagrams", "path": "A board, Insert, Diagram, Mermaid, draw.io or board SVG"},
     "board-workshop": {"title": "Voting dots and a workshop timer", "path": "A board, Board menu, Workshop"},
     "board-diagram-tools": {"title": "Diagram tools: zoom to the selection, tidy as a tree, change a shape, link a shape, shrink text to fit", "path": "A board, Arrange, View, or a selection's More"},
-    "board-paste": {"title": "Paste on a board or map: options and Paste special", "path": "A board, Edit, Paste special"},
+    "board-paste": {"title": "Paste on a board or map: options and Paste special", "path": "A board, Edit, Paste in other ways, Paste special"},
     "mind-map-controls": {"title": "Mind map keys and controls", "path": "Library tab, Boards & maps"},
     "documents-controls": {"title": "Document editor keys and controls", "path": "Library tab, Documents"},
     "documents-replace": {"title": "Replace in every document", "path": "Library tab, Documents, document menu"},
     "live-view-marks": {"title": "Markdown marks in Live view", "path": "Library tab, Documents, Edit, Live"},
     "documents-features": {"title": "Document editor features", "path": "Library tab, Documents"},
     "documents-paste": {"title": "Paste options and Paste special", "path": "Library tab, Documents, document menu"},
+    "documents-comments": {"title": "Comments in a document", "path": "Library tab, Documents, sidebar Outline, Comments"},
     "documents-turn-into": {"title": "Turn into: change a block to a heading, list, quote or code", "path": "Library tab, Documents, select text, Turn into"},
     "mind-map-features": {"title": "Mind map features", "path": "Library tab, Boards & maps"},
     "mind-map-import-export": {"title": "Mind map templates, import and export", "path": "Library tab, Boards & maps"},
     "mind-map-study": {"title": "Study the map", "path": "Library tab, Boards & maps, a map's board menu"},
     "mind-map-look": {"title": "How a map's topics look", "path": "Library tab, Boards & maps, a map"},
-    "emoji-and-icons": {"title": "Emoji and icons", "path": "The smiley on a board's or map's tool dock, or its Insert menu; a topic's Text menu"},
+    "emoji-and-icons": {"title": "Emoji, icons and symbols", "path": "A document's Insert menu, Ctrl+K, the note editor strip; the smiley on a board's or map's tool dock; a topic's Text menu"},
     "board-comments": {"title": "Comments on boards and maps", "path": "An item's right-click menu, Comment…"},
     "sticky-notes": {"title": "Sticky notes and text boxes", "path": "A board's tool dock, Add"},
     "callouts": {"title": "Callouts", "path": "Library tab, Documents"},
@@ -2637,6 +2798,7 @@ TOPIC_META: dict[str, dict] = {
     "properties": {"title": "Note properties and types", "path": "a note's ⋯, Properties; or the command palette, Note types"},
     "entities": {"title": "People and things", "path": "Graph tab, an entity; or the command palette, People and things"},
     "chat-controls": {"title": "Chat keys and controls", "path": "Chat tab"},
+    "chat-context": {"title": "When a chat outgrows the window", "path": "Chat tab, the context pill in the header"},
     "wrap-lines": {"title": "Wrap lines in tables and code", "path": "Chat tab, a table or code block"},
     "notes-controls": {"title": "Notes keys, filters and selection", "path": "Notes tab"},
     "library-controls": {"title": "Library controls", "path": "Library tab"},
@@ -2651,6 +2813,7 @@ TOPIC_META: dict[str, dict] = {
     "attachments": {"title": "Pictures and files in a note", "path": "Capture, or a note being edited"},
     "chat-attach-cards": {"title": "Notes and files attached to a chat message", "path": "Chat, above the box and above a sent message"},
     "chat-model-picker": {"title": "Choosing the model for a box", "path": "Chat, Ask and Writing, beside the mode buttons"},
+    "chat-list": {"title": "Finding and sorting your saved chats", "path": "Chat tab, the Chats list"},
     "filing": {"title": "How a note is filed", "path": "A note's card, beside its category"},
     "suggested-tags": {"title": "Suggested tags", "path": "A note's card"},
     "tag-manager": {"title": "Managing tags", "path": "Notes tab, the ... menu, Manage tags"},
@@ -2667,7 +2830,7 @@ TOPIC_META: dict[str, dict] = {
     "follow-up-trail": {"title": "Where a follow-up came from", "path": "Chat tab, or Ask in the Notes tab, under an answer"},
     "why-this-answer": {"title": "Why this answer", "path": "Chat tab, the popup agent, or Ask in the Notes tab, under an answer"},
     "line-verdicts": {"title": "Wrong fact and Pin as true", "path": "Ask or Chat, a numbered mark in an answer"},
-    "answer-pictures": {"title": "Pictures in answers", "path": "Chat tab, or Ask in the Notes tab, Grounded in"},
+    "answer-pictures": {"title": "Pictures in answers", "path": "Chat tab, or Ask in the Notes tab, Cites under the answer"},
     "library-skills": {"title": "AI skills in the Library", "path": "Library tab, AI skills"},
     "object-move": {"title": "Moving, copying and carrying cards", "path": "Notes tab, or Library tab, drag a card or press Ctrl+C; the tray in the status bar"},
     "ocr-engine": {"title": "Tesseract and the reading language", "path": "The OCR workspace, the reader button"},
@@ -2687,7 +2850,7 @@ TOPIC_META: dict[str, dict] = {
 HELP_GROUPS: list[tuple[str, tuple[str, ...]]] = [
     ("Getting started", (
         "tabs-overview", "phone-nav", "first-steps", "tour", "guide", "manual", "hidden-features", "shortcuts",
-        "command-palette", "find-anything", "find-a-place", "search", "addresses", "settings-overview", "settings-reset", "install-app", "name",
+        "command-palette", "find-anything", "find-a-place", "search", "addresses", "settings-overview", "settings-reset", "install-app", "running-copies", "name",
     )),
     ("Writing notes", (
         "capture", "quick-note", "quick-add", "editor-offers", "autocorrect", "share-note", "capture-anywhere", "note-outbox", "attachments", "quick-sketch", "notes-controls",
@@ -2698,15 +2861,15 @@ HELP_GROUPS: list[tuple[str, tuple[str, ...]]] = [
         "tags-categories", "filing", "suggested-tags", "tag-manager", "manage-categories", "tidy",
     )),
     ("Asking Atlas", (
-        "ask-chat", "answers-from-notes", "chat-controls", "chat-private", "chat-attach-cards", "chat-model-picker", "wrap-lines", "slash-commands", "chat-acts", "tasks", "nicknames", "follow-up-trail", "why-this-answer", "line-verdicts", "answer-pictures", "time-and-recency", "notebook-questions", "studyhelp",
+        "ask-chat", "answers-from-notes", "chat-controls", "chat-context", "chat-private", "chat-attach-cards", "chat-model-picker", "chat-list", "wrap-lines", "slash-commands", "chat-acts", "tasks", "nicknames", "follow-up-trail", "why-this-answer", "line-verdicts", "answer-pictures", "time-and-recency", "notebook-questions", "studyhelp",
         "contradictions", "skills", "personas", "answer-style", "memory", "learned", "open-questions",
     )),
     ("Documents and code", (
-        "documents", "documents-controls", "documents-replace", "live-view-marks", "documents-features", "documents-paste", "documents-turn-into", "callouts", "equation-editor", "document-history", "writing-checks", "code-files", "code-completions", "code-run",
+        "documents", "documents-controls", "diagram-builder", "diagram-blocks", "diagram-reading", "diagram-kinds", "diagram-elsewhere", "documents-replace", "live-view-marks", "documents-features", "documents-paste", "documents-comments", "documents-turn-into", "callouts", "equation-editor", "document-history", "writing-checks", "code-files", "code-completions", "code-run",
         "debugger", "code-panel", "margin-reader",
     )),
     ("Boards and maps", (
-        "whiteboard", "whiteboard-controls", "whiteboard-selection", "board-history", "board-library", "board-library-saving", "board-templates", "board-format", "board-connectors", "board-diagram-tools", "board-workshop", "board-paste", "make-a-diagram", "mind-maps", "mind-map-controls", "mind-map-features", "mind-map-import-export", "mind-map-study", "mind-map-look", "emoji-and-icons",
+        "whiteboard", "whiteboard-controls", "whiteboard-selection", "board-laser", "board-history", "board-library", "board-library-saving", "board-templates", "board-format", "board-connectors", "board-diagram-tools", "board-workshop", "board-paste", "make-a-diagram", "mind-maps", "mind-map-controls", "mind-map-features", "mind-map-import-export", "mind-map-study", "mind-map-look", "emoji-and-icons",
         "board-comments", "sticky-notes",
         "mind-map-structure", "mind-map-lines", "mind-map-callouts", "board-current-layer", "board-keyboard-create", "board-hand-drawn", "board-tables", "board-mermaid", "board-edit-data", "board-colours",
     )),
@@ -2723,14 +2886,14 @@ HELP_GROUPS: list[tuple[str, tuple[str, ...]]] = [
     )),
     ("Look and feel", (
         "appearance", "appearance-panel", "themes", "simple-mode", "accessibility", "movable-panels", "performance", "background-art",
-        "statusbar", "companion", "companion-travel", "companion-remarks", "companion-throw", "atlas-look", "faces",
+        "statusbar", "companion", "companion-travel", "companion-remarks", "companion-habits", "companion-throw", "atlas-look", "faces",
     )),
     ("Models and the AI", (
         "models", "what-is-atlas", "model-downloads", "model-bench", "tools-setting", "autonomous", "websearch",
         "search-index", "search-engine-moved", "packages",
     )),
     ("Privacy and your data", (
-        "privacy", "security", "encryption", "lock", "phone", "lan-networks", "two-computers", "delete-data", "storage", "import-export", "import-apps", "usage-ledger", "background-tasks", "activity", "health",
+        "privacy", "security", "encryption", "lock", "phone", "lan-networks", "two-computers", "delete-data", "storage", "import-export", "import-apps", "usage-ledger", "background-tasks", "activity", "health", "data-folder-check",
     )),
     ("Settings and support", (
         "profile", "general-settings", "desktop-companion", "updates", "maintenance", "logs", "troubleshooting", "credits",
@@ -3016,19 +3179,159 @@ MORE_TOPICS.extend([
             "diagram fill", "diagram opacity", "solid diagram boxes",
         ),
         "body": (
-            "A live Mermaid diagram on a board: Insert, Mermaid diagram... opens the "
-            "source with a preview; Add to board places it at its drawing's shape. "
+            "A live Mermaid diagram on a board: Insert, Diagram, Diagram builder... opens the "
+            "block editor on a sample; Done places it at its drawing's shape. "
             "It is any Mermaid diagram (flowchart, sequence, class, state, Gantt, pie "
             "and the rest), drawn as a note draws it and redrawn with the theme. "
             "Select it and the Format panel's Style tab sets its Fill colour, Fill opacity "
             "and Line opacity (0, 25, 50, 75, 100; 100 is a fully solid fill), and the boxes redraw. "
-            "Double-click it to change the source; a mistake shows the reason in the "
-            "box instead of a picture. Turn into shapes, in the same window, replaces "
+            "Double-click it to change it in the block editor (Source is one button away); "
+            "a mistake shows the reason in the "
+            "box instead of a picture. Turn into shapes, in the editor's ... menu, replaces "
             "a flowchart, state, class or sequence diagram with shapes and connectors "
-            "you can move one by one (Ctrl+Z puts the diagram back). Insert, Mermaid, "
+            "you can move one by one (Ctrl+Z puts the diagram back). Insert, Diagram, Mermaid, "
             "draw.io or board SVG brings a diagram in as shapes straight away."
         ),
         "badge": {"label": "Library", "tab": "library"},
+    },
+    {
+        "id": "diagram-builder",
+        "keywords": (
+            "diagram builder", "where is the diagram builder", "new diagram", "make a diagram", "mermaid",
+            "mmd", "flowchart", "insert a diagram", "diagram in a note", "diagram on a board", "mind map diagram",
+        ),
+        "body": (
+            "The Diagram builder makes a flowchart, mind map, timeline or sequence diagram from "
+            "blocks. Mermaid is only its file format (.mmd). Every door is the same row, "
+            "Diagram builder, with the same icon; in Documents and the Library's document list it is the flow arrow button beside New. Ctrl+K, Diagram builder, and Find anything, Tools "
+            "and features and Quick access list it too. Over a note, a document or a Chat box, "
+            "Insert (or / then diagram) opens the builder and Done saves a diagram file and writes a link to it, "
+            "[[Title]] after a !, which draws the diagram. Over a board or a mind map, Insert, Diagram, Diagram builder adds a diagram object "
+            "to double-click later. Anywhere else, and in the Library's Create, New, Diagram, it "
+            "opens the builder empty, and Done saves it as a new diagram file; Open an existing diagram there lists yours. Cancel changes nothing. "
+            "On a flowchart, the picture outlines the block you point at and the ones picked. "
+            "You can drag a shape from the Add strip onto the picture (onto a block to add it after that block and connect them), "
+            "drag a block on the picture to move it (a caption says where it lands), and hold Shift and drag on empty space to pick the blocks you touch. "
+            "Drop onto a group's box to add or move into it. Pick or point at a block and its four round handles show: drag the round handle on any side to another block "
+            "or a group to connect them, or to empty space for a new connected block (press the handle, then click, if you cannot drag; Escape cancels). "
+            "Double-click a block, an arrow or a group's title to rename it where it sits. Right-click a block or an arrow (long press on a phone) for its menu; click an arrow to pick it, then Enter changes its words and Delete removes it, and drag a dot at either end of it onto another block to move that end there (Escape cancels). From the keyboard, Enter on a connector row opens the same menu."
+        ),
+        "badge": {"label": "Documents", "tab": "documents"},
+    },
+    {
+        "id": "diagram-blocks",
+        "keywords": (
+            "diagram blocks", "edit a diagram", "mermaid blocks", "blocks view", "drag a diagram",
+            "join two blocks", "nest a block", "diagram without typing", "flowchart blocks",
+            "diagram keyboard", "mmd", "diagram file",
+        ),
+        "body": (
+            "A diagram is a Mermaid document. Canvas opens first: the "
+            "blocks on the left, the picture beside them (above on a "
+            "phone). Blocks gives the list room; "
+            "Source and Split show text; Ctrl+Z undoes "
+            "either. Add shows the last shape you used: press it to add one, or press its arrow "
+            "for every shape and its key. Connect to... on a block draws an "
+            "arrow from it: pick a block, or type a new name to make it; a decision's arrows ask for yes or no. Drag a block: "
+            "another's top or bottom puts it before or after, its middle joins "
+            "them, a group's body takes it inside. A connector shows under "
+            "the block it leaves as Start to Next and its label. The shape swatch "
+            "picks it. A divider sizes the blocks and the picture (drag, or "
+            "arrows; Shift for more). Direction (a menu) turns the flow. An empty one lists "
+            "three steps: Add a shape, Name it, Connect it, ticked as you go, or Start from an example. "
+            "The corner bar zooms (Zoom in, Zoom out, Fit), as do the wheel, Ctrl+wheel and a pinch; "
+            "its last button reads the zoom now, and 100% is the drawing's own size; arrow keys pan. "
+            "Shift+click picks a range, Ctrl+click adds one; a bar offers Delete, "
+            "Duplicate, Box them, Done, and any picked grip moves all. "
+            "A block's ... menu (long press on a phone) does the same. "
+            "Keys on "
+            "a block or the picture: arrows walk, Enter renames, N adds a Box, 1 to 7 the other shapes, Shift+N the last one, G adds a group, C or J joins, "
+            "K colours, ? lists keys, Delete removes, Alt+Up and Alt+Down reorder, Alt+Right nests, Alt+Left lifts out. "
+            "Suggest (in the ... menu on a phone) starts a diagram: "
+            "Templates (then Use this template), "
+            "From my notes "
+            "and Describe it (a model; dimmed with none). On a blank diagram a suggestion becomes "
+            "the diagram; otherwise blocks arrive as ghosts: "
+            "Tab takes one, Shift+Tab lets it go, Enter adds the ones taken and "
+            "Escape drops them all, and Ctrl+Z undoes the whole addition. "
+            "Other kinds: next topic."
+        ),
+        "badge": {"label": "Documents", "tab": "documents"},
+    },
+    {
+        "id": "diagram-reading",
+        "keywords": (
+            "diagram list order", "flow order", "diagram indent", "connector rows", "org chart blocks",
+            "diagram too small", "turn it sideways", "diagram direction", "diagram fit", "blocks list phone",
+        ),
+        "body": (
+            "Reading a diagram. The list's first line says what it is for (Your blocks, in the order the chart flows) and, under the pointer or in focus, what that control does; its foot has Add block and Connect. "
+            "The blocks list is drawn in flow order:a block sits under the one that points at it, "
+            "indented where it branches (a straight run of steps stays flush), and a block made by Connect to... lands under its siblings, so an org chart reads like the chart. "
+            "The printed source keeps its own order, and Alt+Up and Alt+Down move a block among its siblings in the source, and say so when the list would not change; drag a grip to move it in the list. "
+            "A block's arrows share one line under it, each as an arrow to the block it reaches and its words; press one for its menu. The menu changes the line (an arrow, a line, dotted, thick, or Both ways with a head at each end) and has Colour…, which draws that arrow in one of twelve hues. "
+            "With two or more blocks picked, the bar also has Colour (K) and Connect, which draws an arrow from the first picked to the second. "
+            "Fit stops at readable text (11 px) and the picture scrolls past it. A tall chart in a wide pane offers Turn it sideways once; Direction is a menu of Down, Right, Up and Left, and Shift turns it back one step. "
+            "On a phone, once there is an arrow the picture takes the page and the Blocks list button opens the blocks as a sheet; Connect to... then puts the cursor in the search."
+        ),
+        "badge": {"label": "Documents", "tab": "documents"},
+    },
+    {
+        "id": "diagram-kinds",
+        "keywords": (
+            "mind map blocks", "timeline blocks", "sequence diagram blocks", "mermaid mind map",
+            "mermaid timeline", "mermaid sequence", "sequence diagram", "diagram kinds",
+        ),
+        "body": (
+            "The Flowchart, Sequence, Mind map and Timeline buttons above the toolbar start a new diagram "
+            "of that kind (Ctrl+Z brings the old one back). A block's ... menu has Box this block, a group round it; "
+            "the bar over picked blocks has Box them. "
+            "Blocks draw flowcharts, mind maps, timelines and sequence diagrams: the first word of "
+            "the source says which, and the bar offers that kind's blocks. A mind map has a branch "
+            "and a leaf (B and N) under its centre. A timeline has a section, a period and an event "
+            "(S, P and E), the events inside their period. A sequence diagram has an actor, "
+            "participant, message, reply, async, lost, note, loop, alt, opt, parallel, critical and break (A, P, M, R, Y, X, T, "
+            "L, G, O, U, C and B); the first message adds the two participants it needs, a reply runs back "
+            "between the same two, and an alt starts with its else and a parallel box with its and. The pane works as a flowchart's "
+            "does: drag a block to move or nest it, double-click a name, the block's ... menu, "
+            "arrows, Enter, Delete, Alt+Up, Alt+Down, Alt+Right and Alt+Left, Ctrl+Z. A line the "
+            "blocks do not show stays where it was, and a diagram they cannot read (a second mind "
+            "map centre, a sequence box, more than 120 blocks) opens in Source with its picture. "
+            "Suggest works in each: Templates include a brainstorm, a project plan, a sign in and a "
+            "request and reply. A suggestion of the diagram's own kind arrives as ghosts to take; "
+            "one of another kind says so and is left out when the diagram has blocks, and replaces "
+            "a blank one."
+        ),
+        "badge": {"label": "Documents", "tab": "documents"},
+    },
+    {
+        "id": "diagram-elsewhere",
+        "keywords": (
+            "edit as blocks", "diagram in a document", "mermaid figure", "open as a diagram",
+            "diagram in chat", "embed a diagram", "export a diagram", "diagram png", "diagram svg",
+            "copy as mermaid", "diagram on a board", "zoom a diagram", "add a block on a phone",
+        ),
+        "body": (
+            "The block editor opens wherever a Mermaid diagram is drawn. In a document's Live view, "
+            "a diagram has an Edit as blocks button on its corner (always there on a touch screen): "
+            "it opens the editor in a window you can move and size, and Done puts the changes back "
+            "between that diagram's own fence marks and nothing else. Cancel, Escape and the X "
+            "ask before they drop changes. On a board, double-click a diagram object. In Chat or Ask, "
+            "a diagram in a reply has Open as a diagram under it, which makes a diagram document of it. "
+            "Type ![[name]] in a note or a document to draw a diagram document's picture there, with a "
+            "line that opens it. The ... menu in the editor's bar has Save as SVG, Save as PNG "
+            "(twice its size), Copy as picture, Copy as Mermaid and Copy as SVG. A diagram's card in the "
+            "Library has the same pictures in its menu, and its page has Download as .png and Copy as picture "
+            "in the ... menu; Download .mmd saves the text. Source, beside Cancel, shows "
+            "the text with the picture; a diagram the blocks cannot draw, or one over 120 blocks, opens there. "
+            "On a phone the shapes are one Add button that opens a sheet of them; pinch the picture to "
+            "zoom, drag it to move, and double tap to fit it again. Save to Library, in the ... menu "
+            "and on a diagram's corner beside Edit as blocks, keeps a copy as a diagram in the Library; "
+            "a notice then offers to replace the fence with a link, or to link a board's diagram to it, "
+            "and nothing changes until you press that. Attach a Library diagram to Chat and the model "
+            "reads its source; its card opens the diagram."
+        ),
+        "badge": {"label": "Documents", "tab": "documents"},
     },
     {
         "id": "board-edit-data",
@@ -3053,7 +3356,7 @@ MORE_TOPICS.extend([
     {
         "id": "board-colours",
         "keywords": (
-            "border colour", "border color", "fill colour", "fill color", "same colour",
+            "opacity", "transparency", "hex", "rgb", "custom colour", "border colour", "border color", "fill colour", "fill color", "same colour",
             "same colour as the fill", "match the border", "swap colours", "recent colours",
             "eyedropper", "eye dropper", "pick a colour from the board", "colour picker",
             "change the colour of a shape", "outline colour",
@@ -3064,8 +3367,14 @@ MORE_TOPICS.extend([
             "For a shape it names both, Fill and Border, with a dot of each: press "
             "the other to set it instead. Same as fill (or Same as border) makes "
             "them one colour and Swap trades them, each one Undo step. Recent "
-            "holds your last eight picks on this device, above the board's colours; "
-            "More colours opens any colour by number. Pick from the board is the "
+            "holds your last eight picks on this device, above the board's colours. "
+            "Custom takes a colour typed or pasted: a hex box (#rgb, #rrggbb, "
+            "#rrggbbaa, rgb() or hsl()) and Red, Green and Blue boxes. Opacity, "
+            "a slider and a number, sets how solid that colour is: the fill's for "
+            "a Fill, the line's for a Border or line, the text's for text. "
+            "Filled off keeps the fill's colour and Filled on brings it back; "
+            "From screen (where the browser has it) takes any colour on the screen. "
+            "Pick from the board is the "
             "eyedropper: the next click takes a colour instead of doing what it "
             "would, from a shape (its fill, or its border with Alt or Take a shape's border), "
             "a line, a text box or any colour button, and Escape stops it. A fill "
@@ -3078,7 +3387,12 @@ TOPIC_META.update({
     "board-edit-data": {"title": "Edit data on a board item", "path": "A board's Format panel, Data"},
     "board-colours": {"title": "Fill, border and recent colours on a board", "path": "A shape's bar, Fill or Border"},
     "board-tables": {"title": "Tables on a board", "path": "A board's Insert menu, Table"},
-    "board-mermaid": {"title": "Live Mermaid diagrams on a board", "path": "A board's Insert menu, Mermaid diagram..."},
+    "board-mermaid": {"title": "Live Mermaid diagrams on a board", "path": "A board's Insert menu, Diagram, Diagram builder..."},
+    "diagram-builder": {"title": "The Diagram builder", "path": "Ctrl+K, Diagram builder; Insert in a note, a document or a board; Library, Create, New diagram"},
+    "diagram-blocks": {"title": "Editing a diagram as blocks", "path": "A diagram document, Blocks"},
+    "diagram-reading": {"title": "Reading a diagram: list order, fit and direction", "path": "A diagram document, Blocks"},
+    "diagram-kinds": {"title": "Mind maps, timelines and sequence diagrams as blocks", "path": "A diagram document, Blocks"},
+    "diagram-elsewhere": {"title": "Editing a diagram in a document, on a board or from a reply, and saving its picture", "path": "A diagram in Live view, Edit as blocks"},
     "board-hand-drawn": {"title": "The hand-drawn look", "path": "A board's View menu, Hand-drawn look"},
     "board-current-layer": {"title": "The current layer", "path": "A board's sidebar, Layers"},
     "board-keyboard-create": {"title": "Making and writing without a mouse", "path": "A board, Keys and controls"},
@@ -3154,7 +3468,9 @@ MORE_TOPICS.append({
     ),
     "body": (
         "Autocorrect fixes a clear typo, such as teh, as you finish the "
-        "word, in the note boxes, the chat and Ask composers, the reminder boxes and the titles. "
+        "word, and puts back a missing apostrophe (havent, ive, dont, youre and the rest "
+        "become haven't, I've, don't, you're; ill, id, cant and wont only where "
+        "the words around them say so), in the note boxes, the chat and Ask composers, the reminder boxes and the titles. "
         "The corrected word is underlined for five seconds: rest the pointer on "
         "it or click it for a small menu to keep it, put back what you typed, "
         "or edit the word (a document gets the same underline), "
@@ -3282,6 +3598,7 @@ MORE_TOPICS.append({
         "equation", "equations", "equation editor", "write an equation",
         "maths", "math", "formula", "fraction", "square root", "greek letter",
         "symbol", "integral", "matrix", "latex", "tex", "alt+=", "alt equals",
+        "common formulas", "quadratic formula", "arrows", "relations", "sets and logic",
     ),
     "body": (
         "The equation editor is the Equation tab of Calculator and equations "
@@ -3289,22 +3606,27 @@ MORE_TOPICS.append({
         "board's text or the Chat box, from a document's Insert menu, or with "
         "Alt+= there and in the Ask box (the same as Word's Alt+=), each over "
         "the box you were in; Ctrl+K, Calculator and equations opens the same "
-        "dialog on Work out, and the shortcuts list has it under Tools. The "
+        "dialog on Sum, and the shortcuts list has it under Tools. The "
         "equation is drawn as it will read, with "
         "dotted boxes where things go: click a box to fill it, Tab goes to the "
-        "next one and the arrows move through the equation. Type it plainly: "
+        "next one and the arrows move through the equation. Backspace in an "
+        "empty box selects its whole structure, and a second removes it. Type it plainly: "
         "a/b makes a fraction, ^ and _ a power or a subscript, and LaTeX such "
         "as \\frac or \\alpha turns into the symbol as you type it. The "
         "palette inserts the structures Word offers (fraction, script, "
         "radical, integral, large operator, bracket, function, accent, limit "
-        "and log, operator, matrix) and Greek, operators, relations, arrows, "
-        "sets and calculus symbols; a selection goes into the first box. The "
+        "and log, operator, matrix), braces and labelled arrows, common "
+        "formulas and symbols: Greek in "
+        "lower and upper case, operators, relations, arrows, sets and logic, "
+        "calculus and function names; a selection goes into the first box. The "
         "LaTeX button shows the same equation as raw TeX to edit directly, and "
-        "the two stay in step. A drawn equation in a note or a document is "
+        "the two stay in step. A row of groups above the palette jumps to one "
+        "and marks the one in view; Pin, then a tile, makes it a favourite at "
+        "the top, and Recent the last ones. A drawn equation in a note or a document is "
         "edited where it stands: click it, Enter or a click outside keeps the "
         "change as one undo step, Escape leaves it as it was. Inline sits in "
         "the sentence, Display on its own line; Ctrl+Enter inserts, and with no "
-        "box behind the dialog the button copies the equation instead. An "
+        "box behind the dialog Insert is off and Copy copies the equation. An "
         "equation made of numbers shows its value under the field. It writes "
         "TeX between dollar signs, so the note stays plain text. On a touch "
         "screen the field offers its own keyboard."

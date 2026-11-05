@@ -529,6 +529,18 @@ function wireSettingsFile() {
 //: Settings, Appearance, Reveal replies (INBOX 1300 C28: `replyReveal`,
 //: reply-kit.js) and Panels open where you left them (INBOX 1434:
 //: panel-movable.js): kept on this device, like Interface animations.
+//: Settings, Account, "Show timers and reminders on the lock screen" (INBOX 1553): off until turned
+//: on, on this device (utility-tools.js lists them on the lock card). The key goes when it is off.
+{
+  const box = $("lock-notices-toggle");
+  box.checked = prefs.get("lock-notices", null) === "on";
+  box.addEventListener("change", () => {
+    if (box.checked) prefs.set("lock-notices", "on");
+    else prefs.remove("lock-notices");
+    ensureModule("utilities").then(() => lockNotices.refresh());
+  });
+}
+
 for (const [id, key] of [["reply-motion-toggle", "reply-motion"], ["panel-restore-toggle", "panel-pos"], ["panel-push-toggle", "panel-push"]]) {
   const box = $(id);
   if (!box) continue;

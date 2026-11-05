@@ -1,0 +1,82 @@
+// diagram-touch.js: the block pane on a phone (1546 P2 leftovers). Lazy: `LAZY_MODULES.diagramTouch`,
+// asked for by diagram-builder.js's `show` on a narrow window or a touch screen, so a desktop never loads it.
+//
+// One thing: the palette becomes one "Add" button that opens a sheet of the shapes (the tiles stay in the
+// page, hidden, and the sheet presses them, so there is one way a block is added). The picture's pinch, pan
+// and fit are diagram-view.js's now (1614), for every window.
+(() => {
+  //: The sheet: the Add library's groups (diagram-library.js), a heading each, then a row per tile with the tile's own glyph,
+  //: its name and its hint (1594). A tile is pressed, so its handler adds the block.
+  function addSheet(root, opener) {
+    const groups = [...root.querySelectorAll(".dgm-palette .dgm-lib-group")];
+    openSheet({
+      label: "Add a block",
+      name: "diagram-add",
+      returnFocus: opener,
+      build: (card, close) => {
+        const list = document.createElement("div");
+        list.className = "sheet-list dgm-add-list";
+        for (const group of groups) {
+          const head = document.createElement("p");
+          head.className = "dgm-add-head muted";
+          head.textContent = group.querySelector(".dgm-lib-head").textContent;
+          list.append(head);
+          for (const tile of group.querySelectorAll(".dgm-tile")) {
+            const row = sheetRow("ph ph-square", tile.querySelector(".dgm-tile-name").textContent, () => {
+              close();
+              tile.click();
+            });
+            //: Every glyph in a slot of one width, so the names start at the same x (R6.11: 57, 54 and 56 px before).
+            const slot = document.createElement("span");
+            slot.className = "dgm-add-glyph";
+            slot.append(tile.firstElementChild.cloneNode(true));
+            row.firstElementChild.replaceWith(slot);
+            const hint = document.createElement("small");
+            hint.className = "dgm-add-hint muted";
+            hint.textContent = tile.dataset.hint;
+            row.lastElementChild.append(hint);
+            list.append(row);
+          }
+        }
+        card.append(list);
+      },
+    });
+  }
+
+  //: The blocks list on a phone (1679, slice 11): the pane moves into a sheet and home again, so the picture keeps the page once the diagram has an arrow.
+  function listSheet(S, opener) {
+    const home = S.pane.parentElement;
+    const before = S.pane.nextSibling;
+    openSheet({
+      label: "Blocks",
+      name: "diagram-blocks",
+      returnFocus: opener,
+      build: (card) => card.append(S.pane),
+      onClose: () => home.insertBefore(S.pane, before),
+    });
+  }
+
+  //: Wires one pane, once. `root` is `.dgm`, `fig` the picture; the kinds' panes have the same two.
+  function wire(S) {
+    if (!S?.root || S.root.dataset.touch) return;
+    S.root.dataset.touch = "1";
+    S.root.classList.add("dgm-compact");
+    const actions = S.root.querySelector(".dgm-dock .dock-actions");
+    //: The flowchart's toolbar has its own Add split (diagram-bar.js); the kinds' palettes still open this sheet.
+    if (S.steps && S.pane && actions && matchMedia("(max-width: 599.98px)").matches) {
+      const list = smallButton("ph:list-bullets", "Blocks list", () => listSheet(S, list));
+      list.classList.add("dgm-listbtn");
+      list.setAttribute("aria-haspopup", "dialog");
+      actions.prepend(list);
+      S.root.classList.add("dgm-phonelist");
+    }
+    if (actions && !S.root.querySelector(".dgm-addsplit")) {
+      const add = smallButton("ph:plus Add", "Choose a shape to add as a block", () => addSheet(S.root, add), false);
+      add.classList.add("dgm-add");
+      add.setAttribute("aria-haspopup", "dialog");
+      actions.prepend(add);
+    }
+  }
+
+  diagramModel.touch = { wire };
+})();

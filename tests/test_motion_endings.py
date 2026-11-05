@@ -38,8 +38,14 @@ FALLBACK = re.compile(r"setTimeout\(|getAnimations\(|reducedMotionWanted\(|prefe
 
 
 def _enclosing_function(text: str, at: int) -> str:
-    start = max(text.rfind("\nfunction ", 0, at), text.rfind("\nasync function ", 0, at))
-    end = text.find("\n}\n", at)
+    #: A file wrapped in an IIFE indents its functions; the nearest function
+    #: start at any indent, closed by a brace at that same indent (with only
+    #: column-0 starts, a wrapped file read as an empty region and failed).
+    starts = list(re.finditer(r"\n([ \t]*)(?:async )?function ", text[:at]))
+    if not starts:
+        return text[: text.find("\n}\n", at) if text.find("\n}\n", at) != -1 else len(text)]
+    start, indent = starts[-1].start(), starts[-1].group(1)
+    end = text.find("\n" + indent + "}\n", at)
     return text[start : end if end != -1 else len(text)]
 
 

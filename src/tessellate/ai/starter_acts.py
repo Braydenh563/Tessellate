@@ -191,7 +191,7 @@ def _open_note(session: Session, *, note_ids: list[int], document_ids: list[int]
     if entry.is_board:
         return _open_board(session, board_ids=[entry.id])
     text = entry.content or ""
-    title = realise.cut_title(day_digest._first_line(text), 80) or f"Note #{entry.id}"
+    title = realise.cut_title(day_digest._first_line(text), 80) or "this note"
     return _outline_answer(title, text), None
 
 
@@ -221,7 +221,7 @@ def _open_links(session: Session, *, note_ids: list[int], **_: object) -> tuple[
     title = note_title(entry.content, size=48)
     if not others:
         return f"Nothing is linked to “{title}” yet.", None
-    rows = [f"#{other.id} {note_title(other.content, size=48)}" for other in others[:12]]
+    rows = [commands._item(other) for other in others[:12]]
     return _list_answer(f"{realise.count_noun(len(others), 'note').capitalize()} linked to “{title}”:", rows), None
 
 
@@ -252,7 +252,7 @@ def _tag_untagged(session: Session, **_: object) -> tuple[str, dict | None]:
             unsure += 1
             continue
         steps.append({"name": "tag_note", "arguments": {"note_id": entry.id, "add": tags}})
-        items.append(f"#{entry.id} {note_title(entry.content, size=48)}: {', '.join(tags)}")
+        items.append(f"{commands._item(entry)}: {', '.join(tags)}")
         if len(steps) >= TAG_NOTES:
             break
     left = f" {realise.count_noun(unsure, 'note')} had no word that matches a tag you use, so they are left as they are." if unsure else ""
@@ -273,7 +273,7 @@ def _tag_open(session: Session, *, note_ids: list[int], **_: object) -> tuple[st
         return f"No tag you already use fits “{title}”; it keeps {', '.join(have) or 'no tags'}.", None
     label = f"Tag “{commands._clip(title, 60)}” {', '.join(tags)}"
     steps = [{"name": "tag_note", "arguments": {"note_id": entry.id, "add": tags}}]
-    return f"{label}. Confirm to do it.", commands._card(label, steps, items=[f"#{entry.id} {title}"])
+    return f"{label}. Confirm to do it.", commands._card(label, steps, items=[title])
 
 
 def _save_answer(session: Session, *, history: list[dict], **_: object) -> tuple[str, dict | None]:
@@ -331,7 +331,7 @@ def _link_related(session: Session, **_: object) -> tuple[str, dict | None]:
     if not chosen:
         return "No two unlinked notes share enough words to link them.", None
     steps = [{"name": "link_notes", "arguments": {"note_id": a.id, "other_note_id": b.id}} for _, a, b in chosen]
-    items = [f"#{a.id} {note_title(a.content, size=48)} and #{b.id} {note_title(b.content, size=48)}" for _, a, b in chosen]
+    items = [f"{commands._item(a)} and {commands._item(b)}" for _, a, b in chosen]
     label = f"Link {realise.count_noun(len(chosen), 'pair')} of notes that share the most words"
     return commands._confirm(label), commands._card(label, steps, items=items)
 
@@ -358,7 +358,7 @@ def _append_today(session: Session, *, slots: dict, now: datetime, **_: object) 
     else:
         steps = [{"name": "edit_note", "arguments": {"note_id": entry.id, "content": (entry.content or "").rstrip() + "\n\n" + words}}]
         label = f"Add “{said}” to the end of today's note"
-        items = [f"#{entry.id} {note_title(entry.content, size=48)}"]
+        items = [commands._item(entry)]
     return commands._confirm(label), commands._card(label, steps, items=items)
 
 
@@ -376,6 +376,21 @@ _HANDLERS = {
     "link_related": _link_related,
     "append_today": _append_today,
 }
+
+#: The Why trail's line for a starter the app reads itself: the step that found
+#: the notes, in place of a search.
+_STEPS = {
+    "changed": "Looked at when your notes were written and edited, since this time yesterday.",
+    "loose_ends": "Read your reminders, open questions and quiet topics.",
+    "due": "Read your reminders due today and overdue.",
+}
+
+
+def step(kind: str) -> str:
+    """The Why trail's line for a starter. A starter's figures are the app's own count, so
+    the turn also skips the number check (`prepared["app_first"]`; INBOX 1569)."""
+    return _STEPS.get(kind, "Read what this needs from your notes and reminders.")
+
 
 #: For the tests and the Guide: what each starter reading is, in a few words.
 KINDS = tuple(_HANDLERS)

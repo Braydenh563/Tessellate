@@ -55,7 +55,152 @@ function meetingGlance(entry) {
   return rows.length ? rows : [{ label: "", text: "Nothing written yet." }];
 }
 
+//: **Copy a note's text** (INBOX 1525 review). A clipped list row holds 300 characters, so the whole text is read first,
+//: and the clipboard takes a promise of it inside the press itself (a write after an await loses the press in Safari).
+//: A read that fails says why; with no `ClipboardItem` the text is read, then copied by `copyToClipboard`.
+entryItem.copyText = async (entry) => {
+  const clipped = entry.content_truncated;
+  const text = clipped ? fullEntry(entry.id).then((whole) => whole.content) : entry.content;
+  try {
+    if (!clipped || typeof ClipboardItem === "undefined" || !navigator.clipboard?.write) throw 0;
+    const blob = text.then((t) => new Blob([t], { type: "text/plain" }));
+    blob.catch(() => {});
+    await navigator.clipboard.write([new ClipboardItem({ "text/plain": blob })]);
+    toast("Note copied.");
+  } catch {
+    try {
+      if (await copyToClipboard(await text)) toast("Note copied.");
+    } catch (error) {
+      toast(error.message, true);
+    }
+  }
+};
+
+//: Moved here from lightbox.js (unslop 1103, boot gzip): its one caller is below, in the lazy note card.
+// The inline result of a re-evaluate: new confidence, plus tag and link
+// suggestions the user applies with a click (nothing is applied on its own).
+function renderInlineAction(entry) {
+  const wrap = document.createElement("div");
+  wrap.className = "inline-action";
+
+  if (inlineAction.kind === "reevaluate") {
+    renderReevaluateResult(entry, wrap);
+    return wrap;
+  }
+
+  if (inlineAction.kind === "document") {
+    renderAttachToDocument(entry, wrap);
+    return wrap;
+  }
+
+  if (inlineAction.kind === "board") {
+    renderAttachToBoard(entry, wrap);
+    return wrap;
+  }
+
+  if (inlineAction.kind === "remind") {
+    const shown = stripFrontmatter(entry.content).trim();
+    const preview = shown.length > 40 ? shown.slice(0, 39) + "…" : shown;
+    const textInput = document.createElement("input");
+    textInput.type = "text";
+    textInput.value = `Follow up: ${preview}`;
+    const dueInput = document.createElement("input");
+    dueInput.type = "datetime-local";
+    dueInput.value = defaultDueValue();
+    const row = document.createElement("div");
+    row.className = "row";
+    row.appendChild(
+      smallButton("Set reminder", "", async () => {
+        //: A refusal (a time already gone) is said, not an unhandled rejection.
+        try {
+          if (!(await addReminder(textInput.value.trim(), dueInput.value, entry.id))) return;
+        } catch (error) {
+          if (!error.isLockout) toast(error.message || "Couldn't set that reminder.", true);
+          return;
+        }
+        inlineAction = null;
+        renderEntries();
+      }, false)
+    );
+    row.appendChild(
+      smallButton("Cancel", "", () => {
+        inlineAction = null;
+        renderEntries();
+      })
+    );
+    wrap.append(textInput, dueInput, row);
+    setTimeout(() => textInput.focus(), 0);
+    return wrap;
+  }
+
+  const isContext = inlineAction.kind === "context";
+
+  const textarea = document.createElement("textarea");
+  textarea.rows = 2;
+  textarea.placeholder = isContext
+    ? "Add detail: Atlas re-reads the whole note and may refile it…"
+    : "Continue this train of thought…";
+  wrap.appendChild(textarea);
+
+  const row = document.createElement("div");
+  row.className = "row";
+  row.appendChild(
+    smallButton(
+      isContext ? "Add context" : "Add to thread",
+      "",
+      async () => {
+        const text = textarea.value.trim();
+        if (!text) return;
+        try {
+          if (isContext) {
+            const updated = await apiJson(`/entries/${entry.id}/context`, {
+              method: "POST",
+              body: JSON.stringify({ text }),
+            });
+            toast(
+              updated.category === entry.category
+                ? `Context added: still filed under “${updated.category}”.`
+                : `Context added: refiled under “${updated.category}”.`
+            );
+          } else {
+            await apiJson("/entries", {
+              method: "POST",
+              body: JSON.stringify({ content: text, parent_id: entry.id }),
+            });
+            toast("Thread continued.");
+          }
+          inlineAction = null;
+          await loadEntries();
+        } catch (error) {
+          toast(error.message, true);
+        }
+      },
+      false
+    )
+  );
+  row.appendChild(
+    smallButton("Cancel", "", () => {
+      inlineAction = null;
+      renderEntries();
+    })
+  );
+  wrap.appendChild(row);
+  setTimeout(() => textarea.focus(), 0);
+  return wrap;
+}
+
+//: **An open edit form is never redrawn** (the notes.spec.js edit-form flake). A redraw
+//: (filing event, change poll, late refresh) built the form again: a bare textarea whose
+//: editor mounts only on a focus nobody gave it, a click on it losing its target. The
+//: form's row is kept here and handed back, unless the redraw is a fresh open (a focus
+//: request pending) or the form was closed since (`editingId` moved).
+
 function entryItem(entry, options = {}) {
+  if (entryItem.live?.dataset.id == entry.id) {
+    if (editingId !== entry.id) entryItem.live = null;
+    else if (options.actions && focusBodyAfterRender !== entry.id && focusTagsAfterRender !== entry.id
+      && (!entryItem.live.isConnected || entryItem.live.parentElement.id === "entry-list")) return entryItem.live;
+  }
   const li = document.createElement("li");
   li.dataset.id = entry.id;
   if (rowEnterIds && rowEnterIds.size && !rowEnterIds.has(String(entry.id))) li.classList.add("row-enter");
@@ -83,6 +228,7 @@ function entryItem(entry, options = {}) {
     //: (188px, then 15, then 277, with note-edit-panels.js held 3s). The
     //: real function draws at once and answers nothing, so only the
     //: stand-in's promise puts placeholders up.
+    entryItem.live = li;
     const drawn = renderEditForm(li, entry);
     if (drawn instanceof Promise) {
       showSkeletons(li, 2);
@@ -233,7 +379,9 @@ function entryItem(entry, options = {}) {
     .filter((line) => line.trim() && !/^\s*!?\[[^\]]*\]\([^)]*\)\s*$/.test(line))
     .join("\n");
   const glance = meetingGlance(entry);
+  //: A row holding only a preview (`content_truncated`) is long by definition: there is more behind it.
   const isLong = !glance && (
+    entry.content_truncated ||
     textOnly.length > LONG_NOTE_CHARS ||
     textOnly.split("\n").length > LONG_NOTE_LINES);
   if (isLong && !expandedNotes.has(entry.id)) content.classList.add("entry-clamped");
@@ -243,7 +391,9 @@ function entryItem(entry, options = {}) {
   //: A clamped card's two lines are text, not the blank line between its
   //: paragraphs (INBOX 458: "Tonight, I have work." then a lone "..."):
   //: folded, the paragraphs run on one line each; opened, the note as written.
-  const body = entry.title ? bodyWithoutTitleLine(entry.content) : stripFrontmatter(entry.content);
+  //: `body` is set again when a clipped row's card is filled with the whole note (INBOX 1525).
+  const bodyOf = (note) => (note.title ? bodyWithoutTitleLine(note.content) : stripFrontmatter(note.content));
+  let body = bodyOf(entry);
   const fillContent = () => renderNoteText(
     content,
     content.classList.contains("entry-clamped") ? body.replace(/\n[ \t\r]*(?:\n[ \t\r]*)+/g, "\n") : body,
@@ -253,19 +403,38 @@ function entryItem(entry, options = {}) {
     (prose) => prose.replace(/^#{1,6}[ \t]+/gm, "").replace(/^( *)-(?= \w)/gm, "$1•")
   );
   fillContent();
+  //: **A card drawn open fills itself with the whole note** (INBOX 1525 review). A clipped row's card read the rest only
+  //: on a "Show more" press, so an opened-out card, row or phone note page drawn again showed 300 characters with no
+  //: way on. One way in for all of them: drawn open, the row's chevron, a press. The card's own `entry` becomes the
+  //: whole note, so its menus and Copy read it too; "note-whole" tells a host that changed the text (the note page).
+  //: `clipped` is how the card was drawn: another reader's `fullEntry` fills the shared row, not this card's text.
+  let clipped = entry.content_truncated;
+  content.fillWhole = () => clipped && (content.whole ||= fullEntry(entry.id).then((whole) => {
+    clipped = false;
+    entry = whole;
+    body = bodyOf(whole);
+    fillContent();
+    if (content.unclip) noteClampFit.observe(content);
+    content.dispatchEvent(new Event("note-whole"));
+  }, () => void (content.whole = null)));
+  if (expandedNotes.has(entry.id) || expandedRows.has(entry.id)) content.fillWhole();
   content.addEventListener("remove-inline-image", async (e) => {
     e.stopPropagation();
     if (!(await confirmDialog("Remove this image from the note?"))) return;
-    const contentBefore = entry.content;
-    entry.content = entry.content.replace(e.detail.originalText, "").replace(/\n{3,}/g, "\n\n").trim();
+    //: The PUT sends the whole text back, so it is built from the note `fullEntry` read, never the card's own row,
+    //: which a list refresh can have swapped for a clipped one meanwhile (INBOX 1525).
+    const whole = await fullEntry(entry.id).catch((error) => void toast(error.message, true));
+    if (!whole) return;
+    const contentBefore = whole.content;
+    const contentAfter = contentBefore.replace(e.detail.originalText, "").replace(/\n{3,}/g, "\n\n").trim();
     try {
-      await apiJson(`/entries/${entry.id}`, { method: "PUT", body: JSON.stringify({ content: entry.content }) });
-      pushEntryPutUndo(entry.id, "Removed an image from a note", { content: contentBefore }, { content: entry.content });
+      await apiJson(`/entries/${entry.id}`, { method: "PUT", body: JSON.stringify({ content: contentAfter }) });
+      pushEntryPutUndo(entry.id, "Removed an image from a note", { content: contentBefore }, { content: contentAfter });
       await refreshEntries([entry.id]);
       flashEntry(entry.id);
       toast("Image removed.");
     } catch(err) {
-      toast(err.message || "Failed to remove image", true);
+      toast(err.message || "Couldn't remove that image.", true);
     }
   });
   if (glance) {
@@ -317,6 +486,7 @@ function entryItem(entry, options = {}) {
       content.classList.toggle("entry-clamped", !expandedNotes.has(entry.id));
       fillContent();
       toggle.textContent = label();
+      if (expandedNotes.has(entry.id)) content.fillWhole();
     });
     li.appendChild(toggle);
     // **Then check whether it was actually needed.** Reported: "a show
@@ -343,7 +513,7 @@ function entryItem(entry, options = {}) {
       fillContent();
       toggle.remove();
     };
-    noteClampFit.observe(content);
+    if (!entry.content_truncated) noteClampFit.observe(content);
   }
 
   const meta = document.createElement("div");
@@ -494,8 +664,8 @@ function entryItem(entry, options = {}) {
   }
   //: Where the tags that do not fit go (INBOX 455 (1), `fitNoteMetas`).
   meta.appendChild(noteMetaMore(entry));
-  //: Tags filing suggested, kept on the note (INBOX 440): a press takes one,
-  //: its × discards it for good.
+  //: Tags filing suggested, kept on the note (INBOX 440): a split chip, its
+  //: first half takes the tag, its x half dismisses it for good.
   const suggestions = options.actions && !entry.is_board ? entry.suggested_tags || [] : [];
   for (const tag of suggestions) {
     //: Two sibling buttons in one chip, take and discard, not a button
@@ -522,7 +692,9 @@ function entryItem(entry, options = {}) {
     group.appendChild(take);
     const discard = document.createElement("button");
     discard.type = "button";
-    discard.className = "unlink";
+    //: Its own half of the chip, not `.unlink`'s glyph after the words
+    //: (INBOX 1583: "those x button on the suggested tags are badly designed").
+    discard.className = "suggested-tag-dismiss";
     setLabel(discard, "ph:x");
     discard.title = `Dismiss: stop suggesting #${tag} for this note`;
     discard.addEventListener("click", (event) => {
@@ -783,9 +955,7 @@ function entryItem(entry, options = {}) {
       favouriteButton(entry)
     );
     actions.appendChild(
-      smallButton("ph:clipboard", "Copy this note's text", async () => {
-        if (await copyToClipboard(entry.content)) toast("Note copied.");
-      })
+      smallButton("ph:clipboard", "Copy this note's text", () => entryItem.copyText(entry))
     );
     actions.appendChild(
       //: `openNoteEditor` scrolls the form into view after the redraw (the

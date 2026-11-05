@@ -38,8 +38,9 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from tessellate.core import deps, events
-from tessellate.core.database import Entry, EntryLink, WhiteboardObject
+from tessellate.core.database import Entry, WhiteboardObject
 from tessellate.core.deps import get_session
+from tessellate.repo import relations as relations_repo
 
 router = APIRouter(prefix="/whiteboard", tags=["whiteboard"])
 
@@ -242,15 +243,9 @@ def _heading_suggestions(entry: Entry, title: str, have: set[str]) -> list[dict]
 
 def _link_suggestions(db: Session, entry: Entry, board_id: int, have: set[str]) -> list[dict]:
     """Linked notes, ones this note points at before ones that point at it."""
-    from sqlalchemy import or_
-
     from tessellate.entry import manager
 
-    links = db.scalars(
-        select(EntryLink)
-        .where(or_(EntryLink.source_entry_id == entry.id, EntryLink.target_entry_id == entry.id))
-        .order_by(EntryLink.id)
-    ).all()
+    links = relations_repo.touching(db, entry.id)
     ids = [link.target_entry_id for link in links if link.source_entry_id == entry.id]
     ids += [link.source_entry_id for link in links if link.target_entry_id == entry.id]
     on_map, seen, out = _refs_on_map(db, board_id), set(have), []
@@ -307,7 +302,8 @@ class BranchesBody(BaseModel):
 def add_branches(board_id: int, node_id: int, body: BranchesBody, db: Session = Depends(get_session)) -> list[dict]:
     """Make the ticked suggestions under the topic: one transaction, a
     `created` event per topic, and the note each came from in its note."""
-    from tessellate.api.routes_whiteboard import MAP_COL, MAP_ROW, WhiteboardObjectData, _object_state, _object_to_out
+    from tessellate.api.routes_whiteboard import MAP_COL, MAP_ROW, WhiteboardObjectData, _object_to_out
+    from tessellate.core.events import object_state as _object_state
     from tessellate.entry import manager
 
     parent = _node_or_404(db, board_id, node_id)

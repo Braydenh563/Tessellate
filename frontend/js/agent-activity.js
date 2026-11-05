@@ -371,7 +371,7 @@ function setAgentMonitorLogVisible(show) {
   agentMonitorLogToggle.setAttribute("aria-label", words);
   agentMonitorLogToggle.title = words;
   setLabel(agentMonitorLogToggle, show ? "ph:list-checks" : "ph:terminal-window");
-  agentMonitorLogToggle.setAttribute("aria-expanded", String(show));
+  agentMonitorLogToggle.setAttribute("aria-expanded", show);
 }
 
 if (agentMonitorLogToggle) {

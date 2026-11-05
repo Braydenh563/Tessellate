@@ -19,21 +19,22 @@ from pathlib import Path
 
 import pytest
 
-DASH = Path(__file__).resolve().parents[1] / "frontend" / "js" / "dashboard.js"
-SOURCE = DASH.read_text(encoding="utf-8")
+DASH = Path(__file__).resolve().parents[1] / "frontend" / "js" / "dash-art.js"  # moved from dashboard.js, INBOX 1530 d
+#: Read at the margin: the file is one IIFE, its body indented two spaces.
+SOURCE = re.sub(r"(?m)^  ", "", DASH.read_text(encoding="utf-8"))
 
 needs_node = pytest.mark.skipif(not shutil.which("node"), reason="needs node")
 
 
 def _fn(name: str) -> str:
     match = re.search(rf"^function {name}\(.*?^\}}", SOURCE, re.S | re.M)
-    assert match, f"{name} is gone from dashboard.js"
+    assert match, f"{name} is gone from dash-art.js"
     return match.group(0)
 
 
 def _const(name: str) -> int:
     match = re.search(rf"^const {name} = (\d+);", SOURCE, re.M)
-    assert match, f"{name} is gone from dashboard.js"
+    assert match, f"{name} is gone from dash-art.js"
     return int(match.group(1))
 
 
@@ -154,7 +155,7 @@ def _front_css(name: str) -> str:
 
 
 def test_the_constellation_has_a_light_well_and_fades_between_themes():
-    js = (ROOT / "frontend" / "js" / "dashboard.js").read_text(encoding="utf-8")
+    js = SOURCE
     # HSL lightness 250 clamps to white, the card's own colour: no well.
     assert "250 - (y / height) * 10" not in js
     # One gradient from lightness 95 down to 91 (it was 55 strips of 95 - (y / height) * 4).
@@ -180,9 +181,9 @@ def test_the_constellation_keeps_its_shape_and_its_height_across_a_theme_change(
     css = (CSS / "02-chat-graph.css").read_text(encoding="utf-8")
     holder = css[css.index(".art-holder {") :].split("}", 1)[0]
     assert "min-height: 13.75rem;" in holder
-    js = (JS / "dashboard.js").read_text(encoding="utf-8")
+    js = SOURCE
     # The drift is read off a page-lifetime clock, never a sketch's own (moved
     # on only by an idle rest, so the stars go on from where they stopped).
     assert "const artClock = { epoch: performance.now() };" in js
     assert "p.millis() * 0.0003" not in js
-    assert js.count("artDriftMs() * 0.0003") == 2
+    assert js.count("artDriftMs() * 0.0003") == 3  # draw, saveSettled, the repaint after a resize (1620)

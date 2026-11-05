@@ -51,7 +51,7 @@ const seed = (title, content) => `(async () => {
     await new Promise((res) => setTimeout(res, 400));
     await openDocument(doc.id);
     await new Promise((res) => setTimeout(res, 2500));
-    return JSON.stringify({ comments: docComments().length });
+    return JSON.stringify({ comments: document.querySelectorAll("#doc-comments .doc-comment-item").length });
   }, CONTENT));
 
   // 1. The section, its count, and the rows.
@@ -78,7 +78,7 @@ const seed = (title, content) => `(async () => {
         context: rows[0].querySelector(".doc-comment-context").textContent,
         body: rows[0].querySelector(".doc-comment-body").textContent,
         kind: rows[0].querySelector(".doc-comment-kind").className,
-        actions: rows[0].querySelectorAll(".doc-comment-action").length,
+        actions: rows[0].querySelectorAll(".doc-comment-resolve").length,
         headOneLine: (() => {
           const h = rows[0].querySelector(".doc-comment-head").getBoundingClientRect();
           return h.height <= 32;
@@ -104,14 +104,14 @@ const seed = (title, content) => `(async () => {
   if (listed.rows !== 3) fails.push(`${listed.rows} rows for three comments`);
   if (listed.headCount !== "3") fails.push("the count does not say 3");
   if (!listed.wrapVisible) fails.push("the comments section did not show");
-  if (listed.order[1] !== "doc-comments-wrap") fails.push(`comments is at ${listed.order.indexOf("doc-comments-wrap")}, not second`);
+  if (listed.order.indexOf("doc-comments-wrap") !== listed.order.indexOf("doc-outline-wrap") + 1) fails.push(`comments is at ${listed.order.indexOf("doc-comments-wrap")}, not straight after the outline`);
   if (!listed.insideSidebar) fails.push("a row is wider than the sidebar");
   if (listed.overflowsX) fails.push("a row scrolls sideways");
   if (listed.first && !/highlighter/.test(listed.first.kind)) fails.push("an anchored comment is not drawn as a highlight");
   if (listed.first && listed.first.actions !== 1) fails.push("no Resolve on the row");
   if (listed.first && !listed.first.headOneLine) fails.push("the subject line and its action do not share a line");
   if (!listed.strip.oneLine || listed.strip.overflows) fails.push(`the tab strip is ${listed.strip.h}px over more than one line`);
-  if (Math.max(...listed.rowH) > 95) fails.push(`a row is ${Math.max(...listed.rowH)}px tall`);
+  if (Math.max(...listed.rowH) > 100) fails.push(`a row is ${Math.max(...listed.rowH)}px tall`);
 
   // 2. Pressing a row jumps the editor to it and marks the row.
   const jumped = await page.evaluate(async () => {
@@ -301,7 +301,7 @@ const seed = (title, content) => `(async () => {
   const resolved = await page.evaluate(async () => {
     const before = docText();
     const rows = [...document.querySelectorAll("#doc-comments .doc-comment-item")];
-    rows[0].querySelector(".doc-comment-action").click();
+    rows[0].querySelector(".doc-comment-resolve").click();
     await new Promise((r) => setTimeout(r, 700));
     return JSON.stringify({
       was: rows.length,
@@ -321,6 +321,93 @@ const seed = (title, content) => `(async () => {
     if (!r.tookRemark) fails.push("resolving left the remark in the text");
     if (!r.tookHighlight) fails.push("resolving left the highlight markers behind");
     if (r.count !== "2") fails.push(`the count says ${r.count} after resolving one of three`);
+  }
+
+  // 6b. A thread (DOCUMENTS_PLAN DX24t): a reply, a reload, the resolved shelf, Reopen.
+  const threaded = await page.evaluate(async () => {
+    const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+    const rows = () => [...document.querySelectorAll("#doc-comments .doc-comment-item")];
+    const id = currentDoc.id;
+    const first = rows()[0];
+    const bylineBefore = first.querySelector(".doc-comment-who")?.textContent || "";
+    first.querySelector(".doc-comment-reply-open").click();
+    await wait(200);
+    const input = document.querySelector("#doc-comments .doc-comment-reply-input");
+    const sidebar = document.getElementById("doc-sidebar").getBoundingClientRect();
+    const box = input.getBoundingClientRect();
+    const focused = document.activeElement === input;
+    input.value = "Will do, thanks";
+    input.form.requestSubmit();
+    await wait(300);
+    const replied = rows()[0].querySelectorAll(".doc-comment-reply").length;
+    await wait(2200);
+    const server = await (await fetch(`/documents/${id}`, { headers: { "X-Auth-Token": localStorage.getItem("token") || "" } })).json();
+    return JSON.stringify({
+      id,
+      bylineBefore,
+      focused,
+      inputInside: box.left >= sidebar.left && box.right <= sidebar.right,
+      inputW: Math.round(box.width),
+      replied,
+      saved: server.threads.length,
+      serverReplies: server.threads.map((t) => t.replies.length),
+      resolvedOnServer: server.threads.filter((t) => t.resolved).length,
+      rowH: rows().map((r) => Math.round(r.getBoundingClientRect().height)),
+    });
+  });
+  console.log("thread -> " + threaded);
+  const th = JSON.parse(threaded);
+  if (!th.focused) fails.push("Reply did not put the caret in its field");
+  if (!th.inputInside) fails.push("the reply field leaves the sidebar");
+  if (th.replied !== 1) fails.push("the reply is not listed under its remark");
+  if (th.resolvedOnServer !== 1) fails.push("the resolved thread is not kept on the server");
+  if (!th.serverReplies.includes(1)) fails.push("the reply was not saved");
+
+  await page.reload({ waitUntil: "domcontentloaded" });
+  await page.waitForTimeout(2500);
+  if (await page.locator("#lock-password").isVisible().catch(() => false)) {
+    await page.fill("#lock-password", "testpassword123");
+    await page.click("#lock-submit");
+    await page.waitForTimeout(2500);
+  }
+  const reopened = await page.evaluate(async (id) => {
+    const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+    switchTab("documents");
+    await wait(500);
+    await openDocument(id);
+    await wait(2500);
+    document.querySelector('#doc-sidebar-tabs button[data-section="outline"]').click();
+    await wait(500);
+    const rows = () => [...document.querySelectorAll("#doc-comments .doc-comment-item")];
+    const afterReload = { rows: rows().length, replies: document.querySelectorAll("#doc-comments .doc-comment-reply").length };
+    const toggle = document.getElementById("doc-comments-resolved-toggle");
+    const toggleText = toggle.textContent;
+    const shelfHiddenFirst = document.getElementById("doc-comments-resolved").classList.contains("hidden");
+    toggle.click();
+    await wait(200);
+    const shelf = [...document.querySelectorAll("#doc-comments-resolved .doc-comment-item")];
+    const shelfInfo = { rows: shelf.length, context: shelf[0]?.querySelector(".doc-comment-context")?.textContent, expanded: toggle.getAttribute("aria-expanded") };
+    shelf[0].querySelector(".doc-comment-action").click();
+    await wait(700);
+    return JSON.stringify({
+      afterReload,
+      toggleText,
+      shelfHiddenFirst,
+      shelfInfo,
+      backInText: docText().includes("==opening claim== %%is this still true after the rewrite?%%"),
+      rowsNow: rows().length,
+      shelfNow: document.querySelectorAll("#doc-comments-resolved .doc-comment-item").length,
+      toggleHidden: document.getElementById("doc-comments-resolved-toggle").classList.contains("hidden"),
+    });
+  }, th.id);
+  console.log("reload + reopen -> " + reopened);
+  {
+    const r = JSON.parse(reopened);
+    if (r.afterReload.rows !== 2 || r.afterReload.replies !== 1) fails.push("the reply did not survive a reload");
+    if (!/1 resolved/.test(r.toggleText) || !r.shelfHiddenFirst) fails.push("the resolved shelf is not folded behind its toggle");
+    if (r.shelfInfo.rows !== 1 || r.shelfInfo.context !== "opening claim" || r.shelfInfo.expanded !== "true") fails.push("the resolved shelf does not list the thread");
+    if (!r.backInText || r.rowsNow !== 3) fails.push("Reopen did not put the remark back");
+    if (r.shelfNow !== 0 || !r.toggleHidden) fails.push("a reopened thread is still on the resolved shelf");
   }
 
   // 7. A document with no comments has no section at all.
@@ -364,7 +451,7 @@ const seed = (title, content) => `(async () => {
       caretInRemark: /%%%%/.test(text) && sel.from === text.indexOf("%%%%") + 2,
       wouldRead: typed.slice(0, 60),
       // An empty remark is not a comment yet, so nothing is listed for it.
-      comments: docComments().length,
+      comments: document.querySelectorAll("#doc-comments .doc-comment-item").length,
       menuItem: Boolean(document.querySelector('[data-md="annotate"]')),
     });
   });

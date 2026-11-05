@@ -32,7 +32,7 @@ def _unmatched_recents(req: _StreamRequest, prepared: dict) -> bool:
         return False
     if not req.ollama.is_running() or _composed(req, True):
         return False
-    from tessellate.search.search_manager import is_recency_ask
+    from tessellate.ai.note_recency import is_recency_ask
 
     #: Two or more subject words is a topic ("mortgage rate zebra paddock");
     #: one is as often the notebook itself ("tell me about my notebook").
@@ -95,6 +95,17 @@ def _offer_events(found: dict) -> list[dict]:
     if found.get("offer"):
         events.append({"type": "offer", "offer": found["offer"]})
     return events
+
+
+#: A web reply, answered or not, is not from the notes: this second meta
+#: replaces the first, so the badge is not "From your notes" and Sources does
+#: not list the ten notes searched first (INBOX 1550: "Sources: 10 notes"
+#: under "the search service ... is not answering").
+NOT_NOTES = {
+    "type": "meta", "web": True, "raw_results": [], "picture_alts": {}, "picture_sizes": {}, "search_mode": "web",
+    "connected_ids": [], "match_info": {}, "when_phrase": None, "as_of": None, "as_of_revisions": {},
+    "answered_by": None, "ollama_running": False, "composed": False,
+}
 
 
 def _search_service() -> tuple[str, str]:

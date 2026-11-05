@@ -64,7 +64,9 @@ def test_z53_a_question_with_a_subject_of_its_own_is_not_pulled_back(ask):
 @pytest.mark.parametrize(("first", "then", "lead"), [
     ("what is on 4 November", "what time", "Here's the exact date: Dentist appointment on 4 November 2026 at 9:30"),
     ("what is on 4 November", "when is it", "The day noted down: Dentist appointment on 4 November 2026"),
-    ("what is on saturday", "who is it with", "Your own words: Coffee with Anna"),
+    #: The opener is the salt's pick: 5e6147c cut the invented speech acts
+    #: ("You captured this", "This was your thought"), which moved the pick.
+    ("what is on saturday", "who is it with", "Here is what you wrote: Coffee with Anna"),
 ])
 def test_z53_a_follow_on_after_a_date_list_keeps_its_first_item(ask, first, then, lead):
     """A date list cites no sources; the links it wrote name what it was about."""
@@ -74,7 +76,7 @@ def test_z53_a_follow_on_after_a_date_list_keeps_its_first_item(ask, first, then
 
 
 def test_z53_a_turn_without_sources_is_named_by_the_links_in_its_answer():
-    from tessellate.api.routes_chat import ChatTurn
+    from tessellate.api.chat_request import ChatTurn
 
     turn = ChatTurn(question="q", answer="- Dentist on 4 November. ([Dentist](#/notes/13))\n- [**Diary: Saturday 25 October**](#/notes/37)")
     assert turn.objects == ["Dentist", "Diary"]
@@ -97,6 +99,6 @@ def test_z52_the_last_topic_is_carried_only_to_a_question_with_no_subject_of_its
 
 
 def test_z52_a_topic_keeps_the_capital_it_was_typed_with():
-    from tessellate.api.routes_chat import _chat_topic
+    from tessellate.api.chat_said import _chat_topic
 
     assert _chat_topic([{"question": "tell me about Sara", "answer": "Sara is your sister."}]) == "Sara"

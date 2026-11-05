@@ -136,7 +136,7 @@ Run targeted tests against the base branch first.
 
 Quality first; never downgrade for quality-sensitive work. Cost is turns times
 context: batch tool calls, grep then read line ranges, no screenshots where a
-number will do, a fresh session per PR (mandatory), compact past 150k per turn (the dash budget);
+number will do, a fresh session per PR (mandatory), compact past 150k per turn (the dash budget), and past 200k a turn, or at the second compaction of a session, stop at the next step boundary (HANDOVER Now, push, end; the 200k line alone left five lines at 198k to 202k: it was read after compactions);
 an idle gap over an hour rewrites the cache (avoid idle check-ins).
 `python scripts/usage_report.py` prints a session's split.
 

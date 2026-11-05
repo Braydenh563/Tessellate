@@ -39,6 +39,10 @@ def test_both_are_placed_again_when_they_change_size():
 
 
 def test_the_dock_is_pinned_at_the_foot_of_a_scrolling_popup():
-    rule = CSS[CSS.index(".graph-popup-actions {") :]
+    #: INBOX 1630: pinned by structure now, not by `sticky` inside one scroller.
+    #: The panel is a column whose body scrolls, so the dock is always whole.
+    lazy = (ROOT / "frontend" / "css" / "graph-lazy.css").read_text(encoding="utf-8")
+    rule = lazy[lazy.index("#graph-popup {") :]
     rule = rule[: rule.index("}")]
-    assert "position: sticky;" in rule and "bottom: calc(-1 * var(--graph-popup-pad));" in rule
+    assert "flex-direction: column;" in rule and "overflow: hidden;" in rule
+    assert "overflow-y: auto;" in lazy[lazy.index(".graph-popup-body {") :].split("}")[0]

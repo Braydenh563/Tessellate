@@ -41,11 +41,11 @@ def _content(note: Any) -> str:
 def subject(question: str) -> list[str]:
     """The words the request is about, as typed, lower-cased: its subject
     terms without the framing words ("open", "main", "notes")."""
-    from tessellate.ai import composer
+    from tessellate.ai import composer_ask  # the defining module: `composer` re-exports it and reads this module back
 
     #: composer_lists.clean, inline: importing it closes a cycle through the plan.
     text = " ".join((question or "").split()).lstrip("\\/'\"` ").rstrip("\\/'\"` ")
-    terms = composer.subject_terms(text)
+    terms = composer_ask.subject_terms(text)
     kept = [t.lower() for t in terms if t.lower() not in _FRAME]
     return kept[:_MAX_TERMS]
 
@@ -56,20 +56,20 @@ def stems_of(text: str) -> list[str]:
 
 
 def _stems(words: list[str]) -> list[str]:
-    from tessellate.ai import composer
+    from tessellate.ai import composer_ask
 
-    return [composer._stem(w) for w in words]  # noqa: SLF001  # the composer's own stemmer, so both read words alike
+    return [composer_ask._stem(w) for w in words]  # noqa: SLF001  # the composer's own stemmer (defined in composer_ask), so both read words alike
 
 
 def _defines(subject_words: list[str], content: str) -> bool:
     """Whether a sentence in the note's first lines says what the subject is
     ("Sourdough is ...", "The sourdough starter means ...")."""
-    from tessellate.ai import composer
+    from tessellate.ai import composer_read
 
     if not subject_words:
         return False
     said = re.compile(r"^(?:the\s+|a\s+|an\s+)?" + r"\s+".join(re.escape(w) for w in subject_words) + r"\s+(?:is|are|means|refers to)\b", re.I)
-    title, start = composer._title(content)  # noqa: SLF001
+    title, start = composer_read._title(content)  # noqa: SLF001
     body = content[start:] if start else content
     lines = [ln.strip(" \t-*#>") for ln in body.splitlines() if ln.strip()]
     for line in lines[:2]:
@@ -81,10 +81,10 @@ def _defines(subject_words: list[str], content: str) -> bool:
 
 def key(note: Any, subject_words: list[str], stems: list[str]) -> tuple[int, int]:
     """The note's tier (0 best) and, inside the title tier, its extra words."""
-    from tessellate.ai import composer
+    from tessellate.ai import composer_read
 
     content = _content(note)
-    title = composer._title(content)[0]  # noqa: SLF001
+    title = composer_read._title(content)[0]  # noqa: SLF001
     title_stems = _stems([w.lower() for w in re.findall(r"[A-Za-z0-9']+", title)])
     wanted = set(stems)
     if wanted and set(title_stems) - {_stems(["note"])[0]} == wanted:
@@ -112,15 +112,21 @@ def _written(note: Any) -> float:
         return 0.0
 
 
+def lead_by(items: list, question: str, note_of: Any = lambda x: x) -> list:
+    """The items (notes, or composer views that carry one) with the ones most
+    plainly about the subject first; the same list when the question names no
+    subject. Inside a title tier the newest leads, so Ask and Chat agree
+    whatever order they were handed; the rest keeps the order given."""
+    words = subject(question)
+    if not words or len(items) < 2:
+        return list(items)
+    stems = _stems(words)
+    keyed = [(key(note_of(it), words, stems), i, it) for i, it in enumerate(items)]
+    keyed.sort(key=lambda k: (k[0], -_written(note_of(k[2])) if k[0][0] < 3 else 0.0, k[1]))
+    return [it for _, _, it in keyed]
+
+
 def lead(notes: list, question: str) -> list:
     """The notes with the ones that are most plainly about the subject
     first; the same list when the question names no subject."""
-    words = subject(question)
-    if not words or len(notes) < 2:
-        return list(notes)
-    stems = _stems(words)
-    keyed = [(key(n, words, stems), i, n) for i, n in enumerate(notes)]
-    #: Inside a title tier the newest leads, so Ask and Chat agree whatever
-    #: order they were handed; the rest keeps the order retrieval gave.
-    keyed.sort(key=lambda k: (k[0], -_written(k[2]) if k[0][0] < 3 else 0.0, k[1]))
-    return [n for _, _, n in keyed]
+    return lead_by(notes, question)

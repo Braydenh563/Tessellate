@@ -123,3 +123,26 @@ function reminderEditForm(reminder) {
   setTimeout(() => textInput.focus(), 0);
   return wrap;
 }
+
+async function snoozeReminderTo(reminder, when) {
+  const before = { due_at: reminder.due_at, done: Boolean(reminder.done) };
+  const put = (body) =>
+    apiJson(`/reminders/${reminder.id}`, { method: "PUT", body: JSON.stringify({ ...body, restore: true }) });
+  await put({ due_at: when.toISOString(), done: false });
+  loadReminders();
+  //: Undo puts the old time and state back (WORLD_CLASS_PLAN row 32, from
+  //: the world-class branch's 2d867a1); `restore` lets a time already past
+  //: through (an overdue reminder is the one that gets snoozed).
+  const back = async () => {
+    await put(before);
+    loadReminders();
+  };
+  const action = pushUndo("Snoozed a reminder", back, async () => {
+    await put({ due_at: when.toISOString(), done: false });
+    loadReminders();
+  });
+  toastAction(`Snoozed to ${whenText(when)}.`, "Undo", async () => {
+    settleUndoFromToast(action);
+    await back();
+  });
+}

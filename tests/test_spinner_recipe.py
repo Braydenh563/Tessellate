@@ -66,7 +66,7 @@ def _keyframes(css: str) -> dict[str, str]:
 
 def _rules(css: str):
     """(selector, body) of each flat rule, at any media depth."""
-    for match in re.finditer(r"([^{}]+)\{([^{}]*)\}", css):
+    for match in re.finditer(r"(?:(?<=[{}])|\A)([^{}]+)\{([^{}]*)\}", css):
         yield match.group(1).strip(), match.group(2)
 
 
@@ -322,7 +322,8 @@ def test_in_progress_copy_uses_a_real_ellipsis_never_three_dots() -> None:
 #: reply-kit.js: the answer panel's statistics grid while it loads (C06), a region, not a button.
 #: mermaid-draw.js marks a diagram's figure busy while it draws, a container like the others.
 #: graph-canvas.js: the map's count line (a status region) during a slow reload (audit 1029 G30).
-CONTAINER_BUSY_FILES = {"app.js", "chat.js", "notes-list.js", "tour.js", "statistics.js", "reply-kit.js", "mermaid-draw.js", "graph-canvas.js"}
+#: chat-turn.js, answer-kit.js: the chat transcript (`#chat-messages`) while an answer streams (audit 1028 E68), the region chat.js marked before its split.
+CONTAINER_BUSY_FILES = {"app.js", "chat.js", "chat-turn.js", "answer-kit.js", "notes-list.js", "tour.js", "statistics.js", "reply-kit.js", "mermaid-draw.js", "graph-canvas.js"}
 
 
 def test_a_button_is_marked_busy_only_through_setbusy() -> None:

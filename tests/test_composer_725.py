@@ -14,6 +14,9 @@ import re
 import pytest
 
 from tessellate.ai import composer, composer_tables
+from tessellate.ai import composer_dialogue
+from tessellate.ai import composer_read
+from tessellate.ai import composer_select
 from tests.test_composer_688 import NOTES, TODAY, _note, assert_traceable
 from tests._app_js import with_pieces
 
@@ -53,7 +56,7 @@ def test_lead_ins_come_off_a_quote_from_the_tested_list(sentence, kept):
 
 
 def test_every_listed_lead_in_is_trimmed_with_its_comma():
-    for lead in composer.LEAD_INS:
+    for lead in composer_read.LEAD_INS:
         view = composer.read_note(_note(1, f"# N\n\n{lead.capitalize()}, the boiler pressure dropped.", 1), 0)
         assert view.sentences[0].text == "The boiler pressure dropped.", lead
 
@@ -148,7 +151,7 @@ def test_textrank_prefers_the_sentence_the_others_lean_towards():
     pool = [v.sentences[0] for v in views]
     for s in pool:
         s.score = 1.0
-    rank = composer.centrality(pool, composer._Meaning(pool, None, {"sourdough"}))
+    rank = composer_select.centrality(pool, composer._Meaning(pool, None, {"sourdough"}))
     assert max(pool, key=lambda s: rank[s.key]).note_id == 1
 
 
@@ -243,7 +246,7 @@ def test_next_questions_come_from_what_the_answer_found_and_did_not_say():
     assert 1 <= len(result["next"]) <= 3
     assert "What else do my notes say about harbor?" in result["next"]
     for question in result["next"]:
-        assert question.endswith("?") and len(question) <= composer.NEXT_MAX_CHARS
+        assert question.endswith("?") and len(question) <= composer_dialogue.NEXT_MAX_CHARS
 
 
 def test_no_next_question_offers_what_was_asked():

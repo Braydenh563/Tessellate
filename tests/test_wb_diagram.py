@@ -46,6 +46,7 @@ def test_the_diagram_is_built_painted_and_exported():
 
 
 def test_insert_edit_and_convert_are_reachable():
-    assert 'data-wb-cmd="insert-diagram"' in HTML and 'id="wb-diagram-dialog"' in HTML
-    edit = _body(INTER, "function wbOpenDiagramDialog(")
-    assert "wbImportMermaid(" in INTER and "wb-diagram-shapes" in edit
+    #: 1546 P5: the textarea dialog is gone; the block builder is the editor, Turn into shapes is in its menu.
+    assert 'data-wb-cmd="insert-diagram"' in HTML and 'id="wb-diagram-dialog"' not in HTML
+    edit = _body(INTER, "function wbEditDiagram(")
+    assert "wbImportMermaid(" in INTER and "wbDiagramToShapes(d, source)" in edit and "openDiagramBuilder(" in edit

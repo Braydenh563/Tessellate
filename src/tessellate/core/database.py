@@ -19,6 +19,7 @@ import logging
 import os
 import re
 import sys
+import zlib
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -37,6 +38,7 @@ from sqlalchemy import (
     create_engine,
     event,
     inspect as sa_inspect,
+    text as sql_text,
 )
 from sqlalchemy.orm import (
     DeclarativeBase,
@@ -177,6 +179,10 @@ def workspace_scoped_models() -> tuple[type, ...]:
 
 @event.listens_for(Session, "do_orm_execute")
 def _add_workspace_filter(execute_state):
+    # Organisation, not a boundary (docs/SECURITY.md, audit 1028 K16): this narrows
+    # ORM selects to the space the request's X-Workspace-ID names; a `session.get`
+    # identity hit or a raw `text()` statement is not narrowed, and the header is
+    # the caller's own. A feature that needs a space to be private has to enforce it.
     # Only filter if the statement is a select() or similar ORM statement
     if execute_state.is_select or execute_state.is_update or execute_state.is_delete:
         workspace_id = execute_state.session.info.get("workspace_id")
@@ -1479,6 +1485,12 @@ class Document(Base, WorkspaceMixin):
     # every document that existed before file types did as markdown, which is
     # what all of them are.
     file_type: Mapped[str] = mapped_column(String(20), default="md")
+    #: The comment threads behind the inline `%%remark%%`s (author, time,
+    #: replies, resolved), a JSON list kept beside the text and never in it
+    #: (core/docthreads.py). Additive; "" is none, as every older row reads.
+    #: The server default too, so a build from before the column can still
+    #: insert a document into a database this one created.
+    threads: Mapped[str] = mapped_column(Text, default="", server_default=sql_text("''"))
     #: Where the Graph holds this document's node in place, as a note's
     #: `graph_pin_x`/`graph_pin_y` do (B78: a document node can be pinned by
     #: double-click or drag, and had nowhere to keep it). Additive.
@@ -2031,6 +2043,12 @@ class MediaUpload(Base, WorkspaceMixin):
     #: `list_media` backfills any NULL it finds once, from a real `stat()`,
     #: and never stats again after that.
     size_bytes: Mapped[int | None] = mapped_column(Integer, default=None)
+    #: True once a private note has embedded this file (SEC-A2). A locked
+    #: note's text is ciphertext, so nothing else says which files are its
+    #: pictures; the flag is what lets a locked session refuse the file and
+    #: its readings. Only ever set, never cleared: a stale True costs a
+    #: readable-note-less file staying sealed until unlock, never a leak.
+    in_private_note: Mapped[bool] = mapped_column(Boolean, default=False)
 
 
 class JobRun(Base):
@@ -2355,8 +2373,14 @@ class DatabaseManager:
             dbapi_connection.execute("PRAGMA temp_store=MEMORY")
 
         Base.metadata.create_all(self.engine)  # creates missing tables only
-        self._add_missing_columns()
+        #: A start that finds the schema as the last one stamped it has no column to add
+        #: (audit 1028 K35): the scan is one `PRAGMA table_info` per table.
+        stamped = self._schema_is_stamped()
+        if not stamped:
+            self._add_missing_columns()
         self._rebuild_categories_unique_constraint()
+        if not stamped:
+            self._stamp_schema()
         self._backfill_inherited_workspaces()
         self._drop_orphan_links()
         self._ensure_fts5()
@@ -2401,7 +2425,8 @@ class DatabaseManager:
                 # Either may write; `or` would skip the second once the first did.
                 boards = search_index.reconcile_boards(session)
                 late = search_index.reconcile_sources(session)
-                if boards or late:
+                private_files = search_index.reconcile_private_files(session)
+                if boards or late or private_files:
                     session.commit()
             return
         # Only on the one startup that creates the table: every write after
@@ -2913,12 +2938,10 @@ class DatabaseManager:
             for table, fk, parent in self._WORKSPACE_INHERITANCE:
                 if table not in tables:
                     continue
-                columns = {
-                    row[1]
-                    for row in connection.exec_driver_sql(
-                        f'PRAGMA table_info("{table}")'
-                    ).fetchall()
-                }
+                #: The model's columns, not a `PRAGMA table_info` per table (audit 1028 K35):
+                #: `_add_missing_columns` has run, so a table the model knows has them all.
+                model = Base.metadata.tables.get(table)
+                columns = set(model.columns.keys()) if model is not None else set()
                 if "workspace_id" not in columns or fk not in columns:
                     continue
                 connection.exec_driver_sql(
@@ -2950,6 +2973,40 @@ class DatabaseManager:
                 "DELETE FROM entry_links WHERE source_entry_id NOT IN (SELECT id FROM entries)"
                 " OR target_entry_id NOT IN (SELECT id FROM entries)"
             )
+
+    @staticmethod
+    def _model_signature() -> str:
+        """Every model table's column names and types, in a fixed order."""
+        return ";".join(
+            f"{table.name}({','.join(f'{column.name} {column.type}' for column in table.columns)})"
+            for table in sorted(Base.metadata.tables.values(), key=lambda t: t.name)
+        )
+
+    def _schema_stamp(self) -> int:
+        """A 31-bit fingerprint of the model and of the model's tables as SQLite
+        holds them (their CREATE text, which an added or dropped column changes).
+        Only the model's tables: the search and full-text tables other steps make
+        after this one would otherwise change it between two starts."""
+        names = sorted(Base.metadata.tables)
+        marks = ",".join("?" for _ in names)
+        with self.engine.connect() as connection:
+            held = connection.exec_driver_sql(
+                f"SELECT name, sql FROM sqlite_master WHERE type='table' AND name IN ({marks}) ORDER BY name",
+                tuple(names),
+            ).fetchall()
+        text = self._model_signature() + "|" + "|".join(f"{name}:{sql}" for name, sql in held)
+        return zlib.crc32(text.encode("utf-8")) & 0x7FFFFFFF
+
+    def _schema_is_stamped(self) -> bool:
+        with self.engine.connect() as connection:
+            stored = connection.exec_driver_sql("PRAGMA user_version").scalar()
+        return stored == self._schema_stamp()
+
+    def _stamp_schema(self) -> None:
+        """Record the fingerprint, after the steps that can change the tables ran."""
+        stamp = self._schema_stamp()
+        with self.engine.begin() as connection:
+            connection.exec_driver_sql(f"PRAGMA user_version = {int(stamp)}")
 
     def _add_missing_columns(self) -> None:
         """Additive auto-migration for existing databases.
@@ -2992,10 +3049,15 @@ class DatabaseManager:
     def optimize(self) -> None:
         """`PRAGMA optimize` at a clean quit (audit 1028 K37), as SQLite advises:
         it gathers the statistics the planner lacks, only for tables the
-        launch's queries used, so plans keep up as a notebook grows."""
+        launch's queries used, so plans keep up as a notebook grows.
+
+        Then the write-ahead log is folded into the file and emptied. A
+        seeded notebook measured 4 KB of file beside 2.2 MB of log after a
+        clean quit, so deleting the `-wal` lost every note (INBOX 1573)."""
         try:
             with self.engine.connect() as connection:
                 connection.exec_driver_sql("PRAGMA optimize")
+                connection.exec_driver_sql("PRAGMA wal_checkpoint(TRUNCATE)")
         except Exception as exc:  # noqa: BLE001  # a quit must not fail over statistics
             logging.getLogger(__name__).info("PRAGMA optimize skipped: %s", exc)
 

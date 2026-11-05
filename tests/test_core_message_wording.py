@@ -86,15 +86,15 @@ SOURCES: tuple[Source, ...] = (
         functions=(
             "validate_attachment_filename",
             "rename_attachment",
-            "rename_tags",
             "rename_category",
             "delete_category",
         ),
     ),
+    Source("repo/tags.py", raises=("ValueError",), functions=("rename",)),
     Source("entry/tidy.py", raises=("ValueError", "LookupError"), functions=("set_auto", "undo")),
     Source("ai/tools/categories.py", raises=("ToolError",)),
     Source(
-        "ai/tools/__init__.py",
+        "ai/tools/tool_turn.py",
         raises=("ToolError",),
         functions=("validate_make_plan", "summarise_turns"),
     ),
@@ -306,7 +306,7 @@ REVIEWED_COMPUTED: dict[tuple[str, str], str] = {
     ("routes_board_library.py", "detail"): "_fail's callers pass literals and f-strings of counts and names, which collect() checks",
     ("routes_import.py", "str(exc)"): "TooBig from entry/app_import.py, one fixed sentence",
     ("routes_webclip.py", "NOT_A_PAGE"): "a constant in routes_webclip.py, checked below",
-    ("routes_whiteboard.py", "detail"): "one of two literal sentences, chosen by what the XMind archive holds",
+    ("wb_import.py", "detail"): "one of two literal sentences, chosen by what the XMind archive holds",
     ("routes_backups.py", "str(exc)"): "FileNotFoundError and ValueError from core/backup.py restore_backup",
     ("routes_categories.py", "str(exc)"): "ToolError (ai/tools/categories.py) and ValueError (entry/manager.py)",
     ("routes_captions.py", "str(exc)"): "CaptionsError from ai/captions.py: its hint constants and literal sentences",
@@ -330,7 +330,7 @@ REVIEWED_COMPUTED: dict[tuple[str, str], str] = {
     ("routes_models.py", "reason"): "core/security.py check_backend_url",
     ("routes_models.py", "info['error']"): "ai/model_cards.py inspect_model_name",
     ("routes_settings.py", "importer.INSTALL_HINT"): "entry/importer.py INSTALL_HINT",
-    ("routes_tags.py", "str(exc)"): "ValueError from entry/manager.py rename_tags",
+    ("routes_tags.py", "str(exc)"): "ValueError from repo/tags.py rename",
     ("routes_tidy.py", "str(exc)"): "ValueError from entry/tidy.py set_auto and LookupError from entry/tidy.py undo",
     ("routes_voice.py", "voice.INSTALL_HINT"): "ai/voice.py INSTALL_HINT",
     ("routes_voice.py", "over_limit_detail"): "the two callers pass literals, which collect() checks",
@@ -341,6 +341,8 @@ REVIEWED_COMPUTED: dict[tuple[str, str], str] = {
     ("routes_webclip.py", "str(exc)"): "ClipRefused from core/webclip.py",
     ("routes_maintenance.py", "refusal"): "core/maintenance.py SHORTCUT_REFUSALS, fixed sentences keyed by reason",
     ("routes_websearch.py", "str(exc)"): "WebSearchError (search/websearch.py) and SearxngError (search/searxng_*.py)",
+    # INBOX 1556: the same sentence, now beside its reason code so the panel can offer to start SearXNG.
+    ("routes_websearch.py", "detail"): "str(exc) of WebSearchError (search/websearch.py) and SearxngError (search/searxng_*.py), with exc.reason as `code`",
 }
 
 

@@ -107,6 +107,33 @@ def category_groups() -> dict[str, str]:
     return _data()["category_groups"]
 
 
+#: The pack's groups that say where a topic came from or what a note is for,
+#: not what it is about: "Original Coverage" holds Sports, Education, Finance
+#: and 46 more, so as a parent it would make every topic a sibling of every
+#: other (INBOX 1583, measured: 10 of 12 mixed notes right without it, 3 with).
+_NOT_PARENTS = frozenset({"Original Coverage", "Note Purposes"})
+
+
+def parent_of(topic: str) -> str | None:
+    """The subject group a topic belongs to ("Sleep": Health & Wellbeing), or None."""
+    group = category_groups().get(topic)
+    return None if group in _NOT_PARENTS else group
+
+
+@lru_cache(maxsize=1)
+def _children() -> dict[str, tuple[str, ...]]:
+    out: dict[str, list[str]] = {}
+    for topic, group in category_groups().items():
+        if group not in _NOT_PARENTS:
+            out.setdefault(group.casefold(), []).append(topic)
+    return {group: tuple(topics) for group, topics in out.items()}
+
+
+def children_of(group: str) -> tuple[str, ...]:
+    """The topics under a subject group named in any case ("leisure"), or ()."""
+    return _children().get((group or "").strip().casefold(), ())
+
+
 def __getattr__(name: str) -> Any:
     """The pack's module-level names, read lazily so importing this module
     reads no data (decision 56)."""
@@ -582,7 +609,7 @@ def name_topics(name: str) -> dict[str, float]:
     everyday name from `memorymap_filing.json` ("Car", "Uni", "Money").
     Each part of a composite name counts ("Films & TV"). A copy: the kept
     answer is shared."""
-    return dict(_name_topics(name or ""))
+    return dict(_name_topics(name or "") or _parent_topics(name or ""))
 
 
 @lru_cache(maxsize=1)
@@ -609,3 +636,14 @@ def _name_topics(name: str) -> dict[str, float]:
             if candidate in labels or candidate in aliases:
                 break
     return found
+
+
+def _parent_topics(name: str) -> dict[str, float]:
+    """**A name that is only a parent of the pack** ("Leisure", "Practical
+    Life") reaches each topic under it (INBOX 1583: the taxonomy's parents),
+    a named topic's 2.0 shared among them as a phrase is shared among its
+    topics. Only when nothing else did: "Work" is a parent too, and its 24
+    job sectors beside its own Business and Career cost the 120-note fixture
+    its Work note."""
+    children = children_of(name)
+    return {topic: 2.0 / len(children) for topic in children}

@@ -334,7 +334,7 @@
 /* --- Wave O: expanded appearance (theme/size/density/glass) ---------------------- */
 .seg {
   display: inline-flex;
-  gap: 0.15rem;
+  gap: var(--space-1);
   padding: 0.25rem;
   border-radius: var(--radius-choice);
   background: var(--chip-bg);
@@ -397,6 +397,19 @@
 .seg button:is(.active, [aria-pressed="true"]) {
   background: var(--accent-surface);
   color: var(--on-accent);
+}
+
+/* **A `.seg` alone on its line spans the row** (INBOX 1566: "the pill has been chucked there with no thought"):
+   equal segments across the width, never a well pushed to one end beside empty space. */
+.seg.seg-fill {
+  display: flex;
+  width: 100%;
+  margin-bottom: 0;
+}
+
+.seg.seg-fill > button {
+  flex: 1 1 0;
+  min-width: 0;
 }
 
 /* --- `.seg-multi`: one well, independent toggles ---------------------------
@@ -1135,6 +1148,16 @@ header#top-bar select,
   display: none;
 }
 
+/* The way out of "SearXNG is down" (INBOX 1556): a line and its button under the
+   message, in the web panel and under a failed web-search tool chip. */
+.searxng-down {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+}
+
 /* Two lines by design: "12 results via SearXNG (local)" is the answer, and
    "nothing left your machine but the query" is the reassurance under it. Glued
    together with a " · " they wrapped mid-phrase in a narrow panel. */
@@ -1634,7 +1657,9 @@ header#top-bar select,
   --quick-tint: var(--accent);
   --quick-tint-ink: var(--accent-text);
   background: color-mix(in oklab, var(--quick-tint) 14%, var(--card));
-  border-color: color-mix(in oklab, var(--quick-tint) 55%, transparent);
+  /* No tinted edge at rest (unslop 1103, 11): the fill, the icon, and a filled
+     button and a link were four accent signals above the fold. The edge takes
+     the tint with the pointer, below. */
   border-radius: var(--radius-md);
 }
 
@@ -3302,6 +3327,23 @@ button.answer-figure-open {
   font-size: var(--text-lg);
 }
 
+/* A question past ten lines folds (the owner, 2026-11-02): the notes' clamp at
+   ten lines, its last line faded into the bubble, "Show more" under it
+   (chat-turn.js addBubble). */
+.msg.user .msg-body {
+  --note-preview-lines: 10;
+}
+
+.msg.user .msg-body.is-folded {
+  -webkit-mask-image: linear-gradient(to bottom, currentColor calc(100% - 1.6em), transparent);
+  mask-image: linear-gradient(to bottom, currentColor calc(100% - 1.6em), transparent);
+}
+
+.msg.user > .entry-more {
+  color: inherit;
+  opacity: 0.8;
+}
+
 .msg.user .msg-role {
   color: var(--on-accent);
   opacity: 0.72;
@@ -3456,9 +3498,7 @@ button.answer-figure-open {
 .graph-zoom {
   display: flex;
   flex-direction: column;
-  /* The padding, gap and overflow are set again below, with the reason. */
-  gap: 0;
-  overflow: hidden;
+  /* The padding, gap and overflow are set below, with the reason. */
   /* The floating-control recipe (see `.scroll-top`): card fill, glass edge,
      glass shadow, the button radius. The buttons inside are plain, the
      strip is the control, not each segment of it. */
@@ -3571,7 +3611,7 @@ button.answer-figure-open {
   border: 1px solid transparent;
   border-radius: var(--radius-choice);
   padding: 0.25rem;
-  gap: 0.15rem;
+  gap: var(--space-1);
 }
 
 /* No glass-off well of its own (INBOX 621): it drew a card-white well with a
@@ -4059,6 +4099,18 @@ button.answer-figure-open {
   --help-caret-x: 50%;
   /* Arrives from its '?': the menus' grow (10-responsive.css, "a menu or
      popover grows from what opened it"). */
+}
+
+/* A status-bar popover's head (`popoverHead`, menus.js; INBOX 1603): its name
+   takes the room, its own actions follow, and the close x ends the row. */
+.popover-head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+.popover-head > .popover-title {
+  flex: 1;
+  min-width: 0;
 }
 
 /* The caret. Two squares rotated 45°, the back one carries the border, the

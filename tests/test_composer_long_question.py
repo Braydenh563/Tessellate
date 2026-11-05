@@ -5,7 +5,7 @@ from __future__ import annotations
 
 import time
 
-from tessellate.ai import composer
+from tessellate.ai import composer, composer_intent
 
 
 def test_planning_a_twenty_thousand_character_question_is_bounded():
@@ -24,11 +24,11 @@ def test_a_long_question_is_not_read_for_a_utility_word_by_word():
 
     question = "the cat or " * 1800
     started = time.perf_counter()
-    assert utilities.kind_of(question[: composer.PLAN_CHARS]) is None
+    assert utilities.kind_of(question[: composer_intent.PLAN_CHARS]) is None
     assert time.perf_counter() - started < 0.15
     started = time.perf_counter()
     for _ in range(7):
-        utilities.kind_of(question[: composer.PLAN_CHARS])
+        utilities.kind_of(question[: composer_intent.PLAN_CHARS])
     assert time.perf_counter() - started < 0.05
 
 
@@ -45,7 +45,7 @@ def test_the_utility_reading_follows_the_web_search_setting(app_state):
 
 
 def test_a_short_question_is_planned_over_all_of_it():
-    assert composer.plan("what did I write about golf") == composer.plan("what did I write about golf"[: composer.PLAN_CHARS])
+    assert composer.plan("what did I write about golf") == composer.plan("what did I write about golf"[: composer_intent.PLAN_CHARS])
 
 
 def test_a_long_question_streams_an_answer_in_bounded_time(ai_client, session):
@@ -75,5 +75,5 @@ def test_the_model_is_given_the_whole_question():
 
 
 def test_the_cap_is_a_prefix_not_a_refusal():
-    tail = "x" * composer.PLAN_CHARS + " golf"
-    assert composer.plan(tail) == composer.plan(tail[: composer.PLAN_CHARS])
+    tail = "x" * composer_intent.PLAN_CHARS + " golf"
+    assert composer.plan(tail) == composer.plan(tail[: composer_intent.PLAN_CHARS])

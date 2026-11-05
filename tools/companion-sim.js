@@ -55,7 +55,7 @@ const ROOT = location.protocol === "file:" ? "../frontend/" : "/";
     el.onerror = () => no(new Error(`could not load ${src}`));
     document.head.appendChild(el);
   });
-  script("js/prefs.js").then(() => script("js/avatars.js")).then(() => script("js/atlas.js")).then(boot).catch((e) => { document.getElementById("status").textContent = e.message; });
+  script("js/prefs.js").then(() => script("js/avatars.js")).then(() => script("js/atlas.js")).then(() => ensureModule("atlasMotion")).then(boot).catch((e) => { document.getElementById("status").textContent = e.message; });
 })();
 
 function boot() {

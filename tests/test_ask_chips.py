@@ -92,12 +92,13 @@ ACT_QUESTIONS = [
 @pytest.mark.parametrize("question", ACT_QUESTIONS)
 def test_a_question_that_names_an_act_is_led_by_the_sentence_naming_it(question):
     from tessellate.ai import composer
+    from tessellate.ai import composer_help
 
     reply = help_chat.offline_answer(question, "notes")
     lead = reply["content"].split("\n\n")[0]
-    act = composer._help_act(question)  # noqa: SLF001
+    act = composer_help._help_act(question)  # noqa: SLF001
     said = {composer._stem(w) for w in re.findall(r"[a-z]+", lead.lower())}  # noqa: SLF001
-    assert act and composer._help_act_stems()[act] & said, (question, lead)  # noqa: SLF001
+    assert act and composer_help._help_act_stems()[act] & said, (question, lead)  # noqa: SLF001
 
 
 def test_exporting_documents_is_not_led_by_the_editors_views():

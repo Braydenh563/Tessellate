@@ -229,7 +229,31 @@ const WB_MAP_HIERARCHIES = Object.freeze({
 //: per edge on every drag frame). `accentInk`: the ink for the accent, read once
 //: per accent (`wbMapAccentInk` keys it), since a computed-style read per topic
 //: inside the paint loop would force a style recalculation per topic.
-const wbMapCache = { levelById: new Map(), looksFor: null, looks: null, accentInk: null, accentFor: null };
+//: `defer`/`cancelAll`: the map's one-shot timers and frames (a rename's focus, the typed-ahead
+//: editor, the study bar's focus), kept so a board switch cancels what the old map left in
+//: flight (`wbCancelBoardTimers`, audit 1028 B32). `frames` 0 is a timer, n a frame n deep.
+const wbMapCache = {
+  levelById: new Map(), looksFor: null, looks: null, accentInk: null, accentFor: null,
+  pending: new Set(),
+  defer(fn, frames = 0) {
+    let id = 0;
+    const cancel = () => (frames ? cancelAnimationFrame(id) : clearTimeout(id));
+    const run = () => {
+      this.pending.delete(cancel);
+      fn();
+    };
+    const step = (left) => {
+      id = requestAnimationFrame(left > 1 ? () => step(left - 1) : run);
+    };
+    if (frames) step(frames);
+    else id = setTimeout(run);
+    this.pending.add(cancel);
+  },
+  cancelAll() {
+    for (const cancel of this.pending) cancel();
+    this.pending.clear();
+  },
+};
 
 //: **The level of every topic** (decision 38). The first root is the centre,
 //: as is any root with topics under it; a root with nothing under it is a
@@ -1907,12 +1931,12 @@ function wbBuildMapNode(el, d) {
       //: Tab and Enter already acted, and the name said. Only when nothing
       //: else took the focus: a press on another field keeps it.
       const label = wbMapLabel(live);
-      setTimeout(() => {
+      wbMapCache.defer(() => {
         const at = document.activeElement;
         if (at && at !== document.body) return;
         document.getElementById("whiteboard-container")?.focus({ preventScroll: true });
         wbAnnounce(label || "Untitled topic");
-      }, 0);
+      });
     });
     text.on("keydown", function (event) {
       if (!this.isContentEditable) return;
@@ -4927,7 +4951,7 @@ function mapPaletteCommands() {
   const canvas = document.getElementById("library-view-whiteboard");
   //: Showing, not merely present: another tab hides the Library, not this.
   if (typeof wbIsMap !== "function" || !wbIsMap() || !canvas?.getClientRects().length) return [];
-  const later = (fn) => () => setTimeout(fn);
+  const later = (fn) => () => wbMapCache.defer(fn);
   const rows = [];
   const node = wbSelectedMapNode();
   const row = (group, label, run, keys, about) => rows.push({ group, label, run: later(run), keys, about });
@@ -5144,7 +5168,7 @@ async function wbMapAddRootAt(x, y) {
 //: topics.
 async function wbMapAddReference(parentId) {
   if (typeof pickLibraryItemDialog !== "function") return null;
-  const chosen = await pickLibraryItemDialog("Point a new node at…");
+  const chosen = await pickLibraryItemDialog("Point a new node at…", { noUploads: true });
   if (!chosen) return null;
   const created = await wbMapCreateNode({
     parentId,
@@ -5413,7 +5437,12 @@ function wbMapRevealTopic(item) {
   const container = document.getElementById("whiteboard-container");
   if (!el || !container) return false;
   const free = typeof wbVisibleCanvasRect === "function" ? wbVisibleCanvasRect() : container.getBoundingClientRect();
-  if (!wbRectEscapes(el.getBoundingClientRect(), free)) return false;
+  //: **Inside the slide's own margin counts as at the edge** (audit 1028 U24:
+  //: the newest topic stood 5px from the canvas edge, "in view" to a plain
+  //: containment test, so the view never moved and it read as cut off).
+  const m = 24;
+  const inset = { left: free.left + m, top: free.top + m, right: free.right - m, bottom: free.bottom - m };
+  if (!wbRectEscapes(el.getBoundingClientRect(), inset)) return false;
   const box = wbItemBBox("object", item);
   if (!box) return false;
   //: With its parent when the two fit side by side (dog2 item 12): centring
@@ -5440,7 +5469,6 @@ function wbMapRevealTopic(item) {
     return true;
   }
   const t = d3.zoomTransform(container);
-  const m = 24;
   const slide = (lo, hi, a0, a1) => {
     let d = 0;
     if (hi > a1 - m) d = a1 - m - hi;
@@ -5499,7 +5527,7 @@ function wbMapEditNode(id, { now = false } = {}) {
     if (commit) el.blur();
   };
   if (now) open();
-  else requestAnimationFrame(open);
+  else wbMapCache.defer(open, 1);
 }
 
 //: **A reference node's own words** (B38). Its name is the item's, so a
@@ -7034,6 +7062,18 @@ function wbMapPickRow(select) {
 //: of the bar where the well was 151. The readout says the size the topic
 //: is drawn at, the map's when it follows the map (ringed, its sentence the
 //: tooltip), so it never reads "M" over a topic the map draws large.
+//: **One scale for the readout** (audit 1028 U28: a root drawn at 22px read
+//: "22px" while its children read "M"). `steps` is the scale, `[{ name, px }]`
+//: smallest first. A size on a step is its name; a size between two is the step
+//: below with a plus ("L+", so it reads as "a little over L" and the minus
+//: button visibly lands on "L"); under the smallest step it is that step.
+//: A property of the stepper, not a shared-scope name (ranked row 37a).
+wbMapSizeStepper.sizeName = function wbMapSizeName(size, steps) {
+  if (!steps.length) return `${size}px`;
+  const below = [...steps].reverse().find((step) => step.px <= size) || steps[0];
+  return below.px === size || size < steps[0].px ? below.name : `${below.name}+`;
+};
+
 function wbMapSizeStepper(select) {
   const wrap = document.createElement("div");
   wrap.className = "stepper wb-map-size-stepper";
@@ -7060,7 +7100,7 @@ function wbMapSizeStepper(select) {
     const drawn = Number(wbMapThemedData(wbSelectedMapNode())?.font_size);
     return { size: drawn > 0 ? drawn : Number(chosen?.dataset.inherits) || WB_MAP_TEXT_DEFAULT, following: true };
   };
-  const nameOf = (size) => choices().find((o) => px(o) === size)?.textContent.trim() || `${size}px`;
+  const nameOf = (size) => wbMapSizeStepper.sizeName(size, choices().map((o) => ({ name: o.textContent.trim(), px: px(o) })));
   const step = (dir) => {
     const { size } = now();
     const list = choices();
@@ -7078,7 +7118,8 @@ function wbMapSizeStepper(select) {
     unit.textContent = nameOf(size);
     unit.classList.toggle("is-inherited", following && Boolean(select.querySelector("option[data-follow]")));
     const said = select.querySelector("option[data-follow]")?.textContent.trim();
-    unit.title = following && said ? said : `Text size ${nameOf(size)}`;
+    const shown = nameOf(size);
+    unit.title = following && said ? said : shown.endsWith("+") ? `Text size ${size}px, a little over ${shown.slice(0, -1)}` : `Text size ${shown}`;
     minus.disabled = !smaller;
     plus.disabled = !larger;
     minus.title = smaller ? `Smaller text (${smaller.textContent.trim()})` : "Already the smallest";
@@ -7575,7 +7616,14 @@ async function wbMapSetNodeStyle(node, patch, { undo = true, rows = null } = {})
   if (undo) wbPushUndo({ action: "move", kind: "object", id: node.id, before: WB_KIND_INFO.object.payload(node) });
   node.data = { ...node.data, ...patch };
   const el = document.querySelector(`.wb-object[data-id="${node.id}"]`);
-  if (el) wbPaintMapNodeStyle(el, node);
+  if (el) {
+    wbPaintMapNodeStyle(el, node);
+    //: Painted outside the render, so the render's paint key (`_wbPaintKey`)
+    //: no longer describes what the element shows. Left as it was, an Undo
+    //: that put the data back to the key's old value was skipped as "nothing
+    //: changed" and the glow stayed on screen (INBOX 1625).
+    el._wbPaintKey = null;
+  }
   //: A selection passes `rows` and saves them once (BD2: one request, not one per topic).
   if (rows) rows.push({ kind: "object", item: node });
   else await wbSaveObject(node);
@@ -9756,8 +9804,7 @@ function wbMapStartStudy() {
   wbStartPresenting();
   wbMapStudySyncBar();
   //: After the shell's own focus on Next (a frame on), so Enter shows.
-  requestAnimationFrame(() => requestAnimationFrame(() =>
-    document.getElementById("wb-study-show")?.focus({ preventScroll: true })));
+  wbMapCache.defer(() => document.getElementById("wb-study-show")?.focus({ preventScroll: true }), 2);
 }
 
 //: Show, then the two marks: the bar's study buttons follow the step.

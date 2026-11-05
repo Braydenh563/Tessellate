@@ -80,6 +80,15 @@
 //    (whiteboard.js) and renderLibraryImagesGallery()/renderLibraryDocuments()
 //    (this file) exactly as before; only the listener's *location* changed.
 
+//: A dock's title says what the tab above it cannot: how many (unslop 1103, 15).
+//: The sub-tab already names the thing, so "Documents" under "Documents" was an echo.
+//: A property of nounCount, not a global of its own (tests/test_global_scope_ratchet.py),
+//: and here, not in prefs.js: only the Library's docks call it (the boot scripts' gzip total).
+nounCount.dock = function (dock, n, one, many = `${one}s`) {
+  const title = document.querySelector(`.dock[data-dock-name="${dock}"] .dock-identity h2`);
+  if (title) title.textContent = n ? nounCount(n, one, many) : `No ${many}`;
+};
+
 //: [{ext, label, line_comment, block_comment, indent, previewable}], server
 //: order preserved: the picker's order is a decision (see filetypes.py) and
 //: sorting it here would quietly undo it. Here, not in documents.js: the
@@ -111,7 +120,9 @@ function docTypeItems(onPick) {
     title:
       type.ext === "md"
         ? "Markdown (.md): the rich text editor, formatted as you type"
-        : `${type.label} (.${type.ext})`,
+        : type.ext === "mmd"
+          ? "Diagram (.mmd): the Diagram builder, saved as a Mermaid file"
+          : `${type.label} (.${type.ext})`,
     group: type.group || "Code",
     run: () => onPick(type.ext),
   }));
@@ -376,6 +387,9 @@ const LIBRARY_KINDS = [
   //: wherever it appears.
   { key: "board", icon: "ph:pencil-circle", label: "Boards" },
   { key: "map", icon: "ph:tree-structure", label: "Mind maps" },
+  //: A Mermaid diagram is a document of the `mmd` type (1546 D5); the server lists it as
+  //: its own kind, and it opens in the Documents editor like any document.
+  { key: "diagram", icon: "ph:flow-arrow", label: "Diagrams" },
   // Drafts used to be a Library sub-tab of its own. It is a *filter over
   // notes*, not a separate kind of thing, and it only sat up there because
   // this chip row did not exist when it was added, so it moved here, which
@@ -535,6 +549,7 @@ function renderLibraryFilters() {
         : kind.key === "meeting"
           ? libraryItems.filter((i) => i.kind === "note" && (i.tags || []).includes("meeting")).length
           : libraryCounts[kind.key] || 0;
+    if (kind.key === "all") nounCount.dock("library", count, "item");
     const button = document.createElement("button");
     button.type = "button";
     button.className =
@@ -781,6 +796,8 @@ function renderLibrary(options) {
         : items.filter(wordMatch);
   }
   items = librarySorted(items);
+  //: The count after a load or a filter, said once to a screen reader (audit 1028 S92).
+  if (prefs.get("activeTab", null) === "library") announce(`Library: ${nounCount(items.length, "item")}`, { settle: 600, once: true });
 
   // The server sends the newest page of a big kind; say so under the grid
   // rather than let 200 cards pass for all of them. A search reaches the
@@ -885,11 +902,13 @@ function renderLibrary(options) {
         createBtn.replaceChildren(...[...dockCreate.childNodes].map((n) => n.cloneNode(true)));
         createBtn.title = dockCreate.title;
       }
+      //: One Create at a time (unslop 1103, 18): the empty state's is the action while there is nothing, so the dock's steps aside, as Documents' does.
+      dockCreate?.classList.toggle("hidden", offerCreate && Boolean(dockCreate));
     }
     const fresh = !items.length && !query && !madeAnything;
     const freshText = $("library-empty-text");
     if (freshText) {
-      freshText.textContent = fresh ? "Make a document, a board or a map, or upload a file." : "";
+      freshText.textContent = fresh ? "Make a document, a diagram, a board or a map, or upload a file." : "";
       freshText.classList.toggle("hidden", !fresh);
     }
     if (!items.length) {
@@ -954,7 +973,7 @@ function libraryCopyActions(kind, title, id) {
   const out = [
     makeMenuItem("ph:copy Copy title", "Copy the name to the clipboard", () => copyToClipboard(name)),
   ];
-  if (kind === "document") {
+  if (kind === "document" || kind === "diagram") {
     out.push(
       makeMenuItem("ph:brackets-square Copy wiki link", "Copy a [[wiki link]] to paste into a note or a document", () =>
         copyToClipboard(`[[${name}]]`)
@@ -962,6 +981,7 @@ function libraryCopyActions(kind, title, id) {
     );
   }
   if (id != null && ["note", "document", "chat", "board", "map"].includes(kind)) out.push(appLinkMenuItem(kind, id));
+  else if (id != null && kind === "diagram") out.push(appLinkMenuItem("document", id));
   return out;
 }
 
@@ -1038,7 +1058,7 @@ function libraryActions(item) {
       }),
     ];
   }
-  if (item.kind === "document") {
+  if (item.kind === "document" || item.kind === "diagram") {
     return [
       makeMenuItem("ph:pencil-simple Rename", "Rename this document", async () => {
         const next = await promptDialog("Rename this document", item.title);
@@ -1046,9 +1066,15 @@ function libraryActions(item) {
         await renameDocumentWithUndo(item, next).catch((e) => toast(e.message, true));
         reload();
       }),
-      makeMenuItem("ph:download-simple Download .md", "Save a copy as a markdown file", () => {
-        downloadFromApi(`/documents/${item.id}/export.md`, "document.md");
+      makeMenuItem(`ph:download-simple Download .${item.kind === "diagram" ? "mmd" : "md"}`, item.kind === "diagram" ? "Save a copy as a Mermaid file" : "Save a copy as a markdown file", () => {
+        downloadFromApi(`/documents/${item.id}/export.md`, item.kind === "diagram" ? "document.mmd" : "document.md");
       }),
+      //: A diagram's picture (DOCUMENTS_PLAN 22, R10): drawn in the frame on the press, by the lazy export file.
+      ...(item.kind === "diagram" ? [["ph:file-svg Save as SVG", "svg"], ["ph:file-png Save as PNG", "png"], ["ph:image Copy as picture", "picture"]].map(([label, how]) =>
+        makeMenuItem(label, "", async () => {
+          //: diagram-embed.js hangs itself on `diagramModel` (documents-mermaid.js, the library bundle), so that bundle comes first; opened from the Library on a fresh boot it is not there yet.
+          if ((await ensureModule("library")) && (await ensureModule("diagramEmbed"))) diagramModel.embed.outDoc(item.id, how);
+        })) : []),
       //: The shared "act on this" rows (INBOX 393): every object can be taken
       //: to the chat that answers about it.
       makeMenuItem("ph:graph Show in graph", "Open the graph centred on this document", () =>
@@ -1097,7 +1123,8 @@ function libraryActions(item) {
       // two-places problem the move was for.
       makeMenuItem("ph:trash Delete for good", `Permanently delete this ${bin.noun}`, async () => {
         if (!(await confirmDialog(`Delete this ${bin.noun} permanently?\n\nThis cannot be undone.`))) return;
-        await apiJson(bin.purge, { method: "DELETE" }).catch((e) => toast(e.message, true));
+        const gone = await apiJson(bin.purge, { method: "DELETE" }).catch((e) => toast(e.message, true));
+        if (gone) undoStoreClear.purged(bin.noun, item.id);
         reload();
       }),
     ];
@@ -1741,7 +1768,7 @@ $("library-grid").addEventListener("focusin", (event) => {
 // Each kind opens where it is actually worked on. The Library finds things; it
 // is not a fifth editor.
 function openLibraryItem(item) {
-  if (item.kind === "document") {
+  if (item.kind === "document" || item.kind === "diagram") {
     openDocumentFromNote(item.id); // the Documents page, on this document
   } else if (item.kind === "chat") {
     switchTab("chat");
@@ -1885,6 +1912,7 @@ $("binned-purge").addEventListener("click", async () => {
   if (!(await confirmDialog("Permanently delete this note?\n\nThis cannot be undone."))) return;
   try {
     await apiJson(`/entries/${id}/purge`, { method: "DELETE" });
+    undoStoreClear.purged("note", id);
     toast("Deleted for good.");
   } catch (error) {
     toast(voiceLine("failed", { what: "delete that note", why: error.message }), true);
@@ -2059,8 +2087,12 @@ $("library-bin-empty").addEventListener("click", async () => {
       "This cannot be undone."
   );
   if (!ok) return;
+  //: The binned ids, asked for before they are gone, so what this device kept of
+  //: each goes with it (`undoStoreClear.purged`).
+  const binned = (await apiJson("/library").catch(() => null))?.items?.filter((item) => item.kind === "archived") || [];
   try {
     await apiJson("/recycle-bin/empty", { method: "POST" });
+    for (const item of binned) undoStoreClear.purged(binRoutes(item).noun, item.id);
   } catch (e) {
     // Was unconditional before: a failed request still showed "The bin is
     // empty." right under its own error toast, one saying it worked and one
@@ -2160,7 +2192,7 @@ $("library-bulk-delete").addEventListener("click", async () => {
         ? [binRoutes(item).purge, "DELETE"]
         : item.kind === "note"
           ? [`/entries/${item.id}`, "DELETE"]
-          : item.kind === "document"
+          : item.kind === "document" || item.kind === "diagram"
             ? [`/documents/${item.id}`, "DELETE"]
             : item.kind === "chat"
               ? [`/conversations/${item.id}`, "DELETE"]
@@ -2171,8 +2203,9 @@ $("library-bulk-delete").addEventListener("click", async () => {
     try {
       const answer = await apiJson(route[0], { method: route[1] });
       deleted++;
+      if (item.kind === "archived") undoStoreClear.purged(binRoutes(item).noun, item.id);
       if (item.kind === "note") comeBack.push({ route, back: [`/entries/${item.id}/restore`, "POST"] });
-      else if (item.kind === "document") comeBack.push({ route, back: [`/documents/${item.id}/restore`, "POST"] });
+      else if (item.kind === "document" || item.kind === "diagram") comeBack.push({ route, back: [`/documents/${item.id}/restore`, "POST"] });
       else if (item.kind === "chat" && answer?.restore) comeBack.push({ route, chat: answer.restore });
     } catch {
       // counted below
@@ -2251,6 +2284,15 @@ const LIBRARY_CREATE_BY_KIND = {
       heads.find((h) => h.textContent === "Code")?.nextElementSibling?.querySelector("button")?.click();
     },
   },
+  //: The Diagram builder's Library door (INBOX 1588): the one opener (`diagramModel.door`, documents-mermaid.js), asked for a document
+  //: so a board left open under the Boards sub-tab does not take the diagram.
+  diagram: {
+    label: "ph:flow-arrow New diagram",
+    run: async () => {
+      await ensureModule("library");
+      await diagramModel.door({ doc: true });
+    },
+  },
   chat: {
     label: "ph:plus New chat",
     run: () => {
@@ -2278,7 +2320,7 @@ const LIBRARY_CREATE_BY_KIND = {
   // not have was a *name*, nothing in the app said "concept map", so the
   // one feature the user was asking for was sitting behind a button called
   // "New board" on a tab called Whiteboards, which is why they reported it
-  // missing. See `createConceptMap` for what the entry point adds on top.
+  // missing.
   //
   // It also answers the deferred half of the ask, "maybe with a way to
   // export that into a visual diagram on the whiteboard", by construction:
@@ -2365,6 +2407,7 @@ const LIBRARY_CREATE_HINTS = {
   note: ["ph:note-pencil", "A quick thought. Atlas files it and links it for you."],
   document: ["ph:file-text", "A long page: headings, an outline, templates, export."],
   code: ["ph:code", "A script, a page or a notebook with a Run button."],
+  diagram: ["ph:flow-arrow", "A flowchart, mind map, timeline or sequence diagram built from blocks, saved as a .mmd file."],
   map: ["ph:graph", "A board of note cards you branch with Tab and Enter; each topic is saved as a note."],
   mindmap: ["ph:tree-structure", "A tree of topics round one central idea, with branches you fold and colour."],
   board: ["ph:squares-four", "A canvas of cards, sketches and links you arrange freely."],
@@ -2377,7 +2420,7 @@ const LIBRARY_CREATE_HINTS = {
 //: then the things that arrive from elsewhere. The picker's sentence used to
 //: say "Five kinds of thing", which went stale the day a sixth row was
 //: added; it names no count now, so it cannot drift from the rows under it.
-const LIBRARY_CREATE_ORDER = ["note", "document", "code", "mindmap", "board", "chat", "meeting", "file"];
+const LIBRARY_CREATE_ORDER = ["note", "document", "code", "diagram", "mindmap", "board", "chat", "meeting", "file"];
 
 //: The kinds that have a chord of their own, by its name in the shortcut
 //: registry: the keycap is read from the live table, so a rebinding shows.
@@ -2420,7 +2463,15 @@ function openLibraryCreatePicker() {
     if (event.key === "Escape") {
       event.stopPropagation();
       close();
+      return;
     }
+    //: Up and Down walk the kinds (R6.6); Enter then makes the one in focus, not the first.
+    const step = { ArrowDown: 1, ArrowUp: -1 }[event.key];
+    if (!step) return;
+    const rows = [...list.querySelectorAll("button")];
+    event.preventDefault();
+    event.stopPropagation();
+    rows[(Math.max(0, rows.indexOf(document.activeElement)) + step + rows.length) % rows.length]?.focus();
   };
 
   for (const kind of LIBRARY_CREATE_ORDER) {
@@ -2852,6 +2903,7 @@ function renderSkillCards(query = "") {
   //: it was a pill well of three).
   const yours = skillCardsCache.filter(({ skill }) => !skill.builtin).length;
   const counts = { all: skillCardsCache.length, yours, builtin: skillCardsCache.length - yours };
+  nounCount.dock("library-skills", counts.all, "skill");
   const kindSelect = $("skills-kind");
   if (kindSelect) {
     for (const option of kindSelect.options) {
@@ -3440,6 +3492,36 @@ async function libraryNewDocument(fileType = null) {
 //: The caret beside New document: the Documents list's own type picker, built
 //: once the table is in (renderLibraryDocuments loads it).
 function libraryDocsNewMount() {
+  //: New diagram beside New document (1679, open item: the list offered none on an empty install or at 390). Built here, not in
+  //: index.html, which is capped at a fixed element count; the same door as the Create menu's (`diagramModel.door`, documents-mermaid.js).
+  {
+    const open = async () => {
+      await ensureModule("library");
+      await diagramModel.door({ doc: true });
+    };
+    const head = $("library-docs-new")?.closest(".split-button");
+    if (head && !$("library-docs-new-diagram")) {
+      const b = document.createElement("button");
+      b.id = "library-docs-new-diagram";
+      b.type = "button";
+      b.className = "ghost small icon-only";
+      b.title = "New diagram";
+      setLabel(b, "ph:flow-arrow");
+      b.setAttribute("aria-label", "New diagram");
+      b.addEventListener("click", open);
+      head.after(b);
+    }
+    const empty = $("library-docs-empty");
+    if (empty && !$("library-docs-empty-diagram")) {
+      const b = document.createElement("button");
+      b.id = "library-docs-empty-diagram";
+      b.type = "button";
+      b.className = "ghost small";
+      setLabel(b, "ph:flow-arrow New diagram");
+      b.addEventListener("click", open);
+      empty.append(b);
+    }
+  }
   const slot = $("library-docs-new-slot");
   if (!slot || slot.firstChild || !docFileTypes.length) return;
   const { wrap, opener } = docTypeMenu((ext) => libraryNewDocument(ext), "Start a document of another type");
@@ -3490,8 +3572,10 @@ async function renderLibraryDocuments() {
   }
   surfaceRecovered(empty);
   //: Every document, before any filter or page: the first reorder stores this (obj-reorder.js).
-  if (!needle) libraryDocsAll = docs;
-  else if (!libraryDocsAll.length) seedLibraryDocsAll();
+  if (!needle) {
+    libraryDocsAll = docs;
+    nounCount.dock("library-docs", docs.length, "document");
+  } else if (!libraryDocsAll.length) seedLibraryDocsAll();
 
   //: The property filter's options come from what the *search* left, so the
   //: control offers the properties of the documents on screen rather than of
@@ -3516,6 +3600,7 @@ async function renderLibraryDocuments() {
   //: One New document at a time: the empty state's own button is the action
   //: while there is nothing, so the head's copy steps aside (audit 1028 U29).
   document.getElementById("library-docs-new")?.closest(".split-button")?.classList.toggle("hidden", !docs.length && !isFilteredEmpty);
+  $("library-docs-new-diagram")?.classList.toggle("hidden", !docs.length && !isFilteredEmpty);
   noMatch?.classList.toggle("hidden", !isFilteredEmpty);
   if (noMatch && isFilteredEmpty) {
     //: Which of the two narrowings came up empty, said by name: "no documents
@@ -9051,6 +9136,9 @@ function filterLibraryImagesGallery() {
     //: the sort still runs over what is left.
     .filter((i) => libraryMediaKind === "files" || libraryImageOriginsOn.has(libraryImageOrigin(i)));
   renderLibraryImageOrigins();
+  nounCount.dock("library-media", ofKind.length, libraryMediaKind === "files" ? "file" : "image");
+  //: The empty state's Upload is the action while there is nothing (unslop 1103, 18); the dock's steps aside.
+  $("library-images-upload")?.classList.toggle("hidden", !ofKind.length);
   const matched = query
     ? ofKind.filter(
         (i) =>
@@ -9076,8 +9164,8 @@ function filterLibraryImagesGallery() {
   for (const image of images) {
     const fig = document.createElement("figure");
     fig.className = "library-image-tile";
-    //: A picture is staged by its media row, a file (an attachment or a PDF) by its id (obj-ref.js).
-    Object.assign(fig.dataset, { obj: `${image._isImage && !image._isAttachment ? "image" : "file"}:${image.id}`, objTitle: image.original_name || "", objUrl: image.url || "" });
+    //: A picture is staged by its media row, a note's attachment as `file`, an upload that is no picture (a PDF) as `upload`: the two tables number their rows apart (obj-ref.js).
+    Object.assign(fig.dataset, { obj: `${image._isAttachment ? "file" : image._isImage ? "image" : "upload"}:${image.id}`, objTitle: image.original_name || "", objUrl: image.url || "" });
     // **A PDF is not an image, and rendering one as an <img> is why files
     // "dont appear anywhere".** Reported directly, and this is the whole
     // mechanism: every `/media/upload` row was rendered into an `<img
@@ -11242,6 +11330,9 @@ async function renderBookmarks() {
     if (!liveLinkIds.has(id)) libraryLinksSelection.delete(id);
   }
   empty.classList.toggle("hidden", bookmarksCache.length > 0);
+  nounCount.dock("library-links", bookmarksCache.length, "bookmark");
+  //: The empty state's Add a bookmark is the action while there is nothing (unslop 1103, 18); the dock's steps aside.
+  $("bookmark-add")?.classList.toggle("hidden", !bookmarksCache.length);
   renderBookmarkGroupChips();
   filterBookmarks();
   syncSelectbarCount("library-links", libraryLinksSelection.size);

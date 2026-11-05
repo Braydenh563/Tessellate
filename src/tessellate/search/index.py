@@ -282,6 +282,24 @@ def _table_missing(session: Session) -> bool:
     return not known
 
 
+#: Columns no index row reads: a chat question counts every note it surfaced
+#: as used, and rewriting those notes' rows was 96 writes per question
+#: (2026-11-02, 24 notes; audit 1028 E65 sweep).
+_BOOKKEEPING = frozenset({"access_count"})
+
+
+def _only_bookkeeping(obj: object) -> bool:
+    """Whether every column that changed on `obj` is one no index row reads."""
+    state = sa_inspect(obj)
+    changed = {a.key for a in state.attrs if a.history.has_changes()}
+    return bool(changed) and changed <= _BOOKKEEPING
+
+
+def _changed(session: Session) -> list:
+    """What this flush added, and what it changed in a column a row reads."""
+    return [*session.new, *(obj for obj in session.dirty if not _only_bookkeeping(obj))]
+
+
 @event.listens_for(Session, "after_flush")
 def _index_on_flush(session: Session, flush_context) -> None:  # noqa: ANN001
     """Keep the index in step with whatever just changed, in the same
@@ -309,7 +327,7 @@ def _index_on_flush(session: Session, flush_context) -> None:  # noqa: ANN001
             ref_id = getattr(obj, "id", None)
             if ref_id is not None:
                 work.append((source, ref_id, None))
-    for obj in [*session.new, *session.dirty]:
+    for obj in _changed(session):
         for source in _BY_MODEL.get(type(obj), ()):
             ref_id = getattr(obj, "id", None)
             if ref_id is None:
@@ -824,7 +842,12 @@ def _attachment_row(att) -> Row | None:  # noqa: ANN001
     if att is None:
         return None
     from tessellate.core import readings
+    from tessellate.core.database import Entry
 
+    # SEC-A2: a private note's files are never indexed, as the note is not.
+    owner = object_session(att)
+    if owner is not None and getattr(owner.get(Entry, att.entry_id), "is_private", False):
+        return None
     return Row(
         title=att.filename or "",
         # Every reading, pages included (F10, `core/readings.text_of`).
@@ -976,6 +999,41 @@ def reconcile_sources(session: Session) -> bool:
             _write(connection, source, ref_id, row)
             changed = changed or row is not None
     return changed
+
+
+def reconcile_private_files(session: Session) -> bool:
+    """Drop the search rows of files on private notes (SEC-A2).
+
+    Returns True when anything was removed. Files on private notes were
+    indexed until the row builder began leaving them out; the write path only
+    clears a row when the note's privacy changes, so rows made before that fix
+    stay until this runs. Run at every startup beside `reconcile_boards`: one
+    indexed read once clean.
+    """
+    from tessellate.core.database import Attachment, Entry
+
+    if _table_missing(session):
+        return False
+    source = _SOURCES["attachments"]
+    low, high = source.slot * SLOT_STRIDE, (source.slot + 1) * SLOT_STRIDE
+    connection = session.connection()
+    held = {
+        int(ref_id)
+        for (ref_id,) in connection.exec_driver_sql(
+            "SELECT ref_id FROM search_index WHERE rowid >= ? AND rowid < ?", (low, high)
+        ).all()
+    }
+    if not held:
+        return False
+    private = set(
+        session.scalars(
+            select(Attachment.id).join(Entry, Entry.id == Attachment.entry_id).where(Entry.is_private == True)  # noqa: E712
+        ).all()
+    )
+    stale = held & private
+    for ref_id in stale:
+        _write(connection, source, ref_id, None)
+    return bool(stale)
 
 
 _register_all()

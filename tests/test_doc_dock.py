@@ -73,8 +73,11 @@ def test_the_ids_did_not_move():
     """documents.js binds by id. A redesign that renames one is a redesign
     that silently unwires it, the "features that never ran" shape."""
     js = Path("frontend/js/documents.js").read_text(encoding="utf-8")
+    # Intent unchanged: an id documents.js builds itself at load (`.id = "doc-..."`, the boot element cap,
+    # test_boot_diet3) is wired by construction, so it counts as present.
+    built = set(re.findall(r'\.id = "(doc-[a-z-]+)"', js))
     for element_id in re.findall(r'\$\("(doc-[a-z-]+)"\)', js):
-        assert f'id="{element_id}"' in HTML, element_id
+        assert f'id="{element_id}"' in HTML or element_id in built, element_id
 
 
 def test_the_export_label_is_set_with_setlabel_not_textcontent():

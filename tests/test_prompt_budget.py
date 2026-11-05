@@ -18,6 +18,8 @@ import json
 import pytest
 
 from tessellate.ai import agent, context, librarian, tools
+from tessellate.ai import agent_policy
+from tessellate.ai import agent_turn
 
 # The settings reads (`runtime_options`, the context budget, which tools are on)
 # build the app state, in the repo's own `data/` folder without this.
@@ -31,7 +33,7 @@ CHARS_PER_TOKEN = 4
 def _system_prompt() -> str:
     """The static part of what agent.run() builds, without the per-turn bits
     (the clock, the style hint, the profile) which are short and variable."""
-    return f"{librarian.DEFAULT_PERSONA} {agent.AGENT_GROUNDING} {agent.TOOLS_GUIDE}"
+    return f"{librarian.DEFAULT_PERSONA} {agent_policy.AGENT_GROUNDING} {agent_policy.TOOLS_GUIDE}"
 
 
 def test_the_untrimmable_prose_stays_small(app_state):
@@ -51,10 +53,10 @@ def test_the_untrimmable_prose_stays_small(app_state):
     TOOLS_GUIDE or the persona, look there rather than at the number.
     """
     prose = len(_system_prompt())
-    assert prose <= agent.PROSE_BUDGET_CHARS, (
+    assert prose <= agent_policy.PROSE_BUDGET_CHARS, (
         f"The agent's un-trimmable prose is {prose} characters "
         f"(~{prose // CHARS_PER_TOKEN} tokens), over the "
-        f"{agent.PROSE_BUDGET_CHARS} budget. Unlike the tool schemas, nothing "
+        f"{agent_policy.PROSE_BUDGET_CHARS} budget. Unlike the tool schemas, nothing "
         "fits this to the window, it is sent whole to a 3B model and a 70B "
         "one alike. Trim what was added, or raise PROSE_BUDGET_CHARS "
         "deliberately and say why in the comment above it."
@@ -193,11 +195,11 @@ def test_a_vague_request_to_do_something_gets_everything(app_state):
 def test_the_user_can_turn_the_focus_off(app_state):
     """A keyword rule's honest failure is a phrasing it doesn't know, so the
     escape hatch has to be reachable without editing code."""
-    from tessellate.ai import agent as agent_module
+    from tessellate.ai import agent_turn
 
-    assert agent_module._focus("what did I save?") is not None
+    assert agent_turn._focus("what did I save?") is not None
     app_state.set_preference("tool_focus", "all")
-    assert agent_module._focus("what did I save?") is None
+    assert agent_turn._focus("what did I save?") is None
 
 
 def test_focusing_never_blocks_a_tool_from_running(app_state, session, fake_ollama):
@@ -228,7 +230,7 @@ def test_the_guide_does_not_repeat_what_a_tool_result_already_says(app_state):
     The preview warning travels with every list result (`tools._READ_MORE`),
     so the guide does not need its own copy of it.
     """
-    guide = agent.TOOLS_GUIDE.lower()
+    guide = agent_policy.TOOLS_GUIDE.lower()
     assert "clipped previews" not in guide
     assert tools._READ_MORE.lower() not in guide
 
@@ -247,7 +249,7 @@ def test_the_clock_in_the_prompt_is_stable_across_a_tool_loop(monkeypatch):
 
     def system_at(moment):
         monkeypatch.setattr(config, "user_now", lambda _cfg: moment)
-        return agent.build_agent_messages("q", [])[0]["content"]
+        return agent_turn.build_agent_messages("q", [])[0]["content"]
 
     first = system_at(base)
     # Three seconds later: a plausible gap between two rounds of one loop.
@@ -280,7 +282,7 @@ def test_a_long_note_does_not_blow_the_prompt_budget():
     long_notes = [
         {"id": i, "category": "Work", "content": "y" * 4000} for i in range(10)
     ]
-    messages = agent.build_agent_messages("what did I say?", long_notes)
+    messages = agent_turn.build_agent_messages("what did I say?", long_notes)
     total = sum(len(m["content"]) for m in messages)
     # Ten 4,000-character notes is 40,000 characters of input; the per-note cap
     # is what stops that reaching the model. The figure here is a sanity
@@ -397,7 +399,7 @@ def test_a_small_model_can_still_ask_the_user_a_question():
 # --- the untooled path's own budget -------------------------------------------
 #
 # `ai/context.py` was written to keep one turn inside one model's window, and
-# for a long time it was wired into `agent.build_agent_messages` and nowhere
+# for a long time it was wired into `agent_turn.build_agent_messages` and nowhere
 # else. `librarian.build_messages`, what "Ask the Librarian" and the Notes Ask
 # box use: had no total cap at all: `UNTOOLED_NOTE_CHARS` bounds ONE note at
 # 2,400 characters and `history_messages` bounds ONE past answer, and nothing
@@ -567,24 +569,24 @@ def test_a_roomy_window_still_gets_the_long_descriptions():
 
 
 def test_a_small_window_gets_the_short_tools_guide():
-    assert agent.tools_guide(4096) is agent.COMPACT_TOOLS_GUIDE
-    assert agent.tools_guide(8192) is agent.COMPACT_TOOLS_GUIDE
-    assert agent.tools_guide(32_768) is agent.TOOLS_GUIDE
+    assert agent_policy.tools_guide(4096) is agent_policy.COMPACT_TOOLS_GUIDE
+    assert agent_policy.tools_guide(8192) is agent_policy.COMPACT_TOOLS_GUIDE
+    assert agent_policy.tools_guide(32_768) is agent_policy.TOOLS_GUIDE
     # An unreported window is not a small one, that is a provider that did not
     # say, and guessing "tiny" would quietly degrade a large model.
-    assert agent.tools_guide(None) is agent.TOOLS_GUIDE
+    assert agent_policy.tools_guide(None) is agent_policy.TOOLS_GUIDE
 
 
 def test_the_short_guide_keeps_the_rules_a_model_gets_wrong_without_them():
     """A truncation of the long guide would lose the honesty rule, which sits
     at its end. This is a rewrite, and these are the parts that must survive."""
-    guide = agent.COMPACT_TOOLS_GUIDE.lower()
+    guide = agent_policy.COMPACT_TOOLS_GUIDE.lower()
     assert "never say you created" in guide          # claiming work never done
     assert "not the whole" in guide.replace(", ", "") # a page is not the notebook
     assert "count_notes" in guide                    # how to get a real total
     assert "private notes are invisible" in guide
     assert "what_to_do" in guide                     # recovering from a failure
-    assert len(agent.COMPACT_TOOLS_GUIDE) < len(agent.TOOLS_GUIDE) // 2
+    assert len(agent_policy.COMPACT_TOOLS_GUIDE) < len(agent_policy.TOOLS_GUIDE) // 2
 
 
 def test_a_small_model_spends_under_a_quarter_of_its_window_on_fixed_cost(session):
@@ -619,14 +621,14 @@ def test_a_small_model_spends_under_a_quarter_of_its_window_on_fixed_cost(sessio
 
     question = "what did I write about the budget?"
     window = 8192
-    guide = agent.tools_guide(window)
+    guide = agent_policy.tools_guide(window)
     budget = context.plan(window, len(guide) + 480)
-    messages = agent.build_agent_messages(
+    messages = agent_turn.build_agent_messages(
         question, notes, style="normal", profile="", history=[],
         persona_prompt="", budget=budget, mode="agent",
     )
     offered = tools.ollama_tools(tools.focus_for(question, ""))
-    if window <= agent.SMALL_WINDOW_TOKENS:
+    if window <= agent_policy.SMALL_WINDOW_TOKENS:
         offered = tools.compact_schemas(offered)
     kept, _ = tools.within_budget(offered, budget.tool_schema_chars)
 

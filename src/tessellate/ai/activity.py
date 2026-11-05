@@ -182,9 +182,9 @@ def _day_words(day: date, today: date) -> str:
 
 
 def _title_of(content: str) -> str:
-    from tessellate.ai import composer
+    from tessellate.ai import composer_read
 
-    return realise.cut_title((composer._title(content or "")[0] or "Untitled").strip(), 80)
+    return realise.cut_title((composer_read._title(content or "")[0] or "Untitled").strip(), 80)
 
 
 def _bounds(start: date, end: date) -> tuple[datetime, datetime]:
@@ -441,7 +441,7 @@ def _glosses(session: Session, rows: list[_Event]) -> dict[str, str]:
     what the note says, not that it was made (audit 1030 Z28). A titled note
     is its link and its first sentence; one with no title is its sentence as
     the link."""
-    from tessellate.ai import composer
+    from tessellate.ai import composer_read
     from tessellate.core.database import Entry
 
     found = {r[3]: int(m.group(1)) for r in rows if r[1] == "made" and r[2] == "note" and (m := _NOTE_ID.search(r[3]))}
@@ -449,7 +449,7 @@ def _glosses(session: Session, rows: list[_Event]) -> dict[str, str]:
     said: dict[str, str] = {}
     for key, ident in found.items():
         content = str(contents.get(ident) or "")
-        name, start = composer._title(content)  # noqa: SLF001
+        name, start = composer_read._title(content)  # noqa: SLF001
         body = _first_sentence(re.sub(r"^[#*>\-\s]+", "", content[start:].strip())) if start else ""
         if start:
             said[key] = f"{key}: {body}" if body else key

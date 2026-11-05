@@ -218,25 +218,115 @@ def _join_scraps(chunks: list[str]) -> None:
             i += 1
 
 
+#: A single paragraph this long, in this many sentences, may hold more than one subject.
+SUBJECT_WORDS = 30
+SUBJECT_SENTENCES = 3
+#: A group of sentences this short is not a note: it stays with its neighbour.
+SUBJECT_MIN_WORDS = 8
+#: Sentence openers that turn to something else ("Now I am...", "Later...").
+_SHIFTS = frozenset(
+    "now next then later also meanwhile anyway afterwards afterward tomorrow tonight yesterday today separately finally".split()
+)
+#: Matched on a right-stripped heading, with no leading `\s*`: that prefix made the
+#: search polynomial on a heading of many tabs (CodeQL 2002).
+_EMOTICON = re.compile(r"[:;=][-^]?[)(DPpOo]+$")
+
+
+def _subject_stems(sentence: str) -> set[str]:
+    from tessellate.ai import tagging
+
+    stop = query_understanding.STOPWORDS
+    words = [w for w in re.findall(r"[a-z][a-z'-]+", sentence.lower()) if len(w) >= 4 and w not in stop]
+    return tagging.stems([w.removesuffix("s") for w in words])
+
+
+def _by_subject(body: str) -> list[str]:
+    """One long paragraph cut where the subject changes: a sentence opening on
+    a turn ("Now", "Later") or sharing no content word with the group so far
+    starts a new group. Sentences come from the composer's splitter and stay
+    as written; a short or single-subject paragraph comes back whole."""
+    from tessellate.ai import composer_tidy
+
+    if "\n" in body.strip() or _count(body) < SUBJECT_WORDS:
+        return [body]
+    sentences = composer_tidy.sentences(body)
+    if len(sentences) < SUBJECT_SENTENCES:
+        return [body]
+    groups = [[sentences[0]]]
+    seen = _subject_stems(sentences[0])
+    for sentence in sentences[1:]:
+        stems = _subject_stems(sentence)
+        opener = re.sub(r"\W", "", sentence.split()[0].lower())
+        if opener in _SHIFTS or not (stems & seen):
+            groups.append([sentence])
+            seen = stems
+        else:
+            groups[-1].append(sentence)
+            seen |= stems
+    texts = [" ".join(g) for g in groups]
+    i = 0
+    while len(texts) > 1 and i < len(texts):
+        if _count(texts[i]) < SUBJECT_MIN_WORDS:
+            lo = i if i + 1 < len(texts) else i - 1
+            texts[lo : lo + 2] = [texts[lo] + " " + texts[lo + 1]]
+            i = max(i - 1, 0)
+        else:
+            i += 1
+    return texts
+
+
+def _expand(chunk: str) -> list[str]:
+    """A chunk as one or more chunks; a leading heading stays on the first."""
+    first, _, rest = chunk.partition("\n")
+    if _heading(first) and rest.strip():
+        pieces = _by_subject(rest.strip())
+        return [first + "\n\n" + pieces[0], *pieces[1:]]
+    return _by_subject(chunk) if not _heading(first) else [chunk]
+
+
 def split_notes(text: str, limit: int) -> list[Part]:
     """One part per heading, or per paragraph when the text has fewer than two
-    headings. A section keeps its heading as its first line (a note's title in
-    this app is its leading heading); scraps join the part beside them; more
-    parts than `limit` are merged, shortest pair first, never dropped."""
+    headings; a long single paragraph is cut further at its subject changes.
+    A heading that titles a part is the part's title and leaves its body;
+    scraps join the part beside them; more parts than `limit` are merged,
+    shortest pair first, never dropped."""
     lines = (text or "").replace("\r\n", "\n").replace("\r", "\n").split("\n")
     marks = _headings(lines)
     chunks = _section_chunks(lines, marks) if len(marks) >= 2 else _paragraph_chunks(lines)
     chunks = [c for c in chunks if c.strip()]
     _join_scraps(chunks)
+    chunks = [piece for c in chunks for piece in _expand(c)]
     while len(chunks) > max(limit, 1):
         k = min(range(len(chunks) - 1), key=lambda j: _count(chunks[j]) + _count(chunks[j + 1]))
         _merge(chunks, k)
     return [_part(c) for c in chunks]
 
 
+def _plain_title(heading: str) -> str:
+    """A heading as a title: the shouting and the trailing emoticon off."""
+    bare = heading.rstrip()
+    found = _EMOTICON.search(bare)
+    if found:
+        bare = bare[: found.start()]
+    return bare.rstrip(" \t!?.") or heading
+
+
 def _part(chunk: str) -> Part:
     from tessellate.ai import composer_voice
 
-    found = _heading(chunk.split("\n", 1)[0])
-    title = found if found else composer_voice.title_for(_without_marks(chunk))
-    return Part(title=title, content=chunk)
+    first, _, rest = chunk.partition("\n")
+    found = _heading(first)
+    if found:
+        body = rest.strip()
+        return Part(title=_plain_title(found), content=body or chunk)
+    return Part(title=_tidy_title(composer_voice.title_for(_without_marks(chunk))), content=chunk)
+
+
+def _tidy_title(title: str) -> str:
+    """A turn-of-subject opener ("Now") and a dangling number off the title."""
+    words = title.split()
+    if len(words) > 3 and re.sub(r"\W", "", words[0].lower()) in _SHIFTS:
+        words = words[1:]
+    if len(words) > 2 and words[-1].isdigit():
+        words = words[:-1]
+    return _trim(words) if words else title

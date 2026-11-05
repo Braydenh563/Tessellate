@@ -192,8 +192,34 @@ def _offset(match: re.Match, today: date, forward: bool):
     return (today + timedelta(days=days if forward else -days), DAY)
 
 
+#: A clear past verb (not the ambiguous got, made, booked, paid, bought, was) before a weekday says the day happened ("finished my
+#: final assignment on friday"): the weekday is the latest one on or before
+#: the note's day, never the coming one (INBOX 1665 e: "Mentions 6 Nov" on a
+#: note written 3 Nov). A future word in the same sentence (will, due, need
+#: to) wins: "I have to hand it in on friday" is ahead.
+_PAST_WORD = re.compile(
+    r"\b(?:finished|completed|missed|submitted|handed|had|went|saw|met|came|left|ran|took|"
+    r"played|wrote|passed|failed|done|ate|slept|worked|visited|attended|"
+    r"lost|won|found|caught|spent|woke|heard|felt)\b",
+    re.IGNORECASE,
+)
+_FUTURE_WORD = re.compile(
+    r"\b(?:will|won't|going to|gonna|need to|needs to|have to|has to|must|should|due|deadline|plan to|planning|"
+    r"would|is|are|starts|begins|want to|wanna|hope to|supposed to|scheduled|booked for|by|before|until|next|upcoming|can't wait)\b|'ll\b",
+    re.IGNORECASE,
+)
+
+
+def _happened(match: re.Match) -> bool:
+    """Whether the sentence the weekday sits in says it already happened."""
+    before = match.string[: match.start()]
+    sentence = re.split(r"[.!?\n]", before)[-1]
+    return bool(_PAST_WORD.search(sentence)) and not _FUTURE_WORD.search(sentence)
+
+
 def _weekday(match: re.Match, today: date):
-    """"Next Friday" is the Friday of next week; "on Friday" is the coming one.
+    """"Next Friday" is the Friday of next week; "on Friday" is the coming one,
+    unless the sentence says it happened: then the latest one, today included.
 
     Both readings exist in ordinary speech and neither is wrong. The rule is
     written down here so the answer is at least consistent, and the phrase is
@@ -207,6 +233,8 @@ def _weekday(match: re.Match, today: date):
         return (today - timedelta(days=behind), DAY)
     if which == "next":
         return (_monday(today) + timedelta(days=7 + target), DAY)
+    if which == "on" and _happened(match):
+        return (today - timedelta(days=(today.weekday() - target) % 7), DAY)
     return (today + timedelta(days=ahead), DAY)  # "this"/"on": the coming one
 
 

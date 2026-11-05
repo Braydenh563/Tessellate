@@ -1,0 +1,68 @@
+/* answer-foot-lazy.css: an answer's foot (CHAT_PLAN B2, DESIGN.md "An
+   answer's foot"), loaded by answer-kit.js itself (every answer bundle
+   brings it) on Ask, Chat and the popup agent.
+
+   **One row of chips, each opening its part below it.** `answerFootGather`
+   (answer-kit.js) puts the row above the parts the surface drew (sources,
+   grounding, evidence, From your notes, patterns, related, why), hides each
+   part until its chip is pressed, and moves the stats line to the row's end.
+   The row is the control group's gap; an open part sits one group gap under
+   it. */
+.answer-foot-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-3);
+  margin-top: var(--space-4);
+  min-width: 0;
+}
+
+.answer-foot-chip[aria-expanded="true"] {
+  background: var(--accent-surface);
+  color: var(--on-accent);
+}
+
+/* The chip is the part's summary now, so the part's own is not drawn twice. */
+.answer-foot-part > summary,
+.ev-foot:has(> .answer-foot-part),
+.answer-foot-part[hidden] {
+  display: none;
+}
+
+/* An open part, or the evidence view its chip pressed, one group gap under
+   the row on every surface. Measured at 1440 before this rule: 4px under
+   Sources and Why (`.msg.assistant details`), 23 to 28 under Cites and the
+   patterns (their holder's margin, padding and divider added on). Three
+   classes, to beat that `details` rule; the holders draw nothing. */
+.answer-foot-bar ~ * :is(.answer-foot-part:not([hidden]), .answer-evidence),
+.answer-foot-bar ~ :is(.answer-foot-part:not([hidden]), .answer-evidence) {
+  margin-top: var(--space-4);
+}
+.answer-foot-bar ~ :is(.answer-grounding, .why-trail, #ask-notes):has(.answer-foot-part),
+#ask-answer-foot > :has(.answer-foot-part) {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: 0;
+}
+
+/* The stats line is the row's last item, at its end, without the model the
+   head's byline already names (nothing said twice). */
+.answer-foot-bar > .msg-meta {
+  margin: 0 0 0 auto;
+}
+.msg:has(> .msg-role .reply-by) > .answer-foot-bar .msg-meta-model {
+  display: none;
+}
+
+/* **The popup agent's actions in its head row** (B2: "actions in the head
+   row not under the foot"): the hover row sits at the bubble's top right,
+   over the name's row, instead of hanging under the foot. */
+.command-palette-results > .msg.assistant > .msg-actions {
+  top: var(--space-2);
+  right: var(--space-2);
+  left: auto;
+}
+
+.command-palette-results > .msg.assistant:has(> .msg-actions) {
+  margin-bottom: 0;
+}

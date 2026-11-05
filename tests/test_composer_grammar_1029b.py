@@ -17,6 +17,8 @@ import re
 import pytest
 
 from tessellate.ai import activity, composer, composer_compose, composer_digest, realise
+from tessellate.ai import composer_empty
+from tessellate.ai import composer_quote
 from tessellate.api import routes_chat
 from tessellate.core import config
 from tessellate.entry import manager
@@ -84,7 +86,7 @@ def test_a_checklist_count_reads_whatever_is_ticked(ticked, total, lead, said):
     tasks = [s for s in view.sentences if s.kind == "task"]
     assert len(tasks) == total
     out = composer._Answer({1: view}, dt.date(2026, 10, 29))
-    composer._checklist_count(out, view, tasks, lead)
+    composer_quote._checklist_count(out, view, tasks, lead)
     assert said in out.text, out.text
 
 
@@ -103,7 +105,7 @@ def _frames() -> list[str]:
 def test_no_gap_frame_doubles_about_or_every(days):
     gap, bare = composer_digest._gap(days), composer_digest._bare_gap(composer_digest._gap(days))
     for frame in _frames():
-        said = frame.format(age=gap, span=gap, every=bare, count="three", all_of="All three")
+        said = frame.format(age=gap, ago=f"{gap} ago", span=gap, every=bare, count="three", all_of="All three")
         assert not re.search(r"\babout\b[^.,;]*\babout\b", said, re.I), said
         assert not re.search(r"\bevery (?:a|an|about|nearly|over)\b", said, re.I), said
         assert "about it about" not in said
@@ -163,10 +165,10 @@ def test_an_empty_day_names_the_newest_note_and_no_it(book, question, chat):
 
 
 def test_a_window_after_the_newest_note_names_the_newest_note():
-    said = composer.empty_window("today", dt.date(2026, 1, 5), dt.date(2026, 10, 28), today=dt.date(2026, 10, 29),
+    said = composer_empty.empty_window("today", dt.date(2026, 1, 5), dt.date(2026, 10, 28), today=dt.date(2026, 10, 29),
                                  window=(dt.date(2026, 10, 29), dt.date(2026, 10, 29)))
     assert "yesterday" in said and "5 January" not in said, said
-    older = composer.empty_window("last month", dt.date(2026, 1, 5), dt.date(2026, 10, 28), today=dt.date(2026, 10, 29),
+    older = composer_empty.empty_window("last month", dt.date(2026, 1, 5), dt.date(2026, 10, 28), today=dt.date(2026, 10, 29),
                                   window=(dt.date(2026, 3, 1), dt.date(2026, 3, 31)))
     assert "yesterday" not in older, older
 
