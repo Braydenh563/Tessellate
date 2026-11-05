@@ -69,3 +69,23 @@ def test_each_part_drifts_on_its_own_closed_path_added_over_the_rest() -> None:
     assert got["durations"] >= 5, "the parts keep different periods"
     assert got["composite"] == ["add"], "added over the follow-through and the CSS sway, never replacing them"
     assert got["stopped"] == [0, 0], "reduced motion or away: none run"
+
+
+TURN_SCRIPT = SCRIPT.split("// A flow on a fake rig")[0].replace("const x = ctx.__x, out = { states: {} };", "const x = ctx.__x, out = { states: {} }; out.max = 0;") + r"""
+const mk = () => { const a = []; return { animate: (frames, opt) => { const an = { frames, opt, cancel() {}, effect: { getComputedTiming: () => ({ progress: 0.5 }) } }; a.push(an); return an; }, a }; };
+for (const s of Object.keys(x.byState)) {
+  for (let i = 0; i < 40; i++) {
+    const rig = { box: { isConnected: true, animate() {}, atlasLoops: [] }, lower: { boxes: [mk()], wisps: [mk()], tails: [mk()], hair: [mk()], neb: [mk()] } };
+    x.flow(rig, s, true);
+    for (const a of rig.lower.flow) for (const k of a.keys) out.max = Math.max(out.max, Math.abs(k[2]));
+  }
+}
+console.log(JSON.stringify(out));
+"""
+
+
+@needs_node
+def test_no_part_turns_more_than_four_degrees_in_any_pose() -> None:
+    """Review of 1683b: tails reached 1.6 x 2.2 x 1.6 = 5.6 degrees on a startle; the lower body stays within 4 of the torso."""
+    out = subprocess.run(["node", "-e", TURN_SCRIPT], capture_output=True, text=True, timeout=60, check=True, cwd=ROOT)
+    assert json.loads(out.stdout)["max"] <= 4.0

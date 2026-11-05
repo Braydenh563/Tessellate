@@ -2,7 +2,7 @@
 
 Generated 2026-11-05 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7825, frontend ids 2644, CSS sections 522, backend routes 644, backend modules 8875, test files 2094, tests 17674, plan headings 1004, app scripts 28, boot scripts 37, script files 257.
+Counts: frontend functions 7825, frontend ids 2644, CSS sections 522, backend routes 644, backend modules 8875, test files 2094, tests 17675, plan headings 1004, app scripts 28, boot scripts 37, script files 257.
 
 ## Frontend functions (7825)
 
@@ -24196,7 +24196,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (17674)
+## Tests (17675)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -25325,7 +25325,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_long_question_1528.py | 5 |
 | tests/test_long_question_bubble_warm12.py | 3 |
 | tests/test_long_runs.py | 12 |
-| tests/test_lower_flow_1683b.py | 2 |
+| tests/test_lower_flow_1683b.py | 3 |
 | tests/test_magic_add_wording.py | 2 |
 | tests/test_maintenance.py | 19 |
 | tests/test_make_plan.py | 21 |

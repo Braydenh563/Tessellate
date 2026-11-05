@@ -921,7 +921,7 @@ atlasRigLower.flow = (rig, state, live) => {
       const start = low.from.get(el) || [0, 0, 0];
       const keys = [start];
       for (let j = 1; j < atlasRigLower.flowKeys - 1; j += 1) {
-        keys.push(gain.map((g, k) => Math.max(-1.6 * g * reach, Math.min(1.6 * g * reach, keys[j - 1][k] * 0.35 + (Math.random() * 2 - 1) * 1.3 * g * reach))));
+        keys.push(gain.map((g, k) => { const cap = Math.min(1.6 * g * reach, k === 2 ? 4 : Infinity); return Math.max(-cap, Math.min(cap, keys[j - 1][k] * 0.35 + (Math.random() * 2 - 1) * 1.3 * g * reach)); }));
       }
       keys.push(start);
       const frames = keys.map((v) => ({ translate: `${atlasFix(v[0])}px ${atlasFix(v[1])}px`, rotate: `${atlasFix(v[2])}deg`, easing: "ease-in-out" }));
