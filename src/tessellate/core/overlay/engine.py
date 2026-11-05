@@ -232,6 +232,14 @@ HANG_FOR = (45.0, 120.0)
 #: slow one, and glances about now and then (INBOX 1670, 13:28Z: "it basically doesn't move while it is
 #: hanging"). The window itself holds still: only the picture swings.
 HANG_SWING = 9.0
+#: A hang ends by its own choice (INBOX 1683 h), never a plain fall on a timer: it pulls itself up onto the
+#: window it holds, swings (a bigger pendulum for `SWING_FOR` s) and drops to a window top within `SWING_REACH`
+#: logical px, or lets go after a startled beat of `REACT_FOR` s.
+SWING_FOR = 1.5
+SWING_BOOST = 1.7
+SWING_REACH = 520.0
+REACT_FOR = 0.6
+HANG_ENDS = {"pull": 5.0, "swing": 4.0, "react": 2.0}
 HANG_PERIOD = 5.6
 HANG_GLANCE = (11.0, 26.0)
 #: What a hang takes hold of (INBOX 1660: "it thinks its hanging but its just ... hanging in
@@ -385,6 +393,10 @@ class Engine:
         self.hang_top = min(max(float(hang_top), 0.0), 0.5)
         #: The window whose title bar a hang (or the trip to one) takes hold of.
         self.hang_on: Perch | None = None
+        #: The window a swinging hang will drop to, when it started swinging, and a startled beat before letting go.
+        self.swing_to: Perch | None = None
+        self.swing_at = 0.0
+        self.releasing = False
         #: True while the person is typing or presenting: it only stands.
         self.quiet = False
         self.now = now
@@ -702,6 +714,7 @@ class Engine:
         self.phase_started = self.hang_started = now
         self.hang_phase = self.rng.uniform(0.0, 2 * math.pi)
         self.hang_glance_at = now + self.rng.uniform(*HANG_GLANCE)
+        self.swing_to, self.releasing = None, False
 
     def _on_rise(self, now: float) -> None:
         self.state_until = now + RISE_FOR
@@ -788,6 +801,8 @@ class Engine:
         if s_ == "hang":  # a slow pendulum from the grip: the lower body swings, the hands do not move
             t = now - self.hang_started
             amp = bh.smooth(t / 1.5) * (0.65 + 0.35 * math.sin(2 * math.pi * t / 41.0 + self.hang_phase))
+            if self.swing_to is not None:  # winding up to let go toward a window: the swing grows
+                amp *= 1.0 + SWING_BOOST * bh.smooth((now - self.swing_at) / SWING_FOR)
             drag = HANG_SWING * amp * math.sin(2 * math.pi * t / HANG_PERIOD + self.hang_phase)
         elif s_ == "warp" and self.warp is not None and self.warp["kind"] == "portal":
             squeeze = self._warp_view(now)[2]
@@ -2014,20 +2029,75 @@ class Engine:
             self._face(-self.facing, now)
             self.hang_glance_at = now + self.rng.uniform(*HANG_GLANCE)
         if now >= self.state_until:
-            self._end_hang(now)
+            if self.swing_to is not None:
+                self._release_swing(now)
+            elif self.releasing:
+                self.releasing = False
+                self._let_go()
+            else:
+                self._end_hang(now)
 
     def _end_hang(self, now: float) -> None:
+        """The hang is over, by its own choice: pull up onto the edge it holds, swing and drop to a window top,
+        or let go after a startled beat. Never a plain fall on a timer (INBOX 1683 h)."""
         held = self._hold_of(self.hang_on) if self.hang_on is not None else None
-        mood = self.mind.mood(now, self.hour)
-        if held is not None and mood in ("curious", "happy", "proud", "bored") and self.rng.random() < 0.7:
-            w, h = self.size
+        w, h = self.size
+        table: dict[str, float] = {"react": HANG_ENDS["react"]}
+        if held is not None and held.top - h >= self.current_monitor().area[1]:
+            table["pull"] = HANG_ENDS["pull"]
+        drop = self._drop_target()
+        if drop is not None:
+            table["swing"] = HANG_ENDS["swing"]
+        roll = self.rng.random() * sum(table.values())
+        pick = "react"
+        for name, wt in table.items():
+            roll -= wt
+            if roll < 0:
+                pick = name
+                break
+        self.legs.append(("hang_" + pick, self.x, self.x, now))
+        if pick == "pull" and held is not None:
             x = min(max(self.x, held.left), held.right - w)
-            if held.top - h >= self.current_monitor().area[1]:
-                self.target = held
-                self.legs.append(("climb", self.x, x, now))
-                self._rise((x, held.top - h), "perch", now)
-                return
-        self._let_go()
+            self.target = held
+            self.legs.append(("climb", self.x, x, now))
+            self._rise((x, held.top - h), "perch", now)
+        elif pick == "swing" and drop is not None:
+            self.swing_to, self.swing_at = drop, now
+            self.state_until = now + SWING_FOR
+        else:
+            self.releasing = True  # a startled beat (a glance, the mood) and then it lets go
+            self.mind.feel("startled", now)
+            self._face(-self.facing, now)
+            self.state_until = now + REACT_FOR
+
+    def _drop_target(self) -> Perch | None:
+        """A window top below the hands that a swing from here can reach (the nearest by sideways distance)."""
+        k, (w, h) = self._scale(), self.size
+        hands = self.y + self._lift()
+        best, best_dx = None, SWING_REACH * k
+        for p in self._candidates():
+            if p.top - h < hands + 40 * k:  # not clearly below
+                continue
+            if self.hang_on is not None and p.key == self.hang_on.key:
+                continue
+            x = min(max(self.x, p.left), p.right - w)
+            if abs(x - self.x) <= best_dx:
+                best, best_dx = p, abs(x - self.x)
+        return best
+
+    def _release_swing(self, now: float) -> None:
+        """At the top of the swing: let go and drop onto the window top chosen when it began (if it is still
+        there and still below); else the plain letting go with its startled beat."""
+        p = next((q for q in self.windows if self.swing_to is not None and q.key == self.swing_to.key), None)
+        self.swing_to = None
+        if p is None or p.top - self.size[1] < self.y + self._lift():
+            self.releasing = False
+            self._let_go()
+            return
+        x = min(max(self.x, p.left), p.right - self.size[0])
+        self.target, self.hang_on = p, None
+        self.legs.append(("drop", self.x, x, now))
+        self._rise((x, p.top - self.size[1]), "perch", now)
 
     def _let_go(self) -> None:
         """Off the ceiling: a walker falls, a floater drifts down to its hover height."""
