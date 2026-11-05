@@ -18,7 +18,7 @@ def rest_life(gait: str, look: str, state: str, seed: int, secs: float = 120.0, 
         e, _s = make(look, gait, seed)
         e.reduced = reduced
         home_at_edge(e)
-        e.big_ready = e.trip_ready = e.climb_ready = float("inf")
+        e.big_ready = e.trip_ready = e.climb_ready = e.ex.act_ready = float("inf")  # nothing started: no trip, no in-place act
         e.update(0.0)
         if state != "stand":
             e._enter(state, 0.0)

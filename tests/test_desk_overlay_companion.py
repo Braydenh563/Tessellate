@@ -46,12 +46,14 @@ def test_every_appearance_choice_is_listed_with_the_current_one_marked() -> None
     by = {r["key"]: r for r in rows}
     assert [r["label"] for r in rows][:3] == ["Atlas, masculine", "Atlas, feminine", "Atlas, match your faces"]
     assert [k for k, r in by.items() if r["current"]] == ["atlas:feminine"]
+    #: Changed on purpose (INBOX 1684): the overlay now draws the person's own companions from the app's figure
+    #: (`capture`), so no row is "shows in the app only" any more; every row is choosable.
     for key in ("me", "persona", "custom"):
-        assert by[key]["enabled"] is False and by[key]["group"] == "Shows in the app only"
+        assert by[key]["enabled"] is True and by[key]["group"] == "Yours"
     assert by["preset:0"]["enabled"] is True and by["preset:0"]["group"] == "Saved companions"
-    assert by["preset:1"]["enabled"] is False
+    assert by["preset:1"]["enabled"] is True and by["preset:1"]["group"] == "Saved companions"
     assert "preset:2" not in by  # a nameless one is not a row
-    assert {r["key"] for r in rows if r["enabled"]} == {"atlas:masculine", "atlas:feminine", "atlas:auto", "preset:0"}
+    assert all(r["enabled"] for r in rows) and len(rows) == 3 + 3 + 2
 
 
 def test_the_name_based_companion_is_marked_when_it_is_the_apps_choice() -> None:
@@ -105,7 +107,8 @@ def test_only_known_keys_reach_the_app_window(over) -> None:  # noqa: F811
     seen: list[str] = []
     over.main_window.evaluate_js = app({"locked": False, "who": "atlas", "look": "masculine"}, seen)
     api = dc.DeskApi(over)
-    for bad in ("", "me", "custom", "atlas:'); alert(1);//", "preset:99999", "preset:x", "atlas:neutral", None, 3):
+    #: "me" and "custom" left this list on purpose (INBOX 1684): they are choices the overlay now draws.
+    for bad in ("", "me ", "Custom", "atlas:'); alert(1);//", "preset:99999", "preset:x", "atlas:neutral", None, 3):
         assert api.choose_companion(bad) in ("unknown", "gone"), bad
     assert not any("prefs.set" in s for s in seen)
 

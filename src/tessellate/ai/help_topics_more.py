@@ -1430,7 +1430,7 @@ MORE_TOPICS: list[dict] = [
         ),
         "body": (
             "In the desktop app on Windows and Linux (X11) the companion can live on your desktop while the Tessellate window is "
-            "minimised or in the tray, and go away when it is open. Atlas floats like a wind spirit, sits "
+            "minimised or in the tray, and go away when it is open. Atlas floats like a wind spirit (others walk the bottom), sits "
             "and then sleeps when you have been away, can be picked up and thrown, "
             "hangs from the top, and peeks up from behind the taskbar or a screen edge. It keeps to a home spot by an "
             "edge and stays there for minutes, alive in place, and makes "
@@ -1443,10 +1443,9 @@ MORE_TOPICS: list[dict] = [
             " Tessellate runs on: Settings, Appearance, Corner companion, Show the companion on the desktop while the window is "
             "minimised or in the tray, or the tray icon's menu; it takes effect while the desktop app runs. Click it for Quick note, "
             "Quick search, New reminder, Open today, Open Tessellate, Wave, Come here, Go somewhere else, Take a nap, Sit on a window"
-            " or Hide for 10 minutes. Come here follows your pointer a while; a nap lasts minutes or until you click it. Right-click it for Companion (Atlas masculine or feminine, or a saved Atlas companion; the rest"
-            " show in the app only), Stay here or Roam, Settings or Turn off. Drag it; it remembers the spot. While Tessellate is "
+            " or Hide for 10 minutes. Come here follows your pointer a while; a nap lasts minutes or until you click it. Right-click it for Companion (Atlas masculine or feminine, your own or a saved one, drawn once), Stay here or Roam, Settings or Turn off. Drag it; it remembers the spot. While Tessellate is "
             "locked it shows only the companion and Open Tessellate. On Wayland, which cannot place a window above others, it stays "
-            "in the app."
+            "in the app. It also lounges, answers a pat and glances at new windows."
         ),
         "badge": {"label": "Desktop companion", "section": "appearance", "target": "desktop-companion-row"},
     },
@@ -1967,7 +1966,7 @@ MORE_TOPICS.extend(
             ),
             "body": (
                 "When an answer in Chat or Ask draws on a note with pictures or "
-                "sketches, the note's numbered chip under Grounded in has up to "
+                "sketches, the note's numbered chip under Cites (the row under the answer) has up to "
                 "three small pictures beside it (a +n says there are more). The "
                 "chip opens the note; a picture opens in the image viewer, with "
                 "its caption and the text read off it. Atlas can also place a "
@@ -2081,11 +2080,14 @@ MORE_TOPICS.extend(
                 "why this answer", "how was this answered", "how did you get that",
                 "where did this answer come from", "which model answered",
                 "how long did it take", "what did it search", "explain the answer",
-                "transparent", "process lines",
+                "transparent", "process lines", "chips under the answer", "answer foot",
             ),
             "body": (
                 "Under an answer in Ask, in a Chat reply and in the popup agent's "
-                "answer, Why this answer opens the lines that "
+                "answer is one row of chips (Sources, Cites, how many sentences "
+                "your notes back, Why this answer) with the time and model at "
+                "its end; each chip opens its part below, one at a time. "
+                "Why this answer opens the lines that "
                 "made it, each with the seconds since you asked: what the "
                 "question was read as, what was searched and how many notes "
                 "matched, who wrote it (Atlas from your notes with no model, "
@@ -2828,7 +2830,7 @@ TOPIC_META: dict[str, dict] = {
     "follow-up-trail": {"title": "Where a follow-up came from", "path": "Chat tab, or Ask in the Notes tab, under an answer"},
     "why-this-answer": {"title": "Why this answer", "path": "Chat tab, the popup agent, or Ask in the Notes tab, under an answer"},
     "line-verdicts": {"title": "Wrong fact and Pin as true", "path": "Ask or Chat, a numbered mark in an answer"},
-    "answer-pictures": {"title": "Pictures in answers", "path": "Chat tab, or Ask in the Notes tab, Grounded in"},
+    "answer-pictures": {"title": "Pictures in answers", "path": "Chat tab, or Ask in the Notes tab, Cites under the answer"},
     "library-skills": {"title": "AI skills in the Library", "path": "Library tab, AI skills"},
     "object-move": {"title": "Moving, copying and carrying cards", "path": "Notes tab, or Library tab, drag a card or press Ctrl+C; the tray in the status bar"},
     "ocr-engine": {"title": "Tesseract and the reading language", "path": "The OCR workspace, the reader button"},
@@ -3240,7 +3242,7 @@ MORE_TOPICS.extend([
             "The corner bar zooms (Zoom in, Zoom out, Fit), as do the wheel, Ctrl+wheel and a pinch; "
             "its last button reads the zoom now, and 100% is the drawing's own size; arrow keys pan. "
             "Shift+click picks a range, Ctrl+click adds one; a bar offers Delete, "
-            "Duplicate, Group into a box, Done, and any picked grip moves all. "
+            "Duplicate, Box them, Done, and any picked grip moves all. "
             "A block's ... menu (long press on a phone) does the same. "
             "Keys on "
             "a block or the picture: arrows walk, Enter renames, N adds a Box, 1 to 7 the other shapes, Shift+N the last one, G adds a group, C or J joins, "
@@ -3281,13 +3283,16 @@ MORE_TOPICS.extend([
             "mermaid timeline", "mermaid sequence", "sequence diagram", "diagram kinds",
         ),
         "body": (
+            "The Flowchart, Sequence, Mind map and Timeline buttons above the toolbar start a new diagram "
+            "of that kind (Ctrl+Z brings the old one back). A block's ... menu has Box this block, a group round it; "
+            "the bar over picked blocks has Box them. "
             "Blocks draw flowcharts, mind maps, timelines and sequence diagrams: the first word of "
             "the source says which, and the bar offers that kind's blocks. A mind map has a branch "
             "and a leaf (B and N) under its centre. A timeline has a section, a period and an event "
             "(S, P and E), the events inside their period. A sequence diagram has an actor, "
-            "participant, message, reply, async, lost, note, loop, alt and opt (A, P, M, R, Y, X, T, "
-            "L, G and O); the first message adds the two participants it needs, a reply runs back "
-            "between the same two, and an alt starts with its else. The pane works as a flowchart's "
+            "participant, message, reply, async, lost, note, loop, alt, opt, parallel, critical and break (A, P, M, R, Y, X, T, "
+            "L, G, O, U, C and B); the first message adds the two participants it needs, a reply runs back "
+            "between the same two, and an alt starts with its else and a parallel box with its and. The pane works as a flowchart's "
             "does: drag a block to move or nest it, double-click a name, the block's ... menu, "
             "arrows, Enter, Delete, Alt+Up, Alt+Down, Alt+Right and Alt+Left, Ctrl+Z. A line the "
             "blocks do not show stays where it was, and a diagram they cannot read (a second mind "
@@ -3351,7 +3356,7 @@ MORE_TOPICS.extend([
     {
         "id": "board-colours",
         "keywords": (
-            "border colour", "border color", "fill colour", "fill color", "same colour",
+            "opacity", "transparency", "hex", "rgb", "custom colour", "border colour", "border color", "fill colour", "fill color", "same colour",
             "same colour as the fill", "match the border", "swap colours", "recent colours",
             "eyedropper", "eye dropper", "pick a colour from the board", "colour picker",
             "change the colour of a shape", "outline colour",
@@ -3362,8 +3367,14 @@ MORE_TOPICS.extend([
             "For a shape it names both, Fill and Border, with a dot of each: press "
             "the other to set it instead. Same as fill (or Same as border) makes "
             "them one colour and Swap trades them, each one Undo step. Recent "
-            "holds your last eight picks on this device, above the board's colours; "
-            "More colours opens any colour by number. Pick from the board is the "
+            "holds your last eight picks on this device, above the board's colours. "
+            "Custom takes a colour typed or pasted: a hex box (#rgb, #rrggbb, "
+            "#rrggbbaa, rgb() or hsl()) and Red, Green and Blue boxes. Opacity, "
+            "a slider and a number, sets how solid that colour is: the fill's for "
+            "a Fill, the line's for a Border or line, the text's for text. "
+            "Filled off keeps the fill's colour and Filled on brings it back; "
+            "From screen (where the browser has it) takes any colour on the screen. "
+            "Pick from the board is the "
             "eyedropper: the next click takes a colour instead of doing what it "
             "would, from a shape (its fill, or its border with Alt or Take a shape's border), "
             "a line, a text box or any colour button, and Escape stops it. A fill "

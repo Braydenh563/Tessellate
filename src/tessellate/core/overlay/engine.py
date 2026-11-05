@@ -55,6 +55,7 @@ import random
 from typing import Any, NamedTuple
 
 from . import behaviour as bh
+from . import extras
 from . import travel as tv
 
 #: Seconds.
@@ -397,6 +398,10 @@ class Output(NamedTuple):
     angle: float | None = None
     #: The wisps' and streams' own motion over the frame (`behaviour.Flow.view`, small integers), or None.
     flow: tuple[int, ...] | None = None
+    #: A prop the figure uses, drawn with the frame, `(name, phase, size)` (`props.view`), or None.
+    prop: tuple[str, int, int] | None = None
+    #: The face it wears over the frame, `(kind, step)` (`faces.EXPRESSIONS`, step 1 to 3), or None.
+    face: tuple[str, int] | None = None
 
 
 def _adjoins(a: Rect, b: Rect, side: str) -> bool:
@@ -576,6 +581,8 @@ class Engine:
         self.home_x = self.x
         self.last_x = self.x
         self.last_y = self.y
+        #: Its props, its face, its answers to the pointer and the screen (`extras.py`).
+        self.ex = extras.Extras(self)
         self._enter("stand" if not reduced else "sit", now)
         self._maybe_relocate(now)
 
@@ -716,6 +723,12 @@ class Engine:
         """The foreground window's caret rectangle in screen px (None: no caret). Read by the runner at
         about 0.5 Hz; the figure steps off it on the next tick."""
         self.caret = rect
+
+    def react(self, kind: str, now: float) -> bool:
+        """Something happened on the screen (`extras.REACTIONS`: a window opened or closed, the foreground app
+        changed, the person came back, the hour, a download, the battery): play its short answer if it is free to.
+        True when it did. Asked on the engine's own thread, like `command`."""
+        return self.ex.fire(kind, now)
 
     def resume(self, now: float) -> None:
         """After a suspend or a long stall: no jump, no catching up."""
@@ -971,8 +984,10 @@ class Engine:
         handler(now, dt)
         if self.card is not None or self.card_queue:
             self._card_step(now)
+        self.ex.life(now)
         if pointer is not None and not self.reduced:
-            self._notice(now, pointer)
+            if not self.ex.pointer(now, pointer):
+                self._notice(now, pointer)
 
     # --- states -----------------------------------------------------------------------------
 
@@ -1074,6 +1089,7 @@ class Engine:
                 self._face(-self.facing, now)
         if now >= self.state_until:
             self._enter("stand", now)
+            self.ex.after_act(now)
 
     def _do_crouch(self, now: float, dt: float) -> None:
         if now >= self.state_until:
@@ -1389,20 +1405,23 @@ class Engine:
             self.perch_until = max(self.perch_until, c["until"])
         want = self._come_target(p)
         if self._come_there(want, c["phase"] == "stay"):
-            if c["phase"] == "go":  # arrived: a happy look, then company
-                c["phase"], c["until"] = "stay", now + COME_FOR
-                self.mind.feel("happy", now)
-                self._enter("wave", now)
-            elif now >= c["until"]:
-                self.come = None
+            self._come_arrived(c, now)
             return
         if c["phase"] == "stay" and now >= c["until"]:
             self.come = None
             return
         c["phase"], c["to"] = "go", want
-        self._come_go(want, now)
+        self._come_head(want, now)
 
-    def _come_go(self, want: tuple, now: float) -> None:
+    def _come_arrived(self, c: dict, now: float) -> None:
+        if c["phase"] == "go":  # arrived: a happy look, then company
+            c["phase"], c["until"] = "stay", now + COME_FOR
+            self.mind.feel("happy", now)
+            self._enter("wave", now)
+        elif now >= c["until"]:
+            self.come = None
+
+    def _come_head(self, want: tuple, now: float) -> None:
         if want[0] == "perch":
             self._climb(now, want[1])
         elif self.perch is not None:
@@ -2927,6 +2946,9 @@ class Engine:
         wake = self._wake_state(now)
         if self.state == "pressed" or self.state == "warp":
             return wake
+        mine = self.ex.wake_ms(now)
+        if mine is not None:
+            wake = mine if wake is None else min(wake, mine)
         tick = FLOW_CALM_MS if self.reduced else FLOW_SLEEP_MS if self.state == "sleep" else FLOW_TICK_MS
         return tick if wake is None else min(wake, tick)
 
@@ -2940,7 +2962,7 @@ class Engine:
             return self._moving_wake(s)
         if s == "act":
             soonest = min(self.state_until, self._next_pose_change(now, 0.5))
-            return max(TICK_WALK_MS, int(math.ceil((soonest - now) * 1000)) + 1)
+            return max(REST_DRAW_MS if self.ex.calm(self.act) else TICK_WALK_MS, int(math.ceil((soonest - now) * 1000)) + 1)
         if s in ("fall", "hop", "fly", "leap"):  # before the tail: it swings through a fall, and the window moves fastest here
             return TICK_FALL_MS
         if self._follow_moving():  # the tail still swings, or the body is easing to its pose
@@ -3021,5 +3043,5 @@ class Engine:
             frame, int(round(x)), int(round(y)), self.facing < 0, self._wake(now),
             self.click_now, self.settled_now, clip, self.card_clicked, self._pose(), fx, round(alpha * 16) / 16.0,
             self.angle if frame.startswith("spin") and self.state == "fly" else None,
-            self._flow_view(now, frame) if fx is None else None,
+            self._flow_view(now, frame) if fx is None else None, *self.ex.view(now),
         )

@@ -38,6 +38,7 @@ import time
 from typing import Any, Callable
 
 from tessellate.core import jobs
+from tessellate.core.overlay import capture
 
 logger = logging.getLogger(__name__)
 
@@ -89,16 +90,21 @@ PANEL_SIZES = {"menu": (248, 516), "context": (248, 306)}
 REFIT_PX = 12
 PANEL_GAP = 8
 LOOK_WAIT = 1.5
+#: A companion whose frames failed to draw is tried again after this many seconds.
+RENDER_RETRY = 300.0
 #: A click on the figure this soon after the panel closed itself on losing focus
 #: is the press that took the focus: it closes the panel, it does not reopen it.
 BLUR_GRACE = 0.6
-#: Asks the app window which Atlas look it draws and how the companion may move
+#: Asks the app window which companion it draws (Atlas and its look, or one of the person's own and a hash of
+#: how it looks, `capture.FIGURE_JS`) and how the companion may move
 #: (Appearance > Companion movement, resolved by `nameMarkBuddyMotion`), in one
 #: round trip; empty when it cannot say. A bare look string is still understood.
 LOOK_SCRIPT = (
     "(function(){try{const lk=document.getElementById('lock-overlay');return JSON.stringify({"
     "locked:!!(lk&&!lk.classList.contains('hidden')),"
     "look:typeof atlasLook==='function'?atlasLook():'',"
+    "who:typeof appearancePref==='function'?appearancePref('avatar-buddy','off'):'off',"
+    "figure:" + capture.FIGURE_JS + ","
     "motion:typeof nameMarkBuddyMotion==='function'?nameMarkBuddyMotion():null})}catch(e){return ''}})()"
 )
 #: "Let it walk": the app's own setting set to Always, as its menu would, then the
@@ -132,6 +138,13 @@ COMPANION_ATLAS = (
     "if(typeof syncNameMarkBuddy==='function')syncNameMarkBuddy();"
     "if(typeof nameMarkBuddySizeSelect==='function')nameMarkBuddySizeSelect();return 'ok'}catch(e){return 'error'}})()"
 )
+#: One of the person's own companions (`me`, `persona`, `custom`): the same writes, without an Atlas look.
+COMPANION_KIND = (
+    "(function(){try{" + COMPANION_LOCK + "prefs.set('avatar-buddy',%s);"
+    "if(typeof mountBuddyCustom==='function')mountBuddyCustom();"
+    "if(typeof syncNameMarkBuddy==='function')syncNameMarkBuddy();"
+    "if(typeof nameMarkBuddySizeSelect==='function')nameMarkBuddySizeSelect();return 'ok'}catch(e){return 'error'}})()"
+)
 #: A saved companion applied by its own function when the app has loaded it; else its two
 #: prefs the overlay shows are written at once and the rest follows when the module loads.
 COMPANION_PRESET = (
@@ -144,7 +157,7 @@ COMPANION_PRESET = (
     "if(typeof ensureModule==='function')ensureModule('companionMenu').then(function(){"
     "if(typeof nameMarkBuddyApplyPreset==='function')nameMarkBuddyApplyPreset(p)});return 'ok'}catch(e){return 'error'}})()"
 )
-_CHOICE_KEY = re.compile(r"atlas:(masculine|feminine|auto)|preset:\d{1,2}")
+_CHOICE_KEY = re.compile(r"atlas:(masculine|feminine|auto)|me|persona|custom|preset:\d{1,2}")
 MOTION_MODES = ("full", "fades", "still")
 MOTION_REASONS = ("", "os", "app", "setting", "avatar", "perf-ignored", "app-ignored", "os-ignored")
 
@@ -153,9 +166,9 @@ _KIND = re.compile(r"[a-z]{1,16}")
 
 def companion_options(data: Any) -> list[dict[str, Any]]:
     """The right-click "Companion" panel's rows from what the app window said (`COMPANION_SCRIPT`):
-    every choice the app offers, the current one marked. The overlay draws Atlas, so only Atlas
-    rows (and a saved companion that is Atlas) can be chosen; the others are listed as
-    "shows in the app only" until frames for them can be made (overlay-1104.md, Remaining)."""
+    every choice the app offers, the current one marked, all of them choosable. Atlas has frames
+    shipped; the others are drawn on this machine from the app's own figure (`capture`, INBOX 1684),
+    and Atlas stands in while that happens."""
     if not isinstance(data, dict):
         return []
     who, look = str(data.get("who") or "off"), str(data.get("look") or "auto")
@@ -164,18 +177,15 @@ def companion_options(data: Any) -> list[dict[str, Any]]:
         for name, label in (("masculine", "Atlas, masculine"), ("feminine", "Atlas, feminine"), ("auto", "Atlas, match your faces"))
     ]
     for kind, label in (("me", "You, from your name"), ("persona", "The chat's persona"), ("custom", "Your own character")):
-        rows.append({"key": kind, "label": label, "group": "Shows in the app only", "current": who == kind, "enabled": False})
+        rows.append({"key": kind, "label": label, "group": "Yours", "current": who == kind, "enabled": True})
     presets = data.get("presets")
     for index, preset in enumerate(presets[:12] if isinstance(presets, list) else []):
         name = str(preset.get("name") or "")[:30] if isinstance(preset, dict) else ""
-        if not name:
-            continue
-        atlas = preset.get("who") == "atlas"
-        rows.append({
-            "key": f"preset:{index}", "label": name, "group": "Saved companions" if atlas else "Shows in the app only",
-            "current": False, "enabled": atlas,
-        })
+        if name:
+            rows.append({"key": f"preset:{index}", "label": name, "group": "Saved companions", "current": False, "enabled": True})
     return rows
+
+
 _lock = threading.RLock()
 _active: DeskCompanion | None = None
 
@@ -232,6 +242,15 @@ def _motion_of(mode: Any, reason: Any) -> tuple[bool, str] | None:
     return (mode != "full", str(reason) if reason in MOTION_REASONS else "")
 
 
+def figure_key(data: dict[str, Any]) -> str | None:
+    """The cache key of the person's own companion the app window draws (`capture`), or None when it
+    draws Atlas (also what the chat's default persona is) or nobody, or gave no figure."""
+    figure = data.get("figure")
+    if data.get("who") not in ("me", "persona", "custom") or not isinstance(figure, dict) or figure.get("atlas") is True:
+        return None
+    return capture.key_for(figure.get("sig"))
+
+
 def _look_in_force(data: dict[str, Any], look: str) -> tuple[str, tuple[bool, str] | None]:
     """The look and motion an answer stands for. A locked app window has not
     read its prefs and answers the default look (INBOX 1670), so the last
@@ -239,11 +258,16 @@ def _look_in_force(data: dict[str, Any], look: str) -> tuple[str, tuple[bool, st
     is remembered. No motion block hands the motion back to the Windows flag."""
     if data.get("look") in ("masculine", "feminine"):
         look = data["look"]
+    elif capture.is_key(look):  # another companion's frames never stand in for this one
+        look = "masculine"
+    key = figure_key(data)
+    if key is not None and capture.complete(key):
+        look = key
     m = data.get("motion")
     motion = _motion_of(m.get("mode"), m.get("reason")) if isinstance(m, dict) else None
     saved_look = _pref(LOOK_PREF, None)
     if data.get("locked") is True:
-        if saved_look in ("masculine", "feminine"):
+        if saved_look in ("masculine", "feminine") or (capture.is_key(saved_look) and capture.complete(saved_look)):
             look = saved_look
             saved = _pref(MOTION_PREF, None)
             if isinstance(saved, (list, tuple)) and len(saved) == 2 and saved[0] in MOTION_MODES:
@@ -896,6 +920,9 @@ class DeskCompanion:
         #: The saved companions' names the "Companion" panel last listed, by key: a choice
         #: names its saved companion by place, and is refused if the name there changed.
         self._choice_names: dict[str, str] = {}
+        #: Companions whose frames are being drawn now, and when a draw last failed, by cache key.
+        self._rendering: set[str] = set()
+        self._render_failed: dict[str, float] = {}
         #: The figure's rectangle (logical pixels) at the last click, and whether
         #: `window` is the quick panel beside it rather than the card.
         self.pet_rect: tuple[int, int, int, int] | None = None
@@ -1046,7 +1073,7 @@ class DeskCompanion:
 
     # --- the overlay (Windows) ---------------------------------------------------
 
-    def _ask_main(self, script: str, what: str) -> Any:
+    def _ask_main(self, script: str, what: str, wait: float = LOOK_WAIT) -> Any:
         """One script run in the app window on a worker, waited for at most
         LOOK_WAIT: a hidden window may not answer, and no click may wait on it."""
         found: list[Any] = []
@@ -1058,7 +1085,7 @@ class DeskCompanion:
                 logger.debug("desk companion: could not ask the app window for %s", what, exc_info=True)
 
         worker = jobs.thread("desk-look", ask)
-        worker.join(LOOK_WAIT)
+        worker.join(wait)
         return found[0] if found else None
 
     def _read_look(self) -> tuple[str, tuple[bool, str] | None]:
@@ -1072,9 +1099,37 @@ class DeskCompanion:
             logger.info("desk companion: the app window gave no look, keeping %s", self.look)
         else:
             look, motion = _look_in_force(data, look)
+            self._want_frames(data)
         if self._walk_forced and (motion is None or motion[0]):
             motion = (False, "")
         return look, motion
+
+    def _want_frames(self, data: dict[str, Any]) -> None:
+        """The person's own companion has no frames yet: draw them from the app window on a worker
+        (Atlas stands in until they are there), and restart the figure when they land. A failed
+        draw is logged and tried again no sooner than `RENDER_RETRY` seconds on."""
+        key = figure_key(data)
+        if key is None or data.get("locked") is True or capture.complete(key):
+            return
+        now = self._now()
+        if key in self._rendering or now - self._render_failed.get(key, -1e9) < RENDER_RETRY:
+            return
+        self._rendering.add(key)
+        jobs.thread("desk-frames", lambda: self._render_frames(key))
+
+    def _render_frames(self, key: str) -> None:
+        try:
+            started = time.monotonic()
+            frames = capture.fetch_frames(lambda script: self._ask_main(script, "the companion's frames", capture.ASK_WAIT))
+            capture.write_set(key, frames)
+        except (capture.CaptureError, ValueError, OSError, ImportError) as exc:
+            self._render_failed[key] = self._now()
+            logger.warning("desk companion: could not draw the companion's frames (%s), Atlas stays", exc)
+            return
+        finally:
+            self._rendering.discard(key)
+        logger.info("desk companion: drew %d frames for %s in %.1f s", len(capture.CAPTURED), key, time.monotonic() - started)
+        self._restart_shown("companion frames drawn")
 
     def _overlay_home(self) -> tuple[int, int] | None:
         saved = _pref(OVERLAY_POS_PREF, None)
@@ -1257,6 +1312,8 @@ class DeskCompanion:
             return "unknown"
         if key.startswith("atlas:"):
             script = COMPANION_ATLAS % json.dumps(key.split(":", 1)[1])
+        elif key in ("me", "persona", "custom"):
+            script = COMPANION_KIND % json.dumps(key)
         else:
             name = self._choice_names.get(key)
             if name is None:

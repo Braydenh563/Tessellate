@@ -283,7 +283,6 @@
       row.setAttribute("role", "menuitemradio");
       row.setAttribute("aria-checked", String(!!option.current));
       row.disabled = !option.enabled;
-      if (!option.enabled) row.title = "Shows in the app only";
       rows.push(row);
     }
     $("desk-menu").replaceChildren(...rows);
