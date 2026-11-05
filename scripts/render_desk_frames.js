@@ -29,7 +29,7 @@ const FRAMES = [
   ...Array.from({ length: 12 }, (_, i) => ({ name: `walk${i}`, pose: "stand", classes: [], float: i / 12 })),
   { name: "sit", pose: "sit", classes: [] },
   { name: "sleep", pose: "sit", classes: ["nmb-sleep"], at: 1.0 },
-  { name: "wave", pose: "stand", classes: ["nmb-act-wave"], at: 0.45 },
+  { name: "wave", pose: "stand", classes: ["nmb-desk-wave"], at: 0.45 },
   { name: "held", pose: "stand", classes: ["nm-buddy-dragging"] },
   { name: "fall", pose: "stand", classes: ["nmb-act-startle"], at: 0.25 },
   { name: "land", pose: "stand", classes: ["nmb-act-land"], at: 0.1 },
@@ -159,7 +159,7 @@ async function steadyShot(page, file, clip) {
     report[look] = got;
     if (got.error) throw new Error(got.error);
     fs.mkdirSync(path.join(out, look), { recursive: true });
-    for (const f of FRAMES) {
+    for (const f of FRAMES.filter((fr) => !process.env.ONLY || process.env.ONLY.split(",").includes(fr.name))) {
       await page.evaluate((frame) => {
         const b = document.getElementById("nm-buddy");
         //: Every frame from the same neutral start: the page's idle timer would
