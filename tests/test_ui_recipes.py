@@ -7456,3 +7456,45 @@ def test_the_edge_handle_and_the_rename_input_are_the_recipe():
     assert "var(--modal-bg)" in handle and "var(--shadow-md)" in handle
     assert "dataset.side" in edges and 'dgm-handle[data-side="left"]' in css  # INBOX 1679: one handle a side
     assert "An edge handle and an input on a picture" in (ROOT / "docs" / "DESIGN.md").read_text(encoding="utf-8")
+
+
+
+def _css_rules(text: str):
+    """(selector, body) pairs of the flat rules in a stylesheet, comments out."""
+    text = re.sub(r"/\*.*?\*/", "", text, flags=re.S)
+    return re.findall(r"([^{}@]+)\{([^{}]*)\}", text)
+
+
+def test_a_panel_fold_is_a_full_width_row_closed_as_open():
+    """INBOX A2: a fold that is a full-width panel open (Thinking, Why this
+    answer, Web results, a long block, Grounded in) is a full-width row
+    closed, so opening never moves the layout sideways. Every one of them
+    wears `.fold-summary`, so no stylesheet may give that summary a width of
+    its own (a `fit-content` pill is the bug), and its caret sits at the end."""
+    every = []
+    for path in CSS:
+        every.extend((path.name, s, b) for s, b in _css_rules(path.read_text(encoding="utf-8")))
+    for name, sel, body in every:
+        for one in sel.split(","):
+            one = one.strip()
+            if one.endswith(".fold-summary") and "[open]" not in one:
+                m = re.search(r"(?<![-\w])(?:max-)?width\s*:\s*([^;]+)", body)
+                assert not m or m.group(1).strip() in {"100%", "auto"}, (name, one, m.group(0))
+    chat = (ROOT / "frontend/css/02-chat-graph.css").read_text(encoding="utf-8")
+    assert re.search(r"\.fold-summary::after\s*\{\s*margin-inline-start:\s*auto", chat)
+    disclosure = (ROOT / "frontend/css/08-consistency.css").read_text(encoding="utf-8")
+    assert ".fold-summary::after" in disclosure
+    for name, sel, body in every:
+        if "[open] > .fold-summary" in sel and ".thinking-fold" in sel + ".thinking-fold":
+            assert "width: auto" not in body, (name, sel, "an open-only width means closed differs")
+
+
+def test_the_ask_column_heads_are_one_recipe():
+    """INBOX A1: the answer head and the Matching records head share a height
+    (`--control-h-lg`) and a title size (`--text-body`), so the first box under
+    each column starts at the same y."""
+    strip = lambda p: re.sub(r"/\*.*?\*/", "", (ROOT / p).read_text(encoding="utf-8"), flags=re.S)
+    m = re.search(r"\.chat-half h3\s*\{([^}]*)\}", strip("frontend/css/01-forms-settings.css"))
+    assert m and "min-height: var(--control-h-lg)" in m.group(1)
+    m = re.search(r"\.answer-head \.msg-role\s*\{([^}]*)\}", strip("frontend/css/08-consistency.css"))
+    assert m and "font-size: var(--text-body)" in m.group(1)

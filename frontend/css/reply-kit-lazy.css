@@ -579,7 +579,6 @@ button.ghost.disclosure-row.calc-log-toggle {
 }
 
 .long-fold[open] > .fold-summary:not(.icon-only):not(.icon-button) {
-  width: auto;
   border: 0;
   border-radius: var(--radius-md) var(--radius-md) 0 0;
   padding: var(--space-2) var(--space-3);
@@ -691,6 +690,13 @@ button.reply-by {
   line-height: 1;
   transform: rotate(-90deg);
   transition: transform var(--ui-base) var(--ease-out);
+  /* At the row's end, where every full-width fold keeps it (A2). */
+  order: 1;
+  margin-inline-start: auto;
+}
+
+.grounding-fold > .fold-summary::after {
+  content: none;
 }
 
 .grounding-fold[open] > .fold-summary::before {

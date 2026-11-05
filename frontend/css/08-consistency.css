@@ -395,7 +395,8 @@
 .settings-fold > summary:not(.icon-only):not(.icon-button)::before,
 .advanced-css > summary:not(.icon-only):not(.icon-button)::before,
 .task-log > summary:not(.icon-only):not(.icon-button)::before,
-.chat-sources > .chat-sources-summary::before {
+.chat-sources > .chat-sources-summary::before,
+.fold-summary::after {
   content: "\e136"; /* ph-caret-down, as `.contents-caret` */
   display: inline-block;
   flex: none;
@@ -423,7 +424,8 @@ details[open] > .about-whats-new::before,
 .settings-fold[open] > summary:not(.icon-only):not(.icon-button)::before,
 .advanced-css[open] > summary:not(.icon-only):not(.icon-button)::before,
 .task-log[open] > summary:not(.icon-only):not(.icon-button)::before,
-.chat-sources[open] > .chat-sources-summary::before {
+.chat-sources[open] > .chat-sources-summary::before,
+details[open] > .fold-summary::after {
   transform: none;
 }
 /* Hover is the only state that fills. Restated because the flat rule above
@@ -2496,9 +2498,6 @@ li:focus-within > .entry-meta .entry-actions > button.ghost,
    genuinely are long. */
 .answer-title {
   gap: var(--space-2);
-}
-.answer-title > .ph-lead {
-  margin-inline-end: 0;
 }
 /* **A '?' is a circle, in every head that sets its own control height**
    (INBOX 179: "'?' tooltip circle buttons are ovals again"). Measured

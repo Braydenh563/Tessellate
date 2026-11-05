@@ -1892,6 +1892,4 @@ The owner: "composer_money seems very specific, what if the user asks about othe
 
 ## Placed from INBOX, 2026-11-05 (the Ask columns and folds)
 
-- **A1, the owner 2026-11-05 02:12Z (screenshot: Ask at about 2000 px, the answer column's "Atlas" head and model chip beside "Matching records" and its chip), verbatim:** "these panels in the ask tab dont start at the same height or have matching font sizes". Measured: the answer head's name is 12px (`.msg-role`), "Matching records" 16px (`.panel-head`); the answer box sits about 12px above the first record. Recommendation (taken): the two `.chat-half` heads are one recipe, the same height (`--control-h-lg`), the same title size and weight, chips the same size, and the first box under each starts at the same y (within 1px) at 1024, 1440 and 2000, measured with and without a Thinking fold.
-- **A2, the owner 2026-11-05 02:14Z (screenshot: a closed "Thinking" fold as a small pill above the full-width answer), verbatim:** "also im not sure about this but I think some of the dropfown boxes like the thinking boxes that expand to full width when opened should still be full width when closed". Recommendation (taken): a fold that is full width when open is full width when closed (its summary a full-width row with the chevron at the end), by class for every fold in Chat, Ask, the guide and the agent steps, so opening it never moves the layout sideways; DESIGN.md's fold recipe says so and a lint holds it.
-
+A1 and A2 built; moved to HISTORY.md ("Moved from the plans, 2026-11-05 (CHAT_PLAN A1 and A2)").

@@ -34,7 +34,6 @@
   border-radius: var(--radius-md);
 }
 .web-fold[open] > .fold-summary:not(.icon-only):not(.icon-button) {
-  width: auto;
   border: 0;
   border-radius: var(--radius-md) var(--radius-md) 0 0;
   padding: var(--space-2) var(--space-3);

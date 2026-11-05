@@ -1145,15 +1145,14 @@ progress {
 /* Open, the summary is the panel's head, not a second box inside it: the
    quiet-button face every summary takes (07-whiteboard-misc.css) drew a
    bordered pill within the panel's own border. */
-.thinking-fold[open] > .fold-summary:not(.icon-only):not(.icon-button),
-.why-fold[open] > .fold-summary:not(.icon-only):not(.icon-button) {
-  width: auto;
+.thinking-fold[open] > .fold-summary,
+.why-fold[open] > .fold-summary {
   border: 0;
   border-radius: var(--radius-md) var(--radius-md) 0 0;
   padding: var(--space-2) var(--space-3);
 }
-.thinking-fold[open] > .fold-summary:not(.icon-only):not(.icon-button):not(:hover):not(:focus-visible),
-.why-fold[open] > .fold-summary:not(.icon-only):not(.icon-button):not(:hover):not(:focus-visible) {
+.thinking-fold[open] > .fold-summary:not(:hover):not(:focus-visible),
+.why-fold[open] > .fold-summary:not(:hover):not(:focus-visible) {
   background: transparent;
 }
 /* "Why this answer" (B30): a job's lines, the seconds in a fixed column so

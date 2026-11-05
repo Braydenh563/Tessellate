@@ -4227,12 +4227,12 @@ mark.lightbox-hit {
    fold, an icon and a word, muted, a ground under the pointer (INBOX 457:
    "make sure all the thinking boxes are the same style and consistent"). */
 .agent-step-group-summary,
+.chat-sources-summary,
 .fold-summary {
   display: flex;
   align-items: center;
   min-height: var(--target-min);
   gap: var(--space-2);
-  width: fit-content;
   padding: var(--space-1) var(--space-2);
   border-radius: var(--radius-sm);
   color: var(--muted);
@@ -4243,20 +4243,38 @@ mark.lightbox-hit {
   list-style: none;
 }
 .agent-step-group-summary::-webkit-details-marker,
+.chat-sources-summary::-webkit-details-marker,
 .fold-summary::-webkit-details-marker {
   display: none;
 }
 .agent-step-group-summary:hover,
+.chat-sources-summary:hover,
 .fold-summary:hover,
 .agent-step-group-summary:is(:focus-visible, :has(:focus-visible)),
+.chat-sources-summary:is(:focus-visible, :has(:focus-visible)),
 .fold-summary:is(:focus-visible, :has(:focus-visible)) {
   background: var(--chip-bg);
   color: var(--ink);
 }
 .agent-step-group[open] > .agent-step-group-summary,
-.thinking-fold[open] > .fold-summary,
-.why-fold[open] > .fold-summary {
+details[open] > .fold-summary {
   color: var(--ink);
+}
+/* **A fold that is a full-width panel open is a full-width row closed**
+   (INBOX A2, the owner: the boxes "that expand to full width when opened
+   should still be full width when closed"). Closed, the summary was a
+   fit-content pill (Thinking 82px in a 528px column) that jumped to the whole
+   row on opening. `.fold-summary` is the summary of every such fold (Thinking,
+   Why this answer, Web results, a long block, Grounded in, Requests and
+   answers), so the row is the flex default (no width of its own) and the affordance, the caret,
+   sits at its end (drawn by the one disclosure rule, 08-consistency.css). The steps group and Sources open as a rail, not a panel,
+   and keep their pill. */
+.agent-step-group-summary,
+.chat-sources-summary {
+  width: fit-content;
+}
+.fold-summary::after {
+  margin-inline-start: auto;
 }
 /* While the group is still collecting steps its summary carries the `.spinner`
    ring (the `ph:spin` marker in `groupSummary`, chat-agent.js); a group that
@@ -4280,26 +4298,6 @@ mark.lightbox-hit {
   margin-top: var(--space-3);
   border-top: 1px solid var(--border);
   padding-top: var(--space-2);
-}
-.chat-sources-summary {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  width: fit-content;
-  padding: var(--space-1) var(--space-2);
-  border-radius: var(--radius-sm);
-  color: var(--muted);
-  font-size: var(--text-sm);
-  cursor: pointer;
-  list-style: none;
-}
-.chat-sources-summary::-webkit-details-marker {
-  display: none;
-}
-.chat-sources-summary:hover,
-.chat-sources-summary:is(:focus-visible, :has(:focus-visible)) {
-  background: var(--chip-bg);
-  color: var(--ink);
 }
 .chat-sources-body {
   display: flex;
