@@ -5,7 +5,7 @@ from __future__ import annotations
 
 from tessellate.core.overlay import engine as eng
 from tessellate.core.overlay.engine import Perch
-from tests.test_overlay_moves import FLOOR, make
+from tests.test_overlay_moves import make
 
 T0 = 10.0
 
@@ -52,7 +52,7 @@ def test_pointer_beside_the_figure_then_moved_to_the_middle_it_comes() -> None:
 def test_with_the_pointer_still_it_follows_after_the_wait() -> None:
     e = start()
     e.command("come", T0)
-    t = run(e, T0, eng.COME_WAIT + 0.2, (860, 950))
+    run(e, T0, eng.COME_WAIT + 0.2, (860, 950))
     assert e.come["phase"] in ("go", "stay")
 
 
