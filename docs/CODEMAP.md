@@ -2,7 +2,7 @@
 
 Generated 2026-11-05 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7822, frontend ids 2644, CSS sections 522, backend routes 644, backend modules 8802, test files 2070, tests 17493, plan headings 1003, app scripts 28, boot scripts 37, script files 257.
+Counts: frontend functions 7822, frontend ids 2644, CSS sections 522, backend routes 644, backend modules 8802, test files 2070, tests 17494, plan headings 1003, app scripts 28, boot scripts 37, script files 257.
 
 ## Frontend functions (7822)
 
@@ -22275,11 +22275,11 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `Engine` | src/tessellate/core/overlay/engine.py:363 |
-| `Monitor` | src/tessellate/core/overlay/engine.py:317 |
-| `Output` | src/tessellate/core/overlay/engine.py:324 |
-| `Perch` | src/tessellate/core/overlay/engine.py:308 |
-| `_adjoins` | src/tessellate/core/overlay/engine.py:352 |
+| `Engine` | src/tessellate/core/overlay/engine.py:366 |
+| `Monitor` | src/tessellate/core/overlay/engine.py:320 |
+| `Output` | src/tessellate/core/overlay/engine.py:327 |
+| `Perch` | src/tessellate/core/overlay/engine.py:311 |
+| `_adjoins` | src/tessellate/core/overlay/engine.py:355 |
 
 ### src/tessellate/core/overlay/host.py (3)
 
@@ -24090,7 +24090,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (17493)
+## Tests (17494)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -24881,7 +24881,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_first_steps_ask_count.py | 1 |
 | tests/test_fixa2_1025.py | 5 |
 | tests/test_flaw_class_lints.py | 2 |
-| tests/test_flow_1683.py | 15 |
+| tests/test_flow_1683.py | 16 |
 | tests/test_focus_feedback_1029.py | 8 |
 | tests/test_focus_timer.py | 7 |
 | tests/test_folder_roundtrip.py | 8 |

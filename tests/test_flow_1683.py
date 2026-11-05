@@ -253,3 +253,35 @@ def test_a_move_throws_the_streams_and_they_settle_after_the_stop():
         e._follow_through(t, 1 / 60)
         t += 1 / 60
     assert e.flow.settled()
+
+
+# --- review of 1683: a drag or a throw must not build a warped picture a frame ----------------------------
+
+
+@pytest.mark.parametrize("look", LOOKS)
+def test_a_drag_and_a_throw_keep_one_flow_so_no_warp_is_built_a_frame(look):
+    from tests.test_overlay_ride_1670 import drag
+
+    e, _ = make(look)
+    t = 1.0
+    for _ in range(60):  # let the streams be mid-sway before the grab
+        e.update(t)
+        t += 0.05
+    sx, sy = int(e.x + e.size[0] / 2), int(e.y + e.size[1] / 2)
+    outs = [e.update(t, (sx, sy), ("down", sx, sy))]
+    for i in range(1, 60):
+        t += 0.016
+        outs.append(e.update(t, event=("move", sx + i * 9, sy - i * 4)))
+    for _ in range(12):  # a fast last stretch, then let go: a throw
+        t += 0.016
+        outs.append(e.update(t, event=("move", sx + 700 + 40 * _, sy - 300)))
+    t += 0.016
+    outs.append(e.update(t, event=("up", sx + 1100, sy - 300)))
+    for _ in range(120):
+        t += 0.016
+        outs.append(e.update(t))
+    airborne = [o for o in outs if o.frame.startswith("spin") or e.state in ("held",)]
+    in_motion = [o for o in outs if o.frame.startswith("spin") or o.frame in ("held", "fall", "hop")]
+    assert in_motion, "the drag or the throw drew no motion frame"
+    assert len({o.flow for o in in_motion}) <= 2, "a flowed picture per frame is a warp per frame"
+    assert not [o for o in airborne if o.frame.startswith("spin") and o.flow is not None]

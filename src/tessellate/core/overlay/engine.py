@@ -97,6 +97,9 @@ FLOW_TICK_MS = 170
 FLOW_SLEEP_MS = 340
 FLOW_CALM_MS = 1000
 FLOW_SPEED_MAX = 900.0
+#: States in which the streams keep their last picture: held, thrown, falling or hopping move the window every
+#: display frame, and a mesh warp each would cost a quarter of the frame at 96 dpi (measured 5.7 ms).
+FLOW_FROZEN = ("pressed", "held", "fly", "fall", "hop", "leap")
 #: A rest redraw is at most this often: 12 a second.
 REST_DRAW_MS = 84
 STAND_FAMILY = ("stand", "blink", "look")
@@ -444,6 +447,7 @@ class Engine:
         self.tail = bh.Trail()
         #: The wisps and the nebula streams (INBOX 1683 c): always swaying, thrown by the body's moves.
         self.flow = bh.Flow()
+        self._flow_held: tuple[int, ...] | None = None
         self.last_y = 0.0
         self.hour = 12
         self.act: str | None = None
@@ -2519,9 +2523,17 @@ class Engine:
     def _idle_index(self, now: float) -> int:
         return int((now - self.idle_start) * self._idle_fps() + 1e-6) % self.idle_frames
 
-    def _flow_view(self, now: float) -> tuple[int, ...]:
-        """What the wisps and streams are doing at `now`; under reduced motion a slow drift only."""
-        return self.flow.view(now, calm=self.reduced)
+    def _flow_view(self, now: float, frame: str = "") -> tuple[int, ...] | None:
+        """What the wisps and streams are doing at `now`; under reduced motion a slow drift only. While the
+        person has hold of it or it is thrown or falling the last view is kept (review of 1683: a new flow is a
+        new picture, and a warp a frame on the drag is the lag the owner complained of); a tumble frame takes
+        none (its picture is the same with any)."""
+        if frame.startswith("spin"):
+            return None
+        if self.state in FLOW_FROZEN:
+            return self._flow_held
+        self._flow_held = self.flow.view(now, calm=self.reduced)
+        return self._flow_held
 
     def _wake(self, now: float) -> int | None:
         """When to draw next: the state's own pace, and never later than the streams' (`FLOW_TICK_MS`, a calm
@@ -2622,5 +2634,5 @@ class Engine:
         return Output(
             frame, int(round(x)), int(round(y)), self.facing < 0, self._wake(now),
             self.click_now, self.settled_now, clip, self.card_clicked, self._pose(), fx, round(alpha * 16) / 16.0,
-            self._flow_view(now) if fx is None else None,
+            self._flow_view(now, frame) if fx is None else None,
         )
