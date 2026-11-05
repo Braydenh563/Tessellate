@@ -42,7 +42,7 @@ def test_the_turn_rate_is_continuous_and_ends_upright(gait: str, speed: int, cur
     # no tick changes the rate by more than 30 percent of max(the rate, 2 rad/s), a contact aside (a bounce
     # shows the startled frame, the rate is allowed to change there; the righting spring is ramped in)
     assert m["jump"] <= 0.30, m
-    assert m["state_end"] in ("stand", "land"), m  # laid down upright, never left tilted
+    assert m["state_end"] in ("stand", "land", "act"), m  # laid down upright (a fall onto its back ends in a shake-off act), never left tilted
 
 
 @pytest.mark.parametrize("gait", ["float", "walk"])
