@@ -339,12 +339,15 @@ Rect = tuple[int, int, int, int]
 
 
 class Perch(NamedTuple):
-    """The top edge of another app's window: a surface to stand on (physical px)."""
+    """The top edge of another app's window: a surface to stand on (physical px). `kind` "top" is a window's
+    top (to stand on, or its title bar to hang from); "bar" a maximised window's title bar and "bottom" a
+    floating window's bottom edge (key negated), which are only hung from (INBOX 1683 w)."""
 
     key: int
     left: int
     top: int
     right: int
+    kind: str = "top"
 
 
 class Monitor(NamedTuple):
@@ -428,6 +431,8 @@ class Engine:
         self.hang_top = min(max(float(hang_top), 0.0), 0.5)
         #: The window whose title bar a hang (or the trip to one) takes hold of.
         self.hang_on: Perch | None = None
+        #: Edges only a hang takes hold of (a maximised window's title bar, a floating window's bottom edge).
+        self.hangs: list[Perch] = []
         #: The window a swinging hang will drop to, when it started swinging, and a startled beat before letting go.
         self.swing_to: Perch | None = None
         self.swing_at = 0.0
@@ -1403,11 +1408,11 @@ class Engine:
 
     # --- window tops (roam) ------------------------------------------------------------
 
-    def set_windows(self, windows: list[Perch], now: float) -> None:
-        """The top edges the runner last read. A figure on one follows it: it falls
-        (or floats down) when that window is gone or no longer under it, and
-        keeps up when it moves."""
+    def set_windows(self, windows: list[Perch], now: float, hangs: list[Perch] | tuple = ()) -> None:
+        """The top edges the runner last read, and the edges only a hang takes hold of. A figure on one follows
+        it: it falls (or floats down) when that window is gone or no longer under it, and keeps up when it moves."""
         self.windows = list(windows)
+        self.hangs = list(hangs)
         if self.hang_on is not None:
             self._check_hang(now)
         if self.perch is None:
