@@ -8,7 +8,7 @@ from __future__ import annotations
 import hashlib
 import re
 
-from tessellate.ai import realise, repair_turn
+from tessellate.ai import intent, realise, repair_turn
 from tessellate.search import query as query_understanding
 
 #: After a ping's own line: was it a search, and how many notes would answer.
@@ -79,7 +79,9 @@ def read_as(last: dict) -> str:
         return "a search of your notes"
     if "search the web" in low or "web search" in low or "search service" in low:
         return "a web search"
-    return "small talk" if answer and len(answer) <= 160 else ""
+    #: A short reply is small talk only when the message before was (a notes
+    #: answer of one line is not).
+    return "small talk" if answer and len(answer) <= 160 and intent.classify(str(last.get("question") or "")) == intent.SMALLTALK else ""
 
 
 def bare_no(message: str, last: dict) -> bool:
@@ -87,6 +89,24 @@ def bare_no(message: str, last: dict) -> bool:
     missed (INBOX 1668 b); after a question it is that question's answer."""
     bare = " ".join(re.findall(r"[a-z]+", (message or "").lower())) in ("no", "nope", "nah", "no no", "nope nope")
     return bare and not str(last.get("answer") or "").rstrip().endswith("?")
+
+
+def answers_offer(message: str, last: dict) -> bool:
+    """"No, I don't want that" after a reply that ended in a question: the
+    answer to it, not a complaint (INBOX 1668 b, review)."""
+    return str(last.get("answer") or "").rstrip().endswith("?") and repair_turn.is_refusal(message)
+
+
+def missed(message: str, kind: str | None, last: dict) -> bool:
+    """Whether the message says the last reply missed: a correction, or a
+    bare "no" after a reply that asked nothing; not a refusal of an offer."""
+    return (kind == "repair" and not answers_offer(message, last)) or bare_no(message, last)
+
+
+def heard(message: str, kind: str | None, last: dict) -> str:
+    """The words the small-talk reply answers: a refusal of an offer is the
+    offer's "no" ("no, I don't want that")."""
+    return "no" if kind == "repair" and answers_offer(message, last) else message
 
 
 def repaired_turn(history: list[dict], last: dict) -> dict:

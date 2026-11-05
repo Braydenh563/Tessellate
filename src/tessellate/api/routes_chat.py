@@ -915,12 +915,12 @@ def _social_reply(req: _StreamRequest, prepared: dict) -> str:
     kind = composer_smalltalk.social_kind(req.question, prepared["intent"])
     if kind in ("greeting", "morning") and (hello := _hello_reply(req, seed, recent)):
         return hello
-    if kind == "repair" or composer_social.bare_no(req.question, last):
+    if composer_social.missed(req.question, kind, last):
         return _repair_reply(req, last, seed)
     if kind == "joke" and (joke := _saved_joke_reply(req, seed)):
         return joke
     said = composer_smalltalk.social(
-        req.question,
+        composer_social.heard(req.question, kind, last),
         prepared["intent"],
         str(last.get("answer") or ""),
         asked,

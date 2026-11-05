@@ -3264,6 +3264,13 @@ def _event_lines(out: _Out, members) -> list[tuple[int, object]]:  # noqa: ANN00
     return events if separate and len(out.lines) == len(out.rows) + 1 else []
 
 
+_DAYS_RE = r"(?:mon|tues|wednes|thurs|fri|satur|sun)day"
+_MONTHS_RE = r"(?:jan|febr)uary|march|april|may|june|july|august|(?:sept|nov|dec)ember|october"
+#: "On Friday 23 October, you went": the absolute date a weekday carries (1441: relative or none).
+_DATED_LEAD = re.compile(rf"^on {_DAYS_RE},? \d{{1,2}} (?:{_MONTHS_RE}),?\s+", re.I)
+_DATED_DAY = re.compile(rf"\b({_DAYS_RE}),? \d{{1,2}} (?:{_MONTHS_RE})\b", re.I)
+
+
 def _each_says_its_day(out: _Out, members, today: date) -> None:  # noqa: ANN001
     """**Separate events of one activity each say their own day** (INBOX
     1668, the narrow exception to 1441: "the how it went part is kinda
@@ -3272,9 +3279,12 @@ def _each_says_its_day(out: _Out, members, today: date) -> None:  # noqa: ANN001
     on a different day, leads each with its day, relative ("last month", "on
     Monday"), so they read as separate occasions; a line that says its day
     already is left. Every other answer keeps 1441: no day unasked."""
-    events = [] if _TIMED.get() else _event_lines(out, members)
+    if _TIMED.get():
+        return
+    events = _event_lines(out, members)
     held = _REGISTER.set("casual")
     try:
+        _drop_absolute_days(out, members, today)
         for at, view in events:
             line = out.lines[at]
             if not _SAYS_WHEN.search(line):
@@ -3283,6 +3293,26 @@ def _each_says_its_day(out: _Out, members, today: date) -> None:  # noqa: ANN001
                 out.rows[at - 1]["sentence"] = out.lines[at].rstrip(".")
     finally:
         _REGISTER.reset(held)
+
+
+def _drop_absolute_days(out: _Out, members, today: date) -> None:  # noqa: ANN001
+    """A weekday that came with its date ("On Friday 23 October, you went")
+    says its day as any other line does here: relative, or the weekday alone
+    (1441: no date unasked). Review of INBOX 1668 c."""
+    by_id = {v.note.get("source_id", v.id): v for v in members}
+    for at in range(1, len(out.lines)):
+        line = out.lines[at]
+        if not (_DATED_LEAD.match(line) or _DATED_DAY.search(line)):
+            continue
+        view = by_id.get(out.rows[at - 1]["note_id"]) if at - 1 < len(out.rows) else None
+        bare = _DATED_LEAD.sub("", line)
+        if bare != line and view is not None and view.written:
+            bare = _lead_day(view.written, today) + bare[:1].lower() + bare[1:]
+        else:
+            bare = _DATED_DAY.sub(r"\1", bare[:1].upper() + bare[1:])
+        if at - 1 < len(out.rows) and out.rows[at - 1].get("sentence"):
+            out.rows[at - 1]["sentence"] = bare.rstrip(".")
+        out.lines[at] = bare
 
 
 def _told_lines(out: _Out, members, facts, today: date, kind: str, moved: str) -> None:  # noqa: ANN001

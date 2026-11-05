@@ -287,7 +287,8 @@ def follow_on(question: str, history: list[dict] | None) -> FollowOn | None:
     defining = _defining_ask(question, turns)
     if defining is not None:
         return defining
-    if not turns:
+    #: "I don't need that" is a reply, not a question about "that" (INBOX 1668 b).
+    if not turns or repair_turn.is_repair(question):
         return None
     return _follow_one(question, _standing(turns))
 

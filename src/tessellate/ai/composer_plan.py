@@ -21,7 +21,7 @@ from datetime import date, datetime, timedelta
 from tessellate.ai import composer_done, recognise, study
 from tessellate.ai import when as when_words
 from tessellate.ai import composer_compose as compose
-from tessellate.ai import note_rank
+from tessellate.ai import note_rank, reminder_parser
 from tessellate.ai.composer_study import Ctx, Reply, pick
 
 _SENTENCE = re.compile(r"(?<=[.!?])\s+(?=[A-Z0-9*\"“(\[])")
@@ -788,6 +788,9 @@ def _asks_due(text: str, today: date) -> bool:
 def answer(ctx: Ctx) -> Reply | None:
     text = " ".join((ctx.question or "").split())
     if not text or len(text) > 200:
+        return None
+    #: "schedule a reminder" starts one; it is not a plan to lay out (INBOX 1668 a).
+    if reminder_parser.canonical_ask(text) != text:
         return None
     today = ctx.now.date()
     if _LEFT.match(text):
