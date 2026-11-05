@@ -1430,7 +1430,7 @@ MORE_TOPICS: list[dict] = [
         ),
         "body": (
             "In the desktop app on Windows and Linux (X11) the companion can live on your desktop while the Tessellate window is "
-            "minimised or in the tray, and go away when it is open. Atlas floats like a wind spirit, sits "
+            "minimised or in the tray, and go away when it is open. Atlas floats like a wind spirit (others walk the bottom), sits "
             "and then sleeps when you have been away, can be picked up and thrown, "
             "hangs from the top, and peeks up from behind the taskbar or a screen edge. It keeps to a home spot by an "
             "edge and stays there for minutes, alive in place, and makes "
@@ -1445,7 +1445,7 @@ MORE_TOPICS: list[dict] = [
             "Quick search, New reminder, Open today, Open Tessellate, Wave, Come here, Go somewhere else, Take a nap, Sit on a window"
             " or Hide for 10 minutes. Come here follows your pointer a while; a nap lasts minutes or until you click it. Right-click it for Companion (Atlas masculine or feminine, your own or a saved one, drawn once), Stay here or Roam, Settings or Turn off. Drag it; it remembers the spot. While Tessellate is "
             "locked it shows only the companion and Open Tessellate. On Wayland, which cannot place a window above others, it stays "
-            "in the app."
+            "in the app. It also lounges, answers a pat and glances at new windows."
         ),
         "badge": {"label": "Desktop companion", "section": "appearance", "target": "desktop-companion-row"},
     },
