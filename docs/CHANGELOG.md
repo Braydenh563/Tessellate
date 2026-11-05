@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Companion asks ledger (INBOX 1683 p, the owner: "go bakc trhough my conversation history and analyse all my requests for the companion and incorporate them all into the workflows"): docs/roadmap/agent-remaining/companion-asks.md lists 94 asks with the owner's words, surface, status and evidence, names the lanes already building (1683 e, i, j, k, l, 1678, 1684, 1686) and groups the rest into four build briefs, desk parity first (props and reactions, wisps and nebula by pose, a desk size handle, real-machine proof and the X11 flake).
 - Companion: hanging, the size handle is at its bottom-right corner, away from the bar and its hands (the owner, 2026-11-05).
 - CI fix: two composer test files pin the day (the reply seed carries it, so "ticked off" was worded differently on 2026-11-05); Open a diagram says when the list failed to load instead of showing "No diagrams yet"; the documents sidebar's new rules moved to the lazy library stylesheet (boot CSS back under its cap); a test helper imported by its package name.
 - Documents sidebar (owner, 2026-11-05): a long outline heading ends in an ellipsis and keeps its task count in view; the New pill and its arrow keep their width and the list head wraps its controls under "Recent" on a narrow sidebar, so the arrow no longer lies over the template button.
