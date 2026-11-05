@@ -1365,10 +1365,10 @@ async function cmdPaletteAsk(text, { plan = null } = {}) {
         //: marker put where the step arrived; the next card's marker goes
         //: after it, so a read stays under the search that found it.
         if (event.ok && (event.tool === "read_url" || event.tool === "web_search")) {
-          const panel = { web: event.sources, read: event.tool === "read_url" };
+          const panels = event.tool === "read_url" ? [{ web: event.sources, read: true }] : [{ web: event.sources }];
           const spot = document.createComment("web card");
           placeStep(spot);
-          drawAnswerPanels(stepsHolder, [panel], spot).then(() => spot.remove());
+          drawAnswerPanels(stepsHolder, panels, spot).then(() => spot.remove());
         }
         keepAtBottom(cmdPaletteResults);
         // Something visible while a tool runs, so a long silence reads as

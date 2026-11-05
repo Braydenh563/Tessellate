@@ -111,3 +111,58 @@ def test_a_model_written_answer_is_never_folded():
     for name in ("ask-compose.js", "chat-turn.js", "palette.js", "help-chat.js"):
         source = (JS / name).read_text(encoding="utf-8")
         assert "finishReply(" in source and "composed:" in source, name
+
+
+def _split_live(chunks):
+    """(thinking before the end, answer before the end, thinking, answer)."""
+    splitter = _ThinkTagSplitter()
+    pieces = []
+    for chunk in chunks:
+        pieces += splitter.feed(chunk)
+    live = list(pieces)
+    pieces += splitter.flush()
+    pick = lambda ps, key: "".join(p[key] for p in ps if key in p)  # noqa: E731
+    return pick(live, "thinking_delta"), pick(live, "content_delta"), pick(pieces, "thinking_delta"), pick(pieces, "content_delta")
+
+
+def test_a_preamble_that_never_closes_shows_each_word_once():
+    """Review of B1: with no close tag the steps went to the fold and the whole
+    text, steps and header included, to the answer as well. The steps stream
+    into the fold as they come; the prose after the last step is held, and is
+    the answer when the reply ends without a close."""
+    text = f"Thinking Process:\n\n{STEPS}\n{ANSWER}"
+    for size in (1, 3, 9, len(text)):
+        live_thinking, live_answer, thinking, answer = _split_live(_chunked(text, size))
+        assert answer.strip() == ANSWER, size
+        assert "Analyze the request" in thinking and "Draft the answer" in thinking, size
+        assert "Analyze the request" not in answer and "Thinking Process" not in answer + thinking, size
+        assert ANSWER not in thinking, size
+        assert not live_answer, size
+    #: The steps are on screen while the reply is still coming.
+    live_thinking, *_ = _split_live(_chunked(text, 9))
+    assert "Search the context" in live_thinking
+    #: The reviewer's probe.
+    *_, thinking, answer = _split_live(_chunked("Thinking Process:\n1. a\n2. b\nThe answer.", 2))
+    assert (thinking.strip(), answer.strip()) == ("1. a\n2. b", "The answer.")
+
+
+def test_a_header_over_plain_prose_is_all_answer():
+    """Nothing reads as a step: no word went to the fold, so the whole text,
+    header and all, is the answer, once."""
+    text = "Reasoning:\nBeans swell as they soak, so soak them overnight."
+    *_, thinking, answer = _split_live(_chunked(text, 4))
+    assert answer == text and not thinking
+
+
+def test_a_header_that_ends_on_a_step_keeps_every_word_in_the_answer():
+    """No prose after the steps: nothing marks an answer, so the answer is
+    the whole text (never lost to the fold)."""
+    *_, thinking, answer = _split_live(_chunked("Thinking:\n1. buy beans\n2. soak them", 3))
+    assert "1. buy beans" in answer and "2. soak them" in answer
+
+
+def test_a_saved_reply_that_never_closes_splits_as_the_stream_did():
+    clean, thinking = split_thinking(f"Thinking Process:\n\n{STEPS}\n{ANSWER}")
+    assert clean == ANSWER
+    assert thinking == STEPS.strip()
+    assert split_thinking("Reasoning:\nBeans swell, so soak them.") == ("Reasoning:\nBeans swell, so soak them.", None)

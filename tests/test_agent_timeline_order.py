@@ -74,4 +74,4 @@ def test_web_cards_in_one_group_keep_their_arrival_order():
     assert "stepsFold.nextElementSibling" not in palette
     assert "const spot = document.createComment(" in palette
     assert "placeStep(spot);" in palette
-    assert "drawAnswerPanels(stepsHolder, [panel], spot).then(() => spot.remove())" in palette
+    assert "drawAnswerPanels(stepsHolder, panels, spot).then(() => spot.remove())" in palette

@@ -6,8 +6,8 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
-- A model's answer is never folded (CHAT_PLAN B1, the owner, 2026-11-05): an untagged "Thinking Process:" preamble streams into the Thinking fold, and the long-block fold applies to composed replies only (measured: 1 to 0 answer folds in Ask, Chat and the popup agent).
-- The popup agent keeps steps and text in arrival order (CHAT_PLAN B5, the owner, 2026-11-05): a search after the first words sits after them and the next words open a new box (measured: TOOL > TEXT1 to TEXT1 > TOOL > TEXT2).
+- A model's answer is never folded (CHAT_PLAN B1, the owner, 2026-11-05): an untagged "Thinking Process:" preamble streams into the Thinking fold, and the long-block fold applies to composed replies only (measured: 1 to 0 answer folds in Ask, Chat and the popup agent); a header nothing closes streams its steps into the fold and gives the prose after them to the answer, each word once.
+- The popup agent keeps steps and text in arrival order (CHAT_PLAN B5, the owner, 2026-11-05): a search after the first words sits after them and the next words open a new box (measured: TOOL > TEXT1 to TEXT1 > TOOL > TEXT2), and a search's card stays above the page read from it (paced stream: READ > SEARCH to SEARCH > READ).
 
 ## [0.7.0] - 2026-11-05
 - Desk companion (INBOX 1683 w): on a real desktop the taskbar was the only place it went. A maximised window is kept as a hang spot (its title bar), a floating window's bottom edge is one and its top a perch, a hang is a trip with its own weight (it hangs a while, then pulls up or lets go), the taskbar is one choice among those in reach, and no destination comes three times running; the scan log counts hang spots. 200 seeded trips, 1920x1080 at 150 percent with a maximised window, the taskbar and a floating window: floor 54, window 46, hang 0 percent before; 38, 33, 29 after at the real trip cadence (maximised window and taskbar only: floor 100 before; floor 58, hang 42 after). Real Windows unverified.

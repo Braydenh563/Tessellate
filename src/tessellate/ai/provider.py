@@ -714,6 +714,31 @@ def _think_header(text: str) -> str:
     return "wait" if any(h.startswith(core) for h in _THINK_HEADERS) else "no"
 
 
+#: A line that reads as part of a reasoning outline: blank, indented, a list
+#: item or a heading. Prose after the last one is where an answer would be.
+_STEP_LINE_RE = re.compile(r"\s*$|\s+\S|\s*(?:\d+[.)]|[-*+•]|#{1,6})\s")
+
+
+def _steps_end(text: str) -> int:
+    """Where the reasoning outline in `text` ends: just past the last whole
+    line that is a step, so what follows is prose that may be the answer."""
+    end = position = 0
+    for line in text.splitlines(keepends=True):
+        position += len(line)
+        if line.endswith("\n") and _STEP_LINE_RE.match(line):
+            end = position
+    return end
+
+
+def _split_header_reply(body: str) -> tuple[str, str]:
+    """(thought, answer) of a reply that opened with a reasoning header and
+    never closed it: the outline is the thought, the prose after its last
+    step the answer. ("", body) when that cannot be told."""
+    end = _steps_end(body if body.endswith("\n") else body + "\n")
+    thought, answer = body[:end], body[end:]
+    return (thought, answer) if thought.strip() and answer.strip() else ("", body)
+
+
 class _ThinkTagSplitter:
     """Routes streamed content into thinking and answer pieces.
 
@@ -743,8 +768,10 @@ class _ThinkTagSplitter:
     def __init__(self) -> None:
         self._buffer = ""
         self._mode = "start"  # start → thinking? → answer
-        #: The thought began at a header, not a tag, and nothing has closed it.
+        #: The thought began at a header, not a tag, and nothing has closed it:
+        #: the header, and the thought shown after it so far.
         self._implied = ""
+        self._shown = ""
 
     @staticmethod
     def _leading(text: str, tags: tuple[str, ...]) -> str | None:
@@ -806,14 +833,18 @@ class _ThinkTagSplitter:
             pieces.append({"thinking_delta": self._buffer[:at]})
             self._buffer = self._buffer[at + size :]
             self._mode = "answer"
-            self._implied = ""
+            self._implied = self._shown = ""
             return True
-        # Keep enough back that a half-arrived closing tag is not
-        # emitted as thinking text.
-        safe = len(self._buffer) - (self._LONGEST_CLOSE - 1)
+        if self._implied:
+            #: A header's thought streams a step at a time; the prose after
+            #: the last step is held, since with no close tag it is the answer.
+            safe = _steps_end(self._buffer)
+        else:
+            # Keep enough back that a half-arrived closing tag is not
+            # emitted as thinking text.
+            safe = len(self._buffer) - (self._LONGEST_CLOSE - 1)
         if safe > 0:
-            if self._implied:
-                self._implied += self._buffer[:safe]
+            self._shown += self._buffer[:safe]
             pieces.append({"thinking_delta": self._buffer[:safe]})
             self._buffer = self._buffer[safe:]
         return False
@@ -842,10 +873,20 @@ class _ThinkTagSplitter:
         if self._mode == "start":
             self._mode = "answer"  # a reply shorter than a header, all answer
         if self._implied:
-            #: A header that nothing closed: no mark says where the answer
-            #: starts, so the whole text is the answer too, never lost to the fold.
-            implied, self._implied = self._implied + leftover, ""
-            return [{"thinking_delta": leftover}, {"content_delta": implied}] if leftover else [{"content_delta": implied}]
+            #: A header that nothing closed (review of B1: the steps were
+            #: shown in the fold and again in the answer). The prose after the
+            #: last step is the answer, each word shown once. With no prose
+            #: there, nothing marks an answer, so the whole text is the answer
+            #: as well, never lost to the fold.
+            header, self._implied = self._implied, ""
+            thought, answer = _split_header_reply(self._shown + leftover)
+            if not self._shown and not thought:
+                return [{"content_delta": header + leftover}]
+            if thought:
+                more = thought[len(self._shown) :]
+                return ([{"thinking_delta": more}] if more else []) + [{"content_delta": answer}]
+            whole = header + self._shown + leftover
+            return ([{"thinking_delta": leftover}] if leftover else []) + [{"content_delta": whole}]
         if not leftover:
             return []
         key = "thinking_delta" if self._mode == "thinking" else "content_delta"
@@ -1389,6 +1430,11 @@ def split_thinking(text: str) -> tuple[str, str | None]:
             break
         thoughts.append(text[opened.end() : closing.start()])
         position = closing.end()
+    if not thoughts and _think_header(text.lstrip()) == "yes":
+        #: A header nothing closed splits as the stream does.
+        thought, rest = _split_header_reply(text.lstrip().partition("\n")[2])
+        if thought:
+            return rest.strip(), thought.strip()
     thinking = "\n\n".join(part.strip() for part in thoughts if part.strip()).strip()
     #: The header a stream reads as the open tag (B1) is the fold's own label.
     if _think_header(thinking) == "yes":

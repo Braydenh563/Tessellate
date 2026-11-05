@@ -2,7 +2,7 @@
 
 Generated 2026-11-05 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7825, frontend ids 2644, CSS sections 522, backend routes 644, backend modules 8830, test files 2093, tests 17647, plan headings 1004, app scripts 28, boot scripts 37, script files 257.
+Counts: frontend functions 7825, frontend ids 2644, CSS sections 522, backend routes 644, backend modules 8832, test files 2093, tests 17652, plan headings 1004, app scripts 28, boot scripts 37, script files 257.
 
 ## Frontend functions (7825)
 
@@ -1628,14 +1628,14 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `agentActStarters` | frontend/js/palette.js:184 |
 | `agentCommitFiles` | frontend/js/palette.js:984 |
 | `agentCurrentTab` | frontend/js/palette.js:119 |
-| `agentFocusStarter` | frontend/js/palette.js:1564 |
+| `agentFocusStarter` | frontend/js/palette.js:1570 |
 | `agentOpenSubject` | frontend/js/palette.js:260 |
 | `agentPaletteShut` | frontend/js/palette.js:452 |
 | `agentPhoneSheet` | frontend/js/palette.js:420 |
 | `agentRenderChips` | frontend/js/palette.js:923 |
 | `agentScopeForRun` | frontend/js/palette.js:313 |
 | `agentStageFiles` | frontend/js/palette.js:953 |
-| `agentStarterButtons` | frontend/js/palette.js:1560 |
+| `agentStarterButtons` | frontend/js/palette.js:1566 |
 | `agentStarterRecents` | frontend/js/palette.js:147 |
 | `agentTabLabel` | frontend/js/palette.js:134 |
 | `agentUnstage` | frontend/js/palette.js:946 |
@@ -1646,14 +1646,14 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `cmdPaletteBusy` | frontend/js/palette.js:597 |
 | `cmdPaletteFacts` | frontend/js/palette.js:631 |
 | `cmdPaletteGoToNote` | frontend/js/palette.js:669 |
-| `cmdPaletteGrow` | frontend/js/palette.js:1542 |
+| `cmdPaletteGrow` | frontend/js/palette.js:1548 |
 | `cmdPaletteLinkNotes` | frontend/js/palette.js:857 |
 | `cmdPaletteReset` | frontend/js/palette.js:496 |
 | `cmdPaletteSaveAsChat` | frontend/js/palette.js:515 |
-| `cmdPaletteSend` | frontend/js/palette.js:1608 |
+| `cmdPaletteSend` | frontend/js/palette.js:1614 |
 | `cmdPaletteSources` | frontend/js/palette.js:684 |
 | `cmdSourceRow` | frontend/js/palette.js:723 |
-| `paletteLater` | frontend/js/palette.js:1656 |
+| `paletteLater` | frontend/js/palette.js:1662 |
 | `rememberAgentStarter` | frontend/js/palette.js:164 |
 | `renderAgentStarters` | frontend/js/palette.js:197 |
 | `renderCmdPaletteMenu` | frontend/js/palette.js:570 |
@@ -13017,7 +13017,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:164 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (8830)
+## Backend modules (8832)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -16629,45 +16629,47 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `proofread` | src/tessellate/ai/proofread.py:48 |
 | `said` | src/tessellate/ai/proofread.py:120 |
 
-### src/tessellate/ai/provider.py (36)
+### src/tessellate/ai/provider.py (38)
 
 | Name | File:line |
 |---|---|
 | `Provider` | src/tessellate/ai/provider.py:338 |
 | `ProviderError` | src/tessellate/ai/provider.py:67 |
 | `ToolsUnsupportedError` | src/tessellate/ai/provider.py:71 |
-| `_ThinkTagSplitter` | src/tessellate/ai/provider.py:717 |
-| `_ToolTextGate` | src/tessellate/ai/provider.py:855 |
-| `_balanced_json_objects` | src/tessellate/ai/provider.py:908 |
-| `_bare_json_calls` | src/tessellate/ai/provider.py:1206 |
-| `_call_end` | src/tessellate/ai/provider.py:1085 |
-| `_calls_in_blob` | src/tessellate/ai/provider.py:1160 |
-| `_close_open_json` | src/tessellate/ai/provider.py:1412 |
-| `_first_json_object_after` | src/tessellate/ai/provider.py:1074 |
-| `_json_too_deep` | src/tessellate/ai/provider.py:1441 |
-| `_literal_keywords` | src/tessellate/ai/provider.py:1110 |
-| `_named_calls` | src/tessellate/ai/provider.py:1224 |
-| `_ns_to_ms` | src/tessellate/ai/provider.py:1345 |
-| `_prose_read_calls` | src/tessellate/ai/provider.py:1263 |
-| `_python_calls` | src/tessellate/ai/provider.py:1250 |
-| `_python_style_calls` | src/tessellate/ai/provider.py:1123 |
+| `_ThinkTagSplitter` | src/tessellate/ai/provider.py:742 |
+| `_ToolTextGate` | src/tessellate/ai/provider.py:896 |
+| `_balanced_json_objects` | src/tessellate/ai/provider.py:949 |
+| `_bare_json_calls` | src/tessellate/ai/provider.py:1247 |
+| `_call_end` | src/tessellate/ai/provider.py:1126 |
+| `_calls_in_blob` | src/tessellate/ai/provider.py:1201 |
+| `_close_open_json` | src/tessellate/ai/provider.py:1458 |
+| `_first_json_object_after` | src/tessellate/ai/provider.py:1115 |
+| `_json_too_deep` | src/tessellate/ai/provider.py:1487 |
+| `_literal_keywords` | src/tessellate/ai/provider.py:1151 |
+| `_named_calls` | src/tessellate/ai/provider.py:1265 |
+| `_ns_to_ms` | src/tessellate/ai/provider.py:1386 |
+| `_prose_read_calls` | src/tessellate/ai/provider.py:1304 |
+| `_python_calls` | src/tessellate/ai/provider.py:1291 |
+| `_python_style_calls` | src/tessellate/ai/provider.py:1164 |
+| `_split_header_reply` | src/tessellate/ai/provider.py:733 |
 | `_squash_separators` | src/tessellate/ai/provider.py:211 |
-| `_tagged_calls` | src/tessellate/ai/provider.py:1185 |
+| `_steps_end` | src/tessellate/ai/provider.py:722 |
+| `_tagged_calls` | src/tessellate/ai/provider.py:1226 |
 | `_think_header` | src/tessellate/ai/provider.py:706 |
-| `_unfence` | src/tessellate/ai/provider.py:1400 |
+| `_unfence` | src/tessellate/ai/provider.py:1446 |
 | `context_from_catalog_entry` | src/tessellate/ai/provider.py:267 |
 | `detect_provider` | src/tessellate/ai/provider.py:313 |
-| `extract_text_tool_calls` | src/tessellate/ai/provider.py:1303 |
+| `extract_text_tool_calls` | src/tessellate/ai/provider.py:1344 |
 | `first_chat_model` | src/tessellate/ai/provider.py:305 |
 | `is_transient_server_error` | src/tessellate/ai/provider.py:118 |
 | `known_context` | src/tessellate/ai/provider.py:226 |
-| `loads_lenient` | src/tessellate/ai/provider.py:1464 |
-| `normalise_tool_calls` | src/tessellate/ai/provider.py:1503 |
-| `offered_tool_names` | src/tessellate/ai/provider.py:1537 |
-| `resolve_tool_name` | src/tessellate/ai/provider.py:1000 |
+| `loads_lenient` | src/tessellate/ai/provider.py:1510 |
+| `normalise_tool_calls` | src/tessellate/ai/provider.py:1549 |
+| `offered_tool_names` | src/tessellate/ai/provider.py:1583 |
+| `resolve_tool_name` | src/tessellate/ai/provider.py:1041 |
 | `set_sampling_overrides_getter` | src/tessellate/ai/provider.py:61 |
-| `set_write_tools` | src/tessellate/ai/provider.py:1152 |
-| `split_thinking` | src/tessellate/ai/provider.py:1353 |
+| `set_write_tools` | src/tessellate/ai/provider.py:1193 |
+| `split_thinking` | src/tessellate/ai/provider.py:1394 |
 | `tools_unsupported_message` | src/tessellate/ai/provider.py:92 |
 
 ### src/tessellate/ai/provider_http.py (17)
@@ -24131,7 +24133,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (17647)
+## Tests (17652)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -24158,7 +24160,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_agent_plan_writes.py | 5 |
 | tests/test_agent_recovery.py | 14 |
 | tests/test_agent_small_model.py | 17 |
-| tests/test_agent_timeline_order.py | 2 |
+| tests/test_agent_timeline_order.py | 3 |
 | tests/test_agent_tools_api.py | 40 |
 | tests/test_agent_undo_bar.py | 5 |
 | tests/test_agent_undo_run_stack.py | 2 |
@@ -24175,7 +24177,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_alembic_full_chain.py | 3 |
 | tests/test_all_spaces_indexes.py | 2 |
 | tests/test_announce_saved_note_z7.py | 4 |
-| tests/test_answer_never_folded.py | 8 |
+| tests/test_answer_never_folded.py | 12 |
 | tests/test_answer_pictures_502.py | 11 |
 | tests/test_answer_support.py | 10 |
 | tests/test_answer_support_cleared.py | 1 |
