@@ -164,6 +164,10 @@ YIELD_NEAR = 130.0
 YIELD_MAX = 4.0
 LEAN_MAX = 0.07
 POSE_RATE = 14.0
+#: The longest slice of time one draw eases the pose by. A draw after a long sleep (an act's hold, a rest) has a big dt;
+#: easing by all of it snapped a 0.1 gap to neutral in one picture (INBOX 1683 j). The next draws are asked at the moving pace.
+POSE_DT_MAX = 1.0 / 60.0
+VX_SMOOTH_S = 0.06
 POSE_OFF = ("held", "pressed", "fly", "fall", "rise", "peek", "emerge", "leap", "hop", "card")
 #: Logical px of travel per walk frame (six frames a stride).
 #: Travel (logical px) per frame of the walk cycle at the shipped 12 frames: 42 px a cycle, as with 6.
@@ -877,9 +881,11 @@ class Engine:
         scale = self._scale()
         self.flow.step(dt, max(-px, min(px, vx)) / scale, max(-px, min(px, vy)) / scale)
         target = self.pose_goal = self._target_pose(now)
-        k = min(1.0, dt * POSE_RATE)
+        k = min(1.0, min(dt, POSE_DT_MAX) * POSE_RATE)
         self.cur = bh.Pose(*(a + (b - a) * k for a, b in zip(self.cur, target)))
-        self.vx_px = vx
+        # a draw that moved the figure by less than a pixel read as speed 0 and dropped the lean target for one picture;
+        # the lean follows a short low-pass of the speed instead (INBOX 1683 j)
+        self.vx_px += (vx - self.vx_px) * (1.0 - math.exp(-dt / VX_SMOOTH_S))
 
     def _target_pose(self, now: float) -> bh.Pose:
         """What the body shape wants now: the act's keyframes, a turn's squeeze, a lean into the
@@ -2524,6 +2530,13 @@ class Engine:
         if self.gait != "float":
             self.vy += GRAVITY * scale * dt
         self.y += self.vy * dt
+        m = self.current_monitor()
+        uy0, uy1 = self._ride_limits("fly")[2:]
+        floor = min(self.floor_y(m), uy1) if self._open_side(m, "bottom") else self.floor_y(m)
+        if self.y > floor:  # the crossing is a flight: the floor holds it (review of INBOX 1683 i)
+            self.y, self.vy = floor, 0.0
+        elif self.y < uy0 and not self._open_side(m, "top"):
+            self.y, self.vy = uy0, max(self.vy, 0.0)
         self._spin(dt, math.hypot(self.vx, self.vy))
         width = max(1.0, self._box(self._fly_frame())[2])
         step = max(abs(self.vx) * dt, 1.0) / width

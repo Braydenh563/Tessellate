@@ -14,6 +14,9 @@ from tests.test_overlay_ride_1670 import make
 #: A joint that moves more than this many px (of a 96 px figure) between two draws is a pop. A 60 Hz ease at
 #: its fastest (a turn's squeeze, which is left out: it is a designed 0.24 s squeeze) steps about 3 px.
 JUMP_PX = 4.0
+#: The pose eases toward a turn's squeeze with a lag, so for this long after a turn its width recovers at the squeeze's own
+#: designed rate (the squeeze sweeps ~9 px a draw at 60 Hz); that is the turn, not a pop.
+TURN_TAIL = 0.3
 
 
 def joints(p: tuple[float, float, float, float] | None, h: float) -> tuple[float, float, float, float]:
@@ -27,7 +30,7 @@ def seam(a, b, h: float) -> float:
     return max(abs(x - y) for x, y in zip(joints(a, h), joints(b, h)))
 
 
-def hour(gait: str, seed: int, secs: float = 3600.0, look: str = "masculine") -> dict:
+def hour(gait: str, seed: int, secs: float = 3600.0, look: str = "masculine", detail: bool = False) -> dict:
     """One seeded hour with the person about; returns draw counts and every pose jump over `JUMP_PX`."""
     e, _s = make(look, gait, seed)
     home_at_edge(e)
@@ -40,7 +43,7 @@ def hour(gait: str, seed: int, secs: float = 3600.0, look: str = "masculine") ->
     try:
         out = e.update(0.0, (px, 600))
         prev, prev_state, prev_t = out, e.state, 0.0
-        turned = False
+        turned_at = -9.0
         jumps: list[tuple[float, str, str, float]] = []
         draws = 0
         while t < secs:
@@ -51,9 +54,13 @@ def hour(gait: str, seed: int, secs: float = 3600.0, look: str = "masculine") ->
             draws += 1
             if e.state not in eng.POSE_OFF and prev_state not in eng.POSE_OFF:
                 j = seam(prev.pose, out.pose, e.size[1])
-                if j > JUMP_PX and t - prev_t < 0.25 and not e.turn_to and not turned and e.state != "warp":  # a warp's squeeze is a designed 0.5 s ease
+                if j > JUMP_PX and t - prev_t < 0.25 and not e.turn_to and t - turned_at > TURN_TAIL and e.state != "warp":  # a warp's squeeze is a designed 0.5 s ease
                     jumps.append((round(t, 2), prev_state, e.state, round(j, 1)))
-            prev, prev_state, prev_t, turned = out, e.state, t, bool(e.turn_to)
+                    if detail:
+                        print(t, prev_state, e.state, e.act, e.mode, prev.pose, out.pose, e.cur, e.pose_goal, out.wake_ms)
+            prev, prev_state, prev_t = out, e.state, t
+            if e.turn_to:
+                turned_at = t
     finally:
         eng.IDLE_SIT, eng.IDLE_SLEEP = saved
     return {"draws": draws, "jumps": jumps}

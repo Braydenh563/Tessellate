@@ -196,3 +196,23 @@ def test_a_tumbling_body_cannot_take_hold_of_the_ceiling() -> None:
 
 def test_the_ceiling_and_wall_constants_are_not_loosened() -> None:
     assert eng.CEIL_TILT < math.radians(30)
+
+
+def test_a_wrap_low_to_the_floor_never_dips_below_it(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Review of INBOX 1683 (i): the crossing integrates gravity, so a walker thrown through a side near the floor sank
+    under the work area while it slid out and in. It is held on the floor limit like any flight."""
+    monkeypatch.setattr(ld, "smack", lambda speed, scale, rng: "through")
+    e, t = dropped(0.0, vx=-2600.0, y=300.0)
+    e.x = 200.0
+    floor = e.floor_y(e.current_monitor())
+    e.y = floor - 2.0
+    e.vy = 900.0
+    e._start_wrap(-1, e._ride_limits("fly")[0], e._ride_limits("fly")[1], t)  # a hit at the floor's height
+    low = 0.0
+    for _ in range(120):
+        t += STEP
+        e.update(t)
+        low = max(low, e.y - floor)
+        if e.wrapping is None and e.outcome == "through":
+            break
+    assert low <= 0.5, low

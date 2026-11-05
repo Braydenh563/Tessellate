@@ -1430,23 +1430,21 @@ MORE_TOPICS: list[dict] = [
             "companion when the window is closed", "show desktop companion",
         ),
         "body": (
-            "In the desktop app on Windows and Linux (X11) the companion can live on your desktop while the Tessellate window is "
-            "minimised or in the tray, and go away when it is open. Atlas floats like a wind spirit (others walk the bottom), sits "
-            "and sleeps when you are away, can be picked up and thrown (it tumbles, lands and gets up, may slide down an edge), "
+            "In the desktop app on Windows and Linux (X11) the companion lives on your desktop while the window is "
+            "minimised or in the tray, and goes when it opens. Atlas floats like a wind spirit (others walk the bottom), sits "
+            "and sleeps when you are away, can be picked up and thrown (it tumbles, lands and gets up, may slide down an edge; only a hard throw up catches the top), "
             "hangs from the top, and peeks up from behind the taskbar or a screen edge. It keeps to a home spot by an "
             "edge and stays there for minutes, alive in place, and makes a few trips an hour: walking, running, "
-            "out at one edge and in at the other, or through a portal. Let go gently near a title bar and it hangs, "
-            "then pulls itself up, swings down or lets go with a start. Sometimes it climbs onto the top of a window, rides it when you move it and hops off "
+            "out at one edge and in at the other, or through a portal, clear of your typing. Let go gently near a title bar and it hangs, "
+            "then pulls itself up, swings down or lets go with a start (also from a maximised title bar or a window's bottom). Sometimes it climbs onto the top of a window, rides it when you move it and hops off "
             "if you close it (Roam over windows turns that off), and"
             " when a reminder falls due it brings you a card to click. It steps aside for full screen and follows Companion movement "
-            "in Appearance: it stands still when that is Fades only or Windows animation effects are off. Turn it on, on the computer"
-            " Tessellate runs on: Settings, Appearance, Corner companion, Show the companion on the desktop while the window is "
-            "minimised or in the tray, or the tray icon's menu; it takes effect while the desktop app runs. Click it for Quick note, "
+            "in Appearance (still when Fades only or Windows animation effects are off). Turn it on, on the computer"
+            " Tessellate runs on: Settings, Appearance, Corner companion, Show the companion on the desktop, or the tray icon's menu. It takes effect while the desktop app runs. Click it for Quick note, "
             "Quick search, New reminder, Open today, Open Tessellate, Wave, Come here, Go somewhere else, Take a nap, Sit on a window"
-            " or Hide for 10 minutes. Come here follows your pointer a while. Right-click it for Companion (Atlas masculine or feminine, or a saved Atlas companion; the rest"
-            " show in the app only), Stay here or Roam, Settings or Turn off. Drag it; it remembers the spot. While Tessellate is "
-            "locked it shows only the companion and Open Tessellate. On Wayland, which cannot place a window above others, it stays "
-            "in the app."
+            " or Hide for 10 minutes. Come here follows your pointer a while; a nap lasts minutes or until you click it. Right-click it for Companion (Atlas masculine or feminine, or a saved Atlas companion; the rest"
+            " show in the app only), Stay here or Roam, Settings or Turn off. Drag it; it keeps the spot. While locked it "
+            "shows only the companion and Open Tessellate. On Wayland it stays in the app."
         ),
         "badge": {"label": "Desktop companion", "section": "appearance", "target": "desktop-companion-row"},
     },
