@@ -209,7 +209,7 @@ function editChatAnswer(handles, turnIndex, current) {
     if (!handles.bubble.querySelector(".edited-marker")) {
       handles.bubble.insertBefore(
         editedMarker(),
-        handles.bubble.querySelector(".msg-actions")
+        handles.bubble.querySelector(":scope > .msg-actions")
       );
     }
     toast("Answer updated.");

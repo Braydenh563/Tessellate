@@ -2217,14 +2217,12 @@ async function openConversation(id) {
       //: These two paths had already drifted (this one had Edit and no fork or
       //: rewrite; the live one the reverse), which is how a fix lands on half
       //: the app's messages.
-      handles.bubble.appendChild(
-        assistantMessageActions({
-          bubble: handles.bubble,
-          text: message.content,
-          question: lastQuestionText,
-          onEdit: () => editChatAnswer(handles, turnIndex, message.content),
-        })
-      );
+      assistantMessageActions({
+        bubble: handles.bubble,
+        text: message.content,
+        question: lastQuestionText,
+        onEdit: () => editChatAnswer(handles, turnIndex, message.content),
+      });
       if (lastQuestionText !== null) {
         chatConv.turns.push({ question: lastQuestionText, answer: message.content });
       }

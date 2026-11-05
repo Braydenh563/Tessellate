@@ -2085,8 +2085,10 @@ MORE_TOPICS.extend(
             "body": (
                 "Under an answer in Ask, in a Chat reply and in the popup agent's "
                 "answer is one row of chips (Sources, Cites, how many sentences "
-                "your notes back, Why this answer) with the time and model at "
-                "its end; each chip opens its part below, one at a time. "
+                "your notes back, Why this answer); in Chat and the popup agent "
+                "the time ends it, the model being named in the answer's head, "
+                "where Copy and the reply's other actions sit at the end. "
+                "Each chip opens its part below, one at a time. "
                 "Why this answer opens the lines that "
                 "made it, each with the seconds since you asked: what the "
                 "question was read as, what was searched and how many notes "
@@ -3512,6 +3514,7 @@ MORE_TOPICS.append({
     "keywords": (
         "patterns", "pattern", "what are patterns", "times since", "weeks running", "keeps coming up",
         "patterns line", "do patterns change", "see the patterns",
+        "confirmed patterns", "edit a confirmed pattern", "manage confirmed patterns",
     ),
     "body": (
         "Patterns are what your notes keep coming back to, counted from the notes "
@@ -3524,7 +3527,9 @@ MORE_TOPICS.append({
         "fact from then on, and Not right, which never shows it or anything like "
         "it again. A plan still open also has Done: it removes your Confirm and "
         "never shows that plan again, and a later note that shares the plan's "
-        "words does the same on its own."
+        "words does the same on its own. Settings, What it learned lists what "
+        "you confirmed under Confirmed by you, where you can edit one or "
+        "delete it (Undo brings it back)."
     ),
     "badge": {"label": "Dashboard", "tab": "dashboard"},
 })

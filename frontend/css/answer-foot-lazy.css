@@ -8,13 +8,29 @@
    part until its chip is pressed, and moves the stats line to the row's end.
    The row is the control group's gap; an open part sits one group gap under
    it. */
+/* **One row, never two** (the review of B2 measured it wrapping: Ask 54px
+   for 4 chips at 1440, the popup agent 120px at 390). The chips keep their
+   words and never shrink; the stats line gives way first, cut with its words
+   in its title; past that the row scrolls inside itself, as a popup's tab row
+   does (popup-anatomy-lazy.css), and never widens the answer. A scroller
+   clips what is drawn outside it, so the row is padded by the focus ring's
+   width (2px out, 2px off) and given that back in its margins: the chips sit
+   where they did and a focused chip's ring shows whole (0px of it showed). */
 .answer-foot-bar {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   align-items: center;
   gap: var(--space-2) var(--space-3);
-  margin-top: var(--space-4);
+  padding: var(--space-1);
+  margin: calc(var(--space-4) - var(--space-1)) calc(var(--space-1) * -1) calc(var(--space-1) * -1);
+  /* `.msg > *` caps a bubble's children at 100%, which the margins outgrow. */
+  max-width: none;
   min-width: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.answer-foot-bar > .answer-foot-chip {
+  flex: none;
 }
 
 .answer-foot-chip[aria-expanded="true"] {
@@ -48,21 +64,50 @@
 /* The stats line is the row's last item, at its end, without the model the
    head's byline already names (nothing said twice). */
 .answer-foot-bar > .msg-meta {
+  flex: 0 1 auto;
+  min-width: 0;
   margin: 0 0 0 auto;
+  overflow: hidden;
+  flex-wrap: nowrap;
+}
+.answer-foot-bar > .msg-meta > * {
+  flex: none;
+  white-space: nowrap;
 }
 .msg:has(> .msg-role .reply-by) > .answer-foot-bar .msg-meta-model {
   display: none;
 }
 
-/* **The popup agent's actions in its head row** (B2: "actions in the head
-   row not under the foot"): the hover row sits at the bubble's top right,
-   over the name's row, instead of hanging under the foot. */
-.command-palette-results > .msg.assistant > .msg-actions {
-  top: var(--space-2);
-  right: var(--space-2);
-  left: auto;
+/* **An answer's actions in its head row** (B2: "actions in the head"), in
+   Chat and the popup agent as in Ask's column head: the surface puts the row
+   in the name row (`.msg-role`), at its end and in its flow, so it has room
+   of its own. Floated over the head's corner instead, it covered the byline
+   and the first line at 390 with touch on (the review of B2), and hung
+   under the bubble it was the owner's "clash with the message bubble"
+   (2026-10-06). Still shown on hover, always on touch (02-chat-graph.css);
+   the head row's caps and accent are not the buttons'. */
+.msg-role > .msg-actions {
+  position: static;
+  order: 1;
+  /* Inside the bubble: six 44px touch targets are 284px, wider than a 390
+     phone's bubble (259), and ran 11px past its edge; they wrap there. */
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  width: auto;
+  max-width: 100%;
+  margin-inline-start: auto;
+  padding: 0;
+  background: none;
+  box-shadow: none;
+  color: var(--ink);
+  font-size: var(--text-base);
+  font-weight: 400;
+  letter-spacing: normal;
+  text-transform: none;
 }
-
-.command-palette-results > .msg.assistant:has(> .msg-actions) {
-  margin-bottom: 0;
+.msg-role > .msg-actions::before {
+  content: none;
+}
+.msg-role:has(> .msg-actions) {
+  flex-wrap: wrap;
 }
