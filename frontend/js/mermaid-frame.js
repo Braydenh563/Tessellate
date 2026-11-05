@@ -65,6 +65,8 @@ function mermaidFrameSized(svgText, background) {
     root.setAttribute("height", String(Math.ceil(box[3])));
   }
   root.removeAttribute("style");
+  const walk = doc.createTreeWalker(root, 4);
+  for (let node = walk.nextNode(); node; node = walk.nextNode()) if (node.nodeValue.includes("&")) node.nodeValue = mermaidFrameSized.entities(node.nodeValue);
   //: The picture carries its own ground, so it reads the same on a printed
   //: page or in a saved file as in the theme it was drawn for (light text on
   //: a transparent picture vanished on white paper).
@@ -78,6 +80,13 @@ function mermaidFrameSized(svgText, background) {
   if (!root.getAttribute("xmlns")) root.setAttribute("xmlns", "http://www.w3.org/2000/svg");
   return new XMLSerializer().serializeToString(root);
 }
+// MERMAID-ENTITY-BEGIN
+//: Mermaid turns a written `#quot;` into the text `&quot;` and, with SVG labels, serialises it as `&amp;quot;`, so the
+//: picture showed the entity itself (1679 m). A text node that still holds a named or numeric entity gets the character.
+//: A property of the one function, not a name of its own (the shared scope only shrinks).
+mermaidFrameSized.entities = (text) =>
+  String(text).replace(/&(quot|lt|gt|amp|apos|#\d{1,7});/g, (all, k) => ({ quot: '"', lt: "<", gt: ">", amp: "&", apos: "'" })[k] ?? (Number(k.slice(1)) <= 0x10ffff ? String.fromCodePoint(Number(k.slice(1))) : all));
+// MERMAID-ENTITY-END
 
 function mermaidFrameConfigure(variables) {
   //: `htmlLabels: false` everywhere: labels as SVG text, not foreignObject

@@ -3240,7 +3240,7 @@ MORE_TOPICS.extend([
             "The corner bar zooms (Zoom in, Zoom out, Fit), as do the wheel, Ctrl+wheel and a pinch; "
             "its last button reads the zoom now, and 100% is the drawing's own size; arrow keys pan. "
             "Shift+click picks a range, Ctrl+click adds one; a bar offers Delete, "
-            "Duplicate, Group into a box, Done, and any picked grip moves all. "
+            "Duplicate, Box them, Done, and any picked grip moves all. "
             "A block's ... menu (long press on a phone) does the same. "
             "Keys on "
             "a block or the picture: arrows walk, Enter renames, N adds a Box, 1 to 7 the other shapes, Shift+N the last one, G adds a group, C or J joins, "
@@ -3281,13 +3281,16 @@ MORE_TOPICS.extend([
             "mermaid timeline", "mermaid sequence", "sequence diagram", "diagram kinds",
         ),
         "body": (
+            "The Flowchart, Sequence, Mind map and Timeline buttons above the toolbar start a new diagram "
+            "of that kind (Ctrl+Z brings the old one back). A block's ... menu has Box this block, a group round it; "
+            "the bar over picked blocks has Box them. "
             "Blocks draw flowcharts, mind maps, timelines and sequence diagrams: the first word of "
             "the source says which, and the bar offers that kind's blocks. A mind map has a branch "
             "and a leaf (B and N) under its centre. A timeline has a section, a period and an event "
             "(S, P and E), the events inside their period. A sequence diagram has an actor, "
-            "participant, message, reply, async, lost, note, loop, alt and opt (A, P, M, R, Y, X, T, "
-            "L, G and O); the first message adds the two participants it needs, a reply runs back "
-            "between the same two, and an alt starts with its else. The pane works as a flowchart's "
+            "participant, message, reply, async, lost, note, loop, alt, opt, parallel, critical and break (A, P, M, R, Y, X, T, "
+            "L, G, O, U, C and B); the first message adds the two participants it needs, a reply runs back "
+            "between the same two, and an alt starts with its else and a parallel box with its and. The pane works as a flowchart's "
             "does: drag a block to move or nest it, double-click a name, the block's ... menu, "
             "arrows, Enter, Delete, Alt+Up, Alt+Down, Alt+Right and Alt+Left, Ctrl+Z. A line the "
             "blocks do not show stays where it was, and a diagram they cannot read (a second mind "

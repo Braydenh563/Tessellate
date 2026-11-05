@@ -116,6 +116,7 @@
     const actions = el("div", "dock-actions");
     actions.append(suggest, ...hist, outline, h.more(S));
     bar.append(split, S.dirs, actions);
+    diagramModel.kindbar?.mount(S, h);
     sync(S);
     //: One Tab stop for the whole toolbar, Left and Right between its buttons (documents.js; 17 stops to the first block before).
     wireToolbarRoving(bar);
