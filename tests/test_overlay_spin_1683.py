@@ -31,6 +31,8 @@ def flight(speed: float, gait: str = "float", look: str = "masculine", angle: fl
         out = e.update(t)
         if e.state != "fly":
             break
+        if e.touch_at is not None:  # the flight only: the landing's own steps are pinned in test_overlay_land_1683
+            continue
         if out.angle is not None:
             drawn.append(math.degrees(out.angle))
             names.append(out.frame)
@@ -42,7 +44,7 @@ def flight(speed: float, gait: str = "float", look: str = "masculine", angle: fl
 @pytest.mark.parametrize("speed", [450.0, 900.0, 2500.0])
 def test_a_thrown_figure_is_drawn_at_a_new_angle_every_tick_in_small_steps(gait: str, speed: float) -> None:
     f = flight(speed, gait)
-    assert len(f["steps"]) > 60
+    assert len(f["steps"]) > 30  # was 60 when the walker's righting slide counted; that is now the landing (test_overlay_land_1683)
     # measured (soft toss, throw, hard throw, 60 Hz): max step 2.2, 3.7, 3.9 degrees; before 7.5, 7.5, 15
     assert max(f["steps"]) <= 4.5
     # no tick holds the angle: before, 58 to 74 percent of ticks repeated the last picture

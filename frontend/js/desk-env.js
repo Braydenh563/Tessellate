@@ -32,9 +32,21 @@ window.lazyScript = (file) => {
 //: The lazy modules the drawing asks for by name. Atlas's blink rig and tail
 //: are loaded with the page (desktop-companion.html), so they answer true; the
 //: companion's menu and throws are the wandering companion's, which this
-//: window does not have.
+//: window does not have. The capture card (Quick note) is the app's own, fetched
+//: on first use as the app fetches it (`LAZY_MODULES`, lazy-entries.js).
 const DESK_MODULES = ["atlasMotion", "atlasLife", "atlasFaces"];
-window.ensureModule = (name) => Promise.resolve(DESK_MODULES.includes(name));
+window.ensureModule = (name) => {
+  const files = { captureCard: ["/css/capture-card-lazy.css", "/js/capture-card.js"] }[name];
+  return files ? Promise.all(files.map((file) => window.lazyScript(file))).then((done) => done.every(Boolean)) : Promise.resolve(DESK_MODULES.includes(name));
+};
+
+//: The card's second file (colours, the bell, pictures, tag suggestions) needs the app's
+//: pickers, menus and uploads, which this page has none of: the card runs on its core.
+window.lazyScript = ((load) => (file) => (file === "/js/capture-card-more.js" ? Promise.resolve(false) : load(file)))(window.lazyScript);
+
+//: A note's title as its leading heading (`withTitle`, capture-ask.js, minus the property
+//: block a desk note never has).
+window.withTitle = (content, title) => ((title || "").trim() ? `# ${title.trim()}\n\n${content.replace(/^\n+/, "")}` : content);
 
 //: The Appearance choices the app's window saved in this browser's storage
 //: (the window shares it), read the way `appearancePref` reads them.
