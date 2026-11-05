@@ -3,13 +3,10 @@
 Pure data and small pure functions: no clock, no randomness of its own (the engine passes its seeded
 `rng`), no Win32.
 
-**By its body first** (INBOX 1683 f, the owner: "all it does is sit on the taskbar and poof"). A leg is
-walked (a floater glides) at a lively pace, a run when it is long, whatever it crosses; the older rule that
-refused to walk a leg longer than a third of the width, or through the middle third, is gone. A portal, a
-puff or an edge walk is a rare flourish (about one leg in ten when the leg is long, one in thirty when it is
-short). Where it comes to *rest* is still never the middle third (`in_middle`, `out_of_middle`).
-
-**A repertoire.** The mode is chosen by distance, mood and gait; a flourish used last (or the one before) is less likely.
+**A repertoire** (INBOX 1683 u, after f: the owner saw only puffs, then asked for "a lot of expansion"). The mode of
+a leg is chosen by distance, mood and gait: a walk or a glide, a run or a swoop, a portal out and in, a walk off
+one screen edge and in from the other; a puff is rare (under one leg in ten) and no mode is used twice running.
+Where it comes to *rest* is still never the middle third (`in_middle`, `out_of_middle`).
 
 **Keeping clear of the text box.** The caret's rectangle (from the foreground window, padded by
 `CARET_MARGIN`) is somewhere the figure's drawn box does not rest or go.
@@ -23,7 +20,7 @@ from typing import NamedTuple
 Rect = tuple[float, float, float, float]
 
 #: Every way it travels. "walk" is a ground companion's, "glide" a floater's; the rest are for either.
-MODES = ("walk", "glide", "portal", "puff", "edge", "jump", "climb", "fade")
+MODES = ("walk", "run", "glide", "swoop", "portal", "puff", "edge", "jump", "climb", "fade")
 #: Jumps over the middle: the ones that do not pass through it.
 LEAPS = ("portal", "puff", "edge")
 #: A leg longer than this share of the work area's width is a long one (a run; a little likelier to flourish).
@@ -123,31 +120,29 @@ def _by_mood(table: dict[str, float], mood: str) -> None:
     for mode in list(table):
         if mode in ("portal", "edge") and mood in ("happy", "curious", "proud", "bored"):
             table[mode] *= 1.5
+        if mode in ("run", "swoop") and mood in ("happy", "curious", "startled", "proud"):
+            table[mode] *= 1.5
+        if mode in ("walk", "glide") and mood in ("sleepy", "bored"):
+            table[mode] *= 1.4
         if mode == "puff" and mood in ("startled", "sleepy"):
             table[mode] *= 1.8
 
 
-def _by_recent(table: dict[str, float], recent: list[str], body: str) -> None:
-    """The same flourish twice running is less likely; the body (walk or glide) may repeat freely."""
-    if recent and recent[-1] != body:
-        table[recent[-1]] = table.get(recent[-1], 0.0) * 0.25
-    if len(recent) > 1 and recent[-2] != body and recent[-2] in table:
-        table[recent[-2]] *= 0.6
-
-
 def pick_mode(
-    rng: random.Random, *, gait: str, long_leg: bool, mood: str, recent: list[str], edge_ok: bool,
+    rng: random.Random, *, gait: str, long_leg: bool, mood: str, recent: list[str], edge_ok: bool, run_ok: bool = True,
 ) -> str:
-    """One mode for a leg: nearly always the body (walk, or glide for a floater), with a portal, a puff or
-    an edge walk now and then, a little more often on a long leg. What was used last is less likely, and
-    nothing is used four times running."""
-    body = "glide" if gait == "float" else "walk"
+    """One mode for a leg (INBOX 1683 u, the owner: it "only ever poofs" and "needs a lot of expansion"): by
+    distance and mood, a walk or a glide, a run or a swoop, a portal out and in, or a walk off one screen
+    edge and in from the other; a puff only rarely (under one leg in ten). The mode just used is never
+    used again (a leg too short for a run may walk twice)."""
+    body, fast = ("glide", "swoop") if gait == "float" else ("walk", "run")
     if long_leg:
-        table = {body: 9.0, "portal": 0.45, "puff": 0.35, "edge": 0.4 if edge_ok else 0.0}
+        table = {body: 4.0, fast: 3.0, "portal": 1.6, "puff": 0.2, "edge": 1.6 if edge_ok else 0.0}
     else:
-        table = {body: 9.0, "portal": 0.12, "puff": 0.18}
+        table = {body: 6.0, fast: 2.0 if run_ok else 0.0, "portal": 0.7, "puff": 0.12}
     _by_mood(table, mood)
-    _by_recent(table, recent, body)
+    if recent and (run_ok or recent[-1] != body):
+        table[recent[-1]] = 0.0
     live = [(m, w) for m, w in table.items() if w > 0]
     if not live:
         return body

@@ -138,6 +138,10 @@ COME_GAP = 70.0
 COME_FOR = 20.0
 #: A "Go somewhere else" is at least this far (logical px), when the work area allows.
 WANDER_MIN = 420.0
+#: A nap asked for from the menu lasts this long (s) unless something wakes it (INBOX 1683 u).
+NAP_FOR = (150.0, 300.0)
+#: A leg shorter than this (logical px) is never a run.
+RUN_MIN = 150.0
 FOLLOW_FOR = (10.0, 18.0)
 GREET_AFTER = 420.0
 #: Under a busy pointer it waits instead of passing (px ahead / height of the path / seconds).
@@ -478,6 +482,8 @@ class Engine:
         self.follow_until = 0.0
         self.follow_close_until = 0.0
         self.nap_after_land = False
+        self.nap_req = False  # a nap was asked for (INBOX 1683 u): the next sleep is a held one
+        self.nap_until = 0.0  # while above zero the sleep is a nap: only a poke, a drag, a command or this ends it
         self.follow_check = 0.0
         self.yield_since: float | None = None
         self.pointer_busy_at = -1e9
@@ -679,6 +685,7 @@ class Engine:
 
     def _enter(self, state: str, now: float) -> None:
         self.state = state
+        self._arm_nap(state, now)
         self.flash = None
         if state not in ("hang", "drift", "rise", "crouch"):
             self.hang_on = None
@@ -703,6 +710,12 @@ class Engine:
             getattr(self, f"_on_{state}", lambda _now: None)(now)
         if state == "stand" and self.perch is not None:  # a visit to a window ends when its time does
             self.state_until = min(self.state_until, max(now + 1.0, self.perch_until))
+
+    def _arm_nap(self, state: str, now: float) -> None:
+        """A sleep that was asked for (`nap_req`) is a nap with an end of its own; any other state is not one."""
+        self.nap_until = now + self.rng.uniform(*NAP_FOR) if state == "sleep" and self.nap_req and not self.reduced else 0.0
+        if state == "sleep":
+            self.nap_req = False
 
     def _on_warp(self, now: float) -> None:
         self.state_until = math.inf
@@ -758,6 +771,7 @@ class Engine:
 
     def _touched(self, now: float) -> None:
         self.last_active = now
+        self.nap_req = False
         if self.state in ("sleep", "sit") and not self.reduced and self.state != "held":
             self._enter("stand", now)
 
@@ -1173,6 +1187,8 @@ class Engine:
         if not self._free_for_command(now):
             return False
         self.last_active = now
+        if name != "nap":
+            self.nap_req = False
         if name == "wave":
             self._enter("sit" if self.reduced else "wave", now)
         elif name == "nap":
@@ -1221,7 +1237,31 @@ class Engine:
             self._leave_perch(now, hop=False)
             return
         self.perch = None
-        self._enter("sit" if self.reduced else "sleep", now)
+        self.follow_until = self.follow_close_until = 0.0
+        self.relocate_at = None
+        if self.reduced:
+            self._enter("sit", now)
+            return
+        self.nap_req = True
+        spot = self._nap_spot()
+        if spot is not None and self.gait == "walk":
+            self._go(spot, "nap", now, plain=True)  # to a corner first, on foot
+            return
+        self._settle_to_sleep(now)
+
+    def _nap_spot(self) -> tuple[float, float] | None:
+        """Where a nap is taken: out of the middle third, by the nearer edge; None when it is there already."""
+        m = self.current_monitor()
+        x = tv.out_of_middle(self.x, m.area, self.size[0])
+        if abs(x - self.x) < 12 * self._scale():
+            return None
+        return x, self.ground_y(m)
+
+    def _settle_to_sleep(self, now: float) -> None:
+        """A turn (to face the way it came, tail to the room) and a curl, then asleep."""
+        if self.metrics:
+            self._face(-self.facing, now)
+        self._enter("sleep", now)
 
     def _wake_up(self, now: float) -> None:
         if not self.reduced:
@@ -1586,13 +1626,21 @@ class Engine:
                 return
             self.modes.append(mode)
         far = dist / self._scale()
-        self.mode = "step" if far < STEP_UNDER else "dash" if far >= DASH_OVER else "walk"
+        self.mode = self._leg_pace(far, plain)
         self.pending = (goal, then)
         if self.mode == "dash" and not self.reduced and self.gait == "walk":
             self._enter("crouch", now)  # a crouch before a long run
             self.pending = (goal, then)
             return
         self._begin_go(now)
+
+    def _leg_pace(self, far: float, plain: bool) -> str:
+        """step, walk or dash for a leg `far` logical px long; a chosen leg takes its pace from its mode (INBOX 1683 u)."""
+        if far < STEP_UNDER:
+            return "step"
+        if plain or self.reduced or self.plain_legs:
+            return "dash" if far >= DASH_OVER else "walk"
+        return "dash" if self.modes and self.modes[-1] in ("run", "swoop") else "walk"
 
     def _begin_go(self, now: float) -> None:
         assert self.pending is not None
@@ -1633,6 +1681,7 @@ class Engine:
         mode = tv.pick_mode(
             self.rng, gait=self.gait, long_leg=long_leg, mood=self.mind.mood(self.now, self.hour),
             recent=self.modes[-3:], edge_ok=flat and opposite and self.perch is None,
+            run_ok=abs(goal[0] - self.x) >= RUN_MIN * self._scale(),
         )
         return mode
 
@@ -1660,7 +1709,7 @@ class Engine:
     def _keep_off_caret(self, now: float) -> None:
         """Over the foreground window's text box (padded): step aside to the nearest edge on the taskbar
         line, in a puff (a fade when reduced), inside a second."""
-        if now < self.evade_ready or self.caret is None:
+        if now < self.evade_ready or self.caret is None or self.nap_until:
             return
         k, m = self._scale(), self.current_monitor()
         frame = self._frame(now)
@@ -1925,7 +1974,9 @@ class Engine:
             self._enter("stand", now)
             if then == "rest":
                 self.state_until = now + self.rng.uniform(*REST_FOR)
-            if then in ("clock", "nap", "greet", "settle"):
+            if then == "nap":
+                self._settle_to_sleep(now)
+            elif then in ("clock", "greet", "settle"):
                 self._arrive_trip(then, now)
 
     def _do_stand(self, now: float, dt: float) -> None:
@@ -1941,7 +1992,8 @@ class Engine:
             self._enter("stand", now)
 
     def _do_sleep(self, now: float, dt: float) -> None:
-        return
+        if self.nap_until and now >= self.nap_until:  # its own long nap is over: up with a stretch
+            self._wake_up(now)
 
     def _do_wave(self, now: float, dt: float) -> None:
         if now >= self.state_until:
@@ -2384,6 +2436,8 @@ class Engine:
     def _notice(self, now: float, pointer: tuple[int, int]) -> None:
         if self.state not in ("stand", "walk", "drift", "sit", "sleep") or now < self.notice_ready:
             return
+        if self.nap_until:
+            return  # a nap holds: the pointer passing, or the menu that asked for it, is not a poke (INBOX 1683 u)
         if self.trip and self.state in ("walk", "drift"):
             return  # on its way: a look at the pointer would end the trip mid-screen (INBOX 1683 f, trips are common now)
         cx, cy = self.x + self.size[0] / 2, self.y + self.size[1] / 2

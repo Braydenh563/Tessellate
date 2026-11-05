@@ -14,7 +14,7 @@ from tessellate.core.overlay.engine import Perch
 from tests.overlay_sim_1670 import simulate
 from tests.test_overlay_moves import FLOOR, make
 
-BODY = ("walk", "glide", "jump", "climb")
+BODY = ("walk", "glide", "jump", "climb")  # a run is a walk leg here
 FLOURISH = ("puff", "portal", "edge", "fade")
 
 # --- (f) it travels by its body -----------------------------------------------------------------
@@ -29,8 +29,11 @@ def test_a_flourish_is_rare_whatever_the_leg(gait: str, long_leg: bool) -> None:
         picks[mode] += 1
         recent.append(mode)
     flourish = sum(picks[m] for m in FLOURISH) / 4000
-    assert flourish <= (0.22 if long_leg else 0.12), picks  # was 0.77 for a long leg and 0.17 for a short one
-    assert picks["glide" if gait == "float" else "walk"] / 4000 >= 0.7, picks
+    # INBOX 1683 u (the owner: "it needs a lot of expansion"): portals and edge walks are now a fifth to two fifths of
+    # the legs, so this bound moved from 0.22/0.12; the puff alone stays rare and a walk, glide or run still leads.
+    assert flourish <= (0.45 if long_leg else 0.25), picks
+    assert picks["puff"] / 4000 < 0.10, picks
+    assert sum(picks[m] for m in ("walk", "glide", "run", "swoop")) / 4000 >= 0.5, picks
 
 
 def test_a_long_leg_across_the_middle_is_walked_not_puffed() -> None:
