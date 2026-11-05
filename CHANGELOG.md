@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Quit on Windows no longer starts a web view during teardown (INBOX 1666): the app's Quit closes the corner companion before hiding the main window (the hide made the companion due and it created its quick panel mid-quit), the panel is not made once closing, and a window still starting gets a 1.5 s loaded deadline before destroy. Fake-window tests only; real Windows not verified.
 - Companion desk parity (INBOX 1683, asks M4 to M7, B9 quality): the desk figure uses props (book, bean bag, fishing rod, push-up mat, map, dumbbell, lantern), wears a face over its warped frames with small unprompted expressions, answers a pat, rub, poke, fast swipe or slow hover, and glances at a new window, an app change, the hour, a low battery or a finished download (never while you type, asleep or on Stay here); the window list is read only by the climb scan.
 - Companion asks ledger (INBOX 1683 p, the owner: "go bakc trhough my conversation history and analyse all my requests for the companion and incorporate them all into the workflows"): docs/roadmap/agent-remaining/companion-asks.md lists 94 asks with the owner's words, surface, status and evidence, names the lanes already building (1683 e, i, j, k, l, 1678, 1684, 1686) and groups the rest into four build briefs, desk parity first (props and reactions, wisps and nebula by pose, a desk size handle, real-machine proof and the X11 flake).
 

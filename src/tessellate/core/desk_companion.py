@@ -520,6 +520,9 @@ SW_SHOWNOACTIVATE = 4
 #: How long a show or hide waits for another one before it gives up (seconds):
 #: a stuck window never holds the tray's menu with it.
 LOCK_WAIT = 5.0
+#: How long quitting waits for a window still starting up before destroying it. Destroying a
+#: web view mid-start made pywebview log "WebView2 initialization failed ... E_ABORT" (INBOX 1666).
+LOADED_WAIT = 1.5
 
 
 def window_handle(window: Any) -> int | None:
@@ -1359,7 +1362,7 @@ class DeskCompanion:
         """The quick panel's window, made once and kept hidden, so a click only
         places and shows it (INBOX 1658: it was made at click time and the figure
         lagged). A failure leaves it to the first click."""
-        if self.window is not None:
+        if self.window is not None or self.closing:
             return
         try:
             self.panel = True
@@ -1647,6 +1650,7 @@ class DeskCompanion:
             timer.cancel()
         self._stop_runner()
         if window is not None:
+            _await_loaded(window)
             try:
                 window.destroy()
             except Exception:  # noqa: BLE001
@@ -1776,6 +1780,20 @@ def carry_due(due: list[Any]) -> int:
         except Exception:  # noqa: BLE001 - a card is not worth the notifier's thread
             logger.warning("desk companion: a reminder's card could not be queued", exc_info=True)
     return taken
+
+
+def _await_loaded(window: Any) -> None:
+    """Give a window that is still starting its web view a short deadline to finish, so quitting
+    never aborts the start (INBOX 1666). Quiet when the backend has no `loaded` event."""
+    loaded = getattr(getattr(window, "events", None), "loaded", None)
+    wait = getattr(loaded, "wait", None)
+    if not callable(wait):
+        return
+    try:
+        if not wait(LOADED_WAIT):
+            logger.info("desk companion: a window was still starting at quit; closing it anyway")
+    except Exception:  # noqa: BLE001 - quitting goes on
+        logger.debug("desk companion: could not wait for the window to load", exc_info=True)
 
 
 def shutdown() -> None:
