@@ -3354,7 +3354,7 @@ MORE_TOPICS.extend([
     {
         "id": "board-colours",
         "keywords": (
-            "border colour", "border color", "fill colour", "fill color", "same colour",
+            "opacity", "transparency", "hex", "rgb", "custom colour", "border colour", "border color", "fill colour", "fill color", "same colour",
             "same colour as the fill", "match the border", "swap colours", "recent colours",
             "eyedropper", "eye dropper", "pick a colour from the board", "colour picker",
             "change the colour of a shape", "outline colour",
@@ -3365,8 +3365,14 @@ MORE_TOPICS.extend([
             "For a shape it names both, Fill and Border, with a dot of each: press "
             "the other to set it instead. Same as fill (or Same as border) makes "
             "them one colour and Swap trades them, each one Undo step. Recent "
-            "holds your last eight picks on this device, above the board's colours; "
-            "More colours opens any colour by number. Pick from the board is the "
+            "holds your last eight picks on this device, above the board's colours. "
+            "Custom takes a colour typed or pasted: a hex box (#rgb, #rrggbb, "
+            "#rrggbbaa, rgb() or hsl()) and Red, Green and Blue boxes. Opacity, "
+            "a slider and a number, sets how solid that colour is: the fill's for "
+            "a Fill, the line's for a Border or line, the text's for text. "
+            "Filled off keeps the fill's colour and Filled on brings it back; "
+            "From screen (where the browser has it) takes any colour on the screen. "
+            "Pick from the board is the "
             "eyedropper: the next click takes a colour instead of doing what it "
             "would, from a shape (its fill, or its border with Alt or Take a shape's border), "
             "a line, a text box or any colour button, and Escape stops it. A fill "
