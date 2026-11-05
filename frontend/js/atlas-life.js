@@ -857,6 +857,81 @@ const ATLAS_NEB_STATES = {
   drift: [[3, 1.02, 1.03], [-4, 1.03, 1.02], [5, 1.01, 1.04]],
   hang: [[2, 1, 1.03], [-2, 1.01, 1.02], [3, 0.99, 1.04]],
 };
+//: **More arrangements than the tables hold** (INBOX 1683 B1 and B3, the owner: "they dont even ahve
+//: different variations or change based on body position"): the authored rows above are the corners; the
+//: rows between each pair (and the last back to the first) are blended and added to the end, so a pose of three has six
+//: and standing eight, none like another and none outside the authored range (the lower body's turn stays
+//: inside the 4 degrees the join allows). Hair rows are numbers, the lower body's and the stream's lists.
+atlasRigLower.blend = (rows) => {
+  const n = rows.length;
+  //: Not always the middle (0.4, 0.6, 0.5 in turn): rows set evenly round a third (walk's) would blend onto each other.
+  const mix = (a, b, t) => (Array.isArray(a) ? a.map((v, k) => v + (b[k] - v) * t) : a + (b - a) * t);
+  const out = rows.slice();
+  for (let i = 0; i < Math.max(3, n); i += 1) out.push(mix(rows[i % n], rows[(i + 1) % n], [0.4, 0.6, 0.5][i % 3]));
+  return out;
+};
+//: Memoised per authored list; a property, not a global (`tests/test_global_scope_ratchet.py`).
+atlasRigLower.blend.cache = new Map();
+atlasRigLower.blend.of = (rows) => {
+  if (!atlasRigLower.blend.cache.has(rows)) atlasRigLower.blend.cache.set(rows, atlasRigLower.blend(rows));
+  return atlasRigLower.blend.cache.get(rows);
+};
+//: **The streams move all the time, and by the pose** (INBOX 1683 B1, B2, B3, B5, B6): beside the pose's
+//: transition each part drifts on a looping path of its own, a Web Animation of `translate` and `rotate`
+//: added over everything else (the follow-through's translate, the CSS sway), run by the compositor, so a
+//: frame costs the page nothing. The path is a random walk through `atlasRigLower.flowKeys` points, eased between
+//: them, 14 to 26 s round and a period of its own for every part, so no two move together and none repeats
+//: before the pose changes (a new path every pose or variant, 5 to 9 s at rest). A pose scales it:
+//: [reach, rate], so asleep it is small and slow, walking and glad it is wide and quick. A new path starts
+//: from where the old one is, so a change of pose is never a step.
+atlasRigLower.flowKeys = 7;
+atlasRigLower.flowByState = { idle: [1, 1], walk: [1.5, 0.7], sit: [0.8, 1.15], lie: [0.6, 1.4], curl: [0.45, 1.7], gesture: [1.25, 0.8], think: [0.9, 1.1], happy: [1.45, 0.65], sad: [0.6, 1.5], startle: [1.6, 0.55], crouch: [0.8, 1.2], lounge: [0.9, 1.3], glide: [1.4, 0.75], drift: [1.3, 1.2], hang: [1.1, 0.9] };
+//: Per part: [x px, y px, turn degrees] at a reach of 1. The lower body's own box barely moves (its join
+//: with the torso must hold: INBOX 615) and does not turn at all; the wisps, the stream and the hair move most.
+atlasRigLower.flowParts = { boxes: [0.3, 0.45, 0], wisps: [1.5, 1.1, 1.6], tails: [0.9, 0.8, 2.2], hair: [0.9, 0.7, 1.6], neb: [1.3, 1, 1.3] };
+//: Where a path is now, from its own keys and clock (not the style: INBOX 1587), eased like the segments.
+atlasRigLower.flowAt = (anim) => {
+  const share = Number(anim.effect?.getComputedTiming?.().progress);
+  if (!anim.keys || !Number.isFinite(share)) return [0, 0, 0];
+  const x = Math.min(1, Math.max(0, share)) * (anim.keys.length - 1);
+  const i = Math.min(anim.keys.length - 2, Math.floor(x));
+  const u = x - i;
+  const e = u * u * (3 - 2 * u);
+  return anim.keys[i].map((v, k) => v + (anim.keys[i + 1][k] - v) * e);
+}
+atlasRigLower.flow = (rig, state, live) => {
+  const low = rig.lower;
+  const loops = (rig.box.atlasLoops ||= []);
+  low.from ||= new Map();
+  for (const anim of low.flow || []) {
+    low.from.set(anim.el, atlasRigLower.flowAt(anim));
+    anim.cancel();
+    if (loops.includes(anim)) loops.splice(loops.indexOf(anim), 1);
+  }
+  low.flow = [];
+  if (!live || !rig.box.isConnected || !rig.box.animate) {
+    low.from.clear();
+    return;
+  }
+  const [reach, rate] = atlasRigLower.flowByState[state] || [1, 1];
+  let n = 0;
+  for (const [part, gain] of Object.entries(atlasRigLower.flowParts)) {
+    for (const el of low[part] || []) {
+      n += 1;
+      const start = low.from.get(el) || [0, 0, 0];
+      const keys = [start];
+      for (let j = 1; j < atlasRigLower.flowKeys - 1; j += 1) {
+        keys.push(gain.map((g, k) => Math.max(-1.6 * g * reach, Math.min(1.6 * g * reach, keys[j - 1][k] * 0.35 + (Math.random() * 2 - 1) * 1.3 * g * reach))));
+      }
+      keys.push(start);
+      const frames = keys.map((v) => ({ translate: `${atlasFix(v[0])}px ${atlasFix(v[1])}px`, rotate: `${atlasFix(v[2])}deg`, easing: "ease-in-out" }));
+      const anim = el.animate(frames, { duration: Math.round((14 + ((n * 4.7) % 12)) * 1000 * rate), iterations: Infinity, composite: "add" });
+      Object.assign(anim, { keys, el });
+      low.flow.push(anim);
+      loops.push(anim);
+    }
+  }
+}
 //: The rig's lower body (atlas.js, `atlasRigAttach`, which makes the rest of
 //: the rig at once): the boxes the state's pose turns, attached when this
 //: file arrives; until then the lower body stands in its drawn pose.
@@ -879,7 +954,7 @@ function atlasRigLowerAttach(box) {
   atlasRigWake(box);
 }
 //: The lower body's pose for the state: its variant (a new one as the
-//: state begins, and every 8 to 14 seconds at rest, on a timer), and the
+//: state begins, and every 5 to 9 seconds at rest, on a timer), and the
 //: way a walk goes. Each part is a box of its own, and the change is a CSS
 //: transition on it, run by the compositor: the state's own time and
 //: curve, the tail and the hair a beat later and longer (follow-through).
@@ -889,7 +964,7 @@ function atlasRigLower(rig, now, live, buddy) {
   if (!low || !(low.boxes.length || low.tails.length || low.hair.length)) return;
   const base = atlasLowerState(buddy, rig.box);
   const state = base === "lie" && atlasRigLower.asleep(buddy) ? "curl" : base;
-  const spec = ATLAS_LOWER_STATES[state];
+  const spec = { ...ATLAS_LOWER_STATES[state], v: atlasRigLower.blend.of(ATLAS_LOWER_STATES[state].v) };
   const fresh = state !== low.state;
   if (fresh || (live && atlasRigLower.rests.has(state) && now >= low.at)) {
     //: Reduced motion keeps each state's first pose and no idle variation.
@@ -904,7 +979,7 @@ function atlasRigLower(rig, now, live, buddy) {
     const posed = atlasRigLower.acts.includes(state) ? Number(buddy?.dataset.variant) : NaN;
     if (Number.isInteger(posed) && posed >= 0 && posed < spec.v.length) low.variant = low.last[state] = posed;
     low.state = state;
-    low.at = now + 8000 + Math.random() * 6000;
+    low.at = now + 5000 + Math.random() * 4000;
   }
   clearTimeout(low.timer);
   //: The next idle variant, unless the tab is hidden or the figure gone or
@@ -917,13 +992,15 @@ function atlasRigLower(rig, now, live, buddy) {
   if (live && atlasRigLower.rests.has(state)) low.timer = setTimeout(next, low.at - now + 10);
   const way = state === "walk" ? (parseFloat(buddy?.style.getPropertyValue("--nmb-lean")) < 0 ? -1 : 1) : 1;
   const [rot, sx, sy, skew, tail] = spec.v[low.variant] || spec.v[0];
-  const hairs = ATLAS_HAIR_STATES[state];
-  const [neb, nsx, nsy] = ATLAS_NEB_STATES[state][low.variant % ATLAS_NEB_STATES[state].length];
+  const hairs = atlasRigLower.blend.of(ATLAS_HAIR_STATES[state]);
+  const nebs = atlasRigLower.blend.of(ATLAS_NEB_STATES[state]);
+  const [neb, nsx, nsy] = nebs[low.variant % nebs.length];
   const hair = hairs[low.variant % hairs.length] * way;
   const pose = (k) => `rotate(${atlasFix(rot * way * k)}deg) skewX(${atlasFix(skew * way * k)}deg) scale(${(1 + (sx - 1) * k).toFixed(3)}, ${(1 + (sy - 1) * k).toFixed(3)})`;
   const key = `${state} ${low.variant} ${way} ${live}`;
   if (key === low.shown) return;
   low.shown = key;
+  atlasRigLower.flow(rig, state, live);
   const go = (el, transform, lag = 0) => {
     el.style.transition = live ? `transform ${spec.ms + lag * 2}ms ${spec.ease} ${lag}ms` : "none";
     el.style.transform = transform;
@@ -943,7 +1020,7 @@ function atlasRigLower(rig, now, live, buddy) {
   //: The stream's two halves move as one ribbon.
   for (const el of low.neb) go(el, `rotate(${atlasFix(neb * way)}deg) scale(${nsx}, ${nsy})`, 120);
 }
-//: The states that rest: a new variant every 8 to 14 s (INBOX 1680: only standing did, so a sat or sleeping figure held one pose for minutes).
+//: The states that rest: a new variant every 5 to 9 s (INBOX 1680, 1683 B1: only standing did, so a sat or sleeping figure held one pose for minutes).
 atlasRigLower.rests = new Set(["idle", "sit", "lie", "curl", "think", "sad", "hang"]);
 //: The states an act poses (INBOX 1681): the act's drawn variant picks the row, so the figure and its lower body agree. They last one act, so none re-rolls on the rest timer.
 atlasRigLower.acts = ["crouch", "lounge", "glide", "drift"];

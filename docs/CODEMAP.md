@@ -2,7 +2,7 @@
 
 Generated 2026-11-05 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7825, frontend ids 2644, CSS sections 522, backend routes 644, backend modules 8875, test files 2092, tests 17665, plan headings 1004, app scripts 28, boot scripts 37, script files 257.
+Counts: frontend functions 7825, frontend ids 2644, CSS sections 522, backend routes 644, backend modules 8875, test files 2093, tests 17667, plan headings 1004, app scripts 28, boot scripts 37, script files 257.
 
 ## Frontend functions (7825)
 
@@ -2109,8 +2109,8 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `atlasFrameBudget` | frontend/js/atlas-life.js:434 |
 | `atlasPropLoops` | frontend/js/atlas-life.js:694 |
 | `atlasPropsFrame` | frontend/js/atlas-life.js:722 |
-| `atlasRigLower` | frontend/js/atlas-life.js:887 |
-| `atlasRigLowerAttach` | frontend/js/atlas-life.js:863 |
+| `atlasRigLower` | frontend/js/atlas-life.js:962 |
+| `atlasRigLowerAttach` | frontend/js/atlas-life.js:938 |
 | `atlasRingLoops` | frontend/js/atlas-life.js:20 |
 | `atlasTailAttach` | frontend/js/atlas-life.js:324 |
 | `atlasTailBend` | frontend/js/atlas-life.js:105 |
@@ -24196,7 +24196,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (17665)
+## Tests (17667)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -25324,6 +25324,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_long_question_1528.py | 5 |
 | tests/test_long_question_bubble_warm12.py | 3 |
 | tests/test_long_runs.py | 12 |
+| tests/test_lower_flow_1683b.py | 2 |
 | tests/test_magic_add_wording.py | 2 |
 | tests/test_maintenance.py | 19 |
 | tests/test_make_plan.py | 21 |
