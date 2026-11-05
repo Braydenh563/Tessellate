@@ -136,6 +136,9 @@ FOLLOW_GAP = 240.0
 #: "Come here" (the menu): it stops this close to the pointer, and keeps company this long.
 COME_GAP = 70.0
 COME_FOR = 20.0
+#: "Come here" waits for the pointer to leave the menu (this far, or COME_WAIT seconds), then follows it.
+COME_MOVED = 120.0
+COME_WAIT = 1.5
 #: A "Go somewhere else" is at least this far (logical px), when the work area allows.
 WANDER_MIN = 420.0
 FOLLOW_FOR = (10.0, 18.0)
@@ -477,6 +480,7 @@ class Engine:
         self.trip_ready = now + self.rng.uniform(*TRIP_FIRST)
         self.follow_until = 0.0
         self.follow_close_until = 0.0
+        self.come: dict | None = None  # "Come here": follow the pointer (INBOX 1683 t)
         self.nap_after_land = False
         self.follow_check = 0.0
         self.yield_since: float | None = None
@@ -780,6 +784,8 @@ class Engine:
             if event[0] == "down" and self.state == "warp":
                 self._finish_warp(now)  # taken hold of mid-vanish: it is where it was going
             self._input(event, now)
+        if self.come is not None:
+            self._come_step(now)
         if self.state not in ("held", "pressed"):
             self._advance(now, dt, pointer)
         if self.caret is not None and self.state not in ("held", "pressed", "fly", "fall", "warp"):
@@ -968,6 +974,9 @@ class Engine:
             return
         if self.follow_until > now and self._follow(now):
             return
+        if self.come is not None and self.come["phase"] != "wait":  # keeping company: small things, not a stroll
+            self._start_act(self.mind.pick(self.rng, now, self.gait, self.hour), now)
+            return
         if self._away() and self.perch is None:
             self._go_home(now)
             return
@@ -977,7 +986,7 @@ class Engine:
 
     def _away(self) -> bool:
         """Further from home than a stroll's end, or off the floor line: it goes back."""
-        if self.home_x is None or self.card is not None:
+        if self.home_x is None or self.card is not None or self.come is not None:
             return False
         if abs(self.x - self.home_x) > AWAY * self._scale():
             return True
@@ -1166,6 +1175,9 @@ class Engine:
     def command(self, name: str, now: float) -> bool:
         """A choice from the companion's menu, on the engine's own thread. True when it took
         effect; False when it cannot be done now (carried, no window to sit on, motion off)."""
+        if name == "come" and self.come is not None:  # a second "Come here" ends the following
+            self.come = None
+            return True
         if name == "stay":
             return self._stay(now)
         if name == "roam":
@@ -1194,6 +1206,7 @@ class Engine:
     def _stay(self, now: float) -> bool:
         self.roam = False
         self.follow_until = 0.0
+        self.come = None
         if self.state in ("walk", "drift", "crouch") and not self.reduced:
             self._enter("stand", now)
         return True
@@ -1234,22 +1247,73 @@ class Engine:
             self._enter("stand", now)
 
     def _come(self, now: float) -> bool:
-        """Walk to the pointer and keep close for a while. False when the pointer is not on this screen."""
+        """"Come here" means follow me. The menu is opened on the figure, so it first waits for the pointer to
+        leave (COME_MOVED px, or COME_WAIT s), then goes to it wherever it is. False without a pointer."""
         if self.pointer is None:
             return False
         self._wake_for(now)
-        self.follow_until = now + COME_FOR
-        self.follow_close_until = self.follow_until
-        if self.perch is not None:
-            self._leave_perch(now, hop=True)
-            return True
-        if self._follow(now):
-            return True
         self.follow_until = self.follow_close_until = 0.0
-        return False
+        self.come = {"phase": "wait", "t0": now, "p0": self.pointer, "until": now + COME_FOR, "to": None}
+        return True
+
+    def _come_step(self, now: float) -> None:
+        c, p, k = self.come, self.pointer, self._scale()
+        assert c is not None
+        if p is None or self.reduced or not self.roam or self.state in ("held", "pressed"):
+            self.come = None
+            return
+        if c["phase"] == "wait":
+            if now - c["t0"] >= COME_WAIT or math.hypot(p[0] - c["p0"][0], p[1] - c["p0"][1]) > COME_MOVED * k:
+                c["phase"], c["until"] = "go", now + COME_FOR
+            return
+        if self.state not in ("stand", "act") or self.busy:
+            return
+        if self.perch is not None:
+            c["until"] = max(c["until"], now + 1.0)
+            self.perch_until = max(self.perch_until, c["until"])
+        want = self._come_target(p)
+        if self._come_there(want, c["phase"] == "stay"):
+            if c["phase"] == "go":  # arrived: a happy look, then company
+                c["phase"], c["until"] = "stay", now + COME_FOR
+                self.mind.feel("happy", now)
+                self._enter("wave", now)
+            elif now >= c["until"]:
+                self.come = None
+            return
+        if c["phase"] == "stay" and now >= c["until"]:
+            self.come = None
+            return
+        c["phase"], c["to"] = "go", want
+        if want[0] == "perch":
+            self._climb(now, want[1])
+        elif self.perch is not None:
+            self._leave_perch(now, hop=True)
+        else:
+            m = self.current_monitor()
+            self._go((want[1], self.ground_y(m)), "come", now, plain=True)
+
+    def _come_target(self, p: tuple[int, int]) -> tuple:
+        """A window top when the pointer is high over one it could stand on, else a spot on the ground by the pointer."""
+        if self.roam_windows:
+            h = self.size[1]
+            over = [q for q in self._candidates() if q.left <= p[0] <= q.right and p[1] <= q.top + h]
+            if over:
+                return ("perch", max(over, key=lambda q: q.top))
+        m = self.current_monitor()
+        k = self._scale()
+        side = -1 if p[0] > self.x + self.size[0] / 2 else 1
+        gx = p[0] - self.size[0] / 2 + side * COME_GAP * k
+        return ("ground", min(max(gx, m.area[0]), m.area[2] - self.size[0]))
+
+    def _come_there(self, want: tuple, company: bool) -> bool:
+        """At the goal; once there, company tolerates the pointer drifting (FOLLOW_GAP) before it re-targets."""
+        if want[0] == "perch":
+            return self.perch is not None and self.perch.key == want[1].key
+        return self.perch is None and abs(want[1] - self.x) < (FOLLOW_GAP if company else 30) * self._scale()
 
     def _wander(self, now: float) -> bool:
         """Go to another part of the work area, far from here, and make it home."""
+        self.come = None
         self._wake_for(now)
         if self.perch is not None:
             self._leave_perch(now, hop=True)
@@ -1390,14 +1454,14 @@ class Engine:
             found.append(p)
         return found
 
-    def _climb(self, now: float) -> None:
+    def _climb(self, now: float, only: Perch | None = None) -> None:
         """Up to a window's top: a walker standing under it jumps, one beside it climbs its side edge
         onto the top, and a floater glides there. Whatever lies between is crossed on foot (INBOX 1683 f)."""
         cand = self._candidates()
         if not cand:
             self._enter("stand", now)
             return
-        p = self.rng.choice(cand)
+        p = only if only is not None else self.rng.choice(cand)
         self.climb_ready = now + self.rng.uniform(*CLIMB_EVERY)
         self.target = p
         m = self.current_monitor()
