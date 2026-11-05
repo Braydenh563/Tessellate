@@ -55,6 +55,7 @@ import random
 from typing import Any, NamedTuple
 
 from . import behaviour as bh
+from . import extras
 from . import travel as tv
 
 #: Seconds.
@@ -376,6 +377,10 @@ class Output(NamedTuple):
     angle: float | None = None
     #: The wisps' and streams' own motion over the frame (`behaviour.Flow.view`, small integers), or None.
     flow: tuple[int, ...] | None = None
+    #: A prop the figure uses, drawn with the frame, `(name, phase, size)` (`props.view`), or None.
+    prop: tuple[str, int, int] | None = None
+    #: The face it wears over the frame, `(kind, step)` (`faces.EXPRESSIONS`, step 1 to 3), or None.
+    face: tuple[str, int] | None = None
 
 
 def _adjoins(a: Rect, b: Rect, side: str) -> bool:
@@ -543,6 +548,8 @@ class Engine:
         self.home_x = self.x
         self.last_x = self.x
         self.last_y = self.y
+        #: Its props, its face, its answers to the pointer and the screen (`extras.py`).
+        self.ex = extras.Extras(self)
         self._enter("stand" if not reduced else "sit", now)
         self._maybe_relocate(now)
 
@@ -683,6 +690,12 @@ class Engine:
         """The foreground window's caret rectangle in screen px (None: no caret). Read by the runner at
         about 0.5 Hz; the figure steps off it on the next tick."""
         self.caret = rect
+
+    def react(self, kind: str, now: float) -> bool:
+        """Something happened on the screen (`extras.REACTIONS`: a window opened or closed, the foreground app
+        changed, the person came back, the hour, a download, the battery): play its short answer if it is free to.
+        True when it did. Asked on the engine's own thread, like `command`."""
+        return self.ex.fire(kind, now)
 
     def resume(self, now: float) -> None:
         """After a suspend or a long stall: no jump, no catching up."""
@@ -928,8 +941,11 @@ class Engine:
         handler(now, dt)
         if self.card is not None or self.card_queue:
             self._card_step(now)
+        if self.state == "stand":
+            self.ex.life(now)
         if pointer is not None and not self.reduced:
-            self._notice(now, pointer)
+            if not self.ex.pointer(now, pointer):
+                self._notice(now, pointer)
 
     # --- states -----------------------------------------------------------------------------
 
@@ -1028,6 +1044,7 @@ class Engine:
                 self._face(-self.facing, now)
         if now >= self.state_until:
             self._enter("stand", now)
+            self.ex.after_act(now)
 
     def _do_crouch(self, now: float, dt: float) -> None:
         if now >= self.state_until:
@@ -2678,6 +2695,9 @@ class Engine:
         wake = self._wake_state(now)
         if self.state == "pressed" or self.state == "warp":
             return wake
+        mine = self.ex.wake_ms(now)
+        if mine is not None:
+            wake = mine if wake is None else min(wake, mine)
         tick = FLOW_CALM_MS if self.reduced else FLOW_SLEEP_MS if self.state == "sleep" else FLOW_TICK_MS
         return tick if wake is None else min(wake, tick)
 
@@ -2772,5 +2792,5 @@ class Engine:
             frame, int(round(x)), int(round(y)), self.facing < 0, self._wake(now),
             self.click_now, self.settled_now, clip, self.card_clicked, self._pose(), fx, round(alpha * 16) / 16.0,
             self.angle if frame.startswith("spin") and self.state == "fly" else None,
-            self._flow_view(now, frame) if fx is None else None,
+            self._flow_view(now, frame) if fx is None else None, *self.ex.view(now),
         )

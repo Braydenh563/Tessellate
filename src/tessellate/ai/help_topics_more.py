@@ -1446,7 +1446,11 @@ MORE_TOPICS: list[dict] = [
             " or Hide for 10 minutes. Right-click it for Companion (Atlas masculine or feminine, or a saved Atlas companion; the rest"
             " show in the app only), Stay here or Roam, Settings or Turn off. Drag it; it remembers the spot. While Tessellate is "
             "locked it shows only the companion and Open Tessellate. On Wayland, which cannot place a window above others, it stays "
-            "in the app."
+            "in the app. "
+            "It also does small things where it stands (reads a book, lounges on a bean bag, goes fishing, does push ups, reads a map, "
+            "writes in a journal), changes its face as it goes, answers the pointer (a pat on the head, a rub, a poke, a fast swipe over it, "
+            "a slow hover) and glances up when a window opens or closes, the app changes, the hour turns, the battery runs low or a "
+            "download finishes, never while you type."
         ),
         "badge": {"label": "Desktop companion", "section": "appearance", "target": "desktop-companion-row"},
     },

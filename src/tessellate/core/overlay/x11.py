@@ -186,6 +186,18 @@ def last_input_age(w: Any) -> float | None:
     return None if ms is None else ms / 1000.0
 
 
+def foreground(w: Any) -> int | None:
+    """The active window's id (only that it changed is used), or None."""
+    got = w.prop(w.root, "_NET_ACTIVE_WINDOW")
+    return got[0] if isinstance(got, list) and got and isinstance(got[0], int) and got[0] else None
+
+
+def battery(_w: Any) -> tuple[int, bool] | None:
+    from . import screenwatch
+
+    return screenwatch.battery_sysfs()
+
+
 def caret_rect(_w: Any) -> None:
     """X11 offers no text caret to other apps (AT-SPI would, but it is not asked): the engine's
     text-zone stand-in is not used here either, so the figure only keeps its home by an edge."""

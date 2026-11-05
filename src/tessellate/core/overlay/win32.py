@@ -489,6 +489,34 @@ def last_input_age(w: Any) -> float | None:
         return None
 
 
+def foreground(w: Any) -> int | None:
+    """The foreground window's handle as a number (only that it changed is used), or None."""
+    try:
+        return int(w.user32.GetForegroundWindow() or 0) or None
+    except Exception:  # noqa: BLE001
+        logger.debug("overlay: foreground window unknown", exc_info=True)
+        return None
+
+
+class _PowerStatus(ctypes.Structure):
+    _fields_ = [
+        ("ACLineStatus", ctypes.c_ubyte), ("BatteryFlag", ctypes.c_ubyte), ("BatteryLifePercent", ctypes.c_ubyte),
+        ("SystemStatusFlag", ctypes.c_ubyte), ("BatteryLifeTime", ctypes.c_ulong), ("BatteryFullLifeTime", ctypes.c_ulong),
+    ]
+
+
+def battery(w: Any) -> tuple[int, bool] | None:
+    """`(percent, on mains power)`, or None for a desktop with no battery (flag 128) or an unknown level (255)."""
+    status = _PowerStatus()
+    try:
+        if not w.kernel32.GetSystemPowerStatus(ctypes.byref(status)) or status.BatteryFlag == 128 or status.BatteryLifePercent > 100:
+            return None
+        return int(status.BatteryLifePercent), status.ACLineStatus == 1
+    except Exception:  # noqa: BLE001
+        logger.debug("overlay: battery unknown", exc_info=True)
+        return None
+
+
 def caret_rect(w: Any) -> tuple[int, int, int, int] | None:
     """The text caret of the foreground window in screen px (left, top, right, bottom), or None when
     there is none or it cannot be read. GetGUIThreadInfo gives `rcCaret` in the caret window's client
