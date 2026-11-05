@@ -2,7 +2,7 @@
 
 Generated 2026-11-05 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7822, frontend ids 2644, CSS sections 522, backend routes 644, backend modules 8797, test files 2070, tests 17482, plan headings 1003, app scripts 28, boot scripts 37, script files 257.
+Counts: frontend functions 7822, frontend ids 2644, CSS sections 522, backend routes 644, backend modules 8797, test files 2072, tests 17498, plan headings 1003, app scripts 28, boot scripts 37, script files 257.
 
 ## Frontend functions (7822)
 
@@ -22273,11 +22273,11 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `Engine` | src/tessellate/core/overlay/engine.py:353 |
-| `Monitor` | src/tessellate/core/overlay/engine.py:309 |
-| `Output` | src/tessellate/core/overlay/engine.py:316 |
-| `Perch` | src/tessellate/core/overlay/engine.py:300 |
-| `_adjoins` | src/tessellate/core/overlay/engine.py:342 |
+| `Engine` | src/tessellate/core/overlay/engine.py:368 |
+| `Monitor` | src/tessellate/core/overlay/engine.py:321 |
+| `Output` | src/tessellate/core/overlay/engine.py:328 |
+| `Perch` | src/tessellate/core/overlay/engine.py:312 |
+| `_adjoins` | src/tessellate/core/overlay/engine.py:357 |
 
 ### src/tessellate/core/overlay/host.py (3)
 
@@ -22291,7 +22291,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `Pacer` | src/tessellate/core/overlay/pacing.py:27 |
+| `Pacer` | src/tessellate/core/overlay/pacing.py:33 |
 
 ### src/tessellate/core/overlay/perches.py (2)
 
@@ -22311,16 +22311,16 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `Frame` | src/tessellate/core/overlay/sprites.py:83 |
-| `SpriteSet` | src/tessellate/core/overlay/sprites.py:151 |
-| `_drawn_box` | src/tessellate/core/overlay/sprites.py:140 |
-| `clear_faint_alpha` | src/tessellate/core/overlay/sprites.py:129 |
-| `clipped` | src/tessellate/core/overlay/sprites.py:98 |
-| `effect` | src/tessellate/core/overlay/sprites.py:392 |
-| `frames_dir` | src/tessellate/core/overlay/sprites.py:117 |
-| `look_for` | src/tessellate/core/overlay/sprites.py:124 |
-| `mix` | src/tessellate/core/overlay/sprites.py:373 |
-| `premultiplied_bgra` | src/tessellate/core/overlay/sprites.py:146 |
+| `Frame` | src/tessellate/core/overlay/sprites.py:89 |
+| `SpriteSet` | src/tessellate/core/overlay/sprites.py:157 |
+| `_drawn_box` | src/tessellate/core/overlay/sprites.py:146 |
+| `clear_faint_alpha` | src/tessellate/core/overlay/sprites.py:135 |
+| `clipped` | src/tessellate/core/overlay/sprites.py:104 |
+| `effect` | src/tessellate/core/overlay/sprites.py:427 |
+| `frames_dir` | src/tessellate/core/overlay/sprites.py:123 |
+| `look_for` | src/tessellate/core/overlay/sprites.py:130 |
+| `mix` | src/tessellate/core/overlay/sprites.py:408 |
+| `premultiplied_bgra` | src/tessellate/core/overlay/sprites.py:152 |
 
 ### src/tessellate/core/overlay/travel.py (15)
 
@@ -24085,7 +24085,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (17482)
+## Tests (17498)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -25456,6 +25456,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_overlay_idle.py | 9 |
 | tests/test_overlay_life_1670.py | 25 |
 | tests/test_overlay_moves.py | 26 |
+| tests/test_overlay_pace_1683.py | 5 |
 | tests/test_overlay_rest_1670.py | 21 |
 | tests/test_overlay_rest_life_1670.py | 7 |
 | tests/test_overlay_ride_1670.py | 16 |
@@ -25463,6 +25464,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_overlay_roam_runner.py | 10 |
 | tests/test_overlay_runner.py | 24 |
 | tests/test_overlay_smooth_1670.py | 11 |
+| tests/test_overlay_spin_1683.py | 11 |
 | tests/test_overlay_sprites.py | 17 |
 | tests/test_overlay_throw_ceiling_1670.py | 6 |
 | tests/test_overlay_tumble_1670.py | 6 |

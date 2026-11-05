@@ -77,7 +77,11 @@ def test_a_wall_bounce_changes_the_turn_and_a_slow_flight_rights_itself_eased() 
     e, _s = make("masculine", "float", 5)
     e.omega, e.angle = 8.0, 1.0
     e._spin_contact(1.0)
+    # intent kept, how it happens moved (INBOX 1683): the reversal is paid out over a few ticks, not taken in one
+    for _ in range(90):
+        e._spin(1 / 60, 1000.0)
     assert e.omega < 0, "a bounce reverses it"
+    e.angle = 1.0
     e.omega, e.angle, e.right_t = 0.0, math.pi * 0.9, 0.0  # nearly upside down, the flight slow
     path, t = [], 0.0
     for _ in range(300):

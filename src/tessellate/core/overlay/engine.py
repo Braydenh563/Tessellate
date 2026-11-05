@@ -149,7 +149,7 @@ POSE_OFF = ("held", "pressed", "fly", "fall", "rise", "peek", "emerge", "leap", 
 #: Travel (logical px) per frame of the walk cycle at the shipped 12 frames: 42 px a cycle, as with 6.
 STRIDE = 3.5
 WALK_FRAMES = 12
-TAIL_TICK_MS = 50
+TAIL_TICK_MS = 16
 GRAVITY = 2200.0
 NOTICE_NEAR = 120.0
 NOTICE_VERY_NEAR = 40.0
@@ -184,10 +184,20 @@ FLY_SPIN_MIN = 60.0
 #: under FLY_SPIN_MIN for a few frames at its apex, and the held pose (a smaller canvas) in
 #: between flickered the window's size and offset (review of INBOX 1670).
 FLY_REST_DWELL = 0.3
-SPIN_OMEGA = (2.5, 11.0)
-SPIN_SWIRL = 3.0
+#: INBOX 1683 ("rotating when thrown ... still horrible"): the figure is drawn at its true angle every tick
+#: (`Output.angle`), so the turn rate is what a person sees. At 60 Hz 4.2 rad/s is 4 degrees a tick (the old 11
+#: was 10.5, a spin that strobed); a soft toss turns about 1 degree a tick. The rate comes from the throw: its speed,
+#: and the lever of where the figure was held (`SPIN_LEVER`, a throw off-centre turns it the way the hand pulls).
+#: A bounce or a bonk changes the rate by easing to it (`SPIN_EASE` per second), never in one tick.
+SPIN_OMEGA = (0.9, 4.2)
+SPIN_SWIRL = 1.2
 SPIN_DRAG = 0.5
-SPIN_CONTACT = 0.6
+SPIN_CONTACT = 0.5
+SPIN_EASE = 5.0
+SPIN_LEVER = 0.9
+#: The squash a thrown floater makes as it comes to rest: this much of its height, over this many seconds.
+SQUASH = 0.1
+SQUASH_FOR = 0.35
 #: Once the flight is this slow (px per second at 96 dpi), or it is on the floor, it rights itself with an
 #: eased turn (a critically damped spring to the nearest upright, `RIGHT_W` rad/s, ramped in over `RIGHT_RAMP`
 #: s so the turn rate stays continuous) and is laid down only when upright.
@@ -285,14 +295,16 @@ CARD_STAND = ("stand", "walk", "drift", "sit", "sleep", "land", "wave", "notice"
 #: The wake of anything that moves the window: one display frame at 60 Hz. The host puts a wake this
 #: short on a fixed 60 Hz grid (`pacing.py`); at 33 ms `SetTimer` made it 31 or 47 (INBOX 1670, 14:14Z,
 #: "very framey"). The position is read from the clock on every tick, so a late tick lands where the
-#: figure should be and never stutters. Slow things (a hanging swing, the tail's settle) keep their own.
+#: figure should be and never stutters. The tail's settle and a pose easing ask the same 16 ms (INBOX 1683: they were
+#: 50, drawn at about 16 a second); a hanging swing asks 33 (two lines of the grid), an act the time its pose next steps.
 TICK_WALK_MS = 16
 TICK_FALL_MS = 16
-HANG_TICK_MS = 50
+HANG_TICK_MS = 33
 #: A visit to a window is not a rest spot: the first leg to a window top stays under a minute.
 #: Sitting and sleeping look at the pointer this often (a wake each).
 POLL_QUIET_MS = 2000
 MIN_WAKE_MS = 30
+POSE_LOOK_STEP = 1.0 / 60.0
 
 Rect = tuple[int, int, int, int]
 
@@ -337,6 +349,9 @@ class Output(NamedTuple):
     fx: tuple[str, float, int] | None = None
     #: How much of the figure shows (1 whole, 0 gone): a vanish or a step through a ring.
     alpha: float = 1.0
+    #: The true angle of a thrown figure's tumble, radians (clockwise on screen positive), or None. `frame` is
+    #: then the nearest of the `SPIN_STEPS` pictures (its box, its name); the runner draws `angle` itself.
+    angle: float | None = None
 
 
 def _adjoins(a: Rect, b: Rect, side: str) -> bool:
@@ -404,6 +419,8 @@ class Engine:
         self.pre_press = "stand"
         self.bonk_until = 0.0
         self.angle = 0.0
+        self.squash_at = -math.inf  # when a thrown floater last came to rest
+        self.kick = 0.0  # the change of turn rate a contact has still to pay out (`_spin`)
         self.omega = 0.0  # a thrown figure's turn rate, rad/s
         self.right_t = 0.0  # seconds it has been righting itself
         self.grounded = False  # a walker's tumble that has reached the floor
@@ -819,6 +836,10 @@ class Engine:
         elif s_ == "stand":
             mood = self.mind.mood(now, self.hour)
             sy = {"sleepy": 0.975, "proud": 1.035, "bored": 0.985, "startled": 1.05}.get(mood, 1.0)
+            u = (now - self.squash_at) / SQUASH_FOR
+            if 0.0 <= u < 1.0:  # the settle after a throw: a small squash and back
+                sy -= SQUASH * math.sin(math.pi * u)
+                sx = 1.0 + 0.5 * SQUASH * math.sin(math.pi * u)
         return sx, sy, lean
 
     def _pose(self) -> tuple[float, float, float, float] | None:
@@ -2099,6 +2120,7 @@ class Engine:
                 self.vx = self.vy = 0.0
                 self.y = self.ground_y(m)
                 self.settled_now = True
+                self.squash_at = now  # INBOX 1683: the settle ends in a small squash (`_ground_pose`), then the stand
                 self._enter("stand", now)
         elif self.y >= floor:
             self._land_tumble(m, floor, dt, now)
@@ -2212,12 +2234,21 @@ class Engine:
         lo, hi = SPIN_OMEGA
         rate = lo + (hi - lo) * min(1.0, speed / (THROW_MAX * 0.5 * self._scale()))
         turn = (1.0 if vx > 0 else -1.0) if abs(vx) > 1.0 else (1.0 if swirl >= 0 else -1.0)
-        return max(-hi, min(hi, turn * rate + SPIN_SWIRL * swirl))
+        # the hand held it off-centre: the torque is (arm x velocity) over (arm squared + a body's radius squared)
+        rx, ry = self.grab[0] - self.size[0] / 2, self.grab[1] - self.size[1] / 2
+        radius = SPIN_LEVER * max(self.size)
+        lever = (rx * vy - ry * vx) / (rx * rx + ry * ry + radius * radius)
+        return max(-hi, min(hi, 0.6 * turn * rate + lever + SPIN_SWIRL * swirl))
 
     def _spin(self, dt: float, speed: float) -> None:
         """One step of the turn: its own drag, and once the flight is slow (or on the floor) an eased turn
         to the nearest upright."""
         self.omega *= math.exp(-SPIN_DRAG * dt)
+        if self.kick:  # a contact's change of rate is paid out over a few ticks, not taken in one
+            part = self.kick * (1.0 - math.exp(-SPIN_EASE * dt))
+            self.omega, self.kick = self.omega + part, self.kick - part
+            if abs(self.kick) < 0.02:
+                self.omega, self.kick = self.omega + self.kick, 0.0
         slow = speed < RIGHT_SPEED * self._scale() or self.grounded
         self.right_t = self.right_t + dt if slow else 0.0
         if self.right_t > 0.0:
@@ -2231,12 +2262,12 @@ class Engine:
     def _righted(self) -> bool:
         """Upright and still turning no more than a drift: safe to lay down."""
         err = self.angle - round(self.angle / (2 * math.pi)) * 2 * math.pi
-        return abs(err) < 0.06 and abs(self.omega) < 0.5
+        return abs(err) < 0.03 and abs(self.omega) < 0.25
 
     def _spin_contact(self, push: float) -> None:
         """A bounce takes some of the turn, reverses it and adds the kick of the surface (`push` -1 to 1)."""
         hi = SPIN_OMEGA[1]
-        self.omega = max(-hi, min(hi, -SPIN_CONTACT * self.omega + SPIN_SWIRL * 0.5 * push))
+        self.kick = max(-hi, min(hi, -SPIN_CONTACT * self.omega + SPIN_SWIRL * 0.5 * push)) - self.omega
 
     def _start_fly(self, vx: float, vy: float, swirl: float = 0.0) -> None:
         self.vx, self.vy = vx, vy
@@ -2244,7 +2275,7 @@ class Engine:
         self.slow_for = self.right_t = 0.0
         self.grounded = self.laid = False
         self.y += self._dy(self._frame(self.now)) - self._dy("spin0")  # drawn where it was
-        self.angle, self.omega = 0.0, self._launch_spin(vx, vy, swirl)
+        self.angle, self.omega, self.kick = 0.0, self._launch_spin(vx, vy, swirl), 0.0
         if abs(vx) > 1:
             self.facing = 1 if vx > 0 else -1
         self._enter("fly", self.now)
@@ -2459,7 +2490,9 @@ class Engine:
         if s in FRAME_OF:
             return FRAME_OF[s]
         if s == "fly":
-            return "hop" if now < self.bonk_until else self._fly_frame()
+            # a bonk shows the startled hop only when the figure is not turning: a picture swap in the middle of a
+            # spin was the snap (INBOX 1683); the contact is felt in the turn rate instead
+            return "hop" if now < self.bonk_until and self.laid else self._fly_frame()
         if s in ("rise", "peek"):
             return self._edge_frame(now)
         if s == "stand":
@@ -2510,7 +2543,7 @@ class Engine:
             return self._moving_wake(s)
         if s == "act":
             soonest = min(self.state_until, self._next_pose_change(now, 0.5))
-            return max(MIN_WAKE_MS, int(math.ceil((soonest - now) * 1000)) + 1)
+            return max(TICK_WALK_MS, int(math.ceil((soonest - now) * 1000)) + 1)
         if s in ("fall", "hop", "fly", "leap"):  # before the tail: it swings through a fall, and the window moves fastest here
             return TICK_FALL_MS
         if self._follow_moving():  # the tail still swings, or the body is easing to its pose
@@ -2559,7 +2592,7 @@ class Engine:
         base = bh.quantised(self.cur)
         t = now
         while t < now + horizon:
-            t += 0.05
+            t += POSE_LOOK_STEP  # a display frame: the 50 ms look-ahead stepped an act's pose at 20 a second (INBOX 1683)
             if bh.quantised(self._target_pose(t)) != base:
                 return t
         return now + horizon
@@ -2590,4 +2623,5 @@ class Engine:
         return Output(
             frame, int(round(x)), int(round(y)), self.facing < 0, self._wake(now),
             self.click_now, self.settled_now, clip, self.card_clicked, self._pose(), fx, round(alpha * 16) / 16.0,
+            self.angle if frame.startswith("spin") and self.state == "fly" else None,
         )

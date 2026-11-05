@@ -143,8 +143,14 @@ def test_the_pacer_keeps_a_fixed_grid_and_skips_what_it_missed() -> None:
     # a tick that missed three lines does not fire a burst to catch up
     late = p.next(first + 0.052, 16)
     assert late > first + 0.052 and abs((late - 10.0) / pacing.FRAME_S - round((late - 10.0) / pacing.FRAME_S)) < 1e-6
-    # a slow ask, or "now", is not paced and drops the grid
-    assert not p.paced(33) and not p.paced(1) and p.paced(16)
+    # Intent kept, the bound moved (INBOX 1683): an animation's own step (a tail settling, a hang's swing, 33 to 100 ms)
+    # is on the grid too, at the first line at or after its time; it was SetTimer, 31 or 47 and 62 ms.
+    p.reset()
+    base = p.next(10.0, 16) - pacing.FRAME_S
+    assert p.paced(33) and p.paced(100) and abs(p.next(base, 33) - (base + 2 * pacing.FRAME_S)) < 1e-9
+    assert abs(p.next(base, 50) - (base + 3 * pacing.FRAME_S)) < 1e-9
+    # a slow ask (a rest's), or "now", is not paced and drops the grid
+    assert not p.paced(250) and not p.paced(1) and p.paced(16)
     assert p.next(20.0, 250) == 20.25 and p.anchor is None
 
 
