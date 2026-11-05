@@ -310,8 +310,9 @@ def test_i_a_weak_cue_never_heads_a_separate_notes_event(client, golf):
     text, _g = ask(client, "golf notes")
     print(text)
     assert "How it went" not in text, text
-    #: Two paragraphs, one per note, neither under a label. Days stay unsaid:
-    #: the question did not ask for time (INBOX 1441).
+    #: Two paragraphs, one per note, neither under a label. Each event says its
+    #: own day since INBOX 1668 (c, the narrow exception to 1441; see
+    #: test_composer_days_1668.py); no absolute date, the question did not ask.
     assert len([p for p in text.split("\n\n") if "golf" in p and not p.startswith("You have")]) == 2, text
 
 

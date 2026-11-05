@@ -915,12 +915,12 @@ def _social_reply(req: _StreamRequest, prepared: dict) -> str:
     kind = composer_smalltalk.social_kind(req.question, prepared["intent"])
     if kind in ("greeting", "morning") and (hello := _hello_reply(req, seed, recent)):
         return hello
-    if kind == "repair":
+    if composer_social.missed(req.question, kind, last):
         return _repair_reply(req, last, seed)
     if kind == "joke" and (joke := _saved_joke_reply(req, seed)):
         return joke
     said = composer_smalltalk.social(
-        req.question,
+        composer_social.heard(req.question, kind, last),
         prepared["intent"],
         str(last.get("answer") or ""),
         asked,
@@ -938,9 +938,9 @@ def _social_reply(req: _StreamRequest, prepared: dict) -> str:
 
 
 def _repair_reply(req: _StreamRequest, last: dict, seed: str) -> str:
-    """"Not what I asked" (INBOX 1485): the miss owned, what the message
-    before was read as, and its better reading: Atlas on itself when it
-    asked what Atlas is. Never a search for the repair's own words."""
+    """"Not what I asked" (INBOX 1485): the miss owned, what the ask before was
+    read as, and its better reading (Atlas on itself). Never a search."""
+    last = composer_social.repaired_turn(req.history or [], last)
     asked = str(last.get("question") or "")
     better = personal.about_me(asked) or ""
     if not better and question_noise.social_kind(asked) == "who":
