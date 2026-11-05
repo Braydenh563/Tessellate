@@ -19,7 +19,7 @@ from __future__ import annotations
 
 import math
 import random
-from typing import NamedTuple
+from typing import Any, NamedTuple
 
 #: Seconds an activity is not repeated after it was done.
 NO_REPEAT = 180.0
@@ -294,3 +294,119 @@ def _amplitude(keys: Keys) -> float:
 
 #: How much each activity moves the body (the engine redraws a calm one less often).
 AMPLITUDE = {name: _amplitude(a.keys) for name, a in ACTIVITIES.items()}
+
+
+# --- the lower body's own life: wisps and nebula streams (INBOX 1683 c) ---------------------------------
+#: Strands across the figure's width. Each has its own octave periods, so no two move together and none
+#: reads as a loop; `FLOW_PERIODS` are the three octaves' ranges in seconds (the shortest is over 4 s, the
+#: wander below keeps it so) and `FLOW_WEIGHTS` how much each counts (the fastest leads).
+FLOW_BANDS = 7
+FLOW_PERIODS = ((9.0, 13.0), (5.6, 8.6), (4.4, 5.9))
+FLOW_WEIGHTS = (0.4, 0.6, 1.0)
+#: Largest ambient sway of a strand's tip and its rise and fall, px of the shipped frame. At the hem this is
+#: under 3 degrees off the torso over the lower body's length (INBOX 615 and 619: never more than 4).
+FLOW_TIP = 2.2
+FLOW_RISE = 1.1
+#: Outer strands (the orbiting streams) sway more than the middle ones; a middle's lead over its tip.
+FLOW_EDGE = 1.0
+FLOW_MID = 0.35
+#: Follow-through: each strand is a spring with its own stiffness, thrown by the body's acceleration and leaning
+#: back with its speed (a stream trails what moves it), `FLOW_MAX` px at most.
+FLOW_STIFF = (34.0, 62.0)
+FLOW_DAMP = 0.4
+FLOW_KICK = 0.18
+FLOW_STREAM = 0.012
+FLOW_MAX = 6.0
+#: Reduced motion: a slow drift only, this share of the sway at this multiple of the periods.
+FLOW_CALM_AMP = 0.5
+FLOW_CALM_SLOW = 2.6
+FLOW_Q = 8.0
+
+
+def _frac(x: float) -> float:
+    return x - math.floor(x)
+
+
+class Flow:
+    """The wisps and the nebula streams move all the time. Each of `FLOW_BANDS` strands carries three octaves of
+    sine at its own periods and phases (so nothing lines up or repeats within a minute) with a slow wander of
+    its phase, the sway of its middle a beat behind its tip (a wave runs down it), a rise and fall a quarter
+    turn behind the sway (the tip goes round an ellipse, never at rest in both at once), and a sparkle that
+    travels down it. On top sits the follow-through: a spring per strand thrown by the body's acceleration,
+    leaning back with its speed (it streams behind a start and when the figure floats up, and drifts on after a
+    stop). `view` is the picture's whole input as small integers (`FLOW_Q` steps a px), so the sprite cache can
+    key on it and a still view costs no redraw."""
+
+    def __init__(self, seed: int = 1683) -> None:
+        rng = random.Random(seed)
+        self.t0 = rng.random() * 500.0
+        self.bands = []
+        for i in range(FLOW_BANDS):
+            octaves = []
+            for k, (lo, hi) in enumerate(FLOW_PERIODS):
+                octaves.append((lo + (hi - lo) * _frac(i * (0.618 + 0.137 * k) + 0.23 * k + rng.random() * 0.2), rng.random() * math.tau))
+            self.bands.append(octaves)
+        self.wander = [37.0 + 5.3 * i for i in range(FLOW_BANDS)]
+        self.glint_periods = [4.6 + 0.8 * ((i * 2) % FLOW_BANDS) for i in range(FLOW_BANDS)]
+        self.pos = [[0.0, 0.0] for _ in range(FLOW_BANDS)]
+        self.vel = [[0.0, 0.0] for _ in range(FLOW_BANDS)]
+        self.stiff = [FLOW_STIFF[0] + (FLOW_STIFF[1] - FLOW_STIFF[0]) * _frac(i * 0.754 + 0.31) for i in range(FLOW_BANDS)]
+        self.last_v = (0.0, 0.0)
+
+    def reach(self, i: int) -> float:
+        """How far strand `i` sways: the outer ones (the streams) most."""
+        edge = abs(i - (FLOW_BANDS - 1) / 2) / ((FLOW_BANDS - 1) / 2)
+        return FLOW_TIP * (0.75 + (FLOW_EDGE * 0.25) * edge)
+
+    def _octaves(self, i: int, t: float, calm: bool, wave: Any) -> float:
+        slow = FLOW_CALM_SLOW if calm else 1.0
+        total = 0.0
+        for k, (period, phase) in enumerate(self.bands[i]):
+            wander = 0.15 * math.sin(math.tau * t / (self.wander[i] * slow) + phase * 3.0)
+            total += FLOW_WEIGHTS[k] * wave(math.tau * t / (period * slow) + phase + wander)
+        return total / sum(FLOW_WEIGHTS) * (FLOW_CALM_AMP if calm else 1.0)
+
+    def sway(self, i: int, t: float, calm: bool = False) -> float:
+        """Strand `i`'s ambient sway at `t`, px (-FLOW_TIP..FLOW_TIP): three octaves, each a phase that wanders."""
+        return self.reach(i) * self._octaves(i, t, calm, math.sin)
+
+    def rise(self, i: int, t: float, calm: bool = False) -> float:
+        """Its rise and fall: the same octaves a quarter turn on."""
+        return FLOW_RISE * self._octaves(i, t, calm, math.cos)
+
+    def step(self, dt: float, vx: float, vy: float) -> None:
+        """Advance the follow-through by `dt` seconds with the body at (`vx`, `vy`) px/s of the shipped frame."""
+        if dt <= 0:
+            return
+        ax, ay = (vx - self.last_v[0]) / dt, (vy - self.last_v[1]) / dt
+        self.last_v = (vx, vy)
+        n = max(1, int(math.ceil(dt / 0.02)))
+        h = dt / n
+        for i in range(FLOW_BANDS):
+            k = self.stiff[i]
+            c = 2.0 * FLOW_DAMP * math.sqrt(k)
+            gain = 0.7 + 0.6 * _frac(i * 0.43 + 0.1)  # each strand is thrown by its own share
+            for axis, v, a in ((0, vx, ax), (1, vy, ay)):
+                rest = -v * FLOW_STREAM * gain
+                p, q = self.pos[i][axis], self.vel[i][axis]
+                for _ in range(n):
+                    q += (k * (rest - p) - c * q - a * FLOW_KICK * gain) * h
+                    p = max(-FLOW_MAX, min(FLOW_MAX, p + q * h))
+                self.pos[i][axis], self.vel[i][axis] = p, q
+
+    def settled(self) -> bool:
+        return all(abs(p[0]) < 0.3 and abs(p[1]) < 0.3 and abs(v[0]) < 2.0 and abs(v[1]) < 2.0 for p, v in zip(self.pos, self.vel))
+
+    def view(self, t: float, calm: bool = False) -> tuple[int, ...]:
+        """Per strand `(tip dx, middle dx, tip dy, sparkle sin, sparkle cos)` in `FLOW_Q` steps (the sparkle in
+        tenths), the follow-through folded in: what the warp needs and nothing else."""
+        t = t + self.t0
+        out: list[int] = []
+        for i in range(FLOW_BANDS):
+            fx, fy = self.pos[i]
+            tip = max(-FLOW_MAX, min(FLOW_MAX, self.sway(i, t, calm) + fx))
+            mid = max(-FLOW_MAX, min(FLOW_MAX, self.sway(i, t - 0.9, calm) * (1 - FLOW_MID) + fx * 0.5))
+            drop = self.rise(i, t, calm) + fy
+            w = math.tau * t / (self.glint_periods[i] * (FLOW_CALM_SLOW if calm else 1.0)) + i * 1.3
+            out += [round(tip * FLOW_Q), round(mid * FLOW_Q), round(drop * FLOW_Q), round(math.sin(w) * 10), round(math.cos(w) * 10)]
+        return tuple(out)
