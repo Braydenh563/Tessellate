@@ -2262,7 +2262,7 @@ class Engine:
     def _righted(self) -> bool:
         """Upright and still turning no more than a drift: safe to lay down."""
         err = self.angle - round(self.angle / (2 * math.pi)) * 2 * math.pi
-        return abs(err) < 0.03 and abs(self.omega) < 0.25
+        return abs(err) < 0.012 and abs(self.omega) < 0.15  # 0.7 degrees: the snap to the upright stand is under one (review of 1683)
 
     def _spin_contact(self, push: float) -> None:
         """A bounce takes some of the turn, reverses it and adds the kick of the surface (`push` -1 to 1)."""

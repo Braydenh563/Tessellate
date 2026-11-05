@@ -145,3 +145,12 @@ def test_spun_at_is_on_the_canvas_of_the_spin_frames_and_keeps_only_a_few() -> N
         assert (f.width, f.height, f.pad_x, f.pad_y) == (ref.width, ref.height, ref.pad_x, ref.pad_y)
     assert len(s._spun_at) <= sprites.SPUN_KEEP
     assert s.spun_at(0.0, 96, False).bgra == s.spun_at(2 * math.pi, 96, False).bgra
+
+
+@pytest.mark.parametrize("speed", [200.0, 900.0, 2200.0])
+def test_the_figure_is_within_a_degree_of_upright_when_it_is_laid_down(speed: float) -> None:
+    """Review of 1683: the stand frame is upright, so any angle left at the hand-over is a visible snap."""
+    r = flight(speed)
+    e = r["engine"]
+    err = abs((math.degrees(e.angle) + 180.0) % 360.0 - 180.0)
+    assert e.state != "fly" and err < 1.0, (e.state, err)

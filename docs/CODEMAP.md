@@ -2,7 +2,7 @@
 
 Generated 2026-11-05 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7822, frontend ids 2644, CSS sections 522, backend routes 644, backend modules 8797, test files 2072, tests 17498, plan headings 1003, app scripts 28, boot scripts 37, script files 257.
+Counts: frontend functions 7822, frontend ids 2644, CSS sections 522, backend routes 644, backend modules 8797, test files 2072, tests 17499, plan headings 1003, app scripts 28, boot scripts 37, script files 257.
 
 ## Frontend functions (7822)
 
@@ -24085,7 +24085,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (17498)
+## Tests (17499)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -25464,7 +25464,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_overlay_roam_runner.py | 10 |
 | tests/test_overlay_runner.py | 24 |
 | tests/test_overlay_smooth_1670.py | 11 |
-| tests/test_overlay_spin_1683.py | 11 |
+| tests/test_overlay_spin_1683.py | 12 |
 | tests/test_overlay_sprites.py | 17 |
 | tests/test_overlay_throw_ceiling_1670.py | 6 |
 | tests/test_overlay_tumble_1670.py | 6 |

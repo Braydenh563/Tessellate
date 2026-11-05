@@ -58,11 +58,14 @@ def test_a_click_places_the_panel_at_the_scale_of_the_monitor_under_the_figure(o
     runner = _runner(over)
     runner.on_click("left", (-600, 880, 100, 120), 96)
     box, dpi = over.panel_box
-    assert dpi == 96 and box == (-600 - dc.PANEL_GAP - 248, 1000 - 168, 248, 168)
+    # INBOX 1683: intent kept (the scale of the monitor under the figure); the opening size is now the measured
+    # menu height (`PANEL_SIZES`), not the old 168 guess, so the numbers come from it.
+    mw, mh = dc.PANEL_SIZES["menu"]
+    assert dpi == 96 and box == (-600 - dc.PANEL_GAP - mw, 1000 - mh, mw, mh)
     runner.on_click("left", (-600, 880, 100, 120), 96)  # closes
     runner.on_click("left", (1200, 800, 150, 180), 144)
     box, dpi = over.panel_box
-    assert dpi == 144 and box[2:] == (372, 252)
+    assert dpi == 144 and box[2:] == (round(mw * 1.5), round(mh * 1.5))
 
 
 def test_a_drop_on_another_monitor_re_places_the_open_panel_with_that_monitors_dpi(over) -> None:
@@ -73,7 +76,7 @@ def test_a_drop_on_another_monitor_re_places_the_open_panel_with_that_monitors_d
     box, dpi = over.panel_box
     assert dpi == 144
     assert over._pet_phys == (150, 180, 144)  # the figure's own size at that scale
-    assert box == dc.panel_placement((1200, 700, 150, 180), (248, 168), MONITORS)[0]
+    assert box == dc.panel_placement((1200, 700, 150, 180), dc.PANEL_SIZES["menu"], MONITORS)[0]  # 1683: the measured size, not 168
     runner.on_settle(-700, 800)  # and back to the 100 percent one
     assert over.panel_box[1] == 96 and over._pet_phys[2] == 96
 

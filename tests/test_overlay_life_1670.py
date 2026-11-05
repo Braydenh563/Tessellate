@@ -453,7 +453,10 @@ def test_idle_wakes_a_minute_stay_low(gait: str) -> None:
     calm(e)
     outs, _t = run(e, 0.0, 300.0)
     per_min = len(outs) / 5.0
-    assert per_min <= 420, per_min  # measured about 350; the old fixed 33 ms bob tick was about 1800 for a floater
+    # INBOX 1683: bound 420 -> 450. Measured 405.6 on the base (the 350 note was stale) and 421 now: an act's pose is
+    # looked ahead a display frame at a time (`POSE_LOOK_STEP`) so its redraw lands on the step instead of up to 50 ms
+    # late. That is the smoothness the owner asked for, about 4 percent more idle wakes; the old fixed 33 ms bob tick was about 1800.
+    assert per_min <= 450, per_min
 
 
 def test_the_frames_held_in_memory_stay_bounded() -> None:
