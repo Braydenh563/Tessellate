@@ -2,9 +2,9 @@
 
 Generated 2026-11-05 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7823, frontend ids 2644, CSS sections 522, backend routes 644, backend modules 8825, test files 2087, tests 17614, plan headings 1004, app scripts 28, boot scripts 37, script files 257.
+Counts: frontend functions 7825, frontend ids 2644, CSS sections 522, backend routes 644, backend modules 8825, test files 2088, tests 17619, plan headings 1004, app scripts 28, boot scripts 37, script files 257.
 
-## Frontend functions (7823)
+## Frontend functions (7825)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -3056,36 +3056,38 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `dateFieldShift` | frontend/js/date-field.js:11 |
 | `dateFieldWire` | frontend/js/date-field.js:13 |
 
-### frontend/js/desk-companion.js (31)
+### frontend/js/desk-companion.js (33)
 
 | Name | File:line |
 |---|---|
 | `$` | frontend/js/desk-companion.js:20 |
+| `announceSaved` | frontend/js/desk-companion.js:350 |
 | `ask` | frontend/js/desk-companion.js:56 |
 | `call` | frontend/js/desk-companion.js:48 |
 | `companionRows` | frontend/js/desk-companion.js:206 |
-| `deskClip` | frontend/js/desk-companion.js:361 |
+| `createNote` | frontend/js/desk-companion.js:340 |
+| `deskClip` | frontend/js/desk-companion.js:369 |
 | `draw` | frontend/js/desk-companion.js:74 |
 | `figure` | frontend/js/desk-companion.js:187 |
 | `fit` | frontend/js/desk-companion.js:117 |
 | `groups` | frontend/js/desk-companion.js:203 |
 | `hideRow` | frontend/js/desk-companion.js:223 |
-| `hitRow` | frontend/js/desk-companion.js:374 |
+| `hitRow` | frontend/js/desk-companion.js:382 |
 | `host` | frontend/js/desk-companion.js:55 |
 | `item` | frontend/js/desk-companion.js:160 |
 | `leave` | frontend/js/desk-companion.js:299 |
 | `note` | frontend/js/desk-companion.js:180 |
-| `noteStatus` | frontend/js/desk-companion.js:321 |
+| `noteStatus` | frontend/js/desk-companion.js:326 |
 | `openCompanion` | frontend/js/desk-companion.js:271 |
 | `openMenu` | frontend/js/desk-companion.js:225 |
+| `openNoteCard` | frontend/js/desk-companion.js:331 |
 | `openPanel` | frontend/js/desk-companion.js:308 |
 | `panelHeight` | frontend/js/desk-companion.js:135 |
-| `plain` | frontend/js/desk-companion.js:367 |
+| `plain` | frontend/js/desk-companion.js:375 |
 | `probe` | frontend/js/desk-companion.js:84 |
-| `rest` | frontend/js/desk-companion.js:314 |
-| `runSearch` | frontend/js/desk-companion.js:413 |
-| `saveNote` | frontend/js/desk-companion.js:327 |
-| `searchEmpty` | frontend/js/desk-companion.js:401 |
+| `rest` | frontend/js/desk-companion.js:315 |
+| `runSearch` | frontend/js/desk-companion.js:421 |
+| `searchEmpty` | frontend/js/desk-companion.js:409 |
 | `seed` | frontend/js/desk-companion.js:66 |
 | `separator` | frontend/js/desk-companion.js:174 |
 | `show` | frontend/js/desk-companion.js:101 |
@@ -11907,7 +11909,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | The reference's glass, the parts that keep the words readable | frontend/css/popup-anatomy-lazy.css:131 |
 | The second level: `.tabs-line` (INBOX 522) | frontend/css/05-sidebars-themes.css:4037 |
 | The surface model pickers on a phone | frontend/css/10-responsive.css:2205 |
-| The target floor (audit 1031 class 28): WCAG 2.5.8's 24 px. Each control | frontend/css/08-consistency.css:10852 |
+| The target floor (audit 1031 class 28): WCAG 2.5.8's 24 px. Each control | frontend/css/08-consistency.css:10853 |
 | The thumb bar (DESIGN.md's recipe index: a bar of actions above the | frontend/css/09-editor.css:774 |
 | The two dialogs reported as off the modal recipe | frontend/css/08-consistency.css:1487 |
 | The two rows that still wrapped at 1024 | frontend/css/08-consistency.css:1357 |
@@ -12298,7 +12300,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/05-sidebars-themes.css | 6188 |
 | frontend/css/06-timeline-dialogs.css | 3700 |
 | frontend/css/07-whiteboard-misc.css | 11854 |
-| frontend/css/08-consistency.css | 10878 |
+| frontend/css/08-consistency.css | 10879 |
 | frontend/css/09-editor.css | 1108 |
 | frontend/css/10-responsive.css | 2709 |
 | frontend/css/appearance-panel-lazy.css | 323 |
@@ -12306,7 +12308,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/ask-compose-lazy.css | 301 |
 | frontend/css/atlas-lazy.css | 376 |
 | frontend/css/captions-lazy.css | 95 |
-| frontend/css/capture-card-lazy.css | 202 |
+| frontend/css/capture-card-lazy.css | 204 |
 | frontend/css/chat-private-lazy.css | 18 |
 | frontend/css/chip-bar-lazy.css | 22 |
 | frontend/css/chord-guide-lazy.css | 158 |
@@ -15832,8 +15834,8 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `_act_topic` | src/tessellate/ai/help_topics_more.py:3394 |
-| `_slash_commands_topic` | src/tessellate/ai/help_topics_more.py:3522 |
+| `_act_topic` | src/tessellate/ai/help_topics_more.py:3393 |
+| `_slash_commands_topic` | src/tessellate/ai/help_topics_more.py:3521 |
 
 ### src/tessellate/ai/help_words.py (2)
 
@@ -24119,7 +24121,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (17614)
+## Tests (17619)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -24650,6 +24652,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_desk_look_locked_1670.py | 5 |
 | tests/test_desk_menu_1670.py | 23 |
 | tests/test_desk_menu_first_open_1683.py | 4 |
+| tests/test_desk_note_card_1688.py | 5 |
 | tests/test_desk_overlay_companion.py | 10 |
 | tests/test_desk_overlay_roam.py | 15 |
 | tests/test_desk_overlay_wiring.py | 36 |

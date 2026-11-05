@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Desk Quick note is the dashboard's Quick capture card (INBOX 1688 c): the panel opens the Notes tab's capture card (title, words or a to-do list, tags, Note and To-do, Close, Save; Ctrl+Enter saves) instead of a plain box, through the same file, styles and draft, saving and offering Undo through the companion's own request; the colour, bell and picture extras stay in the app. Measured card 296 by 262 px beside the dashboard's 306 wide, with the same colours, radius and fonts.
 - Desk companion: Wave now shows a raised hand in both Atlas looks (INBOX 1688 b): the old frame raised the arm against the hair of the same tint (0 solid pixels beside the head above the shoulder in either look); the frame waves the other arm, in the clear (92 and 48 pixels), and `render_desk_frames.js` has an `ONLY` filter.
 - Windows: every path that brings the window back (tray, desk companion, reminder card, second launch) keeps a maximised window maximised (INBOX 1688 a): restore() runs only for a minimised window and a maximised one is put back after it, from the window's own maximise/restore/minimise events.
 - Desk companion: "Come here" now means follow me (INBOX 1683 t): it waits for the pointer to leave the menu, then goes to it wherever it is (the ground, or onto a window top the pointer is over), reacts happily and keeps company for 20 s; a second "Come here" stops it.

@@ -10786,6 +10786,7 @@ header#top-bar button.space-switcher-btn:focus-visible {
   visibility: hidden;
 }
 /* On the dashboard the same bar sits inside the Quick capture card (INBOX 1592): the card is the zone, so no rule above it, and an open composer takes the row's place instead of floating over what is below. */
+.desk-panel .capture-bar,
 .dash-widget .capture-bar {
   margin: 0;
   padding-top: 0;
