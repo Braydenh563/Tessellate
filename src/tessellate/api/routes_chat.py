@@ -75,7 +75,7 @@ from tessellate.entry.manager import UNCATEGORISED
 from tessellate.search import chunks as search_chunks
 from tessellate.search import search_manager
 from sqlalchemy import func
-from tessellate.api.chat_attach import _MEDIA_REF, _attached_boards, _attached_documents, _attached_files, _attached_notes, _files_on, _grounding_candidates, _note_dates, _time_words
+from tessellate.api.chat_attach import _MEDIA_REF, _attached_boards, _attached_documents, _attached_files, _attached_media_files, _attached_notes, _files_on, _grounding_candidates, _note_dates, _time_words
 from tessellate.api.chat_request import ChatRequest, ChatResponse, CommandRunBody, CompressBody, FollowupBody, RememberBody, ToolExecuteBody, _StreamRequest, _Turn, _apply_open, _apply_scope, _chat_model_sees_images, _check_refs, _composed, _event, _image_caption_context, _in_full, _meta_event, _nothing_open, _resolve_chat_images, _resolve_mode, _resolve_persona, _resolve_skill
 from tessellate.api.chat_pool import _Found, _NoteCtx, _chat_payload, _composer_reads, _document_row, _frame_matches, _glossary, _holds_read_text, _in_window, _keep_window, _note_content, _records_beside, _whole_pool, _widened, _with_each_side, _with_neighbours, _with_records, _with_sources
 from tessellate.api.chat_recent import AGENT_SURFACE, ASK_SURFACE, STARTER_SUGGESTIONS, _about, _asked_key, _feature_for, _fill, _recent_questions
@@ -439,7 +439,7 @@ def _prepare(
     force_notes_intent: bool = False,
     attached_notes_only: bool = False,
     document_ids: list[int] | None = None,
-    file_ids: list[int] | None = None,
+    file_ids: list[int] | None = None, media_file_ids: list[int] | None = None,
     board_ids: list[int] | None = None,
     surface: str = ASK_SURFACE,
     as_of: "date | None" = None,
@@ -457,7 +457,7 @@ def _prepare(
     recognise.note_locale(locale)  # the browser's own language and region: which half of the year "summer" is
     attached = _attached_notes(session, note_ids or [])
     attached_docs = _attached_documents(session, document_ids or [])
-    attached_files = _attached_files(session, file_ids or [])
+    attached_files = _attached_files(session, file_ids or []) + _attached_media_files(session, media_file_ids or [])
     attached_boards = _attached_boards(session, board_ids or [])
     detected = _detect_intent(question, force_notes_intent, attached, attached_docs, attached_files, attached_boards)
     detected = _notes_first(session, question, detected)
@@ -493,7 +493,7 @@ def chat(body: ChatRequest, session: Session = Depends(get_session)) -> ChatResp
         body.note_ids,
         attached_notes_only=body.attached_notes_only,
         document_ids=body.document_ids,
-        file_ids=body.file_ids,
+        file_ids=body.file_ids, media_file_ids=body.media_file_ids,
         board_ids=body.board_ids,
         # This endpoint has no tool loop, it retrieves and answers, nothing
         # else: so every turn through it is an ask by construction.
@@ -1923,7 +1923,7 @@ def _stream_prepare(req: _StreamRequest) -> dict:
         force_notes_intent=_forced_notes(req, follow),
         attached_notes_only=bool(scoped) or req.body.attached_notes_only,
         document_ids=req.body.document_ids,
-        file_ids=req.body.file_ids,
+        file_ids=req.body.file_ids, media_file_ids=req.body.media_file_ids,
         board_ids=req.body.board_ids,
         # Asking vs requesting, decided from what the caller can already
         # do rather than from a new flag: `notes_only` is the Notes tab's

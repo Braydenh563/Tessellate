@@ -817,7 +817,7 @@ function notePickerShape(source) {
       //: A PDF shows its first page where the server can draw one
       //: (`has_pages`, the Library Files row's own test and URL); the row
       //: puts the glyph back if the page fails to load.
-      face: (row) => (row.has_pages ? notePickerPage(`/files/${row.id}/pdf-page/0`) : null),
+      face: (row) => (row.has_pages ? notePickerPage(row.page || `/files/${row.id}/pdf-page/0`) : null),
       meta: (row) => [notePickerFacts(
         ((row.original_name || "").includes(".") ? row.original_name.split(".").pop().toUpperCase() : (row.mime || "").split("/").pop()),
         row.size_bytes ? formatFileSize(row.size_bytes) : "",

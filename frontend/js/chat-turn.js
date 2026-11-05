@@ -100,7 +100,8 @@ async function chatSendTurn(preset, opts = {}) {
   const sentAttachments = opts.noteIds || attachedNoteIds.slice();
   const sentImages = opts.imageMediaIds || attachedImages.map((img) => img.id);
   const sentDocuments = opts.documentIds || attachedDocuments.map((d) => d.id);
-  const sentFiles = opts.fileIds || attachedFiles.map((f) => f.id);
+  const sentFiles = opts.fileIds || attachedFiles.filter((f) => typeof f.id === "number").map((f) => f.id);
+  const sentMediaFiles = opts.mediaFileIds || attachedFiles.filter((f) => typeof f.id === "string").map((f) => Number(f.id.slice(1)));
   const sentBoards = opts.boardIds || attachedBoards.map((b) => b.id);
   // What the bubble will draw. Built here, while the composer still knows the
   // names and urls: after the clear below there is nothing left to build it
@@ -396,6 +397,8 @@ async function chatSendTurn(preset, opts = {}) {
         image_media_ids: sentImages.length ? sentImages : null,
         document_ids: sentDocuments.length ? sentDocuments : null,
         file_ids: sentFiles.length ? sentFiles : null,
+      media_file_ids: sentMediaFiles.length ? sentMediaFiles : null,
+        media_file_ids: sentMediaFiles.length ? sentMediaFiles : null,
         note_ids: sentAttachments.length ? sentAttachments : null,
         board_ids: sentBoards.length ? sentBoards : null,
         followup_of: followupOf,
@@ -469,6 +472,7 @@ async function chatSendTurn(preset, opts = {}) {
       imageMediaIds: sentImages,
       documentIds: sentDocuments,
       fileIds: sentFiles,
+      mediaFileIds: sentMediaFiles,
       boardIds: sentBoards,
       skill: opts.skill,
       skillInputs: opts.skillInputs,

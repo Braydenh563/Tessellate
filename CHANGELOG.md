@@ -7,6 +7,7 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 - Desk companion: "Come here" now means follow me (INBOX 1683 t): it waits for the pointer to leave the menu, then goes to it wherever it is (the ground, or onto a window top the pointer is over), reacts happily and keeps company for 20 s; a second "Come here" stops it.
+- Chat Attach lists every file (INBOX 1687, owner): the Files tab and the Library picker read the Library's own uploads beside a note's attachments, an upload travels as `media_file_ids` (its own table, ids never cross), and what the tray drops into the chat is the ticked row in the panel.
 - Companion: hanging, the size handle is at its bottom-right corner, away from the bar and its hands (the owner, 2026-11-05).
 - Ask (owner, 2026-11-05): the answer head and Matching records head are one recipe (32px, 16px title; the first box under each column starts at the same y, was 8px apart), and a fold that is a full-width panel open (Thinking, Why this answer, Web results, a long block, Grounded in) is a full-width row closed with its caret at the end (was an 82px pill in a 528px column); the steps group and Sources follow in Chat and the popup agent.
 - CI fix: two composer test files pin the day (the reply seed carries it, so "ticked off" was worded differently on 2026-11-05); Open a diagram says when the list failed to load instead of showing "No diagrams yet"; the documents sidebar's new rules moved to the lazy library stylesheet (boot CSS back under its cap); a test helper imported by its package name.

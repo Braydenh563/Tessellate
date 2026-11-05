@@ -5168,7 +5168,7 @@ async function wbMapAddRootAt(x, y) {
 //: topics.
 async function wbMapAddReference(parentId) {
   if (typeof pickLibraryItemDialog !== "function") return null;
-  const chosen = await pickLibraryItemDialog("Point a new node at…");
+  const chosen = await pickLibraryItemDialog("Point a new node at…", { noUploads: true });
   if (!chosen) return null;
   const created = await wbMapCreateNode({
     parentId,

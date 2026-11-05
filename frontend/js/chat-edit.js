@@ -248,6 +248,10 @@ async function regenerateLast() {
     noteIds: lastChatAttachments,
     imageMediaIds: lastChatImageAttachments.map((img) => img.id),
     documentIds: lastChatDocumentAttachments.map((d) => d.id),
+    //: Files and maps ride along on a retry too, or the new answer loses what the first one read (INBOX 1687).
+    fileIds: lastChatFileAttachments.filter((f) => typeof f.id === "number").map((f) => f.id),
+    mediaFileIds: lastChatFileAttachments.filter((f) => typeof f.id === "string").map((f) => Number(f.id.slice(1))),
+    boardIds: lastChatBoardAttachments.map((b) => b.id),
     attempt: regenerateLastAnswer.retries,
   });
 }

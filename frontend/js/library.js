@@ -9164,8 +9164,8 @@ function filterLibraryImagesGallery() {
   for (const image of images) {
     const fig = document.createElement("figure");
     fig.className = "library-image-tile";
-    //: A picture is staged by its media row, a file (an attachment or a PDF) by its id (obj-ref.js).
-    Object.assign(fig.dataset, { obj: `${image._isImage && !image._isAttachment ? "image" : "file"}:${image.id}`, objTitle: image.original_name || "", objUrl: image.url || "" });
+    //: A picture is staged by its media row, a note's attachment as `file`, an upload that is no picture (a PDF) as `upload`: the two tables number their rows apart (obj-ref.js).
+    Object.assign(fig.dataset, { obj: `${image._isAttachment ? "file" : image._isImage ? "image" : "upload"}:${image.id}`, objTitle: image.original_name || "", objUrl: image.url || "" });
     // **A PDF is not an image, and rendering one as an <img> is why files
     // "dont appear anywhere".** Reported directly, and this is the whole
     // mechanism: every `/media/upload` row was rendered into an `<img

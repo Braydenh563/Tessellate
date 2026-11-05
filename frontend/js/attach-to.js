@@ -235,16 +235,17 @@ async function notePickerRows(source) {
     notePickerCache.maps = boards.filter((b) => b.id != null);
     return notePickerCache.maps;
   }
-  const path = source === "documents" ? "/documents" : source === "files" ? "/files/gallery" : "/media";
+  //: Files are both tables, the one list every picker shares (library-pick.js).
+  if (source === "files") {
+    await lazyScript("/js/library-pick.js");
+    return (notePickerCache.files = await pickLibraryItemDialog.fileRows());
+  }
+  const path = source === "documents" ? "/documents" : "/media";
   //: All three are paged, and `apiPagedList` reads each to the end: a picker
   //: that silently cannot reach half the library is worse than a slow one.
   const rows = await apiPagedList(path, 200).catch(() => null);
   if (rows == null) return null;
   let list = Array.isArray(rows) ? rows : rows.documents || [];
-  //: **Files means files, and a sketch is a picture** ("sketches show in the
-  //: files section"). `/files/gallery` is every note attachment whatever its
-  //: type; the Library splits it on the mime the same way.
-  if (source === "files") list = list.filter((row) => !(row.mime || "").startsWith("image/"));
   //: Images reach both tables, each row marked with the one it came from.
   //: **The two tables number their rows separately**, so an id alone is not a
   //: picture: a note's picture (an Attachment) was pushed onto the images sent
