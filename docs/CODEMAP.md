@@ -2,7 +2,7 @@
 
 Generated 2026-11-07 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7843, frontend ids 2644, CSS sections 522, backend routes 649, backend modules 8934, test files 2122, tests 17900, plan headings 1004, app scripts 28, boot scripts 37, script files 260.
+Counts: frontend functions 7843, frontend ids 2644, CSS sections 522, backend routes 649, backend modules 8934, test files 2123, tests 17904, plan headings 1004, app scripts 28, boot scripts 37, script files 260.
 
 ## Frontend functions (7843)
 
@@ -22407,14 +22407,14 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `Extras` | src/tessellate/core/overlay/extras.py:258 |
-| `Pointer` | src/tessellate/core/overlay/extras.py:131 |
+| `Extras` | src/tessellate/core/overlay/extras.py:268 |
+| `Pointer` | src/tessellate/core/overlay/extras.py:141 |
 | `Reaction` | src/tessellate/core/overlay/extras.py:53 |
-| `_in_box` | src/tessellate/core/overlay/extras.py:127 |
-| `_k` | src/tessellate/core/overlay/extras.py:87 |
-| `ease` | src/tessellate/core/overlay/extras.py:244 |
-| `ease_marks` | src/tessellate/core/overlay/extras.py:254 |
-| `register` | src/tessellate/core/overlay/extras.py:113 |
+| `_in_box` | src/tessellate/core/overlay/extras.py:137 |
+| `_k` | src/tessellate/core/overlay/extras.py:92 |
+| `ease` | src/tessellate/core/overlay/extras.py:254 |
+| `ease_marks` | src/tessellate/core/overlay/extras.py:264 |
+| `register` | src/tessellate/core/overlay/extras.py:123 |
 
 ### src/tessellate/core/overlay/faces.py (13)
 
@@ -22499,9 +22499,9 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `ScreenWatch` | src/tessellate/core/overlay/screenwatch.py:52 |
-| `battery_sysfs` | src/tessellate/core/overlay/screenwatch.py:39 |
-| `downloads_count` | src/tessellate/core/overlay/screenwatch.py:29 |
+| `ScreenWatch` | src/tessellate/core/overlay/screenwatch.py:54 |
+| `battery_sysfs` | src/tessellate/core/overlay/screenwatch.py:41 |
+| `downloads_count` | src/tessellate/core/overlay/screenwatch.py:31 |
 
 ### src/tessellate/core/overlay/sizing.py (6)
 
@@ -24309,7 +24309,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (17900)
+## Tests (17904)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -24623,6 +24623,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_companion_quiet_1463.py | 5 |
 | tests/test_companion_remarks_743.py | 3 |
 | tests/test_companion_ride_late_scroller.py | 2 |
+| tests/test_companion_screen_1107.py | 4 |
 | tests/test_companion_stacking.py | 4 |
 | tests/test_companion_state_1463.py | 5 |
 | tests/test_companion_throw.py | 9 |

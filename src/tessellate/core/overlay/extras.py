@@ -58,6 +58,8 @@ class Reaction(NamedTuple):
     feel: str = ""
     cooldown: float = 6.0
     touch: bool = False
+    #: B5: 1 waits for a free moment; 2 or more also breaks a sit, a sleep and a walk, and a running reaction of lower priority.
+    prio: int = 1
 
 
 REACTIONS: dict[str, Reaction] = {
@@ -79,6 +81,9 @@ REACTIONS: dict[str, Reaction] = {
     "battery_low": Reaction("shiver", "worried", 3.0, "startled", 600.0),
     "download_done": Reaction("cheer", "joy", 2.0, "happy", 15.0),
     "toast": Reaction("perk_up", "surprised", 1.6, "", 20.0),
+    "window_dragged": Reaction("watch_drag", "curious", 2.0, "", 25.0),
+    "window_maximised": Reaction("perk_up", "surprised", 1.6, "", 20.0),
+    "window_restored": Reaction("relief", "content", 1.8, "", 20.0),
 }
 #: A poke by mood, as the app's: a happy one giggles, a tired or cross one is miffed, the rest are curious.
 POKE_BY_MOOD = {"happy": "poke_giggle", "proud": "poke_giggle", "sleepy": "poke_miffed", "startled": "poke_miffed", "bored": "poke_curious", "curious": "poke_curious"}
@@ -99,14 +104,19 @@ REACT_ACTS: dict[str, bh.Activity] = {
     "flip_twirl": bh.Activity(((0, "hop"), (0.85, "land")), (1.2, 1.5), _TURN2, (("play", -0.4),), turns=(0.3, 0.6), where="react"),
     "flinch": bh.Activity("look", (0.9, 1.2), _k((0, 1, 1, 0), (0.12, 0.96, 1.05, -0.07), (0.7, 0.97, 1.03, -0.05), (1, 1, 1, 0)), (), where="react"),
     "glance_window": bh.Activity("look", (2.0, 2.6), _k((0, 1, 1, 0), (0.15, 0.94, 1.09, 0.1), (0.45, 0.94, 1.09, 0.1), (0.55, 0.94, 1.09, -0.08), (0.85, 0.96, 1.04, -0.08), (1, 1, 1, 0)), (("curiosity", -0.1),), turns=(0.5,), where="react"),
-    "relief": bh.Activity("stand", (1.6, 2.0), _k((0, 1, 1, 0), (0.3, 1.01, 1.03, 0), (0.6, 1, 0.98, 0), (1, 1, 1, 0)), (("rest", -0.05),), where="react"),
+    "relief": bh.Activity("stand", (1.6, 2.0), _k((0, 1, 1, 0), (0.3, 1.02, 1.07, 0), (0.6, 1.01, 0.94, 0), (1, 1, 1, 0)), (("rest", -0.05),), where="react"),
     "glance_screen": bh.Activity("look", (1.4, 1.8), _k((0, 1, 1, 0), (0.25, 0.96, 1.06, 0.08), (0.8, 0.96, 1.06, 0.08), (1, 1, 1, 0)), (), where="react"),
     "welcome_back": bh.Activity("wave", (1.8, 2.4), _k((0, 1, 1, 0), (0.2, 1, 1.02, 0.02), (0.8, 1, 1.02, 0.02), (1, 1, 1, 0)), (("play", -0.1),), where="react"),
     "chime_nod": bh.Activity("stand", (1.6, 2.0), _k((0, 1, 1, 0), (0.25, 1.01, 0.95, 0.02), (0.5, 1, 1, 0), (0.7, 1.01, 0.97, 0.02), (1, 1, 1, 0)), (), where="react"),
     "shiver": bh.Activity("stand", (2.4, 3.0), _k((0, 1, 1, 0), (0.1, 1, 0.98, 0.05), (0.2, 1, 1, -0.05), (0.3, 1, 0.98, 0.05), (0.4, 1, 1, -0.05), (0.55, 1, 0.98, 0.04), (0.7, 1, 1, -0.03), (1, 1, 1, 0)), (), where="react"),
     "cheer": bh.Activity("hop", (1.6, 2.2), _k((0, 1, 1, 0), (0.15, 1.04, 0.86, 0), (0.3, 0.96, 1.12, 0), (0.5, 1.04, 0.88, 0), (0.65, 0.96, 1.12, 0), (0.85, 1.02, 0.94, 0), (1, 1, 1, 0)), (("play", -0.3),), where="react"),
+    "watch_drag": bh.Activity("look", (2.0, 2.8), _k((0, 1, 1, 0), (0.15, 0.96, 1.05, 0.09), (0.4, 0.96, 1.05, -0.09), (0.65, 0.96, 1.05, 0.09), (0.9, 0.97, 1.03, -0.05), (1, 1, 1, 0)), (("curiosity", -0.1),), where="react"),
     "perk_up": bh.Activity("look", (1.2, 1.6), _k((0, 1, 1, 0), (0.15, 0.97, 1.06, 0.02), (0.8, 0.98, 1.03, 0.02), (1, 1, 1, 0)), (), where="react"),
 }
+for _kind, _prio in {"flinch": 3, "poke_miffed": 2, "battery_low": 2, "idle_return": 2, "download_done": 2, "toast": 2}.items():
+    REACTIONS[_kind] = REACTIONS[_kind]._replace(prio=_prio)
+#: The priority of the reaction each reaction-only act belongs to.
+REACT_PRIO: dict[str, int] = {r.act: r.prio for r in REACTIONS.values() if r.act}
 _REGISTERED: set[str] = set()
 
 
@@ -373,9 +383,14 @@ class Extras:
         e = self.e
         if r is None or e.reduced or e.quiet or e.busy or e.card is not None or now < self.cool.get(kind, -1e9):
             return False
-        if e.state not in (TOUCH_FREE if r.touch else SCREEN_FREE):
+        free = TOUCH_FREE if r.touch else SCREEN_FREE
+        if r.prio >= 2:
+            free = (*free, "sit", "sleep", "walk")
+        if e.state not in free:
             return False
-        return not (e.state == "act" and e.act in REACT_ACTS and not r.touch)  # a screen event never breaks a reaction
+        if e.state == "act" and e.act in REACT_ACTS:  # a screen event of the same rank never breaks a reaction
+            return r.touch or r.prio > REACT_PRIO.get(e.act or "", 1)
+        return True
 
     def fire(self, kind: str, now: float, toward: float | None = None) -> bool:
         """Play a reaction if it is allowed now (state, cooldown, nobody typing). True when it started."""

@@ -394,7 +394,7 @@ class OverlayRunner:
         tally: Counter = Counter()
         wins = self._list_windows(tally)
         if wins:  # an empty list is a failed read, not every window closing
-            self._answer(self._watch.windows_seen(win.key for win in wins), now)
+            self._answer(self._watch.windows_seen(win.key for win in wins) + self._watch.states_seen(wins), now)
         scale = max(m.dpi for m in self.monitors) / 96.0 if self.monitors else 1.0
         room = int(engine.size[0] + PERCH_ROOM * scale)
         drops: Counter = Counter()
