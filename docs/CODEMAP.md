@@ -2,7 +2,7 @@
 
 Generated 2026-11-07 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7850, frontend ids 2644, CSS sections 522, backend routes 649, backend modules 8931, test files 2124, tests 17899, plan headings 1004, app scripts 28, boot scripts 37, script files 261.
+Counts: frontend functions 7850, frontend ids 2644, CSS sections 522, backend routes 649, backend modules 8931, test files 2124, tests 17901, plan headings 1004, app scripts 28, boot scripts 37, script files 261.
 
 ## Frontend functions (7850)
 
@@ -24319,7 +24319,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (17899)
+## Tests (17901)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -24403,7 +24403,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_atlas_access.py | 6 |
 | tests/test_atlas_acts_1589.py | 6 |
 | tests/test_atlas_blink_both_eyes_1644.py | 3 |
-| tests/test_atlas_breath_687.py | 5 |
+| tests/test_atlas_breath_687.py | 7 |
 | tests/test_atlas_carry_and_holds_1589.py | 3 |
 | tests/test_atlas_composite_1101.py | 5 |
 | tests/test_atlas_cover_1587.py | 8 |
