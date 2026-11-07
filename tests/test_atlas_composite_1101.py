@@ -69,3 +69,16 @@ def test_the_micro_behaviours_never_add_and_the_ear_flick_replaces_transform() -
     body = "\n".join(ln for ln in ear.group(0).splitlines() if not ln.lstrip().startswith("//"))
     # An svg part's individual `rotate` is the main thread's: the flick turns `transform`, from the crest's turn.
     assert "rotate:" not in body and "transform:" in body and "--atl-crest" in body
+
+
+def test_the_lower_pose_boxes_hint_translate_and_the_stream_has_one_translate_loop() -> None:
+    # Measured in Chromium 153 (compositeFailed per animation, traced from the start): a Web
+    # Animation of `translate` on a box that says `will-change: transform` is refused (bit 19);
+    # two `translate` animations on one box (the stream's CSS drift and its flow path) are refused
+    # (bit 6). Each refusal puts the whole figure's animations back on the main thread.
+    core = (ROOT / "frontend" / "css" / "08-consistency.css").read_text(encoding="utf-8")
+    rule = re.search(r"\.atl-lw > \.atl-lw-pose \{[^}]*\}", core)
+    assert rule and "will-change: translate" in rule.group(0)
+    for box in ("atl-lw-pose-neb", "atl-lw-pose-neb-front"):
+        full = re.search(r"& \." + box + r" \{ animation: ([^;]*);", LAZY)
+        assert full and "atl-lw-drift" not in full.group(1), "the flow path carries the stream's wobble"
