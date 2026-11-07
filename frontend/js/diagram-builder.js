@@ -663,7 +663,7 @@
     //: A narrow window or a touch screen gets the phone's palette sheet and the picture's pinch (diagram-touch.js).
     if (S && matchMedia(COMPACT).matches && (await ensureModule("diagramTouch"))) diagramModel.touch.wire(S);
     //: Zoom, pan and fit for the picture, in every window (diagram-view.js, 1614).
-    if (S && (await ensureModule("diagramView"))) diagramModel.view.wire(S);
+    if (S && ((await ensureModule("valueField")) && (await ensureModule("diagramView")))) diagramModel.view.wire(S);
     if (S && !S.k && (await ensureModule("diagramOverlay"))) diagramModel.overlay.wire(S);
     if (S && !S.k && (await ensureModule("diagramMulti"))) diagramModel.multi.wire(S, helpers);
     if (S && !S.k && (await ensureModule("diagramCanvas"))) diagramModel.canvas.wire(S, helpers);

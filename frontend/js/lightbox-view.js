@@ -438,6 +438,19 @@ function openLightbox(items, startIndex = 0, opts = {}) {
   const ZOOM_MIN = 1;
   const zoomLabel = document.createElement("span");
   zoomLabel.className = "lightbox-zoom-label";
+  //: The readout is a typeable number with a dropdown (INBOX 1694 b, value-field.js): 150 and Enter zooms to 150% of the picture's own pixels.
+  const zoomField = valueField(zoomLabel, {
+    value: 100,
+    min: 5,
+    max: 3200,
+    label: "Zoom percent",
+    format: (v) => `${Math.round(v)}%`,
+    presets: [25, 50, 75, 100, 150, 200, 400].concat([{ label: "Fit", run: () => fitView() }]),
+    onCommit: (pct) => {
+      glide();
+      setZoom((pct / 100) * (zoomTarget() === img && img.naturalWidth && img.offsetWidth ? actualZoom() : 1));
+    },
+  });
   const reducedMotion = () => reducedMotionWanted();
   //: A turned picture is fitted again: a wide photo stood on its end is as
   //: tall as it was wide, so it is scaled into the box it had.
@@ -504,7 +517,7 @@ function openLightbox(items, startIndex = 0, opts = {}) {
     //: A picture's readout is against its own pixels, as every viewer's is:
     //: "53%" at Fit for a picture twice the window, "100%" at actual size.
     const pixels = isImg && img.naturalWidth && img.offsetWidth;
-    zoomLabel.textContent = `${Math.round((pixels ? zoom / actualZoom() : zoom) * 100)}%`;
+    zoomField.set(Math.round((pixels ? zoom / actualZoom() : zoom) * 100));
     fitBtn.setAttribute("aria-pressed", String(zoom === 1));
     //: Pressed when the picture is already at actual size, so a press that
     //: changes nothing (a picture smaller than the window, where fit is 1:1)
@@ -2280,7 +2293,8 @@ function openLightbox(items, startIndex = 0, opts = {}) {
     //: A menu, a popover or a confirm over the viewer has the keys first.
     const above = document.querySelector(".action-menu:not(.hidden), .help-popover:not(.hidden), .confirm-overlay:not(.hidden)");
     if (e.key === "Escape") {
-      if (!above) close();
+      //: Escape in the zoom field puts its number back (value-field.js); it does not close the viewer.
+      if (!above && !e.target.closest?.(".value-field")) close();
       return;
     }
     if (above || typing(e.target) || e.ctrlKey || e.metaKey || e.altKey) return;

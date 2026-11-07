@@ -7414,7 +7414,7 @@ def test_the_diagram_zoom_bar_is_a_plain_corner_dock():
     rule = css[css.index(".dgm-zoom {") : css.index("}", css.index(".dgm-zoom {"))]
     assert "position: absolute;" in rule and "box-shadow: var(--shadow-md);" in rule and "--modal-bg" in rule
     # Every control is a button with a title (the icon-only ones become aria-labels).
-    assert view.count("smallButton(") == 4
+    assert view.count("smallButton(") == 3 and "valueField(levelHost" in view  # the fourth is the typeable readout (INBOX 1694 b)
     assert "A zoom control on a picture that scrolls" in (ROOT / "docs" / "DESIGN.md").read_text(encoding="utf-8")
 
 
@@ -7545,3 +7545,30 @@ def test_a_message_sent_mid_reply_waits_in_the_composer_queue():
     for name, box in (("palette.js", "cmdPaletteInput"), ("help-chat.js", '$("help-chat-input")'), ("chat-turn.js", "input")):
         assert f"{box}.disabled = true" not in texts[name] and f"{box}.disabled = busy" not in texts[name], name
     assert "One composer queue" in (ROOT / "docs" / "DESIGN.md").read_text(encoding="utf-8")
+
+
+def test_a_zoom_readout_is_a_value_field():
+    """DESIGN.md, "A number you read and may type" (INBOX 1694 b): the viewer, the diagram view and the board's zoom
+    and page number are `valueField`s, so a person can type 150 and Enter or pick from the list. A readout written
+    as a bare `%` text is the drift; the files that still have one are frozen and may only fall."""
+    js = ROOT / "frontend" / "js"
+    for name in ("lightbox-view.js", "diagram-view.js", "whiteboard.js"):
+        assert "valueField(" in (js / name).read_text(encoding="utf-8"), name
+    field = (js / "value-field.js").read_text(encoding="utf-8")
+    # Typeable, announced, restorable, and its list is the app's menu rather than a new one.
+    for needle in ('inputMode = "numeric"', 'setAttribute("aria-label"', '"Escape"', "kebabMenu(", "onCommit"):
+        assert needle in field, needle
+    assert 'role="menu"' not in field and "style." not in field
+    assert "A number you read and may type" in (ROOT / "docs" / "DESIGN.md").read_text(encoding="utf-8")
+    readout = re.compile(r"textContent = `[^`]*%`")
+    frozen = {
+        "documents.js": 1, "graph.js": 1, "library.js": 2, "settings-controls.js": 5, "settings-panes.js": 1,
+        "settings.js": 5, "suggestions-inbox.js": 1, "whiteboard-format.js": 2,
+    }
+    found = {}
+    for path in JS:
+        count = len(readout.findall(path.read_text(encoding="utf-8")))
+        if count:
+            found[path.name] = count
+    over = {k: v for k, v in found.items() if v > frozen.get(k, 0)}
+    assert over == {}, f"a new bare percent readout: build it with valueField ({over})"

@@ -235,7 +235,7 @@ async function run(viewport) {
     const lvl = document.getElementById("wb-zoom-level");
     const p = lvl.closest(".whiteboard-floating-panel").getBoundingClientRect();
     const t = document.querySelector(".whiteboard-floating-panel.bottom-center").getBoundingClientRect();
-    return { shown: p.width > 0 && /%$/.test(lvl.textContent), clear: p.bottom <= t.top + 0.5 || p.left >= t.right, inView: p.right <= innerWidth && p.left >= 0 };
+    return { shown: p.width > 0 && /%$/.test(lvl.querySelector("input")?.value || ""), clear: p.bottom <= t.top + 0.5 || p.left >= t.right, inView: p.right <= innerWidth && p.left >= 0 };
   });
   check("the zoom level is shown and clears the tools row", dock.shown && dock.clear && dock.inView, dock);
   check("no console errors", errors.length === 0, errors);

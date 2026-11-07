@@ -48,6 +48,8 @@ CSS_FILES = [
     #: Not linked by index.html either: loaded with the icon picker (app.js
     #: `LAZY_MODULES.iconPicker`, MINDMAP_PLAN decision 43), on first open.
     CSS_DIR / "icon-picker.css",
+    #: The typeable number (value-field.js), loaded with the viewer, the diagram view and the Library bundle.
+    CSS_DIR / "value-field.css",
     #: Loaded with "Forgot your password?" and the recovery key
     #: (`LAZY_MODULES.accountRecovery`, INBOX 663).
     CSS_DIR / "recovery-lazy.css",

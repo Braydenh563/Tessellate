@@ -126,10 +126,8 @@
       //: A button is grey where a press has nowhere to go; the aimed scale decides while a gesture is in motion.
       buttons.out.disabled = math.atEnd(scale, f, -1);
       buttons.in.disabled = math.atEnd(scale, f, 1);
-      const words = `${math.percent(scale)}%`;
-      if (buttons.actual.textContent === words) return;
-      buttons.actual.textContent = words;
-      buttons.actual.setAttribute("aria-label", `Zoom ${words}. Show the diagram at its drawn size, 100%`);
+      //: The readout is a typeable number with a dropdown (INBOX 1694 b, value-field.js); `set` leaves a number being typed alone.
+      level?.set(math.percent(scale));
     };
     //: Zoom to `next` keeping the point that was under (ax, ay) at (cx, cy): the same point for a wheel, the fingers' first and latest middle for a pinch.
     const zoomTo = (next, cx, cy, ax = cx, ay = cy) => {
@@ -155,6 +153,7 @@
     //: The one frame request of this file: asked for by an input (a wheel, a pinch, a drag, a glide), never at rest.
     const nextFrame = (run) => requestAnimationFrame(run);
     let g = null;
+    let level = null;
     let glideFrame = 0;
     const cancelGlide = () => {
       if (glideFrame) cancelAnimationFrame(glideFrame);
@@ -253,9 +252,23 @@
       out: smallButton("ph:minus", "Zoom out", () => step(-1)),
       in: smallButton("ph:plus", "Zoom in", () => step(1)),
       fit: smallButton("Fit", "Fit the diagram to the pane", fitTo),
-      actual: smallButton("100%", "Zoom now. Press for the drawn size, 100%", actual),
     };
-    group.append(buttons.out, buttons.in, buttons.fit, buttons.actual);
+    //: 100% is the drawing's own size; type a number and Enter, or pick one from the chevron (the 1 key still goes to 100%).
+    const levelHost = document.createElement("span");
+    levelHost.className = "dgm-zoom-level";
+    level = valueField(levelHost, {
+      value: 100,
+      min: 5,
+      max: 500,
+      label: "Zoom percent",
+      format: (v) => `${Math.round(v)}%`,
+      presets: [25, 50, 75, 100, 150, 200, 400].concat([{ label: "Fit", run: fitTo }]),
+      onCommit: (pct) => {
+        const img = image();
+        if (img && dims(img)) aim(pct / 100, ...centre());
+      },
+    });
+    group.append(buttons.out, buttons.in, buttons.fit, levelHost);
     bar.append(group);
     stage.append(bar);
     stage.append(note);
