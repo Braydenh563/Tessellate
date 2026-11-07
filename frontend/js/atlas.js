@@ -3298,6 +3298,35 @@ function atlasTailWake(box) {
 }
 
 
+//: **Nothing runs under the entrance fade** (atlasfade-1107). Chromium refuses
+//: for good any animation whose box is empty when it is created (compositeFailed
+//: bit 17), and on the reload path `#nm-buddy` is opacity 0, `nmb-away` and then
+//: the first frame of its fade, while the figure is built: 22 CSS loops and the
+//: ring, pose and tail animations were refused, and every restyle restyled them.
+//: So `go` waits for the companion to show: at once for a figure outside it, else
+//: the rig's next wake (a class change on the companion, the away class coming
+//: off: `atlasRigWake`) looks again, and while it fades looks every three frames.
+//: The boot sheet keeps every animation name off the box until `go` adds
+//: `atl-lit` (08-consistency.css).
+function atlasWhenShown(box, go) {
+  if (box.classList.contains("atl-lit")) return;
+  const buddy = box.closest("#nm-buddy");
+  if (!buddy || +getComputedStyle(buddy).opacity) {
+    box.atlasShow = null;
+    go();
+    return;
+  }
+  //: A figure taken off the page before it showed (the large view's redraw, a style
+  //: change under the fade) would look every three frames for good. `atlasFigure`'s
+  //: settle wait gives a new one 30 frames to attach, so 30 looks is far past that.
+  if (!box.isConnected && (box.atlasLost = (box.atlasLost || 0) + 1) > 30) {
+    box.atlasShow = null;
+    return;
+  }
+  box.atlasShow = () => atlasWhenShown(box, go);
+  if (!buddy.classList.contains("nmb-away")) atlasRigWake.after(box.atlasShow, 3);
+}
+
 //: The companion's figure: the same drawing in its 64 by 92 box.
 function atlasFigure() {
   if (atlasStyle() === "classic") return atlasClassicFigure();
@@ -3315,13 +3344,15 @@ function atlasFigure() {
   //: The tail's life and the rings' loops arrive with atlas-life.js (a lazy
   //: bundle, the boot budget); until then the figure stands in its drawn
   //: shape, which is the shape the tail and the rings rest in.
-  ensureModule("atlasLife").then((ok) => {
+  //: And not under the entrance fade (`atlasWhenShown`).
+  ensureModule("atlasLife").then((ok) => atlasWhenShown(figure, () => {
+    figure.classList.add("atl-lit");
     if (!ok) return;
     atlasRigLowerAttach(figure);
     figure.atlasLoops = atlasRingLoops(figure);
     figure.atlasPropLoops = atlasPropLoops(figure);
     atlasTailAttach(figure);
-  });
+  }));
   const settle = (tries) => (figure.isConnected ? atlasRigWake(figure) : tries && requestAnimationFrame(() => settle(tries - 1)));
   requestAnimationFrame(() => settle(30));
   return figure;
