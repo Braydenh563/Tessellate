@@ -563,7 +563,7 @@ function atlasTailCalm(tail, box) {
   return atlasTailCalm.states.has(tail.state) && !!box.closest("#nm-buddy") && !box.closest(".nm-viewer-figure");
 }
 //: On the function, not the shared scope (test_global_scope_ratchet): only it reads them.
-atlasTailCalm.states = new Set(["idle", "sit", "lie", "think", "sad"]);
+atlasTailCalm.states = new Set(["idle", "sit", "lie", "think", "sad", "hang"]);
 //: **At rest the tail goes to the compositor** (Brief 34 continues, step 2;
 //: decision 7, under 1ms a minute beyond the face): fifteen path draws a
 //: second were about 770 layouts and 2s of script a minute at rest in the

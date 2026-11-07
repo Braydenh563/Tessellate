@@ -148,3 +148,24 @@ def test_the_rise_has_a_period_clear_of_the_idle_clocks():
             ratio = max(period, clock) / min(period, clock)
             for simple in (1, 1.5, 2, 2.5, 3):
                 assert abs(ratio - simple) / simple > 0.025, (look, period, clock)
+
+
+def test_a_hanging_companion_rests_its_tail_on_the_compositor():
+    # atlasidle2 (2026-11-07): hanging from its perch it is still, but "hang" was not a calm
+    # state, so the tail redrew nine paths 11 times a second (66 restyles of ~70 animated
+    # elements in 6 s). It is a rest of the lower body (`atlasRigLower.rests`); the tail rests too.
+    assert re.search(r'atlasTailCalm\.states = new Set\(\[[^\]]*"hang"', LIFE)
+    rests = re.search(r"atlasRigLower\.rests = new Set\(\[([^\]]*)\]", LIFE).group(1)
+    calm = re.search(r"atlasTailCalm\.states = new Set\(\[([^\]]*)\]", LIFE).group(1)
+    assert "hang" in rests and "hang" in calm
+
+
+def test_the_pacer_leaves_the_breath_on_the_compositor():
+    # The companion's pacer (avatars.js, `nameMarkBuddyTempo`) pauses and steps by hand whatever
+    # animates inside a drawing: it held the torso's breath and wrote its currentTime 33 times a
+    # second, a restyle of every animated element each time (hooks.js, 131 writes in 4 s).
+    av = (ROOT / "frontend" / "js" / "avatars.js").read_text(encoding="utf-8")
+    tempo = av[av.index("function nameMarkBuddyTempo()") :]
+    pick = tempo[: tempo.index("nmbTempo.slow = new WeakSet")]
+    assert 'a.id !== "atl-breath"' in pick
+    assert 'id: "atl-breath"' in LIFE
