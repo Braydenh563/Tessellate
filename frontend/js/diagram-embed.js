@@ -152,10 +152,14 @@
     const io = {
       name: title,
       set: (next) => {
+        const kind = diagramModel.builder.kindOf(history[at]);
         history.length = at + 1;
         history.push(next);
         at = history.length - 1;
         if (field.value !== next) field.value = next;
+        //: A press on another kind (diagram-kindbar.js) only sets the source; the pane has to be drawn for it. The page gets
+        //: this through the document; a block gesture draws its own pane, so only a change of kind shows again (DD-1).
+        if (diagramModel.builder.kindOf(next) !== kind) show();
       },
       undo: () => at > 0 && (at -= 1, apply()),
       redo: () => at < history.length - 1 && (at += 1, apply()),
