@@ -102,7 +102,9 @@ def done_later(views: list, view, tasks: list) -> dict[int, tuple]:  # noqa: ANN
 #: A line that plans the doing is not a record of it: "did I pay rent"
 #: beside "Remember to pay rent on the 1st" is "not yet" (audit 1030 Z19).
 _INTENT = re.compile(
-    r"^\s*(?:[-*]\s*)?(?:i\s+)?(?:remember to|need to|have to|must|should|plan to|going to|want to|don't forget to|todo:?|to do:?)\b",
+    r"^\s*(?:[-*]\s*)?(?:i\s+)?(?:remember to|need to|have to|must|should|plan to|going to|want to|don't forget to|todo:?|to do:?)\b"
+    #: "Pay rent, due 10 November" is a to-do with a date, not a payment (round 1 D4).
+    r"|\b(?:due|deadline)\b",
     re.I,
 )
 

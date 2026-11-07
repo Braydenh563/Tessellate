@@ -358,6 +358,8 @@ def _not_said(out, views: list, obj, words: list[str], today: date) -> None:  # 
         out.lines.append(line)
         out.rows.append({"sentence": line, "note_id": empty.note.get("source_id", empty.id), "source": empty.title,
                          "start": 0, "end": 0, "score": 1.0, "digest": True})
+    elif titled := _titled_first(views, obj):
+        _say_line(out, *titled, f"Your {composer_lists._title(titled[0])} note does not say it outright, but it has")  # noqa: SLF001
     elif near := _nearest(views, obj):
         _say_line(out, *near, f"I found nothing in your notes that says so. The closest is {_note_of(near[0], today)}")
     else:
@@ -372,6 +374,16 @@ def _yours(thing: str) -> str:
 
 def _titled_for(view, obj: list[str]) -> bool:  # noqa: ANN001
     return bool(obj) and all(composer._holds(st, view.title_words) for st in obj)  # noqa: SLF001
+
+
+def _titled_first(views: list, obj: list[str]):  # noqa: ANN202
+    """The (view, first sentence) of a note titled for the thing ("Hotel
+    Alfama" for "did I book the hotel"): the title is not in its sentences, so
+    "found nothing" beside that note was wrong (round 1 D4)."""
+    for view in sorted(views, key=lambda v: v.rank):
+        if view.sentences and _titled_for(view, obj):
+            return view, view.sentences[0]
+    return None
 
 
 def _nearest(views: list, obj: list[str]):  # noqa: ANN202

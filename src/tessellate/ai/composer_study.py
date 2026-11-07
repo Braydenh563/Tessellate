@@ -132,7 +132,9 @@ def _titled_as(topic: str, ctx: Ctx, open_one: bool) -> list[dict]:
         return exact[:1]
     #: "open the chess note" names the note titled "Chess": one note, not a menu.
     said = " ".join(_TOPIC_NOISE.sub(" ", topic).split()).lower()
-    return [n for n in ctx.notes if open_one and said and composer_frame.note_title(n).lower() == said][:1]
+    #: "show me the Dentist note" says the same (round 1 D1): "note" in the singular names one.
+    one = open_one or bool(re.search(r"\bnote$", topic, re.I))
+    return [n for n in ctx.notes if one and said and composer_frame.note_title(n).lower() == said][:1]
 
 
 def _ranked_by_title_then_body(topic: str, wanted: list[str], ctx: Ctx, limit: int) -> list[dict]:
@@ -606,6 +608,8 @@ def _finish(ctx: Ctx, topic: str, note: dict, deck: list[study.Card], score: int
 
 
 _OPEN = re.compile(r"^(?:ok(?:ay)?[, ]+|please[, ]+|can you |could you )*(?P<verb>open|show me|show|go to|take me to|pull up|bring up|jump to|find and open)\s+(?:my |the |all my |all the )?(?P<t>.+?)\W*$", re.I)
+#: "the Sara note", "my Dentist note": a note said by its title and nothing more.
+_BARE_NOTE = re.compile(r"^(?:the|my)\s+(?P<t>[\w'’ -]{1,60}?)\s+note\W*$", re.I)
 _OPEN_NOT = re.compile(r"^(?:a new|new|a|an|settings?|chat|the chat|help|guide|the guide|tab|statistics|calendar|timeline|graph|reminders?|tasks?|whiteboard|board|map|the app|search|library|inbox|today)\b", re.I)
 
 
@@ -638,7 +642,13 @@ def open_named(ctx: Ctx) -> Reply | None:
     notes" is the links to the notes that name it. Chat answers the same
     (audit 1029 C20): "open the sourdough starter" was a digest of three loaf
     notes there, and the same words in Ask pointed at the starter."""
-    found = _OPEN.match(" ".join((ctx.asked or ctx.question or "").split()))
+    said = " ".join((ctx.asked or ctx.question or "").split())
+    found = _OPEN.match(said)
+    if found is None and (bare := _BARE_NOTE.match(said)):
+        #: "the Sara note" names the note titled Sara (round 1 D1): that note, not a five-note overview.
+        titled = _titled_as(bare.group("t") + " note", ctx, True)
+        if titled:
+            return Reply(pick(ctx.seed, "openone", ("Here it is:", "Open it from here:", "This one:")) + f" {_link(titled[0])}")
     if not found or _not_an_open(ctx, found):
         return None
     notes = topic_notes(found.group("t"), ctx, limit=5, open_one=not found.group("verb").lower().startswith("show"))

@@ -286,6 +286,11 @@ def _counted(text: str, message: str, session: Session) -> StatAnswer | None:
     of boards and maps, reminders and open items; None for the rest."""
     from tessellate.ai import notebook_tasks, recognise
 
+    #: "how many notes have the word Lisbon" counts the notes that hold it; it
+    #: said the notebook's total, with the subject dropped (round 1 D4).
+    holding = _HOLDING.search(" ".join(text.split()))
+    if holding:
+        return _mention_of(holding.group(1), session)
     tasks = None if _SUBJECT_AFTER.search(text) else notebook_tasks.answer(text, session, utcnow(), _visible, recognise.ahead_window(text))
     if tasks is not None:
         return StatAnswer(*tasks[:2], tasks[2])
@@ -491,6 +496,17 @@ def _mention_count(text: str, session: Session) -> StatAnswer | None:
     word = found.group(1) if found else ""
     if not word or word in _KIND_WORDS or _SUBJECT_AFTER.search(text) or _window(word) is not None:
         return None
+    return _mention_of(word, session)
+
+
+#: "notes have the word Lisbon", "notes contain Lisbon", "notes with the phrase X".
+_HOLDING = re.compile(
+    r"\bnotes?\b(?: (?:do )?(?:i|we|you))? (?:have|has|contains?|holds?|with|including|containing)(?:(?: (?:the|a))? (?:words?|terms?|phrases?)| (?!(?:the|a|an|any|no|tags?|categor\w+|links?|images?|checklists?|tasks?|titles?)\b)) ?([a-z0-9][\w'-]{1,29})$"
+)
+
+
+def _mention_of(word: str, session: Session) -> StatAnswer:
+    """How many notes hold `word`, said as that and never as the total."""
     said = re.compile(rf"(?<!\w){re.escape(word)}(?:s|es)?(?!\w)", re.I)
     n = sum(1 for body in session.scalars(_visible(select(Entry.content))) if said.search(body or ""))
     said_n = f"{_plural(n, 'note')} mention{'s' if n == 1 else ''} {word}." if n else f"None of your notes mention {word}."

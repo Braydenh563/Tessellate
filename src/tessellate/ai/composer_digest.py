@@ -1838,11 +1838,16 @@ _HERE_ARE = re.compile(r"^here(?:'s| is| are)\s+((?:some|a few|a list of|a|an)\s
 _WH_SUBJECT = re.compile(r"(?:what|how|why|which|who|where)\b", re.I)
 
 
+#: A date a sentence says itself ("ran 6 km on 25 October"): the day the note
+#: was written must not lead it.
+_OWN_DATE = re.compile(rf"\b\d{{1,2}}(?:st|nd|rd|th)? (?:{'|'.join(composer_ask._MONTHS)})\b|\b(?:{'|'.join(composer_ask._MONTHS)}) \d{{1,2}}\b", re.I)  # noqa: SLF001
+
+
 def _dated_lead(label: str, i: int, by_day: date | None, written: date | None, before: date | None) -> str:
     """The line's lead: the time since the line before, a recent day, or its date."""
     if not _TIMED.get():
         return ""
-    gap = (written - before).days if i and before and written else 0
+    gap =(written - before).days if i and before and written else 0
     #: The time since the line before reads first; a run's first line, or
     #: one the same days as the last, says a recent day as a person would.
     recent = _recent(written, by_day) if not gap or (by_day and written and (by_day - written).days <= 7) else ""
@@ -1955,6 +1960,9 @@ def _dated_line(line_body: str, label: str, i: int, by_day: date | None, written
     2026-10-11: no label lines), the time since the last one first."""
     lead = _dated_lead(label, i, by_day, written, before)
     reported = _said_as_written(_cleaned_body(line_body, label), i, written)
+    if _OWN_DATE.search(reported) and lead.lower().startswith(("today, ", "yesterday, ")):
+        #: "Today, you ran 6 km on 25 October" reads as a run today (round 1 D9).
+        lead = ""
     line_body = lead + reported
     line_body = line_body[:1].upper() + line_body[1:]
     return line_body, line_body + _relate(line_body, by_day)
@@ -3581,6 +3589,7 @@ def _best(facts: list[Fact], question: str, cue: re.Pattern | None = None) -> Fa
     asks_feeling = bool(_FEELING_ASK.search(question))
     latest = bool(_LATEST_ASK.search(question))
     did_ask = bool(_WHEN_DID.match(clean(question)))
+    subject_words = list(composer.subject_terms(clean(question)))
 
     def rank(f: Fact) -> tuple:
         words = set(f.sentence.words)
@@ -3604,7 +3613,9 @@ def _best(facts: list[Fact], question: str, cue: re.Pattern | None = None) -> Fa
         #: A bare list item ("Passport") is no news of a subject: prose leads a
         #: latest ask. Said in the tuple itself: CodeQL lost the local in this
         #: closure and read it as possibly unset.
-        return (not asked_back, acts, _cued(cue, f.sentence.text), not (latest and f.sentence.kind in {"item", "task"}), id(f.view) not in old, _label_asked(f.label, question), hits, newest, own, asks_feeling and _feeling(f.sentence.text), same_figure, -f.view.rank, -f.sentence.order)
+        #: "what is Project Atlas" is the note titled that, whatever other note repeats the name (round 1 D1).
+        titled = _defines(f.view, subject_words) == 2
+        return (not asked_back, acts, _cued(cue, f.sentence.text), not (latest and f.sentence.kind in {"item", "task"}), id(f.view) not in old, _label_asked(f.label, question), titled, hits, newest, own, asks_feeling and _feeling(f.sentence.text), same_figure, -f.view.rank, -f.sentence.order)
 
     return max(facts, key=rank) if facts else None
 
@@ -3633,6 +3644,9 @@ def _from_name(lead: Fact, body: str, today: date) -> str:
     if body.lower().startswith(name.lower().rstrip(".")):
         return ""
     day = f", {_said_day(lead.view.written, today)}" if _TIMED.get() and lead.view.written and not _says_day(body, lead.view.written, today) else ""
+    if lead.label.strip().capitalize() in _DAY_NAMES:
+        #: "Sunday: call Mum" is the note's own Sunday, not the day it was written (round 1 D8: "today: call Mum").
+        day = f", on {lead.label.strip()}"
     return f"From {name}{day}: {body}."
 
 

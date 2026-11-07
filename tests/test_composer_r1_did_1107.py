@@ -1,0 +1,57 @@
+"""Composer round 1, 2026-11-07, D4: a "did I" answer needs a note that says it
+was done, and a count with a subject counts the subject. Driven through the
+chat route with no model (fake transport); the clock is `_seed_1031c.NOW`."""
+
+from __future__ import annotations
+
+import pytest
+
+import tests._seed_1031c as seed_c
+from tessellate.entry import manager
+
+
+@pytest.fixture
+def notebook(client, session, monkeypatch):
+    def make(*contents):
+        for content in contents:
+            entry = manager.create_entry(session, content)
+            entry.created_at = entry.updated_at = seed_c.NOW
+        session.commit()
+        return seed_c.asker(client, monkeypatch)
+
+    return make
+
+
+def test_d4_a_to_do_line_is_not_a_record_that_it_was_done(notebook):
+    go = notebook("Pay rent, due 10 November", "# Budget\n\nRent £950 a month. Phone £12.")
+    said, _ = go("did I pay the rent")
+    assert not said.startswith("Yes"), said
+
+
+def test_d4_a_past_tense_line_still_answers_yes(notebook):
+    go = notebook("Paid rent on 3 November", "# Budget\n\nRent £950 a month. Phone £12.")
+    said, _ = go("did I pay the rent")
+    assert said.startswith("Yes"), said
+
+
+def test_d4_a_booking_note_answers_did_i_book(notebook):
+    go = notebook(
+        "# Lisbon trip\n\nFlights cost $420 return, leaving 12 May. Staying at Hotel Alfama near the river.",
+        "# Hotel Alfama\n\nBooking reference HA-77421. Late check-out requested. Breakfast included.",
+    )
+    said, _ = go("did I book the hotel")
+    assert "found nothing" not in said and "HA-77421" in said, said
+
+
+@pytest.mark.parametrize("question", ["how many notes have the word Lisbon", "how many notes contain Lisbon", "how many notes mention Lisbon"])
+def test_d4_a_count_with_a_subject_counts_the_subject(notebook, question):
+    go = notebook(
+        "# Lisbon trip\n\nFlights cost $420 return.",
+        "# Hotel Alfama\n\nA hotel in Lisbon. Breakfast included.",
+        "# Banana bread\n\n3 ripe bananas, 100 g butter.",
+        "# Gym plan\n\nSquats, bench, rows.",
+        "# Dentist\n\nDr Patel at Kings Road practice.",
+    )
+    said, _ = go(question)
+    assert "five notes" not in said and "You have 5 notes" not in said, said
+    assert "two notes" in said.lower() or "2 notes" in said, said

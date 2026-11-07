@@ -330,7 +330,10 @@ def _own_notes(own_stems: set[str], other_stems: set[str], views: list[NoteView]
     mine = own_stems - other_stems
     titled = [(v, {_stem(w) for w in v.title_words}) for v in views]
     whole = [v for v, words in titled if len(own_stems) > 1 and own_stems <= words]
-    return whole or [v for v, words in titled if mine & words]
+    #: A title that is the side's words and no more is the note, though the
+    #: other side's words take them all ("Gym" against "Gym plan").
+    exact = [v for v, words in titled if words == own_stems]
+    return whole or exact or [v for v, words in titled if mine & words]
 
 
 def _kinds(notes: list[NoteView], side: set[str]) -> set[str]:
@@ -354,7 +357,14 @@ def _opens_at(view: NoteView, side: set[str]) -> int:
 def _opening_wins(own: list[list[NoteView]], stems: list[set[str]]) -> list[list[NoteView]]:
     """A note two sides both name goes to the side its name opens with:
     "Study plan for November: revise biology on Monday" is the study plan,
-    though "biology" is in its name too (audit 1028 E16). A tie keeps both."""
+    though "biology" is in its name too (audit 1028 E16). A tie keeps both.
+    A note titled exactly for one side goes to it alone: "Gym and Gym plan"
+    is the Gym note against the Gym plan note (round 1107 D1)."""
+    for view in {id(v): v for mine in own for v in mine}.values():
+        title = {_stem(w) for w in view.title_words}
+        exact = [i for i, side in enumerate(stems) if side == title]
+        if len(exact) == 1:
+            own = [[v for v in mine if v is not view or i == exact[0]] for i, mine in enumerate(own)]
     for view in {id(v): v for mine in own for v in mine}.values():
         at = {i: _opens_at(view, stems[i]) for i, mine in enumerate(own) if any(v is view for v in mine)}
         best = min(at.values(), default=99)
