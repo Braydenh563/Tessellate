@@ -57,6 +57,8 @@
     S.foot = foot;
     const add = smallButton("ph:plus Add block", "Add a block after the picked one", () => use.add(S, { edit: true }));
     const connect = smallButton("ph:arrow-bend-down-right Connect", "Draw an arrow from the picked block to another", () => use.connect(S, S.sel || S.tree.querySelector(".dgm-block")?.dataset.key));
+    //: Mouse and touch twins of N, C and the toolbar's Add: not Tab stops, so the picture is near (DD-8).
+    add.tabIndex = connect.tabIndex = -1;
     foot.append(add, connect);
     S.footConnect = connect;
     S.tree.before(line);
@@ -76,11 +78,14 @@
   //: Called by every render: the list shows until the first arrow, each done step ticked; the example and the template button go with the first block.
   function sync(S, blocks) {
     const m = S.m;
-    S.empty.classList.toggle("hidden", m.edges.length > 0);
+    //: The checklist is a lesson for the first two boxes (DD-10, 1107): with two it has taught the box and the name, and the foot's Connect
+    //: is the one next action, so the list and its empty frame go rather than stay as a ticked record to the first arrow.
+    const lesson = m.edges.length === 0 && m.nodes.length < 2;
+    S.empty.classList.toggle("hidden", !lesson);
     S.foot?.classList.toggle("hidden", !blocks);
     //: The checklist already offers the first arrow and the first box, so the foot does not say the same twice (1679 blind pass): Add block
     //: stays where the eye ends, Connect joins it once the checklist has gone, and a box that is added drops the checklist's first row.
-    S.footConnect?.classList.toggle("hidden", m.edges.length === 0 && Boolean(S.steps));
+    S.footConnect?.classList.toggle("hidden", lesson && Boolean(S.steps));
     S.steps?.firstElementChild?.classList.toggle("hidden", m.nodes.length > 0);
     S.empty.classList.toggle("dgm-started", Boolean(blocks));
     //: A phone with an arrow keeps the picture and gets the list as a sheet (diagram-touch.js); before that the steps stay in the page.

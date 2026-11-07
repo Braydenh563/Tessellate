@@ -122,14 +122,51 @@
     wbAnnounce("Diagram linked.");
   }
 
+  //: The look (DD-13, 1107) is two front matter lines Mermaid reads (`config: look: handDrawn`), so the model keeps them, the document
+  //: carries them and every export draws them. Another key in the front matter stays; clean takes the lines out and an empty fence with them.
+  const withLook = (source, hand) => {
+    const { front, rest } = diagramModel.front(String(source).replace(/\r/g, ""));
+    const kept = (front[0] === "---" ? front.slice(1, front.lastIndexOf("---")) : []).filter((line) => !/^\s+look:/.test(line));
+    const at = kept.findIndex((line) => /^config:/.test(line));
+    //: A `config:` on the key's own line is a flow mapping (`config: {theme: dark}`) the look joins inside the braces; any other value
+    //: on that line cannot take a look without turning the file into two `config` keys, so it is left alone (null: the caller says so).
+    const flow = at >= 0 && /^config:\s*\{.*\}\s*$/.test(kept[at]);
+    if (at >= 0 && !flow && !/^config:\s*$/.test(kept[at])) return null;
+    if (flow) {
+      const inner = kept[at].replace(/^config:\s*\{|\}\s*$/g, "").replace(/\s*\blook:\s*\w+\s*,?/, "").replace(/^\s*,\s*|\s*,\s*$/g, "").trim();
+      kept.splice(at, 1, ...(hand ? [`config: {look: handDrawn${inner ? `, ${inner}` : ""}}`] : inner ? [`config: {${inner}}`] : []));
+    }
+    const lines = flow ? kept
+      : hand
+        ? at < 0 ? [...kept, "config:", "  look: handDrawn"] : [...kept.slice(0, at + 1), "  look: handDrawn", ...kept.slice(at + 1)]
+        : kept.filter((line, i) => !(/^config:\s*$/.test(line) && !/^\s/.test(kept[i + 1] || "")));
+    return (lines.length ? `---\n${lines.join("\n")}\n---\n` : "") + rest;
+  };
+  //: end withLook
+
+  //: The document's name from the Title field: nothing a `![[ ]]` link or a `Title#^id` block reference reads as syntax, and never a name
+  //: another document has (links resolve to the first document of that title, so a repeat would show the earlier diagram). Blank is dated.
+  const cleanTitle = (text) => String(text || "").replace(/[\[\]|#]+/g, " ").replace(/\s+/g, " ").trim();
+  const freshTitle = (base, taken) => {
+    let title = base;
+    for (let n = 2; taken.has(title.toLowerCase()); n += 1) title = `${base} ${n}`;
+    return title;
+  };
+  //: end freshTitle
+  const documentName = async (typed) => {
+    const base = cleanTitle(typed) || `Diagram ${new Date().toISOString().slice(0, 16).replace("T", " ")}`;
+    const all = await apiPagedList("/documents", 200).catch(() => (Array.isArray(docs) ? docs : []));
+    return freshTitle(base, new Set(all.map((d) => String(d.title || "").trim().toLowerCase())));
+  };
+
   // --- the dialog (D6) ----------------------------------------------------------------
   const STARTS = { flowchart: "flowchart TD", mindmap: "mindmap\n  root((Topic))", timeline: "timeline\n  title Timeline", sequence: "sequenceDiagram" };
 
-  //: `{source, kind, title, shapes, onDone(source, changed)}`. `kind` names the blank diagram to start
+  //: `{source, kind, title, shapes, named, onDone(source, changed, name)}`. `named` adds a title field: the new document's name and the exports' file name. `kind` names the blank diagram to start
   //: when there is no source. `shapes` is a function that receives the source and makes board shapes
   //: of it (Turn into shapes). `existing` is `{pick, open}` for the door. `offer` is what Save may link. Done calls `onDone` once; Cancel, Escape and the X call nothing, after
   //: asking when there are changes.
-  async function open({ source = "", kind = "flowchart", title = "Edit diagram", shapes = null, offer = null, onDone = null, existing = null } = {}) {
+  async function open({ source = "", kind = "flowchart", title = "Edit diagram", shapes = null, offer = null, onDone = null, existing = null, named = false } = {}) {
     if (!(await ensureModule("diagramBuilder"))) return toast("The block editor did not load. Try again.", "info");
     const first = String(source || "").trim() ? String(source) : STARTS[kind] || STARTS.flowchart;
     const history = [first];
@@ -143,35 +180,72 @@
     overlay.setAttribute("aria-modal", "true");
     overlay.setAttribute("aria-label", title);
     const dialog = el("div", "card modal-card space-dialog dgm-dialog");
+    dialog.tabIndex = -1;
     const returnFocus = document.activeElement;
     const host = el("div", "dgm-host");
+    //: The title (DD-12, 1107): what a new diagram document is called and what its exports are named; blank keeps the dialog's title.
+    const titleField = named ? el("input", "dgm-title") : null;
     const field = el("textarea", "dgm-source");
     field.spellcheck = false;
     field.setAttribute("aria-label", "Mermaid source");
     field.value = first;
+    //: Line numbers beside the text, the error line marked (DD-5, 1107). The field does not wrap, so a number sits on its own line.
+    field.setAttribute("wrap", "off");
+    const srcwrap = el("div", "dgm-srcwrap");
+    const gutter = el("div", "dgm-gutter");
+    gutter.setAttribute("aria-hidden", "true");
+    srcwrap.append(gutter, field);
+    const number = () => {
+      const bad = Number(field.dataset.errorLine) || 0;
+      const all = Array.from({ length: field.value.split("\n").length }, (_, i) => i + 1);
+      gutter.replaceChildren(...(bad && bad <= all.length ? [all.slice(0, bad - 1).map((n) => `${n}\n`).join(""), el("span", "dgm-gutter-bad", String(bad)), all.slice(bad).map((n) => `\n${n}`).join("")] : [all.join("\n")]));
+      gutter.scrollTop = field.scrollTop;
+    };
+    field.addEventListener("scroll", () => (gutter.scrollTop = field.scrollTop));
+    field.addEventListener("dgmerror", number);
+    number();
     const io = {
-      name: title,
+      get name() { return titleField?.value.trim() || title; },
       set: (next) => {
         const kind = diagramModel.builder.kindOf(history[at]);
         history.length = at + 1;
         history.push(next);
         at = history.length - 1;
-        if (field.value !== next) field.value = next;
+        if (field.value !== next) (field.value = next), number();
         //: A press on another kind (diagram-kindbar.js) only sets the source; the pane has to be drawn for it. The page gets
         //: this through the document; a block gesture draws its own pane, so only a change of kind shows again (DD-1).
         if (diagramModel.builder.kindOf(next) !== kind) show();
       },
       undo: () => at > 0 && (at -= 1, apply()),
       redo: () => at < history.length - 1 && (at += 1, apply()),
-      menu: [
-        ...(shapes ? [makeMenuItem("ph:shapes Turn into shapes", "Replace it with shapes and connectors you can move one by one", () => (leave(), shapes(history[at])))] : []),
-        //: The door opens on a drawn starter (DD-3b, 1107), so a blank page is one press away, and Undo brings the starter back.
-        makeMenuItem("ph:eraser Clear", "Start again from an empty diagram of this kind. Undo brings this one back", () => (io.set(`${STARTS[diagramModel.builder.kindOf(history[at])] || STARTS.flowchart}\n`), apply())),
-        makeMenuItem("ph:books Save to Library", "Keep it in the Library to show it with ![[name]]", () => save(history[at], offer?.link ? { label: "Link this diagram", run: (row) => link(offer.link, row, history[at]) } : offer)),
-      ],
+      get menu() {
+        return [
+          ...(shapes ? [makeMenuItem("ph:shapes Turn into shapes", "Replace it with shapes and connectors you can move one by one", () => (leave(), shapes(history[at])))] : []),
+          //: The door opens on a drawn starter (DD-3b, 1107), so a blank page is one press away, and Undo brings the starter back.
+          makeMenuItem("ph:eraser Clear", "Start again from an empty diagram of this kind. Undo brings this one back", () => (io.set(`${STARTS[diagramModel.builder.kindOf(history[at])] || STARTS.flowchart}\n`), apply())),
+          //: One look row, the one that is not on: the menu never says "Hand-drawn" while it is already drawn so, and it is rebuilt with every pane.
+          lookRow(),
+          makeMenuItem("ph:books Save to Library", "Keep it in the Library to show it with ![[name]]", () => save(history[at], offer?.link ? { label: "Link this diagram", run: (row) => link(offer.link, row, history[at]) } : offer)),
+        ];
+      },
+      get canUndo() { return at > 0; },
     };
+    //: A look that cannot be written (a front matter `config` this menu cannot edit) says so and changes nothing.
+    const setLook = (hand) => {
+      const next = withLook(history[at], hand);
+      if (next === null) return toast("The front matter has a config line the menu cannot edit. Change it in Source.", "info");
+      io.set(next);
+      apply();
+    };
+    function lookRow() {
+      const hand = diagramModel.front(history[at]).front.some((line) => /\blook:\s*handDrawn/.test(line));
+      return hand
+        ? makeMenuItem("ph:rectangle Clean look", "Draw the picture with straight, even lines again", () => setLook(false))
+        : makeMenuItem("ph:pencil-line Hand-drawn look", "Draw the picture as if sketched by hand. Kept in the diagram's own text; Undo takes it back", () => setLook(true));
+    }
     const apply = () => {
       field.value = history[at];
+      number();
       show();
     };
     //: The pane on show, for the keys sheet (`?`, the Keys chip).
@@ -196,21 +270,51 @@
     seg.setAttribute("role", "group");
     seg.setAttribute("aria-label", "Diagram view");
     for (const [name, label] of [["canvas", "Canvas"], ["blocks", "Blocks"], ["source", "Source"]]) {
-      const b = smallButton(label, { canvas: "The picture, with the blocks beside it", blocks: "The diagram as blocks", source: "The diagram as text, with its picture" }[name], () => view(name));
+      const b = smallButton(label, { canvas: "The picture, with the blocks beside it", blocks: "The diagram as blocks", source: "The diagram as text, with its picture" }[name], () => {
+        //: A phone shows the picture alone, and its blocks are a sheet (the dock's list button): the Blocks view opens that sheet, not a view that shows nothing new.
+        const sheet = name === "blocks" && phone.matches ? pane?.root?.querySelector(".dgm-listbtn") : null;
+        sheet ? sheet.click() : view(name);
+      });
       b.dataset.view = name;
       seg.append(b);
     }
     let timer = 0;
+    //: What was typed a moment ago becomes its own history step now, so Ctrl+Z in the text undoes it and a block edit alike (DD-5).
+    const flush = () => {
+      clearTimeout(timer);
+      if (field.value !== history[at]) io.set(field.value);
+    };
     field.addEventListener("input", () => {
+      number();
       clearTimeout(timer);
       timer = setTimeout(() => {
-        if (field.value === history[at]) return;
-        io.set(field.value);
+        flush();
         show();
-      }, 300);
+      }, 250);
+    });
+    //: Tab is two spaces, on every selected line when the selection spans lines; Shift+Tab takes them back. Escape is the way out (below).
+    field.addEventListener("keydown", (event) => {
+      if (!(event.key === "Tab" && !event.ctrlKey && !event.metaKey && !event.altKey)) return;
+      event.preventDefault();
+      const { value, selectionStart: from, selectionEnd: to } = field;
+      const start = value.lastIndexOf("\n", from - 1) + 1;
+      if (!event.shiftKey && from === to) field.setRangeText("  ", from, to, "end");
+      else {
+        const block = value.slice(start, to).split("\n");
+        const next = block.map((line) => (event.shiftKey ? line.replace(/^ {1,2}/, "") : `  ${line}`));
+        field.setRangeText(next.join("\n"), start, to, "select");
+        field.setSelectionRange(from === start ? start : Math.max(start, from + next[0].length - block[0].length), start + next.join("\n").length);
+      }
+      field.dispatchEvent(new Event("input"));
     });
     const onKey = (event) => {
       if (event.key !== "Escape" || activeOverlay() !== overlay) return;
+      //: Tab indents in the text, so Escape leaves it for the views; the next Escape closes the window (DD-5).
+      if (event.target === field) {
+        event.preventDefault();
+        event.stopPropagation();
+        return seg.querySelector('[data-view="source"]').focus();
+      }
       //: A menu or an inline field takes its own Escape first; the dialog closes on the next one.
       if (document.querySelector(".action-menu:not(.hidden), .help-popover:not(.hidden)") || event.target.closest?.("input, [contenteditable]")) return;
       event.preventDefault();
@@ -225,12 +329,14 @@
       if (returnFocus?.isConnected) returnFocus.focus?.();
     };
     //: True when leaving may go ahead: nothing changed, or the person confirmed they do not want the changes.
-    const mayDiscard = async () => history[at] === first || (await confirmDialog("Close without keeping your changes to this diagram?", { confirmLabel: "Discard changes", cancelLabel: "Keep editing" }));
+    //: A typed title is a change too: Escape, Cancel and the backdrop ask before dropping it.
+    const mayDiscard = async () => (history[at] === first && !titleField?.value.trim()) || (await confirmDialog("Close without keeping your changes to this diagram?", { confirmLabel: "Discard changes", cancelLabel: "Keep editing" }));
     const finish = async (done) => {
       if (closing) return;
       if (!done && !(await mayDiscard())) return;
+      const [next, changed, typed] = [history[at], history[at] !== first, titleField ? titleField.value : ""];
       leave();
-      if (done && onDone) onDone(history[at], history[at] !== first);
+      if (done && onDone) onDone(next, changed, titleField ? await documentName(typed) : "");
     };
     const foot = el("div", "row right space-dialog-actions");
     const cancel = smallButton("Cancel", "Close without keeping changes", () => finish(false));
@@ -243,13 +349,23 @@
       if (!row || closing || !(await mayDiscard())) return;
       leave();
       existing.open(row);
-    }, false) : null;
+    }) : null;
     //: Help in reach (DD-7, 1107): every key in one sheet, from a chip that is always there, from `?` anywhere in the dialog
     //: outside a field, and from the ... menu; the '?' by the title says what the window is and offers the Guide's topic.
     const keys = () => pane && diagramModel.builder.styleDo(pane, "shortcuts");
     const chip = smallButton("ph:keyboard Keys", "Every key in this editor (?). F6 leaves the blocks", keys);
     chip.classList.add("dgm-keychip");
+    if (known) {
+      known.classList.add("dgm-known");
+      known.setAttribute("aria-label", "Open an existing diagram");
+    }
     foot.append(seg, ...(known ? [known] : []), chip, cancel, go);
+    //: On a phone the views are the sheet's top row, not the foot's first (DD-6, 1107): the foot is one row of Keys, Cancel and Done.
+    const viewbar = el("div", "dgm-viewbar");
+    const phone = matchMedia("(max-width: 599.98px)");
+    const place = () => (phone.matches ? viewbar : foot).prepend(seg);
+    phone.addEventListener("change", place);
+    place();
     const head = dialogHead(title, () => finish(false));
     const help = el("button", "icon-only ghost small graph-help-toggle");
     help.type = "button";
@@ -267,14 +383,30 @@
     head.querySelector(".dialog-head-title").after(help);
     dialog.append(helpBody);
     const body = el("div", "dgm-dialog-body");
-    body.append(field, host);
-    dialog.append(head, body, foot);
+    body.append(srcwrap, host);
+    let titlebar = null;
+    if (titleField) {
+      titleField.type = "text";
+      titleField.maxLength = 80;
+      titleField.placeholder = "Name it, or leave blank to date it";
+      titleField.setAttribute("aria-label", "Diagram title");
+      //: The characters a link reads as syntax never enter the name, so what is shown is what the document is called.
+      titleField.addEventListener("input", () => {
+        const clean = titleField.value.replace(/[\[\]|#]+/g, "");
+        if (clean !== titleField.value) titleField.value = clean;
+      });
+      titleField.addEventListener("keydown", (event) => event.key === "Escape" && (event.preventDefault(), seg.querySelector(".active")?.focus()));
+      titlebar = el("label", "dgm-titlebar");
+      titlebar.append(el("span", "muted", "Title"), titleField);
+    }
+    dialog.append(head, ...(titlebar ? [titlebar] : []), viewbar, body, foot);
     document.addEventListener("keydown", onKey, true);
     wireBackdropClose(overlay, () => finish(false));
-    //: Ctrl+Z in the blocks steps the source history, as it does in a diagram document.
+    //: Ctrl+Z in the blocks or the text steps the source history, as it does in a diagram document.
     dialog.addEventListener("keydown", (event) => {
-      if (event.target === field || !(event.ctrlKey || event.metaKey) || event.key.toLowerCase() !== "z") return;
+      if (!(event.ctrlKey || event.metaKey) || event.key.toLowerCase() !== "z") return;
       event.preventDefault();
+      if (event.target === field) flush();
       (event.shiftKey ? io.redo : io.undo)();
     });
     //: Ctrl+Enter keeps the diagram from anywhere in the window (the other route to Done is 15 Tabs).
@@ -299,6 +431,8 @@
     const firstBox = host.querySelector(".dgm-block");
     if (firstBox && S && !S.k) diagramModel.builder.select(S, firstBox.dataset.key, true);
     else (host.querySelector(".dgm-steps button, .dgm-block[tabindex='0']") || dialog.querySelector(".dgm-pane") || dialog).focus?.({ preventScroll: true });
+    //: A phone hides the blocks (they are a sheet), so that focus went nowhere and the first Tab left the window's top: the picture takes it (measured at 390: BODY).
+    if (!dialog.contains(document.activeElement)) (host.querySelector(".dgm-picture") || dialog).focus?.({ preventScroll: true });
     return dialog;
   }
 

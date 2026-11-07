@@ -785,10 +785,18 @@
   align-self: stretch;
 }
 
+/* The words on one line over a full-width button, so the three buttons are one width and no label wraps (DD-10, 1107). */
 .dgm-step {
-  display: flex;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
   align-items: center;
-  gap: var(--space-3);
+  gap: var(--space-1) var(--space-3);
+}
+
+.dgm-step > button {
+  grid-column: 2;
+  inline-size: 100%;
+  justify-content: center;
 }
 
 .dgm-step-n {
@@ -1217,6 +1225,29 @@
   margin-inline-end: auto;
 }
 
+/* The title row: a label and a field under the head (DD-12). */
+.dgm-dialog .dgm-titlebar {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding-inline: var(--space-5);
+  padding-block-end: var(--space-2);
+  font-size: var(--text-sm);
+}
+
+.dgm-dialog .dgm-title {
+  flex: 1 1 auto;
+  min-width: 0;
+  margin: 0;
+  padding-block: var(--space-2);
+  font-size: var(--text-sm);
+}
+
+.dgm-viewbar:empty {
+  display: none;
+}
+
 .dgm-dialog-body {
   flex: 1 1 auto;
   min-height: 0;
@@ -1230,16 +1261,55 @@
   min-height: 0;
 }
 
-.dgm-source {
+/* The text and its line numbers (DD-5): one box, both columns on the same line height, so a number is beside its line. */
+.dgm-srcwrap {
   display: none;
   flex: 0 0 min(30rem, 42%);
-  resize: none;
-  font-family: var(--mono, ui-monospace, monospace);
-  font-size: var(--text-sm);
+  min-width: 0;
 }
 
-.dgm-dialog[data-view="source"] .dgm-source {
-  display: block;
+.dgm-source,
+.dgm-gutter {
+  font-family: var(--mono, ui-monospace, monospace);
+  font-size: var(--text-sm);
+  line-height: 1.5;
+  padding-block: var(--space-4);
+  border-width: 1px;
+  border-style: solid;
+  border-color: transparent;
+}
+
+.dgm-source {
+  flex: 1 1 auto;
+  min-width: 0;
+  margin: 0;
+  resize: none;
+  border-color: var(--border);
+  border-start-start-radius: 0;
+  border-end-start-radius: 0;
+  overflow: auto;
+}
+
+.dgm-gutter {
+  flex: 0 0 auto;
+  min-width: 3ch;
+  padding-inline: var(--space-3);
+  /* The field's horizontal scrollbar shortens its range; this much more keeps the numbers' range as long. */
+  padding-block-end: calc(var(--space-4) + 1.5rem);
+  overflow: hidden;
+  text-align: end;
+  white-space: pre;
+  color: var(--muted);
+  user-select: none;
+}
+
+.dgm-gutter-bad {
+  color: var(--error);
+  font-weight: 700;
+}
+
+.dgm-dialog[data-view="source"] .dgm-srcwrap {
+  display: flex;
 }
 
 .dgm-dialog[data-view="source"] .dgm-dock,
@@ -1262,8 +1332,49 @@
 }
 
 @media (max-width: 599.98px) {
-  .dgm-dialog {
-    height: 94dvh;
+  /* A phone's builder is a full-screen sheet (DD-6, 1107 round 2): the dialog's 24 px of margin cost the dock its last button
+     (the dock is 324 px of controls in a 308 px body) and left the footer three rows. The tabs are the sheet's top row, the
+     footer one row: the way in to Source is never under it. */
+  /* Flush to the screen, kept out of the notch and the home indicator (10-responsive.css band 2). */
+  .modal-overlay:has(> .dgm-dialog) {
+    padding: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px) env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px);
+  }
+
+  .modal-overlay > .card.dgm-dialog {
+    width: 100%;
+    min-width: 0;
+    max-width: none;
+    height: 100%;
+    max-height: none;
+    /* The surface family's smallest radius, not a square 0 (tests/test_ui_signatures.py: a fifth card radius is refused). */
+    border-radius: var(--radius-sm);
+  }
+
+  .dgm-viewbar .dgm-views {
+    display: flex;
+    margin: 0;
+  }
+
+  .dgm-viewbar .dgm-views button {
+    flex: 1 1 0;
+  }
+
+  .dgm-dialog .space-dialog-actions {
+    flex-wrap: nowrap;
+  }
+
+  .dgm-keychip {
+    margin-inline-end: auto;
+  }
+
+  /* The offer's words take a line, its two buttons the next: Keep was a third line (96 px for a one-line question). */
+  .dgm-sideways > span {
+    flex: 1 0 100%;
+  }
+
+  /* The door's "Open an existing diagram" is its folder glyph here; its name is the button's label. */
+  .dgm-known .ph-text {
+    display: none;
   }
 
   .dgm-dialog-body {
@@ -1287,12 +1398,43 @@
     grid-template-rows: minmax(240px, auto) minmax(0, 1fr);
   }
 
+  /* An empty diagram has nothing to draw, so its picture is a strip and the steps keep the screen (DD-6: the template button was
+     clipped by the pane at 390). */
+  .dgm-dialog-body .dgm-body:has(.dgm-picture-empty) {
+    grid-template-rows: auto minmax(0, 1fr);
+  }
+
+  .dgm-dialog-body .dgm.dgm .dgm-stage:has(> .dgm-picture-empty),
+  .dgm-dialog-body .dgm.dgm .dgm-picture-empty {
+    min-block-size: 0;
+  }
+
   .dgm-dialog-body .dgm-body {
     overflow-y: auto;
   }
 
-  .dgm-dialog[data-view="source"] .dgm-source {
-    flex: 0 0 9rem;
+  /* The text is what the Source view is for: it takes the room the picture does not need (measured at 390: 8 lines, 144 px, under a
+     418 px host), and the picture keeps its 240 px beneath it. */
+  .dgm-dialog[data-view="source"] .dgm-srcwrap {
+    flex: 1 1 9rem;
+  }
+
+  /* The kinds row and the turn-it-sideways offer belong to the other views: here they were 120 of the host's 448 px. */
+  .dgm-dialog[data-view="source"] .dgm-host {
+    flex: 0 0 auto;
+  }
+
+  .dgm-dialog[data-view="source"] :is(.dgm-kinds, .dgm-sideways) {
+    display: none;
+  }
+
+  /* The phone's pane is wide enough for the words and a button on one row, which keeps the empty page free of a scroll (DD-10). */
+  .dgm-step {
+    grid-template-columns: auto minmax(0, 1fr) 10rem;
+  }
+
+  .dgm-step > button {
+    grid-column: 3;
   }
 }
 
@@ -1503,6 +1645,25 @@
   .dgm-handle {
     inline-size: 44px;
     block-size: 44px;
+  }
+
+  /* A handle shrinks to half a small block (diagram-overlay.js, `handleSize`, never under 24), so the drawn disc can be 24 px; its
+     hit area is still 44: the pseudo-element is measured from the padding box inside the 2 px ring, so 12 each side makes
+     20 + 24 = 44 across (measured: 8 gave 36, 10 gave 40). */
+  .dgm-handle::after {
+    inset: -12px;
+  }
+
+  /* The divider is 13 px between the panes (the grid gap it replaces); a finger gets 44 across, over the edges of both. */
+  .dgm-split-handle.sidebar-resize {
+    position: relative;
+    z-index: 1;
+  }
+
+  .dgm-split-handle.sidebar-resize::after {
+    content: "";
+    position: absolute;
+    inset: 0 calc((var(--space-5) - 44px) / 2);
   }
 }
 

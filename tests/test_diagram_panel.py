@@ -57,7 +57,8 @@ def test_the_guide_says_the_pane_in_the_controls_words():
 
 def test_the_foot_and_the_checklist_do_not_say_the_same_thing_twice():
     # 1679 blind pass: after the first block the checklist and the foot both offered a box and an arrow.
-    assert 'S.footConnect?.classList.toggle("hidden", m.edges.length === 0 && Boolean(S.steps))' in STEPS
+    # Intent unchanged, the checklist now goes at two boxes (DD-10, 1107), so the foot's Connect shows from then on.
+    assert 'S.footConnect?.classList.toggle("hidden", lesson && Boolean(S.steps))' in STEPS
     assert 'S.steps?.firstElementChild?.classList.toggle("hidden", m.nodes.length > 0)' in STEPS
     assert "Add a Box" not in STEPS  # sentence case: "Add a box"
 

@@ -51,6 +51,40 @@
     zooms: (e) => !e.shiftKey && (e.ctrlKey || e.deltaMode === 1 || (e.deltaX === 0 && Math.abs(e.deltaY) >= 50 && (Math.abs(e.deltaY) % 100 === 0 || Math.abs(e.deltaY) % 120 === 0))),
     //: The scale factor of one wheel event: a notch is STEP, a pinch's small deltas are continuous.
     factor: (e) => (e.ctrlKey && e.deltaMode === 0 && Math.abs(e.deltaY) < 50 ? Math.exp(-e.deltaY * 0.01) : e.deltaMode === 1 ? STEP ** -Math.sign(e.deltaY) : math.wheel(e.deltaY)),
+    //: The box a press of an arrow key reaches (DD-8a, 1107): the nearest one in that direction, a sideways miss counting double, or the
+    //: top-left one when nothing is picked. `boxes` are the picture's `{id, x, y}`; `dx` and `dy` are -1, 0 or 1.
+    reach: (boxes, from, dx, dy) => {
+      const here = boxes.find((b) => b.id === from);
+      if (!here) return [...boxes].sort((a, b) => a.y - b.y || a.x - b.x)[0] || null;
+      let best = null;
+      let least = Infinity;
+      for (const b of boxes) {
+        const [ax, ay] = [b.x - here.x, b.y - here.y];
+        const ahead = ax * dx + ay * dy;
+        const score = ahead + 2 * (Math.abs(ax * dy) + Math.abs(ay * dx));
+        if (b !== here && ahead > 0 && score < least) [best, least] = [b, score];
+      }
+      return best;
+    },
+    //: The picture said in words, for its alt text and description (DD-8a): every box, then every arrow.
+    summary: (m) => {
+      const name = (id) => m.nodes.find((n) => n.id === id)?.text ?? id;
+      const list = (items, cap = 12) => items.slice(0, cap).join(", ") + (items.length > cap ? `, and ${items.length - cap} more` : "");
+      const n = m.nodes.length;
+      const e = m.edges.length;
+      if (!n) return "Flowchart, empty";
+      return `Flowchart, ${n} ${n === 1 ? "box" : "boxes"} (${list(m.nodes.map((x) => x.text))}), ${e} ${e === 1 ? "arrow" : "arrows"}${e ? `: ${list(m.edges.map((x) => `${name(x.from)} to ${name(x.to)}`))}` : ""}`;
+    },
+    //: What the live region reads when a box is picked in the picture: its name, its kind and where its arrows go.
+    said: (m, id) => {
+      const node = m.nodes.find((n) => n.id === id);
+      if (!node) return "";
+      const name = (i) => m.nodes.find((n) => n.id === i)?.text ?? i;
+      const into = m.edges.filter((x) => x.to === id).map((x) => name(x.from));
+      const out = m.edges.filter((x) => x.from === id).map((x) => name(x.to));
+      const kind = { rect: "box", round: "rounded box", stadium: "pill", circle: "circle", diamond: "decision", hexagon: "hexagon" }[node.shape] || "box";
+      return `${node.text}, ${kind}.${into.length ? ` In from ${into.join(", ")}.` : ""}${out.length ? ` Out to ${out.join(", ")}.` : ""}${into.length || out.length ? "" : " No arrows."}`;
+    },
     //: px per ms over the last 100 ms of `[{t, x, y}]`; a pause leaves nothing.
     velocity: (samples) => {
       const last = samples[samples.length - 1];
@@ -94,7 +128,39 @@
     fig.replaceWith(stage);
     stage.append(fig);
     fig.tabIndex = 0;
-    fig.setAttribute("aria-label", "Diagram picture. Plus and minus zoom, 0 fits it to the pane, the arrow keys move it.");
+    fig.setAttribute("aria-label", "Diagram picture. Arrow keys pick a box, Shift and an arrow move the picture, plus and minus zoom, 0 fits it.");
+    //: The picture says what it holds, and the arrow keys walk its boxes (DD-8a, 1107). A kind's pane has no boxes: its arrows pan.
+    const boxes = () => (!S.k && S.m && S.hit?.boxes?.length ? S.hit.boxes : null);
+    //: One pending message: a quick run of arrows leaves the last box's words, not an earlier one that landed after.
+    let told = 0;
+    const tell = (text) => {
+      if (!S.live) return;
+      S.live.textContent = "";
+      clearTimeout(told);
+      told = setTimeout(() => (S.live.textContent = text), 20);
+    };
+    //: The picked box brought into view when the picture is zoomed past the pane.
+    const reveal = (b) => {
+      const img = image();
+      if (!img) return;
+      const r = img.getBoundingClientRect();
+      const [vx, vy, vw, vh] = S.hit.vb;
+      const at = [r.left + ((b.x - vx) / vw) * r.width, r.top + ((b.y - vy) / vh) * r.height];
+      const pane = fig.getBoundingClientRect();
+      const nudge = (v, lo, hi) => (v < lo + 24 ? v - lo - 24 : v > hi - 24 ? v - hi + 24 : 0);
+      fig.scrollBy({ left: nudge(at[0], pane.left, pane.right), top: nudge(at[1], pane.top, pane.bottom), behavior: "auto" });
+    };
+    const choose = (key) => {
+      const list = boxes();
+      if (!list) return false;
+      const to = math.reach(list, S.sel?.startsWith("n:") ? S.sel.slice(2) : "", ...{ ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] }[key]);
+      if (!to) return tell("No box that way."), true;
+      diagramModel.builder.select(S, `n:${to.id}`);
+      S.tree.querySelector(`.dgm-block[data-key="n:${to.id}"]`)?.scrollIntoView({ block: "nearest" });
+      reveal(to);
+      tell(math.said(S.m, to.id));
+      return true;
+    };
 
     const image = () => fig.querySelector(".md-mermaid-img");
     const dims = (img) => math.size(img.mermaidSvg) || (img.naturalWidth ? { w: img.naturalWidth, h: img.naturalHeight } : null);
@@ -120,6 +186,7 @@
       fig.dataset.zoom = state.fit ? "fit" : (state.scale / f).toFixed(2);
       readout(state.scale);
       for (const after of fig.onzoom || []) after();
+      if (S.m && !S.k) fig.setAttribute("aria-description", (img.alt = math.summary(S.m)));
     };
     //: The 100% button is also the live readout (INBOX 1652): it names the zoom now and a press goes to 100%.
     const readout = (scale) => {
@@ -284,8 +351,9 @@
     fig.addEventListener("keydown", (event) => {
       if (event.target !== fig || event.ctrlKey || event.metaKey || event.altKey) return;
       const move = { ArrowLeft: [-PAN, 0], ArrowRight: [PAN, 0], ArrowUp: [0, -PAN], ArrowDown: [0, PAN] }[event.key];
+      if (move && !event.shiftKey && choose(event.key)) return event.preventDefault();
       cancelGlide();
-      //: Shift is five times as far; the move glides unless the person asked for less motion.
+      //: With boxes, Shift and an arrow pan; the move glides unless the person asked for less motion.
       const far = event.shiftKey ? 5 : 1;
       if (move) settle();
       if (move) fig.scrollBy({ left: move[0] * far, top: move[1] * far, behavior: reduced() ? "auto" : "smooth" });
@@ -293,6 +361,8 @@
       else if (event.key === "-" || event.key === "_") step(-1);
       else if (event.key === "0") fitTo();
       else if (event.key === "1") actual();
+      //: Enter or F2 names the picked box where it stands, as the blocks pane does; with no box picked the key passes on.
+      else if ((event.key === "Enter" || event.key === "F2") && !event.shiftKey && boxes() && S.sel?.startsWith("n:") && S.renameNode?.(S.sel.slice(2))) event.preventDefault();
       else return;
       event.preventDefault();
     });
