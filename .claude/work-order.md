@@ -17,7 +17,8 @@ tier: max (weekly 4%), three agents at once, Sonnet or Haiku; never Fable; owner
 - [x] INBOX 1667 perf: partial 5d6bfcae (scroll-edge sync); follow-up agent/atlasidle-1107: idle Atlas restyle 2.2-3.2 s per 6 s at 4x, note-open long tasks
 - [ ] Layered deep dive round 1: desk companion (research, audit, fix, re-audit)
 - [ ] Deep dive round 1: in-app companion and Atlas
-- [ ] Deep dive round 1: diagram builder
+- [x] Deep dive round 1: diagram builder (41a4919f, diagram-dive-1107.md, DD-1 to DD-15)
+- [ ] Diagram build: Tier 1 plus DD-7, 8, 9, 14 (workflow wf_cf66c311-c38, branch agent/diagbuild-1107, then review, UX audit, blind test, refix)
 - [ ] Deep dive round 1: composer (class rule 1357, parity decision 75)
 - [ ] Repeat rounds per surface until a round finds nothing new
 - [ ] Open deep-audit and Fable findings: ANALYSIS.md, AUDIT.md, FABLE_BRIEF.md
