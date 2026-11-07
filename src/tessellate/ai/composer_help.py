@@ -64,6 +64,17 @@ def _feature_help(question: str, absent: list[str]) -> tuple[str, str] | None:
     return best
 
 
+def _undo_lead(words: list[str]) -> str:
+    """Typed "undo" or "redo" after a change asks for the thing itself, so the
+    keys come first, not a note that the word is not in the notes (round 2 E7)."""
+    said = [w for w in words if w not in _FEATURE_FILLER and w not in ("change", "changes", "action")]
+    if said == ["undo"]:
+        return "Press Undo in the status bar, or Ctrl+Z when you are not typing in a box, to take back your last change. "
+    if said == ["redo"]:
+        return "Press Redo in the status bar, or Ctrl+Shift+Z or Ctrl+Y when you are not typing in a box, to bring back what you undid. "
+    return ""
+
+
 def _feature_instead(question: str, absent: list[str]) -> dict | None:
     """Nothing in the notes, and a two- or three-word message that names an
     app feature (INBOX 1334, "timer\\" got "Which note might it be in?"):
@@ -76,7 +87,7 @@ def _feature_instead(question: str, absent: list[str]) -> dict | None:
     said = absent[0] if absent else " ".join(words)
     #: The feature first: "Nothing in your notes mentions timer" was a
     #: not-found answer to a request for the timer (INBOX 1357, class B).
-    lead = f"“{said[:1].upper()}{said[1:]}” is one of the app's own tools, not something in your notes. "
+    lead = _undo_lead(words) or f"“{said[:1].upper()}{said[1:]}” is one of the app's own tools, not something in your notes. "
     return _result([("template", lead), ("help", best[0], best[1])], "help")
 
 

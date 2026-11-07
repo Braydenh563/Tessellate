@@ -64,6 +64,19 @@ def _naming(session: Session, question: str) -> list[Entry]:
     return list(session.scalars(select(Entry).where(*_live(), *clauses).order_by(Entry.created_at.desc()).limit(LIST_LIMIT)))
 
 
+def _leaving_out(session: Session, question: str) -> list[Entry]:
+    """The notes a "notes about Tokyo but not Lisbon" answer reads: those that
+    name every word of the subject kept (as a word or the start of one), or
+    the newest of all when only a word is left out. The words left out are
+    judged by the answer, which needs the notes that hold them too."""
+    kept = (composer_lists.without_ask(question) or ("", ""))[0]
+    words = [composer._stem(w).rstrip("e") for w in kept.split() if len(w) > 2]  # noqa: SLF001
+    if any(not w.isascii() for w in words):
+        return []
+    clauses = [func.lower(Entry.content).like(f"%{like_escape(w)}%", escape=LIKE_ESCAPE) | func.lower(Entry.tags).like(f"%{like_escape(w)}%", escape=LIKE_ESCAPE) for w in words]
+    return list(session.scalars(select(Entry).where(*_live(), *clauses).order_by(Entry.created_at.desc()).limit(LIST_LIMIT)))
+
+
 def _in_order(session: Session, question: str) -> list[Entry]:
     """The notes at the end of the order asked, so "oldest first" holds the oldest."""
     first = Entry.created_at.asc() if composer_lists.list_order(question) == "oldest" else Entry.created_at.desc()
@@ -95,6 +108,8 @@ def _of_kind(session: Session, kind: str) -> list[Entry]:
     newest = select(Entry).where(*_live()).order_by(Entry.created_at.desc())
     if kind == "tasks":
         newest = newest.where(or_(Entry.content.like("%[ ]%"), Entry.content.like("%[x]%")))
+    if kind == "tables":
+        newest = newest.where(Entry.content.like("%|%"))
     return list(session.scalars(newest.limit(LIST_LIMIT)))
 
 
@@ -106,6 +121,8 @@ def pool(session: Session, question: str, entries: list) -> list:
         found = _filed(session, *composer_lists.list_target(question))
     elif which == "mentions":
         found = _mentioning(session, question)
+    elif which == "without":
+        found = _leaving_out(session, question)
     elif which == "ordered":
         found = _in_order(session, question)
     elif which == "which":
