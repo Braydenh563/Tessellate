@@ -701,9 +701,29 @@
 /* The flowchart's toolbar (diagram-bar.js, 1661 D2): ONE row at every width. Add is a split (the last shape, then a
    caret), Direction one button that turns the diagram; the dock never wraps, so a narrow host drops words, not rows. */
 .dgm-dock {
-  flex-wrap: nowrap;
   align-items: center;
   min-inline-size: 0;
+}
+
+/* One row is the flowchart's alone (DD-2, 1107): the same rule on the kinds' docks, whose palette wraps, painted Suggest,
+   Undo, Redo and the menu over the tiles (dock 543, 124 and 199 px tall at 1440). */
+.dgm-dock:has(> .dgm-addsplit) {
+  flex-wrap: nowrap;
+}
+
+/* The kinds' palettes are one Add button and the same sheet a phone gets (diagram-touch.js `wire`): thirteen tiles do not fit a row. */
+.dgm-addlist :is(.dgm-palette, .dgm-lib-hint) {
+  display: none;
+}
+
+.dgm-addlist .dgm-add {
+  display: inline-flex;
+}
+
+.dgm-addlist .dock-actions {
+  order: -1;
+  margin-left: 0;
+  justify-content: flex-start;
 }
 
 .dgm-addsplit {

@@ -476,3 +476,19 @@ def test_the_flowchart_pane_file_stays_lean_and_its_joins_load_when_used():
     for boot in ("app.js", "lazy-entries.js"):
         assert "diagramJoins" not in (JS / boot).read_text(encoding="utf-8"), boot
     assert "diagram-joins.js" not in (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
+
+
+def test_the_kinds_docks_do_not_inherit_the_flowcharts_one_row_rule():
+    # DD-2 (1107): `.dgm-dock { flex-wrap: nowrap }` was unscoped, so the kinds' wrapping palette (13 tiles for a sequence
+    # diagram) overflowed its row and Suggest, Undo, Redo and the menu were painted over the tiles (3, 14 and 4 overlapping
+    # button pairs; docks 549, 127 and 204 px). Measured after: 0 pairs and a 46 px dock for every kind at 1440, 1000 and 390.
+    css = (Path(__file__).resolve().parents[1] / "frontend" / "css" / "diagram-lazy.css").read_text(encoding="utf-8")
+    plain = css.split("\n.dgm-dock {", 1)[1].split("}", 1)[0]
+    assert "flex-wrap" not in plain
+    assert "flex-wrap: nowrap" in css.split(".dgm-dock:has(> .dgm-addsplit) {", 1)[1].split("}", 1)[0]
+    # The kinds' palette is the Add sheet at every width, so no tile can sit under the dock's buttons.
+    assert ".dgm-addlist :is(.dgm-palette, .dgm-lib-hint)" in css
+    touch = (Path(__file__).resolve().parents[1] / "frontend" / "js" / "diagram-touch.js").read_text(encoding="utf-8")
+    builder = (Path(__file__).resolve().parents[1] / "frontend" / "js" / "diagram-builder.js").read_text(encoding="utf-8")
+    assert '"dgm-compact" : "dgm-addlist"' in touch
+    assert "(S.k || matchMedia(COMPACT).matches) && (await ensureModule(\"diagramTouch\"))" in builder
