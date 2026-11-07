@@ -63,12 +63,16 @@ function valueField(host, opts = {}) {
     opts.onCommit?.(value);
   };
   //: Escape has two stages: the first puts a half-typed number back and keeps the focus (a keyboard user is not thrown
-  //: to the page), the second leaves the field. True when it reverted.
+  //: to the page), the second hands the focus to its slider (`opts.home`), never the page. True when it reverted.
   input.vfRevert = () => {
     if (input.value.trim() === shown) return false;
     paint();
     input.select();
     return true;
+  };
+  const leave = () => {
+    const home = opts.home?.();
+    home?.isConnected ? home.focus() : input.blur();
   };
   input.addEventListener("input", size);
   input.addEventListener("focus", () => input.select());
@@ -91,7 +95,7 @@ function valueField(host, opts = {}) {
       input.select();
     } else if (event.key === "Escape") {
       event.preventDefault();
-      if (!input.vfRevert()) input.blur();
+      if (!input.vfRevert()) leave();
     }
   });
   wrap.append(input);
@@ -171,6 +175,7 @@ function valueField(host, opts = {}) {
       max,
       step: step(),
       label: `${label}, type a value`,
+      home: () => slider,
       //: `data-value-of` says "3 of 12": a scrubber's position means little without its length.
       format: (v) => `${Math.round(v * 100) / 100}${slider.hasAttribute("data-value-of") ? ` of ${max()}` : unit}`,
       onCommit: (v) => {

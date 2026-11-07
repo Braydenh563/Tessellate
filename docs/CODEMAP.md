@@ -2,9 +2,9 @@
 
 Generated 2026-11-07 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7852, frontend ids 2644, CSS sections 522, backend routes 649, backend modules 8931, test files 2123, tests 17895, plan headings 1004, app scripts 28, boot scripts 37, script files 261.
+Counts: frontend functions 7853, frontend ids 2644, CSS sections 522, backend routes 649, backend modules 8931, test files 2124, tests 17897, plan headings 1004, app scripts 28, boot scripts 37, script files 261.
 
-## Frontend functions (7852)
+## Frontend functions (7853)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -697,43 +697,43 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `addReminder` | frontend/js/shell-reminders.js:1538 |
+| `addReminder` | frontend/js/shell-reminders.js:1535 |
 | `armMinuteTick` | frontend/js/shell-reminders.js:41 |
-| `clearDoneReminders` | frontend/js/shell-reminders.js:1077 |
-| `clipText` | frontend/js/shell-reminders.js:846 |
-| `curtainShell` | frontend/js/shell-reminders.js:1678 |
-| `defaultDueValue` | frontend/js/shell-reminders.js:1589 |
+| `clearDoneReminders` | frontend/js/shell-reminders.js:1074 |
+| `clipText` | frontend/js/shell-reminders.js:843 |
+| `curtainShell` | frontend/js/shell-reminders.js:1675 |
+| `defaultDueValue` | frontend/js/shell-reminders.js:1586 |
 | `edgeFadeWire` | frontend/js/shell-reminders.js:442 |
 | `glideStrip` | frontend/js/shell-reminders.js:309 |
-| `liftLockScreen` | frontend/js/shell-reminders.js:1701 |
-| `loadReminders` | frontend/js/shell-reminders.js:932 |
+| `liftLockScreen` | frontend/js/shell-reminders.js:1698 |
+| `loadReminders` | frontend/js/shell-reminders.js:929 |
 | `markScrollEdge` | frontend/js/shell-reminders.js:513 |
 | `markTabBarRecede` | frontend/js/shell-reminders.js:588 |
-| `notePreviewText` | frontend/js/shell-reminders.js:881 |
-| `nudgeDue` | frontend/js/shell-reminders.js:1484 |
+| `notePreviewText` | frontend/js/shell-reminders.js:878 |
+| `nudgeDue` | frontend/js/shell-reminders.js:1481 |
 | `onScrollEdge` | frontend/js/shell-reminders.js:620 |
-| `openCalendarPage` | frontend/js/shell-reminders.js:1317 |
-| `paginateDoneReminders` | frontend/js/shell-reminders.js:1028 |
-| `presetDate` | frontend/js/shell-reminders.js:1373 |
-| `previewBlocks` | frontend/js/shell-reminders.js:873 |
-| `refreshMediaSession` | frontend/js/shell-reminders.js:1642 |
-| `refreshReminderDefaults` | frontend/js/shell-reminders.js:1505 |
-| `relativeWhen` | frontend/js/shell-reminders.js:1353 |
-| `reminderComposeIsPristine` | frontend/js/shell-reminders.js:1493 |
-| `reminderItem` | frontend/js/shell-reminders.js:1118 |
-| `reminderMadeUndo` | frontend/js/shell-reminders.js:1529 |
-| `reminderPutUndoably` | frontend/js/shell-reminders.js:1517 |
-| `reminderTarget` | frontend/js/shell-reminders.js:1334 |
+| `openCalendarPage` | frontend/js/shell-reminders.js:1314 |
+| `paginateDoneReminders` | frontend/js/shell-reminders.js:1025 |
+| `presetDate` | frontend/js/shell-reminders.js:1370 |
+| `previewBlocks` | frontend/js/shell-reminders.js:870 |
+| `refreshMediaSession` | frontend/js/shell-reminders.js:1639 |
+| `refreshReminderDefaults` | frontend/js/shell-reminders.js:1502 |
+| `relativeWhen` | frontend/js/shell-reminders.js:1350 |
+| `reminderComposeIsPristine` | frontend/js/shell-reminders.js:1490 |
+| `reminderItem` | frontend/js/shell-reminders.js:1115 |
+| `reminderMadeUndo` | frontend/js/shell-reminders.js:1526 |
+| `reminderPutUndoably` | frontend/js/shell-reminders.js:1514 |
+| `reminderTarget` | frontend/js/shell-reminders.js:1331 |
 | `revealActiveTab` | frontend/js/shell-reminders.js:269 |
-| `safeMdSlice` | frontend/js/shell-reminders.js:760 |
-| `setDue` | frontend/js/shell-reminders.js:1422 |
+| `safeMdSlice` | frontend/js/shell-reminders.js:757 |
+| `setDue` | frontend/js/shell-reminders.js:1419 |
 | `startClockTicker` | frontend/js/shell-reminders.js:77 |
 | `startMinuteTicker` | frontend/js/shell-reminders.js:60 |
 | `stopClockTicker` | frontend/js/shell-reminders.js:81 |
-| `stripFrontmatter` | frontend/js/shell-reminders.js:856 |
-| `syncDueFromParts` | frontend/js/shell-reminders.js:1436 |
+| `stripFrontmatter` | frontend/js/shell-reminders.js:853 |
+| `syncDueFromParts` | frontend/js/shell-reminders.js:1433 |
 | `syncEdgeFade` | frontend/js/shell-reminders.js:413 |
-| `syncPartsFromDue` | frontend/js/shell-reminders.js:1428 |
+| `syncPartsFromDue` | frontend/js/shell-reminders.js:1425 |
 | `syncScrollEdges` | frontend/js/shell-reminders.js:673 |
 | `syncTabOverflowFade` | frontend/js/shell-reminders.js:232 |
 | `tabBarMode` | frontend/js/shell-reminders.js:226 |
@@ -741,12 +741,12 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `tabContentWidth` | frontend/js/shell-reminders.js:203 |
 | `tabRowSpace` | frontend/js/shell-reminders.js:138 |
 | `tickClocks` | frontend/js/shell-reminders.js:12 |
-| `toLocalInputValue` | frontend/js/shell-reminders.js:1366 |
-| `updateDueReadout` | frontend/js/shell-reminders.js:1448 |
-| `updateReminderBadge` | frontend/js/shell-reminders.js:1047 |
-| `wikiLinkLabel` | frontend/js/shell-reminders.js:807 |
-| `wikiLinkShown` | frontend/js/shell-reminders.js:833 |
-| `wikiLinkTarget` | frontend/js/shell-reminders.js:824 |
+| `toLocalInputValue` | frontend/js/shell-reminders.js:1363 |
+| `updateDueReadout` | frontend/js/shell-reminders.js:1445 |
+| `updateReminderBadge` | frontend/js/shell-reminders.js:1044 |
+| `wikiLinkLabel` | frontend/js/shell-reminders.js:804 |
+| `wikiLinkShown` | frontend/js/shell-reminders.js:830 |
+| `wikiLinkTarget` | frontend/js/shell-reminders.js:821 |
 
 ### frontend/js/markdown.js (34)
 
@@ -7651,18 +7651,19 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `utilityTimeText` | frontend/js/utility-tools.js:24 |
 | `utilityTimerDone` | frontend/js/utility-tools.js:169 |
 
-### frontend/js/value-field.js (11)
+### frontend/js/value-field.js (12)
 
 | Name | File:line |
 |---|---|
 | `bound` | frontend/js/value-field.js:22 |
 | `clamp` | frontend/js/value-field.js:28 |
 | `commit` | frontend/js/value-field.js:53 |
+| `leave` | frontend/js/value-field.js:73 |
 | `paint` | frontend/js/value-field.js:48 |
-| `presets` | frontend/js/value-field.js:99 |
-| `rangeField` | frontend/js/value-field.js:147 |
-| `rangeFieldsIn` | frontend/js/value-field.js:198 |
-| `readoutOf` | frontend/js/value-field.js:141 |
+| `presets` | frontend/js/value-field.js:103 |
+| `rangeField` | frontend/js/value-field.js:151 |
+| `rangeFieldsIn` | frontend/js/value-field.js:203 |
+| `readoutOf` | frontend/js/value-field.js:145 |
 | `size` | frontend/js/value-field.js:43 |
 | `valueField` | frontend/js/value-field.js:20 |
 | `valueFieldParse` | frontend/js/value-field.js:8 |
@@ -24321,7 +24322,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (17895)
+## Tests (17897)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -26277,6 +26278,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_validate.py | 11 |
 | tests/test_validation_copy.py | 6 |
 | tests/test_validation_error_shape.py | 2 |
+| tests/test_value_field_escape_home.py | 2 |
 | tests/test_vault_attachments.py | 9 |
 | tests/test_vault_import.py | 7 |
 | tests/test_vault_read_surfaces.py | 6 |
