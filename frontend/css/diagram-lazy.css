@@ -313,6 +313,15 @@
   margin: 0;
 }
 
+.dgm-picture > .md-mermaid-reason > button {
+  margin-inline-end: var(--space-2);
+}
+
+/* The last good picture under an error (DD-4): present, but plainly not the current source. */
+.dgm-picture-stale > .md-mermaid-img {
+  opacity: 0.4;
+}
+
 /* The overlay (diagram-overlay.js): one box over each drawn node, never a target for a press. Its position is the
    figure's padding box, set from script; a box is placed by a transform so a zoom or a scroll moves no layout. */
 .dgm-overlay {
