@@ -131,10 +131,13 @@
     fig.setAttribute("aria-label", "Diagram picture. Arrow keys pick a box, Shift and an arrow move the picture, plus and minus zoom, 0 fits it.");
     //: The picture says what it holds, and the arrow keys walk its boxes (DD-8a, 1107). A kind's pane has no boxes: its arrows pan.
     const boxes = () => (!S.k && S.m && S.hit?.boxes?.length ? S.hit.boxes : null);
+    //: One pending message: a quick run of arrows leaves the last box's words, not an earlier one that landed after.
+    let told = 0;
     const tell = (text) => {
       if (!S.live) return;
       S.live.textContent = "";
-      setTimeout(() => (S.live.textContent = text), 20);
+      clearTimeout(told);
+      told = setTimeout(() => (S.live.textContent = text), 20);
     };
     //: The picked box brought into view when the picture is zoomed past the pane.
     const reveal = (b) => {
@@ -150,7 +153,7 @@
     const choose = (key) => {
       const list = boxes();
       if (!list) return false;
-      const to = math.reach(list, S.sel?.slice(2), ...{ ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] }[key]);
+      const to = math.reach(list, S.sel?.startsWith("n:") ? S.sel.slice(2) : "", ...{ ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] }[key]);
       if (!to) return tell("No box that way."), true;
       diagramModel.builder.select(S, `n:${to.id}`);
       S.tree.querySelector(`.dgm-block[data-key="n:${to.id}"]`)?.scrollIntoView({ block: "nearest" });
@@ -349,6 +352,8 @@
       if (event.target !== fig || event.ctrlKey || event.metaKey || event.altKey) return;
       const move = { ArrowLeft: [-PAN, 0], ArrowRight: [PAN, 0], ArrowUp: [0, -PAN], ArrowDown: [0, PAN] }[event.key];
       if (move && !event.shiftKey && choose(event.key)) return event.preventDefault();
+      //: Enter or F2 names the picked box in place, as the blocks pane does; a picture with no box picked passes the key on.
+      if ((event.key === "Enter" || event.key === "F2") && !event.shiftKey && boxes() && S.sel?.startsWith("n:") && S.renameNode?.(S.sel.slice(2))) return event.preventDefault();
       cancelGlide();
       //: With boxes, Shift and an arrow pan; the move glides unless the person asked for less motion.
       const far = event.shiftKey ? 5 : 1;
