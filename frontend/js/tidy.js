@@ -164,7 +164,8 @@ async function openTidySheet(review = "") {
 //: rule fires, which is most notebooks most days.
 async function tidyPatterns(state) {
   const body = await apiJson("/insights/patterns", { silent: true }).catch(() => null);
-  if (body?.patterns.some((p) => p.confirmed_id)) await lazyScript("/js/confirmed-patterns.js");
+  //: `lazyScript` answers false on a failed load; a confirmed line then keeps only its Done.
+  const managed = body?.patterns.some((p) => p.confirmed_id) && (await lazyScript("/js/confirmed-patterns.js"));
   if (TIDY.state !== state || !body?.patterns.length) return;
   //: One line per pattern, each with Confirm and Not right (decision 60); a
   //: confirmed one is said as the person's word and carries Edit, Not right
@@ -187,7 +188,8 @@ async function tidyPatterns(state) {
             .then(redraw)
             .catch((error) => toast(error.message, true)),
       }));
-      line.append(kebabMenu([...done, ...confirmedPatternItems(pattern, redraw)], "Manage this pattern"));
+      if (pattern.confirmed_id && managed) line.append(kebabMenu([...done, ...confirmedPatternItems(pattern, redraw)], "Manage this pattern"));
+      else if (done.length) line.append(kebabMenu(done, "Manage this pattern"));
       return line;
     })
   );

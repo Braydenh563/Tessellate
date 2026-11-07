@@ -2657,11 +2657,18 @@ async function renderMemorySettings() {
     const host = $("memory-confirmed-list");
     if (!host) return;
     showSkeletons(host, 2, "li");
-    const [data] = await Promise.all([apiJson("/insights/confirmed").catch(() => null), lazyScript("/js/confirmed-patterns.js")]);
+    //: `lazyScript` answers false on a failed load; either failure is said,
+    //: never shown as "None yet" (the review).
+    const [data, ready] = await Promise.all([apiJson("/insights/confirmed").catch(() => null), lazyScript("/js/confirmed-patterns.js")]);
     clearSkeletons(host);
-    $("memory-confirmed-empty")?.classList.toggle("hidden", Boolean(data?.items.length));
+    const empty = $("memory-confirmed-empty");
+    if (empty) {
+      empty.dataset.none ??= empty.textContent.trim();
+      empty.textContent = data && ready ? empty.dataset.none : "Couldn't load your confirmed patterns.";
+      empty.classList.toggle("hidden", Boolean(data && ready && data.items.length));
+    }
     host.replaceChildren(
-      ...(data?.items || []).map((item) => {
+      ...(ready ? data?.items || [] : []).map((item) => {
         const li = document.createElement("li");
         li.className = "entry-item learned-row";
         const text = li.appendChild(document.createElement("p"));

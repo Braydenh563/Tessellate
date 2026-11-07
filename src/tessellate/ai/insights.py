@@ -551,6 +551,9 @@ def as_row(insight: Insight, known: Memory | None = None) -> dict:
 _TOLD = re.compile(r"^(?P<said>.*), as you told me on (?P<on>\d{1,2} [A-Z][a-z]+)\.$", re.S)
 #: The rules whose key is a subject the person may rename.
 SUBJECT_RULES = ("recurrence", "streak")
+#: That tail typed into Edit (any case, after a comma or a stop): the day is
+#: the one it was first confirmed, said once.
+_TOLD_TYPED = re.compile(r"[\s,.;]*as you told me on \d{1,2} [A-Za-z]+[\s.]*$", re.I)
 
 
 def _payload(row) -> dict:  # noqa: ANN001
@@ -637,7 +640,7 @@ def edit_confirmed(session, row, sentence: str | None = None, subject: str | Non
     import json
 
     payload = _payload(row)
-    sentence = " ".join(str(sentence or "").split()).rstrip(" .")
+    sentence = _TOLD_TYPED.sub("", " ".join(str(sentence or "").split())).rstrip(" .,")
     subject = " ".join(str(subject or "").split())
     if not sentence and not subject:
         raise ValueError("Say what it should say, or what it is about.")

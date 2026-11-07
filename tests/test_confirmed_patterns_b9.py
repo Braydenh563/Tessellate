@@ -219,3 +219,65 @@ def test_one_set_of_actions_for_settings_tidy_and_the_dashboard():
     #: Lazy (the boot gzip budget): each caller loads it before drawing one.
     for caller in ("settings-controls.js", "tidy.js", "dash-day.js"):
         assert 'lazyScript("/js/confirmed-patterns.js")' in open(f"frontend/js/{caller}", encoding="utf-8").read(), caller
+
+
+# --- review fixes ------------------------------------------------------------------------------
+
+
+def test_a_new_subject_replaces_the_last_one_and_not_right_names_only_the_live_ones(client, session):
+    """Measured on the review: disc golf, frisbee, then golf left both old
+    words answering with the golf line, and Not right hid them for good."""
+    item = _confirmed(client, session)
+    for word in ("disc golf", "frisbee"):
+        renamed = client.patch(f"/insights/confirmed/{item['id']}", json={"subject": word})
+        assert renamed.status_code == 200
+    subjects = insights.memory(session).subjects()
+    assert "frisbee" in subjects and "golf" in subjects and "disc golf" not in subjects
+    back = client.patch(f"/insights/confirmed/{item['id']}", json={"subject": "golf"})
+    assert back.json()["subject"] == "golf"
+    assert set(insights.memory(session).subjects()) == {"golf"}
+    said = client.post(f"/insights/confirmed/{item['id']}/dismiss")
+    assert len(said.json()["correction_ids"]) == 1
+    assert insights.memory(session).dismissed == {"recurrence:golf"}
+
+
+def test_typing_the_date_tail_into_edit_says_it_once(client, session):
+    item = _confirmed(client, session)
+    on = item["line"].rsplit(" on ", 1)[-1]
+    edited = client.patch(f"/insights/confirmed/{item['id']}", json={"sentence": "Golf, as you told me on 1 May"})
+    assert edited.json()["line"] == f"Golf, as you told me on {on}"
+    again = client.patch(f"/insights/confirmed/{item['id']}", json={"sentence": "Golf. As you told me on 1 May."})
+    assert again.json()["line"].count("as you told me") == 1
+    #: Only the tail: nothing else left to say is refused, not saved blank.
+    tail_only = client.patch(f"/insights/confirmed/{item['id']}", json={"sentence": ", as you told me on 1 May"})
+    assert tail_only.status_code == 422
+
+
+def test_it_stays_while_any_of_its_notes_can_be_opened(client, session):
+    item = _confirmed(client, session)
+    newest = max(n["id"] for n in item["notes"])
+    session.get(Entry, newest).is_deleted = True
+    session.commit()
+    listed = client.get("/insights/confirmed").json()["items"]
+    assert [i["id"] for i in listed] == [item["id"]] and len(listed[0]["notes"]) == 3
+    assert "golf" in insights.memory(session).subjects()
+    edited = client.patch(f"/insights/confirmed/{item['id']}", json={"sentence": "Golf, still"})
+    assert edited.status_code == 200
+
+
+def test_the_page_says_a_failed_load_and_every_change_can_be_undone():
+    js = with_pieces("settings-controls.js")
+    body = js[js.index("const drawConfirmed = async () => {") :][:2600]
+    #: A failed list or menu says so; it is never "None yet".
+    assert "Couldn't load your confirmed patterns." in body
+    items = frontend_text("confirmed-patterns.js")
+    items = items[items.index("function confirmedPatternItems(") :][:3200]
+    #: The wording and the subject both go on the undo stack.
+    assert 'field === "sentence" &&' not in items and "pushRequestUndo(" in items
+    #: `lazyScript` answers false on a failed load: each caller checks it
+    #: before naming `confirmedPatternItems`.
+    tidy = with_pieces("tidy.js")
+    assert 'const managed = body?.patterns.some((p) => p.confirmed_id) && (await lazyScript("/js/confirmed-patterns.js"));' in tidy
+    assert "if (pattern.confirmed_id && managed)" in tidy
+    day = with_pieces("dash-day.js")
+    assert ".then((ready) =>" in day[day.index("function dashPatternBit(") :][:1800]
