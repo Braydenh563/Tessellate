@@ -324,6 +324,10 @@ CLIMB_FIRST = 40.0
 #: The `climb` act was missing from `ACTS` (so `_can_climb` was never called and a window came only with a rare
 #: trip, one in thirty minutes or so): the owner on Windows had never seen it perch (INBOX 1683 g).
 CLIMB_EVERY = (90.0, 240.0)
+#: A window top (or a title bar) that has just appeared is gone to within this many seconds, not after the
+#: ordinary wait; one such eager trip per `EAGER_EVERY` seconds so it stays a moment, not a habit (INBOX 1692 n).
+CLIMB_SOON = 3.0
+EAGER_EVERY = 45.0
 PERCH_FOR = (45.0, 120.0)  # long enough to be seen and to count as a settled spell (was 20 to 50)
 PERCH_MIN_RISE = 48.0
 PERCH_MOVED = 3.0
@@ -515,6 +519,13 @@ class Engine:
         self.target: Perch | None = None
         self.perch_until = 0.0
         self.climb_ready = now + CLIMB_FIRST
+        #: When a newly seen window top is gone to (None: nothing new), what it is ("climb" or "hang"), the keys
+        #: already seen, the next eager trip, and what the runner should log about trips.
+        self.eager_at: float | None = None
+        self.eager_kind = "climb"
+        self.seen_keys: set[int] = set()
+        self.eager_ready = 0.0
+        self.notes: list[str] = []
         self.pointer: tuple[int, int] | None = None
         self.card: Any = None
         self.card_queue: list[Any] = []
@@ -1083,6 +1094,10 @@ class Engine:
         if self.busy:
             self.state_until = now + QUIET_RECHECK
             return
+        eager = self._eager(now)
+        if eager is not None:
+            self._perform(eager, now)
+            return
         if self.follow_until > now and self._follow(now):
             return
         if self.come is not None and self.come["phase"] != "wait":  # keeping company: small things, not a stroll
@@ -1518,6 +1533,7 @@ class Engine:
         it: it falls (or floats down) when that window is gone or no longer under it, and keeps up when it moves."""
         self.windows = list(windows)
         self.hangs = list(hangs)
+        self._note_new_edges(now)
         if self.hang_on is not None:
             self._check_hang(now)
         if self.perch is None:
@@ -1533,6 +1549,44 @@ class Engine:
             self._follow_top(cur, now)
         else:
             self.perch = cur
+
+    def _note_new_edges(self, now: float) -> None:
+        """A window top (else a title bar) not seen in the last scan: go to it within `CLIMB_SOON` seconds, once
+        the stand it is in ends early. The keys seen are kept so one window is new once (INBOX 1692 n)."""
+        keys = {p.key for p in self.windows} | {p.key for p in self.hangs}
+        fresh = keys - self.seen_keys
+        self.seen_keys = keys
+        if not fresh or self.perch is not None or not (self.roam and self.roam_windows) or self.reduced:
+            return
+        kind = "climb" if any(p.key in fresh for p in self._candidates()) else "hang" if any(p.key in fresh for p in self.hangs) else ""
+        if not kind:
+            return
+        self.eager_at, self.eager_kind = max(now + CLIMB_SOON, self.eager_ready), kind
+        self.notes.append(f"a new {'window top' if kind == 'climb' else 'title bar'} was seen: going to it at {self.eager_at - now:.0f} s")
+        if self.state == "stand":
+            self.state_until = min(self.state_until, self.eager_at)
+
+    def _eager(self, now: float) -> str | None:
+        """The act for a newly seen edge once its time has come, else None (with the reason logged)."""
+        if self.eager_at is None or now < self.eager_at:
+            return None
+        kind, self.eager_at = self.eager_kind, None
+        if self.perch is not None or self.busy or self.reduced or not (self.roam and self.roam_windows):
+            self.notes.append(f"eager {kind} skipped: busy, still or already on a window")
+            return None
+        if kind == "climb" and not self._candidates():
+            self.notes.append("eager climb skipped: the window is no longer a place worth the trip")
+            return None
+        if kind == "hang" and not self.hangs:
+            self.notes.append("eager hang skipped: the edge is gone")
+            return None
+        self.eager_ready = now + EAGER_EVERY
+        self.notes.append(f"eager {kind}: chosen")
+        if kind == "climb":
+            self.climb_ready = 0.0
+        else:
+            self.big_ready = 0.0
+        return kind
 
     def _follow_top(self, cur: Perch, now: float) -> None:
         """The window under it moved up or down: a floater drifts to the new height, a walker steps up, or
@@ -1614,9 +1668,11 @@ class Engine:
             and now >= self.climb_ready and bool(self._candidates())
         )
 
-    def _candidates(self) -> list[Perch]:
+    def _candidates(self, drops: Any = None) -> list[Perch]:
         """Window tops on this monitor worth the trip: they fit on screen with the
-        figure above them, sit well above the floor, and are wide enough to stand on."""
+        figure above them, sit well above the floor, and are wide enough to stand on. The test is the DRAWN
+        figure's top (the overlay window has headroom above it), so a window in the upper part of the screen
+        counts (INBOX 1692 n). `drops`, when given, counts why a top was refused (counts only, for the log)."""
         m = self.current_monitor()
         left, top, right, _bottom = m.area
         scale = m.dpi / 96.0
@@ -1624,11 +1680,17 @@ class Engine:
         found = []
         for p in self.windows:
             lo, hi = max(p.left, left), min(p.right, right)
-            if hi - lo < w + 20 * scale or p.top - h < top:
+            if hi - lo < w + 20 * scale:
+                why = "too narrow"
+            elif self._box_at(0.0, p.top - h)[1] < top:
+                why = "too close to the top"
+            elif p.top - h > self.floor_y(m) - PERCH_MIN_RISE * scale:
+                why = "too near the floor"
+            else:
+                found.append(p)
                 continue
-            if p.top - h > self.floor_y(m) - PERCH_MIN_RISE * scale:
-                continue
-            found.append(p)
+            if drops is not None:
+                drops[why] += 1
         return found
 
     def _climb(self, now: float, only: Perch | None = None) -> None:

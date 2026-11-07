@@ -6,6 +6,8 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- The desk companion sits on windows again (INBOX 1692 n): a full-monitor layered or tool window (an animated wallpaper) no longer hides every window's top, a tool window with a taskbar button counts as a window, a window near the top of the screen is judged by the figure's drawn height, a new window or title bar is gone to within three seconds (was forty), the answer to a new window is a visible look, and the log says why each edge was dropped and why a trip was chosen or skipped.
+- Desk size handle: the diagonal resize cursor over it (NESW standing, NWSE hanging) and an antialiased ring like the app's grip (owner 2026-11-07).
 - The desk companion plays an act a little differently each time (research V3): amplitude 0.85 to 1.15, duration plus or minus 15% and one of three easings, drawn from its own seeded stream so no other choice moves.
 - The desktop companion's menu says your companion is being summoned, not drawn.
 - A trackpad pinch in the lightbox zooms at the diagram view's rate, five times faster than before; a mouse notch is unchanged.

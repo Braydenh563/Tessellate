@@ -30,6 +30,7 @@ WS_POPUP = 0x80000000
 WS_EX_TOPMOST = 0x00000008
 WS_EX_TOOLWINDOW = 0x00000080
 WS_EX_LAYERED = 0x00080000
+WS_EX_APPWINDOW = 0x00040000
 WS_EX_NOACTIVATE = 0x08000000
 EX_STYLE = WS_EX_LAYERED | WS_EX_TOOLWINDOW | WS_EX_TOPMOST | WS_EX_NOACTIVATE
 
@@ -357,6 +358,9 @@ class WinInfo(NamedTuple):
     rect: tuple[int, int, int, int]
     perch: bool
     hang: bool = False
+    #: False for a layered or tool window that fills a monitor (an animated wallpaper, a screen overlay): it is
+    #: drawn above the real windows but hides none of their tops (INBOX 1692 n).
+    solid: bool = True
 
 
 def _frame_rect(w: Any, hwnd: Any) -> tuple[int, int, int, int] | None:
@@ -426,20 +430,29 @@ def _read_window(
     if rect is None:
         note(why)
         return None
+    info, why = _classify(w, hwnd, own_pid, ex, rect, monitors_)
+    note(why or "perch")
+    return info
+
+
+def _classify(w: Any, hwnd: Any, own_pid: int, ex: int, rect: Any, monitors_: list[tuple[int, int, int, int]]) -> "tuple[WinInfo, str | None]":
+    """A framed window as a WinInfo, and the first reason it is no place to stand (None: it is one)."""
     pid = wintypes.DWORD(0)
     w.user32.GetWindowThreadProcessId(hwnd, ctypes.byref(pid))
     full = any(rect[0] <= a[0] and rect[2] >= a[2] and rect[1] <= a[1] and rect[3] >= a[3] for a in monitors_)
+    app = bool(ex & WS_EX_APPWINDOW)  # a tool window that asks for a taskbar button is a real app window (Electron, some browsers)
     reasons = (
-        ("tool window", bool(ex & WS_EX_TOOLWINDOW)), ("own process", int(pid.value) == own_pid),
+        ("tool window", bool(ex & WS_EX_TOOLWINDOW) and not app), ("own process", int(pid.value) == own_pid),
         ("maximised", bool(w.user32.IsZoomed(hwnd))), ("fills a monitor", full),
         ("no title", not w.user32.GetWindowTextLengthW(hwnd)),
     )
     why = next((name for name, hit in reasons if hit), None)
-    note(why or "perch")
     # A maximised window is no place to stand but its title bar is a place to hang from; a tool window, the app's
     # own and one without a title are neither (INBOX 1683 w: with a maximised window up, only the taskbar was left).
     hang = reasons[2][1] and not (reasons[0][1] or reasons[1][1] or reasons[4][1])
-    return WinInfo(int(hwnd), rect, why is None, hang)
+    # A layered or tool window that fills a monitor (an animated wallpaper, a screen overlay) hides no window's top.
+    solid = not (full and ex & (WS_EX_TOOLWINDOW | WS_EX_LAYERED) and not app)
+    return WinInfo(int(hwnd), rect, why is None, hang, solid), why
 
 
 def windows(

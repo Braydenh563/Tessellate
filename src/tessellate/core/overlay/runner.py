@@ -397,10 +397,12 @@ class OverlayRunner:
             self._answer(self._watch.windows_seen(win.key for win in wins), now)
         scale = max(m.dpi for m in self.monitors) / 96.0 if self.monitors else 1.0
         room = int(engine.size[0] + PERCH_ROOM * scale)
-        edges = perches.top_edges(wins, room)
+        drops: Counter = Counter()
+        edges = perches.top_edges(wins, room, drops)
         hangs = perches.hang_spots(wins, room)
         engine.set_windows(edges, now, hangs)
-        self._log_scan(len(wins), len(edges), len(engine._candidates()), tally, len(edges) + len(hangs))
+        self._log_scan(len(wins), len(edges), len(engine._candidates(drops)), tally, len(edges) + len(hangs), drops)
+        self._log_notes()
 
     def _screen_events(self, now: float) -> None:
         """What happened on the screen since the last tick, handed to the engine to answer (INBOX 1683, M6): the
@@ -427,11 +429,19 @@ class OverlayRunner:
             if self.engine is not None and self.engine.react(kind, now):
                 logger.info("overlay: it answered %s", kind)
 
-    def _log_scan(self, listed: int, edges: int, candidates: int, tally: Counter, hangs: int = 0) -> None:
+    def _log_notes(self) -> None:
+        """What the engine decided about a trip to a window or an edge (chosen, skipped and why), one INFO line each."""
+        engine = self.engine
+        while engine is not None and engine.notes:
+            logger.info("overlay: %s", engine.notes.pop(0))
+
+    def _log_scan(self, listed: int, edges: int, candidates: int, tally: Counter, hangs: int = 0, drops: Counter | None = None) -> None:
         """One INFO line when what the window list returns changes (counts and reasons, never a title), so a
         companion that never perches can be read off the log (INBOX 1683 g)."""
         parts = ", ".join(f"{n} {why}" for why, n in sorted(tally.items(), key=lambda kv: (-kv[1], kv[0])))
         line = f"overlay: windows listed {listed}, standable top edges {edges}, worth the trip {candidates}, hang spots {hangs}" + (f" ({parts})" if parts else "")
+        if drops:  # why a standable window's top gave no perch or no trip: counts only (INBOX 1692 n)
+            line += "; edges dropped: " + ", ".join(f"{n} {why}" for why, n in sorted(drops.items(), key=lambda kv: (-kv[1], kv[0])))
         if line != self._last_scan_line:
             self._last_scan_line = line
             logger.info(line)
