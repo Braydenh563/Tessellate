@@ -45,6 +45,8 @@ class FakeWin32:
         self.pace_fire = threading.Event()
         #: (work area, dpi) of each monitor, and the answers the shell gives.
         self.monitor_list: list[tuple[tuple[int, int, int, int], int]] = [((0, 0, 1920, 1040), 96)]
+        self.monitor_full: list[tuple[int, int, int, int]] = []  # each monitor's whole rectangle (rcMonitor), if a test sets it
+        self.autohide = False  # the taskbar's auto-hide setting
         self.notification = 5  # QUNS_ACCEPTS_NOTIFICATIONS
         self.animations = 1
         #: (GetTickCount, last input tick); None answers "unknown" like a failed call.
@@ -173,7 +175,17 @@ class FakeWin32:
         left, top, right, bottom = self.monitor_list[int(hmon) - 100][0]
         work = ref._obj.rcWork
         work.left, work.top, work.right, work.bottom = left, top, right, bottom
+        if self.monitor_full:  # the whole monitor, for the taskbar tests; otherwise left zero
+            full = ref._obj.rcMonitor
+            full.left, full.top, full.right, full.bottom = self.monitor_full[int(hmon) - 100]
         return 1
+
+    def _FindWindowW(self, cls: Any, _title: Any) -> int:
+        """The taskbar (class Shell_TrayWnd) is window 9001 when a test lists it; 0 when there is none."""
+        return 9001 if cls == "Shell_TrayWnd" and 9001 in self.window_list else 0
+
+    def _SHAppBarMessage(self, message: int, _data: Any) -> int:
+        return int(self.autohide) if message == 4 else 0  # ABM_GETSTATE: ABS_AUTOHIDE is 1
 
     def _GetDpiForMonitor(self, hmon: Any, _kind: int, x_ref: Any, y_ref: Any) -> int:
         x_ref._obj.value = y_ref._obj.value = self.monitor_list[int(hmon) - 100][1]

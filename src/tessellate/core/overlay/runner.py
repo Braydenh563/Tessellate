@@ -72,6 +72,8 @@ SCAN_EVERY = 1.0
 #: Pictures with a face or a prop kept built (a prop act cycles a few phases for a minute).
 DECOR_KEEP = 48
 SCAN_RIDING = 0.25
+#: A tool that hides the taskbar window sends no message, so the work area is read again this often (seconds).
+TASKBAR_EVERY = 5.0
 SCAN_SLACK = 1.0
 #: Room past the figure's width a top edge needs to be stood on (logical px, at 96 dpi).
 PERCH_ROOM = 20
@@ -171,6 +173,7 @@ class OverlayRunner:
         #: The foreground window's text band, kept per window: (hwnd, read at, band).
         self._zone: tuple[int, float, tuple[int, int, int, int] | None] | None = None
         self._next_scan = 0.0
+        self._next_taskbar = 0.0
         self._cards: deque[Any] = deque()
         self._commands: deque[str] = deque()
         #: The result of the last menu request the engine took, for the tests and the log.
@@ -379,9 +382,22 @@ class OverlayRunner:
             self._scan_failed = True
             return []
 
+    def _watch_taskbar(self, now: float) -> None:
+        """Read the work areas again now and then: a hider tool changes the floor without a message (research T1)."""
+        if now < self._next_taskbar:
+            return
+        self._next_taskbar = now + TASKBAR_EVERY
+        try:
+            areas = [area for area, _dpi in self.k.monitors(self.w)]
+        except OSError:
+            return
+        if areas and areas != [m.area for m in self.monitors]:
+            self._refresh_monitors()
+
     def _scan(self, now: float, force: bool = False) -> None:
         engine = self.engine
         assert engine is not None
+        self._watch_taskbar(now)
         engine.roam_windows = self.roam_windows
         if not self.roam_windows:
             if engine.windows or engine.perch is not None:

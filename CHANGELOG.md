@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- The desk companion's floor is the bottom of the screen when the taskbar is hidden, auto-hides or is gone (research T1, INBOX 1692 a): the shell is asked for the taskbar state and the work area is read again every five seconds.
 - The window filter follows Alt-Tab for owned windows (research T7): an owner with a dialog open is no perch while the dialog is up, though it still hides what is under it.
 - The desk companion has a fuller mind (research B1, B2, B4, B9; owner 2026-11-07): seven needs, acts scored through response curves, no act twice running, short chains of acts that belong together, idle tiers by time away (look about, then props, then a nap), a rare long walk (an hour apart, only when lively), a trip that waits gets likelier; its idle cycle varies 8% per round (A7) and a look or a head turn starts with a blink (G2).
 - The desk companion reacts by priority (research B5: a flinch or a low battery breaks a sit or a lower reaction) and watches the screen (research B7: a window dragged, maximised or restored each get a look).

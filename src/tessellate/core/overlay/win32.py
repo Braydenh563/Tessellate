@@ -165,6 +165,17 @@ class BITMAPINFO(ctypes.Structure):
     _fields_ = [("bmiHeader", BITMAPINFOHEADER), ("bmiColors", wintypes.DWORD * 1)]
 
 
+ABM_GETSTATE = 4
+ABS_AUTOHIDE = 1
+
+
+class APPBARDATA(ctypes.Structure):
+    _fields_ = [
+        ("cbSize", wintypes.DWORD), ("hWnd", wintypes.HWND), ("uCallbackMessage", wintypes.UINT), ("uEdge", wintypes.UINT),
+        ("rc", wintypes.RECT), ("lParam", wintypes.LPARAM),
+    ]
+
+
 class MONITORINFO(ctypes.Structure):
     _fields_ = [
         ("cbSize", wintypes.DWORD), ("rcMonitor", wintypes.RECT), ("rcWork", wintypes.RECT), ("dwFlags", wintypes.DWORD),
@@ -213,6 +224,7 @@ def signatures() -> dict[str, dict[str, tuple[Any, list[Any]]]]:
             "EnumWindows": (B, [WNDENUMPROC, LPARAM]),
             "IsWindowVisible": (B, [H]),
             "GetAncestor": (H, [H, U]),
+            "FindWindowW": (H, [wintypes.LPCWSTR, wintypes.LPCWSTR]),
             "GetLastActivePopup": (H, [H]),
             "IsIconic": (B, [H]),
             "IsZoomed": (B, [H]),
@@ -246,12 +258,13 @@ def signatures() -> dict[str, dict[str, tuple[Any, list[Any]]]]:
         },
         "shell32": {
             "SHQueryUserNotificationState": (ctypes.c_long, [P(INT)]),
+            "SHAppBarMessage": (ctypes.c_size_t, [wintypes.DWORD, P(APPBARDATA)]),
         },
     }
 
 
 #: Functions an older Windows may lack: left unset (the caller checks `hasattr`).
-OPTIONAL = frozenset({"SetThreadDpiAwarenessContext", "GetDpiForMonitor", "SHQueryUserNotificationState", "DwmGetWindowAttribute"})
+OPTIONAL = frozenset({"SetThreadDpiAwarenessContext", "GetDpiForMonitor", "SHQueryUserNotificationState", "DwmGetWindowAttribute", "SHAppBarMessage"})
 
 
 class Win32:
@@ -304,10 +317,47 @@ def load() -> Win32:
 
 # --- small helpers over the typed calls (shared by host and the coordinator) ----
 
+def _taskbar(w: Any) -> tuple[bool, tuple[int, int, int, int] | None]:
+    """(gone, rect): the taskbar is hidden by a tool, set to auto-hide or absent, and the rectangle it last had (None
+    with no window). The work area keeps its strip when only the window is hidden (research T1, INBOX 1692 a)."""
+    try:
+        tray = w.user32.FindWindowW("Shell_TrayWnd", None)
+        rect = None
+        if tray:
+            r = wintypes.RECT()
+            if w.user32.GetWindowRect(tray, ctypes.byref(r)):
+                rect = (r.left, r.top, r.right, r.bottom)
+        hidden = not tray or not w.user32.IsWindowVisible(tray)
+        ask = getattr(getattr(w, "shell32", None), "SHAppBarMessage", None)
+        data = APPBARDATA()
+        data.cbSize = ctypes.sizeof(APPBARDATA)
+        return hidden or bool(ask is not None and int(ask(ABM_GETSTATE, ctypes.byref(data))) & ABS_AUTOHIDE), rect
+    except Exception:  # noqa: BLE001 - an unreadable taskbar leaves the work area as the shell reports it
+        return False, None
+
+
+def _free_tray_side(work: tuple[int, int, int, int], full: tuple[int, int, int, int], rect: tuple[int, int, int, int] | None) -> tuple[int, int, int, int]:
+    """The work area with the strip a gone taskbar reserved given back: its own side of `full`, the bottom when its
+    rectangle is unknown, and nothing when it sits on another monitor or the monitor's size is unknown."""
+    if full[2] <= full[0] or full[3] <= full[1]:
+        return work
+    left, top, right, bottom = work
+    if rect is None:
+        return left, top, right, full[3]
+    cx, cy = (rect[0] + rect[2]) / 2, (rect[1] + rect[3]) / 2
+    if not (full[0] <= cx < full[2] and full[1] <= cy < full[3]):
+        return work
+    if rect[2] - rect[0] >= rect[3] - rect[1]:  # wide: along the top or the bottom
+        return (left, full[1], right, bottom) if cy < (full[1] + full[3]) / 2 else (left, top, right, full[3])
+    return (full[0], top, right, bottom) if cx < (full[0] + full[2]) / 2 else (left, top, full[2], bottom)
+
+
 def monitors(w: Any) -> list[tuple[tuple[int, int, int, int], int]]:
     """Every monitor's work area (left, top, right, bottom) in physical pixels
-    of the calling thread's awareness, with its effective dpi."""
+    of the calling thread's awareness, with its effective dpi. A taskbar that is hidden or auto-hides gives its
+    strip back, so the floor is the bottom of the screen (research T1)."""
     found: list[tuple[tuple[int, int, int, int], int]] = []
+    gone, tray = _taskbar(w)
 
     def each(hmon: Any, _hdc: Any, _rect: Any, _data: Any) -> int:
         try:
@@ -315,6 +365,9 @@ def monitors(w: Any) -> list[tuple[tuple[int, int, int, int], int]]:
             info.cbSize = ctypes.sizeof(MONITORINFO)
             if w.user32.GetMonitorInfoW(hmon, ctypes.byref(info)):
                 area = (info.rcWork.left, info.rcWork.top, info.rcWork.right, info.rcWork.bottom)
+                if gone:
+                    full = (info.rcMonitor.left, info.rcMonitor.top, info.rcMonitor.right, info.rcMonitor.bottom)
+                    area = _free_tray_side(area, full, tray)
                 found.append((area, _monitor_dpi(w, hmon)))
         except Exception:  # noqa: BLE001 - one bad monitor never ends the walk
             logger.debug("overlay: a monitor could not be read", exc_info=True)
