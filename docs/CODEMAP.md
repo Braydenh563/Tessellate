@@ -2,9 +2,9 @@
 
 Generated 2026-11-07 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7854, frontend ids 2644, CSS sections 522, backend routes 649, backend modules 8931, test files 2123, tests 17895, plan headings 1004, app scripts 28, boot scripts 37, script files 261.
+Counts: frontend functions 7852, frontend ids 2644, CSS sections 522, backend routes 649, backend modules 8931, test files 2123, tests 17895, plan headings 1004, app scripts 28, boot scripts 37, script files 261.
 
-## Frontend functions (7854)
+## Frontend functions (7852)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -576,65 +576,64 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `setNotePickerSource` | frontend/js/chat-attach.js:1018 |
 | `syncChatPrivate` | frontend/js/chat-attach.js:1263 |
 
-### frontend/js/sheets-selects.js (55)
+### frontend/js/sheets-selects.js (54)
 
 | Name | File:line |
 |---|---|
-| `aiNameNow` | frontend/js/sheets-selects.js:2337 |
-| `annotateSliders` | frontend/js/sheets-selects.js:1049 |
-| `applySidebarSheetMode` | frontend/js/sheets-selects.js:219 |
-| `applySidebarWidth` | frontend/js/sheets-selects.js:100 |
-| `applyWebPanelWidth` | frontend/js/sheets-selects.js:529 |
-| `builtinPersonas` | frontend/js/sheets-selects.js:2436 |
-| `builtinThinkingWords` | frontend/js/sheets-selects.js:2386 |
-| `clampToolbarMenu` | frontend/js/sheets-selects.js:1528 |
-| `dateFieldFace` | frontend/js/sheets-selects.js:1078 |
-| `eachSidebar` | frontend/js/sheets-selects.js:196 |
-| `editedMarker` | frontend/js/sheets-selects.js:2026 |
-| `enhanceAllSelects` | frontend/js/sheets-selects.js:1060 |
-| `enhanceDateField` | frontend/js/sheets-selects.js:1088 |
-| `enhanceSelect` | frontend/js/sheets-selects.js:736 |
-| `focusBackTo` | frontend/js/sheets-selects.js:2462 |
-| `focusFirstIn` | frontend/js/sheets-selects.js:2474 |
-| `focusSelect` | frontend/js/sheets-selects.js:1151 |
-| `formatTokens` | frontend/js/sheets-selects.js:1756 |
-| `initResizableSidebars` | frontend/js/sheets-selects.js:477 |
-| `initSidebarSheetDismissal` | frontend/js/sheets-selects.js:282 |
-| `kebabMenu` | frontend/js/sheets-selects.js:1372 |
-| `labelledMenu` | frontend/js/sheets-selects.js:643 |
+| `aiNameNow` | frontend/js/sheets-selects.js:2333 |
+| `annotateSliders` | frontend/js/sheets-selects.js:1045 |
+| `applySidebarSheetMode` | frontend/js/sheets-selects.js:215 |
+| `applySidebarWidth` | frontend/js/sheets-selects.js:96 |
+| `applyWebPanelWidth` | frontend/js/sheets-selects.js:525 |
+| `builtinPersonas` | frontend/js/sheets-selects.js:2432 |
+| `builtinThinkingWords` | frontend/js/sheets-selects.js:2382 |
+| `clampToolbarMenu` | frontend/js/sheets-selects.js:1524 |
+| `dateFieldFace` | frontend/js/sheets-selects.js:1074 |
+| `eachSidebar` | frontend/js/sheets-selects.js:192 |
+| `editedMarker` | frontend/js/sheets-selects.js:2022 |
+| `enhanceAllSelects` | frontend/js/sheets-selects.js:1056 |
+| `enhanceDateField` | frontend/js/sheets-selects.js:1084 |
+| `enhanceSelect` | frontend/js/sheets-selects.js:732 |
+| `focusBackTo` | frontend/js/sheets-selects.js:2458 |
+| `focusFirstIn` | frontend/js/sheets-selects.js:2470 |
+| `focusSelect` | frontend/js/sheets-selects.js:1147 |
+| `formatTokens` | frontend/js/sheets-selects.js:1752 |
+| `initResizableSidebars` | frontend/js/sheets-selects.js:473 |
+| `initSidebarSheetDismissal` | frontend/js/sheets-selects.js:278 |
+| `kebabMenu` | frontend/js/sheets-selects.js:1368 |
+| `labelledMenu` | frontend/js/sheets-selects.js:639 |
 | `layoutIsStacked` | frontend/js/sheets-selects.js:42 |
-| `layoutIsTablet` | frontend/js/sheets-selects.js:79 |
-| `lightboxReadingsFor` | frontend/js/sheets-selects.js:1727 |
-| `listFilter` | frontend/js/sheets-selects.js:1284 |
-| `loadChatSuggestions` | frontend/js/sheets-selects.js:2264 |
-| `loadConversationList` | frontend/js/sheets-selects.js:1832 |
-| `makeMenuItem` | frontend/js/sheets-selects.js:623 |
-| `makeSidebarResizable` | frontend/js/sheets-selects.js:338 |
-| `makeWebPanelResizable` | frontend/js/sheets-selects.js:566 |
-| `menuRowFits` | frontend/js/sheets-selects.js:1351 |
-| `openConversation` | frontend/js/sheets-selects.js:2034 |
-| `openKebabSheet` | frontend/js/sheets-selects.js:1199 |
-| `parseServerTime` | frontend/js/sheets-selects.js:1765 |
-| `personaDisplayName` | frontend/js/sheets-selects.js:2343 |
-| `relativeTime` | frontend/js/sheets-selects.js:1775 |
-| `replaceOpenToolbarMenus` | frontend/js/sheets-selects.js:1636 |
-| `resetWebPanelWidth` | frontend/js/sheets-selects.js:547 |
-| `rowActions` | frontend/js/sheets-selects.js:1259 |
-| `selectFaceText` | frontend/js/sheets-selects.js:727 |
-| `setSidebarSheet` | frontend/js/sheets-selects.js:213 |
-| `shortModelName` | frontend/js/sheets-selects.js:1682 |
+| `lightboxReadingsFor` | frontend/js/sheets-selects.js:1723 |
+| `listFilter` | frontend/js/sheets-selects.js:1280 |
+| `loadChatSuggestions` | frontend/js/sheets-selects.js:2260 |
+| `loadConversationList` | frontend/js/sheets-selects.js:1828 |
+| `makeMenuItem` | frontend/js/sheets-selects.js:619 |
+| `makeSidebarResizable` | frontend/js/sheets-selects.js:334 |
+| `makeWebPanelResizable` | frontend/js/sheets-selects.js:562 |
+| `menuRowFits` | frontend/js/sheets-selects.js:1347 |
+| `openConversation` | frontend/js/sheets-selects.js:2030 |
+| `openKebabSheet` | frontend/js/sheets-selects.js:1195 |
+| `parseServerTime` | frontend/js/sheets-selects.js:1761 |
+| `personaDisplayName` | frontend/js/sheets-selects.js:2339 |
+| `relativeTime` | frontend/js/sheets-selects.js:1771 |
+| `replaceOpenToolbarMenus` | frontend/js/sheets-selects.js:1632 |
+| `resetWebPanelWidth` | frontend/js/sheets-selects.js:543 |
+| `rowActions` | frontend/js/sheets-selects.js:1255 |
+| `selectFaceText` | frontend/js/sheets-selects.js:723 |
+| `setSidebarSheet` | frontend/js/sheets-selects.js:209 |
+| `shortModelName` | frontend/js/sheets-selects.js:1678 |
 | `sidebarDefault` | frontend/js/sheets-selects.js:23 |
-| `sidebarFittedWidth` | frontend/js/sheets-selects.js:86 |
+| `sidebarFittedWidth` | frontend/js/sheets-selects.js:82 |
 | `sidebarWidth` | frontend/js/sheets-selects.js:25 |
-| `sortConversations` | frontend/js/sheets-selects.js:1812 |
-| `syncSidebarInert` | frontend/js/sheets-selects.js:209 |
-| `thinkingWordsFor` | frontend/js/sheets-selects.js:2402 |
-| `trackSeparatorValue` | frontend/js/sheets-selects.js:317 |
-| `wantsThinkingWords` | frontend/js/sheets-selects.js:2423 |
-| `watchForSelects` | frontend/js/sheets-selects.js:1163 |
-| `webPanelIsNarrow` | frontend/js/sheets-selects.js:513 |
-| `webPanelMaxWidth` | frontend/js/sheets-selects.js:523 |
-| `wireInPlaceSheetDismissal` | frontend/js/sheets-selects.js:264 |
+| `sortConversations` | frontend/js/sheets-selects.js:1808 |
+| `syncSidebarInert` | frontend/js/sheets-selects.js:205 |
+| `thinkingWordsFor` | frontend/js/sheets-selects.js:2398 |
+| `trackSeparatorValue` | frontend/js/sheets-selects.js:313 |
+| `wantsThinkingWords` | frontend/js/sheets-selects.js:2419 |
+| `watchForSelects` | frontend/js/sheets-selects.js:1159 |
+| `webPanelIsNarrow` | frontend/js/sheets-selects.js:509 |
+| `webPanelMaxWidth` | frontend/js/sheets-selects.js:519 |
+| `wireInPlaceSheetDismissal` | frontend/js/sheets-selects.js:260 |
 
 ### frontend/js/skills.js (53)
 
@@ -788,29 +787,28 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `splitTableRow` | frontend/js/markdown.js:24 |
 | `wrapToggle` | frontend/js/markdown.js:882 |
 
-### frontend/js/navigation.js (57)
+### frontend/js/navigation.js (56)
 
 | Name | File:line |
 |---|---|
-| `aboveDockFab` | frontend/js/navigation.js:2488 |
+| `aboveDockFab` | frontend/js/navigation.js:2484 |
 | `activeNotesSection` | frontend/js/navigation.js:2314 |
 | `arrowNavTarget` | frontend/js/navigation.js:208 |
 | `backgroundWriteFailed` | frontend/js/navigation.js:1828 |
-| `chatMessagesEl` | frontend/js/navigation.js:2460 |
 | `chatMidStream` | frontend/js/navigation.js:1760 |
 | `closeNavHistoryMenu` | frontend/js/navigation.js:920 |
 | `confirmLeavingUnsavedWork` | frontend/js/navigation.js:1790 |
-| `coversAFormPrimary` | frontend/js/navigation.js:2621 |
+| `coversAFormPrimary` | frontend/js/navigation.js:2617 |
 | `entryLabel` | frontend/js/navigation.js:1018 |
-| `formPrimaryButtons` | frontend/js/navigation.js:2582 |
+| `formPrimaryButtons` | frontend/js/navigation.js:2578 |
 | `goToTabHistory` | frontend/js/navigation.js:1109 |
 | `hasUnsavedWork` | frontend/js/navigation.js:1739 |
 | `hideClosedDockMenuLists` | frontend/js/navigation.js:1517 |
 | `initNotesSubtabs` | frontend/js/navigation.js:2374 |
-| `initScrollTopButton` | frontend/js/navigation.js:2641 |
+| `initScrollTopButton` | frontend/js/navigation.js:2637 |
 | `insideClosedDetails` | frontend/js/navigation.js:1572 |
 | `loadSurface` | frontend/js/navigation.js:1314 |
-| `measureSpacingPx` | frontend/js/navigation.js:2612 |
+| `measureSpacingPx` | frontend/js/navigation.js:2608 |
 | `menuOfOpener` | frontend/js/navigation.js:1594 |
 | `menuRowsOf` | frontend/js/navigation.js:1579 |
 | `mermaidSoon` | frontend/js/navigation.js:373 |
@@ -820,7 +818,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `openSelectionScope` | frontend/js/navigation.js:321 |
 | `paintTabHistory` | frontend/js/navigation.js:967 |
 | `placeDockMenuInWindow` | frontend/js/navigation.js:1385 |
-| `positionScrollTopForNested` | frontend/js/navigation.js:2497 |
+| `positionScrollTopForNested` | frontend/js/navigation.js:2493 |
 | `recordTabVisit` | frontend/js/navigation.js:1055 |
 | `recordingLive` | frontend/js/navigation.js:1767 |
 | `renderMarkdown` | frontend/js/navigation.js:382 |
@@ -829,15 +827,15 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `restoreSettingsScroll` | frontend/js/navigation.js:1156 |
 | `revealTab` | frontend/js/navigation.js:831 |
 | `rowMenuAtEvent` | frontend/js/navigation.js:130 |
-| `scrollTopTargetEl` | frontend/js/navigation.js:2464 |
+| `scrollTopTargetEl` | frontend/js/navigation.js:2460 |
 | `scrollingPage` | frontend/js/navigation.js:2413 |
 | `showNotesSection` | frontend/js/navigation.js:2319 |
-| `spacingPx` | frontend/js/navigation.js:2605 |
+| `spacingPx` | frontend/js/navigation.js:2601 |
 | `stepTabHistory` | frontend/js/navigation.js:1099 |
 | `stripMarkdownPreview` | frontend/js/navigation.js:2203 |
 | `surfaceRecovered` | frontend/js/navigation.js:1292 |
 | `switchTab` | frontend/js/navigation.js:1877 |
-| `syncScrollLock` | frontend/js/navigation.js:2783 |
+| `syncScrollLock` | frontend/js/navigation.js:2779 |
 | `tabLabel` | frontend/js/navigation.js:1006 |
 | `tabPlaceholder` | frontend/js/navigation.js:2139 |
 | `tabSkeletonBar` | frontend/js/navigation.js:2120 |
@@ -848,7 +846,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `usageFlush` | frontend/js/navigation.js:1842 |
 | `watchDockMenuPlacement` | frontend/js/navigation.js:1447 |
 | `wireLongPress` | frontend/js/navigation.js:24 |
-| `zoomWheelDelta` | frontend/js/navigation.js:2801 |
+| `zoomWheelDelta` | frontend/js/navigation.js:2797 |
 
 ### frontend/js/router.js (12)
 
@@ -876,7 +874,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `autoGrowLimit` | frontend/js/settings-panes.js:32 |
 | `autoGrowStillFits` | frontend/js/settings-panes.js:170 |
 | `autoGrowVisible` | frontend/js/settings-panes.js:201 |
-| `catalogueRun` | frontend/js/settings-panes.js:1109 |
+| `catalogueRun` | frontend/js/settings-panes.js:1110 |
 | `chatDockReleaseRing` | frontend/js/settings-panes.js:348 |
 | `chatDockSuppressRing` | frontend/js/settings-panes.js:329 |
 | `checkForSourceUpdateNotice` | frontend/js/settings-panes.js:767 |
@@ -884,17 +882,17 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `downloadExport` | frontend/js/settings-panes.js:985 |
 | `fitChatEmpty` | frontend/js/settings-panes.js:290 |
 | `fitComposerToDock` | frontend/js/settings-panes.js:244 |
-| `hud` | frontend/js/settings-panes.js:1056 |
+| `hud` | frontend/js/settings-panes.js:1057 |
 | `initAutoGrow` | frontend/js/settings-panes.js:449 |
 | `initComposerResize` | frontend/js/settings-panes.js:363 |
 | `loadPreferences` | frontend/js/settings-panes.js:596 |
 | `markPrefsDirty` | frontend/js/settings-panes.js:914 |
 | `markPrefsSaved` | frontend/js/settings-panes.js:930 |
-| `nudgeZoom` | frontend/js/settings-panes.js:1077 |
-| `paletteAbouts` | frontend/js/settings-panes.js:1197 |
-| `paletteCaughtNow` | frontend/js/settings-panes.js:1174 |
-| `paletteKeys` | frontend/js/settings-panes.js:1183 |
-| `paletteRowParts` | frontend/js/settings-panes.js:1208 |
+| `nudgeZoom` | frontend/js/settings-panes.js:1078 |
+| `paletteAbouts` | frontend/js/settings-panes.js:1198 |
+| `paletteCaughtNow` | frontend/js/settings-panes.js:1175 |
+| `paletteKeys` | frontend/js/settings-panes.js:1184 |
+| `paletteRowParts` | frontend/js/settings-panes.js:1209 |
 | `refitComposer` | frontend/js/settings-panes.js:269 |
 | `renderAutonomousSettings` | frontend/js/settings-panes.js:684 |
 | `renderPrefs` | frontend/js/settings-panes.js:614 |
@@ -1669,7 +1667,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `accentTone` | frontend/js/settings.js:2196 |
 | `activeAccent` | frontend/js/settings.js:1388 |
 | `activeLogContainer` | frontend/js/settings.js:893 |
-| `activePalette` | frontend/js/settings.js:2933 |
+| `activePalette` | frontend/js/settings.js:2934 |
 | `activeThemePreset` | frontend/js/settings.js:1746 |
 | `appearancePref` | frontend/js/settings.js:1763 |
 | `applyAccent` | frontend/js/settings.js:1424 |
@@ -1686,9 +1684,9 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `applyThemeChoice` | frontend/js/settings.js:2534 |
 | `applyThemePreset` | frontend/js/settings.js:1783 |
 | `applyZoomVar` | frontend/js/settings.js:2411 |
-| `bgArtOn` | frontend/js/settings.js:3030 |
-| `bgArtRefreshSeed` | frontend/js/settings.js:3024 |
-| `bgArtStyle` | frontend/js/settings.js:3142 |
+| `bgArtOn` | frontend/js/settings.js:3031 |
+| `bgArtRefreshSeed` | frontend/js/settings.js:3025 |
+| `bgArtStyle` | frontend/js/settings.js:3143 |
 | `bgLuma` | frontend/js/settings.js:2178 |
 | `browserLogRecords` | frontend/js/settings.js:771 |
 | `bumpLogErrorBadge` | frontend/js/settings.js:1050 |
@@ -1696,7 +1694,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `clearManualOverrides` | frontend/js/settings.js:1826 |
 | `closeLogs` | frontend/js/settings.js:1188 |
 | `closeSettingsModal` | frontend/js/settings.js:689 |
-| `collapseLongSettingHints` | frontend/js/settings.js:3457 |
+| `collapseLongSettingHints` | frontend/js/settings.js:3458 |
 | `contrastOn` | frontend/js/settings.js:1475 |
 | `copyLogs` | frontend/js/settings.js:1197 |
 | `cssVarNow` | frontend/js/settings.js:2155 |
@@ -1709,18 +1707,18 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `effectiveTheme` | frontend/js/settings.js:2474 |
 | `ensureSettingsPaneTitle` | frontend/js/settings.js:74 |
 | `filterSettings` | frontend/js/settings.js:629 |
-| `focusSettingsHeading` | frontend/js/settings.js:3266 |
-| `focusSettingsPane` | frontend/js/settings.js:3258 |
+| `focusSettingsHeading` | frontend/js/settings.js:3267 |
+| `focusSettingsPane` | frontend/js/settings.js:3259 |
 | `harmonyScheme` | frontend/js/settings.js:1906 |
 | `hexRatio` | frontend/js/settings.js:2183 |
 | `hexToHsl` | frontend/js/settings.js:1858 |
 | `hexToRgbParts` | frontend/js/settings.js:2160 |
 | `hslToHex` | frontend/js/settings.js:1879 |
-| `jobDurationWords` | frontend/js/settings.js:3724 |
-| `jobRunLine` | frontend/js/settings.js:3735 |
+| `jobDurationWords` | frontend/js/settings.js:3725 |
+| `jobRunLine` | frontend/js/settings.js:3736 |
 | `lessTransparencyWanted` | frontend/js/settings.js:2311 |
 | `loadChangelog` | frontend/js/settings.js:484 |
-| `loadSamplingSettings` | frontend/js/settings.js:3423 |
+| `loadSamplingSettings` | frontend/js/settings.js:3424 |
 | `logLevelRank` | frontend/js/settings.js:745 |
 | `logMatchesFilters` | frontend/js/settings.js:793 |
 | `logRecordText` | frontend/js/settings.js:886 |
@@ -1731,35 +1729,35 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `manualOverrides` | frontend/js/settings.js:1820 |
 | `measureLabelOptics` | frontend/js/settings.js:2371 |
 | `nearLogBottom` | frontend/js/settings.js:897 |
-| `noticePerfMode` | frontend/js/settings.js:3384 |
+| `noticePerfMode` | frontend/js/settings.js:3385 |
 | `openSettingsModal` | frontend/js/settings.js:268 |
 | `paintIntegrity` | frontend/js/settings.js:533 |
-| `paintJobLine` | frontend/js/settings.js:3767 |
+| `paintJobLine` | frontend/js/settings.js:3768 |
 | `perfModeOn` | frontend/js/settings.js:2317 |
 | `perfModeReason` | frontend/js/settings.js:2326 |
-| `placeFoldHelp` | frontend/js/settings.js:3666 |
-| `refreshJobRuns` | frontend/js/settings.js:3783 |
+| `placeFoldHelp` | frontend/js/settings.js:3667 |
+| `refreshJobRuns` | frontend/js/settings.js:3784 |
 | `renderActiveLogView` | frontend/js/settings.js:1037 |
 | `renderAppearance` | frontend/js/settings.js:2668 |
-| `renderBgMotionHint` | frontend/js/settings.js:2819 |
-| `renderBgStyleGrid` | frontend/js/settings.js:3063 |
-| `renderBgStyleHint` | frontend/js/settings.js:2800 |
+| `renderBgMotionHint` | frontend/js/settings.js:2820 |
+| `renderBgStyleGrid` | frontend/js/settings.js:3064 |
+| `renderBgStyleHint` | frontend/js/settings.js:2801 |
 | `renderCopyLogsLabel` | frontend/js/settings.js:1212 |
 | `renderCustomThemes` | frontend/js/settings.js:2064 |
 | `renderGlassRows` | frontend/js/settings.js:2655 |
-| `renderJobOverview` | frontend/js/settings.js:3812 |
+| `renderJobOverview` | frontend/js/settings.js:3813 |
 | `renderLogErrorBadge` | frontend/js/settings.js:1056 |
 | `renderLogGap` | frontend/js/settings.js:755 |
 | `renderLogList` | frontend/js/settings.js:944 |
 | `renderLogSharedUI` | frontend/js/settings.js:910 |
 | `renderLogTerminal` | frontend/js/settings.js:1022 |
 | `renderLogs` | frontend/js/settings.js:1156 |
-| `renderPaletteGrid` | frontend/js/settings.js:2940 |
-| `renderProgressMotionHint` | frontend/js/settings.js:2783 |
+| `renderPaletteGrid` | frontend/js/settings.js:2941 |
+| `renderProgressMotionHint` | frontend/js/settings.js:2784 |
 | `renderThemePresets` | frontend/js/settings.js:2572 |
 | `renderThemeToggle` | frontend/js/settings.js:2502 |
 | `repaintThemeAtOnce` | frontend/js/settings.js:1299 |
-| `resetAppearance` | frontend/js/settings.js:2992 |
+| `resetAppearance` | frontend/js/settings.js:2993 |
 | `resetThemeOnly` | frontend/js/settings.js:1838 |
 | `resolvedTheme` | frontend/js/settings.js:2485 |
 | `saveCurrentLook` | frontend/js/settings.js:2003 |
@@ -1770,26 +1768,26 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `serverLogRecord` | frontend/js/settings.js:780 |
 | `setLogLive` | frontend/js/settings.js:1042 |
 | `setSettingsPeek` | frontend/js/settings.js:240 |
-| `settingsFoldState` | frontend/js/settings.js:3614 |
+| `settingsFoldState` | frontend/js/settings.js:3615 |
 | `settingsPeekIsOn` | frontend/js/settings.js:252 |
 | `settingsScroller` | frontend/js/settings.js:103 |
 | `settingsSectionText` | frontend/js/settings.js:587 |
 | `showSettingsSection` | frontend/js/settings.js:117 |
 | `smallMachine` | frontend/js/settings.js:2304 |
 | `sortLogRecords` | frontend/js/settings.js:784 |
-| `startBgArt` | frontend/js/settings.js:3147 |
+| `startBgArt` | frontend/js/settings.js:3148 |
 | `startLogStream` | frontend/js/settings.js:1086 |
-| `stopBgArt` | frontend/js/settings.js:3034 |
+| `stopBgArt` | frontend/js/settings.js:3035 |
 | `stopLogStream` | frontend/js/settings.js:1145 |
-| `taskLogButton` | frontend/js/settings.js:3363 |
+| `taskLogButton` | frontend/js/settings.js:3364 |
 | `themeDefaultAccent` | frontend/js/settings.js:2631 |
 | `themeSwatch` | frontend/js/settings.js:1733 |
 | `themeValue` | frontend/js/settings.js:1756 |
-| `toggleBgArt` | frontend/js/settings.js:3216 |
+| `toggleBgArt` | frontend/js/settings.js:3217 |
 | `toggleTheme` | frontend/js/settings.js:1327 |
 | `updatePeekAvailability` | frontend/js/settings.js:256 |
-| `wireFoldHelps` | frontend/js/settings.js:3679 |
-| `wireSettingsFolds` | frontend/js/settings.js:3623 |
+| `wireFoldHelps` | frontend/js/settings.js:3680 |
+| `wireSettingsFolds` | frontend/js/settings.js:3624 |
 
 ### frontend/js/account-recovery.js (20)
 
@@ -7098,9 +7096,9 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `applyZoom` | frontend/js/sketch-pad.js:763 |
-| `arrowHead` | frontend/js/sketch-pad.js:1076 |
-| `brushWidth` | frontend/js/sketch-pad.js:903 |
+| `applyZoom` | frontend/js/sketch-pad.js:764 |
+| `arrowHead` | frontend/js/sketch-pad.js:1077 |
+| `brushWidth` | frontend/js/sketch-pad.js:904 |
 | `build` | frontend/js/sketch-pad.js:497 |
 | `buildActions` | frontend/js/sketch-pad.js:395 |
 | `buildColours` | frontend/js/sketch-pad.js:327 |
@@ -7112,111 +7110,111 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `buildStroke` | frontend/js/sketch-pad.js:383 |
 | `buildTools` | frontend/js/sketch-pad.js:307 |
 | `camel` | frontend/js/sketch-pad.js:516 |
-| `cancelDrag` | frontend/js/sketch-pad.js:1415 |
-| `cancelPolygon` | frontend/js/sketch-pad.js:1139 |
-| `chordKey` | frontend/js/sketch-pad.js:1546 |
-| `clampBox` | frontend/js/sketch-pad.js:1311 |
+| `cancelDrag` | frontend/js/sketch-pad.js:1416 |
+| `cancelPolygon` | frontend/js/sketch-pad.js:1140 |
+| `chordKey` | frontend/js/sketch-pad.js:1547 |
+| `clampBox` | frontend/js/sketch-pad.js:1312 |
 | `clampMenu` | frontend/js/sketch-pad.js:451 |
-| `clearInk` | frontend/js/sketch-pad.js:1470 |
-| `clearPreview` | frontend/js/sketch-pad.js:1012 |
-| `clearSelection` | frontend/js/sketch-pad.js:1540 |
-| `closeOwnHelp` | frontend/js/sketch-pad.js:1532 |
-| `closePolygon` | frontend/js/sketch-pad.js:1129 |
+| `clearInk` | frontend/js/sketch-pad.js:1471 |
+| `clearPreview` | frontend/js/sketch-pad.js:1013 |
+| `clearSelection` | frontend/js/sketch-pad.js:1541 |
+| `closeOwnHelp` | frontend/js/sketch-pad.js:1533 |
+| `closePolygon` | frontend/js/sketch-pad.js:1130 |
 | `closeStyle` | frontend/js/sketch-pad.js:359 |
-| `commitSelection` | frontend/js/sketch-pad.js:1356 |
-| `commitText` | frontend/js/sketch-pad.js:1245 |
-| `composite` | frontend/js/sketch-pad.js:1149 |
-| `deleteSelection` | frontend/js/sketch-pad.js:1368 |
-| `downloadPng` | frontend/js/sketch-pad.js:1657 |
-| `drawPaper` | frontend/js/sketch-pad.js:731 |
-| `drawPolygonPreview` | frontend/js/sketch-pad.js:1107 |
-| `drawSelection` | frontend/js/sketch-pad.js:1339 |
-| `dropText` | frontend/js/sketch-pad.js:1272 |
-| `endMarquee` | frontend/js/sketch-pad.js:1304 |
-| `endShape` | frontend/js/sketch-pad.js:1031 |
-| `endStroke` | frontend/js/sketch-pad.js:993 |
+| `commitSelection` | frontend/js/sketch-pad.js:1357 |
+| `commitText` | frontend/js/sketch-pad.js:1246 |
+| `composite` | frontend/js/sketch-pad.js:1150 |
+| `deleteSelection` | frontend/js/sketch-pad.js:1369 |
+| `downloadPng` | frontend/js/sketch-pad.js:1658 |
+| `drawPaper` | frontend/js/sketch-pad.js:732 |
+| `drawPolygonPreview` | frontend/js/sketch-pad.js:1108 |
+| `drawSelection` | frontend/js/sketch-pad.js:1340 |
+| `dropText` | frontend/js/sketch-pad.js:1273 |
+| `endMarquee` | frontend/js/sketch-pad.js:1305 |
+| `endShape` | frontend/js/sketch-pad.js:1032 |
+| `endStroke` | frontend/js/sketch-pad.js:994 |
 | `fallbackMenu` | frontend/js/sketch-pad.js:414 |
-| `fillAt` | frontend/js/sketch-pad.js:1159 |
-| `finishClose` | frontend/js/sketch-pad.js:1762 |
-| `finishShape` | frontend/js/sketch-pad.js:1071 |
-| `fit` | frontend/js/sketch-pad.js:787 |
-| `fitZoom` | frontend/js/sketch-pad.js:781 |
-| `flatten` | frontend/js/sketch-pad.js:1646 |
+| `fillAt` | frontend/js/sketch-pad.js:1160 |
+| `finishClose` | frontend/js/sketch-pad.js:1763 |
+| `finishShape` | frontend/js/sketch-pad.js:1072 |
+| `fit` | frontend/js/sketch-pad.js:788 |
+| `fitZoom` | frontend/js/sketch-pad.js:782 |
+| `flatten` | frontend/js/sketch-pad.js:1647 |
 | `forgetColour` | frontend/js/sketch-pad.js:673 |
 | `forgetRecentKey` | frontend/js/sketch-pad.js:688 |
-| `growText` | frontend/js/sketch-pad.js:1229 |
+| `growText` | frontend/js/sketch-pad.js:1230 |
 | `h` | frontend/js/sketch-pad.js:246 |
-| `highlighterWidth` | frontend/js/sketch-pad.js:913 |
+| `highlighterWidth` | frontend/js/sketch-pad.js:914 |
 | `icon` | frontend/js/sketch-pad.js:257 |
 | `iconButton` | frontend/js/sketch-pad.js:265 |
-| `inSelection` | frontend/js/sketch-pad.js:1281 |
-| `inkEmpty` | frontend/js/sketch-pad.js:1464 |
+| `inSelection` | frontend/js/sketch-pad.js:1282 |
+| `inkEmpty` | frontend/js/sketch-pad.js:1465 |
 | `keepColour` | frontend/js/sketch-pad.js:646 |
 | `labelSize` | frontend/js/sketch-pad.js:601 |
-| `landPreview` | frontend/js/sketch-pad.js:1000 |
-| `liftSelection` | frontend/js/sketch-pad.js:1320 |
-| `mods` | frontend/js/sketch-pad.js:822 |
-| `moveMarquee` | frontend/js/sketch-pad.js:1296 |
-| `moveRing` | frontend/js/sketch-pad.js:889 |
-| `moveSelection` | frontend/js/sketch-pad.js:1332 |
-| `moveShape` | frontend/js/sketch-pad.js:1023 |
-| `moveStroke` | frontend/js/sketch-pad.js:956 |
-| `nudge` | frontend/js/sketch-pad.js:1388 |
-| `onCancelPointer` | frontend/js/sketch-pad.js:871 |
-| `onDouble` | frontend/js/sketch-pad.js:880 |
-| `onDown` | frontend/js/sketch-pad.js:826 |
-| `onEscape` | frontend/js/sketch-pad.js:1522 |
-| `onImagePicked` | frontend/js/sketch-pad.js:755 |
-| `onKey` | frontend/js/sketch-pad.js:1487 |
-| `onLeave` | frontend/js/sketch-pad.js:875 |
-| `onMove` | frontend/js/sketch-pad.js:845 |
+| `landPreview` | frontend/js/sketch-pad.js:1001 |
+| `liftSelection` | frontend/js/sketch-pad.js:1321 |
+| `mods` | frontend/js/sketch-pad.js:823 |
+| `moveMarquee` | frontend/js/sketch-pad.js:1297 |
+| `moveRing` | frontend/js/sketch-pad.js:890 |
+| `moveSelection` | frontend/js/sketch-pad.js:1333 |
+| `moveShape` | frontend/js/sketch-pad.js:1024 |
+| `moveStroke` | frontend/js/sketch-pad.js:957 |
+| `nudge` | frontend/js/sketch-pad.js:1389 |
+| `onCancelPointer` | frontend/js/sketch-pad.js:872 |
+| `onDouble` | frontend/js/sketch-pad.js:881 |
+| `onDown` | frontend/js/sketch-pad.js:827 |
+| `onEscape` | frontend/js/sketch-pad.js:1523 |
+| `onImagePicked` | frontend/js/sketch-pad.js:756 |
+| `onKey` | frontend/js/sketch-pad.js:1488 |
+| `onLeave` | frontend/js/sketch-pad.js:876 |
+| `onMove` | frontend/js/sketch-pad.js:846 |
 | `onRoveFocus` | frontend/js/sketch-pad.js:548 |
-| `onTextKey` | frontend/js/sketch-pad.js:1237 |
-| `onUp` | frontend/js/sketch-pad.js:862 |
-| `onWheel` | frontend/js/sketch-pad.js:805 |
-| `open` | frontend/js/sketch-pad.js:1707 |
+| `onTextKey` | frontend/js/sketch-pad.js:1238 |
+| `onUp` | frontend/js/sketch-pad.js:863 |
+| `onWheel` | frontend/js/sketch-pad.js:806 |
+| `open` | frontend/js/sketch-pad.js:1708 |
 | `paintKeep` | frontend/js/sketch-pad.js:639 |
 | `paintRecent` | frontend/js/sketch-pad.js:699 |
-| `paintShape` | frontend/js/sketch-pad.js:1040 |
+| `paintShape` | frontend/js/sketch-pad.js:1041 |
 | `paintWells` | frontend/js/sketch-pad.js:623 |
-| `pickColour` | frontend/js/sketch-pad.js:1180 |
+| `pickColour` | frontend/js/sketch-pad.js:1181 |
 | `placeSwap` | frontend/js/sketch-pad.js:369 |
-| `placeText` | frontend/js/sketch-pad.js:1216 |
-| `placeTextInHand` | frontend/js/sketch-pad.js:1266 |
-| `plainKey` | frontend/js/sketch-pad.js:1576 |
-| `pngBlob` | frontend/js/sketch-pad.js:1653 |
-| `point` | frontend/js/sketch-pad.js:816 |
-| `polygonDown` | frontend/js/sketch-pad.js:1088 |
-| `polygonPoint` | frontend/js/sketch-pad.js:1102 |
-| `popPolygonPoint` | frontend/js/sketch-pad.js:1597 |
-| `queueStatus` | frontend/js/sketch-pad.js:1616 |
-| `redo` | frontend/js/sketch-pad.js:1454 |
-| `redrawStraight` | frontend/js/sketch-pad.js:981 |
+| `placeText` | frontend/js/sketch-pad.js:1217 |
+| `placeTextInHand` | frontend/js/sketch-pad.js:1267 |
+| `plainKey` | frontend/js/sketch-pad.js:1577 |
+| `pngBlob` | frontend/js/sketch-pad.js:1654 |
+| `point` | frontend/js/sketch-pad.js:817 |
+| `polygonDown` | frontend/js/sketch-pad.js:1089 |
+| `polygonPoint` | frontend/js/sketch-pad.js:1103 |
+| `popPolygonPoint` | frontend/js/sketch-pad.js:1598 |
+| `queueStatus` | frontend/js/sketch-pad.js:1617 |
+| `redo` | frontend/js/sketch-pad.js:1455 |
+| `redrawStraight` | frontend/js/sketch-pad.js:982 |
 | `refreshRove` | frontend/js/sketch-pad.js:539 |
 | `rememberColour` | frontend/js/sketch-pad.js:661 |
-| `requestClose` | frontend/js/sketch-pad.js:1754 |
-| `reset` | frontend/js/sketch-pad.js:1728 |
-| `restoreLast` | frontend/js/sketch-pad.js:1438 |
-| `restorePrefs` | frontend/js/sketch-pad.js:1694 |
+| `requestClose` | frontend/js/sketch-pad.js:1755 |
+| `reset` | frontend/js/sketch-pad.js:1729 |
+| `restoreLast` | frontend/js/sketch-pad.js:1439 |
+| `restorePrefs` | frontend/js/sketch-pad.js:1695 |
 | `roveItems` | frontend/js/sketch-pad.js:525 |
 | `roveKey` | frontend/js/sketch-pad.js:555 |
-| `saveNote` | frontend/js/sketch-pad.js:1668 |
-| `say` | frontend/js/sketch-pad.js:1627 |
-| `selectAll` | frontend/js/sketch-pad.js:1381 |
-| `selectDown` | frontend/js/sketch-pad.js:1286 |
+| `saveNote` | frontend/js/sketch-pad.js:1669 |
+| `say` | frontend/js/sketch-pad.js:1628 |
+| `selectAll` | frontend/js/sketch-pad.js:1382 |
+| `selectDown` | frontend/js/sketch-pad.js:1287 |
 | `setColour` | frontend/js/sketch-pad.js:616 |
-| `setDirty` | frontend/js/sketch-pad.js:1637 |
-| `setImage` | frontend/js/sketch-pad.js:743 |
-| `setMode` | frontend/js/sketch-pad.js:716 |
-| `setPaper` | frontend/js/sketch-pad.js:725 |
+| `setDirty` | frontend/js/sketch-pad.js:1638 |
+| `setImage` | frontend/js/sketch-pad.js:744 |
+| `setMode` | frontend/js/sketch-pad.js:717 |
+| `setPaper` | frontend/js/sketch-pad.js:726 |
 | `setSize` | frontend/js/sketch-pad.js:709 |
 | `setStop` | frontend/js/sketch-pad.js:530 |
 | `setTool` | frontend/js/sketch-pad.js:582 |
 | `setWell` | frontend/js/sketch-pad.js:607 |
-| `showBox` | frontend/js/sketch-pad.js:1611 |
-| `showPos` | frontend/js/sketch-pad.js:1606 |
-| `showPreviewAlpha` | frontend/js/sketch-pad.js:952 |
-| `snapshotInk` | frontend/js/sketch-pad.js:1430 |
+| `showBox` | frontend/js/sketch-pad.js:1612 |
+| `showPos` | frontend/js/sketch-pad.js:1607 |
+| `showPreviewAlpha` | frontend/js/sketch-pad.js:953 |
+| `snapshotInk` | frontend/js/sketch-pad.js:1431 |
 | `spArrow` | frontend/js/sketch-pad.js:134 |
 | `spBox` | frontend/js/sketch-pad.js:102 |
 | `spFillRun` | frontend/js/sketch-pad.js:171 |
@@ -7226,20 +7224,20 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `spLineEnds` | frontend/js/sketch-pad.js:125 |
 | `spRgb` | frontend/js/sketch-pad.js:205 |
 | `spSnap45` | frontend/js/sketch-pad.js:116 |
-| `startShape` | frontend/js/sketch-pad.js:1019 |
-| `startStroke` | frontend/js/sketch-pad.js:920 |
-| `startText` | frontend/js/sketch-pad.js:1199 |
-| `stepZoom` | frontend/js/sketch-pad.js:799 |
-| `strokeCtx` | frontend/js/sketch-pad.js:937 |
-| `styleStroke` | frontend/js/sketch-pad.js:941 |
+| `startShape` | frontend/js/sketch-pad.js:1020 |
+| `startStroke` | frontend/js/sketch-pad.js:921 |
+| `startText` | frontend/js/sketch-pad.js:1200 |
+| `stepZoom` | frontend/js/sketch-pad.js:800 |
+| `strokeCtx` | frontend/js/sketch-pad.js:938 |
+| `styleStroke` | frontend/js/sketch-pad.js:942 |
 | `swapColours` | frontend/js/sketch-pad.js:653 |
 | `swatch` | frontend/js/sketch-pad.js:377 |
-| `textPx` | frontend/js/sketch-pad.js:1192 |
-| `toggleFit` | frontend/js/sketch-pad.js:792 |
+| `textPx` | frontend/js/sketch-pad.js:1193 |
+| `toggleFit` | frontend/js/sketch-pad.js:793 |
 | `toggleStyle` | frontend/js/sketch-pad.js:350 |
-| `tracePolygon` | frontend/js/sketch-pad.js:1113 |
-| `typingIn` | frontend/js/sketch-pad.js:1515 |
-| `undo` | frontend/js/sketch-pad.js:1443 |
+| `tracePolygon` | frontend/js/sketch-pad.js:1114 |
+| `typingIn` | frontend/js/sketch-pad.js:1516 |
+| `undo` | frontend/js/sketch-pad.js:1444 |
 | `wireHelp` | frontend/js/sketch-pad.js:567 |
 
 ### frontend/js/space-swap.js (5)
@@ -7659,13 +7657,13 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 |---|---|
 | `bound` | frontend/js/value-field.js:22 |
 | `clamp` | frontend/js/value-field.js:28 |
-| `commit` | frontend/js/value-field.js:52 |
-| `paint` | frontend/js/value-field.js:47 |
-| `presets` | frontend/js/value-field.js:91 |
-| `rangeField` | frontend/js/value-field.js:139 |
-| `rangeFieldsIn` | frontend/js/value-field.js:180 |
-| `readoutOf` | frontend/js/value-field.js:133 |
-| `size` | frontend/js/value-field.js:42 |
+| `commit` | frontend/js/value-field.js:53 |
+| `paint` | frontend/js/value-field.js:48 |
+| `presets` | frontend/js/value-field.js:99 |
+| `rangeField` | frontend/js/value-field.js:147 |
+| `rangeFieldsIn` | frontend/js/value-field.js:198 |
+| `readoutOf` | frontend/js/value-field.js:141 |
+| `size` | frontend/js/value-field.js:43 |
 | `valueField` | frontend/js/value-field.js:20 |
 | `valueFieldParse` | frontend/js/value-field.js:8 |
 
@@ -7887,22 +7885,22 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `wbChangeFromElsewhereSoon` | frontend/js/whiteboard-history.js:353 |
-| `wbCloseHistory` | frontend/js/whiteboard-history.js:191 |
+| `wbChangeFromElsewhereSoon` | frontend/js/whiteboard-history.js:354 |
+| `wbCloseHistory` | frontend/js/whiteboard-history.js:192 |
 | `wbHistBoardParam` | frontend/js/whiteboard-history.js:41 |
 | `wbHistGuard` | frontend/js/whiteboard-history.js:64 |
-| `wbHistLoadOlder` | frontend/js/whiteboard-history.js:137 |
+| `wbHistLoadOlder` | frontend/js/whiteboard-history.js:138 |
 | `wbHistMoment` | frontend/js/whiteboard-history.js:47 |
-| `wbHistRestore` | frontend/js/whiteboard-history.js:211 |
-| `wbHistShow` | frontend/js/whiteboard-history.js:158 |
+| `wbHistRestore` | frontend/js/whiteboard-history.js:212 |
+| `wbHistShow` | frontend/js/whiteboard-history.js:159 |
 | `wbHistSync` | frontend/js/whiteboard-history.js:82 |
 | `wbHistWords` | frontend/js/whiteboard-history.js:53 |
-| `wbOpenHistory` | frontend/js/whiteboard-history.js:103 |
-| `wbOpenSnapshots` | frontend/js/whiteboard-history.js:473 |
-| `wbRestoreToEvent` | frontend/js/whiteboard-history.js:425 |
-| `wbSnapshotPreviewBoard` | frontend/js/whiteboard-history.js:403 |
-| `wbSnapshotRow` | frontend/js/whiteboard-history.js:434 |
-| `wbTakeChangeFromElsewhere` | frontend/js/whiteboard-history.js:315 |
+| `wbOpenHistory` | frontend/js/whiteboard-history.js:104 |
+| `wbOpenSnapshots` | frontend/js/whiteboard-history.js:474 |
+| `wbRestoreToEvent` | frontend/js/whiteboard-history.js:426 |
+| `wbSnapshotPreviewBoard` | frontend/js/whiteboard-history.js:404 |
+| `wbSnapshotRow` | frontend/js/whiteboard-history.js:435 |
+| `wbTakeChangeFromElsewhere` | frontend/js/whiteboard-history.js:316 |
 
 ### frontend/js/whiteboard-interchange.js (49)
 
@@ -12413,7 +12411,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/update-bar-lazy.css | 15 |
 | frontend/css/usage-lazy.css | 34 |
 | frontend/css/utilities-lazy.css | 500 |
-| frontend/css/value-field.css | 49 |
+| frontend/css/value-field.css | 54 |
 | frontend/css/web-lazy.css | 88 |
 | frontend/css/writing-desk-lazy.css | 27 |
 
@@ -15890,8 +15888,8 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `_act_topic` | src/tessellate/ai/help_topics_more.py:3444 |
-| `_slash_commands_topic` | src/tessellate/ai/help_topics_more.py:3576 |
+| `_act_topic` | src/tessellate/ai/help_topics_more.py:3446 |
+| `_slash_commands_topic` | src/tessellate/ai/help_topics_more.py:3578 |
 
 ### src/tessellate/ai/help_words.py (2)
 

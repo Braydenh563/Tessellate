@@ -2402,7 +2402,9 @@ MORE_TOPICS.extend(
                 "the Library loads or you filter it, one polite line says how "
                 "many are shown, and the window title follows the view. Settings, "
                 "Appearance has High contrast, Motion, Interface animations, "
-                "Text size and Zoom."
+                "Text size and Zoom. Every slider's number is a field: Tab to it, "
+                "type a value, Enter applies it, Esc puts it back, and the arrow "
+                "keys step it (Shift for ten)."
             ),
             "badge": {"label": "Appearance", "section": "appearance"},
         },

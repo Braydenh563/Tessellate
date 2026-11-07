@@ -25,6 +25,7 @@
   font-variant-numeric: tabular-nums;
   text-align: center;
   inline-size: auto;
+  field-sizing: content;
 }
 .value-field .value-field-input:hover {
   border-color: var(--border);
@@ -46,4 +47,8 @@
 }
 .value-field-range .value-field .value-field-input {
   min-width: 2ch;
+}
+/* In a flex row (the graph panel's) the field keeps the width of its number and the label gives way. */
+.graph-option-row > .value-field-range {
+  flex: 0 0 auto;
 }

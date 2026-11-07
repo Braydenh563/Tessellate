@@ -463,7 +463,8 @@ HELP_TOPICS: list[dict] = [
             "switches it on by itself on a machine with 2 cores or 4 GB or fewer, "
             "and On or Off overrides that. The Appearance panel (Pop out at the top, "
             "or Ctrl+K, Appearance) holds the same settings beside the app, with "
-            "a strip of sections and a Peek button."
+            "a strip of sections and a Peek button. The sliders' numbers (Zoom, "
+            "Corner rounding, Glass blur) type in too."
         ),
         "badge": {"label": "Appearance", "section": "appearance"},
     },
@@ -2120,7 +2121,7 @@ HELP_TOPICS.extend(
                 "added, changed and removed. Nothing can be changed while the past is shown. Put back "
                 "restores the whole board as it was then, and the second button only what was selected "
                 "when History opened; either is one Undo step and is in the history too. Esc, or the "
-                "slider's right end, comes back to now. Changes older than ninety days may be kept only "
+                "slider's right end, comes back to now; the number beside it (3 of 12) types in to jump. Changes older than ninety days may be kept only "
                 "in summary, and such a moment cannot be shown. Board, Snapshots… names the board as it is "
                 "now (Snapshot and the time unless you type a name); each one shows its picture, and "
                 "Restore puts the board back as one Undo step."

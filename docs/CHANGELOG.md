@@ -10,6 +10,7 @@ below). Versioning is `0.x` while the app stabilises.
 Desk panel fits its content again: fit() asks set_size, not set_figure_size (a rename sent 3 arguments to a 1-argument call; owner's log 2026-11-07).
 - The desktop companion's menu says your companion is being summoned, not drawn.
 - Every slider with a readout can be typed (INBOX 1694 c): the quick sketch thickness, the graph, board and mind map sliders swap their readout for the same value field on first hover or focus (clamped to the slider's range and step, Enter or blur applies, Escape reverts, arrows step, the unit stays).
+- Value fields reached by keyboard (INBOX 1694 c review): a slider's number is fetched on focus as well as hover (range inputs only; a plain number box no longer pays for it), a readout written in code is re-read on the next reach, a field is named by its label and not its title, Escape reverts a half-typed number first and keeps the focus, and the board history scrubber types as 3 of 12.
 - Zoom percentages and the present page number can be typed (INBOX 1694 b): the viewer, the diagram view and the board's zoom readouts take a number and Enter or a pick from a list (25 to 400 and Fit), and a presenting board or map takes a typed page number; one `valueField` recipe (value-field.js).
 - A trackpad pinch in the lightbox zooms at the diagram view's rate, five times faster than before; a mouse notch is unchanged.
 - The in-app companion's size handle, hanging at the bottom right, shows the top-left to bottom-right resize cursor.
