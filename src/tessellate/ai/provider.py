@@ -39,6 +39,7 @@ from __future__ import annotations
 import ast
 import importlib
 import json
+import logging
 import re
 from collections.abc import Callable
 from urllib.parse import urlparse
@@ -166,7 +167,8 @@ def memory_budget_bytes() -> int | None:
         free = hardware.free_memory_gb() or 0.0
         cards = [g.get("vram_gb") or 0.0 for g in hardware.detect_gpus()]
         best = max([free, *cards])
-    except Exception:  # noqa: BLE001  # unreadable memory means "keep the old cap"
+    except Exception as exc:  # noqa: BLE001  # unreadable memory means "keep the old cap"
+        logging.getLogger("tessellate.provider").info("memory unreadable, keeping the old context cap: %s", exc)
         return None
     return int(best * 1024**3 * KV_MEMORY_SHARE) if best else None
 
@@ -458,7 +460,8 @@ class Provider:
             # module level (CodeQL flagged a redundant local import here).
             deps = importlib.import_module("tessellate.core.deps")
             windows = deps.get_config().get_preference("model_context_windows", {})
-        except Exception:  # noqa: BLE001  # a bad preference must not stop a chat
+        except Exception as exc:  # noqa: BLE001  # a bad preference must not stop a chat
+            logging.getLogger("tessellate.provider").info("max_context_tokens unreadable, ignored: %s", exc)
             return None
         if not isinstance(windows, dict):
             return None
@@ -532,7 +535,8 @@ class Provider:
             deps = importlib.import_module("tessellate.core.deps")
             raw = deps.get_config().get_preference("max_context_tokens", None)
             return max(self.DEFAULT_CONTEXT_TOKENS, int(raw)) if raw else None
-        except Exception:  # noqa: BLE001  # a bad preference must not stop a chat
+        except Exception as exc:  # noqa: BLE001  # a bad preference must not stop a chat
+            logging.getLogger("tessellate.provider").info("max_context_tokens unreadable, ignored: %s", exc)
             return None
 
     def context_decision(self, model: str) -> tuple[int, str]:

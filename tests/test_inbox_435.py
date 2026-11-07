@@ -169,4 +169,5 @@ def test_a_late_tag_list_does_not_open_after_the_tag_was_entered():
     commit = panels[panels.index("const commitTag = () => {") :]
     commit = commit[: commit.index("\n  };")]
     assert 'tagEntry.dataset.tagged = "1";' in commit
-    assert 'for (const type of ["focus", "pointerdown"]) tagEntry.addEventListener(type, () => delete tagEntry.dataset.tagged);' in panels
+    # Intent moved (BACKLOG 1682, 0b21a4f4): focus the app gives back after a redraw is no press, so it keeps the mark.
+    assert 'for (const type of ["focus", "pointerdown"]) tagEntry.addEventListener(type, (e) => (e.type === "focus" && restoreFocusTo.giving) || delete tagEntry.dataset.tagged);' in panels

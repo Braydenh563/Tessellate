@@ -20,6 +20,7 @@ from sqlalchemy.orm import Session
 from tessellate.ai import backend_hint, greeting_compose, librarian
 from tessellate.ai.answer_trim import trim_assistant_padding
 from tessellate.ai.ollama_client import OllamaError
+from tessellate.api import paging
 from tessellate.core import deps, jobs
 from tessellate.core.config import days_from_today, user_now
 from tessellate.core.database import Entry, utcnow
@@ -590,14 +591,17 @@ def list_confirmed(
     response: Response,
     limit: int = Query(default=CONFIRMED_PAGE_SIZE, ge=1, le=500),
     offset: int = Query(default=0, ge=0),
+    cursor: str | None = paging.cursor_param(),
     session: Session = Depends(get_session),
 ) -> dict:
     """The confirmed patterns the person can open, newest first, a page at a
-    time; `X-Total-Count` says how many there are."""
+    time; `X-Total-Count` says how many there are, `X-Next-Cursor` where the next page starts."""
     from tessellate.ai import insights
 
+    offset = paging.start(cursor, offset)
     rows = insights.shown_confirmed(session)
     response.headers["X-Total-Count"] = str(len(rows))
+    paging.finish(response, offset, limit, len(rows))
     return {"items": [insights.confirmed_json(session, row) for row in rows[offset : offset + limit]], "total": len(rows)}
 
 

@@ -1932,7 +1932,8 @@ def test_the_size_handle_is_reachable_in_every_pose_1624() -> None:
     assert "right: 2px;" in grip and "right: -" not in grip
     # Intent moved (the owner, 2026-11-05): hanging, the handle is at the
     # bottom-right corner, away from the bar and the hands, still inside the figure.
-    assert '#nm-buddy[data-pose="hang"] .nmb-size-grip { top: auto; bottom: 2px; }' in CSS08
+    # be9722a9: and it shows its own diagonal cursor there.
+    assert '#nm-buddy[data-pose="hang"] .nmb-size-grip { top: auto; bottom: 2px; cursor: nwse-resize; }' in CSS08
     # A pull sizes at one rate: the reference length is never under 100px.
     assert "Math.max(from, 100)" in frontend_text("avatars.js")
 
