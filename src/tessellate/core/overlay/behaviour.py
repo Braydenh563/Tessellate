@@ -392,7 +392,7 @@ class Mind:
 
     def pick(self, rng: random.Random, now: float, gait: str, hour: int = 12, where: str = "") -> str:
         table = self.weights(now, gait, hour, where)
-        nxt = self._next_in_chain(table, gait, where)
+        nxt = self._next_in_chain(now, gait, where)
         if nxt:
             return nxt
         roll = rng.random() * sum(w for _n, w in table)
@@ -403,7 +403,7 @@ class Mind:
                 return name
         return "breathe"
 
-    def _next_in_chain(self, table: list[tuple[str, float]], gait: str, where: str) -> str:
+    def _next_in_chain(self, now: float, gait: str, where: str) -> str:
         """The next step of a running chain, if it can still be done here; a step that cannot ends the chain."""
         if not self.chain:
             return ""
@@ -411,6 +411,9 @@ class Mind:
         act = ACTIVITIES.get(step)
         if act is None or act.gait not in ("any", gait) or (act.where and act.where != where) or step == (self.recent[-1] if self.recent else ""):
             self.chain = []
+            return ""
+        if step not in MICRO and now - self.done.get(step, -1e9) < NO_REPEAT:
+            self.chain = []  # a step done lately waits its turn like any act: the chain ends rather than repeat it
             return ""
         self.chain.pop(0)
         if not self.chain:
