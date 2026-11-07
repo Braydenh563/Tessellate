@@ -2,7 +2,7 @@
 
 Generated 2026-11-07 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7841, frontend ids 2646, CSS sections 522, backend routes 649, backend modules 8920, test files 2111, tests 17816, plan headings 1003, app scripts 28, boot scripts 37, script files 260.
+Counts: frontend functions 7841, frontend ids 2646, CSS sections 522, backend routes 649, backend modules 8920, test files 2112, tests 17821, plan headings 1003, app scripts 28, boot scripts 37, script files 260.
 
 ## Frontend functions (7841)
 
@@ -22492,9 +22492,9 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `ScreenWatch` | src/tessellate/core/overlay/screenwatch.py:49 |
-| `battery_sysfs` | src/tessellate/core/overlay/screenwatch.py:36 |
-| `downloads_count` | src/tessellate/core/overlay/screenwatch.py:26 |
+| `ScreenWatch` | src/tessellate/core/overlay/screenwatch.py:52 |
+| `battery_sysfs` | src/tessellate/core/overlay/screenwatch.py:39 |
+| `downloads_count` | src/tessellate/core/overlay/screenwatch.py:29 |
 
 ### src/tessellate/core/overlay/sprites.py (14)
 
@@ -24290,7 +24290,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (17816)
+## Tests (17821)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -25701,6 +25701,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_overlay_roam.py | 19 |
 | tests/test_overlay_roam_runner.py | 10 |
 | tests/test_overlay_runner.py | 24 |
+| tests/test_overlay_screen_1678.py | 5 |
 | tests/test_overlay_seams_1683e.py | 4 |
 | tests/test_overlay_smooth_1670.py | 11 |
 | tests/test_overlay_spin_1683.py | 12 |

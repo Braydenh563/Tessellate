@@ -161,6 +161,7 @@ class OverlayRunner:
         self._watch = screenwatch.ScreenWatch(
             foreground=(lambda: self.k.foreground(self.w)) if hasattr(self.k, "foreground") else None,
             battery=(lambda: self.k.battery(self.w)) if hasattr(self.k, "battery") else None,
+            run=lambda fn: jobs.thread("overlay-downloads", fn),
         )
         self._decor: dict[tuple, sprites.Frame] = {}
         try:  # a backend that can count why windows were left out (win32); a fake may not
@@ -271,7 +272,7 @@ class OverlayRunner:
             return None
         if kind == "resume":
             self.paused = False
-            engine.resume(now)
+            self._resume_engine(engine, now)
             return 1
         if kind == "display":
             self._refresh_monitors()
@@ -280,7 +281,7 @@ class OverlayRunner:
                 return None
             if self._resume:
                 self._resume = False
-                engine.resume(now)
+                self._resume_engine(engine, now)
             hold = self._busy_gate(now, pointer)
             if hold is not None:
                 return hold
@@ -363,7 +364,13 @@ class OverlayRunner:
             return
         local = time.localtime()
         hour = local.tm_hour if self.clock_hour is None else self.clock_hour
-        self._answer(self._watch.poll(now, hour, local.tm_min), now)
+        self._answer(self._watch.poll(now, hour, local.tm_min, screen=self.roam_windows), now)
+
+    def _resume_engine(self, engine: Any, now: float) -> None:
+        """Back after a stall (a resume, a full-screen app gone, shown again): the engine re-times its acts
+        and the screen watch forgets, so nothing that happened while away is answered as news (1678 review)."""
+        self._watch.forget()
+        engine.resume(now)
 
     def _answer(self, kinds: list[str], now: float) -> None:
         for kind in kinds:
@@ -441,7 +448,7 @@ class OverlayRunner:
             logger.info("overlay: shown again")
             self.busy = False
             self.host.show()  # type: ignore[union-attr]
-            self.engine.resume(now)  # type: ignore[union-attr]
+            self._resume_engine(self.engine, now)
             return None
         return int(BUSY_EVERY * 1000) if self.busy else None
 
