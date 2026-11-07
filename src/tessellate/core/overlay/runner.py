@@ -46,6 +46,7 @@ from tessellate.core.overlay import faces
 from tessellate.core.overlay import perches
 from tessellate.core.overlay import props
 from tessellate.core.overlay import screenwatch
+from tessellate.core.overlay import sizing
 from tessellate.core.overlay import sprites
 from tessellate.core.overlay import win32
 
@@ -98,6 +99,8 @@ class OverlayRunner:
         on_settle: Callable[[int, int], Any] | None = None,
         on_died: Callable[[], Any] | None = None,
         on_card: Callable[[Any], Any] | None = None,
+        on_size: Callable[[float], Any] | None = None,
+        scale: float = 1.0,
         roam_windows: bool = True,
         stay: bool = False,
         backend: Any = None,
@@ -118,6 +121,16 @@ class OverlayRunner:
         self.on_settle = on_settle
         self.on_died = on_died
         self.on_card = on_card
+        #: The size handle: the figure's size as a multiplier on the monitor's dpi (Appearance > Companion size, 0.7 to 1.6),
+        #: where it is eased to, the presses on the handle, how long it shows, and how many times the window was resized.
+        self.on_size = on_size
+        self.scale = sizing.clamp(scale)
+        self._goal: float | None = None
+        self._sizing: dict[str, Any] | None = None
+        self._last_press: tuple[float, int, int, bool] | None = None
+        self._hover_until = -math.inf
+        self._hit: tuple[int, int, int, int] | None = None
+        self.resizes = 0
         self.roam_windows = roam_windows
         self.stay = stay
         self.w = w
@@ -221,6 +234,18 @@ class OverlayRunner:
         self.stay = bool(on)
         self.command("stay" if on else "roam")
 
+    def set_scale(self, scale: float) -> None:
+        """Appearance changed the size (any thread): eased to it on the next ticks."""
+        goal = sizing.clamp(scale)
+        if goal != self.scale:
+            self._goal = goal
+            if self.host:
+                self.host.wake(1)
+
+    def _fdpi(self) -> int:
+        """The dpi the pictures are drawn at: the monitor's, times the size the person chose."""
+        return max(24, round(self.dpi * self.scale))
+
     def set_roam(self, on: bool) -> None:
         """The "Roam over windows" switch: takes effect on the next tick."""
         self.roam_windows = bool(on)
@@ -260,6 +285,8 @@ class OverlayRunner:
             return None
         now = self.clock()
         if kind in ("down", "move", "up", "right"):
+            if self._handle_event(kind, x, y, now):
+                return self._apply(self.engine.update(now, (x, y)))
             return self._apply(self.engine.update(now, (x, y), (kind, x, y)))
         return self._system(kind, now, (x, y))
 
@@ -460,8 +487,9 @@ class OverlayRunner:
         assert self.engine is not None and self.sprites is not None
         dpi = self.engine.monitor_at(self.engine.x, self.engine.y).dpi
         self.dpi = dpi
-        self.engine.set_monitors(self.monitors, self.sprites.size(dpi))
-        self.engine.set_metrics(self.sprites.metrics(dpi))
+        self.sprites.keep_only(self._fdpi())
+        self.engine.set_monitors(self.monitors, self.sprites.size(self._fdpi()))
+        self.engine.set_metrics(self.sprites.metrics(self._fdpi()))
         self._last_key = None
 
     def _ready(self) -> None:
@@ -480,14 +508,14 @@ class OverlayRunner:
         first = self.monitors[0]
         self.dpi = first.dpi
         self.engine = eng.Engine(
-            spr.size(first.dpi), self.monitors, home=self.home, reduced=reduced, roam=not self.stay, roam_windows=self.roam_windows, gait=spr.gait, hang_top=spr.top_share("hang"), idle_frames=spr.idle_count(), walk_frames=spr.walk_count(), now=self.clock(),
+            spr.size(self._fdpi()), self.monitors, home=self.home, reduced=reduced, roam=not self.stay, roam_windows=self.roam_windows, gait=spr.gait, hang_top=spr.top_share("hang"), idle_frames=spr.idle_count(), walk_frames=spr.walk_count(), now=self.clock(),
         )
-        self.engine.set_metrics(spr.metrics(first.dpi))
+        self.engine.set_metrics(spr.metrics(self._fdpi()))
         out = self.engine.update(self.clock())
         self._apply(out)
         logger.info(
             "overlay: ready, look=%s, monitors=%s, frames=%d at %s px, reduced=%s%s",
-            self.look, [(m.area, m.dpi) for m in self.monitors], len(sprites.FRAME_NAMES), spr.size(first.dpi), reduced,
+            self.look, [(m.area, m.dpi) for m in self.monitors], len(sprites.FRAME_NAMES), spr.size(self._fdpi()), reduced,
             f" ({self.reduced_reason})" if reduced and self.reduced_reason else "",
         )
 
@@ -497,22 +525,35 @@ class OverlayRunner:
         dpi = engine.current_monitor().dpi
         if dpi != self.dpi:
             self.dpi = dpi
-            engine.set_monitors(self.monitors, spr.size(dpi))
-            engine.set_metrics(spr.metrics(dpi))
+            spr.keep_only(self._fdpi())
+            engine.set_monitors(self.monitors, spr.size(self._fdpi()))
+            engine.set_metrics(spr.metrics(self._fdpi()))
             self._last_key, self._blend, self._target = None, None, None
+        now = self.clock()
+        eased = self._ease(now)
         engine.hour = time.localtime().tm_hour if self.clock_hour is None else self.clock_hour
         # a thrown figure's true angle is part of the picture (INBOX 1683): every tick of a spin is a new one
         turn = None if out.angle is None else round(math.degrees(out.angle) / sprites.SPIN_QUANT) % round(360.0 / sprites.SPIN_QUANT)
-        key = (out.frame, self.dpi, out.flip, out.clip, out.pose, out.fx, out.alpha, turn, out.flow, out.prop, out.face)
+        handle = self._handle_shown(out, now)
+        key = (out.frame, self._fdpi(), out.flip, out.clip, out.pose, out.fx, out.alpha, turn, out.flow, out.prop, out.face, handle)
         blending = False
         if key != self._last_key:
             blending = self._new_picture(out, key)
         elif self._blend is not None:
             blending = self._show(self._target, out, False)
         elif (out.x, out.y) != self._last_pos:
-            pad = spr.frame(out.frame, self.dpi, out.flip)
+            pad = self._target or spr.frame(out.frame, self._fdpi(), out.flip)
             host.move(out.x - pad.pad_x, out.y - pad.pad_y)
             self._last_pos = (out.x, out.y)
+        self._hand_offs(out, engine)
+        wake = self._cap_wake(self._scan_wake(out.wake_ms))
+        wake = self._handle_wake(wake, handle, now)
+        if blending or eased:  # the dissolve is a move: one step a display frame
+            wake = BLEND_TICK_MS if wake is None else min(wake, BLEND_TICK_MS)
+        return wake
+
+    def _hand_offs(self, out: eng.Output, engine: eng.Engine) -> None:
+        """What the tick finished, passed on off the overlay thread: a click, a settled place, a card."""
         if out.click:
             rect = self.drawn_rect(out.x, out.y, out.frame, out.flip)
             self._hand_off("overlay-click", lambda: self.on_click and self.on_click(out.click, rect, self.dpi))
@@ -522,10 +563,6 @@ class OverlayRunner:
         if out.card is not None:
             token = out.card
             self._hand_off("overlay-card", lambda: self.on_card and self.on_card(token))
-        wake = self._cap_wake(self._scan_wake(out.wake_ms))
-        if blending:  # the dissolve is a move: one step a display frame
-            wake = BLEND_TICK_MS if wake is None else min(wake, BLEND_TICK_MS)
-        return wake
 
     def _new_picture(self, out: eng.Output, key: tuple) -> bool:
         """A new picture: build it, start a dissolve from the last one when the change earns one (a look's is
@@ -533,11 +570,15 @@ class OverlayRunner:
         spr = self.sprites
         assert spr is not None
         if out.angle is not None:
-            posed = spr.spun_at(out.angle, self.dpi, out.flip)
+            posed = spr.spun_at(out.angle, self._fdpi(), out.flip)
         else:
-            posed = spr.posed(out.frame, self.dpi, out.flip, out.pose or eng.bh.NEUTRAL, out.flow) if out.pose or out.flow else spr.frame(out.frame, self.dpi, out.flip)
+            posed = spr.posed(out.frame, self._fdpi(), out.flip, out.pose or eng.bh.NEUTRAL, out.flow) if out.pose or out.flow else spr.frame(out.frame, self._fdpi(), out.flip)
         posed = self._decorated(posed, out, key)
         frame = sprites.effect(sprites.clipped(posed, out.clip), out.fx, out.alpha)
+        self._hit = None
+        if key[-1]:
+            hit = sizing.hit_box(frame.box if frame.box[2] else (0, 0, frame.width, frame.height), out.frame.startswith("hang"), self.dpi)
+            frame, self._hit = sizing.with_handle(frame, hit, self._sizing is not None)
         self._blend = (self._target, self.clock()) if self._blends(self._last_key, key, self._target, frame) else None
         self._blend_s = BLEND_LOOK_S if self._last_key and "look" in (self._last_key[0], key[0]) else BLEND_S
         self._target, self._blend_step = frame, -1
@@ -554,7 +595,7 @@ class OverlayRunner:
         if built is None:
             built = posed
             if out.face is not None:
-                built = faces.draw(spr, out.frame, built, out.flip, out.pose, out.face, spr.frame(out.frame, self.dpi, out.flip))
+                built = faces.draw(spr, out.frame, built, out.flip, out.pose, out.face, spr.frame(out.frame, self._fdpi(), out.flip))
             if out.prop is not None:
                 built = props.draw(built, out.prop, out.flip)
         self._decor[key] = built
@@ -604,11 +645,124 @@ class OverlayRunner:
         Defaults to the frame last drawn."""
         spr = self.sprites
         assert spr is not None
-        dpi = int(dpi or self.dpi)
+        dpi = int(dpi or self._fdpi())
         name, mirror = (frame, flip) if frame is not None else (self._last_key[0], self._last_key[2]) if self._last_key else ("stand", False)
         f = spr.frame(name, dpi, bool(mirror))
         left, top, right, bottom = f.box
         return x - f.pad_x + left, y - f.pad_y + top, right - left, bottom - top
+
+    # --- the size handle ---------------------------------------------------------------------------
+
+    def _handle_shown(self, out: eng.Output, now: float) -> bool:
+        """The handle shows while the pointer is over the figure (and a moment after), or is held on it, when the
+        figure is whole and in no effect: not while it is thrown, carried, faded or clipped behind an edge."""
+        if out.angle is not None or out.fx is not None or out.alpha < 1.0 or out.clip is not None or out.frame in ("held", "fall"):
+            return False
+        return self._sizing is not None or now < self._hover_until
+
+    def _handle_wake(self, wake: int | None, shown: bool, now: float) -> int | None:
+        """The handle goes when the pointer has been gone for SHOW_S: wake then to draw it away."""
+        if not shown or self._sizing is not None:
+            return wake
+        left = max(1, int((self._hover_until - now) * 1000) + 1)
+        return left if wake is None else min(wake, left)
+
+    def _hit_screen(self) -> tuple[int, int, int, int] | None:
+        target, at = self._target, self._last_pos
+        if self._hit is None or target is None or at is None:
+            return None
+        ox, oy = at[0] - target.pad_x, at[1] - target.pad_y
+        h = self._hit
+        return ox + h[0], oy + h[1], ox + h[2], oy + h[3]
+
+    def _handle_event(self, kind: str, x: int, y: int, now: float) -> bool:
+        """A press, move or release meant for the size handle (True: the engine does not see it). Over the figure a
+        move shows the handle; a press on it starts a pull from the stand or hang point, a second press close to the
+        first goes back to Medium (the app's grip, `avatars.js`), and a release keeps the size."""
+        rect = self._hit_screen()
+        over = rect is not None and rect[0] <= x < rect[2] and rect[1] <= y < rect[3]
+        if kind == "move" and self._sizing is None and not over:
+            self._hover_until = now + sizing.SHOW_S
+            return False
+        if kind == "move" and self._sizing is None:
+            self._hover_until = now + sizing.SHOW_S
+            return True
+        if self._sizing is None:
+            return kind == "down" and over and self._press_handle(x, y, now)
+        return self._pull_handle(kind, x, y, now)
+
+    def _press_handle(self, x: int, y: int, now: float) -> bool:
+        """A press on the handle: the second of a double goes back to Medium, else a pull starts from the point the
+        figure stands or hangs on."""
+        last, self._last_press = self._last_press, (now, x, y, False)
+        if last and now - last[0] < sizing.DOUBLE_S and math.hypot(x - last[1], y - last[2]) < sizing.DOUBLE_PX and not last[3]:
+            self._last_press = None
+            self._goal = sizing.MEDIUM
+            return True
+        box = self.drawn_rect(*self._last_pos) if self._last_pos else None
+        if box is None:
+            return True
+        hanging = bool(self._last_key and self._last_key[0].startswith("hang"))
+        origin = (box[0] + box[2] / 2, box[1] if hanging else box[1] + box[3])
+        self._sizing = {"origin": origin, "from": max(8.0, math.hypot(x - origin[0], y - origin[1])), "was": self.scale, "press": (x, y), "moved": False}
+        self._hover_until = now + sizing.SHOW_S
+        self._last_key = None
+        return True
+
+    def _pull_handle(self, kind: str, x: int, y: int, now: float) -> bool:
+        st = self._sizing
+        assert st is not None
+        if kind == "move":
+            if not st["moved"] and math.hypot(x - st["press"][0], y - st["press"][1]) < sizing.SLOP_PX:
+                return True
+            st["moved"] = True
+            if self._last_press:
+                self._last_press = (*self._last_press[:3], True)
+            new = sizing.clamp(sizing.pulled(st["was"], st["from"], math.hypot(x - st["origin"][0], y - st["origin"][1]), self.dpi))
+            if new != self.scale:
+                self._goal = None
+                self._set_scale(new)
+        elif kind == "up":
+            self._sizing = None
+            self._last_key = None
+            self._hover_until = now + sizing.SHOW_S
+            if st["moved"]:
+                self._saved()
+        return True
+
+    def _saved(self) -> None:
+        scale = self.scale
+        self._hand_off("overlay-size", lambda: self.on_size and self.on_size(scale))
+
+    def _set_scale(self, scale: float) -> None:
+        """One step of size: the pictures at the new dpi (the old ones dropped), the engine told once, the window
+        resized by the next picture. The stand or hang point stays where it was (`Engine.resize`)."""
+        engine, spr = self.engine, self.sprites
+        assert engine is not None and spr is not None
+        self.scale = scale
+        fd = self._fdpi()
+        spr.keep_only(fd)
+        engine.resize(spr.size(fd), spr.metrics(fd))
+        self.resizes += 1
+        self._last_key, self._blend, self._target = None, None, None
+
+    def _ease(self, now: float) -> bool:
+        """Toward the size Appearance or a double press asked for, one step a tick (at once in reduced motion).
+        True while there is more to go."""
+        goal = self._goal
+        if goal is None or self._sizing is not None:
+            return False
+        if goal == self.scale:
+            self._goal = None
+            return False
+        nxt = goal if self.reduced else round(self.scale + max(-sizing.STEP, min(sizing.STEP, goal - self.scale)), 2)
+        self._set_scale(nxt)
+        if nxt == goal:
+            self._goal = None
+            if self.on_size is not None:
+                self._saved()
+            return False
+        return True
 
     def _hand_off(self, name: str, call: Callable[[], Any]) -> None:
         try:

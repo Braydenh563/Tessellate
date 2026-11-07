@@ -1,0 +1,88 @@
+"""The desk figure's size handle, at parity with the in-app one (`nameMarkBuddySetSize`, the grip in
+avatars.js): the same range, the same pull rate, a double press back to Medium. The size is a multiplier
+on the monitor's dpi, so every frame, box and metric the figure already has follows it.
+
+Pure functions and constants here; the runner owns the state (`OverlayRunner._size_*`)."""
+
+from __future__ import annotations
+
+import math
+from typing import Any
+
+from tessellate.core.overlay.sprites import Frame, premultiplied_bgra
+
+#: The app keeps 0.7 to 1.6 (`nameMarkBuddyScaleSaved`); Medium is 1.
+MIN_SCALE, MAX_SCALE, MEDIUM = 0.7, 1.6, 1.0
+#: A size is one of these steps: a drag changes the window at most once per step, and the frame cache
+#: holds the current step only (`SpriteSet.keep_only`).
+STEP = 0.05
+#: Two presses this close in time and place are a double (the app's grip: 400 ms, 12 px).
+DOUBLE_S, DOUBLE_PX = 0.4, 12
+#: The pull must move this far before it is a drag (the app's 4 px).
+SLOP_PX = 4
+#: The handle shows this long after the pointer last moved over the figure, and while it is held.
+SHOW_S = 1.2
+#: The least hit box of the handle, in px at 96 dpi (scaled with the monitor), and the gap kept from the figure's corner.
+HIT_PX, GAP_PX = 24, 2
+#: Ring colour (the app's accent) and fill (its card), as straight RGBA.
+RING, FILL = (79, 70, 229, 255), (255, 255, 255, 255)
+#: Alpha of the hit box under the ring: above `sprites.ALPHA_FLOOR` (8), so it takes the press, and too faint to see.
+HIT_ALPHA = 12
+
+
+def clamp(scale: Any) -> float:
+    """A size the app could hold, on the step grid; Medium for anything that is not a number."""
+    try:
+        value = float(scale)
+    except (TypeError, ValueError):
+        return MEDIUM
+    if not math.isfinite(value):
+        return MEDIUM
+    return round(round(min(MAX_SCALE, max(MIN_SCALE, value)) / STEP) * STEP, 2)
+
+
+def pulled(was: float, start_dist: float, dist: float, dpi: int) -> float:
+    """The size after a pull from `start_dist` to `dist` (physical px from the stand or hang point): the
+    app's formula, `was * (1 + (dist - from) / max(from, 100))`, in CSS px (so `dpi / 96` of them)."""
+    k = max(0.25, dpi / 96.0)
+    start = max(8.0, start_dist / k)
+    return was * (1 + (dist / k - start) / max(start, 100.0))
+
+
+def hit_side(dpi: int) -> int:
+    return max(HIT_PX, round(HIT_PX * dpi / 96.0))
+
+
+def hit_box(box: tuple[int, int, int, int], hanging: bool, dpi: int) -> tuple[int, int, int, int]:
+    """The handle's hit box (left, top, right, bottom) in the frame's own pixels: GAP_PX off the figure's drawn
+    corner, top right when it stands and bottom right when it hangs (the app's, since 9d5fd92). It may lie outside
+    the canvas; `with_handle` grows the canvas to hold it, since the layered window takes no click outside it."""
+    side, gap = hit_side(dpi), max(GAP_PX, round(GAP_PX * dpi / 96.0))
+    top = box[3] + gap if hanging else box[1] - gap - side
+    return box[2] + gap, top, box[2] + gap + side, top + side
+
+
+def with_handle(frame: Frame, hit: tuple[int, int, int, int], hot: bool) -> tuple[Frame, tuple[int, int, int, int]]:
+    """`frame` with the handle drawn over it, on a canvas grown (transparent, with `pad` keeping the window's
+    place) where the hit box lies outside it, and the hit box in the new canvas: a faint box (so the whole of it
+    takes the press) and the ring."""
+    from PIL import Image, ImageDraw
+
+    image = Image.frombytes("RGBA", (frame.width, frame.height), frame.bgra, "raw", "BGRa")
+    up, right, down = max(0, -hit[1]), max(0, hit[2] - frame.width), max(0, hit[3] - frame.height)
+    if up or right or down:
+        grown = Image.new("RGBA", (frame.width + right, frame.height + up + down), (0, 0, 0, 0))
+        grown.paste(image, (0, up))
+        image = grown
+    hit = (hit[0], hit[1] + up, hit[2], hit[3] + up)
+    draw_on = Image.new("RGBA", image.size, (0, 0, 0, 0))
+    draw = ImageDraw.Draw(draw_on)
+    draw.rectangle((hit[0], hit[1], hit[2] - 1, hit[3] - 1), fill=(*RING[:3], HIT_ALPHA))
+    side = hit[2] - hit[0]
+    r = side * 0.25 + (1.5 if hot else 0.0)
+    cx, cy = (hit[0] + hit[2]) / 2.0, (hit[1] + hit[3]) / 2.0
+    draw.ellipse((cx - r, cy - r, cx + r, cy + r), fill=FILL, outline=RING, width=max(2, round(side / 12)))
+    image = Image.alpha_composite(image, draw_on)
+    box = frame.box
+    moved = (box[0], box[1] + up, box[2], box[3] + up)
+    return Frame(image.width, image.height, premultiplied_bgra(image), frame.pad_x, frame.pad_y + up, moved), hit

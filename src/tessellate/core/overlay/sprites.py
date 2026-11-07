@@ -80,6 +80,8 @@ GAITS = {"masculine": "float", "feminine": "float"}
 CORE_GROW = 5
 #: Posed frames kept (a pose is a squash, a lean, a lag): the least recently used go.
 POSED_KEEP = 40
+#: Plain frames kept at the size in use, the least recently used going first (the size handle's bound).
+FRAME_KEEP = 50
 #: Horizontal strips a pose is warped in.
 POSE_STRIPS = 24
 #: Alpha under this is clear: the click-through guard.
@@ -183,6 +185,8 @@ class SpriteSet:
         self._posed: dict[tuple[str, int, bool, tuple[float, ...]], Frame] = {}
         self._spun_at: dict[tuple[int, int, bool], Frame] = {}
         self._canvas: dict[tuple[int, bool], tuple[Any, int, int]] = {}
+        self._metrics: dict[int, dict[tuple[str, bool], tuple[int, int, int, int]]] = {}
+        self._metrics_base: tuple[tuple[int, int], dict[tuple[str, bool], tuple[int, int, int, int]]] | None = None
 
     def _has(self, name: str) -> bool:
         return (self.directory / f"{name}.png").is_file()
@@ -287,9 +291,27 @@ class SpriteSet:
         if name not in FRAME_NAMES and name not in DERIVED_FRAMES:
             raise KeyError(name)
         key = (name, int(dpi), bool(flip))
-        cached = self._cache.get(key)
+        cached = self._cache.pop(key, None)
         if cached is not None:
+            self._cache[key] = cached  # most recent last
             return cached
+        built = self._build(name, dpi, flip)
+        self._cache[key] = built
+        while len(self._cache) > FRAME_KEEP:
+            del self._cache[next(iter(self._cache))]
+        return built
+
+    def keep_only(self, dpi: int) -> None:
+        """A new size is the one in use: pictures at any other are dropped (a drag crosses many sizes and
+        must not leave a set of frames behind at each)."""
+        dpi = int(dpi)
+        for store in (self._cache, self._posed, self._spun_at):
+            for key in [k for k in store if k[1] != dpi]:
+                del store[key]
+        for key in [k for k in self._canvas if k[0] != dpi]:
+            del self._canvas[key]
+
+    def _build(self, name: str, dpi: int, flip: bool) -> Frame:
         from PIL import Image, ImageOps
 
         image = self._load(SPIN_BASE if name in SPIN_FRAMES else name)
@@ -299,13 +321,9 @@ class SpriteSet:
         if (width, height) != image.size:
             image = image.resize((width, height), Image.Resampling.LANCZOS)
         if name in SPIN_FRAMES:
-            built = self._spun(image, SPIN_FRAMES.index(name), width, height)
-            self._cache[key] = built
-            return built
+            return self._spun(image, SPIN_FRAMES.index(name), width, height)
         clear = clear_faint_alpha(image)
-        built = Frame(width, height, premultiplied_bgra(clear), box=_drawn_box(clear))
-        self._cache[key] = built
-        return built
+        return Frame(width, height, premultiplied_bgra(clear), box=_drawn_box(clear))
 
     def posed(self, name: str, dpi: int, flip: bool, pose: tuple[float, float, float, float], flow: tuple[int, ...] | None = None) -> Frame:
         """The frame with a body pose over it: `pose` is (sx, sy, lean, drag), see
@@ -396,6 +414,17 @@ class SpriteSet:
         """The drawn box of every frame, both mirrors, in the engine's own coordinates: from
         where the window is placed (`out.x`, `out.y`), so a rotated frame's pad is taken off.
         The engine plants feet and keeps a ride inside the work area from these (INBOX 1670)."""
+        dpi = int(dpi)
+        if dpi in self._metrics:
+            return self._metrics[dpi]
+        if self._metrics_base is not None:
+            # a new size of the same look: the first one's boxes, scaled (building ~100 frames per step of a drag would stall it)
+            (base_w, base_h), base = self._metrics_base
+            width, height = self.size(dpi)
+            sx, sy = width / base_w, height / base_h
+            found = {k: (round(a * sx), round(b * sy), round(c * sx), round(d * sy)) for k, (a, b, c, d) in base.items()}
+            self._metrics = {dpi: found}
+            return found
         found = {}
         step = SPIN_STEPS // SPIN_COARSE
         for name in (*self.available(), *DERIVED_FRAMES):
@@ -404,9 +433,11 @@ class SpriteSet:
             else:
                 near = name
             for flip in (False, True):
-                f = self.frame(near, dpi, flip)
+                f = self._build(near, dpi, flip)  # not kept: the cache holds what is drawn, not every frame of the set
                 left, top, right, bottom = f.box
                 found[(name, flip)] = (left - f.pad_x, top - f.pad_y, right - f.pad_x, bottom - f.pad_y)
+        self._metrics = {dpi: found}
+        self._metrics_base = (self.size(dpi), found)
         return found
 
     def spun_at(self, angle: float, dpi: int = 96, flip: bool = False) -> Frame:

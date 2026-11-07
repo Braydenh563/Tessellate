@@ -7,6 +7,22 @@ Split out of `ROADMAP.md`. Kept, not deleted, for one reason: **three sessions
 have independently rebuilt something that already existed.** This is the file
 that answers "has this been done?" before anyone starts.
 
+## Moved from the plans, 2026-11-07 (companion-asks Group 3)
+
+From agent-remaining/companion-asks.md, Group 3 (asks U1, T12 desk half, INBOX 1683 r), built on agent/g3-size-1107. The block as placed:
+
+### Group 3: a desk size handle at parity with the in-app one (asks U1, T12 desk half, INBOX 1683 r)
+
+The owner (r): "also I cant resize the desktop companion like I can on the in-app one". (m, for the app, built): "I cant properly resize the companion when it is hanging, can the resize circle move to the bottom right instead if it is hanging?".
+
+- The desk figure's size follows the Appearance companion size (`avatar-buddy-size`, read with the look in `LOOK_SCRIPT`, desk_companion.py:98) and a corner handle shown on hover: a pull away from the stand or hang point sizes it, a double-click resets to Medium, eased, remembered per device and shared with Appearance (write back through the page API the way `figure_do` and `set_stay` go).
+- While hanging the handle sits at the bottom right of the figure (as the app's does since 9d5fd92); it must be reachable inside the layered window and take clicks (alpha above the floor), and must not break click-through of clear pixels.
+- Cache: scaled frame sets per size step (bounded; `SpriteSet._cache` holds at most 10 plus 40 posed), no re-render per pixel of a drag; the window is resized once per step.
+- Files: `src/tessellate/core/overlay/sprites.py` (`scale_for` 257, `size` 259), `engine.py` (`set_monitors`, size), `runner.py` (452, 462), `host.py`, `core/desk_companion.py` (`LOOK_SCRIPT` 98, `DeskApi`), `frontend/js/desk-companion.js`, `frontend/js/avatars.js` (size select 3958, grip 9899), help text (`ai/help_chat.py`, `ai/help_topics_more.py`), `tests/test_manual_parity.py`. Leftovers while in `desk_companion.py`: a `figure_do` refusal gives no feedback, "Sit on a window" is not greyed when none is found, Hide for 10 minutes shows no countdown.
+- Measure before and after: figure box in physical pixels at each size step (small, medium, large, and a drag to the min and max) against the app's at the same step (ratio within 2 percent), handle box and hit target while standing and hanging (at least 24 px, 2 px from the figure's corner), draws and window resizes per drag (one resize per step), frame-cache size (keep at most 50 frames), settle with no window move at rest (0 px, as the rest tests pin).
+
+- **Built.** `core/overlay/sizing.py` (range 0.7 to 1.6 and the app's pull formula, the handle's hit box and drawing), `OverlayRunner` (hover shows the handle, a press pulls from the stand or hang point, a second press eases to Medium, one `Engine.resize` per 0.05 step), `SpriteSet.keep_only` and `FRAME_KEEP`, `LOOK_SCRIPT` reads `nameMarkBuddyScaleSaved`, a pull is written back through `nameMarkBuddySetSize`. Fakes only: real Windows and X11 are not measured.
+
 ## Moved from the plans, 2026-11-05 (CHAT_PLAN B1 and B5)
 
 From CHAT_PLAN.md "Placed from INBOX, 2026-11-05 (the Ask columns and folds)", rows B1 and B5, built (41d42ef, f30176e). The rows as placed:
