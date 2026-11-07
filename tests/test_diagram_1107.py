@@ -62,3 +62,24 @@ def test_a_dock_tooltip_names_its_key():
     assert "Choose a shape to add (1 to 7, or ? for every key)" in bar
     assert "Choose a shape to add as a block (N, or ? for every key)" in touch
     assert 'main.title = `Add a ${name.toLowerCase()} (${hintOf(shape)})`' in bar and '"Undo, Ctrl+Z"' in bar and '"Redo, Ctrl+Y"' in bar
+
+
+def test_a_click_on_a_hover_handle_grows_a_joined_block_and_asks_for_its_words():
+    """DD-14: a press that never moved on a handle adds a joined block and opens its words; a drag still connects."""
+    edges = (JS / "diagram-edges.js").read_text(encoding="utf-8")
+    assert "function grow(from, group)" in edges and "else grow(from, " in edges
+    assert "else arm(from, side)" not in edges
+    assert "if (moved) connect(from, event.clientX, event.clientY)" in edges
+    # the keyboard path (Enter on a handle) still arms, so a block can be joined to an existing one without a pointer
+    assert "event.detail === 0 && arm(current(), side)" in edges
+    assert "Click for a new joined block, or drag it to a block to connect them" in edges
+
+
+def test_the_kind_bar_is_one_tab_stop_resting_on_the_chosen_kind():
+    """DD-8: Tab crosses the four kind buttons as one stop (arrows move between them) and the dialog's DOM order is
+    head, kinds, dock, panes, footer, so Add box comes right after the kinds."""
+    bar = (JS / "diagram-kindbar.js").read_text(encoding="utf-8")
+    assert "wireToolbarRoving(seg)" in bar and "button.tabIndex = button.dataset.kind === here ? 0 : -1" in bar
+    assert bar.index("wireToolbarRoving(seg)") < bar.index("S.root.prepend(seg)")
+    embed = (JS / "diagram-embed.js").read_text(encoding="utf-8")
+    assert "foot.append(seg" in embed

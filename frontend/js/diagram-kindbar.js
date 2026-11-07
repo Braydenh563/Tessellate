@@ -34,6 +34,9 @@
       button.setAttribute("aria-pressed", String(key === here));
       seg.append(button);
     }
+    //: One tab stop for the four (arrows move between them), resting on the chosen kind: the dialog is 3 stops shorter to cross.
+    wireToolbarRoving(seg);
+    for (const button of seg.children) button.tabIndex = button.dataset.kind === here ? 0 : -1;
     S.root.prepend(seg);
   }
 

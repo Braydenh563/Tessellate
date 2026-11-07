@@ -41,7 +41,7 @@
 
     //: Four handles, one a side, so a connection can leave any edge and the picked block reads as connectable (INBOX 1679).
     const handles = ["top", "right", "bottom", "left"].map((side) => {
-      const b = smallButton("ph:arrow-bend-down-right", "Connect to another block. Drag it to a block, or press it and click one", () => {});
+      const b = smallButton("ph:arrow-bend-down-right", "Click for a new joined block, or drag it to a block to connect them", () => {});
       b.className = "dgm-handle ghost small hidden";
       b.dataset.side = side;
       //: Four tab stops, so each says which edge it leaves from.
@@ -185,18 +185,20 @@
     });
     fig.addEventListener("pointerleave", (event) => !handles.includes(event.relatedTarget) && hover && leave());
 
+    //: A new block joined from `from` (in `group` when given), its words asked for as soon as it has a place in the picture.
+    function grow(from, group) {
+      const key = h.add(S, { shape: "rect", after: null, into: group ? h.ops.key("g", group) : null, before: null, from, edit: false });
+      const edge = key && S.m.edges.find((e) => e.from === from && e.to === key.slice(2));
+      if (key) want.push({ node: key.slice(2), until: Date.now() + 4000 });
+      if (edge && h.ops.needsLabel(S.m, edge)) want.push({ edge, until: Date.now() + 4000 });
+      return key;
+    }
+
     //: Connects `from` to what is at the point: a block or a group, or (nothing there) a new block, in the group under it.
     function connect(from, x, y) {
       const to = nodeAt(x, y) || groupAt(x, y);
       const name = (id) => h.ops.node(S.m, id)?.text || h.ops.group(S.m, id)?.title || id;
-      if (!to) {
-        const group = groupAt(x, y);
-        const key = h.add(S, { shape: "rect", after: null, into: group ? h.ops.key("g", group) : null, before: null, from, edit: false });
-        const edge = key && S.m.edges.find((e) => e.from === from && e.to === key.slice(2));
-        if (key) want.push({ node: key.slice(2), until: Date.now() + 4000 });
-        if (edge && h.ops.needsLabel(S.m, edge)) want.push({ edge, until: Date.now() + 4000 });
-        return key;
-      }
+      if (!to) return grow(from, groupAt(x, y));
       if (to === from) return;
       const edge = h.ops.join(S.m, from, to);
       if (!edge) return h.say(S, `${name(from)} is already connected to ${name(to)}.`);
@@ -249,8 +251,9 @@
         if (!conn || event.pointerId !== conn.id) return;
         const { from, moved } = conn;
         finish();
+        //: A click with no drag grows a joined block and asks for its words; a drag still connects to what it lands on.
         if (moved) connect(from, event.clientX, event.clientY);
-        else arm(from, side);
+        else grow(from, h.ops.node(S.m, from)?.group || null);
       });
       handle.addEventListener("pointercancel", finish);
       //: Enter or Space on the handle (a click with no pointer) arms it too.

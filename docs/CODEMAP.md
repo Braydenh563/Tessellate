@@ -2,7 +2,7 @@
 
 Generated 2026-11-07 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7851, frontend ids 2644, CSS sections 522, backend routes 649, backend modules 8931, test files 2125, tests 17905, plan headings 1004, app scripts 28, boot scripts 37, script files 261.
+Counts: frontend functions 7851, frontend ids 2644, CSS sections 522, backend routes 649, backend modules 8931, test files 2125, tests 17907, plan headings 1004, app scripts 28, boot scripts 37, script files 261.
 
 ## Frontend functions (7851)
 
@@ -3247,7 +3247,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `choose` | frontend/js/diagram-kindbar.js:40 |
+| `choose` | frontend/js/diagram-kindbar.js:43 |
 | `fresh` | frontend/js/diagram-kindbar.js:18 |
 | `mount` | frontend/js/diagram-kindbar.js:25 |
 
@@ -24320,7 +24320,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (17905)
+## Tests (17907)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -24877,7 +24877,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_device_sizes.py | 11 |
 | tests/test_diag_report.py | 14 |
 | tests/test_diagnostics_1430.py | 9 |
-| tests/test_diagram_1107.py | 4 |
+| tests/test_diagram_1107.py | 6 |
 | tests/test_diagram_1596.py | 4 |
 | tests/test_diagram_1661a.py | 6 |
 | tests/test_diagram_1661b.py | 9 |
