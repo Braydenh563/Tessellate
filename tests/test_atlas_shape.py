@@ -1216,7 +1216,9 @@ def test_the_lower_body_takes_a_pose_for_what_it_is_doing():
     assert curve("think")[1] <= 1, "a slow curl does not"
     rig = ATLAS[ATLAS.index("function atlasRigLower(") :]
     assert "const pick = live ? Math.floor(Math.random() * spec.v.length) : 0;" in rig
-    assert "low.at = now + 8000 + Math.random() * 6000;" in rig
+    # INBOX 1683 B1: the hold fell from 8-14 s to 5-9 s because each state now has six or eight arrangements
+    # (the authored rows plus their blends), so a rest shows more of them; the intent (never the same twice) stands.
+    assert "low.at = now + 5000 + Math.random() * 4000;" in rig
     # Each flowing part takes the state: the dress or cloak, her wisps, both
     # tails, the hair and the nebula stream, as compositor transitions;
     # reduced motion sets the pose with none.

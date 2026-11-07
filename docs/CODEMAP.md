@@ -2,7 +2,7 @@
 
 Generated 2026-11-07 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7841, frontend ids 2646, CSS sections 522, backend routes 649, backend modules 8920, test files 2109, tests 17806, plan headings 1003, app scripts 28, boot scripts 37, script files 260.
+Counts: frontend functions 7841, frontend ids 2646, CSS sections 522, backend routes 649, backend modules 8920, test files 2111, tests 17816, plan headings 1003, app scripts 28, boot scripts 37, script files 260.
 
 ## Frontend functions (7841)
 
@@ -2109,8 +2109,8 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `atlasFrameBudget` | frontend/js/atlas-life.js:434 |
 | `atlasPropLoops` | frontend/js/atlas-life.js:694 |
 | `atlasPropsFrame` | frontend/js/atlas-life.js:722 |
-| `atlasRigLower` | frontend/js/atlas-life.js:887 |
-| `atlasRigLowerAttach` | frontend/js/atlas-life.js:863 |
+| `atlasRigLower` | frontend/js/atlas-life.js:962 |
+| `atlasRigLowerAttach` | frontend/js/atlas-life.js:938 |
 | `atlasRingLoops` | frontend/js/atlas-life.js:20 |
 | `atlasTailAttach` | frontend/js/atlas-life.js:324 |
 | `atlasTailBend` | frontend/js/atlas-life.js:105 |
@@ -22354,12 +22354,12 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | Name | File:line |
 |---|---|
 | `Activity` | src/tessellate/core/overlay/behaviour.py:88 |
-| `Flow` | src/tessellate/core/overlay/behaviour.py:330 |
+| `Flow` | src/tessellate/core/overlay/behaviour.py:346 |
 | `Mind` | src/tessellate/core/overlay/behaviour.py:165 |
 | `Pose` | src/tessellate/core/overlay/behaviour.py:45 |
 | `Trail` | src/tessellate/core/overlay/behaviour.py:247 |
 | `_amplitude` | src/tessellate/core/overlay/behaviour.py:291 |
-| `_frac` | src/tessellate/core/overlay/behaviour.py:326 |
+| `_frac` | src/tessellate/core/overlay/behaviour.py:342 |
 | `_k` | src/tessellate/core/overlay/behaviour.py:105 |
 | `activity_frame` | src/tessellate/core/overlay/behaviour.py:234 |
 | `mood_of` | src/tessellate/core/overlay/behaviour.py:150 |
@@ -24290,7 +24290,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (17806)
+## Tests (17816)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -25103,6 +25103,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_fixa2_1025.py | 5 |
 | tests/test_flaw_class_lints.py | 2 |
 | tests/test_flow_1683.py | 16 |
+| tests/test_flow_pose_1683b.py | 7 |
 | tests/test_focus_feedback_1029.py | 8 |
 | tests/test_focus_timer.py | 7 |
 | tests/test_folder_roundtrip.py | 8 |
@@ -25429,6 +25430,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_long_question_1528.py | 5 |
 | tests/test_long_question_bubble_warm12.py | 3 |
 | tests/test_long_runs.py | 12 |
+| tests/test_lower_flow_1683b.py | 3 |
 | tests/test_magic_add_wording.py | 2 |
 | tests/test_maintenance.py | 19 |
 | tests/test_make_plan.py | 21 |
