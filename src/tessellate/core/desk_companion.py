@@ -1171,6 +1171,7 @@ class DeskCompanion:
         if not started:
             self.overlay_failed = True
             logger.warning("desk companion: the overlay could not start, using the card window instead")
+            self._drop_panel()
             return False
         self.runner = runner
         logger.info(
@@ -1446,6 +1447,22 @@ class DeskCompanion:
         finally:
             _lock.release()
 
+    def _drop_panel(self) -> None:
+        """The card window takes over (lock held): the overlay's quick panel, if one was made, is destroyed,
+        so `_sync_card` makes a real card. Kept, the hidden panel (the overlay's page, menu sized, taking
+        focus) was shown as the card and hid again every few seconds (INBOX 1690 d)."""
+        window = self.window if self.panel else None
+        if self.panel:
+            self.window = None
+        self.panel = self.panel_shown = self.shown = False
+        self.corner = None
+        self.size = REST_SIZE
+        if window is not None:
+            try:
+                window.destroy()
+            except Exception:  # noqa: BLE001
+                logger.debug("could not destroy the quick panel", exc_info=True)
+
     def _overlay_died(self) -> None:
         """The overlay's thread ended after a good start (on a worker): the card
         window takes over, as it does when the overlay cannot start."""
@@ -1458,15 +1475,7 @@ class DeskCompanion:
             logger.warning("desk companion: the overlay stopped, using the card window instead")
             self._stop_runner()
             self.overlay_failed = True
-            window, self.window = self.window, None
-            self.panel = self.panel_shown = self.shown = False
-            self.corner = None
-            self.size = REST_SIZE
-            if window is not None:
-                try:
-                    window.destroy()
-                except Exception:  # noqa: BLE001
-                    logger.debug("could not destroy the quick panel", exc_info=True)
+            self._drop_panel()
             self._sync_card(enabled() and self.main_hidden)
         except Exception:  # noqa: BLE001 - never takes the app with it
             logger.warning("desk companion: the card window did not come back", exc_info=True)

@@ -574,3 +574,24 @@ def test_1666_the_quit_handler_closes_the_companion_before_hiding_the_main_windo
     src = (Path(dc.__file__).resolve().parents[1] / "__main__.py").read_text(encoding="utf-8")
     body = src.split("def _quit_from_app", 1)[1].split("quit_hook.set_quit_handler", 1)[0]
     assert body.index("desk_companion.shutdown()") < body.index("hide()")
+
+
+# INBOX 1690 d: "shown", "raised above the desktop: False", "hidden" every 3 to 8 s after a restart failed.
+@pytest.mark.parametrize("how", ["restart", "sync"])
+def test_1690d_a_failed_restart_drops_the_quick_panel_and_shows_a_real_card(over, how):
+    # Before: the hidden quick panel (the overlay's page, menu sized, taking focus) stayed `self.window`,
+    # so the fallback showed it as the card.
+    over.set_main_hidden(True)
+    panel = over.webview.made[0]
+    assert "overlay=1" in panel.options["url"]
+    over.box.ok = False
+    over.main_window.evaluate_js = lambda script: "feminine"  # a new look: the runner is restarted
+    if how == "restart":
+        assert over._restart_shown("companion choice") is False  # noqa: SLF001
+    else:
+        over.set_main_hidden(False)
+        over.set_main_hidden(True)
+    assert over.overlay_failed and ("destroy",) in panel.calls and ("show",) not in panel.calls
+    card = over.webview.made[-1]
+    assert card is not panel and card.options["url"].endswith("?card=1") and ("show",) in card.calls
+    assert over.shown and not over.panel and not over.panel_shown

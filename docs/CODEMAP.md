@@ -2,7 +2,7 @@
 
 Generated 2026-11-07 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7841, frontend ids 2646, CSS sections 522, backend routes 649, backend modules 8920, test files 2112, tests 17825, plan headings 1003, app scripts 28, boot scripts 37, script files 260.
+Counts: frontend functions 7841, frontend ids 2646, CSS sections 522, backend routes 649, backend modules 8920, test files 2112, tests 17826, plan headings 1003, app scripts 28, boot scripts 37, script files 260.
 
 ## Frontend functions (7841)
 
@@ -21330,10 +21330,10 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `DeskApi` | src/tessellate/core/desk_companion.py:803 |
 | `DeskCompanion` | src/tessellate/core/desk_companion.py:870 |
 | `_SnoozeTimer` | src/tessellate/core/desk_companion.py:776 |
-| `_await_loaded` | src/tessellate/core/desk_companion.py:1800 |
+| `_await_loaded` | src/tessellate/core/desk_companion.py:1809 |
 | `_config` | src/tessellate/core/desk_companion.py:193 |
-| `_default_overlay_factory` | src/tessellate/core/desk_companion.py:1692 |
-| `_follow` | src/tessellate/core/desk_companion.py:1742 |
+| `_default_overlay_factory` | src/tessellate/core/desk_companion.py:1701 |
+| `_follow` | src/tessellate/core/desk_companion.py:1751 |
 | `_linux_areas` | src/tessellate/core/desk_companion.py:312 |
 | `_log_placed` | src/tessellate/core/desk_companion.py:710 |
 | `_look_answer` | src/tessellate/core/desk_companion.py:224 |
@@ -21344,8 +21344,8 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_screen_area` | src/tessellate/core/desk_companion.py:416 |
 | `_set_pref` | src/tessellate/core/desk_companion.py:218 |
 | `_system_dpi` | src/tessellate/core/desk_companion.py:302 |
-| `attach` | src/tessellate/core/desk_companion.py:1707 |
-| `carry_due` | src/tessellate/core/desk_companion.py:1779 |
+| `attach` | src/tessellate/core/desk_companion.py:1716 |
+| `carry_due` | src/tessellate/core/desk_companion.py:1788 |
 | `clamp_corner` | src/tessellate/core/desk_companion.py:432 |
 | `clean_size` | src/tessellate/core/desk_companion.py:728 |
 | `companion_ex_style` | src/tessellate/core/desk_companion.py:506 |
@@ -21356,7 +21356,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `monitor_areas` | src/tessellate/core/desk_companion.py:356 |
 | `monitor_for` | src/tessellate/core/desk_companion.py:454 |
 | `mouse_down` | src/tessellate/core/desk_companion.py:568 |
-| `overlay_support` | src/tessellate/core/desk_companion.py:1675 |
+| `overlay_support` | src/tessellate/core/desk_companion.py:1684 |
 | `panel_corner` | src/tessellate/core/desk_companion.py:441 |
 | `panel_placement` | src/tessellate/core/desk_companion.py:466 |
 | `physical_rect` | src/tessellate/core/desk_companion.py:544 |
@@ -21365,9 +21365,9 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `place_physical` | src/tessellate/core/desk_companion.py:674 |
 | `press_outside` | src/tessellate/core/desk_companion.py:572 |
 | `raise_on_desktop` | src/tessellate/core/desk_companion.py:588 |
-| `shutdown` | src/tessellate/core/desk_companion.py:1816 |
+| `shutdown` | src/tessellate/core/desk_companion.py:1825 |
 | `to_logical` | src/tessellate/core/desk_companion.py:283 |
-| `tray_menu_item` | src/tessellate/core/desk_companion.py:1824 |
+| `tray_menu_item` | src/tessellate/core/desk_companion.py:1833 |
 | `window_handle` | src/tessellate/core/desk_companion.py:528 |
 | `work_area` | src/tessellate/core/desk_companion.py:334 |
 
@@ -24290,7 +24290,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (17825)
+## Tests (17826)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -24833,7 +24833,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_desk_note_card_1688.py | 5 |
 | tests/test_desk_overlay_companion.py | 10 |
 | tests/test_desk_overlay_roam.py | 15 |
-| tests/test_desk_overlay_wiring.py | 45 |
+| tests/test_desk_overlay_wiring.py | 46 |
 | tests/test_desk_own_companion_1684.py | 16 |
 | tests/test_desk_wave_visible.py | 2 |
 | tests/test_desktop_fullscreen.py | 5 |
@@ -27116,7 +27116,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Phases 0 to 2: built 2026-09-09 | docs/roadmap/DOCUMENTS_PLAN.md:119 |
 | Phases 0 to 6: built | docs/roadmap/UI_MODERNISATION_PLAN.md:216 |
 | Phases, each with the gate it is finished against | docs/roadmap/MINDMAP_PLAN.md:1296 |
-| Placed (last 20, newest first) | docs/roadmap/INBOX.md:181 |
+| Placed (last 20, newest first) | docs/roadmap/INBOX.md:174 |
 | Placed from Brief 40, 2026-10-10 (does the MCP server work) | docs/roadmap/AGENT_SKILLS_REFORM.md:345 |
 | Placed from Brief 40, 2026-10-10 (research and placement) | docs/roadmap/BACKLOG.md:4178 |
 | Placed from Brief 40, 2026-10-10 (the phone over HTTPS) | docs/roadmap/WORLD_CLASS_PLAN.md:3128 |

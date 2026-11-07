@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- The desk companion's card fallback (INBOX 1690 d): when the figure could not restart, the hidden quick panel was shown as the card and hid again every few seconds; it is now closed and a real card window made.
 - Quit (INBOX 1666 review): a close on the window's own thread (the close button with close to tray off) no longer waits 1.5 s on a web view start that needs that thread, and a panel window a quit overtakes while it is being made is closed instead of left to the process exit.
 - The desk figure's screen reads (BACKLOG 1678 review): with "Roam over windows" off it reads neither the foreground window nor the downloads folder, the folder is counted on a worker so a sleeping or synced disk never stalls a frame, and after a suspend or a full-screen app the first reads are only remembered, so nothing that happened while away is answered as news.
 - A model's answer is never folded (CHAT_PLAN B1, the owner, 2026-11-05): an untagged "Thinking Process:" preamble streams into the Thinking fold, and the long-block fold applies to composed replies only (measured: 1 to 0 answer folds in Ask, Chat and the popup agent); a header nothing closes streams its steps into the fold and gives the prose after them to the answer, each word once.
