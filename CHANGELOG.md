@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- The window filter follows Alt-Tab for owned windows (research T7): an owner with a dialog open is no perch while the dialog is up, though it still hides what is under it.
 - The desk companion has a fuller mind (research B1, B2, B4, B9; owner 2026-11-07): seven needs, acts scored through response curves, no act twice running, short chains of acts that belong together, idle tiers by time away (look about, then props, then a nap), a rare long walk (an hour apart, only when lively), a trip that waits gets likelier; its idle cycle varies 8% per round (A7) and a look or a head turn starts with a blink (G2).
 - The desk companion reacts by priority (research B5: a flinch or a low battery breaks a sit or a lower reaction) and watches the screen (research B7: a window dragged, maximised or restored each get a look).
 - The desk companion sits on windows again (INBOX 1692 n): a full-monitor layered or tool window (an animated wallpaper) no longer hides every window's top, a tool window with a taskbar button counts as a window, a window near the top of the screen is judged by the figure's drawn height, a new window or title bar is gone to within three seconds (was forty), the answer to a new window is a visible look, and the log says why each edge was dropped and why a trip was chosen or skipped.

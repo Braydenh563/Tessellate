@@ -233,6 +233,12 @@ class FakeWin32:
         ref._obj.y += oy
         return 1
 
+    def _GetAncestor(self, hwnd: Any, _flags: int) -> int:
+        return int(self._win(hwnd).get("root", hwnd))  # the root owner; a window with no owner is its own
+
+    def _GetLastActivePopup(self, hwnd: Any) -> int:
+        return int(self._win(hwnd).get("popup", hwnd))
+
     def _GetWindowThreadProcessId(self, hwnd: Any, pid_ref: Any) -> int:
         if pid_ref is None:
             return 77

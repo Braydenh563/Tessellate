@@ -31,6 +31,7 @@ WS_EX_TOPMOST = 0x00000008
 WS_EX_TOOLWINDOW = 0x00000080
 WS_EX_LAYERED = 0x00080000
 WS_EX_APPWINDOW = 0x00040000
+GA_ROOTOWNER = 3
 WS_EX_NOACTIVATE = 0x08000000
 EX_STYLE = WS_EX_LAYERED | WS_EX_TOOLWINDOW | WS_EX_TOPMOST | WS_EX_NOACTIVATE
 
@@ -211,6 +212,8 @@ def signatures() -> dict[str, dict[str, tuple[Any, list[Any]]]]:
             "SystemParametersInfoW": (B, [U, U, ctypes.c_void_p, U]),
             "EnumWindows": (B, [WNDENUMPROC, LPARAM]),
             "IsWindowVisible": (B, [H]),
+            "GetAncestor": (H, [H, U]),
+            "GetLastActivePopup": (H, [H]),
             "IsIconic": (B, [H]),
             "IsZoomed": (B, [H]),
             "GetWindowLongW": (ctypes.c_long, [H, INT]),
@@ -388,6 +391,21 @@ def _cloaked(w: Any, hwnd: Any) -> bool:
         return False
 
 
+def _alt_tab_listed(w: Any, hwnd: Any) -> bool:
+    """Alt-Tab's rule for an owned window (Raymond Chen's): it is listed when it is the last active visible popup of
+    its root owner. A dialog is, and its owner is then not. True when the shell cannot be asked."""
+    try:
+        walk = w.user32.GetAncestor(hwnd, GA_ROOTOWNER)
+        for _ in range(16):  # an owner chain is a few deep; the bound is a guard against a cycle
+            popup = w.user32.GetLastActivePopup(walk)
+            if w.user32.IsWindowVisible(popup) or popup == walk:
+                return bool(popup == hwnd)
+            walk = popup
+    except Exception:  # noqa: BLE001
+        pass
+    return True
+
+
 def _unlisted(w: Any, hwnd: Any, ignore: Any) -> str | None:
     """Why a window is not listed: not visible, minimised, cloaked (another desktop, a suspended store app) or
     our own overlay; None when it is listed."""
@@ -445,6 +463,7 @@ def _classify(w: Any, hwnd: Any, own_pid: int, ex: int, rect: Any, monitors_: li
         ("tool window", bool(ex & WS_EX_TOOLWINDOW) and not app), ("own process", int(pid.value) == own_pid),
         ("maximised", bool(w.user32.IsZoomed(hwnd))), ("fills a monitor", full),
         ("no title", not w.user32.GetWindowTextLengthW(hwnd)),
+        ("owned popup", not _alt_tab_listed(w, hwnd)),  # T7: not the window Alt-Tab lists, it still hides what is under it
     )
     why = next((name for name, hit in reasons if hit), None)
     # A maximised window is no place to stand but its title bar is a place to hang from; a tool window, the app's
