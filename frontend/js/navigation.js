@@ -332,7 +332,7 @@ function openSelectionScope() {
       remove: () => bar.querySelector('[id$="-bulk-delete"]')?.click(),
     };
   }
-  if (typeof selectMode !== "undefined" && selectMode && $("tab-notes") && !$("tab-notes").classList.contains("hidden")) {
+  if (selectMode && $("tab-notes") && !$("tab-notes").classList.contains("hidden")) {
     return {
       clear: () => exitSelectMode(),
       selectAll: () => {
@@ -1147,7 +1147,7 @@ async function goToTabHistory(next, { fromBrowser = false } = {}) {
 document.addEventListener("scroll", (event) => {
   if (tabHistory.navigating) return;
   const current = tabHistory.stack[tabHistory.index];
-  if (current?.tab !== "settings" || typeof settingsScroller !== "function") return;
+  if (current?.tab !== "settings") return;
   if (event.target === settingsScroller(current.section)) current.scroll = event.target.scrollTop;
 }, { passive: true, capture: true });
 
@@ -1738,7 +1738,7 @@ const lazyTabsReady = new Set();
 // check below already uses for a lazy tab that was never visited.
 function hasUnsavedWork() {
   if (typeof docDirty !== "undefined" && docDirty) return true;
-  if (typeof noteFormDirty !== "undefined" && noteFormDirty && editingId !== null) return true;
+  if (noteFormDirty && editingId !== null) return true;
   //: Not the capture box: its text survives a tab switch (the box stays in
   //: the page) and a reload (the draft in localStorage), so leaving loses
   //: nothing, and asking "Leave without saving?" on every tab switch while a
@@ -1770,7 +1770,7 @@ function recordingLive() {
 
 window.addEventListener("beforeunload", (event) => {
   //: A private chat is gone with its tab (chat-private.js, lazy: `typeof`).
-  const privateChat = typeof chatConv !== "undefined" && chatConv.private && chatConv.turns.length;
+  const privateChat = chatConv.private && chatConv.turns.length;
   if (!hasUnsavedWork() && !chatMidStream() && !recordingLive() && !privateChat) return;
   event.preventDefault();
   event.returnValue = "";

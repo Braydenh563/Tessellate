@@ -1266,9 +1266,7 @@ function renderCompressionState() {
 //: same one every cross-file reading in this app carries, since a picture
 //: can start before the preferences have landed.
 function batteryModeOn() {
-  return Boolean(
-    typeof prefsCache !== "undefined" && prefsCache && prefsCache.battery_efficient_mode
-  );
+  return Boolean(prefsCache && prefsCache.battery_efficient_mode);
 }
 
 // `label` is the reduced-motion fallback: with animations off the dots can't

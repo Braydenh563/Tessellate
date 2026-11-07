@@ -963,7 +963,7 @@ function startApp() {
     // A seeded background (microbes, mycelium) started before the
     // preferences arrived grew from the placeholder name; regrow it from the
     // real one. A no-op for every other style and when nothing changed.
-    if (typeof bgArtRefreshSeed === "function") bgArtRefreshSeed();
+    bgArtRefreshSeed();
     
     // Always check battery efficient mode regardless of ui_state seeding
     const indicator = $("power-saver-indicator");
@@ -1036,7 +1036,7 @@ function startApp() {
   // Re-render whichever tab is on screen. This used to be switchTab() itself, called at module level before initAuth() has a token, so a tab that fetches its own data painted itself from a pile of 401s and then never tried again. On the dashboard that meant an empty grid until you opened Edit layout and cancelled out of it, which re-ran renderDashboard by hand (user-reported). Now the module-level call is revealTab(), DOM only, no fetch: and this is the one place the real data load happens. *After* the entries land, not alongside them. These two ran concurrently, so on a cold load the dashboard rendered against an `allEntries` that was still `[]` and drew its brand-new-notebook card instead of the widgets, reported as "the dashboard widgets are missing until I refresh or change tabs". Every tab wants the notes; none of them wants to guess.
   //: The view the address names, when the page was opened on one (a reload, a bookmark, a pasted link: router.js); it loads its own tab, so the Dashboard is not loaded under it first.
   const tabReady = entriesReady.then(() => step("load this tab", async () => {
-    if (typeof routerRestore === "function" && (await routerRestore())) return;
+    if (await routerRestore()) return;
     return refreshActiveTab();
   }));
 

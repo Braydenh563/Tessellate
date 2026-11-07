@@ -868,7 +868,7 @@ async function savePrefs(options = {}) {
     markPrefsSaved();
     // The microbes and mycelium backgrounds grow from the display name
     // (bg-art.js), so a new name regrows them now rather than next launch.
-    if (typeof bgArtRefreshSeed === "function") bgArtRefreshSeed();
+    bgArtRefreshSeed();
     //: **A toast as well as the inline word** (INBOX 263). Reported: "no
     //: visual confirmation popup shows when I use ctrl s to save my
     //: preferences settings". The inline "Saved." is beside the button, which
@@ -881,7 +881,7 @@ async function savePrefs(options = {}) {
     if (!quiet) toast("Preferences saved.");
 
     // Reflect a name change immediately if the dashboard is showing.
-    if (typeof renderDashboardGreeting === "function") renderDashboardGreeting();
+    renderDashboardGreeting();
     paintUserMarks();
   } catch (error) {
     $("prefs-status").textContent = error.message;

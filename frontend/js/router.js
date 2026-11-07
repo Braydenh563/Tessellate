@@ -105,7 +105,7 @@ function appAddressLabel(hash) {
   const entry = routeEntry(hash);
   const kind = entry && Object.keys(ROUTE_OBJECTS).find((key) => ROUTE_OBJECTS[key].tab === entry.tab && String(entry.section).startsWith(ROUTE_OBJECTS[key].prefix));
   if (!kind) return (entry && ROUTE_VIEW_NAMES[entry.tab]) || hash;
-  const title = typeof historyTitles !== "undefined" && historyTitles.get(entry.section);
+  const title = historyTitles.get(entry.section);
   return title || `${kind.charAt(0).toUpperCase()}${kind.slice(1)} ${entry.section.slice(ROUTE_OBJECTS[kind].prefix.length)}`;
 }
 
@@ -161,7 +161,7 @@ let routerNextId = 1;
 function routerPaintTitle(entry) {
   if (typeof setTitleView !== "function" || !entry) return;
   const view = ROUTE_VIEW_NAMES[entry.tab] || "";
-  let item = entry.section && typeof historyTitles !== "undefined" ? historyTitles.get(entry.section) || "" : "";
+  let item = entry.section ? historyTitles.get(entry.section) || "" : "";
   //: A sub-tab by the word its address uses (Images, Capture, Appearance).
   if (!item && entry.section) {
     const word = entry.tab === "library"
@@ -210,7 +210,7 @@ function routerGo(delta) {
 //: link, a bookmark, a hash typed by hand, a reload. A fresh visit, opened by
 //: the same code the history walk uses, replacing the address it came from.
 async function routerOpen(entry) {
-  if (!entry || typeof openHistoryEntry !== "function") return false;
+  if (!entry) return false;
   routerReplacing = true;
   try {
     await openHistoryEntry(entry);

@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- The first-paint scripts are 228 bytes lighter gzipped (261,017 to 260,789), by dropping `typeof` guards on names the boot scripts always define and compacting the embed-documents fetch; the ratchet cap is unchanged.
 - The Guide's diagram-elsewhere topic is 1,881 characters (before: 1,907, within 20 of the 1,920 reply budget; after: under 1,900), the same instructions in fewer words.
 - Atlas at rest costs less main-thread restyle: the companion's pacer no longer pauses and steps the breath by hand (33 currentTime writes a second), a hanging companion rests its tail on the compositor like the other calm states instead of redrawing nine paths 11 times a second, and the breath no longer starts under the entrance fade (the compositor refused both boot-built torsos there). Reload path, 4x CPU, 6 s of UpdateLayoutTree, 5 interleaved runs each on a loaded host: no page rAF loop median 2416 to 1136 ms; with a page rAF loop 2526 to 2202 ms (every produced frame restyles all ~70 animated elements, so a busy page keeps most of the cost).
 - The Atlas companion's chest now breathes on the compositor: one Web Animation of transform per torso on the rise's own start time, set once and again only when the look changes, not a style write ten times a second (each write restyled all ~70 animated elements; 90 torso restyles in 6 s of the hanging pose). Torso rects within 0.15 px of the old steps.

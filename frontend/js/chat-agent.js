@@ -102,7 +102,7 @@ function chatPositions() {
 }
 
 function noteChatPosition(element, atEnd) {
-  const id = typeof chatConv !== "undefined" && chatConv && chatConv.id;
+  const id = chatConv?.id;
   if (!id || (typeof chatStreaming !== "undefined" && chatStreaming)) return;
   clearTimeout(chatPositionTimer);
   chatPositionTimer = setTimeout(() => {
