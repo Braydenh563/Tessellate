@@ -235,6 +235,14 @@ FLING_LIFT = 300.0
 FLING_FLAIL = 1.6
 FLING_ESCAPE = 0.4
 FLING_FACE = (2.0, 4.0)
+#: A hold that slips (the window moved under the hands, INBOX 1683 k): it may grip again, scrabble for `SCRABBLE_FOR` s
+#: (the hem shakes `SCRABBLE_DRAG` at `SCRABBLE_HZ`) and pull up onto the edge's top, else it drops. The chance is
+#: `GRIP_BASE` bent by how rested it is and by the mood (`GRIP_MOOD`).
+GRIP_BASE = 0.55
+GRIP_MOOD = {"sleepy": 0.5, "bored": 0.8, "startled": 0.9, "curious": 1.1, "happy": 1.2, "proud": 1.2}
+SCRABBLE_FOR = 0.9
+SCRABBLE_DRAG = 6.0
+SCRABBLE_HZ = 6.0
 #: States a dragged window does not throw the figure out of: it is already off the window, held, or going somewhere.
 FLING_SAFE = ("held", "pressed", "fly", "fall", "warp", "hang", "rise", "peek", "emerge", "leap")
 BOUNCE_DAMP = 0.55
@@ -722,6 +730,10 @@ class Engine:
         self.last_fling = ""
         self.flung: str | None = None
         self.flail_until = 0.0
+        #: A hold that slipped: the window it will pull up onto, the scrabble's span, and how the last slip ended.
+        self.pulling: Perch | None = None
+        self.scrabble_t0 = self.scrabble_until = 0.0
+        self.last_slip = ""
         self.phase_from = (0.0, 0.0)
         self.phase_started = now
         self.phase_to = (0.0, 0.0)
@@ -957,6 +969,8 @@ class Engine:
             self.sink, self.peek_edge, self.tuck = 0.0, None, None
         if state not in ("walk", "drift", "crouch"):
             self.goal = None
+        if state != "hang":
+            self.pulling, self.scrabble_until = None, 0.0
         if state != "act":
             self.act = None
 
@@ -1121,6 +1135,8 @@ class Engine:
             drag = HANG_SWING * amp * math.sin(2 * math.pi * t / HANG_PERIOD + self.hang_phase)
             blend = bh.smooth(t / HANG_DRAG_IN)  # a hem left swinging by the leap or climb is not dropped to the pendulum in one pose ease
             drag = self.hang_drag0 * (1.0 - blend) + drag * blend
+            if now < self.scrabble_until:  # the hands slipped and it is clawing back: the hem shakes
+                drag += SCRABBLE_DRAG * math.sin(2 * math.pi * SCRABBLE_HZ * (now - self.scrabble_t0))
         elif s_ == "warp" and self.warp is not None and self.warp["kind"] == "portal":
             squeeze = self._warp_view(now)[2]
             sx, sy = 1.0 - 0.8 * squeeze, 1.0 - 0.2 * squeeze
@@ -1943,11 +1959,42 @@ class Engine:
         if cur is not None:
             self.hang_on = cur
         elif self.state == "hang":
-            self.hang_on = None
-            self._let_go()
+            self._slip_hang(p, now)
         elif self.state in ("drift", "crouch") and self.then == "hang":
             self.hang_on, self.goal, self.then, self.pending = None, None, "stand", None
             self._enter("stand", now)
+
+    def _grip_chance(self, now: float) -> float:
+        """How likely a slipping hold is to grip again: the more rested (and the more cheerful or curious), the likelier."""
+        rested = 1.0 - min(1.0, max(0.0, self.mind.needs["rest"]))
+        return min(0.95, GRIP_BASE * (0.4 + 0.6 * rested) * GRIP_MOOD.get(self.mind.mood(now, self.hour), 1.0))
+
+    def _slip_hang(self, p: Perch, now: float) -> None:
+        """The hands lost the edge: if its window is still there with a top to stand on, a chance to grip again and
+        scrabble (`_do_hang` pulls up when it ends), else the drop."""
+        self.hang_on = None
+        top = next((q for q in self.windows if q.key == p.key), None)
+        if top is not None and top.kind == "top" and top.top - self.size[1] >= self.current_monitor().area[1] and self.rng.random() < self._grip_chance(now):
+            self.last_slip, self.pulling = "pull", top
+            self.scrabble_t0, self.scrabble_until = now, now + SCRABBLE_FOR
+            self.state_until = self.scrabble_until
+            return
+        self.last_slip = "drop"
+        self._let_go()
+
+    def _pull_up(self, now: float) -> None:
+        """The scrabble is over: up onto the window's top where it is now, else the drop."""
+        p, self.pulling = self.pulling, None
+        cur = next((q for q in self.windows if p is not None and q.key == p.key), None)
+        w, h = self.size
+        if cur is None or cur.top - h < self.current_monitor().area[1]:
+            self.last_slip = "drop"
+            self._let_go()
+            return
+        x = min(max(self.x, cur.left), cur.right - w)
+        self.target = cur
+        self.legs.append(("climb", self.x, x, now))
+        self._rise((x, cur.top - h), "perch", now)
 
     def _arrive_hang(self, now: float, m: Monitor) -> None:
         """At the edge a hang came for: hands on it, or (its window went on the way) a stand."""
@@ -2834,6 +2881,10 @@ class Engine:
     def _do_hang(self, now: float, dt: float) -> None:
         """Hanging is alive: the picture swings from the grip (`_target_pose`), and now and then it glances
         round (a turn). It lets go by its own choice: climbs up onto the window's edge, or drops."""
+        if self.pulling is not None:
+            if now >= self.scrabble_until:
+                self._pull_up(now)
+            return
         if now >= self.hang_glance_at and now < self.state_until - 3.0:
             self._face(-self.facing, now)
             self.hang_glance_at = now + self.rng.uniform(*HANG_GLANCE)
