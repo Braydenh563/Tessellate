@@ -5928,7 +5928,8 @@ body .chip.item-label,
 /* Tucked behind the bottom bar (the last resort in a small window): only
    its eyes over the edge, ducking out of sight when the pointer is near. */
 #nm-buddy[data-legs="peek"] .nm-buddy-face {
-  clip-path: inset(-80px -80px calc(92px - var(--nmb-edge)) -80px);
+  /* The top is the head, not the handle's air above it (the char sits at --nmb-edge - 34, rising to - 44 when it emerges). */
+  clip-path: inset(calc(var(--nmb-edge) - 44px) -80px calc(92px - var(--nmb-edge)) -80px);
 }
 #nm-buddy[data-legs="peek"] .nm-buddy-char {
   translate: 0 calc(var(--nmb-edge) - 34px);

@@ -6982,8 +6982,13 @@ function nameMarkBuddyCheck() {
   const aside = nameMarkBuddyStepAside(here, obstacles);
   nmb.moves = (nmb.moves || 0) + 1;
   nmb.moveWhy = "covering a control";
+  //: Over a control with no clear place along its edge: the next beat is a quarter second away,
+  //: not 1.2 to 2.5s (companion dive 1107: a hang on Graph covered Search and Options 2.3 to 3.1s).
   if (aside.x !== here.x) nameMarkBuddyMoveTo(buddy, aside);
-  else nameMarkBuddyQueuePlace();
+  else {
+    clearTimeout(nmb.placeTimer);
+    nmb.placeTimer = setTimeout(nameMarkBuddyBeat, 250);
+  }
 }
 
 //: **Its perch went while you are looking** (INBOX 582, never left on the
@@ -7193,9 +7198,13 @@ function nameMarkBuddyTabChanged() {
     }
     return;
   }
+  //: A bar or a hang is the window's and goes on over the new page's controls: the same look
+  //: that its perch is clear (companion dive 1107: New note covered 6.1 s, Attach 7 s on a phone).
   if ((nmb.perch === "bar" || nmb.perch === "hang") && !nmb.away) {
     nmb.tab = tab;
     nameMarkBuddyFollow();
+    clearTimeout(nmbFollow.recheck);
+    nmbFollow.recheck = setTimeout(queueNameMarkBuddyCheck, 900);
     return;
   }
   if (!nmb.mind) ensureModule("companionMenu");
