@@ -243,13 +243,23 @@
       if (!row || closing || !(await mayDiscard())) return;
       leave();
       existing.open(row);
-    }, false) : null;
+    }) : null;
     //: Help in reach (DD-7, 1107): every key in one sheet, from a chip that is always there, from `?` anywhere in the dialog
     //: outside a field, and from the ... menu; the '?' by the title says what the window is and offers the Guide's topic.
     const keys = () => pane && diagramModel.builder.styleDo(pane, "shortcuts");
     const chip = smallButton("ph:keyboard Keys", "Every key in this editor (?). F6 leaves the blocks", keys);
     chip.classList.add("dgm-keychip");
+    if (known) {
+      known.classList.add("dgm-known");
+      known.setAttribute("aria-label", "Open an existing diagram");
+    }
     foot.append(seg, ...(known ? [known] : []), chip, cancel, go);
+    //: On a phone the views are the sheet's top row, not the foot's first (DD-6, 1107): the foot is one row of Keys, Cancel and Done.
+    const viewbar = el("div", "dgm-viewbar");
+    const phone = matchMedia("(max-width: 599.98px)");
+    const place = () => (phone.matches ? viewbar : foot).prepend(seg);
+    phone.addEventListener("change", place);
+    place();
     const head = dialogHead(title, () => finish(false));
     const help = el("button", "icon-only ghost small graph-help-toggle");
     help.type = "button";
@@ -268,7 +278,7 @@
     dialog.append(helpBody);
     const body = el("div", "dgm-dialog-body");
     body.append(field, host);
-    dialog.append(head, body, foot);
+    dialog.append(head, viewbar, body, foot);
     document.addEventListener("keydown", onKey, true);
     wireBackdropClose(overlay, () => finish(false));
     //: Ctrl+Z in the blocks steps the source history, as it does in a diagram document.

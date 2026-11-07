@@ -1217,6 +1217,10 @@
   margin-inline-end: auto;
 }
 
+.dgm-viewbar:empty {
+  display: none;
+}
+
 .dgm-dialog-body {
   flex: 1 1 auto;
   min-height: 0;
@@ -1262,8 +1266,48 @@
 }
 
 @media (max-width: 599.98px) {
-  .dgm-dialog {
-    height: 94dvh;
+  /* A phone's builder is a full-screen sheet (DD-6, 1107 round 2): the dialog's 24 px of margin cost the dock its last button
+     (the dock is 324 px of controls in a 308 px body) and left the footer three rows. The tabs are the sheet's top row, the
+     footer one row: the way in to Source is never under it. */
+  /* Flush to the screen, kept out of the notch and the home indicator (10-responsive.css band 2). */
+  .modal-overlay:has(> .dgm-dialog) {
+    padding: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px) env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px);
+  }
+
+  .modal-overlay > .card.dgm-dialog {
+    width: 100%;
+    min-width: 0;
+    max-width: none;
+    height: 100%;
+    max-height: none;
+    border-radius: 0;
+  }
+
+  .dgm-viewbar .dgm-views {
+    display: flex;
+    margin: 0;
+  }
+
+  .dgm-viewbar .dgm-views button {
+    flex: 1 1 0;
+  }
+
+  .dgm-dialog .space-dialog-actions {
+    flex-wrap: nowrap;
+  }
+
+  .dgm-keychip {
+    margin-inline-end: auto;
+  }
+
+  /* The offer's words take a line, its two buttons the next: Keep was a third line (96 px for a one-line question). */
+  .dgm-sideways > span {
+    flex: 1 0 100%;
+  }
+
+  /* The door's "Open an existing diagram" is its folder glyph here; its name is the button's label. */
+  .dgm-known .ph-text {
+    display: none;
   }
 
   .dgm-dialog-body {
@@ -1285,6 +1329,17 @@
 
   .dgm-dialog-body .dgm-body {
     grid-template-rows: minmax(240px, auto) minmax(0, 1fr);
+  }
+
+  /* An empty diagram has nothing to draw, so its picture is a strip and the steps keep the screen (DD-6: the template button was
+     clipped by the pane at 390). */
+  .dgm-dialog-body .dgm-body:has(.dgm-picture-empty) {
+    grid-template-rows: auto minmax(0, 1fr);
+  }
+
+  .dgm-dialog-body .dgm.dgm .dgm-stage:has(> .dgm-picture-empty),
+  .dgm-dialog-body .dgm.dgm .dgm-picture-empty {
+    min-block-size: 0;
   }
 
   .dgm-dialog-body .dgm-body {
