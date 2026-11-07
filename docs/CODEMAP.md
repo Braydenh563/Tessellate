@@ -2,7 +2,7 @@
 
 Generated 2026-11-07 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7861, frontend ids 2644, CSS sections 522, backend routes 649, backend modules 9003, test files 2157, tests 18173, plan headings 1004, app scripts 28, boot scripts 37, script files 261.
+Counts: frontend functions 7861, frontend ids 2644, CSS sections 522, backend routes 649, backend modules 9005, test files 2157, tests 18177, plan headings 1004, app scripts 28, boot scripts 37, script files 261.
 
 ## Frontend functions (7861)
 
@@ -13080,7 +13080,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:164 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (9003)
+## Backend modules (9005)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -15008,24 +15008,26 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `listed` | src/tessellate/ai/composer_sides.py:98 |
 | `strip_format` | src/tessellate/ai/composer_sides.py:67 |
 
-### src/tessellate/ai/composer_slots.py (69)
+### src/tessellate/ai/composer_slots.py (71)
 
 | Name | File:line |
 |---|---|
 | `Ask` | src/tessellate/ai/composer_slots.py:653 |
 | `Slot` | src/tessellate/ai/composer_slots.py:661 |
+| `_age_of` | src/tessellate/ai/composer_slots.py:955 |
 | `_all_of` | src/tessellate/ai/composer_slots.py:196 |
+| `_as_written` | src/tessellate/ai/composer_slots.py:947 |
 | `_ask_date` | src/tessellate/ai/composer_slots.py:731 |
 | `_ask_quantity` | src/tessellate/ai/composer_slots.py:746 |
 | `_ask_temperature` | src/tessellate/ai/composer_slots.py:715 |
-| `_by_words` | src/tessellate/ai/composer_slots.py:989 |
+| `_by_words` | src/tessellate/ai/composer_slots.py:1026 |
 | `_counted` | src/tessellate/ai/composer_slots.py:157 |
 | `_counted_ask` | src/tessellate/ai/composer_slots.py:141 |
 | `_did` | src/tessellate/ai/composer_slots.py:475 |
 | `_filed_under` | src/tessellate/ai/composer_slots.py:876 |
 | `_first_did` | src/tessellate/ai/composer_slots.py:312 |
 | `_flat` | src/tessellate/ai/composer_slots.py:705 |
-| `_how` | src/tessellate/ai/composer_slots.py:999 |
+| `_how` | src/tessellate/ai/composer_slots.py:1036 |
 | `_is_done` | src/tessellate/ai/composer_slots.py:533 |
 | `_is_state` | src/tessellate/ai/composer_slots.py:222 |
 | `_is_still` | src/tessellate/ai/composer_slots.py:508 |
@@ -15040,7 +15042,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_note_of` | src/tessellate/ai/composer_slots.py:352 |
 | `_often` | src/tessellate/ai/composer_slots.py:882 |
 | `_often_line` | src/tessellate/ai/composer_slots.py:918 |
-| `_old` | src/tessellate/ai/composer_slots.py:942 |
+| `_old` | src/tessellate/ai/composer_slots.py:977 |
 | `_one_line` | src/tessellate/ai/composer_slots.py:537 |
 | `_only_mentioned` | src/tessellate/ai/composer_slots.py:909 |
 | `_open_everywhere` | src/tessellate/ai/composer_slots.py:244 |
@@ -15076,7 +15078,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_weekday_fits` | src/tessellate/ai/composer_slots.py:818 |
 | `_when_said` | src/tessellate/ai/composer_slots.py:541 |
 | `_yours` | src/tessellate/ai/composer_slots.py:394 |
-| `answer` | src/tessellate/ai/composer_slots.py:971 |
+| `answer` | src/tessellate/ai/composer_slots.py:1008 |
 | `asks_open` | src/tessellate/ai/composer_slots.py:341 |
 | `asks_state` | src/tessellate/ai/composer_slots.py:259 |
 | `open_doings` | src/tessellate/ai/composer_slots.py:334 |
@@ -24417,7 +24419,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (18173)
+## Tests (18177)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -24856,7 +24858,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_composer_r2_1107.py | 22 |
 | tests/test_composer_r2_review_1107.py | 6 |
 | tests/test_composer_r2_route_1107.py | 6 |
-| tests/test_composer_r3_1107.py | 6 |
+| tests/test_composer_r3_1107.py | 10 |
 | tests/test_composer_r3_route_1107.py | 2 |
 | tests/test_composer_ranker_1029.py | 12 |
 | tests/test_composer_redos_1026.py | 4 |

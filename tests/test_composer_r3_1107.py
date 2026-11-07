@@ -66,3 +66,25 @@ def test_r3_1_a_present_tense_when_is_never_the_day_a_note_was_written(question)
 def test_r3_1_a_past_form_is_still_the_day_the_note_was_written(question):
     said = say(question, "# Banana bread\n\n3 ripe bananas, 200 g flour.", "# Sourdough\n\nFeed twice a day.")
     assert "written" in said or "wrote" in said or "made" in said or "started" in said, said
+
+
+# --- R3-3: a person's age is not a thing's start -------------------------------------------
+
+SARA = ("# Sara\n\nSara is my sister. Her birthday is on 14 March.", "Sara likes jazz", "# Gift ideas\n\nSara wants a jazz record for her birthday.")
+
+
+def test_r3_3_how_old_a_person_is_says_the_notes_do_not_and_keeps_the_name_as_written():
+    assert say("how old is Sara", *SARA) == "Your notes do not say how old Sara is. Her birthday is on 14 March."
+
+
+def test_r3_3_a_person_with_no_birthday_has_no_borrowed_one():
+    assert say("how old is Tom", "# Tom\n\nTom is my colleague.", *SARA) == "Your notes do not say how old Tom is."
+
+
+def test_r3_3_an_age_a_note_gives_is_the_answer():
+    assert say("how old is Anna", "# Anna\n\nAnna is my cousin. She is 34 years old.") == "She is 34 years old."
+
+
+def test_r3_3_a_thing_still_counts_days_from_its_start():
+    said = say("how old is my sourdough starter", "# Sourdough starter\n\nStarted on 1 October. Feed twice a day.")
+    assert said == "Your sourdough starter is 37 days old, started on 1 October.", said

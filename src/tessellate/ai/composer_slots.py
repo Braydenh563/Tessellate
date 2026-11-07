@@ -939,7 +939,42 @@ def _start_day(view, today: date) -> tuple[date, object] | None:  # noqa: ANN001
     return min(found, key=lambda f: f[0]) if found else None
 
 
-def _old(out, rest: list[str], views: list, today: date) -> bool:  # noqa: ANN001
+_WORD = re.compile(r"[\w'\u2019-]+")
+_YEARS_OLD = re.compile(r"\b(?:\d{1,3}\s+years?\s+old|aged?\s+\d{1,3}|turned\s+\d{1,3}|turns\s+\d{1,3})\b", re.I)
+_BIRTHDAY = re.compile(r"\b(?:birthday|born)\b", re.I)
+
+
+def _as_written(raw: str, words: list[str]) -> str:
+    """The subject as the person typed it when every word of it is capitalised ("Sara"), a name;
+    "" for a thing ("my sourdough starter")."""
+    typed = {w.lower(): w for w in _WORD.findall(raw)[1:]}
+    got = [typed.get(w.strip("?.!,").lower(), "") for w in words]
+    return " ".join(got) if got and all(g[:1].isupper() for g in got) else ""
+
+
+def _age_of(out, name: str, named: list, today: date) -> bool:  # noqa: ANN001
+    """"How old is Sara": a note that says her age, else that none does, with her birthday when one
+    is written (round 3, R3-3: it was a thing "started", "its age")."""
+    stems = _stems(name)
+    named = [v for v in named if _title_holds(v, stems)]  # her own note, not a gift list that names her
+    for view in named:
+        for s in view.sentences:
+            if _YEARS_OLD.search(s.text):
+                out.lines.append(s.text if s.text.endswith((".", "!")) else f"{s.text}.")
+                composer_lists._cite(out, view, s, out.lines[-1])  # noqa: SLF001
+                return True
+    line = f"Your notes do not say how old {name} is."
+    for view in named:
+        if bday := next((s for s in view.sentences if _BIRTHDAY.search(s.text)), None):
+            line += f" {bday.text}" if bday.text.endswith((".", "!")) else f" {bday.text}."
+            out.lines.append(line)
+            composer_lists._cite(out, view, bday, line)  # noqa: SLF001
+            return True
+    out.lines.append(line)
+    return True
+
+
+def _old(out, rest: list[str], views: list, today: date, raw: str = "") -> bool:  # noqa: ANN001
     """"How old is my sourdough starter": today less the start date the note
     gives; when it gives none, that is said."""
     stems = _stems(" ".join(rest))
@@ -950,6 +985,8 @@ def _old(out, rest: list[str], views: list, today: date) -> bool:  # noqa: ANN00
     if not named:
         return False
     subject = " ".join(w for w in rest if w not in _FILLER)
+    if name := _as_written(raw, [w for w in rest if w not in _FILLER]):
+        return _age_of(out, name, named, today)
     for view in named:
         if got := _start_day(view, today):
             day, s = got
@@ -977,7 +1014,7 @@ def answer(out, asked: str, views: list, today: date) -> bool:  # noqa: ANN001
     if _counted(out, q, views) or _state(out, " ".join(q.lower().split()).rstrip("?.!"), views, today):
         return True
     tokens = q.lower().replace("'s ", " is ").split()
-    shaped = _by_words(out, tokens, views, today)
+    shaped = _by_words(out, tokens, views, today, q)
     if shaped is not None:
         return shaped
     for pattern, say in ((_SINCE, _since), (_DID, _did), (_NEED, _left), (_LEFT, _left), (_STILL_ON, _left), (_IS_STILL, _is_still), (_IS_DONE, _is_done)):
@@ -986,21 +1023,21 @@ def answer(out, asked: str, views: list, today: date) -> bool:  # noqa: ANN001
     return False
 
 
-def _by_words(out, tokens: list[str], views: list, today: date) -> bool | None:  # noqa: ANN001
+def _by_words(out, tokens: list[str], views: list, today: date, raw: str = "") -> bool | None:  # noqa: ANN001
     """A value slot's answer (True, or False when the slot cannot say), how
     often or how old; None when the words ask none of these."""
     if tokens and tokens[0] in ("what", "when", "how", "at"):
         for slot in SLOTS:
             if (ask := slot.ask(tokens)) is not None:
                 return _value(out, slot, ask, views, today)
-    return True if tokens[:1] == ["how"] and _how(out, tokens, views, today) else None
+    return True if tokens[:1] == ["how"] and _how(out, tokens, views, today, raw) else None
 
 
-def _how(out, tokens: list[str], views: list, today: date) -> bool:  # noqa: ANN001
+def _how(out, tokens: list[str], views: list, today: date, raw: str = "") -> bool:  # noqa: ANN001
     """A doing counted from the lines that say it was done (audit 1030 Z23),
     how often the notes are filed under a subject, or how old a thing is."""
     if composer_doings.answer(out, " ".join(tokens), views, today):
         return True
     if len(tokens) > 4 and tokens[1] == "often" and tokens[2] in _AUX and tokens[3] in _SELF and _often(out, tokens[4:], views, today):
         return True
-    return len(tokens) > 3 and tokens[1] == "old" and tokens[2] in ("is", "are", "was") and _old(out, tokens[3:], views, today)
+    return len(tokens) > 3 and tokens[1] == "old" and tokens[2] in ("is", "are", "was") and _old(out, tokens[3:], views, today, raw)
