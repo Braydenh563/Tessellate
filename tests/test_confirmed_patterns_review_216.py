@@ -26,3 +26,10 @@ def test_a_row_without_a_notes_list_still_draws():
     draw = _block("const drawConfirmed = async () => {")
     assert "item.notes.slice" not in draw and "item.notes.length" not in draw
     assert "const notes = item.notes || [];" in draw
+
+
+def test_a_note_link_is_a_button_not_a_dead_anchor():
+    draw = _block("const drawConfirmed = async () => {")
+    assert 'document.createElement("a")' not in draw and 'href = "#"' not in draw
+    assert 'document.createElement("button")' in draw and 'open.className = "linklike"' in draw
+    assert 'open.type = "button"' in draw

@@ -2715,11 +2715,12 @@ async function renderMemorySettings() {
         const notes = item.notes || [];
         notes.slice(0, 5).forEach((note, i) => {
           meta.append(i ? ", " : `. From ${notes.length === 1 ? "a note" : `${notes.length} notes`}: `);
-          const open = meta.appendChild(document.createElement("a"));
-          open.href = "#";
+          //: A word in a sentence that does something is a `.linklike` button, not an `<a href="#">` (DESIGN.md, Plain).
+          const open = meta.appendChild(document.createElement("button"));
+          open.type = "button";
+          open.className = "linklike";
           open.textContent = note.title;
-          open.addEventListener("click", (event) => {
-            event.preventDefault();
+          open.addEventListener("click", () => {
             closeSettingsModal();
             flashEntry(note.id);
           });

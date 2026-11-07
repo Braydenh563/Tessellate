@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Confirmed patterns in Settings: a note named in a pattern's line is a `.linklike` button, not an `<a href="#">` that only acted as one; computed in a browser: underline, no fill, no shadow, 230 buttons and no anchors (PR 216 review, tests/test_confirmed_patterns_review_216.py).
 - Settings, What it remembers reads every page of the Confirmed patterns (200 a page) instead of silently stopping at the first, and a pattern row with no notes list still draws; measured in a browser with 230 patterns, every second one without notes: no rows and a thrown error from one request before, 230 rows over 2 requests after (PR 216 review, tests/test_confirmed_patterns_review_216.py).
 - Typeable number fields ask a phone for the keyboard that fits: digits for whole numbers from zero up, the decimal key where a fraction is possible, the full keyboard where a minus is (value-field.js; PR 216 review, tests/test_value_field_review_216.py).
 - The desk figure's screen watch no longer stops counting the Downloads folder for good when no worker could take the count (the counting flag is cleared and the poll goes on) (PR 216 review, tests/test_overlay_screen_1678.py).
