@@ -88,6 +88,7 @@ function wbHistSync() {
     slider.max = String(wbHist.moments.length);
     slider.value = String(wbHist.pos);
     slider.setAttribute("aria-valuetext", words);
+    window.valueField?.refresh(slider.parentElement);
   }
   if (when) {
     when.textContent = words;

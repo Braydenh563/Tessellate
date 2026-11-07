@@ -7607,7 +7607,9 @@ def test_every_slider_with_a_readout_is_a_value_field():
         and not re.search(rf'id="{re.escape(i)}"[^>]*data-unit=|data-unit=[^>]*id="{re.escape(i)}"|type="range" id="{re.escape(i)}" data-unit', html)
         and i.replace("-slider", "") + "-value" not in html.replace('id="', " ")
     )
-    assert bare == ["wb-history-slider"], bare  # graph-time-slider has a clock readout, skipped in code
+    assert bare == [], bare  # graph-time-slider's date label is left alone in code (see the remaining list)
+    # The history scrubber is a field that reads "3 of 12": its length is read live, since the board grows it.
+    assert 'id="wb-history-slider" data-unit="" data-value-of' in html and 'hasAttribute("data-value-of")' in field
     # Sliders built in script: the files that draw one are frozen.
     built = sorted(
         p.name for p in JS if re.search(r'type = "range"|type: "range"', p.read_text(encoding="utf-8"))

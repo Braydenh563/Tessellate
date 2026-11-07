@@ -39,6 +39,7 @@ function valueField(host, opts = {}) {
   input.spellcheck = false;
   input.setAttribute("aria-label", opts.label || "Value");
   input.value = shown;
+  //: `size` is the fallback; the stylesheet's `field-sizing: content` fits the text itself (`size` alone drew 63px for "50").
   const size = () => {
     input.size = Math.max(3, input.value.length + 1);
   };
@@ -61,6 +62,14 @@ function valueField(host, opts = {}) {
     paint();
     opts.onCommit?.(value);
   };
+  //: Escape has two stages: the first puts a half-typed number back and keeps the focus (a keyboard user is not thrown
+  //: to the page), the second leaves the field. True when it reverted.
+  input.vfRevert = () => {
+    if (input.value.trim() === shown) return false;
+    paint();
+    input.select();
+    return true;
+  };
   input.addEventListener("input", size);
   input.addEventListener("focus", () => input.select());
   input.addEventListener("blur", commit);
@@ -82,8 +91,7 @@ function valueField(host, opts = {}) {
       input.select();
     } else if (event.key === "Escape") {
       event.preventDefault();
-      paint();
-      input.blur();
+      if (!input.vfRevert()) input.blur();
     }
   });
   wrap.append(input);
@@ -144,24 +152,29 @@ function valueField(host, opts = {}) {
     //: A slider with no readout asks for a field after it with `data-value-field="unit"` (the graph's, the pen's).
     if (!source && slider.dataset.unit === undefined) return null;
     slider.dataset.valueField = "1";
-    const min = Number(slider.min || 0);
-    const max = Number(slider.max || 100);
-    const step = Number(slider.step) > 0 ? Number(slider.step) : 1;
+    //: Read live: a board's history grows its slider's `max` while the field lives.
+    const min = () => Number(slider.min || 0);
+    const max = () => Number(slider.max || 100);
+    const step = () => (Number(slider.step) > 0 ? Number(slider.step) : 1);
     const unit = source ? source.textContent.trim().replace(/^[-\d.,\s]+/, "") : slider.dataset.unit;
     const host = document.createElement("span");
     host.className = `value-field-range ${source ? source.className : ""}`.trim();
     if (source) source.classList.add("value-field-source");
     (source || slider).after(host);
-    const label = slider.getAttribute("aria-label") || slider.title || slider.closest("label")?.textContent.trim() || "Value";
+    //: Named by what the slider is named by (aria-label, else its label words without the readout, else its title), never
+    //: by a title's long explanation first.
+    const said = source ? source.textContent : "";
+    const label = slider.getAttribute("aria-label") || [...(slider.labels || [])].map((l) => l.textContent.replace(said, "").trim()).join(" ").trim() || slider.title || "Value";
     const field = valueField(host, {
       value: Number(slider.value),
       min,
       max,
-      step,
+      step: step(),
       label: `${label}, type a value`,
-      format: (v) => `${Math.round(v * 100) / 100}${unit}`,
+      //: `data-value-of` says "3 of 12": a scrubber's position means little without its length.
+      format: (v) => `${Math.round(v * 100) / 100}${slider.hasAttribute("data-value-of") ? ` of ${max()}` : unit}`,
       onCommit: (v) => {
-        const snapped = Math.min(max, Math.max(min, min + Math.round((v - min) / step) * step));
+        const snapped = Math.min(max(), Math.max(min(), min() + Math.round((v - min()) / step()) * step()));
         slider.value = String(snapped);
         slider.dispatchEvent(new Event("input", { bubbles: true }));
         slider.dispatchEvent(new Event("change", { bubbles: true }));
@@ -193,6 +206,17 @@ function valueField(host, opts = {}) {
       if (!rangeField(slider)) slider.vfRefresh?.();
     });
   }
+  //: At the window, before a menu or a panel that is open around the field takes the same Escape and closes itself.
+  window.addEventListener(
+    "keydown",
+    (event) => {
+      if (event.key === "Escape" && event.target.vfRevert?.()) {
+        event.preventDefault();
+        event.stopPropagation();
+      }
+    },
+    true
+  );
   valueField.range = rangeField;
   //: For a surface that writes a readout in code: `valueField.refresh()` re-reads every field under `root`.
   valueField.refresh = (root = document) => root.querySelectorAll("input[data-value-field]").forEach((s) => s.vfRefresh?.());
