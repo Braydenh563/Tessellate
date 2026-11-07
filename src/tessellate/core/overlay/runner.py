@@ -174,6 +174,7 @@ class OverlayRunner:
         self._zone: tuple[int, float, tuple[int, int, int, int] | None] | None = None
         self._next_scan = 0.0
         self._next_taskbar = 0.0
+        self.lively = "usual"
         self._cards: deque[Any] = deque()
         self._commands: deque[str] = deque()
         #: The result of the last menu request the engine took, for the tests and the log.
@@ -264,6 +265,12 @@ class OverlayRunner:
     def _fdpi(self) -> int:
         """The dpi the pictures are drawn at: the monitor's, times the size the person chose."""
         return max(24, round(self.dpi * self.scale))
+
+    def set_lively(self, name: str) -> None:
+        """The menu's Activity (any thread): read by the engine on the next tick."""
+        self.lively = name if name in eng.LIVELY else "usual"
+        if self.host:
+            self.host.wake(1)
 
     def set_roam(self, on: bool) -> None:
         """The "Roam over windows" switch: takes effect on the next tick."""
@@ -399,6 +406,7 @@ class OverlayRunner:
         assert engine is not None
         self._watch_taskbar(now)
         engine.roam_windows = self.roam_windows
+        engine.lively = self.lively
         if not self.roam_windows:
             if engine.windows or engine.perch is not None:
                 engine.set_windows([], now)

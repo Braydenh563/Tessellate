@@ -244,6 +244,13 @@
       }
       //: Roam over windows: a switch, not a one-way action.
       if (overlay && motion && typeof motion.roam === "boolean") motionRows.push(toggle("Roam over windows", motion.roam, () => leave(() => ask("set_roam", !motion.roam))));
+      //: How lively it is: one row that steps Calm, Usual, Lively (saved, and the figure follows).
+      if (overlay && motion && typeof motion.lively === "string") {
+        const levels = ["calm", "usual", "lively"];
+        const names = { calm: "Calm", usual: "Usual", lively: "Lively" };
+        const at = Math.max(0, levels.indexOf(motion.lively));
+        motionRows.push(item(`Activity: ${names[levels[at]]}`, "lightning", () => leave(() => ask("set_lively", levels[(at + 1) % levels.length]))));
+      }
       //: The in-app Companion size steps (`NMB_SIZES`); a size pulled with the corner handle marks none.
       const sizeRows = overlay && !locked && typeof motion?.size === "number"
         ? [["Small", "small", 0.8], ["Medium", "medium", 1], ["Large", "large", 1.3]].map(([label, name, size]) => toggle(label, Math.abs(motion.size - size) < 0.005, () => leave(() => ask("set_figure_size", name))))

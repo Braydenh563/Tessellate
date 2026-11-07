@@ -148,6 +148,9 @@ STROLL = 150.0
 TRIP_EVERY = (520.0, 1100.0)
 TRIP_FIRST = (300.0, 700.0)
 #: Each TRIP_OVERDUE_S a trip is overdue adds one to its weight, to TRIP_OVERDUE_MAX more.
+#: How lively it is (research DG5, the menu's Activity): (the gap between trips times this, the weight of a trip, a
+#: climb, a hang or a peek times this). A calm one also takes no long walk.
+LIVELY = {"calm": (1.6, 0.5), "usual": (1.0, 1.0), "lively": (0.6, 1.6)}
 TRIP_OVERDUE_S = 300.0
 TRIP_OVERDUE_MAX = 4.0
 #: The long walk: a low chance among the trips, and never within an hour of the last (owner 1683 l).
@@ -175,6 +178,9 @@ YIELD_NEAR = 130.0
 YIELD_MAX = 4.0
 LEAN_MAX = 0.07
 POSE_RATE = 14.0
+#: (frequency Hz, damping, response) of the body's scale x, scale y and lean. The scales are a touch underdamped (about
+#: 3% over); the lean has a slight anticipation. The step is about as quick as the lag it replaced (POSE_RATE).
+POSE_DYN = ((3.4, 0.8, 0.0), (3.4, 0.8, 0.0), (3.0, 0.85, -0.12))
 #: The longest slice of time one draw eases the pose by. A draw after a long sleep (an act's hold, a rest) has a big dt;
 #: easing by all of it snapped a 0.1 gap to neutral in one picture (INBOX 1683 j). The next draws are asked at the moving pace.
 POSE_DT_MAX = 1.0 / 60.0
@@ -489,6 +495,7 @@ class Engine:
         self.next_ambient = now + self._ambient_gap()
         self.flash: tuple[str, float] | None = None  # (frame, until): a blink or a look
         self.blink_at = -1e9  # when the last blink began
+        self.lively = "usual"  # the menu's Activity: a key of LIVELY
         self.look_after_blink = False  # the blink now showing opens a look (a gaze shift is blinked into)
         self.notice_ready = now
         self.walk_started = now
@@ -582,6 +589,9 @@ class Engine:
         self.greet_at = 0.0
         self.pose_goal = bh.NEUTRAL
         self.cur = bh.NEUTRAL
+        #: The squash and stretch overshoot a little and settle, the lean anticipates a move (research A2); the tail's
+        #: drag has its own spring chain and keeps the plain lag.
+        self.pose_dyn = [bh.SecondOrder(*POSE_DYN[0], 1.0), bh.SecondOrder(*POSE_DYN[1], 1.0), bh.SecondOrder(*POSE_DYN[2], 0.0)]
         self.last_x = 0.0
         self.travel = 0.0
         self.trips = 0
@@ -943,11 +953,19 @@ class Engine:
         scale = self._scale()
         self.flow.step(dt, max(-px, min(px, vx)) / scale, max(-px, min(px, vy)) / scale)
         target = self.pose_goal = self._target_pose(now)
-        k = min(1.0, min(dt, POSE_DT_MAX) * POSE_RATE)
-        self.cur = bh.Pose(*(a + (b - a) * k for a, b in zip(self.cur, target)))
+        self.cur = self._ease_pose(min(dt, POSE_DT_MAX), target)
         # a draw that moved the figure by less than a pixel read as speed 0 and dropped the lean target for one picture;
         # the lean follows a short low-pass of the speed instead (INBOX 1683 j)
         self.vx_px += (vx - self.vx_px) * (1.0 - math.exp(-dt / VX_SMOOTH_S))
+
+    def _ease_pose(self, dt: float, target: bh.Pose) -> bh.Pose:
+        """The pose one draw later: scale and lean by second-order dynamics (from where `cur` is, so a pose set by
+        hand is honoured), the drag by the plain lag."""
+        for so, value in zip(self.pose_dyn, self.cur):
+            so.y = value
+        sx, sy, lean = (so.step(dt, goal) for so, goal in zip(self.pose_dyn, target))
+        k = min(1.0, dt * POSE_RATE)
+        return bh.Pose(sx, sy, lean, self.cur.drag + (target.drag - self.cur.drag) * k)
 
     def _target_pose(self, now: float) -> bh.Pose:
         """What the body shape wants now: the act's keyframes, a turn's squeeze, a lean into the
@@ -1174,6 +1192,10 @@ class Engine:
         if now >= self.state_until:
             self._begin_go(now)
 
+    def set_lively(self, name: str) -> None:
+        """The menu's Activity: Calm, Usual or Lively; anything else is Usual."""
+        self.lively = name if name in LIVELY else "usual"
+
     def _trip_ok(self, now: float) -> bool:
         return (
             self.roam and not self.reduced and not self.busy and self.perch is None and now >= self.trip_ready
@@ -1200,7 +1222,7 @@ class Engine:
         """A rare, short, purposeful trip: to a window it is curious about, to greet the pointer
         after a long idle, to the clock corner, to follow the pointer a while, or to nap at an edge.
         Afterwards `_after_stand` brings it home."""
-        self.trip_ready = now + self.rng.uniform(*TRIP_EVERY)
+        self.trip_ready = now + self.rng.uniform(*TRIP_EVERY) * LIVELY[self.lively][0]
         self.trips += 1
         m = self.current_monitor()
         k = self._scale()
@@ -1246,6 +1268,7 @@ class Engine:
         """A long walk is rare: a lively mood (happy or curious), some energy, and an hour since the last."""
         return (
             self.roam and not self.reduced and self.perch is None and now - self.last_long_walk >= LONG_WALK_GAP
+            and self.lively != "calm"
             and self.mind.mood(now, self.hour) in ("happy", "curious") and self.mind.needs["rest"] < 0.55
         )
 
@@ -1342,6 +1365,8 @@ class Engine:
                 continue
             if act in ("stroll", "trip") and mood == "bored":
                 w *= 2
+            if act in ("trip", "climb", "hang", "peek"):
+                w *= LIVELY[self.lively][1]
             if act == "trip":  # a trip that has waited past its time is wanted more, up to five times (owner: too rare)
                 w *= 1.0 + min(TRIP_OVERDUE_MAX, max(0.0, now - self.trip_ready) / TRIP_OVERDUE_S)
             table.append((act, w))

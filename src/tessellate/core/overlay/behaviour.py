@@ -55,6 +55,30 @@ class Pose(NamedTuple):
 
 
 NEUTRAL = Pose()
+
+
+class SecondOrder:
+    """A value that follows a target by second-order dynamics (research A2; t3ssel8r's "giving personality to
+    procedural animations"): `f` is how quickly it responds (Hz), `zeta` the damping (below 1 it overshoots a little,
+    1 and above it does not), `r` the initial response (0 starts from rest, below 0 it anticipates by stepping
+    back first, above 1 it overshoots at once). The step is the semi-implicit one, made stable for any frame
+    length by raising the inertia term when a frame is long."""
+
+    def __init__(self, f: float, zeta: float, r: float, x0: float = 0.0) -> None:
+        self.k1 = zeta / (math.pi * f)
+        self.k2 = 1.0 / (2.0 * math.pi * f) ** 2
+        self.k3 = r * zeta / (2.0 * math.pi * f)
+        self.y, self.yd, self.xp = x0, 0.0, x0
+
+    def step(self, dt: float, x: float) -> float:
+        if dt <= 0.0:
+            return self.y
+        xd = (x - self.xp) / dt
+        self.xp = x
+        k2 = max(self.k2, dt * dt / 2.0 + dt * self.k1 / 2.0, dt * self.k1)  # stable for a long frame
+        self.y += dt * self.yd
+        self.yd += dt * (x + self.k3 * xd - self.y - self.k1 * self.yd) / k2
+        return self.y
 #: Pose steps: coarse enough to keep the warped-frame cache small, fine enough to be smooth.
 Q_SCALE, Q_LEAN, Q_DRAG = 0.02, 0.02, 1.0
 
