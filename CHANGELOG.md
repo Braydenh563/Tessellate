@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Composer: "when does uni start", "when does the marathon start" and "when do I make the banana bread" no longer answer "X was written on Saturday 7 November"; only a past form ("when was it written", "when did I start it") asks for the note's own day (audit r3, R3-1).
 - Composer: "what is the table number" and "number of notes" are not phone asks; "the number for the dentist" finds the Dentist note's phone (the person's notes are fetched on the name), and "Sara's number" with none says "None of your notes give a phone number for Sara." instead of "Sara likes jazz has no phone number." (audit r3, R3-2).
 - Composer: a phone or cell that is not asked for ("when did I get my phone", "cell respiration") is no longer a phone number ask (PR 216 CI).
 - Composer readers added this round are linear on long runs (CodeQL 2086 to 2088): the held-word ask lost a backtracking strip that took 9.5 s on 50,000 characters, and the without and state asks no longer overlap their quantifiers; the shape table names its tests directly (2089 to 2094).

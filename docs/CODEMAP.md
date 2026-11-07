@@ -2,7 +2,7 @@
 
 Generated 2026-11-07 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7861, frontend ids 2644, CSS sections 522, backend routes 649, backend modules 9003, test files 2157, tests 18171, plan headings 1004, app scripts 28, boot scripts 37, script files 261.
+Counts: frontend functions 7861, frontend ids 2644, CSS sections 522, backend routes 649, backend modules 9003, test files 2157, tests 18173, plan headings 1004, app scripts 28, boot scripts 37, script files 261.
 
 ## Frontend functions (7861)
 
@@ -13781,8 +13781,8 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_without_command` | src/tessellate/ai/composer_ask.py:476 |
 | `_words` | src/tessellate/ai/composer_ask.py:438 |
 | `_words_of` | src/tessellate/ai/composer_ask.py:434 |
-| `asks_time` | src/tessellate/ai/composer_ask.py:693 |
-| `asks_written_when` | src/tessellate/ai/composer_ask.py:699 |
+| `asks_time` | src/tessellate/ai/composer_ask.py:696 |
+| `asks_written_when` | src/tessellate/ai/composer_ask.py:702 |
 | `classify` | src/tessellate/ai/composer_ask.py:243 |
 | `compare_sides` | src/tessellate/ai/composer_ask.py:643 |
 | `month_name` | src/tessellate/ai/composer_ask.py:41 |
@@ -13791,7 +13791,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `user_now` | src/tessellate/ai/composer_ask.py:23 |
 | `user_today` | src/tessellate/ai/composer_ask.py:34 |
 | `what_is` | src/tessellate/ai/composer_ask.py:215 |
-| `when_terms` | src/tessellate/ai/composer_ask.py:688 |
+| `when_terms` | src/tessellate/ai/composer_ask.py:691 |
 
 ### src/tessellate/ai/composer_aware.py (15)
 
@@ -24417,7 +24417,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (18171)
+## Tests (18173)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -24856,7 +24856,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_composer_r2_1107.py | 22 |
 | tests/test_composer_r2_review_1107.py | 6 |
 | tests/test_composer_r2_route_1107.py | 6 |
-| tests/test_composer_r3_1107.py | 4 |
+| tests/test_composer_r3_1107.py | 6 |
 | tests/test_composer_r3_route_1107.py | 2 |
 | tests/test_composer_ranker_1029.py | 12 |
 | tests/test_composer_redos_1026.py | 4 |

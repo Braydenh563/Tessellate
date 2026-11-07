@@ -49,3 +49,20 @@ def test_r3_2_the_subject_keeps_the_way_it_was_written():
 def test_r3_2_a_person_no_note_gives_a_number_for_is_denied_in_the_notebooks_name():
     assert say("what is Sara's number", "Sara likes jazz", "Weekend: call Mum and meet Sara") == "None of your notes give a phone number for Sara."
     assert say("what is the number for the dentist", "Dentist check-up on 11 November") == "None of your notes give a phone number for the dentist."
+
+
+# --- R3-1: the present tense is the event, not the day the note was written ------------------
+
+UNI = ("# Uni timetable\n\nTuesday and Thursday are uni days. Cloud lab on Thursday afternoon.", "First day of uni is 21 September.")
+
+
+@pytest.mark.parametrize("question", ["when does uni start", "when do I make the banana bread", "when do I add the flour", "when does the marathon start"])
+def test_r3_1_a_present_tense_when_is_never_the_day_a_note_was_written(question):
+    said = say(question, *UNI, "# Banana bread\n\n3 ripe bananas, 200 g flour. Bake 50 minutes at 180.", "# Marathon\n\nRace is on 14 March in Brighton.")
+    assert "was written" not in said, said
+
+
+@pytest.mark.parametrize("question", ["when did I write the banana bread", "when was the banana bread written", "when did I start the sourdough", "when did I make the banana bread"])
+def test_r3_1_a_past_form_is_still_the_day_the_note_was_written(question):
+    said = say(question, "# Banana bread\n\n3 ripe bananas, 200 g flour.", "# Sourdough\n\nFeed twice a day.")
+    assert "written" in said or "wrote" in said or "made" in said or "started" in said, said
