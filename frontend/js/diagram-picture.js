@@ -123,7 +123,14 @@
       note.prepend(go);
     }
     //: A bad edit is one press from undone, whichever pane made it (DD-4).
-    if (S.io?.undo) note.prepend(smallButton("ph:arrow-u-up-left Undo the last edit", "Go back to the diagram before this change", () => S.io.undo()));
+    //: Not offered where there is no earlier step (a bad file opened as it is). The note leaves when the old picture draws, with the focus
+    //: in it, so focus goes to the picture first (measured: the body, and the first Tab was "Skip to content").
+    if (S.io?.undo && S.io.canUndo !== false) {
+      note.prepend(smallButton("ph:arrow-u-up-left Undo the last edit", "Go back to the diagram before this change", () => {
+        (S.fig?.isConnected ? S.fig : field)?.focus?.({ preventScroll: true });
+        S.io.undo();
+      }));
+    }
     if (!S.fig.querySelector(":scope > .md-mermaid-img")) return S.fig.replaceChildren(note);
     S.fig.querySelector(":scope > .md-mermaid-reason")?.remove();
     S.fig.append(note);
