@@ -982,11 +982,16 @@ class Engine:
     def _ease_pose(self, dt: float, target: bh.Pose) -> bh.Pose:
         """The pose one draw later: scale and lean by second-order dynamics (from where `cur` is, so a pose set by
         hand is honoured), the drag by the plain lag."""
-        for so, value in zip(self.pose_dyn, self.cur):
+        out = []
+        for so, value, goal, q in zip(self.pose_dyn, self.cur, target, (bh.Q_SCALE, bh.Q_SCALE, bh.Q_LEAN)):
             so.y = value
-        sx, sy, lean = (so.step(dt, goal) for so, goal in zip(self.pose_dyn, target))
+            nxt = so.step(dt, goal)
+            if abs(nxt - value) > q:  # a spring's peak speed is over a cache step a draw: two grid steps in one picture read as a pop
+                nxt = value + math.copysign(q, nxt - value)
+                so.yd = (nxt - value) / dt  # the velocity it really has, so it does not wind up behind the cap
+            out.append(nxt)
         k = min(1.0, dt * POSE_RATE)
-        return bh.Pose(sx, sy, lean, self.cur.drag + (target.drag - self.cur.drag) * k)
+        return bh.Pose(out[0], out[1], out[2], self.cur.drag + (target.drag - self.cur.drag) * k)
 
     def _target_pose(self, now: float) -> bh.Pose:
         """What the body shape wants now: the act's keyframes, a turn's squeeze, a lean into the
