@@ -923,6 +923,8 @@ atlasRigLower.flow = (rig, state, live) => {
       const keys = [start];
       for (let j = 1; j < atlasRigLower.flowKeys - 1; j += 1) {
         keys.push(gain.map((g, k) => { const cap = 1.6 * g * reach; return Math.max(-cap, Math.min(cap, keys[j - 1][k] * 0.35 + (Math.random() * 2 - 1) * 1.3 * g * reach)); }));
+        //: The stream's own 1 px wobble (it was a CSS `translate` loop on the same box: two animations of one property keep the box off the compositor) rides the path, a swing each key.
+        if (part === "neb") keys[j] = keys[j].map((v, k) => v + (j % 2 ? 1 : -1) * (k ? 0.6 : 1));
       }
       keys.push(start);
       const frames = keys.map((v) => ({ translate: `${atlasFix(v[0])}px ${atlasFix(v[1])}px`, easing: "ease-in-out" }));
