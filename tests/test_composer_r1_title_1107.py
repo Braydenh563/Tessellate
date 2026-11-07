@@ -58,3 +58,24 @@ def test_d1_compare_names_both_sides(go):
     said, _ = go("compare Gym and Gym plan")
     assert "no mention" not in said.lower(), said
     assert "squat" in said.lower() and "warm up" in said.lower(), said
+
+
+# --- Review 1: the title outranks the lines only for "what is X" ---------------------------
+
+@pytest.mark.parametrize(("question", "names"), [("what is Project Atlas", True), ("what's the budget", True), ("who is Sara", True),
+                                                 ("how much is rent", False), ("when is the beta", False), ("when did I last see the dentist", False)])
+def test_review1_only_a_what_or_who_ask_ranks_a_titled_note_first(question, names):
+    from tessellate.ai import composer_digest
+
+    assert bool(composer_digest._NAMES_A_THING.match(question)) is names  # noqa: SLF001
+
+
+@pytest.mark.parametrize("question", ["how much is rent", "what is the budget"])
+def test_review1_every_also_item_starts_with_a_capital(client, session, monkeypatch, question):
+    import tests._seed_1030 as seed_1030
+
+    seed_1030.seed(session)
+    said = seed_1030.asker(client, monkeypatch)(question)[0]
+    line = next((x for x in said.splitlines() if x.startswith("**Also:**")), "")
+    items = [x.strip() for x in line.removeprefix("**Also:**").split(";") if x.strip()]
+    assert not line or all(x[:1].isupper() for x in items), said

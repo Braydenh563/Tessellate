@@ -62,3 +62,11 @@ def test_d8_a_quotation_does_not_skip_a_sentence_inside_the_marks(notebook):
             assert "The Dispossessed" in quoted or "…" in quoted or "..." in quoted, said
 
 
+
+
+@pytest.mark.parametrize(("line", "dated"), [("Ran 6 km on 25 October", True), ("Ran on 25th october", True), ("Flights leave May 5", True),
+                                              ("we may 5 of us go to the match", False), ("I may 3 times a week go running", False)])
+def test_review7_only_a_real_date_in_a_line_is_its_own_date(line, dated):
+    from tessellate.ai import composer_digest
+
+    assert bool(composer_digest._OWN_DATE.search(line)) is dated  # noqa: SLF001

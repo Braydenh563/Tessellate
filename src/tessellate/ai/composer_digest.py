@@ -1840,14 +1840,18 @@ _WH_SUBJECT = re.compile(r"(?:what|how|why|which|who|where)\b", re.I)
 
 #: A date a sentence says itself ("ran 6 km on 25 October"): the day the note
 #: was written must not lead it.
-_OWN_DATE = re.compile(rf"\b\d{{1,2}}(?:st|nd|rd|th)? (?:{'|'.join(composer_ask._MONTHS)})\b|\b(?:{'|'.join(composer_ask._MONTHS)}) \d{{1,2}}\b", re.I)  # noqa: SLF001
+_OWN_DATE = re.compile(
+    rf"\b\d{{1,2}}(?:st|nd|rd|th)? (?i:{'|'.join(composer_ask._MONTHS)})\b"  # noqa: SLF001
+    #: Month first needs the capital: "we may 5 of us go" is not a date.
+    rf"|\b(?:{'|'.join(m.capitalize() for m in composer_ask._MONTHS)}) \d{{1,2}}\b"  # noqa: SLF001
+)
 
 
 def _dated_lead(label: str, i: int, by_day: date | None, written: date | None, before: date | None) -> str:
     """The line's lead: the time since the line before, a recent day, or its date."""
     if not _TIMED.get():
         return ""
-    gap =(written - before).days if i and before and written else 0
+    gap = (written - before).days if i and before and written else 0
     #: The time since the line before reads first; a run's first line, or
     #: one the same days as the last, says a recent day as a person would.
     recent = _recent(written, by_day) if not gap or (by_day and written and (by_day - written).days <= 7) else ""
@@ -2149,7 +2153,8 @@ def _lines(out: _Out, facts: list[Fact], limit: int, skip: set[tuple] | None = N
         last = held[0].view.id
         if written:
             seen_days.append(written)
-        said = said[:1].upper() + said[1:] if label == PHRASES["also"] else said
+        #: Each item of "Also" starts a capital: "phone $35" after "Groceries about $80 a week;" did not (review 1).
+        said = "; ".join(c[:1].upper() + c[1:] for c in said.split("; ")) if label == PHRASES["also"] else said
         if not (said := whole_clause(said, _sentence_ends(held))):
             continue
         listed = _clause_list(said)
@@ -3572,6 +3577,10 @@ _LATEST_ASK = re.compile(
 _PRONOUN_OPENERS = frozenset({"he", "she", "they", "his", "her", "their", "hes", "shes"})
 
 
+#: "what is X", "who's X": an ask for the thing itself, where a note titled X is the answer.
+_NAMES_A_THING = re.compile(r"^\s*(?:what|who)(?:'s|’s|\s+(?:is|are|was))\b", re.I)
+
+
 def _best(facts: list[Fact], question: str, cue: re.Pattern | None = None) -> Fact | None:
     #: Without the asking words: "what day did I run 8 km" is not about a "day".
     stems = set(_subject(question))
@@ -3590,6 +3599,7 @@ def _best(facts: list[Fact], question: str, cue: re.Pattern | None = None) -> Fa
     latest = bool(_LATEST_ASK.search(question))
     did_ask = bool(_WHEN_DID.match(clean(question)))
     subject_words = list(composer.subject_terms(clean(question)))
+    names_a_thing = bool(_NAMES_A_THING.match(clean(question)))
 
     def rank(f: Fact) -> tuple:
         words = set(f.sentence.words)
@@ -3614,7 +3624,8 @@ def _best(facts: list[Fact], question: str, cue: re.Pattern | None = None) -> Fa
         #: latest ask. Said in the tuple itself: CodeQL lost the local in this
         #: closure and read it as possibly unset.
         #: "what is Project Atlas" is the note titled that, whatever other note repeats the name (round 1 D1).
-        titled = _defines(f.view, subject_words) == 2
+        #: Only a "what/who is X" ask: any other ask is weighed by what the lines say (review 1).
+        titled = names_a_thing and _defines(f.view, subject_words) == 2
         return (not asked_back, acts, _cued(cue, f.sentence.text), not (latest and f.sentence.kind in {"item", "task"}), id(f.view) not in old, _label_asked(f.label, question), titled, hits, newest, own, asks_feeling and _feeling(f.sentence.text), same_figure, -f.view.rank, -f.sentence.order)
 
     return max(facts, key=rank) if facts else None
