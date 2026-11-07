@@ -2,7 +2,7 @@
 
 Generated 2026-11-07 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7850, frontend ids 2644, CSS sections 522, backend routes 649, backend modules 8950, test files 2139, tests 17978, plan headings 1004, app scripts 28, boot scripts 37, script files 261.
+Counts: frontend functions 7850, frontend ids 2644, CSS sections 522, backend routes 649, backend modules 8951, test files 2139, tests 17980, plan headings 1004, app scripts 28, boot scripts 37, script files 261.
 
 ## Frontend functions (7850)
 
@@ -13069,7 +13069,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:164 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (8950)
+## Backend modules (8951)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -14319,18 +14319,19 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `doings` | src/tessellate/ai/composer_doings.py:144 |
 | `first` | src/tessellate/ai/composer_doings.py:238 |
 
-### src/tessellate/ai/composer_done.py (9)
+### src/tessellate/ai/composer_done.py (10)
 
 | Name | File:line |
 |---|---|
-| `_asked_thing` | src/tessellate/ai/composer_done.py:112 |
+| `_asked_thing` | src/tessellate/ai/composer_done.py:124 |
 | `_done_later` | src/tessellate/ai/composer_done.py:64 |
 | `_holds` | src/tessellate/ai/composer_done.py:42 |
 | `_says_verb` | src/tessellate/ai/composer_done.py:60 |
 | `_stems` | src/tessellate/ai/composer_done.py:34 |
 | `_verb_forms` | src/tessellate/ai/composer_done.py:48 |
 | `done_later` | src/tessellate/ai/composer_done.py:95 |
-| `done_later_note` | src/tessellate/ai/composer_done.py:117 |
+| `done_later_note` | src/tessellate/ai/composer_done.py:129 |
+| `planned` | src/tessellate/ai/composer_done.py:112 |
 | `recorded_later` | src/tessellate/ai/composer_done.py:83 |
 
 ### src/tessellate/ai/composer_empty.py (10)
@@ -24338,7 +24339,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (17978)
+## Tests (17980)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -24770,7 +24771,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_composer_queue_b3.py | 5 |
 | tests/test_composer_r1_1107.py | 4 |
 | tests/test_composer_r1_dates_1107.py | 4 |
-| tests/test_composer_r1_did_1107.py | 4 |
+| tests/test_composer_r1_did_1107.py | 6 |
 | tests/test_composer_r1_title_1107.py | 6 |
 | tests/test_composer_ranker_1029.py | 12 |
 | tests/test_composer_redos_1026.py | 4 |

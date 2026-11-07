@@ -34,6 +34,21 @@ def test_d4_a_past_tense_line_still_answers_yes(notebook):
     assert said.startswith("Yes"), said
 
 
+def test_review2_a_record_that_says_it_was_due_is_still_a_record(notebook):
+    go = notebook("Paid rent on 1 November, it was due on the 1st.", "# Budget\n\nRent £950 a month. Phone £12.")
+    said, _ = go("did I pay the rent")
+    assert said.startswith("Yes"), said
+
+
+@pytest.mark.parametrize(("line", "plans"), [("Pay rent, due 10 November", True), ("- Send the report, deadline Friday", True),
+                                            ("Paid rent on 1 November, it was due on the 1st.", False), ("Sent the report; the deadline was Friday", False),
+                                            ("Remember to pay rent", True), ("Paid rent", False)])
+def test_review2_planned_tells_a_to_do_from_a_record(line, plans):
+    from tessellate.ai import composer_done
+
+    assert composer_done.planned(line) is plans
+
+
 def test_d4_a_booking_note_answers_did_i_book(notebook):
     go = notebook(
         "# Lisbon trip\n\nFlights cost $420 return, leaving 12 May. Staying at Hotel Alfama near the river.",

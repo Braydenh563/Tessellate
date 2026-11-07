@@ -11,7 +11,7 @@ import functools
 import re
 from datetime import date
 
-from tessellate.ai import factgraph
+from tessellate.ai import factgraph, variants
 from tessellate.ai.composer_ask import _words
 
 
@@ -70,7 +70,7 @@ def _done_later(views: list, verb: frozenset[str], obj, task_view):  # noqa: ANN
         if since and view.written and view.written < since:
             continue
         for s in view.sentences:
-            if s.kind != "task" and _holds(s, obj) and _says_verb(s, verb) and not (_INTENT.search(s.text) or _UNDONE.search(s.text)):
+            if s.kind != "task" and _holds(s, obj) and _says_verb(s, verb) and not (planned(s.text) or _UNDONE.search(s.text)):
                 return view, s
     return None
 
@@ -102,11 +102,23 @@ def done_later(views: list, view, tasks: list) -> dict[int, tuple]:  # noqa: ANN
 #: A line that plans the doing is not a record of it: "did I pay rent"
 #: beside "Remember to pay rent on the 1st" is "not yet" (audit 1030 Z19).
 _INTENT = re.compile(
-    r"^\s*(?:[-*]\s*)?(?:i\s+)?(?:remember to|need to|have to|must|should|plan to|going to|want to|don't forget to|todo:?|to do:?)\b"
-    #: "Pay rent, due 10 November" is a to-do with a date, not a payment (round 1 D4).
-    r"|\b(?:due|deadline)\b",
+    r"^\s*(?:[-*]\s*)?(?:i\s+)?(?:remember to|need to|have to|must|should|plan to|going to|want to|don't forget to|todo:?|to do:?)\b",
     re.I,
 )
+_DUE = re.compile(r"\b(?:due|deadline)\b", re.I)
+_WAS_DUE = re.compile(r"\b(?:was|were|had been|been)\s+due\b", re.I)
+
+
+def planned(text: str) -> bool:
+    """True for a line that plans the doing. "Pay rent, due 10 November" is a
+    to-do with a date, not a payment (round 1 D4); "Paid rent on 1 November,
+    it was due on the 1st" is a record, so a due date counts only when the
+    line does not lead with a past verb and does not say it *was* due."""
+    if _INTENT.search(text):
+        return True
+    first = (re.findall(r"[A-Za-z']+", text) or [""])[0].lower()
+    past = first.endswith("ed") or first in variants.IRREGULAR_PAST
+    return bool(_DUE.search(text)) and not past and not _WAS_DUE.search(text)
 
 
 def _asked_thing(words: list[str]) -> str:

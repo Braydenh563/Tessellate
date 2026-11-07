@@ -22,7 +22,7 @@ from tessellate.ai import composer_ask
 from tessellate.ai import composer_body
 from tessellate.ai import when as when_words
 from tessellate.ai.composer_done import (  # noqa: F401  (moved; re-exported)
-    _DOING_END, _FILLER, _INTENT, _UNDONE, _asked_thing, _done_later, _holds, _says_verb, _stems, _verb_forms,
+    _DOING_END, _FILLER, _UNDONE, _asked_thing, _done_later, _holds, _says_verb, _stems, _verb_forms, planned,
     recorded_later,
 )
 
@@ -340,7 +340,7 @@ def _say_did(out, view, s, verb_word: str, today: date) -> None:  # noqa: ANN001
         _verdict(out, view, s, verb_word)
     elif _UNDONE.search(s.text):
         _say_line(out, view, s, f"No, {_note_of(view, today)} says")
-    elif _INTENT.search(s.text):
+    elif planned(s.text):
         _say_line(out, view, s, f"Not yet, as far as your notes go. {_note_of(view, today).capitalize()} only plans it")
     else:
         _say_line(out, view, s, f"Yes, {_note_of(view, today)} says so")
