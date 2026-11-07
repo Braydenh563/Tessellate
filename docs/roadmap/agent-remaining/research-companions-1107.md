@@ -161,3 +161,21 @@ Order: smallest first; within a size, highest value first. Sizes: S about a day 
 | B10 | Roughly 40 acts against AAA breadth | Behind | Sims object breadth; Agent idle animations | Content pass in bands: props, social, weather, hour, and each gets frames, face and prop; needs B2, B3, V3 first | `ov/behaviour.py`, `ov/props.py`, `scripts/render_desk_frames.py` | L | None |
 
 Verdict on adoption: take no library; take techniques A2, T1, V3, B2, B5, B7 first. Sort within sizes is by value to the owner's 1692 list (a) hidden taskbar, then (b) variety and smoothness, then window interaction.
+
+## 5. Desktop Goose v0.3, read from the owner's copy (2026-11-07)
+
+The owner sent their copy (`DesktopGoose_v0.3.zip`). It has no licence file, so it is all rights reserved: we read its config, changelog and modding API (`GooseModdingAPI/Exports.cs`, `SamEngine.cs`) for technique only, copy no code, art or sound, and never ship anything from it. What it shows:
+
+- **A live rig, not frames.** The goose is a handful of shapes (underbody, body, neck, two head circles, eyes, procedural feet) whose centres are recomputed every tick from position, direction and a neck lerp, then drawn with GDI each frame. Nothing is pre-rendered, so it is never framey and there is no capture step. This is the strongest evidence for A9 (our 48 to 50 warped frames took 67 s on the owner's machine).
+- **Travel never jumps.** A target point, a velocity and a capped acceleration, in three speed tiers (walk 80, run 200, charge 400 px/s; acceleration 1300, charged 2300), with a step every 0.2 s (0.1 s charged) that plants each foot. It enters and leaves by walking off the nearest screen edge, weighted to that edge's centre, not by fading. This is the answer to "every movement is a poof" (1692).
+- **Tasks with a roaming default.** Each task has an id; a random one is chosen after a wander of 20 to 40 s (user-set), the first after 20 s; a task queue; mods hook before and after the tick, the rig update and the render.
+- **It brings its own windows.** Its life on the desktop is carrying things in from off screen: a note with a line from a user-editable text folder, a meme or GIF from a user folder. It drags its own windows, never the user's; it can also grab the cursor (off by default) and leaves muddy footprints (a ring of 64 marks, 15 s).
+- **It does not sit on the user's windows at all.** Our window perching already goes further than Goose; what Goose has that we lack is the live rig, walked travel, props it fetches and carries, and marks it leaves.
+
+| id | gap | ours vs theirs | what pros do (source) | proposed change | files | size | licence note |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| DG1 | Every trip and arrival is a fade or poof | Behind: warp and dissolve | Goose: accelerated walk with planted steps, enters and leaves by a screen edge (owner's copy, `Exports.cs` ParametersTable) | Trips are walked or flown along the floor and window edges at a capped acceleration with speed tiers; appear and leave by the nearest screen edge | `overlay/engine.py`, `ov/behaviour` | M | technique only |
+| DG2 | Pre-rendered frames (67 s capture) | Behind | Goose: shapes recomputed and drawn every tick | Draw the desk figure live from the same rig the in-app Atlas uses (A9), keeping the frame cache only as a fallback | `overlay/sprites.py`, `capture.py` | L | technique only |
+| DG3 | It never carries anything onto the desktop | Absent | Goose fetches a note or a picture from off screen in its own window | The desk companion fetches its own small cards (a note of the day, a due reminder, a picture from a chosen folder) and sets them down; each is our own window, dismissable, never the user's | `desk_companion.py`, `overlay/props.py` | M | technique only |
+| DG4 | It leaves no trace | Absent | Goose: footprints that fade in 15 s | Footprints, crumbs or sparkle marks on the floor and window tops, faded over seconds, off with reduced motion | `overlay/engine.py` | S | technique only |
+| DG5 | Its habits are not the owner's to tune | Partly (menu) | Goose: a plain config of wander times, aggression, sounds, colours | A desk Settings group: how often it roams, whether it may fetch things, sounds, how bold it is | Settings, `desk_companion.py` | S | technique only |
