@@ -76,8 +76,10 @@ class SecondOrder:
         xd = (x - self.xp) / dt
         self.xp = x
         k2 = max(self.k2, dt * dt / 2.0 + dt * self.k1 / 2.0, dt * self.k1)  # stable for a long frame
-        self.y += dt * self.yd
+        # velocity first, then position from the new velocity (symplectic Euler): moving by the old velocity made the first
+        # step after a rest move nothing at all, a draw's worth of lag on every new target
         self.yd += dt * (x + self.k3 * xd - self.y - self.k1 * self.yd) / k2
+        self.y += dt * self.yd
         return self.y
 #: Pose steps: coarse enough to keep the warped-frame cache small, fine enough to be smooth.
 Q_SCALE, Q_LEAN, Q_DRAG = 0.02, 0.02, 1.0
