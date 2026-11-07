@@ -13,7 +13,7 @@ tier: max (weekly 4%), three agents at once, Sonnet or Haiku; never Fable; owner
 - [ ] Merge companion-s (agent/companion-s-1107): window perch bug, the 1683 (l) mind, S rows; reviewer
 - [ ] Coverage ledger of every owner ask (1683 a to y, 1692 a to q, 1694) against code and tests
 - [ ] 1683 (x)(y) build: pull-up, fling off a moved window, slide off, poof or portal escape with a miffed face, tuck behind smaller windows, peek from the taskbar on any edge, hidden taskbar, sidebars; in-app parity
-- [ ] INBOX 1667 perf: 4.5 s avatars.js forced layout after opening a note from the dashboard
+- [x] INBOX 1667 perf: partial 5d6bfcae (scroll-edge sync); follow-up agent/atlasidle-1107: idle Atlas restyle 2.2-3.2 s per 6 s at 4x, note-open long tasks
 - [ ] Layered deep dive round 1: desk companion (research, audit, fix, re-audit)
 - [ ] Deep dive round 1: in-app companion and Atlas
 - [ ] Deep dive round 1: diagram builder
