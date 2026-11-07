@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Composer: a table row is a line of the note (round 2 E1, E19). "how much is bread" answers "Bread £2.50" from a Shopping table instead of "only a title so far", a note with more under its title is never called only a title, and "which notes have tables" or "a numbered list" names the notes that hold one instead of searching the word.
 - Composer: the note a question names by its title leads (round 1 D1). "what is Project Atlas" opens on that note's own first sentence, "the Sara note" and "show me the Dentist note" open that note and not a list of notes about Sara, and "compare Gym and Gym plan" sets the Gym note against the Gym plan note (before, the Gym side said "no mention Gym plan").
 - Composer: "did I pay the rent", "did I book the hotel" and "how many notes have the word Lisbon" no longer state a wrong fact flatly (round 1 D4): a titled note is offered only with its line on the verb ("Booking reference HA-77421" for "did I book the hotel"), a due date counts as the thing asked, and the count is of notes holding the word, not the notebook total.
 - Composer: a title match leads only a "what is X" or "who is X" ask, and every "Also" item starts with a capital ("phone $35" no longer trails "Groceries about $80 a week;"); "may 5" as ordinary words is not a date (review of round 1).

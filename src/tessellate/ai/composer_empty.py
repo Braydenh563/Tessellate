@@ -99,6 +99,10 @@ def _bare_title(out: _Answer, terms: list[str], views: list[NoteView]) -> NoteVi
     for v in views:
         if v.sentences or not v.title:
             continue
+        #: A note with more under its title (a table whose header was all it
+        #: had, a picture) is not "only a title" (round 2 E1).
+        if sum(1 for line in str(v.note.get("content") or "").splitlines() if line.strip()) > 1:
+            continue
         named = v.title_words | v.filed_words | v.words
         if all(_holds(stem, named) for stem in stems):
             out.t("bare_a", "open_quote").asked(v.title).t("close_quote", "bare_b")

@@ -360,11 +360,19 @@ def _opening_wins(own: list[list[NoteView]], stems: list[set[str]]) -> list[list
     though "biology" is in its name too (audit 1028 E16). A tie keeps both.
     A note titled exactly for one side goes to it alone: "Gym and Gym plan"
     is the Gym note against the Gym plan note (round 1107 D1)."""
+    return _by_opening(_by_exact_title(own, stems), stems)
+
+
+def _by_exact_title(own: list[list[NoteView]], stems: list[set[str]]) -> list[list[NoteView]]:
     for view in {id(v): v for mine in own for v in mine}.values():
         title = {_stem(w) for w in view.title_words}
         exact = [i for i, side in enumerate(stems) if side == title]
         if len(exact) == 1:
             own = [[v for v in mine if v is not view or i == exact[0]] for i, mine in enumerate(own)]
+    return own
+
+
+def _by_opening(own: list[list[NoteView]], stems: list[set[str]]) -> list[list[NoteView]]:
     for view in {id(v): v for mine in own for v in mine}.values():
         at = {i: _opens_at(view, stems[i]) for i, mine in enumerate(own) if any(v is view for v in mine)}
         best = min(at.values(), default=99)

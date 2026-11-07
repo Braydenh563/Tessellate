@@ -2135,6 +2135,10 @@ def whole_clause(text: str, whole_ends: frozenset[str] = frozenset()) -> str:
     return kept if len(kept.split()) >= 3 else ""
 
 
+def _capitalised_items(said: str) -> str:
+    return "; ".join(c[:1].upper() + c[1:] for c in said.split("; "))
+
+
 def _lines(out: _Out, facts: list[Fact], limit: int, skip: set[tuple] | None = None, by_day: date | None = None, more: bool = False, weave: bool = False) -> int:
     """Facts grouped under their labels, oldest note first, one line a label;
     the line carries its first note for its one citation mark."""
@@ -2154,7 +2158,7 @@ def _lines(out: _Out, facts: list[Fact], limit: int, skip: set[tuple] | None = N
         if written:
             seen_days.append(written)
         #: Each item of "Also" starts a capital: "phone $35" after "Groceries about $80 a week;" did not (review 1).
-        said = "; ".join(c[:1].upper() + c[1:] for c in said.split("; ")) if label == PHRASES["also"] else said
+        said = _capitalised_items(said) if label == PHRASES["also"] else said
         if not (said := whole_clause(said, _sentence_ends(held))):
             continue
         listed = _clause_list(said)
@@ -3600,6 +3604,9 @@ def _best(facts: list[Fact], question: str, cue: re.Pattern | None = None) -> Fa
     did_ask = bool(_WHEN_DID.match(clean(question)))
     subject_words = list(composer.subject_terms(clean(question)))
     names_a_thing = bool(_NAMES_A_THING.match(clean(question)))
+    #: "what is Project Atlas" is the note titled that, whatever other note repeats the name (round 1 D1).
+    #: Only a "what/who is X" ask: any other ask is weighed by what the lines say (review 1).
+    titled_views = {id(f.view) for f in facts if names_a_thing and _defines(f.view, subject_words) == 2}
 
     def rank(f: Fact) -> tuple:
         words = set(f.sentence.words)
@@ -3623,9 +3630,7 @@ def _best(facts: list[Fact], question: str, cue: re.Pattern | None = None) -> Fa
         #: A bare list item ("Passport") is no news of a subject: prose leads a
         #: latest ask. Said in the tuple itself: CodeQL lost the local in this
         #: closure and read it as possibly unset.
-        #: "what is Project Atlas" is the note titled that, whatever other note repeats the name (round 1 D1).
-        #: Only a "what/who is X" ask: any other ask is weighed by what the lines say (review 1).
-        titled = names_a_thing and _defines(f.view, subject_words) == 2
+        titled = id(f.view) in titled_views
         return (not asked_back, acts, _cued(cue, f.sentence.text), not (latest and f.sentence.kind in {"item", "task"}), id(f.view) not in old, _label_asked(f.label, question), titled, hits, newest, own, asks_feeling and _feeling(f.sentence.text), same_figure, -f.view.rank, -f.sentence.order)
 
     return max(facts, key=rank) if facts else None

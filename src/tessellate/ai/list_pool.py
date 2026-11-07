@@ -95,6 +95,8 @@ def _of_kind(session: Session, kind: str) -> list[Entry]:
     newest = select(Entry).where(*_live()).order_by(Entry.created_at.desc())
     if kind == "tasks":
         newest = newest.where(or_(Entry.content.like("%[ ]%"), Entry.content.like("%[x]%")))
+    if kind == "tables":
+        newest = newest.where(Entry.content.like("%|%"))
     return list(session.scalars(newest.limit(LIST_LIMIT)))
 
 

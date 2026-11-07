@@ -680,13 +680,14 @@ _HOLD_KIND = {
     "to-dos": "tasks", "checkbox": "tasks", "checkboxes": "tasks",
     "date": "dates", "dates": "dates", "deadline": "dates", "deadlines": "dates",
     "list": "items", "lists": "items", "bullet": "items", "bullets": "items",
+    "table": "tables", "tables": "tables",
 }
 _HOLD_OPEN = frozenset({"open", "unticked", "unchecked", "incomplete", "unfinished", "outstanding"})
 #: Words that join the question to its kind and say nothing about it.
 _HOLD_JOIN = frozenset("that which with have has contain contains containing include includes any a an some got i do are is there in them me all of my the your".split())
 #: Words that may sit beside the kind ("bullet lists", "due dates", "to do lists").
-_HOLD_BESIDE = frozenset({"bulleted", "numbered", "check", "to", "do", "due", "new", "item", "items", "task", "checklist"})
-_HOLD_LABEL = {"tasks": "checklists", "dates": "dates", "items": "lists"}
+_HOLD_BESIDE = frozenset({"bulleted", "numbered", "ordered", "check", "to", "do", "due", "new", "item", "items", "task", "checklist"})
+_HOLD_LABEL = {"tasks": "checklists", "dates": "dates", "items": "lists", "tables": "tables", "numbered": "numbered lists"}
 
 
 def holding_ask(question: str) -> tuple[str, bool, str] | None:
@@ -731,6 +732,8 @@ def _holding_kind(tail: list[str], open_only: bool, mode: str) -> tuple[str, boo
     kinds = [_HOLD_KIND[w] for w in tail if w in _HOLD_KIND]
     if not tail or any(w not in _HOLD_KIND and w not in _HOLD_BESIDE for w in tail):
         return None
+    if kinds and kinds[-1] == "items" and {"numbered", "ordered"} & set(tail):
+        return "numbered", open_only, mode
     if kinds:
         return kinds[-1], open_only, mode
     return ("tasks", True, mode) if open_only and tail[-1] in ("item", "items") else None
@@ -743,7 +746,26 @@ def _holding_sentences(view, kind: str, open_only: bool, today: date) -> list:  
         return [s for s in found if s is not None]
     if kind == "tasks":
         return [s for s in view.sentences if s.kind == "task" and not (open_only and s.done)]
+    return _holding_items_of(view, kind)
+
+
+def _holding_items_of(view, kind: str) -> list:  # noqa: ANN001
+    if kind in ("tables", "numbered"):
+        return [s for s in view.sentences if s.kind == "item" and _line_of_item(view, s) == kind]
     return [s for s in view.sentences if s.kind in ("item", "task")]
+
+
+_NUMBERED = re.compile(r"^\s*\d{1,3}[.)]\s")
+
+
+def _line_of_item(view, sentence) -> str:  # noqa: ANN001
+    """"tables" for a table row, "numbered" for a numbered item, else "": what the
+    line holding the unit looks like (round 2 E19)."""
+    content = str(view.note.get("content") or "")
+    line = content[content.rfind("\n", 0, sentence.start) + 1:].split("\n", 1)[0]
+    if line.lstrip().startswith("|"):
+        return "tables"
+    return "numbered" if _NUMBERED.match(line) else ""
 
 
 _TICK = re.compile(r"^\s*[-*+]\s*\[[ xX]\]\s*")
@@ -757,7 +779,7 @@ def _holding_detail(view, got: list, kind: str, today: date) -> str:  # noqa: AN
     if kind == "dates":
         days = _dated(view, today, "future") or _dated(view, today, "past")
         return _day(days[0][0], today)
-    return _plural(len(got), "item")
+    return _plural(len(got), "row" if kind == "tables" else "item")
 
 
 def _holding(out, asked: str, views: list, today: date) -> bool:  # noqa: ANN001
