@@ -1534,7 +1534,7 @@
               <summary><span class="muted dock-menu-label">Options</span></summary>
               <div class="graph-option-row">
                 <label for="graph-pane-depth">Depth</label>
-                <input id="graph-pane-depth" type="range" min="1" max="5" value="1"
+                <input id="graph-pane-depth" type="range" data-unit="" min="1" max="5" value="1"
                   title="How many links away from the open note to draw (1 to 5)">
               </div>
               <div class="graph-toggle-grid">
@@ -4211,7 +4211,7 @@ Link to another note with [[its first few words]]."></textarea>
                  `gcPruneSimilarity` draws. -->
             <div class="graph-option-row hidden" id="graph-similarity-min-row">
               <label for="graph-similarity-min">Match strength</label>
-              <input id="graph-similarity-min" type="range" min="55" max="95" value="55"
+              <input id="graph-similarity-min" type="range" data-unit="%" min="55" max="95" value="55"
                 aria-label="Similarity strength"
                 title="Hide similarity lines weaker than this. At the left, each note keeps its two closest matches">
             </div>
@@ -4235,7 +4235,7 @@ Link to another note with [[its first few words]]."></textarea>
             <span class="muted dock-menu-label" id="graph-focus-label">Focus</span>
             <div class="graph-option-row">
               <label for="graph-focus-depth">Depth</label>
-              <input id="graph-focus-depth" type="range" min="1" max="5" value="2"
+              <input id="graph-focus-depth" type="range" data-unit="" min="1" max="5" value="2"
                 title="How many links away from the note in focus to draw (1 to 5)">
             </div>
             <div class="graph-toggle-grid">
@@ -4280,17 +4280,17 @@ Link to another note with [[its first few words]]."></textarea>
             </div>
             <div class="graph-option-row">
               <label for="graph-gravity">Gravity</label>
-              <input id="graph-gravity" type="range" min="0" max="100" value="50"
+              <input id="graph-gravity" type="range" data-unit="" min="0" max="100" value="50"
                 title="How strongly notes pull together">
             </div>
             <div class="graph-option-row">
               <label for="graph-spread">Spread</label>
-              <input id="graph-spread" type="range" min="0" max="100" value="50"
+              <input id="graph-spread" type="range" data-unit="" min="0" max="100" value="50"
                 title="How far apart linked notes sit">
             </div>
             <div class="graph-option-row">
               <label for="graph-link-force">Link force</label>
-              <input id="graph-link-force" type="range" min="0" max="100" value="50"
+              <input id="graph-link-force" type="range" data-unit="" min="0" max="100" value="50"
                 title="How hard each link pulls its two notes together">
             </div>
             <div class="graph-toggle-grid">
@@ -4456,12 +4456,12 @@ Link to another note with [[its first few words]]."></textarea>
             </div>
             <div class="graph-option-row">
               <label for="graph-label-fade">Text fade</label>
-              <input id="graph-label-fade" type="range" min="0" max="100" value="50"
+              <input id="graph-label-fade" type="range" data-unit="" min="0" max="100" value="50"
                 title="How far out names stay on a big map: to the right, names show from further away">
             </div>
             <div class="graph-option-row">
               <label for="graph-link-width">Link thickness</label>
-              <input id="graph-link-width" type="range" min="0" max="100" value="50"
+              <input id="graph-link-width" type="range" data-unit="" min="0" max="100" value="50"
                 title="How thick the lines are drawn">
             </div>
           </details>
@@ -7682,7 +7682,7 @@ Link to another note with [[its first few words]]."></textarea>
       <div class="wb-context-group hidden" data-wb-ctx="tool">
         <label class="wb-context-field" title="Pen, shape and eraser size" data-wb-tool-setting="size">
           <span class="wb-context-label">Size</span>
-          <input type="range" id="wb-stroke-width" aria-label="Line thickness" title="Pen / shape / eraser size" min="1" max="24" step="1" value="3">
+          <input type="range" id="wb-stroke-width" data-unit="" aria-label="Line thickness" title="Pen / shape / eraser size" min="1" max="24" step="1" value="3">
         </label>
         <select id="wb-arrow-style" aria-label="Arrowhead style" title="Arrowhead style: the Line, Arrow and Link tools" data-wb-tool-setting="ends">
           <option value="end">End</option>
@@ -7927,7 +7927,7 @@ Link to another note with [[its first few words]]."></textarea>
                 <span>Bulleted list</span>
                 <button type="button" id="wb-prop-bullets" class="ghost small icon-only" title="Turn the lines into a bulleted list" aria-label="Bulleted list"><i class="ph ph-list-bullets" aria-hidden="true"></i></button>
               </div>
-              <label class="wb-menu-row hidden" id="wb-fill-opacity-row" title="Shape fill opacity"><span>Fill opacity</span><input type="range" id="wb-fill-opacity" aria-label="Shape fill opacity" title="Shape fill opacity" min="0" max="100" step="5" value="100"></label>
+              <label class="wb-menu-row hidden" id="wb-fill-opacity-row" title="Shape fill opacity"><span>Fill opacity</span><input type="range" id="wb-fill-opacity" data-unit="%" aria-label="Shape fill opacity" title="Shape fill opacity" min="0" max="100" step="5" value="100"></label>
               <label class="wb-menu-row hidden" id="wb-stroke-none-row" title="No stroke: fill only"><span>Draw without a stroke</span><input type="checkbox" id="wb-stroke-none"></label>
             </div>
             <!-- A text box's own background and edge: set once and rarely
@@ -8511,7 +8511,7 @@ Link to another note with [[its first few words]]."></textarea>
               <span class="wb-fmt-buttons"><select id="wb-fmt-endcap" aria-label="Line end" title="Line end"></select><select id="wb-fmt-endsize" class="wb-cap-size" aria-label="End size" title="Size of the end mark"><option value="s">Small</option><option value="m" selected>Medium</option><option value="l">Large</option></select></span>
             </label>
             <label class="wb-fmt-row" data-fmt="label-t"><span class="wb-fmt-label">Label along</span>
-              <input type="range" id="wb-fmt-label-t" min="5" max="95" step="5" aria-label="Label position along the line" title="Label position along the line">
+              <input type="range" id="wb-fmt-label-t" data-unit="%" min="5" max="95" step="5" aria-label="Label position along the line" title="Label position along the line">
             </label>
           </div>
           <div class="wb-fmt-group" data-fmt-group="style">

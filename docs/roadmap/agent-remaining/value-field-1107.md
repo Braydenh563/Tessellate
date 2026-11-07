@@ -8,3 +8,5 @@ Left:
 - Documents word-goal, graph confidence, suggestions-inbox percent: read-only figures, not adjustments; judge before converting.
 - Present page field has no chevron: the page picker beside it already lists every page with its title.
 - Diagram view zoom not driven in a browser (no diagram document opened); lightbox and board were.
+
+Left: a keyboard-only reach (Tab to a slider before any hover) does not fetch the value field, because the boot byte ratchet (260,860 gzipped) had no room for a second `warmOnFirst("focusin", ...)`; a lazy bundle that already carries the field (lightbox, Library) upgrades them. The hover warm uses `input[max]`, so a number box also fetches the 3 KB module. The module key is `vf`.

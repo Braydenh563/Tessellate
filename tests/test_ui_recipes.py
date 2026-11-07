@@ -7572,3 +7572,37 @@ def test_a_zoom_readout_is_a_value_field():
             found[path.name] = count
     over = {k: v for k, v in found.items() if v > frozen.get(k, 0)}
     assert over == {}, f"a new bare percent readout: build it with valueField ({over})"
+
+
+def test_every_slider_with_a_readout_is_a_value_field():
+    """INBOX 1694 c (the owner: "type in values for the thickness slider ... same with any other sliders"): a range
+    input's readout is replaced by a typeable field the first time the pointer or focus reaches it
+    (`valueField.range`, value-field.js), found from the slider by `output[for]`, `<id>-value` or `<id>-out`. A
+    readout the finder cannot reach, or a slider built in script with a bespoke number, is the drift."""
+    html = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
+    app = app_js_text()
+    field = (ROOT / "frontend" / "js" / "value-field.js").read_text(encoding="utf-8")
+    # The hook: one delegated listener, then the module upgrades every slider already drawn.
+    assert (ROOT / "frontend" / "js" / "lazy-entries.js").read_text(encoding="utf-8").count('"input[max]", "vf"') == 1 and "vf:" in app
+    for needle in ('dispatchEvent(new Event("input"', 'dispatchEvent(new Event("change"', "slider.min", "slider.max", "slider.step", "ArrowUp"):
+        assert needle in field, needle
+    ids = [a or b for a, b in re.findall(r'<input[^>]*type="range"[^>]*?id="([^"]+)"|<input[^>]*?id="([^"]+)"[^>]*type="range"', html)]
+    assert len(ids) >= 24
+    # Every `.slider-value` readout is named for its slider, so the finder reaches it.
+    for readout in re.findall(r'class="slider-value" id="([^"]+)"', html):
+        base = readout[: -len("-value")]
+        assert base in ids or base + "-slider" in ids, readout
+    # A static slider with neither a readout nor `data-unit` (which asks for a field after it) is a scrubber or has its
+    # own number box; the list is frozen and may only fall.
+    bare = sorted(
+        i for i in ids
+        if f'id="{i}-value"' not in html and f'id="{i}-out"' not in html and f'for="{i}"' not in html
+        and not re.search(rf'id="{re.escape(i)}"[^>]*data-unit=|data-unit=[^>]*id="{re.escape(i)}"|type="range" id="{re.escape(i)}" data-unit', html)
+        and i.replace("-slider", "") + "-value" not in html.replace('id="', " ")
+    )
+    assert bare == ["wb-history-slider"], bare  # graph-time-slider has a clock readout, skipped in code
+    # Sliders built in script: the files that draw one are frozen.
+    built = sorted(
+        p.name for p in JS if re.search(r'type = "range"|type: "range"', p.read_text(encoding="utf-8"))
+    )
+    assert built == ["meetings.js", "settings-health.js", "sketch-pad.js", "whiteboard-format.js"], built

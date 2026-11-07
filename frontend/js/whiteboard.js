@@ -684,7 +684,7 @@ function wbShowZoomLevel(k) {
     max: 400,
     label: "Zoom percent",
     format: (v) => `${Math.round(v)}%`,
-    presets: [25, 50, 75, 100, 150, 200, 400].concat([{ label: "Fit", run: () => wbZoomToFit() }]),
+    presets: [25, 50, 75, 100, 150, 200, 400, { label: "Fit", run: () => wbZoomToFit() }],
     onCommit: (v) => {
       const container = document.getElementById("whiteboard-container");
       if (container) d3.select(container).transition().duration(160).call(wbZoom.scaleTo, v / 100, wbZoomAnchor({ usePointer: false }));
@@ -25633,7 +25633,6 @@ function wbPresentShow(index) {
   if (!wbPresent.pageField) {
     const slot = document.getElementById("wb-present-count");
     const host = document.createElement("span");
-    host.id = "wb-present-page";
     host.className = "wb-present-page";
     slot?.before(host);
     wbPresent.pageField = valueField(host, {
@@ -25903,7 +25902,7 @@ function wbStopPresenting() {
   wbMapEndStudy();
   closeActionMenus();
   document.getElementById("wb-present-count")?.replaceChildren();
-  document.getElementById("wb-present-page")?.remove();
+  document.querySelector(".wb-present-page")?.remove();
   document.getElementById("library-view-whiteboard")?.classList.remove("wb-presenting");
   document.getElementById("wb-present-bar")?.classList.add("hidden");
   if (!wasFull) toggleWhiteboardFullscreen(false);

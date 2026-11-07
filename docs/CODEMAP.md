@@ -2,9 +2,9 @@
 
 Generated 2026-11-07 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7851, frontend ids 2644, CSS sections 522, backend routes 649, backend modules 8928, test files 2120, tests 17885, plan headings 1004, app scripts 28, boot scripts 37, script files 261.
+Counts: frontend functions 7854, frontend ids 2644, CSS sections 522, backend routes 649, backend modules 8928, test files 2120, tests 17886, plan headings 1004, app scripts 28, boot scripts 37, script files 261.
 
-## Frontend functions (7851)
+## Frontend functions (7854)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -47,18 +47,18 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `clearApiCache` | frontend/js/app.js:557 |
 | `confirmDialog` | frontend/js/app.js:1265 |
 | `confirmVerb` | frontend/js/app.js:1256 |
-| `ensureModule` | frontend/js/app.js:1725 |
+| `ensureModule` | frontend/js/app.js:1724 |
 | `enterWithoutPassword` | frontend/js/app.js:636 |
 | `hide` | frontend/js/app.js:164 |
 | `hideBootSplash` | frontend/js/app.js:832 |
 | `initAuth` | frontend/js/app.js:845 |
 | `installStandIns` | frontend/js/app.js:1894 |
-| `lazyAssetStamp` | frontend/js/app.js:1682 |
-| `lazyScript` | frontend/js/app.js:1704 |
+| `lazyAssetStamp` | frontend/js/app.js:1681 |
+| `lazyScript` | frontend/js/app.js:1703 |
 | `lockFieldForPin` | frontend/js/app.js:752 |
 | `lockNow` | frontend/js/app.js:806 |
 | `mediaSrc` | frontend/js/app.js:235 |
-| `mountNoteSurfaceNow` | frontend/js/app.js:1749 |
+| `mountNoteSurfaceNow` | frontend/js/app.js:1748 |
 | `promptDialog` | frontend/js/app.js:1363 |
 | `purgeLockedContent` | frontend/js/app.js:793 |
 | `recordBrowserLog` | frontend/js/app.js:23 |
@@ -78,7 +78,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `stagedImageByUrl` | frontend/js/app.js:196 |
 | `startApp` | frontend/js/app.js:894 |
 | `startWithoutPassword` | frontend/js/app.js:621 |
-| `whenScriptsLoaded` | frontend/js/app.js:1663 |
+| `whenScriptsLoaded` | frontend/js/app.js:1662 |
 | `wireBackdropClose` | frontend/js/app.js:1477 |
 
 ### frontend/js/prefs.js (6)
@@ -7653,7 +7653,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `utilityTimeText` | frontend/js/utility-tools.js:24 |
 | `utilityTimerDone` | frontend/js/utility-tools.js:169 |
 
-### frontend/js/value-field.js (8)
+### frontend/js/value-field.js (11)
 
 | Name | File:line |
 |---|---|
@@ -7661,7 +7661,10 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `clamp` | frontend/js/value-field.js:28 |
 | `commit` | frontend/js/value-field.js:52 |
 | `paint` | frontend/js/value-field.js:47 |
-| `presets` | frontend/js/value-field.js:82 |
+| `presets` | frontend/js/value-field.js:91 |
+| `rangeField` | frontend/js/value-field.js:139 |
+| `rangeFieldsIn` | frontend/js/value-field.js:180 |
+| `readoutOf` | frontend/js/value-field.js:133 |
 | `size` | frontend/js/value-field.js:42 |
 | `valueField` | frontend/js/value-field.js:20 |
 | `valueFieldParse` | frontend/js/value-field.js:8 |
@@ -8439,7 +8442,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `addBoardToNote` | frontend/js/whiteboard.js:26104 |
+| `addBoardToNote` | frontend/js/whiteboard.js:26103 |
 | `boardItemCount` | frontend/js/whiteboard.js:24990 |
 | `boardSort` | frontend/js/whiteboard.js:24994 |
 | `boardTypeFilter` | frontend/js/whiteboard.js:25037 |
@@ -8452,10 +8455,10 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `drawLibraryBoardsGallery` | frontend/js/whiteboard.js:25126 |
 | `fetchWhiteboardState` | frontend/js/whiteboard.js:19239 |
 | `handleWbZoom` | frontend/js/whiteboard.js:617 |
-| `highlighterBlend` | frontend/js/whiteboard.js:26124 |
+| `highlighterBlend` | frontend/js/whiteboard.js:26123 |
 | `initWhiteboard` | frontend/js/whiteboard.js:14930 |
 | `openWhiteboardBoard` | frontend/js/whiteboard.js:25373 |
-| `pickNotesDialog` | frontend/js/whiteboard.js:26016 |
+| `pickNotesDialog` | frontend/js/whiteboard.js:26015 |
 | `redrawLibraryBoardsGallery` | frontend/js/whiteboard.js:25095 |
 | `refreshBoardList` | frontend/js/whiteboard.js:19278 |
 | `renameCurrentBoard` | frontend/js/whiteboard.js:19387 |
@@ -8749,8 +8752,8 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `wbKeepsRatio` | frontend/js/whiteboard.js:11908 |
 | `wbKeyboardEnter` | frontend/js/whiteboard.js:11727 |
 | `wbLabelBand` | frontend/js/whiteboard.js:20303 |
-| `wbLaserLeave` | frontend/js/whiteboard.js:25893 |
-| `wbLaserTrail` | frontend/js/whiteboard.js:25869 |
+| `wbLaserLeave` | frontend/js/whiteboard.js:25892 |
+| `wbLaserTrail` | frontend/js/whiteboard.js:25868 |
 | `wbLayoutCloneGrips` | frontend/js/whiteboard.js:9267 |
 | `wbLayoutLinkLabel` | frontend/js/whiteboard.js:20486 |
 | `wbLayoutShapeLabel` | frontend/js/whiteboard.js:20027 |
@@ -8876,9 +8879,9 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `wbPolylineAt` | frontend/js/whiteboard.js:5117 |
 | `wbPortFractions` | frontend/js/whiteboard.js:4211 |
 | `wbPortsForPath` | frontend/js/whiteboard.js:4231 |
-| `wbPresentCaption` | frontend/js/whiteboard.js:25674 |
-| `wbPresentLaser` | frontend/js/whiteboard.js:25832 |
-| `wbPresentLaserButton` | frontend/js/whiteboard.js:25823 |
+| `wbPresentCaption` | frontend/js/whiteboard.js:25673 |
+| `wbPresentLaser` | frontend/js/whiteboard.js:25831 |
+| `wbPresentLaserButton` | frontend/js/whiteboard.js:25822 |
 | `wbPresentShow` | frontend/js/whiteboard.js:25619 |
 | `wbPresentSteps` | frontend/js/whiteboard.js:25575 |
 | `wbPropsText` | frontend/js/whiteboard.js:3760 |
@@ -9041,7 +9044,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `wbStickerSize` | frontend/js/whiteboard.js:5847 |
 | `wbStickyFolds` | frontend/js/whiteboard.js:11709 |
 | `wbStickyRemind` | frontend/js/whiteboard.js:23493 |
-| `wbStopPresenting` | frontend/js/whiteboard.js:25898 |
+| `wbStopPresenting` | frontend/js/whiteboard.js:25897 |
 | `wbSvgEscape` | frontend/js/whiteboard.js:13255 |
 | `wbSvgRunLines` | frontend/js/whiteboard.js:13300 |
 | `wbSvgText` | frontend/js/whiteboard.js:13286 |
@@ -12410,7 +12413,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/update-bar-lazy.css | 15 |
 | frontend/css/usage-lazy.css | 34 |
 | frontend/css/utilities-lazy.css | 500 |
-| frontend/css/value-field.css | 38 |
+| frontend/css/value-field.css | 49 |
 | frontend/css/web-lazy.css | 88 |
 | frontend/css/writing-desk-lazy.css | 27 |
 
@@ -24317,7 +24320,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (17885)
+## Tests (17886)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -26218,7 +26221,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_typo_routing.py | 4 |
 | tests/test_ui_1017b.py | 7 |
 | tests/test_ui_batch_726.py | 13 |
-| tests/test_ui_recipes.py | 275 |
+| tests/test_ui_recipes.py | 276 |
 | tests/test_ui_signatures.py | 2 |
 | tests/test_ui_state.py | 6 |
 | tests/test_ui_targets_1029b.py | 9 |

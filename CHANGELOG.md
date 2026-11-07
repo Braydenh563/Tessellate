@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Every slider with a readout can be typed (INBOX 1694 c): the quick sketch thickness, the graph, board and mind map sliders swap their readout for the same value field on first hover or focus (clamped to the slider's range and step, Enter or blur applies, Escape reverts, arrows step, the unit stays).
 - Zoom percentages and the present page number can be typed (INBOX 1694 b): the viewer, the diagram view and the board's zoom readouts take a number and Enter or a pick from a list (25 to 400 and Fit), and a presenting board or map takes a typed page number; one `valueField` recipe (value-field.js).
 - A trackpad pinch in the lightbox zooms at the diagram view's rate, five times faster than before; a mouse notch is unchanged.
 - The in-app companion's size handle, hanging at the bottom right, shows the top-left to bottom-right resize cursor.

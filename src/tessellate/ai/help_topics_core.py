@@ -2000,7 +2000,7 @@ HELP_TOPICS.extend(
                 "connector bound to it and follows it when it moves. A drawn shape is selected and Select returns (not the pen). Shapes draw corner to corner (Shift: square, circle, 45 degree line, straight pen; Alt: centred). The Shapes flyout has more (star, cloud, cylinder and others). Moving around: the wheel "
                 "zooms about the pointer, two trackpad fingers pan, Shift+wheel pans sideways, a pinch "
                 "zooms too, a drag on empty canvas boxes (Shift adds), a right or middle drag or Space and drag pans (a plain right-click opens the menu), a drag to an edge pans, Ctrl+= and Ctrl+- zoom the board about the selection's centre (else the view's), "
-                "Ctrl+0 fits all (or Shift+1), Ctrl+1 is 100% (the % and a presenting page number type in), Shift+2 zooms to the selection, Shift+N shows the "
+                "Ctrl+0 fits all (or Shift+1), Ctrl+1 is 100% (numbers and sliders type in), Shift+2 zooms to the selection, Shift+N shows the "
                 "overview, / or Ctrl+F finds, Ctrl+H replaces, Tab walks the "
                 "items. Ctrl+K also finds select all shapes or connectors, select similar, turn 90 degrees, remove from "
                 "the group, copy and paste the size, grow to fit the words, reverse a connector and clear its bends. "

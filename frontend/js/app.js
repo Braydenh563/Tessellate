@@ -1563,8 +1563,7 @@ const LAZY_MODULES = {
   vault: ["/js/vault-unlock.js"],
   //: The one icon and emoji picker, on first use (MINDMAP_PLAN decision 43): see icon-picker.js.
   iconPicker: ["/css/icon-picker.css", "/js/icon-picker.js"],
-  //: The typeable number with a list (value-field.js, INBOX 1694 b); the viewer and the Library bundle carry it in their own lists.
-  valueField: ["/css/value-field.css", "/js/value-field.js"],
+  vf: ["/css/value-field.css", "/js/value-field.js"],
   //: Settings groups, each file's header says which (WORLD_CLASS_PLAN rows 21 to 27).
   modelBench: ["/js/model-bench.js"],
   //: The web panel: web-clip.js, and its search, result rows and recents (web-results.js).
@@ -1626,7 +1625,7 @@ const LAZY_MODULES = {
     "/css/library-lazy.css", //: The styles only this bundle's surfaces draw, out of the boot budget.
     "/js/undo-store.js", //: First: both editors and the list read it.
     "/js/pick-row.js", //: The Attach picker's row, drawn synchronously by the board pickers.
-    "/css/value-field.css", //: The typeable number (zoom, present page): value-field.js.
+    "/css/value-field.css",
     "/js/value-field.js",
     "/js/image-layout.js",
     //: Before the editors: it holds the file-type table they read.
@@ -1753,6 +1752,7 @@ function mountNoteSurfaceNow(host) {
     return mountNoteSurface(host, NOTE_SURFACES[host.id]);
   });
 }
+
 
 document.addEventListener("focusin", (event) => {
   const host = event.target;
