@@ -5224,13 +5224,17 @@ function nameMarkBuddyFollow(eased = false) {
   const box = g.el.isConnected && !folded ? g.el.getBoundingClientRect() : null;
   //: Carried fast under it, a panel throws it off (companion-throw.js `nameMarkBuddyShaken`).
   if (box) {
-    const dt = at - g.bt;
-    const sx = (box.left - g.bx) / dt;
-    const sy = (box.top - g.by) / dt;
-    [g.bt, g.bx, g.by] = [at, box.left, box.top];
-    if (dt < 100 && Math.hypot(sx, sy) > NMB_TOSS_SPEED * 2) {
-      ensureModule("companionThrow");
-      if (self.nameMarkBuddyShaken?.(buddy, g, sx, sy)) return;
+    //: Reads under 4 ms apart are not taken (0 ms made any move infinitely fast): the next one measures from the last good read.
+    const dt = g.bt === undefined ? 0 : at - g.bt;
+    if (g.bt === undefined) [g.bt, g.bx, g.by] = [at, box.left, box.top];
+    else if (dt >= 4) {
+      const sx = (box.left - g.bx) / dt;
+      const sy = (box.top - g.by) / dt;
+      [g.bt, g.bx, g.by] = [at, box.left, box.top];
+      if (dt < 100 && Math.hypot(sx, sy) > NMB_TOSS_SPEED * 2) {
+        ensureModule("companionThrow");
+        if (self.nameMarkBuddyShaken?.(buddy, g, sx, sy)) return;
+      }
     }
   }
   if (box && g.fx !== undefined && box.width) g.dx = g.fx * box.width - NMB_W / 2;

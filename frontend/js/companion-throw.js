@@ -756,13 +756,14 @@ function nameMarkBuddyThrowLand(buddy, s, tab, spot) {
 //: the speed and a little up, flailing from the first frame (`feel.shaken`), then miffed or worried for two to
 //: four seconds. A panel that animates (a sidebar easing, a card sliding in) is not a shake, and neither is one
 //: more than once in `gap` ms. Reduced motion, a pinned or visiting companion and an open menu never.
-const COMPANION_SHAKE = { carry: 0.6, lift: 0.35, gap: 8000, look: 100, faces: ["nervous", "angry"], face: [2000, 4000] };
+const COMPANION_SHAKE = { carry: 0.6, lift: 0.35, gap: 8000, look: 100, looks: 3, faces: ["nervous", "angry"], face: [2000, 4000] };
 function nameMarkBuddyShaken(buddy, g, sx, sy) {
   const k = COMPANION_SHAKE;
   const now = performance.now();
-  const seen = now - (g.fastAt || -1e9) < k.look;
+  //: Three fast looks in a row, each within `look` ms of the last: a quick wheel flick of a list is one or two.
+  g.fastN = now - (g.fastAt || -1e9) < k.look ? (g.fastN || 0) + 1 : 1;
   g.fastAt = now;
-  if (!seen || nmbFollow.moving || nmb.pinned || nmb.visit || nmb.flight || nameMarkBuddyNoTravel() || nameMarkBuddyMenuOpen()) return false;
+  if (g.fastN < k.looks || nmbFollow.moving || nmb.pinned || nmb.visit || nmb.flight || nameMarkBuddyNoTravel() || nameMarkBuddyMenuOpen()) return false;
   if (now - (nmb.shakenAt || -1e9) < k.gap) return false;
   nmb.shakenAt = now;
   const cut = Math.min(1, NMB_THROW.max / Math.max(1e-9, Math.hypot(sx, sy)));

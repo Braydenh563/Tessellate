@@ -47,8 +47,9 @@ console.log(JSON.stringify({body}));
 
 
 @needs_node
-def test_two_fast_looks_running_throw_it_the_way_the_panel_went_and_a_little_up() -> None:
-    out = shaken("(() => { const a = shake(2, 0, 1000); const b = shake(2, 0, 1016); return [a, b, calls]; })()")
+def test_three_fast_looks_running_throw_it_the_way_the_panel_went_and_a_little_up() -> None:
+    #: Intent moved (review of edges-1107): two looks let a quick wheel flick of a list shake it off; it takes three.
+    out = shaken("(() => { const a = shake(2, 0, 1000); shake(2, 0, 1016); const b = shake(2, 0, 1032); return [a, b, calls]; })()")
     assert out[0] is False and out[1] is True  # the first fast look only arms it: a one-frame jump is not a shake
     throw = [c for c in out[2] if c[0] == "throw"][0]
     assert throw[1] == pytest.approx(2 * 0.6) and throw[2] == pytest.approx(-0.35) and throw[3] is True
@@ -56,31 +57,32 @@ def test_two_fast_looks_running_throw_it_the_way_the_panel_went_and_a_little_up(
 
 @needs_node
 def test_a_throw_is_never_faster_than_the_flight_cap() -> None:
-    out = shaken("(() => { shake(40, 30, 1000); shake(40, 30, 1016); return calls.find((c) => c[0] === 'throw'); })()")
+    out = shaken("(() => { shake(40, 30, 1000); shake(40, 30, 1016); shake(40, 30, 1032); return calls.find((c) => c[0] === 'throw'); })()")
     assert (out[1] ** 2 + (out[2] + 0.35) ** 2) ** 0.5 == pytest.approx(2.3 * 0.6)
 
 
 @needs_node
 def test_a_jump_is_not_a_shake_and_neither_is_a_panel_that_animates() -> None:
-    assert shaken("(() => { shake(2, 0, 1000); return shake(2, 0, 1300); })()") is False  # looks 300 ms apart
-    assert shaken("(() => { nmbFollow.moving = true; shake(2, 0, 1000); return shake(2, 0, 1016); })()") is False
+    assert shaken("(() => { shake(2, 0, 1000); shake(2, 0, 1016); return shake(2, 0, 1316); })()") is False  # a look 300 ms on
+    assert shaken("(() => { shake(2, 0, 1000); return shake(2, 0, 1016); })()") is False  # a flick: two looks are not enough
+    assert shaken("(() => { nmbFollow.moving = true; shake(2, 0, 1000); shake(2, 0, 1016); return shake(2, 0, 1032); })()") is False
 
 
 @needs_node
 @pytest.mark.parametrize("setup", ["reduced = true", "nmb.pinned = true", "nmb.visit = {}", "nmb.flight = {}", "menu = true"])
 def test_reduced_motion_a_pinned_or_visiting_companion_a_flight_or_an_open_menu_never_shake(setup: str) -> None:
-    assert shaken(f"(() => {{ {setup}; shake(2, 0, 1000); return shake(2, 0, 1016); }})()") is False
+    assert shaken(f"(() => {{ {setup}; shake(2, 0, 1000); shake(2, 0, 1016); return shake(2, 0, 1032); }})()") is False
 
 
 @needs_node
 def test_once_in_eight_seconds() -> None:
-    out = shaken("(() => { shake(2, 0, 1000); const a = shake(2, 0, 1016); shake(2, 0, 1100); const b = shake(2, 0, 1116); shake(2, 0, 9100); const c = shake(2, 0, 9116); return [a, b, c]; })()")
+    out = shaken("(() => { shake(2, 0, 1000); shake(2, 0, 1016); const a = shake(2, 0, 1032); shake(2, 0, 1100); shake(2, 0, 1116); const b = shake(2, 0, 1132); shake(2, 0, 9100); shake(2, 0, 9116); const c = shake(2, 0, 9132); return [a, b, c]; })()")
     assert out == [True, False, True]
 
 
 @needs_node
 def test_a_scrolled_container_lets_go_of_the_ride_first() -> None:
-    out = shaken("(() => { nmb.ride = {}; shake(2, 0, 1000); shake(2, 0, 1016); return calls.map((c) => c[0]); })()")
+    out = shaken("(() => { nmb.ride = {}; shake(2, 0, 1000); shake(2, 0, 1016); shake(2, 0, 1032); return calls.map((c) => c[0]); })()")
     assert out[:2] == ["ride", "reset"] and "throw" in out
 
 
@@ -139,3 +141,10 @@ def test_the_hide_behind_is_already_built_for_a_panel_the_dock_and_the_bars() ->
     avatars = AV
     assert 'peek: { ms: 14000' in avatars and 'edge: "top"' in avatars  # peek from behind a panel's top edge
     assert 'getElementById("phone-tab-dock")' in avatars and 'legs: "peek"' in avatars  # and the dock and status bar
+
+
+def test_a_pair_of_reads_in_the_same_instant_reads_no_speed_instead_of_an_infinite_one() -> None:
+    follow = AV[AV.index("function nameMarkBuddyFollow(") :][:4000]
+    #: dt of 0 made a moved box infinitely fast. Reads under 4 ms apart are not taken: the next read measures from the last good one.
+    assert "if (g.bt === undefined) [g.bt, g.bx, g.by]" in follow  # the first read only seeds: no NaN speed
+    assert re.search(r"else if \(dt >= 4\) \{[^}]*\[g\.bt, g\.bx, g\.by\] = \[at, box\.left, box\.top\]", follow, re.S)
