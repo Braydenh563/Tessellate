@@ -8,6 +8,8 @@ below). Versioning is `0.x` while the app stabilises.
 ## [Unreleased]
 Desk panel fits its content again: fit() asks set_size, not set_figure_size (a rename sent 3 arguments to a 1-argument call; owner's log 2026-11-07).
 - The desktop companion's menu says your companion is being summoned, not drawn.
+- Every slider with a readout can be typed (INBOX 1694 c): the quick sketch thickness, the graph, board and mind map sliders swap their readout for the same value field on first hover or focus (clamped to the slider's range and step, Enter or blur applies, Escape reverts, arrows step, the unit stays).
+- Zoom percentages and the present page number can be typed (INBOX 1694 b): the viewer, the diagram view and the board's zoom readouts take a number and Enter or a pick from a list (25 to 400 and Fit), and a presenting board or map takes a typed page number; one `valueField` recipe (value-field.js).
 - A trackpad pinch in the lightbox zooms at the diagram view's rate, five times faster than before; a mouse notch is unchanged.
 - The in-app companion's size handle, hanging at the bottom right, shows the top-left to bottom-right resize cursor.
 - The desk companion no longer stays on the card for good after one failed start (INBOX 1692 k): a see-through figure that does not start is tried again at the next minimise (three times in all), a drawn companion whose frames will not start falls back to Atlas's figure before the card, the card's menu says why in one line, and the card redraws when your chosen look changes, not only your name.

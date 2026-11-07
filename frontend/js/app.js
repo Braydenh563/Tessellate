@@ -1510,7 +1510,7 @@ const LAZY_MODULES = {
   //: d3 (90 KB gzipped) comes with the two surfaces that use it, not at boot (audit FE-07); `ensureModule` fetches a file once whichever bundle names it first.
   graph: ["/vendor/d3.v7.min.js", "/css/graph-lazy.css", "/js/graph.js", "/js/graph-canvas.js"],
   //: The image viewer (2026-09-27, the boot-script gzip budget): see lightbox-view.js's header.
-  lightbox: ["/css/lightbox-lazy.css", "/js/lightbox-view.js"],
+  lightbox: ["/css/lightbox-lazy.css", "/css/value-field.css", "/js/value-field.js", "/js/lightbox-view.js"],
   //: Run, preview and test for a code document (DOCUMENTS_PLAN 23, D1): the protocol and its languages, loaded on the first Run.
   run: ["/js/run-core.js", "/js/run-tests.js", "/js/run-debug.js"],
   editConflict: ["/js/edit-conflict.js"],
@@ -1563,6 +1563,7 @@ const LAZY_MODULES = {
   vault: ["/js/vault-unlock.js"],
   //: The one icon and emoji picker, on first use (MINDMAP_PLAN decision 43): see icon-picker.js.
   iconPicker: ["/css/icon-picker.css", "/js/icon-picker.js"],
+  vf: ["/css/value-field.css", "/js/value-field.js"],
   //: Settings groups, each file's header says which (WORLD_CLASS_PLAN rows 21 to 27).
   modelBench: ["/js/model-bench.js"],
   //: The web panel: web-clip.js, and its search, result rows and recents (web-results.js).
@@ -1624,6 +1625,8 @@ const LAZY_MODULES = {
     "/css/library-lazy.css", //: The styles only this bundle's surfaces draw, out of the boot budget.
     "/js/undo-store.js", //: First: both editors and the list read it.
     "/js/pick-row.js", //: The Attach picker's row, drawn synchronously by the board pickers.
+    "/css/value-field.css",
+    "/js/value-field.js",
     "/js/image-layout.js",
     //: Before the editors: it holds the file-type table they read.
     "/js/library.js",
@@ -1749,6 +1752,7 @@ function mountNoteSurfaceNow(host) {
     return mountNoteSurface(host, NOTE_SURFACES[host.id]);
   });
 }
+
 
 document.addEventListener("focusin", (event) => {
   const host = event.target;

@@ -1627,3 +1627,9 @@
 .dgm-phonelist .dgm-listbtn {
   display: inline-flex;
 }
+/* The zoom readout is a typeable number with a dropdown (value-field.js, INBOX 1694 b). */
+.dgm-zoom .dgm-zoom-level {
+  display: inline-flex;
+  align-items: center;
+  font-size: var(--text-sm);
+}
