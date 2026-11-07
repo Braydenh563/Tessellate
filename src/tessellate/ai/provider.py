@@ -461,7 +461,7 @@ class Provider:
             deps = importlib.import_module("tessellate.core.deps")
             windows = deps.get_config().get_preference("model_context_windows", {})
         except Exception as exc:  # noqa: BLE001  # a bad preference must not stop a chat
-            logging.getLogger("tessellate.provider").info("max_context_tokens unreadable, ignored: %s", exc)
+            logging.getLogger("tessellate.provider").info("model_context_windows unreadable, ignored: %s", exc)
             return None
         if not isinstance(windows, dict):
             return None

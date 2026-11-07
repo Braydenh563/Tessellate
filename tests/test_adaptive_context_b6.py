@@ -163,3 +163,20 @@ def test_an_openai_server_that_only_guesses_keeps_the_cap(prefs, memory):
     client = OpenAICompatClient(base_url="http://localhost:1234/v1")
     client._context_lengths = {"m": 131072}
     assert client.usable_context("m") == OpenAICompatClient.MAX_REQUESTED_CONTEXT
+
+
+def test_an_unreadable_per_model_preference_logs_its_own_name(monkeypatch, caplog):
+    """Review of PR 216: the except branch of `preferred_context` said
+    "max_context_tokens unreadable" while reading `model_context_windows`."""
+    import logging
+
+    import tessellate.core.deps as deps
+
+    def broken():
+        raise RuntimeError("preferences file gone")
+
+    monkeypatch.setattr(deps, "get_config", broken)
+    with caplog.at_level(logging.INFO, logger="tessellate.provider"):
+        assert ollama_model(8192).preferred_context("m") is None
+    assert "model_context_windows unreadable" in caplog.text
+    assert "max_context_tokens" not in caplog.text

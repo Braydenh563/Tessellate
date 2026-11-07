@@ -2,7 +2,7 @@
 
 Generated 2026-11-07 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7861, frontend ids 2644, CSS sections 522, backend routes 649, backend modules 9001, test files 2154, tests 18164, plan headings 1004, app scripts 28, boot scripts 37, script files 261.
+Counts: frontend functions 7861, frontend ids 2644, CSS sections 522, backend routes 649, backend modules 9001, test files 2154, tests 18165, plan headings 1004, app scripts 28, boot scripts 37, script files 261.
 
 ## Frontend functions (7861)
 
@@ -24415,7 +24415,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (18164)
+## Tests (18165)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -24432,7 +24432,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_activity_narrator_guide.py | 2 |
 | tests/test_activity_undo_row.py | 4 |
 | tests/test_acts.py | 11 |
-| tests/test_adaptive_context_b6.py | 11 |
+| tests/test_adaptive_context_b6.py | 12 |
 | tests/test_add_column_sites_1031.py | 3 |
 | tests/test_afterunlock.py | 5 |
 | tests/test_agent_context.py | 7 |
