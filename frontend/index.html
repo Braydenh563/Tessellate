@@ -10192,7 +10192,10 @@ Link to another note with [[its first few words]]."></textarea>
                 <p>
                   The context window is how much of your conversation and notes
                   the model can hold at once, counted in tokens. Empty means
-                  auto: the app uses what the model file or your server reports.
+                  auto: the app uses the model's own window, held back only by
+                  how much free memory the cache for that window would need.
+                  With llama.cpp the server sets the window when it loads the
+                  model, so the app follows the number it reports.
                 </p>
                 <p>
                   Set a number when you know better than the file does, for

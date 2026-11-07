@@ -796,7 +796,9 @@ function renderModelContextBox(modelName, spec) {
   //: identical in an empty box.
   note.textContent = set > 0
     ? `Running ${modelContextModel} at ${set.toLocaleString()} tokens. Clear the box for auto.`
-    : usable
+    : spec && spec.context_reason
+      ? `Auto: ${spec.context_reason}`
+      : usable
       ? `Auto: ${Number(usable).toLocaleString()} tokens, from the model.`
       : "Auto: the app uses the model's own window.";
 }
