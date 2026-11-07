@@ -123,7 +123,7 @@
     if (overlay) height = panelHeight($(PANELS[state]), height, state);
     if (Math.abs(height - asked) <= 2) return;
     asked = height;
-    ask("set_figure_size", SIZES[state][0], height, state);
+    ask("set_size", SIZES[state][0], height, state);
   }
   window.addEventListener("resize", () => {
     if (overlay) fit();

@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+Desk panel fits its content again: fit() asks set_size, not set_figure_size (a rename sent 3 arguments to a 1-argument call; owner's log 2026-11-07).
 - The desktop companion's menu says your companion is being summoned, not drawn.
 - A trackpad pinch in the lightbox zooms at the diagram view's rate, five times faster than before; a mouse notch is unchanged.
 - The in-app companion's size handle, hanging at the bottom right, shows the top-left to bottom-right resize cursor.
