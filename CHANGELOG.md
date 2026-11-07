@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- The desk companion plays an act a little differently each time (research V3): amplitude 0.85 to 1.15, duration plus or minus 15% and one of three easings, drawn from its own seeded stream so no other choice moves.
 - The desktop companion's menu says your companion is being summoned, not drawn.
 - A trackpad pinch in the lightbox zooms at the diagram view's rate, five times faster than before; a mouse notch is unchanged.
 - The in-app companion's size handle, hanging at the bottom right, shows the top-left to bottom-right resize cursor.

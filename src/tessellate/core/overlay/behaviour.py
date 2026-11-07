@@ -69,10 +69,43 @@ def smooth(u: float) -> float:
     return u * u * (3.0 - 2.0 * u)
 
 
+def smoother(u: float) -> float:
+    u = min(max(u, 0.0), 1.0)
+    return u * u * u * (u * (u * 6.0 - 15.0) + 10.0)
+
+
+def sine_ease(u: float) -> float:
+    return 0.5 - 0.5 * math.cos(math.pi * min(max(u, 0.0), 1.0))
+
+
+#: The easings a play can draw (research V3): the same keyframes, a slightly different feel each time.
+EASES = (smooth, smoother, sine_ease)
+VARY_AMP = (0.85, 1.15)
+VARY_DUR = (0.85, 1.15)
+
+
+class Variation(NamedTuple):
+    """One play of an act: how big (factor), how long (factor) and which easing."""
+
+    amp: float = 1.0
+    dur: float = 1.0
+    ease: Any = smooth
+
+
+def vary(rng: random.Random) -> Variation:
+    """A seeded per-play variation: amplitude 0.85 to 1.15, duration plus or minus 15%, one of `EASES`."""
+    return Variation(rng.uniform(*VARY_AMP), rng.uniform(*VARY_DUR), rng.choice(EASES))
+
+
+def scaled(p: Pose, amp: float) -> Pose:
+    """`p` with its distance from neutral multiplied by `amp`."""
+    return Pose(1.0 + (p.sx - 1.0) * amp, 1.0 + (p.sy - 1.0) * amp, p.lean * amp, p.drag)
+
+
 Keys = tuple[tuple[float, float, float, float], ...]  # (u, sx, sy, lean)
 
 
-def sample(keys: Keys, u: float) -> Pose:
+def sample(keys: Keys, u: float, ease: Any = smooth) -> Pose:
     """The pose at `u` (0 to 1 through the activity), eased between keyframes."""
     if not keys:
         return NEUTRAL
@@ -80,7 +113,7 @@ def sample(keys: Keys, u: float) -> Pose:
         return Pose(keys[0][1], keys[0][2], keys[0][3])
     for a, b in zip(keys, keys[1:]):
         if u <= b[0]:
-            k = smooth((u - a[0]) / max(1e-6, b[0] - a[0]))
+            k = ease((u - a[0]) / max(1e-6, b[0] - a[0]))
             return Pose(a[1] + (b[1] - a[1]) * k, a[2] + (b[2] - a[2]) * k, a[3] + (b[3] - a[3]) * k)
     return Pose(keys[-1][1], keys[-1][2], keys[-1][3])
 

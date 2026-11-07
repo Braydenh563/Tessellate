@@ -446,6 +446,8 @@ class Engine:
         #: Blinks and glances draw from their own stream (seeded from the engine's, not drawn from it), so the
         #: far more frequent ambient moments leave every other choice the same for a seed.
         self.life_rng = random.Random(self.rng.getstate()[1][0])
+        self.var_rng = random.Random(self.rng.getstate()[1][0] + 1)
+        self.act_var = bh.Variation()
         self.gait = "float" if gait == "float" else "walk"
         #: The share of the hang frame's height that is clear above the hands.
         self.hang_top = min(max(float(hang_top), 0.0), 0.5)
@@ -815,6 +817,8 @@ class Engine:
     def _on_act(self, now: float) -> None:
         act = bh.ACTIVITIES[self.act or "breathe"]
         self.act_started, self.act_len = now, self.rng.uniform(*act.seconds)
+        self.act_var = bh.vary(self.var_rng)  # V3: not the same play twice; its own stream, so no other draw moves
+        self.act_len *= self.act_var.dur
         self.act_turned = -1.0
         self.state_until = now + self.act_len
 
@@ -936,7 +940,7 @@ class Engine:
             squeeze = self._warp_view(now)[2]
             sx, sy = 1.0 - 0.8 * squeeze, 1.0 - 0.2 * squeeze
         elif s_ == "act":
-            p = bh.sample(bh.ACTIVITIES[self.act or "breathe"].keys, (now - self.act_started) / max(0.01, self.act_len))
+            p = bh.scaled(bh.sample(bh.ACTIVITIES[self.act or "breathe"].keys, (now - self.act_started) / max(0.01, self.act_len), self.act_var.ease), self.act_var.amp)
             sx, sy, lean = p.sx, p.sy, p.lean * (1 if self.facing > 0 else -1)
         else:
             sx, sy, lean = self._ground_pose(now, s_)

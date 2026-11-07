@@ -404,6 +404,7 @@ class Extras:
         e.mind.did(name, now)
         e.act = name
         e._enter("act", now)
+        e.act_var = bh.vary(e.var_rng)
         e.act_len = seconds
         e.state_until = now + seconds
 
