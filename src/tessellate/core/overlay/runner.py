@@ -184,7 +184,7 @@ class OverlayRunner:
 
     # --- life (any thread) ------------------------------------------------------------
 
-    def start(self, timeout: float = 3.0) -> bool:
+    def start(self, timeout: float = 10.0) -> bool:
         """Make the window and the engine. False (and logged) when either fails:
         the coordinator then falls back to the card window."""
         try:

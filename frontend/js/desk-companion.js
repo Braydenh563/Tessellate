@@ -73,8 +73,11 @@
 
   function draw() {
     const name = seed();
-    if (name === seedShown) return;
-    seedShown = name;
+    //: The key holds the parts you chose as well as the name: the same name with a changed look is a new
+    //: drawing (INBOX 1692 k: the card kept the bare name's figure after the profile's look was saved).
+    const key = `${name}|${JSON.stringify(nameMarkOwnFor(name) || {})}`;
+    if (key === seedShown) return;
+    seedShown = key;
     $("desk-figure").replaceChildren(characterFor(name).figure());
     $("desk-pet").setAttribute("aria-label", `${name}, your companion. Click for the menu, right-click for settings, drag to move it.`);
   }
@@ -273,6 +276,7 @@
     const rows = [item("Back", "caret-left", () => openMenu("context"))];
     if (got?.locked) rows.push(note("Tessellate is locked. Open it to unlock, then choose."));
     else if (!got?.options?.length) rows.push(note("Tessellate did not answer. Open it and try again."));
+    if (got?.note) rows.push(note(got.note));
     let group = "";
     for (const option of got?.options || []) {
       if (option.group !== group) {

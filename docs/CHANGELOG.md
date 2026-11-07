@@ -6,6 +6,8 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- The desk companion no longer stays on the card for good after one failed start (INBOX 1692 k): a see-through figure that does not start is tried again at the next minimise (three times in all), a drawn companion whose frames will not start falls back to Atlas's figure before the card, the card's menu says why in one line, and the card redraws when your chosen look changes, not only your name.
+- A companion chosen in the desk menu reaches the figure or says why (INBOX 1692 i, the owner ticked "You, from your name" and the desk kept Atlas): the app's figure is read again, up to four times 0.4 s apart, while it has not been redrawn; the log names why your own companion has no frames; and the Companion panel shows one line while its frames are drawn or when drawing failed.
 - Settings, About names the address and port the app is running at.
 - A thrown companion's landing reads its boxes before the release's writes (INBOX 1667, the owner's 2026-11-07 log: `spotNow` 5956ms, 5774 of it forced layout): the 142 controls' and the bars' rects are taken with the world, so the landing reads nothing (40-note Dashboard, 4x CPU, dirtied page: 13.6ms median to 0.8ms; 20 seeded landing spots identical), and the top bar's height token has no direct first read at boot.
 - Confirmed patterns in Settings load a page at a time (`GET /insights/confirmed` takes `limit` and `offset` and says `X-Total-Count`), and their group is built on first open rather than shipped in the page.
