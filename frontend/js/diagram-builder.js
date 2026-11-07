@@ -524,9 +524,21 @@
     const fold = [];
     //: Suggest folds in here on a phone.
     if (S.suggestBtn && matchMedia(COMPACT).matches) fold.push({ label: "ph:sparkle Suggest…", group: "edit", run: () => suggestMenu(S, S.root.querySelector(".dgm-more button") || S.suggestBtn) });
-    const menu = kebabMenu([...(S.io.menu || []), ...fold, makeMenuItem("ph:keyboard Keyboard shortcuts", "", () => styleDo(S, "shortcuts")), ...rows.map(([label, how]) => makeMenuItem(label, "", () => ensureModule("diagramEmbed").then((ok) => ok && diagramModel.embed.out(how, S.source, S.io.name))))], "More for this diagram");
+    const mine = S.io.menu || [];
+    const menu = kebabMenu([...mine, ...fold, makeMenuItem("ph:keyboard Keyboard shortcuts", "", () => styleDo(S, "shortcuts")), ...rows.map(([label, how]) => makeMenuItem(label, "", () => ensureModule("diagramEmbed").then((ok) => ok && diagramModel.embed.out(how, S.source, S.io.name))))], "More for this diagram");
     menu.classList.add("dgm-more");
+    menu.dataset.rows = mine.map((row) => row.label).join("|");
     return menu;
+  }
+
+  //: The host's rows can depend on the diagram (the dialog's look row names the look that is not on), and the menu is built once with the pane:
+  //: when they differ after a redraw it is built again in its place, keeping the bar's roving Tab stop.
+  function refreshMore(S) {
+    const old = S.root.querySelector(".dgm-more");
+    if (!old || old.dataset.rows === (S.io.menu || []).map((row) => row.label).join("|")) return;
+    const next = more(S);
+    next.querySelector("button").tabIndex = old.querySelector("button").tabIndex;
+    old.replaceWith(next);
   }
 
   //: The toolbar is diagram-bar.js (lazy, 1661 D2): one row, built from these.
@@ -660,6 +672,7 @@
         if (text !== S.source) sync(host, text, S);
       }
     }
+    if (S) refreshMore(S);
     //: The phone's palette sheet and pinch (diagram-touch.js).
     if (S && (S.k || matchMedia(COMPACT).matches) && (await ensureModule("diagramTouch"))) diagramModel.touch.wire(S);
     //: Zoom, pan and fit for the picture, in every window (diagram-view.js, 1614).

@@ -127,13 +127,37 @@
   const withLook = (source, hand) => {
     const { front, rest } = diagramModel.front(String(source).replace(/\r/g, ""));
     const kept = (front[0] === "---" ? front.slice(1, front.lastIndexOf("---")) : []).filter((line) => !/^\s+look:/.test(line));
-    const at = kept.findIndex((line) => /^config:\s*$/.test(line));
-    const lines = hand
-      ? at < 0 ? [...kept, "config:", "  look: handDrawn"] : [...kept.slice(0, at + 1), "  look: handDrawn", ...kept.slice(at + 1)]
-      : kept.filter((line, i) => !(/^config:\s*$/.test(line) && !/^\s/.test(kept[i + 1] || "")));
+    const at = kept.findIndex((line) => /^config:/.test(line));
+    //: A `config:` on the key's own line is a flow mapping (`config: {theme: dark}`) the look joins inside the braces; any other value
+    //: on that line cannot take a look without turning the file into two `config` keys, so it is left alone (null: the caller says so).
+    const flow = at >= 0 && /^config:\s*\{.*\}\s*$/.test(kept[at]);
+    if (at >= 0 && !flow && !/^config:\s*$/.test(kept[at])) return null;
+    if (flow) {
+      const inner = kept[at].replace(/^config:\s*\{|\}\s*$/g, "").replace(/\s*\blook:\s*\w+\s*,?/, "").replace(/^\s*,\s*|\s*,\s*$/g, "").trim();
+      kept.splice(at, 1, ...(hand ? [`config: {look: handDrawn${inner ? `, ${inner}` : ""}}`] : inner ? [`config: {${inner}}`] : []));
+    }
+    const lines = flow ? kept
+      : hand
+        ? at < 0 ? [...kept, "config:", "  look: handDrawn"] : [...kept.slice(0, at + 1), "  look: handDrawn", ...kept.slice(at + 1)]
+        : kept.filter((line, i) => !(/^config:\s*$/.test(line) && !/^\s/.test(kept[i + 1] || "")));
     return (lines.length ? `---\n${lines.join("\n")}\n---\n` : "") + rest;
   };
   //: end withLook
+
+  //: The document's name from the Title field: nothing a `![[ ]]` link or a `Title#^id` block reference reads as syntax, and never a name
+  //: another document has (links resolve to the first document of that title, so a repeat would show the earlier diagram). Blank is dated.
+  const cleanTitle = (text) => String(text || "").replace(/[\[\]|#]+/g, " ").replace(/\s+/g, " ").trim();
+  const freshTitle = (base, taken) => {
+    let title = base;
+    for (let n = 2; taken.has(title.toLowerCase()); n += 1) title = `${base} ${n}`;
+    return title;
+  };
+  //: end freshTitle
+  const documentName = async (typed) => {
+    const base = cleanTitle(typed) || `Diagram ${new Date().toISOString().slice(0, 16).replace("T", " ")}`;
+    const all = await apiPagedList("/documents", 200).catch(() => (Array.isArray(docs) ? docs : []));
+    return freshTitle(base, new Set(all.map((d) => String(d.title || "").trim().toLowerCase())));
+  };
 
   // --- the dialog (D6) ----------------------------------------------------------------
   const STARTS = { flowchart: "flowchart TD", mindmap: "mindmap\n  root((Topic))", timeline: "timeline\n  title Timeline", sequence: "sequenceDiagram" };
@@ -156,6 +180,7 @@
     overlay.setAttribute("aria-modal", "true");
     overlay.setAttribute("aria-label", title);
     const dialog = el("div", "card modal-card space-dialog dgm-dialog");
+    dialog.tabIndex = -1;
     const returnFocus = document.activeElement;
     const host = el("div", "dgm-host");
     //: The title (DD-12, 1107): what a new diagram document is called and what its exports are named; blank keeps the dialog's title.
@@ -193,15 +218,31 @@
       },
       undo: () => at > 0 && (at -= 1, apply()),
       redo: () => at < history.length - 1 && (at += 1, apply()),
-      menu: [
-        ...(shapes ? [makeMenuItem("ph:shapes Turn into shapes", "Replace it with shapes and connectors you can move one by one", () => (leave(), shapes(history[at])))] : []),
-        //: The door opens on a drawn starter (DD-3b, 1107), so a blank page is one press away, and Undo brings the starter back.
-        makeMenuItem("ph:eraser Clear", "Start again from an empty diagram of this kind. Undo brings this one back", () => (io.set(`${STARTS[diagramModel.builder.kindOf(history[at])] || STARTS.flowchart}\n`), apply())),
-        makeMenuItem("ph:pencil-line Hand-drawn look", "Draw the picture as if sketched by hand. Kept in the diagram's own text; Undo takes it back", () => (io.set(withLook(history[at], true)), apply())),
-        makeMenuItem("ph:rectangle Clean look", "Draw the picture with straight, even lines again", () => (io.set(withLook(history[at], false)), apply())),
-        makeMenuItem("ph:books Save to Library", "Keep it in the Library to show it with ![[name]]", () => save(history[at], offer?.link ? { label: "Link this diagram", run: (row) => link(offer.link, row, history[at]) } : offer)),
-      ],
+      get menu() {
+        return [
+          ...(shapes ? [makeMenuItem("ph:shapes Turn into shapes", "Replace it with shapes and connectors you can move one by one", () => (leave(), shapes(history[at])))] : []),
+          //: The door opens on a drawn starter (DD-3b, 1107), so a blank page is one press away, and Undo brings the starter back.
+          makeMenuItem("ph:eraser Clear", "Start again from an empty diagram of this kind. Undo brings this one back", () => (io.set(`${STARTS[diagramModel.builder.kindOf(history[at])] || STARTS.flowchart}\n`), apply())),
+          //: One look row, the one that is not on: the menu never says "Hand-drawn" while it is already drawn so, and it is rebuilt with every pane.
+          lookRow(),
+          makeMenuItem("ph:books Save to Library", "Keep it in the Library to show it with ![[name]]", () => save(history[at], offer?.link ? { label: "Link this diagram", run: (row) => link(offer.link, row, history[at]) } : offer)),
+        ];
+      },
+      get canUndo() { return at > 0; },
     };
+    //: A look that cannot be written (a front matter `config` this menu cannot edit) says so and changes nothing.
+    const setLook = (hand) => {
+      const next = withLook(history[at], hand);
+      if (next === null) return toast("The front matter has a config line the menu cannot edit. Change it in Source.", "info");
+      io.set(next);
+      apply();
+    };
+    function lookRow() {
+      const hand = diagramModel.front(history[at]).front.some((line) => /\blook:\s*handDrawn/.test(line));
+      return hand
+        ? makeMenuItem("ph:rectangle Clean look", "Draw the picture with straight, even lines again", () => setLook(false))
+        : makeMenuItem("ph:pencil-line Hand-drawn look", "Draw the picture as if sketched by hand. Kept in the diagram's own text; Undo takes it back", () => setLook(true));
+    }
     const apply = () => {
       field.value = history[at];
       number();
@@ -229,7 +270,11 @@
     seg.setAttribute("role", "group");
     seg.setAttribute("aria-label", "Diagram view");
     for (const [name, label] of [["canvas", "Canvas"], ["blocks", "Blocks"], ["source", "Source"]]) {
-      const b = smallButton(label, { canvas: "The picture, with the blocks beside it", blocks: "The diagram as blocks", source: "The diagram as text, with its picture" }[name], () => view(name));
+      const b = smallButton(label, { canvas: "The picture, with the blocks beside it", blocks: "The diagram as blocks", source: "The diagram as text, with its picture" }[name], () => {
+        //: A phone shows the picture alone, and its blocks are a sheet (the dock's list button): the Blocks view opens that sheet, not a view that shows nothing new.
+        const sheet = name === "blocks" && phone.matches ? pane?.root?.querySelector(".dgm-listbtn") : null;
+        sheet ? sheet.click() : view(name);
+      });
       b.dataset.view = name;
       seg.append(b);
     }
@@ -284,12 +329,14 @@
       if (returnFocus?.isConnected) returnFocus.focus?.();
     };
     //: True when leaving may go ahead: nothing changed, or the person confirmed they do not want the changes.
-    const mayDiscard = async () => history[at] === first || (await confirmDialog("Close without keeping your changes to this diagram?", { confirmLabel: "Discard changes", cancelLabel: "Keep editing" }));
+    //: A typed title is a change too: Escape, Cancel and the backdrop ask before dropping it.
+    const mayDiscard = async () => (history[at] === first && !titleField?.value.trim()) || (await confirmDialog("Close without keeping your changes to this diagram?", { confirmLabel: "Discard changes", cancelLabel: "Keep editing" }));
     const finish = async (done) => {
       if (closing) return;
       if (!done && !(await mayDiscard())) return;
+      const [next, changed, typed] = [history[at], history[at] !== first, titleField ? titleField.value : ""];
       leave();
-      if (done && onDone) onDone(history[at], history[at] !== first, titleField ? titleField.value.trim() : "");
+      if (done && onDone) onDone(next, changed, titleField ? await documentName(typed) : "");
     };
     const foot = el("div", "row right space-dialog-actions");
     const cancel = smallButton("Cancel", "Close without keeping changes", () => finish(false));
@@ -343,6 +390,11 @@
       titleField.maxLength = 80;
       titleField.placeholder = "Name it, or leave blank to date it";
       titleField.setAttribute("aria-label", "Diagram title");
+      //: The characters a link reads as syntax never enter the name, so what is shown is what the document is called.
+      titleField.addEventListener("input", () => {
+        const clean = titleField.value.replace(/[\[\]|#]+/g, "");
+        if (clean !== titleField.value) titleField.value = clean;
+      });
       titleField.addEventListener("keydown", (event) => event.key === "Escape" && (event.preventDefault(), seg.querySelector(".active")?.focus()));
       titlebar = el("label", "dgm-titlebar");
       titlebar.append(el("span", "muted", "Title"), titleField);
@@ -379,6 +431,8 @@
     const firstBox = host.querySelector(".dgm-block");
     if (firstBox && S && !S.k) diagramModel.builder.select(S, firstBox.dataset.key, true);
     else (host.querySelector(".dgm-steps button, .dgm-block[tabindex='0']") || dialog.querySelector(".dgm-pane") || dialog).focus?.({ preventScroll: true });
+    //: A phone hides the blocks (they are a sheet), so that focus went nowhere and the first Tab left the window's top: the picture takes it (measured at 390: BODY).
+    if (!dialog.contains(document.activeElement)) (host.querySelector(".dgm-picture") || dialog).focus?.({ preventScroll: true });
     return dialog;
   }
 

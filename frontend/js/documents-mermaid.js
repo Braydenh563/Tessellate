@@ -565,7 +565,7 @@
       title: "Diagram builder",
       named: true,
       //: Done makes the `.mmd` row and writes a live reference to it (1621 D5), so the diagram has one home and a page of its own.
-      //: A stamp in the title keeps `![[Title]]` pointing at this row and not at an earlier "Diagram".
+      //: The window hands back a clean, unused title, so `![[Title]]` finds this row.
       onDone: async (next, _changed, name) => {
         const title = name || `Diagram ${new Date().toISOString().slice(0, 16).replace("T", " ")}`;
         const made = await apiJson("/documents", { method: "POST", body: JSON.stringify({ title, content: next, file_type: "mmd" }) }).catch(() => (toast("The diagram was not saved. Try Done again.", "info"), null));

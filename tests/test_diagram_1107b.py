@@ -107,7 +107,8 @@ def test_the_drawing_error_note_offers_undo_of_the_last_edit():
     # role=alert; one press restored the source and the picture, note gone.
     picture = _js("diagram-picture.js")
     failure = picture[picture.index("function failure(") :]
-    assert 'if (S.io?.undo) note.prepend(smallButton("ph:arrow-u-up-left Undo the last edit"' in failure
+    # Review round: now only where there is an earlier step (`canUndo`), so the string moved with the condition; the note still offers it.
+    assert 'note.prepend(smallButton("ph:arrow-u-up-left Undo the last edit"' in failure
     assert failure.index("Undo the last edit") < failure.index("replaceChildren(note)")
 
 
@@ -147,7 +148,8 @@ def test_the_new_diagram_window_has_a_title_that_names_the_document_and_the_expo
     # DD-12. Before: Done made a document titled "Diagram" every time and the PNG was "Diagram builder.png".
     assert 'const titleField = named ? el("input", "dgm-title") : null' in EMBED
     assert "get name() { return titleField?.value.trim() || title; }" in EMBED
-    assert 'onDone(history[at], history[at] !== first, titleField ? titleField.value.trim() : "")' in EMBED
+    # Review round: the name given to Done is cleaned and made unique first (tests/test_diagram_1107c.py); Done still calls `onDone` once.
+    assert 'onDone(next, changed, titleField ? await documentName(typed) : "")' in EMBED
     assert "dialog.append(head, ...(titlebar ? [titlebar] : []), viewbar, body, foot)" in EMBED
     door = _js("documents-mermaid.js")
     assert door.count("named: true") == 2 and "onDone: async (next, _changed, name)" in door
