@@ -983,10 +983,12 @@ class Engine:
         """The pose one draw later: scale and lean by second-order dynamics (from where `cur` is, so a pose set by
         hand is honoured), the drag by the plain lag."""
         out = []
-        for so, value, goal, q in zip(self.pose_dyn, self.cur, target, (bh.Q_SCALE, bh.Q_SCALE, bh.Q_LEAN)):
+        for so, value, goal, q in zip(self.pose_dyn, self.cur, target, (math.inf, bh.Q_SCALE, bh.Q_LEAN)):
             so.y = value
             nxt = so.step(dt, goal)
-            if abs(nxt - value) > q:  # a spring's peak speed is over a cache step a draw: two grid steps in one picture read as a pop
+            # a spring's peak speed is over a cache step a draw: two grid steps of the height or the lean in one picture read as a
+            # pop. The width is left free: it is half the joint, and a turn's squeeze is a designed sweep
+            if abs(nxt - value) > q:
                 nxt = value + math.copysign(q, nxt - value)
                 so.yd = (nxt - value) / dt  # the velocity it really has, so it does not wind up behind the cap
             out.append(nxt)
