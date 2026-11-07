@@ -790,7 +790,7 @@ class OverlayRunner:
         self._goal, self._last_key = None, None
         self._hover_until = now + sizing.SHOW_S
         if self.engine is not None:
-            self.engine.resume(now)
+            self._resume_engine(self.engine, now)
         if st is not None and st["moved"]:
             self._saved()
 
