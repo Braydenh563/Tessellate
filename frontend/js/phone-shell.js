@@ -574,8 +574,9 @@ function initHeaderHeightToken() {
     written = h / em;
     root.style.setProperty("--header-h", `${Math.round(written * 1000) / 1000}rem`);
   };
+  //: No first call of its own (INBOX 1667, `write` 132ms of forced layout at boot): an observer reports a new
+  //: target at once, after the frame's layout, where the read is free; a direct call here was the page's first layout.
   new ResizeObserver(write).observe(bar);
-  write();
 }
 
 initHeaderHeightToken();

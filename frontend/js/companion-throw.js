@@ -392,9 +392,10 @@ function companionThrowPlan(x, y, vx, vy, world) {
   for (let i = 1; i < drop; i += 1) path.splice(-1, 0, { ...a, x: a.x + ((s.x - a.x) * i) / drop, y: a.y + ((s.y - a.y) * i) / drop, t: a.t + 16 * i, rest: false });
   if (drop > 1) path[path.length - 1] = s = { ...s, t: a.t + 16 * drop };
   //: The landing is worked out after the first frame (`land`, below), on the
-  //: path's end: the obstacle measure (7ms clean, 20 to 45ms behind the
-  //: release's own restyle) was the pause between letting go and moving.
-  return { path, still, rand, aim, v: [vx, vy], land:() => nameMarkBuddyMeasureOnce(() => nameMarkBuddyThrowSpot(companionThrowAt(s))) };
+  //: path's end, from the surfaces taken here.
+  //: Its surfaces are read now, with the page clean: the landing itself reads nothing (INBOX 1667).
+  const taken = nameMarkBuddyTakeSurfaces();
+  return { path, still, rand, aim, v: [vx, vy], land: () => nameMarkBuddyMeasureOnce(() => nameMarkBuddyThrowSpot(companionThrowAt(s)), taken) };
 }
 
 //: Where the path has it `ms` into the flight: between its two steps, so
