@@ -18,3 +18,5 @@ Left:
 - `monitors()` keeps its 2-tuple shape; `monitors_full` is the rich API.
 
 Tests changed (intent moved, not weakened): `tests/test_overlay_moves.py` counted a hang that follows a top peek as a second big act, and its clip check had no top strip. A top peek ends as a hang by design, so that hang is the peek's own end; the clip check now also requires a top strip to lie outside the work area.
+
+Review fixes: the Guide's desktop-companion topic lost "Come here follows your pointer" and the resize/corner-handle words to a length trim; they are back (topic 1,897 of 1,900). The shake-off now needs three fast looks (a wheel flick is one or two), skips reads under 4 ms apart, and seeds on its first read; `tests/test_companion_shaken_1107.py` moved from two looks to three for that reason. Review item 3 (`win32._covering`, `_unlisted`) was read-only and stays in the Windows list above; `ABM_GETSTATE` has no per-taskbar handle, so auto-hide is global, which is fine in practice.
