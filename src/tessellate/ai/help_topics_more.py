@@ -2103,8 +2103,10 @@ MORE_TOPICS.extend(
             "body": (
                 "Under an answer in Ask, in a Chat reply and in the popup agent's "
                 "answer is one row of chips (Sources, Cites, how many sentences "
-                "your notes back, Why this answer) with the time and model at "
-                "its end; each chip opens its part below, one at a time. "
+                "your notes back, Why this answer); in Chat and the popup agent "
+                "the time ends it, the model being named in the answer's head, "
+                "where Copy and the reply's other actions sit at the end. "
+                "Each chip opens its part below, one at a time. "
                 "Why this answer opens the lines that "
                 "made it, each with the seconds since you asked: what the "
                 "question was read as, what was searched and how many notes "

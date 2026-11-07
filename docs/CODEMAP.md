@@ -2,7 +2,7 @@
 
 Generated 2026-11-07 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7841, frontend ids 2646, CSS sections 522, backend routes 649, backend modules 8914, test files 2105, tests 17769, plan headings 1003, app scripts 28, boot scripts 37, script files 260.
+Counts: frontend functions 7841, frontend ids 2646, CSS sections 522, backend routes 649, backend modules 8914, test files 2105, tests 17775, plan headings 1003, app scripts 28, boot scripts 37, script files 260.
 
 ## Frontend functions (7841)
 
@@ -580,13 +580,13 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `aiNameNow` | frontend/js/sheets-selects.js:2339 |
+| `aiNameNow` | frontend/js/sheets-selects.js:2337 |
 | `annotateSliders` | frontend/js/sheets-selects.js:1049 |
 | `applySidebarSheetMode` | frontend/js/sheets-selects.js:219 |
 | `applySidebarWidth` | frontend/js/sheets-selects.js:100 |
 | `applyWebPanelWidth` | frontend/js/sheets-selects.js:529 |
-| `builtinPersonas` | frontend/js/sheets-selects.js:2438 |
-| `builtinThinkingWords` | frontend/js/sheets-selects.js:2388 |
+| `builtinPersonas` | frontend/js/sheets-selects.js:2436 |
+| `builtinThinkingWords` | frontend/js/sheets-selects.js:2386 |
 | `clampToolbarMenu` | frontend/js/sheets-selects.js:1528 |
 | `dateFieldFace` | frontend/js/sheets-selects.js:1078 |
 | `eachSidebar` | frontend/js/sheets-selects.js:196 |
@@ -594,8 +594,8 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `enhanceAllSelects` | frontend/js/sheets-selects.js:1060 |
 | `enhanceDateField` | frontend/js/sheets-selects.js:1088 |
 | `enhanceSelect` | frontend/js/sheets-selects.js:736 |
-| `focusBackTo` | frontend/js/sheets-selects.js:2464 |
-| `focusFirstIn` | frontend/js/sheets-selects.js:2476 |
+| `focusBackTo` | frontend/js/sheets-selects.js:2462 |
+| `focusFirstIn` | frontend/js/sheets-selects.js:2474 |
 | `focusSelect` | frontend/js/sheets-selects.js:1151 |
 | `formatTokens` | frontend/js/sheets-selects.js:1756 |
 | `initResizableSidebars` | frontend/js/sheets-selects.js:477 |
@@ -606,7 +606,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `layoutIsTablet` | frontend/js/sheets-selects.js:79 |
 | `lightboxReadingsFor` | frontend/js/sheets-selects.js:1727 |
 | `listFilter` | frontend/js/sheets-selects.js:1284 |
-| `loadChatSuggestions` | frontend/js/sheets-selects.js:2266 |
+| `loadChatSuggestions` | frontend/js/sheets-selects.js:2264 |
 | `loadConversationList` | frontend/js/sheets-selects.js:1832 |
 | `makeMenuItem` | frontend/js/sheets-selects.js:623 |
 | `makeSidebarResizable` | frontend/js/sheets-selects.js:338 |
@@ -615,7 +615,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `openConversation` | frontend/js/sheets-selects.js:2034 |
 | `openKebabSheet` | frontend/js/sheets-selects.js:1199 |
 | `parseServerTime` | frontend/js/sheets-selects.js:1765 |
-| `personaDisplayName` | frontend/js/sheets-selects.js:2345 |
+| `personaDisplayName` | frontend/js/sheets-selects.js:2343 |
 | `relativeTime` | frontend/js/sheets-selects.js:1775 |
 | `replaceOpenToolbarMenus` | frontend/js/sheets-selects.js:1636 |
 | `resetWebPanelWidth` | frontend/js/sheets-selects.js:547 |
@@ -628,9 +628,9 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `sidebarWidth` | frontend/js/sheets-selects.js:25 |
 | `sortConversations` | frontend/js/sheets-selects.js:1812 |
 | `syncSidebarInert` | frontend/js/sheets-selects.js:209 |
-| `thinkingWordsFor` | frontend/js/sheets-selects.js:2404 |
+| `thinkingWordsFor` | frontend/js/sheets-selects.js:2402 |
 | `trackSeparatorValue` | frontend/js/sheets-selects.js:317 |
-| `wantsThinkingWords` | frontend/js/sheets-selects.js:2425 |
+| `wantsThinkingWords` | frontend/js/sheets-selects.js:2423 |
 | `watchForSelects` | frontend/js/sheets-selects.js:1163 |
 | `webPanelIsNarrow` | frontend/js/sheets-selects.js:513 |
 | `webPanelMaxWidth` | frontend/js/sheets-selects.js:523 |
@@ -1627,14 +1627,14 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `agentActStarters` | frontend/js/palette.js:184 |
 | `agentCommitFiles` | frontend/js/palette.js:1006 |
 | `agentCurrentTab` | frontend/js/palette.js:119 |
-| `agentFocusStarter` | frontend/js/palette.js:1593 |
+| `agentFocusStarter` | frontend/js/palette.js:1590 |
 | `agentOpenSubject` | frontend/js/palette.js:260 |
 | `agentPaletteShut` | frontend/js/palette.js:475 |
 | `agentPhoneSheet` | frontend/js/palette.js:443 |
 | `agentRenderChips` | frontend/js/palette.js:945 |
 | `agentScopeForRun` | frontend/js/palette.js:313 |
 | `agentStageFiles` | frontend/js/palette.js:975 |
-| `agentStarterButtons` | frontend/js/palette.js:1589 |
+| `agentStarterButtons` | frontend/js/palette.js:1586 |
 | `agentStarterRecents` | frontend/js/palette.js:147 |
 | `agentTabLabel` | frontend/js/palette.js:134 |
 | `agentUnstage` | frontend/js/palette.js:968 |
@@ -1645,15 +1645,15 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `cmdPaletteBusy` | frontend/js/palette.js:620 |
 | `cmdPaletteFacts` | frontend/js/palette.js:653 |
 | `cmdPaletteGoToNote` | frontend/js/palette.js:691 |
-| `cmdPaletteGrow` | frontend/js/palette.js:1571 |
+| `cmdPaletteGrow` | frontend/js/palette.js:1568 |
 | `cmdPaletteLinkNotes` | frontend/js/palette.js:879 |
 | `cmdPaletteReset` | frontend/js/palette.js:519 |
 | `cmdPaletteSaveAsChat` | frontend/js/palette.js:538 |
-| `cmdPaletteSend` | frontend/js/palette.js:1637 |
+| `cmdPaletteSend` | frontend/js/palette.js:1634 |
 | `cmdPaletteSources` | frontend/js/palette.js:706 |
 | `cmdSourceRow` | frontend/js/palette.js:745 |
 | `composerQueue` | frontend/js/palette.js:395 |
-| `paletteLater` | frontend/js/palette.js:1692 |
+| `paletteLater` | frontend/js/palette.js:1689 |
 | `rememberAgentStarter` | frontend/js/palette.js:164 |
 | `renderAgentStarters` | frontend/js/palette.js:197 |
 | `renderCmdPaletteMenu` | frontend/js/palette.js:593 |
@@ -2799,32 +2799,32 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `addBubble` | frontend/js/chat-turn.js:2394 |
-| `agentTimeline` | frontend/js/chat-turn.js:1217 |
-| `appendRunResumeControls` | frontend/js/chat-turn.js:2288 |
-| `assistantMessageActions` | frontend/js/chat-turn.js:2489 |
-| `chatAttachmentStrip` | frontend/js/chat-turn.js:2163 |
+| `addBubble` | frontend/js/chat-turn.js:2392 |
+| `agentTimeline` | frontend/js/chat-turn.js:1215 |
+| `appendRunResumeControls` | frontend/js/chat-turn.js:2286 |
+| `assistantMessageActions` | frontend/js/chat-turn.js:2491 |
+| `chatAttachmentStrip` | frontend/js/chat-turn.js:2161 |
 | `chatSendTurn` | frontend/js/chat-turn.js:11 |
-| `commitStagedImages` | frontend/js/chat-turn.js:2066 |
-| `continueRunControls` | frontend/js/chat-turn.js:2658 |
-| `deleteChatTurn` | frontend/js/chat-turn.js:2606 |
-| `forkFromBubble` | frontend/js/chat-turn.js:2703 |
-| `manualPauseControls` | frontend/js/chat-turn.js:2732 |
-| `markFollowup` | frontend/js/chat-turn.js:2758 |
-| `mountChatTimer` | frontend/js/chat-turn.js:2115 |
-| `offerFollowups` | frontend/js/chat-turn.js:2001 |
-| `offerReminder` | frontend/js/chat-turn.js:1940 |
-| `paintChatTimer` | frontend/js/chat-turn.js:2102 |
-| `removeChatBubble` | frontend/js/chat-turn.js:2782 |
-| `renderAgentQuestion` | frontend/js/chat-turn.js:1728 |
-| `renderMemoryProposal` | frontend/js/chat-turn.js:1812 |
-| `renderRecordsDetails` | frontend/js/chat-turn.js:2566 |
-| `revalidateSelection` | frontend/js/chat-turn.js:1884 |
-| `saveFollowups` | frontend/js/chat-turn.js:2087 |
-| `selectionContextBlock` | frontend/js/chat-turn.js:2039 |
-| `settlePendingAgentQuestion` | frontend/js/chat-turn.js:2147 |
-| `startChatTimer` | frontend/js/chat-turn.js:2128 |
-| `stopChatTimer` | frontend/js/chat-turn.js:2137 |
+| `commitStagedImages` | frontend/js/chat-turn.js:2064 |
+| `continueRunControls` | frontend/js/chat-turn.js:2661 |
+| `deleteChatTurn` | frontend/js/chat-turn.js:2609 |
+| `forkFromBubble` | frontend/js/chat-turn.js:2706 |
+| `manualPauseControls` | frontend/js/chat-turn.js:2735 |
+| `markFollowup` | frontend/js/chat-turn.js:2761 |
+| `mountChatTimer` | frontend/js/chat-turn.js:2113 |
+| `offerFollowups` | frontend/js/chat-turn.js:1999 |
+| `offerReminder` | frontend/js/chat-turn.js:1938 |
+| `paintChatTimer` | frontend/js/chat-turn.js:2100 |
+| `removeChatBubble` | frontend/js/chat-turn.js:2785 |
+| `renderAgentQuestion` | frontend/js/chat-turn.js:1726 |
+| `renderMemoryProposal` | frontend/js/chat-turn.js:1810 |
+| `renderRecordsDetails` | frontend/js/chat-turn.js:2569 |
+| `revalidateSelection` | frontend/js/chat-turn.js:1882 |
+| `saveFollowups` | frontend/js/chat-turn.js:2085 |
+| `selectionContextBlock` | frontend/js/chat-turn.js:2037 |
+| `settlePendingAgentQuestion` | frontend/js/chat-turn.js:2145 |
+| `startChatTimer` | frontend/js/chat-turn.js:2126 |
+| `stopChatTimer` | frontend/js/chat-turn.js:2135 |
 
 ### frontend/js/chat-undo.js (10)
 
@@ -12336,7 +12336,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/08-consistency.css | 10879 |
 | frontend/css/09-editor.css | 1108 |
 | frontend/css/10-responsive.css | 2709 |
-| frontend/css/answer-foot-lazy.css | 68 |
+| frontend/css/answer-foot-lazy.css | 113 |
 | frontend/css/appearance-panel-lazy.css | 323 |
 | frontend/css/appearance-panel-own-lazy.css | 86 |
 | frontend/css/ask-compose-lazy.css | 301 |
@@ -15873,8 +15873,8 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `_act_topic` | src/tessellate/ai/help_topics_more.py:3424 |
-| `_slash_commands_topic` | src/tessellate/ai/help_topics_more.py:3556 |
+| `_act_topic` | src/tessellate/ai/help_topics_more.py:3426 |
+| `_slash_commands_topic` | src/tessellate/ai/help_topics_more.py:3558 |
 
 ### src/tessellate/ai/help_words.py (2)
 
@@ -15902,7 +15902,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 |---|---|
 | `Insight` | src/tessellate/ai/insights.py:71 |
 | `Memory` | src/tessellate/ai/insights.py:377 |
-| `_confirmed_on` | src/tessellate/ai/insights.py:610 |
+| `_confirmed_on` | src/tessellate/ai/insights.py:612 |
 | `_confirmed_rows` | src/tessellate/ai/insights.py:416 |
 | `_count_word` | src/tessellate/ai/insights.py:87 |
 | `_day` | src/tessellate/ai/insights.py:81 |
@@ -15911,38 +15911,38 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_holds` | src/tessellate/ai/insights.py:100 |
 | `_keys` | src/tessellate/ai/insights.py:411 |
 | `_leisure` | src/tessellate/ai/insights.py:115 |
-| `_notes_behind` | src/tessellate/ai/insights.py:618 |
+| `_notes_behind` | src/tessellate/ai/insights.py:620 |
 | `_own_plan` | src/tessellate/ai/insights.py:167 |
-| `_payload` | src/tessellate/ai/insights.py:559 |
-| `_retire` | src/tessellate/ai/insights.py:484 |
+| `_payload` | src/tessellate/ai/insights.py:561 |
+| `_retire` | src/tessellate/ai/insights.py:486 |
 | `_said` | src/tessellate/ai/insights.py:341 |
 | `_said_now` | src/tessellate/ai/insights.py:369 |
 | `_stems` | src/tessellate/ai/insights.py:325 |
 | `_week` | src/tessellate/ai/insights.py:106 |
 | `_written` | src/tessellate/ai/insights.py:92 |
 | `after_lead` | src/tessellate/ai/insights.py:281 |
-| `as_row` | src/tessellate/ai/insights.py:535 |
+| `as_row` | src/tessellate/ai/insights.py:537 |
 | `confirm` | src/tessellate/ai/insights.py:442 |
-| `confirmed_json` | src/tessellate/ai/insights.py:594 |
+| `confirmed_json` | src/tessellate/ai/insights.py:596 |
 | `confirmed_line` | src/tessellate/ai/insights.py:358 |
 | `contrast` | src/tessellate/ai/insights.py:202 |
-| `dismiss` | src/tessellate/ai/insights.py:472 |
-| `dismiss_confirmed` | src/tessellate/ai/insights.py:662 |
-| `done` | src/tessellate/ai/insights.py:504 |
+| `dismiss` | src/tessellate/ai/insights.py:474 |
+| `dismiss_confirmed` | src/tessellate/ai/insights.py:664 |
+| `done` | src/tessellate/ai/insights.py:506 |
 | `drift` | src/tessellate/ai/insights.py:175 |
-| `edit_confirmed` | src/tessellate/ai/insights.py:633 |
+| `edit_confirmed` | src/tessellate/ai/insights.py:635 |
 | `for_subject` | src/tessellate/ai/insights.py:253 |
 | `from_session` | src/tessellate/ai/insights.py:298 |
 | `key` | src/tessellate/ai/insights.py:330 |
 | `load` | src/tessellate/ai/insights.py:227 |
 | `memory` | src/tessellate/ai/insights.py:392 |
-| `notebook` | src/tessellate/ai/insights.py:676 |
+| `notebook` | src/tessellate/ai/insights.py:678 |
 | `recurrence` | src/tessellate/ai/insights.py:122 |
-| `removed_confirmed` | src/tessellate/ai/insights.py:573 |
-| `restore_confirmed` | src/tessellate/ai/insights.py:579 |
-| `retire_followed` | src/tessellate/ai/insights.py:519 |
+| `removed_confirmed` | src/tessellate/ai/insights.py:575 |
+| `restore_confirmed` | src/tessellate/ai/insights.py:581 |
+| `retire_followed` | src/tessellate/ai/insights.py:521 |
 | `short` | src/tessellate/ai/insights.py:268 |
-| `shown_confirmed` | src/tessellate/ai/insights.py:568 |
+| `shown_confirmed` | src/tessellate/ai/insights.py:570 |
 | `streak` | src/tessellate/ai/insights.py:140 |
 
 ### src/tessellate/ai/intent.py (14)
@@ -24279,7 +24279,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (17769)
+## Tests (17775)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -24324,7 +24324,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_alembic_full_chain.py | 3 |
 | tests/test_all_spaces_indexes.py | 2 |
 | tests/test_announce_saved_note_z7.py | 4 |
-| tests/test_answer_foot_b2.py | 8 |
+| tests/test_answer_foot_b2.py | 12 |
 | tests/test_answer_never_folded.py | 12 |
 | tests/test_answer_pictures_502.py | 11 |
 | tests/test_answer_support.py | 10 |
@@ -25289,7 +25289,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_input_normalise_1029.py | 11 |
 | tests/test_insert_catalogue_1102.py | 6 |
 | tests/test_insight_b11.py | 8 |
-| tests/test_insight_verdicts.py | 12 |
+| tests/test_insight_verdicts.py | 14 |
 | tests/test_insights.py | 15 |
 | tests/test_insights_api.py | 30 |
 | tests/test_install_doc_setup_file.py | 1 |

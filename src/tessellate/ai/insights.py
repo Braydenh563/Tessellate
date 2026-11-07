@@ -450,16 +450,18 @@ def confirm(session, body: dict, today: date) -> dict:  # noqa: ANN001
     insight = _from_payload(body)
     if not insight.note_ids or not insight.rule:
         raise ValueError("That insight names no notes, so there is nothing to confirm.")
-    line = confirmed_line(_said(insight), today)
     the_key = key(insight)
-    #: Already confirmed (a second Confirm from a stale page, or Tidy after a
-    #: binned note): the one row stands, so Settings never lists it twice.
-    held = memory(session).confirmed.get(the_key)
-    if held:
-        return {"id": held["id"], "key": the_key, "line": held["line"]}
+    #: A second Confirm on a pattern already confirmed is that fact, not a
+    #: copy of it (two identical rows in What it learned, the review of B9).
+    known = memory(session).confirmed.get(the_key)
+    if known:
+        return {"id": known["id"], "key": the_key, "line": known["line"]}
+    line = confirmed_line(_said(insight), today)
+    #: Not an edit: the sentence is the person's own from the start, so Reset
+    #: (offered only once they edit it in Settings) puts this sentence back,
+    #: never the measurement, which the payload keeps.
     row = DerivedFact(
         entry_id=max(insight.note_ids), kind=CONFIRMED_KIND, text=line, model="you", confidence=1.0,
-        edited_by_user=True, original_text=insight.text,
         payload=json.dumps({"key": the_key, "rule": insight.rule, "measured": insight.text, "note_ids": insight.note_ids,
                             "source": f"confirmed by you, {today.isoformat()}"}),
     )

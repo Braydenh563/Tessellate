@@ -1213,11 +1213,9 @@ async function cmdPaletteAsk(text, { plan = null } = {}) {
   paintPersonaAvatar(agentAvatar, askedWriter, 20); // now attached, so p5 can measure and draw
   //: The answer's own row, added now and reading `answerRaw` at click time: 
   //: the text does not exist yet, and binding a copy of an empty string is
-  //: how "Copy" ends up copying nothing on a fast answer. It stays the
-  //: bubble's last child: the sources and the facts line go in above it
-  //: (INBOX 458: it hung over the "Found in N notes" heading when those
-  //: were drawn after the bubble).
-  const actionRow = agentMsg.appendChild(
+  //: how "Copy" ends up copying nothing on a fast answer. In the head row's
+  //: flow (B2): anywhere else it lay over text (INBOX 458, B2's review).
+  agentLabel.appendChild(
     chatMessageActions([
       {
         label: "ph:copy",
@@ -1490,10 +1488,9 @@ async function cmdPaletteAsk(text, { plan = null } = {}) {
     //: prose is free to summarise or to leave a note out, but what retrieval
     //: found should not depend on whether it got a mention. One list for
     //: what was searched and what was opened (`cmdPaletteSources`), inside
-    //: the bubble and above its action row, so the row hangs under the
-    //: bubble rather than over the list.
+    //: the bubble.
     const sources = cmdPaletteSources({ meta, touched: [...touched.values()], sentences: cites });
-    if (sources) agentMsg.insertBefore(sources, actionRow);
+    if (sources) agentMsg.appendChild(sources);
     //: The reasoning stays where it was written, folded now, with the
     //: trailing blank lines trimmed.
     for (const fold of thinkingBoxes) {
@@ -1513,9 +1510,9 @@ async function cmdPaletteAsk(text, { plan = null } = {}) {
       //: claims about who answered on one turn.
       persona: askedPersona,
     });
-    if (metaRow) agentMsg.insertBefore(metaRow, actionRow);
-    //: Why this answer (B30), the Ask box's own fold, last above the actions.
-    if (trail) ensureModule("askCompose").then(() => drawWhyTrail(agentMsg, trail, actionRow)).catch(() => {});
+    if (metaRow) agentMsg.appendChild(metaRow);
+    //: Why this answer (B30), the Ask box's own fold, last.
+    if (trail) ensureModule("askCompose").then(() => drawWhyTrail(agentMsg, trail)).catch(() => {});
     keepAtBottom(cmdPaletteResults);
   } catch (err) {
     if (err?.name === "AbortError") {
