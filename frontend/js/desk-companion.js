@@ -120,7 +120,7 @@
     if (overlay) height = panelHeight($(PANELS[state]), height, state);
     if (Math.abs(height - asked) <= 2) return;
     asked = height;
-    ask("set_size", SIZES[state][0], height, state);
+    ask("set_figure_size", SIZES[state][0], height, state);
   }
   window.addEventListener("resize", () => {
     if (overlay) fit();
@@ -241,9 +241,13 @@
       }
       //: Roam over windows: a switch, not a one-way action.
       if (overlay && motion && typeof motion.roam === "boolean") motionRows.push(toggle("Roam over windows", motion.roam, () => leave(() => ask("set_roam", !motion.roam))));
+      //: The in-app Companion size steps (`NMB_SIZES`); a size pulled with the corner handle marks none.
+      const sizeRows = overlay && !locked && typeof motion?.size === "number"
+        ? [["Small", "small", 0.8], ["Medium", "medium", 1], ["Large", "large", 1.3]].map(([label, name, size]) => toggle(label, Math.abs(motion.size - size) < 0.005, () => leave(() => ask("set_figure_size", name))))
+        : [];
       const away = [hideRow()];
       away.push(item("Turn off", "power", () => (overlay ? leave(() => ask("hide_companion")) : ask("hide_companion"))));
-      rows = [...notes, ...groups(look, motionRows, away)];
+      rows = [...notes, ...groups(look, motionRows, sizeRows, away)];
     } else {
       const capture = locked
         ? [note("Tessellate is locked. Open it to unlock.")]

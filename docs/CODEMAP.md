@@ -2,7 +2,7 @@
 
 Generated 2026-11-07 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7841, frontend ids 2644, CSS sections 522, backend routes 649, backend modules 8926, test files 2114, tests 17847, plan headings 1003, app scripts 28, boot scripts 37, script files 260.
+Counts: frontend functions 7841, frontend ids 2644, CSS sections 522, backend routes 649, backend modules 8927, test files 2115, tests 17862, plan headings 1003, app scripts 28, boot scripts 37, script files 260.
 
 ## Frontend functions (7841)
 
@@ -3067,33 +3067,33 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | Name | File:line |
 |---|---|
 | `$` | frontend/js/desk-companion.js:20 |
-| `announceSaved` | frontend/js/desk-companion.js:349 |
+| `announceSaved` | frontend/js/desk-companion.js:353 |
 | `ask` | frontend/js/desk-companion.js:56 |
 | `call` | frontend/js/desk-companion.js:48 |
 | `companionRows` | frontend/js/desk-companion.js:206 |
-| `createNote` | frontend/js/desk-companion.js:339 |
-| `deskClip` | frontend/js/desk-companion.js:368 |
+| `createNote` | frontend/js/desk-companion.js:343 |
+| `deskClip` | frontend/js/desk-companion.js:372 |
 | `draw` | frontend/js/desk-companion.js:74 |
 | `figure` | frontend/js/desk-companion.js:187 |
 | `fit` | frontend/js/desk-companion.js:117 |
 | `groups` | frontend/js/desk-companion.js:203 |
 | `hideRow` | frontend/js/desk-companion.js:223 |
-| `hitRow` | frontend/js/desk-companion.js:381 |
+| `hitRow` | frontend/js/desk-companion.js:385 |
 | `host` | frontend/js/desk-companion.js:55 |
 | `item` | frontend/js/desk-companion.js:160 |
-| `leave` | frontend/js/desk-companion.js:298 |
+| `leave` | frontend/js/desk-companion.js:302 |
 | `note` | frontend/js/desk-companion.js:180 |
-| `noteStatus` | frontend/js/desk-companion.js:325 |
-| `openCompanion` | frontend/js/desk-companion.js:271 |
+| `noteStatus` | frontend/js/desk-companion.js:329 |
+| `openCompanion` | frontend/js/desk-companion.js:275 |
 | `openMenu` | frontend/js/desk-companion.js:225 |
-| `openNoteCard` | frontend/js/desk-companion.js:330 |
-| `openPanel` | frontend/js/desk-companion.js:307 |
+| `openNoteCard` | frontend/js/desk-companion.js:334 |
+| `openPanel` | frontend/js/desk-companion.js:311 |
 | `panelHeight` | frontend/js/desk-companion.js:135 |
-| `plain` | frontend/js/desk-companion.js:374 |
+| `plain` | frontend/js/desk-companion.js:378 |
 | `probe` | frontend/js/desk-companion.js:84 |
-| `rest` | frontend/js/desk-companion.js:314 |
-| `runSearch` | frontend/js/desk-companion.js:420 |
-| `searchEmpty` | frontend/js/desk-companion.js:408 |
+| `rest` | frontend/js/desk-companion.js:318 |
+| `runSearch` | frontend/js/desk-companion.js:424 |
+| `searchEmpty` | frontend/js/desk-companion.js:412 |
 | `seed` | frontend/js/desk-companion.js:66 |
 | `separator` | frontend/js/desk-companion.js:174 |
 | `show` | frontend/js/desk-companion.js:101 |
@@ -13054,7 +13054,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:164 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (8926)
+## Backend modules (8927)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -21326,49 +21326,49 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `DeskApi` | src/tessellate/core/desk_companion.py:810 |
-| `DeskCompanion` | src/tessellate/core/desk_companion.py:877 |
-| `_SnoozeTimer` | src/tessellate/core/desk_companion.py:783 |
-| `_await_loaded` | src/tessellate/core/desk_companion.py:1835 |
-| `_config` | src/tessellate/core/desk_companion.py:200 |
-| `_default_overlay_factory` | src/tessellate/core/desk_companion.py:1727 |
-| `_follow` | src/tessellate/core/desk_companion.py:1777 |
-| `_linux_areas` | src/tessellate/core/desk_companion.py:319 |
-| `_log_placed` | src/tessellate/core/desk_companion.py:717 |
-| `_look_answer` | src/tessellate/core/desk_companion.py:231 |
-| `_look_in_force` | src/tessellate/core/desk_companion.py:261 |
-| `_motion_of` | src/tessellate/core/desk_companion.py:245 |
-| `_pref` | src/tessellate/core/desk_companion.py:213 |
-| `_read_back` | src/tessellate/core/desk_companion.py:706 |
-| `_screen_area` | src/tessellate/core/desk_companion.py:423 |
-| `_set_pref` | src/tessellate/core/desk_companion.py:225 |
-| `_system_dpi` | src/tessellate/core/desk_companion.py:309 |
-| `attach` | src/tessellate/core/desk_companion.py:1742 |
-| `carry_due` | src/tessellate/core/desk_companion.py:1814 |
-| `clamp_corner` | src/tessellate/core/desk_companion.py:439 |
-| `clean_size` | src/tessellate/core/desk_companion.py:735 |
-| `companion_ex_style` | src/tessellate/core/desk_companion.py:513 |
-| `companion_options` | src/tessellate/core/desk_companion.py:174 |
-| `enabled` | src/tessellate/core/desk_companion.py:221 |
-| `figure_key` | src/tessellate/core/desk_companion.py:252 |
-| `hit_script` | src/tessellate/core/desk_companion.py:747 |
-| `monitor_areas` | src/tessellate/core/desk_companion.py:363 |
-| `monitor_for` | src/tessellate/core/desk_companion.py:461 |
-| `mouse_down` | src/tessellate/core/desk_companion.py:575 |
-| `overlay_support` | src/tessellate/core/desk_companion.py:1710 |
-| `panel_corner` | src/tessellate/core/desk_companion.py:448 |
-| `panel_placement` | src/tessellate/core/desk_companion.py:473 |
-| `physical_rect` | src/tessellate/core/desk_companion.py:551 |
-| `pick_area` | src/tessellate/core/desk_companion.py:411 |
-| `place_on_screen` | src/tessellate/core/desk_companion.py:655 |
-| `place_physical` | src/tessellate/core/desk_companion.py:681 |
-| `press_outside` | src/tessellate/core/desk_companion.py:579 |
-| `raise_on_desktop` | src/tessellate/core/desk_companion.py:595 |
-| `shutdown` | src/tessellate/core/desk_companion.py:1851 |
-| `to_logical` | src/tessellate/core/desk_companion.py:290 |
-| `tray_menu_item` | src/tessellate/core/desk_companion.py:1859 |
-| `window_handle` | src/tessellate/core/desk_companion.py:535 |
-| `work_area` | src/tessellate/core/desk_companion.py:341 |
+| `DeskApi` | src/tessellate/core/desk_companion.py:812 |
+| `DeskCompanion` | src/tessellate/core/desk_companion.py:882 |
+| `_SnoozeTimer` | src/tessellate/core/desk_companion.py:785 |
+| `_await_loaded` | src/tessellate/core/desk_companion.py:1865 |
+| `_config` | src/tessellate/core/desk_companion.py:202 |
+| `_default_overlay_factory` | src/tessellate/core/desk_companion.py:1757 |
+| `_follow` | src/tessellate/core/desk_companion.py:1807 |
+| `_linux_areas` | src/tessellate/core/desk_companion.py:321 |
+| `_log_placed` | src/tessellate/core/desk_companion.py:719 |
+| `_look_answer` | src/tessellate/core/desk_companion.py:233 |
+| `_look_in_force` | src/tessellate/core/desk_companion.py:263 |
+| `_motion_of` | src/tessellate/core/desk_companion.py:247 |
+| `_pref` | src/tessellate/core/desk_companion.py:215 |
+| `_read_back` | src/tessellate/core/desk_companion.py:708 |
+| `_screen_area` | src/tessellate/core/desk_companion.py:425 |
+| `_set_pref` | src/tessellate/core/desk_companion.py:227 |
+| `_system_dpi` | src/tessellate/core/desk_companion.py:311 |
+| `attach` | src/tessellate/core/desk_companion.py:1772 |
+| `carry_due` | src/tessellate/core/desk_companion.py:1844 |
+| `clamp_corner` | src/tessellate/core/desk_companion.py:441 |
+| `clean_size` | src/tessellate/core/desk_companion.py:737 |
+| `companion_ex_style` | src/tessellate/core/desk_companion.py:515 |
+| `companion_options` | src/tessellate/core/desk_companion.py:176 |
+| `enabled` | src/tessellate/core/desk_companion.py:223 |
+| `figure_key` | src/tessellate/core/desk_companion.py:254 |
+| `hit_script` | src/tessellate/core/desk_companion.py:749 |
+| `monitor_areas` | src/tessellate/core/desk_companion.py:365 |
+| `monitor_for` | src/tessellate/core/desk_companion.py:463 |
+| `mouse_down` | src/tessellate/core/desk_companion.py:577 |
+| `overlay_support` | src/tessellate/core/desk_companion.py:1740 |
+| `panel_corner` | src/tessellate/core/desk_companion.py:450 |
+| `panel_placement` | src/tessellate/core/desk_companion.py:475 |
+| `physical_rect` | src/tessellate/core/desk_companion.py:553 |
+| `pick_area` | src/tessellate/core/desk_companion.py:413 |
+| `place_on_screen` | src/tessellate/core/desk_companion.py:657 |
+| `place_physical` | src/tessellate/core/desk_companion.py:683 |
+| `press_outside` | src/tessellate/core/desk_companion.py:581 |
+| `raise_on_desktop` | src/tessellate/core/desk_companion.py:597 |
+| `shutdown` | src/tessellate/core/desk_companion.py:1881 |
+| `to_logical` | src/tessellate/core/desk_companion.py:292 |
+| `tray_menu_item` | src/tessellate/core/desk_companion.py:1889 |
+| `window_handle` | src/tessellate/core/desk_companion.py:537 |
+| `work_area` | src/tessellate/core/desk_companion.py:343 |
 
 ### src/tessellate/core/desktop_dialog.py (2)
 
@@ -22495,15 +22495,16 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `battery_sysfs` | src/tessellate/core/overlay/screenwatch.py:39 |
 | `downloads_count` | src/tessellate/core/overlay/screenwatch.py:29 |
 
-### src/tessellate/core/overlay/sizing.py (5)
+### src/tessellate/core/overlay/sizing.py (6)
 
 | Name | File:line |
 |---|---|
-| `clamp` | src/tessellate/core/overlay/sizing.py:33 |
-| `hit_box` | src/tessellate/core/overlay/sizing.py:56 |
-| `hit_side` | src/tessellate/core/overlay/sizing.py:52 |
-| `pulled` | src/tessellate/core/overlay/sizing.py:44 |
-| `with_handle` | src/tessellate/core/overlay/sizing.py:65 |
+| `clamp` | src/tessellate/core/overlay/sizing.py:37 |
+| `hit_box` | src/tessellate/core/overlay/sizing.py:77 |
+| `hit_side` | src/tessellate/core/overlay/sizing.py:56 |
+| `pulled` | src/tessellate/core/overlay/sizing.py:48 |
+| `solid_box` | src/tessellate/core/overlay/sizing.py:65 |
+| `with_handle` | src/tessellate/core/overlay/sizing.py:88 |
 
 ### src/tessellate/core/overlay/sprites.py (14)
 
@@ -24299,7 +24300,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (17847)
+## Tests (17862)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -24838,12 +24839,12 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_desk_companion.py | 63 |
 | tests/test_desk_counts_63.py | 5 |
 | tests/test_desk_look_locked_1670.py | 5 |
-| tests/test_desk_menu_1670.py | 23 |
+| tests/test_desk_menu_1670.py | 24 |
 | tests/test_desk_menu_first_open_1683.py | 4 |
 | tests/test_desk_note_card_1688.py | 5 |
 | tests/test_desk_overlay_companion.py | 10 |
 | tests/test_desk_overlay_roam.py | 15 |
-| tests/test_desk_overlay_wiring.py | 47 |
+| tests/test_desk_overlay_wiring.py | 51 |
 | tests/test_desk_own_companion_1684.py | 16 |
 | tests/test_desk_wave_visible.py | 2 |
 | tests/test_desktop_fullscreen.py | 5 |
@@ -25714,6 +25715,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_overlay_screen_1678.py | 5 |
 | tests/test_overlay_seams_1683e.py | 4 |
 | tests/test_overlay_size_1107.py | 8 |
+| tests/test_overlay_size_review_1107.py | 10 |
 | tests/test_overlay_smooth_1670.py | 11 |
 | tests/test_overlay_spin_1683.py | 12 |
 | tests/test_overlay_sprites.py | 17 |

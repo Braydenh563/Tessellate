@@ -66,6 +66,8 @@ ROAM_PREF = "desktop_companion_roam"
 STAY_PREF = "desktop_companion_stay"
 #: "Hide for 10 minutes" (menu): minutes, and the menu requests the figure takes.
 SNOOZE_MINUTES = 10
+#: The menu's Small, Medium and Large: the in-app steps (`NMB_SIZES` in avatars.js; a test holds them equal).
+SIZE_PRESETS = {"small": 0.8, "medium": 1.0, "large": 1.3}
 FIGURE_COMMANDS = ("wave", "come", "wander", "nap", "wake", "perch")
 #: The look and motion a readable (unlocked) app window last gave. A locked
 #: window has not read its prefs and answers the default look, so these stand
@@ -864,6 +866,9 @@ class DeskApi:
     def set_stay(self, on: Any) -> bool:
         return self._owner.set_stay(on is True)
 
+    def set_figure_size(self, name: Any) -> bool:
+        return self._owner.set_figure_size(name if isinstance(name, str) else "")
+
     def snooze(self) -> bool:
         return self._owner.snooze()
 
@@ -925,6 +930,9 @@ class DeskCompanion:
         self.size_pref = sizing.MEDIUM
         #: The page may still say the old size for a moment after the handle wrote a new one: not believed until then.
         self._size_held = 0.0
+        #: A size the figure was given that the app window has not taken yet (a write that failed): kept here, written
+        #: again on the next sync, and the page's older value does not replace it meanwhile.
+        self._size_unsent: float | None = None
         #: How the companion may move, as the app window last said: None until it
         #: answers (then the runner falls back to the Windows animation flag).
         self.motion: tuple[bool, str] | None = None
@@ -1109,7 +1117,7 @@ class DeskCompanion:
         to the last motion answer (the Windows flag before any)."""
         data = _look_answer(self._ask_main(LOOK_SCRIPT, "its look and motion"))
         look, motion = self.look, self.motion
-        if data is not None and isinstance(data.get("size"), (int, float)) and not isinstance(data.get("size"), bool) and self._now() >= self._size_held:
+        if data is not None and isinstance(data.get("size"), (int, float)) and not isinstance(data.get("size"), bool) and self._size_unsent is None and self._now() >= self._size_held:
             self.size_pref = sizing.clamp(data["size"])
         if data is None:
             logger.info("desk companion: the app window gave no look, keeping %s", self.look)
@@ -1151,9 +1159,30 @@ class DeskCompanion:
         """The figure's handle set a size (on a worker): the app window keeps it as its own handle would, so Appearance
         shows it and the in-app figure follows; remembered per device with the rest of its prefs."""
         value = sizing.clamp(scale)
-        self.size_pref = value
+        self.size_pref = self._size_unsent = value
+        self._flush_size()
+
+    def _flush_size(self) -> None:
+        """Write the size the app window has not taken yet. Only a `true` from its script clears it; a hidden or locked
+        window gives none, and the write is tried again at the next sync (the figure keeps the size meanwhile)."""
+        value = self._size_unsent
+        if value is None:
+            return
         self._size_held = self._now() + 2 * LOOK_WAIT
-        self._ask_main(SIZE_SCRIPT % repr(value), "the size the figure was given")
+        if self._ask_main(SIZE_SCRIPT % repr(value), "the size the figure was given") is True and self._size_unsent == value:
+            self._size_unsent = None
+
+    def set_figure_size(self, name: str) -> bool:
+        """The menu's Small, Medium or Large: the in-app steps, to the running figure and to the app window."""
+        value = SIZE_PRESETS.get(name)
+        if value is None:
+            return False
+        self.size_pref = self._size_unsent = value
+        runner = self.runner
+        if runner is not None and hasattr(runner, "set_scale"):
+            runner.set_scale(value)
+        self._dispatch("desk-size", self._flush_size)
+        return True
 
     def _overlay_home(self) -> tuple[int, int] | None:
         saved = _pref(OVERLAY_POS_PREF, None)
@@ -1164,6 +1193,7 @@ class DeskCompanion:
     def _start_overlay(self) -> bool:
         """The runner for the look and motion in force, made when first due and
         again if either changed; False (a warning logged) when it cannot start."""
+        self._flush_size()
         look, motion = self._read_look()
         if self.runner is not None and self.look == look and self.motion == motion:
             if hasattr(self.runner, "set_scale") and getattr(self.runner, "scale", self.size_pref) != self.size_pref:
@@ -1224,7 +1254,7 @@ class DeskCompanion:
         engine = getattr(runner, "engine", None)
         out: dict[str, Any] = {
             "still": still, "reason": str(reason or ""), "roam": bool(_pref(ROAM_PREF, True)), "stay": bool(_pref(STAY_PREF, False)),
-            "asleep": getattr(engine, "state", "") == "sleep", "figure": runner is not None and hasattr(runner, "command"),
+            "size": self.size_pref, "asleep": getattr(engine, "state", "") == "sleep", "figure": runner is not None and hasattr(runner, "command"),
         }
         if note:
             out["note"] = note

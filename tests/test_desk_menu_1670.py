@@ -249,3 +249,9 @@ def test_a_failed_search_refits_the_window_for_its_status_line() -> None:
     body = js[js.index("async function runSearch()") :]
     catch = body[body.index("} catch (error) {") : body.index("// --- the companion itself")]
     assert "if (overlay) fit();" in catch
+
+
+def test_the_context_menu_offers_small_medium_and_large_as_the_apps_steps() -> None:
+    for label, name in (("Small", "small"), ("Medium", "medium"), ("Large", "large")):
+        assert f'"{label}"' in JS and name in JS, label
+    assert 'ask("set_figure_size"' in JS and "motion.size" in JS
