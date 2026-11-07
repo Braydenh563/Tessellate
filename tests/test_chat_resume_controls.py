@@ -59,7 +59,8 @@ def test_the_popup_agent_writes_its_thinking_as_it_arrives() -> None:
     #: under the bubble's head, inside the step column, never `prepend`ed onto
     #: the bubble above the name and avatar.
     assert "thinkingBox = thinkingFold();" in APP
-    assert "stepsHolder.prepend(thinkingBox);" in APP
+    #: Placed in the step column where it arrived (B5), still never above the head.
+    assert "placeStep(thinkingBox);" in APP
     assert "agentMsg.prepend(" not in APP
     #: Closed when the answer lands, so a finished turn still reads answer
     #: first, and never drawn twice.

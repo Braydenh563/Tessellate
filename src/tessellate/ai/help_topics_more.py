@@ -493,9 +493,10 @@ MORE_TOPICS: list[dict] = [
             "Atlas adds of its own sets whether an answer about a topic ends "
             "with a pattern from your notes: Nothing, One line (the default) "
             "or Everything it finds; each Not right raises the bar. A long "
-            "block in any reply (the text read from a picture, say) is folded "
-            "to one line, its first sentence and its length; press it to read "
-            "the whole."
+            "block in an answer from no model (the text read from a picture, "
+            "say) is folded to one line, its first sentence and its length; "
+            "press it to read the whole. A model's own answer is never folded; "
+            "only its thinking is, under Thinking."
         ),
         "badge": {"label": "Answer style", "section": "personas", "target": "pref-style"},
     },
