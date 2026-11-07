@@ -72,6 +72,10 @@ DOUBLE_GAP = 0.16
 LOOK_SHARE = 0.12
 BLINK_FOR = 0.18
 LOOK_FOR = 1.2
+#: Each idle cycle runs up to this share faster than 4 s, and `IDLE_SLOWEST` slower (research A7). The slow side is
+#: short because a picture held past the 170 ms stream tick would be redrawn unchanged before it moved on.
+IDLE_SPREAD = 0.08
+IDLE_SLOWEST = 0.02
 STAND_FOR = (3.0, 8.0)
 #: A settled spell (INBOX 1670, 13:15Z: "it can't sit still"): standing, it stays put this long before it
 #: so much as picks something to do (median about six minutes); a blink or a tail beat does not break it.
@@ -143,6 +147,12 @@ TURN_FOR = 0.24
 STROLL = 150.0
 TRIP_EVERY = (520.0, 1100.0)
 TRIP_FIRST = (300.0, 700.0)
+#: Each TRIP_OVERDUE_S a trip is overdue adds one to its weight, to TRIP_OVERDUE_MAX more.
+TRIP_OVERDUE_S = 300.0
+TRIP_OVERDUE_MAX = 4.0
+#: The long walk: a low chance among the trips, and never within an hour of the last (owner 1683 l).
+LONG_WALK_WEIGHT = 3.0
+LONG_WALK_GAP = 3600.0
 AWAY = 40.0
 #: Following the pointer at a polite distance, for a while.
 FOLLOW_GAP = 240.0
@@ -450,6 +460,8 @@ class Engine:
         #: Blinks and glances draw from their own stream (seeded from the engine's, not drawn from it), so the
         #: far more frequent ambient moments leave every other choice the same for a seed.
         self.life_rng = random.Random(self.rng.getstate()[1][0])
+        self.idle_rng = random.Random(self.rng.getstate()[1][0] + 2)
+        self._edges: list[float] = [0.0]  # cycle ends, in seconds from `idle_start`; reset when a stand begins
         self.var_rng = random.Random(self.rng.getstate()[1][0] + 1)
         self.act_var = bh.Variation()
         self.gait = "float" if gait == "float" else "walk"
@@ -476,6 +488,8 @@ class Engine:
         self.last_active = now
         self.next_ambient = now + self._ambient_gap()
         self.flash: tuple[str, float] | None = None  # (frame, until): a blink or a look
+        self.blink_at = -1e9  # when the last blink began
+        self.look_after_blink = False  # the blink now showing opens a look (a gaze shift is blinked into)
         self.notice_ready = now
         self.walk_started = now
         self.press: tuple[int, int] | None = None
@@ -571,6 +585,9 @@ class Engine:
         self.last_x = 0.0
         self.travel = 0.0
         self.trips = 0
+        #: The rare long walk across the screen (owner: only on a good mood, never twice within an hour).
+        self.last_long_walk = -1e9
+        self.long_walks = 0
         self.greet_pending = False
         #: The text caret of the foreground window (physical px) and when it was read, or None. While
         #: there is one, or the person is typing, the figure is busy: no trip, and it keeps clear of it.
@@ -800,7 +817,7 @@ class Engine:
         if state != "warp":
             self.warp = None
         if state == "stand":
-            self.idle_start = now  # the cycle starts from its first picture
+            self.idle_start, self._edges = now, [0.0]  # the cycle starts from its first picture
         if state in HOLD_RANGES:
             self.state_until = now + self.rng.uniform(*HOLD_RANGES[state])
         elif state in HOLD_FIXED:
@@ -1050,10 +1067,13 @@ class Engine:
         if self.flash and now >= self.flash[1]:
             if self.flash[0] == "look":  # the cycle resumes where the look paused it, not on another picture
                 self.idle_start += now - (self.flash[1] - LOOK_FOR)
-            self.flash = None
+            self.flash = ("look", now + LOOK_FOR) if self.flash[0] == "blink" and self.look_after_blink else None
+            self.look_after_blink = False
         if self.flash is None and now >= self.next_ambient:
             look = self.state == "stand" and self.life_rng.random() < LOOK_SHARE
-            self.flash = ("look", now + LOOK_FOR) if look else ("blink", now + BLINK_FOR)
+            # G2: a big gaze shift starts with a blink (Eyes Alive), then the look.
+            self.flash, self.blink_at = ("blink", now + BLINK_FOR), now
+            self.look_after_blink = look
             double = not look and self.life_rng.random() < DOUBLE_SHARE
             self.next_ambient = now + (BLINK_FOR + DOUBLE_GAP if double else self._ambient_gap())
 
@@ -1106,7 +1126,15 @@ class Engine:
         if self._away() and self.perch is None:
             self._go_home(now)
             return
+        self._tell_mind(now, idle)
         self._perform(self._pick_act(now, idle), now)
+
+    def _tell_mind(self, now: float, idle: float) -> None:
+        """What the person is doing, for the mind's considerations: seconds since they last did anything and
+        whether the pointer is within a few figures of it."""
+        self.mind.idle = idle
+        p = self.pointer
+        self.mind.near = p is not None and abs(p[0] - (self.x + self.size[0] / 2)) < 4 * self.size[0]
 
     # --- home, trips, and what to do in place (INBOX 1670, row B) ------------------------
 
@@ -1193,6 +1221,8 @@ class Engine:
         elif pick == "follow":
             self.follow_until = now + self.rng.uniform(*FOLLOW_FOR)
             self._follow(now) or self._enter("stand", now)
+        elif pick == "longwalk":
+            self._long_walk(now)
         elif pick == "clock":
             self._go((m.area[2] - self.size[0] - 6 * k, self.ground_y(m)), "clock", now)
         else:  # nap: the nearer outer edge
@@ -1206,9 +1236,27 @@ class Engine:
             table.append(("floor", "follow", 2.0))
         if self.roam_windows and self._candidates():
             table.append(("window", "window", 4.0))
+        if self._long_walk_ok(now):
+            table.append(("floor", "longwalk", LONG_WALK_WEIGHT))
         if now >= self.big_ready and self._hang_ok():  # a hang is a big act: minutes apart, whoever chose it
             table.append(("hang", "hang", HANG_TRIP_WEIGHT))
         return table
+
+    def _long_walk_ok(self, now: float) -> bool:
+        """A long walk is rare: a lively mood (happy or curious), some energy, and an hour since the last."""
+        return (
+            self.roam and not self.reduced and self.perch is None and now - self.last_long_walk >= LONG_WALK_GAP
+            and self.mind.mood(now, self.hour) in ("happy", "curious") and self.mind.needs["rest"] < 0.55
+        )
+
+    def _long_walk(self, now: float) -> None:
+        """Across most of the screen on foot (a floater glides), then a look about when it gets there."""
+        self.last_long_walk, self.long_walks = now, self.long_walks + 1
+        m = self.current_monitor()
+        lo, hi = m.area[0], m.area[2] - self.size[0]
+        far = [x for x in (lo + (hi - lo) * 0.08, lo + (hi - lo) * 0.92) if abs(x - self.x) >= (hi - lo) * 0.45]
+        x = self.rng.choice(far) if far else (hi if self.x < (lo + hi) / 2 else lo)
+        self._go((x, self.ground_y(m)), "longwalk", now, plain=True)
 
     def _trip_pick(self, now: float) -> str:
         table = self._trip_table(now)
@@ -1232,8 +1280,9 @@ class Engine:
     def _arrive_trip(self, then: str, now: float) -> None:
         if then == "greet":
             self._enter("wave", now)
-        elif then == "clock":
-            self._start_act("ponder" if self.rng.random() < 0.5 else "look_around", now)
+        elif then in ("clock", "longwalk"):
+            options = [n for n in ("ponder", "look_around") if n not in self.mind.recent[-1:]]  # never the act it just did
+            self._start_act(self.rng.choice(options), now)
         elif then == "settle":  # "Go somewhere else": the new spot is home now
             self._set_home()
         else:
@@ -1293,6 +1342,8 @@ class Engine:
                 continue
             if act in ("stroll", "trip") and mood == "bored":
                 w *= 2
+            if act == "trip":  # a trip that has waited past its time is wanted more, up to five times (owner: too rare)
+                w *= 1.0 + min(TRIP_OVERDUE_MAX, max(0.0, now - self.trip_ready) / TRIP_OVERDUE_S)
             table.append((act, w))
         return table
 
@@ -2151,6 +2202,9 @@ class Engine:
             return
         if not self.reduced and self.metrics and self.state not in ("held", "fly", "fall"):
             self.turn_to, self.turn_started = direction, now
+            if self.flash is None and now - self.blink_at >= AMBIENT_EVERY[0]:  # G2: the turn is blinked into
+                self.flash, self.blink_at = ("blink", now + BLINK_FOR), now  # (never within the least gap of another)
+                self.next_ambient = max(self.next_ambient, now + AMBIENT_EVERY[0])
         else:
             self.facing = direction
 
@@ -2264,7 +2318,7 @@ class Engine:
                 self.state_until = now + self.rng.uniform(*REST_FOR)
             if then == "nap":
                 self._settle_to_sleep(now)
-            elif then in ("clock", "greet", "settle"):
+            elif then in ("clock", "greet", "settle", "longwalk"):
                 self._arrive_trip(then, now)
 
     def _do_stand(self, now: float, dt: float) -> None:
@@ -3123,8 +3177,25 @@ class Engine:
         """Frames a second: a shipped set of fewer frames plays slower, so the cycle stays 4 s."""
         return IDLE_FPS * max(1, self.idle_frames) / IDLE_FRAMES
 
+    def _idle_cycle(self, now: float) -> tuple[float, float]:
+        """(start, length) of the idle cycle `now` is in. Each cycle runs a little faster or slower than
+        the last, from its own seeded stream, so the breath and sway never line up twice (research A7)."""
+        t = max(0.0, now - self.idle_start)
+        nominal = max(1, self.idle_frames) / self._idle_fps()
+        while self._edges[-1] <= t:
+            self._edges.append(self._edges[-1] + nominal / (1.0 + self.idle_rng.uniform(-IDLE_SLOWEST, IDLE_SPREAD)))
+        k = next(i for i in range(len(self._edges) - 1, 0, -1) if self._edges[i - 1] <= t)
+        return self.idle_start + self._edges[k - 1], self._edges[k] - self._edges[k - 1]
+
     def _idle_index(self, now: float) -> int:
-        return int((now - self.idle_start) * self._idle_fps() + 1e-6) % self.idle_frames
+        start, length = self._idle_cycle(now)
+        return min(self.idle_frames - 1, int((now - start) / length * self.idle_frames + 1e-6)) % self.idle_frames
+
+    def _idle_next(self, now: float) -> float:
+        """When the idle picture next changes."""
+        start, length = self._idle_cycle(now)
+        step = length / self.idle_frames
+        return start + (math.floor((now - start) / step + 1e-6) + 1) * step
 
     def _flow_view(self, now: float, frame: str = "") -> tuple[int, ...] | None:
         """What the wisps and streams are doing at `now`; under reduced motion a slow drift only. While the
@@ -3201,7 +3272,7 @@ class Engine:
             due += [self.flash[1]] if self.flash else [self.next_ambient]
             due.append(self.last_active + IDLE_SIT)
         if self._idling():  # the next idle frame: a redraw only when the index changes
-            due.append(self.idle_start + (math.floor((now - self.idle_start) * self._idle_fps() + 1e-6) + 1) / self._idle_fps())
+            due.append(self._idle_next(now))
         return due
 
     def _next_pose_change(self, now: float, horizon: float = 1.0) -> float:
