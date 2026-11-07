@@ -83,3 +83,13 @@ def test_the_kind_bar_is_one_tab_stop_resting_on_the_chosen_kind():
     assert bar.index("wireToolbarRoving(seg)") < bar.index("S.root.prepend(seg)")
     embed = (JS / "diagram-embed.js").read_text(encoding="utf-8")
     assert "foot.append(seg" in embed
+
+
+def test_new_diagram_is_a_palette_row_and_the_coarse_dock_buttons_are_44_px():
+    """DD-9 (small part): "diagram" in Ctrl+K finds New diagram first, and at (pointer: coarse) every dock button is 2.75rem."""
+    features = (ROOT / "frontend" / "js" / "app-features.js").read_text(encoding="utf-8")
+    assert 'label: "ph:flow-arrow New diagram"' in features and "diagramModel.door({ doc: true })" in features
+    css = (ROOT / "frontend" / "css" / "diagram-lazy.css").read_text(encoding="utf-8")
+    block = css[css.index("@media (pointer: coarse) {\n  .dgm-dirs,") :]
+    block = block[: block.index("\n}\n")]
+    assert ".dgm-dock .dock-actions button:not(.dgm-add)" in block and "min-block-size: 2.75rem" in block
