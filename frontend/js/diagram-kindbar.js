@@ -41,7 +41,8 @@
     wireToolbarRoving(seg);
     for (const button of seg.children) button.tabIndex = button.dataset.kind === here ? 0 : -1;
     S.root.prepend(seg);
-    if (pending === here) seg.querySelector(".active")?.focus();
+    //: After a tick: the bar is not in the page yet while it is being built.
+    if (pending === here) setTimeout(() => seg.querySelector(".active")?.focus(), 0);
     pending = "";
   }
 

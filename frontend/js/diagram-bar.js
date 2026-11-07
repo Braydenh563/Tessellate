@@ -158,10 +158,11 @@
       return true;
     }
     if (event.key !== "Tab" || key[0] !== "n") return false;
-    const id = diagramOps.split(key)[1];
+    const ops = diagramModel.ops;
+    const id = ops.split(key)[1];
     if (event.shiftKey) {
       const from = S.m.edges.find((e) => e.to === id)?.from;
-      const up = (from && S.tree.querySelector(`.dgm-block[data-key="${diagramOps.key("n", from)}"]`)) || block.parentElement.closest(".dgm-block");
+      const up = (from && S.tree.querySelector(`.dgm-block[data-key="${ops.key("n", from)}"]`)) || block.parentElement.closest(".dgm-block");
       if (!up) return false;
       event.preventDefault();
       diagramModel.builder.select(S, up.dataset.key, true);

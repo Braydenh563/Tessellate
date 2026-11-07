@@ -36,6 +36,8 @@ def test_tab_adds_a_joined_box_only_on_the_last_box_and_never_traps_and_f6_leave
     chain = BAR[BAR.index("  function chain(") : BAR.index("  diagramModel.bar = ")]
     assert 'event.key !== "Tab" || key[0] !== "n") return false' in chain and "add(S, { after: key, from: id })" in chain
     assert "S.m.edges.find((e) => e.to === id)?.from" in chain
+    # diagramOps is the builder's private name (an IIFE const); the bar file reads the model's. Review sweep: a ReferenceError on every Tab.
+    assert "diagramModel.ops" in chain and "diagramOps" not in chain
     # Only the last box chains; any other Tab, and Shift+Tab with no parent, is left to the browser (no preventDefault before the return false).
     assert "if (block !== [...S.tree.querySelectorAll(\".dgm-block\")].at(-1)) return false;" in chain
     assert "if (!up) return false;" in chain and chain.index("if (!up) return false;") < chain.index("event.preventDefault()", chain.index("if (!up)"))
@@ -129,3 +131,12 @@ def test_new_diagram_is_a_palette_row_and_the_coarse_dock_buttons_are_44_px():
     block = css[css.index("@media (pointer: coarse) {\n  .dgm-dirs,") :]
     block = block[: block.index("\n}\n")]
     assert ".dgm-dock .dock-actions button:not(.dgm-add)" in block and "min-block-size: 2.75rem" in block
+
+
+def test_a_note_card_asks_for_the_documents_once_so_its_diagram_embed_resolves():
+    # Review 1107: "Embedded: Diagram ..." then "Nothing called ... yet" on the Notes tab, also after a reload: the documents
+    # list was empty there. Measured (port 8821): the card now reads "<name>: open the diagram".
+    notes = _js("notes-list.js")
+    assert "if (!docList.length) loadEmbedDocuments();" in notes
+    ask = notes[notes.index("function loadEmbedDocuments()") :][:520]
+    assert "embedDocumentsAsked" in ask and 'apiPagedList("/documents", DOCUMENTS_PAGE_SIZE)' in ask and "renderEntries();" in ask

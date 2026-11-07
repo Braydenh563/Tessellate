@@ -1270,6 +1270,27 @@
     flex-direction: column;
   }
 
+  /* A phone's dock may take a second row (DD-6, 1107): Add, Direction and five 44 px actions are 368 px against a 308 px
+     body, so the "More for this diagram" button sat 18 px outside the dialog. */
+  .dgm-dialog .dgm-dock:has(> .dgm-addsplit) {
+    flex-wrap: wrap;
+    row-gap: var(--space-1);
+  }
+
+  /* The picture keeps 240 px (it was 96 beside a kind's pane); the blocks pane scrolls under it. */
+  .dgm-dialog-body .dgm-picture,
+  .dgm-dialog-body .dgm.dgm-phonelist :is(.dgm-picture, .dgm-stage) {
+    min-block-size: 240px;
+  }
+
+  .dgm-dialog-body .dgm-body {
+    grid-template-rows: minmax(240px, auto) minmax(0, 1fr);
+  }
+
+  .dgm-dialog-body .dgm-body {
+    overflow-y: auto;
+  }
+
   .dgm-dialog[data-view="source"] .dgm-source {
     flex: 0 0 9rem;
   }
