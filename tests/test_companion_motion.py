@@ -1240,6 +1240,14 @@ def test_a_perch_that_goes_is_replaced_at_once() -> None:
     assert "nmb.placeTimer = setTimeout(nameMarkBuddyBeat, 250);" in lost and "nameMarkBuddyQueuePlace()" not in lost
 
 
+def test_a_control_under_it_that_it_cannot_step_off_asks_for_a_beat_in_a_quarter_second() -> None:
+    # companion dive 1107: a hang on Graph covered Search and Options for 2.3 to 3.1s (the queued beat
+    # waits 1.2 to 2.5s); the perch check now asks for the quick beat when no step along the edge is clear.
+    check = _fn("nameMarkBuddyCheck")
+    tail = check[check.index("const aside = "):]
+    assert "nmb.placeTimer = setTimeout(nameMarkBuddyBeat, 250);" in tail and "nameMarkBuddyQueuePlace()" not in tail
+
+
 def test_an_act_lets_its_face_go_slowly() -> None:
     # The owner: emotes and acts on a click "must ease back to the prior
     # state, never cut back after a few seconds". Measured

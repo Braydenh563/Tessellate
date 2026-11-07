@@ -318,6 +318,9 @@ function nameMarkBuddyCallBack() {
 }
 
 function nameMarkBuddyHide(buddy) {
+  //: Hide removes the face, so a keyboard user's focus would fall to the page (Tab began again at "Skip to
+  //: content"); it goes to the toast's way back instead. A mouse press leaves focus where it is.
+  const kept = !!buddy && buddy.contains(document.activeElement);
   let was = null;
   try {
     //: Which companion it was, so the hotkey brings the same one back.
@@ -358,6 +361,7 @@ function nameMarkBuddyHide(buddy) {
     },
     { record: false }
   );
+  if (kept) document.querySelector("#toast-box .toast-action")?.focus();
 }
 
 //: **Show or hide it from anywhere** (INBOX 430, the owner: "a show/hide
