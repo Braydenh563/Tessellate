@@ -1367,12 +1367,26 @@ class DeskCompanion:
         try:
             self.panel = True
             self.size = self.panel_size("menu")
-            self.window = self._make()
+            self.window = self._unless_closing(self._make())
+            if self.window is None:
+                return
             logger.info("desk companion: quick panel made hidden")
         except Exception:  # noqa: BLE001 - the first click tries again
             logger.warning("desk companion: the quick panel could not be made ahead", exc_info=True)
             self.panel = False
             self.window = None
+
+    def _unless_closing(self, window: Any) -> Any:
+        """A window just made, or None (and it destroyed) when a quit began while it was being made:
+        `close` gave up waiting for the lock and took no window, so nothing else would end it (1666 review)."""
+        if not self.closing:
+            return window
+        logger.info("desk companion: a window made as the app quit is closed again")
+        try:
+            window.destroy()
+        except Exception:  # noqa: BLE001 - quitting goes on
+            logger.debug("could not destroy the companion window", exc_info=True)
+        return None
 
     def _hide_panel_window(self) -> None:
         if self.window is not None and self.panel_shown:
@@ -1531,7 +1545,9 @@ class DeskCompanion:
             self.corner = panel_corner(self.pet_rect, self.size, area)
             self._update_panel_box()
             if self.window is None:
-                self.window = self._make()
+                self.window = self._unless_closing(self._make())
+                if self.window is None:
+                    return
                 logger.info("desk companion: quick panel made beside the figure at %s", self.top_left())
             # The one placement of the click, before the window is shown; nothing
             # resizes or moves it after (the page's own height report is only kept).
@@ -1786,7 +1802,9 @@ def _await_loaded(window: Any) -> None:
     never aborts the start (INBOX 1666). Quiet when the backend has no `loaded` event."""
     loaded = getattr(getattr(window, "events", None), "loaded", None)
     wait = getattr(loaded, "wait", None)
-    if not callable(wait):
+    #: On the GUI thread (the close X quitting) the start waits on this very thread's loop, so a wait
+    #: there only froze the closing window and the start aborted anyway (1666 review).
+    if not callable(wait) or threading.current_thread() is threading.main_thread():
         return
     try:
         if not wait(LOADED_WAIT):

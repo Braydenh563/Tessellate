@@ -498,12 +498,67 @@ def test_1666_a_late_sync_after_close_makes_no_window(over):
 
 
 def test_1666_close_waits_briefly_for_a_window_still_starting_then_destroys(over):
+    # Intent moved (1666 review, 2026-11-07): the wait helps only a close off the GUI thread (the
+    # /shutdown route, the tray), where the web view's start can still finish; so it runs on a worker here.
+    import threading
+
+    over.set_main_hidden(True)
+    panel = over.webview.made[0]
+    panel.events = SimpleNamespace(loaded=_Loaded(ok=False))
+    worker = threading.Thread(target=over.close)
+    worker.start()
+    worker.join(5)
+    assert panel.events.loaded.waited == [dc.LOADED_WAIT]
+    assert ("destroy",) in panel.calls
+
+
+def test_1666_a_close_on_the_gui_thread_does_not_wait_on_a_start_that_needs_that_thread(over):
+    # The close X with close_to_tray off quits on the GUI thread: a start waits on that thread's loop, so
+    # waiting there only froze the closing window for 1.5 s and the start aborted anyway (1666 review).
     over.set_main_hidden(True)
     panel = over.webview.made[0]
     panel.events = SimpleNamespace(loaded=_Loaded(ok=False))
     over.close()
-    assert panel.events.loaded.waited == [dc.LOADED_WAIT]
+    assert panel.events.loaded.waited == []
     assert ("destroy",) in panel.calls
+
+
+def _closing_maker(over):
+    """A `_make` that a quit overtakes: `close` (its lock wait timed out) sets closing mid-creation."""
+    made = []
+
+    def make():
+        window = FakeWindow()
+        made.append(window)
+        over.closing = True
+        return window
+
+    over._make = make  # noqa: SLF001
+    return made
+
+
+def test_1666_a_panel_made_while_the_app_quits_is_destroyed_not_kept(over):
+    made = _closing_maker(over)
+    over._make_panel()  # noqa: SLF001
+    assert over.window is None and ("destroy",) in made[0].calls
+
+
+def test_1666_a_click_whose_panel_is_overtaken_by_quit_shows_nothing_and_keeps_nothing(over):
+    over.set_main_hidden(True)
+    over.window = None
+    made = _closing_maker(over)
+    over._overlay_click("left", (100, 100, 60, 90), 96)  # noqa: SLF001
+    assert over.window is None and made[0].calls == [("destroy",)]
+
+
+def test_1666_the_close_x_quit_closes_the_companion_on_the_same_teardown():
+    from pathlib import Path
+
+    src = (Path(dc.__file__).resolve().parents[1] / "__main__.py").read_text(encoding="utf-8")
+    teardown = src.split("def _stop_background_work", 1)[1].split("\ndef ", 1)[0]
+    assert "desk_companion.shutdown()" in teardown
+    closing = src.split("def _on_closing", 1)[1].split("return True", 1)[0]
+    assert "_stop_background_work()" in closing
 
 
 def test_1666_a_window_without_a_loaded_event_is_still_destroyed(over):

@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Quit (INBOX 1666 review): a close on the window's own thread (the close button with close to tray off) no longer waits 1.5 s on a web view start that needs that thread, and a panel window a quit overtakes while it is being made is closed instead of left to the process exit.
 - The desk figure's screen reads (BACKLOG 1678 review): with "Roam over windows" off it reads neither the foreground window nor the downloads folder, the folder is counted on a worker so a sleeping or synced disk never stalls a frame, and after a suspend or a full-screen app the first reads are only remembered, so nothing that happened while away is answered as news.
 - A model's answer is never folded (CHAT_PLAN B1, the owner, 2026-11-05): an untagged "Thinking Process:" preamble streams into the Thinking fold, and the long-block fold applies to composed replies only (measured: 1 to 0 answer folds in Ask, Chat and the popup agent); a header nothing closes streams its steps into the fold and gives the prose after them to the answer, each word once.
 - The popup agent keeps steps and text in arrival order (CHAT_PLAN B5, the owner, 2026-11-05): a search after the first words sits after them and the next words open a new box (measured: TOOL > TEXT1 to TEXT1 > TOOL > TEXT2), and a search's card stays above the page read from it (paced stream: READ > SEARCH to SEARCH > READ).
