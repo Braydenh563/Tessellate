@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Settings, About names the address and port the app is running at.
 - Confirmed patterns in Settings load a page at a time (`GET /insights/confirmed` takes `limit` and `offset` and says `X-Total-Count`), and their group is built on first open rather than shipped in the page.
 - The context window adapts to the model and the memory (CHAT_PLAN B6): auto is now the model's own length, capped by the KV cache it would need against 40% of free memory or video memory (a 128k model on 64 GB free runs at 131,072, on 8 GB at 25,600; it was 8,192), llama-server's reported n_ctx is used as it stands, a hand-set window and `max_context_tokens` still win, and Settings, Models says the number and why. Fake transports only; no real model run.
 - Follow-up questions under an answer run in Quick (2026-11-05a): no thinking and a 256-token cap, so a reasoning model no longer reasons at length before three short chips.

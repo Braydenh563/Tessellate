@@ -1736,10 +1736,12 @@ HELP_TOPICS.extend(
                 "changelog",
                 "auto update",
                 "version",
+                "port",
+                "address",
             ),
             "body": (
-                "Settings, About says which version you have and checks for a newer "
-                "one. When a check finds one, a bar appears at the top with an "
+                "Settings, About says which version you have, the address and port "
+                "the app runs at, and checks for a newer one. When a check finds one, a bar appears at the top with an "
                 "Update button and a close; the Windows app installs it when you "
                 "press Update, and nothing installs before that. Closing the bar "
                 "hides it for that version, and Show the update bar turns it off. "
