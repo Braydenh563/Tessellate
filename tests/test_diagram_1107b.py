@@ -99,3 +99,12 @@ def test_only_the_picked_row_keeps_tab_stops_so_the_picture_is_within_six_stops(
     builder = _js("diagram-builder.js")
     assert 'for (const c of b.querySelectorAll(":scope > .dgm-card button, :scope > .dgm-joins button"))' in builder
     assert "add.tabIndex = connect.tabIndex = -1;" in _js("diagram-steps.js")
+
+
+def test_the_drawing_error_note_offers_undo_of_the_last_edit():
+    # DD-4 rest: measured at 1440 (port 8871): a typed bad line gave the note [Undo the last edit, Go to line 4], image kept (418 px, stale),
+    # role=alert; one press restored the source and the picture, note gone.
+    picture = _js("diagram-picture.js")
+    failure = picture[picture.index("function failure(") :]
+    assert 'if (S.io?.undo) note.prepend(smallButton("ph:arrow-u-up-left Undo the last edit"' in failure
+    assert failure.index("Undo the last edit") < failure.index("replaceChildren(note)")

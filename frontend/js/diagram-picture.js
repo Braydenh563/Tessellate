@@ -86,7 +86,7 @@
 
   //: A source that will not draw (DD-4, 1107): the last good picture stays, dimmed, with the reason under it, instead of an empty
   //: pane. The reason is an alert the first time a given error shows and a status when the same one is drawn again; the line it
-  //: names is `data-line` and a button puts the caret there; the "tall for this pane" offer is for a picture that is not there.
+  //: names is `data-line` and a button puts the caret there, another undoes the last edit; the "tall for this pane" offer is for a picture that is not there.
   function failure(S, result, source, smallButton) {
     S.fig.classList.toggle("dgm-picture-stale", !result.svg);
     if (result.svg) return void ((S.errorSeen = ""), delete S.fig.dataset.errorLine);
@@ -114,6 +114,8 @@
       });
       note.prepend(go);
     }
+    //: A bad edit is one press from undone, whichever pane made it (DD-4).
+    if (S.io?.undo) note.prepend(smallButton("ph:arrow-u-up-left Undo the last edit", "Go back to the diagram before this change", () => S.io.undo()));
     if (!S.fig.querySelector(":scope > .md-mermaid-img")) return S.fig.replaceChildren(note);
     S.fig.querySelector(":scope > .md-mermaid-reason")?.remove();
     S.fig.append(note);
