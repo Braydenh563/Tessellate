@@ -7534,3 +7534,14 @@ def test_what_an_answer_carries_is_one_foot_row() -> None:
     assert kit.count('bar.className = "answer-foot-bar"') == 1
     design = (ROOT / "docs" / "DESIGN.md").read_text(encoding="utf-8")
     assert "**An answer's foot**" in design and "`answerFootGather`" in design
+def test_a_message_sent_mid_reply_waits_in_the_composer_queue():
+    """DESIGN.md, "One composer queue" (CHAT_PLAN B3): every chat surface makes its queue from `composerQueue`, none disables its box mid-reply, one painter."""
+    js = ROOT / "frontend" / "js"
+    texts = {p.name: p.read_text(encoding="utf-8") for p in js.glob("*.js")}
+    for name, made in (("palette.js", 'composerQueue("chat", chatQueue)'), ("palette.js", 'composerQueue("agent", {'), ("help-chat.js", 'composerQueue("guide", {')):
+        assert made in texts[name], name
+    assert [n for n, t in texts.items() if "composerQueue.paint = " in t] == ["reply-kit.js"]
+    assert [n for n, t in texts.items() if 'className = "chat-queue"' in t] == ["reply-kit.js"]
+    for name, box in (("palette.js", "cmdPaletteInput"), ("help-chat.js", '$("help-chat-input")'), ("chat-turn.js", "input")):
+        assert f"{box}.disabled = true" not in texts[name] and f"{box}.disabled = busy" not in texts[name], name
+    assert "One composer queue" in (ROOT / "docs" / "DESIGN.md").read_text(encoding="utf-8")

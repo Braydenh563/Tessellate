@@ -1023,21 +1023,44 @@ function panelMinimise(panel) {
   panelPushSync();
   chip.querySelector(".minimised-pill-open").focus({ preventScroll: true });
 }
+//: **A close from the pill never shows the window** (CHAT_PLAN B8, the owner:
+//: "sometimes when I close a minimised tab for a window, the window flashes
+//: for a split second"). The x restored the window, a modal dialog modal
+//: again, then pressed its Close, so the exit fade played on screen (8 frames
+//: for the agent and the Guide, 4 for Settings). Close is pressed while it is
+//: still `data-panel-min` (hidden, no transition), the style is read so the
+//: close lands hidden, and the mark comes off once it is gone. A close held
+//: back (a confirm it asks) shows the window again after 700ms.
 function panelRestore(host, close = false) {
   const m = PANEL_MIN.get(host);
   if (!m) return;
   PANEL_MIN.delete(host);
   m.chip.remove();
-  host.removeAttribute("data-panel-min");
   host.inert = false;
   if (!PANEL_MIN.size) panelMinTray().hidePopover();
+  const gone = () => !host.isConnected || (host.tagName === "DIALOG" ? !host.open : host.classList.contains("hidden"));
+  if (close) {
+    if (!gone()) {
+      const btn = panelCloseBtn(m.panel);
+      if (btn) btn.click();
+      else if (host.tagName === "DIALOG") host.close();
+      if (host.isConnected) getComputedStyle(host).display;
+    }
+    const t0 = Date.now();
+    const settle = () => {
+      if (!gone() && Date.now() - t0 < 700) return void setTimeout(settle, 50);
+      host.removeAttribute("data-panel-min");
+      if (!gone() && host.tagName === "DIALOG" && m.modal) panelReopen(host, true);
+      panelPushSync();
+    };
+    return void setTimeout(settle, 50);
+  }
+  host.removeAttribute("data-panel-min");
   if (host.tagName === "DIALOG" && host.open && m.modal) panelReopen(host, true);
-  const gone = host.tagName === "DIALOG" ? !host.open : host.classList.contains("hidden");
-  if (gone) return;
+  if (gone()) return;
   panelPushSync();
-  const btn = close ? panelCloseBtn(m.panel) : panelSt(m.panel).min;
+  const btn = panelSt(m.panel).min;
   if (btn) btn.focus({ preventScroll: true });
-  if (close) (btn ? btn.click() : host.tagName === "DIALOG" && host.close());
 }
 //: **The pill is never an outside press** (INBOX 1543, the owner: "I minimised
 //: it and tried to reopen it from the minimised pill but it didnt reopen"). A

@@ -17,6 +17,67 @@ From CHAT_PLAN.md "Placed from INBOX, 2026-11-05 (the Ask columns and folds)", r
 - **B1, the class was both.** A model whose template opens the thought in the prompt writes "Thinking Process:", numbered steps and only `</think>`; the stream showed all of it as the answer (the close tag dropped). `_ThinkTagSplitter` now reads a first line that is a reasoning header alone (`Thinking Process:`, `Thought process:`, `Reasoning process:`, `Thinking:`, `Reasoning:`, marks allowed) as the open tag; a header nothing closes streams its steps (blank, indented, list or heading lines) into the fold and holds the prose after the last one, which is the answer at the end, each word shown once (review: the steps were shown in the fold and again in the answer); with no step or no prose after one the whole text is the answer, never lost; `split_thinking` splits a saved reply the same way and drops the header from the saved thought. And `replyFoldLong` (INBOX 1300 C08) shut a model's own 145-word paragraph into a "145 words" card: it runs on composed replies only now. C08's words sat under "the composer and ai's responses", so this narrows it; B1 is the newer decision ("the answer is never inside a fold"). A middle way (a model answer folds a long `pre` or quote, an OCR dump, never a paragraph) would be a new INBOX entry if the owner asks. Tests: `tests/test_answer_never_folded.py` (the splitter at chunk sizes 1 to the whole reply, the OpenAI stream and the agent's tool stream through the fake transport).
 - **B5.** The popup agent drew one answer box and put every step fold above it, so text, search, text read search, text. `placeStep` puts a step before the answer box while it is empty and after it once it has words, the next words open a new box, a later thought gets its own fold, web cards go under their step in arrival order (each holds its place with a marker put down when its step arrives, since the lazy module draws it later; review: anchored on the node after the fold, a read went above the search that found it on a paced stream). Chat's `agentTimeline` already kept arrival order; the Guide runs no tools. Test: `tests/test_agent_timeline_order.py` (the server's events stay answer, tool, answer).
 - **Measured** (a sweep that fakes `/chat/stream`, old files routed in for before, :8901 at 1440): answer text inside a fold, Ask 1 to 0, Chat 1 to 0, popup agent 1 to 0, reasoning in the Thinking fold on all three; popup order `TOOL > TEXT1` to `TEXT1 > TOOL > TEXT2`, Chat `TEXT1 > TOOL > TEXT2` before and after. Review fixes (:8913, 1440, a stream paced at 400 ms and one unpaced): search then read in one group `READPANEL > SEARCHPANEL` to `SEARCHPANEL > READPANEL`, after words too (`TEXT1 > TOOLS > SEARCHPANEL > READPANEL > TEXT2`). Not verified: a real model's stream (no model here).
+## Moved from the plans, 2026-11-05 (CHAT_PLAN B3, B4 and B8)
+
+- **B3, verbatim:** "I also cant type in the text box while the popup agent is respondning (check the guide as well) and I cant draft, queue or edit/delete queued messages like in chat for the popup agent." Recommendation (taken): the popup agent and the guide take Chat's composer behaviour: typing stays open while a turn runs, Enter queues, the queue shows with edit and delete, drafts are kept per surface; one shared queue component. **Built:** `composerQueue(name, spec)` (palette.js, off the capped boot bytes) is the one queue, Chat's four names replaced; the agent and the Guide make theirs from it, their boxes stay open mid-reply (the agent's was disabled, the Guide dropped a send), `composerQueue.paint` (reply-kit.js) draws every list, and a queued send no longer clears the box. Drafts stay in each surface's own box in memory, not written to storage (the notebook is locked; a stored draft would sit outside it). Measured with a 3s held POST per turn, Chat, agent and Guide each: box enabled, 2 queued, Edit back, the second sent after the first, queue 0 at the end, a draft typed meanwhile kept (`tests/test_composer_queue_b3.py`, DESIGN.md "One composer queue").
+
+- **B4, verbatim:** "also when fullscreen or docked to the main window, the bottom footer of te popup agent is really really tall which it shouldnt be" (screenshot: the status row then about 270 px of empty footer). Recommendation (taken): the footer is its content's height in every mode (floating, docked, full screen), measured. **Built:** a docked, maximised or resized agent card gives its height to the conversation (or the starters), `flex: 1 1 auto` with no 25rem cap, in panel-movable-lazy.css. At 1440 by 900 the card is 803px docked; under the status row 378px before, 29px (the grip row) after; the foot 45px floating, docked left, docked right and maximised (`tests/test_agent_foot_height.py`).
+
+- **B8, the owner 2026-11-05 02:23Z, verbatim:** "sometimes when I close a minimised tab for a window, the window flashes for a split second". Recommendation (taken): closing a minimised window from its tab never shows the window (no restore before the close, no transition on a hidden window), for every window kind that minimises to a tab. **Built:** the pill's x presses Close while the window is still `data-panel-min` (hidden, no transition or animation), and the mark comes off once it is gone; a held close (a confirm) shows it again after 700ms. Frames with the window on screen during the close, measured over 700ms: agent 8 to 0, Guide 8 to 0, Settings 4 to 0 (`tests/test_panel_min_close_quiet.py`).
+
+## Moved from the plans, 2026-11-05 (CHAT_PLAN, the Ask sub-tab of 2026-09-21)
+
+**All four built, 2026-09-21.** One pass, because they are one screen and
+four separate fixes would have meant four rounds of the same measurement.
+The probe is `scratchpad/ui-sweeps/asktab.js` (registered in
+`scripts/gate.sh`'s sweep list); it measures rather than captures, and it
+drives a real stream through `scratchpad/fake_answer_server.py`, which now
+takes `FAKE_DELAY_MS` so a stream lasts long enough to poll. The full record
+is in HISTORY.md, "INBOX resolved, 2026-09-21".
+
+~~297. Gaps between an attached file and the badges, and badges that do not
+all show.~~ **Built.** The gap: 0.0px to 6.4px, at 1440, 1024, 820 and 390.
+The badges: not a truncation and not a wrap (every badge the data implies
+was drawn at every width, none clipped, 0px of the lane scrolled out), but a
+condition that never fired: `clickableResult` passed `entryItem` no options,
+so every chip gated on `options.actions` was missing from a read-only row.
+The same note: 2 badges in the Ask column before, 4 after, against 5 in
+Browse, the fifth being the one chip decision 16 keeps off a result row.
+
+~~298. No generating animation while the model is thinking and streaming.~~
+**Built.** Frames with the answer actually streaming: 250 before, 0 of them
+showing anything moving; 63 after, 63 of them showing something. Across the
+whole turn: 120 of 372 before, 243 of 243 after. Two existing components
+(`progressLine`, `.is-generating`) called from a surface that never called
+either, not a new control.
+
+~~299. Number the matching records to match the inline referencing.~~
+**Built.** Records numbered: 0 of 5 before, 5 of 5 after, from
+`citationNumbers`, the map the prose marks, the "Grounded in" chips and the
+Sources panel already share. Marks whose row disagrees with them: 0. Numbers
+drawn over a row's own text: 0 (6.4px of clear gutter on every row).
+
+~~300. The sources button reads as a banner and describes a place.~~
+**Built.** 525px of a 525px column (100%) before, 204px (38.9%) after;
+"Sources: 5 notes, on the right" before, "Show the 5 notes used" after; and
+a press now moves the first cited record from 328px below the top of the
+window to 72px.
+
+### The four reports, verbatim
+
+297. **The owner, 2026-09-21, verbatim:** "in the ask subtab in notes, make
+    sure there are appropriate gaps between uploaded files and attachments
+    and the badges and make sure all the badges show."
+
+298. **The owner, 2026-09-21, verbatim:** "there's no generating animation
+    while the model is thinking and streaming in the ask tab either."
+
+299. **The owner, 2026-09-21, verbatim:** "can the notes in the matching
+    records that appear in the ask tab be numbered accordingly to match the
+    inline referencing??"
+
+300. **The owner, 2026-09-21, verbatim:** "fix the ui of this sources button
+    in the ask tab."
 
 ## Session record 2026-11-01 to 03 (Now lines moved from HANDOVER 2026-11-04)
 

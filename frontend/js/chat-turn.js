@@ -177,12 +177,15 @@ async function chatSendTurn(preset, opts = {}) {
   //: element inside `#chat-messages`, and a caller that cleared the pane first
   //: would find it gone.
   $("chat-suggest")?.classList.add("hidden");
-  input.value = "";
-  autoGrow(input); // a cleared box must not keep the height of what was in it
-  // The draft is gone, so the suggestions about it are too, including the
-  // ones that were dismissed, which belonged to that draft and not to the
-  // next one.
-  resetChatNudge();
+  //: A queued send (`keepBox`) leaves the box to what is being typed now.
+  if (!opts.keepBox) {
+    input.value = "";
+    autoGrow(input); // a cleared box must not keep the height of what was in it
+    // The draft is gone, so the suggestions about it are too, including the
+    // ones that were dismissed, which belonged to that draft and not to the
+    // next one.
+    resetChatNudge();
+  }
   //: The box stays open while the answer streams, so the next message can
   //: be written and queued (INBOX 1321); Escape still stops the answer.
   hide("chat-send");
