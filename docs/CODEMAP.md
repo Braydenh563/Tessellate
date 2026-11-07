@@ -2,7 +2,7 @@
 
 Generated 2026-11-07 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7861, frontend ids 2644, CSS sections 522, backend routes 649, backend modules 9001, test files 2156, tests 18176, plan headings 1004, app scripts 28, boot scripts 37, script files 261.
+Counts: frontend functions 7861, frontend ids 2644, CSS sections 522, backend routes 649, backend modules 9001, test files 2156, tests 18177, plan headings 1004, app scripts 28, boot scripts 37, script files 261.
 
 ## Frontend functions (7861)
 
@@ -24415,7 +24415,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (18176)
+## Tests (18177)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -26403,7 +26403,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_validation_copy.py | 6 |
 | tests/test_validation_error_shape.py | 2 |
 | tests/test_value_field_escape_home.py | 2 |
-| tests/test_value_field_review_216.py | 1 |
+| tests/test_value_field_review_216.py | 2 |
 | tests/test_vault_attachments.py | 9 |
 | tests/test_vault_import.py | 7 |
 | tests/test_vault_read_surfaces.py | 6 |

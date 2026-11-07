@@ -147,7 +147,7 @@ function valueField(host, opts = {}) {
   //: `slider.value` and fires `input` then `change`, so the surface's own handlers run as for a drag.
   const readoutOf = (slider) => {
     const byId = (suffix) => (slider.id ? document.getElementById(slider.id + suffix) : null);
-    const forId = slider.id ? document.querySelector(`output[for="${slider.id}"]`) : null;
+    const forId = slider.id ? document.querySelector(`output[for="${CSS.escape(slider.id)}"]`) : null;
     const bare = slider.id ? document.getElementById(slider.id.replace(/-slider$/, "") + "-value") : null;
     return forId || byId("-value") || byId("-out") || bare || slider.parentElement?.querySelector(":scope > output") || null;
   };

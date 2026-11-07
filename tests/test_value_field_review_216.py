@@ -69,3 +69,9 @@ def test_the_phone_keyboard_fits_what_the_field_accepts():
     # Neither numeric keypad has a minus key: a negative lower bound gets the full keyboard.
     assert modes["negative"] == "text"
 
+
+
+def test_a_slider_id_with_a_quote_is_escaped_in_the_readout_selector():
+    probe = _run('a"b')
+    assert 'output[for="a\\"b"]' in probe["selectors"], probe["selectors"]
+    assert 'output[for="a"b"]' not in probe["selectors"]
