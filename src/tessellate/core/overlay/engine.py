@@ -2432,6 +2432,10 @@ class Engine:
                 self._enter("sleep", now)
                 return
             self._enter("sit" if self.reduced else "stand", now)
+            if self.perch is None and not self.reduced and self.roam and self._away():
+                # down from a window it hopped off, away from home: a short stand, then home. The full settle (minutes of
+                # in-place acts) rested it in the middle third, where it never rests (a 15 minute spell there in one seeded hour)
+                self.state_until = min(self.state_until, now + self.rng.uniform(*STAND_FOR))
 
     def _do_hop(self, now: float, dt: float) -> None:
         # A hop up to a higher floor: a short arc, then it stands there.
