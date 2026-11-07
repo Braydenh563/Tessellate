@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Composer: "when did I start learning Spanish" and "when did I start to run" keep their streak answer after the R3-1 change (the did-I form carries the same lookahead as the past form).
 - Composer: "how old is Sara" says "Your notes do not say how old Sara is." with her birthday from her own note, not "when your sara was started, so I cannot work out its age"; a thing ("my sourdough starter") still counts days (audit r3, R3-3).
 - Composer: "when does uni start", "when does the marathon start" and "when do I make the banana bread" no longer answer "X was written on Saturday 7 November"; only a past form ("when was it written", "when did I start it") asks for the note's own day (audit r3, R3-1).
 - Composer: "what is the table number" and "number of notes" are not phone asks; "the number for the dentist" finds the Dentist note's phone (the person's notes are fetched on the name), and "Sara's number" with none says "None of your notes give a phone number for Sara." instead of "Sara likes jazz has no phone number." (audit r3, R3-2).
