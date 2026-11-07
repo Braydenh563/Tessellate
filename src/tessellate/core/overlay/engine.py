@@ -211,6 +211,8 @@ HOME_INSET = 100.0
 RELOCATE_AFTER = 120.0
 
 #: How long each state holds: a range (random) or a fixed time; the others set theirs in `_on_<state>`.
+#: On its feet on the monitor floor, not mid-move: a floor that drops (a taskbar hides) lets these fall to the new one.
+GROUNDED = ("stand", "walk", "drift", "sit", "sleep", "act", "look", "wave", "notice", "startle")
 HOLD_RANGES = {"stand": SETTLE_FOR, "sit": SIT_FOR}
 HOLD_FIXED = {"wave": WAVE_FOR, "land": LAND_FOR, "hop": HOP_FOR, "notice": NOTICE_FOR, "startle": STARTLE_FOR}
 
@@ -222,6 +224,27 @@ FRAME_OF = {"pressed": "stand", "leap": "hop", "notice": "look", "startle": "hop
 THROW_WINDOW = 0.1
 THROW_MIN = 350.0
 THROW_MAX = 3200.0
+#: A window dragged out from under the figure (INBOX 1683 x): faster than `FLING_SPEED` (logical px/s) throws it, a
+#: lying, sitting, napping or prop figure slips off at `SLIP_SPEED`; slower than those it rides. The throw keeps
+#: `FLING_CARRY` of the window's velocity and is always lifted by `FLING_LIFT`; it flails for `FLING_FLAIL` s; it
+#: pops away instead (`FLING_ESCAPE`, more when startled or sleepy) and wears a worried or miffed face `FLING_FACE` s.
+FLING_SPEED = 2 * THROW_MIN
+SLIP_SPEED = THROW_MIN / 2
+FLING_CARRY = 0.6
+FLING_LIFT = 300.0
+FLING_FLAIL = 1.6
+FLING_ESCAPE = 0.4
+FLING_FACE = (2.0, 4.0)
+#: A hold that slips (the window moved under the hands, INBOX 1683 k): it may grip again, scrabble for `SCRABBLE_FOR` s
+#: (the hem shakes `SCRABBLE_DRAG` at `SCRABBLE_HZ`) and pull up onto the edge's top, else it drops. The chance is
+#: `GRIP_BASE` bent by how rested it is and by the mood (`GRIP_MOOD`).
+GRIP_BASE = 0.55
+GRIP_MOOD = {"sleepy": 0.5, "bored": 0.8, "startled": 0.9, "curious": 1.1, "happy": 1.2, "proud": 1.2}
+SCRABBLE_FOR = 0.9
+SCRABBLE_DRAG = 6.0
+SCRABBLE_HZ = 6.0
+#: States a dragged window does not throw the figure out of: it is already off the window, held, or going somewhere.
+FLING_SAFE = ("held", "pressed", "fly", "fall", "warp", "hang", "rise", "peek", "emerge", "leap")
 BOUNCE_DAMP = 0.55
 BONK_FOR = 0.3
 #: A thrown figure's spin (INBOX 1670, 17:05Z: it turned "by 45 degrees each time, at 1 second intervals"):
@@ -323,6 +346,20 @@ RISE_FOR = 0.9
 #: Peek: the figure sinks behind an edge. Hidden share of the figure (0 shown, 1 gone).
 PEEK_HEAD = 0.65
 PEEK_SIDE = 0.55
+#: A peek from the top edge hangs by the hands and climbs up behind the edge; this share of the figure (its legs) is
+#: the last to go (INBOX 1683 y: "hands over the edge").
+PEEK_TOP_SHOWN = 0.45
+#: Where a peek is taken, as weights: behind a bar that is shown (tucked away behind the taskbar or a sidebar), or out
+#: of an edge with no bar. The mood bends them (`_peek_edges`).
+PEEK_BEHIND = 3.0
+PEEK_OPEN = {"bottom": 2.0, "left": 1.5, "right": 1.5, "top": 1.0}
+#: Behind the side of a smaller window (INBOX 1683 k): its weight beside the edges, how old the window scan may be for
+#: it to be trusted (seconds), and the plan, which holds longer than a peek so the window is seen to matter.
+PEEK_TUCK = 2.5
+TUCK_FRESH = 3.0
+TUCK_PLAN = ((0.0, 0.0), (1.0, 1.0), (6.0, 1.0), (6.5, 2.0), (13.0, 2.0), (13.5, 1.0), (16.0, 1.0), (16.8, 0.0))
+#: How far (logical px) a window may stop short of the figure's feet and still hide them.
+TUCK_REACH = 3.0
 #: (seconds, depth): 0 out, 1 the head shows, 2 gone. Sink, look about, duck,
 #: wait, come up, look, out. Depth 1 is `PEEK_HEAD` (or `PEEK_SIDE`) hidden, 2 is all.
 PEEK_PLAN = ((0.0, 0.0), (0.8, 1.0), (3.0, 1.0), (3.4, 2.0), (5.0, 2.0), (5.5, 1.0), (7.0, 1.0), (7.8, 0.0))
@@ -395,11 +432,51 @@ class Perch(NamedTuple):
     kind: str = "top"
 
 
+class Cover(NamedTuple):
+    """A window the figure may tuck behind the side of (physical px): its frame, and the frames of the windows
+    above it in the stacking order that overlap it (INBOX 1683 k)."""
+
+    key: int
+    rect: Rect
+    above: tuple[Rect, ...] = ()
+
+
+class TuckSpot(NamedTuple):
+    """Where to stand to tuck behind `cover`: the figure's left edge `x` and top `y` at rest, and the `peek_edge`
+    it looks out of ("right" when the window is on its right)."""
+
+    cover: Cover
+    edge: str
+    x: float
+    y: float
+
+
+class Bar(NamedTuple):
+    """A strip along one edge of a monitor (INBOX 1683 y): a taskbar or a docked appbar or sidebar. `edge` is the
+    monitor's side it lies along, `rect` its screen pixels, `shown` whether it is there to be hidden behind (not
+    auto-hidden, not hidden by a tool, not under a full-screen window)."""
+
+    edge: str
+    rect: Rect
+    shown: bool = True
+
+
 class Monitor(NamedTuple):
-    """A work area (left, top, right, bottom) in physical pixels and its dpi."""
+    """A play area (left, top, right, bottom) in physical pixels and its dpi. The area is the floor, ceiling and
+    sides: the work area, with the strip of every bar that is not shown given back. `screen` is the whole monitor
+    (None: the area is all there is) and `bars` what lies along its edges."""
 
     area: Rect
     dpi: int = 96
+    screen: Rect | None = None
+    bars: tuple[Bar, ...] = ()
+
+    def full(self) -> Rect:
+        return self.screen or self.area
+
+    def bar(self, edge: str) -> Bar | None:
+        """The shown bar along an edge, or None: the edge is the screen's own."""
+        return next((b for b in self.bars if b.edge == edge and b.shown), None)
 
 
 class Output(NamedTuple):
@@ -446,6 +523,11 @@ def _adjoins(a: Rect, b: Rect, side: str) -> bool:
         "left": abs(br - al) <= 1 and across_y, "right": abs(bl - ar) <= 1 and across_y,
         "top": abs(bb - at) <= 1 and across_x, "bottom": abs(bt - ab) <= 1 and across_x,
     }[side]
+
+
+def _same_screens(new: list[Monitor], old: list[Monitor]) -> bool:
+    """The same screens at the same dpi (only a bar may have come or gone)."""
+    return len(new) == len(old) and all(a.screen is not None and (a.screen, a.dpi) == (b.screen, b.dpi) for a, b in zip(new, old))
 
 
 class Engine:
@@ -637,6 +719,21 @@ class Engine:
         self.peek_edge: str | None = None
         self.peek_started = now
         self.peek_turned = False
+        #: Windows to tuck behind (the last scan), when it was read, the one a walk is heading for, the one hidden behind.
+        self.covers: list[Cover] = []
+        self.covers_at = -math.inf
+        self.tuck_goal: int | None = None
+        self.tuck: Cover | None = None
+        #: A window thrown it (INBOX 1683 x): when the perch was last read, how it left ("fall", "puff", "portal", "slide",
+        #: "tip"), the face it will wear on landing, and until when it flails.
+        self.perch_at = 0.0
+        self.last_fling = ""
+        self.flung: str | None = None
+        self.flail_until = 0.0
+        #: A hold that slipped: the window it will pull up onto, the scrabble's span, and how the last slip ended.
+        self.pulling: Perch | None = None
+        self.scrabble_t0 = self.scrabble_until = 0.0
+        self.last_slip = ""
         self.phase_from = (0.0, 0.0)
         self.phase_started = now
         self.phase_to = (0.0, 0.0)
@@ -762,6 +859,10 @@ class Engine:
 
     def set_monitors(self, monitors: list[Monitor], size: tuple[int, int] | None = None) -> None:
         """Displays or dpi changed: keep the figure on a monitor that is there."""
+        old_size = self.size
+        old_floor = self.ground_y() if self.perch is None and self.state in GROUNDED else None
+        # only a bar coming or going (the same screens, the same dpi) drops the floor under it; a new resolution re-plants it
+        same = _same_screens(monitors, self.monitors)
         self.monitors = list(monitors) or self.monitors
         if size is not None:
             self.size = size
@@ -773,6 +874,9 @@ class Engine:
         moving = ("held", "fall", "hop", "fly", "hang", "rise", "peek", "emerge", "leap", "drift", "walk")
         if self.gait == "float" and self.state in moving:
             self.y = min(max(self.y, top), self.floor_y(m))
+        elif same and old_floor is not None and self.ground_y(m) > old_floor + 1.0 and self.size == old_size:
+            self.x = min(max(self.x, left), right - self.size[0])
+            self._start_fall(0.0)  # the bar went away: it falls to the new floor, it does not snap there
         elif self.state not in moving[:9]:
             self._place_on_floor()
 
@@ -805,6 +909,8 @@ class Engine:
         """The foreground window's caret rectangle in screen px (None: no caret). Read by the runner at
         about 0.5 Hz; the figure steps off it on the next tick."""
         self.caret = rect
+        if self.tuck is not None:
+            self._check_tuck(self.now)
 
     def react(self, kind: str, now: float) -> bool:
         """Something happened on the screen (`extras.REACTIONS`: a window opened or closed, the foreground app
@@ -824,19 +930,11 @@ class Engine:
     # --- state changes ----------------------------------------------------------------
 
     def _enter(self, state: str, now: float) -> None:
+        self._wear_face(state, now)
         self.state = state
         self._arm_nap(state, now)
         self.flash = None
-        if state not in ("hang", "drift", "rise", "crouch"):
-            self.hang_on = None
-        if state != "fly":
-            self.wrapping = None
-        if state not in ("peek", "emerge") and self.wrapping is None:
-            self.sink, self.peek_edge = 0.0, None
-        if state not in ("walk", "drift", "crouch"):
-            self.goal = None
-        if state != "act":
-            self.act = None
+        self._drop_holds(state)
         self.trip = False
         if state != "warp":
             self.warp = None
@@ -852,6 +950,29 @@ class Engine:
             getattr(self, f"_on_{state}", lambda _now: None)(now)
         if state == "stand" and self.perch is not None:  # a visit to a window ends when its time does
             self.state_until = min(self.state_until, max(now + 1.0, self.perch_until))
+
+    def _wear_face(self, state: str, now: float) -> None:
+        if self.flung is not None:  # thrown off a window: the face comes with the first moment it can wear one
+            if state in extras.FACE_STATES:
+                self.ex.over = (self.flung, now, self.rng.uniform(*FLING_FACE))
+                self.flung = None
+            elif state in ("held", "pressed", "hang", "peek", "emerge", "rise"):
+                self.flung = None
+
+    def _drop_holds(self, state: str) -> None:
+        """What the new state lets go of."""
+        if state not in ("hang", "drift", "rise", "crouch"):
+            self.hang_on = None
+        if state != "fly":
+            self.wrapping = None
+        if state not in ("peek", "emerge") and self.wrapping is None:
+            self.sink, self.peek_edge, self.tuck = 0.0, None, None
+        if state not in ("walk", "drift", "crouch"):
+            self.goal = None
+        if state != "hang":
+            self.pulling, self.scrabble_until = None, 0.0
+        if state != "act":
+            self.act = None
 
     def _arm_nap(self, state: str, now: float) -> None:
         """A sleep that was asked for (`nap_req`) is a nap with an end of its own; any other state is not one."""
@@ -897,7 +1018,7 @@ class Engine:
 
     def _on_peek(self, now: float) -> None:
         self.peek_started, self.peek_turned = now, False
-        self.state_until = now + PEEK_PLAN[-1][0]
+        self.state_until = now + (TUCK_PLAN if self.tuck else PEEK_PLAN)[-1][0]
 
     def _on_leap(self, now: float) -> None:
         assert self.target is not None
@@ -1014,6 +1135,8 @@ class Engine:
             drag = HANG_SWING * amp * math.sin(2 * math.pi * t / HANG_PERIOD + self.hang_phase)
             blend = bh.smooth(t / HANG_DRAG_IN)  # a hem left swinging by the leap or climb is not dropped to the pendulum in one pose ease
             drag = self.hang_drag0 * (1.0 - blend) + drag * blend
+            if now < self.scrabble_until:  # the hands slipped and it is clawing back: the hem shakes
+                drag += SCRABBLE_DRAG * math.sin(2 * math.pi * SCRABBLE_HZ * (now - self.scrabble_t0))
         elif s_ == "warp" and self.warp is not None and self.warp["kind"] == "portal":
             squeeze = self._warp_view(now)[2]
             sx, sy = 1.0 - 0.8 * squeeze, 1.0 - 0.2 * squeeze
@@ -1636,17 +1759,27 @@ class Engine:
 
     # --- window tops (roam) ------------------------------------------------------------
 
-    def set_windows(self, windows: list[Perch], now: float, hangs: list[Perch] | tuple = ()) -> None:
+    def set_windows(self, windows: list[Perch], now: float, hangs: list[Perch] | tuple = (), covers: list[Cover] | tuple = ()) -> None:
         """The top edges the runner last read, and the edges only a hang takes hold of. A figure on one follows
         it: it falls (or floats down) when that window is gone or no longer under it, and keeps up when it moves."""
         self.windows = list(windows)
         self.hangs = list(hangs)
+        self.covers, self.covers_at = list(covers), now
+        if self.tuck is not None:
+            self._check_tuck(now)
         self._note_new_edges(now)
         if self.hang_on is not None:
             self._check_hang(now)
         if self.perch is None:
             return
         cur = next((p for p in self.windows if p.key == self.perch.key), None)
+        if cur is not None and self.roam_windows and self._window_throw(cur, now):
+            return
+        self.perch_at = now
+        self._follow_window(cur, now)
+
+    def _follow_window(self, cur: Perch | None, now: float) -> None:
+        """The scan found the window it stands on: ride it, or leave it when it is gone or no longer under it."""
         if cur is not None and self.roam_windows:
             self._ride_sideways(cur)
         cx = self.x + self.size[0] / 2
@@ -1713,6 +1846,78 @@ class Engine:
             elif self.state not in ("hop", "rise", "leap"):
                 self.y = cur.top - self.size[1]  # carried up with it, whatever it was doing
 
+    def _low(self) -> bool:
+        """Lying, sitting, napping or at a prop: a body that does not stand ready for the window to move."""
+        return self.state in ("sit", "sleep") or (self.state == "act" and self.act in (*extras.props.PROP_ACTS, "lie_down"))
+
+    def _moved_fast(self, cur: Perch, now: float) -> tuple[float, float, float] | None:
+        """The window's velocity (px/s) and its speed in logical px/s since the last scan, when that is a move fast enough
+        to throw this figure (a resize is not a move), else None."""
+        old, dt = self.perch, now - self.perch_at
+        if old is None or dt <= 0.0 or self.reduced or self.state in FLING_SAFE:
+            return None
+        if abs((cur.right - cur.left) - (old.right - old.left)) > PERCH_MOVED:
+            return None
+        dx, dy = cur.left - old.left, cur.top - old.top
+        if max(abs(dx), abs(dy)) <= PERCH_MOVED:
+            return None
+        vx, vy = dx / dt, dy / dt
+        speed = math.hypot(vx, vy) / self._scale()
+        return (vx, vy, speed) if speed >= (SLIP_SPEED if self._low() else FLING_SPEED) else None
+
+    def _window_throw(self, cur: Perch, now: float) -> bool:
+        """The window under it moved since the last scan: fast enough, it throws the figure off (a fling with a flail,
+        or a pop away), a lying or sitting one slips off at a lower speed; slower, it rides (`_ride_sideways`). A resize is
+        not a move. True when the figure left the window."""
+        moved = self._moved_fast(cur, now)
+        if moved is None:
+            return False
+        vx, vy, speed = moved
+        self.perch = self.target = None
+        self.legs.append(("jump", self.x, self.x, now))
+        escape = self._escape_roll() if speed >= FLING_SPEED else False  # judged on the mood it had, before the shock
+        self.mind.feel("startled", now)
+        self.flung = "worried" if self.rng.random() < 0.5 else "miffed"
+        if speed < FLING_SPEED:  # a body that cannot get up in time: it slides along with the window, or tips straight off
+            self.last_fling = "slide" if abs(vx) >= abs(vy) else "tip"
+            self._start_fall(0.4 * vx if self.last_fling == "slide" else 0.0)
+            return True
+        if escape:
+            self.last_fling = escape
+            self._escape_from(cur, escape, now)
+            return True
+        self.last_fling = "fall"
+        k = self._scale()
+        limit = THROW_MAX * k
+        if (v := math.hypot(vx, vy)) > limit:
+            vx, vy = vx * limit / v, vy * limit / v
+        self.grab = (self.size[0] / 2, self.size[1] / 2)  # tossed from the middle: no lever, only the direction turns it
+        self._start_fly(vx * FLING_CARRY, min(vy * FLING_CARRY, -FLING_LIFT * k))
+        self.flail_until = now + FLING_FLAIL
+        return True
+
+    def _escape_roll(self) -> str | bool:
+        """Whether the thrown figure pops away rather than falls, and how: a portal or a puff."""
+        mood = self.mind.mood(self.now, self.hour)
+        if self.rng.random() >= FLING_ESCAPE * (1.4 if mood in ("startled", "sleepy") else 1.0):
+            return False
+        return "portal" if self.rng.random() < 0.55 else "puff"
+
+    def _escape_from(self, cur: Perch, mode: str, now: float) -> None:
+        """Pop to somewhere safe: another window's top, else the floor at the far side of the screen from `cur`."""
+        w, h = self.size
+        m = self.current_monitor()
+        others = [p for p in self._candidates() if p.key != cur.key]
+        if others:
+            p = self.rng.choice(others)
+            self.target = p
+            lo, hi = max(p.left, m.area[0]), min(p.right, m.area[2]) - w
+            self._start_warp(mode, (min(max(self.x, lo), hi), p.top - h), "perch", now)
+            return
+        gap = 24 * self._scale()
+        far_left = (cur.left + cur.right) / 2 > (m.area[0] + m.area[2]) / 2
+        self._start_warp(mode, (m.area[0] + gap if far_left else m.area[2] - w - gap, self.ground_y(m)), "evade", now)
+
     def _ride_sideways(self, cur: Perch) -> None:
         """A window dragged along: the figure keeps its place on it (the same width, moved by more than a
         few px), so it rides rather than being left in the air or dropped (INBOX 1683 g)."""
@@ -1754,11 +1959,42 @@ class Engine:
         if cur is not None:
             self.hang_on = cur
         elif self.state == "hang":
-            self.hang_on = None
-            self._let_go()
+            self._slip_hang(p, now)
         elif self.state in ("drift", "crouch") and self.then == "hang":
             self.hang_on, self.goal, self.then, self.pending = None, None, "stand", None
             self._enter("stand", now)
+
+    def _grip_chance(self, now: float) -> float:
+        """How likely a slipping hold is to grip again: the more rested (and the more cheerful or curious), the likelier."""
+        rested = 1.0 - min(1.0, max(0.0, self.mind.needs["rest"]))
+        return min(0.95, GRIP_BASE * (0.4 + 0.6 * rested) * GRIP_MOOD.get(self.mind.mood(now, self.hour), 1.0))
+
+    def _slip_hang(self, p: Perch, now: float) -> None:
+        """The hands lost the edge: if its window is still there with a top to stand on, a chance to grip again and
+        scrabble (`_do_hang` pulls up when it ends), else the drop."""
+        self.hang_on = None
+        top = next((q for q in self.windows if q.key == p.key), None)
+        if top is not None and top.kind == "top" and top.top - self.size[1] >= self.current_monitor().area[1] and self.rng.random() < self._grip_chance(now):
+            self.last_slip, self.pulling = "pull", top
+            self.scrabble_t0, self.scrabble_until = now, now + SCRABBLE_FOR
+            self.state_until = self.scrabble_until
+            return
+        self.last_slip = "drop"
+        self._let_go()
+
+    def _pull_up(self, now: float) -> None:
+        """The scrabble is over: up onto the window's top where it is now, else the drop."""
+        p, self.pulling = self.pulling, None
+        cur = next((q for q in self.windows if p is not None and q.key == p.key), None)
+        w, h = self.size
+        if cur is None or cur.top - h < self.current_monitor().area[1]:
+            self.last_slip = "drop"
+            self._let_go()
+            return
+        x = min(max(self.x, cur.left), cur.right - w)
+        self.target = cur
+        self.legs.append(("climb", self.x, x, now))
+        self._rise((x, cur.top - h), "perch", now)
 
     def _arrive_hang(self, now: float, m: Monitor) -> None:
         """At the edge a hang came for: hands on it, or (its window went on the way) a stand."""
@@ -1852,7 +2088,7 @@ class Engine:
         return next((p for p in self.windows if t is not None and p.key == t.key), None)
 
     def _stand_on(self, p: Perch, now: float) -> None:
-        self.perch, self.target = p, None
+        self.perch, self.target, self.perch_at = p, None, now
         self.perch_until = now + self.rng.uniform(*PERCH_FOR)
         self.x = min(max(self.x, p.left), p.right - self.size[0])
         self.y = p.top - self.size[1]
@@ -1986,15 +2222,57 @@ class Engine:
             found.append((p, lo, hi))
         return found
 
-    def _peek(self, now: float) -> None:
+    def _peek_edges(self, m: Monitor, now: float) -> list[tuple[str, float]]:
+        """The edges a peek may be taken from and how much each is wanted: behind a shown bar (the taskbar on whichever
+        edge it is anchored, a docked sidebar) or out of a screen edge with no bar, the top too (hands over it). The
+        play area's edge is the bar's inner edge, so one rule serves both. The mood bends the weights: a sleepy or
+        startled one tucks behind a bar, a curious one peers out of an open edge, a happy or bored one plays at the top."""
+        mood = self.mind.mood(now, self.hour)
+        out = []
+        for edge in ("bottom", "left", "right", "top"):
+            if edge != "bottom" and not self._open_side(m, edge):
+                continue  # another monitor adjoins: a figure walking there is not at an edge
+            if edge == "top" and not (self.roam_windows and self.roam):
+                continue  # a climb to the ceiling is a window-level trip, like a hang
+            out.append((edge, self._edge_weight(edge, m.bar(edge) is not None, mood)))
+        if self._tuck_spots(m):
+            out.append(("tuck", PEEK_TUCK * (2.0 if mood in ("sleepy", "startled") else 1.0)))
+        return out
+
+    @staticmethod
+    def _edge_weight(edge: str, behind: bool, mood: str) -> float:
+        w = PEEK_BEHIND if behind else PEEK_OPEN[edge]
+        if behind and mood in ("sleepy", "startled"):
+            return w * 2.0
+        if not behind and mood == "curious":
+            return w * 1.5
+        if edge == "top" and mood in ("happy", "bored"):
+            return w * 2.0
+        return w
+
+    def _peek(self, now: float, edge: str | None = None) -> None:
         m = self.current_monitor()
-        edges = ["bottom"] + [e for e in ("left", "right") if self._open_side(m, e)]
-        edge = self.rng.choice(edges)
-        if edge == "bottom":
+        if edge is None:
+            table = self._peek_edges(m, now)
+            roll = self.rng.random() * sum(w for _e, w in table)
+            edge = table[-1][0]
+            for e, w in table:
+                roll -= w
+                if roll < 0:
+                    edge = e
+                    break
+        if edge == "tuck":
+            spot = self.rng.choice(self._tuck_spots(m))
+            self.tuck_goal = spot.cover.key
+            self._go((spot.x, spot.y), f"tuck_{spot.edge}", now)
+        elif edge == "bottom":
             self._go((self.x, self.floor_y(m)), "peek_bottom", now)
-            return
-        gx = m.area[0] if edge == "left" else m.area[2] - self.size[0]
-        self._go((gx, self.y if self.gait == "float" else self.floor_y(m)), f"peek_{edge}", now)
+        elif edge == "top":
+            x = min(max(self.x, m.area[0]), m.area[2] - self.size[0])
+            self._rise((x, m.area[1] - self._lift()), "peek_top", now)
+        else:
+            gx = m.area[0] if edge == "left" else m.area[2] - self.size[0]
+            self._go((gx, self.y if self.gait == "float" else self.floor_y(m)), f"peek_{edge}", now)
 
     def _go(self, goal: tuple[float, float], then: str, now: float, plain: bool = False) -> None:
         """Travel to a point, then `then`. By distance: close range a step, the middle a walk, far a
@@ -2003,7 +2281,7 @@ class Engine:
         self.then = then
         if not plain:
             m = self.current_monitor()
-            gx = goal[0] if then == "card" else tv.out_of_middle(goal[0], m.area, self.size[0])
+            gx = goal[0] if then == "card" or then.startswith("tuck_") else tv.out_of_middle(goal[0], m.area, self.size[0])
             goal = self._clear_of_caret(gx, goal[1])
         dist = abs(goal[0] - self.x) if self.gait == "walk" else math.hypot(goal[0] - self.x, goal[1] - self.y)
         if self.gait == "walk" and dist < 1.0:
@@ -2346,6 +2624,8 @@ class Engine:
             self._leap_to_hang(now)
         elif then.startswith("peek_"):
             self._arrive_peek(then[5:], now)
+        elif then.startswith("tuck_"):
+            self._arrive_tuck(then[5:], now)
         else:
             self._arrive_plain(then, now)
 
@@ -2376,11 +2656,85 @@ class Engine:
     def _arrive_peek(self, edge: str, now: float) -> None:
         self.peek_edge = edge
         self.sink_max = PEEK_HEAD if edge == "bottom" else PEEK_SIDE
+        if edge == "top":
+            self.sink_max = min(0.8, max(0.1, 1.0 - self.hang_top - PEEK_TOP_SHOWN))
+            self.y = self.current_monitor().area[1] - self._lift()  # the hands are over the edge
         if edge == "left":
             self.facing = 1
         elif edge == "right":
             self.facing = -1
         self._enter("peek", now)
+
+    def _tuck_spots(self, m: Monitor) -> list[TuckSpot]:
+        """Where a figure may hide behind the side of a window: the window's frame reaches the figure's whole height
+        (the clip is a rectangle, so a window that stops short would show the feet), is at least as wide as the
+        figure, has room on the screen for it beside the edge, and nothing above it covers that edge. Never the window
+        with the text caret in it (the person is working there), and only from a recent scan (INBOX 1683 k)."""
+        if not (self.roam_windows and self.roam) or self.reduced or self.now - self.covers_at > TUCK_FRESH or not self.covers:
+            return []
+        w, h = self.size
+        k = self._scale()
+        keep = tv.padded(self.caret, tv.CARET_MARGIN * k) if self.caret is not None else None
+        found: list[TuckSpot] = []
+        for c in self.covers:
+            y = self.floor_y(m) if self.gait != "float" else min(max(self.y, c.rect[1]), c.rect[3] - h)
+            if not self._tuck_blocked(c.rect, y, k, keep):
+                found.extend(self._tuck_sides(c, m, y))
+        return found
+
+    def _tuck_blocked(self, rect: tuple[float, float, float, float], y: float, k: float, keep) -> bool:
+        """The window cannot hide the figure: too narrow, not reaching its whole height, or where the person types."""
+        w, h = self.size
+        left, top, right, bottom = rect
+        return right - left < w or top > y or bottom < y + h - TUCK_REACH * k or (keep is not None and tv.overlaps(rect, keep))
+
+    def _tuck_sides(self, c: Cover, m: Monitor, y: float) -> list[TuckSpot]:
+        """The sides of one window with room on the screen and nothing above the edge."""
+        w, h = self.size
+        left, _top, right, _bottom = c.rect
+        found: list[TuckSpot] = []
+        for edge, x, wall in (("right", left - w, left), ("left", right, right)):
+            if x < m.area[0] or x + w > m.area[2]:
+                continue
+            zone = (wall - w, y, wall + w, y + h)
+            if not any(tv.overlaps(zone, a) for a in c.above):
+                found.append(TuckSpot(c, edge, x, y))
+        return found
+
+    def _arrive_tuck(self, edge: str, now: float) -> None:
+        """At the foot of the window's side: tuck if it is still there, where it was and still a place, else stand."""
+        key, self.tuck_goal = self.tuck_goal, None
+        spot = next((s for s in self._tuck_spots(self.current_monitor()) if s.cover.key == key and s.edge == edge), None)
+        if spot is None or abs(spot.x - self.x) > 4 * self._scale():
+            self._enter("stand", now)
+            return
+        self.tuck = spot.cover
+        self._arrive_peek(edge, now)
+
+    def _check_tuck(self, now: float) -> None:
+        """Hidden behind a window: come out when it is gone (closed or minimised), has moved, has another window over
+        its edge, or the person starts typing in it. Read with every scan, and when the caret moves."""
+        cover = self.tuck
+        if cover is None or self.state != "peek":
+            return
+        cur = next((c for c in self.covers if c.key == cover.key), None)
+        k = self._scale()
+        why = ""
+        if cur is None:
+            why = "gone"
+        elif any(abs(a - b) > PERCH_MOVED * k for a, b in zip(cur.rect, cover.rect)):
+            why = "moved"
+        else:
+            wall = cur.rect[0] if self.peek_edge == "right" else cur.rect[2]
+            zone = (wall - self.size[0], self.y, wall + self.size[0], self.y + self.size[1])
+            if any(tv.overlaps(zone, a) for a in cur.above):
+                why = "covered"
+            elif self.caret is not None and tv.overlaps(cur.rect, tv.padded(self.caret, tv.CARET_MARGIN * k)):
+                why = "typed in"
+        if why:
+            self.notes.append(f"tuck ended: the window it was behind is {why}")
+            self.tuck = None
+            self._enter("emerge", now)
 
     def _arrive_plain(self, then: str, now: float) -> None:
         if then == "follow":
@@ -2527,6 +2881,10 @@ class Engine:
     def _do_hang(self, now: float, dt: float) -> None:
         """Hanging is alive: the picture swings from the grip (`_target_pose`), and now and then it glances
         round (a turn). It lets go by its own choice: climbs up onto the window's edge, or drops."""
+        if self.pulling is not None:
+            if now >= self.scrabble_until:
+                self._pull_up(now)
+            return
         if now >= self.hang_glance_at and now < self.state_until - 3.0:
             self._face(-self.facing, now)
             self.hang_glance_at = now + self.rng.uniform(*HANG_GLANCE)
@@ -2610,7 +2968,7 @@ class Engine:
             self.y = max(self.y, self._ride_limits("fly" if self.state == "fly" else self.state)[2])
 
     def _peek_depth(self, t: float) -> float:
-        plan = PEEK_PLAN
+        plan = TUCK_PLAN if self.tuck else PEEK_PLAN
         for (t0, d0), (t1, d1) in zip(plan, plan[1:]):
             if t <= t1:
                 return d0 + (d1 - d0) * (t - t0) / (t1 - t0)
@@ -2627,12 +2985,18 @@ class Engine:
             self.peek_turned = True
             self.facing = -self.facing
         if now >= self.state_until:
-            self._enter("stand", now)
+            if self.peek_edge == "top":
+                self._arrive_hang(now, self.current_monitor())  # back down on its hands, not standing in the air
+            else:
+                self._enter("stand", now)
 
     def _do_emerge(self, now: float, dt: float) -> None:
         t = min(1.0, (now - self.phase_started) / EMERGE_FOR)
         self.sink = self.phase_from[0] * (1.0 - t)
         if now >= self.state_until:
+            if self.peek_edge == "top":
+                self._arrive_hang(now, self.current_monitor())
+                return
             self.peek_edge = None
             self.sink = 0.0
             self._enter("wave" if not self.reduced else "sit", now)
@@ -2808,7 +3172,7 @@ class Engine:
         kind = "scrabble" if self.wall else None
         if self.vy <= 0 or self.grounded:
             self.air_t0 = now
-        elif not self.wall and self.gait != "float" and now - self.air_t0 > ld.FLAIL_AFTER and abs(self.omega) < 1.5:
+        elif not self.wall and self.gait != "float" and (now < self.flail_until or (now - self.air_t0 > ld.FLAIL_AFTER and abs(self.omega) < 1.5)):
             kind = "flail"
         if kind != self.wob_kind:
             self.wob_kind, self.wob_t0 = kind, now
@@ -3286,9 +3650,13 @@ class Engine:
     def _edge_frame(self, now: float) -> str:
         if self.state == "rise":
             frame = "hop" if self.gait == "walk" else f"walk{int((now - self.phase_started) / (0.75 / self.walk_frames)) % self.walk_frames}"
+            if self.then == "peek_top":
+                return "hang"
             if self.then == "hang" and self._rise_drawn(now) + self._box(frame)[1] < self.current_monitor().area[1]:
                 return "hang"  # its head would pass the top of the screen: hands up, in the pose that fits
             return frame
+        if self.peek_edge == "top":
+            return "hang"
         return "stand" if self.sink < self.sink_max * 0.5 or now - self.peek_started < 0.8 else "look"
 
     def _stand_frame(self, now: float) -> str:
@@ -3421,6 +3789,10 @@ class Engine:
         # a bonk shows the startle frame in mid-air: no foot offset of its own
         y += self._dy("held" if self.state == "fly" else frame)
         x += self._flip_dx(frame, self.facing < 0)
+        if self.peek_edge == "top" or (self.state == "rise" and self.then == "peek_top"):
+            # hands over the top edge: what is above the play area's top (behind the bar, or off the screen) is clear
+            up = round(self.sink * h) if self.peek_edge == "top" else 0
+            return x, y - up, (0, min(h, max(0, round(self.current_monitor().area[1] - (y - up)))), w, h)
         if self.sink <= 0 or self.peek_edge is None:
             return x, y, None
         if self.peek_edge == "bottom":

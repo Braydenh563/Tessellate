@@ -363,10 +363,11 @@ function companionThrowLift(y, vy, g) {
 //: 1440x900): the landing was worked out in the frame it came to rest, 11
 //: to 40ms at 1x CPU and 217ms (122 of it forced layout) at 4x, in a frame
 //: the drawing had already dirtied. Reduced motion: the plain flight, no fates.
-function companionThrowPlan(x, y, vx, vy, world) {
+function companionThrowPlan(x, y, vx, vy, world, shaken = false) {
   const rand = companionThrowSeed.seed ? companionThrowRng(companionThrowSeed.seed) : Math.random;
   const speed = Math.hypot(vx, vy);
   const feel = nameMarkBuddyThrowFeel([rand(), rand(), rand()], speed);
+  feel.shaken = shaken;
   const room = { ...world, w: NMB_W, hang: world.top > 0 ? world.top - NMB_GRIP : null, climb: NMB_FEET - 1 - NMB_GRIP };
   const still = nameMarkBuddyNoTravel();
   const aim = still ? "" : companionThrowAim(y, vx, vy, rand);
@@ -395,7 +396,7 @@ function companionThrowPlan(x, y, vx, vy, world) {
   //: path's end, from the surfaces taken here.
   //: Its surfaces are read now, with the page clean: the landing itself reads nothing (INBOX 1667).
   const taken = nameMarkBuddyTakeSurfaces();
-  return { path, still, rand, aim, v: [vx, vy], land: () => nameMarkBuddyMeasureOnce(() => nameMarkBuddyThrowSpot(companionThrowAt(s)), taken) };
+  return { path, still, rand, aim, shaken, v: [vx, vy], land: () => nameMarkBuddyMeasureOnce(() => nameMarkBuddyThrowSpot(companionThrowAt(s)), taken) };
 }
 
 //: Where the path has it `ms` into the flight: between its two steps, so
@@ -479,7 +480,7 @@ function nameMarkBuddyThrow(buddy, vx, vy, world, plan = companionThrowPlan(nmb.
   //: or by the landing itself if the flight is shorter than that.
   let landing = null;
   const spotNow = () => (landing ||= plan.land());
-  nmb.thrown = { v: [+vx.toFixed(2), +vy.toFixed(2)], from: [Math.round(path[0].x), Math.round(path[0].y)] };
+  nmb.thrown = { v: [+vx.toFixed(2), +vy.toFixed(2)], from: [Math.round(path[0].x), Math.round(path[0].y)], shaken: !!plan.shaken };
   if (plan.still) {
     nameMarkBuddyThrowLand(buddy, end, tab, spotNow());
     return;
@@ -667,8 +668,8 @@ function nameMarkBuddyFlightStep(s, dt, world, k = NMB_THROW) {
     if (k.spin) n.rot += n.vx * k.spin * dt;
     else {
       //: A long fall with no tumble in it: it flails, windmilling about its lean.
-      n.fall = n.vy > 0 ? (n.fall || 0) + dt : 0;
-      const [after, amp] = companionThrowLand.flail;
+      n.fall = n.vy > 0 || k.shaken ? (n.fall || 0) + dt : 0;
+      const [after, amp] = k.shaken ? [0, companionThrowLand.flail[1]] : companionThrowLand.flail;
       n.flail = n.fall > after ? amp * Math.min(1, (n.fall - after) / 200) * Math.sin(n.fall * 0.019) : 0;
       n.rot += (Math.max(-40, Math.min(40, n.vx * k.tilt)) + n.flail - n.rot) * ease;
     }
@@ -736,6 +737,7 @@ function nameMarkBuddyThrowLand(buddy, s, tab, spot) {
   nmb.placedAt = Date.now();
   nmb.afterLand = true;
   nameMarkBuddyMoveTo(buddy, spot);
+  if (nmb.thrown.shaken) companionThrowMiffed();
   //: Its landing act a frame later, not in this one: the move's restyle and
   //: the act's were one 27 to 81ms frame (throw5.js), two now. A one-shot
   //: timer, not a frame request (the wake-source ratchet).
@@ -746,4 +748,37 @@ function nameMarkBuddyThrowLand(buddy, s, tab, spot) {
   delete spots["*"];
   spots[tab] = nameMarkBuddySpotFor(spot);
   nameMarkBuddyKeepSpots(spots);
+}
+
+//: **Shaken off** (INBOX 1683 x, the desk companion's fling, in the page): the panel it stands on, or a
+//: container scrolled under it, is carried faster than a throw's own pace (twice `NMB_TOSS_SPEED`, the desk's
+//: `FLING_SPEED = 2 * THROW_MIN`) for two looks running, and it is flung the way the panel went, `carry` of
+//: the speed and a little up, flailing from the first frame (`feel.shaken`), then miffed or worried for two to
+//: four seconds. A panel that animates (a sidebar easing, a card sliding in) is not a shake, and neither is one
+//: more than once in `gap` ms. Reduced motion, a pinned or visiting companion and an open menu never.
+const COMPANION_SHAKE = { carry: 0.6, lift: 0.35, gap: 8000, look: 100, looks: 3, faces: ["nervous", "angry"], face: [2000, 4000] };
+function nameMarkBuddyShaken(buddy, g, sx, sy) {
+  const k = COMPANION_SHAKE;
+  const now = performance.now();
+  //: Three fast looks in a row, each within `look` ms of the last: a quick wheel flick of a list is one or two.
+  g.fastN = now - (g.fastAt || -1e9) < k.look ? (g.fastN || 0) + 1 : 1;
+  g.fastAt = now;
+  if (g.fastN < k.looks || nmbFollow.moving || nmb.pinned || nmb.visit || nmb.flight || nameMarkBuddyNoTravel() || nameMarkBuddyMenuOpen()) return false;
+  if (now - (nmb.shakenAt || -1e9) < k.gap) return false;
+  nmb.shakenAt = now;
+  const cut = Math.min(1, NMB_THROW.max / Math.max(1e-9, Math.hypot(sx, sy)));
+  const vx = sx * cut * k.carry;
+  const vy = sy * cut * k.carry - k.lift;
+  if (nmb.ride) nameMarkBuddyRide(null);
+  nameMarkBuddyIndexReset();
+  const world = nameMarkBuddyWorld(nameMarkBuddyTab());
+  nameMarkBuddyThrow(buddy, vx, vy, world, companionThrowPlan(nmb.x, nmb.y, vx, vy, world, true));
+  return true;
+}
+
+//: The face after a shake: worried or miffed (`angry` comes down through `unimpressed`), two to four seconds.
+function companionThrowMiffed() {
+  const [lo, hi] = COMPANION_SHAKE.face;
+  const faces = COMPANION_SHAKE.faces;
+  nameMarkBuddyExpress(faces[Math.floor(Math.random() * faces.length)], lo + Math.random() * (hi - lo), { drift: true });
 }

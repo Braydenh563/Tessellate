@@ -169,6 +169,7 @@ class BITMAPINFO(ctypes.Structure):
 
 
 ABM_GETSTATE = 4
+ABM_GETTASKBARPOS = 5
 ABS_AUTOHIDE = 1
 
 
@@ -229,6 +230,8 @@ def signatures() -> dict[str, dict[str, tuple[Any, list[Any]]]]:
             "IsWindowVisible": (B, [H]),
             "GetAncestor": (H, [H, U]),
             "FindWindowW": (H, [wintypes.LPCWSTR, wintypes.LPCWSTR]),
+            "FindWindowExW": (H, [H, H, wintypes.LPCWSTR, wintypes.LPCWSTR]),
+            "GetClassNameW": (INT, [H, wintypes.LPWSTR, INT]),
             "GetLastActivePopup": (H, [H]),
             "IsIconic": (B, [H]),
             "IsZoomed": (B, [H]),
@@ -321,58 +324,142 @@ def load() -> Win32:
 
 # --- small helpers over the typed calls (shared by host and the coordinator) ----
 
-def _taskbar(w: Any) -> tuple[bool, tuple[int, int, int, int] | None]:
-    """(gone, rect): the taskbar is hidden by a tool, set to auto-hide or absent, and the rectangle it last had (None
-    with no window). The work area keeps its strip when only the window is hidden (research T1, INBOX 1692 a)."""
-    try:
-        tray = w.user32.FindWindowW("Shell_TrayWnd", None)
-        rect = None
-        if tray:
-            r = wintypes.RECT()
-            if w.user32.GetWindowRect(tray, ctypes.byref(r)):
-                rect = (r.left, r.top, r.right, r.bottom)
-        hidden = not tray or not w.user32.IsWindowVisible(tray)
-        ask = getattr(getattr(w, "shell32", None), "SHAppBarMessage", None)
-        data = APPBARDATA()
-        data.cbSize = ctypes.sizeof(APPBARDATA)
-        return hidden or bool(ask is not None and int(ask(ABM_GETSTATE, ctypes.byref(data))) & ABS_AUTOHIDE), rect
-    except Exception:  # noqa: BLE001 - an unreadable taskbar leaves the work area as the shell reports it
-        return False, None
+Rect = tuple[int, int, int, int]
+#: ABE_LEFT to ABE_BOTTOM, the order Windows numbers a taskbar's edge in.
+EDGES = ("left", "top", "right", "bottom")
+#: Windows that cover a monitor without being a program in front of it (the desktop, the taskbar itself).
+SHELL_CLASSES = frozenset({"Progman", "WorkerW", "Shell_TrayWnd", "Shell_SecondaryTrayWnd"})
 
 
-def _free_tray_side(work: tuple[int, int, int, int], full: tuple[int, int, int, int], rect: tuple[int, int, int, int] | None) -> tuple[int, int, int, int]:
-    """The work area with the strip a gone taskbar reserved given back: its own side of `full`, the bottom when its
-    rectangle is unknown, and nothing when it sits on another monitor or the monitor's size is unknown."""
-    if full[2] <= full[0] or full[3] <= full[1]:
-        return work
-    left, top, right, bottom = work
-    if rect is None:
-        return left, top, right, full[3]
+class BarInfo(NamedTuple):
+    """One strip along a monitor's edge: a taskbar window (`taskbar`) or the strip a docked appbar or sidebar
+    reserves (its inset between the monitor and its work area). `rect` is in screen pixels; `shown` is whether it
+    is there to be tucked behind: visible, not set to auto-hide and not under a full-screen window."""
+
+    edge: str
+    rect: Rect
+    visible: bool = True
+    autohide: bool = False
+    taskbar: bool = True
+    covered: bool = False
+
+    @property
+    def shown(self) -> bool:
+        return self.visible and not self.autohide and not self.covered
+
+
+class MonitorInfo(NamedTuple):
+    """A monitor as the engine plays on it: `area` is the floor, ceiling and sides (the work area with the strip of
+    every bar that is not shown given back), `screen` the whole monitor (rcMonitor), `bars` what is along its edges."""
+
+    area: Rect
+    dpi: int
+    screen: Rect
+    bars: tuple[BarInfo, ...] = ()
+
+
+def _class_name(w: Any, hwnd: Any) -> str:
+    buf = ctypes.create_unicode_buffer(64)
+    return buf.value if w.user32.GetClassNameW(hwnd, buf, 64) else ""
+
+
+def _edge_of(rect: Rect, screen: Rect) -> str:
+    """The side of `screen` a strip lies along, by its shape and where it sits (when the shell does not say)."""
     cx, cy = (rect[0] + rect[2]) / 2, (rect[1] + rect[3]) / 2
-    if not (full[0] <= cx < full[2] and full[1] <= cy < full[3]):
-        return work
-    if rect[2] - rect[0] >= rect[3] - rect[1]:  # wide: along the top or the bottom
-        return (left, full[1], right, bottom) if cy < (full[1] + full[3]) / 2 else (left, top, right, full[3])
-    return (full[0], top, right, bottom) if cx < (full[0] + full[2]) / 2 else (left, top, full[2], bottom)
+    if rect[2] - rect[0] >= rect[3] - rect[1]:
+        return "top" if cy < (screen[1] + screen[3]) / 2 else "bottom"
+    return "left" if cx < (screen[0] + screen[2]) / 2 else "right"
 
 
-def monitors(w: Any) -> list[tuple[tuple[int, int, int, int], int]]:
-    """Every monitor's work area (left, top, right, bottom) in physical pixels
-    of the calling thread's awareness, with its effective dpi. A taskbar that is hidden or auto-hides gives its
-    strip back, so the floor is the bottom of the screen (research T1)."""
-    found: list[tuple[tuple[int, int, int, int], int]] = []
-    gone, tray = _taskbar(w)
+def _nearest(screens: list[tuple[Rect, Rect, int]], rect: Rect) -> int | None:
+    """Index of the monitor a rectangle belongs to: the one whose whole rectangle its centre is nearest (an
+    auto-hidden taskbar rests half outside the screen)."""
+    cx, cy = (rect[0] + rect[2]) / 2, (rect[1] + rect[3]) / 2
+    best: tuple[float, int] | None = None
+    for i, (_work, full, _dpi) in enumerate(screens):
+        if full[2] <= full[0] or full[3] <= full[1]:
+            continue
+        dx, dy = max(full[0] - cx, 0, cx - full[2]), max(full[1] - cy, 0, cy - full[3])
+        if best is None or dx * dx + dy * dy < best[0]:
+            best = (dx * dx + dy * dy, i)
+    return None if best is None else best[1]
+
+
+def _tray_windows(w: Any) -> list[Any]:
+    """The primary taskbar (Shell_TrayWnd) and one Shell_SecondaryTrayWnd per other monitor."""
+    found: list[Any] = []
+    try:
+        primary = w.user32.FindWindowW("Shell_TrayWnd", None)
+        if primary:
+            found.append(primary)
+
+        after = None
+        for _ in range(16):  # one per monitor; the bound is a guard against a loop
+            after = w.user32.FindWindowExW(None, after, "Shell_SecondaryTrayWnd", None)
+            if not after:
+                break
+            if after not in found:
+                found.append(after)
+    except Exception:  # noqa: BLE001 - an unreadable shell leaves the work area as it reports it
+        logger.debug("overlay: the taskbars could not be listed", exc_info=True)
+    return found
+
+
+def _read_tray(w: Any, hwnd: Any) -> tuple[Rect | None, bool, bool, int | None]:
+    """(rectangle, visible, auto-hide, uEdge or None) of one taskbar window (research T1; INBOX 1683 y)."""
+    rect: Rect | None = None
+    r = wintypes.RECT()
+    if w.user32.GetWindowRect(hwnd, ctypes.byref(r)):
+        rect = (r.left, r.top, r.right, r.bottom)
+    visible = bool(w.user32.IsWindowVisible(hwnd))
+    autohide, uedge = False, None
+    ask = getattr(getattr(w, "shell32", None), "SHAppBarMessage", None)
+    if ask is not None:
+        data = APPBARDATA()
+        data.cbSize, data.hWnd = ctypes.sizeof(APPBARDATA), hwnd
+        autohide = bool(int(ask(ABM_GETSTATE, ctypes.byref(data))) & ABS_AUTOHIDE)
+        pos = APPBARDATA()
+        pos.cbSize, pos.hWnd = ctypes.sizeof(APPBARDATA), hwnd
+        if int(ask(ABM_GETTASKBARPOS, ctypes.byref(pos))):
+            uedge = int(pos.uEdge)
+            if rect is None:
+                rect = (pos.rc.left, pos.rc.top, pos.rc.right, pos.rc.bottom)
+    return rect, visible, autohide, uedge
+
+
+def _covering(w: Any, screens: list[tuple[Rect, Rect, int]]) -> set[int]:
+    """The monitors a full-screen program in front covers: the taskbar is under it there, whatever it is set to.
+    The rectangle is tested first (one call) so that a window that covers nothing costs no more."""
+    try:
+        front = w.user32.GetForegroundWindow()
+        r = wintypes.RECT()
+        if not front or not w.user32.GetWindowRect(front, ctypes.byref(r)):
+            return set()
+        rect = (r.left, r.top, r.right, r.bottom)  # the outer rectangle: one cheap call, and a full-screen window has no border to trim
+        hit = {
+            i for i, (_work, full, _dpi) in enumerate(screens)
+            if full[2] > full[0] and rect[0] <= full[0] and rect[1] <= full[1] and rect[2] >= full[2] and rect[3] >= full[3]
+        }
+        if hit and (_unlisted(w, front, None) is not None or _class_name(w, front) in SHELL_CLASSES):
+            return set()
+        return hit
+    except Exception:  # noqa: BLE001 - an unreadable foreground window covers nothing
+        return set()
+
+
+def _screens(w: Any) -> list[tuple[Rect, Rect, int]]:
+    """(work area, whole monitor, dpi) of every monitor, in the calling thread's awareness. The whole monitor is
+    (0, 0, 0, 0) when the shell does not give it."""
+    found: list[tuple[Rect, Rect, int]] = []
 
     def each(hmon: Any, _hdc: Any, _rect: Any, _data: Any) -> int:
         try:
             info = MONITORINFO()
             info.cbSize = ctypes.sizeof(MONITORINFO)
             if w.user32.GetMonitorInfoW(hmon, ctypes.byref(info)):
-                area = (info.rcWork.left, info.rcWork.top, info.rcWork.right, info.rcWork.bottom)
-                if gone:
-                    full = (info.rcMonitor.left, info.rcMonitor.top, info.rcMonitor.right, info.rcMonitor.bottom)
-                    area = _free_tray_side(area, full, tray)
-                found.append((area, _monitor_dpi(w, hmon)))
+                work = (info.rcWork.left, info.rcWork.top, info.rcWork.right, info.rcWork.bottom)
+                full = (info.rcMonitor.left, info.rcMonitor.top, info.rcMonitor.right, info.rcMonitor.bottom)
+                found.append((work, full, _monitor_dpi(w, hmon)))
         except Exception:  # noqa: BLE001 - one bad monitor never ends the walk
             logger.debug("overlay: a monitor could not be read", exc_info=True)
         return 1
@@ -380,6 +467,105 @@ def monitors(w: Any) -> list[tuple[tuple[int, int, int, int], int]]:
     callback = MONITORENUMPROC(each)
     w.user32.EnumDisplayMonitors(None, None, callback, 0)
     return found
+
+
+def _bars_by_monitor(w: Any, screens: list[tuple[Rect, Rect, int]], cover: set[int]) -> list[list[BarInfo]]:
+    """The bars along each monitor's edges: every taskbar window, then any edge whose work area is inset from the
+    monitor by something that is not a taskbar (a docked appbar or sidebar). With no taskbar window at all (a tool
+    removed it) the bottom inset is the missing taskbar's: not shown, so the strip goes back to the floor."""
+    out: list[list[BarInfo]] = [[] for _ in screens]
+    trays = _tray_windows(w)
+    for hwnd in trays:
+        bar = _read_bar(w, hwnd, screens, cover)
+        if bar is not None:
+            out[bar[0]].append(bar[1])
+    for i, (work, full, _dpi) in enumerate(screens):
+        out[i].extend(_inset_bars(work, full, {b.edge for b in out[i]}, not trays, i in cover))
+    return out
+
+
+def _read_bar(w: Any, hwnd: int, screens: list[tuple[Rect, Rect, int]], cover: set[int]) -> tuple[int, BarInfo] | None:
+    """One taskbar window as its monitor's index and bar, or None when it cannot be read or sits on no monitor."""
+    try:
+        rect, visible, autohide, uedge = _read_tray(w, hwnd)
+    except Exception:  # noqa: BLE001
+        logger.debug("overlay: a taskbar could not be read", exc_info=True)
+        return None
+    i = _nearest(screens, rect) if rect is not None else None
+    if rect is None or i is None:
+        return None
+    edge = EDGES[uedge] if uedge is not None and 0 <= uedge < 4 else _edge_of(rect, screens[i][1])
+    return i, BarInfo(edge, rect, visible, autohide, True, i in cover)
+
+
+def _inset_bars(work: Rect, full: Rect, have: set[str], no_taskbar: bool, covered: bool) -> list[BarInfo]:
+    """The edges of one monitor whose work area is inset by something other than a taskbar window."""
+    if full[2] <= full[0] or full[3] <= full[1]:
+        return []
+    insets = {
+        "left": (full[0], full[1], work[0], full[3]), "top": (full[0], full[1], full[2], work[1]),
+        "right": (work[2], full[1], full[2], full[3]), "bottom": (full[0], work[3], full[2], full[3]),
+    }
+    out = []
+    for edge, strip in insets.items():
+        if strip[2] - strip[0] <= 0 or strip[3] - strip[1] <= 0 or edge in have:
+            continue
+        gone_tray = edge == "bottom" and no_taskbar
+        out.append(BarInfo(edge, strip, not gone_tray, False, gone_tray, covered))
+    return out
+
+
+def _play_area(work: Rect, full: Rect, bars_: list[BarInfo], covered: bool) -> Rect:
+    """The work area with the strip of every bar that is not shown given back (and all of the monitor under a
+    full-screen window). The inset on a taskbar's edge is taken to be the taskbar's: a sidebar docked on the same
+    edge is not told apart from it."""
+    if full[2] <= full[0] or full[3] <= full[1]:
+        return work
+    if covered:
+        return full
+    left, top, right, bottom = work
+    for bar in bars_:
+        if bar.shown:
+            continue
+        if bar.edge == "left":
+            left = full[0]
+        elif bar.edge == "top":
+            top = full[1]
+        elif bar.edge == "right":
+            right = full[2]
+        else:
+            bottom = full[3]
+    return left, top, right, bottom
+
+
+def monitors_full(w: Any) -> list[MonitorInfo]:
+    """Every monitor with its play area, whole rectangle and bars (INBOX 1683 y, 1692 a). A shown bar on the
+    bottom edge makes the floor its top; hidden by a tool, auto-hidden or under a full-screen window, the floor is
+    the bottom of the screen. The top, left and right likewise."""
+    screens = _screens(w)
+    try:
+        cover = _covering(w, screens)
+        per = _bars_by_monitor(w, screens, cover)
+    except Exception:  # noqa: BLE001 - an unreadable shell leaves the work areas as the shell reports them
+        logger.debug("overlay: the bars could not be read", exc_info=True)
+        cover, per = set(), [[] for _ in screens]
+    return [
+        MonitorInfo(_play_area(work, full, per[i], i in cover), dpi, full, tuple(per[i]))
+        for i, (work, full, dpi) in enumerate(screens)
+    ]
+
+
+def bars(w: Any) -> list[BarInfo]:
+    """Every bar on every monitor (INBOX 1683 y): the taskbar windows with their rectangle, visibility,
+    auto-hide state and edge (ABM_GETSTATE, ABM_GETTASKBARPOS), and each docked appbar's inset strip."""
+    screens = _screens(w)
+    return [bar for per in _bars_by_monitor(w, screens, _covering(w, screens)) for bar in per]
+
+
+def monitors(w: Any) -> list[tuple[tuple[int, int, int, int], int]]:
+    """Every monitor's play area (left, top, right, bottom) in physical pixels of the calling thread's awareness,
+    with its effective dpi (`monitors_full` has the rest)."""
+    return [(m.area, m.dpi) for m in monitors_full(w)]
 
 
 def _monitor_dpi(w: Any, hmon: Any) -> int:
