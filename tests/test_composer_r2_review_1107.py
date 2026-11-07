@@ -47,3 +47,17 @@ def test_r2_the_undo_copy_names_buttons_that_exist_and_a_key_that_works_outside_
 def test_r2_a_metadata_word_is_never_a_word_the_notes_leave_out(question):
     got = ask(question)
     assert "do not mention" not in got and "mention tags" not in got and "mention a title" not in got, got
+
+
+# --- the open items of the list named ---
+
+@pytest.mark.parametrize("question", ["what is not done in Todo", "what's not done in my todo", "what is unticked on the Todo list"])
+def test_r2_open_items_of_the_list_named(question):
+    got = ask(question)
+    assert got.startswith("3 still to do on Todo:"), got
+    assert "Book MOT" in got and "Pay council tax" not in got and "coriander" not in got, got
+
+
+def test_r2_open_items_of_another_list_named():
+    got = ask("what is not done in the Lisbon packing list")
+    assert got.startswith("3 still to do on Lisbon packing list:") and "Book MOT" not in got, got

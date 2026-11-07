@@ -61,3 +61,20 @@ def test_e2_notes_that_leave_a_word_out_are_every_note_without_it(go, chat):
     said = go("which notes are not about Lisbon", chat)
     assert "Tokyo trip" in said and "Shopping" in said, said
     assert "Lisbon trip" not in said and "Lisbon dinner" not in said, said
+
+
+# --- review of round 2: the same asks through the route (stats answer first, as in the app) ---
+
+
+@pytest.mark.parametrize("chat", [False, True], ids=["ask", "chat"])
+def test_review_the_short_nth_form_and_a_named_list_state_reach_the_composer(go, chat):
+    assert go("last item in my todo", chat).startswith("The last item is Pay council tax"), go("last item in my todo", chat)
+    said = go("what is not done in Todo", chat)
+    assert "Book MOT" in said and "Pay council tax" not in said, said
+
+
+@pytest.mark.parametrize("chat", [False, True], ids=["ask", "chat"])
+@pytest.mark.parametrize(("question", "word"), [("what is my longest note", "longest"), ("what is my shortest note", "shortest"), ("how many notes do I have", "7 notes")])
+def test_review_a_ranking_of_the_notes_is_the_notebook_stats_answer(go, chat, question, word):
+    said = go(question, chat)
+    assert word in said and "don't mention" not in said and "No note I found" not in said, said
