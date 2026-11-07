@@ -153,23 +153,27 @@ MAX_REQUESTED_CONTEXT = 8192
 #: Windows are rounded down to this step so the number reads cleanly.
 CONTEXT_STEP = 1024
 
-#: The share of free memory the KV cache may take. The weights, the app and
-#: the rest of the computer need the remaining 60%.
+#: The share of free memory the KV cache may take. The weights (taken off
+#: first where they are known), the app and the rest of the computer need the
+#: remaining 60%.
 KV_MEMORY_SHARE = 0.4
 
 
-def memory_budget_bytes(weights_bytes: int = 0) -> int | None:
+def memory_budget_bytes(weights_bytes: int = 0, weights_resident: bool = True) -> int | None:
     """What the KV cache may spend: a bounded share of the larger of free RAM
     and what is left of video memory after the model's weights, or None when
     neither can be read.
 
-    A card's figure is its total, which counts the weights as free; free RAM
-    is what programs can use now, which already excludes a loaded model.
+    A card's figure is its total, which counts the weights as free. Free RAM
+    already excludes a loaded model, but not one that has yet to load
+    (`weights_resident` False), whose weights are about to take that room.
     """
     try:
         from tessellate.core import hardware
 
         free = hardware.free_memory_gb() or 0.0
+        if not weights_resident:
+            free = max(0.0, free - weights_bytes / 1024**3)
         cards = [max(0.0, (g.get("vram_gb") or 0.0) - weights_bytes / 1024**3) for g in hardware.detect_gpus()]
         best = max([free, *cards])
     except Exception as exc:  # noqa: BLE001  # unreadable memory means "keep the old context cap"
@@ -533,6 +537,19 @@ class Provider:
         """Bytes the model's weights take, or None if the backend cannot say."""
         return None
 
+    def weights_resident(self, model: str) -> bool:
+        """False only when the backend says the model is not in memory yet; an
+        answer it cannot give counts as resident, the older reading."""
+        loaded = self.loaded_models()
+        if loaded is None:
+            return True
+        names = {model, f"{model}:latest"}
+        return any(name in names for name in loaded)
+
+    def forget_context_decision(self, model: str) -> None:
+        """Read memory afresh for `model` next time (it is being reloaded anyway)."""
+        self.__dict__.get("_memory_windows", {}).pop(model, None)
+
     def window_is_fixed(self, model: str) -> bool:
         """True when the server loaded the model at the reported window, so
         there is nothing to allocate and the number is simply the truth."""
@@ -566,13 +583,19 @@ class Provider:
         #: `num_ctx` changes. Free memory moves every turn (it falls the moment
         #: the model loads), so reading it afresh moved the window by a step
         #: and reloaded the model on turn after turn. A new client (a changed
-        #: backend, a restart) reads memory again.
+        #: backend, a restart, stopping the model) reads memory again.
         decided = self.__dict__.setdefault("_memory_windows", {})
         if kv and model in decided:
             return decided[model]
-        share = memory_budget_bytes(self.weights_bytes(model) or 0) if kv else None
-        if not (kv and share):
+        if not kv:
             return max(floor, min(declared, self.MAX_REQUESTED_CONTEXT)), "default"
+        weights = self.weights_bytes(model) or 0
+        share = memory_budget_bytes(weights, self.weights_resident(model) if weights else True)
+        if not share:
+            #: Cached as well: otherwise every turn asks the server for its
+            #: model list again to reach the same answer.
+            decided[model] = max(floor, min(declared, self.MAX_REQUESTED_CONTEXT)), "default"
+            return decided[model]
         fits = int(share // kv) // CONTEXT_STEP * CONTEXT_STEP
         window = max(floor, min(declared, fits))
         decision = (max(floor, declared), "model") if window >= declared else (window, "memory")

@@ -567,6 +567,7 @@ class OllamaClient(Provider):
             response.raise_for_status()
         except requests.RequestException:
             return False, "Ollama did not answer, so the model could not be stopped. Is Ollama running?"
+        self.forget_context_decision(model)
         return True, f"Stopped {model}: it is out of memory until the next question."
 
     def list_models(self) -> list[dict]:

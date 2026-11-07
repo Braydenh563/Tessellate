@@ -226,3 +226,58 @@ def test_weights_larger_than_the_card_fall_back_to_free_memory(prefs, memory, mo
     client = ollama_model(131072)
     monkeypatch.setattr(client, "list_models", lambda: [{"name": "m", "size": 30 * GIB}])
     assert client.usable_context("m") == 25600  # 8 GiB of free RAM x 0.4
+
+
+def _with_weights(client, monkeypatch, gib, loaded):
+    calls = {"tags": 0}
+
+    def tags():
+        calls["tags"] += 1
+        return [{"name": "m:latest", "size": int(gib * GIB)}]
+
+    monkeypatch.setattr(client, "list_models", tags)
+    monkeypatch.setattr(client, "loaded_models", lambda: loaded)
+    return calls
+
+
+def test_weights_still_to_load_come_off_free_memory(prefs, memory, monkeypatch):
+    """Review of PR 216: the first decision can come before the model loads,
+    when free RAM still holds the room the weights are about to take, and the
+    cached window then stays too large. A model not yet in memory is taken off
+    free RAM; one already loaded is not (free RAM already excludes it)."""
+    memory(20)
+    cold = ollama_model(131072)
+    _with_weights(cold, monkeypatch, 14, [])
+    assert cold.usable_context("m") == 19456  # (20 - 14) GiB x 0.4 / 128 KiB
+    warm = ollama_model(131072)
+    _with_weights(warm, monkeypatch, 14, ["m:latest"])
+    assert warm.usable_context("m") == 65536  # 20 GiB x 0.4 / 128 KiB
+    unknown = ollama_model(131072)
+    _with_weights(unknown, monkeypatch, 14, None)
+    assert unknown.usable_context("m") == 65536  # cannot say: the old reading
+
+
+def test_a_default_decision_is_cached_too(prefs, memory, monkeypatch):
+    """Review of PR 216: with memory unreadable nothing was stored, so every
+    turn asked Ollama for its model list again."""
+    memory(0)
+    client = ollama_model(131072)
+    calls = _with_weights(client, monkeypatch, 14, [])
+    assert [client.usable_context("m") for _ in range(3)] == [8192] * 3
+    assert calls["tags"] == 1
+
+
+def test_stopping_the_model_lets_the_window_be_read_again(prefs, memory, monkeypatch):
+    """Review of PR 216: the cache was never cleared. Stopping the model makes
+    the next turn reload it anyway, so that is the moment to read memory again."""
+    import tessellate.ai.ollama_client as oc
+
+    memory(8)
+    client = ollama_model(131072)
+    _with_weights(client, monkeypatch, 1, ["m:latest"])
+    assert client.usable_context("m") == 25600
+    memory(16)
+    assert client.usable_context("m") == 25600
+    monkeypatch.setattr(oc.requests, "post", lambda *a, **k: type("R", (), {"raise_for_status": lambda self: None})())
+    assert client.unload("m")[0]
+    assert client.usable_context("m") == 52224
