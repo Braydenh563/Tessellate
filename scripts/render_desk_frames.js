@@ -214,8 +214,16 @@ async function steadyShot(page, file, clip) {
           clearTimeout(tail.raf); cancelAnimationFrame(tail.raf); tail.raf = 0;
           if (tail.sway) { tail.sway.cancel(); tail.sway = null; }
           tail.svg.style.removeProperty("transform");
+          //: The page's own loop redraws the tail between the sample and the shot (INBOX 1683 e: four of the
+          //: 24 idle frames carried a tail from another moment, a seam of 5x an ordinary step at the wrap): its
+          //: draws are dropped while a frame is held, only this one's pass through.
+          const draw = window.__tailDraw || (window.__tailDraw = atlasTailDraw);
+          window.atlasTailDraw = (t, ...a) => (t === tail && window.__tailSample ? draw(t, ...a) : undefined);
+          window.__tailSample = false;
           const p = Object.fromEntries(Object.entries(ATLAS_TAIL_ACTS.sway).map(([k, v]) => [k, v]));
-          atlasTailDraw(tail, (s) => atlasTailBend(s, p, w, w, 0, 2 * w), () => 1 + 0.03 * Math.cos(2 * w));
+          window.__tailSample = true;
+          draw(tail, (s) => atlasTailBend(s, p, w, w, 0, 2 * w), () => 1 + 0.03 * Math.cos(2 * w));
+          window.__tailSample = false;
           const k = (1 - Math.cos(w)) / 2;
           for (const el of box.querySelectorAll(".atl-layer-body .nmb-torso")) el.style.setProperty("scale", `${(1 + ATLAS_BREATH_SWELL[0] * k).toFixed(4)} ${(1 + ATLAS_BREATH_SWELL[1] * k).toFixed(4)}`);
           const lower = b.querySelectorAll(".nm-atlas.atl-layer-lower").length ? ".nm-atlas.atl-layer-lower" : ".atl-lw-lower";

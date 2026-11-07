@@ -3,7 +3,12 @@ right" (a screenshot of the desk figure resting on the floor, drawn tilted about
 the shipped frames' alpha and a fixed clock. Before: from the first floor contact a thrown figure took 1.9 to 3.5 s
 (walker) and 1.2 to 3.0 s (floater) to be laid, because the righting was a soft spring (2.6 rad/s) behind a 0.4 s ramp
 and the laid pose also waited 0.3 s of being slow; a landing added a spin kick; and a bounce while righting re-added
-turn. Now the first floor contact pays the turn out as one eased move to the nearest upright (`LAND_RIGHT_FOR`)."""
+turn. Then the first floor contact paid the turn out as one eased move to the nearest upright.
+
+Intent moved (INBOX 1683 k, the owner: "I want it to either land on tis feet, land on its back or stomach and like skid"):
+a landing now ends on the feet, the back or the belly (`landing.decide`), and a lie gets up again. What stays pinned here
+is the owner's complaint of (v): from the first floor contact the body reaches its outcome in one move, is never drawn
+turned once laid, has its feet on the line it rests on, and ends standing upright and still within a bounded time."""
 
 from __future__ import annotations
 
@@ -38,21 +43,24 @@ def fly(gait: str, kind: tuple, look: str = "masculine") -> dict:
     e.big_ready = e.trip_ready = e.climb_ready = float("inf")
     t = _release(e, speed, direction, at)
     boxes = s.metrics(96)
-    rows, flipped = [], False
+    rows, flipped, touch, outcome = [], False, None, None
     out = e.update(t)
     end = t + 12.0
     while t < end and e.state == "fly":
         t += max(0.004, min(0.1, (out.wake_ms or 16) / 1000.0))
-        if name == "upside_down" and not flipped and e.touch_at is None and e.y > e.ground_y() - 90:
+        if name == "upside_down" and not flipped and touch is None and e.y > e.ground_y() - 90:
             flipped, e.angle, e.omega = True, math.pi - 0.1, 0.8  # about to land on its head, still turning
         out = e.update(t)
+        if touch is None and e.grounded:
+            touch = t
+        outcome = outcome or e.outcome
         foot = out.y + boxes[(out.frame, out.flip)][3]
         rows.append((t, e.state, out.frame, out.angle, e.angle, foot, e.laid))
     last = out
     while e.state != "stand" and t < end + 3:
         t += 0.016
         last = e.update(t)
-    return {"e": e, "rows": rows, "touch": e.touch_at, "final_foot": last.y + boxes[(last.frame, last.flip)][3], "state": e.state}
+    return {"e": e, "rows": rows, "touch": touch, "outcome": outcome, "final_foot": last.y + boxes[(last.frame, last.flip)][3], "state": e.state}
 
 
 @pytest.mark.parametrize("gait", ["walk", "float"])

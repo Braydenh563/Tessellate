@@ -2,7 +2,7 @@
 
 Generated 2026-11-07 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7841, frontend ids 2646, CSS sections 522, backend routes 649, backend modules 8914, test files 2105, tests 17775, plan headings 1003, app scripts 28, boot scripts 37, script files 260.
+Counts: frontend functions 7841, frontend ids 2646, CSS sections 522, backend routes 649, backend modules 8919, test files 2108, tests 17795, plan headings 1003, app scripts 28, boot scripts 37, script files 260.
 
 ## Frontend functions (7841)
 
@@ -2938,31 +2938,31 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `companionThrowAim` | frontend/js/companion-throw.js:334 |
-| `companionThrowArrive` | frontend/js/companion-throw.js:134 |
-| `companionThrowAt` | frontend/js/companion-throw.js:281 |
-| `companionThrowAtTime` | frontend/js/companion-throw.js:405 |
-| `companionThrowClimb` | frontend/js/companion-throw.js:543 |
-| `companionThrowDown` | frontend/js/companion-throw.js:253 |
-| `companionThrowFlat` | frontend/js/companion-throw.js:523 |
-| `companionThrowHold` | frontend/js/companion-throw.js:273 |
-| `companionThrowLedges` | frontend/js/companion-throw.js:101 |
-| `companionThrowLift` | frontend/js/companion-throw.js:354 |
-| `companionThrowPick` | frontend/js/companion-throw.js:326 |
-| `companionThrowPlan` | frontend/js/companion-throw.js:367 |
+| `companionThrowAim` | frontend/js/companion-throw.js:333 |
+| `companionThrowArrive` | frontend/js/companion-throw.js:133 |
+| `companionThrowAt` | frontend/js/companion-throw.js:280 |
+| `companionThrowAtTime` | frontend/js/companion-throw.js:404 |
+| `companionThrowClimb` | frontend/js/companion-throw.js:601 |
+| `companionThrowDown` | frontend/js/companion-throw.js:252 |
+| `companionThrowFlat` | frontend/js/companion-throw.js:581 |
+| `companionThrowHold` | frontend/js/companion-throw.js:272 |
+| `companionThrowLedges` | frontend/js/companion-throw.js:100 |
+| `companionThrowLift` | frontend/js/companion-throw.js:353 |
+| `companionThrowPick` | frontend/js/companion-throw.js:325 |
+| `companionThrowPlan` | frontend/js/companion-throw.js:366 |
 | `companionThrowRng` | frontend/js/companion-throw.js:61 |
-| `companionThrowSettle` | frontend/js/companion-throw.js:297 |
-| `companionThrowSettleSoon` | frontend/js/companion-throw.js:561 |
-| `companionThrowSide` | frontend/js/companion-throw.js:165 |
-| `companionThrowSlide` | frontend/js/companion-throw.js:206 |
+| `companionThrowSettle` | frontend/js/companion-throw.js:296 |
+| `companionThrowSettleSoon` | frontend/js/companion-throw.js:619 |
+| `companionThrowSide` | frontend/js/companion-throw.js:164 |
+| `companionThrowSlide` | frontend/js/companion-throw.js:205 |
 | `companionThrowStep` | frontend/js/companion-throw.js:78 |
-| `companionThrowUp` | frontend/js/companion-throw.js:226 |
-| `companionThrowWrapOn` | frontend/js/companion-throw.js:188 |
-| `nameMarkBuddyFlightStep` | frontend/js/companion-throw.js:590 |
-| `nameMarkBuddyThrow` | frontend/js/companion-throw.js:418 |
-| `nameMarkBuddyThrowFeel` | frontend/js/companion-throw.js:574 |
-| `nameMarkBuddyThrowLand` | frontend/js/companion-throw.js:667 |
-| `nameMarkBuddyThrowSpot` | frontend/js/companion-throw.js:656 |
+| `companionThrowUp` | frontend/js/companion-throw.js:225 |
+| `companionThrowWrapOn` | frontend/js/companion-throw.js:187 |
+| `nameMarkBuddyFlightStep` | frontend/js/companion-throw.js:651 |
+| `nameMarkBuddyThrow` | frontend/js/companion-throw.js:471 |
+| `nameMarkBuddyThrowFeel` | frontend/js/companion-throw.js:632 |
+| `nameMarkBuddyThrowLand` | frontend/js/companion-throw.js:733 |
+| `nameMarkBuddyThrowSpot` | frontend/js/companion-throw.js:722 |
 
 ### frontend/js/companion-travel.js (7)
 
@@ -13056,7 +13056,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:164 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (8914)
+## Backend modules (8919)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -15873,8 +15873,8 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `_act_topic` | src/tessellate/ai/help_topics_more.py:3426 |
-| `_slash_commands_topic` | src/tessellate/ai/help_topics_more.py:3558 |
+| `_act_topic` | src/tessellate/ai/help_topics_more.py:3425 |
+| `_slash_commands_topic` | src/tessellate/ai/help_topics_more.py:3557 |
 
 ### src/tessellate/ai/help_words.py (2)
 
@@ -22389,11 +22389,11 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `Engine` | src/tessellate/core/overlay/engine.py:418 |
-| `Monitor` | src/tessellate/core/overlay/engine.py:365 |
-| `Output` | src/tessellate/core/overlay/engine.py:372 |
-| `Perch` | src/tessellate/core/overlay/engine.py:353 |
-| `_adjoins` | src/tessellate/core/overlay/engine.py:407 |
+| `Engine` | src/tessellate/core/overlay/engine.py:422 |
+| `Monitor` | src/tessellate/core/overlay/engine.py:369 |
+| `Output` | src/tessellate/core/overlay/engine.py:376 |
+| `Perch` | src/tessellate/core/overlay/engine.py:357 |
+| `_adjoins` | src/tessellate/core/overlay/engine.py:411 |
 
 ### src/tessellate/core/overlay/extras.py (8)
 
@@ -22433,6 +22433,16 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `OverlayHost` | src/tessellate/core/overlay/host.py:121 |
 | `PaceTimer` | src/tessellate/core/overlay/host.py:61 |
 | `premultiplied_dib_bytes` | src/tessellate/core/overlay/host.py:116 |
+
+### src/tessellate/core/overlay/landing.py (5)
+
+| Name | File:line |
+|---|---|
+| `decide` | src/tessellate/core/overlay/landing.py:47 |
+| `rest_for` | src/tessellate/core/overlay/landing.py:60 |
+| `smack` | src/tessellate/core/overlay/landing.py:64 |
+| `wobble` | src/tessellate/core/overlay/landing.py:74 |
+| `wrap` | src/tessellate/core/overlay/landing.py:42 |
 
 ### src/tessellate/core/overlay/pacing.py (1)
 
@@ -24279,7 +24289,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (17775)
+## Tests (17795)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -24574,6 +24584,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_companion_cover_1632.py | 2 |
 | tests/test_companion_fall_split_1463.py | 3 |
 | tests/test_companion_land_1402.py | 8 |
+| tests/test_companion_landing_1683k.py | 4 |
 | tests/test_companion_menu_choose_1554.py | 1 |
 | tests/test_companion_mind.py | 8 |
 | tests/test_companion_motion.py | 111 |
@@ -25674,6 +25685,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_overlay_host.py | 25 |
 | tests/test_overlay_idle.py | 9 |
 | tests/test_overlay_land_1683.py | 4 |
+| tests/test_overlay_landing_1683k.py | 12 |
 | tests/test_overlay_life_1670.py | 25 |
 | tests/test_overlay_moves.py | 26 |
 | tests/test_overlay_nap_1683u.py | 6 |
@@ -25686,6 +25698,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_overlay_roam.py | 19 |
 | tests/test_overlay_roam_runner.py | 10 |
 | tests/test_overlay_runner.py | 24 |
+| tests/test_overlay_seams_1683e.py | 4 |
 | tests/test_overlay_smooth_1670.py | 11 |
 | tests/test_overlay_spin_1683.py | 12 |
 | tests/test_overlay_sprites.py | 17 |
