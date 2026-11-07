@@ -17,4 +17,8 @@ tier: max (weekly 4%), three agents at once, Sonnet or Haiku; never Fable; owner
 - [ ] Layered deep dive round 1: desk companion (research, audit, fix, re-audit)
 - [ ] Deep dive round 1: in-app companion and Atlas
 - [ ] Deep dive round 1: diagram builder
+- [ ] Deep dive round 1: composer (class rule 1357, parity decision 75)
+- [ ] Repeat rounds per surface until a round finds nothing new
+- [ ] Open deep-audit and Fable findings: ANALYSIS.md, AUDIT.md, FABLE_BRIEF.md
+- [ ] Then plans, BACKLOG, the rest of the 2026-11-07 order
 - [ ] Session end: full suite, INBOX 1693, HANDOVER morning summary, retro
