@@ -127,6 +127,8 @@ class OverlayRunner:
         self.scale = sizing.clamp(scale)
         self._goal: float | None = None
         self._sizing: dict[str, Any] | None = None
+        #: The resize cursor for the handle as last drawn, and the one the host was last told (0: the arrow).
+        self._hit_cursor, self._cursor_now = win32.IDC_SIZENESW, 0
         #: The size just pulled and until when: a sync from the page, which has not got it yet, must not undo it.
         self._pending: tuple[float, float] | None = None
         #: A press the engine took (a drag of the figure): the handle is for a hover, not for what follows one.
@@ -616,6 +618,7 @@ class OverlayRunner:
             if area is not None and out.x - frame.pad_x + max(frame.width, hit[2]) > area[2]:
                 hit = sizing.hit_box(box, hanging, self.dpi, left=True)  # the right corner is off the screen: the left one
             frame, self._hit = sizing.with_handle(frame, hit, self._sizing is not None)
+            self._hit_cursor = win32.IDC_SIZENWSE if sizing.pulls_nwse(box, hit, hanging) else win32.IDC_SIZENESW
         self._blend = (self._target, self.clock()) if self._blends(self._last_key, key, self._target, frame) else None
         self._blend_s = BLEND_LOOK_S if self._last_key and "look" in (self._last_key[0], key[0]) else BLEND_S
         self._target, self._blend_step = frame, -1
@@ -723,6 +726,7 @@ class OverlayRunner:
             return self._pull_handle(kind, x, y, now)
         rect = self._hit_screen()
         over = rect is not None and rect[0] <= x < rect[2] and rect[1] <= y < rect[3]
+        self._set_cursor(self._hit_cursor if over else 0)
         if kind == "down":
             if over and self._press_handle(x, y, now):
                 self._engine_press = False
@@ -736,6 +740,12 @@ class OverlayRunner:
             self._hover_until = now + sizing.SHOW_S
             return over
         return False
+
+    def _set_cursor(self, idc: int) -> None:
+        """The pointer's shape over the overlay, told to the host only when it changes."""
+        if idc != self._cursor_now and self.host is not None:
+            self._cursor_now = idc
+            self.host.cursor(idc)
 
     def _press_handle(self, x: int, y: int, now: float) -> bool:
         """A press on the handle: the second of a double goes back to Medium, else a pull starts from the point the

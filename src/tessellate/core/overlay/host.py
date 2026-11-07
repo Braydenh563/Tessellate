@@ -142,6 +142,7 @@ class OverlayHost:
         self.pos = (0, 0)
         self.visible = False
         self._taskbar_msg = 0
+        self._cursor = 0  # the system cursor over the window while the pointer is on the size handle; 0: the arrow
         self._handlers = self._build_handlers()
         self._drawn = False
         self._logged_ok = False
@@ -213,6 +214,10 @@ class OverlayHost:
 
     def reassert(self) -> None:
         self._call("topmost")
+
+    def cursor(self, idc: int) -> None:
+        """The pointer's shape over the window: a system cursor id (`IDC_SIZENWSE`, ...), 0 for the arrow."""
+        self._call("cursor", int(idc))
 
     # --- the window's thread ------------------------------------------------------------
 
@@ -341,6 +346,7 @@ class OverlayHost:
             k.WM_LBUTTONUP: self._on_up,
             k.WM_RBUTTONUP: lambda _h, _w: self._answered("right"),
             k.WM_MOUSEACTIVATE: lambda _h, _w: k.MA_NOACTIVATE,
+            k.WM_SETCURSOR: self._on_setcursor,
             k.WM_DISPLAYCHANGE: self._on_display,
             k.WM_DPICHANGED: self._on_display,
             k.WM_SETTINGCHANGE: self._on_setting,
@@ -348,6 +354,14 @@ class OverlayHost:
             k.WM_CLOSE: self._on_close,
             k.WM_DESTROY: self._on_destroy,
         }
+
+    def _on_setcursor(self, _hwnd: Any, _wparam: int) -> int | None:
+        """Over the size handle the pointer is the diagonal resize cursor, as on the app's grip (the owner,
+        2026-11-07: "the mouse cursor doesnt change when hovering over it"); elsewhere the class's arrow."""
+        if not self._cursor:
+            return None
+        self.w.user32.SetCursor(self.w.user32.LoadCursorW(None, self._cursor))
+        return 1
 
     def _answered(self, kind: str) -> int:
         self._event(kind)
@@ -482,6 +496,9 @@ class OverlayHost:
             self._set_timer(command[1])
         elif name == "topmost":
             self.reassert_now()
+        elif name == "cursor":
+            self._cursor = int(command[1])
+            self.w.user32.SetCursor(self.w.user32.LoadCursorW(None, self._cursor or k.IDC_ARROW))
 
     def reassert_now(self) -> None:
         if self.hwnd and self.visible:

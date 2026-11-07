@@ -85,6 +85,30 @@ def hit_box(box: tuple[int, int, int, int], hanging: bool, dpi: int, left: bool 
     return x, top, x + side, top + side
 
 
+def pulls_nwse(box: tuple[int, int, int, int], hit: tuple[int, int, int, int], hanging: bool) -> bool:
+    """Whether the handle at `hit` pulls along the top-left to bottom-right diagonal (bottom right hanging, top left
+    standing) rather than bottom-left to top-right: the cursor shown over it, as on the app's grip (1692 j)."""
+    return hanging != (hit[0] < box[0])
+
+
+#: The ring is drawn this many times larger and scaled down, so its edge is smooth like the app's CSS circle
+#: (the owner, 2026-11-07: "the resize circle is different with the desktop companion compared to the in-app one").
+RING_SS = 4
+
+
+def ring_tile(side: int, hot: bool) -> "Any":
+    """The handle's ring on a transparent `side` square: the app's grip (a 12 CSS px circle, a 2 px accent border,
+    a card fill) at the monitor's dpi, antialiased. A held handle grows by 1.5 px, as before."""
+    from PIL import Image, ImageDraw
+
+    big = side * RING_SS
+    tile = Image.new("RGBA", (big, big), (0, 0, 0, 0))
+    r = (side * 0.25 + (1.5 if hot else 0.0)) * RING_SS
+    c = big / 2.0
+    ImageDraw.Draw(tile).ellipse((c - r, c - r, c + r, c + r), fill=FILL, outline=RING, width=max(2, round(side / 12)) * RING_SS)
+    return tile.resize((side, side), Image.LANCZOS)
+
+
 def with_handle(frame: Frame, hit: tuple[int, int, int, int], hot: bool) -> tuple[Frame, tuple[int, int, int, int]]:
     """`frame` with the handle drawn over it, on a canvas grown (transparent, with `pad` keeping the window's
     place) where the hit box lies outside it, and the hit box in the new canvas: a faint box (so the whole of it
@@ -102,9 +126,7 @@ def with_handle(frame: Frame, hit: tuple[int, int, int, int], hot: bool) -> tupl
     draw = ImageDraw.Draw(draw_on)
     draw.rectangle((hit[0], hit[1], hit[2] - 1, hit[3] - 1), fill=(*RING[:3], HIT_ALPHA))
     side = hit[2] - hit[0]
-    r = side * 0.25 + (1.5 if hot else 0.0)
-    cx, cy = (hit[0] + hit[2]) / 2.0, (hit[1] + hit[3]) / 2.0
-    draw.ellipse((cx - r, cy - r, cx + r, cy + r), fill=FILL, outline=RING, width=max(2, round(side / 12)))
+    draw_on.alpha_composite(ring_tile(side, hot), (hit[0], hit[1]))
     image = Image.alpha_composite(image, draw_on)
     box = frame.box
     moved = (box[0] + lead, box[1] + up, box[2] + lead, box[3] + up)

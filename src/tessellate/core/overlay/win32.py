@@ -58,6 +58,7 @@ WM_CLOSE = 0x0010
 WM_QUIT = 0x0012
 WM_SETTINGCHANGE = 0x001A
 WM_MOUSEACTIVATE = 0x0021
+WM_SETCURSOR = 0x0020
 WM_MOUSEMOVE = 0x0200
 WM_LBUTTONDOWN = 0x0201
 WM_LBUTTONUP = 0x0202
@@ -78,6 +79,8 @@ SPI_SETWORKAREA = 0x002F
 SPI_GETCLIENTAREAANIMATION = 0x1042
 MDT_EFFECTIVE_DPI = 0
 IDC_ARROW = 32512
+#: The diagonal resize cursors: top left to bottom right, and bottom left to top right.
+IDC_SIZENWSE, IDC_SIZENESW = 32642, 32643
 GWL_EXSTYLE = -20
 WS_EX_TRANSPARENT = 0x00000020
 #: MonitorFromPoint: the nearest monitor when the point is on none.
@@ -203,6 +206,7 @@ def signatures() -> dict[str, dict[str, tuple[Any, list[Any]]]]:
             "SetCapture": (H, [H]),
             "ReleaseCapture": (B, []),
             "LoadCursorW": (H, [H, ctypes.c_void_p]),
+            "SetCursor": (H, [H]),
             "RegisterWindowMessageW": (U, [wintypes.LPCWSTR]),
             "EnumDisplayMonitors": (B, [H, P(wintypes.RECT), MONITORENUMPROC, LPARAM]),
             "GetMonitorInfoW": (B, [H, P(MONITORINFO)]),
