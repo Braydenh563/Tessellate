@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Opening a note from a dashboard list no longer reads the page's scroll edges inside the tab switch (INBOX 1667, the owner's 2026-11-07 log: frame 5188ms, avatars.js setTimeout 4551ms, input 4016ms behind it): the scroll-edge sync runs a frame on, after the frame's layout, not in the class observer's microtask (48 titled notes, companion on, 4x CPU: its forced scrollTop read 38 to 65ms to none; p95 frame 289-381 to 272, max 545-647 to 475, noisy). A static lint pins that the readers an opened note wakes read no layout inside a querySelectorAll write loop. Not reproduced: the 4.4 s companion timer (its afterClean callbacks cost at most 43ms here); the input lines are events queued behind that one task.
 Desk panel fits its content again: fit() asks set_size, not set_figure_size (a rename sent 3 arguments to a 1-argument call; owner's log 2026-11-07).
 - The desktop companion's menu says your companion is being summoned, not drawn.
 - Every slider with a readout can be typed (INBOX 1694 c): the quick sketch thickness, the graph, board and mind map sliders swap their readout for the same value field on first hover or focus (clamped to the slider's range and step, Enter or blur applies, Escape reverts, arrows step, the unit stays).

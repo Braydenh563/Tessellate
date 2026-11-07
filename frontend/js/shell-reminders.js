@@ -699,7 +699,19 @@ window.addEventListener("resize", syncScrollEdges);
 // publishes, and observing it here keeps the whole effect in one block
 // instead of adding a line to the tab machinery for a gradient.
 if (typeof MutationObserver !== "undefined") {
-  const scrollEdgeObserver = new MutationObserver(() => syncScrollEdges());
+  //: **A frame on, not in the observer's microtask** (INBOX 1667, open a note from the dashboard at 4x:
+  //: `syncScrollEdges` read `scrollTop` straight after the tab switch's writes, 38 to 65ms of forced layout,
+  //: and the note view's own writes came after it and laid the page out a second time). Once a frame, after
+  //: the frame's layout, as `onScrollEdge` above (`afterFrames`, dashboard.js, the file-wide frame loop).
+  let scrollEdgeSync = 0;
+  const scrollEdgeObserver = new MutationObserver(() => {
+    if (scrollEdgeSync) return;
+    scrollEdgeSync = 1;
+    afterFrames(() => setTimeout(() => {
+      scrollEdgeSync = 0;
+      syncScrollEdges();
+    }), 1);
+  });
   for (const page of document.querySelectorAll(".tab-page")) {
     scrollEdgeObserver.observe(page, { attributes: true, attributeFilter: ["class"] });
   }
