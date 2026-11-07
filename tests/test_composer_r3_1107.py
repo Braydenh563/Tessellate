@@ -114,3 +114,23 @@ def test_r3_18_the_day_a_note_was_written_never_stands_before_an_event_with_its_
     said = say("what time is my dentist appointment", *DENTIST)
     assert "today: Went to the dentist on 3 October" not in said and "today: Paid" not in said, said
     assert "Went to the dentist on 3 October" in said, said
+
+
+# --- R3-19, R3-29: hedge words are not terms, and a dated answer needs no "not mentioned" tail ---
+
+LONG = (
+    "I was wondering whether you could possibly help me find out when exactly the dentist appointment "
+    "that I made some weeks ago is happening because I forgot"
+)
+
+
+def test_r3_19_a_hedge_adverb_is_never_called_missing():
+    said = say(LONG, *DENTIST, "# Ice breakers\n\nWhat are you reading at the moment?")
+    assert "possibly" not in said and "exactly" not in said and "because" not in said, said
+    assert "11 November" in said, said
+
+
+@pytest.mark.parametrize("question", ["when is my next dentist appointment", "what time is my dentist appointment"])
+def test_r3_29_a_when_the_note_answers_with_a_date_has_no_not_mentioned_tail(question):
+    said = say(question, *DENTIST)
+    assert "11 November" in said and "mention" not in said and "regarding" not in said and "“appointment”" not in said, said

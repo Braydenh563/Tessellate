@@ -97,7 +97,8 @@ _ASKING_WORDS = frozenset(
     something stuff info information details please thanks thank check
     find look show help kind sort bit quick quickly briefly short detail
     detailed full whole remind possible maybe okay ok hey hi
-    whereabouts address place put decide decided conclude concluded doing""".split()
+    whereabouts address place put decide decided conclude concluded doing
+    possibly exactly precisely definitely basically honestly kindly truly certainly probably roughly approximately because""".split()
 ) | composer_tables.EXTRA_ASKING_WORDS | frozenset(
     #: Time words say when, never what (engine probe P6: "what did I write
     #: last week" was told "No note found brings up last"). The window they
