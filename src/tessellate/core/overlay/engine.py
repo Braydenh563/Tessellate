@@ -224,6 +224,19 @@ FRAME_OF = {"pressed": "stand", "leap": "hop", "notice": "look", "startle": "hop
 THROW_WINDOW = 0.1
 THROW_MIN = 350.0
 THROW_MAX = 3200.0
+#: A window dragged out from under the figure (INBOX 1683 x): faster than `FLING_SPEED` (logical px/s) throws it, a
+#: lying, sitting, napping or prop figure slips off at `SLIP_SPEED`; slower than those it rides. The throw keeps
+#: `FLING_CARRY` of the window's velocity and is always lifted by `FLING_LIFT`; it flails for `FLING_FLAIL` s; it
+#: pops away instead (`FLING_ESCAPE`, more when startled or sleepy) and wears a worried or miffed face `FLING_FACE` s.
+FLING_SPEED = 2 * THROW_MIN
+SLIP_SPEED = THROW_MIN / 2
+FLING_CARRY = 0.6
+FLING_LIFT = 300.0
+FLING_FLAIL = 1.6
+FLING_ESCAPE = 0.4
+FLING_FACE = (2.0, 4.0)
+#: States a dragged window does not throw the figure out of: it is already off the window, held, or going somewhere.
+FLING_SAFE = ("held", "pressed", "fly", "fall", "warp", "hang", "rise", "peek", "emerge", "leap")
 BOUNCE_DAMP = 0.55
 BONK_FOR = 0.3
 #: A thrown figure's spin (INBOX 1670, 17:05Z: it turned "by 45 degrees each time, at 1 second intervals"):
@@ -703,6 +716,12 @@ class Engine:
         self.covers_at = -math.inf
         self.tuck_goal: int | None = None
         self.tuck: Cover | None = None
+        #: A window thrown it (INBOX 1683 x): when the perch was last read, how it left ("fall", "puff", "portal", "slide",
+        #: "tip"), the face it will wear on landing, and until when it flails.
+        self.perch_at = 0.0
+        self.last_fling = ""
+        self.flung: str | None = None
+        self.flail_until = 0.0
         self.phase_from = (0.0, 0.0)
         self.phase_started = now
         self.phase_to = (0.0, 0.0)
@@ -899,6 +918,7 @@ class Engine:
     # --- state changes ----------------------------------------------------------------
 
     def _enter(self, state: str, now: float) -> None:
+        self._wear_face(state, now)
         self.state = state
         self._arm_nap(state, now)
         self.flash = None
@@ -918,6 +938,14 @@ class Engine:
             getattr(self, f"_on_{state}", lambda _now: None)(now)
         if state == "stand" and self.perch is not None:  # a visit to a window ends when its time does
             self.state_until = min(self.state_until, max(now + 1.0, self.perch_until))
+
+    def _wear_face(self, state: str, now: float) -> None:
+        if self.flung is not None:  # thrown off a window: the face comes with the first moment it can wear one
+            if state in extras.FACE_STATES:
+                self.ex.over = (self.flung, now, self.rng.uniform(*FLING_FACE))
+                self.flung = None
+            elif state in ("held", "pressed", "hang", "peek", "emerge", "rise"):
+                self.flung = None
 
     def _drop_holds(self, state: str) -> None:
         """What the new state lets go of."""
@@ -1729,6 +1757,13 @@ class Engine:
         if self.perch is None:
             return
         cur = next((p for p in self.windows if p.key == self.perch.key), None)
+        if cur is not None and self.roam_windows and self._window_throw(cur, now):
+            return
+        self.perch_at = now
+        self._follow_window(cur, now)
+
+    def _follow_window(self, cur: Perch | None, now: float) -> None:
+        """The scan found the window it stands on: ride it, or leave it when it is gone or no longer under it."""
         if cur is not None and self.roam_windows:
             self._ride_sideways(cur)
         cx = self.x + self.size[0] / 2
@@ -1794,6 +1829,78 @@ class Engine:
                 self._enter("hop", now)
             elif self.state not in ("hop", "rise", "leap"):
                 self.y = cur.top - self.size[1]  # carried up with it, whatever it was doing
+
+    def _low(self) -> bool:
+        """Lying, sitting, napping or at a prop: a body that does not stand ready for the window to move."""
+        return self.state in ("sit", "sleep") or (self.state == "act" and self.act in (*extras.props.PROP_ACTS, "lie_down"))
+
+    def _moved_fast(self, cur: Perch, now: float) -> tuple[float, float, float] | None:
+        """The window's velocity (px/s) and its speed in logical px/s since the last scan, when that is a move fast enough
+        to throw this figure (a resize is not a move), else None."""
+        old, dt = self.perch, now - self.perch_at
+        if old is None or dt <= 0.0 or self.reduced or self.state in FLING_SAFE:
+            return None
+        if abs((cur.right - cur.left) - (old.right - old.left)) > PERCH_MOVED:
+            return None
+        dx, dy = cur.left - old.left, cur.top - old.top
+        if max(abs(dx), abs(dy)) <= PERCH_MOVED:
+            return None
+        vx, vy = dx / dt, dy / dt
+        speed = math.hypot(vx, vy) / self._scale()
+        return (vx, vy, speed) if speed >= (SLIP_SPEED if self._low() else FLING_SPEED) else None
+
+    def _window_throw(self, cur: Perch, now: float) -> bool:
+        """The window under it moved since the last scan: fast enough, it throws the figure off (a fling with a flail,
+        or a pop away), a lying or sitting one slips off at a lower speed; slower, it rides (`_ride_sideways`). A resize is
+        not a move. True when the figure left the window."""
+        moved = self._moved_fast(cur, now)
+        if moved is None:
+            return False
+        vx, vy, speed = moved
+        self.perch = self.target = None
+        self.legs.append(("jump", self.x, self.x, now))
+        escape = self._escape_roll() if speed >= FLING_SPEED else False  # judged on the mood it had, before the shock
+        self.mind.feel("startled", now)
+        self.flung = "worried" if self.rng.random() < 0.5 else "miffed"
+        if speed < FLING_SPEED:  # a body that cannot get up in time: it slides along with the window, or tips straight off
+            self.last_fling = "slide" if abs(vx) >= abs(vy) else "tip"
+            self._start_fall(0.4 * vx if self.last_fling == "slide" else 0.0)
+            return True
+        if escape:
+            self.last_fling = escape
+            self._escape_from(cur, escape, now)
+            return True
+        self.last_fling = "fall"
+        k = self._scale()
+        limit = THROW_MAX * k
+        if (v := math.hypot(vx, vy)) > limit:
+            vx, vy = vx * limit / v, vy * limit / v
+        self.grab = (self.size[0] / 2, self.size[1] / 2)  # tossed from the middle: no lever, only the direction turns it
+        self._start_fly(vx * FLING_CARRY, min(vy * FLING_CARRY, -FLING_LIFT * k))
+        self.flail_until = now + FLING_FLAIL
+        return True
+
+    def _escape_roll(self) -> str | bool:
+        """Whether the thrown figure pops away rather than falls, and how: a portal or a puff."""
+        mood = self.mind.mood(self.now, self.hour)
+        if self.rng.random() >= FLING_ESCAPE * (1.4 if mood in ("startled", "sleepy") else 1.0):
+            return False
+        return "portal" if self.rng.random() < 0.55 else "puff"
+
+    def _escape_from(self, cur: Perch, mode: str, now: float) -> None:
+        """Pop to somewhere safe: another window's top, else the floor at the far side of the screen from `cur`."""
+        w, h = self.size
+        m = self.current_monitor()
+        others = [p for p in self._candidates() if p.key != cur.key]
+        if others:
+            p = self.rng.choice(others)
+            self.target = p
+            lo, hi = max(p.left, m.area[0]), min(p.right, m.area[2]) - w
+            self._start_warp(mode, (min(max(self.x, lo), hi), p.top - h), "perch", now)
+            return
+        gap = 24 * self._scale()
+        far_left = (cur.left + cur.right) / 2 > (m.area[0] + m.area[2]) / 2
+        self._start_warp(mode, (m.area[0] + gap if far_left else m.area[2] - w - gap, self.ground_y(m)), "evade", now)
 
     def _ride_sideways(self, cur: Perch) -> None:
         """A window dragged along: the figure keeps its place on it (the same width, moved by more than a
@@ -1934,7 +2041,7 @@ class Engine:
         return next((p for p in self.windows if t is not None and p.key == t.key), None)
 
     def _stand_on(self, p: Perch, now: float) -> None:
-        self.perch, self.target = p, None
+        self.perch, self.target, self.perch_at = p, None, now
         self.perch_until = now + self.rng.uniform(*PERCH_FOR)
         self.x = min(max(self.x, p.left), p.right - self.size[0])
         self.y = p.top - self.size[1]
@@ -3014,7 +3121,7 @@ class Engine:
         kind = "scrabble" if self.wall else None
         if self.vy <= 0 or self.grounded:
             self.air_t0 = now
-        elif not self.wall and self.gait != "float" and now - self.air_t0 > ld.FLAIL_AFTER and abs(self.omega) < 1.5:
+        elif not self.wall and self.gait != "float" and (now < self.flail_until or (now - self.air_t0 > ld.FLAIL_AFTER and abs(self.omega) < 1.5)):
             kind = "flail"
         if kind != self.wob_kind:
             self.wob_kind, self.wob_t0 = kind, now

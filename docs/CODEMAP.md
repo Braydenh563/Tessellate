@@ -2,7 +2,7 @@
 
 Generated 2026-11-07 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7850, frontend ids 2644, CSS sections 522, backend routes 649, backend modules 8967, test files 2138, tests 18017, plan headings 1004, app scripts 28, boot scripts 37, script files 261.
+Counts: frontend functions 7850, frontend ids 2644, CSS sections 522, backend routes 649, backend modules 8967, test files 2139, tests 18034, plan headings 1004, app scripts 28, boot scripts 37, script files 261.
 
 ## Frontend functions (7850)
 
@@ -22417,15 +22417,15 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `Bar` | src/tessellate/core/overlay/engine.py:433 |
-| `Cover` | src/tessellate/core/overlay/engine.py:414 |
-| `Engine` | src/tessellate/core/overlay/engine.py:512 |
-| `Monitor` | src/tessellate/core/overlay/engine.py:443 |
-| `Output` | src/tessellate/core/overlay/engine.py:461 |
-| `Perch` | src/tessellate/core/overlay/engine.py:402 |
-| `TuckSpot` | src/tessellate/core/overlay/engine.py:423 |
-| `_adjoins` | src/tessellate/core/overlay/engine.py:496 |
-| `_same_screens` | src/tessellate/core/overlay/engine.py:507 |
+| `Bar` | src/tessellate/core/overlay/engine.py:446 |
+| `Cover` | src/tessellate/core/overlay/engine.py:427 |
+| `Engine` | src/tessellate/core/overlay/engine.py:525 |
+| `Monitor` | src/tessellate/core/overlay/engine.py:456 |
+| `Output` | src/tessellate/core/overlay/engine.py:474 |
+| `Perch` | src/tessellate/core/overlay/engine.py:415 |
+| `TuckSpot` | src/tessellate/core/overlay/engine.py:436 |
+| `_adjoins` | src/tessellate/core/overlay/engine.py:509 |
+| `_same_screens` | src/tessellate/core/overlay/engine.py:520 |
 
 ### src/tessellate/core/overlay/extras.py (8)
 
@@ -24355,7 +24355,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (18017)
+## Tests (18034)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -25764,6 +25764,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_overlay_edges_1107.py | 20 |
 | tests/test_overlay_engine.py | 30 |
 | tests/test_overlay_faces.py | 1 |
+| tests/test_overlay_fling_1107.py | 17 |
 | tests/test_overlay_float.py | 6 |
 | tests/test_overlay_hang.py | 12 |
 | tests/test_overlay_hang_end_1683.py | 5 |
