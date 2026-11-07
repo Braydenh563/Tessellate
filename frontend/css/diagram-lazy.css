@@ -1412,8 +1412,19 @@
     overflow-y: auto;
   }
 
+  /* The text is what the Source view is for: it takes the room the picture does not need (measured at 390: 8 lines, 144 px, under a
+     418 px host), and the picture keeps its 240 px beneath it. */
   .dgm-dialog[data-view="source"] .dgm-srcwrap {
-    flex: 0 0 9rem;
+    flex: 1 1 9rem;
+  }
+
+  /* The kinds row and the turn-it-sideways offer belong to the other views: here they were 120 of the host's 448 px. */
+  .dgm-dialog[data-view="source"] .dgm-host {
+    flex: 0 0 auto;
+  }
+
+  .dgm-dialog[data-view="source"] :is(.dgm-kinds, .dgm-sideways) {
+    display: none;
   }
 
   /* The phone's pane is wide enough for the words and a button on one row, which keeps the empty page free of a scroll (DD-10). */
@@ -1633,6 +1644,25 @@
   .dgm-handle {
     inline-size: 44px;
     block-size: 44px;
+  }
+
+  /* A handle shrinks to half a small block (diagram-overlay.js, `handleSize`, never under 24), so the drawn disc can be 24 px; its
+     hit area is still 44: the pseudo-element is measured from the padding box inside the 2 px ring, so 12 each side makes
+     20 + 24 = 44 across (measured: 8 gave 36, 10 gave 40). */
+  .dgm-handle::after {
+    inset: -12px;
+  }
+
+  /* The divider is 13 px between the panes (the grid gap it replaces); a finger gets 44 across, over the edges of both. */
+  .dgm-split-handle.sidebar-resize {
+    position: relative;
+    z-index: 1;
+  }
+
+  .dgm-split-handle.sidebar-resize::after {
+    content: "";
+    position: absolute;
+    inset: 0 calc((var(--space-5) - 44px) / 2);
   }
 }
 
