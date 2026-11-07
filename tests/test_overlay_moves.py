@@ -321,7 +321,8 @@ def run_acts(e: Engine, minutes: float):
         t += (out.wake_ms or 1000) / 1000.0
         # The person brushes it now and then, so it is not asleep for good.
         out = e.update(t, event=("move", 0, 0)) if int(t) % 25 == 0 else e.update(t)
-        if e.state != prev and e.state in ("hang", "peek"):
+        # A hang that ends a top peek is that peek's own end (the figure drops back onto its hands), not a second big act.
+        if e.state != prev and e.state in ("hang", "peek") and not (prev in ("peek", "emerge") and e.state == "hang"):
             acts.append((t, e.state))
         prev = e.state
     return acts
@@ -426,6 +427,7 @@ def test_nothing_is_clipped_unless_the_hidden_part_is_past_the_work_areas_edge()
                 clipped_ticks += 1
                 cl, ct, cr, cb = o.clip
                 hidden = [(o.x, o.y, o.x + cl, o.y + h)] if cl > 0 else []
+                hidden += [(o.x, o.y, o.x + w, o.y + ct)] if ct > 0 else []  # a top peek or a hang from the top edge
                 hidden += [(o.x + cr, o.y, o.x + w, o.y + h)] if cr < w else []
                 hidden += [(o.x, o.y + cb, o.x + w, o.y + h)] if cb < h else []
                 assert hidden, (seed, o)

@@ -181,11 +181,35 @@ class FakeWin32:
         return 1
 
     def _FindWindowW(self, cls: Any, _title: Any) -> int:
-        """The taskbar (class Shell_TrayWnd) is window 9001 when a test lists it; 0 when there is none."""
+        """The primary taskbar (class Shell_TrayWnd) is window 9001 when a test lists it; 0 when there is none."""
         return 9001 if cls == "Shell_TrayWnd" and 9001 in self.window_list else 0
 
-    def _SHAppBarMessage(self, message: int, _data: Any) -> int:
-        return int(self.autohide) if message == 4 else 0  # ABM_GETSTATE: ABS_AUTOHIDE is 1
+    def _FindWindowExW(self, _parent: Any, after: Any, cls: Any, _title: Any) -> int:
+        """The next window of class `cls` (a listed window's `cls`) after `after` (None: from the first)."""
+        order = [h for h, win in self.window_list.items() if win.get("cls") == cls]
+        if after:
+            order = order[order.index(int(after)) + 1:] if int(after) in order else []
+        return order[0] if order else 0
+
+    def _GetClassNameW(self, hwnd: Any, buf: Any, _size: int) -> int:
+        """A window's class: its `cls`, Shell_TrayWnd for 9001, else none."""
+        win = self.window_list.get(int(hwnd)) if isinstance(hwnd, int) else None
+        name = (win.get("cls") or ("Shell_TrayWnd" if int(hwnd) == 9001 else "")) if win else ""
+        buf.value = name
+        return len(name)
+
+    def _SHAppBarMessage(self, message: int, data: Any) -> int:
+        """ABM_GETSTATE (4): ABS_AUTOHIDE is 1, per window when a test gives `autohide` on it. ABM_GETTASKBARPOS (5):
+        the window's `edge` (ABE_LEFT 0 to ABE_BOTTOM 3) and its rectangle, or 0 when a test gives no edge."""
+        win = self.window_list.get(int(data._obj.hWnd or 0)) if data is not None else None
+        if message == 4:
+            return int(win["autohide"] if win and "autohide" in win else self.autohide)
+        if message == 5 and win and "edge" in win:
+            data._obj.uEdge = win["edge"]
+            rc = data._obj.rc
+            rc.left, rc.top, rc.right, rc.bottom = win["rect"]
+            return 1
+        return 0
 
     def _GetDpiForMonitor(self, hmon: Any, _kind: int, x_ref: Any, y_ref: Any) -> int:
         x_ref._obj.value = y_ref._obj.value = self.monitor_list[int(hmon) - 100][1]
@@ -215,8 +239,11 @@ class FakeWin32:
     def _GetWindowTextLengthW(self, hwnd: Any) -> int:
         return len(self._win(hwnd).get("title", "x"))
 
+    #: The foreground window (a test sets it to a listed window to put a full-screen program in front).
+    foreground = 900
+
     def _GetForegroundWindow(self) -> int:
-        return 900
+        return self.foreground
 
     #: `(percent, on mains)` the fake reports, or None for a desktop with no battery (flag 128), the default.
     battery: tuple[int, bool] | None = None

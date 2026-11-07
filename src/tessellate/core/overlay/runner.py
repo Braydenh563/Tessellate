@@ -89,6 +89,15 @@ def default_backend(w: Any = None) -> Any:
     return x11
 
 
+def read_layout(k: Any, w: Any) -> list[eng.Monitor]:
+    """Every monitor as the engine plays on it. A backend that knows the screen's bars (`monitors_full`: win32) gives
+    the whole monitor and what lies along its edges; one that does not (x11) gives the play area and dpi."""
+    full = getattr(k, "monitors_full", None)
+    if full is None:
+        return [eng.Monitor(area, dpi) for area, dpi in k.monitors(w)]
+    return [eng.Monitor(m.area, m.dpi, m.screen, tuple(eng.Bar(b.edge, b.rect, b.shown) for b in m.bars)) for m in full(w)]
+
+
 class OverlayRunner:
     def __init__(
         self,
@@ -176,6 +185,7 @@ class OverlayRunner:
         self._zone: tuple[int, float, tuple[int, int, int, int] | None] | None = None
         self._next_scan = 0.0
         self._next_taskbar = 0.0
+        self._bars_key: list | None = None
         self.lively = "usual"
         self._cards: deque[Any] = deque()
         self._commands: deque[str] = deque()
@@ -332,7 +342,7 @@ class OverlayRunner:
             self.paused = False
             self._resume_engine(engine, now)
             return 1
-        if kind == "display":
+        if kind in ("display", "taskbar"):  # the shell rebuilt the taskbar: its edge or size may have changed
             self._refresh_monitors()
         if kind == "tick":
             if not self.visible:
@@ -352,7 +362,7 @@ class OverlayRunner:
             self._run_commands(engine, now)
             self._scan(now)
             self._screen_events(now)
-        if kind not in ("tick", "display"):
+        if kind not in ("tick", "display", "taskbar"):
             return None
         return self._apply(engine.update(now, pointer))
 
@@ -371,12 +381,16 @@ class OverlayRunner:
     def _wants_scan(self, now: float) -> bool:
         """Only when a climb could come soon or the figure stands on a window."""
         e = self.engine
-        if e is None or not self.roam_windows or e.reduced or not e.roam or e.quiet:
+        if e is None or not self.roam_windows or e.reduced or not e.roam:
+            return False
+        if e.tuck is not None:
+            return True  # hidden behind a window: it moving or closing is read within a quarter of a second
+        if e.quiet:
             return False
         if e.perch is not None or e.target is not None or e.state in ("pressed", "held"):
             return True  # carried: a title bar under it may be taken hold of
         # A window is climbed to by a trip or by the climb act, so the list is wanted before either is due.
-        return e.state in ("stand", "walk", "drift", "act", "crouch") and now >= min(e.trip_ready, e.climb_ready) - SCAN_SLACK
+        return e.state in ("stand", "walk", "drift", "act", "crouch") and now >= min(e.trip_ready, e.climb_ready, e.big_ready) - SCAN_SLACK
 
     def _list_windows(self, tally: Counter) -> list:
         """The window list, or [] when it cannot be read (no list means no roaming, never a crash)."""
@@ -397,10 +411,14 @@ class OverlayRunner:
             return
         self._next_taskbar = now + TASKBAR_EVERY
         try:
-            areas = [area for area, _dpi in self.k.monitors(self.w)]
+            read = read_layout(self.k, self.w)
         except OSError:
             return
-        if areas and areas != [m.area for m in self.monitors]:
+        # The play areas move the figure's floor; the bars (shown or not, which edge) move where it can tuck (INBOX 1683 y).
+        key = [(m.screen, m.bars) for m in read]
+        before = getattr(self, "_bars_key", None)
+        self._bars_key = key
+        if read and ([m.area for m in read] != [m.area for m in self.monitors] or (before is not None and key != before)):
             self._refresh_monitors()
 
     def _scan(self, now: float, force: bool = False) -> None:
@@ -413,10 +431,12 @@ class OverlayRunner:
             if engine.windows or engine.perch is not None:
                 engine.set_windows([], now)
             return
+        if engine.tuck is not None:  # hidden behind a window: the next look is a quarter second away, not up to a second
+            self._next_scan = min(self._next_scan, now + SCAN_RIDING)
         if not force and (now < self._next_scan or not self._wants_scan(now)):
             return
         # On a window it rides it: a dragged window is followed four times a second, not once.
-        self._next_scan = now + (SCAN_RIDING if engine.perch is not None else SCAN_EVERY)
+        self._next_scan = now + (SCAN_RIDING if engine.perch is not None or engine.tuck is not None else SCAN_EVERY)
         tally: Counter = Counter()
         wins = self._list_windows(tally)
         if wins:  # an empty list is a failed read, not every window closing
@@ -426,7 +446,7 @@ class OverlayRunner:
         drops: Counter = Counter()
         edges = perches.top_edges(wins, room, drops)
         hangs = perches.hang_spots(wins, room)
-        engine.set_windows(edges, now, hangs)
+        engine.set_windows(edges, now, hangs, perches.tuck_spots(wins, room))
         self._log_scan(len(wins), len(edges), len(engine._candidates(drops)), tally, len(edges) + len(hangs), drops)
         self._log_notes()
 
@@ -539,9 +559,10 @@ class OverlayRunner:
         return int(BUSY_EVERY * 1000) if self.busy else None
 
     def _read_monitors(self) -> list[eng.Monitor]:
-        found = [eng.Monitor(area, dpi) for area, dpi in self.k.monitors(self.w)]
+        found = read_layout(self.k, self.w)
         if not found:
             raise OSError("no monitor was reported")
+        self._bars_key = [(m.screen, m.bars) for m in found]
         return found
 
     def _refresh_monitors(self) -> None:
