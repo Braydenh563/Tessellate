@@ -459,7 +459,7 @@ def _alt_tab_listed(w: Any, hwnd: Any) -> bool:
                 return bool(popup == hwnd)
             walk = popup
     except Exception:  # noqa: BLE001
-        pass
+        logger.debug("alt-tab rule could not be read for a window; it is treated as listed", exc_info=True)
     return True
 
 

@@ -77,6 +77,8 @@ LOOK_FOR = 1.2
 IDLE_SPREAD = 0.08
 IDLE_SLOWEST = 0.02
 STAND_FOR = (3.0, 8.0)
+#: How long a stand lasts after a landing in the middle third before it heads back.
+AWAY_STAND_FOR = (15.0, 35.0)
 #: A settled spell (INBOX 1670, 13:15Z: "it can't sit still"): standing, it stays put this long before it
 #: so much as picks something to do (median about six minutes); a blink or a tail beat does not break it.
 SETTLE_FOR = (200.0, 520.0)
@@ -2432,10 +2434,10 @@ class Engine:
                 self._enter("sleep", now)
                 return
             self._enter("sit" if self.reduced else "stand", now)
-            if self.perch is None and not self.reduced and self.roam and self._away():
-                # down from a window it hopped off, away from home: a short stand, then home. The full settle (minutes of
-                # in-place acts) rested it in the middle third, where it never rests (a 15 minute spell there in one seeded hour)
-                self.state_until = min(self.state_until, now + self.rng.uniform(*STAND_FOR))
+            if self.perch is None and not self.reduced and self.roam and self._away() and tv.in_middle(self.x, self.current_monitor().area, self.size[0]):
+                # down from a window it hopped off into the middle third: a stand of a few breaths, then home. The full settle (minutes
+                # of in-place acts) rested it in the middle third, where it never rests (a 15 minute spell there in one hour)
+                self.state_until = min(self.state_until, now + self.rng.uniform(*AWAY_STAND_FOR))
 
     def _do_hop(self, now: float, dt: float) -> None:
         # A hop up to a higher floor: a short arc, then it stands there.
