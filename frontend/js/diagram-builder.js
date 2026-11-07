@@ -69,6 +69,8 @@
       const bare = diagramModel.front(source.replace(/\r/g, "")).rest.split("\n").every((l) => !l.trim() || /^\s*(%%|flowchart\b|graph\b|mindmap\b|timeline\b|sequenceDiagram\b)/i.test(l));
       const empty = !source.trim() || (!S.plain && blank && bare);
       S.fig.classList.toggle("dgm-picture-empty", empty);
+      //: The phone layout keys on the window body; a class, not `.dgm-body:has()` (test_css_body_has).
+      S.fig.closest(".dgm-body")?.classList.toggle("dgm-body-empty", empty);
       if (empty) return S.fig.replaceChildren(el("p", "muted dgm-hint", "The picture appears here as you add blocks."));
       //: The hint goes now, or it and the pending line show together (1679 m).
       S.fig.querySelector(":scope > .dgm-hint")?.remove();

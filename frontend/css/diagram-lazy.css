@@ -1400,7 +1400,7 @@
 
   /* An empty diagram has nothing to draw, so its picture is a strip and the steps keep the screen (DD-6: the template button was
      clipped by the pane at 390). */
-  .dgm-dialog-body .dgm-body:has(.dgm-picture-empty) {
+  .dgm-dialog-body .dgm-body.dgm-body-empty {
     grid-template-rows: auto minmax(0, 1fr);
   }
 
