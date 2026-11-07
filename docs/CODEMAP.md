@@ -2,7 +2,7 @@
 
 Generated 2026-11-07 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7841, frontend ids 2646, CSS sections 522, backend routes 649, backend modules 8920, test files 2109, tests 17802, plan headings 1003, app scripts 28, boot scripts 37, script files 260.
+Counts: frontend functions 7841, frontend ids 2646, CSS sections 522, backend routes 649, backend modules 8920, test files 2109, tests 17806, plan headings 1003, app scripts 28, boot scripts 37, script files 260.
 
 ## Frontend functions (7841)
 
@@ -3413,7 +3413,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 |---|---|
 | `build` | frontend/js/diagram-steps.js:14 |
 | `frame` | frontend/js/diagram-steps.js:51 |
-| `sync` | frontend/js/diagram-steps.js:76 |
+| `sync` | frontend/js/diagram-steps.js:77 |
 
 ### frontend/js/diagram-style.js (5)
 
@@ -3459,8 +3459,8 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `kindWord` | frontend/js/diagram-view.js:65 |
-| `wire` | frontend/js/diagram-view.js:72 |
+| `kindWord` | frontend/js/diagram-view.js:66 |
+| `wire` | frontend/js/diagram-view.js:73 |
 
 ### frontend/js/documents-ai.js (15)
 
@@ -5955,29 +5955,29 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 |---|---|
 | `mermaidAltFor` | frontend/js/mermaid-draw.js:53 |
 | `mermaidCacheKey` | frontend/js/mermaid-draw.js:335 |
-| `mermaidDrawBlock` | frontend/js/mermaid-draw.js:496 |
-| `mermaidDrawIn` | frontend/js/mermaid-draw.js:516 |
+| `mermaidDrawBlock` | frontend/js/mermaid-draw.js:500 |
+| `mermaidDrawIn` | frontend/js/mermaid-draw.js:520 |
 | `mermaidEnsureFrame` | frontend/js/mermaid-draw.js:107 |
 | `mermaidFaded` | frontend/js/mermaid-draw.js:189 |
 | `mermaidFailure` | frontend/js/mermaid-draw.js:349 |
-| `mermaidFill` | frontend/js/mermaid-draw.js:462 |
+| `mermaidFill` | frontend/js/mermaid-draw.js:466 |
 | `mermaidFillShare` | frontend/js/mermaid-draw.js:168 |
 | `mermaidFills` | frontend/js/mermaid-draw.js:179 |
 | `mermaidHex` | frontend/js/mermaid-draw.js:158 |
 | `mermaidHue` | frontend/js/mermaid-draw.js:205 |
 | `mermaidInkOn` | frontend/js/mermaid-draw.js:199 |
-| `mermaidInlineForExport` | frontend/js/mermaid-draw.js:577 |
+| `mermaidInlineForExport` | frontend/js/mermaid-draw.js:581 |
 | `mermaidKnown` | frontend/js/mermaid-draw.js:342 |
 | `mermaidLook` | frontend/js/mermaid-draw.js:312 |
 | `mermaidLuma` | frontend/js/mermaid-draw.js:192 |
 | `mermaidMix` | frontend/js/mermaid-draw.js:163 |
 | `mermaidOnMessage` | frontend/js/mermaid-draw.js:92 |
-| `mermaidRedrawAll` | frontend/js/mermaid-draw.js:589 |
-| `mermaidRequest` | frontend/js/mermaid-draw.js:403 |
+| `mermaidRedrawAll` | frontend/js/mermaid-draw.js:593 |
+| `mermaidRequest` | frontend/js/mermaid-draw.js:405 |
 | `mermaidResultAccepts` | frontend/js/mermaid-draw.js:23 |
 | `mermaidRgba` | frontend/js/mermaid-draw.js:144 |
-| `mermaidSettled` | frontend/js/mermaid-draw.js:489 |
-| `mermaidShow` | frontend/js/mermaid-draw.js:442 |
+| `mermaidSettled` | frontend/js/mermaid-draw.js:493 |
+| `mermaidShow` | frontend/js/mermaid-draw.js:446 |
 | `mermaidTheme` | frontend/js/mermaid-draw.js:222 |
 | `mermaidThemeNow` | frontend/js/mermaid-draw.js:323 |
 | `mermaidTokenColour` | frontend/js/mermaid-draw.js:215 |
@@ -24290,7 +24290,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (17802)
+## Tests (17806)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -24861,8 +24861,8 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_diagram_object_kind.py | 2 |
 | tests/test_diagram_outline_1679.py | 8 |
 | tests/test_diagram_page_1679.py | 7 |
-| tests/test_diagram_panel.py | 5 |
-| tests/test_diagram_panzoom.py | 7 |
+| tests/test_diagram_panel.py | 8 |
+| tests/test_diagram_panzoom.py | 8 |
 | tests/test_diagram_r10.py | 6 |
 | tests/test_diagram_r6.py | 13 |
 | tests/test_diagram_r7.py | 5 |

@@ -63,6 +63,9 @@ def test_a_notch_or_a_pinch_zooms_and_a_trackpad_scroll_pans():
     assert _math(f"{z}({{ctrlKey:false,shiftKey:false,deltaMode:1,deltaX:0,deltaY:3}})") is True
     assert _math(f"{z}({{ctrlKey:true,shiftKey:false,deltaMode:0,deltaX:0,deltaY:-2.5}})") is True
     assert _math(f"{z}({{ctrlKey:false,shiftKey:false,deltaMode:0,deltaX:0,deltaY:7.5}})") is False
+    # A touchpad flick can report a whole number over 50 that is no notch (1679 review): it scrolls, it does not zoom.
+    assert _math(f"{z}({{ctrlKey:false,shiftKey:false,deltaMode:0,deltaX:0,deltaY:63}})") is False
+    assert _math(f"{z}({{ctrlKey:false,shiftKey:false,deltaMode:0,deltaX:0,deltaY:-87}})") is False
     assert _math(f"{z}({{ctrlKey:false,shiftKey:false,deltaMode:0,deltaX:12,deltaY:-100}})") is False
     assert _math(f"{z}({{ctrlKey:false,shiftKey:true,deltaMode:0,deltaX:0,deltaY:-100}})") is False
 
@@ -100,3 +103,14 @@ def test_the_picture_takes_the_wheel_the_keyboard_and_a_glide():
     assert "math.velocity(" in VIEW and "math.decay(" in VIEW
     assert "cancelGlide" in VIEW  # a press, a wheel or a key stops it
     assert "reducedMotionWanted()" in VIEW  # the shared motion read (test_motion_resolved), not a raw query
+
+
+def test_a_pan_settles_a_gesture_first_and_a_slow_glide_is_not_an_edge():
+    # 1679 review: the commit anchors on the rectangle taken at the gesture's start, so a drag, a key pan or a glide that moved the
+    # scroll in between made the picture jump. Each settles first; the glide keeps a fractional position so a half-pixel step is no edge.
+    move = VIEW.index("} else if (points.size === 1 && (roomy()")
+    assert "settle();" in VIEW[move : move + 200]
+    keys = VIEW.index("const move = {")
+    assert "if (move) settle();" in VIEW[keys : keys + 600]
+    glide = VIEW[VIEW.index("const glide = (v)") : VIEW.index("const now = ")]
+    assert "let [x, y]" in glide and "scrollLeft === x0" not in glide
