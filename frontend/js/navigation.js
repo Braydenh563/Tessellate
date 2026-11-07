@@ -1147,7 +1147,7 @@ async function goToTabHistory(next, { fromBrowser = false } = {}) {
 document.addEventListener("scroll", (event) => {
   if (tabHistory.navigating) return;
   const current = tabHistory.stack[tabHistory.index];
-  if (current?.tab !== "settings") return;
+  if (current?.tab !== "settings" || typeof settingsScroller !== "function") return;
   if (event.target === settingsScroller(current.section)) current.scroll = event.target.scrollTop;
 }, { passive: true, capture: true });
 
@@ -1769,7 +1769,7 @@ function recordingLive() {
 }
 
 window.addEventListener("beforeunload", (event) => {
-  //: A private chat is gone with its tab (chat-private.js, lazy: `typeof`).
+  //: A private chat is gone with its tab (chat-private.js).
   const privateChat = chatConv.private && chatConv.turns.length;
   if (!hasUnsavedWork() && !chatMidStream() && !recordingLive() && !privateChat) return;
   event.preventDefault();
