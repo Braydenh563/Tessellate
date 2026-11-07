@@ -722,6 +722,18 @@ class Engine:
         elif self.state not in moving[:9]:
             self._place_on_floor()
 
+    def resize(self, size: tuple[int, int], metrics: dict[tuple[str, bool], tuple[float, float, float, float]]) -> None:
+        """The person sized the figure (the desk size handle): the window's middle stays where it was, and what holds
+        it stays held: standing keeps its feet on the floor (set_monitors plants them), hanging keeps its hands on the
+        edge (the lift above them changes with the size), so a pull never moves it at rest."""
+        old_w, lift = self.size[0], self._lift()
+        self.set_metrics(metrics)
+        self.size = size
+        self.x += (old_w - size[0]) / 2
+        if self.state in ("hang", "rise"):
+            self.y += lift - self._lift()
+        self.set_monitors(self.monitors, size)
+
     def home(self) -> tuple[int, int]:
         return int(round(self.x)), int(round(self.y))
 

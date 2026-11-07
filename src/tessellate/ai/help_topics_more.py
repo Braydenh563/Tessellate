@@ -1454,15 +1454,15 @@ MORE_TOPICS: list[dict] = [
             "hangs from the top, and peeks up from behind the taskbar or a screen edge. It keeps to a home spot by an "
             "edge for minutes, alive in place, and makes a few trips an hour: walking, running, "
             "out at one edge and in at the other, or through a portal, clear of your typing. Let go gently near a title bar and it hangs, "
-            "then pulls itself up, swings down or lets go with a start (also from a maximised title bar or a window's bottom). Sometimes it climbs onto the top of a window, rides it when you move it and hops off "
+            "then pulls itself up, swings down or lets go with a start. Sometimes it climbs onto the top of a window, rides it when you move it and hops off "
             "if you close it (Roam over windows turns that off), and"
             " when a reminder falls due it brings you a card to click. It steps aside for full screen and follows Companion movement "
             "in Appearance (still when Fades only or Windows animation effects are off). Turn it on, on the computer"
             " Tessellate runs on: Settings, Appearance, Corner companion, Show the companion on the desktop, or the tray icon's menu. It takes effect while the desktop app runs. Click it for Quick note, "
             "Quick search, New reminder, Open today, Open Tessellate, Wave, Come here, Go somewhere else, Take a nap, Sit on a window"
             " or Hide for 10 minutes. Come here follows your pointer a while; a nap lasts minutes or until you click it. Right-click it for Companion (Atlas masculine or feminine, your own or a saved one, drawn once),"
-            " Stay here or Roam, Settings or Turn off. Drag it; it keeps the spot. Locked, it "
-            "shows only Open Tessellate. On Wayland it stays in the app. It also lounges, answers a pat and glances at new windows."
+            " Stay here or Roam, Settings or Turn off. Drag it; it keeps the spot. Pull its corner handle (bottom right while it hangs) to size it, double-click to reset. Locked, it "
+            "shows only Open Tessellate. On Wayland it stays in the app."
         ),
         "badge": {"label": "Desktop companion", "section": "appearance", "target": "desktop-companion-row"},
     },

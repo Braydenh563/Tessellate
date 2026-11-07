@@ -38,7 +38,7 @@ import time
 from typing import Any, Callable
 
 from tessellate.core import jobs
-from tessellate.core.overlay import capture
+from tessellate.core.overlay import capture, sizing
 
 logger = logging.getLogger(__name__)
 
@@ -105,7 +105,14 @@ LOOK_SCRIPT = (
     "look:typeof atlasLook==='function'?atlasLook():'',"
     "who:typeof appearancePref==='function'?appearancePref('avatar-buddy','off'):'off',"
     "figure:" + capture.FIGURE_JS + ","
+    "size:typeof nameMarkBuddyScaleSaved==='function'?nameMarkBuddyScaleSaved():1,"
     "motion:typeof nameMarkBuddyMotion==='function'?nameMarkBuddyMotion():null})}catch(e){return ''}})()"
+)
+#: Appearance > Companion size, written as the app's own handle writes it (`nameMarkBuddySetSize`: the pref, the select
+#: that shows "As you sized it", the in-app figure), from the desk figure's handle. `%s` is a number.
+SIZE_SCRIPT = (
+    "(function(){try{const v=%s;if(typeof nameMarkBuddySetSize==='function')nameMarkBuddySetSize(v,true);"
+    "else prefs.set('avatar-buddy-size',String(v));return true}catch(e){return false}})()"
 )
 #: "Let it walk": the app's own setting set to Always, as its menu would, then the
 #: setting's hint refreshed. True when the app window did it.
@@ -914,6 +921,10 @@ class DeskCompanion:
         #: Why the see-through figure is not used on this machine (Wayland), shown in the card's menu.
         self.overlay_note = ""
         self.look = "masculine"
+        #: Appearance > Companion size as the app window last said it (0.7 to 1.6; Medium is 1).
+        self.size_pref = sizing.MEDIUM
+        #: The page may still say the old size for a moment after the handle wrote a new one: not believed until then.
+        self._size_held = 0.0
         #: How the companion may move, as the app window last said: None until it
         #: answers (then the runner falls back to the Windows animation flag).
         self.motion: tuple[bool, str] | None = None
@@ -1098,6 +1109,8 @@ class DeskCompanion:
         to the last motion answer (the Windows flag before any)."""
         data = _look_answer(self._ask_main(LOOK_SCRIPT, "its look and motion"))
         look, motion = self.look, self.motion
+        if data is not None and isinstance(data.get("size"), (int, float)) and not isinstance(data.get("size"), bool) and self._now() >= self._size_held:
+            self.size_pref = sizing.clamp(data["size"])
         if data is None:
             logger.info("desk companion: the app window gave no look, keeping %s", self.look)
         else:
@@ -1134,6 +1147,14 @@ class DeskCompanion:
         logger.info("desk companion: drew %d frames for %s in %.1f s", len(capture.CAPTURED), key, time.monotonic() - started)
         self._restart_shown("companion frames drawn")
 
+    def _overlay_size(self, scale: float) -> None:
+        """The figure's handle set a size (on a worker): the app window keeps it as its own handle would, so Appearance
+        shows it and the in-app figure follows; remembered per device with the rest of its prefs."""
+        value = sizing.clamp(scale)
+        self.size_pref = value
+        self._size_held = self._now() + 2 * LOOK_WAIT
+        self._ask_main(SIZE_SCRIPT % repr(value), "the size the figure was given")
+
     def _overlay_home(self) -> tuple[int, int] | None:
         saved = _pref(OVERLAY_POS_PREF, None)
         if isinstance(saved, (list, tuple)) and len(saved) == 2 and all(isinstance(v, int) for v in saved):
@@ -1145,6 +1166,8 @@ class DeskCompanion:
         again if either changed; False (a warning logged) when it cannot start."""
         look, motion = self._read_look()
         if self.runner is not None and self.look == look and self.motion == motion:
+            if hasattr(self.runner, "set_scale") and getattr(self.runner, "scale", self.size_pref) != self.size_pref:
+                self.runner.set_scale(self.size_pref)  # Appearance changed it: the figure eases to it
             return True
         place = self._runner_place()
         self.look, self.motion = look, motion
@@ -1164,6 +1187,9 @@ class DeskCompanion:
                 stay=bool(_pref(STAY_PREF, False)),
                 **kw,
             )
+            if hasattr(runner, "on_size"):  # the size handle: the size Appearance has, and the way back for a pull
+                runner.on_size = self._overlay_size
+                runner.scale = self.size_pref
             started = runner.start()
         except Exception:  # noqa: BLE001 - any failure means the card window instead
             logger.warning("desk companion: the overlay failed to build", exc_info=True)

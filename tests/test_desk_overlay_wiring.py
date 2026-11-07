@@ -595,3 +595,26 @@ def test_1690d_a_failed_restart_drops_the_quick_panel_and_shows_a_real_card(over
     card = over.webview.made[-1]
     assert card is not panel and card.options["url"].endswith("?card=1") and ("show",) in card.calls
     assert over.shown and not over.panel and not over.panel_shown
+def test_the_apps_companion_size_reaches_the_figure_and_a_pull_is_written_back(over):
+    """The size handle (INBOX 1683 r): the look read carries Appearance's size, a changed one is passed to the
+    running figure, and the figure's own pull is written through the page the way its handle writes it."""
+    import json
+
+    asked: list[str] = []
+
+    def answer(script):
+        asked.append(script)
+        return json.dumps({"look": "masculine", "size": 1.3}) if "size:" in script else True
+
+    over.main.evaluate_js = answer
+    over.set_main_hidden(True)
+    runner = FakeRunner.started[0]
+    assert over.size_pref == 1.3 and "size:typeof nameMarkBuddyScaleSaved" in asked[0]
+    runner.on_size = over._overlay_size  # noqa: SLF001 - what a real runner is given
+    runner.scale = 1.3
+    runner.set_scale = lambda v: runner.__dict__.setdefault("scaled", []).append(v)
+    over.main.evaluate_js = lambda s: (asked.append(s), json.dumps({"look": "masculine", "size": 0.8}) if "size:" in s else True)[1]
+    over._start_overlay()  # noqa: SLF001
+    assert runner.scaled == [0.8]
+    runner.on_size(1.4)
+    assert over.size_pref == 1.4 and "nameMarkBuddySetSize(v,true)" in asked[-1] and "const v=1.4;" in asked[-1]
