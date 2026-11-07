@@ -165,6 +165,8 @@
       redo: () => at < history.length - 1 && (at += 1, apply()),
       menu: [
         ...(shapes ? [makeMenuItem("ph:shapes Turn into shapes", "Replace it with shapes and connectors you can move one by one", () => (leave(), shapes(history[at])))] : []),
+        //: The door opens on a drawn starter (DD-3b, 1107), so a blank page is one press away, and Undo brings the starter back.
+        makeMenuItem("ph:eraser Clear", "Start again from an empty flowchart. Undo brings this one back", () => (io.set(`${STARTS.flowchart}\n`), apply())),
         makeMenuItem("ph:books Save to Library", "Keep it in the Library to show it with ![[name]]", () => save(history[at], offer?.link ? { label: "Link this diagram", run: (row) => link(offer.link, row, history[at]) } : offer)),
       ],
     };
@@ -255,9 +257,12 @@
     overlay.append(dialog);
     document.body.append(overlay);
     view("canvas");
-    await show();
+    const S = await show();
     //: Focus goes into the dialog, to the first step or block (R6.5): it stayed on the button behind, and the first Tab reached Close.
-    (host.querySelector(".dgm-steps button, .dgm-block[tabindex='0']") || dialog.querySelector(".dgm-pane") || dialog).focus?.({ preventScroll: true });
+    //: A starter's first box is selected and focused, so Enter names it, Tab adds the next (DD-3).
+    const firstBox = host.querySelector(".dgm-block");
+    if (firstBox && S && !S.k) diagramModel.builder.select(S, firstBox.dataset.key, true);
+    else (host.querySelector(".dgm-steps button, .dgm-block[tabindex='0']") || dialog.querySelector(".dgm-pane") || dialog).focus?.({ preventScroll: true });
     return dialog;
   }
 

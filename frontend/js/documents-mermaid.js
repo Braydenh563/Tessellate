@@ -544,8 +544,9 @@
     //: the last document and no builder. Cancel makes nothing.
     if (!box) {
       return openDiagramBuilder({
-        //: Empty, so the walkthrough shows (R6.8); its "Start from an example" button loads the starter.
-        source: "flowchart TD",
+        //: A drawn three-box starter, its first box selected (DD-3b, 1107; it was empty so the walkthrough showed, R6.8): the
+        //: first connected diagram is names typed over boxes that exist. Clear in the ... menu empties it.
+        source: diagramModel.starter,
         title: "Diagram builder",
         existing: { pick: pickExistingDiagram, open: async (row) => (switchTab("documents"), loadDocuments(row.id)) },
         onDone: async (next) => {

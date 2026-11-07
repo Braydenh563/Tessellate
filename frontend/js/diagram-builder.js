@@ -490,6 +490,19 @@
       return act();
     }
     if (mod) return;
+    //: **Tab chains** (DD-3, 1107; Whimsical's way): on a box, Tab adds a box after it, joined to it, and opens its name; Shift+Tab
+    //: selects the box that points at this one (a group's parent otherwise). F6 leaves the blocks for the picture, since Tab stays here.
+    if (event.key === "Tab" && !event.altKey && key[0] === "n") {
+      const id = diagramOps.split(key)[1];
+      event.preventDefault();
+      if (!event.shiftKey) return addBlock(S, { after: key, from: id });
+      const parent = S.m.edges.find((e) => e.to === id)?.from;
+      return go(blockEl(S, parent ? diagramOps.key("n", parent) : null) || block.parentElement.closest(".dgm-block"));
+    }
+    if (event.key === "F6") {
+      event.preventDefault();
+      return (event.shiftKey ? S.root.querySelector(".dgm-dock button") : S.fig)?.focus();
+    }
     //: N adds a Box, Shift+N the last shape used (1661 D2; R6.13 had the selected block's shape); a letter reads the same with or without Shift otherwise.
     const low = event.key.length === 1 ? event.key.toLowerCase() : event.key;
     //: 1 to 7 add a shape, Shift+N the last one used (diagram-bar.js, 1661 D2).
@@ -708,5 +721,5 @@
     return S;
   }
 
-  diagramModel.builder = { show, kindOf, tell: (text) => (told = text) };
+  diagramModel.builder = { show, kindOf, select, tell: (text) => (told = text) };
 })();

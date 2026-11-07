@@ -95,8 +95,10 @@ def test_r6_7_the_empty_library_text_names_diagrams():
 
 def test_r6_8_a_new_diagram_from_create_opens_the_walkthrough_and_offers_an_example():
     door = MERMAID_JS[MERMAID_JS.index("async function diagramDoor") : MERMAID_JS.index("diagramModel.starter =")]
-    anywhere = door[door.index("if (!box)") : door.index("return openDiagramBuilder({\n      source: diagramModel.starter")]
-    assert "source: diagramModel.starter" not in anywhere and 'source: "flowchart TD"' in anywhere
+    anywhere = door[door.index("if (!box)") : door.rindex("return openDiagramBuilder({\n      source: diagramModel.starter")]
+    # Intent moved (DD-3b, 1107): the door opens on the drawn starter, not the blank walkthrough; the walkthrough still shows for
+    # a blank page (Clear in the ... menu, a document with no blocks), and it still offers the example.
+    assert "source: diagramModel.starter" in anywhere and 'source: "flowchart TD"' not in anywhere
     # The text-box path keeps the starter: a fence is pasted into prose and wants something to show.
     assert "source: diagramModel.starter" in door
     assert "Start from an example" in STEPS and "diagramModel.starter" in STEPS

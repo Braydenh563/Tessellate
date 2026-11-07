@@ -2,7 +2,7 @@
 
 Generated 2026-11-07 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7851, frontend ids 2644, CSS sections 522, backend routes 649, backend modules 8931, test files 2124, tests 17900, plan headings 1004, app scripts 28, boot scripts 37, script files 261.
+Counts: frontend functions 7851, frontend ids 2644, CSS sections 522, backend routes 649, backend modules 8931, test files 2125, tests 17902, plan headings 1004, app scripts 28, boot scripts 37, script files 261.
 
 ## Frontend functions (7851)
 
@@ -3153,19 +3153,19 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `blockItems` | frontend/js/diagram-builder.js:334 |
 | `blockKeys` | frontend/js/diagram-builder.js:171 |
 | `buildBlock` | frontend/js/diagram-builder.js:235 |
-| `buildPalette` | frontend/js/diagram-builder.js:565 |
+| `buildPalette` | frontend/js/diagram-builder.js:578 |
 | `buildRow` | frontend/js/diagram-builder.js:248 |
 | `commit` | frontend/js/diagram-builder.js:47 |
 | `drawPicture` | frontend/js/diagram-builder.js:62 |
 | `el` | frontend/js/diagram-builder.js:26 |
 | `groupGlyph` | frontend/js/diagram-builder.js:310 |
 | `joinChip` | frontend/js/diagram-builder.js:317 |
-| `joinPick` | frontend/js/diagram-builder.js:537 |
-| `joins` | frontend/js/diagram-builder.js:533 |
-| `kindOf` | frontend/js/diagram-builder.js:663 |
-| `menuAt` | frontend/js/diagram-builder.js:517 |
-| `more` | frontend/js/diagram-builder.js:554 |
-| `mount` | frontend/js/diagram-builder.js:567 |
+| `joinPick` | frontend/js/diagram-builder.js:550 |
+| `joins` | frontend/js/diagram-builder.js:546 |
+| `kindOf` | frontend/js/diagram-builder.js:676 |
+| `menuAt` | frontend/js/diagram-builder.js:530 |
+| `more` | frontend/js/diagram-builder.js:567 |
+| `mount` | frontend/js/diagram-builder.js:580 |
 | `nameOf` | frontend/js/diagram-builder.js:40 |
 | `nestBlock` | frontend/js/diagram-builder.js:449 |
 | `onKey` | frontend/js/diagram-builder.js:471 |
@@ -3179,14 +3179,14 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `shapeGlyph` | frontend/js/diagram-builder.js:173 |
 | `shapeItems` | frontend/js/diagram-builder.js:181 |
 | `shapeRow` | frontend/js/diagram-builder.js:194 |
-| `show` | frontend/js/diagram-builder.js:673 |
+| `show` | frontend/js/diagram-builder.js:686 |
 | `showFailure` | frontend/js/diagram-builder.js:97 |
 | `stepBlock` | frontend/js/diagram-builder.js:442 |
 | `stops` | frontend/js/diagram-builder.js:153 |
-| `styleDo` | frontend/js/diagram-builder.js:539 |
-| `suggest` | frontend/js/diagram-builder.js:527 |
-| `suggestMenu` | frontend/js/diagram-builder.js:545 |
-| `sync` | frontend/js/diagram-builder.js:638 |
+| `styleDo` | frontend/js/diagram-builder.js:552 |
+| `suggest` | frontend/js/diagram-builder.js:540 |
+| `suggestMenu` | frontend/js/diagram-builder.js:558 |
+| `sync` | frontend/js/diagram-builder.js:651 |
 | `titleOf` | frontend/js/diagram-builder.js:39 |
 
 ### frontend/js/diagram-canvas.js (7)
@@ -3416,11 +3416,11 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `colour` | frontend/js/diagram-style.js:26 |
-| `edge` | frontend/js/diagram-style.js:50 |
-| `shapeRows` | frontend/js/diagram-style.js:18 |
-| `shortcuts` | frontend/js/diagram-style.js:69 |
-| `targets` | frontend/js/diagram-style.js:24 |
+| `colour` | frontend/js/diagram-style.js:27 |
+| `edge` | frontend/js/diagram-style.js:51 |
+| `shapeRows` | frontend/js/diagram-style.js:19 |
+| `shortcuts` | frontend/js/diagram-style.js:70 |
+| `targets` | frontend/js/diagram-style.js:25 |
 
 ### frontend/js/diagram-suggest.js (17)
 
@@ -24320,7 +24320,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (17900)
+## Tests (17902)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -24877,6 +24877,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_device_sizes.py | 11 |
 | tests/test_diag_report.py | 14 |
 | tests/test_diagnostics_1430.py | 9 |
+| tests/test_diagram_1107.py | 2 |
 | tests/test_diagram_1596.py | 4 |
 | tests/test_diagram_1661a.py | 6 |
 | tests/test_diagram_1661b.py | 9 |
