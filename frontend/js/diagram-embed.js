@@ -122,6 +122,19 @@
     wbAnnounce("Diagram linked.");
   }
 
+  //: The look (DD-13, 1107) is two front matter lines Mermaid reads (`config: look: handDrawn`), so the model keeps them, the document
+  //: carries them and every export draws them. Another key in the front matter stays; clean takes the lines out and an empty fence with them.
+  const withLook = (source, hand) => {
+    const { front, rest } = diagramModel.front(String(source).replace(/\r/g, ""));
+    const kept = (front[0] === "---" ? front.slice(1, front.lastIndexOf("---")) : []).filter((line) => !/^\s+look:/.test(line));
+    const at = kept.findIndex((line) => /^config:\s*$/.test(line));
+    const lines = hand
+      ? at < 0 ? [...kept, "config:", "  look: handDrawn"] : [...kept.slice(0, at + 1), "  look: handDrawn", ...kept.slice(at + 1)]
+      : kept.filter((line, i) => !(/^config:\s*$/.test(line) && !/^\s/.test(kept[i + 1] || "")));
+    return (lines.length ? `---\n${lines.join("\n")}\n---\n` : "") + rest;
+  };
+  //: end withLook
+
   // --- the dialog (D6) ----------------------------------------------------------------
   const STARTS = { flowchart: "flowchart TD", mindmap: "mindmap\n  root((Topic))", timeline: "timeline\n  title Timeline", sequence: "sequenceDiagram" };
 
@@ -184,6 +197,8 @@
         ...(shapes ? [makeMenuItem("ph:shapes Turn into shapes", "Replace it with shapes and connectors you can move one by one", () => (leave(), shapes(history[at])))] : []),
         //: The door opens on a drawn starter (DD-3b, 1107), so a blank page is one press away, and Undo brings the starter back.
         makeMenuItem("ph:eraser Clear", "Start again from an empty diagram of this kind. Undo brings this one back", () => (io.set(`${STARTS[diagramModel.builder.kindOf(history[at])] || STARTS.flowchart}\n`), apply())),
+        makeMenuItem("ph:pencil-line Hand-drawn look", "Draw the picture as if sketched by hand. Kept in the diagram's own text; Undo takes it back", () => (io.set(withLook(history[at], true)), apply())),
+        makeMenuItem("ph:rectangle Clean look", "Draw the picture with straight, even lines again", () => (io.set(withLook(history[at], false)), apply())),
         makeMenuItem("ph:books Save to Library", "Keep it in the Library to show it with ![[name]]", () => save(history[at], offer?.link ? { label: "Link this diagram", run: (row) => link(offer.link, row, history[at]) } : offer)),
       ],
     };

@@ -152,3 +152,35 @@ def test_the_new_diagram_window_has_a_title_that_names_the_document_and_the_expo
     door = _js("documents-mermaid.js")
     assert door.count("named: true") == 2 and "onDone: async (next, _changed, name)" in door
     assert "title: name || " in door and ".dgm-title" in CSS
+
+
+def _look(source: str, hand: bool) -> str:
+    # The pure `withLook` is lifted out of the embed file between its markers and run in node, with a front matter reader like the model's.
+    start = EMBED.index("const withLook = ")
+    end = EMBED.index("//: end withLook")
+    program = (
+        "const front=(text)=>{const m=/^---\\n[\\s\\S]*?\\n---\\n/.exec(text);return {front:m?m[0].replace(/\\n$/,'').split('\\n'):[],rest:m?text.slice(m[0].length):text};};"
+        "const diagramModel={front};"
+        + EMBED[start:end]
+        + f"process.stdout.write(JSON.stringify(withLook({json.dumps(source)},{json.dumps(hand)})));"
+    )
+    return json.loads(subprocess.run(["node", "-e", program], capture_output=True, text=True, check=True).stdout)
+
+
+@needs_node
+def test_the_hand_drawn_look_is_front_matter_that_keeps_the_rest_and_clean_removes_it_again():
+    # DD-13. Measured at 1440: the same two-box chart drew a 10,160 B SVG clean and a 59,754 B SVG with look: handDrawn (the viewBox grew 186 x 270
+    # to 199 x 281). The look is two front matter lines, so the model, the document and the exports all keep it.
+    plain = "flowchart TD\n  A --> B\n"
+    hand = _look(plain, True)
+    assert hand == "---\nconfig:\n  look: handDrawn\n---\nflowchart TD\n  A --> B\n"
+    assert _look(hand, False) == plain
+    # Another key in the front matter stays, and a config block already there gains the line once.
+    titled = "---\ntitle: Login\n---\nflowchart TD\n  A --> B\n"
+    assert _look(titled, True) == "---\ntitle: Login\nconfig:\n  look: handDrawn\n---\nflowchart TD\n  A --> B\n"
+    assert _look(_look(titled, True), True) == _look(titled, True)
+    assert _look(_look(titled, True), False) == titled
+    themed = "---\nconfig:\n  theme: dark\n---\nflowchart TD\n  A --> B\n"
+    assert _look(themed, True) == "---\nconfig:\n  look: handDrawn\n  theme: dark\n---\nflowchart TD\n  A --> B\n"
+    assert _look(_look(themed, True), False) == themed
+    assert 'makeMenuItem("ph:pencil-line Hand-drawn look"' in EMBED and 'makeMenuItem("ph:rectangle Clean look"' in EMBED

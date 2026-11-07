@@ -3343,7 +3343,7 @@ MORE_TOPICS.extend([
             "Suggest works in each: Templates include a brainstorm, a project plan, a sign in and a "
             "request and reply. A suggestion of the diagram's own kind arrives as ghosts to take; "
             "one of another kind says so and is left out when the diagram has blocks, and replaces "
-            "a blank one."
+            "a blank one. Hand-drawn look, in the ... menu, draws any of them as a sketch (two lines of front matter, kept in the text); Clean look takes it back."
         ),
         "badge": {"label": "Documents", "tab": "documents"},
     },
