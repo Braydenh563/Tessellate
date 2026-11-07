@@ -485,7 +485,7 @@ function atlasTailFrame(tail, now) {
   const holds = tail.resting && live && atlasTailCalm(tail, box) && atlasLowerState(box.closest("#nm-buddy"), box) === tail.state && now < tail.until;
   if (tail.resting && !holds) atlasTailUnrest(tail);
   //: And the chest's breath (`atlasBreathFrame`).
-  atlasBreathFrame(box, live, now);
+  atlasBreathFrame(box, live);
   for (const anim of box.atlasLoops || []) if (loops !== (anim.playState === "running")) loops ? anim.play() : anim.pause();
   if (holds) {
     tail.raf = setTimeout(() => atlasTailFrame(tail, performance.now()), ATLAS_TAIL_REST_BEAT_MS);
@@ -563,7 +563,7 @@ function atlasTailCalm(tail, box) {
   return atlasTailCalm.states.has(tail.state) && !!box.closest("#nm-buddy") && !box.closest(".nm-viewer-figure");
 }
 //: On the function, not the shared scope (test_global_scope_ratchet): only it reads them.
-atlasTailCalm.states = new Set(["idle", "sit", "lie", "think", "sad"]);
+atlasTailCalm.states = new Set(["idle", "sit", "lie", "think", "sad", "hang"]);
 //: **At rest the tail goes to the compositor** (Brief 34 continues, step 2;
 //: decision 7, under 1ms a minute beyond the face): fifteen path draws a
 //: second were about 770 layouts and 2s of script a minute at rest in the
@@ -576,10 +576,8 @@ atlasTailCalm.states = new Set(["idle", "sit", "lie", "think", "sad"]);
 //: state, the large view or a walk takes the live loop back, the layer
 //: easing home from wherever its sway was. `data-atl-tail` says which.
 const ATLAS_TAIL_SETTLE_MS = 1600;
-//: The resting beat is also the chest's (`atlasBreathFrame`): at 2.5 steps a
-//: second its 0.7px swell moves under 0.2px a step, and each step is a style
-//: recalc and a layout of the body's drawing (recalc.js: the breath at 10 a
-//: second was 550 recalcs and 200 layouts a minute of Atlas at rest).
+//: The resting beat still carries the motion gates for the chest (`atlasBreathFrame`),
+//: which is a compositor animation now and writes nothing per beat.
 const ATLAS_TAIL_REST_BEAT_MS = 400;
 function atlasTailRest(tail, p) {
   const { box, svg } = tail;
@@ -747,49 +745,57 @@ function atlasPropsFrame(box, live, tick) {
 //: about the hips while the head, the arms and the face, other groups, keep
 //: their size: 0.7px on the companion, 1.5px in the large view.
 //:
-//: **Here, ten times a second, not a CSS animation.** It is inside the body's
-//: drawing, so every step repaints that layer. As a CSS loop it ran at the
-//: frame rate in the large view, which nothing paces, and took the view from
-//: 53 frames a second to 20 to 31 on the sweep's machine. Ten a second is
-//: the companion pacer's rate for what animates inside an Atlas layer
-//: (`nameMarkBuddyTempo`), and a step of a tenth of a second moves the chest
-//: about a tenth of a pixel even at 2.2 times, so it reads as the same
-//: breath. By the clock, not by frames, so a slow machine does not step it
-//: more often than that. It rides the tail's loop, which already knows when the
-//: figure is off screen, on a hidden tab, or still by setting (Avatar
-//: animation Off, reduced motion, the companion's own Full motion), and puts
-//: the chest back at rest then.
+//: **On the compositor, set once** (atlasidle2, 2026-11-07). It was written
+//: ten times a second (a CSS loop inside the drawing was refused: it
+//: repainted the large view every frame, 53 frames a second down to 20 to
+//: 31), and that write was one of the two that kept the companion's ~70
+//: animated elements restyling at rest: any style write restyles every
+//: animated element, composited or not (3 torsos x 10 writes a second:
+//: 90 restyles in 6 s of the hanging pose, 2.7 s of main thread at 4x CPU).
+//: Now one Web Animation of `transform` per torso (not the individual
+//: `scale`, which Chromium refuses on an svg box: compositeFailed bit 19),
+//: started on the rise's own start time so the two share a clock for good,
+//: and touched again only when the figure's look (its period) changes or it
+//: comes back from being still. Ease-in-out sine, as the cosine was.
+//: It rides the tail's loop, which already knows when the figure is off
+//: screen, on a hidden tab, or still by setting (Avatar animation Off, reduced
+//: motion, the companion's own Full motion); it cancels the animation then
+//: and puts the chest back at rest.
 //:
 //: On the rise's clock: the swell takes its phase from the box's own
-//: animation, so the chest fills as the shoulders lift. Written as the
-//: individual `scale`, so a transform a gesture or a mood gives the torso
-//: composes with it rather than being overwritten.
+//: animation, so the chest fills as the shoulders lift.
 const ATLAS_BREATH_SWELL = [0.035, 0.025];
-const ATLAS_BREATH_STEP_MS = 100;
-function atlasBreathFrame(box, live, now) {
-  if (live && now - (box.atlasBreathAt || 0) < ATLAS_BREATH_STEP_MS) return;
-  box.atlasBreathAt = live ? now : 0;
-  box.atlasTorsos ||= [...box.querySelectorAll(".atl-layer-body .nmb-torso")];
-  let k = 0;
-  if (live) {
-    //: The rise's clock is read once in a while, not every step, and run on
-    //: by the wall's between: `getAnimations`, and an animation's
-    //: `playState` and `currentTime`, each bring the page's style up to date
-    //: to answer (B87a: 81 forced restyles and layouts in 1.3 s of a carry).
-    if (now > (box.atlasRiseAt || 0)) {
-      const rise = box.querySelector(".atl-lw-breathe")?.getAnimations()[0] || null;
-      const at = rise && rise.playState !== "idle" ? rise.currentTime : null;
-      box.atlasRisePeriod = at !== null ? +rise.effect.getComputedTiming().duration : 0;
-      box.atlasRiseOff = at !== null ? +at - now : null;
-      box.atlasRiseAt = now + 5000;
-    }
-    const rise = box.atlasRiseOff !== null && box.atlasRisePeriod > 0;
-    const period = rise ? box.atlasRisePeriod : box.dataset.atlasLook === "feminine" ? 4000 : 4600;
-    const at = rise ? now + box.atlasRiseOff : now;
-    k = (1 - Math.cos((2 * Math.PI * at) / period)) / 2;
+function atlasBreathFrame(box, live) {
+  const look = box.dataset.atlasLook;
+  if (!live) {
+    if (box.atlasBreath) for (const anim of box.atlasBreath.anims) anim.cancel();
+    box.atlasBreath = null;
+    return;
   }
-  const scale = k ? `${(1 + ATLAS_BREATH_SWELL[0] * k).toFixed(4)} ${(1 + ATLAS_BREATH_SWELL[1] * k).toFixed(4)}` : "";
-  for (const el of box.atlasTorsos) if (el.style.scale !== scale) el.style.scale = scale;
+  if (box.atlasBreath?.look === look) return;
+  //: Not under the entrance fade: started while `#nm-buddy` is opacity 0 the
+  //: torso counts as an empty box and the compositor refuses it for good
+  //: (Chromium status bit 17; both torsos on the reload path, none when
+  //: started a beat later). One style read, only at a start or a retune.
+  const faded = box.closest?.("#nm-buddy");
+  if (faded && +getComputedStyle(faded).opacity === 0) return;
+  box.atlasTorsos ||= [...box.querySelectorAll(".atl-layer-body .nmb-torso")];
+  if (box.atlasBreath) for (const anim of box.atlasBreath.anims) anim.cancel();
+  //: The rise's clock is read here only, at a start or a retune (`getAnimations`
+  //: and an animation's times bring the page's style up to date: B87a, 81
+  //: forced restyles in 1.3 s of a carry when this was read each step).
+  const rise = box.querySelector(".atl-lw-breathe")?.getAnimations()[0] || null;
+  const going = rise && rise.playState !== "idle";
+  const period = going ? +rise.effect.getComputedTiming().duration : look === "feminine" ? 4000 : 4600;
+  const [sx, sy] = ATLAS_BREATH_SWELL;
+  const frames = [{ transform: "scale(1, 1)" }, { transform: `scale(${1 + sx}, ${1 + sy})` }, { transform: "scale(1, 1)" }];
+  const anims = box.atlasTorsos.map((el) => {
+    const anim = el.animate(frames, { duration: period, iterations: Infinity, easing: "cubic-bezier(0.37, 0, 0.63, 1)", id: "atl-breath" });
+    if (going && rise.startTime !== null) anim.startTime = rise.startTime;
+    else if (going) anim.currentTime = rise.currentTime;
+    return anim;
+  });
+  box.atlasBreath = { look, anims };
 }
 
 //: **The lower body by what it is doing** (INBOX 575, the owner: "have the

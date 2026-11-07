@@ -120,27 +120,26 @@ def test_the_wake_marks_the_figure_for_a_fresh_read() -> None:
 
 
 @needs_node
-def test_the_breath_reads_the_rise_clock_once_per_refresh_not_each_step() -> None:
-    swell = "\n".join(re.search(rf"^const {n} = .*;$", LIFE, re.M).group(0) for n in ("ATLAS_BREATH_SWELL", "ATLAS_BREATH_STEP_MS"))
+def test_the_breath_reads_the_rise_clock_once_not_each_step() -> None:
+    # Intent moved (atlasidle2): the breath is a Web Animation set once, so the
+    # rise's clock is read at the start (and a retune), never per step.
+    swell = re.search(r"^const ATLAS_BREATH_SWELL = .*;$", LIFE, re.M).group(0)
     out = _node(
         swell
         + "\n"
         + _fn(LIFE, "atlasBreathFrame")
         + r"""
 let gets = 0;
-let t = 0;
-const rise = { effect: { getComputedTiming: () => ({ duration: 4600 }) } };
-Object.defineProperty(rise, "currentTime", { get() { gets += 1; return t; } });
+const rise = { effect: { getComputedTiming: () => ({ duration: 4600 }) }, startTime: 0 };
+Object.defineProperty(rise, "currentTime", { get() { gets += 1; return 0; } });
 Object.defineProperty(rise, "playState", { get() { gets += 1; return "running"; } });
-const torsos = [{ style: { scale: "" } }];
-const box = { dataset: { atlasLook: "masculine" }, querySelectorAll: () => torsos, querySelector: () => ({ getAnimations: () => [rise] }) };
-const seen = [];
-for (t = 0; t <= 4600; t += 100) { atlasBreathFrame(box, true, t); seen.push(torsos[0].style.scale); }
-process.stdout.write(JSON.stringify({ gets, peak: seen[23], start: seen[0] }));
+const torso = { animate: () => ({ cancel() {} }) };
+const box = { dataset: { atlasLook: "masculine" }, querySelectorAll: () => [torso], querySelector: () => ({ getAnimations: () => { gets += 1; return [rise]; } }) };
+for (let t = 0; t <= 4600; t += 100) atlasBreathFrame(box, true);
+process.stdout.write(JSON.stringify({ gets }));
 """,
     )
-    assert out["gets"] <= 2 * 2, f"{out['gets']} reads of the rise's clock in 46 steps; once per refresh (5 s)"
-    assert out["start"] == "" and out["peak"] == "1.0350 1.0250", "still on the rise's clock, extrapolated by the wall's"
+    assert out["gets"] <= 3, f"{out['gets']} reads of the rise's clock in 46 steps; once, at the start"
 
 
 @needs_node
