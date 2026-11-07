@@ -1,18 +1,20 @@
 mode: continue
 status: running
-pr: 212
-max-continues: 40
+pr: 216
+max-continues: 60
 max-idle-minutes: 60
 finish-up: 85%
-started: 2026-11-04 04:30Z
-tier: pro (weekly 75%: one agent, Sonnet or Haiku, targeted tests); never Fable; owner away golfing about 2 hours, 2026-11-04
+started: 2026-11-07 14:40Z
+tier: max (weekly 4%), three agents at once, Sonnet or Haiku; never Fable; owner asleep from 2026-11-07 14:40Z
 
-## 2026-11-04b away queue (HANDOVER Now 2026-11-04c)
-- [x] Merge blink and E2E agent (INBOX 1644; editor-keys.spec.js:190 heading card innerText ""); resolve 1644, CHANGELOG, push
-- [x] INBOX 1641 rest (58a1836): Settings "Running copies" row (list other running app copies, Shut down each); help, parity
-- [x] INBOX 1649 (acea330, merge 04f8e4b): "I want to edit a note" gets how-to and act answers, never a mid-sentence quote; "word for word" and "quote my X note" fall-throughs (composer agent's finding)
-- [ ] INBOX 1643: graph gcRequestDraw 54 calls/s at rest; plus the owner's 03:08Z lag: input 1432 ms pointerout #dash-start-menu, frame 1416 ms atlas.js setTimeout forced layout 29 ms
-- [ ] CodeQL notes: routes_whiteboard.py re-exports (lines 44 to 59, "moved; re-exported"): point readers at the wb_* modules and drop them
-- [x] Overlay gaps (overlay-1104.md): panel click-away, runner death brings the card back, panel follows a drag
-- [ ] INBOX 1634 throw lag after a restore; then diagram R3 (DOCUMENTS_PLAN)
-- [ ] Session end: HANDOVER morning summary, retro
+## 2026-11-07 overnight queue (HANDOVER Now 2026-11-07c)
+- [ ] Merge land1683 (agent/land1683-1107): overlay tests serially, CHANGELOG, CODEMAP, push
+- [ ] Merge value-field (agent/value-field-1107, INBOX 1694 b c): every slider readout typeable, lint
+- [ ] Merge companion-s (agent/companion-s-1107): window perch bug, the 1683 (l) mind, S rows; reviewer
+- [ ] Coverage ledger of every owner ask (1683 a to y, 1692 a to q, 1694) against code and tests
+- [ ] 1683 (x)(y) build: pull-up, fling off a moved window, slide off, poof or portal escape with a miffed face, tuck behind smaller windows, peek from the taskbar on any edge, hidden taskbar, sidebars; in-app parity
+- [ ] INBOX 1667 perf: 4.5 s avatars.js forced layout after opening a note from the dashboard
+- [ ] Layered deep dive round 1: desk companion (research, audit, fix, re-audit)
+- [ ] Deep dive round 1: in-app companion and Atlas
+- [ ] Deep dive round 1: diagram builder
+- [ ] Session end: full suite, INBOX 1693, HANDOVER morning summary, retro
