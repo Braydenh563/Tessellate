@@ -470,3 +470,52 @@ def test_1658_a_note_opened_from_the_menu_is_still_a_real_resize_and_back(over):
     assert panel.calls[-2][1:] == (320, 376)
     api.set_size(MENU_W, 154, "menu")
     assert panel.calls[-2][1:] == (MENU_W, 154)
+
+
+# INBOX 1666: at quit no web view is started, and one still starting gets a short deadline.
+class _Loaded:
+    def __init__(self, ok=True):
+        self.ok, self.waited = ok, []
+
+    def wait(self, timeout=None):
+        self.waited.append(timeout)
+        return self.ok
+
+
+def test_1666_quit_hides_main_after_closing_so_no_panel_is_made(over):
+    # Before: hide() -> set_main_hidden -> sync -> a new panel window created mid-quit.
+    over.webview.made.clear()
+    dc.shutdown()
+    over.main_window.hide()
+    over.set_main_hidden(True)
+    assert over.webview.made == []
+
+
+def test_1666_a_late_sync_after_close_makes_no_window(over):
+    over.close()
+    over._make_panel()  # noqa: SLF001
+    assert over.webview.made == [] and over.window is None
+
+
+def test_1666_close_waits_briefly_for_a_window_still_starting_then_destroys(over):
+    over.set_main_hidden(True)
+    panel = over.webview.made[0]
+    panel.events = SimpleNamespace(loaded=_Loaded(ok=False))
+    over.close()
+    assert panel.events.loaded.waited == [dc.LOADED_WAIT]
+    assert ("destroy",) in panel.calls
+
+
+def test_1666_a_window_without_a_loaded_event_is_still_destroyed(over):
+    over.set_main_hidden(True)
+    panel = over.webview.made[0]
+    over.close()
+    assert ("destroy",) in panel.calls
+
+
+def test_1666_the_quit_handler_closes_the_companion_before_hiding_the_main_window():
+    from pathlib import Path
+
+    src = (Path(dc.__file__).resolve().parents[1] / "__main__.py").read_text(encoding="utf-8")
+    body = src.split("def _quit_from_app", 1)[1].split("quit_hook.set_quit_handler", 1)[0]
+    assert body.index("desk_companion.shutdown()") < body.index("hide()")
