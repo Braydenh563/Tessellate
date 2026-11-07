@@ -302,7 +302,9 @@ async function openSettingsModal(section = "models", scrollToId = null) {
   //: client's cache size, drafts included) sitting beside the Health
   //: section's own count of the same thing, and the two disagreed.
   const aboutHealth = await apiJson("/health").catch(() => null);
-  $("about-version").textContent = aboutHealth?.version ? `Version ${aboutHealth.version}` : "Version not available right now";
+  //: Where it is served from, read from the page itself so it is the address in use (the owner, 2026-11-07).
+  const served = `Running at ${location.host}${location.port ? "" : " (the default port)"}.`;
+  $("about-version").textContent = `${aboutHealth?.version ? `Version ${aboutHealth.version}.` : "Version not available right now."} ${served}`;
   //: The line waits for the companion's file (`afterCharacters`), not a `typeof` that skipped it.
   afterCharacters(() => {
     const { mode, reason } = nameMarkBuddyMotion();
@@ -2754,6 +2756,7 @@ function renderAppearance() {
   _segActive("border-style-seg", "borderChoice", appearancePref("border-style", "solid"));
   $("shadow-intensity").value = appearancePref("shadow-intensity", "5");
   $("shadow-intensity-value").textContent = `${appearancePref("shadow-intensity", "5")}%`;
+  window.valueField?.refresh();
   $("accent-custom").value = prefs.get("accent-custom", null) || "#4664f0";
   $("page-bg-custom").value = prefs.get("page-bg", null) || "#f5f7fb";
   $("custom-css").value = prefs.get("custom-css", null) || "";

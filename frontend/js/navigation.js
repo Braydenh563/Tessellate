@@ -2444,7 +2444,7 @@ function scrollingPage() {
 // kept in sync with a second copy of the same "scrolled away" logic.
 const NO_SCROLL_TOP_TABS = new Set(["graph", "chat"]);
 const NESTED_SCROLL_TABS = {
-  chat: () => chatMessagesEl(),
+  chat: () => $("chat-messages"),
   notes: () => document.querySelector("#tab-notes .layout > .tab-main"),
   // The Whiteboards sub-view pans rather than scrolls (like Graph), so it
   // deliberately returns nothing here, scrollTopTargetEl() then falls
@@ -2456,10 +2456,6 @@ const NESTED_SCROLL_TABS = {
   },
 };
 let scrollTopUpdate = null;
-
-function chatMessagesEl() {
-  return $("chat-messages");
-}
 
 function scrollTopTargetEl() {
   const tab = prefs.get("activeTab", null) || "dashboard";

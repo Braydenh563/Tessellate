@@ -46,8 +46,9 @@
     },
     //: True where a press in that direction has nowhere to go: the same ends the wheel and a pinch clamp to, so + and Ctrl+wheel stop at one number (1679 m: the last press is a short step, where the button used to go grey at 477% and the wheel went on to 500%).
     atEnd: (scale, fit, dir) => (dir > 0 ? scale >= MAX * fit * (1 - 1e-6) : scale <= MIN * fit * (1 + 1e-6)),
-    //: A mouse notch (whole, 50 or more), a line-mode wheel and a pinch (Ctrl) zoom; a trackpad's two-finger scroll (small, fractional, sideways) and Shift pan natively.
-    zooms: (e) => !e.shiftKey && (e.ctrlKey || e.deltaMode === 1 || (e.deltaX === 0 && Math.abs(e.deltaY) >= 50 && Number.isInteger(e.deltaY))),
+    //: A mouse notch (a whole multiple of 100 or 120: what a wheel reports at 100% or 125% display scaling), a line-mode wheel and a pinch (Ctrl) zoom.
+    //: A trackpad's two-finger scroll (small, fractional, sideways, or a flick of any other whole number) and Shift pan natively (1679 review).
+    zooms: (e) => !e.shiftKey && (e.ctrlKey || e.deltaMode === 1 || (e.deltaX === 0 && Math.abs(e.deltaY) >= 50 && (Math.abs(e.deltaY) % 100 === 0 || Math.abs(e.deltaY) % 120 === 0))),
     //: The scale factor of one wheel event: a notch is STEP, a pinch's small deltas are continuous.
     factor: (e) => (e.ctrlKey && e.deltaMode === 0 && Math.abs(e.deltaY) < 50 ? Math.exp(-e.deltaY * 0.01) : e.deltaMode === 1 ? STEP ** -Math.sign(e.deltaY) : math.wheel(e.deltaY)),
     //: px per ms over the last 100 ms of `[{t, x, y}]`; a pause leaves nothing.
@@ -125,10 +126,8 @@
       //: A button is grey where a press has nowhere to go; the aimed scale decides while a gesture is in motion.
       buttons.out.disabled = math.atEnd(scale, f, -1);
       buttons.in.disabled = math.atEnd(scale, f, 1);
-      const words = `${math.percent(scale)}%`;
-      if (buttons.actual.textContent === words) return;
-      buttons.actual.textContent = words;
-      buttons.actual.setAttribute("aria-label", `Zoom ${words}. Show the diagram at its drawn size, 100%`);
+      //: The readout is a typeable number with a dropdown (INBOX 1694 b, value-field.js); `set` leaves a number being typed alone.
+      level?.set(math.percent(scale));
     };
     //: Zoom to `next` keeping the point that was under (ax, ay) at (cx, cy): the same point for a wheel, the fingers' first and latest middle for a pinch.
     const zoomTo = (next, cx, cy, ax = cx, ay = cy) => {
@@ -154,6 +153,7 @@
     //: The one frame request of this file: asked for by an input (a wheel, a pinch, a drag, a glide), never at rest.
     const nextFrame = (run) => requestAnimationFrame(run);
     let g = null;
+    let level = null;
     let glideFrame = 0;
     const cancelGlide = () => {
       if (glideFrame) cancelAnimationFrame(glideFrame);
@@ -184,6 +184,8 @@
       stage.classList.remove("dgm-gesturing");
       return d;
     };
+    //: The commit puts the point that was under the pointer at the gesture's start back under it. A pan, a glide or a key that moved
+    //: the scroll since would have made that start rectangle stale, so each of them settles a gesture first (1679 review).
     const settle = () => {
       const d = drop();
       if (d) zoomTo(d.want, d.cx, d.cy, d.r.left + d.px, d.r.top + d.py);
@@ -207,15 +209,20 @@
     const glide = (v) => {
       cancelGlide();
       let [vx, vy, then] = [-v.x, -v.y, performance.now()];
+      //: The position is kept as a fraction: a step under half a pixel rounds to no move, which must not read as an edge (a slow glide ended early).
+      let [x, y] = [fig.scrollLeft, fig.scrollTop];
       const tick = (at) => {
         const dt = Math.min(48, at - then);
         then = at;
-        const [x0, y0] = [fig.scrollLeft, fig.scrollTop];
-        fig.scrollLeft = x0 + vx * dt;
-        fig.scrollTop = y0 + vy * dt;
-        //: An edge stops that axis.
-        vx = fig.scrollLeft === x0 ? 0 : math.decay(vx, dt);
-        vy = fig.scrollTop === y0 ? 0 : math.decay(vy, dt);
+        x += vx * dt;
+        y += vy * dt;
+        fig.scrollLeft = x;
+        fig.scrollTop = y;
+        //: An edge (the scroll landed over a pixel from where it was sent) stops that axis.
+        if (Math.abs(fig.scrollLeft - x) > 1) [vx, x] = [0, fig.scrollLeft];
+        if (Math.abs(fig.scrollTop - y) > 1) [vy, y] = [0, fig.scrollTop];
+        vx = math.decay(vx, dt);
+        vy = math.decay(vy, dt);
         glideFrame = math.settled(vx, vy) ? 0 : nextFrame(tick);
       };
       glideFrame = nextFrame(tick);
@@ -245,9 +252,23 @@
       out: smallButton("ph:minus", "Zoom out", () => step(-1)),
       in: smallButton("ph:plus", "Zoom in", () => step(1)),
       fit: smallButton("Fit", "Fit the diagram to the pane", fitTo),
-      actual: smallButton("100%", "Zoom now. Press for the drawn size, 100%", actual),
     };
-    group.append(buttons.out, buttons.in, buttons.fit, buttons.actual);
+    //: 100% is the drawing's own size; type a number and Enter, or pick one from the chevron (the 1 key still goes to 100%).
+    const levelHost = document.createElement("span");
+    levelHost.className = "dgm-zoom-level";
+    level = valueField(levelHost, {
+      value: 100,
+      min: 5,
+      max: 500,
+      label: "Zoom percent",
+      format: (v) => `${Math.round(v)}%`,
+      presets: [25, 50, 75, 100, 150, 200, 400].concat([{ label: "Fit", run: fitTo }]),
+      onCommit: (pct) => {
+        const img = image();
+        if (img && dims(img)) aim(pct / 100, ...centre());
+      },
+    });
+    group.append(buttons.out, buttons.in, buttons.fit, levelHost);
     bar.append(group);
     stage.append(bar);
     stage.append(note);
@@ -266,6 +287,7 @@
       cancelGlide();
       //: Shift is five times as far; the move glides unless the person asked for less motion.
       const far = event.shiftKey ? 5 : 1;
+      if (move) settle();
       if (move) fig.scrollBy({ left: move[0] * far, top: move[1] * far, behavior: reduced() ? "auto" : "smooth" });
       else if (event.key === "+" || event.key === "=") step(1);
       else if (event.key === "-" || event.key === "_") step(-1);
@@ -300,6 +322,7 @@
         aim(start.scale * (mid.d / start.d), mid.x, mid.y);
         travel = 99;
       } else if (points.size === 1 && (roomy() || travel > 12)) {
+        settle();
         const dx = event.clientX - last.x;
         const dy = event.clientY - last.y;
         travel += Math.abs(dx) + Math.abs(dy);

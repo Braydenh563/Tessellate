@@ -82,9 +82,11 @@ def test_every_answer_surface_draws_the_panel_with_one_renderer():
     ask = with_pieces("capture-ask.js")
     assert "function drawAnswerPanels(holder, panels, before = null)" in ask and "replyDrawAll(holder, panels, before)" in ask
     assert "renderReplyPanel(holder, event)" in kit and "drawAnswerPanels(timeline.holder, [event])" in with_pieces("chat-attach.js")
-    for name in ("capture-ask.js", "palette.js"):
+    #: The popup's answer is a box per run of words since B5, so its panels
+    #: go under the last of them (`lastBox()`).
+    for name, call in (("capture-ask.js", "drawAnswerPanels(answerBox"), ("palette.js", "drawAnswerPanels(lastBox()")):
         source = with_pieces(name)
-        assert "onPanel:" in source and "drawAnswerPanels(answerBox" in source, name
+        assert "onPanel:" in source and call in source, name
     #: One recipe: a reply panel is drawn by reply-kit.js and nowhere else.
     others = [p.name for p in JS.glob("*.js") if p.name != "reply-kit.js" and '"reply-panel' in p.read_text(encoding="utf-8")]
     assert not others, f"a reply panel built outside reply-kit.js: {others}"
@@ -140,7 +142,7 @@ def test_a_note_a_reply_gives_is_previewed_on_every_surface():
         "chat-attach.js": "finishReply(answerEls, { composed: meta?.composed",
         #: The meta is the options (its `composed`, and `match_info` for the records, INBOX 1310).
         "capture-ask.js": "finishReply(answerBox, { composed: answerMeta?.composed, match_info: answerMeta?.match_info });",
-        "palette.js": "finishReply(answerBox, { composed: meta?.composed, head: agentLabel",
+        "palette.js": "finishReply(answerBoxes, { composed: meta?.composed, head: agentLabel",
         "help-chat.js": 'finishReply(answerRow.querySelector(".help-chat-prose")',
     }
     for name, call in calls.items():
@@ -159,7 +161,9 @@ def test_a_wall_of_text_in_a_reply_folds_to_its_gist():
     of one of my note's images, maybe it could be in a collapsible subtle
     panel or smth or abrieviated/summarised by the composer somehow??"."""
     kit = (JS / "reply-kit.js").read_text(encoding="utf-8")
-    assert "for (const answer of list) replyFoldLong(answer);" in kit
+    #: The composer's text only: B1 (2026-11-05) found a model's own answer
+    #: folded, and the fold was asked for the composer's output.
+    assert "if (opts.composed) for (const answer of list) replyFoldLong(answer);" in kit
     #: The Thinking fold's disclosure, shut, its summary the gist and length.
     assert 'fold.className = "agent-step long-fold";' in kit and 'summary.className = "fold-summary";' in kit
     assert "const REPLY_FOLD_CHARS = 600;" in kit and 'block.matches("p, pre, blockquote")' in kit

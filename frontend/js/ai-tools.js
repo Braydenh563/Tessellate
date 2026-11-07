@@ -57,10 +57,6 @@ const TASK_OUTCOMES = {
 // the list is first built; after that a poll never touches `.value`, so
 // your choice stays put until you Apply (which re-syncs to the new saved
 // value). No timing-sensitive "userChosen" flag to get wrong.
-function _namesSignature(names) {
-  return [...names].sort().join("|");
-}
-
 function fillModelSelect(select, names, extraFirst, savedValue) {
   //: `extraFirst` started as one leading option ("Inherited: X"); the model-
   //: per-feature select needs three (Inherited, Same as chat model, Same as
@@ -68,7 +64,7 @@ function fillModelSelect(select, names, extraFirst, savedValue) {
   //: caller still passes a single object or null, unchanged.
   const extras = Array.isArray(extraFirst) ? extraFirst.filter(Boolean) : extraFirst ? [extraFirst] : [];
   const wanted = [...extras.map((e) => e.value), ...names];
-  const signature = _namesSignature(wanted);
+  const signature = [...wanted].sort().join("|");
   if (select.dataset.sig === signature) return; // same options → leave it alone
   select.dataset.sig = signature;
   const previous = select.value; // preserve a live selection across a rebuild

@@ -58,6 +58,7 @@
     const add = smallButton("ph:plus Add block", "Add a block after the picked one", () => use.add(S, { edit: true }));
     const connect = smallButton("ph:arrow-bend-down-right Connect", "Draw an arrow from the picked block to another", () => use.connect(S, S.sel || S.tree.querySelector(".dgm-block")?.dataset.key));
     foot.append(add, connect);
+    S.footConnect = connect;
     S.tree.before(line);
     S.tree.after(foot);
     const say = (target) => {
@@ -77,6 +78,10 @@
     const m = S.m;
     S.empty.classList.toggle("hidden", m.edges.length > 0);
     S.foot?.classList.toggle("hidden", !blocks);
+    //: The checklist already offers the first arrow and the first box, so the foot does not say the same twice (1679 blind pass): Add block
+    //: stays where the eye ends, Connect joins it once the checklist has gone, and a box that is added drops the checklist's first row.
+    S.footConnect?.classList.toggle("hidden", m.edges.length === 0 && Boolean(S.steps));
+    S.steps?.firstElementChild?.classList.toggle("hidden", m.nodes.length > 0);
     S.empty.classList.toggle("dgm-started", Boolean(blocks));
     //: A phone with an arrow keeps the picture and gets the list as a sheet (diagram-touch.js); before that the steps stay in the page.
     S.root.classList.toggle("dgm-listless", m.edges.length > 0);

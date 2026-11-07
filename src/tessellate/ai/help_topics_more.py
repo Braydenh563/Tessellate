@@ -161,7 +161,8 @@ MORE_TOPICS: list[dict] = [
             "one sideways can go far or into a corner, and a hard one upwards "
             "can leave the top of the window and fall back in. A panel only "
             "catches it when it comes down slowly, and it may land, slide off "
-            "or tumble and get up. Once down it settles in its own way: sitting with its "
+            "or tumble and get up. It lands by how it was turned: on its feet, or flat on its back or belly, "
+            "skidding a little, lying a moment and getting up to shake it off. A long drop makes it flail. Once down it settles in its own way: sitting with its "
             "legs dangling or kicking, lying down, stretching, or swinging "
             "from the bar. Wherever it ends, it never covers a button: come "
             "down on one and it moves only to the nearest clear place. With "
@@ -293,6 +294,23 @@ MORE_TOPICS: list[dict] = [
             "up get everything."
         ),
         "badge": {"label": "Tools it can use", "section": "tools"},
+    },
+    {
+        "id": "context-window",
+        "keywords": (
+            "context window", "context size", "context length", "num ctx",
+            "window too small", "bigger window", "tokens window", "n ctx",
+        ),
+        "body": (
+            "Settings, Models, Context window is how much the model can hold at "
+            "once. Empty means auto: the model's own window, held back only by "
+            "how much free memory the cache for that window would need, and the "
+            "line under the box says the number in use and why. A number you "
+            "type for a model always wins. With llama.cpp the server sets the "
+            "window when it loads the model, so Tessellate follows the number "
+            "the server reports; start it with a larger -c for more."
+        ),
+        "badge": {"label": "Models", "section": "models"},
     },
     {
         "id": "learned",
@@ -493,9 +511,10 @@ MORE_TOPICS: list[dict] = [
             "Atlas adds of its own sets whether an answer about a topic ends "
             "with a pattern from your notes: Nothing, One line (the default) "
             "or Everything it finds; each Not right raises the bar. A long "
-            "block in any reply (the text read from a picture, say) is folded "
-            "to one line, its first sentence and its length; press it to read "
-            "the whole."
+            "block in an answer from no model (the text read from a picture, "
+            "say) is folded to one line, its first sentence and its length; "
+            "press it to read the whole. A model's own answer is never folded; "
+            "only its thinking is, under Thinking."
         ),
         "badge": {"label": "Answer style", "section": "personas", "target": "pref-style"},
     },
@@ -1429,23 +1448,21 @@ MORE_TOPICS: list[dict] = [
             "companion when the window is closed", "show desktop companion",
         ),
         "body": (
-            "In the desktop app on Windows and Linux (X11) the companion can live on your desktop while the Tessellate window is "
-            "minimised or in the tray, and go away when it is open. Atlas floats like a wind spirit (others walk), sits "
-            "and then sleeps when you have been away, can be picked up and thrown, "
+            "In the desktop app on Windows and Linux (X11) the companion lives on your desktop while the window is "
+            "minimised or in the tray, and goes when it opens. Atlas floats like a wind spirit (others walk the bottom), sits "
+            "and sleeps when you are away, can be picked up and thrown (it tumbles, lands on its feet, back or belly and gets up, may slide down an edge; only a hard throw up catches the top), "
             "hangs from the top, and peeks up from behind the taskbar or a screen edge. It keeps to a home spot by an "
-            "edge for minutes, alive in place, and makes "
-            "a few trips an hour: walking, running, out at one edge and in at the other, or through a portal. "
-            "Let go gently near a title bar and it hangs, then pulls itself up, "
-            "swings down or lets go with a start; it also hangs from a maximised title bar or a window's bottom edge. Sometimes it climbs onto the top of a window, rides it when you move it and hops off "
+            "edge for minutes, alive in place, and makes a few trips an hour: walking, running, "
+            "out at one edge and in at the other, or through a portal, clear of your typing. Let go gently near a title bar and it hangs, "
+            "then pulls itself up, swings down or lets go with a start. Sometimes it climbs onto the top of a window, rides it when you move it and hops off "
             "if you close it (Roam over windows turns that off), and"
-            " a due reminder brings you a card to click. It steps aside for full screen and follows Companion movement "
-            "in Appearance: it stands still when that is Fades only or Windows animation effects are off. Turn it on, on the computer"
-            " Tessellate runs on: Settings, Appearance, Corner companion, Show the companion on the desktop while the window is "
-            "minimised or in the tray, or the tray icon's menu; it takes effect while the desktop app runs. Click it for Quick note, "
+            " when a reminder falls due it brings you a card to click. It steps aside for full screen and follows Companion movement "
+            "in Appearance (still when Fades only or Windows animation effects are off). Turn it on, on the computer"
+            " Tessellate runs on: Settings, Appearance, Corner companion, Show the companion on the desktop, or the tray icon's menu. It takes effect while the desktop app runs. Click it for Quick note, "
             "Quick search, New reminder, Open today, Open Tessellate, Wave, Come here, Go somewhere else, Take a nap, Sit on a window"
-            " or Hide for 10 minutes. Come here follows your pointer; a nap lasts minutes or until you click it. Right-click it for Companion (Atlas masculine or feminine, your own or a saved one, drawn once), Stay here or Roam, Settings or Turn off. Drag it anywhere. Locked, it shows only Open "
-            "Tessellate. On Wayland, which cannot place a window above others, it stays "
-            "in the app. It also lounges, answers a pat and glances at new windows."
+            " or Hide for 10 minutes. Come here follows your pointer a while; a nap lasts minutes or until clicked. Right-click it for Companion (Atlas masculine or feminine, your own or a saved one, summoned once),"
+            " Stay here or Roam, Settings or Turn off. Drag it; it keeps the spot. Menu: Small, Medium, Large; or pull its corner handle (bottom right while it hangs), double-click to reset. Locked, it "
+            "shows only Open Tessellate. On Wayland it stays in the app."
         ),
         "badge": {"label": "Desktop companion", "section": "appearance", "target": "desktop-companion-row"},
     },
@@ -1606,6 +1623,23 @@ MORE_TOPICS.extend(
                 "puts them Recent, Most turns, Most tokens or A to Z, and a pinned "
                 "chat stays first. Each chat's menu renames, pins, archives or "
                 "deletes it. All in Library opens every chat, with the full search."
+            ),
+            "badge": {"label": "Chat", "tab": "chat"},
+        },
+        {
+            "id": "queued-messages",
+            "keywords": (
+                "queue a message", "queued messages", "type while it answers", "type while it is answering",
+                "send while generating", "edit a queued message", "remove a queued message",
+                "cant type while it answers", "message waiting", "the box is locked",
+            ),
+            "body": (
+                "In Chat, the popup agent and the Guide the box stays open while a "
+                "reply is being written. Press Enter and what you typed waits in a "
+                "list by the box; each one goes, oldest first, when the reply before "
+                "it ends. Edit puts a waiting message back in the box, and the x "
+                "removes it. Stop holds the list until you send again, and what you "
+                "are typing stays in the box while the list sends."
             ),
             "badge": {"label": "Chat", "tab": "chat"},
         },
@@ -1998,7 +2032,8 @@ MORE_TOPICS.extend(
                 "caption and the text read off it, shown or hidden), the '?' "
                 "and the ⋯ (rename, delete, see the text on the page). The bar at "
                 "the foot zooms: out, in, back to fit, 1:1 for actual size, and "
-                "Rotate; a PDF adds its page stepper. With more than one file a "
+                "Rotate; the percentage between out and in is a field: type 150 and Enter, "
+                "or open its arrow for 25 to 400 and Fit. A PDF adds its page stepper. With more than one file a "
                 "filmstrip above it jumps to any of them. Scroll zooms where the "
                 "pointer is, drag moves a zoomed picture, double-click switches "
                 "between fit and actual size. Keys: Left and Right, plus and "
@@ -2085,8 +2120,10 @@ MORE_TOPICS.extend(
             "body": (
                 "Under an answer in Ask, in a Chat reply and in the popup agent's "
                 "answer is one row of chips (Sources, Cites, how many sentences "
-                "your notes back, Why this answer) with the time and model at "
-                "its end; each chip opens its part below, one at a time. "
+                "your notes back, Why this answer); in Chat and the popup agent "
+                "the time ends it, the model being named in the answer's head, "
+                "where Copy and the reply's other actions sit at the end. "
+                "Each chip opens its part below, one at a time. "
                 "Why this answer opens the lines that "
                 "made it, each with the seconds since you asked: what the "
                 "question was read as, what was searched and how many notes "
@@ -2365,7 +2402,9 @@ MORE_TOPICS.extend(
                 "the Library loads or you filter it, one polite line says how "
                 "many are shown, and the window title follows the view. Settings, "
                 "Appearance has High contrast, Motion, Interface animations, "
-                "Text size and Zoom."
+                "Text size and Zoom. Every slider's number is a field: Tab to it, "
+                "type a value, Enter applies it, Esc puts it back, and the arrow "
+                "keys step it (Shift for ten)."
             ),
             "badge": {"label": "Appearance", "section": "appearance"},
         },
@@ -2798,6 +2837,7 @@ TOPIC_META: dict[str, dict] = {
     "properties": {"title": "Note properties and types", "path": "a note's ⋯, Properties; or the command palette, Note types"},
     "entities": {"title": "People and things", "path": "Graph tab, an entity; or the command palette, People and things"},
     "chat-controls": {"title": "Chat keys and controls", "path": "Chat tab"},
+    "context-window": {"title": "How much the chat model reads at once", "path": "Settings, Models"},
     "chat-context": {"title": "When a chat outgrows the window", "path": "Chat tab, the context pill in the header"},
     "wrap-lines": {"title": "Wrap lines in tables and code", "path": "Chat tab, a table or code block"},
     "notes-controls": {"title": "Notes keys, filters and selection", "path": "Notes tab"},
@@ -2814,6 +2854,7 @@ TOPIC_META: dict[str, dict] = {
     "chat-attach-cards": {"title": "Notes and files attached to a chat message", "path": "Chat, above the box and above a sent message"},
     "chat-model-picker": {"title": "Choosing the model for a box", "path": "Chat, Ask and Writing, beside the mode buttons"},
     "chat-list": {"title": "Finding and sorting your saved chats", "path": "Chat tab, the Chats list"},
+    "queued-messages": {"title": "Messages that wait their turn", "path": "Chat, the popup agent or the Guide, the box while a reply is written"},
     "filing": {"title": "How a note is filed", "path": "A note's card, beside its category"},
     "suggested-tags": {"title": "Suggested tags", "path": "A note's card"},
     "tag-manager": {"title": "Managing tags", "path": "Notes tab, the ... menu, Manage tags"},
@@ -2861,7 +2902,7 @@ HELP_GROUPS: list[tuple[str, tuple[str, ...]]] = [
         "tags-categories", "filing", "suggested-tags", "tag-manager", "manage-categories", "tidy",
     )),
     ("Asking Atlas", (
-        "ask-chat", "answers-from-notes", "chat-controls", "chat-context", "chat-private", "chat-attach-cards", "chat-model-picker", "chat-list", "wrap-lines", "slash-commands", "chat-acts", "tasks", "nicknames", "follow-up-trail", "why-this-answer", "line-verdicts", "answer-pictures", "time-and-recency", "notebook-questions", "studyhelp",
+        "ask-chat", "answers-from-notes", "chat-controls", "chat-context", "context-window", "chat-private", "chat-attach-cards", "chat-model-picker", "chat-list", "queued-messages", "wrap-lines", "slash-commands", "chat-acts", "tasks", "nicknames", "follow-up-trail", "why-this-answer", "line-verdicts", "answer-pictures", "time-and-recency", "notebook-questions", "studyhelp",
         "contradictions", "skills", "personas", "answer-style", "memory", "learned", "open-questions",
     )),
     ("Documents and code", (
@@ -3240,7 +3281,7 @@ MORE_TOPICS.extend([
             "arrows; Shift for more). Direction (a menu) turns the flow. An empty one lists "
             "three steps: Add a shape, Name it, Connect it, ticked as you go, or Start from an example. "
             "The corner bar zooms (Zoom in, Zoom out, Fit), as do the wheel, Ctrl+wheel and a pinch; "
-            "its last button reads the zoom now, and 100% is the drawing's own size; arrow keys pan. "
+            "its percentage is typeable, with a list, and 100% is the drawing's own size; arrow keys pan. "
             "Shift+click picks a range, Ctrl+click adds one; a bar offers Delete, "
             "Duplicate, Box them, Done, and any picked grip moves all. "
             "A block's ... menu (long press on a phone) does the same. "
@@ -3512,6 +3553,7 @@ MORE_TOPICS.append({
     "keywords": (
         "patterns", "pattern", "what are patterns", "times since", "weeks running", "keeps coming up",
         "patterns line", "do patterns change", "see the patterns",
+        "confirmed patterns", "edit a pattern", "manage patterns", "remove a pattern",
     ),
     "body": (
         "Patterns are what your notes keep coming back to, counted from the notes "
@@ -3524,7 +3566,10 @@ MORE_TOPICS.append({
         "fact from then on, and Not right, which never shows it or anything like "
         "it again. A plan still open also has Done: it removes your Confirm and "
         "never shows that plan again, and a later note that shares the plan's "
-        "words does the same on its own."
+        "words does the same on its own. A confirmed pattern's ... menu has Edit "
+        "(your own words, or what it is about; its tag still reaches it), Not right "
+        "and Remove, each with an Undo, and a plan's Done; Settings, What it remembers lists every confirmed pattern with "
+        "the day you confirmed it and its notes, to manage them in one place."
     ),
     "badge": {"label": "Dashboard", "tab": "dashboard"},
 })

@@ -177,12 +177,15 @@ async function chatSendTurn(preset, opts = {}) {
   //: element inside `#chat-messages`, and a caller that cleared the pane first
   //: would find it gone.
   $("chat-suggest")?.classList.add("hidden");
-  input.value = "";
-  autoGrow(input); // a cleared box must not keep the height of what was in it
-  // The draft is gone, so the suggestions about it are too, including the
-  // ones that were dismissed, which belonged to that draft and not to the
-  // next one.
-  resetChatNudge();
+  //: A queued send (`keepBox`) leaves the box to what is being typed now.
+  if (!opts.keepBox) {
+    input.value = "";
+    autoGrow(input); // a cleared box must not keep the height of what was in it
+    // The draft is gone, so the suggestions about it are too, including the
+    // ones that were dismissed, which belonged to that draft and not to the
+    // next one.
+    resetChatNudge();
+  }
   //: The box stays open while the answer streams, so the next message can
   //: be written and queued (INBOX 1321); Escape still stops the answer.
   hide("chat-send");
@@ -1037,7 +1040,7 @@ async function chatSendTurn(preset, opts = {}) {
         : failure || "The model wrote nothing. Try again, or ask it another way.";
       timeline.ensureAnswerBox().replaceChildren(note);
       // Retry and delete at minimum, so there's always a way forward.
-      bubble.appendChild(
+      (bubble.querySelector(":scope > .msg-role") || bubble).appendChild(
         chatMessageActions([
           { label: "ph:arrow-clockwise", title: "Try again", onClick: () => regenerateLastAnswer() },
           ...(failure ? [{ label: "ph:gear", title: "Open Settings, Models", onClick: () => openSettingsModal("models") }] : []),
@@ -1049,10 +1052,8 @@ async function chatSendTurn(preset, opts = {}) {
     return;
   }
   // Per-message actions: one shared list with the reopened-conversation path,
-  // see `assistantMessageActions` for why that matters.
-  bubble.appendChild(
-    assistantMessageActions({ bubble, text: answerRaw, question })
-  );
+  // see `assistantMessageActions` for why that matters (it places the row).
+  assistantMessageActions({ bubble, text: answerRaw, question });
 
   // Regenerate replaces the last turn; a normal send appends a new one.
   if (opts.replaceLast && convRef.turns.length) {
@@ -2483,9 +2484,13 @@ function addBubble(role, text, attachments = null) {
   return bubble;
 }
 
+//: Builds a reply's actions and puts them in its head row, at its end, in its
+//: flow (CHAT_PLAN B2: "actions in the head"): hung under the bubble or
+//: floated over its corner, a row lay over text (B2's review); a question's
+//: row stays under its bubble.
 function assistantMessageActions({ bubble, text, question, onEdit }) {
   const off = aiIsOff();
-  return chatMessageActions([
+  const row = chatMessageActions([
     {
       label: "ph:copy",
       title: "Copy message",
@@ -2558,6 +2563,7 @@ function assistantMessageActions({ bubble, text, question, onEdit }) {
       onClick: () => deleteChatTurn(bubble),
     },
   ]);
+  return (bubble.querySelector(":scope > .msg-role") || bubble).appendChild(row);
 }
 
 function renderRecordsDetails(holder, meta) {

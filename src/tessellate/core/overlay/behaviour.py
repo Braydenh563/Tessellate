@@ -321,6 +321,22 @@ FLOW_MAX = 6.0
 FLOW_CALM_AMP = 0.5
 FLOW_CALM_SLOW = 2.6
 FLOW_Q = 8.0
+#: Arrangements by pose (INBOX 1683 B1, B3: "they dont even ahve different variations or change based on body
+#: position"). The shipped frames carry one lower body per pose, so each strand also holds an arrangement of its
+#: own, a new one every `FLOW_ARR_HOLD` seconds (its own length per strand) reached by an eased move over
+#: `FLOW_ARR_EASE` seconds: its tip's lean and its rise, px of the shipped frame. Together with the sway the tip
+#: stays under `FLOW_TIP * FLOW_ARR_SWAY + FLOW_ARR_TIP` (2.65 px, under 4 degrees off the torso at the hem: INBOX 615 and 619).
+FLOW_ARR_TIP = 1.0
+#: With an arrangement the sway takes this share of its reach, so the two together stay inside the torso's 4 degrees.
+FLOW_ARR_SWAY = 0.75
+FLOW_ARR_RISE = 0.4
+FLOW_ARR_HOLD = (5.0, 9.0)
+FLOW_ARR_EASE = 2.4
+#: What a pose does to the streams: [reach, speed] by the start of the frame's name (the first match). Asleep they
+#: are small and slow, glad or thrown they are wide and quick; both move on the way to the next pose over
+#: `FLOW_POSE_EASE` seconds, so a change of pose is never a step.
+FLOW_POSE = (("sleep", 0.5, 0.6), ("sit", 0.8, 0.85), ("hang", 0.95, 1.1), ("wave", 1.0, 1.3), ("walk", 1.0, 1.35), ("hop", 1.0, 1.6), ("fall", 1.0, 1.6), ("land", 1.0, 1.2), ("idle", 0.9, 0.95))
+FLOW_POSE_EASE = 0.8
 
 
 def _frac(x: float) -> float:
@@ -352,6 +368,10 @@ class Flow:
         self.vel = [[0.0, 0.0] for _ in range(FLOW_BANDS)]
         self.stiff = [FLOW_STIFF[0] + (FLOW_STIFF[1] - FLOW_STIFF[0]) * _frac(i * 0.754 + 0.31) for i in range(FLOW_BANDS)]
         self.last_v = (0.0, 0.0)
+        self.seed = seed
+        self.hold = [FLOW_ARR_HOLD[0] + (FLOW_ARR_HOLD[1] - FLOW_ARR_HOLD[0]) * _frac(i * 0.618 + 0.29) for i in range(FLOW_BANDS)]
+        # The pose's reach and speed, eased; `skew` is the time the speed has added, so a change of speed is no jump.
+        self.k_reach, self.k_speed, self.skew, self.seen = 1.0, 1.0, 0.0, None
 
     def reach(self, i: int) -> float:
         """How far strand `i` sways: the outer ones (the streams) most."""
@@ -394,19 +414,50 @@ class Flow:
                     p = max(-FLOW_MAX, min(FLOW_MAX, p + q * h))
                 self.pos[i][axis], self.vel[i][axis] = p, q
 
+    def arrangement(self, i: int, t: float) -> tuple[float, float]:
+        """Strand `i`'s arrangement at `t` (each -1..1): the one it holds, eased into the next over the last
+        `FLOW_ARR_EASE` seconds of its hold. A pure function of `t`, so it is the same however often it is read."""
+        n, u = divmod(t / self.hold[i], 1.0)
+        span = FLOW_ARR_EASE / self.hold[i]
+        e = min(1.0, max(0.0, (u - (1.0 - span)) / span))
+        e = e * e * (3.0 - 2.0 * e)
+
+        def pick(k: int) -> tuple[float, float]:
+            rng = random.Random(self.seed * 1000003 + i * 7919 + int(k))
+            return rng.uniform(-1.0, 1.0), rng.uniform(-1.0, 1.0)
+
+        a, b = pick(n), pick(n + 1)
+        return a[0] + (b[0] - a[0]) * e, a[1] + (b[1] - a[1]) * e
+
+    def pose(self, frame: str, now: float) -> None:
+        """Ease the reach and speed toward the frame's pose and advance the clock by the speed (`FLOW_POSE`)."""
+        reach, speed = next(((r, s) for key, r, s in FLOW_POSE if frame.startswith(key)), (1.0, 1.0))
+        dt = 0.0 if self.seen is None else min(0.25, max(0.0, now - self.seen))
+        self.seen = now
+        k = 1.0 - math.exp(-dt / FLOW_POSE_EASE)
+        self.k_reach += (reach - self.k_reach) * k
+        self.k_speed += (speed - self.k_speed) * k
+        self.skew += (self.k_speed - 1.0) * dt
+
     def settled(self) -> bool:
         return all(abs(p[0]) < 0.3 and abs(p[1]) < 0.3 and abs(v[0]) < 2.0 and abs(v[1]) < 2.0 for p, v in zip(self.pos, self.vel))
 
-    def view(self, t: float, calm: bool = False) -> tuple[int, ...]:
+    def view(self, t: float, calm: bool = False, frame: str = "") -> tuple[int, ...]:
         """Per strand `(tip dx, middle dx, tip dy, sparkle sin, sparkle cos)` in `FLOW_Q` steps (the sparkle in
-        tenths), the follow-through folded in: what the warp needs and nothing else."""
-        t = t + self.t0
+        tenths), the follow-through folded in: what the warp needs and nothing else. With a `frame` the pose's
+        reach, speed and the strand's arrangement apply (`pose`, `arrangement`); without one, the bare flow."""
+        if frame:
+            self.pose(frame, t)
+        t = t + self.t0 + (self.skew if frame else 0.0)
+        reach = self.k_reach if frame else 1.0
         out: list[int] = []
         for i in range(FLOW_BANDS):
             fx, fy = self.pos[i]
-            tip = max(-FLOW_MAX, min(FLOW_MAX, self.sway(i, t, calm) + fx))
-            mid = max(-FLOW_MAX, min(FLOW_MAX, self.sway(i, t - 0.9, calm) * (1 - FLOW_MID) + fx * 0.5))
-            drop = self.rise(i, t, calm) + fy
+            ax, ay = self.arrangement(i, t) if frame else (0.0, 0.0)
+            ax, ay = ax * reach * FLOW_ARR_TIP * (FLOW_CALM_AMP if calm else 1.0), ay * reach * FLOW_ARR_RISE * (FLOW_CALM_AMP if calm else 1.0)
+            tip = max(-FLOW_MAX, min(FLOW_MAX, self.sway(i, t, calm) * reach * (FLOW_ARR_SWAY if frame else 1.0) + ax + fx))
+            mid = max(-FLOW_MAX, min(FLOW_MAX, self.sway(i, t - 0.9, calm) * reach * (FLOW_ARR_SWAY if frame else 1.0) * (1 - FLOW_MID) + ax * 0.6 + fx * 0.5))
+            drop = self.rise(i, t, calm) * reach + ay + fy
             w = math.tau * t / (self.glint_periods[i] * (FLOW_CALM_SLOW if calm else 1.0)) + i * 1.3
             out += [round(tip * FLOW_Q), round(mid * FLOW_Q), round(drop * FLOW_Q), round(math.sin(w) * 10), round(math.cos(w) * 10)]
         return tuple(out)

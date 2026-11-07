@@ -1945,6 +1945,13 @@ def _run_desktop(hidden_relaunch: bool = False) -> None:
         # for the autonomous scheduler to finish a write; that wait now
         # happens behind a window that is already gone, not in front of one
         # that looks frozen.
+        # The companion is closed BEFORE the main window is hidden: hiding the main
+        # window is what makes the companion due, and it then made its quick panel
+        # (a new WebView2) in the middle of the quit, which was destroyed while
+        # starting: "WebView2 initialization failed ... E_ABORT" (INBOX 1666).
+        from tessellate.core import desk_companion
+
+        desk_companion.shutdown()
         hide = getattr(window, "hide", None)
         if callable(hide):
             try:

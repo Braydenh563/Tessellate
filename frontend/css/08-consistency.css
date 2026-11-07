@@ -5347,7 +5347,7 @@ body .chip.item-label,
   transition-delay: 0s;
 }
 /* Hanging: bottom right, off the bar (the owner, 2026-11-05). */
-#nm-buddy[data-pose="hang"] .nmb-size-grip { top: auto; bottom: 2px; }
+#nm-buddy[data-pose="hang"] .nmb-size-grip { top: auto; bottom: 2px; cursor: nwse-resize; }
 @media (hover: none) {
   #nm-buddy .nmb-size-grip { display: none; }
 }
@@ -6735,7 +6735,7 @@ body .chip.item-label,
 .atl-lw-pose > .atl-lw-tip { position: absolute; left: 0; top: 0; width: 64px; height: 92px; will-change: rotate; }
 /* The lower body's and the tail's pose for what it is doing (atlas.js,
    `atlasLowerState`, INBOX 575): set by the rig, on the compositor. */
-.atl-lw > .atl-lw-pose { position: absolute; left: 0; top: 0; width: 64px; height: 92px; will-change: transform; }
+.atl-lw > .atl-lw-pose { position: absolute; left: 0; top: 0; width: 64px; height: 92px; will-change: translate; }
 .atl-lw-lower { transform-origin: 31px 55.5px; }
 /* The legs' limb gestures (`nameMarkBuddyLimbs`: rotate and scale) turn the box about the hip, the same two points the root's own `transform` uses. */
 .atl-lw-leg-l { transform-origin: 27.4px 60px; }

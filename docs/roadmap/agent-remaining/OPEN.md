@@ -1737,6 +1737,7 @@ Plan and ROADMAP rows by file: WORLD_CLASS_PLAN 114, UI_MODERNISATION_PLAN 91, C
 | 1665 | Decision 41: date arithmetic, word count and reading time, text transforms. | docs/roadmap/archive/agent-remaining/spec39-1010.md:12 | S | unassigned |
 | 1666 | Decision 45: model choosing among readings (needs the evals marker). | docs/roadmap/archive/agent-remaining/spec39-1010.md:14 | S | unassigned |
 | 1667 | Gemini's light rewrites ("I" to "you", CHAT_PLAN decision 23) were dropped because they changed quoted text and broke grounding; a marked rewrite... | docs/roadmap/archive/agent-remaining/triage-1010.md:29 | L | unassigned |
+| 1683b | Desk half of B1, B3, B5, B6 not built: pose-keyed lower-body and nebula variants rendered into the frames (`scripts/render_desk_frames.*`, `sprites.py`), a live Trail on the veil (`behaviour.py`), and the measures (desk nebula changed-pixel flicker 363 feminine and 331 masculine or lower, lower body within 4 degrees of the torso in a browser, under 2 ms a frame at 4x CPU). Built so far: per-strand arrangements in `Flow.view(frame=)`, and the app (1e686a2, 5edaab1). Held back to avoid the engine lane (landing, loops, shared mind) re-rendering frames under it. | companion-asks.md B1 | M | unassigned |
 
 ### Unassigned, proposed batches
 
@@ -2060,8 +2061,8 @@ being written by running agents stay beside this one.
 Left by the graph agent (Brief 38, merged 2026-10-10):
 
 - Built (`topicRepeatsTag`, notes-list.js): a tag-named topic's chip repeats the tag chip beside it on the card (`noteTopicChip`, notes-list.js); dedupe against the card's own tags.
-- The floating topic rename field is 42px tall over a 17px plate (`gcRenameTopicInline`, graph-canvas.js); not seen by eye, size it to the plate.
-- A topic drag writes its core note's pin with its own `PUT /graph/pin` beside the group's one `PUT /graph/pins` (`gcDragEnd`); one write.
+- **Fixed (checked 2026-11-07: `gcRenameTopicInline` sizes the field to the plate, plate height plus 6).** The floating topic rename field is 42px tall over a 17px plate (`gcRenameTopicInline`, graph-canvas.js); not seen by eye, size it to the plate.
+- **Fixed (checked 2026-11-07: ledger 931, `gcDragEnd` pushes the core note into the group's one `PUT /graph/pins`).** A topic drag writes its core note's pin with its own `PUT /graph/pin` beside the group's one `PUT /graph/pins` (`gcDragEnd`); one write.
 - `scratchpad/ui-sweeps/graphfslightbox.js` reads `.lightbox` in the tick it calls the lazy `openLightbox`; the sweep needs an await.
 - Topics becoming categories is Brief 39b's (GRAPH_PLAN "Decision made, 2026-10-10").
 

@@ -335,7 +335,7 @@ def test_the_desktop_companion_row_is_named_as_a_this_computer_setting():
     for words in ("floats like a wind spirit", "sleeps", "thrown", "hangs from the top", "peeks up from behind the taskbar", "animation effects",
                   "climbs onto the top of a window", "Roam over windows", "a card when a reminder falls due",
                   "alive in place", "walking, running", "out at one edge and in at the other", "through a portal", "swings down or lets go with a start",
-                  "right-click for Companion (Atlas masculine or feminine, your own or a saved one, drawn once)"):
+                  "right-click for Companion (Atlas masculine or feminine, your own or a saved one, summoned once)"):
         assert words in " ".join(popover.split()), words
     for topic in named:
         flat = " ".join(topic["body"].split())
@@ -343,7 +343,7 @@ def test_the_desktop_companion_row_is_named_as_a_this_computer_setting():
                       "climbs onto the top of a window", "Roam over windows", "a card to click",
                       "alive in place", "walking, running", "out at one edge and in at the other", "through a portal", "swings down or lets go with a start",
                       #: Changed on purpose (INBOX 1684): every companion shows on the desk, so "the rest show in the app only" is gone.
-                      "Right-click it for Companion (Atlas masculine or feminine, your own or a saved one, drawn once)"):
+                      "Right-click it for Companion (Atlas masculine or feminine, your own or a saved one, summoned once)"):
             assert words in flat, (topic["id"], words)
             assert len(topic["body"]) < 1900, topic["id"]
     settings = (FRONTEND / "js" / "settings.js").read_text(encoding="utf-8")
@@ -470,10 +470,10 @@ def test_the_diagram_picture_zoom_is_in_the_guide_in_the_controls_words() -> Non
     from tessellate.ai.help_chat import HELP_TOPICS
 
     body = str(next(t["body"] for t in HELP_TOPICS if t["id"] == "diagram-blocks"))
-    for words in ("corner bar zooms (Zoom in, Zoom out, Fit)", "reads the zoom now", "100% is the drawing's own size", "Ctrl+wheel", "a pinch", "arrow keys pan"):
+    for words in ("corner bar zooms (Zoom in, Zoom out, Fit)", "percentage is typeable", "100% is the drawing's own size", "Ctrl+wheel", "a pinch", "arrow keys pan"):
         assert words in body, words
     view = (FRONTEND / "js" / "diagram-view.js").read_text(encoding="utf-8")
-    for label in ('"Zoom in"', '"Zoom out"', '"Fit"', '"100%"', "event.ctrlKey", "ArrowLeft"):
+    for label in ('"Zoom in"', '"Zoom out"', '"Fit"', 'label: "Zoom percent"', "event.ctrlKey", "ArrowLeft"):
         assert label in view, label
 
 
@@ -505,3 +505,22 @@ def test_the_diagram_multiselect_is_in_the_guide_in_the_controls_words() -> None
     multi = (FRONTEND / "js" / "diagram-multi.js").read_text(encoding="utf-8")
     for label in ('"ph:trash Delete"', '"ph:copy Duplicate"', '"ph:diamond Shape"', '"ph:stack Box them"', '"Done"'):
         assert label in multi, label
+
+
+def test_confirmed_patterns_are_managed_where_the_guide_and_the_help_say():
+    """B9 (the owner: "also is there a way to edit or managed confirmed
+    patterns??"): the Patterns topic, the memory topic and What it remembers'
+    own help name the group and its three actions in the controls' words."""
+    from tessellate.ai import help_chat
+
+    topics = {t["id"]: t["body"] for t in help_chat.HELP_TOPICS}
+    for words in ("Edit", "Not right", "Remove", "Undo", "Settings, What it remembers", "its tag still reaches it"):
+        assert words in topics["patterns"], words
+    assert "patterns you confirmed" in topics["memory"]
+    html = (FRONTEND / "index.html").read_text(encoding="utf-8")
+    help_body = html[html.index('id="memory-help"') :][:2400]
+    for words in ("Confirmed patterns", "Edit", "Remove", "Not right", "Undo", "its tag still"):
+        assert words in help_body, words
+    menu = (FRONTEND / "js" / "confirmed-patterns.js").read_text(encoding="utf-8")
+    for label in ('"ph:pencil-simple Edit"', 'item.verdict === "dismiss").label', '"ph:trash Remove"'):
+        assert label in menu, label

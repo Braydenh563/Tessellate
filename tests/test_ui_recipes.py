@@ -7414,7 +7414,7 @@ def test_the_diagram_zoom_bar_is_a_plain_corner_dock():
     rule = css[css.index(".dgm-zoom {") : css.index("}", css.index(".dgm-zoom {"))]
     assert "position: absolute;" in rule and "box-shadow: var(--shadow-md);" in rule and "--modal-bg" in rule
     # Every control is a button with a title (the icon-only ones become aria-labels).
-    assert view.count("smallButton(") == 4
+    assert view.count("smallButton(") == 3 and "valueField(levelHost" in view  # the fourth is the typeable readout (INBOX 1694 b)
     assert "A zoom control on a picture that scrolls" in (ROOT / "docs" / "DESIGN.md").read_text(encoding="utf-8")
 
 
@@ -7534,3 +7534,84 @@ def test_what_an_answer_carries_is_one_foot_row() -> None:
     assert kit.count('bar.className = "answer-foot-bar"') == 1
     design = (ROOT / "docs" / "DESIGN.md").read_text(encoding="utf-8")
     assert "**An answer's foot**" in design and "`answerFootGather`" in design
+def test_a_message_sent_mid_reply_waits_in_the_composer_queue():
+    """DESIGN.md, "One composer queue" (CHAT_PLAN B3): every chat surface makes its queue from `composerQueue`, none disables its box mid-reply, one painter."""
+    js = ROOT / "frontend" / "js"
+    texts = {p.name: p.read_text(encoding="utf-8") for p in js.glob("*.js")}
+    for name, made in (("palette.js", 'composerQueue("chat", chatQueue)'), ("palette.js", 'composerQueue("agent", {'), ("help-chat.js", 'composerQueue("guide", {')):
+        assert made in texts[name], name
+    assert [n for n, t in texts.items() if "composerQueue.paint = " in t] == ["reply-kit.js"]
+    assert [n for n, t in texts.items() if 'className = "chat-queue"' in t] == ["reply-kit.js"]
+    for name, box in (("palette.js", "cmdPaletteInput"), ("help-chat.js", '$("help-chat-input")'), ("chat-turn.js", "input")):
+        assert f"{box}.disabled = true" not in texts[name] and f"{box}.disabled = busy" not in texts[name], name
+    assert "One composer queue" in (ROOT / "docs" / "DESIGN.md").read_text(encoding="utf-8")
+
+
+def test_a_zoom_readout_is_a_value_field():
+    """DESIGN.md, "A number you read and may type" (INBOX 1694 b): the viewer, the diagram view and the board's zoom
+    and page number are `valueField`s, so a person can type 150 and Enter or pick from the list. A readout written
+    as a bare `%` text is the drift; the files that still have one are frozen and may only fall."""
+    js = ROOT / "frontend" / "js"
+    for name in ("lightbox-view.js", "diagram-view.js", "whiteboard.js"):
+        assert "valueField(" in (js / name).read_text(encoding="utf-8"), name
+    field = (js / "value-field.js").read_text(encoding="utf-8")
+    # Typeable, announced, restorable, and its list is the app's menu rather than a new one.
+    for needle in ('inputMode = "numeric"', 'setAttribute("aria-label"', '"Escape"', "kebabMenu(", "onCommit"):
+        assert needle in field, needle
+    assert 'role="menu"' not in field and "style." not in field
+    assert "A number you read and may type" in (ROOT / "docs" / "DESIGN.md").read_text(encoding="utf-8")
+    readout = re.compile(r"textContent = `[^`]*%`")
+    frozen = {
+        "documents.js": 1, "graph.js": 1, "library.js": 2, "settings-controls.js": 5, "settings-panes.js": 1,
+        "settings.js": 5, "suggestions-inbox.js": 1, "whiteboard-format.js": 2,
+    }
+    found = {}
+    for path in JS:
+        count = len(readout.findall(path.read_text(encoding="utf-8")))
+        if count:
+            found[path.name] = count
+    over = {k: v for k, v in found.items() if v > frozen.get(k, 0)}
+    assert over == {}, f"a new bare percent readout: build it with valueField ({over})"
+
+
+def test_every_slider_with_a_readout_is_a_value_field():
+    """INBOX 1694 c (the owner: "type in values for the thickness slider ... same with any other sliders"): a range
+    input's readout is replaced by a typeable field the first time the pointer or focus reaches it
+    (`valueField.range`, value-field.js), found from the slider by `output[for]`, `<id>-value` or `<id>-out`. A
+    readout the finder cannot reach, or a slider built in script with a bespoke number, is the drift."""
+    html = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
+    app = app_js_text()
+    field = (ROOT / "frontend" / "js" / "value-field.js").read_text(encoding="utf-8")
+    # The hook: one delegated listener, then the module upgrades every slider already drawn.
+    lazy = (ROOT / "frontend" / "js" / "lazy-entries.js").read_text(encoding="utf-8")
+    # Pointer and keyboard both fetch it (a keyboard-only user never hovers), and only on a range input: a plain
+    # number box has no readout the recipe owns, so it does not pay for the module.
+    assert lazy.count('"[type=range]", "vf"') == 2 and 'warmOnFirst("focusin", "[type=range]", "vf")' in lazy and "input[max]" not in lazy and "vf:" in app
+    # A surface that writes a readout in code is re-read on the next reach, or by an explicit refresh.
+    assert "valueField.refresh" in field and "vfRefresh" in field
+    for name in ("settings.js", "settings-panes.js"):
+        assert "valueField?.refresh()" in (ROOT / "frontend" / "js" / name).read_text(encoding="utf-8"), name
+    for needle in ('dispatchEvent(new Event("input"', 'dispatchEvent(new Event("change"', "slider.min", "slider.max", "slider.step", "ArrowUp"):
+        assert needle in field, needle
+    ids = [a or b for a, b in re.findall(r'<input[^>]*type="range"[^>]*?id="([^"]+)"|<input[^>]*?id="([^"]+)"[^>]*type="range"', html)]
+    assert len(ids) >= 24
+    # Every `.slider-value` readout is named for its slider, so the finder reaches it.
+    for readout in re.findall(r'class="slider-value" id="([^"]+)"', html):
+        base = readout[: -len("-value")]
+        assert base in ids or base + "-slider" in ids, readout
+    # A static slider with neither a readout nor `data-unit` (which asks for a field after it) is a scrubber or has its
+    # own number box; the list is frozen and may only fall.
+    bare = sorted(
+        i for i in ids
+        if f'id="{i}-value"' not in html and f'id="{i}-out"' not in html and f'for="{i}"' not in html
+        and not re.search(rf'id="{re.escape(i)}"[^>]*data-unit=|data-unit=[^>]*id="{re.escape(i)}"|type="range" id="{re.escape(i)}" data-unit', html)
+        and i.replace("-slider", "") + "-value" not in html.replace('id="', " ")
+    )
+    assert bare == [], bare  # graph-time-slider's date label is left alone in code (see the remaining list)
+    # The history scrubber is a field that reads "3 of 12": its length is read live, since the board grows it.
+    assert 'id="wb-history-slider" data-unit="" data-value-of' in html and 'hasAttribute("data-value-of")' in field
+    # Sliders built in script: the files that draw one are frozen.
+    built = sorted(
+        p.name for p in JS if re.search(r'type = "range"|type: "range"', p.read_text(encoding="utf-8"))
+    )
+    assert built == ["meetings.js", "settings-health.js", "sketch-pad.js", "whiteboard-format.js"], built

@@ -38,7 +38,7 @@ import time
 from typing import Any, Callable
 
 from tessellate.core import jobs
-from tessellate.core.overlay import capture
+from tessellate.core.overlay import capture, sizing
 
 logger = logging.getLogger(__name__)
 
@@ -66,6 +66,8 @@ ROAM_PREF = "desktop_companion_roam"
 STAY_PREF = "desktop_companion_stay"
 #: "Hide for 10 minutes" (menu): minutes, and the menu requests the figure takes.
 SNOOZE_MINUTES = 10
+#: The menu's Small, Medium and Large: the in-app steps (`NMB_SIZES` in avatars.js; a test holds them equal).
+SIZE_PRESETS = {"small": 0.8, "medium": 1.0, "large": 1.3}
 FIGURE_COMMANDS = ("wave", "come", "wander", "nap", "wake", "perch")
 #: The look and motion a readable (unlocked) app window last gave. A locked
 #: window has not read its prefs and answers the default look, so these stand
@@ -92,6 +94,17 @@ PANEL_GAP = 8
 LOOK_WAIT = 1.5
 #: A companion whose frames failed to draw is tried again after this many seconds.
 RENDER_RETRY = 300.0
+#: How often, and how long apart, the figure is read while the app window has not redrawn it since a choice
+#: (INBOX 1692 i: "You, from your name" was ticked and the desk kept Atlas).
+FIGURE_READS = 4
+#: A see-through figure that could not start is tried again when the app window next comes forward and goes
+#: away again, this many times in all (INBOX 1692 k: one slow start put the card up for good).
+OVERLAY_TRIES = 3
+#: ...and, in a sync that is due, no sooner than this many seconds after the failure.
+OVERLAY_RETRY_GAP = 20.0
+FIGURE_GAP = 0.4
+NOTE_DRAWING = "Summoning your companion to the desk. Atlas keeps you company until it arrives."
+NOTE_FAILED = "Your companion could not be summoned to the desk yet, so Atlas stays. It will try again."
 #: A click on the figure this soon after the panel closed itself on losing focus
 #: is the press that took the focus: it closes the panel, it does not reopen it.
 BLUR_GRACE = 0.6
@@ -105,7 +118,14 @@ LOOK_SCRIPT = (
     "look:typeof atlasLook==='function'?atlasLook():'',"
     "who:typeof appearancePref==='function'?appearancePref('avatar-buddy','off'):'off',"
     "figure:" + capture.FIGURE_JS + ","
+    "size:typeof nameMarkBuddyScaleSaved==='function'?nameMarkBuddyScaleSaved():1,"
     "motion:typeof nameMarkBuddyMotion==='function'?nameMarkBuddyMotion():null})}catch(e){return ''}})()"
+)
+#: Appearance > Companion size, written as the app's own handle writes it (`nameMarkBuddySetSize`: the pref, the select
+#: that shows "As you sized it", the in-app figure), from the desk figure's handle. `%s` is a number.
+SIZE_SCRIPT = (
+    "(function(){try{const v=%s;if(typeof nameMarkBuddySetSize==='function')nameMarkBuddySetSize(v,true);"
+    "else prefs.set('avatar-buddy-size',String(v));return true}catch(e){return false}})()"
 )
 #: "Let it walk": the app's own setting set to Always, as its menu would, then the
 #: setting's hint refreshed. True when the app window did it.
@@ -249,6 +269,17 @@ def figure_key(data: dict[str, Any]) -> str | None:
     if data.get("who") not in ("me", "persona", "custom") or not isinstance(figure, dict) or figure.get("atlas") is True:
         return None
     return capture.key_for(figure.get("sig"))
+
+
+def _figure_unsettled(data: dict[str, Any] | None) -> bool:
+    """Your own companion is chosen (and the app is open) but the window has not drawn it: no figure, or Atlas for
+    `me` or `custom`. The persona is only unsettled with no figure at all."""
+    if not isinstance(data, dict) or data.get("locked") is True or data.get("who") not in ("me", "persona", "custom"):
+        return False
+    figure = data.get("figure")
+    if not isinstance(figure, dict) or not figure.get("sig"):
+        return True
+    return figure.get("atlas") is True and data.get("who") != "persona"
 
 
 def _look_in_force(data: dict[str, Any], look: str) -> tuple[str, tuple[bool, str] | None]:
@@ -520,6 +551,9 @@ SW_SHOWNOACTIVATE = 4
 #: How long a show or hide waits for another one before it gives up (seconds):
 #: a stuck window never holds the tray's menu with it.
 LOCK_WAIT = 5.0
+#: How long quitting waits for a window still starting up before destroying it. Destroying a
+#: web view mid-start made pywebview log "WebView2 initialization failed ... E_ABORT" (INBOX 1666).
+LOADED_WAIT = 1.5
 
 
 def window_handle(window: Any) -> int | None:
@@ -854,6 +888,9 @@ class DeskApi:
     def set_stay(self, on: Any) -> bool:
         return self._owner.set_stay(on is True)
 
+    def set_figure_size(self, name: Any) -> bool:
+        return self._owner.set_figure_size(name if isinstance(name, str) else "")
+
     def snooze(self) -> bool:
         return self._owner.snooze()
 
@@ -908,9 +945,19 @@ class DeskCompanion:
         self._overlay_factory = overlay_factory
         self.runner: Any = None
         self.overlay_failed = False
+        self.overlay_tries = 0
+        self._overlay_retry_at = 0.0
+        self.overlay_why = ""
         #: Why the see-through figure is not used on this machine (Wayland), shown in the card's menu.
         self.overlay_note = ""
         self.look = "masculine"
+        #: Appearance > Companion size as the app window last said it (0.7 to 1.6; Medium is 1).
+        self.size_pref = sizing.MEDIUM
+        #: The page may still say the old size for a moment after the handle wrote a new one: not believed until then.
+        self._size_held = 0.0
+        #: A size the figure was given that the app window has not taken yet (a write that failed): kept here, written
+        #: again on the next sync, and the page's older value does not replace it meanwhile.
+        self._size_unsent: float | None = None
         #: How the companion may move, as the app window last said: None until it
         #: answers (then the runner falls back to the Windows animation flag).
         self.motion: tuple[bool, str] | None = None
@@ -922,6 +969,7 @@ class DeskCompanion:
         self._choice_names: dict[str, str] = {}
         #: Companions whose frames are being drawn now, and when a draw last failed, by cache key.
         self._rendering: set[str] = set()
+        self._wanted: str | None = None
         self._render_failed: dict[str, float] = {}
         #: The figure's rectangle (logical pixels) at the last click, and whether
         #: `window` is the quick panel beside it rather than the card.
@@ -1093,22 +1141,67 @@ class DeskCompanion:
         move, asked of it in one round trip (the choices live in that window's
         storage). Bounded; no answer keeps the last look and leaves the motion
         to the last motion answer (the Windows flag before any)."""
-        data = _look_answer(self._ask_main(LOOK_SCRIPT, "its look and motion"))
+        data = self._settled(_look_answer(self._ask_main(LOOK_SCRIPT, "its look and motion")))
         look, motion = self.look, self.motion
+        if data is not None and isinstance(data.get("size"), (int, float)) and not isinstance(data.get("size"), bool) and self._size_unsent is None and self._now() >= self._size_held:
+            self.size_pref = sizing.clamp(data["size"])
         if data is None:
             logger.info("desk companion: the app window gave no look, keeping %s", self.look)
         else:
             look, motion = _look_in_force(data, look)
+            self._explain_figure(data)
             self._want_frames(data)
         if self._walk_forced and (motion is None or motion[0]):
             motion = (False, "")
         return look, motion
+
+    def _settled(self, data: dict[str, Any] | None) -> dict[str, Any] | None:
+        """The answer, read again (`FIGURE_READS` at most) while the app window has not drawn the figure that was
+        chosen: none at all, or Atlas where your own companion was asked for. The first read after a choice can
+        come before the window redrew it. The chat's persona may be Atlas on purpose, so it is only waited for
+        when there is no figure."""
+        for _ in range(FIGURE_READS - 1):
+            if not _figure_unsettled(data):
+                break
+            time.sleep(FIGURE_GAP)
+            fresh = _look_answer(self._ask_main(LOOK_SCRIPT, "its look and motion, again"))
+            if fresh is None:
+                break
+            data = fresh
+        return data
+
+    def _explain_figure(self, data: dict[str, Any]) -> None:
+        """A line in the log whenever your own companion is chosen and there is nothing to draw it from."""
+        who = data.get("who")
+        if who not in ("me", "persona", "custom") or figure_key(data) is not None:
+            return
+        figure = data.get("figure")
+        if data.get("locked") is True:
+            why = "the app window is locked"
+        elif not isinstance(figure, dict) or not figure.get("sig"):
+            why = "the app window drew no figure"
+        elif figure.get("atlas") is True:
+            why = "the figure it drew is Atlas" + (" (the chat's default persona)" if who == "persona" else "")
+        else:
+            why = "the figure has no usable signature"
+        logger.info("desk companion: %r is chosen but %s, Atlas stays", who, why)
+
+    def frames_note(self) -> str:
+        """One line for the Companion panel while your companion's frames are drawn, or when drawing them failed."""
+        key = self._wanted
+        if key is None or capture.complete(key):
+            return ""
+        if key in self._rendering:
+            return NOTE_DRAWING
+        return NOTE_FAILED if key in self._render_failed else ""
 
     def _want_frames(self, data: dict[str, Any]) -> None:
         """The person's own companion has no frames yet: draw them from the app window on a worker
         (Atlas stands in until they are there), and restart the figure when they land. A failed
         draw is logged and tried again no sooner than `RENDER_RETRY` seconds on."""
         key = figure_key(data)
+        if data.get("locked") is not True:
+            self._wanted = key
         if key is None or data.get("locked") is True or capture.complete(key):
             return
         now = self._now()
@@ -1131,6 +1224,35 @@ class DeskCompanion:
         logger.info("desk companion: drew %d frames for %s in %.1f s", len(capture.CAPTURED), key, time.monotonic() - started)
         self._restart_shown("companion frames drawn")
 
+    def _overlay_size(self, scale: float) -> None:
+        """The figure's handle set a size (on a worker): the app window keeps it as its own handle would, so Appearance
+        shows it and the in-app figure follows; remembered per device with the rest of its prefs."""
+        value = sizing.clamp(scale)
+        self.size_pref = self._size_unsent = value
+        self._flush_size()
+
+    def _flush_size(self) -> None:
+        """Write the size the app window has not taken yet. Only a `true` from its script clears it; a hidden or locked
+        window gives none, and the write is tried again at the next sync (the figure keeps the size meanwhile)."""
+        value = self._size_unsent
+        if value is None:
+            return
+        self._size_held = self._now() + 2 * LOOK_WAIT
+        if self._ask_main(SIZE_SCRIPT % repr(value), "the size the figure was given") is True and self._size_unsent == value:
+            self._size_unsent = None
+
+    def set_figure_size(self, name: str) -> bool:
+        """The menu's Small, Medium or Large: the in-app steps, to the running figure and to the app window."""
+        value = SIZE_PRESETS.get(name)
+        if value is None:
+            return False
+        self.size_pref = self._size_unsent = value
+        runner = self.runner
+        if runner is not None and hasattr(runner, "set_scale"):
+            runner.set_scale(value)
+        self._dispatch("desk-size", self._flush_size)
+        return True
+
     def _overlay_home(self) -> tuple[int, int] | None:
         saved = _pref(OVERLAY_POS_PREF, None)
         if isinstance(saved, (list, tuple)) and len(saved) == 2 and all(isinstance(v, int) for v in saved):
@@ -1140,8 +1262,11 @@ class DeskCompanion:
     def _start_overlay(self) -> bool:
         """The runner for the look and motion in force, made when first due and
         again if either changed; False (a warning logged) when it cannot start."""
+        self._flush_size()
         look, motion = self._read_look()
         if self.runner is not None and self.look == look and self.motion == motion:
+            if hasattr(self.runner, "set_scale") and getattr(self.runner, "scale", self.size_pref) != self.size_pref:
+                self.runner.set_scale(self.size_pref)  # Appearance changed it: the figure eases to it
             return True
         place = self._runner_place()
         self.look, self.motion = look, motion
@@ -1149,6 +1274,34 @@ class DeskCompanion:
         kw: dict[str, Any] = {}
         if motion is not None:
             kw = {"reduced": motion[0], "reduced_reason": motion[1]}
+        runner, started = self._build_runner(look, place, kw)
+        if not started and capture.is_key(look):
+            # A drawn companion whose frames will not load must not cost the whole see-through figure.
+            logger.warning("desk companion: the overlay did not start in the drawn companion's frames, trying Atlas")
+            look = self.look = "masculine"
+            runner, started = self._build_runner(look, place, kw)
+        if not started:
+            self.overlay_failed = True
+            self.overlay_tries += 1
+            self._overlay_retry_at = self._now() + OVERLAY_RETRY_GAP
+            self.overlay_why = self.overlay_why or "the see-through window did not start"
+            logger.warning(
+                "desk companion: the overlay could not start (%s), using the card window instead (try %d of %d)",
+                self.overlay_why, self.overlay_tries, OVERLAY_TRIES,
+            )
+            self._drop_panel()
+            return False
+        self.overlay_why = ""
+        self.runner = runner
+        logger.info(
+            "desk companion: overlay started, look=%s, motion=%s (%s)",
+            look, "unknown, the system flag decides" if motion is None else "still" if motion[0] else "moving", motion[1] if motion else "",
+        )
+        return True
+
+    def _build_runner(self, look: str, place: tuple[int, int] | None, kw: dict[str, Any]) -> tuple[Any, bool]:
+        """One try at the runner; (runner, started). The reason a try failed is kept for the card's menu."""
+        runner = None
         try:
             runner = self._overlay_factory(  # type: ignore[misc]
                 look=look,
@@ -1161,20 +1314,17 @@ class DeskCompanion:
                 stay=bool(_pref(STAY_PREF, False)),
                 **kw,
             )
-            started = runner.start()
-        except Exception:  # noqa: BLE001 - any failure means the card window instead
+            if hasattr(runner, "on_size"):  # the size handle: the size Appearance has, and the way back for a pull
+                runner.on_size = self._overlay_size
+                runner.scale = self.size_pref
+            started = bool(runner.start())
+            if not started:
+                self.overlay_why = "the see-through window did not start in time"
+        except Exception as exc:  # noqa: BLE001 - any failure means the card window instead
             logger.warning("desk companion: the overlay failed to build", exc_info=True)
+            self.overlay_why = f"it failed to build ({type(exc).__name__})"
             started = False
-        if not started:
-            self.overlay_failed = True
-            logger.warning("desk companion: the overlay could not start, using the card window instead")
-            return False
-        self.runner = runner
-        logger.info(
-            "desk companion: overlay started, look=%s, motion=%s (%s)",
-            look, "unknown, the system flag decides" if motion is None else "still" if motion[0] else "moving", motion[1] if motion else "",
-        )
-        return True
+        return runner, started
 
     def _runner_place(self) -> tuple[int, int] | None:
         """Where the running figure is, so a restart does not send it home."""
@@ -1190,15 +1340,21 @@ class DeskCompanion:
             runner = self.runner
             still = bool(getattr(runner, "reduced", False)) if runner is not None else False
             reason = getattr(runner, "reduced_reason", "") if still else ""
-        note = self.overlay_note or ("The see-through figure could not start here, so the companion stays in the app." if self.overlay_failed else "")
+        note = self.overlay_note or (self._failed_note() if self.overlay_failed else "")
         engine = getattr(runner, "engine", None)
         out: dict[str, Any] = {
             "still": still, "reason": str(reason or ""), "roam": bool(_pref(ROAM_PREF, True)), "stay": bool(_pref(STAY_PREF, False)),
-            "asleep": getattr(engine, "state", "") == "sleep", "figure": runner is not None and hasattr(runner, "command"),
+            "size": self.size_pref, "asleep": getattr(engine, "state", "") == "sleep", "figure": runner is not None and hasattr(runner, "command"),
         }
         if note:
             out["note"] = note
         return out
+
+    def _failed_note(self) -> str:
+        """The card's one line on why the see-through figure is not there, and whether it will try again."""
+        why = self.overlay_why or "it stopped"
+        again = " It tries again when you next minimise Tessellate." if self.overlay_tries < OVERLAY_TRIES else ""
+        return f"The see-through figure could not start ({why}), so the companion stays in this card.{again}"
 
     def set_roam(self, on: bool) -> bool:
         """The menu's "Roam over windows": saved, and the running figure follows."""
@@ -1301,7 +1457,10 @@ class DeskCompanion:
             return {"locked": True, "options": []}
         options = companion_options(data)
         self._choice_names = {o["key"]: o["label"] for o in options if o["key"].startswith("preset:")}
-        return {"locked": False, "options": options}
+        reply: dict[str, Any] = {"locked": False, "options": options}
+        if note := self.frames_note():
+            reply["note"] = note
+        return reply
 
     def choose_companion(self, key: str) -> str:
         """A choice from that panel, written to the app's own prefs through its window (as
@@ -1359,17 +1518,31 @@ class DeskCompanion:
         """The quick panel's window, made once and kept hidden, so a click only
         places and shows it (INBOX 1658: it was made at click time and the figure
         lagged). A failure leaves it to the first click."""
-        if self.window is not None:
+        if self.window is not None or self.closing:
             return
         try:
             self.panel = True
             self.size = self.panel_size("menu")
-            self.window = self._make()
+            self.window = self._unless_closing(self._make())
+            if self.window is None:
+                return
             logger.info("desk companion: quick panel made hidden")
         except Exception:  # noqa: BLE001 - the first click tries again
             logger.warning("desk companion: the quick panel could not be made ahead", exc_info=True)
             self.panel = False
             self.window = None
+
+    def _unless_closing(self, window: Any) -> Any:
+        """A window just made, or None (and it destroyed) when a quit began while it was being made:
+        `close` gave up waiting for the lock and took no window, so nothing else would end it (1666 review)."""
+        if not self.closing:
+            return window
+        logger.info("desk companion: a window made as the app quit is closed again")
+        try:
+            window.destroy()
+        except Exception:  # noqa: BLE001 - quitting goes on
+            logger.debug("could not destroy the companion window", exc_info=True)
+        return None
 
     def _hide_panel_window(self) -> None:
         if self.window is not None and self.panel_shown:
@@ -1429,6 +1602,22 @@ class DeskCompanion:
         finally:
             _lock.release()
 
+    def _drop_panel(self) -> None:
+        """The card window takes over (lock held): the overlay's quick panel, if one was made, is destroyed,
+        so `_sync_card` makes a real card. Kept, the hidden panel (the overlay's page, menu sized, taking
+        focus) was shown as the card and hid again every few seconds (INBOX 1690 d)."""
+        window = self.window if self.panel else None
+        if self.panel:
+            self.window = None
+        self.panel = self.panel_shown = self.shown = False
+        self.corner = None
+        self.size = REST_SIZE
+        if window is not None:
+            try:
+                window.destroy()
+            except Exception:  # noqa: BLE001
+                logger.debug("could not destroy the quick panel", exc_info=True)
+
     def _overlay_died(self) -> None:
         """The overlay's thread ended after a good start (on a worker): the card
         window takes over, as it does when the overlay cannot start."""
@@ -1441,15 +1630,10 @@ class DeskCompanion:
             logger.warning("desk companion: the overlay stopped, using the card window instead")
             self._stop_runner()
             self.overlay_failed = True
-            window, self.window = self.window, None
-            self.panel = self.panel_shown = self.shown = False
-            self.corner = None
-            self.size = REST_SIZE
-            if window is not None:
-                try:
-                    window.destroy()
-                except Exception:  # noqa: BLE001
-                    logger.debug("could not destroy the quick panel", exc_info=True)
+            self.overlay_tries += 1
+            self._overlay_retry_at = self._now() + OVERLAY_RETRY_GAP
+            self.overlay_why = "its window ended on its own"
+            self._drop_panel()
             self._sync_card(enabled() and self.main_hidden)
         except Exception:  # noqa: BLE001 - never takes the app with it
             logger.warning("desk companion: the card window did not come back", exc_info=True)
@@ -1528,7 +1712,9 @@ class DeskCompanion:
             self.corner = panel_corner(self.pet_rect, self.size, area)
             self._update_panel_box()
             if self.window is None:
-                self.window = self._make()
+                self.window = self._unless_closing(self._make())
+                if self.window is None:
+                    return
                 logger.info("desk companion: quick panel made beside the figure at %s", self.top_left())
             # The one placement of the click, before the window is shown; nothing
             # resizes or moves it after (the page's own height report is only kept).
@@ -1559,12 +1745,31 @@ class DeskCompanion:
             #: One line a step (INBOX 1633: the owner could not see it; the log says where it stopped).
             logger.info("desk companion: due=%s (on=%s, window away=%s, shown=%s)", due, enabled(), self.main_hidden, self.shown)
             try:
+                self._retry_overlay(due)
                 if not self._sync_overlay(due):
                     self._sync_card(due)
             except Exception:  # noqa: BLE001 - a companion that fails never takes the app with it
                 logger.warning("the desktop companion window failed", exc_info=True)
         finally:
             _lock.release()
+
+    def _retry_overlay(self, due: bool) -> None:
+        """After the see-through figure failed (lock held): the card is put away and the figure tried once more,
+        `OVERLAY_TRIES` times in all, when the app window is in front again or, in a due sync, `OVERLAY_RETRY_GAP`
+        seconds on (a start that was only slow must not leave the card up for good)."""
+        if not self.overlay_failed or self.overlay_tries >= OVERLAY_TRIES or self._overlay_factory is None or self.closing:
+            return
+        if due and self._now() < self._overlay_retry_at:
+            return
+        window, self.window = self.window, None
+        self.shown = self.panel_shown = self.panel = False
+        if window is not None:
+            try:
+                window.destroy()
+            except Exception:  # noqa: BLE001
+                logger.debug("could not destroy the card window", exc_info=True)
+        self.overlay_failed = False
+        logger.info("desk companion: the overlay will be tried again at the next minimise (%s)", self.overlay_why)
 
     def _sync_card(self, due: bool) -> None:
         """The card window's half of `sync` (lock held)."""
@@ -1646,6 +1851,7 @@ class DeskCompanion:
             timer.cancel()
         self._stop_runner()
         if window is not None:
+            _await_loaded(window)
             try:
                 window.destroy()
             except Exception:  # noqa: BLE001
@@ -1775,6 +1981,22 @@ def carry_due(due: list[Any]) -> int:
         except Exception:  # noqa: BLE001 - a card is not worth the notifier's thread
             logger.warning("desk companion: a reminder's card could not be queued", exc_info=True)
     return taken
+
+
+def _await_loaded(window: Any) -> None:
+    """Give a window that is still starting its web view a short deadline to finish, so quitting
+    never aborts the start (INBOX 1666). Quiet when the backend has no `loaded` event."""
+    loaded = getattr(getattr(window, "events", None), "loaded", None)
+    wait = getattr(loaded, "wait", None)
+    #: On the GUI thread (the close X quitting) the start waits on this very thread's loop, so a wait
+    #: there only froze the closing window and the start aborted anyway (1666 review).
+    if not callable(wait) or threading.current_thread() is threading.main_thread():
+        return
+    try:
+        if not wait(LOADED_WAIT):
+            logger.info("desk companion: a window was still starting at quit; closing it anyway")
+    except Exception:  # noqa: BLE001 - quitting goes on
+        logger.debug("desk companion: could not wait for the window to load", exc_info=True)
 
 
 def shutdown() -> None:

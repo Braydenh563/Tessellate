@@ -99,7 +99,7 @@ def test_chat_and_the_popup_agent_draw_the_same_fold_from_the_same_event():
     assert "onWhy: (event) => { whyLines = event.lines; }," in chat
     assert 'ensureModule("askCompose").then(() => drawWhyTrail(recordsHolder, whyLines))' in chat
     assert "onWhy: (event) => (trail = event.lines)," in palette
-    assert 'ensureModule("askCompose").then(() => drawWhyTrail(agentMsg, trail, actionRow))' in palette
+    assert 'ensureModule("askCompose").then(() => drawWhyTrail(agentMsg, trail))' in palette
     assert "function drawWhyTrail(parent, lines, before = null)" in lazy and "renderAskWhy(lines, holder)" in lazy
     for text in (chat, palette):
         assert "why-fold" not in text and "why-lines" not in text

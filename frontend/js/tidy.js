@@ -164,21 +164,33 @@ async function openTidySheet(review = "") {
 //: rule fires, which is most notebooks most days.
 async function tidyPatterns(state) {
   const body = await apiJson("/insights/patterns", { silent: true }).catch(() => null);
+  //: `lazyScript` answers false on a failed load; a confirmed line then keeps only its Done.
+  const managed = body?.patterns.some((p) => p.confirmed_id) && (await lazyScript("/js/confirmed-patterns.js"));
   if (TIDY.state !== state || !body?.patterns.length) return;
   //: One line per pattern, each with Confirm and Not right (decision 60); a
-  //: confirmed one is said as the person's word and carries neither.
+  //: confirmed one is said as the person's word and carries Edit, Not right
+  //: and Remove in its ⋯ instead (B9), redrawn from the server after each.
+  //: A confirmed plan's Done is in that same menu, as on the dashboard.
+  const redraw = () => tidyPatterns(state);
   state.patterns.replaceChildren(
     ...body.patterns.map((pattern) => {
-      if (pattern.confirmed && pattern.rule !== "drift") {
-        const line = document.createElement("p");
-        line.className = "insight-line";
-        line.textContent = `Patterns: ${pattern.text}`;
-        return line;
-      }
-      return insightLine(pattern, `Patterns: ${pattern.text}`, (line, verdict, result) => {
-        if (verdict === "dismissed" || verdict === "done") line.remove();
-        else line.textContent = `Patterns: ${result.line}`;
-      });
+      if (!pattern.confirmed_id) return insightLine(pattern, `Patterns: ${pattern.text}`, (row, verdict) => (verdict === "confirmed" ? redraw() : row.remove()));
+      const line = document.createElement("p");
+      line.className = "insight-line";
+      const words = line.appendChild(document.createElement("span"));
+      words.className = "insight-text";
+      words.textContent = `Patterns: ${pattern.text}`;
+      const done = insightVerdictItems(pattern).map((item) => ({
+        label: item.label,
+        title: item.title,
+        run: () =>
+          insightSend(pattern, item.verdict)
+            .then(redraw)
+            .catch((error) => toast(error.message, true)),
+      }));
+      if (pattern.confirmed_id && managed) line.append(kebabMenu([...done, ...confirmedPatternItems(pattern, redraw)], "Manage this pattern"));
+      else if (done.length) line.append(kebabMenu(done, "Manage this pattern"));
+      return line;
     })
   );
   state.patterns.hidden = state.view !== "overview";
@@ -334,18 +346,18 @@ async function tidyShow(key, level = "") {
   }
 }
 
-const TIDY_LEVEL_WORDS = {
-  weak: "Strength: weak",
-  some: "Strength: weak or some",
-  strong: "Strength: any",
-  low: "Fit under 25%",
-  medium: "Fit under 50%",
-  high: "Fit under 75%",
-};
-
 //: The tool row: the review's level, its automatic switch, then the doors to
 //: the tool it belongs with (the tag manager, the filings to check).
 function tidyTools(review) {
+  //: Local, not a global: the shared scope only goes down (row 37a).
+  const TIDY_LEVEL_WORDS = {
+    weak: "Strength: weak",
+    some: "Strength: weak or some",
+    strong: "Strength: any",
+    low: "Fit under 25%",
+    medium: "Fit under 50%",
+    high: "Fit under 75%",
+  };
   const state = TIDY.state;
   state.tools.replaceChildren();
   if (review.levels?.length) {

@@ -3778,14 +3778,42 @@ function nameMarkBuddyCaret() {
 //: One landing's worth of choosing (`fn`) on one measure of the page: a
 //: throw's landing asked for the obstacles two to four times (the drop, the
 //: step along, the open-air search), 8 to 88ms at 1x CPU on Notes (throw5.js).
-function nameMarkBuddyMeasureOnce(fn) {
+//: `taken` (`nameMarkBuddyTakeSurfaces`): the measure made earlier, before the
+//: release's writes, answered from instead of read again.
+function nameMarkBuddyMeasureOnce(fn, taken) {
   const outer = nmb.obstaclesHeld;
-  nmb.obstaclesHeld = outer || { tab: null, boxes: null };
+  const boxes = nmb.place.boxes;
+  nmb.obstaclesHeld = outer || taken?.held || { tab: null, boxes: null };
+  if (taken && !boxes) nmb.place.boxes = taken.rects;
   try {
     return fn();
   } finally {
     nmb.obstaclesHeld = outer;
+    nmb.place.boxes = boxes;
   }
+}
+
+//: **Every box a landing reads, taken in one pass before any write** (INBOX 1667, the owner's log,
+//: 2026-11-07, Windows: `spotNow` 5956ms, 5774 of it forced layout, on the Dashboard). The landing
+//: was worked out after the release had restyled the figure (`nameMarkBuddyPut`, the drag class), so
+//: its first rect read paid for a whole page layout, and the read of 142 controls' boxes and the
+//: bars' came after it. Taken here, in the release's read phase with the world, it reads a clean page
+//: (a landing's 142 rects are free once one layout is done) and the landing does no read at all.
+function nameMarkBuddyTakeSurfaces() {
+  const held = { tab: null, boxes: null };
+  const outer = nmb.obstaclesHeld;
+  nmb.obstaclesHeld = held;
+  try {
+    nameMarkBuddyObstacles(nameMarkBuddyTab());
+  } finally {
+    nmb.obstaclesHeld = outer;
+  }
+  const rects = new Map();
+  for (const id of ["top-bar", "phone-tab-dock", "status-bar"]) {
+    const bar = document.getElementById(id);
+    if (bar) rects.set(bar, bar.getBoundingClientRect());
+  }
+  return { held, rects };
 }
 
 //: **Out of the way of a popup** (INBOX 430, the owner: "move out of the

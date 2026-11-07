@@ -84,7 +84,7 @@ def test_the_view_is_one_lazy_file_with_one_export_a_zoom_bar_on_the_dock_recipe
     assert 'ensureModule("diagramView")' in BUILDER and "diagramModel.view.wire(S)" in BUILDER
     assert "onpaint?." not in BUILDER and "(fig.onpaint ||= []).push(paint)" in VIEW
     # Ctrl+wheel and pinch about the pointer, + - 0 and the arrows, and the four buttons in a plain .dock.
-    for needle in ("event.ctrlKey", "{ passive: false }", 'ArrowLeft:', 'event.key === "0"', 'bar.className = "dock dgm-zoom"', '"Zoom in"', '"Zoom out"', '"Fit"', '"100%"'):
+    for needle in ("event.ctrlKey", "{ passive: false }", 'ArrowLeft:', 'event.key === "0"', 'bar.className = "dock dgm-zoom"', '"Zoom in"', '"Zoom out"', '"Fit"', 'label: "Zoom percent"'):
         assert needle in VIEW, needle
     # The zoom is a width on the image plus the figure's scroll (the technique of the old `zoomable`). 1679 l: a transform is
     # allowed only as the next frame's stand-in while an input is in motion; `drop` clears it before the width is committed.
@@ -105,8 +105,8 @@ def test_the_corner_readout_names_the_true_zoom_after_every_path_1652():
     # 100% is the drawing's own size; the last button is the live readout, repainted by every zoom path (they all end in paint).
     assert _math("m.percent(1)") == 100 and _math("m.percent(1.25)") == 125 and _math("m.percent(0.333)") == 33
     # 1679 l: the readout is one helper (`readout`), called by paint and by a gesture's frame, so it names the zoom aimed at too.
-    assert "buttons.actual.textContent = words" in VIEW and "math.percent(scale)" in VIEW
-    assert VIEW.index("buttons.out.disabled = math.atEnd(scale") < VIEW.index("buttons.actual.textContent = words")
+    assert "level?.set(math.percent(scale))" in VIEW
+    assert VIEW.index("buttons.out.disabled = math.atEnd(scale") < VIEW.index("level?.set(math.percent(scale))")
 
 
 @needs_node

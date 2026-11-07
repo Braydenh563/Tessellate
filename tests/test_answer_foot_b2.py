@@ -91,11 +91,72 @@ def test_the_sheet_loads_with_the_kit_that_draws_the_row() -> None:
 def test_the_row_and_an_open_part_are_on_the_spacing_tokens() -> None:
     bar = CSS[CSS.index(".answer-foot-bar {") :]
     bar = bar[: bar.index("}")]
-    assert "gap: var(--space-2) var(--space-3);" in bar and "margin-top: var(--space-4);" in bar
+    assert "gap: var(--space-2) var(--space-3);" in bar
+    #: A group gap above the chips, the focus ring's room given back.
+    assert "padding: var(--space-1);" in bar
+    assert "margin: calc(var(--space-4) - var(--space-1)) calc(var(--space-1) * -1) calc(var(--space-1) * -1);" in bar
     assert ".answer-foot-part > summary," in CSS
     assert ".answer-foot-bar ~ * :is(.answer-foot-part:not([hidden]), .answer-evidence)," in CSS
-    #: The popup agent's actions in its head, not hanging under the foot.
-    assert ".command-palette-results > .msg.assistant > .msg-actions {" in CSS
+
+
+def test_the_row_is_one_row() -> None:
+    """The review of B2 measured "one row" wrapping: Ask 54px for 4 chips at
+    1440, the popup agent 49px at 1440 and 120px at 390. The row does not wrap:
+    the chips keep their words, the stats line gives way and is cut (its words
+    in its title), and past that the row scrolls inside itself."""
+    bar = CSS[CSS.index(".answer-foot-bar {") :]
+    bar = bar[: bar.index("}")]
+    assert "flex-wrap: nowrap;" in bar and "overflow-x: auto;" in bar and "flex-wrap: wrap" not in bar
+    assert ".answer-foot-bar > .answer-foot-chip {\n  flex: none;" in CSS
+    meta = CSS[CSS.index(".answer-foot-bar > .msg-meta {") :]
+    meta = meta[: meta.index("}")]
+    assert "min-width: 0;" in meta and "overflow: hidden;" in meta
+    gather = _body(KIT, "function answerFootGather(scope) {")
+    assert "kept.title = " in gather
+
+
+def test_a_chip_is_made_once_and_kept() -> None:
+    """The review of B2: every change while an answer streams rebuilt every
+    chip, so a press whose mousedown and mouseup straddled a rebuild was lost.
+    A chip is found again by its key; only a new one is made and wired."""
+    gather = _body(KIT, "function answerFootGather(scope) {")
+    assert "let button = had.get(spec.key);" in gather
+    made = gather[gather.index("if (!button) {") : gather.index("const label = answerFootChipLabel")]
+    assert 'addEventListener("click"' in made and gather.count("addEventListener") == 1
+    #: The row is put together again only when its children differ.
+    assert "want.every((el, index) => bar.children[index] === el)) return;" in gather
+
+
+def test_a_pattern_answered_is_not_still_to_check() -> None:
+    """The review of B2: after Confirm the line read "Confirmed: ..." and the
+    chip still said "1 pattern to check". A line still to check carries its
+    verdict pair."""
+    parts = KIT[KIT.index("const ANSWER_FOOT_PARTS = [") :]
+    patterns = parts[parts.index('key: "patterns"') : parts.index('key: "related"')]
+    assert 'line.querySelector(".insight-verdicts")' in patterns and "to check" in patterns
+
+
+def test_an_answers_actions_are_in_its_head_row() -> None:
+    """B2's "actions in the head", the review: the popup agent's row floated
+    over the head's corner covered the byline and the first line at 390 with
+    touch on. Chat and the popup agent put the row in the name row, in its
+    flow, as Ask's column head does; a question's row stays under its bubble."""
+    chat = (ROOT / "frontend/js/chat-turn.js").read_text(encoding="utf-8")
+    reopened = (ROOT / "frontend/js/sheets-selects.js").read_text(encoding="utf-8")
+    palette = (ROOT / "frontend/js/palette.js").read_text(encoding="utf-8")
+    #: The failed turn's row, and the one list the live and reopened paths share.
+    assert chat.count('(bubble.querySelector(":scope > .msg-role") || bubble).appendChild(') == 2
+    shared = chat[chat.index("function assistantMessageActions(") :]
+    shared = shared[: shared.index("\n}\n")]
+    assert shared.rstrip().endswith('return (bubble.querySelector(":scope > .msg-role") || bubble).appendChild(row);')
+    for text in (chat, reopened):
+        assert "appendChild(\n    assistantMessageActions(" not in text and "appendChild(assistantMessageActions(" not in text
+    assert "      assistantMessageActions({\n        bubble: handles.bubble," in reopened
+    assert "agentLabel.appendChild(\n    chatMessageActions([" in palette and "actionRow" not in palette
+    head = CSS[CSS.index(".msg-role > .msg-actions {") :]
+    head = head[: head.index("}")]
+    assert "position: static;" in head and "margin-inline-start: auto;" in head
+    assert ".command-palette-results > .msg.assistant > .msg-actions" not in CSS
 
 
 def test_running_now_rows_are_on_the_card_gaps() -> None:

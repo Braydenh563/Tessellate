@@ -42,10 +42,6 @@ let editingSkillName = null;
 
 // Steps and inputs are edited as one-per-line text, which is the shape people
 // already write a list in. An input is "name" or "name: the question to ask".
-function stepsToText(steps) {
-  return (steps || []).join("\n");
-}
-
 function inputsToText(inputs) {
   return (inputs || [])
     .map((item) => (item.label && item.label !== `${item.name}?` ? `${item.name}: ${item.label}` : item.name))
@@ -60,7 +56,7 @@ function startEditingSkill(skill) {
   $("skill-name").value = skill.name;
   $("skill-prompt").value = skill.prompt;
   $("skill-description").value = skill.description || "";
-  $("skill-steps").value = stepsToText(skill.steps);
+  $("skill-steps").value = (skill.steps || []).join("\n");
   $("skill-inputs").value = inputsToText(skill.inputs);
   renderSkillToolPicker(skill.tools || []);
   renderSkillVerifyPicker(skill.verify || null);

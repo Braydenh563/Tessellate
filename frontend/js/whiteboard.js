@@ -670,17 +670,27 @@ function wbZoomFrameWork() {
 //: The zoom dock says the level (INBOX 1352 gap 5: three icons and no
 //: number). Written only when the rounded percent changes, to an element
 //: found once, so a pan costs nothing here.
-const wbZoomLevel = { pct: -1, el: null };
 function wbShowZoomLevel(k) {
   const pct = Math.round(k * 100);
-  if (pct === wbZoomLevel.pct) return;
-  wbZoomLevel.pct = pct;
-  wbZoomLevel.el ||= document.getElementById("wb-zoom-level");
-  if (wbZoomLevel.el) {
-    wbZoomLevel.el.textContent = `${pct}%`;
-    //: The name starts with the visible words (BD4, label-content-name-mismatch).
-    wbZoomLevel.el.setAttribute("aria-label", `${pct}%, zoom level, press for 100%`);
-  }
+  const zl = (wbShowZoomLevel.state ||= { pct: -1, el: null });
+  if (pct === zl.pct) return;
+  zl.pct = pct;
+  zl.el ||= document.getElementById("wb-zoom-level");
+  if (!zl.el) return;
+  //: A typeable number with a dropdown (INBOX 1694 b, value-field.js), built on the first paint: Enter zooms about the centre.
+  zl.field ||= valueField(zl.el, {
+    value: pct,
+    min: 10,
+    max: 400,
+    label: "Zoom percent",
+    format: (v) => `${Math.round(v)}%`,
+    presets: [25, 50, 75, 100, 150, 200, 400, { label: "Fit", run: () => wbZoomToFit() }],
+    onCommit: (v) => {
+      const container = document.getElementById("whiteboard-container");
+      if (container) d3.select(container).transition().duration(160).call(wbZoom.scaleTo, v / 100, wbZoomAnchor({ usePointer: false }));
+    },
+  });
+  zl.field.set(pct);
 }
 
 //: Run a queued zoom frame now rather than on the next one: for a transform
@@ -15043,8 +15053,8 @@ async function initWhiteboard() {
   // Was `wbZoom.transform(d3.zoomIdentity)`, a reset to 100% at the origin,
   // under a button labelled "Fit to Screen". See `wbZoomToFit`.
   document.getElementById("wb-zoom-fit").addEventListener("click", () => wbZoomToFit());
-  //: The level itself is the 100% button, as in Figma and draw.io.
-  document.getElementById("wb-zoom-level").addEventListener("click", wbZoomTo100);
+  //: The level is a typeable field (value-field.js); drawn now, since the markup holds only its host.
+  wbShowZoomLevel(d3.zoomTransform(document.getElementById("whiteboard-container")).k || 1);
 
   // **An arrow, not the function directly.** `addEventListener` passes the
   // click event as the first argument, which would land in
@@ -25617,6 +25627,23 @@ function wbPresentShow(index) {
   const at = Math.max(0, Math.min(steps.length - 1, index));
   wbPresent.at = at;
   wbPresentCaption(at, steps);
+  //: **The page number, typeable** (INBOX 1694 b, value-field.js): a small field before the page picker, "2" then
+  //: "of 5: Title". Type a number and Enter to go there; Escape puts it back. Built on a presentation's first step,
+  //: removed with it; the picker beside it is the list of every page with its title.
+  if (!wbPresent.pageField) {
+    const slot = document.getElementById("wb-present-count");
+    const host = document.createElement("span");
+    host.className = "wb-present-page";
+    slot?.before(host);
+    wbPresent.pageField = valueField(host, {
+      value: at + 1,
+      min: 1,
+      max: () => wbPresent?.steps.length || 1,
+      label: "Page number",
+      onCommit: (n) => wbPresentShow(n - 1),
+    });
+  }
+  wbPresent.pageField.set(at + 1);
   const box = steps[at].box();
   const container = document.getElementById("whiteboard-container");
   const rect = container.getBoundingClientRect();
@@ -25652,7 +25679,8 @@ function wbPresentCaption(at, steps) {
   if (next) next.disabled = at === steps.length - 1;
   if (wbStudy.on) wbMapStudySyncBar();
   if (!slot) return;
-  const caption = `${at + 1} of ${steps.length}: ${steps[at].title()}`;
+  //: The page number is the bar's typeable field (`wbPresentPageField`); the opener says the rest.
+  const caption = `of ${steps.length}: ${steps[at].title()}`;
   const items = steps.map((step, i) => ({
     label: `${i + 1}. ${step.title()}`,
     run: () => wbPresentShow(i),
@@ -25874,6 +25902,7 @@ function wbStopPresenting() {
   wbMapEndStudy();
   closeActionMenus();
   document.getElementById("wb-present-count")?.replaceChildren();
+  document.querySelector(".wb-present-page")?.remove();
   document.getElementById("library-view-whiteboard")?.classList.remove("wb-presenting");
   document.getElementById("wb-present-bar")?.classList.add("hidden");
   if (!wasFull) toggleWhiteboardFullscreen(false);
@@ -25889,6 +25918,8 @@ function wbStopPresenting() {
 window.addEventListener("keydown", (event) => {
   if (!wbPresent) return;
   if (event.ctrlKey || event.metaKey || event.altKey) return;
+  //: A number being typed in the bar's page field keeps its own keys (value-field.js).
+  if (event.target.closest?.(".value-field")) return;
   const step = {
     ArrowRight: 1, ArrowDown: 1, PageDown: 1, " ": 1, Enter: 1,
     ArrowLeft: -1, ArrowUp: -1, PageUp: -1,

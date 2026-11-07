@@ -699,7 +699,16 @@ window.addEventListener("resize", syncScrollEdges);
 // publishes, and observing it here keeps the whole effect in one block
 // instead of adding a line to the tab machinery for a gradient.
 if (typeof MutationObserver !== "undefined") {
-  const scrollEdgeObserver = new MutationObserver(() => syncScrollEdges());
+  //: A frame on, after layout, not in the switch's microtask (INBOX 1667: a 38 to 65 ms forced layout).
+  let scrollEdgeSync = 0;
+  const scrollEdgeObserver = new MutationObserver(() => {
+    if (scrollEdgeSync || !window.afterFrames) return;
+    scrollEdgeSync = 1;
+    afterFrames(() => setTimeout(() => {
+      scrollEdgeSync = 0;
+      syncScrollEdges();
+    }), 1);
+  });
   for (const page of document.querySelectorAll(".tab-page")) {
     scrollEdgeObserver.observe(page, { attributes: true, attributeFilter: ["class"] });
   }

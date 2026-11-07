@@ -73,8 +73,11 @@
 
   function draw() {
     const name = seed();
-    if (name === seedShown) return;
-    seedShown = name;
+    //: The key holds the parts you chose as well as the name: the same name with a changed look is a new
+    //: drawing (INBOX 1692 k: the card kept the bare name's figure after the profile's look was saved).
+    const key = `${name}|${JSON.stringify(nameMarkOwnFor(name) || {})}`;
+    if (key === seedShown) return;
+    seedShown = key;
     $("desk-figure").replaceChildren(characterFor(name).figure());
     $("desk-pet").setAttribute("aria-label", `${name}, your companion. Click for the menu, right-click for settings, drag to move it.`);
   }
@@ -241,9 +244,13 @@
       }
       //: Roam over windows: a switch, not a one-way action.
       if (overlay && motion && typeof motion.roam === "boolean") motionRows.push(toggle("Roam over windows", motion.roam, () => leave(() => ask("set_roam", !motion.roam))));
+      //: The in-app Companion size steps (`NMB_SIZES`); a size pulled with the corner handle marks none.
+      const sizeRows = overlay && !locked && typeof motion?.size === "number"
+        ? [["Small", "small", 0.8], ["Medium", "medium", 1], ["Large", "large", 1.3]].map(([label, name, size]) => toggle(label, Math.abs(motion.size - size) < 0.005, () => leave(() => ask("set_figure_size", name))))
+        : [];
       const away = [hideRow()];
       away.push(item("Turn off", "power", () => (overlay ? leave(() => ask("hide_companion")) : ask("hide_companion"))));
-      rows = [...notes, ...groups(look, motionRows, away)];
+      rows = [...notes, ...groups(look, motionRows, sizeRows, away)];
     } else {
       const capture = locked
         ? [note("Tessellate is locked. Open it to unlock.")]
@@ -267,12 +274,13 @@
   //: (Atlas masculine or feminine, matching your faces, You, the chat's persona, your
   //: own character, each saved companion), the current one marked. A choice is written
   //: to the app's own prefs by the host and the figure restarts with the new look. The
-  //: figure on the desktop is Atlas, so the others are listed but cannot be picked here.
+  //: overlay draws all of them (the app window renders the frames), so every row can be picked.
   async function openCompanion() {
     const got = await Promise.resolve(ask("companion_choices")).catch(() => null);
     const rows = [item("Back", "caret-left", () => openMenu("context"))];
     if (got?.locked) rows.push(note("Tessellate is locked. Open it to unlock, then choose."));
     else if (!got?.options?.length) rows.push(note("Tessellate did not answer. Open it and try again."));
+    if (got?.note) rows.push(note(got.note));
     let group = "";
     for (const option of got?.options || []) {
       if (option.group !== group) {

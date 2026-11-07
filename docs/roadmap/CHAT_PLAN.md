@@ -607,57 +607,7 @@ shadow 2px by 8px against a 52.8px gap.
 
 ## Placed from INBOX, 2026-09-21 (the Ask sub-tab, four reports in one pass)
 
-**All four built, 2026-09-21.** One pass, because they are one screen and
-four separate fixes would have meant four rounds of the same measurement.
-The probe is `scratchpad/ui-sweeps/asktab.js` (registered in
-`scripts/gate.sh`'s sweep list); it measures rather than captures, and it
-drives a real stream through `scratchpad/fake_answer_server.py`, which now
-takes `FAKE_DELAY_MS` so a stream lasts long enough to poll. The full record
-is in HISTORY.md, "INBOX resolved, 2026-09-21".
-
-~~297. Gaps between an attached file and the badges, and badges that do not
-all show.~~ **Built.** The gap: 0.0px to 6.4px, at 1440, 1024, 820 and 390.
-The badges: not a truncation and not a wrap (every badge the data implies
-was drawn at every width, none clipped, 0px of the lane scrolled out), but a
-condition that never fired: `clickableResult` passed `entryItem` no options,
-so every chip gated on `options.actions` was missing from a read-only row.
-The same note: 2 badges in the Ask column before, 4 after, against 5 in
-Browse, the fifth being the one chip decision 16 keeps off a result row.
-
-~~298. No generating animation while the model is thinking and streaming.~~
-**Built.** Frames with the answer actually streaming: 250 before, 0 of them
-showing anything moving; 63 after, 63 of them showing something. Across the
-whole turn: 120 of 372 before, 243 of 243 after. Two existing components
-(`progressLine`, `.is-generating`) called from a surface that never called
-either, not a new control.
-
-~~299. Number the matching records to match the inline referencing.~~
-**Built.** Records numbered: 0 of 5 before, 5 of 5 after, from
-`citationNumbers`, the map the prose marks, the "Grounded in" chips and the
-Sources panel already share. Marks whose row disagrees with them: 0. Numbers
-drawn over a row's own text: 0 (6.4px of clear gutter on every row).
-
-~~300. The sources button reads as a banner and describes a place.~~
-**Built.** 525px of a 525px column (100%) before, 204px (38.9%) after;
-"Sources: 5 notes, on the right" before, "Show the 5 notes used" after; and
-a press now moves the first cited record from 328px below the top of the
-window to 72px.
-
-### The four reports, verbatim
-
-297. **The owner, 2026-09-21, verbatim:** "in the ask subtab in notes, make
-    sure there are appropriate gaps between uploaded files and attachments
-    and the badges and make sure all the badges show."
-
-298. **The owner, 2026-09-21, verbatim:** "there's no generating animation
-    while the model is thinking and streaming in the ask tab either."
-
-299. **The owner, 2026-09-21, verbatim:** "can the notes in the matching
-    records that appear in the ask tab be numbered accordingly to match the
-    inline referencing??"
-
-300. **The owner, 2026-09-21, verbatim:** "fix the ui of this sources button
-    in the ask tab."
+All four built 2026-09-21; moved to HISTORY.md ("Moved from the plans, 2026-11-05 (CHAT_PLAN, the Ask sub-tab of 2026-09-21)").
 
 ## Placed from INBOX, 2026-10-03 (the chat stutter, INBOX 413)
 
@@ -1889,10 +1839,11 @@ A1, A2 and the A2 follow-up built; moved to HISTORY.md ("Moved from the plans, 2
 
 B2 and B7 built; moved to HISTORY.md ("Moved from the plans, 2026-11-05 (CHAT_PLAN B2 and B7)").
 
-- **B1, the owner 2026-11-05 02:20Z (screenshots: Ask, the whole answer inside a "145 words" card under Thinking, then the same card collapsed to one line), verbatim:** "also the whole response from my ai model just got placed in a dropdown collapsed box" (pasted: the model's "Thinking Process:" text, numbered steps, no tags). Recommendation (taken): find the class (an untagged "Thinking Process:" preamble, the reasoning split, or the long-answer card folding the answer itself) with a fake-transport stream of exactly that shape; the answer is never inside a fold or a collapsed card, the reasoning is, in Ask, Chat and the popup agent.
-- **B3, verbatim:** "I also cant type in the text box while the popup agent is respondning (check the guide as well) and I cant draft, queue or edit/delete queued messages like in chat for the popup agent." Recommendation (taken): the popup agent and the guide take Chat's composer behaviour: typing stays open while a turn runs, Enter queues, the queue shows with edit and delete, drafts are kept per surface; one shared queue component.
-- **B4, verbatim:** "also when fullscreen or docked to the main window, the bottom footer of te popup agent is really really tall which it shouldnt be" (screenshot: the status row then about 270 px of empty footer). Recommendation (taken): the footer is its content's height in every mode (floating, docked, full screen), measured.
-- **B5, verbatim:** "also in that test request the search appeared after the generated text when it happened before that text was written out." Recommendation (taken): steps and text keep the order they happened in (one timeline ordered by event arrival), in the agent, Chat and the guide; a test with a fake stream of text, tool call, text.
-- **B6, verbatim:** "also I still dont understand why the ai model context windows are so small, cna they be larger?? they need to properly adapt to the model." Recommendation (taken): the context window is read from the model (GGUF metadata or the server's reported n_ctx), set as large as the model and memory allow (a bounded share of free RAM or VRAM), shown in Settings with why; prompt budgets scale from it; fake-transport tests for a 4k, 32k and 128k model. Owner log 02:15Z: "tessellate.agent context budget: 5120 tok window" for gemma-4-E2B (a 128k model).
-- **B8, the owner 2026-11-05 02:23Z, verbatim:** "sometimes when I close a minimised tab for a window, the window flashes for a split second". Recommendation (taken): closing a minimised window from its tab never shows the window (no restore before the close, no transition on a hidden window), for every window kind that minimises to a tab.
-- **B9, the owner 2026-11-05 02:25Z (screenshot: three "Patterns: ... as you told me on ..." lines), verbatim:** "also is there a way to edit or managed confirmed patterns??". Found: no; a Confirm writes a `derived_facts` row of kind "confirmed" (ai/insights.py), and Settings' "What it remembers" (`GET /settings/memory`, routes_settings.py:1638) lists preferences only. Recommendation (taken): confirmed patterns join "What it remembers" as their own group, each with its sentence, the date confirmed and the notes behind it, and Edit (the subject or wording, kept as the person's own word), Remove (soft delete, with Undo) and Not right (the dismiss path); the Patterns line gets the same three in its row menu; Help and the Guide topic say where they are managed.
+- **B1 and B5: built 2026-11-05** (41d42ef, f30176e), moved to HISTORY.md ("Moved from the plans, 2026-11-05 (CHAT_PLAN B1 and B5)"): the answer is never folded, the reasoning is; the popup agent keeps arrival order.
+- B6 (the context window adapts to the model and memory) built; moved to HISTORY.md ("Moved from the plans, 2026-11-07 (CHAT_PLAN B6)").
+- **B3, B4 and B8**: built 2026-11-05, moved to HISTORY.md ("Moved from the plans, 2026-11-05 (CHAT_PLAN B3, B4 and B8)").
+- B9 (confirmed patterns managed) built; moved to HISTORY.md ("Moved from the plans, 2026-11-05 (CHAT_PLAN B9)").
+
+## Placed from INBOX, 2026-11-07 (room for 1694)
+
+1564. **Owner decisions, 2026-11-03 (asked and answered):** U15 arrange menu: "I think it is a good idea to make it subsectioned yeah" (build the submenus). **U15 fixed 8b7d6ad:** five submenus (Order, Align, Distribute size and flip, Tidy and connect, Group and lock); the menu 785px and 24 rows with a scrollbar before, 220px and 5 rows after at 1440x900 (`$S/u15/arrange.js`); all 24 commands by keys; the phone's More sheet still lists them flat (a31r-1103). E33 Guide lead: sentence first, the click path as its own second line (the current order; tests stay). E50: keep Fork and Compress in the phone chat menu. U41: shorten the map-created toast to one line with an action, the longer help behind the help button (tests/test_wb_dog1_fixb.py changes with this dated reason). D30 spellcheck: "japanese, chinese, uk/us english spelling, shouldn the user be able to download language packs like with MS Word?" plus Spanish, French and German, Portuguese. Recommendation: language packs downloaded on demand from Settings (like the model downloads: one download, then offline), a per-document language, UK and US English as two variants of the bundled list; Japanese and Chinese have no word-list spellcheck (no spaces between words), so their pack gives the document language and input hints only, said plainly in the pack's card. Also "tell me about this" joins composer_digest `_THIS` (a30e's found-not-fixed).

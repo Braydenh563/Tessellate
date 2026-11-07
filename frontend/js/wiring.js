@@ -23,7 +23,7 @@ reflectOnlineState();
 // --- writing room wiring ---
 $("draft-compose").addEventListener("click", composeDraft);
 $("draft-undo").addEventListener("click", undoDraft);
-$("draft-cancel").addEventListener("click", cancelDraft);
+$("draft-cancel").addEventListener("click", () => draftController?.abort());
 $("draft-save").addEventListener("click", () => saveDraftAsNote());
 
 $("draft-title").addEventListener("click", suggestDraftTitle);
@@ -357,7 +357,7 @@ document.addEventListener("keydown", (event) => {
   $("chat-dock-more-btn").focus();
 });
 $("chat-stop").addEventListener("click", () => {
-  chatQueueState.held = true;
+  chatQueue.held = true;
   chatController?.abort();
 });
 //: **Escape stops the answer being written** (CHAT_PLAN section 6, the
@@ -380,7 +380,7 @@ document.addEventListener("keydown", (event) => {
   if ($("chat-stop").classList.contains("hidden")) return;
   if (document.querySelector(".modal-overlay:not(.hidden), .sheet-overlay:not(.hidden)")) return;
   event.preventDefault();
-  chatQueueState.held = true;
+  chatQueue.held = true;
   chatController.abort();
 });
 $("chat-new").addEventListener("click", newChatConversation);

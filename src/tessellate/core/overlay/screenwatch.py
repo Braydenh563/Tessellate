@@ -12,6 +12,9 @@ from itertools import islice
 from pathlib import Path
 from typing import Any, Callable
 
+#: No count has come back since the last poll (a count can come back as None: no folder).
+_UNSET: Any = object()
+
 logger = logging.getLogger(__name__)
 
 EVERY = 2.0
@@ -51,9 +54,14 @@ class ScreenWatch:
 
     def __init__(
         self, foreground: Callable[[], int | None] | None = None, battery: Callable[[], tuple[int, bool] | None] | None = None,
-        downloads: Callable[[], int | None] = downloads_count,
+        downloads: Callable[[], int | None] = downloads_count, run: Callable[[Callable[[], None]], Any] | None = None,
     ) -> None:
         self.foreground, self.battery, self.downloads = foreground, battery, downloads
+        #: Where the folder is counted: the runner hands it to a worker (a sleeping or synced folder must not stall a
+        #: frame, the 1678 review); none runs it in the poll.
+        self.run = run or (lambda fn: fn())
+        self._counting = False
+        self._counted: Any = _UNSET
         self.next_at = 0.0
         self.fg: int | None = None
         self.windows: set[int] | None = None
@@ -74,19 +82,29 @@ class ScreenWatch:
         self.windows = seen
         return out
 
-    def poll(self, now: float, hour: int, minute: int = 0) -> list[str]:
-        """The events of this tick (empty before `EVERY` has passed)."""
+    def forget(self) -> None:
+        """After a stall (a suspend, a full-screen app): what changed while away is not news, so the next
+        reads are only remembered."""
+        self.fg, self.windows, self.files, self._counted = None, None, None, _UNSET
+
+    def poll(self, now: float, hour: int, minute: int = 0, screen: bool = True) -> list[str]:
+        """The events of this tick (empty before `EVERY` has passed). `screen` False (the person turned
+        "Roam over windows" off) reads neither the foreground window nor the downloads folder."""
         if now < self.next_at:
             return []
         self.next_at = now + EVERY
         out: list[str] = []
-        out += self._foreground()
+        if screen:
+            out += self._foreground()
+        else:
+            self.fg, self.files, self._counted = None, None, _UNSET
         if self.hour is not None and hour != self.hour and minute < 2:
             out.append("hour_chime")
         if self.hour is None or minute < 2:
             self.hour = hour
         out += self._battery()
-        out += self._downloads(now)
+        if screen:
+            out += self._downloads(now)
         return out
 
     def _foreground(self) -> list[str]:
@@ -121,10 +139,22 @@ class ScreenWatch:
         return []
 
     def _downloads(self, now: float) -> list[str]:
-        if now < self.files_at:
+        if now >= self.files_at and not self._counting:
+            self.files_at = now + DOWNLOADS_EVERY
+            self._counting = True
+            self.run(self._count)
+        if self._counted is _UNSET:
             return []
-        self.files_at = now + DOWNLOADS_EVERY
-        n = self.downloads()
+        n, self._counted = self._counted, _UNSET
         out = ["download_done"] if n is not None and self.files is not None and n > self.files else []
         self.files = n
         return out
+
+    def _count(self) -> None:
+        try:
+            n = self.downloads()
+        except Exception:  # noqa: BLE001 - an unreadable folder is no event
+            logger.debug("overlay: downloads unreadable", exc_info=True)
+            n = None
+        self._counted = n
+        self._counting = False

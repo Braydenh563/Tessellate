@@ -379,6 +379,7 @@ class OllamaClient(Provider):
             # window percentage on each message is measured against, and is
             # often *lower* than the declared one, deliberately (KV cache).
             "usable_context": self.usable_context(model),
+            "context_reason": self.context_explanation(model),
             "capabilities": sorted(self.capabilities(model)),
             "supports_tools": self.supports(model, "tools"),
             "supports_thinking": self.supports(model, "thinking"),
@@ -416,6 +417,32 @@ class OllamaClient(Provider):
             length = known_context(model)
         self._context_lengths[model] = length
         return length
+
+    def kv_bytes_per_token(self, model: str) -> int | None:
+        """KV cache bytes per token, from the shape `/api/show` reports.
+
+        2 (keys and values) x layers x KV heads x head size x 2 bytes (f16).
+        An estimate that errs high (sliding-window layers and a quantised
+        cache cost less), which is the safe side for an out-of-memory.
+        """
+        info = self.show(model).get("model_info") or {}
+
+        def field(suffix: str) -> int | None:
+            for key, value in info.items():
+                if key.endswith(suffix) and isinstance(value, (int, float)) and value > 0:
+                    return int(value)
+            return None
+
+        layers = field(".block_count")
+        heads = field(".attention.head_count")
+        kv_heads = field(".attention.head_count_kv") or heads
+        head_size = field(".attention.key_length")
+        if not head_size:
+            width = field(".embedding_length")
+            head_size = width // heads if width and heads else None
+        if not (layers and kv_heads and head_size):
+            return None
+        return 2 * layers * kv_heads * head_size * 2
 
     def runtime_options(
         self,

@@ -39,6 +39,7 @@ from __future__ import annotations
 import ast
 import importlib
 import json
+import logging
 import re
 from collections.abc import Callable
 from urllib.parse import urlparse
@@ -148,6 +149,29 @@ DEFAULT_CONTEXT_TOKENS = 4096
 # fraction of that, so it is the default; anyone with the memory to spare can
 # raise it in preferences.
 MAX_REQUESTED_CONTEXT = 8192
+
+#: Windows are rounded down to this step so the number reads cleanly.
+CONTEXT_STEP = 1024
+
+#: The share of free memory the KV cache may take. The weights, the app and
+#: the rest of the computer need the other half.
+KV_MEMORY_SHARE = 0.4
+
+
+def memory_budget_bytes() -> int | None:
+    """What the KV cache may spend: a bounded share of the larger of free RAM
+    and video memory, or None when neither can be read."""
+    try:
+        from tessellate.core import hardware
+
+        free = hardware.free_memory_gb() or 0.0
+        cards = [g.get("vram_gb") or 0.0 for g in hardware.detect_gpus()]
+        best = max([free, *cards])
+    except Exception as exc:  # noqa: BLE001  # unreadable memory means "keep the old cap"
+        logging.getLogger("tessellate.provider").info("memory unreadable, keeping the old context cap: %s", exc)
+        return None
+    return int(best * 1024**3 * KV_MEMORY_SHARE) if best else None
+
 
 # Room for the reply. Unset, a backend will happily generate until it decides
 # to stop, and a local model that rambles is the single most common reason an
@@ -436,7 +460,8 @@ class Provider:
             # module level (CodeQL flagged a redundant local import here).
             deps = importlib.import_module("tessellate.core.deps")
             windows = deps.get_config().get_preference("model_context_windows", {})
-        except Exception:  # noqa: BLE001  # a bad preference must not stop a chat
+        except Exception as exc:  # noqa: BLE001  # a bad preference must not stop a chat
+            logging.getLogger("tessellate.provider").info("max_context_tokens unreadable, ignored: %s", exc)
             return None
         if not isinstance(windows, dict):
             return None
@@ -484,10 +509,71 @@ class Provider:
         chosen = self.preferred_context(model)
         if chosen:
             return chosen
-        declared = self.context_length(model) or self.DEFAULT_CONTEXT_TOKENS
-        return max(
-            self.DEFAULT_CONTEXT_TOKENS, min(declared, self.max_requested_context)
-        )
+        return self.context_decision(model)[0]
+
+    # ---- the adaptive ceiling (CHAT_PLAN B6) ---------------------------------
+    #
+    # The owner: "why are the ai model context windows so small, can they be
+    # larger?? they need to properly adapt to the model." A fixed 8192 ceiling
+    # put a 128k model on 5k of budget. The ceiling is now what the machine can
+    # hold: the model's own length, capped by the KV cache that length would
+    # need against a bounded share of free memory. A backend that cannot say
+    # what a token costs keeps the old fixed ceiling.
+
+    def kv_bytes_per_token(self, model: str) -> int | None:
+        """Bytes of KV cache one token of context costs, or None if unknown."""
+        return None
+
+    def window_is_fixed(self, model: str) -> bool:
+        """True when the server loaded the model at the reported window, so
+        there is nothing to allocate and the number is simply the truth."""
+        return False
+
+    def _explicit_ceiling(self) -> int | None:
+        """The global `max_context_tokens` preference, only when it was set."""
+        try:
+            deps = importlib.import_module("tessellate.core.deps")
+            raw = deps.get_config().get_preference("max_context_tokens", None)
+            return max(self.DEFAULT_CONTEXT_TOKENS, int(raw)) if raw else None
+        except Exception as exc:  # noqa: BLE001  # a bad preference must not stop a chat
+            logging.getLogger("tessellate.provider").info("max_context_tokens unreadable, ignored: %s", exc)
+            return None
+
+    def context_decision(self, model: str) -> tuple[int, str]:
+        """The window and why, as (tokens, reason code). One place decides, so
+        the number asked for, the number budgeted and the sentence in Settings
+        cannot disagree."""
+        known = self.context_length(model)
+        declared = known or self.DEFAULT_CONTEXT_TOKENS
+        floor = self.DEFAULT_CONTEXT_TOKENS
+        if known and self.window_is_fixed(model):
+            return max(floor, declared), "server"
+        explicit = self._explicit_ceiling()
+        if explicit:
+            return max(floor, min(declared, explicit)), "preference"
+        kv = self.kv_bytes_per_token(model) if known else None
+        share = memory_budget_bytes() if kv else None
+        if not (kv and share):
+            return max(floor, min(declared, self.MAX_REQUESTED_CONTEXT)), "default"
+        fits = int(share // kv) // CONTEXT_STEP * CONTEXT_STEP
+        window = max(floor, min(declared, fits))
+        if window >= declared:
+            return max(floor, declared), "model"
+        return window, "memory"
+
+    def context_explanation(self, model: str) -> str:
+        """One sentence for Settings: the window in use and why."""
+        chosen = self.preferred_context(model)
+        if chosen:
+            return f"Set by you: {chosen:,} tokens."
+        window, why = self.context_decision(model)
+        shown = f"{window:,} tokens"
+        return {
+            "server": f"{shown}, the window your server loaded the model with; the server sets it.",
+            "preference": f"{shown}, the model's window held to your ceiling in preferences.",
+            "memory": f"{shown}, as much as the free memory on this computer can hold; the model allows more.",
+            "model": f"{shown}, the model's full window; free memory can hold all of it.",
+        }.get(why, f"{shown}, the usual cap, because this backend does not say what a window costs.")
 
     def generation_budget(
         self,
@@ -692,6 +778,52 @@ _THINK_WORDS = ("think", "thinking", "thought", "reason", "reasoning")
 _THINK_OPEN_RE = re.compile(r"<\s*(?:%s)\s*>" % "|".join(_THINK_WORDS), re.I)
 _THINK_CLOSE_RE = re.compile(r"<\s*/\s*(?:%s)\s*>" % "|".join(_THINK_WORDS), re.I)
 
+#: **An untagged reasoning header is an open tag** (CHAT_PLAN B1, the owner:
+#: "the whole response from my ai model just got placed in a dropdown
+#: collapsed box"). A template that opens the thought in the prompt leaves
+#: the model writing "Thinking Process:", numbered steps and only the close
+#: tag; streamed, all of it was the answer. A first line that is one of these
+#: headers alone (marks and a colon allowed, nothing after it) opens the
+#: thought; a word that merely starts a sentence does not.
+_THINK_HEADERS = ("thinking process:", "thought process:", "reasoning process:", "thinking:", "reasoning:")
+_THINK_HEADER_LONGEST = 40
+
+
+def _think_header(text: str) -> str:
+    """"yes", "no" or "wait": is `text`'s first line a reasoning header?"""
+    first, newline, _ = text.partition("\n")
+    core = re.sub(r"[*_#]", "", first).strip().lower()
+    if newline:
+        return "yes" if core in _THINK_HEADERS else "no"
+    if len(first) > _THINK_HEADER_LONGEST:
+        return "no"
+    return "wait" if any(h.startswith(core) for h in _THINK_HEADERS) else "no"
+
+
+#: A line that reads as part of a reasoning outline: blank, indented, a list
+#: item or a heading. Prose after the last one is where an answer would be.
+_STEP_LINE_RE = re.compile(r"\s*$|\s+\S|\s*(?:\d+[.)]|[-*+•]|#{1,6})\s")
+
+
+def _steps_end(text: str) -> int:
+    """Where the reasoning outline in `text` ends: just past the last whole
+    line that is a step, so what follows is prose that may be the answer."""
+    end = position = 0
+    for line in text.splitlines(keepends=True):
+        position += len(line)
+        if line.endswith("\n") and _STEP_LINE_RE.match(line):
+            end = position
+    return end
+
+
+def _split_header_reply(body: str) -> tuple[str, str]:
+    """(thought, answer) of a reply that opened with a reasoning header and
+    never closed it: the outline is the thought, the prose after its last
+    step the answer. ("", body) when that cannot be told."""
+    end = _steps_end(body if body.endswith("\n") else body + "\n")
+    thought, answer = body[:end], body[end:]
+    return (thought, answer) if thought.strip() and answer.strip() else ("", body)
+
 
 class _ThinkTagSplitter:
     """Routes streamed content into thinking and answer pieces.
@@ -722,6 +854,10 @@ class _ThinkTagSplitter:
     def __init__(self) -> None:
         self._buffer = ""
         self._mode = "start"  # start → thinking? → answer
+        #: The thought began at a header, not a tag, and nothing has closed it:
+        #: the header, and the thought shown after it so far.
+        self._implied = ""
+        self._shown = ""
 
     @staticmethod
     def _leading(text: str, tags: tuple[str, ...]) -> str | None:
@@ -750,55 +886,93 @@ class _ThinkTagSplitter:
     def feed(self, chunk: str) -> list[dict]:
         self._buffer += chunk
         pieces: list[dict] = []
-
-        if self._mode == "start":
-            candidate = self._buffer.lstrip()
-            opening = self._leading(candidate, self.OPENS)
-            if opening:
-                self._mode = "thinking"
-                self._buffer = candidate[len(opening) :]
-            elif self._could_become(candidate, self.OPENS):
-                return pieces  # could still become an opening tag, wait
-            else:
-                self._mode = "answer"
-
-        if self._mode == "thinking":
-            at, size = self._find_close(self._buffer)
-            if at != -1:
-                pieces.append({"thinking_delta": self._buffer[:at]})
-                self._buffer = self._buffer[at + size :]
-                self._mode = "answer"
-            else:
-                # Keep enough back that a half-arrived closing tag is not
-                # emitted as thinking text.
-                safe = len(self._buffer) - (self._LONGEST_CLOSE - 1)
-                if safe > 0:
-                    pieces.append({"thinking_delta": self._buffer[:safe]})
-                    self._buffer = self._buffer[safe:]
-                return pieces
-
+        if self._mode == "start" and not self._start():
+            return pieces  # could still become an opening tag or header, wait
+        if self._mode == "thinking" and not self._thinking(pieces):
+            return pieces
         if self._mode == "answer" and self._buffer:
-            # A close with no open before it: drop the tag, keep the text.
-            while True:
-                at, size = self._find_close(self._buffer)
-                if at == -1:
-                    break
-                self._buffer = self._buffer[:at] + self._buffer[at + size :]
-            hold = 0
-            for length in range(1, min(self._LONGEST_CLOSE, len(self._buffer) + 1)):
-                if self._could_become(self._buffer[-length:], self.CLOSES):
-                    hold = length
-            if hold:
-                emit, self._buffer = self._buffer[:-hold], self._buffer[-hold:]
-            else:
-                emit, self._buffer = self._buffer, ""
-            if emit:
-                pieces.append({"content_delta": emit})
+            self._answer(pieces)
         return pieces
+
+    def _start(self) -> bool:
+        """Decide what the reply opens with; False while it cannot be told yet."""
+        candidate = self._buffer.lstrip()
+        opening = self._leading(candidate, self.OPENS)
+        header = _think_header(candidate)
+        if opening:
+            self._mode = "thinking"
+            self._buffer = candidate[len(opening) :]
+        elif self._could_become(candidate, self.OPENS) or header == "wait":
+            return False
+        elif header == "yes":
+            self._mode = "thinking"
+            self._buffer = candidate.partition("\n")[2].lstrip("\n")
+            self._implied = candidate[: len(candidate) - len(self._buffer)]
+        else:
+            self._mode = "answer"
+        return True
+
+    def _thinking(self, pieces: list[dict]) -> bool:
+        """Emit thought up to a close tag; True once the answer has begun."""
+        at, size = self._find_close(self._buffer)
+        if at != -1:
+            pieces.append({"thinking_delta": self._buffer[:at]})
+            self._buffer = self._buffer[at + size :]
+            self._mode = "answer"
+            self._implied = self._shown = ""
+            return True
+        if self._implied:
+            #: A header's thought streams a step at a time; the prose after
+            #: the last step is held, since with no close tag it is the answer.
+            safe = _steps_end(self._buffer)
+        else:
+            # Keep enough back that a half-arrived closing tag is not
+            # emitted as thinking text.
+            safe = len(self._buffer) - (self._LONGEST_CLOSE - 1)
+        if safe > 0:
+            self._shown += self._buffer[:safe]
+            pieces.append({"thinking_delta": self._buffer[:safe]})
+            self._buffer = self._buffer[safe:]
+        return False
+
+    def _answer(self, pieces: list[dict]) -> None:
+        # A close with no open before it: drop the tag, keep the text.
+        while True:
+            at, size = self._find_close(self._buffer)
+            if at == -1:
+                break
+            self._buffer = self._buffer[:at] + self._buffer[at + size :]
+        hold = 0
+        for length in range(1, min(self._LONGEST_CLOSE, len(self._buffer) + 1)):
+            if self._could_become(self._buffer[-length:], self.CLOSES):
+                hold = length
+        if hold:
+            emit, self._buffer = self._buffer[:-hold], self._buffer[-hold:]
+        else:
+            emit, self._buffer = self._buffer, ""
+        if emit:
+            pieces.append({"content_delta": emit})
 
     def flush(self) -> list[dict]:
         """The stream ended: emit whatever is left."""
         leftover, self._buffer = self._buffer, ""
+        if self._mode == "start":
+            self._mode = "answer"  # a reply shorter than a header, all answer
+        if self._implied:
+            #: A header that nothing closed (review of B1: the steps were
+            #: shown in the fold and again in the answer). The prose after the
+            #: last step is the answer, each word shown once. With no prose
+            #: there, nothing marks an answer, so the whole text is the answer
+            #: as well, never lost to the fold.
+            header, self._implied = self._implied, ""
+            thought, answer = _split_header_reply(self._shown + leftover)
+            if not self._shown and not thought:
+                return [{"content_delta": header + leftover}]
+            if thought:
+                more = thought[len(self._shown) :]
+                return ([{"thinking_delta": more}] if more else []) + [{"content_delta": answer}]
+            whole = header + self._shown + leftover
+            return ([{"thinking_delta": leftover}] if leftover else []) + [{"content_delta": whole}]
         if not leftover:
             return []
         key = "thinking_delta" if self._mode == "thinking" else "content_delta"
@@ -1342,7 +1516,15 @@ def split_thinking(text: str) -> tuple[str, str | None]:
             break
         thoughts.append(text[opened.end() : closing.start()])
         position = closing.end()
+    if not thoughts and _think_header(text.lstrip()) == "yes":
+        #: A header nothing closed splits as the stream does.
+        thought, rest = _split_header_reply(text.lstrip().partition("\n")[2])
+        if thought:
+            return rest.strip(), thought.strip()
     thinking = "\n\n".join(part.strip() for part in thoughts if part.strip()).strip()
+    #: The header a stream reads as the open tag (B1) is the fold's own label.
+    if _think_header(thinking) == "yes":
+        thinking = thinking.partition("\n")[2].strip()
     return "".join(answer).strip(), thinking or None
 
 

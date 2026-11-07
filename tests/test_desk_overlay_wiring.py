@@ -289,14 +289,14 @@ def test_the_overlay_follows_the_apps_resolved_motion_and_logs_it(over, caplog):
     runner = FakeRunner.started[0]
     assert runner.reduced is True and runner.reduced_reason == "app"
     assert any("overlay started" in r.getMessage() and "motion=still (app)" in r.getMessage() for r in caplog.records)
-    assert dc.DeskApi(over).panel_motion() == {"still": True, "reason": "app", "roam": True, "stay": False, "asleep": False, "figure": True}
+    assert dc.DeskApi(over).panel_motion() == {"still": True, "reason": "app", "roam": True, "stay": False, "size": 1.0, "asleep": False, "figure": True}
 
 
 def test_a_full_answer_moves_and_no_answer_leaves_it_to_the_windows_flag(over):
     over.main_window.evaluate_js = _says(mode="full")
     over.set_main_hidden(True)
     assert FakeRunner.started[0].reduced is False
-    assert dc.DeskApi(over).panel_motion() == {"still": False, "reason": "", "roam": True, "stay": False, "asleep": False, "figure": True}
+    assert dc.DeskApi(over).panel_motion() == {"still": False, "reason": "", "roam": True, "stay": False, "size": 1.0, "asleep": False, "figure": True}
     over.set_main_hidden(False)
     over.close()
     over.closing = False
@@ -470,3 +470,223 @@ def test_1658_a_note_opened_from_the_menu_is_still_a_real_resize_and_back(over):
     assert panel.calls[-2][1:] == (320, 376)
     api.set_size(MENU_W, 154, "menu")
     assert panel.calls[-2][1:] == (MENU_W, 154)
+
+
+# INBOX 1666: at quit no web view is started, and one still starting gets a short deadline.
+class _Loaded:
+    def __init__(self, ok=True):
+        self.ok, self.waited = ok, []
+
+    def wait(self, timeout=None):
+        self.waited.append(timeout)
+        return self.ok
+
+
+def test_1666_quit_hides_main_after_closing_so_no_panel_is_made(over):
+    # Before: hide() -> set_main_hidden -> sync -> a new panel window created mid-quit.
+    over.webview.made.clear()
+    dc.shutdown()
+    over.main_window.hide()
+    over.set_main_hidden(True)
+    assert over.webview.made == []
+
+
+def test_1666_a_late_sync_after_close_makes_no_window(over):
+    over.close()
+    over._make_panel()  # noqa: SLF001
+    assert over.webview.made == [] and over.window is None
+
+
+def test_1666_close_waits_briefly_for_a_window_still_starting_then_destroys(over):
+    # Intent moved (1666 review, 2026-11-07): the wait helps only a close off the GUI thread (the
+    # /shutdown route, the tray), where the web view's start can still finish; so it runs on a worker here.
+    import threading
+
+    over.set_main_hidden(True)
+    panel = over.webview.made[0]
+    panel.events = SimpleNamespace(loaded=_Loaded(ok=False))
+    worker = threading.Thread(target=over.close)
+    worker.start()
+    worker.join(5)
+    assert panel.events.loaded.waited == [dc.LOADED_WAIT]
+    assert ("destroy",) in panel.calls
+
+
+def test_1666_a_close_on_the_gui_thread_does_not_wait_on_a_start_that_needs_that_thread(over):
+    # The close X with close_to_tray off quits on the GUI thread: a start waits on that thread's loop, so
+    # waiting there only froze the closing window for 1.5 s and the start aborted anyway (1666 review).
+    over.set_main_hidden(True)
+    panel = over.webview.made[0]
+    panel.events = SimpleNamespace(loaded=_Loaded(ok=False))
+    over.close()
+    assert panel.events.loaded.waited == []
+    assert ("destroy",) in panel.calls
+
+
+def _closing_maker(over):
+    """A `_make` that a quit overtakes: `close` (its lock wait timed out) sets closing mid-creation."""
+    made = []
+
+    def make():
+        window = FakeWindow()
+        made.append(window)
+        over.closing = True
+        return window
+
+    over._make = make  # noqa: SLF001
+    return made
+
+
+def test_1666_a_panel_made_while_the_app_quits_is_destroyed_not_kept(over):
+    made = _closing_maker(over)
+    over._make_panel()  # noqa: SLF001
+    assert over.window is None and ("destroy",) in made[0].calls
+
+
+def test_1666_a_click_whose_panel_is_overtaken_by_quit_shows_nothing_and_keeps_nothing(over):
+    over.set_main_hidden(True)
+    over.window = None
+    made = _closing_maker(over)
+    over._overlay_click("left", (100, 100, 60, 90), 96)  # noqa: SLF001
+    assert over.window is None and made[0].calls == [("destroy",)]
+
+
+def test_1666_the_close_x_quit_closes_the_companion_on_the_same_teardown():
+    from pathlib import Path
+
+    src = (Path(dc.__file__).resolve().parents[1] / "__main__.py").read_text(encoding="utf-8")
+    teardown = src.split("def _stop_background_work", 1)[1].split("\ndef ", 1)[0]
+    assert "desk_companion.shutdown()" in teardown
+    closing = src.split("def _on_closing", 1)[1].split("return True", 1)[0]
+    assert "_stop_background_work()" in closing
+
+
+def test_1666_a_window_without_a_loaded_event_is_still_destroyed(over):
+    over.set_main_hidden(True)
+    panel = over.webview.made[0]
+    over.close()
+    assert ("destroy",) in panel.calls
+
+
+def test_1666_the_quit_handler_closes_the_companion_before_hiding_the_main_window():
+    from pathlib import Path
+
+    src = (Path(dc.__file__).resolve().parents[1] / "__main__.py").read_text(encoding="utf-8")
+    body = src.split("def _quit_from_app", 1)[1].split("quit_hook.set_quit_handler", 1)[0]
+    assert body.index("desk_companion.shutdown()") < body.index("hide()")
+
+
+# INBOX 1690 d: "shown", "raised above the desktop: False", "hidden" every 3 to 8 s after a restart failed.
+@pytest.mark.parametrize("how", ["restart", "sync"])
+def test_1690d_a_failed_restart_drops_the_quick_panel_and_shows_a_real_card(over, how):
+    # Before: the hidden quick panel (the overlay's page, menu sized, taking focus) stayed `self.window`,
+    # so the fallback showed it as the card.
+    over.set_main_hidden(True)
+    panel = over.webview.made[0]
+    assert "overlay=1" in panel.options["url"]
+    over.box.ok = False
+    over.main_window.evaluate_js = lambda script: "feminine"  # a new look: the runner is restarted
+    if how == "restart":
+        assert over._restart_shown("companion choice") is False  # noqa: SLF001
+    else:
+        over.set_main_hidden(False)
+        over.set_main_hidden(True)
+    assert over.overlay_failed and ("destroy",) in panel.calls and ("show",) not in panel.calls
+    card = over.webview.made[-1]
+    assert card is not panel and card.options["url"].endswith("?card=1") and ("show",) in card.calls
+    assert over.shown and not over.panel and not over.panel_shown
+def test_the_apps_companion_size_reaches_the_figure_and_a_pull_is_written_back(over):
+    """The size handle (INBOX 1683 r): the look read carries Appearance's size, a changed one is passed to the
+    running figure, and the figure's own pull is written through the page the way its handle writes it."""
+
+    asked: list[str] = []
+
+    def answer(script):
+        asked.append(script)
+        return json.dumps({"look": "masculine", "size": 1.3}) if "size:" in script else True
+
+    over.main.evaluate_js = answer
+    over.set_main_hidden(True)
+    runner = FakeRunner.started[0]
+    assert over.size_pref == 1.3 and "size:typeof nameMarkBuddyScaleSaved" in asked[0]
+    runner.on_size = over._overlay_size  # noqa: SLF001 - what a real runner is given
+    runner.scale = 1.3
+    runner.set_scale = lambda v: runner.__dict__.setdefault("scaled", []).append(v)
+    over.main.evaluate_js = lambda s: (asked.append(s), json.dumps({"look": "masculine", "size": 0.8}) if "size:" in s else True)[1]
+    over._start_overlay()  # noqa: SLF001
+    assert runner.scaled == [0.8]
+    runner.on_size(1.4)
+    assert over.size_pref == 1.4 and "nameMarkBuddySetSize(v,true)" in asked[-1] and "const v=1.4;" in asked[-1]
+
+
+def _page(over, answers):
+    """The app window: `answers` is what a size write returns; the look says what size the page holds."""
+
+    asked: list[str] = []
+    state = {"write": answers, "page": 1.0}
+
+    def answer(script):
+        asked.append(script)
+        if "size:" in script:
+            return json.dumps({"look": "masculine", "size": state["page"]})
+        return state["write"]
+
+    over.main.evaluate_js = answer
+    return asked, state
+
+
+def test_a_failed_write_back_keeps_the_pulled_size_and_is_retried_on_the_next_sync(over):
+    asked, state = _page(over, False)
+    over.set_main_hidden(True)
+    runner = FakeRunner.started[0]
+    runner.scale, runner.set_scale = 1.0, lambda v: runner.__dict__.setdefault("scaled", []).append(v)
+    runner.on_size = over._overlay_size  # noqa: SLF001
+    runner.on_size(1.4)
+    assert over.size_pref == 1.4 and over._size_unsent == 1.4  # noqa: SLF001
+    over._now = lambda: 1e9  # noqa: SLF001 - well past the hold
+    runner.scale = 1.4
+    before = len(asked)
+    over._start_overlay()  # noqa: SLF001 - the page still says 1.0
+    assert over.size_pref == 1.4 and not hasattr(runner, "scaled")  # the page's old value is not taken back
+    assert any("const v=1.4;" in s for s in asked[before:])  # the write is tried again
+    state["write"] = True
+    over._start_overlay()  # noqa: SLF001
+    assert over._size_unsent is None  # noqa: SLF001
+    state["page"] = 0.8
+    over._now = lambda: 2e9  # noqa: SLF001
+    over._start_overlay()  # noqa: SLF001 - now Appearance may change it
+    assert over.size_pref == 0.8
+
+
+def test_the_menu_sizes_are_the_apps_three_steps_and_set_the_figure_and_the_page(over):
+    asked, _ = _page(over, True)
+    over.set_main_hidden(True)
+    runner = FakeRunner.started[0]
+    runner.scale, runner.set_scale = 1.0, lambda v: runner.__dict__.setdefault("scaled", []).append(v)
+    api = dc.DeskApi(over)
+    assert api.set_figure_size("large") is True and over.size_pref == 1.3 and runner.scaled == [1.3]
+    assert "const v=1.3;" in asked[-1] and api.panel_motion()["size"] == 1.3
+    assert api.set_figure_size("huge") is False and api.set_figure_size(None) is False and over.size_pref == 1.3
+    assert api.set_figure_size("small") and runner.scaled == [1.3, 0.8]
+
+
+def test_the_size_script_and_look_script_use_the_names_the_page_really_has():
+    from pathlib import Path
+    import re
+
+    js = (Path(dc.__file__).resolve().parents[3] / "frontend" / "js" / "avatars.js").read_text(encoding="utf-8")
+    setter = re.search(r"function nameMarkBuddySetSize\((\w+), (\w+) = true\)", js)
+    assert setter and "nameMarkBuddySetSize(v,true)" in dc.SIZE_SCRIPT and "%s" in dc.SIZE_SCRIPT
+    assert "function nameMarkBuddyScaleSaved()" in js and "nameMarkBuddyScaleSaved()" in dc.LOOK_SCRIPT
+    assert 'prefs.get("avatar-buddy-size"' in js and "'avatar-buddy-size'" in dc.SIZE_SCRIPT
+    steps = re.search(r"const NMB_SIZES = \{ small: ([\d.]+), medium: ([\d.]+), large: ([\d.]+) \}", js)
+    assert steps and dc.SIZE_PRESETS == {"small": float(steps[1]), "medium": float(steps[2]), "large": float(steps[3])}
+
+
+@pytest.mark.parametrize("bad", ["big", True, None, [1], {"a": 1}])
+def test_a_size_that_is_not_a_number_is_ignored_when_the_look_is_read(over, bad):
+
+    over.main.evaluate_js = lambda s: json.dumps({"look": "masculine", "size": bad})
+    over.size_pref = 1.3
+    over._read_look()  # noqa: SLF001
+    assert over.size_pref == 1.3

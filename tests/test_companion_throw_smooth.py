@@ -40,7 +40,8 @@ def _plan(body: str):
     pure = THROW[: THROW.index("//: The throw itself (moved here")]
     harness = "\n".join(
         [
-            "const NMB_W = 64, NMB_GRIP = 8, NMB_FEET = 90; const nmb = {}; let still = false, spots = 0;",
+            "const NMB_W = 64, NMB_GRIP = 8, NMB_FEET = 90; const nmb = { place: { boxes: null } }; let still = false, spots = 0;",
+            "function nameMarkBuddyTakeSurfaces() { return { held: { tab: null, boxes: null }, rects: new Map() }; }",
             "function nameMarkBuddyNoTravel() { return still; }",
             "function nameMarkBuddyThrowSpot(s) { spots += 1; return { kind: 'yours', pose: 'stand', x: Math.round(s.x), y: Math.round(s.y) }; }",
             "const W = { left: 0, right: 1376, top: 48, floor: 780, ledges: [{ left: 300, right: 700, y: 420 }] };",
@@ -117,7 +118,7 @@ def test_one_landing_measures_the_obstacles_once() -> None:
     # the number of measures is the number of popup sweeps it starts.
     script = "\n".join(
         [
-            "const nmb = {}; let reads = 0; let nameMarkBuddyTextCache = null; const NAME_MARK_BUDDY_NEVER_COVER = 'button';",
+            "const nmb = { place: { boxes: null } }; let reads = 0; let nameMarkBuddyTextCache = null; const NAME_MARK_BUDDY_NEVER_COVER = 'button';",
             "const document = { getElementById: () => null, querySelector: () => null, querySelectorAll: () => [] };",
             "function nameMarkBuddyPopups() { reads += 1; return [{ left: 1, right: 2, top: 1, bottom: 2 }]; }",
             "function nameMarkBuddyShown() { return null; }",
@@ -137,7 +138,8 @@ def test_one_landing_measures_the_obstacles_once() -> None:
     got = json.loads(subprocess.run(["node", "-e", script], capture_output=True, text=True, check=True).stdout)
     # Once inside (a caller's push does not reach the next caller), every time outside.
     assert got == {"inside": 1, "after": 2, "once": 1, "held": None}
-    assert "nameMarkBuddyMeasureOnce(() => nameMarkBuddyThrowSpot(" in _fn(THROW, "companionThrowPlan")
+    # The surfaces are taken in the release, before its writes (INBOX 1667); the landing answers from them.
+    assert "nameMarkBuddyMeasureOnce(() => nameMarkBuddyThrowSpot(companionThrowAt(s)), taken)" in _fn(THROW, "companionThrowPlan")
     assert "nameMarkBuddyMeasureOnce(() => nameMarkBuddyLandNear(box.left, box.top, nameMarkBuddyDrop(" in AV
 
 

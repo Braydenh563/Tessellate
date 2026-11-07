@@ -142,6 +142,7 @@ class OpenAICompatClient(Provider):
         # restarted app in practice, and re-probing per turn costs a round trip
         # on the path that is already the slowest thing the app does.
         self._context_lengths: dict[str, int | None] = {}
+        self._fixed_windows: set[str] = set()
         self._catalog: list[dict] | None = None
         self._props: dict | None = None
 
@@ -288,6 +289,7 @@ class OpenAICompatClient(Provider):
             loaded = entry.get("loaded_context_length")
             if isinstance(loaded, (int, float)) and loaded > 0:
                 length = int(loaded)
+                self._fixed_windows.add(model)
             else:
                 length = context_from_catalog_entry(entry)
             break
@@ -295,10 +297,18 @@ class OpenAICompatClient(Provider):
             n_ctx = self._fetch_props().get("n_ctx")
             if isinstance(n_ctx, (int, float)) and n_ctx > 0:
                 length = int(n_ctx)
+                self._fixed_windows.add(model)
         if length is None:
             length = known_context(model)
         self._context_lengths[model] = length
         return length
+
+    def window_is_fixed(self, model: str) -> bool:
+        """The server loaded this model at the reported window (`/props`
+        n_ctx or LM Studio's loaded length), so the app budgets to it as it
+        stands and the server, not this app, decides it."""
+        self.context_length(model)
+        return model in self._fixed_windows
 
     def _fetch_props(self) -> dict:
         """`llama-server`'s own `/props`, ROADMAP.md item A.2: "detect it".
@@ -375,6 +385,7 @@ class OpenAICompatClient(Provider):
             "quantisation": entry.get("quantization") or entry.get("quantization_level"),
             "context_length": self.context_length(model),
             "usable_context": self.usable_context(model),
+            "context_reason": self.context_explanation(model),
             # Only LM Studio answers these two, and both are worth showing:
             # "loaded at 4k" explains a 128k model behaving like a small one.
             "loaded_context_length": int(loaded) if isinstance(loaded, (int, float)) and loaded > 0 else None,

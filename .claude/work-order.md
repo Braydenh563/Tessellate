@@ -1,18 +1,28 @@
 mode: continue
 status: running
-pr: 212
-max-continues: 40
+pr: 216
+max-continues: 60
 max-idle-minutes: 60
 finish-up: 85%
-started: 2026-11-04 04:30Z
-tier: pro (weekly 75%: one agent, Sonnet or Haiku, targeted tests); never Fable; owner away golfing about 2 hours, 2026-11-04
+started: 2026-11-07 14:40Z
+tier: max (weekly 4%), three agents at once, Sonnet or Haiku; never Fable; owner asleep from 2026-11-07 14:40Z
 
-## 2026-11-04b away queue (HANDOVER Now 2026-11-04c)
-- [x] Merge blink and E2E agent (INBOX 1644; editor-keys.spec.js:190 heading card innerText ""); resolve 1644, CHANGELOG, push
-- [x] INBOX 1641 rest (58a1836): Settings "Running copies" row (list other running app copies, Shut down each); help, parity
-- [x] INBOX 1649 (acea330, merge 04f8e4b): "I want to edit a note" gets how-to and act answers, never a mid-sentence quote; "word for word" and "quote my X note" fall-throughs (composer agent's finding)
-- [ ] INBOX 1643: graph gcRequestDraw 54 calls/s at rest; plus the owner's 03:08Z lag: input 1432 ms pointerout #dash-start-menu, frame 1416 ms atlas.js setTimeout forced layout 29 ms
-- [ ] CodeQL notes: routes_whiteboard.py re-exports (lines 44 to 59, "moved; re-exported"): point readers at the wb_* modules and drop them
-- [x] Overlay gaps (overlay-1104.md): panel click-away, runner death brings the card back, panel follows a drag
-- [ ] INBOX 1634 throw lag after a restore; then diagram R3 (DOCUMENTS_PLAN)
-- [ ] Session end: HANDOVER morning summary, retro
+## 2026-11-07 overnight queue (HANDOVER Now 2026-11-07c)
+- [x] Merge land1683 (e7ad8fe9) (agent/land1683-1107): overlay tests serially, CHANGELOG, CODEMAP, push
+- [x] Merge value-field (1d562540; follow-up agent/vf2-1107: keyboard reach, graph clock, scrubber) (agent/value-field-1107, INBOX 1694 b c): every slider readout typeable, lint
+- [x] Atlas composite and afterFrames regressions (93b010af; follow-up agent/atlasidle2-1107)
+- [x] CI fixes 1a15ca00 (6 failures) and atlasidle2 merged 399f5e3f (3 refused animations to 0; restyle unchanged)
+- [ ] Atlas at-rest writers (workflow wf_381edf17-a3a, agent/atlaswriters-1107)
+- [ ] Merge companion-s (agent/companion-s-1107): window perch bug, the 1683 (l) mind, S rows; reviewer
+- [ ] Coverage ledger of every owner ask (1683 a to y, 1692 a to q, 1694) against code and tests
+- [ ] 1683 (x)(y) build: pull-up, fling off a moved window, slide off, poof or portal escape with a miffed face, tuck behind smaller windows, peek from the taskbar on any edge, hidden taskbar, sidebars; in-app parity
+- [x] INBOX 1667 perf: partial 5d6bfcae (scroll-edge sync); follow-up agent/atlasidle-1107: idle Atlas restyle 2.2-3.2 s per 6 s at 4x, note-open long tasks
+- [ ] Layered deep dive round 1: desk companion (research, audit, fix, re-audit)
+- [ ] Deep dive round 1: in-app companion and Atlas
+- [x] Deep dive round 1: diagram builder (41a4919f, diagram-dive-1107.md, DD-1 to DD-15)
+- [ ] Diagram build: Tier 1 plus DD-7, 8, 9, 14 (workflow wf_cf66c311-c38, branch agent/diagbuild-1107, then review, UX audit, blind test, refix)
+- [ ] Deep dive round 1: composer (class rule 1357, parity decision 75)
+- [ ] Repeat rounds per surface until a round finds nothing new
+- [ ] Open deep-audit and Fable findings: ANALYSIS.md, AUDIT.md, FABLE_BRIEF.md
+- [ ] Then plans, BACKLOG, the rest of the 2026-11-07 order
+- [ ] Session end: full suite, INBOX 1693, HANDOVER morning summary, retro

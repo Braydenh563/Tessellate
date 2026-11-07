@@ -392,7 +392,8 @@ HELP_TOPICS: list[dict] = [
             "Tessellate can pick up small facts and preferences as you write and "
             "chat, always asking first, never assumed. Accept or decline each "
             "suggestion right in the chat, and review or forget anything it has "
-            "learned in Settings, What it remembers."
+            "learned in Settings, What it remembers, which also lists the "
+            "patterns you confirmed, to edit, remove or mark not right."
         ),
         "badge": {"label": "What it remembers", "section": "memory"},
     },
@@ -462,7 +463,8 @@ HELP_TOPICS: list[dict] = [
             "switches it on by itself on a machine with 2 cores or 4 GB or fewer, "
             "and On or Off overrides that. The Appearance panel (Pop out at the top, "
             "or Ctrl+K, Appearance) holds the same settings beside the app, with "
-            "a strip of sections and a Peek button."
+            "a strip of sections and a Peek button. The sliders' numbers (Zoom, "
+            "Corner rounding, Glass blur) type in too."
         ),
         "badge": {"label": "Appearance", "section": "appearance"},
     },
@@ -1735,10 +1737,12 @@ HELP_TOPICS.extend(
                 "changelog",
                 "auto update",
                 "version",
+                "port",
+                "address",
             ),
             "body": (
-                "Settings, About says which version you have and checks for a newer "
-                "one. When a check finds one, a bar appears at the top with an "
+                "Settings, About says which version you have, the address and port "
+                "the app runs at, and checks for a newer one. When a check finds one, a bar appears at the top with an "
                 "Update button and a close; the Windows app installs it when you "
                 "press Update, and nothing installs before that. Closing the bar "
                 "hides it for that version, and Show the update bar turns it off. "
@@ -1997,7 +2001,7 @@ HELP_TOPICS.extend(
                 "connector bound to it and follows it when it moves. A drawn shape is selected and Select returns (not the pen). Shapes draw corner to corner (Shift: square, circle, 45 degree line, straight pen; Alt: centred). The Shapes flyout has more (star, cloud, cylinder and others). Moving around: the wheel "
                 "zooms about the pointer, two trackpad fingers pan, Shift+wheel pans sideways, a pinch "
                 "zooms too, a drag on empty canvas boxes (Shift adds), a right or middle drag or Space and drag pans (a plain right-click opens the menu), a drag to an edge pans, Ctrl+= and Ctrl+- zoom the board about the selection's centre (else the view's), "
-                "Ctrl+0 fits all (or Shift+1), Ctrl+1 is 100%, Shift+2 zooms to the selection, Shift+N shows the "
+                "Ctrl+0 fits all (or Shift+1), Ctrl+1 is 100% (numbers and sliders type in), Shift+2 zooms to the selection, Shift+N shows the "
                 "overview, / or Ctrl+F finds, Ctrl+H replaces, Tab walks the "
                 "items. Ctrl+K also finds select all shapes or connectors, select similar, turn 90 degrees, remove from "
                 "the group, copy and paste the size, grow to fit the words, reverse a connector and clear its bends. "
@@ -2117,7 +2121,7 @@ HELP_TOPICS.extend(
                 "added, changed and removed. Nothing can be changed while the past is shown. Put back "
                 "restores the whole board as it was then, and the second button only what was selected "
                 "when History opened; either is one Undo step and is in the history too. Esc, or the "
-                "slider's right end, comes back to now. Changes older than ninety days may be kept only "
+                "slider's right end, comes back to now; the number beside it (3 of 12) types in to jump. Changes older than ninety days may be kept only "
                 "in summary, and such a moment cannot be shown. Board, Snapshots… names the board as it is "
                 "now (Snapshot and the time unless you type a name); each one shows its picture, and "
                 "Restore puts the board back as one Undo step."

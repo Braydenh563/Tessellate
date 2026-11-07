@@ -2847,7 +2847,17 @@ function agentRunTool(run, node) {
     //: Beside "4 of 5 from your notes", the fold's own "From your notes"
     //: read as the same claim twice.
     { key: "notes", find: ".from-notes-fold", label: () => "ph:note Notes-only answer" },
-    { key: "patterns", find: ".insight-line", label: (parts) => `ph:lightbulb ${parts.length} ${parts.length === 1 ? "pattern" : "patterns"} to check` },
+    //: A line answered (Confirm or Not right) loses its pair and is checked:
+    //: the count to check is the lines that still carry one.
+    {
+      key: "patterns",
+      find: ".insight-line",
+      label: (parts) => {
+        const all = `${parts.length} ${parts.length === 1 ? "pattern" : "patterns"}`;
+        const open = parts.filter((line) => line.querySelector(".insight-verdicts")).length;
+        return `ph:lightbulb ${!open ? all : open === parts.length ? `${all} to check` : `${all}, ${open} to check`}`;
+      },
+    },
     { key: "related", find: ".answer-related", label: () => "ph:compass Elsewhere in your notebook" },
     //: By its holders: `renderAskWhy` stays the one file naming the fold (B30).
     { key: "why", find: ".why-trail > details, #ask-why > details" },
@@ -2893,12 +2903,25 @@ function agentRunTool(run, node) {
     while (top.parentElement !== scope) top = top.parentElement;
     if (top !== bar && bar.nextElementSibling !== top) scope.insertBefore(bar, top);
     const open = scope.dataset.footOpen || "";
+    //: **Each chip is made once and kept.** Rebuilt on every change while an
+    //: answer streams, a press whose mousedown landed on one button and
+    //: mouseup on its replacement was no click at all (the review of B2);
+    //: now a chip's words and state change in place, only when they differ.
+    const had = new Map([...bar.querySelectorAll(":scope > .answer-foot-chip")].map((chip) => [chip.dataset.foot, chip]));
     const chips = found.map(({ spec, parts }) => {
-      const button = document.createElement("button");
-      button.type = "button";
-      button.className = "chip chip-interactive answer-foot-chip";
-      button.dataset.foot = spec.key;
-      setLabel(button, answerFootChipLabel(spec, parts));
+      let button = had.get(spec.key);
+      if (!button) {
+        button = document.createElement("button");
+        button.type = "button";
+        button.className = "chip chip-interactive answer-foot-chip";
+        button.dataset.foot = spec.key;
+        button.addEventListener("click", () => answerFootToggle(scope, spec.key));
+      }
+      const label = answerFootChipLabel(spec, parts);
+      if (button.dataset.label !== label) {
+        button.dataset.label = label;
+        setLabel(button, label);
+      }
       //: The part's own head is hidden while the chip stands for it: its
       //: words (and the search mode the chip leaves out) are the title.
       button.title = (parts[0].querySelector(":scope > summary") || parts[0]).textContent.trim();
@@ -2914,12 +2937,15 @@ function agentRunTool(run, node) {
         if (on && part.tagName === "DETAILS") part.open = true;
       });
       button.setAttribute("aria-controls", parts.map((part) => part.id).join(" "));
-      button.addEventListener("click", () => answerFootToggle(scope, spec.key));
       return button;
     });
     const kept = stats || bar.querySelector(":scope > .msg-meta");
+    //: The stats line may be cut to fit the one row: its words are its title.
+    if (kept) kept.title = [...kept.children].map((item) => item.textContent.trim()).filter(Boolean).join(" · ");
+    const want = [...chips, ...(kept ? [kept] : [])];
+    if (want.length === bar.children.length && want.every((el, index) => bar.children[index] === el)) return;
     const focused = bar.contains(document.activeElement) ? document.activeElement.dataset.foot : null;
-    bar.replaceChildren(...chips, ...(kept ? [kept] : []));
+    bar.replaceChildren(...want);
     if (focused) bar.querySelector(`[data-foot="${focused}"]`)?.focus();
   }
 

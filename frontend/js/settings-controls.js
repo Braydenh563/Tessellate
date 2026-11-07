@@ -2648,6 +2648,77 @@ async function renderMemorySettings() {
   const budget = $("memory-budget");
   if (!list) return;
 
+  //: **Confirmed patterns, their own group** (CHAT_PLAN B9, the owner: "also
+  //: is there a way to edit or managed confirmed patterns??"): each Patterns
+  //: line the person confirmed, its sentence, the day and the notes behind it
+  //: (each opens its note), with the Patterns line's own menu (`rowActions`).
+  //: Local, not a global: the shared scope only goes down (row 37a).
+  //: Confirmed patterns (CHAT_PLAN B9), built on first draw rather than shipped
+  //: in the page (the boot document's element cap, tests/test_boot_diet3.py).
+  const confirmedHost = () => {
+    const found = $("memory-confirmed-list");
+    const section = $("settings-memory");
+    if (found || !section) return found;
+    const group = section.appendChild(document.createElement("div"));
+    group.className = "settings-group";
+    const head = group.appendChild(document.createElement("h4"));
+    head.className = "setting-subhead";
+    head.textContent = "Confirmed patterns";
+    const host = group.appendChild(document.createElement("ul"));
+    host.id = "memory-confirmed-list";
+    host.className = "entry-list";
+    const empty = group.appendChild(document.createElement("p"));
+    empty.id = "memory-confirmed-empty";
+    empty.className = "muted empty-line hidden";
+    empty.textContent = "None yet. Confirm a line in Tidy's Patterns and it is listed here.";
+    return host;
+  };
+  const drawConfirmed = async () => {
+    const host = confirmedHost();
+    if (!host) return;
+    showSkeletons(host, 2, "li");
+    //: `lazyScript` answers false on a failed load; either failure is said,
+    //: never shown as "None yet" (the review).
+    const [data, ready] = await Promise.all([apiJson("/insights/confirmed").catch(() => null), lazyScript("/js/confirmed-patterns.js")]);
+    clearSkeletons(host);
+    const empty = $("memory-confirmed-empty");
+    if (empty) {
+      empty.dataset.none ??= empty.textContent.trim();
+      empty.textContent = data && ready ? empty.dataset.none : "Couldn't load your confirmed patterns.";
+      empty.classList.toggle("hidden", Boolean(data && ready && data.items.length));
+    }
+    host.replaceChildren(
+      ...(ready ? data?.items || [] : []).map((item) => {
+        const li = document.createElement("li");
+        li.className = "entry-item learned-row";
+        const text = li.appendChild(document.createElement("p"));
+        text.className = "learned-text";
+        text.textContent = item.sentence;
+        const meta = li.appendChild(document.createElement("p"));
+        meta.className = "muted learned-meta";
+        const on = item.confirmed_on ? new Date(`${item.confirmed_on}T12:00:00`) : null;
+        //: Day then month, as the line itself says it ("as you told me on 5 November").
+        meta.append(on ? `Confirmed ${on.getDate()} ${on.toLocaleDateString(undefined, { month: "long" })}` : "Confirmed by you");
+        if (item.subject) meta.append(`, about ${item.subject}`);
+        item.notes.slice(0, 5).forEach((note, i) => {
+          meta.append(i ? ", " : `. From ${item.notes.length === 1 ? "a note" : `${item.notes.length} notes`}: `);
+          const open = meta.appendChild(document.createElement("a"));
+          open.href = "#";
+          open.textContent = note.title;
+          open.addEventListener("click", (event) => {
+            event.preventDefault();
+            closeSettingsModal();
+            flashEntry(note.id);
+          });
+        });
+        if (item.notes.length > 5) meta.append(`, and ${item.notes.length - 5} more`);
+        li.append(rowActions(confirmedPatternItems(item, drawConfirmed), "More for this pattern"));
+        return li;
+      })
+    );
+  };
+  drawConfirmed();
+
   //: Placeholders while the first answer is on its way, so a slow disk never
   //: reads as "nothing saved yet" (DESIGN.md's list recipe; only into an
   //: empty list, so a refresh never covers rows already there).
@@ -2775,6 +2846,7 @@ async function renderMemorySettings() {
     })
   );
 }
+
 // ---- Settings, About, Maintenance (core/maintenance.py, core/doctor.py) ----
 //: The owner, 2026-10-11: "Can you add like buttons in settings to run them
 //: in like the about page??", about doctor, reinstall, tools and uninstall.
