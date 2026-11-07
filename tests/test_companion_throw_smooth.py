@@ -40,7 +40,7 @@ def _plan(body: str):
     pure = THROW[: THROW.index("//: The throw itself (moved here")]
     harness = "\n".join(
         [
-            "const NMB_W = 64, NMB_GRIP = 8, NMB_FEET = 90; const nmb = { place: { boxes: null } }; let still = false, spots = 0;"
+            "const NMB_W = 64, NMB_GRIP = 8, NMB_FEET = 90; const nmb = { place: { boxes: null } }; let still = false, spots = 0;",
             "function nameMarkBuddyTakeSurfaces() { return { held: { tab: null, boxes: null }, rects: new Map() }; }",
             "function nameMarkBuddyNoTravel() { return still; }",
             "function nameMarkBuddyThrowSpot(s) { spots += 1; return { kind: 'yours', pose: 'stand', x: Math.round(s.x), y: Math.round(s.y) }; }",
