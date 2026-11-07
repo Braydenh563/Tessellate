@@ -14,7 +14,11 @@ _DIGITS = re.compile(r"\+?\d[\d ()./-]{6,}\d")
 _PROPERTIES: dict[str, tuple[re.Pattern, re.Pattern, str]] = {
     #: key: (the question's word, the sentence's word or shape, the noun said)
     "phone": (
-        re.compile(r"\b(?:phone|mobile|cell|telephone)\b|\bnumber\b(?!\s+of\b)", re.I),
+        # "phone" alone is a thing ("when did I get my phone", "cell respiration"): only a "what is X's phone"
+        # ask or one that says number is a number ask (PR 216 CI, 3.11).
+        re.compile(
+            r"\bnumber\b(?!\s+of\b)|\b(?:phone|mobile|cell|telephone)\s+no\b"
+            r"|^(?:what(?:'s|s| is| are)?|give me|tell me|find)\b[^?]*\b(?:phone|mobile|cell|telephone)\s*[?.!]*$", re.I),
         re.compile(r"\b(?:phone|mobile|cell|tel|telephone|call)\b", re.I), "phone number"),
     "password": (re.compile(r"\b(?:password|passcode|pin)\b", re.I), re.compile(r"\b(?:password|passcode|pin)\b", re.I), "password"),
     "address": (

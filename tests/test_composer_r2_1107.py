@@ -196,3 +196,13 @@ def test_row11_a_summary_quotes_without_emphasis_marks():
     assert "Bring wine and cash" in result["text"] and "*" not in result["text"] and "`" not in result["text"], result["text"]
     assert all("*" not in row["sentence"] for row in result["grounding"])
 
+
+
+def test_e4_a_phone_or_cell_that_is_not_asked_for_is_not_a_number_ask():
+    from tessellate.ai import composer_property as cp
+
+    for q in ("when did I get my phone??", "explain cell respiration", "my phone screen cracked", "mobile games I liked"):
+        assert cp.asked(q) == "", q
+    for q in ("what is the landlord's number", "what is the dentist's phone number", "what's Sam's mobile?",
+              "give me the plumber's phone", "what is his cell no."):
+        assert cp.asked(q) == "phone", q
