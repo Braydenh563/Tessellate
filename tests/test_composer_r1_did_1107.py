@@ -58,7 +58,8 @@ def test_d4_a_booking_note_answers_did_i_book(notebook):
     assert "found nothing" not in said and "HA-77421" in said, said
 
 
-@pytest.mark.parametrize("question", ["how many notes have the word Lisbon", "how many notes contain Lisbon", "how many notes mention Lisbon"])
+@pytest.mark.parametrize("question", ["how many notes have the word Lisbon", "how many notes contain Lisbon", "how many notes mention Lisbon",
+                                      "how many notes have the word Lisbon?", "How many notes contain Lisbon?", "how many notes have the phrase Lisbon."])
 def test_d4_a_count_with_a_subject_counts_the_subject(notebook, question):
     go = notebook(
         "# Lisbon trip\n\nFlights cost $420 return.",
@@ -70,3 +71,28 @@ def test_d4_a_count_with_a_subject_counts_the_subject(notebook, question):
     said, _ = go(question)
     assert "five notes" not in said and "You have 5 notes" not in said, said
     assert "two notes" in said.lower() or "2 notes" in said, said
+
+
+COUNT_NOTES = (
+    "# Lisbon trip\n\nFlights cost $420 return.",
+    "# Hotel Alfama\n\nA hotel in Lisbon. Breakfast included.",
+    "# Banana bread\n\n3 ripe bananas, 100 g butter.",
+)
+
+
+def test_review3_the_word_keeps_the_casing_the_person_typed(notebook):
+    said, _ = notebook(*COUNT_NOTES)("how many notes have the word Lisbon?")
+    assert "mention Lisbon" in said and "lisbon" not in said, said
+
+
+@pytest.mark.parametrize("question", ["how many notes do I have today", "how many notes did I have yesterday", "how many notes have I got this week",
+                                      "how many notes have reminders", "how many notes have photos", "how many notes have tags", "how many notes have links?"])
+def test_review3_a_day_or_a_kind_after_have_is_not_a_word_to_find(question, client, session):
+    from tessellate.ai import notebook_stats
+    from tessellate.entry import manager
+
+    for content in COUNT_NOTES:
+        manager.create_entry(session, content)
+    session.commit()
+    got = notebook_stats.answer(question, session)
+    assert got is None or got.kind != "mention-count", (question, got)

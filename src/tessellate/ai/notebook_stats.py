@@ -288,9 +288,8 @@ def _counted(text: str, message: str, session: Session) -> StatAnswer | None:
 
     #: "how many notes have the word Lisbon" counts the notes that hold it; it
     #: said the notebook's total, with the subject dropped (round 1 D4).
-    holding = _HOLDING.search(" ".join(text.split()))
-    if holding:
-        return _mention_of(holding.group(1), session)
+    if holding := _held_word(text, message):
+        return _mention_of(holding, session)
     tasks = None if _SUBJECT_AFTER.search(text) else notebook_tasks.answer(text, session, utcnow(), _visible, recognise.ahead_window(text))
     if tasks is not None:
         return StatAnswer(*tasks[:2], tasks[2])
@@ -503,6 +502,29 @@ def _mention_count(text: str, session: Session) -> StatAnswer | None:
 _HOLDING = re.compile(
     r"\bnotes?\b(?: (?:do )?(?:i|we|you))? (?:have|has|contains?|holds?|with|including|containing)(?:(?: (?:the|a))? (?:words?|terms?|phrases?)| (?!(?:the|a|an|any|no|tags?|categor\w+|links?|images?|checklists?|tasks?|titles?)\b)) ?([a-z0-9][\w'-]{1,29})$"
 )
+
+
+#: What a note can hold that the app counts on its own ("how many notes have
+#: reminders" is the reminders, not the word): never a word to find.
+_HELD_KINDS = frozenset(
+    """reminders photos pictures images attachments files documents boards maps comments subtasks checklists tasks todos links backlinks
+    tags categories folders titles dates deadlines events highlights drawings audio recordings voice videos""".split()
+)
+#: A day or a stretch of time after "have": a window, not a word.
+_HELD_TIMES = frozenset("today yesterday tomorrow tonight now week weekend month year morning afternoon evening".split())
+
+
+def _held_word(text: str, message: str) -> str:
+    """The word "how many notes have the word Lisbon?" asks for, as the person
+    typed it; "" when the ask is a day, a window or a kind the app counts."""
+    found = _HOLDING.search(re.sub(r"[\s?.!]+$", "", " ".join(text.split())))
+    word = found.group(1) if found else ""
+    low = word.lower()
+    if not word or low in _KIND_WORDS or low in _HELD_TIMES or low.rstrip("s") in _HELD_KINDS or low in _HELD_KINDS or _window(word) is not None:
+        return ""
+    #: The text was lowercased and spell-fixed to match; the word is said back as typed.
+    typed = re.search(rf"(?<!\w){re.escape(word)}(?!\w)", message or "", re.I)
+    return typed.group(0) if typed else word
 
 
 def _mention_of(word: str, session: Session) -> StatAnswer:
