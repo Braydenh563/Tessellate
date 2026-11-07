@@ -346,7 +346,7 @@ def _say_did(out, view, s, verb_word: str, today: date) -> None:  # noqa: ANN001
         _say_line(out, view, s, f"Yes, {_note_of(view, today)} says so")
 
 
-def _not_said(out, views: list, obj, words: list[str], today: date) -> None:  # noqa: ANN001
+def _not_said(out, views: list, obj, words: list[str], today: date, verb: frozenset[str] = frozenset()) -> None:  # noqa: ANN001
     """No note says the doing: the nearest note that names the thing, or a
     plain no, never the question echoed back ("says you written")."""
     thing = _yours(_asked_thing(words))
@@ -358,7 +358,7 @@ def _not_said(out, views: list, obj, words: list[str], today: date) -> None:  # 
         out.lines.append(line)
         out.rows.append({"sentence": line, "note_id": empty.note.get("source_id", empty.id), "source": empty.title,
                          "start": 0, "end": 0, "score": 1.0, "digest": True})
-    elif titled := _titled_first(views, obj):
+    elif titled := _titled_first(views, obj, verb):
         _say_line(out, *titled, f"Your {composer_lists._title(titled[0])} note does not say it outright, but it has")  # noqa: SLF001
     elif near := _nearest(views, obj):
         _say_line(out, *near, f"I found nothing in your notes that says so. The closest is {_note_of(near[0], today)}")
@@ -376,13 +376,19 @@ def _titled_for(view, obj: list[str]) -> bool:  # noqa: ANN001
     return bool(obj) and all(composer._holds(st, view.title_words) for st in obj)  # noqa: SLF001
 
 
-def _titled_first(views: list, obj: list[str]):  # noqa: ANN202
-    """The (view, first sentence) of a note titled for the thing ("Hotel
-    Alfama" for "did I book the hotel"): the title is not in its sentences, so
-    "found nothing" beside that note was wrong (round 1 D4)."""
+def _titled_first(views: list, obj: list[str], verb: frozenset[str]):  # noqa: ANN202
+    """The (view, sentence) of a note titled for the thing ("Hotel Alfama" for
+    "did I book the hotel") whose sentence says the doing ("Booking reference
+    HA-77421"): the title is not in its sentences, so "found nothing" beside
+    that note was wrong (round 1 D4). A note with no sentence on the verb is
+    not offered: its first line is no news of the doing (review 4)."""
+    if not verb:
+        return None
     for view in sorted(views, key=lambda v: v.rank):
-        if view.sentences and _titled_for(view, obj):
-            return view, view.sentences[0]
+        if _titled_for(view, obj):
+            for s in view.sentences:
+                if _says_verb(s, verb):
+                    return view, s
     return None
 
 
@@ -459,7 +465,7 @@ def _did(out, rest: str, views: list, today: date) -> bool:  # noqa: ANN001
     if best is not None and best[1].kind == "task" and not best[1].done:
         best = _done_later(views, verb, obj, best[0]) or best
     if best is None:
-        _not_said(out, views, obj, words, today)
+        _not_said(out, views, obj, words, today, verb)
         return True
     _say_did(out, *best, words[0], today)
     return True

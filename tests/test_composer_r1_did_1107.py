@@ -58,6 +58,24 @@ def test_d4_a_booking_note_answers_did_i_book(notebook):
     assert "found nothing" not in said and "HA-77421" in said, said
 
 
+def test_review4_a_titled_note_with_no_line_on_the_verb_is_not_offered_as_the_doing(notebook):
+    go = notebook(
+        "# Lisbon trip\n\nFlights cost $420 return, leaving 12 May.",
+        "# Hotel Alfama\n\nLate check-out requested. Breakfast included.",
+    )
+    said, _ = go("did I book the hotel")
+    assert "does not say it outright" not in said and "Breakfast" not in said.split("closest")[0], said
+
+
+def test_review4_the_line_offered_is_the_one_on_the_verb_not_the_first(notebook):
+    go = notebook(
+        "# Lisbon trip\n\nFlights cost $420 return, leaving 12 May.",
+        "# Hotel Alfama\n\nLate check-out requested. Booking reference HA-77421. Breakfast included.",
+    )
+    said, _ = go("did I book the hotel")
+    assert "HA-77421" in said and "Late check-out" not in said, said
+
+
 @pytest.mark.parametrize("question", ["how many notes have the word Lisbon", "how many notes contain Lisbon", "how many notes mention Lisbon",
                                       "how many notes have the word Lisbon?", "How many notes contain Lisbon?", "how many notes have the phrase Lisbon."])
 def test_d4_a_count_with_a_subject_counts_the_subject(notebook, question):

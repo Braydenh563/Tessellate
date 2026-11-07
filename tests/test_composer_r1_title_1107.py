@@ -27,6 +27,11 @@ NOTES = (
 )
 
 
+def _id_of(heading: str) -> int:
+    """The id the fixture gave the note whose first line is `heading` (ids run from 1 in a fresh notebook)."""
+    return 1 + next(i for i, note in enumerate(NOTES) if note.split("\n", 1)[0] == heading)
+
+
 @pytest.fixture
 def go(client, session, monkeypatch):
     for content in NOTES:
@@ -45,13 +50,14 @@ def test_d1_what_is_a_title_answers_from_the_note_with_that_title(go):
 
 def test_d1_the_x_note_is_the_note_titled_x(go):
     said, _ = go("the Sara note")
-    assert "[**Sara**](#/notes/" in said and "notes about Sara" not in said, said
+    assert f"[**Sara**](#/notes/{_id_of('# Sara')})" in said and "notes about Sara" not in said, said
 
 
 def test_d1_show_me_the_dentist_note_picks_the_titled_note(go):
     said, _ = go("show me the Dentist note")
     assert "Pick one" not in said, said
-    assert "Dentist" in said and "Dr Patel" in said or "#/notes/" in said, said
+    #: The note titled Dentist, not "Dentist bill" or the loose "Dentist said ..." line.
+    assert f"[**Dentist**](#/notes/{_id_of('# Dentist')})" in said, said
 
 
 def test_d1_compare_names_both_sides(go):
