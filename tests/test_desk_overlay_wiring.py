@@ -598,7 +598,6 @@ def test_1690d_a_failed_restart_drops_the_quick_panel_and_shows_a_real_card(over
 def test_the_apps_companion_size_reaches_the_figure_and_a_pull_is_written_back(over):
     """The size handle (INBOX 1683 r): the look read carries Appearance's size, a changed one is passed to the
     running figure, and the figure's own pull is written through the page the way its handle writes it."""
-    import json
 
     asked: list[str] = []
 
