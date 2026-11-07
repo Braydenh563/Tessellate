@@ -76,16 +76,12 @@ const SIDEBAR_VIEWPORT_SHARE = 0.24;
 const SIDEBAR_TABLET_MAX = 192;
 const SIDEBAR_TABLET_BAND = "(min-width: 820px) and (max-width: 1099.98px)";
 
-function layoutIsTablet() {
-  return window.matchMedia(SIDEBAR_TABLET_BAND).matches;
-}
-
 //: What the sidebar may actually occupy right now, the user's own width
 //: where there is room for it, less where there is not, never below the
 //: floor a category name needs to stay readable.
 function sidebarFittedWidth(saved) {
   const cap = Math.max(SIDEBAR_MIN, Math.round(window.innerWidth * SIDEBAR_VIEWPORT_SHARE));
-  const banded = layoutIsTablet() ? Math.min(cap, SIDEBAR_TABLET_MAX) : cap;
+  const banded = window.matchMedia(SIDEBAR_TABLET_BAND).matches ? Math.min(cap, SIDEBAR_TABLET_MAX) : cap;
   return Math.min(saved, banded);
 }
 

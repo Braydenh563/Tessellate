@@ -7583,7 +7583,14 @@ def test_every_slider_with_a_readout_is_a_value_field():
     app = app_js_text()
     field = (ROOT / "frontend" / "js" / "value-field.js").read_text(encoding="utf-8")
     # The hook: one delegated listener, then the module upgrades every slider already drawn.
-    assert (ROOT / "frontend" / "js" / "lazy-entries.js").read_text(encoding="utf-8").count('"input[max]", "vf"') == 1 and "vf:" in app
+    lazy = (ROOT / "frontend" / "js" / "lazy-entries.js").read_text(encoding="utf-8")
+    # Pointer and keyboard both fetch it (a keyboard-only user never hovers), and only on a range input: a plain
+    # number box has no readout the recipe owns, so it does not pay for the module.
+    assert lazy.count('"[type=range]", "vf"') == 2 and 'warmOnFirst("focusin", "[type=range]", "vf")' in lazy and "input[max]" not in lazy and "vf:" in app
+    # A surface that writes a readout in code is re-read on the next reach, or by an explicit refresh.
+    assert "valueField.refresh" in field and "vfRefresh" in field
+    for name in ("settings.js", "settings-panes.js"):
+        assert "valueField?.refresh()" in (ROOT / "frontend" / "js" / name).read_text(encoding="utf-8"), name
     for needle in ('dispatchEvent(new Event("input"', 'dispatchEvent(new Event("change"', "slider.min", "slider.max", "slider.step", "ArrowUp"):
         assert needle in field, needle
     ids = [a or b for a, b in re.findall(r'<input[^>]*type="range"[^>]*?id="([^"]+)"|<input[^>]*?id="([^"]+)"[^>]*type="range"', html)]

@@ -171,17 +171,30 @@ function valueField(host, opts = {}) {
     const sync = () => field.set(Number(slider.value));
     slider.addEventListener("input", sync);
     slider.addEventListener("change", sync);
-    //: Settled on what the readout says, or the slider where it has none.
-    const first = source ? valueFieldParse(source.textContent) : null;
-    if (first !== null) field.set(first);
-    else sync();
+    //: Settled on what the readout says, or the slider where it has none. Also the refresh a surface that writes the
+    //: readout or `slider.value` without an event gets (on the next reach, or `valueField.refresh()`).
+    slider.vfRefresh = () => {
+      const said = source ? valueFieldParse(source.textContent) : null;
+      if (said !== null) field.set(said);
+      else sync();
+    };
+    host.vfSlider = slider;
+    slider.vfRefresh();
     return field;
   };
   const rangeFieldsIn = (root) => root.querySelectorAll('input[type="range"]').forEach(rangeField);
   rangeFieldsIn(document);
   //: Once loaded, it follows the pointer and focus itself (app.js only fetches it on the first reach of a slider, and
   //: the reach that fetched it is replayed here by the document scan above).
-  for (const type of ["pointerover", "focusin"]) document.addEventListener(type, ({ target }) => rangeField(target));
+  for (const type of ["pointerover", "focusin"]) {
+    document.addEventListener(type, ({ target }) => {
+      //: A reach of the slider or of its field re-reads the readout the surface wrote.
+      const slider = target.vfSlider || target.closest?.(".value-field-range")?.vfSlider || target;
+      if (!rangeField(slider)) slider.vfRefresh?.();
+    });
+  }
   valueField.range = rangeField;
+  //: For a surface that writes a readout in code: `valueField.refresh()` re-reads every field under `root`.
+  valueField.refresh = (root = document) => root.querySelectorAll("input[data-value-field]").forEach((s) => s.vfRefresh?.());
   window.valueField = valueField;
 })();
