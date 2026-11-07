@@ -3358,12 +3358,12 @@ MORE_TOPICS.extend([
             "it opens the editor in a window you can move and size, and Done puts the changes back "
             "between that diagram's own fence marks and nothing else. Cancel, Escape and the X "
             "ask before they drop changes. On a board, double-click a diagram object. In Chat or Ask, "
-            "a diagram in a reply has Open as a diagram under it, which makes a diagram document of it. "
-            "Type ![[name]] in a note or a document to draw a diagram document's picture there, with a "
+            "a diagram in a reply has Open as a diagram under it, which makes it a diagram document. "
+            "Type ![[name]] in a note or a document to draw that diagram document there, with a "
             "line that opens it. The ... menu in the editor's bar has Save as SVG, Save as PNG "
-            "(twice its size), Copy as picture, Copy as Mermaid and Copy as SVG. A diagram's card in the "
-            "Library has the same pictures in its menu, and its page has Download as .png and Copy as picture "
-            "in the ... menu; Download .mmd saves the text. Source, beside Cancel, shows "
+            "(twice its size), Copy as picture, Copy as Mermaid and Copy as SVG. A diagram's Library card "
+            "has the same pictures in its menu; its page has Download as .png and Copy as picture "
+            "in the ... menu, and Download .mmd saves the text. Source, beside Cancel, shows "
             "the text with the picture; a diagram the blocks cannot draw, or one over 120 blocks, opens there. "
             "The New diagram window opens on a three-box starter; Clear, in the ... menu, empties it. "
             "On the last box, Tab adds a joined box; on any other, Tab moves on. Shift+Tab selects its source, F6 leaves the blocks and Ctrl+Enter keeps the diagram. "
@@ -3373,7 +3373,7 @@ MORE_TOPICS.extend([
             "and on a diagram's corner beside Edit as blocks, keeps a copy as a diagram in the Library; "
             "a notice then offers to replace the fence with a link, or to link a board's diagram to it, "
             "and nothing changes until you press that. Attach a Library diagram to Chat and the model "
-            "reads its source; its card opens the diagram."
+            "reads its source; its card opens it."
         ),
         "badge": {"label": "Documents", "tab": "documents"},
     },
