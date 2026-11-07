@@ -76,12 +76,17 @@ function focusNoteRow(id) {
 //: change does not pull focus into a hidden tab. Hidden counts as lost: the
 //: browser only moves focus off a node just hidden after this frame.
 function restoreFocusTo(target) {
-  requestAnimationFrame(() => {
+  const give = () => {
     const here = document.activeElement;
     if (here && here !== document.body && here.isConnected && here.checkVisibility?.() !== false) return;
     const el = target instanceof Node ? target : target();
-    if (el?.isConnected && el.checkVisibility?.() !== false) el.focus({ preventScroll: true });
-  });
+    if (!el?.isConnected || el.checkVisibility?.() === false) return;
+    restoreFocusTo.giving = true;
+    el.focus({ preventScroll: true });
+    restoreFocusTo.giving = false;
+  };
+  give(); //: 1682
+  requestAnimationFrame(give);
 }
 
 //: The control of a note's row that holds the keyboard, as classes (without

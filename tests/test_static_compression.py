@@ -146,7 +146,10 @@ PIECE_CAP = 32_000
 #: 2026-11-04, +20 (INBOX 1679 review): a dialog opened over a sheet (the diagram's Connect
 #: to… picker over the Blocks list) takes the Escape, so one Escape no longer closes both;
 #: one test in phone-shell.js's sheet handler; same win-back item.
-TOTAL_CAP = 260_820
+#: 2026-11-05, +40 (BACKLOG 1682): a list redraw gives the keyboard back in its own task
+#: and flags that focus as the app's (restoreFocusTo), so a key typed meanwhile is kept
+#: and the tags field does not take it for a press; same win-back item.
+TOTAL_CAP = 260_860
 
 
 def _served_gzip_size(client, name: str) -> int:
