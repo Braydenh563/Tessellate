@@ -548,9 +548,11 @@
         //: first connected diagram is names typed over boxes that exist. Clear in the ... menu empties it.
         source: diagramModel.starter,
         title: "Diagram builder",
+        named: true,
         existing: { pick: pickExistingDiagram, open: async (row) => (switchTab("documents"), loadDocuments(row.id)) },
-        onDone: async (next) => {
-          const made = await apiJson("/documents", { method: "POST", body: JSON.stringify({ title: "Diagram", content: next, file_type: "mmd" }) }).catch(() => (toast("The diagram was not saved. Try Done again.", "info"), null));
+        //: The window's title names the document and the exports; blank is dated, so two Done presses are two names (DD-12, 1107).
+        onDone: async (next, _changed, name) => {
+          const made = await apiJson("/documents", { method: "POST", body: JSON.stringify({ title: name || `Diagram ${new Date().toISOString().slice(0, 16).replace("T", " ")}`, content: next, file_type: "mmd" }) }).catch(() => (toast("The diagram was not saved. Try Done again.", "info"), null));
           if (!made) return;
           switchTab("documents");
           await loadDocuments(made.id);
@@ -561,10 +563,11 @@
     return openDiagramBuilder({
       source: diagramModel.starter,
       title: "Diagram builder",
+      named: true,
       //: Done makes the `.mmd` row and writes a live reference to it (1621 D5), so the diagram has one home and a page of its own.
       //: A stamp in the title keeps `![[Title]]` pointing at this row and not at an earlier "Diagram".
-      onDone: async (next) => {
-        const title = `Diagram ${new Date().toISOString().slice(0, 16).replace("T", " ")}`;
+      onDone: async (next, _changed, name) => {
+        const title = name || `Diagram ${new Date().toISOString().slice(0, 16).replace("T", " ")}`;
         const made = await apiJson("/documents", { method: "POST", body: JSON.stringify({ title, content: next, file_type: "mmd" }) }).catch(() => (toast("The diagram was not saved. Try Done again.", "info"), null));
         if (!made) return;
         offerCreateUndo(made);

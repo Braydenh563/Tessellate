@@ -125,11 +125,11 @@
   // --- the dialog (D6) ----------------------------------------------------------------
   const STARTS = { flowchart: "flowchart TD", mindmap: "mindmap\n  root((Topic))", timeline: "timeline\n  title Timeline", sequence: "sequenceDiagram" };
 
-  //: `{source, kind, title, shapes, onDone(source, changed)}`. `kind` names the blank diagram to start
+  //: `{source, kind, title, shapes, named, onDone(source, changed, name)}`. `named` adds a title field: the new document's name and the exports' file name. `kind` names the blank diagram to start
   //: when there is no source. `shapes` is a function that receives the source and makes board shapes
   //: of it (Turn into shapes). `existing` is `{pick, open}` for the door. `offer` is what Save may link. Done calls `onDone` once; Cancel, Escape and the X call nothing, after
   //: asking when there are changes.
-  async function open({ source = "", kind = "flowchart", title = "Edit diagram", shapes = null, offer = null, onDone = null, existing = null } = {}) {
+  async function open({ source = "", kind = "flowchart", title = "Edit diagram", shapes = null, offer = null, onDone = null, existing = null, named = false } = {}) {
     if (!(await ensureModule("diagramBuilder"))) return toast("The block editor did not load. Try again.", "info");
     const first = String(source || "").trim() ? String(source) : STARTS[kind] || STARTS.flowchart;
     const history = [first];
@@ -145,6 +145,8 @@
     const dialog = el("div", "card modal-card space-dialog dgm-dialog");
     const returnFocus = document.activeElement;
     const host = el("div", "dgm-host");
+    //: The title (DD-12, 1107): what a new diagram document is called and what its exports are named; blank keeps the dialog's title.
+    const titleField = named ? el("input", "dgm-title") : null;
     const field = el("textarea", "dgm-source");
     field.spellcheck = false;
     field.setAttribute("aria-label", "Mermaid source");
@@ -165,7 +167,7 @@
     field.addEventListener("dgmerror", number);
     number();
     const io = {
-      name: title,
+      get name() { return titleField?.value.trim() || title; },
       set: (next) => {
         const kind = diagramModel.builder.kindOf(history[at]);
         history.length = at + 1;
@@ -272,7 +274,7 @@
       if (closing) return;
       if (!done && !(await mayDiscard())) return;
       leave();
-      if (done && onDone) onDone(history[at], history[at] !== first);
+      if (done && onDone) onDone(history[at], history[at] !== first, titleField ? titleField.value.trim() : "");
     };
     const foot = el("div", "row right space-dialog-actions");
     const cancel = smallButton("Cancel", "Close without keeping changes", () => finish(false));
@@ -320,7 +322,17 @@
     dialog.append(helpBody);
     const body = el("div", "dgm-dialog-body");
     body.append(srcwrap, host);
-    dialog.append(head, viewbar, body, foot);
+    let titlebar = null;
+    if (titleField) {
+      titleField.type = "text";
+      titleField.maxLength = 80;
+      titleField.placeholder = "Name it, or leave blank to date it";
+      titleField.setAttribute("aria-label", "Diagram title");
+      titleField.addEventListener("keydown", (event) => event.key === "Escape" && (event.preventDefault(), seg.querySelector(".active")?.focus()));
+      titlebar = el("label", "dgm-titlebar");
+      titlebar.append(el("span", "muted", "Title"), titleField);
+    }
+    dialog.append(head, ...(titlebar ? [titlebar] : []), viewbar, body, foot);
     document.addEventListener("keydown", onKey, true);
     wireBackdropClose(overlay, () => finish(false));
     //: Ctrl+Z in the blocks or the text steps the source history, as it does in a diagram document.

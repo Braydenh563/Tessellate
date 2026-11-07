@@ -1225,6 +1225,25 @@
   margin-inline-end: auto;
 }
 
+/* The title row: a label and a field under the head (DD-12). */
+.dgm-dialog .dgm-titlebar {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding-inline: var(--space-5);
+  padding-block-end: var(--space-2);
+  font-size: var(--text-sm);
+}
+
+.dgm-dialog .dgm-title {
+  flex: 1 1 auto;
+  min-width: 0;
+  margin: 0;
+  padding-block: var(--space-2);
+  font-size: var(--text-sm);
+}
+
 .dgm-viewbar:empty {
   display: none;
 }

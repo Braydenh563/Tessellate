@@ -3314,7 +3314,8 @@ MORE_TOPICS.extend([
             "With two or more blocks picked, the bar also has Colour (K) and Connect, which draws an arrow from the first picked to the second. "
             "Fit stops at readable text (11 px) and the picture scrolls past it. In the picture an arrow key picks the box that way, reading aloud its name and arrows, and Shift with an arrow moves the picture. A tall chart in a wide pane offers Turn it sideways once; Direction is a menu of Down, Right, Up and Left, and Shift turns it back one step. "
             "On a phone, once there is an arrow the picture takes the page and the Blocks list button opens the blocks as a sheet; Connect to... then puts the cursor in the search. "
-            "In Source, Tab indents and Shift+Tab takes it back, Escape leaves the text, Ctrl+Z steps the blocks' history too, and a red line number is the line a drawing error names."
+            "In Source, Tab indents and Shift+Tab takes it back, Escape leaves the text, Ctrl+Z steps the blocks' history too, and a red line number is the line a drawing error names. "
+            "The New diagram window's Title names the document Done makes (blank dates it) and the files you export."
         ),
         "badge": {"label": "Documents", "tab": "documents"},
     },

@@ -33,7 +33,8 @@ def test_a_phone_builder_is_a_full_screen_sheet_with_the_views_on_top_and_a_one_
     # DD-6: 390 x 844 measured before: dialog 342 wide, dock 18 px outside it, foot three rows (153 px), Source under the foot.
     assert 'const viewbar = el("div", "dgm-viewbar")' in EMBED
     assert 'matchMedia("(max-width: 599.98px)")' in EMBED and "(phone.matches ? viewbar : foot).prepend(seg)" in EMBED
-    assert "dialog.append(head, viewbar, body, foot)" in EMBED
+    # DD-12 puts the optional title row after the head.
+    assert "dialog.append(head, ...(titlebar ? [titlebar] : []), viewbar, body, foot)" in EMBED
     css = _phone_css()
     assert ".modal-overlay > .card.dgm-dialog" in css and "max-width: none" in css and "max-height: none" in css
     # Out of the notch and off the home indicator, as 10-responsive.css band 2 does for every other dialog.
@@ -140,3 +141,14 @@ def test_the_empty_checklist_is_one_width_and_goes_at_two_boxes():
     rule = CSS[start : start + 400]
     assert "display: grid" in rule and "inline-size: 100%" in rule
     assert "grid-template-columns: auto minmax(0, 1fr) 10rem" in CSS
+
+
+def test_the_new_diagram_window_has_a_title_that_names_the_document_and_the_export():
+    # DD-12. Before: Done made a document titled "Diagram" every time and the PNG was "Diagram builder.png".
+    assert 'const titleField = named ? el("input", "dgm-title") : null' in EMBED
+    assert "get name() { return titleField?.value.trim() || title; }" in EMBED
+    assert 'onDone(history[at], history[at] !== first, titleField ? titleField.value.trim() : "")' in EMBED
+    assert "dialog.append(head, ...(titlebar ? [titlebar] : []), viewbar, body, foot)" in EMBED
+    door = _js("documents-mermaid.js")
+    assert door.count("named: true") == 2 and "onDone: async (next, _changed, name)" in door
+    assert "title: name || " in door and ".dgm-title" in CSS
