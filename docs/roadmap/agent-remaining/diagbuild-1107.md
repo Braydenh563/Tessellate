@@ -44,6 +44,28 @@ Judged not defects:
 - Tab order "Add box is the 22nd stop": measured from F6, which lands on the picture, so it counts the whole run to the footer and round. From the open focus Add a box is 3 Shift+Tab (DD-8, above). A picture node is still not a stop (DD-8a, below).
 - Focus on open stays on the first box: the starter's Enter-to-name path (DD-3) depends on it; the trap is gone, so it no longer strands the user.
 
+## Round 2 review, fixed (port 8881; `tests/test_diagram_1107c.py`)
+
+| Finding | Before | After |
+| --- | --- | --- |
+| Review 1: `![[Title]]` could show another diagram | Done kept the typed title as is; `]]`, `|` and `#` went into the link | the window cleans `[ ] | #` as typed and asks the server's list for a free name: runs gave "Login flow", "Login flow 2", "3", "4" |
+| Review 2: title outside the discard guard | Escape or Cancel dropped a typed title with no question | the guard asks (confirm shown, 1 of 1) |
+| Review 3: `withLook` and an existing `config` | `config: {theme: dark}` gained a second `config:` key | joins inside the braces, clean takes it out; a value it cannot edit is left alone with a toast |
+| Review 4 and UX 2: Undo in the error note | shown at the first step; focus fell to BODY | hidden when `canUndo` is false; focus goes to the picture first (FIGURE, inside the dialog) |
+| Review 5: arrow pick from a picked arrow | `slice(2)` of an arrow key is no box, so the top left | starts from a box key only |
+| Review 6: Add and Connect out of the Tab order | rejected: Tab 2 is "Connect to..." on the picked row and Tab 29 is "Add a box" in the bar; N and C stay in the Keys sheet |
+| Review 7: announcement | the duplicate `aria-description` and `alt` is kept (the focusable figure reads the description, the image alt is read only when browsing); the pending `setTimeout` is cleared, so a run of arrows says the last box |
+| UX 1: phone Blocks segment | pressed, tree 0x0 | opens the Blocks sheet, tree 343 x 247, the previous view stays pressed |
+| UX 3: focus on open at 390 | BODY | the picture (FIGURE, inside the dialog) |
+| UX 4: touch hit areas | handle 24 x 44 with a 36 x 56 hit area; divider 12.8 px | handle hit area x -22..22 (45), y -32..32; divider hit area about 44 (hit at 21 px, not at 23) |
+| UX 5: look rows | both rows, no state | one row, the look that is not on (Hand-drawn look, then Clean look after the redraw) |
+| UX 6: phone Source | 144 px (8 lines) | 262 px, picture 240, no overflow (the kinds row and the sideways offer are hidden in Source) |
+| UX 7 and 8 | no row for Left and Right in the bar; Enter on the picked box did nothing | Keys sheet and the diagram-reading topic (1,855 characters) say it; Enter opens the name input with the box's words |
+
+Also fixed: the phone sheet's `border-radius: 0` (round 1, DD-6) was a fifth card radius and turned `tests/test_ui_signatures.py` red; it is `var(--radius-sm)` now (2.4 px, dialog still 390 x 844, no overflow). Found, not mine: `tests/test_zz_probe_tmp.py` (tracked since the composer round 2 review) has an unused `pytest` import, so `scripts/gate.sh` ruff step fails.
+
+Not verified: a screen reader, real touch hardware, the hand-drawn picture render by eye.
+
 ## Not built
 
 - DD-5: a Mermaid completion list (needs a keyword table and a menu; the other Source keys are built).
