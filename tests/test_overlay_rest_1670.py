@@ -50,7 +50,9 @@ def test_at_rest_the_drawn_feet_do_not_move_and_it_starts_few_things(gait: str, 
     assert m["rest_window_dy_per_min"] <= 6.0
     # Intent moved (INBOX 1683, asks M4/M5: "a lot of actions and activities it can perform while idle"): the in-place acts
     # (a book, a map, a bean bag) are the point now, about 40 an hour; 3 was the bar when only jitter started things.
-    assert m["starts_per_10min"] <= 9.0, m["starts"]
+    # Intent moved again (owner 2026-11-07 14:32Z: the full behaviour mind, with chains of acts that belong together,
+    # research B4): a chain's follow-on acts are starts too, 9.3 to 9.7 per ten minutes measured, so the bar is 10.
+    assert m["starts_per_10min"] <= 10.0, m["starts"]
     # (INBOX 1683, same move: an in-place act every 60 to 150 s shifts the window a few px with its frame's foot line, which
     # ends a spell without a single step taken; the figure still keeps to its home, which the feet and the moving share hold.)
     assert m["spell_median"] >= 45.0, m["spell_median"]

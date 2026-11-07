@@ -18,6 +18,8 @@ _UNSET: Any = object()
 logger = logging.getLogger(__name__)
 
 EVERY = 2.0
+#: A window that moved this many px between two scans, twice running, is being dragged.
+DRAG_MIN = 24
 #: Battery percent that is low, and the one it must climb back past before it can say so again.
 LOW, RECOVERED = 20, 30
 #: A download folder entry still being written ends in one of these.
@@ -65,6 +67,8 @@ class ScreenWatch:
         self.next_at = 0.0
         self.fg: int | None = None
         self.windows: set[int] | None = None
+        #: key -> (frame, maximised, steps moved in a row) of the last scan, for a drag and a maximise.
+        self.frames: dict[int, tuple[tuple[int, int, int, int], bool, int]] | None = None
         self.hour: int | None = None
         self.low = False
         self.files: int | None = None
@@ -82,10 +86,35 @@ class ScreenWatch:
         self.windows = seen
         return out
 
+    def states_seen(self, wins: Any) -> list[str]:
+        """What the windows did since the last scan (B7): one dragged (it moved on two scans running with its size
+        unchanged, said once per drag), one maximised, one put back. Keys, frames and flags only, never a title."""
+        now: dict[int, tuple[tuple[int, int, int, int], bool, int]] = {}
+        out: list[str] = []
+        before = self.frames
+        for w in wins:
+            rect, zoomed = tuple(w.rect), bool(w.hang)
+            steps = 0
+            old = before.get(w.key) if before is not None else None
+            if old is not None:
+                (ol, ot, orr, ob), was_zoomed, was_steps = old
+                same_size = (orr - ol, ob - ot) == (rect[2] - rect[0], rect[3] - rect[1])
+                moved = same_size and (abs(rect[0] - ol) + abs(rect[1] - ot)) >= DRAG_MIN
+                steps = was_steps + 1 if moved else 0
+                if steps == 2:
+                    out.append("window_dragged")
+                if zoomed and not was_zoomed:
+                    out.append("window_maximised")
+                elif was_zoomed and not zoomed:
+                    out.append("window_restored")
+            now[w.key] = (rect, zoomed, steps)  # type: ignore[assignment]
+        self.frames = now
+        return out
+
     def forget(self) -> None:
         """After a stall (a suspend, a full-screen app): what changed while away is not news, so the next
         reads are only remembered."""
-        self.fg, self.windows, self.files, self._counted = None, None, None, _UNSET
+        self.fg, self.windows, self.frames, self.files, self._counted = None, None, None, None, _UNSET
 
     def poll(self, now: float, hour: int, minute: int = 0, screen: bool = True) -> list[str]:
         """The events of this tick (empty before `EVERY` has passed). `screen` False (the person turned

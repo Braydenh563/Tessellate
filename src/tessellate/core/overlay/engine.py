@@ -72,6 +72,10 @@ DOUBLE_GAP = 0.16
 LOOK_SHARE = 0.12
 BLINK_FOR = 0.18
 LOOK_FOR = 1.2
+#: Each idle cycle runs up to this share faster than 4 s, and `IDLE_SLOWEST` slower (research A7). The slow side is
+#: short because a picture held past the 170 ms stream tick would be redrawn unchanged before it moved on.
+IDLE_SPREAD = 0.08
+IDLE_SLOWEST = 0.02
 STAND_FOR = (3.0, 8.0)
 #: A settled spell (INBOX 1670, 13:15Z: "it can't sit still"): standing, it stays put this long before it
 #: so much as picks something to do (median about six minutes); a blink or a tail beat does not break it.
@@ -144,6 +148,15 @@ TURN_FOR = 0.24
 STROLL = 150.0
 TRIP_EVERY = (520.0, 1100.0)
 TRIP_FIRST = (300.0, 700.0)
+#: Each TRIP_OVERDUE_S a trip is overdue adds one to its weight, to TRIP_OVERDUE_MAX more.
+#: How lively it is (research DG5, the menu's Activity): (the gap between trips times this, the weight of a trip, a
+#: climb, a hang or a peek times this). A calm one also takes no long walk.
+LIVELY = {"calm": (1.6, 0.5), "usual": (1.0, 1.0), "lively": (0.6, 1.6)}
+TRIP_OVERDUE_S = 300.0
+TRIP_OVERDUE_MAX = 4.0
+#: The long walk: a low chance among the trips, and never within an hour of the last (owner 1683 l).
+LONG_WALK_WEIGHT = 3.0
+LONG_WALK_GAP = 3600.0
 AWAY = 40.0
 #: Following the pointer at a polite distance, for a while.
 FOLLOW_GAP = 240.0
@@ -169,11 +182,14 @@ LEAN_MAX = 0.07
 POSE_RATE = 14.0
 HANG_DRAG_IN = 0.6
 DRAG_STEP_MAX = 3.5
+#: (frequency Hz, damping, response) of the body's scale x, scale y and lean. The scales are a touch underdamped (about
+#: 3% over); the lean has a slight anticipation. The step is about as quick as the lag it replaced (POSE_RATE).
+POSE_DYN = ((3.4, 0.8, 0.0), (3.4, 0.8, 0.0), (3.0, 0.85, -0.12))
 #: The longest slice of time one draw eases the pose by after a long sleep (an act's hold, a rest): easing by all of it snapped
 #: a 0.1 gap to neutral in one picture (INBOX 1683 j). A draw within `POSE_DT_WAKE` of the last is at the moving pace and
 #: eases by all of its dt (a turn's squeeze is drawn at 30 Hz); a gap under `POSE_GAP_FREE` cache steps (`bh.Q_SCALE`: 3 px
 #: of the 150 px figure) is one picture's change at most, so it is closed at the real dt, however long the sleep (a capped
-#: slice there made a long-sleeping act crawl in short draws).
+#: slice there made a long-sleeping act crawl in short draws). The spring (`POSE_DYN`) is stable at any dt.
 POSE_DT_MAX, POSE_DT_WAKE, POSE_GAP_FREE = 1.0 / 60.0, 0.05, 0.75
 VX_SMOOTH_S = 0.06
 POSE_OFF = ("held", "pressed", "fly", "fall", "rise", "peek", "emerge", "leap", "hop", "card")
@@ -331,6 +347,10 @@ CLIMB_FIRST = 40.0
 #: The `climb` act was missing from `ACTS` (so `_can_climb` was never called and a window came only with a rare
 #: trip, one in thirty minutes or so): the owner on Windows had never seen it perch (INBOX 1683 g).
 CLIMB_EVERY = (90.0, 240.0)
+#: A window top (or a title bar) that has just appeared is gone to within this many seconds, not after the
+#: ordinary wait; one such eager trip per `EAGER_EVERY` seconds so it stays a moment, not a habit (INBOX 1692 n).
+CLIMB_SOON = 3.0
+EAGER_EVERY = 45.0
 PERCH_FOR = (45.0, 120.0)  # long enough to be seen and to count as a settled spell (was 20 to 50)
 PERCH_MIN_RISE = 48.0
 PERCH_MOVED = 3.0
@@ -453,6 +473,10 @@ class Engine:
         #: Blinks and glances draw from their own stream (seeded from the engine's, not drawn from it), so the
         #: far more frequent ambient moments leave every other choice the same for a seed.
         self.life_rng = random.Random(self.rng.getstate()[1][0])
+        self.idle_rng = random.Random(self.rng.getstate()[1][0] + 2)
+        self._edges: list[float] = [0.0]  # cycle ends, in seconds from `idle_start`; reset when a stand begins
+        self.var_rng = random.Random(self.rng.getstate()[1][0] + 1)
+        self.act_var = bh.Variation()
         self.gait = "float" if gait == "float" else "walk"
         #: The share of the hang frame's height that is clear above the hands.
         self.hang_top = min(max(float(hang_top), 0.0), 0.5)
@@ -477,6 +501,9 @@ class Engine:
         self.last_active = now
         self.next_ambient = now + self._ambient_gap()
         self.flash: tuple[str, float] | None = None  # (frame, until): a blink or a look
+        self.blink_at = -1e9  # when the last blink began
+        self.lively = "usual"  # the menu's Activity: a key of LIVELY
+        self.look_after_blink = False  # the blink now showing opens a look (a gaze shift is blinked into)
         self.notice_ready = now
         self.walk_started = now
         self.press: tuple[int, int] | None = None
@@ -522,6 +549,13 @@ class Engine:
         self.target: Perch | None = None
         self.perch_until = 0.0
         self.climb_ready = now + CLIMB_FIRST
+        #: When a newly seen window top is gone to (None: nothing new), what it is ("climb" or "hang"), the keys
+        #: already seen, the next eager trip, and what the runner should log about trips.
+        self.eager_at: float | None = None
+        self.eager_kind = "climb"
+        self.seen_keys: set[int] = set()
+        self.eager_ready = 0.0
+        self.notes: list[str] = []
         self.pointer: tuple[int, int] | None = None
         self.card: Any = None
         self.card_queue: list[Any] = []
@@ -566,9 +600,15 @@ class Engine:
         self.greet_at = 0.0
         self.pose_goal = bh.NEUTRAL
         self.cur = bh.NEUTRAL
+        #: The squash and stretch overshoot a little and settle, the lean anticipates a move (research A2); the tail's
+        #: drag has its own spring chain and keeps the plain lag.
+        self.pose_dyn = [bh.SecondOrder(*POSE_DYN[0], 1.0), bh.SecondOrder(*POSE_DYN[1], 1.0), bh.SecondOrder(*POSE_DYN[2], 0.0)]
         self.last_x = 0.0
         self.travel = 0.0
         self.trips = 0
+        #: The rare long walk across the screen (owner: only on a good mood, never twice within an hour).
+        self.last_long_walk = -1e9
+        self.long_walks = 0
         self.greet_pending = False
         #: The text caret of the foreground window (physical px) and when it was read, or None. While
         #: there is one, or the person is typing, the figure is busy: no trip, and it keeps clear of it.
@@ -799,7 +839,7 @@ class Engine:
         if state != "warp":
             self.warp = None
         if state == "stand":
-            self.idle_start = now  # the cycle starts from its first picture
+            self.idle_start, self._edges = now, [0.0]  # the cycle starts from its first picture
         if state in HOLD_RANGES:
             self.state_until = now + self.rng.uniform(*HOLD_RANGES[state])
         elif state in HOLD_FIXED:
@@ -827,6 +867,8 @@ class Engine:
     def _on_act(self, now: float) -> None:
         act = bh.ACTIVITIES[self.act or "breathe"]
         self.act_started, self.act_len = now, self.rng.uniform(*act.seconds)
+        self.act_var = bh.vary(self.var_rng)  # V3: not the same play twice; its own stream, so no other draw moves
+        self.act_len *= self.act_var.dur
         self.act_turned = -1.0
         self.state_until = now + self.act_len
 
@@ -925,8 +967,7 @@ class Engine:
         self.flow.step(dt, max(-px, min(px, vx)) / scale, max(-px, min(px, vy)) / scale)
         target = self.pose_goal = self._target_pose(now)
         gap = max(abs(a - b) / q for a, b, q in zip(self.cur, target, (bh.Q_SCALE, bh.Q_SCALE, bh.Q_LEAN, bh.Q_DRAG)))
-        k = min(1.0, (dt if gap <= POSE_GAP_FREE or dt <= POSE_DT_WAKE else POSE_DT_MAX) * POSE_RATE)
-        nxt = bh.Pose(*(a + (b - a) * k for a, b in zip(self.cur, target)))
+        nxt = self._ease_pose(dt if gap <= POSE_GAP_FREE or dt <= POSE_DT_WAKE else POSE_DT_MAX, target)
         # the hem is a swinging spring: a dash's stop threw its tip 26 px and back in 0.2 s, 5 to 6 px between two draws. The
         # drawn hem moves by at most DRAG_STEP_MAX px a draw (the follow-through stays, only its speed is bounded)
         step = max(-DRAG_STEP_MAX, min(DRAG_STEP_MAX, nxt.drag - self.cur.drag))
@@ -937,6 +978,15 @@ class Engine:
             self.vx_px = 0.0
         else:
             self.vx_px += (vx - self.vx_px) * (1.0 - math.exp(-dt / VX_SMOOTH_S))
+
+    def _ease_pose(self, dt: float, target: bh.Pose) -> bh.Pose:
+        """The pose one draw later: scale and lean by second-order dynamics (from where `cur` is, so a pose set by
+        hand is honoured), the drag by the plain lag."""
+        for so, value in zip(self.pose_dyn, self.cur):
+            so.y = value
+        sx, sy, lean = (so.step(dt, goal) for so, goal in zip(self.pose_dyn, target))
+        k = min(1.0, dt * POSE_RATE)
+        return bh.Pose(sx, sy, lean, self.cur.drag + (target.drag - self.cur.drag) * k)
 
     def _target_pose(self, now: float) -> bh.Pose:
         """What the body shape wants now: the act's keyframes, a turn's squeeze, a lean into the
@@ -959,7 +1009,7 @@ class Engine:
             squeeze = self._warp_view(now)[2]
             sx, sy = 1.0 - 0.8 * squeeze, 1.0 - 0.2 * squeeze
         elif s_ == "act":
-            p = bh.sample(bh.ACTIVITIES[self.act or "breathe"].keys, (now - self.act_started) / max(0.01, self.act_len))
+            p = bh.scaled(bh.sample(bh.ACTIVITIES[self.act or "breathe"].keys, (now - self.act_started) / max(0.01, self.act_len), self.act_var.ease), self.act_var.amp)
             sx, sy, lean = p.sx, p.sy, p.lean * (1 if self.facing > 0 else -1)
         else:
             sx, sy, lean = self._ground_pose(now, s_)
@@ -1058,10 +1108,13 @@ class Engine:
         if self.flash and now >= self.flash[1]:
             if self.flash[0] == "look":  # the cycle resumes where the look paused it, not on another picture
                 self.idle_start += now - (self.flash[1] - LOOK_FOR)
-            self.flash = None
+            self.flash = ("look", now + LOOK_FOR) if self.flash[0] == "blink" and self.look_after_blink else None
+            self.look_after_blink = False
         if self.flash is None and now >= self.next_ambient:
             look = self.state == "stand" and self.life_rng.random() < LOOK_SHARE
-            self.flash = ("look", now + LOOK_FOR) if look else ("blink", now + BLINK_FOR)
+            # G2: a big gaze shift starts with a blink (Eyes Alive), then the look.
+            self.flash, self.blink_at = ("blink", now + BLINK_FOR), now
+            self.look_after_blink = look
             double = not look and self.life_rng.random() < DOUBLE_SHARE
             self.next_ambient = now + (BLINK_FOR + DOUBLE_GAP if double else self._ambient_gap())
 
@@ -1102,6 +1155,10 @@ class Engine:
         if self.busy:
             self.state_until = now + QUIET_RECHECK
             return
+        eager = self._eager(now)
+        if eager is not None:
+            self._perform(eager, now)
+            return
         if self.follow_until > now and self._follow(now):
             return
         if self.come is not None and self.come["phase"] != "wait":  # keeping company: small things, not a stroll
@@ -1110,7 +1167,15 @@ class Engine:
         if self._away() and self.perch is None:
             self._go_home(now)
             return
+        self._tell_mind(now, idle)
         self._perform(self._pick_act(now, idle), now)
+
+    def _tell_mind(self, now: float, idle: float) -> None:
+        """What the person is doing, for the mind's considerations: seconds since they last did anything and
+        whether the pointer is within a few figures of it."""
+        self.mind.idle = idle
+        p = self.pointer
+        self.mind.near = p is not None and abs(p[0] - (self.x + self.size[0] / 2)) < 4 * self.size[0]
 
     # --- home, trips, and what to do in place (INBOX 1670, row B) ------------------------
 
@@ -1150,6 +1215,10 @@ class Engine:
         if now >= self.state_until:
             self._begin_go(now)
 
+    def set_lively(self, name: str) -> None:
+        """The menu's Activity: Calm, Usual or Lively; anything else is Usual."""
+        self.lively = name if name in LIVELY else "usual"
+
     def _trip_ok(self, now: float) -> bool:
         return (
             self.roam and not self.reduced and not self.busy and self.perch is None and now >= self.trip_ready
@@ -1176,7 +1245,7 @@ class Engine:
         """A rare, short, purposeful trip: to a window it is curious about, to greet the pointer
         after a long idle, to the clock corner, to follow the pointer a while, or to nap at an edge.
         Afterwards `_after_stand` brings it home."""
-        self.trip_ready = now + self.rng.uniform(*TRIP_EVERY)
+        self.trip_ready = now + self.rng.uniform(*TRIP_EVERY) * LIVELY[self.lively][0]
         self.trips += 1
         m = self.current_monitor()
         k = self._scale()
@@ -1197,6 +1266,8 @@ class Engine:
         elif pick == "follow":
             self.follow_until = now + self.rng.uniform(*FOLLOW_FOR)
             self._follow(now) or self._enter("stand", now)
+        elif pick == "longwalk":
+            self._long_walk(now)
         elif pick == "clock":
             self._go((m.area[2] - self.size[0] - 6 * k, self.ground_y(m)), "clock", now)
         else:  # nap: the nearer outer edge
@@ -1210,9 +1281,28 @@ class Engine:
             table.append(("floor", "follow", 2.0))
         if self.roam_windows and self._candidates():
             table.append(("window", "window", 4.0))
+        if self._long_walk_ok(now):
+            table.append(("floor", "longwalk", LONG_WALK_WEIGHT))
         if now >= self.big_ready and self._hang_ok():  # a hang is a big act: minutes apart, whoever chose it
             table.append(("hang", "hang", HANG_TRIP_WEIGHT))
         return table
+
+    def _long_walk_ok(self, now: float) -> bool:
+        """A long walk is rare: a lively mood (happy or curious), some energy, and an hour since the last."""
+        return (
+            self.roam and not self.reduced and self.perch is None and now - self.last_long_walk >= LONG_WALK_GAP
+            and self.lively != "calm"
+            and self.mind.mood(now, self.hour) in ("happy", "curious") and self.mind.needs["rest"] < 0.55
+        )
+
+    def _long_walk(self, now: float) -> None:
+        """Across most of the screen on foot (a floater glides), then a look about when it gets there."""
+        self.last_long_walk, self.long_walks = now, self.long_walks + 1
+        m = self.current_monitor()
+        lo, hi = m.area[0], m.area[2] - self.size[0]
+        far = [x for x in (lo + (hi - lo) * 0.08, lo + (hi - lo) * 0.92) if abs(x - self.x) >= (hi - lo) * 0.45]
+        x = self.rng.choice(far) if far else (hi if self.x < (lo + hi) / 2 else lo)
+        self._go((x, self.ground_y(m)), "longwalk", now, plain=True)
 
     def _trip_pick(self, now: float) -> str:
         table = self._trip_table(now)
@@ -1236,8 +1326,9 @@ class Engine:
     def _arrive_trip(self, then: str, now: float) -> None:
         if then == "greet":
             self._enter("wave", now)
-        elif then == "clock":
-            self._start_act("ponder" if self.rng.random() < 0.5 else "look_around", now)
+        elif then in ("clock", "longwalk"):
+            options = [n for n in ("ponder", "look_around") if n not in self.mind.recent[-1:]]  # never the act it just did
+            self._start_act(self.rng.choice(options), now)
         elif then == "settle":  # "Go somewhere else": the new spot is home now
             self._set_home()
         else:
@@ -1297,6 +1388,10 @@ class Engine:
                 continue
             if act in ("stroll", "trip") and mood == "bored":
                 w *= 2
+            if act in ("trip", "climb", "hang", "peek"):
+                w *= LIVELY[self.lively][1]
+            if act == "trip":  # a trip that has waited past its time is wanted more, up to five times (owner: too rare)
+                w *= 1.0 + min(TRIP_OVERDUE_MAX, max(0.0, now - self.trip_ready) / TRIP_OVERDUE_S)
             table.append((act, w))
         return table
 
@@ -1537,6 +1632,7 @@ class Engine:
         it: it falls (or floats down) when that window is gone or no longer under it, and keeps up when it moves."""
         self.windows = list(windows)
         self.hangs = list(hangs)
+        self._note_new_edges(now)
         if self.hang_on is not None:
             self._check_hang(now)
         if self.perch is None:
@@ -1552,6 +1648,44 @@ class Engine:
             self._follow_top(cur, now)
         else:
             self.perch = cur
+
+    def _note_new_edges(self, now: float) -> None:
+        """A window top (else a title bar) not seen in the last scan: go to it within `CLIMB_SOON` seconds, once
+        the stand it is in ends early. The keys seen are kept so one window is new once (INBOX 1692 n)."""
+        keys = {p.key for p in self.windows} | {p.key for p in self.hangs}
+        fresh = keys - self.seen_keys
+        self.seen_keys = keys
+        if not fresh or self.perch is not None or not (self.roam and self.roam_windows) or self.reduced:
+            return
+        kind = "climb" if any(p.key in fresh for p in self._candidates()) else "hang" if any(p.key in fresh for p in self.hangs) else ""
+        if not kind:
+            return
+        self.eager_at, self.eager_kind = max(now + CLIMB_SOON, self.eager_ready), kind
+        self.notes.append(f"a new {'window top' if kind == 'climb' else 'title bar'} was seen: going to it at {self.eager_at - now:.0f} s")
+        if self.state == "stand":
+            self.state_until = min(self.state_until, self.eager_at)
+
+    def _eager(self, now: float) -> str | None:
+        """The act for a newly seen edge once its time has come, else None (with the reason logged)."""
+        if self.eager_at is None or now < self.eager_at:
+            return None
+        kind, self.eager_at = self.eager_kind, None
+        if self.perch is not None or self.busy or self.reduced or not (self.roam and self.roam_windows):
+            self.notes.append(f"eager {kind} skipped: busy, still or already on a window")
+            return None
+        if kind == "climb" and not self._candidates():
+            self.notes.append("eager climb skipped: the window is no longer a place worth the trip")
+            return None
+        if kind == "hang" and not self.hangs:
+            self.notes.append("eager hang skipped: the edge is gone")
+            return None
+        self.eager_ready = now + EAGER_EVERY
+        self.notes.append(f"eager {kind}: chosen")
+        if kind == "climb":
+            self.climb_ready = 0.0
+        else:
+            self.big_ready = 0.0
+        return kind
 
     def _follow_top(self, cur: Perch, now: float) -> None:
         """The window under it moved up or down: a floater drifts to the new height, a walker steps up, or
@@ -1633,9 +1767,11 @@ class Engine:
             and now >= self.climb_ready and bool(self._candidates())
         )
 
-    def _candidates(self) -> list[Perch]:
+    def _candidates(self, drops: Any = None) -> list[Perch]:
         """Window tops on this monitor worth the trip: they fit on screen with the
-        figure above them, sit well above the floor, and are wide enough to stand on."""
+        figure above them, sit well above the floor, and are wide enough to stand on. The test is the DRAWN
+        figure's top (the overlay window has headroom above it), so a window in the upper part of the screen
+        counts (INBOX 1692 n). `drops`, when given, counts why a top was refused (counts only, for the log)."""
         m = self.current_monitor()
         left, top, right, _bottom = m.area
         scale = m.dpi / 96.0
@@ -1643,11 +1779,17 @@ class Engine:
         found = []
         for p in self.windows:
             lo, hi = max(p.left, left), min(p.right, right)
-            if hi - lo < w + 20 * scale or p.top - h < top:
+            if hi - lo < w + 20 * scale:
+                why = "too narrow"
+            elif self._box_at(0.0, p.top - h)[1] < top:
+                why = "too close to the top"
+            elif p.top - h > self.floor_y(m) - PERCH_MIN_RISE * scale:
+                why = "too near the floor"
+            else:
+                found.append(p)
                 continue
-            if p.top - h > self.floor_y(m) - PERCH_MIN_RISE * scale:
-                continue
-            found.append(p)
+            if drops is not None:
+                drops[why] += 1
         return found
 
     def _climb(self, now: float, only: Perch | None = None) -> None:
@@ -2108,6 +2250,9 @@ class Engine:
             return
         if not self.reduced and self.metrics and self.state not in ("held", "fly", "fall"):
             self.turn_to, self.turn_started = direction, now
+            if self.flash is None and now - self.blink_at >= AMBIENT_EVERY[0]:  # G2: the turn is blinked into
+                self.flash, self.blink_at = ("blink", now + BLINK_FOR), now  # (never within the least gap of another)
+                self.next_ambient = max(self.next_ambient, now + AMBIENT_EVERY[0])
         else:
             self.facing = direction
 
@@ -2240,7 +2385,7 @@ class Engine:
                 self.state_until = now + self.rng.uniform(*REST_FOR)
             if then == "nap":
                 self._settle_to_sleep(now)
-            elif then in ("clock", "greet", "settle"):
+            elif then in ("clock", "greet", "settle", "longwalk"):
                 self._arrive_trip(then, now)
 
     def _do_stand(self, now: float, dt: float) -> None:
@@ -3147,8 +3292,25 @@ class Engine:
         """Frames a second: a shipped set of fewer frames plays slower, so the cycle stays 4 s."""
         return IDLE_FPS * max(1, self.idle_frames) / IDLE_FRAMES
 
+    def _idle_cycle(self, now: float) -> tuple[float, float]:
+        """(start, length) of the idle cycle `now` is in. Each cycle runs a little faster or slower than
+        the last, from its own seeded stream, so the breath and sway never line up twice (research A7)."""
+        t = max(0.0, now - self.idle_start)
+        nominal = max(1, self.idle_frames) / self._idle_fps()
+        while self._edges[-1] <= t:
+            self._edges.append(self._edges[-1] + nominal / (1.0 + self.idle_rng.uniform(-IDLE_SLOWEST, IDLE_SPREAD)))
+        k = next(i for i in range(len(self._edges) - 1, 0, -1) if self._edges[i - 1] <= t)
+        return self.idle_start + self._edges[k - 1], self._edges[k] - self._edges[k - 1]
+
     def _idle_index(self, now: float) -> int:
-        return int((now - self.idle_start) * self._idle_fps() + 1e-6) % self.idle_frames
+        start, length = self._idle_cycle(now)
+        return min(self.idle_frames - 1, int((now - start) / length * self.idle_frames + 1e-6)) % self.idle_frames
+
+    def _idle_next(self, now: float) -> float:
+        """When the idle picture next changes."""
+        start, length = self._idle_cycle(now)
+        step = length / self.idle_frames
+        return start + (math.floor((now - start) / step + 1e-6) + 1) * step
 
     def _flow_view(self, now: float, frame: str = "") -> tuple[int, ...] | None:
         """What the wisps and streams are doing at `now`; under reduced motion a slow drift only. While the
@@ -3225,7 +3387,7 @@ class Engine:
             due += [self.flash[1]] if self.flash else [self.next_ambient]
             due.append(self.last_active + IDLE_SIT)
         if self._idling():  # the next idle frame: a redraw only when the index changes
-            due.append(self.idle_start + (math.floor((now - self.idle_start) * self._idle_fps() + 1e-6) + 1) / self._idle_fps())
+            due.append(self._idle_next(now))
         return due
 
     def _next_pose_change(self, now: float, horizon: float = 1.0) -> float:

@@ -72,6 +72,8 @@ SCAN_EVERY = 1.0
 #: Pictures with a face or a prop kept built (a prop act cycles a few phases for a minute).
 DECOR_KEEP = 48
 SCAN_RIDING = 0.25
+#: A tool that hides the taskbar window sends no message, so the work area is read again this often (seconds).
+TASKBAR_EVERY = 5.0
 SCAN_SLACK = 1.0
 #: Room past the figure's width a top edge needs to be stood on (logical px, at 96 dpi).
 PERCH_ROOM = 20
@@ -173,6 +175,8 @@ class OverlayRunner:
         #: The foreground window's text band, kept per window: (hwnd, read at, band).
         self._zone: tuple[int, float, tuple[int, int, int, int] | None] | None = None
         self._next_scan = 0.0
+        self._next_taskbar = 0.0
+        self.lively = "usual"
         self._cards: deque[Any] = deque()
         self._commands: deque[str] = deque()
         #: The result of the last menu request the engine took, for the tests and the log.
@@ -263,6 +267,12 @@ class OverlayRunner:
     def _fdpi(self) -> int:
         """The dpi the pictures are drawn at: the monitor's, times the size the person chose."""
         return max(24, round(self.dpi * self.scale))
+
+    def set_lively(self, name: str) -> None:
+        """The menu's Activity (any thread): read by the engine on the next tick."""
+        self.lively = name if name in eng.LIVELY else "usual"
+        if self.host:
+            self.host.wake(1)
 
     def set_roam(self, on: bool) -> None:
         """The "Roam over windows" switch: takes effect on the next tick."""
@@ -381,10 +391,24 @@ class OverlayRunner:
             self._scan_failed = True
             return []
 
+    def _watch_taskbar(self, now: float) -> None:
+        """Read the work areas again now and then: a hider tool changes the floor without a message (research T1)."""
+        if now < self._next_taskbar:
+            return
+        self._next_taskbar = now + TASKBAR_EVERY
+        try:
+            areas = [area for area, _dpi in self.k.monitors(self.w)]
+        except OSError:
+            return
+        if areas and areas != [m.area for m in self.monitors]:
+            self._refresh_monitors()
+
     def _scan(self, now: float, force: bool = False) -> None:
         engine = self.engine
         assert engine is not None
+        self._watch_taskbar(now)
         engine.roam_windows = self.roam_windows
+        engine.lively = self.lively
         if not self.roam_windows:
             if engine.windows or engine.perch is not None:
                 engine.set_windows([], now)
@@ -396,13 +420,15 @@ class OverlayRunner:
         tally: Counter = Counter()
         wins = self._list_windows(tally)
         if wins:  # an empty list is a failed read, not every window closing
-            self._answer(self._watch.windows_seen(win.key for win in wins), now)
+            self._answer(self._watch.windows_seen(win.key for win in wins) + self._watch.states_seen(wins), now)
         scale = max(m.dpi for m in self.monitors) / 96.0 if self.monitors else 1.0
         room = int(engine.size[0] + PERCH_ROOM * scale)
-        edges = perches.top_edges(wins, room)
+        drops: Counter = Counter()
+        edges = perches.top_edges(wins, room, drops)
         hangs = perches.hang_spots(wins, room)
         engine.set_windows(edges, now, hangs)
-        self._log_scan(len(wins), len(edges), len(engine._candidates()), tally, len(edges) + len(hangs))
+        self._log_scan(len(wins), len(edges), len(engine._candidates(drops)), tally, len(edges) + len(hangs), drops)
+        self._log_notes()
 
     def _screen_events(self, now: float) -> None:
         """What happened on the screen since the last tick, handed to the engine to answer (INBOX 1683, M6): the
@@ -429,11 +455,19 @@ class OverlayRunner:
             if self.engine is not None and self.engine.react(kind, now):
                 logger.info("overlay: it answered %s", kind)
 
-    def _log_scan(self, listed: int, edges: int, candidates: int, tally: Counter, hangs: int = 0) -> None:
+    def _log_notes(self) -> None:
+        """What the engine decided about a trip to a window or an edge (chosen, skipped and why), one INFO line each."""
+        engine = self.engine
+        while engine is not None and engine.notes:
+            logger.info("overlay: %s", engine.notes.pop(0))
+
+    def _log_scan(self, listed: int, edges: int, candidates: int, tally: Counter, hangs: int = 0, drops: Counter | None = None) -> None:
         """One INFO line when what the window list returns changes (counts and reasons, never a title), so a
         companion that never perches can be read off the log (INBOX 1683 g)."""
         parts = ", ".join(f"{n} {why}" for why, n in sorted(tally.items(), key=lambda kv: (-kv[1], kv[0])))
         line = f"overlay: windows listed {listed}, standable top edges {edges}, worth the trip {candidates}, hang spots {hangs}" + (f" ({parts})" if parts else "")
+        if drops:  # why a standable window's top gave no perch or no trip: counts only (INBOX 1692 n)
+            line += "; edges dropped: " + ", ".join(f"{n} {why}" for why, n in sorted(drops.items(), key=lambda kv: (-kv[1], kv[0])))
         if line != self._last_scan_line:
             self._last_scan_line = line
             logger.info(line)

@@ -64,6 +64,9 @@ OVERLAY_POS_PREF = "desktop_companion_overlay_pos"
 ROAM_PREF = "desktop_companion_roam"
 #: "Stay here" (menu): it stands where it is and does not wander until "Roam" is chosen.
 STAY_PREF = "desktop_companion_stay"
+#: The menu's Activity (research DG5): how lively the figure is.
+LIVELY_PREF = "desktop_companion_lively"
+LIVELY_LEVELS = ("calm", "usual", "lively")
 #: "Hide for 10 minutes" (menu): minutes, and the menu requests the figure takes.
 SNOOZE_MINUTES = 10
 #: The menu's Small, Medium and Large: the in-app steps (`NMB_SIZES` in avatars.js; a test holds them equal).
@@ -831,6 +834,12 @@ class _SnoozeTimer:
         return self._thread is not None and self._thread.is_alive()
 
 
+def _lively_pref() -> str:
+    """The saved Activity, Usual when none or an unknown one is saved."""
+    saved = _pref(LIVELY_PREF, "usual")
+    return saved if saved in LIVELY_LEVELS else "usual"
+
+
 class DeskApi:
     """What the companion's page may ask of its window. Only public methods
     are exposed to the page (pywebview), and each validates what it is given:
@@ -887,6 +896,9 @@ class DeskApi:
 
     def set_stay(self, on: Any) -> bool:
         return self._owner.set_stay(on is True)
+
+    def set_lively(self, name: Any) -> bool:
+        return self._owner.set_lively(name if isinstance(name, str) else "")
 
     def set_figure_size(self, name: Any) -> bool:
         return self._owner.set_figure_size(name if isinstance(name, str) else "")
@@ -1314,6 +1326,8 @@ class DeskCompanion:
                 stay=bool(_pref(STAY_PREF, False)),
                 **kw,
             )
+            if hasattr(runner, "set_lively"):
+                runner.set_lively(_lively_pref())
             if hasattr(runner, "on_size"):  # the size handle: the size Appearance has, and the way back for a pull
                 runner.on_size = self._overlay_size
                 runner.scale = self.size_pref
@@ -1344,7 +1358,7 @@ class DeskCompanion:
         engine = getattr(runner, "engine", None)
         out: dict[str, Any] = {
             "still": still, "reason": str(reason or ""), "roam": bool(_pref(ROAM_PREF, True)), "stay": bool(_pref(STAY_PREF, False)),
-            "size": self.size_pref, "asleep": getattr(engine, "state", "") == "sleep", "figure": runner is not None and hasattr(runner, "command"),
+            "lively": _lively_pref(), "size": self.size_pref, "asleep": getattr(engine, "state", "") == "sleep", "figure": runner is not None and hasattr(runner, "command"),
         }
         if note:
             out["note"] = note
@@ -1371,6 +1385,16 @@ class DeskCompanion:
         if name not in FIGURE_COMMANDS or runner is None or not self.shown or not hasattr(runner, "command"):
             return False
         return bool(runner.command(name))
+
+    def set_lively(self, name: str) -> bool:
+        """The menu's Activity: Calm, Usual or Lively, saved, and the running figure follows. False for another name."""
+        if name not in LIVELY_LEVELS:
+            return False
+        _set_pref(LIVELY_PREF, name)
+        runner = self.runner
+        if runner is not None and hasattr(runner, "set_lively"):
+            runner.set_lively(name)
+        return True
 
     def set_stay(self, on: bool) -> bool:
         """"Stay here" or "Roam": saved, and the running figure follows."""

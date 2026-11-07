@@ -86,7 +86,7 @@ def test_old_windows_may_lack_only_the_optional_functions() -> None:
         dlls[name] = d
     assert set(k.apply_signatures(dlls)) == {
         "user32.SetThreadDpiAwarenessContext", "shcore.GetDpiForMonitor", "shell32.SHQueryUserNotificationState",
-        "dwmapi.DwmGetWindowAttribute",
+        "dwmapi.DwmGetWindowAttribute", "shell32.SHAppBarMessage",  # intent moved (research T1): the taskbar state is optional too
     }
     del dlls["user32"].CreateWindowExW
     with pytest.raises(AttributeError):

@@ -24,7 +24,12 @@ from typing import Any, NamedTuple
 #: Seconds an activity is not repeated after it was done.
 NO_REPEAT = 180.0
 #: Need rise per second at rest (they reach 1.0 in about this many seconds without relief).
-NEED_FULL = {"rest": 1500.0, "curiosity": 700.0, "play": 1100.0}
+NEED_FULL = {
+    "rest": 1500.0, "curiosity": 700.0, "play": 1100.0,
+    # B2: a wish for company (the person's attention), for comfort (a groom, a settle), for a bite, and for
+    # something new (boredom is `novelty` high).
+    "social": 900.0, "comfort": 1300.0, "hunger": 2400.0, "novelty": 1800.0,
+}
 MOODS = ("happy", "curious", "sleepy", "startled", "proud", "bored")
 #: How long an event keeps a mood in front (seconds).
 MOOD_FOR = 25.0
@@ -50,6 +55,30 @@ class Pose(NamedTuple):
 
 
 NEUTRAL = Pose()
+
+
+class SecondOrder:
+    """A value that follows a target by second-order dynamics (research A2; t3ssel8r's "giving personality to
+    procedural animations"): `f` is how quickly it responds (Hz), `zeta` the damping (below 1 it overshoots a little,
+    1 and above it does not), `r` the initial response (0 starts from rest, below 0 it anticipates by stepping
+    back first, above 1 it overshoots at once). The step is the semi-implicit one, made stable for any frame
+    length by raising the inertia term when a frame is long."""
+
+    def __init__(self, f: float, zeta: float, r: float, x0: float = 0.0) -> None:
+        self.k1 = zeta / (math.pi * f)
+        self.k2 = 1.0 / (2.0 * math.pi * f) ** 2
+        self.k3 = r * zeta / (2.0 * math.pi * f)
+        self.y, self.yd, self.xp = x0, 0.0, x0
+
+    def step(self, dt: float, x: float) -> float:
+        if dt <= 0.0:
+            return self.y
+        xd = (x - self.xp) / dt
+        self.xp = x
+        k2 = max(self.k2, dt * dt / 2.0 + dt * self.k1 / 2.0, dt * self.k1)  # stable for a long frame
+        self.y += dt * self.yd
+        self.yd += dt * (x + self.k3 * xd - self.y - self.k1 * self.yd) / k2
+        return self.y
 #: Pose steps: coarse enough to keep the warped-frame cache small, fine enough to be smooth.
 Q_SCALE, Q_LEAN, Q_DRAG = 0.02, 0.02, 1.0
 
@@ -69,10 +98,43 @@ def smooth(u: float) -> float:
     return u * u * (3.0 - 2.0 * u)
 
 
+def smoother(u: float) -> float:
+    u = min(max(u, 0.0), 1.0)
+    return u * u * u * (u * (u * 6.0 - 15.0) + 10.0)
+
+
+def sine_ease(u: float) -> float:
+    return 0.5 - 0.5 * math.cos(math.pi * min(max(u, 0.0), 1.0))
+
+
+#: The easings a play can draw (research V3): the same keyframes, a slightly different feel each time.
+EASES = (smooth, smoother, sine_ease)
+VARY_AMP = (0.85, 1.15)
+VARY_DUR = (0.85, 1.15)
+
+
+class Variation(NamedTuple):
+    """One play of an act: how big (factor), how long (factor) and which easing."""
+
+    amp: float = 1.0
+    dur: float = 1.0
+    ease: Any = smooth
+
+
+def vary(rng: random.Random) -> Variation:
+    """A seeded per-play variation: amplitude 0.85 to 1.15, duration plus or minus 15%, one of `EASES`."""
+    return Variation(rng.uniform(*VARY_AMP), rng.uniform(*VARY_DUR), rng.choice(EASES))
+
+
+def scaled(p: Pose, amp: float) -> Pose:
+    """`p` with its distance from neutral multiplied by `amp`."""
+    return Pose(1.0 + (p.sx - 1.0) * amp, 1.0 + (p.sy - 1.0) * amp, p.lean * amp, p.drag)
+
+
 Keys = tuple[tuple[float, float, float, float], ...]  # (u, sx, sy, lean)
 
 
-def sample(keys: Keys, u: float) -> Pose:
+def sample(keys: Keys, u: float, ease: Any = smooth) -> Pose:
     """The pose at `u` (0 to 1 through the activity), eased between keyframes."""
     if not keys:
         return NEUTRAL
@@ -80,7 +142,7 @@ def sample(keys: Keys, u: float) -> Pose:
         return Pose(keys[0][1], keys[0][2], keys[0][3])
     for a, b in zip(keys, keys[1:]):
         if u <= b[0]:
-            k = smooth((u - a[0]) / max(1e-6, b[0] - a[0]))
+            k = ease((u - a[0]) / max(1e-6, b[0] - a[0]))
             return Pose(a[1] + (b[1] - a[1]) * k, a[2] + (b[2] - a[2]) * k, a[3] + (b[3] - a[3]) * k)
     return Pose(keys[-1][1], keys[-1][2], keys[-1][3])
 
@@ -136,6 +198,21 @@ ACTIVITIES: dict[str, Activity] = {
     "lie_down": Activity("sleep", (10.0, 22.0), _k((0, 1, 1, 0), (0.15, 1.04, 0.9, 0), (1, 1.04, 0.9, 0)), (("rest", -0.8),), gait="walk", likes="sleepy"),
     "tail_flick": Activity("stand", (0.9, 1.3), _k((0, 1, 1, 0), (0.2, 1, 1, 0.06), (0.4, 1, 1, -0.02), (1, 1, 1, 0)), ()),
 }
+_PACE = _k((0, 1, 1, 0), (0.2, 1, 1, 0.05), (0.45, 1, 1, -0.05), (0.7, 1, 1, 0.05), (1, 1, 1, 0))
+#: B2/B1 (INBOX 1683 l): more things to do in place, each feeding one of the new needs.
+ACTIVITIES.update({
+    "groom": Activity("sit", (4.0, 7.0), _k((0, 1, 1, 0), (0.15, 1, 0.97, 0.05), (0.35, 1, 0.97, -0.05), (0.55, 1, 0.97, 0.05), (0.8, 1, 0.98, 0), (1, 1, 1, 0)), (("comfort", -0.45),), likes="sleepy"),
+    "scratch": Activity("stand", (1.6, 2.6), _k((0, 1, 1, 0), (0.15, 1.01, 0.97, 0.06), (0.3, 1, 1, -0.02), (0.45, 1.01, 0.97, 0.06), (0.6, 1, 1, -0.02), (1, 1, 1, 0)), (("comfort", -0.2),)),
+    "snack": Activity("sit", (6.0, 10.0), _k((0, 1, 1, 0), (0.15, 1, 0.98, 0.03), (0.4, 1, 1, 0.01), (0.65, 1, 0.98, 0.03), (1, 1, 1, 0)), (("hunger", -0.7), ("rest", -0.05)), likes="happy"),
+    "peer_at_cursor": Activity("look", (2.0, 3.2), _k((0, 1, 1, 0), (0.25, 0.97, 1.03, 0.05), (0.8, 0.97, 1.03, 0.05), (1, 1, 1, 0)), (("social", -0.25), ("curiosity", -0.1)), likes="curious"),
+    "pace": Activity("stand", (3.0, 5.0), _PACE, (("novelty", -0.25), ("play", -0.05))),
+    "invent_game": Activity("hop", (2.4, 3.6), _k((0, 1, 1, 0), (0.15, 1.04, 0.88, 0), (0.35, 0.96, 1.1, 0.04), (0.55, 1.03, 0.9, 0), (0.75, 0.97, 1.08, -0.04), (1, 1, 1, 0)), (("novelty", -0.4), ("play", -0.3)), likes="happy"),
+    "tinker": Activity("look", (3.0, 5.0), _k((0, 1, 1, 0), (0.2, 0.98, 0.99, -0.04), (0.5, 0.98, 0.99, 0.04), (0.8, 0.98, 0.99, -0.03), (1, 1, 1, 0)), (("novelty", -0.35), ("curiosity", -0.1)), likes="curious"),
+    "dust_off": Activity("stand", (1.0, 1.5), _k((0, 1, 1, 0), (0.15, 1, 1, 0.06), (0.3, 1, 1, -0.06), (0.5, 1, 1, 0.04), (1, 1, 1, 0)), (("comfort", -0.2),)),
+})
+for _n, _extra in {"wave_idle": (("social", -0.3),), "little_dance": (("social", -0.1), ("novelty", -0.1)), "glance_pointer": (("social", -0.1),),
+                   "look_around": (("novelty", -0.1),), "stretch": (("comfort", -0.2),), "sit_down": (("comfort", -0.25),)}.items():
+    ACTIVITIES[_n] = ACTIVITIES[_n]._replace(feeds=ACTIVITIES[_n].feeds + _extra)
 #: The ones that only make sense in place: all of them (a trip is a different table).
 IDLE_NAMES = tuple(ACTIVITIES)
 #: Base chance of each, before need, mood and repeat shape it. Quiet things are common.
@@ -144,6 +221,7 @@ BASE_WEIGHT = {
     "stretch": 4, "yawn": 3, "glance_pointer": 5, "ponder": 4, "sway": 4, "wiggle": 3, "bounce": 2,
     "scan_horizon": 3, "little_dance": 2, "wave_idle": 2, "sit_down": 4, "doze": 2, "curl_up": 1, "pose_proud": 2,
     "peek_down": 3, "shake_off": 1, "crouch_watch": 3, "float_loop": 3, "lie_down": 2,
+    "groom": 3, "scratch": 3, "snack": 3, "peer_at_cursor": 3, "pace": 2, "invent_game": 2, "tinker": 3, "dust_off": 2,
 }
 
 
@@ -153,6 +231,8 @@ def mood_of(needs: dict[str, float], event: str, event_age: float, hour: int) ->
         return event
     if needs["rest"] > 0.65 or hour >= 23 or hour < 6:
         return "sleepy"
+    if needs.get("novelty", 0.0) > 0.85:
+        return "bored"
     if needs["curiosity"] > 0.6:
         return "curious"
     if needs["play"] > 0.6:
@@ -162,23 +242,96 @@ def mood_of(needs: dict[str, float], event: str, event_age: float, hour: int) ->
     return "proud" if needs["play"] < 0.1 else "happy"
 
 
+MICRO = ("breathe", "shift_weight", "slow_blink", "tail_flick")
+#: Acts that ask for the person (they win when someone is here) and acts that are quiet (they win when they are away).
+ATTENTION = frozenset({"wave_idle", "glance_pointer", "peer_at_cursor", "little_dance"})
+QUIET = frozenset({"sit_down", "doze", "curl_up", "lie_down", "groom", "daydream", "stargaze"})
+CHAIN_CHANCE = 0.45
+#: Idle escalates with the seconds the person has been away (research B9, Agent idle levels 1 to 3): a look about,
+#: then stretches and props, then a nap last. Each group is lifted in its own tier and held back before it.
+IDLE_TIERS = (60.0, 180.0, 360.0)
+TIER_LOOK = frozenset({"look_around", "scan_horizon", "peek_down", "ponder", "slow_blink"})
+TIER_PROPS = frozenset({"stretch", "yawn", "groom", "scratch", "snack", "tinker", "invent_game", "dust_off", "pace"})
+TIER_NAP = frozenset({"sit_down", "doze", "curl_up", "lie_down"})
+#: (group, its tier, how far it is held back before that tier): a look about is never held, a nap most of all.
+TIER_GROUPS = ((TIER_LOOK, 1, 1.0), (TIER_PROPS, 2, 0.75), (TIER_NAP, 3, 0.5))
+TIER_LIFT = 2.0
+
+
+def idle_tier(idle: float) -> int:
+    """0 while they are about, then 1, 2, 3 as the time away passes each of `IDLE_TIERS`."""
+    return sum(idle > t for t in IDLE_TIERS)
+
+
+def tier_factor(name: str, idle: float) -> float:
+    """What the idle tier does to an act's weight: lifted in its own tier, held back before it, plain after."""
+    tier = idle_tier(idle)
+    for group, level, hold in TIER_GROUPS:
+        if name in group:
+            return TIER_LIFT if tier == level else hold if tier < level else 1.0
+    return 1.0
+
+
+class Chain(NamedTuple):
+    """A short run of acts that belong together (B4): started by its first act, with a mood that allows it."""
+
+    steps: tuple[str, ...]
+    moods: tuple[str, ...] = ()
+
+
+CHAINS = (
+    Chain(("stretch", "yawn", "sit_down")),
+    Chain(("look_around", "ponder", "puzzle")),
+    Chain(("tiptoe", "crouch_watch", "bounce"), ("curious", "happy")),
+    Chain(("hum", "sway", "little_dance"), ("happy", "proud")),
+    Chain(("sip_tea", "write_journal"), ("curious", "proud")),
+    Chain(("scratch", "groom", "dust_off"), ()),
+    Chain(("tinker", "invent_game"), ("bored", "curious", "happy")),
+)
+
+
+def curve(x: float, kind: str = "smooth") -> float:
+    """A response curve from 0..1 to 0..1 (IAUS): slow-then-fast, fast-then-slow or an S."""
+    x = min(max(x, 0.0), 1.0)
+    return {"quad": x * x, "root": math.sqrt(x), "smooth": smooth(x)}[kind]
+
+
+def utility(considerations: list[float]) -> float:
+    """The product of the considerations (each 0..1) with the IAUS compensation, so many of them do not
+    drag a good act to nothing: c' = c + (1 - c) * (1 - 1/n) * c."""
+    n = max(1, len(considerations))
+    mod = 1.0 - 1.0 / n
+    out = 1.0
+    for c in considerations:
+        out *= c + (1.0 - c) * mod * c
+    return out
+
+
 class Mind:
     """Needs, mood and what it did lately."""
 
     def __init__(self, now: float = 0.0) -> None:
-        self.needs = {"rest": 0.1, "curiosity": 0.2, "play": 0.2}
+        self.needs = {"rest": 0.1, "curiosity": 0.2, "play": 0.2, "social": 0.2, "comfort": 0.15, "hunger": 0.1, "novelty": 0.2}
         self.event = ""
         self.event_at = -1e9
         self.done: dict[str, float] = {}
         self.at = now
         self.fidget_ready = now + FIDGET_FIRST
+        #: The last few acts (no back-to-back repeat), seconds since the person last did anything and whether the
+        #: pointer is near: the engine sets the last two before it asks for the next act.
+        self.recent: list[str] = []
+        self.idle = 0.0
+        self.near = False
+        #: The steps still to come of a running chain, and how many chains ran to the end.
+        self.chain: list[str] = []
+        self.chains_done = 0
 
     def tick(self, now: float, hour: int = 12) -> None:
         dt = min(max(now - self.at, 0.0), 30.0)
         self.at = now
         night = 2.0 if (hour >= 23 or hour < 6) else 1.0
         for k, full in NEED_FULL.items():
-            self.needs[k] = min(1.0, self.needs[k] + dt / full * (night if k == "rest" else 1.0))
+            self.needs[k] = min(1.0, self.needs.get(k, 0.2) + dt / full * (night if k == "rest" else 1.0))
 
     def mood(self, now: float, hour: int = 12) -> str:
         return mood_of(self.needs, self.event, now - self.event_at, hour)
@@ -188,47 +341,88 @@ class Mind:
 
     def did(self, name: str, now: float) -> None:
         self.done[name] = now
+        self.recent = [*self.recent[-5:], name]
         if name in FIDGETS:
             self.fidget_ready = now + FIDGET_GAP
         for need, delta in ACTIVITIES[name].feeds if name in ACTIVITIES else ():
-            self.needs[need] = min(1.0, max(0.0, self.needs[need] + delta))
+            self.needs[need] = min(1.0, max(0.0, self.needs.get(need, 0.2) + delta))
 
     def weights(self, now: float, gait: str, hour: int = 12, where: str = "") -> list[tuple[str, float]]:
         mood = self.mood(now, hour)
         tired = mood == "sleepy" or self.needs["rest"] > 0.6
-        content = mood in ("proud", "bored") or self.needs["play"] < 0.15
         out = []
         for name, act in ACTIVITIES.items():
             if act.gait not in ("any", gait) or (act.where and act.where != where):
                 continue
             if name in FIDGETS and (now < self.fidget_ready or tired):
                 continue  # a fidget is a rare, chosen act; a tired one does not
-            if now - self.done.get(name, -1e9) < NO_REPEAT and name not in ("breathe", "shift_weight", "slow_blink", "tail_flick"):
-                continue  # quiet micro things may recur; the rest wait their turn
-            out.append((name, self._weight(name, act, mood, content, hour)))
+            if self.recent and name == self.recent[-1]:
+                continue  # never the same act twice running, quiet ones included
+            if now - self.done.get(name, -1e9) < NO_REPEAT and name not in MICRO:
+                continue  # quiet micro things may recur (not back to back); the rest wait their turn
+            out.append((name, self._weight(name, act, mood, hour, now)))
         return out
 
-    def _weight(self, name: str, act: Activity, mood: str, content: bool, hour: int) -> float:
-        w = float(BASE_WEIGHT.get(name, 2))
-        for need, delta in act.feeds:
-            if delta < 0:
-                w *= 1.0 + 3.0 * self.needs[need]
-        if act.likes == mood:
-            w *= 2.5
-        if name in FIDGETS and content:
+    def _when(self, name: str, hour: int) -> float:
+        """How well the hour and the rest suit the act: a quiet one at night or when tired, the rest by day."""
+        night = hour >= 23 or hour < 6
+        if name in QUIET or name in TIER_NAP:
+            return 1.0 if night or self.needs["rest"] >= 0.3 else 0.25
+        return 0.55 if night else 1.0
+
+    def _seen(self, name: str, act: Activity) -> float:
+        """What the person is doing suits the act: those that ask for company when they are here, quiet when away."""
+        if name in ATTENTION or any(n == "social" for n, _d in act.feeds):
+            return 0.25 + 0.55 * curve(1.0 - self.idle / 120.0, "root") + (0.2 if self.near else 0.0)
+        return 0.4 + 0.6 * curve(self.idle / 180.0, "quad") if name in QUIET else 0.8
+
+    def _weight(self, name: str, act: Activity, mood: str, hour: int, now: float = 0.0) -> float:
+        """Base weight times the utility of its considerations (research B1): how much it is wanted (a need,
+        on a curve), how well the mood and hour suit it, what the person is doing, and how lately it was done."""
+        fed = [self.needs.get(n, 0.2) for n, d in act.feeds if d < 0]
+        want = 0.2 + 0.8 * curve(max(fed), "quad") if fed else 0.5
+        fits = 1.0 if act.likes == mood else (0.6 if not act.likes else 0.4)
+        ago = now - self.done.get(name, -1e9)
+        fresh = 0.5 + 0.5 * curve(ago / 30.0) if name in MICRO else 0.3 + 0.7 * curve(ago / (NO_REPEAT * 2.0))
+        w = float(BASE_WEIGHT.get(name, 2)) * 4.0 * utility([want, fits, self._when(name, hour), self._seen(name, act), fresh])
+        w *= tier_factor(name, self.idle)
+        if name in FIDGETS and (mood in ("proud", "bored") or self.needs["play"] < 0.15):
             w *= 0.4  # content, it has less to burn off
-        if name in ("doze", "curl_up", "lie_down", "sit_down") and self.needs["rest"] < 0.3 and not (hour >= 23 or hour < 6):
-            w *= 0.2
         return w
 
     def pick(self, rng: random.Random, now: float, gait: str, hour: int = 12, where: str = "") -> str:
         table = self.weights(now, gait, hour, where)
+        nxt = self._next_in_chain(table, gait, where)
+        if nxt:
+            return nxt
         roll = rng.random() * sum(w for _n, w in table)
         for name, w in table:
             roll -= w
             if roll < 0:
+                self._begin_chain(name, rng, now, hour)
                 return name
         return "breathe"
+
+    def _next_in_chain(self, table: list[tuple[str, float]], gait: str, where: str) -> str:
+        """The next step of a running chain, if it can still be done here; a step that cannot ends the chain."""
+        if not self.chain:
+            return ""
+        step = self.chain[0]
+        act = ACTIVITIES.get(step)
+        if act is None or act.gait not in ("any", gait) or (act.where and act.where != where) or step == (self.recent[-1] if self.recent else ""):
+            self.chain = []
+            return ""
+        self.chain.pop(0)
+        if not self.chain:
+            self.chains_done += 1
+        return step
+
+    def _begin_chain(self, name: str, rng: random.Random, now: float, hour: int) -> None:
+        for c in CHAINS:
+            if c.steps[0] == name and all(s in ACTIVITIES for s in c.steps) and (not c.moods or self.mood(now, hour) in c.moods):
+                if rng.random() < CHAIN_CHANCE:
+                    self.chain = list(c.steps[1:])
+                return
 
 
 def activity_frame(act: Activity, u: float) -> str:
