@@ -825,12 +825,26 @@ _STEP_LINE_RE = re.compile(r"\s*$|\s+\S|\s*(?:\d+[.)]|[-*+•]|#{1,6})\s")
 
 def _steps_end(text: str) -> int:
     """Where the reasoning outline in `text` ends: just past the last whole
-    line that is a step, so what follows is prose that may be the answer."""
+    line that is a step, so what follows is prose that may be the answer.
+
+    Prose that follows a blank line once a step has been seen ends the
+    outline for good: the lines after it are the answer, even when the answer
+    is itself a list ("Here's the answer:" then "- a" and "- b"). Prose
+    straight after a step, with no blank line, is a continuation of it."""
     end = position = 0
+    seen_step = after_blank = False
     for line in text.splitlines(keepends=True):
+        if not line.endswith("\n"):
+            break
         position += len(line)
-        if line.endswith("\n") and _STEP_LINE_RE.match(line):
-            end = position
+        if not _STEP_LINE_RE.match(line):
+            if seen_step and after_blank:
+                break
+            after_blank = False
+            continue
+        end = position
+        after_blank = not line.strip()
+        seen_step = seen_step or not after_blank
     return end
 
 
@@ -942,7 +956,9 @@ class _ThinkTagSplitter:
         if self._implied:
             #: A header's thought streams a step at a time; the prose after
             #: the last step is held, since with no close tag it is the answer.
-            safe = _steps_end(self._buffer)
+            #: Measured over everything seen, not the buffer alone, so that
+            #: "a step was seen" and "a blank line came last" survive the cut.
+            safe = _steps_end(self._shown + self._buffer) - len(self._shown)
         else:
             # Keep enough back that a half-arrived closing tag is not
             # emitted as thinking text.
