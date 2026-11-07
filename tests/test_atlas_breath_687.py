@@ -115,6 +115,30 @@ process.stdout.write(JSON.stringify({ steady, retuned }));
     assert out["retuned"] == [[2, True], [2, True]], "a new look (a new period) replaces it"
 
 
+@pytest.mark.skipif(not shutil.which("node"), reason="needs node")
+def test_the_breath_waits_out_the_entrance_fade():
+    # Started under the companion's opacity-0 entrance, a boot-built torso animation
+    # is refused by the compositor for good (compositeFailed bit 17, an empty box;
+    # measured: both torsos refused on the reload path, none when started later).
+    out = _run(
+        FAKE
+        + """
+let opacity = "0";
+globalThis.getComputedStyle = () => ({ opacity });
+const box = made("masculine", anim(4600, 0));
+box.closest = () => ({});
+atlasBreathFrame(box, true);
+const early = box.atlasTorsos ? box.atlasTorsos.map((t) => t.animated.length) : [0, 0];
+opacity = "1";
+atlasBreathFrame(box, true);
+atlasBreathFrame(box, true);
+process.stdout.write(JSON.stringify({ early, late: box.atlasTorsos.map((t) => t.animated.length) }));
+"""
+    )
+    assert out["early"] == [0, 0], "nothing is started while the figure is faded out"
+    assert out["late"] == [1, 1], "started once, on the first beat after the fade"
+
+
 def test_it_rides_the_tail_loop_which_knows_the_motion_gates():
     frame = _fn("atlasTailFrame")
     # And behind the lock (`data-atlas-hidden`, Brief 34 decision 7).

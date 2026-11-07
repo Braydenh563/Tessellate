@@ -773,6 +773,12 @@ function atlasBreathFrame(box, live) {
     return;
   }
   if (box.atlasBreath?.look === look) return;
+  //: Not under the entrance fade: started while `#nm-buddy` is opacity 0 the
+  //: torso counts as an empty box and the compositor refuses it for good
+  //: (Chromium status bit 17; both torsos on the reload path, none when
+  //: started a beat later). One style read, only at a start or a retune.
+  const faded = box.closest?.("#nm-buddy");
+  if (faded && +getComputedStyle(faded).opacity === 0) return;
   box.atlasTorsos ||= [...box.querySelectorAll(".atl-layer-body .nmb-torso")];
   if (box.atlasBreath) for (const anim of box.atlasBreath.anims) anim.cancel();
   //: The rise's clock is read here only, at a start or a retune (`getAnimations`
