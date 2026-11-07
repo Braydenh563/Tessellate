@@ -877,22 +877,23 @@ atlasRigLower.blend.of = (rows) => {
   return atlasRigLower.blend.cache.get(rows);
 };
 //: **The streams move all the time, and by the pose** (INBOX 1683 B1, B2, B3, B5, B6): beside the pose's
-//: transition each part drifts on a looping path of its own, a Web Animation of `translate` and `rotate`
-//: added over everything else (the follow-through's translate, the CSS sway), run by the compositor, so a
-//: frame costs the page nothing. The path is a random walk through `atlasRigLower.flowKeys` points, eased between
+//: transition each part drifts on a looping path of its own, a Web Animation of `translate`, the one property
+//: nothing else on these boxes sets (the pose is `transform`, the CSS sway `rotate` and `scale`), so it replaces
+//: and the compositor runs it: an added (`composite: "add"`) turn took the whole figure off the compositor
+//: (tests/test_atlas_composite_1101.py). The path is a random walk through `atlasRigLower.flowKeys` points, eased between
 //: them, 14 to 26 s round and a period of its own for every part, so no two move together and none repeats
 //: before the pose changes (a new path every pose or variant, 5 to 9 s at rest). A pose scales it:
 //: [reach, rate], so asleep it is small and slow, walking and glad it is wide and quick. A new path starts
 //: from where the old one is, so a change of pose is never a step.
 atlasRigLower.flowKeys = 7;
 atlasRigLower.flowByState = { idle: [1, 1], walk: [1.5, 0.7], sit: [0.8, 1.15], lie: [0.6, 1.4], curl: [0.45, 1.7], gesture: [1.25, 0.8], think: [0.9, 1.1], happy: [1.45, 0.65], sad: [0.6, 1.5], startle: [1.6, 0.55], crouch: [0.8, 1.2], lounge: [0.9, 1.3], glide: [1.4, 0.75], drift: [1.3, 1.2], hang: [1.1, 0.9] };
-//: Per part: [x px, y px, turn degrees] at a reach of 1. The lower body's own box barely moves (its join
-//: with the torso must hold: INBOX 615) and does not turn at all; the wisps, the stream and the hair move most.
-atlasRigLower.flowParts = { boxes: [0.3, 0.45, 0], wisps: [1.5, 1.1, 1.6], tails: [0.9, 0.8, 2.2], hair: [0.9, 0.7, 1.6], neb: [1.3, 1, 1.3] };
+//: Per part: [x px, y px] at a reach of 1. The lower body's own box barely moves (its join with the torso
+//: must hold: INBOX 615); the wisps, the stream and the hair move most.
+atlasRigLower.flowParts = { boxes: [0.3, 0.45], wisps: [1.5, 1.1], tails: [0.9, 0.8], hair: [0.9, 0.7], neb: [1.3, 1] };
 //: Where a path is now, from its own keys and clock (not the style: INBOX 1587), eased like the segments.
 atlasRigLower.flowAt = (anim) => {
   const share = Number(anim.effect?.getComputedTiming?.().progress);
-  if (!anim.keys || !Number.isFinite(share)) return [0, 0, 0];
+  if (!anim.keys || !Number.isFinite(share)) return [0, 0];
   const x = Math.min(1, Math.max(0, share)) * (anim.keys.length - 1);
   const i = Math.min(anim.keys.length - 2, Math.floor(x));
   const u = x - i;
@@ -918,14 +919,14 @@ atlasRigLower.flow = (rig, state, live) => {
   for (const [part, gain] of Object.entries(atlasRigLower.flowParts)) {
     for (const el of low[part] || []) {
       n += 1;
-      const start = low.from.get(el) || [0, 0, 0];
+      const start = low.from.get(el) || [0, 0];
       const keys = [start];
       for (let j = 1; j < atlasRigLower.flowKeys - 1; j += 1) {
-        keys.push(gain.map((g, k) => { const cap = Math.min(1.6 * g * reach, k === 2 ? 4 : Infinity); return Math.max(-cap, Math.min(cap, keys[j - 1][k] * 0.35 + (Math.random() * 2 - 1) * 1.3 * g * reach)); }));
+        keys.push(gain.map((g, k) => { const cap = 1.6 * g * reach; return Math.max(-cap, Math.min(cap, keys[j - 1][k] * 0.35 + (Math.random() * 2 - 1) * 1.3 * g * reach)); }));
       }
       keys.push(start);
-      const frames = keys.map((v) => ({ translate: `${atlasFix(v[0])}px ${atlasFix(v[1])}px`, rotate: `${atlasFix(v[2])}deg`, easing: "ease-in-out" }));
-      const anim = el.animate(frames, { duration: Math.round((14 + ((n * 4.7) % 12)) * 1000 * rate), iterations: Infinity, composite: "add" });
+      const frames = keys.map((v) => ({ translate: `${atlasFix(v[0])}px ${atlasFix(v[1])}px`, easing: "ease-in-out" }));
+      const anim = el.animate(frames, { duration: Math.round((14 + ((n * 4.7) % 12)) * 1000 * rate), iterations: Infinity });
       Object.assign(anim, { keys, el });
       low.flow.push(anim);
       loops.push(anim);

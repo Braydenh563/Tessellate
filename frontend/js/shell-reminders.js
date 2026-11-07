@@ -702,7 +702,7 @@ if (typeof MutationObserver !== "undefined") {
   //: A frame on, after layout, not in the switch's microtask (INBOX 1667: a 38 to 65 ms forced layout).
   let scrollEdgeSync = 0;
   const scrollEdgeObserver = new MutationObserver(() => {
-    if (scrollEdgeSync) return;
+    if (scrollEdgeSync || !window.afterFrames) return;
     scrollEdgeSync = 1;
     afterFrames(() => setTimeout(() => {
       scrollEdgeSync = 0;

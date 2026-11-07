@@ -90,4 +90,6 @@ def test_the_tab_switch_edge_sync_reads_a_frame_on_not_in_the_observers_microtas
     block = src[at : at + 400]
     assert "new MutationObserver(() => syncScrollEdges())" not in src, "a direct call reads scrollTop right after the switch's writes"
     assert "afterFrames(() => setTimeout(() => {" in block and "syncScrollEdges();" in block
-    assert "if (scrollEdgeSync) return;" in block, "once a frame"
+    # Intent moved (2026-11-07): a mutation before dashboard.js has loaded found no `afterFrames` and threw on
+    # every boot; it is skipped until then (the first tab switch syncs).
+    assert "if (scrollEdgeSync || !window.afterFrames) return;" in block, "once a frame, and never before the helper"

@@ -61,13 +61,16 @@ def test_every_pose_has_six_or_more_arrangements_inside_the_authored_turn() -> N
 
 
 @needs_node
-def test_each_part_drifts_on_its_own_closed_path_added_over_the_rest() -> None:
+def test_each_part_drifts_on_its_own_closed_path_under_the_rest() -> None:
     out = subprocess.run(["node", "-e", SCRIPT], capture_output=True, text=True, timeout=30, check=True, cwd=ROOT)
     got = json.loads(out.stdout)
     assert got["paths"] == 7 and got["loops"] == [7, 7], "one path per element, replaced not stacked"
     assert got["closed"], "a path ends where it began, so it loops without a cut"
     assert got["durations"] >= 5, "the parts keep different periods"
-    assert got["composite"] == ["add"], "added over the follow-through and the CSS sway, never replacing them"
+    # Intent moved (2026-11-07, the Atlas idle restyle): the path was added (`composite: "add"`) over the CSS
+    # sway's `rotate`, which took the figure off the compositor (tests/test_atlas_composite_1101.py). It is now
+    # `translate` alone, which nothing else on these boxes sets, so it replaces and still leaves the sway be.
+    assert got["composite"] == [None], "a replacing translate, never added"
     assert got["stopped"] == [0, 0], "reduced motion or away: none run"
 
 
@@ -77,7 +80,7 @@ for (const s of Object.keys(x.byState)) {
   for (let i = 0; i < 40; i++) {
     const rig = { box: { isConnected: true, animate() {}, atlasLoops: [] }, lower: { boxes: [mk()], wisps: [mk()], tails: [mk()], hair: [mk()], neb: [mk()] } };
     x.flow(rig, s, true);
-    for (const a of rig.lower.flow) for (const k of a.keys) out.max = Math.max(out.max, Math.abs(k[2]));
+    for (const a of rig.lower.flow) for (const f of a.frames) out.max = Math.max(out.max, "rotate" in f ? 99 : 0, ...a.keys.map((k) => k.length - 2));
   }
 }
 console.log(JSON.stringify(out));
@@ -86,6 +89,7 @@ console.log(JSON.stringify(out));
 
 @needs_node
 def test_no_part_turns_more_than_four_degrees_in_any_pose() -> None:
-    """Review of 1683b: tails reached 1.6 x 2.2 x 1.6 = 5.6 degrees on a startle; the lower body stays within 4 of the torso."""
+    """Review of 1683b: tails reached 1.6 x 2.2 x 1.6 = 5.6 degrees on a startle; the lower body stays within 4 of the torso.
+    Intent moved (2026-11-07): the path no longer turns at all (the CSS sway owns `rotate`), so it holds at 0."""
     out = subprocess.run(["node", "-e", TURN_SCRIPT], capture_output=True, text=True, timeout=60, check=True, cwd=ROOT)
     assert json.loads(out.stdout)["max"] <= 4.0
