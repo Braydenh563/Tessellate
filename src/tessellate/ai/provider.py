@@ -969,6 +969,11 @@ class _ThinkTagSplitter:
 
     def _thinking(self, pieces: list[dict]) -> bool:
         """Emit thought up to a close tag; True once the answer has begun."""
+        if self._implied and not self._shown:
+            #: The blank line after a header is not thought. Dropped here, not
+            #: in `_start`, so a stream cut one character at a time (where the
+            #: newline arrives after the header was decided) reads the same.
+            self._buffer = self._buffer.lstrip("\n")
         at, size = self._find_close(self._buffer)
         if at != -1:
             pieces.append({"thinking_delta": self._buffer[:at]})

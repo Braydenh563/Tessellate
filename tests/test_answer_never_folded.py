@@ -197,3 +197,17 @@ def test_a_bare_reasoning_header_over_a_plain_list_is_still_the_answer():
     steps nothing marks an answer, so the whole text is the answer."""
     *_, thinking, answer = _split_live(_chunked("Reasoning:\n- cheap\n- fast\n", 3))
     assert "- cheap" in answer and "- fast" in answer
+
+
+def test_the_fold_never_opens_on_a_blank_line_whatever_the_chunk_size():
+    """Review of PR 216: the thought began with "\\n" when the stream came one
+    character at a time and not when it came in larger pieces. The blank line
+    after a header is not part of the thought."""
+    text = f"Thinking Process:\n\n{STEPS}\n{ANSWER}"
+    starts = set()
+    for size in (1, 2, 7, len(text)):
+        _, _, thinking, answer = _split_live(_chunked(text, size))
+        starts.add(thinking)
+        assert not thinking.startswith("\n"), size
+        assert answer.strip() == ANSWER, size
+    assert len(starts) == 1

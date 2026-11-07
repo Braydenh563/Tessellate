@@ -6,6 +6,8 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- A reasoning header's fold no longer opens on a blank line when the stream arrives one character at a time; the same text now folds the same at every chunk size (PR 216 review, tests/test_answer_never_folded.py).
+- The adaptive context window reads memory more truthfully: a model not yet loaded has its weights taken off free RAM (as video memory already did), a decision with no readable memory is cached like any other so turns stop re-asking Ollama for its model list, and stopping the model lets the next turn read memory afresh (PR 216 review, tests/test_adaptive_context_b6.py).
 - A slider whose id has a quote in it no longer throws a SyntaxError when its number field looks for its readout: the id goes through `CSS.escape` (value-field.js; checked in Chromium, tests/test_value_field_review_216.py).
 - Confirmed patterns in Settings: a note named in a pattern's line is a `.linklike` button, not an `<a href="#">` that only acted as one; computed in a browser: underline, no fill, no shadow, 230 buttons and no anchors (PR 216 review, tests/test_confirmed_patterns_review_216.py).
 - Settings, What it remembers reads every page of the Confirmed patterns (200 a page) instead of silently stopping at the first, and a pattern row with no notes list still draws; measured in a browser with 230 patterns, every second one without notes: no rows and a thrown error from one request before, 230 rows over 2 requests after (PR 216 review, tests/test_confirmed_patterns_review_216.py).

@@ -2,7 +2,7 @@
 
 Generated 2026-11-07 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7861, frontend ids 2644, CSS sections 522, backend routes 649, backend modules 9001, test files 2156, tests 18177, plan headings 1004, app scripts 28, boot scripts 37, script files 261.
+Counts: frontend functions 7861, frontend ids 2644, CSS sections 522, backend routes 649, backend modules 9001, test files 2156, tests 18181, plan headings 1004, app scripts 28, boot scripts 37, script files 261.
 
 ## Frontend functions (7861)
 
@@ -16756,44 +16756,44 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `Provider` | src/tessellate/ai/provider.py:367 |
+| `Provider` | src/tessellate/ai/provider.py:371 |
 | `ProviderError` | src/tessellate/ai/provider.py:68 |
 | `ToolsUnsupportedError` | src/tessellate/ai/provider.py:72 |
-| `_ThinkTagSplitter` | src/tessellate/ai/provider.py:860 |
-| `_ToolTextGate` | src/tessellate/ai/provider.py:1016 |
-| `_balanced_json_objects` | src/tessellate/ai/provider.py:1069 |
-| `_bare_json_calls` | src/tessellate/ai/provider.py:1367 |
-| `_call_end` | src/tessellate/ai/provider.py:1246 |
-| `_calls_in_blob` | src/tessellate/ai/provider.py:1321 |
-| `_close_open_json` | src/tessellate/ai/provider.py:1578 |
-| `_first_json_object_after` | src/tessellate/ai/provider.py:1235 |
-| `_json_too_deep` | src/tessellate/ai/provider.py:1607 |
-| `_literal_keywords` | src/tessellate/ai/provider.py:1271 |
-| `_named_calls` | src/tessellate/ai/provider.py:1385 |
-| `_ns_to_ms` | src/tessellate/ai/provider.py:1506 |
-| `_prose_read_calls` | src/tessellate/ai/provider.py:1424 |
-| `_python_calls` | src/tessellate/ai/provider.py:1411 |
-| `_python_style_calls` | src/tessellate/ai/provider.py:1284 |
-| `_split_header_reply` | src/tessellate/ai/provider.py:851 |
-| `_squash_separators` | src/tessellate/ai/provider.py:240 |
-| `_steps_end` | src/tessellate/ai/provider.py:826 |
-| `_tagged_calls` | src/tessellate/ai/provider.py:1346 |
-| `_think_header` | src/tessellate/ai/provider.py:810 |
-| `_unfence` | src/tessellate/ai/provider.py:1566 |
-| `context_from_catalog_entry` | src/tessellate/ai/provider.py:296 |
-| `detect_provider` | src/tessellate/ai/provider.py:342 |
-| `extract_text_tool_calls` | src/tessellate/ai/provider.py:1464 |
-| `first_chat_model` | src/tessellate/ai/provider.py:334 |
+| `_ThinkTagSplitter` | src/tessellate/ai/provider.py:883 |
+| `_ToolTextGate` | src/tessellate/ai/provider.py:1044 |
+| `_balanced_json_objects` | src/tessellate/ai/provider.py:1097 |
+| `_bare_json_calls` | src/tessellate/ai/provider.py:1395 |
+| `_call_end` | src/tessellate/ai/provider.py:1274 |
+| `_calls_in_blob` | src/tessellate/ai/provider.py:1349 |
+| `_close_open_json` | src/tessellate/ai/provider.py:1606 |
+| `_first_json_object_after` | src/tessellate/ai/provider.py:1263 |
+| `_json_too_deep` | src/tessellate/ai/provider.py:1635 |
+| `_literal_keywords` | src/tessellate/ai/provider.py:1299 |
+| `_named_calls` | src/tessellate/ai/provider.py:1413 |
+| `_ns_to_ms` | src/tessellate/ai/provider.py:1534 |
+| `_prose_read_calls` | src/tessellate/ai/provider.py:1452 |
+| `_python_calls` | src/tessellate/ai/provider.py:1439 |
+| `_python_style_calls` | src/tessellate/ai/provider.py:1312 |
+| `_split_header_reply` | src/tessellate/ai/provider.py:874 |
+| `_squash_separators` | src/tessellate/ai/provider.py:244 |
+| `_steps_end` | src/tessellate/ai/provider.py:849 |
+| `_tagged_calls` | src/tessellate/ai/provider.py:1374 |
+| `_think_header` | src/tessellate/ai/provider.py:833 |
+| `_unfence` | src/tessellate/ai/provider.py:1594 |
+| `context_from_catalog_entry` | src/tessellate/ai/provider.py:300 |
+| `detect_provider` | src/tessellate/ai/provider.py:346 |
+| `extract_text_tool_calls` | src/tessellate/ai/provider.py:1492 |
+| `first_chat_model` | src/tessellate/ai/provider.py:338 |
 | `is_transient_server_error` | src/tessellate/ai/provider.py:119 |
-| `known_context` | src/tessellate/ai/provider.py:255 |
-| `loads_lenient` | src/tessellate/ai/provider.py:1630 |
-| `memory_budget_bytes` | src/tessellate/ai/provider.py:161 |
-| `normalise_tool_calls` | src/tessellate/ai/provider.py:1669 |
-| `offered_tool_names` | src/tessellate/ai/provider.py:1703 |
-| `resolve_tool_name` | src/tessellate/ai/provider.py:1161 |
+| `known_context` | src/tessellate/ai/provider.py:259 |
+| `loads_lenient` | src/tessellate/ai/provider.py:1658 |
+| `memory_budget_bytes` | src/tessellate/ai/provider.py:162 |
+| `normalise_tool_calls` | src/tessellate/ai/provider.py:1697 |
+| `offered_tool_names` | src/tessellate/ai/provider.py:1731 |
+| `resolve_tool_name` | src/tessellate/ai/provider.py:1189 |
 | `set_sampling_overrides_getter` | src/tessellate/ai/provider.py:62 |
-| `set_write_tools` | src/tessellate/ai/provider.py:1313 |
-| `split_thinking` | src/tessellate/ai/provider.py:1514 |
+| `set_write_tools` | src/tessellate/ai/provider.py:1341 |
+| `split_thinking` | src/tessellate/ai/provider.py:1542 |
 | `tools_unsupported_message` | src/tessellate/ai/provider.py:93 |
 
 ### src/tessellate/ai/provider_http.py (17)
@@ -24415,7 +24415,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (18177)
+## Tests (18181)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -24432,7 +24432,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_activity_narrator_guide.py | 2 |
 | tests/test_activity_undo_row.py | 4 |
 | tests/test_acts.py | 11 |
-| tests/test_adaptive_context_b6.py | 15 |
+| tests/test_adaptive_context_b6.py | 18 |
 | tests/test_add_column_sites_1031.py | 3 |
 | tests/test_afterunlock.py | 5 |
 | tests/test_agent_context.py | 7 |
@@ -24463,7 +24463,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_all_spaces_indexes.py | 2 |
 | tests/test_announce_saved_note_z7.py | 4 |
 | tests/test_answer_foot_b2.py | 12 |
-| tests/test_answer_never_folded.py | 15 |
+| tests/test_answer_never_folded.py | 16 |
 | tests/test_answer_pictures_502.py | 11 |
 | tests/test_answer_support.py | 10 |
 | tests/test_answer_support_cleared.py | 1 |
