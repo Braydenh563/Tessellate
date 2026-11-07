@@ -197,3 +197,36 @@ The owner (s, orchestrator): the X11 test `test_on_a_real_server_the_window_is_p
 ## Order
 
 Group 1 first (the desk's parity is the owner's loudest complaint), Group 2 next (named in six of the owner's messages across both surfaces), then Group 3 (small, self-contained, can run beside either), then Group 4 (proof; the flake part can start at any time because it touches only tests and `x11.py`).
+
+## 2026-11-07 additions (INBOX 1683 x and y, 1692 a to q)
+
+The owner, 2026-11-07 14:40Z (1683 y): "ABSOLUTELY MAKE SURE YOU HAVE MISSED NOTHING AND WILL COVER EVERYTHING IN MY REQUESTS". Every row here is in scope for the overnight run; the deep dives re-grade the 118 rows above against this head. Status codes as above; "running" names the agent branch building it.
+
+| Row | Ask (INBOX part) | Surface | Status | Evidence or owner of the work |
+| --- | --- | --- | --- | --- |
+| N1 | Landing outcomes: feet, back, belly, skid, bounce off (1683 k) | both | BF | `overlay/landing.py`, `companion-throw.js`; land1683 reconciles 25 tests |
+| N2 | Flail airborne, scrabble on a wall slide (1683 k) | desk BF, app P | P | `engine._air_wobble`; app has flail, no scrabble |
+| N3 | After a scrabble, grip and pull up, or drop (1683 k, x 1) | both | M | 1683 (x) build |
+| N4 | Fast window move flings it off with a flail; lying, sitting or on a prop slides or tips off; poof or portal to safety; worried or miffed look; slow move stays anchored (1683 k, x 2) | desk, app analogue on a moved panel | P | ride built (`engine._ride_sideways`); fling, slide-off, escape, face missing |
+| N5 | Edge hit squashes and slides down, or wraps through when fast (1683 k) | both | BF | `landing.py` wrap; recheck squash |
+| N6 | Tuck behind a smaller window, peek round its edge, come out on move or close (1683 i, x 3) | desk | M | 1683 (x) build: z-order under the window |
+| N7 | Peek from behind the taskbar on whichever edge it is anchored, from any screen edge when the taskbar is hidden, and from docked sidebars (appbars) (1683 y) | desk | M | 1683 (x) build: ABM_GETTASKBARPOS, ABM_GETSTATE, appbar rects |
+| N8 | Floor is the screen bottom when the taskbar is auto-hidden or a full-screen program hides it (1692 a) | desk | BF | 1692 a fix; Windows unverified |
+| N9 | Portal as a travel and as the escape after a fall-off; share measured by the seeded hour (1683 x 4, u) | both | P | `travel.MODES` has portal; escape use and share missing |
+| N10 | Same outcomes in the in-app companion: scrabble, pull-up, fling, miffed face (1683 k, x 5) | app | M | 1683 (x) build |
+| N11 | Sit on windows, perch, react to screen events (1692 n) | desk | running | agent/companion-s-1107 step 1 |
+| N12 | The full mind: needs energy, curiosity, boredom, comfort, mood; curves; no repeats; chains; interrupts; rare mood-gated long walk at most once an hour (1683 l, 1692 q) | both | running | agent/companion-s-1107 step 2 |
+| N13 | Poof stays, no footprints, no constant long walks, more variation and options (1692 o) | both | decision | research DG1, DG4 dropped |
+| N14 | Live drawing only within the CPU budget: idle under 1% of a core, moving under 3%, no redraw while still, 30 fps idle, 60 dragged (1692 p) | desk | M | DG2 row; measured before shipping |
+| N15 | Own activities with props: fishing, reading, beanbag or chair nap, dinner, chasing sprites (1692 e) | both | P | props exist for some; deep dive lists the rest |
+| N16 | Lower body and nebula follow the pose: moving, flying, lying, sitting (1692 e, 1683 n) | both | P | wisps 0f94048; pose-following open |
+| N17 | Two tracks: Atlas (both looks) more detailed; generated companions get their own full behaviour set (1692 f) | both | P | deep dive 1 |
+| N18 | Every motion drawn every frame, no frame steps; p95 under 8 ms in-app at 4x CPU (1692 g) | both | P | in-app rig continuous; desk frames cached (see N14) |
+| N19 | Size handle on the figure's box corner; Small, Medium, Large in the desk menu (1692 h) | desk | BF | G3 merged; handle cursor and ring 6e5e6bac |
+| N20 | Look picked in the desk menu repaints at once; customisations (hair, hat, glasses) carried to the desk (1692 i, k) | desk | BF | desk-look agent merged; Windows unverified |
+| N21 | Hanging handle cursor nwse (1692 j) | both | BU | tests/test_buddy_grip_cursor_1107.py, test_desk_handle_cursor_1107.py |
+| N22 | Late overlay wins over the card; start timeout never sticky; twenty minimise toggles (1692 k, l) | desk | BF | desk-look agent |
+| N23 | React to everything in the app and on the screen (1692 d, e) | both | P | events wired: window_opened, app_switched; deep dive lists the rest |
+| N24 | Research other desktop pets and NPC libraries (1692 d) | both | built | agent-remaining/research-companions-1107.md, 29 rows plus DG1 to DG5 |
+| N25 | Layered multi-round deep dives per surface until a round finds nothing new (owner 14:35Z) | all | queued | work order rows 7 to 9 |
+| N26 | set_size regression (pywebview TypeError) | desk | BU | 37532f77, tests/test_desk_fit_set_size_1107.py |
