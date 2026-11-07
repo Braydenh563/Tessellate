@@ -14,6 +14,15 @@ Source: `diagram-dive-1107.md` (rows DD-1..15). Measured in the running app (por
 | DD-8 order | Add a box was tab stop 8 | kind bar is one roving stop: Add a box is stop 5, 3 Shift+Tab from the open focus. DOM order was already head, kinds, dock, panes, footer |
 | DD-14 handle click | a click armed the handle and waited for a second click | a click adds a joined box and focuses its label input (3 to 4 boxes); drag still connects; Enter on a handle still arms |
 | DD-9 small part | dock 44 px at coarse already (7 of 7 buttons 44 x 44 at 390 touch) | now linted; "diagram" in Ctrl+K lists New diagram first and Enter opens the window |
+| DD-6 phone sheet | 390 x 844: dialog 342 wide, foot 153 px (3 rows), dock 18 px outside the dialog, starter picture 240 px, Source under the foot | dialog 390 wide, foot 44 px (1 row), dock 27 px inside, starter picture 434, empty steps and template above the body bottom (707 of 764), Source tab on top and reachable (5 of 5 hit tests), no horizontal overflow in six kinds |
+| DD-8a picture keys | picture alt "Flowchart", arrows did nothing on the picture | arrow keys pick the nearest box that way and the live region reads "Check, decision. In from Start, Retry. Out to Done, Retry."; Shift+arrow pans; alt text and aria-description list every box and arrow |
+| DD-8 first picture stop | stop 23 from the open focus (five boxes, 1440) | stop 6: only the picked row's swatch, Connect, menu and connector chips are stops; the list foot's twins are not |
+| DD-4 rest Undo | a bad line left the note with Go to line only | note is [Undo the last edit, Go to line 4], picture kept (418 px, dimmed), role=alert; one press restores source and picture |
+| DD-5 Source pane | Tab left the field, no line numbers, 480 px soft-wrapped field, Ctrl+Z the browser's own, Escape closed the window | gutter and field share top, height (608.4 px) and line height (18 px); scroll lock-step (538 = 538 over 62 lines); Tab and Shift+Tab indent and outdent every selected line; Ctrl+Z steps the shared history (a typed edit is one step); the error line's number is red; Escape moves to the views, the next closes |
+| DD-10 empty state | step buttons 113, 133, 131 px wide, rows 43, 32, 43 (two-line words), ticked record kept to the first arrow | 190 px each, rows 60, words one line (18 px); list and frame gone at two boxes, the foot's Connect shows; at 390 buttons 160 px each and the pane 383 = 383 (no scroll) |
+| DD-12 title | Done made "Diagram" every time; the PNG was "Diagram builder.png" | a 39 px Title row (50 at 390); PNG "Login flow.png", document "Login flow"; blank is dated ("Diagram 2026-11-07 21:48"), so two Done presses differ |
+| DD-13 look | no look choice | ... menu: Hand-drawn look, Clean look; two front matter lines; picture 172 to 176 px wide, SVG 10,160 to 59,754 B; hit boxes found for all nodes; Undo restores. Reduced motion needed no change (`reduced()` already gates the one scroll animation) |
+| DD-9a debounce | Source redraw waited 300 ms | 250 ms; typing to new picture 1x [892, 509, 511, 559] to [754, 463, 506, 538] ms, 4x [1060, 731, 786, 823] to [1170, 626, 1027, 865] (noise); open to first block at 4x 758, 443, 144 ms (target under 1,000) |
 
 ## Review of the build (port 8821, measured before and after)
 
@@ -37,8 +46,11 @@ Judged not defects:
 
 ## Not built
 
-- DD-4: an Undo the last edit button on the error note, and a true gutter marker (the source box has no gutter; the line is exposed as `data-line`).
-- DD-6: the footer is still three rows at 390 (153 px of 844).
-- DD-8: first picture node at most 6 stops (it is stop 26 at 1440; each block row has about 4 stops: needs the list as one roving tree).
-- DD-5, DD-6 (footer still three rows at 390: 153 px), DD-8a, the rest of DD-9, DD-9a, DD-10..13, DD-15.
-- Real-model and touch-device checks: only emulated touch was driven.
+- DD-5: a Mermaid completion list (needs a keyword table and a menu; the other Source keys are built).
+- DD-10: a drawn sample in the blank picture of an empty diagram (the checklist and widths are built).
+- DD-11: a lost action after a rename. Not reproduced: 0 lost in 20 trials at 4x CPU with a 500 ms gap (harness `lost.js`: rename, Enter, wait, drag the right handle onto the other box); a guard that dropped the hit map while a redraw was pending was built, measured (boxes 0 during 57 to 672 ms of settling, progress cursor) and left out, because nothing was lost without it and it hides the handles for that time after every edit.
+- DD-12: a Versions list of the dialog's history steps.
+- DD-13: node and rank spacing (a `config: flowchart: nodeSpacing` front matter did not change the drawn size in the frame).
+- DD-9 rest: already there on inspection, not changed: the Create menu and Ctrl+K list "New diagram" (app-features.js, library.js), the New caret menu has a Diagram (.mmd) row, the empty documents list has a labelled New diagram button, and at `(pointer: coarse)` the dock buttons are 44 px (820 touch: no control under 40 px but the shrunk connect handles, 24 x 44). The documents head's New diagram stays an icon with a tooltip.
+- DD-9a: pre-warming the lazy modules (open to first block is already under 1,000 ms at 4x).
+- DD-15, and the real-model and real-touch checks: only emulated touch was driven; no screen reader was run.
