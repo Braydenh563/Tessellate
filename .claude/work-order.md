@@ -26,3 +26,5 @@ tier: max (weekly 4%), three agents at once, Sonnet or Haiku; never Fable; owner
 - [ ] Open deep-audit and Fable findings: ANALYSIS.md, AUDIT.md, FABLE_BRIEF.md
 - [ ] Then plans, BACKLOG, the rest of the 2026-11-07 order
 - [ ] Session end: full suite, INBOX 1693, HANDOVER morning summary, retro
+
+- 17:4xZ: companion-s merged locally as c5a644b6 (not pushed): 6 overlay tests fail, all caused by companion-s (pass on ^1, fail on ^2). Fix workflow wf_32497065-27e (fix, review, refix) in the main checkout. Push after it is green, then start the edges build.
