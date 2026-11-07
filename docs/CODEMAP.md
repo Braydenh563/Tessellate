@@ -2,7 +2,7 @@
 
 Generated 2026-11-07 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7841, frontend ids 2646, CSS sections 522, backend routes 649, backend modules 8919, test files 2108, tests 17795, plan headings 1003, app scripts 28, boot scripts 37, script files 260.
+Counts: frontend functions 7841, frontend ids 2646, CSS sections 522, backend routes 649, backend modules 8920, test files 2108, tests 17795, plan headings 1003, app scripts 28, boot scripts 37, script files 260.
 
 ## Frontend functions (7841)
 
@@ -13056,7 +13056,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:164 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (8919)
+## Backend modules (8920)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -22389,11 +22389,11 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `Engine` | src/tessellate/core/overlay/engine.py:422 |
-| `Monitor` | src/tessellate/core/overlay/engine.py:369 |
-| `Output` | src/tessellate/core/overlay/engine.py:376 |
-| `Perch` | src/tessellate/core/overlay/engine.py:357 |
-| `_adjoins` | src/tessellate/core/overlay/engine.py:411 |
+| `Engine` | src/tessellate/core/overlay/engine.py:429 |
+| `Monitor` | src/tessellate/core/overlay/engine.py:376 |
+| `Output` | src/tessellate/core/overlay/engine.py:383 |
+| `Perch` | src/tessellate/core/overlay/engine.py:364 |
+| `_adjoins` | src/tessellate/core/overlay/engine.py:418 |
 
 ### src/tessellate/core/overlay/extras.py (8)
 
@@ -22434,15 +22434,16 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `PaceTimer` | src/tessellate/core/overlay/host.py:61 |
 | `premultiplied_dib_bytes` | src/tessellate/core/overlay/host.py:116 |
 
-### src/tessellate/core/overlay/landing.py (5)
+### src/tessellate/core/overlay/landing.py (6)
 
 | Name | File:line |
 |---|---|
-| `decide` | src/tessellate/core/overlay/landing.py:47 |
-| `rest_for` | src/tessellate/core/overlay/landing.py:60 |
-| `smack` | src/tessellate/core/overlay/landing.py:64 |
-| `wobble` | src/tessellate/core/overlay/landing.py:74 |
-| `wrap` | src/tessellate/core/overlay/landing.py:42 |
+| `decide` | src/tessellate/core/overlay/landing.py:50 |
+| `hermite` | src/tessellate/core/overlay/landing.py:63 |
+| `rest_for` | src/tessellate/core/overlay/landing.py:72 |
+| `smack` | src/tessellate/core/overlay/landing.py:76 |
+| `wobble` | src/tessellate/core/overlay/landing.py:86 |
+| `wrap` | src/tessellate/core/overlay/landing.py:45 |
 
 ### src/tessellate/core/overlay/pacing.py (1)
 

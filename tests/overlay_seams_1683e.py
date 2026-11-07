@@ -8,6 +8,7 @@ from __future__ import annotations
 import random
 
 from tessellate.core.overlay import engine as eng
+from tessellate.core.overlay import extras
 from tests.overlay_sim_1670 import WINDOWS, home_at_edge
 from tests.test_overlay_ride_1670 import make
 
@@ -23,6 +24,13 @@ def joints(p: tuple[float, float, float, float] | None, h: float) -> tuple[float
     """(head x shift, head y shift, width, hem drag) in px for a pose over a figure `h` px tall."""
     sx, sy, lean, drag = p if p is not None else (1.0, 1.0, 0.0, 0.0)
     return lean * h, (1.0 - sy) * h, sx * h * 0.5, drag
+
+
+def twirling(e) -> bool:
+    """An act whose keys squeeze the width to a sliver (a flip's twirl, `extras._TURN2`): the same designed turn squeeze as a
+    turn's, played by the act, so it is left out the way a turn is."""
+    act = eng.bh.ACTIVITIES.get(e.act or "") or extras.REACT_ACTS.get(e.act or "")
+    return e.state == "act" and act is not None and min(k[1] for k in act.keys) < 0.5
 
 
 def seam(a, b, h: float) -> float:
@@ -54,7 +62,7 @@ def hour(gait: str, seed: int, secs: float = 3600.0, look: str = "masculine", de
             draws += 1
             if e.state not in eng.POSE_OFF and prev_state not in eng.POSE_OFF:
                 j = seam(prev.pose, out.pose, e.size[1])
-                if j > JUMP_PX and t - prev_t < 0.25 and not e.turn_to and t - turned_at > TURN_TAIL and e.state != "warp":  # a warp's squeeze is a designed 0.5 s ease
+                if j > JUMP_PX and t - prev_t < 0.25 and not e.turn_to and not twirling(e) and t - turned_at > TURN_TAIL and e.state != "warp":  # a warp's squeeze is a designed 0.5 s ease
                     jumps.append((round(t, 2), prev_state, e.state, round(j, 1)))
                     if detail:
                         print(t, prev_state, e.state, e.act, e.mode, prev.pose, out.pose, e.cur, e.pose_goal, out.wake_ms)

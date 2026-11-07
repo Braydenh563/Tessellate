@@ -55,8 +55,9 @@ def tumble(gait: str, look: str = "masculine", seed: int = 5, speed: float = 150
         out = e.update(t)
         omega = getattr(e, "omega", None)
         # INBOX 1683 k: on the floor the body flops to its back, belly or feet (`landing.decide`) and a wall smack is a
-        # contact too: the continuity asked of the turn is the flight's, the landing has its own tests
-        contact = e.bonk_until != bonk or getattr(e, "grounded", False) != grounded or getattr(e, "grounded", False) or bool(getattr(e, "wall", 0))
+        # contact too, and so is a floater's arrival at its floor line (`Engine._floored`, which never sets `grounded`): the continuity
+        # asked of the turn is the flight's, the landing has its own tests (the rate steps of its eased move: test_overlay_land_1683.py)
+        contact = e.bonk_until != bonk or getattr(e, "grounded", False) != grounded or getattr(e, "grounded", False) or e._floored() or bool(getattr(e, "wall", 0))
         bonk, grounded = e.bonk_until, getattr(e, "grounded", False)
         if omega is not None and last_omega is not None and e.state == "fly" and not contact:
             jump = max(jump, abs(omega - last_omega) / max(abs(last_omega), 2.0))
