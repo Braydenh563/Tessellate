@@ -509,7 +509,7 @@ def _cannot_untick(question: str) -> dict | None:
     mentions (audit 1030 Z37)."""
     if not _UNTICK.match(" ".join((question or "").split())):
         return None
-    line = "I can tick items off, but I cannot untick one yet. Open the note and clear the box."
+    line = "I can tick items off, but I cannot untick one yet. Press Ctrl+Z right after a tick to take it back, or open the note and clear the box."
     return {**_result([("template", line)], "none"), "answered": True}
 
 

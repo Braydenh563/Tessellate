@@ -6,7 +6,7 @@ from __future__ import annotations
 
 from datetime import date
 
-from tessellate.ai import composer
+from tessellate.ai import composer, composer_dialogue, composer_digest
 
 TODAY = date(2026, 11, 7)
 
@@ -38,7 +38,31 @@ for i,(t,b,d) in enumerate(raw,1):
     notes.append({"id":i,"content":t+"\n"+b if b!=t else t,"category":"Uncategorised","tags":[],"created_at":dd.isoformat()+"T10:00:00Z"})
 
 
-def ask(question: str, only: tuple[str, ...] | None = None, history: list | None = None) -> str:
+def ask(question: str, only: tuple[str, ...] | None = None) -> str:
     """The composed answer to `question` over the seed (or only the notes titled in `only`)."""
     pool = [n for n in notes if only is None or n["content"].split("\n", 1)[0] in only]
-    return composer.compose(question, pool, today=TODAY, **({"history": history} if history else {}))["text"]
+    return _route_answer(question, pool)["text"]
+
+
+def _route_answer(question: str, pool: list, **kw) -> dict:
+    """What the chat route does with no model: the digest's answer, else the composer's."""
+    return composer_digest.answer(question, pool, today=TODAY) or composer.compose(question, pool, today=TODAY, **kw)
+
+
+def chain(questions: list[str], titles: list[tuple[str, ...]] | tuple[str, ...] | None = None) -> list[str]:
+    """The answers to `questions` asked one after the other, each turn given the
+    history before it. `titles` is the retrieved notes per turn (one tuple a turn,
+    or one tuple for all); None means every note."""
+    history: list[dict] = []
+    said: list[str] = []
+    for i, question in enumerate(questions):
+        only = None if titles is None else (titles[i] if titles and isinstance(titles[0], tuple) else titles)
+        pool = [n for n in notes if only is None or n["content"].split("\n", 1)[0] in only]
+        follow = composer_dialogue.follow_on(question, history)
+        restated = follow is not None and follow.kind in composer_dialogue._RESTATES  # noqa: SLF001
+        result = composer_digest.answer(follow.question if restated else question, pool, today=TODAY) if (follow is None or restated) else None
+        result = result or composer.compose(
+            follow.question if follow else question, pool, today=TODAY, dialogue=composer.Dialogue.from_history(history), turn=i)
+        history.append({"question": question, "answer": result["text"]})
+        said.append(result["text"])
+    return said

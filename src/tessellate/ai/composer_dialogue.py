@@ -469,6 +469,10 @@ def _follow_swap(text: str, previous: str, last: dict, turns: list[dict]) -> Any
 _PERSON_PRONOUN = re.compile(r"\b(?:her|him|she|he|hers|his)\b", re.I)
 
 
+#: "and his address", "what about her birthday": a thing of the person the turn before named, with no asking word.
+_PERSON_THING = re.compile(r"^(?:(?:and|also|but|so)[, ]+)?(?:(?:what|how) about\s+)?(?:his|her|their)\s+[a-z][\w' -]{1,30}$", re.I)
+
+
 def _pronoun_kind(text: str) -> str:
     """Which pronoun follow-on `text` is: "bare" (a pronoun and no subject),
     "slot" ("how much does it cost"), "person" ("what should I get her"),
@@ -477,6 +481,8 @@ def _pronoun_kind(text: str) -> str:
     if bare:
         return "bare"
     #: "how much does it cost", "when is it due": the slot word is not a subject.
+    if _PERSON_THING.match(text.strip().rstrip("?.! ")):
+        return "person_thing"
     if refers_back(text) and _SLOT_PRONOUN.search(text):
         return "slot"
     if _ASKS_SLOT.match(text.strip()) and _PERSON_PRONOUN.search(text) and not re.search(r"\b[A-Z][a-z]", text.strip()[1:]):
@@ -500,19 +506,41 @@ def _pronoun_swap(text: str, named: str, kind: str) -> str:
     return pattern.sub(said, text, count=1)
 
 
+def _carried_source(previous: str, turns: list[dict]) -> str:
+    """The question whose subject a pronoun stands for: the turn before, unless
+    that one only names a bare lower-case word ("what should I pack") and an
+    earlier turn named a thing by a capitalised name ("tell me about the Tokyo
+    trip"), which is what "it" still means (round 2 E5)."""
+    def named(question: str) -> bool:
+        span = _asked_span(question, subject_terms(question))
+        return bool(span) and any(w[:1].isupper() for w in span.split())
+
+    if named(previous):
+        return previous
+    for turn in reversed(turns[:-1]):
+        question = str(turn.get("question") or "").strip()
+        if named(question):
+            return question
+    return previous
+
+
 def _follow_pronoun(text: str, previous: str, last: dict, turns: list[dict]) -> Any:
     kind = _pronoun_kind(text)
     if not kind:
         return None
-    subject = _asked_span(previous, subject_terms(previous))
+    source = _carried_source(previous, turns)
+    subject = _asked_span(source, subject_terms(source))
     if not subject:
         return None
-    article = re.search(r"\b(?:the|my|our)\s+$", previous[: previous.lower().find(subject.lower())], re.I)
+    article = re.search(r"\b(?:the|my|our)\s+$", source[: source.lower().find(subject.lower())], re.I)
     #: A bare "that" keeps the old bare subject; the newer slot and person
     #: follow-ons read with the article ("how much does the Lisbon trip cost").
     named = (article.group(0).strip() + " " if article and kind != "bare" else "") + subject
     if kind == "total":
         return FollowOn(f"{text.rstrip(' ?.!')} for {named}?", previous, "", "pronoun")
+    if kind == "person_thing":
+        thing = re.sub(r"^(?:(?:and|also|but|so)[, ]+)?(?:(?:what|how) about\s+)?", "", text.strip().rstrip("?.! "), flags=re.I)
+        return FollowOn("what is " + _pronoun_swap(thing, named, "person"), previous, "", "pronoun")
     return FollowOn(_pronoun_swap(text, named, kind), previous, "", "pronoun")
 
 

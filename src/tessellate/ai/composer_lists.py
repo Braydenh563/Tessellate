@@ -235,25 +235,67 @@ def counted_order(question: str) -> tuple[bool, int, str] | None:
     return found.oldest, found.count, found.subject
 
 
+#: "notes about Tokyo but not Lisbon", "which notes are not about Lisbon",
+#: "nothing about Lisbon": a word the notes must leave out (round 2 E2). The
+#: mark is the first of these after the lead; the words before it, less the
+#: ask's own, are the subject kept, and the words after it the subject dropped.
+_WITHOUT_MARK = re.compile(
+    r"(?:^|[,\s]+)(?:but\s+(?:not|without)|and\s+not|not\s+(?:about|on|mentioning)|without|excluding|except(?:\s+for)?|other\s+than"
+    r"|nothing\s+(?:about|on)|(?:that\s+)?(?:do|does)(?:n't|\s+not)\s+(?:mention|include|have|say\s+anything\s+about|talk\s+about)"
+    r"|(?:are|is)(?:n't|\s+not)\s+(?:about|on)|not)\s+(?P<neg>\S.*)$",
+    re.I,
+)
+_WITHOUT_LEAD = frozenset(
+    "what which do did i know have wrote write list show me find give tell all of my notes note entries entry that are is about on mentioning "
+    "mention with for any the there anything something a an".split()
+)
+
+
+#: A question has to ask for notes (or say "about") before "not" is read as leaving a word out:
+#: "what is not done" and "why did I not go" are not.
+_WITHOUT_NOTES = re.compile(r"\b(?:notes?|entries|about)\b|^(?:nothing|without)\b", re.I)
+
+
+def without_ask(question: str) -> tuple[str, str] | None:
+    """`(kept, left_out)` as typed for "notes about Tokyo but not Lisbon" ("Tokyo",
+    "Lisbon"), with "" kept for "which notes are not about Lisbon"; None for
+    any other question."""
+    q = _q(question)
+    found = _WITHOUT_MARK.search(q)
+    if not found or not _WITHOUT_NOTES.search(q[: found.end()]):
+        return None
+    head = q[: found.start()].strip(" ,")
+    words = head.split()
+    while words and words[0].lower() in _WITHOUT_LEAD:
+        words.pop(0)
+    kept = " ".join(words)
+    left = re.sub(r"^(?:the\s+word\s+|the\s+|my\s+)", "", found.group("neg").strip(" ,\"'"), flags=re.I)
+    if not left or len(left.split()) > 4 or len(kept.split()) > 5:
+        return None
+    return kept, left
+
+
+#: The shapes `kind` tries first, in this order (the names resolve at call time).
+_ASKED_IN_ORDER = (
+    ("without", lambda q: without_ask(q)),
+    ("until", lambda q: utilities.until_subject(q)),
+    ("ordered", lambda q: list_order(q)),
+    ("counted", lambda q: counted_order(q)),
+    ("order", lambda q: _ORDER.match(q)),
+    ("mentions", lambda q: _MENTION.match(q)),
+    ("which", lambda q: composer_versus.asks(q)),
+    ("holding", lambda q: holding_ask(q)),
+)
+
+
 def kind(question: str) -> str | None:
     """Which computed shape `question` is, or None."""
     q = _q(question)
     if not q:
         return None
-    if utilities.until_subject(q):
-        return "until"
-    if list_order(q):
-        return "ordered"
-    if counted_order(q):
-        return "counted"
-    if _ORDER.match(q):
-        return "order"
-    if _MENTION.match(q):
-        return "mentions"
-    if composer_versus.asks(q):
-        return "which"
-    if holding_ask(q):
-        return "holding"
+    for name, test in _ASKED_IN_ORDER:
+        if test(q):
+            return name
     due = due_ask(q)
     found = _DATES.search(q)
     if found and _only_a_window(found.group("rest")):
@@ -809,7 +851,34 @@ def _holding(out, asked: str, views: list, today: date) -> bool:  # noqa: ANN001
     return True
 
 
-_SHAPES = {"until": _until, "order": _order, "which": _which, "ordered": _ordered, "counted": _counted, "mentions": _mentions, "listed": _listed, "dates": _dates, "due_for": _due_for, "holding": _holding}
+def _holds_all(view, words: list[str]) -> bool:  # noqa: ANN001
+    have = view.words | view.title_words | view.filed_words
+    return bool(words) and all(composer._holds(w, have) for w in words)  # noqa: SLF001
+
+
+def _without(out, asked: str, views: list, today: date) -> bool:  # noqa: ANN001
+    """The notes that hold the subject asked about and leave the other out; with
+    no subject asked about, every note that leaves it out (round 2 E2)."""
+    kept, left = without_ask(asked)  # type: ignore[misc]
+    kept_words, left_words = composer._words(kept), composer._words(left)  # noqa: SLF001
+    if not left_words:
+        return False
+    members = [v for v in views if v.sentences and not _holds_all(v, left_words) and (not kept_words or _holds_all(v, kept_words))]
+    members.sort(key=lambda v: (v.written or date.min, -v.rank), reverse=True)
+    if not members:
+        out.lines.append(f"Every note I looked through that mentions {kept} also mentions {left}." if kept_words else f"Every note I looked through mentions {left}.")
+        return True
+    verb = "does" if len(members) == 1 else "do"
+    head = f"{_plural_words(len(members), 'note').capitalize()} {'mentions' if len(members) == 1 else 'mention'} {kept} and not {left}:" if kept_words else (
+        f"{_plural_words(len(members), 'note').capitalize()} {verb} not mention {left}:")
+    lines = [(f"{_title(v)}, {_day(v.written, today)}" if v.written else _title(v), v, v.sentences[0]) for v in members[:SHOWN]]
+    _block(out, head, lines)
+    if len(members) > SHOWN:
+        out.lines.append(_more_on_the_right(len(members) - SHOWN))
+    return True
+
+
+_SHAPES = {"without": _without, "until": _until, "order": _order, "which": _which, "ordered": _ordered, "counted": _counted, "mentions": _mentions, "listed": _listed, "dates": _dates, "due_for": _due_for, "holding": _holding}
 
 
 def answer(out, which: str, asked: str, views: list, today: date) -> bool:  # noqa: ANN001

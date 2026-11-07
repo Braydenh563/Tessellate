@@ -20,6 +20,8 @@ NOTES = (
     "# Todo\n\n- [ ] Book MOT\n- [x] Pay council tax",
     "# Lisbon dinner\n\nRemember to book a table for dinner in Lisbon on the first night.",
     "# Ideas\n\n- Paint the shed\n- Learn Rust",
+    "# Tokyo trip\n\nFlights cost $900 return, leaving 3 April. Staying in Shinjuku for six nights.",
+    "# Lisbon trip\n\nFlights cost $420 return, leaving 12 May. Staying at Hotel Alfama near the river.",
 )
 
 
@@ -45,3 +47,17 @@ def test_e19_a_table_is_a_kind_of_note_not_a_word(go, chat, question):
 def test_e19_a_numbered_list_is_not_every_list(go, chat):
     said = go("which notes have a numbered list", chat)
     assert "Packing for Tokyo" in said and "Ideas" not in said and "Todo" not in said, said
+
+
+@pytest.mark.parametrize("chat", [False, True], ids=["ask", "chat"])
+def test_e2_but_not_names_the_notes_that_keep_one_word_and_leave_the_other(go, chat):
+    said = go("notes about Tokyo but not Lisbon", chat)
+    assert "Tokyo trip" in said and "Lisbon trip" not in said and "Lisbon dinner" not in said, said
+    assert "“not”" not in said, said
+
+
+@pytest.mark.parametrize("chat", [False, True], ids=["ask", "chat"])
+def test_e2_notes_that_leave_a_word_out_are_every_note_without_it(go, chat):
+    said = go("which notes are not about Lisbon", chat)
+    assert "Tokyo trip" in said and "Shopping" in said, said
+    assert "Lisbon trip" not in said and "Lisbon dinner" not in said, said

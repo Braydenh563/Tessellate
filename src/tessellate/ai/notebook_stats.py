@@ -801,6 +801,36 @@ def _longest_notes(session: Session) -> StatAnswer:
     )
 
 
+def _shortest_notes(session: Session) -> StatAnswer:
+    """The notes with the least in them, the mirror of the longest (round 2 E21).
+
+    "What is my shortest note" used to fall through to "Your notes don't mention
+    shortest". Empty notes are left out (nothing to name), and the SQL narrows
+    to the shortest by characters before the words are counted.
+    """
+    rows = session.execute(
+        _visible(select(Entry.id, Entry.content))
+        .where(func.length(func.trim(Entry.content)) > 0)
+        .order_by(func.length(Entry.content).asc())
+        .limit(TOP_N * 5)
+    ).all()
+    if not rows:
+        return StatAnswer("shortest-notes", "There are no notes to rank yet.")
+    counted = sorted(((composer_frame.note_words(content), note_id, content) for note_id, content in rows), key=lambda r: r[0])
+    facts = [
+        {"label": composer_frame.note_title(content, size=60) or composer_frame.plain_snippet(content), "count": words, "id": note_id}
+        for words, note_id, content in counted[:TOP_N]
+    ]
+    lead = facts[0]
+    unit = "word" if lead["count"] == 1 else "words"
+    return StatAnswer(
+        "shortest-notes",
+        f"Your shortest note is “{lead['label']}”, about {lead['count']} {unit}. "
+        f"The {len(facts)} shortest are listed below.",
+        facts,
+    )
+
+
 def _stale_notes(session: Session) -> StatAnswer:
     """What you have not touched in a season.
 
@@ -1311,6 +1341,7 @@ _LATER_RULES = (
     (lambda t: _asks(t, r"\b(?:write|wrote|written|writing)\b", r"\bmost\b", r"\babout\b"), _top_subjects),
     (lambda t: _asks(t, r"\bwords?\b|word count|wordcount", r"\bhow many|\btotal|\bwritten|\bcount") and not _names_a_thing(t), _word_count),
     (lambda t: _asks(t, r"longest|biggest|largest", r"\bnotes?\b"), _longest_notes),
+    (lambda t: _asks(t, r"shortest|smallest", r"\bnotes?\b"), _shortest_notes),
     (lambda t: _asks(t, r"stale|forgotten|untouched|abandoned|haven.?t (?:looked|touched|opened|read)"), _stale_notes),
     (lambda t: _asks(t, _TAG_WORDS, r"together|alongside|\bpairs?\b|combination|co-?occur"), _tag_pairs),
 )

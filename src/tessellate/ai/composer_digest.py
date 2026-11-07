@@ -44,7 +44,7 @@ from functools import lru_cache, wraps
 from pathlib import Path
 
 from tessellate.ai import composer, composer_doings, composer_done, composer_frame, composer_threads, composer_lists, composer_money, composer_slots, composer_sum, composer_tables, filed_name, glossary, question_noise, realise, verdicts
-from tessellate.ai import composer_answer, composer_brief
+from tessellate.ai import composer_answer, composer_brief, composer_nth, composer_oneword, composer_property
 from tessellate.ai import composer_ask
 from tessellate.ai import composer_read
 from tessellate.ai import composer_select
@@ -4007,9 +4007,31 @@ def _no_place(out: _Out, cue, lead: Fact) -> None:  # noqa: ANN001
         out.lines.append(PHRASES["no_place"])
 
 
+def _property_lead(out: _Out, question: str, members, facts: list[Fact], lead: Fact) -> Fact | None:
+    """The fact that holds the property asked for ("his number", "the
+    password for the bank"); None, with the line said, when no note read for
+    this says it (round 2 E4, E20). `lead` itself when the question asks no such property."""
+    prop = composer_property.asked(question)
+    if not prop:
+        return lead
+    holders = [f for f in facts if composer_property.held(prop, f.sentence.text)]
+    if holders:
+        return next((f for f in holders if f.view.id == lead.view.id), holders[0])
+    if any(composer_property.held(prop, x.text) for m in members for x in m.sentences):
+        return lead
+    named = _your_note(lead.view)
+    line = f"{named[:1].upper()}{named[1:]} has no {composer_property.noun(prop)}."
+    out.lines.append(line)
+    out.rows.append(_row(line, lead))
+    return None
+
+
 def _single(out: _Out, kind: str, question: str, members, facts, today: date) -> None:
     cue = _single_cue(kind, clean(question))
     lead = _best(facts, question, cue)
+    if lead is None:
+        return
+    lead = _property_lead(out, question, members, facts, lead)
     if lead is None:
         return
     _no_place(out, cue, lead)
@@ -4361,7 +4383,7 @@ def _exact_lookup(out: _Out, asked: str, question: str, views: list, today: date
         return True
     if composer_sum.most(out, question, views, today):
         return True
-    if composer_slots.answer(out, asked, views, today) or composer_money.answer(out, question, views, today):
+    if composer_nth.answer(out, asked, views) or composer_slots.answer(out, asked, views, today) or composer_money.answer(out, question, views, today):
         return True
     if composer_sum.answer(out, question, views, today):
         return True
@@ -4652,6 +4674,8 @@ def answer(
     when the question is not one this shape answers (a sum, a time, a
     command, nothing found): the caller then asks `composer.compose`."""
     today = today or composer.user_today()
+    if one := composer_oneword.named(question, notes):
+        return _one_word_result(one)
     asked = composer_ask.what_is(clean(question))
     kind = _kind_if_mine(asked)
     #: An act ("rename my gym log") is not a topic to digest: with its verb off
@@ -5211,6 +5235,16 @@ def polish(text: str, keep: Iterable[str] = ()) -> str:
     return realise.mend_stops(re.sub("(\\d+)", lambda m: held[int(m.group(1))], text))
 
 
+#: A note's own emphasis marks (`*Bring wine*`, a one-word `cash` code span)
+#: show as plain words in a quote: the answer's own bold stays (round 2, research row 11).
+_ITALIC_MARK = re.compile(r"(?<![*\w])\*(?![\s*])([^*\n]+?)(?<![\s*])\*(?![*\w])")
+_CODE_WORD = re.compile(r"`(\w+)`")
+
+
+def _plain_marks(line: str) -> str:
+    return _CODE_WORD.sub(r"\1", _ITALIC_MARK.sub(r"\1", line))
+
+
 def _polish_out(out: _Out, kind: str) -> None:
     """The composed lines, said with the grammar pass. A web answer is the
     pages' own words under a one-line lead, so it is not touched."""
@@ -5226,7 +5260,7 @@ def _polish_out(out: _Out, kind: str) -> None:
     #: A quote is the note's own words, whatever frame said it (INBOX 1515).
     pool = [t for v in _VIEWS.get() for t in (str(v.note.get("content") or ""), *map(str, (v.note.get("link_reasons") or {}).values()))]
     for lines in (out.lines, out.more, out.closing, out.next):
-        lines[:] = [composer_threads.own_words(polish(line, keep), pool) for line in lines]
+        lines[:] = [_plain_marks(composer_threads.own_words(polish(line, keep), pool)) for line in lines]
     if out.offer and out.offer.get("label"):
         out.offer = {**out.offer, "label": polish(str(out.offer["label"]), keep)}
     _rows_as_polished(out)
@@ -5237,7 +5271,8 @@ def _rows_as_polished(out: _Out) -> None:
     "Tuesday"), else the card cannot find its words in the text (INBOX 1665 f)."""
     whole = "\n".join([*out.lines, *out.more, *out.closing, *out.next])
     for row in out.rows:
-        said = str(row.get("sentence") or "")
+        said = _plain_marks(str(row.get("sentence") or ""))
+        row["sentence"] = said
         found = re.search(re.escape(said), whole, re.IGNORECASE) if said and said not in whole else None
         if found:
             row["sentence"] = found.group(0)
@@ -5356,6 +5391,19 @@ def _ask_key(question: str) -> str:
     latest on X" are one chip, and the question just asked is none."""
     words = re.sub(r"\bwhat's\b", "what is", question.lower())
     return " ".join(re.findall(r"[a-z0-9]+", re.sub(r"\b(?:the|my|a|an|last)\b", " ", words)))
+
+
+def _one_word_result(note: dict) -> dict:
+    """The answer for a note that is one word, cited to that note (round 2 E11)."""
+    out = _Out()
+    out.lines.append(composer_oneword.say(note))
+    text = out.lines[0]
+    word = " ".join(str(note.get("content") or "").split())
+    out.rows.append({
+        "sentence": text, "note_id": note.get("source_id", note.get("id")), "source": word, "start": 0, "end": len(word),
+        "score": 1.0, "digest": True, "kind": "note",
+    })
+    return _result(out, "fact", "")
 
 
 def _result(out: _Out, kind: str, question: str) -> dict:

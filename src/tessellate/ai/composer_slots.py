@@ -181,7 +181,11 @@ def _counted(out, q: str, views: list) -> bool:  # noqa: ANN001
 _STATE = r"packed|bought|ticked(?:\s+off)?|checked(?:\s+off)?|done|finished|completed|sorted|booked|crossed\s+off"
 _IS_STATE = re.compile(rf"^(?:is|are|has|have)\s+(?:all\s+(?:of\s+)?)?(?P<obj>.+?)\s+(?:been\s+)?(?P<verb>{_STATE})(?:\s+(?:yet|already))?$", re.I)
 _UN_STATE = re.compile(r"^what(?:'s|\s+is|\s+are)?\s+(?:still\s+)?(?:un(?P<un>packed|ticked|checked|bought|done)|not\s+(?P<not>packed|ticked|checked|bought|done)(?:\s+yet)?)$", re.I)
-_TICKED_SO_FAR = re.compile(r"^what(?:'s|\s+have\s+i|\s+did\s+i|\s+i've)\s+(?:i\s+)?(?:ticked|checked|crossed)\s+off(?:\s+(?:so\s+far|already|yet))?$", re.I)
+_TICKED_SO_FAR = re.compile(r"^what(?:'s|\s+have\s+i|\s+did\s+i|\s+i've)\s+(?:i\s+)?(?:tick(?:ed)?|check(?:ed)?|cross(?:ed)?)(?:\s+off)?(?:\s+(?:so\s+far|already|yet))?$", re.I)
+#: "What is not done", "what is left to do", "what haven't I finished": the
+#: open items of every checklist, no list named (round 2 E21).
+_BARE_STATE = frozenset({"ticked", "checked", "done"})
+_ALL_OPEN = re.compile(r"^(?:what|which)\s+(?:tasks|items|things|todos)\s+(?:are|is)\s+(?:still\s+)?(?:open|outstanding|left|unticked|remaining|pending|not\s+done)$|^what(?:'s|\s+is|\s+are)?\s+(?:still\s+)?(?:left|outstanding|remaining)(?:\s+to\s+do)?$|^what\s+(?:haven't|have\s+not|hasn't)\s+i\s+(?:done|finished|ticked(?:\s+off)?|completed|checked(?:\s+off)?|packed|bought)(?:\s+yet)?$", re.I)
 _EVERYTHING = frozenset({"everything", "all", "it all", "all of it", "everything on the list"})
 
 
@@ -237,11 +241,26 @@ def _ticked_so_far(out, views: list) -> bool:  # noqa: ANN001
     return True
 
 
+def _open_everywhere(out, views: list) -> bool:  # noqa: ANN001
+    """Every checklist item not yet ticked, by the note it is in."""
+    tasks = [(v, s) for v in sorted(views, key=lambda v: v.rank) for s in v.sentences if s.kind == "task"]
+    if not tasks:
+        return False
+    open_ = [(v, s) for v, s in tasks if not s.done and not recorded_later(views, v, s)]
+    if not open_:
+        out.lines.append("Nothing is open: every checklist item is ticked off.")
+        return True
+    notes = len({id(v) for v, _s in open_})
+    header = f"{realise.count_word(len(open_)).capitalize()} item{'s' if len(open_) != 1 else ''} still open across {realise.count_word(notes)} note{'s' if notes != 1 else ''}:"
+    composer_lists._block(out, header, [(f"{_task_name(s)}, in {composer_lists._title(v)}", v, s) for v, s in open_[:12]])  # noqa: SLF001
+    return True
+
+
 def asks_state(question: str) -> bool:
     """Whether `question` asks a checklist's state by its verb ("what's
     unpacked", "what have I ticked off")."""
     q = " ".join(str(question or "").lower().split()).rstrip("?.!")
-    return bool(_UN_STATE.match(q) or _TICKED_SO_FAR.match(q))
+    return bool(_UN_STATE.match(q) or _TICKED_SO_FAR.match(q) or _ALL_OPEN.match(q))
 
 
 #: "Is the library membership renewed", "is the laptop backed up", "is the
@@ -270,7 +289,10 @@ def _state(out, q: str, views: list, today: date) -> bool:  # noqa: ANN001
     if m := _IS_PASSIVE.match(q):
         return _was_done(out, m, views, today)
     if m := _UN_STATE.match(q):
-        return _left(out, m.group("un") or m.group("not"), views, today)
+        bare = m.group("un") or m.group("not")
+        return _open_everywhere(out, views) if bare.lower() in _BARE_STATE else _left(out, bare, views, today)
+    if _ALL_OPEN.match(q):
+        return _open_everywhere(out, views)
     return bool(_TICKED_SO_FAR.match(q)) and _ticked_so_far(out, views)
 
 
