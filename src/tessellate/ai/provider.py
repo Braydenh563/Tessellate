@@ -149,6 +149,28 @@ DEFAULT_CONTEXT_TOKENS = 4096
 # raise it in preferences.
 MAX_REQUESTED_CONTEXT = 8192
 
+#: Windows are rounded down to this step so the number reads cleanly.
+CONTEXT_STEP = 1024
+
+#: The share of free memory the KV cache may take. The weights, the app and
+#: the rest of the computer need the other half.
+KV_MEMORY_SHARE = 0.4
+
+
+def memory_budget_bytes() -> int | None:
+    """What the KV cache may spend: a bounded share of the larger of free RAM
+    and video memory, or None when neither can be read."""
+    try:
+        from tessellate.core import hardware
+
+        free = hardware.free_memory_gb() or 0.0
+        cards = [g.get("vram_gb") or 0.0 for g in hardware.detect_gpus()]
+        best = max([free, *cards])
+    except Exception:  # noqa: BLE001  # unreadable memory means "keep the old cap"
+        return None
+    return int(best * 1024**3 * KV_MEMORY_SHARE) if best else None
+
+
 # Room for the reply. Unset, a backend will happily generate until it decides
 # to stop, and a local model that rambles is the single most common reason an
 # answer "takes ages", output tokens are generated one at a time, so they cost
@@ -484,10 +506,70 @@ class Provider:
         chosen = self.preferred_context(model)
         if chosen:
             return chosen
-        declared = self.context_length(model) or self.DEFAULT_CONTEXT_TOKENS
-        return max(
-            self.DEFAULT_CONTEXT_TOKENS, min(declared, self.max_requested_context)
-        )
+        return self.context_decision(model)[0]
+
+    # ---- the adaptive ceiling (CHAT_PLAN B6) ---------------------------------
+    #
+    # The owner: "why are the ai model context windows so small, can they be
+    # larger?? they need to properly adapt to the model." A fixed 8192 ceiling
+    # put a 128k model on 5k of budget. The ceiling is now what the machine can
+    # hold: the model's own length, capped by the KV cache that length would
+    # need against a bounded share of free memory. A backend that cannot say
+    # what a token costs keeps the old fixed ceiling.
+
+    def kv_bytes_per_token(self, model: str) -> int | None:
+        """Bytes of KV cache one token of context costs, or None if unknown."""
+        return None
+
+    def window_is_fixed(self, model: str) -> bool:
+        """True when the server loaded the model at the reported window, so
+        there is nothing to allocate and the number is simply the truth."""
+        return False
+
+    def _explicit_ceiling(self) -> int | None:
+        """The global `max_context_tokens` preference, only when it was set."""
+        try:
+            deps = importlib.import_module("tessellate.core.deps")
+            raw = deps.get_config().get_preference("max_context_tokens", None)
+            return max(self.DEFAULT_CONTEXT_TOKENS, int(raw)) if raw else None
+        except Exception:  # noqa: BLE001  # a bad preference must not stop a chat
+            return None
+
+    def context_decision(self, model: str) -> tuple[int, str]:
+        """The window and why, as (tokens, reason code). One place decides, so
+        the number asked for, the number budgeted and the sentence in Settings
+        cannot disagree."""
+        known = self.context_length(model)
+        declared = known or self.DEFAULT_CONTEXT_TOKENS
+        floor = self.DEFAULT_CONTEXT_TOKENS
+        if known and self.window_is_fixed(model):
+            return max(floor, declared), "server"
+        explicit = self._explicit_ceiling()
+        if explicit:
+            return max(floor, min(declared, explicit)), "preference"
+        kv = self.kv_bytes_per_token(model) if known else None
+        share = memory_budget_bytes() if kv else None
+        if not (kv and share):
+            return max(floor, min(declared, self.MAX_REQUESTED_CONTEXT)), "default"
+        fits = int(share // kv) // CONTEXT_STEP * CONTEXT_STEP
+        window = max(floor, min(declared, fits))
+        if window >= declared:
+            return max(floor, declared), "model"
+        return window, "memory"
+
+    def context_explanation(self, model: str) -> str:
+        """One sentence for Settings: the window in use and why."""
+        chosen = self.preferred_context(model)
+        if chosen:
+            return f"Set by you: {chosen:,} tokens."
+        window, why = self.context_decision(model)
+        shown = f"{window:,} tokens"
+        return {
+            "server": f"{shown}, the window your server loaded the model with; the server sets it.",
+            "preference": f"{shown}, the model's window held to your ceiling in preferences.",
+            "memory": f"{shown}, as much as the free memory on this computer can hold; the model allows more.",
+            "model": f"{shown}, the model's full window; free memory can hold all of it.",
+        }.get(why, f"{shown}, the usual cap, because this backend does not say what a window costs.")
 
     def generation_budget(
         self,

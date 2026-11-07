@@ -296,6 +296,23 @@ MORE_TOPICS: list[dict] = [
         "badge": {"label": "Tools it can use", "section": "tools"},
     },
     {
+        "id": "context-window",
+        "keywords": (
+            "context window", "context size", "context length", "num ctx",
+            "window too small", "bigger window", "tokens window", "n ctx",
+        ),
+        "body": (
+            "Settings, Models, Context window is how much the model can hold at "
+            "once. Empty means auto: the model's own window, held back only by "
+            "how much free memory the cache for that window would need, and the "
+            "line under the box says the number in use and why. A number you "
+            "type for a model always wins. With llama.cpp the server sets the "
+            "window when it loads the model, so Tessellate follows the number "
+            "the server reports; start it with a larger -c for more."
+        ),
+        "badge": {"label": "Models", "section": "models"},
+    },
+    {
         "id": "learned",
         "keywords": (
             "what it learned", "learned", "worked out", "derived", "forget everything learned",

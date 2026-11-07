@@ -7,6 +7,16 @@ Split out of `ROADMAP.md`. Kept, not deleted, for one reason: **three sessions
 have independently rebuilt something that already existed.** This is the file
 that answers "has this been done?" before anyone starts.
 
+## Moved from the plans, 2026-11-07 (CHAT_PLAN B6)
+
+From CHAT_PLAN.md "Placed from INBOX, 2026-11-05", row B6, built. The row as placed:
+
+- **B6, verbatim:** "also I still dont understand why the ai model context windows are so small, cna they be larger?? they need to properly adapt to the model." Recommendation (taken): the context window is read from the model (GGUF metadata or the server's reported n_ctx), set as large as the model and memory allow (a bounded share of free RAM or VRAM), shown in Settings with why; prompt budgets scale from it; fake-transport tests for a 4k, 32k and 128k model. Owner log 02:15Z: "tessellate.agent context budget: 5120 tok window" for gemma-4-E2B (a 128k model).
+
+- **Built.** `provider.context_decision` is the one place that decides the window: a hand-set per-model value first, then a server-fixed window (llama-server `/props` n_ctx, LM Studio loaded length) as it stands, then an explicit `max_context_tokens`, then the adaptive ceiling (the model's length capped by KV bytes per token from `/api/show` against 40% of the larger of free RAM and video memory, rounded down to 1024, floor 4096), else the old 8192. `model_spec.context_reason` is the Settings sentence.
+- **Measured** (fake transports, 32 layers x 8 KV heads x 128 wide, 128 KiB per token): a 128k model 8,192 to 131,072 at 64 GB free, 52,224 at 16 GB, 25,600 at 8 GB; a 32k model 8,192 to 32,768 at 64 GB, 25,600 at 8 GB; a 4k model 4,096 throughout.
+- **Not verified:** real inference; the KV estimate is an upper bound from the shape (sliding-window layers and a quantised cache cost less).
+
 ## Moved from the plans, 2026-11-05 (CHAT_PLAN B1 and B5)
 
 From CHAT_PLAN.md "Placed from INBOX, 2026-11-05 (the Ask columns and folds)", rows B1 and B5, built (41d42ef, f30176e). The rows as placed:

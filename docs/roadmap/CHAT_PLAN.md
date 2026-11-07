@@ -1840,6 +1840,6 @@ A1, A2 and the A2 follow-up built; moved to HISTORY.md ("Moved from the plans, 2
 B2 and B7 built; moved to HISTORY.md ("Moved from the plans, 2026-11-05 (CHAT_PLAN B2 and B7)").
 
 - **B1 and B5: built 2026-11-05** (41d42ef, f30176e), moved to HISTORY.md ("Moved from the plans, 2026-11-05 (CHAT_PLAN B1 and B5)"): the answer is never folded, the reasoning is; the popup agent keeps arrival order.
-- **B6, verbatim:** "also I still dont understand why the ai model context windows are so small, cna they be larger?? they need to properly adapt to the model." Recommendation (taken): the context window is read from the model (GGUF metadata or the server's reported n_ctx), set as large as the model and memory allow (a bounded share of free RAM or VRAM), shown in Settings with why; prompt budgets scale from it; fake-transport tests for a 4k, 32k and 128k model. Owner log 02:15Z: "tessellate.agent context budget: 5120 tok window" for gemma-4-E2B (a 128k model).
+- B6 (the context window adapts to the model and memory) built; moved to HISTORY.md ("Moved from the plans, 2026-11-07 (CHAT_PLAN B6)").
 - **B3, B4 and B8**: built 2026-11-05, moved to HISTORY.md ("Moved from the plans, 2026-11-05 (CHAT_PLAN B3, B4 and B8)").
 - B9 (confirmed patterns managed) built; moved to HISTORY.md ("Moved from the plans, 2026-11-05 (CHAT_PLAN B9)").
