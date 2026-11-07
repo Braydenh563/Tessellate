@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Follow-up questions under an answer run in Quick (2026-11-05a): no thinking and a 256-token cap, so a reasoning model no longer reasons at length before three short chips.
 - The desk companion's card fallback (INBOX 1690 d): when the figure could not restart, the hidden quick panel was shown as the card and hid again every few seconds; it is now closed and a real card window made.
 - Quit (INBOX 1666 review): a close on the window's own thread (the close button with close to tray off) no longer waits 1.5 s on a web view start that needs that thread, and a panel window a quit overtakes while it is being made is closed instead of left to the process exit.
 - The desk figure's screen reads (BACKLOG 1678 review): with "Roam over windows" off it reads neither the foreground window nor the downloads folder, the folder is counted on a worker so a sleeping or synced disk never stalls a frame, and after a suspend or a full-screen app the first reads are only remembered, so nothing that happened while away is answered as news.

@@ -2,7 +2,7 @@
 
 Generated 2026-11-07 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7841, frontend ids 2646, CSS sections 522, backend routes 649, backend modules 8920, test files 2112, tests 17826, plan headings 1003, app scripts 28, boot scripts 37, script files 260.
+Counts: frontend functions 7841, frontend ids 2646, CSS sections 522, backend routes 649, backend modules 8920, test files 2112, tests 17827, plan headings 1003, app scripts 28, boot scripts 37, script files 260.
 
 ## Frontend functions (7841)
 
@@ -24290,7 +24290,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (17826)
+## Tests (17827)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -25110,7 +25110,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_followup_ordinal_e14.py | 9 |
 | tests/test_followup_referent_1029.py | 9 |
 | tests/test_followup_trail_490.py | 3 |
-| tests/test_followups.py | 19 |
+| tests/test_followups.py | 20 |
 | tests/test_font_matrix.py | 6 |
 | tests/test_forced_colors_s15.py | 2 |
 | tests/test_forced_layout_1667.py | 11 |
@@ -27116,7 +27116,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Phases 0 to 2: built 2026-09-09 | docs/roadmap/DOCUMENTS_PLAN.md:119 |
 | Phases 0 to 6: built | docs/roadmap/UI_MODERNISATION_PLAN.md:216 |
 | Phases, each with the gate it is finished against | docs/roadmap/MINDMAP_PLAN.md:1296 |
-| Placed (last 20, newest first) | docs/roadmap/INBOX.md:174 |
+| Placed (last 20, newest first) | docs/roadmap/INBOX.md:175 |
 | Placed from Brief 40, 2026-10-10 (does the MCP server work) | docs/roadmap/AGENT_SKILLS_REFORM.md:345 |
 | Placed from Brief 40, 2026-10-10 (research and placement) | docs/roadmap/BACKLOG.md:4178 |
 | Placed from Brief 40, 2026-10-10 (the phone over HTTPS) | docs/roadmap/WORLD_CLASS_PLAN.md:3128 |
