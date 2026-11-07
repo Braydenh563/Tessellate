@@ -69,9 +69,9 @@ def _undo_lead(words: list[str]) -> str:
     keys come first, not a note that the word is not in the notes (round 2 E7)."""
     said = [w for w in words if w not in _FEATURE_FILLER and w not in ("change", "changes", "action")]
     if said == ["undo"]:
-        return "Press Ctrl+Z, or Undo in the toast that follows a change, to take back your last change. "
+        return "Press Undo in the status bar, or Ctrl+Z when you are not typing in a box, to take back your last change. "
     if said == ["redo"]:
-        return "Press Ctrl+Shift+Z or Ctrl+Y, or Redo in the status bar, to bring back what you undid. "
+        return "Press Redo in the status bar, or Ctrl+Shift+Z or Ctrl+Y when you are not typing in a box, to bring back what you undid. "
     return ""
 
 

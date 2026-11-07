@@ -113,12 +113,12 @@ def test_e26_a_foreign_function_word_is_not_reported_missing(question):
 @pytest.mark.parametrize("question", ["undo", "undo that", "undo the last change"])
 def test_e7_a_typed_undo_says_how_to_undo_first(question):
     got = ask(question)
-    assert got.startswith("Press Ctrl+Z, or Undo in the toast"), got
-    assert "not something in your notes" not in got
+    assert got.startswith("Press Undo in the status bar, or Ctrl+Z"), got
+    assert "toast" not in got and "not something in your notes" not in got
 
 
 def test_e7_a_typed_redo_says_the_redo_keys_first():
-    assert ask("redo").startswith("Press Ctrl+Shift+Z or Ctrl+Y"), ask("redo")
+    assert ask("redo").startswith("Press Redo in the status bar, or Ctrl+Shift+Z"), ask("redo")
 
 
 # --- E8: the nth item of a list, and how many items it holds ------------------------------
@@ -195,3 +195,4 @@ def test_row11_a_summary_quotes_without_emphasis_marks():
     result = composer_digest.answer("summarise my social notes", [note, other], today=date(2026, 11, 7))
     assert "Bring wine and cash" in result["text"] and "*" not in result["text"] and "`" not in result["text"], result["text"]
     assert all("*" not in row["sentence"] for row in result["grounding"])
+

@@ -18,11 +18,13 @@ _ORDINALS = {
     "first": 1, "second": 2, "third": 3, "fourth": 4, "fifth": 5, "sixth": 6, "seventh": 7, "eighth": 8, "ninth": 9, "tenth": 10, "last": -1,
 }
 _THING = r"(?:item|thing|entry|line|task|bullet|step|row)"
-_PLACE = r"(?:\s+(?:in|on|of|from)\s+(?:my\s+|the\s+|our\s+)?(?P<note>.+?))?"
-_NTH = re.compile(
-    rf"^(?:what|which)(?:'s|\s+is|\s+was)?\s+(?:the\s+)?(?P<nth>{'|'.join(_ORDINALS)}|\d{{1,2}}(?:st|nd|rd|th))\s+{_THING}{_PLACE}$",
-    re.I,
-)
+_PLACE = r"\s+(?:in|on|of|from)\s+(?:my\s+|the\s+|our\s+)?(?P<note>.+?)"
+_ORD = rf"(?P<nth>{'|'.join(_ORDINALS)}|\d{{1,2}}(?:st|nd|rd|th))\s+{_THING}"
+#: "What is the third item in X", or the short forms people type ("third item in
+#: the Tokyo packing list", "show me the last item in my todo"). A short form
+#: must name the list: "first thing in the morning" is not an ask for one.
+_NTH = re.compile(rf"^(?:what|which)(?:'s|\s+is|\s+was)?\s+(?:the\s+)?{_ORD}(?:{_PLACE})?$", re.I)
+_NTH_SHORT = re.compile(rf"^(?:(?:show|tell|give|read)\s+me\s+)?(?:the\s+)?{_ORD}{_PLACE}$", re.I)
 _COUNT = re.compile(rf"^how\s+many\s+(?P<thing>{_THING}s?)\s+(?:are\s+|do\s+i\s+have\s+)?(?:there\s+)?(?:in|on|of)\s+(?:my\s+|the\s+|our\s+)?(?P<note>.+?)$", re.I)
 _NOT_NAMING = frozenset({"list", "note", "checklist", "lists", "notes", "for", "the", "of", "my", "and", "to", "a", "an", "in", "on"})
 
@@ -57,7 +59,7 @@ def _asked(asked: str):  # noqa: ANN202
     """`(position, note words, ordinal word)` for an nth ask, position 0 for a
     count, or None."""
     q = " ".join(str(asked or "").split()).rstrip("?.! ")
-    if m := _NTH.match(q):
+    if m := _NTH.match(q) or _NTH_SHORT.match(q):
         return _nth_of(m.group("nth")), m.group("note") or "", m.group("nth").lower()
     if m := _COUNT.match(q):
         return 0, m.group("note"), ""
