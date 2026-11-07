@@ -621,7 +621,6 @@ def test_the_apps_companion_size_reaches_the_figure_and_a_pull_is_written_back(o
 
 def _page(over, answers):
     """The app window: `answers` is what a size write returns; the look says what size the page holds."""
-    import json
 
     asked: list[str] = []
     state = {"write": answers, "page": 1.0}
@@ -686,7 +685,6 @@ def test_the_size_script_and_look_script_use_the_names_the_page_really_has():
 
 @pytest.mark.parametrize("bad", ["big", True, None, [1], {"a": 1}])
 def test_a_size_that_is_not_a_number_is_ignored_when_the_look_is_read(over, bad):
-    import json
 
     over.main.evaluate_js = lambda s: json.dumps({"look": "masculine", "size": bad})
     over.size_pref = 1.3
