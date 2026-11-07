@@ -240,9 +240,9 @@ def counted_order(question: str) -> tuple[bool, int, str] | None:
 #: mark is the first of these after the lead; the words before it, less the
 #: ask's own, are the subject kept, and the words after it the subject dropped.
 _WITHOUT_MARK = re.compile(
-    r"(?:^|[,\s]+)(?:but\s+(?:not|without)|and\s+not|not\s+(?:about|on|mentioning)|without|excluding|except(?:\s+for)?|other\s+than"
+    r"(?:^|(?<=[,\s]))(?:but\s+(?:not|without)|and\s+not|not\s+(?:about|on|mentioning)|without|excluding|except(?:\s+for)?|other\s+than"
     r"|nothing\s+(?:about|on)|(?:that\s+)?(?:do|does)(?:n't|\s+not)\s+(?:mention|include|have|say\s+anything\s+about|talk\s+about)"
-    r"|(?:are|is)(?:n't|\s+not)\s+(?:about|on)|not)\s+(?P<neg>\S.*)$",
+    r"|(?:are|is)(?:n't|\s+not)\s+(?:about|on)|not)\s+(?=\S)",
     re.I,
 )
 _WITHOUT_LEAD = frozenset(
@@ -269,33 +269,22 @@ def without_ask(question: str) -> tuple[str, str] | None:
     "Lisbon"), with "" kept for "which notes are not about Lisbon"; None for
     any other question."""
     q = _q(question)
+    #: The marker only, its words are the rest of the question: a pattern that
+    #: also matched the tail backtracked on every "not" in a long ask (CodeQL 2086).
     found = _WITHOUT_MARK.search(q)
-    if not found or not _WITHOUT_NOTES.search(q[: found.end()]):
+    if not found or not _WITHOUT_NOTES.search(q):
         return None
     head = q[: found.start()].strip(" ,")
     words = head.split()
     while words and words[0].lower() in _WITHOUT_LEAD:
         words.pop(0)
     kept = " ".join(words)
-    left = re.sub(r"^(?:the\s+word\s+|the\s+|my\s+)", "", found.group("neg").strip(" ,\"'"), flags=re.I)
+    left = re.sub(r"^(?:the\s+word\s+|the\s+|my\s+)", "", q[found.end() :].strip(" ,\"'"), flags=re.I)
     if not left or len(left.split()) > 4 or len(kept.split()) > 5:
         return None
     if all(w in _METADATA_WORDS for w in re.findall(r"[a-z]+", left.lower()) if w not in ("a", "an", "any", "no", "the")):
         return None
     return kept, left
-
-
-#: The shapes `kind` tries first, in this order (the names resolve at call time).
-_ASKED_IN_ORDER = (
-    ("without", lambda q: without_ask(q)),
-    ("until", lambda q: utilities.until_subject(q)),
-    ("ordered", lambda q: list_order(q)),
-    ("counted", lambda q: counted_order(q)),
-    ("order", lambda q: _ORDER.match(q)),
-    ("mentions", lambda q: _MENTION.match(q)),
-    ("which", lambda q: composer_versus.asks(q)),
-    ("holding", lambda q: holding_ask(q)),
-)
 
 
 def kind(question: str) -> str | None:
@@ -949,3 +938,17 @@ def counted_filing(question: str) -> str | None:
     if name.lower() in _NOT_A_NAME:
         return ""
     return name
+
+
+#: The shapes `kind` tries first, in this order. Defined last so that every
+#: test it names (`holding_ask` is near the end) exists by then.
+_ASKED_IN_ORDER = (
+    ("without", without_ask),
+    ("until", utilities.until_subject),
+    ("ordered", list_order),
+    ("counted", counted_order),
+    ("order", _ORDER.match),
+    ("mentions", _MENTION.match),
+    ("which", composer_versus.asks),
+    ("holding", holding_ask),
+)

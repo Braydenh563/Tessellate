@@ -180,7 +180,7 @@ def _counted(out, q: str, views: list) -> bool:  # noqa: ANN001
 #: phrasing (audit 1030 Z56).
 _STATE = r"packed|bought|ticked(?:\s+off)?|checked(?:\s+off)?|done|finished|completed|sorted|booked|crossed\s+off"
 _IS_STATE = re.compile(rf"^(?:is|are|has|have)\s+(?:all\s+(?:of\s+)?)?(?P<obj>.+?)\s+(?:been\s+)?(?P<verb>{_STATE})(?:\s+(?:yet|already))?$", re.I)
-_UN_STATE = re.compile(r"^what(?:'s|\s+is|\s+are)?\s+(?:still\s+)?(?:un(?P<un>packed|ticked|checked|bought|done)|not\s+(?P<not>packed|ticked|checked|bought|done)(?:\s+yet)?)(?:\s+(?:in|on|from|of)\s+(?:my\s+|the\s+|our\s+)?(?P<place>.+?))?$", re.I)
+_UN_STATE = re.compile(r"^what(?:'s|\s+is|\s+are)?\s+(?:still\s+)?(?:un(?P<un>packed|ticked|checked|bought|done)|not\s+(?P<not>packed|ticked|checked|bought|done)(?:\s+yet)?)(?:\s+(?:in|on|from|of)\s+(?:my\s+|the\s+|our\s+)?(?P<place>\S.*?))?$", re.I)
 _TICKED_SO_FAR = re.compile(r"^what(?:'s|\s+have\s+i|\s+did\s+i|\s+i've)\s+(?:i\s+)?(?:tick(?:ed)?|check(?:ed)?|cross(?:ed)?)(?:\s+off)?(?:\s+(?:so\s+far|already|yet))?$", re.I)
 #: "What is not done", "what is left to do", "what haven't I finished": the
 #: open items of every checklist, no list named (round 2 E21).

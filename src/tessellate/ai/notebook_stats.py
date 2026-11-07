@@ -517,7 +517,7 @@ _HELD_TIMES = frozenset("today yesterday tomorrow tonight now week weekend month
 def _held_word(text: str, message: str) -> str:
     """The word "how many notes have the word Lisbon?" asks for, as the person
     typed it; "" when the ask is a day, a window or a kind the app counts."""
-    found = _HOLDING.search(re.sub(r"[\s?.!]+$", "", " ".join(text.split())))
+    found = _HOLDING.search(" ".join(text.split()).rstrip(" ?.!"))
     word = found.group(1) if found else ""
     low = word.lower()
     if not word or low in _KIND_WORDS or low in _HELD_TIMES or low.rstrip("s") in _HELD_KINDS or low in _HELD_KINDS or _window(word) is not None:
