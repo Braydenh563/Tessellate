@@ -11,7 +11,7 @@ from concurrent.futures import Future
 from concurrent.futures import TimeoutError as FutureTimeout
 from datetime import date, datetime, timedelta, timezone
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query, Response
 from fastapi.responses import StreamingResponse
 from sqlalchemy import func, select
 from pydantic import BaseModel, Field
@@ -581,12 +581,24 @@ def _confirmed_or_404(session: Session, fact_id: int):  # noqa: ANN202
     return found[0]
 
 
+#: One page of confirmed patterns: they grow with each Yes the person gives.
+CONFIRMED_PAGE_SIZE = 200
+
+
 @router.get("/confirmed")
-def list_confirmed(session: Session = Depends(get_session)) -> dict:
-    """Every confirmed pattern the person can open, newest first."""
+def list_confirmed(
+    response: Response,
+    limit: int = Query(default=CONFIRMED_PAGE_SIZE, ge=1, le=500),
+    offset: int = Query(default=0, ge=0),
+    session: Session = Depends(get_session),
+) -> dict:
+    """The confirmed patterns the person can open, newest first, a page at a
+    time; `X-Total-Count` says how many there are."""
     from tessellate.ai import insights
 
-    return {"items": [insights.confirmed_json(session, row) for row in insights.shown_confirmed(session)[:500]]}
+    rows = insights.shown_confirmed(session)
+    response.headers["X-Total-Count"] = str(len(rows))
+    return {"items": [insights.confirmed_json(session, row) for row in rows[offset : offset + limit]], "total": len(rows)}
 
 
 @router.patch("/confirmed/{fact_id}")

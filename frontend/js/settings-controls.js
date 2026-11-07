@@ -2653,8 +2653,28 @@ async function renderMemorySettings() {
   //: line the person confirmed, its sentence, the day and the notes behind it
   //: (each opens its note), with the Patterns line's own menu (`rowActions`).
   //: Local, not a global: the shared scope only goes down (row 37a).
+  //: Confirmed patterns (CHAT_PLAN B9), built on first draw rather than shipped
+  //: in the page (the boot document's element cap, tests/test_boot_diet3.py).
+  const confirmedHost = () => {
+    const found = $("memory-confirmed-list");
+    const section = $("settings-memory");
+    if (found || !section) return found;
+    const group = section.appendChild(document.createElement("div"));
+    group.className = "settings-group";
+    const head = group.appendChild(document.createElement("h4"));
+    head.className = "setting-subhead";
+    head.textContent = "Confirmed patterns";
+    const host = group.appendChild(document.createElement("ul"));
+    host.id = "memory-confirmed-list";
+    host.className = "entry-list";
+    const empty = group.appendChild(document.createElement("p"));
+    empty.id = "memory-confirmed-empty";
+    empty.className = "muted empty-line hidden";
+    empty.textContent = "None yet. Confirm a line in Tidy's Patterns and it is listed here.";
+    return host;
+  };
   const drawConfirmed = async () => {
-    const host = $("memory-confirmed-list");
+    const host = confirmedHost();
     if (!host) return;
     showSkeletons(host, 2, "li");
     //: `lazyScript` answers false on a failed load; either failure is said,
