@@ -97,7 +97,7 @@ def test_the_panel_says_when_frames_are_being_drawn_and_when_they_could_not_be(o
     assert "note" not in api.companion_choices()
     over.set_main_hidden(True)
     note = api.companion_choices()["note"]
-    assert note == "Drawing your companion for the desk. Atlas stands in until it is ready."
+    assert note == "Summoning your companion to the desk. Atlas keeps you company until it arrives."  # Intent moved: the owner, 2026-11-07, "drawing is too technical", so the line says summoning.
 
     def silent(script):
         if script == dc.LOOK_SCRIPT:
@@ -110,7 +110,7 @@ def test_the_panel_says_when_frames_are_being_drawn_and_when_they_could_not_be(o
     monkeypatch.setattr(capture, "fetch_frames", lambda ask: real(ask, sleep=clock.sleep, clock=clock))
     held.pop()()  # the worker runs against a page that does not answer
     failed = api.companion_choices()["note"]
-    assert failed == "Your companion could not be drawn for the desk, so Atlas stays. It will try again."
+    assert failed == "Your companion could not be summoned to the desk yet, so Atlas stays. It will try again."
     for text in (note, failed):
         assert chr(0x2014) not in text and "!" not in text
 

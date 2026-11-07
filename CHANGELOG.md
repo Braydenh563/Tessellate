@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- The desktop companion's menu says your companion is being summoned, not drawn.
 - A trackpad pinch in the lightbox zooms at the diagram view's rate, five times faster than before; a mouse notch is unchanged.
 - The in-app companion's size handle, hanging at the bottom right, shows the top-left to bottom-right resize cursor.
 - The desk companion no longer stays on the card for good after one failed start (INBOX 1692 k): a see-through figure that does not start is tried again at the next minimise (three times in all), a drawn companion whose frames will not start falls back to Atlas's figure before the card, the card's menu says why in one line, and the card redraws when your chosen look changes, not only your name.

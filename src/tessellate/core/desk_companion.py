@@ -103,8 +103,8 @@ OVERLAY_TRIES = 3
 #: ...and, in a sync that is due, no sooner than this many seconds after the failure.
 OVERLAY_RETRY_GAP = 20.0
 FIGURE_GAP = 0.4
-NOTE_DRAWING = "Drawing your companion for the desk. Atlas stands in until it is ready."
-NOTE_FAILED = "Your companion could not be drawn for the desk, so Atlas stays. It will try again."
+NOTE_DRAWING = "Summoning your companion to the desk. Atlas keeps you company until it arrives."
+NOTE_FAILED = "Your companion could not be summoned to the desk yet, so Atlas stays. It will try again."
 #: A click on the figure this soon after the panel closed itself on losing focus
 #: is the press that took the focus: it closes the panel, it does not reopen it.
 BLUR_GRACE = 0.6
