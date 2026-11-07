@@ -785,10 +785,18 @@
   align-self: stretch;
 }
 
+/* The words on one line over a full-width button, so the three buttons are one width and no label wraps (DD-10, 1107). */
 .dgm-step {
-  display: flex;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
   align-items: center;
-  gap: var(--space-3);
+  gap: var(--space-1) var(--space-3);
+}
+
+.dgm-step > button {
+  grid-column: 2;
+  inline-size: 100%;
+  justify-content: center;
 }
 
 .dgm-step-n {
@@ -1387,6 +1395,15 @@
 
   .dgm-dialog[data-view="source"] .dgm-srcwrap {
     flex: 0 0 9rem;
+  }
+
+  /* The phone's pane is wide enough for the words and a button on one row, which keeps the empty page free of a scroll (DD-10). */
+  .dgm-step {
+    grid-template-columns: auto minmax(0, 1fr) 10rem;
+  }
+
+  .dgm-step > button {
+    grid-column: 3;
   }
 }
 

@@ -127,3 +127,16 @@ def test_the_source_pane_has_line_numbers_indent_keys_whole_edit_undo_and_a_way_
     assert 'field.dispatchEvent(new Event("dgmerror"))' in picture
     assert 'field.addEventListener("dgmerror"' in EMBED
     assert ".dgm-gutter-bad" in CSS and ".dgm-srcwrap" in CSS
+
+
+def test_the_empty_checklist_is_one_width_and_goes_at_two_boxes():
+    # DD-10, measured at 1440 (pane 256 wide): step buttons 113, 133, 131 px wide, rows 43, 32, 43 tall (two-line words), the ticked
+    # record left to the first arrow. After: 190 px each, rows 60, words one line (18 px), and the list and its frame gone at two boxes
+    # (the foot's Connect is the next action). At 390: 160 px each, the pane 383 = 383 (no scroll).
+    steps = _js("diagram-steps.js")
+    assert "const lesson = m.edges.length === 0 && m.nodes.length < 2;" in steps
+    assert 'S.empty.classList.toggle("hidden", !lesson)' in steps and 'S.footConnect?.classList.toggle("hidden", lesson && Boolean(S.steps))' in steps
+    start = CSS.index(".dgm-step {")
+    rule = CSS[start : start + 400]
+    assert "display: grid" in rule and "inline-size: 100%" in rule
+    assert "grid-template-columns: auto minmax(0, 1fr) 10rem" in CSS
