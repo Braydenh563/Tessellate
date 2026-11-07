@@ -30,6 +30,17 @@ const LIGHTBOX_HELP = [
   "The bars fade when the mouse rests on the picture and come back when it moves.",
 ];
 
+//: How far one wheel event zooms. In proportion to the travel, so a wheel's
+//: one notch of 100 is one even step (x1.22); a line or a page of travel
+//: (`deltaMode` 1, 2) counts as 40px. A trackpad pinch (a Ctrl wheel of small
+//: pixel deltas) moves at the diagram view's rate, 0.01 a pixel: at the
+//: notch's 0.002 it was "very slow or minimal" (the owner, INBOX 1694).
+function lightboxZoomFactor(e) {
+  if (e.ctrlKey && e.deltaMode === 0 && Math.abs(e.deltaY) < 50) return Math.exp(-e.deltaY * 0.01);
+  const travel = Math.max(-200, Math.min(200, e.deltaY * (e.deltaMode ? 40 : 1)));
+  return Math.exp(-travel * 0.002);
+}
+
 function openLightbox(items, startIndex = 0, opts = {}) {
   let index = startIndex;
   const overlay = document.createElement("div");
@@ -884,11 +895,7 @@ function openLightbox(items, startIndex = 0, opts = {}) {
       if (!doc.classList.contains("hidden") && !e.ctrlKey) return;
       if (!doc.classList.contains("hidden") && pdfPages.classList.contains("hidden")) return; // plain text: nothing to zoom
       e.preventDefault();
-      //: In proportion to the travel, so a trackpad's many small deltas and
-      //: a wheel's one notch of 100 both feel continuous (a notch: x1.22).
-      //: A line or a page of travel (`deltaMode` 1, 2) counts as 40px.
-      const travel = Math.max(-200, Math.min(200, e.deltaY * (e.deltaMode ? 40 : 1)));
-      setZoom(zoom * Math.exp(-travel * 0.002), [e.clientX, e.clientY]);
+      setZoom(zoom * lightboxZoomFactor(e), [e.clientX, e.clientY]);
     },
     { passive: false }
   );

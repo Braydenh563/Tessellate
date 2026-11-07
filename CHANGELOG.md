@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- A trackpad pinch in the lightbox zooms at the diagram view's rate, five times faster than before; a mouse notch is unchanged.
 - The in-app companion's size handle, hanging at the bottom right, shows the top-left to bottom-right resize cursor.
 - Settings, About names the address and port the app is running at.
 - A thrown companion's landing reads its boxes before the release's writes (INBOX 1667, the owner's 2026-11-07 log: `spotNow` 5956ms, 5774 of it forced layout): the 142 controls' and the bars' rects are taken with the world, so the landing reads nothing (40-note Dashboard, 4x CPU, dirtied page: 13.6ms median to 0.8ms; 20 seeded landing spots identical), and the top bar's height token has no direct first read at boot.

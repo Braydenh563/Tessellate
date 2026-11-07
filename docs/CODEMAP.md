@@ -2,9 +2,9 @@
 
 Generated 2026-11-07 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7842, frontend ids 2644, CSS sections 522, backend routes 649, backend modules 8926, test files 2116, tests 17854, plan headings 1003, app scripts 28, boot scripts 37, script files 260.
+Counts: frontend functions 7843, frontend ids 2644, CSS sections 522, backend routes 649, backend modules 8926, test files 2118, tests 17857, plan headings 1004, app scripts 28, boot scripts 37, script files 260.
 
-## Frontend functions (7842)
+## Frontend functions (7843)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -5704,14 +5704,15 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `attachFromLibrary` | frontend/js/lightbox-actions.js:68 |
 | `reevaluateEntry` | frontend/js/lightbox-actions.js:5 |
 
-### frontend/js/lightbox-view.js (4)
+### frontend/js/lightbox-view.js (5)
 
 | Name | File:line |
 |---|---|
-| `codeFamilyFor` | frontend/js/lightbox-view.js:2424 |
-| `codeScanner` | frontend/js/lightbox-view.js:2405 |
-| `highlightCodeInto` | frontend/js/lightbox-view.js:2378 |
-| `openLightbox` | frontend/js/lightbox-view.js:33 |
+| `codeFamilyFor` | frontend/js/lightbox-view.js:2431 |
+| `codeScanner` | frontend/js/lightbox-view.js:2412 |
+| `highlightCodeInto` | frontend/js/lightbox-view.js:2385 |
+| `lightboxZoomFactor` | frontend/js/lightbox-view.js:38 |
+| `openLightbox` | frontend/js/lightbox-view.js:44 |
 
 ### frontend/js/link-types.js (8)
 
@@ -24300,7 +24301,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (17854)
+## Tests (17857)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -24492,6 +24493,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_brand_mark.py | 6 |
 | tests/test_brand_name.py | 10 |
 | tests/test_breakpoints.py | 3 |
+| tests/test_buddy_grip_cursor_1107.py | 1 |
 | tests/test_budgets.py | 6 |
 | tests/test_calc_fit_1622.py | 5 |
 | tests/test_calc_panel_1102.py | 13 |
@@ -25404,6 +25406,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_library_tab_leaves_board.py | 1 |
 | tests/test_library_visit_cost.py | 3 |
 | tests/test_lightbox.py | 21 |
+| tests/test_lightbox_pinch_1694.py | 2 |
 | tests/test_like_escaping.py | 5 |
 | tests/test_line_clipboard.py | 5 |
 | tests/test_line_gutter_look.py | 7 |
@@ -26423,7 +26426,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_zoom_frame_1508.py | 3 |
 | tests/test_zoom_wheel_delta.py | 3 |
 
-## Plan headings (1003)
+## Plan headings (1004)
 
 Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, except the HISTORY.md archive. Sorted by heading.
 
@@ -27249,6 +27252,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from INBOX, 2026-11-04 (1657, what the two lag rounds left) | docs/roadmap/UI_MODERNISATION_PLAN.md:1560 |
 | Placed from INBOX, 2026-11-04 (audit Rank 36, hover decision) | docs/roadmap/GRAPH_PLAN.md:637 |
 | Placed from INBOX, 2026-11-05 (the Ask columns and folds) | docs/roadmap/CHAT_PLAN.md:1836 |
+| Placed from INBOX, 2026-11-07 (room for 1694) | docs/roadmap/CHAT_PLAN.md:1847 |
 | Placed from INBOX, built (pointers) | docs/roadmap/UI_MODERNISATION_PLAN.md:1062 |
 | Placed from INBOX: 107d, the segmented mini bars | docs/roadmap/DOCUMENTS_PLAN.md:385 |
 | Placed from INBOX: the composer everywhere (the owner, 2026-10-06) | docs/roadmap/CHAT_PLAN.md:639 |
