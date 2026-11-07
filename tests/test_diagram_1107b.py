@@ -5,7 +5,12 @@ Source assertions for what the code must hold; the browser numbers (rects, key c
 
 from __future__ import annotations
 
+import json
+import shutil
+import subprocess
 from pathlib import Path
+
+import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
 JS = ROOT / "frontend" / "js"
@@ -38,3 +43,59 @@ def test_a_phone_builder_is_a_full_screen_sheet_with_the_views_on_top_and_a_one_
     assert ".dgm-known .ph-text" in css and 'known.setAttribute("aria-label", "Open an existing diagram")' in EMBED
     # An empty diagram's picture is a strip so the steps and the template button stay on the screen.
     assert ".dgm-picture-empty" in css[css.index("grid-template-rows: auto minmax(0, 1fr)") - 200 :]
+
+
+needs_node = pytest.mark.skipif(shutil.which("node") is None, reason="node is not installed")
+
+
+def _math(expr: str):
+    script = (
+        "const vm=require('vm');const ctx={diagramModel:{}};vm.createContext(ctx);"
+        f"vm.runInContext(require('fs').readFileSync({json.dumps(str(JS / 'diagram-view.js'))},'utf8'),ctx);"
+        f"const m=ctx.diagramModel.view.math;process.stdout.write(JSON.stringify({expr}));"
+    )
+    return json.loads(subprocess.run(["node", "-e", script], capture_output=True, text=True, check=True).stdout)
+
+
+MODEL = (
+    "{nodes:[{id:'A',text:'Start',shape:'rect'},{id:'B',text:'Check',shape:'diamond'},{id:'C',text:'Done',shape:'rect'},{id:'D',text:'Lone',shape:'round'}],"
+    "edges:[{from:'A',to:'B'},{from:'B',to:'C'}]}"
+)
+BOXES = "[{id:'A',x:50,y:20},{id:'B',x:50,y:100},{id:'C',x:150,y:180},{id:'D',x:-40,y:180}]"
+
+
+@needs_node
+def test_an_arrow_key_on_the_picture_reaches_the_nearest_box_that_way_or_the_top_left_one():
+    # DD-8a: nothing picked starts at the top left; a box straight below beats one far to the side; no box that way is null.
+    assert _math(f"m.reach({BOXES}, '', 0, 1).id") == "A"
+    assert _math(f"m.reach({BOXES}, 'A', 0, 1).id") == "B"
+    assert _math(f"m.reach({BOXES}, 'B', 0, 1).id") in ("C", "D")
+    assert _math(f"m.reach({BOXES}, 'C', -1, 0).id") == "D"
+    assert _math(f"m.reach({BOXES}, 'A', 0, -1)") is None
+    assert _math(f"m.reach({BOXES}, 'A', 1, 0)") is None or _math(f"m.reach({BOXES}, 'A', 1, 0).id") == "C"
+
+
+@needs_node
+def test_the_picture_names_every_box_and_arrow_and_a_picked_box_names_its_arrows():
+    # DD-8a: the alt text lists every box (a lone one too) and every arrow; the live region reads the box and its edges.
+    said = _math(f"m.summary({MODEL})")
+    assert said.startswith("Flowchart, 4 boxes (Start, Check, Done, Lone), 2 arrows: Start to Check, Check to Done")
+    assert _math(f"m.said({MODEL}, 'B')") == "Check, decision. In from Start. Out to Done."
+    assert _math(f"m.said({MODEL}, 'D')") == "Lone, pill. No arrows." or "No arrows." in _math(f"m.said({MODEL}, 'D')")
+    assert _math("m.summary({nodes:[],edges:[]})") == "Flowchart, empty"
+
+
+def test_the_picture_arrows_pick_and_shift_pans_and_the_description_is_on_the_figure():
+    view = _js("diagram-view.js")
+    assert "if (move && !event.shiftKey && choose(event.key)) return event.preventDefault();" in view
+    assert 'fig.setAttribute("aria-description", (img.alt = math.summary(S.m)))' in view
+    assert "diagramModel.builder.select(S, `n:${to.id}`)" in view and "tell(math.said(S.m, to.id))" in view
+    # A kind's pane has no boxes, so its arrows still pan.
+    assert "!S.k && S.m && S.hit?.boxes?.length" in view
+
+
+def test_only_the_picked_row_keeps_tab_stops_so_the_picture_is_within_six_stops():
+    # DD-8: five rows of four buttons put the first picture stop at 23 (1440, five boxes). Now the picked row's buttons only.
+    builder = _js("diagram-builder.js")
+    assert 'for (const c of b.querySelectorAll(":scope > .dgm-card button, :scope > .dgm-joins button"))' in builder
+    assert "add.tabIndex = connect.tabIndex = -1;" in _js("diagram-steps.js")

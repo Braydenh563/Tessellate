@@ -57,6 +57,8 @@
     S.foot = foot;
     const add = smallButton("ph:plus Add block", "Add a block after the picked one", () => use.add(S, { edit: true }));
     const connect = smallButton("ph:arrow-bend-down-right Connect", "Draw an arrow from the picked block to another", () => use.connect(S, S.sel || S.tree.querySelector(".dgm-block")?.dataset.key));
+    //: Mouse and touch twins of N, C and the toolbar's Add: not Tab stops, so the picture is near (DD-8).
+    add.tabIndex = connect.tabIndex = -1;
     foot.append(add, connect);
     S.footConnect = connect;
     S.tree.before(line);

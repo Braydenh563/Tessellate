@@ -538,3 +538,9 @@ def test_the_diagram_tab_chain_the_starter_and_the_keys_chip_are_in_the_guide() 
     style = (FRONTEND / "js" / "diagram-style.js").read_text(encoding="utf-8")
     assert '"ph:keyboard Keys"' in embed and '"ph:eraser Clear"' in embed and 'data-help-for", "dgm-dialog-help"' in embed
     assert '["Tab", "Add a box after the last one, joined to it"]' in style
+    # 1107 DD-8a: the picture's arrows pick a box, the Keys sheet and the Guide say so.
+    assert '["Arrows on the picture", "Pick the box in that direction"]' in style
+    diagram = str(next(t["body"] for t in HELP_TOPICS if t["id"] == "diagram-blocks"))
+    assert "Shift+arrow keys pan" in diagram
+    reading = str(next(t["body"] for t in HELP_TOPICS if t["id"] == "diagram-reading"))
+    assert "In the picture an arrow key picks the box that way, reading aloud its name and arrows, and Shift with an arrow moves the picture" in reading
