@@ -154,7 +154,7 @@ class OverlayHost:
 
     # --- life ------------------------------------------------------------------
 
-    def start(self, timeout: float = 3.0) -> bool:
+    def start(self, timeout: float = 10.0) -> bool:
         """Make the window on its own thread; True once it exists."""
         if self._thread is not None:
             return self.alive
@@ -230,6 +230,13 @@ class OverlayHost:
             self._teardown()
             return
         self._ready.set()
+        if self._stopping:
+            #: The owner gave up waiting (`start` timed out and `stop` ran) while this thread was still making
+            #: the window and loading the frames, which a busy machine does slowly (INBOX 1692 k: ready one
+            #: second after a 3 s wait). A window nobody holds must not stay on the desktop beside the card.
+            logger.warning("overlay: the window came up after it was given up on, closing it")
+            self._teardown()
+            return
         try:
             self._pump()
         except Exception:  # noqa: BLE001 - the thread ends, the app does not
