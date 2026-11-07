@@ -39,3 +39,11 @@ def test_r2_the_undo_copy_names_buttons_that_exist_and_a_key_that_works_outside_
         got = ask(word)
         assert "status bar" in got and "toast" not in got, got
     assert "Undo on the card" in ask("untick bread"), ask("untick bread")
+
+
+# --- a metadata word is not a word a note leaves out ---
+
+@pytest.mark.parametrize("question", ["do I have notes without tags", "show me notes without a title", "which notes have no category", "notes without links"])
+def test_r2_a_metadata_word_is_never_a_word_the_notes_leave_out(question):
+    got = ask(question)
+    assert "do not mention" not in got and "mention tags" not in got and "mention a title" not in got, got

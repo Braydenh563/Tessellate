@@ -251,6 +251,14 @@ _WITHOUT_LEAD = frozenset(
 )
 
 
+#: "notes without tags", "without a title": what a note carries beside its text.
+#: These are not words a note mentions, so a note without them is a count
+#: of the notebook (`notebook_stats`), never a "do not mention" list.
+_METADATA_WORDS = frozenset(
+    "tag tags title titles category categories folder folders space spaces link links label labels attachment attachments reminder reminders".split()
+)
+
+
 #: A question has to ask for notes (or say "about") before "not" is read as leaving a word out:
 #: "what is not done" and "why did I not go" are not.
 _WITHOUT_NOTES = re.compile(r"\b(?:notes?|entries|about)\b|^(?:nothing|without)\b", re.I)
@@ -271,6 +279,8 @@ def without_ask(question: str) -> tuple[str, str] | None:
     kept = " ".join(words)
     left = re.sub(r"^(?:the\s+word\s+|the\s+|my\s+)", "", found.group("neg").strip(" ,\"'"), flags=re.I)
     if not left or len(left.split()) > 4 or len(kept.split()) > 5:
+        return None
+    if all(w in _METADATA_WORDS for w in re.findall(r"[a-z]+", left.lower()) if w not in ("a", "an", "any", "no", "the")):
         return None
     return kept, left
 
