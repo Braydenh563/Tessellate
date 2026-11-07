@@ -71,7 +71,7 @@
     const rows = [...shapeRows(h), ...OTHER];
     openSheet({
       label: "Keyboard shortcuts",
-      sub: "With the picture or the blocks focused.",
+      sub: "From anywhere in the editor outside a text field.",
       name: "diagram-shortcuts",
       build: (card) => {
         const field = document.createElement("input");

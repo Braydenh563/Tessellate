@@ -73,7 +73,7 @@
       S.root.classList.add("dgm-phonelist");
     }
     if (actions && !S.root.querySelector(".dgm-addsplit")) {
-      const add = smallButton("ph:plus Add", "Choose a shape to add as a block", () => addSheet(S.root, add), false);
+      const add = smallButton("ph:plus Add", "Choose a shape to add as a block (N, or ? for every key)", () => addSheet(S.root, add), false);
       add.classList.add("dgm-add");
       add.setAttribute("aria-haspopup", "dialog");
       actions.prepend(add);

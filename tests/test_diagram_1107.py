@@ -41,4 +41,24 @@ def test_the_door_opens_on_a_drawn_starter_with_its_first_box_selected_and_clear
     assert 'source: "flowchart TD"' not in door
     assert 'makeMenuItem("ph:eraser Clear"' in EMBED and "io.set(`${STARTS.flowchart}\\n`)" in EMBED
     assert "diagramModel.builder.select(S, firstBox.dataset.key, true)" in EMBED
-    assert "select, tell:" in BUILDER
+    assert "kindOf, select, keys:" in BUILDER
+
+
+def test_the_dialog_has_a_keys_chip_a_question_mark_anywhere_and_a_help_popover_with_the_guide_offer():
+    # DD-7: help in reach. `?` from anywhere but a field; a block's own `?` is not opened twice.
+    assert 'smallButton("ph:keyboard Keys"' in EMBED and "foot.append(seg, ...(known ? [known] : []), chip, cancel, go)" in EMBED
+    ask = EMBED[EMBED.index('event.key !== "?"') :][:260]
+    assert "event.defaultPrevented" in ask and 'input, textarea, select, [contenteditable]' in ask and "keys();" in EMBED
+    assert 'data-help-for", "dgm-dialog-help"' in EMBED and "initHelpToggles(dialog)" in EMBED
+    assert 'atlasSuggestion("How do I make a diagram?"' in EMBED
+    # An open help popover takes its own Escape before the dialog closes.
+    assert ".help-popover:not(.hidden)" in EMBED
+    assert "keys: (S) => styleDo(S, \"shortcuts\")" in BUILDER
+
+
+def test_a_dock_tooltip_names_its_key():
+    bar = _js("diagram-bar.js")
+    touch = _js("diagram-touch.js")
+    assert "Choose a shape to add (1 to 7, or ? for every key)" in bar
+    assert "Choose a shape to add as a block (N, or ? for every key)" in touch
+    assert 'main.title = `Add a ${name.toLowerCase()} (${hintOf(shape)})`' in bar and '"Undo, Ctrl+Z"' in bar and '"Redo, Ctrl+Y"' in bar

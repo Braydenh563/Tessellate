@@ -721,5 +721,5 @@
     return S;
   }
 
-  diagramModel.builder = { show, kindOf, select, tell: (text) => (told = text) };
+  diagramModel.builder = { show, kindOf, select, keys: (S) => styleDo(S, "shortcuts"), tell: (text) => (told = text) };
 })();

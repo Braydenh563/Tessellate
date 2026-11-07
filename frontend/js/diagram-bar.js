@@ -69,7 +69,7 @@
       h.add(S, optionsOf(shape));
     };
     main.addEventListener("click", () => add(last()));
-    const caret = h.smallButton("ph:caret-down", "Choose a shape to add", () => {
+    const caret = h.smallButton("ph:caret-down", "Choose a shape to add (1 to 7, or ? for every key)", () => {
       //: A pointer menu lines its right edge up with the point, so the point is the caret's right edge (it opened at the window's left edge from the split's left).
       const r = caret.getBoundingClientRect();
       const rows = ORDER.map((shape) => ({ label: nameOf(shape, h), keys: hintOf(shape), title: hints.get(nameOf(shape, h)) || "", run: () => add(shape) }));
