@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- The desk figure's screen watch no longer stops counting the Downloads folder for good when no worker could take the count (the counting flag is cleared and the poll goes on) (PR 216 review, tests/test_overlay_screen_1678.py).
 - An untagged reasoning header no longer swallows an answer that is itself a list: the outline ends at the first prose line after a blank line, so "Here's the answer:" with its bullets streams as the answer, not as thinking (PR 216 review, tests/test_answer_never_folded.py).
 - The adaptive context window subtracts the model's size (`/api/tags`) from a card's video memory before taking the cache share, so a large model on a small card is no longer budgeted memory its weights hold (PR 216 review, tests/test_adaptive_context_b6.py).
 - The adaptive context window (CHAT_PLAN B6) is decided once per model for the life of the client: free memory read afresh each turn moved `num_ctx` by a step and made Ollama reload the model (PR 216 review, tests/test_adaptive_context_b6.py).

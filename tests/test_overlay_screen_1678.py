@@ -66,6 +66,29 @@ def test_the_folder_is_counted_off_the_calling_thread_and_answered_on_a_later_po
     assert w.poll(16.0, 9, 30) == ["download_done"]
 
 
+def test_a_worker_that_cannot_take_the_count_does_not_stop_the_counting_for_good() -> None:
+    """Review of PR 216: `run` raising (the executor shut down at quit) left the
+    counting flag set, so no later poll ever counted the folder again."""
+    broken = [True]
+    queued = []
+
+    def run(fn):
+        if broken[0]:
+            raise RuntimeError("cannot schedule new futures after shutdown")
+        queued.append(fn)
+
+    w, _fg, files, reads = _watch(run=run)
+    w.poll(0.0, 9, 30)  # must not raise in the frame
+    broken[0] = False
+    w.poll(12.0, 9, 30)
+    assert len(queued) == 1, "the next count is handed over"
+    queued.pop()()
+    files[0] = 4
+    w.poll(24.0, 9, 30)
+    queued.pop()()
+    assert w.poll(26.0, 9, 30) == ["download_done"]
+
+
 def test_the_runner_passes_the_switch_counts_on_a_worker_and_forgets_on_every_resume() -> None:
     assert "screen=self.roam_windows" in RUNNER
     assert 'jobs.thread("overlay-downloads"' in RUNNER
