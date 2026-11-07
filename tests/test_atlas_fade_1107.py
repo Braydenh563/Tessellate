@@ -35,10 +35,10 @@ def _fn(name: str) -> str:
 
 def test_an_unlit_figure_holds_every_animation_name_in_the_boot_sheet() -> None:
     rule = re.search(
-        r"\.atl-figure-box:not\(\.atl-lit\),\s*\.atl-figure-box:not\(\.atl-lit\) \* \{ animation: none !important; \}",
+        r"\.atl-figure-box:not\(\.atl-lit\), \.atl-figure-box:not\(\.atl-lit\) \*,\s*:where\(:root\[data-motion=\"reduced\"\][^{]*\{ animation: none !important; \}",
         CSS,
     )
-    assert rule, "one rule: the box and everything in it, animation none, until atl-lit"
+    assert rule, "one rule: the box and everything in it, animation none, until atl-lit (the reduced-motion orbit rule rides it, as test_atlas_shape reads it)"
     # Boot CSS, not the lazy faces: the orbit and drift loops are written here and
     # are created the moment the figure is drawn, before atlas-lazy.css arrives.
     assert ".atl-figure-box:not(.atl-lit)" not in (ROOT / "frontend" / "css" / "atlas-lazy.css").read_text(encoding="utf-8")
@@ -66,9 +66,9 @@ globalThis.requestAnimationFrame = (f) => frames.push(f);
 const atlasRigWake = { after: (cb, n) => requestAnimationFrame((t) => (n > 1 ? atlasRigWake.after(cb, n - 1) : cb(t))) };
 const flush = () => { const f = frames.splice(0); f.forEach((g) => g(0)); };
 const set = new Set();
-const make = (inBuddy, away) => {
+const make = (inBuddy, away, connected = true) => {
   const buddy = { classList: { contains: (c) => c === "nmb-away" && away } };
-  const box = { classList: { contains: (c) => set.has(c) }, closest: (s) => (inBuddy && s === "#nm-buddy" ? buddy : null) };
+  const box = { isConnected: connected, classList: { contains: (c) => set.has(c) }, closest: (s) => (inBuddy && s === "#nm-buddy" ? buddy : null) };
   const log = [];
   atlasWhenShown(box, () => log.push("go"));
   return { box, log };
@@ -90,7 +90,19 @@ const late = [fading.log.length, frames.length, fading.box.atlasShow];
 // a wake after it went does nothing more
 set.add("atl-lit");
 fading.box.atlasShow && fading.box.atlasShow();
-process.stdout.write(JSON.stringify({ early, queued, mid, stillWaiting, late, after: fading.log.length }));
+// a figure dropped from the page before its companion showed gives up (it would look
+// every three frames for good), but waits while it is only not yet attached
+set.delete("atl-lit");
+opacity = "0";
+frames.length = 0;
+const lost = make(true, false, false);
+let looks = 0;
+while (frames.length && looks < 400) { flush(); looks++; }
+const dropped = [lost.log.length, frames.length, lost.box.atlasShow, looks < 400];
+const attaching = make(true, false, false);
+for (let i = 0; i < 30; i++) flush();
+const youngWaits = [attaching.log.length, frames.length > 0, typeof attaching.box.atlasShow];
+process.stdout.write(JSON.stringify({ early, queued, mid, stillWaiting, late, after: fading.log.length, dropped, youngWaits }));
 """
     )
     out = json.loads(subprocess.run(["node", "-e", script], capture_output=True, text=True, check=True).stdout)
@@ -99,6 +111,8 @@ process.stdout.write(JSON.stringify({ early, queued, mid, stillWaiting, late, af
     assert out["stillWaiting"][0] == 0, "still opacity 0 on the fade's first frame: it goes on waiting"
     assert out["late"][0] == 1 and out["late"][1] == 0 and out["late"][2] is None, "goes once, on the first frame the companion shows, and asks for no more frames"
     assert out["after"] == 1, "never twice"
+    assert out["dropped"] == [0, 0, None, True], "removed before the companion showed: it stops looking, and never lights"
+    assert out["youngWaits"] == [0, True, "function"], "not yet attached is not removed: the settle wait gives it time"
 
 
 def test_the_rig_wake_looks_again_for_a_figure_that_waits() -> None:

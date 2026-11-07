@@ -3316,6 +3316,13 @@ function atlasWhenShown(box, go) {
     go();
     return;
   }
+  //: A figure taken off the page before it showed (the large view's redraw, a style
+  //: change under the fade) would look every three frames for good. `atlasFigure`'s
+  //: settle wait gives a new one 30 frames to attach, so 30 looks is far past that.
+  if (!box.isConnected && (box.atlasLost = (box.atlasLost || 0) + 1) > 30) {
+    box.atlasShow = null;
+    return;
+  }
   box.atlasShow = () => atlasWhenShown(box, go);
   if (!buddy.classList.contains("nmb-away")) atlasRigWake.after(box.atlasShow, 3);
 }
