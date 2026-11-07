@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- The adaptive context window (CHAT_PLAN B6) is decided once per model for the life of the client: free memory read afresh each turn moved `num_ctx` by a step and made Ollama reload the model (PR 216 review, tests/test_adaptive_context_b6.py).
 - A model's hand-set window that cannot be read logs `model_context_windows unreadable`, not the global ceiling's name (PR 216 review, tests/test_adaptive_context_b6.py).
 - Composer: a phone or cell that is not asked for ("when did I get my phone", "cell respiration") is no longer a phone number ask (PR 216 CI).
 - Composer readers added this round are linear on long runs (CodeQL 2086 to 2088): the held-word ask lost a backtracking strip that took 9.5 s on 50,000 characters, and the without and state asks no longer overlap their quantifiers; the shape table names its tests directly (2089 to 2094).

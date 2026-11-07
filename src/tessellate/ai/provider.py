@@ -552,14 +552,23 @@ class Provider:
         if explicit:
             return max(floor, min(declared, explicit)), "preference"
         kv = self.kv_bytes_per_token(model) if known else None
+        #: **Decided once per model, for the life of this client.** The window
+        #: becomes Ollama's `num_ctx`, and Ollama reloads a model whenever
+        #: `num_ctx` changes. Free memory moves every turn (it falls the moment
+        #: the model loads), so reading it afresh moved the window by a step
+        #: and reloaded the model on turn after turn. A new client (a changed
+        #: backend, a restart) reads memory again.
+        decided = self.__dict__.setdefault("_memory_windows", {})
+        if kv and model in decided:
+            return decided[model]
         share = memory_budget_bytes() if kv else None
         if not (kv and share):
             return max(floor, min(declared, self.MAX_REQUESTED_CONTEXT)), "default"
         fits = int(share // kv) // CONTEXT_STEP * CONTEXT_STEP
         window = max(floor, min(declared, fits))
-        if window >= declared:
-            return max(floor, declared), "model"
-        return window, "memory"
+        decision = (max(floor, declared), "model") if window >= declared else (window, "memory")
+        decided[model] = decision
+        return decision
 
     def context_explanation(self, model: str) -> str:
         """One sentence for Settings: the window in use and why."""

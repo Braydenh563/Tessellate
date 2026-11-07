@@ -180,3 +180,25 @@ def test_an_unreadable_per_model_preference_logs_its_own_name(monkeypatch, caplo
         assert ollama_model(8192).preferred_context("m") is None
     assert "model_context_windows unreadable" in caplog.text
     assert "max_context_tokens" not in caplog.text
+
+
+def test_the_memory_window_is_decided_once_per_model(prefs, memory):
+    """Review of PR 216: `num_ctx` is the window, and Ollama reloads a model
+    when `num_ctx` changes, so free memory read afresh on every turn (it drops
+    the moment the model loads) moved the window by a 1,024 step and reloaded
+    the model each time. One decision per model for the life of the client."""
+    memory(8)
+    client = ollama_model(131072)
+    client._shown["m2"] = client._shown["m"]
+    first = client.usable_context("m")
+    assert first == 25600
+    memory(64)  # more memory freed up: no growth mid-session
+    assert client.usable_context("m") == first
+    memory(2)  # the loaded model took its share: no shrink either
+    assert client.usable_context("m") == first
+    assert client.runtime_options("m")["num_ctx"] == first
+    assert "free memory" in client.context_explanation("m")
+    # Another model is its own decision; a new client (a new session) reads memory again.
+    memory(16)
+    assert client.usable_context("m2") == 52224
+    assert ollama_model(131072).usable_context("m") == 52224
