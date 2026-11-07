@@ -352,8 +352,6 @@
       if (event.target !== fig || event.ctrlKey || event.metaKey || event.altKey) return;
       const move = { ArrowLeft: [-PAN, 0], ArrowRight: [PAN, 0], ArrowUp: [0, -PAN], ArrowDown: [0, PAN] }[event.key];
       if (move && !event.shiftKey && choose(event.key)) return event.preventDefault();
-      //: Enter or F2 names the picked box in place, as the blocks pane does; a picture with no box picked passes the key on.
-      if ((event.key === "Enter" || event.key === "F2") && !event.shiftKey && boxes() && S.sel?.startsWith("n:") && S.renameNode?.(S.sel.slice(2))) return event.preventDefault();
       cancelGlide();
       //: With boxes, Shift and an arrow pan; the move glides unless the person asked for less motion.
       const far = event.shiftKey ? 5 : 1;
@@ -363,6 +361,8 @@
       else if (event.key === "-" || event.key === "_") step(-1);
       else if (event.key === "0") fitTo();
       else if (event.key === "1") actual();
+      //: Enter or F2 names the picked box where it stands, as the blocks pane does; with no box picked the key passes on.
+      else if ((event.key === "Enter" || event.key === "F2") && !event.shiftKey && boxes() && S.sel?.startsWith("n:") && S.renameNode?.(S.sel.slice(2))) event.preventDefault();
       else return;
       event.preventDefault();
     });

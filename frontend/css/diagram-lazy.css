@@ -1346,7 +1346,8 @@
     max-width: none;
     height: 100%;
     max-height: none;
-    border-radius: 0;
+    /* The surface family's smallest radius, not a square 0 (tests/test_ui_signatures.py: a fifth card radius is refused). */
+    border-radius: var(--radius-sm);
   }
 
   .dgm-viewbar .dgm-views {
