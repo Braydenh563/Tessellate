@@ -86,10 +86,18 @@
 
   //: A source that will not draw (DD-4, 1107): the last good picture stays, dimmed, with the reason under it, instead of an empty
   //: pane. The reason is an alert the first time a given error shows and a status when the same one is drawn again; the line it
-  //: names is `data-line` and a button puts the caret there; the "tall for this pane" offer is for a picture that is not there.
+  //: names is `data-line` and a button puts the caret there, another undoes the last edit; the "tall for this pane" offer is for a picture that is not there.
   function failure(S, result, source, smallButton) {
     S.fig.classList.toggle("dgm-picture-stale", !result.svg);
-    if (result.svg) return void ((S.errorSeen = ""), delete S.fig.dataset.errorLine);
+    const field = S.root.closest(".dgm-dialog")?.querySelector(".dgm-source");
+    //: The text field's gutter marks the line (DD-5): set with the note, cleared when the picture draws.
+    const mark = (line) => {
+      if (!field || field.dataset.errorLine === (line || undefined)) return;
+      if (line) field.dataset.errorLine = line;
+      else delete field.dataset.errorLine;
+      field.dispatchEvent(new Event("dgmerror"));
+    };
+    if (result.svg) return void ((S.errorSeen = ""), delete S.fig.dataset.errorLine, mark(""));
     S.fig.classList.remove("md-mermaid-pending");
     S.fig.removeAttribute("aria-busy");
     const error = result.error;
@@ -100,7 +108,7 @@
     note.setAttribute("role", fresh ? "alert" : "status");
     S.sideways?.classList.add("hidden");
     const line = /^Line (\d+):/.exec(plain)?.[1];
-    const field = S.root.closest(".dgm-dialog")?.querySelector(".dgm-source");
+    mark(line);
     if (line) {
       note.dataset.line = line;
       S.fig.dataset.errorLine = line;
@@ -113,6 +121,15 @@
         field.setSelectionRange(from, from + (lines[Number(line) - 1] || "").length);
       });
       note.prepend(go);
+    }
+    //: A bad edit is one press from undone, whichever pane made it (DD-4).
+    //: Not offered where there is no earlier step (a bad file opened as it is). The note leaves when the old picture draws, with the focus
+    //: in it, so focus goes to the picture first (measured: the body, and the first Tab was "Skip to content").
+    if (S.io?.undo && S.io.canUndo !== false) {
+      note.prepend(smallButton("ph:arrow-u-up-left Undo the last edit", "Go back to the diagram before this change", () => {
+        (S.fig?.isConnected ? S.fig : field)?.focus?.({ preventScroll: true });
+        S.io.undo();
+      }));
     }
     if (!S.fig.querySelector(":scope > .md-mermaid-img")) return S.fig.replaceChildren(note);
     S.fig.querySelector(":scope > .md-mermaid-reason")?.remove();

@@ -274,6 +274,8 @@
     S.arm = (from) => arm(from, "right");
     //: And the pick (diagram-edge-pick.js) opens a picked arrow's words on Enter.
     S.renameEdge = renameEdge;
+    //: And the picture's own keys (diagram-view.js): Enter or F2 on a picked box names it where it stands.
+    S.renameNode = renameNode;
     const disarm = () => {
       armed = "";
       for (const handle of handles) handle.removeAttribute("aria-pressed");
