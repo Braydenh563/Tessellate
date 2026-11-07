@@ -2,7 +2,7 @@
 
 Generated 2026-11-07 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7861, frontend ids 2644, CSS sections 522, backend routes 649, backend modules 9001, test files 2154, tests 18172, plan headings 1004, app scripts 28, boot scripts 37, script files 261.
+Counts: frontend functions 7861, frontend ids 2644, CSS sections 522, backend routes 649, backend modules 9001, test files 2155, tests 18173, plan headings 1004, app scripts 28, boot scripts 37, script files 261.
 
 ## Frontend functions (7861)
 
@@ -7665,14 +7665,14 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 |---|---|
 | `bound` | frontend/js/value-field.js:22 |
 | `clamp` | frontend/js/value-field.js:28 |
-| `commit` | frontend/js/value-field.js:53 |
-| `leave` | frontend/js/value-field.js:73 |
-| `paint` | frontend/js/value-field.js:48 |
-| `presets` | frontend/js/value-field.js:103 |
-| `rangeField` | frontend/js/value-field.js:151 |
-| `rangeFieldsIn` | frontend/js/value-field.js:203 |
-| `readoutOf` | frontend/js/value-field.js:145 |
-| `size` | frontend/js/value-field.js:43 |
+| `commit` | frontend/js/value-field.js:56 |
+| `leave` | frontend/js/value-field.js:76 |
+| `paint` | frontend/js/value-field.js:51 |
+| `presets` | frontend/js/value-field.js:106 |
+| `rangeField` | frontend/js/value-field.js:154 |
+| `rangeFieldsIn` | frontend/js/value-field.js:206 |
+| `readoutOf` | frontend/js/value-field.js:148 |
+| `size` | frontend/js/value-field.js:46 |
 | `valueField` | frontend/js/value-field.js:20 |
 | `valueFieldParse` | frontend/js/value-field.js:8 |
 
@@ -24415,7 +24415,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (18172)
+## Tests (18173)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -26402,6 +26402,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_validation_copy.py | 6 |
 | tests/test_validation_error_shape.py | 2 |
 | tests/test_value_field_escape_home.py | 2 |
+| tests/test_value_field_review_216.py | 1 |
 | tests/test_vault_attachments.py | 9 |
 | tests/test_vault_import.py | 7 |
 | tests/test_vault_read_surfaces.py | 6 |

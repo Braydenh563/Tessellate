@@ -7556,7 +7556,9 @@ def test_a_zoom_readout_is_a_value_field():
         assert "valueField(" in (js / name).read_text(encoding="utf-8"), name
     field = (js / "value-field.js").read_text(encoding="utf-8")
     # Typeable, announced, restorable, and its list is the app's menu rather than a new one.
-    for needle in ('inputMode = "numeric"', 'setAttribute("aria-label"', '"Escape"', "kebabMenu(", "onCommit"):
+    # Intent moved (PR 216 review): the field still sets a phone keyboard; which one now follows what it accepts
+    # (numeric for whole numbers from zero, decimal for fractions, text where a minus is), see test_value_field_review_216.py.
+    for needle in ('input.inputMode = ', 'setAttribute("aria-label"', '"Escape"', "kebabMenu(", "onCommit"):
         assert needle in field, needle
     assert 'role="menu"' not in field and "style." not in field
     assert "A number you read and may type" in (ROOT / "docs" / "DESIGN.md").read_text(encoding="utf-8")
