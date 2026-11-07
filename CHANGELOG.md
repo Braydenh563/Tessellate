@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Composer: "when is the dentist" leads with "Dentist check-up on 11 November" (the next date), not "You went to the dentist on 3 October"; a timeline no longer prints the day a note was written ("today:") before an event with its own date (audit r3, R3-18).
 - Composer: "when did I start learning Spanish" and "when did I start to run" keep their streak answer after the R3-1 change (the did-I form carries the same lookahead as the past form).
 - Composer: "how old is Sara" says "Your notes do not say how old Sara is." with her birthday from her own note, not "when your sara was started, so I cannot work out its age"; a thing ("my sourdough starter") still counts days (audit r3, R3-3).
 - Composer: "when does uni start", "when does the marathon start" and "when do I make the banana bread" no longer answer "X was written on Saturday 7 November"; only a past form ("when was it written", "when did I start it") asks for the note's own day (audit r3, R3-1).

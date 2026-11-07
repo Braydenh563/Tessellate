@@ -3585,6 +3585,17 @@ _PRONOUN_OPENERS = frozenset({"he", "she", "they", "his", "her", "their", "hes",
 _NAMES_A_THING = re.compile(r"^\s*(?:what|who)(?:'s|’s|\s+(?:is|are|was))\b", re.I)
 
 
+#: "When is the dentist", "when does the term start": the day still to come, not the one that went by.
+_WHEN_NOW = re.compile(r"^\s*(?:when(?:'s|\u2019s|s|\s+(?:is|are|does|will))|what\s+(?:day|date|time)\s+(?:is|are|does|will))\b", re.I)
+
+
+def _ahead(fact: Fact, today: date) -> bool:
+    """Whether the sentence names a day that is today or still to come (R3-18)."""
+    from tessellate.ai import composer_body
+
+    return any(fact.sentence.start <= at < fact.sentence.end for _day, at in composer_body._days_named(fact.view, today, "future"))  # noqa: SLF001
+
+
 def _best(facts: list[Fact], question: str, cue: re.Pattern | None = None) -> Fact | None:
     #: Without the asking words: "what day did I run 8 km" is not about a "day".
     stems = set(_subject(question))
@@ -3604,6 +3615,7 @@ def _best(facts: list[Fact], question: str, cue: re.Pattern | None = None) -> Fa
     did_ask = bool(_WHEN_DID.match(clean(question)))
     subject_words = list(composer.subject_terms(clean(question)))
     names_a_thing = bool(_NAMES_A_THING.match(clean(question)))
+    now_ask = bool(_WHEN_NOW.match(clean(question))) and _TODAY.get() is not None
     #: "what is Project Atlas" is the note titled that, whatever other note repeats the name (round 1 D1).
     #: Only a "what/who is X" ask: any other ask is weighed by what the lines say (review 1).
     titled_views = {id(f.view) for f in facts if names_a_thing and _defines(f.view, subject_words) == 2}
@@ -3631,7 +3643,7 @@ def _best(facts: list[Fact], question: str, cue: re.Pattern | None = None) -> Fa
         #: latest ask. Said in the tuple itself: CodeQL lost the local in this
         #: closure and read it as possibly unset.
         titled = id(f.view) in titled_views
-        return (not asked_back, acts, _cued(cue, f.sentence.text), not (latest and f.sentence.kind in {"item", "task"}), id(f.view) not in old, _label_asked(f.label, question), titled, hits, newest, own, asks_feeling and _feeling(f.sentence.text), same_figure, -f.view.rank, -f.sentence.order)
+        return (not asked_back, acts, _cued(cue, f.sentence.text), now_ask and _ahead(f, _TODAY.get()), not (latest and f.sentence.kind in {"item", "task"}), id(f.view) not in old, _label_asked(f.label, question), titled, hits, newest, own, asks_feeling and _feeling(f.sentence.text), same_figure, -f.view.rank, -f.sentence.order)
 
     return max(facts, key=rank) if facts else None
 

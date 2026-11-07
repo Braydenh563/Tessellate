@@ -88,3 +88,29 @@ def test_r3_3_an_age_a_note_gives_is_the_answer():
 def test_r3_3_a_thing_still_counts_days_from_its_start():
     said = say("how old is my sourdough starter", "# Sourdough starter\n\nStarted on 1 October. Feed twice a day.")
     assert said == "Your sourdough starter is 37 days old, started on 1 October.", said
+
+
+# --- R3-18: "when is" leads with the day still to come -------------------------------------
+
+DENTIST = (
+    "# Dentist bill\n\nPaid £85 for the check-up on 3 October.",
+    "Dentist said to floss more and use the soft brush",
+    "Went to the dentist on 3 October and paid the bill",
+    "Dentist check-up on 11 November",
+)
+
+
+@pytest.mark.parametrize("question", ["when is the dentist", "whens the dentist"])
+def test_r3_18_a_present_tense_when_leads_with_the_next_date_not_the_last_visit(question):
+    said = say(question, *DENTIST)
+    assert said.startswith("Dentist check-up on 11 November"), said
+
+
+def test_r3_18_a_past_when_still_leads_with_the_visit_that_happened():
+    assert "3 October" in say("when did I go to the dentist", *DENTIST).split(".")[0]
+
+
+def test_r3_18_the_day_a_note_was_written_never_stands_before_an_event_with_its_own_date():
+    said = say("what time is my dentist appointment", *DENTIST)
+    assert "today: Went to the dentist on 3 October" not in said and "today: Paid" not in said, said
+    assert "Went to the dentist on 3 October" in said, said

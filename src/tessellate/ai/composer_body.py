@@ -255,6 +255,12 @@ def _joiners(relation: str, first: Sentence) -> list[str]:
     return ["", "and_join", "on_top"] if _lowered(first) else [""]
 
 
+#: A sentence that names its own date ("on 3 October", "11 November"), which the day it was written must not stand in front of.
+_OWN_DATE = re.compile(
+    r"\b\d{1,2}(?:st|nd|rd|th)?\s+(?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\b"
+    r"|\b(?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\s+\d{1,2}\b", re.I)
+
+
 def _timeline(out: _Answer, sentences: list[Sentence], terms: list[str]) -> None:
     """A "when" question's other notes, as bullets in the order they were
     written: a timeline is a list, and reads as one."""
@@ -267,10 +273,13 @@ def _timeline(out: _Answer, sentences: list[Sentence], terms: list[str]) -> None
     for note_id in order:
         view = out.views[note_id]
         out.t("line", "bullet")
-        if view.written:
+        mine = sorted((s for s in sentences if s.note_id == note_id), key=lambda s: s.order)
+        # "today: Went to the dentist on 3 October" puts the write day before an event with its own (R3-18).
+        dated = any(_OWN_DATE.search(s.text) for s in mine)
+        if view.written and not dated:
             out.m(out.day(view.written)).t("colon")
-        _quotes(out, sorted((s for s in sentences if s.note_id == note_id), key=lambda s: s.order), terms)
-        if view.titled or not view.written:
+        _quotes(out, mine, terms)
+        if view.titled or not view.written or dated:
             out.cite(view)
 
 
