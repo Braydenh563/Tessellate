@@ -5222,6 +5222,17 @@ function nameMarkBuddyFollow(eased = false) {
   }
   const folded = g.folded;
   const box = g.el.isConnected && !folded ? g.el.getBoundingClientRect() : null;
+  //: Carried fast under it, a panel throws it off (companion-throw.js `nameMarkBuddyShaken`).
+  if (box) {
+    const dt = at - g.bt;
+    const sx = (box.left - g.bx) / dt;
+    const sy = (box.top - g.by) / dt;
+    [g.bt, g.bx, g.by] = [at, box.left, box.top];
+    if (dt < 100 && Math.hypot(sx, sy) > NMB_TOSS_SPEED * 2) {
+      ensureModule("companionThrow");
+      if (self.nameMarkBuddyShaken?.(buddy, g, sx, sy)) return;
+    }
+  }
   if (box && g.fx !== undefined && box.width) g.dx = g.fx * box.width - NMB_W / 2;
   if (box && g.ty !== undefined && box.width) g.dy = g.dy0 + (g.ty * box.width) / g.w0;
   if (!box || (!box.width && !box.height)) {

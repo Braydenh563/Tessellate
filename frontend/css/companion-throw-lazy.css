@@ -8,7 +8,12 @@
 
 /* Splatted against a side of the window: squashed flat toward that side
    and stretched along it while it holds and slides down. */
-#nm-buddy.nmb-splat .nm-buddy-char { scale: 0.84 1.08; }
+#nm-buddy.nmb-splat .nm-buddy-char { scale: 0.84 1.08; animation: nmb-scrabble 150ms ease-in-out 9 alternate; }
+/* Clawing at the wall for purchase while it slides: quick small jolts up and down the wall. */
+@keyframes nmb-scrabble {
+  from { translate: 0 -2px; scale: 0.84 1.08; }
+  to { translate: 1px 2px; scale: 0.8 1.12; }
+}
 #nm-buddy.nmb-splat[data-splat="l"] .nm-buddy-char { transform-origin: 0 50%; }
 #nm-buddy.nmb-splat[data-splat="r"] .nm-buddy-char { transform-origin: 100% 50%; }
 
@@ -19,14 +24,20 @@
 #nm-buddy.nmb-slip .nm-buddy-char { animation: nmb-slip-pull 520ms var(--ease-in-out) both; }
 @keyframes nmb-climb-pull {
   0% { translate: 0 -6px; scale: 0.94 1.06; rotate: 6deg; }
-  30% { translate: 0 4px; scale: 1.05 0.95; rotate: -3deg; }
+  14% { translate: 2px 2px; rotate: 7deg; }
+  22% { translate: -2px 4px; rotate: -6deg; }
+  30% { translate: 2px 4px; scale: 1.05 0.95; rotate: 5deg; }
+  42% { translate: -2px 5px; rotate: -4deg; }
   55% { translate: 0 6px; scale: 1.08 0.92; rotate: 0deg; }
   100% { translate: 0 -14px; scale: 0.95 1.07; rotate: 0deg; }
 }
 @keyframes nmb-slip-pull {
   0% { translate: 0 -14px; rotate: -10deg; }
   18% { translate: 0 5px; scale: 0.94 1.08; rotate: 8deg; }
+  28% { translate: -2px 4px; rotate: -7deg; }
+  34% { translate: 2px 3px; rotate: 6deg; }
   40% { translate: 0 2px; rotate: -4deg; }
+  51% { translate: -2px 4px; rotate: 5deg; }
   62% { translate: 0 6px; scale: 1.08 0.92; rotate: 0deg; }
   100% { translate: 0 -14px; scale: 0.95 1.07; rotate: 0deg; }
 }
