@@ -736,29 +736,28 @@ def _longest_notes(session: Session) -> StatAnswer:
 
     Useful for the reason nobody expects: the longest notes are usually the
     ones that should have been split, and this is the only view in the app that
-    surfaces them. Ordered by character count in SQL so the whole notebook does
-    not have to come back to rank ten rows.
+    surfaces them. The SQL narrows to the longest by characters, so the whole
+    notebook does not have to come back; the ranking and the number said are
+    words, and each note is named by its title (round 1 D5: a list labelled in
+    words but ordered by characters, named by a glued title and body).
     """
     rows = session.execute(
         _visible(select(Entry.id, Entry.content))
         .where(func.length(Entry.content) >= _LONGEST_MIN_CHARS)
         .order_by(func.length(Entry.content).desc())
-        .limit(TOP_N)
+        .limit(TOP_N * 5)
     ).all()
     if not rows:
         return StatAnswer("longest-notes", "There are no notes long enough to rank yet.")
+    counted = sorted(((composer_frame.note_words(content), note_id, content) for note_id, content in rows), key=lambda r: -r[0])
     facts = [
-        {
-            "label": composer_frame.plain_snippet(content),
-            "count": composer_frame.note_words(content),
-            "id": note_id,
-        }
-        for note_id, content in rows
+        {"label": composer_frame.note_title(content, size=60) or composer_frame.plain_snippet(content), "count": words, "id": note_id}
+        for words, note_id, content in counted[:TOP_N]
     ]
     lead = facts[0]
     return StatAnswer(
         "longest-notes",
-        f"Your longest note is about {lead['count']} words: “{lead['label']}”. "
+        f"Your longest note is “{lead['label']}”, about {lead['count']} words. "
         f"The top {len(facts)} are listed below.",
         facts,
     )

@@ -114,6 +114,10 @@ def _complete_rest(text: str) -> str | None:
         return re.sub(r"^\w+\s+off\s+", "", text, count=1, flags=re.IGNORECASE)
     if re.match(r"(?:tick|check|cross|strike)\s+(?!off\b)\S", text, re.IGNORECASE) and _OFF_TAIL.search(text):
         return _OFF_TAIL.sub("", text.split(" ", 1)[1], count=1)
+    #: "tick the charger" (round 1 D3): ticking is not a question, so no trailing
+    #: "off" is needed; "check X" still is ("check the weather" asks).
+    if re.match(r"(?:tick|cross|strike)\s+(?!off\b)\S", text, re.IGNORECASE):
+        return text.split(" ", 1)[1]
     if low.startswith("complete "):
         return text[len("complete ") :]
     return None
