@@ -44,7 +44,7 @@ from functools import lru_cache, wraps
 from pathlib import Path
 
 from tessellate.ai import composer, composer_doings, composer_done, composer_frame, composer_threads, composer_lists, composer_money, composer_slots, composer_sum, composer_tables, filed_name, glossary, question_noise, realise, verdicts
-from tessellate.ai import composer_answer, composer_brief
+from tessellate.ai import composer_answer, composer_brief, composer_nth, composer_oneword, composer_property
 from tessellate.ai import composer_ask
 from tessellate.ai import composer_read
 from tessellate.ai import composer_select
@@ -1838,6 +1838,15 @@ _HERE_ARE = re.compile(r"^here(?:'s| is| are)\s+((?:some|a few|a list of|a|an)\s
 _WH_SUBJECT = re.compile(r"(?:what|how|why|which|who|where)\b", re.I)
 
 
+#: A date a sentence says itself ("ran 6 km on 25 October"): the day the note
+#: was written must not lead it.
+_OWN_DATE = re.compile(
+    rf"\b\d{{1,2}}(?:st|nd|rd|th)? (?i:{'|'.join(composer_ask._MONTHS)})\b"  # noqa: SLF001
+    #: Month first needs the capital: "we may 5 of us go" is not a date.
+    rf"|\b(?:{'|'.join(m.capitalize() for m in composer_ask._MONTHS)}) \d{{1,2}}\b"  # noqa: SLF001
+)
+
+
 def _dated_lead(label: str, i: int, by_day: date | None, written: date | None, before: date | None) -> str:
     """The line's lead: the time since the line before, a recent day, or its date."""
     if not _TIMED.get():
@@ -1955,6 +1964,9 @@ def _dated_line(line_body: str, label: str, i: int, by_day: date | None, written
     2026-10-11: no label lines), the time since the last one first."""
     lead = _dated_lead(label, i, by_day, written, before)
     reported = _said_as_written(_cleaned_body(line_body, label), i, written)
+    if _OWN_DATE.search(reported) and lead.lower().startswith(("today, ", "yesterday, ")):
+        #: "Today, you ran 6 km on 25 October" reads as a run today (round 1 D9).
+        lead = ""
     line_body = lead + reported
     line_body = line_body[:1].upper() + line_body[1:]
     return line_body, line_body + _relate(line_body, by_day)
@@ -2123,6 +2135,10 @@ def whole_clause(text: str, whole_ends: frozenset[str] = frozenset()) -> str:
     return kept if len(kept.split()) >= 3 else ""
 
 
+def _capitalised_items(said: str) -> str:
+    return "; ".join(c[:1].upper() + c[1:] for c in said.split("; "))
+
+
 def _lines(out: _Out, facts: list[Fact], limit: int, skip: set[tuple] | None = None, by_day: date | None = None, more: bool = False, weave: bool = False) -> int:
     """Facts grouped under their labels, oldest note first, one line a label;
     the line carries its first note for its one citation mark."""
@@ -2141,7 +2157,8 @@ def _lines(out: _Out, facts: list[Fact], limit: int, skip: set[tuple] | None = N
         last = held[0].view.id
         if written:
             seen_days.append(written)
-        said = said[:1].upper() + said[1:] if label == PHRASES["also"] else said
+        #: Each item of "Also" starts a capital: "phone $35" after "Groceries about $80 a week;" did not (review 1).
+        said = _capitalised_items(said) if label == PHRASES["also"] else said
         if not (said := whole_clause(said, _sentence_ends(held))):
             continue
         listed = _clause_list(said)
@@ -3564,6 +3581,10 @@ _LATEST_ASK = re.compile(
 _PRONOUN_OPENERS = frozenset({"he", "she", "they", "his", "her", "their", "hes", "shes"})
 
 
+#: "what is X", "who's X": an ask for the thing itself, where a note titled X is the answer.
+_NAMES_A_THING = re.compile(r"^\s*(?:what|who)(?:'s|’s|\s+(?:is|are|was))\b", re.I)
+
+
 def _best(facts: list[Fact], question: str, cue: re.Pattern | None = None) -> Fact | None:
     #: Without the asking words: "what day did I run 8 km" is not about a "day".
     stems = set(_subject(question))
@@ -3581,6 +3602,11 @@ def _best(facts: list[Fact], question: str, cue: re.Pattern | None = None) -> Fa
     asks_feeling = bool(_FEELING_ASK.search(question))
     latest = bool(_LATEST_ASK.search(question))
     did_ask = bool(_WHEN_DID.match(clean(question)))
+    subject_words = list(composer.subject_terms(clean(question)))
+    names_a_thing = bool(_NAMES_A_THING.match(clean(question)))
+    #: "what is Project Atlas" is the note titled that, whatever other note repeats the name (round 1 D1).
+    #: Only a "what/who is X" ask: any other ask is weighed by what the lines say (review 1).
+    titled_views = {id(f.view) for f in facts if names_a_thing and _defines(f.view, subject_words) == 2}
 
     def rank(f: Fact) -> tuple:
         words = set(f.sentence.words)
@@ -3604,7 +3630,8 @@ def _best(facts: list[Fact], question: str, cue: re.Pattern | None = None) -> Fa
         #: A bare list item ("Passport") is no news of a subject: prose leads a
         #: latest ask. Said in the tuple itself: CodeQL lost the local in this
         #: closure and read it as possibly unset.
-        return (not asked_back, acts, _cued(cue, f.sentence.text), not (latest and f.sentence.kind in {"item", "task"}), id(f.view) not in old, _label_asked(f.label, question), hits, newest, own, asks_feeling and _feeling(f.sentence.text), same_figure, -f.view.rank, -f.sentence.order)
+        titled = id(f.view) in titled_views
+        return (not asked_back, acts, _cued(cue, f.sentence.text), not (latest and f.sentence.kind in {"item", "task"}), id(f.view) not in old, _label_asked(f.label, question), titled, hits, newest, own, asks_feeling and _feeling(f.sentence.text), same_figure, -f.view.rank, -f.sentence.order)
 
     return max(facts, key=rank) if facts else None
 
@@ -3633,6 +3660,9 @@ def _from_name(lead: Fact, body: str, today: date) -> str:
     if body.lower().startswith(name.lower().rstrip(".")):
         return ""
     day = f", {_said_day(lead.view.written, today)}" if _TIMED.get() and lead.view.written and not _says_day(body, lead.view.written, today) else ""
+    if lead.label.strip().capitalize() in _DAY_NAMES:
+        #: "Sunday: call Mum" is the note's own Sunday, not the day it was written (round 1 D8: "today: call Mum").
+        day = f", on {lead.label.strip()}"
     return f"From {name}{day}: {body}."
 
 
@@ -3977,9 +4007,31 @@ def _no_place(out: _Out, cue, lead: Fact) -> None:  # noqa: ANN001
         out.lines.append(PHRASES["no_place"])
 
 
+def _property_lead(out: _Out, question: str, members, facts: list[Fact], lead: Fact) -> Fact | None:
+    """The fact that holds the property asked for ("his number", "the
+    password for the bank"); None, with the line said, when no note read for
+    this says it (round 2 E4, E20). `lead` itself when the question asks no such property."""
+    prop = composer_property.asked(question)
+    if not prop:
+        return lead
+    holders = [f for f in facts if composer_property.held(prop, f.sentence.text)]
+    if holders:
+        return next((f for f in holders if f.view.id == lead.view.id), holders[0])
+    if any(composer_property.held(prop, x.text) for m in members for x in m.sentences):
+        return lead
+    named = _your_note(lead.view)
+    line = f"{named[:1].upper()}{named[1:]} has no {composer_property.noun(prop)}."
+    out.lines.append(line)
+    out.rows.append(_row(line, lead))
+    return None
+
+
 def _single(out: _Out, kind: str, question: str, members, facts, today: date) -> None:
     cue = _single_cue(kind, clean(question))
     lead = _best(facts, question, cue)
+    if lead is None:
+        return
+    lead = _property_lead(out, question, members, facts, lead)
     if lead is None:
         return
     _no_place(out, cue, lead)
@@ -4331,7 +4383,7 @@ def _exact_lookup(out: _Out, asked: str, question: str, views: list, today: date
         return True
     if composer_sum.most(out, question, views, today):
         return True
-    if composer_slots.answer(out, asked, views, today) or composer_money.answer(out, question, views, today):
+    if composer_nth.answer(out, asked, views) or composer_slots.answer(out, asked, views, today) or composer_money.answer(out, question, views, today):
         return True
     if composer_sum.answer(out, question, views, today):
         return True
@@ -4622,6 +4674,8 @@ def answer(
     when the question is not one this shape answers (a sum, a time, a
     command, nothing found): the caller then asks `composer.compose`."""
     today = today or composer.user_today()
+    if one := composer_oneword.named(question, notes):
+        return _one_word_result(one)
     asked = composer_ask.what_is(clean(question))
     kind = _kind_if_mine(asked)
     #: An act ("rename my gym log") is not a topic to digest: with its verb off
@@ -5181,6 +5235,16 @@ def polish(text: str, keep: Iterable[str] = ()) -> str:
     return realise.mend_stops(re.sub("(\\d+)", lambda m: held[int(m.group(1))], text))
 
 
+#: A note's own emphasis marks (`*Bring wine*`, a one-word `cash` code span)
+#: show as plain words in a quote: the answer's own bold stays (round 2, research row 11).
+_ITALIC_MARK = re.compile(r"(?<![*\w])\*(?![\s*])([^*\n]+?)(?<![\s*])\*(?![*\w])")
+_CODE_WORD = re.compile(r"`(\w+)`")
+
+
+def _plain_marks(line: str) -> str:
+    return _CODE_WORD.sub(r"\1", _ITALIC_MARK.sub(r"\1", line))
+
+
 def _polish_out(out: _Out, kind: str) -> None:
     """The composed lines, said with the grammar pass. A web answer is the
     pages' own words under a one-line lead, so it is not touched."""
@@ -5196,7 +5260,7 @@ def _polish_out(out: _Out, kind: str) -> None:
     #: A quote is the note's own words, whatever frame said it (INBOX 1515).
     pool = [t for v in _VIEWS.get() for t in (str(v.note.get("content") or ""), *map(str, (v.note.get("link_reasons") or {}).values()))]
     for lines in (out.lines, out.more, out.closing, out.next):
-        lines[:] = [composer_threads.own_words(polish(line, keep), pool) for line in lines]
+        lines[:] = [_plain_marks(composer_threads.own_words(polish(line, keep), pool)) for line in lines]
     if out.offer and out.offer.get("label"):
         out.offer = {**out.offer, "label": polish(str(out.offer["label"]), keep)}
     _rows_as_polished(out)
@@ -5207,7 +5271,8 @@ def _rows_as_polished(out: _Out) -> None:
     "Tuesday"), else the card cannot find its words in the text (INBOX 1665 f)."""
     whole = "\n".join([*out.lines, *out.more, *out.closing, *out.next])
     for row in out.rows:
-        said = str(row.get("sentence") or "")
+        said = _plain_marks(str(row.get("sentence") or ""))
+        row["sentence"] = said
         found = re.search(re.escape(said), whole, re.IGNORECASE) if said and said not in whole else None
         if found:
             row["sentence"] = found.group(0)
@@ -5326,6 +5391,19 @@ def _ask_key(question: str) -> str:
     latest on X" are one chip, and the question just asked is none."""
     words = re.sub(r"\bwhat's\b", "what is", question.lower())
     return " ".join(re.findall(r"[a-z0-9]+", re.sub(r"\b(?:the|my|a|an|last)\b", " ", words)))
+
+
+def _one_word_result(note: dict) -> dict:
+    """The answer for a note that is one word, cited to that note (round 2 E11)."""
+    out = _Out()
+    out.lines.append(composer_oneword.say(note))
+    text = out.lines[0]
+    word = " ".join(str(note.get("content") or "").split())
+    out.rows.append({
+        "sentence": text, "note_id": note.get("source_id", note.get("id")), "source": word, "start": 0, "end": len(word),
+        "score": 1.0, "digest": True, "kind": "note",
+    })
+    return _result(out, "fact", "")
 
 
 def _result(out: _Out, kind: str, question: str) -> dict:

@@ -22,7 +22,7 @@ from tessellate.ai import composer_ask
 from tessellate.ai import composer_body
 from tessellate.ai import when as when_words
 from tessellate.ai.composer_done import (  # noqa: F401  (moved; re-exported)
-    _DOING_END, _FILLER, _INTENT, _UNDONE, _asked_thing, _done_later, _holds, _says_verb, _stems, _verb_forms,
+    _DOING_END, _FILLER, _UNDONE, _asked_thing, _done_later, _holds, _says_verb, _stems, _verb_forms, planned,
     recorded_later,
 )
 
@@ -180,8 +180,12 @@ def _counted(out, q: str, views: list) -> bool:  # noqa: ANN001
 #: phrasing (audit 1030 Z56).
 _STATE = r"packed|bought|ticked(?:\s+off)?|checked(?:\s+off)?|done|finished|completed|sorted|booked|crossed\s+off"
 _IS_STATE = re.compile(rf"^(?:is|are|has|have)\s+(?:all\s+(?:of\s+)?)?(?P<obj>.+?)\s+(?:been\s+)?(?P<verb>{_STATE})(?:\s+(?:yet|already))?$", re.I)
-_UN_STATE = re.compile(r"^what(?:'s|\s+is|\s+are)?\s+(?:still\s+)?(?:un(?P<un>packed|ticked|checked|bought|done)|not\s+(?P<not>packed|ticked|checked|bought|done)(?:\s+yet)?)$", re.I)
-_TICKED_SO_FAR = re.compile(r"^what(?:'s|\s+have\s+i|\s+did\s+i|\s+i've)\s+(?:i\s+)?(?:ticked|checked|crossed)\s+off(?:\s+(?:so\s+far|already|yet))?$", re.I)
+_UN_STATE = re.compile(r"^what(?:'s|\s+is|\s+are)?\s+(?:still\s+)?(?:un(?P<un>packed|ticked|checked|bought|done)|not\s+(?P<not>packed|ticked|checked|bought|done)(?:\s+yet)?)(?:\s+(?:in|on|from|of)\s+(?:my\s+|the\s+|our\s+)?(?P<place>.+?))?$", re.I)
+_TICKED_SO_FAR = re.compile(r"^what(?:'s|\s+have\s+i|\s+did\s+i|\s+i've)\s+(?:i\s+)?(?:tick(?:ed)?|check(?:ed)?|cross(?:ed)?)(?:\s+off)?(?:\s+(?:so\s+far|already|yet))?$", re.I)
+#: "What is not done", "what is left to do", "what haven't I finished": the
+#: open items of every checklist, no list named (round 2 E21).
+_BARE_STATE = frozenset({"ticked", "checked", "done"})
+_ALL_OPEN = re.compile(r"^(?:what|which)\s+(?:tasks|items|things|todos)\s+(?:are|is)\s+(?:still\s+)?(?:open|outstanding|left|unticked|remaining|pending|not\s+done)$|^what(?:'s|\s+is|\s+are)?\s+(?:still\s+)?(?:left|outstanding|remaining)(?:\s+to\s+do)?$|^what\s+(?:haven't|have\s+not|hasn't)\s+i\s+(?:done|finished|ticked(?:\s+off)?|completed|checked(?:\s+off)?|packed|bought)(?:\s+yet)?$", re.I)
 _EVERYTHING = frozenset({"everything", "all", "it all", "all of it", "everything on the list"})
 
 
@@ -237,11 +241,26 @@ def _ticked_so_far(out, views: list) -> bool:  # noqa: ANN001
     return True
 
 
+def _open_everywhere(out, views: list) -> bool:  # noqa: ANN001
+    """Every checklist item not yet ticked, by the note it is in."""
+    tasks = [(v, s) for v in sorted(views, key=lambda v: v.rank) for s in v.sentences if s.kind == "task"]
+    if not tasks:
+        return False
+    open_ = [(v, s) for v, s in tasks if not s.done and not recorded_later(views, v, s)]
+    if not open_:
+        out.lines.append("Nothing is open: every checklist item is ticked off.")
+        return True
+    notes = len({id(v) for v, _s in open_})
+    header = f"{realise.count_word(len(open_)).capitalize()} item{'s' if len(open_) != 1 else ''} still open across {realise.count_word(notes)} note{'s' if notes != 1 else ''}:"
+    composer_lists._block(out, header, [(f"{_task_name(s)}, in {composer_lists._title(v)}", v, s) for v, s in open_[:12]])  # noqa: SLF001
+    return True
+
+
 def asks_state(question: str) -> bool:
     """Whether `question` asks a checklist's state by its verb ("what's
     unpacked", "what have I ticked off")."""
     q = " ".join(str(question or "").lower().split()).rstrip("?.!")
-    return bool(_UN_STATE.match(q) or _TICKED_SO_FAR.match(q))
+    return bool(_UN_STATE.match(q) or _TICKED_SO_FAR.match(q) or _ALL_OPEN.match(q))
 
 
 #: "Is the library membership renewed", "is the laptop backed up", "is the
@@ -270,7 +289,13 @@ def _state(out, q: str, views: list, today: date) -> bool:  # noqa: ANN001
     if m := _IS_PASSIVE.match(q):
         return _was_done(out, m, views, today)
     if m := _UN_STATE.match(q):
-        return _left(out, m.group("un") or m.group("not"), views, today)
+        bare = m.group("un") or m.group("not")
+        #: A list named ("what is not done in Todo"): its open items, not every checklist's.
+        if m.group("place"):
+            return _left(out, f"on {m.group('place')}", views, today)
+        return _open_everywhere(out, views) if bare.lower() in _BARE_STATE else _left(out, bare, views, today)
+    if _ALL_OPEN.match(q):
+        return _open_everywhere(out, views)
     return bool(_TICKED_SO_FAR.match(q)) and _ticked_so_far(out, views)
 
 
@@ -340,13 +365,13 @@ def _say_did(out, view, s, verb_word: str, today: date) -> None:  # noqa: ANN001
         _verdict(out, view, s, verb_word)
     elif _UNDONE.search(s.text):
         _say_line(out, view, s, f"No, {_note_of(view, today)} says")
-    elif _INTENT.search(s.text):
+    elif planned(s.text):
         _say_line(out, view, s, f"Not yet, as far as your notes go. {_note_of(view, today).capitalize()} only plans it")
     else:
         _say_line(out, view, s, f"Yes, {_note_of(view, today)} says so")
 
 
-def _not_said(out, views: list, obj, words: list[str], today: date) -> None:  # noqa: ANN001
+def _not_said(out, views: list, obj, words: list[str], today: date, verb: frozenset[str] = frozenset()) -> None:  # noqa: ANN001
     """No note says the doing: the nearest note that names the thing, or a
     plain no, never the question echoed back ("says you written")."""
     thing = _yours(_asked_thing(words))
@@ -358,6 +383,8 @@ def _not_said(out, views: list, obj, words: list[str], today: date) -> None:  # 
         out.lines.append(line)
         out.rows.append({"sentence": line, "note_id": empty.note.get("source_id", empty.id), "source": empty.title,
                          "start": 0, "end": 0, "score": 1.0, "digest": True})
+    elif titled := _titled_first(views, obj, verb):
+        _say_line(out, *titled, f"Your {composer_lists._title(titled[0])} note does not say it outright, but it has")  # noqa: SLF001
     elif near := _nearest(views, obj):
         _say_line(out, *near, f"I found nothing in your notes that says so. The closest is {_note_of(near[0], today)}")
     else:
@@ -372,6 +399,22 @@ def _yours(thing: str) -> str:
 
 def _titled_for(view, obj: list[str]) -> bool:  # noqa: ANN001
     return bool(obj) and all(composer._holds(st, view.title_words) for st in obj)  # noqa: SLF001
+
+
+def _titled_first(views: list, obj: list[str], verb: frozenset[str]):  # noqa: ANN202
+    """The (view, sentence) of a note titled for the thing ("Hotel Alfama" for
+    "did I book the hotel") whose sentence says the doing ("Booking reference
+    HA-77421"): the title is not in its sentences, so "found nothing" beside
+    that note was wrong (round 1 D4). A note with no sentence on the verb is
+    not offered: its first line is no news of the doing (review 4)."""
+    if not verb:
+        return None
+    for view in sorted(views, key=lambda v: v.rank):
+        if _titled_for(view, obj):
+            for s in view.sentences:
+                if _says_verb(s, verb):
+                    return view, s
+    return None
 
 
 def _nearest(views: list, obj: list[str]):  # noqa: ANN202
@@ -447,7 +490,7 @@ def _did(out, rest: str, views: list, today: date) -> bool:  # noqa: ANN001
     if best is not None and best[1].kind == "task" and not best[1].done:
         best = _done_later(views, verb, obj, best[0]) or best
     if best is None:
-        _not_said(out, views, obj, words, today)
+        _not_said(out, views, obj, words, today, verb)
         return True
     _say_did(out, *best, words[0], today)
     return True

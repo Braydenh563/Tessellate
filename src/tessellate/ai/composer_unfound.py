@@ -65,6 +65,15 @@ _INSTRUCTION_STEMS = frozenset(
 )
 
 
+#: Function words of the other languages a notebook is written in, which are
+#: never a topic the notes could be missing: "que sé sobre Tokyo" is not
+#: missing "sobre" (round 2 E26). Words that are also English are left out.
+_FOREIGN = frozenset(
+    """sobre que qué sé de del la las el los por para sin como cómo ist wie der das über und mit ein eine les des une dans pour
+    mein meine dein avec qui est sul della dei che nel não uma com dos mes sur""".split()
+)
+
+
 #: An adverb says how, not what: "what did I personally think", "is it
 #: actually recorded" are never missing their "personally" (stress run 2026-10-30).
 _MANNER = re.compile(r"(?:ally|ely|ently|antly|ously|ively|edly|icitly)$|^(?:simply|merely|basically|honestly|truly|mostly|mainly|barely|nearly|hardly)$", re.I)
@@ -146,6 +155,8 @@ def _frame_stems(question: str) -> frozenset[str]:
 
 def _is_unfound(out: _Answer, term: str, found: set[str], quoted: set[str], quoted_text: str = "") -> bool:
     if len(term) < _MISSING_MIN or _stem(term) in _INSTRUCTION_STEMS or _MANNER.search(term) or _seen(term, found):
+        return False
+    if term.lower() in _FOREIGN:
         return False
     if _stem(term) in _frame_stems(out.question or ""):
         return False
