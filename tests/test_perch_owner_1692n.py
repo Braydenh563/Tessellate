@@ -108,7 +108,7 @@ def test_a_new_window_top_is_gone_to_within_a_few_seconds_not_after_the_first_fo
     t = run_until(e, 0.1, 0.9)  # a stand, well inside CLIMB_FIRST
     e.set_windows([eng.Perch(2, 150, 700, 2400)], t)
     assert any("new window top" in n for n in e.notes)
-    t = run_until(e, t, eng.CLIMB_SOON + 6.0)
+    run_until(e, t, eng.CLIMB_SOON + 6.0)
     assert any("eager climb: chosen" in n for n in e.notes)
     assert e.target is not None or e.perch is not None or e.state in ("warp", "walk", "fly", "crouch", "rise", "land", "drift", "climb")
     assert e.state != "stand" or e.perch is not None
@@ -119,7 +119,7 @@ def test_an_eager_trip_that_cannot_happen_says_why_and_the_next_one_waits() -> N
     t = run_until(e, 0.1, 0.5)
     e.set_windows([eng.Perch(2, 150, 700, 2400)], t)
     e.set_windows([], t + 0.5)  # the window went before its time
-    t = run_until(e, t + 0.5, eng.CLIMB_SOON + 3.0)
+    run_until(e, t + 0.5, eng.CLIMB_SOON + 3.0)
     assert any(n.startswith("eager climb skipped") for n in e.notes)
     assert e.perch is None
 
