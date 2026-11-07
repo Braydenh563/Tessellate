@@ -2061,8 +2061,8 @@ being written by running agents stay beside this one.
 Left by the graph agent (Brief 38, merged 2026-10-10):
 
 - Built (`topicRepeatsTag`, notes-list.js): a tag-named topic's chip repeats the tag chip beside it on the card (`noteTopicChip`, notes-list.js); dedupe against the card's own tags.
-- The floating topic rename field is 42px tall over a 17px plate (`gcRenameTopicInline`, graph-canvas.js); not seen by eye, size it to the plate.
-- A topic drag writes its core note's pin with its own `PUT /graph/pin` beside the group's one `PUT /graph/pins` (`gcDragEnd`); one write.
+- **Fixed (checked 2026-11-07: `gcRenameTopicInline` sizes the field to the plate, plate height plus 6).** The floating topic rename field is 42px tall over a 17px plate (`gcRenameTopicInline`, graph-canvas.js); not seen by eye, size it to the plate.
+- **Fixed (checked 2026-11-07: ledger 931, `gcDragEnd` pushes the core note into the group's one `PUT /graph/pins`).** A topic drag writes its core note's pin with its own `PUT /graph/pin` beside the group's one `PUT /graph/pins` (`gcDragEnd`); one write.
 - `scratchpad/ui-sweeps/graphfslightbox.js` reads `.lightbox` in the tick it calls the lazy `openLightbox`; the sweep needs an await.
 - Topics becoming categories is Brief 39b's (GRAPH_PLAN "Decision made, 2026-10-10").
 
