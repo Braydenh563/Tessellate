@@ -22,6 +22,10 @@ DOUBLE_S, DOUBLE_PX = 0.4, 12
 SLOP_PX = 4
 #: The handle shows this long after the pointer last moved over the figure, and while it is held.
 SHOW_S = 1.2
+#: A pull with no pointer event for this long is over (a release that never arrived: a lost grab, a lock screen).
+PULL_IDLE_S = 8.0
+#: A size just pulled is kept against the page's older value for this long, while the write-back reaches it.
+PENDING_S = 6.0
 #: The least hit box of the handle, in px at 96 dpi (scaled with the monitor), and the gap kept from the figure's corner.
 HIT_PX, GAP_PX = 24, 2
 #: Ring colour (the app's accent) and fill (its card), as straight RGBA.
@@ -53,13 +57,32 @@ def hit_side(dpi: int) -> int:
     return max(HIT_PX, round(HIT_PX * dpi / 96.0))
 
 
-def hit_box(box: tuple[int, int, int, int], hanging: bool, dpi: int) -> tuple[int, int, int, int]:
+#: The least alpha that counts as the figure for the handle's corner: the glow and wisps below it are drawn but faint
+#: (the drawn box keeps them, for hit testing), and a handle hung on their corner floats in empty space (INBOX 1692 h).
+SOLID_ALPHA = 128
+
+
+def solid_box(frame: Frame) -> tuple[int, int, int, int]:
+    """The box of the frame's solid pixels (left, top, right, bottom): where the handle's corner is. The drawn box
+    when nothing is that solid."""
+    from PIL import Image
+
+    alpha = Image.frombytes("L", (frame.width, frame.height), bytes(frame.bgra[3::4]))
+    box = alpha.point(lambda a: 255 if a >= SOLID_ALPHA else 0).getbbox()
+    if box:
+        return tuple(box)  # type: ignore[return-value]
+    return frame.box if frame.box[2] else (0, 0, frame.width, frame.height)
+
+
+def hit_box(box: tuple[int, int, int, int], hanging: bool, dpi: int, left: bool = False) -> tuple[int, int, int, int]:
     """The handle's hit box (left, top, right, bottom) in the frame's own pixels: GAP_PX off the figure's drawn
     corner, top right when it stands and bottom right when it hangs (the app's, since 9d5fd92). It may lie outside
-    the canvas; `with_handle` grows the canvas to hold it, since the layered window takes no click outside it."""
+    the canvas; `with_handle` grows the canvas to hold it, since the layered window takes no click outside it.
+    `left`: on the figure's left corner instead, when the right one would put the window off the monitor."""
     side, gap = hit_side(dpi), max(GAP_PX, round(GAP_PX * dpi / 96.0))
     top = box[3] + gap if hanging else box[1] - gap - side
-    return box[2] + gap, top, box[2] + gap + side, top + side
+    x = box[0] - gap - side if left else box[2] + gap
+    return x, top, x + side, top + side
 
 
 def with_handle(frame: Frame, hit: tuple[int, int, int, int], hot: bool) -> tuple[Frame, tuple[int, int, int, int]]:
@@ -69,12 +92,12 @@ def with_handle(frame: Frame, hit: tuple[int, int, int, int], hot: bool) -> tupl
     from PIL import Image, ImageDraw
 
     image = Image.frombytes("RGBA", (frame.width, frame.height), frame.bgra, "raw", "BGRa")
-    up, right, down = max(0, -hit[1]), max(0, hit[2] - frame.width), max(0, hit[3] - frame.height)
-    if up or right or down:
-        grown = Image.new("RGBA", (frame.width + right, frame.height + up + down), (0, 0, 0, 0))
-        grown.paste(image, (0, up))
+    lead, up, right, down = max(0, -hit[0]), max(0, -hit[1]), max(0, hit[2] - frame.width), max(0, hit[3] - frame.height)
+    if lead or up or right or down:
+        grown = Image.new("RGBA", (frame.width + lead + right, frame.height + up + down), (0, 0, 0, 0))
+        grown.paste(image, (lead, up))
         image = grown
-    hit = (hit[0], hit[1] + up, hit[2], hit[3] + up)
+    hit = (hit[0] + lead, hit[1] + up, hit[2] + lead, hit[3] + up)
     draw_on = Image.new("RGBA", image.size, (0, 0, 0, 0))
     draw = ImageDraw.Draw(draw_on)
     draw.rectangle((hit[0], hit[1], hit[2] - 1, hit[3] - 1), fill=(*RING[:3], HIT_ALPHA))
@@ -84,5 +107,5 @@ def with_handle(frame: Frame, hit: tuple[int, int, int, int], hot: bool) -> tupl
     draw.ellipse((cx - r, cy - r, cx + r, cy + r), fill=FILL, outline=RING, width=max(2, round(side / 12)))
     image = Image.alpha_composite(image, draw_on)
     box = frame.box
-    moved = (box[0], box[1] + up, box[2], box[3] + up)
-    return Frame(image.width, image.height, premultiplied_bgra(image), frame.pad_x, frame.pad_y + up, moved), hit
+    moved = (box[0] + lead, box[1] + up, box[2] + lead, box[3] + up)
+    return Frame(image.width, image.height, premultiplied_bgra(image), frame.pad_x + lead, frame.pad_y + up, moved), hit

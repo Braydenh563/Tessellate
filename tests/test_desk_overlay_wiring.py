@@ -289,14 +289,14 @@ def test_the_overlay_follows_the_apps_resolved_motion_and_logs_it(over, caplog):
     runner = FakeRunner.started[0]
     assert runner.reduced is True and runner.reduced_reason == "app"
     assert any("overlay started" in r.getMessage() and "motion=still (app)" in r.getMessage() for r in caplog.records)
-    assert dc.DeskApi(over).panel_motion() == {"still": True, "reason": "app", "roam": True, "stay": False, "asleep": False, "figure": True}
+    assert dc.DeskApi(over).panel_motion() == {"still": True, "reason": "app", "roam": True, "stay": False, "size": 1.0, "asleep": False, "figure": True}
 
 
 def test_a_full_answer_moves_and_no_answer_leaves_it_to_the_windows_flag(over):
     over.main_window.evaluate_js = _says(mode="full")
     over.set_main_hidden(True)
     assert FakeRunner.started[0].reduced is False
-    assert dc.DeskApi(over).panel_motion() == {"still": False, "reason": "", "roam": True, "stay": False, "asleep": False, "figure": True}
+    assert dc.DeskApi(over).panel_motion() == {"still": False, "reason": "", "roam": True, "stay": False, "size": 1.0, "asleep": False, "figure": True}
     over.set_main_hidden(False)
     over.close()
     over.closing = False
@@ -617,3 +617,78 @@ def test_the_apps_companion_size_reaches_the_figure_and_a_pull_is_written_back(o
     assert runner.scaled == [0.8]
     runner.on_size(1.4)
     assert over.size_pref == 1.4 and "nameMarkBuddySetSize(v,true)" in asked[-1] and "const v=1.4;" in asked[-1]
+
+
+def _page(over, answers):
+    """The app window: `answers` is what a size write returns; the look says what size the page holds."""
+    import json
+
+    asked: list[str] = []
+    state = {"write": answers, "page": 1.0}
+
+    def answer(script):
+        asked.append(script)
+        if "size:" in script:
+            return json.dumps({"look": "masculine", "size": state["page"]})
+        return state["write"]
+
+    over.main.evaluate_js = answer
+    return asked, state
+
+
+def test_a_failed_write_back_keeps_the_pulled_size_and_is_retried_on_the_next_sync(over):
+    asked, state = _page(over, False)
+    over.set_main_hidden(True)
+    runner = FakeRunner.started[0]
+    runner.scale, runner.set_scale = 1.0, lambda v: runner.__dict__.setdefault("scaled", []).append(v)
+    runner.on_size = over._overlay_size  # noqa: SLF001
+    runner.on_size(1.4)
+    assert over.size_pref == 1.4 and over._size_unsent == 1.4  # noqa: SLF001
+    over._now = lambda: 1e9  # noqa: SLF001 - well past the hold
+    runner.scale = 1.4
+    before = len(asked)
+    over._start_overlay()  # noqa: SLF001 - the page still says 1.0
+    assert over.size_pref == 1.4 and not hasattr(runner, "scaled")  # the page's old value is not taken back
+    assert any("const v=1.4;" in s for s in asked[before:])  # the write is tried again
+    state["write"] = True
+    over._start_overlay()  # noqa: SLF001
+    assert over._size_unsent is None  # noqa: SLF001
+    state["page"] = 0.8
+    over._now = lambda: 2e9  # noqa: SLF001
+    over._start_overlay()  # noqa: SLF001 - now Appearance may change it
+    assert over.size_pref == 0.8
+
+
+def test_the_menu_sizes_are_the_apps_three_steps_and_set_the_figure_and_the_page(over):
+    asked, _ = _page(over, True)
+    over.set_main_hidden(True)
+    runner = FakeRunner.started[0]
+    runner.scale, runner.set_scale = 1.0, lambda v: runner.__dict__.setdefault("scaled", []).append(v)
+    api = dc.DeskApi(over)
+    assert api.set_figure_size("large") is True and over.size_pref == 1.3 and runner.scaled == [1.3]
+    assert "const v=1.3;" in asked[-1] and api.panel_motion()["size"] == 1.3
+    assert api.set_figure_size("huge") is False and api.set_figure_size(None) is False and over.size_pref == 1.3
+    assert api.set_figure_size("small") and runner.scaled == [1.3, 0.8]
+
+
+def test_the_size_script_and_look_script_use_the_names_the_page_really_has():
+    from pathlib import Path
+    import re
+
+    js = (Path(dc.__file__).resolve().parents[3] / "frontend" / "js" / "avatars.js").read_text(encoding="utf-8")
+    setter = re.search(r"function nameMarkBuddySetSize\((\w+), (\w+) = true\)", js)
+    assert setter and "nameMarkBuddySetSize(v,true)" in dc.SIZE_SCRIPT and "%s" in dc.SIZE_SCRIPT
+    assert "function nameMarkBuddyScaleSaved()" in js and "nameMarkBuddyScaleSaved()" in dc.LOOK_SCRIPT
+    assert 'prefs.get("avatar-buddy-size"' in js and "'avatar-buddy-size'" in dc.SIZE_SCRIPT
+    steps = re.search(r"const NMB_SIZES = \{ small: ([\d.]+), medium: ([\d.]+), large: ([\d.]+) \}", js)
+    assert steps and dc.SIZE_PRESETS == {"small": float(steps[1]), "medium": float(steps[2]), "large": float(steps[3])}
+
+
+@pytest.mark.parametrize("bad", ["big", True, None, [1], {"a": 1}])
+def test_a_size_that_is_not_a_number_is_ignored_when_the_look_is_read(over, bad):
+    import json
+
+    over.main.evaluate_js = lambda s: json.dumps({"look": "masculine", "size": bad})
+    over.size_pref = 1.3
+    over._read_look()  # noqa: SLF001
+    assert over.size_pref == 1.3

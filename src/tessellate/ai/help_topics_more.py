@@ -1461,7 +1461,7 @@ MORE_TOPICS: list[dict] = [
             " Tessellate runs on: Settings, Appearance, Corner companion, Show the companion on the desktop, or the tray icon's menu. It takes effect while the desktop app runs. Click it for Quick note, "
             "Quick search, New reminder, Open today, Open Tessellate, Wave, Come here, Go somewhere else, Take a nap, Sit on a window"
             " or Hide for 10 minutes. Come here follows your pointer a while; a nap lasts minutes or until clicked. Right-click it for Companion (Atlas masculine or feminine, your own or a saved one, drawn once),"
-            " Stay here or Roam, Settings or Turn off. Drag it; it keeps the spot. Pull its corner handle (bottom right while it hangs) to size it, double-click to reset. The menu notes a draw. Locked, it "
+            " Stay here or Roam, Settings or Turn off. Drag it; it keeps the spot. Menu: Small, Medium, Large; or pull its corner handle (bottom right while it hangs), double-click to reset. Locked, it "
             "shows only Open Tessellate. On Wayland it stays in the app."
         ),
         "badge": {"label": "Desktop companion", "section": "appearance", "target": "desktop-companion-row"},
@@ -2834,6 +2834,7 @@ TOPIC_META: dict[str, dict] = {
     "properties": {"title": "Note properties and types", "path": "a note's ⋯, Properties; or the command palette, Note types"},
     "entities": {"title": "People and things", "path": "Graph tab, an entity; or the command palette, People and things"},
     "chat-controls": {"title": "Chat keys and controls", "path": "Chat tab"},
+    "context-window": {"title": "How much the chat model reads at once", "path": "Settings, Models"},
     "chat-context": {"title": "When a chat outgrows the window", "path": "Chat tab, the context pill in the header"},
     "wrap-lines": {"title": "Wrap lines in tables and code", "path": "Chat tab, a table or code block"},
     "notes-controls": {"title": "Notes keys, filters and selection", "path": "Notes tab"},
@@ -2898,7 +2899,7 @@ HELP_GROUPS: list[tuple[str, tuple[str, ...]]] = [
         "tags-categories", "filing", "suggested-tags", "tag-manager", "manage-categories", "tidy",
     )),
     ("Asking Atlas", (
-        "ask-chat", "answers-from-notes", "chat-controls", "chat-context", "chat-private", "chat-attach-cards", "chat-model-picker", "chat-list", "queued-messages", "wrap-lines", "slash-commands", "chat-acts", "tasks", "nicknames", "follow-up-trail", "why-this-answer", "line-verdicts", "answer-pictures", "time-and-recency", "notebook-questions", "studyhelp",
+        "ask-chat", "answers-from-notes", "chat-controls", "chat-context", "context-window", "chat-private", "chat-attach-cards", "chat-model-picker", "chat-list", "queued-messages", "wrap-lines", "slash-commands", "chat-acts", "tasks", "nicknames", "follow-up-trail", "why-this-answer", "line-verdicts", "answer-pictures", "time-and-recency", "notebook-questions", "studyhelp",
         "contradictions", "skills", "personas", "answer-style", "memory", "learned", "open-questions",
     )),
     ("Documents and code", (

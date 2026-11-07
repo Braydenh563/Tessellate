@@ -734,6 +734,11 @@ class Engine:
             self.y += lift - self._lift()
         self.set_monitors(self.monitors, size)
 
+    def hold(self) -> Output:
+        """The picture as it is, time not advanced: the figure held still while the size handle is pulled (the
+        caller `resume`s it on release, so nothing it was doing is caught up)."""
+        return self._output(self.now)
+
     def home(self) -> tuple[int, int]:
         return int(round(self.x)), int(round(self.y))
 
