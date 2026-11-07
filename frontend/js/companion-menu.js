@@ -216,6 +216,8 @@ function nameMarkViewerActs(buddy) {
 function nameMarkBuddyMenu(buddy, at = null) {
   if (typeof openMenuAtPoint !== "function") return;
   const face = buddy.querySelector(".nm-buddy-face");
+  //: Its line is put away: the menu opens over it and left "...ne." showing from under it.
+  buddy.querySelector(":scope > .nm-say")?.remove();
   if (nmb.anim && nmb.anim.playState === "running") {
     const drawn = buddy.getBoundingClientRect();
     nmb.anim.cancel();
@@ -342,8 +344,12 @@ function nameMarkBuddyMenu(buddy, at = null) {
   items.push({
     group: "settings",
     label: lively ? "ph:speaker-slash Quieter" : "ph:speaker-high Livelier",
-    title: lively ? "It only blinks and looks, and still answers you" : "It waves and gestures now and then again",
-    run: () => choose("avatar-buddy-actions", lively ? "off" : "fewer"),
+    title: lively ? "Reduce actions: off. It only blinks and looks, and still answers you" : "Reduce actions: fewer. It waves and gestures now and then again",
+    //: Answers in its own voice: the row only relabelled itself, which read as nothing happening.
+    run: async () => {
+      await choose("avatar-buddy-actions", lively ? "off" : "fewer");
+      nameMarkSay(buddy, lively ? "Quieter now." : "Livelier again.");
+    },
   });
   items.push({
     group: "settings",

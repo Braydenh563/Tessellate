@@ -5282,25 +5282,22 @@ body .chip.item-label,
 }
 #nm-buddy:is([data-pose="stand"], [data-pose="sit"]) .nmb-size-grip { pointer-events: auto; }
 #nm-buddy .nm-buddy-face:active { cursor: grabbing; }
-/* **Its focus is a glow round the figure, not a box** (the owner,
-   2026-10-11: a blue rounded rectangle round the sleeping companion in its
-   large view). No ring from a click, and none of the base `:focus-visible`
-   outline (the button's 64 by 92 box, not the figure); from the keyboard a
-   soft accent glow behind the figure, an ellipse its own size. A gradient
-   on a still pseudo-element, not a `drop-shadow` on the moving drawing
-   (the "no filter on the figure" rule below). */
+/* **Its focus is a glow and a ring round the figure, not a box** (the owner, 2026-10-11: a blue
+   rounded rectangle round the sleeping companion). None from a click; from the keyboard an accent
+   ellipse its own size, on a still pseudo-element (no `drop-shadow` on the moving drawing). */
 #nm-buddy .nm-buddy-face:is(:focus, :focus-visible) { outline: none; }
 #nm-buddy .nm-buddy-face::before {
   content: "";
   position: absolute;
   inset: -10px -14px;
   border-radius: 50%;
-  background: radial-gradient(closest-side, color-mix(in srgb, var(--accent) 42%, transparent), color-mix(in srgb, var(--accent) 16%, transparent) 70%, transparent);
+  background: radial-gradient(closest-side, color-mix(in srgb, var(--accent) 36%, transparent), transparent);
   opacity: 0;
   transition: opacity var(--ui-fast) var(--ease-out);
   pointer-events: none;
 }
-#nm-buddy .nm-buddy-face:focus-visible::before { opacity: 1; }
+/* The ring (an outline follows the ellipse, and forced colours keep it): the haze alone was 1.9:1, a focus indicator needs 3:1. */
+#nm-buddy .nm-buddy-face:focus-visible::before { opacity: 1; outline: 2px solid var(--accent); }
 /* **Its size** (avatars.js, `nameMarkBuddySetSize`): the figure scaled
    about the point it touches its perch, so it keeps its place on it: its
    soles standing, its seat sitting (`--nmb-edge`), its hands hanging, its

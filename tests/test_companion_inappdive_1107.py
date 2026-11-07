@@ -67,3 +67,34 @@ def test_the_palette_can_put_the_keyboard_on_the_companion() -> None:
     assert "nameMarkBuddyShowing()" in features[features.index('"ph:crosshair Focus companion"') - 80 :][:120]
     assert ".nm-buddy-face" in row and ".focus()" in row
     assert "Focus companion" in HELP
+
+
+def test_the_keyboard_focus_on_the_figure_has_a_solid_ring_not_only_a_haze() -> None:
+    # A radial glow fading to nothing measured about 1.9:1 against the page; WCAG 2.2 asks 3:1 for a focus indicator.
+    ring = _rule("#nm-buddy .nm-buddy-face:focus-visible::before")
+    assert "opacity: 1" in ring
+    # An outline follows the ::before's border-radius (an ellipse, not the button's box) and survives forced colours.
+    assert "outline: 2px solid var(--accent)" in ring, "a 2px accent ring on the ellipse, not a box"
+
+
+def test_quieter_and_livelier_answer_in_the_companions_voice() -> None:
+    # The row only relabelled itself, so the press read as nothing (blind test, companion dive round 2).
+    menu = (JS / "companion-menu.js").read_text(encoding="utf-8")
+    row = menu[menu.index('label: lively ? "ph:speaker-slash Quieter"') :]
+    row = row[: row.index("\n  });")]
+    assert "await choose(" in row and "nameMarkSay(buddy," in row
+    assert "Reduce actions" in row, "the row's hint names the Settings control it is"
+
+
+def test_hiding_from_the_keyboard_leaves_focus_on_the_way_back() -> None:
+    # Hide removed the focused face, so focus fell to the page and Tab began at "Skip to content".
+    settings = (JS / "companion-settings.js").read_text(encoding="utf-8")
+    hide = _body(settings, "function nameMarkBuddyHide")
+    assert "buddy.contains(document.activeElement)" in hide
+    assert ".toast-action\")?.focus()" in hide
+
+
+def test_the_menu_puts_its_speech_bubble_away_before_it_opens_over_it() -> None:
+    menu = (JS / "companion-menu.js").read_text(encoding="utf-8")
+    opens = _body(menu, "function nameMarkBuddyMenu")
+    assert opens.index('querySelector(":scope > .nm-say")?.remove()') < opens.index("openMenuAtPoint(")
