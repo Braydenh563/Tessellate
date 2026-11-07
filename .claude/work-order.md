@@ -10,6 +10,7 @@ tier: max (weekly 4%), three agents at once, Sonnet or Haiku; never Fable; owner
 ## 2026-11-07 overnight queue (HANDOVER Now 2026-11-07c)
 - [x] Merge land1683 (e7ad8fe9) (agent/land1683-1107): overlay tests serially, CHANGELOG, CODEMAP, push
 - [x] Merge value-field (1d562540; follow-up agent/vf2-1107: keyboard reach, graph clock, scrubber) (agent/value-field-1107, INBOX 1694 b c): every slider readout typeable, lint
+- [x] Atlas composite and afterFrames regressions (93b010af; follow-up agent/atlasidle2-1107)
 - [ ] Merge companion-s (agent/companion-s-1107): window perch bug, the 1683 (l) mind, S rows; reviewer
 - [ ] Coverage ledger of every owner ask (1683 a to y, 1692 a to q, 1694) against code and tests
 - [ ] 1683 (x)(y) build: pull-up, fling off a moved window, slide off, poof or portal escape with a miffed face, tuck behind smaller windows, peek from the taskbar on any edge, hidden taskbar, sidebars; in-app parity
