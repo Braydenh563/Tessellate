@@ -245,7 +245,7 @@
       timer = setTimeout(() => {
         flush();
         show();
-      }, 300);
+      }, 250);
     });
     //: Tab is two spaces, on every selected line when the selection spans lines; Shift+Tab takes them back. Escape is the way out (below).
     field.addEventListener("keydown", (event) => {

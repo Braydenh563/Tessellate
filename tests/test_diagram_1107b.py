@@ -184,3 +184,9 @@ def test_the_hand_drawn_look_is_front_matter_that_keeps_the_rest_and_clean_remov
     assert _look(themed, True) == "---\nconfig:\n  look: handDrawn\n  theme: dark\n---\nflowchart TD\n  A --> B\n"
     assert _look(_look(themed, True), False) == themed
     assert 'makeMenuItem("ph:pencil-line Hand-drawn look"' in EMBED and 'makeMenuItem("ph:rectangle Clean look"' in EMBED
+
+
+def test_source_typing_redraws_after_a_quarter_second_of_quiet():
+    # DD-9a. Measured (port 8871, one added line): typing to the new picture 510 to 560 ms at 1x and 730 to 820 ms at 4x with a 300 ms wait;
+    # opening the New diagram window to its first block at 4x was 758, 443 and 144 ms (the target was under 1,000), so the lazy modules are not pre-warmed.
+    assert "}, 250);" in EMBED[EMBED.index("const flush = () =>") :][:900]
