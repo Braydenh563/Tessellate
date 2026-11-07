@@ -17,6 +17,9 @@ FEET_WITHIN = 0.7
 LIE_REST = (0.5, 1.0)
 OVER_CHANCE = 0.4
 GETUP_W = 6.0
+#: A body that lands on its feet turns upright in one eased move this long (s), the owner's "it keeps turning even after it
+#: lands" (INBOX 1683 v): upright and still within it, whatever it landed with.
+FEET_FOR = 0.5
 GROUND_RAMP = 0.08
 #: Rising to a ceiling it would take hold of: it turns upright for the catch, this strongly, this far ahead (s).
 REACH_W = 9.0
@@ -55,6 +58,15 @@ def decide(angle: float, omega: float, facing: int, hard: bool = False, rng: ran
     if hard and rng is not None and rng.random() < OVER_CHANCE:  # a hard hit rebounds: it goes over the other way
         side = -side
     return ("belly" if (side > 0) == (facing > 0) else "back"), side * QUARTER
+
+
+def hermite(a0: float, w0: float, elapsed: float, d: float = FEET_FOR) -> tuple[float, float]:
+    """(angle, rate) `elapsed` s into the eased move from angle `a0` and rate `w0` to upright and still over `d` s: a cubic
+    Hermite, so the rate is continuous at the start and the end and changes by little in between."""
+    u = min(1.0, elapsed / d)
+    angle = a0 * (2 * u**3 - 3 * u**2 + 1) + d * w0 * (u**3 - 2 * u**2 + u)
+    rate = a0 * (6 * u**2 - 6 * u) / d + w0 * (3 * u**2 - 4 * u + 1)
+    return angle, rate
 
 
 def rest_for(rng: random.Random) -> float:

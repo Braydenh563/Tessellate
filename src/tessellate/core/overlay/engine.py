@@ -135,6 +135,7 @@ STEP_UNDER = 60.0
 DASH_OVER = 420.0
 STEP_K, DASH_K = 0.6, 2.0
 EASE_IN = 0.7
+PACE_SLEW, PACE_GAP = 3.0, 0.1
 EASE_OUT = 70.0
 CROUCH_FOR = 0.25
 TURN_FOR = 0.24
@@ -163,11 +164,17 @@ GREET_AFTER = 420.0
 #: Under a busy pointer it waits instead of passing (px ahead / height of the path / seconds).
 YIELD_NEAR = 130.0
 YIELD_MAX = 4.0
+YIELD_BRAKE_S = 0.12
 LEAN_MAX = 0.07
 POSE_RATE = 14.0
-#: The longest slice of time one draw eases the pose by. A draw after a long sleep (an act's hold, a rest) has a big dt;
-#: easing by all of it snapped a 0.1 gap to neutral in one picture (INBOX 1683 j). The next draws are asked at the moving pace.
-POSE_DT_MAX = 1.0 / 60.0
+HANG_DRAG_IN = 0.6
+DRAG_STEP_MAX = 3.5
+#: The longest slice of time one draw eases the pose by after a long sleep (an act's hold, a rest): easing by all of it snapped
+#: a 0.1 gap to neutral in one picture (INBOX 1683 j). A draw within `POSE_DT_WAKE` of the last is at the moving pace and
+#: eases by all of its dt (a turn's squeeze is drawn at 30 Hz); a gap under `POSE_GAP_FREE` cache steps (`bh.Q_SCALE`: 3 px
+#: of the 150 px figure) is one picture's change at most, so it is closed at the real dt, however long the sleep (a capped
+#: slice there made a long-sleeping act crawl in short draws).
+POSE_DT_MAX, POSE_DT_WAKE, POSE_GAP_FREE = 1.0 / 60.0, 0.05, 0.75
 VX_SMOOTH_S = 0.06
 POSE_OFF = ("held", "pressed", "fly", "fall", "rise", "peek", "emerge", "leap", "hop", "card")
 #: Logical px of travel per walk frame (six frames a stride).
@@ -487,6 +494,8 @@ class Engine:
         self.omega = 0.0  # a thrown figure's turn rate, rad/s
         self.right_t = 0.0  # seconds it has been righting itself
         self.grounded = False  # a walker's tumble that has reached the floor
+        self.feet_from: tuple[float, float] | None = None  # the turn and rate where a landing on the feet began (`_feet_begin`)
+        self.feet_s = 0.0
         self.outcome: str | None = None  # how the last throw came to rest: feet, belly, back (`landing.decide`)
         self.lie_goal: float | None = None  # the quarter turn a body on its back or belly settles to (None: upright)
         self.lie_until = 0.0  # when it gets up, once it lies still
@@ -546,6 +555,8 @@ class Engine:
         self.nap_until = 0.0  # while above zero the sleep is a nap: only a poke, a drag, a command or this ends it
         self.follow_check = 0.0
         self.yield_since: float | None = None
+        self.pace_at = -math.inf
+        self.pace_last = 0.0  # the pace of the last step (`_pace`), which a yield brakes from
         self.pointer_busy_at = -1e9
         self.last_pointer: tuple[int, int] | None = None
         self.last_click = -1e9
@@ -569,6 +580,7 @@ class Engine:
         self.modes: list[str] = []
         self.legs: list[tuple[str, float, float, float]] = []
         self.hang_started = now
+        self.hang_drag0 = 0.0
         self.hang_phase = 0.0
         self.hang_glance_at = math.inf
         self.idle_start = 0.0
@@ -830,6 +842,7 @@ class Engine:
     def _on_hang(self, now: float) -> None:
         self.state_until = now + self.rng.uniform(*bh.HANG_BY_MOOD.get(self.mind.mood(now, self.hour), HANG_FOR))
         self.phase_started = self.hang_started = now
+        self.hang_drag0 = self.cur.drag  # the hem the hang starts from: the swing is blended in from it (`_target_pose`)
         self.hang_phase = self.rng.uniform(0.0, 2 * math.pi)
         self.hang_glance_at = now + self.rng.uniform(*HANG_GLANCE)
         self.swing_to, self.releasing = None, False
@@ -911,11 +924,19 @@ class Engine:
         scale = self._scale()
         self.flow.step(dt, max(-px, min(px, vx)) / scale, max(-px, min(px, vy)) / scale)
         target = self.pose_goal = self._target_pose(now)
-        k = min(1.0, min(dt, POSE_DT_MAX) * POSE_RATE)
-        self.cur = bh.Pose(*(a + (b - a) * k for a, b in zip(self.cur, target)))
+        gap = max(abs(a - b) / q for a, b, q in zip(self.cur, target, (bh.Q_SCALE, bh.Q_SCALE, bh.Q_LEAN, bh.Q_DRAG)))
+        k = min(1.0, (dt if gap <= POSE_GAP_FREE or dt <= POSE_DT_WAKE else POSE_DT_MAX) * POSE_RATE)
+        nxt = bh.Pose(*(a + (b - a) * k for a, b in zip(self.cur, target)))
+        # the hem is a swinging spring: a dash's stop threw its tip 26 px and back in 0.2 s, 5 to 6 px between two draws. The
+        # drawn hem moves by at most DRAG_STEP_MAX px a draw (the follow-through stays, only its speed is bounded)
+        step = max(-DRAG_STEP_MAX, min(DRAG_STEP_MAX, nxt.drag - self.cur.drag))
+        self.cur = nxt._replace(drag=self.cur.drag + step)
         # a draw that moved the figure by less than a pixel read as speed 0 and dropped the lean target for one picture;
         # the lean follows a short low-pass of the speed instead (INBOX 1683 j)
-        self.vx_px += (vx - self.vx_px) * (1.0 - math.exp(-dt / VX_SMOOTH_S))
+        if abs(vx) > px:  # a vanish, a warp or a placement is no speed: it leans no more, and the low-pass must not carry it on
+            self.vx_px = 0.0
+        else:
+            self.vx_px += (vx - self.vx_px) * (1.0 - math.exp(-dt / VX_SMOOTH_S))
 
     def _target_pose(self, now: float) -> bh.Pose:
         """What the body shape wants now: the act's keyframes, a turn's squeeze, a lean into the
@@ -932,6 +953,8 @@ class Engine:
             if self.swing_to is not None:  # winding up to let go toward a window: the swing grows
                 amp *= 1.0 + SWING_BOOST * bh.smooth((now - self.swing_at) / SWING_FOR)
             drag = HANG_SWING * amp * math.sin(2 * math.pi * t / HANG_PERIOD + self.hang_phase)
+            blend = bh.smooth(t / HANG_DRAG_IN)  # a hem left swinging by the leap or climb is not dropped to the pendulum in one pose ease
+            drag = self.hang_drag0 * (1.0 - blend) + drag * blend
         elif s_ == "warp" and self.warp is not None and self.warp["kind"] == "portal":
             squeeze = self._warp_view(now)[2]
             sx, sy = 1.0 - 0.8 * squeeze, 1.0 - 0.2 * squeeze
@@ -2105,7 +2128,26 @@ class Engine:
         k = {"step": STEP_K, "dash": DASH_K}.get(self.mode, 1.0)
         rise = bh.smooth((now - self.walk_started) / EASE_IN)
         fall = 1.0 if left is None else bh.smooth(left / (EASE_OUT * self._scale()))
-        return k * max(0.12, min(rise, max(0.2, fall)))
+        want = k * max(0.12, min(rise, max(0.2, fall)))
+        # the pace never rises faster than PACE_SLEW a second from where it was last: a start, the end of a turn or the end of
+        # a yield that jumped to the pace set a step of speed, which is an acceleration spike for the tail's spring and moved
+        # the hem 5 to 6 px in one draw (INBOX 1683 j). A gap since the last step is a fresh start from nothing.
+        gap = now - self.pace_at
+        self.pace_at = now
+        fresh = not 0.0 <= gap <= PACE_GAP
+        base, step = (0.0, 1.0 / 60.0) if fresh else (self.pace_last, gap)
+        self.pace_last = min(want, base + PACE_SLEW * step) if want > base else want
+        return self.pace_last
+
+    def _brake(self, now: float, dt: float) -> float:
+        """The pace while it gives way to a busy pointer: the last pace decays over a few draws, so the stop is a slowing
+        and the hem and tail are not thrown by a speed that fell to nothing in one draw (INBOX 1683 j). 0 once stopped."""
+        self.pace_last *= math.exp(-dt / YIELD_BRAKE_S)
+        if self.pace_last < 0.03:
+            self.pace_last = 0.0
+            self.walk_started = now  # the pace eases in from when it moves, not from when it was told
+        self.pace_at = now
+        return self.pace_last
 
     def _yields(self, now: float, ahead: float) -> bool:
         """Wait, rather than pass under a busy pointer: the pointer within YIELD_NEAR px of the path
@@ -2275,20 +2317,27 @@ class Engine:
         else:
             diff = (want - self.heading + math.pi) % (2 * math.pi) - math.pi
             self.heading += max(-FLOAT_TURN * dt, min(FLOAT_TURN * dt, diff))
-        if self._turning(now) or self._yields(now, math.cos(self.heading) * 90 * scale):
-            self.walk_started = now  # the pace eases in from when it moves, not from when it was told
+        if self._turning(now):
+            self.walk_started, self.pace_last = now, 0.0  # the pace eases in from when it moves, not from when it was told
             return
-        speed = FLOAT_SPEED * scale * self._pace(now, dist)
-        self.x = min(max(self.x + math.cos(self.heading) * speed * dt, left), right - self.size[0])
-        high = top - (self._lift() if self.then == "hang" and self.trip else 0.0)
-        if not self.trip:  # a wander turns wide, so the band is held by the clamp too, not only by the goal
-            high = max(high, self.ground_y(m) - FLOAT_BAND * self.size[1])
-        self.y = min(max(self.y + math.sin(self.heading) * speed * dt, high), self.floor_y(m))
+        pace = self._brake(now, dt) if self._yields(now, math.cos(self.heading) * 90 * scale) else self._pace(now, dist)
+        if pace <= 0.0:
+            return
+        self._drift_move(m, FLOAT_SPEED * scale * pace * dt)
         if abs(math.cos(self.heading)) > 0.5:
             self._face(1 if math.cos(self.heading) > 0 else -1, now)
         if wandering and now >= self.state_until:
             self.goal = None
             self._enter("stand", now)
+
+    def _drift_move(self, m: Monitor, step: float) -> None:
+        """Move `step` px along the heading, inside the work area and (a wander) the hover band."""
+        left, top, right, _b = m.area
+        self.x = min(max(self.x + math.cos(self.heading) * step, left), right - self.size[0])
+        high = top - (self._lift() if self.then == "hang" and self.trip else 0.0)
+        if not self.trip:  # a wander turns wide, so the band is held by the clamp too, not only by the goal
+            high = max(high, self.ground_y(m) - FLOAT_BAND * self.size[1])
+        self.y = min(max(self.y + math.sin(self.heading) * step, high), self.floor_y(m))
 
     def _leg_x(self, left: float, right: float) -> float:
         """The far end of a drift leg: a good way across the work area (FLOAT_LEG of its
@@ -2503,17 +2552,26 @@ class Engine:
             return
         floor = min(self.floor_y(m), uy1) if self._open_side(m, "bottom") else self.floor_y(m)
         if floater:
-            self.y = min(self.y, floor)
-            # at the drawn-box limit counts as down: the tumble's box is taller than the figure, so the
-            # limit can sit above the rest line, and it hung there in the limp pose (INBOX 1670)
-            if speed < 25 * scale and self._righted() and (abs(self.ground_y(m) - self.y) < 4 * scale or self.y >= floor - 0.5):
-                self.vx = self.vy = 0.0
-                self.y = self.ground_y(m)
-                self.settled_now = True
-                self.squash_at = now  # INBOX 1683: the settle ends in a small squash (`_ground_pose`), then the stand
-                self._enter("stand", now)
+            self._float_floor(m, floor, speed, now)
         elif self.y >= floor or self.grounded:
             self._land_tumble(m, floor, dt, now)
+
+    def _float_floor(self, m: Monitor, floor: float, speed: float, now: float) -> None:
+        """A thrown floater at its floor line: the landing move begins, the picture's feet reach the line, and once upright
+        and slow it settles into the stand."""
+        scale = self._scale()
+        if self._floored():
+            self._feet_begin()
+        floor = self._pose_floor(m, floor)  # the picture shown now, not the tumble's tallest frame: upright, its feet reach the line
+        self.y = min(self.y, floor)
+        # at the drawn-box limit counts as down: the tumble's box is taller than the figure, so the
+        # limit can sit above the rest line, and it hung there in the limp pose (INBOX 1670)
+        if speed < 25 * scale and self._righted() and (abs(self.ground_y(m) - self.y) < 4 * scale or self.y >= floor - 0.5):
+            self.vx = self.vy = 0.0
+            self.y = self.ground_y(m)
+            self.settled_now = True
+            self.squash_at = now  # INBOX 1683: the settle ends in a small squash (`_ground_pose`), then the stand
+            self._enter("stand", now)
 
     def _fly_walls(self, m: Monitor, now: float) -> tuple[float, float]:
         """The side walls (of what is drawn: the tumble's widest frame, not the window around it); returns the
@@ -2614,7 +2672,10 @@ class Engine:
             self.ground_mon = m  # the slide stays on the screen it landed on: a seam would jump the floor under it
             self.outcome, goal = ld.decide(self.angle, self.omega, 1 if self.facing >= 0 else -1, self.vy > 0 and abs(self.launch[1]) > 600 * self._scale(), self.rng)
             self.lie_goal = goal if self.outcome != "feet" else None
-            self._spin_contact(1.0 if self.vx >= 0 else -1.0)
+            if self.lie_goal is not None:  # the thump of a body going down; a landing on the feet adds no turn (INBOX 1683 v)
+                self._spin_contact(1.0 if self.vx >= 0 else -1.0)
+            else:
+                self._feet_begin()  # a wall bounce's unpaid kick is dropped there: the floor turns it upright, not further
         self.vy = 0.0
         self.vx *= math.exp(-(ld.STUMBLE_K if self.lie_goal is None else ld.SKID_K) * dt)
         self.x = min(max(self.x, m.area[0]), m.area[2] - self.size[0])
@@ -2653,13 +2714,13 @@ class Engine:
 
     def _do_walk(self, now: float, dt: float) -> None:
         if self._turning(now):
-            self.walk_started = now
+            self.walk_started, self.pace_last = now, 0.0
             return
         left = abs(self.goal[0] - self.x) if self.goal is not None else None
-        if self._yields(now, self.facing * 90 * self._scale()):
-            self.walk_started = now
+        pace = self._brake(now, dt) if self._yields(now, self.facing * 90 * self._scale()) else self._pace(now, left)
+        if pace <= 0.0:
             return
-        step = WALK_SPEED * self._scale() * dt * self.facing * self._pace(now, left)
+        step = WALK_SPEED * self._scale() * dt * self.facing * pace
         nx = self.x + step
         if self.goal is not None and abs(self.goal[0] - self.x) <= max(abs(step), 0.75):
             self.x = self.goal[0]
@@ -2727,12 +2788,32 @@ class Engine:
     def _spin(self, dt: float, speed: float) -> None:
         """One step of the turn: its own drag, and once the flight is slow (or on the floor) an eased turn
         to the nearest upright."""
-        self.omega *= math.exp(-SPIN_DRAG * dt)
-        self._pay_kick(dt)
-        self._right_step(dt, speed)
-        self.angle += self.omega * dt
-        if self.slow_for >= FLY_REST_DWELL and self._righted():
+        if self.feet_from is not None:
+            self._feet_step(dt)
+        else:
+            self.omega *= math.exp(-SPIN_DRAG * dt)
+            self._pay_kick(dt)
+            self._right_step(dt, speed)
+            self.angle += self.omega * dt
+        # on the floor, upright and still it is the held pose at once: the tumble's upright frame stands 14 px higher than the held
+        # one, so waiting out the dwell drew the feet off the line and then stepped them down (INBOX 1683 v)
+        if (self.slow_for >= FLY_REST_DWELL or self.grounded or self._floored()) and self._righted():
             self.laid = True  # laid down for good until the next throw: the held pose never swaps back to the tumble
+
+    def _feet_begin(self) -> None:
+        """The first floor contact of a body that comes down on its feet: from here its turn is one eased move (a cubic
+        Hermite from the angle and rate now to upright and still, `landing.FEET_FOR` s). A spring stiff enough to be upright
+        in that time changed the rate by up to 3 rad/s a tick; the move changes it by 0.14 (INBOX 1683 v)."""
+        if self.feet_from is None:
+            self.feet_from, self.feet_s = (ld.wrap(self.angle), self.omega + self.kick), 0.0
+            self.kick = 0.0
+
+    def _feet_step(self, dt: float) -> None:
+        a0, w0 = self.feet_from or (0.0, 0.0)
+        self.feet_s += dt
+        self.angle, self.omega = ld.hermite(a0, w0, self.feet_s)
+        if self.feet_s >= ld.FEET_FOR:
+            self.angle = self.omega = 0.0
 
     def _pay_kick(self, dt: float) -> None:
         """A contact's change of rate is paid out over a few ticks, not taken in one."""
@@ -2762,6 +2843,14 @@ class Engine:
             return ld.THUMP_W
         return ld.GETUP_W if self.grounded else (ld.REACH_W if reach else RIGHT_W)
 
+    def _floored(self) -> bool:
+        """A floater at its rest line: it never sets `grounded` (it hovers), but this is its floor contact."""
+        if self.gait != "float" or self.vy < 0:
+            return False
+        m = self.current_monitor()
+        # the drawn box's bottom limit can sit above the rest line (see `_do_fly`): at it counts as down
+        return self.y >= min(self.ground_y(m) - 4 * self._scale(), self._pose_floor(m, self.floor_y(m))) - 0.5
+
     def _turn_err(self) -> float:
         """How far the angle is from where it settles: the nearest upright, or the quarter turn it lies at."""
         if self.lie_goal is None:
@@ -2785,6 +2874,7 @@ class Engine:
         self.launch = (vx, vy)
         self.slow_for = self.right_t = 0.0
         self.grounded = self.laid = self.lying = False
+        self.feet_from, self.feet_s = None, 0.0
         self.outcome = self.lie_goal = self.wob_kind = None
         self.wall, self.wob, self.air_t0 = 0, 0.0, self.now
         self.y += self._dy(self._frame(self.now)) - self._dy("spin0")  # drawn where it was
