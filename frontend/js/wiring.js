@@ -23,7 +23,7 @@ reflectOnlineState();
 // --- writing room wiring ---
 $("draft-compose").addEventListener("click", composeDraft);
 $("draft-undo").addEventListener("click", undoDraft);
-$("draft-cancel").addEventListener("click", cancelDraft);
+$("draft-cancel").addEventListener("click", () => draftController?.abort());
 $("draft-save").addEventListener("click", () => saveDraftAsNote());
 
 $("draft-title").addEventListener("click", suggestDraftTitle);

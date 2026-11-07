@@ -1066,10 +1066,6 @@ function undoDraft() {
 // cancelled, and shows that it's working while it does.
 let draftController = null;
 
-function cancelDraft() {
-  draftController?.abort();
-}
-
 // What was last folded into the draft. Kept so a second pass doesn't resend
 // thoughts the model has already used, which is the problem clearing the box
 // was solving, at the cost of destroying the user's own writing.

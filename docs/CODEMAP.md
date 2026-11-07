@@ -2,9 +2,9 @@
 
 Generated 2026-11-07 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7853, frontend ids 2644, CSS sections 522, backend routes 649, backend modules 8931, test files 2124, tests 17897, plan headings 1004, app scripts 28, boot scripts 37, script files 261.
+Counts: frontend functions 7851, frontend ids 2644, CSS sections 522, backend routes 649, backend modules 8931, test files 2124, tests 17897, plan headings 1004, app scripts 28, boot scripts 37, script files 261.
 
-## Frontend functions (7853)
+## Frontend functions (7851)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -469,12 +469,11 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `wheelScrollsHorizontally` | frontend/js/chat.js:1394 |
 | `wireHorizontalWheelScrolling` | frontend/js/chat.js:1427 |
 
-### frontend/js/chat-agent.js (43)
+### frontend/js/chat-agent.js (42)
 
 | Name | File:line |
 |---|---|
 | `assistantAvatar` | frontend/js/chat-agent.js:348 |
-| `cancelDraft` | frontend/js/chat-agent.js:1069 |
 | `cardTextPreview` | frontend/js/chat-agent.js:673 |
 | `changeDiff` | frontend/js/chat-agent.js:480 |
 | `changeRow` | frontend/js/chat-agent.js:392 |
@@ -1053,45 +1052,44 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `whenText` | frontend/js/status.js:1120 |
 | `withoutEndStop` | frontend/js/status.js:2530 |
 
-### frontend/js/ai-tools.js (35)
+### frontend/js/ai-tools.js (34)
 
 | Name | File:line |
 |---|---|
-| `_namesSignature` | frontend/js/ai-tools.js:60 |
-| `applyEmbeddingBackend` | frontend/js/ai-tools.js:695 |
-| `applyFeatureModel` | frontend/js/ai-tools.js:363 |
-| `applyPalette` | frontend/js/ai-tools.js:1107 |
-| `applyRestoredLook` | frontend/js/ai-tools.js:1042 |
-| `clearEmbeddingBackendLatch` | frontend/js/ai-tools.js:742 |
-| `featureModelChoiceLabel` | frontend/js/ai-tools.js:357 |
-| `featureModelMenuItem` | frontend/js/ai-tools.js:400 |
-| `featureModelRow` | frontend/js/ai-tools.js:339 |
-| `featureModelState` | frontend/js/ai-tools.js:347 |
-| `fillModelSelect` | frontend/js/ai-tools.js:64 |
-| `lookFromOtherWindow` | frontend/js/ai-tools.js:1077 |
-| `looksLikeEmbeddingModel` | frontend/js/ai-tools.js:691 |
-| `mirroredUiKeys` | frontend/js/ai-tools.js:855 |
-| `placeChatModelPanel` | frontend/js/ai-tools.js:219 |
-| `pullLookFromNotebook` | frontend/js/ai-tools.js:1063 |
-| `renderAutonomousModelPicker` | frontend/js/ai-tools.js:531 |
-| `renderChatActiveModelBadge` | frontend/js/ai-tools.js:144 |
-| `renderChatModelPicker` | frontend/js/ai-tools.js:97 |
-| `renderFeatureModels` | frontend/js/ai-tools.js:386 |
-| `renderOcrModelPicker` | frontend/js/ai-tools.js:512 |
-| `renderReindex` | frontend/js/ai-tools.js:627 |
-| `renderUtilityModelPicker` | frontend/js/ai-tools.js:264 |
-| `renderVisionModelPicker` | frontend/js/ai-tools.js:287 |
-| `saveUiState` | frontend/js/ai-tools.js:913 |
-| `seedUiStateFromServer` | frontend/js/ai-tools.js:990 |
-| `syncEmbeddingPickerState` | frontend/js/ai-tools.js:564 |
-| `syncFeatureModelSelects` | frontend/js/ai-tools.js:434 |
+| `applyEmbeddingBackend` | frontend/js/ai-tools.js:691 |
+| `applyFeatureModel` | frontend/js/ai-tools.js:359 |
+| `applyPalette` | frontend/js/ai-tools.js:1103 |
+| `applyRestoredLook` | frontend/js/ai-tools.js:1038 |
+| `clearEmbeddingBackendLatch` | frontend/js/ai-tools.js:738 |
+| `featureModelChoiceLabel` | frontend/js/ai-tools.js:353 |
+| `featureModelMenuItem` | frontend/js/ai-tools.js:396 |
+| `featureModelRow` | frontend/js/ai-tools.js:335 |
+| `featureModelState` | frontend/js/ai-tools.js:343 |
+| `fillModelSelect` | frontend/js/ai-tools.js:60 |
+| `lookFromOtherWindow` | frontend/js/ai-tools.js:1073 |
+| `looksLikeEmbeddingModel` | frontend/js/ai-tools.js:687 |
+| `mirroredUiKeys` | frontend/js/ai-tools.js:851 |
+| `placeChatModelPanel` | frontend/js/ai-tools.js:215 |
+| `pullLookFromNotebook` | frontend/js/ai-tools.js:1059 |
+| `renderAutonomousModelPicker` | frontend/js/ai-tools.js:527 |
+| `renderChatActiveModelBadge` | frontend/js/ai-tools.js:140 |
+| `renderChatModelPicker` | frontend/js/ai-tools.js:93 |
+| `renderFeatureModels` | frontend/js/ai-tools.js:382 |
+| `renderOcrModelPicker` | frontend/js/ai-tools.js:508 |
+| `renderReindex` | frontend/js/ai-tools.js:623 |
+| `renderUtilityModelPicker` | frontend/js/ai-tools.js:260 |
+| `renderVisionModelPicker` | frontend/js/ai-tools.js:283 |
+| `saveUiState` | frontend/js/ai-tools.js:909 |
+| `seedUiStateFromServer` | frontend/js/ai-tools.js:986 |
+| `syncEmbeddingPickerState` | frontend/js/ai-tools.js:560 |
+| `syncFeatureModelSelects` | frontend/js/ai-tools.js:430 |
 | `taskElapsed` | frontend/js/ai-tools.js:31 |
-| `uiStateFingerprint` | frontend/js/ai-tools.js:902 |
-| `uiStatePayload` | frontend/js/ai-tools.js:889 |
-| `uiStateRememberSynced` | frontend/js/ai-tools.js:1031 |
-| `watchMirroredUiKeys` | frontend/js/ai-tools.js:958 |
-| `wireFeatureModelSelects` | frontend/js/ai-tools.js:494 |
-| `wireReindexButton` | frontend/js/ai-tools.js:606 |
+| `uiStateFingerprint` | frontend/js/ai-tools.js:898 |
+| `uiStatePayload` | frontend/js/ai-tools.js:885 |
+| `uiStateRememberSynced` | frontend/js/ai-tools.js:1027 |
+| `watchMirroredUiKeys` | frontend/js/ai-tools.js:954 |
+| `wireFeatureModelSelects` | frontend/js/ai-tools.js:490 |
+| `wireReindexButton` | frontend/js/ai-tools.js:602 |
 
 ### frontend/js/phone-shell.js (62)
 
