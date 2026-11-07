@@ -108,3 +108,22 @@ def test_the_drawing_error_note_offers_undo_of_the_last_edit():
     failure = picture[picture.index("function failure(") :]
     assert 'if (S.io?.undo) note.prepend(smallButton("ph:arrow-u-up-left Undo the last edit"' in failure
     assert failure.index("Undo the last edit") < failure.index("replaceChildren(note)")
+
+
+def test_the_source_pane_has_line_numbers_indent_keys_whole_edit_undo_and_a_way_out():
+    # DD-5. Measured before (1440, port 8871): Tab left the field (focus on a ghost button), no line numbers, a soft-wrapped 480 px field,
+    # Ctrl+Z was the browser's own so a block edit could not be undone from the text, Escape closed the window.
+    assert 'const srcwrap = el("div", "dgm-srcwrap")' in EMBED and 'gutter.setAttribute("aria-hidden", "true")' in EMBED
+    assert 'field.setAttribute("wrap", "off")' in EMBED and "body.append(srcwrap, host)" in EMBED
+    # Tab is two spaces (every selected line when it spans lines), Shift+Tab takes them back.
+    assert 'event.key === "Tab" && !event.ctrlKey && !event.metaKey && !event.altKey' in EMBED
+    # The text field's undo is the history's: the debounce is flushed first so an edit made a moment ago is its own step.
+    assert "const flush = () =>" in EMBED and "if (event.target === field) flush()" in EMBED
+    assert "event.target === field ||" not in EMBED
+    # Escape in the field leaves the field (Tab now indents, so it is the way out); the next one closes the window.
+    assert "if (event.target === field)" in EMBED[EMBED.index("const onKey") :]
+    # The error line is marked in the gutter, set by the picture's failure note and cleared when the picture draws.
+    picture = _js("diagram-picture.js")
+    assert 'field.dispatchEvent(new Event("dgmerror"))' in picture
+    assert 'field.addEventListener("dgmerror"' in EMBED
+    assert ".dgm-gutter-bad" in CSS and ".dgm-srcwrap" in CSS

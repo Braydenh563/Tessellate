@@ -12,7 +12,7 @@
     ["Tab", "Add a box after the last one, joined to it"], ["Shift + Tab", "Select the box that points at this one"], ["F6", "Leave the blocks for the picture"], ["Ctrl + Enter", "Keep the diagram (Done)"],
     ["Enter, F2", "Name the selected block"], ["Delete", "Remove the selected block"], ["C", "Connect the selected block to another"],
     ["K", "Colour the selected blocks"], ["Alt + arrows", "Move or nest the selected block"], ["Ctrl + Z, Ctrl + Y", "Undo, redo"],
-    ["Shift + F10", "Open the block menu"], ["Arrows on the picture", "Pick the box in that direction"], ["Shift + arrows on the picture", "Move the picture"], ["?", "Show this sheet"],
+    ["Shift + F10", "Open the block menu"], ["Arrows on the picture", "Pick the box in that direction"], ["Shift + arrows on the picture", "Move the picture"], ["Tab, Shift + Tab in Source", "Indent, take the indent back"], ["Esc in Source", "Leave the text for the views"], ["?", "Show this sheet"],
   ];
 
   //: The keys the shape table holds, each with the word the Add menu uses.

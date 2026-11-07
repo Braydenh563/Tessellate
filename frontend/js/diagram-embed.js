@@ -149,6 +149,21 @@
     field.spellcheck = false;
     field.setAttribute("aria-label", "Mermaid source");
     field.value = first;
+    //: Line numbers beside the text, the error line marked (DD-5, 1107). The field does not wrap, so a number sits on its own line.
+    field.setAttribute("wrap", "off");
+    const srcwrap = el("div", "dgm-srcwrap");
+    const gutter = el("div", "dgm-gutter");
+    gutter.setAttribute("aria-hidden", "true");
+    srcwrap.append(gutter, field);
+    const number = () => {
+      const bad = Number(field.dataset.errorLine) || 0;
+      const all = Array.from({ length: field.value.split("\n").length }, (_, i) => i + 1);
+      gutter.replaceChildren(...(bad && bad <= all.length ? [all.slice(0, bad - 1).map((n) => `${n}\n`).join(""), el("span", "dgm-gutter-bad", String(bad)), all.slice(bad).map((n) => `\n${n}`).join("")] : [all.join("\n")]));
+      gutter.scrollTop = field.scrollTop;
+    };
+    field.addEventListener("scroll", () => (gutter.scrollTop = field.scrollTop));
+    field.addEventListener("dgmerror", number);
+    number();
     const io = {
       name: title,
       set: (next) => {
@@ -156,7 +171,7 @@
         history.length = at + 1;
         history.push(next);
         at = history.length - 1;
-        if (field.value !== next) field.value = next;
+        if (field.value !== next) (field.value = next), number();
         //: A press on another kind (diagram-kindbar.js) only sets the source; the pane has to be drawn for it. The page gets
         //: this through the document; a block gesture draws its own pane, so only a change of kind shows again (DD-1).
         if (diagramModel.builder.kindOf(next) !== kind) show();
@@ -172,6 +187,7 @@
     };
     const apply = () => {
       field.value = history[at];
+      number();
       show();
     };
     //: The pane on show, for the keys sheet (`?`, the Keys chip).
@@ -201,16 +217,42 @@
       seg.append(b);
     }
     let timer = 0;
+    //: What was typed a moment ago becomes its own history step now, so Ctrl+Z in the text undoes it and a block edit alike (DD-5).
+    const flush = () => {
+      clearTimeout(timer);
+      if (field.value !== history[at]) io.set(field.value);
+    };
     field.addEventListener("input", () => {
+      number();
       clearTimeout(timer);
       timer = setTimeout(() => {
-        if (field.value === history[at]) return;
-        io.set(field.value);
+        flush();
         show();
       }, 300);
     });
+    //: Tab is two spaces, on every selected line when the selection spans lines; Shift+Tab takes them back. Escape is the way out (below).
+    field.addEventListener("keydown", (event) => {
+      if (!(event.key === "Tab" && !event.ctrlKey && !event.metaKey && !event.altKey)) return;
+      event.preventDefault();
+      const { value, selectionStart: from, selectionEnd: to } = field;
+      const start = value.lastIndexOf("\n", from - 1) + 1;
+      if (!event.shiftKey && from === to) field.setRangeText("  ", from, to, "end");
+      else {
+        const block = value.slice(start, to).split("\n");
+        const next = block.map((line) => (event.shiftKey ? line.replace(/^ {1,2}/, "") : `  ${line}`));
+        field.setRangeText(next.join("\n"), start, to, "select");
+        field.setSelectionRange(from === start ? start : Math.max(start, from + next[0].length - block[0].length), start + next.join("\n").length);
+      }
+      field.dispatchEvent(new Event("input"));
+    });
     const onKey = (event) => {
       if (event.key !== "Escape" || activeOverlay() !== overlay) return;
+      //: Tab indents in the text, so Escape leaves it for the views; the next Escape closes the window (DD-5).
+      if (event.target === field) {
+        event.preventDefault();
+        event.stopPropagation();
+        return seg.querySelector('[data-view="source"]').focus();
+      }
       //: A menu or an inline field takes its own Escape first; the dialog closes on the next one.
       if (document.querySelector(".action-menu:not(.hidden), .help-popover:not(.hidden)") || event.target.closest?.("input, [contenteditable]")) return;
       event.preventDefault();
@@ -277,14 +319,15 @@
     head.querySelector(".dialog-head-title").after(help);
     dialog.append(helpBody);
     const body = el("div", "dgm-dialog-body");
-    body.append(field, host);
+    body.append(srcwrap, host);
     dialog.append(head, viewbar, body, foot);
     document.addEventListener("keydown", onKey, true);
     wireBackdropClose(overlay, () => finish(false));
-    //: Ctrl+Z in the blocks steps the source history, as it does in a diagram document.
+    //: Ctrl+Z in the blocks or the text steps the source history, as it does in a diagram document.
     dialog.addEventListener("keydown", (event) => {
-      if (event.target === field || !(event.ctrlKey || event.metaKey) || event.key.toLowerCase() !== "z") return;
+      if (!(event.ctrlKey || event.metaKey) || event.key.toLowerCase() !== "z") return;
       event.preventDefault();
+      if (event.target === field) flush();
       (event.shiftKey ? io.redo : io.undo)();
     });
     //: Ctrl+Enter keeps the diagram from anywhere in the window (the other route to Done is 15 Tabs).

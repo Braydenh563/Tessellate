@@ -542,5 +542,9 @@ def test_the_diagram_tab_chain_the_starter_and_the_keys_chip_are_in_the_guide() 
     assert '["Arrows on the picture", "Pick the box in that direction"]' in style
     diagram = str(next(t["body"] for t in HELP_TOPICS if t["id"] == "diagram-blocks"))
     assert "Shift+arrow keys pan" in diagram
+    # 1107 DD-5: the Source pane's keys, in the Keys sheet and the Guide.
+    assert '["Tab, Shift + Tab in Source", "Indent, take the indent back"]' in style and '["Esc in Source", "Leave the text for the views"]' in style
     reading = str(next(t["body"] for t in HELP_TOPICS if t["id"] == "diagram-reading"))
+    for words in ("In Source, Tab indents and Shift+Tab takes it back", "Escape leaves the text", "a red line number"):
+        assert words in reading, words
     assert "In the picture an arrow key picks the box that way, reading aloud its name and arrows, and Shift with an arrow moves the picture" in reading

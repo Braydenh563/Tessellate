@@ -89,7 +89,15 @@
   //: names is `data-line` and a button puts the caret there, another undoes the last edit; the "tall for this pane" offer is for a picture that is not there.
   function failure(S, result, source, smallButton) {
     S.fig.classList.toggle("dgm-picture-stale", !result.svg);
-    if (result.svg) return void ((S.errorSeen = ""), delete S.fig.dataset.errorLine);
+    const field = S.root.closest(".dgm-dialog")?.querySelector(".dgm-source");
+    //: The text field's gutter marks the line (DD-5): set with the note, cleared when the picture draws.
+    const mark = (line) => {
+      if (!field || field.dataset.errorLine === (line || undefined)) return;
+      if (line) field.dataset.errorLine = line;
+      else delete field.dataset.errorLine;
+      field.dispatchEvent(new Event("dgmerror"));
+    };
+    if (result.svg) return void ((S.errorSeen = ""), delete S.fig.dataset.errorLine, mark(""));
     S.fig.classList.remove("md-mermaid-pending");
     S.fig.removeAttribute("aria-busy");
     const error = result.error;
@@ -100,7 +108,7 @@
     note.setAttribute("role", fresh ? "alert" : "status");
     S.sideways?.classList.add("hidden");
     const line = /^Line (\d+):/.exec(plain)?.[1];
-    const field = S.root.closest(".dgm-dialog")?.querySelector(".dgm-source");
+    mark(line);
     if (line) {
       note.dataset.line = line;
       S.fig.dataset.errorLine = line;
