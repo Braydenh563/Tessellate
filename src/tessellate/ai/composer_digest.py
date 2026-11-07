@@ -4019,8 +4019,10 @@ def _property_lead(out: _Out, question: str, members, facts: list[Fact], lead: F
         return next((f for f in holders if f.view.id == lead.view.id), holders[0])
     if any(composer_property.held(prop, x.text) for m in members for x in m.sentences):
         return lead
+    whose = composer_property.subject(question) if prop == "phone" else ""
     named = _your_note(lead.view)
-    line = f"{named[:1].upper()}{named[1:]} has no {composer_property.noun(prop)}."
+    # A person or a business asked for is denied in the notebook's name, not by the lead note alone (R3-2).
+    line = f"None of your notes give a phone number for {whose}." if whose else f"{named[:1].upper()}{named[1:]} has no {composer_property.noun(prop)}."
     out.lines.append(line)
     out.rows.append(_row(line, lead))
     return None

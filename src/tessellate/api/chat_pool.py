@@ -17,7 +17,7 @@ from sqlalchemy import func, or_, select
 from sqlalchemy.orm import Session
 
 from tessellate.ai import composer, composer_frame, composer_intent, composer_lists, composer_money, composer_slots, composer_sum, composer_versus, glossary, librarian, neighbours, question_noise
-from tessellate.ai import composer_ask
+from tessellate.ai import composer_ask, composer_property
 from tessellate.api.chat_attach import _MEDIA_REF, _attached_boards, _attachment_readings, _media_readings, _mostly_pictures, _named_sources, _picture_alts, _picture_sizes
 from tessellate.core import deps
 from tessellate.core.database import Category, Entry, like_escape, LIKE_ESCAPE, MediaUpload
@@ -299,6 +299,18 @@ def _with_records(session: Session, question: str, entries: list, locale: str | 
                 seen.add(entry.id)
                 merged.append(entry)
     return merged
+
+
+def _with_holders(session: Session, question: str, entries: list, locale: str | None) -> list:  # noqa: ANN001
+    """"The number for the dentist" is searched on the word "number" too, which
+    fills the five places with other notes that say number: the person's notes are fetched as well, on the name alone, so a
+    denial is made over everything the notebook says of them (round 3, R3-2)."""
+    whose = composer_property.subject(question) if composer_property.asked(question) == "phone" else ""
+    if not whose:
+        return entries
+    have = {e.id for e in entries}
+    found = search_manager.retrieve_detailed(session, whose, deps.get_embeddings(), limit=6, locale=locale).entries
+    return entries + [e for e in found if e.id not in have]
 
 
 def _records_beside(session: Session, question: str, attached: list, locale: str | None) -> list:  # noqa: ANN001
