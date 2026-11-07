@@ -57,7 +57,7 @@ MORE_TOPICS: list[dict] = [
             "its spot here, a size, Quieter (only blinks and looks; Livelier undoes it), "
             "Call back and reset its place, and Hide. "
             "Ctrl+Shift+Y, the command palette and Find anything show or hide "
-            "it from anywhere. If it "
+            "it from anywhere, and the palette's Focus companion puts the keyboard on it. If it "
             "is ever out of reach, Call back (in the setting, its menu or the palette) brings it back."
         ),
         "badge": {"label": "Corner companion", "section": "appearance", "target": "avatar-buddy-row"},

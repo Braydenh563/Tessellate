@@ -543,6 +543,7 @@ function paletteCommands() {
     //: INBOX 430: also in Find anything, which lists these same commands;
     //: the row says which it will do, since this list is built per query.
     { label: nameMarkBuddyShowing() ? "ph:eye-slash Hide companion" : "ph:person-simple Show companion", chord: "toggleCompanion", act: () => nameMarkBuddyToggle() },
+    ...(nameMarkBuddyShowing() ? [{ label: "ph:crosshair Focus companion", keywords: "companion atlas keyboard tab reach arrow keys menu", about: "Put the keyboard on it: arrow keys move it, Enter says hello, Shift+F10 opens its menu.", act: () => setTimeout(() => document.querySelector("#nm-buddy .nm-buddy-face")?.focus(), 150) }] : []),
     { label: "ph:keyboard Keyboard shortcuts", reveal: "shortcuts", chord: "help" },
     //: INBOX 896: the status bar's wifi icon, by name, from anywhere.
     { label: "ph:wifi-high Other devices", keywords: "lan network wifi phone open close trusted networks address", about: "Whether a phone on this network can open the app, with the switch and the trusted networks.", chord: "lanPanel", act: () => openLanPanel() },

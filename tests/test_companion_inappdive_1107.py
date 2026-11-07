@@ -58,3 +58,12 @@ def test_the_menu_has_a_quieter_row_that_the_settings_select_agrees_with() -> No
     # Through the Appearance select's own change, as Size and Atlas look do.
     assert 'choose("avatar-buddy-actions", lively ? "off" : "fewer")' in menu
     assert "Quieter" in HELP, "help moves with the menu (standing order 13)"
+
+
+def test_the_palette_can_put_the_keyboard_on_the_companion() -> None:
+    features = (JS / "app-features.js").read_text(encoding="utf-8")
+    row = features[features.index('"ph:crosshair Focus companion"') :]
+    row = row[: row.index("\n")]
+    assert "nameMarkBuddyShowing()" in features[features.index('"ph:crosshair Focus companion"') - 80 :][:120]
+    assert ".nm-buddy-face" in row and ".focus()" in row
+    assert "Focus companion" in HELP
