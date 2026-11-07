@@ -28,3 +28,4 @@ tier: max (weekly 4%), three agents at once, Sonnet or Haiku; never Fable; owner
 - [ ] Session end: full suite, INBOX 1693, HANDOVER morning summary, retro
 
 - 17:4xZ: companion-s merged locally as c5a644b6 (not pushed): 6 overlay tests fail, all caused by companion-s (pass on ^1, fail on ^2). Fix workflow wf_32497065-27e (fix, review, refix) in the main checkout. Push after it is green, then start the edges build.
+- 17:5xZ: diagbuild done (agent/diagbuild-1107, 9 commits: DD-1,2,3,4,7,8 part,9 small,14 + refix of review, UX and blind findings); merge after the companion-s fix workflow lands. Composer round 1 started (wf_ca4f2f32-3d4: research, audit, verify, fix on agent/composer-r1-1107, review, refix). Edges build waits for the companion-s fix (both edit engine.py).
