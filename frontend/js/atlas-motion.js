@@ -264,6 +264,8 @@ function atlasRigWake(host) {
   //: The tail (`atlasTailFrame`) wakes with it: back on screen, a new
   //: state, a figure just put on the page.
   atlasTailWake(box);
+  //: A figure waiting for its companion to show (`atlasWhenShown`) looks again.
+  if (box?.atlasShow) atlasRigWake.after(box.atlasShow, 3);
   //: A wake is a change of what the CSS has the figure do (a class, a pose,
   //: a mood, a gesture): the rig and the props read the page's style again
   //: (`atlasRigFrame`, `atlasPropsFrame`) and hold what they read otherwise.

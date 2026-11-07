@@ -6852,7 +6852,10 @@ body .chip.item-label,
   & .atl-orbiter { animation: atl-orbit-back var(--atl-orbit-t) linear calc(var(--atl-at) * var(--atl-orbit-t) * -1) infinite, atl-orbit-depth var(--atl-orbit-t) linear calc(var(--atl-at) * var(--atl-orbit-t) * -1) infinite; }
 }
 .atl-figure-box.atl-off .atl-orbits *, :root[data-atlas-hidden] .atl-orbits * { animation-play-state: paused !important; }
-:where(:root[data-motion="reduced"]:not([data-buddy-motion="full"])) .nm-live > .atl-orbits :is(.atl-orbit-arm, .atl-orbiter) { animation: none !important; }
+/* And no loop is made under the entrance fade (atlas.js, `atlasWhenShown` adds atl-lit): the
+   compositor refuses for good an animation created while #nm-buddy is opacity 0. One rule, one !important. */
+:where(:root[data-motion="reduced"]:not([data-buddy-motion="full"])) .nm-live > .atl-orbits :is(.atl-orbit-arm, .atl-orbiter),
+.atl-figure-box:not(.atl-lit), .atl-figure-box:not(.atl-lit) * { animation: none !important; }
 @keyframes atl-orbit { from { rotate: 0deg; } to { rotate: 360deg; } }
 @keyframes atl-orbit-back { from { rotate: 0deg; } to { rotate: -360deg; } }
 /* The turn's angle is the keyframe's offset: 25% is the front (nearest),
