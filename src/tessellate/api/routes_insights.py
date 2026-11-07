@@ -558,6 +558,87 @@ def done_insight(body: InsightVerdict, session: Session = Depends(get_session)) 
     return result
 
 
+# --- Confirmed patterns, managed (CHAT_PLAN B9) --------------------------------------------
+# The owner, 2026-11-05: "also is there a way to edit or managed confirmed
+# patterns??". Settings, What it remembers lists them; the Patterns line's
+# menu reaches the same four routes. Every one reads through the notes it
+# rests on, so when none can be opened (private, binned, another space) it is a 404.
+
+
+class ConfirmedEdit(BaseModel):
+    """The person's own wording, or the subject it also answers under."""
+
+    sentence: str | None = Field(default=None, max_length=300)
+    subject: str | None = Field(default=None, max_length=80)
+
+
+def _confirmed_or_404(session: Session, fact_id: int):  # noqa: ANN202
+    from tessellate.ai import insights
+
+    found = insights.shown_confirmed(session, fact_id)
+    if not found:
+        raise HTTPException(status_code=404, detail="That confirmed pattern could not be found.")
+    return found[0]
+
+
+@router.get("/confirmed")
+def list_confirmed(session: Session = Depends(get_session)) -> dict:
+    """Every confirmed pattern the person can open, newest first."""
+    from tessellate.ai import insights
+
+    return {"items": [insights.confirmed_json(session, row) for row in insights.shown_confirmed(session)[:500]]}
+
+
+@router.patch("/confirmed/{fact_id}")
+def edit_confirmed(fact_id: int, body: ConfirmedEdit, session: Session = Depends(get_session)) -> dict:
+    """Edit: said in the person's words from the next turn on."""
+    from tessellate.ai import insights
+
+    row = _confirmed_or_404(session, fact_id)
+    try:
+        insights.edit_confirmed(session, row, body.sentence, body.subject)
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    session.commit()
+    return insights.confirmed_json(session, row)
+
+
+@router.delete("/confirmed/{fact_id}")
+def remove_confirmed(fact_id: int, session: Session = Depends(get_session)) -> dict:
+    """Remove: a soft delete; the pattern may be shown, and confirmed, again."""
+    from tessellate.core.database import utcnow
+
+    row = _confirmed_or_404(session, fact_id)
+    row.deleted_at = utcnow()
+    session.commit()
+    return {"id": fact_id}
+
+
+@router.post("/confirmed/{fact_id}/restore")
+def restore_confirmed(fact_id: int, session: Session = Depends(get_session)) -> dict:
+    """Undo of Remove and of Not right: the confirmed fact is back, and one
+    confirmed again under the same key in between goes (`replaced`)."""
+    from tessellate.ai import insights
+
+    row = insights.removed_confirmed(session, fact_id)
+    if row is None:
+        raise HTTPException(status_code=404, detail="That confirmed pattern is not removed.")
+    replaced = insights.restore_confirmed(session, row)
+    session.commit()
+    return {**insights.confirmed_json(session, row), "replaced": replaced}
+
+
+@router.post("/confirmed/{fact_id}/dismiss", status_code=201)
+def dismiss_confirmed(fact_id: int, session: Session = Depends(get_session)) -> dict:
+    """Not right: removed, and the pattern and its variants not shown again."""
+    from tessellate.ai import insights
+
+    row = _confirmed_or_404(session, fact_id)
+    ids = insights.dismiss_confirmed(session, row)
+    session.commit()
+    return {"id": fact_id, "correction_ids": ids}
+
+
 @router.get("/tag-cloud")
 def tag_cloud(session: Session = Depends(get_session)) -> list[dict]:
     """Every tag with its frequency, most-used first, for a weighted cloud.

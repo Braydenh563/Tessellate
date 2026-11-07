@@ -3531,6 +3531,7 @@ MORE_TOPICS.append({
     "keywords": (
         "patterns", "pattern", "what are patterns", "times since", "weeks running", "keeps coming up",
         "patterns line", "do patterns change", "see the patterns",
+        "confirmed patterns", "edit a pattern", "manage patterns", "remove a pattern",
     ),
     "body": (
         "Patterns are what your notes keep coming back to, counted from the notes "
@@ -3543,7 +3544,10 @@ MORE_TOPICS.append({
         "fact from then on, and Not right, which never shows it or anything like "
         "it again. A plan still open also has Done: it removes your Confirm and "
         "never shows that plan again, and a later note that shares the plan's "
-        "words does the same on its own."
+        "words does the same on its own. A confirmed pattern's ... menu has Edit "
+        "(your own words, or what it is about; its tag still reaches it), Not right "
+        "and Remove, each with an Undo, and a plan's Done; Settings, What it remembers lists every confirmed pattern with "
+        "the day you confirmed it and its notes, to manage them in one place."
     ),
     "badge": {"label": "Dashboard", "tab": "dashboard"},
 })
