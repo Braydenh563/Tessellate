@@ -444,6 +444,23 @@ class OllamaClient(Provider):
             return None
         return 2 * layers * kv_heads * head_size * 2
 
+    def weights_bytes(self, model: str) -> int | None:
+        """The model's size on disk from `/api/tags`, close to what its weights
+        take in memory; None when Ollama cannot say. Asked once per model: the
+        context decision that wants it is cached."""
+        if _is_down(self.base_url):
+            return None
+        try:
+            installed = self.list_models()
+        except (OllamaError, AttributeError):
+            return None
+        names = {model, f"{model}:latest"}
+        for entry in installed:
+            size = entry.get("size")
+            if isinstance(size, (int, float)) and size > 0 and (entry.get("name") in names or entry.get("model") in names):
+                return int(size)
+        return None
+
     def runtime_options(
         self,
         model: str,

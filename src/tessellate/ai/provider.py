@@ -154,20 +154,25 @@ MAX_REQUESTED_CONTEXT = 8192
 CONTEXT_STEP = 1024
 
 #: The share of free memory the KV cache may take. The weights, the app and
-#: the rest of the computer need the other half.
+#: the rest of the computer need the remaining 60%.
 KV_MEMORY_SHARE = 0.4
 
 
-def memory_budget_bytes() -> int | None:
+def memory_budget_bytes(weights_bytes: int = 0) -> int | None:
     """What the KV cache may spend: a bounded share of the larger of free RAM
-    and video memory, or None when neither can be read."""
+    and what is left of video memory after the model's weights, or None when
+    neither can be read.
+
+    A card's figure is its total, which counts the weights as free; free RAM
+    is what programs can use now, which already excludes a loaded model.
+    """
     try:
         from tessellate.core import hardware
 
         free = hardware.free_memory_gb() or 0.0
-        cards = [g.get("vram_gb") or 0.0 for g in hardware.detect_gpus()]
+        cards = [max(0.0, (g.get("vram_gb") or 0.0) - weights_bytes / 1024**3) for g in hardware.detect_gpus()]
         best = max([free, *cards])
-    except Exception as exc:  # noqa: BLE001  # unreadable memory means "keep the old cap"
+    except Exception as exc:  # noqa: BLE001  # unreadable memory means "keep the old context cap"
         logging.getLogger("tessellate.provider").info("memory unreadable, keeping the old context cap: %s", exc)
         return None
     return int(best * 1024**3 * KV_MEMORY_SHARE) if best else None
@@ -524,6 +529,10 @@ class Provider:
         """Bytes of KV cache one token of context costs, or None if unknown."""
         return None
 
+    def weights_bytes(self, model: str) -> int | None:
+        """Bytes the model's weights take, or None if the backend cannot say."""
+        return None
+
     def window_is_fixed(self, model: str) -> bool:
         """True when the server loaded the model at the reported window, so
         there is nothing to allocate and the number is simply the truth."""
@@ -561,7 +570,7 @@ class Provider:
         decided = self.__dict__.setdefault("_memory_windows", {})
         if kv and model in decided:
             return decided[model]
-        share = memory_budget_bytes() if kv else None
+        share = memory_budget_bytes(self.weights_bytes(model) or 0) if kv else None
         if not (kv and share):
             return max(floor, min(declared, self.MAX_REQUESTED_CONTEXT)), "default"
         fits = int(share // kv) // CONTEXT_STEP * CONTEXT_STEP

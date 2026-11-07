@@ -202,3 +202,27 @@ def test_the_memory_window_is_decided_once_per_model(prefs, memory):
     memory(16)
     assert client.usable_context("m2") == 52224
     assert ollama_model(131072).usable_context("m") == 52224
+
+
+GIB = 1024**3
+
+
+def test_the_loaded_weights_come_off_video_memory_before_the_share(prefs, memory, monkeypatch):
+    """Review of PR 216: a card's total memory was counted as if empty, so a
+    14 GiB model on a 24 GiB card was budgeted 9.6 GiB of cache against the 10
+    GiB actually left. The model's size comes off the card first."""
+    memory(4, vram_gb=24)
+    client = ollama_model(131072)
+    monkeypatch.setattr(client, "list_models", lambda: [{"name": "other", "size": 1}, {"name": "m:latest", "size": 14 * GIB}])
+    assert client.usable_context("m") == 32768  # (24 - 14) GiB x 0.4 / 128 KiB
+    # The same without a weight we can read: the whole card, as before.
+    plain = ollama_model(131072)
+    monkeypatch.setattr(plain, "list_models", lambda: [])
+    assert plain.usable_context("m") == 77824
+
+
+def test_weights_larger_than_the_card_fall_back_to_free_memory(prefs, memory, monkeypatch):
+    memory(8, vram_gb=24)
+    client = ollama_model(131072)
+    monkeypatch.setattr(client, "list_models", lambda: [{"name": "m", "size": 30 * GIB}])
+    assert client.usable_context("m") == 25600  # 8 GiB of free RAM x 0.4
