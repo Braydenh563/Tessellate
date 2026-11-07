@@ -78,7 +78,7 @@ def test_a_body_that_lands_tilted_lies_down_skids_and_gets_up_without_a_snap(ang
 
 def test_a_landing_near_upright_stays_on_the_feet() -> None:
     e, t = dropped(0.4, y=800.0)
-    t, _seen = run(e, t, 4.0, until=lambda en: en.state != "fly")
+    run(e, t, 4.0, until=lambda en: en.state != "fly")
     assert e.outcome == "feet" and e.lie_goal is None and not e.lying
     assert e.state in ("land", "stand")
 
