@@ -2673,13 +2673,25 @@ async function renderMemorySettings() {
     empty.textContent = "None yet. Confirm a line in Tidy's Patterns and it is listed here.";
     return host;
   };
+  //: The list is paged (200 a page); every page is read, so a long list is not cut at the first one without a word.
+  const confirmedPages = async () => {
+    const items = [];
+    let total = Infinity;
+    while (items.length < total) {
+      const page = await apiJson(`/insights/confirmed?limit=200&offset=${items.length}`);
+      if (!page?.items?.length) break;
+      items.push(...page.items);
+      total = Number.isFinite(page.total) ? page.total : items.length;
+    }
+    return { items, total: items.length };
+  };
   const drawConfirmed = async () => {
     const host = confirmedHost();
     if (!host) return;
     showSkeletons(host, 2, "li");
     //: `lazyScript` answers false on a failed load; either failure is said,
     //: never shown as "None yet" (the review).
-    const [data, ready] = await Promise.all([apiJson("/insights/confirmed").catch(() => null), lazyScript("/js/confirmed-patterns.js")]);
+    const [data, ready] = await Promise.all([confirmedPages().catch(() => null), lazyScript("/js/confirmed-patterns.js")]);
     clearSkeletons(host);
     const empty = $("memory-confirmed-empty");
     if (empty) {
@@ -2700,8 +2712,9 @@ async function renderMemorySettings() {
         //: Day then month, as the line itself says it ("as you told me on 5 November").
         meta.append(on ? `Confirmed ${on.getDate()} ${on.toLocaleDateString(undefined, { month: "long" })}` : "Confirmed by you");
         if (item.subject) meta.append(`, about ${item.subject}`);
-        item.notes.slice(0, 5).forEach((note, i) => {
-          meta.append(i ? ", " : `. From ${item.notes.length === 1 ? "a note" : `${item.notes.length} notes`}: `);
+        const notes = item.notes || [];
+        notes.slice(0, 5).forEach((note, i) => {
+          meta.append(i ? ", " : `. From ${notes.length === 1 ? "a note" : `${notes.length} notes`}: `);
           const open = meta.appendChild(document.createElement("a"));
           open.href = "#";
           open.textContent = note.title;
@@ -2711,7 +2724,7 @@ async function renderMemorySettings() {
             flashEntry(note.id);
           });
         });
-        if (item.notes.length > 5) meta.append(`, and ${item.notes.length - 5} more`);
+        if (notes.length > 5) meta.append(`, and ${notes.length - 5} more`);
         li.append(rowActions(confirmedPatternItems(item, drawConfirmed), "More for this pattern"));
         return li;
       })

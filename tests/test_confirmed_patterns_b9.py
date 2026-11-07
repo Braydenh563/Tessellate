@@ -210,7 +210,9 @@ def test_settings_lists_them_as_their_own_group_with_the_three_actions():
     assert '$("settings-memory")' in built and '"settings-group"' in built and '"Confirmed patterns"' in built
     assert 'host.id = "memory-confirmed-list"' in built and "const host = confirmedHost();" in js
     body = js[js.index("const drawConfirmed = async () => {") :][:2600]
-    assert 'apiJson("/insights/confirmed")' in body
+    # Intent moved (PR 216 review): the list is read page by page to its end (`confirmedPages`), not
+    # as the first 200 rows; the route and the draw are the same.
+    assert "confirmedPages()" in body and "/insights/confirmed?limit=200&offset=" in js
     assert "rowActions(confirmedPatternItems(" in body
 
 
