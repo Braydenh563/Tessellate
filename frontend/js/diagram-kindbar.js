@@ -22,6 +22,9 @@
     return `${lead}${header}\n`;
   };
 
+  //: The kind just pressed: the pane is drawn again and the bar with it, so the new bar takes the focus the old one lost.
+  let pending = "";
+
   function mount(S, h) {
     const here = S.k ? S.k.name : "flowchart";
     const seg = h.el("div", "seg dgm-kinds");
@@ -34,7 +37,13 @@
       button.setAttribute("aria-pressed", String(key === here));
       seg.append(button);
     }
+    //: One tab stop for the four (arrows move between them), resting on the chosen kind: the dialog is 3 stops shorter to cross.
+    wireToolbarRoving(seg);
+    for (const button of seg.children) button.tabIndex = button.dataset.kind === here ? 0 : -1;
     S.root.prepend(seg);
+    //: After a tick: the bar is not in the page yet while it is being built.
+    if (pending === here) setTimeout(() => seg.querySelector(".active")?.focus(), 0);
+    pending = "";
   }
 
   function choose(S, h, here, to) {
@@ -42,6 +51,7 @@
     //: A source the blocks cannot read (a Gantt, say) is content, not blank: the Undo line must say so.
     const blank = !S.source.trim() || (S.plain ? false : S.k ? S.k.blank(S.m) : !S.m?.nodes.length && !S.m?.subgraphs.length && !S.m?.edges.length);
     diagramModel.builder.tell(blank ? `A new ${NOUN[to]}.` : `A new ${NOUN[to]}. Undo, Ctrl+Z, brings the ${NOUN[here]} back.`);
+    pending = to;
     S.io.set(fresh(S.source, to));
   }
 

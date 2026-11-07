@@ -1437,6 +1437,7 @@ function resolveWikiTarget(name) {
     : null;
   const documents = cached || (typeof docs !== "undefined" && Array.isArray(docs) ? docs : null);
   const docList = documents || [];
+  if (!docList.length) loadEmbedDocuments();
   const doc =
     docList.find((d) => (d.title || "").trim().toLowerCase() === needle) ||
     //: Reported directly: "still cant open note links from the document
@@ -1451,6 +1452,22 @@ function resolveWikiTarget(name) {
     docList.find((d) => (d.title || "").trim().toLowerCase().startsWith(needle));
   if (doc) return { kind: "document", doc };
   return null;
+}
+
+//: **Documents for a note card's embeds, fetched once** (review 1107): on the Notes tab nothing had filled the documents list yet
+//: (`docs` is the Library's, `editorDocumentCache` the `[[` picker's), so a note holding `![[A diagram]]` drew "Nothing called
+//: ... yet" for a diagram that exists, also after a reload. The first miss asks for the list, then the cards are drawn again.
+let embedDocumentsAsked = false;
+function loadEmbedDocuments() {
+  if (embedDocumentsAsked) return;
+  embedDocumentsAsked = true;
+  apiPagedList("/documents", DOCUMENTS_PAGE_SIZE)
+    .then((list) => {
+      if (!Array.isArray(list) || !list.length) return;
+      editorDocumentCache = list;
+      renderEntries();
+    })
+    .catch(() => {});
 }
 
 // A note card's text: block constructs first, then the inline pass.

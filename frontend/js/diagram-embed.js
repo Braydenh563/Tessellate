@@ -152,15 +152,21 @@
     const io = {
       name: title,
       set: (next) => {
+        const kind = diagramModel.builder.kindOf(history[at]);
         history.length = at + 1;
         history.push(next);
         at = history.length - 1;
         if (field.value !== next) field.value = next;
+        //: A press on another kind (diagram-kindbar.js) only sets the source; the pane has to be drawn for it. The page gets
+        //: this through the document; a block gesture draws its own pane, so only a change of kind shows again (DD-1).
+        if (diagramModel.builder.kindOf(next) !== kind) show();
       },
       undo: () => at > 0 && (at -= 1, apply()),
       redo: () => at < history.length - 1 && (at += 1, apply()),
       menu: [
         ...(shapes ? [makeMenuItem("ph:shapes Turn into shapes", "Replace it with shapes and connectors you can move one by one", () => (leave(), shapes(history[at])))] : []),
+        //: The door opens on a drawn starter (DD-3b, 1107), so a blank page is one press away, and Undo brings the starter back.
+        makeMenuItem("ph:eraser Clear", "Start again from an empty diagram of this kind. Undo brings this one back", () => (io.set(`${STARTS[diagramModel.builder.kindOf(history[at])] || STARTS.flowchart}\n`), apply())),
         makeMenuItem("ph:books Save to Library", "Keep it in the Library to show it with ![[name]]", () => save(history[at], offer?.link ? { label: "Link this diagram", run: (row) => link(offer.link, row, history[at]) } : offer)),
       ],
     };
@@ -168,8 +174,11 @@
       field.value = history[at];
       show();
     };
+    //: The pane on show, for the keys sheet (`?`, the Keys chip).
+    let pane = null;
     const show = () =>
       diagramModel.builder.show(host, io, history[at]).then((S) => {
+        pane = S;
         for (const name of ["canvas", "blocks"]) seg.querySelector(`[data-view="${name}"]`).disabled = Boolean(S?.plain);
         if (S?.plain && dialog.dataset.view !== "source") view("source");
         return S;
@@ -203,7 +212,7 @@
     const onKey = (event) => {
       if (event.key !== "Escape" || activeOverlay() !== overlay) return;
       //: A menu or an inline field takes its own Escape first; the dialog closes on the next one.
-      if (document.querySelector(".action-menu:not(.hidden)") || event.target.closest?.("input, [contenteditable]")) return;
+      if (document.querySelector(".action-menu:not(.hidden), .help-popover:not(.hidden)") || event.target.closest?.("input, [contenteditable]")) return;
       event.preventDefault();
       event.stopPropagation();
       finish(false);
@@ -235,8 +244,28 @@
       leave();
       existing.open(row);
     }, false) : null;
-    foot.append(seg, ...(known ? [known] : []), cancel, go);
+    //: Help in reach (DD-7, 1107): every key in one sheet, from a chip that is always there, from `?` anywhere in the dialog
+    //: outside a field, and from the ... menu; the '?' by the title says what the window is and offers the Guide's topic.
+    const keys = () => pane && diagramModel.builder.styleDo(pane, "shortcuts");
+    const chip = smallButton("ph:keyboard Keys", "Every key in this editor (?). F6 leaves the blocks", keys);
+    chip.classList.add("dgm-keychip");
+    foot.append(seg, ...(known ? [known] : []), chip, cancel, go);
     const head = dialogHead(title, () => finish(false));
+    const help = el("button", "icon-only ghost small graph-help-toggle");
+    help.type = "button";
+    help.title = "About this editor";
+    help.setAttribute("aria-label", "About this editor");
+    help.setAttribute("data-help-for", "dgm-dialog-help");
+    help.setAttribute("aria-controls", "dgm-dialog-help");
+    help.setAttribute("aria-expanded", "false");
+    setLabel(help, "ph:question");
+    const helpBody = el("div", "help-body hidden");
+    helpBody.id = "dgm-dialog-help";
+    helpBody.setAttribute("role", "dialog");
+    helpBody.setAttribute("aria-label", "About this editor");
+    helpBody.append(el("p", "", "Draw with blocks and the picture follows. Press N to add a box, Tab on the last box to add one joined to it, Enter to name it, F6 leaves the blocks, Ctrl+Enter keeps the diagram and ? lists every key."), atlasSuggestion("How do I make a diagram?", "Ask about making a diagram"));
+    head.querySelector(".dialog-head-title").after(help);
+    dialog.append(helpBody);
     const body = el("div", "dgm-dialog-body");
     body.append(field, host);
     dialog.append(head, body, foot);
@@ -248,12 +277,28 @@
       event.preventDefault();
       (event.shiftKey ? io.redo : io.undo)();
     });
+    //: Ctrl+Enter keeps the diagram from anywhere in the window (the other route to Done is 15 Tabs).
+    dialog.addEventListener("keydown", (event) => {
+      if (!((event.ctrlKey || event.metaKey) && event.key === "Enter") || event.altKey) return;
+      event.preventDefault();
+      finish(true);
+    });
+    //: `?` from anywhere in the dialog but a text field; a block's own handler has taken it already (and said so by `defaultPrevented`).
+    dialog.addEventListener("keydown", (event) => {
+      if (event.key !== "?" || event.defaultPrevented || event.ctrlKey || event.metaKey || event.altKey || event.target.closest?.("input, textarea, select, [contenteditable]")) return;
+      event.preventDefault();
+      keys();
+    });
     overlay.append(dialog);
     document.body.append(overlay);
+    initHelpToggles(dialog);
     view("canvas");
-    await show();
+    const S = await show();
     //: Focus goes into the dialog, to the first step or block (R6.5): it stayed on the button behind, and the first Tab reached Close.
-    (host.querySelector(".dgm-steps button, .dgm-block[tabindex='0']") || dialog.querySelector(".dgm-pane") || dialog).focus?.({ preventScroll: true });
+    //: A starter's first box is selected and focused, so Enter names it, Tab adds the next (DD-3).
+    const firstBox = host.querySelector(".dgm-block");
+    if (firstBox && S && !S.k) diagramModel.builder.select(S, firstBox.dataset.key, true);
+    else (host.querySelector(".dgm-steps button, .dgm-block[tabindex='0']") || dialog.querySelector(".dgm-pane") || dialog).focus?.({ preventScroll: true });
     return dialog;
   }
 

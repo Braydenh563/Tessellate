@@ -69,7 +69,7 @@
       h.add(S, optionsOf(shape));
     };
     main.addEventListener("click", () => add(last()));
-    const caret = h.smallButton("ph:caret-down", "Choose a shape to add", () => {
+    const caret = h.smallButton("ph:caret-down", "Choose a shape to add (1 to 7, or ? for every key)", () => {
       //: A pointer menu lines its right edge up with the point, so the point is the caret's right edge (it opened at the window's left edge from the split's left).
       const r = caret.getBoundingClientRect();
       const rows = ORDER.map((shape) => ({ label: nameOf(shape, h), keys: hintOf(shape), title: hints.get(nameOf(shape, h)) || "", run: () => add(shape) }));
@@ -145,5 +145,34 @@
     run();
   }
 
-  diagramModel.bar = { build, sync, key, last, rootKey };
+  //: **Tab chains** (DD-3, 1107; Whimsical's way), and only where they cannot trap: Tab on the LAST box adds a box joined to it and
+  //: opens its name; Shift+Tab on a box with a parent selects the parent. Any other Tab (and Shift+Tab on a root) is left to the
+  //: browser, so the blocks can be walked out of (review 1107: Tab on every box added boxes without end). Returns true when it
+  //: took the key.
+  function chain(event, S, key, block, add) {
+    if (event.altKey) return false;
+    //: F6 leaves the blocks for the picture (Shift+F6 for the toolbar).
+    if (event.key === "F6") {
+      event.preventDefault();
+      (event.shiftKey ? S.root.querySelector(".dgm-dock button") : S.fig)?.focus();
+      return true;
+    }
+    if (event.key !== "Tab" || key[0] !== "n") return false;
+    const ops = diagramModel.ops;
+    const id = ops.split(key)[1];
+    if (event.shiftKey) {
+      const from = S.m.edges.find((e) => e.to === id)?.from;
+      const up = (from && S.tree.querySelector(`.dgm-block[data-key="${ops.key("n", from)}"]`)) || block.parentElement.closest(".dgm-block");
+      if (!up) return false;
+      event.preventDefault();
+      diagramModel.builder.select(S, up.dataset.key, true);
+      return true;
+    }
+    if (block !== [...S.tree.querySelectorAll(".dgm-block")].at(-1)) return false;
+    event.preventDefault();
+    add(S, { after: key, from: id });
+    return true;
+  }
+
+  diagramModel.bar = { build, sync, key, last, rootKey, chain };
 })();

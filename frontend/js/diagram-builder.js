@@ -81,9 +81,7 @@
           if (stamp !== S.drawn) return;
           S.hit = result.svg ? diagramModel.picture.boxes(result.svg) : null;
           for (const paint of S.fig.onpaint || []) paint();
-          if (result.svg) return;
-          S.fig.classList.remove("md-mermaid-pending");
-          S.fig.replaceChildren(mermaidFailure.note(result.error, source));
+          diagramModel.picture.failure(S, result, source, smallButton);
         });
       });
     }, S.drawWait || 120);
@@ -458,6 +456,7 @@
       return act();
     }
     if (mod) return;
+    if (diagramModel.bar.chain(event, S, key, block, addBlock)) return;
     //: N adds a Box, Shift+N the last shape used (1661 D2; R6.13 had the selected block's shape); a letter reads the same with or without Shift otherwise.
     const low = event.key.length === 1 ? event.key.toLowerCase() : event.key;
     //: 1 to 7 add a shape, Shift+N the last one used (diagram-bar.js, 1661 D2).
@@ -661,7 +660,7 @@
       }
     }
     //: A narrow window or a touch screen gets the phone's palette sheet and the picture's pinch (diagram-touch.js).
-    if (S && matchMedia(COMPACT).matches && (await ensureModule("diagramTouch"))) diagramModel.touch.wire(S);
+    if (S && (S.k || matchMedia(COMPACT).matches) && (await ensureModule("diagramTouch"))) diagramModel.touch.wire(S);
     //: Zoom, pan and fit for the picture, in every window (diagram-view.js, 1614).
     if (S && ((await ensureModule("vf")) && (await ensureModule("diagramView")))) diagramModel.view.wire(S);
     if (S && !S.k && (await ensureModule("diagramOverlay"))) diagramModel.overlay.wire(S);
@@ -676,5 +675,5 @@
     return S;
   }
 
-  diagramModel.builder = { show, kindOf, tell: (text) => (told = text) };
+  diagramModel.builder = { show, kindOf, select, styleDo, tell: (text) => (told = text) };
 })();

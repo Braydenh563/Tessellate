@@ -3254,7 +3254,7 @@ MORE_TOPICS.extend([
             "You can drag a shape from the Add strip onto the picture (onto a block to add it after that block and connect them), "
             "drag a block on the picture to move it (a caption says where it lands), and hold Shift and drag on empty space to pick the blocks you touch. "
             "Drop onto a group's box to add or move into it. Pick or point at a block and its four round handles show: drag the round handle on any side to another block "
-            "or a group to connect them, or to empty space for a new connected block (press the handle, then click, if you cannot drag; Escape cancels). "
+            "or a group to connect them, or to empty space for a new connected block; a click on one adds a joined block (Enter, then click, connects; Escape cancels). "
             "Double-click a block, an arrow or a group's title to rename it where it sits. Right-click a block or an arrow (long press on a phone) for its menu; click an arrow to pick it, then Enter changes its words and Delete removes it, and drag a dot at either end of it onto another block to move that end there (Escape cancels). From the keyboard, Enter on a connector row opens the same menu."
         ),
         "badge": {"label": "Documents", "tab": "documents"},
@@ -3365,7 +3365,10 @@ MORE_TOPICS.extend([
             "Library has the same pictures in its menu, and its page has Download as .png and Copy as picture "
             "in the ... menu; Download .mmd saves the text. Source, beside Cancel, shows "
             "the text with the picture; a diagram the blocks cannot draw, or one over 120 blocks, opens there. "
-            "On a phone the shapes are one Add button that opens a sheet of them; pinch the picture to "
+            "The New diagram window opens on a three-box starter; Clear, in the ... menu, empties it. "
+            "On the last box, Tab adds a joined box; on any other, Tab moves on. Shift+Tab selects its source, F6 leaves the blocks and Ctrl+Enter keeps the diagram. "
+            "The Keys button in its foot, or ? outside a text field, lists every key. "
+            "On a phone, and in Sequence, Mind map and Timeline, the shapes are one Add button that opens a sheet of them; pinch the picture to "
             "zoom, drag it to move, and double tap to fit it again. Save to Library, in the ... menu "
             "and on a diagram's corner beside Edit as blocks, keeps a copy as a diagram in the Library; "
             "a notice then offers to replace the fence with a link, or to link a board's diagram to it, "

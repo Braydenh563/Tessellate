@@ -41,7 +41,7 @@
     return both;
   }
 
-  const PURPOSE = "Your blocks, in the order the chart flows. Pick one to find it in the picture.";
+  const PURPOSE = "Your blocks, in the order the chart flows. Tab on the last adds a box. F6 leaves the blocks.";
   const LABEL_WORDS = "Double-click the name, or press Enter, to rename it.";
 
   //: The pane's frame (1679 k): the purpose line above the list, and a foot under it with the two things a first use wants where the

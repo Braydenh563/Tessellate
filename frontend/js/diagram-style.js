@@ -9,6 +9,7 @@
 (() => {
   //: Keys that are not in the shape table: [keys, what it does].
   const OTHER = [
+    ["Tab", "Add a box after the last one, joined to it"], ["Shift + Tab", "Select the box that points at this one"], ["F6", "Leave the blocks for the picture"], ["Ctrl + Enter", "Keep the diagram (Done)"],
     ["Enter, F2", "Name the selected block"], ["Delete", "Remove the selected block"], ["C", "Connect the selected block to another"],
     ["K", "Colour the selected blocks"], ["Alt + arrows", "Move or nest the selected block"], ["Ctrl + Z, Ctrl + Y", "Undo, redo"],
     ["Shift + F10", "Open the block menu"], ["?", "Show this sheet"],
@@ -70,7 +71,7 @@
     const rows = [...shapeRows(h), ...OTHER];
     openSheet({
       label: "Keyboard shortcuts",
-      sub: "With the picture or the blocks focused.",
+      sub: "From anywhere in the editor outside a text field.",
       name: "diagram-shortcuts",
       build: (card) => {
         const field = document.createElement("input");

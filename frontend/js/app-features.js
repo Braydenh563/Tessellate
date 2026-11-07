@@ -363,6 +363,7 @@ function paletteCommands() {
     { label: "ph:lightning Quick note", about: "A note saved without leaving this page.", chord: "quickNote", act: () => openQuickNote() },
     { label: "ph:clipboard-text Paste as a note", about: "What you copied, saved as a new note.", chord: "pasteNote", act: () => pasteClipboardAsNote() },
     { label: "ph:file-text New document", reveal: "doc-new", chord: "newDocument" },
+    { label: "ph:flow-arrow New diagram", about: "A flowchart, sequence, mind map or timeline built from blocks.", act: () => ensureModule("library").then(() => diagramModel.door({ doc: true })) },
     { label: "ph:code New code file", act: () => ensureModule("library").then(() => LIBRARY_CREATE_BY_KIND.code.run()) },
     { label: "ph:sparkle Write a note from rough thoughts", reveal: "writing-room" },
     { label: "ph:sparkle New chat", reveal: "chat-new", chord: "newChat" },
