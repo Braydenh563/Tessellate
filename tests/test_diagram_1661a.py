@@ -12,7 +12,8 @@ CSS = (ROOT / "frontend" / "css" / "diagram-lazy.css").read_text(encoding="utf-8
 
 
 def test_the_toolbar_is_one_nowrap_dock_with_the_controls_in_order():
-    assert "flex-wrap: nowrap" in CSS.split(".dgm-dock {", 1)[1].split("}", 1)[0]
+    # Intent moved (DD-2, 1107): one row is the flowchart dock's, so the nowrap is scoped to it; the kinds' docks wrap.
+    assert "flex-wrap: nowrap" in CSS.split(".dgm-dock:has(> .dgm-addsplit) {", 1)[1].split("}", 1)[0]
     build = BAR.split("function build(", 1)[1]
     order = build.index("bar.append(split, S.dirs, actions)")
     assert order > 0

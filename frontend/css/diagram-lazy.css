@@ -313,6 +313,15 @@
   margin: 0;
 }
 
+.dgm-picture > .md-mermaid-reason > button {
+  margin-inline-end: var(--space-2);
+}
+
+/* The last good picture under an error (DD-4): present, but plainly not the current source. */
+.dgm-picture-stale > .md-mermaid-img {
+  opacity: 0.4;
+}
+
 /* The overlay (diagram-overlay.js): one box over each drawn node, never a target for a press. Its position is the
    figure's padding box, set from script; a box is placed by a transform so a zoom or a scroll moves no layout. */
 .dgm-overlay {
@@ -701,9 +710,29 @@
 /* The flowchart's toolbar (diagram-bar.js, 1661 D2): ONE row at every width. Add is a split (the last shape, then a
    caret), Direction one button that turns the diagram; the dock never wraps, so a narrow host drops words, not rows. */
 .dgm-dock {
-  flex-wrap: nowrap;
   align-items: center;
   min-inline-size: 0;
+}
+
+/* One row is the flowchart's alone (DD-2, 1107): the same rule on the kinds' docks, whose palette wraps, painted Suggest,
+   Undo, Redo and the menu over the tiles (dock 543, 124 and 199 px tall at 1440). */
+.dgm-dock:has(> .dgm-addsplit) {
+  flex-wrap: nowrap;
+}
+
+/* The kinds' palettes are one Add button and the same sheet a phone gets (diagram-touch.js `wire`): thirteen tiles do not fit a row. */
+.dgm-addlist :is(.dgm-palette, .dgm-lib-hint) {
+  display: none;
+}
+
+.dgm-addlist .dgm-add {
+  display: inline-flex;
+}
+
+.dgm-addlist .dock-actions {
+  order: -1;
+  margin-left: 0;
+  justify-content: flex-start;
 }
 
 .dgm-addsplit {
@@ -1239,6 +1268,27 @@
 
   .dgm-dialog-body {
     flex-direction: column;
+  }
+
+  /* A phone's dock may take a second row (DD-6, 1107): Add, Direction and five 44 px actions are 368 px against a 308 px
+     body, so the "More for this diagram" button sat 18 px outside the dialog. */
+  .dgm-dialog .dgm-dock:has(> .dgm-addsplit) {
+    flex-wrap: wrap;
+    row-gap: var(--space-1);
+  }
+
+  /* The picture keeps 240 px (it was 96 beside a kind's pane); the blocks pane scrolls under it. */
+  .dgm-dialog-body .dgm-picture,
+  .dgm-dialog-body .dgm.dgm-phonelist :is(.dgm-picture, .dgm-stage) {
+    min-block-size: 240px;
+  }
+
+  .dgm-dialog-body .dgm-body {
+    grid-template-rows: minmax(240px, auto) minmax(0, 1fr);
+  }
+
+  .dgm-dialog-body .dgm-body {
+    overflow-y: auto;
   }
 
   .dgm-dialog[data-view="source"] .dgm-source {

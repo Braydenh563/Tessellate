@@ -84,7 +84,7 @@ def test_growth_under_a_following_pane_never_lets_go_only_a_scroll_up_does():
     script = (
         code
         + """
-let chatController = null, chatStreaming = null;
+let chatController = null, chatStreaming = null, chatConv = null; // chat.js declares chatConv before chat-agent.js
 const typingDots = () => ({});
 globalThis.performance = { now: () => 1e6 };
 const pill = { classList: { toggle() {}, add() {}, remove() {} } };

@@ -120,9 +120,7 @@ function emblemArt(size, { arrive = false, still = false, head = false } = {}) {
 //: Called where either changes.
 
 function syncEmblemBusy() {
-  const chatting = typeof chatController !== "undefined" && Boolean(chatController);
-  const running = typeof agentRuns !== "undefined" && agentRuns.some((run) => run.state === "running");
-  const busy = chatting || running;
+  const busy = Boolean(chatController) || (typeof agentRuns !== "undefined" && agentRuns.some((run) => run.state === "running"));
   if (busy === emblemState.busy) return;
   emblemState.busy = busy;
   for (const art of document.querySelectorAll(".emblem-art:not(.is-head)")) emblemSetBusy(art, busy);
@@ -1121,7 +1119,7 @@ function initNotePage() {
     //: the checkbox (note-cards.js), and this handler did not know the mode:
     //: the first tap selected the note and opened its page over the list too
     //: (found by the deepflows sweep).
-    if (typeof selectMode !== "undefined" && selectMode) return;
+    if (selectMode) return;
     const li = event.target.closest("li[data-id]");
     if (!li || li.querySelector("textarea")) return;
     if (event.target.closest("button, a, input, select, [contenteditable], .chip-interactive, summary")) return;
@@ -1503,7 +1501,7 @@ function openSheet({ label, sub = "", name, build, variant = "", modal = true, r
     //: sheet over the note page, INBOX 392), and every sheet's listener is
     //: on the document, so one Escape closed both. Only the topmost answers.
     const sheets = document.querySelectorAll(".sheet-overlay:not(.sheet-leaving)");
-    if ((sheets.length && sheets[sheets.length - 1] !== overlay) || document.querySelector(".confirm-overlay")) return;
+    if ((sheets.length && sheets[sheets.length - 1] !== overlay) || [...document.querySelectorAll(".confirm-overlay")].some((o) => overlay.compareDocumentPosition(o) & Node.DOCUMENT_POSITION_FOLLOWING)) return;
     //: A dialog over this sheet (Connect to… over the Blocks list) takes the Escape too.
     //: A ⋯ menu open over the sheet takes its own Escape (an entity page's).
     //: Not the menu this sheet *is* (`openKebabSheet` moves a ⋯ menu in,
@@ -1656,7 +1654,7 @@ function syncPhoneMoreRuns() {
 
 //: Due-or-overdue reminders, as `updateReminderBadge` last counted them.
 function phoneMoreDueCount() {
-  return typeof reminderCounts === "undefined" ? 0 : reminderCounts.due || 0;
+  return reminderCounts.due || 0;
 }
 
 // The bar has to say where you are on all seven tabs, not on the four it

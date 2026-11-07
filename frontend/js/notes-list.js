@@ -123,7 +123,7 @@ async function openNoteEditor(id, { focusTags = false } = {}) {
   //: lands here, but the form is drawn into the list, which is behind that
   //: sheet: Edit did nothing anyone could see (found by the deepflows sweep at
   //: 390 wide). The page closes, and the form is there to type in.
-  if (typeof notePageClose === "function") notePageClose();
+  notePageClose?.();
   //: The caret goes into the form (WCAG 2.4.3); it was left on <body>.
   if (focusTags) focusTagsAfterRender = id;
   else focusBodyAfterRender = id;
@@ -1432,11 +1432,11 @@ function resolveWikiTarget(name) {
   //: "Nothing called A document yet" while the Live view of the same line,
   //: which resolves through documents.js's own `docs`, drew it: two views of
   //: one line disagreeing (found by `scratchpad/ui-sweeps/blockbar.js`).
-  const cached = typeof editorDocumentCache !== "undefined" && editorDocumentCache && editorDocumentCache.length
+  const cached = typeof editorDocumentCache !== "undefined" && editorDocumentCache?.length
     ? editorDocumentCache
     : null;
-  const documents = cached || (typeof docs !== "undefined" && Array.isArray(docs) ? docs : null);
-  const docList = documents || [];
+  const docList = cached || (typeof docs !== "undefined" && Array.isArray(docs) ? docs : []);
+  if (!docList.length) loadEmbedDocuments();
   const doc =
     docList.find((d) => (d.title || "").trim().toLowerCase() === needle) ||
     //: Reported directly: "still cant open note links from the document
@@ -1451,6 +1451,22 @@ function resolveWikiTarget(name) {
     docList.find((d) => (d.title || "").trim().toLowerCase().startsWith(needle));
   if (doc) return { kind: "document", doc };
   return null;
+}
+
+//: **Documents for a note card's embeds, fetched once** (review 1107): on the Notes tab nothing had filled the documents list yet
+//: (`docs` is the Library's, `editorDocumentCache` the `[[` picker's), so a note holding `![[A diagram]]` drew "Nothing called
+//: ... yet" for a diagram that exists, also after a reload. The first miss asks for the list, then the cards are drawn again.
+let embedDocumentsAsked = false;
+function loadEmbedDocuments() {
+  if (embedDocumentsAsked) return;
+  embedDocumentsAsked = true;
+  apiPagedList("/documents", DOCUMENTS_PAGE_SIZE)
+    .then((list) => {
+      if (!list.length) return;
+      editorDocumentCache = list;
+      renderEntries();
+    })
+    .catch(() => {});
 }
 
 // A note card's text: block constructs first, then the inline pass.
@@ -3281,7 +3297,7 @@ async function followNoteChanges() {
     noteChanges.quiet = body.ids.length ? 0 : noteChanges.quiet + 1;
     if (!ids.length) return;
     await refreshEntries(ids);
-    if (typeof refreshNotePage === "function") refreshNotePage(ids);
+    refreshNotePage(ids);
   } catch {
     /* offline or locked: the next tick asks again */
   } finally {

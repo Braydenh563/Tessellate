@@ -2331,7 +2331,7 @@ async function loadChatSuggestions() {
 const AI_NAME = "Atlas";
 
 function aiNameNow() {
-  return typeof AI_NAME === "string" ? AI_NAME : "Atlas";
+  return AI_NAME;
 }
 
 //: The built-in librarian is Atlas; a preference saved as "Librarian" from

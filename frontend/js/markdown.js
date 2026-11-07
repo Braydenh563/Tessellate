@@ -371,18 +371,16 @@ function mdMathBox(tag, className, tex, display) {
   //: Not a silent guard: the bundle that draws maths is asked for, and the
   //: box redraws itself in place once it lands (a note card or a chat
   //: answer can be the first thing on screen with a formula in it).
-  if (typeof ensureModule === "function") {
-    ensureModule("library")
-      .then(() => {
-        if (!box.isConnected || typeof docMathRender !== "function") return;
-        try {
-          box.replaceChildren(docMathRender(tex, display));
-        } catch {
-          // The source stays.
-        }
-      })
-      .catch(() => {});
-  }
+  ensureModule("library")
+    .then(() => {
+      if (!box.isConnected || typeof docMathRender !== "function") return;
+      try {
+        box.replaceChildren(docMathRender(tex, display));
+      } catch {
+        // The source stays.
+      }
+    })
+    .catch(() => {});
   return box;
 }
 
@@ -740,10 +738,6 @@ function boardEmbedElement(ref) {
     //: A reference a forced refresh has already failed to find is not asked
     //: about again: without this, every re-render of a note holding a dead
     //: object would walk `/whiteboard/boards` from the top.
-    if (typeof loadMapBoardIndex !== "function") {
-      fill(true);
-      return;
-    }
     let walk = boardEmbedForced.get(ref.id);
     if (walk === true) {
       fill(true);

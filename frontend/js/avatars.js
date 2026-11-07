@@ -5560,7 +5560,7 @@ function nameMarkBuddyTempo() {
     //: nor a move let go (`nameMarkBuddyBlend`, 480ms), for the same reason.
     //: Nor Atlas's blink (atlas.js, `atlasBlink`, 320ms): stepped at
     //: 10Hz its lid jumped in three steps.
-    nmbTempo.anims = buddy.getAnimations({ subtree: true }).filter((a) => a.effect?.target instanceof SVGElement && !(a.effect.target instanceof SVGSVGElement) && !(typeof CSSTransition === "function" && a instanceof CSSTransition) && a.id !== "nmb-blend" && a.id !== "atl-blink" && a.playState !== "finished");
+    nmbTempo.anims = buddy.getAnimations({ subtree: true }).filter((a) => a.effect?.target instanceof SVGElement && !(a.effect.target instanceof SVGSVGElement) && !(typeof CSSTransition === "function" && a instanceof CSSTransition) && a.id !== "nmb-blend" && a.id !== "atl-blink" && a.id !== "atl-breath" && a.playState !== "finished");
     //: **Nor the hands it holds on by, while they are not shown** (Brief 34
     //: decision 7). The hold's reach (`.nmb-hold`, shown only hanging,
     //: carried or in a stretch, a yawn or a cheer) was stepped twenty times

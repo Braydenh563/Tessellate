@@ -13,7 +13,7 @@
 
 function hiddenStatusSlots() {
   // `prefsCache` is a global `let`, not on `window`: read it bare.
-  const stored = typeof prefsCache === "object" && prefsCache ? prefsCache.status_bar_hidden : null;
+  const stored = prefsCache ? prefsCache.status_bar_hidden : null;
   return new Set(Array.isArray(stored) ? stored : []);
 }
 

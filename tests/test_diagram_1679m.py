@@ -123,3 +123,28 @@ def test_the_kind_switcher_hides_for_a_source_blocks_cannot_draw_and_never_calls
 
 def test_the_kind_switcher_buttons_share_one_row_on_a_phone():
     assert ".dgm-kinds button" in CSS and "flex: 1 1 0" in CSS.split(".dgm-kinds button")[1][:120]
+
+
+def test_the_dialogs_kind_bar_redraws_the_pane_when_the_kind_changes():
+    # DD-1 (1107): the dialog's io.set stored history and the textarea but never called show(), so a press on Sequence
+    # rewrote the source and left a flowchart pane with Flowchart pressed. The page's io.set re-shows through the document.
+    embed = (JS / "diagram-embed.js").read_text(encoding="utf-8")
+    start = embed.index("const io = {")
+    body = embed[start : embed.index("undo:", start)]
+    assert "if (diagramModel.builder.kindOf(next) !== kind) show();" in body
+
+
+def test_a_drawing_error_keeps_the_last_good_picture_dimmed_and_says_the_line_once():
+    # DD-4 (1107): `D[Oops --> A` replaced the picture with the sentence, left the "tall for this pane" offer beside it and
+    # announced nothing. Now the image stays at 40% under the message, the offer hides, the message is an alert the first
+    # time a given error shows (a status on a redraw of the same one) and names its line for a button that puts the caret there.
+    start = BUILDER.index("function drawPicture")
+    assert "diagramModel.picture.failure(S, result, source, smallButton)" in BUILDER[start : BUILDER.index("// --- the tree", start)]
+    # Review 1107: the builder is at its size cap, so the failure view lives in diagram-picture.js; the assertions are unchanged.
+    picture = (JS / "diagram-picture.js").read_text(encoding="utf-8")
+    body = picture[picture.index("function failure(") :]
+    assert 'S.fig.querySelector(":scope > .md-mermaid-img")' in body and "dgm-picture-stale" in body
+    assert 'setAttribute("role", fresh ? "alert" : "status")' in body
+    assert "S.sideways?.classList.add(\"hidden\")" in body
+    assert "dataset.line" in body and "setSelectionRange" in body
+    assert ".dgm-picture-stale > .md-mermaid-img" in CSS and "opacity: 0.4" in CSS.split(".dgm-picture-stale > .md-mermaid-img {", 1)[1].split("}", 1)[0]

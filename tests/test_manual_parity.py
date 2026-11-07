@@ -524,3 +524,17 @@ def test_confirmed_patterns_are_managed_where_the_guide_and_the_help_say():
     menu = (FRONTEND / "js" / "confirmed-patterns.js").read_text(encoding="utf-8")
     for label in ('"ph:pencil-simple Edit"', 'item.verdict === "dismiss").label', '"ph:trash Remove"'):
         assert label in menu, label
+
+
+def test_the_diagram_tab_chain_the_starter_and_the_keys_chip_are_in_the_guide() -> None:
+    """1107 DD-3 and DD-7: Tab and Shift+Tab on a box, the New diagram window's starter and Clear, the Keys button and `?`,
+    each said in the Guide in the words the controls carry (standing order 13)."""
+    from tessellate.ai.help_chat import HELP_TOPICS
+
+    elsewhere = str(next(t["body"] for t in HELP_TOPICS if t["id"] == "diagram-elsewhere"))
+    for words in ("Tab adds a joined box", "Shift+Tab selects its source", "F6 leaves the blocks", "Ctrl+Enter keeps the diagram", "three-box starter", "Clear, in the ... menu", "The Keys button", "? outside a text field", "one Add button"):
+        assert words in elsewhere, words
+    embed = (FRONTEND / "js" / "diagram-embed.js").read_text(encoding="utf-8")
+    style = (FRONTEND / "js" / "diagram-style.js").read_text(encoding="utf-8")
+    assert '"ph:keyboard Keys"' in embed and '"ph:eraser Clear"' in embed and 'data-help-for", "dgm-dialog-help"' in embed
+    assert '["Tab", "Add a box after the last one, joined to it"]' in style

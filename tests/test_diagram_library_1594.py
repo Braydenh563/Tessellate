@@ -102,7 +102,8 @@ def test_the_dock_is_one_row_at_every_width_because_direction_is_one_button_and_
     builder = _read("diagram-builder.js")
     more = builder.split("function more(S) {", 1)[1].split("\n  }\n", 1)[0]
     assert "matchMedia(COMPACT).matches" in more and '"ph:compass Direction"' not in more and "Suggest…" in more
-    assert "flex-wrap: nowrap" in CSS.split(".dgm-dock {", 1)[1].split("}", 1)[0]
+    # Intent moved (DD-2, 1107): one row is the flowchart dock's, so the nowrap is scoped to it; the kinds' docks wrap.
+    assert "flex-wrap: nowrap" in CSS.split(".dgm-dock:has(> .dgm-addsplit) {", 1)[1].split("}", 1)[0]
     assert "gap: var(--space-1);" in CSS.split(".dgm-compact .dock-actions {", 1)[1].split("}", 1)[0]
 
 
