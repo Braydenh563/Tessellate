@@ -1503,7 +1503,7 @@ function openSheet({ label, sub = "", name, build, variant = "", modal = true, r
     //: sheet over the note page, INBOX 392), and every sheet's listener is
     //: on the document, so one Escape closed both. Only the topmost answers.
     const sheets = document.querySelectorAll(".sheet-overlay:not(.sheet-leaving)");
-    if ((sheets.length && sheets[sheets.length - 1] !== overlay) || document.querySelector(".confirm-overlay")) return;
+    if ((sheets.length && sheets[sheets.length - 1] !== overlay) || [...document.querySelectorAll(".confirm-overlay")].some((o) => overlay.compareDocumentPosition(o) & Node.DOCUMENT_POSITION_FOLLOWING)) return;
     //: A dialog over this sheet (Connect to… over the Blocks list) takes the Escape too.
     //: A ⋯ menu open over the sheet takes its own Escape (an entity page's).
     //: Not the menu this sheet *is* (`openKebabSheet` moves a ⋯ menu in,

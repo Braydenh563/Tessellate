@@ -139,7 +139,10 @@ def test_a_drawing_error_keeps_the_last_good_picture_dimmed_and_says_the_line_on
     # announced nothing. Now the image stays at 40% under the message, the offer hides, the message is an alert the first
     # time a given error shows (a status on a redraw of the same one) and names its line for a button that puts the caret there.
     start = BUILDER.index("function drawPicture")
-    body = BUILDER[start : BUILDER.index("// --- the tree", start)]
+    assert "diagramModel.picture.failure(S, result, source, smallButton)" in BUILDER[start : BUILDER.index("// --- the tree", start)]
+    # Review 1107: the builder is at its size cap, so the failure view lives in diagram-picture.js; the assertions are unchanged.
+    picture = (JS / "diagram-picture.js").read_text(encoding="utf-8")
+    body = picture[picture.index("function failure(") :]
     assert 'S.fig.querySelector(":scope > .md-mermaid-img")' in body and "dgm-picture-stale" in body
     assert 'setAttribute("role", fresh ? "alert" : "status")' in body
     assert "S.sideways?.classList.add(\"hidden\")" in body

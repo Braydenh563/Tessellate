@@ -3366,7 +3366,7 @@ MORE_TOPICS.extend([
             "in the ... menu; Download .mmd saves the text. Source, beside Cancel, shows "
             "the text with the picture; a diagram the blocks cannot draw, or one over 120 blocks, opens there. "
             "The New diagram window opens on a three-box starter; Clear, in the ... menu, empties it. "
-            "On a box, Tab adds a joined box, Shift+Tab selects its source and F6 leaves the blocks. "
+            "On the last box, Tab adds a joined box; on any other, Tab moves on. Shift+Tab selects its source, F6 leaves the blocks and Ctrl+Enter keeps the diagram. "
             "The Keys button in its foot, or ? outside a text field, lists every key. "
             "On a phone, and in Sequence, Mind map and Timeline, the shapes are one Add button that opens a sheet of them; pinch the picture to "
             "zoom, drag it to move, and double tap to fit it again. Save to Library, in the ... menu "

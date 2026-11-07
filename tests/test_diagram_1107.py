@@ -22,16 +22,52 @@ MERMAID = _js("documents-mermaid.js")
 STYLE = _js("diagram-style.js")
 
 
-def test_tab_on_a_box_adds_a_joined_box_and_names_it_and_shift_tab_selects_the_one_that_points_here():
+BAR = _js("diagram-bar.js")
+KINDBAR = _js("diagram-kindbar.js")
+SHELL = _js("phone-shell.js")
+
+
+def test_tab_adds_a_joined_box_only_on_the_last_box_and_never_traps_and_f6_leaves_the_blocks():
     # DD-3a: first connected 3-box diagram without a drag. The flowchart's handler only; the mind map keeps its own Tab.
+    # Review 1107 moved the code to diagram-bar.js (the builder is at its size cap) and made Tab a chain only on the last box:
+    # Tab on every box added boxes without end and Shift+Tab on the first box swallowed the key (WCAG 2.1.2).
     body = BUILDER[BUILDER.index("  function onKey(S, event)") :]
-    tab = body[body.index('event.key === "Tab"') : body.index('event.key === "F6"')]
-    assert 'key[0] === "n"' in tab and "addBlock(S, { after: key, from: id })" in tab
-    assert "S.m.edges.find((e) => e.to === id)?.from" in tab
-    # Tab stays in the blocks, so F6 is the way out (a key trap otherwise).
-    assert 'event.key === "F6"' in body and "S.fig" in body[body.index('event.key === "F6"') :][:200]
-    for row in ('["Tab", "Add a box after the selected one, joined to it"]', '["Shift + Tab"', '["F6"'):
-        assert row in STYLE
+    assert "diagramModel.bar.chain(event, S, key, block, addBlock)" in body
+    chain = BAR[BAR.index("  function chain(") : BAR.index("  diagramModel.bar = ")]
+    assert 'event.key !== "Tab" || key[0] !== "n") return false' in chain and "add(S, { after: key, from: id })" in chain
+    assert "S.m.edges.find((e) => e.to === id)?.from" in chain
+    # Only the last box chains; any other Tab, and Shift+Tab with no parent, is left to the browser (no preventDefault before the return false).
+    assert "if (block !== [...S.tree.querySelectorAll(\".dgm-block\")].at(-1)) return false;" in chain
+    assert "if (!up) return false;" in chain and chain.index("if (!up) return false;") < chain.index("event.preventDefault()", chain.index("if (!up)"))
+    # F6 is the way out of the blocks to the picture, Shift+F6 to the toolbar.
+    assert 'event.key === "F6"' in chain and "S.fig" in chain
+    for row in ('["Tab", "Add a box after the last one, joined to it"]', '["Shift + Tab", "Select the box that points at this one"]', '["F6"', '["Ctrl + Enter", "Keep the diagram (Done)"]'):
+        assert row in STYLE, row
+    # The first-run line, the Keys chip and the blocks hint all name the way out.
+    assert "F6 leaves the blocks" in EMBED and "F6 leaves the blocks" in _js("diagram-steps.js")
+
+
+def test_clear_starts_the_kind_the_pane_is_not_always_a_flowchart():
+    # Review 1107: Clear on a sequence, mind map or timeline switched the kind silently.
+    assert "STARTS[diagramModel.builder.kindOf(history[at])]" in EMBED and "io.set(`${STARTS.flowchart}\\n`)" not in EMBED
+    assert 'makeMenuItem("ph:eraser Clear"' in EMBED
+
+
+def test_ctrl_enter_keeps_the_diagram_from_anywhere_in_the_dialog():
+    # Review 1107: the only keyboard route to Done was 15 Tabs.
+    assert '(event.ctrlKey || event.metaKey) && event.key === "Enter"' in EMBED and "finish(true)" in EMBED[EMBED.index('event.key === "Enter"') :][:200]
+    assert "Ctrl + Enter" in STYLE
+
+
+def test_the_keys_sheet_closes_on_escape_over_the_diagram_window():
+    # Review 1107: the sheet's early return counted the host dialog's own .confirm-overlay, so Escape did nothing and sheets stacked.
+    assert 'document.querySelector(".confirm-overlay")) return;' not in SHELL
+    assert "DOCUMENT_POSITION_FOLLOWING" in SHELL[SHELL.index("One Escape, one sheet") :][:900]
+
+
+def test_a_press_on_a_kind_puts_focus_back_on_the_kind_bar():
+    # Review 1107: the pane was rebuilt and focus fell to BODY.
+    assert "pending" in KINDBAR and "focus()" in KINDBAR[KINDBAR.index("S.root.prepend(seg)") :][:240]
 
 
 def test_the_door_opens_on_a_drawn_starter_with_its_first_box_selected_and_clear_in_the_menu():
@@ -39,9 +75,9 @@ def test_the_door_opens_on_a_drawn_starter_with_its_first_box_selected_and_clear
     door = MERMAID[MERMAID.index("async function diagramDoor") : MERMAID.index("diagramModel.starter =")]
     assert door.count("source: diagramModel.starter") == 2
     assert 'source: "flowchart TD"' not in door
-    assert 'makeMenuItem("ph:eraser Clear"' in EMBED and "io.set(`${STARTS.flowchart}\\n`)" in EMBED
+    assert 'makeMenuItem("ph:eraser Clear"' in EMBED
     assert "diagramModel.builder.select(S, firstBox.dataset.key, true)" in EMBED
-    assert "kindOf, select, keys:" in BUILDER
+    assert "kindOf, select, styleDo," in BUILDER
 
 
 def test_the_dialog_has_a_keys_chip_a_question_mark_anywhere_and_a_help_popover_with_the_guide_offer():
@@ -53,7 +89,7 @@ def test_the_dialog_has_a_keys_chip_a_question_mark_anywhere_and_a_help_popover_
     assert 'atlasSuggestion("How do I make a diagram?"' in EMBED
     # An open help popover takes its own Escape before the dialog closes.
     assert ".help-popover:not(.hidden)" in EMBED
-    assert "keys: (S) => styleDo(S, \"shortcuts\")" in BUILDER
+    assert 'diagramModel.builder.styleDo(pane, "shortcuts")' in EMBED
 
 
 def test_a_dock_tooltip_names_its_key():

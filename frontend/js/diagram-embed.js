@@ -166,7 +166,7 @@
       menu: [
         ...(shapes ? [makeMenuItem("ph:shapes Turn into shapes", "Replace it with shapes and connectors you can move one by one", () => (leave(), shapes(history[at])))] : []),
         //: The door opens on a drawn starter (DD-3b, 1107), so a blank page is one press away, and Undo brings the starter back.
-        makeMenuItem("ph:eraser Clear", "Start again from an empty flowchart. Undo brings this one back", () => (io.set(`${STARTS.flowchart}\n`), apply())),
+        makeMenuItem("ph:eraser Clear", "Start again from an empty diagram of this kind. Undo brings this one back", () => (io.set(`${STARTS[diagramModel.builder.kindOf(history[at])] || STARTS.flowchart}\n`), apply())),
         makeMenuItem("ph:books Save to Library", "Keep it in the Library to show it with ![[name]]", () => save(history[at], offer?.link ? { label: "Link this diagram", run: (row) => link(offer.link, row, history[at]) } : offer)),
       ],
     };
@@ -246,8 +246,8 @@
     }, false) : null;
     //: Help in reach (DD-7, 1107): every key in one sheet, from a chip that is always there, from `?` anywhere in the dialog
     //: outside a field, and from the ... menu; the '?' by the title says what the window is and offers the Guide's topic.
-    const keys = () => pane && diagramModel.builder.keys(pane);
-    const chip = smallButton("ph:keyboard Keys", "Every key in this editor (?)", keys);
+    const keys = () => pane && diagramModel.builder.styleDo(pane, "shortcuts");
+    const chip = smallButton("ph:keyboard Keys", "Every key in this editor (?). F6 leaves the blocks", keys);
     chip.classList.add("dgm-keychip");
     foot.append(seg, ...(known ? [known] : []), chip, cancel, go);
     const head = dialogHead(title, () => finish(false));
@@ -263,7 +263,7 @@
     helpBody.id = "dgm-dialog-help";
     helpBody.setAttribute("role", "dialog");
     helpBody.setAttribute("aria-label", "About this editor");
-    helpBody.append(el("p", "", "Draw with blocks and the picture follows. Press N to add a box, Tab to add one joined to it, Enter to name it and ? for every key."), atlasSuggestion("How do I make a diagram?", "Ask about making a diagram"));
+    helpBody.append(el("p", "", "Draw with blocks and the picture follows. Press N to add a box, Tab on the last box to add one joined to it, Enter to name it, F6 leaves the blocks, Ctrl+Enter keeps the diagram and ? lists every key."), atlasSuggestion("How do I make a diagram?", "Ask about making a diagram"));
     head.querySelector(".dialog-head-title").after(help);
     dialog.append(helpBody);
     const body = el("div", "dgm-dialog-body");
@@ -276,6 +276,12 @@
       if (event.target === field || !(event.ctrlKey || event.metaKey) || event.key.toLowerCase() !== "z") return;
       event.preventDefault();
       (event.shiftKey ? io.redo : io.undo)();
+    });
+    //: Ctrl+Enter keeps the diagram from anywhere in the window (the other route to Done is 15 Tabs).
+    dialog.addEventListener("keydown", (event) => {
+      if (!((event.ctrlKey || event.metaKey) && event.key === "Enter") || event.altKey) return;
+      event.preventDefault();
+      finish(true);
     });
     //: `?` from anywhere in the dialog but a text field; a block's own handler has taken it already (and said so by `defaultPrevented`).
     dialog.addEventListener("keydown", (event) => {

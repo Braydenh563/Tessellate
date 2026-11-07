@@ -81,44 +81,10 @@
           if (stamp !== S.drawn) return;
           S.hit = result.svg ? diagramModel.picture.boxes(result.svg) : null;
           for (const paint of S.fig.onpaint || []) paint();
-          S.fig.classList.toggle("dgm-picture-stale", !result.svg);
-          if (result.svg) return void ((S.errorSeen = ""), delete S.fig.dataset.errorLine);
-          S.fig.classList.remove("md-mermaid-pending");
-          S.fig.removeAttribute("aria-busy");
-          showFailure(S, result.error, source);
+          diagramModel.picture.failure(S, result, source, smallButton);
         });
       });
     }, S.drawWait || 120);
-  }
-
-  //: A source that will not draw (DD-4, 1107): the last good picture stays, dimmed, with the reason under it, instead of an empty
-  //: pane. The reason is an alert the first time a given error shows and a status when the same one is drawn again; the line it
-  //: names is `data-line` and a button puts the caret there; the "tall for this pane" offer is for a picture that is not there.
-  function showFailure(S, error, source) {
-    const note = mermaidFailure.note(error, source);
-    const plain = mermaidFailure.plain(error, source);
-    const fresh = S.errorSeen !== plain;
-    S.errorSeen = plain;
-    note.setAttribute("role", fresh ? "alert" : "status");
-    S.sideways?.classList.add("hidden");
-    const line = /^Line (\d+):/.exec(plain)?.[1];
-    const field = S.root.closest(".dgm-dialog")?.querySelector(".dgm-source");
-    if (line) {
-      note.dataset.line = line;
-      S.fig.dataset.errorLine = line;
-    } else delete S.fig.dataset.errorLine;
-    if (line && field) {
-      const go = smallButton(`Go to line ${line}`, "Put the cursor on the line the message names", () => {
-        const lines = field.value.split("\n");
-        const from = lines.slice(0, Number(line) - 1).join("\n").length + (line > 1 ? 1 : 0);
-        field.focus();
-        field.setSelectionRange(from, from + (lines[Number(line) - 1] || "").length);
-      });
-      note.prepend(go);
-    }
-    if (!S.fig.querySelector(":scope > .md-mermaid-img")) return S.fig.replaceChildren(note);
-    S.fig.querySelector(":scope > .md-mermaid-reason")?.remove();
-    S.fig.append(note);
   }
 
   // --- the tree -------------------------------------------------------------------
@@ -490,19 +456,7 @@
       return act();
     }
     if (mod) return;
-    //: **Tab chains** (DD-3, 1107; Whimsical's way): on a box, Tab adds a box after it, joined to it, and opens its name; Shift+Tab
-    //: selects the box that points at this one (a group's parent otherwise). F6 leaves the blocks for the picture, since Tab stays here.
-    if (event.key === "Tab" && !event.altKey && key[0] === "n") {
-      const id = diagramOps.split(key)[1];
-      event.preventDefault();
-      if (!event.shiftKey) return addBlock(S, { after: key, from: id });
-      const parent = S.m.edges.find((e) => e.to === id)?.from;
-      return go(blockEl(S, parent ? diagramOps.key("n", parent) : null) || block.parentElement.closest(".dgm-block"));
-    }
-    if (event.key === "F6") {
-      event.preventDefault();
-      return (event.shiftKey ? S.root.querySelector(".dgm-dock button") : S.fig)?.focus();
-    }
+    if (diagramModel.bar.chain(event, S, key, block, addBlock)) return;
     //: N adds a Box, Shift+N the last shape used (1661 D2; R6.13 had the selected block's shape); a letter reads the same with or without Shift otherwise.
     const low = event.key.length === 1 ? event.key.toLowerCase() : event.key;
     //: 1 to 7 add a shape, Shift+N the last one used (diagram-bar.js, 1661 D2).
@@ -721,5 +675,5 @@
     return S;
   }
 
-  diagramModel.builder = { show, kindOf, select, keys: (S) => styleDo(S, "shortcuts"), tell: (text) => (told = text) };
+  diagramModel.builder = { show, kindOf, select, styleDo, tell: (text) => (told = text) };
 })();

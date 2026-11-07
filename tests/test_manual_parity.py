@@ -532,9 +532,9 @@ def test_the_diagram_tab_chain_the_starter_and_the_keys_chip_are_in_the_guide() 
     from tessellate.ai.help_chat import HELP_TOPICS
 
     elsewhere = str(next(t["body"] for t in HELP_TOPICS if t["id"] == "diagram-elsewhere"))
-    for words in ("Tab adds a joined box", "Shift+Tab selects its source", "F6 leaves the blocks", "three-box starter", "Clear, in the ... menu", "The Keys button", "? outside a text field", "one Add button"):
+    for words in ("Tab adds a joined box", "Shift+Tab selects its source", "F6 leaves the blocks", "Ctrl+Enter keeps the diagram", "three-box starter", "Clear, in the ... menu", "The Keys button", "? outside a text field", "one Add button"):
         assert words in elsewhere, words
     embed = (FRONTEND / "js" / "diagram-embed.js").read_text(encoding="utf-8")
     style = (FRONTEND / "js" / "diagram-style.js").read_text(encoding="utf-8")
     assert '"ph:keyboard Keys"' in embed and '"ph:eraser Clear"' in embed and 'data-help-for", "dgm-dialog-help"' in embed
-    assert '["Tab", "Add a box after the selected one, joined to it"]' in style
+    assert '["Tab", "Add a box after the last one, joined to it"]' in style

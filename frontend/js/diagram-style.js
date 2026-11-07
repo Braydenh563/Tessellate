@@ -9,7 +9,7 @@
 (() => {
   //: Keys that are not in the shape table: [keys, what it does].
   const OTHER = [
-    ["Tab", "Add a box after the selected one, joined to it"], ["Shift + Tab", "Select the box that points at this one"], ["F6", "Leave the blocks for the picture"],
+    ["Tab", "Add a box after the last one, joined to it"], ["Shift + Tab", "Select the box that points at this one"], ["F6", "Leave the blocks for the picture"], ["Ctrl + Enter", "Keep the diagram (Done)"],
     ["Enter, F2", "Name the selected block"], ["Delete", "Remove the selected block"], ["C", "Connect the selected block to another"],
     ["K", "Colour the selected blocks"], ["Alt + arrows", "Move or nest the selected block"], ["Ctrl + Z, Ctrl + Y", "Undo, redo"],
     ["Shift + F10", "Open the block menu"], ["?", "Show this sheet"],
