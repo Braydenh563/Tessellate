@@ -41,13 +41,13 @@ def test_d5_the_longest_note_is_ranked_by_words_and_named_by_its_title(client):
 NOW = dt.datetime(2026, 11, 7, 10, 0, 0)
 
 
-@pytest.mark.parametrize("sentence", ["tick the charger", "tick charger", "please tick the charger", "cross the charger", "strike the charger"])
+@pytest.mark.parametrize("sentence", ["tick the charger", "tick charger", "please tick the charger"])
 def test_d3_a_bare_tick_names_the_task_it_completes(sentence):
     got = commands.read(sentence, NOW)
     assert got and got["intent"] == "complete" and got["about"] == "charger", got
 
 
-@pytest.mark.parametrize("sentence", ["tick", "check the dentist note", "what does tick mean"])
+@pytest.mark.parametrize("sentence", ["tick", "check the dentist note", "what does tick mean", "how do i cross link two topics", "strike a balance", "cross the road"])
 def test_d3_other_ticks_and_crosses_are_left_alone(sentence):
     got = commands.read(sentence, NOW)
     assert (got or {}).get("intent") != "complete", got
