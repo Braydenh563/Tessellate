@@ -336,6 +336,15 @@ function nameMarkBuddyMenu(buddy, at = null) {
       run: () => nameMarkBuddySetSize(value),
     })),
   });
+  //: **A quiet switch where the noise is** (companion dive 1107: it had no quiet entry, and the
+  //: owner calls it distracting): Off is "only blinks and looks"; the default, Fewer, is the way back.
+  const lively = nameMarkBuddyActions() !== "off";
+  items.push({
+    group: "settings",
+    label: lively ? "ph:speaker-slash Quieter" : "ph:speaker-high Livelier",
+    title: lively ? "It only blinks and looks, and still answers you" : "It waves and gestures now and then again",
+    run: () => choose("avatar-buddy-actions", lively ? "off" : "fewer"),
+  });
   items.push({
     group: "settings",
     label: "ph:gear Settings",

@@ -2,7 +2,7 @@
 
 Generated 2026-11-07 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7856, frontend ids 2644, CSS sections 522, backend routes 649, backend modules 9001, test files 2153, tests 18145, plan headings 1004, app scripts 28, boot scripts 37, script files 261.
+Counts: frontend functions 7856, frontend ids 2644, CSS sections 522, backend routes 649, backend modules 9001, test files 2153, tests 18147, plan headings 1004, app scripts 28, boot scripts 37, script files 261.
 
 ## Frontend functions (7856)
 
@@ -1929,10 +1929,10 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `featureCommandRows` | frontend/js/app-features.js:223 |
 | `paletteCommands` | frontend/js/app-features.js:296 |
 | `popupToolMaths` | frontend/js/app-features.js:254 |
-| `quickAccessCurrent` | frontend/js/app-features.js:601 |
-| `quickAccessItems` | frontend/js/app-features.js:592 |
-| `quickCatalogue` | frontend/js/app-features.js:573 |
-| `renderQuickLinks` | frontend/js/app-features.js:605 |
+| `quickAccessCurrent` | frontend/js/app-features.js:600 |
+| `quickAccessItems` | frontend/js/app-features.js:591 |
+| `quickCatalogue` | frontend/js/app-features.js:572 |
+| `renderQuickLinks` | frontend/js/app-features.js:604 |
 | `renderToolShortcutList` | frontend/js/app-features.js:270 |
 
 ### frontend/js/app-import.js (6)
@@ -24410,7 +24410,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (18145)
+## Tests (18147)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -24711,7 +24711,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_companion_dynamics_1107.py | 5 |
 | tests/test_companion_fall_split_1463.py | 3 |
 | tests/test_companion_idle_1107.py | 3 |
-| tests/test_companion_inappdive_1107.py | 2 |
+| tests/test_companion_inappdive_1107.py | 4 |
 | tests/test_companion_land_1402.py | 8 |
 | tests/test_companion_landing_1683k.py | 4 |
 | tests/test_companion_lively_1107.py | 6 |

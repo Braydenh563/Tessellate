@@ -34,3 +34,27 @@ def test_a_bar_or_hang_that_changes_tab_looks_again_for_a_clear_perch() -> None:
     changed = changed[: changed.index("\n}\n")]
     bar = changed[changed.index('(nmb.perch === "bar" || nmb.perch === "hang")') :]
     assert "setTimeout(queueNameMarkBuddyCheck, 900)" in bar[: bar.index("return;")]
+
+
+JS = ROOT / "frontend" / "js"
+HELP = (ROOT / "src" / "tessellate" / "ai" / "help_topics_more.py").read_text(encoding="utf-8")
+
+
+def _body(text: str, head: str) -> str:
+    start = text.index(head)
+    return text[start : text.index("\n}\n", start)]
+
+
+def test_a_bare_companion_tells_a_new_person_how_to_use_it() -> None:
+    # The face had a title only while a prop was on; the how-to was in aria-label alone.
+    props = _body((JS / "avatars.js").read_text(encoding="utf-8"), "function nameMarkBuddyNameProps")
+    assert 'else face.title = face.getAttribute("aria-label");' in props
+    assert "drag to move" in (JS / "avatars.js").read_text(encoding="utf-8")
+
+
+def test_the_menu_has_a_quieter_row_that_the_settings_select_agrees_with() -> None:
+    menu = (JS / "companion-menu.js").read_text(encoding="utf-8")
+    assert "Quieter" in menu and "Livelier" in menu
+    # Through the Appearance select's own change, as Size and Atlas look do.
+    assert 'choose("avatar-buddy-actions", lively ? "off" : "fewer")' in menu
+    assert "Quieter" in HELP, "help moves with the menu (standing order 13)"

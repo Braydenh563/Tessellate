@@ -9619,7 +9619,7 @@ function nameMarkBuddyNameProps(buddy, face) {
   const capShown = '.nmb-night:is([data-pose="sit"], [data-pose^="curl"], .nmb-act-lie), :is(.nmb-act-lie, :is([data-pose="sit"], [data-pose^="curl"]):is(.nmb-sleep, .nmb-act-nap)):not(.nmb-cap-off)';
   if (buddy.querySelector(".nmp-nightcap") && buddy.matches(capShown)) words.push(nameMarkBuddyHasAtlas(buddy) ? "a moon on its ear: it is resting" : "a night cap: it is resting");
   if (words.length) face.title = `${buddy.dataset.seed || "Your companion"}: ${words.join("; ")}`;
-  else face.removeAttribute("title");
+  else face.title = face.getAttribute("aria-label");
 }
 function nameMarkBuddySound(source, playing) {
   if (playing) nmbSounds.add(source);
@@ -10482,7 +10482,7 @@ function syncNameMarkBuddy() {
     if (!nmbTempo.timer) nmbTempo.timer = setTimeout(nameMarkBuddyTempo, 0);
     buddy.querySelector(".nm-buddy-face").setAttribute(
       "aria-label",
-      `${seed}, your companion. Click to say hello, double-click to enlarge, drag to move, Shift+F10 for its menu.`,
+      `${seed}, your companion. Click to say hello, double-click to enlarge, drag to move, right-click or Shift+F10 for its menu.`,
     );
   }
   //: **Never drawn before it has a place** (the owner, 2026-09-27: it
