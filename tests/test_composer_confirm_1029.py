@@ -13,7 +13,7 @@ from datetime import datetime
 
 import pytest
 
-from tessellate.ai import acts, commands
+from tessellate.ai import act_steps, acts, commands
 from tessellate.entry import manager
 
 NOW = datetime(2026, 10, 10, 12, 0)
@@ -61,7 +61,7 @@ def test_a_misspelt_verb_is_still_put_right():
     ],
 )
 def test_an_add_keeps_the_notes_structure(content, added, want):
-    assert commands.appended(content, added) == want
+    assert act_steps.appended(content, added) == want
 
 
 @pytest.mark.parametrize(

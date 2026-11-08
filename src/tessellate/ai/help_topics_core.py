@@ -2794,8 +2794,8 @@ HELP_TOPICS.extend(
                 "Tab and Shift+Tab "
                 "indent and outdent, Ctrl+/ comments the selection (Enter ends the remark), Alt+Up / "
                 "Alt+Down moves the block at the caret, and typing / opens "
-                "the blocks menu. Ctrl+F finds and Ctrl+H (Mac: Cmd+Option+F) replaces (Enter or F3 next, "
-                "Shift+Enter previous, Esc closes), and Ctrl+Shift+F finds in every "
+                "the blocks menu. Ctrl+F finds and Ctrl+H (Mac: Cmd+Option+F) replaces (F3 next, "
+                "Shift+Enter previous), Ctrl+Alt+G goes to a line, and Ctrl+Shift+F finds in every "
                 "document. Views: Edit, where Live renders as you write, Source "
                 "is the markdown and Split puts a preview beside it, or Read. The "
                 "sidebar's Outline lists the headings, and they fold. Focus mode (the corners button on "
@@ -2828,12 +2828,15 @@ HELP_TOPICS.extend(
                 "numbered list style",
                 "roman numerals",
                 "lettered list",
+                "hash tag",
+                "tag completion",
             ),
             "body": (
                 "List styles (Library, Documents). The arrow beside the List and Numbered "
                 "buttons picks the style: dots, circles, squares or dashes, and 1., 1), a. or i. "
-                "The marker is kept in the text, so every view and the export read it. "
-                "A bullet pasted from elsewhere becomes a list item."
+                "The marker is kept in the text, so every view and the export read it, and Enter at the end of an a., i. or dash item starts the next one. "
+                "A bullet pasted from elsewhere becomes a list item. In a markdown "
+                "document, typing # and a letter offers the tags you have used."
             ),
             "badge": {"label": "Library", "tab": "library"},
         },
