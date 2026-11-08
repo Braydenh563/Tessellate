@@ -1276,7 +1276,7 @@
 }
 
 .dgm-kindmenu .menu-item.active {
-  color: var(--accent);
+  color: var(--accent-text);
 }
 
 .dgm-kindnote {
