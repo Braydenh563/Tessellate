@@ -143,3 +143,39 @@ def test_r3_17_a_slipped_head_word_still_has_its_object(question):
     from tessellate.ai import vocative
 
     assert vocative.split(question).names == [], question
+
+
+# --- R3-10: "you planned to" only before a verb that is one ---------------------------------
+
+def test_r3_10_a_negated_imperative_is_quoted_never_planned():
+    said = say("what do I know about shop", "# Sara birthday ideas\n\nA jazz record, lilies, or tickets to the theatre. Do not buy perfume again.", "# Shopping\n\n- milk\n- bread")
+    assert "planned to do not" not in said and "“Do not buy perfume again”" in said, said
+
+
+def test_r3_10_a_verb_that_is_a_noun_here_is_quoted_never_planned():
+    said = say("first order", "Order 4471 from Amazon arrives Tuesday. Cost £34.", "Remember to book a table for dinner in Lisbon on the first night",
+               "First day of uni is 21 September", "# Order of the day\n\nStandup, then lunch.")
+    assert "planned to order" not in said and "Order 4471 from Amazon arrives Tuesday" in said, said
+
+
+# --- R3-11, R3-12: a two-sentence or labelled line is quoted as written -------------------------
+
+@pytest.mark.parametrize("i", [0, 1, 2])
+def test_r3_11_a_two_sentence_line_is_quoted_not_reported(i):
+    from tessellate.ai import composer_digest
+
+    line = "Boiler service due in December. Engineer is Mr Brunetti, phone 020 7946 0555"
+    said = composer_digest._said_as_written(line, i)
+    assert "mentioned that" not in said and f"“{line}”" in said, said
+
+
+def test_r3_12_a_label_line_keeps_its_list_and_gets_no_article():
+    said = say("what do I know about table 4", "# Table plans\n\nWedding table 4: Anna, Tom and Sara", "# Shopping\n\n- milk",
+               "Remember to book a table for dinner in Lisbon on the first night", "First day of uni is 21 September")
+    assert "“Wedding table 4: Anna, Tom and Sara”" in said and "a wedding" not in said, said
+
+
+def test_r3_12_a_title_less_note_is_named_once():
+    said = say("what do I know about standup", "Order of the day: standup, lunch with Priya, dentist", "# Shopping\n\n- milk",
+               "Weekly standup is every Monday at 9am in the small room", "First day of uni is 21 September")
+    assert "your note the order" not in said.lower(), said

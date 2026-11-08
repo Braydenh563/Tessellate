@@ -1001,6 +1001,11 @@ def _verb_led(text: str) -> bool:
     words = re.findall(r"[A-Za-z][\w'-]*", text or "")
     if not words or words[0].lower() not in _LEAD_VERBS:
         return False
+    # "Do not buy perfume again" is a rule to quote, and "Order 4471 from Amazon" names a thing: neither fits "you planned to" (R3-10).
+    if len(words) >= 2 and words[0].lower() == "do" and words[1].lower() in ("not", "nt"):
+        return False
+    if re.match(r"\s*[A-Za-z][\w'-]*\s+#?\d{3,}\b", text or ""):
+        return False
     return not (len(words) >= 2 and words[1].lower() in _NOUN_AFTER)
 
 
@@ -1022,7 +1027,11 @@ def _your_note(view) -> str:  # noqa: ANN001
     note = getattr(view, "note", None) or {"content": getattr(view, "title", "")}
     #: "Trip planning: flights to Lisbon" is your trip planning note.
     label = composer_frame.note_label(note)
-    return _note_called(composer_frame.lower_name(label)) if label else composer_frame.short_name(note)
+    if label:
+        # "your note the order of the day" is two names; a title-less note is named once, as "your order of the day note" (R3-12).
+        bare = re.sub(r"^(?:the|an?)\s+", "", composer_frame.lower_name(label), flags=re.I)
+        return _note_called(bare or composer_frame.lower_name(label))
+    return composer_frame.short_name(note)
 
 
 def _title_only(view) -> bool:  # noqa: ANN001
@@ -1934,6 +1943,7 @@ def _past_verb(word: str) -> bool:
     return word.lower() in factgraph._PAST  # noqa: SLF001
 
 
+_SENTENCE_BREAK = re.compile(r"[.!?] [A-Z]")
 _LIST_HEADING = re.compile(r"your .+? note lists \w+ (?:items|questions to ask)\b", re.I)
 
 
@@ -1954,7 +1964,10 @@ def _said_as_written(line_body: str, i: int, written: date | None = None) -> str
         return _wrote(line_body, i)
     if _SHORTHAND.match(line_body) and not _CLAUSE_HEAD.match(line_body):
         #: "by 20 July, Cloud computing is the delivery of ...": a statement
-        #: about something else is what the person wrote (INBOX 1420).
+        #: about something else is what the person wrote (INBOX 1420). Two sentences are not one
+        #: "that" clause ("you mentioned that Boiler service due in December. Engineer is ..."): quoted (R3-11).
+        if _SENTENCE_BREAK.search(line_body):
+            return _wrote(line_body, i)
         return _REPORTS[i % len(_REPORTS)] + _fragment(line_body, _NAMES.get())
     return _reported(line_body, i, written)
 
@@ -2369,10 +2382,16 @@ def _noted_sentence(body: str, first: bool) -> str:
     return ("says " if finite else "is ") + body
 
 
+_LABELLED = re.compile(r"[A-Z][^:.!?\n]{0,60}:\s+\S")
+
+
 def _clause_of_frame(body: str, frame: str, i: int, first: bool) -> str:
     """The clause a body gets from the frame alone, once no task or doing claimed it."""
     if frame == "heard":
         return f"{_pick('learned', i)} {body}"
+    #: "Wedding table 4: Anna, Tom and Sara" is a label and its value: said as written, its commas kept (R3-12).
+    if frame in ("planned", "noted") and _LABELLED.match(body):
+        return _wrote(body, i)
     if frame in ("planned", "noted"):
         items = [("the " + p if _PLACE_NOUN.match(p) else p) for p in re.split(r",\s*(?:and\s+)?", body) if p]
         return ("has " if first else "it has ") + realise.join_items(items)
@@ -2445,7 +2464,11 @@ def _label_names(label: str, view) -> bool:  # noqa: ANN001
 def _section_items(bodies: list[str]) -> str:
     if any(_FINITE.search(b) for b in bodies) or len(bodies) == 1 and len(bodies[0].split()) > 8:
         return _join(bodies, True)
-    return realise.join_items([p for b in bodies for p in re.split(r",\s*(?:and\s+)?", b) if p])
+    pieces = [p for b in bodies for p in re.split(r",\s*(?:and\s+)?", b) if p]
+    # "Anna, Tom and Sara" is already a list: split on its commas and joined again it read "Anna and Tom and Sara" (R3-12).
+    if any(re.search(r"\band\b", p) for p in pieces):
+        return "; ".join(b.strip().rstrip(".") for b in bodies)
+    return realise.join_items(pieces)
 
 
 def _noted_section(head: str, items: str, view, today: date | None) -> str:  # noqa: ANN001
@@ -2470,6 +2493,11 @@ def _section_line(label: str, view, bodies: list[str], today: date | None, same:
         line = f"{'it also says' if same else _your_note(view) + ' says'} {composer_threads.voiced(head)}: {items}"
     elif not view.titled and first.startswith(label.strip().lower()):
         line = _noted_section(head, items, view, today)
+    elif not view.titled or re.search(r"\d", label):
+        # A label line of a title-less note, or one with a number ("Wedding table 4"), is the note's own words:
+        # "has a wedding table 4:" invented an article and rewrote its commas (R3-12).
+        said = f"“{label.strip()}: {items}”"
+        line = f"you wrote {said}" if not view.titled else f"{'it also says' if same else _your_note(view) + ' says'} {said}"
     elif same:
         line = f"it also has {composer_threads.with_article(head)}: {items}"
     else:
