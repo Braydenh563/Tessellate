@@ -64,8 +64,8 @@ RAN = ["how far did I run", "how many km did I run", "how many kilometres have I
 @pytest.mark.parametrize("question", RAN)
 def test_a_measure_names_a_titleless_note_by_a_phrase_not_its_line(ask, question):
     said = ask(question)
-    assert "your note on the run" in said, said
-    assert "Felt really good" not in said and "without stopping" not in said, said
+    assert "“Felt really good after the run…”" in said, said
+    assert "without stopping" not in said, said
     #: The note's own "6 km" is said once, as its figure.
     assert len(re.findall(r"\b6 (?:km|kilometres)\b", said)) == 1, said
     assert re.search(r"\b19 (?:km|kilometres)\b", said), said
@@ -77,9 +77,9 @@ def test_a_measure_with_a_noun_and_a_bare_pronoun_is_the_doing_not_the_subject(a
 
 
 @pytest.mark.parametrize("line, wanted", [
-    ("Felt really good after the run today, 6 km without stopping", "your note on the run"),
-    ("Felt great after the swim this morning, 1 km easy", "your note on the swim"),
-    ("Felt tired after the ride yesterday, 30 km", "your note on the ride"),
+    ("Felt really good after the run today, 6 km without stopping", "“Felt really good after the run…”"),
+    ("Felt great after the swim this morning, 1 km easy", "“Felt great after the swim this…”"),
+    ("Felt tired after the ride yesterday, 30 km", "“Felt tired after the ride yesterday…”"),
 ])
 def test_a_feeling_line_is_named_by_what_it_is_about(line, wanted):
     assert composer_frame.short_name({"content": line}) == wanted

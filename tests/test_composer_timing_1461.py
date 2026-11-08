@@ -165,12 +165,12 @@ def test_the_owners_question_reads_in_the_past_with_both(ask, question):
 
 
 @pytest.mark.parametrize(("content", "name"), [
-    ("had design class today for prototyping", "your note on design class for prototyping"),
-    ("went to the gym after work", "your note on the gym after work"),
-    ("studied for the exam tonight", "your note on the exam"),
-    ("Finished my assignment on networks", "your note on your assignment on networks"),
-    ("Started a new job", "your note on a new job"),
-    ("Met Sam for coffee yesterday", "your note on Sam for coffee"),
+    ("had design class today for prototyping", "“had design class today for prototyping”"),
+    ("went to the gym after work", "“went to the gym after work”"),
+    ("studied for the exam tonight", "“studied for the exam tonight”"),
+    ("Finished my assignment on networks", "“Finished my assignment on networks”"),
+    ("Started a new job", "“Started a new job”"),
+    ("Met Sam for coffee yesterday", "“Met Sam for coffee yesterday”"),
 ])
 def test_a_diary_line_is_named_by_what_it_is_about(content, name):
     assert composer_frame.short_name({"id": 1, "content": content}) == name
@@ -183,9 +183,9 @@ def test_a_name_that_looks_like_a_past_stays_a_name(content):
 
 
 @pytest.mark.parametrize(("content", "name"), [
-    ("my uni days this week are tuesday and thursday", "the note on your uni days"),
-    ("my shifts today are long", "the note on your shifts"),
-    ("my readings last week were dense", "the note on your readings"),
+    ("my uni days this week are tuesday and thursday", "“my uni days this week are…”"),
+    ("my shifts today are long", "“my shifts today are long”"),
+    ("my readings last week were dense", "“my readings last week were dense”"),
 ])
 def test_a_subject_name_drops_its_time_words(content, name):
     assert composer_frame.short_name({"id": 1, "content": content}) == name

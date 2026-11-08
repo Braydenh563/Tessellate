@@ -148,7 +148,7 @@ def test_r3_17_a_slipped_head_word_still_has_its_object(question):
 # --- R3-10: "you planned to" only before a verb that is one ---------------------------------
 
 def test_r3_10_a_negated_imperative_is_quoted_never_planned():
-    said = say("what do I know about buy", "# Sara birthday ideas\n\nA jazz record, lilies, or tickets to the theatre. Do not buy perfume again.", "# Shopping\n\n- milk\n- bread")
+    said = say("what do I know about shop", "# Sara birthday ideas\n\nA jazz record, lilies, or tickets to the theatre. Do not buy perfume again.", "# Shopping\n\n- milk\n- bread")
     assert "planned to do not" not in said and "“Do not buy perfume again”" in said, said
 
 

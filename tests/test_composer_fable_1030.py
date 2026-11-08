@@ -278,7 +278,7 @@ def _old(pattern):
 
 
 def _f14_patterns():
-    from tessellate.ai import activity, composer_frame, recognise, task_acts
+    from tessellate.ai import activity, recognise, task_acts
     from tessellate.ai import composer_ask
 
     return {
@@ -286,7 +286,6 @@ def _f14_patterns():
         "digest-compare": composer_digest._ASKS["compare"],
         "done-tail": task_acts._DONE_TAIL,
         "date-stub": activity._DATE_STUB,
-        "presented-end": composer_frame._PRESENTED_END,
         "tail-kind": task_acts._TAIL_KIND,
         "clock-tail": recognise._CLOCK_TAIL,
     }

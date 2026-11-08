@@ -59,7 +59,7 @@ def _which(content: str) -> str:
     heading = manager.extract_title(content)
     if heading:
         return f"“{realise.cut_title(heading, 60)}”"
-    return composer_frame._clipped({"content": content})  # noqa: SLF001
+    return composer_frame.name_of({"content": content})
 
 
 def _words(content: str) -> int:

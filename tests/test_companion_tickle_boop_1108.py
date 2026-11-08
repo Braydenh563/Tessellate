@@ -80,7 +80,7 @@ def test_a_click_on_the_nose_is_a_boop_and_elsewhere_is_not() -> None:
 def test_the_handlers_are_wired_and_have_a_switch() -> None:
     assert "nmb.touch.tickled(rub, face.getBoundingClientRect())" in AV and "nmb.touch.tickle(buddy)" in AV
     assert "nmb.touch.onNose(face.getBoundingClientRect(), event.clientX, event.clientY)" in AV
-    assert "if (nose && !wasAsleep && nmb.touch.boop(buddy)) return;" in AV
+    assert "if (nose && !wasAsleep) nmb.touch.boop(buddy);" in AV
     row = re.search(r'\["rub", "[^"]*", \[([^\]]*)\]\]', AV)
     assert row and '"tickle"' in row.group(1) and '"boop"' in row.group(1)
     for name in ("tickle", "boop"):
@@ -93,3 +93,40 @@ def test_the_catalogue_counts_both_as_built_on_both_sides() -> None:
     entries = {e["id"]: e for e in json.loads((ROOT / "frontend" / "companion-catalogue.json").read_text(encoding="utf-8"))["entries"]}
     for key in ("int.tickle", "int.boop_nose"):
         assert entries[key]["app"]["s"] == "built" and entries[key]["desk"]["s"] == "built", key
+
+
+@needs_node
+def test_a_boop_adds_to_the_click_reaction_and_does_not_replace_it() -> None:
+    """Review 1108 (HIGH): the click's own answer (a pout here, a wake or a spin elsewhere) plays whole, the boop's
+    face and sneeze go on top of it, and the 3 s cool-down still holds. The poke closure is run as written, on a fixed clock."""
+    start = AV.index("    const poke = () => {")
+    poke = AV[start : AV.index("\n    };\n    if (nmb.visit) poke();", start) + 7]
+    script = f"""
+let t = 1e6; Date.now = () => t; Math.random = () => 0.1;
+const log = [];
+const nmb = {{ pokes: [], mood: {{ sociability: 0.5, curiosity: 0.5 }}, act: "", lastPoke: 0 }};
+const nameMarkBuddyStill = () => false, nameMarkBuddyActOff = () => false, nameMarkBuddyFeel = () => log.push("feel");
+const isAtlasSeed = () => false, nameMarkBuddyExpress = (f) => log.push("express:" + f), nameMarkSay = (b, s) => log.push("say:" + s);
+const document = {{ hidden: false }};
+{touch_scope()}
+const how = {{ v: "pout" }};
+const nameMarkBuddyClickReaction = () => how.v, nameMarkReact = () => log.push("react"), atlasPlay = () => {{}};
+const nameMarkBuddyPout = () => log.push("pout"), nameMarkBuddyWake = () => log.push("wake"), nameMarkBuddyAct = (a) => log.push("act:" + a);
+const nameMarkBuddyEase = () => {{}}, nameMarkBuddyRelease = () => {{}}, nameMarkLine = () => "line";
+const NMB_POUT_MS = 1, NMB_GRUMPY_MS = 1;
+const buddy = {{ dataset: {{}}, classList: {{ contains: () => false, remove() {{}}, add() {{}} }}, querySelector: () => ({{ animate: () => log.push("bounce") }}) }};
+const face = {{ querySelector: () => null }};
+let pokeTimer = 0, nose = true;
+{poke}
+const out = [];
+poke(); out.push(log.splice(0));
+how.v = "wake"; t += 1000; poke(); out.push(log.splice(0));
+how.v = "pleased"; t += 5000; poke(); out.push(log.splice(0));
+nose = false; t += 5000; poke(); out.push(log.splice(0));
+console.log(JSON.stringify(out));
+"""
+    first, inside_cooldown, after, off_nose = json.loads(subprocess.run(["node", "-e", script], capture_output=True, text=True, check=True).stdout)
+    assert "pout" in first and first.index("pout") < first.index("bounce") and "express:surprised" in first, first
+    assert "wake" in inside_cooldown and "bounce" not in inside_cooldown, "the wake plays; 1 s on, no second boop"
+    assert "act:wave" in after and "bounce" in after and "say:Achoo." in after, after
+    assert "bounce" not in off_nose, "off the nose it is the click alone"

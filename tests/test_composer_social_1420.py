@@ -142,9 +142,9 @@ def test_an_untitled_note_is_named_by_a_whole_description_not_a_cut_phrase():
     from tessellate.ai import composer_frame
 
     name = composer_frame.short_name({"content": social.PICKUP})
-    assert name == "your non-corny pickup and conversation starters", name
+    assert name == "“Here are some refined, non-corny pickup…”", name
     #: A diary line is named by a whole clause, never cut mid-thought.
-    assert composer_frame.short_name({"content": social.FRIEND}) == "“I had work today and a friend was sad”"
+    assert composer_frame.short_name({"content": social.FRIEND}) == "“I had work today and a…”"
 
 
 def test_the_citation_goes_after_an_emoticon_not_before_it():
@@ -195,7 +195,7 @@ def test_untitled_uni_notes_are_named_by_what_they_are_about(question):
     from tessellate.ai import composer_digest
 
     text = composer_digest.answer(question, social.uni_notes(), today=social.TODAY)["text"]
-    assert "the note on cloud computing" in text, text
+    assert "“I had three lectures for cloud…”" in text, text
     #: Never an opening cut mid-phrase, never "you noted that you had noted".
     assert "uni days this week are Tuesday," not in text and "your uni days this week are Tuesday" not in text.split("\n\n")[1], text
     assert not re.search(r"you (?:noted|wrote|said|mentioned) that you had (?:noted|jotted|written)", text), text

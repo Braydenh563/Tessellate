@@ -383,7 +383,7 @@
     sel.removeAllRanges();
     sel.addRange(range);
     let over = false;
-    const end = (keep) => {
+    const end = (keep, to) => {
       if (over) return;
       over = true;
       target.removeEventListener("keydown", onKey);
@@ -393,9 +393,9 @@
       target.classList.remove("dgm-editing");
       if (keep && text !== was) done(text, was);
       else target.textContent = was;
-      //: Not when the render already put focus there.
+      //: Not when the render put focus there or the press went to another field.
       const block = key && blockEl(S, key);
-      if (block && document.activeElement !== block) block.focus();
+      if (block && !to && document.activeElement !== block) block.focus();
     };
     const onKey = (event) => {
       if (event.key !== "Enter" && event.key !== "Escape") return;
@@ -403,7 +403,7 @@
       event.stopPropagation();
       end(event.key === "Enter");
     };
-    const onBlur = () => end(true);
+    const onBlur = (event) => end(true, event.relatedTarget);
     target.addEventListener("keydown", onKey);
     target.addEventListener("blur", onBlur);
   }
@@ -532,7 +532,7 @@
     return menu;
   }
 
-  //: The host's rows can depend on the diagram: when they differ after a redraw the menu is rebuilt in place, keeping the Tab stop.
+  //: The host's rows can depend on the diagram: when they differ after a redraw the menu is rebuilt, keeping the Tab stop.
   function refreshMore(S) {
     const old = S.root.querySelector(".dgm-more");
     if (!old || old.dataset.rows === (S.io.menu || []).map((row) => row.label).join("|")) return;
@@ -577,7 +577,7 @@
     host.append(root);
     panes.set(root, S);
     S.tree.addEventListener("keydown", (event) => onKey(S, event));
-    root.addEventListener("keydown", (event) => diagramModel.bar.historyKey(S, event));
+    root.addEventListener("keydown", (event) => diagramModel.kindbar.historyKey(S, event));
     root.addEventListener("keydown", (event) => diagramModel.bar.rootKey(S, event, { add: addBlock, style: styleDo }));
     S.tree.addEventListener("click", (event) => {
       const block = event.target.closest(".dgm-block");

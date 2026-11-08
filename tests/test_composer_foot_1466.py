@@ -49,7 +49,7 @@ def test_an_answer_that_already_asks_gets_no_closing_chips(client, notebook):
 def test_a_linked_note_is_related_and_a_cited_one_is_not(client, notebook):
     out = _asked(client, "what is my gym plan")
     (event,) = out["related"]
-    assert event["items"] == [{"kind": "note", "id": notebook["coach"], "label": COACH}]
+    assert event["items"] == [{"kind": "note", "id": notebook["coach"], "label": "Coach says my bench form needs…"}]
 
 
 def test_nothing_linked_means_no_related_event(client, notebook):

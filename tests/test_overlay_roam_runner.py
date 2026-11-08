@@ -5,6 +5,7 @@ the dpi under a point. Windows itself cannot run here."""
 from __future__ import annotations
 
 import os
+import random
 from typing import Any
 
 import pytest
@@ -50,6 +51,7 @@ def due(r, clock) -> None:
 def test_window_tops_are_read_at_most_once_a_second_and_given_to_the_engine() -> None:
     r, fake, clock, _ = started()
     fake.window_list = {5: {"rect": (300, 400, 1100, 900), "title": "Notes"}}
+    r.engine.rng = random.Random(4)  # unseeded, 1 run in 20 sent it on a trip that warps (a warping figure wants no scan): 1 scan in 2.5 s
     due(r, clock)
     before = scans(fake)
     tick(r, clock, 0.1, 25)  # 2.5 s of ticks

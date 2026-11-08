@@ -1642,20 +1642,11 @@ def _members(question: str, views: list[composer.NoteView]) -> list[composer.Not
     #: "buy a capo" in it. A note must hold a word that names something (when
     #: the question has one); the doing words then count with the rest.
     scored = _scored_members(stems, views)
-    #: A synonym ("shop" for "bought") is the word's stand-in: it never joins notes that say the word itself (R3-9).
-    said = [(h, v) for h, v in scored if any(st in _pool(v) or st in _filed_text(v) for st in stems if st not in _VERBS())]
-    scored = said or scored
     if not scored or _unanswerable(stems, views):
         return []
     best = max(h for h, _ in scored)
     need = best if best >= 2 else 1
     return _acting(_typed_first([v for h, v in scored if h >= need], question), question)
-
-
-def _filed_text(view: composer.NoteView) -> str:
-    """A note's text, title, category and tags as typed, lower-case: where "books" is said even when the note's words are not."""
-    note = view.note
-    return " ".join(str(note.get(k) or "") for k in ("content", "title", "category", *(("tags",) if not note.get("tags") else ()))).lower() + " " + " ".join(map(str, note.get("tags") or [])).lower()
 
 
 def _scored_members(stems: list[str], views: list[composer.NoteView]) -> list[tuple[int, composer.NoteView]]:
@@ -3758,7 +3749,8 @@ def _from_name(lead: Fact, body: str, today: date) -> str:
     if not lead.label or lead.label in {name for name, _ in _CUES} or _TIME_LABEL.match(lead.label + " x"):
         return ""
     name = f"your {_fragment(lead.label, _NAMES.get())} note" if _label_names(lead.label, lead.view) else _your_note(lead.view)
-    if body.lower().startswith(name.lower().rstrip(".")):
+    spoken = name.lower().strip("“”… .")
+    if body.lower().lstrip("“”\" ").startswith(spoken):
         return ""
     day = f", {_said_day(lead.view.written, today)}" if _TIMED.get() and lead.view.written and not _says_day(body, lead.view.written, today) else ""
     if lead.label.strip().capitalize() in _DAY_NAMES:
@@ -4565,38 +4557,63 @@ _COUNTED_ELSEWHERE = frozenset({"notes", "entries", "words", "characters", "lett
 
 def _count_of_unwritten(asked: str, views: list) -> str:
     """"how many cells" when no note says the word: its synonym ("cell" is a
-    phone) must not stand in, so the answer is that none does (R3-6)."""
+    phone) must not stand in, so the answer is that none does (R3-6). When
+    notes say it and none gives a figure for it ("3 ripe bananas"), the count
+    is of the notes that mention it, never one note's line (R3-5)."""
     m = _COUNTED.match(clean(asked).strip(" ?.!"))
     noun = m.group("noun").lower() if m else ""
     if not noun or noun in _COUNTED_ELSEWHERE:
         return ""
     stems = composer._words(noun)  # noqa: SLF001
-    everywhere = set().union(*(_pool(v) for v in views))
-    return "" if not stems or any(st in everywhere for st in stems) else f"None of your notes mention {noun}."
+    if not stems:
+        return ""
+    mentioning = [v for v in views if any(st in _pool(v) for st in stems)]
+    if not mentioning:
+        return f"None of your notes mention {noun}."
+    #: A figure beside the noun ("3 ripe bananas", "two phones") is the amounts reader's, not a count of notes.
+    figure = re.compile(rf"\b(?:\d[\d.,]*|{'|'.join(realise._NUMBERS)})\s+(?:[\w-]+\s+){{0,2}}{re.escape(noun.rstrip('s'))}", re.I)  # noqa: SLF001
+    if any(figure.search(str(v.note.get("content") or "")) for v in mentioning):
+        return ""
+    if len(mentioning) == 1:
+        return f"One of your notes mentions {noun}."
+    return f"{realise.count_word(len(mentioning)).capitalize()} of your notes mention {noun}."
 
 
 _MY_LIST = re.compile(r"^what(?:'s| is| are)? (?:on|in) (?:my|the) (?:check ?)?lists?$", re.I)
 
 
-def _which_list(out: _Out, asked: str, views: list) -> bool:
+_LIST_ITEM_LINE = re.compile(r"(?:[-*+]|\d{1,3}[.)])\s|\[[ xX]\]")
+
+
+def _list_title(note: dict) -> str:
+    """The name of a note that is a list: a title over at most two lines of
+    intro and then two or more items, nothing after them; "" for any other."""
+    content = str(note.get("content") or "")
+    title = composer_frame.title_line(content)
+    lines = [ln.strip() for ln in content.splitlines() if ln.strip()][1:]
+    kinds = [bool(_LIST_ITEM_LINE.match(ln)) for ln in lines]
+    first = kinds.index(True) if True in kinds else len(kinds)
+    return title if title and first <= 2 and len(kinds) - first >= 2 and all(kinds[first:]) else ""
+
+
+def _which_list(out: _Out, asked: str, notes: list) -> bool:
     """"what is on my list" with several lists to be meant: asked which, with
-    each as a chip, rather than the first one picked (R3-8)."""
+    each as a chip, rather than the first one picked (R3-8). A list may open
+    with a line of intro."""
     if not _MY_LIST.match(clean(asked).strip(" ?.!")):
         return False
-    lists = [v for v in views if getattr(v, "titled", False) and len(v.sentences) >= 2 and all(s.kind in ("task", "item") for s in v.sentences)]
-    if len(lists) < 2:
+    names = [n for n in (_list_title(note) for note in notes) if n]
+    if len(names) < 2:
         return False
-    names = [v.title for v in lists[:4]]
+    names = names[:4]
     out.lines.append(f"Which list: {', '.join(names[:-1])} or {names[-1]}?")
     out.next = [f"What is in {n}?" for n in names[:3]]
     return True
 
 
 def _asked_which(out: _Out, asked: str, views: list) -> bool:
-    """The two short answers that need no note read: which of several lists is
-    meant (R3-8), and that no note mentions the thing counted (R3-6)."""
-    if _which_list(out, asked, views):
-        return True
+    """The short answers that need no note read: how many notes mention the
+    thing counted, and that none does (R3-5, R3-6)."""
     none = _count_of_unwritten(asked, views)
     if none:
         out.lines.append(none)
@@ -4852,6 +4869,30 @@ def _chosen(asked: str, kind: str, views: list, wants_context: bool) -> tuple[li
 
 
 @_isolated
+def _routed_away(question: str, notes: list[dict], today: date) -> tuple:
+    """(reply, question, asked) for the asks that are not a digest: `reply` is
+    the answer (None for "not this shape"), or `_ORDINARY` with the question's
+    slips put right and its ask read, for `answer` to digest."""
+    from tessellate.ai import composer_intent
+
+    #: What is on a named day is one answer, however asked: the recall's (R3-8).
+    if composer_intent.asks_the_day(question, today):
+        return None, question, None
+    if one := composer_oneword.named(question, notes):
+        return _one_word_result(one), question, None
+    #: "Where did I write about squats" is a sentence naming the note (A22), not a digest of what it says.
+    if located := composer_small.where_written(question, notes, today=today):
+        return located, question, None
+    #: "wen is the exam" is "when is the exam": the asking words put right, the notes' own words never changed (R3-17).
+    question = question_noise.slips_only(question, known=composer._note_words(notes))  # noqa: SLF001
+    asked = composer_ask.what_is(clean(question))
+    #: "what is on my list": which of several lists (R3-8), or the one there is.
+    which = _Out()
+    if _which_list(which, asked, notes):
+        return _result(which, "fact", asked), question, asked
+    return _ORDINARY, question, asked
+
+
 def answer(
     question: str, notes: list[dict], *, today: date | None = None, voice: str = "natural", turn: int = 0,
     insight: str = "one", learned=None, known=None,  # noqa: ANN001
@@ -4860,19 +4901,9 @@ def answer(
     when the question is not one this shape answers (a sum, a time, a
     command, nothing found): the caller then asks `composer.compose`."""
     today = today or composer.user_today()
-    from tessellate.ai import composer_intent
-
-    #: What is on a named day is one answer, however asked: the recall's (R3-8).
-    if composer_intent.asks_the_day(question, today):
-        return None
-    if one := composer_oneword.named(question, notes):
-        return _one_word_result(one)
-    #: "Where did I write about squats" is a sentence naming the note (A22), not a digest of what it says.
-    if located := composer_small.where_written(question, notes, today=today):
-        return located
-    #: "wen is the exam" is "when is the exam": the asking words put right, the notes' own words never changed (R3-17).
-    question = question_noise.slips_only(question, known=composer._note_words(notes))  # noqa: SLF001
-    asked = composer_ask.what_is(clean(question))
+    reply, question, asked = _routed_away(question, notes, today)
+    if reply is not _ORDINARY:
+        return reply
     kind = _kind_if_mine(asked)
     #: An act ("rename my gym log") is not a topic to digest: with its verb off
     #: the subject, it would find the gym log and summarise it.

@@ -1467,6 +1467,17 @@ MORE_TOPICS: list[dict] = [
         ),
         "badge": {"label": "Desktop companion", "section": "appearance", "target": "desktop-companion-row"},
     },
+    {
+        "id": "desktop-companion-moods",
+        "keywords": (
+            "desktop companion sad", "companion lonely", "companion left alone", "companion welcome back",
+            "companion confused", "companion dropped near a window", "desktop companion moods",
+        ),
+        "body": (
+            'The companion on the desktop shows how things are going. Leave it alone for fifteen minutes, with no pointer near it and nothing happening, and it looks sad once; it never does while it sleeps or while you type. Come back after ten minutes away and it waves. Let go of it just short of a window top (a drop, not a throw) and, once it is on the floor, it looks confused. With Motion off it stays still.'
+        ),
+        "badge": {"label": "Desktop companion", "section": "appearance", "target": "desktop-companion-row"},
+    },
 ]
 
 #: **Every feature since 0.3.0, large and small** (INBOX 448 (1), the owner:
@@ -2742,6 +2753,7 @@ TOPIC_META: dict[str, dict] = {
     "companion-remarks": {"title": "What the companion says", "path": "Settings, Appearance, Atlas and faces, Corner companion"},
     "companion-habits": {"title": "The companion's habits and reactions", "path": "Settings, Appearance, Atlas and faces, Corner companion"},
     "desktop-companion": {"title": "The companion on the desktop", "path": "On the computer Tessellate runs on, Settings, Appearance, Corner companion, Show the companion on the desktop"},
+    "desktop-companion-moods": {"title": "When the desktop companion looks sad, glad or confused", "path": "On the computer Tessellate runs on, Settings, Appearance, Corner companion, Show the companion on the desktop"},
     "what-is-atlas": {"title": "What Atlas does", "path": "The Chat tab, or Ctrl+Shift+A over any tab"},
     "atlas-look": {"title": "How Atlas looks", "path": "Settings, Appearance, Atlas and faces, Atlas style and Atlas look"},
     "faces": {"title": "Generated faces", "path": "Settings, Appearance, Atlas and faces"},
@@ -2939,7 +2951,7 @@ HELP_GROUPS: list[tuple[str, tuple[str, ...]]] = [
         "privacy", "security", "encryption", "lock", "phone", "lan-networks", "two-computers", "delete-data", "storage", "import-export", "import-apps", "usage-ledger", "background-tasks", "activity", "health", "data-folder-check",
     )),
     ("Settings and support", (
-        "profile", "general-settings", "desktop-companion", "updates", "maintenance", "logs", "troubleshooting", "credits",
+        "profile", "general-settings", "desktop-companion", "desktop-companion-moods", "updates", "maintenance", "logs", "troubleshooting", "credits",
     )),
 ]
 
@@ -3270,26 +3282,26 @@ MORE_TOPICS.extend([
         ),
         "body": (
             "Add a block: N, a shelf tile or Add; /diagram opens the builder in a document. "
-            "Picture opens first: the "
-            "blocks left, the picture beside them. List gives the blocks list the room instead; "
+            "Picture opens first, "
+            "blocks at its left. List gives the blocks list the room instead; "
             "Source and Split show text; Ctrl+Z undoes "
             "either. Add shows the last shape you used: press it to add one, or press its arrow "
             "for every shape and its key. Connect to... on a block draws an "
-            "arrow from it: pick a block, or type a new name to make it; a decision's arrows ask for yes or no. Drag a block: "
+            "arrow: pick a block, or type a new name to make it; a decision's arrows ask for yes or no. Drag a block: "
             "another's top or bottom puts it before or after, its middle joins "
-            "them, a group's body takes it inside. A connector shows under "
-            "the block it leaves as Start to Next and its label. The shape swatch "
+            "them, a group's body takes it inside. Under a block, "
+            "a connector reads Start to Next and its label. The shape swatch "
             "picks it. A divider sizes the blocks and the picture (drag or "
             "arrows; Shift for more). Direction (a menu) turns the flow. An empty one lists "
-            "three steps: Add a shape, Name it, Connect it, or Start from an example. "
+            "three steps: Add a shape, Name it, Connect it. "
             "The corner bar zooms (Zoom in, Zoom out, Fit), as do Ctrl+wheel and a pinch; "
             "its percentage is typeable and 100% is the drawing's own size; Shift+arrow keys pan. "
             "Shift+click picks a range, Ctrl+click adds one; Escape lets go of the pick; a bar offers Delete, "
             "Duplicate, Box them, Done; any picked grip moves all. "
             "Press or drag a block from the shelf onto the picture to join the nearest box (Add on a phone); long press a block for its menu. "
             "Keys "
-            "on a block: arrows walk, Enter renames, N adds a Box, G adds a group, C or J joins, "
-            "? lists keys, Delete removes, Alt+Up and Alt+Down reorder, Alt+Right nests, Alt+Left lifts. "
+            "on a block: arrows walk, Enter renames, N adds a Box, 1 to 7 the other shapes, Shift+N the last one, G adds a group, C or J joins, "
+            "K colours, ? lists keys, Delete removes, Alt+Up and Alt+Down reorder, Alt+Right nests, Alt+Left lifts. "
             "Suggest (... on a phone) starts one: "
             "Templates (then Use this template), "
             "From my notes "

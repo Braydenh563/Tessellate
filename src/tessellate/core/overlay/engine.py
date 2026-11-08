@@ -128,6 +128,9 @@ NOTICE_COOLDOWN = 8.0
 #: keyboard, since the big acts (hang, peek) come two to four minutes apart.
 IDLE_SIT = 600.0
 IDLE_SLEEP = 1200.0
+#: Left alone this long (no pointer near it, no touch, no reaction): a sad look, once per idle stretch. Fifteen minutes,
+#: between the sit at `IDLE_SIT` and the sleep at `IDLE_SLEEP`, so it is seen sitting and never while asleep.
+LONELY_AFTER = 900.0
 #: The idle cycle (`idle0` to `idle23`, one tail beat and one breath): a standing figure draws these at
 #: `IDLE_FPS` all the time so the parts never stop (INBOX 1670, 15:40Z); reduced it is the one `stand` frame
 #: and costs no wake.
@@ -662,6 +665,7 @@ class Engine:
         self.home_arrivals = 0
         self.click_now: str | None = None
         self.trail: list[tuple[float, int, int]] = []
+        self.shake_read_at = -1e9  # when the carried pointer was last read for a shake
         self.woke_at = -1e9  # when it last woke from sleep (a pet soon after is shy)
         self.pre_press = "stand"
         self.bonk_until = 0.0
@@ -813,6 +817,11 @@ class Engine:
         #: A carry shaken hard enough (`extras.shake_flips`), and the moment a drop owes a dizzy sway (None: none owed).
         self.shaken = False
         self.dizzy_owed: float | None = None
+        #: The `last_active` of the idle stretch it has already looked sad in (one look per stretch).
+        self.lonely_stretch: float | None = None
+        #: When it was let go over a window top it missed by a little (`_top_in_reach`), until it has looked confused for it.
+        self.missed_owed: float | None = None
+        self.missed_top = False
         #: Carried upside down (grabbed by the feet, or shaken): drawn as the turned tumble picture, half a circle round.
         self.upside = False
         #: When this carry began and the stage it has reached (`CARRY_STAGES`): "", "kick", "cross" or "sigh".
@@ -1095,6 +1104,30 @@ class Engine:
             self.dizzy_owed = None
             self.ex.fire("dizzy", now, seconds=self.ex.rng.uniform(*extras.DIZZY_FOR))
 
+    def _missed(self, now: float) -> None:
+        """Let go over a window top it was not close enough to reach: once it stands or sits on the floor it looks
+        confused (the face alone), given up after `DIZZY_WAIT` s. A hang, a perch or another carry ends the debt."""
+        if self.missed_owed is None:
+            return
+        if now - self.missed_owed > DIZZY_WAIT or self.perch is not None or self.state in ("held", "pressed", "hang"):
+            self.missed_owed = None
+        elif self.state in ("stand", "sit"):
+            self.missed_owed = None
+            self.ex.fire("confused", now)
+
+    def _lonely(self, now: float, pointer: tuple[int, int] | None) -> None:
+        """Left alone `LONELY_AFTER` s while standing or sitting (not asleep, not busy, not reduced): the refused look,
+        once per idle stretch (a pointer within `NOTICE_NEAR` is company). The look does not count as activity, so the sit and the sleep keep their times."""
+        if now - self.last_active < LONELY_AFTER or self.lonely_stretch == self.last_active:
+            return
+        if self.state not in ("stand", "sit") or self.busy or self.reduced:
+            return
+        if pointer is not None and math.hypot(pointer[0] - self.x - self.size[0] / 2, pointer[1] - self.y - self.size[1] / 2) <= NOTICE_NEAR * self._scale():
+            return  # a pointer resting beside it is company
+        kept = self.last_active
+        if self.ex.fire("refused", now):
+            self.lonely_stretch = self.last_active = kept
+
     def _wear_face(self, state: str, now: float) -> None:
         if self.flung is not None:  # thrown off a window: the face comes with the first moment it can wear one
             if state in extras.FACE_STATES:
@@ -1221,6 +1254,8 @@ class Engine:
             self._turning(now)
         self._follow_through(now, dt)
         self._dizzy(now)
+        self._missed(now)
+        self._lonely(now, pointer)
         self._carry_tick(now)
         if self.settled_now and self.placed:  # where the person left it is home
             self.home_x, self.placed = self.x, False
@@ -3850,12 +3885,20 @@ class Engine:
         if self.carrying:
             self.trail.append((self.now, px, py))
             self._trim_trail()
-            if not self.shaken and not self.reduced and extras.shake_flips(self.trail, self.now, self._scale()) >= extras.SHAKE_FLIPS:
+            if self._shake_due() and extras.shake_flips(self.trail, self.now, self._scale()) >= extras.SHAKE_FLIPS:
                 self.shaken = True
                 self._turn_over(True)
             self.x = px - self.grab[0] - self._flip_dx(self._held_frame(), self.facing < 0)
             self.y = py - self.grab[1] - self._dy("held")
             self._keep_on_screen()
+
+    def _shake_due(self) -> bool:
+        """Whether to read the shake now: not once shaken or when reduced, and at most every `SHAKE_EVERY` s (a 1000 Hz
+        mouse would otherwise read it a thousand times a second, about 0.3 ms each)."""
+        if self.shaken or self.reduced or self.now - self.shake_read_at < extras.SHAKE_EVERY:
+            return False
+        self.shake_read_at = self.now
+        return True
 
     def _trim_trail(self) -> None:
         """Keep the carried pointer's last `SHAKE_WINDOW` s, whatever the pointer's rate (every raw move arrives), capped
@@ -3923,8 +3966,11 @@ class Engine:
         self.x = min(max(self.x, max(x0, m.area[0] - self._ride_box("held")[0])), min(x1, m.area[2] - self._ride_box("held")[2]))
         velocity = None if self.reduced else self._throw_velocity(now, px, py)
         speed = 0.0 if velocity is None else math.hypot(*velocity)
-        if speed < PERCH_THROW * THROW_MIN * self._scale() and self._drop_on_top(now):
-            return
+        if speed < PERCH_THROW * THROW_MIN * self._scale():
+            if self._drop_on_top(now):
+                return
+            if self.missed_top:
+                self.missed_owed = now
         if velocity is not None:  # a throw is a throw: only a release that is not one takes hold near an edge
             self._start_fly(*velocity, self._swirl(now, px, py))
         elif not self._grab_edge(now):
@@ -3953,6 +3999,7 @@ class Engine:
         feet above it); a note for each top near but out of reach, or for none under the figure at all."""
         w, h = self.size
         feet, centre, m = self.y + h, self.x + w / 2, self.current_monitor()
+        self.missed_top = False
         above, below = DROP_REACH[0] * h, DROP_REACH[1] * h
         under = [(p.top - feet, p) for p in self.windows if p.kind == "top" and p.top >= m.area[1] and p.left <= centre < p.right]
         reach = [(gap, p) for gap, p in under if -below <= gap <= above]
@@ -3964,6 +4011,7 @@ class Engine:
     def _note_out_of_reach(self, gaps: list[float], above: float, below: float) -> None:
         for gap in gaps:
             if abs(gap) < 2 * self.size[1]:
+                self.missed_top = True
                 self.notes.append(f"let go {abs(gap):.0f} px {'above' if gap > 0 else 'below'} a window top: out of reach (within {above:.0f} above or {below:.0f} below)")
 
     def _swirl(self, now: float, px: int, py: int) -> float:
@@ -4296,6 +4344,8 @@ class Engine:
         if s == "stand":
             due += [self.flash[1]] if self.flash else [self.next_ambient]
             due.append(self.last_active + IDLE_SIT)
+        if s in ("stand", "sit") and self.lonely_stretch != self.last_active and self.last_active + LONELY_AFTER > now:
+            due.append(self.last_active + LONELY_AFTER)
         if self._idling():  # the next idle frame: a redraw only when the index changes
             due.append(self._idle_next(now))
         return due
