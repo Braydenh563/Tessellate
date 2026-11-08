@@ -276,7 +276,8 @@ TOOL_CUES: tuple[tuple[str, str], ...] = (
     ("find_similar_notes", r"\bsimilar to\b|\blike the .+ note\b"),
     ("notebook_structure", r"\b(?:shape|structure|clusters?) of (?:my|the) notebook\b|^how (?:are|r) (?:all )?my notes (?:connected|linked)\b"),
     ("notebook_overview", r"\boverview of (?:my|the) notebook\b|\bnotebook overview\b|^how (?:big|large) is (?:my|the) notebook\b"),
-    ("count_notes", r"\bcount (?:my |the )?notes\b|\bnotes per (?:category|tag)\b"),
+    #: "count notes about the dentist" counts a subject's notes, which the composer answers (R3-6, D4).
+    ("count_notes", r"\bcount (?:my |the )?notes\b(?! (?:about|on|mentioning|mention|containing|that|with)\b)|\bnotes per (?:category|tag)\b"),
     ("list_tags", r"\b(?:list|show|what are) (?:me )?(?:all )?my tags\b|" + _listing("tags?")),
     ("list_categories", r"\b(?:list|show|what are) (?:me )?(?:all )?my categories\b|" + _listing("categories|categorys|category")),
     #: "what tasks do I have", "whats due this week", "what is overdue": the

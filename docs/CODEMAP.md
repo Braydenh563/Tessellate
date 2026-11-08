@@ -2,7 +2,7 @@
 
 Generated 2026-11-08 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7917, frontend ids 2652, CSS sections 522, backend routes 649, backend modules 9207, test files 2243, tests 18889, plan headings 1004, app scripts 28, boot scripts 37, script files 263.
+Counts: frontend functions 7917, frontend ids 2652, CSS sections 522, backend routes 649, backend modules 9207, test files 2244, tests 18894, plan headings 1004, app scripts 28, boot scripts 37, script files 263.
 
 ## Frontend functions (7917)
 
@@ -13235,7 +13235,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 |---|---|
 | `Act` | src/tessellate/ai/act_registry.py:72 |
 | `_listing` | src/tessellate/ai/act_registry.py:240 |
-| `act_topic` | src/tessellate/ai/act_registry.py:355 |
+| `act_topic` | src/tessellate/ai/act_registry.py:356 |
 | `app_verb` | src/tessellate/ai/act_registry.py:171 |
 | `app_verb_line` | src/tessellate/ai/act_registry.py:179 |
 | `ask_line` | src/tessellate/ai/act_registry.py:191 |
@@ -14947,19 +14947,19 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `_head_word` | src/tessellate/ai/composer_overview.py:152 |
-| `_holding` | src/tessellate/ai/composer_overview.py:87 |
-| `_list_line` | src/tessellate/ai/composer_overview.py:256 |
-| `_names` | src/tessellate/ai/composer_overview.py:136 |
-| `_phrase` | src/tessellate/ai/composer_overview.py:270 |
-| `_prose_line` | src/tessellate/ai/composer_overview.py:225 |
-| `_wider` | src/tessellate/ai/composer_overview.py:115 |
-| `best_line` | src/tessellate/ai/composer_overview.py:242 |
-| `members` | src/tessellate/ai/composer_overview.py:97 |
-| `names_by_note` | src/tessellate/ai/composer_overview.py:160 |
-| `shared_names` | src/tessellate/ai/composer_overview.py:209 |
-| `themes` | src/tessellate/ai/composer_overview.py:187 |
-| `topic` | src/tessellate/ai/composer_overview.py:72 |
+| `_head_word` | src/tessellate/ai/composer_overview.py:158 |
+| `_holding` | src/tessellate/ai/composer_overview.py:93 |
+| `_list_line` | src/tessellate/ai/composer_overview.py:262 |
+| `_names` | src/tessellate/ai/composer_overview.py:142 |
+| `_phrase` | src/tessellate/ai/composer_overview.py:276 |
+| `_prose_line` | src/tessellate/ai/composer_overview.py:231 |
+| `_wider` | src/tessellate/ai/composer_overview.py:121 |
+| `best_line` | src/tessellate/ai/composer_overview.py:248 |
+| `members` | src/tessellate/ai/composer_overview.py:103 |
+| `names_by_note` | src/tessellate/ai/composer_overview.py:166 |
+| `shared_names` | src/tessellate/ai/composer_overview.py:215 |
+| `themes` | src/tessellate/ai/composer_overview.py:193 |
+| `topic` | src/tessellate/ai/composer_overview.py:78 |
 
 ### src/tessellate/ai/composer_parts.py (2)
 
@@ -16793,7 +16793,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_month_keys` | src/tessellate/ai/notebook_stats.py:1045 |
 | `_most_linked` | src/tessellate/ai/notebook_stats.py:570 |
 | `_named_count` | src/tessellate/ai/notebook_stats.py:453 |
-| `_names_a_thing` | src/tessellate/ai/notebook_stats.py:1329 |
+| `_names_a_thing` | src/tessellate/ai/notebook_stats.py:1332 |
 | `_narrowed_count` | src/tessellate/ai/notebook_stats.py:303 |
 | `_no_repeats` | src/tessellate/ai/notebook_stats.py:337 |
 | `_note_count` | src/tessellate/ai/notebook_stats.py:538 |
@@ -24760,7 +24760,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (18889)
+## Tests (18894)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -25227,6 +25227,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_composer_r3b_1108.py | 21 |
 | tests/test_composer_r3fix_1108.py | 8 |
 | tests/test_composer_r4_1108.py | 8 |
+| tests/test_composer_r5_1108.py | 5 |
 | tests/test_composer_ranker_1029.py | 12 |
 | tests/test_composer_redos_1026.py | 4 |
 | tests/test_composer_regex_linear_1029.py | 3 |
