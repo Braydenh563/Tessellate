@@ -31,7 +31,7 @@ TOPIC_LEADS: dict[str, str] = {
     "settings-reset": "Put a changed setting back to its default, or carry your settings elsewhere.",
     "install-app": "Give Tessellate its own window and icon, and share pages to it from your phone.",
     "running-copies": "See other copies of Tessellate running on this computer and shut them down.",
-    "name": "Tessellate used to be called MemoryMap AI, and nothing of yours changed with it.",
+    "name": "Tessellate used to be called MemoryMap AI, and nothing of yours changed with it.",  # brand: keep (the former name, noted on purpose)
     # Writing notes
     "capture": "Write a note in seconds, and let a local AI file and tag it for you.",
     "quick-note": "Jot a note from any tab without leaving what you are doing.",

@@ -2108,7 +2108,7 @@ function atlasHandProps(armR, armL, look) {
 //: atlas-lazy.css, hidden otherwise like every prop (`.nm-figure .nmp`).
 atlasHandProps.deskHand = function (arm, at, name) {
   const slot = atlasMake("g", { transform: `translate(${+at[0].toFixed(2)} ${+at[1].toFixed(2)})` }, arm);
-  const prop = atlasGroup(slot, `nmp nmp-${name}`);
+  const prop = atlasGroup(slot, ["nmp", `nmp-${name}`].join(" "));
   return atlasMake("g", { class: "atl-ds-turn" }, prop);
 };
 atlasHandProps.desk = function (armR, armL, look) {
@@ -2170,7 +2170,7 @@ atlasHandProps.front = function (layer) {
   atlasMake("path", { class: "atl-ds-scrawl", pathLength: 1, d: "M29 60.2Q33 58.8 36 60.4T42 60.2" }, diary);
   atlasMake("path", { class: "atl-ds-ribbon", d: "M43.4 62.4V66.6" }, diary);
   const sky = atlasGroup(layer, "nmp nmp-sky");
-  [[7, 12, 2.7, 0], [55, 9, 3.2, 1], [54, 27, 2.2, 2], [8, 32, 2, 1]].forEach(([x, y, r, k]) => atlasSpark(sky, x, y, r, `atl-ds-twinkle atl-ds-twinkle-${k}`));
+  [[7, 12, 2.7, 0], [55, 9, 3.2, 1], [54, 27, 2.2, 2], [8, 32, 2, 1]].forEach(([x, y, r, k]) => atlasSpark(sky, x, y, r, ["atl-ds-twinkle", `atl-ds-twinkle-${k}`].join(" ")));
   const shoot = atlasGroup(sky, "atl-ds-shoot");
   atlasMake("path", { class: "atl-ds-trail", d: "M64 -2L52 6" }, shoot);
   atlasSpark(shoot, 52, 6, 1.8, "atl-ds-twinkle");

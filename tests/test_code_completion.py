@@ -266,8 +266,11 @@ def test_emmet_is_vendored_with_its_licence_and_loaded_on_demand():
 def test_the_tools_stay_off_for_prose_and_plain():
     tools = _function("docCodeTools")
     assert "type.previewable" in tools and 'docView === "plain"' in tools
-    #: Prose keeps its inert completer: no sources, no typing trigger.
-    assert "override: [], activateOnTyping: false" in tools
+    #: Plain text keeps its inert completer: no sources, no typing trigger.
+    #: Markdown has one source since doclist-1108, the `#tag` list, which
+    #: answers only while a `#word` is typed (the stated intent moved there).
+    assert 'override: type.ext === "md" ? [docPairInput.tagSource(CM)] : []' in tools
+    assert 'activateOnTyping: type.ext === "md"' in tools
     assert "docCompletionExtras(CM, type)" in tools
 
 
