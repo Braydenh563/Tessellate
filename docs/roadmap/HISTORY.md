@@ -7,6 +7,14 @@ Split out of `ROADMAP.md`. Kept, not deleted, for one reason: **three sessions
 have independently rebuilt something that already existed.** This is the file
 that answers "has this been done?" before anyone starts.
 
+## Moved from the plans, 2026-11-08 (DOCUMENTS_PLAN 23, rows L1 to L5)
+
+- L1 built: `docLists.enter` (documents-cm.js) gives the next marker for a letter, roman or dash item; the Enter handler in `docProsePairKeymap` (documents-prose.js) calls it when `docListEnter` has no answer. Harness cases in `tests/_doc_lists_harness.js`. Measured in the editor: `a.`/`b.` then Enter gave `c.`, `ii.` gave `iii.`, a dash gave a dash, a plain dot stayed with the keymap, an empty `d.` ended the list.
+- L2 was already built, the scout was wrong: `docPairInput` and `docProseInputHandler` (documents-prose.js, tests/test_prose_autofill.py) pair `(`, `[`, `{`, backtick, `*` and `_` in markdown and text, skip code and fences, and keep `[[` for the link menu. Measured in the editor: `(` gave `()`, `[` inside gave `([])`, backtick gave a pair, `[[` stayed `[[` with the caret at 2, `(` inside a fence stayed single. No code change.
+- L4 built: `Mod-Alt-g` runs `gotoLine` in every document and the palette and shortcut sheet get a prose row, "Go to a line in this text" (`goto-line-text`, documents.js); Ctrl+G is unchanged. Measured: Ctrl+Alt+G opened `.cm-goto-line`, 12 went to line 12, Ctrl+G opened no dialog.
+- L3 was already built, the scout missed it: the bundled markdown grammar gives a fold range to every list item with children or continuation lines, and `codeFolding` plus `foldKeymap` are in the base extensions (documents.js). Measured with `foldable()` on `- top / child / child 2 / grand / second / third / more text`: lines 1, 3 and 6 fold (to 4, 4, 7), childless lines do not. With line numbers on, the gutter drew 4 carets, `foldCode` at line 1 left a `.cm-foldPlaceholder` and the visible lines `•top…`, `•second`, `•third`. No code change; the gutter itself stays off for markdown until Line numbers is on (an existing choice).
+- L5 built: `docTagTyped` and `docTagSource` (documents-prose.js) feed the prose `autocompletion` override that documents-code.js already created inert (`activateOnTyping` is now on for markdown only). Options come from `/tags` (30 s cache), most used first. Measured in the editor with tags wip (2) and wiring (1): `fix #w` listed `#wip2`, `#wiring1`, Enter wrote `fix #wip`; a heading line, a fence and plain text listed nothing; no page errors. Tests: `test_prose_autofill.py`.
+
 ## Moved from the plans, 2026-11-07 (CHAT_PLAN B6)
 
 From CHAT_PLAN.md "Placed from INBOX, 2026-11-05", row B6, built. The row as placed:

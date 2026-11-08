@@ -3124,6 +3124,9 @@ const DOC_COMMANDS = [
     run: () => docOpenReplace() },
   { id: "goto-line", icon: "ph:arrow-line-down", label: "Go to a line", keys: "Ctrl+G",
     code: true, run: () => docCmView && window.CM6.search.gotoLine(docCmView) },
+  //: Prose has Ctrl+G for find next, so its Go to line takes Ctrl+Alt+G (DOCUMENTS_PLAN 23 L4).
+  { id: "goto-line-text", icon: "ph:arrow-line-down", label: "Go to a line in this text", keys: "Ctrl+Alt+G",
+    prose: true, run: () => docCmView && window.CM6.search.gotoLine(docCmView) },
   { id: "find-next", icon: "ph:arrow-down", label: "Find the next match", keys: "F3",
     prose: true, run: () => docCmView && window.CM6.search.findNext(docCmView) },
   { id: "find-documents", icon: "ph:magnifying-glass", label: "Find in every document", keys: "Ctrl+Shift+F",
@@ -16222,6 +16225,8 @@ function docCmKeymap(CM) {
     //: VS Code's Go to line. A code file only; CodeMirror's own binding for
     //: the key (find next) stays for prose and on F3.
     { key: "Mod-g", run: (view) => (docFileType().previewable ? false : CM.search.gotoLine(view)) },
+    //: Prose and plain text get it on Ctrl+Alt+G (L4): Ctrl+G stays find next there.
+    { key: "Mod-Alt-g", run: (view) => CM.search.gotoLine(view) },
     //: Ctrl+H is Replace in every word processor and editor; the panel is the
     //: same, with the cursor in its Replace field. Cmd+H hides the app on a
     //: Mac, so Cmd+Option+F, VS Code's Mac chord, does the same (audit 1028 D31).

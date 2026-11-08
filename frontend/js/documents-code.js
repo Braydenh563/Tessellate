@@ -852,9 +852,11 @@ function docCodeTools(CM) {
     //: a code file followed within ~100ms by opening a markdown one fired
     //: the old timer into a state with no completion field, which throws
     //: "Field is not present in this state" (found by the code editor pass).
-    //: No sources and no typing trigger, so prose behaves exactly as before.
+    //: Plain text has no sources and no typing trigger. Markdown has one, the
+    //: `#tag` list (`docPairInput.tagSource`), which answers null unless a `#word` is
+    //: being typed, so the rest of the typing is as before.
     //: A CSV keeps the output panel, which is where its table is shown.
-    return [CM.autocomplete.autocompletion({ override: [], activateOnTyping: false }), type.ext === "csv" ? docRunExtension(CM) : []];
+    return [CM.autocomplete.autocompletion({ override: type.ext === "md" ? [docPairInput.tagSource(CM)] : [], activateOnTyping: type.ext === "md" }), type.ext === "csv" ? docRunExtension(CM) : []];
   }
   const native = ["js", "ts", "py", "css", "html"].includes(type.ext);
   return [

@@ -95,3 +95,16 @@ def test_the_live_view_draws_the_style_of_each_marker():
     js = (ROOT / "frontend" / "js" / "documents-cm.js").read_text(encoding="utf-8")
     assert "docLists.bulletStyle(line.text)" in js and "new DocBulletWidget(style)" in js
     assert 'name === "Paragraph" && node.node.parent?.name === "Document"' in js
+
+
+def test_enter_continues_letter_roman_and_dash_items(r):
+    """L1 (DOCUMENTS_PLAN 23): the markdown keymap continues only CommonMark markers."""
+    e = r["enter"]
+    assert e["alpha"] == {"insert": "\nc. "}
+    assert e["roman"] == {"insert": "\niv. "}
+    assert e["romanFour"] == {"insert": "\nv. "}
+    assert e["dash"] == {"insert": "\n-  "}
+    assert e["lonelyA"] == {"insert": "\nb. "}
+    assert e["emptyAlpha"] == {"exit": "- "}
+    for key in ("dot", "task", "z", "sentence"):
+        assert e[key] is None, key

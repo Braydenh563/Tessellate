@@ -330,6 +330,22 @@ function settingResultsKey(event) {
 const settingsIndexScrollers = new WeakSet();
 let settingsIndexWatch = null;
 
+//: Whether `el` is drawn, read from the tree and not from layout (INBOX laglist
+//: 1108, item 1): `getClientRects` made the first read of a section settle the
+//: whole pane's pending style, 70 to 103 ms at 4x CPU on Help. A node is out
+//: when it or an ancestor under the pane is `hidden` or has the `hidden` class
+//: (display: none, the app's one way to hide a block), or sits in a closed
+//: `details` other than its summary.
+settingsIndexHeads.shown = (el, pane) => {
+  for (let n = el; n; n = n.parentElement) {
+    if (n.hidden || n.classList.contains("hidden")) return false;
+    const up = n.parentElement;
+    if (up && up.tagName === "DETAILS" && !up.open && n.tagName !== "SUMMARY") return false;
+    if (n === pane) break;
+  }
+  return true;
+};
+
 //: The heads an index would list: the pane's group heads in order, not the
 //: pane's own title, not the ones in a popover or a hidden group.
 function settingsIndexHeads(pane) {
@@ -337,7 +353,7 @@ function settingsIndexHeads(pane) {
   const title = settingsPaneTitleHead(pane);
   for (const h of pane.querySelectorAll("h3")) {
     if (h.closest(".help-body, .settings-pane-title")) continue;
-    if (!h.getClientRects().length) continue;
+    if (!settingsIndexHeads.shown(h, pane)) continue;
     const label = (h.dataset.indexLabel || h.textContent).replace(/\s+/g, " ").trim();
     if (!label || (title && h === title.querySelector("h3"))) continue;
     heads.push({ el: h, label });
@@ -352,7 +368,7 @@ function settingsIndexHeads(pane) {
 function settingsPaneTitleHead(pane) {
   const title = pane.querySelector(":scope > .settings-pane-title");
   if (title) return title;
-  const first = [...pane.children].find((c) => c.getClientRects().length);
+  const first = [...pane.children].find((c) => settingsIndexHeads.shown(c, pane));
   return first?.matches(".help-head, .dock") ? first : null;
 }
 
