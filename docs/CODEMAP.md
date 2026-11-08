@@ -2,9 +2,9 @@
 
 Generated 2026-11-08 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7918, frontend ids 2652, CSS sections 522, backend routes 649, backend modules 9201, test files 2243, tests 18894, plan headings 1004, app scripts 28, boot scripts 37, script files 263.
+Counts: frontend functions 7917, frontend ids 2652, CSS sections 522, backend routes 649, backend modules 9201, test files 2243, tests 18894, plan headings 1004, app scripts 28, boot scripts 37, script files 263.
 
-## Frontend functions (7918)
+## Frontend functions (7917)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -2094,13 +2094,12 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 |---|---|
 | `assistantEmblemInto` | frontend/js/assistant-avatar.js:18 |
 
-### frontend/js/atlas-life.js (19)
+### frontend/js/atlas-life.js (18)
 
 | Name | File:line |
 |---|---|
 | `atlasBreathFrame` | frontend/js/atlas-life.js:797 |
 | `atlasFrameBudget` | frontend/js/atlas-life.js:463 |
-| `atlasLowerSpell` | frontend/js/atlas-life.js:998 |
 | `atlasPropLoops` | frontend/js/atlas-life.js:721 |
 | `atlasPropsFrame` | frontend/js/atlas-life.js:749 |
 | `atlasRigLower` | frontend/js/atlas-life.js:1046 |

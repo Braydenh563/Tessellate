@@ -1,5 +1,5 @@
 """In-app Atlas: the nine tail poses of atlascat-1108 C2 and C3 and the eight lower-body states of C5, each with a trigger
-(`atlasLowerSpell`, `ATLAS_TAIL_BY_STATE`, `ATLAS_TAIL_BY_MOOD`). Run in node's vm over the real file with a fixed clock."""
+(`atlasRigLower.spell`, `ATLAS_TAIL_BY_STATE`, `atlasTailPick.byMood`). Run in node's vm over the real file with a fixed clock."""
 
 from __future__ import annotations
 
@@ -24,7 +24,7 @@ const ctx = { atlasFix: (v) => v, console, Math, Map, Set, Object, Array, Number
   performance: { now: () => clock },
   atlasLowerState: (buddy, box) => box.base };
 vm.createContext(ctx);
-vm.runInContext(src + "\n;this.__x = { spell: atlasLowerSpell, acts: ATLAS_TAIL_ACTS, byState: ATLAS_TAIL_BY_STATE, byMood: ATLAS_TAIL_BY_MOOD, bend: atlasTailBend, lower: ATLAS_LOWER_STATES, calm: atlasTailCalm.states, rests: atlasRigLower.rests };", ctx);
+vm.runInContext(src + "\n;this.__x = { spell: atlasRigLower.spell, acts: ATLAS_TAIL_ACTS, byState: ATLAS_TAIL_BY_STATE, byMood: atlasTailPick.byMood, bend: atlasTailBend, lower: ATLAS_LOWER_STATES, calm: atlasTailCalm.states, rests: atlasRigLower.rests };", ctx);
 const x = ctx.__x;
 const mk = (base, mood = "calm", spin = false) => ({ base, dataset: { atlasMood: mood }, classList: { contains: (c) => (c === "atl-play-spin" ? spin : false) } });
 const buddy = (...cls) => ({ classList: { contains: (c) => cls.includes(c) } });
@@ -109,7 +109,7 @@ def test_the_resting_states_re_read_on_their_timer_and_the_calm_ones_rest_on_the
 
 
 def test_the_moods_pick_the_tails() -> None:
-    row = LIFE.split("const ATLAS_TAIL_BY_MOOD = ")[1].split("\n")[0]
+    row = LIFE.split("atlasTailPick.byMood = ")[1].split("\n")[0]
     for mood, pose in (("curious", "hook"), ("shy", "tuck"), ("worried", "shiver"), ("sleepy", "pillow")):
         assert f'{mood}: [[' in row and f'"{pose}"' in row.split(f"{mood}: ")[1].split("]]")[0], mood
 

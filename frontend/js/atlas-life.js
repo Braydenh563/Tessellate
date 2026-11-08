@@ -100,7 +100,7 @@ const ATLAS_TAIL_BY_STATE = {
   happy: [["wag", 3], ["flick", 1], ["loop8", 1.5]],
   sad: [["droop", 1], ["tuck", 1.5]],
   startle: [["stiff", 2], ["shiver", 1]],
-  //: The lower body's own states (atlascat-1108 C5, `atlasLowerSpell`) pick the tail that goes with them.
+  //: The lower body's own states (atlascat-1108 C5, `atlasRigLower.spell`) pick the tail that goes with them.
   glide: [["balance", 2], ["trail", 1]],
   lounge: [["coil_hold", 2], ["wrap", 1]],
   billow: [["trail", 1]],
@@ -114,7 +114,7 @@ const ATLAS_TAIL_BY_STATE = {
 };
 //: Moods that pick a tail of their own while the lower body is plain (idle or sitting): a curious one hooks it, a shy
 //: one tucks it in, a worried one shivers, a drowsy one curls it under its head.
-const ATLAS_TAIL_BY_MOOD = { curious: [["hook", 3], ["curl", 1]], confused: [["hook", 2], ["sway", 1]], shy: [["tuck", 1]], worried: [["shiver", 1], ["droop", 1]], sleepy: [["pillow", 2], ["droop", 1]] };
+atlasTailPick.byMood = { curious: [["hook", 3], ["curl", 1]], confused: [["hook", 2], ["sway", 1]], shy: [["tuck", 1]], worried: [["shiver", 1], ["droop", 1]], sleepy: [["pillow", 2], ["droop", 1]] };
 //: The angle the tail has turned through at `s` (0 at the root, 1 at the
 //: tip), in radians, for its state `p` at phase `ph` (`ph2` the second
 //: wave's) and the slow drift `drift`. Zero at the root, so the root and
@@ -424,7 +424,7 @@ function atlasTailAttach(box) {
   atlasTailWake(box);
 }
 function atlasTailPick(tail, state, now) {
-  const moody = state === "idle" || state === "sit" ? ATLAS_TAIL_BY_MOOD[tail.box.dataset.atlasMood] : null;
+  const moody = state === "idle" || state === "sit" ? atlasTailPick.byMood[tail.box.dataset.atlasMood] : null;
   const list = moody || ATLAS_TAIL_BY_STATE[state] || ATLAS_TAIL_BY_STATE.idle;
   const choices = list.length > 1 ? list.filter(([name]) => name !== tail.act) : list;
   let r = Math.random() * choices.reduce((sum, [, w]) => sum + w, 0);
@@ -511,7 +511,7 @@ function atlasTailFrame(tail, now) {
   //: Resting on the compositor (`atlasTailRest`): nothing to draw while the
   //: state holds and the act has not run out; the breath and the props
   //: are all this beat does.
-  const holds = tail.resting && live && atlasTailCalm(tail, box) && atlasLowerSpell(box.closest("#nm-buddy"), box) === tail.state && now < tail.until;
+  const holds = tail.resting && live && atlasTailCalm(tail, box) && atlasRigLower.spell(box.closest("#nm-buddy"), box) === tail.state && now < tail.until;
   if (tail.resting && !holds) atlasTailUnrest(tail);
   //: And the chest's breath (`atlasBreathFrame`).
   atlasBreathFrame(box, live);
@@ -533,7 +533,7 @@ function atlasTailFrame(tail, now) {
   tail.at = now;
   if (live) {
     const buddy = box.closest("#nm-buddy");
-    const state = atlasLowerSpell(buddy, box);
+    const state = atlasRigLower.spell(buddy, box);
     if (state !== tail.state || now >= tail.until) atlasTailPick(tail, state, now);
     const goal = tail.goal || ATLAS_TAIL_ACTS[tail.act];
     //: Critically damped springs: a flick comes in fast, the rest ease.
@@ -868,7 +868,7 @@ const ATLAS_LOWER_STATES = {
   glide: { ms: 800, ease: "cubic-bezier(0.3, 0.9, 0.5, 1)", v: [[-3.5, 0.9, 1.14, 8, -34], [-2, 0.88, 1.18, 6, -42], [-3.8, 0.92, 1.12, 10, -28]] },
   drift: { ms: 1400, ease: "cubic-bezier(0.45, 0, 0.35, 1)", v: [[2, 1.02, 1.04, -4, 18], [-3, 1.08, 0.88, 3, -24], [3.8, 1, 1.08, -6, 32]] },
   hang: { ms: 700, ease: "cubic-bezier(0.34, 1.2, 0.6, 1)", v: [[1.5, 0.96, 1.08, -2, 10], [-2, 0.95, 1.1, 3, -14], [2.5, 0.97, 1.06, -3, 18]] },
-  //: atlascat-1108 C5 (`atlasLowerSpell` says when): a gust lifts the hem on a fast glide, the legs tucked under
+  //: atlascat-1108 C5 (`atlasRigLower.spell` says when): a gust lifts the hem on a fast glide, the legs tucked under
   //: cross-legged, a slow ripple root to hem in a calm spell, a quick flutter when excited, spread flat after a
   //: long sit, a playful kick of the hem when glad, a spiral that unwinds after a twirl, and heavy when tired.
   billow: { ms: 380, ease: "cubic-bezier(0.25, 1.7, 0.5, 1)", v: [[-3, 0.92, 1.1, 9, -30], [-2, 0.9, 1.14, 11, -38], [-3.5, 0.94, 1.08, 7, -26]] },
@@ -995,7 +995,7 @@ atlasRigLower.flow = (rig, state, live) => {
 //: flutters it; a glad one kicks the hem for 2.5 s of every 12; a twirl (`atl-play-spin`) leaves a spiral that unwinds over
 //: 2.5 s; a tired one (sleepy or drowsy) is heavy. Everything else is the base state. It reads the clock and nothing else,
 //: so a figure at rest costs nothing more: the states that rest re-read it on their 5 to 9 s timer.
-function atlasLowerSpell(buddy, box) {
+atlasRigLower.spell = (buddy, box) => {
   const base = atlasLowerState(buddy, box);
   const now = performance.now();
   const seen = (box.atlasLowerSeen ||= { key: "", at: now, spun: -1e9 });
@@ -1005,9 +1005,9 @@ function atlasLowerSpell(buddy, box) {
   }
   if (box.classList.contains("atl-play-spin")) seen.spun = now;
   if (now - seen.spun < 2500) return "spiral";
-  return atlasLowerSpell.of(base, (now - seen.at) / 1000, box.dataset.atlasMood || "calm", buddy);
-}
-atlasLowerSpell.of = (base, held, mood, buddy) => {
+  return atlasRigLower.spell.of(base, (now - seen.at) / 1000, box.dataset.atlasMood || "calm", buddy);
+};
+atlasRigLower.spell.of = (base, held, mood, buddy) => {
   const has = (c) => !!buddy && buddy.classList.contains(c);
   if (base === "glide") return held < 1.5 ? "billow" : base;
   if (base === "sit") return has("nmb-act-meditate") ? "coil" : held >= 40 ? "pool" : base;
@@ -1046,7 +1046,7 @@ function atlasRigLowerAttach(box) {
 function atlasRigLower(rig, now, live, buddy) {
   const low = rig.lower;
   if (!low || !(low.boxes.length || low.tails.length || low.hair.length)) return;
-  const base = atlasLowerSpell(buddy, rig.box);
+  const base = atlasRigLower.spell(buddy, rig.box);
   const state = base === "lie" && atlasRigLower.asleep(buddy) ? "curl" : base;
   const spec = { ...ATLAS_LOWER_STATES[state], v: atlasRigLower.blend.of(ATLAS_LOWER_STATES[state].v) };
   const fresh = state !== low.state;
