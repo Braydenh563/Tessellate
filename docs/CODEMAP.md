@@ -2,7 +2,7 @@
 
 Generated 2026-11-08 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7915, frontend ids 2652, CSS sections 522, backend routes 649, backend modules 9206, test files 2233, tests 18807, plan headings 1004, app scripts 28, boot scripts 37, script files 263.
+Counts: frontend functions 7915, frontend ids 2652, CSS sections 522, backend routes 649, backend modules 9206, test files 2234, tests 18814, plan headings 1004, app scripts 28, boot scripts 37, script files 263.
 
 ## Frontend functions (7915)
 
@@ -22724,15 +22724,15 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 |---|---|
 | `Activity` | src/tessellate/core/overlay/behaviour.py:154 |
 | `Chain` | src/tessellate/core/overlay/behaviour.py:348 |
-| `Flow` | src/tessellate/core/overlay/behaviour.py:725 |
+| `Flow` | src/tessellate/core/overlay/behaviour.py:738 |
 | `Mind` | src/tessellate/core/overlay/behaviour.py:383 |
 | `Pose` | src/tessellate/core/overlay/behaviour.py:52 |
 | `SecondOrder` | src/tessellate/core/overlay/behaviour.py:62 |
-| `TailLayer` | src/tessellate/core/overlay/behaviour.py:673 |
+| `TailLayer` | src/tessellate/core/overlay/behaviour.py:686 |
 | `Trail` | src/tessellate/core/overlay/behaviour.py:535 |
 | `Variation` | src/tessellate/core/overlay/behaviour.py:120 |
 | `_amplitude` | src/tessellate/core/overlay/behaviour.py:579 |
-| `_frac` | src/tessellate/core/overlay/behaviour.py:721 |
+| `_frac` | src/tessellate/core/overlay/behaviour.py:734 |
 | `_from_catalogue` | src/tessellate/core/overlay/behaviour.py:236 |
 | `_k` | src/tessellate/core/overlay/behaviour.py:171 |
 | `activity_frame` | src/tessellate/core/overlay/behaviour.py:522 |
@@ -22748,8 +22748,8 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `sine_ease` | src/tessellate/core/overlay/behaviour.py:110 |
 | `smooth` | src/tessellate/core/overlay/behaviour.py:100 |
 | `smoother` | src/tessellate/core/overlay/behaviour.py:105 |
-| `tail_bend` | src/tessellate/core/overlay/behaviour.py:653 |
-| `tail_points` | src/tessellate/core/overlay/behaviour.py:660 |
+| `tail_bend` | src/tessellate/core/overlay/behaviour.py:666 |
+| `tail_points` | src/tessellate/core/overlay/behaviour.py:673 |
 | `tier_factor` | src/tessellate/core/overlay/behaviour.py:339 |
 | `utility` | src/tessellate/core/overlay/behaviour.py:372 |
 | `vary` | src/tessellate/core/overlay/behaviour.py:128 |
@@ -24757,7 +24757,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (18807)
+## Tests (18814)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -26236,6 +26236,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_overlay_land_1683.py | 4 |
 | tests/test_overlay_landing_1683k.py | 12 |
 | tests/test_overlay_life_1670.py | 25 |
+| tests/test_overlay_lower_layer_1108.py | 7 |
 | tests/test_overlay_modes_1107.py | 3 |
 | tests/test_overlay_moves.py | 26 |
 | tests/test_overlay_nap_1683u.py | 7 |

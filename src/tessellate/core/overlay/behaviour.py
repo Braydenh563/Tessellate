@@ -625,6 +625,19 @@ FLOW_ARR_EASE = 2.4
 #: `FLOW_POSE_EASE` seconds, so a change of pose is never a step.
 FLOW_POSE = (("sleep", 0.5, 0.6), ("sit", 0.8, 0.85), ("hang", 0.95, 1.1), ("wave", 1.0, 1.3), ("walk", 1.0, 1.35), ("hop", 1.0, 1.6), ("fall", 1.0, 1.6), ("land", 1.0, 1.2), ("idle", 0.9, 0.95))
 FLOW_POSE_EASE = 0.8
+#: What the figure is doing, over its frame (atlascat-1108 C4, the in-app `lower:*` states; INBOX 1696 z: "the lower body
+#: doesnt change at all"): [reach, speed, tip lean px, rise px] by name, the engine's `_lower_state` picking it. A
+#: state names the lower body's own sway and offset: it takes the place of the frame's `FLOW_POSE` row while it lasts, and
+#: all four ease together over `FLOW_POSE_EASE`. The two offsets are small (the join with the torso allows 4 degrees,
+#: INBOX 615 and 619): `glide` leans back from the way it goes (the engine signs it).
+FLOW_LOWER = {
+    "lie": (0.55, 0.55, 0.0, 0.5), "think": (0.7, 0.8, 0.5, 0.0), "sad": (0.45, 0.5, 0.0, -0.5),
+    "startle": (1.0, 1.7, 0.0, 0.8), "lounge": (0.85, 0.7, 0.4, 0.2), "glide": (1.0, 1.4, 0.8, 0.3),
+}
+#: A sit this long is a lounge (the lower body spreads and slackens).
+LOUNGE_AFTER = 6.0
+#: Acts that are the figure thinking.
+THINK_ACTS = frozenset({"ponder", "puzzle", "tinker"})
 
 
 #: The tail as a layer (atlascat-1108 C1, INBOX 1696 w: "the tail is framed in that it isnt a smooth animation"): the idle
@@ -751,6 +764,7 @@ class Flow:
         self.hold = [FLOW_ARR_HOLD[0] + (FLOW_ARR_HOLD[1] - FLOW_ARR_HOLD[0]) * _frac(i * 0.618 + 0.29) for i in range(FLOW_BANDS)]
         # The pose's reach and speed, eased; `skew` is the time the speed has added, so a change of speed is no jump.
         self.k_reach, self.k_speed, self.skew, self.seen = 1.0, 1.0, 0.0, None
+        self.k_tip, self.k_rise = 0.0, 0.0  # the lower state's offsets, eased (`FLOW_LOWER`)
 
     def reach(self, i: int) -> float:
         """How far strand `i` sways: the outer ones (the streams) most."""
@@ -808,32 +822,39 @@ class Flow:
         a, b = pick(n), pick(n + 1)
         return a[0] + (b[0] - a[0]) * e, a[1] + (b[1] - a[1]) * e
 
-    def pose(self, frame: str, now: float) -> None:
-        """Ease the reach and speed toward the frame's pose and advance the clock by the speed (`FLOW_POSE`)."""
+    def pose(self, frame: str, now: float, lower: str = "", side: float = 1.0) -> None:
+        """Ease the reach and speed toward the frame's pose and advance the clock by the speed (`FLOW_POSE`); a
+        `lower` state (`FLOW_LOWER`) takes its place, with its two offsets (the tip's lean signed by `side`)."""
         reach, speed = next(((r, s) for key, r, s in FLOW_POSE if frame.startswith(key)), (1.0, 1.0))
+        tip, rise = 0.0, 0.0
+        if lower in FLOW_LOWER:
+            reach, speed, tip, rise = FLOW_LOWER[lower]
+            tip *= side
         dt = 0.0 if self.seen is None else min(0.25, max(0.0, now - self.seen))
         self.seen = now
         k = 1.0 - math.exp(-dt / FLOW_POSE_EASE)
         self.k_reach += (reach - self.k_reach) * k
         self.k_speed += (speed - self.k_speed) * k
+        self.k_tip += (tip - self.k_tip) * k
+        self.k_rise += (rise - self.k_rise) * k
         self.skew += (self.k_speed - 1.0) * dt
 
     def settled(self) -> bool:
         return all(abs(p[0]) < 0.3 and abs(p[1]) < 0.3 and abs(v[0]) < 2.0 and abs(v[1]) < 2.0 for p, v in zip(self.pos, self.vel))
 
-    def view(self, t: float, calm: bool = False, frame: str = "") -> tuple[int, ...]:
+    def view(self, t: float, calm: bool = False, frame: str = "", lower: str = "", side: float = 1.0) -> tuple[int, ...]:
         """Per strand `(tip dx, middle dx, tip dy, sparkle sin, sparkle cos)` in `FLOW_Q` steps (the sparkle in
         tenths), the follow-through folded in: what the warp needs and nothing else. With a `frame` the pose's
         reach, speed and the strand's arrangement apply (`pose`, `arrangement`); without one, the bare flow."""
         if frame:
-            self.pose(frame, t)
+            self.pose(frame, t, lower, side)
         t = t + self.t0 + (self.skew if frame else 0.0)
         reach = self.k_reach if frame else 1.0
         out: list[int] = []
         for i in range(FLOW_BANDS):
             fx, fy = self.pos[i]
             ax, ay = self.arrangement(i, t) if frame else (0.0, 0.0)
-            ax, ay = ax * reach * FLOW_ARR_TIP * (FLOW_CALM_AMP if calm else 1.0), ay * reach * FLOW_ARR_RISE * (FLOW_CALM_AMP if calm else 1.0)
+            ax, ay = ax * reach * FLOW_ARR_TIP * (FLOW_CALM_AMP if calm else 1.0) + (self.k_tip if frame else 0.0), ay * reach * FLOW_ARR_RISE * (FLOW_CALM_AMP if calm else 1.0) + (self.k_rise if frame else 0.0)
             tip = max(-FLOW_MAX, min(FLOW_MAX, self.sway(i, t, calm) * reach * (FLOW_ARR_SWAY if frame else 1.0) + ax + fx))
             mid = max(-FLOW_MAX, min(FLOW_MAX, self.sway(i, t - 0.9, calm) * reach * (FLOW_ARR_SWAY if frame else 1.0) * (1 - FLOW_MID) + ax * 0.6 + fx * 0.5))
             drop = self.rise(i, t, calm) * reach + ay + fy

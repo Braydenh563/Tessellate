@@ -1,7 +1,9 @@
 # desklayers-1108 remaining
 
 - done C1 (tail layer): `behaviour.TailLayer`, `sprites.SpriteSet.tailed`, `runner._new_picture`; test `tests/test_overlay_tail_layer_1108.py`.
-- next C4 (lower layer): `behaviour.FLOW_LOWER`, `engine._lower_state`; test `tests/test_overlay_lower_layer_1108.py`.
+- done C4 (lower layer): `behaviour.FLOW_LOWER`, `Flow.pose(lower=)`, `engine._lower_state`; test `tests/test_overlay_lower_layer_1108.py`.
+- next: C2 and C3 (new tail poses), C5 (new lower states `lower.billow` and the rest), each a row in `TAIL_POSES` or `FLOW_LOWER` plus a pick in `engine._lower_state` or `TailLayer.choose`.
+- left: the lower layer's picture still renews at the streams' pace (`FLOW_TICK_MS` 170 ms, 66 ms with the tail ticking, a walk at 16 ms): a faster stream while sleeping or acting is a CPU call for the owner; the states `think`, `sad` and `startle` are short on the desk (an act, a reaction face), so they are seen for seconds.
 - left: real Windows rendering of the tail warp and the 30 a second pace unverified (FakeWin32 and Pillow only); the warp shears the baked tail (columns of the tail's region moved by the eased control points), it does not redraw a rig tail, so a pose reads as a bend, not a loop; `tail.hook`, `coil_hold`, `thump`, `shiver`, `loop8`, `tip_twitch`, `balance`, `pillow`, `tuck` (C2, C3) are new poses to add to `TAIL_POSES`.
 - left: the layer is on for stand and sit of a floater only (`behaviour.TAIL_FRAMES`); walk, sleep, act and hang frames keep their baked tail.
 - note: owner call, CPU: 30 tail ticks a second cost about 4 percent of a core at dpi 192 (a tick is the tail warp, 1.3 ms); `TAIL_LAYER_MS` 66 halves it. The rest wake bars in `test_overlay_rest_1670.py` and `test_overlay_parity_1683.py` now bound at that pace.

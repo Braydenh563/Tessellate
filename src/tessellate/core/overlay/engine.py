@@ -722,6 +722,7 @@ class Engine:
         #: The tail's own layer (C1): a floater's tail is drawn every display frame, not baked in the idle cycle.
         self.tail_layer = bh.TailLayer()
         self.tail_layer_on = True  # the runner turns it off for a look whose tail is not Atlas's (a captured companion)
+        self.state_at, self._seen_state = now, ""  # when the state was first seen drawn (a long sit is a lounge)
         self._flow_held: tuple[int, ...] | None = None
         self._flow_at = 0.0
         self.last_y = 0.0
@@ -4179,6 +4180,26 @@ class Engine:
         step = length / self.idle_frames
         return start + (math.floor((now - start) / step + 1e-6) + 1) * step
 
+    def _lower_state(self, now: float, face: tuple[str, int] | None) -> str:
+        """What the lower body is doing, for `bh.FLOW_LOWER` (atlascat-1108 C4): lying in a nap, thinking, sad, startled,
+        lounging in a long sit, gliding on the move; "" for the frame's own row."""
+        s = self.state
+        if s != self._seen_state:
+            self._seen_state, self.state_at = s, now  # read here, not in `_enter`: a sit counts from its first picture
+        if s == "sleep":
+            return "lie" if self.nap_until else ""
+        if s == "startle" or (self.ex.over is not None and self.ex.over[0] in ("surprised", "worried")):
+            return "startle"
+        if face is not None and face[0] == "sad":
+            return "sad"
+        if s == "act" and self.act in bh.THINK_ACTS:
+            return "think"
+        if s == "sit":
+            return "lounge" if now - self.state_at >= bh.LOUNGE_AFTER else ""
+        if s in ("walk", "drift"):
+            return "glide"
+        return ""
+
     def _tail_view(self, now: float, frame: str) -> tuple[int, ...] | None:
         """The layered tail's view over a stand-family or sit frame, or None (no layer: another frame, reduced motion, a
         walker, a figure the person has hold of)."""
@@ -4188,7 +4209,7 @@ class Engine:
         self.tail_layer.choose(self.state, mood, now)
         return self.tail_layer.view(now)
 
-    def _flow_view(self, now: float, frame: str = "") -> tuple[int, ...] | None:
+    def _flow_view(self, now: float, frame: str = "", lower: str = "") -> tuple[int, ...] | None:
         """What the wisps and streams are doing at `now`; under reduced motion a slow drift only. While the
         person has hold of it or it is thrown or falling the last view is kept (review of 1683: a new flow is a
         new picture, and a warp a frame on the drag is the lag the owner complained of); a tumble frame takes
@@ -4200,7 +4221,7 @@ class Engine:
         if self._flow_held is not None and self._tail_ticks() and 0.0 <= now - self._flow_at < FLOW_VIEW_MS / 1000.0:
             return self._flow_held  # the tail's ticks (33 ms) reuse the body picture: only the tail is redrawn between two of these
         self._flow_at = now
-        self._flow_held = self.flow.view(now, calm=self.reduced, frame=frame or "stand")
+        self._flow_held = self.flow.view(now, calm=self.reduced, frame=frame or "stand", lower=lower, side=-float(self.facing))
         return self._flow_held
 
     def _tail_ticks(self) -> bool:
@@ -4326,10 +4347,11 @@ class Engine:
         fx, alpha, _squeeze = self._warp_view(now) if self.state == "warp" else (None, 1.0, 0.0)
         if fx is not None:
             fx = (fx[0], round(max(0.0, min(1.0, fx[1])) * 16) / 16.0, fx[2])  # as alpha is: a step finer than 1/16 is a picture nobody sees
+        prop, face = self.ex.view(now)
         return Output(
             frame, int(round(x)), int(round(y)), self.facing < 0, self._wake(now),
             self.click_now, self.settled_now, clip, self.card_clicked, self._pose(), fx, round(alpha * 16) / 16.0,
             self.angle + self.wob if frame.startswith("spin") and self.state == "fly" else math.pi if self.peek_flip or (self.upside and self.state == "held") else None,
-            self._flow_view(now, frame) if fx is None else None, *self.ex.view(now),
+            self._flow_view(now, frame, self._lower_state(now, face)) if fx is None else None, prop, face,
             self._tail_view(now, frame) if fx is None and self.tail_layer_on else None,
         )
