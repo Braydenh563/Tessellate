@@ -346,3 +346,87 @@ done: step 1 ddce2944; next: commit the catalogue (step 2), then the ratchet tes
   The test asks for at least 12 acts and no pose over 90 s. `test_built_variety_only_rises` floors the built sides at 38 in-app and 29 desk.
 
 done: step 2 1668e9dc; next: the test (step 3), then the build order (step 4).
+
+## Step 4: the build order (Sonnet builders, batches of 5 rows)
+
+Every row has the same last check, which is the ratchet itself:
+
+- Built on a side: set that side's `s` to `built` with `names` and an `at` the test can find.
+- Delete the id from `APP_ONLY` or `DESK_ONLY` in `tests/test_companion_catalogue_1108.py`, and lower the matching cap by the same count. An entry built on neither side that lands on both lowers `NEITHER_CAP`.
+- A new entry built on one side only goes onto the other side's list. Its cap rises, which is the one allowed rise, and it is recorded in the row's commit.
+
+Run, per row, `.venv/bin/python -m pytest -q tests/test_companion_catalogue_1108.py` plus the named test, then `bash scripts/gate.sh --staged`. Desk paths are under `src/tessellate/core/overlay/` and app paths under `frontend/js/`. A desk act that needs frames adds them through `scripts/render_desk_frames.js` (the sprite sheet in `frontend/img/desk`) in the same commit.
+
+### Batch A: one table both sides read (do first; the other batches assume it)
+
+| # | Entries | Files | Check |
+| --- | --- | --- | --- |
+| A1 | the loader (no entry) | new `catalogue.py` (reads `FRONTEND_DIR / "companion-catalogue.json"` once, cached) | new `tests/test_overlay_catalogue_1108.py`: returns 307 entries; a missing file gives an empty table, not a crash |
+| A2 | the reader (no entry) | `avatars.js` (fetch `/companion-catalogue.json` once at first idle with `api(path, { silent: true })`, as `settings-find.js:871` loads `/credits.json`) | `node --check`; a static test that the companion keeps its built-in tables when the fetch fails |
+| A3 | `durations`: `seconds` and `w` of every act built on both sides | `behaviour.py` (Activity length and weight from the table where an entry exists); `avatars.js` (`NAME_MARK_BUDDY_ACTS` `ms` and `w`) | `test_overlay_idle.py`, `test_atlas_acts_1589.py`; one table, so the two sides' durations agree (new assert in A1's test) |
+| A4 | `beats` of every long act (shift within the pose budget) | `behaviour.py` Mind (a beat timer per act); `avatars.js` act runner | `test_long_acts_change_pose_within_the_budget` plus a desk sim over 600 s: no pose held over 90 s |
+| A5 | mood, energy and day weights | `behaviour.py` Mind pick; `avatars.js` pick | a seeded desk sim and app sim each reproduce `seeded_hour` act counts within 2 |
+
+### Batch B: shaking, upside down and dizzy on the desk (kk)
+
+| # | Entries | Files | Check |
+| --- | --- | --- | --- |
+| B1 | `int.shake_dizzy`, `face.dizzy` | `extras.py` classify (a carried shake: 3 direction flips in 0.6 s); `engine.py` a `_dizzy` state after the drop (spiral eyes, 2.5 to 4 s sway); `faces.py` `dizzy` | new `tests/test_overlay_shake_1108.py`: a fake drag with 3 flips lands dizzy, 2 flips does not |
+| B2 | `int.held_upside_down` | `engine.py` the carried pose flips when the grab point is the feet or after a shake; `sprites.py` a rotated frame set | the same test file: the carried frame is the flipped set while upside down |
+| B3 | `int.long_carry`, `lower.drift` | `engine.py` the carry timer (after 4 s: kick legs, then cross arms, then a sigh); `extras.py` | a carry held 10 s in the fake shows the three stages in order |
+| B4 | `face.confused`, `face.sad`, `face.shy`, `face.love`, `face.laughing` | `faces.py` EXPRESSIONS; `scripts/render_desk_frames.js` face frames | `test_overlay_faces.py` covers the five |
+| B5 | `int.tickle`, `int.boop_nose` (new; both sides) | `extras.py` classify (fast small rub on the body, a tap on the face); `avatars.js` pet and poke handlers | `test_overlay_peek_flip_1108.py` style fake on desk; static test in-app; both sides built in one commit |
+
+### Batch C: the tail and lower body as layers (dd)
+
+| # | Entries | Files | Check |
+| --- | --- | --- | --- |
+| C1 | `tail.curl`, `tail.wrap`, `tail.wag`, `tail.droop`, `tail.stiff` on the desk | `sprites.py` a tail layer drawn per tick over the body frame; `runner.py` compositing | new `tests/test_overlay_tail_layer_1108.py`: each pose changes the tail's drawn points, the body frame is unchanged |
+| C2 | `tail.hook`, `tail.coil_hold`, `tail.thump`, `tail.shiver`, `tail.tuck` (new) | `atlas-life.js` `ATLAS_TAIL_ACTS`; the desk tail layer from C1 | `test_atlas_acts_1589.py` plus C1's test |
+| C3 | `tail.loop8`, `tail.tip_twitch`, `tail.balance`, `tail.pillow` (new) | the same as C2 | the same |
+| C4 | `lower.lie`, `lower.think`, `lower.sad`, `lower.startle`, `lower.lounge`, `lower.glide` on the desk | `sprites.py` a lower-body layer; `behaviour.py` FLOW_POSE gains the states | a desk test per state, as in C1 |
+| C5 | `lower.billow`, `lower.coil`, `lower.ripple_calm`, `lower.flutter`, `lower.pool`, `lower.hem_kick`, `lower.spiral`, `lower.heavy` (new) | `atlas-life.js` `ATLAS_LOWER_STATES`; the desk lower layer from C4 | `test_atlas_rest_motion.py` plus C4's test |
+
+### Batch D: the app learns the desk's acts (v)
+
+| # | Entries | Files | Check |
+| --- | --- | --- | --- |
+| D1 | `act.push_ups`, `act.lift_weights`, `act.sip_tea`, `act.snack`, `act.fish` | `avatars.js` `NAME_MARK_BUDDY_ACTS` plus pose bodies; the props drawn in the rig (`atlas.js`) | `test_atlas_acts_1589.py`; the app's act table rows found by `test_every_table_row_is_catalogued[app]` |
+| D2 | `act.write_journal`, `act.watch_stars`, `act.blanket_nap`, `act.water_plant`, `act.puzzle` | as D1 | as D1 |
+| D3 | `act.nod`, `act.little_dance`, `act.pose_proud`, `act.look_down`, `act.tiptoe` | as D1 | as D1 |
+| D4 | `act.daydream`, `act.pace`, `act.invent_game`, `act.tinker`, `act.dust_off`, `face.miffed`, `face.smirk` | as D1; `atlas.js` `ATLAS_MOODS` for the two faces | as D1 plus `test_atlas_face_inherit_1591.py` |
+| D5 | `int.pat`, `int.swipe_twirl`, `int.ceiling_bonk`, `move.cloud_ride`, `lower.fall`, `trans.upright>hang` | `avatars.js` pointer handlers (a slow pat on the head; a fast swipe spins once); `companion-throw.js` (a throw into the top bar bonks); a cloud ride as a walk variant | `test_companion_throw_fates.py` plus a static test per handler |
+
+### Batch E: the desk learns the app's acts (v)
+
+| # | Entries | Files | Check |
+| --- | --- | --- | --- |
+| E1 | `act.dangle`, `act.kick_legs`, `act.hang_one_hand`, `act.hang_by_feet`, `act.sloth` | `engine.py` hang tricks on a window top edge (the hang state exists: `_leap_to_hang`); `props.py` PLAIN_ACTS | `test_overlay_hang.py` gains the five |
+| E2 | `act.juggle`, `act.meditate`, `act.toss_stars`, `act.cast_sparkle`, `act.chair` | `props.py` PROP_ACTS and SPELL_ACTS; `render_desk_frames.js` | `test_overlay_life_1670.py` |
+| E3 | `act.facepalm`, `act.lean_tilt`, `act.head_tilt`, `act.ear_twitch`, `act.sniff` | `props.py` PLAIN_ACTS | as E2 |
+| E4 | `act.sigh`, `act.hands_on_hips`, `act.clasp_hands`, `act.lounge`, `act.rest_head`, `pos.lounge`, `pos.lean` | `props.py` PLAIN_ACTS; `behaviour.py` FLOW_POSE | as E2 |
+| E5 | `pos.cross_legged`, `pos.edge_dangle`, `pos.back_float`, `move.afield`, and the 14 app-only transitions | `engine.py` in-between frames per pair (the pattern of `_pull_up`); `sprites.py` | `test_transitions_cover_every_pair`; `test_overlay_moves.py` |
+
+### Batch F: the app's reactions on the desk and the desk's on the app (v)
+
+| # | Entries | Files | Check |
+| --- | --- | --- | --- |
+| F1 | `react.long_note`, `react.private_note`, `react.remark`, `react.note_binned` | `extras.py` REACTIONS fed by the app events the desk already polls (`runner.py`) | `test_desk_overlay_wiring.py` |
+| F2 | `react.graph_laid`, `react.search_found`, `react.search_nothing`, `react.reminder_bell` | as F1 | as F1 |
+| F3 | `react.window_opened`, `react.window_closed`, `react.window_dragged`, `react.window_maximised`, `react.window_restored` in-app | `avatars.js` `NMB_REACTIONS`, as analogues: a panel opened, closed, dragged, a surface fullscreened and restored | the app's reaction rows found by `test_every_table_row_is_catalogued[app]` |
+| F4 | `react.idle_return`, `react.hour_chime`, `react.battery_low` in-app | `avatars.js` (`visibilitychange`, the clock, `navigator.getBattery` where present) | static test; battery absent is silent |
+| F5 | `react.media_playing`, `react.fullscreen_app`, `react.typing_burst`, `react.night_falls`, `react.morning_hello` (new; both sides) | desk `screenwatch.py` and `extras.py`; app `avatars.js` | both allow lists unchanged (built on both in one commit) |
+
+### Batch G: new variety on both sides (dd)
+
+| # | Entries | Files | Check |
+| --- | --- | --- | --- |
+| G1 | `act.cloud_pillow`, `act.star_catch`, `act.tail_chase`, `act.knit_starlight`, `act.count_stars` | `avatars.js` acts; `props.py` and `render_desk_frames.js` | `test_built_variety_only_rises` floors raised to the new measure |
+| G2 | `act.paper_plane`, `act.blow_bubbles`, `act.conduct`, `act.tail_stretch`, `act.lean_on_edge` | as G1 | as G1 |
+| G3 | `act.foot_tap`, `act.balance_walk`, `act.sketch_view`, `act.sneeze`, `act.hiccup`, `act.self_hug`, `act.kneel_look`, `act.stargaze_awake` | as G1 | as G1 |
+| G4 | `move.tiptoe_sneak`, `move.skip`, `move.swim_air`, `move.somersault`, `move.slide_pole`; `pos.belly_sprawl`, `pos.kneel` | app walk (`atlas-motion.js`); desk `travel.py` and `engine.py` | `test_overlay_moves.py`; the app's motion test |
+| G5 | `int.hold_still`, `int.carry_over`, `int.catch_midair`, `int.tail_pull`, `int.drag_skid`, `int.toss_up`, `int.pointer_chase`; `face.pout`, `face.eyes_down`, `face.cross_eyed`, `face.wince`, `face.giggle`, `face.groggy`, `face.awe`, `face.bored`, `face.relieved` | `extras.py` and `faces.py`; `avatars.js` handlers and `atlas.js` moods | `test_overlay_faces.py`; `test_companion_throw_fates.py` |
+
+The 46 transitions built on neither side are drawn last, in batches of 5 rows, after E5 sets the pattern. The gaps stay listed by `test_transitions_cover_every_pair` until then.
+
+done: step 3 62043f4e; step 4 is this build order and the PLAN.md row. Next: Batch A by a Sonnet builder.
