@@ -6,6 +6,8 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Diagram builder: a shelf on the picture's corner (flowchart: Box, Rounded, Decision, Start and end, Note, Group; sequence: Participant, Message, Reply, Note, Loop, Alt) adds a block by a press or a drag, with a caret for the whole Add menu; hidden on phones (INBOX 1661 l).
+- A sequence diagram is edited on its picture by drag (INBOX 1661 l): a head dragged sideways reorders the participants (a 2 px accent line in the head gap), a drag from one lifeline to another adds a message at the gap under the pointer and opens its name, and a 24 px + in the left margin of a gap opens the Add menu for it. Measured at 1440, both themes: App dragged past Server gives User, Server, App; User to Server between messages 1 and 2 inserts at index 1 with the field open and in view; the + is 24 px at 5.9:1 or more.
 - Chat with no model, pasted text (T6): join lines with commas, split on commas into lines, and count characters with and without spaces; a note named in the question is still left alone.
 - Chat with no model, Unix time (Time and date): "unix time now", "what is 1700000000 as a date" and "unix time of 1 January 2024".
 - Chat with no model, calculator words (T1): round, floor, ceil, log, ln, pow and "2(3+4)"; a power too large to write out, a log of zero or a negative number, and a base of 1 each say why.

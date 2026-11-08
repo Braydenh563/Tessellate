@@ -679,6 +679,8 @@
     if (S && (S.k || matchMedia(COMPACT).matches) && (await ensureModule("diagramTouch"))) diagramModel.touch.wire(S);
     //: Zoom, pan and fit for the picture, in every window (diagram-view.js, 1614).
     if (S && ((await ensureModule("vf")) && (await ensureModule("diagramView")))) diagramModel.view.wire(S);
+    //: The shelf of blocks on the picture, once it has its stage (diagram-library.js).
+    if (S && S.fig.parentElement?.classList.contains("dgm-stage")) diagramModel.library.shelf(S, { ...helpers, glyph: shapeGlyph, groupGlyph });
     //: A sequence diagram is edited on its picture too (1661 l): its parts become the overlay's boxes first.
     if (S?.k?.name === "sequence" && (await lazyScript("/js/diagram-seq-canvas.js"))) diagramModel.seqCanvas?.wire(S);
     if (S && (!S.k || S.seq) && (await ensureModule("diagramOverlay"))) diagramModel.overlay.wire(S);
