@@ -25,6 +25,10 @@ LOW, RECOVERED = 20, 30
 #: A download folder entry still being written ends in one of these.
 #: The folder is looked at this many entries deep and this often (a huge folder costs a bounded read, rarely).
 SCAN_CAP, DOWNLOADS_EVERY = 3000, 10.0
+#: Input older than this (s, ten minutes: the figure's sit, `engine.IDLE_SIT`) is an absence, and the next input is the person coming back.
+AWAY_AFTER = 600.0
+#: ...and input this fresh (s, a few reads of the 0.5 Hz typing check) is the return.
+BACK_WITHIN = 5.0
 PARTIAL = (".crdownload", ".part", ".tmp", ".download", ".partial")
 
 
@@ -73,6 +77,19 @@ class ScreenWatch:
         self.low = False
         self.files: int | None = None
         self.files_at = 0.0
+        self.away = False
+
+    def input_seen(self, now: float, age: float | None) -> list[str]:
+        """The seconds since the last key or mouse input anywhere (None: unreadable). Said once when input comes back
+        after `AWAY_AFTER` s without any: the figure's welcome back. Only the age is used, never what was typed."""
+        if age is None:
+            return []
+        if age >= AWAY_AFTER:
+            self.away = True
+        elif self.away and age < BACK_WITHIN:
+            self.away = False
+            return ["idle_return"]
+        return []
 
     def windows_seen(self, keys: Any) -> list[str]:
         """The window list a scan read: what opened and closed since the last one (the first is only remembered)."""

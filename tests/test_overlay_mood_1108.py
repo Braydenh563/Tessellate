@@ -6,7 +6,7 @@ from __future__ import annotations
 import random
 
 from tessellate.core.overlay import engine as eng
-from tessellate.core.overlay import extras
+from tessellate.core.overlay import extras, screenwatch
 from tessellate.core.overlay.engine import Engine, Monitor
 
 SIZE = (100, 120)
@@ -86,3 +86,38 @@ def test_a_new_idle_stretch_is_sad_again_but_not_before() -> None:
     e._touched(start)
     again = faces_of(run(e, start, start + eng.LONELY_AFTER + 60, step=0.25), "sad")
     assert again and min(s[0] for s in again) >= start + eng.LONELY_AFTER
+
+
+# --- 2: welcome back ----------------------------------------------------------------------------------------
+
+
+def test_input_after_a_long_gap_is_one_return() -> None:
+    w = screenwatch.ScreenWatch()
+    assert w.input_seen(0.0, 5.0) == []
+    assert w.input_seen(2.0, 600.0) == []  # still away
+    assert w.input_seen(4.0, screenwatch.AWAY_AFTER + 10) == []
+    assert w.input_seen(6.0, 0.3) == ["idle_return"]
+    assert w.input_seen(8.0, 0.2) == []  # once
+
+
+def test_a_short_pause_is_not_a_return() -> None:
+    w = screenwatch.ScreenWatch()
+    for t, age in ((0.0, 5.0), (2.0, 60.0), (4.0, 0.2)):
+        assert w.input_seen(t, age) == []
+
+
+def test_unreadable_input_age_is_no_event() -> None:
+    w = screenwatch.ScreenWatch()
+    assert w.input_seen(0.0, None) == []
+
+
+def test_the_return_wakes_a_sitting_figure_and_clears_the_sad_face() -> None:
+    e = make()
+    seen = run(e, 0.1, eng.LONELY_AFTER + 20, step=0.25)
+    assert faces_of(seen, "sad")
+    t = eng.LONELY_AFTER + 21
+    assert e.react("idle_return", t)
+    out = e.update(t + 0.1)
+    assert e.state == "act" and e.act == "welcome_back"
+    assert out.face is None or out.face[0] != "sad"
+    assert e.ex.over[0] == "smile"

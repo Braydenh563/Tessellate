@@ -1474,7 +1474,7 @@ MORE_TOPICS: list[dict] = [
             "companion confused", "companion dropped near a window", "desktop companion moods",
         ),
         "body": (
-            'The companion on the desktop shows how things are going. Leave it alone for fifteen minutes, with no pointer near it and nothing happening, and it looks sad once; it never does while it sleeps or while you type. With Motion off it stays still.'
+            'The companion on the desktop shows how things are going. Leave it alone for fifteen minutes, with no pointer near it and nothing happening, and it looks sad once; it never does while it sleeps or while you type. Come back after ten minutes away and it waves. With Motion off it stays still.'
         ),
         "badge": {"label": "Desktop companion", "section": "appearance", "target": "desktop-companion-row"},
     },

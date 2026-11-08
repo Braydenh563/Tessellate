@@ -64,6 +64,8 @@ BLENDED = ("stand", "walk", "idle", "look", "sit", "sleep", "wave", "land", "han
 BUSY_EVERY = 2.0
 #: Input this recent means the person is typing or working: no acts, only standing.
 TYPING_AGE = 2.5
+#: A welcome back not yet answered (the figure busy or mid-reaction) is tried again for this long (s).
+RETURN_FOR = 10.0
 #: How long a foreground window's text band is trusted before it is read again.
 ZONE_EVERY = 30.0
 #: The window scan is at most this often (seconds); it starts this long before a
@@ -178,6 +180,7 @@ class OverlayRunner:
         #: is not typing (INBOX 1670: "it doesnt move" while the mouse was in use).
         self._busy_ptr: tuple[int, int] | None = None
         self._ptr_moved_at = -math.inf
+        self._return_until = -math.inf
         self._stopped = False
         self._resume = False
         self._last_key: tuple | None = None
@@ -544,6 +547,12 @@ class OverlayRunner:
         if engine is None:  # typing: it stays put (nothing big); the mouse alone is not typing
             return
         engine.quiet = age is not None and age < TYPING_AGE and now - self._ptr_moved_at > age
+        # the person back after a long absence (checked here: a sitting or sleeping figure reads no screen events)
+        if self._watch.input_seen(now, age):
+            self._return_until = now + RETURN_FOR
+        if now < self._return_until and engine.react("idle_return", now):
+            self._return_until = 0.0
+            logger.info("overlay: it answered idle_return")
         # at BUSY_EVERY (0.5 Hz); Chromium and Electron give no caret (INBOX 1670 13:22Z)
         read_caret = getattr(self.k, "caret_rect", None)  # the X11 backend reads no caret yet
         caret = read_caret(self.w) if read_caret else None
