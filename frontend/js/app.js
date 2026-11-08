@@ -1824,7 +1824,7 @@ const LAZY_ENTRY_POINTS = {
   settingsControls: ["refreshSearxngHost", "renderStatusBarSettings", "renderLanAccess", "renderMemorySettings", "renderAccount", "renderAutonomousReview", "renderToolSettings"],
   settingsData: ["renderPrivacyRange", "renderPrivacyReceipt", "renderBackups", "renderBackupRetention", "backupNow", "importDirectory", "importMarkdown", "importDocument"],
   tagSuggest: ["openTagSuggest", "renderReevaluateResult"],
-  writingDesk: ["composeDraft", "suggestDraftTitle", "saveDraftAsNote", "draftSaveMenuInit"],
+  writingDesk: ["addDraftSource", "composeDraft", "suggestDraftTitle", "saveDraftAsNote", "draftSaveMenuInit"],
   //: Each called for its effect when a figure mounts or moves; nothing reads a result.
   atlasMotion: ["atlasBlinkStart", "atlasRigAttach", "atlasRigWake"],
   companionMenu: ["nameMarkBuddyMenu", "openNameMarkViewer", "mountBuddyPresets"],

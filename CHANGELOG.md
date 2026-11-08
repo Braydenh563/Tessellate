@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Writing room: a note dropped or pasted from the Tray into Your thoughts is added to the notes the draft is written from, not left in the box as a raw [[link]] (INBOX 1696 n).
 - Ask: Elsewhere in your notebook and Why this answer both open above Ask next, and the chips under an answer carry a caret that turns when open, so they read as disclosures, not as questions (INBOX 1696 o).
 - Throwing the in-app companion no longer walks the whole page again on landing: the tab's surfaces were dropped a frame after they were found (a ResizeObserver's first report), so every landing re-read 149 to 299 boxes behind a whole-page layout (INBOX 1696 l, the 7.5 s freeze).
 - In-app companion: the edge move squeezes out through the side with wisps and comes back in eased, a hang drifts down before it leaves, and blink, cloud and bubble moves join the chooser (INBOX 1692).

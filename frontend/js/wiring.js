@@ -71,13 +71,7 @@ $("draft-add-source").addEventListener("click", async () => {
   }
   const entry = await pickEntryDialog("Which note should Atlas write from?");
   if (!entry) return;
-  if (draftSources.some((s) => s.id === entry.id)) return;
-  draftSources.push({
-    id: entry.id,
-    label: clipText(entry.title || notePreviewText(entry.content) || "Untitled note", 60),
-  });
-  renderDraftSources();
-  saveDraftLocally();
+  addDraftSource(entry);
 });
 $("draft-continue-note").addEventListener("click", async () => {
   const entry = await pickEntryDialog("Which note should Atlas carry on?");

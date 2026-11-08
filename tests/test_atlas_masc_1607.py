@@ -187,7 +187,8 @@ def test_his_arms_grow_from_inside_his_narrower_shoulders():
 def _mask() -> tuple[str, float, float, float]:
     """The shoulder mask's ellipses: (where their centres come from, cy, rx, ry)."""
     found = re.search(r'for \(const cx of (.+?)\) atlasMake\("ellipse", \{ cx, cy: ([0-9.]+), rx: ([0-9.]+), ry: ([0-9.]+), fill: `url\(#\$\{id\}-shoulderg\)` \}, shoulders\);', ATLAS)
-    return found.group(1), *(float(v) for v in found.groups()[1:])
+    cy, rx, ry = (float(v) for v in found.groups()[1:])
+    return found.group(1), cy, rx, ry
 
 
 def test_the_shoulder_join_is_placed_from_each_look_s_own_roots():

@@ -2,9 +2,9 @@
 
 Generated 2026-11-08 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7882, frontend ids 2644, CSS sections 522, backend routes 649, backend modules 9046, test files 2177, tests 18353, plan headings 1005, app scripts 28, boot scripts 37, script files 262.
+Counts: frontend functions 7883, frontend ids 2644, CSS sections 522, backend routes 649, backend modules 9046, test files 2178, tests 18355, plan headings 1005, app scripts 28, boot scripts 37, script files 262.
 
-## Frontend functions (7882)
+## Frontend functions (7883)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -481,8 +481,8 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `chatHeadIsAtlas` | frontend/js/chat-agent.js:322 |
 | `chatHeadKey` | frontend/js/chat-agent.js:327 |
 | `chatPositions` | frontend/js/chat-agent.js:99 |
-| `clearDraftTarget` | frontend/js/chat-agent.js:960 |
-| `draftTranslateKind` | frontend/js/chat-agent.js:856 |
+| `clearDraftTarget` | frontend/js/chat-agent.js:961 |
+| `draftTranslateKind` | frontend/js/chat-agent.js:857 |
 | `dropChatBubble` | frontend/js/chat-agent.js:271 |
 | `followBottom` | frontend/js/chat-agent.js:39 |
 | `followReleased` | frontend/js/chat-agent.js:28 |
@@ -494,27 +494,27 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `paintAssistantAvatar` | frontend/js/chat-agent.js:368 |
 | `paintAssistantHeads` | frontend/js/chat-agent.js:382 |
 | `paintUserMarks` | frontend/js/chat-agent.js:253 |
-| `paneWordCount` | frontend/js/chat-agent.js:976 |
-| `pushDraftUndo` | frontend/js/chat-agent.js:1000 |
-| `putDraftBack` | frontend/js/chat-agent.js:1025 |
-| `rememberDraftVersion` | frontend/js/chat-agent.js:927 |
-| `renderDraftSources` | frontend/js/chat-agent.js:866 |
-| `renderDraftTarget` | frontend/js/chat-agent.js:947 |
-| `renderDraftVersions` | frontend/js/chat-agent.js:898 |
+| `paneWordCount` | frontend/js/chat-agent.js:977 |
+| `pushDraftUndo` | frontend/js/chat-agent.js:1001 |
+| `putDraftBack` | frontend/js/chat-agent.js:1026 |
+| `rememberDraftVersion` | frontend/js/chat-agent.js:928 |
+| `renderDraftSources` | frontend/js/chat-agent.js:867 |
+| `renderDraftTarget` | frontend/js/chat-agent.js:948 |
+| `renderDraftVersions` | frontend/js/chat-agent.js:899 |
 | `repaintAssistantAvatars` | frontend/js/chat-agent.js:375 |
-| `restoreDraftLocally` | frontend/js/chat-agent.js:803 |
-| `saveDraftLocally` | frontend/js/chat-agent.js:781 |
-| `setDraftStatus` | frontend/js/chat-agent.js:968 |
+| `restoreDraftLocally` | frontend/js/chat-agent.js:804 |
+| `saveDraftLocally` | frontend/js/chat-agent.js:782 |
+| `setDraftStatus` | frontend/js/chat-agent.js:969 |
 | `showWaiting` | frontend/js/chat-agent.js:685 |
 | `sourceHost` | frontend/js/chat-agent.js:750 |
 | `syncChatJumpLatest` | frontend/js/chat-agent.js:145 |
 | `thinkingFold` | frontend/js/chat-agent.js:277 |
 | `thinkingFoldIn` | frontend/js/chat-agent.js:297 |
 | `thinkingPaint` | frontend/js/chat-agent.js:291 |
-| `translateNoteInDesk` | frontend/js/chat-agent.js:840 |
-| `undoDraft` | frontend/js/chat-agent.js:1049 |
-| `updateDraftCount` | frontend/js/chat-agent.js:982 |
-| `updateDraftUndoButton` | frontend/js/chat-agent.js:1036 |
+| `translateNoteInDesk` | frontend/js/chat-agent.js:841 |
+| `undoDraft` | frontend/js/chat-agent.js:1050 |
+| `updateDraftCount` | frontend/js/chat-agent.js:983 |
+| `updateDraftUndoButton` | frontend/js/chat-agent.js:1037 |
 | `userMarkSeed` | frontend/js/chat-agent.js:242 |
 
 ### frontend/js/chat-attach.js (54)
@@ -1162,39 +1162,39 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `addAtlasLine` | frontend/js/wiring.js:214 |
-| `askAtlasAbout` | frontend/js/wiring.js:203 |
-| `chatRecallStep` | frontend/js/wiring.js:795 |
-| `clearDueNudges` | frontend/js/wiring.js:1696 |
-| `closeGlobalFind` | frontend/js/wiring.js:639 |
-| `dashboardGreetingPersona` | frontend/js/wiring.js:900 |
-| `escapeForFind` | frontend/js/wiring.js:417 |
-| `globalFindClearHighlights` | frontend/js/wiring.js:475 |
-| `globalFindRun` | frontend/js/wiring.js:486 |
-| `globalFindShowActive` | frontend/js/wiring.js:558 |
-| `globalFindStep` | frontend/js/wiring.js:571 |
-| `globalFindWalkableRoot` | frontend/js/wiring.js:450 |
-| `initGraphOptionFolds` | frontend/js/wiring.js:991 |
-| `initHelpToggles` | frontend/js/wiring.js:223 |
-| `noteSourceOn` | frontend/js/wiring.js:866 |
-| `nudgeDueShown` | frontend/js/wiring.js:1700 |
-| `openGlobalFind` | frontend/js/wiring.js:577 |
-| `openReminderCompose` | frontend/js/wiring.js:1596 |
-| `paintDashboardPersonaMark` | frontend/js/wiring.js:906 |
+| `addAtlasLine` | frontend/js/wiring.js:208 |
+| `askAtlasAbout` | frontend/js/wiring.js:197 |
+| `chatRecallStep` | frontend/js/wiring.js:789 |
+| `clearDueNudges` | frontend/js/wiring.js:1690 |
+| `closeGlobalFind` | frontend/js/wiring.js:633 |
+| `dashboardGreetingPersona` | frontend/js/wiring.js:894 |
+| `escapeForFind` | frontend/js/wiring.js:411 |
+| `globalFindClearHighlights` | frontend/js/wiring.js:469 |
+| `globalFindRun` | frontend/js/wiring.js:480 |
+| `globalFindShowActive` | frontend/js/wiring.js:552 |
+| `globalFindStep` | frontend/js/wiring.js:565 |
+| `globalFindWalkableRoot` | frontend/js/wiring.js:444 |
+| `initGraphOptionFolds` | frontend/js/wiring.js:985 |
+| `initHelpToggles` | frontend/js/wiring.js:217 |
+| `noteSourceOn` | frontend/js/wiring.js:860 |
+| `nudgeDueShown` | frontend/js/wiring.js:1694 |
+| `openGlobalFind` | frontend/js/wiring.js:571 |
+| `openReminderCompose` | frontend/js/wiring.js:1590 |
+| `paintDashboardPersonaMark` | frontend/js/wiring.js:900 |
 | `reflectOnlineState` | frontend/js/wiring.js:16 |
-| `renameCurrentConversation` | frontend/js/wiring.js:726 |
-| `renderPlanToggle` | frontend/js/wiring.js:1405 |
-| `renderWebSearchToggle` | frontend/js/wiring.js:1357 |
-| `setFullscreenSurface` | frontend/js/wiring.js:1224 |
-| `setGraphOptionsOpen` | frontend/js/wiring.js:1012 |
-| `setNoteSource` | frontend/js/wiring.js:881 |
-| `settingsSectionContaining` | frontend/js/wiring.js:463 |
-| `startNewNote` | frontend/js/wiring.js:1280 |
-| `syncNoteSourceButtons` | frontend/js/wiring.js:874 |
-| `timelineSelectableRows` | frontend/js/wiring.js:1332 |
-| `toggleSelectAllRows` | frontend/js/wiring.js:1318 |
-| `toggleWebSearch` | frontend/js/wiring.js:1438 |
-| `watchFullscreenSurface` | frontend/js/wiring.js:1230 |
+| `renameCurrentConversation` | frontend/js/wiring.js:720 |
+| `renderPlanToggle` | frontend/js/wiring.js:1399 |
+| `renderWebSearchToggle` | frontend/js/wiring.js:1351 |
+| `setFullscreenSurface` | frontend/js/wiring.js:1218 |
+| `setGraphOptionsOpen` | frontend/js/wiring.js:1006 |
+| `setNoteSource` | frontend/js/wiring.js:875 |
+| `settingsSectionContaining` | frontend/js/wiring.js:457 |
+| `startNewNote` | frontend/js/wiring.js:1274 |
+| `syncNoteSourceButtons` | frontend/js/wiring.js:868 |
+| `timelineSelectableRows` | frontend/js/wiring.js:1326 |
+| `toggleSelectAllRows` | frontend/js/wiring.js:1312 |
+| `toggleWebSearch` | frontend/js/wiring.js:1432 |
+| `watchFullscreenSurface` | frontend/js/wiring.js:1224 |
 
 ### frontend/js/settings-wiring.js (45)
 
@@ -6253,16 +6253,16 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `objBefore` | frontend/js/obj-order.js:82 |
-| `objInsertIndex` | frontend/js/obj-order.js:91 |
-| `objIsGrid` | frontend/js/obj-order.js:75 |
-| `objMergeOrder` | frontend/js/obj-order.js:63 |
-| `objMoveKey` | frontend/js/obj-order.js:49 |
-| `objOrderCmp` | frontend/js/obj-order.js:43 |
-| `objOrderKey` | frontend/js/obj-order.js:23 |
-| `objOrderLoad` | frontend/js/obj-order.js:27 |
-| `objOrderRank` | frontend/js/obj-order.js:37 |
-| `objOrderSave` | frontend/js/obj-order.js:31 |
+| `objBefore` | frontend/js/obj-order.js:83 |
+| `objInsertIndex` | frontend/js/obj-order.js:92 |
+| `objIsGrid` | frontend/js/obj-order.js:76 |
+| `objMergeOrder` | frontend/js/obj-order.js:64 |
+| `objMoveKey` | frontend/js/obj-order.js:50 |
+| `objOrderCmp` | frontend/js/obj-order.js:44 |
+| `objOrderKey` | frontend/js/obj-order.js:24 |
+| `objOrderLoad` | frontend/js/obj-order.js:28 |
+| `objOrderRank` | frontend/js/obj-order.js:38 |
+| `objOrderSave` | frontend/js/obj-order.js:32 |
 
 ### frontend/js/obj-ref.js (13)
 
@@ -6271,16 +6271,16 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `objCardAt` | frontend/js/obj-ref.js:74 |
 | `objCardTitle` | frontend/js/obj-ref.js:66 |
 | `objDefaultTitle` | frontend/js/obj-ref.js:37 |
-| `objDestinationAt` | frontend/js/obj-ref.js:112 |
+| `objDestinationAt` | frontend/js/obj-ref.js:113 |
 | `objInField` | frontend/js/obj-ref.js:19 |
-| `objInsertText` | frontend/js/obj-ref.js:161 |
+| `objInsertText` | frontend/js/obj-ref.js:162 |
 | `objKey` | frontend/js/obj-ref.js:51 |
 | `objLinkText` | frontend/js/obj-ref.js:91 |
 | `objNoteTitle` | frontend/js/obj-ref.js:61 |
 | `objParseKey` | frontend/js/obj-ref.js:56 |
 | `objRef` | frontend/js/obj-ref.js:44 |
 | `objRefFromCard` | frontend/js/obj-ref.js:84 |
-| `objRender` | frontend/js/obj-ref.js:177 |
+| `objRender` | frontend/js/obj-ref.js:179 |
 
 ### frontend/js/obj-reorder.js (21)
 
@@ -7423,10 +7423,10 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `paintTaskRunLines` | frontend/js/task-steps.js:76 |
-| `taskRunFold` | frontend/js/task-steps.js:53 |
-| `taskRunLinesText` | frontend/js/task-steps.js:43 |
-| `taskSteps` | frontend/js/task-steps.js:16 |
+| `paintTaskRunLines` | frontend/js/task-steps.js:77 |
+| `taskRunFold` | frontend/js/task-steps.js:54 |
+| `taskRunLinesText` | frontend/js/task-steps.js:44 |
+| `taskSteps` | frontend/js/task-steps.js:17 |
 
 ### frontend/js/tidy.js (21)
 
@@ -9160,10 +9160,11 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `wbZoomToFit` | frontend/js/whiteboard.js:2924 |
 | `wbZoomToSelection` | frontend/js/whiteboard.js:3071 |
 
-### frontend/js/writing-desk.js (14)
+### frontend/js/writing-desk.js (15)
 
 | Name | File:line |
 |---|---|
+| `addDraftSource` | frontend/js/writing-desk.js:489 |
 | `composeDraft` | frontend/js/writing-desk.js:19 |
 | `draftSaveMenuInit` | frontend/js/writing-desk.js:366 |
 | `draftWithHeading` | frontend/js/writing-desk.js:260 |
@@ -24491,7 +24492,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (18353)
+## Tests (18355)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -26670,6 +26671,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_writing_dictionary_persists.py | 4 |
 | tests/test_writing_nomodel_1488.py | 19 |
 | tests/test_writing_offline_view_1488.py | 7 |
+| tests/test_writing_room_tray_1696.py | 2 |
 | tests/test_xfix_1031.py | 10 |
 | tests/test_xmind_import.py | 3 |
 | tests/test_zoom_frame_1508.py | 3 |

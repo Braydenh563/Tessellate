@@ -106,6 +106,7 @@ const OBJ_DESTS = [
   { type: "chat", sel: "#chat-input, .chat-composer, .chat-dock" },
   { type: "reminder", sel: "#reminder-magic, #reminder-compose" },
   { type: "board", sel: "#whiteboard-container" },
+  { type: "writing", sel: "#draft-thoughts, #draft-sources" },
   { type: "text", sel: "textarea, input[type='text'], input:not([type]), [contenteditable='true'], .cm-editor, #doc-editor" },
 ];
 
@@ -169,6 +170,7 @@ function objInsertText(el, text) {
 const OBJ_RENDERERS = {
   chat: (ref) => OBJ_STAGE[ref.kind](ref),
   text: (ref, dest) => objInsertText(dest.el, objLinkText(ref)),
+  writing: (ref, dest) => (ref.kind === "note" ? (addDraftSource(ref), true) : OBJ_RENDERERS.text(ref, dest)),
   reminder: (ref, dest) => objInsertText(dest.el.matches("textarea") ? dest.el : $("reminder-magic"), ref.title),
 };
 
