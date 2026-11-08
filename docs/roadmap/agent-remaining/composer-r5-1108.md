@@ -20,6 +20,8 @@ some differences from the auditors' answers are seed artefacts.
 - E22: `_name_said` (my landlord is Your landlord) and `_titled_names` (Tokyo capitalised in two titles) in `composer_digest`.
 - D21: `composer_help._short_line` caps the help line a feature word gets.
 - R3-35 measured: "tell me about the dentist", "dentist" and the count question now agree (three; Sara seven).
+- R3-2: `_names_whose` in `composer_digest._property_lead` (a phone number held by a note that never names the person is not theirs) and `composer_property._HAS_PHONE` ("does Sara have a phone number"). "Sara's number" was already denied correctly. The table, seat and car exclusions were already in `_NOT_PHONE`.
+- R3-18 measured: "when is the dentist" leads with "Dentist check-up on 11 November".
 
 ## Next
 

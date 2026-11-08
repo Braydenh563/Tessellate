@@ -36,8 +36,8 @@ def test_e5_a_property_question_with_its_own_subject_is_not_carried(ask):
 
 def test_e23_a_named_date_is_not_read_back_as_its_own_answer(ask):
     said = ask("what day is 14 March")["text"]
-    assert said.startswith("14 March 2027 is a Sunday."), said
-    assert "Read as 14 March as Sunday" not in said, said
+    assert said.startswith("That is Sunday 14 March 2027."), said
+    assert said.count("14 March") == 2 and "as Sunday" not in said, said
 
 
 def test_e22_my_landlord_is_your_landlord_in_the_frame(ask):

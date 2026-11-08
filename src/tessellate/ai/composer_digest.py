@@ -4121,6 +4121,16 @@ def _no_place(out: _Out, cue, lead: Fact) -> None:  # noqa: ANN001
         out.lines.append(PHRASES["no_place"])
 
 
+def _names_whose(view, whose: str) -> bool:  # noqa: ANN001
+    """Whether the note is about the person or business whose number was asked ("Sara's phone number"
+    must not be the dentist's; R3-2). No subject asked: any note."""
+    words = [w for w in re.findall(r"\w+", whose.lower()) if w not in ("the", "my", "our")]
+    if not words:
+        return True
+    text = " ".join([view.title or "", *(x.text for x in view.sentences)]).lower()
+    return all(re.search(rf"\b{re.escape(w)}", text) for w in words)
+
+
 def _property_lead(out: _Out, question: str, members, facts: list[Fact], lead: Fact) -> Fact | None:
     """The fact that holds the property asked for ("his number", "the
     password for the bank"); None, with the line said, when no note read for
@@ -4128,12 +4138,12 @@ def _property_lead(out: _Out, question: str, members, facts: list[Fact], lead: F
     prop = composer_property.asked(question)
     if not prop:
         return lead
-    holders = [f for f in facts if composer_property.held(prop, f.sentence.text)]
+    whose = composer_property.subject(question) if prop == "phone" else ""
+    holders = [f for f in facts if composer_property.held(prop, f.sentence.text) and _names_whose(f.view, whose)]
     if holders:
         return next((f for f in holders if f.view.id == lead.view.id), holders[0])
-    if any(composer_property.held(prop, x.text) for m in members for x in m.sentences):
+    if not whose and any(composer_property.held(prop, x.text) for m in members for x in m.sentences):
         return lead
-    whose = composer_property.subject(question) if prop == "phone" else ""
     named = _your_note(lead.view)
     # A person or a business asked for is denied in the notebook's name, not by the lead note alone (R3-2).
     line = f"None of your notes give a phone number for {whose}." if whose else f"{named[:1].upper()}{named[1:]} has no {composer_property.noun(prop)}."

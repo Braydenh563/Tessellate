@@ -42,6 +42,7 @@ _NOT_PHONE = re.compile(
 #: Only the tail is a pattern: the one or two words before it are read backwards (`_words_before`), so
 #: no match can start at every letter of a long run (CodeQL 2097, polynomial ReDoS).
 _POSSESSIVE = re.compile(r"['\u2019]s?\s+(?:phone\s+|mobile\s+|cell\s+)?number\b", re.I)
+_HAS_PHONE = re.compile(r"^(?:does|did|do)\s+([^?.!]{1,40}?)\s+(?:have|got)\s+(?:a|an|any)\s+(?:phone|mobile|cell)\b", re.I)
 _OF_SUBJECT = re.compile(r"\bnumber\s+for\s+([^?.!]{1,60})", re.I)
 _LEAD_WORDS = frozenset(("what", "whats", "what's", "is", "are", "give", "me", "tell", "find", "and", "also", "then"))
 
@@ -78,7 +79,7 @@ def subject(question: str) -> str:
         while words and words[0].lower() in _LEAD_WORDS:
             words.pop(0)
         return " ".join(words)
-    hit = _OF_SUBJECT.search(text)
+    hit = _OF_SUBJECT.search(text) or _HAS_PHONE.match(text)
     return hit.group(1).strip() if hit else ""
 
 

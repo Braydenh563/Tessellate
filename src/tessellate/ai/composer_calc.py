@@ -172,7 +172,7 @@ _PLAIN_DATE = re.compile(r"^(?:\d{1,2}(?:st|nd|rd|th)?\s+[a-z]{3,9}|[a-z]{3,9}\s
 def _weekday_of(rest: str, target: date, today: date) -> Reply:
     """"14 March 2027 is a Sunday.", and when the year was not said, which one was assumed (audit E23):
     the sentence does not repeat itself as its own reading."""
-    said = f"{target.day} {target:%B} {target.year} {'was' if target < today else 'is'} a {target:%A}."
+    said = f"That {'was' if target < today else 'is'} {_long(target)}."
     if _PLAIN_DATE.match(rest).group("year"):
         return Reply(said)
     return Reply(f"{said}\n\n_Read as the {'last' if target < today else 'next'} {target.day} {target:%B}._")

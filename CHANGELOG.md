@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Composer: a person's phone number (Sara's phone number, does Sara have a phone number) is never another note's; with no note giving one, the answer says none of your notes do.
 - Composer: a feature word in chat (what is my name) gets one short help line or a pointer to its Help topic, not a Settings paragraph.
 - Composer: "who is my landlord" says "Your landlord" in the frame, and a name only titles write (Tokyo) keeps its capital when typed small in a count.
 - Composer: a date question (what day is 14 March) no longer repeats the answer as its own "Read as" line.
