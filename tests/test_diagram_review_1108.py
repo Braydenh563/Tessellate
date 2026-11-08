@@ -1,0 +1,57 @@
+"""Review 1108 of the diagram builder: seven findings, each run in node where the code can be loaded.
+
+Files load into a `vm` context with the globals they read at load time stubbed; what is stubbed is named in each test.
+"""
+
+from __future__ import annotations
+
+import json
+import shutil
+import subprocess
+from pathlib import Path
+
+import pytest
+
+JS = Path(__file__).resolve().parents[1] / "frontend" / "js"
+needs_node = pytest.mark.skipif(not shutil.which("node"), reason="node is not installed")
+
+HARNESS = r"""
+const vm = require("vm"), fs = require("fs");
+const JS = process.argv[1];
+const ctx = { diagramModel: {}, console, Promise, Math, Number, String, Set, Map, Array, JSON, RegExp, Object };
+ctx.window = ctx;
+vm.createContext(ctx);
+const load = (file) => vm.runInContext(fs.readFileSync(JS + "/" + file, "utf8"), ctx, { filename: file });
+const out = (v) => process.stdout.write(JSON.stringify(v));
+"""
+
+
+def run(body: str):
+    proc = subprocess.run(["node", "-e", HARNESS + "\n(async () => {\n" + body + "\n})();", str(JS)], capture_output=True, text=True)
+    assert proc.returncode == 0, proc.stderr[-2500:]
+    return json.loads(proc.stdout)
+
+
+@needs_node
+def test_ctrl_z_in_a_non_flowchart_pane_runs_its_own_undo_without_the_flowchart_toolbar_loaded():
+    """HIGH: diagram-kinds.js called diagramModel.bar.historyKey; bar loads for flowcharts only, so a sequence .mmd threw."""
+    got = run(
+        """
+load("diagram-kindbar.js");
+const calls = [];
+const key = (extra) => ({ key: "z", ctrlKey: true, altKey: false, shiftKey: false, target: { isContentEditable: false, closest: () => null },
+  preventDefault: () => calls.push("prevent"), stopPropagation: () => calls.push("stop"), ...extra });
+const S = { io: { undo: () => calls.push("undo"), redo: () => calls.push("redo") } };
+const h = ctx.diagramModel.kindbar.historyKey;
+h(S, key());
+h(S, key({ key: "y" }));
+h(S, key({ target: { isContentEditable: false, closest: () => ({}) } }));
+out({ bar: typeof ctx.diagramModel.bar, calls });
+"""
+    )
+    assert got["bar"] == "undefined"
+    assert got["calls"] == ["prevent", "stop", "undo", "prevent", "stop", "redo"]
+
+
+def test_the_other_kinds_pane_never_reaches_for_the_flowchart_toolbar():
+    assert "diagramModel.bar" not in (JS / "diagram-kinds.js").read_text(encoding="utf-8")

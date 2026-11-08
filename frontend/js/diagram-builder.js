@@ -577,7 +577,7 @@
     host.append(root);
     panes.set(root, S);
     S.tree.addEventListener("keydown", (event) => onKey(S, event));
-    root.addEventListener("keydown", (event) => diagramModel.bar.historyKey(S, event));
+    root.addEventListener("keydown", (event) => diagramModel.kindbar.historyKey(S, event));
     root.addEventListener("keydown", (event) => diagramModel.bar.rootKey(S, event, { add: addBlock, style: styleDo }));
     S.tree.addEventListener("click", (event) => {
       const block = event.target.closest(".dgm-block");

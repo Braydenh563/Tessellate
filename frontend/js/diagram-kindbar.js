@@ -130,5 +130,17 @@
     S.io.set(fresh(S.source, to));
   }
 
-  diagramModel.kindbar = { mount, fresh, KINDS, SAMPLE };
+
+  //: Ctrl+Z and Ctrl+Y anywhere inside the builder (a tile, the picture, the toolbar) are the builder's: the app's undo listens on the
+  //: document and would run a second step, even bin the document ("Undone: Created"). A text field keeps the browser's own.
+  //: Lives here, not in diagram-bar.js: that loads for flowcharts only, and a sequence .mmd opened first threw on every keydown (review 1108).
+  function historyKey(S, event) {
+    const t = event.target;
+    if (event.altKey || !(event.ctrlKey || event.metaKey) || !/^[zy]$/i.test(event.key) || t.isContentEditable || t.closest?.("input, textarea, select")) return;
+    event.preventDefault();
+    event.stopPropagation();
+    return event.shiftKey || /y/i.test(event.key) ? S.io.redo() : S.io.undo();
+  }
+
+  diagramModel.kindbar = { mount, fresh, historyKey, KINDS, SAMPLE };
 })();

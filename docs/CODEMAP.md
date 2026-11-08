@@ -2,7 +2,7 @@
 
 Generated 2026-11-08 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7915, frontend ids 2652, CSS sections 522, backend routes 649, backend modules 9199, test files 2233, tests 18796, plan headings 1004, app scripts 28, boot scripts 37, script files 263.
+Counts: frontend functions 7915, frontend ids 2652, CSS sections 522, backend routes 649, backend modules 9199, test files 2234, tests 18798, plan headings 1004, app scripts 28, boot scripts 37, script files 263.
 
 ## Frontend functions (7915)
 
@@ -3134,19 +3134,18 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `diagSections` | frontend/js/diag-report.js:106 |
 | `diagTable` | frontend/js/diag-report.js:96 |
 
-### frontend/js/diagram-bar.js (10)
+### frontend/js/diagram-bar.js (9)
 
 | Name | File:line |
 |---|---|
 | `build` | frontend/js/diagram-bar.js:40 |
-| `chain` | frontend/js/diagram-bar.js:147 |
+| `chain` | frontend/js/diagram-bar.js:137 |
 | `hintOf` | frontend/js/diagram-bar.js:17 |
-| `historyKey` | frontend/js/diagram-bar.js:122 |
 | `key` | frontend/js/diagram-bar.js:112 |
 | `last` | frontend/js/diagram-bar.js:18 |
 | `nameOf` | frontend/js/diagram-bar.js:23 |
 | `optionsOf` | frontend/js/diagram-bar.js:22 |
-| `rootKey` | frontend/js/diagram-bar.js:132 |
+| `rootKey` | frontend/js/diagram-bar.js:122 |
 | `sync` | frontend/js/diagram-bar.js:26 |
 
 ### frontend/js/diagram-builder.js (41)
@@ -3258,7 +3257,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `titleOf` | frontend/js/diagram-joins.js:29 |
 | `words` | frontend/js/diagram-joins.js:110 |
 
-### frontend/js/diagram-kindbar.js (8)
+### frontend/js/diagram-kindbar.js (9)
 
 | Name | File:line |
 |---|---|
@@ -3266,6 +3265,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `choose` | frontend/js/diagram-kindbar.js:121 |
 | `decorate` | frontend/js/diagram-kindbar.js:86 |
 | `fresh` | frontend/js/diagram-kindbar.js:19 |
+| `historyKey` | frontend/js/diagram-kindbar.js:137 |
 | `lost` | frontend/js/diagram-kindbar.js:111 |
 | `mount` | frontend/js/diagram-kindbar.js:51 |
 | `open` | frontend/js/diagram-kindbar.js:78 |
@@ -24750,7 +24750,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (18796)
+## Tests (18798)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -25396,6 +25396,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_diagram_r8c.py | 11 |
 | tests/test_diagram_r9b.py | 9 |
 | tests/test_diagram_r9c.py | 9 |
+| tests/test_diagram_review_1108.py | 2 |
 | tests/test_diagram_review_1679.py | 4 |
 | tests/test_diagram_split_r3_r4.py | 8 |
 | tests/test_diagram_suggest.py | 22 |
