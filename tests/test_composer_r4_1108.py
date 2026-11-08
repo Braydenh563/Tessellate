@@ -61,3 +61,31 @@ def test_r3_4_the_ordinal_reader_is_linear_on_long_runs():
         t0 = time.perf_counter()
         composer_small.ordinal_about(run, [])
         assert time.perf_counter() - t0 < 2.0, run[:30]
+
+
+
+def test_e14_a_name_typed_without_its_accents_finds_the_accented_note():
+    notes = ("# José García\n\nJosé is my landlord. Phone 020 7946 0999.", "# Gym\n\nSquats on Monday.")
+    for question in ("tell me about Jose Garcia", "tell me about Garcia", "who is Jose"):
+        said = say(question, *notes)
+        assert "landlord" in said and "don't mention" not in said, (question, said)
+
+
+def test_e12_a_noun_for_the_phone_is_read_beside_the_business():
+    notes = ("# Dentist\n\nPhone 020 7946 0011\nDentist check-up on 11 November.", "# Dentist bill\n\nPaid £85 for the check-up.")
+    said = say("dentist number", *notes)
+    assert said.startswith("Phone 020 7946 0011"), said
+
+
+def test_d15_a_days_until_a_verb_reads_as_a_sentence():
+    said = say("how many days until my passport expires", "# Passport\n\nExpires 12 March 2031. Number is in the safe.")
+    assert "expires is" not in said and "The passport expires" in said and "12 March 2031" in said, said
+
+
+def test_e17_a_date_in_a_note_extended_later_is_this_year():
+    pool = _pool("# Running log\n\nRan 6 km on 25 October.")
+    pool[0]["created_at"] = "2026-10-14T10:00:00Z"
+    pool[0]["updated_at"] = "2026-11-01T10:00:00Z"
+    said = _route_answer("when did I last run", pool)["text"]
+    assert "25 October 2026" in said or "25 October," in said and "2025" not in said, said
+    assert "a year ago" not in said, said

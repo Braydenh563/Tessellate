@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Composer answers: a name typed without its accents finds the accented note, "dentist number" is read as the phone, "days until my passport expires" keeps its verb, and a date in a log extended later is read against the edit (round 4: E14, E12, D15, E17).
 - Composer (round 4, audit R3-4): "what is the first note I wrote about Sara" and "the last note about the dentist" rank that subject's notes by the day written ("Your first note about Sara is Sara, written four weeks ago: ..."), instead of answering with any note that holds the word first.
 - Composer (round 4, audit E6): "how much is left in my budget" takes the figure from a sentence that says budget, not "Overdraft limit £500" in another note, and a Budget note that lists costs with no limit gets "I found no budget figure in your notes".
 - Desk companion (deskmood 3): let go over a window top it missed by a little (the 'out of reach' case of `_top_in_reach`, a drop, not a throw), it looks confused once it stands on the floor (the `confused` reaction, 20 s cooldown); a drop onto a top or over no window does not.
