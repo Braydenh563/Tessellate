@@ -199,6 +199,12 @@ function markSaidSentences(targets, sentences) {
 //: new note, a pin), what was done and Undo. Confirm and Undo both post the
 //: steps to `/chat/command/run`, which runs only the tools an act may use.
 function renderActCard(holder, event) {
+  //: "cancel" said in the chat (CHAT_PLAN X17): the server's reply closes the
+  //: card still open, nothing else is drawn.
+  if (event.cancel) {
+    document.querySelectorAll(".tool-confirm[data-pending-act]").forEach((open) => open.replaceWith(toolChip("ph:x Cancelled: nothing was changed.")));
+    return;
+  }
   const card = document.createElement("div");
   card.className = "tool-confirm";
   const run = (steps, then) =>
@@ -224,6 +230,7 @@ function renderActCard(holder, event) {
   //: sentence again made the bubble say it twice. The words stay on the card
   //: as its accessible name, and a run with nothing to undo draws no card.
   const done = (summary, undo, steps, said = false) => {
+    delete card.dataset.pendingAct;
     const row = document.createElement("div");
     row.className = "row";
     if (undo?.length) {
@@ -265,6 +272,8 @@ function renderActCard(holder, event) {
       smallButton("Cancel", "Don't do this", () => card.replaceWith(toolChip("ph:x Cancelled: nothing was changed.")))
     );
     line(`ph:warning ${event.label}`, notice, row);
+    //: Open until Confirm settles it (`done` clears this) or Cancel replaces the card; the page tells the server (`chatHistoryWithOpenCard`).
+    card.dataset.pendingAct = event.label || "";
   }
   if (card.childElementCount) holder.appendChild(card);
   chatScrollToEnd();

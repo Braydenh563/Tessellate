@@ -1337,7 +1337,10 @@ async function streamChatEvents({
 // characters carrying the gist of ten turns is strictly better than the whole
 // of one.
 function chatHistoryToSend() {
-  const turns = chatConv.turns;
+  //: The last turn carries the label of an act card still waiting for Confirm
+  //: (`renderActCard` marks it), so "cancel" can drop it (CHAT_PLAN X17).
+  const open = [...$("chat-messages").querySelectorAll(".tool-confirm[data-pending-act]")].at(-1);
+  const turns = open && chatConv.turns.length ? [...chatConv.turns.slice(0, -1), { ...chatConv.turns.at(-1), pending_act: open.dataset.pendingAct }] : chatConv.turns;
   if (!chatSummary || chatSummary.covered <= 0) {
     return turns.slice(-MAX_CLIENT_HISTORY);
   }
