@@ -111,3 +111,12 @@ def test_job_lines_read_layout_only_for_a_running_job():
     body = _function(JS / "settings.js", "refreshJobRuns")
     line = next(row for row in body.splitlines() if "const running" in row)
     assert line.index("jobRunning") < line.index("offsetParent"), line
+
+
+def test_a_scroll_over_the_page_reads_no_layout():
+    # A Settings section switch scrolled its pane, and the edge timer's scrollTop read paid the pane's pending
+    # style (274 ms at 4x CPU in the trace): a menu, a dialog or Settings is skipped before any timer is set.
+    body = _function(JS / "shell-reminders.js", "onScrollEdge")
+    guard = body.index("#settings-modal")
+    assert guard < body.index("requestAnimationFrame("), body
+    assert body.count("#settings-modal") == 1, "one guard, before the timer"

@@ -620,7 +620,10 @@ let scrollEdgeFrame = 0;
 function onScrollEdge(event) {
   const region = event.target === document ? document.scrollingElement : event.target;
   if (!region || region.nodeType !== 1) return;
-  if (scrollEdgeFrame) return;
+  //: The same guard the edge effect uses: a menu, a dialog or a sheet scrolls *over* the page, and nothing
+  //: under it reacts. Before the timer, not in it (INBOX 1696 f): a Settings section switch scrolls its pane,
+  //: and the timer's scrollTop read paid the pane's pending style (274 ms at 4x CPU) for no change at all.
+  if (scrollEdgeFrame || region.closest(".action-menu, .help-popover, .modal-overlay, #settings-modal, [role='menu']")) return;
   // Coalesced to one measurement per frame: a scroll event fires far more
   // often than the screen repaints, and this one reads layout.
   //: After the frame's layout, a timer past it (see `scheduleUpdate`,
@@ -628,15 +631,7 @@ function onScrollEdge(event) {
   scrollEdgeFrame = requestAnimationFrame(() => setTimeout(() => {
     scrollEdgeFrame = 0;
     markScrollEdge(region);
-    //: The same guard the edge effect uses: a menu, a dialog or a sheet
-    //: scrolls *over* the page, and the bar it is covering has no business
-    //: reacting to it.
-    if (
-      !region.closest ||
-      !region.closest(".action-menu, .help-popover, .modal-overlay, #settings-modal, [role='menu']")
-    ) {
-      markTabBarRecede(region);
-    }
+    markTabBarRecede(region);
   }));
 }
 
