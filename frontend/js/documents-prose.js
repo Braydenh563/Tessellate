@@ -1782,24 +1782,25 @@ function docSmartPunct(before, ch) {
   return null;
 }
 
-//: **`#tag` completion in markdown** (DOCUMENTS_PLAN 23 L5). `before` is the
+//: **`#tag` completion in markdown** (DOCUMENTS_PLAN 23 L5), `docPairInput.tag`
+//: and `.tagSource`, properties not globals (the scope ratchet). `before` is the
 //: line up to the caret; returns the typed word after a `#` that opens a word
 //: (`#wi` in `fix #wi`), or null. Not a heading (`## Plan`), not `#` inside a
 //: word (`C#`, a URL anchor), and nothing until a letter follows the `#`.
-function docTagTyped(before) {
+docPairInput.tag = (before) => {
   if (/^\s{0,3}#{1,6}(?:\s|$)/.test(before)) return null;
   const m = /(?:^|\s)#([\p{L}\p{N}_-]+)$/u.exec(before);
   return m ? m[1] : null;
-}
+};
 
 //: The completion source for it: the tags the tag fields offer (`/tags`,
 //: the same answer `tag-suggest.js` reads), most used first. Silent about
 //: code, fences and headings, and about a failed fetch.
-function docTagSource(CM) {
+docPairInput.tagSource = (CM) => {
   return async (context) => {
     if (docFileType().ext !== "md") return null;
     const line = context.state.doc.lineAt(context.pos);
-    const typed = docTagTyped(line.text.slice(0, context.pos - line.from));
+    const typed = docPairInput.tag(line.text.slice(0, context.pos - line.from));
     if (typed === null || docInCodeAt(CM, context.state, context.pos)) return null;
     const counts = await apiJson("/tags", { silent: true, cacheMs: 30000 }).catch(() => null);
     if (!counts || context.aborted) return null;
@@ -1808,7 +1809,7 @@ function docTagSource(CM) {
       .map(([name, count]) => ({ label: `#${name}`, detail: String(count), type: "keyword" }));
     return options.length ? { from: context.pos - typed.length - 1, options, validFor: /^#[\p{L}\p{N}_-]*$/u } : null;
   };
-}
+};
 
 //: The characters that pair, and what closes each.
 const DOC_PAIR_CLOSE = { "(": ")", "[": "]", "{": "}", "`": "`", "_": "_", "*": "*" };

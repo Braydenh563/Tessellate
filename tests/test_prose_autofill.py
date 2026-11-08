@@ -55,7 +55,8 @@ def run(calls: list) -> list:
         + "\nconst NOW = new Date(2026, 8, 24, 14, 5);\n"
         "const ctx = (extra) => ({ now: NOW, locale: 'en-GB', slug: mdHeadingId, ...extra });\n"
         "const fns = {docLorem, docFillTable, docFillSig, docSmartPunct, docPairInput, docPairBackspace,"
-        " docFillToken, docFillGhost, docListEnter, docListExitText, docBulletRetype, docFenceCloseIndent, docTagTyped};\n"
+        " docFillToken, docFillGhost, docListEnter, docListExitText, docBulletRetype, docFenceCloseIndent};\n"
+        "fns.docTagTyped = docPairInput.tag;\n"
         "fns.toc = (text) => docFillToc(text, mdHeadingId);\n"
         "fns.date = (kind, locale) => docFillDate(kind, NOW, locale);\n"
         "fns.options = (before, after, extra) => docFillOptions(docFillToken(before, after), ctx(extra || {}))"
@@ -474,4 +475,4 @@ def test_a_hash_tag_is_completed_only_where_a_word_opens_with_one() -> None:
 
 def test_markdown_wires_the_tag_source_and_plain_text_stays_inert() -> None:
     code = (ROOT / "frontend" / "js" / "documents-code.js").read_text(encoding="utf-8")
-    assert 'override: type.ext === "md" ? [docTagSource(CM)] : [], activateOnTyping: type.ext === "md"' in code
+    assert 'override: type.ext === "md" ? [docPairInput.tagSource(CM)] : [], activateOnTyping: type.ext === "md"' in code

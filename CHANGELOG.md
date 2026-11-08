@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Settings lag (laglist 1108 item 1): the section index ("On this page") reads which group heads are shown from the tree (`hidden`, the `hidden` class, closed `details`) instead of `getClientRects`, which settled the whole pane's pending style: at 4x CPU the first heads read on Help went from 70, 82, 103 ms to 0.7, 0.2, 0.1 ms and the first index build from 80, 94, 111 ms to 2.3, 0.5, 2.1 ms. The heads listed are the same on all 21 sections at 1440 and 390.
 - Documents editor (DOCUMENTS_PLAN 23 L5): typing `#` and a letter in a markdown document offers the tags you have used (the list the tag fields read, most used first); Enter or Tab takes one. It stays quiet in headings, code, fences and plain text.
 - Documents editor (DOCUMENTS_PLAN 23 L4): Ctrl+Alt+G goes to a line in markdown and text documents (the palette and the shortcut sheet list it); Ctrl+G stays find next there, and Go to line on Ctrl+G stays for code files.
 - Documents editor (DOCUMENTS_PLAN 23 L1): Enter at the end of an `a.`, `i.` or two-space dash item starts the next item (`b.`, `ii.`, another dash); Enter on an empty letter or roman item ends the list. The markdown keymap continued only CommonMark markers.
