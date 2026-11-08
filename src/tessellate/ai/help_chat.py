@@ -785,7 +785,7 @@ def _prompt_for(
             }
         )
     if topics:
-        reference = "\n".join(f"- {topic['body']}" for topic in topics)
+        reference = "\n".join(f"- {topic_title(topic)}: {topic['body']}" for topic in topics)
         messages.append(
             {"role": "system", "content": f"Reference notes for this question:\n{reference}"}
         )

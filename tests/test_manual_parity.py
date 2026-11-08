@@ -619,6 +619,9 @@ def test_the_lead_is_never_prompt_text(monkeypatch):
     sent = "\n".join(message["content"] for message in messages)
     assert len(topics) == len(help_chat.HELP_TOPICS)
     assert [lead for lead in TOPIC_LEADS.values() if lead in sent] == []
+    #: A body no longer opens on its label ("Graph keys and controls."), so the
+    #: title names the surface for the model, as `help_block_for` does.
+    assert [t["id"] for t in help_chat.HELP_TOPICS if f"- {help_chat.topic_title(t)}: " not in sent] == []
 
 
 def test_settings_help_and_the_manual_draw_and_search_the_lead():

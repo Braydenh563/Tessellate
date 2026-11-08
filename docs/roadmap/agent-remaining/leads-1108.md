@@ -6,3 +6,4 @@
 - Base reds seen, not mine (4da87779 fails them alone): test_module_line_caps (routes_chat.py 2476 > 2474), test_global_scope_ratchet (9708 > 9706), test_frontend_wake_sources (avatars.js raf 7 to 8), test_complexity (composer_ask.subject_terms, composer_slots._age_of).
 - done: "Help: a one-line lead on every topic" commit; next: nothing in this brief.
 - Not done: the Guide's system answer (`help_chat.system_answer`) does not show the lead; 1612 c (pictures) untouched.
+- Review: 13 leads rewritten (12 restated their title, make-a-diagram vague: the controls topics, chat-list, chat-attach-cards, what-is-atlas, graph-options-help, companion-habits, make-a-diagram); the Guide's prompt reference now reads `- title: body` (help_block_for's form), since `_prompt_for` sent bodies without titles and "Click the map, then the arrow keys..." no longer said which surface. Sweeps /tmp/claude-0/leads-rev/sw/rev.js and man.js.
