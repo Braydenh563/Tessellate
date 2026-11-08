@@ -334,3 +334,15 @@ The catalogue has 307 entries: idle acts 88, transitions 66, faces 30, interacti
 The 111 entries built on neither side are new, and each is marked `missing` on both sides. Every entry built on one side only is marked `missing` on the other.
 
 done: step 1 ddce2944; next: commit the catalogue (step 2), then the ratchet test (step 3), then the build order (step 4).
+
+## Step 3: the ratchets, `tests/test_companion_catalogue_1108.py`
+
+- **(a) Parity.** `APP_ONLY` (69) and `DESK_ONLY` (36) are the allow lists, and their caps may only fall, as may `NEITHER_CAP` (111). Every act, tail, lower, mood, micro, reaction and poke row in the app's tables, and every Activity, reaction, face, spell and flow row on the desk, must be catalogued under its exact name, and every catalogued name must still exist in the code. A built side's `at` text must be found in its file.
+- **(b) Variety.** `seeded_hour` draws one hour at hours 9, 14, 20 and 23 with seeds 1 to 3, from the catalogue's weights on a fixed clock (no wall time). Measured 2026-11-08:
+  - all entries: 48 to 80 distinct acts, longest pose 75.8 s;
+  - built in-app: 42 to 50 acts, longest 69.7 s;
+  - built on the desk: 32 to 46 acts, longest 69.6 s.
+
+  The test asks for at least 12 acts and no pose over 90 s. `test_built_variety_only_rises` floors the built sides at 38 in-app and 29 desk.
+
+done: step 2 1668e9dc; next: the test (step 3), then the build order (step 4).
