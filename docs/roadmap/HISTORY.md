@@ -52963,3 +52963,25 @@ Built: T1. Row text: T1 | Calculator | Gemini `math` shape, invisible, digit-onl
 - **What it does:** `ai/composer_sums.py` (through `composer_quick`) adds the spoken shorthand: "5 factorial" and "5!" (up to 20), "half of 90", "a third of 10", "a quarter of 8", "double 45", "twice", "triple", "sqrt 144" and the root sign. "Half of 90 is 45." then "_Read as 90 divided by 2._" The rest of the row (sums, percentages, "squared", "the square root of") was already built in `utilities.py` and `composer_calc.py`.
 - **Check:** `tests/test_composer_sums_1108.py` (exact sentences, 20k linear timing).
 - **Not built:** The function whitelist words round, floor, ceil, min, max, log, ln, pow typed as words; "2(3+4)".
+
+## Moved from the plans, 2026-11-08 (CHAT_PLAN small rows D)
+
+Built (verified by asking the plan row's own phrasing, `tests/test_composer_smalld_1108.py`): T11, T5, C6, X4, X6, X12, X18, and the leftovers of T1, T6 and Time and date. Row text:
+
+- T11 | Dice and coin | None | "roll 2d6", "flip a coin", "roll a dice" | `random` with the same labelling; the roll is stated with each die | S | 2
+- T5 | Word count and reading time | Gemini `reading_time` (counts the retrieved notes, not the one asked about; invisible) | "how many words is this note", "reading time of the passport note" | Count on the resolved note's text (code and front matter excluded), 238 words per minute, "about 420 words, two minutes" | S | 2
+- C6 | Identity | `SOCIAL["who"]` 12; owner: "Composer doesn't know it is atlas" | Not named; bubble label | "I am Atlas. With no model I answer from your notes alone; with one, I use it and check it against them." ; label "Atlas, from your notes" or "Atlas, <model>" | S | 8
+- X4 | File into a category | `edit_note` `category` | No chat verb | "file this under Work" with the engine's explanation line ("shares gym, squat and protein with 6 notes there") | S | 7 (decision 39)
+- X6 | Pin | `pin_note` | No chat verb | "pin this" with dialogue reference | S | 7
+- X12 | Find and open | `search_notes`, `get_note` | No chat verb ("open the passport note") | Title match first, then plan; one result opens, several asks which | S | 7
+- X18 | Capability line | `CAPABILITY_LINE` only on the wip branch | Must list only verbs that run | Generated from the registered acts, not typed | S | 7 and 8
+
+- **T11 dice and coin:** "roll 2d6" says "You rolled 4, 1: 5 in all.", "flip a coin" and "roll a dice" answer, in `utilities.py`. Nothing new was needed.
+- **T5 word count:** "how many words is the passport note" was built (`composer_calc._word_count`); "reading time of the passport note" now answers too (the word count pattern gained "reading time").
+- **C6 identity:** "who are you" says "Atlas's assistant" in every line (`composer_smalltalk.SOCIAL["who"]`; the plan's "I am Atlas" wording was amended by decision 36).
+- **X4, X6, X12, X18:** "file this under Work", "pin this", "pin the passport note", "open the passport note" read as their acts (`commands.read_typed`), and the capability line is generated from the act registry (`act_registry.capability_line`, `tests/test_acts.py`).
+- **T1 leftovers:** `ai/composer_sums.py` now also answers "round 3.14159 to 2 decimal places", "floor 3.7", "ceil 3.2", "round up 3.2", "log 100", "log2 8", "log base 2 of 8", "ln 1", "pow(2, 10)", "2 to the power of 10" and "2(3+4)". A power past the cap ("2 to the power of 10000"), a log of zero or a negative number, a base of 0 or 1, and zero to a negative power each say why. min and max were already built in `utilities.py`.
+- **T6 leftovers:** `ai/composer_text.py` also joins lines with commas, splits on commas into lines, and counts characters with and without spaces (pasted text, after a colon, quote or new line).
+- **Time and date leftover:** `ai/composer_epoch.py` answers "unix time now" (the turn's clock), "what is 1700000000 as a date" (seconds, or milliseconds from 12 digits, in UTC) and "unix time of 1 January 2024" (midnight UTC).
+- **Review fixes on batch C:** case transforms leave "uppercase my notes about X" alone; "pick" needs a list written as a list; "what week is 3 March" is this year; fractions show two decimals.
+- **Not built:** X5 (renaming a tag or category by chat), X8 restore, X10, X11, X13 to X17, T7 to T9 and the rest of the X rows stay open in CHAT_PLAN; acting on a named note ("uppercase the passport note") needs the confirm-first draft path.

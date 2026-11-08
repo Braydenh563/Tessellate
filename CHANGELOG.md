@@ -6,6 +6,10 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Chat with no model, pasted text (T6): join lines with commas, split on commas into lines, and count characters with and without spaces; a note named in the question is still left alone.
+- Chat with no model, Unix time (Time and date): "unix time now", "what is 1700000000 as a date" and "unix time of 1 January 2024".
+- Chat with no model, calculator words (T1): round, floor, ceil, log, ln, pow and "2(3+4)"; a power too large to write out, a log of zero or a negative number, and a base of 1 each say why.
+- Chat with no model, review fixes: case transforms and picks no longer take questions about your notes, a bare day and month in a week question means this year, and a fraction like a third of 10 shows two decimals.
 Your own desk companion's capture works again: it asks the page for the frames it keeps, not the wave swing the shipped frames added (which stopped it at wave0).
 - Desk frames re-rendered deterministically (stand-centred crop, shared stream, walk tail pinned, clipped idle feet); the ten overlay failures fixed at the source, held ride box widened
 - Desk expressions: the art's calm mouth is painted out from the skin either side of it with a feathered edge, not a flat disc (the owner's white paste round the mouth, INBOX 1696 hh); desk arms measured at 0.4 to 0.5 px thicker than the app's at 128 px, inside the 1 px bar, pinned by a test (1696 z).
