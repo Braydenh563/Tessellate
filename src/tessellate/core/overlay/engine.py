@@ -128,6 +128,9 @@ NOTICE_COOLDOWN = 8.0
 #: keyboard, since the big acts (hang, peek) come two to four minutes apart.
 IDLE_SIT = 600.0
 IDLE_SLEEP = 1200.0
+#: Left alone this long (no pointer near it, no touch, no reaction): a sad look, once per idle stretch. Fifteen minutes,
+#: between the sit at `IDLE_SIT` and the sleep at `IDLE_SLEEP`, so it is seen sitting and never while asleep.
+LONELY_AFTER = 900.0
 #: The idle cycle (`idle0` to `idle23`, one tail beat and one breath): a standing figure draws these at
 #: `IDLE_FPS` all the time so the parts never stop (INBOX 1670, 15:40Z); reduced it is the one `stand` frame
 #: and costs no wake.
@@ -801,6 +804,8 @@ class Engine:
         #: A carry shaken hard enough (`extras.shake_flips`), and the moment a drop owes a dizzy sway (None: none owed).
         self.shaken = False
         self.dizzy_owed: float | None = None
+        #: The `last_active` of the idle stretch it has already looked sad in (one look per stretch).
+        self.lonely_stretch: float | None = None
         #: Carried upside down (grabbed by the feet, or shaken): drawn as the turned tumble picture, half a circle round.
         self.upside = False
         #: When this carry began and the stage it has reached (`CARRY_STAGES`): "", "kick", "cross" or "sigh".
@@ -1083,6 +1088,19 @@ class Engine:
             self.dizzy_owed = None
             self.ex.fire("dizzy", now, seconds=self.ex.rng.uniform(*extras.DIZZY_FOR))
 
+    def _lonely(self, now: float, pointer: tuple[int, int] | None) -> None:
+        """Left alone `LONELY_AFTER` s while standing or sitting (not asleep, not busy, not reduced): the refused look,
+        once per idle stretch (a pointer within `NOTICE_NEAR` is company). The look does not count as activity, so the sit and the sleep keep their times."""
+        if now - self.last_active < LONELY_AFTER or self.lonely_stretch == self.last_active:
+            return
+        if self.state not in ("stand", "sit") or self.busy or self.reduced:
+            return
+        if pointer is not None and math.hypot(pointer[0] - self.x - self.size[0] / 2, pointer[1] - self.y - self.size[1] / 2) <= NOTICE_NEAR * self._scale():
+            return  # a pointer resting beside it is company
+        kept = self.last_active
+        if self.ex.fire("refused", now):
+            self.lonely_stretch = self.last_active = kept
+
     def _wear_face(self, state: str, now: float) -> None:
         if self.flung is not None:  # thrown off a window: the face comes with the first moment it can wear one
             if state in extras.FACE_STATES:
@@ -1209,6 +1227,7 @@ class Engine:
             self._turning(now)
         self._follow_through(now, dt)
         self._dizzy(now)
+        self._lonely(now, pointer)
         self._carry_tick(now)
         if self.settled_now and self.placed:  # where the person left it is home
             self.home_x, self.placed = self.x, False
@@ -4254,6 +4273,8 @@ class Engine:
         if s == "stand":
             due += [self.flash[1]] if self.flash else [self.next_ambient]
             due.append(self.last_active + IDLE_SIT)
+        if s in ("stand", "sit") and self.lonely_stretch != self.last_active and self.last_active + LONELY_AFTER > now:
+            due.append(self.last_active + LONELY_AFTER)
         if self._idling():  # the next idle frame: a redraw only when the index changes
             due.append(self._idle_next(now))
         return due

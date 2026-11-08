@@ -2,7 +2,7 @@
 
 Generated 2026-11-08 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7917, frontend ids 2652, CSS sections 522, backend routes 649, backend modules 9194, test files 2236, tests 18824, plan headings 1004, app scripts 28, boot scripts 37, script files 263.
+Counts: frontend functions 7917, frontend ids 2652, CSS sections 522, backend routes 649, backend modules 9194, test files 2237, tests 18829, plan headings 1004, app scripts 28, boot scripts 37, script files 263.
 
 ## Frontend functions (7917)
 
@@ -16179,8 +16179,8 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `_act_topic` | src/tessellate/ai/help_topics_more.py:3455 |
-| `_slash_commands_topic` | src/tessellate/ai/help_topics_more.py:3587 |
+| `_act_topic` | src/tessellate/ai/help_topics_more.py:3467 |
+| `_slash_commands_topic` | src/tessellate/ai/help_topics_more.py:3599 |
 
 ### src/tessellate/ai/help_words.py (2)
 
@@ -22780,15 +22780,15 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `Bar` | src/tessellate/core/overlay/engine.py:507 |
-| `Cover` | src/tessellate/core/overlay/engine.py:488 |
-| `Engine` | src/tessellate/core/overlay/engine.py:586 |
-| `Monitor` | src/tessellate/core/overlay/engine.py:517 |
-| `Output` | src/tessellate/core/overlay/engine.py:535 |
-| `Perch` | src/tessellate/core/overlay/engine.py:476 |
-| `TuckSpot` | src/tessellate/core/overlay/engine.py:497 |
-| `_adjoins` | src/tessellate/core/overlay/engine.py:570 |
-| `_same_screens` | src/tessellate/core/overlay/engine.py:581 |
+| `Bar` | src/tessellate/core/overlay/engine.py:510 |
+| `Cover` | src/tessellate/core/overlay/engine.py:491 |
+| `Engine` | src/tessellate/core/overlay/engine.py:589 |
+| `Monitor` | src/tessellate/core/overlay/engine.py:520 |
+| `Output` | src/tessellate/core/overlay/engine.py:538 |
+| `Perch` | src/tessellate/core/overlay/engine.py:479 |
+| `TuckSpot` | src/tessellate/core/overlay/engine.py:500 |
+| `_adjoins` | src/tessellate/core/overlay/engine.py:573 |
+| `_same_screens` | src/tessellate/core/overlay/engine.py:584 |
 
 ### src/tessellate/core/overlay/extras.py (11)
 
@@ -24747,7 +24747,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (18824)
+## Tests (18829)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -26231,6 +26231,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_overlay_landing_1683k.py | 12 |
 | tests/test_overlay_life_1670.py | 25 |
 | tests/test_overlay_modes_1107.py | 3 |
+| tests/test_overlay_mood_1108.py | 5 |
 | tests/test_overlay_moves.py | 26 |
 | tests/test_overlay_nap_1683u.py | 7 |
 | tests/test_overlay_pace_1683.py | 5 |
@@ -27574,7 +27575,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | E4 · The honest positives, so the section is not one-sided (read) | docs/roadmap/MODERNISATION_AUDIT.md:676 |
 | Earlier morning summary (2026-10-30) | docs/roadmap/HANDOVER.md:41 |
 | Earlier morning summary (away run 2026-10-18b) | docs/roadmap/HANDOVER.md:60 |
-| Earlier sessions | docs/roadmap/HANDOVER.md:526 |
+| Earlier sessions | docs/roadmap/HANDOVER.md:528 |
 | Expert audit, 2026-10-10 | docs/roadmap/BACKLOG.md:4270 |
 | F. Agent harness: what "ultimate" needs that is not there | docs/roadmap/AUDIT.md:113 |
 | F. Performance and perceived speed | docs/roadmap/MODERNISATION_AUDIT.md:685 |

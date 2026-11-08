@@ -1467,6 +1467,17 @@ MORE_TOPICS: list[dict] = [
         ),
         "badge": {"label": "Desktop companion", "section": "appearance", "target": "desktop-companion-row"},
     },
+    {
+        "id": "desktop-companion-moods",
+        "keywords": (
+            "desktop companion sad", "companion lonely", "companion left alone", "companion welcome back",
+            "companion confused", "companion dropped near a window", "desktop companion moods",
+        ),
+        "body": (
+            'The companion on the desktop shows how things are going. Leave it alone for fifteen minutes, with no pointer near it and nothing happening, and it looks sad once; it never does while it sleeps or while you type. With Motion off it stays still.'
+        ),
+        "badge": {"label": "Desktop companion", "section": "appearance", "target": "desktop-companion-row"},
+    },
 ]
 
 #: **Every feature since 0.3.0, large and small** (INBOX 448 (1), the owner:
@@ -2742,6 +2753,7 @@ TOPIC_META: dict[str, dict] = {
     "companion-remarks": {"title": "What the companion says", "path": "Settings, Appearance, Atlas and faces, Corner companion"},
     "companion-habits": {"title": "The companion's habits and reactions", "path": "Settings, Appearance, Atlas and faces, Corner companion"},
     "desktop-companion": {"title": "The companion on the desktop", "path": "On the computer Tessellate runs on, Settings, Appearance, Corner companion, Show the companion on the desktop"},
+    "desktop-companion-moods": {"title": "When the desktop companion looks sad, glad or confused", "path": "On the computer Tessellate runs on, Settings, Appearance, Corner companion, Show the companion on the desktop"},
     "what-is-atlas": {"title": "What Atlas does", "path": "The Chat tab, or Ctrl+Shift+A over any tab"},
     "atlas-look": {"title": "How Atlas looks", "path": "Settings, Appearance, Atlas and faces, Atlas style and Atlas look"},
     "faces": {"title": "Generated faces", "path": "Settings, Appearance, Atlas and faces"},
@@ -2939,7 +2951,7 @@ HELP_GROUPS: list[tuple[str, tuple[str, ...]]] = [
         "privacy", "security", "encryption", "lock", "phone", "lan-networks", "two-computers", "delete-data", "storage", "import-export", "import-apps", "usage-ledger", "background-tasks", "activity", "health", "data-folder-check",
     )),
     ("Settings and support", (
-        "profile", "general-settings", "desktop-companion", "updates", "maintenance", "logs", "troubleshooting", "credits",
+        "profile", "general-settings", "desktop-companion", "desktop-companion-moods", "updates", "maintenance", "logs", "troubleshooting", "credits",
     )),
 ]
 
