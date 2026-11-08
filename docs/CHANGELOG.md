@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- List styles in rendered notes, Chat and the HTML export (INBOX 1696 cc): `*` circles, `+` squares, a two-space dash, `1)` numbers, `a.` letters and `i.` roman numerals are read by the renderer as the lists they are (letters only as a run, never inside a paragraph), a change of marker starts a new list, and the export keeps the type; before, `1)`, `a.` and `i.` were plain paragraphs and every marker was one list.
 - Chat acts (X17): "cancel", "never mind" or "forget it" closes an act card that is still waiting for Confirm and says nothing was changed; with no card waiting the words are read as before.
 - Chat acts (X5, X8): "rename the tag gym to fitness", "rename the category Work to Job" and "rename the note X to Y" give a card that waits for Confirm (an unknown name says which are close), and "restore the passport note" brings a note back from the bin after Confirm; Undo reverses each.
 - Chat acts (X10): "add buy milk to today's note" gives a card that waits for Confirm and adds a bullet to the daily note; if the note changed meanwhile, nothing is written and the line says so.
