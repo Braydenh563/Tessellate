@@ -6,6 +6,9 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Settings: Line spacing (Tight, Normal, Roomy) and Line width (Narrow, Standard, Wide) for notes and documents, Live editor included, carried in exported looks (BACKLOG).
+- Settings: Mix palette, accent and density picks a fresh combination with one Undo; the whole-theme button is now Random theme (BACKLOG).
+- Settings: Export look and Import look in Your themes; an import checks every value, skips what it cannot read and names it, with Undo (BACKLOG).
 - Chat: "show me something old" brings back one older note with its opening line (CHAT_PLAN A24).
 - Chat: "where did I write X" names the note, its heading and category, and when it was last edited (CHAT_PLAN A22).
 - Chat: spelled numbers in a question are read as numbers ("the last two notes"), leaving quotes and names alone (CHAT_PLAN U17).
