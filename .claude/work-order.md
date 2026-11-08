@@ -5,7 +5,7 @@ max-continues: 60
 max-idle-minutes: 60
 finish-up: 45%
 started: 2026-11-07 14:40Z
-tier: max (weekly 32% at 2026-11-08 16:00Z), four agents at once, Sonnet or Haiku, one Opus for design or risky review; never Fable; owner away from 2026-11-08 16:00Z until late afternoon 2026-11-09
+tier: max (weekly 32% at 2026-11-08 16:00Z), four agents at once, Sonnet or Haiku, one Opus for design or risky review; never Fable; owner away from 2026-11-08 16:00Z until about 2026-11-09 06:00Z to 07:00Z (late afternoon owner time, UTC+10)
 
 ## 2026-11-08 away queue (HANDOVER Now 2026-11-08g)
 - [ ] Merge desklayers-1108 (C1, C4), appacts-1108 (D1, D2), dgmlive-1108 (diagram real-browser checks), deskmood-1108 (sad when left alone, welcome back, confused on a missed landing): targeted tests, reviewer on UI, push
