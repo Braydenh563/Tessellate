@@ -8,16 +8,20 @@ file is an empty table, so the built-in tables stand and nothing else changes. R
 from __future__ import annotations
 
 import json
+import sys
 from functools import lru_cache
 from pathlib import Path
 from typing import Any
 
 
 def path() -> Path:
-    """`frontend/companion-catalogue.json`, in a checkout or a bundled build."""
-    from tessellate.api.app import FRONTEND_DIR
-
-    return Path(FRONTEND_DIR) / "companion-catalogue.json"
+    """`frontend/companion-catalogue.json`, in a checkout or a bundled build (the root `api/app.py` names
+    `FRONTEND_DIR` from; not imported, since `behaviour.py` reads this at import and the app is heavy)."""
+    if getattr(sys, "frozen", False):
+        root = Path(getattr(sys, "_MEIPASS", Path(sys.executable).parent))
+    else:
+        root = Path(__file__).resolve().parents[4]
+    return root / "frontend" / "companion-catalogue.json"
 
 
 @lru_cache(maxsize=1)
@@ -35,6 +39,7 @@ def entries() -> list[dict[str, Any]]:
     return [e for e in rows if isinstance(e, dict) and "id" in e] if isinstance(rows, list) else []
 
 
+@lru_cache(maxsize=1)
 def by_desk_name() -> dict[str, dict[str, Any]]:
     """Each act entry built on the desk, by the desk table name it covers (`acts:doze` -> `doze`)."""
     out: dict[str, dict[str, Any]] = {}
@@ -46,3 +51,9 @@ def by_desk_name() -> dict[str, dict[str, Any]]:
             if table == "acts":
                 out[name] = e
     return out
+
+
+def reset() -> None:
+    """Forget what was read (a test that points `path` elsewhere)."""
+    load.cache_clear()
+    by_desk_name.cache_clear()

@@ -57,7 +57,9 @@ def test_a_nap_is_still_asleep_after_ten_minutes_when_it_is_not_its_own_long_nap
 
 
 def test_its_own_long_nap_ends_with_a_stretch() -> None:
-    e, _ = make("masculine", "walk", 5)
+    # seed 4, not 5 (atlascat-1108 A3): at seed 5 the first update starts a spell, the nap command is dropped, and the
+    # stretch seen was a chance idle one; seed 4 sleeps and wakes with the stretch, which is what this holds
+    e, _ = make("masculine", "walk", 4)
     t = 100.0
     e.update(t)
     e.command("nap", t)

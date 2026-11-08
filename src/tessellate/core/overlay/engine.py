@@ -280,6 +280,8 @@ SPIN_LEVER = 0.9
 #: The squash a thrown floater makes as it comes to rest: this much of its height, over this many seconds.
 SQUASH = 0.1
 SQUASH_FOR = 0.35
+#: A4: a sit or a sleep shifting its weight (seconds, and the lean it takes).
+SHIFT_FOR, SHIFT_LEAN = 2.4, 0.05
 #: Once the flight is this slow (px per second at 96 dpi), or it is on the floor, it rights itself with an
 #: eased turn (a critically damped spring to the nearest upright, `RIGHT_W` rad/s, ramped in over `RIGHT_RAMP`
 #: s so the turn rate stays continuous) and is laid down only when upright.
@@ -636,6 +638,7 @@ class Engine:
         self.bonk_until = 0.0
         self.angle = 0.0
         self.squash_at = -math.inf  # when a thrown floater last came to rest
+        self.shift_at = -math.inf  # when a sit or a sleep last shifted its weight (A4)
         self.kick = 0.0  # the change of turn rate a contact has still to pay out (`_spin`)
         self.omega = 0.0  # a thrown figure's turn rate, rad/s
         self.right_t = 0.0  # seconds it has been righting itself
@@ -979,6 +982,8 @@ class Engine:
         self._wear_face(state, now)
         self.state = state
         self._arm_nap(state, now)
+        if state in bh.STATE_BEATS:
+            self.mind.start_beats(bh.STATE_BEATS[state], now, self.var_rng)
         self.flash = None
         self._drop_holds(state)
         self.trip = False
@@ -1045,6 +1050,7 @@ class Engine:
         if self.spell_len:
             self.act_len, self.spell_len = self.spell_len, 0.0
         self.act_turned = -1.0
+        self.mind.start_beats(self.act or "breathe", now, self.var_rng)  # A4: a long act shifts its pose within its budget
         self.state_until = now + self.act_len
 
     def _on_crouch(self, now: float) -> None:
@@ -1200,6 +1206,10 @@ class Engine:
         if self.turn_to != 0:
             u = (now - self.turn_started) / TURN_FOR
             sx *= max(0.12, abs(math.cos(math.pi * min(1.0, u))))
+        u = (now - self.shift_at) / SHIFT_FOR
+        if s_ in ("act", "sit", "sleep") and 0.0 <= u < 1.0:  # A4: a long act or rest shifts its weight over and settles
+            lean += SHIFT_LEAN * math.sin(math.pi * u) * (1 if self.mind.shifts % 2 else -1)
+            sy -= 0.02 * math.sin(math.pi * u)
         return bh.Pose(sx, sy, lean, drag)
 
     def _ground_pose(self, now: float, s_: str) -> tuple[float, float, float]:
@@ -1443,6 +1453,8 @@ class Engine:
             if u >= t and self.act_turned < t:
                 self.act_turned = t
                 self._face(-self.facing, now)
+        if self.mind.shift_due(now, self.var_rng):
+            self.shift_at = now  # A4: the same lean and settle as a sit's, the window does not move
         if now >= self.state_until:
             self._enter("stand", now)
             self.ex.after_act(now)
@@ -2942,6 +2954,8 @@ class Engine:
 
     def _do_sit(self, now: float, dt: float) -> None:
         self._ambient(now)
+        if self.mind.shift_due(now, self.var_rng):
+            self.shift_at = now  # a seat shift: a lean and a settle (`_ground_pose`), the window does not move
         idle = now - self.last_active
         if idle >= IDLE_SLEEP:
             self._enter("sleep", now)
@@ -2949,6 +2963,8 @@ class Engine:
             self._enter("stand", now)
 
     def _do_sleep(self, now: float, dt: float) -> None:
+        if self.mind.shift_due(now, self.var_rng):
+            self.shift_at = now  # turns over in its sleep: the same lean and settle
         if self.nap_until and now >= self.nap_until:  # its own long nap is over: up with a stretch
             self._wake_up(now)
 

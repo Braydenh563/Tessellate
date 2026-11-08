@@ -21,6 +21,8 @@ import math
 import random
 from typing import Any, NamedTuple
 
+from tessellate.core.overlay import catalogue
+
 #: Seconds an activity is not repeated after it was done.
 NO_REPEAT = 180.0
 #: Need rise per second at rest (they reach 1.0 in about this many seconds without relief).
@@ -227,6 +229,63 @@ BASE_WEIGHT = {
 }
 
 
+#: The acts `_from_catalogue` set from the table (props and extras register more later, with lengths of their own).
+CATALOGUED: set[str] = set()
+
+
+def _from_catalogue() -> None:
+    """A3 (atlascat-1108): an act built on both sides takes its length and weight from the shared catalogue
+    (`frontend/companion-catalogue.json`); an entry that covers several desk acts splits its weight among them.
+    A missing file changes nothing."""
+    names: dict[str, list[str]] = {}
+    for name, e in catalogue.by_desk_name().items():
+        if name in ACTIVITIES and e.get("app", {}).get("s") == "built":
+            names.setdefault(e["id"], []).append(name)
+    for eid, group in names.items():
+        e = next(x for x in catalogue.entries() if x["id"] == eid)
+        for name in group:
+            # never shorter than the built-in minimum: a shorter play redraws faster than the 12 a second cap
+            lo = max(float(e["seconds"][0]), ACTIVITIES[name].seconds[0])
+            ACTIVITIES[name] = ACTIVITIES[name]._replace(seconds=(lo, max(lo, float(e["seconds"][1]))))
+            BASE_WEIGHT[name] = e["w"] / len(group)
+            CATALOGUED.add(name)
+
+
+
+def phase_of(hour: int) -> str:
+    """The part of the day (`phases` of the catalogue), "" without a catalogue."""
+    for name, (a, b) in catalogue.load().get("phases", {}).items():
+        if (a <= hour % 24 < b) if a < b else (hour % 24 >= a or hour % 24 < b):
+            return name
+    return ""
+
+
+def catalogue_factor(name: str, mood: str, hour: int) -> float:
+    """A5: what the catalogue's mood, energy and day weights make of an act now (1 for an act it does not list, and for the props' own). Energy
+    is the part of the day's, none when sleepy and one more when happy or startled."""
+    e = catalogue.by_desk_name().get(name) if name in CATALOGUED else None
+    if e is None:
+        return 1.0
+    phase = phase_of(hour)
+    energy = catalogue.load().get("energy_by_phase", {}).get(phase, 1)
+    energy = 0 if mood == "sleepy" else min(2, energy + 1) if mood in ("happy", "startled") else energy
+    return float(e.get("mood", {}).get(mood, 1.0) * e["energy"][energy] * e.get("day", {}).get(phase, 1.0))
+
+
+def shift_every(name: str) -> tuple[float, float] | None:
+    """How often the catalogue's pose-shifting beat of the act `name` falls (seconds), if it has one."""
+    for b in catalogue.by_desk_name().get(name, {}).get("beats", []):
+        if b.get("shifts"):
+            return float(b["every"][0]), float(b["every"][1])
+    return None
+
+
+#: A4: a sit or a sleep that is not an act shifts by the beats of the catalogue entry it plays (a read's seat shift, a
+#: nap's turn over), so neither holds one pose past 90 s.
+STATE_BEATS = {"sit": "read_book", "sleep": "doze"}
+_from_catalogue()
+
+
 def mood_of(needs: dict[str, float], event: str, event_age: float, hour: int) -> str:
     """The mood: an event of the last `MOOD_FOR` seconds wins; else the strongest need."""
     if event and event_age < MOOD_FOR:
@@ -327,6 +386,10 @@ class Mind:
         #: The steps still to come of a running chain, and how many chains ran to the end.
         self.chain: list[str] = []
         self.chains_done = 0
+        #: A4: when the running act next shifts its pose (a long act turns over or shifts its seat), and every how long.
+        self.shift_at = math.inf
+        self.shift_every: tuple[float, float] | None = None
+        self.shifts = 0
 
     def tick(self, now: float, hour: int = 12) -> None:
         dt = min(max(now - self.at, 0.0), 30.0)
@@ -340,6 +403,20 @@ class Mind:
 
     def feel(self, event: str, now: float) -> None:
         self.event, self.event_at = event, now
+
+    def start_beats(self, name: str, now: float, rng: random.Random) -> None:
+        """A4 (atlascat-1108): the act's catalogue beats that shift the pose are timed from its start, so a long act
+        never holds one pose past its budget; an act with none draws nothing."""
+        self.shift_every = shift_every(name)
+        self.shift_at = now + rng.uniform(*self.shift_every) if self.shift_every else math.inf
+
+    def shift_due(self, now: float, rng: random.Random) -> bool:
+        """True once each time a pose shift falls due, and the next one is timed from it."""
+        if self.shift_every is None or now < self.shift_at:
+            return False
+        self.shift_at = now + rng.uniform(*self.shift_every)
+        self.shifts += 1
+        return True
 
     def did(self, name: str, now: float) -> None:
         self.done[name] = now
@@ -387,7 +464,7 @@ class Mind:
         ago = now - self.done.get(name, -1e9)
         fresh = 0.5 + 0.5 * curve(ago / 30.0) if name in MICRO else 0.3 + 0.7 * curve(ago / (NO_REPEAT * 2.0))
         w = float(BASE_WEIGHT.get(name, 2)) * 4.0 * utility([want, fits, self._when(name, hour), self._seen(name, act), fresh])
-        w *= tier_factor(name, self.idle)
+        w *= tier_factor(name, self.idle) * catalogue_factor(name, mood, hour)
         if name in FIDGETS and (mood in ("proud", "bored") or self.needs["play"] < 0.15):
             w *= 0.4  # content, it has less to burn off
         return w

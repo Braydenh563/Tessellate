@@ -3489,7 +3489,15 @@ const nmb = {
 //: built-in tables above exactly as they are (no retry, no error shown). A property of `nmb`, so it adds no global.
 //: catalogue-begin
 nmb.cat = (() => {
-  const st = { tried: false, doc: null, byAct: {} };
+  const st = { tried: false, doc: null, byAct: {}, entry: {}, beats: {}, mood: "content", moodUntil: 0 };
+  const pick = (pairs, roll) => {
+    let r = roll * pairs.reduce((sum, [, w]) => sum + w, 0);
+    for (const [name, w] of pairs) {
+      r -= w;
+      if (r < 0) return name;
+    }
+    return pairs[pairs.length - 1][0];
+  };
   return {
     state: st,
     load() {
@@ -3504,6 +3512,100 @@ nmb.cat = (() => {
       if (!doc || !Array.isArray(doc.entries)) return;
       st.doc = doc;
       st.byAct = {};
+      st.entry = {};
+      st.beats = {};
+      //: A3: an act built on both sides takes its length (the middle of the desk's range) and weight from the
+      //: table; an entry that covers several acts splits its weight among them. A weight of 0 (only an event
+      //: starts it) stays 0. A4: the beats that shift the pose, kept for every act built here. A5: the entry itself.
+      for (const e of doc.entries) {
+        if (e.kind !== "idle_act" || e.app?.s !== "built") continue;
+        const names = (e.app.names || []).filter((n) => n.startsWith("acts:") && NAME_MARK_BUDDY_ACTS[n.slice(5)]).map((n) => n.slice(5));
+        const shift = (e.beats || []).find((b) => b.shifts);
+        for (const act of names) {
+          const spec = NAME_MARK_BUDDY_ACTS[act];
+          st.entry[act] = e;
+          if (shift) st.beats[act] = shift.every;
+          if (e.desk?.s !== "built") continue;
+          spec.ms = Math.round(((e.seconds[0] + e.seconds[1]) / 2) * 1000);
+          if (spec.w > 0) spec.w = e.w / names.length;
+          st.byAct[act] = { e, n: names.length };
+        }
+      }
+    },
+    //: A4: when, in milliseconds from an act's start, its pose shifts (every 45 to 85 s of a read, a nap's turn over),
+    //: so no long act holds one pose past its budget. Empty for an act with no such beat.
+    plan(act, ms, rand = Math.random) {
+      const every = st.beats[act];
+      const out = [];
+      if (!every) return out;
+      for (let t = 0; ; ) {
+        t += (every[0] + rand() * (every[1] - every[0])) * 1000;
+        if (t >= ms) return out;
+        out.push(Math.round(t));
+      }
+    },
+    arm(act, ms) {
+      clearTimeout(nmb.beatTimer);
+      nmb.beatTimer = 0;
+      const offs = nmb.cat.plan(act, ms);
+      let i = 0;
+      let last = 0;
+      const next = () => {
+        if (i >= offs.length) return;
+        const at = offs[i++];
+        nmb.beatTimer = setTimeout(() => {
+          nmb.beatTimer = 0;
+          if (nmb.act !== act) return;
+          nmb.cat.shift(act);
+          next();
+        }, at - last);
+        last = at;
+      };
+      next();
+    },
+    //: The shift itself: a lie-down turns over onto the other side; any other act lifts its arms and takes another variant.
+    shift(act) {
+      const buddy = document.getElementById("nm-buddy");
+      if (!buddy) return;
+      if (act === "lie") nameMarkBuddyLieDown(buddy, nmb.lieSide === "right" ? "left" : "right");
+      else {
+        const n = NMB_VARIANTS[act] || 0;
+        if (n) {
+          const v = nameMarkBuddyPickVariant(n, nmb.variant?.[act] ?? -1);
+          nmb.variant = { ...(nmb.variant || {}), [act]: v };
+          buddy.dataset.variant = String(v);
+        }
+        if (!nameMarkBuddyStill()) nameMarkBuddyLimbs(buddy, "cue", 420);
+      }
+    },
+    //: A5: the part of the day, the mood it holds for 6 to 12 minutes (drawn from the part of the day's), the energy
+    //: that moves with it, and the factor an act's mood, energy and day weights make (1 when it is not catalogued).
+    phase(hour) {
+      for (const [name, [a, b]] of Object.entries(st.doc?.phases || {})) {
+        if (a < b ? hour >= a && hour < b : hour >= a || hour < b) return name;
+      }
+      return "";
+    },
+    moodAt(phase, roll) {
+      return pick(Object.entries(st.doc?.mood_by_phase?.[phase] || { content: 1 }), roll);
+    },
+    energyOf(mood, phase) {
+      const base = st.doc?.energy_by_phase?.[phase] ?? 1;
+      return mood === "sleepy" ? 0 : mood === "happy" || mood === "startled" ? Math.min(2, base + 1) : base;
+    },
+    factor(act, mood, phase) {
+      const e = st.entry[act];
+      if (!e) return 1;
+      return (e.mood?.[mood] ?? 1) * (e.energy?.[nmb.cat.energyOf(mood, phase)] ?? 1) * (e.day?.[phase] ?? 1);
+    },
+    weigh(act, now, hour, rand = Math.random) {
+      if (!st.doc || !st.entry[act]) return 1;
+      const phase = nmb.cat.phase(hour);
+      if (now >= st.moodUntil) {
+        st.mood = nmb.cat.moodAt(phase, rand());
+        st.moodUntil = now + (360 + rand() * 360) * 1000;
+      }
+      return nmb.cat.factor(act, st.mood, phase);
     },
   };
 })();
@@ -7999,6 +8101,7 @@ function nameMarkBuddyAct(act, ms) {
   const face = { lie: "sleepy", facepalm: "unimpressed" }[act];
   if (face) nameMarkBuddyExpress(face, spec?.ms || 2000);
   if (spec?.cool) nmb.cool[act] = Date.now() + spec.cool;
+  nmb.cat.arm(act, ms || spec?.ms || 1200);
   //: **The next act starts on a page a frame has drawn** (INBOX 1667: `avatars.js:7792` up to 84ms of forced
   //: layout at 4x): ending an act hands its parts over (`nameMarkBuddyBlend` reads them), and the timer lands
   //: between the page's writes and its frame. Still the same act a frame on, or it was already replaced.
@@ -8507,6 +8610,7 @@ function nameMarkBuddyDecide(now = Date.now(), hour = new Date().getHours()) {
     if (spec.atlas && !nmb.atlasLook) w = 0;
     if (!NMB_QUIET_ACTS.includes(act)) w *= { off: 0, fewer: nmb.visit ? 1 : 0.33, normal: 1 }[actions] ?? 0.33;
     w *= drive[act] ?? 1;
+    w *= nmb.cat.weigh(act, now, hour);
     if (NMB_LOUD_ACTS.includes(act)) w *= loud;
     if (w > 0) {
       pool.push([act, w]);
