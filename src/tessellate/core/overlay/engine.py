@@ -3682,10 +3682,8 @@ class Engine:
             return bh.activity_frame(bh.ACTIVITIES[self.act or "breathe"], (now - self.act_started) / max(0.01, self.act_len))
         if s == "crouch":
             return "land"
-        if s == "warp" and self.warp is not None and self.warp["kind"] == "edge" and self.gait == "float":
-            return self._stream_frame(now)
         if s == "warp" and self.warp is not None and self.warp["kind"] == "edge":
-            return f"walk{int((now - self.warp['t0']) / (0.75 / self.walk_frames)) % self.walk_frames}"
+            return self._edge_warp_frame(now)
         if s in FRAME_OF:
             return self._fixed_frame(s)
         if s == "fly":
@@ -3697,6 +3695,12 @@ class Engine:
         if s == "sit" and self.flash:  # eyelids over the sat figure's eyes (`SpriteSet` derives the frame)
             return "sitblink"
         return s  # sit, sleep, wave, fall, land
+
+    def _edge_warp_frame(self, now: float) -> str:
+        """Off one side and on at the other: a floater flows on its idle cycle, a walker steps."""
+        if self.gait == "float":
+            return self._stream_frame(now)
+        return f"walk{int((now - self.warp['t0']) / (0.75 / self.walk_frames)) % self.walk_frames}"
 
     def _flying_frame(self, now: float) -> str:
         """A bonk shows the startled hop only when the figure is not turning: a picture swap in the middle of a
