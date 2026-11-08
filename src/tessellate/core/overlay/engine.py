@@ -2641,6 +2641,7 @@ class Engine:
         if self.mode == "dash" and not self.reduced and self.gait == "walk":
             self._enter("crouch", now)  # a crouch before a long run
             self.pending = (goal, then)
+            self._face(1 if goal[0] >= self.x else -1, now)  # the turn rides the crouch, so the walk does not set off with a stale facing and stand turning
             return
         self._begin_go(now)
 

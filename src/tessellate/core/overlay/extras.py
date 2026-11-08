@@ -27,6 +27,8 @@ MIN_WAKE_MS = 16
 AFTER_ACT_QUIET = 2.0
 #: An act whose pose swings less than this is drawn at the rest pace.
 CALM_AMPLITUDE = 0.1
+#: A small plain stand act is calm only under this: a stretch (0.09, the largest of the small ones) visibly moves, so it keeps its pose's own frames.
+SMALL_AMPLITUDE = 0.08
 #: A gap in the ticks longer than this is a stall (a suspend, a test's clock jump): the next act is re-timed. And the
 #: least wait after the figure was busy with something else.
 LIFE_STALL, LIFE_SETTLE = 10.0, 8.0
@@ -462,7 +464,7 @@ class Extras:
         if bh.AMPLITUDE.get(act, 1.0) >= CALM_AMPLITUDE:
             return False
         # A small stand act with no turn (dust_off: 1 s, a 0.06 shake) is calm too: at the walk's pace it drew 14 to 16 a second.
-        small = act in bh.ACTIVITIES and bh.ACTIVITIES[act].frame == "stand" and not bh.ACTIVITIES[act].turns
+        small = act in bh.ACTIVITIES and bh.ACTIVITIES[act].frame == "stand" and not bh.ACTIVITIES[act].turns and bh.AMPLITUDE[act] < SMALL_AMPLITUDE
         return act in props.PROP_ACTS or act in props.PLAIN_ACTS or act in props.SPELL_ACTS or small
 
     def _marks(self, now: float) -> list[float]:
