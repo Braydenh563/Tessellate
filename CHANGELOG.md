@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Composer: a hello between 22:00 and 05:00 is answered 'Good evening', not 'Good night' (R3-34).
 - Composer: notes titled with different days of one subject (Monday, Friday) can still be said as a but; the newest-notes lead is split to keep its complexity (R3-24, R3-16).
 - Composer: with no notes at all, a question answers 'You have no notes yet' and how to begin, not 'I couldn't find any saved notes matching that question' (R3-30).
 - Composer: 'She likes...' from a note titled Mum reads 'Mum likes...'; the search still finds 'Dr Patel' and 'uni' as typed while slips like 'abuot' are put right (R3-25, R3-17).

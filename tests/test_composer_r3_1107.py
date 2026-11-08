@@ -304,3 +304,13 @@ def test_r3_25_a_sentence_that_opens_with_she_is_named(question, kept):
     said = say(question, "# Mum\n\nShe likes gardening and crosswords. Her birthday is 4 July", "# Shopping\n\n- milk", "Dentist check-up on 11 November", "Remember to book a table for dinner in Lisbon")
     assert "“She " not in said and "“Her " not in said, said
     assert kept in said, said
+
+
+# --- R3-34: a hello late at night is not answered "Good night" ----------------------------------
+
+@pytest.mark.parametrize("hour", [22, 23, 0, 3])
+def test_r3_34_a_late_hello_is_good_evening_never_good_night(hour):
+    from tessellate.ai import composer_compose
+
+    assert composer_compose.greeted_as("hello", hour) == "evening"
+    assert composer_compose.time_of_day(23) == "night"  # the clock's word is unchanged; only the greeting differs

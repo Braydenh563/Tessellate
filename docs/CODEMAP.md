@@ -2,7 +2,7 @@
 
 Generated 2026-11-08 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7861, frontend ids 2644, CSS sections 522, backend routes 649, backend modules 9016, test files 2157, tests 18207, plan headings 1004, app scripts 28, boot scripts 37, script files 261.
+Counts: frontend functions 7861, frontend ids 2644, CSS sections 522, backend routes 649, backend modules 9016, test files 2157, tests 18208, plan headings 1004, app scripts 28, boot scripts 37, script files 261.
 
 ## Frontend functions (7861)
 
@@ -13952,7 +13952,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `time_of_day` | src/tessellate/ai/composer_compose.py:332 |
 | `voice_for` | src/tessellate/ai/composer_compose.py:70 |
 | `voice_for_persona` | src/tessellate/ai/composer_compose.py:96 |
-| `welcome` | src/tessellate/ai/composer_compose.py:348 |
+| `welcome` | src/tessellate/ai/composer_compose.py:350 |
 
 ### src/tessellate/ai/composer_dialogue.py (31)
 
@@ -24430,7 +24430,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (18207)
+## Tests (18208)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -24869,7 +24869,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_composer_r2_1107.py | 22 |
 | tests/test_composer_r2_review_1107.py | 6 |
 | tests/test_composer_r2_route_1107.py | 6 |
-| tests/test_composer_r3_1107.py | 33 |
+| tests/test_composer_r3_1107.py | 34 |
 | tests/test_composer_r3_route_1107.py | 7 |
 | tests/test_composer_ranker_1029.py | 12 |
 | tests/test_composer_redos_1026.py | 4 |
