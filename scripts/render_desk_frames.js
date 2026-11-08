@@ -30,6 +30,9 @@ const FRAMES = [
   { name: "sit", pose: "sit", classes: [] },
   { name: "sleep", pose: "sit", classes: ["nmb-sleep"], at: 1.0 },
   { name: "wave", pose: "stand", classes: ["nmb-desk-wave"], at: 0.45 },
+  //: The wave's arm swing (INBOX 1696, the owner: one raised arm held still "looks liek a nazi salute"): six
+  //: frames out and back about the raised arm, drawn in turn by the engine (`engine.WAVE_FPS`).
+  ...[100, 112, 128, 140, 128, 112].map((deg, i) => ({ name: `wave${i}`, pose: "stand", classes: ["nmb-desk-wave"], at: 0.45, wave: deg })),
   { name: "held", pose: "stand", classes: ["nm-buddy-dragging"] },
   { name: "fall", pose: "stand", classes: ["nmb-act-startle"], at: 0.25 },
   { name: "land", pose: "stand", classes: ["nmb-act-land"], at: 0.1 },
@@ -205,6 +208,8 @@ async function steadyShot(page, file, clip) {
         const put = (el, t, origin) => { el.style.setProperty("transform", t, "important"); if (origin) el.style.setProperty("transform-origin", origin, "important"); };
         const char = b.querySelector(".nm-buddy-char");
         if (frame.spin) put(char, `rotate(${frame.spin}deg)`, "50% 45%");
+        if (frame.wave !== undefined) b.style.setProperty("--desk-wave", `${frame.wave}deg`);
+        else b.style.removeProperty("--desk-wave");
         if (frame.idle !== undefined) {
           const w = frame.idle * 2 * Math.PI;
           const box = [...b.querySelectorAll("*")].find((el) => el.atlasTail);

@@ -595,7 +595,7 @@ class OverlayRunner:
         first = self.monitors[0]
         self.dpi = first.dpi
         self.engine = eng.Engine(
-            spr.size(self._fdpi()), self.monitors, home=self.home, reduced=reduced, roam=not self.stay, roam_windows=self.roam_windows, gait=spr.gait, hang_top=spr.top_share("hang"), idle_frames=spr.idle_count(), walk_frames=spr.walk_count(), now=self.clock(),
+            spr.size(self._fdpi()), self.monitors, home=self.home, reduced=reduced, roam=not self.stay, roam_windows=self.roam_windows, gait=spr.gait, hang_top=spr.top_share("hang"), idle_frames=spr.idle_count(), walk_frames=spr.walk_count(), wave_frames=spr.wave_count(), now=self.clock(),
         )
         self.engine.set_metrics(spr.metrics(self._fdpi()))
         out = self.engine.update(self.clock())

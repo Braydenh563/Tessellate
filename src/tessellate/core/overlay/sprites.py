@@ -37,6 +37,10 @@ IDLE_FRAMES = tuple(f"idle{i}" for i in range(IDLE_COUNT))
 #: of it, not every 7. A shipped set of 6 still runs (`SpriteSet.walk_count`).
 WALK_COUNT = 12
 OLD_WALK_COUNT = 6
+#: The wave's arm swing (INBOX 1696: one frame held the arm straight up, "it looks liek a nazi salute"): the arm
+#: swung side to side about the raised position, `wave0` to `wave5`. Optional: a set without it draws `wave`.
+WAVE_COUNT = 6
+WAVE_FRAMES = tuple(f"wave{i}" for i in range(WAVE_COUNT))
 #: Every frame of a look, in the order they are rendered. Walking is `walk0` to
 #: `walk11`; the others are what the engine's states draw. `card0` and `card1` are the
 #: figure holding a reminder's card (`scripts/render_card_frames.py`, Pillow, from
@@ -47,6 +51,7 @@ FRAME_NAMES = (
     "sit", "sleep", "wave", "held", "fall", "land", "hop", "hang", "tumble",
     "card0", "card1",
     *IDLE_FRAMES,
+    *WAVE_FRAMES,
 )
 #: Drawn by `scripts/render_card_frames.py`, not captured from the app.
 CARD_FRAMES = ("card0", "card1")
@@ -193,12 +198,16 @@ class SpriteSet:
 
     def missing(self) -> list[str]:
         """What a look must have to run: the frames an older, shorter set also had."""
-        extra = {*WALK_FRAMES[OLD_WALK_COUNT:], *IDLE_FRAMES[OLD_IDLE_COUNT:]}
+        extra = {*WALK_FRAMES[OLD_WALK_COUNT:], *IDLE_FRAMES[OLD_IDLE_COUNT:], *WAVE_FRAMES}
         return [n for n in FRAME_NAMES if n not in extra and not self._has(n)]
 
     def walk_count(self) -> int:
         """How many frames of the walk cycle are shipped (6 or 12), for the engine's stride."""
         return WALK_COUNT if all(self._has(n) for n in WALK_FRAMES) else OLD_WALK_COUNT
+
+    def wave_count(self) -> int:
+        """The wave's arm swing frames shipped (`WAVE_COUNT`), or 0: the one `wave` frame is drawn."""
+        return WAVE_COUNT if all(self._has(n) for n in WAVE_FRAMES) else 0
 
     def idle_count(self) -> int:
         return IDLE_COUNT if all(self._has(n) for n in IDLE_FRAMES) else OLD_IDLE_COUNT

@@ -35,6 +35,8 @@ const DESK_FRAME_SPECS = [
   { name: "sit", pose: "sit", classes: [] },
   { name: "sleep", pose: "sit", classes: ["nmb-sleep"], at: 1.0 },
   { name: "wave", pose: "stand", classes: ["nmb-desk-wave"], at: 0.45, arm: "rotate(-140deg)" },
+  //: The arm swung out and back about the raised one (INBOX 1696: one held frame read as a salute).
+  ...[-120, -132, -148, -160, -148, -132].map((deg, i) => ({ name: `wave${i}`, pose: "stand", classes: ["nmb-desk-wave"], at: 0.45, arm: `rotate(${deg}deg)` })),
   { name: "held", pose: "stand", classes: ["nm-buddy-dragging"] },
   { name: "fall", pose: "stand", classes: ["nmb-act-startle"], at: 0.25 },
   { name: "land", pose: "stand", classes: ["nmb-act-land"], at: 0.1 },
