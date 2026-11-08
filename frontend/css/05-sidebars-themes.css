@@ -6186,3 +6186,7 @@ button.ghost.doc-template-choice[aria-checked="true"] {
 }
 /* The Tags sheet's rows (categories-panel.js `openTagsSheet`): the sheet row
    takes the width, its two small buttons sit at its end. */
+/* Atlas's feminine look a shade deeper on a light page (INBOX 1696 r, ff):
+   she melted into it, forehead 1.15:1 off the page; with the outline in
+   atlas-lazy.css, 1.32. Still lilac, her rim unchanged. */
+:root:not([data-mode="dark"]) .nm-atlas[data-atlas-look="feminine"] { --atl-hi: #e3e4fb; --atl-lt: #cfd1f6; --atl-md: #b4b3ec; --atl-dp: #968fd6; }

@@ -6,7 +6,8 @@ stood 1.13:1 off the page and her chest 1.21:1 (his 1.21 and 1.41), the
 weakest tenth of her head's outline 1.31:1 (his 1.71), so she melted into a
 light page. And her brows, at opacity 0.22, did not show at 64 px, so sad,
 worried and calm wore the same face. The fixes live in the lazy Atlas sheet
-(`frontend/css/atlas-lazy.css`), not boot CSS.
+(`frontend/css/atlas-lazy.css`), not boot CSS, but for the four
+colours, which belong in a colour file.
 """
 
 from __future__ import annotations
@@ -17,6 +18,8 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 LAZY = (ROOT / "frontend" / "css" / "atlas-lazy.css").read_text(encoding="utf-8")
 BOOT = (ROOT / "frontend" / "css" / "08-consistency.css").read_text(encoding="utf-8")
+#: Colour literals live in the colour files (test_style_scale): her light palette is there.
+THEMES = (ROOT / "frontend" / "css" / "05-sidebars-themes.css").read_text(encoding="utf-8")
 LIGHT_HER = ':root:not([data-mode="dark"]) .nm-atlas[data-atlas-look="feminine"]'
 
 
@@ -41,7 +44,7 @@ def _vars(block: str) -> dict[str, str]:
 
 def test_her_skin_is_a_shade_deeper_on_a_light_page() -> None:
     dark = _vars(_block(BOOT, '.nm-atlas[data-atlas-look="feminine"]'))
-    light = _vars(_block(LAZY, LIGHT_HER))
+    light = _vars(_block(THEMES, LIGHT_HER))
     for key in ("--atl-hi", "--atl-lt", "--atl-md", "--atl-dp"):
         assert key in light, key
         # Deeper, still lilac: blue stays the strongest channel.
