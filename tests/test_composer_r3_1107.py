@@ -134,3 +134,12 @@ def test_r3_19_a_hedge_adverb_is_never_called_missing():
 def test_r3_29_a_when_the_note_answers_with_a_date_has_no_not_mentioned_tail(question):
     said = say(question, *DENTIST)
     assert "11 November" in said and "mention" not in said and "regarding" not in said and "“appointment”" not in said, said
+
+
+# --- R3-17: "abuot lisbn" is not a name called at the end -----------------------------------
+
+@pytest.mark.parametrize("question", ["wat do i know abuot lisbn", "what do i know abot tokio", "tel me abuot lisbn"])
+def test_r3_17_a_slipped_head_word_still_has_its_object(question):
+    from tessellate.ai import vocative
+
+    assert vocative.split(question).names == [], question

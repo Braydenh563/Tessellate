@@ -287,6 +287,9 @@ def _search_notes(session: Session, question: str, found: _Found, attached: list
     #: CC" also finds the notes that say Cloud Computing, B7).
     found.meaning_loading = _meaning_loading()
     found.meaning_off = _meaning_off()
+    #: ...and with the slips put right ("wat do i know abuot tokio"), which the search would
+    #: otherwise match on "wat" and "abuot" (round 3, R3-17).
+    question = question_noise.repair(question_noise.tidy(" ".join(question.split()))) or question
     hit = search_manager.retrieve_detailed(
         session, glossary.expand(question, _glossary(session)), deps.get_embeddings(), limit=5,
         locale=locale,

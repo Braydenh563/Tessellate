@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Composer: "wat do i know abuot lisbn" no longer drops "lisbn" as a name called at the end, "wat do i know about tokio" is searched as "what do i know about tokio" (it said none of your notes mention tokyo), and "wen is the exam" is read as when (audit r3, R3-17).
 - Composer: "possibly", "exactly" and "because" are asking words, never listed as missing from the notes, and a "when" answered by a dated sentence no longer ends "None of these notes mention “appointment”" (audit r3, R3-19 and R3-29).
 - Composer: "when is the dentist" leads with "Dentist check-up on 11 November" (the next date), not "You went to the dentist on 3 October"; a timeline no longer prints the day a note was written ("today:") before an event with its own date (audit r3, R3-18).
 - Composer: "when did I start learning Spanish" and "when did I start to run" keep their streak answer after the R3-1 change (the did-I form carries the same lookahead as the past form).

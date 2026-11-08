@@ -4690,6 +4690,8 @@ def answer(
     today = today or composer.user_today()
     if one := composer_oneword.named(question, notes):
         return _one_word_result(one)
+    #: "wen is the exam" is "when is the exam": the asking words put right, the notes' own words never changed (R3-17).
+    question = question_noise.repair(question_noise.tidy(" ".join(question.split())), known=composer._note_words(notes)) or question  # noqa: SLF001
     asked = composer_ask.what_is(clean(question))
     kind = _kind_if_mine(asked)
     #: An act ("rename my gym log") is not a topic to digest: with its verb off

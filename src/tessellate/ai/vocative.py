@@ -201,6 +201,9 @@ def _tail_is_the_question(tokens: list[re.Match], size: int, words: list[str], k
     previous = tokens[-size - 1].group(0).lower()
     if previous in OBJECT_HEADS or len(tokens) - size < 2:
         return True
+    #: A head typed with a slip ("abuot lisbn", "abot tokio") still has an object after it (round 3, R3-17).
+    if len(previous) >= 3 and question_noise.repair(previous).lower() in OBJECT_HEADS:
+        return True
     #: "tell me about project atlas": the two words end a title the
     #: notes hold, so "atlas" is the thing, not the assistant called
     #: at the end (audit 1030 A17).
