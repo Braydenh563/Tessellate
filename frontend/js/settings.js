@@ -195,17 +195,18 @@ function showSettingsSection(name) {
   // the only one that has to be told it is no longer being looked at.
   if (name !== "logs") closeLogs();
   if (name === "logs") renderLogs();
-  if (["preferences", "general", "searchindex", "personas"].includes(name)) renderPrefs().catch(() => {});
+  const read = ["preferences", "general", "searchindex", "personas"].includes(name) && renderPrefs().catch(() => {});
   if (name === "websearch") renderWebSearch().catch(() => {});
-  if (name === "personas") renderPersonas().catch(() => {});
+  //: Personas draws from the read above, not a second GET of the same document (INBOX 1696 f).
+  if (name === "personas") renderPersonas(read).catch(() => {});
   if (name === "skills") renderSkillSettings();
   if (name === "templates") renderTemplateSettings();
   if (name === "tools") renderToolSettings();
   if (name === "memory") renderMemorySettings().catch(() => {});
   //: The Learned section lives in settings-controls.js (lazy, 2026-11-02, eager gzip headroom).
   if (name === "learned") ensureModule("settingsControls").then(() => renderLearned()).catch(() => {});
-  if (name === "tasks") renderAutonomousReview().catch(() => {});
   if (name === "tasks") {
+    renderAutonomousReview().catch(() => {});
     apiJson("/preferences")
       .then((prefs) => {
         prefsCache = prefs;
@@ -227,8 +228,8 @@ function showSettingsSection(name) {
         $("pref-smart-model-routing").checked = prefs.smart_model_routing_enabled ?? true;
       })
       .catch(() => {});
+    renderModelBench();
   }
-  if (name === "models") renderModelBench();
   if (name === "general") {
     renderUsage();
     //: Search suggestions are kept on this device (search-suggest.js).
@@ -256,9 +257,11 @@ function showSettingsSection(name) {
   if (name === "searchindex") renderEmbedChoices();
   //: The Atlas row's starter chips, with the chat's bundle (help-chat.js).
   if (name === "help") renderAtlasStarters();
-  if (name === "about") renderHealthBlock().catch(() => {});
   //: Settings, About, Maintenance: settings-controls.js, the window's lazy file.
-  if (name === "about") ensureModule("settingsControls").then(() => renderMaintenance());
+  if (name === "about") {
+    renderHealthBlock().catch(() => {});
+    ensureModule("settingsControls").then(() => renderMaintenance());
+  }
   //: The "Last run" lines on this section's controls, and the Background jobs
   //: overview (INBOX 438): one fetch fills every line on the page.
   refreshJobRuns();
@@ -3836,7 +3839,8 @@ async function refreshJobRuns() {
   const lines = [...document.querySelectorAll("[data-job-line]")];
   for (const el of lines) paintJobLine(el);
   clearTimeout(jobRunsTimer);
-  const running = lines.some((el) => el.offsetParent !== null && el.dataset.jobRunning === "1");
+  //: Layout is read only for a running line: after the paint above, the first `offsetParent` laid out the page (INBOX 1696 f).
+  const running = lines.some((el) => el.dataset.jobRunning === "1" && el.offsetParent);
   if (running && authToken()) jobRunsTimer = setTimeout(refreshJobRuns, 2000);
 }
 

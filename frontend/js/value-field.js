@@ -147,7 +147,7 @@ function valueField(host, opts = {}) {
   //: `slider.value` and fires `input` then `change`, so the surface's own handlers run as for a drag.
   const readoutOf = (slider) => {
     const byId = (suffix) => (slider.id ? document.getElementById(slider.id + suffix) : null);
-    const forId = slider.id ? document.querySelector(`output[for="${CSS.escape(slider.id)}"]`) : null;
+    const forId = slider.id ? (scan ? scan.outs.get(slider.id) : document.querySelector(`output[for="${CSS.escape(slider.id)}"]`)) : null;
     const bare = slider.id ? document.getElementById(slider.id.replace(/-slider$/, "") + "-value") : null;
     return forId || byId("-value") || byId("-out") || bare || slider.parentElement?.querySelector(":scope > output") || null;
   };
@@ -171,7 +171,7 @@ function valueField(host, opts = {}) {
     //: Named by what the slider is named by (aria-label, else its label words without the readout, else its title), never
     //: by a title's long explanation first.
     const said = source ? source.textContent : "";
-    const label = slider.getAttribute("aria-label") || [...(slider.labels || [])].map((l) => l.textContent.replace(said, "").trim()).join(" ").trim() || slider.title || "Value";
+    const label = slider.getAttribute("aria-label") || (scan ? scan.labels.get(slider) || [] : [...(slider.labels || [])]).map((l) => l.textContent.replace(said, "").trim()).join(" ").trim() || slider.title || "Value";
     const field = valueField(host, {
       value: Number(slider.value),
       min,
@@ -203,8 +203,17 @@ function valueField(host, opts = {}) {
     slider.vfRefresh();
     return field;
   };
-  const rangeFieldsIn = (root) => root.querySelectorAll('input[type="range"]').forEach(rangeField);
-  rangeFieldsIn(document);
+  //: **The page's readouts and labels are read once for the scan** (INBOX 1696 f): one `output[for]` query and one
+  //: `labels` walk per slider over a 12,000-element page was 64 to 72 ms of the first slider hover at 4x CPU, and a
+  //: pointer moving over the Settings nav waited behind it. First match wins, as `querySelector` and `labels` give.
+  let scan = { outs: new Map(), labels: new Map() };
+  for (const out of document.querySelectorAll("output[for]")) scan.outs.has(out.getAttribute("for")) || scan.outs.set(out.getAttribute("for"), out);
+  for (const label of document.querySelectorAll("label")) {
+    const control = label.control;
+    if (control) scan.labels.set(control, [...(scan.labels.get(control) || []), label]);
+  }
+  document.querySelectorAll('input[type="range"]').forEach(rangeField);
+  scan = null;
   //: Once loaded, it follows the pointer and focus itself (app.js only fetches it on the first reach of a slider, and
   //: the reach that fetched it is replayed here by the document scan above).
   for (const type of ["pointerover", "focusin"]) {
