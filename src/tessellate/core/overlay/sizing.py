@@ -74,6 +74,26 @@ def solid_box(frame: Frame) -> tuple[int, int, int, int]:
     return frame.box if frame.box[2] else (0, 0, frame.width, frame.height)
 
 
+#: The ring hangs by the head (standing) or the feet (hanging): the solid pixels in this share of the figure's
+#: height at that end, so a tail swirl or a hair trail does not carry it into empty space (INBOX 1692, the owner
+#: 2026-11-08: "the resize circle is still really far away").
+CORNER_BAND = 0.3
+
+
+def corner_box(frame: Frame, hanging: bool) -> tuple[int, int, int, int]:
+    """`solid_box` with its sides taken from the band at the ring's end (the top standing, the bottom hanging)."""
+    from PIL import Image
+
+    box = solid_box(frame)
+    band = max(1, round((box[3] - box[1]) * CORNER_BAND))
+    top, bottom = (box[3] - band, box[3]) if hanging else (box[1], box[1] + band)
+    alpha = Image.frombytes("L", (frame.width, frame.height), bytes(frame.bgra[3::4]))
+    part = alpha.crop((box[0], top, box[2], bottom)).point(lambda a: 255 if a >= SOLID_ALPHA else 0).getbbox()
+    if not part:
+        return box
+    return box[0] + part[0], box[1], box[0] + part[2], box[3]
+
+
 def hit_box(box: tuple[int, int, int, int], hanging: bool, dpi: int, left: bool = False) -> tuple[int, int, int, int]:
     """The handle's hit box (left, top, right, bottom) in the frame's own pixels: GAP_PX off the figure's drawn
     corner, top right when it stands and bottom right when it hangs (the app's, since 9d5fd92). It may lie outside

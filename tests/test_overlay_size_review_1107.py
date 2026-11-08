@@ -165,7 +165,9 @@ def test_at_the_right_edge_the_handle_flips_to_the_left_corner_inside_the_screen
     r, fake, clock, _ = started(reduced=True)
     stand(r, clock)
     show_handle(r, clock)
-    assert r._hit[0] >= r._target.box[2]  # mid-screen it stays on the right
+    # Intent moved (INBOX 1692, 2026-11-08): the ring hangs by the head, which can lie inside the drawn box's right
+    # edge (a tail swirl widens it); mid-screen it still stays on the right side.
+    assert r._hit[0] >= (r._target.box[0] + r._target.box[2]) / 2  # mid-screen it stays on the right
     r.stop()
 
 

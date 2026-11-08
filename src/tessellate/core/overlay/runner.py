@@ -666,8 +666,8 @@ class OverlayRunner:
         frame = sprites.effect(sprites.clipped(posed, out.clip), out.fx, out.alpha)
         self._hit = None
         if key[-1]:
-            box = sizing.solid_box(frame)
             hanging = out.frame.startswith("hang")
+            box = sizing.corner_box(frame, hanging)
             hit = sizing.hit_box(box, hanging, self.dpi)
             area = self.engine.current_monitor().area if self.engine else None
             if area is not None and out.x - frame.pad_x + max(frame.width, hit[2]) > area[2]:

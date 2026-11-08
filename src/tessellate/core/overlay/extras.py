@@ -39,7 +39,9 @@ SAMPLE_KEEP = 1.6
 #: Gesture thresholds, logical px (scaled by the figure's size) and seconds.
 PAT_DIP, PAT_REVERSALS, PAT_WINDOW, HEAD_ZONE = 11.0, 2, 1.0, 0.42
 RUB_SWING, RUB_REVERSALS, RUB_WINDOW, RUB_FLAT = 14.0, 3, 1.4, 0.7
-POKE_SPEED, POKE_REST, POKE_WINDOW = 800.0, 260.0, 0.4
+#: A poke is a jab: in at `POKE_SPEED`, at most `POKE_DWELL` s inside, back out the way it came, answered within
+#: `POKE_LEFT` s of leaving. An arrival that stays is a hover (INBOX 1692: "it gets instantly mad every time i hover").
+POKE_SPEED, POKE_WINDOW, POKE_DWELL, POKE_LEFT = 800.0, 0.4, 0.6, 0.3
 SWIPE_SPEED, FLINCH_REACH = 1500.0, 150.0
 HOVER_FOR, HOVER_STILL = 1.2, 80.0
 #: A stroke's travel over its distance: more than this is a tremor, not a pat.
@@ -138,6 +140,14 @@ def _in_box(s: tuple[float, float, float], box: tuple[float, float, float, float
     return box[0] - pad <= s[1] <= box[2] + pad and box[1] - pad <= s[2] <= box[3] + pad
 
 
+def _seg_dist(x: float, y: float, a: tuple[float, float, float], c: tuple[float, float, float]) -> float:
+    """Distance from (x, y) to the segment between two samples."""
+    dx, dy = c[1] - a[1], c[2] - a[2]
+    span = dx * dx + dy * dy
+    u = 0.0 if span == 0 else max(0.0, min(1.0, ((x - a[1]) * dx + (y - a[2]) * dy) / span))
+    return math.hypot(a[1] + u * dx - x, a[2] + u * dy - y)
+
+
 class Pointer:
     """A classifier of the pointer's last second and a half: the gesture it just made, if any."""
 
@@ -190,9 +200,9 @@ class Pointer:
             return "flip"
         if not _in_box(last, box, pad):
             self.inside_since = None
-            return self._flinch(now, box, k, last)
+            return self._poke(now, box, k, pad) or self._flinch(now, box, k, last)
         self.inside_since = self.inside_since if self.inside_since is not None else last[0]
-        return self._poke(now, box, k, pad) or self._stroke(now, box, k, pad) or self._hover(now, k)
+        return self._stroke(now, box, k, pad) or self._hover(now, k)
 
     def _flipped(self, now: float, box: tuple[float, float, float, float], k: float) -> bool:
         """A fast swipe straight across the figure, from outside one side to outside the other."""
@@ -204,19 +214,38 @@ class Pointer:
         return min(xs) < lx and max(xs) > r and all(t <= s[2] <= b for s in quick if lx <= s[1] <= r)
 
     def _flinch(self, now: float, box: tuple[float, float, float, float], k: float, last: tuple[float, float, float]) -> str | None:
+        """A fast swipe that went past the figure: its path came within reach and went on. An approach that stops
+        beside it ends at its nearest point, so it is not one (INBOX 1692)."""
         lx, t, r, b = box
-        if self._swipe_ended(now, k) and math.hypot(last[1] - (lx + r) / 2, last[2] - (t + b) / 2) <= FLINCH_REACH * k + (r - lx) / 2:
+        if not self._swipe_ended(now, k):
+            return None
+        cx, cy = (lx + r) / 2, (t + b) / 2
+        pts = [s for s in self.samples if now - s[0] <= 0.4]
+        near = min((_seg_dist(cx, cy, a, c) for a, c in zip(pts, pts[1:])), default=math.inf)
+        reach = FLINCH_REACH * k + (r - lx) / 2
+        if near <= reach and math.hypot(last[1] - cx, last[2] - cy) >= near + FLINCH_REACH * k * 0.5:
             return "flinch"
         return None
 
     def _poke(self, now: float, box: tuple[float, float, float, float], k: float, pad: float) -> str | None:
-        """A quick jab into the figure that stops there."""
-        before = [s for s in self.samples if POKE_WINDOW >= now - s[0] > 0.12]
+        """A jab: in fast, a moment inside, and back out the way it came. Read once the pointer has left."""
         pts = list(self.samples)
-        peak = max((self._leg(a, c) for a, c in zip(pts, pts[1:]) if now - c[0] <= POKE_WINDOW), default=0.0)
-        if before and not _in_box(before[0], box, pad) and peak >= POKE_SPEED * k and self.speed(now, 0.12) <= POKE_REST * k:
-            return "poke"
-        return None
+        j = len(pts) - 1
+        while j >= 0 and not _in_box(pts[j], box, pad):
+            j -= 1
+        if j < 1 or j == len(pts) - 1 or now - pts[j + 1][0] > POKE_LEFT:
+            return None
+        i = j
+        while i > 0 and _in_box(pts[i - 1], box, pad):
+            i -= 1
+        if i == 0 or pts[j][0] - pts[i][0] > POKE_DWELL:
+            return None
+        into = (pts[i][1] - pts[i - 1][1], pts[i][2] - pts[i - 1][2])
+        out = (pts[j + 1][1] - pts[j][1], pts[j + 1][2] - pts[j][2])
+        if into[0] * out[0] + into[1] * out[1] >= 0:  # straight on through is a pass, not a jab
+            return None
+        peak = max((self._leg(a, c) for a, c in zip(pts[: i + 1], pts[1 : i + 1]) if pts[i][0] - c[0] <= POKE_WINDOW), default=0.0)
+        return "poke" if peak >= POKE_SPEED * k else None
 
     def _stroke(self, now: float, box: tuple[float, float, float, float], k: float, pad: float) -> str | None:
         """Strokes on the figure: dips on the head are a pat, sweeps along the body a rub."""
