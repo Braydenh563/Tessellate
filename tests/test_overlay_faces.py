@@ -123,3 +123,15 @@ def test_love_is_worn_on_the_third_pet_in_a_short_while() -> None:
         t += 7.0  # past the cooldowns, inside the pet streak
         e.update(t)
     assert faces_worn[:2] == ["joy", "content"] and faces_worn[2] == "love", faces_worn
+
+
+def test_a_pet_variant_keeps_the_cooldown_of_its_pat_or_rub() -> None:
+    """Love and shy are faces of a pat, not other pets: a pat right after a pat still waits out the pat's cooldown."""
+    from tests.test_overlay_parity_1683 import still
+
+    e, _s, t = still()
+    t = _pet(e, "pat", t)
+    first = e.ex.cool["pat"]
+    e.ex.pets = [t - 1.0, t - 0.5]  # two recent pets: the next would be loved
+    t = _pet(e, "pat", t)
+    assert t < first and e.ex.last.count("pat_love") == 0 and e.ex.cool["pat"] == first

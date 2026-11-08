@@ -523,9 +523,10 @@ class Extras:
         replaces the reaction's own length (a dizzy sway is drawn per shake)."""
         e = self.e
         r = REACTIONS.get(kind)
-        if r is None or not self._allowed(r, kind, now):
+        base = kind.rsplit("_", 1)[0] if kind.endswith(("_shy", "_love")) else kind  # a face of a pat is still a pat
+        if r is None or not self._allowed(r, base, now):
             return False
-        self.cool[kind] = now + r.cooldown
+        self.cool[base] = now + r.cooldown
         self.last = [*self.last[-7:], kind]
         if r.feel:
             e.mind.feel(r.feel, now)
