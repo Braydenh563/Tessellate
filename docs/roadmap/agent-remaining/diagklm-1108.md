@@ -75,13 +75,12 @@ Branch `agent/diagklm-1108` from `claude/next-queue-1102` (7cba04a8). The spec i
 - done: S3 (fold: rail 32 px, picture 905 to 1136 wide at 1440 with the list folded, list 1136 with the picture folded, kept on reopen; 390 sequence picture 96 to 435). Not built: folding the Source view's text (its folds hide there).
 - done: S4 part 1 (press picks 11 of 11 at 1440 and 390, both themes; rename field centre 0 px off; Alt+Down, Delete; a source with activations, a nested loop and a self message 10 of 10).
 - done: S4 part 1 227c4384.
-- next: S4 part 2, `diagram-seq-canvas.js` `wire`: drag a head to reorder, drag lifeline to lifeline to add a message, the "+" in a gap; then S5 shelf (`diagram-library.js` `build`).
+- done: S4 part 2 (drag a head to reorder, lifeline to lifeline for a message, the + in a gap; head reorder User, Server, App; lifeline drag inserts at index 1 with the field in view; + 24 px, 5.9:1 light and 7.0:1 dark).
+- done: S5 shelf and S6 help (`dock dgm-shelf` six tiles plus caret, both kinds; zoom bar and first part overlap 0 px at 1440 light and dark; Message dropped at App's x between messages 1 and 2 inserts at index 1; flowchart Box drag 3 to 4 blocks, press 4 to 5; hidden at 390).
+- was next: S4 part 2, `diagram-seq-canvas.js` `wire`: drag a head to reorder, drag lifeline to lifeline to add a message, the "+" in a gap; then S5 shelf (`diagram-library.js` `build`).
 
 ## Left (stopped at the context line, after S4 part 1)
 
-- (l) "drag a participant to reorder": a head drag sideways with a 2 px accent line in the head gap, `frontend/js/diagram-seq-canvas.js` `wire` (add pointer handlers beside the `click` one); hit: App dragged past Server gives User, Server, App.
-- (l) "drag from one lifeline to another to add a message": rubber line with its arrow, insert at the gap under the pointer and open its name (`rename`); same file; hit: User to Server between messages 1 and 2 inserts at index 1.
-- (l) "hover gaps offer a +": a 24 px `.dgm-gap-plus` in the left margin of the gap under the pointer opening the grouped Add menu for that gap; same file.
 - (l) "a drag-and-drop library of block types onto the picture": S5 shelf, `frontend/js/diagram-library.js` `build` compact form at the picture's top-left (six tiles plus a caret, both kinds); the sequence drop marker in seq-canvas `over`; the flowchart drop is `diagram-canvas.js` `over` (built).
 - (l) "then flowchart" on the shelf, and mind map and timeline on the picture (cut to the next round in the spec).
 - (m) the Source view's text does not fold (its toggles hide there); `frontend/css/diagram-lazy.css` the fold block, `diagram-embed.js` srcwrap.
@@ -94,4 +93,4 @@ Branch `agent/diagklm-1108` from `claude/next-queue-1102` (7cba04a8). The spec i
 - done: merged claude/next-queue-1102 (24860fbd; CHANGELOG union, CODEMAP regenerated); the complexity failures went with it. The other three lints (global names 9708 > 9706, avatars.js raf 7 to 8, routes_chat.py 2476 > 2474) fail the same on the base branch at 74e55094: not this branch.
 - done: a press on the word Kind in the Title row (a `<label>`) focused the title field; it opens the Kind menu now (diagram-kindbar.js `mount`).
 - measured: Kind menu 4 of 4 rows with a sample, the chosen one `aria-current`; sequence rename on the picture, message rename, Delete and Ctrl+Z at 1440 and 390; folds left and right, `[` by key, kept after a reload (`diagram.fold` = left); no page errors.
-- open: no drag-and-drop block shelf on the picture yet (l part 2 and S5 above); the owner's ask is not met until it lands.
+- open: S6 blind tests and the default fold; the shelf is mouse only (touch uses the Add sheet); mind map and timeline have no shelf.

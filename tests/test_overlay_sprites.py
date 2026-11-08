@@ -20,7 +20,8 @@ def test_every_look_has_every_frame() -> None:
         files = sorted(p.stem for p in (DIR / look).glob("*.png"))
         assert files == sorted(sprites.FRAME_NAMES), look
     # Intent moved (INBOX 1670, "very framey"): 12 walk and 24 idle frames, in-betweens of the old 6 and 12.
-    assert len(sprites.FRAME_NAMES) == 50 and len(sprites.WALK_FRAMES) == 12 and len(sprites.IDLE_FRAMES) == 24
+    # Intent moved (INBOX 1696 x): six wave frames (wave0..wave5), 50 to 56.
+    assert len(sprites.FRAME_NAMES) == 56 and len(sprites.WALK_FRAMES) == 12 and len(sprites.IDLE_FRAMES) == 24
 
 
 def test_frames_of_a_look_share_one_size_and_stay_small() -> None:
@@ -110,7 +111,8 @@ def test_look_names_and_missing_frames() -> None:
     assert sprites.look_for("auto") == "masculine" and sprites.look_for(None) == "masculine"
     assert sprites.SpriteSet("masculine", DIR).missing() == []
     # an older, shorter set (6 walk, 12 idle) still runs, so those extras are not required
-    older = (sprites.WALK_COUNT - sprites.OLD_WALK_COUNT) + (sprites.IDLE_COUNT - sprites.OLD_IDLE_COUNT)
+    # Intent moved (INBOX 1696 x): the six wave frames are optional too (`missing()` leaves them out).
+    older = (sprites.WALK_COUNT - sprites.OLD_WALK_COUNT) + (sprites.IDLE_COUNT - sprites.OLD_IDLE_COUNT) + sprites.WAVE_COUNT
     assert len(sprites.SpriteSet("masculine", DIR / "nowhere").missing()) == len(sprites.FRAME_NAMES) - older
 
 

@@ -7114,7 +7114,8 @@ svg.atl-defs { position: absolute; width: 0; height: 0; overflow: hidden; }
 #nm-buddy.nmb-act-wave .atl-figure[data-atlas-look="feminine"] .nmb-arm-r { transform: rotate(-130deg); }
 /* The desk's wave frame (scripts/render_desk_frames.js, INBOX 1688): the right arm's hand
    vanishes into the hair of the same tint, so the frame waves the left, in the clear. */
-#nm-buddy.nmb-desk-wave .atl-figure .nmb-arm-l { transform: rotate(120deg); }
+/* The wave cycle's frames set the angle (INBOX 1696: one raised arm held still read as a salute). */
+#nm-buddy.nmb-desk-wave .atl-figure .nmb-arm-l { transform: rotate(var(--desk-wave, 120deg)); }
 #nm-buddy.nmb-act-shrug .atl-figure .nmb-arm-r { transform: rotate(-40deg); }
 #nm-buddy.nmb-act-shrug .atl-figure .nmb-arm-l { transform: rotate(40deg); }
 /* A facepalm is the chin hand brought up over the eyes, not the arm thrown

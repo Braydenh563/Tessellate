@@ -580,6 +580,8 @@ class Dialogue:
     corrections: list[str] = field(default_factory=list)
     used: set[str] = field(default_factory=set)
     salt: str = ""
+    #: The label of the act card the last turn left waiting for Confirm, "" when none.
+    pending_act: str = ""
 
     @property
     def turns(self) -> int:
@@ -592,6 +594,7 @@ class Dialogue:
         the words earlier answers used are found in their text."""
         turns = [{"question": str(t.get("question") or ""), "answer": str(t.get("answer") or "")} for t in history or []]
         dialogue = cls(history=turns, salt=salt or (hashlib.sha1(turns[0]["question"].encode()).hexdigest()[:12] if turns else ""))
+        dialogue.pending_act = str((history or [{}])[-1].get("pending_act") or "").strip()
         for turn in turns:
             dialogue.used |= _templates_in(turn["answer"])
             dialogue.topic_stack += [t for t in subject_terms(turn["question"]) if t not in dialogue.topic_stack]

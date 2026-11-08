@@ -1143,7 +1143,7 @@ and https://learn.microsoft.com/en-us/windows/powertoys/run
 | Inline calculator | "15% of 85", roots, implied multiplication `2(3+4)`, ceil, floor, round, max, min, abs, log, ln, sqrt, pow, factorial, constants | Parsed expression; `=` direct prefix in PowerToys | An owned evaluator (an `ast` walk, policy 1), percent-of phrases, words ("times", "plus", "squared") | Partial: simple_eval on a digit-only regex, invisible (finding 1) | M |
 | Unit conversion with `to` and `in` | 13 types: acceleration, angle, area, duration, energy, information, length, mass, power, pressure, speed, temperature, volume | A units table | Our own table (about 150 units, plain data), "5 miles in km" | Partial: Gemini-branch pint path, to be removed (policy 1) | M |
 | Currency conversion | Spotlight converts currency | Live rates | Offline: a dated table the person can edit, always stated "rates as of <date>" | No | M |
-| Time and date | Current time, calendar week of a date, Unix epoch, days in a month, week of year | Time and date plugin with formats | "what week is 3 March", "days until Friday", "what day is 3 weeks from now" | Partial: `when.py`; the Gemini `utility` time answer is invisible | S |
+| Time and date | Built. Moved to HISTORY.md ("Moved from the plans, 2026-11-08 (CHAT_PLAN Time and date)"). | | | | |
 | Value generator | GUID, hashes, base64, URL encode | stdlib | Text transforms (below) take the useful half: case, sort lines, count, slugify | No | S |
 | Definitions | Word meanings | System dictionary | Own-notes definitions only (a "X is" sentence); a general dictionary is too heavy (policy 2) | No | M |
 | History plugin `!!` | Recall what you ran before | Result history | Ask history and `search_chat_history` | Yes: `routes_ask_history.py` | none |
@@ -1245,21 +1245,21 @@ and always show the exact change before running.
 | X1 | Remind | `set_reminder` tool; `when.parse_reminder_text`, `reminder_parser`; recurring none, daily, weekly, monthly | `commands.py` unrun on `wip/composer-acts`; Gemini `utility` branch claims "noted" and writes nothing (finding 1) | Parse text and time, confirm card "Remind you to call mum, Friday 9:00", ask "When?" when missing; recurrence words map to the four values | M | 7 |
 | X2 | Tag and untag | `tag_note` (add, remove, many ids) | No chat verb | "tag my gym notes #fitness": resolve notes by plan, card lists them (cap 50), undo = the inverse call | M | 7 |
 | X3 | Link and unlink | `link_notes` (reason, link type), `unlink_notes` | No chat verb; no reasons | "link A and B": the reason is the composer's pair reason (decision 39), shown on the card | M | 7 |
-| X4 | File into a category | `edit_note` `category` | No chat verb | "file this under Work" with the engine's explanation line ("shares gym, squat and protein with 6 notes there") | S | 7 (decision 39) |
-| X5 | Rename (note title, tag, category) | `edit_note`, `rename_tag`, `rename_category` | No chat verb | Object resolved by kind word ("rename the tag gym to fitness") | S | 7 |
-| X6 | Pin | `pin_note` | No chat verb | "pin this" with dialogue reference | S | 7 |
+| X4 | File into a category | Built. Moved to HISTORY.md ("Moved from the plans, 2026-11-08 (CHAT_PLAN small rows D)"). | | | | |
+| X5 | Rename (note title, tag, category) | Built. Moved to HISTORY.md ("Moved from the plans, 2026-11-08 (CHAT_PLAN acts)"). |
+| X6 | Pin | Built. Moved to HISTORY.md ("Moved from the plans, 2026-11-08 (CHAT_PLAN small rows D)"). | | | | |
 | X7 | Archive | No tool (only delete and restore) | An archive verb with nothing behind it | Do not offer until a tool exists; the capability line lists only verbs that run | none | n/a |
-| X8 | Delete and restore | `delete_note`, `restore_note` (bin) | No chat verb | Always confirmed, always the bin, undo = restore | S | 7 |
+| X8 | Delete and restore | Built. Moved to HISTORY.md ("Moved from the plans, 2026-11-08 (CHAT_PLAN acts)"). |
 | X9 | Create (note, reminder, document, board, map) | `create_note`, `create_document`, `create_mindmap`, `generate_diagram`, board tools | `new_note` only on the wip branch | "make a note: ..." with the person's words verbatim; documents and maps from a named source note or a list | M | 7 |
-| X10 | Add to a note | Daily-note route; `edit_note` replaces content (no append argument) | The act reads the note and writes the whole text | "add X to today's note": daily route, append a bullet, optimistic-lock check (`edit_conflicts.py`) | S | 7 |
+| X10 | Add to a note | Built. Moved to HISTORY.md ("Moved from the plans, 2026-11-08 (CHAT_PLAN acts)"). |
 | X11 | Summarise as an act | `summarize_notes` | Results not saved | "summarise my gym notes into a note": A20 text, created as a note with its sources linked | S | 7 |
-| X12 | Find and open | `search_notes`, `get_note` | No chat verb ("open the passport note") | Title match first, then plan; one result opens, several asks which | S | 7 |
+| X12 | Find and open | Built. Moved to HISTORY.md ("Moved from the plans, 2026-11-08 (CHAT_PLAN small rows D)"). | | | | |
 | X13 | Templates | Four built-in templates; daily-note body in the frontend | No variables; no user quick-adds | `{date}`, `{weekday}`, `{week}`, `{title}`, `{n}` filled by rule; a saved phrasing with slots appears as a chip ("Log a workout: {what}") | M | 7 |
 | X14 | Bulk acts with preview | Confirm card for agent writes | Counts, caps, partial failure wording | Card: "Tag 14 notes #fitness" with the first five listed and a "show all"; cap 50; result line "Done: 13. Not done: 1, it is private."; one undo for the batch | M | 7 |
 | X15 | Scheduled acts | Reminders recur; Night shift jobs | No "every Monday, list what is open" | An act with a recurrence is a reminder whose note carries the phrasing; at most one proactive line a day per scheduled act (decision 28) | M | 7 and new |
 | X16 | Undo | Per-feature undo toasts; `restore_note`; tidy runs undoable | No generic "undo that" in Chat | The act's own inverse steps stored in the confirm card's result; "undo" and "undo that" read as a conversation control (C13) | M | 7 |
-| X17 | Cancel | None | Pending act cannot be dropped | "cancel", "never mind" clear `Dialogue.pending_act` | S | 7 |
-| X18 | Capability line | `CAPABILITY_LINE` only on the wip branch | Must list only verbs that run | Generated from the registered acts, not typed | S | 7 and 8 |
+| X17 | Cancel | Built. Moved to HISTORY.md ("Moved from the plans, 2026-11-08 (CHAT_PLAN acts)"). | | | | |
+| X18 | Capability line | Built. Moved to HISTORY.md ("Moved from the plans, 2026-11-08 (CHAT_PLAN small rows D)"). | | | | |
 
 #### Conversing
 
@@ -1270,7 +1270,7 @@ and always show the exact change before running.
 | C3 | Mood | `SOCIAL["emotion"]` 21 | Replies are generic | Name the feeling word the person used; if their recent notes show a streak or a hard week (measured), say that measured fact, never advice | S | 8 |
 | C4 | Small talk | how, laugh, reaction, confused, ack, compliment, insult (20 lines each) | No memory of what was said; the same kind repeats | Kind plus the last two replies: avoid repeats across the session (decision 34) | S | 4 |
 | C5 | About the app | `intent.ABOUT_APP`, `SOCIAL["about_app"]` 10; the Guide separately (`help_chat`) | Chat and Guide are two engines | One engine with a `help` register (decision 36): the step sentence first, the rest behind "More about the Dashboard" | M | 8 |
-| C6 | Identity | `SOCIAL["who"]` 12; owner: "Composer doesn't know it is atlas" | Not named; bubble label | "I am Atlas. With no model I answer from your notes alone; with one, I use it and check it against them." ; label "Atlas, from your notes" or "Atlas, <model>" | S | 8 |
+| C6 | Identity | Built. Moved to HISTORY.md ("Moved from the plans, 2026-11-08 (CHAT_PLAN small rows D)"). | | | | |
 | C7 | Capability questions | `ABOUT_APP` patterns; `get_app_navigation` tool | Answers are static | Generated from the act registry and utility table (X18, T-rows) with one example each | S | 8 |
 | C8 | Help | `help_chat.HELP_TOPICS` 121, keyword and edit-distance matching, `offline_answer` pastes whole paragraphs | Whole paragraphs; no step-first answer | `help` register composer picks the one sentence (owner's widgets example) | M | 8 |
 | C9 | Encouragement | `composer_voice` remarks (week count, open items) | None in Chat | When a measured streak, a finished checklist or a long gap ends, say it plainly ("All 5 items on the Trip list are ticked."); no praise words the data cannot back | S | 6 and 8 |
@@ -1289,19 +1289,19 @@ branch's pint and simpleeval go with Brief 35 (policy 1).
 
 | Id | Capability | Has it (file) | Gap | Deterministic rule or data | Cost | Step |
 | --- | --- | --- | --- | --- | --- | --- |
-| T1 | Calculator | Gemini `math` shape, invisible, digit-only regex | "15% of 80", "20 percent of 50", "3 times 4", "sqrt 144", "2(3+4)", words for operators | `ast` evaluator over + - * / % ^ and a function whitelist (sqrt, round, floor, ceil, abs, min, max, log, ln, pow, factorial), percent-of, "plus/minus/times/divided by/squared"; no names, no attributes | M | 2 |
+| T1 | Calculator | Built. Moved to HISTORY.md ("Moved from the plans, 2026-11-08 (CHAT_PLAN T1)"). | | | | |
 | T2 | Unit tables | Gemini `convert` shape (pint), invisible | Length, mass, volume, temperature, speed, area, time, data, energy, pressure, angle with `to` and `in` | A plain-data table of about 150 units with factor and offset; temperature by formula; ambiguity ("ton", "pint", "cup") asks | M | 2 |
 | T3 | Currency tables offline | None | Rates change | A small dated table in the app (about 30 currencies, one date), user-editable in Settings, every answer says "rates as of <date>"; no network | M | new (2) |
 | T4 | Date arithmetic | `when.days_since`, `timewords` | "days until Friday", "what day is 3 weeks from now", "weeks between two dates", "what week number is 3 March", "how old is a date" | Date maths over `timewords` mentions and a table of fixed-date holidays by name and country-neutral rule (Easter by algorithm) | M | 2 |
-| T5 | Word count and reading time | Gemini `reading_time` (counts the retrieved notes, not the one asked about; invisible) | "how many words is this note", "reading time of the passport note" | Count on the resolved note's text (code and front matter excluded), 238 words per minute, "about 420 words, two minutes" | S | 2 |
-| T6 | Text transforms | None | Upper, lower, title case, sort lines, remove duplicate lines, number lines, slugify, count characters, reverse, join/split on commas | Act on the note or the pasted text; output is a draft the person confirms before it replaces anything | S | 7 |
+| T5 | Word count and reading time | Built. Moved to HISTORY.md ("Moved from the plans, 2026-11-08 (CHAT_PLAN small rows D)"). | | | | |
+| T6 | Text transforms | Built. Moved to HISTORY.md ("Moved from the plans, 2026-11-08 (CHAT_PLAN T6)"). | | | | |
 | T7 | Checklists | Checklist units in `read_note`; done counts | Make a checklist from a sentence; tick by chat | "make a checklist: milk, eggs, bread" creates a note with `- [ ]` lines; "tick milk" edits one line | S | 7 |
 | T8 | Counters | None | "add 1 to coffee", "how many coffees this week" | A counter is a note titled "Counter: coffee" with a numeric property, incremented by an act; the count over a window is derived from dated lines | M | 7 |
 | T9 | Timers | Reminders with `due_at`, `reminder_parser.relative_delta` ("in 20 minutes") | A timer in a chat | A timer is a reminder due in N minutes, titled "Timer: 10 minutes"; the confirm card says so; no countdown claim | S | 7 |
-| T10 | Random pick | `resurface.ranked` | "pick one of pizza, sushi, tacos", "pick a number between 1 and 10" | Seeded by session salt and turn; the result is a computed value labelled "random" | S | 2 |
-| T11 | Dice and coin | None | "roll 2d6", "flip a coin", "roll a dice" | `random` with the same labelling; the roll is stated with each die | S | 2 |
+| T10 | Random pick | Built. Moved to HISTORY.md ("Moved from the plans, 2026-11-08 (CHAT_PLAN T10)"). | | | | |
+| T11 | Dice and coin | Built. Moved to HISTORY.md ("Moved from the plans, 2026-11-08 (CHAT_PLAN small rows D)"). | | | | |
 | T12 | Templates | See X13 | See X13 | See X13 | M | 7 |
-| T13 | Time and date now | Gemini `utility` shape, invisible | Today's date, the time, week number, "what day is it" | Local clock and the user's timezone setting; computed | S | 2 |
+| T13 | Time and date now | Built. Moved to HISTORY.md ("Moved from the plans, 2026-11-08 (CHAT_PLAN T13)"). | | | | |
 
 #### Proactive (decision 28: rarely, on real signals, never while typing)
 

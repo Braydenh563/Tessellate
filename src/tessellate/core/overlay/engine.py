@@ -135,6 +135,8 @@ IDLE_FRAMES = 24
 #: 24 frames at 6 a second keep the cycle at 4 s (one tail beat, one breath) with twice the in-betweens.
 #: Faster would be the energetic child the owner does not want (INBOX 1670, 14:10Z).
 IDLE_FPS = 6.0
+#: The wave's arm swing (`sprites.WAVE_FRAMES`): six frames a swing and back, a little over two swings a second.
+WAVE_FPS = 14.0
 
 #: Logical pixels (scaled by the monitor's dpi).
 #: Lively, not a crawl (INBOX 1683 f: "all it does is poof"); was 55, so a 1,500 px leg took 16 s at a dash.
@@ -145,7 +147,7 @@ STEP_UNDER = 60.0
 DASH_OVER = 420.0
 STEP_K, DASH_K = 0.6, 2.0
 EASE_IN = 0.7
-PACE_SLEW, PACE_GAP = 3.0, 0.1
+PACE_SLEW, PACE_GAP = 3.0, 0.4  # a draw slower than 10 a second (8 on a big 200% screen) is a hitch, not a fresh start (INBOX 1696 i)
 EASE_OUT = 70.0
 CROUCH_FOR = 0.25
 TURN_FOR = 0.24
@@ -581,12 +583,14 @@ class Engine:
         hang_top: float = 0.0,
         idle_frames: int = IDLE_FRAMES,
         walk_frames: int = WALK_FRAMES,
+        wave_frames: int = 0,
         rng: random.Random | None = None,
         now: float = 0.0,
     ) -> None:
         self.size = size
         self.idle_frames = max(0, int(idle_frames))
         self.walk_frames = max(1, int(walk_frames))
+        self.wave_frames = max(0, int(wave_frames))
         self.monitors = list(monitors) or [Monitor((0, 0, 1920, 1040))]
         self.roam = roam
         self.reduced = reduced
@@ -857,9 +861,19 @@ class Engine:
             left, top, right, bottom = self._box(n, flip)
             dx, dy = self._flip_dx(n, flip), self._dy("held" if frame == "fly" else n)
             boxes.append((left + dx, top + dy, right + dx, bottom + dy))
-        return (
+        left, top, right, bottom = (
             min(b[0] for b in boxes), min(b[1] for b in boxes), max(b[2] for b in boxes), max(b[3] for b in boxes),
         )
+        if frame == "held":
+            # A lifted or pressed figure is still drawn as a stand or an idle picture for a moment (the rise, the
+            # press), whose tail or ring may reach a px or two past the held pose: the sides cover the whole cycle,
+            # so no picture of it is cut by the screen's edge on a ride (INBOX 1670).
+            dx = self._flip_dx("stand", flip)
+            for n in (*STAND_FAMILY, *(f"idle{i}" for i in range(IDLE_FRAMES))):
+                b = self.metrics.get((n, flip))
+                if b:
+                    left, right = min(left, b[0] + dx), max(right, b[2] + dx)
+        return left, top, right, bottom
 
     def _default_home(self) -> tuple[int, int]:
         m = self.monitors[0]
@@ -3872,6 +3886,14 @@ class Engine:
         return FRAME_OF[s]
 
     def _frame(self, now: float) -> str:
+        name = self._state_frame(now)
+        #: A wave swings its arm (INBOX 1696: one held frame read as a salute), wherever it is drawn: the wave
+        #: state, an act that waves, a dance.
+        if name == "wave" and self.wave_frames:
+            return f"wave{int(now * WAVE_FPS + 1e-6) % self.wave_frames}"
+        return name
+
+    def _state_frame(self, now: float) -> str:
         s = self.state
         if s in ("card", "walk", "drift"):
             return self._step_frame(now, s)

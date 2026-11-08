@@ -176,12 +176,26 @@
   font-size: var(--text-sm);
 }
 
-/* The sideways offer (diagram-outline.js): one line under the toolbar, gone once answered. */
+/* The sideways offer (diagram-outline.js): a card over the foot of the panes, gone once answered. It took a row of its own
+   and pushed the shelf and both panes down 42 px when it came (blind test 1108); out of the flow it moves nothing. */
+.dgm {
+  position: relative;
+}
+
 .dgm-sideways {
+  position: absolute;
+  inset: auto auto var(--space-3) var(--space-3);
+  max-inline-size: calc(100% - 2 * var(--space-3));
+  z-index: 2;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--modal-bg);
+  box-shadow: var(--shadow-md);
   font-size: var(--text-sm);
 }
 
@@ -301,6 +315,38 @@
 }
 
 .dgm-stage:not(.dgm-zoomable) .dgm-zoom {
+  display: none;
+}
+
+/* The shelf (1661 l): six blocks of the kind on the picture's top left. Each is the library's own tile, icon only, so a
+   press adds it and a drag drops it on the picture; the caret opens the whole grouped Add menu. */
+.dgm-shelf {
+  position: absolute;
+  inset-block-start: var(--space-3);
+  inset-inline-start: var(--space-3);
+  z-index: 2;
+  flex-wrap: nowrap;
+  gap: var(--space-1);
+  margin: 0;
+  padding: var(--space-1);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--modal-bg);
+}
+
+.dgm-shelf .dgm-tile {
+  justify-content: center;
+  inline-size: var(--control-h);
+  padding: 0;
+  border-color: transparent;
+  background: transparent;
+}
+
+.dgm-shelf .dgm-tile:hover {
+  background: var(--hover-veil);
+}
+
+.dgm-shelf .dgm-tile-name {
   display: none;
 }
 
@@ -1173,6 +1219,14 @@
   inline-size: 1.5rem;
 }
 
+/* The shelf's caret menu: the tile's glyph in one 1.25em column, so the names line up. */
+.dgm-menu-glyph {
+  flex: none;
+  display: inline-grid;
+  place-items: center;
+  inline-size: 1.25rem;
+}
+
 .dgm-add-glyph > .dgm-group-icon {
   font-size: var(--text-h3);
 }
@@ -1244,7 +1298,7 @@
 }
 
 .dgm-kindmenu .menu-item.active {
-  color: var(--accent);
+  color: var(--accent-text);
 }
 
 .dgm-kindnote {
@@ -1739,6 +1793,81 @@
   pointer-events: auto;
 }
 
+/* A sequence picture while a part is dragged (diagram-seq-canvas.js): one mark in the overlay, a 2 px accent line in a gap
+   or a head gap, or the rubber line of a new message with its arrow; a message to the same lifeline is a small loop. */
+.dgm-seqmark {
+  position: absolute;
+  inset: 0 auto auto 0;
+  box-sizing: border-box;
+  background: var(--accent);
+  border-radius: var(--radius-pill);
+  pointer-events: none;
+}
+
+.dgm-seqmark.dgm-target {
+  outline: 0;
+}
+
+.dgm-seqmark.rubber::after {
+  content: "";
+  position: absolute;
+  inset-block-start: -4px;
+  inset-inline-end: -2px;
+  border: 5px solid transparent;
+  border-inline-end-width: 0;
+  border-inline-start-color: var(--accent);
+}
+
+.dgm-seqmark.rubber.back::after {
+  inset-inline-end: auto;
+  inset-inline-start: -2px;
+  border-inline-start-width: 0;
+  border-inline-start-color: transparent;
+  border-inline-end: 5px solid var(--accent);
+}
+
+.dgm-seqmark.self {
+  background: none;
+  border: 2px solid var(--accent);
+  border-inline-start-width: 0;
+  border-radius: 0 var(--radius-md) var(--radius-md) 0;
+}
+
+/* The "+" in the left margin of the gap under the pointer: 24 px, the accent on the surface. */
+.dgm-gap-plus {
+  position: absolute;
+  inset: 0 auto auto 0;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  min-block-size: 24px;
+  min-inline-size: 24px;
+  padding: 0;
+  border: 1px solid var(--accent);
+  border-radius: var(--radius-pill);
+  background: var(--surface-1);
+  color: var(--accent-text);
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+.dgm-gap-plus:hover,
+.dgm-gap-plus:focus-visible {
+  background: var(--accent-soft);
+}
+
+.dgm-gap-plus.hidden {
+  display: none;
+}
+
+@media (pointer: coarse) {
+  .dgm-gap-plus {
+    display: none;
+  }
+}
+
 /* The shortcuts sheet (diagram-style.js) borrows the whiteboard help rows; this sets the one column width they read. */
 .dgm-keys {
   --wb-help-keys-w: 9rem;
@@ -1875,6 +2004,11 @@
   .dgm-join {
     min-block-size: 2.75rem;
     min-inline-size: 2.75rem;
+  }
+
+  /* The shelf is mouse only: a phone or touch screen adds blocks from the Add sheet. */
+  .dgm-shelf {
+    display: none;
   }
 }
 

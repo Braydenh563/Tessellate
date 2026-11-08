@@ -203,3 +203,74 @@ def test_the_picture_takes_a_press_a_rename_and_the_lists_keys():
     assert 'lazyScript("/js/diagram-seq-canvas.js")' in builder and "(!S.k || S.seq)" in builder
     assert "(S.k && !S.seq)" in _js("diagram-overlay.js")
     assert "const act = {" in _js("diagram-kinds.js") and "ghostSpec, act }" in _js("diagram-kinds.js")
+
+
+# --- S4 (l) part 2: reorder a head, draw a message between lifelines, the "+" in a gap
+
+
+@needs_node
+def test_a_head_dragged_past_the_last_one_gives_user_server_app():
+    # Measured in the app: App dragged past Server gives User, Server, App.
+    out = _seq(
+        "(()=>{const m=K.sequence.parse(V.src);const hit=C.boxes(V.svg,m,K.ops.key);"
+        "const app=hit.boxes.find((b)=>b.et==='participant'&&b.who==='App');"
+        "const g=C.headGap(hit,520,app.id);const ok=K.ops.move(K.sequence,m,app.id,null,g.key);"
+        "return {ok,key:g.key,names:m.participants.map((p)=>p.label),line:g.x>550}})()",
+        src=LOGIN, svg=LOGIN_SVG,
+    )
+    assert out["ok"] and out["key"] is None and out["names"] == ["User", "Server", "App"] and out["line"]
+
+
+@needs_node
+def test_the_gap_under_the_pointer_names_the_row_it_goes_before_and_the_lifeline_pair():
+    # A message from User to Server between messages 1 and 2 inserts at index 1; a pointer past the last row appends.
+    out = _seq(
+        "(()=>{const m=K.sequence.parse(V.src);const hit=C.boxes(V.svg,m,K.ops.key);"
+        "const g=C.gap(hit,150);const p=C.pair(hit,75);const f=K.ops.find(K.sequence,m,g.key);"
+        "const node=K.ops.add(K.sequence,m,'m',{parent:f.parent,before:f.node,fields:{from:'User',to:'Server',text:'New'}});"
+        "const end=C.gap(hit,600);const last=C.pair(hit,475);"
+        "return {at:m.steps.indexOf(node),text:m.steps.map((s)=>s.text),before:g.key===K.ops.key(m.steps[0])?'first':'second',"
+        "pair:[p.from,p.to],end:end.key,last:[last.from,last.to],mid:g.y>126&&g.y<176-38+1}})()",
+        src=LOGIN, svg=LOGIN_SVG,
+    )
+    assert out["at"] == 1 and out["text"][:3] == ["Enter password", "New", "Check login"]
+    assert out["pair"] == ["User", "App"] and out["last"] == ["App", "Server"] and out["end"] is None
+
+
+def test_the_picture_takes_the_drags_the_plus_and_the_shelf_drop():
+    canvas = _js("diagram-seq-canvas.js")
+    for needle in ('fig.addEventListener("pointerdown"', "stopImmediatePropagation()", "act.shift(S, ", "dgm-gap-plus", "seqOpen", "over, clear"):
+        assert needle in canvas, needle
+    assert "dgm-seqmark" in CSS and ".dgm-gap-plus" in CSS and "min-block-size: 24px" in CSS
+    assert "shift(S, key, before)" in _js("diagram-kinds.js")
+
+
+# --- S5: the shelf
+
+
+@needs_node
+def test_a_message_dropped_at_apps_x_between_messages_one_and_two_goes_app_to_server_at_index_one():
+    out = _seq(
+        "(()=>{const m=K.sequence.parse(V.src);const hit=C.boxes(V.svg,m,K.ops.key);"
+        "const app=hit.boxes.find((b)=>b.et==='participant'&&b.who==='App');"
+        "const x=app.x+app.w/2;const p=C.pair(hit,x);const g=C.gap(hit,150);const f=K.ops.find(K.sequence,m,g.key);"
+        "const node=K.ops.add(K.sequence,m,'m',{parent:f.parent,before:f.node,fields:{from:p.from,to:p.to,text:'Message'}});"
+        "return {at:m.steps.indexOf(node),pair:[p.from,p.to]}})()",
+        src=LOGIN, svg=LOGIN_SVG,
+    )
+    assert out["at"] == 1 and out["pair"] == ["App", "Server"]
+
+
+def test_the_shelf_is_a_dock_of_six_grip_tiles_and_a_caret_hidden_on_phones_and_coarse_pointers():
+    lib = _js("diagram-library.js")
+    for needle in ("function tileOf(t)", "dataset.objGrip", "dock dgm-shelf", "dgm-shelf-more", 'aria-haspopup", "menu"', "openMenuAtPoint("):
+        assert needle in lib, needle
+    for kind in ('"Box", "Rounded", "Decision", "Pill", "Note", "Group"', '"participant", "message", "reply", "note", "loop", "alt"'):
+        assert kind in lib
+    assert "diagramModel.library.shelf(S, { ...helpers, glyph: shapeGlyph, groupGlyph })" in _js("diagram-builder.js")
+    block = CSS[CSS.index(".dgm-shelf {") :][:700]
+    assert "position: absolute" in block and "var(--space-3)" in block
+    # The shelf is hidden in the one touch and phone-width block (a second copy of that block hid the grips' rule from test_diagram_touch).
+    assert CSS.count("@media (pointer: coarse), (max-width: 599.98px) {") == 1
+    coarse = CSS[CSS.index("@media (pointer: coarse), (max-width: 599.98px) {") :].split("\n}\n", 1)[0]
+    assert ".dgm-shelf {\n    display: none;" in coarse

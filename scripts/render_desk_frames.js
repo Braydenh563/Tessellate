@@ -30,6 +30,9 @@ const FRAMES = [
   { name: "sit", pose: "sit", classes: [] },
   { name: "sleep", pose: "sit", classes: ["nmb-sleep"], at: 1.0 },
   { name: "wave", pose: "stand", classes: ["nmb-desk-wave"], at: 0.45 },
+  //: The wave's arm swing (INBOX 1696, the owner: one raised arm held still "looks liek a nazi salute"): six
+  //: frames out and back about the raised arm, drawn in turn by the engine (`engine.WAVE_FPS`).
+  ...[100, 112, 128, 140, 128, 112].map((deg, i) => ({ name: `wave${i}`, pose: "stand", classes: ["nmb-desk-wave"], at: 0.45, wave: deg })),
   { name: "held", pose: "stand", classes: ["nm-buddy-dragging"] },
   { name: "fall", pose: "stand", classes: ["nmb-act-startle"], at: 0.25 },
   { name: "land", pose: "stand", classes: ["nmb-act-land"], at: 0.1 },
@@ -165,6 +168,10 @@ async function steadyShot(page, file, clip) {
         //: Every frame from the same neutral start: the page's idle timer would
         //: otherwise make it drowsy (`data-feel`, a nightcap) part-way through.
         for (const name of b.getAttributeNames()) if (name.startsWith("data-") && !["data-gait", "data-seed", "data-atlas-variant"].includes(name)) b.removeAttribute(name);
+        //: The page's blink clock closes the eyes at any moment, and the freeze below then holds that blink:
+        //: a masculine `stand` shipped with shut eyes (INBOX 1696). No blink in any frame but the engine's own lids.
+        if (typeof atlasState !== "undefined") { clearTimeout(atlasState.blinkTimer); atlasState.blinkTimer = 0; }
+        for (const el of b.querySelectorAll(".atl-blinking, .atl-blinking-slow")) el.classList.remove("atl-blinking", "atl-blinking-slow");
         for (const el of b.querySelectorAll(".nm-buddy-char, .atl-lw-tail, .atl-lw-lower, .nm-atlas.atl-layer-lower")) { el.style.removeProperty("transform"); el.style.removeProperty("transform-origin"); }
         //: The page's own timers write `style.transform` (a plain write replaces the important
         //: one) and walk the figure to its home corner part-way through the run: every frame
@@ -193,6 +200,16 @@ async function steadyShot(page, file, clip) {
           if (a.transitionProperty) { a.finish(); continue; }
           a.pause();
           if (a.animationName && /neb|wisp|glint/.test(a.animationName)) { a.currentTime = 0; continue; } // the same moment in every frame and in the stream pass
+          //: The rig's own sways (`atl-lw-sway-*`, `atl-sway-body`) sit at one moment in every frame: `at` is the
+          //: act's moment (a blink, a look), and it also moved these, so stand, blink, look, wave and land came
+          //: out with a lower body 5 to 7 px apart (INBOX 1696 w, "framey"); stand's ran on at its live time.
+          //: A sway is held at the middle of its swing (no lean), so the walk frames' own swing (inline) is the only one.
+          if (a.animationName && /^atl-(lw-)?sway/.test(a.animationName)) {
+            a.effect.updateTiming({ delay: 0 });
+            a.currentTime = (a.effect.getComputedTiming().duration || 0) * 0.5;
+            continue;
+          }
+          if (a.animationName && !/^nmb-/.test(a.animationName)) { a.currentTime = 0; continue; }
           if (!a.animationName || (frame.phase === undefined && frame.at === undefined)) continue;
           const t = a.effect.getComputedTiming();
           const cycle = (t.duration || 0) * (String(t.direction).startsWith("alternate") ? 2 : 1);
@@ -205,10 +222,15 @@ async function steadyShot(page, file, clip) {
         const put = (el, t, origin) => { el.style.setProperty("transform", t, "important"); if (origin) el.style.setProperty("transform-origin", origin, "important"); };
         const char = b.querySelector(".nm-buddy-char");
         if (frame.spin) put(char, `rotate(${frame.spin}deg)`, "50% 45%");
-        if (frame.idle !== undefined) {
-          const w = frame.idle * 2 * Math.PI;
+        if (frame.wave !== undefined) b.style.setProperty("--desk-wave", `${frame.wave}deg`);
+        else b.style.removeProperty("--desk-wave");
+        //: Every frame's tail sits at one moment (the loop's start for a non-idle frame): the live
+        //: loop otherwise captured it anywhere, so stand's lowest row moved 17 px from idle's.
+        {
+          const w = (frame.idle || 0) * 2 * Math.PI;
           const box = [...b.querySelectorAll("*")].find((el) => el.atlasTail);
-          if (!box) throw new Error("no live tail to sample");
+          if (!box && frame.idle !== undefined) throw new Error("no live tail to sample");
+          if (box) {
           const tail = box.atlasTail;
           //: Stop the live loop and the compositor sway so nothing redraws over the sample.
           clearTimeout(tail.raf); cancelAnimationFrame(tail.raf); tail.raf = 0;
@@ -224,19 +246,22 @@ async function steadyShot(page, file, clip) {
           window.__tailSample = true;
           draw(tail, (s) => atlasTailBend(s, p, w, w, 0, 2 * w), () => 1 + 0.03 * Math.cos(2 * w));
           window.__tailSample = false;
+          { // the breath and the lower wisp too: stand sat 5 px below idle with only the tail pinned
           const k = (1 - Math.cos(w)) / 2;
           for (const el of box.querySelectorAll(".atl-layer-body .nmb-torso")) el.style.setProperty("scale", `${(1 + ATLAS_BREATH_SWELL[0] * k).toFixed(4)} ${(1 + ATLAS_BREATH_SWELL[1] * k).toFixed(4)}`);
           const lower = b.querySelectorAll(".nm-atlas.atl-layer-lower").length ? ".nm-atlas.atl-layer-lower" : ".atl-lw-lower";
           for (const low of b.querySelectorAll(lower)) put(low, `skewX(${(3 * Math.sin(w - 1.5)).toFixed(2)}deg)`, "50% 55%");
+          }
+          }
         }
         if (frame.float !== undefined) {
           const w = frame.float * 2 * Math.PI;
           //: No translateY: the engine's slow bob (BOB_HZ) is the only vertical motion. This one
           //: baked 9.7 px at 1.33 Hz into the drift frames (INBOX 1670: "bobbing really fast").
           put(char, "rotate(4deg)", "50% 90%");
-          for (const tail of b.querySelectorAll(".atl-lw-tail")) put(tail, `rotate(${(11 * Math.sin(w - 1.0)).toFixed(2)}deg)`, "40% 35%");
+          for (const tail of b.querySelectorAll(".atl-lw-tail")) put(tail, `rotate(${(-7 + 2.5 * Math.sin(w - 1.0)).toFixed(2)}deg)`, "40% 35%");
           const lower = b.querySelectorAll(".nm-atlas.atl-layer-lower").length ? ".nm-atlas.atl-layer-lower" : ".atl-lw-lower";
-          for (const low of b.querySelectorAll(lower)) put(low, `skewX(${(9 * Math.sin(w - 2.0)).toFixed(2)}deg)`, "50% 55%");
+          for (const low of b.querySelectorAll(lower)) put(low, `skewX(${(6 * Math.sin(w - 2.0)).toFixed(2)}deg)`, "50% 55%");
         }
       }, f);
       await page.waitForTimeout(40);

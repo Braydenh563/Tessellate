@@ -1372,6 +1372,7 @@ function wbEditDiagram(d = null) {
   openDiagramBuilder({
     source: d?.data?.mermaid || diagramModel.starter,
     title: d ? "Edit diagram" : "Diagram builder",
+    draft: d ? `board:${d.id}` : "board-new",
     shapes: d ? (source) => (wbMermaidKind(source) ? wbDiagramToShapes(d, source) : toast("Shapes cover flowchart, state, class and sequence diagrams.")) : null,
     //: Save to Library (R9c).
     offer: d && { link: d },

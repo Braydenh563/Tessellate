@@ -8,7 +8,7 @@
 // A tile is `{ group, name, hint, glyph, label, data, press, keys? }`. `flow` is the flowchart's own list; the other kinds
 // give theirs to `build` from diagram-kinds.js. One closure, one export: `diagramModel.library`.
 (() => {
-  const IDLE = "Press a shape to add it, or drag it into the blocks.";
+  const IDLE = "Press a shape to add it, or drag it into the blocks or onto the picture.";
 
   //: The flowchart's tiles by meaning: [group, [[shape, hint], ...]]. A note is a rounded block that says "Note".
   const FLOW = [
@@ -43,6 +43,21 @@
     );
   }
 
+  //: One tile: a button that is pressed to add and grabbed (`data-obj-grip`) to drag, so the strip and the shelf share it.
+  function tileOf(t) {
+    const tile = make("button", "dgm-tile");
+    tile.type = "button";
+    tile.dataset.objGrip = "";
+    Object.assign(tile.dataset, t.data, { hint: t.hint });
+    tile.title = `${t.hint} Press to add it, or drag it into the blocks or onto the picture.`;
+    tile.setAttribute("aria-label", t.label);
+    if (t.keys) tile.setAttribute("aria-keyshortcuts", t.keys);
+    //: A clone: a spec is drawn twice (the Add library and the shelf) and a node sits in one place only. The second tile took the first's glyph, so the phone's Add sheet printed the name where the glyph should be (blind test 1108).
+    tile.append(t.glyph.cloneNode(true), make("span", "dgm-tile-name", t.name));
+    tile.addEventListener("click", t.press);
+    return tile;
+  }
+
   function build(tiles, idle = IDLE) {
     const strip = make("div", "dock-group dgm-palette dgm-library");
     strip.setAttribute("role", "group");
@@ -58,18 +73,7 @@
       box.setAttribute("role", "group");
       box.setAttribute("aria-label", name);
       const row = make("div", "dgm-lib-tiles");
-      for (const t of list) {
-        const tile = make("button", "dgm-tile");
-        tile.type = "button";
-        tile.dataset.objGrip = "";
-        Object.assign(tile.dataset, t.data, { hint: t.hint });
-        tile.title = `${t.hint} Press to add it, or drag it into the blocks.`;
-        tile.setAttribute("aria-label", t.label);
-        if (t.keys) tile.setAttribute("aria-keyshortcuts", t.keys);
-        tile.append(t.glyph, make("span", "dgm-tile-name", t.name));
-        tile.addEventListener("click", t.press);
-        row.append(tile);
-      }
+      for (const t of list) row.append(tileOf(t));
       box.append(make("span", "dgm-lib-head", name), row);
       strip.append(box);
     }
@@ -85,5 +89,46 @@
     return strip;
   }
 
-  diagramModel.library = { build, flow };
+  //: The shelf (INBOX 1661 l): six tiles of the kind on the picture's top left, and a caret for the rest as the grouped Add menu.
+  //: A flowchart's are picked by name, a sequence diagram's by tile id; the other kinds have none yet.
+  const SIX = { flowchart: ["Box", "Rounded", "Decision", "Pill", "Note", "Group"], sequence: ["participant", "message", "reply", "note", "loop", "alt"] };
+
+  function shelf(S, h) {
+    const stage = S?.fig?.parentElement;
+    const kind = S?.k ? S.k.name : "flowchart";
+    if (!stage?.classList.contains("dgm-stage") || stage.querySelector(".dgm-shelf") || !SIX[kind]) return;
+    const specs = S.k ? S.specs : flow({ ...h, add: (options) => h.add(S, options) });
+    if (!specs) return;
+    const bar = make("div", "dock dgm-shelf");
+    bar.setAttribute("role", "group");
+    bar.setAttribute("aria-label", "Add to the picture");
+    for (const id of SIX[kind]) {
+      const t = specs.find((x) => (x.data.tile || x.name) === id);
+      if (t) bar.append(tileOf(t));
+    }
+    const more = make("button", "ghost small icon-only dgm-shelf-more");
+    more.type = "button";
+    more.title = "Every block you can add";
+    more.setAttribute("aria-label", "Every block you can add");
+    more.setAttribute("aria-haspopup", "menu");
+    more.append(make("i", "ph ph-caret-down"));
+    more.firstChild.setAttribute("aria-hidden", "true");
+    more.addEventListener("click", () => {
+      const r = more.getBoundingClientRect();
+      openMenuAtPoint(specs.map((t) => ({ label: t.name, group: t.group, title: t.hint, run: t.press })), "Add to the diagram", r.right, r.bottom, more);
+      //: Each row wears its tile's glyph, in the order the rows were given (the menu has no icon field for a drawn shape).
+      //: The menu may be moved out of its host to escape a clipping ancestor, so it is found by being the one open (one menu is open at a time).
+      const menu = document.querySelector(".action-menu:not(.hidden)");
+      menu?.querySelectorAll(":scope > .menu-item").forEach((row, i) => {
+        if (!specs[i]) return;
+        const slot = make("span", "dgm-menu-glyph");
+        slot.append(specs[i].glyph.cloneNode(true));
+        row.prepend(slot);
+      });
+    });
+    bar.append(more);
+    stage.append(bar);
+  }
+
+  diagramModel.library = { build, flow, shelf };
 })();

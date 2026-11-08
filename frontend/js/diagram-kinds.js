@@ -807,21 +807,25 @@
 
   //: A tile's block, after the selection, inside it, or at a drop's `spot`. The sequence adds the
   //: participants a first message needs, a blank mind map its central idea.
-  function addTile(S, tile, { sel = S.sel, spot = null, edit = true } = {}) {
+  //: `fields` overrides the tile's (the picture names a message's two ends); `wrap` is a step the new box takes in (a Loop dropped on a message).
+  function addTile(S, tile, { sel = S.sel, spot = null, edit = true, fields: given = null, wrap = null } = {}) {
     const A = S.k;
     const m = S.m;
     if (ops.count(A, m) >= ops.MAX - 4) return kit.say(S, `A diagram holds at most ${ops.MAX} blocks.`);
     if (A.start && !m.root) A.start(m);
     const at = sel && find(S, sel)?.node;
-    const place = spot || ops.spot(A, m, tile.type, sel, Boolean(tile.into));
+    const under = wrap && find(S, wrap);
+    const place = spot || (under && { parent: under.parent, before: under.node }) || ops.spot(A, m, tile.type, sel, Boolean(tile.into));
     if (!place) return kit.say(S, A.hint(tile.type));
     const { fields, made } = A.defaults ? A.defaults(m, tile, at) : { fields: tile.fields, made: 0 };
-    const node = ops.add(A, m, tile.type, { parent: place.parent, before: place.before, fields });
+    const node = ops.add(A, m, tile.type, { parent: place.parent, before: place.before, fields: { ...fields, ...given } });
     if (!node) return kit.say(S, A.hint(tile.type));
+    if (under && node.steps) (under.list.splice(under.list.indexOf(under.node), 1), node.steps.splice(0, 1, under.node));
     S.tile = tile;
     S.sel = ops.key(node);
     kit.commit(S, `Added ${tile.name.toLowerCase()}${made ? ` and ${made} ${made === 1 ? "participant" : "participants"}` : ""}.`);
-    if (edit) relabel(S, S.sel);
+    //: A sequence diagram names the new part on its picture (diagram-seq-canvas.js); the others in their list.
+    if (edit) S.seq ? (S.seqOpen = S.sel) : relabel(S, S.sel);
     return S.sel;
   }
 
@@ -909,7 +913,8 @@
     const { S, key } = g;
     const A = S.k;
     const at = document.elementFromPoint(g.x, g.y);
-    if (!at || !S.pane.contains(at)) return null;
+    if (!at || !S.pane.contains(at)) return S.seq && g.tile ? diagramModel.seqCanvas.over(g) : null;
+    if (S.seq) diagramModel.seqCanvas.clear(S);
     const dragged = key ? find(S, key) : null;
     const type = dragged ? dragged.node.type : g.tile.type;
     const block = at.closest(".dgm-block");
@@ -936,7 +941,7 @@
   function dropApply(g, target) {
     const { S } = g;
     const spot = { parent: target.parent, before: target.before };
-    if (g.tile) return addTile(S, g.tile, { spot, edit: false });
+    if (g.tile) return addTile(S, g.tile, { spot, edit: false, ...target.add });
     const to = target.parent ? ops.key(target.parent) : null;
     if (!ops.move(S.k, S.m, g.key, to, target.before ? ops.key(target.before) : null)) return;
     S.sel = g.key;
@@ -958,11 +963,13 @@
     },
     drop(g) {
       kit.dropMark(g, null);
+      if (g.S.seq) diagramModel.seqCanvas.clear(g.S);
       g.dragEl?.classList.remove("dgm-lifted");
       if (g.target) dropApply(g, g.target);
     },
     cancel(g) {
       kit.dropMark(g, null);
+      if (g.S.seq) diagramModel.seqCanvas.clear(g.S);
       g.dragEl?.classList.remove("dgm-lifted");
     },
   };
@@ -980,12 +987,12 @@
     bar.setAttribute("role", "toolbar");
     bar.setAttribute("aria-label", "Diagram blocks");
     //: The Add library (diagram-library.js): the tiles by meaning, each with its hint.
-    const tiles = diagramModel.library.build(
-      S.k.tiles.map((t) => ({
-        group: t.group, name: t.name, hint: `Adds ${t.about}.`, glyph: icon(t.icon), keys: t.key.toUpperCase(),
-        label: `Add ${t.name.toLowerCase()}. Adds ${t.about}.`, data: { tile: t.id }, press: () => addTile(S, t),
-      }))
-    );
+    //: The same specs are the picture's shelf (diagram-library.js `shelf`, asked for by the builder once the picture has its stage).
+    S.specs = S.k.tiles.map((t) => ({
+      group: t.group, name: t.name, hint: `Adds ${t.about}.`, glyph: icon(t.icon), keys: t.key.toUpperCase(),
+      label: `Add ${t.name.toLowerCase()}. Adds ${t.about}.`, data: { tile: t.id }, press: () => addTile(S, t),
+    }));
+    const tiles = diagramModel.library.build(S.specs);
     const actions = kit.el("div", "dock-actions");
     S.suggestBtn = smallButton("ph:sparkle Suggest", "Start from a template, your notes or a description", () => kit.suggestMenu(S, S.suggestBtn));
     S.suggestBtn.classList.add("dgm-suggest");
@@ -1131,6 +1138,15 @@
     },
     remove: removeBlock,
     step: stepBlock,
+    add: addTile,
+    //: A participant to just before `before` (null: last), from a drag of its head on the picture; no change, no commit.
+    shift(S, key, before) {
+      const was = S.k.print(S.m);
+      if (!ops.move(S.k, S.m, key, null, before) || S.k.print(S.m) === was) return false;
+      S.sel = key;
+      kit.commit(S, `Moved ${nameOf(S, key)}.`);
+      return true;
+    },
   };
 
   diagramModel.kinds = { mindmap, timeline, sequence, ops, show, ghostSpec, act };

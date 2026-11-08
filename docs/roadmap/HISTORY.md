@@ -52923,3 +52923,82 @@ Built: A24. Row text: A24 | A random note, an old note | `resurface.for_day`, `r
 - **What it does:** `composer_small.something_old()` answers "show me something old / an old note / something forgotten / from a while back" with one note picked by the chat's salt and turn from the faded end of the notes: the route's pool is `resurface.ranked` (six, else the six oldest; `list_pool._faded`), and the composer cuts any longer list to its oldest six. "Here is one from a while back: **Old trip**, written four years ago. It begins: We walked the coast path in 2022."
 - **Check:** `tests/test_small_b_1108_a24.py` (fixed clock, salts a to h give more than one pick, route with no model).
 - **Not built:** "show me a random note" (the row title); only the old ask. Also fixed the complexity ratchet for `what_if`, `where_written` and `list_pool.pool` by splitting them.
+
+## Moved from the plans, 2026-11-08 (CHAT_PLAN T10)
+
+Built: T10. Row text: T10 | Random pick | `resurface.ranked` | "pick one of pizza, sushi, tacos", "pick a number between 1 and 10" | Seeded by session salt and turn; the result is a computed value labelled "random" | S | 2
+
+- **What it does:** `ai/composer_chance.py` (reached through `composer_quick`, hooked in `composer_extra.answer`) answers "pick one of pizza, sushi, tacos" and "choose between tea and coffee": "I pick tacos." then "_Read as one pick at random from pizza, sushi and tacos._" Seeded by the chat seed and the question, so one chat repeats its pick. Two to twenty options; "my notes", "number" and "reminders" are left alone; no note is read.
+- **Check:** `tests/test_composer_chance_1108.py` (fixed clock, exact sentences, 20k linear timing).
+- **Not built:** Picking a random note ("pick one of my notes") is left to the A24 old-note ask.
+
+## Moved from the plans, 2026-11-08 (CHAT_PLAN T13)
+
+Built: T13. Row text: T13 | Time and date now | Gemini `utility` shape, invisible | Today's date, the time, week number, "what day is it" | Local clock and the user's timezone setting; computed | S | 2
+
+- **What it does:** `ai/composer_clock.py` (through `composer_quick`) answers from the turn's date: "what week is it" gives "It is week 45 of 2026." (ISO, weeks start Monday), "what quarter is it" "It is quarter 4 of 2026, October to December.", "what day of the year is it" "Today is day 312 of 2026, and 53 days remain.", "what's tomorrow's date" "Tomorrow is Monday 9 November 2026." Each says how it was read; no note is read.
+- **Check:** `tests/test_composer_clock_1108.py` (fixed clock, exact sentences, ISO year edge, 20k linear timing).
+- **Not built:** Week of a named date, leap year and days left in the year are the Time and date row.
+
+## Moved from the plans, 2026-11-08 (CHAT_PLAN Time and date)
+
+Built: Time and date (the tools survey row). Row text: | Time and date | Current time, calendar week of a date, Unix epoch, days in a month, week of year | Time and date plugin with formats | "what week is 3 March", "days until Friday", "what day is 3 weeks from now" | Partial: `when.py`; the Gemini `utility` time answer is invisible | S |
+
+- **What it does:** `ai/composer_clock.py` also answers "what week is 3 March" ("Wednesday 3 March 2027 is in week 9 of 2027."), "is 2028 a leap year" ("2028 is a leap year: it has 366 days, and February has 29."), "how many days are left in the year" and "how many weeks left in the year" ("There are 53 days left in 2026, after today."). Each says how it was read; no note is read.
+- **Check:** `tests/test_composer_clock_1108.py` (fixed clock, exact sentences, 20k linear timing).
+- **Not built:** Unix epoch time.
+
+## Moved from the plans, 2026-11-08 (CHAT_PLAN T6)
+
+Built: T6. Row text: T6 | Text transforms | None | Upper, lower, title case, sort lines, remove duplicate lines, number lines, slugify, count characters, reverse, join/split on commas | Act on the note or the pasted text; output is a draft the person confirms before it replaces anything | S | 7
+
+- **What it does:** `ai/composer_text.py` (through `composer_quick`) transforms text the person pastes: "uppercase: hello there" gives "In capitals:" and a code block with HELLO THERE; also lower case, title case ("The Lord of the Rings"), slugify, reverse, sort (lines or comma items), remove duplicate lines (first kept), number the lines. The reply ends "A draft only: nothing was saved or changed." Sort, reverse, dedupe and number answer only after a colon, quote or new line, so "sort my notes by date" is left alone. Pasted text only (20,000 characters at most); no note is read, quoted or changed.
+- **Check:** `tests/test_composer_text_1108.py` (exact sentences, fixed clock, 20k linear timing).
+- **Not built:** Acting on a named note ("uppercase the passport note"): a note edit needs the confirm-first draft path, so it stays open; join/split on commas and count characters (word counts exist).
+
+## Moved from the plans, 2026-11-08 (CHAT_PLAN T1)
+
+Built: T1. Row text: T1 | Calculator | Gemini `math` shape, invisible, digit-only regex | "15% of 80", "20 percent of 50", "3 times 4", "sqrt 144", "2(3+4)", words for operators | `ast` evaluator over + - * / % ^ and a function whitelist (sqrt, round, floor, ceil, abs, min, max, log, ln, pow, factorial), percent-of, "plus/minus/times/divided by/squared"; no names, no attributes | M | 2
+
+- **What it does:** `ai/composer_sums.py` (through `composer_quick`) adds the spoken shorthand: "5 factorial" and "5!" (up to 20), "half of 90", "a third of 10", "a quarter of 8", "double 45", "twice", "triple", "sqrt 144" and the root sign. "Half of 90 is 45." then "_Read as 90 divided by 2._" The rest of the row (sums, percentages, "squared", "the square root of") was already built in `utilities.py` and `composer_calc.py`.
+- **Check:** `tests/test_composer_sums_1108.py` (exact sentences, 20k linear timing).
+- **Not built:** The function whitelist words round, floor, ceil, min, max, log, ln, pow typed as words; "2(3+4)".
+
+## Moved from the plans, 2026-11-08 (CHAT_PLAN small rows D)
+
+Built (verified by asking the plan row's own phrasing, `tests/test_composer_smalld_1108.py`): T11, T5, C6, X4, X6, X12, X18, and the leftovers of T1, T6 and Time and date. Row text:
+
+- T11 | Dice and coin | None | "roll 2d6", "flip a coin", "roll a dice" | `random` with the same labelling; the roll is stated with each die | S | 2
+- T5 | Word count and reading time | Gemini `reading_time` (counts the retrieved notes, not the one asked about; invisible) | "how many words is this note", "reading time of the passport note" | Count on the resolved note's text (code and front matter excluded), 238 words per minute, "about 420 words, two minutes" | S | 2
+- C6 | Identity | `SOCIAL["who"]` 12; owner: "Composer doesn't know it is atlas" | Not named; bubble label | "I am Atlas. With no model I answer from your notes alone; with one, I use it and check it against them." ; label "Atlas, from your notes" or "Atlas, <model>" | S | 8
+- X4 | File into a category | `edit_note` `category` | No chat verb | "file this under Work" with the engine's explanation line ("shares gym, squat and protein with 6 notes there") | S | 7 (decision 39)
+- X6 | Pin | `pin_note` | No chat verb | "pin this" with dialogue reference | S | 7
+- X12 | Find and open | `search_notes`, `get_note` | No chat verb ("open the passport note") | Title match first, then plan; one result opens, several asks which | S | 7
+- X18 | Capability line | `CAPABILITY_LINE` only on the wip branch | Must list only verbs that run | Generated from the registered acts, not typed | S | 7 and 8
+
+- **T11 dice and coin:** "roll 2d6" says "You rolled 4, 1: 5 in all.", "flip a coin" and "roll a dice" answer, in `utilities.py`. Nothing new was needed.
+- **T5 word count:** "how many words is the passport note" was built (`composer_calc._word_count`); "reading time of the passport note" now answers too (the word count pattern gained "reading time").
+- **C6 identity:** "who are you" says "Atlas's assistant" in every line (`composer_smalltalk.SOCIAL["who"]`; the plan's "I am Atlas" wording was amended by decision 36).
+- **X4, X6, X12, X18:** "file this under Work", "pin this", "pin the passport note", "open the passport note" read as their acts (`commands.read_typed`), and the capability line is generated from the act registry (`act_registry.capability_line`, `tests/test_acts.py`).
+- **T1 leftovers:** `ai/composer_sums.py` now also answers "round 3.14159 to 2 decimal places", "floor 3.7", "ceil 3.2", "round up 3.2", "log 100", "log2 8", "log base 2 of 8", "ln 1", "pow(2, 10)", "2 to the power of 10" and "2(3+4)". A power past the cap ("2 to the power of 10000"), a log of zero or a negative number, a base of 0 or 1, and zero to a negative power each say why. min and max were already built in `utilities.py`.
+- **T6 leftovers:** `ai/composer_text.py` also joins lines with commas, splits on commas into lines, and counts characters with and without spaces (pasted text, after a colon, quote or new line).
+- **Time and date leftover:** `ai/composer_epoch.py` answers "unix time now" (the turn's clock), "what is 1700000000 as a date" (seconds, or milliseconds from 12 digits, in UTC) and "unix time of 1 January 2024" (midnight UTC).
+- **Review fixes on batch C:** case transforms leave "uppercase my notes about X" alone; "pick" needs a list written as a list; "what week is 3 March" is this year; fractions show two decimals.
+- **Not built:** X5 (renaming a tag or category by chat), X8 restore, X10, X11, X13 to X17, T7 to T9 and the rest of the X rows stay open in CHAT_PLAN; acting on a named note ("uppercase the passport note") needs the confirm-first draft path.
+
+## Moved from the plans, 2026-11-08 (CHAT_PLAN acts)
+
+Built (`tests/test_chat_acts_1108.py`). Row text:
+
+- X17 | Cancel | None | Pending act cannot be dropped | "cancel", "never mind" clear `Dialogue.pending_act` | S | 7
+
+- **X17 cancel:** the page marks an act card that still waits (`data-pending-act`, `renderActCard`) and sends its label as the last turn's `pending_act`; `Dialogue.pending_act` reads it and `composer_cancel.reply` (called from `chat_extra.events`) answers "cancel", "never mind", "forget it" with one line and an `act` event with `cancel` set, which closes the open card. With no card waiting the words fall through as before ("cancel the dentist task" is still the task act). Answered where the engine answers (no model, or From your notes); with a model up the model reads the words.
+
+- | X5 | Rename (note title, tag, category) | `edit_note`, `rename_tag`, `rename_category` | No chat verb | Object resolved by kind word ("rename the tag gym to fitness") | S | 7 |
+- | X8 | Delete and restore | `delete_note`, `restore_note` (bin) | No chat verb | Always confirmed, always the bin, undo = restore | S | 7 |
+
+- **X5 rename:** `ai/object_acts.py` reads "rename the tag gym to fitness", "rename the category Work to Job" and "rename the note X to Y" by the kind word; the card is `rename_tag` or `rename_category` (now runnable, undone by renaming back). An unknown name says which are close; a rename onto an existing name is left to the Tag manager (a merge cannot be undone); a tag a private note holds is refused while the vault is locked. Questions ("how do I rename a tag") are not acts.
+- **X8 restore:** "restore the passport note" (or "from the bin") finds the note in the bin by its words, asks which when several match, and gives a confirm card whose undo bins it again; a private note is never restored from Chat. Delete was already always a confirmed card to the bin with restore as its undo; a test now pins it.
+
+- | X10 | Add to a note | Daily-note route; `edit_note` replaces content (no append argument) | The act reads the note and writes the whole text | "add X to today's note": daily route, append a bullet, optimistic-lock check (`edit_conflicts.py`) | S | 7 |
+- **X10 add to today's note:** "add buy milk to today's note" (also "put ... in my daily note", and the older "add to today's note: ...") is the `append_today` starter in `ai/starter_acts.py`: a card that waits for Confirm, a bullet in the note's own shape (`commands.appended`), or a new daily note when there is none. The `edit_note` step carries `base_hash` (`edit_conflicts.content_hash` of the text read); `tool_write._refuse_stale` refuses the write when the note changed since, and the run line says "it changed since the card was made" (skip reason `stale`). A private daily note is not written to. Answered where the engine answers (no model, or From your notes).

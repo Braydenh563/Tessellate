@@ -667,7 +667,7 @@ async function chatSendTurn(preset, opts = {}) {
         //: Waiting cards are output (`showWaiting`); an act's is the answer's own.
         showWaiting(event.type === "act" ? timeline.holder : recordsHolder, renderToolConfirm, event);
         if (event.done) bubble.dataset.wrote = "1"; // an act that ran at once wrote
-        status.textContent = "Waiting for your confirmation…";
+        if (!event.cancel) status.textContent = "Waiting for your confirmation…";
       },
       onAsk: (event) => {
         clearPending();

@@ -21,6 +21,7 @@ from tessellate.ai import composer_ask, composer_property
 from tessellate.api.chat_attach import _MEDIA_REF, _attached_boards, _attachment_readings, _media_readings, _mostly_pictures, _named_sources, _picture_alts, _picture_sizes
 from tessellate.core import deps
 from tessellate.core.database import Category, Entry, like_escape, LIKE_ESCAPE, MediaUpload
+from tessellate.repo import content as content_repo
 from tessellate.repo import documents as documents_repo
 from tessellate.repo import relations as relations_repo
 from tessellate.repo import tags as tags_repo
@@ -302,13 +303,14 @@ def _with_records(session: Session, question: str, entries: list, locale: str | 
 
 
 def _or_empty_notebook(session: Session, line: str) -> str:
-    """"I couldn't find any saved notes matching that question" reads as if notes exist: with none at all the
-    answer says so, and how to begin (round 3, R3-30). A private note is a note: it is counted here (and
-    only counted), and a line that says more than the plain miss (a day with nothing in it, with where the
+    """"I couldn't find any saved notes matching that question" reads as if notes exist: with no note and no
+    document at all the answer says so, and how to begin (round 3, R3-30); a notebook of documents keeps the
+    plain miss, which the related items follow. A private note is a note: it is counted (and only counted),
+    and a line that says more than the plain miss (a day with nothing in it, with where the
     notes run) is kept."""
     if line != librarian.NO_RESULTS_MESSAGE:
         return line
-    if session.query(func.count(Entry.id)).filter(Entry.is_deleted == False, Entry.is_board == False).scalar():  # noqa: E712
+    if content_repo.anything_kept(session):
         return line
     return "You have no notes yet. Write one, or type note: and what you want to keep."
 

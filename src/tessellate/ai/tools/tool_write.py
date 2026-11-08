@@ -59,8 +59,21 @@ def _create_note(session: Session, args: dict) -> dict:
     return result
 
 
+def _refuse_stale(entry: Entry, args: dict) -> None:
+    """The edit-conflict lock for a card that appends to a note's text it read
+    earlier (`base_hash`, CHAT_PLAN X10): if the note changed in between, the
+    append would overwrite that change, so it is refused, not merged."""
+    base = args.get("base_hash")
+    if base:
+        from tessellate.api.edit_conflicts import content_hash  # lazy: `ai` sits below `api`
+
+        if content_hash(entry.content) != str(base):
+            raise ToolError("That note changed since this was prepared, so nothing was written. Ask again to add to the latest text.")
+
+
 def _edit_note(session: Session, args: dict) -> dict:
     entry = _require_note(session, args)
+    _refuse_stale(entry, args)
     undo = _undo_edit(session, entry)  # before the write, or it undoes nothing
     content = args.get("content")
     content_changed = content is not None and str(content) != entry.content

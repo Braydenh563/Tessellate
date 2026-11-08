@@ -11,7 +11,7 @@ from datetime import datetime, timedelta
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from tessellate.ai import activity, composer_digest, composer_extra, composer_suggest, realise
+from tessellate.ai import activity, composer_cancel, composer_digest, composer_extra, composer_suggest, realise
 from tessellate.ai.composer_study import Ctx
 from tessellate.ai.tools._common import _visible
 from tessellate.core.database import Category, Entry
@@ -40,6 +40,11 @@ def events(session: Session, question: str, history: list[dict], *, now: datetim
            follow_kind: str = "", said: str = "", asked: str = "", ask: bool = False, voice: str = "natural") -> list[dict] | None:
     """The answer events for a question this module reads, else None. A
     failure is logged and leaves the question to the older readers."""
+    #: "cancel" while a card waits drops that card (CHAT_PLAN X17).
+    #: Read on what was typed (`asked`), not on `question`: a follow-up rewrites that
+    #: ("no cancel it" became a question about a note), and the card waiting is not a topic.
+    if (dropped := composer_cancel.reply(asked or question, history)) is not None:
+        return dropped
     #: "Summarise this" and "summarise Travel" read the open note or a whole
     #: category, which the digest does better than a title match here.
     if composer_digest.about_this(question) or composer_digest.named_category(

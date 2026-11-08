@@ -19,10 +19,10 @@ import re
 from collections import Counter
 from datetime import datetime
 
-from sqlalchemy import func, select
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from tessellate.ai import commands, day_digest, lexical_filing, realise, recognise, tagging, utilities
+from tessellate.ai import act_steps, commands, day_digest, lexical_filing, realise, recognise, tagging, utilities
 from tessellate.ai.composer_frame import note_title
 from tessellate.core.database import Document, Entry, EntryLink, Reminder
 
@@ -30,6 +30,8 @@ from tessellate.core.database import Document, Entry, EntryLink, Reminder
 #: with the closing punctuation off before it is matched.
 _READS = (
     ("append_today", re.compile(r"^(?:add|append) to (?:today'?s|the daily|my daily) (?:note|journal)[:,]?\s+(?P<words>.+)$")),
+    #: "add buy milk to today's note": the words come first (CHAT_PLAN X10).
+    ("append_today", re.compile(r"^(?:please )?(?:add|put|append) (?P<words>.+?) (?:to|in|into|onto) (?:today'?s|the daily|my daily|the day'?s) (?:note|journal)$")),
     #: The time words are the recogniser's (`_since_a_day`), never a list here.
     ("changed", re.compile(r"^what (?:has )?changed(?: in (?:my|the) notebook)?(?: (?P<when>.+))?$")),
     ("loose_ends", re.compile(r"\bloose ends?\b|^what should i (?:pick up|do) next$")),
@@ -58,7 +60,8 @@ TAG_NOTES = 20
 
 def read(text: str) -> tuple[str, dict] | None:
     """The starter `text` is, as `(kind, slots)`, or None."""
-    low = re.sub(r"\s+", " ", str(text or "")).strip().lower().rstrip(".?!")
+    flat = re.sub(r"\s+", " ", str(text or "")).strip().replace("’", "'").rstrip(".?!")
+    low = flat.lower()
     if not low or len(low) > 300:
         return None
     for kind, pattern in _READS:
@@ -68,7 +71,10 @@ def read(text: str) -> tuple[str, dict] | None:
             if kind == "changed" and not _since_a_day(slots.pop("when")):
                 continue
             if "words" in slots:
-                slots["words"] = _original_tail(str(text).strip().rstrip("."), len(slots["words"]))
+                #: The same pattern on the typed text, not the folded one: a fold can change
+                #: a text's length ("İ"), so a span from `low` does not carry over.
+                typed = re.compile(pattern.pattern, re.IGNORECASE).search(flat)
+                slots["words"] = (typed or found).group("words").strip()
             return kind, slots
     return None
 
@@ -81,11 +87,6 @@ _A_WEDNESDAY = datetime(2000, 1, 5, 12)
 def _since_a_day(when: str | None) -> bool:
     """No time words, or ones meaning today or since yesterday."""
     return when is None or recognise.days_since(when, _A_WEDNESDAY) in (0, 1)
-
-
-def _original_tail(text: str, length: int) -> str:
-    """The person's own words, case kept, for what the folded match found."""
-    return text[-length:].strip() if length else ""
 
 
 def events(session: Session, kind: str, slots: dict, now: datetime, note_ids: list[int] | None,
@@ -337,26 +338,31 @@ def _link_related(session: Session, **_: object) -> tuple[str, dict | None]:
 
 
 def _today_note(session: Session, now: datetime) -> Entry | None:
-    heading = f"# {now.date().isoformat()}"
-    rows = session.scalars(
-        select(Entry).where(Entry.is_deleted == False, func.substr(Entry.content, 1, len(heading)) == heading)  # noqa: E712
-        .order_by(Entry.id)
-    ).all()
-    return next((e for e in rows if (e.content or "").split("\n", 1)[0].strip() == heading), None)
+    return act_steps.daily_note(session, f"# {now.date().isoformat()}")
+
+
+#: Words that point at a thing, not at what to write.
+_POINTERS = frozenset({"it", "that", "this", "them", "these", "those", "something", "stuff"})
 
 
 def _append_today(session: Session, *, slots: dict, now: datetime, **_: object) -> tuple[str, dict | None]:
     words = commands._cap(str(slots.get("words") or "").strip(" '\"“”"))
-    if not words:
-        return "What should go in today's note? Say it after the colon.", None
+    if not words or words.lower() in _POINTERS:
+        return "What should go in today's note? Say it after the colon, like: add buy milk to today's note.", None
     entry = _today_note(session, now)
     said = commands._clip(words, 80)
+    if entry is not None and entry.is_private:
+        return "Today's note is private, so I will not write to it from here. Open the note to add to it.", None
     if entry is None:
         steps = [{"name": "create_note", "arguments": {"content": f"# {now.date().isoformat()}\n\n{words}"}}]
         label = f"Start today's note with “{said}”"
         items = []
     else:
-        steps = [{"name": "edit_note", "arguments": {"note_id": entry.id, "content": (entry.content or "").rstrip() + "\n\n" + words}}]
+        from tessellate.api.edit_conflicts import content_hash  # lazy: `ai` sits below `api`
+
+        #: A bullet in the note's own shape, locked to the text read here.
+        text = act_steps.appended(entry.content or "", words)
+        steps = [{"name": "edit_note", "arguments": {"note_id": entry.id, "content": text, "base_hash": content_hash(entry.content)}}]
         label = f"Add “{said}” to the end of today's note"
         items = [commands._item(entry)]
     return commands._confirm(label), commands._card(label, steps, items=items)

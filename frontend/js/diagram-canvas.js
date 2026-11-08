@@ -11,6 +11,17 @@
   const math = {
     nodeAt: (hit, img, x, y) => overlay().at(hit, img, x, y),
     groupAt: (hit, img, x, y) => overlay().clusterAt(hit, img, x, y),
+    //: The node whose centre is nearest a client point and within `within` px of it, or "" (blind test 1108: a tile dropped
+    //: beside a box was added unconnected). `ok` filters the ids the model knows.
+    nearest: (hit, img, x, y, within = 120, ok = () => true) => {
+      let best = "";
+      let far = within;
+      for (const n of overlay().place(hit, img, { left: 0, top: 0 })) {
+        const d = Math.hypot(n.x + n.w / 2 - x, n.y + n.h / 2 - y);
+        if (d <= far && ok(n.id)) (best = n.id), (far = d);
+      }
+      return best;
+    },
     //: The ids of the nodes a client rectangle touches (corners in any order), in drawing order.
     sweep: (hit, img, rect) => {
       const l = Math.min(rect.left, rect.right);
@@ -58,7 +69,14 @@
     if (!id || !h.ops.node(S.m, id)) {
       //: Empty space: a palette tile adds there, a group lifts to the top level, a box is not moved by a drop that names nowhere (1679 slice 12).
       if (key?.[0] === "n" && !g.tile) return null;
-      return { canvas: true, op: "into", group: null, before: null, card: S.fig, word: g.tile ? "Add here" : "To the top level" };
+      //: A tile on empty picture joins the box nearest the drop (within 120 px), else the selected box, else stands alone.
+      const ok = (n) => Boolean(h.ops.node(S.m, n));
+      const lone = !g.tile || g.tile.dataset.shape === "group";
+      const near = lone || !img || !S.hit ? "" : math.nearest(S.hit, img.getBoundingClientRect(), g.x, g.y, 120, ok);
+      const picked = S.sel?.[0] === "n" ? S.sel.slice(2) : "";
+      const from = near || (picked && !lone && ok(picked) ? picked : "");
+      if (!from) return { canvas: true, op: "into", group: null, before: null, card: S.fig, word: g.tile ? "Add here" : "To the top level" };
+      return { canvas: true, op: "into", group: null, before: null, card: boxOf(S, from) || S.fig, word: `Add, joined from ${h.ops.node(S.m, from).text}`, from };
     }
     const target = h.ops.key("n", id);
     const set = key && S.picked?.size > 1 && S.picked.has(key) ? [...S.picked] : key ? [key] : [];
