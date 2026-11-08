@@ -127,9 +127,11 @@ def _what(clause: str, at: int, end: int, last: str) -> str:
         return " ".join(words[-3:])
     after = _AFTER.match(clause[end:])
     #: "$112 on the 17th" is when, not what: it keeps the clause before's label.
-    if not after or re.search(r"[0-9]", after.group("what")) or recognise.without_windows(after.group("what")) != after.group("what") or set(after.group("what").lower().split()) & recognise.MONTH_NAMES:
+    #: "$84 on groceries this week" is groceries: a window after the thing is dropped, not the label.
+    thing = " ".join(recognise.without_windows(after.group("what")).split()) if after else ""
+    if not thing or re.search(r"[0-9]", thing) or set(thing.lower().split()) & recognise.MONTH_NAMES:
         return last
-    return re.sub(r"^my\b", "your", after.group("what").strip())
+    return re.sub(r"^my\b", "your", thing)
 
 
 def _moved(clause: str, said: list) -> bool:
@@ -432,7 +434,8 @@ def _note_name(view) -> str:  # noqa: ANN001
     if figure and figure.start() > 2:
         named, cut = named[: figure.start()], False
     bare = " ".join(_FIGURE_IN_NAME.sub("", named).split())
-    if not bare or re.search(r"\b(?:on|of|for|about|after|before)$", bare):
+    #: A name cut at its figure that is only the spending verb ("Spent") names nothing.
+    if not bare or not _VERB.sub("", bare) or re.search(r"\b(?:on|of|for|about|after|before)$", bare):
         return composer_frame.name_of(view.note)
     #: The note's clipped first words are its name (R3-15), quoted as `name_of`
     #: quotes them; a name cut at its figure ("Order") is a noun, said bare.

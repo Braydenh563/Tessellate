@@ -89,3 +89,15 @@ def test_e17_a_date_in_a_note_extended_later_is_this_year():
     said = _route_answer("when did I last run", pool)["text"]
     assert "25 October 2026" in said or "25 October," in said and "2025" not in said, said
     assert "a year ago" not in said, said
+
+
+def test_a_spend_on_a_thing_this_week_is_that_things_amount_only():
+    """"$84 on groceries this week and $35 on fuel": the window after the
+    thing is dropped from its label, so a groceries ask is not the whole note."""
+    said = say("how much did I spend on groceries?", "Spent $84 on groceries this week and $35 on fuel.")
+    assert "$84" in said and "$119" not in said and "$35 on fuel" not in said.split("Also")[0], said
+
+
+def test_a_note_named_for_the_spending_verb_is_named_by_its_words():
+    said = say("how much did I spend?", "Spent $84 on groceries this week and $35 on fuel.")
+    assert "going by Spent:" not in said and "$119" in said, said
