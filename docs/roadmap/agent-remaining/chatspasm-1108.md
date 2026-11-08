@@ -9,7 +9,7 @@
 - Fix: `spare > 0 &&` in the `needed` test. A strip is only for a thread that really overflows; hysteresis kept.
 - Test: `tests/test_jump_gap_1590.py::test_a_short_chat_never_toggles_the_strip_on_every_call_1696` (realistic
   scrollHeight >= clientHeight model; failed before the fix).
-- Probe: `scratchpad/ui-sweeps/chatspasm1696.js` (BUDDY=1 enables Atlas in-app companion, CPU=4, PRE=n earlier turns,
+- Probe: `scratchpad/ui-sweeps/chatspasm1696.js (in git at 38e8986e, untracked after for the scratchpad cap)` (BUDDY=1 enables Atlas in-app companion, CPU=4, PRE=n earlier turns,
   DUMP=1 per-frame rows).
 
 ## Numbers (4x CPU, new chat, first message, fake model)
