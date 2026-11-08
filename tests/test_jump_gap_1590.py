@@ -68,3 +68,53 @@ console.log(JSON.stringify(seen));
     assert json.loads(out) == [
         [400, False, False], [580, False, False], [620, True, True], [1000, True, True], [620, True, True], [580, False, False], [400, False, False],
     ]
+
+
+@pytest.mark.skipif(not shutil.which("node"), reason="needs node")
+def test_a_short_chat_never_toggles_the_strip_on_every_call_1696():
+    """INBOX 1696: "sending a message to the chat still causes it to spasm up
+    and down really fast". A browser never reports a scrollHeight under the
+    clientHeight, so a thread that fits reads a spare of 0, and `0 + gap` beat
+    the slack on every other call: the strip went on, off, on, off at every
+    stream delta, resizing the pane by 45px each time (measured at 4x CPU, 69
+    reversals in 3.5s). Modelled here with the real invariant."""
+    source = with_pieces("chat-agent.js")
+    begin = source.index("const SCROLL_STICK_SLACK")
+    code = source[begin : source.index("//: **What the notebook gave a message, as one card**", begin)]
+    script = (
+        code
+        + """
+let chatController = null, chatStreaming = null;
+const typingDots = () => ({});
+globalThis.performance = { now: () => 1e6 };
+const GAP = 45, FULL = 600;
+const on = new Set(["chat-transcript"]);
+const transcript = { classList: { contains: (c) => on.has(c), add: (c) => on.add(c), remove: (c) => on.delete(c), toggle() {} } };
+globalThis.getComputedStyle = () => ({ paddingBottom: on.has("has-jump-gap") ? GAP + "px" : "0px" });
+const pill = { classList: { toggle() {}, add() {}, remove() {} } };
+let content = 0;
+const pane = {
+  id: "chat-messages", dataset: { stuck: "1" }, top: 0, parentElement: transcript,
+  get clientHeight() { return on.has("has-jump-gap") ? FULL - GAP : FULL; },
+  get scrollHeight() { return Math.max(content, this.clientHeight); },
+  get scrollTop() { return this.top; },
+  set scrollTop(v) { this.top = v; },
+  addEventListener() {},
+  querySelector() { return {}; },
+};
+const $ = (id) => (id === "chat-messages" ? pane : id === "chat-jump-latest" ? pill : null);
+const seen = [];
+for (const height of [0, 120, 300, 560, 598, 700, 1000, 700, 598, 300]) {
+  content = height;
+  const states = [];
+  for (let i = 0; i < 4; i += 1) { syncChatJumpLatest(); states.push(on.has("has-jump-gap")); }
+  seen.push([height, states.every((x) => x === states[0]) ? states[0] : "flips"]);
+}
+console.log(JSON.stringify(seen));
+"""
+    )
+    out = subprocess.run(["node", "-e", script], capture_output=True, text=True, check=True).stdout
+    assert json.loads(out) == [
+        [0, False], [120, False], [300, False], [560, False], [598, False], [700, True], [1000, True], [700, True], [598, True], [300, False],
+    ]  # 598 on the way down overflows the shrunk pane (555) by 43: it stays, stably
+
