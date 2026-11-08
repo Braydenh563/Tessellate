@@ -23,6 +23,12 @@ some differences from the auditors' answers are seed artefacts.
 - R3-2: `_names_whose` in `composer_digest._property_lead` (a phone number held by a note that never names the person is not theirs) and `composer_property._HAS_PHONE` ("does Sara have a phone number"). "Sara's number" was already denied correctly. The table, seat and car exclusions were already in `_NOT_PHONE`.
 - R3-18 measured: "when is the dentist" leads with "Dentist check-up on 11 November".
 
-## Next
+## Left (not started or not finished)
 
-- E7, D10, E10, R3-2, R3-18, R3-20, R3-22, R3-33, R3-35, D22.
+- E7 untick (needs an `uncomplete` act beside `task_acts.plan_complete`; today `composer._cannot_untick` says so) and "undo that" after a tick (`composer_help._undo_lead` answers with the keys, the act card already carries Undo).
+- D10 multi-tick ("tick email landlord and call plumber" finds no task named the whole phrase) and offers that carry their act.
+- E10 per-subject split for "what do I know about Tom and Sara" (one pooled count today).
+- R3-20, R3-22, R3-33, D22 (probe: "list my checklists" now answers with two unrelated notes), D19, R3-36, D25 not probed.
+- "put it in today's note": parsed as a move of "these" with no target (`commands._no_notes_to_tag_or_move`); needs a design call (append to the daily note, not a category move).
+- The r3fix single-list intro-line route.
+- "what is the table number" answers a dinner-booking line (no table-plan note in the seed).
