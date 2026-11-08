@@ -13,7 +13,7 @@ import itertools
 from sqlalchemy import func, or_, select
 from sqlalchemy.orm import Session
 
-from tessellate.ai import composer, composer_lists, composer_versus
+from tessellate.ai import composer, composer_lists, composer_small, composer_versus, resurface
 from tessellate.core.database import LIKE_ESCAPE, Category, Entry, like_escape
 
 #: Notes read for one computed answer: the list's count and the mentions are
@@ -113,7 +113,22 @@ def _of_kind(session: Session, kind: str) -> list[Entry]:
     return list(session.scalars(newest.limit(LIST_LIMIT)))
 
 
+def _faded(session: Session) -> list[Entry]:
+    """The notes "show me something old" picks from: the most faded ones
+    (`resurface.ranked`), else the oldest, when no score has been kept yet."""
+    found = resurface.ranked(session, limit=composer_small.OLD_POOL)
+    return found or list(session.scalars(select(Entry).where(*_live()).order_by(Entry.created_at.asc()).limit(composer_small.OLD_POOL)))
+
+
 def pool(session: Session, question: str, entries: list) -> list:
+    """The notes the answer for `question` reads: the faded ones for "show me
+    something old", else the computed answer's (`_computed`)."""
+    if composer_small.asks_old(question):
+        return _faded(session) or entries
+    return _computed(session, question, entries)
+
+
+def _computed(session: Session, question: str, entries: list) -> list:
     """The notes the computed answer for `question` reads, or `entries` when
     it is not one or its pool is empty (the search's own notes then answer)."""
     which = composer_lists.computed_kind(question)
