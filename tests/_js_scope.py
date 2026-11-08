@@ -14,7 +14,7 @@ from __future__ import annotations
 
 import re
 
-from tessellate.api.asset_strip import strip_js
+from tessellate.api.asset_strip import strip_js_comments
 
 _OPEN = re.compile(r"^\(\(\) => \{$")
 _CLOSE = re.compile(r"^\}\)\(\);$")
@@ -28,7 +28,7 @@ _TOP_LEVEL = re.compile(
 def is_wrapped(source: str) -> bool:
     """The whole script is one closure: nothing but comments before its opening
     line, nothing after its closing one."""
-    lines = [line for line in strip_js(source).split("\n") if line.strip()]
+    lines = [line for line in strip_js_comments(source).split("\n") if line.strip()]
     return bool(lines) and bool(_OPEN.match(lines[0])) and bool(_CLOSE.match(lines[-1]))
 
 
@@ -52,4 +52,4 @@ def global_names(source: str) -> set[str]:
     any other script's top-level declarations."""
     if is_wrapped(source):
         return exported(source)
-    return {a or b for a, b in _TOP_LEVEL.findall(strip_js(source))}
+    return {a or b for a, b in _TOP_LEVEL.findall(strip_js_comments(source))}

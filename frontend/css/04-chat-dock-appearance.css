@@ -1557,8 +1557,7 @@ body.scroll-top-visible #tab-notes .layout > .tab-main {
      of its own under the title, where it reads as a control belonging to the
      note rather than to the panel. The identity block shrinks instead
      (min-width: 0 below) and the title wraps inside it. */
-  flex-wrap: nowrap;
-}
+  flex-wrap: nowrap;}
 
 /* The head is the drag handle (INBOX 1413); touch-action keeps a finger from
    scrolling the page instead. Away: the node is out of view, the popup waits. */
@@ -1862,6 +1861,12 @@ body.scroll-top-visible #tab-notes .layout > .tab-main {
 .graph-popup .row {
   margin: 0;
   align-items: center;
+}
+
+/* The owner, 2026-11-08: "no small gap at the bottom below the x close button": the rule above zeroed the head's
+   margin too, so a one-line head sat flush on the body and a sketch's picture touched the close (INBOX 1694 d). */
+.graph-popup > .graph-popup-head {
+  margin-bottom: var(--space-2);
 }
 
 /* --- markdown tables ------------------------------------------------------- */

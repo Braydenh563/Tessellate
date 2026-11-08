@@ -149,7 +149,9 @@ PIECE_CAP = 32_000
 #: 2026-11-05, +40 (BACKLOG 1682): a list redraw gives the keyboard back in its own task
 #: and flags that focus as the app's (restoreFocusTo), so a key typed meanwhile is kept
 #: and the tags field does not take it for a press; same win-back item.
-TOTAL_CAP = 260_860
+#: 2026-11-08, -8,880 (260,860 to 251,980): leading indentation is stripped from served JS
+#: and CSS (asset_strip.py, STRIP_VERSION 4, newlines kept); measured 260,814 to 251,949.
+TOTAL_CAP = 251_980
 
 
 def _served_gzip_size(client, name: str) -> int:

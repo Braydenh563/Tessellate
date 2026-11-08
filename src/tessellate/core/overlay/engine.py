@@ -243,6 +243,11 @@ GRIP_MOOD = {"sleepy": 0.5, "bored": 0.8, "startled": 0.9, "curious": 1.1, "happ
 SCRABBLE_FOR = 0.9
 SCRABBLE_DRAG = 6.0
 SCRABBLE_HZ = 6.0
+#: Sliding down a screen side and scrabbling (INBOX 1683 x, y): after `WALL_SCRABBLE` s (the slide takes about a second
+#: from the middle of the screen, so a beat), a window top within `WALL_REACH` figure heights of the hands is
+#: something to pull up onto (the nearest), else it slides on and lands.
+WALL_SCRABBLE = 0.45
+WALL_REACH = 1.3
 #: States a dragged window does not throw the figure out of: it is already off the window, held, or going somewhere.
 FLING_SAFE = ("held", "pressed", "fly", "fall", "warp", "hang", "rise", "peek", "emerge", "leap")
 BOUNCE_DAMP = 0.55
@@ -364,6 +369,11 @@ TUCK_REACH = 3.0
 #: wait, come up, look, out. Depth 1 is `PEEK_HEAD` (or `PEEK_SIDE`) hidden, 2 is all.
 PEEK_PLAN = ((0.0, 0.0), (0.8, 1.0), (3.0, 1.0), (3.4, 2.0), (5.0, 2.0), (5.5, 1.0), (7.0, 1.0), (7.8, 0.0))
 EMERGE_FOR = 0.4
+#: The top peek (INBOX 1683 x, y: "upside-down, peering down from behind the top edge"): (seconds, step) with 0 hanging in
+#: view, 1 pulled up out of sight, 2 turned over and lowered to peer down (`PEEK_TOP_PEER` of the figure shows, its head
+#: first). The turn is made while it is out of sight, so the pose changes without a step.
+PEEK_TOP_PLAN = ((0.0, 0.0), (0.8, 1.0), (2.2, 2.0), (6.2, 2.0), (7.4, 1.0), (8.2, 0.0))
+PEEK_TOP_PEER = 0.4
 #: Big acts (hang, peek) are at least this far apart (seconds): calm, minutes.
 BIG_EVERY = (700.0, 1300.0)
 #: The first one comes sooner, inside the minutes before it sits down for good.
@@ -719,6 +729,9 @@ class Engine:
         self.peek_edge: str | None = None
         self.peek_started = now
         self.peek_turned = False
+        #: A top peek turned over (drawn upside-down from `peek_show` of its height below the edge).
+        self.peek_flip = False
+        self.peek_show = 0.0
         #: Windows to tuck behind (the last scan), when it was read, the one a walk is heading for, the one hidden behind.
         self.covers: list[Cover] = []
         self.covers_at = -math.inf
@@ -969,6 +982,8 @@ class Engine:
             self.sink, self.peek_edge, self.tuck = 0.0, None, None
         if state not in ("walk", "drift", "crouch"):
             self.goal = None
+        if state != "peek":
+            self.peek_flip, self.peek_show = False, 0.0
         if state != "hang":
             self.pulling, self.scrabble_until = None, 0.0
         if state != "act":
@@ -1018,7 +1033,7 @@ class Engine:
 
     def _on_peek(self, now: float) -> None:
         self.peek_started, self.peek_turned = now, False
-        self.state_until = now + (TUCK_PLAN if self.tuck else PEEK_PLAN)[-1][0]
+        self.state_until = now + (PEEK_TOP_PLAN if self.peek_edge == "top" else TUCK_PLAN if self.tuck else PEEK_PLAN)[-1][0]
 
     def _on_leap(self, now: float) -> None:
         assert self.target is not None
@@ -1981,6 +1996,34 @@ class Engine:
             return
         self.last_slip = "drop"
         self._let_go()
+
+    def _wall_pull(self, now: float) -> bool:
+        """Scrabbling down a screen side: after the scrabble, the nearest window top within reach is pulled up onto
+        (the climb the hang slip ends in); with none, False and the slide goes on to the landing."""
+        if now - self.wob_t0 < WALL_SCRABBLE:
+            return False
+        w, h = self.size
+        scale = self._scale()
+        area = self.current_monitor().area
+        hands = self.y + self._dy(self._frame(now)) + 0.35 * h
+        best: tuple[float, Perch] | None = None
+        for p in self.windows:
+            if p.kind != "top" or p.top - h < area[1] or p.right - p.left < w:
+                continue
+            gap = max(p.left - (self.x + w), self.x - p.right, 0.0)
+            far = math.hypot(gap, p.top - hands)
+            if far <= WALL_REACH * h * scale and (best is None or far < best[0]):
+                best = (far, p)
+        if best is None:
+            return False
+        cur = best[1]
+        x = min(max(self.x, cur.left), cur.right - w)
+        self.vx = self.vy = self.omega = self.kick = self.angle = self.wob = 0.0
+        self.wall, self.wob_kind, self.grounded = 0, None, False
+        self.target = cur
+        self.legs.append(("climb", self.x, x, now))
+        self._rise((x, cur.top - h), "perch", now)
+        return True
 
     def _pull_up(self, now: float) -> None:
         """The scrabble is over: up onto the window's top where it is now, else the drop."""
@@ -2974,8 +3017,24 @@ class Engine:
                 return d0 + (d1 - d0) * (t - t0) / (t1 - t0)
         return plan[-1][1]
 
+    def _top_peek(self, t: float) -> None:
+        """The top peek's pose at `t`: pulled up out of sight hanging, turned over there, lowered upside-down to peer."""
+        d = PEEK_TOP_PLAN[-1][1]
+        for (t0, d0), (t1, d1) in zip(PEEK_TOP_PLAN, PEEK_TOP_PLAN[1:]):
+            if t <= t1:
+                d = d0 + (d1 - d0) * bh.smooth((t - t0) / (t1 - t0))
+                break
+        self.peek_flip = d > 1.0
+        self.sink = min(d, 1.0)
+        self.peek_show = max(0.0, d - 1.0) * PEEK_TOP_PEER
+
     def _do_peek(self, now: float, dt: float) -> None:
         t = now - self.peek_started
+        if self.peek_edge == "top":
+            self._top_peek(t)
+            if now >= self.state_until:
+                self._arrive_hang(now, self.current_monitor())  # back down on its hands, not standing in the air
+            return
         depth = self._peek_depth(t)
         if depth <= 1.0:
             self.sink = depth * self.sink_max
@@ -3070,6 +3129,8 @@ class Engine:
         self._spin(dt, speed)
         self._air_wobble(now, dt)
         uy0, uy1 = self._fly_walls(m, now)
+        if self.wall and self._wall_pull(now):
+            return
         if self._hit_ceiling(m, uy0, now):
             return
         floor = min(self.floor_y(m), uy1) if self._open_side(m, "bottom") else self.floor_y(m)
@@ -3621,6 +3682,8 @@ class Engine:
             return bh.activity_frame(bh.ACTIVITIES[self.act or "breathe"], (now - self.act_started) / max(0.01, self.act_len))
         if s == "crouch":
             return "land"
+        if s == "warp" and self.warp is not None and self.warp["kind"] == "edge" and self.gait == "float":
+            return self._stream_frame(now)
         if s == "warp" and self.warp is not None and self.warp["kind"] == "edge":
             return f"walk{int((now - self.warp['t0']) / (0.75 / self.walk_frames)) % self.walk_frames}"
         if s in FRAME_OF:
@@ -3645,18 +3708,28 @@ class Engine:
             return f"card{int(now / CARD_SWAP) % 2}"
         if self.card is not None:
             return f"card{int((now - self.walk_started) / CARD_WALK_SWAP) % 2}"
+        if self.gait == "float":
+            return self._stream_frame(now)
         return f"walk{int(self.travel / (STRIDE * WALK_FRAMES / self.walk_frames * self._scale())) % self.walk_frames}"
+
+    def _stream_frame(self, now: float) -> str:
+        """A floater on the move: its idle cycle (tail and streams flowing, eyes open), never the walk cycle, whose
+        shipped Atlas frames shut the eyes on every other step and bob the body (INBOX 1692: "it still looks like it
+        hobbles along and its eyes blick ferociously ... it floats like a wind spirit")."""
+        if self.idle_frames <= 0:
+            return "stand"
+        return f"idle{int(now * IDLE_FPS + 1e-6) % self.idle_frames}"
 
     def _edge_frame(self, now: float) -> str:
         if self.state == "rise":
-            frame = "hop" if self.gait == "walk" else f"walk{int((now - self.phase_started) / (0.75 / self.walk_frames)) % self.walk_frames}"
+            frame = "hop" if self.gait == "walk" else self._stream_frame(now)
             if self.then == "peek_top":
                 return "hang"
             if self.then == "hang" and self._rise_drawn(now) + self._box(frame)[1] < self.current_monitor().area[1]:
                 return "hang"  # its head would pass the top of the screen: hands up, in the pose that fits
             return frame
         if self.peek_edge == "top":
-            return "hang"
+            return "spin24" if self.peek_flip else "hang"
         return "stand" if self.sink < self.sink_max * 0.5 or now - self.peek_started < 0.8 else "look"
 
     def _stand_frame(self, now: float) -> str:
@@ -3785,13 +3858,19 @@ class Engine:
         """Where the window is drawn and which part of the frame shows: the rest
         position, less the sink behind an edge."""
         w, h = self.size
+        if self.peek_flip and self.peek_edge == "top":
+            # upside-down, drawn turned half a circle on the tumble's square canvas: its head comes first below the
+            # edge and everything above the work area's top is clear (the canvas pad shifts the clip)
+            top, side = self.current_monitor().area[1], math.ceil(math.hypot(w, h))
+            yb = top - h + round(self.peek_show * h)
+            return self.x, yb, (0, max(0, top - yb + (side - h) // 2), side, side)
         x, y = self.x, self.y
         # a bonk shows the startle frame in mid-air: no foot offset of its own
         y += self._dy("held" if self.state == "fly" else frame)
         x += self._flip_dx(frame, self.facing < 0)
         if self.peek_edge == "top" or (self.state == "rise" and self.then == "peek_top"):
             # hands over the top edge: what is above the play area's top (behind the bar, or off the screen) is clear
-            up = round(self.sink * h) if self.peek_edge == "top" else 0
+            up = round(self.sink * (h - self._lift())) if self.peek_edge == "top" else 0
             return x, y - up, (0, min(h, max(0, round(self.current_monitor().area[1] - (y - up)))), w, h)
         if self.sink <= 0 or self.peek_edge is None:
             return x, y, None
@@ -3813,6 +3892,6 @@ class Engine:
         return Output(
             frame, int(round(x)), int(round(y)), self.facing < 0, self._wake(now),
             self.click_now, self.settled_now, clip, self.card_clicked, self._pose(), fx, round(alpha * 16) / 16.0,
-            self.angle + self.wob if frame.startswith("spin") and self.state == "fly" else None,
+            self.angle + self.wob if frame.startswith("spin") and self.state == "fly" else math.pi if self.peek_flip else None,
             self._flow_view(now, frame) if fx is None else None, *self.ex.view(now),
         )
