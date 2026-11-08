@@ -33,3 +33,12 @@ def test_a_diagram_made_from_insert_is_given_to_the_document_lists_before_its_em
     body = MERMAID.split("function diagramMadeKnown(")[1].split("\n  }\n")[0]
     assert "docs = other(docs)" in body and "renderDocList()" in body
     assert "diagramModel.madeKnown?.(made)" in EMBED
+
+
+CANVAS = (JS / "diagram-canvas.js").read_text(encoding="utf-8")
+
+
+def test_a_tile_dropped_beside_the_diagram_joins_from_the_nearest_box_however_far():
+    """The help says "joined from the box nearest the drop"; a 120 px reach joined the selected Start from beside Ship it (136 px)."""
+    assert "g.x, g.y, Infinity, ok)" in CANVAS
+    assert "g.x, g.y, 120" not in CANVAS

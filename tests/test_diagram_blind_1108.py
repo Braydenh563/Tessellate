@@ -51,7 +51,7 @@ def test_a_kind_change_with_content_asks_first_in_the_confirm():
 
 def test_a_tile_dropped_on_empty_picture_joins_the_nearest_box_or_the_selected_one():
     assert "nearest: (hit, img, x, y, within = 120" in CANVAS
-    assert "math.nearest(S.hit, img.getBoundingClientRect(), g.x, g.y, 120" in CANVAS
+    assert "math.nearest(S.hit, img.getBoundingClientRect(), g.x, g.y, Infinity" in CANVAS
     assert 'S.sel?.[0] === "n"' in CANVAS and "word: `Add, joined from" in CANVAS
     #: The drop applies `from` as the over-a-box drop does.
     assert "...(target.from ? { from: target.from } : {})" in POINTER
