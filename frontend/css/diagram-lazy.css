@@ -1202,26 +1202,73 @@
   max-height: none;
 }
 
-/* The kind of diagram (diagram-kindbar.js, 1679 m): one `.seg` well above the toolbar, as wide as its four words. */
-.dgm-kinds {
-  align-self: flex-start;
+/* The kind of diagram (diagram-kindbar.js, 1661 k): one button in the Title row, its sample, word and caret. */
+.dgm-kindbtn {
   flex: none;
-  max-width: 100%;
-  flex-wrap: nowrap;
+  gap: var(--space-2);
 }
 
-/* Four worded buttons share one row on a phone instead of wrapping to a second (measured: 100px tall at 390, 40 at 1440). */
-.dgm-kinds .btn,
-.dgm-kinds button {
-  flex: 1 1 0;
+.dgm-kindpic {
+  flex: none;
+  inline-size: 1.25rem;
+  block-size: 0.875rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* The menu's rows: a larger sample, the word and the line on what it makes. */
+.dgm-kindmenu .menu-item {
+  gap: var(--space-3);
+  align-items: center;
+}
+
+.dgm-kindmenu .dgm-kindpic {
+  inline-size: 2.5rem;
+  block-size: 1.75rem;
+  stroke-width: 1.5;
+}
+
+.dgm-kindtext {
+  display: flex;
+  flex-direction: column;
   min-width: 0;
-  padding-inline: var(--space-1);
-  white-space: nowrap;
+  text-align: start;
 }
 
-/* A source the blocks cannot draw (a Gantt) is not a flowchart: no kind is pressed, so none is offered. */
-.dgm-plain .dgm-kinds {
+.dgm-kind-about {
+  font-size: var(--text-xs);
+  white-space: normal;
+}
+
+.dgm-kindmenu .menu-item.active {
+  color: var(--accent);
+}
+
+.dgm-kindnote {
+  margin: 0;
+  padding: var(--space-2) var(--space-3);
+  max-inline-size: 18rem;
+  font-size: var(--text-xs);
+}
+
+/* A source the blocks cannot draw (a Gantt) is not a flowchart: no kind is offered. */
+.dgm-plain .dgm-kindbtn,
+.dgm-dialog:has(.dgm-plain) :is(.dgm-kindbtn, .dgm-kindlabel) {
   display: none;
+}
+
+@media (max-width: 599.98px) {
+  .dgm-kindword {
+    display: none;
+  }
+
+  .dgm-kindbtn {
+    min-inline-size: 2.75rem;
+    min-block-size: 2.75rem;
+  }
 }
 
 /* Blocks and Source wait at the foot's start, so the title keeps its room on a phone. */
@@ -1428,7 +1475,7 @@
     flex: 0 0 auto;
   }
 
-  .dgm-dialog[data-view="source"] :is(.dgm-kinds, .dgm-sideways) {
+  .dgm-dialog[data-view="source"] :is(.dgm-kindbtn, .dgm-kindlabel, .dgm-sideways) {
     display: none;
   }
 

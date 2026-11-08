@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Diagram builder: the kind is one Kind menu in the Title row, each kind with a small picture and a line on what it makes, instead of a row of four buttons of its own (the picture is 57 px taller at 1440, INBOX 1661 k).
 - Diagram builder: quicker building: a double press on empty picture adds a box, Ctrl+D duplicates, Ctrl+A picks all, Delete removes, Shift+Enter adds a joined box, Alt+Enter a sister, Ctrl+F finds, and a connector can be reversed.
 - Diagram builder: the rings and handles stay on their boxes when the picture scrolls, a press on empty space or Escape clears the pick, and the Canvas and Blocks views are now called Picture and List.
 - Desk companion: a throw that crosses a side edge now stops at the top of the screen like any other throw, instead of rising through it.

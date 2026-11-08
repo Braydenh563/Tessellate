@@ -69,7 +69,7 @@ def test_the_keys_sheet_closes_on_escape_over_the_diagram_window():
 
 def test_a_press_on_a_kind_puts_focus_back_on_the_kind_bar():
     # Review 1107: the pane was rebuilt and focus fell to BODY.
-    assert "pending" in KINDBAR and "focus()" in KINDBAR[KINDBAR.index("S.root.prepend(seg)") :][:240]
+    assert "pending" in KINDBAR and "button.focus()" in KINDBAR[KINDBAR.index("if (pending === here)") :][:80]
 
 
 def test_the_door_opens_on_a_drawn_starter_with_its_first_box_selected_and_clear_in_the_menu():
@@ -113,12 +113,12 @@ def test_a_click_on_a_hover_handle_grows_a_joined_block_and_asks_for_its_words()
     assert "Click for a new joined block, or drag it to a block to connect them" in edges
 
 
-def test_the_kind_bar_is_one_tab_stop_resting_on_the_chosen_kind():
-    """DD-8: Tab crosses the four kind buttons as one stop (arrows move between them) and the dialog's DOM order is
-    head, kinds, dock, panes, footer, so Add box comes right after the kinds."""
+def test_the_kind_is_one_tab_stop_in_the_title_row():
+    """DD-8, moved by 1661 k: the kinds were four buttons crossed as one roving stop; they are now one Kind button, so
+    the stop is that button, in the Title row before the dock, and the dialog's views are still the foot's."""
     bar = (JS / "diagram-kindbar.js").read_text(encoding="utf-8")
-    assert "wireToolbarRoving(seg)" in bar and "button.tabIndex = button.dataset.kind === here ? 0 : -1" in bar
-    assert bar.index("wireToolbarRoving(seg)") < bar.index("S.root.prepend(seg)")
+    assert "wireToolbarRoving(seg)" not in bar and 'h.el("button", "ghost small dgm-kindbtn")' in bar
+    assert "row.append(word, button)" in bar
     embed = (JS / "diagram-embed.js").read_text(encoding="utf-8")
     assert "foot.append(seg" in embed
 

@@ -3326,8 +3326,8 @@ MORE_TOPICS.extend([
             "mermaid timeline", "mermaid sequence", "sequence diagram", "diagram kinds",
         ),
         "body": (
-            "The Flowchart, Sequence, Mind map and Timeline buttons above the toolbar start a new diagram "
-            "of that kind (Ctrl+Z brings the old one back). A block's ... menu has Box this block, a group round it; "
+            "Kind, in the Title row (first in the toolbar elsewhere), is a menu of Flowchart, Sequence, Mind map and Timeline, "
+            "each with a small picture; one starts a new, empty diagram of that kind (Ctrl+Z brings the old one back). A block's ... menu has Box this block, a group round it; "
             "the bar over picked blocks has Box them. "
             "Blocks draw flowcharts, mind maps, timelines and sequence diagrams: the first word of "
             "the source says which, and the bar offers that kind's blocks. A mind map has a branch "

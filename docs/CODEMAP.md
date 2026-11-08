@@ -2,9 +2,9 @@
 
 Generated 2026-11-08 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7865, frontend ids 2644, CSS sections 522, backend routes 649, backend modules 9027, test files 2172, tests 18300, plan headings 1004, app scripts 28, boot scripts 37, script files 261.
+Counts: frontend functions 7869, frontend ids 2644, CSS sections 522, backend routes 649, backend modules 9027, test files 2173, tests 18306, plan headings 1004, app scripts 28, boot scripts 37, script files 261.
 
-## Frontend functions (7865)
+## Frontend functions (7869)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -3254,13 +3254,17 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `titleOf` | frontend/js/diagram-joins.js:29 |
 | `words` | frontend/js/diagram-joins.js:110 |
 
-### frontend/js/diagram-kindbar.js (3)
+### frontend/js/diagram-kindbar.js (7)
 
 | Name | File:line |
 |---|---|
-| `choose` | frontend/js/diagram-kindbar.js:49 |
-| `fresh` | frontend/js/diagram-kindbar.js:18 |
-| `mount` | frontend/js/diagram-kindbar.js:28 |
+| `blankOf` | frontend/js/diagram-kindbar.js:48 |
+| `choose` | frontend/js/diagram-kindbar.js:108 |
+| `decorate` | frontend/js/diagram-kindbar.js:84 |
+| `fresh` | frontend/js/diagram-kindbar.js:19 |
+| `mount` | frontend/js/diagram-kindbar.js:51 |
+| `open` | frontend/js/diagram-kindbar.js:76 |
+| `sample` | frontend/js/diagram-kindbar.js:36 |
 
 ### frontend/js/diagram-kinds.js (62)
 
@@ -12378,7 +12382,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/dash-night-lazy.css | 29 |
 | frontend/css/dash-orphans-lazy.css | 57 |
 | frontend/css/desk-companion-lazy.css | 226 |
-| frontend/css/diagram-lazy.css | 1881 |
+| frontend/css/diagram-lazy.css | 1928 |
 | frontend/css/file-drop-lazy.css | 51 |
 | frontend/css/first-run-lazy.css | 140 |
 | frontend/css/forced-colors-lazy.css | 28 |
@@ -24445,7 +24449,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (18300)
+## Tests (18306)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -25036,6 +25040,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_diagram_1596.py | 4 |
 | tests/test_diagram_1661a.py | 6 |
 | tests/test_diagram_1661b.py | 9 |
+| tests/test_diagram_1661klm.py | 6 |
 | tests/test_diagram_1679m.py | 14 |
 | tests/test_diagram_blind_fixes.py | 6 |
 | tests/test_diagram_builder.py | 20 |

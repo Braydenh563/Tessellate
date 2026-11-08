@@ -427,7 +427,9 @@ def test_the_diagram_kinds_are_in_the_guide_in_the_controls_words() -> None:
                   "a section, a period and an event (S, P and E)",
                   # 1679 m: the tiles grew by Parallel, Critical and Break (U, C, B); the sentence still lists every tile with its key.
                   "actor, participant, message, reply, async, lost, note, loop, alt, opt, parallel, critical and break (A, P, M, R, Y, X, T, L, G, O, U, C and B)",
-                  "opens in Source with its picture", "of another kind says so and is left out", "replaces a blank one"):
+                  "opens in Source with its picture", "of another kind says so and is left out", "replaces a blank one",
+                  # 1661 k: the four kind buttons became one Kind menu in the Title row.
+                  "Kind, in the Title row (first in the toolbar elsewhere), is a menu"):
         assert words in body, words
     assert "diagram-kinds" in TOPIC_META and "diagram-kinds" in dict(HELP_GROUPS)["Documents and code"]
     assert "next topic" in str(next(t["body"] for t in HELP_TOPICS if t["id"] == "diagram-blocks"))
