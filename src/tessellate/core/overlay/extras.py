@@ -59,6 +59,8 @@ TOUCH_FREE = (*SCREEN_FREE, "sit", "sleep", "startle")
 #: motion's main axis (a drag with a wobble travels away; a shake goes back and forth about a point; catalogue
 #: `int.shake_dizzy`, INBOX 1696 kk). The dizzy sway after the drop lasts `DIZZY_FOR` s.
 SHAKE_FLIPS, SHAKE_WINDOW, SHAKE_SWING, DIZZY_FOR = 3, 0.6, 30.0, (2.5, 4.0)
+#: A pet this soon after waking is shy; the third pet inside `LOVE_STREAK` s is loved.
+SHY_FOR, LOVE_STREAK, LOVE_PETS = 8.0, 30.0, 3
 FACE_STATES = ("stand", "act", "notice", "startle", "wave", "land", "sit")
 
 
@@ -72,6 +74,8 @@ class Reaction(NamedTuple):
     touch: bool = False
     #: B5: 1 waits for a free moment; 2 or more also breaks a sit, a sleep and a walk, and a running reaction of lower priority.
     prio: int = 1
+    #: A face alone that may be worn while the person is working (it asks nothing of them).
+    busy_ok: bool = False
 
 
 REACTIONS: dict[str, Reaction] = {
@@ -86,6 +90,14 @@ REACTIONS: dict[str, Reaction] = {
     "hover": Reaction("", "smile", 3.0, "happy", 25.0, True),
     "tickle": Reaction("tickle_squirm", "laughing", 2.4, "happy", 8.0, True),
     "boop": Reaction("boop_sneeze", "surprised", 1.1, "", 5.0, True),
+    # the faces confused, sad, shy and love (catalogue B4): a poke while the person works, a refused request, a pet
+    # right after waking, a long run of pets
+    "confused": Reaction("", "confused", 1.8, "", 20.0, True, 1, True),
+    "refused": Reaction("", "sad", 2.4, "", 10.0, True),
+    "pat_shy": Reaction("pat_happy", "shy", 2.2, "happy", 3.0, True),
+    "rub_shy": Reaction("rub_purr", "shy", 3.4, "happy", 6.0, True),
+    "pat_love": Reaction("pat_happy", "love", 2.6, "happy", 3.0, True),
+    "rub_love": Reaction("rub_purr", "love", 3.6, "happy", 6.0, True),
     # a shake while carried: it is left dizzy on the ground (`Extras.dizzy`)
     "dizzy": Reaction("dizzy_sway", "dizzy", 3.2, "startled", 8.0, True, 2),
     # the screen
@@ -378,6 +390,7 @@ class Extras:
         self.over: tuple[str, float, float] | None = None
         self.hold: float | None = None
         self.last: list[str] = []
+        self.pets: list[float] = []  # when the last pats and rubs began
         self.near = False
         #: Where the pointer was last and when it last moved: it is watched finely only while it moves near the figure.
         self.seen: tuple[int, int] | None = None
@@ -465,24 +478,36 @@ class Extras:
         if pointer != self.seen:
             self.seen, self.moved_at = pointer, now
         self.pointer_state.feed(now, float(pointer[0]), float(pointer[1]))
-        if e.state not in TOUCH_FREE or e.quiet or e.busy:
+        if e.state not in TOUCH_FREE:
             return False
         kind = self.pointer_state.classify(now, box, k, e.mind.mood(now, e.hour))
         if kind is None:
             return False
+        if e.quiet or e.busy:  # it does not play for someone who is working, but a poke puzzles it
+            return kind == "poke" and self.fire("confused", now, toward=pointer[0])
         if kind == "poke":
             kind = POKE_BY_MOOD.get(e.mind.mood(now, e.hour), "poke_curious")
-        if self.fire(kind, now, toward=pointer[0]):
+        if self.fire(self._warmed(kind, now), now, toward=pointer[0]):
+            if kind in ("pat", "rub"):
+                self.pets = [*(p for p in self.pets if now - p <= LOVE_STREAK), now]
             self.pointer_state.clear()
             return True
         return False
+
+    def _warmed(self, kind: str, now: float) -> str:
+        """A pat or rub right after waking is shy, and the third inside `LOVE_STREAK` s is loved."""
+        if kind not in ("pat", "rub"):
+            return kind
+        if sum(1 for p in self.pets if now - p <= LOVE_STREAK) + 1 >= LOVE_PETS:
+            return f"{kind}_love"
+        return f"{kind}_shy" if now - self.e.woke_at <= SHY_FOR else kind
 
     # --- reactions ---------------------------------------------------------------------------
 
     def _allowed(self, r: Reaction | None, kind: str, now: float) -> bool:
         """Whether a reaction may start now: the state, the cooldown, nobody typing, no card, no running reaction."""
         e = self.e
-        if r is None or e.reduced or e.quiet or e.busy or e.card is not None or now < self.cool.get(kind, -1e9):
+        if r is None or e.reduced or (e.busy and not r.busy_ok) or e.card is not None or now < self.cool.get(kind, -1e9):
             return False
         free = TOUCH_FREE if r.touch else SCREEN_FREE
         if r.prio >= 2:

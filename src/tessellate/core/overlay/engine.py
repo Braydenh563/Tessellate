@@ -654,6 +654,7 @@ class Engine:
         self.home_arrivals = 0
         self.click_now: str | None = None
         self.trail: list[tuple[float, int, int]] = []
+        self.woke_at = -1e9  # when it last woke from sleep (a pet soon after is shy)
         self.pre_press = "stand"
         self.bonk_until = 0.0
         self.angle = 0.0
@@ -1017,6 +1018,8 @@ class Engine:
     # --- state changes ----------------------------------------------------------------
 
     def _enter(self, state: str, now: float) -> None:
+        if self.state == "sleep" and state != "sleep":
+            self.woke_at = now
         self._wear_face(state, now)
         self.state = state
         self._arm_nap(state, now)
@@ -1764,7 +1767,13 @@ class Engine:
 
     def command(self, name: str, now: float) -> bool:
         """A choice from the companion's menu, on the engine's own thread. True when it took
-        effect; False when it cannot be done now (carried, no window to sit on, motion off)."""
+        effect; False when it cannot be done now (carried, no window to sit on, motion off), and it looks sad."""
+        done = self._command(name, now)
+        if not done:
+            self.ex.fire("refused", now)
+        return done
+
+    def _command(self, name: str, now: float) -> bool:
         if name == "come" and self.come is not None:  # a second "Come here" ends the following
             self.come = None
             return True
