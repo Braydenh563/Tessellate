@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Served scripts and stylesheets lose their leading indentation (asset_strip.py, STRIP_VERSION 4): newlines kept so stack-trace line numbers hold; template literal text, continued strings, regexes, kept comments, CSS strings and `url(` are untouched. The scripts' gzipped total went from 260,814 to 251,949 bytes (-8,865) and TOTAL_CAP from 260,860 to 251,980 (tests/test_asset_strip.py, tests/test_static_compression.py).
 - Diagram builder: the phone empty layout keys on a class set by the picture, not a `:has()` on the window body (PR 216 CI, test_css_body_has).
 - Companion round 2 (companion dive 1107, blind test): the keyboard focus on the figure is a 2px accent ring on the haze's ellipse (about 1.9:1 before; 4.7:1 light and 6.8:1 dark measured), Quieter and Livelier answer in the companion's voice and name the Settings control (Reduce actions), Hide from the keyboard leaves focus on the toast's Show it button instead of the page, and the menu puts the companion's speech bubble away before it opens over it.
 - The command palette has Focus companion while a companion is showing (companion dive 1107): the keyboard reaches the companion in one step instead of 21 to 50 Tab presses (Chat 21, Dashboard 45, Notes 50); arrow keys then move it and Shift+F10 opens its menu. The Guide's companion topic names it.
