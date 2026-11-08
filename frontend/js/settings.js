@@ -114,6 +114,37 @@ function settingsScroller(name) {
   return null;
 }
 
+//: **A picked row keeps a row of room** (INBOX 1696 e, the owner: a row picked
+//: "right at the bottom in the settings sidebar and other sidebars" should
+//: "scroll a little down to give comfortable room for the selected item unless
+//: it is the last item"). Measured before at 1440x560: the Settings nav's
+//: bottom row stayed 12px under the edge (and 1440x260, a notes sidebar row
+//: 3.3px above it). The row is brought to its own height inside its sidebar's edge (half the
+//: sidebar at most), with the box's own `scrollTop`, never `scrollIntoView`,
+//: which walks every ancestor; the last and first rows stop at the end, as
+//: the scroll clamps. A property of menus.js's `nearestScrollParent`, not a
+//: name in the shared scope (tests/test_global_scope_ratchet.py), and here, a
+//: boot script past the gzip budget's eager set (tests/test_static_compression.py:
+//: notes-list.js had 1 byte to spare). DESIGN.md, the row-room recipe.
+nearestScrollParent.reveal = function revealRow(row, box = row && nearestScrollParent(row), smooth = false) {
+  if (!row?.isConnected || !box) return 0;
+  //: A list the page itself scrolls has no sidebar edge to keep room at.
+  if (box === document.documentElement) return row.scrollIntoView({ block: "nearest" }), 0;
+  //: The edge seen: a sidebar taller than the window ends at the window.
+  const rect = box.getBoundingClientRect();
+  const have = { top: Math.max(rect.top, 0), bottom: Math.min(rect.bottom, innerHeight) };
+  const at = row.getBoundingClientRect();
+  if (have.bottom <= have.top || !at.height) return 0;
+  const room = Math.min(at.height, Math.max(0, (have.bottom - have.top - at.height) / 2));
+  const delta = at.bottom > have.bottom - room ? at.bottom - have.bottom + room : at.top < have.top + room ? at.top - have.top - room : 0;
+  //: Whole pixels away from the row, as `scrollTop` rounds.
+  if (Math.abs(delta) >= 1) box.scrollTo({ top: box.scrollTop + (delta > 0 ? Math.ceil(delta) : Math.floor(delta)), behavior: smooth ? "smooth" : "auto" });
+  return delta;
+};
+//: The notes sidebar: a pick (a press, or Enter, which presses) redraws the list inside the row's own click
+//: (`renderSidebar`), so on the way back up the redrawn current row is brought in.
+$("category-list")?.addEventListener("click", (event) => nearestScrollParent.reveal(event.currentTarget.querySelector('li[aria-current="true"]')));
+
 function showSettingsSection(name) {
   //: The companion's one-time nudge (avatars.js) may show when Appearance
   //: is first opened.
@@ -157,6 +188,8 @@ function showSettingsSection(name) {
   //: A long section gets its own index (settings-find.js, loaded on the first
   //: open of Settings).
   if (typeof settingsIndexWatchSection === "function") settingsIndexWatchSection(name);
+  //: The chosen pane's row keeps a row of room in the sidebar (INBOX 1696 e), after its "On this page" list is drawn.
+  nearestScrollParent.reveal(document.querySelector(`#settings-nav button[data-section="${name}"]`));
   updatePeekAvailability(name);
   // The log stream is the only section that holds a connection open, so it is
   // the only one that has to be told it is no longer being looked at.

@@ -412,15 +412,10 @@ function settingsNavFollow(link) {
     }, { passive: true });
   }
   if (box.matches(":hover") || performance.now() - (box._userScrollAt || 0) < 600) return;
-  const have = box.getBoundingClientRect();
-  const at = link.getBoundingClientRect();
-  const pad = 8;
-  const delta = at.top < have.top + pad ? at.top - have.top - pad : at.bottom > have.bottom - pad ? at.bottom - have.bottom + pad : 0;
-  if (!delta) return;
-  const root = document.documentElement;
-  const still = reducedMotionWanted() || root.dataset.uiMotion === "off";
+  //: A row of room past the marked link, as a picked row has (INBOX 1696 e; it was 8px).
+  const still = reducedMotionWanted() || document.documentElement.dataset.uiMotion === "off";
   box._followAt = performance.now();
-  box.scrollTo({ top: box.scrollTop + delta, behavior: still ? "auto" : "smooth" });
+  nearestScrollParent.reveal(link, box, !still);
 }
 
 //: Mark the head the pane is scrolled to. `aria-current="location"` is the

@@ -107,6 +107,8 @@ function manualBuild(listing) {
       if (part === current) part.jump.setAttribute("aria-current", "location");
       else part.jump.removeAttribute("aria-current");
     }
+    //: The marked group keeps a row of room in a contents list that scrolls (INBOX 1696 e).
+    if (current) nearestScrollParent.reveal(current.jump, contents);
   };
   topics.addEventListener("scroll", follow, { passive: true });
   contents.addEventListener("click", (event) => {

@@ -7618,3 +7618,22 @@ def test_every_slider_with_a_readout_is_a_value_field():
         p.name for p in JS if re.search(r'type = "range"|type: "range"', p.read_text(encoding="utf-8"))
     )
     assert built == ["meetings.js", "settings-health.js", "sketch-pad.js", "whiteboard-format.js"], built
+
+
+def test_a_picked_sidebar_row_keeps_a_row_of_room():
+    """INBOX 1696 e: a row picked or walked to at a sidebar's edge is brought in by the one helper,
+    `nearestScrollParent.reveal`, with its own height of room (tests/test_row_room_1696.py runs the arithmetic)."""
+    design = (ROOT / "docs" / "DESIGN.md").read_text(encoding="utf-8")
+    assert "**`nearestScrollParent.reveal(row)`**" in design and "tests/test_row_room_1696.py" in design
+    js = ROOT / "frontend" / "js"
+    settings = (js / "settings.js").read_text(encoding="utf-8")
+    helper = settings.split("nearestScrollParent.reveal = function revealRow(", 1)[1].split("\n};\n", 1)[0]
+    #: The room is the row's own height, not a pad in pixels.
+    assert "Math.min(at.height," in helper and "box.scrollTo(" in helper
+    #: A sidebar's own follow and the trees' keys never scroll by hand again beside it.
+    find = (js / "settings-find.js").read_text(encoding="utf-8")
+    follow = find.split("function settingsNavFollow(link) {", 1)[1].split("\n}\n", 1)[0]
+    assert "nearestScrollParent.reveal(" in follow and "scrollTo(" not in follow and "scrollIntoView" not in follow
+    library = (js / "library.js").read_text(encoding="utf-8")
+    tree = library.split("function contentsTreeKeys(event) {", 1)[1].split("\n}\n", 1)[0]
+    assert "nearestScrollParent.reveal(target)" in tree and "scrollIntoView" not in tree

@@ -12912,7 +12912,7 @@ function contentsTreeKeys(event) {
     if (!target) return;
     event.preventDefault();
     target.focus();
-    target.scrollIntoView({ block: "nearest" });
+    nearestScrollParent.reveal(target);
   };
   const expanded = current.getAttribute("aria-expanded");
   switch (event.key) {
