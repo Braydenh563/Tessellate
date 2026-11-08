@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Documents editor (DOCUMENTS_PLAN 23 L5): typing `#` and a letter in a markdown document offers the tags you have used (the list the tag fields read, most used first); Enter or Tab takes one. It stays quiet in headings, code, fences and plain text.
 - Documents editor (DOCUMENTS_PLAN 23 L4): Ctrl+Alt+G goes to a line in markdown and text documents (the palette and the shortcut sheet list it); Ctrl+G stays find next there, and Go to line on Ctrl+G stays for code files.
 - Documents editor (DOCUMENTS_PLAN 23 L1): Enter at the end of an `a.`, `i.` or two-space dash item starts the next item (`b.`, `ii.`, another dash); Enter on an empty letter or roman item ends the list. The markdown keymap continued only CommonMark markers.
 - Diagram builder (blind test 1108): a selected block's connection handles stay inside the picture's scroll area, and the "Turn it sideways" offer floats over the foot of the panes instead of pushing the shelf and both panes down 42 px.
