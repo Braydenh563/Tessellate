@@ -26,20 +26,15 @@ _YEAR_DAY = re.compile(
     r"^(?:(?:what|which) day of the year (?:is it|is today|is this)|what is (?:the )?day of the year(?: today| now)?|day of the year(?: today| now)?"
     r"|what is (?:the )?day number(?: today)?)$"
 )
-_NEXT_OR_LAST = re.compile(
-    r"^(?:(?:what|when) (?:is|was) )?(?:the )?(?P<d>tomorrow|yesterday)(?:'s|s)? date$|^what (?:is|was) the date (?P<e>tomorrow|yesterday)$"
-)
 _WEEK_OF = re.compile(r"^(?:(?:what|which) week(?: number)?(?: of the year)? (?:is|was)|week number (?:of|for)) (?P<d>\S.*)$")
 _YEAR_DAY_OF = re.compile(r"^(?:(?:what|which) day of the year (?:is|was)|what is (?:the )?day number of) (?P<d>\S.*)$")
 #: A bare day and month ("3 march", "march 3rd"): in a week or day-of-year question that is this year, not the next time it comes round.
 _BARE_DATE = re.compile(r"^(?:the )?(?:(?P<d>\d{1,2})(?:st|nd|rd|th)?(?: of)? (?P<m>[a-z]{3,9})|(?P<m2>[a-z]{3,9}) (?P<d2>\d{1,2})(?:st|nd|rd|th)?)(?: (?P<y>\d{4}))?$")
 _MONTHS = ("january", "february", "march", "april", "may", "june", "july", "august", "september", "october", "november", "december")
-_LEAP = re.compile(r"^(?:is|was|will) (?P<y>\d{4}|it|this year|next year|last year)(?: be)? a leap year$")
 _LEFT = re.compile(
     r"^(?:how many )?(?P<u>days|weeks)(?: are)? (?:left|remaining|remain|to go) (?:in|of) (?:the|this) year$"
     r"|^how many (?P<v>days|weeks) (?:until|till|to) (?:the )?(?:end of (?:the|this) year|year end)$"
 )
-_YEAR_SHIFT = {"it": 0, "this year": 0, "next year": 1, "last year": -1}
 _QUARTER_MONTHS = ("January to March", "April to June", "July to September", "October to December")
 
 
@@ -128,7 +123,7 @@ def _week_of(phrase: str, today: date) -> Reply | None:
 
 
 def _leap(which: str, today: date) -> Reply:
-    year = int(which) if which.isdigit() else today.year + _YEAR_SHIFT[which]
+    year = int(which) if which.isdigit() else today.year + recognise.YEAR_SHIFT[which]
     verb = "was" if year < today.year else "is"
     if is_leap(year):
         return computed(f"{year} {verb} a leap year: it has 366 days, and February has 29.", "the leap year rule: every fourth year, except centuries not divisible by 400")
@@ -154,9 +149,9 @@ def answer(ctx: Ctx) -> Reply | None:
         return _quarter(today)
     if _YEAR_DAY.match(text):
         return _year_day(today)
-    found = _LEAP.match(text)
-    if found:
-        return _leap(found["y"], today)
+    year = recognise.leap_year_asked(text)
+    if year:
+        return _leap(year, today)
     found = _LEFT.match(text)
     if found:
         return _left(found["u"] or found["v"], today)
@@ -166,7 +161,7 @@ def answer(ctx: Ctx) -> Reply | None:
     found = _WEEK_OF.match(text)
     if found:
         return _week_of(found["d"], today)
-    found = _NEXT_OR_LAST.match(text)
-    if found:
-        return _neighbour(found["d"] or found["e"], today)
+    which = recognise.neighbour_day(text)
+    if which:
+        return _neighbour(which, today)
     return None
