@@ -243,6 +243,11 @@ GRIP_MOOD = {"sleepy": 0.5, "bored": 0.8, "startled": 0.9, "curious": 1.1, "happ
 SCRABBLE_FOR = 0.9
 SCRABBLE_DRAG = 6.0
 SCRABBLE_HZ = 6.0
+#: Sliding down a screen side and scrabbling (INBOX 1683 x, y): after `WALL_SCRABBLE` s (the slide takes about a second
+#: from the middle of the screen, so a beat), a window top within `WALL_REACH` figure heights of the hands is
+#: something to pull up onto (the nearest), else it slides on and lands.
+WALL_SCRABBLE = 0.45
+WALL_REACH = 1.3
 #: States a dragged window does not throw the figure out of: it is already off the window, held, or going somewhere.
 FLING_SAFE = ("held", "pressed", "fly", "fall", "warp", "hang", "rise", "peek", "emerge", "leap")
 BOUNCE_DAMP = 0.55
@@ -1982,6 +1987,34 @@ class Engine:
         self.last_slip = "drop"
         self._let_go()
 
+    def _wall_pull(self, now: float) -> bool:
+        """Scrabbling down a screen side: after the scrabble, the nearest window top within reach is pulled up onto
+        (the climb the hang slip ends in); with none, False and the slide goes on to the landing."""
+        if now - self.wob_t0 < WALL_SCRABBLE:
+            return False
+        w, h = self.size
+        scale = self._scale()
+        area = self.current_monitor().area
+        hands = self.y + self._dy(self._frame(now)) + 0.35 * h
+        best: tuple[float, Perch] | None = None
+        for p in self.windows:
+            if p.kind != "top" or p.top - h < area[1] or p.right - p.left < w:
+                continue
+            gap = max(p.left - (self.x + w), self.x - p.right, 0.0)
+            far = math.hypot(gap, p.top - hands)
+            if far <= WALL_REACH * h * scale and (best is None or far < best[0]):
+                best = (far, p)
+        if best is None:
+            return False
+        cur = best[1]
+        x = min(max(self.x, cur.left), cur.right - w)
+        self.vx = self.vy = self.omega = self.kick = self.angle = self.wob = 0.0
+        self.wall, self.wob_kind, self.grounded = 0, None, False
+        self.target = cur
+        self.legs.append(("climb", self.x, x, now))
+        self._rise((x, cur.top - h), "perch", now)
+        return True
+
     def _pull_up(self, now: float) -> None:
         """The scrabble is over: up onto the window's top where it is now, else the drop."""
         p, self.pulling = self.pulling, None
@@ -3070,6 +3103,8 @@ class Engine:
         self._spin(dt, speed)
         self._air_wobble(now, dt)
         uy0, uy1 = self._fly_walls(m, now)
+        if self.wall and self._wall_pull(now):
+            return
         if self._hit_ceiling(m, uy0, now):
             return
         floor = min(self.floor_y(m), uy1) if self._open_side(m, "bottom") else self.floor_y(m)
