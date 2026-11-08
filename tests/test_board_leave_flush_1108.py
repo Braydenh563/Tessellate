@@ -21,14 +21,14 @@ def test_pagehide_finishes_the_open_edit() -> None:
     match = re.search(r'addEventListener\("pagehide",\s*\(\)\s*=>\s*\{(.*?)\n\}\);', SRC, re.S)
     assert match, "whiteboard.js has no pagehide listener"
     body = match.group(1)
-    assert "wbPageLeaving = true" in body
+    assert "wbCommitOpenEdit.leaving = true" in body
     assert "wbCommitOpenEdit()" in body
 
 
 def test_the_leaving_save_is_keepalive() -> None:
     start = SRC.index("async function wbSaveObject(d)")
     block = SRC[start : start + 1200]
-    assert "keepalive: wbPageLeaving" in block
+    assert "keepalive: wbCommitOpenEdit.leaving === true" in block
 
 
 def test_tab_switch_does_not_end_an_edit() -> None:

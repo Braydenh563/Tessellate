@@ -11621,15 +11621,14 @@ function wbCommitOpenEdit() {
 //: typed into an open sticky, text box or topic never left (measured: type,
 //: reload, the server kept the old text and no write was sent). `pagehide`
 //: finishes the edit and `wbSaveObject` sends with `keepalive` while
-//: `wbPageLeaving` is set, so the request outlives the page. Not
+//: `wbCommitOpenEdit.leaving` is set (a property, not a new shared name: the global-scope ratchet), so the request outlives the page. Not
 //: `visibilitychange`: switching tabs must not end an edit in progress.
-let wbPageLeaving = false;
 window.addEventListener("pagehide", () => {
-  wbPageLeaving = true;
+  wbCommitOpenEdit.leaving = true;
   try {
     wbCommitOpenEdit();
   } finally {
-    setTimeout(() => { wbPageLeaving = false; }, 0);
+    setTimeout(() => { wbCommitOpenEdit.leaving = false; }, 0);
   }
 });
 
@@ -23317,7 +23316,7 @@ async function wbSaveObject(d) {
     const saved = await apiJson(`/whiteboard/objects/${d.id}`, {
       method: "PUT",
       body: JSON.stringify(body),
-      keepalive: wbPageLeaving,
+      keepalive: wbCommitOpenEdit.leaving === true,
     });
     //: **What changed here while the save was out stays** (audit FEAT-02):
     //: with the map's add no longer waiting for its saves, a tidy or a
@@ -25927,7 +25926,10 @@ function wbStopPresenting() {
   //: Back to where the board was looked at from before.
   const container = document.getElementById("whiteboard-container");
   if (container && camera) d3.select(container).call(wbZoom.transform, camera);
-  (focus && document.contains(focus) ? focus : container)?.focus?.({ preventScroll: true });
+  //: Only an element on screen: Present starts from a menu item, in a menu that
+  //: has closed by now, and focusing it left focus on `<body>` (boardfix-1108).
+  const back = focus && document.contains(focus) && focus.getClientRects().length ? focus : container;
+  (back ?? container)?.focus?.({ preventScroll: true });
 }
 
 //: While it runs the keys are the presentation's, ahead of the board's own

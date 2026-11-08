@@ -6294,7 +6294,11 @@ function wbMapLayoutPositions(index, layout) {
     }
     return node;
   };
-  const virtual = wrap(null, null, 0, -1);
+  //: **Radial with several top-level topics puts them on the first ring**
+  //: (boardfix-1108): they were all depth 0, so radius 0, and sat on one
+  //: another (measured: four roots, 6 overlapping pairs of 10 boxes). The
+  //: virtual root takes the centre instead; one root still stands on it.
+  const virtual = wrap(null, null, 0, radial && index.roots.length > 1 ? 0 : -1);
 
   wbTidyFirstWalk(virtual, breadthOf, gap);
 
