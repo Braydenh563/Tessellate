@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Chat with no model: pick one of options, week and day of year, leap year, days left, text transforms on pasted text, and factorial, half, double and square root as words (composer batch C).
 - Extras downloads try again twice after a server error (5xx, 429) or a dropped connection; a 404 still fails at once. Fixes the Windows package check failing on a GitHub 504.
 - The installer's optional packages step now writes why a package failed into the data folder's log, not only exit code 1.
 - Companion catalogue: 307 acts in nine kinds shared by the desk and in-app companions, with a parity ratchet and a seven-batch build order.
