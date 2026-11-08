@@ -7443,6 +7443,13 @@ def test_a_split_inside_a_dialog_or_page_is_the_sidebar_handle_on_a_grid():
         if js.name.startswith("diagram-") and js.name != "diagram-split.js":
             assert 'className = "sidebar-resize' not in js.read_text(encoding="utf-8"), js.name
     assert "A split inside a dialog or page" in (ROOT / "docs" / "DESIGN.md").read_text(encoding="utf-8")
+    # 1661 m: each side folds to a rail, one kept value so one side always shows, and no other diagram file folds a panel.
+    for needle in ('"ghost small icon-only dgm-fold"', "`ghost dgm-rail`", '"aria-keyshortcuts", key', 'const FOLD = "diagram.fold"', '"BracketLeft"'):
+        assert needle in split, needle
+    assert "grid-template-columns: 2rem minmax(0, 1fr);" in css and "writing-mode: vertical-rl;" in css
+    for js in JS:
+        if js.name.startswith("diagram-") and js.name != "diagram-split.js":
+            assert "dgm-rail" not in js.read_text(encoding="utf-8") and "dgm-no-outline" not in js.read_text(encoding="utf-8"), js.name
 
 
 def test_the_edge_handle_and_the_rename_input_are_the_recipe():

@@ -3,6 +3,8 @@
 // for by diagram-builder.js's `show`. It is the sidebars' handle (`.sidebar-resize`: role separator, tabindex 0,
 // `trackSeparatorValue`, arrows 12 px, Shift 40 px, `prefs` for the width) on a grid, so it sets a column variable
 // (`--dgm-list` on `.dgm-body`) instead of a panel's width. The picture side keeps at least 240 px.
+// Each side folds to a 32 px rail (INBOX 1661 m): a labelled toggle on the panel, `[` for the list and `]` for the picture,
+// one kept choice (`diagram.fold`), and one of the two always showing. Not below 600, where there is one column.
 (() => {
   const KEY = "diagramListWidth";
   const MIN = 224; // 14rem: the least the blocks list has always had
@@ -96,7 +98,92 @@
       event.preventDefault();
     });
     handle.addEventListener("dblclick", () => handle.dispatchEvent(new KeyboardEvent("keydown", { key: "Home" })));
+    wireFold(S, body, handle);
   }
 
-  diagramModel.split = { wire, math };
+  //: The fold: "" (both open), "left" (the list is a rail) or "right" (the picture is). One value, so both can never fold.
+  const FOLD = "diagram.fold";
+  const SIDES = { left: ["list", "[", "BracketLeft"], right: ["picture", "]", "BracketRight"] };
+  const PHONE = "(max-width: 599.98px)";
+  const fold = {
+    //: The toolbar's old Blocks list button kept "0" in `diagram.outline`; it is read once as a folded list.
+    get() {
+      try {
+        if (prefs.get("diagram.outline") === "0") prefs.set(FOLD, "left"), prefs.set("diagram.outline", "");
+        const v = prefs.get(FOLD, "");
+        return v === "left" || v === "right" ? v : "";
+      } catch {
+        return "";
+      }
+    },
+    set(v) {
+      try {
+        prefs.set(FOLD, v);
+      } catch {
+        /* storage blocked: it holds for this window only */
+      }
+    },
+    //: What a press on one side's toggle leaves: that side folds, or opens if it was folded (the other then opens too).
+    next: (now, side) => (now === side ? "" : side),
+  };
+
+  //: One toggle: on the open panel it folds it, on the rail it opens it.
+  function toggle(side, folded) {
+    const [noun, key] = SIDES[side];
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = folded ? `ghost dgm-rail` : "ghost small icon-only dgm-fold";
+    b.dataset.side = side;
+    b.setAttribute("aria-expanded", String(!folded));
+    b.setAttribute("aria-keyshortcuts", key);
+    const say = `${folded ? "Open" : "Fold"} the ${noun} (${key})`;
+    b.title = say;
+    b.setAttribute("aria-label", say);
+    const icon = document.createElement("i");
+    icon.className = `ph ph-sidebar-simple${side === "right" ? " dgm-flip" : ""}`;
+    icon.setAttribute("aria-hidden", "true");
+    b.append(icon);
+    if (folded) b.append(Object.assign(document.createElement("span"), { className: "dgm-rail-word", textContent: noun[0].toUpperCase() + noun.slice(1) }));
+    return b;
+  }
+
+  //: Paints the kept fold on `body`, and wires the toggles, the rails and the two keys once.
+  function wireFold(S, body, handle) {
+    const stage = S.fig?.parentElement?.classList.contains("dgm-stage") ? S.fig.parentElement : S.fig;
+    if (!stage) return;
+    const head = document.createElement("div");
+    head.className = "dgm-panehead";
+    head.append(Object.assign(document.createElement("span"), { className: "muted", textContent: "List" }), toggle("left", false));
+    S.pane.prepend(head);
+    const right = toggle("right", false);
+    stage.append(right);
+    const rails = { left: toggle("left", true), right: toggle("right", true) };
+    body.prepend(rails.left);
+    body.append(rails.right);
+    const paint = (v) => {
+      for (const side of ["left", "right"]) body.classList.toggle(`dgm-fold-${side}`, v === side);
+      handle.hidden = Boolean(v);
+    };
+    const press = (side) => {
+      const was = fold.get();
+      const v = fold.next(was, side);
+      fold.set(v);
+      paint(v);
+      const [noun, key] = SIDES[side];
+      if (S.live) S.live.textContent = v ? `The ${noun} is folded. ${key} opens it.` : `The ${noun} is open.`;
+      (v ? rails[side] : side === "left" ? head.querySelector("button") : right).focus();
+    };
+    for (const b of [head.querySelector("button"), right, rails.left, rails.right]) b.addEventListener("click", () => press(b.dataset.side));
+    S.root.addEventListener("keydown", (event) => {
+      const side = event.code === "BracketLeft" ? "left" : event.code === "BracketRight" ? "right" : "";
+      const t = event.target;
+      if (!side || event.defaultPrevented || event.altKey || event.ctrlKey || event.metaKey || t.isContentEditable || t.closest?.("input, textarea, select")) return;
+      if (matchMedia(PHONE).matches) return;
+      event.preventDefault();
+      press(side);
+    });
+    paint(fold.get());
+  }
+
+  diagramModel.split = { wire, math, fold };
 })();

@@ -18,7 +18,7 @@ def test_the_toolbar_is_one_nowrap_dock_with_the_controls_in_order():
     order = build.index("bar.append(split, S.dirs, actions)")
     assert order > 0
     # Eight now: the blocks-list button sits before the menu (1661 review: the list can be hidden).
-    assert "actions.append(suggest, ...hist, outline, h.more(S))" in build
+    assert "actions.append(suggest, ...hist, h.more(S))" in build  # 1661 m: the list button left for the panel's own fold
     assert 'bar.dataset.dockName = "diagram"' in build and 'setAttribute("role", "toolbar")' in build
     # The eight tiles and the four direction buttons are not built any more.
     assert "library.build(" not in BUILDER and "for (const [dir, arrow, name] of DIRS)" not in BUILDER

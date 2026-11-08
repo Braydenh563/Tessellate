@@ -3313,7 +3313,7 @@ MORE_TOPICS.extend([
             "A block's arrows share one line under it; press one for its menu: the line (arrow, line, dotted, thick, Both ways), Colour… and Reverse direction. "
             "With two or more blocks picked, the bar also has Colour (K) and Connect, which draws an arrow from the first picked to the second. "
             "Fit stops at readable text (11 px) and the picture scrolls past it. In the picture an arrow key picks the box that way, reading aloud its name and arrows, and Shift with an arrow moves the picture. A tall chart in a wide pane offers Turn it sideways once; Direction is a menu of Down, Right, Up and Left, and Shift turns it back one step. "
-            "On a phone, once there is an arrow the picture takes the page and the Blocks list button opens the blocks as a sheet. "
+            "[ and ] fold the list and the picture to a rail; the rail opens it. On a phone, once there is an arrow (another kind: a block), Blocks list opens the list as a sheet. "
             "In Source, Tab indents and Shift+Tab takes it back, Escape leaves the text, Ctrl+Z steps the blocks' history too, and a red line number is the line a drawing error names; its note has Undo the last edit. "
             "In the bar Left and Right walk the buttons; the ... menu has the look, Save as PNG and Save to Library. On the picture Enter names the picked box, Shift+Enter adds a joined box and Alt+Enter a sister, Ctrl+D copies, Ctrl+A picks all, Delete removes, Ctrl+F or / finds by name, and a double press on empty space adds a box. "
             "The New diagram window's Title names the document Done makes (blank dates it) and the files you export."
@@ -3327,8 +3327,8 @@ MORE_TOPICS.extend([
             "mermaid timeline", "mermaid sequence", "sequence diagram", "diagram kinds",
         ),
         "body": (
-            "The Flowchart, Sequence, Mind map and Timeline buttons above the toolbar start a new diagram "
-            "of that kind (Ctrl+Z brings the old one back). A block's ... menu has Box this block, a group round it; "
+            "Kind, in the Title row (first in the toolbar elsewhere), is a menu of Flowchart, Sequence, Mind map and Timeline, "
+            "each with a small picture; one starts a new, empty diagram of that kind (Ctrl+Z brings the old one back). A block's ... menu has Box this block, a group round it; "
             "the bar over picked blocks has Box them. "
             "Blocks draw flowcharts, mind maps, timelines and sequence diagrams: the first word of "
             "the source says which, and the bar offers that kind's blocks. A mind map has a branch "
@@ -3341,6 +3341,7 @@ MORE_TOPICS.extend([
             "arrows, Enter, Delete, Alt+Up, Alt+Down, Alt+Right and Alt+Left, Ctrl+Z. A line the "
             "blocks do not show stays where it was, and a diagram they cannot read (a second mind "
             "map centre, a sequence box, more than 120 blocks) opens in Source with its picture. "
+            "On a sequence picture a press picks a part, a double press, Enter or F2 renames it there, Delete removes it and Alt+Up or Alt+Down moves it. "
             "Suggest works in each: Templates include a brainstorm, a project plan, a sign in and a "
             "request and reply. A suggestion of the diagram's own kind arrives as ghosts to take; "
             "one of another kind says so and is left out when the diagram has blocks, and replaces "
