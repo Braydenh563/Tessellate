@@ -42,11 +42,10 @@ APP_ONLY = frozenset({
     "act.hands_on_hips", "act.hang_by_feet", "act.hang_one_hand", "act.head_tilt", "act.juggle", "act.kick_legs",
     "act.lean_tilt", "act.lounge", "act.meditate", "act.rest_head", "act.sigh", "act.sloth", "act.sniff",
     "act.toss_stars", 
-    "lower.drift", "lower.glide", "lower.lie",
-    "lower.lounge", "lower.sad", "lower.startle", "lower.think", "move.afield", "pos.back_float", "pos.cross_legged",
+    "lower.drift", "move.afield", "pos.back_float", "pos.cross_legged",
     "pos.edge_dangle", "pos.lean", "pos.lounge", "react.graph_laid", "react.long_note", "react.note_binned",
     "react.private_note", "react.remark", "react.reminder_bell", "react.search_found", "react.search_nothing",
-    "tail.curl", "tail.droop", "tail.stiff", "tail.wag", "tail.wrap", "trans.back_float>upright",
+    "trans.back_float>upright",
     "trans.cross_legged>sit", "trans.curl>sit", "trans.edge_dangle>sit", "trans.lounge>sit", "trans.sit>cross_legged",
     "trans.sit>curl", "trans.sit>edge_dangle", "trans.sit>lounge", "trans.sit>upright", "trans.upright>back_float",
     "trans.upright>curl", "trans.upright>lie", "trans.upright>sit",
@@ -59,7 +58,7 @@ DESK_ONLY = frozenset({
     "react.battery_low", "react.hour_chime", "react.idle_return", "react.window_closed", "react.window_dragged",
     "react.window_maximised", "react.window_opened", "react.window_restored", "trans.upright>hang",
 })
-APP_ONLY_CAP, DESK_ONLY_CAP, NEITHER_CAP = 60, 26, 109
+APP_ONLY_CAP, DESK_ONLY_CAP, NEITHER_CAP = 49, 26, 109
 
 
 @lru_cache(maxsize=1)
@@ -223,6 +222,7 @@ def seeded_hour(seed: int, hour: int, side: str | None = None) -> dict:
     changes every 6 to 12 minutes by the part of the day; energy is the part of the day's, moved by the mood. With
     `side`, only what that side has built. The acts, tail poses, lower sways and faces shown, and the longest hold."""
     d, ids, rng = doc(), by_id(), random.Random(seed)
+    parts_rng = random.Random(seed * 7919 + 1)  # its own stream: building a part row must not reshuffle the acts drawn
     acts = [e for e in entries() if e["kind"] == "idle_act" and e.get("w", 0) > 0 and (side is None or built(e, side))]
     parts = {e["id"] for e in entries() if side is None or built(e, side)}
     t, mood, mood_until, recent, last_end = 0.0, "content", 0.0, [], {}
@@ -249,7 +249,7 @@ def seeded_hour(seed: int, hour: int, side: str | None = None) -> dict:
         for field in ("tail", "lower", "face"):
             live = [r for r in e[field] if r in parts]
             if live:
-                seen[field].add(rng.choice(live))
+                seen[field].add(parts_rng.choice(live))
         recent = (recent + [e["id"]])[-3:]
         t += length + 1.0
         last_end[e["id"]] = t

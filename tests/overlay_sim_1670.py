@@ -72,6 +72,7 @@ def _run(gait, seed, secs, setup, pointer, look) -> dict:
         setup(e)
     rng = random.Random(seed + 7)
     px, t = 400, 0.0
+    next_ptr = rng.expovariate(1 / 25.0)  # the pointer moves on its own clock, not once per wake: a faster wake must not reshuffle the hour
     out = e.update(0.0, (px, 600) if pointer else None)
 
     def feet(o) -> float:
@@ -98,8 +99,9 @@ def _run(gait, seed, secs, setup, pointer, look) -> dict:
     while t < secs:
         step = min(max(0.016, (out.wake_ms or 1000) / 1000.0), 1.0)
         t += step
-        if pointer and rng.random() < step / 25.0:
+        if pointer and t >= next_ptr:
             px = rng.randint(200, 1700)
+            next_ptr = t + rng.expovariate(1 / 25.0)
         out = e.update(t, (px, 600) if pointer else None)
         wakes += 1
         s = e.state

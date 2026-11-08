@@ -625,6 +625,110 @@ FLOW_ARR_EASE = 2.4
 #: `FLOW_POSE_EASE` seconds, so a change of pose is never a step.
 FLOW_POSE = (("sleep", 0.5, 0.6), ("sit", 0.8, 0.85), ("hang", 0.95, 1.1), ("wave", 1.0, 1.3), ("walk", 1.0, 1.35), ("hop", 1.0, 1.6), ("fall", 1.0, 1.6), ("land", 1.0, 1.2), ("idle", 0.9, 0.95))
 FLOW_POSE_EASE = 0.8
+#: What the figure is doing, over its frame (atlascat-1108 C4, the in-app `lower:*` states; INBOX 1696 z: "the lower body
+#: doesnt change at all"): [reach, speed, tip lean px, rise px] by name, the engine's `_lower_state` picking it. A
+#: state names the lower body's own sway and offset: it takes the place of the frame's `FLOW_POSE` row while it lasts, and
+#: all four ease together over `FLOW_POSE_EASE`. The two offsets are small (the join with the torso allows 4 degrees,
+#: INBOX 615 and 619): `glide` leans back from the way it goes (the engine signs it).
+FLOW_LOWER = {
+    "lie": (0.55, 0.55, 0.0, 0.5), "think": (0.7, 0.8, 0.5, 0.0), "sad": (0.45, 0.5, 0.0, -0.5),
+    "startle": (1.0, 1.7, 0.0, 0.8), "lounge": (0.85, 0.7, 0.4, 0.2), "glide": (1.0, 1.4, 0.8, 0.3),
+}
+#: A sit this long is a lounge (the lower body spreads and slackens).
+LOUNGE_AFTER = 6.0
+#: Acts that are the figure thinking.
+THINK_ACTS = frozenset({"ponder", "puzzle", "tinker"})
+
+
+#: The tail as a layer (atlascat-1108 C1, INBOX 1696 w: "the tail is framed in that it isnt a smooth animation"): the idle
+#: frames carry the tail's beat baked in at 6 a second, so the tail is drawn on its own, every display frame, over the body.
+#: The poses are the in-app rig's (`ATLAS_TAIL_ACTS`): [curl rad root to tip (+ round and down), amp rad of the wave at the
+#: tip, period s, k rad of phase root to tip]. A pose change eases over `TAIL_EASE` seconds, so no pose is ever a step.
+TAIL_POSES = {
+    "sway": (0.15, 0.34, 3.9, 3.4), "curl": (-1.3, 0.19, 4.6, 2.4), "wrap": (1.1, 0.17, 4.9, 2.2),
+    "wag": (-0.4, 0.46, 0.66, 2.4), "droop": (0.6, 0.11, 5.6, 1.8), "stiff": (-0.12, 0.08, 2.1, 2.0),
+}
+#: The poses a state picks from, by weight (the rig's `ATLAS_TAIL_BY_STATE`), and the mood's own (a glad one wags, a tired
+#: or bored one lets it droop, a startled one holds it stiff).
+TAIL_BY_STATE = {"stand": (("sway", 3.0), ("curl", 2.0), ("wrap", 1.4)), "sit": (("wrap", 2.0), ("sway", 1.0), ("curl", 1.0))}
+TAIL_BY_MOOD = {"happy": "wag", "proud": "wag", "sleepy": "droop", "bored": "droop", "startled": "stiff"}
+#: The body frames that carry the layered tail (the stand family and the sit; `sprites.TAIL_SOURCE` has the same names).
+TAIL_FRAMES = ("stand", "idle", "blink", "look", "sit", "sitblink")
+TAIL_HOLD = (3.0, 6.0)
+TAIL_EASE = 0.9
+TAIL_STEPS = 6  # control points along the tail, root excluded
+TAIL_Q = 8.0  # steps a px of the shipped frame in a view
+#: The tail's length in px of the shipped frame, and how much of a pose's own shape shows (a mesh shear, not a rig).
+TAIL_LEN = 96.0
+TAIL_REACH = 0.85
+
+
+def tail_bend(s: float, p: tuple[float, float, float, float], ph: float, ph2: float) -> float:
+    """The angle the tail has turned through at `s` (0 root, 1 tip): the rig's `atlasTailBend` without its third ripple."""
+    e = s ** 1.5
+    curl, amp, _period, k = p
+    return curl * s * s + amp * e * math.sin(ph - k * s) + max(0.13, 0.35 * amp) * e * math.sin(ph2 - 1.7 * k * s + 0.7)
+
+
+def tail_points(p: tuple[float, float, float, float], ph: float, ph2: float, wave: bool = True) -> list[tuple[float, float]]:
+    """The tail's axis, `TAIL_STEPS` points from the root (in tail lengths, x along the way it points, y down): the bend
+    integrated along it."""
+    x = y = 0.0
+    out = []
+    for i in range(1, TAIL_STEPS + 1):
+        t = (i - 0.5) / TAIL_STEPS
+        a = tail_bend(t, p, ph, ph2) if wave else p[0] * t * t
+        x, y = x + math.cos(a) / TAIL_STEPS, y + math.sin(a) / TAIL_STEPS
+        out.append((x, y))
+    return out
+
+
+class TailLayer:
+    """The tail's own motion at the display rate: a pose picked by the state and mood (its own seeded stream, so the
+    engine's other choices never shift), eased into from the last over `TAIL_EASE` seconds, a wave whose phase runs on
+    with the eased period. `view` is what the picture needs: where each control point sits against the rest shape, in
+    `TAIL_Q` steps of a px, so the sprite cache can key on it."""
+
+    def __init__(self, seed: int = 1696) -> None:
+        self.rng = random.Random(seed)
+        self.name = "sway"
+        self.p = list(TAIL_POSES["sway"])
+        self.ph = self.rng.random() * math.tau
+        self.ph2 = self.rng.random() * math.tau
+        self.until = 0.0
+        self.seen: float | None = None
+        #: The shape the shipped frames carry (a plain curl of the sway's, no wave): the layer moves the tail from it.
+        self.rest = tail_points((TAIL_POSES["sway"][0], 0.0, 1.0, 1.0), 0.0, 0.0, wave=False)
+
+    def choose(self, state: str, mood: str, now: float) -> None:
+        """Pick the next pose when the hold is over: the mood's if it has one, else a weighted pick of the state's."""
+        if now < self.until:
+            return
+        self.until = now + self.rng.uniform(*TAIL_HOLD)
+        if mood in TAIL_BY_MOOD:
+            self.name = TAIL_BY_MOOD[mood]
+            return
+        names, weights = zip(*TAIL_BY_STATE.get(state, TAIL_BY_STATE["stand"]))
+        self.name = self.rng.choices(names, weights)[0]
+
+    def view(self, now: float, calm: bool = False) -> tuple[int, ...]:
+        dt = 0.0 if self.seen is None else min(0.25, max(0.0, now - self.seen))
+        self.seen = now
+        goal = TAIL_POSES[self.name]
+        k = 1.0 - math.exp(-dt / TAIL_EASE)
+        for i in range(4):
+            self.p[i] += (goal[i] - self.p[i]) * k
+        slow = FLOW_CALM_SLOW if calm else 1.0
+        period = max(0.3, self.p[2]) * slow
+        self.ph = (self.ph + math.tau * dt / period) % math.tau
+        self.ph2 = (self.ph2 + math.tau * dt / (period * 0.62)) % math.tau
+        pose = tuple(self.p)
+        pts = tail_points(pose, self.ph, self.ph2)
+        amp = FLOW_CALM_AMP if calm else 1.0
+        out: list[int] = []
+        for (x, y), (rx, ry) in zip(pts, self.rest):
+            out += [round((x - rx) * TAIL_LEN * TAIL_REACH * amp * TAIL_Q), round((y - ry) * TAIL_LEN * TAIL_REACH * amp * TAIL_Q)]
+        return tuple(out)
 
 
 def _frac(x: float) -> float:
@@ -660,6 +764,7 @@ class Flow:
         self.hold = [FLOW_ARR_HOLD[0] + (FLOW_ARR_HOLD[1] - FLOW_ARR_HOLD[0]) * _frac(i * 0.618 + 0.29) for i in range(FLOW_BANDS)]
         # The pose's reach and speed, eased; `skew` is the time the speed has added, so a change of speed is no jump.
         self.k_reach, self.k_speed, self.skew, self.seen = 1.0, 1.0, 0.0, None
+        self.k_tip, self.k_rise = 0.0, 0.0  # the lower state's offsets, eased (`FLOW_LOWER`)
 
     def reach(self, i: int) -> float:
         """How far strand `i` sways: the outer ones (the streams) most."""
@@ -717,32 +822,39 @@ class Flow:
         a, b = pick(n), pick(n + 1)
         return a[0] + (b[0] - a[0]) * e, a[1] + (b[1] - a[1]) * e
 
-    def pose(self, frame: str, now: float) -> None:
-        """Ease the reach and speed toward the frame's pose and advance the clock by the speed (`FLOW_POSE`)."""
+    def pose(self, frame: str, now: float, lower: str = "", side: float = 1.0) -> None:
+        """Ease the reach and speed toward the frame's pose and advance the clock by the speed (`FLOW_POSE`); a
+        `lower` state (`FLOW_LOWER`) takes its place, with its two offsets (the tip's lean signed by `side`)."""
         reach, speed = next(((r, s) for key, r, s in FLOW_POSE if frame.startswith(key)), (1.0, 1.0))
+        tip, rise = 0.0, 0.0
+        if lower in FLOW_LOWER:
+            reach, speed, tip, rise = FLOW_LOWER[lower]
+            tip *= side
         dt = 0.0 if self.seen is None else min(0.25, max(0.0, now - self.seen))
         self.seen = now
         k = 1.0 - math.exp(-dt / FLOW_POSE_EASE)
         self.k_reach += (reach - self.k_reach) * k
         self.k_speed += (speed - self.k_speed) * k
+        self.k_tip += (tip - self.k_tip) * k
+        self.k_rise += (rise - self.k_rise) * k
         self.skew += (self.k_speed - 1.0) * dt
 
     def settled(self) -> bool:
         return all(abs(p[0]) < 0.3 and abs(p[1]) < 0.3 and abs(v[0]) < 2.0 and abs(v[1]) < 2.0 for p, v in zip(self.pos, self.vel))
 
-    def view(self, t: float, calm: bool = False, frame: str = "") -> tuple[int, ...]:
+    def view(self, t: float, calm: bool = False, frame: str = "", lower: str = "", side: float = 1.0) -> tuple[int, ...]:
         """Per strand `(tip dx, middle dx, tip dy, sparkle sin, sparkle cos)` in `FLOW_Q` steps (the sparkle in
         tenths), the follow-through folded in: what the warp needs and nothing else. With a `frame` the pose's
         reach, speed and the strand's arrangement apply (`pose`, `arrangement`); without one, the bare flow."""
         if frame:
-            self.pose(frame, t)
+            self.pose(frame, t, lower, side)
         t = t + self.t0 + (self.skew if frame else 0.0)
         reach = self.k_reach if frame else 1.0
         out: list[int] = []
         for i in range(FLOW_BANDS):
             fx, fy = self.pos[i]
             ax, ay = self.arrangement(i, t) if frame else (0.0, 0.0)
-            ax, ay = ax * reach * FLOW_ARR_TIP * (FLOW_CALM_AMP if calm else 1.0), ay * reach * FLOW_ARR_RISE * (FLOW_CALM_AMP if calm else 1.0)
+            ax, ay = ax * reach * FLOW_ARR_TIP * (FLOW_CALM_AMP if calm else 1.0) + (self.k_tip if frame else 0.0), ay * reach * FLOW_ARR_RISE * (FLOW_CALM_AMP if calm else 1.0) + (self.k_rise if frame else 0.0)
             tip = max(-FLOW_MAX, min(FLOW_MAX, self.sway(i, t, calm) * reach * (FLOW_ARR_SWAY if frame else 1.0) + ax + fx))
             mid = max(-FLOW_MAX, min(FLOW_MAX, self.sway(i, t - 0.9, calm) * reach * (FLOW_ARR_SWAY if frame else 1.0) * (1 - FLOW_MID) + ax * 0.6 + fx * 0.5))
             drop = self.rise(i, t, calm) * reach + ay + fy
