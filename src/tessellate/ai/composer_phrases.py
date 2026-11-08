@@ -150,6 +150,8 @@ PHRASES: dict[str, str] = {
     "newest_lead": "Your ",
     "newest_guess": "I could not tell what that asks about, so here are your ",
     "newest_mid": " newest notes",
+    "newest_one_lead": "Your newest note",
+    "newest_one_guess": "I could not tell what that asks about, so here is your newest note",
     "until_ahead_days": " days from today, on ",
     "until_ahead_day": " day from today, on ",
     "until_ago_days": " days ago, on ",

@@ -50,7 +50,7 @@ def test_the_scrabble_ends_in_a_pull_up_onto_a_window_top_within_reach(monkeypat
     assert t - started >= eng.WALL_SCRABBLE - 0.1  # it scrabbled a beat first, as a hang slip does
     assert e.phase_to[1] == pytest.approx(near.top - e.size[1])
     assert near.left <= e.phase_to[0] <= near.right - e.size[0]
-    t = run(e, t, 4.0, lambda en: en.state == "stand")
+    run(e, t, 4.0, lambda en: en.state == "stand")
     assert e.state == "stand" and e.perch is not None and e.perch.key == 7 and not e.grounded
 
 

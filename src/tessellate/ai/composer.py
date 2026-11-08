@@ -88,7 +88,7 @@ from tessellate.ai import act_registry, composer_ack, composer_links, composer_o
 from tessellate.ai import recognise as rec
 from tessellate.ai.composer_phrases import PHRASES
 from tessellate.ai.composer_ask import _ASKS_FIRST, _KNOWN, _SHAPE_RULES, _guessing_recent, _holds, _stem, _still_recent, _words, asks_written_when, classify, compare_sides, rephrase, subject_terms, user_now, user_today, when_terms
-from tessellate.ai.composer_read import NoteView, Sentence, _distinct_ids, read_note
+from tessellate.ai.composer_read import NoteView, Sentence, _cue, _distinct_ids, read_note
 from tessellate.ai.composer_select import MAX_PER_NOTE, MAX_POINTS, MEANING_POOL, _ASKS_NOW, _Meaning, _score, select
 from tessellate.ai.composer_answer import _Answer, asks_now, _SESSION
 from tessellate.ai.composer_unfound import _missing
@@ -605,7 +605,7 @@ def _day_terms(p, views_list: list) -> list[str]:  # noqa: ANN001
 
 
 def _write_body(out: "_Answer", p, shape: str, chosen: list, terms: list, question: str, meaning, broad: bool, views_list: list) -> None:  # noqa: ANN001
-    pair = _disagreement(chosen)
+    pair = _disagreement(chosen, out.views)
     if _confirmed_lead(out, question, terms):
         pass
     elif p.kind == "insight" and _insight_lead(out, question, terms, views_list):
@@ -619,7 +619,10 @@ def _write_body(out: "_Answer", p, shape: str, chosen: list, terms: list, questi
     _readings(out, question, terms, views_list)
     if broad and p.kind != "insight":
         _insight_close(out, question, terms, views_list)
-    _missing(out, terms, views_list)
+    #: A "when" the lead answers with a date is answered: a synonym it does not repeat ("appointment" for
+    #: "check-up") is not a hole to point at (round 3, R3-29).
+    if not (shape == "when" and not broad and _cue(shape, lead.text) > 0):
+        _missing(out, terms, views_list)
 
 
 def _is_broad(shape: str, question: str) -> bool:

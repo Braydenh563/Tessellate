@@ -1001,6 +1001,11 @@ def _verb_led(text: str) -> bool:
     words = re.findall(r"[A-Za-z][\w'-]*", text or "")
     if not words or words[0].lower() not in _LEAD_VERBS:
         return False
+    # "Do not buy perfume again" is a rule to quote, and "Order 4471 from Amazon" names a thing: neither fits "you planned to" (R3-10).
+    if len(words) >= 2 and words[0].lower() == "do" and words[1].lower() in ("not", "nt"):
+        return False
+    if re.match(r"\s*[A-Za-z][\w'-]*\s+#?\d{3,}\b", text or ""):
+        return False
     return not (len(words) >= 2 and words[1].lower() in _NOUN_AFTER)
 
 
@@ -1022,7 +1027,11 @@ def _your_note(view) -> str:  # noqa: ANN001
     note = getattr(view, "note", None) or {"content": getattr(view, "title", "")}
     #: "Trip planning: flights to Lisbon" is your trip planning note.
     label = composer_frame.note_label(note)
-    return _note_called(composer_frame.lower_name(label)) if label else composer_frame.short_name(note)
+    if label:
+        # "your note the order of the day" is two names; a title-less note is named once, as "your order of the day note" (R3-12).
+        bare = re.sub(r"^(?:the|an?)\s+", "", composer_frame.lower_name(label), flags=re.I)
+        return _note_called(bare or composer_frame.lower_name(label))
+    return composer_frame.short_name(note)
 
 
 def _title_only(view) -> bool:  # noqa: ANN001
@@ -1934,6 +1943,9 @@ def _past_verb(word: str) -> bool:
     return word.lower() in factgraph._PAST  # noqa: SLF001
 
 
+_SENTENCE_BREAK = re.compile(r"[.!?] [A-Z]")
+#: A line with "my" or "I" in it is reported ("Sara is your sister"), so only the rest is quoted whole.
+_FIRST_PERSON = re.compile(r"\b(?:my|me|mine|your|yours|i|i'm|i've|we|our)\b", re.I)
 _LIST_HEADING = re.compile(r"your .+? note lists \w+ (?:items|questions to ask)\b", re.I)
 
 
@@ -1954,7 +1966,10 @@ def _said_as_written(line_body: str, i: int, written: date | None = None) -> str
         return _wrote(line_body, i)
     if _SHORTHAND.match(line_body) and not _CLAUSE_HEAD.match(line_body):
         #: "by 20 July, Cloud computing is the delivery of ...": a statement
-        #: about something else is what the person wrote (INBOX 1420).
+        #: about something else is what the person wrote (INBOX 1420). Two sentences are not one
+        #: "that" clause ("you mentioned that Boiler service due in December. Engineer is ..."): quoted (R3-11).
+        if _SENTENCE_BREAK.search(line_body) and not _FIRST_PERSON.search(line_body):
+            return _wrote(line_body, i)
         return _REPORTS[i % len(_REPORTS)] + _fragment(line_body, _NAMES.get())
     return _reported(line_body, i, written)
 
@@ -1993,7 +2008,21 @@ def _said_body(f: Fact, label: str) -> str:
     #: no label said (a question not about time) the day stays (INBOX 1461:
     #: "had design class today" lost its day).
     body = re.sub(rf"(?:^|\s)on {re.escape(label)}(?: \([^)]*\))?,?", "", f.body).strip() if _TIMED.get() else f.body
-    return _fragment(body, _NAMES.get())
+    return _fragment(_named_pronoun(body, f.view), _NAMES.get())
+
+
+_PRONOUN_START = re.compile(r"(she|he|her|his)\b(?P<rest>.*)", re.I | re.S)
+_PERSON_TITLE = re.compile(r"[A-Z][a-z]+(?: [A-Z][a-z]+)?")
+
+
+def _named_pronoun(body: str, view) -> str:  # noqa: ANN001
+    """"She likes gardening" lifted out of the note titled "Mum" says nothing on its own: the pronoun is the
+    note's name ("Mum likes gardening", "Mum's birthday is 4 July"; R3-25). Only a one- or two-word name."""
+    title = (view.title or "").strip() if getattr(view, "titled", False) else ""
+    found = _PRONOUN_START.match(body or "")
+    if not found or not _PERSON_TITLE.fullmatch(title):
+        return body
+    return title + ("'s" if found.group(1).lower() in ("her", "his") else "") + found.group("rest")
 
 
 def _bodies_of(held: list[Fact], label: str) -> tuple[list[str], str]:
@@ -2369,10 +2398,16 @@ def _noted_sentence(body: str, first: bool) -> str:
     return ("says " if finite else "is ") + body
 
 
+_LABELLED = re.compile(r"[A-Z][^:.!?\n]{0,60}:\s+\S")
+
+
 def _clause_of_frame(body: str, frame: str, i: int, first: bool) -> str:
     """The clause a body gets from the frame alone, once no task or doing claimed it."""
     if frame == "heard":
         return f"{_pick('learned', i)} {body}"
+    #: "Wedding table 4: Anna, Tom and Sara" is a label and its value: said as written, its commas kept (R3-12).
+    if frame in ("planned", "noted") and _LABELLED.match(body):
+        return _wrote(body, i)
     if frame in ("planned", "noted"):
         items = [("the " + p if _PLACE_NOUN.match(p) else p) for p in re.split(r",\s*(?:and\s+)?", body) if p]
         return ("has " if first else "it has ") + realise.join_items(items)
@@ -2445,7 +2480,11 @@ def _label_names(label: str, view) -> bool:  # noqa: ANN001
 def _section_items(bodies: list[str]) -> str:
     if any(_FINITE.search(b) for b in bodies) or len(bodies) == 1 and len(bodies[0].split()) > 8:
         return _join(bodies, True)
-    return realise.join_items([p for b in bodies for p in re.split(r",\s*(?:and\s+)?", b) if p])
+    pieces = [p for b in bodies for p in re.split(r",\s*(?:and\s+)?", b) if p]
+    # "Anna, Tom and Sara" is already a list: split on its commas and joined again it read "Anna and Tom and Sara" (R3-12).
+    if any(re.search(r"\band\b", p) for p in pieces):
+        return "; ".join(b.strip().rstrip(".") for b in bodies)
+    return realise.join_items(pieces)
 
 
 def _noted_section(head: str, items: str, view, today: date | None) -> str:  # noqa: ANN001
@@ -2470,6 +2509,11 @@ def _section_line(label: str, view, bodies: list[str], today: date | None, same:
         line = f"{'it also says' if same else _your_note(view) + ' says'} {composer_threads.voiced(head)}: {items}"
     elif not view.titled and first.startswith(label.strip().lower()):
         line = _noted_section(head, items, view, today)
+    elif re.search(r"\s\d+$", label.strip()):
+        # A label that ends in a number ("Wedding table 4") is the note's own words:
+        # "has a wedding table 4:" invented an article and rewrote its commas (R3-12).
+        said = f"“{label.strip()}: {items}”"
+        line = f"you wrote {said}" if not view.titled else f"{'it also says' if same else _your_note(view) + ' says'} {said}"
     elif same:
         line = f"it also has {composer_threads.with_article(head)}: {items}"
     else:
@@ -3046,9 +3090,11 @@ def _named_as(view: composer.NoteView, body: str) -> str:
 
 
 def _listed(facts: list[Fact]) -> str:
-    items = [_fragment(f.body.rstrip("."), _NAMES.get()) for f in facts[:GIST_ITEMS]]
-    if len(facts) > GIST_ITEMS:
-        items.append(f"{realise.count_word(len(facts) - GIST_ITEMS)} more")
+    #: "and one more" names nothing; a single item left over is said (R3-13).
+    shown = facts[:GIST_ITEMS + 1] if len(facts) == GIST_ITEMS + 1 else facts[:GIST_ITEMS]
+    items = [_fragment(f.body.rstrip("."), _NAMES.get()) for f in shown]
+    if len(facts) > len(shown):
+        items.append(f"{realise.count_word(len(facts) - len(shown))} more")
     return realise.join_items(items)
 
 
@@ -3585,6 +3631,22 @@ _PRONOUN_OPENERS = frozenset({"he", "she", "they", "his", "her", "their", "hes",
 _NAMES_A_THING = re.compile(r"^\s*(?:what|who)(?:'s|’s|\s+(?:is|are|was))\b", re.I)
 
 
+#: "When is the dentist", "when does the term start": the day still to come, not the one that went by.
+_WHEN_NOW = re.compile(r"^\s*(?:when(?:'s|\u2019s|s|\s+(?:is|are|does|will))|what\s+(?:day|date|time)\s+(?:is|are|does|will))\b", re.I)
+
+
+def _ahead(fact: Fact, today: date) -> bool:
+    """Whether the sentence names a day that is today or still to come (R3-18)."""
+    from tessellate.ai import composer_body
+
+    return any(fact.sentence.start <= at < fact.sentence.end for _day, at in composer_body._days_named(fact.view, today, "future"))  # noqa: SLF001
+
+
+def _ahead_if(on: bool, fact: Fact) -> bool:
+    """Whether a present-tense "when" ask is answered by a day still to come (R3-18)."""
+    return on and _ahead(fact, _TODAY.get())
+
+
 def _best(facts: list[Fact], question: str, cue: re.Pattern | None = None) -> Fact | None:
     #: Without the asking words: "what day did I run 8 km" is not about a "day".
     stems = set(_subject(question))
@@ -3604,6 +3666,7 @@ def _best(facts: list[Fact], question: str, cue: re.Pattern | None = None) -> Fa
     did_ask = bool(_WHEN_DID.match(clean(question)))
     subject_words = list(composer.subject_terms(clean(question)))
     names_a_thing = bool(_NAMES_A_THING.match(clean(question)))
+    now_ask = bool(_WHEN_NOW.match(clean(question))) and _TODAY.get() is not None
     #: "what is Project Atlas" is the note titled that, whatever other note repeats the name (round 1 D1).
     #: Only a "what/who is X" ask: any other ask is weighed by what the lines say (review 1).
     titled_views = {id(f.view) for f in facts if names_a_thing and _defines(f.view, subject_words) == 2}
@@ -3631,7 +3694,7 @@ def _best(facts: list[Fact], question: str, cue: re.Pattern | None = None) -> Fa
         #: latest ask. Said in the tuple itself: CodeQL lost the local in this
         #: closure and read it as possibly unset.
         titled = id(f.view) in titled_views
-        return (not asked_back, acts, _cued(cue, f.sentence.text), not (latest and f.sentence.kind in {"item", "task"}), id(f.view) not in old, _label_asked(f.label, question), titled, hits, newest, own, asks_feeling and _feeling(f.sentence.text), same_figure, -f.view.rank, -f.sentence.order)
+        return (not asked_back, acts, _cued(cue, f.sentence.text), _ahead_if(now_ask, f), not (latest and f.sentence.kind in {"item", "task"}), id(f.view) not in old, _label_asked(f.label, question), titled, hits, newest, own, asks_feeling and _feeling(f.sentence.text), same_figure, -f.view.rank, -f.sentence.order)
 
     return max(facts, key=rank) if facts else None
 
@@ -4019,8 +4082,10 @@ def _property_lead(out: _Out, question: str, members, facts: list[Fact], lead: F
         return next((f for f in holders if f.view.id == lead.view.id), holders[0])
     if any(composer_property.held(prop, x.text) for m in members for x in m.sentences):
         return lead
+    whose = composer_property.subject(question) if prop == "phone" else ""
     named = _your_note(lead.view)
-    line = f"{named[:1].upper()}{named[1:]} has no {composer_property.noun(prop)}."
+    # A person or a business asked for is denied in the notebook's name, not by the lead note alone (R3-2).
+    line = f"None of your notes give a phone number for {whose}." if whose else f"{named[:1].upper()}{named[1:]} has no {composer_property.noun(prop)}."
     out.lines.append(line)
     out.rows.append(_row(line, lead))
     return None
@@ -4509,6 +4574,12 @@ def _scope(question: str, asked: str, notes: list[dict], today: date, voice: str
     return (views if wants_context else [v for v in views if not _context_note(v)]), wants_context
 
 
+def _title_holds(view, words: list[str]) -> bool:  # noqa: ANN001
+    """Whether the note's title has every word of the subject in it."""
+    held = getattr(view, "title_words", None)
+    return bool(held) and all(composer._holds(composer._stem(t), held) for t in words)  # noqa: SLF001
+
+
 def _defines(view, words: list[str]) -> float:
     """How plainly `view` is the note about `words`: 2 when its title is the
     subject ("Sara", "Uni"), 1 when an opening sentence says what it is
@@ -4520,6 +4591,10 @@ def _defines(view, words: list[str]) -> float:
     if title and (title == " ".join(words).lower() or composer._words(title) == composer._words(" ".join(words))):
         return 2
     said = re.compile(r"^(?:the\s+)?" + r"\s+".join(re.escape(t) for t in words) + r"\s+(?:is|are|was|were|means|refers to)\b", re.I)
+    #: A title that holds every word of the subject ("Meeting with Priya", "Weekend plans") is the note about it,
+    #: ahead of a sentence that merely says something (R3-20, D1).
+    if title and _title_holds(view, words):
+        return 1.8
     #: Filed under the subject (its category, its tag) is a definition too
     #: (audit 1031 C4: the Books note leads "what do I know about reading").
     filed = bool(getattr(view, "filed_words", None)) and all(composer._stem(t) in view.filed_words for t in words)  # noqa: SLF001
@@ -4676,6 +4751,8 @@ def answer(
     today = today or composer.user_today()
     if one := composer_oneword.named(question, notes):
         return _one_word_result(one)
+    #: "wen is the exam" is "when is the exam": the asking words put right, the notes' own words never changed (R3-17).
+    question = question_noise.slips_only(question, known=composer._note_words(notes))  # noqa: SLF001
     asked = composer_ask.what_is(clean(question))
     kind = _kind_if_mine(asked)
     #: An act ("rename my gym log") is not a topic to digest: with its verb off
