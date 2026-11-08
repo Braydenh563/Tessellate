@@ -153,21 +153,30 @@ MAX_REQUESTED_CONTEXT = 8192
 #: Windows are rounded down to this step so the number reads cleanly.
 CONTEXT_STEP = 1024
 
-#: The share of free memory the KV cache may take. The weights, the app and
-#: the rest of the computer need the other half.
+#: The share of free memory the KV cache may take. The weights (taken off
+#: first where they are known), the app and the rest of the computer need the
+#: remaining 60%.
 KV_MEMORY_SHARE = 0.4
 
 
-def memory_budget_bytes() -> int | None:
+def memory_budget_bytes(weights_bytes: int = 0, weights_resident: bool = True) -> int | None:
     """What the KV cache may spend: a bounded share of the larger of free RAM
-    and video memory, or None when neither can be read."""
+    and what is left of video memory after the model's weights, or None when
+    neither can be read.
+
+    A card's figure is its total, which counts the weights as free. Free RAM
+    already excludes a loaded model, but not one that has yet to load
+    (`weights_resident` False), whose weights are about to take that room.
+    """
     try:
         from tessellate.core import hardware
 
         free = hardware.free_memory_gb() or 0.0
-        cards = [g.get("vram_gb") or 0.0 for g in hardware.detect_gpus()]
+        if not weights_resident:
+            free = max(0.0, free - weights_bytes / 1024**3)
+        cards = [max(0.0, (g.get("vram_gb") or 0.0) - weights_bytes / 1024**3) for g in hardware.detect_gpus()]
         best = max([free, *cards])
-    except Exception as exc:  # noqa: BLE001  # unreadable memory means "keep the old cap"
+    except Exception as exc:  # noqa: BLE001  # unreadable memory means "keep the old context cap"
         logging.getLogger("tessellate.provider").info("memory unreadable, keeping the old context cap: %s", exc)
         return None
     return int(best * 1024**3 * KV_MEMORY_SHARE) if best else None
@@ -461,7 +470,7 @@ class Provider:
             deps = importlib.import_module("tessellate.core.deps")
             windows = deps.get_config().get_preference("model_context_windows", {})
         except Exception as exc:  # noqa: BLE001  # a bad preference must not stop a chat
-            logging.getLogger("tessellate.provider").info("max_context_tokens unreadable, ignored: %s", exc)
+            logging.getLogger("tessellate.provider").info("model_context_windows unreadable, ignored: %s", exc)
             return None
         if not isinstance(windows, dict):
             return None
@@ -524,6 +533,23 @@ class Provider:
         """Bytes of KV cache one token of context costs, or None if unknown."""
         return None
 
+    def weights_bytes(self, model: str) -> int | None:
+        """Bytes the model's weights take, or None if the backend cannot say."""
+        return None
+
+    def weights_resident(self, model: str) -> bool:
+        """False only when the backend says the model is not in memory yet; an
+        answer it cannot give counts as resident, the older reading."""
+        loaded = self.loaded_models()
+        if loaded is None:
+            return True
+        names = {model, f"{model}:latest"}
+        return any(name in names for name in loaded)
+
+    def forget_context_decision(self, model: str) -> None:
+        """Read memory afresh for `model` next time (it is being reloaded anyway)."""
+        self.__dict__.get("_memory_windows", {}).pop(model, None)
+
     def window_is_fixed(self, model: str) -> bool:
         """True when the server loaded the model at the reported window, so
         there is nothing to allocate and the number is simply the truth."""
@@ -552,14 +578,29 @@ class Provider:
         if explicit:
             return max(floor, min(declared, explicit)), "preference"
         kv = self.kv_bytes_per_token(model) if known else None
-        share = memory_budget_bytes() if kv else None
-        if not (kv and share):
+        #: **Decided once per model, for the life of this client.** The window
+        #: becomes Ollama's `num_ctx`, and Ollama reloads a model whenever
+        #: `num_ctx` changes. Free memory moves every turn (it falls the moment
+        #: the model loads), so reading it afresh moved the window by a step
+        #: and reloaded the model on turn after turn. A new client (a changed
+        #: backend, a restart, stopping the model) reads memory again.
+        decided = self.__dict__.setdefault("_memory_windows", {})
+        if kv and model in decided:
+            return decided[model]
+        if not kv:
             return max(floor, min(declared, self.MAX_REQUESTED_CONTEXT)), "default"
+        weights = self.weights_bytes(model) or 0
+        share = memory_budget_bytes(weights, self.weights_resident(model) if weights else True)
+        if not share:
+            #: Cached as well: otherwise every turn asks the server for its
+            #: model list again to reach the same answer.
+            decided[model] = max(floor, min(declared, self.MAX_REQUESTED_CONTEXT)), "default"
+            return decided[model]
         fits = int(share // kv) // CONTEXT_STEP * CONTEXT_STEP
         window = max(floor, min(declared, fits))
-        if window >= declared:
-            return max(floor, declared), "model"
-        return window, "memory"
+        decision = (max(floor, declared), "model") if window >= declared else (window, "memory")
+        decided[model] = decision
+        return decision
 
     def context_explanation(self, model: str) -> str:
         """One sentence for Settings: the window in use and why."""
@@ -807,12 +848,26 @@ _STEP_LINE_RE = re.compile(r"\s*$|\s+\S|\s*(?:\d+[.)]|[-*+•]|#{1,6})\s")
 
 def _steps_end(text: str) -> int:
     """Where the reasoning outline in `text` ends: just past the last whole
-    line that is a step, so what follows is prose that may be the answer."""
+    line that is a step, so what follows is prose that may be the answer.
+
+    Prose that follows a blank line once a step has been seen ends the
+    outline for good: the lines after it are the answer, even when the answer
+    is itself a list ("Here's the answer:" then "- a" and "- b"). Prose
+    straight after a step, with no blank line, is a continuation of it."""
     end = position = 0
+    seen_step = after_blank = False
     for line in text.splitlines(keepends=True):
+        if not line.endswith("\n"):
+            break
         position += len(line)
-        if line.endswith("\n") and _STEP_LINE_RE.match(line):
-            end = position
+        if not _STEP_LINE_RE.match(line):
+            if seen_step and after_blank:
+                break
+            after_blank = False
+            continue
+        end = position
+        after_blank = not line.strip()
+        seen_step = seen_step or not after_blank
     return end
 
 
@@ -914,6 +969,11 @@ class _ThinkTagSplitter:
 
     def _thinking(self, pieces: list[dict]) -> bool:
         """Emit thought up to a close tag; True once the answer has begun."""
+        if self._implied and not self._shown:
+            #: The blank line after a header is not thought. Dropped here, not
+            #: in `_start`, so a stream cut one character at a time (where the
+            #: newline arrives after the header was decided) reads the same.
+            self._buffer = self._buffer.lstrip("\n")
         at, size = self._find_close(self._buffer)
         if at != -1:
             pieces.append({"thinking_delta": self._buffer[:at]})
@@ -924,7 +984,9 @@ class _ThinkTagSplitter:
         if self._implied:
             #: A header's thought streams a step at a time; the prose after
             #: the last step is held, since with no close tag it is the answer.
-            safe = _steps_end(self._buffer)
+            #: Measured over everything seen, not the buffer alone, so that
+            #: "a step was seen" and "a blank line came last" survive the cut.
+            safe = _steps_end(self._shown + self._buffer) - len(self._shown)
         else:
             # Keep enough back that a half-arrived closing tag is not
             # emitted as thinking text.

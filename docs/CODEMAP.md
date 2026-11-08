@@ -1,8 +1,8 @@
 # Code map
 
-Generated 2026-11-07 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
+Generated 2026-11-08 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7861, frontend ids 2644, CSS sections 522, backend routes 649, backend modules 9001, test files 2155, tests 18174, plan headings 1004, app scripts 28, boot scripts 37, script files 261.
+Counts: frontend functions 7861, frontend ids 2644, CSS sections 522, backend routes 649, backend modules 9001, test files 2157, tests 18191, plan headings 1004, app scripts 28, boot scripts 37, script files 261.
 
 ## Frontend functions (7861)
 
@@ -6784,24 +6784,24 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `addPersona` | frontend/js/settings-controls.js:1385 |
 | `addSkill` | frontend/js/settings-controls.js:2023 |
 | `addTemplate` | frontend/js/settings-controls.js:1575 |
-| `appendToolRow` | frontend/js/settings-controls.js:3699 |
+| `appendToolRow` | frontend/js/settings-controls.js:3713 |
 | `applyBackendChoice` | frontend/js/settings-controls.js:1317 |
 | `applyChatModel` | frontend/js/settings-controls.js:1499 |
 | `applyOcrModel` | frontend/js/settings-controls.js:1515 |
-| `applyToolFilter` | frontend/js/settings-controls.js:3763 |
+| `applyToolFilter` | frontend/js/settings-controls.js:3777 |
 | `applyUtilityModel` | frontend/js/settings-controls.js:1534 |
 | `applyVisionModel` | frontend/js/settings-controls.js:1553 |
 | `changePassword` | frontend/js/settings-controls.js:185 |
 | `chosenSkillTools` | frontend/js/settings-controls.js:2085 |
 | `chosenSkillVerify` | frontend/js/settings-controls.js:2064 |
-| `decorateThemeCards` | frontend/js/settings-controls.js:3124 |
+| `decorateThemeCards` | frontend/js/settings-controls.js:3138 |
 | `deleteProfile` | frontend/js/settings-controls.js:1978 |
-| `ensureAppearancePopOut` | frontend/js/settings-controls.js:3318 |
-| `ensurePaneTabs` | frontend/js/settings-controls.js:3288 |
-| `ensureSettingsFoldAll` | frontend/js/settings-controls.js:3246 |
+| `ensureAppearancePopOut` | frontend/js/settings-controls.js:3332 |
+| `ensurePaneTabs` | frontend/js/settings-controls.js:3302 |
+| `ensureSettingsFoldAll` | frontend/js/settings-controls.js:3260 |
 | `exportFullBackup` | frontend/js/settings-controls.js:1966 |
 | `findDuplicates` | frontend/js/settings-controls.js:1732 |
-| `glassWake` | frontend/js/settings-controls.js:3875 |
+| `glassWake` | frontend/js/settings-controls.js:3889 |
 | `lanAllowHere` | frontend/js/settings-controls.js:2557 |
 | `lanCall` | frontend/js/settings-controls.js:2410 |
 | `lanEmptyRow` | frontend/js/settings-controls.js:2403 |
@@ -6809,85 +6809,85 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `lanNetworkRows` | frontend/js/settings-controls.js:2468 |
 | `lanSwitch` | frontend/js/settings-controls.js:81 |
 | `lanTrustNetwork` | frontend/js/settings-controls.js:2505 |
-| `learnedBulk` | frontend/js/settings-controls.js:4412 |
-| `learnedCheckLine` | frontend/js/settings-controls.js:4850 |
-| `learnedCheckMark` | frontend/js/settings-controls.js:4882 |
-| `learnedCheckPutBack` | frontend/js/settings-controls.js:4930 |
-| `learnedCheckRefresh` | frontend/js/settings-controls.js:4893 |
-| `learnedCheckRun` | frontend/js/settings-controls.js:4901 |
-| `learnedCheckSentence` | frontend/js/settings-controls.js:4845 |
-| `learnedCheckShow` | frontend/js/settings-controls.js:4864 |
-| `learnedDelete` | frontend/js/settings-controls.js:4622 |
-| `learnedEdit` | frontend/js/settings-controls.js:4575 |
-| `learnedExport` | frontend/js/settings-controls.js:4664 |
-| `learnedForget` | frontend/js/settings-controls.js:4644 |
-| `learnedFromYouText` | frontend/js/settings-controls.js:4762 |
-| `learnedKindLabel` | frontend/js/settings-controls.js:4271 |
-| `learnedReset` | frontend/js/settings-controls.js:4601 |
-| `learnedRow` | frontend/js/settings-controls.js:4458 |
-| `learnedRunNow` | frontend/js/settings-controls.js:4683 |
-| `learnedSetSwitch` | frontend/js/settings-controls.js:4378 |
-| `maintenanceDoctorRow` | frontend/js/settings-controls.js:2886 |
-| `maintenanceSay` | frontend/js/settings-controls.js:2862 |
-| `makeMaintenanceShortcut` | frontend/js/settings-controls.js:2959 |
+| `learnedBulk` | frontend/js/settings-controls.js:4426 |
+| `learnedCheckLine` | frontend/js/settings-controls.js:4864 |
+| `learnedCheckMark` | frontend/js/settings-controls.js:4896 |
+| `learnedCheckPutBack` | frontend/js/settings-controls.js:4944 |
+| `learnedCheckRefresh` | frontend/js/settings-controls.js:4907 |
+| `learnedCheckRun` | frontend/js/settings-controls.js:4915 |
+| `learnedCheckSentence` | frontend/js/settings-controls.js:4859 |
+| `learnedCheckShow` | frontend/js/settings-controls.js:4878 |
+| `learnedDelete` | frontend/js/settings-controls.js:4636 |
+| `learnedEdit` | frontend/js/settings-controls.js:4589 |
+| `learnedExport` | frontend/js/settings-controls.js:4678 |
+| `learnedForget` | frontend/js/settings-controls.js:4658 |
+| `learnedFromYouText` | frontend/js/settings-controls.js:4776 |
+| `learnedKindLabel` | frontend/js/settings-controls.js:4285 |
+| `learnedReset` | frontend/js/settings-controls.js:4615 |
+| `learnedRow` | frontend/js/settings-controls.js:4472 |
+| `learnedRunNow` | frontend/js/settings-controls.js:4697 |
+| `learnedSetSwitch` | frontend/js/settings-controls.js:4392 |
+| `maintenanceDoctorRow` | frontend/js/settings-controls.js:2900 |
+| `maintenanceSay` | frontend/js/settings-controls.js:2876 |
+| `makeMaintenanceShortcut` | frontend/js/settings-controls.js:2973 |
 | `mergeDuplicateGroup` | frontend/js/settings-controls.js:1868 |
 | `mergeNamedPrompts` | frontend/js/settings-controls.js:1991 |
-| `openMaintenanceFolder` | frontend/js/settings-controls.js:2950 |
-| `openTaskLog` | frontend/js/settings-controls.js:3170 |
-| `openUninstallSteps` | frontend/js/settings-controls.js:2970 |
+| `openMaintenanceFolder` | frontend/js/settings-controls.js:2964 |
+| `openTaskLog` | frontend/js/settings-controls.js:3184 |
+| `openUninstallSteps` | frontend/js/settings-controls.js:2984 |
 | `pickJsonFile` | frontend/js/settings-controls.js:2588 |
-| `previewTheme` | frontend/js/settings-controls.js:3050 |
+| `previewTheme` | frontend/js/settings-controls.js:3064 |
 | `refreshSearxngHost` | frontend/js/settings-controls.js:1199 |
-| `releaseThemeHold` | frontend/js/settings-controls.js:3057 |
-| `renderAccount` | frontend/js/settings-controls.js:3432 |
-| `renderAutoChoices` | frontend/js/settings-controls.js:3198 |
-| `renderAutonomousReview` | frontend/js/settings-controls.js:3514 |
+| `releaseThemeHold` | frontend/js/settings-controls.js:3071 |
+| `renderAccount` | frontend/js/settings-controls.js:3446 |
+| `renderAutoChoices` | frontend/js/settings-controls.js:3212 |
+| `renderAutonomousReview` | frontend/js/settings-controls.js:3528 |
 | `renderDuplicateGroups` | frontend/js/settings-controls.js:1810 |
-| `renderFeatureModelRows` | frontend/js/settings-controls.js:3334 |
+| `renderFeatureModelRows` | frontend/js/settings-controls.js:3348 |
 | `renderLanAccess` | frontend/js/settings-controls.js:2578 |
 | `renderLanAddresses` | frontend/js/settings-controls.js:2319 |
 | `renderLanFirewall` | frontend/js/settings-controls.js:2367 |
 | `renderLanState` | frontend/js/settings-controls.js:2230 |
 | `renderLanTrust` | frontend/js/settings-controls.js:2419 |
-| `renderLearned` | frontend/js/settings-controls.js:4783 |
-| `renderLearnedFromYou` | frontend/js/settings-controls.js:4774 |
-| `renderLearnedList` | frontend/js/settings-controls.js:4535 |
-| `renderLearnedSwitches` | frontend/js/settings-controls.js:4275 |
-| `renderMaintenance` | frontend/js/settings-controls.js:2866 |
+| `renderLearned` | frontend/js/settings-controls.js:4797 |
+| `renderLearnedFromYou` | frontend/js/settings-controls.js:4788 |
+| `renderLearnedList` | frontend/js/settings-controls.js:4549 |
+| `renderLearnedSwitches` | frontend/js/settings-controls.js:4289 |
+| `renderMaintenance` | frontend/js/settings-controls.js:2880 |
 | `renderMcpSnippet` | frontend/js/settings-controls.js:2206 |
 | `renderMemorySettings` | frontend/js/settings-controls.js:2645 |
-| `renderPinSettings` | frontend/js/settings-controls.js:3485 |
-| `renderRunBudget` | frontend/js/settings-controls.js:3617 |
-| `renderSmallModelAuto` | frontend/js/settings-controls.js:3223 |
-| `renderSmallModelMode` | frontend/js/settings-controls.js:3605 |
+| `renderPinSettings` | frontend/js/settings-controls.js:3499 |
+| `renderRunBudget` | frontend/js/settings-controls.js:3631 |
+| `renderSmallModelAuto` | frontend/js/settings-controls.js:3237 |
+| `renderSmallModelMode` | frontend/js/settings-controls.js:3619 |
 | `renderStatusBarSettings` | frontend/js/settings-controls.js:2150 |
-| `renderToolFocus` | frontend/js/settings-controls.js:3579 |
-| `renderToolSettings` | frontend/js/settings-controls.js:3530 |
+| `renderToolFocus` | frontend/js/settings-controls.js:3593 |
+| `renderToolSettings` | frontend/js/settings-controls.js:3544 |
 | `resetAllFeatureModels` | frontend/js/settings-controls.js:1482 |
 | `restartMemoryMap` | frontend/js/settings-controls.js:1683 |
 | `restoreFullBackup` | frontend/js/settings-controls.js:1929 |
 | `runEmbeddingFallback` | frontend/js/settings-controls.js:1418 |
-| `runMaintenanceDoctor` | frontend/js/settings-controls.js:2912 |
+| `runMaintenanceDoctor` | frontend/js/settings-controls.js:2926 |
 | `saveExportSaveDir` | frontend/js/settings-controls.js:1757 |
 | `saveModelContextWindow` | frontend/js/settings-controls.js:1352 |
 | `saveRunBudget` | frontend/js/settings-controls.js:1613 |
-| `saveToolGroup` | frontend/js/settings-controls.js:3668 |
-| `saveToolSwitch` | frontend/js/settings-controls.js:3628 |
+| `saveToolGroup` | frontend/js/settings-controls.js:3682 |
+| `saveToolSwitch` | frontend/js/settings-controls.js:3642 |
 | `saveWebSearchSettings` | frontend/js/settings-controls.js:1650 |
-| `setCustomAccent` | frontend/js/settings-controls.js:3976 |
+| `setCustomAccent` | frontend/js/settings-controls.js:3990 |
 | `setLanOption` | frontend/js/settings-controls.js:2528 |
-| `setMaintenanceReinstall` | frontend/js/settings-controls.js:2937 |
+| `setMaintenanceReinstall` | frontend/js/settings-controls.js:2951 |
 | `showLanQr` | frontend/js/settings-controls.js:2286 |
 | `showVoiceSample` | frontend/js/settings-controls.js:661 |
-| `syncLearnedSelectbar` | frontend/js/settings-controls.js:4400 |
+| `syncLearnedSelectbar` | frontend/js/settings-controls.js:4414 |
 | `textToInputs` | frontend/js/settings-controls.js:2619 |
 | `textToSteps` | frontend/js/settings-controls.js:2612 |
-| `themeEyeButton` | frontend/js/settings-controls.js:3097 |
-| `themePreviewNotice` | frontend/js/settings-controls.js:3070 |
-| `toolGroupAllPaint` | frontend/js/settings-controls.js:3657 |
-| `toolGroupBoxes` | frontend/js/settings-controls.js:3648 |
+| `themeEyeButton` | frontend/js/settings-controls.js:3111 |
+| `themePreviewNotice` | frontend/js/settings-controls.js:3084 |
+| `toolGroupAllPaint` | frontend/js/settings-controls.js:3671 |
+| `toolGroupBoxes` | frontend/js/settings-controls.js:3662 |
 | `waitForRestart` | frontend/js/settings-controls.js:1709 |
-| `wireLearnedSection` | frontend/js/settings-controls.js:4717 |
+| `wireLearnedSection` | frontend/js/settings-controls.js:4731 |
 
 ### frontend/js/settings-data.js (52)
 
@@ -7665,14 +7665,14 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 |---|---|
 | `bound` | frontend/js/value-field.js:22 |
 | `clamp` | frontend/js/value-field.js:28 |
-| `commit` | frontend/js/value-field.js:53 |
-| `leave` | frontend/js/value-field.js:73 |
-| `paint` | frontend/js/value-field.js:48 |
-| `presets` | frontend/js/value-field.js:103 |
-| `rangeField` | frontend/js/value-field.js:151 |
-| `rangeFieldsIn` | frontend/js/value-field.js:203 |
-| `readoutOf` | frontend/js/value-field.js:145 |
-| `size` | frontend/js/value-field.js:43 |
+| `commit` | frontend/js/value-field.js:56 |
+| `leave` | frontend/js/value-field.js:76 |
+| `paint` | frontend/js/value-field.js:51 |
+| `presets` | frontend/js/value-field.js:106 |
+| `rangeField` | frontend/js/value-field.js:154 |
+| `rangeFieldsIn` | frontend/js/value-field.js:206 |
+| `readoutOf` | frontend/js/value-field.js:148 |
+| `size` | frontend/js/value-field.js:46 |
 | `valueField` | frontend/js/value-field.js:20 |
 | `valueFieldParse` | frontend/js/value-field.js:8 |
 
@@ -16756,44 +16756,44 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `Provider` | src/tessellate/ai/provider.py:362 |
+| `Provider` | src/tessellate/ai/provider.py:371 |
 | `ProviderError` | src/tessellate/ai/provider.py:68 |
 | `ToolsUnsupportedError` | src/tessellate/ai/provider.py:72 |
-| `_ThinkTagSplitter` | src/tessellate/ai/provider.py:828 |
-| `_ToolTextGate` | src/tessellate/ai/provider.py:982 |
-| `_balanced_json_objects` | src/tessellate/ai/provider.py:1035 |
-| `_bare_json_calls` | src/tessellate/ai/provider.py:1333 |
-| `_call_end` | src/tessellate/ai/provider.py:1212 |
-| `_calls_in_blob` | src/tessellate/ai/provider.py:1287 |
-| `_close_open_json` | src/tessellate/ai/provider.py:1544 |
-| `_first_json_object_after` | src/tessellate/ai/provider.py:1201 |
-| `_json_too_deep` | src/tessellate/ai/provider.py:1573 |
-| `_literal_keywords` | src/tessellate/ai/provider.py:1237 |
-| `_named_calls` | src/tessellate/ai/provider.py:1351 |
-| `_ns_to_ms` | src/tessellate/ai/provider.py:1472 |
-| `_prose_read_calls` | src/tessellate/ai/provider.py:1390 |
-| `_python_calls` | src/tessellate/ai/provider.py:1377 |
-| `_python_style_calls` | src/tessellate/ai/provider.py:1250 |
-| `_split_header_reply` | src/tessellate/ai/provider.py:819 |
-| `_squash_separators` | src/tessellate/ai/provider.py:235 |
-| `_steps_end` | src/tessellate/ai/provider.py:808 |
-| `_tagged_calls` | src/tessellate/ai/provider.py:1312 |
-| `_think_header` | src/tessellate/ai/provider.py:792 |
-| `_unfence` | src/tessellate/ai/provider.py:1532 |
-| `context_from_catalog_entry` | src/tessellate/ai/provider.py:291 |
-| `detect_provider` | src/tessellate/ai/provider.py:337 |
-| `extract_text_tool_calls` | src/tessellate/ai/provider.py:1430 |
-| `first_chat_model` | src/tessellate/ai/provider.py:329 |
+| `_ThinkTagSplitter` | src/tessellate/ai/provider.py:883 |
+| `_ToolTextGate` | src/tessellate/ai/provider.py:1044 |
+| `_balanced_json_objects` | src/tessellate/ai/provider.py:1097 |
+| `_bare_json_calls` | src/tessellate/ai/provider.py:1395 |
+| `_call_end` | src/tessellate/ai/provider.py:1274 |
+| `_calls_in_blob` | src/tessellate/ai/provider.py:1349 |
+| `_close_open_json` | src/tessellate/ai/provider.py:1606 |
+| `_first_json_object_after` | src/tessellate/ai/provider.py:1263 |
+| `_json_too_deep` | src/tessellate/ai/provider.py:1635 |
+| `_literal_keywords` | src/tessellate/ai/provider.py:1299 |
+| `_named_calls` | src/tessellate/ai/provider.py:1413 |
+| `_ns_to_ms` | src/tessellate/ai/provider.py:1534 |
+| `_prose_read_calls` | src/tessellate/ai/provider.py:1452 |
+| `_python_calls` | src/tessellate/ai/provider.py:1439 |
+| `_python_style_calls` | src/tessellate/ai/provider.py:1312 |
+| `_split_header_reply` | src/tessellate/ai/provider.py:874 |
+| `_squash_separators` | src/tessellate/ai/provider.py:244 |
+| `_steps_end` | src/tessellate/ai/provider.py:849 |
+| `_tagged_calls` | src/tessellate/ai/provider.py:1374 |
+| `_think_header` | src/tessellate/ai/provider.py:833 |
+| `_unfence` | src/tessellate/ai/provider.py:1594 |
+| `context_from_catalog_entry` | src/tessellate/ai/provider.py:300 |
+| `detect_provider` | src/tessellate/ai/provider.py:346 |
+| `extract_text_tool_calls` | src/tessellate/ai/provider.py:1492 |
+| `first_chat_model` | src/tessellate/ai/provider.py:338 |
 | `is_transient_server_error` | src/tessellate/ai/provider.py:119 |
-| `known_context` | src/tessellate/ai/provider.py:250 |
-| `loads_lenient` | src/tessellate/ai/provider.py:1596 |
-| `memory_budget_bytes` | src/tessellate/ai/provider.py:161 |
-| `normalise_tool_calls` | src/tessellate/ai/provider.py:1635 |
-| `offered_tool_names` | src/tessellate/ai/provider.py:1669 |
-| `resolve_tool_name` | src/tessellate/ai/provider.py:1127 |
+| `known_context` | src/tessellate/ai/provider.py:259 |
+| `loads_lenient` | src/tessellate/ai/provider.py:1658 |
+| `memory_budget_bytes` | src/tessellate/ai/provider.py:162 |
+| `normalise_tool_calls` | src/tessellate/ai/provider.py:1697 |
+| `offered_tool_names` | src/tessellate/ai/provider.py:1731 |
+| `resolve_tool_name` | src/tessellate/ai/provider.py:1189 |
 | `set_sampling_overrides_getter` | src/tessellate/ai/provider.py:62 |
-| `set_write_tools` | src/tessellate/ai/provider.py:1279 |
-| `split_thinking` | src/tessellate/ai/provider.py:1480 |
+| `set_write_tools` | src/tessellate/ai/provider.py:1341 |
+| `split_thinking` | src/tessellate/ai/provider.py:1542 |
 | `tools_unsupported_message` | src/tessellate/ai/provider.py:93 |
 
 ### src/tessellate/ai/provider_http.py (17)
@@ -24415,7 +24415,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (18174)
+## Tests (18191)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -24432,7 +24432,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_activity_narrator_guide.py | 2 |
 | tests/test_activity_undo_row.py | 4 |
 | tests/test_acts.py | 11 |
-| tests/test_adaptive_context_b6.py | 11 |
+| tests/test_adaptive_context_b6.py | 18 |
 | tests/test_add_column_sites_1031.py | 3 |
 | tests/test_afterunlock.py | 5 |
 | tests/test_agent_context.py | 7 |
@@ -24463,7 +24463,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_all_spaces_indexes.py | 2 |
 | tests/test_announce_saved_note_z7.py | 4 |
 | tests/test_answer_foot_b2.py | 12 |
-| tests/test_answer_never_folded.py | 12 |
+| tests/test_answer_never_folded.py | 16 |
 | tests/test_answer_pictures_502.py | 11 |
 | tests/test_answer_support.py | 10 |
 | tests/test_answer_support_cleared.py | 1 |
@@ -24910,6 +24910,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_compression.py | 8 |
 | tests/test_concurrency_sizing_1031.py | 6 |
 | tests/test_confirmed_patterns_b9.py | 18 |
+| tests/test_confirmed_patterns_review_216.py | 3 |
 | tests/test_connected_results.py | 9 |
 | tests/test_connection_labels_1442.py | 2 |
 | tests/test_connection_row_cues.py | 7 |
@@ -25862,7 +25863,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_overlay_roam_runner.py | 10 |
 | tests/test_overlay_runner.py | 24 |
 | tests/test_overlay_scrabble_1107.py | 9 |
-| tests/test_overlay_screen_1678.py | 5 |
+| tests/test_overlay_screen_1678.py | 6 |
 | tests/test_overlay_seams_1683e.py | 4 |
 | tests/test_overlay_size_1107.py | 8 |
 | tests/test_overlay_size_review_1107.py | 10 |
@@ -26403,6 +26404,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_validation_copy.py | 6 |
 | tests/test_validation_error_shape.py | 2 |
 | tests/test_value_field_escape_home.py | 2 |
+| tests/test_value_field_review_216.py | 2 |
 | tests/test_vault_attachments.py | 9 |
 | tests/test_vault_import.py | 7 |
 | tests/test_vault_read_surfaces.py | 6 |

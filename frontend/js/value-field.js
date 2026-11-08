@@ -34,7 +34,10 @@ function valueField(host, opts = {}) {
   const input = document.createElement("input");
   input.type = "text";
   input.className = "value-field-input";
-  input.inputMode = "numeric";
+  //: The phone keyboard that fits what the field takes: digits for whole numbers from zero up, the decimal key where a
+  //: fraction is possible (the parser reads "1.5"), and the full keyboard where a minus is (neither numeric keypad has one).
+  const [lo, hi] = [bound("min", NaN), bound("max", NaN)];
+  input.inputMode = lo < 0 ? "text" : [lo, hi, opts.step ?? 1].every(Number.isInteger) ? "numeric" : "decimal";
   input.autocomplete = "off";
   input.spellcheck = false;
   input.setAttribute("aria-label", opts.label || "Value");
@@ -144,7 +147,7 @@ function valueField(host, opts = {}) {
   //: `slider.value` and fires `input` then `change`, so the surface's own handlers run as for a drag.
   const readoutOf = (slider) => {
     const byId = (suffix) => (slider.id ? document.getElementById(slider.id + suffix) : null);
-    const forId = slider.id ? document.querySelector(`output[for="${slider.id}"]`) : null;
+    const forId = slider.id ? document.querySelector(`output[for="${CSS.escape(slider.id)}"]`) : null;
     const bare = slider.id ? document.getElementById(slider.id.replace(/-slider$/, "") + "-value") : null;
     return forId || byId("-value") || byId("-out") || bare || slider.parentElement?.querySelector(":scope > output") || null;
   };

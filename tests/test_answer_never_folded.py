@@ -166,3 +166,48 @@ def test_a_saved_reply_that_never_closes_splits_as_the_stream_did():
     assert clean == ANSWER
     assert thinking == STEPS.strip()
     assert split_thinking("Reasoning:\nBeans swell, so soak them.") == ("Reasoning:\nBeans swell, so soak them.", None)
+
+
+#: Review of PR 216: an answer that is itself a list. The steps end at the
+#: first prose line that follows a blank line; the list under it is the answer.
+LISTED = "Here's the answer:\n- soak the beans\n- boil them\nHope that helps"
+
+
+def test_an_answer_that_is_a_list_is_not_pulled_into_the_fold():
+    text = f"Thinking Process:\n1. **Analyze:** beans.\n2. **Draft:** a list.\n\n{LISTED}"
+    for size in (1, 3, 9, len(text)):
+        live_thinking, live_answer, thinking, answer = _split_live(_chunked(text, size))
+        assert answer.strip() == LISTED, size
+        assert thinking.strip() == "1. **Analyze:** beans.\n2. **Draft:** a list.", size
+        # Never on screen as reasoning, even briefly.
+        assert "soak the beans" not in live_thinking and "Here's the answer" not in live_thinking, size
+    assert split_thinking(text) == (LISTED, "1. **Analyze:** beans.\n2. **Draft:** a list.")
+
+
+def test_prose_in_the_middle_of_the_steps_without_a_blank_line_stays_in_the_fold():
+    text = "Thinking Process:\n1. a\nso the person wants beans\n2. b\n\nThe answer."
+    *_, thinking, answer = _split_live(_chunked(text, 2))
+    assert "so the person wants beans" in thinking and "2. b" in thinking
+    assert answer.strip() == "The answer."
+
+
+def test_a_bare_reasoning_header_over_a_plain_list_is_still_the_answer():
+    """Is "Reasoning:" alone on a first line ever a real answer? It can be: a
+    list the person asked for under that heading. With no prose after the
+    steps nothing marks an answer, so the whole text is the answer."""
+    *_, thinking, answer = _split_live(_chunked("Reasoning:\n- cheap\n- fast\n", 3))
+    assert "- cheap" in answer and "- fast" in answer
+
+
+def test_the_fold_never_opens_on_a_blank_line_whatever_the_chunk_size():
+    """Review of PR 216: the thought began with "\\n" when the stream came one
+    character at a time and not when it came in larger pieces. The blank line
+    after a header is not part of the thought."""
+    text = f"Thinking Process:\n\n{STEPS}\n{ANSWER}"
+    starts = set()
+    for size in (1, 2, 7, len(text)):
+        _, _, thinking, answer = _split_live(_chunked(text, size))
+        starts.add(thinking)
+        assert not thinking.startswith("\n"), size
+        assert answer.strip() == ANSWER, size
+    assert len(starts) == 1

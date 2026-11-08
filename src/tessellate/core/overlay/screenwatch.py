@@ -171,7 +171,13 @@ class ScreenWatch:
         if now >= self.files_at and not self._counting:
             self.files_at = now + DOWNLOADS_EVERY
             self._counting = True
-            self.run(self._count)
+            try:
+                self.run(self._count)
+            except Exception:  # noqa: BLE001 - no worker to count on (thread start refused) is no event
+                #: `_count` never ran, so nothing else would clear the flag and
+                #: the folder would never be counted again.
+                self._counting = False
+                logger.debug("overlay: downloads count not started", exc_info=True)
         if self._counted is _UNSET:
             return []
         n, self._counted = self._counted, _UNSET
