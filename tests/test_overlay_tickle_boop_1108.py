@@ -74,7 +74,6 @@ def test_a_tremor_on_the_belly_is_not_a_tickle(seed: int) -> None:
 
 def test_a_tap_on_the_face_is_a_boop() -> None:
     e, _s, t = still()
-    lx, top, r, b = box(e)
     nx, ny = nose(e)
     path = [(nx + 400, ny), (nx + 330, ny), (nx + 200, ny), (nx + 60, ny), (nx + 2, ny), (nx + 120, ny), (nx + 300, ny)]
     heard = said(e, path, 0.04, t)
@@ -84,7 +83,6 @@ def test_a_tap_on_the_face_is_a_boop() -> None:
 
 def test_a_tap_on_the_body_or_the_far_side_of_the_face_is_a_poke_not_a_boop() -> None:
     e, _s, t = still()
-    lx, top, r, b = box(e)
     bx, by = belly(e)
     path = [(bx + 400, by), (bx + 330, by), (bx + 200, by), (bx + 60, by), (bx + 2, by), (bx + 120, by), (bx + 300, by)]
     heard = said(e, path, 0.04, t)
