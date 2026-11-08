@@ -1007,6 +1007,10 @@ class DeskCompanion:
         self._pet_box: tuple[int, int, int, int] | None = None
         self._away_watch: threading.Thread | None = None
         self.panel_box: tuple[tuple[int, int, int, int], int] | None = None
+        #: Where the last runner's figure stood and what it was doing (`Engine.carry`), read as it stopped: a runner
+        #: that died mid-trip came back at the place saved at the last drop, the old spot (INBOX 1696 i).
+        self._last_place: tuple[int, int] | None = None
+        self._last_carry: dict[str, Any] | None = None
 
     # --- where it is -----------------------------------------------------------
 
@@ -1280,18 +1284,18 @@ class DeskCompanion:
             if hasattr(self.runner, "set_scale") and getattr(self.runner, "scale", self.size_pref) != self.size_pref:
                 self.runner.set_scale(self.size_pref)  # Appearance changed it: the figure eases to it
             return True
-        place = self._runner_place()
+        place, carried = self._runner_place(), self._runner_carry()
         self.look, self.motion = look, motion
         self._stop_runner()
         kw: dict[str, Any] = {}
         if motion is not None:
             kw = {"reduced": motion[0], "reduced_reason": motion[1]}
-        runner, started = self._build_runner(look, place, kw)
+        runner, started = self._build_runner(look, place, kw, carried)
         if not started and capture.is_key(look):
             # A drawn companion whose frames will not load must not cost the whole see-through figure.
             logger.warning("desk companion: the overlay did not start in the drawn companion's frames, trying Atlas")
             look = self.look = "masculine"
-            runner, started = self._build_runner(look, place, kw)
+            runner, started = self._build_runner(look, place, kw, carried)
         if not started:
             self.overlay_failed = True
             self.overlay_tries += 1
@@ -1311,7 +1315,9 @@ class DeskCompanion:
         )
         return True
 
-    def _build_runner(self, look: str, place: tuple[int, int] | None, kw: dict[str, Any]) -> tuple[Any, bool]:
+    def _build_runner(
+        self, look: str, place: tuple[int, int] | None, kw: dict[str, Any], carried: dict[str, Any] | None = None,
+    ) -> tuple[Any, bool]:
         """One try at the runner; (runner, started). The reason a try failed is kept for the card's menu."""
         runner = None
         try:
@@ -1331,6 +1337,10 @@ class DeskCompanion:
             if hasattr(runner, "on_size"):  # the size handle: the size Appearance has, and the way back for a pull
                 runner.on_size = self._overlay_size
                 runner.scale = self.size_pref
+            if hasattr(runner, "on_place"):  # a trip arrived where it lives now: saved, as a drop is
+                runner.on_place = self._overlay_place
+            if hasattr(runner, "carried"):  # a restart: the new figure takes up the home and the menu's trip
+                runner.carried = carried
             started = bool(runner.start())
             if not started:
                 self.overlay_why = "the see-through window did not start in time"
@@ -1341,12 +1351,27 @@ class DeskCompanion:
         return runner, started
 
     def _runner_place(self) -> tuple[int, int] | None:
-        """Where the running figure is, so a restart does not send it home."""
+        """Where the running figure is, so a restart does not send it home; with no runner, where the last one stood
+        when it stopped (a death mid-trip), before the saved place."""
+        if self.runner is None:
+            return self._last_place
         engine = getattr(self.runner, "engine", None)
         x, y = getattr(engine, "x", None), getattr(engine, "y", None)
         if isinstance(x, (int, float)) and isinstance(y, (int, float)):
             return int(x), int(y)
         return None
+
+    def _runner_carry(self) -> dict[str, Any] | None:
+        """What the running figure was doing (`Engine.carry`), for the next runner; the last one's with no runner."""
+        if self.runner is None:
+            return self._last_carry
+        carry = getattr(getattr(self.runner, "engine", None), "carry", None)
+        try:
+            found = carry() if callable(carry) else None
+        except Exception:  # noqa: BLE001 - a restart without it ends the trip where it stands
+            logger.debug("desk companion: the figure's trip could not be read", exc_info=True)
+            return None
+        return found if isinstance(found, dict) else None
 
     def panel_motion(self) -> dict[str, Any]:
         """Whether the figure is standing still and why, for the right-click menu."""
@@ -1509,6 +1534,8 @@ class DeskCompanion:
         return "ok" if self._restart_shown("companion choice") else "error"
 
     def _stop_runner(self) -> None:
+        if self.runner is not None:
+            self._last_place, self._last_carry = self._runner_place(), self._runner_carry()
         runner, self.runner = self.runner, None
         if runner is not None:
             try:
@@ -1592,6 +1619,10 @@ class DeskCompanion:
                 logger.warning("desk companion: the quick panel did not hide", exc_info=True)
                 return False
         return True
+
+    def _overlay_place(self, x: int, y: int) -> None:
+        """A trip arrived where the figure lives now (on a worker): saved, so the next start is there, not at the last drop."""
+        _set_pref(OVERLAY_POS_PREF, [int(x), int(y)])
 
     def _overlay_settle(self, x: int, y: int) -> None:
         """A drop: saved, and an open panel follows the figure."""
