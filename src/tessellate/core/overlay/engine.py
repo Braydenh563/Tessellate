@@ -326,7 +326,7 @@ FLOAT_BAND = 0.35
 FLOAT_MOVE_WEIGHT = 150
 #: Hang from the top edge, and the climb up to it. The window holds still while it hangs
 #: (INBOX 1663: "slides a little from side to side"): any life is in the frames.
-HANG_FOR = (45.0, 120.0)
+HANG_FOR = (150.0, 480.0)  # INBOX 1696 b: minutes, as `bh.HANG_BY_MOOD`; the long end is the longest mood's
 #: A hang swings from its grip like a pendulum (the lower body lags by this many px, `Pose.drag`), a
 #: slow one, and glances about now and then (INBOX 1670, 13:28Z: "it basically doesn't move while it is
 #: hanging"). The window itself holds still: only the picture swings.
@@ -2483,6 +2483,10 @@ class Engine:
             return "fade"
         if self.plain_legs:
             return "walk"
+        if then == "hang" and self.gait == "float":
+            # INBOX 1696 b: a glide up drew the idle frames (the stand picture sliding up) and waited under a busy
+            # pointer part way; the way up to a hang is a blink or a cloud ride, never the one just used
+            return "cloud" if self.modes[-1:] == ["blink"] else "blink" if self.modes[-1:] == ["cloud"] else self.rng.choice(("blink", "cloud"))
         m = self.current_monitor()
         area, w = m.area, self.size[0]
         long_leg = tv.far(self.x, goal[0], area) or tv.crosses_middle(self.x, goal[0], area, w)
