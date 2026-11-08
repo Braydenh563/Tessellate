@@ -887,6 +887,11 @@ header#top-bar[data-scrolled="1"],
   overflow-y: auto;
   min-height: 0;
 }
+/* The list scrolls, so its rows must not shrink to fit it: a long one (the diagram's Add sheet) drew each name
+   over the hint above (INBOX 1661, 2026-11-08). */
+.sheet-list > * {
+  flex-shrink: 0;
+}
 /* A row is the whole width, which is the target a thumb wants, and the Plain
    tier of the button ramp: no fill at rest, a tint under the pointer and on
    focus. The icon is the same glyph the tab strip shows for that tab, read

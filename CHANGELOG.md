@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Sheet lists keep each row's height: the diagram's Add a block sheet no longer draws a name over the hint above (INBOX 1661).
 - Desk companion: an ordinary hover is a smile, never a poke or a flinch (a poke is a jab back out, a flinch a swipe that passes); the resize ring hangs by the head, not off the tail swirl (INBOX 1692).
 - Served scripts and stylesheets lose their leading indentation (asset_strip.py, STRIP_VERSION 4): newlines kept so stack-trace line numbers hold; template literal text, continued strings, regexes, kept comments, CSS strings and `url(` are untouched. The scripts' gzipped total went from 260,814 to 251,949 bytes (-8,865) and TOTAL_CAP from 260,860 to 251,980 (tests/test_asset_strip.py, tests/test_static_compression.py).
 - Indentation strip, review fix (asset_strip.py, STRIP_VERSION 5): a `/` that reads as division but could start a regex statement holding a quote or backtick (after the `)` of an `if`/`while`/`for`/`with` head, or first on a line after `)` or `}`) makes every later line keep its indentation, so a misread template cannot lose its text; no file in frontend/js triggers it and the gzipped total stays 251,949 (tests/test_asset_strip.py).
