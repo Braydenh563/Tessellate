@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Diagram Guide: a sequence diagram's keyboard way to insert at a gap is named (Insert in the blocks list adds a step under the selected one), since the + at a gap is pointer-only.
 - Composer: a spend on a thing this week (groceries) totals that thing only, not the note's fuel too, and the overview summary never repeats a note's own "today".
 - Desk companion: a stretch draws at its own pose frames again, and a dash turns toward where it is going during its crouch instead of after it.
 - Guide: questions about the companion outside the app reach the desktop companion topic first again.

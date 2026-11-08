@@ -492,3 +492,18 @@ def test_the_kinds_docks_do_not_inherit_the_flowcharts_one_row_rule():
     builder = (Path(__file__).resolve().parents[1] / "frontend" / "js" / "diagram-builder.js").read_text(encoding="utf-8")
     assert '"dgm-compact" : "dgm-addlist"' in touch
     assert "(S.k || matchMedia(COMPACT).matches) && (await ensureModule(\"diagramTouch\"))" in builder
+
+
+def test_insert_on_a_selected_sequence_message_adds_one_in_the_gap_below_it():
+    """Review finding 4: the block list's Insert key (diagram-kinds.js `keydown`) asks `ops.spot` for the row after the
+    selection, which is the gap the picture's + opens, so a keyboard user can insert between two messages."""
+    got = _ops(
+        "sequence",
+        SEQ,
+        "const t = A.tiles.find((x) => x.id === 'message'); const sel = key('u3');"
+        "const p = o.spot(A, m, t.type, sel); const d = A.defaults(m, t, null);"
+        "o.add(A, m, t.type, { ...p, fields: { ...d.fields, text: 'between' } });",
+    )
+    lines = [ln.strip() for ln in got["src"].splitlines()]
+    hi = next(i for i, ln in enumerate(lines) if ln.endswith(": hi"))
+    assert lines[hi + 1].endswith(": between") and lines[hi + 2].endswith(": hello")

@@ -655,7 +655,9 @@ def test_the_sequence_picture_drags_are_in_the_guide_and_the_dialog_help() -> No
     from tessellate.ai.help_chat import HELP_TOPICS
 
     body = str(next(t["body"] for t in HELP_TOPICS if t["id"] == "diagram-kinds"))
-    for words in ("a head dragged sideways reorders", "a drag from one lifeline to another adds a message", "the + at a gap opens the Add menu"):
+    # Review finding 4: the + is pointer-only, so the Guide names the keyboard way to the same gap (the block list's Insert key).
+    for words in ("a head dragged sideways reorders", "a drag from one lifeline to another adds a message", "the + at a gap opens the Add menu",
+                  "from the keyboard, Insert in the blocks list adds a step under the selected one"):
         assert words in body, words
     embed = (FRONTEND / "js" / "diagram-embed.js").read_text(encoding="utf-8")
     assert "double press a part to name it, drag a head to reorder and drag from one lifeline to another to add a message. The shelf in the picture's corner adds a block by a press or a drag" in embed
