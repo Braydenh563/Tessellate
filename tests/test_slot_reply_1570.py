@@ -6,10 +6,12 @@ with the act and its Undo."""
 from __future__ import annotations
 
 import json
+from datetime import date
 
 import pytest
 
 from tessellate.ai import composer_suggest
+from tessellate.core import clock
 from tessellate.entry import manager
 
 NOTES = ["# Interesting bean\n\nAn interesting bean from the market.", "# Conversation starters\n\nAsk something interesting.", "# Lisbon trip\n\nFlights."]
@@ -34,7 +36,9 @@ def _said(events):
 
 
 @pytest.fixture
-def notebook(client, session):
+def notebook(client, session, monkeypatch):
+    #: A fixed day: the reply seed reads it (`chat_said._reply_seed`), so the confirmation's phrasing moved with the real date.
+    monkeypatch.setattr(clock, "today", lambda: date(2026, 11, 7))
     for content in NOTES:
         manager.create_entry(session, content)
     session.commit()
