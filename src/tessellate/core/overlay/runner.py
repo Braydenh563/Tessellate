@@ -200,10 +200,12 @@ class OverlayRunner:
             run=lambda fn: jobs.thread("overlay-downloads", fn),
         )
         self._decor: dict[tuple, sprites.Frame] = {}
+        self._warmed = 0  # the size the quarter turn was last built for (INBOX 1696 a)
         try:  # a backend that can count why windows were left out (win32); a fake may not
             self._tallies = "tally" in inspect.signature(self.k.windows).parameters
+            self._nears = "near" in inspect.signature(self.k.windows).parameters
         except (TypeError, ValueError):
-            self._tallies = False
+            self._tallies = self._nears = False
 
     # --- life (any thread) ------------------------------------------------------------
 
@@ -327,7 +329,11 @@ class OverlayRunner:
                 if self._sizing is not None:  # a pull holds the figure still, whatever it was doing
                     return self._apply(self.engine.hold())
                 return self._apply(self.engine.update(now, (x, y)))
-            return self._apply(self.engine.update(now, (x, y), (kind, x, y)))
+            if kind == "up" and self.engine.carrying:
+                self._scan_at_release(x, y, now)
+            out = self.engine.update(now, (x, y), (kind, x, y))
+            self._log_notes()
+            return self._apply(out)
         return self._system(kind, now, (x, y))
 
     def _system(self, kind: str, now: float, pointer: tuple[int, int]) -> int | None:
@@ -392,13 +398,13 @@ class OverlayRunner:
         # A window is climbed to by a trip or by the climb act, so the list is wanted before either is due.
         return e.state in ("stand", "walk", "drift", "act", "crouch") and now >= min(e.trip_ready, e.climb_ready, e.big_ready) - SCAN_SLACK
 
-    def _list_windows(self, tally: Counter) -> list:
+    def _list_windows(self, tally: Counter, near: tuple[int, int, int] | None = None, seen: list | None = None) -> list:
         """The window list, or [] when it cannot be read (no list means no roaming, never a crash)."""
+        extra: dict[str, Any] = {"tally": tally} if self._tallies else {}
+        if near is not None and self._nears:
+            extra.update(near=near, seen=seen)
         try:
-            return self.k.windows(
-                self.w, os.getpid(), self.host.hwnd if self.host else None, [m.area for m in self.monitors],
-                **({"tally": tally} if self._tallies else {}),
-            )
+            return self.k.windows(self.w, os.getpid(), self.host.hwnd if self.host else None, [m.area for m in self.monitors], **extra)
         except Exception:  # noqa: BLE001
             if not self._scan_failed:
                 logger.warning("overlay: the windows could not be listed", exc_info=True)
@@ -421,7 +427,27 @@ class OverlayRunner:
         if read and ([m.area for m in read] != [m.area for m in self.monitors] or (before is not None and key != before)):
             self._refresh_monitors()
 
-    def _scan(self, now: float, force: bool = False) -> None:
+    def _scan_at_release(self, x: int, y: int, now: float) -> None:
+        """A carried figure let go: the windows read now, not up to a second ago (INBOX 1696 b: "I tried to drag the
+        desktop companion onto the top of my file explorer window but it just fell"), and one INFO line for each
+        window whose top is near the feet saying what it counted as (its class, never its title)."""
+        engine = self.engine
+        assert engine is not None
+        if not self.roam_windows or engine.reduced or not engine.roam:
+            return
+        w, h = engine.size
+        feet, reach = int(engine.y + h), int(2 * h)
+        seen: list = []
+        self._scan(now, force=True, near=(int(engine.x + w / 2), feet, reach), seen=seen)
+        for cls, rect, why in seen[:8]:
+            used = any(p.left <= engine.x + w / 2 < p.right and p.top == rect[1] for p in engine.windows)
+            logger.info(
+                "overlay: let go at %s with the feet at y %d: a %s window, top %d, x %d to %d, counted as %s%s",
+                (x, y), feet, cls or "nameless", rect[1], rect[0], rect[2], why,
+                "" if why != "perch" else (", its top is a place to stand" if used else ", its top is covered or too narrow here"),
+            )
+
+    def _scan(self, now: float, force: bool = False, near: tuple[int, int, int] | None = None, seen: list | None = None) -> None:
         engine = self.engine
         assert engine is not None
         self._watch_taskbar(now)
@@ -438,7 +464,7 @@ class OverlayRunner:
         # On a window it rides it: a dragged window is followed four times a second, not once.
         self._next_scan = now + (SCAN_RIDING if engine.perch is not None or engine.tuck is not None else SCAN_EVERY)
         tally: Counter = Counter()
-        wins = self._list_windows(tally)
+        wins = self._list_windows(tally, near, seen)
         if wins:  # an empty list is a failed read, not every window closing
             self._answer(self._watch.windows_seen(win.key for win in wins) + self._watch.states_seen(wins), now)
         scale = max(m.dpi for m in self.monitors) / 96.0 if self.monitors else 1.0
@@ -622,6 +648,7 @@ class OverlayRunner:
             self._last_key, self._blend, self._target = None, None, None
         now = self.clock()
         eased = self._ease(now)
+        self._warm_spins(spr)
         engine.hour = time.localtime().tm_hour if self.clock_hour is None else self.clock_hour
         # a thrown figure's true angle is part of the picture (INBOX 1683): every tick of a spin is a new one
         turn = None if out.angle is None else round(math.degrees(out.angle) / sprites.SPIN_QUANT) % round(360.0 / sprites.SPIN_QUANT)
@@ -642,6 +669,16 @@ class OverlayRunner:
         if blending or eased:  # the dissolve is a move: one step a display frame
             wake = BLEND_TICK_MS if wake is None else min(wake, BLEND_TICK_MS)
         return wake
+
+    def _warm_spins(self, spr: sprites.SpriteSet) -> None:
+        """Once a size is settled, its quarter turn is built on a worker (INBOX 1696 a: a fall rotated a fresh picture
+        every tick, 6 ms at dpi 192, about 8 fps on the owner's machine), so a throw only transposes. Not mid-pull or
+        mid-ease (each step is a size of its own), and not in reduced motion, where nothing spins."""
+        fd = self._fdpi()
+        if fd == self._warmed or self._sizing is not None or self._goal is not None or self.reduced:
+            return
+        self._warmed = fd
+        self._hand_off("overlay-spins", lambda: spr.warm_spins(fd))
 
     def _hand_offs(self, out: eng.Output, engine: eng.Engine) -> None:
         """What the tick finished, passed on off the overlay thread: a click, a settled place, a card."""

@@ -298,6 +298,11 @@ SPIN_FRAMES_ENGINE = tuple(f"spin{i}" for i in range(SPIN_STEPS))
 HOVER = (0.0, 0.0)
 #: How far below the work area's top a released figure's head may be and still take hold.
 HANG_REACH = 0.3
+#: Let go with its feet this near a window's top (shares of its height: above the edge, and below it with the legs in
+#: front of the title bar) and it settles onto that top (INBOX 1696 b: "I tried to drag the desktop companion onto the
+#: top of my file explorer window but it just fell"). A release slower than `PERCH_THROW` times THROW_MIN is a placing.
+DROP_REACH = (0.6, 0.35)
+PERCH_THROW = 2.0
 #: The ceiling takes hold of a throw only when it was thrown hard and mostly upward (INBOX 1670, 15:45Z: "nearly every
 #: time I throw it no matter how hard, it goes to the top to hang"): this much upward launch speed (logical px per
 #: second, over half of `THROW_MAX`) and at least this share of the throw's speed pointing up. It is read at the
@@ -321,7 +326,7 @@ FLOAT_BAND = 0.35
 FLOAT_MOVE_WEIGHT = 150
 #: Hang from the top edge, and the climb up to it. The window holds still while it hangs
 #: (INBOX 1663: "slides a little from side to side"): any life is in the frames.
-HANG_FOR = (45.0, 120.0)
+HANG_FOR = (90.0, 300.0)  # INBOX 1696 b: minutes, as `bh.HANG_BY_MOOD`; the long end is the longest mood's
 #: A hang swings from its grip like a pendulum (the lower body lags by this many px, `Pose.drag`), a
 #: slow one, and glances about now and then (INBOX 1670, 13:28Z: "it basically doesn't move while it is
 #: hanging"). The window itself holds still: only the picture swings.
@@ -1392,9 +1397,13 @@ class Engine:
 
     def _spell_spot(self, now: float) -> tuple[float, float] | None:
         """A spot to settle at: by a screen edge (never the middle third), more often the far one, clear of the caret;
-        the near one while a home chosen from the menu holds (`HOME_KEEP`)."""
+        the home itself while a home chosen from the menu holds (`HOME_KEEP`)."""
         m = self.current_monitor()
         k = self._scale()
+        if now - self.homed_at < HOME_KEEP and self.home_x is not None:
+            # INBOX 1696: the near edge was often where it had come from (a wander lands just out of the middle third),
+            # so the first spell took it back there in a puff, seconds after it arrived
+            return self._clear_of_caret(self.home_x, self.ground_y(m), SPELL_ROOM * self.size[1])
         side = tv.nearest_edge(self.x, m.area, self.size[0])
         if now - self.homed_at >= HOME_KEEP and self.rng.random() < 0.65:
             side = -side
@@ -1846,10 +1855,14 @@ class Engine:
         lo, hi = m.area[0], m.area[2] - self.size[0]
         far = [x for x in (lo + (hi - lo) * i / 10 for i in range(11)) if abs(x - self.x) >= WANDER_MIN * k]
         pool = far or [lo if self.x - lo > hi - self.x else hi]
-        gx = self.rng.choice(pool)
+        ground = self.ground_y(m)
+        gx, _gy = self._clear_of_caret(tv.out_of_middle(self.rng.choice(pool), m.area, self.size[0]), ground)  # where _go aims
         if abs(gx - self.x) < 12 * k:
             return False
-        self._go((gx, self.ground_y(m)), "settle", now)
+        # INBOX 1696: home from the moment it is chosen. Set on arrival, a step aside from the caret on the way (a puff to
+        # the nearest edge) left the old home, and the next decision took it back there
+        self.home_x = gx
+        self._go((gx, ground), "settle", now)
         self.homed_at = now
         return True
 
@@ -2478,15 +2491,22 @@ class Engine:
             return "fade"
         if self.plain_legs:
             return "walk"
+        if then == "hang" and self.gait == "float":
+            # INBOX 1696 b: a glide up drew the idle frames (the stand picture sliding up) and waited under a busy
+            # pointer part way; the way up to a hang is a blink or a cloud ride, never the one just used
+            return "cloud" if self.modes[-1:] == ["blink"] else "blink" if self.modes[-1:] == ["cloud"] else self.rng.choice(("blink", "cloud"))
         m = self.current_monitor()
         area, w = m.area, self.size[0]
         long_leg = tv.far(self.x, goal[0], area) or tv.crosses_middle(self.x, goal[0], area, w)
         flat = abs(goal[1] - self.ground_y(m)) < 8 * self._scale() and abs(self.y - self.ground_y(m)) < 8 * self._scale()
         opposite = (self.x + w / 2 - (area[0] + area[2]) / 2) * (goal[0] + w / 2 - (area[0] + area[2]) / 2) < 0
+        # INBOX 1696: a floater's glide or swoop draws the idle frames, so a menu wander that drifted read as the stand
+        # picture sliding across the taskbar; it is a seen move (a blink, a ride, a portal), as between two spells
+        seen = then == "settle" and self.gait == "float"
         mode = tv.pick_mode(
-            self.rng, gait=self.gait, long_leg=long_leg, mood=self.mind.mood(self.now, self.hour),
+            self.rng, gait=self.gait, long_leg=long_leg or seen, mood=self.mind.mood(self.now, self.hour),
             recent=self.modes[-3:], edge_ok=flat and opposite and self.perch is None,
-            run_ok=abs(goal[0] - self.x) >= RUN_MIN * self._scale(), between=then == "spell",
+            run_ok=abs(goal[0] - self.x) >= RUN_MIN * self._scale(), between=then == "spell" or seen,
         )
         return mode
 
@@ -3683,10 +3703,49 @@ class Engine:
         x0, x1, _y0, _y1 = self._ride_limits("held")
         self.x = min(max(self.x, max(x0, m.area[0] - self._ride_box("held")[0])), min(x1, m.area[2] - self._ride_box("held")[2]))
         velocity = None if self.reduced else self._throw_velocity(now, px, py)
+        speed = 0.0 if velocity is None else math.hypot(*velocity)
+        if speed < PERCH_THROW * THROW_MIN * self._scale() and self._drop_on_top(now):
+            return
         if velocity is not None:  # a throw is a throw: only a release that is not one takes hold near an edge
             self._start_fly(*velocity, self._swirl(now, px, py))
         elif not self._grab_edge(now):
             self._drop(now)
+
+    def _drop_on_top(self, now: float) -> bool:
+        """Let go with the feet near a window's top, over it: it settles onto that top and stands there (INBOX 1696 b).
+        The runner reads the windows afresh at the release, so the edge is where the window is now. Each release over
+        or near an edge leaves a note saying why it did or did not stay."""
+        if self.reduced or not (self.roam and self.roam_windows):
+            return False
+        w, h = self.size
+        best = self._top_in_reach()
+        if best is None:
+            return False
+        p = best[1]
+        x = min(max(self.x, p.left), p.right - w)
+        self.notes.append(f"let go over a window top ({best[0]:.0f} px from the feet): standing on it")
+        self.target, self.hang_on, self.placed = p, None, True
+        self.legs.append(("drop", self.x, x, now))
+        self._rise((x, p.top - h), "perch", now, drawn_from=self.y + self._dy("held"))
+        return True
+
+    def _top_in_reach(self) -> tuple[float, Perch] | None:
+        """The window top nearest the feet within `DROP_REACH` under the figure's middle, with the gap (positive: the
+        feet above it); a note for each top near but out of reach, or for none under the figure at all."""
+        w, h = self.size
+        feet, centre, m = self.y + h, self.x + w / 2, self.current_monitor()
+        above, below = DROP_REACH[0] * h, DROP_REACH[1] * h
+        under = [(p.top - feet, p) for p in self.windows if p.kind == "top" and p.top >= m.area[1] and p.left <= centre < p.right]
+        reach = [(gap, p) for gap, p in under if -below <= gap <= above]
+        self._note_out_of_reach([gap for gap, _p in under if not -below <= gap <= above], above, below)
+        if not reach and not any(p.kind == "top" and p.left <= centre < p.right for p in self.windows):
+            self.notes.append(f"let go with no window top under the figure ({len(self.windows)} standable in the scan)")
+        return min(reach, key=lambda gp: abs(gp[0])) if reach else None
+
+    def _note_out_of_reach(self, gaps: list[float], above: float, below: float) -> None:
+        for gap in gaps:
+            if abs(gap) < 2 * self.size[1]:
+                self.notes.append(f"let go {abs(gap):.0f} px {'above' if gap > 0 else 'below'} a window top: out of reach (within {above:.0f} above or {below:.0f} below)")
 
     def _swirl(self, now: float, px: int, py: int) -> float:
         """How much the pointer's path curled over the throw window, -1 to 1 (clockwise on screen positive):

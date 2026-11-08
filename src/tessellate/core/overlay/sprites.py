@@ -21,6 +21,7 @@ from __future__ import annotations
 import logging
 import math
 import re
+import threading
 from pathlib import Path
 from typing import Any, NamedTuple
 
@@ -61,9 +62,13 @@ SPIN_FRAMES = tuple(f"spin{i}" for i in range(SPIN_STEPS))
 SPIN_BASE = "tumble"
 #: A thrown figure is drawn at its true angle (INBOX 1683: "rotating when thrown ... still horrible"; the 48 steps of
 #: 7.5 degrees held a picture for 2 to 3 ticks and then jumped 7.5 or 15): `spun_at` turns the tumble by any angle,
-#: rounded to `SPIN_QUANT` degrees (a step the eye cannot see), on the same canvas as the `spinN` frames.
-#: Only the last `SPUN_KEEP` are kept, since a spinning figure never shows an angle twice in a row.
-SPIN_QUANT = 0.25
+#: rounded to `SPIN_QUANT` degrees, on the same canvas as the `spinN` frames. INBOX 1696 a: at dpi 192 a fresh turn
+#: was 6 ms of Pillow (4.7 of it the rotate, ten GIL hand-backs) on every tick of a fall, about 8 fps on the owner's
+#: machine; now the quarter turn is rotated once per size (`warm_spins`, off the overlay thread), kept cropped to the
+#: drawn box (19.5 MB at dpi 192), and every other angle and the mirror are that picture transposed (0.15 ms).
+#: Only the last `SPUN_KEEP` assembled pictures are kept, since a spinning figure never shows an angle twice in a row.
+SPIN_QUANT = 1.0
+SPIN_QUARTER = round(90.0 / SPIN_QUANT)
 SPUN_KEEP = 6
 #: The sat figure with its eyes shut (INBOX 1670, 16:40Z: a sit had no blink). Not a shipped file: derived at
 #: load from `sit` with closed lids drawn over its eyes, so the frame set and its byte budget do not move.
@@ -185,6 +190,12 @@ class SpriteSet:
         self._posed: dict[tuple[str, int, bool, tuple[float, ...]], Frame] = {}
         self._spun_at: dict[tuple[int, int, bool], Frame] = {}
         self._canvas: dict[tuple[int, bool], tuple[Any, int, int]] = {}
+        #: The quarter turn per dpi: {dpi: {step: (cropped premultiplied BGRA as an RGBA image, left, top)}}, built
+        #: by `warm_spins` on a worker or on first use; the lock keeps the two from building one step twice.
+        self._spin_bases: dict[int, dict[int, tuple[Any, int, int]]] = {}
+        self._spin_lock = threading.Lock()
+        self._spin_live = 0
+        self.rotations = 0  # Pillow rotates done, for the tests and the log
         self._metrics: dict[int, dict[tuple[str, bool], tuple[int, int, int, int]]] = {}
         self._metrics_base: tuple[tuple[int, int], dict[tuple[str, bool], tuple[int, int, int, int]]] | None = None
 
@@ -308,8 +319,12 @@ class SpriteSet:
         for store in (self._cache, self._posed, self._spun_at):
             for key in [k for k in store if k[1] != dpi]:
                 del store[key]
-        for key in [k for k in self._canvas if k[0] != dpi]:
-            del self._canvas[key]
+        with self._spin_lock:
+            self._spin_live = dpi
+            for key in [k for k in self._canvas if k[0] != dpi]:
+                del self._canvas[key]
+            for d in [d for d in self._spin_bases if d != dpi]:
+                del self._spin_bases[d]
 
     def _build(self, name: str, dpi: int, flip: bool) -> Frame:
         from PIL import Image, ImageOps
@@ -442,30 +457,85 @@ class SpriteSet:
 
     def spun_at(self, angle: float, dpi: int = 96, flip: bool = False) -> Frame:
         """The tumble turned by `angle` radians (clockwise on screen positive), on the canvas of `spin0`.
-        Cached by the angle rounded to `SPIN_QUANT` degrees, the last `SPUN_KEEP` only."""
-        import math
-
+        Rounded to `SPIN_QUANT` degrees: a quarter-turn picture (`_spin_base`) transposed into place, the last
+        `SPUN_KEEP` kept. The mirror is the unmirrored figure turned the other way and flipped."""
         from PIL import Image
 
-        q = round(math.degrees(angle) / SPIN_QUANT) % round(360.0 / SPIN_QUANT)
+        steps = round(360.0 / SPIN_QUANT)
+        q = round(math.degrees(angle) / SPIN_QUANT) % steps
         key = (q, int(dpi), bool(flip))
         hit = self._spun_at.pop(key, None)
         if hit is None:
-            base_key = (int(dpi), bool(flip))
-            if base_key not in self._canvas:
-                base = self.frame("spin0", dpi, flip)  # builds the size and pad the canvas shares
-                image = self._pose_image(SPIN_BASE, dpi, flip)
-                canvas = Image.new("RGBA", (base.width, base.height), (0, 0, 0, 0))
-                canvas.paste(image, (base.pad_x, base.pad_y))
-                self._canvas[base_key] = (canvas, base.pad_x, base.pad_y)
-            canvas, pad_x, pad_y = self._canvas[base_key]
-            turned = canvas.rotate(-q * SPIN_QUANT, resample=Image.Resampling.BILINEAR)  # bicubic is 3.4 ms a frame, this 1.3 (a draw budget is 16)
-            clear = clear_faint_alpha(turned)
-            hit = Frame(canvas.width, canvas.height, premultiplied_bgra(clear), pad_x, pad_y, _drawn_box(clear))
+            side, pad_x, pad_y = self._spin_canvas(int(dpi))
+            quarter, rest = divmod((-q) % steps if flip else q, SPIN_QUARTER)
+            image, x, y = self._spin_base(rest, int(dpi))
+            w, h = image.size
+            if quarter:  # a quarter turn clockwise on screen moves (x, y) to (side - y, x)
+                image = image.transpose((Image.Transpose.ROTATE_270, Image.Transpose.ROTATE_180, Image.Transpose.ROTATE_90)[quarter - 1])
+                for _ in range(quarter):
+                    x, y, w, h = side - (y + h), x, h, w
+            if flip:  # mirrored about the canvas middle; when the side and the width differ by an odd number, the
+                # mirrored figure would sit a pixel off its pad: that pixel, turned with it, is put back
+                d = 2 * pad_x + self.size(int(dpi))[0] - side
+                turn = math.radians(q * SPIN_QUANT)
+                image = image.transpose(Image.Transpose.FLIP_LEFT_RIGHT)
+                x, y = side - (x + w) + round(d * math.cos(turn)), y + round(d * math.sin(turn))
+            canvas = Image.new("RGBA", (side, side), (0, 0, 0, 0))
+            canvas.paste(image, (x, y))
+            hit = Frame(side, side, canvas.tobytes(), pad_x, pad_y, (x, y, x + w, y + h))
         self._spun_at[key] = hit
         while len(self._spun_at) > SPUN_KEEP:
             del self._spun_at[next(iter(self._spun_at))]
         return hit
+
+    def _spin_base(self, step: int, dpi: int) -> tuple[Any, int, int]:
+        """The tumble turned `step` of `SPIN_QUARTER` steps on the spin canvas, cropped to its drawn box: premultiplied
+        BGRA held in an RGBA image (a transpose does not care which byte is which) and its top left on the canvas."""
+        found = self._spin_bases.get(dpi, {}).get(step)
+        if found is not None:
+            return found
+        from PIL import Image
+
+        with self._spin_lock:
+            found = self._spin_bases.get(dpi, {}).get(step)
+            if found is not None:
+                return found
+            if (dpi, False) not in self._canvas:
+                side, pad_x, pad_y = self._spin_canvas(dpi)  # the size and pad `spin0` has, without its cache (a worker runs this)
+                canvas = Image.new("RGBA", (side, side), (0, 0, 0, 0))
+                canvas.paste(self._pose_image(SPIN_BASE, dpi, False), (pad_x, pad_y))
+                self._canvas[(dpi, False)] = (canvas, pad_x, pad_y)
+            canvas = self._canvas[(dpi, False)][0]
+            turned = canvas.rotate(-step * SPIN_QUANT, resample=Image.Resampling.BILINEAR)
+            self.rotations += 1
+            clear = clear_faint_alpha(turned)
+            left, top, right, bottom = _drawn_box(clear)
+            cropped = clear.crop((left, top, right, bottom))
+            found = (Image.frombytes("RGBA", cropped.size, premultiplied_bgra(cropped)), left, top)
+            if dpi == self._spin_live or not self._spin_live:
+                self._spin_bases.setdefault(dpi, {})[step] = found
+            return found
+
+    def _spin_canvas(self, dpi: int) -> tuple[int, int, int]:
+        """The spin canvas's side and the figure's pad on it, as `_spun` makes them."""
+        width, height = self.size(dpi)
+        side = math.ceil(math.hypot(width, height))
+        return side, (side - width) // 2, (side - height) // 2
+
+    def warm_spins(self, dpi: int) -> int:
+        """Every step of the quarter turn at `dpi` built now (a worker calls this after a size change, so a throw
+        never rotates on the overlay thread). Stops when another size takes over. Returns how many it built."""
+        dpi, built = int(dpi), 0
+        for step in range(SPIN_QUARTER):
+            if self._spin_live and dpi != self._spin_live:
+                break
+            if step not in self._spin_bases.get(dpi, {}):
+                self._spin_base(step, dpi)
+                built += 1
+        return built
+
+    def spins_ready(self, dpi: int) -> bool:
+        return len(self._spin_bases.get(int(dpi), {})) >= SPIN_QUARTER
 
     def _spun(self, image: Any, step: int, width: int, height: int) -> Frame:
         """The picture turned by `step` of `SPIN_STEPS` turns on a square canvas big enough
