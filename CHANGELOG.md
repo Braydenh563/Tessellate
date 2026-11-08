@@ -6,6 +6,16 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Settings: the value-field scan reads once (72 to 311 ms down to 19 to 30 ms at 4x CPU), Personas reads preferences once and draws faces after the rows, job lines read layout only when running, and a scroll inside Settings, a menu or a dialog sets no scroll-edge timer (INBOX 1696 f).
+- Diagram builder: a press on empty space, beside the picture or Escape lets go of the pick in every kind (INBOX 1696 g).
+- Sidebars: a picked row keeps a row of room below it in Settings, the notes sidebar and the manual's contents, which now scroll instead of squeezing (INBOX 1696 e).
+- Note titles in link lists read without Markdown marks ("Guide**" reads "Guide"), and a lone asterisk in a title stays (INBOX 1696 d).
+- Settings: the changed-row bar sits 8 px from the text on every row (INBOX 1696 c).
+- Desk menu: Activity, Stay here or Roam, Roam over windows and the sizes keep the menu open with the new tick; moves still close it (INBOX 1696 h).
+- Desk companion: Go somewhere else always travels with a seen move and stays at the new spot (INBOX 1696 i).
+- Desk companion: a floater rises to a hang with a blink or a cloud, never the standing frame sliding up or stopping part way, and hangs for 1 to 5 minutes by mood (INBOX 1696 b, k).
+- Desk companion: let go over a window's top edge and it stands on it, read fresh at the release, with a log line naming why a nearby window was not counted (INBOX 1696 b).
+- Desk companion: a fall no longer stutters at high DPI (the quarter turn is built once per size and reused, 6.4 ms to 0.3 ms a picture) (INBOX 1696 a).
 - Writing room: a note dropped or pasted from the Tray into Your thoughts is added to the notes the draft is written from, not left in the box as a raw [[link]] (INBOX 1696 n).
 - Ask: Elsewhere in your notebook and Why this answer both open above Ask next, and the chips under an answer carry a caret that turns when open, so they read as disclosures, not as questions (INBOX 1696 o).
 - Throwing the in-app companion no longer walks the whole page again on landing: the tab's surfaces were dropped a frame after they were found (a ResizeObserver's first report), so every landing re-read 149 to 299 boxes behind a whole-page layout (INBOX 1696 l, the 7.5 s freeze).
