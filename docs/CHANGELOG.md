@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Guide (review 1108): the diagram blocks topic says again that 1 to 7 add the other shapes, Shift+N the last one and K colours (1886 of 1900 characters; the empty-state example and three wordier phrases gave the room).
 - Diagram builder (review 1108): the automatic "no" on a decision's second arrow only applies to a new branch next to a first arrow that says yes (any case or punctuation); a re-pointed arrow and a template's or suggestion's edge keep exactly their own words. test_diagram_r6 item 3 renamed to say what it asserts.
 - Diagram builder (review 1108): Keep on the tall-chart offer is remembered for that diagram only (keyed by the document, not the shared preview host), so one Keep no longer turns the offer off for every diagram document.
 - Diagram window (review 1108): Ctrl+Z with focus on Picture, List, Source, Done, Cancel or the help button steps the diagram once; it no longer also runs the app's undo (the press stops at the window).

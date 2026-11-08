@@ -129,3 +129,12 @@ out({ first, sameDiagramAgain: shown(a2), otherDiagram: shown(b1) });
 """
     )
     assert got == {"first": True, "sameDiagramAgain": False, "otherDiagram": True}
+
+
+def test_the_guide_says_the_shape_keys_and_k_again_inside_its_budget():
+    """LOW: dgmfix2 dropped "1 to 7 the other shapes, Shift+N the last one" and "K colours" from the Guide to fit 1900."""
+    from tessellate.ai.help_chat import HELP_TOPICS
+
+    body = str(next(t["body"] for t in HELP_TOPICS if t["id"] == "diagram-blocks"))
+    assert "1 to 7 the other shapes, Shift+N the last one" in body and "K colours" in body
+    assert len(body) < 1900

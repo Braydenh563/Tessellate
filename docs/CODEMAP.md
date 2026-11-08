@@ -2,7 +2,7 @@
 
 Generated 2026-11-08 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7917, frontend ids 2652, CSS sections 522, backend routes 649, backend modules 9199, test files 2234, tests 18803, plan headings 1004, app scripts 28, boot scripts 37, script files 263.
+Counts: frontend functions 7917, frontend ids 2652, CSS sections 522, backend routes 649, backend modules 9199, test files 2234, tests 18804, plan headings 1004, app scripts 28, boot scripts 37, script files 263.
 
 ## Frontend functions (7917)
 
@@ -24752,7 +24752,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (18803)
+## Tests (18804)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -25398,7 +25398,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_diagram_r8c.py | 11 |
 | tests/test_diagram_r9b.py | 9 |
 | tests/test_diagram_r9c.py | 9 |
-| tests/test_diagram_review_1108.py | 7 |
+| tests/test_diagram_review_1108.py | 8 |
 | tests/test_diagram_review_1679.py | 4 |
 | tests/test_diagram_split_r3_r4.py | 8 |
 | tests/test_diagram_suggest.py | 22 |
