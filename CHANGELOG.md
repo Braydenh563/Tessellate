@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- The graph popup's header keeps a small gap above the note, so a sketch's picture no longer touches the close button (INBOX 1694 d).
 - A typed value beside a slider in a bar (the sketch pad's size, the graph's) sits inside its pill as text instead of a filled box that overlapped the border (INBOX 1694 c).
 - Desk Atlas no longer limps on trips: a floating look moves on its idle cycle (streams flowing, eyes open) instead of the walk frames that shut its eyes every other step (INBOX 1692).
 - Sheet lists keep each row's height: the diagram's Add a block sheet no longer draws a name over the hint above (INBOX 1661).

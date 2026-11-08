@@ -31,3 +31,12 @@ def test_the_sketch_size_slider_rule_names_the_slider_only():
     assert not re.search(r"\.sp-size input\s*\{", text)
     rule = re.search(r'\.sp-size input\[type="range"\]\s*\{([^}]*)\}', text)
     assert rule and "background: transparent" in rule.group(1)
+
+
+def test_the_graph_popup_head_keeps_a_gap_under_the_close_button():
+    """INBOX 1694 d: the head sat flush on the body, so a sketch's picture touched the close button."""
+    text = (CSS / "04-chat-dock-appearance.css").read_text(encoding="utf-8")
+    rule = re.search(r"\n\.graph-popup > \.graph-popup-head\s*\{([^}]*)\}", text)
+    #: After `.graph-popup .row { margin: 0 }`, which outranks a bare `.graph-popup-head` by order and weight.
+    assert rule and text.index(rule.group(0)) > text.index(".graph-popup .row {")
+    assert re.search(r"margin-bottom:\s*var\(--space-[2-4]\)", rule.group(1))
