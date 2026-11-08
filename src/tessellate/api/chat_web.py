@@ -147,3 +147,15 @@ def _web_chip(req: _StreamRequest) -> list[dict]:
     if not terms:
         return []
     return [{"type": "offer", "offer": {"kind": "ask", "label": "", "asks": [f"Search the web for {' '.join(terms[:3])}"]}}]
+
+
+def _torn_events(req: _StreamRequest, prepared: dict) -> list | None:
+    """Notes or the web (INBOX 1696 s): a message both sides read about equally
+    gets one line and the two chips, no model, no search; the composer stays
+    editable. Web off or not allowed: None, the notes answer."""
+    if not prepared["notes"] or req.images_raw or req.body.answer_from or not _web_allowed(req):
+        return None
+    if not composer_unplaced.torn(req.question or "", prepared["notes"], web_on=True):
+        return None
+    asks = composer_unplaced.torn_chips(req.question or "")
+    return [{"type": "answer", "delta": "Your notes or the web?"}, {"type": "offer", "offer": {"kind": "ask", "label": "", "asks": asks}}]

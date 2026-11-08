@@ -679,7 +679,7 @@ HELP_TOPICS: list[dict] = [
             'Settings", "Open the web panel" and "Use another provider"), and the panel '
             "searches again once it answers; where this app cannot start it, it says why "
             "and links Web search settings. Banter, slang or a single word is never sent to the web: "
-            "you are asked, with a chip for your notes and one for the web. To start it "
+            "you are asked, with a chip for your notes and one for the web, and so is a question your notes and the web could both answer (\"Your notes or the web?\"; with web search off it is never asked). To start it "
             "yourself with Docker, run: docker run -d --name searxng -p 8888:8080 "
             "-v searxng:/etc/searxng searxng/searxng, then press Auto-detect there. "
             "With SearXNG chosen and no address saved, the reply says it is not "
