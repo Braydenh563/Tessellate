@@ -1,0 +1,52 @@
+"""What the second real-browser run of the diagram surfaces (dgmlive2 1108) found; these read the source for what has to stay true."""
+
+from __future__ import annotations
+
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+JS = ROOT / "frontend" / "js"
+LIBRARY = (JS / "library.js").read_text(encoding="utf-8")
+DOCUMENTS = (JS / "documents.js").read_text(encoding="utf-8")
+
+
+def test_a_library_reload_hands_focus_back_to_the_grid_when_the_row_it_held_is_redrawn():
+    """Measured in Chromium: rename, archive or delete from a row's ⋯ by keyboard left document.activeElement on BODY."""
+    body = LIBRARY.split("async function loadLibrary(")[1].split("\n}\n")[0]
+    assert "const held = grid.contains(document.activeElement);" in body
+    assert "if (held && !grid.contains(document.activeElement)) {" in body
+    assert "ensureLibraryGridStop(grid);" in body
+
+
+def test_undoing_a_document_act_redraws_the_library_it_was_made_from():
+    """Measured in Chromium: Undo on 'Moved to the bin' restored the diagram on the server and the Library grid kept the row gone until the tab was left and re-entered."""
+    assert 'document.addEventListener("documents-undone"' in LIBRARY
+    for name in ("deleteDocumentWithUndo", "renameDocumentWithUndo", "archiveDocumentWithUndo"):
+        body = DOCUMENTS.split(f"async function {name}(")[1].split("\n}\n")[0]
+        assert 'new Event("documents-undone")' in body, name
+
+
+def test_an_archived_diagram_is_listed_by_the_library_once_as_shelved(client, session):
+    """Measured in Chromium: Archive on a diagram's row toasted and shelved it, and the row stayed in Everything because /library listed it as a diagram as well as shelved."""
+    from tessellate.core.database import Document
+
+    kept = Document(title="Kept flow", content="flowchart TD\n A-->B\n", file_type="mmd")
+    gone = Document(title="Shelved flow", content="flowchart TD\n A-->B\n", file_type="mmd")
+    session.add_all([kept, gone])
+    session.commit()
+    archived = client.put(f"/documents/{gone.id}/archive")
+    assert archived.status_code == 200
+
+    items = client.get("/library").json()["items"]
+    titles = [(i["kind"], i["title"]) for i in items if i["title"] in ("Kept flow", "Shelved flow")]
+    assert ("diagram", "Kept flow") in titles
+    assert ("shelved", "Shelved flow") in titles
+    assert ("diagram", "Shelved flow") not in titles
+
+
+def test_a_row_pressed_in_the_embed_dialogs_more_menu_leaves_focus_on_its_new_opener():
+    """Measured in Chromium: 'Hand-drawn look' remounted the pane and document.activeElement went to BODY inside a modal dialog."""
+    embed = (JS / "diagram-embed.js").read_text(encoding="utf-8")
+    body = embed.split("const show = () => {")[1].split("\n    const view = ")[0]
+    assert 'document.activeElement?.closest?.(".dgm-more")' in body
+    assert 'host.querySelector(".dgm-more button")?.focus(' in body

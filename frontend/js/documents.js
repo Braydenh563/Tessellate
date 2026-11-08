@@ -7606,6 +7606,7 @@ async function exportDocumentPdf() {
 //: text as a new document and everything that pointed at the old id was lost.
 //: `pushUndo` puts it on the app-wide stack (Ctrl+Z, the status bar's Undo)
 //: and `toastAction` offers it at once, which is when people notice.
+//: `documents-undone`: the Library lists documents and diagrams too and redraws only on its own actions, so an undo or redo of one (toast, Ctrl+Z, status bar) left a row gone or old until the tab was re-entered (dgmlive2 1108); library.js listens.
 async function deleteDocumentWithUndo(doc) {
   await apiJson(`/documents/${doc.id}`, { method: "DELETE" });
   const title = doc.title || "Untitled";
@@ -7614,10 +7615,12 @@ async function deleteDocumentWithUndo(doc) {
     async () => {
       await apiJson(`/documents/${doc.id}/restore`, { method: "POST" });
       await loadDocuments(doc.id);
+      document.dispatchEvent(new Event("documents-undone"));
     },
     async () => {
       await apiJson(`/documents/${doc.id}`, { method: "DELETE" });
       await loadDocuments();
+      document.dispatchEvent(new Event("documents-undone"));
     }
   );
   toastAction(`Moved ${toastName(title, "the document")} to the bin.`, "Undo", async () => {
@@ -7655,7 +7658,10 @@ async function renameDocumentWithUndo(doc, next) {
     docs = docs.map((d) => (d.id === saved.id ? { ...d, ...saved } : d));
     renderDocList();
   };
-  const put = async (title) => settle(await docPutFields(doc.id, { title }), title);
+  const put = async (title) => {
+    await settle(await docPutFields(doc.id, { title }), title);
+    document.dispatchEvent(new Event("documents-undone"));
+  };
   const saved = await docPutFields(doc.id, { title: next });
   offerUndo(`Renamed “${clipText(before, 40)}”`, `Renamed to “${clipText(next, 40)}”.`, () => put(before), () => put(next));
   await settle(saved, next);
@@ -7674,8 +7680,12 @@ async function archiveDocumentWithUndo(doc) {
     async () => {
       await apiJson(`/documents/${doc.id}/unarchive`, { method: "PUT" });
       await loadDocuments(doc.id);
+      document.dispatchEvent(new Event("documents-undone"));
     },
-    archive
+    async () => {
+      await archive();
+      document.dispatchEvent(new Event("documents-undone"));
+    }
   );
 }
 

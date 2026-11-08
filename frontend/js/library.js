@@ -491,7 +491,13 @@ async function loadLibrary() {
   renderLibraryOverview();
   renderLibraryFilters();
   renderLibraryView();
+  //: A row action (rename, archive, delete) reloads the grid under the focused ⋯, which dropped focus to the page (dgmlive2 1108): the card last used, or the first, takes it back.
+  const held = grid.contains(document.activeElement);
   renderLibrary({ quiet: true });
+  if (held && !grid.contains(document.activeElement)) {
+    ensureLibraryGridStop(grid);
+    grid.querySelector(".library-card .card-open[tabindex='0']")?.focus({ preventScroll: true });
+  }
 }
 
 /** The one line of the old overview strip that was not already on screen.
@@ -1754,6 +1760,9 @@ function ensureLibraryGridStop(grid) {
     grid.querySelector(".library-card");
   if (card) setLibraryCardStop(card, true);
 }
+document.addEventListener("documents-undone", () => {
+  if ($("library-grid")?.offsetParent) loadLibrary();
+});
 $("library-grid").addEventListener("focusin", (event) => {
   const card = event.target.closest?.(".library-card");
   if (!card || card.querySelector(".card-open")?.tabIndex === 0) return;
