@@ -193,6 +193,7 @@ class SpriteSet:
         self._source: dict[str, Any] = {}
         self._cache: dict[tuple[str, int, bool], Frame] = {}
         self._posed: dict[tuple[str, int, bool, tuple[float, ...]], Frame] = {}
+        self._tail_kept: dict[tuple[str, int, bool], tuple[Any, Any]] = {}
         self._spun_at: dict[tuple[int, int, bool], Frame] = {}
         self._canvas: dict[tuple[int, bool], tuple[Any, int, int]] = {}
         #: The quarter turn per dpi: {dpi: {step: (cropped premultiplied BGRA as an RGBA image, left, top)}}, built
@@ -325,7 +326,7 @@ class SpriteSet:
         """A new size is the one in use: pictures at any other are dropped (a drag crosses many sizes and
         must not leave a set of frames behind at each)."""
         dpi = int(dpi)
-        for store in (self._cache, self._posed, self._spun_at):
+        for store in (self._cache, self._posed, self._spun_at, self._tail_kept):
             for key in [k for k in store if k[1] != dpi]:
                 del store[key]
         with self._spin_lock:
@@ -433,6 +434,71 @@ class SpriteSet:
         warped = _glint(warped, flow, (left, top, right, feet))
         clear = clear_faint_alpha(warped)
         return Frame(w, h, premultiplied_bgra(clear), box=_drawn_box(clear))
+
+    def _tail_src(self, name: str, dpi: int, flip: bool) -> tuple[Any, Any]:
+        """The tail source picture (straight RGBA, at this size) and the region's feather mask, kept: both are the same
+        every tick."""
+        key = (name, int(dpi), bool(flip))
+        hit = self._tail_kept.get(key)
+        if hit is None:
+            image = self._pose_image(name, dpi, flip)
+            w, h = image.size
+            x0, y0, x1, y1 = self._tail_region(w, h, flip)
+            feather = max(1, round(TAIL_FEATHER * w / self._load("stand").size[0]))
+            mask = _feather_mask(x1 - x0, y1 - y0, feather, flip)
+            hit = (image, mask)
+            self._tail_kept[key] = hit
+            while len(self._tail_kept) > 8:
+                del self._tail_kept[next(iter(self._tail_kept))]
+        return hit
+
+    @staticmethod
+    def _tail_region(w: int, h: int, flip: bool) -> tuple[int, int, int, int]:
+        x0, y0, x1, y1 = TAIL_BOX
+        a, b = round(x0 * w), round(x1 * w)
+        return (w - b, round(y0 * h), w - a, round(y1 * h)) if flip else (a, round(y0 * h), b, round(y1 * h))
+
+    def tailed(self, base: Frame, name: str, dpi: int, flip: bool, view: tuple[int, ...] | None) -> Frame:
+        """`base` with the tail layer drawn over it (`behaviour.TailLayer.view`): the tail's region redrawn from the
+        tail source with its control points moved, every byte outside the region the body's own (the body frame is not
+        rebuilt: it is cut and spliced). The same frame when there is no layer for it."""
+        source = tail_source(name)
+        if source is None or not view or not any(view) or not self._has(source):
+            return base
+        from PIL import Image
+
+        src, mask = self._tail_src(source, dpi, flip)
+        w, h = src.size
+        if (base.width, base.height) != (w, h):
+            return base
+        x0, y0, x1, y1 = self._tail_region(w, h, flip)
+        scale = w / self._load("stand").size[0]
+        sgn = -1.0 if flip else 1.0
+        root = (x0 if not flip else x1)
+        reach = (TAIL_SPAN - TAIL_BOX[0]) * w  # root to the tip's rest, px
+        steps = len(view) // 2
+
+        def shift(x: float) -> tuple[float, float]:
+            dx, dy = _tail_shift(view, abs(x - root) / reach)
+            return sgn * dx * scale, dy * scale
+
+        edges = sorted({x0, x1, *(min(x1, max(x0, round(root + sgn * reach * i / steps))) for i in range(1, steps + 1))})
+        mesh = []
+        for a, b in zip(edges, edges[1:]):
+            (ax, ay), (bx, by) = shift(a), shift(b)
+            mesh.append(((a - x0, 0, b - x0, y1 - y0), (a - ax, y0 - ay, a - ax, y1 - ay, b - bx, y1 - by, b - bx, y0 - by)))
+        moved = src.transform((x1 - x0, y1 - y0), Image.Transform.MESH, mesh, Image.Resampling.BILINEAR)
+        row = (x1 - x0) * 4
+        pixels = base.bgra
+        old = Image.frombuffer("RGBA", (x1 - x0, y1 - y0), b"".join(pixels[((y0 + j) * w + x0) * 4:((y0 + j) * w + x1) * 4] for j in range(y1 - y0)), "raw", "BGRa", 0, 1)
+        mixed = clear_faint_alpha(Image.composite(moved, old, mask))
+        patch = premultiplied_bgra(mixed)
+        out = bytearray(pixels)
+        for j in range(y1 - y0):
+            at = ((y0 + j) * w + x0) * 4
+            out[at:at + row] = patch[j * row:(j + 1) * row]
+        whole = Image.frombuffer("RGBA", (w, h), bytes(out), "raw", "BGRA", 0, 1)  # only its alpha is read: the box
+        return Frame(w, h, bytes(out), base.pad_x, base.pad_y, _drawn_box(whole))
 
     def metrics(self, dpi: int = 96) -> dict[tuple[str, bool], tuple[int, int, int, int]]:
         """The drawn box of every frame, both mirrors, in the engine's own coordinates: from
@@ -567,6 +633,7 @@ class SpriteSet:
 #: height, the torso's middle (share of the half width: still inside the first, free past the second) never sways,
 #: and the outer streams take this share of a strand's sway at any height.
 FLOW_FIELDS = 5
+TAIL_Q = 8.0  # `behaviour.TAIL_Q`: steps a px in a tail view
 FLOW_WAIST = 0.5
 FLOW_CORE = (0.3, 0.6)
 FLOW_RIBBON = 0.8
@@ -629,6 +696,48 @@ def _glint(image: Any, flow: tuple[int, ...], box: tuple[int, int, int, int]) ->
     gate = ImageChops.multiply(mask, image.convert("L"))
     r, g, b, a = image.split()
     return Image.merge("RGBA", (ImageChops.screen(r, gate), ImageChops.screen(g, gate), ImageChops.screen(b, gate), a))
+
+
+#: The tail as a layer (atlascat-1108 C1, `behaviour.TailLayer`): the tail's region of a body frame (shares of the picture,
+#: as shipped, facing right) is redrawn every display frame from a fixed tail source (`stand`, or `sit`), each of its
+#: `TAIL_STEPS` control points moved by the view, so the tail moves smoothly and not at the idle cycle's 6 a second. The
+#: region's edges feather over `TAIL_FEATHER` px of the shipped frame, so no seam shows against the body. The root end
+#: (`TAIL_SPAN`: where the tail's tip rests, share of the width) never moves.
+TAIL_BOX = (0.52, 0.53, 1.0, 0.88)
+TAIL_SPAN = 0.82
+TAIL_FEATHER = 10
+TAIL_SOURCE = {"stand": "stand", "idle": "stand", "blink": "stand", "look": "stand", "sit": "sit", "sitblink": "sit"}
+
+
+def tail_source(name: str) -> str | None:
+    """The frame the tail is taken from for a body frame, or None when this one carries no layered tail."""
+    return TAIL_SOURCE.get(name.rstrip("0123456789"))
+
+
+def _feather_mask(width: int, height: int, feather: int, flip: bool) -> Any:
+    """The tail region's mask: 0 at the root's edge, the top and the bottom, rising to 255 over `feather` px."""
+    from PIL import Image, ImageChops
+
+    def ramp(n: int, both: bool, reverse: bool) -> list[int]:
+        out = []
+        for i in range(n):
+            j = n - 1 - i if reverse else i
+            out.append(round(255 * (min(1.0, (j + 1) / feather, (n - j) / feather) if both else min(1.0, (j + 1) / feather))))
+        return out
+
+    cols, rows = Image.new("L", (width, 1)), Image.new("L", (1, height))
+    cols.putdata(ramp(width, False, flip))
+    rows.putdata(ramp(height, True, False))
+    return ImageChops.multiply(cols.resize((width, height), Image.Resampling.NEAREST), rows.resize((width, height), Image.Resampling.NEAREST))
+
+
+def _tail_shift(view: tuple[int, ...], t: float) -> tuple[float, float]:
+    """The control points' move at `t` (0 root, 1 tip; clamped), px of the shipped frame, by their straight line."""
+    pts = [(0.0, 0.0)] + [(view[i] / TAIL_Q, view[i + 1] / TAIL_Q) for i in range(0, len(view), 2)]
+    u = max(0.0, min(1.0, t)) * (len(pts) - 1)
+    i = min(len(pts) - 2, int(u))
+    f = u - i
+    return pts[i][0] + (pts[i + 1][0] - pts[i][0]) * f, pts[i][1] + (pts[i + 1][1] - pts[i][1]) * f
 
 
 #: Alpha under this share of the picture is gone altogether: no faint ghost, and no click lands on it.

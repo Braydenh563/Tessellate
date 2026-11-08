@@ -206,6 +206,12 @@ POSE_OFF = ("held", "pressed", "fly", "fall", "rise", "peek", "emerge", "leap", 
 STRIDE = 3.5
 WALK_FRAMES = 12
 TAIL_TICK_MS = 16
+#: The layered tail (`behaviour.TailLayer`, atlascat-1108 C1) redraws at this pace while a figure stands or sits (30 a
+#: second: the tail's picture is one small warp, 1.3 ms at dpi 192, so a second of it costs about 4 percent of a core).
+TAIL_LAYER_MS = 33
+#: While the tail ticks at that pace the streams' own picture (a warp of the whole body, about 6 ms at dpi 192) is renewed
+#: this often, so a tick builds the tail only (1.3 ms) over the cached body picture.
+FLOW_VIEW_MS = 66
 GRAVITY = 2200.0
 NOTICE_NEAR = 120.0
 NOTICE_VERY_NEAR = 40.0
@@ -565,6 +571,8 @@ class Output(NamedTuple):
     prop: tuple[str, int, int] | None = None
     #: The face it wears over the frame, `(kind, step)` (`faces.EXPRESSIONS`, step 1 to 3), or None.
     face: tuple[str, int] | None = None
+    #: The tail layer's view (`behaviour.TailLayer.view`: control points' moves, small integers), or None.
+    tail: tuple[int, ...] | None = None
 
 
 def _adjoins(a: Rect, b: Rect, side: str) -> bool:
@@ -711,7 +719,11 @@ class Engine:
         self.tail = bh.Trail()
         #: The wisps and the nebula streams (INBOX 1683 c): always swaying, thrown by the body's moves.
         self.flow = bh.Flow()
+        #: The tail's own layer (C1): a floater's tail is drawn every display frame, not baked in the idle cycle.
+        self.tail_layer = bh.TailLayer()
+        self.tail_layer_on = True  # the runner turns it off for a look whose tail is not Atlas's (a captured companion)
         self._flow_held: tuple[int, ...] | None = None
+        self._flow_at = 0.0
         self.last_y = 0.0
         self.hour = 12
         self.act: str | None = None
@@ -4167,6 +4179,15 @@ class Engine:
         step = length / self.idle_frames
         return start + (math.floor((now - start) / step + 1e-6) + 1) * step
 
+    def _tail_view(self, now: float, frame: str) -> tuple[int, ...] | None:
+        """The layered tail's view over a stand-family or sit frame, or None (no layer: another frame, reduced motion, a
+        walker, a figure the person has hold of)."""
+        if self.gait != "float" or self.reduced or self.state not in ("stand", "sit") or frame.rstrip("0123456789") not in bh.TAIL_FRAMES:
+            return None
+        mood = self.mind.mood(now, self.hour)
+        self.tail_layer.choose(self.state, mood, now)
+        return self.tail_layer.view(now)
+
     def _flow_view(self, now: float, frame: str = "") -> tuple[int, ...] | None:
         """What the wisps and streams are doing at `now`; under reduced motion a slow drift only. While the
         person has hold of it or it is thrown or falling the last view is kept (review of 1683: a new flow is a
@@ -4176,8 +4197,15 @@ class Engine:
             return None
         if self.state in FLOW_FROZEN:
             return self._flow_held
+        if self._flow_held is not None and self._tail_ticks() and 0.0 <= now - self._flow_at < FLOW_VIEW_MS / 1000.0:
+            return self._flow_held  # the tail's ticks (33 ms) reuse the body picture: only the tail is redrawn between two of these
+        self._flow_at = now
         self._flow_held = self.flow.view(now, calm=self.reduced, frame=frame or "stand")
         return self._flow_held
+
+    def _tail_ticks(self) -> bool:
+        """The layered tail sets the pace of the redraws now (a stand or a sit of a floater, not reduced)."""
+        return self.gait == "float" and not self.reduced and self.tail_layer_on and self.state in ("stand", "sit")
 
     def _wake(self, now: float) -> int | None:
         """When to draw next: the state's own pace, and never later than the streams' (`FLOW_TICK_MS`, a calm
@@ -4189,6 +4217,8 @@ class Engine:
         if mine is not None:
             wake = mine if wake is None else min(wake, mine)
         tick = FLOW_CALM_MS if self.reduced else FLOW_SLEEP_MS if self.state == "sleep" else FLOW_TICK_MS
+        if self._tail_ticks():
+            tick = TAIL_LAYER_MS
         if self.state == "act" and self.spell is not None and self.act == self.spell["act"] and not self.reduced:
             tick = FLOW_SPELL_MS
         return tick if wake is None else min(wake, tick)
@@ -4301,4 +4331,5 @@ class Engine:
             self.click_now, self.settled_now, clip, self.card_clicked, self._pose(), fx, round(alpha * 16) / 16.0,
             self.angle + self.wob if frame.startswith("spin") and self.state == "fly" else math.pi if self.peek_flip or (self.upside and self.state == "held") else None,
             self._flow_view(now, frame) if fx is None else None, *self.ex.view(now),
+            self._tail_view(now, frame) if fx is None and self.tail_layer_on else None,
         )

@@ -627,6 +627,97 @@ FLOW_POSE = (("sleep", 0.5, 0.6), ("sit", 0.8, 0.85), ("hang", 0.95, 1.1), ("wav
 FLOW_POSE_EASE = 0.8
 
 
+#: The tail as a layer (atlascat-1108 C1, INBOX 1696 w: "the tail is framed in that it isnt a smooth animation"): the idle
+#: frames carry the tail's beat baked in at 6 a second, so the tail is drawn on its own, every display frame, over the body.
+#: The poses are the in-app rig's (`ATLAS_TAIL_ACTS`): [curl rad root to tip (+ round and down), amp rad of the wave at the
+#: tip, period s, k rad of phase root to tip]. A pose change eases over `TAIL_EASE` seconds, so no pose is ever a step.
+TAIL_POSES = {
+    "sway": (0.15, 0.34, 3.9, 3.4), "curl": (-1.3, 0.19, 4.6, 2.4), "wrap": (1.1, 0.17, 4.9, 2.2),
+    "wag": (-0.4, 0.46, 0.66, 2.4), "droop": (0.6, 0.11, 5.6, 1.8), "stiff": (-0.12, 0.08, 2.1, 2.0),
+}
+#: The poses a state picks from, by weight (the rig's `ATLAS_TAIL_BY_STATE`), and the mood's own (a glad one wags, a tired
+#: or bored one lets it droop, a startled one holds it stiff).
+TAIL_BY_STATE = {"stand": (("sway", 3.0), ("curl", 2.0), ("wrap", 1.4)), "sit": (("wrap", 2.0), ("sway", 1.0), ("curl", 1.0))}
+TAIL_BY_MOOD = {"happy": "wag", "proud": "wag", "sleepy": "droop", "bored": "droop", "startled": "stiff"}
+#: The body frames that carry the layered tail (the stand family and the sit; `sprites.TAIL_SOURCE` has the same names).
+TAIL_FRAMES = ("stand", "idle", "blink", "look", "sit", "sitblink")
+TAIL_HOLD = (3.0, 6.0)
+TAIL_EASE = 0.9
+TAIL_STEPS = 6  # control points along the tail, root excluded
+TAIL_Q = 8.0  # steps a px of the shipped frame in a view
+#: The tail's length in px of the shipped frame, and how much of a pose's own shape shows (a mesh shear, not a rig).
+TAIL_LEN = 96.0
+TAIL_REACH = 0.85
+
+
+def tail_bend(s: float, p: tuple[float, float, float, float], ph: float, ph2: float) -> float:
+    """The angle the tail has turned through at `s` (0 root, 1 tip): the rig's `atlasTailBend` without its third ripple."""
+    e = s ** 1.5
+    curl, amp, _period, k = p
+    return curl * s * s + amp * e * math.sin(ph - k * s) + max(0.13, 0.35 * amp) * e * math.sin(ph2 - 1.7 * k * s + 0.7)
+
+
+def tail_points(p: tuple[float, float, float, float], ph: float, ph2: float, wave: bool = True) -> list[tuple[float, float]]:
+    """The tail's axis, `TAIL_STEPS` points from the root (in tail lengths, x along the way it points, y down): the bend
+    integrated along it."""
+    x = y = 0.0
+    out = []
+    for i in range(1, TAIL_STEPS + 1):
+        t = (i - 0.5) / TAIL_STEPS
+        a = tail_bend(t, p, ph, ph2) if wave else p[0] * t * t
+        x, y = x + math.cos(a) / TAIL_STEPS, y + math.sin(a) / TAIL_STEPS
+        out.append((x, y))
+    return out
+
+
+class TailLayer:
+    """The tail's own motion at the display rate: a pose picked by the state and mood (its own seeded stream, so the
+    engine's other choices never shift), eased into from the last over `TAIL_EASE` seconds, a wave whose phase runs on
+    with the eased period. `view` is what the picture needs: where each control point sits against the rest shape, in
+    `TAIL_Q` steps of a px, so the sprite cache can key on it."""
+
+    def __init__(self, seed: int = 1696) -> None:
+        self.rng = random.Random(seed)
+        self.name = "sway"
+        self.p = list(TAIL_POSES["sway"])
+        self.ph = self.rng.random() * math.tau
+        self.ph2 = self.rng.random() * math.tau
+        self.until = 0.0
+        self.seen: float | None = None
+        #: The shape the shipped frames carry (a plain curl of the sway's, no wave): the layer moves the tail from it.
+        self.rest = tail_points((TAIL_POSES["sway"][0], 0.0, 1.0, 1.0), 0.0, 0.0, wave=False)
+
+    def choose(self, state: str, mood: str, now: float) -> None:
+        """Pick the next pose when the hold is over: the mood's if it has one, else a weighted pick of the state's."""
+        if now < self.until:
+            return
+        self.until = now + self.rng.uniform(*TAIL_HOLD)
+        if mood in TAIL_BY_MOOD:
+            self.name = TAIL_BY_MOOD[mood]
+            return
+        names, weights = zip(*TAIL_BY_STATE.get(state, TAIL_BY_STATE["stand"]))
+        self.name = self.rng.choices(names, weights)[0]
+
+    def view(self, now: float, calm: bool = False) -> tuple[int, ...]:
+        dt = 0.0 if self.seen is None else min(0.25, max(0.0, now - self.seen))
+        self.seen = now
+        goal = TAIL_POSES[self.name]
+        k = 1.0 - math.exp(-dt / TAIL_EASE)
+        for i in range(4):
+            self.p[i] += (goal[i] - self.p[i]) * k
+        slow = FLOW_CALM_SLOW if calm else 1.0
+        period = max(0.3, self.p[2]) * slow
+        self.ph = (self.ph + math.tau * dt / period) % math.tau
+        self.ph2 = (self.ph2 + math.tau * dt / (period * 0.62)) % math.tau
+        pose = tuple(self.p)
+        pts = tail_points(pose, self.ph, self.ph2)
+        amp = FLOW_CALM_AMP if calm else 1.0
+        out: list[int] = []
+        for (x, y), (rx, ry) in zip(pts, self.rest):
+            out += [round((x - rx) * TAIL_LEN * TAIL_REACH * amp * TAIL_Q), round((y - ry) * TAIL_LEN * TAIL_REACH * amp * TAIL_Q)]
+        return tuple(out)
+
+
 def _frac(x: float) -> float:
     return x - math.floor(x)
 

@@ -36,7 +36,7 @@ def hour(gait: str, seed: int, look: str = "masculine") -> dict:
 
 
 #: The least median settled stretch in seconds (moved from 45, INBOX 1692: rides are seen travel).
-SETTLED_MEDIAN = 35.0
+SETTLED_MEDIAN = 30.0
 CASES = [(g, s) for g in GAITS for s in SEEDS]
 
 
@@ -61,6 +61,8 @@ def test_at_rest_the_drawn_feet_do_not_move_and_it_starts_few_things(gait: str, 
     # ends a spell without a single step taken; the figure still keeps to its home, which the feet and the moving share hold.)
     # Intent moved (INBOX 1692, 00:50Z): a trip may now be a cloud ride or a bubble drift, a few seconds of picture changes
     # that cut a settled stretch short; the median is 40 on the worst seed (was 45 and up), so the bar is 35.
+    # Intent moved (atlascat-1108 C1): the tail layer makes a stand or a sit wake every `TAIL_LAYER_MS`, and the sim draws its
+    # pointer from a seeded stream once per wake, so the seeded hour reshuffles; seed 1 measures 31.5 (seeds 2 and 3 50 and 61), so 30.
     assert m["spell_median"] >= SETTLED_MEDIAN, m["spell_median"]
     assert m["moving_share"] <= 0.03, m["moving_share"]
 
@@ -74,7 +76,9 @@ def test_the_idle_wakes_stay_at_or_below_the_old_rate(gait: str, seed: int) -> N
     # 496 with it and 413 without. The rest the figure spends in place keeps the old bar.
     # Moved again (INBOX 1692): a cloud ride or bubble drift is drawn every frame while it travels; walk 2 measured 485.
     h = hour(gait, seed)
-    assert h["wakes_per_min"] - h["hang_wakes_per_min"] <= 500, h["hang_wakes_per_min"]  # measured about 380 to 440
+    # Intent moved (atlascat-1108 C1, INBOX 1696 w: the tail "isnt a smooth animation"): a stand or a sit now wakes every
+    # `TAIL_LAYER_MS` for the tail layer, 30 a second; the bar is that pace (measured 737, 1604, 1604 on the three seeds).
+    assert h["wakes_per_min"] - h["hang_wakes_per_min"] <= 60_000 // eng.TAIL_LAYER_MS, h["hang_wakes_per_min"]
 
 
 def test_fidgets_are_at_most_two_an_hour() -> None:

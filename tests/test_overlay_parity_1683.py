@@ -429,7 +429,9 @@ def test_an_hour_awake_shows_many_more_acts_and_pictures_and_still_barely_moves(
     assert r["longest_repeat"] <= 2, r
     assert r["pictures"] >= 700, r  # was 331 to 800 an hour
     assert r["moving_share"] <= 0.012, r  # travel is still rare: 0.3 to 1 percent of the hour by seed, 0.55 on average (was 0.5)
-    assert 70 <= r["wakes_per_min"] <= 700, r
+    # Intent moved (atlascat-1108 C1): the tail layer wakes a stand or a sit every `TAIL_LAYER_MS` (30 a second): 1745 a minute
+    # measured; the ceiling is that pace.
+    assert 70 <= r["wakes_per_min"] <= 60_000 // eng.TAIL_LAYER_MS, r
 
 
 @pytest.mark.parametrize("seed", [1, 3, 4])
