@@ -50,20 +50,24 @@
     return out;
   }
 
-  //: "Turn it sideways", one line under the toolbar, once per diagram (1679, slice 7): `want` is diagram-view.js's `math.sideways`.
-  //: A press turns it (one change); Keep ends the offer. Kept on S so a redraw does not ask again.
+  //: "Turn it sideways", one line in the picture pane, once per diagram (1679, slice 7): `want` is diagram-view.js's `math.sideways`
+  //: on a drawing that is shrunk to fit. A press turns it (one change); Keep ends the offer for that diagram for good: the host is
+  //: kept in `answered`, so a redraw or a rebuilt pane after an edit does not ask again.
+  const answered = new WeakSet();
   function offer(S, want) {
-    const show = want && !S.sidewaysAsked && Boolean(S.turn);
+    const show = want && !S.sidewaysAsked && !answered.has(S.host) && Boolean(S.turn);
     if (!show) return S.sideways?.classList.add("hidden");
     if (!S.sideways) {
       const line = document.createElement("div");
       line.className = "dgm-sideways muted";
       const words = document.createElement("span");
       words.textContent = "This chart is tall for this pane.";
-      const turn = smallButton("ph:arrow-right Turn it sideways", "Draw it left to right", () => ((S.sidewaysAsked = true), S.turn("LR")), false);
-      const keep = smallButton("Keep", "Leave it top to bottom", () => ((S.sidewaysAsked = true), line.classList.add("hidden")));
+      const done = () => ((S.sidewaysAsked = true), answered.add(S.host));
+      const turn = smallButton("ph:arrow-right Turn it sideways", "Draw it left to right", () => (done(), S.turn("LR")), false);
+      const keep = smallButton("Keep", "Leave it top to bottom", () => (done(), line.classList.add("hidden")));
       line.append(words, turn, keep);
-      S.note.after(line);
+      //: In the picture's stage, not the whole builder: it straddled the list and the picture (blind test 1108).
+      (S.fig.parentElement || S.note.parentElement).append(line);
       S.sideways = line;
     }
     S.sideways.classList.remove("hidden");

@@ -1,7 +1,10 @@
 # dgmfix2-1108 (branch agent/dgmfix2-1108)
 
-Done:
-- 1 Ctrl+Z in the builder: `diagramModel.bar.historyKey` on the root of both builders (diagram-bar.js).
-- 2 insert embed: diagramMadeKnown in documents-mermaid.js. 3 nearest join: Infinity reach in diagram-canvas.js. 4 and 5: Guide lead, ? popover lines, tap words (one commit).
+Done: 1 (47293615), 2 (5ead8020), 3 (44938f9f), 4 and 5 (2ca96d87), 6 (4afa55ae), 7, 8 and the extras (last commit).
 
-Next: 6 handle clamp (edited, unstaged), 7, 8, extras. Was: 2 insert embed refresh and name (documents-mermaid.js diagramDoor), then 3 to 8 and the three extras in the brief order.
+Not verified:
+- The hover blue bar at x 601-615 (the split handle) did not reproduce; unfixed.
+- The Edit-mode `![[name]]` chip: Live view has the picture card, now click-to-open; the chip path is unreachable for diagrams.
+- The phone sideways offer (it needs box.width > box.height, so it never showed at 390).
+- Real inference (fake transport only).
+- Guide `diagram-blocks` is at 1899 of 1900; the phone Suggest wording lost "in the ... menu" (pin in test_diagram_1596 moved).

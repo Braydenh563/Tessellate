@@ -77,3 +77,42 @@ def test_a_handle_stays_inside_the_part_of_the_picture_the_stage_shows():
     """A wide chart scrolls inside the stage, which clips: at 390 the selected block's right handle ended at 354 on a stage ending 344."""
     assert "seen.right - ox0" in EDGES and "fig.clientLeft - fig.scrollLeft" in EDGES
     assert "room(x0, x1, x - size / 2 + ox * out)" in EDGES
+
+
+OUTLINE = (JS / "diagram-outline.js").read_text(encoding="utf-8")
+VIEW = (JS / "diagram-view.js").read_text(encoding="utf-8")
+CSS = (ROOT / "frontend" / "css" / "diagram-lazy.css").read_text(encoding="utf-8")
+
+
+def test_the_turn_it_sideways_offer_needs_a_shrunk_drawing_lives_in_the_stage_and_is_answered_once_per_diagram():
+    """The default three boxes (418 px in a 538 px stage) asked; the line straddled the list and the picture; Keep did not hold after an edit."""
+    assert "offer(S, f < 1 && math.sideways(" in VIEW
+    assert "const answered = new WeakSet();" in OUTLINE and "answered.has(S.host)" in OUTLINE and "answered.add(S.host)" in OUTLINE
+    assert "S.fig.parentElement" in OUTLINE and "S.note.after(line)" not in OUTLINE
+    rule = CSS[CSS.index(".dgm-sideways {") : CSS.index("}", CSS.index(".dgm-sideways {"))]
+    assert "12rem" in rule
+
+
+DOCS_JS = (JS / "documents.js").read_text(encoding="utf-8")
+OPS = (JS / "diagram-ops.js").read_text(encoding="utf-8")
+KINDBAR = (JS / "diagram-kindbar.js").read_text(encoding="utf-8")
+DRAW = (JS / "mermaid-draw.js").read_text(encoding="utf-8")
+
+
+def test_opening_a_document_closes_the_block_hover_toolbar():
+    """Reopening from the embed's link left the pencil/copy/trash bar (1091,161 to 1193,199) over Suggest."""
+    start = DOCS_JS.index("const seq = ++docOpenSeq;")
+    assert "docBlockBarClose();" in DOCS_JS[start : start + 400]
+
+
+def test_a_decisions_second_branch_is_labelled_no_when_the_first_is_yes():
+    assert '"no"' in OPS and "diamond" in OPS[OPS.index("function dgbJoin") :][:1500]
+
+
+def test_the_kind_menu_label_differs_from_the_kind_button_label():
+    """Two elements shared the aria-label Kind of diagram."""
+    assert '"Kinds of diagram"' in KINDBAR
+
+
+def test_the_embedded_picture_opens_the_diagram_on_a_press():
+    assert "diagram-embed-box" in DRAW and "openDocument(doc.id)" in DRAW[DRAW.index("diagram-embed-box") :][:400]

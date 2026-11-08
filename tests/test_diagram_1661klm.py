@@ -36,7 +36,7 @@ def test_the_four_button_row_is_gone_and_one_kind_button_opens_a_menu():
     bar = _js("diagram-kindbar.js")
     assert "dgm-kinds" not in bar and ".dgm-kinds" not in CSS
     assert 'aria-haspopup", "menu"' in bar and "Kind of diagram: ${label}. Choose a kind" in bar
-    assert 'openMenuAtPoint(KINDS.map' in bar and '"Kind of diagram"' in bar
+    assert 'openMenuAtPoint(KINDS.map' in bar and '"Kinds of diagram"' in bar
 
 
 def test_the_button_sits_in_the_title_row_behind_a_kind_label_else_first_in_the_toolbar():

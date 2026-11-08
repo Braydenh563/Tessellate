@@ -76,8 +76,8 @@ def test_the_dialog_keeps_a_draft_per_target_and_gives_it_back_in_the_confirm():
 
 def test_a_handle_never_leaves_the_pictures_scroll_area():
     edges = (JS / "diagram-edges.js").read_text(encoding="utf-8")
-    assert "[wide, tall] = [fig.scrollWidth, fig.scrollHeight]" in edges and "room(wide, x - size / 2" in edges and "room(tall, y - size / 2" in edges
-    assert "Math.max(0, Math.min(at, extent - size))" in edges
+    assert "[wide, tall] = [fig.scrollWidth, fig.scrollHeight]" in edges and "room(x0, x1, x - size / 2" in edges and "room(y0, y1, y - size / 2" in edges
+    assert "Math.max(from, Math.min(at, to - size))" in edges
 
 
 def test_the_sideways_offer_is_out_of_the_flow_so_it_moves_no_pane():
