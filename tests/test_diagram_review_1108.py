@@ -81,6 +81,13 @@ def test_ctrl_z_from_a_button_in_the_diagram_window_stops_before_the_apps_undo()
     assert _embed_key("field") == ["prevent", "stop", "flush", "undo"]
 
 
+@needs_node
+def test_ctrl_z_in_a_text_field_of_the_diagram_window_is_left_to_the_browsers_text_undo():
+    """LOW: the title field (and a rename input) got preventDefault, which cancelled the browser's undo of the typing."""
+    assert _embed_key("title") == []
+    assert _embed_key("title", shift=True) == []
+
+
 def _join(first: str, steps: str):
     from tests.test_diagram_builder import _script
 
