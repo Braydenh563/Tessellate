@@ -1092,7 +1092,7 @@ def test_c46_a_joke_is_the_one_you_saved(notebook, question):
 def test_c31_a_one_line_label_note_in_a_list_is_never_untitled(notebook, question):
     said, _ = notebook(question)
     assert "Untitled" not in said, said
-    assert "[the note that starts “Idea: a podcast about local history”](#/notes/" in said, said
+    assert "[“Idea: a podcast about local history”](#/notes/" in said, said
     assert said.count("a podcast about local history") == 1, said
 
 

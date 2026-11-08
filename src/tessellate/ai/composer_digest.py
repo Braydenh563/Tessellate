@@ -1593,6 +1593,14 @@ def _unanswerable(stems: list[str], views: list[composer.NoteView]) -> bool:
     return any(st not in _VERBS() and not composer._holds(st, everywhere) for st in stems)
 
 
+def _said_as_typed(view: composer.NoteView, said: re.Pattern, stems: set[str]) -> bool:
+    """Whether a note says the plural noun as typed. A title that names the
+    activity ("Shopping") is "shops" as typed; "Booked flights" is not "books" (R3-9)."""
+    note = view.note
+    text = " ".join(str(note.get(k) or "") for k in ("content", "title", "category")) + " " + " ".join(map(str, note.get("tags") or []))
+    return bool(said.search(text)) or any(w.lower().endswith("ing") and composer._stem(w.lower()) in stems for w in re.findall(r"[A-Za-z]+", view.title))  # noqa: SLF001
+
+
 def _typed_first(members: list[composer.NoteView], question: str) -> list[composer.NoteView]:
     """"books" is the notes that say "book" or "books", before the ones that
     only say "booked" (the stemmer folds all three; audit 1031 C8). Only a
@@ -1601,7 +1609,8 @@ def _typed_first(members: list[composer.NoteView], question: str) -> list[compos
     if not plural or len(members) < 2:
         return members
     said = re.compile(r"\b(?:" + "|".join(re.escape(w) for t in plural for w in (t, t[:-1])) + r")\b", re.I)
-    typed = [v for v in members if said.search(" ".join(str(v.note.get(k) or "") for k in ("content", "title", "category")) + " " + " ".join(map(str, v.note.get("tags") or [])))]
+    stems = {composer._stem(t) for t in plural}  # noqa: SLF001
+    typed = [v for v in members if _said_as_typed(v, said, stems)]
     return typed or members
 
 
@@ -1633,11 +1642,20 @@ def _members(question: str, views: list[composer.NoteView]) -> list[composer.Not
     #: "buy a capo" in it. A note must hold a word that names something (when
     #: the question has one); the doing words then count with the rest.
     scored = _scored_members(stems, views)
+    #: A synonym ("shop" for "bought") is the word's stand-in: it never joins notes that say the word itself (R3-9).
+    said = [(h, v) for h, v in scored if any(st in _pool(v) or st in _filed_text(v) for st in stems if st not in _VERBS())]
+    scored = said or scored
     if not scored or _unanswerable(stems, views):
         return []
     best = max(h for h, _ in scored)
     need = best if best >= 2 else 1
     return _acting(_typed_first([v for h, v in scored if h >= need], question), question)
+
+
+def _filed_text(view: composer.NoteView) -> str:
+    """A note's text, title, category and tags as typed, lower-case: where "books" is said even when the note's words are not."""
+    note = view.note
+    return " ".join(str(note.get(k) or "") for k in ("content", "title", "category", *(("tags",) if not note.get("tags") else ()))).lower() + " " + " ".join(map(str, note.get("tags") or [])).lower()
 
 
 def _scored_members(stems: list[str], views: list[composer.NoteView]) -> list[tuple[int, composer.NoteView]]:
@@ -3647,6 +3665,20 @@ def _ahead_if(on: bool, fact: Fact) -> bool:
     return on and _ahead(fact, _TODAY.get())
 
 
+#: "what am I reading": the doing as it is going on, which a sentence saying it leads (R3-22).
+_AM_DOING = re.compile(r"^\s*what (?:\w+ )?am i (?:\w+ )?([a-z]{3,}ing)\b", re.I)
+
+
+def _says_now(going_on: re.Pattern | None, fact: Fact) -> bool:
+    """Whether the sentence says the doing asked about ("Currently reading Piranesi")."""
+    return bool(going_on and going_on.search(fact.sentence.text))
+
+
+def _opening(fact: Fact) -> bool:
+    """Whether the sentence is the first its note says."""
+    return bool(fact.view.sentences) and fact.sentence is fact.view.sentences[0]
+
+
 def _best(facts: list[Fact], question: str, cue: re.Pattern | None = None) -> Fact | None:
     #: Without the asking words: "what day did I run 8 km" is not about a "day".
     stems = set(_subject(question))
@@ -3666,6 +3698,8 @@ def _best(facts: list[Fact], question: str, cue: re.Pattern | None = None) -> Fa
     did_ask = bool(_WHEN_DID.match(clean(question)))
     subject_words = list(composer.subject_terms(clean(question)))
     names_a_thing = bool(_NAMES_A_THING.match(clean(question)))
+    going = _AM_DOING.search(clean(question))
+    going_on = re.compile(rf"\b{re.escape(going.group(1))}\b", re.I) if going else None
     now_ask = bool(_WHEN_NOW.match(clean(question))) and _TODAY.get() is not None
     #: "what is Project Atlas" is the note titled that, whatever other note repeats the name (round 1 D1).
     #: Only a "what/who is X" ask: any other ask is weighed by what the lines say (review 1).
@@ -3680,7 +3714,7 @@ def _best(facts: list[Fact], question: str, cue: re.Pattern | None = None) -> Fa
         own = sum(weight[st] for st in stems if composer._holds(st, words))
         hits = sum(weight[st] for st in stems if composer._holds(st, words | f.view.filed_words | f.view.title_words))
         #: The amount asked about ("8 km") beats a sentence that only shares the verb.
-        same_figure = bool(figures & composer_answer.figures_of(f.sentence.text)) if figures else False
+        same_figure = bool(figures & composer_answer.figures_of(f.sentence.text))
         #: Between sources that say it equally well, the one the search ranked first.
         #: Of the notes that fit the subject equally, the newest one for a "latest" ask.
         newest = (f.view.written or date.min) if latest else date.min
@@ -3694,7 +3728,11 @@ def _best(facts: list[Fact], question: str, cue: re.Pattern | None = None) -> Fa
         #: latest ask. Said in the tuple itself: CodeQL lost the local in this
         #: closure and read it as possibly unset.
         titled = id(f.view) in titled_views
-        return (not asked_back, acts, _cued(cue, f.sentence.text), _ahead_if(now_ask, f), not (latest and f.sentence.kind in {"item", "task"}), id(f.view) not in old, _label_asked(f.label, question), titled, hits, newest, own, asks_feeling and _feeling(f.sentence.text), same_figure, -f.view.rank, -f.sentence.order)
+        #: The sentence that says the doing ("Currently reading Piranesi") beats the note that is only about it.
+        doing_now = _says_now(going_on, f)
+        #: What a titled note is leads with the line it opens on; 
+        opens = titled and _opening(f)
+        return (not asked_back, doing_now, acts, _cued(cue, f.sentence.text), _ahead_if(now_ask, f), not (latest and f.sentence.kind in {"item", "task"}), id(f.view) not in old, _label_asked(f.label, question), titled, opens, hits, newest, own, asks_feeling and _feeling(f.sentence.text), same_figure, -f.view.rank, -f.sentence.order)
 
     return max(facts, key=rank) if facts else None
 
@@ -4047,7 +4085,9 @@ _MONEY_ASK = re.compile(r"\bhow much\b|\b(?:costs?|price[sd]?|pay|paid|charge[sd
 
 #: "how long do I bake it": the lead is the sentence that holds a length of time (audit 1031 C16).
 _HOW_LONG = re.compile(r"^\s*how long\s+(?:do|does|did|will|would|should|can|could|is|are|was|were)\b", re.I)
-_DURATION = re.compile(r"\b\d+(?:[.,]\d+)?\s*(?:-\s*\d+\s*)?(?:seconds?|secs?|minutes?|mins?|hours?|hrs?|days?|weeks?|months?|years?)\b", re.I)
+_DURATION = re.compile(
+    r"\b(?:\d+(?:[.,]\d+)?\s*(?:-\s*\d+\s*)?|(?:one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|a few|several)\s+)"
+    r"(?:seconds?|secs?|minutes?|mins?|hours?|hrs?|nights?|days?|weeks?|months?|years?)\b", re.I)
 
 
 def _single_cue(kind: str, asked: str) -> re.Pattern | None:
@@ -4091,10 +4131,28 @@ def _property_lead(out: _Out, question: str, members, facts: list[Fact], lead: F
     return None
 
 
+_PRICE_WORDS = re.compile(r"\b(?:costs?|price[sd]?|pay|paid|charge[sd]?)\b", re.I)
+
+
+def _no_price(out: _Out, cue, question: str, members) -> bool:  # noqa: ANN001
+    """"what does espresso cost" when no note on it holds an amount: that is
+    said, not the machine's model name (R3-28)."""
+    if not (isinstance(cue, _MoneyCue) and _PRICE_WORDS.search(question)) or any(cue.search(x.text) for m in members for x in m.sentences):
+        return False
+    named = [w for w in composer.subject_terms(clean(question)) if not _PRICE_WORDS.fullmatch(w) and w.lower() not in {"much", "does", "did", "do"}]
+    out.lines.append(f"None of your {' '.join(named[:2])} notes give a price." if named else "None of your notes give a price.")
+    return True
+
+
+def _heard_heading(lead: Fact) -> bool:
+    """A fact under a heading that says what was heard, done or planned."""
+    return bool(lead.heading and (_HEARD.search(lead.label) or _DID.search(lead.label) or _PLANNED.search(lead.label)))
+
+
 def _single(out: _Out, kind: str, question: str, members, facts, today: date) -> None:
     cue = _single_cue(kind, clean(question))
     lead = _best(facts, question, cue)
-    if lead is None:
+    if lead is None or _no_price(out, cue, question, members):
         return
     lead = _property_lead(out, question, members, facts, lead)
     if lead is None:
@@ -4108,7 +4166,7 @@ def _single(out: _Out, kind: str, question: str, members, facts, today: date) ->
         rest = _single_opinion(out, lead, facts, rest, question, today)
     elif kind == "count":
         rest = _single_count(out, lead, facts, members, question, today)
-    elif lead.heading and (_HEARD.search(lead.label) or _DID.search(lead.label) or _PLANNED.search(lead.label)):
+    elif _heard_heading(lead):
         rest = _single_heading(out, lead, rest, today)
     else:
         _say_fact(out, lead, today, question)
@@ -4497,25 +4555,76 @@ def _which_names(kind: str, asked: str) -> tuple[str, str]:
     return ("who", f"who is {m.group('name').strip()}") if m else (kind, asked)
 
 
-def _early(out: _Out, kind: str, asked: str, question: str, views: list, today: date):  # noqa: ANN202
-    """The answers that are one notebook-wide lookup (what an abbreviation
-    stands for, who someone is, a comparison, what a category holds): the
-    result, None when the ask fits but nothing answers it, or `_ORDINARY`."""
-    names = _NAMES.get()
-    if _looked_up(out, asked, question, views, today):
-        return _result(out, "fact", asked)
-    kind, asked = _which_names(kind, asked)
+#: "how many cells", "number of cells": one counted noun and nothing else.
+_COUNTED = re.compile(r"^(?:how many|(?:the )?number of) (?P<noun>[a-z]{3,})(?: (?:do i have|are there|have i got))?$", re.I)
+#: Nouns other readers count (notes, words, days): never answered here.
+_COUNTED_ELSEWHERE = frozenset({"notes", "entries", "words", "characters", "letters", "sentences", "days", "weeks", "months", "years", "hours", "minutes", "nights", "times", "items", "tasks", "reminders", "lists", "files", "documents", "boards", "pictures", "tags", "categories", "things"})
+
+
+def _count_of_unwritten(asked: str, views: list) -> str:
+    """"how many cells" when no note says the word: its synonym ("cell" is a
+    phone) must not stand in, so the answer is that none does (R3-6)."""
+    m = _COUNTED.match(clean(asked).strip(" ?.!"))
+    noun = m.group("noun").lower() if m else ""
+    if not noun or noun in _COUNTED_ELSEWHERE:
+        return ""
+    stems = composer._words(noun)  # noqa: SLF001
+    everywhere = set().union(*(_pool(v) for v in views))
+    return "" if not stems or any(st in everywhere for st in stems) else f"None of your notes mention {noun}."
+
+
+_MY_LIST = re.compile(r"^what(?:'s| is| are)? (?:on|in) (?:my|the) (?:check ?)?lists?$", re.I)
+
+
+def _which_list(out: _Out, asked: str, views: list) -> bool:
+    """"what is on my list" with several lists to be meant: asked which, with
+    each as a chip, rather than the first one picked (R3-8)."""
+    if not _MY_LIST.match(clean(asked).strip(" ?.!")):
+        return False
+    lists = [v for v in views if getattr(v, "titled", False) and len(v.sentences) >= 2 and all(s.kind in ("task", "item") for s in v.sentences)]
+    if len(lists) < 2:
+        return False
+    names = [v.title for v in lists[:4]]
+    out.lines.append(f"Which list: {', '.join(names[:-1])} or {names[-1]}?")
+    out.next = [f"What is in {n}?" for n in names[:3]]
+    return True
+
+
+def _asked_which(out: _Out, asked: str, views: list) -> bool:
+    """The two short answers that need no note read: which of several lists is
+    meant (R3-8), and that no note mentions the thing counted (R3-6)."""
+    if _which_list(out, asked, views):
+        return True
+    none = _count_of_unwritten(asked, views)
+    if none:
+        out.lines.append(none)
+    return bool(none)
+
+
+def _as_who(kind: str, asked: str, names: set[str], views: list) -> tuple[str, str]:
+    """"tell me about Tom" is "who is Tom": a name has one answer shape (audit
+    1029 C17), never an attendee list read as a count. "How did I meet Mia" is
+    too: the note that says who she is answers it, never one that only shares
+    the verb ("we meet on Thursdays")."""
     met = _HOW_MET.match(asked.strip(" ?.!"))
     #: One meets a person: a name asked so is one even when notes are
     #: tagged with it (#mia), which `_person_asked` reads as a topic.
     said = met.group("name").lower() if met else ""
     said = said if said.isalpha() and said in names else ""
     if said or (kind == "overview" and (said := _person_asked(asked, names, views))):
-        #: "tell me about Tom" is "who is Tom": a name has one answer shape
-        #: (audit 1029 C17), never an attendee list read as a count. "How
-        #: did I meet Mia" is too: the note that says who she is answers
-        #: it, never one that only shares the verb ("we meet on Thursdays").
-        kind, asked = "who", f"who is {said}"
+        return "who", f"who is {said}"
+    return kind, asked
+
+
+def _early(out: _Out, kind: str, asked: str, question: str, views: list, today: date):  # noqa: ANN202
+    """The answers that are one notebook-wide lookup (what an abbreviation
+    stands for, who someone is, a comparison, what a category holds): the
+    result, None when the ask fits but nothing answers it, or `_ORDINARY`."""
+    names = _NAMES.get()
+    if _looked_up(out, asked, question, views, today) or _asked_which(out, asked, views):
+        return _result(out, "fact", asked)
+    kind, asked = _which_names(kind, asked)
+    kind, asked = _as_who(kind, asked, names, views)
     if kind == "who":
         name = _ASKS["who"].search(asked).group("name").strip()
         return _result(out, kind, asked) if _who(out, name, views, names, today) else None
@@ -4749,6 +4858,11 @@ def answer(
     when the question is not one this shape answers (a sum, a time, a
     command, nothing found): the caller then asks `composer.compose`."""
     today = today or composer.user_today()
+    from tessellate.ai import composer_intent
+
+    #: What is on a named day is one answer, however asked: the recall's (R3-8).
+    if composer_intent.asks_the_day(question, today):
+        return None
     if one := composer_oneword.named(question, notes):
         return _one_word_result(one)
     #: "Where did I write about squats" is a sentence naming the note (A22), not a digest of what it says.

@@ -49,6 +49,10 @@ _RECALL = re.compile(
 
 
 #: The verbs of such a question, which are not subjects to search for.
+#: "do I have anything on Wednesday" asks what is on the day, as "what is on Wednesday" does (R3-8).
+_ANYTHING_ON = re.compile(r"^\W*(?:do i have|have i got|have i|got|is there|are there)\s+(?:anything|something)\b", re.I)
+
+
 _RECALL_VERBS = frozenset("add added save saved make made jot jotted capture captured anything write wrote note noted".split())
 
 
@@ -128,10 +132,29 @@ def _plan_constraints(question: str, terms: list[str]) -> tuple[dict, list[str],
     return constraints, terms, source_kind
 
 
+#: "what do I have on Friday", "do I have anything on Friday": the day's items (R3-8).
+_DAY_ASK = re.compile(r"^\W*(?:what do i have|do i have|have i got|have i|got|is there|are there)\s+(?:(?:anything|something)\s+)?(?:on|for)\b", re.I)
+
+
+def asks_the_day(question: str, today: date) -> bool:
+    """Whether the question asks what is on one named day, which the recall
+    answers the same way however it is put."""
+    if not _DAY_ASK.search(question or ""):
+        return False
+    p = plan(question, today)
+    return p.kind == "recall" and bool(p.window) and p.window[0] == p.window[1]
+
+
+def _asks_recall(question: str, shape: str) -> bool:
+    """A day or window with no subject asks what the notes hold from then;
+    "do I have anything on Wednesday" asks it as a yes/no (R3-8)."""
+    return bool(_RECALL.search(question or "")) or shape in ("what", "recent", "list") or (shape == "yesno" and bool(_ANYTHING_ON.search(question or "")))
+
+
 def _plan_kind(question: str, utility: str | None, shape: str, spanned: bool, has_terms: bool) -> str:
     if utility and utility != "until_note":
         return "utility"
-    if spanned and not has_terms and (_RECALL.search(question or "") or shape in ("what", "recent", "list")):
+    if spanned and not has_terms and _asks_recall(question, shape):
         return "recall"
     if _INSIGHT.search(question or ""):
         return "insight"
