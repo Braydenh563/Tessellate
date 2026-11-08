@@ -11616,6 +11616,23 @@ function wbCommitOpenEdit() {
   if (active?.isContentEditable && active.closest("#wb-html-layer")) active.blur();
 }
 
+//: **A box still being typed in is saved when the page goes** (boardfix-1108):
+//: the save runs on blur, and a reload or a closed tab does not blur, so words
+//: typed into an open sticky, text box or topic never left (measured: type,
+//: reload, the server kept the old text and no write was sent). `pagehide`
+//: finishes the edit and `wbSaveObject` sends with `keepalive` while
+//: `wbPageLeaving` is set, so the request outlives the page. Not
+//: `visibilitychange`: switching tabs must not end an edit in progress.
+let wbPageLeaving = false;
+window.addEventListener("pagehide", () => {
+  wbPageLeaving = true;
+  try {
+    wbCommitOpenEdit();
+  } finally {
+    setTimeout(() => { wbPageLeaving = false; }, 0);
+  }
+});
+
 async function wbUndo() {
   await wbDeleting.settled();
   wbHistoryFor();
@@ -23300,6 +23317,7 @@ async function wbSaveObject(d) {
     const saved = await apiJson(`/whiteboard/objects/${d.id}`, {
       method: "PUT",
       body: JSON.stringify(body),
+      keepalive: wbPageLeaving,
     });
     //: **What changed here while the save was out stays** (audit FEAT-02):
     //: with the map's add no longer waiting for its saves, a tidy or a
