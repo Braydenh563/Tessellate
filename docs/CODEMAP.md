@@ -2,7 +2,7 @@
 
 Generated 2026-11-08 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7861, frontend ids 2644, CSS sections 522, backend routes 649, backend modules 9005, test files 2157, tests 18197, plan headings 1004, app scripts 28, boot scripts 37, script files 261.
+Counts: frontend functions 7861, frontend ids 2644, CSS sections 522, backend routes 649, backend modules 9009, test files 2157, tests 18198, plan headings 1004, app scripts 28, boot scripts 37, script files 261.
 
 ## Frontend functions (7861)
 
@@ -13080,7 +13080,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:164 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (9005)
+## Backend modules (9009)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -18575,27 +18575,31 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `served_index_html` | src/tessellate/api/app.py:287 |
 | `served_offline_html` | src/tessellate/api/app.py:271 |
 
-### src/tessellate/api/asset_strip.py (17)
+### src/tessellate/api/asset_strip.py (21)
 
 | Name | File:line |
 |---|---|
-| `_css_scan` | src/tessellate/api/asset_strip.py:334 |
+| `_css_scan` | src/tessellate/api/asset_strip.py:384 |
 | `_drop_indent` | src/tessellate/api/asset_strip.py:117 |
-| `_html_tag_end` | src/tessellate/api/asset_strip.py:400 |
-| `_js_regex_allowed` | src/tessellate/api/asset_strip.py:142 |
-| `_js_scan` | src/tessellate/api/asset_strip.py:225 |
+| `_first_doubt` | src/tessellate/api/asset_strip.py:184 |
+| `_html_tag_end` | src/tessellate/api/asset_strip.py:450 |
+| `_js_regex_allowed` | src/tessellate/api/asset_strip.py:163 |
+| `_js_scan` | src/tessellate/api/asset_strip.py:271 |
+| `_js_slash_doubtful` | src/tessellate/api/asset_strip.py:194 |
 | `_keep` | src/tessellate/api/asset_strip.py:58 |
+| `_keep_after` | src/tessellate/api/asset_strip.py:257 |
+| `_prev_code` | src/tessellate/api/asset_strip.py:142 |
 | `_rebuild` | src/tessellate/api/asset_strip.py:64 |
-| `_skip_regex` | src/tessellate/api/asset_strip.py:194 |
-| `_skip_string` | src/tessellate/api/asset_strip.py:177 |
-| `css_comment_spans` | src/tessellate/api/asset_strip.py:330 |
-| `html_comment_spans` | src/tessellate/api/asset_strip.py:416 |
-| `js_comment_spans` | src/tessellate/api/asset_strip.py:220 |
-| `strip_css` | src/tessellate/api/asset_strip.py:378 |
-| `strip_for_path` | src/tessellate/api/asset_strip.py:463 |
-| `strip_html` | src/tessellate/api/asset_strip.py:459 |
-| `strip_js` | src/tessellate/api/asset_strip.py:320 |
-| `strip_js_comments` | src/tessellate/api/asset_strip.py:314 |
+| `_skip_regex` | src/tessellate/api/asset_strip.py:231 |
+| `_skip_string` | src/tessellate/api/asset_strip.py:214 |
+| `css_comment_spans` | src/tessellate/api/asset_strip.py:380 |
+| `html_comment_spans` | src/tessellate/api/asset_strip.py:466 |
+| `js_comment_spans` | src/tessellate/api/asset_strip.py:266 |
+| `strip_css` | src/tessellate/api/asset_strip.py:428 |
+| `strip_for_path` | src/tessellate/api/asset_strip.py:513 |
+| `strip_html` | src/tessellate/api/asset_strip.py:509 |
+| `strip_js` | src/tessellate/api/asset_strip.py:370 |
+| `strip_js_comments` | src/tessellate/api/asset_strip.py:364 |
 
 ### src/tessellate/api/bounds.py (4)
 
@@ -24419,7 +24423,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (18197)
+## Tests (18198)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -24499,7 +24503,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_ask_user.py | 18 |
 | tests/test_ask_wait_1027.py | 4 |
 | tests/test_asset_cache_busting.py | 3 |
-| tests/test_asset_strip.py | 26 |
+| tests/test_asset_strip.py | 27 |
 | tests/test_atlas_access.py | 6 |
 | tests/test_atlas_acts_1589.py | 6 |
 | tests/test_atlas_blink_both_eyes_1644.py | 3 |

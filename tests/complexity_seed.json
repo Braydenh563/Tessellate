@@ -75,7 +75,6 @@
  "src/tessellate/ai/utilities.py::_dates": 18,
  "src/tessellate/ai/vision_ocr.py::pdf_vision_ocr_and_store": 16,
  "src/tessellate/api/app.py::RevalidatedStatic._precompressed": 21,
- "src/tessellate/api/asset_strip.py::_js_regex_allowed": 18,
  "src/tessellate/api/asset_strip.py::_rebuild": 17,
  "src/tessellate/api/asset_strip.py::_js_scan": 24,
  "src/tessellate/api/routes_board_history.py::_board_events": 20,

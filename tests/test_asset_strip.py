@@ -118,6 +118,21 @@ def test_regexes_and_kept_comments_are_not_reindented():
     assert strip_js(src) == "a = /  x[ ]\\/ y/g;\nb = c / d;\n/*! keep\n     this */\n"
 
 
+def test_a_slash_after_a_closing_bracket_that_might_open_a_regex_keeps_later_indents():
+    """`if (x)\n /`/.test(y)` is a regex statement, but a `/` after `)` reads
+    as division, so its backtick would open a template and the guess would
+    strip real template text. Where a quote could be hiding in such a regex
+    the rest of the file keeps its indentation; a plain division does not."""
+    src = "if (x)\n   /`/.test(y);\n   z = `\n   a`;\n"
+    assert strip_js(src) == "if (x)\n/`/.test(y);\n   z = `\n   a`;\n"
+    block = "if (x) {}\n  /'/.test(y);\n  z = '\\\n  a';\n"
+    assert strip_js(block) == "if (x) {}\n/'/.test(y);\n  z = '\\\n  a';\n"
+    # Division with no quote between the slashes is certain: indents still go.
+    assert strip_js("n = (a) / 2 / (b);\n  m();\n") == "n = (a) / 2 / (b);\nm();\n"
+    mid = 'k = (a - b) / 100 + "." + (c) / 3;\n  m();\n'
+    assert strip_js(mid) == 'k = (a - b) / 100 + "." + (c) / 3;\nm();\n'
+
+
 def test_css_loses_its_leading_indentation_but_not_inside_strings_or_urls():
     src = (
         ".a {\n    color: red;\n\tmargin: 0;\n}\n"

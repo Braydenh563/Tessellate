@@ -46,7 +46,7 @@ import re
 #: Bumped whenever the output for the same input changes, so a cached copy
 #: from an older stripper (memory, `<data dir>/cache/static-gz`, and the
 #: content-hash stamp the browser caches against) is never reused.
-STRIP_VERSION = "4"
+STRIP_VERSION = "5"
 
 _IDENT_CHAR = re.compile(r"[\w$]")
 #: After these words a `/` starts a regex literal, not a division.
@@ -139,8 +139,9 @@ _JS_NEXT = re.compile(r"[\"'`/{}]")
 _TEMPLATE_NEXT = re.compile(r"[`\\$]")
 
 
-def _js_regex_allowed(text: str, i: int, spans: list[tuple[int, int]]) -> bool:
-    """Whether a `/` at `i` begins a regex literal, from the token before it."""
+def _prev_code(text: str, i: int, spans: list[tuple[int, int]]) -> int:
+    """Index of the last character before `i` that is neither blank nor in a
+    comment of `spans`, or -1."""
     j = i - 1
     k = len(spans) - 1
     while j >= 0:
@@ -156,6 +157,12 @@ def _js_regex_allowed(text: str, i: int, spans: list[tuple[int, int]]) -> bool:
             k -= 1
             continue
         break
+    return j
+
+
+def _js_regex_allowed(text: str, i: int, spans: list[tuple[int, int]]) -> bool:
+    """Whether a `/` at `i` begins a regex literal, from the token before it."""
+    j = _prev_code(text, i, spans)
     if j < 0:
         return True
     ch = text[j]
@@ -172,6 +179,36 @@ def _js_regex_allowed(text: str, i: int, spans: list[tuple[int, int]]) -> bool:
     if ch in "+-" and j > 0 and text[j - 1] == ch:
         return False  # postfix `x++ / 2`
     return True
+
+
+def _first_doubt(doubt: int, text: str, i: int, spans: list[tuple[int, int]]) -> int:
+    """`doubt` if set, else `i` when the division-read `/` at `i` is doubtful."""
+    if doubt >= 0:
+        return doubt
+    return i if _js_slash_doubtful(text, i, spans) else -1
+
+
+_CONTROL_HEAD = re.compile(r"[ \t]*(?:\}[ \t]*)?(?:else[ \t]+)?(?:if|while|for|with)\b")
+
+
+def _js_slash_doubtful(text: str, i: int, spans: list[tuple[int, int]]) -> bool:
+    """A `/` read as division that could be a regex statement whose quote or
+    backtick would then not open a string, e.g. `if (x) /`/.test(y)`: the
+    one guess `_js_scan` cannot settle from the token before. Only a `/`
+    right after the `)` of an `if`/`while`/`for`/`with` head, or a `/` that
+    starts a line after a `}` or `)`, qualifies; `(a - b) / 100 + "."` does
+    not."""
+    j = _prev_code(text, i, spans)
+    if j < 0 or text[j] not in ")}":
+        return False
+    line = text.rfind("\n", 0, j) + 1
+    first = text.rfind("\n", 0, i) + 1
+    control = text[j] == ")" and _CONTROL_HEAD.match(text, line) is not None
+    starts_line = first > j and not text[first:i].strip()
+    if not (control or starts_line):
+        return False
+    end = _skip_regex(text, i)
+    return end is not None and re.search(r"[\"'`]", text[i:end]) is not None
 
 
 def _skip_string(text: str, i: int, quote: str) -> int:
@@ -217,6 +254,15 @@ def _skip_regex(text: str, i: int) -> int | None:
     return None
 
 
+def _keep_after(
+    keep: list[tuple[int, int]], doubt: int, n: int
+) -> list[tuple[int, int]]:
+    """`keep` with everything from the first doubtful `/` on as one range."""
+    if doubt < 0:
+        return keep
+    return [r for r in keep if r[1] <= doubt] + [(doubt, n)]
+
+
 def js_comment_spans(text: str) -> list[tuple[int, int]]:
     """Every comment's (start, end) in a script, kept ones excluded."""
     return _js_scan(text)[0]
@@ -231,6 +277,9 @@ def _js_scan(text: str) -> tuple[list[tuple[int, int]], list[tuple[int, int]]]:
     tstart = 0
     #: Every comment, kept ones too, in order: what the regex test skips over.
     every: list[tuple[int, int]] = []
+    #: Where the first doubtful `/` sits; text after it may be misread, so
+    #: its lines keep their indentation.
+    doubt = -1
     # One entry per open `${`: the `{` depth inside that substitution.
     templates: list[int] = []
     n = len(text)
@@ -241,7 +290,7 @@ def _js_scan(text: str) -> tuple[list[tuple[int, int]], list[tuple[int, int]]]:
             m = _TEMPLATE_NEXT.search(text, i)
             if m is None:
                 keep.append((tstart, n))
-                return spans, keep
+                return spans, _keep_after(keep, doubt, n)
             i = m.start()
             ch = text[i]
             if ch == "\\":
@@ -307,8 +356,9 @@ def _js_scan(text: str) -> tuple[list[tuple[int, int]], list[tuple[int, int]]]:
                 end = _skip_regex(text, i)
                 i = i + 1 if end is None else end
             else:
+                doubt = _first_doubt(doubt, text, i, every)
                 i += 1
-    return spans, keep
+    return spans, _keep_after(keep, doubt, n)
 
 
 def strip_js_comments(text: str) -> str:
