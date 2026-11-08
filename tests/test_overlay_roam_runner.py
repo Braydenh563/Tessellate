@@ -134,6 +134,7 @@ def test_an_idle_minute_costs_at_most_one_scan_a_second_and_its_window_calls() -
     r.engine.next_ambient = 1e9
     r.engine.state_until = 1e9
     r.engine.trip_ready = clock.t  # due, but nothing picks it: the test only counts reads
+    r.engine.relocate_at = None  # (home is in the middle third: its move to an edge is a drift and a window ride, not an idle minute)
     r.engine.big_ready = 1e9
     start = len(fake.calls)
     for _ in range(600):  # ten ticks a second for a minute
