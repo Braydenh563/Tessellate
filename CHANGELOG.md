@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Desk companion (deskfix 9): the carried pointer is read for a shake at most every 10 ms (a 1000 Hz mouse cost 323 us a pointer event, now 70 us mean); the roam runner's scan-rate test seeds the engine (an unseeded trip that warps wants no scan, 1 run in 20).
 - Desk companion (deskfix 7, 8): a carried shake is read in 12 directions over points averaged per 15 ms (above 48 samples), with the motion across the axis at most 1.5 times the motion along it and a 22 px stroke, so vertical and diagonal shakes count and 0.5 to 1 px pointer jitter at 60 to 1000 Hz no longer hides a 25 px shake; drags with a wobble or jitter still do not.
 - Desk companion (deskfix 6): the shy and love faces of a pat or rub keep that pat's or rub's cooldown, so a third pet right after a pat no longer skips the 3 s wait.
 - Desk companion (deskfix 4, 5): the faces confused, sad, shy and love are worn: confused when poked while the person works, sad when a menu request is refused, shy when petted within 8 s of waking, love on the third pet inside 30 s; stale docstrings of _pose and _on_nose corrected.

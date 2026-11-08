@@ -61,7 +61,7 @@ TOUCH_FREE = (*SCREEN_FREE, "sit", "sleep", "startle")
 SHAKE_FLIPS, SHAKE_WINDOW, SHAKE_SWING, DIZZY_FOR = 3, 0.6, 22.0, (2.5, 4.0)
 #: The shake is read in this many directions, over points averaged per `SHAKE_BUCKET` s when there are more than `SHAKE_RAW`; the motion across the axis
 #: may be at most `SHAKE_ACROSS` times the motion along it.
-SHAKE_AXES, SHAKE_BUCKET, SHAKE_ACROSS, SHAKE_RAW = 12, 0.015, 1.5, 48
+SHAKE_AXES, SHAKE_BUCKET, SHAKE_ACROSS, SHAKE_RAW, SHAKE_EVERY = 12, 0.015, 1.5, 48, 0.01
 #: A pet this soon after waking is shy; the third pet inside `LOVE_STREAK` s is loved.
 SHY_FOR, LOVE_STREAK, LOVE_PETS = 8.0, 30.0, 3
 FACE_STATES = ("stand", "act", "notice", "startle", "wave", "land", "sit")
