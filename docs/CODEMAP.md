@@ -2,7 +2,7 @@
 
 Generated 2026-11-08 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7884, frontend ids 2652, CSS sections 522, backend routes 649, backend modules 9080, test files 2205, tests 18498, plan headings 1004, app scripts 28, boot scripts 37, script files 263.
+Counts: frontend functions 7884, frontend ids 2652, CSS sections 522, backend routes 649, backend modules 9084, test files 2206, tests 18500, plan headings 1004, app scripts 28, boot scripts 37, script files 263.
 
 ## Frontend functions (7884)
 
@@ -13121,7 +13121,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:164 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (9080)
+## Backend modules (9084)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -22585,6 +22585,15 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `touches_edge` | src/tessellate/core/overlay/capture.py:202 |
 | `write_set` | src/tessellate/core/overlay/capture.py:208 |
 
+### src/tessellate/core/overlay/catalogue.py (4)
+
+| Name | File:line |
+|---|---|
+| `by_desk_name` | src/tessellate/core/overlay/catalogue.py:38 |
+| `entries` | src/tessellate/core/overlay/catalogue.py:33 |
+| `load` | src/tessellate/core/overlay/catalogue.py:24 |
+| `path` | src/tessellate/core/overlay/catalogue.py:16 |
+
 ### src/tessellate/core/overlay/engine.py (9)
 
 | Name | File:line |
@@ -24550,7 +24559,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (18498)
+## Tests (18500)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -25991,6 +26000,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_outside_text_taints_chat.py | 3 |
 | tests/test_overlay_alive_1670.py | 12 |
 | tests/test_overlay_bob_1670.py | 3 |
+| tests/test_overlay_catalogue_1108.py | 2 |
 | tests/test_overlay_come_1683.py | 5 |
 | tests/test_overlay_dest_1683.py | 10 |
 | tests/test_overlay_edges_1107.py | 20 |
