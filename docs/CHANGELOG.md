@@ -6,6 +6,12 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Documents: four bullet and four number styles kept in the list marker, style menus on List and Numbered, and pasted look-alike bullets become list items (INBOX 1696 cc).
+- Companion: a pull on the drawing outside its handle grabs it instead of selecting page text (INBOX 1696 bb).
+- Chat: with web search on, a no-model question that fits your notes and the web about equally asks Your notes or the web? with two buttons (INBOX 1696 s).
+- Companions: the unicorn's rainbow mane, the karate headband and the dress now read as themselves at 64 px (INBOX 1696 r).
+- Atlas: her light-page pass (head, chest and torso contrast up) and brows at 0.5 opacity so her moods read (INBOX 1696 r, ff).
+- Atlas: his crest is a short swept cut rather than a curled arc that read as a tiara at 64 px (INBOX 1696 gg).
 - Graph: a hover card or node popup near the top stays below the graph's own toolbar, not only the app's top bar (was cut by up to 25 px at 1440 wide and 65 px at 390).
 - Settings: the value-field scan reads once (72 to 311 ms down to 19 to 30 ms at 4x CPU), Personas reads preferences once and draws faces after the rows, job lines read layout only when running, and a scroll inside Settings, a menu or a dialog sets no scroll-edge timer (INBOX 1696 f).
 - Diagram builder: a press on empty space, beside the picture or Escape lets go of the pick in every kind (INBOX 1696 g).
