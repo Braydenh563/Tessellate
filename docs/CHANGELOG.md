@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- A greeting that also asks how you are ("hey! whatcha doing??") is answered with the welcome and a line about how the app is, not the welcome alone (INBOX 1693 c).
 - A reopened chat draws what the live answer drew: a no-model reply keeps its Composer badge, note card, Why this answer trail and timing line (INBOX 1693 b).
 - The graph popup's header keeps a small gap above the note, so a sketch's picture no longer touches the close button (INBOX 1694 d).
 - A typed value beside a slider in a bar (the sketch pad's size, the graph's) sits inside its pill as text instead of a filled box that overlapped the border (INBOX 1694 c).

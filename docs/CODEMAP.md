@@ -2,7 +2,7 @@
 
 Generated 2026-11-08 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7861, frontend ids 2644, CSS sections 522, backend routes 649, backend modules 9011, test files 2162, tests 18213, plan headings 1004, app scripts 28, boot scripts 37, script files 261.
+Counts: frontend functions 7861, frontend ids 2644, CSS sections 522, backend routes 649, backend modules 9012, test files 2162, tests 18215, plan headings 1004, app scripts 28, boot scripts 37, script files 261.
 
 ## Frontend functions (7861)
 
@@ -12538,11 +12538,11 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/code-snippets` | POST | `create_snippet` | src/tessellate/api/routes_code_snippets.py:89 |
 | `/code-snippets/{snippet_id}` | PUT | `update_snippet` | src/tessellate/api/routes_code_snippets.py:105 |
 | `/command` | GET | `capture_command` | src/tessellate/api/routes_usage.py:46 |
-| `/command/run` | POST | `run_command` | src/tessellate/api/routes_chat.py:1794 |
-| `/commands` | GET | `list_commands` | src/tessellate/api/routes_chat.py:2381 |
+| `/command/run` | POST | `run_command` | src/tessellate/api/routes_chat.py:1796 |
+| `/commands` | GET | `list_commands` | src/tessellate/api/routes_chat.py:2383 |
 | `/compose` | POST | `compose_draft` | src/tessellate/api/routes_drafts.py:92 |
 | `/compose/stream` | POST | `compose_draft_stream` | src/tessellate/api/routes_drafts.py:134 |
-| `/compress` | POST | `compress_history` | src/tessellate/api/routes_chat.py:2417 |
+| `/compress` | POST | `compress_history` | src/tessellate/api/routes_chat.py:2419 |
 | `/compute` | POST | `compute` | src/tessellate/api/routes_resurface.py:76 |
 | `/confirm` | POST | `confirm_insight` | src/tessellate/api/routes_insights.py:521 |
 | `/confirmed` | GET | `list_confirmed` | src/tessellate/api/routes_insights.py:589 |
@@ -12764,7 +12764,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/merges/{undo_id}/undo` | POST | `undo_merge_route` | src/tessellate/api/routes_entities.py:228 |
 | `/mermaid-frame` | GET | `mermaid_frame` | src/tessellate/api/app.py:1592 |
 | `/models/{size}` | DELETE | `remove_model` | src/tessellate/api/routes_voice.py:51 |
-| `/modes` | GET | `list_modes` | src/tessellate/api/routes_chat.py:2390 |
+| `/modes` | GET | `list_modes` | src/tessellate/api/routes_chat.py:2392 |
 | `/most-accessed` | GET | `most_accessed` | src/tessellate/api/routes_entries.py:2664 |
 | `/most-opened` | GET | `most_opened` | src/tessellate/api/routes_vision.py:113 |
 | `/move` | POST | `move_notes` | src/tessellate/api/routes_categories.py:162 |
@@ -12890,7 +12890,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/status` | GET | `status` | src/tessellate/api/routes_voice.py:32 |
 | `/stop` | POST | `stop` | src/tessellate/api/routes_bench.py:250 |
 | `/storage` | GET | `storage_location` | src/tessellate/api/routes_backups.py:46 |
-| `/stream` | POST | `chat_stream` | src/tessellate/api/routes_chat.py:2235 |
+| `/stream` | POST | `chat_stream` | src/tessellate/api/routes_chat.py:2237 |
 | `/suggest` | POST | `suggest_reminder` | src/tessellate/api/routes_reminders.py:578 |
 | `/suggest-tags` | POST | `suggest_tags_for_draft` | src/tessellate/api/routes_entries.py:1396 |
 | `/suggested` | GET | `suggested` | src/tessellate/api/routes_models.py:836 |
@@ -12928,8 +12928,8 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/tidy-proposals/undismiss` | POST | `undismiss_tidy` | src/tessellate/api/routes_vision.py:262 |
 | `/title` | POST | `draft_title` | src/tessellate/api/routes_drafts.py:171 |
 | `/today-line` | GET | `today_line` | src/tessellate/api/routes_insights.py:473 |
-| `/tools` | GET | `list_tools` | src/tessellate/api/routes_chat.py:2411 |
-| `/tools/execute` | POST | `execute_confirmed_tool` | src/tessellate/api/routes_chat.py:2444 |
+| `/tools` | GET | `list_tools` | src/tessellate/api/routes_chat.py:2413 |
+| `/tools/execute` | POST | `execute_confirmed_tool` | src/tessellate/api/routes_chat.py:2446 |
 | `/topics` | GET | `topics` | src/tessellate/api/routes_help.py:61 |
 | `/transcribe` | POST | `transcribe` | src/tessellate/api/routes_voice.py:110 |
 | `/transcribe-meeting` | POST | `transcribe_meeting` | src/tessellate/api/routes_voice.py:117 |
@@ -13080,7 +13080,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:164 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (9011)
+## Backend modules (9012)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -16837,53 +16837,54 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `stems` | src/tessellate/ai/question_cues.py:152 |
 | `subject` | src/tessellate/ai/question_cues.py:158 |
 
-### src/tessellate/ai/question_noise.py (47)
+### src/tessellate/ai/question_noise.py (48)
 
 | Name | File:line |
 |---|---|
-| `_at_asking_place` | src/tessellate/ai/question_noise.py:2542 |
-| `_cosine` | src/tessellate/ai/question_noise.py:2658 |
-| `_is_spelt` | src/tessellate/ai/question_noise.py:2467 |
-| `_join_asking` | src/tessellate/ai/question_noise.py:2380 |
-| `_one_slip_from` | src/tessellate/ai/question_noise.py:2606 |
-| `_phrase_table` | src/tessellate/ai/question_noise.py:2121 |
-| `_real_word_slips` | src/tessellate/ai/question_noise.py:2362 |
-| `_repair_by_speller` | src/tessellate/ai/question_noise.py:2512 |
-| `_repair_late_space` | src/tessellate/ai/question_noise.py:2416 |
-| `_repair_misspelt` | src/tessellate/ai/question_noise.py:2473 |
-| `_repair_slang` | src/tessellate/ai/question_noise.py:2436 |
-| `_repair_token` | src/tessellate/ai/question_noise.py:2389 |
-| `_report_alternative` | src/tessellate/ai/question_noise.py:2444 |
-| `_run_on_reading` | src/tessellate/ai/question_noise.py:2497 |
-| `_small_talk_words` | src/tessellate/ai/question_noise.py:2323 |
-| `_social_phrases` | src/tessellate/ai/question_noise.py:2134 |
-| `_speller_may_read` | src/tessellate/ai/question_noise.py:2461 |
-| `_split` | src/tessellate/ai/question_noise.py:2303 |
-| `_spoken_to_kind` | src/tessellate/ai/question_noise.py:2158 |
+| `_at_asking_place` | src/tessellate/ai/question_noise.py:2550 |
+| `_cosine` | src/tessellate/ai/question_noise.py:2666 |
+| `_is_spelt` | src/tessellate/ai/question_noise.py:2475 |
+| `_join_asking` | src/tessellate/ai/question_noise.py:2388 |
+| `_one_slip_from` | src/tessellate/ai/question_noise.py:2614 |
+| `_phrase_table` | src/tessellate/ai/question_noise.py:2122 |
+| `_real_word_slips` | src/tessellate/ai/question_noise.py:2370 |
+| `_repair_by_speller` | src/tessellate/ai/question_noise.py:2520 |
+| `_repair_late_space` | src/tessellate/ai/question_noise.py:2424 |
+| `_repair_misspelt` | src/tessellate/ai/question_noise.py:2481 |
+| `_repair_slang` | src/tessellate/ai/question_noise.py:2444 |
+| `_repair_token` | src/tessellate/ai/question_noise.py:2397 |
+| `_report_alternative` | src/tessellate/ai/question_noise.py:2452 |
+| `_run_on_reading` | src/tessellate/ai/question_noise.py:2505 |
+| `_small_talk_words` | src/tessellate/ai/question_noise.py:2331 |
+| `_social_phrases` | src/tessellate/ai/question_noise.py:2135 |
+| `_speller_may_read` | src/tessellate/ai/question_noise.py:2469 |
+| `_split` | src/tessellate/ai/question_noise.py:2311 |
+| `_spoken_to_kind` | src/tessellate/ai/question_noise.py:2166 |
 | `_strip_stray_tail` | src/tessellate/ai/question_noise.py:433 |
-| `_trigrams` | src/tessellate/ai/question_noise.py:2653 |
-| `_unstretched` | src/tessellate/ai/question_noise.py:1971 |
-| `_vector_cosine` | src/tessellate/ai/question_noise.py:2669 |
-| `_without_filler` | src/tessellate/ai/question_noise.py:2037 |
-| `_word_core` | src/tessellate/ai/question_noise.py:2454 |
-| `_word_kinds` | src/tessellate/ai/question_noise.py:2147 |
-| `addressed_kind` | src/tessellate/ai/question_noise.py:2109 |
-| `allowance` | src/tessellate/ai/question_noise.py:2241 |
-| `alternative` | src/tessellate/ai/question_noise.py:2288 |
+| `_trigrams` | src/tessellate/ai/question_noise.py:2661 |
+| `_unstretched` | src/tessellate/ai/question_noise.py:1972 |
+| `_vector_cosine` | src/tessellate/ai/question_noise.py:2677 |
+| `_without_filler` | src/tessellate/ai/question_noise.py:2038 |
+| `_word_core` | src/tessellate/ai/question_noise.py:2462 |
+| `_word_kinds` | src/tessellate/ai/question_noise.py:2155 |
+| `addressed_kind` | src/tessellate/ai/question_noise.py:2110 |
+| `allowance` | src/tessellate/ai/question_noise.py:2249 |
+| `alternative` | src/tessellate/ai/question_noise.py:2296 |
 | `asks_archived` | src/tessellate/ai/question_noise.py:427 |
-| `asks_identity` | src/tessellate/ai/question_noise.py:2090 |
-| `destretch` | src/tessellate/ai/question_noise.py:1992 |
-| `drop_filler` | src/tessellate/ai/question_noise.py:2060 |
-| `filler_subject` | src/tessellate/ai/question_noise.py:2031 |
-| `guess_kind` | src/tessellate/ai/question_noise.py:2676 |
-| `guided` | src/tessellate/ai/question_noise.py:2586 |
-| `is_filler` | src/tessellate/ai/question_noise.py:2010 |
-| `media_kind` | src/tessellate/ai/question_noise.py:2052 |
-| `nearest` | src/tessellate/ai/question_noise.py:2259 |
+| `asks_how` | src/tessellate/ai/question_noise.py:2145 |
+| `asks_identity` | src/tessellate/ai/question_noise.py:2091 |
+| `destretch` | src/tessellate/ai/question_noise.py:1993 |
+| `drop_filler` | src/tessellate/ai/question_noise.py:2061 |
+| `filler_subject` | src/tessellate/ai/question_noise.py:2032 |
+| `guess_kind` | src/tessellate/ai/question_noise.py:2684 |
+| `guided` | src/tessellate/ai/question_noise.py:2594 |
+| `is_filler` | src/tessellate/ai/question_noise.py:2011 |
+| `media_kind` | src/tessellate/ai/question_noise.py:2053 |
+| `nearest` | src/tessellate/ai/question_noise.py:2267 |
 | `new_notes_as_newest` | src/tessellate/ai/question_noise.py:466 |
-| `repair` | src/tessellate/ai/question_noise.py:2331 |
-| `router_words` | src/tessellate/ai/question_noise.py:2570 |
-| `social_kind` | src/tessellate/ai/question_noise.py:2166 |
+| `repair` | src/tessellate/ai/question_noise.py:2339 |
+| `router_words` | src/tessellate/ai/question_noise.py:2578 |
+| `social_kind` | src/tessellate/ai/question_noise.py:2174 |
 | `strip_strays` | src/tessellate/ai/question_noise.py:475 |
 | `strip_symbols` | src/tessellate/ai/question_noise.py:496 |
 | `tidy` | src/tessellate/ai/question_noise.py:482 |
@@ -19239,115 +19240,115 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `_act_events` | src/tessellate/api/routes_chat.py:1599 |
-| `_act_planned_events` | src/tessellate/api/routes_chat.py:1629 |
+| `_act_events` | src/tessellate/api/routes_chat.py:1601 |
+| `_act_planned_events` | src/tessellate/api/routes_chat.py:1631 |
 | `_activity` | src/tessellate/api/routes_chat.py:236 |
-| `_address` | src/tessellate/api/routes_chat.py:2146 |
-| `_answer_lines` | src/tessellate/api/routes_chat.py:2313 |
+| `_address` | src/tessellate/api/routes_chat.py:2148 |
+| `_answer_lines` | src/tessellate/api/routes_chat.py:2315 |
 | `_answer_voice` | src/tessellate/api/routes_chat.py:610 |
-| `_answerable_chips` | src/tessellate/api/routes_chat.py:1338 |
-| `_app_first_events` | src/tessellate/api/routes_chat.py:1731 |
-| `_app_said` | src/tessellate/api/routes_chat.py:962 |
-| `_asked` | src/tessellate/api/routes_chat.py:2131 |
-| `_asked_back_events` | src/tessellate/api/routes_chat.py:1484 |
+| `_answerable_chips` | src/tessellate/api/routes_chat.py:1340 |
+| `_app_first_events` | src/tessellate/api/routes_chat.py:1733 |
+| `_app_said` | src/tessellate/api/routes_chat.py:964 |
+| `_asked` | src/tessellate/api/routes_chat.py:2133 |
+| `_asked_back_events` | src/tessellate/api/routes_chat.py:1486 |
 | `_assist` | src/tessellate/api/routes_chat.py:665 |
-| `_call_events` | src/tessellate/api/routes_chat.py:951 |
+| `_call_events` | src/tessellate/api/routes_chat.py:953 |
 | `_capability_answer` | src/tessellate/api/routes_chat.py:869 |
 | `_chat_voice` | src/tessellate/api/routes_chat.py:621 |
-| `_check_model_prose` | src/tessellate/api/routes_chat.py:2021 |
-| `_choose_events` | src/tessellate/api/routes_chat.py:1991 |
-| `_cited_question` | src/tessellate/api/routes_chat.py:1860 |
-| `_compose_for` | src/tessellate/api/routes_chat.py:1281 |
+| `_check_model_prose` | src/tessellate/api/routes_chat.py:2023 |
+| `_choose_events` | src/tessellate/api/routes_chat.py:1993 |
+| `_cited_question` | src/tessellate/api/routes_chat.py:1862 |
+| `_compose_for` | src/tessellate/api/routes_chat.py:1283 |
 | `_composed_chat` | src/tessellate/api/routes_chat.py:574 |
-| `_composed_events` | src/tessellate/api/routes_chat.py:1411 |
-| `_composed_grounding_event` | src/tessellate/api/routes_chat.py:1358 |
-| `_composed_result` | src/tessellate/api/routes_chat.py:1310 |
+| `_composed_events` | src/tessellate/api/routes_chat.py:1413 |
+| `_composed_grounding_event` | src/tessellate/api/routes_chat.py:1360 |
+| `_composed_result` | src/tessellate/api/routes_chat.py:1312 |
 | `_composed_support` | src/tessellate/api/routes_chat.py:791 |
-| `_composed_text` | src/tessellate/api/routes_chat.py:1453 |
+| `_composed_text` | src/tessellate/api/routes_chat.py:1455 |
 | `_composer_embed` | src/tessellate/api/routes_chat.py:654 |
 | `_composer_voice` | src/tessellate/api/routes_chat.py:633 |
 | `_computed_answer` | src/tessellate/api/routes_chat.py:247 |
 | `_context_note` | src/tessellate/api/routes_chat.py:359 |
 | `_context_notes` | src/tessellate/api/routes_chat.py:399 |
-| `_conversational_messages` | src/tessellate/api/routes_chat.py:1138 |
-| `_digest_for` | src/tessellate/api/routes_chat.py:1224 |
-| `_earlier_rows` | src/tessellate/api/routes_chat.py:1263 |
-| `_early_events` | src/tessellate/api/routes_chat.py:1509 |
-| `_exact_events` | src/tessellate/api/routes_chat.py:997 |
-| `_exact_note_events` | src/tessellate/api/routes_chat.py:1824 |
-| `_extra_events` | src/tessellate/api/routes_chat.py:1716 |
-| `_fact_events` | src/tessellate/api/routes_chat.py:1016 |
-| `_first_events` | src/tessellate/api/routes_chat.py:1755 |
-| `_follow_up` | src/tessellate/api/routes_chat.py:1870 |
-| `_forced_notes` | src/tessellate/api/routes_chat.py:1663 |
+| `_conversational_messages` | src/tessellate/api/routes_chat.py:1140 |
+| `_digest_for` | src/tessellate/api/routes_chat.py:1226 |
+| `_earlier_rows` | src/tessellate/api/routes_chat.py:1265 |
+| `_early_events` | src/tessellate/api/routes_chat.py:1511 |
+| `_exact_events` | src/tessellate/api/routes_chat.py:999 |
+| `_exact_note_events` | src/tessellate/api/routes_chat.py:1826 |
+| `_extra_events` | src/tessellate/api/routes_chat.py:1718 |
+| `_fact_events` | src/tessellate/api/routes_chat.py:1018 |
+| `_first_events` | src/tessellate/api/routes_chat.py:1757 |
+| `_follow_up` | src/tessellate/api/routes_chat.py:1872 |
+| `_forced_notes` | src/tessellate/api/routes_chat.py:1665 |
 | `_from_records` | src/tessellate/api/routes_chat.py:223 |
-| `_ground_final` | src/tessellate/api/routes_chat.py:2049 |
-| `_guarded_slash_lines` | src/tessellate/api/routes_chat.py:2319 |
+| `_ground_final` | src/tessellate/api/routes_chat.py:2051 |
+| `_guarded_slash_lines` | src/tessellate/api/routes_chat.py:2321 |
 | `_hello_reply` | src/tessellate/api/routes_chat.py:894 |
-| `_interactive_lines` | src/tessellate/api/routes_chat.py:2294 |
-| `_lines_for` | src/tessellate/api/routes_chat.py:2307 |
+| `_interactive_lines` | src/tessellate/api/routes_chat.py:2296 |
+| `_lines_for` | src/tessellate/api/routes_chat.py:2309 |
 | `_meaning_off` | src/tessellate/api/routes_chat.py:639 |
-| `_missed_events` | src/tessellate/api/routes_chat.py:1471 |
-| `_no_model_events` | src/tessellate/api/routes_chat.py:1535 |
-| `_no_notes_answer` | src/tessellate/api/routes_chat.py:1201 |
-| `_no_notes_events` | src/tessellate/api/routes_chat.py:1184 |
-| `_no_notes_line` | src/tessellate/api/routes_chat.py:1050 |
-| `_note_tool_read` | src/tessellate/api/routes_chat.py:1836 |
+| `_missed_events` | src/tessellate/api/routes_chat.py:1473 |
+| `_no_model_events` | src/tessellate/api/routes_chat.py:1537 |
+| `_no_notes_answer` | src/tessellate/api/routes_chat.py:1203 |
+| `_no_notes_events` | src/tessellate/api/routes_chat.py:1186 |
+| `_no_notes_line` | src/tessellate/api/routes_chat.py:1052 |
+| `_note_tool_read` | src/tessellate/api/routes_chat.py:1838 |
 | `_notes_answer_due` | src/tessellate/api/routes_chat.py:815 |
-| `_offered_open` | src/tessellate/api/routes_chat.py:1946 |
-| `_personal_unsearched` | src/tessellate/api/routes_chat.py:1163 |
-| `_plain_events` | src/tessellate/api/routes_chat.py:1547 |
-| `_plan_turn` | src/tessellate/api/routes_chat.py:1962 |
-| `_pre_answer_events` | src/tessellate/api/routes_chat.py:1575 |
+| `_offered_open` | src/tessellate/api/routes_chat.py:1948 |
+| `_personal_unsearched` | src/tessellate/api/routes_chat.py:1165 |
+| `_plain_events` | src/tessellate/api/routes_chat.py:1549 |
+| `_plan_turn` | src/tessellate/api/routes_chat.py:1964 |
+| `_pre_answer_events` | src/tessellate/api/routes_chat.py:1577 |
 | `_prepare` | src/tessellate/api/routes_chat.py:435 |
-| `_prime_model_notes` | src/tessellate/api/routes_chat.py:1980 |
+| `_prime_model_notes` | src/tessellate/api/routes_chat.py:1982 |
 | `_recall_window` | src/tessellate/api/routes_chat.py:272 |
-| `_repair_reply` | src/tessellate/api/routes_chat.py:940 |
+| `_repair_reply` | src/tessellate/api/routes_chat.py:942 |
 | `_resolve_plan` | src/tessellate/api/routes_chat.py:170 |
 | `_retrieve_for` | src/tessellate/api/routes_chat.py:315 |
 | `_retrieve_ranked` | src/tessellate/api/routes_chat.py:426 |
 | `_rewind_as_of` | src/tessellate/api/routes_chat.py:331 |
 | `_search_notes` | src/tessellate/api/routes_chat.py:285 |
-| `_settle_turn` | src/tessellate/api/routes_chat.py:2092 |
-| `_skill_lines` | src/tessellate/api/routes_chat.py:2359 |
-| `_slash_lines` | src/tessellate/api/routes_chat.py:2333 |
-| `_small_talk_events` | src/tessellate/api/routes_chat.py:1104 |
-| `_social_reply` | src/tessellate/api/routes_chat.py:907 |
-| `_spoken_act` | src/tessellate/api/routes_chat.py:1809 |
-| `_starter_events` | src/tessellate/api/routes_chat.py:1785 |
-| `_stats_events` | src/tessellate/api/routes_chat.py:982 |
-| `_stop_when_gone` | src/tessellate/api/routes_chat.py:2264 |
-| `_stream_lines` | src/tessellate/api/routes_chat.py:2110 |
-| `_stream_prepare` | src/tessellate/api/routes_chat.py:1906 |
-| `_stream_request` | src/tessellate/api/routes_chat.py:2169 |
-| `_this_note_events` | src/tessellate/api/routes_chat.py:1726 |
-| `_this_note_said` | src/tessellate/api/routes_chat.py:1690 |
-| `_told_sources` | src/tessellate/api/routes_chat.py:1248 |
+| `_settle_turn` | src/tessellate/api/routes_chat.py:2094 |
+| `_skill_lines` | src/tessellate/api/routes_chat.py:2361 |
+| `_slash_lines` | src/tessellate/api/routes_chat.py:2335 |
+| `_small_talk_events` | src/tessellate/api/routes_chat.py:1106 |
+| `_social_reply` | src/tessellate/api/routes_chat.py:909 |
+| `_spoken_act` | src/tessellate/api/routes_chat.py:1811 |
+| `_starter_events` | src/tessellate/api/routes_chat.py:1787 |
+| `_stats_events` | src/tessellate/api/routes_chat.py:984 |
+| `_stop_when_gone` | src/tessellate/api/routes_chat.py:2266 |
+| `_stream_lines` | src/tessellate/api/routes_chat.py:2112 |
+| `_stream_prepare` | src/tessellate/api/routes_chat.py:1908 |
+| `_stream_request` | src/tessellate/api/routes_chat.py:2171 |
+| `_this_note_events` | src/tessellate/api/routes_chat.py:1728 |
+| `_this_note_said` | src/tessellate/api/routes_chat.py:1692 |
+| `_told_sources` | src/tessellate/api/routes_chat.py:1250 |
 | `_tool_read_events` | src/tessellate/api/routes_chat.py:826 |
-| `_tools_provider` | src/tessellate/api/routes_chat.py:1892 |
-| `_unplaced_events` | src/tessellate/api/routes_chat.py:1174 |
-| `_unsaid_greeting` | src/tessellate/api/routes_chat.py:2082 |
+| `_tools_provider` | src/tessellate/api/routes_chat.py:1894 |
+| `_unplaced_events` | src/tessellate/api/routes_chat.py:1176 |
+| `_unsaid_greeting` | src/tessellate/api/routes_chat.py:2084 |
 | `_web_answer` | src/tessellate/api/routes_chat.py:762 |
 | `_web_events` | src/tessellate/api/routes_chat.py:802 |
-| `_web_events_or_down` | src/tessellate/api/routes_chat.py:1497 |
+| `_web_events_or_down` | src/tessellate/api/routes_chat.py:1499 |
 | `_web_pages` | src/tessellate/api/routes_chat.py:725 |
 | `_welcome` | src/tessellate/api/routes_chat.py:881 |
-| `_with_lapsed` | src/tessellate/api/routes_chat.py:1090 |
-| `_with_next_step` | src/tessellate/api/routes_chat.py:1384 |
-| `_with_older` | src/tessellate/api/routes_chat.py:1077 |
+| `_with_lapsed` | src/tessellate/api/routes_chat.py:1092 |
+| `_with_next_step` | src/tessellate/api/routes_chat.py:1386 |
+| `_with_older` | src/tessellate/api/routes_chat.py:1079 |
 | `_worked_out` | src/tessellate/api/routes_chat.py:199 |
 | `chat` | src/tessellate/api/routes_chat.py:484 |
 | `chat_followups` | src/tessellate/api/routes_chat.py:149 |
-| `chat_stream` | src/tessellate/api/routes_chat.py:2237 |
-| `compress_history` | src/tessellate/api/routes_chat.py:2418 |
-| `execute_confirmed_tool` | src/tessellate/api/routes_chat.py:2445 |
+| `chat_stream` | src/tessellate/api/routes_chat.py:2239 |
+| `compress_history` | src/tessellate/api/routes_chat.py:2420 |
+| `execute_confirmed_tool` | src/tessellate/api/routes_chat.py:2447 |
 | `forget_recent_question` | src/tessellate/api/routes_chat.py:98 |
-| `list_commands` | src/tessellate/api/routes_chat.py:2382 |
-| `list_modes` | src/tessellate/api/routes_chat.py:2391 |
-| `list_tools` | src/tessellate/api/routes_chat.py:2412 |
+| `list_commands` | src/tessellate/api/routes_chat.py:2384 |
+| `list_modes` | src/tessellate/api/routes_chat.py:2393 |
+| `list_tools` | src/tessellate/api/routes_chat.py:2414 |
 | `recent_questions` | src/tessellate/api/routes_chat.py:92 |
 | `remember_recent_question` | src/tessellate/api/routes_chat.py:106 |
-| `run_command` | src/tessellate/api/routes_chat.py:1795 |
+| `run_command` | src/tessellate/api/routes_chat.py:1797 |
 | `suggestions` | src/tessellate/api/routes_chat.py:121 |
 
 ### src/tessellate/api/routes_code_assist.py (2)
@@ -24425,7 +24426,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (18213)
+## Tests (18215)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -26206,7 +26207,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_smooth_boot.py | 17 |
 | tests/test_snippet_drag.py | 7 |
 | tests/test_snippet_word_boundaries.py | 8 |
-| tests/test_social_1485.py | 18 |
+| tests/test_social_1485.py | 20 |
 | tests/test_source_check.py | 8 |
 | tests/test_source_structure_1026.py | 3 |
 | tests/test_space_delete_cascades.py | 1 |
