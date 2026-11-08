@@ -66,6 +66,8 @@
       row.querySelectorAll(":scope > :is(.dgm-kindbtn, .dgm-kindlabel)").forEach((old) => old.remove());
       const word = h.el("span", "muted dgm-kindlabel", "Kind");
       word.setAttribute("aria-hidden", "true");
+      //: The row is a <label> for the title field, so a press on this word would land in that field.
+      word.addEventListener("click", (event) => (event.preventDefault(), button.click()));
       row.append(word, button);
     } else dock?.prepend(button, h.el("div", "dock-group"));
     //: After a tick: the bar is not in the page yet while it is being built.

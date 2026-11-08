@@ -3258,11 +3258,11 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | Name | File:line |
 |---|---|
 | `blankOf` | frontend/js/diagram-kindbar.js:48 |
-| `choose` | frontend/js/diagram-kindbar.js:108 |
-| `decorate` | frontend/js/diagram-kindbar.js:84 |
+| `choose` | frontend/js/diagram-kindbar.js:110 |
+| `decorate` | frontend/js/diagram-kindbar.js:86 |
 | `fresh` | frontend/js/diagram-kindbar.js:19 |
 | `mount` | frontend/js/diagram-kindbar.js:51 |
-| `open` | frontend/js/diagram-kindbar.js:76 |
+| `open` | frontend/js/diagram-kindbar.js:78 |
 | `sample` | frontend/js/diagram-kindbar.js:36 |
 
 ### frontend/js/diagram-kinds.js (62)

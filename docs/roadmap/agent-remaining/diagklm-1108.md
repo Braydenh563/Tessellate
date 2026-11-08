@@ -88,3 +88,10 @@ Branch `agent/diagklm-1108` from `claude/next-queue-1102` (7cba04a8). The spec i
 - S6: the two blind tasks with the left panel folded (a sequence of three participants, four messages, a note and an alt; a flowchart with a decision and two labelled branches), then the default fold.
 - Measured short of the spec by 1 px: chrome 204 (target 203) and picture 462 (463) at 1440; the picture 1136 wide with the list folded (target 1140) after an 8 px gap was added beside the rail.
 - Gate on this branch fails on four lints in files not touched here (global names 9708 > 9706, avatars.js raf 7 to 8, composer_ask/composer_slots complexity, routes_chat.py 2476 > 2474); not checked against the base branch.
+
+## Review 1108 (independent, port 8922)
+
+- done: merged claude/next-queue-1102 (24860fbd; CHANGELOG union, CODEMAP regenerated); the complexity failures went with it. The other three lints (global names 9708 > 9706, avatars.js raf 7 to 8, routes_chat.py 2476 > 2474) fail the same on the base branch at 74e55094: not this branch.
+- done: a press on the word Kind in the Title row (a `<label>`) focused the title field; it opens the Kind menu now (diagram-kindbar.js `mount`).
+- measured: Kind menu 4 of 4 rows with a sample, the chosen one `aria-current`; sequence rename on the picture, message rename, Delete and Ctrl+Z at 1440 and 390; folds left and right, `[` by key, kept after a reload (`diagram.fold` = left); no page errors.
+- open: no drag-and-drop block shelf on the picture yet (l part 2 and S5 above); the owner's ask is not met until it lands.

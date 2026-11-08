@@ -45,6 +45,8 @@ def test_the_button_sits_in_the_title_row_behind_a_kind_label_else_first_in_the_
     assert '"muted dgm-kindlabel", "Kind"' in bar and "dock?.prepend(button" in bar
     # the Title row outlives the pane, so a remount replaces the old button rather than adding a second
     assert ":scope > :is(.dgm-kindbtn, .dgm-kindlabel)" in bar and "old.remove()" in bar
+    # Review 1108: the Title row is a <label>, so a press on the word Kind went to the title field; it opens the menu instead.
+    assert 'word.addEventListener("click", (event) => (event.preventDefault(), button.click()))' in bar
 
 
 def test_each_menu_row_has_its_sample_and_what_it_makes_and_a_change_says_its_cost():
