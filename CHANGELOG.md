@@ -6,6 +6,8 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Diagram builder: quicker building: a double press on empty picture adds a box, Ctrl+D duplicates, Ctrl+A picks all, Delete removes, Shift+Enter adds a joined box, Alt+Enter a sister, Ctrl+F finds, and a connector can be reversed.
+- Diagram builder: the rings and handles stay on their boxes when the picture scrolls, a press on empty space or Escape clears the pick, and the Canvas and Blocks views are now called Picture and List.
 - Desk companion: a throw that crosses a side edge now stops at the top of the screen like any other throw, instead of rising through it.
 - Companions use edges more: the in-app one slides in against a panel's side and back out; the desk one pulls itself up onto a nearby window top after scrabbling down a wall, and peers down upside-down from behind the top edge (INBOX 1683 x, y).
 - A companion throw or shake on a window that has just come back from the tray waits two frames, so the browser lays the page out on its own frame and the throw reads a clean page (INBOX 1634 d).
