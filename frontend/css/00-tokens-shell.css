@@ -49,6 +49,10 @@
 :root {
   color-scheme: light;
 }
+/* Settings, Line width: the document's measure (Live and Read) at 0.85 and 1.2 of
+   its 50em. No new custom property: the count only falls (test_style_scale). */
+:root[data-read-measure="narrow"] { --doc-measure: calc(42.5em - 2 * var(--doc-gutter)); }
+:root[data-read-measure="wide"] { --doc-measure: calc(60em - 2 * var(--doc-gutter)); }
 :root[data-mode="dark"] {
   color-scheme: dark;
 }

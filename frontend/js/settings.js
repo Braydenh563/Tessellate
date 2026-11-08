@@ -1525,6 +1525,8 @@ const APPEARANCE_DEFAULTS = {
   fontsize: "normal",
   font: "system", // system | serif | mono
   density: "comfortable", // comfortable | compact | spacious
+  "read-leading": "normal", // tight | normal | roomy: a note's and a document's line height
+  "read-measure": "standard", // narrow | standard | wide: how long a line of reading text runs
   glass: "on",
   // Performance mode (INBOX 49): "auto" turns it on for a small machine, 4
   // cores or 4 GB or fewer, and when the operating system asks for reduced
@@ -2643,6 +2645,10 @@ function applyAppearance() {
   root.dataset.font = appearancePref("font");
   measureLabelOptics();
   root.dataset.density = effectiveDensity();
+  //: A stored value the lists do not offer reads as the middle one, never as an invalid token.
+  for (const [key, field, list] of [["read-leading", "readLeading", ["tight", "normal", "roomy"]], ["read-measure", "readMeasure", ["narrow", "standard", "wide"]]]) {
+    root.dataset[field] = list.includes(appearancePref(key)) ? appearancePref(key) : list[1];
+  }
   //: The dashboard's own level follows the app's Compact (dashboard.js).
   applyDashDensity(dashDensity(), { persist: false });
   const perf = perfModeOn();
@@ -2995,6 +3001,8 @@ function renderAppearance() {
   //: first row rather than on a blank.
   $("font-seg").value = appearancePref("font");
   $("density-seg").value = prefs.get("density", null) || "auto";
+  $("read-leading").value = appearancePref("read-leading");
+  $("read-measure").value = appearancePref("read-measure");
   settingsReadouts.auto?.();
 }
 

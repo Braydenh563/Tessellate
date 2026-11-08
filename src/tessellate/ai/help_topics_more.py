@@ -849,7 +849,7 @@ MORE_TOPICS: list[dict] = [
             "offered at the nearest shade that can), Page background, and "
             "Build a scheme from one colour. "
             "Typography & layout: Text size, Font (System, Serif, Mono, Arial, "
-            "or Readable, the Atkinson Hyperlegible face), Density, Corner rounding, "
+            "or Readable, the Atkinson Hyperlegible face), Density, Line spacing and Line width (Tight, Normal or Roomy, and Narrow, Standard or Wide, for notes and documents you read), Corner rounding, "
             "Zoom, Border style and Shadow intensity (Text size, Density and Zoom "
             "are marked On this device: a phone and a computer each keep their "
             "own, while colours and fonts follow you). Effects & accessibility: "

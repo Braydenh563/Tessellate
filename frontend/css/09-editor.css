@@ -170,6 +170,13 @@
 #doc-preview {
   line-height: 1.6;
 }
+/* Settings, Line spacing: 0.9 and 1.15 of the 1.6 (1.72 in serif). */
+:root[data-read-leading="tight"] #doc-preview {
+  line-height: 1.44;
+}
+:root[data-read-leading="roomy"] #doc-preview {
+  line-height: 1.84;
+}
 #doc-preview :is(.md-h1, .md-h2) {
   margin-block: var(--space-9) var(--space-4);
 }
@@ -688,6 +695,12 @@
 .doc-serif #doc-preview {
   font-family: "Iowan Old Style", Palatino, "Palatino Linotype", Georgia, "Times New Roman", serif;
   line-height: 1.72;
+}
+:root[data-read-leading="tight"] .doc-serif #doc-preview {
+  line-height: 1.55;
+}
+:root[data-read-leading="roomy"] .doc-serif #doc-preview {
+  line-height: 1.98;
 }
 
 /* **And its own measure, for the same reason it has its own leading.** A

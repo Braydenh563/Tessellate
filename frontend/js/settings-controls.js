@@ -3863,6 +3863,13 @@ $("density-seg").addEventListener("change", (e) => {
   applyAppearance();
   renderAppearance();
 });
+for (const key of ["read-leading", "read-measure"]) {
+  $(key).addEventListener("change", (e) => {
+    prefs.set(key, e.target.value);
+    applyAppearance();
+    renderAppearance();
+  });
+}
 $("perf-mode").addEventListener("change", (e) => {
   prefs.set("perf", e.target.value);
   applyAppearance();

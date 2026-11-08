@@ -92,6 +92,8 @@ const LOOK_ROWS = [
   { key: "fontsize", id: "fontsize-seg", seg: "fontsize" },
   { key: "font", id: "font-seg" },
   { key: "density", id: "density-seg", ui: "auto" },
+  { key: "read-leading", id: "read-leading" },
+  { key: "read-measure", id: "read-measure" },
   { key: "contrast", id: "contrast-toggle", on: "on", base: "off" },
   { key: "motion", id: "motion-seg", seg: "motionChoice" },
   { key: "ui-motion", id: "ui-motion-toggle", on: "on", off: "off" },

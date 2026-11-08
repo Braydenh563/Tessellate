@@ -807,6 +807,8 @@ const MIRRORED_UI_EXTRAS = [
   "show-thinking-words",
   "border-style",
   "shadow-intensity",
+  "read-leading",
+  "read-measure",
   "avatar-motion",
   "avatar-follow",
   "avatar-buddy",

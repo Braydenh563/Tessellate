@@ -1140,8 +1140,7 @@ palettes."
 
 - **Fonts** (`#font-seg` offers System, Serif, Mono, Arial; **Next:** a dyslexia-friendly face must be vendored under `frontend/vendor/fonts/` with its licence (an SIL OFL font is AGPL-compatible), an `@font-face` in `frontend/css`, a `data-font` value in `index.html:9368` and `settings-controls.js`, and per-surface choice is a second `--font-*` token pair in `00-tokens-shell.css`): beyond system/serif/mono: a curated set including a dyslexia-
   friendly face, plus per-surface choice (UI vs note body vs code)
-- **Sizing** (UI zoom `#zoom-slider` and Text size exist; **Next:** line-height and measure are two new tokens read by `.entry-content` and the document reader, as a two-row Settings group in `index.html:9355` with a '?'): independent UI scale and reading size; line-height and measure
-  (line width) controls, which matter more for long notes than font size
+- **Sizing** (UI zoom `#zoom-slider` and Text size exist; line spacing and line width are built, see HISTORY "Moved from the plans, 2026-11-08 (BACKLOG Sizing, reading)"): independent UI scale and reading size
 - **Colours** (accent swatches and a custom accent exist; **Next:** per-surface accents and a palette builder are not built; the JSON import/export of a look is built, see HISTORY "Moved from the plans, 2026-11-08 (BACKLOG Colours, look file)"): per-surface accents and a custom palette builder (pick a base,
   derive the set)
 - **More themes and palettes** (`#palette-grid`; **Next:** a "surprise me" that generates a coherent one; the seeded pick of palette, accent and density is built, see HISTORY "Moved from the plans, 2026-11-08 (BACKLOG Surprise mix)")

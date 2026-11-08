@@ -1678,6 +1678,13 @@ input.md-task-inline:disabled,
 .entry-list:not(.is-rows) .entry-content {
   max-width: 84ch;
 }
+/* Settings, Line width: 0.85 and 1.2 of the 84ch. */
+:root[data-read-measure="narrow"] .entry-list:not(.is-rows) .entry-content {
+  max-width: 71ch;
+}
+:root[data-read-measure="wide"] .entry-list:not(.is-rows) .entry-content {
+  max-width: 101ch;
+}
 /* The AI Skills panel's own log rows (`renderSkillLogs`, library.js): 
    `#skills-logs-list` is a plain `<div class="entry-list">`, not a `<ul>`
    (it holds status text on the empty-state path too), so its rows are
