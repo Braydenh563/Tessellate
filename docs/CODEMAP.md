@@ -15414,7 +15414,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_slug` | src/tessellate/ai/composer_text.py:85 |
 | `_sort` | src/tessellate/ai/composer_text.py:113 |
 | `_split` | src/tessellate/ai/composer_text.py:109 |
-| `_title` | src/tessellate/ai/composer_text.py:75 |
+| `_title_case` | src/tessellate/ai/composer_text.py:75 |
 | `_unquote` | src/tessellate/ai/composer_text.py:132 |
 | `answer` | src/tessellate/ai/composer_text.py:185 |
 

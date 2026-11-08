@@ -72,7 +72,7 @@ _LEADS = {
 }
 
 
-def _title(text: str) -> str:
+def _title_case(text: str) -> str:
     words = text.split(" ")
     last = len(words) - 1
     out = []
@@ -120,7 +120,7 @@ def _number(text: str) -> str:
 
 
 _APPLY = {
-    "upper": str.upper, "lower": str.lower, "title": lambda t: _title(" ".join(t.split())), "slug": _slug, "reverse": lambda t: t[::-1],
+    "upper": str.upper, "lower": str.lower, "title": lambda t: _title_case(" ".join(t.split())), "slug": _slug, "reverse": lambda t: t[::-1],
     "dedupe": _dedupe, "join": _join, "split": _split, "sort": _sort, "number": _number,
 }
 
