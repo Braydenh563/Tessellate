@@ -204,4 +204,6 @@ def test_restore_never_brings_back_a_private_note(client, session):
     session.get(Entry, note).is_private = True
     session.commit()
     card, events = _card(client, "restore the passport note")
-    assert card is None and "private" in _text(events)
+    #: Wrong intent before (review 1108): "private" in the reply told a reader
+    #: that a sealed note in the bin holds the word. It is missing, like any other.
+    assert card is None and "private" not in _text(events) and "nothing in the bin about “passport”" in _text(events)
