@@ -169,7 +169,10 @@ def test_a_floater_drifts_across_the_width_and_a_band_above_its_rest_line_not_th
     # than its own, and walks a few steps, not across the width.
     assert max(ys) - min(ys) <= eng.FLOAT_BAND * e.size[1] + eng.HOVER[1] + 2  # no bob any more (16:40Z)
     assert 20 < max(xs) - min(xs) <= 2 * eng.STROLL + 20
-    assert {"walk0", "walk3"} & frames
+    # Intent moved (INBOX 1692, the owner 2026-11-08: "atlas doesnt walk, it doesnt have legs, it floats like a wind
+    # spirit"): a floater's stroll flows on its idle cycle, never the walk frames; it still moves (the width above).
+    assert not {f for f in frames if f.startswith("walk")}
+    assert {f for f in frames if f.startswith("idle")}
 
 
 def test_a_floater_curves_and_never_walks_on_a_floor() -> None:

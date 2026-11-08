@@ -210,16 +210,8 @@ def _turn_messages(turn: TurnBody) -> list[dict]:
     now = utcnow()
     asked = now - timedelta(milliseconds=max(0, min(turn.elapsed_ms or 0, 86_400_000)))
     assistant = {"role": "assistant", "content": turn.answer, "thinking": turn.thinking, "at": now.isoformat()}
-    if turn.tools:
-        assistant["tools"] = turn.tools
-    if turn.steps:
-        assistant["steps"] = turn.steps
-    if turn.resume:
-        assistant["resume"] = turn.resume
-    if turn.tokens:
-        assistant["tokens"] = turn.tokens
-    if turn.stats:
-        assistant["stats"] = turn.stats
+    #: Kept only when the turn has them, so an old reader sees the same message shape.
+    assistant.update({k: getattr(turn, k) for k in ("tools", "steps", "resume", "tokens", "stats", "why") if getattr(turn, k)})
     if turn.elapsed_ms is not None:
         assistant["elapsed_ms"] = turn.elapsed_ms
     if turn.raw_results:
@@ -255,8 +247,6 @@ def _turn_messages(turn: TurnBody) -> list[dict]:
             "composed": bool(turn.by.get("composed")),
             "model": str(turn.by.get("model") or "")[:120],
         }
-    if turn.why:
-        assistant["why"] = turn.why
     return [_user_message(turn, asked), assistant]
 
 
