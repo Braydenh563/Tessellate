@@ -1261,7 +1261,7 @@ def _which(parsed: dict, session: Session, note_ids: list[int] | None) -> tuple[
 
 #: What the card says under its label: the person decides, nothing has run.
 CONFIRM_NOTICE = "Nothing changes until you confirm, and Undo takes it back."
-_SKIP_REASONS = {"private": "it is private", "binned": "it is in the bin", "failed": "it could not be changed"}
+_SKIP_REASONS = {"private": "it is private", "binned": "it is in the bin", "failed": "it could not be changed", "stale": "it changed since the card was made"}
 
 
 def _card(label: str, steps: list[dict], skipped: list[dict] | None = None, items: list[str] | None = None) -> dict:
@@ -1867,6 +1867,13 @@ def _step_undo(name: str, args: dict, result: dict):  # noqa: ANN202
     return step_undo
 
 
+def _failure_reason(error: str) -> str:
+    """The skip reason a tool's refusal stands for."""
+    if "is private" in error:
+        return "private"
+    return "stale" if "changed since" in error else "failed"
+
+
 def _run_one(session: Session, name: str, args: dict, tools) -> dict:  # noqa: ANN001
     """One step's result: the composer's own steps first, then the tool table."""
     if name == "start_meeting":
@@ -1899,7 +1906,7 @@ def run(session: Session, steps: list[dict], skipped: list[dict] | None = None, 
             continue
         result = _run_one(session, name, args, tools)
         if "error" in result:
-            reason = "private" if "is private" in str(result["error"]) else "failed"
+            reason = _failure_reason(str(result["error"]))
             failed.append({"id": args.get("note_id"), "reason": reason})
             continue
         done.append((name, args, result))

@@ -1251,7 +1251,7 @@ and always show the exact change before running.
 | X7 | Archive | No tool (only delete and restore) | An archive verb with nothing behind it | Do not offer until a tool exists; the capability line lists only verbs that run | none | n/a |
 | X8 | Delete and restore | Built. Moved to HISTORY.md ("Moved from the plans, 2026-11-08 (CHAT_PLAN acts)"). |
 | X9 | Create (note, reminder, document, board, map) | `create_note`, `create_document`, `create_mindmap`, `generate_diagram`, board tools | `new_note` only on the wip branch | "make a note: ..." with the person's words verbatim; documents and maps from a named source note or a list | M | 7 |
-| X10 | Add to a note | Daily-note route; `edit_note` replaces content (no append argument) | The act reads the note and writes the whole text | "add X to today's note": daily route, append a bullet, optimistic-lock check (`edit_conflicts.py`) | S | 7 |
+| X10 | Add to a note | Built. Moved to HISTORY.md ("Moved from the plans, 2026-11-08 (CHAT_PLAN acts)"). |
 | X11 | Summarise as an act | `summarize_notes` | Results not saved | "summarise my gym notes into a note": A20 text, created as a note with its sources linked | S | 7 |
 | X12 | Find and open | Built. Moved to HISTORY.md ("Moved from the plans, 2026-11-08 (CHAT_PLAN small rows D)"). | | | | |
 | X13 | Templates | Four built-in templates; daily-note body in the frontend | No variables; no user quick-adds | `{date}`, `{weekday}`, `{week}`, `{title}`, `{n}` filled by rule; a saved phrasing with slots appears as a chip ("Log a workout: {what}") | M | 7 |
