@@ -2,9 +2,9 @@
 
 Generated 2026-11-08 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7915, frontend ids 2652, CSS sections 522, backend routes 649, backend modules 9199, test files 2234, tests 18798, plan headings 1004, app scripts 28, boot scripts 37, script files 263.
+Counts: frontend functions 7916, frontend ids 2652, CSS sections 522, backend routes 649, backend modules 9199, test files 2234, tests 18799, plan headings 1004, app scripts 28, boot scripts 37, script files 263.
 
-## Frontend functions (7915)
+## Frontend functions (7916)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -3219,29 +3219,30 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `overlay` | frontend/js/diagram-edges.js:12 |
 | `wire` | frontend/js/diagram-edges.js:30 |
 
-### frontend/js/diagram-embed.js (19)
+### frontend/js/diagram-embed.js (20)
 
 | Name | File:line |
 |---|---|
-| `cleanTitle` | frontend/js/diagram-embed.js:150 |
+| `cleanTitle` | frontend/js/diagram-embed.js:160 |
 | `copyPicture` | frontend/js/diagram-embed.js:48 |
-| `documentName` | frontend/js/diagram-embed.js:157 |
-| `draftForget` | frontend/js/diagram-embed.js:190 |
-| `draftKeep` | frontend/js/diagram-embed.js:180 |
-| `draftsRead` | frontend/js/diagram-embed.js:169 |
-| `draftsWrite` | frontend/js/diagram-embed.js:179 |
+| `documentName` | frontend/js/diagram-embed.js:167 |
+| `draftForget` | frontend/js/diagram-embed.js:200 |
+| `draftKeep` | frontend/js/diagram-embed.js:190 |
+| `draftsRead` | frontend/js/diagram-embed.js:179 |
+| `draftsWrite` | frontend/js/diagram-embed.js:189 |
 | `el` | frontend/js/diagram-embed.js:10 |
-| `freshTitle` | frontend/js/diagram-embed.js:151 |
-| `hashOf` | frontend/js/diagram-embed.js:198 |
-| `link` | frontend/js/diagram-embed.js:117 |
-| `open` | frontend/js/diagram-embed.js:211 |
+| `freshTitle` | frontend/js/diagram-embed.js:161 |
+| `hashOf` | frontend/js/diagram-embed.js:208 |
+| `historyKey` | frontend/js/diagram-embed.js:87 |
+| `link` | frontend/js/diagram-embed.js:127 |
+| `open` | frontend/js/diagram-embed.js:221 |
 | `out` | frontend/js/diagram-embed.js:63 |
 | `outDoc` | frontend/js/diagram-embed.js:79 |
 | `pngOf` | frontend/js/diagram-embed.js:28 |
-| `save` | frontend/js/diagram-embed.js:93 |
+| `save` | frontend/js/diagram-embed.js:103 |
 | `svgOf` | frontend/js/diagram-embed.js:19 |
-| `swapRange` | frontend/js/diagram-embed.js:87 |
-| `withLook` | frontend/js/diagram-embed.js:128 |
+| `swapRange` | frontend/js/diagram-embed.js:97 |
+| `withLook` | frontend/js/diagram-embed.js:138 |
 
 ### frontend/js/diagram-joins.js (9)
 
@@ -24750,7 +24751,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (18798)
+## Tests (18799)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -25396,7 +25397,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_diagram_r8c.py | 11 |
 | tests/test_diagram_r9b.py | 9 |
 | tests/test_diagram_r9c.py | 9 |
-| tests/test_diagram_review_1108.py | 2 |
+| tests/test_diagram_review_1108.py | 3 |
 | tests/test_diagram_review_1679.py | 4 |
 | tests/test_diagram_split_r3_r4.py | 8 |
 | tests/test_diagram_suggest.py | 22 |

@@ -82,6 +82,16 @@
     return out(how, doc.content, doc.title);
   }
 
+  //: Ctrl+Z and Ctrl+Shift+Z in the dialog. The press is the dialog's whole: stopPropagation keeps the app's undo (a listener on
+  //: the document) from running a second step after this one when focus is on Picture, List, Source, Done or Cancel.
+  function historyKey(event, field, flush, io) {
+    if (!(event.ctrlKey || event.metaKey) || event.key.toLowerCase() !== "z") return;
+    event.preventDefault();
+    event.stopPropagation();
+    if (event.target === field) flush();
+    (event.shiftKey ? io.redo : io.undo)();
+  }
+
   // --- Save to Library (R9c, 1621 D4) ---------------------------------------------------
   //: The whole fence round the lines `diagramModel.fence` found: from its opening mark to the end of its closing line.
   function swapRange(text, at) {
@@ -478,12 +488,7 @@
     document.addEventListener("keydown", onKey, true);
     wireBackdropClose(overlay, () => finish(false));
     //: Ctrl+Z in the blocks or the text steps the source history, as it does in a diagram document.
-    dialog.addEventListener("keydown", (event) => {
-      if (!(event.ctrlKey || event.metaKey) || event.key.toLowerCase() !== "z") return;
-      event.preventDefault();
-      if (event.target === field) flush();
-      (event.shiftKey ? io.redo : io.undo)();
-    });
+    dialog.addEventListener("keydown", (event) => historyKey(event, field, flush, io));
     //: Ctrl+Enter keeps the diagram from anywhere in the window (the other route to Done is 15 Tabs).
     dialog.addEventListener("keydown", (event) => {
       if (!((event.ctrlKey || event.metaKey) && event.key === "Enter") || event.altKey) return;
@@ -523,5 +528,5 @@
     return dialog;
   }
 
-  diagramModel.embed = { open, out, outDoc, save, swapRange, link };
+  diagramModel.embed = { open, out, outDoc, save, swapRange, link, historyKey };
 })();

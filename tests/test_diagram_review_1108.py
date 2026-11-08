@@ -55,3 +55,27 @@ out({ bar: typeof ctx.diagramModel.bar, calls });
 
 def test_the_other_kinds_pane_never_reaches_for_the_flowchart_toolbar():
     assert "diagramModel.bar" not in (JS / "diagram-kinds.js").read_text(encoding="utf-8")
+
+
+def _embed_key(target: str, shift: bool = False) -> list:
+    """The real diagram-embed.js `historyKey`, called with Ctrl+Z from `target`: the source box, a button or the title field."""
+    return run(
+        f"""
+load("diagram-embed.js");
+const calls = [];
+const field = {{ isContentEditable: false, closest: () => ({{}}) }};
+const targets = {{ field, button: {{ isContentEditable: false, closest: () => null }}, title: {{ isContentEditable: false, closest: () => ({{}}) }} }};
+const event = {{ key: "z", ctrlKey: true, shiftKey: {json.dumps(shift)}, target: targets[{json.dumps(target)}],
+  preventDefault: () => calls.push("prevent"), stopPropagation: () => calls.push("stop") }};
+ctx.diagramModel.embed.historyKey(event, field, () => calls.push("flush"), {{ undo: () => calls.push("undo"), redo: () => calls.push("redo") }});
+out(calls);
+"""
+    )
+
+
+@needs_node
+def test_ctrl_z_from_a_button_in_the_diagram_window_stops_before_the_apps_undo():
+    """MED: Picture, List, Source, Done, Cancel and "?" sit outside the builder pane; the app's undo listens on the document."""
+    assert _embed_key("button") == ["prevent", "stop", "undo"]
+    assert _embed_key("button", shift=True) == ["prevent", "stop", "redo"]
+    assert _embed_key("field") == ["prevent", "stop", "flush", "undo"]

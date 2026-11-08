@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Diagram window (review 1108): Ctrl+Z with focus on Picture, List, Source, Done, Cancel or the help button steps the diagram once; it no longer also runs the app's undo (the press stops at the window).
 - Diagram builder (review 1108): Ctrl+Z in a sequence, mind map or timeline opened first no longer throws on every keydown; the shared undo key handler moved from the flowchart-only toolbar module to the kind bar that every kind loads.
 - Diagram builder tests (perf audit 1108 P2, P3): the lazy row menu, the SVG label patch (escaping, no change when the words do not match) and the typing-aware draw (one redraw with the latest label) are now pinned by behaviour tests run in node, not by source substrings.
 - Desk companion (deskfix 4, 5): the faces confused, sad, shy and love are worn: confused when poked while the person works, sad when a menu request is refused, shy when petted within 8 s of waking, love on the third pet inside 30 s; stale docstrings of _pose and _on_nose corrected.
