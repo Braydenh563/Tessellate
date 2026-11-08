@@ -315,3 +315,22 @@ Every other ordered pair of the 8 core positions, and the 10 via transitions, is
 | face.awe | no | no |
 | face.bored | no | no |
 | face.relieved | no | no |
+
+## Step 2: the catalogue, `frontend/companion-catalogue.json`
+
+Format: JSON, because both sides parse it with no new dependency. The app fetches it as it fetches `/credits.json` (and as the board library loads `frontend/board-library/*.json`), and the desk reads it through `FRONTEND_DIR`, as `sprites.frames_dir` reads `frontend/img/desk`.
+One file both sides read means no table is copied, so parity is a property of one file and the test can check it.
+A Python or JS module would need the other side to scrape it.
+
+The catalogue has 307 entries: idle acts 88, transitions 66, faces 30, interactions 26, reactions 26, lower-body sways 24, tail poses 17, movements 17 and body positions 13. Each entry gives:
+
+- its id and kind;
+- `seconds`, the duration range;
+- weights by mood, by energy (low, mid, high) and by time of day;
+- for idle acts, its pose and the tail, lower and face parts it uses, plus `beats`, the pose shifts that keep a long act from holding one pose over 90 s;
+- `draw`, what it needs drawn;
+- its status per side, with the table names and the code location (`path#text`) on each built side.
+
+The 111 entries built on neither side are new, and each is marked `missing` on both sides. Every entry built on one side only is marked `missing` on the other.
+
+done: step 1 ddce2944; next: commit the catalogue (step 2), then the ratchet test (step 3), then the build order (step 4).
