@@ -338,3 +338,18 @@ def test_a_rows_menu_is_built_on_its_first_press_not_per_row():
     assert "kebabMenu(items(), label)" in lazy and "again.click()" in lazy and "stub.replaceWith(real)" in lazy
     kinds = (BUILDER.parent / "diagram-kinds.js").read_text(encoding="utf-8")
     assert "diagramModel.library.lazyKebab(() => itemsFor(S, key)" in kinds
+
+
+def test_a_draw_waits_for_the_typed_label_and_a_relabel_shows_in_the_picture_at_once():
+    # 1108 P3: the draw starts in an idle slice and not while a label is being typed; a relabel patches the words in the
+    # drawn picture (a blob swap) before the redraw, so the picture follows Enter in about 0.2 s, not 0.75 s.
+    code = BUILDER.read_text(encoding="utf-8")
+    draw = code[code.index("function drawPicture(S)") :]
+    draw = draw[: draw.index("\n  }\n")]
+    assert "diagramModel.picture.idle(S)" in draw and 'ensureModule("mermaid")' in draw
+    assert "diagramModel.picture.patch(S, key, was, text)" in code and "done(text, was)" in code
+    picture = (BUILDER.parent / "diagram-picture.js").read_text(encoding="utf-8")
+    idle = picture.split("const idle = ", 1)[1].split("diagramModel.picture =", 1)[0]
+    assert '.dgm-editing' in idle and "requestIdleCallback" in idle
+    patch = picture.split("function patch(", 1)[1].split("const idle = ", 1)[0]
+    assert "text-outer-tspan" in patch and "mermaidShow(" in patch and "onpaint" in patch and "rows.length !== 1" in patch

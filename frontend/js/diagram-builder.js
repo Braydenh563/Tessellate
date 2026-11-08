@@ -74,7 +74,7 @@
       if (empty) return S.fig.replaceChildren(el("p", "muted dgm-hint", "The picture appears here as you add blocks."));
       //: The hint goes now, or it and the pending line show together (1679 m).
       S.fig.querySelector(":scope > .dgm-hint")?.remove();
-      ensureModule("mermaid").then((ok) => {
+      Promise.all([ensureModule("mermaid"), diagramModel.picture.idle(S)]).then(([ok]) => {
         if (!ok || stamp !== S.drawn) return;
         const began = performance.now();
         mermaidFill(S.fig, source, (result) => {
@@ -362,11 +362,12 @@
     const b = blockEl(S, key);
     if (!b || key[0] === "k") return;
     const label = b.querySelector(":scope > .dgm-card > .dgm-label");
-    beginEdit(S, label, nameOf(S, key), (text) => {
+    beginEdit(S, label, nameOf(S, key), (text, was) => {
       //: An empty name is refused; an unchanged row gets the old name back by hand.
       if (!diagramOps.relabel(S.m, key, text)) return (label.textContent = nameOf(S, key)), render(S);
       if (text === nameOf(S, key) && S.source === diagramModel.print(S.m)) return render(S);
       commit(S, `Renamed to ${text}.`);
+      diagramModel.picture.patch(S, key, was, text);
     }, key);
   }
 
@@ -390,7 +391,7 @@
       const text = target.textContent.trim();
       target.removeAttribute("contenteditable");
       target.classList.remove("dgm-editing");
-      if (keep && text !== was) done(text);
+      if (keep && text !== was) done(text, was);
       else target.textContent = was;
       //: Not when the render already put focus there.
       const block = key && blockEl(S, key);
