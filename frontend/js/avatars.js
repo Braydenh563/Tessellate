@@ -3297,6 +3297,8 @@ const NAME_MARK_BUDDY_KINDS = {
 };
 
 const nmb = {
+  cold: false,
+  warmQueue: [],
   //: **A house cat's room and mind** (INBOX 1673): hidden with its tab (`absent`), when it last settled, since when it has been out of your view,
   //: how much it misses you (0 to 3), its own temper, and when it is out for a while (`afield`). `NMB_MIND.move` reads them.
   absent: false, settledAt: Date.now(), unseenSince: 0, lonely: 0, lonelyAt: 0, userMovedAt: 0, lastAfield: 0, afield: null, owed: "", leaving: false,
@@ -3776,6 +3778,26 @@ function nameMarkBuddyCaret() {
   const bottom = Math.min(box.bottom, box.top + 32);
   return { left: box.left - NMB_CARET_PAD, right: box.right + NMB_CARET_PAD, top: box.top - 6, bottom: bottom + 6 };
 }
+
+//: **A window just shown holds its throws two frames** (INBOX 1634 d: `spotNow` 5582ms, 5400 of it layout,
+//: 8 s after the window came back from the tray). The first layout after a hidden web view is shown is the
+//: whole page's, and a throw's plan is the first to read. `cold` is up from the show until the second frame
+//: after it; a release in that time waits for it (`nameMarkBuddyAfterWarm`), a shake is not a throw.
+function nameMarkBuddyWarmUp() {
+  nmb.cold = true;
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    nmb.cold = false;
+    for (const run of nmb.warmQueue.splice(0)) run();
+  }));
+}
+function nameMarkBuddyAfterWarm(run) {
+  if (!nmb.cold) return false;
+  nmb.warmQueue.push(run);
+  return true;
+}
+document.addEventListener("visibilitychange", () => {
+  if (!document.hidden) nameMarkBuddyWarmUp();
+});
 
 //: One landing's worth of choosing (`fn`) on one measure of the page: a
 //: throw's landing asked for the obstacles two to four times (the drop, the
@@ -10153,6 +10175,8 @@ function nameMarkBuddyBuild() {
   });
   const release = (event) => {
     nmb.grabbed = false;
+    const held = drag;
+    if (drag?.moved && nameMarkBuddyAfterWarm(() => drag === held && release(event))) return;
     const flipped = drag?.flipped;
     if (drag?.moved) {
       cancelAnimationFrame(dragFrame);

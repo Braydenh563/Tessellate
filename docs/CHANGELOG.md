@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- A companion throw or shake on a window that has just come back from the tray waits two frames, so the browser lays the page out on its own frame and the throw reads a clean page (INBOX 1634 d).
 - Companions use edges more: the in-app one tucks behind a panel's side and comes back out; the desk one pulls itself up onto a nearby window top after scrabbling down a wall, and peers down upside-down from behind the top edge (INBOX 1683 x, y).
 - A greeting that also asks how you are ("hey! whatcha doing??") is answered with the welcome and a line about how the app is, not the welcome alone (INBOX 1693 c).
 - A reopened chat draws what the live answer drew: a no-model reply keeps its Composer badge, note card, Why this answer trail and timing line (INBOX 1693 b).
