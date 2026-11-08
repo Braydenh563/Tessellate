@@ -4127,7 +4127,7 @@ function renderDocPreview() {
   if (docFileType().ext === "mmd") {
     preview.dataset.dgmLayout = docViewState.layout;
     const text = docText();
-    const io = { name: $("doc-title").value, set: (next) => (docUndoBreak(), (docSurface().text = next)), undo: () => docUndo(), redo: () => docRedo() };
+    const io = { key: currentDoc?.id, name: $("doc-title").value, set: (next) => (docUndoBreak(), (docSurface().text = next)), undo: () => docUndo(), redo: () => docRedo() };
     ensureModule("diagramBuilder").then((ok) => {
       //: A diagram the blocks cannot take (another kind, over 120 blocks) opens in Split, which is Source with its picture
       //: and the one line saying why; once per document, so a person who goes back to Blocks is not sent out again.

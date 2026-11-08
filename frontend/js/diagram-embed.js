@@ -82,6 +82,20 @@
     return out(how, doc.content, doc.title);
   }
 
+  //: Ctrl+Z and Ctrl+Shift+Z in the dialog. The press is the dialog's whole: stopPropagation keeps the app's undo (a listener on
+  //: the document) from running a second step after this one when focus is on Picture, List, Source, Done or Cancel.
+  //: A text field other than the source box (the title, a block's name while it is renamed) keeps the browser's own text undo:
+  //: this returns before preventDefault there, so Ctrl+Z undoes the typing, not the diagram. The source box is the one field that
+  //: steps the diagram's history, because its words are the source.
+  function historyKey(event, field, flush, io) {
+    if (!(event.ctrlKey || event.metaKey) || event.key.toLowerCase() !== "z") return;
+    if (event.target !== field && (event.target.isContentEditable || event.target.closest?.("input, textarea, select"))) return;
+    event.preventDefault();
+    event.stopPropagation();
+    if (event.target === field) flush();
+    (event.shiftKey ? io.redo : io.undo)();
+  }
+
   // --- Save to Library (R9c, 1621 D4) ---------------------------------------------------
   //: The whole fence round the lines `diagramModel.fence` found: from its opening mark to the end of its closing line.
   function swapRange(text, at) {
@@ -477,13 +491,9 @@
     dialog.append(head, ...(titlebar ? [titlebar] : []), viewbar, body, foot);
     document.addEventListener("keydown", onKey, true);
     wireBackdropClose(overlay, () => finish(false));
-    //: Ctrl+Z in the blocks or the text steps the source history, as it does in a diagram document.
-    dialog.addEventListener("keydown", (event) => {
-      if (!(event.ctrlKey || event.metaKey) || event.key.toLowerCase() !== "z") return;
-      event.preventDefault();
-      if (event.target === field) flush();
-      (event.shiftKey ? io.redo : io.undo)();
-    });
+    //: Ctrl+Z in the blocks or the source box steps the source history, as it does in a diagram document; in any other text field
+    //: (the title, a rename) it is the browser's text undo and this listener leaves it alone (`historyKey`).
+    dialog.addEventListener("keydown", (event) => historyKey(event, field, flush, io));
     //: Ctrl+Enter keeps the diagram from anywhere in the window (the other route to Done is 15 Tabs).
     dialog.addEventListener("keydown", (event) => {
       if (!((event.ctrlKey || event.metaKey) && event.key === "Enter") || event.altKey) return;
@@ -523,5 +533,5 @@
     return dialog;
   }
 
-  diagramModel.embed = { open, out, outDoc, save, swapRange, link };
+  diagramModel.embed = { open, out, outDoc, save, swapRange, link, historyKey };
 })();

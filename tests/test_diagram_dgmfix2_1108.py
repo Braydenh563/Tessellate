@@ -9,17 +9,18 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 JS = ROOT / "frontend" / "js"
-BAR = (JS / "diagram-bar.js").read_text(encoding="utf-8")
+KINDBAR = (JS / "diagram-kindbar.js").read_text(encoding="utf-8")
 BUILDER = (JS / "diagram-builder.js").read_text(encoding="utf-8")
 KINDS = (JS / "diagram-kinds.js").read_text(encoding="utf-8")
 
 
 def test_the_builder_keeps_ctrl_z_for_itself_wherever_focus_is_inside_it():
     """The app's undo listener is on the document: a press on a tile or the picture also binned the new document."""
-    assert "function historyKey(" in BAR
-    assert "event.stopPropagation()" in BAR.split("function historyKey(")[1].split("\n  }\n")[0]
-    assert "diagramModel.bar.historyKey(S, event)" in BUILDER
-    assert "diagramModel.bar.historyKey(S, event)" in KINDS
+    # Moved from diagram-bar.js (flowchart only) to diagram-kindbar.js (every kind); the intent is the same, the home is not.
+    assert "function historyKey(" in KINDBAR
+    assert "event.stopPropagation()" in KINDBAR.split("function historyKey(")[1].split("\n  }\n")[0]
+    assert "diagramModel.kindbar.historyKey(S, event)" in BUILDER
+    assert "diagramModel.kindbar.historyKey(S, event)" in KINDS
 
 
 MERMAID = (JS / "documents-mermaid.js").read_text(encoding="utf-8")
@@ -87,7 +88,8 @@ CSS = (ROOT / "frontend" / "css" / "diagram-lazy.css").read_text(encoding="utf-8
 def test_the_turn_it_sideways_offer_needs_a_shrunk_drawing_lives_in_the_stage_and_is_answered_once_per_diagram():
     """The default three boxes (418 px in a 538 px stage) asked; the line straddled the list and the picture; Keep did not hold after an edit."""
     assert "offer(S, f < 1 && math.sideways(" in VIEW
-    assert "const answered = new WeakSet();" in OUTLINE and "answered.has(S.host)" in OUTLINE and "answered.add(S.host)" in OUTLINE
+    # Review 1108: keyed by the diagram (io.key), the host only where there is none; the node test in test_diagram_review_1108.py runs it.
+    assert "const answered = new Set();" in OUTLINE and "answered.has(whose(S))" in OUTLINE and "answered.add(whose(S))" in OUTLINE
     assert "S.fig.parentElement" in OUTLINE and "S.note.after(line)" not in OUTLINE
     rule = CSS[CSS.index(".dgm-sideways {") : CSS.index("}", CSS.index(".dgm-sideways {"))]
     assert "12rem" in rule
