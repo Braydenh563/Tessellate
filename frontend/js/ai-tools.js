@@ -807,8 +807,6 @@ const MIRRORED_UI_EXTRAS = [
   "show-thinking-words",
   "border-style",
   "shadow-intensity",
-  "read-leading",
-  "read-measure",
   "avatar-motion",
   "avatar-follow",
   "avatar-buddy",
@@ -1090,6 +1088,7 @@ const OVERRIDABLE_KEYS = [
   "theme", "palette", "accent", "accent-custom", "page-bg", "font", "fontsize",
   "density", "radius", "glass", "glass-blur", "glass-opacity", "glass-sheen", "glass-controls", "page-wash",
   "glass-sheen-strength", "bg-style", "bg-motion", "bg-intensity", "zoom",
+  "read-leading", "read-measure",
 ];
 
 // LOOK_KEYS stays here, not in settings.js with the rest of "your own saved

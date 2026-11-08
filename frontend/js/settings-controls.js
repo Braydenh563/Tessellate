@@ -3176,7 +3176,7 @@ $("theme-surprise")?.addEventListener("click", () => {
   const pick = names[Math.floor(Math.random() * names.length)];
   applyThemePreset(pick, true);
   renderAppearance();
-  toast(`${THEME_PRESETS[pick].label} theme. Press Surprise me again for another.`, "info");
+  toast(`${THEME_PRESETS[pick].label} theme. Press Random theme again for another.`, "info");
 });
 
 //: Logs, from a job history row and the empty log (moved out of boot code, the

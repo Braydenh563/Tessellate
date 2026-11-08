@@ -63,8 +63,10 @@ def test_the_choice_is_applied_validated_defaulted_mirrored_and_resettable():
     assert '"readLeading"' in body and '"readMeasure"' in body
     assert '"read-leading": "normal"' in SETTINGS and '"read-measure": "standard"' in SETTINGS
     assert '{ key: "read-leading", id: "read-leading" }' in ROWS and '{ key: "read-measure", id: "read-measure" }' in ROWS
-    extras = AI_TOOLS[AI_TOOLS.index("MIRRORED_UI_EXTRAS = [") :][:1500]
-    assert '"read-leading"' in extras and '"read-measure"' in extras
+    look = AI_TOOLS[AI_TOOLS.index("const OVERRIDABLE_KEYS") :][:500]  # LOOK_KEYS is built from it
+    assert '"read-leading"' in look and '"read-measure"' in look
+    small = INDEX[INDEX.index('id="read-measure-row"') :][:400]
+    assert "column" in small
 
 
 def test_the_guide_names_both():

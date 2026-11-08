@@ -1778,6 +1778,8 @@ function themeSwatch(preset) {
 //: A theme under the pointer in Settings (settings-controls.js previewTheme):
 //: read before the manual layer, because a click would clear that layer.
 const settingsLook = {
+  quiet: 0,
+  quietWords: "",
   themePreview: "",
   logFilterFromRun: false,
 };
@@ -2079,6 +2081,8 @@ settingsLook.lookFile = (() => {
       "bg-intensity": whole(20, 100),
       radius: whole(0, 22),
       bgArt: onOff,
+      "read-leading": oneOf(["tight", "normal", "roomy"]),
+      "read-measure": oneOf(["narrow", "standard", "wide"]),
     };
   }
 
@@ -2154,6 +2158,7 @@ settingsLook.lookFile = (() => {
   }
 
   function restoreLook(snap) {
+    settingsLook.quiet = Date.now() + 5000;
     for (const [key, value] of Object.entries(snap)) {
       if (value === null) prefs.remove(key);
       else prefs.set(key, value);
@@ -2174,6 +2179,10 @@ settingsLook.lookFile = (() => {
 
   //: Runs `change`, then offers Undo (the toast's button and Ctrl+Z).
   function changeLookWithUndo(label, message, change) {
+    //: The look reaches the notebook a moment later as a preference change, whose own
+    //: generic toast ("Palette: default to default and 1 more") would stack on this one.
+    settingsLook.quiet = Date.now() + 5000;
+    settingsLook.quietWords = label;
     const before = lookSnapshot();
     change();
     const after = lookSnapshot();
@@ -2188,8 +2197,8 @@ settingsLook.lookFile = (() => {
   function surpriseNow() {
     const seed = Date.now() % 100000;
     const pick = surprisePick(seed, { palette: activePalette(), accent: appearancePref("accent"), density: effectiveDensity() });
-    const names = `${PALETTES.find((p) => p.id === pick.palette).name} palette, ${ACCENTS.find((a) => a.name === pick.accent).label.toLowerCase()} accent, ${pick.density}`;
-    changeLookWithUndo("Mixed a look", `Mix ${seed}: ${names}.`, () => {
+    const names = `${PALETTES.find((p) => p.id === pick.palette).name} palette, ${ACCENTS.find((a) => a.name === pick.accent).label.toLowerCase()} accent, ${pick.density} density`;
+    changeLookWithUndo("Mixed a look", `Mixed a look: ${names}.`, () => {
       // As choosing a palette does (`applyThemePreset`): its colours must not sit under a custom accent or page.
       for (const key of ["accent-custom", "page-bg", "page-bg-dark"]) prefs.remove(key);
       prefs.set("density", pick.density);
