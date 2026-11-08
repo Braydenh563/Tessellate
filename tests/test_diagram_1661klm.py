@@ -270,4 +270,7 @@ def test_the_shelf_is_a_dock_of_six_grip_tiles_and_a_caret_hidden_on_phones_and_
     assert "diagramModel.library.shelf(S, { ...helpers, glyph: shapeGlyph, groupGlyph })" in _js("diagram-builder.js")
     block = CSS[CSS.index(".dgm-shelf {") :][:700]
     assert "position: absolute" in block and "var(--space-3)" in block
-    assert "@media (pointer: coarse), (max-width: 599.98px) {\n  .dgm-shelf {\n    display: none;" in CSS
+    # The shelf is hidden in the one touch and phone-width block (a second copy of that block hid the grips' rule from test_diagram_touch).
+    assert CSS.count("@media (pointer: coarse), (max-width: 599.98px) {") == 1
+    coarse = CSS[CSS.index("@media (pointer: coarse), (max-width: 599.98px) {") :].split("\n}\n", 1)[0]
+    assert ".dgm-shelf {\n    display: none;" in coarse

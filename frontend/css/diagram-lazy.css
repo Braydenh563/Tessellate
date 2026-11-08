@@ -336,12 +336,6 @@
   display: none;
 }
 
-@media (pointer: coarse), (max-width: 599.98px) {
-  .dgm-shelf {
-    display: none;
-  }
-}
-
 /* While a zoom is in motion (diagram-view.js) the picture is only a transform: the boxes, handles and the picked arrow
    sit at the old size, so they hide until the real width lands (140 ms after the last input), then draw once. */
 .dgm-stage.dgm-gesturing .dgm-picture > .dgm-overlay {
@@ -1988,6 +1982,11 @@
   .dgm-join {
     min-block-size: 2.75rem;
     min-inline-size: 2.75rem;
+  }
+
+  /* The shelf is mouse only: a phone or touch screen adds blocks from the Add sheet. */
+  .dgm-shelf {
+    display: none;
   }
 }
 
