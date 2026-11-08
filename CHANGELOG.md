@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- List styles in rendered notes, Chat and the HTML export (INBOX 1696 cc): `*` circles, `+` squares, a two-space dash, `1)` numbers, `a.` letters and `i.` roman numerals are read by the renderer as the lists they are (letters only as a run, never inside a paragraph), a change of marker starts a new list, and the export keeps the type; before, `1)`, `a.` and `i.` were plain paragraphs and every marker was one list.
 - Chat with no model, pasted text (T6): join lines with commas, split on commas into lines, and count characters with and without spaces; a note named in the question is still left alone.
 - Chat with no model, Unix time (Time and date): "unix time now", "what is 1700000000 as a date" and "unix time of 1 January 2024".
 - Chat with no model, calculator words (T1): round, floor, ceil, log, ln, pow and "2(3+4)"; a power too large to write out, a log of zero or a negative number, and a base of 1 each say why.

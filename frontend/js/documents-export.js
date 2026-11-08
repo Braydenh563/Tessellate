@@ -101,6 +101,12 @@ th, td { padding: 0.45em 0.7em; border: 1px solid var(--rule); text-align: left;
 th { background: var(--inner); }
 hr { height: 1px; margin: 2.5em 0; border: 0; background: var(--rule); }
 ul.task-list, .task-list { list-style: none; padding-left: 1.2em; }
+.md-ul-circle { list-style-type: circle; }
+.md-ul-square { list-style-type: square; }
+.md-ul-dash { list-style-type: "\\2013  "; }
+.md-ol-a-dot { list-style-type: lower-alpha; }
+.md-ol-i-dot { list-style-type: lower-roman; }
+.md-ol-1-paren > li::marker { content: counter(list-item) ") "; }
 input[type="checkbox"] { margin-right: 0.4em; }
 .callout {
   margin: 1.5em 0;

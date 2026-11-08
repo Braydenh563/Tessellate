@@ -1283,6 +1283,14 @@ progress {
   list-style: none;
   margin-left: -1.1rem;
 }
+/* The marker a list is written with (mdList in markdown.js names it in the list's class; the HTML export
+   carries the same rules in DOC_EXPORT_CSS). Dots and numbers are the browser's own. */
+.md-ul-circle { list-style-type: circle; }
+.md-ul-square { list-style-type: square; }
+.md-ul-dash { list-style-type: "\2013  "; }
+.md-ol-a-dot { list-style-type: lower-alpha; }
+.md-ol-i-dot { list-style-type: lower-roman; }
+.md-ol-1-paren > li::marker { content: counter(list-item) ") "; }
 .md-task input {
   width: auto;
   margin-right: 0.4rem;
