@@ -1,4 +1,4 @@
 # dgmleft-1108 remaining (branch agent/dgmleft-1108, port 8784)
 
-Done: 1 bottom-right dead spot (drop over a dock now lands; corners 4 of 5 taken before 0 of 2 failing: br, br95, tl failed, all five take now).
-Next: 2 kindbar decorate host, diagram-kindbar.js.
+Done: 1 e2dff89a dead spot (corners tl, br, br95 failed; all five take now). 2 menu held by element (could not reproduce a loss in the app: 4 glyphs, 1 active either way).
+Next: 3 coarse-pointer handle lean-out, diagram-edges.js:76.

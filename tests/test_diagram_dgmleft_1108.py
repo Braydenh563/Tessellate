@@ -20,3 +20,11 @@ def test_a_drop_over_a_dock_is_a_drop_on_the_picture():
     seq = _text("diagram-seq-canvas.js")
     seq_over = seq[seq.index("function over(g)") : seq.index("const f = frameOf(S)")]
     assert ".dgm-zoom" not in seq_over and 'closest(".dock' not in seq_over
+
+
+def test_menus_are_decorated_through_the_element_not_its_host():
+    """Item 2: `openMenuAtPoint` returns the menu; the kind bar and the shelf decorate that, not a host lookup."""
+    assert "return menu;" in _text("markdown.js").split("function openMenuAtPoint")[1].split("function linkMenuItems")[0]
+    assert ".pointer-menu-host .action-menu" not in _text("diagram-kindbar.js")
+    assert "const menu = openMenuAtPoint(" in _text("diagram-kindbar.js")
+    assert "const menu = openMenuAtPoint(" in _text("diagram-library.js")
