@@ -209,3 +209,18 @@ def test_r3_28_what_is_a_titled_note_leads_with_its_opening_line():
 def test_r3_28_a_price_ask_over_unpriced_notes_says_so(question):
     said = say(question, "# Espresso\n\nMachine is a Gaggia Classic. Dial in at 18 g in, 36 g out.", "Dentist on Friday at 3pm.")
     assert said.startswith("None of your espresso") and said.endswith("give a price."), said
+
+
+# --- how long: "2h50" is a length of time, and the line that says it about the thing asked leads ---
+
+PORTUGAL = (
+    "# Portugal trip, overview\n\nTen days in May: four in Lisbon, a day in Sintra, three in Porto, two in the Douro valley. Train between the cities, a car only for the valley.",
+    "# Trains\n\nLisbon to Porto on the Alfa Pendular, 2h50. Tickets open 60 days ahead and are half price if booked early.",
+    "# Flights\n\nOut to Lisbon, back from Porto, so no day is lost going back. Booked, seats 14A and 14B.",
+)
+
+
+@pytest.mark.parametrize("order", [(0, 1, 2), (1, 0, 2), (2, 0, 1)])
+def test_how_long_the_train_is_answered_by_the_line_that_gives_the_journey_time(order):
+    said = say("How long is the train from Lisbon to Porto?", *(PORTUGAL[i] for i in order))
+    assert said.startswith("Lisbon to Porto on the Alfa Pendular, 2h50"), said

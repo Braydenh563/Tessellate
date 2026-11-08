@@ -74,7 +74,7 @@
       if (empty) return S.fig.replaceChildren(el("p", "muted dgm-hint", "The picture appears here as you add blocks."));
       //: The hint goes now, or it and the pending line show together (1679 m).
       S.fig.querySelector(":scope > .dgm-hint")?.remove();
-      ensureModule("mermaid").then((ok) => {
+      Promise.all([ensureModule("mermaid"), diagramModel.picture.idle(S)]).then(([ok]) => {
         if (!ok || stamp !== S.drawn) return;
         const began = performance.now();
         mermaidFill(S.fig, source, (result) => {
@@ -258,9 +258,7 @@
     connect.classList.add("dgm-connect");
     connect.setAttribute("aria-label", `Connect to…, from ${text}`);
     card.append(connect);
-    const menu = kebabMenu(blockItems(S, key), `Menu for ${text}`);
-    menu.classList.add("dgm-menu");
-    card.append(menu);
+    card.append(diagramModel.library.lazyKebab(() => blockItems(S, key), `Menu for ${text}`));
     block.append(card);
     if (joins.length) {
       const row = el("div", "dgm-joins");
@@ -364,11 +362,12 @@
     const b = blockEl(S, key);
     if (!b || key[0] === "k") return;
     const label = b.querySelector(":scope > .dgm-card > .dgm-label");
-    beginEdit(S, label, nameOf(S, key), (text) => {
+    beginEdit(S, label, nameOf(S, key), (text, was) => {
       //: An empty name is refused; an unchanged row gets the old name back by hand.
       if (!diagramOps.relabel(S.m, key, text)) return (label.textContent = nameOf(S, key)), render(S);
       if (text === nameOf(S, key) && S.source === diagramModel.print(S.m)) return render(S);
       commit(S, `Renamed to ${text}.`);
+      diagramModel.picture.patch(S, key, was, text);
     }, key);
   }
 
@@ -392,7 +391,7 @@
       const text = target.textContent.trim();
       target.removeAttribute("contenteditable");
       target.classList.remove("dgm-editing");
-      if (keep && text !== was) done(text);
+      if (keep && text !== was) done(text, was);
       else target.textContent = was;
       //: Not when the render already put focus there.
       const block = key && blockEl(S, key);
@@ -533,8 +532,7 @@
     return menu;
   }
 
-  //: The host's rows can depend on the diagram (the dialog's look row names the look that is not on), and the menu is built once with the pane:
-  //: when they differ after a redraw it is built again in its place, keeping the bar's roving Tab stop.
+  //: The host's rows can depend on the diagram: when they differ after a redraw the menu is rebuilt in place, keeping the Tab stop.
   function refreshMore(S) {
     const old = S.root.querySelector(".dgm-more");
     if (!old || old.dataset.rows === (S.io.menu || []).map((row) => row.label).join("|")) return;

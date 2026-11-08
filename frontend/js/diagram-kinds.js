@@ -727,9 +727,7 @@
     grip.append(icon("dots-six-vertical"));
     card.append(grip, glyph(S, node), kit.el("span", "dgm-label", text));
     if (meta) card.append(kit.el("span", "dgm-meta muted", meta));
-    const menu = kebabMenu(itemsFor(S, key), `Menu for ${text}`);
-    menu.classList.add("dgm-menu");
-    card.append(menu);
+    card.append(diagramModel.library.lazyKebab(() => itemsFor(S, key), `Menu for ${text}`));
     block.append(card);
     if (boxed || row.kids?.length) {
       const kids = kit.el("div", "dgm-kids");

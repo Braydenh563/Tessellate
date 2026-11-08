@@ -101,3 +101,24 @@ def test_they_are_answered_in_the_catalogues_own_lengths() -> None:
     for act, (lo, hi) in {"tickle_squirm": (1.5, 3.0), "boop_sneeze": (0.8, 1.4)}.items():
         assert bh.ACTIVITIES[act].seconds == (lo, hi)
     assert extras.REACTIONS["tickle"].touch and extras.REACTIONS["boop"].touch
+
+
+@pytest.mark.parametrize("tip", [0.55, 0.65, 0.75])
+@pytest.mark.parametrize("dt", [0.016])  # slower than this is not a jab at all
+def test_a_jab_down_through_the_nose_band_to_the_chest_is_a_poke_not_a_boop(tip: float, dt: float) -> None:
+    """The tip decides it: a jab that only passes the nose on its way to the belly landed on the belly."""
+    e, _s, t = still()
+    lx, top, r, b = box(e)
+    cx, ty = (lx + r) // 2, top + int(tip * (b - top))
+    down = [(cx, top - 300 + int((ty - top + 300) * k / 12)) for k in range(13)]
+    up = [(cx, ty - int(300 * k / 6)) for k in range(1, 7)]
+    assert "boop" not in said(e, down + up, dt, t)
+
+
+def test_a_jab_down_that_lands_on_the_nose_is_still_a_boop() -> None:
+    e, _s, t = still()
+    lx, top, r, b = box(e)
+    cx, ty = (lx + r) // 2, top + int(0.3 * (b - top))
+    down = [(cx, top - 300 + int((ty - top + 300) * k / 12)) for k in range(13)]
+    up = [(cx, ty - int(300 * k / 6)) for k in range(1, 7)]
+    assert "boop" in said(e, down + up, 0.016, t)
