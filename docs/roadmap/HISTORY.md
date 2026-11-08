@@ -10,6 +10,7 @@ that answers "has this been done?" before anyone starts.
 ## Moved from the plans, 2026-11-08 (DOCUMENTS_PLAN 23, rows L1 to L5)
 
 - L1 built: `docLists.enter` (documents-cm.js) gives the next marker for a letter, roman or dash item; the Enter handler in `docProsePairKeymap` (documents-prose.js) calls it when `docListEnter` has no answer. Harness cases in `tests/_doc_lists_harness.js`. Measured in the editor: `a.`/`b.` then Enter gave `c.`, `ii.` gave `iii.`, a dash gave a dash, a plain dot stayed with the keymap, an empty `d.` ended the list.
+- L2 was already built, the scout was wrong: `docPairInput` and `docProseInputHandler` (documents-prose.js, tests/test_prose_autofill.py) pair `(`, `[`, `{`, backtick, `*` and `_` in markdown and text, skip code and fences, and keep `[[` for the link menu. Measured in the editor: `(` gave `()`, `[` inside gave `([])`, backtick gave a pair, `[[` stayed `[[` with the caret at 2, `(` inside a fence stayed single. No code change.
 
 ## Moved from the plans, 2026-11-07 (CHAT_PLAN B6)
 
