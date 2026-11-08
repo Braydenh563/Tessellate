@@ -2,7 +2,7 @@
 
 Generated 2026-11-08 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7884, frontend ids 2652, CSS sections 522, backend routes 649, backend modules 9120, test files 2210, tests 18556, plan headings 1004, app scripts 28, boot scripts 37, script files 263.
+Counts: frontend functions 7884, frontend ids 2652, CSS sections 522, backend routes 649, backend modules 9125, test files 2210, tests 18560, plan headings 1004, app scripts 28, boot scripts 37, script files 263.
 
 ## Frontend functions (7884)
 
@@ -13121,7 +13121,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:164 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (9120)
+## Backend modules (9125)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -15328,18 +15328,23 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `holds_amount` | src/tessellate/ai/composer_sum.py:218 |
 | `most` | src/tessellate/ai/composer_sum.py:198 |
 
-### src/tessellate/ai/composer_sums.py (8)
+### src/tessellate/ai/composer_sums.py (13)
 
 | Name | File:line |
 |---|---|
-| `_clean` | src/tessellate/ai/composer_sums.py:32 |
-| `_factorial` | src/tessellate/ai/composer_sums.py:47 |
-| `_multiple` | src/tessellate/ai/composer_sums.py:61 |
-| `_num` | src/tessellate/ai/composer_sums.py:39 |
-| `_part` | src/tessellate/ai/composer_sums.py:54 |
-| `_say` | src/tessellate/ai/composer_sums.py:43 |
-| `_sqrt` | src/tessellate/ai/composer_sums.py:68 |
-| `answer` | src/tessellate/ai/composer_sums.py:75 |
+| `_clean` | src/tessellate/ai/composer_sums.py:50 |
+| `_factorial` | src/tessellate/ai/composer_sums.py:65 |
+| `_implicit` | src/tessellate/ai/composer_sums.py:136 |
+| `_log` | src/tessellate/ai/composer_sums.py:109 |
+| `_multiple` | src/tessellate/ai/composer_sums.py:79 |
+| `_num` | src/tessellate/ai/composer_sums.py:57 |
+| `_part` | src/tessellate/ai/composer_sums.py:72 |
+| `_places` | src/tessellate/ai/composer_sums.py:93 |
+| `_power` | src/tessellate/ai/composer_sums.py:125 |
+| `_rounded` | src/tessellate/ai/composer_sums.py:97 |
+| `_say` | src/tessellate/ai/composer_sums.py:61 |
+| `_sqrt` | src/tessellate/ai/composer_sums.py:86 |
+| `answer` | src/tessellate/ai/composer_sums.py:147 |
 
 ### src/tessellate/ai/composer_switch.py (5)
 
@@ -24615,7 +24620,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (18556)
+## Tests (18560)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -25085,7 +25090,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_composer_short_facts.py | 2 |
 | tests/test_composer_slots_1029.py | 13 |
 | tests/test_composer_slots_1029b.py | 28 |
-| tests/test_composer_smalld_1108.py | 12 |
+| tests/test_composer_smalld_1108.py | 16 |
 | tests/test_composer_social.py | 15 |
 | tests/test_composer_social_1420.py | 14 |
 | tests/test_composer_streak_1029.py | 13 |

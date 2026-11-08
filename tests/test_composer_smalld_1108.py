@@ -8,7 +8,7 @@ import datetime as dt
 
 import pytest
 
-from tessellate.ai import commands, composer_chance, composer_extra, composer_smalltalk, composer_study, composer_text, utilities
+from tessellate.ai import commands, composer_chance, composer_extra, composer_smalltalk, composer_study, composer_sums, composer_text, utilities
 
 NOW = dt.datetime(2026, 11, 8, 10, 0, 0)
 
@@ -70,6 +70,66 @@ def test_day_of_year_of_a_date():
 def test_a_third_is_two_decimals():
     assert said("a third of 10").startswith("A third of 10 is 3.33.")
     assert said("a third of 100").startswith("A third of 100 is 33.33.")
+
+
+# --- 2: T1 leftovers as words -----------------------------------------------------------------
+SUMS = [
+    ("round 3.7", "3.7 rounded is 4."),
+    ("round 2.5", "2.5 rounded is 3."),
+    ("round 3.14159 to 2 decimal places", "3.14159 rounded to 2 decimal places is 3.14."),
+    ("round 2.675 to 2 decimals", "2.675 rounded to 2 decimal places is 2.68."),
+    ("what is 3.2 rounded", "3.2 rounded is 3."),
+    ("floor 3.7", "3.7 rounded down is 3."),
+    ("round down 3.7", "3.7 rounded down is 3."),
+    ("what is the floor of -3.2", "-3.2 rounded down is -4."),
+    ("ceil 3.2", "3.2 rounded up is 4."),
+    ("ceiling of 3.2", "3.2 rounded up is 4."),
+    ("round up 3.2", "3.2 rounded up is 4."),
+    ("log 100", "The log (base 10) of 100 is 2."),
+    ("log of 1000", "The log (base 10) of 1,000 is 3."),
+    ("log2 8", "The log (base 2) of 8 is 3."),
+    ("log base 2 of 8", "The log (base 2) of 8 is 3."),
+    ("ln 1", "The natural log of 1 is 0."),
+    ("natural log of 10", "The natural log of 10 is 2.302585."),
+    ("pow(2, 10)", "2 to the power of 10 is 1,024."),
+    ("pow 2 10", "2 to the power of 10 is 1,024."),
+    ("2 to the power of 10", "2 to the power of 10 is 1,024."),
+    ("2 raised to 3", "2 to the power of 3 is 8."),
+    ("2(3+4)", "2(3+4) is 14."),
+    ("what is 2 (3 + 4)", "2 (3 + 4) is 14."),
+    ("(1+2)(3+4)", "(1+2)(3+4) is 21."),
+    ("3(2)", "3(2) is 6."),
+]
+
+
+@pytest.mark.parametrize("q,start", SUMS)
+def test_sum_words(q, start):
+    assert said(q).startswith(start), (q, said(q))
+
+
+@pytest.mark.parametrize("q,why", [
+    ("log 0", "not defined"), ("log of -5", "not defined"), ("ln 0", "not defined"), ("log base 1 of 5", "base"), ("log base 0 of 5", "base"),
+    ("2 to the power of 10000", "too large"), ("10 to the power of 20", "too large"), ("0 to the power of -1", "cannot"), ("pow(9, 999)", "too large"),
+])
+def test_sum_words_say_why_when_they_cannot(q, why):
+    assert why in said(q), (q, said(q))
+
+
+@pytest.mark.parametrize("q", [
+    "round up my notes on X", "max's birthday", "the log from Tuesday", "log 5 miles in my running note", "floor plan for the house", "ceiling paint note",
+    "ln is it", "pow wow notes", "round the clock", "split the trip note", "join the club note", "2 (3 days)", "call 555(1234)", "round 3.7 notes", "log",
+])
+def test_sum_words_leave_note_questions_alone(q):
+    assert composer_sums.answer(ctx(q)) is None, q
+
+
+def test_sum_words_are_linear_on_long_input():
+    import time
+
+    start = time.perf_counter()
+    for q in ("round " + "1" * 20000, "log " + " " * 20000 + "5", "(" * 20000, "2" + "(2" * 10000, "pow " + "9 " * 10000):
+        composer_sums.answer(ctx(q))
+    assert time.perf_counter() - start < 1.0
 
 
 # --- 1: rows the plan still lists as open, asked in the plan's own phrasing ------------------
