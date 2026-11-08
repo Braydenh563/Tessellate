@@ -45,7 +45,7 @@ from pathlib import Path
 
 from tessellate.ai import composer, composer_doings, composer_done, composer_frame, composer_threads, composer_lists, composer_money, composer_slots, composer_sum, composer_tables, filed_name, glossary, question_noise, realise, verdicts
 from tessellate.ai import composer_answer, composer_brief, composer_nth, composer_oneword, composer_property, composer_small
-from tessellate.ai import composer_ask
+from tessellate.ai import composer_ask, factgraph
 from tessellate.ai import composer_read
 from tessellate.ai import composer_select
 from tessellate.ai.composer_lists import clean
@@ -737,7 +737,8 @@ def kind_of(question: str) -> str:
     for kind in ("compare", "who", "count", "likes", "opinion", "left", "when", "overview"):
         if _ASKS[kind].search(q):
             return kind
-    return "overview" if q and not _ASKED.match(q) else "fact"
+    #: "dentist number" is a fact asked bare, not a topic to overview (E12).
+    return "overview" if q and not _ASKED.match(q) and not composer_property.asked(q) else "fact"
 
 
 #: The notebook's names (words capitalised mid-sentence), for this answer.
@@ -3806,7 +3807,8 @@ def _event_lead(out: _Out, lead: Fact, today: date) -> bool:
     #: A thing done is in the past of the note that tells it: "Planted
     #: tomatoes on 5 October" in a note of 30 October is this year's 5 October,
     #: never next year's (2026-10-30 sweep).
-    for found in _spans(body, lead.view.written, "past"):
+    #: Read against the later of written and edited (E17): a log line added at an edit is no older than it.
+    for found in _spans(body, factgraph._anchor(lead.view.note) or lead.view.written, "past"):
         #: "Called mum, she is coming for Christmas": a day a preposition of
         #: aim leads is where something is headed, not the day it happened
         #: (audit 1031 C9); the note's own day stands.
@@ -4880,6 +4882,9 @@ def _routed_away(question: str, notes: list[dict], today: date) -> tuple:
         return None, question, None
     if one := composer_oneword.named(question, notes):
         return _one_word_result(one), question, None
+    #: "The first note I wrote about Sara" ranks that subject's notes by day (R3-4).
+    if ranked := composer_small.ordinal_about(question, notes, today=today):
+        return ranked, question, None
     #: "Where did I write about squats" is a sentence naming the note (A22), not a digest of what it says.
     if located := composer_small.where_written(question, notes, today=today):
         return located, question, None

@@ -12,6 +12,7 @@ from __future__ import annotations
 import contextvars
 import functools
 import re
+import unicodedata
 
 from tessellate.core.lazyre import lazy_compile
 from datetime import date, datetime
@@ -294,6 +295,14 @@ def _overview():
 
 
 @functools.lru_cache(maxsize=1 << 16)
+def _unaccented(word: str) -> str:
+    """"josé" as "jose": the key a word is matched on, so a name typed on a
+    phone keyboard without its accents meets the note that has them (E14)."""
+    if word.isascii():
+        return word
+    return "".join(c for c in unicodedata.normalize("NFKD", word) if not unicodedata.combining(c))
+
+
 def _stem(word: str) -> str:
     """A light stem, so "testers" meets "tester" and "booked" meets "book".
 
@@ -305,7 +314,7 @@ def _stem(word: str) -> str:
     """
     #: One key for the UK and US spellings ("colour" meets "color", INBOX
     #: 895); the answer is still made from the note's own words.
-    return _stem_plain(variants.canonical(word.lower()))
+    return _stem_plain(variants.canonical(_unaccented(word.lower())))
 
 
 #: Plurals whose singular ends in f or fe: "find notes about knives" must meet

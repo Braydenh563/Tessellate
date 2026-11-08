@@ -245,6 +245,54 @@ def where_written(question: str, notes: list[dict], *, today: date | None = None
     return _result(out.parts, "where", out.rows)
 
 
+# --- R3-4: the first or last note about a subject ---------------------------------------
+
+#: "What is the first note I wrote about Sara", "the latest note about the dentist":
+#: a rank by day inside the subject, not a search. `_plain` collapsed the
+#: spaces, so each one below is a single literal and no two quantifiers share characters.
+_ORDINAL_ABOUT = re.compile(
+    r"^(?:(?:what|which) (?:is|was) |show me |tell me )?(?:my |the )?(?P<end>first|oldest|earliest|last)"
+    r"(?: note| entry)?(?: (?:that )?i (?:wrote|made|saved|noted))? (?:about|on|mentioning|that mentions) (?:the |my )?(?P<rest>\S.*)$",
+    re.I,
+)
+_EARLIEST = frozenset({"first", "oldest", "earliest"})
+
+
+def _ordinal_held(question: str, views: list[NoteView]) -> tuple[bool, list[str], list[NoteView]] | None:
+    """(asks the earliest, the subject words, the notes holding all of them), or None."""
+    found = _ORDINAL_ABOUT.match(_plain(question))
+    if not found:
+        return None
+    words = [w for w in re.findall(r"[\w'-]+", found.group("rest")) if w.lower() not in _ASKED_STOP and len(w) > 1]
+    stems = {_stem(w) for w in words}
+    held = [v for v in views if v.written and all(_holds(st, v.words) for st in stems)] if words else []
+    return (found.group("end").lower() in _EARLIEST, words, held) if held else None
+
+
+def ordinal_about(question: str, notes: list[dict], *, today: date | None = None) -> dict | None:
+    """"Your first note about Sara is Sara, written four weeks ago: ..." from the
+    notes that hold every subject word, ranked by the day written; None when
+    the question is not this shape or no note holds the subject."""
+    views = _views(notes)
+    read = _ordinal_held(question, views)
+    if read is None:
+        return None
+    early, words, held = read
+    view = (min if early else max)(held, key=lambda v: (v.written, -v.rank if early else v.rank))
+    best = _best_sentence(view, {_stem(w) for w in words}) or (view.sentences[0] if view.sentences else None)
+    if best is None:
+        return None
+    today = today or user_today()
+    out = _Answer({v.id: v for v in views}, today)
+    out.parts.append(("template", f"Your {'first' if early else 'latest'} note about {' '.join(words)} is "))
+    out.name(view)
+    out.parts.append(("template", ", written "))
+    out.m(ago((today - view.written).days))
+    out.parts.append(("template", ": "))
+    out.q(best, words)
+    return _result(out.parts, "ordinal", out.rows)
+
+
 # --- A24: show me something old -------------------------------------------------------
 
 _OLD = re.compile(

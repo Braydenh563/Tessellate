@@ -376,25 +376,35 @@ def _the(subject: str) -> str:
     return subject if subject[:1].isupper() else f"the {subject}"
 
 
+#: "my passport expires" in "how many days until my passport expires": the
+#: verb is the sentence's own ("The passport expires 1586 days from today").
+_ENDING_VERB = re.compile(r"^(?P<noun>.+?) (?P<verb>expires|ends|starts|begins|arrives|happens|renews|finishes)$", re.I)
+
+
+def _the_and_verb(subject: str) -> tuple[str, str]:
+    found = _ENDING_VERB.match(subject.strip())
+    return (_the(found.group("noun")), found.group("verb").lower()) if found else (_the(subject), "is")
+
+
 def _until(out, asked: str, views: list, today: date) -> bool:  # noqa: ANN001
     tense, subject = utilities.until_subject(asked)
     found = _find(views, subject, today, tense)
     if not found:
         return False
     view, day, sentence = found
-    the = _the(subject)
+    the, verb = _the_and_verb(subject)
     the = the[:1].upper() + the[1:]
     n = abs((day - today).days)
     if n == 0:
-        line = f"{the} is today." if tense == "future" else f"{the} was today."
+        line = f"{the} {verb} today." if tense == "future" else f"{the} was today."
     elif n == 1:
-        line = f"{the} is tomorrow." if tense == "future" else f"{the} was yesterday."
+        line = f"{the} {verb} tomorrow." if tense == "future" else f"{the} was yesterday."
     #: The distance first, then the day, as every timed answer says it (INBOX
     #: 1483): "was nine days ago, on 2 October", "is 23 days from today, on 3
     #: November" (the words "how many days until" is answered in); the count asked
     #: for stays exact.
     elif tense == "future":
-        line = f"{the} is {realise.count_word(n)} days from today, on {_day(day, today)}."
+        line = f"{the} {verb} {realise.count_word(n)} days from today, on {_day(day, today)}."
     else:
         line = f"{the} was {realise.count_word(n)} days ago, on {_day(day, today)}."
     out.lines.append(line)

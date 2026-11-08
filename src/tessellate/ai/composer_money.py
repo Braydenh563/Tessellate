@@ -940,13 +940,27 @@ def _target_asked(q: str) -> _Target | None:
     return _Target(dimension, figure[0][1] if figure else None, unit, word, _target_verb(q), rest)
 
 
-def _goal_in(views: list, dimension: str) -> Item | None:
-    """The newest figure a note sets as a goal, target or budget."""
+#: Words that name the same kind of figure: a limit is not a budget, a target is a goal.
+_KIND = {"goal": "goal", "target": "goal", "aim": "goal", "budget": "budget", "limit": "limit", "cap": "limit"}
+
+
+def _says_kind(text: str, noun: str) -> bool:
+    return any(_KIND.get(w.lower().rstrip("s")) == _KIND.get(noun) for w in _TARGET_WORD.findall(text))
+
+
+def _goal_in(views: list, dimension: str, noun: str = "") -> Item | None:
+    """The newest figure a note sets as the goal, target or budget asked for.
+    A sentence of another kind ("Overdraft limit £500" is not a budget) does
+    not count, and a note titled for it counts only when it holds one figure
+    (a Budget note listing rent, groceries and phone sets no limit)."""
     goals = []
     for view in views:
+        figures = [s for s in view.sentences if _read(s.text, dimension)]
         for sentence in view.sentences:
-            if _TARGET_WORD.search(sentence.text + " " + str(view.title)):
-                goals += [(bool(_TARGET_WORD.search(sentence.text)), view.written or date.min, Item(_note_name(view), m[2], m[1], view, sentence)) for m in _read(sentence.text, dimension)]  # noqa: SLF001
+            named = _says_kind(sentence.text, noun) if noun else bool(_TARGET_WORD.search(sentence.text))
+            titled = _says_kind(str(view.title), noun) if noun else bool(_TARGET_WORD.search(str(view.title)))
+            if named or (titled and len(figures) == 1):
+                goals += [(named, view.written or date.min, Item(_note_name(view), m[2], m[1], view, sentence)) for m in _read(sentence.text, dimension)]  # noqa: SLF001
     return max(goals, key=lambda g: g[:2])[2] if goals else None
 
 
@@ -969,7 +983,7 @@ def _toward(out, ask: _Target, views: list, today: date) -> bool:  # noqa: ANN00
     win = _window_asked(ask.after, today, views)
     aim, goal = ask.value, None
     if aim is None:
-        goal = _goal_in(views, ask.dimension)
+        goal = _goal_in(views, ask.dimension, ask.noun)
         if goal is None:
             out.lines.append(f"I found no {ask.noun} figure in your notes.")
             return True

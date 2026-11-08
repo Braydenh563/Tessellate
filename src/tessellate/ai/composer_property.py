@@ -23,6 +23,7 @@ _PROPERTIES: dict[str, tuple[re.Pattern, re.Pattern, str]] = {
             r"\b(?:his|her|their|my|your|our)\s+(?:phone\s+|mobile\s+|cell\s+)?number\b"
             r"|\w['\u2019]s?\s+(?:phone\s+|mobile\s+|cell\s+)?number\b|\bnumber\s+for\s+(?!(?:the\s+)?day\b)\w"
             r"|\b(?:phone|mobile|cell|telephone)\s+(?:number|no)\b"
+            r"|^(?:the\s+)?[a-z]+\s+number\s*[?.!]*$"
             r"|^(?:what(?:'s|s| is| are)?|give me|tell me|find)\b[^?]*\b(?:phone|mobile|cell|telephone)\s*[?.!]*$", re.I),
         re.compile(r"\b(?:phone|mobile|tel|telephone)\b", re.I), "phone number"),
     "password": (re.compile(r"\b(?:password|passcode|pin)\b", re.I), re.compile(r"\b(?:password|passcode|pin)\b", re.I), "password"),
