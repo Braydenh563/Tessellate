@@ -127,3 +127,16 @@ def test_r3_30_a_notebook_of_private_notes_is_not_told_it_has_no_notes(client, s
     session.commit()
     text = _ask(client, "what is my phone number", use_tools=False)["text"]
     assert "You have no notes yet" not in text, text
+
+
+
+@pytest.mark.parametrize("chat", [False, True], ids=["ask", "chat"])
+def test_r3_5_what_dates_do_i_have_lists_the_dates_not_the_newest_notes(go, chat):
+    said = go("what dates do I have", chat)
+    assert "newest notes" not in said and "11 November" in said and "8 December" in said and "12 March 2031" in said, said
+
+
+@pytest.mark.parametrize("chat", [False, True], ids=["ask", "chat"])
+def test_r3_5_what_dates_in_a_month_is_not_a_date_sum(go, chat):
+    said = go("what dates do I have in December", chat)
+    assert "Read as" not in said and "S do i have" not in said, said

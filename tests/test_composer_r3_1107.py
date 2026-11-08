@@ -327,3 +327,20 @@ def test_r3_2_number_to_and_number_of_are_not_a_phone_ask(question):
 
 def test_r3_2_the_number_for_a_business_is_still_a_phone_ask():
     assert composer_property.asked("what is the number for the dentist") == "phone"
+
+
+@pytest.mark.parametrize("question", ["what date do I have in December", "what dates are in December", "what dates do I have in December"])
+def test_r3_5_a_date_ask_with_a_verb_after_it_is_no_date_sum(question):
+    from datetime import datetime
+
+    from tessellate.ai import composer_calc
+
+    assert composer_calc._day_question(question, datetime(2026, 11, 7).date()) is None, question  # noqa: SLF001
+
+
+def test_r3_5_what_day_is_a_date_is_still_a_date_sum():
+    from datetime import datetime
+
+    from tessellate.ai import composer_calc
+
+    assert composer_calc._day_question("what day is 3 march", datetime(2026, 11, 7).date()) is not None  # noqa: SLF001

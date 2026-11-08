@@ -67,7 +67,9 @@ _DATES = re.compile(
     #: (`_only_a_window` reads `rest`).
     r"\bwhat(?:'s| is| are)\s+(?:(?:all|every|any)\s+)?(?:the\s+|my\s+)?(?:due|coming up|upcoming|deadlines?|overdue)"
     r"(?:\s+(?:items?|things?|tasks?))?(?P<rest>.*)$|"
-    r"\b(?:all|every|any) (?:the |my )?(?:dates?|deadlines?)\b|\bwhat do i have coming up\b",
+    r"\b(?:all|every|any) (?:the |my )?(?:dates?|deadlines?)\b|\bwhat do i have coming up\b"
+    #: "What dates do I have" is the dated lines, not the five newest notes (round 3, R3-5).
+    r"|\bwhat dates (?:do i have|have i (?:got|saved|written|noted)|are (?:there|in my notes))\b",
     re.I,
 )
 
@@ -151,7 +153,7 @@ def list_target(question: str) -> tuple[str, str] | None:
 def window_of(question: str) -> tuple[str, int]:
     """`(how it is said, days ahead)` for a time word in the question: -1 is
     to the month's end, 99999 every date ahead."""
-    if re.search(r"\b(?:all|every) (?:the |my )?dates?\b", question, re.I):
+    if re.search(r"\b(?:all|every) (?:the |my )?dates?\b|\bwhat dates\b", question, re.I):
         return "ahead in your notes", 99999
     from tessellate.ai import composer_plan
 
