@@ -2,7 +2,7 @@
 
 Generated 2026-11-08 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7915, frontend ids 2652, CSS sections 522, backend routes 649, backend modules 9199, test files 2232, tests 18792, plan headings 1004, app scripts 28, boot scripts 37, script files 263.
+Counts: frontend functions 7915, frontend ids 2652, CSS sections 522, backend routes 649, backend modules 9200, test files 2232, tests 18795, plan headings 1004, app scripts 28, boot scripts 37, script files 263.
 
 ## Frontend functions (7915)
 
@@ -13152,7 +13152,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:164 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (9199)
+## Backend modules (9200)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -22794,20 +22794,21 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_adjoins` | src/tessellate/core/overlay/engine.py:570 |
 | `_same_screens` | src/tessellate/core/overlay/engine.py:581 |
 
-### src/tessellate/core/overlay/extras.py (10)
+### src/tessellate/core/overlay/extras.py (11)
 
 | Name | File:line |
 |---|---|
-| `Extras` | src/tessellate/core/overlay/extras.py:377 |
-| `Pointer` | src/tessellate/core/overlay/extras.py:180 |
-| `Reaction` | src/tessellate/core/overlay/extras.py:67 |
-| `_in_box` | src/tessellate/core/overlay/extras.py:168 |
-| `_k` | src/tessellate/core/overlay/extras.py:120 |
-| `_seg_dist` | src/tessellate/core/overlay/extras.py:172 |
-| `ease` | src/tessellate/core/overlay/extras.py:363 |
-| `ease_marks` | src/tessellate/core/overlay/extras.py:373 |
-| `register` | src/tessellate/core/overlay/extras.py:154 |
-| `shake_flips` | src/tessellate/core/overlay/extras.py:344 |
+| `Extras` | src/tessellate/core/overlay/extras.py:401 |
+| `Pointer` | src/tessellate/core/overlay/extras.py:183 |
+| `Reaction` | src/tessellate/core/overlay/extras.py:70 |
+| `_bucketed` | src/tessellate/core/overlay/extras.py:347 |
+| `_in_box` | src/tessellate/core/overlay/extras.py:171 |
+| `_k` | src/tessellate/core/overlay/extras.py:123 |
+| `_seg_dist` | src/tessellate/core/overlay/extras.py:175 |
+| `ease` | src/tessellate/core/overlay/extras.py:387 |
+| `ease_marks` | src/tessellate/core/overlay/extras.py:397 |
+| `register` | src/tessellate/core/overlay/extras.py:157 |
+| `shake_flips` | src/tessellate/core/overlay/extras.py:365 |
 
 ### src/tessellate/core/overlay/faces.py (16)
 
@@ -24750,7 +24751,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (18792)
+## Tests (18795)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -26250,7 +26251,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_overlay_scrabble_1107.py | 9 |
 | tests/test_overlay_screen_1678.py | 6 |
 | tests/test_overlay_seams_1683e.py | 4 |
-| tests/test_overlay_shake_1108.py | 15 |
+| tests/test_overlay_shake_1108.py | 18 |
 | tests/test_overlay_size_1107.py | 8 |
 | tests/test_overlay_size_review_1107.py | 10 |
 | tests/test_overlay_slow_tick_1108.py | 2 |

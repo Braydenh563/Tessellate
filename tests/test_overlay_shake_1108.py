@@ -261,3 +261,57 @@ def test_small_corrections_while_placing_are_not_a_shake() -> None:
     t, px, py = pull_out(e, 1.0, *grab_at(e, 1.0))
     stroked(e, t, px, py, 60, 20, 4, 0.09)  # three 20 px corrections inside 0.36 s
     assert not e.shaken
+
+
+def stroked_along(e: Engine, t: float, px: int, py: int, hz: int, angle: float, stroke: float, strokes: int, secs: float, sd: float = 0.0, seed: int = 7) -> tuple[float, int, int]:
+    """Strokes back and forth along `angle` degrees (0 is x, 90 is y), with Gaussian pointer jitter of `sd` px (a fixed seed)."""
+    rng, n, sign = random.Random(seed), max(1, round(hz * secs)), 1
+    ux, uy, x0, y0 = math.cos(math.radians(angle)), math.sin(math.radians(angle)), px, py
+    pos = 0.0
+    for _ in range(strokes):
+        start = pos
+        for i in range(1, n + 1):
+            t += 1.0 / hz
+            pos = start + sign * stroke * i / n
+            px, py = round(x0 + pos * ux + rng.gauss(0, sd)), round(y0 + pos * uy + rng.gauss(0, sd))
+            e.update(t, event=("move", px, py))
+        sign = -sign
+    return t, px, py
+
+
+@pytest.mark.parametrize("hz", [60, 1000])
+@pytest.mark.parametrize("angle", [90, 45, 135])
+def test_a_shake_is_read_along_any_direction(hz: int, angle: int) -> None:
+    e = make()
+    t, px, py = pull_out(e, 1.0, *grab_at(e, 1.0))
+    stroked_along(e, t, px, py, hz, angle, 40, 4, 0.1)
+    assert e.shaken, (hz, angle)
+
+
+@pytest.mark.parametrize("sd", [0.5, 1.0])
+@pytest.mark.parametrize("hz", [60, 500, 1000])
+def test_a_25_px_shake_is_read_through_pointer_jitter(hz: int, sd: float) -> None:
+    """A 25 px stroke every 0.125 s (4 Hz) with sub-pixel to 1 px jitter on each reported position."""
+    e = make()
+    t, px, py = pull_out(e, 1.0, *grab_at(e, 1.0))
+    stroked_along(e, t, px, py, hz, 0, 25, 6, 0.125, sd)
+    assert e.shaken, (hz, sd)
+
+
+@pytest.mark.parametrize("hz", [60, 1000])
+def test_a_slow_jittery_drag_and_a_jittery_wobble_are_not_a_shake(hz: int) -> None:
+    rng = random.Random(3)
+    e = make()
+    t, px, py = pull_out(e, 1.0, *grab_at(e, 1.0))
+    x0, y0, t0 = px, py, t
+    while t < t0 + 1.5:
+        t += 1.0 / hz
+        e.update(t, event=("move", round(x0 - 600 * (t - t0) + rng.gauss(0, 1)), round(y0 + 10 * math.sin(2 * math.pi * 3 * (t - t0)) + rng.gauss(0, 1))))
+        assert not e.shaken
+    e = make()
+    t, px, py = pull_out(e, 1.0, *grab_at(e, 1.0))
+    x0, t0 = px, t
+    while t < t0 + 1.5:
+        t += 1.0 / hz
+        e.update(t, event=("move", round(x0 + 40 * (t - t0) + rng.gauss(0, 1)), py + round(rng.gauss(0, 1))))
+        assert not e.shaken

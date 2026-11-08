@@ -58,7 +58,10 @@ TOUCH_FREE = (*SCREEN_FREE, "sit", "sleep", "startle")
 #: A carried shake: this many direction flips inside `SHAKE_WINDOW` s, each after a stroke of `SHAKE_SWING` px along the
 #: motion's main axis (a drag with a wobble travels away; a shake goes back and forth about a point; catalogue
 #: `int.shake_dizzy`, INBOX 1696 kk). The dizzy sway after the drop lasts `DIZZY_FOR` s.
-SHAKE_FLIPS, SHAKE_WINDOW, SHAKE_SWING, DIZZY_FOR = 3, 0.6, 30.0, (2.5, 4.0)
+SHAKE_FLIPS, SHAKE_WINDOW, SHAKE_SWING, DIZZY_FOR = 3, 0.6, 22.0, (2.5, 4.0)
+#: The shake is read in this many directions, over points averaged per `SHAKE_BUCKET` s when there are more than `SHAKE_RAW`; the motion across the axis
+#: may be at most `SHAKE_ACROSS` times the motion along it.
+SHAKE_AXES, SHAKE_BUCKET, SHAKE_ACROSS, SHAKE_RAW = 12, 0.015, 1.5, 48
 #: A pet this soon after waking is shy; the third pet inside `LOVE_STREAK` s is loved.
 SHY_FOR, LOVE_STREAK, LOVE_PETS = 8.0, 30.0, 3
 FACE_STATES = ("stand", "act", "notice", "startle", "wave", "land", "sit")
@@ -341,23 +344,44 @@ class Pointer:
         return max(vals) - min(vals) if vals else 0.0
 
 
+def _bucketed(pts: list[tuple[float, float, float]]) -> list[tuple[float, float, float]]:
+    """The window's points averaged over `SHAKE_BUCKET` s: a 1000 Hz mouse's pixel jitter averages out, and a few dozen
+    points are left to read whatever the pointer's rate."""
+    out: list[list[float]] = []
+    first, slot = pts[0][0], -1
+    for t, x, y in pts:
+        n = int((t - first) / SHAKE_BUCKET)
+        if n != slot:
+            out.append([0.0, 0.0, 0.0, 0.0])
+            slot = n
+        b = out[-1]
+        b[0] += t
+        b[1] += x
+        b[2] += y
+        b[3] += 1.0
+    return [(b[0] / b[3], b[1] / b[3], b[2] / b[3]) for b in out]
+
+
 def shake_flips(trail: list[tuple[float, float, float]], now: float, k: float) -> int:
-    """Direction flips of a carried figure's pointer over the last `SHAKE_WINDOW` s along the main axis of that motion:
-    how hard it was shaken. `trail` is `(time, x, y)`, at any pointer rate. The flips are read along the principal axis
-    of the window's points, so a drag with a sideways wobble (it moves away, its main axis never turns back) is not a
-    shake, and strokes under `SHAKE_SWING` px (scaled by `k`) are a hand's tremor."""
-    pts = [p for p in trail if now - p[0] <= SHAKE_WINDOW]
-    if len(pts) < 4:
+    """Direction flips of a carried figure's pointer over the last `SHAKE_WINDOW` s along the best of `SHAKE_AXES`
+    directions: how hard it was shaken. `trail` is `(time, x, y)`, at any pointer rate. A shake goes back and forth
+    about a point, so the motion across its axis stays small beside the motion along it; a drag with a wobble
+    travels far across the wobble's axis and is not one. Strokes under `SHAKE_SWING` px (scaled by `k`) are tremor."""
+    raw = [p for p in trail if now - p[0] <= SHAKE_WINDOW]
+    if len(raw) < 4:
         return 0
-    n = len(pts)
-    mx, my = sum(p[1] for p in pts) / n, sum(p[2] for p in pts) / n
-    sxx = sum((p[1] - mx) ** 2 for p in pts)
-    syy = sum((p[2] - my) ** 2 for p in pts)
-    sxy = sum((p[1] - mx) * (p[2] - my) for p in pts)
-    angle = 0.5 * math.atan2(2 * sxy, sxx - syy)
-    ux, uy = math.cos(angle), math.sin(angle)
-    along = [(p[0], (p[1] - mx) * ux + (p[2] - my) * uy, 0.0) for p in pts]
-    return Pointer.reversals(along, 1, SHAKE_SWING * k)
+    pts = _bucketed(raw) if len(raw) > SHAKE_RAW else raw
+    best = 0
+    for a in range(SHAKE_AXES):
+        ux, uy = math.cos(math.pi * a / SHAKE_AXES), math.sin(math.pi * a / SHAKE_AXES)
+        along = [(p[0], p[1] * ux + p[2] * uy, 0.0) for p in pts]
+        flips = Pointer.reversals(along, 1, SHAKE_SWING * k)
+        if flips <= best:
+            continue
+        across = [p[2] * ux - p[1] * uy for p in pts]
+        if max(across) - min(across) <= SHAKE_ACROSS * (max(q[1] for q in along) - min(q[1] for q in along)):
+            best = flips
+    return best
 
 
 def ease(t: float, length: float) -> int:
