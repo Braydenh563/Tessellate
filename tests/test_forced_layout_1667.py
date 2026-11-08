@@ -41,7 +41,7 @@ def test_a_travel_step_runs_a_frame_on_unless_the_move_ended() -> None:
 
 def test_a_mood_hands_over_a_frame_on() -> None:
     mood = _body(_src("atlas.js"), "function setAtlasMood(")
-    assert "nmb.afterClean(() => nameMarkBuddyBlend(boxes, latest, 700), 6, latest)" in mood, "a page still being written snaps"
+    assert "nmb.afterClean(() => nameMarkBuddyBlend(boxes, latest, 700), 14, latest, 160)" in mood, "a page still being written snaps"
     assert "else apply();" in mood, "the lite set and a hidden tab still change the mood at once"
     assert "!document.hidden" in mood, "a hidden tab has no frames to wait for"
 
@@ -75,7 +75,7 @@ def test_the_card_grip_looks_once_a_frame_not_once_a_pointerover() -> None:
 
 def test_after_clean_can_snap_instead_of_reading_a_page_still_being_written() -> None:
     src = _src("avatars.js")
-    assert "afterClean(fn, tries = 6, snap = fn) {" in src
+    assert "afterClean(fn, tries = 6, snap = fn, calm = 0) {" in src
     assert "(dirty ? snap : fn)()" in src
 
 

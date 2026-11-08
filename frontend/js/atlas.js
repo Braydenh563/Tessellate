@@ -3735,7 +3735,7 @@ function setAtlasMood(mood, forMs = 0, { quiet = false, easeMs = 0, backEaseMs =
   //: tab has no frames to wait for, so it applies at once.
   const seq = (setAtlasMood.seq = (setAtlasMood.seq || 0) + 1);
   const latest = () => seq === setAtlasMood.seq && apply();
-  if (boxes.length && !lite && !document.hidden) setTimeout(() => seq === setAtlasMood.seq && nmb.afterClean(() => nameMarkBuddyBlend(boxes, latest, 700), 6, latest), Math.max(0, settling + 20));
+  if (boxes.length && !lite && !document.hidden) setTimeout(() => seq === setAtlasMood.seq && nmb.afterClean(() => nameMarkBuddyBlend(boxes, latest, 700), 14, latest, 160), Math.max(0, settling + 20));
   else apply();
   if (next === "surprised" && forMs > 2000) {
     //: A failure startles first, then worries until it has passed.
