@@ -49,6 +49,9 @@ STROKE_WASTE = 1.3
 #: States a reaction may break into, and the few more a touch may.
 SCREEN_FREE = ("stand", "act", "notice", "wave", "land")
 TOUCH_FREE = (*SCREEN_FREE, "sit", "sleep", "startle")
+#: A carried shake: this many direction flips inside `SHAKE_WINDOW` s, each after a stroke of `SHAKE_SWING` px (catalogue
+#: `int.shake_dizzy`, INBOX 1696 kk). The dizzy sway after the drop lasts `DIZZY_FOR` s.
+SHAKE_FLIPS, SHAKE_WINDOW, SHAKE_SWING, DIZZY_FOR = 3, 0.6, 18.0, (2.5, 4.0)
 FACE_STATES = ("stand", "act", "notice", "startle", "wave", "land", "sit")
 
 
@@ -74,6 +77,8 @@ REACTIONS: dict[str, Reaction] = {
     "flip": Reaction("flip_twirl", "joy", 1.6, "happy", 5.0, True),
     "flinch": Reaction("flinch", "worried", 1.2, "startled", 5.0, True),
     "hover": Reaction("", "smile", 3.0, "happy", 25.0, True),
+    # a shake while carried: it is left dizzy on the ground (`Extras.dizzy`)
+    "dizzy": Reaction("dizzy_sway", "dizzy", 3.2, "startled", 8.0, True, 2),
     # the screen
     "window_opened": Reaction("glance_window", "curious", 2.0, "", 20.0),
     "window_closed": Reaction("relief", "content", 1.8, "", 30.0),
@@ -113,6 +118,7 @@ REACT_ACTS: dict[str, bh.Activity] = {
     "shiver": bh.Activity("stand", (2.4, 3.0), _k((0, 1, 1, 0), (0.1, 1, 0.98, 0.05), (0.2, 1, 1, -0.05), (0.3, 1, 0.98, 0.05), (0.4, 1, 1, -0.05), (0.55, 1, 0.98, 0.04), (0.7, 1, 1, -0.03), (1, 1, 1, 0)), (), where="react"),
     "cheer": bh.Activity("hop", (1.6, 2.2), _k((0, 1, 1, 0), (0.15, 1.04, 0.86, 0), (0.3, 0.96, 1.12, 0), (0.5, 1.04, 0.88, 0), (0.65, 0.96, 1.12, 0), (0.85, 1.02, 0.94, 0), (1, 1, 1, 0)), (("play", -0.3),), where="react"),
     "watch_drag": bh.Activity("look", (2.0, 2.8), _k((0, 1, 1, 0), (0.15, 0.96, 1.05, 0.09), (0.4, 0.96, 1.05, -0.09), (0.65, 0.96, 1.05, 0.09), (0.9, 0.97, 1.03, -0.05), (1, 1, 1, 0)), (("curiosity", -0.1),), where="react"),
+    "dizzy_sway": bh.Activity("stand", (2.5, 4.0), _k((0, 1, 1, 0), (0.12, 1, 1.02, 0.08), (0.3, 1, 1.0, -0.08), (0.5, 1, 1.02, 0.07), (0.7, 1, 1.0, -0.07), (0.85, 1, 1.01, 0.04), (1, 1, 1, 0)), (), where="react"),
     "perk_up": bh.Activity("look", (1.2, 1.6), _k((0, 1, 1, 0), (0.15, 0.97, 1.06, 0.02), (0.8, 0.98, 1.03, 0.02), (1, 1, 1, 0)), (), where="react"),
 }
 for _kind, _prio in {"flinch": 3, "poke_miffed": 2, "battery_low": 2, "idle_return": 2, "download_done": 2, "toast": 2}.items():
@@ -173,7 +179,8 @@ class Pointer:
         path = sum(math.hypot(b[1] - a[1], b[2] - a[2]) for a, b in zip(pts, pts[1:]))
         return path / max(0.016, pts[-1][0] - pts[0][0])
 
-    def reversals(self, pts: list[tuple[float, float, float]], axis: int, swing: float) -> int:
+    @staticmethod
+    def reversals(pts: list[tuple[float, float, float]], axis: int, swing: float) -> int:
         """Turns of direction along an axis (1 x, 2 y), each after a stroke of at least `swing` px that went there
         fairly straight (the travel at most `STROKE_WASTE` times the distance), so a hand's tremor does not count."""
         n, direction, anchor, travel = 0, 0, pts[0][axis] if pts else 0.0, 0.0
@@ -278,6 +285,15 @@ class Pointer:
     def _spread(pts: list, axis: int) -> float:
         vals = [p[axis] for p in pts]
         return max(vals) - min(vals) if vals else 0.0
+
+
+def shake_flips(trail: list[tuple[float, float, float]], now: float, k: float) -> int:
+    """Direction flips of a carried figure's pointer over the last `SHAKE_WINDOW` s, the larger of x and y: how
+    hard it was shaken. `trail` is `(time, x, y)`; strokes under `SHAKE_SWING` px (scaled by `k`) are a hand's tremor."""
+    pts = [p for p in trail if now - p[0] <= SHAKE_WINDOW]
+    if len(pts) < 4:
+        return 0
+    return max(Pointer.reversals(pts, 1, SHAKE_SWING * k), Pointer.reversals(pts, 2, SHAKE_SWING * k))
 
 
 def ease(t: float, length: float) -> int:
@@ -425,8 +441,9 @@ class Extras:
             return r.touch or r.prio > REACT_PRIO.get(e.act or "", 1)
         return True
 
-    def fire(self, kind: str, now: float, toward: float | None = None) -> bool:
-        """Play a reaction if it is allowed now (state, cooldown, nobody typing). True when it started."""
+    def fire(self, kind: str, now: float, toward: float | None = None, seconds: float | None = None) -> bool:
+        """Play a reaction if it is allowed now (state, cooldown, nobody typing). True when it started. `seconds`
+        replaces the reaction's own length (a dizzy sway is drawn per shake)."""
         e = self.e
         r = REACTIONS.get(kind)
         if r is None or not self._allowed(r, kind, now):
@@ -438,9 +455,10 @@ class Extras:
         e.last_active = now
         if toward is not None and r.touch:
             e.facing = -1 if toward < e.x + e.size[0] / 2 else 1
-        self.over = (r.face, now, r.seconds)
+        length = r.seconds if seconds is None else seconds
+        self.over = (r.face, now, length)
         if r.act:
-            self._play(r.act, r.seconds, now)
+            self._play(r.act, length, now)
         return True
 
     def _play(self, name: str, seconds: float, now: float) -> None:

@@ -2,7 +2,7 @@
 
 Generated 2026-11-08 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7908, frontend ids 2652, CSS sections 522, backend routes 649, backend modules 9180, test files 2226, tests 18707, plan headings 1004, app scripts 28, boot scripts 37, script files 263.
+Counts: frontend functions 7908, frontend ids 2652, CSS sections 522, backend routes 649, backend modules 9182, test files 2227, tests 18712, plan headings 1004, app scripts 28, boot scripts 37, script files 263.
 
 ## Frontend functions (7908)
 
@@ -13145,7 +13145,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:164 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (9180)
+## Backend modules (9182)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -22761,48 +22761,50 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `Bar` | src/tessellate/core/overlay/engine.py:497 |
-| `Cover` | src/tessellate/core/overlay/engine.py:478 |
-| `Engine` | src/tessellate/core/overlay/engine.py:576 |
-| `Monitor` | src/tessellate/core/overlay/engine.py:507 |
-| `Output` | src/tessellate/core/overlay/engine.py:525 |
-| `Perch` | src/tessellate/core/overlay/engine.py:466 |
-| `TuckSpot` | src/tessellate/core/overlay/engine.py:487 |
-| `_adjoins` | src/tessellate/core/overlay/engine.py:560 |
-| `_same_screens` | src/tessellate/core/overlay/engine.py:571 |
+| `Bar` | src/tessellate/core/overlay/engine.py:499 |
+| `Cover` | src/tessellate/core/overlay/engine.py:480 |
+| `Engine` | src/tessellate/core/overlay/engine.py:578 |
+| `Monitor` | src/tessellate/core/overlay/engine.py:509 |
+| `Output` | src/tessellate/core/overlay/engine.py:527 |
+| `Perch` | src/tessellate/core/overlay/engine.py:468 |
+| `TuckSpot` | src/tessellate/core/overlay/engine.py:489 |
+| `_adjoins` | src/tessellate/core/overlay/engine.py:562 |
+| `_same_screens` | src/tessellate/core/overlay/engine.py:573 |
 
-### src/tessellate/core/overlay/extras.py (9)
-
-| Name | File:line |
-|---|---|
-| `Extras` | src/tessellate/core/overlay/extras.py:297 |
-| `Pointer` | src/tessellate/core/overlay/extras.py:151 |
-| `Reaction` | src/tessellate/core/overlay/extras.py:55 |
-| `_in_box` | src/tessellate/core/overlay/extras.py:139 |
-| `_k` | src/tessellate/core/overlay/extras.py:94 |
-| `_seg_dist` | src/tessellate/core/overlay/extras.py:143 |
-| `ease` | src/tessellate/core/overlay/extras.py:283 |
-| `ease_marks` | src/tessellate/core/overlay/extras.py:293 |
-| `register` | src/tessellate/core/overlay/extras.py:125 |
-
-### src/tessellate/core/overlay/faces.py (14)
+### src/tessellate/core/overlay/extras.py (10)
 
 | Name | File:line |
 |---|---|
-| `Look` | src/tessellate/core/overlay/faces.py:33 |
-| `Micro` | src/tessellate/core/overlay/faces.py:93 |
-| `_brow` | src/tessellate/core/overlay/faces.py:239 |
-| `_erase_mouth` | src/tessellate/core/overlay/faces.py:268 |
-| `_features` | src/tessellate/core/overlay/faces.py:222 |
-| `_lid` | src/tessellate/core/overlay/faces.py:255 |
-| `_match` | src/tessellate/core/overlay/faces.py:147 |
-| `_mouth` | src/tessellate/core/overlay/faces.py:290 |
-| `_skin` | src/tessellate/core/overlay/faces.py:186 |
-| `_splice` | src/tessellate/core/overlay/faces.py:246 |
-| `draw` | src/tessellate/core/overlay/faces.py:192 |
-| `eye_anchor` | src/tessellate/core/overlay/faces.py:133 |
-| `head_point` | src/tessellate/core/overlay/faces.py:165 |
-| `level_at` | src/tessellate/core/overlay/faces.py:86 |
+| `Extras` | src/tessellate/core/overlay/extras.py:313 |
+| `Pointer` | src/tessellate/core/overlay/extras.py:157 |
+| `Reaction` | src/tessellate/core/overlay/extras.py:58 |
+| `_in_box` | src/tessellate/core/overlay/extras.py:145 |
+| `_k` | src/tessellate/core/overlay/extras.py:99 |
+| `_seg_dist` | src/tessellate/core/overlay/extras.py:149 |
+| `ease` | src/tessellate/core/overlay/extras.py:299 |
+| `ease_marks` | src/tessellate/core/overlay/extras.py:309 |
+| `register` | src/tessellate/core/overlay/extras.py:131 |
+| `shake_flips` | src/tessellate/core/overlay/extras.py:290 |
+
+### src/tessellate/core/overlay/faces.py (15)
+
+| Name | File:line |
+|---|---|
+| `Look` | src/tessellate/core/overlay/faces.py:34 |
+| `Micro` | src/tessellate/core/overlay/faces.py:96 |
+| `_brow` | src/tessellate/core/overlay/faces.py:244 |
+| `_erase_mouth` | src/tessellate/core/overlay/faces.py:285 |
+| `_features` | src/tessellate/core/overlay/faces.py:225 |
+| `_lid` | src/tessellate/core/overlay/faces.py:272 |
+| `_match` | src/tessellate/core/overlay/faces.py:150 |
+| `_mouth` | src/tessellate/core/overlay/faces.py:307 |
+| `_skin` | src/tessellate/core/overlay/faces.py:189 |
+| `_spiral` | src/tessellate/core/overlay/faces.py:260 |
+| `_splice` | src/tessellate/core/overlay/faces.py:251 |
+| `draw` | src/tessellate/core/overlay/faces.py:195 |
+| `eye_anchor` | src/tessellate/core/overlay/faces.py:136 |
+| `head_point` | src/tessellate/core/overlay/faces.py:168 |
+| `level_at` | src/tessellate/core/overlay/faces.py:89 |
 
 ### src/tessellate/core/overlay/host.py (3)
 
@@ -24724,7 +24726,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (18707)
+## Tests (18712)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -26221,6 +26223,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_overlay_scrabble_1107.py | 9 |
 | tests/test_overlay_screen_1678.py | 6 |
 | tests/test_overlay_seams_1683e.py | 4 |
+| tests/test_overlay_shake_1108.py | 5 |
 | tests/test_overlay_size_1107.py | 8 |
 | tests/test_overlay_size_review_1107.py | 10 |
 | tests/test_overlay_slow_tick_1108.py | 2 |

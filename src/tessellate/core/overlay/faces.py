@@ -10,6 +10,7 @@ a half-lid, a flicker of a smile). Everything is placed from the eye box the lid
 
 from __future__ import annotations
 
+import math
 import random
 from typing import Any, NamedTuple
 
@@ -34,7 +35,7 @@ class Look(NamedTuple):
     """One expression. `brow` tilts the inner ends (positive up, worried), `lift` raises both brows (px),
     `lid` closes the eyes from the top (0 open, 1 shut), `smile` curves the mouth (negative frowns), `open` is
     an o mouth's height (px), `arc` shuts the eyes as happy arcs, `blush` reddens the cheeks, `askew` raises
-    one brow more than the other (px, left is the figure's)."""
+    one brow more than the other (px, left is the figure's), `spiral` swirls the eyes (dizzy)."""
 
     brow: float = 0.0
     lift: float = 0.0
@@ -44,6 +45,7 @@ class Look(NamedTuple):
     arc: float = 0.0
     blush: float = 0.0
     askew: float = 0.0
+    spiral: float = 0.0
 
 
 EXPRESSIONS: dict[str, Look] = {
@@ -59,6 +61,7 @@ EXPRESSIONS: dict[str, Look] = {
     "proud": Look(lift=2.0, smile=3.0, lid=0.15),
     "strain": Look(brow=-4.0, lift=-1.0, smile=-1.5, open=2.0, lid=0.2),
     "smirk": Look(askew=2.5, smile=2.5, lid=0.2),
+    "dizzy": Look(brow=2.0, lift=1.0, open=2.5, spiral=1.0),
 }
 #: The easing of a level over a hold: up, held, down (step indexes into `LEVELS`).
 EASE = (1, 2, 3, 2, 1)
@@ -228,7 +231,9 @@ def _features(g: Any, patch: Any, at: tuple[float, float], u: float, look: Look,
     sign = -1 if flip else 1
     for side in (-1, 1):
         ex = ox + side * gap * u
-        if look.arc * f > 0.3 or look.lid * f > 0.05:
+        if look.spiral * f > 0.3:
+            _spiral(g, ex, oy, u, f, skin, ink)
+        elif look.arc * f > 0.3 or look.lid * f > 0.05:
             _lid(g, ex, oy, u, look, f, skin, ink)
         if look.brow or look.lift or look.askew:
             _brow(g, ex, oy, u, side, side * sign > 0, look, f, ink)
@@ -250,6 +255,18 @@ def _splice(base: sp.Frame, rows: bytes, left: int, top: int, right: int, bottom
         a = ((top + y) * base.width + left) * 4
         out[a:a + (right - left) * 4] = rows[y * (right - left) * 4:(y + 1) * (right - left) * 4]
     return sp.Frame(base.width, base.height, bytes(out), base.pad_x, base.pad_y, base.box)
+
+
+def _spiral(g: Any, ex: float, ey: float, u: float, f: float, skin: tuple, ink: tuple) -> None:
+    """A dizzy eye: skin over it and two turns of a spiral winding out from its middle."""
+    rx, ry = 7.5 * u, 6.5 * u
+    g.ellipse((ex - rx, ey - ry, ex + rx, ey + ry), fill=skin)
+    steps = 28
+    pts = []
+    for i in range(steps + 1):
+        a, r = 4.0 * math.pi * i / steps, 0.9 * i / steps
+        pts.append((ex + rx * r * math.cos(a), ey + ry * r * math.sin(a)))
+    g.line(pts, fill=ink, width=max(2, int(1.1 * u)))
 
 
 def _lid(g: Any, ex: float, ey: float, u: float, look: Look, f: float, skin: tuple, ink: tuple) -> None:

@@ -241,6 +241,8 @@ FLING_LIFT = 300.0
 FLING_FLAIL = 1.6
 FLING_ESCAPE = 0.4
 FLING_FACE = (2.0, 4.0)
+#: How long a drop waits to stand before the dizzy sway it owes is given up.
+DIZZY_WAIT = 10.0
 #: A hold that slips (the window moved under the hands, INBOX 1683 k): it may grip again, scrabble for `SCRABBLE_FOR` s
 #: (the hem shakes `SCRABBLE_DRAG` at `SCRABBLE_HZ`) and pull up onto the edge's top, else it drops. The chance is
 #: `GRIP_BASE` bent by how rested it is and by the mood (`GRIP_MOOD`).
@@ -786,6 +788,9 @@ class Engine:
         self.perch_at = 0.0
         self.last_fling = ""
         self.flung: str | None = None
+        #: A carry shaken hard enough (`extras.shake_flips`), and the moment a drop owes a dizzy sway (None: none owed).
+        self.shaken = False
+        self.dizzy_owed: float | None = None
         self.flail_until = 0.0
         #: A hold that slipped: the window it will pull up onto, the scrabble's span, and how the last slip ended.
         self.pulling: Perch | None = None
@@ -1024,6 +1029,17 @@ class Engine:
         if state == "stand" and self.perch is not None:  # a visit to a window ends when its time does
             self.state_until = min(self.state_until, max(now + 1.0, self.perch_until))
 
+    def _dizzy(self, now: float) -> None:
+        """A shaken carry has been let go: once it stands or sits again (the fall and the landing come first) it sways
+        dizzily for `extras.DIZZY_FOR` s, spiral eyes and all. Given up if it has not stood within `DIZZY_WAIT` s."""
+        if self.dizzy_owed is None:
+            return
+        if now - self.dizzy_owed > DIZZY_WAIT:
+            self.dizzy_owed = None
+        elif self.state in ("stand", "sit"):
+            self.dizzy_owed = None
+            self.ex.fire("dizzy", now, seconds=self.ex.rng.uniform(*extras.DIZZY_FOR))
+
     def _wear_face(self, state: str, now: float) -> None:
         if self.flung is not None:  # thrown off a window: the face comes with the first moment it can wear one
             if state in extras.FACE_STATES:
@@ -1147,6 +1163,7 @@ class Engine:
         if self.turn_to:  # a turn begun in an act or a stand still finishes
             self._turning(now)
         self._follow_through(now, dt)
+        self._dizzy(now)
         if self.settled_now and self.placed:  # where the person left it is home
             self.home_x, self.placed = self.x, False
             self._maybe_relocate(now)
@@ -3738,6 +3755,7 @@ class Engine:
             #: Held by where it is drawn: the pointer keeps its place on the figure.
             self.grab = (px - drawn_x, py - drawn_y)
             self.carrying = False
+            self.shaken = False
             self.trail = [(now, px, py)]
             self.pre_press = self.state
             self.state = "pressed"
@@ -3764,7 +3782,9 @@ class Engine:
             self.y = py - self.grab[1] - self._dy("held")
             self._keep_on_screen()
             self.trail.append((self.now, px, py))
-            del self.trail[:-16]
+            del self.trail[:-48]  # 0.6 s of a shake at 60 Hz is 36 samples
+            if not self.shaken and not self.reduced and extras.shake_flips(self.trail, self.now, self._scale()) >= extras.SHAKE_FLIPS:
+                self.shaken = True
 
     def _ride_limits(self, frame: str) -> tuple[float, float, float, float]:
         """Where the engine's x and y may go (x low, x high, y low, y high) so the drawn box of
@@ -3795,6 +3815,8 @@ class Engine:
             return
         self.carrying = False
         self.placed = True
+        if self.shaken:
+            self.shaken, self.dizzy_owed = False, now
         self.mind.feel("startled", now)
         m = self.current_monitor()
         x0, x1, _y0, _y1 = self._ride_limits("held")
