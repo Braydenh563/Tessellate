@@ -32,7 +32,7 @@ _NEXT_OR_LAST = re.compile(
 _WEEK_OF = re.compile(r"^(?:(?:what|which) week(?: number)?(?: of the year)? (?:is|was)|week number (?:of|for)) (?P<d>\S.*)$")
 _YEAR_DAY_OF = re.compile(r"^(?:(?:what|which) day of the year (?:is|was)|what is (?:the )?day number of) (?P<d>\S.*)$")
 #: A bare day and month ("3 march", "march 3rd"): in a week or day-of-year question that is this year, not the next time it comes round.
-_BARE_DATE = re.compile(r"^(?:the )?(?:(?P<d>\d{1,2})(?:st|nd|rd|th)?(?: of)? (?P<m>[a-z]{3,9})|(?P<m2>[a-z]{3,9}) (?P<d2>\d{1,2})(?:st|nd|rd|th)?)$")
+_BARE_DATE = re.compile(r"^(?:the )?(?:(?P<d>\d{1,2})(?:st|nd|rd|th)?(?: of)? (?P<m>[a-z]{3,9})|(?P<m2>[a-z]{3,9}) (?P<d2>\d{1,2})(?:st|nd|rd|th)?)(?: (?P<y>\d{4}))?$")
 _MONTHS = ("january", "february", "march", "april", "may", "june", "july", "august", "september", "october", "november", "december")
 _LEAP = re.compile(r"^(?:is|was|will) (?P<y>\d{4}|it|this year|next year|last year)(?: be)? a leap year$")
 _LEFT = re.compile(
@@ -89,19 +89,20 @@ def _neighbour(which: str, today: date) -> Reply:
 
 
 def _this_year(phrase: str, today: date) -> date | None:
-    """The date of a bare day and month in `today`'s year, else None."""
+    """The date of a day and month (with a year if given, else `today`'s), else None."""
     found = _BARE_DATE.match(phrase)
     if not found:
         return None
     name = found["m"] or found["m2"]
     month = next((i for i, m in enumerate(_MONTHS, 1) if len(name) >= 3 and m.startswith(name)), 0)
     try:
-        return date(today.year, month, int(found["d"] or found["d2"])) if month else None
+        return date(int(found["y"] or today.year), month, int(found["d"] or found["d2"])) if month else None
     except ValueError:
         return None
 
 
-def _on(phrase: str, today: date) -> date | None:
+def on(phrase: str, today: date) -> date | None:
+    """The day a phrase names: a bare day and month is this year, else whatever `recognise` makes of it."""
     day = _this_year(phrase, today)
     if day is not None:
         return day
@@ -110,7 +111,7 @@ def _on(phrase: str, today: date) -> date | None:
 
 
 def _year_day_of(phrase: str, today: date) -> Reply | None:
-    day = _on(phrase, today)
+    day = on(phrase, today)
     if day is None:
         return None
     n = day.timetuple().tm_yday
@@ -118,7 +119,7 @@ def _year_day_of(phrase: str, today: date) -> Reply | None:
 
 
 def _week_of(phrase: str, today: date) -> Reply | None:
-    day = _on(phrase, today)
+    day = on(phrase, today)
     if day is None:
         return None
     iso = day.isocalendar()

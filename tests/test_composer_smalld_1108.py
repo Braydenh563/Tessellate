@@ -8,7 +8,7 @@ import datetime as dt
 
 import pytest
 
-from tessellate.ai import commands, composer_chance, composer_extra, composer_smalltalk, composer_study, composer_sums, composer_text, utilities
+from tessellate.ai import commands, composer_chance, composer_epoch, composer_extra, composer_smalltalk, composer_study, composer_sums, composer_text, utilities
 
 NOW = dt.datetime(2026, 11, 8, 10, 0, 0)
 
@@ -129,6 +129,73 @@ def test_sum_words_are_linear_on_long_input():
     start = time.perf_counter()
     for q in ("round " + "1" * 20000, "log " + " " * 20000 + "5", "(" * 20000, "2" + "(2" * 10000, "pow " + "9 " * 10000):
         composer_sums.answer(ctx(q))
+    assert time.perf_counter() - start < 1.0
+
+
+# --- 3: T6 leftovers on pasted text -----------------------------------------------------------
+def test_join_lines_with_commas():
+    text = said("join lines with commas:\nmilk\neggs\nbread")
+    assert text.startswith("Joined with commas:\n\n```\nmilk, eggs, bread\n```")
+    assert "nothing was saved or changed" in text
+    assert said("join these lines with commas: milk\neggs") .startswith("Joined with commas:")
+
+
+def test_split_on_commas_into_lines():
+    assert said("split on commas: milk, eggs, bread").startswith("Split into lines:\n\n```\nmilk\neggs\nbread\n```")
+    assert said("split this into lines: a, b").startswith("Split into lines:")
+
+
+def test_count_characters_with_and_without_spaces():
+    assert said("count characters: hello there").startswith("11 characters, 10 without spaces.")
+    assert said("character count: a b").startswith("3 characters, 2 without spaces.")
+    assert said('count the characters "tea time"').startswith("8 characters, 7 without spaces.")
+    assert said("count characters: x").startswith("1 character, 1 without spaces.")
+
+
+@pytest.mark.parametrize("q", [
+    "split the trip note", "join the club note", "join the club", "split my notes by topic", "count characters in my notes", "count characters in the passport note",
+    "join: ", "split on commas", "character count of my essay note", "join the team note: ok",
+])
+def test_text_words_do_not_take_note_questions(q):
+    assert composer_text.answer(ctx(q)) is None, q
+
+
+# --- 4: Unix epoch -----------------------------------------------------------------------------
+def test_epoch_to_a_date():
+    assert said("what is 1700000000 as a date").startswith("1700000000 is Tuesday 14 November 2023, 22:13:20 UTC.")
+    assert said("convert unix time 0 to a date").startswith("0 is Thursday 1 January 1970, 00:00:00 UTC.")
+    assert "Read as seconds since 1 January 1970 UTC" in said("epoch 1700000000 to date")
+    assert said("what date is timestamp 1700000000000").startswith("1700000000000 is Tuesday 14 November 2023, 22:13:20 UTC.")
+    assert "milliseconds" in said("what date is timestamp 1700000000000")
+
+
+def test_unix_time_now_uses_the_clock():
+    got = said("unix time now")
+    assert got.startswith(f"The Unix time is {int(NOW.timestamp())}.")
+    assert said("what is the current epoch time").startswith(f"The Unix time is {int(NOW.timestamp())}.")
+
+
+def test_a_date_as_unix_time():
+    assert said("unix time of 1 January 2024").startswith("1 January 2024 is 1704067200 in Unix time")
+    assert said("what is 3 march 2027 in unix time").startswith("3 March 2027 is 1804032000 in Unix time")
+    assert said("epoch for 25 december").startswith("25 December 2026 is 1798156800 in Unix time")
+
+
+@pytest.mark.parametrize("q", [
+    "what is unix", "what is epoch", "the unix time of my meeting", "epoch time of my notes", "what is 99999999999999999 as a date", "unix time of the plan",
+    "what is 12 as a date", "what is 2024 as a date",
+])
+def test_epoch_leaves_other_questions_alone(q):
+    assert composer_epoch.answer(ctx(q)) is None, q
+
+
+def test_text_and_epoch_readers_are_linear_on_long_input():
+    import time
+
+    start = time.perf_counter()
+    for q in ("join lines with commas:" + "a\n" * 9000, "split on commas: " + "a," * 9000, "count characters: " + "a " * 9000, "unix time of " + "1 " * 40, "epoch " + "9" * 5000 + " to date",
+              "split " + "the " * 5000 + "note", "unix time of" + " " * 5000 + "x"):
+        composer_extra.answer(ctx(q))
     assert time.perf_counter() - start < 1.0
 
 
