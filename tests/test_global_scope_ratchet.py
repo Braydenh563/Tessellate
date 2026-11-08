@@ -16,7 +16,7 @@ import re
 from collections import Counter
 from pathlib import Path
 
-from tessellate.api.asset_strip import strip_js
+from tessellate.api.asset_strip import strip_js_comments
 from tests import _js_scope
 
 JS = Path(__file__).resolve().parents[1] / "frontend" / "js"
@@ -66,7 +66,7 @@ GLOBAL_NAMES_CAP = 9706
 
 
 def _code() -> dict[str, str]:
-    return {p.name: strip_js(p.read_text(encoding="utf-8")) for p in sorted(JS.glob("*.js"))}
+    return {p.name: strip_js_comments(p.read_text(encoding="utf-8")) for p in sorted(JS.glob("*.js"))}
 
 
 def test_cross_file_guards_only_go_down():

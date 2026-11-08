@@ -26,6 +26,14 @@ same line in the source, and ASI (a `return` before a multi-line comment)
 reads the same. (A stylesheet is the exception: no stack trace names a CSS
 line, so `strip_css` also drops the empty lines.)
 
+**Indentation.** Scripts and stylesheets also lose the spaces and tabs at the
+start of each line (about 8.8 KB gzipped off the boot set), newlines kept.
+Not where the leading whitespace is data: the text of a template literal, a
+string continued over a line end, a kept multi-line comment, a CSS string or an
+unquoted `url(`. The scanners report those ranges and `_drop_indent` skips any
+line that starts inside one. It runs on the comment-free text, so it scans
+that a second time.
+
 `tests/test_asset_strip.py` holds the edge cases and, where `node` is on the
 path, runs `node --check` over every stripped script; the acorn token check in
 that file proves the stripped token stream equals the original's.
@@ -38,7 +46,7 @@ import re
 #: Bumped whenever the output for the same input changes, so a cached copy
 #: from an older stripper (memory, `<data dir>/cache/static-gz`, and the
 #: content-hash stamp the browser caches against) is never reused.
-STRIP_VERSION = "3"
+STRIP_VERSION = "4"
 
 _IDENT_CHAR = re.compile(r"[\w$]")
 #: After these words a `/` starts a regex literal, not a division.
@@ -99,6 +107,28 @@ def _rebuild(text: str, spans: list[tuple[int, int]], joiner: str = " ") -> str:
             while end < n and text[end] in " \t":
                 end += 1
         cursor = end
+    out.append(text[cursor:])
+    return "".join(out)
+
+
+_LINE_INDENT = re.compile(r"(?<=\n)[ \t]+|\A[ \t]+")
+
+
+def _drop_indent(text: str, keep: list[tuple[int, int]]) -> str:
+    """`text` without the leading spaces and tabs of any line, except a line
+    that starts inside a `keep` range (a template's text, a continued string,
+    a kept comment): the newline before it is at an index `a <= p - 1 < b`."""
+    out: list[str] = []
+    cursor = 0
+    k = 0
+    for m in _LINE_INDENT.finditer(text):
+        p = m.start()
+        while k < len(keep) and keep[k][1] < p:
+            k += 1
+        if k < len(keep) and keep[k][0] < p <= keep[k][1]:
+            continue
+        out.append(text[cursor:p])
+        cursor = m.end()
     out.append(text[cursor:])
     return "".join(out)
 
@@ -189,7 +219,16 @@ def _skip_regex(text: str, i: int) -> int | None:
 
 def js_comment_spans(text: str) -> list[tuple[int, int]]:
     """Every comment's (start, end) in a script, kept ones excluded."""
+    return _js_scan(text)[0]
+
+
+def _js_scan(text: str) -> tuple[list[tuple[int, int]], list[tuple[int, int]]]:
+    """(comment spans, ranges whose inner line starts are data), in order."""
     spans: list[tuple[int, int]] = []
+    #: Template text, strings and kept comments: `_drop_indent` leaves alone
+    #: a line that starts inside one.
+    keep: list[tuple[int, int]] = []
+    tstart = 0
     #: Every comment, kept ones too, in order: what the regex test skips over.
     every: list[tuple[int, int]] = []
     # One entry per open `${`: the `{` depth inside that substitution.
@@ -201,15 +240,18 @@ def js_comment_spans(text: str) -> list[tuple[int, int]]:
         if in_template:
             m = _TEMPLATE_NEXT.search(text, i)
             if m is None:
-                return spans
+                keep.append((tstart, n))
+                return spans, keep
             i = m.start()
             ch = text[i]
             if ch == "\\":
                 i += 2
             elif ch == "`":
+                keep.append((tstart, i))
                 in_template = False
                 i += 1
             elif text[i + 1 : i + 2] == "{":
+                keep.append((tstart, i))
                 templates.append(0)
                 in_template = False
                 i += 2
@@ -222,10 +264,13 @@ def js_comment_spans(text: str) -> list[tuple[int, int]]:
         i = m.start()
         ch = text[i]
         if ch in "\"'":
-            i = _skip_string(text, i, ch)
+            end = _skip_string(text, i, ch)
+            keep.append((i, end))
+            i = end
         elif ch == "`":
             in_template = True
             i += 1
+            tstart = i
         elif ch == "{":
             if templates:
                 templates[-1] += 1
@@ -235,6 +280,7 @@ def js_comment_spans(text: str) -> list[tuple[int, int]]:
                 if templates[-1] == 0:
                     templates.pop()
                     in_template = True
+                    tstart = i + 1
                 else:
                     templates[-1] -= 1
             i += 1
@@ -252,7 +298,9 @@ def js_comment_spans(text: str) -> list[tuple[int, int]]:
                 end = text.find("*/", i + 2)
                 end = n if end == -1 else end + 2
                 every.append((i, end))
-                if not _keep(text[i:end]):
+                if _keep(text[i:end]):
+                    keep.append((i, end))
+                else:
                     spans.append((i, end))
                 i = end
             elif _js_regex_allowed(text, i, every):
@@ -260,11 +308,18 @@ def js_comment_spans(text: str) -> list[tuple[int, int]]:
                 i = i + 1 if end is None else end
             else:
                 i += 1
-    return spans
+    return spans, keep
+
+
+def strip_js_comments(text: str) -> str:
+    """Comments gone, indentation kept: for a reader (a test, a lint) that
+    tells a top-level line from a nested one by its indent."""
+    return _rebuild(text, js_comment_spans(text))
 
 
 def strip_js(text: str) -> str:
-    return _rebuild(text, js_comment_spans(text))
+    bare = strip_js_comments(text)
+    return _drop_indent(bare, _js_scan(bare)[1])
 
 
 # ----------------------------------------------------------------------- CSS
@@ -273,7 +328,13 @@ _CSS_NEXT = re.compile(r"[\"'/]|url\(", re.IGNORECASE)
 
 
 def css_comment_spans(text: str) -> list[tuple[int, int]]:
+    return _css_scan(text)[0]
+
+
+def _css_scan(text: str) -> tuple[list[tuple[int, int]], list[tuple[int, int]]]:
+    """(comment spans, string / `url(` / kept-comment ranges), as `_js_scan`."""
     spans: list[tuple[int, int]] = []
+    keep: list[tuple[int, int]] = []
     n = len(text)
     i = 0
     while i < n:
@@ -283,12 +344,16 @@ def css_comment_spans(text: str) -> list[tuple[int, int]]:
         i = m.start()
         ch = text[i]
         if ch in "\"'":
-            i = _skip_string(text, i, ch)
+            end = _skip_string(text, i, ch)
+            keep.append((i, end))
+            i = end
         elif ch == "/":
             if text[i + 1 : i + 2] == "*":
                 end = text.find("*/", i + 2)
                 end = n if end == -1 else end + 2
-                if not _keep(text[i:end]):
+                if _keep(text[i:end]):
+                    keep.append((i, end))
+                else:
                     spans.append((i, end))
                 i = end
             else:
@@ -301,8 +366,10 @@ def css_comment_spans(text: str) -> list[tuple[int, int]]:
                 i = j  # a quoted url is a string, read as one next round
             else:
                 close = text.find(")", j)
-                i = n if close == -1 else close + 1
-    return spans
+                end = n if close == -1 else close + 1
+                keep.append((i, end))
+                i = end
+    return spans, keep
 
 
 _CSS_BLANK_LINE = re.compile(r"\n[ \t]*(?=\n)")
@@ -312,8 +379,10 @@ def strip_css(text: str) -> str:
     """Comments gone, and the empty lines they leave with them. Unlike a
     script, a stylesheet is never named by line in a stack trace, and the
     1,300 empty lines a commented file left cost the boot stylesheets about
-    three kilobytes gzipped against a cap that was at zero (INBOX 776)."""
-    return _CSS_BLANK_LINE.sub("", _rebuild(text, css_comment_spans(text)))
+    three kilobytes gzipped against a cap that was at zero (INBOX 776), and
+    the indentation goes too, outside strings and `url(`."""
+    bare = _CSS_BLANK_LINE.sub("", _rebuild(text, css_comment_spans(text)))
+    return _drop_indent(bare, _css_scan(bare)[1])
 
 
 # ---------------------------------------------------------------------- HTML

@@ -20,7 +20,7 @@ from __future__ import annotations
 import re
 from pathlib import Path
 
-from tessellate.api.asset_strip import strip_js
+from tessellate.api.asset_strip import strip_js_comments
 from tests._app_js import with_pieces
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -41,7 +41,7 @@ def _boot_scripts() -> list[str]:
 def _character_names() -> set[str]:
     names: set[str] = set()
     for file in CHARACTER_FILES:
-        names |= set(DECLARED.findall(strip_js((JS / file).read_text(encoding="utf-8"))))
+        names |= set(DECLARED.findall(strip_js_comments((JS / file).read_text(encoding="utf-8"))))
     return names
 
 
@@ -102,7 +102,7 @@ def test_every_boot_mention_of_a_character_function_waits_for_it():
     assert {"syncNameMarkBuddy", "atlasOn"} <= stand_ins, "the stand-in list was not read"
     loose = []
     for file in _boot_scripts():
-        code = strip_js((JS / file).read_text(encoding="utf-8"))
+        code = strip_js_comments((JS / file).read_text(encoding="utf-8"))
         own = set(DECLARED.findall(code))
         for number, name, context in _mentions(code, names - own):
             line = context.split("\n")[-1]
