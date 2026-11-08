@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Composer: the digest's `answer` runs in its own context again (a split had left the decorator on the helper), and the tests reset the digest's context variables per test, so `-n 2` no longer fails the age, versus and voice tests.
 - Composer (round 5, audit R3-6 and D4): "number of notes about Sara" and "count notes about the dentist" give the subject's real count, the same as "how many notes about Sara" (the notes were fetched for the topic only when the question opened with "how many", and "count notes" ran the count tool); "how many words in my longest note" gives that note's length, not the notebook total.
 - Composer answers: a name typed without its accents finds the accented note, "dentist number" is read as the phone, "days until my passport expires" keeps its verb, and a date in a log extended later is read against the edit (round 4: E14, E12, D15, E17).
 - Composer (round 4, audit R3-4): "what is the first note I wrote about Sara" and "the last note about the dentist" rank that subject's notes by the day written ("Your first note about Sara is Sara, written four weeks ago: ..."), instead of answering with any note that holds the word first.

@@ -4898,6 +4898,7 @@ def _routed_away(question: str, notes: list[dict], today: date) -> tuple:
     return _ORDINARY, question, asked
 
 
+@_isolated
 def answer(
     question: str, notes: list[dict], *, today: date | None = None, voice: str = "natural", turn: int = 0,
     insight: str = "one", learned=None, known=None,  # noqa: ANN001
