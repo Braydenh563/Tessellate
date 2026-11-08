@@ -2,7 +2,7 @@
 
 Generated 2026-11-08 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7861, frontend ids 2644, CSS sections 522, backend routes 649, backend modules 9016, test files 2157, tests 18211, plan headings 1004, app scripts 28, boot scripts 37, script files 261.
+Counts: frontend functions 7861, frontend ids 2644, CSS sections 522, backend routes 649, backend modules 9016, test files 2157, tests 18213, plan headings 1004, app scripts 28, boot scripts 37, script files 261.
 
 ## Frontend functions (7861)
 
@@ -13759,18 +13759,18 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 |---|---|
 | `_after_suffix` | src/tessellate/ai/composer_ask.py:344 |
 | `_alternatives` | src/tessellate/ai/composer_ask.py:412 |
-| `_bare_side` | src/tessellate/ai/composer_ask.py:593 |
+| `_bare_side` | src/tessellate/ai/composer_ask.py:599 |
 | `_build_synonyms` | src/tessellate/ai/composer_ask.py:402 |
-| `_clean_split` | src/tessellate/ai/composer_ask.py:618 |
+| `_clean_split` | src/tessellate/ai/composer_ask.py:624 |
 | `_guessing_recent` | src/tessellate/ai/composer_ask.py:195 |
 | `_holds` | src/tessellate/ai/composer_ask.py:425 |
 | `_is_clause_start` | src/tessellate/ai/composer_ask.py:465 |
 | `_keyed_synonyms` | src/tessellate/ai/composer_ask.py:418 |
-| `_numbered_sides` | src/tessellate/ai/composer_ask.py:645 |
+| `_numbered_sides` | src/tessellate/ai/composer_ask.py:651 |
 | `_one_syllable_cvc` | src/tessellate/ai/composer_ask.py:277 |
 | `_overview` | src/tessellate/ai/composer_ask.py:288 |
 | `_past_filler` | src/tessellate/ai/composer_ask.py:508 |
-| `_raw_sides` | src/tessellate/ai/composer_ask.py:631 |
+| `_raw_sides` | src/tessellate/ai/composer_ask.py:637 |
 | `_respell` | src/tessellate/ai/composer_ask.py:203 |
 | `_stem` | src/tessellate/ai/composer_ask.py:297 |
 | `_stem_plain` | src/tessellate/ai/composer_ask.py:323 |
@@ -13781,17 +13781,17 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_without_command` | src/tessellate/ai/composer_ask.py:477 |
 | `_words` | src/tessellate/ai/composer_ask.py:439 |
 | `_words_of` | src/tessellate/ai/composer_ask.py:435 |
-| `asks_time` | src/tessellate/ai/composer_ask.py:708 |
-| `asks_written_when` | src/tessellate/ai/composer_ask.py:714 |
+| `asks_time` | src/tessellate/ai/composer_ask.py:714 |
+| `asks_written_when` | src/tessellate/ai/composer_ask.py:720 |
 | `classify` | src/tessellate/ai/composer_ask.py:244 |
-| `compare_sides` | src/tessellate/ai/composer_ask.py:655 |
+| `compare_sides` | src/tessellate/ai/composer_ask.py:661 |
 | `month_name` | src/tessellate/ai/composer_ask.py:41 |
 | `rephrase` | src/tessellate/ai/composer_ask.py:221 |
 | `subject_terms` | src/tessellate/ai/composer_ask.py:527 |
 | `user_now` | src/tessellate/ai/composer_ask.py:23 |
 | `user_today` | src/tessellate/ai/composer_ask.py:34 |
 | `what_is` | src/tessellate/ai/composer_ask.py:216 |
-| `when_terms` | src/tessellate/ai/composer_ask.py:703 |
+| `when_terms` | src/tessellate/ai/composer_ask.py:709 |
 
 ### src/tessellate/ai/composer_aware.py (15)
 
@@ -24430,7 +24430,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (18211)
+## Tests (18213)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -24870,7 +24870,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_composer_r2_review_1107.py | 6 |
 | tests/test_composer_r2_route_1107.py | 6 |
 | tests/test_composer_r3_1107.py | 36 |
-| tests/test_composer_r3_route_1107.py | 8 |
+| tests/test_composer_r3_route_1107.py | 10 |
 | tests/test_composer_ranker_1029.py | 12 |
 | tests/test_composer_redos_1026.py | 4 |
 | tests/test_composer_regex_linear_1029.py | 3 |

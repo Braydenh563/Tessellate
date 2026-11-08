@@ -91,3 +91,18 @@ def test_r3_30_a_notebook_with_notes_keeps_the_plain_miss(go):  # noqa: D103
 def test_r3_2_a_number_to_call_is_not_a_phone_number_for_the_word_call(go, chat):
     said = go("what's the number to call", chat)
     assert "phone number for call" not in said, said
+
+
+
+@pytest.mark.parametrize("chat", [False, True], ids=["ask", "chat"])
+def test_r3_1_a_start_asked_of_a_subject_is_not_found_in_another_notes_start(go, chat):
+    """"when does uni start": the Marathon note's "Start is at 9am" is not the uni's start."""
+    said = go("when does uni start", chat)
+    assert "Marathon" not in said and "Start is at 9am" not in said and "Race is" not in said, said
+    assert "Uni timetable" in said, said
+
+
+@pytest.mark.parametrize("chat", [False, True], ids=["ask", "chat"])
+def test_r3_1_a_start_asked_of_the_note_that_has_one_still_finds_it(go, chat):
+    said = go("when does the marathon start", chat)
+    assert "14 March" in said and "Marathon" in said, said

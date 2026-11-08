@@ -558,11 +558,17 @@ def subject_terms(question: str) -> list[str]:
     #: "the first note I wrote about Sara": the place in an order, not a word to find ("First day of uni"; R3-4).
     if _ORDINAL_NOTE.search(question):
         seen = [w for w in seen if w not in ("first", "last")]
+    #: "When does uni start": the verb is the event's own, not a word to find; kept as a term it finds the
+    #: Marathon note's "Start is at 9am" and answers with that race (round 3 review, R3-1).
+    if _EVENT_ENDS.search(question) and len(seen) > 1:
+        seen = [w for w in seen if w.lower() not in _EVENT_VERBS]
     #: A praise word alone names nothing ("anything interesting", "the cool
     #: stuff"); beside a noun ("interesting bean") it stays (INBOX 1561).
     return [] if all(w in question_noise.PRAISE_WORDS for w in seen) else seen
 
 
+_EVENT_ENDS = re.compile(r"^\s*when\s+(?:does|do|will|is)\b[^?.!]{1,80}?\b(?:start|begin|end|finish)s?\s*[?.!]*$", re.I)
+_EVENT_VERBS = frozenset(("start", "starts", "begin", "begins", "end", "ends", "finish", "finishes"))
 _ORDINAL_NOTE = re.compile(r"\b(?:first|last)\s+(?:note|notes|entry|entries)\b", re.I)
 _DATE_ASK = re.compile(r"\b(?:what|which)\s+dates?\b|\bdates?\s+(?:of|for)\b", re.I)
 
