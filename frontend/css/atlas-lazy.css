@@ -374,3 +374,14 @@
 #nm-buddy.nm-buddy-dragging .atl-lw-pose > svg,
 .atl-figure-box.atl-off .atl-lw-pose > svg,
 :root[data-atlas-hidden] .atl-lw-pose > svg { animation-play-state: paused !important; }
+/* Her pass (INBOX 1696 r, ff), measured at 64 and 128 px on a light page
+   (atlasm1108.js): her forehead stood 1.13:1 off the page, her chest 1.21:1
+   and the weakest tenth of her head's outline 1.31:1 (his 1.21, 1.41 and
+   1.71), so she melted into it. A shade deeper and a rim-coloured outline:
+   1.30, 1.33 and 1.46. The small busts have their own fine line. */
+:root:not([data-mode="dark"]) .nm-atlas[data-atlas-look="feminine"] { --atl-hi: #e3e4fb; --atl-lt: #cfd1f6; --atl-md: #b4b3ec; --atl-dp: #968fd6; }
+:root:not([data-mode="dark"]) .nm-atlas[data-atlas-look="feminine"]:not(.atl-head, .atl-tiny) .atl-edge { stroke: var(--atl-rim); stroke-width: 1.8; opacity: 0.45; }
+/* Her brows carry her moods too (INBOX 1696 r; his, 1607 d): at 0.22 they
+   did not show at 64 px, so sad and worried wore the calm face. Softer than
+   his, a fine arch. The rest arch lifts at the nose (1402), so it reads open. */
+.nm-atlas .atl-brow-arch { stroke-width: 1.2; opacity: 0.5; }
