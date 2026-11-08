@@ -387,11 +387,16 @@ def _not_said(out, views: list, obj, words: list[str], today: date, verb: frozen
         _say_line(out, *titled, f"Your {composer_lists._title(titled[0])} note does not say it outright, but it has")  # noqa: SLF001
     elif near := _nearest(views, obj):
         _say_line(out, *near, f"I found nothing in your notes that says so. The closest is {_note_of(near[0], today)}")
-    elif place := _titled_any(views, obj):
+    elif words[0].lower() in _TRIP_VERBS and (place := _titled_any(views, obj)):
         #: "have I been to Tokyo" with a Tokyo trip note: the note is the nearest thing, not "nothing" (R3-21, E3).
         _say_line(out, *place, f"Your {composer_lists._title(place[0])} note does not say it outright, but it has")  # noqa: SLF001
     else:
         out.lines.append(f"I found nothing in your notes about {thing}.")
+
+
+#: A trip is the one doing whose note is titled for the place, with nothing on the verb in it (R3-21);
+#: "did I book the hotel" is not offered a line that says nothing of booking.
+_TRIP_VERBS = frozenset({"been", "go", "went", "gone", "visit", "visited", "travel", "travelled", "traveled", "fly", "flew", "flown"})
 
 
 def _titled_any(views: list, obj: list[str]):  # noqa: ANN202
