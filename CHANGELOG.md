@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Extras downloads try again twice after a server error (5xx, 429) or a dropped connection; a 404 still fails at once. Fixes the Windows package check failing on a GitHub 504.
 - The installer's optional packages step now writes why a package failed into the data folder's log, not only exit code 1.
 - Companion catalogue: 307 acts in nine kinds shared by the desk and in-app companions, with a parity ratchet and a seven-batch build order.
 - Lag log rows for animation frames name the callback that ran (a slow frame callback is kept for the row) instead of the sampler wrapper (INBOX 1696 jj).

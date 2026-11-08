@@ -294,6 +294,35 @@ def _mb(n: float) -> str:
     return f"{n / 1_000_000:.1f}"
 
 
+#: Waits before the second and third try of a download that met a server
+#: error. GitHub's release downloads answer 502 and 504 now and then (the
+#: package check failed three times in a row on one, 2026-11-08), and one
+#: blip used to fail the whole install. A 4xx is the address or the file
+#: and is not tried again.
+_RETRY_WAITS = (2.0, 5.0)
+
+
+def _open_retrying(url: str, state):
+    """`_open_url`, tried again after a 5xx, a 429 or a dropped connection."""
+    import urllib.error
+
+    for wait in (*_RETRY_WAITS, None):
+        try:
+            return _open_url(url)
+        except urllib.error.HTTPError as exc:
+            if wait is None or not (exc.code >= 500 or exc.code == 429):
+                raise
+            state.log.append(f"{url} answered {exc.code}, trying again in {wait:g} s")
+        except (urllib.error.URLError, TimeoutError, ConnectionError) as exc:
+            if wait is None:
+                raise
+            state.log.append(f"{url} unreachable ({exc}), trying again in {wait:g} s")
+        if state.cancelled:
+            raise DownloadFailed("stopped")
+        time.sleep(wait)
+    raise AssertionError("unreachable")
+
+
 def _fetch(download: Download, dest: Path, state, label: str) -> None:
     """Stream one file to `dest`, hashing as it goes; raise on a mismatch."""
     url = effective_url(download)
@@ -302,7 +331,7 @@ def _fetch(download: Download, dest: Path, state, label: str) -> None:
     digest = hashlib.sha256()
     received = 0
     last = 0.0
-    with _open_url(url) as response, open(dest, "wb") as out:
+    with _open_retrying(url, state) as response, open(dest, "wb") as out:
         while True:
             if state.cancelled:
                 raise DownloadFailed("stopped")

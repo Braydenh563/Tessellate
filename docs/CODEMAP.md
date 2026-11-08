@@ -2,7 +2,7 @@
 
 Generated 2026-11-08 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7884, frontend ids 2652, CSS sections 522, backend routes 649, backend modules 9081, test files 2205, tests 18499, plan headings 1004, app scripts 28, boot scripts 37, script files 263.
+Counts: frontend functions 7884, frontend ids 2652, CSS sections 522, backend routes 649, backend modules 9082, test files 2205, tests 18501, plan headings 1004, app scripts 28, boot scripts 37, script files 263.
 
 ## Frontend functions (7884)
 
@@ -13121,7 +13121,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:164 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (9081)
+## Backend modules (9082)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -21876,29 +21876,30 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `undo` | src/tessellate/core/events.py:905 |
 | `writes` | src/tessellate/core/events.py:266 |
 
-### src/tessellate/core/extra_downloads.py (20)
+### src/tessellate/core/extra_downloads.py (21)
 
 | Name | File:line |
 |---|---|
 | `Download` | src/tessellate/core/extra_downloads.py:79 |
 | `DownloadFailed` | src/tessellate/core/extra_downloads.py:242 |
-| `_check_engine` | src/tessellate/core/extra_downloads.py:325 |
-| `_fetch` | src/tessellate/core/extra_downloads.py:297 |
+| `_check_engine` | src/tessellate/core/extra_downloads.py:354 |
+| `_fetch` | src/tessellate/core/extra_downloads.py:326 |
 | `_is_musl` | src/tessellate/core/extra_downloads.py:128 |
 | `_mb` | src/tessellate/core/extra_downloads.py:293 |
+| `_open_retrying` | src/tessellate/core/extra_downloads.py:305 |
 | `_open_url` | src/tessellate/core/extra_downloads.py:235 |
-| `_unpack` | src/tessellate/core/extra_downloads.py:343 |
+| `_unpack` | src/tessellate/core/extra_downloads.py:372 |
 | `downloads_for` | src/tessellate/core/extra_downloads.py:145 |
 | `effective_url` | src/tessellate/core/extra_downloads.py:227 |
 | `folder` | src/tessellate/core/extra_downloads.py:194 |
-| `install` | src/tessellate/core/extra_downloads.py:384 |
+| `install` | src/tessellate/core/extra_downloads.py:413 |
 | `is_installed` | src/tessellate/core/extra_downloads.py:198 |
 | `platform_key` | src/tessellate/core/extra_downloads.py:109 |
 | `platform_reason` | src/tessellate/core/extra_downloads.py:151 |
 | `reason` | src/tessellate/core/extra_downloads.py:287 |
 | `root_dir` | src/tessellate/core/extra_downloads.py:186 |
 | `source` | src/tessellate/core/extra_downloads.py:211 |
-| `uninstall` | src/tessellate/core/extra_downloads.py:426 |
+| `uninstall` | src/tessellate/core/extra_downloads.py:455 |
 | `url_allowed` | src/tessellate/core/extra_downloads.py:167 |
 
 ### src/tessellate/core/extras.py (60)
@@ -24551,7 +24552,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (18499)
+## Tests (18501)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -25370,7 +25371,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_extras_1030.py | 17 |
 | tests/test_extras_bundles.py | 29 |
 | tests/test_extras_desktop_locked.py | 5 |
-| tests/test_extras_download.py | 22 |
+| tests/test_extras_download.py | 24 |
 | tests/test_f7_pool_moves.py | 3 |
 | tests/test_fact_check_1027.py | 17 |
 | tests/test_factgraph.py | 11 |
