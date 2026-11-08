@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Atlas: the torso's paint over each shoulder now stands on each look's own arm roots and runs past where an arm's inner edge leaves the body, so neither look's arm shows a cut line where it joins (his inner edge was uncovered from y 44.5 to 45.4; at 2x the shoulder pixels are the same with his arms hidden).
 - Atlas, masculine look: his head sits on narrower shoulders in her proportion (head over shoulders 1.09 to 1.31, hers 1.59; shoulders 17 to 15 across, head 0.76 to 0.8, arms in by 1 with their roots), and his hair frames his face: a lower hairline (14.2 to 16.1) and short sideburns, bare outline below the brows 0.93 to 0.80.
 - Atlas, masculine look: the design pass for his head, shoulder join and expressions is measured against the feminine look (head over shoulders 1.08 against 1.56, 93% of his face outline bare, an arm seam on 16 of 28 points), with targets and a before pose sheet; nothing visible changes yet.
 - Diagram builder: quicker building: a double press on empty picture adds a box, Ctrl+D duplicates, Ctrl+A picks all, Delete removes, Shift+Enter adds a joined box, Alt+Enter a sister, Ctrl+F finds, and a connector can be reversed.

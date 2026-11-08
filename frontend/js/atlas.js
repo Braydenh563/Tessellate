@@ -2763,11 +2763,17 @@ function atlasBuildDefs(svg, id) {
   stops(tip, [[0, "atl-st-white"], [0.4, "atl-st-white-mid"], [1, "atl-st-white-0"]]);
   //: The shoulder joins (round 9, `atl-shoulders` in `atlasBody`): the
   //: torso's paint over each arm root, full at the joint and gone by the
-  //: ellipse's rim. One placing fits both looks' roots (35.2 and 35.6).
+  //: ellipse's rim. **On each look's own roots** (INBOX 1607 c, the owner:
+  //: "the connection between the sholders and the arms could be
+  //: smoother"): one placing on his roots, full only to y 43.5, left his
+  //: arm's shaded inner edge crossing the torso below it (16 of 28 points a
+  //: line at 1x, atlasm1108.js) and sat 1.8 off hers; now each look's, and
+  //: full to y 46.2, past where an arm's inner edge leaves the torso.
   const shoulderFade = atlasMake("radialGradient", { id: `${id}-shoulderg` }, defs);
   stops(shoulderFade, [[0, "atl-st-white"], [0.55, "atl-st-white"], [1, "atl-st-white-0"]]);
   const shoulders = atlasMake("mask", { id: `${id}-shoulders`, maskUnits: "userSpaceOnUse", x: -30, y: -30, width: 124, height: 150 }, defs);
-  for (const cx of [24.6, 37.4]) atlasMake("ellipse", { cx, cy: 40.8, rx: 4.4, ry: 5, fill: `url(#${id}-shoulderg)` }, shoulders);
+  const roots = ATLAS_LOOKS[id.slice(4)];
+  for (const cx of roots ? [roots.armL[0][0], roots.arm[0][0]] : [25.6, 36.4]) atlasMake("ellipse", { cx, cy: 42.6, rx: 4.8, ry: 6.6, fill: `url(#${id}-shoulderg)` }, shoulders);
   for (const [cx, cy, side] of ATLAS_GEO.eyes) {
     const clip = atlasMake("clipPath", { id: `${id}-e${side > 0 ? "l" : "r"}` }, defs);
     atlasMake("path", { d: atlasAlmond(cx, cy, side).d }, clip);

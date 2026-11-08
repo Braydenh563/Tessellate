@@ -182,3 +182,50 @@ def test_his_arms_grow_from_inside_his_narrower_shoulders():
         assert f"#nm-buddy .atl-figure .nmb-{part}-l {{ transform-origin: {lx}px 41px; }}" in CSS
         assert f"#nm-buddy .atl-figure .nmb-{part}-r {{ transform-origin: {rx}px 41px; }}" in CSS
     assert f".nm-atlas .nmb-arm-l {{ transform-box: view-box; transform-origin: {lx}px 41px; }}" in CSS
+
+
+def _mask() -> tuple[str, float, float, float]:
+    """The shoulder mask's ellipses: (where their centres come from, cy, rx, ry)."""
+    found = re.search(r'for \(const cx of (.+?)\) atlasMake\("ellipse", \{ cx, cy: ([0-9.]+), rx: ([0-9.]+), ry: ([0-9.]+), fill: `url\(#\$\{id\}-shoulderg\)` \}, shoulders\);', ATLAS)
+    return found.group(1), *(float(v) for v in found.groups()[1:])
+
+
+def test_the_shoulder_join_is_placed_from_each_look_s_own_roots():
+    # 1607 c ("the connection between the sholders and the arms could be
+    # smoother"): the torso's paint laid over each arm's root (`shoulders`)
+    # was one placing for both looks, his roots, full only to y 43.5, so his
+    # arm's shaded inner edge crossed the torso below it (16 of 28 points
+    # read as a line at 1x, atlasm1108.js) and hers sat 1.8 off her roots.
+    # Each look's mask now stands on its own arms' roots, deep enough to
+    # cover every point of an arm's inner edge that lies inside the torso.
+    source, cy, rx, ry = _mask()
+    assert "24.6" not in source and "37.4" not in source and "armL[0][0]" in source and "arm[0][0]" in source, source
+    full = 0.55  # the gradient's last opaque stop (`shoulderg`)
+    for look in ("masculine", "feminine"):
+        body = _look(look)
+        torso = _sample(_path(look, "torso"))
+        w0, w1 = json.loads(re.search(r"armWidth: (\[[^\]]+\])", body).group(1))
+        width = lambda t, w0=w0, w1=w1: w0 - (w0 - w1) * min(1, t * 1.15) ** 0.9  # noqa: E731 (atlasLimbTo)
+        arms = _arms(look)
+        roots = [arms["l"][0][0], arms["r"][0][0]]
+        for side, segs in arms.items():
+            towards = 1 if side == "l" else -1
+            for i in range(61):
+                t = i / 60
+                k = min(len(segs) - 1, int(t * len(segs)))
+                s = t * len(segs) - k
+                x0, y0, x1, y1, x2, y2, x3, y3 = segs[k]
+                at = lambda s: ((1 - s) ** 3 * x0 + 3 * (1 - s) ** 2 * s * x1 + 3 * (1 - s) * s * s * x2 + s**3 * x3, (1 - s) ** 3 * y0 + 3 * (1 - s) ** 2 * s * y1 + 3 * (1 - s) * s * s * y2 + s**3 * y3)  # noqa: E731
+                (ax, ay), (bx, by) = at(max(0, s - 1e-3)), at(min(1, s + 1e-3))
+                px, py = at(s)
+                n = math.hypot(bx - ax, by - ay)
+                # The edge that faces the body's middle.
+                nx, ny = (by - ay) / n, -(bx - ax) / n
+                if nx * towards < 0:
+                    nx, ny = -nx, -ny
+                ex, ey = px + nx * width(t) / 2, py + ny * width(t) / 2
+                if not _inside(torso, ex, ey) or min(math.dist((ex, ey), p) for p in torso[0]) < 0.4:
+                    continue
+                r = min(math.hypot((ex - cx) / rx, (ey - cy) / ry) for cx in roots)
+                alpha = 1 if r <= full else max(0.0, 1 - (r - full) / (1 - full))
+                assert alpha >= 0.6, (look, side, round(ex, 1), round(ey, 1), round(alpha, 2))

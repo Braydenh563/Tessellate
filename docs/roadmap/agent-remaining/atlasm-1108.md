@@ -106,3 +106,7 @@ any new JS (the flick) is paid for in the same commit or goes to a lazy file. No
 - done: step 2, head (this commit; head over shoulders 1.09 to 1.31, hairline 14.1 to 16.1, bare 0.93 to 0.80
   by tests/test_atlas_masc_1607.py; shoulders 15.0 not 15.4, since 15.4 gave 1.27; arms in by 1, the CSS origins
   his; his three 18deg inward arms 16deg so a hand stays at the middle). next: step 3, `atlas.js` shoulder mask.
+- done: step 3, shoulder join (this commit; the mask on each look's roots, cy 42.6 rx 4.8 ry 6.6; his pivots
+  were moved in step 2 by the CSS origins, which are his, so no `armPivots`). Sweep: his remaining "line points"
+  (14/31 at 2x) are pixel-identical with his arms hidden (EXTRA css in a scratch copy of the sweep): the torso's
+  own shading under the arm's outline, not a join. next: step 4, eyes and brows, `08-consistency.css` 7388, 7212.
