@@ -58,14 +58,14 @@
   const answered = new Set();
   const whose = (S) => S.io?.key ?? S.host;
   function offer(S, want) {
-    const show = want && !S.sidewaysAsked && !answered.has(whose(S)) && Boolean(S.turn);
+    const show = want && !answered.has(whose(S)) && Boolean(S.turn);
     if (!show) return S.sideways?.classList.add("hidden");
     if (!S.sideways) {
       const line = document.createElement("div");
       line.className = "dgm-sideways muted";
       const words = document.createElement("span");
       words.textContent = "This chart is tall for this pane.";
-      const done = () => ((S.sidewaysAsked = true), answered.add(whose(S)));
+      const done = () => answered.add(whose(S));
       const turn = smallButton("ph:arrow-right Turn it sideways", "Draw it left to right", () => (done(), S.turn("LR")), false);
       const keep = smallButton("Keep", "Leave it top to bottom", () => (done(), line.classList.add("hidden")));
       line.append(words, turn, keep);

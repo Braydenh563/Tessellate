@@ -383,7 +383,7 @@
     sel.removeAllRanges();
     sel.addRange(range);
     let over = false;
-    const end = (keep) => {
+    const end = (keep, movedTo = null) => {
       if (over) return;
       over = true;
       target.removeEventListener("keydown", onKey);
@@ -393,9 +393,9 @@
       target.classList.remove("dgm-editing");
       if (keep && text !== was) done(text, was);
       else target.textContent = was;
-      //: Not when the render already put focus there.
+      //: Not when the render already put focus there, and not when the press went to another field (the dialog's title).
       const block = key && blockEl(S, key);
-      if (block && document.activeElement !== block) block.focus();
+      if (block && !movedTo && document.activeElement !== block) block.focus();
     };
     const onKey = (event) => {
       if (event.key !== "Enter" && event.key !== "Escape") return;
@@ -403,7 +403,7 @@
       event.stopPropagation();
       end(event.key === "Enter");
     };
-    const onBlur = () => end(true);
+    const onBlur = (event) => end(true, event.relatedTarget);
     target.addEventListener("keydown", onKey);
     target.addEventListener("blur", onBlur);
   }
