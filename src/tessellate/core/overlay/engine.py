@@ -369,6 +369,11 @@ TUCK_REACH = 3.0
 #: wait, come up, look, out. Depth 1 is `PEEK_HEAD` (or `PEEK_SIDE`) hidden, 2 is all.
 PEEK_PLAN = ((0.0, 0.0), (0.8, 1.0), (3.0, 1.0), (3.4, 2.0), (5.0, 2.0), (5.5, 1.0), (7.0, 1.0), (7.8, 0.0))
 EMERGE_FOR = 0.4
+#: The top peek (INBOX 1683 x, y: "upside-down, peering down from behind the top edge"): (seconds, step) with 0 hanging in
+#: view, 1 pulled up out of sight, 2 turned over and lowered to peer down (`PEEK_TOP_PEER` of the figure shows, its head
+#: first). The turn is made while it is out of sight, so the pose changes without a step.
+PEEK_TOP_PLAN = ((0.0, 0.0), (0.8, 1.0), (2.2, 2.0), (6.2, 2.0), (7.4, 1.0), (8.2, 0.0))
+PEEK_TOP_PEER = 0.4
 #: Big acts (hang, peek) are at least this far apart (seconds): calm, minutes.
 BIG_EVERY = (700.0, 1300.0)
 #: The first one comes sooner, inside the minutes before it sits down for good.
@@ -724,6 +729,9 @@ class Engine:
         self.peek_edge: str | None = None
         self.peek_started = now
         self.peek_turned = False
+        #: A top peek turned over (drawn upside-down from `peek_show` of its height below the edge).
+        self.peek_flip = False
+        self.peek_show = 0.0
         #: Windows to tuck behind (the last scan), when it was read, the one a walk is heading for, the one hidden behind.
         self.covers: list[Cover] = []
         self.covers_at = -math.inf
@@ -974,6 +982,8 @@ class Engine:
             self.sink, self.peek_edge, self.tuck = 0.0, None, None
         if state not in ("walk", "drift", "crouch"):
             self.goal = None
+        if state != "peek":
+            self.peek_flip, self.peek_show = False, 0.0
         if state != "hang":
             self.pulling, self.scrabble_until = None, 0.0
         if state != "act":
@@ -1023,7 +1033,7 @@ class Engine:
 
     def _on_peek(self, now: float) -> None:
         self.peek_started, self.peek_turned = now, False
-        self.state_until = now + (TUCK_PLAN if self.tuck else PEEK_PLAN)[-1][0]
+        self.state_until = now + (PEEK_TOP_PLAN if self.peek_edge == "top" else TUCK_PLAN if self.tuck else PEEK_PLAN)[-1][0]
 
     def _on_leap(self, now: float) -> None:
         assert self.target is not None
@@ -3007,8 +3017,24 @@ class Engine:
                 return d0 + (d1 - d0) * (t - t0) / (t1 - t0)
         return plan[-1][1]
 
+    def _top_peek(self, t: float) -> None:
+        """The top peek's pose at `t`: pulled up out of sight hanging, turned over there, lowered upside-down to peer."""
+        d = PEEK_TOP_PLAN[-1][1]
+        for (t0, d0), (t1, d1) in zip(PEEK_TOP_PLAN, PEEK_TOP_PLAN[1:]):
+            if t <= t1:
+                d = d0 + (d1 - d0) * bh.smooth((t - t0) / (t1 - t0))
+                break
+        self.peek_flip = d > 1.0
+        self.sink = min(d, 1.0)
+        self.peek_show = max(0.0, d - 1.0) * PEEK_TOP_PEER
+
     def _do_peek(self, now: float, dt: float) -> None:
         t = now - self.peek_started
+        if self.peek_edge == "top":
+            self._top_peek(t)
+            if now >= self.state_until:
+                self._arrive_hang(now, self.current_monitor())  # back down on its hands, not standing in the air
+            return
         depth = self._peek_depth(t)
         if depth <= 1.0:
             self.sink = depth * self.sink_max
@@ -3691,7 +3717,7 @@ class Engine:
                 return "hang"  # its head would pass the top of the screen: hands up, in the pose that fits
             return frame
         if self.peek_edge == "top":
-            return "hang"
+            return "spin24" if self.peek_flip else "hang"
         return "stand" if self.sink < self.sink_max * 0.5 or now - self.peek_started < 0.8 else "look"
 
     def _stand_frame(self, now: float) -> str:
@@ -3820,13 +3846,19 @@ class Engine:
         """Where the window is drawn and which part of the frame shows: the rest
         position, less the sink behind an edge."""
         w, h = self.size
+        if self.peek_flip and self.peek_edge == "top":
+            # upside-down, drawn turned half a circle on the tumble's square canvas: its head comes first below the
+            # edge and everything above the work area's top is clear (the canvas pad shifts the clip)
+            top, side = self.current_monitor().area[1], math.ceil(math.hypot(w, h))
+            yb = top - h + round(self.peek_show * h)
+            return self.x, yb, (0, max(0, top - yb + (side - h) // 2), side, side)
         x, y = self.x, self.y
         # a bonk shows the startle frame in mid-air: no foot offset of its own
         y += self._dy("held" if self.state == "fly" else frame)
         x += self._flip_dx(frame, self.facing < 0)
         if self.peek_edge == "top" or (self.state == "rise" and self.then == "peek_top"):
             # hands over the top edge: what is above the play area's top (behind the bar, or off the screen) is clear
-            up = round(self.sink * h) if self.peek_edge == "top" else 0
+            up = round(self.sink * (h - self._lift())) if self.peek_edge == "top" else 0
             return x, y - up, (0, min(h, max(0, round(self.current_monitor().area[1] - (y - up)))), w, h)
         if self.sink <= 0 or self.peek_edge is None:
             return x, y, None
@@ -3848,6 +3880,6 @@ class Engine:
         return Output(
             frame, int(round(x)), int(round(y)), self.facing < 0, self._wake(now),
             self.click_now, self.settled_now, clip, self.card_clicked, self._pose(), fx, round(alpha * 16) / 16.0,
-            self.angle + self.wob if frame.startswith("spin") and self.state == "fly" else None,
+            self.angle + self.wob if frame.startswith("spin") and self.state == "fly" else math.pi if self.peek_flip else None,
             self._flow_view(now, frame) if fx is None else None, *self.ex.view(now),
         )
