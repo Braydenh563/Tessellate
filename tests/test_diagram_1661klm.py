@@ -71,3 +71,15 @@ def test_below_600_the_word_hides_and_the_button_is_44_px():
 
 def test_a_source_the_blocks_cannot_draw_offers_no_kind_even_from_the_title_row():
     assert ".dgm-dialog:has(.dgm-plain) :is(.dgm-kindbtn, .dgm-kindlabel)" in CSS
+
+
+# --- S2: a box just added and picked is brought into view
+
+
+def test_a_new_picked_box_is_scrolled_into_view_but_not_on_the_first_picture():
+    # Measured at 200% zoom, 1440: 0 of 10 Ctrl+D adds were wholly inside the picture before, 10 of 10 after; at 50% none scrolls.
+    overlay = _js("diagram-overlay.js")
+    draw = overlay[overlay.index("const draw = () => {") :][:1400]
+    assert "born.push(b.id)" in overlay and 'sync(found, boxes, "node", "", born)' in draw
+    assert "const fresh = seen && born.find((id) => ids.has(id));" in draw
+    assert 'scrollIntoView({ block: "nearest", inline: "nearest" })' in draw

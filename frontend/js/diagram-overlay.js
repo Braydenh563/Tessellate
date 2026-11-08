@@ -59,6 +59,7 @@
     const boxes = new Map();
     const groups = new Map();
     let hover = "";
+    let seen = false;
 
     //: The picked ids: the primary block and every block of the pick, as the list marks them.
     const chosen = () => {
@@ -75,12 +76,14 @@
     };
     S.mark = () => mark();
     //: One element per box of a list, kept by id; a group's lies under the nodes' (styled lower).
-    const sync = (found, kept, attr, extra) => {
+    //: `born` collects the ids that got a box on this draw, so a new box can be brought into view.
+    const sync = (found, kept, attr, extra, born = []) => {
       const live = new Set(found.map((b) => b.id));
       for (const [id, box] of kept) if (!live.has(id)) box.remove(), kept.delete(id);
       for (const b of found) {
         let box = kept.get(b.id);
         if (!box) {
+          born.push(b.id);
           box = document.createElement("span");
           box.className = "dgm-box" + extra;
           box.dataset[attr] = b.id;
@@ -99,8 +102,15 @@
       const found = img && S.hit ? math.place(S.hit, img.getBoundingClientRect(), layer.getBoundingClientRect()) : [];
       const rect = img && S.hit ? img.getBoundingClientRect() : null;
       sync(rect ? math.place(S.hit, rect, layer.getBoundingClientRect(), S.hit.clusters) : [], groups, "group", " dgm-cluster");
-      sync(found, boxes, "node", "");
+      const born = [];
+      sync(found, boxes, "node", "", born);
       mark();
+      //: A box just added and picked is scrolled into view (an add off the visible part of a zoomed picture was out of
+      //: sight unless its name field took the focus). Not on the first picture, whose boxes are all new.
+      const ids = chosen();
+      const fresh = seen && born.find((id) => ids.has(id));
+      if (found.length) seen = true;
+      if (fresh) boxes.get(fresh).scrollIntoView({ block: "nearest", inline: "nearest" });
     };
 
     //: After every draw (including one that leaves no picture), and from the zoom (diagram-view.js) after a zoom, a fit or a resize of the pane.

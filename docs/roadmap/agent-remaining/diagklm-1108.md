@@ -70,4 +70,6 @@ Branch `agent/diagklm-1108` from `claude/next-queue-1102` (7cba04a8). The spec i
 ## Log
 
 - done: spec (this file).
-- next: S1, `frontend/js/diagram-kindbar.js:26`.
+- done: S1 262c70da (chrome 261 to 204 at 1440, 329 to 260 at 390; picture 405 to 462 tall; rows 54 px).
+- done: S2 (scroll into view; 200% zoom: 0 to 10 of 10 at 1440 Ctrl+D, 10 of 10 at 390 N, none scrolls at 50%).
+- next: S3, `frontend/js/diagram-split.js` `wire`.
