@@ -115,3 +115,12 @@ any new JS (the flick) is paid for in the same commit or goes to a lazy file. No
   lashes; happy low 0.3, surprised brow-y -4.2, determined low 0.24 knit 2deg, worried knit -15). Mood mean (face
   change from calm) 1x 28.4 to 28.8, 2x 27.5 to 31.1 (hers 26.1, 31.1); weakest at 1x determined 10.2 (hers 14.1
   at 2x), surprised 19.2. next: step 5, desk frames, `sprites.py:73` LID_EYES, `faces.py:27-28`.
+- blocked: step 5, desk frames. A fresh `scripts/render_desk_frames.py` at this head fails 21 overlay tests
+  (test_overlay_rest_1670, _ride_1670, _alive_1670 idle bottom, _seams_1683e) in BOTH looks, and none of the
+  failing rows is his head: the shipped frames are from b1e2dcf6 (11-04), before 8362d0ed changed the render
+  script, and `stand` (with sit, look, wave, land) still captures the live tail at any moment (only idle frames
+  sample `atlasTailBend`), so stand's lowest row moves 258 to 275 (hers) against idle's 255. The frames were
+  not shipped; the desk shows his old head until this is fixed. Next: sample the tail at w 0 for every non-idle
+  frame in `render_desk_frames.js` (~line 205), re-render, then set LID_EYES["masculine"] from the new stand
+  (the scale estimate is 0.9/0.84 x 0.8/0.76 = 1.13 about the box's centre: (109, 111, 155, 127), not measured)
+  and check BROW_UP 9 and MOUTH_DOWN 13 (`faces.py:27-28`) on his face.
