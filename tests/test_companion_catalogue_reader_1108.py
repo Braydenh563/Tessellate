@@ -33,3 +33,10 @@ def test_a_failed_fetch_keeps_the_built_in_tables(answer: str) -> None:
         ACTS, answer,
     )
     assert out == {"same": True, "doc": None}
+
+
+def test_the_catalogue_is_served_by_the_local_server(client) -> None:
+    # review of atlascat-1108: the reader fetches it from the server, so it is a static file there; the service worker does not precache it
+    # because the shell is never cached either (an app without its server shows the offline page), and a failed fetch keeps the built-in tables
+    r = client.get("/companion-catalogue.json")
+    assert r.status_code == 200 and len(r.json()["entries"]) == 307

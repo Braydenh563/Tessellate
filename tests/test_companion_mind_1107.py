@@ -207,7 +207,7 @@ def test_the_hour_summary_numbers() -> None:
     # little of the hour and moves the seeded draws; four seeds swung 24 to 37 acts each, so the bar reads eight seeds
     # (the base had 17 chains and 271 acts over them, this 11 and 264): 30 acts and more than one chain a seed-hour.
     # Intent moved (atlascat 1108 A3): acts built on both sides take the catalogue's longer lengths (a nap 20 to 240 s, a read 25 to 55 s),
-    # so the hour holds fewer, longer acts: 15 chains and 222 acts over the eight seeds, 28 an hour; the bar reads 200.
+    # so an hour holds fewer, longer acts. The bar sums eight seed-hours (15 chains and 222 acts measured, about 28 acts a seed-hour): 200 acts.
     chains = acts = 0
     for seed in range(1, 9):
         e, names = hour_of_life(seed)

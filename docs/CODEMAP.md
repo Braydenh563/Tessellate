@@ -2,7 +2,7 @@
 
 Generated 2026-11-08 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7908, frontend ids 2652, CSS sections 522, backend routes 649, backend modules 9178, test files 2223, tests 18682, plan headings 1004, app scripts 28, boot scripts 37, script files 263.
+Counts: frontend functions 7908, frontend ids 2652, CSS sections 522, backend routes 649, backend modules 9178, test files 2223, tests 18684, plan headings 1004, app scripts 28, boot scripts 37, script files 263.
 
 ## Frontend functions (7908)
 
@@ -22698,32 +22698,32 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | Name | File:line |
 |---|---|
 | `Activity` | src/tessellate/core/overlay/behaviour.py:154 |
-| `Chain` | src/tessellate/core/overlay/behaviour.py:336 |
-| `Flow` | src/tessellate/core/overlay/behaviour.py:622 |
-| `Mind` | src/tessellate/core/overlay/behaviour.py:371 |
+| `Chain` | src/tessellate/core/overlay/behaviour.py:348 |
+| `Flow` | src/tessellate/core/overlay/behaviour.py:634 |
+| `Mind` | src/tessellate/core/overlay/behaviour.py:383 |
 | `Pose` | src/tessellate/core/overlay/behaviour.py:52 |
 | `SecondOrder` | src/tessellate/core/overlay/behaviour.py:62 |
-| `Trail` | src/tessellate/core/overlay/behaviour.py:523 |
+| `Trail` | src/tessellate/core/overlay/behaviour.py:535 |
 | `Variation` | src/tessellate/core/overlay/behaviour.py:120 |
-| `_amplitude` | src/tessellate/core/overlay/behaviour.py:567 |
-| `_frac` | src/tessellate/core/overlay/behaviour.py:618 |
+| `_amplitude` | src/tessellate/core/overlay/behaviour.py:579 |
+| `_frac` | src/tessellate/core/overlay/behaviour.py:630 |
 | `_from_catalogue` | src/tessellate/core/overlay/behaviour.py:236 |
 | `_k` | src/tessellate/core/overlay/behaviour.py:171 |
-| `activity_frame` | src/tessellate/core/overlay/behaviour.py:510 |
-| `catalogue_factor` | src/tessellate/core/overlay/behaviour.py:263 |
-| `curve` | src/tessellate/core/overlay/behaviour.py:354 |
-| `idle_tier` | src/tessellate/core/overlay/behaviour.py:322 |
-| `mood_of` | src/tessellate/core/overlay/behaviour.py:289 |
-| `phase_of` | src/tessellate/core/overlay/behaviour.py:255 |
+| `activity_frame` | src/tessellate/core/overlay/behaviour.py:522 |
+| `catalogue_factor` | src/tessellate/core/overlay/behaviour.py:269 |
+| `curve` | src/tessellate/core/overlay/behaviour.py:366 |
+| `idle_tier` | src/tessellate/core/overlay/behaviour.py:334 |
+| `mood_of` | src/tessellate/core/overlay/behaviour.py:301 |
+| `phase_of` | src/tessellate/core/overlay/behaviour.py:261 |
 | `quantised` | src/tessellate/core/overlay/behaviour.py:90 |
 | `sample` | src/tessellate/core/overlay/behaviour.py:141 |
 | `scaled` | src/tessellate/core/overlay/behaviour.py:133 |
-| `shift_every` | src/tessellate/core/overlay/behaviour.py:275 |
+| `shift_every` | src/tessellate/core/overlay/behaviour.py:284 |
 | `sine_ease` | src/tessellate/core/overlay/behaviour.py:110 |
 | `smooth` | src/tessellate/core/overlay/behaviour.py:100 |
 | `smoother` | src/tessellate/core/overlay/behaviour.py:105 |
-| `tier_factor` | src/tessellate/core/overlay/behaviour.py:327 |
-| `utility` | src/tessellate/core/overlay/behaviour.py:360 |
+| `tier_factor` | src/tessellate/core/overlay/behaviour.py:339 |
+| `utility` | src/tessellate/core/overlay/behaviour.py:372 |
 | `vary` | src/tessellate/core/overlay/behaviour.py:128 |
 
 ### src/tessellate/core/overlay/capture.py (14)
@@ -24722,7 +24722,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (18682)
+## Tests (18684)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -25032,7 +25032,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_companion_body.py | 10 |
 | tests/test_companion_cat_1673.py | 21 |
 | tests/test_companion_catalogue_1108.py | 9 |
-| tests/test_companion_catalogue_reader_1108.py | 3 |
+| tests/test_companion_catalogue_reader_1108.py | 4 |
 | tests/test_companion_cover_1632.py | 2 |
 | tests/test_companion_dynamics_1107.py | 5 |
 | tests/test_companion_edges_kept_1696.py | 2 |
@@ -26177,7 +26177,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_outside_text_taints_chat.py | 3 |
 | tests/test_overlay_alive_1670.py | 12 |
 | tests/test_overlay_bob_1670.py | 3 |
-| tests/test_overlay_catalogue_1108.py | 8 |
+| tests/test_overlay_catalogue_1108.py | 9 |
 | tests/test_overlay_come_1683.py | 5 |
 | tests/test_overlay_deskframes_1696.py | 3 |
 | tests/test_overlay_dest_1683.py | 10 |

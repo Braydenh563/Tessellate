@@ -22,12 +22,12 @@ Left, one line each:
   not the whole `nameMarkBuddyDecide` (it needs the DOM).
 - Desk act lengths never go under the built-in minimum (the redraw cap of 12 a second, `test_7_rest_stays_alive...`); the
   table's shorter minimums (bounce 0.8, stretch 1.6, groom 3.2, peer_at_cursor 1.4, scan_horizon 2.5) are not reached on the desk.
-- `tests/test_overlay_nap_1683u.py::test_its_own_long_nap_ends_with_a_stretch` seed 5 to 4: at seed 5 the first update starts a
-  spell and drops the nap command (also at the base), and its stretch was a chance idle one.
-- Found, not fixed: a `nap` command given while the engine is walking to a spell spot is dropped (`_nap` only runs from
-  stand); 7 of 11 seeds show it at the base.
-- Two more intent notes: `test_overlay_rest_life_1670` stand test reads seeds (1, 3, 5) (seed 2 now draws a dust_off or a read_book in the
-  first minute); `test_companion_mind_1107::test_the_hour_summary_numbers` acts bar 240 to 200 (longer catalogue lengths: 222 acts, 15 chains
+- Review fixes: a nap command during a spell's warp is taken at once (nap_1683u back on seed 5; a test covers seeds 1, 2, 3, 5, 7, 10, 11);
+  standing is at most 9 draws a second over seeds 1 to 5 (small stand acts and in-place turns draw at the rest pace); a catalogue entry missing a
+  key is skipped. `frontend/sw.js` needs no precache: the shell is never cached, so there is no offline start, and a failed fetch keeps the built-ins.
+- Open: the still-stand test reads seeds (1, 3, 5) because seed 2 on the walk now draws a `read_book` from the stroll path, whose sit frame sits 8 px
+  lower (a moved window by design; `sit_down` does the same on other seeds at the base). Seeds (1, 2, 3) need the stroll pick to skip sit-frame acts: a design call.
+- Intent note: `test_companion_mind_1107::test_the_hour_summary_numbers` acts bar 240 to 200 (longer catalogue lengths: 222 acts, 15 chains
   over eight seed-hours).
 - A3, A4 and A5 share files (behaviour.py, engine.py, avatars.js), so they land as one commit, not three.
 - Numbers: desk 600 s sim longest held pose 81.0 s (was 150 s sit, 221 s nap); seeded act-count means desk 37.17 vs 36.17, app 26.25 vs 25.67.
