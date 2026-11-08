@@ -3,7 +3,7 @@ status: running
 pr: 216
 max-continues: 60
 max-idle-minutes: 60
-finish-up: 45%
+finish-up: 60%
 started: 2026-11-07 14:40Z
 tier: max (weekly 32% at 2026-11-08 16:00Z), four agents at once, Sonnet or Haiku, one Opus for design or risky review; never Fable; owner away from 2026-11-08 16:00Z until about 2026-11-09 06:00Z to 07:00Z (late afternoon owner time, UTC+10)
 
@@ -15,7 +15,7 @@ tier: max (weekly 32% at 2026-11-08 16:00Z), four agents at once, Sonnet or Haik
 - [ ] "put it in today's note" read by the move reader; r3fix single-list intro-line route
 - [ ] Layered deep dive next round per surface (desk, in-app, Atlas, diagram, composer)
 - [ ] Open audit rows on other surfaces (audit-1031-ranked.md first; board, mind map, notes, documents, code editor, OCR), FABLE_BRIEF findings, plans and BACKLOG, smallest first (owner 16:35Z)
-- [ ] Session end at 45% weekly or queue done: full suite, Morning summary, retro
+- [ ] Session end at 60% weekly or queue done: full suite, Morning summary, retro
 
 ## 2026-11-07 overnight queue (HANDOVER Now 2026-11-07c)
 - [x] Merge land1683 (e7ad8fe9) (agent/land1683-1107): overlay tests serially, CHANGELOG, CODEMAP, push
