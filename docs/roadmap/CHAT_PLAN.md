@@ -1289,7 +1289,7 @@ branch's pint and simpleeval go with Brief 35 (policy 1).
 
 | Id | Capability | Has it (file) | Gap | Deterministic rule or data | Cost | Step |
 | --- | --- | --- | --- | --- | --- | --- |
-| T1 | Calculator | Gemini `math` shape, invisible, digit-only regex | "15% of 80", "20 percent of 50", "3 times 4", "sqrt 144", "2(3+4)", words for operators | `ast` evaluator over + - * / % ^ and a function whitelist (sqrt, round, floor, ceil, abs, min, max, log, ln, pow, factorial), percent-of, "plus/minus/times/divided by/squared"; no names, no attributes | M | 2 |
+| T1 | Calculator | Built. Moved to HISTORY.md ("Moved from the plans, 2026-11-08 (CHAT_PLAN T1)"). | | | | |
 | T2 | Unit tables | Gemini `convert` shape (pint), invisible | Length, mass, volume, temperature, speed, area, time, data, energy, pressure, angle with `to` and `in` | A plain-data table of about 150 units with factor and offset; temperature by formula; ambiguity ("ton", "pint", "cup") asks | M | 2 |
 | T3 | Currency tables offline | None | Rates change | A small dated table in the app (about 30 currencies, one date), user-editable in Settings, every answer says "rates as of <date>"; no network | M | new (2) |
 | T4 | Date arithmetic | `when.days_since`, `timewords` | "days until Friday", "what day is 3 weeks from now", "weeks between two dates", "what week number is 3 March", "how old is a date" | Date maths over `timewords` mentions and a table of fixed-date holidays by name and country-neutral rule (Easter by algorithm) | M | 2 |

@@ -52955,3 +52955,11 @@ Built: T6. Row text: T6 | Text transforms | None | Upper, lower, title case, sor
 - **What it does:** `ai/composer_text.py` (through `composer_quick`) transforms text the person pastes: "uppercase: hello there" gives "In capitals:" and a code block with HELLO THERE; also lower case, title case ("The Lord of the Rings"), slugify, reverse, sort (lines or comma items), remove duplicate lines (first kept), number the lines. The reply ends "A draft only: nothing was saved or changed." Sort, reverse, dedupe and number answer only after a colon, quote or new line, so "sort my notes by date" is left alone. Pasted text only (20,000 characters at most); no note is read, quoted or changed.
 - **Check:** `tests/test_composer_text_1108.py` (exact sentences, fixed clock, 20k linear timing).
 - **Not built:** Acting on a named note ("uppercase the passport note"): a note edit needs the confirm-first draft path, so it stays open; join/split on commas and count characters (word counts exist).
+
+## Moved from the plans, 2026-11-08 (CHAT_PLAN T1)
+
+Built: T1. Row text: T1 | Calculator | Gemini `math` shape, invisible, digit-only regex | "15% of 80", "20 percent of 50", "3 times 4", "sqrt 144", "2(3+4)", words for operators | `ast` evaluator over + - * / % ^ and a function whitelist (sqrt, round, floor, ceil, abs, min, max, log, ln, pow, factorial), percent-of, "plus/minus/times/divided by/squared"; no names, no attributes | M | 2
+
+- **What it does:** `ai/composer_sums.py` (through `composer_quick`) adds the spoken shorthand: "5 factorial" and "5!" (up to 20), "half of 90", "a third of 10", "a quarter of 8", "double 45", "twice", "triple", "sqrt 144" and the root sign. "Half of 90 is 45." then "_Read as 90 divided by 2._" The rest of the row (sums, percentages, "squared", "the square root of") was already built in `utilities.py` and `composer_calc.py`.
+- **Check:** `tests/test_composer_sums_1108.py` (exact sentences, 20k linear timing).
+- **Not built:** The function whitelist words round, floor, ceil, min, max, log, ln, pow typed as words; "2(3+4)".
