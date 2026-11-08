@@ -576,9 +576,22 @@ mermaidFill.embed = async (box, doc, name) => {
     //: already opened the target; stopPropagation here only keeps that from opening it a second time (review 1108).
     box.classList.add("diagram-embed-box");
     box.title = "Open the diagram";
+    //: A double click is two presses: the first opens the diagram, and the second lands on the page that replaced this one
+    //: (measured: a 297-character selection across the builder). For half a second a press that is a second or later of its
+    //: run is stopped, its default (selecting) and its click (it could press a button of the builder).
+    const calm = () => {
+      const stop = (event) => {
+        if (event.detail > 1) (event.preventDefault(), event.stopPropagation());
+      };
+      for (const name of ["mousedown", "click"]) document.addEventListener(name, stop, true);
+      setTimeout(() => {
+        for (const name of ["mousedown", "click"]) document.removeEventListener(name, stop, true);
+      }, 500);
+    };
     box.addEventListener("click", (event) => {
       if (event.target.closest("button, a")) return;
       event.stopPropagation();
+      calm();
       openDocument(doc.id);
     });
     box.append(open);

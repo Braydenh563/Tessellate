@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Documents (dgmlive2 4): a double click on a diagram embed opens the diagram once and no longer lets its second press select or press the page it opened (Chromium at 40 and 120 ms between presses: a 297-character selection across the builder before, 0 after; opens 1, the CodeMirror selection stays [0,0]). A drag that starts on the embed selects nothing and moves nothing (selection 0, document text unchanged).
 - Diagram builder (dgmlive2 3): a row pressed in the embed dialog's More menu that redraws the picture (Hand-drawn or Clean look) no longer drops focus to the page; the new ⋯ takes it (Chromium: BODY before, "More for this diagram" after, inside a modal dialog).
 - Library (dgmlive2 2): an archived diagram or document is listed once, as shelved; `/library` also listed it as its own kind, so Archive on a row toasted and the row stayed in Everything (Chromium: diagram 26 and shelved 26 both returned; now shelved only).
 - Library (dgmlive2 1): a row's rename, archive or delete from its ⋯ by keyboard no longer drops focus to the page (the grid reload now hands it to the card last used; Chromium: BODY before, the card after), and Undo of a document or diagram delete, rename or archive (toast, Ctrl+Z, status bar) redraws the Library (the deleted row stayed gone until the tab was re-entered).

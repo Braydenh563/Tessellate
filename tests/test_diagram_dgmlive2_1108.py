@@ -50,3 +50,13 @@ def test_a_row_pressed_in_the_embed_dialogs_more_menu_leaves_focus_on_its_new_op
     body = embed.split("const show = () => {")[1].split("\n    const view = ")[0]
     assert 'document.activeElement?.closest?.(".dgm-more")' in body
     assert 'host.querySelector(".dgm-more button")?.focus(' in body
+
+
+def test_the_second_press_of_a_double_click_on_an_embed_does_not_select_or_press_the_page_it_opened():
+    """Measured in Chromium: a double click on the embed opened the diagram once, and the second press landed on the new page and left a 297-character selection."""
+    draw = (JS / "mermaid-draw.js").read_text(encoding="utf-8")
+    body = draw.split("mermaidFill.embed = async")[1].split("\n};\n")[0]
+    assert "const calm = () =>" in body
+    assert 'for (const name of ["mousedown", "click"]) document.addEventListener(name, stop, true);' in body
+    assert "event.detail > 1" in body
+    assert "calm();\n      openDocument(doc.id);\n    });\n    box.append(open);" in body
