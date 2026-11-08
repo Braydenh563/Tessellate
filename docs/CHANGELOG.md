@@ -48,6 +48,7 @@ Your own desk companion's capture works again: it asks the page for the frames i
 - Settings: the changed-row bar sits 8 px from the text on every row (INBOX 1696 c).
 - Desk menu: Activity, Stay here or Roam, Roam over windows and the sizes keep the menu open with the new tick; moves still close it (INBOX 1696 h).
 - Desk companion: Go somewhere else always travels with a seen move and stays at the new spot (INBOX 1696 i).
+- Desk companion: a draw slower than 10 frames a second no longer restarts the walk's ease-in on every tick, so a long trip such as Go somewhere else moves at its pace instead of crawling at 5 px/s (INBOX 1696 i).
 - Desk companion: a floater rises to a hang with a blink or a cloud, never the standing frame sliding up or stopping part way, and hangs for 1 to 5 minutes by mood (INBOX 1696 b, k).
 - Desk companion: let go over a window's top edge and it stands on it, read fresh at the release, with a log line naming why a nearby window was not counted (INBOX 1696 b).
 - Desk companion: a fall no longer stutters at high DPI (the quarter turn is built once per size and reused, 6.4 ms to 0.3 ms a picture) (INBOX 1696 a).
