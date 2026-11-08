@@ -506,19 +506,28 @@ const ATLAS_LOOKS = {
     //: The crest: four locks swept back, a quarter fuller than drawn (the
     //: owner, round 5: "flowing, voluminous"), over a soft mass that fills
     //: the gaps between them so the crest reads as hair, not streaks.
+    //: **Short, swept, his** (INBOX 1696 gg, the owner: "that semicircular
+    //: arc or curve on the top of masculine atlas's head looks like female
+    //: hair or a tiara"): each lock was a half circle (turning 157 to 203
+    //: degrees) curled over the crown and down to y 43 past his jaw, which
+    //: at 64 px was one pale arc over the head. Now each rises from inside
+    //: the crown and flicks over to his left in a short sweep (under 90
+    //: degrees, 14 to 26 long), the tips fanned from above the crown to
+    //: above his left ear and the highest at the far side, not a dome over
+    //: the middle; the mass under them is smaller, so the tips stand apart.
     locks: [
-      { seg: [[23, 12, 26, 0, 42, -3, 52, 6], [52, 6, 57, 10.6, 58, 16, 54.6, 19.4]], w: [7.8, 0.7] },
-      { seg: [[28, 10, 36, 0.4, 50, 3, 58, 13], [58, 13, 63, 19.6, 62.6, 26, 58.4, 29]], w: [8.8, 0.8] },
-      { seg: [[33, 9.6, 40, 3.6, 53, 7, 59, 19], [59, 19, 63.4, 27.4, 61.6, 34, 56.6, 37.4]], w: [8, 0.8] },
-      { seg: [[37, 11, 43, 8, 52, 14, 55.6, 24], [55.6, 24, 58.4, 32, 57.2, 39, 52.4, 43]], w: [6.2, 0.7] },
-      { seg: [[27, 11, 34, 0, 48, 0, 57, 12]], w: [12, 2.4], mass: true },
+      { seg: [[25, 12, 27, 6, 34, 1, 44, -1]], w: [7.8, 0.7] },
+      { seg: [[28, 11, 32, 5, 41, 2.4, 51, 4]], w: [8.8, 0.8] },
+      { seg: [[33, 10.6, 38, 6, 47, 6, 53, 11]], w: [8, 0.8] },
+      { seg: [[36, 11.4, 41, 9, 47, 11.6, 50, 17]], w: [6.2, 0.7] },
+      { seg: [[27, 11, 32, 5.4, 42, 5, 48, 10]], w: [8, 2], mass: true },
     ],
     head: [
-      { seg: [[23, 12, 28, 2, 44, 1, 52, 8], [52, 8, 55.6, 11.4, 56, 15.4, 53.4, 18]], w: [7.8, 0.7] },
-      { seg: [[28, 10, 36, 0.4, 49, 3, 54.4, 12], [54.4, 12, 57.6, 17, 57.4, 22.4, 54, 25.4]], w: [8.8, 0.8] },
-      { seg: [[33, 9.6, 40, 3.6, 51, 7, 55, 17], [55, 17, 58, 24, 57, 30, 52.6, 33.6]], w: [8, 0.8] },
-      { seg: [[37, 11, 43, 8, 51, 13, 53.6, 22], [53.6, 22, 55.6, 29, 54.6, 35, 50.4, 39]], w: [6.2, 0.7] },
-      { seg: [[27, 11, 34, 0, 47, 0, 54, 11]], w: [12, 2.4], mass: true },
+      { seg: [[25, 12, 27, 6.4, 34, 1.4, 43, 0]], w: [7.8, 0.7] },
+      { seg: [[28, 11, 32, 5.4, 40, 3, 49.4, 4.6]], w: [8.8, 0.8] },
+      { seg: [[33, 10.6, 38, 6.4, 46, 6.4, 51.4, 11]], w: [8, 0.8] },
+      { seg: [[36, 11.4, 41, 9.2, 46, 11.6, 48.6, 16]], w: [6.2, 0.7] },
+      { seg: [[27, 11, 32, 5.6, 41, 5.2, 47, 10]], w: [8, 2], mass: true },
     ],
     brow: "straight",
     //: One short flick at each eye's outer corner, not her three lashes (INBOX 1607 d).
@@ -1732,7 +1741,8 @@ function atlasMane(parent, level, edge, look) {
     }
   });
   if (!edge) {
-    atlasSpecks(mane, [[44, 9.6, 0.3], [50, 14, 0.24], [53, 22, 0.3], [49, 30, 0.2], [55, 36, 0.24]], "atl-speck atl-speck-soft");
+    //: His specks sit on his short crest (INBOX 1696 gg), hers down her back.
+    atlasSpecks(mane, spec.roundLocks ? [[44, 9.6, 0.3], [50, 14, 0.24], [53, 22, 0.3], [49, 30, 0.2], [55, 36, 0.24]] : [[44, 6.4, 0.3], [49, 9.4, 0.24], [38, 4.2, 0.2]], "atl-speck atl-speck-soft");
     //: The feminine look's hair carries a constellation (the reference's
     //: "long flowing hair with constellations"): star points along the
     //: locks, threaded.
