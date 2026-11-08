@@ -2,7 +2,7 @@
 
 Generated 2026-11-08 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7884, frontend ids 2652, CSS sections 522, backend routes 649, backend modules 9082, test files 2205, tests 18501, plan headings 1004, app scripts 28, boot scripts 37, script files 263.
+Counts: frontend functions 7884, frontend ids 2652, CSS sections 522, backend routes 649, backend modules 9116, test files 2209, tests 18544, plan headings 1004, app scripts 28, boot scripts 37, script files 263.
 
 ## Frontend functions (7884)
 
@@ -13121,7 +13121,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:164 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (9082)
+## Backend modules (9116)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -13961,6 +13961,31 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_word_count` | src/tessellate/ai/composer_calc.py:291 |
 | `answer` | src/tessellate/ai/composer_calc.py:328 |
 | `glossary` | src/tessellate/ai/composer_calc.py:299 |
+
+### src/tessellate/ai/composer_chance.py (3)
+
+| Name | File:line |
+|---|---|
+| `_spoken` | src/tessellate/ai/composer_chance.py:44 |
+| `answer` | src/tessellate/ai/composer_chance.py:48 |
+| `options_in` | src/tessellate/ai/composer_chance.py:34 |
+
+### src/tessellate/ai/composer_clock.py (12)
+
+| Name | File:line |
+|---|---|
+| `_leap` | src/tessellate/ai/composer_clock.py:97 |
+| `_left` | src/tessellate/ai/composer_clock.py:105 |
+| `_neighbour` | src/tessellate/ai/composer_clock.py:79 |
+| `_quarter` | src/tessellate/ai/composer_clock.py:66 |
+| `_week` | src/tessellate/ai/composer_clock.py:61 |
+| `_week_of` | src/tessellate/ai/composer_clock.py:87 |
+| `_year_day` | src/tessellate/ai/composer_clock.py:71 |
+| `answer` | src/tessellate/ai/composer_clock.py:113 |
+| `clean` | src/tessellate/ai/composer_clock.py:50 |
+| `computed` | src/tessellate/ai/composer_clock.py:46 |
+| `is_leap` | src/tessellate/ai/composer_clock.py:57 |
+| `long_day` | src/tessellate/ai/composer_clock.py:42 |
 
 ### src/tessellate/ai/composer_compose.py (29)
 
@@ -14943,6 +14968,12 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `noun` | src/tessellate/ai/composer_property.py:101 |
 | `subject` | src/tessellate/ai/composer_property.py:72 |
 
+### src/tessellate/ai/composer_quick.py (1)
+
+| Name | File:line |
+|---|---|
+| `answer` | src/tessellate/ai/composer_quick.py:17 |
+
 ### src/tessellate/ai/composer_quote.py (21)
 
 | Name | File:line |
@@ -15293,6 +15324,19 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `holds_amount` | src/tessellate/ai/composer_sum.py:218 |
 | `most` | src/tessellate/ai/composer_sum.py:198 |
 
+### src/tessellate/ai/composer_sums.py (8)
+
+| Name | File:line |
+|---|---|
+| `_clean` | src/tessellate/ai/composer_sums.py:32 |
+| `_factorial` | src/tessellate/ai/composer_sums.py:47 |
+| `_multiple` | src/tessellate/ai/composer_sums.py:61 |
+| `_num` | src/tessellate/ai/composer_sums.py:39 |
+| `_part` | src/tessellate/ai/composer_sums.py:54 |
+| `_say` | src/tessellate/ai/composer_sums.py:43 |
+| `_sqrt` | src/tessellate/ai/composer_sums.py:68 |
+| `answer` | src/tessellate/ai/composer_sums.py:75 |
+
 ### src/tessellate/ai/composer_switch.py (5)
 
 | Name | File:line |
@@ -15309,6 +15353,21 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 |---|---|
 | `_build` | src/tessellate/ai/composer_tables.py:749 |
 | `voice_of` | src/tessellate/ai/composer_tables.py:35 |
+
+### src/tessellate/ai/composer_text.py (10)
+
+| Name | File:line |
+|---|---|
+| `_apply` | src/tessellate/ai/composer_text.py:86 |
+| `_body` | src/tessellate/ai/composer_text.py:125 |
+| `_dedupe` | src/tessellate/ai/composer_text.py:78 |
+| `_head` | src/tessellate/ai/composer_text.py:114 |
+| `_items` | src/tessellate/ai/composer_text.py:71 |
+| `_read` | src/tessellate/ai/composer_text.py:136 |
+| `_slug` | src/tessellate/ai/composer_text.py:66 |
+| `_title` | src/tessellate/ai/composer_text.py:56 |
+| `_unquote` | src/tessellate/ai/composer_text.py:105 |
+| `answer` | src/tessellate/ai/composer_text.py:149 |
 
 ### src/tessellate/ai/composer_this.py (5)
 
@@ -24552,7 +24611,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (18501)
+## Tests (18544)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -24919,6 +24978,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_composer_brief.py | 13 |
 | tests/test_composer_calc_1025.py | 5 |
 | tests/test_composer_cfix_1031.py | 138 |
+| tests/test_composer_chance_1108.py | 9 |
 | tests/test_composer_class_1031.py | 17 |
 | tests/test_composer_classes_1026b.py | 2 |
 | tests/test_composer_classes_1026c.py | 6 |
@@ -24927,6 +24987,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_composer_classes_1026f.py | 7 |
 | tests/test_composer_classes_1357.py | 1 |
 | tests/test_composer_clauses_shape_1104.py | 5 |
+| tests/test_composer_clock_1108.py | 14 |
 | tests/test_composer_commands.py | 14 |
 | tests/test_composer_compare_1029.py | 2 |
 | tests/test_composer_compare_e16.py | 2 |
@@ -25028,10 +25089,12 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_composer_subject_1029.py | 11 |
 | tests/test_composer_suggest_2210.py | 13 |
 | tests/test_composer_summaries_1029b.py | 17 |
+| tests/test_composer_sums_1108.py | 5 |
 | tests/test_composer_sweep_1028b.py | 3 |
 | tests/test_composer_sweep_1030.py | 8 |
 | tests/test_composer_tables.py | 32 |
 | tests/test_composer_tasks_1028.py | 38 |
+| tests/test_composer_text_1108.py | 15 |
 | tests/test_composer_timing_1461.py | 15 |
 | tests/test_composer_titles_1515.py | 9 |
 | tests/test_composer_today_1030.py | 4 |

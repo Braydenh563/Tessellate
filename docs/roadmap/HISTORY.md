@@ -52923,3 +52923,43 @@ Built: A24. Row text: A24 | A random note, an old note | `resurface.for_day`, `r
 - **What it does:** `composer_small.something_old()` answers "show me something old / an old note / something forgotten / from a while back" with one note picked by the chat's salt and turn from the faded end of the notes: the route's pool is `resurface.ranked` (six, else the six oldest; `list_pool._faded`), and the composer cuts any longer list to its oldest six. "Here is one from a while back: **Old trip**, written four years ago. It begins: We walked the coast path in 2022."
 - **Check:** `tests/test_small_b_1108_a24.py` (fixed clock, salts a to h give more than one pick, route with no model).
 - **Not built:** "show me a random note" (the row title); only the old ask. Also fixed the complexity ratchet for `what_if`, `where_written` and `list_pool.pool` by splitting them.
+
+## Moved from the plans, 2026-11-08 (CHAT_PLAN T10)
+
+Built: T10. Row text: T10 | Random pick | `resurface.ranked` | "pick one of pizza, sushi, tacos", "pick a number between 1 and 10" | Seeded by session salt and turn; the result is a computed value labelled "random" | S | 2
+
+- **What it does:** `ai/composer_chance.py` (reached through `composer_quick`, hooked in `composer_extra.answer`) answers "pick one of pizza, sushi, tacos" and "choose between tea and coffee": "I pick tacos." then "_Read as one pick at random from pizza, sushi and tacos._" Seeded by the chat seed and the question, so one chat repeats its pick. Two to twenty options; "my notes", "number" and "reminders" are left alone; no note is read.
+- **Check:** `tests/test_composer_chance_1108.py` (fixed clock, exact sentences, 20k linear timing).
+- **Not built:** Picking a random note ("pick one of my notes") is left to the A24 old-note ask.
+
+## Moved from the plans, 2026-11-08 (CHAT_PLAN T13)
+
+Built: T13. Row text: T13 | Time and date now | Gemini `utility` shape, invisible | Today's date, the time, week number, "what day is it" | Local clock and the user's timezone setting; computed | S | 2
+
+- **What it does:** `ai/composer_clock.py` (through `composer_quick`) answers from the turn's date: "what week is it" gives "It is week 45 of 2026." (ISO, weeks start Monday), "what quarter is it" "It is quarter 4 of 2026, October to December.", "what day of the year is it" "Today is day 312 of 2026, and 53 days remain.", "what's tomorrow's date" "Tomorrow is Monday 9 November 2026." Each says how it was read; no note is read.
+- **Check:** `tests/test_composer_clock_1108.py` (fixed clock, exact sentences, ISO year edge, 20k linear timing).
+- **Not built:** Week of a named date, leap year and days left in the year are the Time and date row.
+
+## Moved from the plans, 2026-11-08 (CHAT_PLAN Time and date)
+
+Built: Time and date (the tools survey row). Row text: | Time and date | Current time, calendar week of a date, Unix epoch, days in a month, week of year | Time and date plugin with formats | "what week is 3 March", "days until Friday", "what day is 3 weeks from now" | Partial: `when.py`; the Gemini `utility` time answer is invisible | S |
+
+- **What it does:** `ai/composer_clock.py` also answers "what week is 3 March" ("Wednesday 3 March 2027 is in week 9 of 2027."), "is 2028 a leap year" ("2028 is a leap year: it has 366 days, and February has 29."), "how many days are left in the year" and "how many weeks left in the year" ("There are 53 days left in 2026, after today."). Each says how it was read; no note is read.
+- **Check:** `tests/test_composer_clock_1108.py` (fixed clock, exact sentences, 20k linear timing).
+- **Not built:** Unix epoch time.
+
+## Moved from the plans, 2026-11-08 (CHAT_PLAN T6)
+
+Built: T6. Row text: T6 | Text transforms | None | Upper, lower, title case, sort lines, remove duplicate lines, number lines, slugify, count characters, reverse, join/split on commas | Act on the note or the pasted text; output is a draft the person confirms before it replaces anything | S | 7
+
+- **What it does:** `ai/composer_text.py` (through `composer_quick`) transforms text the person pastes: "uppercase: hello there" gives "In capitals:" and a code block with HELLO THERE; also lower case, title case ("The Lord of the Rings"), slugify, reverse, sort (lines or comma items), remove duplicate lines (first kept), number the lines. The reply ends "A draft only: nothing was saved or changed." Sort, reverse, dedupe and number answer only after a colon, quote or new line, so "sort my notes by date" is left alone. Pasted text only (20,000 characters at most); no note is read, quoted or changed.
+- **Check:** `tests/test_composer_text_1108.py` (exact sentences, fixed clock, 20k linear timing).
+- **Not built:** Acting on a named note ("uppercase the passport note"): a note edit needs the confirm-first draft path, so it stays open; join/split on commas and count characters (word counts exist).
+
+## Moved from the plans, 2026-11-08 (CHAT_PLAN T1)
+
+Built: T1. Row text: T1 | Calculator | Gemini `math` shape, invisible, digit-only regex | "15% of 80", "20 percent of 50", "3 times 4", "sqrt 144", "2(3+4)", words for operators | `ast` evaluator over + - * / % ^ and a function whitelist (sqrt, round, floor, ceil, abs, min, max, log, ln, pow, factorial), percent-of, "plus/minus/times/divided by/squared"; no names, no attributes | M | 2
+
+- **What it does:** `ai/composer_sums.py` (through `composer_quick`) adds the spoken shorthand: "5 factorial" and "5!" (up to 20), "half of 90", "a third of 10", "a quarter of 8", "double 45", "twice", "triple", "sqrt 144" and the root sign. "Half of 90 is 45." then "_Read as 90 divided by 2._" The rest of the row (sums, percentages, "squared", "the square root of") was already built in `utilities.py` and `composer_calc.py`.
+- **Check:** `tests/test_composer_sums_1108.py` (exact sentences, 20k linear timing).
+- **Not built:** The function whitelist words round, floor, ceil, min, max, log, ln, pow typed as words; "2(3+4)".

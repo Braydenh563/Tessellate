@@ -1143,7 +1143,7 @@ and https://learn.microsoft.com/en-us/windows/powertoys/run
 | Inline calculator | "15% of 85", roots, implied multiplication `2(3+4)`, ceil, floor, round, max, min, abs, log, ln, sqrt, pow, factorial, constants | Parsed expression; `=` direct prefix in PowerToys | An owned evaluator (an `ast` walk, policy 1), percent-of phrases, words ("times", "plus", "squared") | Partial: simple_eval on a digit-only regex, invisible (finding 1) | M |
 | Unit conversion with `to` and `in` | 13 types: acceleration, angle, area, duration, energy, information, length, mass, power, pressure, speed, temperature, volume | A units table | Our own table (about 150 units, plain data), "5 miles in km" | Partial: Gemini-branch pint path, to be removed (policy 1) | M |
 | Currency conversion | Spotlight converts currency | Live rates | Offline: a dated table the person can edit, always stated "rates as of <date>" | No | M |
-| Time and date | Current time, calendar week of a date, Unix epoch, days in a month, week of year | Time and date plugin with formats | "what week is 3 March", "days until Friday", "what day is 3 weeks from now" | Partial: `when.py`; the Gemini `utility` time answer is invisible | S |
+| Time and date | Built. Moved to HISTORY.md ("Moved from the plans, 2026-11-08 (CHAT_PLAN Time and date)"). | | | | |
 | Value generator | GUID, hashes, base64, URL encode | stdlib | Text transforms (below) take the useful half: case, sort lines, count, slugify | No | S |
 | Definitions | Word meanings | System dictionary | Own-notes definitions only (a "X is" sentence); a general dictionary is too heavy (policy 2) | No | M |
 | History plugin `!!` | Recall what you ran before | Result history | Ask history and `search_chat_history` | Yes: `routes_ask_history.py` | none |
@@ -1289,19 +1289,19 @@ branch's pint and simpleeval go with Brief 35 (policy 1).
 
 | Id | Capability | Has it (file) | Gap | Deterministic rule or data | Cost | Step |
 | --- | --- | --- | --- | --- | --- | --- |
-| T1 | Calculator | Gemini `math` shape, invisible, digit-only regex | "15% of 80", "20 percent of 50", "3 times 4", "sqrt 144", "2(3+4)", words for operators | `ast` evaluator over + - * / % ^ and a function whitelist (sqrt, round, floor, ceil, abs, min, max, log, ln, pow, factorial), percent-of, "plus/minus/times/divided by/squared"; no names, no attributes | M | 2 |
+| T1 | Calculator | Built. Moved to HISTORY.md ("Moved from the plans, 2026-11-08 (CHAT_PLAN T1)"). | | | | |
 | T2 | Unit tables | Gemini `convert` shape (pint), invisible | Length, mass, volume, temperature, speed, area, time, data, energy, pressure, angle with `to` and `in` | A plain-data table of about 150 units with factor and offset; temperature by formula; ambiguity ("ton", "pint", "cup") asks | M | 2 |
 | T3 | Currency tables offline | None | Rates change | A small dated table in the app (about 30 currencies, one date), user-editable in Settings, every answer says "rates as of <date>"; no network | M | new (2) |
 | T4 | Date arithmetic | `when.days_since`, `timewords` | "days until Friday", "what day is 3 weeks from now", "weeks between two dates", "what week number is 3 March", "how old is a date" | Date maths over `timewords` mentions and a table of fixed-date holidays by name and country-neutral rule (Easter by algorithm) | M | 2 |
 | T5 | Word count and reading time | Gemini `reading_time` (counts the retrieved notes, not the one asked about; invisible) | "how many words is this note", "reading time of the passport note" | Count on the resolved note's text (code and front matter excluded), 238 words per minute, "about 420 words, two minutes" | S | 2 |
-| T6 | Text transforms | None | Upper, lower, title case, sort lines, remove duplicate lines, number lines, slugify, count characters, reverse, join/split on commas | Act on the note or the pasted text; output is a draft the person confirms before it replaces anything | S | 7 |
+| T6 | Text transforms | Built. Moved to HISTORY.md ("Moved from the plans, 2026-11-08 (CHAT_PLAN T6)"). | | | | |
 | T7 | Checklists | Checklist units in `read_note`; done counts | Make a checklist from a sentence; tick by chat | "make a checklist: milk, eggs, bread" creates a note with `- [ ]` lines; "tick milk" edits one line | S | 7 |
 | T8 | Counters | None | "add 1 to coffee", "how many coffees this week" | A counter is a note titled "Counter: coffee" with a numeric property, incremented by an act; the count over a window is derived from dated lines | M | 7 |
 | T9 | Timers | Reminders with `due_at`, `reminder_parser.relative_delta` ("in 20 minutes") | A timer in a chat | A timer is a reminder due in N minutes, titled "Timer: 10 minutes"; the confirm card says so; no countdown claim | S | 7 |
-| T10 | Random pick | `resurface.ranked` | "pick one of pizza, sushi, tacos", "pick a number between 1 and 10" | Seeded by session salt and turn; the result is a computed value labelled "random" | S | 2 |
+| T10 | Random pick | Built. Moved to HISTORY.md ("Moved from the plans, 2026-11-08 (CHAT_PLAN T10)"). | | | | |
 | T11 | Dice and coin | None | "roll 2d6", "flip a coin", "roll a dice" | `random` with the same labelling; the roll is stated with each die | S | 2 |
 | T12 | Templates | See X13 | See X13 | See X13 | M | 7 |
-| T13 | Time and date now | Gemini `utility` shape, invisible | Today's date, the time, week number, "what day is it" | Local clock and the user's timezone setting; computed | S | 2 |
+| T13 | Time and date now | Built. Moved to HISTORY.md ("Moved from the plans, 2026-11-08 (CHAT_PLAN T13)"). | | | | |
 
 #### Proactive (decision 28: rarely, on real signals, never while typing)
 
