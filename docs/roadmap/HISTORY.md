@@ -11,6 +11,7 @@ that answers "has this been done?" before anyone starts.
 
 - L1 built: `docLists.enter` (documents-cm.js) gives the next marker for a letter, roman or dash item; the Enter handler in `docProsePairKeymap` (documents-prose.js) calls it when `docListEnter` has no answer. Harness cases in `tests/_doc_lists_harness.js`. Measured in the editor: `a.`/`b.` then Enter gave `c.`, `ii.` gave `iii.`, a dash gave a dash, a plain dot stayed with the keymap, an empty `d.` ended the list.
 - L2 was already built, the scout was wrong: `docPairInput` and `docProseInputHandler` (documents-prose.js, tests/test_prose_autofill.py) pair `(`, `[`, `{`, backtick, `*` and `_` in markdown and text, skip code and fences, and keep `[[` for the link menu. Measured in the editor: `(` gave `()`, `[` inside gave `([])`, backtick gave a pair, `[[` stayed `[[` with the caret at 2, `(` inside a fence stayed single. No code change.
+- L4 built: `Mod-Alt-g` runs `gotoLine` in every document and the palette and shortcut sheet get a prose row, "Go to a line in this text" (`goto-line-text`, documents.js); Ctrl+G is unchanged. Measured: Ctrl+Alt+G opened `.cm-goto-line`, 12 went to line 12, Ctrl+G opened no dialog.
 
 ## Moved from the plans, 2026-11-07 (CHAT_PLAN B6)
 
