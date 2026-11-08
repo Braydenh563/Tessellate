@@ -290,6 +290,12 @@ def invitation(message: str, subject: str, voice: str, seed: str) -> str:
     return _pick(f"{message}|{subject}", f"invite:{seed}", list(INVITES[said])).format(subject=subject)
 
 
+def hello_how(message: str, voice: str, recent: list[str], seed: str) -> str:
+    """A hello that also asks how you are gets that answered (INBOX 1693): the
+    welcome, then this reply; "" when the hello does not ask."""
+    return social("how are you", "smalltalk", "", "", voice, recent, seed) if question_noise.asks_how(message) else ""
+
+
 def greeting_ask(message: str, voice: str, seed: str) -> str:
     """A plain offer to end a welcome that already names the last note (the
     invitation would say it twice, audit 1030 Z51)."""

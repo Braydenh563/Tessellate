@@ -894,15 +894,13 @@ def _welcome(req: _StreamRequest, seed: str, recent: list[str]) -> str:
 def _hello_reply(req: _StreamRequest, seed: str, recent: list[str]) -> str:
     """A hello answered with a welcome built from the day (CHAT_PLAN 1353), or
     "" when the day's numbers cannot be read."""
-    welcome = _welcome(req, seed, recent)
-    if not welcome:
+    if not (welcome := _welcome(req, seed, recent)):
         return ""
     sees = composer_aware.opening(_awareness(req), seed) if req.body.screen else ""
     #: The welcome already names the last note: no second sentence about it.
     invite = "" if "“" in welcome or "](#/notes/" in welcome else _newest_word(req.session)
     asks = composer_smalltalk.invitation(req.question, invite, _composer_voice(), seed) if invite else composer_smalltalk.greeting_ask(req.question, _composer_voice(), seed)
-    #: A hello that also asks how you are gets that answered (INBOX 1693): the welcome, then the reply.
-    how = composer_smalltalk.social("how are you", "smalltalk", "", "", _composer_voice(), [welcome, *recent], seed) if question_noise.asks_how(req.question) else ""
+    how = composer_smalltalk.hello_how(req.question, _composer_voice(), [welcome, *recent], seed)
     return "\n\n".join(p for p in (" ".join(p for p in (welcome, how or asks) if p), sees) if p)
 
 
