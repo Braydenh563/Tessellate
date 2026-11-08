@@ -2943,8 +2943,14 @@ function graphPanelRoom() {
   //: `floor` is the top of what can be seen: the map's box may start under the
   //: app's top bar (a scrolled page), and anything placed there is covered by
   //: it (INBOX 1630, "the graph popup gets covered by the top bar").
-  const head = document.getElementById("top-bar");
-  const floor = head && head.offsetParent !== null ? Math.max(0, head.getBoundingClientRect().bottom - box.top) : 0;
+  //: The graph's own dock lies over the map's top too (the owner, 2026-11-08: "the top of popup
+  //: cards can be cut off by the top bar in the graph on hover"): a hover card 25px under it at
+  //: 1440 and 65px at 390 (graphcard1697.js), so the floor is the lower of the two bars' feet.
+  let floor = 0;
+  for (const bar of [document.getElementById("top-bar"), document.querySelector('.dock[data-dock-name="graph"]')]) {
+    const at = bar && bar.offsetParent !== null ? bar.getBoundingClientRect() : null;
+    if (at && at.top < box.top + box.height / 2) floor = Math.max(floor, at.bottom - box.top);
+  }
   return { box, room: Math.max(0, bottom - box.top), floor };
 }
 

@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Graph: a hover card or node popup near the top stays below the graph's own toolbar, not only the app's top bar (was cut by up to 25 px at 1440 wide and 65 px at 390).
 - Settings: the value-field scan reads once (72 to 311 ms down to 19 to 30 ms at 4x CPU), Personas reads preferences once and draws faces after the rows, job lines read layout only when running, and a scroll inside Settings, a menu or a dialog sets no scroll-edge timer (INBOX 1696 f).
 - Diagram builder: a press on empty space, beside the picture or Escape lets go of the pick in every kind (INBOX 1696 g).
 - Sidebars: a picked row keeps a row of room below it in Settings, the notes sidebar and the manual's contents, which now scroll instead of squeezing (INBOX 1696 e).

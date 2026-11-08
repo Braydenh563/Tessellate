@@ -5235,11 +5235,13 @@ function gcHoverCardFrame(s) {
   const h = card._h || 0;
   const gap = 12;
   //: **Inside what can be seen** (INBOX 1630, "the graph popup gets covered by
-  //: the top bar"): the map's box can start under the app's top bar, so the
-  //: card's floor is the bar's bottom, not the box's top. When centring beside
-  //: the dot would cross that floor the card goes below the dot instead.
-  const bar = document.getElementById("top-bar");
-  const seen = bar && bar.offsetParent !== null ? bar.getBoundingClientRect().bottom - s.canvas.getBoundingClientRect().top : 0;
+  //: the top bar"): the map's box can start under the app's top bar, and the
+  //: graph's dock lies over its top, so the card's floor is the lower of their
+  //: feet (`graphPanelRoom`, the node popup's floor too), not the box's top.
+  //: When centring beside the dot would cross that floor the card goes below
+  //: the dot instead.
+  const { box, floor: under } = graphPanelRoom();
+  const seen = under + box.top - s.canvas.getBoundingClientRect().top;
   const floor = Math.max(gap, seen + gap);
   let left = sx + r + gap;
   if (left + w > s.dims.w - gap) left = sx - r - gap - w;
