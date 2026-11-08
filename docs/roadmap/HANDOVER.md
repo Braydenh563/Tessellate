@@ -35,9 +35,10 @@
 
 ## Morning summary
 
-Away run 2026-11-08 (weekly 34% of the 60% line), branch claude/next-queue-1102, PR 216 (not merged; the owner merges), head pushed past 39f185f2.
+Away run 2026-11-08 (weekly 34% of the 60% line), branch claude/next-queue-1102, PR 216 (not merged; the owner merges), head pushed past 100a9dba.
 
 - Done: desk companion (moods, routines, tail and lower body as layers, 9 tail poses and 8 lower states on both sides), in-app routines, composer rounds 4 and 5 (41 of 91 rows plus counting, compare, title pin, follow-on, a context leak between answers), diagram library and embed fixes, whiteboard and mind map (leave flushes edits, radial with several roots, Present Esc focus), CodeQL 2114.
+- Suite red found at session end (CI runs had been cancelled by each push): 20 of CI's 21 failures fixed (the 21st, test_overlay_x11, was CI's X server not starting; composer groceries total and own "today", undo scan, tray drag harness, Guide desktop asks, CSS lint stems, stretch pace, dash turn); 7 more were xdist workers killed for memory, so run the full suite at -n 3 here.
 - Owner decisions: a happy wag at rest is 6 a second (15 needs the 500 rest ceiling raised); "put it in today's note" as an append to the daily note; open-fit on a phone (1 of 5 topics in view at 390); diagram DD-5, DD-13, R12, R14.
 - Unverified: companion poses on a real desktop and in a real browser; the cold flow warp is 9 to 17 ms at dpi 192 against 8 ms.
 - Next (fresh session): composer-r5 leftovers (composer-r5-1108.md), atlascat D3 to D5, perf P6, P7, P9, the flow warp, audit-1031-ranked rows 19, 21, 22, 23, 36, 37, 42, 55, then BACKLOG smallest first.
