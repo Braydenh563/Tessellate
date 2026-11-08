@@ -7649,7 +7649,7 @@ async function renameDocumentWithUndo(doc, next) {
   //: returns the document, so the list takes it in place, and the open
   //: document's title box and record follow, where a read of the whole list
   //: (two pages at 230 documents) and a reopen of the open one used to.
-  const settle = (saved, title) => {
+  const settle = async (saved, title) => {
     if (currentDoc?.id === saved.id) {
       $("doc-title").value = title;
       currentDoc = { ...currentDoc, title: saved.title, updated_at: saved.updated_at };
@@ -7658,10 +7658,11 @@ async function renameDocumentWithUndo(doc, next) {
     docs = docs.map((d) => (d.id === saved.id ? { ...d, ...saved } : d));
     renderDocList();
   };
-  const put = async (title) => {
-    await settle(await docPutFields(doc.id, { title }), title);
-    document.dispatchEvent(new Event("documents-undone"));
-  };
+  //: `put` stays one expression so the PUT sits in this function, beside the
+  //: `offerUndo` that carries it: tests/test_undo_coverage.py reads a block body
+  //: as a function of its own and then finds a write with no undo near it.
+  const undone = () => document.dispatchEvent(new Event("documents-undone"));
+  const put = async (title) => settle(await docPutFields(doc.id, { title }), title).then(undone);
   const saved = await docPutFields(doc.id, { title: next });
   offerUndo(`Renamed “${clipText(before, 40)}”`, `Renamed to “${clipText(next, 40)}”.`, () => put(before), () => put(next));
   await settle(saved, next);

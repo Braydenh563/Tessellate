@@ -344,20 +344,6 @@ window.addEventListener("scroll", (event) => {
   }
 }, true);
 
-//: **One capture listener for every '?'** (perf audit 1108 P4: Settings' first open added 922 listeners, 202 of them
-//: these). The trigger's press is read here, before anything under it: the same stop as the per-trigger listener had,
-//: since these triggers live inside <label>s often enough that a bare click would toggle the setting they explain.
-document.addEventListener("click", (event) => {
-  for (let el = event.target; el && el !== document; el = el.parentElement) {
-    const entry = wireHelpPopover.triggers.get(el);
-    if (!entry) continue;
-    event.preventDefault();
-    event.stopPropagation();
-    entry.toggle();
-    return;
-  }
-}, true);
-
 function wireHelpPopover(trigger, panel) {
   if (!trigger || !panel || panel.dataset.helpPopover) return;
   panel.dataset.helpPopover = "1";
@@ -443,6 +429,20 @@ function wireHelpPopover(trigger, panel) {
 }
 wireHelpPopover.triggers = new WeakMap();
 window.wireHelpPopover = wireHelpPopover;
+
+//: **One capture listener for every '?'** (perf audit 1108 P4: Settings' first open added 922 listeners, 202 of them
+//: these). The trigger's press is read here, before anything under it: the same stop as the per-trigger listener had,
+//: since these triggers live inside <label>s often enough that a bare click would toggle the setting they explain.
+document.addEventListener("click", (event) => {
+  for (let el = event.target; el && el !== document; el = el.parentElement) {
+    const entry = wireHelpPopover.triggers.get(el);
+    if (!entry) continue;
+    event.preventDefault();
+    event.stopPropagation();
+    entry.toggle();
+    return;
+  }
+}, true);
 
 //: **The accessible card: the title opens it, not the card** (INBOX 433,
 //: WCAG 4.1.2). A Library card was an `<article role="button">` holding its
