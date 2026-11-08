@@ -35,3 +35,16 @@
 - The blush ellipses in `faces._mouth` paint a faint green-tinted ring where they overhang the face edge (masculine
   `content`/`smile`, seen on the mouth sheet); not fixed.
 - Not verified on a real desktop (Windows overlay): frames checked as PNG crops and the targeted pytest only.
+
+## Still failing with these frames (all pass on the merge base with the old frames; targeted run, `-n 3 -p no:randomly`)
+
+- `test_overlay_ride_1670.py`: `test_the_lowest_drawn_row_of_every_resting_frame_is_on_the_work_areas_bottom[feminine]`
+  (walk5 gap -5, bound 4: the feminine walk tail dips 11 px under stand, was 8), `test_no_frame_is_cut_on_a_ride_over_a_seeded_run`
+  (all four: left, right or top cut by 1 to 2 px).
+- `test_overlay_land_1683.py::..._bounded_time[corner-float]` (1.55 s), `test_overlay_seams_1683e.py::..._wraps_like_any_other_step[masculine]`,
+  `test_overlay_size_1107.py` (feet drift 2.5 > 2), `test_overlay_size_review_1107.py` (1798-35+166 > 1920),
+  `test_overlay_tumble_1670.py::test_a_curling_throw_turns_against...` (2.45 > 2.75): all read the frames' margins and
+  the tumble picture; next step: compare `frame.box`, `_dy("stand")` and the pad of the old and new sets (the crop box
+  moved from 263x302 and 263x299 to 262x303 and 263x296) before touching a test.
+- Four lints fail on the merge base itself, not on these files: `test_style_scale::test_no_token_is_used_with_a_dead_fallback`,
+  `test_global_scope_ratchet`, `test_frontend_wake_sources` (avatars.js raf 7 to 8), `test_module_line_caps` (routes_chat.py).
