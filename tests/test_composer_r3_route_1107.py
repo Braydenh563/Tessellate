@@ -106,3 +106,16 @@ def test_r3_1_a_start_asked_of_a_subject_is_not_found_in_another_notes_start(go,
 def test_r3_1_a_start_asked_of_the_note_that_has_one_still_finds_it(go, chat):
     said = go("when does the marathon start", chat)
     assert "14 March" in said and "Marathon" in said, said
+
+
+@pytest.mark.parametrize("chat", [False, True], ids=["ask", "chat"])
+def test_r3_3_how_old_a_person_is_says_so_in_the_route_not_general_knowledge(go, chat):
+    said = go("how old is Sara", chat)
+    assert said.startswith("Your notes do not say how old Sara is."), said
+    assert "general knowledge" not in said, said
+
+
+@pytest.mark.parametrize("chat", [False, True], ids=["ask", "chat"])
+def test_r3_21_a_trip_note_is_offered_as_all_it_has_not_as_proof(go, chat):
+    said = go("did I go to Tokyo", chat)
+    assert "does not say it outright" not in said and "only has" in said and "3 April" in said, said

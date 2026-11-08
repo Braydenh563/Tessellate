@@ -389,7 +389,7 @@ def _not_said(out, views: list, obj, words: list[str], today: date, verb: frozen
         _say_line(out, *near, f"I found nothing in your notes that says so. The closest is {_note_of(near[0], today)}")
     elif words[0].lower() in _TRIP_VERBS and (place := _titled_any(views, obj)):
         #: "have I been to Tokyo" with a Tokyo trip note: the note is the nearest thing, not "nothing" (R3-21, E3).
-        _say_line(out, *place, f"Your {composer_lists._title(place[0])} note does not say it outright, but it has")  # noqa: SLF001
+        _say_line(out, *place, f"I found nothing in your notes that says so. Your {composer_lists._title(place[0])} note only has")  # noqa: SLF001
     else:
         out.lines.append(f"I found nothing in your notes about {thing}.")
 
@@ -969,6 +969,7 @@ def _age_of(out, name: str, named: list, today: date) -> bool:  # noqa: ANN001
     """"How old is Sara": a note that says her age, else that none does, with her birthday when one
     is written (round 3, R3-3: it was a thing "started", "its age")."""
     stems = _stems(name)
+    mentioned = named
     named = [v for v in named if _title_holds(v, stems)]  # her own note, not a gift list that names her
     for view in named:
         for s in view.sentences:
@@ -984,6 +985,11 @@ def _age_of(out, name: str, named: list, today: date) -> bool:  # noqa: ANN001
             composer_lists._cite(out, view, bday, line)  # noqa: SLF001
             return True
     out.lines.append(line)
+    #: The denial is grounded in her note, or the route reads an ungrounded line as a miss and answers
+    #: "general knowledge" over it (round 3 review).
+    for view in (named or mentioned)[:1]:
+        if first := next((x for x in view.sentences if x.kind in ("prose", "item", "task")), None):
+            composer_lists._cite(out, view, first, line)  # noqa: SLF001
     return True
 
 

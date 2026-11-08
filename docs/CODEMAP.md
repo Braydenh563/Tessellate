@@ -2,7 +2,7 @@
 
 Generated 2026-11-08 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7861, frontend ids 2644, CSS sections 522, backend routes 649, backend modules 9016, test files 2157, tests 18213, plan headings 1004, app scripts 28, boot scripts 37, script files 261.
+Counts: frontend functions 7861, frontend ids 2644, CSS sections 522, backend routes 649, backend modules 9016, test files 2157, tests 18215, plan headings 1004, app scripts 28, boot scripts 37, script files 261.
 
 ## Frontend functions (7861)
 
@@ -15027,14 +15027,14 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_ask_date` | src/tessellate/ai/composer_slots.py:744 |
 | `_ask_quantity` | src/tessellate/ai/composer_slots.py:759 |
 | `_ask_temperature` | src/tessellate/ai/composer_slots.py:728 |
-| `_by_words` | src/tessellate/ai/composer_slots.py:1039 |
+| `_by_words` | src/tessellate/ai/composer_slots.py:1045 |
 | `_counted` | src/tessellate/ai/composer_slots.py:157 |
 | `_counted_ask` | src/tessellate/ai/composer_slots.py:141 |
 | `_did` | src/tessellate/ai/composer_slots.py:488 |
 | `_filed_under` | src/tessellate/ai/composer_slots.py:889 |
 | `_first_did` | src/tessellate/ai/composer_slots.py:312 |
 | `_flat` | src/tessellate/ai/composer_slots.py:718 |
-| `_how` | src/tessellate/ai/composer_slots.py:1049 |
+| `_how` | src/tessellate/ai/composer_slots.py:1055 |
 | `_is_done` | src/tessellate/ai/composer_slots.py:546 |
 | `_is_state` | src/tessellate/ai/composer_slots.py:222 |
 | `_is_still` | src/tessellate/ai/composer_slots.py:521 |
@@ -15049,7 +15049,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_note_of` | src/tessellate/ai/composer_slots.py:352 |
 | `_often` | src/tessellate/ai/composer_slots.py:895 |
 | `_often_line` | src/tessellate/ai/composer_slots.py:931 |
-| `_old` | src/tessellate/ai/composer_slots.py:990 |
+| `_old` | src/tessellate/ai/composer_slots.py:996 |
 | `_one_line` | src/tessellate/ai/composer_slots.py:550 |
 | `_only_mentioned` | src/tessellate/ai/composer_slots.py:922 |
 | `_open_everywhere` | src/tessellate/ai/composer_slots.py:244 |
@@ -15086,7 +15086,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_weekday_fits` | src/tessellate/ai/composer_slots.py:831 |
 | `_when_said` | src/tessellate/ai/composer_slots.py:554 |
 | `_yours` | src/tessellate/ai/composer_slots.py:407 |
-| `answer` | src/tessellate/ai/composer_slots.py:1021 |
+| `answer` | src/tessellate/ai/composer_slots.py:1027 |
 | `asks_open` | src/tessellate/ai/composer_slots.py:341 |
 | `asks_state` | src/tessellate/ai/composer_slots.py:259 |
 | `open_doings` | src/tessellate/ai/composer_slots.py:334 |
@@ -24430,7 +24430,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (18213)
+## Tests (18215)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -24870,7 +24870,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_composer_r2_review_1107.py | 6 |
 | tests/test_composer_r2_route_1107.py | 6 |
 | tests/test_composer_r3_1107.py | 36 |
-| tests/test_composer_r3_route_1107.py | 10 |
+| tests/test_composer_r3_route_1107.py | 12 |
 | tests/test_composer_ranker_1029.py | 12 |
 | tests/test_composer_redos_1026.py | 4 |
 | tests/test_composer_regex_linear_1029.py | 3 |
