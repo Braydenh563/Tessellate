@@ -52888,3 +52888,11 @@ Built: U17. Row text: U17 | Spelled numbers and ordinals | `timewords` and `remi
 - **What it does:** `ai/composer_numbers.py` `normalise()` turns number words (zero to ninety-nine, "twenty-five") to digits ahead of the plan and the composer (`composer_intent._planned_text`, `composer.compose`), skipping quoted text, a capitalised word inside a sentence ("Five Guys"), "hundred/thousand/million", and "one" unless a unit or a note follows it. Reuses `timewords._NUMBER_WORDS`. Ordinals are not converted (decision of this build): every reader of "the second note" takes the word, and "2nd" reads as a day of the month to the time rules.
 - **Check:** `tests/test_small_b_1108_u17.py` (no model, fixed clock).
 - **Not verified:** real inference; the model-on path reads the composer's normalised question only through `compose`.
+
+## Moved from the plans, 2026-11-08 (CHAT_PLAN U16)
+
+Built: U16. Row text: U16 | Hypotheticals | None: "what if I move to Lisbon" is shape `translate` (finding 2) | A what-if has no fact to answer from | Kind `hypothetical`: say what the notes hold about the premise's subject (plans, preferences, costs), then "Your notes do not say what would happen." Never a consequence | S | 2
+
+- **What it does:** `ai/composer_small.py` `what_if()` (wired in `composer._early_answer`) answers "what if / suppose / imagine / what would happen if ..." by quoting the sentences of the best note that hold the premise's subject (verbs and fillers dropped, the subject worded as typed), then "Your notes do not say what would happen."; no note holds it: "Your notes hold nothing about Paris, and they do not say what would happen." A consequence is never stated, only quoted. It is no longer read as a translation. Module also carries A22 and A24 (their commits wire the route).
+- **Check:** `tests/test_small_b_1108_u16.py` (no model, fixed clock, plus the route with no model).
+- **Not verified:** model-on: the model still answers a what-if itself (decision 75); no instruction was added to its prompt.

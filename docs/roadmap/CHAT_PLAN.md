@@ -1200,7 +1200,7 @@ how it was read. Time facts below were measured with `entry/timewords.find` and
 | U13 | Lists | `list` shape, `_list_block`, checklist done counts | A list spread across notes; "the third item"; "how many left" | Merge list items from notes in the window, number them, count done and open as a measured line | S | 2 |
 | U14 | Yes or no | `yesno`, "your notes say", contrary sentence check | Negated and hypothetical facts are not told apart from asserted ones | Fact `mode` (asserted, negated, hypothetical, conditional, question, quoted) decides which sentences may answer | M | 1 |
 | U15 | Why and how | `explain` shape, `because` cue in `_cue` | Why and how are one shape; steps not kept in order | Why: sentences with because, so that, since, due to, reason, plus the sentence before; how: numbered or ordered items and imperatives in note order | S | 2 |
-| U16 | Hypotheticals | None: "what if I move to Lisbon" is shape `translate` (finding 2) | A what-if has no fact to answer from | Kind `hypothetical`: say what the notes hold about the premise's subject (plans, preferences, costs), then "Your notes do not say what would happen." Never a consequence | S | 2 |
+| U16 | Hypotheticals | Built. Moved to HISTORY.md ("Moved from the plans, 2026-11-08 (CHAT_PLAN U16)"). | | | | |
 | U17 | Spelled numbers and ordinals | Built. Moved to HISTORY.md ("Moved from the plans, 2026-11-08 (CHAT_PLAN U17)"). | | | | |
 | U18 | Out-of-domain | `_nothing` | No class, no eval group (Snips None) | A measured out-of-domain group in the noisy set: weather, scores, trivia; the plain no-answer, the closest note if any, a capability line with one tappable example | S | 2 and 10 |
 
