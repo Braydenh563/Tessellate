@@ -6,6 +6,9 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Desk companion (deskfix 9): the carried pointer is read for a shake at most every 10 ms (a 1000 Hz mouse cost 323 us a pointer event, now 70 us mean); the roam runner's scan-rate test seeds the engine (an unseeded trip that warps wants no scan, 1 run in 20).
+- Desk companion (deskfix 7, 8): a carried shake is read in 12 directions over points averaged per 15 ms (above 48 samples), with the motion across the axis at most 1.5 times the motion along it and a 22 px stroke, so vertical and diagonal shakes count and 0.5 to 1 px pointer jitter at 60 to 1000 Hz no longer hides a 25 px shake; drags with a wobble or jitter still do not.
+- Desk companion (deskfix 6): the shy and love faces of a pat or rub keep that pat's or rub's cooldown, so a third pet right after a pat no longer skips the 3 s wait.
 - Companion (review 1108): a click on the nose is a boop on top of the click reaction, not instead of it: the wake, pout, spin or wave still plays, then the boop face and sneeze layer on, still once per 3 s.
 - Diagram embed (review 1108): a click on an embedded diagram picture is click-only, so it never stops a press reaching the Live editor; the reason is in the comment and a test pins it.
 - Diagram window (review 1108): Ctrl+Z in a text field of the diagram window (the title, a rename) is the browser's text undo again; only the source box and the blocks step the diagram's history, and the comment now says so.

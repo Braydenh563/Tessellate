@@ -654,6 +654,7 @@ class Engine:
         self.home_arrivals = 0
         self.click_now: str | None = None
         self.trail: list[tuple[float, int, int]] = []
+        self.shake_read_at = -1e9  # when the carried pointer was last read for a shake
         self.woke_at = -1e9  # when it last woke from sleep (a pet soon after is shy)
         self.pre_press = "stand"
         self.bonk_until = 0.0
@@ -3837,12 +3838,20 @@ class Engine:
         if self.carrying:
             self.trail.append((self.now, px, py))
             self._trim_trail()
-            if not self.shaken and not self.reduced and extras.shake_flips(self.trail, self.now, self._scale()) >= extras.SHAKE_FLIPS:
+            if self._shake_due() and extras.shake_flips(self.trail, self.now, self._scale()) >= extras.SHAKE_FLIPS:
                 self.shaken = True
                 self._turn_over(True)
             self.x = px - self.grab[0] - self._flip_dx(self._held_frame(), self.facing < 0)
             self.y = py - self.grab[1] - self._dy("held")
             self._keep_on_screen()
+
+    def _shake_due(self) -> bool:
+        """Whether to read the shake now: not once shaken or when reduced, and at most every `SHAKE_EVERY` s (a 1000 Hz
+        mouse would otherwise read it a thousand times a second, about 0.3 ms each)."""
+        if self.shaken or self.reduced or self.now - self.shake_read_at < extras.SHAKE_EVERY:
+            return False
+        self.shake_read_at = self.now
+        return True
 
     def _trim_trail(self) -> None:
         """Keep the carried pointer's last `SHAKE_WINDOW` s, whatever the pointer's rate (every raw move arrives), capped
