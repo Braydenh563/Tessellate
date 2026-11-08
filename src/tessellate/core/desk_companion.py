@@ -31,6 +31,7 @@ from __future__ import annotations
 
 import json
 import logging
+import math
 import re
 import sys
 import threading
@@ -105,6 +106,9 @@ FIGURE_READS = 4
 OVERLAY_TRIES = 3
 #: ...and, in a sync that is due, no sooner than this many seconds after the failure.
 OVERLAY_RETRY_GAP = 20.0
+#: A runner that died is brought back where it stood only this soon after (its retry waits `OVERLAY_RETRY_GAP` at
+#: least); later, or a second start, uses the saved place, which an arrival home keeps current.
+LAST_PLACE_KEEP = 3 * OVERLAY_RETRY_GAP
 FIGURE_GAP = 0.4
 NOTE_DRAWING = "Summoning your companion to the desk. Atlas keeps you company until it arrives."
 NOTE_FAILED = "Your companion could not be summoned to the desk yet, so Atlas stays. It will try again."
@@ -1007,10 +1011,11 @@ class DeskCompanion:
         self._pet_box: tuple[int, int, int, int] | None = None
         self._away_watch: threading.Thread | None = None
         self.panel_box: tuple[tuple[int, int, int, int], int] | None = None
-        #: Where the last runner's figure stood and what it was doing (`Engine.carry`), read as it stopped: a runner
-        #: that died mid-trip came back at the place saved at the last drop, the old spot (INBOX 1696 i).
+        #: Where a runner that died stood, what it was doing (`Engine.carry`) and when: one that died mid-trip came back
+        #: at the place saved at the last drop, the old spot (INBOX 1696 i). Used once, by the next start only.
         self._last_place: tuple[int, int] | None = None
         self._last_carry: dict[str, Any] | None = None
+        self._last_at = -math.inf
 
     # --- where it is -----------------------------------------------------------
 
@@ -1354,17 +1359,19 @@ class DeskCompanion:
         """Where the running figure is, so a restart does not send it home; with no runner, where the last one stood
         when it stopped (a death mid-trip), before the saved place."""
         if self.runner is None:
-            return self._last_place
+            place, self._last_place = self._last_place, None
+            return place if self._now() - self._last_at <= LAST_PLACE_KEEP else None
         engine = getattr(self.runner, "engine", None)
         x, y = getattr(engine, "x", None), getattr(engine, "y", None)
-        if isinstance(x, (int, float)) and isinstance(y, (int, float)):
+        if isinstance(x, (int, float)) and isinstance(y, (int, float)) and math.isfinite(x) and math.isfinite(y):
             return int(x), int(y)
         return None
 
     def _runner_carry(self) -> dict[str, Any] | None:
         """What the running figure was doing (`Engine.carry`), for the next runner; the last one's with no runner."""
         if self.runner is None:
-            return self._last_carry
+            carried, self._last_carry = self._last_carry, None
+            return carried if self._now() - self._last_at <= LAST_PLACE_KEEP else None
         carry = getattr(getattr(self.runner, "engine", None), "carry", None)
         try:
             found = carry() if callable(carry) else None
@@ -1533,9 +1540,13 @@ class DeskCompanion:
             return answer if answer in ("locked", "gone") else "error"
         return "ok" if self._restart_shown("companion choice") else "error"
 
-    def _stop_runner(self) -> None:
-        if self.runner is not None:
-            self._last_place, self._last_carry = self._runner_place(), self._runner_carry()
+    def _stop_runner(self, died: bool = False) -> None:
+        """The runner stopped. Only a death is remembered for the next start: a clean stop (off, a restart, closing)
+        leaves nothing to replay. A death before the engine was ready keeps the last good place."""
+        if died and self.runner is not None:
+            place, carried = self._runner_place(), self._runner_carry()
+            if place is not None:
+                self._last_place, self._last_carry, self._last_at = place, carried, self._now()
         runner, self.runner = self.runner, None
         if runner is not None:
             try:
@@ -1683,7 +1694,7 @@ class DeskCompanion:
             if self.closing or self.runner is None:
                 return
             logger.warning("desk companion: the overlay stopped, using the card window instead")
-            self._stop_runner()
+            self._stop_runner(died=True)
             self.overlay_failed = True
             self.overlay_tries += 1
             self._overlay_retry_at = self._now() + OVERLAY_RETRY_GAP

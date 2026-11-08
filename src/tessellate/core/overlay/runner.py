@@ -138,6 +138,8 @@ class OverlayRunner:
         #: A trip arrived where it lives now (`Engine.home_arrivals`): passed on so the place is saved, as a drop is.
         self.on_place: Callable[[int, int], Any] | None = None
         self._arrivals_seen = 0
+        #: Drops handed on so far: an arrival's save is skipped once a drop came after it.
+        self._drops = 0
         #: The last runner's `Engine.carry`, set by the coordinator before `start` on a restart: taken up in `_ready`.
         self.carried: dict[str, Any] | None = None
         self.scale = sizing.clamp(scale)
@@ -692,12 +694,14 @@ class OverlayRunner:
             rect = self.drawn_rect(out.x, out.y, out.frame, out.flip)
             self._hand_off("overlay-click", lambda: self.on_click and self.on_click(out.click, rect, self.dpi))
         if out.settled:
+            self._drops += 1
             home = engine.home()  # where it stands, not where its window is drawn (feet are planted)
             self._hand_off("overlay-settle", lambda: self.on_settle and self.on_settle(*home))
         if engine.home_arrivals != self._arrivals_seen:
             self._arrivals_seen = engine.home_arrivals
-            place = engine.home()
-            self._hand_off("overlay-place", lambda: self.on_place and self.on_place(*place))
+            place, drops = engine.home(), self._drops
+            # the hand-offs run on workers in any order: an arrival saved after a later drop would undo the drop's place
+            self._hand_off("overlay-place", lambda: self.on_place and self._drops == drops and not out.settled and self.on_place(*place))
         if out.card is not None:
             token = out.card
             self._hand_off("overlay-card", lambda: self.on_card and self.on_card(token))

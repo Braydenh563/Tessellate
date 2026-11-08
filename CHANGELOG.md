@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Desk companion (review of the 1696 i fix): only a runner that died is brought back where it stood, once and within a minute; a clean stop and a later start use the saved place, and an arrival's save never undoes a later drop.
 - Desk companion (INBOX 1696 i): "Go somewhere else" no longer poofs back halfway. A caret near the taskbar line sent a trip to the nearest edge, the one it set off from (4 of 5 seeds on a 2560 px screen at 200%); it now steps aside toward its goal or finishes the trip there. A runner restart hands the trip and the chosen home to the new figure, a runner that died comes back where it stood, not at the last drop, and a trip that arrives home saves the place.
 - Settings lag (laglist 1108 item 1): the section index ("On this page") reads which group heads are shown from the tree (`hidden`, the `hidden` class, closed `details`) instead of `getClientRects`, which settled the whole pane's pending style: at 4x CPU the first heads read on Help went from 70, 82, 103 ms to 0.7, 0.2, 0.1 ms and the first index build from 80, 94, 111 ms to 2.3, 0.5, 2.1 ms. The heads listed are the same on all 21 sections at 1440 and 390.
 - Documents editor (DOCUMENTS_PLAN 23 L5): typing `#` and a letter in a markdown document offers the tags you have used (the list the tag fields read, most used first); Enter or Tab takes one. It stays quiet in headings, code, fences and plain text.

@@ -218,3 +218,106 @@ def test_a_trip_that_arrives_saves_the_place_without_moving_the_panel(carrying, 
     corner = carrying.corner
     runner.on_place(681, 1120)
     assert prefs[dc.OVERLAY_POS_PREF] == [681, 1120] and carrying.corner == corner
+
+
+# --- review of bde97408: nothing stale is replayed, nothing half-read is used ---------------------------------------
+
+
+def test_a_clean_stop_then_a_start_uses_the_saved_place_not_the_stopped_runner(carrying, prefs):  # noqa: F811
+    prefs[dc.OVERLAY_POS_PREF] = [681, 1120]
+    carrying.set_main_hidden(True)
+    first = FakeRunner.started[0]
+    first.engine = SimpleNamespace(x=1290, y=1120, carry=lambda: dict(TRIP))
+    carrying.close()  # a clean stop (turned off, the app quitting): nothing to come back to
+    carrying.closing = False
+    carrying.set_main_hidden(True)
+    again = FakeRunner.started[-1]
+    assert again is not first and again.home == (681, 1120) and again.carried is None
+
+
+def test_a_death_is_replayed_once_and_not_when_old(carrying, prefs):  # noqa: F811
+    prefs[dc.OVERLAY_POS_PREF] = [681, 1120]
+    clock = [100.0]
+    carrying._now = lambda: clock[0]  # noqa: SLF001
+    carrying.set_main_hidden(True)
+    first = FakeRunner.started[0]
+    first.engine = SimpleNamespace(x=1290, y=1120, carry=lambda: dict(TRIP))
+    first.on_died()
+    clock[0] += dc.OVERLAY_RETRY_GAP + 1  # the retry comes no sooner than the gap
+    carrying.set_main_hidden(False)
+    carrying.set_main_hidden(True)
+    second = FakeRunner.started[-1]
+    assert second is not first and second.home == (1290, 1120) and second.carried == TRIP
+    carrying._stop_runner()  # noqa: SLF001 - a clean stop and a second start: the death was used up
+    carrying.set_main_hidden(True)
+    third = FakeRunner.started[-1]
+    assert third is not second and third.home == (681, 1120) and third.carried is None
+    third.engine = SimpleNamespace(x=1290, y=1120, carry=lambda: dict(TRIP))
+    third.on_died()
+    clock[0] += dc.LAST_PLACE_KEEP + 1  # long after: the saved place, not an old trip
+    carrying.set_main_hidden(False)
+    carrying.set_main_hidden(True)
+    fourth = FakeRunner.started[-1]
+    assert fourth is not third and fourth.home == (681, 1120) and fourth.carried is None
+
+
+def test_a_death_before_the_engine_was_ready_keeps_the_last_good_place(carrying):  # noqa: F811
+    carrying.set_main_hidden(True)
+    first = FakeRunner.started[0]
+    first.engine = SimpleNamespace(x=1290, y=1120, carry=lambda: dict(TRIP))
+    first.on_died()
+    assert carrying._last_place == (1290, 1120)  # noqa: SLF001
+    carrying.runner = Carrying(look="masculine", home=None, on_click=None, on_settle=None)  # no engine yet
+    carrying._overlay_died()  # noqa: SLF001
+    assert carrying._last_place == (1290, 1120) and carrying._last_carry == TRIP  # noqa: SLF001
+
+
+def test_a_place_that_is_not_a_number_is_no_place(carrying):  # noqa: F811
+    carrying.set_main_hidden(True)
+    FakeRunner.started[0].engine = SimpleNamespace(x=float("nan"), y=1120)
+    assert carrying._runner_place() is None  # noqa: SLF001
+
+
+def test_an_off_screen_place_and_goal_land_on_the_monitor() -> None:
+    e = _engine(1, home=(9000, 9000))
+    assert AREA[0] <= e.x <= AREA[2] - e.size[0] and AREA[1] <= e.y <= AREA[3] - e.size[1]
+    e.take({"home_x": 9000.0, "homed_for": 1.0, "goal": -5000.0, "then": "settle"}, 1.0)
+    assert e.home_x == AREA[2] - e.size[0]
+    goal = e.goal or (e.pending[0] if e.pending else e.warp["dst"] if e.warp else None)
+    assert goal is not None and AREA[0] <= goal[0] <= AREA[2] - e.size[0] and AREA[1] <= goal[1] <= AREA[3] - e.size[1]
+
+
+def test_carry_reads_the_warp_once() -> None:
+    class Vanishing(dict):
+        """The overlay thread finishes the warp (clears it) right after the first read."""
+
+        def __init__(self, e: Engine, **kw: object) -> None:
+            super().__init__(**kw)
+            self.e = e
+
+        def __getitem__(self, key: str) -> object:
+            value = super().__getitem__(key)
+            self.e.warp = None
+            return value
+
+    e = _engine(1)
+    e.state, e.then = "warp", "settle"
+    e.warp = Vanishing(e, dst=(300.0, 1000.0))
+    assert e.carry()["goal"] == 300.0
+
+
+def test_a_late_arrival_never_overwrites_a_drop() -> None:
+    from tessellate.core.overlay import runner as runner_mod
+
+    later: list = []
+    saved: list = []
+    r = runner_mod.OverlayRunner(w=object(), backend=SimpleNamespace(windows=lambda w: []), dispatch=lambda name, fn: later.append(fn))
+    r.on_settle = lambda x, y: saved.append(("drop", x, y))
+    r.on_place = lambda x, y: saved.append(("place", x, y))
+    engine = SimpleNamespace(home_arrivals=1, home=lambda: (300, 1000))
+    r._hand_offs(SimpleNamespace(click=None, settled=False, card=None), engine)  # noqa: SLF001 - a trip arrives
+    engine.home = lambda: (900, 1000)
+    r._hand_offs(SimpleNamespace(click=None, settled=True, card=None), engine)  # noqa: SLF001 - then a drop
+    for fn in later:  # the hand-offs run later, on workers
+        fn()
+    assert saved == [("drop", 900, 1000)]

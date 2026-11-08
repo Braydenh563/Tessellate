@@ -1889,11 +1889,13 @@ class Engine:
     def carry(self) -> dict[str, Any]:
         """What a new engine takes up from this one when the runner restarts (frames drawn, a look or motion answer): the
         home, how long ago the menu chose it, and the goal of the menu's trip or a trip home still under way."""
-        goal, then = (self.goal, self.then) if self.goal is not None else self.pending or (None, "")
-        if self.state == "warp" and self.warp is not None:
-            goal, then = self.warp["dst"], self.then
-        if self.edge_plan is not None:
-            goal, then = self.edge_plan
+        # read once each: this runs on the coordinator's thread while the overlay's own may finish a warp or a leg
+        walking, pending, warp, plan, then = self.goal, self.pending, self.warp, self.edge_plan, self.then
+        goal, then = (walking, then) if walking is not None else pending or (None, "")
+        if self.state == "warp" and warp is not None:
+            goal, then = warp["dst"], self.then
+        if plan is not None:
+            goal, then = plan
         live = goal is not None and then in RESUMED_THENS
         return {"home_x": self.home_x, "homed_for": self.now - self.homed_at, "goal": goal[0] if live else None, "then": then if live else ""}
 
@@ -1905,14 +1907,18 @@ class Engine:
         m = self.current_monitor()
         lo, hi = m.area[0], m.area[2] - self.size[0]
         home = carried.get("home_x")
-        if isinstance(home, (int, float)):
+        if isinstance(home, (int, float)) and math.isfinite(home):
             self.home_x = min(max(float(home), lo), hi)
-        self.homed_at = now - float(carried.get("homed_for", math.inf))
+        homed = float(carried.get("homed_for", math.inf))
+        self.homed_at = -math.inf if math.isnan(homed) else now - homed
         self.relocate_at = None
         self._maybe_relocate(now)
         goal = carried.get("goal")
-        if isinstance(goal, (int, float)) and not self.reduced and self.roam and self.state == "stand" and abs(goal - self.x) >= 12 * self._scale():
-            self._go((min(max(float(goal), lo), hi), self.ground_y(m)), str(carried.get("then") or "home"), now)
+        if not isinstance(goal, (int, float)) or not math.isfinite(goal) or self.reduced or not self.roam or self.state != "stand":
+            return
+        gx = min(max(float(goal), lo), hi)  # on this monitor, on its floor: a screen may have gone with the old runner
+        if abs(gx - self.x) >= 12 * self._scale():
+            self._go((gx, self.ground_y(m)), str(carried.get("then") or "home"), now)
 
     def _sit_on_window(self, now: float) -> bool:
         """Climb to a window's top edge the last scan found. False when there is none to sit on."""
