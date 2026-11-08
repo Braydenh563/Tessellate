@@ -81,6 +81,32 @@ def test_ctrl_z_from_a_button_in_the_diagram_window_stops_before_the_apps_undo()
     assert _embed_key("field") == ["prevent", "stop", "flush", "undo"]
 
 
+def _join(first: str, steps: str):
+    from tests.test_diagram_builder import _script
+
+    label = f"|{first}|" if first else ""
+    return _script(f"flowchart TD\n  D{{Ready?}}\n  Y[Ship]\n  N[Fix]\n  D -->{label} Y\n", steps)["result"]
+
+
+@needs_node
+@pytest.mark.parametrize("first,said", [("yes", "no"), ("Yes!", "no"), (" YES? ", "no"), ("maybe", ""), ("", ""), ("not yes", "")])
+def test_the_automatic_no_is_only_for_a_new_second_branch_after_a_yes(first, said):
+    """MED: the first label folds (case, punctuation) to yes; any other first word leaves the new arrow to be asked."""
+    assert _join(first, "return o.join(m, 'D', 'N').label;") == said
+
+
+@needs_node
+def test_a_repointed_or_suggested_arrow_keeps_exactly_the_words_it_was_given():
+    """MED: reconnect (diagram-edge-pick.js) and a template's or suggestion's edge (diagram-suggest.js) pass `label`, even empty."""
+    assert _join("yes", "return o.join(m, 'D', 'N', { label: '' }).label;") == ""
+    assert _join("yes", "return o.join(m, 'D', 'N', { label: 'later' }).label;") == "later"
+
+
+@needs_node
+def test_a_third_arrow_out_of_a_decision_is_not_given_no():
+    assert _join("yes", "o.join(m, 'D', 'N'); const z = o.addNode(m, { text: 'Skip' }); return o.join(m, 'D', z).label;") == ""
+
+
 @needs_node
 def test_keep_on_the_tall_chart_offer_is_remembered_per_diagram_not_per_shared_preview_host():
     """MED: every diagram document draws into the one #doc-preview, so a host key turned the offer off for all of them."""

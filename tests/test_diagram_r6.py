@@ -48,7 +48,9 @@ def test_r6_2_a_node_in_the_picture_is_not_text_to_select_and_a_move_redraws_the
     assert got["result"] == ["B", "A"] and got["src"].index("B[") < got["src"].index("A[")
 
 
-def test_r6_3_a_second_arrow_out_of_a_decision_asks_for_its_words():
+def test_r6_3_a_second_arrow_next_to_a_yes_is_already_labelled_no_and_the_other_arrows_still_ask():
+    # Renamed in review 1108: the old name said "asks for its words" while the body asserts the second branch is NOT asked.
+    # Its stated intent (a decision's branches get words) moved with dgmfix2; the asserts below are unchanged.
     src = "flowchart TD\n  D{Ready?}\n  Y[Ship]\n  N[Fix]\n  D -->|yes| Y\n"
     # dgmfix2: a second branch next to a "yes" now arrives already labelled "no", so it no longer needs asking.
     got = _script(src, "const e = o.join(m, 'D', 'N'); return [e.label, o.needsLabel(m, e), o.needsLabel(m, m.edges[0])];")
