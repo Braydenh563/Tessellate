@@ -2036,7 +2036,8 @@ def _blocking_failure(line: str) -> None:
     could say which package or which step had failed."""
     _logger.warning("%s", line)
     if sys.stderr is not None:
-        print(line, file=sys.stderr, flush=True)
+        sys.stderr.write(line + "\n")
+        sys.stderr.flush()
 
 
 def download_ready(extra_id: str) -> Path | None:

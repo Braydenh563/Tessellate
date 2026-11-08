@@ -21949,7 +21949,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `cancel` | src/tessellate/core/extras.py:1146 |
 | `current` | src/tessellate/core/extras.py:1142 |
 | `download_mb` | src/tessellate/core/extras.py:777 |
-| `download_ready` | src/tessellate/core/extras.py:2042 |
+| `download_ready` | src/tessellate/core/extras.py:2043 |
 | `find_system_python` | src/tessellate/core/extras.py:132 |
 | `footprint` | src/tessellate/core/extras.py:1027 |
 | `frozen_extras_dir` | src/tessellate/core/extras.py:222 |
