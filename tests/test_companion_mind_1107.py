@@ -206,12 +206,14 @@ def test_the_hour_summary_numbers() -> None:
     # Intent moved (INBOX 1692, 00:50Z): travel is now seen (blink, cloud and bubble rides of 1.5 to 3.4 s), which takes a
     # little of the hour and moves the seeded draws; four seeds swung 24 to 37 acts each, so the bar reads eight seeds
     # (the base had 17 chains and 271 acts over them, this 11 and 264): 30 acts and more than one chain a seed-hour.
+    # Intent moved (atlascat 1108 A3): acts built on both sides take the catalogue's longer lengths (a nap 20 to 240 s, a read 25 to 55 s),
+    # so an hour holds fewer, longer acts. The bar sums eight seed-hours (15 chains and 222 acts measured, about 28 acts a seed-hour): 200 acts.
     chains = acts = 0
     for seed in range(1, 9):
         e, names = hour_of_life(seed)
         chains += e.mind.chains_done
         acts += len(names)
-    assert chains >= 10 and acts >= 240
+    assert chains >= 10 and acts >= 200
 
 
 def test_an_overdue_trip_is_chosen_more_often() -> None:

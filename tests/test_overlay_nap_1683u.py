@@ -68,6 +68,20 @@ def test_its_own_long_nap_ends_with_a_stretch() -> None:
     assert ("act", "stretch") in seen, seen
 
 
+@pytest.mark.parametrize("seed", [1, 2, 3, 5, 7, 10, 11])
+def test_a_nap_asked_for_right_after_the_first_update_is_taken(seed: int) -> None:
+    # review of atlascat-1108: at seed 5 the first update sets off for a spell's spot (state "warp") and the command was dropped
+    e, _ = make("masculine", "walk", seed)
+    t = 100.0
+    e.update(t)
+    assert e.command("nap", t)
+    seen = set()
+    for _ in range(int(60 / 0.25)):
+        t = _run(e, t, 0.25)
+        seen.add(e.state)
+    assert "sleep" in seen, (seed, seen)
+
+
 @pytest.mark.parametrize("how", ["poke", "wake", "wave"])
 def test_a_poke_and_a_command_wake_a_nap(how: str) -> None:
     e, _ = make("masculine", "walk", 6)
