@@ -250,8 +250,9 @@ def _private_hold(session: Session, *tags: str) -> bool:
     if vault.key() is not None:
         return False
     wanted = set(tags)
-    rows = session.scalars(select(Entry).where(Entry.is_private == True))  # noqa: E712
-    return any(wanted.intersection(manager.entry_tags(row)) for row in rows)
+    #: Tags only: a private note's body is never loaded just to read them.
+    rows = session.scalars(select(Entry.tags).where(Entry.is_private == True))  # noqa: E712
+    return any(wanted.intersection(manager.tags_from_json(raw)) for raw in rows)
 
 
 def _tag_refusal(session: Session, old: str, new: str) -> str | None:

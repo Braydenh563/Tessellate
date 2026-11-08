@@ -8,6 +8,7 @@ import json
 from datetime import datetime, timedelta
 
 import pytest
+from sqlalchemy import event
 
 from tessellate.ai import object_acts
 from tessellate.core.database import Entry
@@ -68,3 +69,28 @@ def test_an_accented_word_is_still_found_beyond_ascii_case_folding(session):
     session.add(note)
     session.commit()
     assert [row.id for row in object_acts._binned(session, {"about": "équipe"})] == [note.id]
+
+
+def test_the_private_hold_reads_the_tags_column_only(session, monkeypatch):
+    from tessellate.core import vault
+
+    monkeypatch.setattr(vault, "key", lambda: None)
+    session.add(Entry(content="# Secret body", is_private=True, tags=json.dumps(["gym"])))
+    session.add(Entry(content="# Open", tags=json.dumps(["gym"])))
+    session.commit()
+    seen: list[str] = []
+
+    def spy(conn, cursor, statement, *rest):
+        seen.append(statement)
+
+    engine = session.get_bind()
+    event.listen(engine, "before_cursor_execute", spy)
+    try:
+        assert object_acts._private_hold(session, "gym") is True
+        assert object_acts._private_hold(session, "other") is False
+    finally:
+        event.remove(engine, "before_cursor_execute", spy)
+    selects = [s for s in seen if s.lstrip().upper().startswith("SELECT") and "is_private" in s.lower()]
+    assert selects, seen
+    for statement in selects:
+        assert "content" not in statement.lower().split(" from ")[0], statement
