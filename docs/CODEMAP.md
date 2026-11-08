@@ -2,7 +2,7 @@
 
 Generated 2026-11-08 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7917, frontend ids 2652, CSS sections 522, backend routes 649, backend modules 9214, test files 2254, tests 18937, plan headings 1004, app scripts 28, boot scripts 37, script files 263.
+Counts: frontend functions 7917, frontend ids 2652, CSS sections 522, backend routes 649, backend modules 9215, test files 2254, tests 18939, plan headings 1005, app scripts 28, boot scripts 37, script files 263.
 
 ## Frontend functions (7917)
 
@@ -13154,7 +13154,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:164 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (9214)
+## Backend modules (9215)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -14547,35 +14547,35 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `nth` | src/tessellate/ai/composer_follow.py:140 |
 | `why` | src/tessellate/ai/composer_follow.py:161 |
 
-### src/tessellate/ai/composer_frame.py (51)
+### src/tessellate/ai/composer_frame.py (52)
 
 | Name | File:line |
 |---|---|
 | `Group` | src/tessellate/ai/composer_frame.py:48 |
-| `_base` | src/tessellate/ai/composer_frame.py:644 |
-| `_by_link` | src/tessellate/ai/composer_frame.py:628 |
-| `_by_meaning` | src/tessellate/ai/composer_frame.py:614 |
-| `_by_word` | src/tessellate/ai/composer_frame.py:621 |
+| `_base` | src/tessellate/ai/composer_frame.py:655 |
+| `_by_link` | src/tessellate/ai/composer_frame.py:639 |
+| `_by_meaning` | src/tessellate/ai/composer_frame.py:625 |
+| `_by_word` | src/tessellate/ai/composer_frame.py:632 |
 | `_clause_end` | src/tessellate/ai/composer_frame.py:323 |
 | `_components` | src/tessellate/ai/composer_frame.py:86 |
-| `_first_line` | src/tessellate/ai/composer_frame.py:474 |
-| `_flat_quote` | src/tessellate/ai/composer_frame.py:561 |
-| `_group_clause` | src/tessellate/ai/composer_frame.py:531 |
+| `_first_line` | src/tessellate/ai/composer_frame.py:485 |
+| `_flat_quote` | src/tessellate/ai/composer_frame.py:572 |
+| `_group_clause` | src/tessellate/ai/composer_frame.py:542 |
 | `_joined` | src/tessellate/ai/composer_frame.py:115 |
-| `_link_said` | src/tessellate/ai/composer_frame.py:503 |
+| `_link_said` | src/tessellate/ai/composer_frame.py:514 |
 | `_links` | src/tessellate/ai/composer_frame.py:80 |
 | `_list_item` | src/tessellate/ai/composer_frame.py:251 |
 | `_lower` | src/tessellate/ai/composer_frame.py:213 |
 | `_marked` | src/tessellate/ai/composer_frame.py:268 |
-| `_names` | src/tessellate/ai/composer_frame.py:486 |
+| `_names` | src/tessellate/ai/composer_frame.py:497 |
 | `_opens_section` | src/tessellate/ai/composer_frame.py:260 |
 | `_plain` | src/tessellate/ai/composer_frame.py:247 |
 | `_plain_lower` | src/tessellate/ai/composer_frame.py:221 |
-| `_relation` | src/tessellate/ai/composer_frame.py:654 |
-| `_said_line` | src/tessellate/ai/composer_frame.py:414 |
-| `_sayer` | src/tessellate/ai/composer_frame.py:635 |
+| `_relation` | src/tessellate/ai/composer_frame.py:665 |
+| `_said_line` | src/tessellate/ai/composer_frame.py:425 |
+| `_sayer` | src/tessellate/ai/composer_frame.py:646 |
 | `_score` | src/tessellate/ai/composer_frame.py:72 |
-| `_shared_line` | src/tessellate/ai/composer_frame.py:515 |
+| `_shared_line` | src/tessellate/ai/composer_frame.py:526 |
 | `_tag_list` | src/tessellate/ai/composer_frame.py:64 |
 | `_tag_pairs` | src/tessellate/ai/composer_frame.py:103 |
 | `_tags` | src/tessellate/ai/composer_frame.py:68 |
@@ -14583,25 +14583,26 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_titled` | src/tessellate/ai/composer_frame.py:308 |
 | `bind_lower` | src/tessellate/ai/composer_frame.py:205 |
 | `clipped_words` | src/tessellate/ai/composer_frame.py:336 |
-| `echoed` | src/tessellate/ai/composer_frame.py:546 |
-| `group_line` | src/tessellate/ai/composer_frame.py:565 |
+| `echoed` | src/tessellate/ai/composer_frame.py:557 |
+| `group_line` | src/tessellate/ai/composer_frame.py:576 |
 | `groups` | src/tessellate/ai/composer_frame.py:149 |
-| `lead_line` | src/tessellate/ai/composer_frame.py:594 |
-| `lower_name` | src/tessellate/ai/composer_frame.py:399 |
-| `name_of` | src/tessellate/ai/composer_frame.py:347 |
-| `note_label` | src/tessellate/ai/composer_frame.py:386 |
-| `note_title` | src/tessellate/ai/composer_frame.py:376 |
+| `lead_line` | src/tessellate/ai/composer_frame.py:605 |
+| `lower_name` | src/tessellate/ai/composer_frame.py:410 |
+| `name_of` | src/tessellate/ai/composer_frame.py:358 |
+| `note_label` | src/tessellate/ai/composer_frame.py:397 |
+| `note_title` | src/tessellate/ai/composer_frame.py:387 |
 | `note_words` | src/tessellate/ai/composer_frame.py:190 |
-| `own_title` | src/tessellate/ai/composer_frame.py:420 |
+| `own_title` | src/tessellate/ai/composer_frame.py:431 |
 | `plain_snippet` | src/tessellate/ai/composer_frame.py:171 |
-| `reason_said` | src/tessellate/ai/composer_frame.py:497 |
-| `reasons` | src/tessellate/ai/composer_frame.py:667 |
-| `short_name` | src/tessellate/ai/composer_frame.py:463 |
+| `reason_said` | src/tessellate/ai/composer_frame.py:508 |
+| `reasons` | src/tessellate/ai/composer_frame.py:678 |
+| `short_name` | src/tessellate/ai/composer_frame.py:474 |
 | `strip_end_emoticon` | src/tessellate/ai/composer_frame.py:241 |
 | `themes` | src/tessellate/ai/composer_frame.py:130 |
-| `thread_name` | src/tessellate/ai/composer_frame.py:584 |
+| `thread_name` | src/tessellate/ai/composer_frame.py:595 |
 | `title_line` | src/tessellate/ai/composer_frame.py:300 |
-| `topic_words` | src/tessellate/ai/composer_frame.py:601 |
+| `topic_words` | src/tessellate/ai/composer_frame.py:612 |
+| `without_own_day` | src/tessellate/ai/composer_frame.py:352 |
 
 ### src/tessellate/ai/composer_help.py (27)
 
@@ -14792,95 +14793,95 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | Name | File:line |
 |---|---|
 | `Item` | src/tessellate/ai/composer_money.py:99 |
-| `_Diff` | src/tessellate/ai/composer_money.py:1032 |
-| `_Measure` | src/tessellate/ai/composer_money.py:704 |
-| `_Target` | src/tessellate/ai/composer_money.py:884 |
-| `_Win` | src/tessellate/ai/composer_money.py:174 |
-| `_about` | src/tessellate/ai/composer_money.py:269 |
-| `_adjective` | src/tessellate/ai/composer_money.py:967 |
-| `_asks_a_sum` | src/tessellate/ai/composer_money.py:743 |
-| `_bare_total` | src/tessellate/ai/composer_money.py:644 |
-| `_both_sets` | src/tessellate/ai/composer_money.py:1138 |
-| `_cite_all` | src/tessellate/ai/composer_money.py:346 |
-| `_clause_items` | src/tessellate/ai/composer_money.py:148 |
-| `_difference` | src/tessellate/ai/composer_money.py:1160 |
-| `_difference_asked` | src/tessellate/ai/composer_money.py:1069 |
-| `_dimension_asked` | src/tessellate/ai/composer_money.py:1057 |
-| `_dimension_of` | src/tessellate/ai/composer_money.py:717 |
-| `_done` | src/tessellate/ai/composer_money.py:784 |
-| `_due` | src/tessellate/ai/composer_money.py:667 |
-| `_due_by` | src/tessellate/ai/composer_money.py:325 |
-| `_due_line` | src/tessellate/ai/composer_money.py:583 |
-| `_figure` | src/tessellate/ai/composer_money.py:790 |
-| `_first_window` | src/tessellate/ai/composer_money.py:1089 |
-| `_forms` | src/tessellate/ai/composer_money.py:777 |
-| `_gap_line` | src/tessellate/ai/composer_money.py:1151 |
-| `_goal_in` | src/tessellate/ai/composer_money.py:951 |
-| `_in_month` | src/tessellate/ai/composer_money.py:236 |
-| `_in_one_currency` | src/tessellate/ai/composer_money.py:1119 |
-| `_in_window` | src/tessellate/ai/composer_money.py:255 |
-| `_ing_forms` | src/tessellate/ai/composer_money.py:893 |
-| `_is_done` | src/tessellate/ai/composer_money.py:293 |
-| `_items` | src/tessellate/ai/composer_money.py:280 |
-| `_items_by` | src/tessellate/ai/composer_money.py:302 |
+| `_Diff` | src/tessellate/ai/composer_money.py:1035 |
+| `_Measure` | src/tessellate/ai/composer_money.py:707 |
+| `_Target` | src/tessellate/ai/composer_money.py:887 |
+| `_Win` | src/tessellate/ai/composer_money.py:176 |
+| `_about` | src/tessellate/ai/composer_money.py:271 |
+| `_adjective` | src/tessellate/ai/composer_money.py:970 |
+| `_asks_a_sum` | src/tessellate/ai/composer_money.py:746 |
+| `_bare_total` | src/tessellate/ai/composer_money.py:647 |
+| `_both_sets` | src/tessellate/ai/composer_money.py:1141 |
+| `_cite_all` | src/tessellate/ai/composer_money.py:348 |
+| `_clause_items` | src/tessellate/ai/composer_money.py:150 |
+| `_difference` | src/tessellate/ai/composer_money.py:1163 |
+| `_difference_asked` | src/tessellate/ai/composer_money.py:1072 |
+| `_dimension_asked` | src/tessellate/ai/composer_money.py:1060 |
+| `_dimension_of` | src/tessellate/ai/composer_money.py:720 |
+| `_done` | src/tessellate/ai/composer_money.py:787 |
+| `_due` | src/tessellate/ai/composer_money.py:670 |
+| `_due_by` | src/tessellate/ai/composer_money.py:327 |
+| `_due_line` | src/tessellate/ai/composer_money.py:586 |
+| `_figure` | src/tessellate/ai/composer_money.py:793 |
+| `_first_window` | src/tessellate/ai/composer_money.py:1092 |
+| `_forms` | src/tessellate/ai/composer_money.py:780 |
+| `_gap_line` | src/tessellate/ai/composer_money.py:1154 |
+| `_goal_in` | src/tessellate/ai/composer_money.py:954 |
+| `_in_month` | src/tessellate/ai/composer_money.py:238 |
+| `_in_one_currency` | src/tessellate/ai/composer_money.py:1122 |
+| `_in_window` | src/tessellate/ai/composer_money.py:257 |
+| `_ing_forms` | src/tessellate/ai/composer_money.py:896 |
+| `_is_done` | src/tessellate/ai/composer_money.py:295 |
+| `_items` | src/tessellate/ai/composer_money.py:282 |
+| `_items_by` | src/tessellate/ai/composer_money.py:304 |
 | `_kind_spent` | src/tessellate/ai/composer_money.py:36 |
-| `_left_asked` | src/tessellate/ai/composer_money.py:859 |
-| `_left_out` | src/tessellate/ai/composer_money.py:1130 |
-| `_listed` | src/tessellate/ai/composer_money.py:380 |
-| `_measure` | src/tessellate/ai/composer_money.py:822 |
-| `_measure_asked` | src/tessellate/ai/composer_money.py:749 |
-| `_measures_line` | src/tessellate/ai/composer_money.py:800 |
-| `_money` | src/tessellate/ai/composer_money.py:342 |
-| `_month_asked` | src/tessellate/ai/composer_money.py:162 |
-| `_month_dates` | src/tessellate/ai/composer_money.py:194 |
-| `_months_of` | src/tessellate/ai/composer_money.py:247 |
-| `_most` | src/tessellate/ai/composer_money.py:592 |
-| `_moved` | src/tessellate/ai/composer_money.py:135 |
-| `_names_window` | src/tessellate/ai/composer_money.py:1042 |
-| `_note_month` | src/tessellate/ai/composer_money.py:183 |
-| `_note_name` | src/tessellate/ai/composer_money.py:414 |
-| `_noted` | src/tessellate/ai/composer_money.py:286 |
-| `_one_day` | src/tessellate/ai/composer_money.py:711 |
-| `_one_of_several` | src/tessellate/ai/composer_money.py:384 |
-| `_one_short_vowel` | src/tessellate/ai/composer_money.py:770 |
-| `_only_priced` | src/tessellate/ai/composer_money.py:478 |
-| `_past` | src/tessellate/ai/composer_money.py:1095 |
-| `_planned` | src/tessellate/ai/composer_money.py:466 |
-| `_rates` | src/tessellate/ai/composer_money.py:497 |
-| `_read` | src/tessellate/ai/composer_money.py:142 |
-| `_refunds_and_due` | src/tessellate/ai/composer_money.py:565 |
-| `_say` | src/tessellate/ai/composer_money.py:557 |
-| `_say_rates` | src/tessellate/ai/composer_money.py:513 |
-| `_says_kind` | src/tessellate/ai/composer_money.py:947 |
-| `_side` | src/tessellate/ai/composer_money.py:1109 |
-| `_spent` | src/tessellate/ai/composer_money.py:542 |
-| `_spent_by_sign` | src/tessellate/ai/composer_money.py:531 |
-| `_spent_line` | src/tessellate/ai/composer_money.py:442 |
-| `_spent_nothing` | src/tessellate/ai/composer_money.py:521 |
-| `_still_due` | src/tessellate/ai/composer_money.py:316 |
-| `_subject` | src/tessellate/ai/composer_money.py:368 |
-| `_target_asked` | src/tessellate/ai/composer_money.py:922 |
-| `_target_dimension` | src/tessellate/ai/composer_money.py:913 |
-| `_target_verb` | src/tessellate/ai/composer_money.py:903 |
-| `_total_asked` | src/tessellate/ai/composer_money.py:608 |
-| `_total_rest` | src/tessellate/ai/composer_money.py:614 |
-| `_totalled` | src/tessellate/ai/composer_money.py:738 |
-| `_toward` | src/tessellate/ai/composer_money.py:980 |
-| `_unit_named` | src/tessellate/ai/composer_money.py:1047 |
-| `_unit_of` | src/tessellate/ai/composer_money.py:659 |
-| `_verdict` | src/tessellate/ai/composer_money.py:974 |
+| `_left_asked` | src/tessellate/ai/composer_money.py:862 |
+| `_left_out` | src/tessellate/ai/composer_money.py:1133 |
+| `_listed` | src/tessellate/ai/composer_money.py:382 |
+| `_measure` | src/tessellate/ai/composer_money.py:825 |
+| `_measure_asked` | src/tessellate/ai/composer_money.py:752 |
+| `_measures_line` | src/tessellate/ai/composer_money.py:803 |
+| `_money` | src/tessellate/ai/composer_money.py:344 |
+| `_month_asked` | src/tessellate/ai/composer_money.py:164 |
+| `_month_dates` | src/tessellate/ai/composer_money.py:196 |
+| `_months_of` | src/tessellate/ai/composer_money.py:249 |
+| `_most` | src/tessellate/ai/composer_money.py:595 |
+| `_moved` | src/tessellate/ai/composer_money.py:137 |
+| `_names_window` | src/tessellate/ai/composer_money.py:1045 |
+| `_note_month` | src/tessellate/ai/composer_money.py:185 |
+| `_note_name` | src/tessellate/ai/composer_money.py:416 |
+| `_noted` | src/tessellate/ai/composer_money.py:288 |
+| `_one_day` | src/tessellate/ai/composer_money.py:714 |
+| `_one_of_several` | src/tessellate/ai/composer_money.py:386 |
+| `_one_short_vowel` | src/tessellate/ai/composer_money.py:773 |
+| `_only_priced` | src/tessellate/ai/composer_money.py:481 |
+| `_past` | src/tessellate/ai/composer_money.py:1098 |
+| `_planned` | src/tessellate/ai/composer_money.py:469 |
+| `_rates` | src/tessellate/ai/composer_money.py:500 |
+| `_read` | src/tessellate/ai/composer_money.py:144 |
+| `_refunds_and_due` | src/tessellate/ai/composer_money.py:568 |
+| `_say` | src/tessellate/ai/composer_money.py:560 |
+| `_say_rates` | src/tessellate/ai/composer_money.py:516 |
+| `_says_kind` | src/tessellate/ai/composer_money.py:950 |
+| `_side` | src/tessellate/ai/composer_money.py:1112 |
+| `_spent` | src/tessellate/ai/composer_money.py:545 |
+| `_spent_by_sign` | src/tessellate/ai/composer_money.py:534 |
+| `_spent_line` | src/tessellate/ai/composer_money.py:445 |
+| `_spent_nothing` | src/tessellate/ai/composer_money.py:524 |
+| `_still_due` | src/tessellate/ai/composer_money.py:318 |
+| `_subject` | src/tessellate/ai/composer_money.py:370 |
+| `_target_asked` | src/tessellate/ai/composer_money.py:925 |
+| `_target_dimension` | src/tessellate/ai/composer_money.py:916 |
+| `_target_verb` | src/tessellate/ai/composer_money.py:906 |
+| `_total_asked` | src/tessellate/ai/composer_money.py:611 |
+| `_total_rest` | src/tessellate/ai/composer_money.py:617 |
+| `_totalled` | src/tessellate/ai/composer_money.py:741 |
+| `_toward` | src/tessellate/ai/composer_money.py:983 |
+| `_unit_named` | src/tessellate/ai/composer_money.py:1050 |
+| `_unit_of` | src/tessellate/ai/composer_money.py:662 |
+| `_verdict` | src/tessellate/ai/composer_money.py:977 |
 | `_what` | src/tessellate/ai/composer_money.py:115 |
-| `_which_measure` | src/tessellate/ai/composer_money.py:812 |
-| `_window_asked` | src/tessellate/ai/composer_money.py:223 |
-| `_without_trailing_punctuation` | src/tessellate/ai/composer_money.py:728 |
-| `_word_for` | src/tessellate/ai/composer_money.py:1101 |
-| `_year_of` | src/tessellate/ai/composer_money.py:206 |
-| `answer` | src/tessellate/ai/composer_money.py:1224 |
-| `asks` | src/tessellate/ai/composer_money.py:1181 |
-| `recorded_notes` | src/tessellate/ai/composer_money.py:1203 |
-| `records_amounts` | src/tessellate/ai/composer_money.py:1219 |
-| `spent_only` | src/tessellate/ai/composer_money.py:472 |
-| `sums_a_measure` | src/tessellate/ai/composer_money.py:1189 |
+| `_which_measure` | src/tessellate/ai/composer_money.py:815 |
+| `_window_asked` | src/tessellate/ai/composer_money.py:225 |
+| `_without_trailing_punctuation` | src/tessellate/ai/composer_money.py:731 |
+| `_word_for` | src/tessellate/ai/composer_money.py:1104 |
+| `_year_of` | src/tessellate/ai/composer_money.py:208 |
+| `answer` | src/tessellate/ai/composer_money.py:1227 |
+| `asks` | src/tessellate/ai/composer_money.py:1184 |
+| `recorded_notes` | src/tessellate/ai/composer_money.py:1206 |
+| `records_amounts` | src/tessellate/ai/composer_money.py:1222 |
+| `spent_only` | src/tessellate/ai/composer_money.py:475 |
+| `sums_a_measure` | src/tessellate/ai/composer_money.py:1192 |
 
 ### src/tessellate/ai/composer_notes.py (19)
 
@@ -24767,7 +24768,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (18937)
+## Tests (18939)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -25237,7 +25238,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_composer_r3_route_1107.py | 15 |
 | tests/test_composer_r3b_1108.py | 21 |
 | tests/test_composer_r3fix_1108.py | 8 |
-| tests/test_composer_r4_1108.py | 8 |
+| tests/test_composer_r4_1108.py | 10 |
 | tests/test_composer_r5_1108.py | 5 |
 | tests/test_composer_r5_follow_1108.py | 7 |
 | tests/test_composer_r5_phone_1108.py | 3 |
@@ -27028,7 +27029,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_zoom_frame_1508.py | 3 |
 | tests/test_zoom_wheel_delta.py | 3 |
 
-## Plan headings (1004)
+## Plan headings (1005)
 
 Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, except the HISTORY.md archive. Sorted by heading.
 
@@ -27038,7 +27039,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | 0. Performance and "not device heavy" (cross-cutting, first) | docs/roadmap/PLAN.md:26 |
 | 0. The diagnosis in one page | docs/roadmap/WORLD_CLASS_PLAN.md:25 |
 | 0. The operating protocol (read every session, it is short) | docs/roadmap/SESSION_BRIEFS.md:17 |
-| 0.6.01 bug-document pass (2026-10-22, branch claude/project-thread-ol5yuv) | docs/roadmap/HANDOVER.md:57 |
+| 0.6.01 bug-document pass (2026-10-22, branch claude/project-thread-ol5yuv) | docs/roadmap/HANDOVER.md:66 |
 | 1. Format panel, Style tab | docs/roadmap/WHITEBOARD_PLAN.md:978 |
 | 1. Live log console (started, not finished) | docs/roadmap/BACKLOG.md:31 |
 | 1. Research read, 2026-10-10, and what each changes here | docs/roadmap/CHAT_PLAN.md:1503 |
@@ -27202,7 +27203,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | 20. A model per feature (asked for directly, 2026-09-21) | docs/roadmap/WORLD_CLASS_PLAN.md:2213 |
 | 20. Backend | docs/roadmap/BACKLOG.md:1307 |
 | 20. The 2026-10-05 feature audit: decisions | docs/roadmap/DOCUMENTS_PLAN.md:943 |
-| 2026-09-08, the third night: read this block first, whoever you are | docs/roadmap/HANDOVER.md:69 |
+| 2026-09-08, the third night: read this block first, whoever you are | docs/roadmap/HANDOVER.md:78 |
 | 21. Every failure names its way out (INBOX 272 part 1, 2026-09-21) | docs/roadmap/WORLD_CLASS_PLAN.md:2283 |
 | 21. Skills: rebuilt; what is left | docs/roadmap/BACKLOG.md:1443 |
 | 21. The code editor against VS Code, and writing checks everywhere (INBOX 646) | docs/roadmap/DOCUMENTS_PLAN.md:299 |
@@ -27610,16 +27611,17 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | E2 · The complexity of the AI path is where the next bug will be, High (read) | docs/roadmap/MODERNISATION_AUDIT.md:653 |
 | E3 · Model calls are scattered across request handlers, background threads and module singletons, High (read) | docs/roadmap/MODERNISATION_AUDIT.md:666 |
 | E4 · The honest positives, so the section is not one-sided (read) | docs/roadmap/MODERNISATION_AUDIT.md:676 |
-| Earlier morning summary (2026-10-30) | docs/roadmap/HANDOVER.md:46 |
-| Earlier morning summary (away run 2026-10-18b) | docs/roadmap/HANDOVER.md:65 |
-| Earlier sessions | docs/roadmap/HANDOVER.md:535 |
+| Earlier morning summary (2026-10-30) | docs/roadmap/HANDOVER.md:55 |
+| Earlier morning summary (2026-11-04) | docs/roadmap/HANDOVER.md:45 |
+| Earlier morning summary (away run 2026-10-18b) | docs/roadmap/HANDOVER.md:74 |
+| Earlier sessions | docs/roadmap/HANDOVER.md:544 |
 | Expert audit, 2026-10-10 | docs/roadmap/BACKLOG.md:4270 |
 | F. Agent harness: what "ultimate" needs that is not there | docs/roadmap/AUDIT.md:113 |
 | F. Performance and perceived speed | docs/roadmap/MODERNISATION_AUDIT.md:685 |
 | F1 · Boot is ~1 s and tab switches are ~10–50 ms. The app is not slow; it is *heavy*: Medium | docs/roadmap/MODERNISATION_AUDIT.md:687 |
 | F2 · Fourteen requests in sixty idle seconds, from three separate timers, High | docs/roadmap/MODERNISATION_AUDIT.md:708 |
 | F3 · List rendering is solved; list *fetching* is not, Medium | docs/roadmap/MODERNISATION_AUDIT.md:733 |
-| Fable's working notes for Opus (2026-09-09 05:10 UTC) | docs/roadmap/HANDOVER.md:221 |
+| Fable's working notes for Opus (2026-09-09 05:10 UTC) | docs/roadmap/HANDOVER.md:230 |
 | Found by an agent while measuring something else (2026-09-08, graph) | docs/roadmap/CHAT_PLAN.md:578 |
 | G. Mobile and responsive | docs/roadmap/MODERNISATION_AUDIT.md:743 |
 | G. Test-suite gaps | docs/roadmap/AUDIT.md:123 |
@@ -27646,7 +27648,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Harness robustness, 2026-10-04 (INBOX 527) | docs/roadmap/AGENT_SKILLS_REFORM.md:202 |
 | Harper (Automattic) | docs/roadmap/ANALYSIS.md:1783 |
 | Headroom: evaluated, not adopted | docs/roadmap/BACKLOG.md:729 |
-| How far each plan actually is (honest, as of 2026-10-03) | docs/roadmap/HANDOVER.md:357 |
+| How far each plan actually is (honest, as of 2026-10-03) | docs/roadmap/HANDOVER.md:366 |
 | How to proceed after PR 149 (written 2026-09-14; the live order is CLAUDE.md standing order 1 and HANDOVER's Now line) | docs/ROADMAP.md:295 |
 | How to read the evidence in here | docs/roadmap/MODERNISATION_AUDIT.md:23 |
 | How to work on this repo | docs/ROADMAP.md:364 |
@@ -27664,7 +27666,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Ideas | docs/roadmap/CHAT_PLAN.md:862 |
 | Ideas | docs/roadmap/DOCUMENTS_PLAN.md:1376 |
 | Ideas | docs/roadmap/WORLD_CLASS_PLAN.md:3117 |
-| If Opus is the orchestrator (no Fable available) | docs/roadmap/HANDOVER.md:79 |
+| If Opus is the orchestrator (no Fable available) | docs/roadmap/HANDOVER.md:88 |
 | Image notes and the Library, against photocraft and lightcraft | docs/roadmap/ANALYSIS.md:3955 |
 | Is its backend better designed? No: and it says so about itself | docs/roadmap/ANALYSIS.md:810 |
 | KnowNote (MrSibe) | docs/roadmap/ANALYSIS.md:1932 |
@@ -27688,7 +27690,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Order and dependencies | docs/roadmap/WORLD_CLASS_PLAN.md:1360 |
 | Owner's list, 2026-10-13 (one batch, in one place) | docs/roadmap/BACKLOG.md:4385 |
 | PDF viewer and OCR workspace, against pdfcraft | docs/roadmap/ANALYSIS.md:3922 |
-| PR 144 is done when (the owner's checklist, 2026-09-09 05:30 UTC) | docs/roadmap/HANDOVER.md:118 |
+| PR 144 is done when (the owner's checklist, 2026-09-09 05:30 UTC) | docs/roadmap/HANDOVER.md:127 |
 | Parity matrix, 2026-10-10 | docs/roadmap/ANALYSIS.md:3703 |
 | Performance on small laptops, measured 2026-09-08 23:30 UTC (Chromium, 1366x768, no GPU) | docs/roadmap/WHITEBOARD_PLAN.md:679 |
 | Phase 10: the Liquid Glass adoptions (½ session) | docs/roadmap/UI_MODERNISATION_PLAN.md:561 |
@@ -27917,9 +27919,9 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Six repositories read for Tessellate, 2026-09-20 | docs/roadmap/ANALYSIS.md:1760 |
 | Sources | docs/roadmap/MINDMAP_PLAN.md:280 |
 | Speech, four projects read by name, and what this app already does | docs/roadmap/ANALYSIS.md:3102 |
-| Standing orders for this session (whoever the model is) | docs/roadmap/HANDOVER.md:293 |
+| Standing orders for this session (whoever the model is) | docs/roadmap/HANDOVER.md:302 |
 | Start of the next PR (the owner, 2026-10-12, "log everything I've mentioned") | docs/roadmap/BACKLOG.md:4310 |
-| State of the branch (`claude/notes-flow-rebuild`, PR #162) | docs/roadmap/HANDOVER.md:377 |
+| State of the branch (`claude/notes-flow-rebuild`, PR #162) | docs/roadmap/HANDOVER.md:386 |
 | Steps | docs/roadmap/UI_MODERNISATION_PLAN.md:1048 |
 | Steps | docs/roadmap/WORLD_CLASS_PLAN.md:1524 |
 | Still open | docs/roadmap/WORLD_CLASS_PLAN.md:2260 |
