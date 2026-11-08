@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Extras downloads: a 429 or 503 that says Retry-After is waited out (up to 30 s, else the usual 2 s and 5 s), and Stop during that wait ends the install without another request.
 - Chat: restoring a note from the bin by number or by words now finds notes binned long ago, not only the 500 most recently binned.
 - Composer: a spend on a thing this week (groceries) totals that thing only, not the note's fuel too, and the overview summary never repeats a note's own "today".
 - Desk companion: a stretch draws at its own pose frames again, and a dash turns toward where it is going during its crouch instead of after it.
@@ -113,7 +114,7 @@ Your own desk companion's capture works again: it asks the page for the frames i
 - Desk expressions: the art's calm mouth is painted out from the skin either side of it with a feathered edge, not a flat disc (the owner's white paste round the mouth, INBOX 1696 hh); desk arms measured at 0.4 to 0.5 px thicker than the app's at 128 px, inside the 1 px bar, pinned by a test (1696 z).
 - Desk frames: the render pins every frame's tail, sways and breath to one moment and stops the page's blink clock (a masculine stand shipped with shut eyes), all frames re-rendered for both looks with the six wave swing frames, and the eye boxes re-measured (INBOX 1696 x, w).
 - Chat with no model: pick one of options, week and day of year, leap year, days left, text transforms on pasted text, and factorial, half, double and square root as words (composer batch C).
-- Extras downloads try again twice after a server error (5xx, 429) or a dropped connection; a 404 still fails at once. Fixes the Windows package check failing on a GitHub 504.
+- Extras downloads try again twice after a server error (5xx, 429) or a connection that could not be opened; a 404 still fails at once, and a download that breaks off part-way fails rather than resuming. Fixes the Windows package check failing on a GitHub 504.
 - The installer's optional packages step now writes why a package failed into the data folder's log, not only exit code 1.
 - Companion catalogue: 307 acts in nine kinds shared by the desk and in-app companions, with a parity ratchet and a seven-batch build order.
 - Lag log rows for animation frames name the callback that ran (a slow frame callback is kept for the row) instead of the sampler wrapper (INBOX 1696 jj).
