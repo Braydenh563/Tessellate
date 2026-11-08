@@ -229,7 +229,7 @@ def test_the_pane_is_one_tree_of_cards_with_the_dock_recipe_and_kebab_menus():
     #: The dock is built by diagram-bar.js since 1661 D2; the recipe (the dock class and name) is unchanged.
     bar = (BUILDER.parent / "diagram-bar.js").read_text(encoding="utf-8")
     assert 'dataset.dockName = "diagram"' in bar and 'el("div", "dock dgm-dock")' in bar
-    assert "kebabMenu(blockItems(S, key)" in code and "openMenuAtPoint" in code and "wireLongPress(S.tree" in code
+    assert "lazyKebab(() => blockItems(S, key)" in code and "openMenuAtPoint" in code and "wireLongPress(S.tree" in code
     # Relabel in place is the board's pattern: plaintext-only, Enter commits, Escape reverts.
     assert '"contenteditable", "plaintext-only"' in code and 'event.key !== "Enter" && event.key !== "Escape"' in code
     # The keys of the plan's keyboard row.
@@ -324,3 +324,32 @@ def test_the_row_swatch_is_a_named_button_and_the_shape_menu_rows_draw_their_sha
     # The menu rows are made here because setLabel takes only ph: icons.
     assert "shapeRow(" in code and "ph-check" in code and "ph:square" not in code
     assert ".dgm-swatch" in css and "min-inline-size: 1.5rem" in css and ".dgm-swatch:focus-visible" in css
+
+
+def test_a_rows_menu_is_built_on_its_first_press_not_per_row():
+    # 1108 P2: 41 rows built 41 menus (each with its shape submenu) on open: 3,112 tree nodes, 287 listeners.
+    # The row carries only the opener; `kebabMenu` runs inside the press, in both the flowchart and the kinds' panes.
+    code = BUILDER.read_text(encoding="utf-8")
+    row = code.split("function buildRow(", 1)[1].split("function groupGlyph", 1)[0]
+    assert "diagramModel.library.lazyKebab(() => blockItems(S, key)" in row
+    assert not re.search(r"const menu = kebabMenu\(", row)
+    lib = (BUILDER.parent / "diagram-library.js").read_text(encoding="utf-8")
+    lazy = lib.split("function lazyKebab(", 1)[1].split("diagramModel.library =", 1)[0]
+    assert "kebabMenu(items(), label)" in lazy and "again.click()" in lazy and "stub.replaceWith(real)" in lazy
+    kinds = (BUILDER.parent / "diagram-kinds.js").read_text(encoding="utf-8")
+    assert "diagramModel.library.lazyKebab(() => itemsFor(S, key)" in kinds
+
+
+def test_a_draw_waits_for_the_typed_label_and_a_relabel_shows_in_the_picture_at_once():
+    # 1108 P3: the draw starts in an idle slice and not while a label is being typed; a relabel patches the words in the
+    # drawn picture (a blob swap) before the redraw, so the picture follows Enter in about 0.2 s, not 0.75 s.
+    code = BUILDER.read_text(encoding="utf-8")
+    draw = code[code.index("function drawPicture(S)") :]
+    draw = draw[: draw.index("\n  }\n")]
+    assert "diagramModel.picture.idle(S)" in draw and 'ensureModule("mermaid")' in draw
+    assert "diagramModel.picture.patch(S, key, was, text)" in code and "done(text, was)" in code
+    picture = (BUILDER.parent / "diagram-picture.js").read_text(encoding="utf-8")
+    idle = picture.split("const idle = ", 1)[1].split("diagramModel.picture =", 1)[0]
+    assert '.dgm-editing' in idle and "requestIdleCallback" in idle
+    patch = picture.split("function patch(", 1)[1].split("const idle = ", 1)[0]
+    assert "text-outer-tspan" in patch and "mermaidShow(" in patch and "onpaint" in patch and "rows.length !== 1" in patch

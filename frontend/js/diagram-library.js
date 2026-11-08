@@ -132,5 +132,26 @@
     stage.append(bar);
   }
 
-  diagramModel.library = { build, flow, shelf };
+  //: A row's ⋯ before it is pressed: an empty `kebabMenu` (1108 P2). The press is caught on the way down, and the
+  //: real menu, with its rows and the shape submenu, is built then and swapped in; 41 blocks no longer carry 41
+  //: full menus nobody opened. `items` is called on that press.
+  function lazyKebab(items, label) {
+    const stub = kebabMenu([], label);
+    stub.classList.add("dgm-menu");
+    stub.addEventListener("click", (event) => {
+      event.stopPropagation();
+      const real = kebabMenu(items(), label);
+      real.classList.add("dgm-menu");
+      const [old, again] = [stub, real].map((wrap) => wrap.querySelector(".kebab-opener"));
+      const tab = old.getAttribute("tabindex");
+      if (tab != null) again.setAttribute("tabindex", tab);
+      const focused = document.activeElement === old;
+      stub.replaceWith(real);
+      if (focused) again.focus({ preventScroll: true });
+      again.click();
+    }, true);
+    return stub;
+  }
+
+  diagramModel.library = { build, flow, shelf, lazyKebab };
 })();

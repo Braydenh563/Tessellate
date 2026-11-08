@@ -136,5 +136,33 @@
     S.fig.append(note);
   }
 
-  diagramModel.picture = { boxes, pick, failure };
+  //: A relabel shows in the drawn picture before the redraw (1108 P3): the node's one row of words (a tspan per word)
+  //: becomes one tspan of the new words and the picture is shown again: a blob swap, not a Mermaid render. Skipped unless
+  //: the node has one row reading as the old words; the redraw that follows replaces it either way.
+  function patch(S, key, was, text) {
+    const id = diagramModel.ops.split(key)[1];
+    const svg = S.fig.querySelector(":scope > img.md-mermaid-img")?.mermaidSvg;
+    const at = svg && new RegExp('<g\\b[^>]*\\bid="(?:[^"]*?-)?flowchart-' + id.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + '-\\d+"').exec(svg);
+    if (!at) return;
+    const rest = svg.slice(at.index + at[0].length);
+    const next = rest.search(/\bid="[^"]*flowchart-/);
+    const end = at.index + at[0].length + (next < 0 ? rest.length : next);
+    const esc = (t) => t.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    const part = svg.slice(at.index, end);
+    const rows = [...part.matchAll(/(<tspan\b[^>]*text-outer-tspan[^>]*>)((?:<tspan\b[^>]*>[^<]*<\/tspan>)+)<\/tspan>/g)];
+    if (rows.length !== 1 || [...rows[0][2].matchAll(/>([^<]*)<\/tspan>/g)].map((m) => m[1]).join("") !== esc(was)) return;
+    const words = '<tspan font-style="normal" class="text-inner-tspan" font-weight="normal">' + esc(text) + "</tspan>";
+    const from = at.index + rows[0].index;
+    mermaidShow(S.fig, { svg: svg.slice(0, from) + rows[0][1] + words + "</tspan>" + svg.slice(from + rows[0][0].length), key: S.fig.mermaidKey }, S.source);
+    for (const paint of S.fig.onpaint || []) paint();
+  }
+
+  //: Resolves in an idle slice (at most 400 ms), and not while a label is being typed (1108 P3): a draw starts between
+  //: keys, never on one, and Enter or blur brings it. A newer change drops the older draw by its stamp.
+  const idle = (S) => new Promise((done) => {
+    const go = () => (S.tree.querySelector(".dgm-editing") ? setTimeout(go, 150) : (window.requestIdleCallback || setTimeout)(done, { timeout: 400 }));
+    go();
+  });
+
+  diagramModel.picture = { boxes, pick, failure, patch, idle };
 })();
