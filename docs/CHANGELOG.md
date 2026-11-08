@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Chat: restoring a note from the bin by number or by words now finds notes binned long ago, not only the 500 most recently binned.
 - Composer: a spend on a thing this week (groceries) totals that thing only, not the note's fuel too, and the overview summary never repeats a note's own "today".
 - Desk companion: a stretch draws at its own pose frames again, and a dash turns toward where it is going during its crouch instead of after it.
 - Guide: questions about the companion outside the app reach the desktop companion topic first again.

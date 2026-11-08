@@ -2,7 +2,7 @@
 
 Generated 2026-11-08 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7917, frontend ids 2652, CSS sections 522, backend routes 649, backend modules 9215, test files 2254, tests 18939, plan headings 1005, app scripts 28, boot scripts 37, script files 263.
+Counts: frontend functions 7917, frontend ids 2652, CSS sections 522, backend routes 649, backend modules 9215, test files 2255, tests 18943, plan headings 1005, app scripts 28, boot scripts 37, script files 263.
 
 ## Frontend functions (7917)
 
@@ -16859,7 +16859,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | Name | File:line |
 |---|---|
 | `Helpers` | src/tessellate/ai/object_acts.py:27 |
-| `_binned` | src/tessellate/ai/object_acts.py:342 |
+| `_binned` | src/tessellate/ai/object_acts.py:346 |
 | `_category_refusal` | src/tessellate/ai/object_acts.py:268 |
 | `_close` | src/tessellate/ai/object_acts.py:186 |
 | `_every_tag` | src/tessellate/ai/object_acts.py:229 |
@@ -16871,7 +16871,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_note_target` | src/tessellate/ai/object_acts.py:55 |
 | `_plan_rename_category` | src/tessellate/ai/object_acts.py:320 |
 | `_plan_rename_tag` | src/tessellate/ai/object_acts.py:297 |
-| `_plan_restore` | src/tessellate/ai/object_acts.py:365 |
+| `_plan_restore` | src/tessellate/ai/object_acts.py:376 |
 | `_private_hold` | src/tessellate/ai/object_acts.py:243 |
 | `_reading` | src/tessellate/ai/object_acts.py:219 |
 | `_spaced` | src/tessellate/ai/object_acts.py:209 |
@@ -16881,7 +16881,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_unknown` | src/tessellate/ai/object_acts.py:195 |
 | `guard` | src/tessellate/ai/object_acts.py:277 |
 | `pick_note_split` | src/tessellate/ai/object_acts.py:139 |
-| `plan` | src/tessellate/ai/object_acts.py:387 |
+| `plan` | src/tessellate/ai/object_acts.py:398 |
 | `read_rename` | src/tessellate/ai/object_acts.py:105 |
 | `read_restore` | src/tessellate/ai/object_acts.py:159 |
 
@@ -24768,7 +24768,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (18939)
+## Tests (18943)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -25007,6 +25007,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_characters_lazy.py | 5 |
 | tests/test_chat_act_card_once.py | 1 |
 | tests/test_chat_acts_1108.py | 7 |
+| tests/test_chat_acts_binned_reach.py | 4 |
 | tests/test_chat_acts_objects_1108.py | 15 |
 | tests/test_chat_acts_review_1108.py | 33 |
 | tests/test_chat_acts_today_1108.py | 6 |

@@ -339,6 +339,10 @@ def _plan_rename_category(session: Session, parsed: dict, c) -> dict:  # noqa: A
     return {"line": c.confirm(label), "card": card}
 
 
+#: Most notes `_binned` hands back for a "restore all" count or a words match.
+_BIN_SCAN = 500
+
+
 def _binned(session: Session, parsed: dict) -> list:
     """The notes in the bin that the name holds: every word of it in the
     note's text, newest binned first (the notes a write would touch are read
@@ -347,19 +351,26 @@ def _binned(session: Session, parsed: dict) -> list:
     holds, and a board comes back from the bin view."""
     from tessellate.core.database import Entry
 
+    visible = (Entry.is_deleted == True, Entry.is_private.is_not(True), Entry.is_board.is_not(True))  # noqa: E712
     number = parsed.get("note_id")
-    rows = session.scalars(
-        select(Entry).where(Entry.is_deleted == True, Entry.is_private.is_not(True), Entry.is_board.is_not(True))  # noqa: E712
-        .order_by(Entry.deleted_at.desc()).limit(500)
-    ).all()
     if number is not None:
-        return [row for row in rows if row.id == number]
+        return list(session.scalars(select(Entry).where(Entry.id == number, *visible)))
+    newest_first = Entry.deleted_at.desc()
     if parsed.get("all"):
-        return list(rows)
+        return list(session.scalars(select(Entry).where(*visible).order_by(newest_first).limit(_BIN_SCAN)))
     words = [w for w in re.findall(r"[\w']+", str(parsed.get("about") or "").lower()) if len(w) > 1 and w not in ("the", "my", "of", "and", "note")]
     if not words:
         return []
-    return [row for row in rows if all(re.search(rf"\b{re.escape(w)}(?:e?s)?\b", (row.content or "").lower()) for w in words)]
+    #: SQLite's LIKE folds ASCII case only, so a word with any other letter is left to the regex below.
+    #: `autoescape` makes `_` (a word character) and `%` literal.
+    narrowed = [Entry.content.contains(w, autoescape=True) for w in words if w.isascii()]
+    found: list = []
+    for row in session.scalars(select(Entry).where(*visible, *narrowed).order_by(newest_first)).yield_per(200):
+        if all(re.search(rf"\b{re.escape(w)}(?:e?s)?\b", (row.content or "").lower()) for w in words):
+            found.append(row)
+            if len(found) >= _BIN_SCAN:
+                break
+    return found
 
 
 def _plan_restore(session: Session, parsed: dict, c) -> dict:  # noqa: ANN001
