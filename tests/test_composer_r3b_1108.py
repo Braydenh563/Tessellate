@@ -104,10 +104,13 @@ SHOP = (
 
 
 @pytest.mark.parametrize("question", ["what do I know about shop", "what do I know about shops", "what do I know about shopping"])
-def test_r3_9_a_word_and_its_plural_find_the_same_notes_and_not_a_synonym_beside_a_literal_hit(question):
+def test_r3_9_a_word_and_its_plural_find_the_same_notes_and_a_buy_note_is_not_dropped(question):
+    """Review R3-9: a literal hit ("Shopping", "corner shop") no longer hides a
+    note that only says buy or bought; the stem is one across readers."""
     said = say(question, *SHOP)
     assert "Shopping" in said and "corner shop" in said, said
-    assert "Pixel" not in said and "perfume" not in said, said
+    if question.endswith("shop"):
+        assert "perfume" in said and "Pixel" in said, said
 
 
 @pytest.mark.parametrize("question", ["what did I buy in the shop", "how much did I spend on shopping", "what did I spend on the shop"])

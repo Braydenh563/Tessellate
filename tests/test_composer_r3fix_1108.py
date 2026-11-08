@@ -60,3 +60,36 @@ def test_a_sum_names_an_unbought_note_by_the_same_name():
         note = {"content": "Went running with Sam and then home for tea"}
 
     assert composer_money._note_name(V) == "“Went running with Sam and then…”"  # quoted as name_of quotes it
+
+
+def test_a_shop_ask_keeps_the_note_that_only_says_buy():
+    from tests.test_composer_r3_1107 import say
+
+    said = say("what do I know about shop", "# Shopping\n\n- milk\n- bread", "Need to buy new shoes for the wedding on Saturday.")
+    assert "Shopping" in said and "shoes for the wedding" in said, said
+
+
+INTRO_TODO = "# Todo\n\nThings I need to do before Friday.\n\n- [ ] Book MOT\n- [ ] Email landlord"
+INTRO_PACKING = "# Packing\n\nFor the trip.\n\n- [ ] Passport\n- [ ] Charger"
+
+
+def test_a_list_with_an_intro_line_is_a_list_to_ask_which_of():
+    from tests.test_composer_r3_1107 import say
+
+    said = say("what is on my list", INTRO_TODO, INTRO_PACKING, "Dentist on 11 November")
+    assert said == "Which list: Todo or Packing?", said
+
+
+def test_whats_on_my_todo_shows_a_todo_note_with_an_intro_line():
+    from tests.test_composer_r3_1107 import say
+
+    said = say("what's on my todo", INTRO_TODO, INTRO_PACKING)
+    assert "Book MOT" in said and "Nothing in the notes" not in said, said
+
+
+def test_how_many_of_a_thing_no_note_gives_a_figure_for_counts_the_notes_that_mention_it():
+    from tests.test_composer_r3_1107 import say
+
+    notes = ("My phone is a Pixel 8, bought in March for £549.", "Old phone: iPhone 6, given to Sam", "Phone bill is £30 a month", "# Shopping\n\n- milk")
+    assert say("how many phones", *notes) == "Three of your notes mention phones."
+    assert say("how many phones", notes[0], notes[3]) == "One of your notes mentions phones."

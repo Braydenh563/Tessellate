@@ -179,10 +179,12 @@ def trace_failures(result: dict, question: str, notes: list[dict], on: date, ask
         elif kind == "term":
             #: A word of the notes as written there, naming a thread or a
             #: name that links them (INBOX 787's overview).
-            #: A title-less note's name is its own first words, clipped and quoted (`composer_frame.name_of`, R3-15).
-            from tessellate.ai import composer_frame
-
-            if text != composer_frame.name_of(by_id[part[2]]) and not re.search(rf"\b{re.escape(text)}\b", by_id[part[2]]["content"]):
+            #: A title-less note's name is its own first words in quotes (`composer_frame.name_of`, R3-15):
+            #: checked against the note's own words, never against the function that wrote it.
+            words = by_id[part[2]]["content"]
+            inner = text[1:-1].removesuffix("…") if text.startswith("“") and text.endswith("”") else ""
+            quoted = bool(inner) and " ".join(inner.split()) in " ".join(re.sub(r"[#*>\[\]]|^\s*(?:[-+]|\d+[.)])\s", "", words, flags=re.M).split())
+            if not quoted and not re.search(rf"\b{re.escape(text)}\b", words):
                 failures.append(f"not a word of note {part[2]}: {text!r}")
         elif kind == "asked":
             if text.lower() not in f"{question} {asked_from}".lower():
