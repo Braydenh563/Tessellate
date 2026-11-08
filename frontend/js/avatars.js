@@ -10653,3 +10653,49 @@ function nameMarkBuddyHint(fromAppearance = false) {
 //: app was still locked.
 setTimeout(() => nameMarkBuddyHint(), 20000);
 setTimeout(() => nameMarkBuddyHint(), 80000);
+//: **A pull from the drawing is a grab** (INBOX 1696 bb, the owner: "the screen
+//: scrolls again when I throw the in-app companion (sometimes)"). Sitting or
+//: standing, its handle ends at the seat or the soles so a button under the
+//: legs stays usable, but the drawing reaches 19px left, 26 right and 47 below
+//: the handle (buddyhit1696.js): a pull that began there was the page's, a text
+//: selection that autoscrolls. A press on the drawing outside the handle that
+//: becomes a pull (4px) is now taken as a grab of the companion: the page's
+//: selection never starts and the face gets the press (its own pull code runs).
+//: A plain click is untouched and goes through to what is under it.
+// pull-grab:begin
+(() => {
+  let arm = null;
+  let swallow = false;
+  const drawn = (buddy, x, y) => [...buddy.querySelectorAll(".nm-buddy-char svg, .nm-buddy-char img, .nm-buddy-char canvas")].some((el) => {
+    const r = el.getBoundingClientRect();
+    return x >= r.left && x <= r.right && y >= r.top && y <= r.bottom;
+  });
+  document.addEventListener("pointerdown", (event) => {
+    arm = null;
+    swallow = false;
+    const buddy = document.getElementById("nm-buddy");
+    if (!buddy || event.button !== 0 || event.target?.closest?.("#nm-buddy") || !drawn(buddy, event.clientX, event.clientY)) return;
+    arm = { id: event.pointerId, x: event.clientX, y: event.clientY };
+  }, true);
+  document.addEventListener("pointermove", (event) => {
+    if (!arm || event.pointerId !== arm.id || Math.hypot(event.clientX - arm.x, event.clientY - arm.y) < 4) return;
+    const face = document.getElementById("nm-buddy")?.querySelector(".nm-buddy-face");
+    const from = arm;
+    arm = null;
+    if (!face) return;
+    swallow = true;
+    getSelection()?.removeAllRanges();
+    face.dispatchEvent(new PointerEvent("pointerdown", { button: 0, clientX: from.x, clientY: from.y, pointerId: from.id, bubbles: true }));
+  }, true);
+  //: A selection that has not begun never does while the press is armed (a wobble included).
+  document.addEventListener("selectstart", (event) => { if (arm || swallow) event.preventDefault(); }, true);
+  //: The click a grab ends in is the companion's, not the page's.
+  document.addEventListener("click", (event) => {
+    if (!swallow) return;
+    swallow = false;
+    event.stopPropagation();
+    event.preventDefault();
+  }, true);
+  for (const type of ["pointerup", "pointercancel"]) document.addEventListener(type, () => { arm = null; }, true);
+})();
+// pull-grab:end

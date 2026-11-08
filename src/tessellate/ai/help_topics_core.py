@@ -660,8 +660,8 @@ HELP_TOPICS: list[dict] = [
         ),
         "body": (
             "Web search is opt-in. Turn it on in Settings, Web "
-            "search, or with the Web button in Chat (it asks first; with web on and the panel "
-            "shut, a click opens the panel; with it open, a click turns web off): only your search words are sent out, "
+            "search, or with the Web button in Chat (it asks first; with web on, a click "
+            "opens the panel, or turns web off if it is open): only your search words are sent out, "
             "never your notes, and never a question about your own notes or records. "
             "It runs in Agent mode: there the assistant looks something up online "
             "when asked, and a Chat question your notes do not answer is answered "
@@ -670,7 +670,7 @@ HELP_TOPICS: list[dict] = [
             "mode answers come from your notes only, and the Web button says so; the "
             "Web panel still searches by hand. The pages are in the "
             "Web results fold under the answer; press a title to read one there, "
-            "as text, or the arrow to open it in your browser. "
+            "as text, or the arrow to open it outside. "
             "Paste a link and ask to read it: with web search on and no model "
             "the page is fetched and told back as its main points, key terms "
             "and sections; with it off you are told so and given the setting. "
@@ -679,7 +679,7 @@ HELP_TOPICS: list[dict] = [
             'Settings", "Open the web panel" and "Use another provider"), and the panel '
             "searches again once it answers; where this app cannot start it, it says why "
             "and links Web search settings. Banter, slang or a single word is never sent to the web: "
-            "you are asked, with a chip for your notes and one for the web. To start it "
+            "you are asked, with a chip for your notes and one for the web (also for a question both fit). To start it "
             "yourself with Docker, run: docker run -d --name searxng -p 8888:8080 "
             "-v searxng:/etc/searxng searxng/searxng, then press Auto-detect there. "
             "With SearXNG chosen and no address saved, the reply says it is not "
@@ -2814,6 +2814,25 @@ HELP_TOPICS.extend(
                 "lists and links; Ctrl+Shift+V pastes plain text. With nothing "
                 "selected, Ctrl+C and Ctrl+X copy and cut the whole line, and "
                 "pasting that line puts it above the one you are on."
+            ),
+            "badge": {"label": "Library", "tab": "library"},
+        },
+        {
+            "id": "documents-list-styles",
+            "keywords": (
+                "list style",
+                "list styles",
+                "bullet style",
+                "dot points",
+                "numbered list style",
+                "roman numerals",
+                "lettered list",
+            ),
+            "body": (
+                "List styles (Library, Documents). The arrow beside the List and Numbered "
+                "buttons picks the style: dots, circles, squares or dashes, and 1., 1), a. or i. "
+                "The marker is kept in the text, so every view and the export read it. "
+                "A bullet pasted from elsewhere becomes a list item."
             ),
             "badge": {"label": "Library", "tab": "library"},
         },
