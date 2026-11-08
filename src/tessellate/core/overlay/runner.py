@@ -200,6 +200,7 @@ class OverlayRunner:
             run=lambda fn: jobs.thread("overlay-downloads", fn),
         )
         self._decor: dict[tuple, sprites.Frame] = {}
+        self._warmed = 0  # the size the quarter turn was last built for (INBOX 1696 a)
         try:  # a backend that can count why windows were left out (win32); a fake may not
             self._tallies = "tally" in inspect.signature(self.k.windows).parameters
         except (TypeError, ValueError):
@@ -622,6 +623,7 @@ class OverlayRunner:
             self._last_key, self._blend, self._target = None, None, None
         now = self.clock()
         eased = self._ease(now)
+        self._warm_spins(spr)
         engine.hour = time.localtime().tm_hour if self.clock_hour is None else self.clock_hour
         # a thrown figure's true angle is part of the picture (INBOX 1683): every tick of a spin is a new one
         turn = None if out.angle is None else round(math.degrees(out.angle) / sprites.SPIN_QUANT) % round(360.0 / sprites.SPIN_QUANT)
@@ -642,6 +644,16 @@ class OverlayRunner:
         if blending or eased:  # the dissolve is a move: one step a display frame
             wake = BLEND_TICK_MS if wake is None else min(wake, BLEND_TICK_MS)
         return wake
+
+    def _warm_spins(self, spr: sprites.SpriteSet) -> None:
+        """Once a size is settled, its quarter turn is built on a worker (INBOX 1696 a: a fall rotated a fresh picture
+        every tick, 6 ms at dpi 192, about 8 fps on the owner's machine), so a throw only transposes. Not mid-pull or
+        mid-ease (each step is a size of its own), and not in reduced motion, where nothing spins."""
+        fd = self._fdpi()
+        if fd == self._warmed or self._sizing is not None or self._goal is not None or self.reduced:
+            return
+        self._warmed = fd
+        self._hand_off("overlay-spins", lambda: spr.warm_spins(fd))
 
     def _hand_offs(self, out: eng.Output, engine: eng.Engine) -> None:
         """What the tick finished, passed on off the overlay thread: a click, a settled place, a card."""
