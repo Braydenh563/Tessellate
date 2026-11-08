@@ -3212,7 +3212,7 @@ class Engine:
         floor = min(self.floor_y(m), uy1) if self._open_side(m, "bottom") else self.floor_y(m)
         if self.y > floor:  # the crossing is a flight: the floor holds it (review of INBOX 1683 i)
             self.y, self.vy = floor, 0.0
-        elif self.y < uy0 and not self._open_side(m, "top"):
+        elif self.y < uy0:  # open or not, the top stops a crossing: it cannot take hold mid-wrap, so it went through
             self.y, self.vy = uy0, max(self.vy, 0.0)
         self._spin(dt, math.hypot(self.vx, self.vy))
         width = max(1.0, self._box(self._fly_frame())[2])

@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Desk companion: a throw that crosses a side edge now stops at the top of the screen like any other throw, instead of rising through it.
 - Companions use edges more: the in-app one slides in against a panel's side and back out; the desk one pulls itself up onto a nearby window top after scrabbling down a wall, and peers down upside-down from behind the top edge (INBOX 1683 x, y).
 - A companion throw or shake on a window that has just come back from the tray waits two frames, so the browser lays the page out on its own frame and the throw reads a clean page (INBOX 1634 d).
 - Companions use edges more: the in-app one tucks behind a panel's side and comes back out; the desk one pulls itself up onto a nearby window top after scrabbling down a wall, and peers down upside-down from behind the top edge (INBOX 1683 x, y).
