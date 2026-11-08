@@ -247,11 +247,11 @@
 @keyframes nmb-trail { from { rotate: -4deg; } to { rotate: 4deg; } }
 /* End poses 1681 */
 
-/* Leaning on a panel's side edge it tucks behind it, 24px sideways, everything
-   past the edge cut away (`peekside`, avatars.js); the glow fades with it. */
+/* Leaning on a panel's side edge it slides 24px in against it (`peekside`,
+   avatars.js) and its glow fades. Nothing is clipped: a clip at no real edge
+   is the cut body INBOX 1463 removed. */
 #nm-buddy[data-side="left"] { --nmb-side: 1; }
 #nm-buddy[data-side="right"] { --nmb-side: -1; }
-#nm-buddy[data-pose="lean"]:is(.nmb-act-peekside, .nmb-act-emerge) .nm-buddy-face { clip-path: inset(-80px 6px); }
 #nm-buddy.nmb-act-peekside::before,
 #nm-buddy.nmb-act-peekside::after {
   opacity: 0;

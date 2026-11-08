@@ -24,12 +24,14 @@ def test_peekside_ends_by_emerging_never_a_pop() -> None:
     assert 'if ((was === "peek" || was === "peekside") && act !== "emerge" && !nameMarkBuddyStill()) act = act || "emerge";' in act
 
 
-def test_peekside_slides_sideways_behind_the_panel_edge_and_is_clipped_there() -> None:
+def test_peekside_slides_sideways_against_the_panel_edge_unclipped() -> None:
     for name in ("nmb-peekside-in", "nmb-emerge-side"):
         assert f"@keyframes {name} {{" in CSS08
     assert '#nm-buddy[data-side="left"] { --nmb-side: 1; }' in CSS08
     assert '#nm-buddy[data-side="right"] { --nmb-side: -1; }' in CSS08
-    assert '#nm-buddy[data-pose="lean"]:is(.nmb-act-peekside, .nmb-act-emerge) .nm-buddy-face { clip-path: inset(-80px 6px); }' in CSS08
+    # Intent moved (INBOX 1463 decision): the clip trimmed 6 px off each side wherever the companion stood, at no
+    # panel line, which is the cut body 1463 removed; the slide and the glow fade stay.
+    assert "clip-path" not in CSS08
     assert "&.nmb-act-peekside .nm-buddy-char { animation: nmb-peekside-in 1.1s ease-in-out forwards; }" in CSS08
     # Its glow and shadow fade with it, as every other hiding act's do.
     assert "#nm-buddy.nmb-act-peekside::after" in CSS08
