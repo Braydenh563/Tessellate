@@ -342,7 +342,9 @@ def greeted_as(question: str, hour: int) -> str:
     morning" is answered in the morning, whatever the clock says, audit 1029
     C14), else the clock's."""
     said = _GREETED.search(question or "")
-    return (said.group(1) or said.group(2)).lower() if said else time_of_day(hour)
+    #: "Good night" is how a day ends, never how a visit begins: a hello at 23:08 is a "good evening" (R3-34).
+    part = (said.group(1) or said.group(2)).lower() if said else time_of_day(hour)
+    return "evening" if part == "night" else part
 
 
 def welcome(mood: Mood, *, hour: int = 9, due: int | None = None, last: str = "", streak: int = 0, notes: int = 1, question: str = "", last_href: str = "") -> str:

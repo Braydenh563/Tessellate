@@ -255,6 +255,12 @@ def _joiners(relation: str, first: Sentence) -> list[str]:
     return ["", "and_join", "on_top"] if _lowered(first) else [""]
 
 
+#: A sentence that names its own date ("on 3 October", "11 November"), which the day it was written must not stand in front of.
+_OWN_DATE = re.compile(
+    r"\b\d{1,2}(?:st|nd|rd|th)?\s+(?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\b"
+    r"|\b(?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\s+\d{1,2}\b", re.I)
+
+
 def _timeline(out: _Answer, sentences: list[Sentence], terms: list[str]) -> None:
     """A "when" question's other notes, as bullets in the order they were
     written: a timeline is a list, and reads as one."""
@@ -267,10 +273,13 @@ def _timeline(out: _Answer, sentences: list[Sentence], terms: list[str]) -> None
     for note_id in order:
         view = out.views[note_id]
         out.t("line", "bullet")
-        if view.written:
+        mine = sorted((s for s in sentences if s.note_id == note_id), key=lambda s: s.order)
+        # "today: Went to the dentist on 3 October" puts the write day before an event with its own (R3-18).
+        dated = any(_OWN_DATE.search(s.text) for s in mine)
+        if view.written and not dated:
             out.m(out.day(view.written)).t("colon")
-        _quotes(out, sorted((s for s in sentences if s.note_id == note_id), key=lambda s: s.order), terms)
-        if view.titled or not view.written:
+        _quotes(out, mine, terms)
+        if view.titled or not view.written or dated:
             out.cite(view)
 
 
@@ -291,10 +300,23 @@ def _earlier(out: _Answer, sentences: list[Sentence], terms: list[str]) -> None:
         out.cite(view)
 
 
-def _disagreement(chosen: list[Sentence]) -> tuple[Sentence, Sentence] | None:
+_DAYISH = re.compile(r"\d+|(?:mon|tues?|wednes|thurs?|fri|satur|sun)(?:day)?|(?:jan|febr?|mar|apr|may|jun|jul|aug|sept?|oct|nov|dec)[a-z]*", re.I)
+
+
+def _other_subjects(views: dict, a: Sentence, b: Sentence) -> bool:
+    """Whether two notes are titled for different things ("Tokyo trip" and "Lisbon trip"): each title has a
+    word the other lacks. Their figures differ because the notes are about different things (R3-24)."""
+    left, right = (getattr(views.get(s.note_id), "title_words", None) for s in (a, b))
+    if not (left and right):
+        return False
+    #: "Monday" and "Friday" name days of one subject, not two subjects.
+    return bool({w for w in left - right if not _DAYISH.fullmatch(w)} and {w for w in right - left if not _DAYISH.fullmatch(w)})
+
+
+def _disagreement(chosen: list[Sentence], views: dict | None = None) -> tuple[Sentence, Sentence] | None:
     for i, a in enumerate(chosen):
         for b in chosen[i + 1:]:
-            if disagree(a, b):
+            if disagree(a, b) and not _other_subjects(views or {}, a, b):
                 return a, b
     return None
 
@@ -956,13 +978,21 @@ def told_as_past(content: str, at: int) -> bool:
     return rec.told_as_past(content[start: min(stops) if stops else len(content)])
 
 
+def _newest_lead(out: _Answer, count: int, guessing: bool) -> None:
+    """"Your five newest notes" for several, "your newest note" for one, never "your one newest notes" (R3-16)."""
+    if count == 1:
+        out.t("newest_one_guess" if guessing else "newest_one_lead")
+    else:
+        out.t("newest_guess" if guessing else "newest_lead").m(out.count(count)).t("newest_mid")
+
+
 def _newest(out: _Answer, views: list[NoteView], guessing: bool = False) -> None:
     """The newest notes, each by its first sentence, newest first. When the
     question named nothing to look for, the lead says these are a fallback."""
     shown = [v for v in views if v.sentences][:5]
     if not shown:
         return
-    out.t("newest_guess" if guessing else "newest_lead").m(out.count(len(shown))).t("newest_mid")
+    _newest_lead(out, len(shown), guessing)
     _span(out, shown)
     out.t("end_colon")
     for view in shown:

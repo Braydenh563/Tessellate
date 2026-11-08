@@ -387,8 +387,21 @@ def _not_said(out, views: list, obj, words: list[str], today: date, verb: frozen
         _say_line(out, *titled, f"Your {composer_lists._title(titled[0])} note does not say it outright, but it has")  # noqa: SLF001
     elif near := _nearest(views, obj):
         _say_line(out, *near, f"I found nothing in your notes that says so. The closest is {_note_of(near[0], today)}")
+    elif words[0].lower() in _TRIP_VERBS and (place := _titled_any(views, obj)):
+        #: "have I been to Tokyo" with a Tokyo trip note: the note is the nearest thing, not "nothing" (R3-21, E3).
+        _say_line(out, *place, f"I found nothing in your notes that says so. Your {composer_lists._title(place[0])} note only has")  # noqa: SLF001
     else:
         out.lines.append(f"I found nothing in your notes about {thing}.")
+
+
+#: A trip is the one doing whose note is titled for the place, with nothing on the verb in it (R3-21);
+#: "did I book the hotel" is not offered a line that says nothing of booking.
+_TRIP_VERBS = frozenset({"been", "go", "went", "gone", "visit", "visited", "travel", "travelled", "traveled", "fly", "flew", "flown"})
+
+
+def _titled_any(views: list, obj: list[str]):  # noqa: ANN202
+    """The (view, first sentence) of the best-ranked note titled for the thing, whatever it says."""
+    return next(((v, v.sentences[0]) for v in sorted(views, key=lambda v: v.rank) if v.sentences and _titled_for(v, obj)), None)
 
 
 def _yours(thing: str) -> str:
@@ -939,7 +952,48 @@ def _start_day(view, today: date) -> tuple[date, object] | None:  # noqa: ANN001
     return min(found, key=lambda f: f[0]) if found else None
 
 
-def _old(out, rest: list[str], views: list, today: date) -> bool:  # noqa: ANN001
+_WORD = re.compile(r"[\w'\u2019-]+")
+_YEARS_OLD = re.compile(r"\b(?:\d{1,3}\s+years?\s+old|aged?\s+\d{1,3}|turned\s+\d{1,3}|turns\s+\d{1,3})\b", re.I)
+_BIRTHDAY = re.compile(r"\b(?:birthday|born)\b", re.I)
+
+
+def _as_written(raw: str, words: list[str]) -> str:
+    """The subject as the person typed it when every word of it is capitalised ("Sara"), a name;
+    "" for a thing ("my sourdough starter")."""
+    typed = {w.lower(): w for w in _WORD.findall(raw)[1:]}
+    got = [typed.get(w.strip("?.!,").lower(), "") for w in words]
+    return " ".join(got) if got and all(g[:1].isupper() for g in got) else ""
+
+
+def _age_of(out, name: str, named: list, today: date) -> bool:  # noqa: ANN001
+    """"How old is Sara": a note that says her age, else that none does, with her birthday when one
+    is written (round 3, R3-3: it was a thing "started", "its age")."""
+    stems = _stems(name)
+    mentioned = named
+    named = [v for v in named if _title_holds(v, stems)]  # her own note, not a gift list that names her
+    for view in named:
+        for s in view.sentences:
+            if _YEARS_OLD.search(s.text):
+                out.lines.append(s.text if s.text.endswith((".", "!")) else f"{s.text}.")
+                composer_lists._cite(out, view, s, out.lines[-1])  # noqa: SLF001
+                return True
+    line = f"Your notes do not say how old {name} is."
+    for view in named:
+        if bday := next((s for s in view.sentences if _BIRTHDAY.search(s.text)), None):
+            line += f" {bday.text}" if bday.text.endswith((".", "!")) else f" {bday.text}."
+            out.lines.append(line)
+            composer_lists._cite(out, view, bday, line)  # noqa: SLF001
+            return True
+    out.lines.append(line)
+    #: The denial is grounded in her note, or the route reads an ungrounded line as a miss and answers
+    #: "general knowledge" over it (round 3 review).
+    for view in (named or mentioned)[:1]:
+        if first := next((x for x in view.sentences if x.kind in ("prose", "item", "task")), None):
+            composer_lists._cite(out, view, first, line)  # noqa: SLF001
+    return True
+
+
+def _old(out, rest: list[str], views: list, today: date, raw: str = "") -> bool:  # noqa: ANN001
     """"How old is my sourdough starter": today less the start date the note
     gives; when it gives none, that is said."""
     stems = _stems(" ".join(rest))
@@ -950,6 +1004,8 @@ def _old(out, rest: list[str], views: list, today: date) -> bool:  # noqa: ANN00
     if not named:
         return False
     subject = " ".join(w for w in rest if w not in _FILLER)
+    if name := _as_written(raw, [w for w in rest if w not in _FILLER]):
+        return _age_of(out, name, named, today)
     for view in named:
         if got := _start_day(view, today):
             day, s = got
@@ -977,7 +1033,7 @@ def answer(out, asked: str, views: list, today: date) -> bool:  # noqa: ANN001
     if _counted(out, q, views) or _state(out, " ".join(q.lower().split()).rstrip("?.!"), views, today):
         return True
     tokens = q.lower().replace("'s ", " is ").split()
-    shaped = _by_words(out, tokens, views, today)
+    shaped = _by_words(out, tokens, views, today, q)
     if shaped is not None:
         return shaped
     for pattern, say in ((_SINCE, _since), (_DID, _did), (_NEED, _left), (_LEFT, _left), (_STILL_ON, _left), (_IS_STILL, _is_still), (_IS_DONE, _is_done)):
@@ -986,21 +1042,21 @@ def answer(out, asked: str, views: list, today: date) -> bool:  # noqa: ANN001
     return False
 
 
-def _by_words(out, tokens: list[str], views: list, today: date) -> bool | None:  # noqa: ANN001
+def _by_words(out, tokens: list[str], views: list, today: date, raw: str = "") -> bool | None:  # noqa: ANN001
     """A value slot's answer (True, or False when the slot cannot say), how
     often or how old; None when the words ask none of these."""
     if tokens and tokens[0] in ("what", "when", "how", "at"):
         for slot in SLOTS:
             if (ask := slot.ask(tokens)) is not None:
                 return _value(out, slot, ask, views, today)
-    return True if tokens[:1] == ["how"] and _how(out, tokens, views, today) else None
+    return True if tokens[:1] == ["how"] and _how(out, tokens, views, today, raw) else None
 
 
-def _how(out, tokens: list[str], views: list, today: date) -> bool:  # noqa: ANN001
+def _how(out, tokens: list[str], views: list, today: date, raw: str = "") -> bool:  # noqa: ANN001
     """A doing counted from the lines that say it was done (audit 1030 Z23),
     how often the notes are filed under a subject, or how old a thing is."""
     if composer_doings.answer(out, " ".join(tokens), views, today):
         return True
     if len(tokens) > 4 and tokens[1] == "often" and tokens[2] in _AUX and tokens[3] in _SELF and _often(out, tokens[4:], views, today):
         return True
-    return len(tokens) > 3 and tokens[1] == "old" and tokens[2] in ("is", "are", "was") and _old(out, tokens[3:], views, today)
+    return len(tokens) > 3 and tokens[1] == "old" and tokens[2] in ("is", "are", "was") and _old(out, tokens[3:], views, today, raw)

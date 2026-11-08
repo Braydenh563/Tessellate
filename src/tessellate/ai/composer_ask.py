@@ -97,7 +97,8 @@ _ASKING_WORDS = frozenset(
     something stuff info information details please thanks thank check
     find look show help kind sort bit quick quickly briefly short detail
     detailed full whole remind possible maybe okay ok hey hi
-    whereabouts address place put decide decided conclude concluded doing""".split()
+    whereabouts address place put decide decided conclude concluded doing
+    possibly exactly precisely definitely basically honestly kindly truly certainly probably roughly approximately because""".split()
 ) | composer_tables.EXTRA_ASKING_WORDS | frozenset(
     #: Time words say when, never what (engine probe P6: "what did I write
     #: last week" was told "No note found brings up last"). The window they
@@ -550,9 +551,26 @@ def subject_terms(question: str) -> list[str]:
         if word in _ASKING_WORDS or word in seen:
             continue
         seen.append(word)
+    #: "What dates do I have", "the date of my passport expiry" ask for dates; the word is no term to find in a
+    #: note ("the date test still fails"; R3-5).
+    if _DATE_ASK.search(question):
+        seen = [w for w in seen if w not in ("date", "dates")]
+    #: "the first note I wrote about Sara": the place in an order, not a word to find ("First day of uni"; R3-4).
+    if _ORDINAL_NOTE.search(question):
+        seen = [w for w in seen if w not in ("first", "last")]
+    #: "When does uni start": the verb is the event's own, not a word to find; kept as a term it finds the
+    #: Marathon note's "Start is at 9am" and answers with that race (round 3 review, R3-1).
+    if _EVENT_ENDS.search(question) and len(seen) > 1:
+        seen = [w for w in seen if w.lower() not in _EVENT_VERBS]
     #: A praise word alone names nothing ("anything interesting", "the cool
     #: stuff"); beside a noun ("interesting bean") it stays (INBOX 1561).
     return [] if all(w in question_noise.PRAISE_WORDS for w in seen) else seen
+
+
+_EVENT_ENDS = re.compile(r"^\s*when\s+(?:does|do|will|is)\b[^?.!]{1,80}?\b(?:start|begin|end|finish)s?\s*[?.!]*$", re.I)
+_EVENT_VERBS = frozenset(("start", "starts", "begin", "begins", "end", "ends", "finish", "finishes"))
+_ORDINAL_NOTE = re.compile(r"\b(?:first|last)\s+(?:note|notes|entry|entries)\b", re.I)
+_DATE_ASK = re.compile(r"\b(?:what|which)\s+dates?\b|\bdates?\s+(?:of|for)\b", re.I)
 
 
 _COMPARE_SIDES = (
@@ -669,8 +687,11 @@ _KNOWN: contextvars.ContextVar[frozenset] = contextvars.ContextVar("composer_kno
 #: "When was my gym log written", "what day did I create the pasta recipe",
 #: "what date was the essay started": about the note's own day, not its words.
 _WRITTEN_WHEN = lazy_compile(
-    r"\b(?:when|what (?:day|date))\b.{0,50}?\b(?:written|wrote|write|made|make|created|create|(?:started|start|began|begun)(?!\s+(?:\w+ing|to\s+\w+)\b)|"
-    r"added|add|saved|save|put together|jotted|typed)\b",
+    r"\b(?:when|what (?:day|date))\b.{0,50}?\b(?:written|wrote|made|created|(?:started|began|begun)(?!\s+(?:\w+ing|to\s+\w+)\b)|"
+    r"added|saved|put together|jotted|typed|"
+    # The base verb is the note's day only after "did I": "when does uni start" and "when do I make
+    # the banana bread" ask about the event, not the day it was written (round 3, R3-1).
+    r"did\s+(?:I|we)\b.{0,30}?\b(?:write|make|create|(?:start|begin)(?!\s+(?:\w+ing|to\s+\w+)\b)|add|save|put together|jot|type))\b",
     re.I,
 )
 

@@ -50,8 +50,10 @@ _NEED = re.compile(
     rf".*?(?:if|when|given|with|and)\s+(?:i(?:'ve| have| got| scored)?|my\b.*?\bis|so far)?\s*(?:got|scored|have|on|of|is)?\s*{_NUM}\s*%?\s*(?:so far|already)?.*?(?:worth|weighted|weighting|counts? for|which is|being|is)\s*{_NUM}\s*%", re.I)
 
 _DAYQ = re.compile(
-    rf"{_LEAD}what(?:'s| is| was| will be| would be)? (?:the )?(?P<kind>day|date|weekday)(?: of the week)?"
-    rf"(?: is| was| will it be| would it be| will| would| is it going to be)?(?: it| that)?\s*(?:in |on )?(?P<rest>.+?)\W*$", re.I)
+    rf"{_LEAD}what(?:'s| is| was| will be| would be)? (?:the )?(?P<kind>day|date|weekday)\b(?: of the week)?"
+    #: A date or day wanted, not a question that merely starts "what date(s) ...": "what dates do I have in
+    #: December" asks for the notes' dates (round 3, R3-5).
+    rf"(?: is| was| will it be| would it be| will| would| is it going to be)?(?: it| that)?\s*(?:in |on )?(?!\s*(?:do|does|did|have|has|are|am|can|could|i|we|you|there)\b)(?P<rest>.+?)\W*$", re.I)
 _BETWEEN = re.compile(rf"{_LEAD}(?:how many |how much )?(?P<unit>days|weeks|months|nights)?\s*(?:are there |is there |have i got |do i have )?(?:between|from)\s+(?P<a>.+?)\s+(?:and|to|until|till)\s+(?P<b>.+?)\W*$", re.I)
 _COUNTDOWN = re.compile(
     rf"{_LEAD}(?:how (?:many|much) (?P<u>days|weeks|months|sleeps)(?: (?:are there|is there|do i have|have i got|are left|is left|left|to go|remain|remaining))?|how long|(?P<u2>days|weeks|months|sleeps)(?: left| to go)?)"
@@ -270,10 +272,20 @@ def _note_count(ctx: Ctx, topic: str) -> Reply | None:
     counted = utilities.counts(body)
     sents = len(study.sentences(body))
     words = counted["words"]
-    read = f", {'' if counted['read'].startswith('under') else 'a '}{counted['read']}" if counted["read"] else ""
+    read = f", {_read_said(counted['read'])}" if counted["read"] else ""
     detail = f"{counted['chars']} characters and about {sents} sentence{'s' if sents != 1 else ''}{read}"
     return Reply(compose.frame("count_note", ctx.mood, link=f"[**{study.title_of(body)}**](#/notes/{notes[0]['id']})",
                              words=f"{words} word{'s' if words != 1 else ''}", detail=detail))
+
+
+def _read_said(compact: str) -> str:
+    """The footer's "under a min", "4 min read" and "1.5h read" as a phrase in a sentence: "under a minute",
+    "a 4-minute read", "a 1.5-hour read" (R3-37)."""
+    if compact.startswith("under"):
+        return "under a minute"
+    if compact.endswith("h read"):
+        return f"a {compact[:-len('h read')]}-hour read"
+    return f"a {compact.split(' ')[0]}-minute read"
 
 
 def _word_count(ctx: Ctx, text: str) -> Reply | None:

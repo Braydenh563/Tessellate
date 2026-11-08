@@ -15,11 +15,16 @@ _PROPERTIES: dict[str, tuple[re.Pattern, re.Pattern, str]] = {
     #: key: (the question's word, the sentence's word or shape, the noun said)
     "phone": (
         # "phone" alone is a thing ("when did I get my phone", "cell respiration"): only a "what is X's phone"
-        # ask or one that says number is a number ask (PR 216 CI, 3.11).
+        # ask or one that says number is a number ask (PR 216 CI, 3.11). A bare "number" is a phone
+        # only beside a person or a business ("Sara's number", "the number for the dentist"), not
+        # "what is the number" or "the table number" (round 3, R3-2). "Number of" and "number to" are a
+        # count or an action ("number of mice", "the number to call"), never a person's.
         re.compile(
-            r"\bnumber\b(?!\s+of\b)|\b(?:phone|mobile|cell|telephone)\s+no\b"
+            r"\b(?:his|her|their|my|your|our)\s+(?:phone\s+|mobile\s+|cell\s+)?number\b"
+            r"|\w['\u2019]s?\s+(?:phone\s+|mobile\s+|cell\s+)?number\b|\bnumber\s+for\s+(?!(?:the\s+)?day\b)\w"
+            r"|\b(?:phone|mobile|cell|telephone)\s+(?:number|no)\b"
             r"|^(?:what(?:'s|s| is| are)?|give me|tell me|find)\b[^?]*\b(?:phone|mobile|cell|telephone)\s*[?.!]*$", re.I),
-        re.compile(r"\b(?:phone|mobile|cell|tel|telephone|call)\b", re.I), "phone number"),
+        re.compile(r"\b(?:phone|mobile|tel|telephone)\b", re.I), "phone number"),
     "password": (re.compile(r"\b(?:password|passcode|pin)\b", re.I), re.compile(r"\b(?:password|passcode|pin)\b", re.I), "password"),
     "address": (
         re.compile(r"\baddress\b", re.I),
@@ -29,7 +34,26 @@ _PROPERTIES: dict[str, tuple[re.Pattern, re.Pattern, str]] = {
 #: A "number" that is not a phone number: a count, a reference, a place in a list.
 _NOT_PHONE = re.compile(
     r"\b(?:how many|what number|which number|serial|order|house|flat|room|page|reference|booking|account|policy|ticket|"
-    r"sort code|item|step|day|week|month|year|line|chapter|lap|set|rep)\b", re.I)
+    r"sort code|item|step|day|week|month|year|line|chapter|lap|set|rep|table|seat|car|bus|size|shoe|plate|locker|bin|"
+    r"lucky|favourite|favorite|pin)\b|\bnumber\s+of\s+(?:the\s+|my\s+)?\w+s\b", re.I)
+
+
+_POSSESSIVE = re.compile(r"(?<![\w'\u2019])([A-Za-z][\w-]*(?:\s+[A-Za-z][\w-]*)?)['\u2019]s?\s+(?:phone\s+|mobile\s+|cell\s+)?number\b", re.I)
+_OF_SUBJECT = re.compile(r"\bnumber\s+for\s+([^?.!]{1,60})", re.I)
+_LEAD_WORDS = frozenset(("what", "whats", "what's", "is", "are", "give", "me", "tell", "find", "and", "also", "then"))
+
+
+def subject(question: str) -> str:
+    """Whose number is asked for, as the person wrote it ("Sara", "the dentist"); "" for a pronoun or none."""
+    text = " ".join((question or "").split())
+    hit = _POSSESSIVE.search(text)
+    if hit:
+        words = hit.group(1).split()
+        while words and words[0].lower() in _LEAD_WORDS:
+            words.pop(0)
+        return " ".join(words)
+    hit = _OF_SUBJECT.search(text)
+    return hit.group(1).strip() if hit else ""
 
 
 def asked(question: str) -> str:
