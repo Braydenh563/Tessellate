@@ -5855,13 +5855,13 @@ function nameMarkBuddyMoveTo(buddy, spot, instant = false) {
   //: not just appear suddenly in different locations"): a move that starts
   //: while another is under way starts from where it is drawn now, not from
   //: where the last one was going.
-  let was = { x: nmb.x, y: nmb.y };
+  let was = { x: nmb.x, y: nmb.y, pose: buddy.dataset.pose };
   const underway = (nmb.anim && nmb.anim.playState === "running") || (nmb.glideAnim && nmb.glideAnim.playState === "running");
   const char = buddy.querySelector(".nm-buddy-char");
   let lift = 0;
   if (underway) {
     const box = buddy.getBoundingClientRect();
-    was = { x: box.left, y: box.top };
+    was = { x: box.left, y: box.top, pose: buddy.dataset.pose };
     lift = Number.parseFloat(String(char ? getComputedStyle(char).translate : "").split(" ")[1]) || 0;
   }
   //: And the lean it was in: a float leans into its way and a shuffle
@@ -6197,6 +6197,8 @@ function nameMarkBuddyGo(buddy, dx, dy, spot = {}, poseChanged = false, was = { 
   //: tumbling from side screen across the screen ... when I am on a new
   //: page"): a far move a sub-view asked for (`nmb.quiet`) crossfades too.
   if (nameMarkBuddyNoTravel() || (nmb.quiet && distance > size * NMB_FAR_SIZES)) {
+    //: A new view's far move is a blink (sparkles, not a slide across the page; INBOX 1692) once the lazy file is here.
+    if (!nameMarkBuddyNoTravel() && nmb.travelPlay?.(buddy, dx, dy, size, nameMarkBuddyFlies(buddy), was, "blink")) return;
     nameMarkBuddyCrossfade(buddy, dx, dy, 420);
     return;
   }

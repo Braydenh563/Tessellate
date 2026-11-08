@@ -177,3 +177,91 @@ def test_the_idle_acts_are_quiet_and_wait_for_their_sheet() -> None:
 def test_it_wanders_off_less_often() -> None:
     wander = _body(AV, "nameMarkBuddyWander")
     assert "0.35" not in wander
+
+
+# --- INBOX 1692 (the owner: "transformed sideways off the screen at the top and on the screen at the bottom, there was no
+# real animation or life to it at all"; "a portal or like magic ... float on a cloud"). ---------------------------------
+
+NEW_MOVES = {"blink", "cloud", "bubble"}
+
+
+@needs_node
+def test_the_new_ways_turn_up_for_a_far_move_and_never_for_a_near_one() -> None:
+    assert NEW_MOVES <= _all_moves(_o(y0=800, x0=900, x1=100, dx=800, dy=-300))
+    assert not NEW_MOVES & _all_moves(_o(dx=90, dy=0, x0=400, x1=310))
+    assert not NEW_MOVES & _all_moves(_o(reduced=True))
+
+
+def _play(move: str, was_pose: str, now_pose: str = "stand") -> dict:
+    """Run one player in node against stubs; the timers are captured and fired in order, so what a move sets over time is seen."""
+    stub = """
+const NMB_W = 64, NMB_H = 92, NMB_BLEND_IN_MS = 120;
+var innerWidth = 1440, innerHeight = 900;
+const timers = [];
+const setTimeout = (fn, ms) => { timers.push([ms, fn]); return timers.length; };
+const clearTimeout = () => {};
+const nmbTempo = { seen: 0, timer: 0 };
+function nameMarkBuddyTempo() {}
+function nameMarkBuddyBlend(b, fn) { fn(); }
+const made = [];
+const document = { createElement: () => ({ style: { setProperty() {} }, setAttribute() {}, appendChild() {}, animate() {}, remove() {}, className: "" }) };
+const nmb = { x: 100, y: 700, lx: 0, ly: 0, pose: %s, travelFx: [], travelTimers: [], afterClean: (fn) => fn(), anim: null };
+const buddy = { dataset: { pose: %s }, classList: { add() {}, remove() {}, contains: () => false }, parentElement: null };
+""" % (json.dumps(now_pose), json.dumps(was_pose))
+    run = f"""
+const ctx = {{ was: {{ x: 1200, y: 100, pose: {json.dumps(was_pose)} }}, frames: [], body: null, ms: 0, turn: "" }};
+COMPANION_TRAVEL_PLAYERS[{json.dumps(move)}](buddy, 1100, -600, ctx);
+const poseAtStart = buddy.dataset.pose;
+const log = [poseAtStart];
+for (const [ms, fn] of timers.sort((a, b) => a[0] - b[0])) {{ fn(); log.push(buddy.dataset.pose); }}
+console.log(JSON.stringify({{ ctx, poseAtStart, log }}));
+"""
+    done = subprocess.run(["node", "-e", stub + TRAVEL.replace("nmb.travelPlay = companionTravelPlay;", "") + run], capture_output=True, text=True, check=True)
+    return json.loads(done.stdout)
+
+
+@needs_node
+def test_an_edge_move_from_a_hang_keeps_the_hang_until_it_is_out_of_sight() -> None:
+    r = _play("edge", "hang")
+    assert r["poseAtStart"] == "hang"  # it did not stand up on the spot
+    assert r["log"][-1] == "stand"  # and has the new pose once it is gone
+    assert any(f["opacity"] == 0 for f in r["ctx"]["frames"]) and any(f["opacity"] == 1 for f in r["ctx"]["frames"])
+
+
+@needs_node
+def test_the_edge_move_has_a_body_that_thins_through_the_edge_and_eased_runs() -> None:
+    r = _play("edge", "stand")
+    body, frames = r["ctx"]["body"], r["ctx"]["frames"]
+    assert body and any(b["scale"].startswith("0.2 ") for b in body)  # squeezed thin through the edge, both ways
+    assert sum(b["scale"].startswith("0.2 ") for b in body) >= 3
+    assert any(f.get("easing") in ("ease-in", "ease-out") for f in frames)  # not one linear slide
+    assert r["ctx"]["ms"] >= 1600
+
+
+@needs_node
+@pytest.mark.parametrize("move", sorted(NEW_MOVES))
+def test_the_new_moves_play_with_a_body_and_end_in_place(move: str) -> None:
+    r = _play(move, "stand")
+    ctx = r["ctx"]
+    assert ctx["body"] and ctx["frames"] and ctx["ms"] >= 1500
+    last = ctx["frames"][-1]
+    assert last["translate"] == "0px 0px" and last["opacity"] == 1
+    assert ctx["frames"][0]["translate"] == "1100px -600px"
+
+
+def test_the_wisp_the_spark_the_cloud_and_the_bubble_have_their_styles() -> None:
+    css = (ROOT / "frontend" / "css" / "companion-travel-lazy.css").read_text(encoding="utf-8")
+    for cls in ("nmb-wisp", "nmb-spark", "nmb-cloud", "nmb-bubble"):
+        assert f".{cls}" in css, cls
+    assert "nmb-wisp" in TRAVEL and "nmb-spark" in TRAVEL
+
+
+def test_a_new_views_far_move_blinks_instead_of_crossfading_when_the_file_is_here() -> None:
+    go = _body(AV, "nameMarkBuddyGo")
+    assert '"blink")) return;' in go and go.index('"blink")') < go.index("nameMarkBuddyCrossfade(buddy, dx, dy, 420)")
+
+
+def test_the_travel_file_stays_small() -> None:
+    import gzip
+
+    assert len(gzip.compress((JS / "companion-travel.js").read_bytes())) <= 6000

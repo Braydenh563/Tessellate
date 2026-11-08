@@ -29,7 +29,12 @@
 //: a side only). Nothing here clips it.
 //: `nmb.travelForce` names a move to play whatever the chooser would say (the
 //: sweep, scratchpad/ui-sweeps/companiontravel.js).
-const COMPANION_TRAVEL_MOVES = ["walk", "portal", "smoke", "edge"];
+//: INBOX 1692 (the owner: "no real animation or life", "a portal or like magic ... float on a cloud"): three more calm
+//: ways, and the edge walk wraps with an exit and an entry.
+//:   blink   sparkles gather, it is gone, sparkles scatter where it lands
+//:   cloud   a small cloud forms under it and it rides it, bobbing, to the place
+//:   bubble  it is lifted inside a bubble that rises, drifts and sets it down
+const COMPANION_TRAVEL_MOVES = ["walk", "portal", "smoke", "edge", "blink", "cloud", "bubble"];
 //: A way on foot off the window and back in may not be longer than this many of its own widths.
 const COMPANION_TRAVEL_EDGE_SIZES = 14;
 
@@ -42,7 +47,7 @@ function companionTravelWeights(o) {
   const d = Math.hypot(o.dx, o.dy);
   const [width] = o.win;
   //: A puff is rare (INBOX 1683 u: the owner saw only puffs); the portal and the edge walk lead, a walk keeps the near.
-  const w = { walk: d <= s * 8 ? 3 : 1.2, portal: d > s * 2.5 ? 3 : 0, smoke: d > s * 2 ? 0.25 : 0, edge: 0 };
+  const w = { walk: d <= s * 8 ? 3 : 1.2, portal: d > s * 2.5 ? 3 : 0, smoke: d > s * 2 ? 0.25 : 0, edge: 0, blink: d > s * 2 ? 2 : 0, cloud: d > s * 2.5 ? 2.5 : 0, bubble: d > s * 2.5 ? 1.8 : 0 };
   const out = Math.min(o.x0, width - s - o.x0);
   const into = Math.min(o.x1, width - s - o.x1);
   if (d > s * 3 && out + into + s * 2 <= s * COMPANION_TRAVEL_EDGE_SIZES) w.edge = 2.5;
@@ -123,6 +128,31 @@ function companionTravelSteps(buddy, ms, len) {
   companionTravelAt(ms + len, () => nameMarkBuddyBlend(buddy, () => buddy.classList.remove("nmb-walking")));
 }
 
+//: A ride (cloud, bubble): it is carried the whole way, an element of its own (the cloud, the bubble) moving with it
+//: on the same eased path, formed in the first tenth and thinned at the last. `o.bob` is how far the path arcs up
+//: (a cloud a little, a bubble a lot); `o.rise` the figure's lift onto it.
+function companionTravelRide(buddy, dx, dy, ctx, cls, o) {
+  const host = buddy.parentElement;
+  const T = Math.min(3400, 1800 + Math.hypot(dx, dy) * 1.2);
+  const path = (k) => `${Math.round(dx * (1 - k))}px ${Math.round(dy * (1 - k) - o.bob * Math.sin(Math.PI * k))}px`;
+  const marks = [0, 0.1, 0.3, 0.5, 0.7, 0.9, 1];
+  ctx.ms = T;
+  ctx.frames = marks.map((k, i) => ({ translate: path(k), opacity: 1, offset: k, easing: i ? "ease-in-out" : "ease-in" }));
+  ctx.body = [{ translate: "0px 0px", scale: "1", offset: 0 }, { translate: `0px ${o.rise}px`, scale: o.scale, offset: 0.12, easing: "ease-out" }, { translate: `0px ${o.rise}px`, scale: o.scale, offset: 0.88 }, { translate: "0px 0px", scale: "1", offset: 1 }];
+  ctx.turn = dx > 0 ? "l" : "r";
+  if (!host) return;
+  const el = document.createElement("span");
+  el.className = cls;
+  el.setAttribute("aria-hidden", "true");
+  el.style.left = `${nmb.lx}px`;
+  el.style.top = `${nmb.ly}px`;
+  const at = (k) => ({ translate: path(k) });
+  el.animate(marks.map((k, i) => ({ ...at(k), opacity: i === 0 || i === 6 ? 0 : 1, scale: i === 0 || i === 6 ? "0.3" : "1", offset: k })), { duration: T, easing: "ease-in-out" });
+  host.appendChild(el);
+  nmb.travelFx.push(el);
+  setTimeout(() => el.remove(), T + 80);
+}
+
 const COMPANION_TRAVEL_PLAYERS = {
   //: A puff over it, gone, a puff there, back. 900ms.
   smoke(buddy, dx, dy, ctx) {
@@ -168,36 +198,74 @@ const COMPANION_TRAVEL_PLAYERS = {
     companionTravelSteps(buddy, T * 0.14, T * 0.28);
     companionTravelSteps(buddy, T * 0.61, T * 0.29);
   },
-  //: Off the side of the window nearest where it was, in from the side nearest where it goes.
+  //: Off the side of the window nearest where it was, in from the side nearest where it goes. It keeps the pose it
+  //: had until it is out of sight (a hang does not stand up on the spot), squeezes thin through the edge with wisps
+  //: trailing and, mirrored, comes in the same way; each run is eased, never one linear slide (INBOX 1692).
   edge(buddy, dx, dy, ctx) {
     const W = innerWidth;
     const was = ctx.was;
     const outTo = was.x + NMB_W / 2 < W / 2 ? -(was.x + NMB_W + 8) : W - was.x + 8;
     const inFrom = nmb.x + NMB_W / 2 < W / 2 ? -(nmb.x + NMB_W + 8) : W - nmb.x + 8;
-    const t1 = Math.max(500, Math.abs(outTo) * COMPANION_TRAVEL_PACE);
-    const t2 = Math.max(500, Math.abs(inFrom) * COMPANION_TRAVEL_PACE);
+    const t1 = Math.max(700, Math.abs(outTo) * COMPANION_TRAVEL_PACE);
+    const t2 = Math.max(700, Math.abs(inFrom) * COMPANION_TRAVEL_PACE);
     const gap = 260;
     const T = t1 + gap + t2;
     const a = t1 / T;
+    const b = (t1 + gap) / T;
+    const thin = "0.2 1.06";
     ctx.frames = [
-      { translate: `${dx}px ${dy}px`, offset: 0 },
-      { translate: `${dx + outTo}px ${dy}px`, offset: a },
-      { translate: `${inFrom}px 0px`, offset: a + 0.001 },
-      { translate: `${inFrom}px 0px`, offset: (t1 + gap) / T },
-      { translate: "0px 0px", offset: 1 },
+      { translate: `${dx}px ${dy}px`, opacity: 1, offset: 0, easing: "ease-in" },
+      { translate: `${dx + outTo * 0.8}px ${dy}px`, opacity: 1, offset: a * 0.8 },
+      { translate: `${dx + outTo}px ${dy}px`, opacity: 0, offset: a },
+      { translate: `${inFrom}px 0px`, opacity: 0, offset: a + 0.001 },
+      { translate: `${inFrom}px 0px`, opacity: 0, offset: b, easing: "ease-out" },
+      { translate: `${inFrom * 0.2}px 0px`, opacity: 1, offset: b + (1 - b) * 0.2 },
+      { translate: "0px 0px", opacity: 1, offset: 1 },
+    ];
+    ctx.body = [
+      { scale: "1 1", offset: 0 }, { scale: "1 1", offset: a * 0.5 }, { scale: thin, offset: a * 0.85, easing: "ease-in" },
+      { scale: thin, offset: b }, { scale: thin, offset: b + (1 - b) * 0.15, easing: "ease-out" }, { scale: "1.04 0.98", offset: b + (1 - b) * 0.75 }, { scale: "1 1", offset: 1 },
     ];
     ctx.ms = T;
     ctx.turn = outTo < 0 ? "l" : "r";
-    companionTravelSteps(buddy, 0, t1);
+    const hung = was.pose === "hang";
+    if (was.pose && was.pose !== nmb.pose) {
+      buddy.dataset.pose = was.pose;
+      companionTravelAt(t1 + gap * 0.5, () => (buddy.dataset.pose = nmb.pose));
+    }
+    if (!hung) companionTravelSteps(buddy, 0, t1);
     companionTravelSteps(buddy, t1 + gap, t2);
     companionTravelAt(t1 + gap, () => (buddy.dataset.turn = inFrom < 0 ? "r" : "l"));
+    for (let i = 0; i < 3; i += 1) {
+      companionTravelFx(buddy, "nmb-wisp", dx + outTo * (0.5 + i * 0.18), dy, a * T * (0.6 + i * 0.12), 1, 700);
+      companionTravelFx(buddy, "nmb-wisp", inFrom * (0.5 - i * 0.15), 0, (b + 0.04 + i * 0.05) * T, 1, 700);
+    }
+  },
+  //: Sparkles gather round it, it is gone, sparkles scatter where it lands. 1.5s.
+  blink(buddy, dx, dy, ctx) {
+    const T = 1500;
+    const cut = 0.34;
+    const pos = (x, y, extra = {}) => ({ translate: `${x}px ${y}px`, ...extra });
+    ctx.frames = [pos(dx, dy, { opacity: 1, offset: 0 }), pos(dx, dy, { opacity: 1, offset: 0.12 }), pos(dx, dy, { opacity: 0, offset: cut }), pos(0, 0, { opacity: 0, offset: cut + 0.001 }), pos(0, 0, { opacity: 0, offset: 0.52 }), pos(0, 0, { opacity: 1, offset: 0.78 }), pos(0, 0, { opacity: 1, offset: 1 })];
+    ctx.ms = T;
+    ctx.body = [{ scale: "1", offset: 0 }, { scale: "1.12", offset: 0.2, easing: "ease-in" }, { scale: "0.3", offset: cut }, { scale: "0.3", offset: 0.52 }, { scale: "1.08", offset: 0.82, easing: "ease-out" }, { scale: "1", offset: 1 }];
+    companionTravelFx(buddy, "nmb-spark", dx, dy, 0, 8, 900);
+    companionTravelFx(buddy, "nmb-spark", 0, 0, T * 0.5, 8, 900);
+  },
+  //: A cloud forms under it; it steps up, rides it (eased, with a slow bob) and steps off. 1.8s to 3.4s by the way.
+  cloud(buddy, dx, dy, ctx) {
+    companionTravelRide(buddy, dx, dy, ctx, "nmb-cloud", { rise: -8, bob: 6, scale: "1" });
+  },
+  //: Lifted in a bubble that rises, drifts over and sets it down. The same time.
+  bubble(buddy, dx, dy, ctx) {
+    companionTravelRide(buddy, dx, dy, ctx, "nmb-bubble", { rise: -14, bob: 70, scale: "0.9" });
   },
 };
 
 //: Play a far move; false when it should be walked (the chooser's "walk", or no player for it).
-function companionTravelPlay(buddy, dx, dy, size, flies, was) {
+function companionTravelPlay(buddy, dx, dy, size, flies, was, force = "") {
   const o = { last: nmb.travelLast || "", dx, dy, size, flies, reduced: nameMarkBuddyNoTravel(), win: [innerWidth, innerHeight], x0: was.x, x1: nmb.x };
-  const move = nmb.travelForce || companionTravelChoose(o, Math.random());
+  const move = force || nmb.travelForce || companionTravelChoose(o, Math.random());
   nmb.travelLast = move;
   const player = COMPANION_TRAVEL_PLAYERS[move];
   if (!player) return false;
