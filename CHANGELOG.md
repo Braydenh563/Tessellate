@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Composer: a note whose title holds the subject leads the answer; 'what dates', 'the date of' no longer search for the word date (R3-20, D1, R3-5).
 - Composer: a negated or noun-like first word is quoted, not planned; a labelled line and a two-sentence line are quoted as written; a list keeps its commas; a title-less note is named once (R3-10, R3-11, R3-12).
 - Composer: "wat do i know abuot lisbn" no longer drops "lisbn" as a name called at the end, "wat do i know about tokio" is searched as "what do i know about tokio" (it said none of your notes mention tokyo), and "wen is the exam" is read as when (audit r3, R3-17).
 - Composer: "possibly", "exactly" and "because" are asking words, never listed as missing from the notes, and a "when" answered by a dated sentence no longer ends "None of these notes mention “appointment”" (audit r3, R3-19 and R3-29).

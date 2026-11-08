@@ -3624,6 +3624,11 @@ def _ahead(fact: Fact, today: date) -> bool:
     return any(fact.sentence.start <= at < fact.sentence.end for _day, at in composer_body._days_named(fact.view, today, "future"))  # noqa: SLF001
 
 
+def _ahead_if(on: bool, fact: Fact) -> bool:
+    """Whether a present-tense "when" ask is answered by a day still to come (R3-18)."""
+    return on and _ahead(fact, _TODAY.get())
+
+
 def _best(facts: list[Fact], question: str, cue: re.Pattern | None = None) -> Fact | None:
     #: Without the asking words: "what day did I run 8 km" is not about a "day".
     stems = set(_subject(question))
@@ -3671,7 +3676,7 @@ def _best(facts: list[Fact], question: str, cue: re.Pattern | None = None) -> Fa
         #: latest ask. Said in the tuple itself: CodeQL lost the local in this
         #: closure and read it as possibly unset.
         titled = id(f.view) in titled_views
-        return (not asked_back, acts, _cued(cue, f.sentence.text), now_ask and _ahead(f, _TODAY.get()), not (latest and f.sentence.kind in {"item", "task"}), id(f.view) not in old, _label_asked(f.label, question), titled, hits, newest, own, asks_feeling and _feeling(f.sentence.text), same_figure, -f.view.rank, -f.sentence.order)
+        return (not asked_back, acts, _cued(cue, f.sentence.text), _ahead_if(now_ask, f), not (latest and f.sentence.kind in {"item", "task"}), id(f.view) not in old, _label_asked(f.label, question), titled, hits, newest, own, asks_feeling and _feeling(f.sentence.text), same_figure, -f.view.rank, -f.sentence.order)
 
     return max(facts, key=rank) if facts else None
 
@@ -4551,6 +4556,12 @@ def _scope(question: str, asked: str, notes: list[dict], today: date, voice: str
     return (views if wants_context else [v for v in views if not _context_note(v)]), wants_context
 
 
+def _title_holds(view, words: list[str]) -> bool:  # noqa: ANN001
+    """Whether the note's title has every word of the subject in it."""
+    held = getattr(view, "title_words", None)
+    return bool(held) and all(composer._holds(composer._stem(t), held) for t in words)  # noqa: SLF001
+
+
 def _defines(view, words: list[str]) -> float:
     """How plainly `view` is the note about `words`: 2 when its title is the
     subject ("Sara", "Uni"), 1 when an opening sentence says what it is
@@ -4562,6 +4573,10 @@ def _defines(view, words: list[str]) -> float:
     if title and (title == " ".join(words).lower() or composer._words(title) == composer._words(" ".join(words))):
         return 2
     said = re.compile(r"^(?:the\s+)?" + r"\s+".join(re.escape(t) for t in words) + r"\s+(?:is|are|was|were|means|refers to)\b", re.I)
+    #: A title that holds every word of the subject ("Meeting with Priya", "Weekend plans") is the note about it,
+    #: ahead of a sentence that merely says something (R3-20, D1).
+    if title and _title_holds(view, words):
+        return 1.8
     #: Filed under the subject (its category, its tag) is a definition too
     #: (audit 1031 C4: the Books note leads "what do I know about reading").
     filed = bool(getattr(view, "filed_words", None)) and all(composer._stem(t) in view.filed_words for t in words)  # noqa: SLF001

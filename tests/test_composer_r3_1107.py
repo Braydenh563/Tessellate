@@ -179,3 +179,48 @@ def test_r3_12_a_title_less_note_is_named_once():
     said = say("what do I know about standup", "Order of the day: standup, lunch with Priya, dentist", "# Shopping\n\n- milk",
                "Weekly standup is every Monday at 9am in the small room", "First day of uni is 21 September")
     assert "your note the order" not in said.lower(), said
+
+
+# --- R3-20, D1: the note whose title holds the subject leads ----------------------------------
+
+def test_r3_20_a_title_with_the_subject_in_it_leads():
+    said = say("who is Priya", "# The order of the day\n\nStandup, then lunch. Priya does the slides, you do the report.", "# Meeting with Priya\n\nPriya leads the design team at Acme",
+               "# Project Atlas\n\nPriya owns the launch plan", "# Shopping\n\n- milk")
+    assert said.index("design team") < said.index("slides"), said
+
+
+def test_r3_20_defines_ranks_a_title_with_the_subject_above_a_sentence():
+    from tessellate.ai import composer_digest
+
+    class V:
+        titled = True
+        filed_words = frozenset()
+
+        def __init__(self, title, text):
+            from tessellate.ai import composer
+
+            self.title, self.title_words = title, frozenset(composer._stem(w) for w in composer._words(title))
+            self.sentences = [type("S", (), {"text": text})()]
+
+    titled = V("Meeting with Priya", "Design review on Friday")
+    said = V("Order of the day", "Priya is the one who does the slides")
+    exact = V("Priya", "Sister")
+    assert composer_digest._defines(exact, ["priya"]) > composer_digest._defines(titled, ["priya"]) > composer_digest._defines(said, ["priya"])
+
+
+# --- R3-5: "date" in a date ask is not a word to find ---------------------------------------
+
+PASSPORT = ["# Passport\n\nExpires 12 March 2031", "# Test\n\nThe unit test for the parser passes now, the date test still fails.", "# Shopping\n\n- milk",
+            "Dentist check-up on 11 November"]
+
+
+def test_r3_5_a_date_ask_never_finds_the_date_test():
+    said = say("what is the date of my passport expiry", *PASSPORT)
+    assert "date test" not in said and "12 March 2031" in said, said
+
+
+@pytest.mark.parametrize("question", ["what dates do I have", "which date is my passport expiry", "what is the date of the exam"])
+def test_r3_5_date_is_no_search_term_in_a_date_ask(question):
+    from tessellate.ai import composer
+
+    assert "date" not in composer.subject_terms(question) and "dates" not in composer.subject_terms(question), question

@@ -551,9 +551,16 @@ def subject_terms(question: str) -> list[str]:
         if word in _ASKING_WORDS or word in seen:
             continue
         seen.append(word)
+    #: "What dates do I have", "the date of my passport expiry" ask for dates; the word is no term to find in a
+    #: note ("the date test still fails"; R3-5).
+    if _DATE_ASK.search(question):
+        seen = [w for w in seen if w not in ("date", "dates")]
     #: A praise word alone names nothing ("anything interesting", "the cool
     #: stuff"); beside a noun ("interesting bean") it stays (INBOX 1561).
     return [] if all(w in question_noise.PRAISE_WORDS for w in seen) else seen
+
+
+_DATE_ASK = re.compile(r"\b(?:what|which)\s+dates?\b|\bdates?\s+(?:of|for)\b", re.I)
 
 
 _COMPARE_SIDES = (

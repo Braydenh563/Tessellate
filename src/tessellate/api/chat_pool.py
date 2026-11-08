@@ -301,6 +301,12 @@ def _with_records(session: Session, question: str, entries: list, locale: str | 
     return merged
 
 
+def _slips_put_right(question: str) -> str:
+    """The question searched with its slips put right ("wat do i know abuot tokio"), which the search would
+    otherwise match on "wat" and "abuot" (round 3, R3-17)."""
+    return question_noise.repair(question_noise.tidy(" ".join(question.split()))) or question
+
+
 def _with_holders(session: Session, question: str, entries: list, locale: str | None) -> list:  # noqa: ANN001
     """"The number for the dentist" is searched on the word "number" too, which
     fills the five places with other notes that say number: the person's notes are fetched as well, on the name alone, so a
