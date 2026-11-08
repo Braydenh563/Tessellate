@@ -763,7 +763,7 @@ function nameMarkBuddyShaken(buddy, g, sx, sy) {
   //: Three fast looks in a row, each within `look` ms of the last: a quick wheel flick of a list is one or two.
   g.fastN = now - (g.fastAt || -1e9) < k.look ? (g.fastN || 0) + 1 : 1;
   g.fastAt = now;
-  if (g.fastN < k.looks || nmbFollow.moving || nmb.pinned || nmb.visit || nmb.flight || nameMarkBuddyNoTravel() || nameMarkBuddyMenuOpen()) return false;
+  if (g.fastN < k.looks || nmb.cold || nmbFollow.moving || nmb.pinned || nmb.visit || nmb.flight || nameMarkBuddyNoTravel() || nameMarkBuddyMenuOpen()) return false;
   if (now - (nmb.shakenAt || -1e9) < k.gap) return false;
   nmb.shakenAt = now;
   const cut = Math.min(1, NMB_THROW.max / Math.max(1e-9, Math.hypot(sx, sy)));
