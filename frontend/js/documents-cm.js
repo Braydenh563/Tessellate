@@ -1880,7 +1880,7 @@ globalThis.docLists = (() => {
     return { from: lo, to: hi, lines: out };
   };
   //: A bullet pasted from a web page or a word processor: a Unicode dash, "•", "◦" or "▪" opening a line.
-  const LOOK = /^([ \t]*)[‐-—•◦▪][ \t]+(?=\S)/gm;
+  const LOOK = /^([ \t]*)[\u2010-\u2014\u2022\u25E6\u25AA][ \t]+(?=\S)/gm;
   const pasteFix = (text, first = true) => {
     const cut = first ? 0 : text.indexOf("\n") + 1 || text.length;
     return text.slice(0, cut) + text.slice(cut).replace(LOOK, "$1- ");

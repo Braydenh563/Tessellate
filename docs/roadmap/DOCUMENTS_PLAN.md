@@ -1591,7 +1591,7 @@ Dots: `-` disc, `*` circle, `+` square, `-` plus two spaces dash. Numbers:
 `1.`, `1)`, `a.` and `i.` (the last two count only as a run of two, `a.` then
 `b.` or `i.` then `ii.`; `h. i. j.` stays letters). One list is one marker at
 one level. The List and Numbered menus restyle the list at the caret as one
-undo step; a pasted `‐ ‑ ‒ – —`, `•`, `◦` or `▪` at a line start becomes `- `.
+undo step; a pasted Unicode dash (U+2010 to U+2014), `•`, `◦` or `▪` at a line start becomes `- `.
 Block `docLists`, documents-cm.js. Scout of the bundled CodeMirror:
 - Already in prose: fold, multiple cursors, rectangular select, brackets, search, merge view.
 - Row L1 (S): Enter in an `a.`, `i.` or dash list does not continue the marker (markdown keymap knows only CommonMark).

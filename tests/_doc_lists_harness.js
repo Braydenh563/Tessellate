@@ -73,7 +73,7 @@ out.nestedOnly = L.restyle(["1. top", "   - sub", "   - sub two"], 1, 1, "circle
 // A pasted look-alike marker at a line start becomes "- ".
 out.paste = [
   "• one\n◦ two\n▪ three",
-  "‐ a\n‑ b\n‒ c\n– d\n— e",
+  "\u2010 a\n\u2011 b\n\u2012 c\n\u2013 d\n\u2014 e",
   "  • indented",
   "no marker • inside stays",
   "•nospace",
