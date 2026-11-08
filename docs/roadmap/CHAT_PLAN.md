@@ -1298,7 +1298,7 @@ branch's pint and simpleeval go with Brief 35 (policy 1).
 | T7 | Checklists | Checklist units in `read_note`; done counts | Make a checklist from a sentence; tick by chat | "make a checklist: milk, eggs, bread" creates a note with `- [ ]` lines; "tick milk" edits one line | S | 7 |
 | T8 | Counters | None | "add 1 to coffee", "how many coffees this week" | A counter is a note titled "Counter: coffee" with a numeric property, incremented by an act; the count over a window is derived from dated lines | M | 7 |
 | T9 | Timers | Reminders with `due_at`, `reminder_parser.relative_delta` ("in 20 minutes") | A timer in a chat | A timer is a reminder due in N minutes, titled "Timer: 10 minutes"; the confirm card says so; no countdown claim | S | 7 |
-| T10 | Random pick | `resurface.ranked` | "pick one of pizza, sushi, tacos", "pick a number between 1 and 10" | Seeded by session salt and turn; the result is a computed value labelled "random" | S | 2 |
+| T10 | Random pick | Built. Moved to HISTORY.md ("Moved from the plans, 2026-11-08 (CHAT_PLAN T10)"). | | | | |
 | T11 | Dice and coin | None | "roll 2d6", "flip a coin", "roll a dice" | `random` with the same labelling; the roll is stated with each die | S | 2 |
 | T12 | Templates | See X13 | See X13 | See X13 | M | 7 |
 | T13 | Time and date now | Gemini `utility` shape, invisible | Today's date, the time, week number, "what day is it" | Local clock and the user's timezone setting; computed | S | 2 |

@@ -640,7 +640,7 @@ HELP_TOPICS: list[dict] = [
             "“What's due this week”, “what's left to do”, “plan my week”, “when is my exam” and “how long until the exam” read your reminders, the dates "
             "your notes give and your open checklist items. It also works out percentages, marks needed, dates "
             "(“what day is 3 weeks from friday”, “how many weeks until christmas”, “how many days since 1 october”) and word counts, and defines common study terms your notes "
-            "do not cover. After a due or plan list, “the second one” and “why” explain a line and where it came from; "
+            "do not cover. “Pick one of pizza, sushi, tacos” picks one of the options you type, at random and without reading a note.After a due or plan list, “the second one” and “why” explain a line and where it came from; "
             "“What did I write about databases this week” lists that time's notes on a topic, dated, and “outline lecture 5” shows a note's headings with a word count each; "
             "after a reply that says a tool is off, “turn it on” links its switch (it never flips it for you). "
             "Every answer about a note is that note's own words."
