@@ -251,7 +251,7 @@ def where_written(question: str, notes: list[dict], *, today: date | None = None
 #: a rank by day inside the subject, not a search. `_plain` collapsed the
 #: spaces, so each one below is a single literal and no two quantifiers share characters.
 _ORDINAL_ABOUT = re.compile(
-    r"^(?:(?:what|which) (?:is|was) |show me |tell me )?(?:my |the )?(?P<end>first|oldest|earliest|last|latest|newest|most recent)"
+    r"^(?:(?:what|which) (?:is|was) |show me |tell me )?(?:my |the )?(?P<end>first|oldest|earliest|last)"
     r"(?: note| entry)?(?: (?:that )?i (?:wrote|made|saved|noted))? (?:about|on|mentioning|that mentions) (?:the |my )?(?P<rest>\S.*)$",
     re.I,
 )
