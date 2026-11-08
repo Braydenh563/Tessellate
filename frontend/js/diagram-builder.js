@@ -258,9 +258,7 @@
     connect.classList.add("dgm-connect");
     connect.setAttribute("aria-label", `Connect to…, from ${text}`);
     card.append(connect);
-    const menu = kebabMenu(blockItems(S, key), `Menu for ${text}`);
-    menu.classList.add("dgm-menu");
-    card.append(menu);
+    card.append(diagramModel.library.lazyKebab(() => blockItems(S, key), `Menu for ${text}`));
     block.append(card);
     if (joins.length) {
       const row = el("div", "dgm-joins");
@@ -533,8 +531,7 @@
     return menu;
   }
 
-  //: The host's rows can depend on the diagram (the dialog's look row names the look that is not on), and the menu is built once with the pane:
-  //: when they differ after a redraw it is built again in its place, keeping the bar's roving Tab stop.
+  //: The host's rows can depend on the diagram: when they differ after a redraw the menu is rebuilt in place, keeping the Tab stop.
   function refreshMore(S) {
     const old = S.root.querySelector(".dgm-more");
     if (!old || old.dataset.rows === (S.io.menu || []).map((row) => row.label).join("|")) return;

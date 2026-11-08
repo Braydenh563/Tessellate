@@ -229,7 +229,7 @@ def test_the_pane_is_one_tree_of_cards_with_the_dock_recipe_and_kebab_menus():
     #: The dock is built by diagram-bar.js since 1661 D2; the recipe (the dock class and name) is unchanged.
     bar = (BUILDER.parent / "diagram-bar.js").read_text(encoding="utf-8")
     assert 'dataset.dockName = "diagram"' in bar and 'el("div", "dock dgm-dock")' in bar
-    assert "kebabMenu(blockItems(S, key)" in code and "openMenuAtPoint" in code and "wireLongPress(S.tree" in code
+    assert "lazyKebab(() => blockItems(S, key)" in code and "openMenuAtPoint" in code and "wireLongPress(S.tree" in code
     # Relabel in place is the board's pattern: plaintext-only, Enter commits, Escape reverts.
     assert '"contenteditable", "plaintext-only"' in code and 'event.key !== "Enter" && event.key !== "Escape"' in code
     # The keys of the plan's keyboard row.
@@ -324,3 +324,17 @@ def test_the_row_swatch_is_a_named_button_and_the_shape_menu_rows_draw_their_sha
     # The menu rows are made here because setLabel takes only ph: icons.
     assert "shapeRow(" in code and "ph-check" in code and "ph:square" not in code
     assert ".dgm-swatch" in css and "min-inline-size: 1.5rem" in css and ".dgm-swatch:focus-visible" in css
+
+
+def test_a_rows_menu_is_built_on_its_first_press_not_per_row():
+    # 1108 P2: 41 rows built 41 menus (each with its shape submenu) on open: 3,112 tree nodes, 287 listeners.
+    # The row carries only the opener; `kebabMenu` runs inside the press, in both the flowchart and the kinds' panes.
+    code = BUILDER.read_text(encoding="utf-8")
+    row = code.split("function buildRow(", 1)[1].split("function groupGlyph", 1)[0]
+    assert "diagramModel.library.lazyKebab(() => blockItems(S, key)" in row
+    assert not re.search(r"const menu = kebabMenu\(", row)
+    lib = (BUILDER.parent / "diagram-library.js").read_text(encoding="utf-8")
+    lazy = lib.split("function lazyKebab(", 1)[1].split("diagramModel.library =", 1)[0]
+    assert "kebabMenu(items(), label)" in lazy and "again.click()" in lazy and "stub.replaceWith(real)" in lazy
+    kinds = (BUILDER.parent / "diagram-kinds.js").read_text(encoding="utf-8")
+    assert "diagramModel.library.lazyKebab(() => itemsFor(S, key)" in kinds
