@@ -30,7 +30,8 @@
             //: Every glyph in a slot of one width, so the names start at the same x (R6.11: 57, 54 and 56 px before).
             const slot = document.createElement("span");
             slot.className = "dgm-add-glyph";
-            slot.append(tile.firstElementChild.cloneNode(true));
+            //: The glyph by what it is, not by its place: a tile that lost its glyph printed its name here.
+            slot.append(tile.querySelector(":scope > :not(.dgm-tile-name)").cloneNode(true));
             row.firstElementChild.replaceWith(slot);
             const hint = document.createElement("small");
             hint.className = "dgm-add-hint muted";

@@ -1205,6 +1205,14 @@
   inline-size: 1.5rem;
 }
 
+/* The shelf's caret menu: the tile's glyph in one 1.25em column, so the names line up. */
+.dgm-menu-glyph {
+  flex: none;
+  display: inline-grid;
+  place-items: center;
+  inline-size: 1.25rem;
+}
+
 .dgm-add-glyph > .dgm-group-icon {
   font-size: var(--text-h3);
 }

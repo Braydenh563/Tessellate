@@ -2,9 +2,9 @@
 
 Generated 2026-11-08 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7902, frontend ids 2652, CSS sections 522, backend routes 649, backend modules 9154, test files 2215, tests 18612, plan headings 1004, app scripts 28, boot scripts 37, script files 263.
+Counts: frontend functions 7908, frontend ids 2652, CSS sections 522, backend routes 649, backend modules 9154, test files 2216, tests 18620, plan headings 1004, app scripts 28, boot scripts 37, script files 263.
 
-## Frontend functions (7902)
+## Frontend functions (7908)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -3201,13 +3201,13 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `boxOf` | frontend/js/diagram-canvas.js:29 |
-| `groupBox` | frontend/js/diagram-canvas.js:28 |
-| `imageOf` | frontend/js/diagram-canvas.js:27 |
-| `node` | frontend/js/diagram-canvas.js:32 |
-| `over` | frontend/js/diagram-canvas.js:44 |
+| `boxOf` | frontend/js/diagram-canvas.js:40 |
+| `groupBox` | frontend/js/diagram-canvas.js:39 |
+| `imageOf` | frontend/js/diagram-canvas.js:38 |
+| `node` | frontend/js/diagram-canvas.js:43 |
+| `over` | frontend/js/diagram-canvas.js:55 |
 | `overlay` | frontend/js/diagram-canvas.js:10 |
-| `wire` | frontend/js/diagram-canvas.js:72 |
+| `wire` | frontend/js/diagram-canvas.js:90 |
 
 ### frontend/js/diagram-edge-pick.js (1)
 
@@ -3222,17 +3222,22 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `overlay` | frontend/js/diagram-edges.js:12 |
 | `wire` | frontend/js/diagram-edges.js:30 |
 
-### frontend/js/diagram-embed.js (14)
+### frontend/js/diagram-embed.js (19)
 
 | Name | File:line |
 |---|---|
 | `cleanTitle` | frontend/js/diagram-embed.js:149 |
 | `copyPicture` | frontend/js/diagram-embed.js:48 |
 | `documentName` | frontend/js/diagram-embed.js:156 |
+| `draftForget` | frontend/js/diagram-embed.js:189 |
+| `draftKeep` | frontend/js/diagram-embed.js:179 |
+| `draftsRead` | frontend/js/diagram-embed.js:168 |
+| `draftsWrite` | frontend/js/diagram-embed.js:178 |
 | `el` | frontend/js/diagram-embed.js:10 |
 | `freshTitle` | frontend/js/diagram-embed.js:150 |
+| `hashOf` | frontend/js/diagram-embed.js:197 |
 | `link` | frontend/js/diagram-embed.js:116 |
-| `open` | frontend/js/diagram-embed.js:169 |
+| `open` | frontend/js/diagram-embed.js:210 |
 | `out` | frontend/js/diagram-embed.js:63 |
 | `outDoc` | frontend/js/diagram-embed.js:79 |
 | `pngOf` | frontend/js/diagram-embed.js:28 |
@@ -3255,14 +3260,15 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `titleOf` | frontend/js/diagram-joins.js:29 |
 | `words` | frontend/js/diagram-joins.js:110 |
 
-### frontend/js/diagram-kindbar.js (7)
+### frontend/js/diagram-kindbar.js (8)
 
 | Name | File:line |
 |---|---|
 | `blankOf` | frontend/js/diagram-kindbar.js:48 |
-| `choose` | frontend/js/diagram-kindbar.js:110 |
+| `choose` | frontend/js/diagram-kindbar.js:121 |
 | `decorate` | frontend/js/diagram-kindbar.js:86 |
 | `fresh` | frontend/js/diagram-kindbar.js:19 |
+| `lost` | frontend/js/diagram-kindbar.js:111 |
 | `mount` | frontend/js/diagram-kindbar.js:51 |
 | `open` | frontend/js/diagram-kindbar.js:78 |
 | `sample` | frontend/js/diagram-kindbar.js:36 |
@@ -3344,10 +3350,10 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `build` | frontend/js/diagram-library.js:60 |
+| `build` | frontend/js/diagram-library.js:61 |
 | `flow` | frontend/js/diagram-library.js:29 |
 | `make` | frontend/js/diagram-library.js:21 |
-| `shelf` | frontend/js/diagram-library.js:95 |
+| `shelf` | frontend/js/diagram-library.js:96 |
 | `tileOf` | frontend/js/diagram-library.js:47 |
 
 ### frontend/js/diagram-multi.js (3)
@@ -3420,9 +3426,9 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `dropMark` | frontend/js/diagram-pointer.js:30 |
-| `make` | frontend/js/diagram-pointer.js:61 |
-| `mark` | frontend/js/diagram-pointer.js:36 |
+| `dropMark` | frontend/js/diagram-pointer.js:37 |
+| `make` | frontend/js/diagram-pointer.js:68 |
+| `mark` | frontend/js/diagram-pointer.js:43 |
 | `word` | frontend/js/diagram-pointer.js:12 |
 
 ### frontend/js/diagram-seq-canvas.js (27)
@@ -3510,8 +3516,8 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | Name | File:line |
 |---|---|
 | `addSheet` | frontend/js/diagram-touch.js:11 |
-| `listSheet` | frontend/js/diagram-touch.js:48 |
-| `wire` | frontend/js/diagram-touch.js:61 |
+| `listSheet` | frontend/js/diagram-touch.js:49 |
+| `wire` | frontend/js/diagram-touch.js:62 |
 
 ### frontend/js/diagram-view.js (2)
 
@@ -3964,13 +3970,13 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `dgmSubgraph` | frontend/js/documents-mermaid.js:184 |
 | `dgmTint` | frontend/js/documents-mermaid.js:227 |
 | `dgmUnquote` | frontend/js/documents-mermaid.js:76 |
-| `diagramDoor` | frontend/js/documents-mermaid.js:536 |
+| `diagramDoor` | frontend/js/documents-mermaid.js:537 |
 | `docMermaidBlocks` | frontend/js/documents-mermaid.js:371 |
 | `docMermaidField` | frontend/js/documents-mermaid.js:380 |
 | `docMermaidWhenDrawn` | frontend/js/documents-mermaid.js:361 |
 | `docRenderMermaidIn` | frontend/js/documents-mermaid.js:353 |
-| `openDiagramBuilder` | frontend/js/documents-mermaid.js:500 |
-| `pickExistingDiagram` | frontend/js/documents-mermaid.js:512 |
+| `openDiagramBuilder` | frontend/js/documents-mermaid.js:501 |
+| `pickExistingDiagram` | frontend/js/documents-mermaid.js:513 |
 
 ### frontend/js/documents-outline.js (12)
 
@@ -7977,7 +7983,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `wbDiagramFillShare` | frontend/js/whiteboard-interchange.js:1294 |
 | `wbDiagramLook` | frontend/js/whiteboard-interchange.js:1277 |
 | `wbDiagramSize` | frontend/js/whiteboard-interchange.js:1349 |
-| `wbDiagramToShapes` | frontend/js/whiteboard-interchange.js:1403 |
+| `wbDiagramToShapes` | frontend/js/whiteboard-interchange.js:1404 |
 | `wbDrawioBox` | frontend/js/whiteboard-interchange.js:1049 |
 | `wbDrawioCells` | frontend/js/whiteboard-interchange.js:1001 |
 | `wbDrawioLook` | frontend/js/whiteboard-interchange.js:505 |
@@ -8010,7 +8016,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `wbMermaidStateParse` | frontend/js/whiteboard-interchange.js:289 |
 | `wbOpenImportDialog` | frontend/js/whiteboard-interchange.js:986 |
 | `wbPaintDiagram` | frontend/js/whiteboard-interchange.js:1314 |
-| `wbSaveDiagram` | frontend/js/whiteboard-interchange.js:1383 |
+| `wbSaveDiagram` | frontend/js/whiteboard-interchange.js:1384 |
 | `wbThumbBoardId` | frontend/js/whiteboard-interchange.js:1196 |
 | `wbThumbFlush` | frontend/js/whiteboard-interchange.js:1206 |
 | `wbThumbMark` | frontend/js/whiteboard-interchange.js:1200 |
@@ -12433,7 +12439,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/dash-night-lazy.css | 29 |
 | frontend/css/dash-orphans-lazy.css | 57 |
 | frontend/css/desk-companion-lazy.css | 226 |
-| frontend/css/diagram-lazy.css | 2118 |
+| frontend/css/diagram-lazy.css | 2126 |
 | frontend/css/file-drop-lazy.css | 51 |
 | frontend/css/first-run-lazy.css | 140 |
 | frontend/css/forced-colors-lazy.css | 28 |
@@ -24682,7 +24688,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (18612)
+## Tests (18620)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -25291,6 +25297,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_diagram_1661b.py | 9 |
 | tests/test_diagram_1661klm.py | 18 |
 | tests/test_diagram_1679m.py | 14 |
+| tests/test_diagram_blind_1108.py | 8 |
 | tests/test_diagram_blind_fixes.py | 6 |
 | tests/test_diagram_builder.py | 20 |
 | tests/test_diagram_d3.py | 2 |
