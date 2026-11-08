@@ -4132,6 +4132,7 @@ $("custom-theme-save").addEventListener("click", () => {
 $("custom-theme-name").addEventListener("keydown", (e) => {
   if (e.key === "Enter") $("custom-theme-save").click();
 });
+$("look-surprise").addEventListener("click", () => settingsLook.lookFile.surpriseNow());
 $("look-export").addEventListener("click", () => settingsLook.lookFile.exportNow());
 $("look-import").addEventListener("click", () => pickJsonFile("look-import-file", (data) => settingsLook.lookFile.importNow(data)));
 

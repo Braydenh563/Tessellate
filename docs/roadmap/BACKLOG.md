@@ -1144,8 +1144,7 @@ palettes."
   (line width) controls, which matter more for long notes than font size
 - **Colours** (accent swatches and a custom accent exist; **Next:** per-surface accents and a palette builder are not built; the JSON import/export of a look is built, see HISTORY "Moved from the plans, 2026-11-08 (BACKLOG Colours, look file)"): per-surface accents and a custom palette builder (pick a base,
   derive the set)
-- **More themes and palettes** (`#palette-grid`; **Next:** a "surprise me" is a seeded pick of accent, palette and density from the existing sets, applied through `applySavedTheme` in `settings.js`), and a "surprise me" that generates a coherent
-  one
+- **More themes and palettes** (`#palette-grid`; **Next:** a "surprise me" that generates a coherent one; the seeded pick of palette, accent and density is built, see HISTORY "Moved from the plans, 2026-11-08 (BACKLOG Surprise mix)")
 - ~~**Save a custom combination as your own theme**, not just a custom palette.~~ **Built, see `frontend/js/settings.js:1786` (`MAX_CUSTOM_THEMES`, saved looks, `applySavedTheme`).**
   Asked as "allow for saving of custom appearances and themes", the palette
   builder above already covers colour; a theme is colour *plus* light/dark,

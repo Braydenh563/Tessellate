@@ -2120,11 +2120,34 @@ settingsLook.lookFile = (() => {
     return out;
   }
 
+  //: **Surprise mix**: a palette, an accent and a density from the sets the
+  //: pickers already offer, each different from what is showing. Seeded
+  //: (mulberry32), so the same number is the same mix and a test can hold it.
+  function surprisePick(seed, current) {
+    let state = seed >>> 0;
+    const next = () => {
+      state = (state + 0x6d2b79f5) >>> 0;
+      let t = state;
+      t = Math.imul(t ^ (t >>> 15), t | 1);
+      t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+    const choose = (list, now) => {
+      const rest = list.filter((x) => x !== now);
+      return rest[Math.floor(next() * rest.length)];
+    };
+    return {
+      palette: choose(PALETTES.map((p) => p.id), current.palette),
+      accent: choose(ACCENTS.map((a) => a.name), current.accent),
+      density: choose(["comfortable", "compact", "spacious"], current.density),
+    };
+  }
+
   //: Everything a look can change, read before and put back after, so Undo is
   //: exact: a key the person had not set is removed, not set to a default.
   function lookSnapshot() {
     const snap = {};
-    for (const key of [...LOOK_KEYS, "density", "themePreset"]) snap[key] = prefs.get(key, null);
+    for (const key of [...LOOK_KEYS, "density", "themePreset", "page-bg-dark"]) snap[key] = prefs.get(key, null);
     return snap;
   }
 
@@ -2160,6 +2183,18 @@ settingsLook.lookFile = (() => {
     });
   }
 
+  function surpriseNow() {
+    const seed = Date.now() % 100000;
+    const pick = surprisePick(seed, { palette: activePalette(), accent: appearancePref("accent"), density: effectiveDensity() });
+    const names = `${PALETTES.find((p) => p.id === pick.palette).name} palette, ${ACCENTS.find((a) => a.name === pick.accent).label.toLowerCase()} accent, ${pick.density}`;
+    changeLookWithUndo("Mixed a look", `Mix ${seed}: ${names}.`, () => {
+      // As choosing a palette does (`applyThemePreset`): its colours must not sit under a custom accent or page.
+      for (const key of ["accent-custom", "page-bg", "page-bg-dark"]) prefs.remove(key);
+      prefs.set("density", pick.density);
+      applySavedTheme({ values: { palette: pick.palette, accent: pick.accent }, preset: prefs.get("themePreset", null) || "" }, false);
+    });
+  }
+
   function exportLook() {
     const { values, preset } = currentLookValues();
     downloadJson("tessellate-look.json", lookFilePayload(values, preset));
@@ -2186,6 +2221,7 @@ settingsLook.lookFile = (() => {
       check: checkLookFile, payload: lookFilePayload, skippedLine,
       snapshot: lookSnapshot, restore: restoreLook, repaint: repaintLook,
       changeWithUndo: changeLookWithUndo, exportNow: exportLook, importNow: importLook,
+      pick: surprisePick, surpriseNow,
     };
 })();
 // LOOK FILE END
