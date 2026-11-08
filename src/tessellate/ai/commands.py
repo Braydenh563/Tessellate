@@ -1653,6 +1653,19 @@ def _said(line: str) -> str:
     return line
 
 
+def _the_titled(found: list, about: str) -> object | None:
+    """The one note whose title is what was named: exactly, else the only one it starts. A title that is
+    exactly the name wins over longer titles that start the same way: "pin the Gym note" with "Gym plan"
+    beside it (audit D2)."""
+    said = about.strip().lower()
+    titles = [(e, note_title(e.content, size=48).strip().lower()) for e in found]
+    for same in (lambda t: t == said, lambda t: t.startswith(said)):
+        hit = [e for e, t in titles if same(t)]
+        if len(hit) == 1:
+            return hit[0]
+    return None
+
+
 def _resolve_one(session: Session, about: str | None, note_ids: list[int] | None, these: bool, number: int | None = None) -> tuple[object | None, str]:
     """The one note a single-note act names, or None and the question to ask
     (decision 24's shape: one question, the candidates named). `number`: the
@@ -1669,9 +1682,9 @@ def _resolve_one(session: Session, about: str | None, note_ids: list[int] | None
     if not found:
         return None, _which_note(about or "")
     if len(found) > 1:
-        titled = [e for e in found if note_title(e.content, size=48).lower().startswith((about or "").lower())]
-        if len(titled) == 1:
-            return titled[0], ""
+        titled = _the_titled(found, about or "")
+        if titled:
+            return titled, ""
         names = " or ".join(f"“{note_title(e.content, size=48)}”" for e in found[:3])
         return None, f"Which note about “{about}”: {names}?"
     return found[0], ""
