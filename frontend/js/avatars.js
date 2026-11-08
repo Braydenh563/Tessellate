@@ -10613,71 +10613,76 @@ function nameMarkBuddyBuild() {
       const sinceLast = now - (nmb.lastPoke || 0);
       nmb.lastPoke = now;
       nmb.pokes = [...nmb.pokes.filter((at) => now - at < 20000), now];
-      if (nose && !wasAsleep && nmb.touch.boop(buddy)) return;
-      const groggy = now - (nmb.wokeAt || 0) < 10000;
-      //: What it did last counts only inside the same run of taps.
-      const lastHow = sinceLast < 20000 ? nmb.lastHow || "" : "";
-      const how = nameMarkBuddyClickReaction(wasAsleep, wasAsleep ? 1 : nmb.pokes.length, sinceLast, groggy, lastHow);
-      nmb.lastHow = how;
-      const mark = face.querySelector(".name-mark");
-      //: A spin is Atlas's own turn (atlas.js); another face's react is
-      //: already a hop and a spin.
-      if (how === "spin" && mark?.classList.contains("nm-atlas")) atlasPlay("spin", 900);
-      else nameMarkReact(mark);
-      if (how === "wake") {
-        //: The poke that woke it starts the count of pokes that annoy it.
-        nmb.pokes = [now];
-        if (nmb.act === "lie") nameMarkBuddyAct("");
-        nameMarkBuddyWake(true);
-        return;
-      }
-      if (how === "pout") {
-        nameMarkBuddyFeel(-0.15);
-        nmb.groggyUntil = Math.max(nmb.groggyUntil || 0, now + 4000);
-        nameMarkBuddyPout(buddy, NMB_POUT_MS);
-        return;
-      }
-      //: **Poked too often** (four times in twenty seconds): grumpy, briefly.
-      //: It turns away, says so, and will not look at you. It was half a
-      //: minute and a pout after it, 35s of a scowl (INBOX 1402, the owner:
-      //: "a bored or grumpy gangster ... half the time"): now `NMB_GRUMPY_MS`
-      //: and a short pout on the way back.
-      if (how === "grumpy") {
-        nameMarkBuddyFeel(-0.4);
-        nmb.grumpyUntil = now + NMB_GRUMPY_MS;
-        nmb.mood.sociability = Math.max(0, nmb.mood.sociability - 0.25);
-        nameMarkBuddyRelease();
-        buddy.classList.remove("nmb-pout");
-        nameMarkBuddyEase(buddy, 2400);
-        buddy.classList.add("nmb-grumpy");
-        nameMarkBuddyExpress("unimpressed", NMB_GRUMPY_MS);
-        buddy.dataset.turn = nmb.pointer && nmb.pointer[0] > nmb.x + NMB_W / 2 ? "l" : "r";
-        setTimeout(() => {
-          //: And it comes down through a pout, not straight back (unless it
-          //: has gone meanwhile: the pout would land on its successor, or a
-          //: rub has made up already).
-          if (!buddy.isConnected || (nmb.rubbedAt || 0) > now) return;
-          buddy.classList.remove("nmb-grumpy");
-          nameMarkBuddyPout(buddy, 2000);
-          if (buddy.dataset.turn && !buddy.classList.contains("nmb-walking")) delete buddy.dataset.turn;
-        }, NMB_GRUMPY_MS);
-        nameMarkSay(buddy, ["Hmph.", "Okay, that's enough.", "I'm not talking to you."][Math.floor(Math.random() * 3)]);
-        return;
-      }
-      nmb.mood.sociability = Math.min(1, nmb.mood.sociability + 0.05);
-      nmb.mood.curiosity = Math.min(1, nmb.mood.curiosity + 0.05);
-      nameMarkBuddyFeel(how === "playful" || how === "laugh" ? 0.08 : 0.12);
-      //: The face holds a few seconds and comes down through a smaller one
-      //: (`NMB_EXPR_SOFTEN`), never straight back. Each answer has its own:
-      //: curious looks round with wide eyes, a spin is bright, a laugh holds
-      //: longest.
-      const answerFace = { playful: "laughing", laugh: "laughing", curious: "surprised", spin: "excited" };
-      nameMarkBuddyExpress(answerFace[how] || "happy", how === "laugh" ? 3800 : how === "curious" ? 2600 : 3200);
-      //: The acts are the gentle ones (a look, a wave, a wiggle): none is a
-      //: whole-body hop, so the large view keeps INBOX 669's limits.
-      const move = { pleased: "wave", wave: "wave", playful: "wiggle", laugh: "wiggle", curious: "look", spin: "" }[how];
-      if (!nameMarkBuddyStill() && move !== "") nameMarkBuddyAct(nmb.pose === "hang" ? "swing" : move);
-      nameMarkSay(buddy, nameMarkLine(buddy.dataset.seed || ""));
+      //: A boop adds to the click, never replaces it (review 1108): the reaction below plays whole (a wake,
+      //: a pout, a spin) and the boop's face and sneeze go on top, still once per `BOOP.coolMs`.
+      const react = () => {
+        const groggy = now - (nmb.wokeAt || 0) < 10000;
+        //: What it did last counts only inside the same run of taps.
+        const lastHow = sinceLast < 20000 ? nmb.lastHow || "" : "";
+        const how = nameMarkBuddyClickReaction(wasAsleep, wasAsleep ? 1 : nmb.pokes.length, sinceLast, groggy, lastHow);
+        nmb.lastHow = how;
+        const mark = face.querySelector(".name-mark");
+        //: A spin is Atlas's own turn (atlas.js); another face's react is
+        //: already a hop and a spin.
+        if (how === "spin" && mark?.classList.contains("nm-atlas")) atlasPlay("spin", 900);
+        else nameMarkReact(mark);
+        if (how === "wake") {
+          //: The poke that woke it starts the count of pokes that annoy it.
+          nmb.pokes = [now];
+          if (nmb.act === "lie") nameMarkBuddyAct("");
+          nameMarkBuddyWake(true);
+          return;
+        }
+        if (how === "pout") {
+          nameMarkBuddyFeel(-0.15);
+          nmb.groggyUntil = Math.max(nmb.groggyUntil || 0, now + 4000);
+          nameMarkBuddyPout(buddy, NMB_POUT_MS);
+          return;
+        }
+        //: **Poked too often** (four times in twenty seconds): grumpy, briefly.
+        //: It turns away, says so, and will not look at you. It was half a
+        //: minute and a pout after it, 35s of a scowl (INBOX 1402, the owner:
+        //: "a bored or grumpy gangster ... half the time"): now `NMB_GRUMPY_MS`
+        //: and a short pout on the way back.
+        if (how === "grumpy") {
+          nameMarkBuddyFeel(-0.4);
+          nmb.grumpyUntil = now + NMB_GRUMPY_MS;
+          nmb.mood.sociability = Math.max(0, nmb.mood.sociability - 0.25);
+          nameMarkBuddyRelease();
+          buddy.classList.remove("nmb-pout");
+          nameMarkBuddyEase(buddy, 2400);
+          buddy.classList.add("nmb-grumpy");
+          nameMarkBuddyExpress("unimpressed", NMB_GRUMPY_MS);
+          buddy.dataset.turn = nmb.pointer && nmb.pointer[0] > nmb.x + NMB_W / 2 ? "l" : "r";
+          setTimeout(() => {
+            //: And it comes down through a pout, not straight back (unless it
+            //: has gone meanwhile: the pout would land on its successor, or a
+            //: rub has made up already).
+            if (!buddy.isConnected || (nmb.rubbedAt || 0) > now) return;
+            buddy.classList.remove("nmb-grumpy");
+            nameMarkBuddyPout(buddy, 2000);
+            if (buddy.dataset.turn && !buddy.classList.contains("nmb-walking")) delete buddy.dataset.turn;
+          }, NMB_GRUMPY_MS);
+          nameMarkSay(buddy, ["Hmph.", "Okay, that's enough.", "I'm not talking to you."][Math.floor(Math.random() * 3)]);
+          return;
+        }
+        nmb.mood.sociability = Math.min(1, nmb.mood.sociability + 0.05);
+        nmb.mood.curiosity = Math.min(1, nmb.mood.curiosity + 0.05);
+        nameMarkBuddyFeel(how === "playful" || how === "laugh" ? 0.08 : 0.12);
+        //: The face holds a few seconds and comes down through a smaller one
+        //: (`NMB_EXPR_SOFTEN`), never straight back. Each answer has its own:
+        //: curious looks round with wide eyes, a spin is bright, a laugh holds
+        //: longest.
+        const answerFace = { playful: "laughing", laugh: "laughing", curious: "surprised", spin: "excited" };
+        nameMarkBuddyExpress(answerFace[how] || "happy", how === "laugh" ? 3800 : how === "curious" ? 2600 : 3200);
+        //: The acts are the gentle ones (a look, a wave, a wiggle): none is a
+        //: whole-body hop, so the large view keeps INBOX 669's limits.
+        const move = { pleased: "wave", wave: "wave", playful: "wiggle", laugh: "wiggle", curious: "look", spin: "" }[how];
+        if (!nameMarkBuddyStill() && move !== "") nameMarkBuddyAct(nmb.pose === "hang" ? "swing" : move);
+        nameMarkSay(buddy, nameMarkLine(buddy.dataset.seed || ""));
+      };
+      react();
+      if (nose && !wasAsleep) nmb.touch.boop(buddy);
     };
     if (nmb.visit) poke();
     else pokeTimer = setTimeout(poke, 280);
