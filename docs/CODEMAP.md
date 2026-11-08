@@ -2,7 +2,7 @@
 
 Generated 2026-11-08 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7917, frontend ids 2652, CSS sections 522, backend routes 649, backend modules 9195, test files 2239, tests 18845, plan headings 1004, app scripts 28, boot scripts 37, script files 263.
+Counts: frontend functions 7917, frontend ids 2652, CSS sections 522, backend routes 649, backend modules 9195, test files 2239, tests 18846, plan headings 1004, app scripts 28, boot scripts 37, script files 263.
 
 ## Frontend functions (7917)
 
@@ -1197,51 +1197,51 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `activeOverlay` | frontend/js/settings-wiring.js:944 |
-| `captureCountText` | frontend/js/settings-wiring.js:1704 |
-| `captureShortcutKey` | frontend/js/settings-wiring.js:1452 |
-| `clearStagedImages` | frontend/js/settings-wiring.js:2101 |
-| `closeOverlaysForChord` | frontend/js/settings-wiring.js:1247 |
-| `closeShortcuts` | frontend/js/settings-wiring.js:1482 |
-| `comboFromEvent` | frontend/js/settings-wiring.js:1283 |
-| `commitCaptureImages` | frontend/js/settings-wiring.js:2086 |
-| `fileDropBox` | frontend/js/settings-wiring.js:1949 |
+| `activeOverlay` | frontend/js/settings-wiring.js:947 |
+| `captureCountText` | frontend/js/settings-wiring.js:1707 |
+| `captureShortcutKey` | frontend/js/settings-wiring.js:1455 |
+| `clearStagedImages` | frontend/js/settings-wiring.js:2104 |
+| `closeOverlaysForChord` | frontend/js/settings-wiring.js:1250 |
+| `closeShortcuts` | frontend/js/settings-wiring.js:1485 |
+| `comboFromEvent` | frontend/js/settings-wiring.js:1286 |
+| `commitCaptureImages` | frontend/js/settings-wiring.js:2089 |
+| `fileDropBox` | frontend/js/settings-wiring.js:1952 |
 | `flashSaved` | frontend/js/settings-wiring.js:496 |
-| `handleFileUpload` | frontend/js/settings-wiring.js:2133 |
-| `hideChordGuide` | frontend/js/settings-wiring.js:1265 |
-| `inEditable` | frontend/js/settings-wiring.js:942 |
-| `loadForgottenOrder` | frontend/js/settings-wiring.js:1563 |
-| `loadShortcuts` | frontend/js/settings-wiring.js:1113 |
-| `localizeStaticChords` | frontend/js/settings-wiring.js:1156 |
+| `handleFileUpload` | frontend/js/settings-wiring.js:2136 |
+| `hideChordGuide` | frontend/js/settings-wiring.js:1268 |
+| `inEditable` | frontend/js/settings-wiring.js:945 |
+| `loadForgottenOrder` | frontend/js/settings-wiring.js:1566 |
+| `loadShortcuts` | frontend/js/settings-wiring.js:1116 |
+| `localizeStaticChords` | frontend/js/settings-wiring.js:1159 |
 | `lockFail` | frontend/js/settings-wiring.js:269 |
 | `lockFailed` | frontend/js/settings-wiring.js:281 |
 | `lockRequest` | frontend/js/settings-wiring.js:375 |
-| `mapEditorShown` | frontend/js/settings-wiring.js:939 |
-| `matchesShortcut` | frontend/js/settings-wiring.js:1301 |
-| `maybeShowOnboarding` | frontend/js/settings-wiring.js:965 |
+| `mapEditorShown` | frontend/js/settings-wiring.js:942 |
+| `matchesShortcut` | frontend/js/settings-wiring.js:1304 |
+| `maybeShowOnboarding` | frontend/js/settings-wiring.js:968 |
 | `notebookLocked` | frontend/js/settings-wiring.js:481 |
 | `persistSavedSearches` | frontend/js/settings-wiring.js:53 |
-| `renderCaptureFiles` | frontend/js/settings-wiring.js:1669 |
-| `renderEntryAttachmentChips` | frontend/js/settings-wiring.js:1636 |
-| `renderInstallRow` | frontend/js/settings-wiring.js:1871 |
+| `renderCaptureFiles` | frontend/js/settings-wiring.js:1672 |
+| `renderEntryAttachmentChips` | frontend/js/settings-wiring.js:1639 |
+| `renderInstallRow` | frontend/js/settings-wiring.js:1874 |
 | `renderSavedSearches` | frontend/js/settings-wiring.js:17 |
-| `resetShortcuts` | frontend/js/settings-wiring.js:1419 |
-| `restampShortcutHints` | frontend/js/settings-wiring.js:1166 |
-| `rewriteStagedUrls` | frontend/js/settings-wiring.js:2074 |
-| `runShortcut` | frontend/js/settings-wiring.js:1310 |
+| `resetShortcuts` | frontend/js/settings-wiring.js:1422 |
+| `restampShortcutHints` | frontend/js/settings-wiring.js:1169 |
+| `rewriteStagedUrls` | frontend/js/settings-wiring.js:2077 |
+| `runShortcut` | frontend/js/settings-wiring.js:1313 |
 | `saveCurrentSearch` | frontend/js/settings-wiring.js:61 |
-| `saveShortcutOverrides` | frontend/js/settings-wiring.js:1271 |
+| `saveShortcutOverrides` | frontend/js/settings-wiring.js:1274 |
 | `saveWhatIsInFront` | frontend/js/settings-wiring.js:559 |
 | `savedSearches` | frontend/js/settings-wiring.js:13 |
-| `setShortcutStatus` | frontend/js/settings-wiring.js:1436 |
-| `setShortcutStatusError` | frontend/js/settings-wiring.js:1443 |
-| `singleKeysOn` | frontend/js/settings-wiring.js:2272 |
-| `stagedImageUrl` | frontend/js/settings-wiring.js:2051 |
-| `stampShortcutTitles` | frontend/js/settings-wiring.js:1142 |
+| `setShortcutStatus` | frontend/js/settings-wiring.js:1439 |
+| `setShortcutStatusError` | frontend/js/settings-wiring.js:1446 |
+| `singleKeysOn` | frontend/js/settings-wiring.js:2275 |
+| `stagedImageUrl` | frontend/js/settings-wiring.js:2054 |
+| `stampShortcutTitles` | frontend/js/settings-wiring.js:1145 |
 | `submitLockForm` | frontend/js/settings-wiring.js:305 |
-| `textCounts` | frontend/js/settings-wiring.js:1694 |
-| `uploadStagedFiles` | frontend/js/settings-wiring.js:2110 |
-| `wordCount` | frontend/js/settings-wiring.js:1689 |
+| `textCounts` | frontend/js/settings-wiring.js:1697 |
+| `uploadStagedFiles` | frontend/js/settings-wiring.js:2113 |
+| `wordCount` | frontend/js/settings-wiring.js:1692 |
 
 ### frontend/js/spaces-find.js (25)
 
@@ -24748,7 +24748,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (18845)
+## Tests (18846)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -25373,7 +25373,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_diagram_deep_1588.py | 5 |
 | tests/test_diagram_dgmfix2_1108.py | 12 |
 | tests/test_diagram_dgmleft_1108.py | 3 |
-| tests/test_diagram_dgmlive2_1108.py | 6 |
+| tests/test_diagram_dgmlive2_1108.py | 7 |
 | tests/test_diagram_dgmlive_1108.py | 2 |
 | tests/test_diagram_document.py | 7 |
 | tests/test_diagram_door_panel.py | 2 |

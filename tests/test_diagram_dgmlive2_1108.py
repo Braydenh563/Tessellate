@@ -67,3 +67,11 @@ def test_the_purpose_line_keeps_room_for_the_three_lines_it_wraps_to_so_the_firs
     css = (ROOT / "frontend" / "css" / "diagram-lazy.css").read_text(encoding="utf-8")
     rule = css[css.index(".dgm-purpose {") :].split("}")[0]
     assert "min-block-size: calc(3 * 1.4em);" in rule
+
+
+def test_the_apps_undo_and_redo_chords_wait_while_a_dialog_is_in_front():
+    """Measured in Chromium: with 'Switch to mind map?' open, Ctrl+Z undid the last rename behind it (F 'Done' back to 'Step') and the dialog stayed."""
+    wiring = (JS / "settings-wiring.js").read_text(encoding="utf-8")
+    assert 'const behindModal = () => [...document.querySelectorAll(".modal-overlay, dialog[open]")].some((m) => m.getClientRects().length);' in wiring
+    assert 'if ((id === "undo" || id === "redo") && behindModal()) continue;' in wiring
+    assert '=== "y" && !behindModal()' in wiring
