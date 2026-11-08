@@ -4880,6 +4880,9 @@ def _routed_away(question: str, notes: list[dict], today: date) -> tuple:
         return None, question, None
     if one := composer_oneword.named(question, notes):
         return _one_word_result(one), question, None
+    #: "The first note I wrote about Sara" ranks that subject's notes by day (R3-4).
+    if ranked := composer_small.ordinal_about(question, notes, today=today):
+        return ranked, question, None
     #: "Where did I write about squats" is a sentence naming the note (A22), not a digest of what it says.
     if located := composer_small.where_written(question, notes, today=today):
         return located, question, None

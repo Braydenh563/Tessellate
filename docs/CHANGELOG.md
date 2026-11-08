@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Composer (round 4, audit R3-4): "what is the first note I wrote about Sara" and "the last note about the dentist" rank that subject's notes by the day written ("Your first note about Sara is Sara, written four weeks ago: ..."), instead of answering with any note that holds the word first.
 - Composer (round 4, audit E6): "how much is left in my budget" takes the figure from a sentence that says budget, not "Overdraft limit £500" in another note, and a Budget note that lists costs with no limit gets "I found no budget figure in your notes".
 - Desk companion (deskmood 3): let go over a window top it missed by a little (the 'out of reach' case of `_top_in_reach`, a drop, not a throw), it looks confused once it stands on the floor (the `confused` reaction, 20 s cooldown); a drop onto a top or over no window does not.
 - Desk companion (deskmood 2): `idle_return` is now emitted. `ScreenWatch.input_seen` reads the seconds since the last key or mouse input (age only) and says it once when input returns after 10 minutes without; the runner answers it from the typing check (a sitting or sleeping figure reads no screen events), retried for 10 s, and the welcome back replaces the sad face.
