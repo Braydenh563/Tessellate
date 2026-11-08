@@ -318,13 +318,17 @@
     };
     //: The pane on show, for the keys sheet (`?`, the Keys chip).
     let pane = null;
-    const show = () =>
-      diagramModel.builder.show(host, io, history[at]).then((S) => {
+    const show = () => {
+      //: The pane is mounted anew, so a row pressed in the ⋯ (the look) left focus on the page; the new ⋯ takes it back (dgmlive2 1108).
+      const fromMore = Boolean(document.activeElement?.closest?.(".dgm-more"));
+      return diagramModel.builder.show(host, io, history[at]).then((S) => {
         pane = S;
+        if (fromMore && !host.contains(document.activeElement)) host.querySelector(".dgm-more button")?.focus({ preventScroll: true });
         for (const name of ["canvas", "blocks"]) seg.querySelector(`[data-view="${name}"]`).disabled = Boolean(S?.plain);
         if (S?.plain && dialog.dataset.view !== "source") view("source");
         return S;
       });
+    };
     const view = (name) => {
       dialog.dataset.view = name;
       if (name !== "source") host.dataset.dgmLayout = name;

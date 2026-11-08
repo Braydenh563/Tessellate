@@ -570,6 +570,18 @@ mermaidFill.embed = async (box, doc, name) => {
       event.stopPropagation();
       openDocument(doc.id);
     });
+    //: A double click is two presses: the first opens the diagram, and the second lands on the page that replaced this one
+    //: (measured: a 297-character selection across the builder). For half a second a press that is a second or later of its
+    //: run is stopped, its default (selecting) and its click (it could press a button of the builder).
+    const calm = () => {
+      const stop = (event) => {
+        if (event.detail > 1) (event.preventDefault(), event.stopPropagation());
+      };
+      for (const name of ["mousedown", "click"]) document.addEventListener(name, stop, true);
+      setTimeout(() => {
+        for (const name of ["mousedown", "click"]) document.removeEventListener(name, stop, true);
+      }, 500);
+    };
     //: The picture opens the diagram too (blind test 1108: pressing the embed did nothing). A `click` only: no mousedown, no
     //: preventDefault, so a pointer press still reaches the editor first. In the Live editor the embed is a widget whose
     //: `ignoreEvent` is true (documents-cm.js), so CodeMirror never placed a caret from a press on it, and its own click handler
@@ -579,6 +591,7 @@ mermaidFill.embed = async (box, doc, name) => {
     box.addEventListener("click", (event) => {
       if (event.target.closest("button, a")) return;
       event.stopPropagation();
+      calm();
       openDocument(doc.id);
     });
     box.append(open);

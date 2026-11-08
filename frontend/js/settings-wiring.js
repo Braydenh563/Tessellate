@@ -662,18 +662,21 @@ document.addEventListener("keydown", (e) => {
   //: board's own chords; the same handoff undo already makes
   //: (`boardHistoryActive`), one owner for one shortcut.
   if (chorded && !(typeof wbOwnsChord === "function" && wbOwnsChord(e))) {
+    //: A confirm or a picker in front is a pause, not a step: Ctrl+Z reached past "Switch to mind map?" and undid the last edit behind it (dgmlive2 1108). Read only for undo and redo.
+    const behindModal = () => [...document.querySelectorAll(".modal-overlay, dialog[open]")].some((m) => m.getClientRects().length);
     const inTextField = inEditable(document.activeElement);
     //: **Ctrl+Y is redo too**, the Windows habit: the board's own Redo
     //: button and Edit menu already print "Ctrl+Y" and nothing answered it
     //: (the Guide agent's finding, 2026-09-24). Same rule as Ctrl+Shift+Z:
     //: a text field keeps its own.
-    if (!inTextField && (e.ctrlKey || e.metaKey) && !e.shiftKey && !e.altKey && e.key.toLowerCase() === "y") {
+    if (!inTextField && (e.ctrlKey || e.metaKey) && !e.shiftKey && !e.altKey && e.key.toLowerCase() === "y" && !behindModal()) {
       e.preventDefault();
       runShortcut("redo");
       return;
     }
     for (const [id, def] of Object.entries(shortcuts)) {
       if ((id === "undo" || id === "redo" || id === "pasteNote") && inTextField) continue;
+      if ((id === "undo" || id === "redo") && behindModal()) continue;
       //: INBOX 321: on an open board the same chord duplicates the selection.
       //: And an editor that already answered it keeps it: the documents
       //: editor binds Ctrl+D to "select the next match" (CodeMirror's search
