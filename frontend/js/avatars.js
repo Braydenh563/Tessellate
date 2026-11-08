@@ -3227,7 +3227,7 @@ const NMB_ACTIVITIES = [
   ["wander", "Wander off now and then, and come back", ["wander"]],
   ["come", "Come over to you after a few minutes apart", ["come"]],
   ["afield", "Go out for a while now and then", ["afield"]],
-  ["rub", "Lean into a rub (the pointer back and forth over it)", ["rub"]],
+  ["rub", "Lean into a rub, giggle at a tickle, sneeze at a boop (the pointer on it)", ["rub", "tickle", "boop"]],
   ["flip", "Turn upside down when shaken while carried", ["flip"]],
   ["remark", "Say something from your notes now and then", ["remark"]],
   ["habits", "Little habits and reactions (a search that finds nothing, a fast pointer, a long carry)", ["habits"]],
@@ -6820,6 +6820,74 @@ function nameMarkBuddyRubbed(buddy) {
   }
   if (Math.random() < 0.4) nameMarkSay(buddy, NMB_RUB_LINES[Math.floor(Math.random() * NMB_RUB_LINES.length)]);
 }
+//: **Tickled** and **booped** (the companion catalogue, `int.tickle` and
+//: `int.boop_nose`; the desk figure has both). One scope, one name
+//: (`nmb.touch`), so the shared scope does not grow by seven.
+//: Tickled: a fast small rub on the body below the head, not the long slow
+//: stroke of a rub. `TICKLE.turns` turns of `travel` px or more inside
+//: `windowMs`, no more than `span` px across and flatter than `flat` (a
+//: hand's tremor turns as often but as far up as across). `tickled` is pure,
+//: for the tests (`rect` is the figure's box). It squirms and giggles, at
+//: most once in eight seconds, and not asleep.
+//: Booped: a click on the nose, the middle of the face's box between
+//: `noseTop` and the head's lower edge. It rears back, scrunches and sneezes.
+nmb.touch = (() => {
+  const TICKLE = { travel: 5, turns: 5, windowMs: 1200, span: 18, flat: 0.6, minSamples: 8, headShare: 0.42, coolMs: 8000 };
+  const BOOP = { half: 0.2, noseTop: 0.18, noseBottom: 0.42, coolMs: 3000 };
+  const LINES = ["Hehe, that tickles.", "Stop, hehe.", "Not there."];
+  function tickled(samples, rect) {
+    const last = samples[samples.length - 1];
+    if (!last || !rect) return false;
+    const recent = samples.filter((sample) => last[2] - sample[2] <= TICKLE.windowMs);
+    if (recent.length < TICKLE.minSamples) return false;
+    const xs = recent.map((sample) => sample[0]);
+    const ys = recent.map((sample) => sample[1]);
+    const across = Math.max(...xs) - Math.min(...xs);
+    const up = Math.max(...ys) - Math.min(...ys);
+    if (across > TICKLE.span || up > TICKLE.flat * across) return false;
+    if (Math.min(...ys) <= rect.top + TICKLE.headShare * rect.height) return false;
+    return nameMarkBuddyStrokes(recent, 0, TICKLE.travel, TICKLE.windowMs) >= TICKLE.turns;
+  }
+  function tickle(buddy) {
+    if (!buddy || nameMarkBuddyStill() || document.hidden || nameMarkBuddyMenuOpen() || buddy.classList.contains("nm-buddy-dragging") || nameMarkBuddyActOff("tickle")) return;
+    const now = Date.now();
+    if (now - (nmb.tickledAt || 0) < TICKLE.coolMs || nameMarkBuddyAsleep(buddy)) return;
+    nmb.tickledAt = nmb.pettedAt = now;
+    nameMarkBuddyFeel(0.15);
+    const face = buddy.querySelector(":scope > .nm-buddy-face");
+    if (face && typeof face.animate === "function") {
+      const wiggle = [0, -5, 5, -5, 5, -4, 4, -2, 0].map((deg, i, all) => ({ transform: `rotate(${deg}deg) translateY(${i % 2 ? -2 : 0}px)`, offset: i / (all.length - 1), transformOrigin: "50% 100%" }));
+      face.animate(wiggle, { duration: 1500, easing: "ease-in-out" });
+    }
+    if (isAtlasSeed(buddy.dataset.seed || "")) setAtlasMood("laughing", 2400, { quiet: true, backEaseMs: 1000 });
+    else nameMarkBuddyExpress("laughing", 2400);
+    if (Math.random() < 0.5) nameMarkSay(buddy, LINES[Math.floor(Math.random() * LINES.length)]);
+  }
+  function onNose(rect, x, y) {
+    if (!rect || !rect.width || !rect.height) return false;
+    return Math.abs(x - (rect.left + rect.width / 2)) <= BOOP.half * rect.width
+      && y >= rect.top + BOOP.noseTop * rect.height && y <= rect.top + BOOP.noseBottom * rect.height;
+  }
+  function boop(buddy) {
+    if (!buddy || nameMarkBuddyStill() || document.hidden || nameMarkBuddyActOff("boop")) return false;
+    const now = Date.now();
+    if (now - (nmb.boopedAt || 0) < BOOP.coolMs) return false;
+    nmb.boopedAt = now;
+    nameMarkBuddyFeel(0.05);
+    const face = buddy.querySelector(":scope > .nm-buddy-face");
+    if (face && typeof face.animate === "function") {
+      face.animate([
+        { transform: "translateY(0) scale(1)" }, { transform: "translateY(-3px) scale(1.03, 1.05)", offset: 0.3 },
+        { transform: "translateY(1px) scale(1.04, 0.92)", offset: 0.55 }, { transform: "translateY(0) scale(1)" },
+      ].map((frame) => ({ ...frame, transformOrigin: "50% 100%" })), { duration: 800, easing: "ease-out" });
+    }
+    if (isAtlasSeed(buddy.dataset.seed || "")) setAtlasMood("surprised", 1100, { quiet: true, backEaseMs: 600 });
+    else nameMarkBuddyExpress("surprised", 1100);
+    if (Math.random() < 0.5) nameMarkSay(buddy, "Achoo.");
+    return true;
+  }
+  return { tickled, tickle, onNose, boop };
+})();
 //: **Flipped** (INBOX 743, the owner: "flipping it upside down??"): shaken
 //: up and down while carried, it turns over and hangs upside down from your
 //: hold, startled; let go, it turns the rest of the way round as it falls
@@ -10467,6 +10535,8 @@ function nameMarkBuddyBuild() {
     clearTimeout(pokeTimer);
     pokeTimer = 0;
     if (!nmb.visit && event.detail >= 2) return;
+    //: A real pointer's click, where it landed (a keyboard's has no place): on the nose it is a boop.
+    const nose = event.detail >= 1 && nmb.touch.onNose(face.getBoundingClientRect(), event.clientX, event.clientY);
     const poke = () => {
       pokeTimer = 0;
       const now = Date.now();
@@ -10474,6 +10544,7 @@ function nameMarkBuddyBuild() {
       const sinceLast = now - (nmb.lastPoke || 0);
       nmb.lastPoke = now;
       nmb.pokes = [...nmb.pokes.filter((at) => now - at < 20000), now];
+      if (nose && !wasAsleep && nmb.touch.boop(buddy)) return;
       const groggy = now - (nmb.wokeAt || 0) < 10000;
       //: What it did last counts only inside the same run of taps.
       const lastHow = sinceLast < 20000 ? nmb.lastHow || "" : "";
@@ -10586,7 +10657,10 @@ function nameMarkBuddyBuild() {
     const t = performance.now();
     rub.push([event.clientX, event.clientY, t]);
     while (rub.length > 2 && t - rub[0][2] > 1600) rub.shift();
-    if (rub.length >= 6 && nameMarkBuddyStrokes(rub, 0, 5, 1600) >= 4) {
+    if (nmb.touch.tickled(rub, face.getBoundingClientRect())) {
+      rub = [];
+      nmb.touch.tickle(buddy);
+    } else if (rub.length >= 6 && nameMarkBuddyStrokes(rub, 0, 5, 1600) >= 4) {
       rub = [];
       nameMarkBuddyRubbed(buddy);
     }

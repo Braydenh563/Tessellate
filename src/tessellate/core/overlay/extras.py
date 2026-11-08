@@ -39,6 +39,12 @@ SAMPLE_KEEP = 1.6
 #: Gesture thresholds, logical px (scaled by the figure's size) and seconds.
 PAT_DIP, PAT_REVERSALS, PAT_WINDOW, HEAD_ZONE = 11.0, 2, 1.0, 0.42
 RUB_SWING, RUB_REVERSALS, RUB_WINDOW, RUB_FLAT = 14.0, 3, 1.4, 0.7
+#: A tickle (catalogue `int.tickle`) is a fast small rub on the body below the head: `TICKLE_REVERSALS` turns of at
+#: least `TICKLE_SWING` px inside `TICKLE_WINDOW` s, over no more than `TICKLE_SPAN` px across and flatter than `TICKLE_FLAT`
+#: (a hand's tremor turns as often, but as far up as across). A boop (`int.boop_nose`) is a jab whose tip lands on the
+#: nose: within `NOSE_HALF` of the box's width about its middle, between `NOSE_TOP` and the head's lower edge.
+TICKLE_SWING, TICKLE_REVERSALS, TICKLE_WINDOW, TICKLE_SPAN, TICKLE_FLAT = 5.0, 5, 1.2, 18.0, 0.6
+NOSE_HALF, NOSE_TOP = 0.2, 0.18
 #: A poke is a jab: in at `POKE_SPEED`, at most `POKE_DWELL` s inside, back out the way it came, answered within
 #: `POKE_LEFT` s of leaving. An arrival that stays is a hover (INBOX 1692: "it gets instantly mad every time i hover").
 POKE_SPEED, POKE_WINDOW, POKE_DWELL, POKE_LEFT = 800.0, 0.4, 0.6, 0.3
@@ -77,6 +83,8 @@ REACTIONS: dict[str, Reaction] = {
     "flip": Reaction("flip_twirl", "joy", 1.6, "happy", 5.0, True),
     "flinch": Reaction("flinch", "worried", 1.2, "startled", 5.0, True),
     "hover": Reaction("", "smile", 3.0, "happy", 25.0, True),
+    "tickle": Reaction("tickle_squirm", "laughing", 2.4, "happy", 8.0, True),
+    "boop": Reaction("boop_sneeze", "surprised", 1.1, "", 5.0, True),
     # a shake while carried: it is left dizzy on the ground (`Extras.dizzy`)
     "dizzy": Reaction("dizzy_sway", "dizzy", 3.2, "startled", 8.0, True, 2),
     # the screen
@@ -119,6 +127,8 @@ REACT_ACTS: dict[str, bh.Activity] = {
     "cheer": bh.Activity("hop", (1.6, 2.2), _k((0, 1, 1, 0), (0.15, 1.04, 0.86, 0), (0.3, 0.96, 1.12, 0), (0.5, 1.04, 0.88, 0), (0.65, 0.96, 1.12, 0), (0.85, 1.02, 0.94, 0), (1, 1, 1, 0)), (("play", -0.3),), where="react"),
     "watch_drag": bh.Activity("look", (2.0, 2.8), _k((0, 1, 1, 0), (0.15, 0.96, 1.05, 0.09), (0.4, 0.96, 1.05, -0.09), (0.65, 0.96, 1.05, 0.09), (0.9, 0.97, 1.03, -0.05), (1, 1, 1, 0)), (("curiosity", -0.1),), where="react"),
     "dizzy_sway": bh.Activity("stand", (2.5, 4.0), _k((0, 1, 1, 0), (0.12, 1, 1.02, 0.08), (0.3, 1, 1.0, -0.08), (0.5, 1, 1.02, 0.07), (0.7, 1, 1.0, -0.07), (0.85, 1, 1.01, 0.04), (1, 1, 1, 0)), (), where="react"),
+    "tickle_squirm": bh.Activity("hop", (1.5, 3.0), _k((0, 1, 1, 0), (0.08, 1.03, 0.94, 0.05), (0.16, 0.97, 1.04, -0.05), (0.24, 1.03, 0.94, 0.05), (0.32, 0.97, 1.04, -0.05), (0.4, 1.03, 0.94, 0.05), (0.48, 0.97, 1.04, -0.05), (0.6, 1.02, 0.96, 0.03), (0.75, 0.99, 1.02, -0.02), (1, 1, 1, 0)), (("play", -0.3),), where="react"),
+    "boop_sneeze": bh.Activity("stand", (0.8, 1.4), _k((0, 1, 1, 0), (0.25, 1, 1.05, -0.1), (0.45, 1, 1.07, -0.12), (0.55, 1.03, 0.9, 0.08), (0.75, 1, 0.98, 0.02), (1, 1, 1, 0)), (), where="react"),
     "perk_up": bh.Activity("look", (1.2, 1.6), _k((0, 1, 1, 0), (0.15, 0.97, 1.06, 0.02), (0.8, 0.98, 1.03, 0.02), (1, 1, 1, 0)), (), where="react"),
 }
 for _kind, _prio in {"flinch": 3, "poke_miffed": 2, "battery_low": 2, "idle_return": 2, "download_done": 2, "toast": 2}.items():
@@ -252,7 +262,18 @@ class Pointer:
         if into[0] * out[0] + into[1] * out[1] >= 0:  # straight on through is a pass, not a jab
             return None
         peak = max((self._leg(a, c) for a, c in zip(pts[: i + 1], pts[1 : i + 1]) if pts[i][0] - c[0] <= POKE_WINDOW), default=0.0)
-        return "poke" if peak >= POKE_SPEED * k else None
+        return self._jab(peak >= POKE_SPEED * k, pts[i : j + 1], box)
+
+    def _jab(self, fast: bool, inside: list[tuple[float, float, float]], box: tuple[float, float, float, float]) -> str | None:
+        """A jab that was fast enough: a boop when its tip landed on the nose, else a poke."""
+        if not fast:
+            return None
+        return "boop" if any(self._on_nose(p, box) for p in inside) else "poke"
+    @staticmethod
+    def _on_nose(p: tuple[float, float, float], box: tuple[float, float, float, float]) -> bool:
+        lx, t, r, b = box
+        h = b - t
+        return abs(p[1] - (lx + r) / 2) <= NOSE_HALF * (r - lx) and t + NOSE_TOP * h <= p[2] <= t + HEAD_ZONE * h
 
     def _stroke(self, now: float, box: tuple[float, float, float, float], k: float, pad: float) -> str | None:
         """Strokes on the figure: dips on the head are a pat, sweeps along the body a rub."""
@@ -261,10 +282,24 @@ class Pointer:
         head = [s for s in inside if now - s[0] <= PAT_WINDOW and s[2] <= t + HEAD_ZONE * (b - t)]
         if len(head) >= 4 and self.reversals(head, 2, PAT_DIP * k) >= PAT_REVERSALS and self._spread(head, 1) <= (r - lx):
             return "pat"
+        if self._tickled(inside, now, box, k):
+            return "tickle"
         body = [s for s in inside if now - s[0] <= RUB_WINDOW]
         if len(body) >= 6 and self.reversals(body, 1, RUB_SWING * k) >= RUB_REVERSALS and self._spread(body, 2) <= RUB_FLAT * (b - t):
             return "rub"
         return None
+
+    def _tickled(self, inside: list[tuple[float, float, float]], now: float, box: tuple[float, float, float, float], k: float) -> bool:
+        """A fast small rub on the body below the head (see `TICKLE_SWING`)."""
+        _lx, t, _r, b = box
+        low = [s for s in inside if now - s[0] <= TICKLE_WINDOW and s[2] > t + HEAD_ZONE * (b - t)]
+        across = self._spread(low, 1)
+        return (
+            len(low) >= 8
+            and self.reversals(low, 1, TICKLE_SWING * k) >= TICKLE_REVERSALS
+            and across <= TICKLE_SPAN * k
+            and self._spread(low, 2) <= TICKLE_FLAT * across
+        )
 
     def _hover(self, now: float, k: float) -> str | None:
         if self.inside_since is not None and now - self.inside_since >= HOVER_FOR and self.speed(now, HOVER_FOR) <= HOVER_STILL * k:

@@ -56,7 +56,7 @@ DESK_ONLY = frozenset({
     "react.battery_low", "react.hour_chime", "react.idle_return", "react.window_closed", "react.window_dragged",
     "react.window_maximised", "react.window_opened", "react.window_restored", "trans.upright>hang",
 })
-APP_ONLY_CAP, DESK_ONLY_CAP, NEITHER_CAP = 60, 36, 111
+APP_ONLY_CAP, DESK_ONLY_CAP, NEITHER_CAP = 60, 36, 109
 
 
 @lru_cache(maxsize=1)
