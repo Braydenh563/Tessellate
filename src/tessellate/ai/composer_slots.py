@@ -971,19 +971,9 @@ def _age_of(out, name: str, named: list, today: date) -> bool:  # noqa: ANN001
     stems = _stems(name)
     mentioned = named
     named = [v for v in named if _title_holds(v, stems)]  # her own note, not a gift list that names her
-    for view in named:
-        for s in view.sentences:
-            if _YEARS_OLD.search(s.text):
-                out.lines.append(s.text if s.text.endswith((".", "!")) else f"{s.text}.")
-                composer_lists._cite(out, view, s, out.lines[-1])  # noqa: SLF001
-                return True
     line = f"Your notes do not say how old {name} is."
-    for view in named:
-        if bday := next((s for s in view.sentences if _BIRTHDAY.search(s.text)), None):
-            line += f" {bday.text}" if bday.text.endswith((".", "!")) else f" {bday.text}."
-            out.lines.append(line)
-            composer_lists._cite(out, view, bday, line)  # noqa: SLF001
-            return True
+    if _said_line(out, named, _YEARS_OLD, "") or _said_line(out, named, _BIRTHDAY, f"{line} "):
+        return True
     out.lines.append(line)
     #: The denial is grounded in her note, or the route reads an ungrounded line as a miss and answers
     #: "general knowledge" over it (round 3 review).
@@ -991,6 +981,16 @@ def _age_of(out, name: str, named: list, today: date) -> bool:  # noqa: ANN001
         if first := next((x for x in view.sentences if x.kind in ("prose", "item", "task")), None):
             composer_lists._cite(out, view, first, line)  # noqa: SLF001
     return True
+
+
+def _said_line(out, views: list, pattern, lead: str) -> bool:  # noqa: ANN001
+    """The first sentence of `views` that `pattern` finds, after `lead`, said and cited."""
+    for view in views:
+        if s := next((x for x in view.sentences if pattern.search(x.text)), None):
+            out.lines.append(lead + (s.text if s.text.endswith((".", "!")) else f"{s.text}."))
+            composer_lists._cite(out, view, s, out.lines[-1])  # noqa: SLF001
+            return True
+    return False
 
 
 def _old(out, rest: list[str], views: list, today: date, raw: str = "") -> bool:  # noqa: ANN001

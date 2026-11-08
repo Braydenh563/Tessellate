@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Chat: a very long run-together word in a question is split in linear time (50,000 letters took 1.3 s, now 0.03 s).
 - Diagram builder: quicker building: a double press on empty picture adds a box, Ctrl+D duplicates, Ctrl+A picks all, Delete removes, Shift+Enter adds a joined box, Alt+Enter a sister, Ctrl+F finds, and a connector can be reversed.
 - Diagram builder: the rings and handles stay on their boxes when the picture scrolls, a press on empty space or Escape clears the pick, and the Canvas and Blocks views are now called Picture and List.
 - Desk companion: a throw that crosses a side edge now stops at the top of the screen like any other throw, instead of rising through it.

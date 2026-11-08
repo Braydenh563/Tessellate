@@ -551,6 +551,14 @@ def subject_terms(question: str) -> list[str]:
         if word in _ASKING_WORDS or word in seen:
             continue
         seen.append(word)
+    seen = _without_asked_shape(question, seen)
+    #: A praise word alone names nothing ("anything interesting", "the cool
+    #: stuff"); beside a noun ("interesting bean") it stays (INBOX 1561).
+    return [] if all(w in question_noise.PRAISE_WORDS for w in seen) else seen
+
+
+def _without_asked_shape(question: str, seen: list[str]) -> list[str]:
+    """The terms less the words that are the question's shape, not its subject."""
     #: "What dates do I have", "the date of my passport expiry" ask for dates; the word is no term to find in a
     #: note ("the date test still fails"; R3-5).
     if _DATE_ASK.search(question):
@@ -562,9 +570,7 @@ def subject_terms(question: str) -> list[str]:
     #: Marathon note's "Start is at 9am" and answers with that race (round 3 review, R3-1).
     if _EVENT_ENDS.search(question) and len(seen) > 1:
         seen = [w for w in seen if w.lower() not in _EVENT_VERBS]
-    #: A praise word alone names nothing ("anything interesting", "the cool
-    #: stuff"); beside a noun ("interesting bean") it stays (INBOX 1561).
-    return [] if all(w in question_noise.PRAISE_WORDS for w in seen) else seen
+    return seen
 
 
 _EVENT_ENDS = re.compile(r"^\s*when\s+(?:does|do|will|is)\b[^?.!]{1,80}?\b(?:start|begin|end|finish)s?\s*[?.!]*$", re.I)
