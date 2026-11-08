@@ -4869,6 +4869,30 @@ def _chosen(asked: str, kind: str, views: list, wants_context: bool) -> tuple[li
 
 
 @_isolated
+def _routed_away(question: str, notes: list[dict], today: date) -> tuple:
+    """(reply, question, asked) for the asks that are not a digest: `reply` is
+    the answer (None for "not this shape"), or `_ORDINARY` with the question's
+    slips put right and its ask read, for `answer` to digest."""
+    from tessellate.ai import composer_intent
+
+    #: What is on a named day is one answer, however asked: the recall's (R3-8).
+    if composer_intent.asks_the_day(question, today):
+        return None, question, None
+    if one := composer_oneword.named(question, notes):
+        return _one_word_result(one), question, None
+    #: "Where did I write about squats" is a sentence naming the note (A22), not a digest of what it says.
+    if located := composer_small.where_written(question, notes, today=today):
+        return located, question, None
+    #: "wen is the exam" is "when is the exam": the asking words put right, the notes' own words never changed (R3-17).
+    question = question_noise.slips_only(question, known=composer._note_words(notes))  # noqa: SLF001
+    asked = composer_ask.what_is(clean(question))
+    #: "what is on my list": which of several lists (R3-8), or the one there is.
+    which = _Out()
+    if _which_list(which, asked, notes):
+        return _result(which, "fact", asked), question, asked
+    return _ORDINARY, question, asked
+
+
 def answer(
     question: str, notes: list[dict], *, today: date | None = None, voice: str = "natural", turn: int = 0,
     insight: str = "one", learned=None, known=None,  # noqa: ANN001
@@ -4877,23 +4901,9 @@ def answer(
     when the question is not one this shape answers (a sum, a time, a
     command, nothing found): the caller then asks `composer.compose`."""
     today = today or composer.user_today()
-    from tessellate.ai import composer_intent
-
-    #: What is on a named day is one answer, however asked: the recall's (R3-8).
-    if composer_intent.asks_the_day(question, today):
-        return None
-    if one := composer_oneword.named(question, notes):
-        return _one_word_result(one)
-    #: "Where did I write about squats" is a sentence naming the note (A22), not a digest of what it says.
-    if located := composer_small.where_written(question, notes, today=today):
-        return located
-    #: "wen is the exam" is "when is the exam": the asking words put right, the notes' own words never changed (R3-17).
-    question = question_noise.slips_only(question, known=composer._note_words(notes))  # noqa: SLF001
-    asked = composer_ask.what_is(clean(question))
-    #: "what is on my list": which of several lists (R3-8), or the one there is.
-    which = _Out()
-    if _which_list(which, asked, notes):
-        return _result(which, "fact", asked)
+    reply, question, asked = _routed_away(question, notes, today)
+    if reply is not _ORDINARY:
+        return reply
     kind = _kind_if_mine(asked)
     #: An act ("rename my gym log") is not a topic to digest: with its verb off
     #: the subject, it would find the gym log and summarise it.

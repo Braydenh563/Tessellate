@@ -383,7 +383,7 @@
     sel.removeAllRanges();
     sel.addRange(range);
     let over = false;
-    const end = (keep, movedTo = null) => {
+    const end = (keep, to) => {
       if (over) return;
       over = true;
       target.removeEventListener("keydown", onKey);
@@ -393,9 +393,9 @@
       target.classList.remove("dgm-editing");
       if (keep && text !== was) done(text, was);
       else target.textContent = was;
-      //: Not when the render already put focus there, and not when the press went to another field (the dialog's title).
+      //: Not when the render put focus there or the press went to another field.
       const block = key && blockEl(S, key);
-      if (block && !movedTo && document.activeElement !== block) block.focus();
+      if (block && !to && document.activeElement !== block) block.focus();
     };
     const onKey = (event) => {
       if (event.key !== "Enter" && event.key !== "Escape") return;
@@ -532,7 +532,7 @@
     return menu;
   }
 
-  //: The host's rows can depend on the diagram: when they differ after a redraw the menu is rebuilt in place, keeping the Tab stop.
+  //: The host's rows can depend on the diagram: when they differ after a redraw the menu is rebuilt, keeping the Tab stop.
   function refreshMore(S) {
     const old = S.root.querySelector(".dgm-more");
     if (!old || old.dataset.rows === (S.io.menu || []).map((row) => row.label).join("|")) return;

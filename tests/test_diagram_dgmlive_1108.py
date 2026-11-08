@@ -13,8 +13,8 @@ def test_a_rename_ended_by_a_press_on_another_field_does_not_pull_focus_back_to_
     """Measured in Chromium: Add box, then a click on the dialog's title put focus on the block and the typing went nowhere."""
     body = BUILDER.split("function beginEdit(")[1].split("\n  function stepBlock(")[0]
     assert "const onBlur = (event) => end(true, event.relatedTarget)" in body
-    assert "const end = (keep, movedTo = null) =>" in body
-    assert "if (block && !movedTo && document.activeElement !== block) block.focus();" in body
+    assert "const end = (keep, to) =>" in body
+    assert "if (block && !to && document.activeElement !== block) block.focus();" in body
 
 
 OUTLINE = (JS / "diagram-outline.js").read_text(encoding="utf-8")

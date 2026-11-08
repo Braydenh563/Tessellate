@@ -48,7 +48,7 @@ def test_selection_and_focus_write_only_what_differs_and_never_refocus_what_has_
     assert "stops(S, blockEl(S, key))" in JS.split("function select(", 1)[1].split("\n  }\n", 1)[0]
     render = JS.split("function render(S) {", 1)[1].split("\n  }\n", 1)[0]
     assert "if (had && document.activeElement !== stop) stop?.focus();" in render
-    end = JS.split("const end = (keep) => {", 1)[1].split("\n    };", 1)[0]
+    end = JS.split("const end = (keep", 1)[1].split("\n    };", 1)[0]
     assert "document.activeElement !== block" in end
     # A row is found by its key in one query, not by walking every row.
     assert 'S.tree.querySelector(`.dgm-block[data-key="' in JS
