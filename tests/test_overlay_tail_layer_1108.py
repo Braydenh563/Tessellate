@@ -142,7 +142,6 @@ def test_an_active_tail_ceiling_a_hover_draws_at_the_active_pace_not_the_cycles(
     seen, wakes = drive(e, pointer=near, seconds=8.0)
     assert e.state == "stand"
     assert all(w is not None and w <= eng.TAIL_LAYER_MS for w in wakes)
-    span = seen[-1][0] - seen[0][0]
     frames = len({f for _, f, _ in seen})
     tails = len({v for _, _, v in seen})
     assert tails > 3 * frames, ("the tail's pictures outnumber the cycle's", tails, frames)
