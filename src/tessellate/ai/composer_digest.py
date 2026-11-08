@@ -3519,7 +3519,7 @@ def _summary_names(members) -> str:  # noqa: ANN001
     """"Cloud computing, Essay plan and eight more": two or three notes by a
     clean name, their own titles first, then how many more (composer-1031,
     item 3)."""
-    named = [composer_frame.short_name(v.note, _heading_said) for v in members]
+    named = [composer_frame.without_own_day(composer_frame.short_name(v.note, _heading_said)) for v in members]
     order = sorted(range(len(named)), key=lambda i: (not _CLEAN_NAME.match(named[i]), named[i].startswith(("the note", "your ")), i))
     picked = list(dict.fromkeys(named[i] for i in order))[: 3 if len(members) == 3 else 2]
     rest = len(members) - len(picked)

@@ -344,6 +344,17 @@ def clipped_words(note: dict) -> str:
     return said + ("…" if len(words) > _CLIP_WORDS else "") if said else ""
 
 
+#: Words of when that were the note's own day. A summary is read on other
+#: days than the notes were written, so it never says them (INBOX 1461).
+_OWN_DAY = lazy_compile(r"\b(?:today|yesterday|tonight|this (?:morning|afternoon|evening)|last night)\b", re.I)
+
+
+def without_own_day(name: str) -> str:
+    """`name` without the note's own "today" ("Pottery: trimmed my first bowl"),
+    unchanged when nothing else would be left."""
+    return " ".join(_OWN_DAY.sub("", name).split()).replace(" ”", "”").replace("“ ", "“") or name
+
+
 def name_of(note: dict) -> str:
     """**The one name for a note, on every surface** (R3-15): its own title
     when it has one ("Trains", `_titled`), else its first clause, six words
