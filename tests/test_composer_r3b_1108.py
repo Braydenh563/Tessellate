@@ -53,7 +53,7 @@ def test_r3_15_a_listing_names_an_untitled_note_by_its_words_and_dates_it_after(
 
 def test_r3_15_a_property_denial_names_an_untitled_note_the_same_way():
     said = say("what is the address of the dentist", UNTITLED[0], "Sara likes jazz")
-    assert said == "The note that starts “Dentist said to floss more and…” has no address.", said
+    assert said == "“Dentist said to floss more and…” has no address.", said
 
 
 # --- R3-8: the same ask gets the same answer ---------------------------------------------------

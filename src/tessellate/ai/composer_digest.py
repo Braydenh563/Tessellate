@@ -3758,7 +3758,8 @@ def _from_name(lead: Fact, body: str, today: date) -> str:
     if not lead.label or lead.label in {name for name, _ in _CUES} or _TIME_LABEL.match(lead.label + " x"):
         return ""
     name = f"your {_fragment(lead.label, _NAMES.get())} note" if _label_names(lead.label, lead.view) else _your_note(lead.view)
-    if body.lower().startswith(name.lower().rstrip(".")):
+    spoken = name.lower().strip("“”… .")
+    if body.lower().lstrip("“”\" ").startswith(spoken):
         return ""
     day = f", {_said_day(lead.view.written, today)}" if _TIMED.get() and lead.view.written and not _says_day(body, lead.view.written, today) else ""
     if lead.label.strip().capitalize() in _DAY_NAMES:
