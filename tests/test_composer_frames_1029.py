@@ -210,7 +210,7 @@ def test_verb_led(item, led):
 
 @pytest.mark.parametrize(("content", "name"), [
     ("I just missed the bus to uni and had to walk all the way in the rain.", "“I just missed the bus to uni”"),
-    ("Idea: a bike route along the river to work, about 8 km.", "the note that starts “Idea: a bike route along the river…”"),
+    ("Idea: a bike route along the river to work, about 8 km.", "the note that starts “Idea: a bike route along the…”"),
     ("Pros: more time\n\nCons: pay cut", "the note that starts “Pros: more time”"),
 ])
 def test_a_title_less_note_is_named_by_its_clipped_first_clause(content, name):

@@ -19,7 +19,7 @@ def ask(client, session, monkeypatch):
 def test_z34_a_question_that_names_nothing_says_the_newest_notes_are_a_fallback(ask, question):
     said = ask(question)[0]
     assert said.startswith("I could not tell what that asks about, so here are your"), said
-    assert "From yesterday: Coffee" not in said and "[From yesterday](#/notes/" in said, said
+    assert "From yesterday: Coffee" not in said and "[“Coffee with Anna on Saturday at…”](#/notes/" in said, said
 
 
 @pytest.mark.parametrize("question", ["what have I saved recently", "show my newest notes"])

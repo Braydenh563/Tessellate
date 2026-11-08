@@ -92,7 +92,7 @@ _NOT_DONE = re.compile(_PLANNED.pattern + r"|\bbudget\w*|\blimits?\b|\baim\w*|" 
 #: A balance still owed, said beside the total so it is not mistaken as missed.
 _STILL_DUE = re.compile(r"\b(?:due|unpaid|balance|haven't paid|not paid)\b", re.I)
 #: A note is a spending note when its title or text says so.
-_SPENDING = re.compile(r"\b(?:spen[dt]\w*|expenses?|costs?|paid|bought|purchases?|bills?|receipts?)\b", re.I)
+_SPENDING = re.compile(r"\b(?:spen[dt]\w*|expenses?|costs?|paid|bought|purchases?|bills?|receipts?|shop\w*)\b", re.I)
 _DATE_TAIL = re.compile(r"(?<!\s)\s+(?:on|in|at|from|for)\s+.*$", re.I)
 
 
@@ -403,15 +403,24 @@ _BOUGHT = re.compile(
 _FIGURE_IN_NAME = re.compile(r"\b\d[\d.,]*\s?(?:[a-zA-Zµ]+\b)?")
 
 
+#: A first word that says when or where, not what, after "bought".
+_WHEN_WORDS = frozenset("in on at from since by last this next yesterday today tomorrow january february march april may june july august september october november december".split())
+
+
 def _note_name(view) -> str:  # noqa: ANN001
     """A note as a sum names it: its title, what it bought, or a short noun
     phrase for what it is about ("your note on the run"), never its whole
     line and never a figure the answer says beside it (composer-1031)."""
     if view.titled:
         return composer_lists._title(view)  # noqa: SLF001
-    if m := _BOUGHT.search(str(view.note.get("content") or "")):
+    #: What it bought, unless that is a time or place ("bought in March") and no thing (R3-23).
+    if (m := _BOUGHT.search(str(view.note.get("content") or ""))) and m.group("what").split()[0].lower() not in _WHEN_WORDS:
         return m.group("what").strip()
-    named = composer_frame.short_name(view.note)
+    named = re.sub(r"^the note on your ", "your ", composer_frame.short_name(view.note))
+    #: "order 4471 from Amazon arrives Tuesday" is the order: the name stops where its figure starts.
+    figure = re.search(r"\s\S*\d", named)
+    if figure and figure.start() > 2:
+        named = named[: figure.start()]
     bare = " ".join(_FIGURE_IN_NAME.sub("", named).split())
     if not bare or re.search(r"\b(?:on|of|for|about|after|before)$", bare):
         return f"your note of {composer_lists._day(view.written, composer.user_today())}" if view.written else composer_lists._title(view)  # noqa: SLF001
@@ -435,7 +444,7 @@ def _spent_line(items: list, symbol: str, on: str, when: str) -> tuple[str, floa
             by_label[item.label] = by_label.get(item.label, 0) + item.value
         listed = _listed([f"{label.lower() if i else label} {_money(symbol, v)}" for i, (label, v) in enumerate(by_label.items())])
         return f"You spent {_money(symbol, total)}{on}{when}, going by {next(iter(by_note))}: {listed}.", total
-    listed = _listed([f"{name} {_money(symbol, v)}" for name, v in by_note.items()])
+    listed = _listed([f"{name[:1].upper()}{name[1:]} {_money(symbol, v)}" for name, v in by_note.items()])
     return f"Your notes record {_money(symbol, total)} spent{on}{when}: {listed}.", total
 
 

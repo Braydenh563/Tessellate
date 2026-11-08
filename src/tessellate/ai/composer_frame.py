@@ -339,27 +339,35 @@ def _whole_clause(clause: str) -> str:
     return ""
 
 
-#: How many words of a title-less note's first clause name it (C8).
-_CLIP_WORDS = 7
+#: How many words of a title-less note's first clause name it (C8, R3-15).
+_CLIP_WORDS = 6
 
 
-def _clipped(note: dict) -> str:
-    """A title-less note by its first clause, cut at a word with an ellipsis:
-    "the note that starts “I just missed the bus to uni…”", never by its
-    day alone or "an untitled note" (audit 1029 C8, INBOX 1420)."""
+def name_of(note: dict) -> str:
+    """**The one name for a title-less note, on every surface** (R3-15): its
+    first clause, six words at most, cut with an ellipsis, in quotes
+    (“Dentist said to floss more and…”). The day is the caller's muted
+    second field, never part of the name."""
     first = _first_line(str(note.get("content") or "").strip())
     clause = re.split(r"(?<=\w)[,;.!?](?:\s|$)", first, maxsplit=1)[0].strip()
     words = clause.split()
     if not words:
         return "a note with no words yet"
     said = " ".join(words[:_CLIP_WORDS]).rstrip(",;:")
-    return f"the note that starts “{said}{'…' if len(words) > _CLIP_WORDS else ''}”"
+    return f"“{said}{'…' if len(words) > _CLIP_WORDS else ''}”"
+
+
+def _clipped(note: dict) -> str:
+    """A title-less note by its first clause, in a sentence: "the note that
+    starts “I just missed the bus to…”", never by its day alone or "an
+    untitled note" (audit 1029 C8, INBOX 1420)."""
+    name = name_of(note)
+    return name if name.startswith("a note") else f"the note that starts {name}"
 
 
 def clipped_name(note: dict) -> str:
-    """A title-less note by its first words, for a link's text: "the note that
-    starts “Idea: a podcast about local history”"."""
-    return _clipped(note)
+    """A title-less note for a link's text: `name_of`, the same words."""
+    return name_of(note)
 
 
 #: A verb that makes a short line a sentence, after its first word (the

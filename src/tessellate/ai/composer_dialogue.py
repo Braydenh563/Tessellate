@@ -298,7 +298,7 @@ def follow_on(question: str, history: list[dict] | None) -> FollowOn | None:
 #: launch one") lean on the question before, which stays the one the next
 #: terse turn leans on: "why?" after "longer" asks about the subject, not
 #: about "longer".
-_RESTATES = frozenset({"window", "subject", "entity", "pronoun", "did_you_mean", "ordinal"})
+_RESTATES = frozenset({"window", "subject", "entity", "pronoun", "did_you_mean", "ordinal", "part"})
 
 
 def _standing(turns: list[dict]) -> list[dict]:
@@ -544,10 +544,32 @@ def _follow_pronoun(text: str, previous: str, last: dict, turns: list[dict]) -> 
     return FollowOn(_pronoun_swap(text, named, kind), previous, "", "pronoun")
 
 
+#: "and the flights", "also the hotel?": a part of the thing the turn before named, with no verb.
+_AND_PART = re.compile(r"^(?:and|also)\s+(?:the\s+)?(?P<part>[a-z][a-z'-]*(?: [a-z][a-z'-]*)?)\s*[?.!]?\s*$")
+
+
+def _follow_part(text: str, previous: str, last: dict, turns: list[dict]) -> Any:
+    """"and the flights" after "what is the Lisbon trip" asks for the Lisbon
+    trip's flights, not for every note about flights (audit 1107 R3-27). Only a
+    plain lower-case noun phrase after a capitalised subject: "and the Tokyo
+    trip" names its own subject and is the swap reader's."""
+    got = _AND_PART.match(text.strip())
+    if not got:
+        return _NOT_THIS
+    source = _carried_source(previous, turns)
+    subject = _asked_span(source, subject_terms(source))
+    if not subject or not any(w[:1].isupper() for w in subject.split()):
+        return _NOT_THIS
+    start = source.lower().find(subject.lower())
+    article = re.search(r"\b(?:the|my|our)\s+$", source[:start], re.I)
+    named = (article.group(0).strip() + " " if article else "") + subject
+    return FollowOn(f"What are the {got.group('part')} for {named}?", previous, "", "part")
+
+
 #: Tried in this order: a "more" is not a correction, and a correction is not a swap.
 _FOLLOW_READERS = (
     _follow_more, _follow_ordinal, _follow_correction, _follow_length, _follow_window, _follow_meant,
-    _follow_bare, _follow_swap, _follow_pronoun,
+    _follow_bare, _follow_part, _follow_swap, _follow_pronoun,
 )
 
 

@@ -132,6 +132,9 @@ PHRASES: dict[str, str] = {
     "timeline": "In the order you wrote them:",
     # A comparison.
     "of_found": "Of the notes found, ",
+    "only_lead": "Only ",
+    "only_appear": " appears in your notes; nothing mentions ",
+    "only_appear_many": " appear in your notes; nothing mentions ",
     "mentions_one": " mentions ",
     #: "which is longer, the budget or the Lisbon trip" (audit 1029 C36).
     "is_longer": " is the longer note: ",
@@ -180,6 +183,8 @@ PHRASES: dict[str, str] = {
     "recall_note": " note ",
     "recall_notes": " notes ",
     "recall_b": ", newest first:",
+    "recall_dated_note": " note falls ",
+    "recall_dated_notes": " notes fall ",
     #: The window held more than the list shows (audit 1029 C11): say so.
     "recall_more_a": "And ",
     "recall_more_b": " more.",

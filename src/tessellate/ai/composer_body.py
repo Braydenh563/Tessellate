@@ -17,7 +17,7 @@ from datetime import date
 from tessellate.ai import composer_frame, composer_versus, question_noise, recognise as rec, utilities, when as when_words
 from tessellate.ai.composer_answer import _Answer
 from tessellate.ai.composer_ask import _holds, _overview, _stem, _words, subject_terms
-from tessellate.ai.composer_quote import _ENDED, _joined, _list_block, _lowered, _pick, _quotes, _said_before, _sentence_case, _unlike_before, _with_context, decap
+from tessellate.ai.composer_quote import _ENDED, _joined, _list_block, _list_lead, _list_sentence, _lowered, _pick, _quotes, _said_before, _sentence_case, _unlike_before, _with_context, decap
 from tessellate.ai.composer_read import NoteView, Sentence, _NUMBER_CUE, _cue
 from tessellate.ai.composer_select import _Meaning, _was_said, centrality, disagree, select
 from tessellate.ai.composer_unfound import _says_every
@@ -223,6 +223,13 @@ def _other(out: _Answer, unit: list[Sentence], relation: str, used: set[str], te
     """One other note's sentences, after the joiner its relation earns, if
     any; `used` holds the joiners already said: never the same joining
     words twice in one answer."""
+    view = out.views[unit[0].note_id]
+    #: A list is its note's: "Your Reading list note lists A, B and C", never a connector in front of
+    #: its entries lower-cased ("Over in another note, the Dispossessed, Middlemarch") (R3-14).
+    if len(unit) >= 2 and view.titled and all(s.kind == "item" for s in unit):
+        _list_lead(out, view, "opening")
+        _list_sentence(out, unit, terms)
+        return
     if unit[0].kind.startswith("picture") and len(unit) == 1:
         #: A picture's reading names its note itself ("The picture
         #: in **Sketches** shows ..."): no joiner before it.
@@ -431,6 +438,20 @@ def _side_picks(sides: tuple[str, ...], views: list[NoteView], meaning_for):  # 
 
 
 def _compare_lead(out: _Answer, sides: tuple[str, ...], counts: list[int]) -> None:
+    #: One side with nothing is said once, not as "no mention Tokyo" beside the other (R3-14).
+    if 0 in counts and any(counts):
+        found = [label for label, n in zip(sides, counts) if n]
+        out.t("only_lead")
+        for i, label in enumerate(found):
+            if i:
+                out.t("and")
+            out.asked(label)
+        out.t("only_appear" if len(found) == 1 else "only_appear_many")
+        for i, label in enumerate(label for label, n in zip(sides, counts) if not n):
+            if i:
+                out.t("and")
+            out.asked(label)
+        return
     out.t(_unlike_before(out, ["of_found", "across_found"])[0])
     for i, (label, n) in enumerate(zip(sides, counts)):
         if i:
@@ -513,7 +534,8 @@ def _compare(out: _Answer, sides: tuple[str, ...], views: list[NoteView], meanin
     #: each says." before the headings that say it.
     out.t("stop")
     for label, side, side_terms in zip(sides, only, terms):
-        _compare_side(out, label, side, side_terms)
+        if side or not any(only):
+            _compare_side(out, label, side, side_terms)
     if both:
         out.t("para", "bold", "both", "bold")
         for s in both:
@@ -1009,9 +1031,11 @@ def _newest(out: _Answer, views: list[NoteView], guessing: bool = False) -> None
                 out.address(f"](#/notes/{view.id})")
             out.dated(view)
         elif view.written:
-            out.t("list_from").m(out.day(view.written))
+            #: The note's words are its name, the day a muted second field (R3-15).
+            out.term(composer_frame.name_of(view.note), view)
             if linked:
                 out.address(f"](#/notes/{view.id})")
+            out.dated(view)
         else:
             out.name(view, cap=True)
         out.t("colon")
