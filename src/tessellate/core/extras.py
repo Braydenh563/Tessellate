@@ -2017,15 +2017,26 @@ def install_blocking(extra_ids: list[str]) -> int:
             continue
         started, message = start(extra_id)
         if not started:
-            _logger.warning("extra %s not installed: %s", extra_id, message)
+            _blocking_failure(f"extra {extra_id} not installed: {message}")
             failed += 1
             continue
         while current().running:
             time.sleep(0.5)
         if current().outcome != "completed":
-            _logger.warning("extra %s failed: %s", extra_id, current().step)
+            _blocking_failure(f"extra {extra_id} failed: {current().step}")
             failed += 1
     return failed
+
+
+def _blocking_failure(line: str) -> None:
+    """Why the wizard's install failed, in the log and on stderr. A windowed
+    build's stderr is `logs/desktop-stdio.log` (`_ensure_std_streams`), the
+    file the wizard's support text and the package check read; the logger
+    alone left that file empty when `--install-extras` exited 1, so neither
+    could say which package or which step had failed."""
+    _logger.warning("%s", line)
+    if sys.stderr is not None:
+        print(line, file=sys.stderr, flush=True)
 
 
 def download_ready(extra_id: str) -> Path | None:

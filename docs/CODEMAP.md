@@ -2,7 +2,7 @@
 
 Generated 2026-11-08 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7884, frontend ids 2652, CSS sections 522, backend routes 649, backend modules 9080, test files 2205, tests 18498, plan headings 1004, app scripts 28, boot scripts 37, script files 263.
+Counts: frontend functions 7884, frontend ids 2652, CSS sections 522, backend routes 649, backend modules 9081, test files 2205, tests 18499, plan headings 1004, app scripts 28, boot scripts 37, script files 263.
 
 ## Frontend functions (7884)
 
@@ -13121,7 +13121,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:164 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (9080)
+## Backend modules (9081)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -21901,7 +21901,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `uninstall` | src/tessellate/core/extra_downloads.py:426 |
 | `url_allowed` | src/tessellate/core/extra_downloads.py:167 |
 
-### src/tessellate/core/extras.py (59)
+### src/tessellate/core/extras.py (60)
 
 | Name | File:line |
 |---|---|
@@ -21909,6 +21909,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `Bundle` | src/tessellate/core/extras.py:791 |
 | `Extra` | src/tessellate/core/extras.py:334 |
 | `InstallState` | src/tessellate/core/extras.py:867 |
+| `_blocking_failure` | src/tessellate/core/extras.py:2031 |
 | `_busy` | src/tessellate/core/extras.py:1645 |
 | `_canonical` | src/tessellate/core/extras.py:1198 |
 | `_claim` | src/tessellate/core/extras.py:1633 |
@@ -21948,7 +21949,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `cancel` | src/tessellate/core/extras.py:1146 |
 | `current` | src/tessellate/core/extras.py:1142 |
 | `download_mb` | src/tessellate/core/extras.py:777 |
-| `download_ready` | src/tessellate/core/extras.py:2031 |
+| `download_ready` | src/tessellate/core/extras.py:2042 |
 | `find_system_python` | src/tessellate/core/extras.py:132 |
 | `footprint` | src/tessellate/core/extras.py:1027 |
 | `frozen_extras_dir` | src/tessellate/core/extras.py:222 |
@@ -24550,7 +24551,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (18498)
+## Tests (18499)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -25435,7 +25436,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_frontend_wake_sources.py | 2 |
 | tests/test_frontend_workspace_header.py | 3 |
 | tests/test_frontmatter_title_1031.py | 3 |
-| tests/test_frozen_extras.py | 10 |
+| tests/test_frozen_extras.py | 11 |
 | tests/test_frozen_launch.py | 19 |
 | tests/test_frozen_packaging.py | 14 |
 | tests/test_full_entry_1525b.py | 5 |
