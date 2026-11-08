@@ -3064,11 +3064,13 @@ const NAME_MARK_BUDDY_ACTS = {
   dangle: { ms: 6000, w: 5, cool: 5000, poses: ["sit"], legs: "out" },
   kick: { ms: 1600, w: 2, cool: 12000, poses: ["sit"], legs: "out" },
   peek: { ms: 14000, w: 2, cool: 70000, poses: ["sit", "stand"], edge: "top" },
+  //: The same hiding from a panel's SIDE edge, leaning on it: it slides sideways behind the panel, eyes over the edge.
+  peekside: { ms: 12000, w: 1.5, cool: 70000, poses: ["lean"], edge: "side" },
   swing: { ms: 2600, w: 3, cool: 8000, poses: ["hang"] },
   sloth: { ms: 9000, w: 2, cool: 30000, poses: ["hang"] },
   onehand: { ms: 4200, w: 2, cool: 20000, poses: ["hang"] },
   feet: { ms: 7000, w: 1, cool: 45000, poses: ["hang"] },
-  emerge: { ms: 800, w: 0, cool: 0, poses: ["sit", "stand"] },
+  emerge: { ms: 800, w: 0, cool: 0, poses: ["sit", "stand", "lean"] },
   //: **Peeking down from under a bar** (the owner: "is there a peak half
   //: hidden animation for the companion like with the bottom bar for the top
   //: bar as well?"). The mirror of `peek`: hanging from the top bar (or a
@@ -3190,7 +3192,7 @@ const NMB_QUIET_ACTS = ["blink", "look", "glance", "turn", "yawn", "nap", "dangl
 const NMB_ACTIVITIES = [
   ["wave", "Wave", ["wave"]],
   ["hop", "Hop and stretch", ["hop", "stretch"]],
-  ["peek", "Peek from behind a panel", ["peek"]],
+  ["peek", "Peek from behind a panel", ["peek", "peekside"]],
   ["peekdown", "Peek down from under the top bar", ["peekdown"]],
   ["legs", "Swing its legs over an edge", ["dangle", "kick"]],
   ["hang", "Hanging tricks", ["swing", "sloth", "onehand", "feet"]],
@@ -5491,7 +5493,7 @@ const NMB_TEMPO_MS = 50;
 const NMB_HOLD_SHOWN = '[data-pose="hang"], [data-travel="climb"], .nm-buddy-dragging, .nmb-act-stretch, .nmb-act-yawn, .nmb-act-cheer, .nmb-act-wake, .nmb-act-startle';
 //: The long, still acts are rest, and paced as rest: a stance, a nap, a
 //: book, a seat. Full rate is for the short ones, where it is moving.
-const NMB_RESTING_ACTS = new Set(["lie", "read", "beanbag", "chair", "nap", "peek", "peekdown", "meditate", "crouch", "lounge", "rest", "drift", ...Object.keys(NMB_STANCES)]);
+const NMB_RESTING_ACTS = new Set(["lie", "read", "beanbag", "chair", "nap", "peek", "peekside", "peekdown", "meditate", "crouch", "lounge", "rest", "drift", ...Object.keys(NMB_STANCES)]);
 const nmbTempo = { held: true, timer: 0, anims: [], at: 0, seen: 0, clock: new WeakMap(), slow: new WeakSet(), gap: new WeakMap(), ticks: 0, stride: 1 };
 //: **A prop's slow loop is stepped slowly** (audit 1101, row 17's pacer
 //: leftover). Each step of an animation inside the drawing restyles the whole
@@ -7809,7 +7811,7 @@ function nameMarkBuddyAct(act, ms) {
   clearTimeout(nmb.shyTimer);
   nmb.timer = 0;
   //: Out from behind the panel before anything else.
-  if (was === "peek" && act !== "emerge" && !nameMarkBuddyStill()) act = act || "emerge";
+  if ((was === "peek" || was === "peekside") && act !== "emerge" && !nameMarkBuddyStill()) act = act || "emerge";
   if (was === "peekdown" && act !== "peekback" && !nameMarkBuddyStill()) act = act || "peekback";
   if (NMB_SCENE_ACTS.includes(was)) {
     buddy.classList.add("nmb-unwind");
@@ -7974,7 +7976,7 @@ function nameMarkBuddyVary(buddy, act = "", ms = 1200) {
 //: out of one takes (the CSS's slow transition, plus the prop's delay).
 const NMB_SCENE_ACTS = ["lie", "read", "beanbag", "chair", "facepalm", "shrug"];
 //: Where a manner's lean or give would show wrong (see `nameMarkBuddyVary`).
-const NMB_MANNER_STILL = new Set(["peek", "peekdown", "peekback", "emerge", "hide", "dangle", "onehand", "swing", "sloth", "meditate", ...NMB_SCENE_ACTS]);
+const NMB_MANNER_STILL = new Set(["peek", "peekside", "peekdown", "peekback", "emerge", "hide", "dangle", "onehand", "swing", "sloth", "meditate", ...NMB_SCENE_ACTS]);
 //: Its props: a still drawing behind it (the beanbag, the chair, the
 //: pillow) and one in front (the book), in its 64 by 92 box and scaled
 //: with it, made the first time one is needed and kept. Nothing on them
