@@ -94,11 +94,17 @@ def _feature_instead(question: str, absent: list[str]) -> dict | None:
     #: The feature first: "Nothing in your notes mentions timer" was a
     #: not-found answer to a request for the timer (INBOX 1357, class B).
     lead = _undo_lead(words) or f"“{said[:1].upper()}{said[1:]}” is one of the app's own tools, not something in your notes. "
-    return _result([("template", lead), ("help", best[0], best[1])], "help")
+    return _result([("template", lead), ("help", _short_line(best[0]), best[1])], "help")
 
 
 #: The longest help sentence an offer repeats under a note answer.
 _OFFER_WORDS = 20
+
+
+def _short_line(line: str) -> str:
+    """A help line as one short sentence: the line itself when it is a line, else
+    where to read the steps (D21: "what is my name" answered a Settings paragraph)."""
+    return line if len(line.split()) <= _OFFER_WORDS else "Open its Help topic for the steps."
 
 
 def offered(result: dict | None, question: str) -> dict | None:
@@ -113,7 +119,7 @@ def offered(result: dict | None, question: str) -> dict | None:
         return result
     #: A topic's whole step sentence is a paragraph under a note answer ("phone" got 600 characters
     #: on opening the notebook over the network): past a line, the offer points to the topic (R3-7).
-    line = best[0] if len(best[0].split()) <= _OFFER_WORDS else "Open its Help topic for the steps."
+    line = _short_line(best[0])
     more = [("template", PHRASES["feature_offer"]), ("help", line, best[1])]
     return {**result, "parts": [*result["parts"], *more], "text": result["text"] + "".join(part[1] for part in more)}
 

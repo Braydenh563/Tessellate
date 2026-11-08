@@ -904,6 +904,21 @@ def _titles() -> list[str]:
     return sorted({v.title for v in _VIEWS.get() if v.title and v.titled}, key=len, reverse=True)
 
 
+def _titled_names() -> set[str]:
+    """A word with a capital in two titles, one of them past the title's first
+    word ("Tokyo trip", "Packing for Tokyo"): a name, which keeps its capital
+    when the question typed it small (E22). "Meeting notes" and "Meeting with
+    Priya" do not make "meeting" one."""
+    seen: dict[str, int] = {}
+    inside: set[str] = set()
+    for t in _titles():
+        words = re.findall(r"\b[A-Z][\w'-]*", t)
+        for w in {w.lower() for w in words}:
+            seen[w] = seen.get(w, 0) + 1
+        inside |= {w.lower() for w in re.findall(r"(?<=\s)[A-Z][\w'-]*", t)}
+    return {w for w, n in seen.items() if n > 1 and w in inside}
+
+
 def _title_capitals() -> set[str]:
     """Words a title writes with a capital past its first word ("Project
     Atlas kickoff meeting"): names, which keep their capital in a fragment
@@ -1731,7 +1746,7 @@ def _as_written(topic: str, members: list[composer.NoteView]) -> str:
     #: A dictionary word capitalised inside a sentence ("Learn Portuguese
     #: before Lisbon") is a name too when the notes never write it small;
     #: `cased` checks that last part (2026-10-30: "three notes about lisbon").
-    names = {w for w in _NAMES.get() if w not in _dictionary() or w in placed or _always_capital(w, text)} | _title_capitals()
+    names = {w for w in _NAMES.get() if w not in _dictionary() or w in placed or _always_capital(w, text)} | _title_capitals() | _titled_names()
     whole = re.search(rf"\b{re.escape(topic)}\b", text, re.I) if " " in topic.strip() else None
     if whole and topic.islower() and re.search(r"\s[A-Z]", whole.group(0)) and any(w in names for w in topic.split()):
         #: "project atlas" is "Project Atlas", as the notes write it.
@@ -4106,6 +4121,16 @@ def _no_place(out: _Out, cue, lead: Fact) -> None:  # noqa: ANN001
         out.lines.append(PHRASES["no_place"])
 
 
+def _names_whose(view, whose: str) -> bool:  # noqa: ANN001
+    """Whether the note is about the person or business whose number was asked ("Sara's phone number"
+    must not be the dentist's; R3-2). No subject asked: any note."""
+    words = [w for w in re.findall(r"\w+", whose.lower()) if w not in ("the", "my", "our")]
+    if not words:
+        return True
+    text = " ".join([view.title or "", *(x.text for x in view.sentences)]).lower()
+    return all(re.search(rf"\b{re.escape(w)}", text) for w in words)
+
+
 def _property_lead(out: _Out, question: str, members, facts: list[Fact], lead: Fact) -> Fact | None:
     """The fact that holds the property asked for ("his number", "the
     password for the bank"); None, with the line said, when no note read for
@@ -4113,12 +4138,12 @@ def _property_lead(out: _Out, question: str, members, facts: list[Fact], lead: F
     prop = composer_property.asked(question)
     if not prop:
         return lead
-    holders = [f for f in facts if composer_property.held(prop, f.sentence.text)]
+    whose = composer_property.subject(question) if prop == "phone" else ""
+    holders = [f for f in facts if composer_property.held(prop, f.sentence.text) and _names_whose(f.view, whose)]
     if holders:
         return next((f for f in holders if f.view.id == lead.view.id), holders[0])
-    if any(composer_property.held(prop, x.text) for m in members for x in m.sentences):
+    if not whose and any(composer_property.held(prop, x.text) for m in members for x in m.sentences):
         return lead
-    whose = composer_property.subject(question) if prop == "phone" else ""
     named = _your_note(lead.view)
     # A person or a business asked for is denied in the notebook's name, not by the lead note alone (R3-2).
     line = f"None of your notes give a phone number for {whose}." if whose else f"{named[:1].upper()}{named[1:]} has no {composer_property.noun(prop)}."
@@ -4206,7 +4231,7 @@ def _titled_body(view, name: str, sentence) -> str:  # noqa: ANN001
 
 def _who_many(out: _Out, name: str, found: list, today: date) -> None:
     """Every note that names the person: how many, then a line from each."""
-    out.lines.append(PHRASES["who_many"].format(name=name[:1].upper() + name[1:], count=_count(len({v.id for v, _ in found})), span=_span([v for v, _ in found], today)))
+    out.lines.append(PHRASES["who_many"].format(name=_name_said(name), count=_count(len({v.id for v, _ in found})), span=_span([v for v, _ in found], today)))
     said: set[str] = set()
     for v, s2 in found[:LINES["overview"]]:
         body = _titled_body(v, name, s2) or _tidy(_second_person(s2.text.strip()), v.written)
@@ -4249,6 +4274,13 @@ def _who_fact(view, s) -> str:  # noqa: ANN001
     return _tidy(_second_person(text), view.written)
 
 
+def _name_said(name: str, *, first: bool = True) -> str:
+    """The name the frame says: "my landlord" is "Your landlord" (E22), not a
+    quoted "My landlord", and the first letter has its capital."""
+    said = re.sub(r"^my\b", "your", name, flags=re.I)
+    return said[:1].upper() + said[1:] if first else said
+
+
 def _who(out: _Out, name: str, views, names: set[str], today: date) -> bool:
     found = _who_found(name, views)
     if not found:
@@ -4259,8 +4291,8 @@ def _who(out: _Out, name: str, views, names: set[str], today: date) -> bool:
     view, s = found[0]
     fact = _titled_body(view, name, s) or _who_fact(view, s)
     if len({v.id for v, _ in found}) == 1:
-        out.lines.append(PHRASES["who_once"].format(name=name[:1].upper() + name[1:], day=_day(view.written, today), fact=fact))
-        out.closing.append(PHRASES["only_names"].format(name=name[:1].upper() + name[1:]))
+        out.lines.append(PHRASES["who_once"].format(name=_name_said(name), day=_day(view.written, today), fact=fact))
+        out.closing.append(PHRASES["only_names"].format(name=_name_said(name, first=not name.lower().startswith("my "))))
     else:
         _who_many(out, name, found, today)
         return True
@@ -4898,6 +4930,7 @@ def _routed_away(question: str, notes: list[dict], today: date) -> tuple:
     return _ORDINARY, question, asked
 
 
+@_isolated
 def answer(
     question: str, notes: list[dict], *, today: date | None = None, voice: str = "natural", turn: int = 0,
     insight: str = "one", learned=None, known=None,  # noqa: ANN001

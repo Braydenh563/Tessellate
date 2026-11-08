@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import os
 import importlib
+from contextvars import Context, ContextVar
 import shutil
 import sys
 from pathlib import Path
@@ -502,3 +503,22 @@ def _release_fastapi_callable_caches():
             clear = getattr(value, "cache_clear", None)
             if callable(clear):
                 clear()
+
+
+@pytest.fixture(autouse=True)
+def _fresh_digest_context():
+    """The digest keeps its per-answer state in context variables. The public
+    entries run in a copy of the caller's context, but a helper called directly
+    (`_pattern` reaches `_next_gap`, which appends to the gap leads) writes to
+    the test's own context, and pytest runs every test of a worker in one. A
+    test then read the leads an earlier one had used, so "a day ago" came out
+    as another wording, depending on which tests shared the worker. Reset every
+    one to its default per test."""
+    from tessellate.ai import composer_digest
+
+    for var in vars(composer_digest).values():
+        if isinstance(var, ContextVar):
+            try:
+                var.set(Context().run(var.get))  # a fresh context answers with the variable's own default
+            except LookupError:
+                pass

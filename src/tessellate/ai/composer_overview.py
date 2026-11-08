@@ -53,7 +53,13 @@ _ASKS = (
     ),
     re.compile(r"^\s*(?:who\s+is|who's)\s+(?P<t>[A-Z][\w'-]+)\s*\??$"),
     re.compile(r"^\s*what\s+(?:did|does|has)\s+(?P<t>[A-Z][\w'-]+)\s+(?:say|said|want|think|thinks?|tell\s+me)\b.{0,30}?\??$"),
-    re.compile(r"^\s*how\s+many\s+(?:of\s+my\s+)?notes\s+(?:are\s+|do\s+i\s+have\s+)?(?:about|on|mention(?:ing)?)\s+(?P<t>.+?)\s*\??$", re.I),
+    #: "number of notes about X" and "count notes about X" ask what "how many notes about X" asks (R3-6):
+    #: one opener list, so the five likest notes never stand for the count.
+    re.compile(
+        r"^\s*(?:how\s+many|(?:the\s+)?(?:number|count|total|tally)\s+of|count|total|tally)\s+(?:of\s+)?(?:my\s+|the\s+|all\s+)?(?:notes|entries)\s+"
+        r"(?:are\s+|do\s+i\s+have\s+)?(?:about|on|mention(?:ing)?)\s+(?P<t>.+?)\s*\??$",
+        re.I,
+    ),
     re.compile(r"^\s*what\s+are\s+my\s+(?P<t>[\w' -]{2,40}?)\s*\??$", re.I),
 )
 #: "What am I working on": the notes that say so, newest last.

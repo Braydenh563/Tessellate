@@ -6,6 +6,15 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Composer: a person's phone number (Sara's phone number, does Sara have a phone number) is never another note's; with no note giving one, the answer says none of your notes do.
+- Composer: a feature word in chat (what is my name) gets one short help line or a pointer to its Help topic, not a Settings paragraph.
+- Composer: "who is my landlord" says "Your landlord" in the frame, and a name only titles write (Tokyo) keeps its capital when typed small in a count.
+- Composer: a date question (what day is 14 March) no longer repeats the answer as its own "Read as" line.
+- Composer: a follow-on that asks only for a property (where is it, when does it start, how much did it cost) keeps the previous subject.
+- Composer: pinning a note by its exact title no longer asks "Which note" when another title starts with it.
+- Composer: "X vs Y", "X versus Y" and "X or Y, which" are read as a compare even when a side is named like the assistant (Atlas).
+- Composer: the digest's `answer` runs in its own context again (a split had left the decorator on the helper), and the tests reset the digest's context variables per test, so `-n 2` no longer fails the age, versus and voice tests.
+- Composer (round 5, audit R3-6 and D4): "number of notes about Sara" and "count notes about the dentist" give the subject's real count, the same as "how many notes about Sara" (the notes were fetched for the topic only when the question opened with "how many", and "count notes" ran the count tool); "how many words in my longest note" gives that note's length, not the notebook total.
 - Board (boardfix-1108 3): leaving a presentation with Esc puts focus on the canvas instead of `<body>`; Present starts from a menu item that has closed by the end (Chromium: `BODY#` before, `DIV#whiteboard-container` after, so the next Tab starts on the board's zoom out button, not the page's first control).
 - Mind map (boardfix-1108 2): the Radial layout no longer stacks several top-level topics on the centre; four of them sat on one another (Chromium: 6 overlapping pairs of 10 boxes, each 187 by 41 to 52 px; after, 0), and with one root nothing moves. The virtual root over them takes the centre and they take the first ring.
 - Board (boardfix-1108 1): a sticky, text box or topic still open for typing is saved when the page reloads or the tab closes; before, the words never left (Chromium: type then reload at once and after 1.5 s, the server kept the old text, 0 writes; after, the server holds the new text both times). The save goes out with `keepalive` on `pagehide`; a tab switch still leaves the edit open.

@@ -940,6 +940,8 @@ EXTRA_COMPARE_SIDES: tuple[re.Pattern[str], ...] = (
     #: "which costs more, Lisbon or Tokyo" and the other way round (round 2 E9).
     re.compile(r"^which(?: one| note)? costs? (?:more|less)[,:]?\s+(?P<a>.+?) or (?P<b>.+?)[?.!]*$", re.I),
     re.compile(r"^(?P<a>[\w' ,-]+?) or (?P<b>[\w' ,-]+?),? which(?: one| note)? costs? (?:more|less)[?.!]*$", re.I),
+    #: "Lisbon or Atlas which", "Lisbon or Atlas, which one": two names and a bare which (D3).
+    re.compile(r"^(?P<a>[\w' -]{1,40}?) or (?P<b>[\w' -]{1,40}?),?\s+which(?: one| is| of them| note)?(?: \w+){0,3}[?.!]*$", re.I),
     re.compile(r"^(?:(?:what are|what is) )?(?:the )?(?:pros and cons|advantages and disadvantages|upsides and downsides|pros|cons) of (?P<a>.+?) (?:and|or|vs\.?|versus) (?P<b>.+?)[?.!]*$", re.I),
     re.compile(r"^(?:how|what) (?:is|are) (?P<a>.+?) (?:different|difference|differs?) from (?P<b>.+?)[?.!]*$", re.I),
     re.compile(r"^(?P<a>.+?) (?:differs?|is different|is a difference) from (?P<b>.+?)[?.!]*$", re.I),
@@ -954,6 +956,7 @@ EXTRA_COMPARE_SIDES: tuple[re.Pattern[str], ...] = (
 #: The comparison triggers added to the "compare" shape rule: all two-sided,
 #: so a question with one subject is never read as a comparison.
 COMPARE_SHAPE_EXTRA = (
+    r"^[\w' -]{1,40}? or [\w' -]{1,40}?,?\s+which\b|"
     r"^which(?: one)? (?:comes|came|is|was) first\b.+? or |"
     r"^which(?: one| note)? costs? (?:more|less)\b.+? or |^[\w' ,-]+? or [\w' ,-]+?,? which(?: one| note)? costs? (?:more|less)\W*$|"
     rf"\b(?:{_MORE}) than\b|\bcompare[sd]? (?:with|to)\b|\b(?:pros and cons|advantages and disadvantages) of .+? (?:and|or|vs\.?|versus) |"

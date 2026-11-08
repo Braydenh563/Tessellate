@@ -59,7 +59,7 @@ OBJECT_HEADS = frozenset(
     told find search show open visit remind message pay paid owe thank invite
     help mention mentioned add remove delete tag file read watch buy bought
     get got need want use is was are were be am has have had do did does
-    know knew love like hate say said write wrote and or than""".split()
+    know knew love like hate say said write wrote and or than vs versus against""".split()
 )
 #: Whether a word is in the person's notes, for the length of one `split`.
 _IN_NOTES: contextvars.ContextVar = contextvars.ContextVar("vocative_in_notes", default=None)

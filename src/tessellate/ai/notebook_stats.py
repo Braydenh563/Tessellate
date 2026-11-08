@@ -1304,6 +1304,9 @@ def page(session: Session, now: datetime, usage_summary: dict, first_day: int = 
 #: answers). Below the readers they name, so each is named directly. Three tables because a named count and a windowed count sit
 #: between them, in this order.
 _FIRST_RULES = (
+    #: "how many words in my longest note" asks that note's length, not the notebook's size (D4).
+    (lambda t: _asks(t, r"\bhow many words\b", r"\b(?:longest|biggest|largest)\b", r"\bnotes?\b"), _longest_notes),
+    (lambda t: _asks(t, r"\bhow many words\b", r"\b(?:shortest|smallest)\b", r"\bnotes?\b"), _shortest_notes),
     (lambda t: _asks(t, _TAG_WORDS, _MOST), _top_tags),
     (lambda t: _asks(t, _CATEGORY_WORDS, _MOST), _top_categories),
     (lambda t: _asks(t, r"untagged|no tags|without (?:a )?tags?|missing tags?"), _untagged),
