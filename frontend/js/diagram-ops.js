@@ -177,9 +177,12 @@
     const ids = dgbIds(m);
     const edge = { from, to, label: "", style: "solid", arrow: true, ...extra };
     if (!ids.has(from) || !ids.has(to)) return null;
-    //: A decision's second arrow, with the first saying yes and no "no" yet, says no (blind test 1108; the first still waits for its word).
+    //: A decision's NEW second arrow, when the first says yes (case and punctuation folded: "Yes!" counts), says no (blind test 1108;
+    //: the first still waits for its word). Only a caller that gave no words at all: a re-pointed branch (diagram-edge-pick.js) and a
+    //: template's or a suggestion's edge (diagram-suggest.js) pass `label`, empty or not, and keep exactly that (review 1108).
     const out = m.edges.filter((e) => e.from === from);
-    if (!edge.label && dgbNode(m, from)?.shape === "diamond" && out.some((e) => /^yes$/i.test(e.label || "")) && !out.some((e) => /^no$/i.test(e.label || ""))) edge.label = "no";
+    const folded = (text) => String(text || "").toLowerCase().replace(/[^a-z0-9]+/g, "");
+    if (!("label" in extra) && dgbNode(m, from)?.shape === "diamond" && out.length === 1 && folded(out[0].label) === "yes") edge.label = "no";
     if (m.edges.some((e) => e.from === from && e.to === to && e.label === edge.label && e.style === edge.style && e.arrow === edge.arrow)) return null;
     return dgbEdit(m, () => m.edges.push(edge)) ? edge : null;
   }

@@ -6,6 +6,13 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Diagram embed (review 1108): a click on an embedded diagram picture is click-only, so it never stops a press reaching the Live editor; the reason is in the comment and a test pins it.
+- Diagram window (review 1108): Ctrl+Z in a text field of the diagram window (the title, a rename) is the browser's text undo again; only the source box and the blocks step the diagram's history, and the comment now says so.
+- Guide (review 1108): the diagram blocks topic says again that 1 to 7 add the other shapes, Shift+N the last one and K colours (1886 of 1900 characters; the empty-state example and three wordier phrases gave the room).
+- Diagram builder (review 1108): the automatic "no" on a decision's second arrow only applies to a new branch next to a first arrow that says yes (any case or punctuation); a re-pointed arrow and a template's or suggestion's edge keep exactly their own words. test_diagram_r6 item 3 renamed to say what it asserts.
+- Diagram builder (review 1108): Keep on the tall-chart offer is remembered for that diagram only (keyed by the document, not the shared preview host), so one Keep no longer turns the offer off for every diagram document.
+- Diagram window (review 1108): Ctrl+Z with focus on Picture, List, Source, Done, Cancel or the help button steps the diagram once; it no longer also runs the app's undo (the press stops at the window).
+- Diagram builder (review 1108): Ctrl+Z in a sequence, mind map or timeline opened first no longer throws on every keydown; the shared undo key handler moved from the flowchart-only toolbar module to the kind bar that every kind loads.
 - Companion (audit 1108 P11): the catalogue is fetched at an idle moment and parsed in slices of 40 entries, not as one `answer.json()`. Measured at 4x CPU on first idle: one 104 ms task before, slices of 8 ms or less after (307 entries, same document).
 - Diagram builder tests (perf audit 1108 P2, P3): the lazy row menu, the SVG label patch (escaping, no change when the words do not match) and the typing-aware draw (one redraw with the latest label) are now pinned by behaviour tests run in node, not by source substrings.
 - Desk companion (deskfix 4, 5): the faces confused, sad, shy and love are worn: confused when poked while the person works, sad when a menu request is refused, shy when petted within 8 s of waking, love on the third pet inside 30 s; stale docstrings of _pose and _on_nose corrected.

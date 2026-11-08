@@ -52,17 +52,20 @@
 
   //: "Turn it sideways", one line in the picture pane, once per diagram (1679, slice 7): `want` is diagram-view.js's `math.sideways`
   //: on a drawing that is shrunk to fit. A press turns it (one change); Keep ends the offer for that diagram for good: the host is
-  //: kept in `answered`, so a redraw or a rebuilt pane after an edit does not ask again.
-  const answered = new WeakSet();
+  //: kept in `answered`, so a redraw or a rebuilt pane after an edit does not ask again. Keyed by the diagram (`io.key`, the
+  //: document's id) and not by the host: documents draw every diagram into the one #doc-preview, so a host key turned the offer
+  //: off for all of them (review 1108). A dialog has no id and its own host, so the host stays its key.
+  const answered = new Set();
+  const whose = (S) => S.io?.key ?? S.host;
   function offer(S, want) {
-    const show = want && !S.sidewaysAsked && !answered.has(S.host) && Boolean(S.turn);
+    const show = want && !S.sidewaysAsked && !answered.has(whose(S)) && Boolean(S.turn);
     if (!show) return S.sideways?.classList.add("hidden");
     if (!S.sideways) {
       const line = document.createElement("div");
       line.className = "dgm-sideways muted";
       const words = document.createElement("span");
       words.textContent = "This chart is tall for this pane.";
-      const done = () => ((S.sidewaysAsked = true), answered.add(S.host));
+      const done = () => ((S.sidewaysAsked = true), answered.add(whose(S)));
       const turn = smallButton("ph:arrow-right Turn it sideways", "Draw it left to right", () => (done(), S.turn("LR")), false);
       const keep = smallButton("Keep", "Leave it top to bottom", () => (done(), line.classList.add("hidden")));
       line.append(words, turn, keep);

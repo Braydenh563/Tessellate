@@ -2,9 +2,9 @@
 
 Generated 2026-11-08 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7915, frontend ids 2652, CSS sections 522, backend routes 649, backend modules 9199, test files 2234, tests 18801, plan headings 1004, app scripts 28, boot scripts 37, script files 263.
+Counts: frontend functions 7917, frontend ids 2652, CSS sections 522, backend routes 649, backend modules 9199, test files 2235, tests 18811, plan headings 1004, app scripts 28, boot scripts 37, script files 263.
 
-## Frontend functions (7915)
+## Frontend functions (7917)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -3134,19 +3134,18 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `diagSections` | frontend/js/diag-report.js:106 |
 | `diagTable` | frontend/js/diag-report.js:96 |
 
-### frontend/js/diagram-bar.js (10)
+### frontend/js/diagram-bar.js (9)
 
 | Name | File:line |
 |---|---|
 | `build` | frontend/js/diagram-bar.js:40 |
-| `chain` | frontend/js/diagram-bar.js:147 |
+| `chain` | frontend/js/diagram-bar.js:137 |
 | `hintOf` | frontend/js/diagram-bar.js:17 |
-| `historyKey` | frontend/js/diagram-bar.js:122 |
 | `key` | frontend/js/diagram-bar.js:112 |
 | `last` | frontend/js/diagram-bar.js:18 |
 | `nameOf` | frontend/js/diagram-bar.js:23 |
 | `optionsOf` | frontend/js/diagram-bar.js:22 |
-| `rootKey` | frontend/js/diagram-bar.js:132 |
+| `rootKey` | frontend/js/diagram-bar.js:122 |
 | `sync` | frontend/js/diagram-bar.js:26 |
 
 ### frontend/js/diagram-builder.js (41)
@@ -3220,29 +3219,30 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `overlay` | frontend/js/diagram-edges.js:12 |
 | `wire` | frontend/js/diagram-edges.js:30 |
 
-### frontend/js/diagram-embed.js (19)
+### frontend/js/diagram-embed.js (20)
 
 | Name | File:line |
 |---|---|
-| `cleanTitle` | frontend/js/diagram-embed.js:150 |
+| `cleanTitle` | frontend/js/diagram-embed.js:164 |
 | `copyPicture` | frontend/js/diagram-embed.js:48 |
-| `documentName` | frontend/js/diagram-embed.js:157 |
-| `draftForget` | frontend/js/diagram-embed.js:190 |
-| `draftKeep` | frontend/js/diagram-embed.js:180 |
-| `draftsRead` | frontend/js/diagram-embed.js:169 |
-| `draftsWrite` | frontend/js/diagram-embed.js:179 |
+| `documentName` | frontend/js/diagram-embed.js:171 |
+| `draftForget` | frontend/js/diagram-embed.js:204 |
+| `draftKeep` | frontend/js/diagram-embed.js:194 |
+| `draftsRead` | frontend/js/diagram-embed.js:183 |
+| `draftsWrite` | frontend/js/diagram-embed.js:193 |
 | `el` | frontend/js/diagram-embed.js:10 |
-| `freshTitle` | frontend/js/diagram-embed.js:151 |
-| `hashOf` | frontend/js/diagram-embed.js:198 |
-| `link` | frontend/js/diagram-embed.js:117 |
-| `open` | frontend/js/diagram-embed.js:211 |
+| `freshTitle` | frontend/js/diagram-embed.js:165 |
+| `hashOf` | frontend/js/diagram-embed.js:212 |
+| `historyKey` | frontend/js/diagram-embed.js:90 |
+| `link` | frontend/js/diagram-embed.js:131 |
+| `open` | frontend/js/diagram-embed.js:225 |
 | `out` | frontend/js/diagram-embed.js:63 |
 | `outDoc` | frontend/js/diagram-embed.js:79 |
 | `pngOf` | frontend/js/diagram-embed.js:28 |
-| `save` | frontend/js/diagram-embed.js:93 |
+| `save` | frontend/js/diagram-embed.js:107 |
 | `svgOf` | frontend/js/diagram-embed.js:19 |
-| `swapRange` | frontend/js/diagram-embed.js:87 |
-| `withLook` | frontend/js/diagram-embed.js:128 |
+| `swapRange` | frontend/js/diagram-embed.js:101 |
+| `withLook` | frontend/js/diagram-embed.js:142 |
 
 ### frontend/js/diagram-joins.js (9)
 
@@ -3258,7 +3258,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `titleOf` | frontend/js/diagram-joins.js:29 |
 | `words` | frontend/js/diagram-joins.js:110 |
 
-### frontend/js/diagram-kindbar.js (8)
+### frontend/js/diagram-kindbar.js (9)
 
 | Name | File:line |
 |---|---|
@@ -3266,6 +3266,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `choose` | frontend/js/diagram-kindbar.js:121 |
 | `decorate` | frontend/js/diagram-kindbar.js:86 |
 | `fresh` | frontend/js/diagram-kindbar.js:19 |
+| `historyKey` | frontend/js/diagram-kindbar.js:137 |
 | `lost` | frontend/js/diagram-kindbar.js:111 |
 | `mount` | frontend/js/diagram-kindbar.js:51 |
 | `open` | frontend/js/diagram-kindbar.js:78 |
@@ -3371,8 +3372,8 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 |---|---|
 | `dgbAddGroup` | frontend/js/diagram-ops.js:146 |
 | `dgbAddNode` | frontend/js/diagram-ops.js:138 |
-| `dgbBranchWord` | frontend/js/diagram-ops.js:327 |
-| `dgbDuplicate` | frontend/js/diagram-ops.js:281 |
+| `dgbBranchWord` | frontend/js/diagram-ops.js:330 |
+| `dgbDuplicate` | frontend/js/diagram-ops.js:284 |
 | `dgbEdit` | frontend/js/diagram-ops.js:82 |
 | `dgbFreshId` | frontend/js/diagram-ops.js:26 |
 | `dgbGroup` | frontend/js/diagram-ops.js:23 |
@@ -3381,32 +3382,33 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `dgbJoin` | frontend/js/diagram-ops.js:176 |
 | `dgbKey` | frontend/js/diagram-ops.js:19 |
 | `dgbLayout` | frontend/js/diagram-ops.js:35 |
-| `dgbLift` | frontend/js/diagram-ops.js:235 |
+| `dgbLift` | frontend/js/diagram-ops.js:238 |
 | `dgbMove` | frontend/js/diagram-ops.js:115 |
-| `dgbMoveMany` | frontend/js/diagram-ops.js:262 |
-| `dgbNeedsLabel` | frontend/js/diagram-ops.js:325 |
-| `dgbNest` | frontend/js/diagram-ops.js:228 |
+| `dgbMoveMany` | frontend/js/diagram-ops.js:265 |
+| `dgbNeedsLabel` | frontend/js/diagram-ops.js:328 |
+| `dgbNest` | frontend/js/diagram-ops.js:231 |
 | `dgbNode` | frontend/js/diagram-ops.js:22 |
 | `dgbParentOf` | frontend/js/diagram-ops.js:96 |
-| `dgbRelabel` | frontend/js/diagram-ops.js:195 |
+| `dgbRelabel` | frontend/js/diagram-ops.js:198 |
 | `dgbRemove` | frontend/js/diagram-ops.js:156 |
-| `dgbRoots` | frontend/js/diagram-ops.js:245 |
-| `dgbSisters` | frontend/js/diagram-ops.js:206 |
+| `dgbRoots` | frontend/js/diagram-ops.js:248 |
+| `dgbSisters` | frontend/js/diagram-ops.js:209 |
 | `dgbSplit` | frontend/js/diagram-ops.js:20 |
-| `dgbStep` | frontend/js/diagram-ops.js:217 |
+| `dgbStep` | frontend/js/diagram-ops.js:220 |
 | `dgbUnits` | frontend/js/diagram-ops.js:68 |
-| `dgbUnjoin` | frontend/js/diagram-ops.js:187 |
-| `dgbWrap` | frontend/js/diagram-ops.js:314 |
+| `dgbUnjoin` | frontend/js/diagram-ops.js:190 |
+| `dgbWrap` | frontend/js/diagram-ops.js:317 |
 
-### frontend/js/diagram-outline.js (5)
+### frontend/js/diagram-outline.js (6)
 
 | Name | File:line |
 |---|---|
-| `box` | frontend/js/diagram-outline.js:84 |
+| `box` | frontend/js/diagram-outline.js:87 |
 | `flow` | frontend/js/diagram-outline.js:9 |
-| `offer` | frontend/js/diagram-outline.js:57 |
+| `offer` | frontend/js/diagram-outline.js:60 |
 | `order` | frontend/js/diagram-outline.js:35 |
-| `stuck` | frontend/js/diagram-outline.js:77 |
+| `stuck` | frontend/js/diagram-outline.js:80 |
+| `whose` | frontend/js/diagram-outline.js:59 |
 
 ### frontend/js/diagram-overlay.js (1)
 
@@ -6038,13 +6040,13 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `mermaidHex` | frontend/js/mermaid-draw.js:158 |
 | `mermaidHue` | frontend/js/mermaid-draw.js:205 |
 | `mermaidInkOn` | frontend/js/mermaid-draw.js:199 |
-| `mermaidInlineForExport` | frontend/js/mermaid-draw.js:590 |
+| `mermaidInlineForExport` | frontend/js/mermaid-draw.js:593 |
 | `mermaidKnown` | frontend/js/mermaid-draw.js:342 |
 | `mermaidLook` | frontend/js/mermaid-draw.js:312 |
 | `mermaidLuma` | frontend/js/mermaid-draw.js:192 |
 | `mermaidMix` | frontend/js/mermaid-draw.js:163 |
 | `mermaidOnMessage` | frontend/js/mermaid-draw.js:92 |
-| `mermaidRedrawAll` | frontend/js/mermaid-draw.js:602 |
+| `mermaidRedrawAll` | frontend/js/mermaid-draw.js:605 |
 | `mermaidRequest` | frontend/js/mermaid-draw.js:405 |
 | `mermaidResultAccepts` | frontend/js/mermaid-draw.js:23 |
 | `mermaidRgba` | frontend/js/mermaid-draw.js:144 |
@@ -24750,7 +24752,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (18801)
+## Tests (18811)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -25397,6 +25399,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_diagram_r8c.py | 11 |
 | tests/test_diagram_r9b.py | 9 |
 | tests/test_diagram_r9c.py | 9 |
+| tests/test_diagram_review_1108.py | 10 |
 | tests/test_diagram_review_1679.py | 4 |
 | tests/test_diagram_split_r3_r4.py | 8 |
 | tests/test_diagram_suggest.py | 22 |
