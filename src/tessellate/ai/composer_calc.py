@@ -270,10 +270,20 @@ def _note_count(ctx: Ctx, topic: str) -> Reply | None:
     counted = utilities.counts(body)
     sents = len(study.sentences(body))
     words = counted["words"]
-    read = f", {'' if counted['read'].startswith('under') else 'a '}{counted['read']}" if counted["read"] else ""
+    read = f", {_read_said(counted['read'])}" if counted["read"] else ""
     detail = f"{counted['chars']} characters and about {sents} sentence{'s' if sents != 1 else ''}{read}"
     return Reply(compose.frame("count_note", ctx.mood, link=f"[**{study.title_of(body)}**](#/notes/{notes[0]['id']})",
                              words=f"{words} word{'s' if words != 1 else ''}", detail=detail))
+
+
+def _read_said(compact: str) -> str:
+    """The footer's "under a min", "4 min read" and "1.5h read" as a phrase in a sentence: "under a minute",
+    "a 4-minute read", "a 1.5-hour read" (R3-37)."""
+    if compact.startswith("under"):
+        return "under a minute"
+    if compact.endswith("h read"):
+        return f"a {compact[:-len('h read')]}-hour read"
+    return f"a {compact.split(' ')[0]}-minute read"
 
 
 def _word_count(ctx: Ctx, text: str) -> Reply | None:

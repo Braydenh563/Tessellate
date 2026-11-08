@@ -266,3 +266,32 @@ def test_r3_4_first_and_last_note_are_places_in_an_order_not_terms():
 def test_r3_4_the_first_note_about_sara_is_not_the_first_day_of_uni():
     said = say("what is the first note I wrote about Sara", "# Sara\n\nSara is my sister", "First day of uni is 21 September", "Sara likes jazz", "Dinner on Friday")
     assert "First day of uni" not in said, said
+
+
+# --- R3-24: two trips are not a contradiction --------------------------------------------------
+
+def test_r3_24_notes_titled_for_different_things_never_disagree():
+    from types import SimpleNamespace as NS
+
+    from tessellate.ai import composer_body
+    from tessellate.ai.composer_read import Sentence
+
+    def sentence(note_id, text):
+        return Sentence(note_id=note_id, rank=0, start=0, end=len(text), text=text, words=text.lower().replace(",", "").replace("$", "").split())
+
+    a = sentence(1, "Flights cost $900 return, leaving 3 April")
+    b = sentence(2, "Flights cost $420 return, leaving 12 May")
+    trips = {1: NS(title_words={"tokyo", "trip"}), 2: NS(title_words={"lisbon", "trip"})}
+    same = {1: NS(title_words={"flights"}), 2: NS(title_words={"flights", "booking"})}
+    assert composer_body._disagreement([a, b]) == (a, b)
+    assert composer_body._disagreement([a, b], trips) is None
+    assert composer_body._disagreement([a, b], same) == (a, b)
+
+
+# --- R3-37: a reading time in a sentence is words, not the footer's abbreviation ----------------
+
+@pytest.mark.parametrize(("compact", "said"), [("under a min", "under a minute"), ("4 min read", "a 4-minute read"), ("1.5h read", "a 1.5-hour read")])
+def test_r3_37_a_reading_time_is_said_in_words(compact, said):
+    from tessellate.ai import composer_calc
+
+    assert composer_calc._read_said(compact) == said

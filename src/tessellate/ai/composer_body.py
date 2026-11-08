@@ -300,10 +300,17 @@ def _earlier(out: _Answer, sentences: list[Sentence], terms: list[str]) -> None:
         out.cite(view)
 
 
-def _disagreement(chosen: list[Sentence]) -> tuple[Sentence, Sentence] | None:
+def _other_subjects(views: dict, a: Sentence, b: Sentence) -> bool:
+    """Whether two notes are titled for different things ("Tokyo trip" and "Lisbon trip"): each title has a
+    word the other lacks. Their figures differ because the notes are about different things (R3-24)."""
+    left, right = (getattr(views.get(s.note_id), "title_words", None) for s in (a, b))
+    return bool(left and right and left - right and right - left)
+
+
+def _disagreement(chosen: list[Sentence], views: dict | None = None) -> tuple[Sentence, Sentence] | None:
     for i, a in enumerate(chosen):
         for b in chosen[i + 1:]:
-            if disagree(a, b):
+            if disagree(a, b) and not _other_subjects(views or {}, a, b):
                 return a, b
     return None
 

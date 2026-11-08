@@ -605,7 +605,7 @@ def _day_terms(p, views_list: list) -> list[str]:  # noqa: ANN001
 
 
 def _write_body(out: "_Answer", p, shape: str, chosen: list, terms: list, question: str, meaning, broad: bool, views_list: list) -> None:  # noqa: ANN001
-    pair = _disagreement(chosen)
+    pair = _disagreement(chosen, out.views)
     if _confirmed_lead(out, question, terms):
         pass
     elif p.kind == "insight" and _insight_lead(out, question, terms, views_list):
