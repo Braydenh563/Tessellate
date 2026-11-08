@@ -1847,3 +1847,35 @@
   align-items: center;
   font-size: var(--text-sm);
 }
+
+/* Find (diagram-multi.js, quick ways): a small dock at the picture's top corner; a found box is ringed dashed. */
+.dgm-find {
+  position: absolute;
+  inset-block-start: var(--space-5);
+  inset-inline-start: var(--space-5);
+  z-index: 2;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: var(--space-2);
+  margin: 0;
+  padding: var(--space-1);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--modal-bg);
+  box-shadow: var(--shadow-md);
+}
+
+.dgm-find.hidden {
+  display: none;
+}
+
+.dgm-find-count {
+  min-inline-size: 6ch;
+  white-space: nowrap;
+}
+
+.dgm-box.found {
+  border-style: dashed;
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}

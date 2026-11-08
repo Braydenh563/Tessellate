@@ -49,7 +49,9 @@
   function wire(S) {
     const fig = S?.fig;
     const stage = fig?.parentElement;
-    if (!fig || S.k || !stage?.classList.contains("dgm-stage") || fig.querySelector(":scope > .dgm-overlay")) return;
+    if (!fig || S.k || !stage?.classList.contains("dgm-stage") || fig.dataset.overlay) return;
+    //: Once per figure, not once per layer in it: a picture that went away (every block deleted) took the layer out, and the next draw made a second one while the first still painted (6 boxes for 3 blocks).
+    fig.dataset.overlay = "1";
     const layer = document.createElement("div");
     layer.className = "dgm-overlay";
     layer.setAttribute("aria-hidden", "true");
