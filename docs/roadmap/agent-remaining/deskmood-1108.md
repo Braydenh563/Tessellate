@@ -5,3 +5,4 @@
 - left: `idle_return` needs input age from the backend (`last_input_age`): Windows and X11 only; real input rates and the 0.5 Hz typing-check latency unverified on a real desktop.
 - left: the sad look uses the plain face over a sit or stand (no sad act or lower-body pose; the desk `lower.sad` row is C4, desklayers).
 - left: wider overlay suite (all `tests/test_overlay*.py`) was not completed here (machine busy, run killed by load); only the files named in the CHANGELOG lines plus runner, shake, landing and catalogue tests ran green.
+- review (no blocking findings): `_note_out_of_reach` counts any window top within two heights of the feet, not one the drop aimed at (no aimed-at signal exists; a near-miss heuristic); a refused confused look is dropped, not owed; with the figure hidden, `_read_typing` returns before the return check, so the first input after it shows counts as a return.
