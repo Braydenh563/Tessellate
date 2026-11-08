@@ -15,7 +15,9 @@ async function savePersonaList(personas) {
   personaOptions();
 }
 
-async function renderPersonas() {
+//: `read`: the Settings section's GET of the preferences already on its way (renderPrefs), so the pane does not
+//: ask for the same document twice (INBOX 1696 f); without one (a save, an edit) it asks.
+async function renderPersonas(read) {
   //: The greeting picker is filled before the wait, not after it (the owner:
   //: "the dashboard greeting persona selection box is broken and there is no
   //: avatar next to it ... it sometimes works and sometimes doesnt"). It was
@@ -25,7 +27,7 @@ async function renderPersonas() {
   renderDashboardPersonaSelect(personaNamesNow());
   const list = $("persona-list");
   showSkeletons(list, 3, "li");
-  prefsCache = await apiJson("/preferences").catch(() => prefsCache);
+  prefsCache = await (read?.then(() => prefsCache) || apiJson("/preferences")).catch(() => prefsCache);
   clearSkeletons(list);
   const custom = (prefsCache && prefsCache.personas) || [];
   const overrides = new Map(custom.map((p) => [p.name, p]));
@@ -51,6 +53,7 @@ async function renderPersonas() {
 
   renderDashboardPersonaSelect(rows.map((p) => p.name));
 
+  const faces = [];
   for (const persona of rows) {
     const li = document.createElement("li");
 
@@ -183,7 +186,7 @@ async function renderPersonas() {
     //: 36px in the Settings list (the owner: "enlarge the avatar icons on
     //: personas in settings a bit"): a row there has the room, and a face
     //: at 20px was a coloured dot with a smile.
-    fillPersonaMark(mark, persona.name, 36);
+    faces.push([mark, persona.name]);
     row.append(mark, chip(persona.name, "item-title"));
     if (persona.builtin) {
       row.appendChild(chip(persona.overridden ? "Edited" : "Built-in", "item-label"));
@@ -219,6 +222,11 @@ async function renderPersonas() {
     li.append(row, actions);
     list.appendChild(li);
   }
+  //: **The faces after the rows' frame** (INBOX 1696 f): a new face is measured where it is drawn, and measured
+  //: straight after the rows were written it paid the page's style and layout (89 to 113 ms forced at 4x CPU).
+  //: One a frame: a new face is 15 to 30 ms at 4x on its own, so five in one task were a long one again.
+  const next = () => faces.length && (fillPersonaMark(...faces.shift(), 36), afterFrames(() => setTimeout(next), 1));
+  afterFrames(() => setTimeout(next), 1);
 }
 
 // A second, independent picker (asked for directly): the dashboard greeting
