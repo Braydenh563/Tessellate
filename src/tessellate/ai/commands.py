@@ -36,7 +36,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from tessellate.ai import note_recency, object_acts, reminder_parser, task_acts, when
-from tessellate.ai import act_registry
+from tessellate.ai import act_registry, act_steps
 from tessellate.ai.composer_frame import note_title
 from tessellate.ai.act_registry import CONFIRM_INTENTS
 from tessellate.ai.filed_name import filed_listing
@@ -1677,11 +1677,6 @@ def _resolve_one(session: Session, about: str | None, note_ids: list[int] | None
     return found[0], ""
 
 
-_CHECK_LINE = re.compile(r"^\s*[-*+]\s+\[[ xX]\]\s")
-_BULLET_LINE = re.compile(r"^\s*[-*+]\s+(?!\[)")
-_ITEM_LEAD = re.compile(r"^\s*(?:[-*+]\s+)?(?:\[[ xX]\]\s+)?")
-
-
 def retitled(content: str, title: str) -> str:
     """`content` with its title line (the first line, heading or not) replaced
     by `# title`: the old title is not left behind as body text and the heading
@@ -1692,20 +1687,6 @@ def retitled(content: str, title: str) -> str:
         return f"# {title}\n"
     lines[at] = f"# {title}"
     return "\n".join(lines)
-
-
-def appended(content: str, text: str) -> str:
-    """`content` with `text` added at the end in the note's own shape: an item
-    after a checklist is `- [ ] item`, after bullets `- item`, else a new
-    paragraph (audit 1029 C42). One helper, so every add keeps the structure."""
-    body = content.rstrip()
-    last = next((line for line in reversed(body.split("\n")) if line.strip()), "")
-    item = _ITEM_LEAD.sub("", text.strip(), count=1) or text.strip()
-    if _CHECK_LINE.match(last):
-        return f"{body}\n- [ ] {item}"
-    if _BULLET_LINE.match(last):
-        return f"{body}\n- {item}"
-    return f"{body}\n\n{text}"
 
 
 def _deletes_all(parsed: dict) -> bool:
@@ -1752,7 +1733,7 @@ def _plan_one(session: Session, parsed: dict, note_ids: list[int] | None) -> dic
         steps = [{"name": "edit_note", "arguments": {"note_id": entry.id, "content": new_content}}]
         label = f"Rename the note {name} to “{parsed['title']}”"
     elif intent == "append":
-        new_content = appended(entry.content or "", parsed["content"])
+        new_content = act_steps.appended(entry.content or "", parsed["content"])
         steps = [{"name": "edit_note", "arguments": {"note_id": entry.id, "content": new_content}}]
         label = f"Add “{_clip(parsed['content'], 80)}” to the end of {name}"
     else:
@@ -1904,7 +1885,7 @@ def run(session: Session, steps: list[dict], skipped: list[dict] | None = None, 
     in the line rather than a stop: a person who confirmed tagging five notes
     gets the four that could be tagged and is told about the fifth.
     """
-    from tessellate.ai import starter_acts, tools  # lazy: starter_acts imports this module
+    from tessellate.ai import tools
 
     done: list[tuple[str, dict, dict]] = []
     failed: list[dict] = list(skipped or [])
@@ -1916,14 +1897,14 @@ def run(session: Session, steps: list[dict], skipped: list[dict] | None = None, 
         if name not in RUNNABLE:
             failed.append({"id": None, "reason": "failed"})
             continue
-        name, args = starter_acts.settle_step(session, name, args)
+        name, args = act_steps.settle_step(session, name, args)
         result = _run_one(session, name, args, tools)
         if "error" in result:
             reason = _failure_reason(str(result["error"]))
             failed.append({"id": args.get("note_id"), "reason": reason})
             continue
         done.append((name, args, result))
-        step_undo = starter_acts.lock_undo(session, name, args, _step_undo(name, args, result))
+        step_undo = act_steps.lock_undo(session, name, args, _step_undo(name, args, result))
         if isinstance(step_undo, dict):
             undo.extend(step_undo["steps"] if step_undo.get("tool") == "batch" else [step_undo])
         opened = result.get("open") or opened

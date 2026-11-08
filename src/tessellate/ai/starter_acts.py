@@ -19,10 +19,10 @@ import re
 from collections import Counter
 from datetime import datetime
 
-from sqlalchemy import func, select
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from tessellate.ai import commands, day_digest, lexical_filing, realise, recognise, tagging, utilities
+from tessellate.ai import act_steps, commands, day_digest, lexical_filing, realise, recognise, tagging, utilities
 from tessellate.ai.composer_frame import note_title
 from tessellate.core.database import Document, Entry, EntryLink, Reminder
 
@@ -338,47 +338,11 @@ def _link_related(session: Session, **_: object) -> tuple[str, dict | None]:
 
 
 def _today_note(session: Session, now: datetime) -> Entry | None:
-    return _daily_note(session, f"# {now.date().isoformat()}")
+    return act_steps.daily_note(session, f"# {now.date().isoformat()}")
 
 
-#: What "add to today's note" says when it must start the note.
-_NEW_DAILY = re.compile(r"(# \d{4}-\d{2}-\d{2})\n\n(.+)", re.DOTALL)
 #: Words that point at a thing, not at what to write.
 _POINTERS = frozenset({"it", "that", "this", "them", "these", "those", "something", "stuff"})
-
-
-def _daily_note(session: Session, heading: str) -> Entry | None:
-    rows = session.scalars(
-        select(Entry).where(Entry.is_deleted == False, func.substr(Entry.content, 1, len(heading)) == heading)  # noqa: E712
-        .order_by(Entry.id)
-    ).all()
-    return next((e for e in rows if (e.content or "").split("\n", 1)[0].strip() == heading), None)
-
-
-def settle_step(session: Session, name: str, args: dict) -> tuple[str, dict]:
-    """A card that would start today's note, run when the note is there by now
-    (another card confirmed first made it), adds to that note instead: two
-    cards confirmed in turn made two notes headed the same day."""
-    found = _NEW_DAILY.fullmatch(str(args.get("content") or "")) if name == "create_note" else None
-    existing = _daily_note(session, found.group(1)) if found else None
-    if existing is None:
-        return name, args
-    from tessellate.api.edit_conflicts import content_hash  # lazy: `ai` sits below `api`
-
-    text = commands.appended(existing.content or "", found.group(2))
-    return "edit_note", {"note_id": existing.id, "content": text, "base_hash": content_hash(existing.content)}
-
-
-def lock_undo(session: Session, name: str, args: dict, undo: object) -> object:
-    """The undo of a write locked to the text it read (`base_hash`), locked in
-    turn to the text that write left: text typed after the act is not lost to
-    an Undo that puts the whole old text back; it is refused as stale."""
-    if name != "edit_note" or not args.get("base_hash") or not isinstance(undo, dict) or undo.get("tool") != "edit_note":
-        return undo
-    from tessellate.api.edit_conflicts import content_hash  # lazy: `ai` sits below `api`
-
-    entry = session.get(Entry, int(args["note_id"]))
-    return undo if entry is None else {**undo, "arguments": {**undo.get("arguments", {}), "base_hash": content_hash(entry.content)}}
 
 
 def _append_today(session: Session, *, slots: dict, now: datetime, **_: object) -> tuple[str, dict | None]:
@@ -397,7 +361,7 @@ def _append_today(session: Session, *, slots: dict, now: datetime, **_: object) 
         from tessellate.api.edit_conflicts import content_hash  # lazy: `ai` sits below `api`
 
         #: A bullet in the note's own shape, locked to the text read here.
-        text = commands.appended(entry.content or "", words)
+        text = act_steps.appended(entry.content or "", words)
         steps = [{"name": "edit_note", "arguments": {"note_id": entry.id, "content": text, "base_hash": content_hash(entry.content)}}]
         label = f"Add “{said}” to the end of today's note"
         items = [commands._item(entry)]
