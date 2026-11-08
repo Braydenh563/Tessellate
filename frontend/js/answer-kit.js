@@ -104,7 +104,7 @@ function citeKey(kind, id) {
 
 function citationNumbers(sentences, orderedSources = null) {
   const numberFor = new Map();
-  if (orderedSources && orderedSources.length) {
+  if (orderedSources?.length) {
     orderedSources.forEach((source, index) => {
       if (source && (source.kind === "note" || source.kind === "document")) numberFor.set(citeKey(source.kind, source.id), index + 1);
     });
@@ -181,7 +181,7 @@ function citationInsertionPoint(node, offset, targets) {
     anchor = anchor.parentElement;
   }
   const next = anchor.nextSibling;
-  if (next && next.nodeType === Node.TEXT_NODE) {
+  if (next?.nodeType === Node.TEXT_NODE) {
     let run = 0;
     while (run < next.data.length && CITATION_CLOSING.test(next.data[run])) run += 1;
     if (run) {
@@ -1141,22 +1141,22 @@ async function streamChatEvents({
   // answering a pending `ask` event, so it says so rather than making the
   // classifier guess from three letters.
   if (answeringAgent) body.answering_agent = true;
-  if (noteIds && noteIds.length) body.note_ids = noteIds;
+  if (noteIds?.length) body.note_ids = noteIds;
   // Vision-capable models (ROADMAP.md's largest open item): ids from
   // /media/upload, the same endpoint the note/document editors already use
   // for drag-and-drop images: see `_resolve_chat_images` (routes_chat.py)
   // for how an id becomes a data URI the provider actually sends.
-  if (imageMediaIds && imageMediaIds.length) body.image_media_ids = imageMediaIds;
+  if (imageMediaIds?.length) body.image_media_ids = imageMediaIds;
   //: Documents and files must be sent here too: `/chat/stream` is the path the Chat tab uses, and a chip that never reached the model was a shipped bug.
-  if (documentIds && documentIds.length) body.document_ids = documentIds;
-  if (fileIds && fileIds.length) body.file_ids = fileIds;
-  if (mediaFileIds && mediaFileIds.length) body.media_file_ids = mediaFileIds;
+  if (documentIds?.length) body.document_ids = documentIds;
+  if (fileIds?.length) body.file_ids = fileIds;
+  if (mediaFileIds?.length) body.media_file_ids = mediaFileIds;
   //: A mind map attached by hand (MINDMAP_PLAN.md §5 item 11). Its own
   //: field, not folded into `note_ids`, because a board's `content` is the
   //: single line `# My map`, sent as a note the model would get a heading
   //: and be told it was a map. `_attached_boards` (routes_chat.py) turns the
   //: id into the outline instead.
-  if (boardIds && boardIds.length) body.board_ids = boardIds;
+  if (boardIds?.length) body.board_ids = boardIds;
   // Running a skill sends its name, not its prompt: the server owns what a
   // skill is, the steps, the values, the tools it may use, so the two
   // definitions can't drift apart.
@@ -1354,7 +1354,7 @@ function chatHistoryToSend() {
 // The persona name to label assistant bubbles with (falls back to "Assistant").
 function assistantLabel() {
   const select = $("persona-select");
-  return (select && select.value) || "Assistant";
+  return select?.value || "Assistant";
 }
 
 function chatMessageActions(actions) {
@@ -1568,14 +1568,14 @@ function messageMetaLine({ model, elapsedMs, stats, toolCount = 0, rounds = 0, u
   //    three lines of digits on a narrow window.
   const detail = [];
   if (inTok != null || outTok != null) {
-    const approx = stats && stats.usage_source === "estimated" ? "~" : "";
+    const approx = stats?.usage_source === "estimated" ? "~" : "";
     detail.push(`${approx}${inTok ?? "?"} tokens in → ${outTok ?? "?"} out`);
   }
   if (outTok && stats && stats.eval_ms) {
     detail.push(`${(outTok / (stats.eval_ms / 1000)).toFixed(1)} tokens/second`);
   }
   if (rounds > 1) detail.push(`${rounds} rounds`);
-  if (stats && stats.usage_source === "estimated") {
+  if (stats?.usage_source === "estimated") {
     detail.push("~ means the server didn't report counts, so these are estimated");
   }
   if (detail.length) row.title = detail.join("\n");

@@ -1607,12 +1607,16 @@ function replyFinish(answers, opts = {}) {
   }
   //: Nested, not a global: the shared scope is capped (test_global_scope_ratchet).
 
+  //: A reopened chat passes only its bubble (INBOX 1693): the answers and the head are found in it.
+  if (!answers && opts.bubble) answers = opts.bubble.querySelectorAll(".bubble-answer");
+  if (!opts.head && opts.bubble) opts = { engine: true, ...opts, head: opts.bubble.querySelector(".msg-role") };
   const list = (answers instanceof Element ? [answers] : [...(answers || [])]).filter((el) => el?.isConnected);
   if (!list.length) return;
   //: A composed reply only (B1): a model's own answer is never folded.
   if (opts.composed) for (const answer of list) replyFoldLong(answer);
   replyNotePreviews(list);
   if (opts.head && list.some((answer) => answer.textContent.trim())) replyByline(opts.head, opts);
+  if (opts.why) ensureModule("askCompose").then(() => drawWhyTrail(opts.records, opts.why)).catch(() => {});
   if (opts.composed) replyReveal(list);
   if (opts.unsupported) renderToolsUnsupportedNotice(opts.bubble, opts.unsupported);
   if (opts.trimmed) renderHistoryTrimmedNotice(opts.bubble, opts.trimmed);

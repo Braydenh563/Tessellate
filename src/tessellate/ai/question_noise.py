@@ -539,6 +539,7 @@ SOCIAL_PHRASES: dict[str, str] = {
     "how is it going": "how", "how's it going": "how", "whats up": "how", "what's up": "how",
     "what is up": "how", "how you doing": "how", "how are things": "how", "you good": "how",
     "what are you doing": "how", "what you up to": "how", "what are you up to": "how",
+    "whatcha doing": "how", "whatcha up to": "how", "watcha doing": "how",
     "my bad": "sorry", "my mistake": "sorry", "sorry about that": "sorry",
     "wait what": "confused", "come again": "confused", "say again": "confused", "sorry what": "confused",
     "i dont get it": "confused", "i don't get it": "confused", "i dont understand": "confused",
@@ -2139,6 +2140,13 @@ def _social_phrases(text: str) -> tuple[list[str], str]:
             kinds.append(kind)
             text = pattern.sub(" ", text)
     return kinds, text
+
+
+def asks_how(message: str) -> bool:
+    """Whether a message asks how the app is or what it is doing ("hey! whatcha
+    doing??"), whatever else it says: a greeting leads the kind, this is the rest."""
+    text = " ".join(re.split(r"[^\w']+", strip_symbols(destretch(drop_filler((message or "").strip()))).lower())).strip()
+    return "how" in _social_phrases(text)[0]
 
 
 _SOCIAL_RANK = ("repair", "confused", "thanks", "sorry", "bye", "morning", "greeting", "how", "who", "frustrated", "reaction", "laugh", "compliment", "insult", "emotion", "glad")

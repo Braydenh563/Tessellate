@@ -901,7 +901,9 @@ def _hello_reply(req: _StreamRequest, seed: str, recent: list[str]) -> str:
     #: The welcome already names the last note: no second sentence about it.
     invite = "" if "“" in welcome or "](#/notes/" in welcome else _newest_word(req.session)
     asks = composer_smalltalk.invitation(req.question, invite, _composer_voice(), seed) if invite else composer_smalltalk.greeting_ask(req.question, _composer_voice(), seed)
-    return "\n\n".join(p for p in (" ".join(p for p in (welcome, asks) if p), sees) if p)
+    #: A hello that also asks how you are gets that answered (INBOX 1693): the welcome, then the reply.
+    how = composer_smalltalk.social("how are you", "smalltalk", "", "", _composer_voice(), [welcome, *recent], seed) if question_noise.asks_how(req.question) else ""
+    return "\n\n".join(p for p in (" ".join(p for p in (welcome, how or asks) if p), sees) if p)
 
 
 def _social_reply(req: _StreamRequest, prepared: dict) -> str:

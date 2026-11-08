@@ -157,6 +157,11 @@ class TurnBody(BaseModel):
     picture_alts: dict[str, str] | None = Field(default=None, max_length=40)
     #: Their [width, height] (INBOX 526), so a reopened figure holds its space.
     picture_sizes: dict[str, list[int]] | None = Field(default=None, max_length=40)
+    #: Who wrote the reply (`{composed, model}`), so a reopened chat draws
+    #: the same badge, note card and timing line the live answer did (INBOX 1693).
+    by: dict | None = None
+    #: The Why this answer trail's lines, kept for the same reload.
+    why: list | None = Field(default=None, max_length=40)
 
 
 class RenameBody(BaseModel):
@@ -245,6 +250,13 @@ def _turn_messages(turn: TurnBody) -> list[dict]:
     persona = (turn.persona or "").strip()
     if persona:
         assistant["persona"] = persona
+    if turn.by:
+        assistant["by"] = {
+            "composed": bool(turn.by.get("composed")),
+            "model": str(turn.by.get("model") or "")[:120],
+        }
+    if turn.why:
+        assistant["why"] = turn.why
     return [_user_message(turn, asked), assistant]
 
 

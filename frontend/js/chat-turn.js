@@ -495,7 +495,7 @@ async function chatSendTurn(preset, opts = {}) {
         meta = m;
         //: No model runs: the answer is composed from the notes (INBOX 725).
         //: A web reply's second meta (`chat_web.NOT_NOTES`) wakes no model.
-        if (!m?.web) status.textContent = m && m.composed ? "Composing from your notes, no AI…" : "Waking the model…";
+        if (!m?.web) status.textContent = m?.composed ? "Composing from your notes, no AI…" : "Waking the model…";
       },
       onRelated: (event) => {
         ensureModule("replyKit").then(() => renderRelatedElsewhere(groundingHolder, event.items)).catch(() => {});
@@ -770,7 +770,7 @@ async function chatSendTurn(preset, opts = {}) {
       //: too long to be a sentence, or none, falls back to a line that still
       //: says what to do next.
       miss = error instanceof TypeError;
-      const said = String(error && error.message ? error.message : "").trim();
+      const said = String(error?.message || "").trim();
       timeline.failRunningStep(
         said && said.length <= 160 ? said : "The model stopped before it finished. Try again, or check Settings, Models."
       );
@@ -838,7 +838,7 @@ async function chatSendTurn(preset, opts = {}) {
       // The turn is over: it is saved (or about to be) and a reload of this
       // thread will render it like any other. Re-attaching these nodes after
       // that point would show it twice.
-      if (chatStreaming && chatStreaming.conv === convRef) chatStreaming = null;
+      if (chatStreaming?.conv === convRef) chatStreaming = null;
     }
     // The composer belongs to whatever conversation is on screen. A turn that
     // finishes after the reader has moved on must not re-enable, refocus or
@@ -925,7 +925,7 @@ async function chatSendTurn(preset, opts = {}) {
   const elapsedMs = Math.round(performance.now() - startedAt);
   //: For the status bar's AI dot (Placed 2026-09-09 item 99 (c)).
   if (stats) {
-    lastAnswerFacts = { model: stats.model || (meta && meta.answered_by) || "", ms: elapsedMs, used: Number(stats.prompt_tokens) || 0, window: Number(stats.context_tokens) || 0 };
+    lastAnswerFacts = { model: model || "", ms: elapsedMs, used: Number(stats.prompt_tokens) || 0, window: Number(stats.context_tokens) || 0 };
     renderAiPill();
   }
   // A turn that only ran tools still cost time and tokens, so it gets a meta
@@ -942,11 +942,11 @@ async function chatSendTurn(preset, opts = {}) {
   if (answerRaw || toolEvents.length) {
     bubble.appendChild(
       messageMetaLine({
-        model: (stats && stats.model) || (meta && meta.answered_by),
+        model,
         elapsedMs,
         stats,
         toolCount: toolEvents.length,
-        rounds: (stats && stats.round) || 0,
+        rounds: stats?.round || 0,
         usedTools: effectiveUseTools,
       })
     );
@@ -1056,11 +1056,9 @@ async function chatSendTurn(preset, opts = {}) {
   assistantMessageActions({ bubble, text: answerRaw, question });
 
   // Regenerate replaces the last turn; a normal send appends a new one.
-  if (opts.replaceLast && convRef.turns.length) {
-    convRef.turns[convRef.turns.length - 1] = { question, answer: answerRaw, objects: chatTurnObjects(turnSources) };
-  } else {
-    convRef.turns.push({ question, answer: answerRaw, objects: chatTurnObjects(turnSources) });
-  }
+  const turnRecord = { question, answer: answerRaw, objects: chatTurnObjects(turnSources) };
+  if (opts.replaceLast && convRef.turns.length) convRef.turns[convRef.turns.length - 1] = turnRecord;
+  else convRef.turns.push(turnRecord);
   // Persist the finished turn so the chat survives restarts. A checkpoint
   // still on its way is let land first, so this sees its id and replaces its
   // row rather than racing it to create a second conversation.
@@ -1137,6 +1135,9 @@ async function chatSendTurn(preset, opts = {}) {
       note_ids: sentAttachments.length ? sentAttachments : null,
       board_ids: sentBoards.length ? sentBoards : null,
       followup_of: followupOf,
+      //: Who wrote it and why, so a reload draws the badge, note card and Why trail (INBOX 1693).
+      by: meta && { composed: meta.composed, model },
+      why: whyLines,
       //: The thumbnails' words, so a reopened chat keeps them (INBOX 502).
       picture_alts: meta?.picture_alts && Object.keys(meta.picture_alts).length ? meta.picture_alts : null,
       picture_sizes: meta?.picture_sizes && Object.keys(meta.picture_sizes).length ? meta.picture_sizes : null,
@@ -1342,7 +1343,7 @@ function agentTimeline(holder, options = {}) {
     setLabel(summary, `${icon} ${plan.skill}`);
     el.appendChild(summary);
     const items = [];
-    if ((plan.steps && plan.steps.length) || plan.kind === "turn") {
+    if (plan.steps?.length || plan.kind === "turn") {
       const list = document.createElement("ol");
       list.className = "plan-steps";
       plan.steps.forEach((step, index) => {
@@ -1354,7 +1355,7 @@ function agentTimeline(holder, options = {}) {
       });
       el.appendChild(list);
     }
-    if (plan.tools && plan.tools.length) {
+    if (plan.tools?.length) {
       const line = document.createElement("div");
       line.className = "plan-tools";
       line.textContent = `Tools for this run: ${plan.tools.join(", ")}`;
@@ -1772,7 +1773,7 @@ function renderAgentQuestion(holder, event) {
   const settle = (answer) => {
     if (settled) return;
     settled = true;
-    if (pendingAgentQuestion && pendingAgentQuestion.card === card) pendingAgentQuestion = null;
+    if (pendingAgentQuestion?.card === card) pendingAgentQuestion = null;
     card.replaceWith(toolChip(`ph:question ${event.question} → ${answer}`));
   };
   const submit = () => {
@@ -2634,7 +2635,7 @@ async function deleteChatTurn(assistantBubble) {
   const userBubble = assistantBubble.previousElementSibling;
   //: Later questions move up one saved turn (E49).
   for (let node = assistantBubble; (node = node.nextElementSibling); ) if (node.dataset.turn) node.dataset.turn -= 1;
-  if (userBubble && userBubble.classList.contains("user")) dropChatBubble(userBubble);
+  if (userBubble?.classList.contains("user")) dropChatBubble(userBubble);
   assistantBubble.remove();
   chatConv.turns.splice(index, 1);
   renderChatTurnCount();
