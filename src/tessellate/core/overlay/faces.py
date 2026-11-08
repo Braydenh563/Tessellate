@@ -233,7 +233,7 @@ def _features(g: Any, patch: Any, at: tuple[float, float], u: float, look: Look,
         if look.brow or look.lift or look.askew:
             _brow(g, ex, oy, u, side, side * sign > 0, look, f, ink)
     if look.smile or look.open or look.blush:
-        _mouth(g, ox, oy + MOUTH_DOWN * u, u, look, f, skin, ink)
+        _mouth(g, patch, ox, oy + MOUTH_DOWN * u, u, look, f, ink)
 
 
 def _brow(g: Any, ex: float, oy: float, u: float, side: int, raised_side: bool, look: Look, f: float, ink: tuple) -> None:
@@ -265,9 +265,31 @@ def _lid(g: Any, ex: float, ey: float, u: float, look: Look, f: float, skin: tup
     g.line((ex - rx * 0.9, ey - ry + drop, ex + rx * 0.9, ey - ry + drop), fill=ink, width=max(2, int(1.2 * u)))
 
 
-def _mouth(g: Any, mx: float, my: float, u: float, look: Look, f: float, skin: tuple, ink: tuple) -> None:
+def _erase_mouth(patch: Any, mx: float, my: float, u: float) -> None:
+    """The calm mouth the art has, painted out from the face around it, not with one flat tone: each row runs
+    from the skin just left of the mouth to the skin just right of it, and the edge is feathered (INBOX 1696
+    hh, the owner: "white paste around its mouth": a flat disc of the between-the-eyes tone sat lighter than
+    the chin's shading, with a hard edge)."""
+    from PIL import Image, ImageDraw, ImageFilter
+
+    w = 5.5 * u * 1.3
+    x0, x1 = int(mx - w) - int(2 * u), int(mx + w) + int(2 * u)
+    y0, y1 = int(my - 3.5 * u), int(my + 4.5 * u)
+    width, height = x1 - x0, y1 - y0
+    if width < 8 or height < 4 or x0 < 3 or x1 + 3 > patch.width or y1 > patch.height:
+        return
+    left = patch.crop((x0 - 3, y0, x0, y1)).resize((1, height), Image.Resampling.BOX).resize((width, height))
+    right = patch.crop((x1, y0, x1 + 3, y1)).resize((1, height), Image.Resampling.BOX).resize((width, height))
+    across = Image.linear_gradient("L").transpose(Image.Transpose.ROTATE_90).resize((width, height))
+    fill = Image.composite(right, left, across)
+    mask = Image.new("L", (width, height), 0)
+    ImageDraw.Draw(mask).ellipse((int(2 * u), 0, width - int(2 * u), height - 1), fill=255)
+    patch.paste(fill, (x0, y0), mask.filter(ImageFilter.GaussianBlur(1.0 * u)))
+
+
+def _mouth(g: Any, patch: Any, mx: float, my: float, u: float, look: Look, f: float, ink: tuple) -> None:
     w = 5.5 * u
-    g.ellipse((mx - w * 1.5, my - 3.5 * u, mx + w * 1.5, my + 4.5 * u), fill=skin)  # the calm mouth the art has
+    _erase_mouth(patch, mx, my, u)
     if look.blush:
         a = int(110 * look.blush * f)
         for side in (-1, 1):

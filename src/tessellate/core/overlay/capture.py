@@ -35,7 +35,8 @@ PAD = 4
 #: Sets kept: the newest by time, the rest pruned when a new one lands (a figure the person changed back and forth).
 KEEP = 6
 #: What the page captures; the rest (`card0`, `card1`) are drawn here, and the lidded sit is derived on load.
-CAPTURED = tuple(n for n in sprites.FRAME_NAMES if n not in sprites.CARD_FRAMES)
+#: The wave swing frames are optional (a captured figure keeps the one `wave`, INBOX 1696 x), so no page renders them.
+CAPTURED = tuple(n for n in sprites.FRAME_NAMES if n not in sprites.CARD_FRAMES and n not in sprites.WAVE_FRAMES)
 
 #: Where the reminder card sits as a share of the frame (centre x, centre y), its size in 2x pixels and its lift.
 CARD_CENTRE = (0.66, 0.60)
@@ -149,7 +150,7 @@ def cache_root() -> Path:
 def complete(key: str, root: Path | None = None) -> bool:
     """True when every frame a set needs is there."""
     folder = (root or cache_root()) / key
-    return is_key(key) and all((folder / f"{name}.png").is_file() for name in sprites.FRAME_NAMES)
+    return is_key(key) and all((folder / f"{name}.png").is_file() for name in CAPTURED + sprites.CARD_FRAMES)
 
 
 def draw_card(base: Any, lift: tuple[int, int]) -> Any:

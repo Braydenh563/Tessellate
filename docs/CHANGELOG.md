@@ -6,6 +6,9 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Desk frames re-rendered deterministically (stand-centred crop, shared stream, walk tail pinned, clipped idle feet); the ten overlay failures fixed at the source, held ride box widened
+- Desk expressions: the art's calm mouth is painted out from the skin either side of it with a feathered edge, not a flat disc (the owner's white paste round the mouth, INBOX 1696 hh); desk arms measured at 0.4 to 0.5 px thicker than the app's at 128 px, inside the 1 px bar, pinned by a test (1696 z).
+- Desk frames: the render pins every frame's tail, sways and breath to one moment and stops the page's blink clock (a masculine stand shipped with shut eyes), all frames re-rendered for both looks with the six wave swing frames, and the eye boxes re-measured (INBOX 1696 x, w).
 - Chat with no model: pick one of options, week and day of year, leap year, days left, text transforms on pasted text, and factorial, half, double and square root as words (composer batch C).
 - Extras downloads try again twice after a server error (5xx, 429) or a dropped connection; a 404 still fails at once. Fixes the Windows package check failing on a GitHub 504.
 - The installer's optional packages step now writes why a package failed into the data folder's log, not only exit code 1.
