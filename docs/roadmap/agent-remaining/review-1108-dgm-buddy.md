@@ -13,4 +13,4 @@ Diagram:
 - LOW a text field inside the diagram window: Ctrl+Z goes to the window's listener and cancels the browser's text undo; the comment says otherwise.
 
 In-app companion:
-- HIGH `avatars.js:10539,10547`: a click on the nose zone is a boop (once per 3 s) and replaces the click reaction (wake, pout, spin). A boop should be a quick tap that is not a click the user meant as a click, or add to the click reaction rather than replace it.
+- **FIXED buddyrev-1108** HIGH `avatars.js:10539,10547`: a click on the nose zone is a boop (once per 3 s) and replaces the click reaction (wake, pout, spin). A boop should be a quick tap that is not a click the user meant as a click, or add to the click reaction rather than replace it.
