@@ -240,3 +240,29 @@ def test_r3_13_a_fourth_item_is_named_not_counted():
     said = say("what do I know about Tokyo", "# Packing for Tokyo\n\n- passport\n- rail pass\n- adapter\n- umbrella", "# Tokyo trip\n\nFlights leaving 3 April. Staying in Shinjuku for six nights",
                "Tokyo has great ramen", "# Shopping\n\n- milk")
     assert "umbrella" in said and "one more" not in said, said
+
+
+# --- R3-16: one note is "your newest note" ------------------------------------------------------
+
+def test_r3_16_one_newest_note_is_singular():
+    # tests/test_composer_688.py::test_the_newest_notes_for_a_question_with_no_subject, with one note.
+    from tests.test_composer_688 import NOTES, ask
+
+    newest = sorted(NOTES, key=lambda n: n["created_at"], reverse=True)[:1]
+    text = ask("what did I write recently", newest, recent=True)["text"]
+    assert text.startswith("Your newest note, ") and "one newest" not in text, text
+
+
+# --- R3-4: "the first note about Sara" is not a search for the word first -------------------------
+
+def test_r3_4_first_and_last_note_are_places_in_an_order_not_terms():
+    from tessellate.ai import composer
+
+    assert "first" not in composer.subject_terms("what is the first note I wrote about Sara")
+    assert "last" not in composer.subject_terms("what is the last note about the dentist")
+    assert "first" in composer.subject_terms("first order")
+
+
+def test_r3_4_the_first_note_about_sara_is_not_the_first_day_of_uni():
+    said = say("what is the first note I wrote about Sara", "# Sara\n\nSara is my sister", "First day of uni is 21 September", "Sara likes jazz", "Dinner on Friday")
+    assert "First day of uni" not in said, said

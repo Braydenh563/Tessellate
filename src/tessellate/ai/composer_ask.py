@@ -555,11 +555,15 @@ def subject_terms(question: str) -> list[str]:
     #: note ("the date test still fails"; R3-5).
     if _DATE_ASK.search(question):
         seen = [w for w in seen if w not in ("date", "dates")]
+    #: "the first note I wrote about Sara": the place in an order, not a word to find ("First day of uni"; R3-4).
+    if _ORDINAL_NOTE.search(question):
+        seen = [w for w in seen if w not in ("first", "last")]
     #: A praise word alone names nothing ("anything interesting", "the cool
     #: stuff"); beside a noun ("interesting bean") it stays (INBOX 1561).
     return [] if all(w in question_noise.PRAISE_WORDS for w in seen) else seen
 
 
+_ORDINAL_NOTE = re.compile(r"\b(?:first|last)\s+(?:note|notes|entry|entries)\b", re.I)
 _DATE_ASK = re.compile(r"\b(?:what|which)\s+dates?\b|\bdates?\s+(?:of|for)\b", re.I)
 
 

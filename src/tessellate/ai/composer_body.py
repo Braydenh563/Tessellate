@@ -971,7 +971,11 @@ def _newest(out: _Answer, views: list[NoteView], guessing: bool = False) -> None
     shown = [v for v in views if v.sentences][:5]
     if not shown:
         return
-    out.t("newest_guess" if guessing else "newest_lead").m(out.count(len(shown))).t("newest_mid")
+    if len(shown) == 1:
+        #: One note is "your newest note", never "your one newest notes" (R3-16).
+        out.t("newest_one_guess" if guessing else "newest_one_lead")
+    else:
+        out.t("newest_guess" if guessing else "newest_lead").m(out.count(len(shown))).t("newest_mid")
     _span(out, shown)
     out.t("end_colon")
     for view in shown:
