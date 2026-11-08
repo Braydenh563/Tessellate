@@ -647,3 +647,15 @@ def test_settings_help_and_the_manual_draw_and_search_the_lead():
     assert "[topic.title, topic.lead," in find
     assert 'lead.className = "manual-lead"' in manual
     assert "${topic.lead}" in manual
+
+
+def test_the_sequence_picture_drags_are_in_the_guide_and_the_dialog_help() -> None:
+    """INBOX 1661 (l): a head dragged sideways, a drag between lifelines and the + at a gap, said in the Guide's
+    `diagram-kinds` topic and the New diagram window's About this editor."""
+    from tessellate.ai.help_chat import HELP_TOPICS
+
+    body = str(next(t["body"] for t in HELP_TOPICS if t["id"] == "diagram-kinds"))
+    for words in ("a head dragged sideways reorders", "a drag from one lifeline to another adds a message", "the + at a gap opens the Add menu"):
+        assert words in body, words
+    embed = (FRONTEND / "js" / "diagram-embed.js").read_text(encoding="utf-8")
+    assert "double press a part to name it, drag a head to reorder and drag from one lifeline to another to add a message" in embed

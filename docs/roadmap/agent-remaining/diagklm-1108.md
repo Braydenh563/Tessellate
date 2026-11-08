@@ -75,13 +75,11 @@ Branch `agent/diagklm-1108` from `claude/next-queue-1102` (7cba04a8). The spec i
 - done: S3 (fold: rail 32 px, picture 905 to 1136 wide at 1440 with the list folded, list 1136 with the picture folded, kept on reopen; 390 sequence picture 96 to 435). Not built: folding the Source view's text (its folds hide there).
 - done: S4 part 1 (press picks 11 of 11 at 1440 and 390, both themes; rename field centre 0 px off; Alt+Down, Delete; a source with activations, a nested loop and a self message 10 of 10).
 - done: S4 part 1 227c4384.
-- next: S4 part 2, `diagram-seq-canvas.js` `wire`: drag a head to reorder, drag lifeline to lifeline to add a message, the "+" in a gap; then S5 shelf (`diagram-library.js` `build`).
+- done: S4 part 2 (drag a head to reorder, lifeline to lifeline for a message, the + in a gap; head reorder User, Server, App; lifeline drag inserts at index 1 with the field in view; + 24 px, 5.9:1 light and 7.0:1 dark).
+- was next: S4 part 2, `diagram-seq-canvas.js` `wire`: drag a head to reorder, drag lifeline to lifeline to add a message, the "+" in a gap; then S5 shelf (`diagram-library.js` `build`).
 
 ## Left (stopped at the context line, after S4 part 1)
 
-- (l) "drag a participant to reorder": a head drag sideways with a 2 px accent line in the head gap, `frontend/js/diagram-seq-canvas.js` `wire` (add pointer handlers beside the `click` one); hit: App dragged past Server gives User, Server, App.
-- (l) "drag from one lifeline to another to add a message": rubber line with its arrow, insert at the gap under the pointer and open its name (`rename`); same file; hit: User to Server between messages 1 and 2 inserts at index 1.
-- (l) "hover gaps offer a +": a 24 px `.dgm-gap-plus` in the left margin of the gap under the pointer opening the grouped Add menu for that gap; same file.
 - (l) "a drag-and-drop library of block types onto the picture": S5 shelf, `frontend/js/diagram-library.js` `build` compact form at the picture's top-left (six tiles plus a caret, both kinds); the sequence drop marker in seq-canvas `over`; the flowchart drop is `diagram-canvas.js` `over` (built).
 - (l) "then flowchart" on the shelf, and mind map and timeline on the picture (cut to the next round in the spec).
 - (m) the Source view's text does not fold (its toggles hide there); `frontend/css/diagram-lazy.css` the fold block, `diagram-embed.js` srcwrap.

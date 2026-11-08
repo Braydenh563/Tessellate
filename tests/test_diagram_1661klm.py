@@ -203,3 +203,43 @@ def test_the_picture_takes_a_press_a_rename_and_the_lists_keys():
     assert 'lazyScript("/js/diagram-seq-canvas.js")' in builder and "(!S.k || S.seq)" in builder
     assert "(S.k && !S.seq)" in _js("diagram-overlay.js")
     assert "const act = {" in _js("diagram-kinds.js") and "ghostSpec, act }" in _js("diagram-kinds.js")
+
+
+# --- S4 (l) part 2: reorder a head, draw a message between lifelines, the "+" in a gap
+
+
+@needs_node
+def test_a_head_dragged_past_the_last_one_gives_user_server_app():
+    # Measured in the app: App dragged past Server gives User, Server, App.
+    out = _seq(
+        "(()=>{const m=K.sequence.parse(V.src);const hit=C.boxes(V.svg,m,K.ops.key);"
+        "const app=hit.boxes.find((b)=>b.et==='participant'&&b.who==='App');"
+        "const g=C.headGap(hit,520,app.id);const ok=K.ops.move(K.sequence,m,app.id,null,g.key);"
+        "return {ok,key:g.key,names:m.participants.map((p)=>p.label),line:g.x>550}})()",
+        src=LOGIN, svg=LOGIN_SVG,
+    )
+    assert out["ok"] and out["key"] is None and out["names"] == ["User", "Server", "App"] and out["line"]
+
+
+@needs_node
+def test_the_gap_under_the_pointer_names_the_row_it_goes_before_and_the_lifeline_pair():
+    # A message from User to Server between messages 1 and 2 inserts at index 1; a pointer past the last row appends.
+    out = _seq(
+        "(()=>{const m=K.sequence.parse(V.src);const hit=C.boxes(V.svg,m,K.ops.key);"
+        "const g=C.gap(hit,150);const p=C.pair(hit,75);const f=K.ops.find(K.sequence,m,g.key);"
+        "const node=K.ops.add(K.sequence,m,'m',{parent:f.parent,before:f.node,fields:{from:'User',to:'Server',text:'New'}});"
+        "const end=C.gap(hit,600);const last=C.pair(hit,475);"
+        "return {at:m.steps.indexOf(node),text:m.steps.map((s)=>s.text),before:g.key===K.ops.key(m.steps[0])?'first':'second',"
+        "pair:[p.from,p.to],end:end.key,last:[last.from,last.to],mid:g.y>126&&g.y<176-38+1}})()",
+        src=LOGIN, svg=LOGIN_SVG,
+    )
+    assert out["at"] == 1 and out["text"][:3] == ["Enter password", "New", "Check login"]
+    assert out["pair"] == ["User", "App"] and out["last"] == ["App", "Server"] and out["end"] is None
+
+
+def test_the_picture_takes_the_drags_the_plus_and_the_shelf_drop():
+    canvas = _js("diagram-seq-canvas.js")
+    for needle in ('fig.addEventListener("pointerdown"', "stopImmediatePropagation()", "act.shift(S, ", "dgm-gap-plus", "seqOpen", "over, clear"):
+        assert needle in canvas, needle
+    assert "dgm-seqmark" in CSS and ".dgm-gap-plus" in CSS and "min-block-size: 24px" in CSS
+    assert "shift(S, key, before)" in _js("diagram-kinds.js")

@@ -1739,6 +1739,81 @@
   pointer-events: auto;
 }
 
+/* A sequence picture while a part is dragged (diagram-seq-canvas.js): one mark in the overlay, a 2 px accent line in a gap
+   or a head gap, or the rubber line of a new message with its arrow; a message to the same lifeline is a small loop. */
+.dgm-seqmark {
+  position: absolute;
+  inset: 0 auto auto 0;
+  box-sizing: border-box;
+  background: var(--accent);
+  border-radius: var(--radius-pill);
+  pointer-events: none;
+}
+
+.dgm-seqmark.dgm-target {
+  outline: 0;
+}
+
+.dgm-seqmark.rubber::after {
+  content: "";
+  position: absolute;
+  inset-block-start: -4px;
+  inset-inline-end: -2px;
+  border: 5px solid transparent;
+  border-inline-end-width: 0;
+  border-inline-start-color: var(--accent);
+}
+
+.dgm-seqmark.rubber.back::after {
+  inset-inline-end: auto;
+  inset-inline-start: -2px;
+  border-inline-start-width: 0;
+  border-inline-start-color: transparent;
+  border-inline-end: 5px solid var(--accent);
+}
+
+.dgm-seqmark.self {
+  background: none;
+  border: 2px solid var(--accent);
+  border-inline-start-width: 0;
+  border-radius: 0 var(--radius-md) var(--radius-md) 0;
+}
+
+/* The "+" in the left margin of the gap under the pointer: 24 px, the accent on the surface. */
+.dgm-gap-plus {
+  position: absolute;
+  inset: 0 auto auto 0;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  min-block-size: 24px;
+  min-inline-size: 24px;
+  padding: 0;
+  border: 1px solid var(--accent);
+  border-radius: var(--radius-pill);
+  background: var(--surface-1);
+  color: var(--accent-text);
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+.dgm-gap-plus:hover,
+.dgm-gap-plus:focus-visible {
+  background: var(--accent-soft);
+}
+
+.dgm-gap-plus.hidden {
+  display: none;
+}
+
+@media (pointer: coarse) {
+  .dgm-gap-plus {
+    display: none;
+  }
+}
+
 /* The shortcuts sheet (diagram-style.js) borrows the whiteboard help rows; this sets the one column width they read. */
 .dgm-keys {
   --wb-help-keys-w: 9rem;

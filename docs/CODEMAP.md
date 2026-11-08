@@ -2,9 +2,9 @@
 
 Generated 2026-11-08 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7884, frontend ids 2652, CSS sections 522, backend routes 649, backend modules 9081, test files 2205, tests 18499, plan headings 1004, app scripts 28, boot scripts 37, script files 263.
+Counts: frontend functions 7900, frontend ids 2652, CSS sections 522, backend routes 649, backend modules 9081, test files 2205, tests 18503, plan headings 1004, app scripts 28, boot scripts 37, script files 263.
 
-## Frontend functions (7884)
+## Frontend functions (7900)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -3271,15 +3271,15 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `addTile` | frontend/js/diagram-kinds.js:810 |
+| `addTile` | frontend/js/diagram-kinds.js:811 |
 | `buildBlock` | frontend/js/diagram-kinds.js:687 |
-| `buildPalette` | frontend/js/diagram-kinds.js:977 |
+| `buildPalette` | frontend/js/diagram-kinds.js:983 |
 | `buildRow` | frontend/js/diagram-kinds.js:697 |
-| `dropApply` | frontend/js/diagram-kinds.js:936 |
-| `dropAt` | frontend/js/diagram-kinds.js:908 |
+| `dropApply` | frontend/js/diagram-kinds.js:940 |
+| `dropAt` | frontend/js/diagram-kinds.js:911 |
 | `fieldsOf` | frontend/js/diagram-kinds.js:680 |
 | `find` | frontend/js/diagram-kinds.js:622 |
-| `ghostSpec` | frontend/js/diagram-kinds.js:1090 |
+| `ghostSpec` | frontend/js/diagram-kinds.js:1096 |
 | `glyph` | frontend/js/diagram-kinds.js:627 |
 | `icon` | frontend/js/diagram-kinds.js:617 |
 | `itemsFor` | frontend/js/diagram-kinds.js:760 |
@@ -3317,21 +3317,21 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `kxUid` | frontend/js/diagram-kinds.js:30 |
 | `kxWalk` | frontend/js/diagram-kinds.js:263 |
 | `kxWithin` | frontend/js/diagram-kinds.js:283 |
-| `menuAt` | frontend/js/diagram-kinds.js:888 |
-| `mount` | frontend/js/diagram-kinds.js:1005 |
+| `menuAt` | frontend/js/diagram-kinds.js:891 |
+| `mount` | frontend/js/diagram-kinds.js:1011 |
 | `nameOf` | frontend/js/diagram-kinds.js:623 |
-| `nestBlock` | frontend/js/diagram-kinds.js:834 |
-| `onKey` | frontend/js/diagram-kinds.js:853 |
+| `nestBlock` | frontend/js/diagram-kinds.js:837 |
+| `onKey` | frontend/js/diagram-kinds.js:856 |
 | `pickWho` | frontend/js/diagram-kinds.js:746 |
 | `relabel` | frontend/js/diagram-kinds.js:797 |
-| `removeBlock` | frontend/js/diagram-kinds.js:840 |
+| `removeBlock` | frontend/js/diagram-kinds.js:843 |
 | `render` | frontend/js/diagram-kinds.js:660 |
-| `seedBlock` | frontend/js/diagram-kinds.js:895 |
-| `show` | frontend/js/diagram-kinds.js:1113 |
-| `stepBlock` | frontend/js/diagram-kinds.js:828 |
-| `sync` | frontend/js/diagram-kinds.js:1066 |
+| `seedBlock` | frontend/js/diagram-kinds.js:898 |
+| `show` | frontend/js/diagram-kinds.js:1119 |
+| `stepBlock` | frontend/js/diagram-kinds.js:831 |
+| `sync` | frontend/js/diagram-kinds.js:1072 |
 | `whoLabel` | frontend/js/diagram-kinds.js:624 |
-| `withinNode` | frontend/js/diagram-kinds.js:930 |
+| `withinNode` | frontend/js/diagram-kinds.js:934 |
 | `words` | frontend/js/diagram-kinds.js:643 |
 
 ### frontend/js/diagram-letgo.js (1)
@@ -3423,21 +3423,37 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `mark` | frontend/js/diagram-pointer.js:36 |
 | `word` | frontend/js/diagram-pointer.js:12 |
 
-### frontend/js/diagram-seq-canvas.js (11)
+### frontend/js/diagram-seq-canvas.js (27)
 
 | Name | File:line |
 |---|---|
 | `attr` | frontend/js/diagram-seq-canvas.js:10 |
 | `boxes` | frontend/js/diagram-seq-canvas.js:113 |
+| `clear` | frontend/js/diagram-seq-canvas.js:186 |
+| `frameOf` | frontend/js/diagram-seq-canvas.js:167 |
 | `frames` | frontend/js/diagram-seq-canvas.js:60 |
+| `gap` | frontend/js/diagram-seq-canvas.js:135 |
+| `gapLine` | frontend/js/diagram-seq-canvas.js:195 |
+| `headGap` | frontend/js/diagram-seq-canvas.js:145 |
+| `headLine` | frontend/js/diagram-seq-canvas.js:200 |
+| `heads` | frontend/js/diagram-seq-canvas.js:132 |
 | `inner` | frontend/js/diagram-seq-canvas.js:18 |
+| `layerOf` | frontend/js/diagram-seq-canvas.js:165 |
+| `mark` | frontend/js/diagram-seq-canvas.js:174 |
 | `messages` | frontend/js/diagram-seq-canvas.js:33 |
+| `near` | frontend/js/diagram-seq-canvas.js:154 |
 | `notes` | frontend/js/diagram-seq-canvas.js:50 |
 | `num` | frontend/js/diagram-seq-canvas.js:9 |
 | `order` | frontend/js/diagram-seq-canvas.js:88 |
+| `over` | frontend/js/diagram-seq-canvas.js:218 |
+| `pair` | frontend/js/diagram-seq-canvas.js:156 |
 | `participants` | frontend/js/diagram-seq-canvas.js:20 |
 | `parts` | frontend/js/diagram-seq-canvas.js:75 |
-| `wire` | frontend/js/diagram-seq-canvas.js:122 |
+| `put` | frontend/js/diagram-seq-canvas.js:187 |
+| `rubber` | frontend/js/diagram-seq-canvas.js:204 |
+| `span` | frontend/js/diagram-seq-canvas.js:124 |
+| `spotOf` | frontend/js/diagram-seq-canvas.js:211 |
+| `wire` | frontend/js/diagram-seq-canvas.js:243 |
 
 ### frontend/js/diagram-split.js (3)
 
@@ -12415,7 +12431,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/dash-night-lazy.css | 29 |
 | frontend/css/dash-orphans-lazy.css | 57 |
 | frontend/css/desk-companion-lazy.css | 226 |
-| frontend/css/diagram-lazy.css | 2006 |
+| frontend/css/diagram-lazy.css | 2081 |
 | frontend/css/file-drop-lazy.css | 51 |
 | frontend/css/first-run-lazy.css | 140 |
 | frontend/css/forced-colors-lazy.css | 28 |
@@ -16037,8 +16053,8 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `_act_topic` | src/tessellate/ai/help_topics_more.py:3453 |
-| `_slash_commands_topic` | src/tessellate/ai/help_topics_more.py:3585 |
+| `_act_topic` | src/tessellate/ai/help_topics_more.py:3454 |
+| `_slash_commands_topic` | src/tessellate/ai/help_topics_more.py:3586 |
 
 ### src/tessellate/ai/help_words.py (2)
 
@@ -24551,7 +24567,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (18499)
+## Tests (18503)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -25150,7 +25166,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_diagram_1596.py | 4 |
 | tests/test_diagram_1661a.py | 6 |
 | tests/test_diagram_1661b.py | 9 |
-| tests/test_diagram_1661klm.py | 13 |
+| tests/test_diagram_1661klm.py | 16 |
 | tests/test_diagram_1679m.py | 14 |
 | tests/test_diagram_blind_fixes.py | 6 |
 | tests/test_diagram_builder.py | 20 |
@@ -25749,7 +25765,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_make_plan.py | 21 |
 | tests/test_manage_lists_504.py | 5 |
 | tests/test_manual_entry_points.py | 3 |
-| tests/test_manual_parity.py | 29 |
+| tests/test_manual_parity.py | 30 |
 | tests/test_map_actions_clear_of_label.py | 1 |
 | tests/test_map_add_speed.py | 6 |
 | tests/test_map_branch_colour_order.py | 3 |

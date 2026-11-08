@@ -3337,15 +3337,16 @@ MORE_TOPICS.extend([
             "participant, message, reply, async, lost, note, loop, alt, opt, parallel, critical and break (A, P, M, R, Y, X, T, "
             "L, G, O, U, C and B); the first message adds the two participants it needs, a reply runs back "
             "between the same two, and an alt starts with its else and a parallel box with its and. The pane works as a flowchart's "
-            "does: drag a block to move or nest it, double-click a name, the block's ... menu, "
-            "arrows, Enter, Delete, Alt+Up, Alt+Down, Alt+Right and Alt+Left, Ctrl+Z. A line the "
+            "does: drag a block to move or nest it, double-click a name, the ... menu, "
+            "arrows, Enter, Delete, Alt+arrows, Ctrl+Z. A line the "
             "blocks do not show stays where it was, and a diagram they cannot read (a second mind "
             "map centre, a sequence box, more than 120 blocks) opens in Source with its picture. "
-            "On a sequence picture a press picks a part, a double press, Enter or F2 renames it there, Delete removes it and Alt+Up or Alt+Down moves it. "
-            "Suggest works in each: Templates include a brainstorm, a project plan, a sign in and a "
+            "On a sequence picture a press picks a part, a double press, Enter or F2 renames it there, Delete removes it, Alt+Up or Alt+Down moves it, "
+            "a head dragged sideways reorders, a drag from one lifeline to another adds a message there, and the + at a gap opens the Add menu. "
+            "Suggest works in each: Templates include a brainstorm, a plan, a sign in and a "
             "request and reply. A suggestion of the diagram's own kind arrives as ghosts to take; "
             "one of another kind says so and is left out when the diagram has blocks, and replaces "
-            "a blank one. Hand-drawn look, in the ... menu, draws any of them as a sketch (two lines of front matter, kept in the text); Clean look takes it back."
+            "a blank one. Hand-drawn look, in the ... menu, sketches any of them; Clean look takes it back."
         ),
         "badge": {"label": "Documents", "tab": "documents"},
     },
