@@ -661,3 +661,6 @@ def test_the_sequence_picture_drags_are_in_the_guide_and_the_dialog_help() -> No
     assert "double press a part to name it, drag a head to reorder and drag from one lifeline to another to add a message. The shelf in the picture's corner adds a block by a press or a drag" in embed
     blocks = str(next(t["body"] for t in HELP_TOPICS if t["id"] == "diagram-blocks"))
     assert "Press or drag a block from the shelf onto the picture" in blocks
+    # dgmleft-1108: the drop joins the nearest box and Kind asks first, in the Guide and in the dialog's help, under the 1900 limit.
+    assert "onto the picture to join the nearest box" in blocks and "Kind asks before it clears blocks" in blocks and len(blocks) < 1900
+    assert "Kind asks before it clears a diagram that has blocks." in embed

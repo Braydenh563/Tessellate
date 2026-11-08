@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Diagram builder (dgmleft 4): the Guide topic "Editing a diagram as blocks" now says a shelf drop joins the nearest box and that Kind asks before it clears blocks, at 1895 of 1900 characters (the sentence "A diagram is a Mermaid document." went to make room), and the dialog help says Kind asks too.
 - Diagram builder (dgmleft 3): on a coarse pointer a selected box's connection handles lean fully out of the edge (their inner edge on the box edge), so a tap on a handle never lands on the box; measured at 390 by 844 with touch: overlap 10 px before, 0 after on all four sides; a mouse keeps 12 px.
 - Diagram builder (dgmleft 2): the Kind menu and the shelf caret menu hold the menu element `openMenuAtPoint` now returns instead of looking it up under its host, so a menu moved out of its host keeps its glyphs and active row (in the app both still show 4 glyphs and 1 active row).
 - Diagram builder (dgmleft 1): a shelf tile or block dropped over the zoom bar or the shelf itself lands on the picture like any other point; the corners at 4% and 96% of a 755 by 537 picture all take a drop (the bottom right and top left did not).
