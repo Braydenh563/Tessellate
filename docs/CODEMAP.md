@@ -15409,21 +15409,21 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `_apply` | src/tessellate/ai/composer_text.py:128 |
-| `_body` | src/tessellate/ai/composer_text.py:152 |
-| `_count` | src/tessellate/ai/composer_text.py:179 |
-| `_dedupe` | src/tessellate/ai/composer_text.py:97 |
-| `_head` | src/tessellate/ai/composer_text.py:141 |
-| `_items` | src/tessellate/ai/composer_text.py:90 |
-| `_join` | src/tessellate/ai/composer_text.py:105 |
-| `_number` | src/tessellate/ai/composer_text.py:118 |
-| `_read` | src/tessellate/ai/composer_text.py:166 |
-| `_slug` | src/tessellate/ai/composer_text.py:85 |
-| `_sort` | src/tessellate/ai/composer_text.py:113 |
-| `_split` | src/tessellate/ai/composer_text.py:109 |
-| `_title_case` | src/tessellate/ai/composer_text.py:75 |
-| `_unquote` | src/tessellate/ai/composer_text.py:132 |
-| `answer` | src/tessellate/ai/composer_text.py:185 |
+| `_apply` | src/tessellate/ai/composer_text.py:130 |
+| `_body` | src/tessellate/ai/composer_text.py:154 |
+| `_count` | src/tessellate/ai/composer_text.py:181 |
+| `_dedupe` | src/tessellate/ai/composer_text.py:99 |
+| `_head` | src/tessellate/ai/composer_text.py:143 |
+| `_items` | src/tessellate/ai/composer_text.py:92 |
+| `_join` | src/tessellate/ai/composer_text.py:107 |
+| `_number` | src/tessellate/ai/composer_text.py:120 |
+| `_read` | src/tessellate/ai/composer_text.py:168 |
+| `_slug_of` | src/tessellate/ai/composer_text.py:86 |
+| `_sort` | src/tessellate/ai/composer_text.py:115 |
+| `_split` | src/tessellate/ai/composer_text.py:111 |
+| `_title_case` | src/tessellate/ai/composer_text.py:76 |
+| `_unquote` | src/tessellate/ai/composer_text.py:134 |
+| `answer` | src/tessellate/ai/composer_text.py:187 |
 
 ### src/tessellate/ai/composer_this.py (5)
 
