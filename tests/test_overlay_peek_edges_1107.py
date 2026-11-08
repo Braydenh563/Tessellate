@@ -4,6 +4,7 @@ clock, no Win32; real Windows is unverified."""
 
 from __future__ import annotations
 
+import math
 import random
 from collections import Counter
 
@@ -15,6 +16,7 @@ from tessellate.core.overlay.engine import Bar, Engine, Monitor
 
 SIZE = (100, 120)
 FULL = (0, 0, 1920, 1080)
+SQUARE = math.ceil(math.hypot(*SIZE))  # the canvas a turned (upside-down) figure is drawn on
 #: edge -> (the bar's rectangle, the play area it leaves)
 BARS = {
     "bottom": ((0, 1040, 1920, 1080), (0, 0, 1920, 1040)),
@@ -80,7 +82,10 @@ def test_the_clip_hides_exactly_the_part_under_the_bar(bar: str) -> None:
         assert out.x + right == BARS[bar][0][0]
         assert (left, top, bottom) == (0, 0, h)
     else:
-        assert out.y + top == BARS[bar][0][3]
+        # Intent moved, not weakened (edges2-1108): the top peek is drawn upside-down on the tumble's square canvas, whose
+        # clip is in that canvas's pixels, so its origin is the box's less the pad; the edge is still where the strip begins.
+        w, h = (SQUARE, SQUARE) if out.frame.startswith("spin") else (w, h)
+        assert out.y - (SQUARE - SIZE[1]) // 2 * (w == SQUARE) + top == BARS[bar][0][3]
         assert (left, right, bottom) == (0, w, h)
     rows, cols = alpha_rows_cols(sprites.clipped(opaque(w, h), out.clip))
     visible_rows = set(range(max(0, top), min(h, bottom)))
@@ -99,8 +104,8 @@ def test_with_no_bar_the_screen_edge_is_the_edge(bar: str) -> None:
         assert out.x + out.clip[0] == FULL[0]
     elif bar == "right":
         assert out.x + out.clip[2] == FULL[2]
-    else:
-        assert out.y + out.clip[1] == FULL[1]
+    else:  # the turned canvas's origin (see the note above)
+        assert out.y - (SQUARE - SIZE[1]) // 2 * out.frame.startswith("spin") + out.clip[1] == FULL[1]
 
 
 @pytest.mark.parametrize("bar", ["bottom", "left", "right", "top"])
