@@ -318,9 +318,10 @@
   border: 1px solid var(--ghost-btn-border);
   border-radius: var(--radius-md);
 }
-.sp-size input {
+.sp-size input[type="range"] {
   width: 5rem;
   margin: 0;
+  background: transparent;
   accent-color: var(--accent);
   cursor: pointer;
 }

@@ -9376,7 +9376,7 @@ input[type="file"] {
    library toolbar states, repeated here because a dock may hold controls
    that never sat in one. Checkboxes and radios are excluded for the reason
    that rule gives: stretching a tick box makes an oval. */
-.dock input:not([type="checkbox"]):not([type="radio"]):not(.search-field-input),
+.dock input:not([type="checkbox"]):not([type="radio"]):not(.search-field-input, .value-field-input),
 .dock select,
 .dock .seg,
 .dock .segmented-control,

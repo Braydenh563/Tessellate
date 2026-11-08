@@ -579,14 +579,14 @@ details[open] > :is(.fold-summary, .agent-step-group-summary)::after {
   border-color: var(--accent);
   background: var(--input-bg);
 }
-/* One inset for anything that takes input: one fill, one radius, one
+/* One inset for anything typed into (a value field and a slider keep their own look, INBOX 1694 c): one fill, one radius, one
    height, and the same quiet edge as the search field beside it (INBOX 621:
    a bordered sort select next to an edgeless field was two answers again).
    Three of these (search, the select opener, the native select behind it)
    drew three radii while sitting side by side. The Ask composer and the
    chat strip are bars too (INBOX 813: one bar select), so their pickers take
    the same inset at their own bar's height rather than a form field's edge. */
-.dock input:not([type="checkbox"]):not([type="radio"]):not(.search-field-input),
+.dock input:not([type="checkbox"]):not([type="radio"]):not(.search-field-input, .value-field-input, [type="range"]),
 .dock select:not(.select-native-hidden):not(.dock-native-hidden),
 .dock .select-shell > .select-opener,
 .ask-composer .select-shell > .select-opener,

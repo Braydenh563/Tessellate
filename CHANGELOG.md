@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- A typed value beside a slider in a bar (the sketch pad's size, the graph's) sits inside its pill as text instead of a filled box that overlapped the border (INBOX 1694 c).
 - Desk Atlas no longer limps on trips: a floating look moves on its idle cycle (streams flowing, eyes open) instead of the walk frames that shut its eyes every other step (INBOX 1692).
 - Sheet lists keep each row's height: the diagram's Add a block sheet no longer draws a name over the hint above (INBOX 1661).
 - Desk companion: an ordinary hover is a smile, never a poke or a flinch (a poke is a jab back out, a flinch a swipe that passes); the resize ring hangs by the head, not off the tail swirl (INBOX 1692).
