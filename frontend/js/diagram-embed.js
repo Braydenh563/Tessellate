@@ -440,7 +440,20 @@
     helpBody.id = "dgm-dialog-help";
     helpBody.setAttribute("role", "dialog");
     helpBody.setAttribute("aria-label", "About this editor");
-    helpBody.append(el("p", "", "Draw with blocks and the picture follows. Picture gives the drawing the room, List gives the blocks list the room, and Source is the text. Press N to add a box, Tab on the last box to add one joined to it, Enter to name it, [ and ] fold the list and the picture, F6 leaves the blocks, Ctrl+Enter keeps the diagram and ? lists every key. On a sequence picture, double press a part to name it, drag a head to reorder and drag from one lifeline to another to add a message. The shelf in the picture's corner adds a block by a press or a drag onto the picture, joined from the box nearest the drop. Kind asks before it clears a diagram that has blocks. If the page closes with this window open, the next open offers your changes back."), atlasSuggestion("How do I make a diagram?", "Ask about making a diagram"));
+    //: Short lines, one thought each (the 200-word paragraph read as a wall): the sequence sentence and the shelf sentence stay together.
+    const helpLines = [
+      "Draw with blocks and the picture follows. Picture gives the drawing the room, List gives the blocks list the room, and Source is the text.",
+      "Press N to add a box, Tab on the last box to add one joined to it, Enter to name it.",
+      "[ and ] fold the list and the picture, F6 leaves the blocks, Ctrl+Enter keeps the diagram and ? lists every key.",
+      //: No shelf on a phone or touch screen (it is hidden there): the line says Add, not a drag.
+      "On a sequence picture, double press a part to name it, drag a head to reorder and drag from one lifeline to another to add a message. The shelf in the picture's corner adds a block by a press or a drag onto the picture, joined from the box nearest the drop.".replace(
+        matchMedia("(max-width: 599.98px), (pointer: coarse)").matches ? / The shelf .*$/ : /$^/,
+        " Tap Add to put a block in, joined from the selected box."
+      ),
+      "Kind asks before it clears a diagram that has blocks.",
+      "If the page closes with this window open, the next open offers your changes back.",
+    ];
+    helpBody.append(...helpLines.map((line) => el("p", "", line)), atlasSuggestion("How do I make a diagram?", "Ask about making a diagram"));
     head.querySelector(".dialog-head-title").after(help);
     dialog.append(helpBody);
     const body = el("div", "dgm-dialog-body");

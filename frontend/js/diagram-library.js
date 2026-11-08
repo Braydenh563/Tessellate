@@ -9,6 +9,9 @@
 // give theirs to `build` from diagram-kinds.js. One closure, one export: `diagramModel.library`.
 (() => {
   const IDLE = "Press a shape to add it, or drag it into the blocks or onto the picture.";
+  //: A phone or touch screen has no shelf to drag from (diagram-lazy.css hides it): the words say tap and Add, not drag.
+  const compact = () => matchMedia("(max-width: 599.98px), (pointer: coarse)").matches;
+  const idleLine = () => (compact() ? "Tap a shape to add it." : IDLE);
 
   //: The flowchart's tiles by meaning: [group, [[shape, hint], ...]]. A note is a rounded block that says "Note".
   const FLOW = [
@@ -49,7 +52,7 @@
     tile.type = "button";
     tile.dataset.objGrip = "";
     Object.assign(tile.dataset, t.data, { hint: t.hint });
-    tile.title = `${t.hint} Press to add it, or drag it into the blocks or onto the picture.`;
+    tile.title = compact() ? `${t.hint} Tap to add it.` : `${t.hint} Press to add it, or drag it into the blocks or onto the picture.`;
     tile.setAttribute("aria-label", t.label);
     if (t.keys) tile.setAttribute("aria-keyshortcuts", t.keys);
     //: A clone: a spec is drawn twice (the Add library and the shelf) and a node sits in one place only. The second tile took the first's glyph, so the phone's Add sheet printed the name where the glyph should be (blind test 1108).
@@ -58,7 +61,7 @@
     return tile;
   }
 
-  function build(tiles, idle = IDLE) {
+  function build(tiles, idle = idleLine()) {
     const strip = make("div", "dock-group dgm-palette dgm-library");
     strip.setAttribute("role", "group");
     strip.setAttribute("aria-label", "Add to the diagram");

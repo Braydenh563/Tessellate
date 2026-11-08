@@ -2,9 +2,9 @@
 
 Generated 2026-11-08 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7910, frontend ids 2652, CSS sections 522, backend routes 649, backend modules 9180, test files 2227, tests 18718, plan headings 1004, app scripts 28, boot scripts 37, script files 263.
+Counts: frontend functions 7912, frontend ids 2652, CSS sections 522, backend routes 649, backend modules 9180, test files 2227, tests 18721, plan headings 1004, app scripts 28, boot scripts 37, script files 263.
 
-## Frontend functions (7910)
+## Frontend functions (7912)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -3344,15 +3344,17 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 |---|---|
 | `wire` | frontend/js/diagram-letgo.js:13 |
 
-### frontend/js/diagram-library.js (5)
+### frontend/js/diagram-library.js (7)
 
 | Name | File:line |
 |---|---|
-| `build` | frontend/js/diagram-library.js:61 |
-| `flow` | frontend/js/diagram-library.js:29 |
-| `make` | frontend/js/diagram-library.js:21 |
-| `shelf` | frontend/js/diagram-library.js:96 |
-| `tileOf` | frontend/js/diagram-library.js:47 |
+| `build` | frontend/js/diagram-library.js:64 |
+| `compact` | frontend/js/diagram-library.js:13 |
+| `flow` | frontend/js/diagram-library.js:32 |
+| `idleLine` | frontend/js/diagram-library.js:14 |
+| `make` | frontend/js/diagram-library.js:24 |
+| `shelf` | frontend/js/diagram-library.js:99 |
+| `tileOf` | frontend/js/diagram-library.js:50 |
 
 ### frontend/js/diagram-multi.js (3)
 
@@ -16162,8 +16164,8 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `_act_topic` | src/tessellate/ai/help_topics_more.py:3454 |
-| `_slash_commands_topic` | src/tessellate/ai/help_topics_more.py:3586 |
+| `_act_topic` | src/tessellate/ai/help_topics_more.py:3455 |
+| `_slash_commands_topic` | src/tessellate/ai/help_topics_more.py:3587 |
 
 ### src/tessellate/ai/help_words.py (2)
 
@@ -24726,7 +24728,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (18718)
+## Tests (18721)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -25344,7 +25346,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_diagram_builder.py | 20 |
 | tests/test_diagram_d3.py | 2 |
 | tests/test_diagram_deep_1588.py | 5 |
-| tests/test_diagram_dgmfix2_1108.py | 3 |
+| tests/test_diagram_dgmfix2_1108.py | 6 |
 | tests/test_diagram_dgmleft_1108.py | 3 |
 | tests/test_diagram_document.py | 7 |
 | tests/test_diagram_door_panel.py | 2 |

@@ -42,3 +42,29 @@ def test_a_tile_dropped_beside_the_diagram_joins_from_the_nearest_box_however_fa
     """The help says "joined from the box nearest the drop"; a 120 px reach joined the selected Start from beside Ship it (136 px)."""
     assert "g.x, g.y, Infinity, ok)" in CANVAS
     assert "g.x, g.y, 120" not in CANVAS
+
+
+EMBED_JS = (JS / "diagram-embed.js").read_text(encoding="utf-8")
+LIBRARY = (JS / "diagram-library.js").read_text(encoding="utf-8")
+
+
+def test_the_guide_answers_how_to_add_a_block_with_the_keys_the_shelf_and_the_slash():
+    from tessellate.ai.help_chat import HELP_TOPICS
+
+    body = str(next(t["body"] for t in HELP_TOPICS if t["id"] == "diagram-blocks"))
+    for words in ("Add a block: N, a shelf tile or Add", "/diagram opens the builder in a document", "(Add on a phone)"):
+        assert words in body, words
+    assert len(body) < 1900
+
+
+def test_the_builder_help_is_short_lines_not_one_paragraph():
+    assert "const helpLines = [" in EMBED_JS and "...helpLines.map((line) => el(\"p\", \"\", line))" in EMBED_JS
+    lines = EMBED_JS.split("const helpLines = [")[1].split("];")[0]
+    assert lines.count('",\n') + lines.count("\",\n") >= 5
+
+
+def test_a_phone_is_told_to_tap_add_where_the_shelf_is_hidden():
+    """The shelf is `display: none` on a coarse pointer or under 600 px (diagram-lazy.css): no tile can be dragged there."""
+    assert "Tap to add it." in LIBRARY and 'matchMedia("(max-width: 599.98px), (pointer: coarse)")' in LIBRARY
+    assert "Tap a shape to add it." in LIBRARY
+    assert "Tap Add to put a block in" in EMBED_JS
