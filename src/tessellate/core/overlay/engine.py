@@ -298,6 +298,11 @@ SPIN_FRAMES_ENGINE = tuple(f"spin{i}" for i in range(SPIN_STEPS))
 HOVER = (0.0, 0.0)
 #: How far below the work area's top a released figure's head may be and still take hold.
 HANG_REACH = 0.3
+#: Let go with its feet this near a window's top (shares of its height: above the edge, and below it with the legs in
+#: front of the title bar) and it settles onto that top (INBOX 1696 b: "I tried to drag the desktop companion onto the
+#: top of my file explorer window but it just fell"). A release slower than `PERCH_THROW` times THROW_MIN is a placing.
+DROP_REACH = (0.6, 0.35)
+PERCH_THROW = 2.0
 #: The ceiling takes hold of a throw only when it was thrown hard and mostly upward (INBOX 1670, 15:45Z: "nearly every
 #: time I throw it no matter how hard, it goes to the top to hang"): this much upward launch speed (logical px per
 #: second, over half of `THROW_MAX`) and at least this share of the throw's speed pointing up. It is read at the
@@ -3683,10 +3688,43 @@ class Engine:
         x0, x1, _y0, _y1 = self._ride_limits("held")
         self.x = min(max(self.x, max(x0, m.area[0] - self._ride_box("held")[0])), min(x1, m.area[2] - self._ride_box("held")[2]))
         velocity = None if self.reduced else self._throw_velocity(now, px, py)
+        speed = 0.0 if velocity is None else math.hypot(*velocity)
+        if speed < PERCH_THROW * THROW_MIN * self._scale() and self._drop_on_top(now):
+            return
         if velocity is not None:  # a throw is a throw: only a release that is not one takes hold near an edge
             self._start_fly(*velocity, self._swirl(now, px, py))
         elif not self._grab_edge(now):
             self._drop(now)
+
+    def _drop_on_top(self, now: float) -> bool:
+        """Let go with the feet near a window's top, over it: it settles onto that top and stands there (INBOX 1696 b).
+        The runner reads the windows afresh at the release, so the edge is where the window is now. Each release over
+        or near an edge leaves a note saying why it did or did not stay."""
+        if self.reduced or not (self.roam and self.roam_windows):
+            return False
+        w, h = self.size
+        feet, centre, m = self.y + h, self.x + w / 2, self.current_monitor()
+        above, below = DROP_REACH[0] * h, DROP_REACH[1] * h
+        best: tuple[float, Perch] | None = None
+        for p in self.windows:
+            if p.kind != "top" or p.top < m.area[1] or not p.left <= centre < p.right:
+                continue
+            gap = p.top - feet  # positive: the feet are above the edge
+            if -below <= gap <= above and (best is None or abs(gap) < abs(best[0])):
+                best = (gap, p)
+            elif abs(gap) < 2 * h:
+                self.notes.append(f"let go {abs(gap):.0f} px {'above' if gap > 0 else 'below'} a window top: out of reach (within {above:.0f} above or {below:.0f} below)")
+        if best is None:
+            if not any(p.kind == "top" and p.left <= centre < p.right for p in self.windows):
+                self.notes.append(f"let go with no window top under the figure ({len(self.windows)} standable in the scan)")
+            return False
+        p = best[1]
+        x = min(max(self.x, p.left), p.right - w)
+        self.notes.append(f"let go over a window top ({best[0]:.0f} px from the feet): standing on it")
+        self.target, self.hang_on, self.placed = p, None, True
+        self.legs.append(("drop", self.x, x, now))
+        self._rise((x, p.top - h), "perch", now, drawn_from=self.y + self._dy("held"))
+        return True
 
     def _swirl(self, now: float, px: int, py: int) -> float:
         """How much the pointer's path curled over the throw window, -1 to 1 (clockwise on screen positive):
