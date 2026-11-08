@@ -843,7 +843,7 @@ MORE_TOPICS: list[dict] = [
         ),
         "body": (
             "Settings, Appearance. Themes: each theme is a tile of four overlapping dots (the page, its card, the accent and the ink) over its name; press the eye in a theme's corner to see it on the whole app, then Apply or Cancel, "
-            "press Surprise me for a random one, save and switch your own. Theme & "
+            "press Surprise me for a random one, save and switch your own, or Export look and Import look to move one between devices as a JSON file (an import skips what it cannot read and says which, with Undo). Theme & "
             "colour: Palette, Mode (light, dark or system), Accent colour or a "
             "custom one (a colour a button's words cannot be read on is "
             "offered at the nearest shade that can), Page background, and "

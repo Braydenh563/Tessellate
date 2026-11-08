@@ -4132,6 +4132,8 @@ $("custom-theme-save").addEventListener("click", () => {
 $("custom-theme-name").addEventListener("keydown", (e) => {
   if (e.key === "Enter") $("custom-theme-save").click();
 });
+$("look-export").addEventListener("click", () => settingsLook.lookFile.exportNow());
+$("look-import").addEventListener("click", () => pickJsonFile("look-import-file", (data) => settingsLook.lookFile.importNow(data)));
 
 $("log-source").addEventListener("change", renderActiveLogView);
 $("log-level").addEventListener("change", renderActiveLogView);

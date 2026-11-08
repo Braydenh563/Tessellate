@@ -2031,6 +2031,165 @@ function currentLookValues() {
   return { values, preset: preset || "" };
 }
 
+// LOOK FILE BEGIN
+//: One property of `settingsLook`, not a dozen globals: the shared scope is
+//: counted and capped (tests/test_global_scope_ratchet.py).
+settingsLook.lookFile = (() => {
+  //: **A look as a file** (BACKLOG, Colours). The export is what a saved look
+  //: holds (`currentLookValues`); the import takes only what it can prove, key
+  //: by key, because a file is typed by hand or by someone else and a value
+  //: invalid where it is used, not where it is set, breaks the page far away
+  //: (a "NaN" in a custom property takes every shadow with it).
+  const LOOK_FILE_KIND = "tessellate-look";
+  const LOOK_HEX = /^#[0-9a-f]{6}$/i;
+  //: A background is a colour or a gradient; nothing that can fetch (`url(`) or
+  //: reach into the page (`var(`, `attr(`, `env(`).
+  const LOOK_GRADIENT = /^linear-gradient\([#0-9a-zA-Z.,()%\s-]{1,180}\)$/;
+
+  function lookRules() {
+    const oneOf = (list) => (v) => (typeof v === "string" && list.includes(v) ? v : null);
+    const whole = (lo, hi) => (v) => {
+      if (typeof v !== "string" && typeof v !== "number") return null;
+      const text = String(v);
+      return /^\d{1,3}$/.test(text) && Number(text) >= lo && Number(text) <= hi ? String(Number(text)) : null;
+    };
+    const onOff = oneOf(["on", "off"]);
+    return {
+      theme: oneOf(["light", "dark", "system"]),
+      palette: oneOf(PALETTES.map((p) => p.id)),
+      accent: oneOf(ACCENTS.map((a) => a.name)),
+      "accent-custom": (v) => (typeof v === "string" && LOOK_HEX.test(v) ? v.toLowerCase() : null),
+      "page-bg": (v) => {
+        if (typeof v !== "string") return null;
+        if (LOOK_HEX.test(v)) return v.toLowerCase();
+        return LOOK_GRADIENT.test(v) && !/\b(url|var|attr|env|image)\s*\(/i.test(v) ? v : null;
+      },
+      font: oneOf(["system", "serif", "mono", "arial", "readable"]),
+      glass: onOff,
+      "glass-blur": whole(2, 30),
+      "glass-opacity": whole(5, 100),
+      "glass-sheen": onOff,
+      "glass-controls": onOff,
+      "page-wash": onOff,
+      "glass-sheen-strength": whole(0, 100),
+      "bg-style": oneOf(BG_ART_STYLES),
+      "bg-motion": oneOf(["auto", "moving", "still"]),
+      "bg-intensity": whole(20, 100),
+      radius: whole(0, 22),
+      bgArt: onOff,
+    };
+  }
+
+  function lookFilePayload(values, preset) {
+    const out = {};
+    for (const key of LOOK_KEYS) if (Object.hasOwn(values, key)) out[key] = values[key];
+    return { kind: LOOK_FILE_KIND, version: 1, values: out, preset: preset || "" };
+  }
+
+  //: Up to four names, then a count: a toast is a line, not a list.
+  function skippedLine(names) {
+    const shown = names.slice(0, 4).join(", ");
+    return names.length > 4 ? `${shown} and ${names.length - 4} more` : shown;
+  }
+
+  function checkLookFile(data) {
+    const out = { values: {}, preset: "", skipped: [] };
+    const plain = (x) => x && typeof x === "object" && !Array.isArray(x);
+    if (!plain(data) || data.kind !== LOOK_FILE_KIND || data.version !== 1 || !plain(data.values)) {
+      out.error = "That file isn't a Tessellate look.";
+      return out;
+    }
+    const rules = lookRules();
+    for (const [key, value] of Object.entries(data.values)) {
+      const name = String(key).slice(0, 30);
+      if (!LOOK_KEYS.includes(key)) {
+        out.skipped.push(`${name} (not part of a look)`);
+        continue;
+      }
+      const clean = rules[key](value);
+      if (clean === null) out.skipped.push(`${name} (value out of range)`);
+      else out.values[key] = clean;
+    }
+    if (data.preset) {
+      if (typeof data.preset === "string" && Object.hasOwn(THEME_PRESETS, data.preset)) out.preset = data.preset;
+      else out.skipped.push("preset (unknown theme)");
+    }
+    if (!Object.keys(out.values).length && !out.preset) {
+      out.error = `Nothing in that file could be applied. Skipped: ${skippedLine(out.skipped)}.`;
+    }
+    return out;
+  }
+
+  //: Everything a look can change, read before and put back after, so Undo is
+  //: exact: a key the person had not set is removed, not set to a default.
+  function lookSnapshot() {
+    const snap = {};
+    for (const key of [...LOOK_KEYS, "density", "themePreset"]) snap[key] = prefs.get(key, null);
+    return snap;
+  }
+
+  function restoreLook(snap) {
+    for (const [key, value] of Object.entries(snap)) {
+      if (value === null) prefs.remove(key);
+      else prefs.set(key, value);
+    }
+    repaintLook();
+  }
+
+  //: The tail every way of applying a look shares (saved, imported, restored).
+  function repaintLook() {
+    applyThemeChoice(effectiveTheme(), false);
+    applyAppearance();
+    // The art is a running p5 sketch, not a CSS variable, so applyAppearance
+    // marking the root "on" is not enough to start or stop one.
+    if (bgArtOn()) startBgArt();
+    else stopBgArt();
+    renderAppearance();
+  }
+
+  //: Runs `change`, then offers Undo (the toast's button and Ctrl+Z).
+  function changeLookWithUndo(label, message, change) {
+    const before = lookSnapshot();
+    change();
+    const after = lookSnapshot();
+    const action = pushUndo(label, () => restoreLook(before), () => restoreLook(after));
+    toastAction(message, "Undo", () => {
+      settleUndoFromToast(action);
+      restoreLook(before);
+      toast("Put your look back.");
+    });
+  }
+
+  function exportLook() {
+    const { values, preset } = currentLookValues();
+    downloadJson("tessellate-look.json", lookFilePayload(values, preset));
+  }
+
+  function importLook(data) {
+    const check = checkLookFile(data);
+    if (check.error) return toast(check.error, "info");
+    const theme = { name: "imported look", values: check.values, preset: check.preset };
+    changeLookWithUndo("Imported a look", "Applied the look from that file.", () => {
+      // A custom accent outranks a named one: a file naming an accent alone means that accent.
+      if (check.values.accent && !check.values["accent-custom"]) prefs.remove("accent-custom");
+      // "System" is the absence of a choice (`applyThemeChoice`), never a stored one.
+      if (check.values.theme === "system") {
+        delete check.values.theme;
+        prefs.remove("theme");
+      }
+      applySavedTheme(theme, false);
+    });
+    if (check.skipped.length) toast(`Skipped ${skippedLine(check.skipped)}.`, "info");
+  }
+
+    return {
+      check: checkLookFile, payload: lookFilePayload, skippedLine,
+      snapshot: lookSnapshot, restore: restoreLook, repaint: repaintLook,
+      changeWithUndo: changeLookWithUndo, exportNow: exportLook, importNow: importLook,
+    };
+})();
+// LOOK FILE END
+
 function savedThemes() {
   const saved = prefsCache && prefsCache.custom_themes;
   return Array.isArray(saved) ? saved : [];
@@ -2063,7 +2222,7 @@ async function saveCurrentLook() {
   toast(`Saved “${name}”.`);
 }
 
-function applySavedTheme(theme) {
+function applySavedTheme(theme, announce = true) {
   // Everything the snapshot named is restored; everything it didn't is left
   // alone rather than reset, so applying a saved look never silently changes a
   // setting the snapshot had nothing to say about.
@@ -2074,16 +2233,10 @@ function applySavedTheme(theme) {
   }
   if (theme.preset) prefs.set("themePreset", theme.preset);
   else prefs.remove("themePreset");
-  // The same function startup uses, so a restored look is applied by exactly
+  // The same functions startup uses, so a restored look is applied by exactly
   // the path that would have applied it on a fresh load.
-  applyThemeChoice(theme.values?.theme || "system", false);
-  applyAppearance();
-  // The art is a running p5 sketch, not a CSS variable, so applyAppearance
-  // marking the root "on" is not enough to start or stop one.
-  if (bgArtOn()) startBgArt();
-  else stopBgArt();
-  renderAppearance();
-  toast(`Applied “${theme.name}”.`);
+  settingsLook.lookFile.repaint();
+  if (announce) toast(`Applied “${theme.name}”.`);
 }
 
 async function deleteSavedTheme(name) {

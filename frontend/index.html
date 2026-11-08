@@ -11557,7 +11557,9 @@ Link to another note with [[its first few words]]."></textarea>
                   <span>Your themes</span>
                   <small class="muted">
                     Save everything you've set: colours, font, spacing, corners,
-                    background: as one look you can come back to.
+                    background: as one look you can come back to. Export look
+                    saves it as a file; Import look applies one, skipping
+                    anything it cannot read.
                   </small>
                 </div>
                 <!-- One wrapper, not two siblings: `.setting-row-stack` is a
@@ -11580,6 +11582,13 @@ Link to another note with [[its first few words]]."></textarea>
                       title="e.g. Late night"
                       aria-label="Name for the saved theme">
                     <button id="custom-theme-save" class="ghost small">Save current look</button>
+                  </div>
+                  <div class="row look-share-row">
+                    <button id="look-export" class="ghost small"
+                      title="Download this look as a JSON file">Export look</button>
+                    <button id="look-import" class="ghost small"
+                      title="Apply a look from a JSON file; Undo puts yours back">Import look</button>
+                    <input id="look-import-file" aria-label="Import a look from a JSON file" title="Import a look from a JSON file" type="file" accept=".json" class="hidden">
                   </div>
                 </div>
               </div>
