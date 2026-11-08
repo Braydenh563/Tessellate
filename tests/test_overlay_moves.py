@@ -426,10 +426,14 @@ def test_nothing_is_clipped_unless_the_hidden_part_is_past_the_work_areas_edge()
                     continue
                 clipped_ticks += 1
                 cl, ct, cr, cb = o.clip
-                hidden = [(o.x, o.y, o.x + cl, o.y + h)] if cl > 0 else []
-                hidden += [(o.x, o.y, o.x + w, o.y + ct)] if ct > 0 else []  # a top peek or a hang from the top edge
-                hidden += [(o.x + cr, o.y, o.x + w, o.y + h)] if cr < w else []
-                hidden += [(o.x, o.y + cb, o.x + w, o.y + h)] if cb < h else []
+                # Intent moved, not weakened (edges2-1108): the upside-down top peek is drawn on the tumble's square canvas,
+                # whose clip is in that canvas's pixels and whose origin is the box's less the pad; the check is the same.
+                cw, ch = (math.ceil(math.hypot(w, h)),) * 2 if o.frame.startswith("spin") else (w, h)
+                ox, oy = o.x - (cw - w) // 2, o.y - (ch - h) // 2
+                hidden = [(ox, oy, ox + cl, oy + ch)] if cl > 0 else []
+                hidden += [(ox, oy, ox + cw, oy + ct)] if ct > 0 else []  # a top peek or a hang from the top edge
+                hidden += [(ox + cr, oy, ox + cw, oy + ch)] if cr < cw else []
+                hidden += [(ox, oy + cb, ox + cw, oy + ch)] if cb < ch else []
                 assert hidden, (seed, o)
                 for hx0, hy0, hx1, hy1 in hidden:
                     outside = hx1 <= left or hx0 >= right or hy0 >= bottom or hy1 <= top
