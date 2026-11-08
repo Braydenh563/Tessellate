@@ -6,6 +6,9 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Composer: a spend on a thing this week (groceries) totals that thing only, not the note's fuel too, and the overview summary never repeats a note's own "today".
+- Desk companion: a stretch draws at its own pose frames again, and a dash turns toward where it is going during its crouch instead of after it.
+- Guide: questions about the companion outside the app reach the desktop companion topic first again.
 - Composer: a person's phone number (Sara's phone number, does Sara have a phone number) is never another note's; with no note giving one, the answer says none of your notes do.
 - Composer: a feature word in chat (what is my name) gets one short help line or a pointer to its Help topic, not a Settings paragraph.
 - Composer: "who is my landlord" says "Your landlord" in the frame, and a name only titles write (Tokyo) keeps its capital when typed small in a count.
