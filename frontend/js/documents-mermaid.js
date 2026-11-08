@@ -432,6 +432,7 @@
           openDiagramBuilder({
             source: this.source,
             title: "Edit diagram",
+            draft: `doc:${currentDoc?.id ?? ""}`,
             offer: { fence: [view, this.source, near] },
             onDone: (next, changed) => {
               if (!changed) return;
@@ -549,6 +550,7 @@
         source: diagramModel.starter,
         title: "Diagram builder",
         named: true,
+        draft: "new",
         existing: { pick: pickExistingDiagram, open: async (row) => (switchTab("documents"), loadDocuments(row.id)) },
         //: The window's title names the document and the exports; blank is dated, so two Done presses are two names (DD-12, 1107).
         onDone: async (next, _changed, name) => {
@@ -564,6 +566,7 @@
       source: diagramModel.starter,
       title: "Diagram builder",
       named: true,
+      draft: "new-embed",
       //: Done makes the `.mmd` row and writes a live reference to it (1621 D5), so the diagram has one home and a page of its own.
       //: The window hands back a clean, unused title, so `![[Title]]` finds this row.
       onDone: async (next, _changed, name) => {

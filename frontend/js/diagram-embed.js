@@ -159,16 +159,58 @@
     return freshTitle(base, new Set(all.map((d) => String(d.title || "").trim().toLowerCase())));
   };
 
+  // --- the kept draft (blind test 1108) ----------------------------------------------
+  //: A reload with the dialog open lost everything. The document editor keeps its unsaved text on this device and offers it back
+  //: the next time that document opens (documents.js `keepDocEditLocally`, `offerKeptDocEdit`); the dialog does the same, per
+  //: target: `draft` is the caller's key ("doc:12", "new", "board:7") and the hash of the source it opened on is added, so two
+  //: diagrams in one page keep one draft each. At most five, two weeks, 2 MB; Done and Discard forget it.
+  const DRAFTS = "diagram-drafts";
+  const draftsRead = () => {
+    let all = {};
+    try {
+      all = prefs.json(DRAFTS, {}) || {};
+    } catch {
+      all = {};
+    }
+    const cutoff = Date.now() - 14 * 864e5;
+    return Object.fromEntries(Object.entries(all).filter(([, d]) => d?.at > cutoff));
+  };
+  const draftsWrite = (all) => (Object.keys(all).length ? prefs.setJSON(DRAFTS, all) : prefs.remove(DRAFTS));
+  const draftKeep = (key, draft) => {
+    if (!key || String(draft.source).length > 2e6) return;
+    try {
+      const all = { ...draftsRead(), [key]: { ...draft, at: Date.now() } };
+      const newest = Object.entries(all).sort((a, b) => b[1].at - a[1].at).slice(0, 5);
+      draftsWrite(Object.fromEntries(newest));
+    } catch {
+      /* storage full or blocked: nothing more can be done */
+    }
+  };
+  const draftForget = (key) => {
+    try {
+      const all = draftsRead();
+      if (key && key in all) (delete all[key], draftsWrite(all));
+    } catch {
+      /* nothing kept, nothing to forget */
+    }
+  };
+  const hashOf = (text) => {
+    let h = 5381;
+    for (let i = 0; i < text.length; i += 1) h = ((h * 33) ^ text.charCodeAt(i)) >>> 0;
+    return h.toString(36);
+  };
+
   // --- the dialog (D6) ----------------------------------------------------------------
   const STARTS = { flowchart: "flowchart TD", mindmap: "mindmap\n  root((Topic))", timeline: "timeline\n  title Timeline", sequence: "sequenceDiagram" };
 
   //: `{source, kind, title, shapes, named, onDone(source, changed, name)}`. `named` adds a title field: the new document's name and the exports' file name. `kind` names the blank diagram to start
   //: when there is no source. `shapes` is a function that receives the source and makes board shapes
-  //: of it (Turn into shapes). `existing` is `{pick, open}` for the door. `offer` is what Save may link. Done calls `onDone` once; Cancel, Escape and the X call nothing, after
+  //: of it (Turn into shapes). `draft` keys the kept unsaved copy (a reload offers it back). `existing` is `{pick, open}` for the door. `offer` is what Save may link. Done calls `onDone` once; Cancel, Escape and the X call nothing, after
   //: asking when there are changes.
-  async function open({ source = "", kind = "flowchart", title = "Edit diagram", shapes = null, offer = null, onDone = null, existing = null, named = false } = {}) {
+  async function open({ source = "", kind = "flowchart", title = "Edit diagram", shapes = null, offer = null, onDone = null, existing = null, named = false, draft = "" } = {}) {
     if (!(await ensureModule("diagramBuilder"))) return toast("The block editor did not load. Try again.", "info");
     const first = String(source || "").trim() ? String(source) : STARTS[kind] || STARTS.flowchart;
+    const draftId = draft ? `${draft}:${hashOf(first)}` : "";
     const history = [first];
     let at = 0;
     let closing = false;
@@ -204,6 +246,16 @@
     field.addEventListener("scroll", () => (gutter.scrollTop = field.scrollTop));
     field.addEventListener("dgmerror", number);
     number();
+    //: Kept a moment after each change and when the page goes (a reload, a closed tab); nothing is kept for a dialog that has not changed.
+    let keepTimer = 0;
+    const keep = () => {
+      if (closing || !draftId) return;
+      const typed = titleField ? titleField.value : "";
+      if (history[at] === first && !typed.trim()) return draftForget(draftId);
+      draftKeep(draftId, { source: history[at], title: typed });
+    };
+    const keepSoon = () => (clearTimeout(keepTimer), (keepTimer = setTimeout(keep, 500)));
+    window.addEventListener("pagehide", keep);
     const io = {
       get name() { return titleField?.value.trim() || title; },
       set: (next) => {
@@ -212,6 +264,7 @@
         history.push(next);
         at = history.length - 1;
         if (field.value !== next) (field.value = next), number();
+        keepSoon();
         //: A press on another kind (diagram-kindbar.js) only sets the source; the pane has to be drawn for it. The page gets
         //: this through the document; a block gesture draws its own pane, so only a change of kind shows again (DD-1).
         if (diagramModel.builder.kindOf(next) !== kind) show();
@@ -326,6 +379,8 @@
     const leave = () => {
       closing = true;
       clearTimeout(timer);
+      clearTimeout(keepTimer);
+      window.removeEventListener("pagehide", keep);
       document.removeEventListener("keydown", onKey, true);
       overlay.remove();
       if (returnFocus?.isConnected) returnFocus.focus?.();
@@ -337,6 +392,8 @@
       if (closing) return;
       if (!done && !(await mayDiscard())) return;
       const [next, changed, typed] = [history[at], history[at] !== first, titleField ? titleField.value : ""];
+      //: Done keeps the diagram and Discard was confirmed: either way the draft has done its work.
+      draftForget(draftId);
       leave();
       if (done && onDone) onDone(next, changed, titleField ? await documentName(typed) : "");
     };
@@ -349,6 +406,7 @@
       const row = await existing.pick();
       //: Opening another diagram leaves this one, so it asks as Cancel does (a reviewer found it dropped edits silently).
       if (!row || closing || !(await mayDiscard())) return;
+      draftForget(draftId);
       leave();
       existing.open(row);
     }) : null;
@@ -381,7 +439,7 @@
     helpBody.id = "dgm-dialog-help";
     helpBody.setAttribute("role", "dialog");
     helpBody.setAttribute("aria-label", "About this editor");
-    helpBody.append(el("p", "", "Draw with blocks and the picture follows. Picture gives the drawing the room, List gives the blocks list the room, and Source is the text. Press N to add a box, Tab on the last box to add one joined to it, Enter to name it, [ and ] fold the list and the picture, F6 leaves the blocks, Ctrl+Enter keeps the diagram and ? lists every key. On a sequence picture, double press a part to name it, drag a head to reorder and drag from one lifeline to another to add a message. The shelf in the picture's corner adds a block by a press or a drag."), atlasSuggestion("How do I make a diagram?", "Ask about making a diagram"));
+    helpBody.append(el("p", "", "Draw with blocks and the picture follows. Picture gives the drawing the room, List gives the blocks list the room, and Source is the text. Press N to add a box, Tab on the last box to add one joined to it, Enter to name it, [ and ] fold the list and the picture, F6 leaves the blocks, Ctrl+Enter keeps the diagram and ? lists every key. On a sequence picture, double press a part to name it, drag a head to reorder and drag from one lifeline to another to add a message. The shelf in the picture's corner adds a block by a press or a drag onto the picture, joined from the box nearest the drop. If the page closes with this window open, the next open offers your changes back."), atlasSuggestion("How do I make a diagram?", "Ask about making a diagram"));
     head.querySelector(".dialog-head-title").after(help);
     dialog.append(helpBody);
     const body = el("div", "dgm-dialog-body");
@@ -397,6 +455,7 @@
         const clean = titleField.value.replace(/[\[\]|#]+/g, "");
         if (clean !== titleField.value) titleField.value = clean;
       });
+      titleField.addEventListener("input", keepSoon);
       titleField.addEventListener("keydown", (event) => event.key === "Escape" && (event.preventDefault(), seg.querySelector(".active")?.focus()));
       titlebar = el("label", "dgm-titlebar");
       titlebar.append(el("span", "muted", "Title"), titleField);
@@ -435,6 +494,18 @@
     else (host.querySelector(".dgm-steps button, .dgm-block[tabindex='0']") || dialog.querySelector(".dgm-pane") || dialog).focus?.({ preventScroll: true });
     //: A phone hides the blocks (they are a sheet), so that focus went nowhere and the first Tab left the window's top: the picture takes it (measured at 390: BODY).
     if (!dialog.contains(document.activeElement)) (host.querySelector(".dgm-picture") || dialog).focus?.({ preventScroll: true });
+    //: A draft kept by a reload is offered back, not applied: the person may have meant to start again. Asked in the confirm, not a
+    //: toast: a toast over this dialog steps aside from its buttons (status.js `toastYield`, measured 0.12 opacity and not pressable).
+    const kept = draftId ? draftsRead()[draftId] : null;
+    if (kept && (kept.source !== first || (kept.title || "").trim())) {
+      const back = await confirmDialog("Put back your unsaved changes?\n\nThis diagram was open when the page closed, and what you drew was kept on this device.", { confirmLabel: "Put them back", cancelLabel: "Start fresh", danger: false });
+      if (closing) return dialog;
+      if (back) {
+        if (titleField && kept.title) titleField.value = kept.title;
+        io.set(kept.source);
+        apply();
+      } else draftForget(draftId);
+    } else if (kept) draftForget(draftId);
     return dialog;
   }
 

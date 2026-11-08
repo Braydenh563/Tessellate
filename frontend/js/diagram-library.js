@@ -8,7 +8,7 @@
 // A tile is `{ group, name, hint, glyph, label, data, press, keys? }`. `flow` is the flowchart's own list; the other kinds
 // give theirs to `build` from diagram-kinds.js. One closure, one export: `diagramModel.library`.
 (() => {
-  const IDLE = "Press a shape to add it, or drag it into the blocks.";
+  const IDLE = "Press a shape to add it, or drag it into the blocks or onto the picture.";
 
   //: The flowchart's tiles by meaning: [group, [[shape, hint], ...]]. A note is a rounded block that says "Note".
   const FLOW = [
@@ -49,10 +49,11 @@
     tile.type = "button";
     tile.dataset.objGrip = "";
     Object.assign(tile.dataset, t.data, { hint: t.hint });
-    tile.title = `${t.hint} Press to add it, or drag it into the blocks.`;
+    tile.title = `${t.hint} Press to add it, or drag it into the blocks or onto the picture.`;
     tile.setAttribute("aria-label", t.label);
     if (t.keys) tile.setAttribute("aria-keyshortcuts", t.keys);
-    tile.append(t.glyph, make("span", "dgm-tile-name", t.name));
+    //: A clone: a spec is drawn twice (the Add library and the shelf) and a node sits in one place only. The second tile took the first's glyph, so the phone's Add sheet printed the name where the glyph should be (blind test 1108).
+    tile.append(t.glyph.cloneNode(true), make("span", "dgm-tile-name", t.name));
     tile.addEventListener("click", t.press);
     return tile;
   }
@@ -115,6 +116,15 @@
     more.addEventListener("click", () => {
       const r = more.getBoundingClientRect();
       openMenuAtPoint(specs.map((t) => ({ label: t.name, group: t.group, title: t.hint, run: t.press })), "Add to the diagram", r.right, r.bottom, more);
+      //: Each row wears its tile's glyph, in the order the rows were given (the menu has no icon field for a drawn shape).
+      //: The menu may be moved out of its host to escape a clipping ancestor, so it is found by being the one open (one menu is open at a time).
+      const menu = document.querySelector(".action-menu:not(.hidden)");
+      menu?.querySelectorAll(":scope > .menu-item").forEach((row, i) => {
+        if (!specs[i]) return;
+        const slot = make("span", "dgm-menu-glyph");
+        slot.append(specs[i].glyph.cloneNode(true));
+        row.prepend(slot);
+      });
     });
     bar.append(more);
     stage.append(bar);

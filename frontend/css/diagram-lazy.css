@@ -176,12 +176,26 @@
   font-size: var(--text-sm);
 }
 
-/* The sideways offer (diagram-outline.js): one line under the toolbar, gone once answered. */
+/* The sideways offer (diagram-outline.js): a card over the foot of the panes, gone once answered. It took a row of its own
+   and pushed the shelf and both panes down 42 px when it came (blind test 1108); out of the flow it moves nothing. */
+.dgm {
+  position: relative;
+}
+
 .dgm-sideways {
+  position: absolute;
+  inset: auto auto var(--space-3) var(--space-3);
+  max-inline-size: calc(100% - 2 * var(--space-3));
+  z-index: 2;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--modal-bg);
+  box-shadow: var(--shadow-md);
   font-size: var(--text-sm);
 }
 
@@ -1203,6 +1217,14 @@
   display: inline-grid;
   place-items: center;
   inline-size: 1.5rem;
+}
+
+/* The shelf's caret menu: the tile's glyph in one 1.25em column, so the names line up. */
+.dgm-menu-glyph {
+  flex: none;
+  display: inline-grid;
+  place-items: center;
+  inline-size: 1.25rem;
 }
 
 .dgm-add-glyph > .dgm-group-icon {

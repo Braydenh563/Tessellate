@@ -6,6 +6,8 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Diagram builder (blind test 1108): a selected block's connection handles stay inside the picture's scroll area, and the "Turn it sideways" offer floats over the foot of the panes instead of pushing the shelf and both panes down 42 px.
+- Diagram builder (blind test 1108): the phone's Add sheet shows every glyph again (the shelf had taken the library's); the shelf's caret menu rows wear the tiles' glyphs; changing the kind of a diagram that has blocks asks first (Switch, Keep flowchart); a tile dropped on the picture joins the nearest box within 120 px, else the selected box, and its caption stays inside the picture; an open window keeps an unsaved draft per diagram on this device and offers it back after a reload.
 - List styles in rendered notes, Chat and the HTML export (INBOX 1696 cc): `*` circles, `+` squares, a two-space dash, `1)` numbers, `a.` letters and `i.` roman numerals are read by the renderer as the lists they are (letters only as a run, never inside a paragraph), a change of marker starts a new list, and the export keeps the type; before, `1)`, `a.` and `i.` were plain paragraphs and every marker was one list.
 - Chat acts (X17): "cancel", "never mind" or "forget it" closes an act card that is still waiting for Confirm and says nothing was changed; with no card waiting the words are read as before.
 - Chat acts (X5, X8): "rename the tag gym to fitness", "rename the category Work to Job" and "rename the note X to Y" give a card that waits for Confirm (an unknown name says which are close), and "restore the passport note" brings a note back from the bin after Confirm; Undo reverses each.

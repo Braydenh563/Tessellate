@@ -107,9 +107,24 @@
     menu.append(note);
   }
 
-  function choose(S, h, here, to) {
+  //: What a change would clear, in words: "The 3 boxes", "The 5 blocks", "The diagram" (a source the blocks cannot read).
+  function lost(S, here) {
+    if (S.plain) return "The diagram";
+    const n = here === "flowchart" ? S.m?.nodes.length || 0 : S.root.querySelectorAll(".dgm-block").length;
+    if (!n) return "The diagram";
+    const noun = here === "flowchart" ? (n === 1 ? "box" : "boxes") : n === 1 ? "block" : "blocks";
+    return `The ${n} ${noun}`;
+  }
+
+  //: A diagram with content is not swapped silently (blind test 1108: 3 cards went to 0 and only Undo knew). The person is
+  //: asked first, in the app's confirm; a blank one switches at once.
+  async function choose(S, h, here, to) {
     if (to === here) return;
     const blank = blankOf(S);
+    if (!blank) {
+      const ok = await confirmDialog(`Switch to ${NOUN[to]}?\n\n${lost(S, here)} will be cleared. Undo, Ctrl+Z, brings the ${NOUN[here]} back.`, { confirmLabel: "Switch", cancelLabel: `Keep ${NOUN[here]}`, danger: false });
+      if (!ok) return;
+    }
     diagramModel.builder.tell(blank ? `A new ${NOUN[to]}.` : `A new ${NOUN[to]}. Undo, Ctrl+Z, brings the ${NOUN[here]} back.`);
     pending = to;
     S.io.set(fresh(S.source, to));
