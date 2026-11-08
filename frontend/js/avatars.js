@@ -3484,6 +3484,31 @@ const nmb = {
   },
 };
 
+//: **The companion catalogue, read once** (atlascat-1108 A2; `frontend/companion-catalogue.json`, the one table
+//: the desk companion reads too). Fetched at the first idle decision; a missing file or a failed fetch leaves the
+//: built-in tables above exactly as they are (no retry, no error shown). A property of `nmb`, so it adds no global.
+//: catalogue-begin
+nmb.cat = (() => {
+  const st = { tried: false, doc: null, byAct: {} };
+  return {
+    state: st,
+    load() {
+      if (st.tried) return;
+      st.tried = true;
+      api("/companion-catalogue.json", { silent: true })
+        .then((answer) => (answer.ok ? answer.json() : Promise.reject(new Error(String(answer.status)))))
+        .then((doc) => nmb.cat.apply(doc))
+        .catch(() => {});
+    },
+    apply(doc) {
+      if (!doc || !Array.isArray(doc.entries)) return;
+      st.doc = doc;
+      st.byAct = {};
+    },
+  };
+})();
+//: catalogue-end
+
 //: The companion's own reading of reduced motion and Avatar animation Off:
 //: no travel and no behaviours, it simply appears where it is going. The
 //: system's own hint stops the travel too (a walk across the screen is the
@@ -8294,6 +8319,7 @@ function nameMarkBuddyRelease() {
 function nameMarkBuddySchedule() {
   clearTimeout(nmb.timer);
   nmb.timer = 0;
+  nmb.cat.load();
   const buddy = document.getElementById("nm-buddy");
   nameMarkBuddyState(buddy);
   if (!buddy || document.hidden || (nameMarkBuddyStill() && !nmb.fadeComes()) || (buddy.classList.contains("nmb-sleep") && !nmb.absent)) return;
