@@ -387,8 +387,16 @@ def _not_said(out, views: list, obj, words: list[str], today: date, verb: frozen
         _say_line(out, *titled, f"Your {composer_lists._title(titled[0])} note does not say it outright, but it has")  # noqa: SLF001
     elif near := _nearest(views, obj):
         _say_line(out, *near, f"I found nothing in your notes that says so. The closest is {_note_of(near[0], today)}")
+    elif place := _titled_any(views, obj):
+        #: "have I been to Tokyo" with a Tokyo trip note: the note is the nearest thing, not "nothing" (R3-21, E3).
+        _say_line(out, *place, f"Your {composer_lists._title(place[0])} note does not say it outright, but it has")  # noqa: SLF001
     else:
         out.lines.append(f"I found nothing in your notes about {thing}.")
+
+
+def _titled_any(views: list, obj: list[str]):  # noqa: ANN202
+    """The (view, first sentence) of the best-ranked note titled for the thing, whatever it says."""
+    return next(((v, v.sentences[0]) for v in sorted(views, key=lambda v: v.rank) if v.sentences and _titled_for(v, obj)), None)
 
 
 def _yours(thing: str) -> str:

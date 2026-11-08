@@ -3074,9 +3074,11 @@ def _named_as(view: composer.NoteView, body: str) -> str:
 
 
 def _listed(facts: list[Fact]) -> str:
-    items = [_fragment(f.body.rstrip("."), _NAMES.get()) for f in facts[:GIST_ITEMS]]
-    if len(facts) > GIST_ITEMS:
-        items.append(f"{realise.count_word(len(facts) - GIST_ITEMS)} more")
+    #: "and one more" names nothing; a single item left over is said (R3-13).
+    shown = facts[:GIST_ITEMS + 1] if len(facts) == GIST_ITEMS + 1 else facts[:GIST_ITEMS]
+    items = [_fragment(f.body.rstrip("."), _NAMES.get()) for f in shown]
+    if len(facts) > len(shown):
+        items.append(f"{realise.count_word(len(facts) - len(shown))} more")
     return realise.join_items(items)
 
 

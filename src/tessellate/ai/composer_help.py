@@ -91,6 +91,10 @@ def _feature_instead(question: str, absent: list[str]) -> dict | None:
     return _result([("template", lead), ("help", best[0], best[1])], "help")
 
 
+#: The longest help sentence an offer repeats under a note answer.
+_OFFER_WORDS = 20
+
+
 def offered(result: dict | None, question: str) -> dict | None:
     """A note does mention the word a short message names as a feature
     ("timer" with a Kitchen timer note): the note answers, and the tool is
@@ -101,7 +105,10 @@ def offered(result: dict | None, question: str) -> dict | None:
     best = _feature_help(question, [])
     if best is None:
         return result
-    more = [("template", PHRASES["feature_offer"]), ("help", best[0], best[1])]
+    #: A topic's whole step sentence is a paragraph under a note answer ("phone" got 600 characters
+    #: on opening the notebook over the network): past a line, the offer points to the topic (R3-7).
+    line = best[0] if len(best[0].split()) <= _OFFER_WORDS else "Open its Help topic for the steps."
+    more = [("template", PHRASES["feature_offer"]), ("help", line, best[1])]
     return {**result, "parts": [*result["parts"], *more], "text": result["text"] + "".join(part[1] for part in more)}
 
 

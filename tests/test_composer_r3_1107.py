@@ -224,3 +224,19 @@ def test_r3_5_date_is_no_search_term_in_a_date_ask(question):
     from tessellate.ai import composer
 
     assert "date" not in composer.subject_terms(question) and "dates" not in composer.subject_terms(question), question
+
+
+# --- R3-21, E3: a place with a note of its own is not "nothing" ---------------------------------
+
+@pytest.mark.parametrize("question", ["have I been to Tokyo", "did I go to Tokyo"])
+def test_r3_21_a_place_with_its_own_note_is_named_not_denied(question):
+    said = say(question, "# Tokyo trip\n\nFlights leaving 3 April. Staying in Shinjuku for six nights", "# Shopping\n\n- milk", "Went to the dentist on 3 October")
+    assert "found nothing in your notes about" not in said and "Tokyo trip" in said and "3 April" in said, said
+
+
+# --- R3-13: "and one more" is never a placeholder for a single item -------------------------------
+
+def test_r3_13_a_fourth_item_is_named_not_counted():
+    said = say("what do I know about Tokyo", "# Packing for Tokyo\n\n- passport\n- rail pass\n- adapter\n- umbrella", "# Tokyo trip\n\nFlights leaving 3 April. Staying in Shinjuku for six nights",
+               "Tokyo has great ramen", "# Shopping\n\n- milk")
+    assert "umbrella" in said and "one more" not in said, said
