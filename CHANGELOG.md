@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Diagram builder (dgmleft 3): on a coarse pointer a selected box's connection handles lean fully out of the edge (their inner edge on the box edge), so a tap on a handle never lands on the box; measured at 390 by 844 with touch: overlap 10 px before, 0 after on all four sides; a mouse keeps 12 px.
 - Diagram builder (dgmleft 2): the Kind menu and the shelf caret menu hold the menu element `openMenuAtPoint` now returns instead of looking it up under its host, so a menu moved out of its host keeps its glyphs and active row (in the app both still show 4 glyphs and 1 active row).
 - Diagram builder (dgmleft 1): a shelf tile or block dropped over the zoom bar or the shelf itself lands on the picture like any other point; the corners at 4% and 96% of a 755 by 537 picture all take a drop (the bottom right and top left did not).
 - Settings lag (laglist 1108 item 1): the section index ("On this page") reads which group heads are shown from the tree (`hidden`, the `hidden` class, closed `details`) instead of `getClientRects`, which settled the whole pane's pending style: at 4x CPU the first heads read on Help went from 70, 82, 103 ms to 0.7, 0.2, 0.1 ms and the first index build from 80, 94, 111 ms to 2.3, 0.5, 2.1 ms. The heads listed are the same on all 21 sections at 1440 and 390.

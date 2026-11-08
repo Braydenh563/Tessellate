@@ -28,3 +28,9 @@ def test_menus_are_decorated_through_the_element_not_its_host():
     assert ".pointer-menu-host .action-menu" not in _text("diagram-kindbar.js")
     assert "const menu = openMenuAtPoint(" in _text("diagram-kindbar.js")
     assert "const menu = openMenuAtPoint(" in _text("diagram-library.js")
+
+
+def test_coarse_handles_lean_fully_out_of_the_box():
+    """Item 3: on `(pointer: coarse)` a handle's inner edge is on the box edge (measured 10 px of overlap at 390 before, 0 after)."""
+    edges = _text("diagram-edges.js")
+    assert "const lean = coarse ? size / 2 :" in edges
