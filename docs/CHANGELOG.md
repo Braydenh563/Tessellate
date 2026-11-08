@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Diagram builder tests (perf audit 1108 P2, P3): the lazy row menu, the SVG label patch (escaping, no change when the words do not match) and the typing-aware draw (one redraw with the latest label) are now pinned by behaviour tests run in node, not by source substrings.
 - Desk companion (deskfix 4, 5): the faces confused, sad, shy and love are worn: confused when poked while the person works, sad when a menu request is refused, shy when petted within 8 s of waking, love on the third pet inside 30 s; stale docstrings of _pose and _on_nose corrected.
 - Desk companion (deskfix 2, 3): a carried shake is read over the last 0.6 s at any pointer rate (60 to 1000 Hz; it was the last 48 samples, so a fast mouse never shook the figure), and along the main axis of the motion with strokes of 30 px, so a drag with a wobble or small corrections while placing are not a shake.
 - Desk companion (deskfix 1): a boop is decided by where the jab's tip lands (its turning point), not by any point of its path; a jab straight down to the chest or belly is a poke, not a boop.
