@@ -84,7 +84,7 @@ from __future__ import annotations
 import re
 from datetime import date, datetime
 
-from tessellate.ai import act_registry, composer_ack, composer_links, composer_open, composer_tables, composer_versus, grounding, phrasing, question_noise, spelling, utilities
+from tessellate.ai import act_registry, composer_ack, composer_links, composer_numbers, composer_open, composer_tables, composer_versus, grounding, phrasing, question_noise, spelling, utilities
 from tessellate.ai import recognise as rec
 from tessellate.ai.composer_phrases import PHRASES
 from tessellate.ai.composer_ask import _ASKS_FIRST, _KNOWN, _SHAPE_RULES, _guessing_recent, _holds, _stem, _still_recent, _words, asks_written_when, classify, compare_sides, rephrase, subject_terms, user_now, user_today, when_terms
@@ -320,7 +320,7 @@ def compose(
         voice = composer_tables.DEFAULT_VOICE
     #: In a conversation (decision 34, 35): the turn and the chat's salt
     #: choose the wording, and a terse turn is read against the ones before.
-    asked = question
+    asked, question = question, composer_numbers.normalise(question)
     if dialogue is not None:
         question, salt, turn, said, prefer, previous = _read_in_dialogue(
             question, dialogue, salt=salt, turn=turn, said=said, prefer=prefer, previous=previous, resolved=resolved

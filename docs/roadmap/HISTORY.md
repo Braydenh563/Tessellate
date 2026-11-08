@@ -52880,3 +52880,11 @@ Built: R10 (1621), tests in `tests/test_diagram_r10.py`. Row text: Export from t
 
 1574. **Owner, 2026-11-03, verbatim (screenshots: the Windows launcher splash with the PowerShell icon on the taskbar; the splash's logo tile next to the app's):** "at least on my version, when the splash is showing before the app window starts up, the windows taskbar icon is the powershell logo and not tessellate. also the colour gradient on the splash isnt the same as all the others and has much more pink" Recommendation: the splash window sets the app's AppUserModelID and its window icon (the same .ico as the app window) so the taskbar shows Tessellate; the splash logo uses the one brand gradient (the icon file itself, or the tokens the app's mark uses), with a test that the splash's gradient stops equal the mark's. **Fixed** (b1e2dcf6, scripts/splash.ps1): the splash sets the app's AppUserModelID before its form and the app's icon.ico as its window icon; its tile is the mark's three stops (favicon.svg `tile`). `tests/test_launcher_scripts.py::TestTheWindowsSplash` reads both; the taskbar itself is unverified off Windows.
 
+
+## Moved from the plans, 2026-11-08 (CHAT_PLAN U17)
+
+Built: U17. Row text: U17 | Spelled numbers and ordinals | `timewords` and `reminder_parser` read "two", "half an hour"; `_ORDINAL` reads "second" | Not applied to whole questions ("the last 2 weeks", "twenty notes") | `normalise()` turns number words to digits ahead of every rule, in quoted-free text only | S | 2
+
+- **What it does:** `ai/composer_numbers.py` `normalise()` turns number words (zero to ninety-nine, "twenty-five") to digits ahead of the plan and the composer (`composer_intent._planned_text`, `composer.compose`), skipping quoted text, a capitalised word inside a sentence ("Five Guys"), "hundred/thousand/million", and "one" unless a unit or a note follows it. Reuses `timewords._NUMBER_WORDS`. Ordinals are not converted (decision of this build): every reader of "the second note" takes the word, and "2nd" reads as a day of the month to the time rules.
+- **Check:** `tests/test_small_b_1108_u17.py` (no model, fixed clock).
+- **Not verified:** real inference; the model-on path reads the composer's normalised question only through `compose`.

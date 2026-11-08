@@ -2,7 +2,7 @@
 
 Generated 2026-11-08 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7884, frontend ids 2644, CSS sections 522, backend routes 649, backend modules 9054, test files 2193, tests 18431, plan headings 1003, app scripts 28, boot scripts 37, script files 263.
+Counts: frontend functions 7884, frontend ids 2644, CSS sections 522, backend routes 649, backend modules 9057, test files 2194, tests 18434, plan headings 1003, app scripts 28, boot scripts 37, script files 263.
 
 ## Frontend functions (7884)
 
@@ -13113,7 +13113,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:164 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (9054)
+## Backend modules (9057)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -14801,6 +14801,14 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_nth_of` | src/tessellate/ai/composer_nth.py:32 |
 | `_view_for` | src/tessellate/ai/composer_nth.py:37 |
 | `answer` | src/tessellate/ai/composer_nth.py:69 |
+
+### src/tessellate/ai/composer_numbers.py (3)
+
+| Name | File:line |
+|---|---|
+| `_digits` | src/tessellate/ai/composer_numbers.py:39 |
+| `_plain` | src/tessellate/ai/composer_numbers.py:53 |
+| `normalise` | src/tessellate/ai/composer_numbers.py:57 |
 
 ### src/tessellate/ai/composer_oneword.py (2)
 
@@ -24506,7 +24514,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (18431)
+## Tests (18434)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -26312,6 +26320,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_slash_timeline_1333.py | 8 |
 | tests/test_slot_reference_1570.py | 2 |
 | tests/test_slot_reply_1570.py | 8 |
+| tests/test_small_b_1108_u17.py | 3 |
 | tests/test_small_fixes_1019.py | 8 |
 | tests/test_small_fixes_1027.py | 17 |
 | tests/test_smooth_boot.py | 17 |
