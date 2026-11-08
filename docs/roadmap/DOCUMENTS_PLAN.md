@@ -1596,5 +1596,5 @@ Block `docLists`, documents-cm.js. Scout of the bundled CodeMirror:
 - Already in prose: fold, multiple cursors, rectangular select, brackets, search, merge view.
 - Rows L1 (Enter continues `a.`, `i.`, dash lists) built, see HISTORY 2026-11-08 (DOCUMENTS_PLAN 23 L1 to L5).
 - Row L2 was already built (`docPairInput`, documents-prose.js; see HISTORY 2026-11-08).
-- Row L3 (M): fold a list item with its children (`foldService`, headings and callouts fold today); fold gutter in prose.
+- Row L3 was already built (the markdown grammar folds list items), see HISTORY.
 - Row L4 built, see HISTORY. Row L5 (M): prose autocompletion offers `[[` only; add `#tag`.
