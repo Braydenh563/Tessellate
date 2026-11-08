@@ -22631,20 +22631,20 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `CaptureError` | src/tessellate/core/overlay/capture.py:73 |
-| `_frame_of` | src/tessellate/core/overlay/capture.py:77 |
-| `_started` | src/tessellate/core/overlay/capture.py:98 |
-| `cache_root` | src/tessellate/core/overlay/capture.py:145 |
-| `common_box` | src/tessellate/core/overlay/capture.py:189 |
-| `complete` | src/tessellate/core/overlay/capture.py:150 |
-| `decode` | src/tessellate/core/overlay/capture.py:177 |
-| `draw_card` | src/tessellate/core/overlay/capture.py:156 |
-| `fetch_frames` | src/tessellate/core/overlay/capture.py:110 |
-| `is_key` | src/tessellate/core/overlay/capture.py:141 |
-| `key_for` | src/tessellate/core/overlay/capture.py:132 |
-| `prune` | src/tessellate/core/overlay/capture.py:246 |
-| `touches_edge` | src/tessellate/core/overlay/capture.py:203 |
-| `write_set` | src/tessellate/core/overlay/capture.py:209 |
+| `CaptureError` | src/tessellate/core/overlay/capture.py:77 |
+| `_frame_of` | src/tessellate/core/overlay/capture.py:81 |
+| `_started` | src/tessellate/core/overlay/capture.py:102 |
+| `cache_root` | src/tessellate/core/overlay/capture.py:149 |
+| `common_box` | src/tessellate/core/overlay/capture.py:193 |
+| `complete` | src/tessellate/core/overlay/capture.py:154 |
+| `decode` | src/tessellate/core/overlay/capture.py:181 |
+| `draw_card` | src/tessellate/core/overlay/capture.py:160 |
+| `fetch_frames` | src/tessellate/core/overlay/capture.py:114 |
+| `is_key` | src/tessellate/core/overlay/capture.py:145 |
+| `key_for` | src/tessellate/core/overlay/capture.py:136 |
+| `prune` | src/tessellate/core/overlay/capture.py:250 |
+| `touches_edge` | src/tessellate/core/overlay/capture.py:207 |
+| `write_set` | src/tessellate/core/overlay/capture.py:213 |
 
 ### src/tessellate/core/overlay/engine.py (9)
 

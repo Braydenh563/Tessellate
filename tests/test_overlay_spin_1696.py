@@ -115,6 +115,7 @@ def test_a_spinning_fall_at_the_owners_size_rotates_nothing_on_the_overlay_threa
     # Intent moved (deskframes-1108): the literal was the shipped frame's size and moves with every render; the point is
     # that the runner is at the owner's 192 dpi size, so the warmed spins are the ones the throw uses.
     stand = r.sprites.frame("stand", r._fdpi())
+    assert r._fdpi() == 192  # the owner's 192 dpi size (review: the size line alone compares a frame with itself)
     assert r.sprites.size(r._fdpi()) == (stand.width, stand.height)
     assert r.sprites.spins_ready(192)  # warmed when the size settled (the test's hand-off runs at once)
     before = r.sprites.rotations

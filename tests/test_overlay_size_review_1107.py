@@ -163,7 +163,8 @@ def test_at_the_right_edge_the_handle_flips_to_the_left_corner_inside_the_screen
     # Intent moved (INBOX 1692 h): the handle hangs by the figure's solid corner, not its drawn box, whose faint nebula
     # stream can reach 10 px further left than the head (measured 29 against 39 at 96 dpi): the handle is left of the corner.
     base = r.sprites.frame(r._shown[0], r._fdpi(), r._shown[1])
-    assert r._hit[2] <= sizing.corner_box(base, False)[0] + (t.pad_x - base.pad_x)  # on the figure's left corner
+    gap = max(sizing.GAP_PX, round(sizing.GAP_PX * r._fdpi() / 96.0))  # review: the bound is the corner less its gap
+    assert r._hit[2] <= sizing.corner_box(base, False)[0] - gap + (t.pad_x - base.pad_x)  # on the figure's left corner
     r.stop()
     r, fake, clock, _ = started(reduced=True)
     stand(r, clock)

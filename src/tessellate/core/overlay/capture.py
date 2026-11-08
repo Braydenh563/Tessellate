@@ -59,7 +59,11 @@ LOAD_SCRIPT = (
     "(function(){try{if(typeof deskFramesStart==='function')return 'ready';"
     "if(typeof lazyScript==='function'){lazyScript('/js/desk-frames.js');return 'loading'}return 'error'}catch(e){return 'error'}})()"
 )
-START_SCRIPT = "(function(){try{return String(deskFramesStart(null))}catch(e){return 'error'}})()"
+#: Names the frames it wants: the page also holds the wave swing for the offline renderer, and a capture that
+#: asked for every frame got `wave0` back and stopped on it as an unknown frame (review of deskframes-1108).
+START_SCRIPT = (
+    "(function(){try{return String(deskFramesStart(" + json.dumps(list(CAPTURED)) + "))}catch(e){return 'error'}})()"
+)
 NEXT_SCRIPT = "(function(){try{return deskFramesNext()}catch(e){return JSON.stringify({error:String(e)})}})()"
 STOP_SCRIPT = "(function(){try{deskFramesStop()}catch(e){}return 'ok'})()"
 #: How long the page gets to load the module, to answer a poll, and to draw every frame.

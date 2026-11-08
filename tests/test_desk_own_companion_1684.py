@@ -176,7 +176,14 @@ def test_the_page_names_exactly_the_frames_python_wants() -> None:
     js = (ROOT / "frontend" / "js" / "desk-frames.js").read_text(encoding="utf-8")
     walk, idle = (int(re.search(rf"DESK_{k}_N = (\d+)", js).group(1)) for k in ("WALK", "IDLE"))
     names = set(re.findall(r'\{ name: "(\w+)"', js)) | {f"walk{i}" for i in range(walk)} | {f"idle{i}" for i in range(idle)}
-    assert names == set(capture.CAPTURED), names ^ set(capture.CAPTURED)
+    # The page also renders the wave swing for the offline renderer (`name: \`wave${i}\``, a template literal
+    # the scan above cannot see); a capture must not ask for it, or the first `wave0` stops it as an unknown
+    # frame (review of deskframes-1108: `deskFramesStart(null)` asked for all 54).
+    assert re.search(r"name: `wave\$\{i\}`", js) and not set(sprites.WAVE_FRAMES) & set(capture.CAPTURED)
+    names |= set(sprites.WAVE_FRAMES)
+    assert names == set(capture.CAPTURED) | set(sprites.WAVE_FRAMES), names ^ set(capture.CAPTURED)
+    asked = json.loads(re.search(r"deskFramesStart\((\[.*?\])\)", capture.START_SCRIPT).group(1))
+    assert asked == list(capture.CAPTURED)
     assert "lazyScript('/js/desk-frames.js')" in capture.LOAD_SCRIPT and "function lazyScript(" in (ROOT / "frontend" / "js" / "app.js").read_text(encoding="utf-8")
     for fn in ("deskFramesStart", "deskFramesNext", "deskFramesStop"):
         assert f"function {fn}(" in js and fn in capture.START_SCRIPT + capture.NEXT_SCRIPT + capture.STOP_SCRIPT

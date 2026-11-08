@@ -52,7 +52,18 @@ def test_no_frame_set_bobs_the_figure_by_itself(look: str) -> None:
     # Intent kept (no up and down of its own faster than a breath): 24 frames sample the tail's swing
     # at more points than 12 did, and two renders of the same frame differ by about half a pixel, so the
     # bound is 1.4 (measured 1.28 and 1.05). The bug it guards was 1.6 px at 0.67 Hz.
-    assert max(idle) - min(idle) <= 1.4, (look, max(idle) - min(idle))
+    # Review of deskframes-1108: the upper half measures 0.33 (masculine) and 0.71 (feminine), so 1.4 there left a
+    # 1 px bob unseen; 0.9 keeps the half pixel two renders differ by. The lower half (tail, feet) is held below.
+    assert max(idle) - min(idle) <= 0.9, (look, max(idle) - min(idle))
+    # The figure never sinks or lifts through the loop: every idle frame's lowest drawn row (alpha 32 and up, past
+    # the faint wash; the solid rows at 200 follow the tail's own swing, up to 5 px) is the stand's.
+    def bottom(path: Path) -> int:
+        alpha = np.array(Image.open(path).convert("RGBA"))[..., 3]
+        return int(np.nonzero((alpha >= 32).any(axis=1))[0].max())
+
+    feet = bottom(d / "stand.png")
+    sunk = {i: bottom(d / f"idle{i}.png") - feet for i in range(IDLE_COUNT)}
+    assert all(abs(v) <= 1 for v in sunk.values()), (look, sunk)
 
 
 @pytest.mark.parametrize("look", LOOKS)
