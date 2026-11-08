@@ -53,6 +53,7 @@ from tessellate import SUPPORT_EMAIL
 from tessellate.ai import AI_NAME
 from tessellate.ai import act_registry, help_words, presets
 from tessellate.ai.help_topics_core import HELP_TOPICS  # the table, moved out whole (AI23)
+from tessellate.ai.help_leads import TOPIC_LEADS
 from tessellate.ai.help_topics_more import HELP_GROUPS, TOPIC_META
 from typing import TYPE_CHECKING
 
@@ -591,23 +592,22 @@ def source_names(topics: list[dict]) -> list[str]:
 def help_listing() -> dict:
     """Every entry, in `HELP_GROUPS` order, for Settings, Help (INBOX 448).
 
-    `find` is the entry's keywords, which the Settings search reads beside the
-    title so a row is found by the words a person types ("percentage") and not
-    only by its name; `link` is the entry's badge, the same tab or section an
-    answer's chip opens."""
+    `find` is the entry's keywords, which the Settings search reads beside the title so a row
+    is found by the words a person types ("percentage") and not only by its name; `link` is
+    the entry's badge, the same tab or section an answer's chip opens."""
     by_id = {topic["id"]: topic for topic in HELP_TOPICS}
     groups = []
     for title, ids in HELP_GROUPS:
         topics = []
         for topic_id in ids:
-            topic = by_id.get(topic_id)
-            if topic is None:
+            if (topic := by_id.get(topic_id)) is None:
                 continue
             topics.append(
                 {
                     "id": topic_id,
                     "title": topic_title(topic),
                     "path": TOPIC_META.get(topic_id, {}).get("path", ""),
+                    "lead": TOPIC_LEADS.get(topic_id, ""),  # never prompt text (INBOX 1612)
                     "body": topic["body"],
                     "find": " ".join(topic["keywords"]),
                     "link": topic["badge"],
@@ -785,7 +785,7 @@ def _prompt_for(
             }
         )
     if topics:
-        reference = "\n".join(f"- {topic['body']}" for topic in topics)
+        reference = "\n".join(f"- {topic_title(topic)}: {topic['body']}" for topic in topics)
         messages.append(
             {"role": "system", "content": f"Reference notes for this question:\n{reference}"}
         )

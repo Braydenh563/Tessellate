@@ -478,6 +478,14 @@ details[open] > :is(.fold-summary, .agent-step-group-summary)::after {
   padding: 0 0 var(--space-3);
   border-top: 0;
 }
+/* The topic's one line (INBOX 1612): first under its title, on the body's
+   edge, in the ink at the worded-control weight so it reads as the summary
+   and the body as the detail under it. */
+.help-accordion > details > p.help-topic-lead {
+  margin-bottom: var(--space-2);
+  font-weight: 500;
+  color: var(--text);
+}
 /* ---------------------------------------------------------------------------
    3. A dock is one bar, and its controls belong to it
    ---------------------------------------------------------------------------

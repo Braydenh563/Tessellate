@@ -92,6 +92,11 @@
   line-height: 1.5;
   max-width: 70ch;
 }
+/* The topic's one line (INBOX 1612), first under its title. */
+.manual-topic p.manual-lead {
+  font-weight: 500;
+  color: var(--text);
+}
 .manual-where {
   font-size: var(--text-xs);
 }
