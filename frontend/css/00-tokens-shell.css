@@ -219,6 +219,9 @@ select optgroup {
   --space-7: calc(1.25rem * var(--density));
   --space-8: calc(1.5rem * var(--density));
   --space-9: calc(2rem * var(--density));
+  /* A changed Settings row's bar, from the row's text edge (INBOX 1696 c):
+     inside the group, never on its edge (two gutters put it on the border). */
+  --setting-bar-inset: var(--space-3);
   /* Height of the top bar. No longer used for sticky offsets, since §36A the
      page is its own scroll container and the header sits outside it, so
      nothing inside a page has to clear it. Kept because the media query below
