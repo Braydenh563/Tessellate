@@ -245,6 +245,9 @@ FLING_FACE = (2.0, 4.0)
 DIZZY_WAIT = 10.0
 #: A press on the lowest part of the body (share of its height from the top) carries it by the feet: upside down.
 FEET_GRAB = 0.78
+#: A long carry: (seconds held, stage). The legs kick, the arms cross, then it sighs; a sigh is `SIGH_FOR` s of breath.
+CARRY_STAGES = ((4.0, "kick"), (6.0, "cross"), (8.0, "sigh"))
+KICK_HZ, SIGH_FOR = 2.5, 1.8
 UPSIDE_FRAME = "spin24"  # the tumble turned half a circle (24 of 48 steps), the picture a turned peek uses too
 #: A hold that slips (the window moved under the hands, INBOX 1683 k): it may grip again, scrabble for `SCRABBLE_FOR` s
 #: (the hem shakes `SCRABBLE_DRAG` at `SCRABBLE_HZ`) and pull up onto the edge's top, else it drops. The chance is
@@ -796,6 +799,9 @@ class Engine:
         self.dizzy_owed: float | None = None
         #: Carried upside down (grabbed by the feet, or shaken): drawn as the turned tumble picture, half a circle round.
         self.upside = False
+        #: When this carry began and the stage it has reached (`CARRY_STAGES`): "", "kick", "cross" or "sigh".
+        self.carry_since: float | None = None
+        self.carry_stage = ""
         self.flail_until = 0.0
         #: A hold that slipped: the window it will pull up onto, the scrabble's span, and how the last slip ended.
         self.pulling: Perch | None = None
@@ -1034,6 +1040,32 @@ class Engine:
         if state == "stand" and self.perch is not None:  # a visit to a window ends when its time does
             self.state_until = min(self.state_until, max(now + 1.0, self.perch_until))
 
+    def _carry_tick(self, now: float) -> None:
+        """A carry that goes on: after `CARRY_STAGES[0]` s it kicks its legs, then crosses its arms, then sighs (INBOX
+        1696 kk). Everything resets with the drop."""
+        if self.state != "held" or self.carry_since is None:
+            self.carry_since, self.carry_stage = None, ""
+            return
+        held = now - self.carry_since
+        self.carry_stage = next((n for at, n in reversed(CARRY_STAGES) if held >= at), "")
+
+    def _carry_pose(self) -> tuple[float, float, float, float] | None:
+        """The body language of a long carry over the held picture: the legs kick (a quick lean back and forth), the
+        arms cross (a touch narrower, kept), a sigh (a slow dip and rise of the chest). None upside down, where the
+        turned picture sits on a bigger canvas, and before the first stage."""
+        if self.upside or not self.carry_stage or self.carry_since is None:
+            return None
+        into = self.now - self.carry_since - dict((n, at) for at, n in CARRY_STAGES)[self.carry_stage]
+        sx, sy, lean = 1.0, 1.0, 0.0
+        if self.carry_stage == "kick":
+            lean = 0.08 * math.sin(2 * math.pi * KICK_HZ * into)
+        else:
+            sx = 0.96  # arms crossed
+            if self.carry_stage == "sigh" and into < SIGH_FOR:
+                sy = 1.0 - 0.08 * math.sin(math.pi * into / SIGH_FOR)
+        q = bh.quantised(bh.Pose(sx, sy, lean, 0.0))
+        return None if q is None else (q.sx, q.sy, q.lean, q.drag)
+
     def _dizzy(self, now: float) -> None:
         """A shaken carry has been let go: once it stands or sits again (the fall and the landing come first) it sways
         dizzily for `extras.DIZZY_FOR` s, spiral eyes and all. Given up if it has not stood within `DIZZY_WAIT` s."""
@@ -1171,6 +1203,7 @@ class Engine:
             self._turning(now)
         self._follow_through(now, dt)
         self._dizzy(now)
+        self._carry_tick(now)
         if self.settled_now and self.placed:  # where the person left it is home
             self.home_x, self.placed = self.x, False
             self._maybe_relocate(now)
@@ -1285,6 +1318,8 @@ class Engine:
     def _pose(self) -> tuple[float, float, float, float] | None:
         """The body pose to draw over the frame; none while it is carried, thrown, falling or at an
         edge (those frames carry their own shape, and a spin sits on a bigger canvas)."""
+        if self.state == "held":
+            return self._carry_pose()
         if self.state in POSE_OFF:
             return None
         q = self._life_pose(self.now)
@@ -3785,6 +3820,7 @@ class Engine:
             self.sink, self.peek_edge, self.goal = 0.0, None, None
             self.perch = self.target = None
             self.upside = False
+            self.carry_since = self.now
             if self._by_the_feet():
                 self._turn_over(True)
         if self.carrying:

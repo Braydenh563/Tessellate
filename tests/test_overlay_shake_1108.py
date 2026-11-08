@@ -126,12 +126,13 @@ def test_the_dizzy_face_is_drawn_and_a_reduced_figure_is_never_dizzy() -> None:
 # --- B2: carried upside down ----------------------------------------------------------------------------------
 
 
-def hold(e: Engine, t0: float, seconds: float, px: int, py: int, step: float = 0.1) -> list[tuple[float, eng.Output]]:
-    """The pointer rests while the figure is held: every draw (time since the carry began, output)."""
+def hold(e: Engine, t0: float, seconds: float, step: float = 0.1) -> list[tuple[float, str, eng.Output]]:
+    """The pointer rests while the figure is held: every draw (time since the carry began, its stage, the output)."""
     t, seen = t0, []
     while t < t0 + seconds:
         t += step
-        seen.append((t - t0, e.update(t)))
+        out = e.update(t)
+        seen.append((t - t0, e.carry_stage, out))
     return seen
 
 
@@ -173,3 +174,37 @@ def test_the_flipped_figure_stays_under_the_pointer_and_on_screen() -> None:
     assert (e.x, e.y) == (907 - w / 2, 503 - 10)
     e.update(t + 0.2, event=("move", -500, -500))
     assert e.x >= -w / 2 and e.y >= 0
+# --- B3: a long carry -----------------------------------------------------------------------------------------
+
+
+def test_a_carry_held_10_seconds_goes_through_kick_cross_and_sigh_in_order() -> None:
+    e = make()
+    t, px, py = pull_out(e, 1.0, *grab_at(e, 1.0, fy=0.3))
+    seen = [(s, stage, o.pose) for s, stage, o in hold(e, t, 10.0, 0.05)]
+    order = []
+    for _s, stage, _p in seen:
+        if not order or order[-1] != stage:
+            order.append(stage)
+    assert order == ["", "kick", "cross", "sigh"], order
+    starts = {stage: min(s for s, st, _p in seen if st == stage) for stage in ("kick", "cross", "sigh")}
+    assert 4.0 <= starts["kick"] <= 4.2 and starts["kick"] < starts["cross"] < starts["sigh"]
+    # each stage is seen on the figure: nothing before 4 s, legs swinging, then the arms still, then a breath out
+    assert all(p is None for s, st, p in seen if st == "")
+    kick = {p for s, st, p in seen if st == "kick"}
+    assert len(kick) > 3 and any(p is not None and p[2] != 0 for p in kick)  # a lean back and forth
+    cross = {p for s, st, p in seen if st == "cross"}
+    assert len(cross) == 1 and None not in cross  # arms crossed: held still, a touch narrower
+    sigh = [p for s, st, p in seen if st == "sigh" and p is not None]
+    assert sigh and min(p[1] for p in sigh) < 1.0
+
+
+def test_the_carry_clock_starts_at_the_carry_not_the_press_and_resets_at_the_drop() -> None:
+    e = make()
+    px, py = grab_at(e, 1.0, fy=0.3)
+    e.update(5.0)  # a long press that is not yet a carry
+    t, px, py = pull_out(e, 5.0, px, py)
+    assert e.carry_stage == ""
+    hold(e, t, 4.5)
+    assert e.carry_stage == "kick"
+    run_after_drop(e, t + 4.5, px, py, 1.0)
+    assert e.carry_stage == "" and e.carry_since is None
