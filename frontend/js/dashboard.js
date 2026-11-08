@@ -3138,10 +3138,10 @@ function paintFadedNotes(body, items) {
     const title = document.createElement("button");
     title.type = "button";
     title.className = "linklike faded-title";
-    title.textContent = item.title || "Untitled note";
+    title.textContent = noteNamePlain(item.title || "") || "Untitled note";
     //: One line, ellipsised, so the full title is the tooltip; the reason
     //: line beneath is what the row is for.
-    title.title = `${item.title || "Untitled note"}: open in the Notes tab`;
+    title.title = `${title.textContent}: open in the Notes tab`;
     title.addEventListener("click", () => flashEntry(item.id));
     main.appendChild(title);
 
