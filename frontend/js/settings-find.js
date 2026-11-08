@@ -116,15 +116,19 @@ settingRowsScan.pane = function (pane) {
 //: password. The rule is meaning.js's (`meaningAlts`, in this bundle); the
 //: rows' own words are its vocabulary, so a slip of a label reads as it.
 let settingVocabCache = null;
+//: Each row's words are added once, not on every key (perf audit 1108 P4: `meaningWords` over every row was
+//: 37 to 63 ms a key at 4x); a row that is gone leaves its words, which only widens a typo's reach a little.
 function settingVocab(rows) {
-  if (rows || !settingVocabCache) {
-    settingVocabCache = new Set();
-    for (const row of rows || settingRows()) {
-      for (const w of meaningWords(`${row.text} ${row.sectionLabel} ${row.keys}`)) settingVocabCache.add(w);
-    }
+  if (!rows && settingVocabCache) return settingVocabCache;
+  settingVocabCache ||= new Set();
+  for (const row of rows || settingRows()) {
+    if (settingVocab.seen.has(row)) continue;
+    settingVocab.seen.add(row);
+    for (const w of meaningWords(`${row.text} ${row.sectionLabel} ${row.keys}`)) settingVocabCache.add(w);
   }
   return settingVocabCache;
 }
+settingVocab.seen = new WeakSet();
 
 //: What a query asks for, as one list of words-meaning-the-same per thing
 //: named (`meaningAlts`); filterSettings (settings.js) asks it for the nav.
@@ -727,6 +731,7 @@ function helpMarks(parent, text, rx) {
 
 //: Draw (or redraw, with the words marked) a topic's title, lead, text and place.
 function helpTopicPaint(details, rx) {
+  details._painted = true;
   const topic = details._topic;
   const [summary, lead, body, where] = details.children;
   summary.replaceChildren();
@@ -765,7 +770,10 @@ function helpTopicRow(topic) {
     if (link) where.appendChild(helpTopicLink(link));
     details.appendChild(where);
   }
-  helpTopicPaint(details, null);
+  //: Title and lead only: the text, its emphasis and its place are drawn when the topic is opened or matched
+  //: (perf audit 1108 P4: drawing all of them was +2,574 nodes on the first key typed in Settings).
+  summary.textContent = topic.title;
+  lead.textContent = topic.lead;
   return details;
 }
 
@@ -833,7 +841,7 @@ function helpApplySearch(query) {
       any = true;
       shown += 1;
       details.open = searching || (helpOpenBefore?.get(details) ?? details.open);
-      helpTopicPaint(details, rx);
+      if (searching || details._painted) helpTopicPaint(details, rx);
     }
     list.classList.toggle("hidden", !any);
     list.previousElementSibling?.classList.toggle("hidden", !any);
@@ -943,6 +951,11 @@ function renderHelpTopics() {
       }
       box.replaceChildren(...parts);
       box.removeAttribute("aria-busy");
+      //: One capture listener for the hundred folds: `toggle` does not bubble.
+      box.addEventListener("toggle", (event) => {
+        const topic = event.target;
+        if (topic._topic && topic.open && !topic._painted) helpTopicPaint(topic, null);
+      }, true);
       if ($("help-search")?.value) helpApplySearch($("help-search").value);
       if (typeof currentSettingsSection !== "undefined" && currentSettingsSection === "help") settingsIndexBuild("help");
     })

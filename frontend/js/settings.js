@@ -176,6 +176,7 @@ function showSettingsSection(name) {
   for (const section of SETTINGS_SECTIONS) {
     $(`settings-${section}`).classList.toggle("hidden", section !== name);
   }
+  enhanceAllSelects($(`settings-${name}`));
   ensureSettingsPaneTitle($(`settings-${name}`), name);
   ensureSettingsFoldAll($(`settings-${name}`));
   for (const button of document.querySelectorAll("#settings-nav button")) {
@@ -719,14 +720,15 @@ function filterSettings(term) {
   // The first match is shown rather than leaving the pane on what it was
   // (dog2 item 18: "phone" listed results over the Models pane).
   const first = settingsFound ? findSettings(query, 1)[0]?.section : buttons.find((b) => !b.classList.contains("hidden"))?.dataset.section;
-  if (first) showSettingsSection(first);
+  if (first && first !== currentSettingsSection) showSettingsSection(first);
 }
 
 function closeSettingsModal() {
   //: The address and the title go back to the tab under it (router.js).
   ensureModule("quickNote").then(() => routerSettle());
   const search = $("settings-search");
-  if (search) {
+  //: Only a box that was typed in needs putting back (perf audit 1108 P12: the empty pass was a 396 ms task at 4x).
+  if (search?.value) {
     search.value = "";
     filterSettings("");
   }
