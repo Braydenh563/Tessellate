@@ -19,6 +19,9 @@ def make(seed: int, **kw) -> Engine:
     e = Engine(SIZE, ONE, rng=random.Random(seed), home=(800, 1040 - 120), gait="float", **kw)
     e.big_ready = float("inf")  # no hang or peek: this is about travelling
     e.climb_ready = float("inf")
+    # Intent moved (INBOX 1692, 00:50Z): presence spells move it between spots on purpose; these
+    # tests are about the plain floater, so spells are off here (tests/test_overlay_presence_1692.py).
+    e.presence = False
     return e
 
 

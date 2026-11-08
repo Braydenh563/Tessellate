@@ -57,6 +57,7 @@ from typing import Any, NamedTuple
 from . import behaviour as bh
 from . import extras
 from . import landing as ld
+from . import presence as pr
 from . import travel as tv
 
 #: Seconds.
@@ -104,6 +105,9 @@ FLOW_TICK_MS = 170
 #: A sleeper's streams drift slower (its breath is the only quick thing), a third of the pictures.
 FLOW_SLEEP_MS = 340
 FLOW_CALM_MS = 1000
+#: In a presence spell the streams and the prop step together at this pace (3 pictures a second at most): minutes of
+#: it must cost what a minute of standing does (INBOX 1692, the CPU budget).
+FLOW_SPELL_MS = 300
 FLOW_SPEED_MAX = 900.0
 #: States in which the streams keep their last picture: held, thrown, falling or hopping move the window every
 #: display frame, and a mesh warp each would cost a quarter of the frame at 96 dpi (measured 5.7 ms).
@@ -372,9 +376,22 @@ BIG_FIRST = (300.0, 700.0)
 QUIET_RECHECK = 5.0
 REST_FOR = (8.0, 20.0)
 #: The ambient choice, one table: act -> (weight, big). `sleep` needs SLEEP_AFTER idle.
+#: A presence spell (INBOX 1692): a few minutes of one quiet thing in place, by the hour and the mood (`presence.py`).
+SPELL_WEIGHT = 170
+#: It moves to another spot between spells when the spot is further than this many logical px.
+SPELL_MOVE = 160.0
+#: Typing: a spell carries on quietly in place, in acts of this many seconds, while the person works.
+SPELL_QUIET = (45.0, 100.0)
+#: A prop reaches this share of the figure's height past its drawn box (a rod, a plant, a sky): the caret is kept this
+#: much further off while it is out.
+SPELL_ROOM = 0.3
+#: With presence on (the default) it stands this long between two things, not `SETTLE_FOR` (200 to 520 s of stillness,
+#: which was 50 of every 60 minutes): it is there and doing something, and the stillness is the rest.
+SPELL_SETTLE = (6.0, 22.0)
 ACTS = {
     "idle": (62, False), "stroll": (3, False), "trip": (16, False), "sleep": (2, False),
     "hang": (4, True), "peek": (5, True), "climb": (90, False),
+    "spell": (SPELL_WEIGHT, False),
 }
 SLEEP_AFTER = 60.0
 
@@ -703,6 +720,12 @@ class Engine:
         #: What it did to get about: `modes` the chosen ones, `legs` every move `(mode, x0, x1, t)`.
         self.modes: list[str] = []
         self.legs: list[tuple[str, float, float, float]] = []
+        #: The spell it is in or just did `{"name", "act", "start", "len"}`, every spell begun `spells`, and the length the
+        #: next act is to take (`_on_act`).
+        self.presence = True
+        self.spell: dict[str, Any] | None = None
+        self.spells: list[tuple[str, float, float]] = []
+        self.spell_len = 0.0
         self.hang_started = now
         self.hang_drag0 = 0.0
         self.hang_phase = 0.0
@@ -940,7 +963,9 @@ class Engine:
             self.warp = None
         if state == "stand":
             self.idle_start, self._edges = now, [0.0]  # the cycle starts from its first picture
-        if state in HOLD_RANGES:
+        if state == "stand" and self.presence and self.roam and not self.reduced:
+            self.state_until = now + self.rng.uniform(*SPELL_SETTLE)  # a breath between two things, not minutes of stillness
+        elif state in HOLD_RANGES:
             self.state_until = now + self.rng.uniform(*HOLD_RANGES[state])
         elif state in HOLD_FIXED:
             self.state_until = now + HOLD_FIXED[state]
@@ -992,6 +1017,8 @@ class Engine:
         self.act_started, self.act_len = now, self.rng.uniform(*act.seconds)
         self.act_var = bh.vary(self.var_rng)  # V3: not the same play twice; its own stream, so no other draw moves
         self.act_len *= self.act_var.dur
+        if self.spell_len:
+            self.act_len, self.spell_len = self.spell_len, 0.0
         self.act_turned = -1.0
         self.state_until = now + self.act_len
 
@@ -1285,7 +1312,10 @@ class Engine:
     def _decide(self, now: float, idle: float) -> None:
         """A settled spell is over: follow, go home, or do the next thing."""
         if self.busy:
-            self.state_until = now + QUIET_RECHECK
+            if not self.reduced and self.roam and self.perch is None and self.card is None and self.presence and self.come is None:
+                self._spell_quietly(now)  # the person is typing: the spell goes on, in place, not a freeze
+            else:
+                self.state_until = now + QUIET_RECHECK
             return
         eager = self._eager(now)
         if eager is not None:
@@ -1326,6 +1356,50 @@ class Engine:
 
     def _set_home(self) -> None:
         self.home_x = self.x
+
+    # --- presence spells (INBOX 1692) -------------------------------------------------------
+
+    def _begin_spell(self, now: float) -> None:
+        """Choose the next spell by the hour and the mood and go to its spot (a seen move, never a long walk), or start
+        it where it is when that is spot enough."""
+        name = pr.pick_spell(self.rng, self.hour, self.mind.mood(now, self.hour), [s[0] for s in self.spells[-2:]])
+        self.spell = {"name": name, "act": pr.SPELLS[name].act, "start": now, "len": pr.length_of(self.rng, name)}
+        spot = self._spell_spot()
+        if spot is not None and abs(spot[0] - self.x) > SPELL_MOVE * self._scale():
+            self._go(spot, "spell", now)
+        else:
+            self._start_spell(now)
+
+    def _spell_spot(self) -> tuple[float, float] | None:
+        """A spot to settle at: by a screen edge (never the middle third), more often the far one, clear of the caret."""
+        m = self.current_monitor()
+        k = self._scale()
+        side = tv.nearest_edge(self.x, m.area, self.size[0])
+        if self.rng.random() < 0.65:
+            side = -side
+        x = tv.edge_x(side, m.area, self.size[0], self.rng.uniform(6.0, tv.EDGE_ZONE * 0.8) * k)
+        return self._clear_of_caret(x, self.ground_y(m), SPELL_ROOM * self.size[1])
+
+    def _start_spell(self, now: float) -> None:
+        """The spell's act, one long prop act: fetched in seconds, its prop moving, put away at the end."""
+        sp_ = self.spell
+        if sp_ is None:
+            self._enter("stand", now)
+            return
+        sp_["start"] = now
+        self.spells.append((sp_["name"], now, sp_["len"]))
+        self.spell_len = sp_["len"]
+        self._start_act(sp_["act"], now)
+
+    def _spell_quietly(self, now: float) -> None:
+        """While the person types the spell's act goes on in place (a shorter one at a time), as a companion keeps
+        you company without getting in the way."""
+        if self.spell is None:
+            name = pr.pick_spell(self.rng, self.hour, self.mind.mood(now, self.hour), [s[0] for s in self.spells[-2:]])
+            self.spell = {"name": name, "act": pr.SPELLS[name].act, "start": now, "len": 0.0}
+        sp_ = self.spell
+        self.spell_len = self.rng.uniform(*SPELL_QUIET)
+        self._start_act(sp_["act"], now)
 
     def _start_act(self, name: str, now: float) -> None:
         self.mind.did(name, now)
@@ -1510,7 +1584,12 @@ class Engine:
             return not self._can_climb(now) or self._dest_repeats("window")
         if act == "hang" and self._dest_repeats("hang"):
             return True
+        if act == "spell":
+            return up or self._no_spell()
         return act == "stroll" and up
+
+    def _no_spell(self) -> bool:
+        return not self.presence or self.reduced or not self.roam or self.card is not None or self.come is not None
 
     def _act_table(self, now: float, idle: float) -> list[tuple[str, float]]:
         mood = self.mind.mood(now, self.hour)
@@ -1534,7 +1613,11 @@ class Engine:
             self.big_ready = now + self.rng.uniform(*BIG_EVERY)
         if act in ("climb", "hang"):
             self._note_dest("window" if act == "climb" else "hang")
-        if act == "stroll":
+        if act != "spell":
+            self.spell = None
+        if act == "spell":
+            self._begin_spell(now)
+        elif act == "stroll":
             self._stroll(now)
         elif act == "trip":
             self._start_trip(now)
@@ -1848,7 +1931,7 @@ class Engine:
 
     def _low(self) -> bool:
         """Lying, sitting, napping or at a prop: a body that does not stand ready for the window to move."""
-        return self.state in ("sit", "sleep") or (self.state == "act" and self.act in (*extras.props.PROP_ACTS, "lie_down"))
+        return self.state in ("sit", "sleep") or (self.state == "act" and self.act in (*extras.props.PROP_ACTS, *extras.props.SPELL_ACTS, "lie_down"))
 
     def _moved_fast(self, cur: Perch, now: float) -> tuple[float, float, float] | None:
         """The window's velocity (px/s) and its speed in logical px/s since the last scan, when that is a move fast enough
@@ -2353,7 +2436,7 @@ class Engine:
         mode = tv.pick_mode(
             self.rng, gait=self.gait, long_leg=long_leg, mood=self.mind.mood(self.now, self.hour),
             recent=self.modes[-3:], edge_ok=flat and opposite and self.perch is None,
-            run_ok=abs(goal[0] - self.x) >= RUN_MIN * self._scale(),
+            run_ok=abs(goal[0] - self.x) >= RUN_MIN * self._scale(), between=then == "spell",
         )
         return mode
 
@@ -2364,12 +2447,13 @@ class Engine:
         dx, dy = self._flip_dx(frame, flip), self._dy(frame)
         return x + left + dx, y + top + dy, x + right + dx, y + bottom + dy
 
-    def _clear_of_caret(self, gx: float, gy: float) -> tuple[float, float]:
-        """A goal that is not over the text box: the nearer screen edge if it is."""
+    def _clear_of_caret(self, gx: float, gy: float, room: float = 0.0) -> tuple[float, float]:
+        """A goal that is not over the text box: the nearer screen edge if it is. `room` (px) is more clearance, for a
+        prop that reaches past the figure."""
         if self.caret is None:
             return gx, gy
         k, m = self._scale(), self.current_monitor()
-        keep = tv.padded(self.caret, tv.CARET_MARGIN * k)
+        keep = tv.padded(self.caret, tv.CARET_MARGIN * k + room)
         if not tv.overlaps(self._box_at(gx, gy), keep):
             return gx, gy
         for side in sorted((-1, 1), key=lambda sd: abs(tv.edge_x(sd, m.area, self.size[0]) - gx)):
@@ -2387,7 +2471,8 @@ class Engine:
         frame = self._frame(now)
         x, y, _clip = self._display(frame)
         left, top, right, bottom = self._box(frame, self.facing < 0)
-        keep = tv.padded(self.caret, tv.CARET_MARGIN * k)
+        room = SPELL_ROOM * self.size[1] if self.state == "act" and extras.props.spec_of(self.act) is not None else 0.0
+        keep = tv.padded(self.caret, tv.CARET_MARGIN * k + room)
         if not tv.overlaps((x + left, y + top, x + right, y + bottom), keep):
             return
         self.evade_ready = now + 1.0
@@ -2396,7 +2481,7 @@ class Engine:
             tx = tv.edge_x(side, m.area, self.size[0], 4 * k)
             if not tv.overlaps(self._box_at(tx, ground), keep):
                 self.perch = self.target = None
-                self._start_warp("fade" if self.reduced else "puff", (tx, ground), "evade", now)
+                self._start_warp("fade" if self.reduced else tv.caret_move(self.rng, self.modes), (tx, ground), "evade", now)
                 return
 
     def _start_warp(self, mode: str, dest: tuple[float, float], then: str, now: float) -> None:
@@ -2404,8 +2489,10 @@ class Engine:
         it steps in and the ring closes; a puff is a cloud; a fade is only the picture (reduced motion);
         an edge walk slips off the near edge of the screen and comes in from the far one."""
         src = (self.x, self.y)
-        wp = tv.warp_for(mode, self.rng)
+        wp = tv.warp_for(mode, self.rng, math.hypot(dest[0] - self.x, dest[1] - self.y) / self._scale())
         side = tv.nearest_edge(self.x, self.current_monitor().area, self.size[0])
+        if mode in tv.RIDES and abs(dest[0] - self.x) > 4 * self._scale():
+            self._face(1 if dest[0] > self.x else -1, now)  # it sets off facing the way it goes
         self._enter("warp", now)
         self.then = then
         self.legs.append((mode, src[0], dest[0], now))
@@ -2437,6 +2524,14 @@ class Engine:
         if phase == "gap":
             return None, 0.0, 1.0
         v = u if phase == "out" else 1.0 - u  # the way back is the way out, backwards
+        if kind in tv.RIDES:  # carried the whole time: the cloud or bubble grows round it, holds, and thins at the end
+            ut = min(1.0, t / wp.total)
+            edge = bh.smooth(min(ut, 1.0 - ut) / 0.14)
+            shimmer = 0.0625 * (int(t * 3.0) % 2) if edge >= 1.0 else 0.0  # a step a third of a second keeps the picture alive
+            return (kind, edge - shimmer, self.facing), 1.0, 0.0
+        if kind == "blink":
+            alpha = 1.0 - bh.smooth((v - 0.3) / 0.4)
+            return ("blink", math.sin(math.pi * v) ** 0.7, 0), alpha, 0.0
         if kind == "portal":
             ring = bh.smooth(v / 0.35) * (1.0 - bh.smooth((v - 0.8) / 0.2))
             alpha = 1.0 - bh.smooth((v - 0.35) / 0.5)
@@ -2459,7 +2554,10 @@ class Engine:
             return
         wp, kind = w["w"], w["kind"]
         t = now - w["t0"]
-        if not w["moved"] and t >= wp.out:
+        if kind in tv.RIDES:
+            self._ride(w, t / wp.total)
+            w["moved"] = True
+        elif not w["moved"] and t >= wp.out:
             w["moved"] = True
             self.x, self.y = w["dst"]
             if kind == "edge":
@@ -2469,6 +2567,20 @@ class Engine:
             self.sink = bh.smooth(t / wp.out) if t < wp.out else 1.0 if t < wp.out + wp.gap else 1.0 - bh.smooth((t - wp.out - wp.gap) / wp.back)
         if t >= wp.total:
             self._finish_warp(now)
+
+    def _ride(self, w: dict, u: float) -> None:
+        """Where a cloud or a bubble has carried it by `u` (0 to 1) of the ride: eased along the line, a cloud with
+        a slow bob, a bubble up and over in an arc that comes back down at the end."""
+        e = bh.smooth(min(1.0, max(0.0, u)))
+        (sx, sy), (dx, dy) = w["src"], w["dst"]
+        k = self._scale()
+        self.x = sx + (dx - sx) * e
+        base = sy + (dy - sy) * e
+        if w["kind"] == "bubble":
+            lift = min(150.0 * k, 40.0 * k + abs(dx - sx) * 0.12)
+            self.y = base - lift * math.sin(math.pi * e)
+        else:
+            self.y = base - 6.0 * k * math.sin(math.pi * e) - 2.5 * k * math.sin(u * 14.0) * math.sin(math.pi * e)
 
     def _finish_warp(self, now: float) -> None:
         w = self.warp
@@ -2742,6 +2854,9 @@ class Engine:
             self.state_until = now + 1.5
         elif then == "home":
             self._enter("land" if self.mode == "dash" else "stand", now)
+        elif then == "spell":
+            self._enter("stand", now)
+            self._start_spell(now)
         else:
             self._enter("stand", now)
             if then == "rest":
@@ -3715,6 +3830,8 @@ class Engine:
         if mine is not None:
             wake = mine if wake is None else min(wake, mine)
         tick = FLOW_CALM_MS if self.reduced else FLOW_SLEEP_MS if self.state == "sleep" else FLOW_TICK_MS
+        if self.state == "act" and self.spell is not None and self.act == self.spell["act"] and not self.reduced:
+            tick = FLOW_SPELL_MS
         return tick if wake is None else min(wake, tick)
 
     def _wake_state(self, now: float) -> int | None:
@@ -3810,6 +3927,8 @@ class Engine:
         frame = self._frame(now)
         x, y, clip = self._display(frame)
         fx, alpha, _squeeze = self._warp_view(now) if self.state == "warp" else (None, 1.0, 0.0)
+        if fx is not None:
+            fx = (fx[0], round(max(0.0, min(1.0, fx[1])) * 16) / 16.0, fx[2])  # as alpha is: a step finer than 1/16 is a picture nobody sees
         return Output(
             frame, int(round(x)), int(round(y)), self.facing < 0, self._wake(now),
             self.click_now, self.settled_now, clip, self.card_clicked, self._pose(), fx, round(alpha * 16) / 16.0,

@@ -601,9 +601,11 @@ class OverlayRunner:
         out = self.engine.update(self.clock())
         self._apply(out)
         logger.info(
-            "overlay: ready, look=%s, monitors=%s, frames=%d at %s px, reduced=%s%s",
+            "overlay: ready, look=%s, monitors=%s, frames=%d at %s px, reduced=%s%s, effects=%s",
             self.look, [(m.area, m.dpi) for m in self.monitors], len(sprites.FRAME_NAMES), spr.size(self._fdpi()), reduced,
             f" ({self.reduced_reason})" if reduced and self.reduced_reason else "",
+            # INBOX 1692: with the OS's animations off every portal is a plain fade; the log says so, so it is not a mystery
+            "off, every move is a fade (animations are off in " + (self.reduced_reason or "the app") + ")" if reduced else "on",
         )
 
     def _apply(self, out: eng.Output) -> int | None:

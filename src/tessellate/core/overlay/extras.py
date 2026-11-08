@@ -327,7 +327,7 @@ class Extras:
         if e.state == "act" and e.act:
             length = max(0.01, e.act_len)
             t = now - e.act_started
-            prop = props.view(e.act, t / length, t)
+            prop = props.view(e.act, t / length, t, length)
             kind = faces.ACT_FACES.get(e.act)
             if face is None and kind and (lv := ease(t, length)):
                 face = (kind, lv)
@@ -354,7 +354,7 @@ class Extras:
     def calm(act: str | None) -> bool:
         """A prop or plain act whose pose barely moves (a breath, a page turn): it is drawn at the rest pace
         (`REST_DRAW_MS`), not at the walk's, so a minute of reading costs what a minute of standing does."""
-        return (act in props.PROP_ACTS or act in props.PLAIN_ACTS) and bh.AMPLITUDE.get(act, 1.0) < CALM_AMPLITUDE
+        return (act in props.PROP_ACTS or act in props.PLAIN_ACTS or act in props.SPELL_ACTS) and bh.AMPLITUDE.get(act, 1.0) < CALM_AMPLITUDE
 
     def _marks(self, now: float) -> list[float]:
         """The moments after `now` a reaction's face next steps. The micro-expressions' and the acts' own steps are

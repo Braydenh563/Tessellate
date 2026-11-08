@@ -31,6 +31,8 @@ def settle(e: eng.Engine, secs: float = 3.0, t: float = 0.0) -> float:
 def still(look: str = "masculine", seed: int = 2) -> tuple[eng.Engine, SpriteSet, float]:
     """A standing figure with no trip, climb or in-place act due: only what the test asks for happens."""
     e, s = make(look, "float", seed)
+    e.presence = False  # Intent moved (INBOX 1692, 00:50Z): spells (presence) have their own tests; this one measures the plain acts
+    e._enter("stand", 0.0)  # its first hold was drawn with presence on
     e.big_ready = e.trip_ready = e.climb_ready = e.ex.act_ready = float("inf")
     e.next_ambient = float("inf")
     e.ex.micro.next_at = float("inf")

@@ -70,6 +70,7 @@ def test_the_window_never_bobs_at_rest_or_while_drifting_and_the_breath_is_in_th
 
 def test_a_ground_companion_never_bobs_in_the_air_and_floating_acts_are_not_its_own() -> None:
     e, _s = make("masculine", "walk")
+    e.presence = False  # Intent moved (INBOX 1692): spells travel between spots on purpose; this one is about the plain companion
     outs, _t = run(calm(e), 0.0, 120.0)
     assert len({round(o.y - e._dy(o.frame)) for o in outs}) == 1  # on the floor all the time: no air to bob in
     mind = bh.Mind()
@@ -421,6 +422,7 @@ def test_it_waits_rather_than_passing_under_a_busy_pointer() -> None:
 
 def test_a_trip_goes_home_afterwards() -> None:
     e, _s = make("masculine", "walk", plain=True)
+    e.presence = False  # Intent moved (INBOX 1692): spells travel between spots on purpose; this one is about the plain companion
     calm(e)
     home = e.home_x
     e.trip_ready = 0.0
@@ -438,6 +440,7 @@ def test_the_screens_middle_is_not_where_it_spends_its_time() -> None:
     """Home at the left edge: over fifteen minutes it never gets past 40 percent of the width
     (strolls stay within STROLL px of home; a trip is far rarer than that in fifteen minutes)."""
     e, _s = make("masculine", "float")
+    e.presence = False  # Intent moved (INBOX 1692): spells travel between spots on purpose; this one is about the plain companion
     e.home_x = e.x = 120.0
     e.trip_ready = e.big_ready = math.inf
     outs, _t = run(e, 0.0, 900.0)

@@ -48,7 +48,7 @@
   width: 12px;
   aspect-ratio: 1;
   margin: -6px;
-  background: color-mix(in srgb, var(--accent) 55%, #fff);
+  background: color-mix(in srgb, var(--accent) 55%, var(--on-accent));
   clip-path: polygon(50% 0, 62% 38%, 100% 50%, 62% 62%, 50% 100%, 38% 62%, 0 50%, 38% 38%);
   opacity: 0;
   animation: nmb-puff 900ms var(--nmb-burst-delay) var(--ease-out) both;
@@ -59,7 +59,7 @@
   left: 50%;
   top: 55%;
   width: 34px;
-  height: 12px;
+  block-size: 12px;
   margin: -6px -17px;
   border-radius: 50%;
   background: radial-gradient(closest-side, color-mix(in srgb, var(--accent) 45%, transparent), transparent);
@@ -79,11 +79,11 @@
   left: 50%;
   bottom: -6px;
   width: 72px;
-  height: 22px;
+  block-size: 22px;
   margin-left: -36px;
   border-radius: 50%;
-  background: radial-gradient(closest-side, color-mix(in srgb, var(--muted) 70%, #fff), color-mix(in srgb, var(--muted) 25%, transparent));
-  box-shadow: -16px -6px 0 -4px color-mix(in srgb, var(--muted) 60%, #fff), 16px -5px 0 -3px color-mix(in srgb, var(--muted) 60%, #fff);
+  background: radial-gradient(closest-side, color-mix(in srgb, var(--muted) 70%, var(--card)), color-mix(in srgb, var(--muted) 25%, transparent));
+  box-shadow: -16px -6px 0 -4px color-mix(in srgb, var(--muted) 60%, var(--card)), 16px -5px 0 -3px color-mix(in srgb, var(--muted) 60%, var(--card));
 }
 /* The bubble round a lifted figure: a thin rim and a faint fill, a glint at the top left. */
 .nmb-bubble::before {
@@ -94,9 +94,9 @@
   width: 88px;
   aspect-ratio: 1;
   margin: -44px;
-  border: 2px solid color-mix(in srgb, var(--accent) 60%, #fff);
+  border: 2px solid color-mix(in srgb, var(--accent) 60%, var(--on-accent));
   border-radius: 50%;
-  background: radial-gradient(circle at 30% 28%, color-mix(in srgb, #fff 60%, transparent) 0 8%, color-mix(in srgb, var(--accent) 12%, transparent) 9% 100%);
+  background: radial-gradient(circle at 30% 28%, color-mix(in srgb, var(--on-accent) 60%, transparent) 0 8%, color-mix(in srgb, var(--accent) 12%, transparent) 9% 100%);
 }
 
 /* A portal: an upright ring that opens, holds while it is walked through,

@@ -20,7 +20,11 @@ from typing import NamedTuple
 Rect = tuple[float, float, float, float]
 
 #: Every way it travels. "walk" is a ground companion's, "glide" a floater's; the rest are for either.
-MODES = ("walk", "run", "glide", "swoop", "portal", "puff", "edge", "jump", "climb", "fade")
+MODES = ("walk", "run", "glide", "swoop", "portal", "puff", "edge", "jump", "climb", "fade", "blink", "cloud", "bubble")
+#: The rides: the figure travels the whole time it is drawn in its cloud or bubble, not in a vanish and an arrival.
+RIDES = ("cloud", "bubble")
+#: The ways it gets to a new spot between presence spells, and the ones it steps aside from the caret in (never a walk).
+VISIBLE = ("blink", "cloud", "bubble", "portal")
 #: Jumps over the middle: the ones that do not pass through it.
 LEAPS = ("portal", "puff", "edge")
 #: A leg longer than this share of the work area's width is a long one (a run; a little likelier to flourish).
@@ -51,14 +55,36 @@ WARPS = {
     "puff": Warp(0.32, 0.05, 0.36),
     "edge": Warp(0.45, 0.05, 0.55),
     "fade": Warp(0.25, 0.05, 0.25),
+    "blink": Warp(0.80, 0.05, 0.80),  # sparkles gather, it is gone, sparkles scatter: long enough to be seen (1.5 s)
+    "cloud": Warp(0.80, 0.0, 0.80),
+    "bubble": Warp(0.90, 0.0, 0.90),
 }
+#: A ride is this long at least (seconds) and this much longer per 1000 logical px of the leg, at most RIDE_MAX.
+RIDE_MIN, RIDE_PER_KPX, RIDE_MAX = 1.6, 1.4, 3.4
 
 
-def warp_for(mode: str, rng: random.Random) -> Warp:
-    """The warp of a mode, a little different each time (within 10 percent)."""
+def warp_for(mode: str, rng: random.Random, dist: float = 0.0) -> Warp:
+    """The warp of a mode, a little different each time (within 10 percent); a ride is longer for a longer leg
+    (`dist`, logical px) so it is never a dash."""
     w = WARPS.get(mode, WARPS["fade"])
-    k = rng.uniform(0.92, 1.08)
+    k = rng.uniform(0.96, 1.08) if mode in RIDES or mode == "blink" else rng.uniform(0.92, 1.08)
+    if mode in RIDES:
+        half = min(RIDE_MAX, RIDE_MIN + RIDE_PER_KPX * abs(dist) / 1000.0) / 2.0
+        return Warp(half * k, 0.0, half * k)
     return Warp(w.out * k, w.gap, w.back * k)
+
+
+def caret_move(rng: random.Random, recent: list[str]) -> str:
+    """How it steps out of the caret's way (INBOX 1692: it was always a puff, the move the owner met most): a blink, a
+    portal or a puff, never the one it used last."""
+    live = [m for m in ("blink", "portal", "puff") if not recent or m != recent[-1]]
+    weights = {"blink": 4.0, "portal": 3.0, "puff": 1.0}
+    roll = rng.random() * sum(weights[m] for m in live)
+    for m in live:
+        roll -= weights[m]
+        if roll < 0:
+            return m
+    return live[-1]
 
 
 def middle(area: Rect) -> tuple[float, float]:
@@ -118,6 +144,10 @@ def padded(r: Rect, by: float) -> Rect:
 
 def _by_mood(table: dict[str, float], mood: str) -> None:
     for mode in list(table):
+        if mode in ("bubble", "blink") and mood in ("happy", "curious", "proud"):
+            table[mode] *= 1.4
+        if mode == "cloud" and mood in ("sleepy", "bored"):
+            table[mode] *= 1.5
         if mode in ("portal", "edge") and mood in ("happy", "curious", "proud", "bored"):
             table[mode] *= 1.5
         if mode in ("run", "swoop") and mood in ("happy", "curious", "startled", "proud"):
@@ -128,18 +158,28 @@ def _by_mood(table: dict[str, float], mood: str) -> None:
             table[mode] *= 1.8
 
 
+def _mode_table(body: str, fast: str, long_leg: bool, edge_ok: bool, run_ok: bool, between: bool) -> dict[str, float]:
+    """The weights of the modes for one leg: between presence spells (INBOX 1692) seen and never a long walk."""
+    if between:
+        table = {"blink": 2.0, "cloud": 3.0, "bubble": 2.0, "portal": 1.6, "puff": 0.1}
+        if not long_leg:
+            table[body] = 1.5
+        return table
+    if long_leg:
+        return {body: 4.0, fast: 3.0, "portal": 1.6, "puff": 0.2, "edge": 1.6 if edge_ok else 0.0, "blink": 1.2, "cloud": 1.6, "bubble": 1.0}
+    return {body: 6.0, fast: 2.0 if run_ok else 0.0, "portal": 0.7, "puff": 0.12, "blink": 0.5, "cloud": 0.7, "bubble": 0.5}
+
+
 def pick_mode(
     rng: random.Random, *, gait: str, long_leg: bool, mood: str, recent: list[str], edge_ok: bool, run_ok: bool = True,
+    between: bool = False,
 ) -> str:
     """One mode for a leg (INBOX 1683 u, the owner: it "only ever poofs" and "needs a lot of expansion"): by
     distance and mood, a walk or a glide, a run or a swoop, a portal out and in, or a walk off one screen
     edge and in from the other; a puff only rarely (under one leg in ten). The mode just used is never
     used again (a leg too short for a run may walk twice)."""
     body, fast = ("glide", "swoop") if gait == "float" else ("walk", "run")
-    if long_leg:
-        table = {body: 4.0, fast: 3.0, "portal": 1.6, "puff": 0.2, "edge": 1.6 if edge_ok else 0.0}
-    else:
-        table = {body: 6.0, fast: 2.0 if run_ok else 0.0, "portal": 0.7, "puff": 0.12}
+    table = _mode_table(body, fast, long_leg, edge_ok, run_ok, between)
     _by_mood(table, mood)
     if recent and (run_ok or recent[-1] != body):
         table[recent[-1]] = 0.0

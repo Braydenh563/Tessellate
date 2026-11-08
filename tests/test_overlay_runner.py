@@ -222,6 +222,23 @@ def test_the_apps_answer_beats_the_windows_flag_and_no_answer_falls_back_to_it()
     r.stop()
 
 
+def test_the_startup_line_says_whether_the_effects_are_on(caplog) -> None:
+    """INBOX 1692: the owner saw only puffs; the log never said the OS had animations off (every warp is then a plain fade)."""
+    caplog.set_level("INFO", logger=runner_mod.logger.name)
+    fake = FakeWin32()
+    fake.animations = 0
+    r, *_ = make(fake)
+    assert r.start()
+    line = next(rec.getMessage() for rec in caplog.records if "overlay: ready" in rec.getMessage())
+    assert "effects=off, every move is a fade (animations are off in os)" in line, line
+    r.stop()
+    caplog.clear()
+    r, *_ = make()
+    assert r.start()
+    assert "effects=on" in next(rec.getMessage() for rec in caplog.records if "overlay: ready" in rec.getMessage())
+    r.stop()
+
+
 def _pump(r, fake, clock, seconds: float, until=None) -> float:
     """Fire the timer the overlay asked for, in fake time: each WM_TIMER is posted
     after the clock moved by the asked-for wait. Returns the fake seconds used."""

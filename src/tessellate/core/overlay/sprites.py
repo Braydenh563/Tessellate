@@ -558,6 +558,9 @@ FADE_CLEAR = 0.06
 PORTAL_RING = (150, 110, 255)
 PORTAL_RIM = (210, 190, 255)
 PUFF_SMOKE = (236, 238, 244)
+SPARK = (255, 240, 190)
+CLOUD = (240, 244, 252)
+BUBBLE = (170, 214, 255)
 
 
 def mix(a: Frame, b: Frame, u: float) -> Frame | None:
@@ -579,11 +582,64 @@ def mix(a: Frame, b: Frame, u: float) -> Frame | None:
     return Frame(a.width, a.height, out.tobytes("raw", "BGRA"), a.pad_x, a.pad_y, box=box)
 
 
+def fx_margin(frame: Frame) -> int:
+    """The room an effect needs around the figure, in px: a portal's ring, a cloud, a bubble or a sparkle reach past the
+    picture's own edge (the ring spanned y 0 to 156 of a 151 px canvas and was clipped, INBOX 1692)."""
+    left, top, right, bottom = frame.box if frame.box[2] else (0, 0, frame.width, frame.height)
+    return int(0.15 * max(right - left, bottom - top)) + 20
+
+
+def _star(draw: Any, x: float, y: float, r: float, tone: int) -> None:
+    """A four-point sparkle."""
+    q = r * 0.22
+    draw.polygon([(x, y - r), (x + q, y - q), (x + r, y), (x + q, y + q), (x, y + r), (x - q, y + q), (x - r, y), (x - q, y - q)], fill=(*SPARK, tone))
+
+
+def _draw_fx(draw: Any, kind: str, strength: float, face: int, cx: float, cy: float, bw: float, bh: float, phase: float) -> None:
+    """The effect's shapes on a transparent layer (a portal ring, smoke, sparkles, a cloud, a bubble)."""
+    if kind == "portal":
+        ox = (1 if face >= 0 else -1) * bw * 0.18
+        rx, ry = bw * 0.30 * (0.5 + 0.5 * strength), bh * 0.62 * (0.6 + 0.4 * strength)
+        box = (cx + ox - rx, cy - ry, cx + ox + rx, cy + ry)
+        tone = max(1, int(220 * strength))
+        for grow, rgb in ((10, PORTAL_RING), (5, PORTAL_RING), (0, PORTAL_RIM)):
+            draw.ellipse((box[0] - grow, box[1] - grow, box[2] + grow, box[3] + grow), outline=(*rgb, tone // (1 + grow // 5)), width=3)
+    elif kind == "blink":
+        tone = max(1, int(255 * strength))
+        for i in range(7):  # sparkles ringed round the body, each turning on and off out of step
+            a = i * 2.4 + phase * 3.0
+            x, y = cx + math.cos(a) * bw * (0.42 + 0.08 * (i % 3)), cy + math.sin(a) * bh * (0.40 + 0.06 * (i % 2))
+            _star(draw, x, y, max(4.0, bw * (0.07 + 0.03 * ((i + int(phase * 6)) % 3))) * (0.4 + 0.6 * strength), tone)
+    elif kind == "cloud":
+        tone = max(1, int(235 * strength))
+        base = cy + bh * 0.5
+        for dx, dy, rad in ((-0.34, 0.0, 0.17), (-0.12, -0.05, 0.22), (0.14, -0.04, 0.2), (0.34, 0.01, 0.16), (0.0, 0.05, 0.2)):
+            r = bw * rad * (0.55 + 0.45 * strength)
+            x, y = cx + dx * bw * 1.15, base + 0.02 * bh + dy * bh * 0.5
+            draw.ellipse((x - r, y - r * 0.7, x + r, y + r * 0.7), fill=(*CLOUD, tone))
+    elif kind == "bubble":
+        tone = max(1, int(200 * strength))
+        r = max(bw, bh) * 0.62 * (0.7 + 0.3 * strength)
+        draw.ellipse((cx - r, cy - r, cx + r, cy + r), fill=(*BUBBLE, tone // 6), outline=(*BUBBLE, tone), width=3)
+        draw.arc((cx - r * 0.78, cy - r * 0.78, cx + r * 0.78, cy + r * 0.78), 200, 260, fill=(255, 255, 255, tone), width=3)
+        for i in range(3):  # small ones rising off it
+            y = cy + r * (0.9 - ((phase * 2.0 + i / 3.0) % 1.0) * 1.9)
+            x = cx + (i - 1) * r * 0.55
+            draw.ellipse((x - 4, y - 4, x + 4, y + 4), outline=(*BUBBLE, tone), width=2)
+    else:
+        tone = max(1, int(200 * strength))
+        for dx, dy, rad in ((-0.3, 0.25, 0.30), (0.3, 0.2, 0.28), (0.0, -0.1, 0.36), (-0.2, -0.3, 0.24), (0.25, -0.3, 0.22)):
+            r = max(bw, bh) * rad * (0.4 + 0.8 * strength)
+            x, y = cx + dx * bw, cy + dy * bh
+            draw.ellipse((x - r, y - r, x + r, y + r), fill=(*PUFF_SMOKE, tone))
+
+
 def effect(frame: Frame, fx: tuple[str, float, int] | None, alpha: float) -> Frame:
-    """The frame as a vanish or an arrival shows it (INBOX 1670): the figure's alpha scaled by `alpha`
-    (clear below FADE_CLEAR), with a portal ring or a puff of smoke over it. `fx` is (kind, strength 0..1,
-    facing); the plain fade is `fx` None. Straight alpha through Pillow, then the halo guard, so a faint
-    edge takes no click. The box stays the figure's own (the quick panel is placed from it)."""
+    """The frame as a vanish, an arrival or a ride shows it (INBOX 1670): the figure's alpha scaled by `alpha`
+    (clear below FADE_CLEAR), with a portal ring, smoke, sparkles, a cloud or a bubble. `fx` is (kind, strength
+    0..1, facing); the plain fade is `fx` None. The canvas grows by `fx_margin` all round while an effect shows
+    (the window keeps its place through `pad`), so nothing is clipped. Straight alpha through Pillow, then the
+    halo guard, so a faint edge takes no click. The box moves with the figure (the quick panel is placed from it)."""
     if fx is None and alpha >= 1.0:
         return frame
     from PIL import Image, ImageDraw, ImageFilter
@@ -593,28 +649,20 @@ def effect(frame: Frame, fx: tuple[str, float, int] | None, alpha: float) -> Fra
     share = 0.0 if alpha < FADE_CLEAR else max(0.0, min(1.0, alpha))
     if share < 1.0:
         image.putalpha(image.getchannel("A").point(lambda a: int(a * share)))
+    box = frame.box
     if fx is not None and fx[1] > 0.0:
         kind, strength, face = fx
-        left, top, right, bottom = frame.box if frame.box[2] else (0, 0, w, h)
-        cx, cy = (left + right) / 2.0, (top + bottom) / 2.0
-        bw, bh = right - left, bottom - top
-        layer = Image.new("RGBA", (w, h), (0, 0, 0, 0))
-        draw = ImageDraw.Draw(layer)
-        if kind == "portal":
-            ox = (1 if face >= 0 else -1) * bw * 0.18
-            rx, ry = bw * 0.30 * (0.5 + 0.5 * strength), bh * 0.62 * (0.6 + 0.4 * strength)
-            box = (cx + ox - rx, cy - ry, cx + ox + rx, cy + ry)
-            tone = max(1, int(220 * strength))
-            for grow, rgb in ((10, PORTAL_RING), (5, PORTAL_RING), (0, PORTAL_RIM)):
-                draw.ellipse((box[0] - grow, box[1] - grow, box[2] + grow, box[3] + grow), outline=(*rgb, tone // (1 + grow // 5)), width=3)
-            layer = layer.filter(ImageFilter.GaussianBlur(1.5))
-        else:
-            tone = max(1, int(200 * strength))
-            for dx, dy, rad in ((-0.3, 0.25, 0.30), (0.3, 0.2, 0.28), (0.0, -0.1, 0.36), (-0.2, -0.3, 0.24), (0.25, -0.3, 0.22)):
-                r = max(bw, bh) * rad * (0.4 + 0.8 * strength)
-                x, y = cx + dx * bw, cy + dy * bh
-                draw.ellipse((x - r, y - r, x + r, y + r), fill=(*PUFF_SMOKE, tone))
-            layer = layer.filter(ImageFilter.GaussianBlur(max(2.0, bw * 0.04)))
-        image = Image.alpha_composite(image, layer)
+        left, top, right, bottom = box if box[2] else (0, 0, w, h)
+        m = fx_margin(frame)
+        grown = Image.new("RGBA", (w + 2 * m, h + 2 * m), (0, 0, 0, 0))
+        grown.paste(image, (m, m))
+        image, box = grown, (box[0] + m, box[1] + m, box[2] + m, box[3] + m)
+        layer = Image.new("RGBA", image.size, (0, 0, 0, 0))
+        phase = strength  # a sparkle's turn and a bubble's rise follow the strength, so a step of it is a new picture
+        _draw_fx(ImageDraw.Draw(layer), kind, strength, face, (left + right) / 2.0 + m, (top + bottom) / 2.0 + m, right - left, bottom - top, phase)
+        layer = layer.filter(ImageFilter.GaussianBlur(1.5 if kind in ("portal", "blink", "bubble") else max(2.0, (right - left) * 0.04)))
+        image = Image.alpha_composite(layer, image) if kind == "cloud" else Image.alpha_composite(image, layer)
+        w, h = image.size
+        frame = frame._replace(pad_x=frame.pad_x + m, pad_y=frame.pad_y + m)
     clear = clear_faint_alpha(image)
-    return Frame(w, h, premultiplied_bgra(clear), frame.pad_x, frame.pad_y, frame.box)
+    return Frame(w, h, premultiplied_bgra(clear), frame.pad_x, frame.pad_y, box)

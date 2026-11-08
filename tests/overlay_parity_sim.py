@@ -24,6 +24,7 @@ def hour(gait: str, look: str, seed: int, secs: float = 3600.0) -> dict:
     eng.IDLE_SIT = eng.IDLE_SLEEP = float("inf")
     try:
         e, _s = make(look, gait, seed)
+        e.presence = False  # Intent moved (INBOX 1692, 00:50Z): spells (presence) have their own tests; this one measures the plain acts
         home_at_edge(e)
         e.big_ready, e.trip_ready, e.climb_ready = 300.0, 120.0, 0.0
         e.set_windows(list(WINDOWS), 0.0)

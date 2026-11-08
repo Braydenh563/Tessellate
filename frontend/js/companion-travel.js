@@ -74,8 +74,6 @@ function companionTravelChoose(o, roll) {
 //: starts while it is on its way takes over like any other), its body's
 //: scale on `nmb.hopAnim`, and the rings or puffs as small elements beside
 //: it, gone when it ends or is cut. Nothing in here is called per frame.
-const COMPANION_TRAVEL_PACE = 3.4;
-
 function companionTravelFx(buddy, cls, dx, dy, delay, parts, life) {
   const host = buddy.parentElement;
   if (!host) return;
@@ -204,10 +202,11 @@ const COMPANION_TRAVEL_PLAYERS = {
   edge(buddy, dx, dy, ctx) {
     const W = innerWidth;
     const was = ctx.was;
+    const pace = 3.4; // ms per px of the walk off and on
     const outTo = was.x + NMB_W / 2 < W / 2 ? -(was.x + NMB_W + 8) : W - was.x + 8;
     const inFrom = nmb.x + NMB_W / 2 < W / 2 ? -(nmb.x + NMB_W + 8) : W - nmb.x + 8;
-    const t1 = Math.max(700, Math.abs(outTo) * COMPANION_TRAVEL_PACE);
-    const t2 = Math.max(700, Math.abs(inFrom) * COMPANION_TRAVEL_PACE);
+    const t1 = Math.max(700, Math.abs(outTo) * pace);
+    const t2 = Math.max(700, Math.abs(inFrom) * pace);
     const gap = 260;
     const T = t1 + gap + t2;
     const a = t1 / T;
