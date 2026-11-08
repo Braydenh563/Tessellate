@@ -2,7 +2,7 @@
 
 Generated 2026-11-08 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7866, frontend ids 2644, CSS sections 522, backend routes 649, backend modules 9046, test files 2177, tests 18342, plan headings 1005, app scripts 28, boot scripts 37, script files 261.
+Counts: frontend functions 7866, frontend ids 2644, CSS sections 522, backend routes 649, backend modules 9047, test files 2177, tests 18342, plan headings 1005, app scripts 28, boot scripts 37, script files 261.
 
 ## Frontend functions (7866)
 
@@ -13085,7 +13085,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:164 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (9046)
+## Backend modules (9047)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -22534,17 +22534,18 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `ease_marks` | src/tessellate/core/overlay/extras.py:293 |
 | `register` | src/tessellate/core/overlay/extras.py:125 |
 
-### src/tessellate/core/overlay/faces.py (13)
+### src/tessellate/core/overlay/faces.py (14)
 
 | Name | File:line |
 |---|---|
 | `Look` | src/tessellate/core/overlay/faces.py:33 |
 | `Micro` | src/tessellate/core/overlay/faces.py:93 |
 | `_brow` | src/tessellate/core/overlay/faces.py:239 |
+| `_erase_mouth` | src/tessellate/core/overlay/faces.py:268 |
 | `_features` | src/tessellate/core/overlay/faces.py:222 |
 | `_lid` | src/tessellate/core/overlay/faces.py:255 |
 | `_match` | src/tessellate/core/overlay/faces.py:147 |
-| `_mouth` | src/tessellate/core/overlay/faces.py:268 |
+| `_mouth` | src/tessellate/core/overlay/faces.py:290 |
 | `_skin` | src/tessellate/core/overlay/faces.py:186 |
 | `_splice` | src/tessellate/core/overlay/faces.py:246 |
 | `draw` | src/tessellate/core/overlay/faces.py:192 |

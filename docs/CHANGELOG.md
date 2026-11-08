@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Desk expressions: the art's calm mouth is painted out from the skin either side of it with a feathered edge, not a flat disc (the owner's white paste round the mouth, INBOX 1696 hh); desk arms measured at 0.4 to 0.5 px thicker than the app's at 128 px, inside the 1 px bar, pinned by a test (1696 z).
 - Desk frames: the render pins every frame's tail, sways and breath to one moment and stops the page's blink clock (a masculine stand shipped with shut eyes), all frames re-rendered for both looks with the six wave swing frames, and the eye boxes re-measured (INBOX 1696 x, w).
 - Throwing the in-app companion no longer walks the whole page again on landing: the tab's surfaces were dropped a frame after they were found (a ResizeObserver's first report), so every landing re-read 149 to 299 boxes behind a whole-page layout (INBOX 1696 l, the 7.5 s freeze).
 - In-app companion: the edge move squeezes out through the side with wisps and comes back in eased, a hang drifts down before it leaves, and blink, cloud and bubble moves join the chooser (INBOX 1692).
