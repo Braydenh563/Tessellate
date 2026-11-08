@@ -259,9 +259,9 @@ async function steadyShot(page, file, clip) {
           //: No translateY: the engine's slow bob (BOB_HZ) is the only vertical motion. This one
           //: baked 9.7 px at 1.33 Hz into the drift frames (INBOX 1670: "bobbing really fast").
           put(char, "rotate(4deg)", "50% 90%");
-          for (const tail of b.querySelectorAll(".atl-lw-tail")) put(tail, `rotate(${(9 * Math.sin(w - 1.0)).toFixed(2)}deg)`, "40% 35%");
+          for (const tail of b.querySelectorAll(".atl-lw-tail")) put(tail, `rotate(${(-7 + 2.5 * Math.sin(w - 1.0)).toFixed(2)}deg)`, "40% 35%");
           const lower = b.querySelectorAll(".nm-atlas.atl-layer-lower").length ? ".nm-atlas.atl-layer-lower" : ".atl-lw-lower";
-          for (const low of b.querySelectorAll(lower)) put(low, `skewX(${(8 * Math.sin(w - 2.0)).toFixed(2)}deg)`, "50% 55%");
+          for (const low of b.querySelectorAll(lower)) put(low, `skewX(${(6 * Math.sin(w - 2.0)).toFixed(2)}deg)`, "50% 55%");
         }
       }, f);
       await page.waitForTimeout(40);

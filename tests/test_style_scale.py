@@ -377,6 +377,7 @@ FALLBACK_ALLOWED = {
     "--chip-bg",
     "--bar-scale",
     "--wb-map-edge-colour",
+    "--desk-wave",  # set inline per frame by the frame renderer; the fallback is the idle wave
 }
 
 VAR_WITH_FALLBACK = re.compile(r"var\(\s*(--[\w-]+)\s*,")

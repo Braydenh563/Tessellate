@@ -858,9 +858,19 @@ class Engine:
             left, top, right, bottom = self._box(n, flip)
             dx, dy = self._flip_dx(n, flip), self._dy("held" if frame == "fly" else n)
             boxes.append((left + dx, top + dy, right + dx, bottom + dy))
-        return (
+        left, top, right, bottom = (
             min(b[0] for b in boxes), min(b[1] for b in boxes), max(b[2] for b in boxes), max(b[3] for b in boxes),
         )
+        if frame == "held":
+            # A lifted or pressed figure is still drawn as a stand or an idle picture for a moment (the rise, the
+            # press), whose tail or ring may reach a px or two past the held pose: the sides cover the whole cycle,
+            # so no picture of it is cut by the screen's edge on a ride (INBOX 1670).
+            dx = self._flip_dx("stand", flip)
+            for n in (*STAND_FAMILY, *(f"idle{i}" for i in range(IDLE_FRAMES))):
+                b = self.metrics.get((n, flip))
+                if b:
+                    left, right = min(left, b[0] + dx), max(right, b[2] + dx)
+        return left, top, right, bottom
 
     def _default_home(self) -> tuple[int, int]:
         m = self.monitors[0]

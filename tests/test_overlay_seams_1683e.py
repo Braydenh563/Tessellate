@@ -37,9 +37,17 @@ def _step(a, b) -> float:
     return float(np.abs(a[..., :3] * wa - b[..., :3] * wb).mean() + np.abs(a[..., 3] - b[..., 3]).mean())
 
 
-@pytest.mark.xfail(strict=True, reason="the shipped idle frames were captured with the live tail loop running over the sample; "
-                   "scripts/render_desk_frames.js now holds it, but the frames are not re-shot yet (wrap step 8x the median)")
-@pytest.mark.parametrize("look", ["masculine", "feminine"])
+# Intent moved (INBOX 1696 hh, deskframes-1108): the frames are re-shot with the tail held, so the masculine idle wraps like
+# any other step (3.99 against a median 1.47). The feminine one still jumps (hair and the ring change between idle 11 and
+# 12, 17 and 18, 23 and 0), so only it keeps the marker.
+@pytest.mark.parametrize(
+    "look",
+    [
+        "masculine",
+        pytest.param("feminine", marks=pytest.mark.xfail(strict=True, reason="the feminine idle's hair and ring jump at three of its steps (wrap step 4x the median); "
+                                                                                "see docs/roadmap/agent-remaining/deskframes-1108.md")),
+    ],
+)
 def test_the_idle_cycle_wraps_like_any_other_step(look: str) -> None:
     s = sp.SpriteSet(look)
     frames = [np.asarray(s._load(n)).astype(float) for n in sp.IDLE_FRAMES]

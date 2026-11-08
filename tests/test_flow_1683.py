@@ -211,7 +211,13 @@ def _at_rest(look: str = "masculine", seconds: float = 12.0, state: str | None =
 @pytest.mark.parametrize("state", [None, "sit", "sleep"])
 def test_the_engine_redraws_at_rest_so_the_streams_never_stop(state):
     out = _at_rest(state=state)
-    assert all(o.wake_ms is not None and o.wake_ms <= (eng.FLOW_SLEEP_MS if state == "sleep" else eng.FLOW_TICK_MS) for o in out), "a wake is never later than the streams' tick"
+    # Intent moved (deskframes-1108): a spell act (a drawn rune, `FLOW_SPELL_MS`) ticks at its own 300 ms, and with the new
+    # frame sizes the seeded run reaches one; the bound is the slowest tick the engine has at rest, still under a second.
+    slowest = eng.FLOW_SLEEP_MS if state == "sleep" else eng.FLOW_SPELL_MS
+    assert all(o.wake_ms is not None and o.wake_ms <= slowest for o in out), "a wake is never later than the streams' tick"
+    # Intent moved (deskframes-1108): a warp's picture is an effect (`Output.fx`) that takes no flow by design (the seeded
+    # run now reaches one at 7.4 s), so the streams are asked of every other picture.
+    out = [o for o in out if o.fx is None]
     views = [o.flow for o in out]
     assert all(v is not None for v in views)
     # a 1 s window always holds more than one distinct picture of the streams
