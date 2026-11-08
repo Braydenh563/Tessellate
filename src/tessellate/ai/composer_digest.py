@@ -1944,6 +1944,8 @@ def _past_verb(word: str) -> bool:
 
 
 _SENTENCE_BREAK = re.compile(r"[.!?] [A-Z]")
+#: A line with "my" or "I" in it is reported ("Sara is your sister"), so only the rest is quoted whole.
+_FIRST_PERSON = re.compile(r"\b(?:my|me|mine|your|yours|i|i'm|i've|we|our)\b", re.I)
 _LIST_HEADING = re.compile(r"your .+? note lists \w+ (?:items|questions to ask)\b", re.I)
 
 
@@ -1966,7 +1968,7 @@ def _said_as_written(line_body: str, i: int, written: date | None = None) -> str
         #: "by 20 July, Cloud computing is the delivery of ...": a statement
         #: about something else is what the person wrote (INBOX 1420). Two sentences are not one
         #: "that" clause ("you mentioned that Boiler service due in December. Engineer is ..."): quoted (R3-11).
-        if _SENTENCE_BREAK.search(line_body):
+        if _SENTENCE_BREAK.search(line_body) and not _FIRST_PERSON.search(line_body):
             return _wrote(line_body, i)
         return _REPORTS[i % len(_REPORTS)] + _fragment(line_body, _NAMES.get())
     return _reported(line_body, i, written)
@@ -2006,7 +2008,21 @@ def _said_body(f: Fact, label: str) -> str:
     #: no label said (a question not about time) the day stays (INBOX 1461:
     #: "had design class today" lost its day).
     body = re.sub(rf"(?:^|\s)on {re.escape(label)}(?: \([^)]*\))?,?", "", f.body).strip() if _TIMED.get() else f.body
-    return _fragment(body, _NAMES.get())
+    return _fragment(_named_pronoun(body, f.view), _NAMES.get())
+
+
+_PRONOUN_START = re.compile(r"(she|he|her|his)\b(?P<rest>.*)", re.I | re.S)
+_PERSON_TITLE = re.compile(r"[A-Z][a-z]+(?: [A-Z][a-z]+)?")
+
+
+def _named_pronoun(body: str, view) -> str:  # noqa: ANN001
+    """"She likes gardening" lifted out of the note titled "Mum" says nothing on its own: the pronoun is the
+    note's name ("Mum likes gardening", "Mum's birthday is 4 July"; R3-25). Only a one- or two-word name."""
+    title = (view.title or "").strip() if getattr(view, "titled", False) else ""
+    found = _PRONOUN_START.match(body or "")
+    if not found or not _PERSON_TITLE.fullmatch(title):
+        return body
+    return title + ("'s" if found.group(1).lower() in ("her", "his") else "") + found.group("rest")
 
 
 def _bodies_of(held: list[Fact], label: str) -> tuple[list[str], str]:
@@ -2493,8 +2509,8 @@ def _section_line(label: str, view, bodies: list[str], today: date | None, same:
         line = f"{'it also says' if same else _your_note(view) + ' says'} {composer_threads.voiced(head)}: {items}"
     elif not view.titled and first.startswith(label.strip().lower()):
         line = _noted_section(head, items, view, today)
-    elif not view.titled or re.search(r"\d", label):
-        # A label line of a title-less note, or one with a number ("Wedding table 4"), is the note's own words:
+    elif re.search(r"\s\d+$", label.strip()):
+        # A label that ends in a number ("Wedding table 4") is the note's own words:
         # "has a wedding table 4:" invented an article and rewrote its commas (R3-12).
         said = f"“{label.strip()}: {items}”"
         line = f"you wrote {said}" if not view.titled else f"{'it also says' if same else _your_note(view) + ' says'} {said}"
@@ -4736,7 +4752,7 @@ def answer(
     if one := composer_oneword.named(question, notes):
         return _one_word_result(one)
     #: "wen is the exam" is "when is the exam": the asking words put right, the notes' own words never changed (R3-17).
-    question = question_noise.repair(question_noise.tidy(" ".join(question.split())), known=composer._note_words(notes)) or question  # noqa: SLF001
+    question = question_noise.slips_only(question, known=composer._note_words(notes))  # noqa: SLF001
     asked = composer_ask.what_is(clean(question))
     kind = _kind_if_mine(asked)
     #: An act ("rename my gym log") is not a topic to digest: with its verb off

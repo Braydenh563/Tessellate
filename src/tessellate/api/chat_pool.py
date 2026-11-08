@@ -304,7 +304,7 @@ def _with_records(session: Session, question: str, entries: list, locale: str | 
 def _slips_put_right(question: str) -> str:
     """The question searched with its slips put right ("wat do i know abuot tokio"), which the search would
     otherwise match on "wat" and "abuot" (round 3, R3-17)."""
-    return question_noise.repair(question_noise.tidy(" ".join(question.split()))) or question
+    return question_noise.slips_only(question)
 
 
 def _with_holders(session: Session, question: str, entries: list, locale: str | None) -> list:  # noqa: ANN001

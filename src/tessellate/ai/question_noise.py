@@ -30,6 +30,7 @@ and measured by `tests/_composer_eval.py --noise`.
 
 from __future__ import annotations
 
+import difflib
 import math
 import re
 
@@ -2326,6 +2327,19 @@ def _small_talk_words() -> frozenset:
     if _SMALL_TALK.get("size") != size:
         _SMALL_TALK.update(size=size, words=frozenset(SLANG.keys() | SOCIAL.keys()))
     return _SMALL_TALK["words"]
+
+
+def slips_only(text: str, known=frozenset()) -> str:  # noqa: ANN001
+    """`repair`, keeping only the slips: a word changed to one that looks like it ("abuot" to "about", "tokio" to
+    "Tokyo") is taken, a word spelled out ("Dr" to "doctor", "uni" to "university") stays as typed, so the search
+    still finds the notes that say it as the person did (round 3, R3-17). The question as typed when the repair
+    added or dropped a word."""
+    typed = " ".join((text or "").split())
+    fixed = repair(tidy(typed), known=known) or typed
+    old, new = typed.split(" "), fixed.split(" ")
+    if len(old) != len(new):
+        return typed
+    return " ".join(b if difflib.SequenceMatcher(None, a.lower().strip("?.,!"), b.lower().strip("?.,!")).ratio() >= 0.6 else a for a, b in zip(old, new, strict=True))
 
 
 def repair(text: str, report: list | None = None, known=frozenset(), fixed: list | None = None) -> str:  # noqa: ANN001

@@ -295,3 +295,12 @@ def test_r3_37_a_reading_time_is_said_in_words(compact, said):
     from tessellate.ai import composer_calc
 
     assert composer_calc._read_said(compact) == said
+
+
+# --- R3-25: a pronoun lifted out of its note is the note's name ---------------------------------
+
+@pytest.mark.parametrize(("question", "kept"), [("what do I know about Mum", "Mum's birthday is 4 July"), ("when is Mum birthday", "Mum likes gardening")])
+def test_r3_25_a_sentence_that_opens_with_she_is_named(question, kept):
+    said = say(question, "# Mum\n\nShe likes gardening and crosswords. Her birthday is 4 July", "# Shopping\n\n- milk", "Dentist check-up on 11 November", "Remember to book a table for dinner in Lisbon")
+    assert "“She " not in said and "“Her " not in said, said
+    assert kept in said, said

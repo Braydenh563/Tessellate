@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Composer: 'She likes...' from a note titled Mum reads 'Mum likes...'; the search still finds 'Dr Patel' and 'uni' as typed while slips like 'abuot' are put right (R3-25, R3-17).
 - Composer: two notes titled for different things (Tokyo trip, Lisbon trip) are no contradiction, and a note's reading time is 'under a minute' or 'a 4-minute read' in a sentence (R3-24, R3-37).
 - Composer: 'Your newest note' for one note, the stats line says 'from today' like chat, and 'the first note I wrote about Sara' no longer searches for the word first (R3-16, R3-4).
 - Composer: the tool offer under a note answer points to its Help topic instead of pasting a paragraph; have I been to Tokyo names the Tokyo note; a single leftover list item is named, not counted (R3-7, R3-21, E3, R3-13).

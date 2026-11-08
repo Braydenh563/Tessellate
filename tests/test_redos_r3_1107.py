@@ -7,7 +7,7 @@ import time
 
 import pytest
 
-from tessellate.ai import composer_body, composer_digest, composer_property
+from tessellate.ai import composer_ask, composer_body, composer_digest, composer_property, question_noise
 
 N = 50_000
 BOUND_S = 2.0
@@ -24,11 +24,14 @@ RUNS = {
     "labelled": "Wedding table: " + "A b " * (N // 4),
     "colons": ":" * N,
     "when words": "when is " * (N // 8),
+    "first notes": "first note " * (N // 11),
+    "she he": "she he " * (N // 7),
 }
 
 READERS = {
     "composer_property.asked": composer_property.asked,
     "composer_property.subject": composer_property.subject,
+    "question_noise.slips_only": question_noise.slips_only,
 }
 
 
@@ -46,6 +49,11 @@ REGEXES = {
     "digest._OWN_DATE": composer_digest._OWN_DATE,
     "digest._WHEN_NOW": composer_digest._WHEN_NOW,
     "body._OWN_DATE": composer_body._OWN_DATE,
+    "digest._PRONOUN_START": composer_digest._PRONOUN_START,
+    "digest._PERSON_TITLE": composer_digest._PERSON_TITLE,
+    "digest._FIRST_PERSON": composer_digest._FIRST_PERSON,
+    "ask._ORDINAL_NOTE": composer_ask._ORDINAL_NOTE,
+    "ask._DATE_ASK": composer_ask._DATE_ASK,
 }
 
 
