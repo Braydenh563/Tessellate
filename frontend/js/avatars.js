@@ -3432,12 +3432,16 @@ const nmb = {
   pageAt: 0,
   //: `snap` runs instead of `fn` when the page is still being written after the last try: a hand-over
   //: makes its change without reading rather than read a dirty page.
-  afterClean(fn, tries = 6, snap = fn) {
+  //: `calm` (ms): also waits out a pointer that moved that recently, and then runs `fn` rather than `snap`
+  //: (lagjj-1108: a mood's hand-over, 132 to 248ms of reads at 4x, landed inside a pointer's move and every
+  //: pointerout waited behind it, 288 to 504ms).
+  afterClean(fn, tries = 6, snap = fn, calm = 0) {
     afterFrames(() => {
       const frame = performance.now();
       setTimeout(() => {
         const dirty = nmb.pageAt > frame || performance.now() < (window.uiSettlingUntil || 0);
-        if (dirty && tries > 1) nmb.afterClean(fn, tries - 1, snap);
+        const moving = calm > 0 && Date.now() - nmb.lastInput < calm;
+        if ((dirty || moving) && tries > 1) nmb.afterClean(fn, tries - 1, snap, calm);
         else (dirty ? snap : fn)();
       });
     }, 1);
@@ -5591,6 +5595,20 @@ function nameMarkBuddyDue(anim, beat) {
   if (gap) return nmbTempo.ticks % gap === 0;
   return beat || !nmbTempo.slow.has(anim);
 }
+//: **The periodic look is not taken while an answer streams, nor on a page written since the idle moment**
+//: (chatspasm-1108: 54 to 364ms of forced style at 4x CPU, 300ms after Send, with the idle gate already open:
+//: each delta dirties the pane, and the beat after the idle callback read it before a frame drew it). The
+//: list it holds serves meanwhile; a streaming answer defers the look to 6s, a written page re-arms the idle
+//: gate eight times at most. An asked-for look (`seen` 0) is not held back.
+nmbTempo.calm = (now) => {
+  if (nmbTempo.seen <= 0) return true;
+  if (typeof chatStreaming !== "undefined" && chatStreaming && now - nmbTempo.seen < 6000) return false;
+  if (nmbTempo.ready && nmb.pageAt > nmbTempo.readyAt && (nmbTempo.waits = (nmbTempo.waits || 0) + 1) < 8) {
+    nmbTempo.ready = false;
+    return false;
+  }
+  return true;
+};
 function nameMarkBuddyTempo() {
   nmbTempo.timer = 0;
   const buddy = document.getElementById("nm-buddy");
@@ -5611,20 +5629,7 @@ function nameMarkBuddyTempo() {
   nmbTempo.skips = 0;
   //: Not while a page or popup is arriving: `getAnimations` flushes all the style it has dirtied (306ms at 4x, INBOX 1534).
   //: Nor behind a modal (INBOX 1587): the beats go on with the list it has.
-  let due = now - nmbTempo.seen > 1000 && now >= (window.uiSettlingUntil || 0) && !nameMarkBuddyBehindCover();
-  //: **Nor while an answer streams, nor on a page written since the idle moment** (chatspasm-1108: 54 to
-  //: 364ms of forced style at 4x CPU, 300ms after Send, with the idle gate already open: each delta dirties
-  //: the pane, and the beat after the idle callback read it before a frame drew it). The list it holds
-  //: serves meanwhile; a streaming answer defers the periodic look to 6s, a written page re-arms the idle
-  //: gate eight times at most.
-  if (due && nmbTempo.seen > 0) {
-    const streaming = typeof chatStreaming !== "undefined" && chatStreaming;
-    if (streaming && now - nmbTempo.seen < 6000) due = false;
-    else if (nmbTempo.ready && nmb.pageAt > nmbTempo.readyAt && (nmbTempo.waits = (nmbTempo.waits || 0) + 1) < 8) {
-      nmbTempo.ready = false;
-      due = false;
-    }
-  }
+  const due = now - nmbTempo.seen > 1000 && now >= (window.uiSettlingUntil || 0) && !nameMarkBuddyBehindCover() && nmbTempo.calm(now);
   //: **The periodic look waits for the page to be drawn** (the lag log: `avatars.js TimerHandler:setTimeout
   //: 623ms (forced layout 465ms)`; 15 reads, 596ms, max 514ms at 4x CPU across seven tab clicks, right after
   //: the hold below ended and the arriving page was still dirty). An idle callback runs after the frame that

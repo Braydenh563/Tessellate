@@ -310,7 +310,7 @@ def test_first_readers_wait_for_an_arriving_page() -> None:
     assert "const look = (rig.dirty || !rig.reads) && !settling;" in frame
     assert "rig.still = busy || (settling && rig.dirty) ? 0" in frame, "it stays awake until it has read again"
     mood = _fn(ATLAS, "setAtlasMood")
-    assert "window.uiSettlingUntil" in mood and "nmb.afterClean(() => nameMarkBuddyBlend(boxes, latest, 700), 6, latest), Math.max(0, settling + 20))" in mood  # INBOX 1667: a frame on as well, and a dirty page snaps; `latest` is the newest call only (review: mood race)
+    assert "window.uiSettlingUntil" in mood and "nmb.afterClean(() => nameMarkBuddyBlend(boxes, latest, 700), 14, latest, 160), Math.max(0, settling + 20))" in mood  # INBOX 1667: a frame on as well, and a dirty page snaps; `latest` is the newest call only (review: mood race)
     # The follow frame holds only while it is glued to a panel (1575's hold). One
     # harness (1575's nine-tab series at 4x, 500 seeded notes, three runs each),
     # reads and forced ms under the follow frame: glue-only 155 and 2.65 s, no hold
