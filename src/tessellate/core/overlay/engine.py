@@ -1397,9 +1397,13 @@ class Engine:
 
     def _spell_spot(self, now: float) -> tuple[float, float] | None:
         """A spot to settle at: by a screen edge (never the middle third), more often the far one, clear of the caret;
-        the near one while a home chosen from the menu holds (`HOME_KEEP`)."""
+        the home itself while a home chosen from the menu holds (`HOME_KEEP`)."""
         m = self.current_monitor()
         k = self._scale()
+        if now - self.homed_at < HOME_KEEP and self.home_x is not None:
+            # INBOX 1696: the near edge was often where it had come from (a wander lands just out of the middle third),
+            # so the first spell took it back there in a puff, seconds after it arrived
+            return self._clear_of_caret(self.home_x, self.ground_y(m), SPELL_ROOM * self.size[1])
         side = tv.nearest_edge(self.x, m.area, self.size[0])
         if now - self.homed_at >= HOME_KEEP and self.rng.random() < 0.65:
             side = -side
@@ -1851,10 +1855,14 @@ class Engine:
         lo, hi = m.area[0], m.area[2] - self.size[0]
         far = [x for x in (lo + (hi - lo) * i / 10 for i in range(11)) if abs(x - self.x) >= WANDER_MIN * k]
         pool = far or [lo if self.x - lo > hi - self.x else hi]
-        gx = self.rng.choice(pool)
+        ground = self.ground_y(m)
+        gx, _gy = self._clear_of_caret(tv.out_of_middle(self.rng.choice(pool), m.area, self.size[0]), ground)  # where _go aims
         if abs(gx - self.x) < 12 * k:
             return False
-        self._go((gx, self.ground_y(m)), "settle", now)
+        # INBOX 1696: home from the moment it is chosen. Set on arrival, a step aside from the caret on the way (a puff to
+        # the nearest edge) left the old home, and the next decision took it back there
+        self.home_x = gx
+        self._go((gx, ground), "settle", now)
         self.homed_at = now
         return True
 
@@ -2492,10 +2500,13 @@ class Engine:
         long_leg = tv.far(self.x, goal[0], area) or tv.crosses_middle(self.x, goal[0], area, w)
         flat = abs(goal[1] - self.ground_y(m)) < 8 * self._scale() and abs(self.y - self.ground_y(m)) < 8 * self._scale()
         opposite = (self.x + w / 2 - (area[0] + area[2]) / 2) * (goal[0] + w / 2 - (area[0] + area[2]) / 2) < 0
+        # INBOX 1696: a floater's glide or swoop draws the idle frames, so a menu wander that drifted read as the stand
+        # picture sliding across the taskbar; it is a seen move (a blink, a ride, a portal), as between two spells
+        seen = then == "settle" and self.gait == "float"
         mode = tv.pick_mode(
-            self.rng, gait=self.gait, long_leg=long_leg, mood=self.mind.mood(self.now, self.hour),
+            self.rng, gait=self.gait, long_leg=long_leg or seen, mood=self.mind.mood(self.now, self.hour),
             recent=self.modes[-3:], edge_ok=flat and opposite and self.perch is None,
-            run_ok=abs(goal[0] - self.x) >= RUN_MIN * self._scale(), between=then == "spell",
+            run_ok=abs(goal[0] - self.x) >= RUN_MIN * self._scale(), between=then == "spell" or seen,
         )
         return mode
 
