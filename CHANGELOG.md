@@ -6,6 +6,9 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Desk companion (deskmood 3): let go over a window top it missed by a little (the 'out of reach' case of `_top_in_reach`, a drop, not a throw), it looks confused once it stands on the floor (the `confused` reaction, 20 s cooldown); a drop onto a top or over no window does not.
+- Desk companion (deskmood 2): `idle_return` is now emitted. `ScreenWatch.input_seen` reads the seconds since the last key or mouse input (age only) and says it once when input returns after 10 minutes without; the runner answers it from the typing check (a sitting or sleeping figure reads no screen events), retried for 10 s, and the welcome back replaces the sad face.
+- Desk companion (deskmood 1): left alone for 15 minutes (`engine.LONELY_AFTER`, between the sit at 10 and the sleep at 20) with no pointer within reach and no touch or reaction, it wears the sad face once per idle stretch; never asleep, busy or with Motion off, and the look does not reset the sit and sleep timers. Reuses the `refused` reaction.
 - Docs: a CONTEXT.md in three source folders says which files hold what and which tests guard them.
 - Diagram builder (dgmlive 3): Keep on "This chart is tall for this pane" is remembered by diagram only; the pane is reused across documents and its own flag hid the offer on the next tall document (Chromium: second tall chart showed 0 offers after Keep on the first, now 1; the first stays answered).
 - Diagram builder (dgmlive 2): ending a block rename by pressing another field (the dialog title) no longer pulls focus back to the block, so the title takes the typing and its own Ctrl+Z undoes only that typing (Chromium: the title stayed empty and Ctrl+Z removed the new block; now "Hello title" is typed and 3 blocks stay).

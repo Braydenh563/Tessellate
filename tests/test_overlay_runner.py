@@ -395,6 +395,27 @@ def test_typing_keeps_the_engine_quiet_and_an_unknown_input_age_does_not() -> No
     r.stop()
 
 
+def test_input_after_a_long_absence_makes_the_figure_welcome_the_person_back() -> None:
+    r, fake, clock, *_ = make(reduced=False)
+    assert r.start()
+    r.show()
+    assert wait_for(lambda: r.host.visible)
+    answered: list[str] = []
+    r.engine.react = lambda kind, now: answered.append(kind) or True  # type: ignore[method-assign]
+    for last_input, expect in (((10_000, 9_000), 0), ((10_000, 9_000 - 700_000 % 2**32), 0)):
+        fake.last_input = last_input
+        clock.t += 5
+        r._next_busy_check = 0.0
+        r._busy_gate(clock.t)
+        assert len(answered) == expect
+    fake.last_input = (10_000_000, 9_999_000)  # a key a second ago, after ten minutes of none
+    clock.t += 5
+    r._next_busy_check = 0.0
+    r._busy_gate(clock.t)
+    assert answered == ["idle_return"]
+    r.stop()
+
+
 def test_the_engine_is_given_the_hang_frames_measured_top_margin() -> None:
     r, *_ = make()
     assert r.start()

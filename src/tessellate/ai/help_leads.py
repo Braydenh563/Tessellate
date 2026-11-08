@@ -238,6 +238,7 @@ TOPIC_LEADS: dict[str, str] = {
     "profile": "Tell Atlas your name and a little about you for more personal answers.",
     "general-settings": "Set the calendar, seasons, bin and chat history to the way you work.",
     "desktop-companion": "Let the companion live on your desktop while the app is minimised.",
+    "desktop-companion-moods": "When the desktop companion looks sad, waves, or looks confused.",
     "updates": "Check for a newer version and install it when you choose.",
     "maintenance": "Run the launcher's checks and repairs from inside the app.",
     "logs": "See what went wrong and gather it into a bundle to report a problem.",
