@@ -52896,3 +52896,10 @@ Built: U16. Row text: U16 | Hypotheticals | None: "what if I move to Lisbon" is 
 - **What it does:** `ai/composer_small.py` `what_if()` (wired in `composer._early_answer`) answers "what if / suppose / imagine / what would happen if ..." by quoting the sentences of the best note that hold the premise's subject (verbs and fillers dropped, the subject worded as typed), then "Your notes do not say what would happen."; no note holds it: "Your notes hold nothing about Paris, and they do not say what would happen." A consequence is never stated, only quoted. It is no longer read as a translation. Module also carries A22 and A24 (their commits wire the route).
 - **Check:** `tests/test_small_b_1108_u16.py` (no model, fixed clock, plus the route with no model).
 - **Not verified:** model-on: the model still answers a what-if itself (decision 75); no instruction was added to its prompt.
+
+## Moved from the plans, 2026-11-08 (CHAT_PLAN A22)
+
+Built: A22. Row text: A22 | Where did I write X | Search results show the note, category, space | Not said in a sentence | "It is in 'Gym plan', in Fitness, last edited 3 days ago." from the row's own fields | S | 2
+
+- **What it does:** `composer_small.where_written()` answers "where did I write/put/note/save/mention X" with the note by name, the section heading above the match when it is not the title, its category, and how long ago (last edited, else written): "It is in **Gym plan**, under Leg day, in Fitness, last edited three days ago. It reads: Squats on Monday and deadlifts on Friday." Hooked first in `composer_digest.answer` (which otherwise took the question) and in `composer._early_answer`; None when no note holds every word, so the ordinary answer stands.
+- **Check:** `tests/test_small_b_1108_a22.py` (fixed clock, route with no model).
