@@ -118,4 +118,19 @@ out.pasteEvent = pasteWith("• one\n• two", "");
 out.pasteEventMid = pasteWith("• one", "abc ");
 out.pasteEventPlain = pasteWith("plain text", "");
 
+// Enter on a letter, roman or dash item continues it (L1); the keymap does not.
+const ent = (...lines) => L.enter(lines);
+out.enter = {
+  alpha: ent("a. one", "b. two"),
+  alphaIndented: ent("a. one", "b. two", "  c. no"),
+  roman: ent("i. a", "ii. b", "iii. c"),
+  romanFour: ent("i. a", "ii. b", "iii. c", "iv. d"),
+  dash: ent("-  two spaces"),
+  dot: ent("- plain"),
+  task: ent("- [ ] task"),
+  emptyAlpha: ent("a. one", "b. "),
+  z: ent(..."abcdefghijklmnopqrstuvwxyz".split("").map((c) => `${c}. x`)),
+  sentence: ent("A. Smith wrote this"),
+  lonelyA: ent("a. only"),
+};
 console.log(JSON.stringify(out));

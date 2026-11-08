@@ -1881,6 +1881,22 @@ globalThis.docLists = (() => {
   };
   //: A bullet pasted from a web page or a word processor: a Unicode dash, "•", "◦" or "▪" opening a line.
   const LOOK = /^([ \t]*)[\u2010-\u2014\u2022\u25E6\u25AA][ \t]+(?=\S)/gm;
+  //: What Enter does at the end of the last of `lines` when it is a letter, roman or dash item, which
+  //: the markdown keymap does not continue: `{ insert }` is the next marker after a newline, `{ exit }`
+  //: the text an empty item becomes (its level out, as `docListEnter` does for the others). Null leaves
+  //: Enter alone: not such an item, a task, or a letter run past `z`.
+  const enter = (lines) => {
+    const i = lines.length - 1;
+    const it = classify(lines)[i];
+    if (!it) return null;
+    const text = lines[i];
+    const empty = !text.slice(it.head).trim();
+    if (it.kind === "bullet" ? it.style !== "dash" || it.task : it.style !== "alpha" && it.style !== "roman") return null;
+    if (empty) return { exit: it.indent + "- " };
+    if (it.kind === "bullet") return { insert: `\n${it.indent}-  ` };
+    const n = it.style === "alpha" ? it.token.charCodeAt(0) - 96 : fromRoman(it.token);
+    return n === 26 && it.style === "alpha" ? null : { insert: `\n${it.indent}${marker(it.style, n + 1)}` };
+  };
   const pasteFix = (text, first = true) => {
     const cut = first ? 0 : text.indexOf("\n") + 1 || text.length;
     return text.slice(0, cut) + text.slice(cut).replace(LOOK, "$1- ");
@@ -1933,6 +1949,6 @@ globalThis.docLists = (() => {
     window.addEventListener("paste", pasted, true);
     mount();
   }
-  return { parse, classify, restyle, pasteFix, marker, mount, apply, glyph: (style) => GLYPH[style] || GLYPH.disc, bulletStyle: (text) => { const it = parse(text); return it?.kind === "bullet" ? it.style : "disc"; } };
+  return { parse, classify, restyle, enter, pasteFix, marker, mount, apply, glyph: (style) => GLYPH[style] || GLYPH.disc, bulletStyle: (text) => { const it = parse(text); return it?.kind === "bullet" ? it.style : "disc"; } };
 })();
 // list-styles:end

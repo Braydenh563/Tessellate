@@ -2832,7 +2832,7 @@ HELP_TOPICS.extend(
             "body": (
                 "List styles (Library, Documents). The arrow beside the List and Numbered "
                 "buttons picks the style: dots, circles, squares or dashes, and 1., 1), a. or i. "
-                "The marker is kept in the text, so every view and the export read it. "
+                "The marker is kept in the text, so every view and the export read it, and Enter at the end of an a., i. or dash item starts the next one. "
                 "A bullet pasted from elsewhere becomes a list item."
             ),
             "badge": {"label": "Library", "tab": "library"},

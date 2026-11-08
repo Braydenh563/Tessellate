@@ -2123,8 +2123,19 @@ function docProsePairKeymap(CM, anyHost = false) {
       if (!range.empty || view.state.selection.ranges.length > 1) return false;
       const line = view.state.doc.lineAt(range.head);
       if (range.head !== line.to || docInCodeAt(CM, view.state, range.head, anyHost)) return false;
-      const exit = docListEnter(line.text);
-      if (exit === null) return false;
+      let exit = docListEnter(line.text);
+      if (exit === null) {
+        //: Letter, roman and dash items: the keymap does not continue them (`docLists.enter`).
+        const rows = [];
+        for (let n = Math.max(1, line.number - 200); n <= line.number; n += 1) rows.push(view.state.doc.line(n).text);
+        const more = docLists.enter(rows);
+        if (!more) return false;
+        if (more.insert) {
+          view.dispatch({ changes: { from: range.head, insert: more.insert }, selection: { anchor: range.head + more.insert.length }, userEvent: "input" });
+          return true;
+        }
+        exit = docListEnter(more.exit);
+      }
       const next = docListExitText(exit, line.number > 1 ? view.state.doc.line(line.number - 1).text : null);
       view.dispatch({
         changes: { from: line.from, to: line.to, insert: next },

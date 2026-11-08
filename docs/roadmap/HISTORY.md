@@ -7,6 +7,10 @@ Split out of `ROADMAP.md`. Kept, not deleted, for one reason: **three sessions
 have independently rebuilt something that already existed.** This is the file
 that answers "has this been done?" before anyone starts.
 
+## Moved from the plans, 2026-11-08 (DOCUMENTS_PLAN 23, rows L1 to L5)
+
+- L1 built: `docLists.enter` (documents-cm.js) gives the next marker for a letter, roman or dash item; the Enter handler in `docProsePairKeymap` (documents-prose.js) calls it when `docListEnter` has no answer. Harness cases in `tests/_doc_lists_harness.js`. Measured in the editor: `a.`/`b.` then Enter gave `c.`, `ii.` gave `iii.`, a dash gave a dash, a plain dot stayed with the keymap, an empty `d.` ended the list.
+
 ## Moved from the plans, 2026-11-07 (CHAT_PLAN B6)
 
 From CHAT_PLAN.md "Placed from INBOX, 2026-11-05", row B6, built. The row as placed:
