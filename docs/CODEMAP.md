@@ -2,7 +2,7 @@
 
 Generated 2026-11-08 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7866, frontend ids 2644, CSS sections 522, backend routes 649, backend modules 9046, test files 2176, tests 18339, plan headings 1005, app scripts 28, boot scripts 37, script files 261.
+Counts: frontend functions 7866, frontend ids 2644, CSS sections 522, backend routes 649, backend modules 9046, test files 2177, tests 18342, plan headings 1005, app scripts 28, boot scripts 37, script files 261.
 
 ## Frontend functions (7866)
 
@@ -22491,20 +22491,20 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `CaptureError` | src/tessellate/core/overlay/capture.py:72 |
-| `_frame_of` | src/tessellate/core/overlay/capture.py:76 |
-| `_started` | src/tessellate/core/overlay/capture.py:97 |
-| `cache_root` | src/tessellate/core/overlay/capture.py:144 |
-| `common_box` | src/tessellate/core/overlay/capture.py:188 |
-| `complete` | src/tessellate/core/overlay/capture.py:149 |
-| `decode` | src/tessellate/core/overlay/capture.py:176 |
-| `draw_card` | src/tessellate/core/overlay/capture.py:155 |
-| `fetch_frames` | src/tessellate/core/overlay/capture.py:109 |
-| `is_key` | src/tessellate/core/overlay/capture.py:140 |
-| `key_for` | src/tessellate/core/overlay/capture.py:131 |
-| `prune` | src/tessellate/core/overlay/capture.py:245 |
-| `touches_edge` | src/tessellate/core/overlay/capture.py:202 |
-| `write_set` | src/tessellate/core/overlay/capture.py:208 |
+| `CaptureError` | src/tessellate/core/overlay/capture.py:73 |
+| `_frame_of` | src/tessellate/core/overlay/capture.py:77 |
+| `_started` | src/tessellate/core/overlay/capture.py:98 |
+| `cache_root` | src/tessellate/core/overlay/capture.py:145 |
+| `common_box` | src/tessellate/core/overlay/capture.py:189 |
+| `complete` | src/tessellate/core/overlay/capture.py:150 |
+| `decode` | src/tessellate/core/overlay/capture.py:177 |
+| `draw_card` | src/tessellate/core/overlay/capture.py:156 |
+| `fetch_frames` | src/tessellate/core/overlay/capture.py:110 |
+| `is_key` | src/tessellate/core/overlay/capture.py:141 |
+| `key_for` | src/tessellate/core/overlay/capture.py:132 |
+| `prune` | src/tessellate/core/overlay/capture.py:246 |
+| `touches_edge` | src/tessellate/core/overlay/capture.py:203 |
+| `write_set` | src/tessellate/core/overlay/capture.py:209 |
 
 ### src/tessellate/core/overlay/engine.py (9)
 
@@ -24470,7 +24470,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (18339)
+## Tests (18342)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -25898,6 +25898,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_overlay_alive_1670.py | 12 |
 | tests/test_overlay_bob_1670.py | 3 |
 | tests/test_overlay_come_1683.py | 5 |
+| tests/test_overlay_deskframes_1696.py | 3 |
 | tests/test_overlay_dest_1683.py | 10 |
 | tests/test_overlay_edges_1107.py | 20 |
 | tests/test_overlay_engine.py | 30 |

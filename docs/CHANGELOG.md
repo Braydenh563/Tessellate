@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Desk frames: the render pins every frame's tail, sways and breath to one moment and stops the page's blink clock (a masculine stand shipped with shut eyes), all frames re-rendered for both looks with the six wave swing frames, and the eye boxes re-measured (INBOX 1696 x, w).
 - Throwing the in-app companion no longer walks the whole page again on landing: the tab's surfaces were dropped a frame after they were found (a ResizeObserver's first report), so every landing re-read 149 to 299 boxes behind a whole-page layout (INBOX 1696 l, the 7.5 s freeze).
 - In-app companion: the edge move squeezes out through the side with wisps and comes back in eased, a hang drifts down before it leaves, and blink, cloud and bubble moves join the chooser (INBOX 1692).
 - Desk companion: idle time becomes 2 to 8 minute spells by hour and mood (tea, reading, doodling, fishing, stargazing, a nap under a blanket, watering a plant), standing still falls from about 50 to 11 minutes an hour, and it travels by sparkle blink, cloud ride or bubble as well as portal and puff (INBOX 1692).

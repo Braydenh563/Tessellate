@@ -107,13 +107,13 @@ def crop_box(images: list[Image.Image]) -> tuple[int, int, int, int]:
 
 
 def clip_idle_tails(folder: Path) -> None:
-    """Clip an idle picture's tail tip to at most one source pixel below the stand's bottom (INBOX 1670,
+    """Clip an idle picture's tail tip to no lower than the stand's bottom (it was one source pixel below until the render pinned stand's tail: the cycle then spread 3 rows) (INBOX 1670,
     16:40Z: the feminine idle bottom stepped 258 to 261 and the figure seemed to jitter). The tip is a few
     near-transparent rows of the swish, so clipping it costs nothing a person can see."""
     def bottom(im: Image.Image) -> int:
         return im.getchannel("A").point(lambda v: 255 if v >= 24 else 0).getbbox()[3]
 
-    limit = bottom(Image.open(folder / "stand.png").convert("RGBA")) + 1
+    limit = bottom(Image.open(folder / "stand.png").convert("RGBA"))
     for path in sorted(folder.glob("idle*.png")):
         im = Image.open(path).convert("RGBA")
         if bottom(im) <= limit:

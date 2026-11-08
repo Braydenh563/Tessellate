@@ -121,7 +121,8 @@ def test_a_set_is_cropped_to_one_box_with_cards_and_is_whole_or_absent(tmp_path)
     frames["tumble"] = capture.decode(figure_png("tumble", offset=60))
     folder = capture.write_set(capture.key_for("a"), frames, root=tmp_path)
     assert capture.complete(folder.name, root=tmp_path)
-    sizes = {Image.open(folder / f"{n}.png").size for n in sprites.FRAME_NAMES}
+    # Intent moved (INBOX 1696 x): the optional wave swing frames are not part of a captured set.
+    sizes = {Image.open(folder / f"{n}.png").size for n in (*capture.CAPTURED, *sprites.CARD_FRAMES)}
     assert len(sizes) == 1
     width, height = sizes.pop()
     assert width < CANVAS[0] and height < CANVAS[1]
