@@ -6,6 +6,8 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- In-app companion: the edge move squeezes out through the side with wisps and comes back in eased, a hang drifts down before it leaves, and blink, cloud and bubble moves join the chooser (INBOX 1692).
+- Desk companion: idle time becomes 2 to 8 minute spells by hour and mood (tea, reading, doodling, fishing, stargazing, a nap under a blanket, watering a plant), standing still falls from about 50 to 11 minutes an hour, and it travels by sparkle blink, cloud ride or bubble as well as portal and puff (INBOX 1692).
 - Fixed: the possessive reader in the phone-number ask reads the words before "'s number" backwards, so no pattern can start at every letter of a long run (CodeQL 2097).
 - Chat: a very long run-together word in a question is split in linear time (50,000 letters took 1.3 s, now 0.03 s).
 - Diagram builder: quicker building: a double press on empty picture adds a box, Ctrl+D duplicates, Ctrl+A picks all, Delete removes, Shift+Enter adds a joined box, Alt+Enter a sister, Ctrl+F finds, and a connector can be reversed.

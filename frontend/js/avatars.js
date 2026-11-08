@@ -3324,7 +3324,7 @@ const nmb = {
     return nmb.absent && nameMarkBuddyMotion().mode !== "full";
   },
   //: Far moves (companion-travel.js, lazy): the player it sets, the last move, a move to force, and what a move has out.
-  travelPlay: null, travelLast: "", travelForce: "", travelFx: [], travelTimers: [],
+  travelPlay: null, poseWas: "", travelLast: "", travelForce: "", travelFx: [], travelTimers: [],
   x: NaN, y: NaN, pose: "", legs: "", perch: "", tab: "", act: "", lastAct: "", timer: 0,
   lastInput: Date.now(), lastCheer: 0, lastPoke: 0, pointer: null, watchTimer: 0, watchAt: 0,
   cueTimer: 0, startledAt: 0, errandTimer: 0, readingErrand: false, shyAt: 0, shyTimer: 0, readTimer: 0, keyAt: 0, keyRun: 0,
@@ -5947,6 +5947,7 @@ function nameMarkBuddyMoveTo(buddy, spot, instant = false) {
   buddy.style.setProperty("--nmb-edge", `${nmb.edgeLine}px`);
   buddy.dataset.perch = nmb.perch;
   nameMarkBuddyGait(buddy);
+  nmb.poseWas = buddy.dataset.pose || "";
   buddy.dataset.pose = spot.pose;
   const dx = was.x - x;
   const dy = was.y - y;
@@ -6221,6 +6222,8 @@ function nameMarkBuddyGo(buddy, dx, dy, spot = {}, poseChanged = false, was = { 
   //: tumbling from side screen across the screen ... when I am on a new
   //: page"): a far move a sub-view asked for (`nmb.quiet`) crossfades too.
   if (nameMarkBuddyNoTravel() || (nmb.quiet && distance > size * NMB_FAR_SIZES)) {
+    //: A new view's far move is a sparkle blink (INBOX 1692), not a bare fade; reduced motion keeps the fade.
+    if (!nameMarkBuddyNoTravel() && nmb.travelPlay?.(buddy, dx, dy, size, false, was, "blink")) return;
     nameMarkBuddyCrossfade(buddy, dx, dy, 420);
     return;
   }

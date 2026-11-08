@@ -18,6 +18,9 @@
 //:   smoke   a puff, gone; a puff there, back
 //:   edge    off the nearest side of the window, in from the side nearest there
 //:   walk    on foot (avatars.js's own: a level way, or a climb across levels)
+//:   blink   sparkles, gone, sparkles there, back (also a far move a new view asked for)
+//:   cloud   a small cloud forms under it and carries it there, with a bob
+//:   bubble  it floats up in a bubble, drifts there and the bubble pops
 //:   fade    reduced motion: a crossfade, and nothing else
 //: Every move is one animation of the host's `translate` and `opacity`, on the
 //: compositor, plus a few small elements for the rings and the puffs (the lazy
@@ -29,7 +32,7 @@
 //: a side only). Nothing here clips it.
 //: `nmb.travelForce` names a move to play whatever the chooser would say (the
 //: sweep, scratchpad/ui-sweeps/companiontravel.js).
-const COMPANION_TRAVEL_MOVES = ["walk", "portal", "smoke", "edge"];
+const COMPANION_TRAVEL_MOVES = ["walk", "portal", "smoke", "edge", "blink", "cloud", "bubble"];
 //: A way on foot off the window and back in may not be longer than this many of its own widths.
 const COMPANION_TRAVEL_EDGE_SIZES = 14;
 
@@ -46,6 +49,8 @@ function companionTravelWeights(o) {
   const out = Math.min(o.x0, width - s - o.x0);
   const into = Math.min(o.x1, width - s - o.x1);
   if (d > s * 3 && out + into + s * 2 <= s * COMPANION_TRAVEL_EDGE_SIZES) w.edge = 2.5;
+  //: The new ways are seen, not rare (INBOX 1692: "more life to it"); each wants a way worth the show.
+  Object.assign(w, { blink: d > s * 2 ? 1.5 : 0, cloud: d > s * 3 ? 1.5 : 0, bubble: d > s * 3 ? 1 : 0 });
   if (o.last in w) w[o.last] = 0;
   return w;
 }
@@ -88,6 +93,7 @@ function companionTravelFx(buddy, cls, dx, dy, delay, parts, life) {
   host.appendChild(fx);
   nmb.travelFx.push(fx);
   setTimeout(() => fx.remove(), delay + life);
+  return fx;
 }
 
 //: The end of a move, or its being cut: everything it set comes off.
@@ -98,6 +104,7 @@ function companionTravelEnd(buddy, anim) {
   for (const fx of nmb.travelFx) fx.remove();
   nmb.travelFx = [];
   buddy.classList.remove("nmb-poofing");
+  if (nmb.pose && buddy.dataset.pose !== nmb.pose) buddy.dataset.pose = nmb.pose;
   if (buddy.classList.contains("nmb-walking")) nameMarkBuddyBlend(buddy, () => buddy.classList.remove("nmb-walking"));
   delete buddy.dataset.turn;
   nameMarkBuddyTravel(buddy, "");
@@ -168,40 +175,118 @@ const COMPANION_TRAVEL_PLAYERS = {
     companionTravelSteps(buddy, T * 0.14, T * 0.28);
     companionTravelSteps(buddy, T * 0.61, T * 0.29);
   },
-  //: Off the side of the window nearest where it was, in from the side nearest where it goes.
+  //: **Out through the edge and in through the edge** (INBOX 1692: "transformed sideways off the screen at the
+  //: top and on the screen at the bottom, no real animation"). A hang lets go and drifts down first, still
+  //: hanging until it does; it walks to the side eased in, squeezing narrow into the edge with wisps behind
+  //: it, and comes in from the other side the mirror way: wisps, then widening, eased out.
   edge(buddy, dx, dy, ctx) {
     const W = innerWidth;
     const was = ctx.was;
     const outTo = was.x + NMB_W / 2 < W / 2 ? -(was.x + NMB_W + 8) : W - was.x + 8;
     const inFrom = nmb.x + NMB_W / 2 < W / 2 ? -(nmb.x + NMB_W + 8) : W - nmb.x + 8;
-    const t1 = Math.max(500, Math.abs(outTo) * COMPANION_TRAVEL_PACE);
-    const t2 = Math.max(500, Math.abs(inFrom) * COMPANION_TRAVEL_PACE);
+    const hung = ctx.poseWas === "hang" && buddy.dataset.pose !== "hang";
+    const lead = hung ? 280 : 0;
+    const t1 = Math.max(700, Math.abs(outTo) * COMPANION_TRAVEL_PACE);
+    const t2 = Math.max(700, Math.abs(inFrom) * COMPANION_TRAVEL_PACE);
     const gap = 260;
-    const T = t1 + gap + t2;
-    const a = t1 / T;
+    const T = lead + t1 + gap + t2;
+    const at = (ms) => ms / T;
+    const squeeze = 0.2;
+    if (hung) buddy.dataset.pose = "hang";
     ctx.frames = [
       { translate: `${dx}px ${dy}px`, offset: 0 },
-      { translate: `${dx + outTo}px ${dy}px`, offset: a },
-      { translate: `${inFrom}px 0px`, offset: a + 0.001 },
-      { translate: `${inFrom}px 0px`, offset: (t1 + gap) / T },
+      { translate: `${dx}px ${dy + (hung ? 26 : 0)}px`, offset: at(lead), easing: "ease-in" },
+      { translate: `${dx + outTo}px ${dy + (hung ? 26 : 0)}px`, offset: at(lead + t1) },
+      { translate: `${inFrom}px 0px`, offset: at(lead + t1) + 0.001 },
+      { translate: `${inFrom}px 0px`, offset: at(lead + t1 + gap), easing: "ease-out" },
       { translate: "0px 0px", offset: 1 },
     ];
     ctx.ms = T;
+    const near = 0.8;
+    const sq = { scale: `${squeeze} 1`, opacity: 0.2 };
+    ctx.body = [
+      { scale: "1 1", opacity: 1, offset: 0 },
+      { scale: "1 1", opacity: 1, offset: at(lead + t1 * near), easing: "ease-in" },
+      { ...sq, offset: at(lead + t1) },
+      { ...sq, offset: at(lead + t1 + gap) },
+      { scale: "1 1", opacity: 1, offset: at(lead + t1 + gap + t2 * 0.3), easing: "ease-out" },
+      { scale: "1 1", opacity: 1, offset: 1 },
+    ];
     ctx.turn = outTo < 0 ? "l" : "r";
-    companionTravelSteps(buddy, 0, t1);
-    companionTravelSteps(buddy, t1 + gap, t2);
-    companionTravelAt(t1 + gap, () => (buddy.dataset.turn = inFrom < 0 ? "r" : "l"));
+    for (let i = 0; i < 3; i += 1) {
+      const f = near + (i / 3) * (1 - near);
+      companionTravelFx(buddy, "nmb-wisp", dx + outTo * f, dy, lead + t1 * f, 4, 520);
+      companionTravelFx(buddy, "nmb-wisp", inFrom * (1 - i * 0.12), 0, lead + t1 + gap - 120 + i * 90, 4, 520);
+    }
+    companionTravelSteps(buddy, lead, t1);
+    companionTravelSteps(buddy, lead + t1 + gap, t2);
+    if (hung) companionTravelAt(lead, () => (buddy.dataset.pose = nmb.pose));
+    companionTravelAt(lead + t1 + gap, () => (buddy.dataset.turn = inFrom < 0 ? "r" : "l"));
+  },
+  //: Sparkles over it, it spins small and is gone; sparkles there, it spins back. 1.1s.
+  blink(buddy, dx, dy, ctx) {
+    const T = 1100;
+    const cut = 0.3;
+    const pos = (x, y, extra = {}) => ({ translate: `${x}px ${y}px`, ...extra });
+    ctx.frames = [
+      pos(dx, dy, { opacity: 1, offset: 0 }),
+      pos(dx, dy, { opacity: 0, offset: cut }),
+      pos(0, 0, { opacity: 0, offset: cut + 0.001 }),
+      pos(0, 0, { opacity: 0, offset: 0.5 }),
+      pos(0, 0, { opacity: 1, offset: 0.78 }),
+      pos(0, 0, { opacity: 1, offset: 1 }),
+    ];
+    ctx.ms = T;
+    ctx.body = [
+      { scale: "1", rotate: "0deg", offset: 0 },
+      { scale: "0.1", rotate: "200deg", offset: cut, easing: "ease-in" },
+      { scale: "0.1", rotate: "200deg", offset: 0.5 },
+      { scale: "1", rotate: "360deg", offset: 0.8, easing: "ease-out" },
+      { scale: "1", rotate: "360deg", offset: 1 },
+    ];
+    companionTravelFx(buddy, "nmb-spark", dx, dy, 0, 7, 700);
+    companionTravelFx(buddy, "nmb-spark", 0, 0, T * 0.46, 7, 700);
+  },
+  //: A cloud forms under it, it steps on and is carried, bobbing, and steps off as it thins. 1.4 to 2.6s.
+  cloud(buddy, dx, dy, ctx) {
+    const T = Math.round(Math.min(2600, Math.max(1400, Math.hypot(dx, dy) * 2.4)));
+    const pos = (x, y, extra = {}) => ({ translate: `${x}px ${y}px`, ...extra });
+    ctx.frames = [pos(dx, dy, { offset: 0 }), pos(dx, dy, { offset: 0.2, easing: "ease-in-out" }), pos(0, 0, { offset: 0.85 }), pos(0, 0, { offset: 1 })];
+    ctx.ms = T;
+    ctx.body = [{ translate: "0px 0px", offset: 0 }, { translate: "0px -6px", offset: 0.2 }, { translate: "0px -2px", offset: 0.4 }, { translate: "0px -7px", offset: 0.6 }, { translate: "0px -2px", offset: 0.85 }, { translate: "0px 0px", offset: 1 }];
+    const fx = companionTravelFx(buddy, "nmb-cloud", dx, dy, 0, 0, T + 50);
+    fx?.animate([{ translate: "0px 0px", opacity: 0, offset: 0 }, { translate: "0px 0px", opacity: 1, offset: 0.14 }, { translate: "0px 0px", opacity: 1, offset: 0.2, easing: "ease-in-out" }, { translate: `${-dx}px ${-dy}px`, opacity: 1, offset: 0.85 }, { translate: `${-dx}px ${-dy}px`, opacity: 0, offset: 1 }], { duration: T, easing: "linear" });
+    companionTravelFx(buddy, "nmb-wisp", 0, 0, T * 0.86, 4, 520);
+  },
+  //: It floats up in a bubble, drifts across on a shallow sway and the bubble pops over where it goes. 1.8 to 3.2s.
+  bubble(buddy, dx, dy, ctx) {
+    const T = Math.round(Math.min(3200, Math.max(1800, Math.hypot(dx, dy) * 3)));
+    const steps = 6;
+    const lift = 46;
+    const pos = (u) => {
+      const sway = Math.sin(u * Math.PI * 3) * 10 * (1 - u);
+      return { translate: `${dx * (1 - u) + sway}px ${dy * (1 - u) - Math.sin(u * Math.PI) * lift}px`, offset: 0.16 + u * 0.7 };
+    };
+    ctx.frames = [{ translate: `${dx}px ${dy}px`, offset: 0 }, ...Array.from({ length: steps + 1 }, (_, i) => pos(i / steps)), { translate: "0px 0px", offset: 1 }];
+    ctx.ms = T;
+    const fx = companionTravelFx(buddy, "nmb-bubble", dx, dy, 0, 0, T + 50);
+    const path = ctx.frames.slice(1, -1).map((f) => {
+      const [x, y] = f.translate.split(" ").map(Number.parseFloat);
+      return { translate: `${x - dx}px ${y - dy}px`, offset: f.offset };
+    });
+    fx?.animate([{ translate: "0px 0px", opacity: 0, scale: "0.3", offset: 0 }, { translate: "0px 0px", opacity: 1, scale: "1", offset: 0.16 }, ...path, { translate: `${-dx}px ${-dy}px`, opacity: 1, scale: "1", offset: 0.88 }, { translate: `${-dx}px ${-dy}px`, opacity: 0, scale: "1.35", offset: 0.95 }, { translate: `${-dx}px ${-dy}px`, opacity: 0, scale: "1.35", offset: 1 }], { duration: T, easing: "ease-in-out" });
+    companionTravelFx(buddy, "nmb-wisp", 0, 0, T * 0.87, 5, 520);
   },
 };
 
 //: Play a far move; false when it should be walked (the chooser's "walk", or no player for it).
-function companionTravelPlay(buddy, dx, dy, size, flies, was) {
+function companionTravelPlay(buddy, dx, dy, size, flies, was, force = "") {
   const o = { last: nmb.travelLast || "", dx, dy, size, flies, reduced: nameMarkBuddyNoTravel(), win: [innerWidth, innerHeight], x0: was.x, x1: nmb.x };
-  const move = nmb.travelForce || companionTravelChoose(o, Math.random());
+  const move = force || nmb.travelForce || companionTravelChoose(o, Math.random());
   nmb.travelLast = move;
   const player = COMPANION_TRAVEL_PLAYERS[move];
   if (!player) return false;
-  const ctx = { was, frames: [], body: null, ms: 0, turn: "" };
+  const ctx = { was, frames: [], body: null, ms: 0, turn: "", poseWas: nmb.poseWas };
   for (const t of nmb.travelTimers) clearTimeout(t);
   nmb.travelTimers = [];
   for (const fx of nmb.travelFx) fx.remove();

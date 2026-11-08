@@ -177,3 +177,53 @@ def test_the_idle_acts_are_quiet_and_wait_for_their_sheet() -> None:
 def test_it_wanders_off_less_often() -> None:
     wander = _body(AV, "nameMarkBuddyWander")
     assert "0.35" not in wander
+
+
+# ---- INBOX 1692: the wrap has an exit and an entry, and there are more ways to go ----
+
+
+def _player(name: str) -> str:
+    start = TRAVEL.index(f"  {name}(buddy, dx, dy, ctx) {{")
+    return TRAVEL[start : TRAVEL.index("\n  },\n", start)]
+
+
+def test_an_edge_move_has_an_exit_an_entry_and_a_body() -> None:
+    edge = _player("edge")
+    assert "ctx.body = [" in edge  # the squeeze through the edge, not a bare slide
+    assert "squeeze" in edge and "nmb-wisp" in edge
+    assert "ease-in" in edge and "ease-out" in edge  # eased, never linear
+    assert "opacity" in edge
+
+
+def test_an_edge_move_from_a_hang_keeps_the_hang_until_the_exit() -> None:
+    edge = _player("edge")
+    assert 'ctx.poseWas === "hang"' in edge
+    # It is put back to hanging at the start and let go only after the drift down.
+    assert edge.index('buddy.dataset.pose = "hang"') < edge.index("buddy.dataset.pose = nmb.pose")
+    assert "nmb.poseWas" in AV and AV.index("nmb.poseWas = buddy.dataset.pose") < AV.index("buddy.dataset.pose = spot.pose;")
+    # A cut move puts the pose back.
+    assert "buddy.dataset.pose = nmb.pose" in _body(TRAVEL, "companionTravelEnd")
+
+
+@needs_node
+def test_the_new_ways_to_go_turn_up_for_a_far_move_and_not_for_a_near_one() -> None:
+    far = _all_moves(_o(y0=800, x0=900, x1=100, dx=800, dy=-300))
+    assert {"blink", "cloud", "bubble"} <= far
+    assert _all_moves(_o(dx=90, dy=0, x0=400, x1=310)) == {"walk"}
+    for last in ("blink", "cloud", "bubble"):
+        assert last not in _run([{"o": _o(last=last), "roll": i / 100} for i in range(100)])
+
+
+def test_every_move_has_a_player_and_a_sheet_rule() -> None:
+    css = (ROOT / "frontend" / "css" / "companion-travel-lazy.css").read_text(encoding="utf-8")
+    for move in ("blink", "cloud", "bubble", "edge", "portal", "smoke"):
+        assert f"  {move}(buddy, dx, dy, ctx) {{" in TRAVEL
+    for cls in ("nmb-wisp", "nmb-spark", "nmb-cloud", "nmb-bubble"):
+        assert f".{cls}" in css
+
+
+def test_a_new_views_far_move_is_a_blink_and_reduced_motion_keeps_the_fade() -> None:
+    go = _body(AV, "nameMarkBuddyGo")
+    quiet = go[go.index("nmb.quiet && distance") :]
+    assert '"blink"' in quiet[:400]
+    assert quiet.index("nameMarkBuddyNoTravel()") < quiet.index('"blink"') < quiet.index("nameMarkBuddyCrossfade(buddy, dx, dy, 420)")

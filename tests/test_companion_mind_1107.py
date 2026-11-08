@@ -130,6 +130,10 @@ def hour_of_life(seed: int, hour: int = 14):
 
     e = eng.Engine((100, 120), [eng.Monitor((0, 0, 1920, 1040), 96)], rng=random.Random(seed), idle_frames=0, home=(800, 920))
     e.hour = hour
+    # Intent moved (INBOX 1692, 00:50Z): with presence on, the hour is mostly a few minutes-long spells (a typing spell
+    # goes on in place, so its act runs twice in a row on purpose); this hour measures the mind's own picks, and
+    # spells have their variety tests in test_overlay_presence_1692.py.
+    e.presence = False
     names: list[str] = []
     real = e._start_act
     e._start_act = lambda name, now: (names.append(name), real(name, now))[1]  # type: ignore[method-assign]
@@ -199,12 +203,15 @@ def test_a_long_walk_crosses_most_of_the_screen_on_foot_then_looks_about() -> No
 
 
 def test_the_hour_summary_numbers() -> None:
+    # Intent moved (INBOX 1692, 00:50Z): travel is now seen (blink, cloud and bubble rides of 1.5 to 3.4 s), which takes a
+    # little of the hour and moves the seeded draws; four seeds swung 24 to 37 acts each, so the bar reads eight seeds
+    # (the base had 17 chains and 271 acts over them, this 11 and 264): 30 acts and more than one chain a seed-hour.
     chains = acts = 0
-    for seed in (1, 2, 3, 4):
+    for seed in range(1, 9):
         e, names = hour_of_life(seed)
         chains += e.mind.chains_done
         acts += len(names)
-    assert chains >= 6 and acts >= 120
+    assert chains >= 10 and acts >= 240
 
 
 def test_an_overdue_trip_is_chosen_more_often() -> None:

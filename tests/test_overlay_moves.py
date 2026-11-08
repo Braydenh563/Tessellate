@@ -333,7 +333,8 @@ def run_acts(e: Engine, minutes: float):
 
 def test_big_acts_are_minutes_apart_and_all_the_acts_are_in_one_table() -> None:
     # Intent kept, table grown (INBOX 1683 g): `climb` was missing, so no ambient run ever called `_can_climb`.
-    assert set(eng.ACTS) == {"idle", "stroll", "trip", "sleep", "hang", "peek", "climb"}
+    # Grown again (INBOX 1692): `spell`, the minutes-long presence act.
+    assert set(eng.ACTS) == {"idle", "stroll", "trip", "sleep", "hang", "peek", "climb", "spell"}
     for gait in ("walk", "float"):
         # Bar moved (INBOX 1670: a hang is 30 to 200 s and the rest is long): ten hours, not three.
         acts = run_acts(make(seed=4, gait=gait), 600)
@@ -345,13 +346,17 @@ def test_big_acts_are_minutes_apart_and_all_the_acts_are_in_one_table() -> None:
 def test_nothing_but_standing_while_the_person_is_busy() -> None:
     e = make()
     e.quiet = True
-    states, t = set(), 0.0
+    # Intent moved (INBOX 1692): a spell goes on quietly in place while the person types instead of a
+    # freeze, so "act" is allowed; what stays true is that it never travels, climbs or leaves the spot.
+    states, t, spots = set(), 0.0, set()
     out = e.update(t)
     while t < 600:
         t += (out.wake_ms or 1000) / 1000.0
         out = e.update(t, (0, 0))
         states.add(e.state)
-    assert states <= {"stand", "sit", "sleep"}
+        spots.add((out.x, out.y))
+    assert states <= {"stand", "sit", "sleep", "act"}
+    assert len(spots) == 1, spots
 
 
 def test_the_still_state_never_throws_hangs_or_peeks() -> None:

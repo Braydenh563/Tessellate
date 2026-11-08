@@ -89,12 +89,15 @@ def test_a_poke_and_a_command_wake_a_nap(how: str) -> None:
 
 def test_it_settles_out_of_the_middle_before_it_sleeps() -> None:
     e, _ = make("masculine", "walk", 7)
+    e.presence = False  # Intent moved (INBOX 1692): the first update would start a spell and its warp, which a nap cannot cut
     t = 100.0
     e.update(t)
     e.x = 900.0  # the middle third of 1920
     e._place_on_floor()
     e.command("nap", t)
-    assert e.state in ("walk", "crouch")
+    # Intent moved (INBOX 1692): the way out of the middle may now be a seen blink, cloud ride or bubble
+    # drift as well as a walk; what is kept is that it ends asleep, out of the middle.
+    assert e.state in ("walk", "crouch", "warp")
     _run(e, t, 12.0)
     assert e.state == "sleep"
     assert not tv.in_middle(e.x, AREA, e.size[0])
@@ -103,6 +106,7 @@ def test_it_settles_out_of_the_middle_before_it_sleeps() -> None:
 def _wander_legs(gait: str, legs: int = 200) -> tuple[Counter, list[str]]:
     """One engine wandering `legs` times in a row at 1920 wide; the modes it chose, in order."""
     e, _ = make("masculine", gait, 11)
+    e.presence = False  # Intent moved (INBOX 1692): a spell would be under way at the first update; this is about wander legs
     t = 100.0
     e.update(t)
     picked: list[str] = []

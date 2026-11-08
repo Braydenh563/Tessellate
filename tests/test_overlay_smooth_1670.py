@@ -92,6 +92,8 @@ def test_cycle_frames_per_second_as_drawn() -> None:
     e2, rec2 = sim.floating(sim.paced_host())
     print(f"walk cycle {walk_fps:.1f} frames/s; float cycle {sim.cycle_fps(rec2, ('drift',), 'walk'):.1f} frames/s")
     idle = sim.make("masculine", "float", 2)[0]
+    idle.presence = False  # Intent moved (INBOX 1692): with presence on a spell starts after the 6 to 22 s settle, mid-cycle
+    idle._enter("stand", 0.0)
     seen, t = [], 0.0
     while t < 8.0:
         out = idle.update(t)

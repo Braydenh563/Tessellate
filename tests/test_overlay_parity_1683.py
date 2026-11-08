@@ -31,6 +31,8 @@ def settle(e: eng.Engine, secs: float = 3.0, t: float = 0.0) -> float:
 def still(look: str = "masculine", seed: int = 2) -> tuple[eng.Engine, SpriteSet, float]:
     """A standing figure with no trip, climb or in-place act due: only what the test asks for happens."""
     e, s = make(look, "float", seed)
+    e.presence = False  # Intent moved (INBOX 1692, 00:50Z): spells (presence) have their own tests; this one measures the plain acts
+    e._enter("stand", 0.0)  # its first hold was drawn with presence on
     e.big_ready = e.trip_ready = e.climb_ready = e.ex.act_ready = float("inf")
     e.next_ambient = float("inf")
     e.ex.micro.next_at = float("inf")
@@ -178,6 +180,7 @@ def test_a_figure_that_stands_does_things_in_place_now_and_then(monkeypatch) -> 
     monkeypatch.setattr(eng, "IDLE_SIT", float("inf"))  # the person is about: the long-idle sit is off
     monkeypatch.setattr(eng, "IDLE_SLEEP", float("inf"))
     e, _s = make("masculine", "float", 3)
+    e.presence = False  # Intent moved (INBOX 1692, 00:50Z): a spell holds one act for minutes; this counts the plain acts
     e.big_ready = e.trip_ready = e.climb_ready = float("inf")
     names, t, last = [], 0.0, None
     while t < 1800.0:
