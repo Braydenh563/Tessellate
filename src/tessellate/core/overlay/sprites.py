@@ -497,8 +497,13 @@ class SpriteSet:
         for j in range(y1 - y0):
             at = ((y0 + j) * w + x0) * 4
             out[at:at + row] = patch[j * row:(j + 1) * row]
-        whole = Image.frombuffer("RGBA", (w, h), bytes(out), "raw", "BGRA", 0, 1)  # only its alpha is read: the box
-        return Frame(w, h, bytes(out), base.pad_x, base.pad_y, _drawn_box(whole))
+        # The box: the body's own, grown by what the patch draws (the patch alone is scanned, not the whole picture), so a
+        # swing of the tail never shrinks the hit box under the body.
+        px0, py0, px1, py1 = _drawn_box(mixed)
+        pb = (x0 + px0, y0 + py0, x0 + px1, y0 + py1)
+        bx = base.box if base.box[2] else pb
+        box = (min(bx[0], pb[0]), min(bx[1], pb[1]), max(bx[2], pb[2]), max(bx[3], pb[3]))
+        return Frame(w, h, bytes(out), base.pad_x, base.pad_y, box)
 
     def metrics(self, dpi: int = 96) -> dict[tuple[str, bool], tuple[int, int, int, int]]:
         """The drawn box of every frame, both mirrors, in the engine's own coordinates: from

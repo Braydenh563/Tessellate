@@ -122,21 +122,95 @@ def test_the_tail_never_holds_still_for_half_a_second() -> None:
             assert len(set(views[k:k + 15])) > 1, (name, k)
 
 
-def test_the_engine_draws_the_tail_at_the_display_rate_not_the_cycles() -> None:
-    e, _ = make()
-    t, seen, wakes = 1.0, [], []
-    for _ in range(90):
-        o = e.update(t)
-        seen.append((t, o.frame, o.tail))
-        wakes.append(o.wake_ms)
+def drive(e: eng.Engine, seconds: float = 6.0, pointer=None, start: float = 1.0) -> tuple[list, list]:
+    """Ticks of the engine while it stands (the look at a pointer is its own state and pace)."""
+    t, seen, wakes = start, [], []
+    while t < start + seconds:
+        o = e.update(t, pointer)
+        if e.state == "stand":
+            seen.append((t, o.frame, o.tail))
+            wakes.append(o.wake_ms)
         t += max(0.03, (o.wake_ms or 1000) / 1000.0)
+    return seen, wakes
+
+
+def test_an_active_tail_ceiling_a_hover_draws_at_the_active_pace_not_the_cycles() -> None:
+    """The active tail's ceiling: with the pointer near it redraws every `TAIL_LAYER_MS` at most (15 a second, 18 with the cycle's frame changes), more than
+    the 6 a second cycle; this is the only place the faster pace is allowed (rest is held to the old wake rate)."""
+    e, _ = make()
+    near = (e.x + e.size[0] // 2 + 60, e.y + e.size[1] // 2)
+    seen, wakes = drive(e, pointer=near, seconds=8.0)
     assert e.state == "stand"
     assert all(w is not None and w <= eng.TAIL_LAYER_MS for w in wakes)
     span = seen[-1][0] - seen[0][0]
     frames = len({f for _, f, _ in seen})
     tails = len({v for _, _, v in seen})
-    assert tails > 4 * frames, ("the tail's pictures outnumber the 6 a second cycle's", tails, frames)
-    assert span > 2.0 and len(seen) / span >= 25, (len(seen), span)
+    assert tails > 3 * frames, ("the tail's pictures outnumber the cycle's", tails, frames)
+    span = seen[-1][0] - seen[0][0]
+    assert 12 <= len(seen) / span <= 20, (len(seen), span)  # 15 a second, and the cycle's own frame change between two ticks
+
+
+def test_the_tail_is_fast_on_hover_and_just_after_a_touch_and_slow_at_rest() -> None:
+    e, _ = make()
+    e.tail_layer.name, e.tail_layer.until = "wag", 1e9
+    _, wakes = drive(e)
+    assert e._tail_ms(7.0) == eng.FLOW_TICK_MS, "a glad mood's wag alone is not the active pace"
+    assert max(w for w in wakes if w is not None) <= eng.FLOW_TICK_MS
+    near = (e.x + e.size[0] // 2, e.y + e.size[1] // 2)
+    e.update(8.0, near)
+    assert e._tail_ms(8.0) == eng.TAIL_LAYER_MS
+    e.pointer = None
+    assert e._tail_ms(9.0) == eng.FLOW_TICK_MS
+    e.last_click = 9.0
+    assert e._tail_ms(10.0) == eng.TAIL_LAYER_MS and e._tail_ms(9.0 + eng.TAIL_TOUCHED_FOR + 0.1) == eng.FLOW_TICK_MS
+
+
+def test_a_sit_and_a_droop_tick_at_the_rest_pace_and_the_warp_lands_on_every_tail_tick() -> None:
+    e, _ = make()
+    e._enter("sit", 1.0)
+    e.state_until = 1e9
+    e.tail_layer.name, e.tail_layer.until = "droop", 1e9
+    t, warps, last = 1.0, 0, None
+    for _ in range(40):
+        o = e.update(t)
+        assert o.wake_ms is not None and o.wake_ms <= eng.FLOW_TICK_MS
+        if o.flow is not None and o.flow != last:
+            warps += 1
+            last = o.flow
+        t += o.wake_ms / 1000.0
+    assert warps >= 36, warps  # a warp per tail tick, none between: the old rest cost plus the tail's patch
+
+
+def test_while_fast_the_warp_is_renewed_on_every_second_tail_tick() -> None:
+    e, _ = make()
+    e.last_click = 1.0
+    t, flows = 1.0, []
+    for _ in range(40):
+        o = e.update(t)
+        flows.append(o.flow)
+        t += eng.TAIL_LAYER_MS / 1000.0
+    changes = sum(a != b for a, b in zip(flows, flows[1:]))
+    assert 14 <= changes <= 26, changes
+
+
+def test_an_asleep_figure_has_no_tail_tick() -> None:
+    e, _ = make()
+    e._enter("sleep", 1.0)
+    assert not e._tail_ticks()
+    o = e.update(1.1)
+    assert o.tail is None and (o.wake_ms or 0) >= eng.FLOW_TICK_MS
+
+
+def test_the_mood_is_not_worked_out_every_tick() -> None:
+    e, _ = make()
+    calls = []
+    real = e.mind.mood
+    e.mind.mood = lambda now, hour=12: calls.append(now) or real(now, hour)
+    for k in range(10):
+        e._mood(1.0 + k * 0.03)
+    assert len(calls) == 1
+    e.mind.feel("startled", 1.5)
+    assert e._mood(1.5) == "startled", "an event shows at once"
 
 
 def test_no_layer_for_a_walker_a_reduced_figure_or_a_held_one() -> None:
@@ -174,3 +248,28 @@ def test_a_tick_costs_under_eight_ms_at_dpi_192(spr: sp.SpriteSet) -> None:
     for k in range(40):
         spr.tailed(base, "idle3", 192, False, layer.view(10.0 + k * STEP))
     assert (time.perf_counter() - t0) / 40 < 0.008
+
+
+@pytest.mark.parametrize("dpi", [96, 192])
+@pytest.mark.parametrize("flip", [False, True])
+@pytest.mark.parametrize("name", ["stand", "idle3", "blink", "look", "sit", "sitblink"])
+def test_the_tail_is_drawn_on_a_flow_warped_frame_at_both_dpis(spr: sp.SpriteSet, name: str, flip: bool, dpi: int) -> None:
+    flow = (3, -2, 1, 0, 2) * bh.FLOW_BANDS
+    posed = spr.posed(name, dpi, flip, (1.0, 1.0, 0.0, 0.0), flow)
+    flat = spr.frame(name, dpi, flip)
+    assert (posed.width, posed.height, posed.pad_x, posed.pad_y) == (flat.width, flat.height, 0, 0), "the warp never changes the canvas"
+    _, _, view = settled("curl")
+    drawn = spr.tailed(posed, name, dpi, flip, view)
+    assert drawn is not posed and drawn.bgra != posed.bgra, "the tail was spliced, not skipped"
+    w, h = posed.width, posed.height
+    x0, y0, x1, y1 = sp.SpriteSet._tail_region(w, h, flip)
+    for y in range(h):
+        a, b = posed.bgra[y * w * 4:(y + 1) * w * 4], drawn.bgra[y * w * 4:(y + 1) * w * 4]
+        if y0 <= y < y1:
+            assert a[:x0 * 4] == b[:x0 * 4] and a[x1 * 4:] == b[x1 * 4:]
+        else:
+            assert a == b
+    other = spr.tailed(posed, name, dpi, flip, settled("wrap")[2])
+    assert other.bgra != drawn.bgra
+    left, top, right, bottom = drawn.box
+    assert 0 <= left < right <= w and 0 <= top < bottom <= h

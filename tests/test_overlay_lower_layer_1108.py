@@ -113,11 +113,22 @@ def test_changing_the_state_is_never_a_step() -> None:
 def test_the_lower_layer_is_never_identical_across_ten_ticks_at_rest(state: str) -> None:
     e, t = put(state) if state else (make()[0], 1.0)
     views = []
-    for _ in range(100):
+    for _ in range(40):  # the rest tick is 170 ms: 40 of them are 7 s, before a trip may start
         o = e.update(t)
         views.append(o.flow)
         t += max(0.03, (o.wake_ms or 1000) / 1000.0)
     assert all(v is not None for v in views)
-    for k in range(0, 100 - 10, 5):
+    for k in range(0, 40 - 10, 5):
         window = views[k:k + 10]
         assert len(set(window)) > 1, (state, k, "frozen for ten ticks")
+
+
+def test_a_sad_reaction_is_read_from_the_same_signal_the_startle_is() -> None:
+    # `ex.over` is the reaction's face: sad is picked from it with no face passed in, as a startle is.
+    e, t = put("sad")
+    assert e._lower_state(t, None) == "sad"
+    e2, t2 = put("sad")
+    e2.ex.over = ("worried", t2, 1e9)
+    assert e2._lower_state(t2, None) == "startle"
+    e2.ex.over = None
+    assert e2._lower_state(t2, None) == ""

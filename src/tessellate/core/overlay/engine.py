@@ -209,12 +209,13 @@ POSE_OFF = ("held", "pressed", "fly", "fall", "rise", "peek", "emerge", "leap", 
 STRIDE = 3.5
 WALK_FRAMES = 12
 TAIL_TICK_MS = 16
-#: The layered tail (`behaviour.TailLayer`, atlascat-1108 C1) redraws at this pace while a figure stands or sits (30 a
-#: second: the tail's picture is one small warp, 1.3 ms at dpi 192, so a second of it costs about 4 percent of a core).
-TAIL_LAYER_MS = 33
-#: While the tail ticks at that pace the streams' own picture (a warp of the whole body, about 6 ms at dpi 192) is renewed
-#: this often, so a tick builds the tail only (1.3 ms) over the cached body picture.
-FLOW_VIEW_MS = 66
+#: The layered tail (`behaviour.TailLayer`, atlascat-1108 C1) redraws at the display's pace only while it is looked at: a
+#: pointer near, a touch in the last `TAIL_TOUCHED_FOR` seconds (15 a second; the tail's picture is one small warp, 2 ms at
+#: dpi 192). At rest (a sit, a lounge, a droop, a calm or glad mood) it ticks with the streams, every `FLOW_TICK_MS`, and the
+#: body warp is renewed on each of those ticks, so a body warp never lands between two tail ticks and rest costs the old
+#: pace plus one small tail patch. While fast, the body warp is renewed on every second tick. Asleep the tail never ticks.
+TAIL_LAYER_MS = 66
+TAIL_TOUCHED_FOR = 4.0
 GRAVITY = 2200.0
 NOTICE_NEAR = 120.0
 NOTICE_VERY_NEAR = 40.0
@@ -729,6 +730,7 @@ class Engine:
         self.state_at, self._seen_state = now, ""  # when the state was first seen drawn (a long sit is a lounge)
         self._flow_held: tuple[int, ...] | None = None
         self._flow_at = 0.0
+        self._mood_kept: tuple[float, float, str] = (-1e9, -1.0, "content")  # (when, the event's time, mood): see `_mood`
         self.last_y = 0.0
         self.hour = 12
         self.act: str | None = None
@@ -4236,9 +4238,10 @@ class Engine:
             self._seen_state, self.state_at = s, now  # read here, not in `_enter`: a sit counts from its first picture
         if s == "sleep":
             return "lie" if self.nap_until else ""
-        if s == "startle" or (self.ex.over is not None and self.ex.over[0] in ("surprised", "worried")):
+        over = self.ex.over[0] if self.ex.over is not None else None  # the reaction's face, the signal the startle reads
+        if s == "startle" or over in ("surprised", "worried"):
             return "startle"
-        if face is not None and face[0] == "sad":
+        if over == "sad" or (face is not None and face[0] == "sad"):
             return "sad"
         if s == "act" and self.act in bh.THINK_ACTS:
             return "think"
@@ -4253,9 +4256,28 @@ class Engine:
         walker, a figure the person has hold of)."""
         if self.gait != "float" or self.reduced or self.state not in ("stand", "sit") or frame.rstrip("0123456789") not in bh.TAIL_FRAMES:
             return None
-        mood = self.mind.mood(now, self.hour)
-        self.tail_layer.choose(self.state, mood, now)
+        self.tail_layer.choose(self.state, self._mood(now), now)
         return self.tail_layer.view(now)
+
+    def _mood(self, now: float) -> str:
+        """`Mind.mood`, kept for half a second (the needs move over minutes; an event shows at once): not worked out per tick."""
+        at, ev, kept = self._mood_kept
+        if 0.0 <= now - at < 0.5 and ev == self.mind.event_at:
+            return kept
+        kept = self.mind.mood(now, self.hour)
+        self._mood_kept = (now, self.mind.event_at, kept)
+        return kept
+
+    def _tail_fast(self, now: float) -> bool:
+        """The tail is being looked at: the pointer near, a touch just now. (A glad mood's wag at rest is drawn at the rest
+        pace too: glad is the usual mood, and it would hold the whole hour at the active pace.)"""
+        if now - self.last_click < TAIL_TOUCHED_FOR:
+            return True
+        p = self.pointer
+        return p is not None and math.hypot(p[0] - self.x - self.size[0] / 2, p[1] - self.y - self.size[1] / 2) <= NOTICE_NEAR * self._scale()
+
+    def _tail_ms(self, now: float) -> int:
+        return TAIL_LAYER_MS if self._tail_fast(now) else FLOW_TICK_MS
 
     def _flow_view(self, now: float, frame: str = "", lower: str = "") -> tuple[int, ...] | None:
         """What the wisps and streams are doing at `now`; under reduced motion a slow drift only. While the
@@ -4266,8 +4288,8 @@ class Engine:
             return None
         if self.state in FLOW_FROZEN:
             return self._flow_held
-        if self._flow_held is not None and self._tail_ticks() and 0.0 <= now - self._flow_at < FLOW_VIEW_MS / 1000.0:
-            return self._flow_held  # the tail's ticks (33 ms) reuse the body picture: only the tail is redrawn between two of these
+        if self._flow_held is not None and self._tail_ticks() and self._tail_fast(now) and 0.0 <= now - self._flow_at < 1.5 * TAIL_LAYER_MS / 1000.0:
+            return self._flow_held  # while fast, every other tail tick reuses the body picture: only the tail is redrawn between two warps
         self._flow_at = now
         self._flow_held = self.flow.view(now, calm=self.reduced, frame=frame or "stand", lower=lower, side=-float(self.facing))
         return self._flow_held
@@ -4287,7 +4309,7 @@ class Engine:
             wake = mine if wake is None else min(wake, mine)
         tick = FLOW_CALM_MS if self.reduced else FLOW_SLEEP_MS if self.state == "sleep" else FLOW_TICK_MS
         if self._tail_ticks():
-            tick = TAIL_LAYER_MS
+            tick = self._tail_ms(now)
         if self.state == "act" and self.spell is not None and self.act == self.spell["act"] and not self.reduced:
             tick = FLOW_SPELL_MS
         return tick if wake is None else min(wake, tick)
