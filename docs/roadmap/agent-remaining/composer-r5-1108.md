@@ -12,6 +12,15 @@ some differences from the auditors' answers are seed artefacts.
   "count notes about X" ran the count tool (`act_registry` cue); "how many words in my longest
   note" fell to the notebook total (`notebook_stats.answer`).
 
+- D3: `vocative` stripped "Atlas" as an assistant name before the compare reader saw it; "vs", "versus" and "or ... which" now read as a compare (`composer_tables`).
+- D2: `commands._resolve_one` matched titles by prefix, so an exact title that was also a prefix asked "Which note"; an exact title wins.
+- E5/D6: `composer_dialogue.follow_on` carries the subject for a question that asks only a property.
+- E23: `composer_calc` no longer echoes the answer as its "Read as" line.
+- Context leak (coordinator row): `answer` had lost `_isolated` in a split; `tests/conftest.py` resets the digest's context variables per test.
+- E22: `_name_said` (my landlord is Your landlord) and `_titled_names` (Tokyo capitalised in two titles) in `composer_digest`.
+- D21: `composer_help._short_line` caps the help line a feature word gets.
+- R3-35 measured: "tell me about the dentist", "dentist" and the count question now agree (three; Sara seven).
+
 ## Next
 
-- D3, D2, E5/D6, then E7, D10, E10, E22, E23, R3-2, R3-18, R3-20, R3-22, R3-33, R3-35, D21, D22.
+- E7, D10, E10, R3-2, R3-18, R3-20, R3-22, R3-33, R3-35, D22.

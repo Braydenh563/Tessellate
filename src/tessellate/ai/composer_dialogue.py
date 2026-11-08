@@ -228,6 +228,9 @@ class FollowOn:
     #: A correction's words ("no, the gym one": "gym"): the notes they name
     #: are put first, the ones the answer before quoted after (decision 35).
     prefer: str = ""
+    #: The question a later terse turn leans on in place of this one, when this one only asked a
+    #: property of the subject ("what should I pack"): the subject's own question stays the one.
+    stands: str = ""
 
 
 def _named_notes(answer: str) -> list[str]:
@@ -310,7 +313,7 @@ def _standing(turns: list[dict]) -> list[dict]:
         follow = _follow_one(text, out) if out else None
         prefer = ""
         if follow:
-            text = follow.question if follow.kind in _RESTATES else follow.previous
+            text = follow.stands or (follow.question if follow.kind in _RESTATES else follow.previous)
             #: A correction's note stays chosen for the turns that lean on it:
             #: "no, the data structures one", then "shorter", is still that note (B8).
             prefer = follow.prefer or (out[-1].get("prefer", "") if follow.kind != "subject" else "")
@@ -473,6 +476,26 @@ _PERSON_PRONOUN = re.compile(r"\b(?:her|him|she|he|hers|his)\b", re.I)
 _PERSON_THING = re.compile(r"^(?:(?:and|also|but|so)[, ]+)?(?:(?:what|how) about\s+)?(?:his|her|their)\s+[a-z][\w' -]{1,30}$", re.I)
 
 
+#: The thing of a subject a question asks for by its kind alone ("what should I
+#: pack", "when is the next appointment", "how much did it cost" without the
+#: "it"): it has no subject of its own, so the turn before's is the one (audit E5, D6).
+_PROPERTY_WORDS = frozenset(
+    "appointment appointments cost costs price prices deadline address pack bring wear start end flight flights hotel hotels next".split()
+)
+_OWNED = re.compile(r"\b(?:my|our|your)\b", re.I)
+
+
+def _property_only(text: str) -> bool:
+    """Whether `text` asks for a property of an unnamed subject: every word it
+    is about is one of `_PROPERTY_WORDS`, it names nothing of its own (no
+    capital, no number, no "my") and it opens with an asking word."""
+    q = " ".join(text.split()).rstrip("?.! ")
+    if not _ASKS_SLOT.match(q) or _OWNED.search(q) or re.search(r"\b[A-Z][a-z]|\d", q[1:]):
+        return False
+    terms = [t.lower() for t in subject_terms(q) if t.lower() not in _SLOT_PRONOUN.pattern]
+    return bool(terms) and all(t in _PROPERTY_WORDS or t.rstrip("s") in _PROPERTY_WORDS for t in terms)
+
+
 def _pronoun_kind(text: str) -> str:
     """Which pronoun follow-on `text` is: "bare" (a pronoun and no subject),
     "slot" ("how much does it cost"), "person" ("what should I get her"),
@@ -490,7 +513,7 @@ def _pronoun_kind(text: str) -> str:
     #: "what's the total", "how far in total": no subject of its own at all.
     if _TOTAL_ASK.search(text) and not _PRONOUN.search(text) and not set(subject_terms(text)) - _TOTAL_WORDS:
         return "total"
-    return ""
+    return "property" if _property_only(text) else ""
 
 
 def _pronoun_swap(text: str, named: str, kind: str) -> str:
@@ -536,8 +559,8 @@ def _follow_pronoun(text: str, previous: str, last: dict, turns: list[dict]) -> 
     #: A bare "that" keeps the old bare subject; the newer slot and person
     #: follow-ons read with the article ("how much does the Lisbon trip cost").
     named = (article.group(0).strip() + " " if article and kind != "bare" else "") + subject
-    if kind == "total":
-        return FollowOn(f"{text.rstrip(' ?.!')} for {named}?", previous, "", "pronoun")
+    if kind in ("total", "property"):
+        return FollowOn(f"{text.rstrip(' ?.!')} for {named}?", previous, "", "pronoun", stands=source if kind == "property" else "")
     if kind == "person_thing":
         thing = re.sub(r"^(?:(?:and|also|but|so)[, ]+)?(?:(?:what|how) about\s+)?", "", text.strip().rstrip("?.! "), flags=re.I)
         return FollowOn("what is " + _pronoun_swap(thing, named, "person"), previous, "", "pronoun")

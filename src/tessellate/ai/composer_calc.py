@@ -165,6 +165,19 @@ def _offset_reply(moved: dict, today: date) -> Reply:
     return _computed(f"{what.capitalize()} {when}{based} {verb} {_long(target)}.", f"{what} {'before' if moved['sign'] < 0 else 'after'} {_long(moved['base'])}")
 
 
+#: "14 March", "March 14th", "14 March 2027": a plain calendar date, whose weekday is asked.
+_PLAIN_DATE = re.compile(r"^(?:\d{1,2}(?:st|nd|rd|th)?\s+[a-z]{3,9}|[a-z]{3,9}\s+\d{1,2}(?:st|nd|rd|th)?)(?P<year>,?\s+\d{4})?$", re.I)
+
+
+def _weekday_of(rest: str, target: date, today: date) -> Reply:
+    """"14 March 2027 is a Sunday.", and when the year was not said, which one was assumed (audit E23):
+    the sentence does not repeat itself as its own reading."""
+    said = f"{target.day} {target:%B} {target.year} {'was' if target < today else 'is'} a {target:%A}."
+    if _PLAIN_DATE.match(rest).group("year"):
+        return Reply(said)
+    return Reply(f"{said}\n\n_Read as the {'last' if target < today else 'next'} {target.day} {target:%B}._")
+
+
 def _day_question(text: str, today: date) -> Reply | None:
     found = _DAYQ.match(text)
     if not found:
@@ -178,6 +191,10 @@ def _day_question(text: str, today: date) -> Reply | None:
     target = _resolve(rest, today)
     if target is None:
         return None
+    if _PLAIN_DATE.match(rest):
+        return _weekday_of(rest, target, today)
+    if rest.lower() in ("tomorrow", "yesterday", "tonight"):
+        return Reply(f"{rest.capitalize()} {'was' if target < today else 'is'} {_long(target)}.")
     return _computed(f"{rest.capitalize()} {'was' if target < today else 'is'} {_long(target)}.", f"{rest} as {_long(target)}")
 
 

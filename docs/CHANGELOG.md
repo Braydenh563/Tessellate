@@ -6,6 +6,12 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Composer: a feature word in chat (what is my name) gets one short help line or a pointer to its Help topic, not a Settings paragraph.
+- Composer: "who is my landlord" says "Your landlord" in the frame, and a name only titles write (Tokyo) keeps its capital when typed small in a count.
+- Composer: a date question (what day is 14 March) no longer repeats the answer as its own "Read as" line.
+- Composer: a follow-on that asks only for a property (where is it, when does it start, how much did it cost) keeps the previous subject.
+- Composer: pinning a note by its exact title no longer asks "Which note" when another title starts with it.
+- Composer: "X vs Y", "X versus Y" and "X or Y, which" are read as a compare even when a side is named like the assistant (Atlas).
 - Composer: the digest's `answer` runs in its own context again (a split had left the decorator on the helper), and the tests reset the digest's context variables per test, so `-n 2` no longer fails the age, versus and voice tests.
 - Composer (round 5, audit R3-6 and D4): "number of notes about Sara" and "count notes about the dentist" give the subject's real count, the same as "how many notes about Sara" (the notes were fetched for the topic only when the question opened with "how many", and "count notes" ran the count tool); "how many words in my longest note" gives that note's length, not the notebook total.
 - Composer answers: a name typed without its accents finds the accented note, "dentist number" is read as the phone, "days until my passport expires" keeps its verb, and a date in a log extended later is read against the edit (round 4: E14, E12, D15, E17).

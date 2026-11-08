@@ -904,6 +904,21 @@ def _titles() -> list[str]:
     return sorted({v.title for v in _VIEWS.get() if v.title and v.titled}, key=len, reverse=True)
 
 
+def _titled_names() -> set[str]:
+    """A word with a capital in two titles, one of them past the title's first
+    word ("Tokyo trip", "Packing for Tokyo"): a name, which keeps its capital
+    when the question typed it small (E22). "Meeting notes" and "Meeting with
+    Priya" do not make "meeting" one."""
+    seen: dict[str, int] = {}
+    inside: set[str] = set()
+    for t in _titles():
+        words = re.findall(r"\b[A-Z][\w'-]*", t)
+        for w in {w.lower() for w in words}:
+            seen[w] = seen.get(w, 0) + 1
+        inside |= {w.lower() for w in re.findall(r"(?<=\s)[A-Z][\w'-]*", t)}
+    return {w for w, n in seen.items() if n > 1 and w in inside}
+
+
 def _title_capitals() -> set[str]:
     """Words a title writes with a capital past its first word ("Project
     Atlas kickoff meeting"): names, which keep their capital in a fragment
@@ -1731,7 +1746,7 @@ def _as_written(topic: str, members: list[composer.NoteView]) -> str:
     #: A dictionary word capitalised inside a sentence ("Learn Portuguese
     #: before Lisbon") is a name too when the notes never write it small;
     #: `cased` checks that last part (2026-10-30: "three notes about lisbon").
-    names = {w for w in _NAMES.get() if w not in _dictionary() or w in placed or _always_capital(w, text)} | _title_capitals()
+    names = {w for w in _NAMES.get() if w not in _dictionary() or w in placed or _always_capital(w, text)} | _title_capitals() | _titled_names()
     whole = re.search(rf"\b{re.escape(topic)}\b", text, re.I) if " " in topic.strip() else None
     if whole and topic.islower() and re.search(r"\s[A-Z]", whole.group(0)) and any(w in names for w in topic.split()):
         #: "project atlas" is "Project Atlas", as the notes write it.
@@ -4206,7 +4221,7 @@ def _titled_body(view, name: str, sentence) -> str:  # noqa: ANN001
 
 def _who_many(out: _Out, name: str, found: list, today: date) -> None:
     """Every note that names the person: how many, then a line from each."""
-    out.lines.append(PHRASES["who_many"].format(name=name[:1].upper() + name[1:], count=_count(len({v.id for v, _ in found})), span=_span([v for v, _ in found], today)))
+    out.lines.append(PHRASES["who_many"].format(name=_name_said(name), count=_count(len({v.id for v, _ in found})), span=_span([v for v, _ in found], today)))
     said: set[str] = set()
     for v, s2 in found[:LINES["overview"]]:
         body = _titled_body(v, name, s2) or _tidy(_second_person(s2.text.strip()), v.written)
@@ -4249,6 +4264,13 @@ def _who_fact(view, s) -> str:  # noqa: ANN001
     return _tidy(_second_person(text), view.written)
 
 
+def _name_said(name: str, *, first: bool = True) -> str:
+    """The name the frame says: "my landlord" is "Your landlord" (E22), not a
+    quoted "My landlord", and the first letter has its capital."""
+    said = re.sub(r"^my\b", "your", name, flags=re.I)
+    return said[:1].upper() + said[1:] if first else said
+
+
 def _who(out: _Out, name: str, views, names: set[str], today: date) -> bool:
     found = _who_found(name, views)
     if not found:
@@ -4259,8 +4281,8 @@ def _who(out: _Out, name: str, views, names: set[str], today: date) -> bool:
     view, s = found[0]
     fact = _titled_body(view, name, s) or _who_fact(view, s)
     if len({v.id for v, _ in found}) == 1:
-        out.lines.append(PHRASES["who_once"].format(name=name[:1].upper() + name[1:], day=_day(view.written, today), fact=fact))
-        out.closing.append(PHRASES["only_names"].format(name=name[:1].upper() + name[1:]))
+        out.lines.append(PHRASES["who_once"].format(name=_name_said(name), day=_day(view.written, today), fact=fact))
+        out.closing.append(PHRASES["only_names"].format(name=_name_said(name, first=not name.lower().startswith("my "))))
     else:
         _who_many(out, name, found, today)
         return True
