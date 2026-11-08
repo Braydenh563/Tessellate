@@ -6084,7 +6084,7 @@ select {
   content: "";
   position: absolute;
   inset-block: var(--space-2);
-  inset-inline-start: calc(-2 * var(--space-3));
+  inset-inline-start: calc(-1 * var(--setting-bar-inset));
   width: 2px;
   border-radius: var(--radius-pill);
   background: var(--accent-text);

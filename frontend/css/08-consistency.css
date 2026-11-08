@@ -6565,7 +6565,6 @@ body .chip.item-label,
   --atl-aura: none;
   --atl-core: none;
   --atl-skirt: var(--atl-md);
-  --atl-flow: var(--atl-md);
   /* A chest star's brightness (atlas.js sets it per star). */
   --atl-b: 0.5;
   --atl-iris: var(--atl-ink);
@@ -7461,14 +7460,14 @@ svg.atl-defs { position: absolute; width: 0; height: 0; overflow: hidden; }
 .nm-atlas .atl-ribbon-edge { fill: none; stroke: white; stroke-width: 0.45; stroke-linecap: round; opacity: 0.42; }
 /* **The Galaxy Seed Sower's tail** (atlas.js, `lowerTaper: "sower"`;
    INBOX 535): her skin's light at the hips deepening to the nebula's
-   violet (`--atl-flow`), the inner side shaded deeper violet with galaxy
+   violet (`--atl-md`), the inner side shaded deeper violet with galaxy
    sparkles, a pale light down the outer side. Fills only. Every part is
    static paint in the lower layer, so its sway is the layer root's. */
 .nm-atlas .atl-st-flow0 { stop-color: var(--atl-lt); stop-opacity: 0.97; }
 .nm-atlas .atl-st-flow1 { stop-color: var(--atl-md); stop-opacity: 0.92; }
 .nm-atlas .atl-st-flow2 { stop-color: var(--atl-neb-c); stop-opacity: 0.9; }
 .nm-atlas .atl-st-flow3 { stop-color: var(--atl-neb2-c); stop-opacity: 0.9; }
-.nm-atlas .atl-sower-fill { fill: var(--atl-flow); }
+.nm-atlas .atl-sower-fill { fill: var(--atl-md); }
 /* The dress (atlas.js, `spec.sower`; INBOX 559, the owner of a striped
    gown with an outlined, scalloped hem: "it looks old and like a circus").
    No outline: a nebula's clouds in the flow's paint, two broad soft sweeps
@@ -9944,6 +9943,13 @@ aside[data-resizable].sidebar-collapsed > :not(.sidebar-collapse-toggle):not(.si
 #settings-modal :is(.settings-group, .settings-fold)
   label:is(.check-row, .setting-check):has(> input[type="checkbox"]):not(.row > *, .tool-picker > *) {
   margin-inline: calc(-1 * var(--space-3) - 1px);
+}
+/*    A switch that leads a help head (its '?' beside it) hangs on the start
+      side only, so it stands on the same edge and its changed bar on the
+      same x as the rows around it (INBOX 1696 c: 9px further in). */
+#settings-modal :is(.settings-group, .settings-fold)
+  .row.help-head > label:is(.check-row, .setting-check):first-child:has(> input[type="checkbox"]) {
+  margin-inline-start: calc(-1 * var(--space-3) - 1px);
 }
 /* 3. The hairline between two hung switch rows stops where the head's does
       (INBOX 464 (13)). Hanging the row (2) took its top border with it, 9px

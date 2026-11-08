@@ -126,7 +126,7 @@ function entityMentionRow(m) {
   const open = document.createElement("button");
   open.type = "button";
   open.className = "linklike inbox-row-title";
-  open.textContent = m.title;
+  open.textContent = noteNamePlain(m.title) || "Untitled note";
   open.title = "Open this note";
   open.addEventListener("click", () => {
     entityPageClose?.();
