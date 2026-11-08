@@ -943,7 +943,7 @@ function nameMarkLean(face, mood, lean) {
 const NAME_MARK_CREATURES = {
   panda: { head: "#f5f4ef", ears: "round", ear: "#2b2a28", patches: "#2b2a28" },
   bear: { head: "#9c755f", ears: "round", muzzle: "#d9b38c" },
-  koala: { head: "#a9aaa4", ears: "round", earSize: 4.6, inner: "#f3c6cf", nose: true },
+  koala: { head: "#757671", ears: "round", earSize: 4.6, inner: "#f3c6cf", nose: true },
   mouse: { head: "#b9b9b3", ears: "round", earSize: 5, inner: "#ff9da7" },
   monkey: { head: "#9c755f", ears: "side", muzzle: "#e8c9a4" },
   cat: { ears: "pointy", mouth: "cat", whiskers: true },
@@ -989,10 +989,10 @@ const NAME_MARK_CREATURES = {
   zombie: { head: "#9bb58a", stitches: true },
   minotaur: { head: "#8a5a2b", bullHorns: true, noseRing: true, muzzle: "#b0703a" },
   medusa: { head: "#8cd17d", snakeHair: "#3f7f3a" },
-  cyclops: { head: "#b3a0d6", oneEye: true },
+  cyclops: { head: "#7b6aa1", oneEye: true },
   phoenix: { head: "#f28e2c", beak: "#edc949", flameCrest: true, wing: "phoenix", limbs: "wings-feather" },
   yeti: { head: "#f5f4ef", wool: "#e8eef5", mask: "#9fb8d0" },
-  bat: { head: "#6b5b73", ears: "pointy", limbs: "wings-bat", wing: "bat", inner: "#ff9da7" },
+  bat: { head: "#7a6a82", ears: "pointy", limbs: "wings-bat", wing: "bat", inner: "#ff9da7" },
 };
 
 //: Which colour pairs (`NM_CHAR_PAIRS`) each mood leans to, when the name
@@ -1987,6 +1987,7 @@ function drawCharacter(seed, size = 20, mode = "mark") {
   const clip = make("g", { "clip-path": `url(#${id("c")})` }, torso);
   //: People wear clothes on the lower half; creatures show a paler belly.
   const outfit = beast ? null : style.outfit;
+  let cuff = null;
   if (outfit) {
     // The garment joins the roll, so two names on one pair and one roll still differ.
     let cloth = pair.cloth[((style.outfitColour || 0) + (outfit.length & 1)) % pair.cloth.length];
@@ -2004,7 +2005,13 @@ function drawCharacter(seed, size = 20, mode = "mark") {
       make("path", { d: "M22 53 C26 61 38 61 42 53", fill: base, stroke: clothLine, "stroke-width": 1 }, clip);
       for (const x of [27, 32, 37]) make("circle", { cx: x, cy: x === 32 ? 59.5 : 58, r: 1, fill: "#f5f4ef" }, clip);
     } else if (outfit === "sweater") {
-      for (const y of [68, 71]) make("path", { d: `M8 ${y} L56 ${y}`, stroke: clothLine, "stroke-width": 0.9 }, clip);
+      //: A ribbed hem and ribbed cuffs (the arms draw them below): two faint
+      //: lines were the tee at 64 px (INBOX 1696 r).
+      const rib = nmMix(cloth, "#000000", 0.16);
+      make("path", { d: "M0 69 C12 71 52 71 64 69 L64 92 L0 92 Z", fill: rib }, clip);
+      make("path", { d: "M0 69 C12 71 52 71 64 69", fill: "none", stroke: clothLine, "stroke-width": 1 }, clip);
+      for (let x = 6; x <= 58; x += 3) make("path", { d: `M${x} 72 L${x} 78`, stroke: clothLine, "stroke-width": 0.8, "stroke-opacity": 0.7 }, clip);
+      cuff = { fill: rib, line: clothLine };
     } else if (outfit === "dress") {
       //: A skirt that flares past the hips to below the body (INBOX 1696 r):
       //: the tee with a white stripe said nothing of a dress. Under the arms.
@@ -2081,7 +2088,7 @@ function drawCharacter(seed, size = 20, mode = "mark") {
   const head = make("g", { class: "nm-buddy-head" }, body);
   const eyeY = creature?.eyesUp ? 10 : 30;
   const eyes = [];
-  if (creature?.oneEye || reading.mutant?.eyes === 1) eyes.push([32, eyeY - 1, 1.35]);
+  if (creature?.oneEye || reading.mutant?.eyes === 1) eyes.push([32, eyeY - 1, 1.9]);
   else if (reading.mutant?.eyes === 3) eyes.push([32 - spread, eyeY, 1], [32 + spread, eyeY, 1], [32, eyeY - 10, 0.8]);
   else eyes.push([32 - spread, eyeY, 1], [32 + spread, eyeY, 1]);
   if (beast?.patches) for (const [x, y] of eyes) make("ellipse", { cx: x, cy: y + 1, rx: 7, ry: 8.5, transform: `rotate(${x < 32 ? 25 : -25} ${x} ${y})`, fill: beast.patches }, head);
@@ -2122,6 +2129,9 @@ function drawCharacter(seed, size = 20, mode = "mark") {
       make("circle", { cx: x + dx + r * 0.4 * k, cy: y + dy - r * 0.45 * k, r: 0.9 * k, fill: "#ffffff" }, eye);
     };
     const out = index === 0 ? -1 : 1;
+    //: A frog's eyes sit on its head bumps: a closed or happy eye there was a
+    //: dark arc on green with no eye white, so the bump gets the white.
+    if (creature?.eyesUp && ["happy", "content", "closed", "squeeze"].includes(s)) white(5.2, 5.2);
     //: On a dark patch (a panda, a sloth) a closed eye is drawn in white.
     const lidInk = beast?.patches ? "#ffffff" : NM_CHAR_INK;
     if (s === "squeeze") stroke(`M${x + out * 3} ${y - 3} L${x - out * 3} ${y} L${x + out * 3} ${y + 3}`, eye, 2, lidInk);
@@ -2313,8 +2323,12 @@ function drawCharacter(seed, size = 20, mode = "mark") {
   if (extras.includes("bubble")) make("circle", { class: "nm-heart", cx: 44, cy: my + 2, r: 2.4, fill: "#cfe8ff", stroke: "#7cc4f0", "stroke-width": 0.7 }, head);
   if (extras.includes("drool")) drop(36, my + 6, "nm-sweat");
   if (extras.includes("thermometer")) {
-    make("rect", { x: 34, y: my - 1, width: 9, height: 2, rx: 1, fill: "#ffffff", stroke: line, "stroke-width": 0.6, transform: `rotate(-18 34 ${my})` }, head);
-    make("circle", { cx: 34.5, cy: my, r: 1.3, fill: "#e8364f" }, head);
+    //: Glass stem out of the mouth, red mercury and a big red bulb at the
+    //: outer end: a white stick with a red tip in the mouth was a cigarette.
+    const therm = make("g", { transform: `rotate(-18 34 ${my})` }, head);
+    make("rect", { x: 34, y: my - 1.1, width: 9, height: 2.2, rx: 1.1, fill: "#e6f1fb", stroke: line, "stroke-width": 0.6 }, therm);
+    make("path", { d: `M38 ${my} L43 ${my}`, stroke: "#e8364f", "stroke-width": 0.9, "stroke-linecap": "round" }, therm);
+    make("circle", { cx: 43.6, cy: my, r: 2.5, fill: "#e8364f", stroke: line, "stroke-width": 0.6 }, therm);
   }
 
   // --- what it wears on its head and face --------------------------------------------
@@ -2433,8 +2447,11 @@ function drawCharacter(seed, size = 20, mode = "mark") {
       fill("M16 9 L14 -6 L22 1 L32 -10 L42 1 L50 -6 L48 9 Z", gold, goldLine);
       for (const x of [22, 32, 42]) make("circle", { cx: x, cy: 5, r: 1.6, fill: "#e8364f" }, hat);
     } else if (kind === "tiara") {
-      fill("M20 8 C22 2 28 -2 32 -6 C36 -2 42 2 44 8 C40 5 24 5 20 8 Z", "#dfe6ee", "#7a8796");
-      make("circle", { cx: 32, cy: 0, r: 1.8, fill: "#e36fa6" }, hat);
+      //: A thin band with three points and a gem (INBOX 1696 r): the old
+      //: grey triangle on the crown read as a paper hat or a fin.
+      fill("M19 8 C24 5.4 40 5.4 45 8 L44.4 10.2 C39 7.8 25 7.8 19.6 10.2 Z", "#dfe6ee", "#7a8796");
+      for (const d of ["M23 6.8 L25.5 0.5 L28 5.8 Z", "M29.5 5.6 L32 -5 L34.5 5.6 Z", "M36 5.8 L38.5 0.5 L41 6.8 Z"]) fill(d, "#dfe6ee", "#7a8796");
+      make("circle", { cx: 32, cy: 1.2, r: 1.7, fill: "#e36fa6", stroke: "#7a1f4f", "stroke-width": 0.6 }, hat);
     } else if (kind === "tricorn") {
       fill("M4 8 C14 -6 22 -8 32 -4 C42 -8 50 -6 60 8 C48 4 16 4 4 8 Z", "#2b2a33", nmLineFor("#2b2a33"));
       make("circle", { cx: 32, cy: 1, r: 2.4, fill: "#f5f4ef" }, hat);
@@ -2494,6 +2511,11 @@ function drawCharacter(seed, size = 20, mode = "mark") {
     const arms = [["l", "M13.5 56 Q9 61 7.5 67"], ["r", "M50.5 56 Q55 61 56.5 67"]];
     for (const [side, d] of arms) {
       const arm = outlined(d, armColour, 6, body, { class: `nmb-arm nmb-arm-${side}`, "data-pivot": side === "l" ? "13.5 56" : "50.5 56" });
+      if (cuff) {
+        const [ax, ay, bx, by] = side === "l" ? [5, 61.9, 12.4, 65.1] : [59, 61.9, 51.6, 65.1];
+        make("path", { d: `M${ax} ${ay} L${bx} ${by}`, stroke: cuff.fill, "stroke-width": 3.6 }, arm);
+        for (const o of [-1.5, 1.5]) make("path", { d: `M${ax} ${ay + o} L${bx} ${by + o}`, stroke: cuff.line, "stroke-width": 0.7 }, arm);
+      }
       if (claw) shape("path", { d: side === "l" ? "M7.5 67 L2 70 L6 72 L3 75 L10 72 Z" : "M56.5 67 L62 70 L58 72 L61 75 L54 72 Z", fill: nmMix(base, "#000000", 0.1) }, arm);
       if (side === "r" && reading.hand) nameCharacterHeld(reading.hand, arm, { make, shape, stroke, outlined, star, heart, base, line });
       //: The hand slots: a bell and a lantern held up in the right hand,
@@ -2645,8 +2667,11 @@ function nameCharacterHeld(kind, arm, t) {
       make("circle", { cx: hx + 7, cy: hy - 3.5, r: 1, fill: "#e2574c" }, g);
       break;
     case "paintbrush":
-      pole(hx, hy + 2, hx + 4, hy - 12);
-      shape("path", { d: `M${hx + 3} ${hy - 12} L${hx + 6} ${hy - 12} L${hx + 5} ${hy - 18} Z`, fill: "#4e79a7" }, g);
+      //: A handle, a steel ferrule and a tuft of paint-loaded bristles: the
+      //: stump was a triangle 3 wide.
+      pole(hx, hy + 2, hx + 4, hy - 12, wood, 2.2);
+      stroke(`M${hx + 3.3} ${hy - 12.6} L${hx + 4.6} ${hy - 15.4}`, g, 3.2, steel);
+      shape("path", { d: `M${hx + 2.6} ${hy - 15} C${hx + 1.6} ${hy - 21} ${hx + 5} ${hy - 25} ${hx + 7.4} ${hy - 24} C${hx + 8.4} ${hy - 20} ${hx + 7.4} ${hy - 16} ${hx + 6.4} ${hy - 15} Z`, fill: "#4e79a7" }, g);
       break;
     case "hammer":
     case "axe":
@@ -2668,15 +2693,24 @@ function nameCharacterHeld(kind, arm, t) {
       shape("path", { d: `M${hx - 3} ${hy - 6} L${hx + 11} ${hy - 6} L${hx + 11} ${hy - 2} L${hx + 3} ${hy - 2} L${hx + 1} ${hy + 3} L${hx - 2} ${hy + 3} Z`, fill: "#7b61c4" }, g);
       break;
     case "tableflip":
-      shape("rect", { x: hx + 1, y: hy - 16, width: 12, height: 3, rx: 1, fill: wood, transform: `rotate(-35 ${hx + 7} ${hy - 14})` }, g);
+      //: A table caught mid-flip: its top and two legs, tilted off the hand
+      //: (a lone brown bar read as a stick).
+      {
+        const tbl = make("g", { transform: `rotate(-52 ${hx + 3} ${hy - 6})` }, g);
+        shape("rect", { x: hx - 6, y: hy - 12, width: 18, height: 3.6, rx: 1, fill: wood }, tbl);
+        for (const lx of [hx - 4.4, hx + 8.4]) shape("rect", { x: lx, y: hy - 9, width: 2.2, height: 7, rx: 0.8, fill: wood }, tbl);
+      }
       break;
     case "wave":
     case "thumbsup":
     case "peace":
       arm.classList.add("nmc-raised");
-      if (kind === "thumbsup") shape("ellipse", { cx: hx + 1, cy: hy - 4, rx: 1.6, ry: 3, fill: t.base }, g);
-      if (kind === "peace") shape("ellipse", { cx: hx + 1, cy: hy - 4, rx: 1.3, ry: 3, fill: t.base }, g);
-      if (kind === "peace") shape("ellipse", { cx: hx - 2, cy: hy - 3.5, rx: 1.3, ry: 3, fill: t.base, transform: `rotate(-20 ${hx - 2} ${hy - 3.5})` }, g);
+      //: The raised arm shows in the figure (`.nmc-raised`, not the
+      //: `.nmb-hold` pair, which is the hanging reach): only the digits
+      //: were too small for 64 px, so they are longer and wider.
+      if (kind === "thumbsup") shape("ellipse", { cx: hx + 1, cy: hy - 5, rx: 2.3, ry: 4.4, fill: t.base }, g);
+      if (kind === "peace") shape("ellipse", { cx: hx + 1.6, cy: hy - 5, rx: 1.8, ry: 4.6, fill: t.base }, g);
+      if (kind === "peace") shape("ellipse", { cx: hx - 2.2, cy: hy - 4.6, rx: 1.8, ry: 4.6, fill: t.base, transform: `rotate(-22 ${hx - 2.2} ${hy - 4.6})` }, g);
       break;
     default:
       heart(hx + 2, hy - 4, 2.6, "#e8364f", g);

@@ -66,3 +66,91 @@ def test_the_dress_flares_past_the_body() -> None:
     assert min(xs) < 8 and max(xs) > 56, xs
     assert max(ys) > 76 and max(ys) < 86, ys
     assert min(xs) >= 1 and max(xs) <= 63, xs
+
+
+# --- rows 4 to 12 (atlasf1696-1108c.md) --------------------------------------
+
+
+def _block(start: str, end: str) -> str:
+    at = APP.index(start)
+    return APP[at : APP.index(end, at + len(start))]
+
+
+def test_the_tiara_is_a_thin_band_with_three_points_and_a_gem() -> None:
+    block = _block('} else if (kind === "tiara") {', "} else if (kind ===")
+    ds = re.findall(r'"(M[^"]+Z)"', block)
+    assert len(ds) == 4, "a band and three points"
+    band, *points = ds
+    ys = [y for _, y in _numbers(band)]
+    assert max(ys) - min(ys) <= 5, "the band is thin"
+    tips = sorted(min(y for _, y in _numbers(d)) for d in points)
+    assert len(points) == 3 and tips[0] <= -3 and tips[1] >= -1, tips
+    assert "#e36fa6" in block and "r: 1.7" in block, "a gem"
+
+
+def test_the_sweater_has_a_ribbed_hem_and_cuffs() -> None:
+    block = _block('} else if (outfit === "sweater") {', '} else if (outfit === "dress") {')
+    assert "x += 3" in block and "L${x} 78" in block, "rib lines running down the hem"
+    assert "cuff = {" in block
+    arms = _block("if (cuff) {", "if (claw)")
+    assert "stroke-width" in arms and "arm)" in arms, "cuffs drawn on the arm so they move with it"
+
+
+def test_a_raised_gesture_is_drawn_on_the_arm_not_the_hold_pair() -> None:
+    # `.nm-figure .nmb-hold { opacity: 0 }` hides the hanging reach only; the
+    # gesture is `.nmc-raised` on the right arm, which the figure rotates up.
+    css = (ROOT / "frontend" / "css" / "08-consistency.css").read_text(encoding="utf-8")
+    assert ".nm-figure .nmb-arm-r.nmc-raised { rotate: -115deg; }" in css
+    block = _block('case "thumbsup":', "default:")
+    assert 'arm.classList.add("nmc-raised")' in block
+    # The digits were 3 units long at 64 px: long enough to read now.
+    ry = [float(v) for v in re.findall(r"ry: (\d+(?:\.\d+)?)", block)]
+    assert ry and min(ry) >= 4.4, ry
+
+
+def test_tableflip_draws_a_table_and_the_brush_has_a_head() -> None:
+    flip = _block('case "tableflip":', 'case "wave":')
+    assert 'shape("rect"' in flip and "for (const lx of [" in flip, "a top and legs, not one bar"
+    brush = _block('case "paintbrush":', 'case "hammer":')
+    assert "steel" in brush, "a ferrule"
+    bristles = re.search(r"d: `M\$\{hx \+ 2\.6\}[^`]+`", brush)
+    assert bristles, "bristles as a curved tuft"
+    xs = [float(v) for v in re.findall(r"hx \+ (\d+(?:\.\d+)?)", bristles.group(0))]
+    assert max(xs) - min(xs) >= 5, "wider than the old 3 unit stump"
+
+
+def test_the_thermometer_is_not_a_cigarette() -> None:
+    block = _block('if (extras.includes("thermometer")) {', "// --- what it wears")
+    bulb = re.search(r'make\("circle", \{ cx: ([\d.]+), cy: my, r: ([\d.]+), fill: "#e8364f"', block)
+    assert bulb, "a red bulb"
+    cx, r = float(bulb.group(1)), float(bulb.group(2))
+    assert r >= 2.2, "a big bulb"
+    assert cx >= 40, "at the outer end, not the tip held in the mouth"
+    assert 'fill: "#ffffff"' not in block, "not a plain white stick"
+
+
+def test_a_frogs_closed_eyes_sit_on_whites() -> None:
+    assert re.search(r'creature\?\.eyesUp && \["happy", "content", "closed", "squeeze"\]\.includes\(s\)\) white\(', APP)
+
+
+def _luma(hex_: str) -> float:
+    c = [int(hex_[i : i + 2], 16) / 255 for i in (1, 3, 5)]
+    c = [v / 12.92 if v <= 0.03928 else ((v + 0.055) / 1.055) ** 2.4 for v in c]
+    return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2]
+
+
+def _contrast(a: str, b: str) -> float:
+    la, lb = sorted((_luma(a), _luma(b)), reverse=True)
+    return (la + 0.05) / (lb + 0.05)
+
+
+def test_bat_koala_and_cyclops_hold_three_to_one_on_both_grounds() -> None:
+    for name in ("bat", "koala", "cyclops"):
+        colour = re.search(rf'  {name}: \{{ head: "(#[0-9a-f]{{6}})"', APP).group(1)
+        assert _contrast(colour, "#171a26") >= 3, (name, "dark")
+        assert _contrast(colour, "#eef0f6") >= 3, (name, "light")
+
+
+def test_the_cyclops_eye_is_big_for_the_head() -> None:
+    m = re.search(r"creature\?\.oneEye[^\n]+eyes\.push\(\[32, eyeY - 1, ([\d.]+)\]\)", APP)
+    assert m and float(m.group(1)) >= 1.8
