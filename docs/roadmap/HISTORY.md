@@ -52931,3 +52931,11 @@ Built: T10. Row text: T10 | Random pick | `resurface.ranked` | "pick one of pizz
 - **What it does:** `ai/composer_chance.py` (reached through `composer_quick`, hooked in `composer_extra.answer`) answers "pick one of pizza, sushi, tacos" and "choose between tea and coffee": "I pick tacos." then "_Read as one pick at random from pizza, sushi and tacos._" Seeded by the chat seed and the question, so one chat repeats its pick. Two to twenty options; "my notes", "number" and "reminders" are left alone; no note is read.
 - **Check:** `tests/test_composer_chance_1108.py` (fixed clock, exact sentences, 20k linear timing).
 - **Not built:** Picking a random note ("pick one of my notes") is left to the A24 old-note ask.
+
+## Moved from the plans, 2026-11-08 (CHAT_PLAN T13)
+
+Built: T13. Row text: T13 | Time and date now | Gemini `utility` shape, invisible | Today's date, the time, week number, "what day is it" | Local clock and the user's timezone setting; computed | S | 2
+
+- **What it does:** `ai/composer_clock.py` (through `composer_quick`) answers from the turn's date: "what week is it" gives "It is week 45 of 2026." (ISO, weeks start Monday), "what quarter is it" "It is quarter 4 of 2026, October to December.", "what day of the year is it" "Today is day 312 of 2026, and 53 days remain.", "what's tomorrow's date" "Tomorrow is Monday 9 November 2026." Each says how it was read; no note is read.
+- **Check:** `tests/test_composer_clock_1108.py` (fixed clock, exact sentences, ISO year edge, 20k linear timing).
+- **Not built:** Week of a named date, leap year and days left in the year are the Time and date row.

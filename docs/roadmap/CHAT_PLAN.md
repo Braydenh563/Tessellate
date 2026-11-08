@@ -1301,7 +1301,7 @@ branch's pint and simpleeval go with Brief 35 (policy 1).
 | T10 | Random pick | Built. Moved to HISTORY.md ("Moved from the plans, 2026-11-08 (CHAT_PLAN T10)"). | | | | |
 | T11 | Dice and coin | None | "roll 2d6", "flip a coin", "roll a dice" | `random` with the same labelling; the roll is stated with each die | S | 2 |
 | T12 | Templates | See X13 | See X13 | See X13 | M | 7 |
-| T13 | Time and date now | Gemini `utility` shape, invisible | Today's date, the time, week number, "what day is it" | Local clock and the user's timezone setting; computed | S | 2 |
+| T13 | Time and date now | Built. Moved to HISTORY.md ("Moved from the plans, 2026-11-08 (CHAT_PLAN T13)"). | | | | |
 
 #### Proactive (decision 28: rarely, on real signals, never while typing)
 
