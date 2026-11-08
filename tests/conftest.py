@@ -521,4 +521,6 @@ def _fresh_digest_context():
             try:
                 var.set(Context().run(var.get))  # a fresh context answers with the variable's own default
             except LookupError:
-                pass
+                # A variable with no default has nothing an earlier test could
+                # have left behind, so there is nothing to reset.
+                continue
