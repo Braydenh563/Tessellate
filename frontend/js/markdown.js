@@ -1030,6 +1030,8 @@ function openMenuAtPoint(items, ariaLabel, x, y, returnFocus = null) {
     if (menu.contains(document.activeElement)) return;
     menu.querySelector("button")?.focus({ preventScroll: true });
   });
+  //: The menu itself, for a caller that decorates its rows: it may be moved out of its host (`escapeMenuIfClipped`), so a lookup by host can miss it.
+  return menu;
 }
 
 //: What a right-click on a link offers, by what the link is. An address can be

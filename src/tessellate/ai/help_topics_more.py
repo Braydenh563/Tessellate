@@ -3268,8 +3268,8 @@ MORE_TOPICS.extend([
             "diagram keyboard", "mmd", "diagram file",
         ),
         "body": (
-            "A diagram is a Mermaid document. Picture opens first: the "
-            "blocks on the left, the picture beside them. List gives the blocks list the room instead; "
+            "Picture opens first: the "
+            "blocks left, the picture beside them. List gives the blocks list the room instead; "
             "Source and Split show text; Ctrl+Z undoes "
             "either. Add shows the last shape you used: press it to add one, or press its arrow "
             "for every shape and its key. Connect to... on a block draws an "
@@ -3282,20 +3282,20 @@ MORE_TOPICS.extend([
             "three steps: Add a shape, Name it, Connect it, or Start from an example. "
             "The corner bar zooms (Zoom in, Zoom out, Fit), as do Ctrl+wheel and a pinch; "
             "its percentage is typeable and 100% is the drawing's own size; Shift+arrow keys pan. "
-            "Shift+click picks a range, Ctrl+click adds one; Escape lets go of the pick ; a bar offers Delete, "
-            "Duplicate, Box them, Done, any picked grip moves all. "
-            "Press or drag a block from the shelf onto the picture; long press a block for its menu. "
+            "Shift+click picks a range, Ctrl+click adds one; Escape lets go of the pick; a bar offers Delete, "
+            "Duplicate, Box them, Done; any picked grip moves all. "
+            "Press or drag a block from the shelf onto the picture to join the nearest box; long press a block for its menu. "
             "Keys "
             "on a block: arrows walk, Enter renames, N adds a Box, 1 to 7 the other shapes, Shift+N the last one, G adds a group, C or J joins, "
-            "K colours, ? lists keys, Delete removes, Alt+Up and Alt+Down reorder, Alt+Right nests, Alt+Left lifts out. "
-            "Suggest (in the ... menu on a phone) starts a diagram: "
+            "K colours, ? lists keys, Delete removes, Alt+Up and Alt+Down reorder, Alt+Right nests, Alt+Left lifts. "
+            "Suggest (in the ... menu on a phone) starts one: "
             "Templates (then Use this template), "
             "From my notes "
             "and Describe it (a model; dimmed with none). On a blank diagram a suggestion becomes "
             "the diagram; otherwise blocks arrive as ghosts: "
-            "Tab takes one, Shift+Tab lets it go, Enter adds the ones taken and "
-            "Escape drops them all, and Ctrl+Z undoes the whole addition. "
-            "More kinds: next topic."
+            "Tab takes one, Shift+Tab lets it go, Enter adds those taken and "
+            "Escape drops them all; Ctrl+Z undoes the whole addition. "
+            "Kind asks before it clears blocks. More kinds: next topic."
         ),
         "badge": {"label": "Documents", "tab": "documents"},
     },

@@ -56,7 +56,8 @@
     const { S, key } = g;
     const stage = S.fig.parentElement;
     const at = document.elementFromPoint(g.x, g.y);
-    if (!at || !stage?.contains(at) || at.closest(".dock")) return null;
+    //: A dock (the zoom bar, the shelf) over the picture is not a dead spot: every point of the stage takes a drop.
+    if (!at || !stage?.contains(at)) return null;
     const img = imageOf(S);
     const id = img && S.hit ? math.nodeAt(S.hit, img.getBoundingClientRect(), g.x, g.y) : "";
     //: Over a group's box and no node: into that group (R8c). Not into a dragged group, or into one inside it.

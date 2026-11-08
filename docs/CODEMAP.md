@@ -2,7 +2,7 @@
 
 Generated 2026-11-08 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7908, frontend ids 2652, CSS sections 522, backend routes 649, backend modules 9169, test files 2221, tests 18683, plan headings 1004, app scripts 28, boot scripts 37, script files 263.
+Counts: frontend functions 7908, frontend ids 2652, CSS sections 522, backend routes 649, backend modules 9169, test files 2222, tests 18686, plan headings 1004, app scripts 28, boot scripts 37, script files 263.
 
 ## Frontend functions (7908)
 
@@ -753,10 +753,10 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `boardEmbedMarkdown` | frontend/js/markdown.js:858 |
 | `columnAlign` | frontend/js/markdown.js:63 |
 | `isTableSeparator` | frontend/js/markdown.js:15 |
-| `linkAtEvent` | frontend/js/markdown.js:1084 |
+| `linkAtEvent` | frontend/js/markdown.js:1086 |
 | `linkCard` | frontend/js/markdown.js:954 |
 | `linkCardPath` | frontend/js/markdown.js:922 |
-| `linkMenuItems` | frontend/js/markdown.js:1041 |
+| `linkMenuItems` | frontend/js/markdown.js:1043 |
 | `mdBlockEnd` | frontend/js/markdown.js:50 |
 | `mdCalloutElement` | frontend/js/markdown.js:227 |
 | `mdCalloutHead` | frontend/js/markdown.js:208 |
@@ -3204,7 +3204,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `node` | frontend/js/diagram-canvas.js:43 |
 | `over` | frontend/js/diagram-canvas.js:55 |
 | `overlay` | frontend/js/diagram-canvas.js:10 |
-| `wire` | frontend/js/diagram-canvas.js:90 |
+| `wire` | frontend/js/diagram-canvas.js:91 |
 
 ### frontend/js/diagram-edge-pick.js (1)
 
@@ -24708,7 +24708,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (18683)
+## Tests (18686)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -25323,6 +25323,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_diagram_builder.py | 20 |
 | tests/test_diagram_d3.py | 2 |
 | tests/test_diagram_deep_1588.py | 5 |
+| tests/test_diagram_dgmleft_1108.py | 3 |
 | tests/test_diagram_document.py | 7 |
 | tests/test_diagram_door_panel.py | 2 |
 | tests/test_diagram_doors_1588.py | 5 |
