@@ -1751,6 +1751,10 @@ class Engine:
         if self.state == "hang" and not self.reduced:
             self._let_go()
             return True
+        if self.state == "warp" and self.spell is not None and not self.reduced:  # a request ends the puff to a spell's spot: it is taken at once
+            self.spell = None
+            self._enter("stand", now)
+            return True
         return self.state in self._FREE
 
     def _nap(self, now: float) -> None:
@@ -1759,6 +1763,7 @@ class Engine:
             self._leave_perch(now, hop=False)
             return
         self.perch = None
+        self.spell = None
         self.follow_until = self.follow_close_until = 0.0
         self.relocate_at = None
         if self.reduced:

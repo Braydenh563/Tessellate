@@ -2,7 +2,7 @@
 
 Generated 2026-11-08 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7908, frontend ids 2652, CSS sections 522, backend routes 649, backend modules 9178, test files 2223, tests 18680, plan headings 1004, app scripts 28, boot scripts 37, script files 263.
+Counts: frontend functions 7908, frontend ids 2652, CSS sections 522, backend routes 649, backend modules 9178, test files 2223, tests 18682, plan headings 1004, app scripts 28, boot scripts 37, script files 263.
 
 ## Frontend functions (7908)
 
@@ -24722,7 +24722,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (18680)
+## Tests (18682)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -26199,7 +26199,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_overlay_life_1670.py | 25 |
 | tests/test_overlay_modes_1107.py | 3 |
 | tests/test_overlay_moves.py | 26 |
-| tests/test_overlay_nap_1683u.py | 6 |
+| tests/test_overlay_nap_1683u.py | 7 |
 | tests/test_overlay_pace_1683.py | 5 |
 | tests/test_overlay_parity_1683.py | 29 |
 | tests/test_overlay_peek_edges_1107.py | 13 |
@@ -26208,7 +26208,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_overlay_presence_1692.py | 18 |
 | tests/test_overlay_release_1696.py | 5 |
 | tests/test_overlay_rest_1670.py | 21 |
-| tests/test_overlay_rest_life_1670.py | 7 |
+| tests/test_overlay_rest_life_1670.py | 8 |
 | tests/test_overlay_ride_1670.py | 16 |
 | tests/test_overlay_ring_1692.py | 3 |
 | tests/test_overlay_roam.py | 19 |
