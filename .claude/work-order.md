@@ -14,6 +14,7 @@ tier: max (weekly 32% at 2026-11-08 16:00Z), four agents at once, Sonnet or Haik
 - [ ] perf P6, P7, P9 (audit-1108-perf.md); coil breath on the compositor (restlayout-1108.md)
 - [ ] "put it in today's note" read by the move reader; r3fix single-list intro-line route
 - [ ] Layered deep dive next round per surface (desk, in-app, Atlas, diagram, composer)
+- [ ] Open audit rows on other surfaces (audit-1031-ranked.md first; board, mind map, notes, documents, code editor, OCR), FABLE_BRIEF findings, plans and BACKLOG, smallest first (owner 16:35Z)
 - [ ] Session end at 45% weekly or queue done: full suite, Morning summary, retro
 
 ## 2026-11-07 overnight queue (HANDOVER Now 2026-11-07c)
