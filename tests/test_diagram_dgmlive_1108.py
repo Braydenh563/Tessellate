@@ -15,3 +15,14 @@ def test_a_rename_ended_by_a_press_on_another_field_does_not_pull_focus_back_to_
     assert "const onBlur = (event) => end(true, event.relatedTarget)" in body
     assert "const end = (keep, movedTo = null) =>" in body
     assert "if (block && !movedTo && document.activeElement !== block) block.focus();" in body
+
+
+OUTLINE = (JS / "diagram-outline.js").read_text(encoding="utf-8")
+
+
+def test_keep_on_the_sideways_offer_is_remembered_by_diagram_only_never_on_the_reused_pane():
+    """Measured in Chromium: Keep on one document hid the offer on the next, because the pane (and its flag) is reused across documents."""
+    body = OUTLINE.split("function offer(")[1].split("\n  }\n")[0]
+    assert "sidewaysAsked" not in body
+    assert "!answered.has(whose(S))" in body
+    assert "answered.add(whose(S))" in body
