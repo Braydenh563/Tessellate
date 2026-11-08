@@ -4185,10 +4185,22 @@ const NAME_MARK_BUDDY_SURFACES = [
 const NMB_SURFACE_CAP = 80;
 let nameMarkBuddyIndex = null;
 let nameMarkBuddyIndexObserver = null;
+let nameMarkBuddyIndexSize = null;
 
 function nameMarkBuddyIndexReset() {
   nameMarkBuddyIndex = null;
   nmb.covers = null;
+}
+//: **Dropped when the tab changes size, not when it is first watched** (INBOX 1696 l, the owner's log:
+//: `spotNow` 7500ms, 6905 of it forced layout). A ResizeObserver reports once as it starts observing, so
+//: the walk was dropped a frame after it was made, every time: a throw's landing walked the page again
+//: after the release's writes, 149 to 299 box reads behind one whole-page layout (spotreads1696.js).
+function nameMarkBuddyIndexResized(entries) {
+  const box = entries[entries.length - 1]?.contentRect;
+  const size = box ? `${Math.round(box.width)}x${Math.round(box.height)}` : "";
+  const was = nameMarkBuddyIndexSize;
+  nameMarkBuddyIndexSize = size;
+  if (was !== null && was !== size) nameMarkBuddyIndexReset();
 }
 
 //: The tab's surfaces, found by walking it rather than by naming them all:
@@ -4303,8 +4315,9 @@ function nameMarkBuddyEdges(tab) {
   if (nameMarkBuddyOnBoard()) edges.push(...nmb.boardEdges(floor, ceiling));
   nameMarkBuddyIndex = { tab, edges };
   if (page && typeof ResizeObserver === "function") {
-    if (!nameMarkBuddyIndexObserver) nameMarkBuddyIndexObserver = new ResizeObserver(nameMarkBuddyIndexReset);
+    if (!nameMarkBuddyIndexObserver) nameMarkBuddyIndexObserver = new ResizeObserver(nameMarkBuddyIndexResized);
     nameMarkBuddyIndexObserver.disconnect();
+    nameMarkBuddyIndexSize = null;
     nameMarkBuddyIndexObserver.observe(page);
   }
   return edges;
