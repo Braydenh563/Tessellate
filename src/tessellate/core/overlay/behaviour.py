@@ -288,7 +288,7 @@ def shift_every(name: str) -> tuple[float, float] | None:
             if b.get("shifts"):
                 return float(b["every"][0]), float(b["every"][1])
     except (KeyError, IndexError, TypeError, ValueError, AttributeError):
-        pass
+        return None  # a malformed catalogue entry is no beat: the act keeps its built-in pose shifts
     return None
 
 
