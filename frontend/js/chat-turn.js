@@ -770,7 +770,7 @@ async function chatSendTurn(preset, opts = {}) {
       //: too long to be a sentence, or none, falls back to a line that still
       //: says what to do next.
       miss = error instanceof TypeError;
-      const said = String(error?.message || "").trim();
+      const said = String(error.message || "").trim();
       timeline.failRunningStep(
         said && said.length <= 160 ? said : "The model stopped before it finished. Try again, or check Settings, Models."
       );

@@ -798,7 +798,10 @@ def split_run_on(word: str, known=()) -> tuple[str, str] | None:  # noqa: ANN001
     if len(word) < 6 or not word.isalpha() or is_word(word, known):
         return None
     small = DETERMINERS | PREPOSITIONS | frozenset(FUNCTION_PRIOR) | frozenset({"then", "when", "that", "what", "this", "are", "is"})
-    for cut in range(2, len(word) - 1):
+    #: Only a cut that leaves a small word at either end can match, so only those cuts are tried: every cut of a long
+    #: run copied the word each time (50,000 letters took 1.3 s, round 3 ReDoS sweep).
+    m, n = max(map(len, small)), len(word)
+    for cut in sorted({*range(2, min(m, n - 2) + 1), *range(max(2, n - m), n - 1)}):
         head, tail = word[:cut], word[cut:]
         if (head in small or tail in small) and is_word(head, known) and is_word(tail, known) and min(len(head), len(tail)) >= 2:
             return head, tail

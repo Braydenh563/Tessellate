@@ -2315,7 +2315,8 @@ def _split(word: str) -> str | None:
     low = word.lower()
     if len(low) < 5 or low in VOCABULARY or low in REAL_WORDS:
         return None
-    for cut in range(2, len(low) - 1):
+    #: The head is an asking word, so only cuts up to the longest one are tried (each cut copies the word).
+    for cut in range(2, min(len(low) - 1, max(map(len, ASKING)) + 1)):
         head, tail = low[:cut], low[cut:]
         if head in ASKING and tail in VOCABULARY:
             return f"{head} {tail}"
