@@ -89,7 +89,7 @@ def test_an_mmd_document_opens_in_blocks_and_its_view_is_never_stored():
     sync = docs[docs.index("function syncDocFileType(") :]
     sync = sync[: sync.index("\n  docCmSyncFileType();")]
     assert 'setDocView(type.ext === "mmd" ? "canvas" : "source")' in sync and "docViewState.allows(type, docView)" in sync
-    assert "A diagram has Canvas, Blocks, Split and Source." in sync
+    assert "A diagram has Picture, List, Split and Source." in sync
     setter = docs[docs.index("function setDocView(") :]
     setter = setter[: setter.index("\n}\n")]
     # held means "not written to the prefs a markdown document reads".

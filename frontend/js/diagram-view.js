@@ -183,6 +183,8 @@
       img.draggable = false;
       img.style.maxWidth = "none";
       img.style.width = `${d.w * state.scale}px`;
+      //: A new picture (an edit redraws it) empties the pane and the browser clamps the scroll to 0: the place the person was reading comes back (INBOX 1661 g).
+      if (img !== shown) fig.scrollTo(...(shown ? seen : [0, 0])), (shown = img);
       fig.dataset.zoom = state.fit ? "fit" : (state.scale / f).toFixed(2);
       readout(state.scale);
       for (const after of fig.onzoom || []) after();
@@ -340,6 +342,9 @@
     stage.append(bar);
     stage.append(note);
 
+    let shown = null;
+    let seen = [0, 0];
+    fig.addEventListener("scroll", () => (seen = [fig.scrollLeft, fig.scrollTop]), { passive: true });
     (fig.onpaint ||= []).push(paint);
     new ResizeObserver(paint).observe(fig);
 
@@ -375,7 +380,8 @@
     };
     const roomy = () => fig.scrollWidth > fig.clientWidth + 1 || fig.scrollHeight > fig.clientHeight + 1;
     fig.addEventListener("pointerdown", (event) => {
-      if (event.button) return;
+      //: A handle, an arrow's end or the name field sits in the figure (diagram-overlay.js): its press is not a pan.
+      if (event.button || event.target.closest?.(".dgm-overlay > *")) return;
       if (!points.size) (travel = 0), (wasted = 0);
       cancelGlide();
       trail = [{ t: event.timeStamp, x: event.clientX, y: event.clientY }];

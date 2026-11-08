@@ -30,7 +30,7 @@
   function wire(S, h) {
     const fig = S?.fig;
     const stage = fig?.parentElement;
-    const layer = stage?.querySelector(".dgm-overlay");
+    const layer = fig?.querySelector(":scope > .dgm-overlay");
     if (!layer || S.k || fig.dataset.edges) return;
     fig.dataset.edges = "1";
     const img = () => fig.querySelector(".md-mermaid-img");
@@ -150,7 +150,7 @@
     };
 
     fig.addEventListener("dblclick", (event) => {
-      if (!S.hit || !rect() || event.target.closest(".dock, .dgm-handle, .dgm-rename")) return;
+      if (!S.hit || !rect() || event.target.closest(".dock, .dgm-overlay > *")) return;
       const node = nodeAt(event.clientX, event.clientY);
       const arrow = !node && math.edgeAt(S.hit, rect(), event.clientX, event.clientY);
       const edge = arrow && S.m.edges.find((e) => math.edgeId(S.m, e) === arrow);
@@ -174,11 +174,10 @@
     (fig.onpaint ||= []).push(settle);
     (fig.onzoom ||= []).push(settle);
     fig.addEventListener("load", settle, true);
-    fig.addEventListener("scroll", showHandle, { passive: true });
     for (const type of ["click", "keyup", "focusin"]) S.root.addEventListener(type, () => queueMicrotask(showHandle));
 
     fig.addEventListener("pointermove", (event) => {
-      if (event.pointerType === "touch" || event.buttons || conn) return;
+      if (event.pointerType === "touch" || event.buttons || conn || event.target.closest?.(".dgm-handle")) return;
       const id = nodeAt(event.clientX, event.clientY);
       if (id) (hover = id), clearTimeout(hideTimer), showHandle();
       else if (hover) leave();
@@ -281,6 +280,9 @@
       for (const handle of handles) handle.removeAttribute("aria-pressed");
       showHandle();
     };
+    //: Escape on a picked block puts an armed handle back before it lets go of the pick (diagram-canvas.js `clear`).
+    S.cancelArm = () => Boolean(armed) && (disarm(), true);
+    S.handles = showHandle;
     fig.addEventListener("click", (event) => {
       if (!armed || event.target.closest(".dock, .dgm-handle")) return;
       const from = armed;

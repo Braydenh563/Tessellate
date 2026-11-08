@@ -95,13 +95,15 @@
 
     // --- the actions ----------------------------------------------------------------
     function removeAll() {
-      const gone = [...S.picked].filter((k) => ops.remove(S.m, k)).length;
+      const gone = base().filter((k) => k[0] !== "k" && ops.remove(S.m, k)).length;
       S.picked.clear();
       S.sel = null;
       if (gone) h.commit(S, `Deleted ${gone} blocks.`);
     }
     function copyAll() {
-      const made = ops.duplicate(S.m, [...S.picked]);
+      const list = base().filter((k) => k[0] !== "k");
+      if (!list.length) return say("Pick a block to duplicate.");
+      const made = ops.duplicate(S.m, list);
       if (!made) return say(`A diagram holds at most ${ops.MAX} blocks.`);
       S.picked.clear();
       made.keys.forEach((k) => S.picked.add(k));
@@ -168,7 +170,117 @@
       else done = false;
       if (done) (event.preventDefault(), event.stopPropagation());
     }, true);
+    diagramModel.quick.wire(S, h, { show, keys, base, copyAll, removeAll });
   }
 
   diagramModel.multi = { wire };
+})();
+
+// Quick ways to build (INBOX 1661 j), in the same lazy file because they act on the pick: Ctrl+D copies it, Ctrl+A picks every
+// block from the picture, Delete removes it from the picture, Shift+Enter adds a joined box after it and Alt+Enter a
+// sister joined to the same parent, a double press on empty picture adds a box, and Find (Ctrl+F or /) rings the boxes
+// whose words match. Tab chains stay as diagram-bar.js has them (no trap).
+(() => {
+  const typing = (t) => t.isContentEditable || t.closest?.("input, textarea, select, .menu-wrap");
+
+  function wire(S, h, { show, keys, base, copyAll, removeAll }) {
+    const { ops } = h;
+    const say = (text) => h.say(S, text);
+    const img = () => S.fig.querySelector(".md-mermaid-img");
+    const nodeKey = () => (S.sel && S.sel[0] === "n" ? ops.split(S.sel)[1] : null);
+
+    // --- find ---------------------------------------------------------------------
+    const bar = h.el("div", "dock dgm-find hidden");
+    bar.setAttribute("role", "search");
+    const field = h.el("input", "search-field");
+    field.type = "search";
+    field.placeholder = "Find a block";
+    field.setAttribute("aria-label", "Find a block");
+    const count = h.el("span", "muted dgm-find-count");
+    count.setAttribute("aria-hidden", "true");
+    const shut = smallButton("ph:x", "Close find, Escape", () => close());
+    shut.setAttribute("aria-label", "Close find");
+    bar.append(field, count, shut);
+    (S.fig.parentElement || S.fig).append(bar);
+    let hits = [];
+    let at = -1;
+    const ring = () => {
+      const ids = new Set(hits.map((k) => ops.split(k)[1]));
+      for (const box of S.fig.querySelectorAll(".dgm-overlay .dgm-box")) box.classList.toggle("found", ids.has(box.dataset.node || box.dataset.group));
+    };
+    (S.fig.onpaint ||= []).push(ring);
+    const scan = () => {
+      const needle = field.value.trim().toLowerCase();
+      hits = needle ? keys().filter((k) => (ops.node(S.m, ops.split(k)[1])?.text ?? ops.group(S.m, ops.split(k)[1])?.title ?? "").toLowerCase().includes(needle)) : [];
+      at = -1;
+      count.textContent = needle ? `${hits.length} found` : "";
+      ring();
+      if (needle) say(hits.length ? `${hits.length} ${hits.length === 1 ? "block matches" : "blocks match"}.` : "No block matches.");
+    };
+    function go(step) {
+      if (!hits.length) return;
+      at = (at + step + hits.length) % hits.length;
+      count.textContent = `${at + 1} of ${hits.length}`;
+      S.sel = hits[at];
+      h.select(S, hits[at], false);
+      S.fig.querySelector(`.dgm-overlay .dgm-box[data-node="${ops.split(hits[at])[1]}"]`)?.scrollIntoView({ block: "center", inline: "center", behavior: "auto" });
+      say(`${h.name(S, hits[at])}, ${at + 1} of ${hits.length}.`);
+    }
+    function open() {
+      bar.classList.remove("hidden");
+      field.focus();
+      field.select();
+      scan();
+    }
+    function close() {
+      bar.classList.add("hidden");
+      hits = [];
+      ring();
+      (S.sel ? h.blockEl(S, S.sel) : null)?.focus?.() || S.fig.focus();
+    }
+    field.addEventListener("input", scan);
+    field.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") (event.preventDefault(), go(event.shiftKey ? -1 : 1));
+      else if (event.key === "Escape") (event.preventDefault(), event.stopPropagation(), close());
+    });
+
+    // --- build ----------------------------------------------------------------------
+    const child = () => h.add(S, nodeKey() ? { after: S.sel, from: nodeKey() } : { after: S.sel });
+    const sister = () => {
+      const id = nodeKey();
+      const parent = id && S.m.edges.find((e) => e.to === id)?.from;
+      return h.add(S, parent ? { after: S.sel, from: parent } : { after: S.sel });
+    };
+    S.root.addEventListener("keydown", (event) => {
+      if (event.defaultPrevented || typing(event.target)) return;
+      const mod = event.ctrlKey || event.metaKey;
+      const low = event.key.toLowerCase();
+      const inTree = S.tree.contains(event.target);
+      let run = null;
+      if (mod && !event.shiftKey && !event.altKey && low === "d") run = copyAll;
+      else if (mod && !event.shiftKey && !event.altKey && low === "f") run = open;
+      else if (mod && !event.altKey && low === "a" && event.target === S.fig && keys().length) run = () => show(keys(), S.sel || keys()[0]);
+      else if (!mod && !event.altKey && event.key === "/") run = open;
+      else if (!mod && event.key === "Enter" && event.shiftKey && !event.altKey && (inTree || event.target === S.fig)) run = child;
+      else if (!mod && event.key === "Enter" && event.altKey && !event.shiftKey && (inTree || event.target === S.fig)) run = sister;
+      else if (!mod && !event.altKey && /^(Delete|Backspace)$/.test(event.key) && event.target === S.fig && base().length) run = removeAll;
+      if (!run) return;
+      event.preventDefault();
+      event.stopPropagation();
+      run();
+    });
+
+    //: A double press on empty picture adds a box (a node, an arrow or a group's title strip renames, in diagram-edges.js).
+    S.fig.addEventListener("dblclick", (event) => {
+      const image = img();
+      if (!image || !S.hit || event.target.closest(".dock, .dgm-overlay > *, .dgm-zoom")) return;
+      const rect = image.getBoundingClientRect();
+      const canvas = diagramModel.canvas.math;
+      if (canvas.nodeAt(S.hit, rect, event.clientX, event.clientY) || canvas.groupAt(S.hit, rect, event.clientX, event.clientY) || diagramModel.edges?.math.edgeAt(S.hit, rect, event.clientX, event.clientY)) return;
+      event.preventDefault();
+      h.add(S, { after: null });
+    });
+  }
+
+  diagramModel.quick = { wire };
 })();

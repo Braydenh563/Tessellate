@@ -59,6 +59,15 @@
         },
         group: "edit",
       },
+      {
+        label: "ph:swap Reverse direction",
+        run: () => {
+          if (S.m.edges.some((e) => e !== edge && e.from === edge.to && e.to === edge.from && e.label === edge.label)) return h.say(S, "A connector already points that way.");
+          [edge.from, edge.to] = [edge.to, edge.from];
+          h.commit(S, `The connector now runs from ${titleOf(h, S, edge.from)} to ${titleOf(h, S, edge.to)}.`);
+        },
+        group: "edit",
+      },
       { label: "ph:trash Remove connector", danger: true, run: () => (h.ops.unjoin(S.m, edge), h.commit(S, `Removed the connector to ${to}.`)), group: "edit" },
     ];
   }

@@ -238,6 +238,7 @@
 /* Two classes, not one: mermaid-lazy.css loads after this file and gives `.md-mermaid` a block margin, which
    left the picture 19px (1.2rem) shorter than the blocks pane beside it (INBOX 1614, measured at 1440x900). */
 .dgm .dgm-picture {
+  position: relative;
   display: flex;
   margin: 0;
   min-width: 0;
@@ -257,7 +258,7 @@
 }
 
 /* Words and failure notes fill the picture; only the image is centred by its auto margins. */
-.dgm-picture > :not(.md-mermaid-img) {
+.dgm-picture > :not(.md-mermaid-img, .dgm-overlay) {
   flex: 1 1 auto;
   min-width: 0;
   user-select: text;
@@ -305,7 +306,7 @@
 
 /* While a zoom is in motion (diagram-view.js) the picture is only a transform: the boxes, handles and the picked arrow
    sit at the old size, so they hide until the real width lands (140 ms after the last input), then draw once. */
-.dgm-stage.dgm-gesturing > :is(.dgm-overlay, .dgm-edge-svg, .dgm-end) {
+.dgm-stage.dgm-gesturing .dgm-picture > .dgm-overlay {
   visibility: hidden;
 }
 
@@ -322,11 +323,14 @@
   opacity: 0.4;
 }
 
-/* The overlay (diagram-overlay.js): one box over each drawn node, never a target for a press. Its position is the
-   figure's padding box, set from script; a box is placed by a transform so a zoom or a scroll moves no layout. */
+/* The overlay (diagram-overlay.js): one box over each drawn node, never a target for a press. It is a zero-size origin at the
+   top left of the figure's scrolled content (INBOX 1661 g), so a scroll moves every box, ring, handle and name field with the
+   picture itself; the figure clips them. A box is placed by a transform so a zoom moves no layout. */
 .dgm-overlay {
   position: absolute;
-  overflow: hidden;
+  inset: 0 auto auto 0;
+  inline-size: 0;
+  block-size: 0;
   pointer-events: none;
 }
 
@@ -1565,9 +1569,8 @@
   opacity: 0.4;
 }
 
-.dgm-overlay.dgm-target {
+.dgm-picture.dgm-target {
   outline-offset: -2px;
-  background: transparent;
 }
 
 .dgm-marquee {
@@ -1843,4 +1846,36 @@
   display: inline-flex;
   align-items: center;
   font-size: var(--text-sm);
+}
+
+/* Find (diagram-multi.js, quick ways): a small dock at the picture's top corner; a found box is ringed dashed. */
+.dgm-find {
+  position: absolute;
+  inset-block-start: var(--space-5);
+  inset-inline-start: var(--space-5);
+  z-index: 2;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: var(--space-2);
+  margin: 0;
+  padding: var(--space-1);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--modal-bg);
+  box-shadow: var(--shadow-md);
+}
+
+.dgm-find.hidden {
+  display: none;
+}
+
+.dgm-find-count {
+  min-inline-size: 6ch;
+  white-space: nowrap;
+}
+
+.dgm-box.found {
+  border-style: dashed;
+  border-color: var(--accent);
+  background: var(--accent-soft);
 }

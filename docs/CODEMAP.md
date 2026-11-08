@@ -2,9 +2,9 @@
 
 Generated 2026-11-08 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7863, frontend ids 2644, CSS sections 522, backend routes 649, backend modules 9012, test files 2167, tests 18233, plan headings 1004, app scripts 28, boot scripts 37, script files 261.
+Counts: frontend functions 7865, frontend ids 2644, CSS sections 522, backend routes 649, backend modules 9012, test files 2169, tests 18244, plan headings 1004, app scripts 28, boot scripts 37, script files 261.
 
-## Frontend functions (7863)
+## Frontend functions (7865)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -3206,7 +3206,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `node` | frontend/js/diagram-canvas.js:32 |
 | `over` | frontend/js/diagram-canvas.js:44 |
 | `overlay` | frontend/js/diagram-canvas.js:10 |
-| `wire` | frontend/js/diagram-canvas.js:73 |
+| `wire` | frontend/js/diagram-canvas.js:72 |
 
 ### frontend/js/diagram-edge-pick.js (1)
 
@@ -3244,15 +3244,15 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `ask` | frontend/js/diagram-joins.js:112 |
+| `ask` | frontend/js/diagram-joins.js:121 |
 | `isKind` | frontend/js/diagram-joins.js:24 |
 | `items` | frontend/js/diagram-joins.js:32 |
 | `lastTarget` | frontend/js/diagram-joins.js:11 |
-| `menu` | frontend/js/diagram-joins.js:68 |
+| `menu` | frontend/js/diagram-joins.js:77 |
 | `nameOf` | frontend/js/diagram-joins.js:30 |
-| `pick` | frontend/js/diagram-joins.js:120 |
+| `pick` | frontend/js/diagram-joins.js:129 |
 | `titleOf` | frontend/js/diagram-joins.js:29 |
-| `words` | frontend/js/diagram-joins.js:101 |
+| `words` | frontend/js/diagram-joins.js:110 |
 
 ### frontend/js/diagram-kindbar.js (3)
 
@@ -3337,11 +3337,13 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `flow` | frontend/js/diagram-library.js:29 |
 | `make` | frontend/js/diagram-library.js:21 |
 
-### frontend/js/diagram-multi.js (1)
+### frontend/js/diagram-multi.js (3)
 
 | Name | File:line |
 |---|---|
+| `typing` | frontend/js/diagram-multi.js:184 |
 | `wire` | frontend/js/diagram-multi.js:14 |
+| `wire` | frontend/js/diagram-multi.js:186 |
 
 ### frontend/js/diagram-ops.js (28)
 
@@ -3390,7 +3392,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `wire` | frontend/js/diagram-overlay.js:47 |
+| `wire` | frontend/js/diagram-overlay.js:49 |
 
 ### frontend/js/diagram-picture.js (4)
 
@@ -5965,28 +5967,28 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 |---|---|
 | `mermaidAltFor` | frontend/js/mermaid-draw.js:53 |
 | `mermaidCacheKey` | frontend/js/mermaid-draw.js:335 |
-| `mermaidDrawBlock` | frontend/js/mermaid-draw.js:500 |
-| `mermaidDrawIn` | frontend/js/mermaid-draw.js:520 |
+| `mermaidDrawBlock` | frontend/js/mermaid-draw.js:501 |
+| `mermaidDrawIn` | frontend/js/mermaid-draw.js:521 |
 | `mermaidEnsureFrame` | frontend/js/mermaid-draw.js:107 |
 | `mermaidFaded` | frontend/js/mermaid-draw.js:189 |
 | `mermaidFailure` | frontend/js/mermaid-draw.js:349 |
-| `mermaidFill` | frontend/js/mermaid-draw.js:466 |
+| `mermaidFill` | frontend/js/mermaid-draw.js:467 |
 | `mermaidFillShare` | frontend/js/mermaid-draw.js:168 |
 | `mermaidFills` | frontend/js/mermaid-draw.js:179 |
 | `mermaidHex` | frontend/js/mermaid-draw.js:158 |
 | `mermaidHue` | frontend/js/mermaid-draw.js:205 |
 | `mermaidInkOn` | frontend/js/mermaid-draw.js:199 |
-| `mermaidInlineForExport` | frontend/js/mermaid-draw.js:581 |
+| `mermaidInlineForExport` | frontend/js/mermaid-draw.js:582 |
 | `mermaidKnown` | frontend/js/mermaid-draw.js:342 |
 | `mermaidLook` | frontend/js/mermaid-draw.js:312 |
 | `mermaidLuma` | frontend/js/mermaid-draw.js:192 |
 | `mermaidMix` | frontend/js/mermaid-draw.js:163 |
 | `mermaidOnMessage` | frontend/js/mermaid-draw.js:92 |
-| `mermaidRedrawAll` | frontend/js/mermaid-draw.js:593 |
+| `mermaidRedrawAll` | frontend/js/mermaid-draw.js:594 |
 | `mermaidRequest` | frontend/js/mermaid-draw.js:405 |
 | `mermaidResultAccepts` | frontend/js/mermaid-draw.js:23 |
 | `mermaidRgba` | frontend/js/mermaid-draw.js:144 |
-| `mermaidSettled` | frontend/js/mermaid-draw.js:493 |
+| `mermaidSettled` | frontend/js/mermaid-draw.js:494 |
 | `mermaidShow` | frontend/js/mermaid-draw.js:446 |
 | `mermaidTheme` | frontend/js/mermaid-draw.js:222 |
 | `mermaidThemeNow` | frontend/js/mermaid-draw.js:323 |
@@ -12376,7 +12378,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/dash-night-lazy.css | 29 |
 | frontend/css/dash-orphans-lazy.css | 57 |
 | frontend/css/desk-companion-lazy.css | 226 |
-| frontend/css/diagram-lazy.css | 1846 |
+| frontend/css/diagram-lazy.css | 1881 |
 | frontend/css/file-drop-lazy.css | 51 |
 | frontend/css/first-run-lazy.css | 140 |
 | frontend/css/forced-colors-lazy.css | 28 |
@@ -15944,8 +15946,8 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `_act_topic` | src/tessellate/ai/help_topics_more.py:3452 |
-| `_slash_commands_topic` | src/tessellate/ai/help_topics_more.py:3584 |
+| `_act_topic` | src/tessellate/ai/help_topics_more.py:3451 |
+| `_slash_commands_topic` | src/tessellate/ai/help_topics_more.py:3583 |
 
 ### src/tessellate/ai/help_words.py (2)
 
@@ -24428,7 +24430,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (18233)
+## Tests (18244)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -25012,6 +25014,8 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_diagram_1107.py | 12 |
 | tests/test_diagram_1107b.py | 11 |
 | tests/test_diagram_1107c.py | 10 |
+| tests/test_diagram_1108.py | 6 |
+| tests/test_diagram_1108b.py | 5 |
 | tests/test_diagram_1596.py | 4 |
 | tests/test_diagram_1661a.py | 6 |
 | tests/test_diagram_1661b.py | 9 |

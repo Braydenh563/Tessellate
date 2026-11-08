@@ -269,9 +269,9 @@
     const seg = el("div", "seg dgm-views");
     seg.setAttribute("role", "group");
     seg.setAttribute("aria-label", "Diagram view");
-    for (const [name, label] of [["canvas", "Canvas"], ["blocks", "Blocks"], ["source", "Source"]]) {
-      const b = smallButton(label, { canvas: "The picture, with the blocks beside it", blocks: "The diagram as blocks", source: "The diagram as text, with its picture" }[name], () => {
-        //: A phone shows the picture alone, and its blocks are a sheet (the dock's list button): the Blocks view opens that sheet, not a view that shows nothing new.
+    for (const [name, label] of [["canvas", "Picture"], ["blocks", "List"], ["source", "Source"]]) {
+      const b = smallButton(label, { canvas: "Picture first: the drawing is wide, with a narrow list of its blocks beside it", blocks: "List first: the blocks list is wide, with the drawing beside it", source: "The diagram as text, with its picture" }[name], () => {
+        //: A phone shows the picture alone, and its blocks are a sheet (the dock's list button): the List view opens that sheet, not a view that shows nothing new.
         const sheet = name === "blocks" && phone.matches ? pane?.root?.querySelector(".dgm-listbtn") : null;
         sheet ? sheet.click() : view(name);
       });
@@ -317,6 +317,8 @@
       }
       //: A menu or an inline field takes its own Escape first; the dialog closes on the next one.
       if (document.querySelector(".action-menu:not(.hidden), .help-popover:not(.hidden)") || event.target.closest?.("input, [contenteditable]")) return;
+      //: A picked block goes first (INBOX 1661 h): Escape lets go of it, and the next one closes the window.
+      if (pane?.clear?.()) return event.preventDefault(), event.stopPropagation();
       event.preventDefault();
       event.stopPropagation();
       finish(false);
@@ -379,7 +381,7 @@
     helpBody.id = "dgm-dialog-help";
     helpBody.setAttribute("role", "dialog");
     helpBody.setAttribute("aria-label", "About this editor");
-    helpBody.append(el("p", "", "Draw with blocks and the picture follows. Press N to add a box, Tab on the last box to add one joined to it, Enter to name it, F6 leaves the blocks, Ctrl+Enter keeps the diagram and ? lists every key."), atlasSuggestion("How do I make a diagram?", "Ask about making a diagram"));
+    helpBody.append(el("p", "", "Draw with blocks and the picture follows. Picture gives the drawing the room, List gives the blocks list the room, and Source is the text. Press N to add a box, Tab on the last box to add one joined to it, Enter to name it, F6 leaves the blocks, Ctrl+Enter keeps the diagram and ? lists every key."), atlasSuggestion("How do I make a diagram?", "Ask about making a diagram"));
     head.querySelector(".dialog-head-title").after(help);
     dialog.append(helpBody);
     const body = el("div", "dgm-dialog-body");
