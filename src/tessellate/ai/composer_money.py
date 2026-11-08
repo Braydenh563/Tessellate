@@ -407,6 +407,10 @@ _FIGURE_IN_NAME = re.compile(r"\b\d[\d.,]*\s?(?:[a-zA-Zµ]+\b)?")
 _WHEN_WORDS = frozenset("in on at from since by last this next yesterday today tomorrow january february march april may june july august september october november december".split())
 
 
+#: "My phone is ...", "The car was ...": a short subject before its verb.
+_SUBJECT = re.compile(r"((?:my|your|the)\s+[\w-]+(?:\s[\w-]+){0,2}?)\s+(?:is|are|was|were)\b", re.I)
+
+
 def _note_name(view) -> str:  # noqa: ANN001
     """A note as a sum names it: its title, what it bought, or a short noun
     phrase for what it is about ("your note on the run"), never its whole
@@ -416,15 +420,23 @@ def _note_name(view) -> str:  # noqa: ANN001
     #: What it bought, unless that is a time or place ("bought in March") and no thing (R3-23).
     if (m := _BOUGHT.search(str(view.note.get("content") or ""))) and m.group("what").split()[0].lower() not in _WHEN_WORDS:
         return m.group("what").strip()
-    named = re.sub(r"^the note on your ", "your ", composer_frame.short_name(view.note))
-    #: "order 4471 from Amazon arrives Tuesday" is the order: the name stops where its figure starts.
+    #: "My phone is a Pixel 8" is the phone: the subject before its verb names the thing.
+    if (subject := _SUBJECT.match(str(view.note.get("content") or "").strip())):
+        return re.sub(r"^my\b", "your", subject.group(1), flags=re.I)
+    #: Else the note's words (`composer_frame.clipped_words`, R3-15) up to the
+    #: figure: "Order 4471 from Amazon arrives Tuesday" is the order.
+    named = composer_frame.clipped_words(view.note)
+    cut = named.endswith("…")
+    named = named.rstrip("…")
     figure = re.search(r"\s\S*\d", named)
     if figure and figure.start() > 2:
-        named = named[: figure.start()]
+        named, cut = named[: figure.start()], False
     bare = " ".join(_FIGURE_IN_NAME.sub("", named).split())
     if not bare or re.search(r"\b(?:on|of|for|about|after|before)$", bare):
-        return f"your note of {composer_lists._day(view.written, composer.user_today())}" if view.written else composer_lists._title(view)  # noqa: SLF001
-    return bare
+        return composer_frame.name_of(view.note)
+    #: The note's clipped first words are its name (R3-15), quoted as `name_of`
+    #: quotes them; a name cut at its figure ("Order") is a noun, said bare.
+    return f"“{bare}…”" if cut else bare
 
 
 def _spent_line(items: list, symbol: str, on: str, when: str) -> tuple[str, float]:

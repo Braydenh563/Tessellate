@@ -110,11 +110,11 @@ B_COUNTS = [
 #: Class C, a note whose first line is a label is named by its title when it
 #: has one, else the way other untitled notes are (its own first words in quotes, R3-15). (question, must, never)
 C_LABEL_NAMES = [
-    ("notes from November last year", r"(?=.*(?:Untitled\]|that starts|“|From 4 November).*Blockers: none)", r"\[Blockers: none|\[Mood: fine"),
-    ("what did I write in November 2025", r"(?=.*(?:Untitled\]|that starts|“|From 4 November).*Blockers: none)", r"\[Blockers: none|\[Mood: fine"),
-    ("what did I write on 4 November 2025", r"(?:Untitled\]|that starts|“|From 4 November).*Blockers: none", r"\[Blockers: none"),
-    ("what did I write on 18 November 2025", r"(?:Untitled\]|that starts|“|From 18 November).*Mood: fine", r"\[Mood: fine"),
-    ("notes from 16 October 2026", r"(?:Untitled\]|that starts|“|From 16 October).*Status: done", r"\[Status: done"),
+    ("notes from November last year", r"(?=.*(?:“Blockers: none”|From 4 November.*Blockers: none))", r"\[Blockers: none|\[Mood: fine"),
+    ("what did I write in November 2025", r"(?=.*(?:“Blockers: none”|From 4 November.*Blockers: none))", r"\[Blockers: none|\[Mood: fine"),
+    ("what did I write on 4 November 2025", r"(?:“Blockers: none”|From 4 November.*Blockers: none)", r"\[Blockers: none"),
+    ("what did I write on 18 November 2025", r"(?:“Mood: fine”|From 18 November.*Mood: fine)", r"\[Mood: fine"),
+    ("notes from 16 October 2026", r"(?:“Status: done”|From 16 October.*Status: done)", r"\[Status: done"),
     ("what did I write on 17 October 2026", r"Scope", r"\[Blockers: none|Scope Blockers|Scope\W+Scope"),
     ("show me notes from 17 October 2026", r"Scope", r"\[Blockers: none|Scope Blockers|Scope\W+Scope"),
 ]
