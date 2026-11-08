@@ -84,12 +84,13 @@
         const [x, y] = anchor(at, handle.dataset.side);
         //: A shrunk handle leans out of its edge so no more than a sixth of the block's smaller side is under it.
         //: On a coarse pointer it leans fully out (its inner edge on the box edge), so a finger that taps the handle never lands on the box (up to 12 px of overlap, measured at 390).
-        const lean = coarse ? size / 2 : size < full ? Math.max(0, size / 2 - Math.min(at.w, at.h) / 6) : 0;
+        const lean = size < full ? Math.max(0, size / 2 - Math.min(at.w, at.h) / 6) : 0;
+        const out = coarse ? size / 2 : lean;
         const [ox, oy] = { top: [0, -1], bottom: [0, 1], left: [-1, 0], right: [1, 0] }[handle.dataset.side];
         //: Never past the picture's scroll area: a block near the edge had its handle cut by the pane (blind test 1108: a box 15 px under
         //: the top, a 44 px handle). The handle moves in over the block instead, which a cut handle could not be pressed through.
         const room = (extent, at) => Math.max(0, Math.min(at, extent - size));
-        handle.style.transform = `translate(${room(wide, x - size / 2 + ox * lean)}px, ${room(tall, y - size / 2 + oy * lean)}px)`;
+        handle.style.transform = `translate(${room(wide, x - size / 2 + ox * out)}px, ${room(tall, y - size / 2 + oy * out)}px)`;
       }
     };
     const leave = () => {
