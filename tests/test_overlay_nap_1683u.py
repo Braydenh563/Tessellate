@@ -130,5 +130,10 @@ def test_wander_legs_use_many_modes_rarely_puff_never_repeat_and_wrap_an_edge(ga
     total = len(order)
     assert len(mix) >= 4, mix  # measured before: walk 90 percent, edge, portal and puff 3 percent each, never a run
     assert mix["puff"] / total < 0.10, mix
-    assert mix["edge"] >= 1, mix
+    # Intent moved (INBOX 1696, the owner: a floater's "Go somewhere else" slid the stand picture across the taskbar):
+    # a floater's menu wander is a seen move only, so the glide to an edge before the wrap is a walker's alone
+    if gait == "walk":
+        assert mix["edge"] >= 1, mix
+    else:
+        assert not {"glide", "swoop", "edge"} & set(mix), mix
     assert all(a != b for a, b in zip(order, order[1:])), order

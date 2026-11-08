@@ -137,8 +137,8 @@ def test_a_hang_is_long_and_the_picture_changes_every_few_seconds() -> None:
 
 def test_every_planned_hang_lasts_at_least_half_a_minute_whatever_the_mood() -> None:
     # The sim above sees few hangs in an hour (a different seed can show none), so the plan itself is pinned.
-    # Intent moved (INBOX 1696 b, the owner: a hang lasts minutes by mood): the cap was 200 s, now eight minutes
-    assert all(lo >= 30.0 and hi <= 480.0 for lo, hi in bh.HANG_BY_MOOD.values())
+    # Intent moved (INBOX 1696 b, the owner: a hang lasts minutes by mood): the cap was 200 s, now five minutes
+    assert all(lo >= 30.0 and hi <= 300.0 for lo, hi in bh.HANG_BY_MOOD.values())
     assert eng.HANG_FOR[0] >= 30.0
 
 

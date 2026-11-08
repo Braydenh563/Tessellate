@@ -326,7 +326,7 @@ FLOAT_BAND = 0.35
 FLOAT_MOVE_WEIGHT = 150
 #: Hang from the top edge, and the climb up to it. The window holds still while it hangs
 #: (INBOX 1663: "slides a little from side to side"): any life is in the frames.
-HANG_FOR = (150.0, 480.0)  # INBOX 1696 b: minutes, as `bh.HANG_BY_MOOD`; the long end is the longest mood's
+HANG_FOR = (90.0, 300.0)  # INBOX 1696 b: minutes, as `bh.HANG_BY_MOOD`; the long end is the longest mood's
 #: A hang swings from its grip like a pendulum (the lower body lags by this many px, `Pose.drag`), a
 #: slow one, and glances about now and then (INBOX 1670, 13:28Z: "it basically doesn't move while it is
 #: hanging"). The window itself holds still: only the picture swings.

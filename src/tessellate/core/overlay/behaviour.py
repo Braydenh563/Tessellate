@@ -40,10 +40,10 @@ FIDGETS = frozenset({"bounce", "wiggle", "sway", "float_loop", "little_dance", "
 FIDGET_FIRST = 600.0
 FIDGET_GAP = 1800.0
 #: How long a hang lasts by mood (INBOX 1670, 13:28Z: "it doesn't hang for a while"; INBOX 1696 b: minutes, not
-#: tens of seconds): one to eight minutes. A tired one lets go sooner, a curious or bored one stays and looks about.
+#: tens of seconds): one to five minutes (longer took a third of an evening's spells). A tired one lets go sooner, a curious or bored one stays and looks about.
 HANG_BY_MOOD = {
-    "sleepy": (90.0, 180.0), "startled": (60.0, 120.0), "happy": (150.0, 360.0), "proud": (120.0, 300.0),
-    "curious": (180.0, 420.0), "bored": (240.0, 480.0),
+    "sleepy": (60.0, 120.0), "startled": (60.0, 90.0), "happy": (90.0, 240.0), "proud": (90.0, 180.0),
+    "curious": (120.0, 300.0), "bored": (150.0, 300.0),
 }
 
 

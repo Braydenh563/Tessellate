@@ -2,7 +2,7 @@
 "just slides up" in the standing picture "and stops part way"). Before: a floater's hang trip was any leg mode, most
 often a glide or a swoop, which a drift draws in the idle frames (the stand picture sliding up the screen), and a
 drift waits under a busy pointer (`_yields`), so it stopped part way when the pointer was near; a hang lasted 30 to
-200 s. Now the trip up is a blink or a cloud ride (never waiting on the pointer), and a hang lasts one to eight
+200 s. Now the trip up is a blink or a cloud ride (never waiting on the pointer), and a hang lasts one to five
 minutes by mood. Fixed clock throughout."""
 
 from __future__ import annotations
@@ -43,6 +43,6 @@ def test_a_floaters_trip_up_to_a_hang_is_a_blink_or_a_cloud_and_it_gets_there(lo
 
 def test_a_hang_lasts_minutes_and_longer_when_curious_or_bored() -> None:
     for mood, (lo, hi) in bh.HANG_BY_MOOD.items():
-        assert lo >= 60.0 and hi >= 2 * lo and hi <= 480.0, mood
+        assert lo >= 60.0 and hi >= 1.5 * lo and hi <= 300.0, mood
     assert bh.HANG_BY_MOOD["sleepy"][1] < bh.HANG_BY_MOOD["bored"][1]
     assert eng.HANG_FOR[0] >= 60.0 and eng.HANG_FOR[1] >= max(hi for _lo, hi in bh.HANG_BY_MOOD.values())
