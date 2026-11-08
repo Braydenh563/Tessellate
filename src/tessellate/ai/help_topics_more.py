@@ -3266,9 +3266,10 @@ MORE_TOPICS.extend([
         "keywords": (
             "diagram blocks", "edit a diagram", "mermaid blocks", "blocks view", "drag a diagram",
             "join two blocks", "nest a block", "diagram without typing", "flowchart blocks",
-            "diagram keyboard", "mmd", "diagram file",
+            "diagram keyboard", "mmd", "diagram file", "add a block", "add a box", "add a shape to a diagram",
         ),
         "body": (
+            "Add a block: N, a shelf tile or Add; /diagram opens the builder in a document. "
             "Picture opens first: the "
             "blocks left, the picture beside them. List gives the blocks list the room instead; "
             "Source and Split show text; Ctrl+Z undoes "
@@ -3285,18 +3286,18 @@ MORE_TOPICS.extend([
             "its percentage is typeable and 100% is the drawing's own size; Shift+arrow keys pan. "
             "Shift+click picks a range, Ctrl+click adds one; Escape lets go of the pick; a bar offers Delete, "
             "Duplicate, Box them, Done; any picked grip moves all. "
-            "Press or drag a block from the shelf onto the picture to join the nearest box; long press a block for its menu. "
+            "Press or drag a block from the shelf onto the picture to join the nearest box (Add on a phone); long press a block for its menu. "
             "Keys "
-            "on a block: arrows walk, Enter renames, N adds a Box, 1 to 7 the other shapes, Shift+N the last one, G adds a group, C or J joins, "
-            "K colours, ? lists keys, Delete removes, Alt+Up and Alt+Down reorder, Alt+Right nests, Alt+Left lifts. "
-            "Suggest (in the ... menu on a phone) starts one: "
+            "on a block: arrows walk, Enter renames, N adds a Box, G adds a group, C or J joins, "
+            "? lists keys, Delete removes, Alt+Up and Alt+Down reorder, Alt+Right nests, Alt+Left lifts. "
+            "Suggest (... on a phone) starts one: "
             "Templates (then Use this template), "
             "From my notes "
-            "and Describe it (a model; dimmed with none). On a blank diagram a suggestion becomes "
-            "the diagram; otherwise blocks arrive as ghosts: "
+            "and Describe it (a model; dimmed with none). A blank diagram becomes "
+            "the suggestion; otherwise blocks arrive as ghosts: "
             "Tab takes one, Shift+Tab lets it go, Enter adds those taken and "
-            "Escape drops them all; Ctrl+Z undoes the whole addition. "
-            "Kind asks before it clears blocks. More kinds: next topic."
+            "Escape drops them; Ctrl+Z undoes the whole addition. "
+            "Kind asks before it clears blocks. More: next topic."
         ),
         "badge": {"label": "Documents", "tab": "documents"},
     },

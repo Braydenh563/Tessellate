@@ -177,6 +177,9 @@
     const ids = dgbIds(m);
     const edge = { from, to, label: "", style: "solid", arrow: true, ...extra };
     if (!ids.has(from) || !ids.has(to)) return null;
+    //: A decision's second arrow, with the first saying yes and no "no" yet, says no (blind test 1108; the first still waits for its word).
+    const out = m.edges.filter((e) => e.from === from);
+    if (!edge.label && dgbNode(m, from)?.shape === "diamond" && out.some((e) => /^yes$/i.test(e.label || "")) && !out.some((e) => /^no$/i.test(e.label || ""))) edge.label = "no";
     if (m.edges.some((e) => e.from === from && e.to === to && e.label === edge.label && e.style === edge.style && e.arrow === edge.arrow)) return null;
     return dgbEdit(m, () => m.edges.push(edge)) ? edge : null;
   }

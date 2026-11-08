@@ -534,6 +534,15 @@
     return new Promise((resolve) => shell.open(resolve));
   }
 
+  //: A diagram made from the builder is a document the lists do not know yet: the Library's `docs` (the sidebar, the Live view's link
+  //: resolver) and the `[[` picker's cache are given the row, so `![[Title]]` draws in Read view at once and not after a reload.
+  function diagramMadeKnown(made) {
+    const other = (list) => [made, ...(Array.isArray(list) ? list : []).filter((d) => d.id !== made.id)];
+    if (typeof docs !== "undefined") docs = other(docs);
+    if (typeof editorDocumentCache !== "undefined" && editorDocumentCache?.length) editorDocumentCache = other(editorDocumentCache);
+    if ($("doc-list")) renderDocList();
+  }
+
   async function diagramDoor({ target = null, doc = false } = {}) {
     const onBoard = !doc && wbCommandsLive() && (!target || Boolean(target.closest?.("#library-view-whiteboard")));
     if (onBoard) return wbEditDiagram();
@@ -574,6 +583,7 @@
         const made = await apiJson("/documents", { method: "POST", body: JSON.stringify({ title, content: next, file_type: "mmd" }) }).catch(() => (toast("The diagram was not saved. Try Done again.", "info"), null));
         if (!made) return;
         offerCreateUndo(made);
+        diagramMadeKnown(made);
         box.focus?.();
         editorBlock(box, `![[${made.title || title}]]`, "", "");
       },
@@ -583,6 +593,7 @@
   diagramModel.starter = "flowchart TD\n  A[Start] --> B{Ready?}\n  B -->|yes| C[Ship it]";
   //: Exported on `diagramModel`, not as a global name of its own: the callers are in other files and ask for the library bundle first.
   diagramModel.door = diagramDoor;
+  diagramModel.madeKnown = diagramMadeKnown;
 
   //: The file's whole surface: what documents.js and documents-export.js call.
   Object.assign(window, { docRenderMermaidIn, docMermaidWhenDrawn, docMermaidField, diagramModel, openDiagramBuilder });

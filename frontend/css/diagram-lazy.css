@@ -185,7 +185,8 @@
 .dgm-sideways {
   position: absolute;
   inset: auto auto var(--space-3) var(--space-3);
-  max-inline-size: calc(100% - 2 * var(--space-3));
+  /* In the picture's stage, left of its zoom bar (about 12rem, bottom right). */
+  max-inline-size: calc(100% - 2 * var(--space-3) - 12rem);
   z-index: 2;
   display: flex;
   flex-wrap: wrap;
@@ -2010,6 +2011,12 @@
   /* The shelf is mouse only: a phone or touch screen adds blocks from the Add sheet. */
   .dgm-shelf {
     display: none;
+  }
+
+  /* No shelf at the top here, so the offer takes the top of the stage, whole width. */
+  .dgm-sideways {
+    inset: var(--space-3) var(--space-3) auto var(--space-3);
+    max-inline-size: none;
   }
 }
 

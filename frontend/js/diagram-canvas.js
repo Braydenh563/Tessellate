@@ -70,10 +70,11 @@
     if (!id || !h.ops.node(S.m, id)) {
       //: Empty space: a palette tile adds there, a group lifts to the top level, a box is not moved by a drop that names nowhere (1679 slice 12).
       if (key?.[0] === "n" && !g.tile) return null;
-      //: A tile on empty picture joins the box nearest the drop (within 120 px), else the selected box, else stands alone.
+      //: A tile on empty picture joins the box nearest the drop by rendered centres, however far (the help says so; a 120 px reach joined the
+      //: selected box from beside the last one), else the selected box, else stands alone.
       const ok = (n) => Boolean(h.ops.node(S.m, n));
       const lone = !g.tile || g.tile.dataset.shape === "group";
-      const near = lone || !img || !S.hit ? "" : math.nearest(S.hit, img.getBoundingClientRect(), g.x, g.y, 120, ok);
+      const near = lone || !img || !S.hit ? "" : math.nearest(S.hit, img.getBoundingClientRect(), g.x, g.y, Infinity, ok);
       const picked = S.sel?.[0] === "n" ? S.sel.slice(2) : "";
       const from = near || (picked && !lone && ok(picked) ? picked : "");
       if (!from) return { canvas: true, op: "into", group: null, before: null, card: S.fig, word: g.tile ? "Add here" : "To the top level" };

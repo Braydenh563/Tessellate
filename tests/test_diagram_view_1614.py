@@ -132,5 +132,5 @@ def test_a_tall_drawing_in_a_wide_stage_offers_to_turn_sideways_once_and_not_for
 def test_the_offer_is_one_line_under_the_toolbar_with_two_buttons_and_one_commit():
     view = (JS / "diagram-outline.js").read_text(encoding="utf-8")
     assert "dgm-sideways" in view and "Turn it sideways" in view and 'S.turn("LR")' in view
-    assert "diagramModel.outline?.offer(S, math.sideways(" in (JS / "diagram-view.js").read_text(encoding="utf-8")
+    assert "diagramModel.outline?.offer(S, f < 1 && math.sideways(" in (JS / "diagram-view.js").read_text(encoding="utf-8")
     assert "dgm-sideways" in (ROOT / "frontend" / "css" / "diagram-lazy.css").read_text(encoding="utf-8")

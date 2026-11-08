@@ -50,8 +50,9 @@ def test_r6_2_a_node_in_the_picture_is_not_text_to_select_and_a_move_redraws_the
 
 def test_r6_3_a_second_arrow_out_of_a_decision_asks_for_its_words():
     src = "flowchart TD\n  D{Ready?}\n  Y[Ship]\n  N[Fix]\n  D -->|yes| Y\n"
-    got = _script(src, "const e = o.join(m, 'D', 'N'); return [o.needsLabel(m, e), o.needsLabel(m, m.edges[0])];")
-    assert got["result"] == [True, False]  # the second branch, unlabelled; the first has its words
+    # dgmfix2: a second branch next to a "yes" now arrives already labelled "no", so it no longer needs asking.
+    got = _script(src, "const e = o.join(m, 'D', 'N'); return [e.label, o.needsLabel(m, e), o.needsLabel(m, m.edges[0])];")
+    assert got["result"] == ["no", False, False]
     box = _script("flowchart TD\n  A[One]\n  B[Two]\n  C[Three]\n  A --> B\n", "const e = o.join(m, 'A', 'C'); return o.needsLabel(m, e);")
     assert box["result"] is False  # only a decision's branches are asked about
     # INBOX 1679 moved the intent: the FIRST arrow out of a decision asks too (it was "one arrow out is not a branch yet", and

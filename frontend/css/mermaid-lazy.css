@@ -113,6 +113,11 @@
   }
 }
 
+/* The picture of an embedded diagram opens it on a press. */
+.diagram-embed-box {
+  cursor: pointer;
+}
+
 /* A diagram embedded with ![[name]] and a reply's Open as a diagram: a line under the picture. */
 .diagram-embed-open,
 .md-mermaid-as {

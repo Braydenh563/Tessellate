@@ -82,4 +82,4 @@ def test_the_dock_is_one_row_at_320_because_suggest_folds_into_the_more_menu():
     assert "S.suggestBtn && matchMedia(COMPACT).matches" in more
     assert "ph:sparkle Suggest…" in more and ".dgm-more button" in more
     help_text = (ROOT / "src" / "tessellate" / "ai" / "help_topics_more.py").read_text(encoding="utf-8")
-    assert "Suggest (in the ... menu on a phone)" in help_text
+    assert "Suggest (... on a phone)" in help_text

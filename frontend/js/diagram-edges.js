@@ -79,6 +79,11 @@
       const size = overlay().handleSize(at, full, coarse ? 24 : 14);
       //: Read before the loop writes (a read after a write lays the page out once per handle).
       const [wide, tall] = [fig.scrollWidth, fig.scrollHeight];
+      //: The part of that area the stage shows (a wide chart scrolls inside the stage, which clips): a handle past it was cut (390 px: 8 to 10 px).
+      const [seen, shown] = [stage.getBoundingClientRect(), fig.getBoundingClientRect()];
+      const [ox0, oy0] = [shown.left + fig.clientLeft - fig.scrollLeft, shown.top + fig.clientTop - fig.scrollTop];
+      const [x0, y0] = [Math.max(0, seen.left - ox0), Math.max(0, seen.top - oy0)];
+      const [x1, y1] = [Math.min(wide, seen.right - ox0), Math.min(tall, seen.bottom - oy0)];
       for (const handle of handles) {
         handle.style.inlineSize = handle.style.blockSize = `${size}px`;
         const [x, y] = anchor(at, handle.dataset.side);
@@ -89,8 +94,8 @@
         const [ox, oy] = { top: [0, -1], bottom: [0, 1], left: [-1, 0], right: [1, 0] }[handle.dataset.side];
         //: Never past the picture's scroll area: a block near the edge had its handle cut by the pane (blind test 1108: a box 15 px under
         //: the top, a 44 px handle). The handle moves in over the block instead, which a cut handle could not be pressed through.
-        const room = (extent, at) => Math.max(0, Math.min(at, extent - size));
-        handle.style.transform = `translate(${room(wide, x - size / 2 + ox * out)}px, ${room(tall, y - size / 2 + oy * out)}px)`;
+        const room = (from, to, at) => Math.max(from, Math.min(at, to - size));
+        handle.style.transform = `translate(${room(x0, x1, x - size / 2 + ox * out)}px, ${room(y0, y1, y - size / 2 + oy * out)}px)`;
       }
     };
     const leave = () => {

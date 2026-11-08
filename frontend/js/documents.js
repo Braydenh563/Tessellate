@@ -1295,6 +1295,8 @@ async function openDocument(id) {
   //: the one it just made race, and the fetch that landed last won, leaving
   //: a person typing into an old document they took for the new one.
   const seq = ++docOpenSeq;
+  //: The block bar belongs to the page being left: opened from a link under the pointer, nothing fires mouseleave, and it hung over the new page.
+  docBlockBarClose();
   //: The place being left is written down first, while the surface still
   //: holds that document (see `docRememberPositionNow`).
   docRememberPositionNow();

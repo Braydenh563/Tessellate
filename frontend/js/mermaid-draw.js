@@ -570,6 +570,14 @@ mermaidFill.embed = async (box, doc, name) => {
       event.stopPropagation();
       openDocument(doc.id);
     });
+    //: The picture opens the diagram too (blind test 1108: pressing the embed did nothing).
+    box.classList.add("diagram-embed-box");
+    box.title = "Open the diagram";
+    box.addEventListener("click", (event) => {
+      if (event.target.closest("button, a")) return;
+      event.stopPropagation();
+      openDocument(doc.id);
+    });
     box.append(open);
   } catch {
     box.replaceChildren(mdDocumentCard(doc, name, true));

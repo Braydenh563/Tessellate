@@ -78,7 +78,7 @@
   function open(S, h, here, button) {
     const r = button.getBoundingClientRect();
     //: Held, not looked up by its host: the menu can be moved out of it (the shelf's caret menu was).
-    const menu = openMenuAtPoint(KINDS.map(([key, label]) => ({ label, run: () => choose(S, h, here, key) })), "Kind of diagram", r.left, r.bottom, button);
+    const menu = openMenuAtPoint(KINDS.map(([key, label]) => ({ label, run: () => choose(S, h, here, key) })), "Kinds of diagram", r.left, r.bottom, button);
     if (menu) decorate(menu, here, blankOf(S));
   }
 

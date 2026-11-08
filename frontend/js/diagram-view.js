@@ -177,7 +177,8 @@
       //: The box less its border, not `clientWidth`: that is rounded and loses a scrollbar's width, so Fit would move with the zoom.
       const box = fig.getBoundingClientRect();
       f = math.fitScale(d.w, d.h, box.width - 2 * fig.clientLeft, box.height - 2 * fig.clientTop);
-      diagramModel.outline?.offer(S, math.sideways(d, box, S.m?.dir));
+      //: Only when the drawing is shrunk to fit: a chart that fits whole has nothing to turn (the default three boxes asked).
+      diagramModel.outline?.offer(S, f < 1 && math.sideways(d, box, S.m?.dir));
       if (state.fit) state.scale = f;
       else state.scale = math.clamp(state.scale, f);
       img.draggable = false;
