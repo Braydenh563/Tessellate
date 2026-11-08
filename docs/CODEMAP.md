@@ -2,7 +2,7 @@
 
 Generated 2026-11-08 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7908, frontend ids 2652, CSS sections 522, backend routes 649, backend modules 9182, test files 2227, tests 18718, plan headings 1004, app scripts 28, boot scripts 37, script files 263.
+Counts: frontend functions 7908, frontend ids 2652, CSS sections 522, backend routes 649, backend modules 9183, test files 2227, tests 18720, plan headings 1004, app scripts 28, boot scripts 37, script files 263.
 
 ## Frontend functions (7908)
 
@@ -13145,7 +13145,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:164 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (9182)
+## Backend modules (9183)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -22786,25 +22786,26 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `register` | src/tessellate/core/overlay/extras.py:131 |
 | `shake_flips` | src/tessellate/core/overlay/extras.py:290 |
 
-### src/tessellate/core/overlay/faces.py (15)
+### src/tessellate/core/overlay/faces.py (16)
 
 | Name | File:line |
 |---|---|
 | `Look` | src/tessellate/core/overlay/faces.py:34 |
-| `Micro` | src/tessellate/core/overlay/faces.py:96 |
-| `_brow` | src/tessellate/core/overlay/faces.py:244 |
-| `_erase_mouth` | src/tessellate/core/overlay/faces.py:285 |
-| `_features` | src/tessellate/core/overlay/faces.py:225 |
-| `_lid` | src/tessellate/core/overlay/faces.py:272 |
-| `_match` | src/tessellate/core/overlay/faces.py:150 |
-| `_mouth` | src/tessellate/core/overlay/faces.py:307 |
-| `_skin` | src/tessellate/core/overlay/faces.py:189 |
-| `_spiral` | src/tessellate/core/overlay/faces.py:260 |
-| `_splice` | src/tessellate/core/overlay/faces.py:251 |
-| `draw` | src/tessellate/core/overlay/faces.py:195 |
-| `eye_anchor` | src/tessellate/core/overlay/faces.py:136 |
-| `head_point` | src/tessellate/core/overlay/faces.py:168 |
-| `level_at` | src/tessellate/core/overlay/faces.py:89 |
+| `Micro` | src/tessellate/core/overlay/faces.py:103 |
+| `_brow` | src/tessellate/core/overlay/faces.py:253 |
+| `_erase_mouth` | src/tessellate/core/overlay/faces.py:304 |
+| `_features` | src/tessellate/core/overlay/faces.py:232 |
+| `_heart` | src/tessellate/core/overlay/faces.py:269 |
+| `_lid` | src/tessellate/core/overlay/faces.py:291 |
+| `_match` | src/tessellate/core/overlay/faces.py:157 |
+| `_mouth` | src/tessellate/core/overlay/faces.py:326 |
+| `_skin` | src/tessellate/core/overlay/faces.py:196 |
+| `_spiral` | src/tessellate/core/overlay/faces.py:279 |
+| `_splice` | src/tessellate/core/overlay/faces.py:260 |
+| `draw` | src/tessellate/core/overlay/faces.py:202 |
+| `eye_anchor` | src/tessellate/core/overlay/faces.py:143 |
+| `head_point` | src/tessellate/core/overlay/faces.py:175 |
+| `level_at` | src/tessellate/core/overlay/faces.py:96 |
 
 ### src/tessellate/core/overlay/host.py (3)
 
@@ -24726,7 +24727,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (18718)
+## Tests (18720)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -26188,7 +26189,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_overlay_dest_1683.py | 10 |
 | tests/test_overlay_edges_1107.py | 20 |
 | tests/test_overlay_engine.py | 30 |
-| tests/test_overlay_faces.py | 1 |
+| tests/test_overlay_faces.py | 3 |
 | tests/test_overlay_fling_1107.py | 17 |
 | tests/test_overlay_float.py | 6 |
 | tests/test_overlay_float_drift_1692.py | 2 |
