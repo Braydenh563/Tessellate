@@ -52,6 +52,7 @@ REGEXES = {
     "digest._PRONOUN_START": composer_digest._PRONOUN_START,
     "digest._PERSON_TITLE": composer_digest._PERSON_TITLE,
     "digest._FIRST_PERSON": composer_digest._FIRST_PERSON,
+    "body._DAYISH": composer_body._DAYISH,
     "ask._ORDINAL_NOTE": composer_ask._ORDINAL_NOTE,
     "ask._DATE_ASK": composer_ask._DATE_ASK,
 }

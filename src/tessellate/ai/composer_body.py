@@ -300,11 +300,17 @@ def _earlier(out: _Answer, sentences: list[Sentence], terms: list[str]) -> None:
         out.cite(view)
 
 
+_DAYISH = re.compile(r"\d+|(?:mon|tues?|wednes|thurs?|fri|satur|sun)(?:day)?|(?:jan|febr?|mar|apr|may|jun|jul|aug|sept?|oct|nov|dec)[a-z]*", re.I)
+
+
 def _other_subjects(views: dict, a: Sentence, b: Sentence) -> bool:
     """Whether two notes are titled for different things ("Tokyo trip" and "Lisbon trip"): each title has a
     word the other lacks. Their figures differ because the notes are about different things (R3-24)."""
     left, right = (getattr(views.get(s.note_id), "title_words", None) for s in (a, b))
-    return bool(left and right and left - right and right - left)
+    if not (left and right):
+        return False
+    #: "Monday" and "Friday" name days of one subject, not two subjects.
+    return bool({w for w in left - right if not _DAYISH.fullmatch(w)} and {w for w in right - left if not _DAYISH.fullmatch(w)})
 
 
 def _disagreement(chosen: list[Sentence], views: dict | None = None) -> tuple[Sentence, Sentence] | None:
@@ -972,17 +978,21 @@ def told_as_past(content: str, at: int) -> bool:
     return rec.told_as_past(content[start: min(stops) if stops else len(content)])
 
 
+def _newest_lead(out: _Answer, count: int, guessing: bool) -> None:
+    """"Your five newest notes" for several, "your newest note" for one, never "your one newest notes" (R3-16)."""
+    if count == 1:
+        out.t("newest_one_guess" if guessing else "newest_one_lead")
+    else:
+        out.t("newest_guess" if guessing else "newest_lead").m(out.count(count)).t("newest_mid")
+
+
 def _newest(out: _Answer, views: list[NoteView], guessing: bool = False) -> None:
     """The newest notes, each by its first sentence, newest first. When the
     question named nothing to look for, the lead says these are a fallback."""
     shown = [v for v in views if v.sentences][:5]
     if not shown:
         return
-    if len(shown) == 1:
-        #: One note is "your newest note", never "your one newest notes" (R3-16).
-        out.t("newest_one_guess" if guessing else "newest_one_lead")
-    else:
-        out.t("newest_guess" if guessing else "newest_lead").m(out.count(len(shown))).t("newest_mid")
+    _newest_lead(out, len(shown), guessing)
     _span(out, shown)
     out.t("end_colon")
     for view in shown:
