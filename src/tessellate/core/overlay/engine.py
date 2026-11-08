@@ -728,6 +728,7 @@ class Engine:
         self.tail_layer = bh.TailLayer()
         self.tail_layer_on = True  # the runner turns it off for a look whose tail is not Atlas's (a captured companion)
         self.state_at, self._seen_state = now, ""  # when the state was first seen drawn (a long sit is a lounge)
+        self._twirl_at = -1e9  # the last time a twirl was drawn (its spiral unwinds after)
         self._flow_held: tuple[int, ...] | None = None
         self._flow_at = 0.0
         self._mood_kept: tuple[float, float, str] = (-1e9, -1.0, "content")  # (when, the event's time, mood): see `_mood`
@@ -4231,6 +4232,43 @@ class Engine:
         return start + (math.floor((now - start) / step + 1e-6) + 1) * step
 
     def _lower_state(self, now: float, face: tuple[str, int] | None) -> str:
+        """What the lower body is doing, for `bh.FLOW_LOWER` (atlascat-1108 C4, C5): the base state (`_lower_base`) read
+        with the act, the speed and how long it has lasted (`_lower_spell`); "" for the frame's own row."""
+        return self._lower_spell(now, self._lower_base(now, face))
+
+    def _lower_spell(self, now: float, base: str) -> str:
+        """A state of the lower body's own beyond the base ones (atlascat-1108 C5): a twirl's spiral (and its 2.5 s unwinding),
+        a glad act's hem kick, a seated act's coil, a fast glide's billow, and at rest a tired heaviness, an excited flutter,
+        a long sit spread flat (a pool), a calm stand's slow ripple."""
+        s, act = self.state, self.act if self.state == "act" else ""
+        if act in bh.TWIRL_ACTS:
+            self._twirl_at = now
+        if now - self._twirl_at < bh.SPIRAL_FOR:
+            return "spiral"
+        if act in bh.HEM_ACTS:
+            return "hem_kick"
+        if act in bh.COIL_ACTS:
+            return "coil"
+        if base == "glide":
+            fast = self.mode == "dash" or abs(self.vx_px) >= bh.BILLOW_SPEED * WALK_SPEED * self._scale()
+            return "billow" if fast else base
+        return self._lower_rest(now, base) if s in ("stand", "sit") else base
+
+    def _lower_rest(self, now: float, base: str) -> str:
+        """The resting spells: sleepy is heavy, a glad reaction flutters, a sit of `POOL_AFTER` s is a pool, and a calm stand
+        ripples for `RIPPLE_FOR` s of every `RIPPLE_EVERY` once `RIPPLE_AT` s in. A sad or startled figure keeps its own."""
+        if base in ("sad", "startle"):
+            return base
+        if self._mood(now) == "sleepy":
+            return "heavy"
+        if self.mind.event == "happy" and 0.0 <= now - self.mind.event_at < bh.FLUTTER_FOR:
+            return "flutter"
+        held = now - self.state_at
+        if self.state == "sit":
+            return "pool" if held >= bh.POOL_AFTER else base
+        return "ripple_calm" if base == "" and bh.RIPPLE_AT <= held % bh.RIPPLE_EVERY < bh.RIPPLE_AT + bh.RIPPLE_FOR else base
+
+    def _lower_base(self, now: float, face: tuple[str, int] | None) -> str:
         """What the lower body is doing, for `bh.FLOW_LOWER` (atlascat-1108 C4): lying in a nap, thinking, sad, startled,
         lounging in a long sit, gliding on the move; "" for the frame's own row."""
         s = self.state
@@ -4256,8 +4294,24 @@ class Engine:
         walker, a figure the person has hold of)."""
         if self.gait != "float" or self.reduced or self.state not in ("stand", "sit") or frame.rstrip("0123456789") not in bh.TAIL_FRAMES:
             return None
-        self.tail_layer.choose(self.state, self._mood(now), now)
+        state, mood = self._tail_cue(now)
+        self.tail_layer.choose(state, mood, now)
         return self.tail_layer.view(now)
+
+    def _tail_cue(self, now: float) -> tuple[str, str]:
+        """What the tail picks its pose by (atlascat-1108 C2, C3): the state, with a window's top as `perch` (balance) and a
+        long sit as `lounge`; the mood, with a sad reaction as `sad` (tuck) and a glad one looked at as `playful` (loop8)."""
+        state, mood = self.state, self._mood(now)
+        if self.perch is not None and state == "stand":
+            state = "perch"
+        elif state == "sit" and now - self.state_at >= bh.LOUNGE_AFTER:
+            state = "lounge"
+        over = self.ex.over[0] if self.ex.over is not None else None
+        if over == "sad" and mood != "startled":
+            mood = "sad"
+        elif mood in ("happy", "proud") and self._tail_fast(now):
+            mood = "playful"
+        return state, mood
 
     def _mood(self, now: float) -> str:
         """`Mind.mood`, kept for half a second (the needs move over minutes; an event shows at once): not worked out per tick."""

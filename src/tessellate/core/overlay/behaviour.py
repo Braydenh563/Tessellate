@@ -633,25 +633,59 @@ FLOW_POSE_EASE = 0.8
 FLOW_LOWER = {
     "lie": (0.55, 0.55, 0.0, 0.5), "think": (0.7, 0.8, 0.5, 0.0), "sad": (0.45, 0.5, 0.0, -0.5),
     "startle": (1.0, 1.7, 0.0, 0.8), "lounge": (0.85, 0.7, 0.4, 0.2), "glide": (1.0, 1.4, 0.8, 0.3),
+    # atlascat-1108 C5: a gust on a fast glide, tucked under cross-legged, a slow calm ripple, an excited flutter, spread
+    # flat after a long sit, a playful kick of the hem, a spiral after a twirl, heavy when tired.
+    "billow": (1.0, 1.9, 0.9, 0.9), "coil": (0.6, 0.7, 0.3, -0.3), "ripple_calm": (0.8, 0.5, 0.0, 0.2),
+    "flutter": (0.9, 2.0, 0.0, 0.5), "pool": (0.5, 0.5, 0.6, -0.6), "hem_kick": (1.0, 1.8, 0.7, 0.8),
+    "spiral": (1.0, 1.6, 0.8, 0.0), "heavy": (0.4, 0.4, 0.0, -0.8),
 }
 #: A sit this long is a lounge (the lower body spreads and slackens).
 LOUNGE_AFTER = 6.0
 #: Acts that are the figure thinking.
 THINK_ACTS = frozenset({"ponder", "puzzle", "tinker"})
+#: What the lower body spells beyond the base states (`Engine._lower_spell`): acts that sit it cross-legged, acts of
+#: a glad figure that kick the hem, acts that twirl (a spiral that unwinds `SPIRAL_FOR` s after), a sit this long
+#: spread flat, a calm stand's ripple (`RIPPLE_EVERY` s cycle, the last `RIPPLE_FOR` s of its first `RIPPLE_AT`), an
+#: excited reaction's flutter, and the speed that makes a glide a gust.
+COIL_ACTS = frozenset({"invent_game", "groom", "snack"})
+HEM_ACTS = frozenset({"little_dance", "bounce", "wiggle"})
+TWIRL_ACTS = frozenset({"flip_twirl", "float_loop"})
+SPIRAL_FOR = 2.5
+POOL_AFTER = 40.0
+RIPPLE_EVERY, RIPPLE_AT, RIPPLE_FOR = 40.0, 24.0, 8.0
+FLUTTER_FOR = 4.0
+BILLOW_SPEED = 1.2  # times the walking speed
 
 
 #: The tail as a layer (atlascat-1108 C1, INBOX 1696 w: "the tail is framed in that it isnt a smooth animation"): the idle
 #: frames carry the tail's beat baked in at 6 a second, so the tail is drawn on its own, every display frame, over the body.
 #: The poses are the in-app rig's (`ATLAS_TAIL_ACTS`): [curl rad root to tip (+ round and down), amp rad of the wave at the
 #: tip, period s, k rad of phase root to tip]. A pose change eases over `TAIL_EASE` seconds, so no pose is ever a step.
+#: Two more numbers on the end (the rig's `tip` and `env`): an extra bend over the last third (a hook, radians), and the
+#: exponent of the wave's envelope along the tail (1.5 the whole tail; high, only the tip moves).
 TAIL_POSES = {
-    "sway": (0.15, 0.34, 3.9, 3.4), "curl": (-1.3, 0.19, 4.6, 2.4), "wrap": (1.1, 0.17, 4.9, 2.2),
-    "wag": (-0.4, 0.46, 0.66, 2.4), "droop": (0.6, 0.11, 5.6, 1.8), "stiff": (-0.12, 0.08, 2.1, 2.0),
+    "sway": (0.15, 0.34, 3.9, 3.4, 0.0, 1.5), "curl": (-1.3, 0.19, 4.6, 2.4, 0.0, 1.5), "wrap": (1.1, 0.17, 4.9, 2.2, 0.0, 1.5),
+    "wag": (-0.4, 0.46, 0.66, 2.4, 0.0, 1.5), "droop": (0.6, 0.11, 5.6, 1.8, 0.0, 1.5), "stiff": (-0.12, 0.08, 2.1, 2.0, 0.0, 1.5),
+    # atlascat-1108 C2 and C3: a question-mark hook, the tip coiled (round a prop), a slow thump, a shiver, tucked in, a
+    # figure of eight, a tip twitch (only the last fifth moves), level for balance, curled under the head.
+    "hook": (-0.9, 0.1, 4.4, 2.0, 1.4, 1.5), "coil_hold": (1.3, 0.06, 6.0, 1.6, 1.2, 1.5), "thump": (0.3, 0.3, 1.4, 1.2, 0.0, 1.5),
+    "shiver": (0.0, 0.08, 0.12, 5.0, 0.0, 1.5), "tuck": (1.6, 0.05, 6.0, 1.6, 0.4, 1.5), "loop8": (-0.2, 0.55, 2.2, 2.6, 0.0, 1.5),
+    "tip_twitch": (0.25, 0.2, 0.9, 3.4, 0.0, 6.0), "balance": (0.0, 0.06, 2.6, 2.0, 0.0, 1.5), "pillow": (1.8, 0.05, 7.0, 1.6, 0.9, 1.5),
 }
 #: The poses a state picks from, by weight (the rig's `ATLAS_TAIL_BY_STATE`), and the mood's own (a glad one wags, a tired
 #: or bored one lets it droop, a startled one holds it stiff).
-TAIL_BY_STATE = {"stand": (("sway", 3.0), ("curl", 2.0), ("wrap", 1.4)), "sit": (("wrap", 2.0), ("sway", 1.0), ("curl", 1.0))}
-TAIL_BY_MOOD = {"happy": "wag", "proud": "wag", "sleepy": "droop", "bored": "droop", "startled": "stiff"}
+#: A figure on a window's top balances (`perch`), one in a long sit coils its tip (`lounge`, the in-app `coil_hold`, with no
+#: prop to hold yet).
+TAIL_BY_STATE = {
+    "stand": (("sway", 3.0), ("curl", 2.0), ("wrap", 1.4), ("tip_twitch", 1.0)), "sit": (("wrap", 2.0), ("sway", 1.0), ("curl", 1.0)),
+    "perch": (("balance", 3.0), ("sway", 1.0)), "lounge": (("coil_hold", 2.0), ("wrap", 1.0)),
+}
+#: A name is a fixed pose; a list is a weighted pick. Impatient (bored) it thumps or lets it droop, curious it hooks it, sad
+#: (the reaction's face) it tucks it in, playful (glad with the pointer near or a touch just now) it draws a figure of eight.
+TAIL_BY_MOOD = {
+    "happy": "wag", "proud": "wag", "sleepy": "droop", "bored": (("droop", 1.0), ("thump", 2.0)), "startled": "stiff",
+    "curious": (("hook", 3.0), ("curl", 1.0)), "sad": (("tuck", 2.0), ("droop", 1.0)), "playful": (("loop8", 3.0), ("wag", 1.0)),
+}
 #: The body frames that carry the layered tail (the stand family and the sit; `sprites.TAIL_SOURCE` has the same names).
 TAIL_FRAMES = ("stand", "idle", "blink", "look", "sit", "sitblink")
 TAIL_HOLD = (3.0, 6.0)
@@ -663,14 +697,15 @@ TAIL_LEN = 96.0
 TAIL_REACH = 0.85
 
 
-def tail_bend(s: float, p: tuple[float, float, float, float], ph: float, ph2: float) -> float:
+def tail_bend(s: float, p: tuple[float, ...], ph: float, ph2: float) -> float:
     """The angle the tail has turned through at `s` (0 root, 1 tip): the rig's `atlasTailBend` without its third ripple."""
-    e = s ** 1.5
-    curl, amp, _period, k = p
-    return curl * s * s + amp * e * math.sin(ph - k * s) + max(0.13, 0.35 * amp) * e * math.sin(ph2 - 1.7 * k * s + 0.7)
+    curl, amp, _period, k, tip, env = p
+    e = s ** env
+    hook = tip * max(0.0, (s - 0.62) / 0.38) ** 2
+    return hook + curl * s * s + amp * e * math.sin(ph - k * s) + max(0.13, 0.35 * amp) * e * math.sin(ph2 - 1.7 * k * s + 0.7)
 
 
-def tail_points(p: tuple[float, float, float, float], ph: float, ph2: float, wave: bool = True) -> list[tuple[float, float]]:
+def tail_points(p: tuple[float, ...], ph: float, ph2: float, wave: bool = True) -> list[tuple[float, float]]:
     """The tail's axis, `TAIL_STEPS` points from the root (in tail lengths, x along the way it points, y down): the bend
     integrated along it."""
     x = y = 0.0
@@ -698,28 +733,36 @@ class TailLayer:
         self.until = 0.0
         self.seen: float | None = None
         #: The shape the shipped frames carry (a plain curl of the sway's, no wave): the layer moves the tail from it.
-        self.rest = tail_points((TAIL_POSES["sway"][0], 0.0, 1.0, 1.0), 0.0, 0.0, wave=False)
+        self.rest = tail_points((TAIL_POSES["sway"][0], 0.0, 1.0, 1.0, 0.0, 1.5), 0.0, 0.0, wave=False)
 
     def choose(self, state: str, mood: str, now: float) -> None:
         """Pick the next pose when the hold is over: the mood's if it has one, else a weighted pick of the state's."""
         if now < self.until:
             return
         self.until = now + self.rng.uniform(*TAIL_HOLD)
-        if mood in TAIL_BY_MOOD:
-            self.name = TAIL_BY_MOOD[mood]
-            return
-        names, weights = zip(*TAIL_BY_STATE.get(state, TAIL_BY_STATE["stand"]))
-        self.name = self.rng.choices(names, weights)[0]
+        if mood == "startled":  # a start holds it stiff, then it shivers, and so on while the mood lasts
+            self.name = "shiver" if self.name == "stiff" else "stiff"
+        elif mood == "sleepy" and state in ("sit", "lounge"):
+            self.name = "pillow"  # drowsy and settled: curled under the head
+        elif mood in TAIL_BY_MOOD and not (state in ("perch", "lounge") and mood in ("bored", "curious", "happy", "proud")):
+            pick = TAIL_BY_MOOD[mood]
+            self.name = pick if isinstance(pick, str) else self._weighted(pick)
+        else:
+            self.name = self._weighted(TAIL_BY_STATE.get(state, TAIL_BY_STATE["stand"]))
+
+    def _weighted(self, table: tuple[tuple[str, float], ...]) -> str:
+        names, weights = zip(*table)
+        return self.rng.choices(names, weights)[0]
 
     def view(self, now: float, calm: bool = False) -> tuple[int, ...]:
         dt = 0.0 if self.seen is None else min(0.25, max(0.0, now - self.seen))
         self.seen = now
         goal = TAIL_POSES[self.name]
         k = 1.0 - math.exp(-dt / TAIL_EASE)
-        for i in range(4):
+        for i in range(6):
             self.p[i] += (goal[i] - self.p[i]) * k
         slow = FLOW_CALM_SLOW if calm else 1.0
-        period = max(0.3, self.p[2]) * slow
+        period = max(0.1, self.p[2]) * slow
         self.ph = (self.ph + math.tau * dt / period) % math.tau
         self.ph2 = (self.ph2 + math.tau * dt / (period * 0.62)) % math.tau
         pose = tuple(self.p)

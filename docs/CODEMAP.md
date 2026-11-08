@@ -2,9 +2,9 @@
 
 Generated 2026-11-08 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7917, frontend ids 2652, CSS sections 522, backend routes 649, backend modules 9201, test files 2241, tests 18874, plan headings 1004, app scripts 28, boot scripts 37, script files 263.
+Counts: frontend functions 7918, frontend ids 2652, CSS sections 522, backend routes 649, backend modules 9201, test files 2243, tests 18894, plan headings 1004, app scripts 28, boot scripts 37, script files 263.
 
-## Frontend functions (7917)
+## Frontend functions (7918)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -2094,28 +2094,29 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 |---|---|
 | `assistantEmblemInto` | frontend/js/assistant-avatar.js:18 |
 
-### frontend/js/atlas-life.js (18)
+### frontend/js/atlas-life.js (19)
 
 | Name | File:line |
 |---|---|
-| `atlasBreathFrame` | frontend/js/atlas-life.js:768 |
-| `atlasFrameBudget` | frontend/js/atlas-life.js:434 |
-| `atlasPropLoops` | frontend/js/atlas-life.js:692 |
-| `atlasPropsFrame` | frontend/js/atlas-life.js:720 |
-| `atlasRigLower` | frontend/js/atlas-life.js:971 |
-| `atlasRigLowerAttach` | frontend/js/atlas-life.js:947 |
+| `atlasBreathFrame` | frontend/js/atlas-life.js:797 |
+| `atlasFrameBudget` | frontend/js/atlas-life.js:463 |
+| `atlasLowerSpell` | frontend/js/atlas-life.js:998 |
+| `atlasPropLoops` | frontend/js/atlas-life.js:721 |
+| `atlasPropsFrame` | frontend/js/atlas-life.js:749 |
+| `atlasRigLower` | frontend/js/atlas-life.js:1046 |
+| `atlasRigLowerAttach` | frontend/js/atlas-life.js:1022 |
 | `atlasRingLoops` | frontend/js/atlas-life.js:20 |
-| `atlasTailAttach` | frontend/js/atlas-life.js:324 |
-| `atlasTailBend` | frontend/js/atlas-life.js:105 |
-| `atlasTailCalm` | frontend/js/atlas-life.js:562 |
-| `atlasTailDraw` | frontend/js/atlas-life.js:619 |
-| `atlasTailFollow` | frontend/js/atlas-life.js:115 |
-| `atlasTailFrame` | frontend/js/atlas-life.js:460 |
-| `atlasTailKit` | frontend/js/atlas-life.js:197 |
-| `atlasTailPick` | frontend/js/atlas-life.js:398 |
-| `atlasTailRest` | frontend/js/atlas-life.js:582 |
-| `atlasTailShape` | frontend/js/atlas-life.js:164 |
-| `atlasTailUnrest` | frontend/js/atlas-life.js:597 |
+| `atlasTailAttach` | frontend/js/atlas-life.js:352 |
+| `atlasTailBend` | frontend/js/atlas-life.js:132 |
+| `atlasTailCalm` | frontend/js/atlas-life.js:591 |
+| `atlasTailDraw` | frontend/js/atlas-life.js:648 |
+| `atlasTailFollow` | frontend/js/atlas-life.js:143 |
+| `atlasTailFrame` | frontend/js/atlas-life.js:489 |
+| `atlasTailKit` | frontend/js/atlas-life.js:225 |
+| `atlasTailPick` | frontend/js/atlas-life.js:426 |
+| `atlasTailRest` | frontend/js/atlas-life.js:611 |
+| `atlasTailShape` | frontend/js/atlas-life.js:192 |
+| `atlasTailUnrest` | frontend/js/atlas-life.js:626 |
 
 ### frontend/js/atlas-micro.js (8)
 
@@ -22721,15 +22722,15 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 |---|---|
 | `Activity` | src/tessellate/core/overlay/behaviour.py:154 |
 | `Chain` | src/tessellate/core/overlay/behaviour.py:348 |
-| `Flow` | src/tessellate/core/overlay/behaviour.py:738 |
+| `Flow` | src/tessellate/core/overlay/behaviour.py:781 |
 | `Mind` | src/tessellate/core/overlay/behaviour.py:383 |
 | `Pose` | src/tessellate/core/overlay/behaviour.py:52 |
 | `SecondOrder` | src/tessellate/core/overlay/behaviour.py:62 |
-| `TailLayer` | src/tessellate/core/overlay/behaviour.py:686 |
+| `TailLayer` | src/tessellate/core/overlay/behaviour.py:721 |
 | `Trail` | src/tessellate/core/overlay/behaviour.py:535 |
 | `Variation` | src/tessellate/core/overlay/behaviour.py:120 |
 | `_amplitude` | src/tessellate/core/overlay/behaviour.py:579 |
-| `_frac` | src/tessellate/core/overlay/behaviour.py:734 |
+| `_frac` | src/tessellate/core/overlay/behaviour.py:777 |
 | `_from_catalogue` | src/tessellate/core/overlay/behaviour.py:236 |
 | `_k` | src/tessellate/core/overlay/behaviour.py:171 |
 | `activity_frame` | src/tessellate/core/overlay/behaviour.py:522 |
@@ -22745,8 +22746,8 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `sine_ease` | src/tessellate/core/overlay/behaviour.py:110 |
 | `smooth` | src/tessellate/core/overlay/behaviour.py:100 |
 | `smoother` | src/tessellate/core/overlay/behaviour.py:105 |
-| `tail_bend` | src/tessellate/core/overlay/behaviour.py:666 |
-| `tail_points` | src/tessellate/core/overlay/behaviour.py:673 |
+| `tail_bend` | src/tessellate/core/overlay/behaviour.py:700 |
+| `tail_points` | src/tessellate/core/overlay/behaviour.py:708 |
 | `tier_factor` | src/tessellate/core/overlay/behaviour.py:339 |
 | `utility` | src/tessellate/core/overlay/behaviour.py:372 |
 | `vary` | src/tessellate/core/overlay/behaviour.py:128 |
@@ -24754,7 +24755,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (18874)
+## Tests (18894)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -24861,6 +24862,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_atlas_sleep_z.py | 2 |
 | tests/test_atlas_stars.py | 7 |
 | tests/test_atlas_suggest_shape.py | 2 |
+| tests/test_atlas_tail_lower_c_1108.py | 10 |
 | tests/test_atlas_wake_stays.py | 3 |
 | tests/test_atlas_wisps_pose.py | 3 |
 | tests/test_atomic_io_windows.py | 2 |
@@ -26271,6 +26273,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_overlay_spin_1696.py | 4 |
 | tests/test_overlay_sprites.py | 17 |
 | tests/test_overlay_tail_layer_1108.py | 18 |
+| tests/test_overlay_tail_poses_1108.py | 10 |
 | tests/test_overlay_throw_ceiling_1670.py | 6 |
 | tests/test_overlay_tickle_boop_1108.py | 9 |
 | tests/test_overlay_travel_1683.py | 5 |

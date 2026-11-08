@@ -58,7 +58,7 @@ DESK_ONLY = frozenset({
     "react.battery_low", "react.hour_chime", "react.idle_return", "react.window_closed", "react.window_dragged",
     "react.window_maximised", "react.window_opened", "react.window_restored", "trans.upright>hang",
 })
-APP_ONLY_CAP, DESK_ONLY_CAP, NEITHER_CAP = 49, 26, 109
+APP_ONLY_CAP, DESK_ONLY_CAP, NEITHER_CAP = 49, 26, 92
 
 
 @lru_cache(maxsize=1)
@@ -113,7 +113,7 @@ def app_rows() -> frozenset[str]:
     text = "".join((ROOT / "frontend" / "js" / f).read_text(encoding="utf-8") for f in APP_FILES)
     rows = {f"acts:{k}" for k in re.findall(r"^  ([a-z]+): \{ ms: \d+, w: ", text, re.M)}
     for table, name in (("tail", "ATLAS_TAIL_ACTS"), ("mood", "ATLAS_MOODS"), ("lower", "ATLAS_LOWER_STATES"), ("react", "NMB_REACTIONS")):
-        rows |= {f"{table}:{k}" for k in re.findall(r"^  ([a-z]+):", _block(text, name), re.M)}
+        rows |= {f"{table}:{k}" for k in re.findall(r"^  ([a-z0-9_]+):", _block(text, name), re.M)}
     rows |= {f"micro:{k}" for k in re.findall(r"\b([a-z]+):", _block(text, "ATLAS_MICRO_BASE"))}
     pool = re.search(r"NMB_POKE_POOL = \[(.*?)\]", text)
     assert pool
