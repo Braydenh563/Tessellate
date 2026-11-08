@@ -2095,6 +2095,64 @@ function atlasHandProps(armR, armL, look) {
   for (const [x, y, r] of [[9.6, 62.8, 1.9], [16.4, 76, 1.9]]) atlasMake("circle", { class: "atl-node-dot", cx: x, cy: y, r }, cable);
 }
 
+//: **The desk's acts, in Atlas's own parts** (INBOX 1696 v, the owner: "I want
+//: the desktop companion to be just as good as the in-app one and vice
+//: versa"). The desk draws push-ups on a mat, a dumbbell, a cup of tea, a
+//: snack and a fishing rod (`core/overlay/props.py`, `presence.py`,
+//: `behaviour.py`); these are the same things as small vector parts in the
+//: rig's paint, so both read as the same act in either theme: navy bodies,
+//: the glow colour for rims, the gold for the bright bits, never a literal
+//: colour. A hand's prop is drawn about the hand (the origin), inside an
+//: `atl-ds-turn` group the act's CSS turns back as the arm turns, so a cup
+//: stays upright while the arm lifts it. Shown by `nmb-act-<name>` in
+//: atlas-lazy.css, hidden otherwise like every prop (`.nm-figure .nmp`).
+atlasHandProps.deskHand = function (arm, at, name) {
+  const slot = atlasMake("g", { transform: `translate(${+at[0].toFixed(2)} ${+at[1].toFixed(2)})` }, arm);
+  const prop = atlasGroup(slot, `nmp nmp-${name}`);
+  return atlasMake("g", { class: "atl-ds-turn" }, prop);
+};
+atlasHandProps.desk = function (armR, armL, look) {
+  const right = (ATLAS_LOOKS[look] || {}).propHand || [48.2, 60];
+  const left = [63 - right[0], right[1]];
+  //: A dumbbell in each hand: a bar, a plate at each end, the plates bright.
+  for (const [arm, at, side] of [[armR, right, "r"], [armL, left, "l"]]) {
+    const bell = atlasHandProps.deskHand(arm, at, `dumbbell nmp-dumbbell-${side}`);
+    atlasMake("rect", { class: "atl-ds-metal", x: -4.8, y: -0.7, width: 9.6, height: 1.4, rx: 0.5 }, bell);
+    for (const x of [-6.8, 4.6]) atlasMake("rect", { class: "atl-ds-plate", x, y: -3, width: 2.2, height: 6, rx: 0.8 }, bell);
+  }
+  //: A cup on its saucer with the steam over it (the desk's `sip_tea` cup).
+  const cup = atlasHandProps.deskHand(armR, right, "cup");
+  atlasMake("ellipse", { class: "atl-ds-metal", cx: 0, cy: 2.9, rx: 4, ry: 0.9 }, cup);
+  atlasMake("path", { class: "atl-ds-handle", d: "M2.6 -1.2Q5.2 -1.2 4.4 1.2Q3.9 2.2 2.2 1.8" }, cup);
+  atlasMake("path", { class: "atl-ds-cup", d: "M-2.8 -2.4H2.8L2.2 1.8Q0 3.2 -2.2 1.8Z" }, cup);
+  atlasMake("path", { class: "atl-ds-tea", d: "M-2.5 -1.4H2.5" }, cup);
+  const steam = atlasGroup(cup, "atl-ds-steam");
+  atlasMake("path", { class: "atl-thread", d: "M-1 -3.6Q-2.2 -5 -1 -6.4Q0.2 -7.8 -1 -9.2" }, steam);
+  atlasMake("path", { class: "atl-thread atl-ds-steam-b", d: "M1.4 -3.6Q0.2 -5 1.4 -6.4Q2.6 -7.8 1.4 -9" }, steam);
+  //: A round biscuit with a bite out of it and a crumb or two.
+  const snack = atlasHandProps.deskHand(armR, right, "snack");
+  const biscuit = atlasGroup(snack, "atl-ds-biscuit");
+  atlasMake("path", { class: "atl-ds-snack", d: "M1.2 -2.5A2.8 2.8 0 1 0 2.7 0.8A1.3 1.3 0 0 1 2.2 -0.9A1.3 1.3 0 0 1 1.2 -2.5Z" }, biscuit);
+  for (const [x, y] of [[-1, -0.6], [0.4, 1.2], [-0.2, -1.6]]) atlasMake("circle", { class: "atl-ds-chip", cx: x, cy: y, r: 0.4 }, biscuit);
+  const crumbs = atlasGroup(snack, "atl-ds-crumbs");
+  for (const [x, y] of [[3.4, 1.8], [2.2, 3.4], [4.4, 3.6]]) atlasMake("circle", { class: "atl-ds-chip", cx: x, cy: y, r: 0.35 }, crumbs);
+  //: A fishing rod, its line hanging to a bobber, ripples under it.
+  const rod = atlasHandProps.deskHand(armR, right, "rod");
+  atlasMake("path", { class: "atl-ds-rod", d: "M-1.6 1.6L9.4 -17" }, rod);
+  atlasMake("path", { class: "atl-ds-line", d: "M9.4 -17Q10.6 -6 9.8 5.2" }, rod);
+  atlasMake("ellipse", { class: "atl-ds-ripple", cx: 9.8, cy: 8.2, rx: 3.6, ry: 0.9 }, rod);
+  atlasMake("ellipse", { class: "atl-ds-ripple atl-ds-ripple-b", cx: 9.8, cy: 8.2, rx: 3.6, ry: 0.9 }, rod);
+  atlasMake("circle", { class: "atl-ds-bobber", cx: 9.8, cy: 6.4, r: 1.6 }, rod);
+  atlasMake("path", { class: "atl-ds-bobber-top", d: "M8.2 6.4A1.6 1.6 0 0 1 11.4 6.4Z" }, rod);
+};
+//: The push-ups' mat, behind the body and under its feet.
+atlasHandProps.mat = function (layer) {
+  const mat = atlasGroup(layer, "nmp nmp-pushmat");
+  atlasMake("rect", { class: "atl-ds-mat", x: 0, y: 83, width: 62, height: 5, rx: 2.5 }, mat);
+  atlasMake("path", { class: "atl-ds-mat-line", d: "M6 85.5H56" }, mat);
+  return mat;
+};
+
 //: The head: mane, ears, wisps and skin in the edge layer; the mane's
 //: fills (behind the head); the head's fill and rim shade; the ears and
 //: wisps over it; the specular, blush, eyes, brows, mouths, then the
@@ -2309,6 +2367,7 @@ function atlasBody(parent, id, props, look, route = null) {
     if (!edge && props) {
       atlasCoilProp(back.fill);
       atlasCoilProp.seats(back.fill);
+      atlasHandProps.mat(back.fill);
     }
     //: The mermaid lower body (the feminine look): one ribbon from the
     //: hips sweeping down to the left and curling, in the tail's paint,
@@ -2543,6 +2602,7 @@ function atlasBody(parent, id, props, look, route = null) {
   }
   if (props) {
     atlasHandProps(arms.r, arms.l, look);
+    atlasHandProps.desk(arms.r, arms.l, look);
     atlasBookProp(frontAt.fill);
     atlasMapProp(frontAt.fill);
     //: Startled, a translucent bubble round the whole figure (the

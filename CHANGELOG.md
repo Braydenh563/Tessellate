@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Companion (atlascat D1, INBOX 1696 v): Atlas does five of the desk's acts, each its own pose with its prop drawn in the rig in both themes: push-ups on a mat (the body dips and leans, the elbows pump), two dumbbells curled a side at a time, a cup of tea lifted and sipped with steam, a biscuit eaten in four bites, and a fishing rod cast, waited on and reeled in with the eyes on the bobber; the eyes, arms, tail and face (calm, a smile now and then) all move over the beats, the lengths and weights come from the catalogue, one switch under What it does on its own.
 - Companion (review 1108): a click on the nose is a boop on top of the click reaction, not instead of it: the wake, pout, spin or wave still plays, then the boop face and sneeze layer on, still once per 3 s.
 - Diagram embed (review 1108): a click on an embedded diagram picture is click-only, so it never stops a press reaching the Live editor; the reason is in the comment and a test pins it.
 - Diagram window (review 1108): Ctrl+Z in a text field of the diagram window (the title, a rename) is the browser's text undo again; only the source box and the blocks step the diagram's history, and the comment now says so.

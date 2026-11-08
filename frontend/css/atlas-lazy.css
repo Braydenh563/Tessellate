@@ -385,3 +385,165 @@
    did not show at 64 px, so sad and worried wore the calm face. Softer than
    his, a fine arch. The rest arch lifts at the nose (1402), so it reads open. */
 .nm-atlas .atl-brow-arch { stroke-width: 1.2; opacity: 0.5; }
+/* **The desk's acts, as Atlas does them** (INBOX 1696 v, the owner: "I want the
+   desktop companion to be just as good as the in-app one and vice versa";
+   avatars.js `NMB_DESK_ACTS`, atlas.js `atlasDeskProps`). Each act is a pose of
+   its own: the eyes on the prop, the arms holding or moving it over beats,
+   a lean, the tail and the face set for it. The numbers here are the poses
+   at rest (what reduced motion shows); the loops are at the end, under the
+   motion gate, and move the same things. Left arm turns are positive and
+   right ones negative (outward from hanging); a held prop's `atl-ds-turn`
+   turns back by the arm's turn so it stays upright while the arm lifts it. */
+#nm-buddy.nmb-act-pushups .atl-figure .nmp-pushmat,
+#nm-buddy.nmb-act-weights .atl-figure :is(.nmp-dumbbell-l, .nmp-dumbbell-r),
+#nm-buddy.nmb-act-tea .atl-figure .nmp-cup,
+#nm-buddy.nmb-act-snack .atl-figure .nmp-snack,
+#nm-buddy.nmb-act-fish .atl-figure .nmp-rod { opacity: 1; }
+#nm-buddy:is(.nmb-act-pushups, .nmb-act-weights, .nmb-act-tea, .nmb-act-snack, .nmb-act-fish) .nm-atlas .atl-iris { translate: none; }
+/* Push-ups: pressed down, leaning into it, the tail out behind, eyes ahead and down. */
+#nm-buddy.nmb-act-pushups .atl-figure .nmb-arm-l { transform: rotate(34deg); }
+#nm-buddy.nmb-act-pushups .atl-figure .nmb-arm-r { transform: rotate(-34deg); }
+#nm-buddy.nmb-act-pushups .nm-atlas { --atl-lean: 5deg; --atl-sy: 0.96; --atl-tail: 22deg; --atl-head-y: 1.2px; --atl-tilt: -2deg; }
+#nm-buddy.nmb-act-pushups .nm-atlas .atl-pupil { --atl-px: 0px; --atl-py: 1.2px; }
+/* Dumbbells: a curl a side, head turned to the hand that works, weight shifted the other way. */
+#nm-buddy.nmb-act-weights .atl-figure .nmb-arm-l { transform: rotate(12deg); }
+#nm-buddy.nmb-act-weights .atl-figure .nmb-arm-r { transform: rotate(-12deg); }
+#nm-buddy.nmb-act-weights .nm-atlas { --atl-lean: -2deg; --atl-tail: 18deg; --atl-head-y: 0px; --atl-tilt: -3deg; }
+#nm-buddy.nmb-act-weights .nm-atlas .atl-pupil { --atl-px: -1.2px; --atl-py: 0.4px; }
+/* Tea: the cup lifted to the cheek, the head tipped to it, eyes on the rim. */
+#nm-buddy.nmb-act-tea .atl-figure .nmb-arm-r { transform: rotate(-100deg); }
+#nm-buddy.nmb-act-tea .atl-figure .nmb-arm-l { transform: rotate(14deg); }
+#nm-buddy.nmb-act-tea .nm-atlas { --atl-lean: 2deg; --atl-tail: -6deg; --atl-head-y: 0.6px; --atl-tilt: 5deg; }
+#nm-buddy.nmb-act-tea .nm-atlas .atl-pupil { --atl-px: 1.6px; --atl-py: -0.4px; }
+/* A biscuit at the mouth, the other hand under it, a lean in. */
+#nm-buddy.nmb-act-snack .atl-figure .nmb-arm-r { transform: rotate(-106deg); }
+#nm-buddy.nmb-act-snack .atl-figure .nmb-arm-l { transform: rotate(36deg); }
+#nm-buddy.nmb-act-snack .nm-atlas { --atl-lean: 2deg; --atl-tail: 10deg; --atl-head-y: 0.8px; --atl-tilt: 3deg; }
+#nm-buddy.nmb-act-snack .nm-atlas .atl-pupil { --atl-px: 1.4px; --atl-py: 0.2px; }
+/* Fishing: the rod out in front, the other hand low on it, eyes on the bobber. */
+#nm-buddy.nmb-act-fish .atl-figure .nmb-arm-r { transform: rotate(-34deg); }
+#nm-buddy.nmb-act-fish .atl-figure .nmb-arm-l { transform: rotate(24deg); }
+#nm-buddy.nmb-act-fish .nm-atlas { --atl-lean: 3deg; --atl-tail: -10deg; --atl-head-y: 0.4px; --atl-tilt: 3deg; }
+#nm-buddy.nmb-act-fish .nm-atlas .atl-pupil { --atl-px: 1.8px; --atl-py: 1.2px; }
+#nm-buddy.nmb-act-tea .atl-ds-turn { rotate: 100deg; }
+#nm-buddy.nmb-act-snack .atl-ds-turn { rotate: 106deg; }
+#nm-buddy.nmb-act-fish .atl-ds-turn { rotate: 34deg; }
+#nm-buddy.nmb-act-weights .nmp-dumbbell-l .atl-ds-turn { rotate: -12deg; }
+#nm-buddy.nmb-act-weights .nmp-dumbbell-r .atl-ds-turn { rotate: 12deg; }
+/* Their paint: navy and the glow colour for the dark parts (as the seats), gold
+   for the bright, so each shows on the light and the dark page alike. */
+.nm-atlas .atl-ds-turn { scale: 1.5; transform-origin: 0 0; }
+.nm-atlas .atl-ds-metal { fill: var(--atl-navy); stroke: var(--atl-glow-c); stroke-width: 0.5; }
+.nm-atlas .atl-ds-plate { fill: var(--atl-gold); stroke: var(--atl-gold-line); stroke-width: 0.6; stroke-linejoin: round; }
+.nm-atlas .atl-ds-handle { fill: none; stroke: var(--atl-gold-line); stroke-width: 0.9; stroke-linecap: round; }
+.nm-atlas .atl-ds-cup { fill: var(--atl-hi); stroke: var(--atl-line); stroke-width: 0.7; stroke-linejoin: round; }
+.nm-atlas .atl-ds-tea { fill: none; stroke: var(--atl-gold-line); stroke-width: 1.1; stroke-linecap: round; }
+.nm-atlas .atl-ds-steam .atl-thread { stroke: var(--atl-line); stroke-width: 0.6; opacity: 0.55; }
+.nm-atlas .atl-ds-snack { fill: var(--atl-gold); stroke: var(--atl-gold-line); stroke-width: 0.7; stroke-linejoin: round; }
+.nm-atlas .atl-ds-chip { fill: var(--atl-gold-line); }
+.nm-atlas .atl-ds-crumbs { opacity: 0; }
+.nm-atlas .atl-ds-rod { fill: none; stroke: color-mix(in oklab, var(--atl-lilac) 55%, var(--atl-navy)); stroke-width: 1.1; stroke-linecap: round; }
+.nm-atlas .atl-ds-line { fill: none; stroke: color-mix(in oklab, var(--atl-lilac) 55%, var(--atl-navy)); stroke-width: 0.4; opacity: 0.9; }
+.nm-atlas .atl-ds-ripple { fill: none; stroke: var(--atl-glow-c); stroke-width: 0.5; opacity: 0.8; transform-box: fill-box; transform-origin: center; }
+.nm-atlas .atl-ds-ripple-b { opacity: 0.4; scale: 1.6; }
+.nm-atlas .atl-ds-bobber { fill: var(--atl-hi); stroke: var(--atl-line); stroke-width: 0.5; }
+.nm-atlas .atl-ds-bobber-top { fill: var(--atl-gold); stroke: var(--atl-gold-line); stroke-width: 0.4; }
+.nm-atlas .atl-ds-mat { fill: color-mix(in oklab, var(--atl-lilac) 60%, var(--atl-navy)); stroke: var(--atl-glow-c); stroke-width: 0.5; }
+.nm-atlas .atl-ds-mat-line { fill: none; stroke: var(--atl-lilac); stroke-width: 0.8; stroke-linecap: round; opacity: 0.8; }
+:root:not([data-avatar-motion="off"]):is(:not([data-motion="reduced"]), [data-buddy-motion="full"]) {
+  /* Push-ups, four of them (1.75 s each): down, up, the body, the elbows and the eyes together. */
+  & #nm-buddy.nmb-act-pushups .nm-atlas { animation: atl-ds-pushups-body 1.75s ease-in-out infinite; }
+  & #nm-buddy.nmb-act-pushups .atl-figure .nmb-arm-l { animation: atl-ds-pushups-arm 1.75s ease-in-out infinite; }
+  & #nm-buddy.nmb-act-pushups .atl-figure .nmb-arm-r { animation: atl-ds-pushups-arm-r 1.75s ease-in-out infinite; }
+  & #nm-buddy.nmb-act-pushups .nm-atlas .atl-pupil { animation: atl-ds-pushups-eye 1.75s ease-in-out infinite; }
+  & #nm-buddy.nmb-act-pushups .nm-atlas .atl-tail { animation: atl-ds-pushups-tail 1.75s ease-in-out infinite; }
+  & #nm-buddy.nmb-act-pushups .nm-atlas .atl-m-grin { animation: atl-ds-grin-late 7s linear infinite; }
+  & #nm-buddy.nmb-act-pushups .nm-atlas .atl-m-smile { animation: atl-ds-smile-late 7s linear infinite; }
+  /* Dumbbells: the left curl, then the right (3.6 s a pair, twice). */
+  & #nm-buddy.nmb-act-weights .atl-figure .nmb-arm-l { animation: atl-ds-weights-arm 3.6s ease-in-out infinite; }
+  & #nm-buddy.nmb-act-weights .atl-figure .nmb-arm-r { animation: atl-ds-weights-arm-r 3.6s ease-in-out infinite; }
+  & #nm-buddy.nmb-act-weights .nmp-dumbbell-l .atl-ds-turn { animation: atl-ds-weights-turn 3.6s ease-in-out infinite; }
+  & #nm-buddy.nmb-act-weights .nmp-dumbbell-r .atl-ds-turn { animation: atl-ds-weights-turn-r 3.6s ease-in-out infinite; }
+  & #nm-buddy.nmb-act-weights .nm-atlas { animation: atl-ds-weights-body 3.6s ease-in-out infinite; }
+  & #nm-buddy.nmb-act-weights .nm-atlas .atl-pupil { animation: atl-ds-weights-eye 3.6s ease-in-out infinite; }
+  & #nm-buddy.nmb-act-weights .nm-atlas .atl-tail { animation: atl-ds-weights-tail 3.6s ease-in-out infinite; }
+  & #nm-buddy.nmb-act-weights .nm-atlas .atl-m-grin { animation: atl-ds-grin-late 7.2s linear infinite; }
+  & #nm-buddy.nmb-act-weights .nm-atlas .atl-m-smile { animation: atl-ds-smile-late 7.2s linear infinite; }
+  /* Tea: lift, sip twice with the cup tipped, lower, and the steam going up all the while (3.8 s, twice). */
+  & #nm-buddy.nmb-act-tea .atl-figure .nmb-arm-r { animation: atl-ds-tea-arm 11.4s ease-in-out infinite; }
+  & #nm-buddy.nmb-act-tea .atl-figure .nmb-arm-l { animation: atl-ds-tea-arm-l 11.4s ease-in-out infinite; }
+  & #nm-buddy.nmb-act-tea .atl-ds-turn { animation: atl-ds-tea-turn 11.4s ease-in-out infinite; }
+  & #nm-buddy.nmb-act-tea .atl-ds-steam { animation: atl-ds-steam 1.9s ease-out infinite; }
+  & #nm-buddy.nmb-act-tea .atl-ds-steam-b { animation: atl-ds-steam 1.9s ease-out -0.9s infinite; }
+  & #nm-buddy.nmb-act-tea .nm-atlas .atl-pupil { animation: atl-ds-tea-eye 11.4s ease-in-out infinite; }
+  & #nm-buddy.nmb-act-tea .nm-atlas .atl-tail { animation: atl-ds-tea-tail 5.7s ease-in-out infinite; }
+  & #nm-buddy.nmb-act-tea .nm-atlas .atl-m-grin { animation: atl-ds-grin-sip 11.4s linear infinite; }
+  & #nm-buddy.nmb-act-tea .nm-atlas .atl-m-smile { animation: atl-ds-smile-sip 11.4s linear infinite; }
+  /* A snack: to the mouth, four bites (it gets smaller), the tail wagging, a crumb falling each time (6.4 s). */
+  & #nm-buddy.nmb-act-snack .atl-figure .nmb-arm-r { animation: atl-ds-snack-arm 6.4s ease-in-out infinite; }
+  & #nm-buddy.nmb-act-snack .atl-ds-turn { animation: atl-ds-snack-turn 6.4s ease-in-out infinite; }
+  & #nm-buddy.nmb-act-snack .atl-ds-biscuit { animation: atl-ds-snack-bites 6.4s linear infinite; }
+  & #nm-buddy.nmb-act-snack .atl-ds-crumbs { animation: atl-ds-snack-crumbs 6.4s linear infinite; }
+  & #nm-buddy.nmb-act-snack .atl-figure .nmb-arm-l { animation: atl-ds-snack-arm-l 6.4s ease-in-out infinite; }
+  & #nm-buddy.nmb-act-snack .nm-atlas .atl-pupil { animation: atl-ds-snack-eye 6.4s ease-in-out infinite; }
+  & #nm-buddy.nmb-act-snack .nm-atlas .atl-tail { animation: atl-ds-snack-tail 6.4s ease-in-out infinite; }
+  & #nm-buddy.nmb-act-snack .nm-atlas .atl-m-grin { animation: atl-ds-grin-chew 6.4s linear infinite; }
+  & #nm-buddy.nmb-act-snack .nm-atlas .atl-m-smile { animation: atl-ds-smile-chew 6.4s linear infinite; }
+  /* Fishing: a cast over the shoulder, a long wait on the bobber, a bite, a quick reel in (8.4 s). */
+  & #nm-buddy.nmb-act-fish .atl-figure .nmb-arm-r { animation: atl-ds-fish-arm 42s ease-in-out infinite; }
+  & #nm-buddy.nmb-act-fish .atl-ds-turn { animation: atl-ds-fish-turn 42s ease-in-out infinite; }
+  & #nm-buddy.nmb-act-fish .atl-figure .nmb-arm-l { animation: atl-ds-fish-arm-l 42s ease-in-out infinite; }
+  & #nm-buddy.nmb-act-fish .atl-ds-bobber { animation: atl-ds-fish-bob 42s ease-in-out infinite; }
+  & #nm-buddy.nmb-act-fish .atl-ds-ripple { animation: atl-ds-ripple 2.1s ease-out infinite; }
+  & #nm-buddy.nmb-act-fish .atl-ds-ripple-b { animation: atl-ds-ripple 2.1s ease-out -1s infinite; }
+  & #nm-buddy.nmb-act-fish .nm-atlas { animation: atl-ds-fish-body 42s ease-in-out infinite; }
+  & #nm-buddy.nmb-act-fish .nm-atlas .atl-pupil { animation: atl-ds-fish-eye 42s ease-in-out infinite; }
+  & #nm-buddy.nmb-act-fish .nm-atlas .atl-tail { animation: atl-ds-fish-tail 42s ease-in-out infinite; }
+  & #nm-buddy.nmb-act-fish .nm-atlas .atl-m-grin { animation: atl-ds-grin-late 42s linear infinite; }
+  & #nm-buddy.nmb-act-fish .nm-atlas .atl-m-smile { animation: atl-ds-smile-late 42s linear infinite; }
+}
+/* The face: calm, then a smile for a beat (never the brows-down default). */
+@keyframes atl-ds-grin-late { 0%, 68% { opacity: 0; } 76%, 94% { opacity: 1; } 100% { opacity: 0; } }
+@keyframes atl-ds-smile-late { 0%, 68% { opacity: 1; } 76%, 94% { opacity: 0; } 100% { opacity: 1; } }
+@keyframes atl-ds-grin-sip { 0%, 14.28% { opacity: 0; } 17%, 22.44% { opacity: 1; } 25.16%, 34% { opacity: 0; } 100% { opacity: 0; } }
+@keyframes atl-ds-smile-sip { 0%, 14.28% { opacity: 1; } 17%, 22.44% { opacity: 0; } 25.16%, 34% { opacity: 1; } 100% { opacity: 1; } }
+@keyframes atl-ds-grin-chew { 0%, 30% { opacity: 0; } 36%, 80% { opacity: 1; } 90%, 100% { opacity: 0; } }
+@keyframes atl-ds-smile-chew { 0%, 30% { opacity: 1; } 36%, 80% { opacity: 0; } 90%, 100% { opacity: 1; } }
+/* Push-ups. */
+@keyframes atl-ds-pushups-body { 0%, 100% { --atl-sy: 1; --atl-lean: 2deg; } 50% { --atl-sy: 0.9; --atl-lean: 12deg; } }
+@keyframes atl-ds-pushups-arm { 0%, 100% { transform: rotate(16deg); } 50% { transform: rotate(52deg); } }
+@keyframes atl-ds-pushups-arm-r { 0%, 100% { transform: rotate(-16deg); } 50% { transform: rotate(-52deg); } }
+@keyframes atl-ds-pushups-eye { 0%, 100% { translate: 0 -0.5px; } 50% { translate: 0 1.1px; } }
+@keyframes atl-ds-pushups-tail { 0%, 100% { rotate: -8deg; } 50% { rotate: 10deg; } }
+/* Dumbbells: the left up and down in the first half, the right in the second. */
+@keyframes atl-ds-weights-arm { 0%, 50%, 100% { transform: rotate(12deg); } 14%, 32% { transform: rotate(98deg); } 22% { transform: rotate(104deg); } }
+@keyframes atl-ds-weights-arm-r { 0%, 50%, 100% { transform: rotate(-12deg); } 64%, 82% { transform: rotate(-98deg); } 72% { transform: rotate(-104deg); } }
+@keyframes atl-ds-weights-turn { 0%, 50%, 100% { rotate: -12deg; } 14%, 32% { rotate: -98deg; } 22% { rotate: -104deg; } }
+@keyframes atl-ds-weights-turn-r { 0%, 50%, 100% { rotate: 12deg; } 64%, 82% { rotate: 98deg; } 72% { rotate: 104deg; } }
+@keyframes atl-ds-weights-body { 0%, 50%, 100% { --atl-lean: 0deg; } 22% { --atl-lean: 4deg; } 72% { --atl-lean: -4deg; } }
+@keyframes atl-ds-weights-eye { 0%, 50%, 100% { translate: 0 0.3px; } 14%, 32% { translate: -1.6px -0.8px; } 64%, 82% { translate: 1.6px -0.8px; } 40% { translate: -0.4px 0.2px; } }
+@keyframes atl-ds-weights-tail { 0%, 50%, 100% { rotate: 0deg; } 22% { rotate: 12deg; } 72% { rotate: -12deg; } }
+/* Tea. */
+@keyframes atl-ds-tea-arm { 0%, 34% { transform: rotate(-14deg); } 4.76%, 9.52% { transform: rotate(-100deg); } 11.56%, 13.6% { transform: rotate(-106deg); } 21.08% { transform: rotate(-102deg); } 26.52% { transform: rotate(-14deg); } 100% { transform: rotate(-14deg); } }
+@keyframes atl-ds-tea-arm-l { 0%, 34% { transform: rotate(14deg); } 13.6%, 22.44% { transform: rotate(20deg); } 100% { transform: rotate(14deg); } }
+@keyframes atl-ds-tea-turn { 0%, 34% { rotate: 14deg; } 4.76%, 9.52% { rotate: 100deg; } 11.56%, 13.6% { rotate: 80deg; } 21.08% { rotate: 98deg; } 26.52% { rotate: 14deg; } 100% { rotate: 14deg; } }
+@keyframes atl-ds-steam { 0% { translate: 0 1px; opacity: 0; } 30% { opacity: 0.9; } 100% { translate: 0 -3px; opacity: 0; } }
+@keyframes atl-ds-tea-eye { 0%, 34% { translate: 0.6px 1.3px; } 4.76%, 9.52% { translate: 1.6px -0.3px; } 11.56%, 13.6% { translate: 1.8px -0.9px; } 21.08% { translate: 1.6px -0.3px; } 26.52% { translate: 0.6px 1.3px; } 100% { translate: 0.6px 1.3px; } }
+@keyframes atl-ds-tea-tail { 0%, 100% { rotate: -4deg; } 50% { rotate: 6deg; } }
+/* A snack: lifted, four bites, lowered. */
+@keyframes atl-ds-snack-arm { 0%, 100% { transform: rotate(-14deg); } 14%, 18% { transform: rotate(-104deg); } 26% { transform: rotate(-98deg); } 32% { transform: rotate(-108deg); } 42% { transform: rotate(-98deg); } 48% { transform: rotate(-108deg); } 58% { transform: rotate(-98deg); } 64% { transform: rotate(-108deg); } 72% { transform: rotate(-100deg); } 88% { transform: rotate(-14deg); } }
+@keyframes atl-ds-snack-turn { 0%, 100% { rotate: 14deg; } 14%, 18% { rotate: 104deg; } 26% { rotate: 98deg; } 32% { rotate: 108deg; } 42% { rotate: 98deg; } 48% { rotate: 108deg; } 58% { rotate: 98deg; } 64% { rotate: 108deg; } 72% { rotate: 100deg; } 88% { rotate: 14deg; } }
+@keyframes atl-ds-snack-arm-l { 0%, 100% { transform: rotate(14deg); } 18%, 76% { transform: rotate(36deg); } }
+@keyframes atl-ds-snack-bites { 0%, 29% { scale: 1; } 30%, 45% { scale: 0.8; } 46%, 61% { scale: 0.6; } 62%, 74% { scale: 0.42; } 75%, 100% { scale: 0; } }
+@keyframes atl-ds-snack-crumbs { 0%, 29% { opacity: 0; translate: 0 0; } 31% { opacity: 1; translate: 0 0; } 40% { opacity: 0; translate: 0 5px; } 47% { opacity: 1; translate: 0 0; } 56% { opacity: 0; translate: 0 5px; } 63% { opacity: 1; translate: 0 0; } 72%, 100% { opacity: 0; translate: 0 5px; } }
+@keyframes atl-ds-snack-eye { 0%, 100% { translate: 0.4px 1.4px; } 18%, 72% { translate: 1.2px 0.5px; } 32%, 48%, 64% { translate: 1.8px 0.1px; } }
+@keyframes atl-ds-snack-tail { 0%, 28%, 80%, 100% { rotate: 0deg; } 32% { rotate: 14deg; } 38% { rotate: -10deg; } 44% { rotate: 14deg; } 50% { rotate: -10deg; } 56% { rotate: 14deg; } 62% { rotate: -10deg; } 68% { rotate: 8deg; } }
+/* Fishing. */
+@keyframes atl-ds-fish-arm { 0%, 1.62%, 100% { transform: rotate(-30deg); } 3.66% { transform: rotate(-118deg); } 4.88% { transform: rotate(-22deg); } 6.5% { transform: rotate(-36deg); } 33.82% { transform: rotate(-34deg); } 61.13% { transform: rotate(-37deg); } 88.45% { transform: rotate(-34deg); } 94.87% { transform: rotate(-78deg); } 97.67% { transform: rotate(-34deg); } }
+@keyframes atl-ds-fish-turn { 0%, 1.62%, 100% { rotate: 30deg; } 3.66% { rotate: 92deg; } 4.88% { rotate: 60deg; } 6.5% { rotate: 46deg; } 33.82% { rotate: 43deg; } 61.13% { rotate: 46deg; } 88.45% { rotate: 43deg; } 94.87% { rotate: 56deg; } 97.67% { rotate: 44deg; } }
+@keyframes atl-ds-fish-arm-l { 0%, 100% { transform: rotate(18deg); } 6.5%, 93% { transform: rotate(26deg); } 94.87% { transform: rotate(32deg); } }
+@keyframes atl-ds-fish-bob { 0%, 6.09%, 100% { translate: 0 0; } 24.71% { translate: 0 0.5px; } 47.47% { translate: 0 -0.3px; } 74.79% { translate: 0 0.4px; } 93% { translate: 0 2.4px; } 93.93% { translate: 0 -0.4px; } }
+@keyframes atl-ds-ripple { 0% { scale: 0.4; opacity: 0.8; } 100% { scale: 1.5; opacity: 0; } }
+@keyframes atl-ds-fish-body { 0%, 100% { --atl-lean: 2deg; } 3.66% { --atl-lean: -5deg; } 5.28% { --atl-lean: 6deg; } 94.87% { --atl-lean: -3deg; } }
+@keyframes atl-ds-fish-eye { 0%, 100% { translate: 1.4px 1px; } 2.84%, 4.06% { translate: 0.4px -1.4px; } 5.69% { translate: 1.8px 1px; } 93% { translate: 1.8px 1.8px; } 94.87% { translate: 1px -0.4px; } }
+@keyframes atl-ds-fish-tail { 0%, 83.89%, 100% { rotate: 0deg; } 93.47% { rotate: 24deg; } 95.33% { rotate: -8deg; } 97.67% { rotate: 4deg; } }

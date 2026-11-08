@@ -28,7 +28,7 @@ def test_a_long_app_act_shifts_its_pose_inside_the_budget() -> None:
             for n in e["app"]["names"]:
                 if n.startswith("acts:"):
                     acts[n[5:]] = {"ms": 1, "w": 1, "cool": 0, "poses": ["stand"]}
-    assert set(acts) == {"nap", "read"}, acts
+    assert set(acts) == {"nap", "read", "tea", "fish"}, acts  # 1696 v: tea and fishing (Batch D) are built here and have a shift beat
     out = run(SHIFT_SIM % {}, acts)
     assert max(out.values()) <= 90000, out
 
