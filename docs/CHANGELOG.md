@@ -6,6 +6,9 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Desk companion (deskfix 4, 5): the faces confused, sad, shy and love are worn: confused when poked while the person works, sad when a menu request is refused, shy when petted within 8 s of waking, love on the third pet inside 30 s; stale docstrings of _pose and _on_nose corrected.
+- Desk companion (deskfix 2, 3): a carried shake is read over the last 0.6 s at any pointer rate (60 to 1000 Hz; it was the last 48 samples, so a fast mouse never shook the figure), and along the main axis of the motion with strokes of 30 px, so a drag with a wobble or small corrections while placing are not a shake.
+- Desk companion (deskfix 1): a boop is decided by where the jab's tip lands (its turning point), not by any point of its path; a jab straight down to the chest or belly is a poke, not a boop.
 - Diagram builder redraw (perf audit 1108 P3): a relabel shows in the picture at once (the words are swapped in the drawn SVG, 235 ms after Enter against 745 ms, 41 blocks at 4x CPU throttle), and the Mermaid redraw behind it starts in an idle slice and never while a label is being typed, so a key does not wait on a draw (the audit's 766 and 1,128 ms long tasks did not reproduce here: 181 to 217 ms before and after, host loaded).
 - Diagram builder opens lighter (perf audit 1108 P2): each row now carries an empty ⋯ and builds its menu and shape submenu on the first press, so a 41-block flowchart opens with 734 block-tree nodes, not 3,112, and 251 listeners on open, not 287, and the first block shows at 0.46 s, not 3.1 s (4x CPU throttle probe; the audit's 2,500 listeners did not reproduce).
 - Ask: "how long is the train from Lisbon to Porto" is answered by the line with the journey time again; "2h50" and "1h 30m" now read as a length of time (the round-3 merge had let "Ten days in May" lead).

@@ -55,9 +55,12 @@ STROKE_WASTE = 1.3
 #: States a reaction may break into, and the few more a touch may.
 SCREEN_FREE = ("stand", "act", "notice", "wave", "land")
 TOUCH_FREE = (*SCREEN_FREE, "sit", "sleep", "startle")
-#: A carried shake: this many direction flips inside `SHAKE_WINDOW` s, each after a stroke of `SHAKE_SWING` px (catalogue
+#: A carried shake: this many direction flips inside `SHAKE_WINDOW` s, each after a stroke of `SHAKE_SWING` px along the
+#: motion's main axis (a drag with a wobble travels away; a shake goes back and forth about a point; catalogue
 #: `int.shake_dizzy`, INBOX 1696 kk). The dizzy sway after the drop lasts `DIZZY_FOR` s.
-SHAKE_FLIPS, SHAKE_WINDOW, SHAKE_SWING, DIZZY_FOR = 3, 0.6, 18.0, (2.5, 4.0)
+SHAKE_FLIPS, SHAKE_WINDOW, SHAKE_SWING, DIZZY_FOR = 3, 0.6, 30.0, (2.5, 4.0)
+#: A pet this soon after waking is shy; the third pet inside `LOVE_STREAK` s is loved.
+SHY_FOR, LOVE_STREAK, LOVE_PETS = 8.0, 30.0, 3
 FACE_STATES = ("stand", "act", "notice", "startle", "wave", "land", "sit")
 
 
@@ -71,6 +74,8 @@ class Reaction(NamedTuple):
     touch: bool = False
     #: B5: 1 waits for a free moment; 2 or more also breaks a sit, a sleep and a walk, and a running reaction of lower priority.
     prio: int = 1
+    #: A face alone that may be worn while the person is working (it asks nothing of them).
+    busy_ok: bool = False
 
 
 REACTIONS: dict[str, Reaction] = {
@@ -85,6 +90,14 @@ REACTIONS: dict[str, Reaction] = {
     "hover": Reaction("", "smile", 3.0, "happy", 25.0, True),
     "tickle": Reaction("tickle_squirm", "laughing", 2.4, "happy", 8.0, True),
     "boop": Reaction("boop_sneeze", "surprised", 1.1, "", 5.0, True),
+    # the faces confused, sad, shy and love (catalogue B4): a poke while the person works, a refused request, a pet
+    # right after waking, a long run of pets
+    "confused": Reaction("", "confused", 1.8, "", 20.0, True, 1, True),
+    "refused": Reaction("", "sad", 2.4, "", 10.0, True),
+    "pat_shy": Reaction("pat_happy", "shy", 2.2, "happy", 3.0, True),
+    "rub_shy": Reaction("rub_purr", "shy", 3.4, "happy", 6.0, True),
+    "pat_love": Reaction("pat_happy", "love", 2.6, "happy", 3.0, True),
+    "rub_love": Reaction("rub_purr", "love", 3.6, "happy", 6.0, True),
     # a shake while carried: it is left dizzy on the ground (`Extras.dizzy`)
     "dizzy": Reaction("dizzy_sway", "dizzy", 3.2, "startled", 8.0, True, 2),
     # the screen
@@ -262,15 +275,21 @@ class Pointer:
         if into[0] * out[0] + into[1] * out[1] >= 0:  # straight on through is a pass, not a jab
             return None
         peak = max((self._leg(a, c) for a, c in zip(pts[: i + 1], pts[1 : i + 1]) if pts[i][0] - c[0] <= POKE_WINDOW), default=0.0)
-        return self._jab(peak >= POKE_SPEED * k, pts[i : j + 1], box)
+        return self._jab(peak >= POKE_SPEED * k, pts[i : j + 1], box, pts[i - 1])
 
-    def _jab(self, fast: bool, inside: list[tuple[float, float, float]], box: tuple[float, float, float, float]) -> str | None:
-        """A jab that was fast enough: a boop when its tip landed on the nose, else a poke."""
+    def _jab(
+        self, fast: bool, inside: list[tuple[float, float, float]], box: tuple[float, float, float, float], came_from: tuple[float, float, float]
+    ) -> str | None:
+        """A jab that was fast enough: a boop when its tip landed on the nose, else a poke. The tip is the point inside
+        farthest from where the jab came in (its turning point), not any point it passed on the way."""
         if not fast:
             return None
-        return "boop" if any(self._on_nose(p, box) for p in inside) else "poke"
+        tip = max(inside, key=lambda p: math.hypot(p[1] - came_from[1], p[2] - came_from[2]))
+        return "boop" if self._on_nose(tip, box) else "poke"
+
     @staticmethod
     def _on_nose(p: tuple[float, float, float], box: tuple[float, float, float, float]) -> bool:
+        """Whether the point `p` is on the nose: the middle of the face, between `NOSE_TOP` and the head's lower edge."""
         lx, t, r, b = box
         h = b - t
         return abs(p[1] - (lx + r) / 2) <= NOSE_HALF * (r - lx) and t + NOSE_TOP * h <= p[2] <= t + HEAD_ZONE * h
@@ -323,12 +342,22 @@ class Pointer:
 
 
 def shake_flips(trail: list[tuple[float, float, float]], now: float, k: float) -> int:
-    """Direction flips of a carried figure's pointer over the last `SHAKE_WINDOW` s, the larger of x and y: how
-    hard it was shaken. `trail` is `(time, x, y)`; strokes under `SHAKE_SWING` px (scaled by `k`) are a hand's tremor."""
+    """Direction flips of a carried figure's pointer over the last `SHAKE_WINDOW` s along the main axis of that motion:
+    how hard it was shaken. `trail` is `(time, x, y)`, at any pointer rate. The flips are read along the principal axis
+    of the window's points, so a drag with a sideways wobble (it moves away, its main axis never turns back) is not a
+    shake, and strokes under `SHAKE_SWING` px (scaled by `k`) are a hand's tremor."""
     pts = [p for p in trail if now - p[0] <= SHAKE_WINDOW]
     if len(pts) < 4:
         return 0
-    return max(Pointer.reversals(pts, 1, SHAKE_SWING * k), Pointer.reversals(pts, 2, SHAKE_SWING * k))
+    n = len(pts)
+    mx, my = sum(p[1] for p in pts) / n, sum(p[2] for p in pts) / n
+    sxx = sum((p[1] - mx) ** 2 for p in pts)
+    syy = sum((p[2] - my) ** 2 for p in pts)
+    sxy = sum((p[1] - mx) * (p[2] - my) for p in pts)
+    angle = 0.5 * math.atan2(2 * sxy, sxx - syy)
+    ux, uy = math.cos(angle), math.sin(angle)
+    along = [(p[0], (p[1] - mx) * ux + (p[2] - my) * uy, 0.0) for p in pts]
+    return Pointer.reversals(along, 1, SHAKE_SWING * k)
 
 
 def ease(t: float, length: float) -> int:
@@ -361,6 +390,7 @@ class Extras:
         self.over: tuple[str, float, float] | None = None
         self.hold: float | None = None
         self.last: list[str] = []
+        self.pets: list[float] = []  # when the last pats and rubs began
         self.near = False
         #: Where the pointer was last and when it last moved: it is watched finely only while it moves near the figure.
         self.seen: tuple[int, int] | None = None
@@ -448,24 +478,36 @@ class Extras:
         if pointer != self.seen:
             self.seen, self.moved_at = pointer, now
         self.pointer_state.feed(now, float(pointer[0]), float(pointer[1]))
-        if e.state not in TOUCH_FREE or e.quiet or e.busy:
+        if e.state not in TOUCH_FREE:
             return False
         kind = self.pointer_state.classify(now, box, k, e.mind.mood(now, e.hour))
         if kind is None:
             return False
+        if e.quiet or e.busy:  # it does not play for someone who is working, but a poke puzzles it
+            return kind == "poke" and self.fire("confused", now, toward=pointer[0])
         if kind == "poke":
             kind = POKE_BY_MOOD.get(e.mind.mood(now, e.hour), "poke_curious")
-        if self.fire(kind, now, toward=pointer[0]):
+        if self.fire(self._warmed(kind, now), now, toward=pointer[0]):
+            if kind in ("pat", "rub"):
+                self.pets = [*(p for p in self.pets if now - p <= LOVE_STREAK), now]
             self.pointer_state.clear()
             return True
         return False
+
+    def _warmed(self, kind: str, now: float) -> str:
+        """A pat or rub right after waking is shy, and the third inside `LOVE_STREAK` s is loved."""
+        if kind not in ("pat", "rub"):
+            return kind
+        if sum(1 for p in self.pets if now - p <= LOVE_STREAK) + 1 >= LOVE_PETS:
+            return f"{kind}_love"
+        return f"{kind}_shy" if now - self.e.woke_at <= SHY_FOR else kind
 
     # --- reactions ---------------------------------------------------------------------------
 
     def _allowed(self, r: Reaction | None, kind: str, now: float) -> bool:
         """Whether a reaction may start now: the state, the cooldown, nobody typing, no card, no running reaction."""
         e = self.e
-        if r is None or e.reduced or e.quiet or e.busy or e.card is not None or now < self.cool.get(kind, -1e9):
+        if r is None or e.reduced or (e.busy and not r.busy_ok) or e.card is not None or now < self.cool.get(kind, -1e9):
             return False
         free = TOUCH_FREE if r.touch else SCREEN_FREE
         if r.prio >= 2:

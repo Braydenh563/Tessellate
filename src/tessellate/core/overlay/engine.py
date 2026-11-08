@@ -228,6 +228,8 @@ FRAME_OF = {"pressed": "stand", "leap": "hop", "notice": "look", "startle": "hop
 #: Throw: the pointer's last THROW_WINDOW seconds decide the velocity. Logical
 #: px per second (scaled by dpi): slower than THROW_MIN is a plain drop.
 THROW_WINDOW = 0.1
+#: Most carried-pointer samples kept for the shake and the throw: 0.6 s of a 1000 Hz mouse plus a margin.
+TRAIL_CAP = 800
 THROW_MIN = 350.0
 THROW_MAX = 3200.0
 #: A window dragged out from under the figure (INBOX 1683 x): faster than `FLING_SPEED` (logical px/s) throws it, a
@@ -652,6 +654,7 @@ class Engine:
         self.home_arrivals = 0
         self.click_now: str | None = None
         self.trail: list[tuple[float, int, int]] = []
+        self.woke_at = -1e9  # when it last woke from sleep (a pet soon after is shy)
         self.pre_press = "stand"
         self.bonk_until = 0.0
         self.angle = 0.0
@@ -1015,6 +1018,8 @@ class Engine:
     # --- state changes ----------------------------------------------------------------
 
     def _enter(self, state: str, now: float) -> None:
+        if self.state == "sleep" and state != "sleep":
+            self.woke_at = now
         self._wear_face(state, now)
         self.state = state
         self._arm_nap(state, now)
@@ -1762,7 +1767,13 @@ class Engine:
 
     def command(self, name: str, now: float) -> bool:
         """A choice from the companion's menu, on the engine's own thread. True when it took
-        effect; False when it cannot be done now (carried, no window to sit on, motion off)."""
+        effect; False when it cannot be done now (carried, no window to sit on, motion off), and it looks sad."""
+        done = self._command(name, now)
+        if not done:
+            self.ex.fire("refused", now)
+        return done
+
+    def _command(self, name: str, now: float) -> bool:
         if name == "come" and self.come is not None:  # a second "Come here" ends the following
             self.come = None
             return True
@@ -3825,13 +3836,23 @@ class Engine:
                 self._turn_over(True)
         if self.carrying:
             self.trail.append((self.now, px, py))
-            del self.trail[:-48]  # 0.6 s of a shake at 60 Hz is 36 samples
+            self._trim_trail()
             if not self.shaken and not self.reduced and extras.shake_flips(self.trail, self.now, self._scale()) >= extras.SHAKE_FLIPS:
                 self.shaken = True
                 self._turn_over(True)
             self.x = px - self.grab[0] - self._flip_dx(self._held_frame(), self.facing < 0)
             self.y = py - self.grab[1] - self._dy("held")
             self._keep_on_screen()
+
+    def _trim_trail(self) -> None:
+        """Keep the carried pointer's last `SHAKE_WINDOW` s, whatever the pointer's rate (every raw move arrives), capped
+        by count (a 1000 Hz mouse sends 600 samples in that time) so a stalled clock cannot grow it."""
+        keep = self.now - extras.SHAKE_WINDOW
+        drop = 0
+        while drop < len(self.trail) - 1 and self.trail[drop][0] < keep:
+            drop += 1
+        del self.trail[:drop]
+        del self.trail[:-TRAIL_CAP]
 
     def _held_frame(self) -> str:
         """The picture a carried figure shows: the held pose, or the tumble turned half a circle when upside down."""
