@@ -3144,7 +3144,12 @@ async function _loadEntries() {
   let cursor = "";
   while (offset < total) {
     const after = cursor ? `&cursor=${encodeURIComponent(cursor)}` : "";
-    const response = await api(`/entries?limit=${ENTRIES_PAGE_SIZE}${after}&preview=300`);
+    //: **The rest in one request, not page by page** (perf audit 1108 P10: 500 notes were three `/entries` fetches
+    //: of 200, 1.1 to 1.4 s each on a loaded host). The first page stays small for the first paint; the first
+    //: response's total says how much is left, so one more request (up to the server's own page, 1000) fetches
+    //: it. A notebook past 1,200 still pages, in thousands.
+    const want = first ? ENTRIES_PAGE_SIZE : Math.min(1000, Math.max(ENTRIES_PAGE_SIZE, total - offset));
+    const response = await api(`/entries?limit=${want}${after}&preview=300`);
     const page = await response.json();
     if (generation !== _entriesLoadGeneration) return; // superseded mid-load
 

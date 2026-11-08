@@ -44,3 +44,10 @@ def test_reopen_redraws_nothing_it_already_has():
     close = _src("settings.js")
     close = close[close.index("function closeSettingsModal(") :][:900]
     assert "if (search?.value)" in close
+
+
+def test_boot_fetches_the_rest_of_the_notes_in_one_request():
+    # perf audit 1108 P10: 500 notes were three /entries fetches; the first page is small, the rest is one request.
+    notes = _src("notes-list.js")
+    assert "Math.min(1000, Math.max(ENTRIES_PAGE_SIZE, total - offset))" in notes
+    assert "/entries?limit=${want}${after}&preview=300" in notes
