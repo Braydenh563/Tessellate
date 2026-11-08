@@ -412,15 +412,10 @@ function settingsNavFollow(link) {
     }, { passive: true });
   }
   if (box.matches(":hover") || performance.now() - (box._userScrollAt || 0) < 600) return;
-  const have = box.getBoundingClientRect();
-  const at = link.getBoundingClientRect();
-  const pad = 8;
-  const delta = at.top < have.top + pad ? at.top - have.top - pad : at.bottom > have.bottom - pad ? at.bottom - have.bottom + pad : 0;
-  if (!delta) return;
-  const root = document.documentElement;
-  const still = reducedMotionWanted() || root.dataset.uiMotion === "off";
+  //: A row of room past the marked link, as a picked row has (INBOX 1696 e; it was 8px).
+  const still = reducedMotionWanted() || document.documentElement.dataset.uiMotion === "off";
   box._followAt = performance.now();
-  box.scrollTo({ top: box.scrollTop + delta, behavior: still ? "auto" : "smooth" });
+  nearestScrollParent.reveal(link, box, !still);
 }
 
 //: Mark the head the pane is scrolled to. `aria-current="location"` is the
@@ -714,12 +709,14 @@ function helpMarks(parent, text, rx) {
   parent.append(text.slice(at));
 }
 
-//: Draw (or redraw, with the words marked) a topic's title, text and place.
+//: Draw (or redraw, with the words marked) a topic's title, lead, text and place.
 function helpTopicPaint(details, rx) {
   const topic = details._topic;
-  const [summary, body, where] = details.children;
+  const [summary, lead, body, where] = details.children;
   summary.replaceChildren();
   helpMarks(summary, topic.title, rx);
+  lead.replaceChildren();
+  helpMarks(lead, topic.lead, rx);
   body.replaceChildren();
   helpFill(body, topic.body, rx);
   const path = where?.firstChild;
@@ -735,10 +732,13 @@ function helpTopicRow(topic) {
   details._topic = topic;
   const summary = document.createElement("summary");
   summary.dataset.keys = topic.find.toLowerCase();
-  summary.dataset.find = topic.body.toLowerCase();
-  details._help = [topic.title, topic.find, topic.body, topic.path].join(" ").toLowerCase();
+  summary.dataset.find = `${topic.lead} ${topic.body}`.toLowerCase();
+  details._help = [topic.title, topic.lead, topic.find, topic.body, topic.path].join(" ").toLowerCase();
   details._named = `${topic.title} ${topic.find}`.toLowerCase();
-  details.append(summary, document.createElement("p"));
+  //: The topic's one line (INBOX 1612), first under its title.
+  const lead = document.createElement("p");
+  lead.className = "help-topic-lead";
+  details.append(summary, lead, document.createElement("p"));
   //: A link to Help from inside Help goes nowhere.
   const link = topic.id === "manual" ? { manual: true, label: "the manual" } : topic.link && topic.link.section !== "help" ? topic.link : null;
   if (topic.path || link) {

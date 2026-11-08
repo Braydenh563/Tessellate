@@ -169,7 +169,7 @@
   content: "";
   position: absolute;
   inset-block: var(--space-2);
-  inset-inline-start: calc(-2 * var(--space-3));
+  inset-inline-start: calc(-1 * var(--setting-bar-inset));
   width: 2px;
   border-radius: var(--radius-pill);
   background: var(--accent-text);
@@ -315,7 +315,10 @@
   background: var(--ghost-btn-bg);
 }
 #appearance-panel :is(.check-row, .setting-check, .checkbox-label).setting-modified::before {
-  inset-inline-start: calc(-1 * var(--space-3));
+  inset-inline-start: calc(var(--space-3) - var(--setting-bar-inset));
+}
+#appearance-panel .settings-group.setting-modified::before {
+  inset-inline-start: calc(1rem - var(--setting-bar-inset));
 }
 #appearance-panel .settings-group > .selectbar {
   margin-inline: calc(-1rem - 1px);

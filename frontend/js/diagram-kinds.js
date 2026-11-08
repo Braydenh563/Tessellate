@@ -1076,6 +1076,8 @@
     S.note.classList.toggle("hidden", Boolean(parsed));
     S.note.textContent = parsed ? "" : big ? `This diagram has more than ${ops.MAX} blocks, so it opens in Source with its picture.` : `Blocks cannot read this ${A.noun}, so it opens in Source with its picture.`;
     S.m = parsed || A.empty();
+    //: With a block the phone's list is a sheet (diagram-touch.js) and the picture takes the page, as a flowchart's with an arrow.
+    S.root.classList.toggle("dgm-listless", !A.blank(S.m));
     if (!parsed) S.ghosts.replaceChildren(), S.ghosts.classList.add("hidden");
     S.pane.classList.toggle("hidden", !parsed);
     render(S);
@@ -1119,5 +1121,17 @@
     return text === S.source ? S : sync(host, text, S);
   }
 
-  diagramModel.kinds = { mindmap, timeline, sequence, ops, show, ghostSpec };
+  //: What the picture (diagram-seq-canvas.js) does to a row: the same steps the list's keys take, with the same lines said.
+  const act = {
+    select: (S, key) => kit.select(S, key),
+    name: nameOf,
+    rename(S, key, text) {
+      if (text === nameOf(S, key) || !ops.relabel(S.k, S.m, key, text)) return;
+      kit.commit(S, `Renamed to ${text}.`);
+    },
+    remove: removeBlock,
+    step: stepBlock,
+  };
+
+  diagramModel.kinds = { mindmap, timeline, sequence, ops, show, ghostSpec, act };
 })();

@@ -1911,8 +1911,6 @@ function drawCharacter(seed, size = 20, mode = "mark") {
         const a = (Math.PI * 2 * i) / 12;
         make("circle", { cx: 32 + Math.cos(a) * 27, cy: 28 + Math.sin(a) * 24, r: 8, fill: mane, stroke: nmMix(mane, "#000000", 0.45), "stroke-width": LW }, back);
       }
-    } else {
-      ["#e15759", "#f28e2c", "#edc949", "#59a14f", "#4e79a7"].forEach((c, i) => outlined(`M${40 + i * 3} ${2 + i * 2} C${54 + i * 2} ${8 + i * 3} ${60 + i} ${24 + i * 4} ${58 + i} ${40 + i * 3}`, c, 2.6, back));
     }
   }
   if (creature?.wool) {
@@ -2008,7 +2006,10 @@ function drawCharacter(seed, size = 20, mode = "mark") {
     } else if (outfit === "sweater") {
       for (const y of [68, 71]) make("path", { d: `M8 ${y} L56 ${y}`, stroke: clothLine, "stroke-width": 0.9 }, clip);
     } else if (outfit === "dress") {
-      make("path", { d: "M8 63 L56 63", stroke: "#f5f4ef", "stroke-width": 2 }, clip);
+      //: A skirt that flares past the hips to below the body (INBOX 1696 r):
+      //: the tee with a white stripe said nothing of a dress. Under the arms.
+      make("path", { d: "M10 60 C24 63 40 63 54 60 L60 79 C44 83 20 83 4 79 Z", fill: cloth, stroke: clothLine, "stroke-width": LW, "stroke-linejoin": "round" }, torso);
+      make("path", { d: "M10 60 C24 63 40 63 54 60", fill: "none", stroke: "#f5f4ef", "stroke-width": 1.6, "stroke-linecap": "round" }, torso);
     } else {
       make("path", { d: "M26 54 C28 58 36 58 38 54", fill: "none", stroke: clothLine, "stroke-width": 1.2 }, clip);
     }
@@ -2379,6 +2380,14 @@ function drawCharacter(seed, size = 20, mode = "mark") {
     stroke(`M${32 + sx * 6} 6 Q${32 + sx * 10} -4 ${32 + sx * 14} -6`, top, 1.4, "#2b2a28");
     make("circle", { cx: 32 + sx * 14, cy: -6, r: 2, fill: "#2b2a28" }, top);
   }
+  if (creature?.mane === "rainbow") {
+    //: A rainbow forelock from the horn to the right temple (INBOX 1696 r):
+    //: the strands were behind the head, and only the blue showed past its
+    //: edge, a grey scythe at 64 px. One outline under all five, then the colours.
+    const forelock = ["M33 3 C42 2 50 7 52 13", "M33.6 5 C43 4.4 51 9.4 53 15.2", "M34.2 7 C44 6.8 52 11.8 54 17.4", "M34.8 9 C45 9.2 53 14.2 55 19.6", "M35.4 11 C46 11.6 54 16.6 56 21.8"];
+    const lock = make("g", { class: "nmc-forelock" }, top);
+    for (const ink of [line, null]) forelock.forEach((d, i) => make("path", { d, fill: "none", stroke: ink || ["#e15759", "#f28e2c", "#edc949", "#59a14f", "#4e79a7"][i], "stroke-width": ink ? 2.6 + LW * 2 : 2.6, "stroke-linecap": "round" }, lock));
+  }
   if (beast?.smallHorns || beast?.unihorn || beast?.bullHorns || beast?.antlers) {
     if (beast.unihorn) make("path", { d: "M28 6 L32 -14 L36 6 Z", fill: gold, stroke: goldLine, "stroke-width": LW, "stroke-linejoin": "round" }, top);
     if (beast.smallHorns) for (const sx of [-1, 1]) make("path", { d: `M${32 + sx * 10} 7 L${32 + sx * 13} -2 L${32 + sx * 16} 8 Z`, fill: beast.smallHorns, stroke: nmMix(beast.smallHorns, "#000000", 0.4), "stroke-width": LW, "stroke-linejoin": "round" }, top);
@@ -2445,11 +2454,16 @@ function drawCharacter(seed, size = 20, mode = "mark") {
         }
         make("circle", { cx: x, cy: y, r: 1.2, fill: "#f28e2c" }, hat);
       }
-    } else if (kind === "bandana" || kind === "headband") {
-      const band = kind === "bandana" ? "#e2574c" : "#e8364f";
+    } else if (kind === "bandana") {
       //: Across the forehead, clear of the brows (at 21.5) and the eyes.
-      make("path", { d: "M5 16 C14 9 50 9 59 16 L59 21 C50 14 14 14 5 21 Z", fill: band, stroke: nmMix(band, "#000000", 0.4), "stroke-width": LW }, hat);
-      make("path", { d: "M58 16 L66 12 L64 20 Z M58 19 L67 23 L60 25 Z", fill: band, stroke: nmMix(band, "#000000", 0.4), "stroke-width": 1 }, hat);
+      make("path", { d: "M5 16 C14 9 50 9 59 16 L59 21 C50 14 14 14 5 21 Z", fill: "#e2574c", stroke: nmMix("#e2574c", "#000000", 0.4), "stroke-width": LW }, hat);
+      make("path", { d: "M58 16 L66 12 L64 20 Z M58 19 L67 23 L60 25 Z", fill: "#e2574c", stroke: nmMix("#e2574c", "#000000", 0.4), "stroke-width": 1 }, hat);
+    } else if (kind === "headband") {
+      //: The karate band, white with a red sun at the front and long tails
+      //: (INBOX 1696 r): it was the bandana's red band in another red.
+      make("path", { d: "M5 16 C14 9 50 9 59 16 L59 20 C50 13 14 13 5 20 Z", fill: "#f5f4ef", stroke: "#8a8f99", "stroke-width": LW }, hat);
+      make("circle", { cx: 32, cy: 13.4, r: 2.4, fill: "#e8364f" }, hat);
+      make("path", { d: "M58 17 L67 22 L64 26 Z M58 19 L64 28 L60 30 Z", fill: "#f5f4ef", stroke: "#8a8f99", "stroke-width": 1 }, hat);
     } else if (kind === "headphones") {
       make("path", { d: "M8 30 C6 6 58 6 56 30", fill: "none", stroke: "#2b2a33", "stroke-width": 3 }, hat);
       for (const x of [4, 60]) make("rect", { x: x - 4, y: 24, width: 8, height: 13, rx: 4, fill: "#e2574c", stroke: "#2b2a33", "stroke-width": LW }, hat);
@@ -10639,3 +10653,49 @@ function nameMarkBuddyHint(fromAppearance = false) {
 //: app was still locked.
 setTimeout(() => nameMarkBuddyHint(), 20000);
 setTimeout(() => nameMarkBuddyHint(), 80000);
+//: **A pull from the drawing is a grab** (INBOX 1696 bb, the owner: "the screen
+//: scrolls again when I throw the in-app companion (sometimes)"). Sitting or
+//: standing, its handle ends at the seat or the soles so a button under the
+//: legs stays usable, but the drawing reaches 19px left, 26 right and 47 below
+//: the handle (buddyhit1696.js): a pull that began there was the page's, a text
+//: selection that autoscrolls. A press on the drawing outside the handle that
+//: becomes a pull (4px) is now taken as a grab of the companion: the page's
+//: selection never starts and the face gets the press (its own pull code runs).
+//: A plain click is untouched and goes through to what is under it.
+// pull-grab:begin
+(() => {
+  let arm = null;
+  let swallow = false;
+  const drawn = (buddy, x, y) => [...buddy.querySelectorAll(".nm-buddy-char svg, .nm-buddy-char img, .nm-buddy-char canvas")].some((el) => {
+    const r = el.getBoundingClientRect();
+    return x >= r.left && x <= r.right && y >= r.top && y <= r.bottom;
+  });
+  document.addEventListener("pointerdown", (event) => {
+    arm = null;
+    swallow = false;
+    const buddy = document.getElementById("nm-buddy");
+    if (!buddy || event.button !== 0 || event.target?.closest?.("#nm-buddy") || !drawn(buddy, event.clientX, event.clientY)) return;
+    arm = { id: event.pointerId, x: event.clientX, y: event.clientY };
+  }, true);
+  document.addEventListener("pointermove", (event) => {
+    if (!arm || event.pointerId !== arm.id || Math.hypot(event.clientX - arm.x, event.clientY - arm.y) < 4) return;
+    const face = document.getElementById("nm-buddy")?.querySelector(".nm-buddy-face");
+    const from = arm;
+    arm = null;
+    if (!face) return;
+    swallow = true;
+    getSelection()?.removeAllRanges();
+    face.dispatchEvent(new PointerEvent("pointerdown", { button: 0, clientX: from.x, clientY: from.y, pointerId: from.id, bubbles: true }));
+  }, true);
+  //: A selection that has not begun never does while the press is armed (a wobble included).
+  document.addEventListener("selectstart", (event) => { if (arm || swallow) event.preventDefault(); }, true);
+  //: The click a grab ends in is the companion's, not the page's.
+  document.addEventListener("click", (event) => {
+    if (!swallow) return;
+    swallow = false;
+    event.stopPropagation();
+    event.preventDefault();
+  }, true);
+  for (const type of ["pointerup", "pointercancel"]) document.addEventListener(type, () => { arm = null; }, true);
+})();
+// pull-grab:end

@@ -427,7 +427,11 @@ def test_the_diagram_kinds_are_in_the_guide_in_the_controls_words() -> None:
                   "a section, a period and an event (S, P and E)",
                   # 1679 m: the tiles grew by Parallel, Critical and Break (U, C, B); the sentence still lists every tile with its key.
                   "actor, participant, message, reply, async, lost, note, loop, alt, opt, parallel, critical and break (A, P, M, R, Y, X, T, L, G, O, U, C and B)",
-                  "opens in Source with its picture", "of another kind says so and is left out", "replaces a blank one"):
+                  "opens in Source with its picture", "of another kind says so and is left out", "replaces a blank one",
+                  # 1661 k: the four kind buttons became one Kind menu in the Title row.
+                  "Kind, in the Title row (first in the toolbar elsewhere), is a menu",
+                  # 1661 l: a sequence diagram is edited on its picture (diagram-seq-canvas.js).
+                  "On a sequence picture a press picks a part, a double press, Enter or F2 renames it there"):
         assert words in body, words
     assert "diagram-kinds" in TOPIC_META and "diagram-kinds" in dict(HELP_GROUPS)["Documents and code"]
     assert "next topic" in str(next(t["body"] for t in HELP_TOPICS if t["id"] == "diagram-blocks"))
@@ -552,3 +556,94 @@ def test_the_diagram_tab_chain_the_starter_and_the_keys_chip_are_in_the_guide() 
     for words in ("In Source, Tab indents and Shift+Tab takes it back", "Escape leaves the text", "a red line number", "Title names the document Done makes (blank dates it)"):
         assert words in reading, words
     assert "In the picture an arrow key picks the box that way, reading aloud its name and arrows, and Shift with an arrow moves the picture" in reading
+
+
+def test_the_diagram_panel_folds_are_in_the_guide_in_the_controls_words() -> None:
+    """1661 m: `[` and `]` fold the list and the picture to a rail (diagram-split.js), and a kind's list is the phone's sheet."""
+    from tessellate.ai.help_chat import HELP_TOPICS
+
+    body = str(next(t["body"] for t in HELP_TOPICS if t["id"] == "diagram-reading"))
+    assert "[ and ] fold the list and the picture to a rail" in body and "Blocks list opens the list as a sheet" in body
+    split = (FRONTEND / "js" / "diagram-split.js").read_text(encoding="utf-8")
+    assert 'right: ["picture", "]"' in split and 'left: ["list", "["' in split
+
+
+# --- the one-line lead on every topic (INBOX 1612) ----------------------------
+#: The owner's decision: "yes to a one-line summary at the top of every topic
+#: (the copy rule's one line, the rest under it)". Each lead is one sentence
+#: saying what the feature is for, drawn first in Settings, Help and the
+#: manual, and kept out of the prompt (help_leads.py says why).
+
+_LEAD_MAX = 90
+
+
+def _listed_topics() -> list[dict]:
+    from tessellate.ai.help_chat import help_listing
+
+    return [topic for group in help_listing()["groups"] for topic in group["topics"]]
+
+
+def _lead_faults(lead: str, title: str) -> list[str]:
+    import re
+
+    words = lead.split()
+    return [
+        reason
+        for reason, bad in (
+            ("over 90 characters", len(lead) > _LEAD_MAX),
+            ("no full stop at the end", not lead.endswith(".")),
+            ("more than one sentence", bool(re.search(r"[.!?;]\s", lead))),
+            ("an em-dash or en-dash", "\u2014" in lead or "\u2013" in lead),
+            ("an exclamation mark", "!" in lead),
+            ("not starting with a capital", not lead[:1].isupper()),
+            ("title case", sum(w[:1].isupper() for w in words[1:]) * 2 > len(words)),
+            ("the title again", lead.rstrip(".").casefold() == title.casefold()),
+        )
+        if bad
+    ]
+
+
+def test_every_listed_topic_has_a_one_sentence_lead():
+    faults = {}
+    for topic in _listed_topics():
+        lead = topic.get("lead", "")
+        found = ["no lead"] if not lead else _lead_faults(lead, topic["title"])
+        if found:
+            faults[topic["id"]] = found
+    assert not faults, faults
+
+
+def test_no_two_leads_are_the_same_and_none_is_left_over():
+    from tessellate.ai.help_leads import TOPIC_LEADS
+
+    listed = {topic["id"] for topic in _listed_topics()}
+    assert set(TOPIC_LEADS) <= listed, sorted(set(TOPIC_LEADS) - listed)
+    leads = [lead.casefold() for lead in TOPIC_LEADS.values()]
+    assert len(leads) == len(set(leads)), sorted({lead for lead in leads if leads.count(lead) > 1})
+
+
+def test_the_lead_is_never_prompt_text(monkeypatch):
+    from tessellate.ai import help_chat
+    from tessellate.ai.help_leads import TOPIC_LEADS
+
+    assert not any("lead" in topic for topic in help_chat.HELP_TOPICS)
+    #: Every topic grounds this one turn, so no lead can hide behind retrieval.
+    monkeypatch.setattr(help_chat, "topics_for", lambda question, tab: list(help_chat.HELP_TOPICS))
+    messages, topics = help_chat._prompt_for("how do I sort my notes", None, None, None)
+    sent = "\n".join(message["content"] for message in messages)
+    assert len(topics) == len(help_chat.HELP_TOPICS)
+    assert [lead for lead in TOPIC_LEADS.values() if lead in sent] == []
+    #: A body no longer opens on its label ("Graph keys and controls."), so the
+    #: title names the surface for the model, as `help_block_for` does.
+    assert [t["id"] for t in help_chat.HELP_TOPICS if f"- {help_chat.topic_title(t)}: " not in sent] == []
+
+
+def test_settings_help_and_the_manual_draw_and_search_the_lead():
+    # Both scripts are lazy, so they are read as files, not from app_js_text.
+    find = (FRONTEND / "js" / "settings-find.js").read_text(encoding="utf-8")
+    manual = (FRONTEND / "js" / "manual.js").read_text(encoding="utf-8")
+    assert 'lead.className = "help-topic-lead"' in find
+    assert "details.append(summary, lead," in find
+    assert "[topic.title, topic.lead," in find
+    assert 'lead.className = "manual-lead"' in manual
+    assert "${topic.lead}" in manual

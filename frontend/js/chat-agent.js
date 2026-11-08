@@ -778,6 +778,7 @@ const MAX_DRAFT_VERSIONS = 12;
 //: actually binds: this only stops the picker offering a seventh.
 const DRAFT_MAX_SOURCES = 6;
 
+
 function saveDraftLocally() {
   try {
     prefs.set(

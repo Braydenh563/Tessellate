@@ -168,16 +168,21 @@ function docLivePlugin(CM) {
   //: reason the callout label's does: a click on the bullet is a click into
   //: the line behind it.
   class DocBulletWidget extends WidgetType {
-    eq() {
-      return true;
+    constructor(style = "disc") {
+      super();
+      this.style = style;
+    }
+    eq(other) {
+      return other.style === this.style;
     }
     ignoreEvent() {
       return false;
     }
     toDOM() {
       const dot = document.createElement("span");
-      dot.className = "cm-md-li-mark cm-md-li-bullet";
-      dot.textContent = "\u2022";
+      //: The glyph is the list's style (`docLists`): dots, circles, squares or dashes.
+      dot.className = `cm-md-li-mark cm-md-li-bullet cm-md-li-bullet-${this.style}`;
+      dot.textContent = docLists.glyph(this.style);
       return dot;
     }
   }
@@ -881,13 +886,16 @@ function docLivePlugin(CM) {
               if (taskLead && !touched(line.from, line.to)) {
                 ranges.push(hidden.range(from, line.from + taskLead[0].length));
               } else if (/^[-*+]$/.test(mark[1]) && !touched(line.from, line.to)) {
+                const style = docLists.bulletStyle(line.text);
                 ranges.push(
-                  Decoration.replace({ widget: new DocBulletWidget() }).range(from, to)
+                  Decoration.replace({ widget: new DocBulletWidget(style) }).range(from, to)
                 );
                 //: The space after it goes: the bullet is a fixed 1.6em box, so
                 //: the first line's words start exactly where a wrapped line's
                 //: do (a space is the font's width, which left them 11px apart).
-                if (doc.sliceString(to, to + 1) === " ") ranges.push(hidden.range(to, to + 1));
+                //: A dash list's two spaces both go (`docLists`: the dash style).
+                const gap = style === "dash" ? 2 : 1;
+                if (doc.sliceString(to, to + gap) === " ".repeat(gap)) ranges.push(hidden.range(to, to + gap));
               } else if (/^\d+[.)]$/.test(mark[1]) && !touched(line.from, line.to)) {
                 //: A number and its space share a box at least 1.6em wide, so a
                 //: short number's wrap lines up as the bullet's does.
@@ -897,6 +905,23 @@ function docLivePlugin(CM) {
                 ranges.push(Decoration.mark({ class: "cm-md-li-mark" }).range(from, to));
               }
             }
+            return undefined;
+          }
+          //: **Letters and roman numerals are lists here** (`docLists`): CommonMark reads
+          //: "a." and "i." as paragraph text, so the tree has no ListItem for them.
+          //: The same hanging indent and muted marker, drawn from the line itself.
+          if (name === "Paragraph" && node.node.parent?.name === "Document") {
+            const first = doc.lineAt(node.from).number;
+            const last = doc.lineAt(node.to).number;
+            const rows = [];
+            for (let n = first; n <= last; n += 1) rows.push(doc.line(n));
+            docLists.classify(rows.map((row) => row.text)).forEach((it, k) => {
+              if (!it?.letters) return;
+              const row = rows[k];
+              const depth = Math.min(LIST_DEPTH_MAX, Math.floor(it.indent.replace(/\t/g, "  ").length / 2));
+              ranges.push(Decoration.line({ class: `cm-md-li cm-md-li-${depth}` }).range(row.from));
+              ranges.push(Decoration.mark({ class: "cm-md-li-mark cm-md-li-num" }).range(row.from + it.indent.length, row.from + it.head));
+            });
             return undefined;
           }
           if (name === "Blockquote") {
@@ -1745,3 +1770,169 @@ function docLivePlugin(CM) {
   );
   return docLivePluginCache;
 }
+
+//: **List styles, kept in the markdown** (INBOX 1696 cc; DOCUMENTS_PLAN decision 40).
+//: The marker is the style, so every view and the export read it: `-` dots,
+//: `*` circles, `+` squares (CommonMark's three bullets, and a change of marker
+//: starts a new list there), a dash is `-` with two spaces, `1.` and `1)`
+//: numbers, `a.` letters and `i.` roman numerals (plain text elsewhere, which
+//: reads the same). The live view, the List and Numbered menus and the paste
+//: fix all go through this one block.
+// list-styles:begin
+globalThis.docLists = (() => {
+  const ROMAN = [["m", 1000], ["cm", 900], ["d", 500], ["cd", 400], ["c", 100], ["xc", 90], ["l", 50], ["xl", 40], ["x", 10], ["ix", 9], ["v", 5], ["iv", 4], ["i", 1]];
+  const toRoman = (n) => {
+    let out = "";
+    let rest = n;
+    for (const [r, v] of ROMAN) while (rest >= v) { out += r; rest -= v; }
+    return out;
+  };
+  const fromRoman = (s) => {
+    let n = 0;
+    let rest = s;
+    for (const [r, v] of ROMAN) while (rest.startsWith(r)) { n += v; rest = rest.slice(r.length); }
+    return rest || !n || toRoman(n) !== s ? 0 : n;
+  };
+  const toAlpha = (n) => {
+    let out = "";
+    let rest = n;
+    while (rest > 0) { rest -= 1; out = String.fromCharCode(97 + (rest % 26)) + out; rest = Math.floor(rest / 26); }
+    return out;
+  };
+  const BULLET = { disc: "-", circle: "*", square: "+", dash: "-" };
+  const GLYPH = { disc: "•", circle: "◦", square: "▪", dash: "–" };
+  const LINE = /^([ \t]*)(?:([-*+])( +)(\[[ xX]\] )?|(\d{1,9})([.)]) +|([a-z]{1,6})([.)]) +)/;
+  //: One line as a list item, or null. A letter token is only a candidate here (`classify`).
+  const parse = (text) => {
+    const m = LINE.exec(text);
+    if (!m) return null;
+    if (m[2]) {
+      const task = Boolean(m[4]);
+      const two = m[3].length >= 2 && m[3].length <= 3 && /\S/.test(text.slice(m[0].length));
+      const style = m[2] === "*" ? "circle" : m[2] === "+" ? "square" : !task && two ? "dash" : "disc";
+      return { kind: "bullet", style, indent: m[1], head: m[1].length + 1 + m[3].length, task };
+    }
+    if (m[5]) return { kind: "ordered", style: m[6] === "." ? "decimal" : "paren", indent: m[1], head: m[0].length, token: m[5] };
+    return { kind: "ordered", style: "", letters: true, indent: m[1], head: m[0].length, token: m[7] };
+  };
+  //: Every line parsed, a letter run accepted only as a run: `a.` starts letters,
+  //: `i.` starts roman numerals, and the next item continues either; a sentence
+  //: that merely opens "A. Smith" is not a list because nothing follows it.
+  const classify = (lines) => {
+    const out = [];
+    lines.forEach((text, i) => {
+      const it = parse(text);
+      if (it?.letters) {
+        const prev = out[i - 1];
+        const same = prev && prev.indent === it.indent;
+        const t = it.token;
+        if (t.length === 1 && ((same && prev.style === "alpha" && prev.token.charCodeAt(0) + 1 === t.charCodeAt(0)) || t === "a")) it.style = "alpha";
+        else if (fromRoman(t) && ((same && prev.style === "roman" && fromRoman(prev.token) + 1 === fromRoman(t)) || t === "i")) it.style = "roman";
+        else { out.push(null); return; }
+      }
+      out.push(it);
+    });
+    return out;
+  };
+  const marker = (style, n) => {
+    if (style in BULLET) return BULLET[style] + (style === "dash" ? "  " : " ");
+    return `${style === "alpha" ? toAlpha(n) : style === "roman" ? toRoman(n) : n}${style === "paren" ? ")" : "."} `;
+  };
+  //: The lines from..to (inclusive) of a document in `style`: the list they are in, at their
+  //: own level (nested items keep theirs), or the selected lines made into a new one.
+  const restyle = (lines, from, to, style) => {
+    const cls = classify(lines);
+    let pivot = -1;
+    for (let i = from; i <= to && pivot < 0; i += 1) if (cls[i]) pivot = i;
+    if (pivot < 0) {
+      let n = 0;
+      return { from, to, lines: lines.slice(from, to + 1).map((text) => {
+        if (!text.trim()) return text;
+        n += 1;
+        const lead = /^[ \t]*/.exec(text)[0];
+        return lead + marker(style, n) + text.slice(lead.length);
+      }) };
+    }
+    const indent = cls[pivot].indent;
+    //: One list is one marker style at one level (CommonMark starts a new list where the
+    //: marker changes), with anything nested deeper or indented under it.
+    const own = (j) => cls[j].indent === indent && cls[j].style === cls[pivot].style;
+    const member = (j) => lines[j].trim() && (cls[j] ? own(j) || cls[j].indent.length > indent.length : /^[ \t]+\S/.test(lines[j]));
+    //: A blank line joins a loose list when the next line that way is this list's own item.
+    const bridged = (j, step) => {
+      let k = j;
+      while (k >= 0 && k < lines.length && !lines[k].trim()) k += step;
+      return k >= 0 && k < lines.length && cls[k] && own(k);
+    };
+    let lo = pivot;
+    let hi = pivot;
+    while (lo > 0 && (member(lo - 1) || (!lines[lo - 1].trim() && bridged(lo - 1, -1)))) lo -= 1;
+    while (hi < lines.length - 1 && (member(hi + 1) || (!lines[hi + 1].trim() && bridged(hi + 1, 1)))) hi += 1;
+    lo = Math.min(lo, from);
+    hi = Math.max(hi, to);
+    let n = 0;
+    const out = lines.slice(lo, hi + 1).map((text, k) => {
+      const it = cls[lo + k];
+      if (!it || it.indent !== indent || it.task) return text;
+      n += 1;
+      return indent + marker(style, n) + text.slice(it.head);
+    });
+    return { from: lo, to: hi, lines: out };
+  };
+  //: A bullet pasted from a web page or a word processor: a Unicode dash, "•", "◦" or "▪" opening a line.
+  const LOOK = /^([ \t]*)[\u2010-\u2014\u2022\u25E6\u25AA][ \t]+(?=\S)/gm;
+  const pasteFix = (text, first = true) => {
+    const cut = first ? 0 : text.indexOf("\n") + 1 || text.length;
+    return text.slice(0, cut) + text.slice(cut).replace(LOOK, "$1- ");
+  };
+  const MENUS = {
+    ul: ["Dot point styles", [["disc", "• Dots", "- item"], ["circle", "◦ Circles", "* item"], ["square", "▪ Squares", "+ item"], ["dash", "– Dashes", "-  item (two spaces)"]]],
+    ol: ["Numbering styles", [["decimal", "1. Numbers", "1. item"], ["paren", "1) Numbers with a bracket", "1) item"], ["alpha", "a. Letters", "a. item"], ["roman", "i. Roman numerals", "i. item"]]],
+  };
+  //: The selected lines (or the caret's) restyled through the editor's own box, one undo step.
+  const apply = (style) => {
+    const box = docSurfaceById("doc-content");
+    if (!box) return;
+    docUndoBreak();
+    const { selectionStart: s, selectionEnd: e, value } = box;
+    const lines = value.split("\n");
+    const first = value.slice(0, s).split("\n").length - 1;
+    const last = Math.max(first, value.slice(0, e).split("\n").length - 1 - (e > s && value[e - 1] === "\n" ? 1 : 0));
+    const done = restyle(lines, first, last, style);
+    const at = lines.slice(0, done.from).reduce((sum, line) => sum + line.length + 1, 0);
+    const body = done.lines.join("\n");
+    box.value = [...lines.slice(0, done.from), ...done.lines, ...lines.slice(done.to + 1)].join("\n");
+    box.setSelectionRange(at, at + body.length);
+    finishMarkdownEdit(box, "doc-content");
+  };
+  //: A menu beside each of the List and Numbered buttons (the kebab recipe), mounted once.
+  const mount = () => {
+    if (typeof kebabMenu !== "function") return;
+    for (const [md, [label, rows]] of Object.entries(MENUS)) {
+      const button = document.querySelector(`#doc-toolbar [data-md="${md}"]`);
+      if (!button || button.nextElementSibling?.classList.contains("doc-list-styles")) continue;
+      const wrap = kebabMenu(rows.map(([style, words, example]) => ({ label: words, title: example, run: () => apply(style) })), label);
+      wrap.classList.add("doc-list-styles");
+      button.after(wrap);
+    }
+  };
+  const pasted = (event) => {
+    const view = typeof docCmView === "undefined" ? null : docCmView;
+    if (!view || !view.dom.contains(event.target) || view.dom.classList.contains("doc-content-code") || view.state.readOnly) return;
+    const text = event.clipboardData?.getData("text/plain");
+    if (!text) return;
+    const caret = view.state.selection.main.from;
+    const line = view.state.doc.lineAt(caret);
+    const fixed = pasteFix(text, !/\S/.test(view.state.sliceDoc(line.from, caret)));
+    if (fixed === text) return;
+    event.preventDefault();
+    event.stopPropagation();
+    view.dispatch({ ...view.state.replaceSelection(fixed), scrollIntoView: true, userEvent: "input.paste" });
+  };
+  if (typeof window !== "undefined" && window.addEventListener) {
+    window.addEventListener("paste", pasted, true);
+    mount();
+  }
+  return { parse, classify, restyle, pasteFix, marker, mount, apply, glyph: (style) => GLYPH[style] || GLYPH.disc, bulletStyle: (text) => { const it = parse(text); return it?.kind === "bullet" ? it.style : "disc"; } };
+})();
+// list-styles:end

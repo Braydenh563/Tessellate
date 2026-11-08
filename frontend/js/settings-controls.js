@@ -2719,7 +2719,7 @@ async function renderMemorySettings() {
           const open = meta.appendChild(document.createElement("button"));
           open.type = "button";
           open.className = "linklike";
-          open.textContent = note.title;
+          open.textContent = noteNamePlain(note.title) || "Untitled note";
           open.addEventListener("click", () => {
             closeSettingsModal();
             flashEntry(note.id);

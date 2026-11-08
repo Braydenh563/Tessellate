@@ -225,6 +225,8 @@
   }
   const hideRow = () => item("Hide for 10 minutes", "timer", () => leave(() => ask("snooze")));
 
+  //: The row `keepOpen` redraws the menu for: the focus goes back to it, not to the first row.
+  let refocus = "";
   async function openMenu(kind) {
     await probe();
     const menu = $("desk-menu");
@@ -240,20 +242,20 @@
       const motionRows = [];
       if (overlay && !locked && motion?.still && motion.reason !== "avatar") motionRows.push(item("Let it walk", "person-simple-walk", () => leave(() => ask("let_it_walk"))));
       if (overlay && motion && typeof motion.stay === "boolean" && !motion.still) {
-        motionRows.push(motion.stay ? item("Roam", "person-simple-walk", () => leave(() => ask("set_stay", false))) : item("Stay here", "push-pin", () => leave(() => ask("set_stay", true))));
+        motionRows.push(motion.stay ? item("Roam", "person-simple-walk", () => keepOpen(() => ask("set_stay", false), "Stay here")) : item("Stay here", "push-pin", () => keepOpen(() => ask("set_stay", true), "Roam")));
       }
       //: Roam over windows: a switch, not a one-way action.
-      if (overlay && motion && typeof motion.roam === "boolean") motionRows.push(toggle("Roam over windows", motion.roam, () => leave(() => ask("set_roam", !motion.roam))));
+      if (overlay && motion && typeof motion.roam === "boolean") motionRows.push(toggle("Roam over windows", motion.roam, () => keepOpen(() => ask("set_roam", !motion.roam), "Roam over windows")));
       //: How lively it is: one row that steps Calm, Usual, Lively (saved, and the figure follows).
       if (overlay && motion && typeof motion.lively === "string") {
         const levels = ["calm", "usual", "lively"];
         const names = { calm: "Calm", usual: "Usual", lively: "Lively" };
         const at = Math.max(0, levels.indexOf(motion.lively));
-        motionRows.push(item(`Activity: ${names[levels[at]]}`, "lightning", () => leave(() => ask("set_lively", levels[(at + 1) % levels.length]))));
+        motionRows.push(item(`Activity: ${names[levels[at]]}`, "lightning", () => keepOpen(() => ask("set_lively", levels[(at + 1) % levels.length]), "Activity: ")));
       }
       //: The in-app Companion size steps (`NMB_SIZES`); a size pulled with the corner handle marks none.
       const sizeRows = overlay && !locked && typeof motion?.size === "number"
-        ? [["Small", "small", 0.8], ["Medium", "medium", 1], ["Large", "large", 1.3]].map(([label, name, size]) => toggle(label, Math.abs(motion.size - size) < 0.005, () => leave(() => ask("set_figure_size", name))))
+        ? [["Small", "small", 0.8], ["Medium", "medium", 1], ["Large", "large", 1.3]].map(([label, name, size]) => toggle(label, Math.abs(motion.size - size) < 0.005, () => keepOpen(() => ask("set_figure_size", name), label)))
         : [];
       const away = [hideRow()];
       away.push(item("Turn off", "power", () => (overlay ? leave(() => ask("hide_companion")) : ask("hide_companion"))));
@@ -274,7 +276,10 @@
     }
     menu.replaceChildren(...rows);
     show(kind);
-    rows.find((row) => row.tagName === "BUTTON" && !row.disabled)?.focus();
+    const live = rows.filter((row) => row.tagName === "BUTTON" && !row.disabled);
+    const again = refocus;
+    refocus = "";
+    (live.find((row) => again && row.textContent.startsWith(again)) || live[0])?.focus();
   }
 
   //: The right-click menu's "Companion": every choice the app's Appearance offers
@@ -303,6 +308,18 @@
     $("desk-menu").replaceChildren(...rows);
     show("context");
     rows.find((row) => row.tagName === "BUTTON" && !row.disabled)?.focus();
+  }
+
+  //: A choice that changes a setting (Activity, Stay here or Roam, Roam over windows, a size) keeps the menu
+  //: open, drawn again with the new tick and the focus back on that row (INBOX 1696); a request that moves the
+  //: figure or opens something closes it (`leave`).
+  async function keepOpen(action, row) {
+    try {
+      await action();
+    } finally {
+      refocus = row;
+      await openMenu("context");
+    }
   }
 
   //: Run `action` first, then rest: the click that brought the app forward is the

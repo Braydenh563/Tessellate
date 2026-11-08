@@ -1451,18 +1451,18 @@ MORE_TOPICS: list[dict] = [
         "body": (
             "In the desktop app on Windows and Linux (X11) the companion lives on your desktop while the window is "
             "minimised or in the tray, and goes when it opens. Atlas floats like a wind spirit (others walk the bottom), sleeps "
-            "when you are away, can be picked up and thrown (it tumbles, lands and gets up; only a hard throw up catches the top), "
-            "hangs from the top, and peeks up from behind the taskbar, a screen edge or a smaller window (drag it and it is thrown off). It keeps to a home spot by an "
+            "when you are away, can be picked up and thrown (it tumbles, lands and gets up; a hard throw up catches the top), "
+            "hangs from the top, and peeks up from behind the taskbar, a screen edge or a smaller window (a drag throws it off). It keeps to a home spot by an "
             "edge for minutes, alive in place, and makes a few trips an hour: walking, running, "
             "out at one edge and in at the other, or through a portal. Let go gently near a title bar and it hangs, "
             "then pulls itself up, swings down or lets go with a start. Sometimes it climbs onto the top of a window, rides it when you move it and hops off "
             "if you close it (Roam over windows turns that off), and"
             " when a reminder falls due it brings you a card to click. It steps aside for full screen and follows Companion movement "
             "in Appearance (still when Fades only or Windows animation effects are off). Turn it on, on the computer"
-            " Tessellate runs on: Settings, Appearance, Show the companion on the desktop, or the tray icon's menu. It takes effect while the desktop app runs. Click it for Quick note, "
+            " Tessellate runs on: Settings, Appearance, Show the companion on the desktop, or the tray icon's menu. It works while the desktop app runs. Click it for Quick note, "
             "Quick search, New reminder, Open today, Open Tessellate, Wave, Come here, Go somewhere else, Take a nap, Sit on a window"
-            " or Hide for 10 minutes. Come here follows your pointer a while; a nap lasts minutes or until clicked. Right-click it for Companion (Atlas masculine or feminine, your own or a saved one, summoned once),"
-            " Stay here or Roam, Activity (Calm, Usual or Lively; calm takes fewer trips), Settings or Turn off. Drag it; it keeps the spot. Menu: Small, Medium, Large; or pull its corner handle (bottom right while it hangs), double-click to reset. Locked, it "
+            " or Hide for 10 minutes. Come here follows your pointer; a nap lasts minutes or until clicked. Right-click it for Companion (Atlas masculine or feminine, your own or a saved one, summoned once),"
+            " Stay here or Roam, Activity (Calm, Usual or Lively; calm takes fewer trips), Settings or Turn off; settings keep it open. Drag it; it keeps the spot. Menu: Small, Medium, Large; or pull its corner handle (bottom right while it hangs), double-click to reset. Locked, it "
             "shows only Open Tessellate. On Wayland it stays in the app."
         ),
         "badge": {"label": "Desktop companion", "section": "appearance", "target": "desktop-companion-row"},
@@ -1916,7 +1916,7 @@ MORE_TOPICS.extend(
                 "what a card shows", "create a linked note", "link mode",
             ),
             "body": (
-                "What a note's card draws. A table or a code block is drawn the "
+                "A table or a code block is drawn the "
                 "way a document draws it, with its Copy button; a search does not "
                 "mark words inside one. A picture from the web is not loaded, "
                 "because this notebook works offline: the card says so and links "
@@ -2348,7 +2348,7 @@ MORE_TOPICS.extend(
                 "forget panel position",
             ),
             "body": (
-                "Moving and resizing panels. On a computer with a mouse, any panel "
+                "On a computer with a mouse, any panel "
                 "with a title row (the agent, Find anything, Statistics, Settings "
                 "and the rest) can sit where you want it: drag its head to move it "
                 "and drag any edge or corner to resize it from that side. "
@@ -2391,7 +2391,7 @@ MORE_TOPICS.extend(
                 "covering the button", "message covering", "larger text", "bigger text",
             ),
             "body": (
-                "Accessibility. The app works at 200% and 400% browser zoom: on a "
+                "The app works at 200% and 400% browser zoom: on a "
                 "short window Chat flows as a page, and sub-tab strips scroll with "
                 "the page so a focused control stays in view. Settings, Keyboard "
                 "shortcuts has Single-key shortcuts: turn it off so speech input "
@@ -2416,7 +2416,7 @@ MORE_TOPICS.extend(
                 "flashcards", "quiz me on my map", "test myself", "memorise",
             ),
             "body": (
-                "Study the map. On a mind map, the board menu's Study the map "
+                "On a mind map, the board menu's Study the map "
                 "goes full screen and asks one branch at a time: what is under "
                 "it is hidden until you press Show (or Enter), then Knew it or "
                 "Not yet marks it and moves on. Branches with topics under "
@@ -2435,7 +2435,7 @@ MORE_TOPICS.extend(
                 "attach to a comment",
             ),
             "body": (
-                "Comments on a board or a map. Right-click a card, sticky, shape or "
+                "Right-click a card, sticky, shape or "
                 "topic and choose Comment… for a thread on it; the count on its "
                 "corner opens it again. Each comment has Reply (answered one step in "
                 "under it), Edit (in place: Enter keeps it, Esc puts it back, and the "
@@ -2458,7 +2458,7 @@ MORE_TOPICS.extend(
                 "text size for some words", "different font for some words", "colour some words", "highlight colour on a board",
             ),
             "body": (
-                "Sticky notes and text boxes on a board. A sticky (N, or the note "
+                "A sticky (N, or the note "
                 "on the tool dock) is paper: its colour, a lift, and a folded "
                 "corner. A text box (T) is words on the board, with no fill and a "
                 "faint dashed edge. Select a sticky and its bar starts with a Paper "
@@ -2489,7 +2489,7 @@ MORE_TOPICS.extend(
                 "symbol", "symbols", "insert a symbol", "special characters", "greek letters", "arrows",
             ),
             "body": (
-                "Emoji and icons. One picker holds every Phosphor icon the app ships "
+                "One picker holds every Phosphor icon the app ships "
                 "and about 470 emoji: Emoji or Icons in the tab strip under its title, "
                 "type to search, Recent first, arrows and Enter to choose, Escape to close. "
                 "The last Emoji group is Japanese emoticons (kaomoji such as a shrug or a table flip), "
@@ -2527,7 +2527,7 @@ MORE_TOPICS.extend(
                 "solid fill", "topic style", "topic icon", "emoji on a topic", "icon picker",
             ),
             "body": (
-                "How a map's topics look. A map draws as a hierarchy: the centre "
+                "A map draws as a hierarchy: the centre "
                 "large, bold and filled, each main branch bold on a tinted card "
                 "with a thick line, deeper topics plain. Enter on the centre adds "
                 "a main branch. A topic's own size, shape or fill always beats "
@@ -3278,14 +3278,14 @@ MORE_TOPICS.extend([
             "another's top or bottom puts it before or after, its middle joins "
             "them, a group's body takes it inside. A connector shows under "
             "the block it leaves as Start to Next and its label. The shape swatch "
-            "picks it. A divider sizes the blocks and the picture (drag, or "
+            "picks it. A divider sizes the blocks and the picture (drag or "
             "arrows; Shift for more). Direction (a menu) turns the flow. An empty one lists "
             "three steps: Add a shape, Name it, Connect it, or Start from an example. "
             "The corner bar zooms (Zoom in, Zoom out, Fit), as do Ctrl+wheel and a pinch; "
-            "its percentage is typeable, with a list, and 100% is the drawing's own size; Shift+arrow keys pan. "
-            "Shift+click picks a range, Ctrl+click adds one; Escape lets go of the pick; a bar offers Delete, "
+            "its percentage is typeable and 100% is the drawing's own size; Shift+arrow keys pan. "
+            "Shift+click picks a range, Ctrl+click adds one; Escape lets go of the pick (a click off too); a bar offers Delete, "
             "Duplicate, Box them, Done, any picked grip moves all. "
-            "A block's ... menu (long press on a phone) does the same. "
+            "A block's ... menu (long press on a phone) does it too. "
             "Keys "
             "on a block: arrows walk, Enter renames, N adds a Box, 1 to 7 the other shapes, Shift+N the last one, G adds a group, C or J joins, "
             "K colours, ? lists keys, Delete removes, Alt+Up and Alt+Down reorder, Alt+Right nests, Alt+Left lifts out. "
@@ -3307,13 +3307,13 @@ MORE_TOPICS.extend([
             "diagram too small", "turn it sideways", "diagram direction", "diagram fit", "blocks list phone",
         ),
         "body": (
-            "Reading a diagram. The list says Your blocks, in the order the chart flows; its foot has Add block and Connect. A block sits under the one that points at it, "
+            "The list says Your blocks, in the order the chart flows; its foot has Add block and Connect. A block sits under the one that points at it, "
             "indented where it branches (a straight run of steps stays flush), and a block made by Connect to... lands under its siblings, so an org chart reads like the chart. "
             "The printed source keeps its own order; Alt+Up and Alt+Down move a block among its siblings, and say so when the list would not change; drag a grip to move it. "
             "A block's arrows share one line under it; press one for its menu: the line (arrow, line, dotted, thick, Both ways), Colour… and Reverse direction. "
             "With two or more blocks picked, the bar also has Colour (K) and Connect, which draws an arrow from the first picked to the second. "
             "Fit stops at readable text (11 px) and the picture scrolls past it. In the picture an arrow key picks the box that way, reading aloud its name and arrows, and Shift with an arrow moves the picture. A tall chart in a wide pane offers Turn it sideways once; Direction is a menu of Down, Right, Up and Left, and Shift turns it back one step. "
-            "On a phone, once there is an arrow the picture takes the page and the Blocks list button opens the blocks as a sheet. "
+            "[ and ] fold the list and the picture to a rail; the rail opens it. On a phone, once there is an arrow (another kind: a block), Blocks list opens the list as a sheet. "
             "In Source, Tab indents and Shift+Tab takes it back, Escape leaves the text, Ctrl+Z steps the blocks' history too, and a red line number is the line a drawing error names; its note has Undo the last edit. "
             "In the bar Left and Right walk the buttons; the ... menu has the look, Save as PNG and Save to Library. On the picture Enter names the picked box, Shift+Enter adds a joined box and Alt+Enter a sister, Ctrl+D copies, Ctrl+A picks all, Delete removes, Ctrl+F or / finds by name, and a double press on empty space adds a box. "
             "The New diagram window's Title names the document Done makes (blank dates it) and the files you export."
@@ -3327,8 +3327,8 @@ MORE_TOPICS.extend([
             "mermaid timeline", "mermaid sequence", "sequence diagram", "diagram kinds",
         ),
         "body": (
-            "The Flowchart, Sequence, Mind map and Timeline buttons above the toolbar start a new diagram "
-            "of that kind (Ctrl+Z brings the old one back). A block's ... menu has Box this block, a group round it; "
+            "Kind, in the Title row (first in the toolbar elsewhere), is a menu of Flowchart, Sequence, Mind map and Timeline, "
+            "each with a small picture; one starts a new, empty diagram of that kind (Ctrl+Z brings the old one back). A block's ... menu has Box this block, a group round it; "
             "the bar over picked blocks has Box them. "
             "Blocks draw flowcharts, mind maps, timelines and sequence diagrams: the first word of "
             "the source says which, and the bar offers that kind's blocks. A mind map has a branch "
@@ -3341,6 +3341,7 @@ MORE_TOPICS.extend([
             "arrows, Enter, Delete, Alt+Up, Alt+Down, Alt+Right and Alt+Left, Ctrl+Z. A line the "
             "blocks do not show stays where it was, and a diagram they cannot read (a second mind "
             "map centre, a sequence box, more than 120 blocks) opens in Source with its picture. "
+            "On a sequence picture a press picks a part, a double press, Enter or F2 renames it there, Delete removes it and Alt+Up or Alt+Down moves it. "
             "Suggest works in each: Templates include a brainstorm, a project plan, a sign in and a "
             "request and reply. A suggestion of the diagram's own kind arrives as ghosts to take; "
             "one of another kind says so and is left out when the diagram has blocks, and replaces "

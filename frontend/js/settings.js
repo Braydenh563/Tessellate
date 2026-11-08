@@ -114,6 +114,37 @@ function settingsScroller(name) {
   return null;
 }
 
+//: **A picked row keeps a row of room** (INBOX 1696 e, the owner: a row picked
+//: "right at the bottom in the settings sidebar and other sidebars" should
+//: "scroll a little down to give comfortable room for the selected item unless
+//: it is the last item"). Measured before at 1440x560: the Settings nav's
+//: bottom row stayed 12px under the edge (and 1440x260, a notes sidebar row
+//: 3.3px above it). The row is brought to its own height inside its sidebar's edge (half the
+//: sidebar at most), with the box's own `scrollTop`, never `scrollIntoView`,
+//: which walks every ancestor; the last and first rows stop at the end, as
+//: the scroll clamps. A property of menus.js's `nearestScrollParent`, not a
+//: name in the shared scope (tests/test_global_scope_ratchet.py), and here, a
+//: boot script past the gzip budget's eager set (tests/test_static_compression.py:
+//: notes-list.js had 1 byte to spare). DESIGN.md, the row-room recipe.
+nearestScrollParent.reveal = function revealRow(row, box = row && nearestScrollParent(row), smooth = false) {
+  if (!row?.isConnected || !box) return 0;
+  //: A list the page itself scrolls has no sidebar edge to keep room at.
+  if (box === document.documentElement) return row.scrollIntoView({ block: "nearest" }), 0;
+  //: The edge seen: a sidebar taller than the window ends at the window.
+  const rect = box.getBoundingClientRect();
+  const have = { top: Math.max(rect.top, 0), bottom: Math.min(rect.bottom, innerHeight) };
+  const at = row.getBoundingClientRect();
+  if (have.bottom <= have.top || !at.height) return 0;
+  const room = Math.min(at.height, Math.max(0, (have.bottom - have.top - at.height) / 2));
+  const delta = at.bottom > have.bottom - room ? at.bottom - have.bottom + room : at.top < have.top + room ? at.top - have.top - room : 0;
+  //: Whole pixels away from the row, as `scrollTop` rounds.
+  if (Math.abs(delta) >= 1) box.scrollTo({ top: box.scrollTop + (delta > 0 ? Math.ceil(delta) : Math.floor(delta)), behavior: smooth ? "smooth" : "auto" });
+  return delta;
+};
+//: The notes sidebar: a pick (a press, or Enter, which presses) redraws the list inside the row's own click
+//: (`renderSidebar`), so on the way back up the redrawn current row is brought in.
+$("category-list")?.addEventListener("click", (event) => nearestScrollParent.reveal(event.currentTarget.querySelector('li[aria-current="true"]')));
+
 function showSettingsSection(name) {
   //: The companion's one-time nudge (avatars.js) may show when Appearance
   //: is first opened.
@@ -157,22 +188,25 @@ function showSettingsSection(name) {
   //: A long section gets its own index (settings-find.js, loaded on the first
   //: open of Settings).
   if (typeof settingsIndexWatchSection === "function") settingsIndexWatchSection(name);
+  //: The chosen pane's row keeps a row of room in the sidebar (INBOX 1696 e), after its "On this page" list is drawn.
+  nearestScrollParent.reveal(document.querySelector(`#settings-nav button[data-section="${name}"]`));
   updatePeekAvailability(name);
   // The log stream is the only section that holds a connection open, so it is
   // the only one that has to be told it is no longer being looked at.
   if (name !== "logs") closeLogs();
   if (name === "logs") renderLogs();
-  if (["preferences", "general", "searchindex", "personas"].includes(name)) renderPrefs().catch(() => {});
+  const read = ["preferences", "general", "searchindex", "personas"].includes(name) && renderPrefs().catch(() => {});
   if (name === "websearch") renderWebSearch().catch(() => {});
-  if (name === "personas") renderPersonas().catch(() => {});
+  //: Personas draws from the read above, not a second GET of the same document (INBOX 1696 f).
+  if (name === "personas") renderPersonas(read).catch(() => {});
   if (name === "skills") renderSkillSettings();
   if (name === "templates") renderTemplateSettings();
   if (name === "tools") renderToolSettings();
   if (name === "memory") renderMemorySettings().catch(() => {});
   //: The Learned section lives in settings-controls.js (lazy, 2026-11-02, eager gzip headroom).
   if (name === "learned") ensureModule("settingsControls").then(() => renderLearned()).catch(() => {});
-  if (name === "tasks") renderAutonomousReview().catch(() => {});
   if (name === "tasks") {
+    renderAutonomousReview().catch(() => {});
     apiJson("/preferences")
       .then((prefs) => {
         prefsCache = prefs;
@@ -194,8 +228,8 @@ function showSettingsSection(name) {
         $("pref-smart-model-routing").checked = prefs.smart_model_routing_enabled ?? true;
       })
       .catch(() => {});
+    renderModelBench();
   }
-  if (name === "models") renderModelBench();
   if (name === "general") {
     renderUsage();
     //: Search suggestions are kept on this device (search-suggest.js).
@@ -223,9 +257,11 @@ function showSettingsSection(name) {
   if (name === "searchindex") renderEmbedChoices();
   //: The Atlas row's starter chips, with the chat's bundle (help-chat.js).
   if (name === "help") renderAtlasStarters();
-  if (name === "about") renderHealthBlock().catch(() => {});
   //: Settings, About, Maintenance: settings-controls.js, the window's lazy file.
-  if (name === "about") ensureModule("settingsControls").then(() => renderMaintenance());
+  if (name === "about") {
+    renderHealthBlock().catch(() => {});
+    ensureModule("settingsControls").then(() => renderMaintenance());
+  }
   //: The "Last run" lines on this section's controls, and the Background jobs
   //: overview (INBOX 438): one fetch fills every line on the page.
   refreshJobRuns();
@@ -3803,7 +3839,8 @@ async function refreshJobRuns() {
   const lines = [...document.querySelectorAll("[data-job-line]")];
   for (const el of lines) paintJobLine(el);
   clearTimeout(jobRunsTimer);
-  const running = lines.some((el) => el.offsetParent !== null && el.dataset.jobRunning === "1");
+  //: Layout is read only for a running line: after the paint above, the first `offsetParent` laid out the page (INBOX 1696 f).
+  const running = lines.some((el) => el.dataset.jobRunning === "1" && el.offsetParent);
   if (running && authToken()) jobRunsTimer = setTimeout(refreshJobRuns, 2000);
 }
 

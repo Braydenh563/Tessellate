@@ -290,7 +290,9 @@ class FakeWin32:
             ref._obj.value = int(win.get("cloaked", False))  # real values: 1 app, 2 shell, 4 inherited
         else:
             r = ref._obj
-            r.left, r.top, r.right, r.bottom = win["rect"]
+            # `frame` stands in for what DWM answers when it is not the window's rectangle: an empty one for a window
+            # that draws its own frame (INBOX 1696 b), and `rect` then comes from GetWindowRect (`outer`)
+            r.left, r.top, r.right, r.bottom = win.get("frame", win["rect"])
         return 0
 
     def _MonitorFromPoint(self, pt: Any, _flags: int) -> int:

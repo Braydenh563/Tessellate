@@ -49,7 +49,8 @@
   function wire(S) {
     const fig = S?.fig;
     const stage = fig?.parentElement;
-    if (!fig || S.k || !stage?.classList.contains("dgm-stage") || fig.dataset.overlay) return;
+    //: A flowchart's, and a sequence diagram's once diagram-seq-canvas.js has given it boxes (`S.seq`); not the other kinds yet.
+    if (!fig || (S.k && !S.seq) || !stage?.classList.contains("dgm-stage") || fig.dataset.overlay) return;
     //: Once per figure, not once per layer in it: a picture that went away (every block deleted) took the layer out, and the next draw made a second one while the first still painted (6 boxes for 3 blocks).
     fig.dataset.overlay = "1";
     const layer = document.createElement("div");
@@ -59,11 +60,14 @@
     const boxes = new Map();
     const groups = new Map();
     let hover = "";
+    let seen = false;
 
     //: The picked ids: the primary block and every block of the pick, as the list marks them.
     const chosen = () => {
       const ids = new Set();
-      for (const row of S.tree.querySelectorAll('.dgm-block[aria-selected="true"]')) if (row.dataset.key.startsWith("n:")) ids.add(row.dataset.key.slice(2));
+      //: A flowchart box is named by its node id ("n:" off the row key); a sequence part by the row key itself.
+      for (const row of S.tree.querySelectorAll('.dgm-block[aria-selected="true"]')) if (S.seq) ids.add(row.dataset.key);
+      else if (row.dataset.key.startsWith("n:")) ids.add(row.dataset.key.slice(2));
       return ids;
     };
     const mark = () => {
@@ -75,12 +79,14 @@
     };
     S.mark = () => mark();
     //: One element per box of a list, kept by id; a group's lies under the nodes' (styled lower).
-    const sync = (found, kept, attr, extra) => {
+    //: `born` collects the ids that got a box on this draw, so a new box can be brought into view.
+    const sync = (found, kept, attr, extra, born = []) => {
       const live = new Set(found.map((b) => b.id));
       for (const [id, box] of kept) if (!live.has(id)) box.remove(), kept.delete(id);
       for (const b of found) {
         let box = kept.get(b.id);
         if (!box) {
+          born.push(b.id);
           box = document.createElement("span");
           box.className = "dgm-box" + extra;
           box.dataset[attr] = b.id;
@@ -99,8 +105,15 @@
       const found = img && S.hit ? math.place(S.hit, img.getBoundingClientRect(), layer.getBoundingClientRect()) : [];
       const rect = img && S.hit ? img.getBoundingClientRect() : null;
       sync(rect ? math.place(S.hit, rect, layer.getBoundingClientRect(), S.hit.clusters) : [], groups, "group", " dgm-cluster");
-      sync(found, boxes, "node", "");
+      const born = [];
+      sync(found, boxes, "node", "", born);
       mark();
+      //: A box just added and picked is scrolled into view (an add off the visible part of a zoomed picture was out of
+      //: sight unless its name field took the focus). Not on the first picture, whose boxes are all new.
+      const ids = chosen();
+      const fresh = seen && born.find((id) => ids.has(id));
+      if (found.length) seen = true;
+      if (fresh) boxes.get(fresh).scrollIntoView({ block: "nearest", inline: "nearest" });
     };
 
     //: After every draw (including one that leaves no picture), and from the zoom (diagram-view.js) after a zoom, a fit or a resize of the pane.

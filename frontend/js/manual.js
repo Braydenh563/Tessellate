@@ -26,7 +26,7 @@ function manualWords(query) {
 //: query read by meaning (meaning.js, Brief 94: "bin" finds the topic on the
 //: trash), when the layer is in the page; the words as typed always count.
 function manualMatches(topic, words, things = null) {
-  const hay = `${topic.title} ${topic.path} ${topic.body} ${topic.find}`.toLowerCase();
+  const hay = `${topic.title} ${topic.lead} ${topic.path} ${topic.body} ${topic.find}`.toLowerCase();
   return words.every((word) => hay.includes(word)) || manualByName(topic, words, things);
 }
 
@@ -48,6 +48,11 @@ function manualTopicEl(topic) {
   const title = document.createElement("h4");
   title.textContent = topic.title;
   article.appendChild(title);
+  //: The topic's one line (INBOX 1612), first under its title.
+  const lead = document.createElement("p");
+  lead.className = "manual-lead";
+  lead.textContent = topic.lead;
+  article.appendChild(lead);
   if (topic.path) {
     const where = document.createElement("p");
     where.className = "muted manual-where";
@@ -107,6 +112,8 @@ function manualBuild(listing) {
       if (part === current) part.jump.setAttribute("aria-current", "location");
       else part.jump.removeAttribute("aria-current");
     }
+    //: The marked group keeps a row of room in a contents list that scrolls (INBOX 1696 e).
+    if (current) nearestScrollParent.reveal(current.jump, contents);
   };
   topics.addEventListener("scroll", follow, { passive: true });
   contents.addEventListener("click", (event) => {

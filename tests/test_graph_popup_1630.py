@@ -25,7 +25,9 @@ def _fn(text: str, name: str) -> str:
 
 def test_the_hover_card_stands_below_the_top_bar_and_flips_below_its_dot():
     body = _fn(frontend_text("js/graph-canvas.js"), "gcHoverCardFrame")
-    assert 'document.getElementById("top-bar")' in body
+    #: Intent moved (the owner, 2026-11-08: the card cut off by the graph's own
+    #: dock): the floor is `graphPanelRoom`'s, which reads the top bar and the dock.
+    assert "const { box, floor: under } = graphPanelRoom();" in body
     assert "const floor = Math.max(gap, seen + gap);" in body
     assert "if (top < floor) {" in body and "top = sy + r + gap;" in body
     assert "top = Math.max(floor, Math.min(top, s.dims.h - h - gap));" in body
@@ -97,3 +99,13 @@ def test_a_self_requested_frame_has_an_end():
     assert "s.fadeSnap" in step and "s.hoverEase = 1;" in step
     tail = draw[draw.index("s.selfFrames = (s.selfFrames || 0) + 1;") :]
     assert tail.index("s.selfFrames > gcRequestDraw.selfCap") < tail.index("gcRequestDraw(s, true)")
+
+
+def test_the_floor_is_the_lower_foot_of_the_top_bar_and_the_graph_dock():
+    """The owner, 2026-11-08: "the top of popup cards can be cut off by the top bar
+    in the graph on hover"; the bar was the graph's dock, over the map's top (a card
+    25px under it at 1440, 65px at 390, scratchpad/ui-sweeps/graphcard1697.js)."""
+    room = _fn(frontend_text("js/graph.js"), "graphPanelRoom")
+    assert 'document.querySelector(\'.dock[data-dock-name="graph"]\')' in room
+    assert "floor = Math.max(floor, at.bottom - box.top)" in room
+    assert "at.top < box.top + box.height / 2" in room

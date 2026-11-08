@@ -319,21 +319,8 @@ agent that audits what renders first (section 1 of CLAUDE.md) and then builds:
 - Help moves with it (standing order 13). Measure with a Playwright sweep per
   language; no new required dependency (CLAUDE.md, the owner's offline rule).
 
-## Built, Phase 1 (the chrome), 2026-09-09
-
-Moved to HISTORY.md ("Moved from the plans, 2026-09-09", DOCUMENTS_PLAN.md) on 2026-09-09: a plan holds open work only.
-
-## Built, Phase 2 step 1 (the engine, vendored and verified under the CSP), 2026-09-09
-
-Moved to HISTORY.md ("Moved from the plans, 2026-09-09", DOCUMENTS_PLAN.md) on 2026-09-09: a plan holds open work only.
-
-## Built, Phase 2 steps 2 to 4 (the engine under the editor), 2026-09-09
-
-Moved to HISTORY.md ("Moved from the plans, 2026-09-09", DOCUMENTS_PLAN.md) on 2026-09-09: a plan holds open work only. What is left open from this phase is in `archive/agent-remaining/documents-engine.md`.
-
-## Built: Phase 0
-
-Moved to HISTORY.md ("Moved from the plans, 2026-09-09", DOCUMENTS_PLAN.md) on 2026-09-09: a plan holds open work only.
+## Built, Phases 0 to 2 (the chrome, the engine, the editor), 2026-09-09
+Moved to HISTORY.md ("Moved from the plans, 2026-09-09", DOCUMENTS_PLAN.md): a plan holds open work only.
 
 ## Built, Phase 3 (tables, blocks, embeds, properties, columns), 2026-09-12
 
@@ -1597,3 +1584,17 @@ Critique points rejected or changed:
 ## Placed from INBOX, 2026-11-04
 
 1679. **Owner, 2026-11-04 16:50Z, verbatim (names Fable for this task):** "also can you get fable to take a quick look at and do a deep dive on the diagram builder?? it si still not really learnable and is still quite unintuitive and it feels like it lacks key design features and utility and it just feels very demo and not a complete feature or smth that it usable and easy to understand". One Fable agent, read-only deep dive, findings in `docs/roadmap/agent-remaining/diagram-fable-1679.md`, then ranked slices built by Sonnet. Owner, 2026-11-05 00:25Z, verbatim: "also on the mermaid diagram, it is soo much better now, but the left panel still needs a bit of a redesign to be more intuitive to use and understand, also the panning and zoom of the right panel feels really awkward and unresponsive and it needs a bit of usability, an ux polishing". Recommendation (taken): (k) the left panel (the outline and blocks pane) redesigned for first use: one clear purpose line, the tree of boxes and lines read top to bottom with what each row does on hover and focus, add and connect where the eye is, and a blind-tester pass before and after; (l) the picture pane's pan and zoom: wheel and pinch zoom about the pointer, drag to pan with momentum, zoom on every input in one frame (no wait for a re-render; the SVG transforms and redraws after), fit and 100% buttons, keyboard pan and zoom, measured input-to-paint latency (under 16 ms) and zoom steps that feel even. Then, 2026-11-05: "shouldnt these be from the outer box not the text?" (the connect arrows sat on a pill's label; fixed 2026-11-05, the shape is read before the label group) and "like make tools and features more accessible and aparrent, beef it up, are there any missing features?? what if I need to make like a sequence diagram or box certain elements?? it feels very rudimentary and basic". Recommendation (taken): (m) sequence diagrams and groups exist but are hidden behind the kind menu and the Arrange menu: a visible kind switcher (flowchart, sequence, mind map, timeline) at the top of the builder, "Box the picked blocks" on the selection bar and the block menu, every tool labelled where it sits, and a gap audit against Mermaid (class, state, ER, Gantt and pie open in Source only today; styling per block, notes and activations in a sequence, edge labels and link styles, icons) with the gaps built in order of use. **(m) built 2026-11-05:** the visible kind switcher (Flowchart, Sequence, Mind map, Timeline: `diagram-kindbar.js`, a new empty diagram of the kind, Undo brings the old one back), Box this block (block menu) and Box them (selection bar), sequence Parallel, Critical and Break boxes (U, C, B), and nine editor bugs from a fresh-eyes tester (handles scale with the block, `&quot;` drawn as a quote, emptied name, hint and pending line at once, `Add a box`, steps buttons duplicating the foot, + and wheel top, pan with nothing to pan). **Gap audit against Mermaid, still open, in order of use:** (1) flowchart shapes the blocks cannot read (cylinder `[( )]`, subroutine `[[ ]]`, parallelogram `[/ /]`, flag `>]`; such a diagram opens in Source), then `classDef`/`class` styling beyond the fill colour, `click` links and Font Awesome icons; (2) sequence: `autonumber`, `box` around participants, `create`/`destroy`, `rect` highlight colour (all open in Source today); (3) Gantt, pie and state diagrams as block kinds (the three most asked after sequence), then class and ER (Source only); (4) a per-edge label position, curve style and a link `id@` animation; (5) markdown strings and `<br>` line breaks in a name; (6) flowchart sub-direction inside a subgraph.
+
+## 23. List styles, decision 40 (INBOX 1696 cc, built 2026-11-08)
+**Decision 40.** The marker is the style, so the source and the export agree.
+Dots: `-` disc, `*` circle, `+` square, `-` plus two spaces dash. Numbers:
+`1.`, `1)`, `a.` and `i.` (the last two count only as a run of two, `a.` then
+`b.` or `i.` then `ii.`; `h. i. j.` stays letters). One list is one marker at
+one level. The List and Numbered menus restyle the list at the caret as one
+undo step; a pasted Unicode dash (U+2010 to U+2014), `•`, `◦` or `▪` at a line start becomes `- `.
+Block `docLists`, documents-cm.js. Scout of the bundled CodeMirror:
+- Already in prose: fold, multiple cursors, rectangular select, brackets, search, merge view.
+- Row L1 (S): Enter in an `a.`, `i.` or dash list does not continue the marker (markdown keymap knows only CommonMark).
+- Row L2 (S): prose has no `closeBrackets` for `(`, `[`, `*`, backtick; code files do (`docCodePairs`).
+- Row L3 (M): fold a list item with its children (`foldService`, headings and callouts fold today); fold gutter in prose.
+- Row L4 (S): `gotoLine` is code only. Row L5 (M): prose autocompletion offers `[[` only; add `#tag`.

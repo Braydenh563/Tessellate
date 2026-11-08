@@ -61,8 +61,9 @@ TOP_LEVEL_LETS_CAP = 699
 #: folds and filter (documents-outline.js, 327 lines) wrapped whole, ten exports; measured 9,714. a28z-1102 (INBOX 1556): the
 #: web panel's search and result rows (web-results.js, 400 lines) wrapped whole, eight exports, with the SearXNG start helper
 #: and failure row added inside it; measured 9,708. 1546 P1 (D4): the board's `wbMermaidParse` and `wbMermaidText` go and
-#: documents-mermaid.js exports `diagramModel`; measured 9,706.
-GLOBAL_NAMES_CAP = 9706
+#: documents-mermaid.js exports `diagramModel`; measured 9,706. 2026-11-08 (after merges took it to 9,711): task-steps.js
+#: (three exports) and obj-order.js (eight) wrapped whole; measured 9,701.
+GLOBAL_NAMES_CAP = 9701
 
 
 def _code() -> dict[str, str]:

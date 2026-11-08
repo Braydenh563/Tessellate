@@ -79,7 +79,7 @@ from tessellate.api.chat_attach import _MEDIA_REF, _attached_boards, _attached_d
 from tessellate.api.chat_request import ChatRequest, ChatResponse, CommandRunBody, CompressBody, FollowupBody, RememberBody, ToolExecuteBody, _StreamRequest, _Turn, _apply_open, _apply_scope, _chat_model_sees_images, _check_refs, _composed, _event, _image_caption_context, _in_full, _meta_event, _nothing_open, _resolve_chat_images, _resolve_mode, _resolve_persona, _resolve_skill
 from tessellate.api.chat_pool import _Found, _NoteCtx, _chat_payload, _composer_reads, _document_row, _frame_matches, _glossary, _holds_read_text, _in_window, _keep_window, _note_content, _or_empty_notebook, _records_beside, _slips_put_right, _whole_pool, _widened, _with_each_side, _with_holders, _with_neighbours, _with_records, _with_sources
 from tessellate.api.chat_recent import AGENT_SURFACE, ASK_SURFACE, STARTER_SUGGESTIONS, _about, _asked_key, _feature_for, _fill, _recent_questions
-from tessellate.api.chat_web import WEB_PAGES, _can_start_searxng, _home_place, _link_events, _offer_events, _search_service, _unmatched_recents, _web_allowed, _web_chip, _web_first, _web_page_row, _web_pref_on
+from tessellate.api.chat_web import WEB_PAGES, _can_start_searxng, _torn_events, _home_place, _link_events, _offer_events, _search_service, _unmatched_recents, _web_allowed, _web_chip, _web_first, _web_page_row, _web_pref_on
 from tessellate.api.chat_agent import _agent_events, _close_quietly, _first_agent_event, _refuse_failed, _refuse_if_off, _starter_read
 from tessellate.api.chat_said import MODEL_STOPPED_NOTE, _says_cannot, _ROWS_KEPT, _app_answers, _asked_before, _asks_capability, _asks_only_a_time, _awareness, _chart_line, _cited_titles, _composed_lines, _current_notes, _diagram_events, _engine_counts, _engine_stands, _filed_or_counted_events, _first_cited_has_list, _held_reply, _help_events, _in_notes, _late_panel, _linked_notes, _listed_below, _model_said, _name_documents, _newest_titles, _newest_word, _open_note_answer, _ping_offer, _related_elsewhere, _related_sentence, _remember_rows, _reminder_window, _reply_seed, _row_source, _rows_key, _run_title, _said_events, _save_ask_turn, _saved_joke_reply, _search_footer, _sees, _slash_chart, _stats_chart, _stats_listed, _suggest_events, _with_words_only, reply_panel
 from tessellate.api.chat_turn import _asks_change, _chat_reply, _checks_grounding, _cited_scope, _composes_offline, _detect_intent, _engine_answers, _facts_turn, _insight_level, _insight_memory, _is_composing, _log_question, _may_digest, _meaning_loading, _model_stream_events, _note_with_hint, _notes_first, _notes_messages, _relay_events, _searched_question, _social_line, _trim_answer, _uncut, _verdicts, _why, _will_answer
@@ -894,15 +894,13 @@ def _welcome(req: _StreamRequest, seed: str, recent: list[str]) -> str:
 def _hello_reply(req: _StreamRequest, seed: str, recent: list[str]) -> str:
     """A hello answered with a welcome built from the day (CHAT_PLAN 1353), or
     "" when the day's numbers cannot be read."""
-    welcome = _welcome(req, seed, recent)
-    if not welcome:
+    if not (welcome := _welcome(req, seed, recent)):
         return ""
     sees = composer_aware.opening(_awareness(req), seed) if req.body.screen else ""
     #: The welcome already names the last note: no second sentence about it.
     invite = "" if "“" in welcome or "](#/notes/" in welcome else _newest_word(req.session)
     asks = composer_smalltalk.invitation(req.question, invite, _composer_voice(), seed) if invite else composer_smalltalk.greeting_ask(req.question, _composer_voice(), seed)
-    #: A hello that also asks how you are gets that answered (INBOX 1693): the welcome, then the reply.
-    how = composer_smalltalk.social("how are you", "smalltalk", "", "", _composer_voice(), [welcome, *recent], seed) if question_noise.asks_how(req.question) else ""
+    how = composer_smalltalk.hello_how(req.question, _composer_voice(), [welcome, *recent], seed)
     return "\n\n".join(p for p in (" ".join(p for p in (welcome, how or asks) if p), sees) if p)
 
 
@@ -1531,7 +1529,7 @@ def _early_events(req: _StreamRequest, prepared: dict, ollama_running: bool) -> 
     if bare and composer_unplaced.jibe(req.question or ""):
         #: A jibe is banter even when a note holds the word "mum" (audit 1031 C21).
         return _unplaced_events(req)
-    return None
+    return _torn_events(req, prepared) if bare else None
 
 
 def _no_model_events(req: _StreamRequest, prepared: dict, ollama_running: bool) -> list | None:

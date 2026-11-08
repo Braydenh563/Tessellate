@@ -610,11 +610,12 @@ class WinInfo(NamedTuple):
 
 
 def _frame_rect(w: Any, hwnd: Any) -> tuple[int, int, int, int] | None:
-    """The visible frame (DWMWA_EXTENDED_FRAME_BOUNDS), else the window rectangle."""
+    """The visible frame (DWMWA_EXTENDED_FRAME_BOUNDS), else the window rectangle. An empty frame from DWM (a window
+    that draws its own, INBOX 1696 b: an Explorer window may be counted "no frame") falls back to the rectangle too."""
     r = wintypes.RECT()
     dwm = getattr(getattr(w, "dwmapi", None), "DwmGetWindowAttribute", None)
     try:
-        if dwm is not None and dwm(hwnd, DWMWA_EXTENDED_FRAME_BOUNDS, ctypes.byref(r), ctypes.sizeof(r)) == 0:
+        if dwm is not None and dwm(hwnd, DWMWA_EXTENDED_FRAME_BOUNDS, ctypes.byref(r), ctypes.sizeof(r)) == 0 and r.right > r.left and r.bottom > r.top:
             return r.left, r.top, r.right, r.bottom
         if w.user32.GetWindowRect(hwnd, ctypes.byref(r)):
             return r.left, r.top, r.right, r.bottom
@@ -673,27 +674,18 @@ def _framed(w: Any, hwnd: Any, ex: int) -> tuple[Any, str]:
     return rect, ""
 
 
-def _read_window(
-    w: Any, hwnd: Any, own_pid: int, ignore: Any, monitors_: list[tuple[int, int, int, int]], tally: Counter | None = None,
-) -> "WinInfo | None":
-    """One window as a WinInfo, or None when it is not listed, click-through or has no frame. `tally` counts
-    why each window was left out or not made a perch (counts only, never a title)."""
-    def note(why: str) -> None:
-        if tally is not None:
-            tally[why] += 1
-
+def _read_window_why(w: Any, hwnd: Any, own_pid: int, ignore: Any, monitors_: list[tuple[int, int, int, int]]) -> "tuple[WinInfo | None, str, Any]":
+    """One window as a WinInfo (None: not listed), the first reason it is no place to stand ("perch": it is one),
+    and its frame when it was read."""
     why = _unlisted(w, hwnd, ignore)
     if why is not None:
-        note(why)
-        return None
+        return None, why, None
     ex = int(w.user32.GetWindowLongW(hwnd, GWL_EXSTYLE))
     rect, why = _framed(w, hwnd, ex)
     if rect is None:
-        note(why)
-        return None
+        return None, why, None
     info, why = _classify(w, hwnd, own_pid, ex, rect, monitors_)
-    note(why or "perch")
-    return info
+    return info, why or "perch", rect
 
 
 def _classify(w: Any, hwnd: Any, own_pid: int, ex: int, rect: Any, monitors_: list[tuple[int, int, int, int]]) -> "tuple[WinInfo, str | None]":
@@ -719,20 +711,27 @@ def _classify(w: Any, hwnd: Any, own_pid: int, ex: int, rect: Any, monitors_: li
 
 def windows(
     w: Any, own_pid: int, ignore: int | None, monitors_: list[tuple[int, int, int, int]], tally: Counter | None = None,
+    near: tuple[int, int, int] | None = None, seen: list | None = None,
 ) -> list[WinInfo]:
     """Visible, un-minimised, un-cloaked top-level windows, topmost first. Read only:
     nothing here moves, focuses or messages a window. `perch` is False for a tool
     window, a window with no title, this process's own windows (the app's, the
     panel), a maximised one (which is `hang`: its title bar can be held), and one that fills a monitor's work area (full screen).
     `ignore` is the overlay's own window (never in the list). `tally`, when given, is filled with the
-    count of windows by outcome (the first reason each was left out), for the log."""
+    count of windows by outcome (the first reason each was left out), for the log. `near` (x, y, reach) with `seen`
+    fills `seen` with (class, rectangle, reason) for each window, listed or not, spanning x with its top within reach
+    of y: why a release over a window did or did not find its top (INBOX 1696 b; a class name, never a title)."""
     found: list[WinInfo] = []
 
     def each(hwnd: Any, _data: Any) -> int:
         try:
-            info = _read_window(w, hwnd, own_pid, ignore, monitors_, tally)
+            info, why, rect = _read_window_why(w, hwnd, own_pid, ignore, monitors_)
+            if tally is not None:
+                tally[why] += 1
             if info is not None:
                 found.append(info)
+            if near is not None and seen is not None and why != "own overlay":
+                _note_near(w, hwnd, rect, why, near, seen)
         except Exception:  # noqa: BLE001 - one odd window never ends the walk
             if tally is not None:
                 tally["unreadable"] += 1
@@ -742,6 +741,17 @@ def windows(
     callback = WNDENUMPROC(each)
     w.user32.EnumWindows(callback, 0)
     return found
+
+
+def _note_near(w: Any, hwnd: Any, rect: Any, why: str, near: tuple[int, int, int], seen: list) -> None:
+    if rect is None:
+        r = wintypes.RECT()
+        if not w.user32.GetWindowRect(hwnd, ctypes.byref(r)):
+            return
+        rect = (r.left, r.top, r.right, r.bottom)
+    x, y, reach = near
+    if rect[0] <= x < rect[2] and abs(rect[1] - y) <= reach:
+        seen.append((_class_name(w, hwnd), tuple(rect), why))
 
 
 def cursor_pos(w: Any) -> tuple[int, int]:
