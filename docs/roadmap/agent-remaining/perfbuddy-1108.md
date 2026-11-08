@@ -13,4 +13,5 @@ Findings that change how P1 should be attacked (measured, bare pages in the same
 
 Not done:
 - P1: nothing landed. Next: count frame requests at rest by owner (win.js lists them) and drop the ones with no visible effect: `atlas-life.js:555` rAF in the calm tail path, `avatars.js` tempo `afterFrames` per beat.
-- P5, P8: see the log below.
+- P5: not fixed. Tried: a typed letter in a field no longer wakes the follow loop on keydown, and its dodge look waits 300 ms with no late 700 ms look. Measured 49 keys at 4x, Atlas, after 50 s: 412 to 430 layouts against 403 to 424 before, none forced. No gain, so reverted. The layouts are the frames the rig asks for during the ~10 s of typing (same cause as P1), not the key handlers.
+- P8: not fixed. Profile of the first chat answer at 4x: avatars.js self time is 135 ms of 12 s; the one real cost is `nameMarkBuddyBlend`'s `getAnimations({subtree})`, which settles the answer's 500 to 860 new nodes (266 ms from the 1.5 s cue timer's `nameMarkBuddyAct`, avatars.js:8226 via 9217; 138 to 380 ms from `setAtlasMood`'s blend, atlas.js:3738). Tried deferring the cue's act to `requestIdleCallback` plus `nmb.afterClean`: the same read took 450 ms, so reverted. Next: skip or snap the blend while a chat turn is still rendering (`#chat-send` busy), or read the parts without a subtree style flush.
