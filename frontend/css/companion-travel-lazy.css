@@ -67,6 +67,8 @@
     &.nmb-act-groom .nm-buddy-char { animation: nmb-groom 3.2s ease-in-out; }
     &.nmb-act-sniff .nm-buddy-char { animation: nmb-sniff 2.4s ease-in-out; }
     &.nmb-act-sigh .nm-buddy-char { animation: nmb-sigh 2.8s ease-in-out; }
+    &.nmb-act-peekside .nm-buddy-char { animation: nmb-peekside-in 1.1s ease-in-out forwards; }
+    &[data-pose="lean"].nmb-act-emerge .nm-buddy-char { animation: nmb-emerge-side 0.8s var(--ease-out) both; }
   }
 }
 /* Shaken off, as after rain: a quick twist each way, getting smaller. */
@@ -244,3 +246,16 @@
 @keyframes nmb-pull { from { transform: translateY(1px); } to { transform: translateY(-5px); } }
 @keyframes nmb-trail { from { rotate: -4deg; } to { rotate: 4deg; } }
 /* End poses 1681 */
+
+/* Leaning on a panel's side edge it tucks behind it, 24px sideways, everything
+   past the edge cut away (`peekside`, avatars.js); the glow fades with it. */
+#nm-buddy[data-side="left"] { --nmb-side: 1; }
+#nm-buddy[data-side="right"] { --nmb-side: -1; }
+#nm-buddy[data-pose="lean"]:is(.nmb-act-peekside, .nmb-act-emerge) .nm-buddy-face { clip-path: inset(-80px 6px); }
+#nm-buddy.nmb-act-peekside::before,
+#nm-buddy.nmb-act-peekside::after {
+  opacity: 0;
+  transition: opacity var(--motion-base) var(--ease-out);
+}
+@keyframes nmb-peekside-in { to { translate: calc(var(--nmb-side) * 24px) 0; } }
+@keyframes nmb-emerge-side { from { translate: calc(var(--nmb-side) * 24px) 0; } }
