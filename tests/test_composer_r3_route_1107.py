@@ -84,3 +84,10 @@ def test_r3_30_an_empty_notebook_says_it_has_no_notes(client, question):
 
 def test_r3_30_a_notebook_with_notes_keeps_the_plain_miss(go):  # noqa: D103
     assert "You have no notes yet" not in go("what do I know about Reykjavik")
+
+
+# --- review of the round 3 head -------------------------------------------------------------------
+@pytest.mark.parametrize("chat", [False, True], ids=["ask", "chat"])
+def test_r3_2_a_number_to_call_is_not_a_phone_number_for_the_word_call(go, chat):
+    said = go("what's the number to call", chat)
+    assert "phone number for call" not in said, said

@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Composer: 'the number to call', 'the number of children' and 'the number of mice' are no longer read as a phone-number ask for the word after them; only 'number for X' beside a person or business is (review of round 3, R3-2).
 - Composer: the note-titled-for-the-place fallback of 'have I been to Tokyo' applies to trips only, so 'did I book the hotel' is not offered an unrelated line (R3-21).
 - Composer: a hello between 22:00 and 05:00 is answered 'Good evening', not 'Good night' (R3-34).
 - Composer: notes titled with different days of one subject (Monday, Friday) can still be said as a but; the newest-notes lead is split to keep its complexity (R3-24, R3-16).

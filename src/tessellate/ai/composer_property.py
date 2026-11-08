@@ -17,10 +17,11 @@ _PROPERTIES: dict[str, tuple[re.Pattern, re.Pattern, str]] = {
         # "phone" alone is a thing ("when did I get my phone", "cell respiration"): only a "what is X's phone"
         # ask or one that says number is a number ask (PR 216 CI, 3.11). A bare "number" is a phone
         # only beside a person or a business ("Sara's number", "the number for the dentist"), not
-        # "what is the number" or "the table number" (round 3, R3-2).
+        # "what is the number" or "the table number" (round 3, R3-2). "Number of" and "number to" are a
+        # count or an action ("number of mice", "the number to call"), never a person's.
         re.compile(
             r"\b(?:his|her|their|my|your|our)\s+(?:phone\s+|mobile\s+|cell\s+)?number\b"
-            r"|\w['\u2019]s?\s+(?:phone\s+|mobile\s+|cell\s+)?number\b|\bnumber\s+(?:for|of|to)\s+(?!(?:the\s+)?day\b)\w"
+            r"|\w['\u2019]s?\s+(?:phone\s+|mobile\s+|cell\s+)?number\b|\bnumber\s+for\s+(?!(?:the\s+)?day\b)\w"
             r"|\b(?:phone|mobile|cell|telephone)\s+(?:number|no)\b"
             r"|^(?:what(?:'s|s| is| are)?|give me|tell me|find)\b[^?]*\b(?:phone|mobile|cell|telephone)\s*[?.!]*$", re.I),
         re.compile(r"\b(?:phone|mobile|tel|telephone)\b", re.I), "phone number"),
@@ -38,7 +39,7 @@ _NOT_PHONE = re.compile(
 
 
 _POSSESSIVE = re.compile(r"(?<![\w'\u2019])([A-Za-z][\w-]*(?:\s+[A-Za-z][\w-]*)?)['\u2019]s?\s+(?:phone\s+|mobile\s+|cell\s+)?number\b", re.I)
-_OF_SUBJECT = re.compile(r"\bnumber\s+(?:for|of|to)\s+([^?.!]{1,60})", re.I)
+_OF_SUBJECT = re.compile(r"\bnumber\s+for\s+([^?.!]{1,60})", re.I)
 _LEAD_WORDS = frozenset(("what", "whats", "what's", "is", "are", "give", "me", "tell", "find", "and", "also", "then"))
 
 

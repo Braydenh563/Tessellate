@@ -314,3 +314,16 @@ def test_r3_34_a_late_hello_is_good_evening_never_good_night(hour):
 
     assert composer_compose.greeted_as("hello", hour) == "evening"
     assert composer_compose.time_of_day(23) == "night"  # the clock's word is unchanged; only the greeting differs
+
+
+# --- review of the round 3 head --------------------------------------------------------------
+
+@pytest.mark.parametrize("question", [
+    "what's the number to call", "the number of children", "what is the number of mice in the lab", "how big is the number of days",
+])
+def test_r3_2_number_to_and_number_of_are_not_a_phone_ask(question):
+    assert composer_property.asked(question) == "", question
+
+
+def test_r3_2_the_number_for_a_business_is_still_a_phone_ask():
+    assert composer_property.asked("what is the number for the dentist") == "phone"

@@ -2,7 +2,7 @@
 
 Generated 2026-11-08 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7861, frontend ids 2644, CSS sections 522, backend routes 649, backend modules 9016, test files 2157, tests 18208, plan headings 1004, app scripts 28, boot scripts 37, script files 261.
+Counts: frontend functions 7861, frontend ids 2644, CSS sections 522, backend routes 649, backend modules 9016, test files 2157, tests 18211, plan headings 1004, app scripts 28, boot scripts 37, script files 261.
 
 ## Frontend functions (7861)
 
@@ -14886,10 +14886,10 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `asked` | src/tessellate/ai/composer_property.py:58 |
-| `held` | src/tessellate/ai/composer_property.py:67 |
-| `noun` | src/tessellate/ai/composer_property.py:75 |
-| `subject` | src/tessellate/ai/composer_property.py:45 |
+| `asked` | src/tessellate/ai/composer_property.py:59 |
+| `held` | src/tessellate/ai/composer_property.py:68 |
+| `noun` | src/tessellate/ai/composer_property.py:76 |
+| `subject` | src/tessellate/ai/composer_property.py:46 |
 
 ### src/tessellate/ai/composer_quote.py (21)
 
@@ -24430,7 +24430,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (18208)
+## Tests (18211)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -24869,8 +24869,8 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_composer_r2_1107.py | 22 |
 | tests/test_composer_r2_review_1107.py | 6 |
 | tests/test_composer_r2_route_1107.py | 6 |
-| tests/test_composer_r3_1107.py | 34 |
-| tests/test_composer_r3_route_1107.py | 7 |
+| tests/test_composer_r3_1107.py | 36 |
+| tests/test_composer_r3_route_1107.py | 8 |
 | tests/test_composer_ranker_1029.py | 12 |
 | tests/test_composer_redos_1026.py | 4 |
 | tests/test_composer_regex_linear_1029.py | 3 |
