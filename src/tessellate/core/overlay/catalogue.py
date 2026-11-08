@@ -44,7 +44,7 @@ def by_desk_name() -> dict[str, dict[str, Any]]:
     """Each act entry built on the desk, by the desk table name it covers (`acts:doze` -> `doze`)."""
     out: dict[str, dict[str, Any]] = {}
     for e in entries():
-        if e.get("kind") != "idle_act" or e.get("desk", {}).get("s") != "built":
+        if not isinstance(e, dict) or e.get("kind") != "idle_act" or not isinstance(e.get("desk"), dict) or e["desk"].get("s") != "built":
             continue
         for n in e["desk"].get("names", []):
             table, _, name = n.partition(":")

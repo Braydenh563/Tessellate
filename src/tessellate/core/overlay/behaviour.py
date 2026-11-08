@@ -237,19 +237,25 @@ def _from_catalogue() -> None:
     """A3 (atlascat-1108): an act built on both sides takes its length and weight from the shared catalogue
     (`frontend/companion-catalogue.json`); an entry that covers several desk acts splits its weight among them.
     A missing file changes nothing."""
-    names: dict[str, list[str]] = {}
+    names: dict[str, list[tuple[str, tuple[float, float], float]]] = {}
     for name, e in catalogue.by_desk_name().items():
-        if name in ACTIVITIES and e.get("app", {}).get("s") == "built":
-            names.setdefault(e["id"], []).append(name)
-    for eid, group in names.items():
-        e = next(x for x in catalogue.entries() if x["id"] == eid)
-        for name in group:
+        if name not in ACTIVITIES or e.get("app", {}).get("s") != "built":
+            continue
+        try:  # an entry without its numbers is skipped: a bad file leaves the built-ins
+            span = (float(e["seconds"][0]), float(e["seconds"][1]))
+            w = float(e["w"])
+            e["energy"][2]
+            e["id"]
+        except (KeyError, IndexError, TypeError, ValueError):
+            continue
+        names.setdefault(e["id"], []).append((name, span, w))
+    for group in names.values():
+        for name, span, w in group:
             # never shorter than the built-in minimum: a shorter play redraws faster than the 12 a second cap
-            lo = max(float(e["seconds"][0]), ACTIVITIES[name].seconds[0])
-            ACTIVITIES[name] = ACTIVITIES[name]._replace(seconds=(lo, max(lo, float(e["seconds"][1]))))
-            BASE_WEIGHT[name] = e["w"] / len(group)
+            lo = max(span[0], ACTIVITIES[name].seconds[0])
+            ACTIVITIES[name] = ACTIVITIES[name]._replace(seconds=(lo, max(lo, span[1])))
+            BASE_WEIGHT[name] = w / len(group)
             CATALOGUED.add(name)
-
 
 
 def phase_of(hour: int) -> str:
@@ -266,17 +272,23 @@ def catalogue_factor(name: str, mood: str, hour: int) -> float:
     e = catalogue.by_desk_name().get(name) if name in CATALOGUED else None
     if e is None:
         return 1.0
-    phase = phase_of(hour)
-    energy = catalogue.load().get("energy_by_phase", {}).get(phase, 1)
-    energy = 0 if mood == "sleepy" else min(2, energy + 1) if mood in ("happy", "startled") else energy
-    return float(e.get("mood", {}).get(mood, 1.0) * e["energy"][energy] * e.get("day", {}).get(phase, 1.0))
+    try:
+        phase = phase_of(hour)
+        energy = catalogue.load().get("energy_by_phase", {}).get(phase, 1)
+        energy = 0 if mood == "sleepy" else min(2, energy + 1) if mood in ("happy", "startled") else energy
+        return float(e.get("mood", {}).get(mood, 1.0) * e["energy"][energy] * e.get("day", {}).get(phase, 1.0))
+    except (KeyError, IndexError, TypeError, ValueError, AttributeError):
+        return 1.0
 
 
 def shift_every(name: str) -> tuple[float, float] | None:
     """How often the catalogue's pose-shifting beat of the act `name` falls (seconds), if it has one."""
-    for b in catalogue.by_desk_name().get(name, {}).get("beats", []):
-        if b.get("shifts"):
-            return float(b["every"][0]), float(b["every"][1])
+    try:
+        for b in catalogue.by_desk_name().get(name, {}).get("beats", []):
+            if b.get("shifts"):
+                return float(b["every"][0]), float(b["every"][1])
+    except (KeyError, IndexError, TypeError, ValueError, AttributeError):
+        pass
     return None
 
 

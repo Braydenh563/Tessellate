@@ -93,6 +93,32 @@ def test_without_the_file_the_desk_keeps_its_built_in_numbers(monkeypatch, tmp_p
         catalogue.reset()
 
 
+@pytest.mark.parametrize("drop", ["seconds", "w", "energy", "id"])
+def test_an_entry_missing_a_key_is_skipped_not_a_crash(monkeypatch, tmp_path, drop: str) -> None:
+    """Review of atlascat-1108: a JSON object whose entry lacks `seconds`, `w` or `energy` must leave the built-ins, not raise at import."""
+    import json
+
+    raw = json.loads(catalogue.path().read_text(encoding="utf-8"))
+    for e in raw["entries"]:
+        if e.get("kind") == "idle_act" and e.get("desk", {}).get("s") == "built":
+            e.pop(drop, None)
+    raw["entries"].append("not an entry")
+    (tmp_path / "bad.json").write_text(json.dumps(raw), encoding="utf-8")
+    acts, weight = dict(bh.ACTIVITIES), dict(bh.BASE_WEIGHT)
+    monkeypatch.setattr(bh, "ACTIVITIES", dict(acts))
+    monkeypatch.setattr(bh, "BASE_WEIGHT", dict(weight))
+    monkeypatch.setattr(bh, "CATALOGUED", set())
+    monkeypatch.setattr(catalogue, "path", lambda: tmp_path / "bad.json")
+    catalogue.reset()
+    try:
+        bh._from_catalogue()
+        assert bh.ACTIVITIES == acts and bh.BASE_WEIGHT == weight and not bh.CATALOGUED
+        assert bh.catalogue_factor("doze", "content", 12) == 1.0
+    finally:
+        monkeypatch.undo()
+        catalogue.reset()
+
+
 # --- A4: beats ---------------------------------------------------------------------------------------------------
 
 MAX_HOLD = 90.0
