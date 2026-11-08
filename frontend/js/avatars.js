@@ -3537,10 +3537,45 @@ nmb.cat = (() => {
     load() {
       if (st.tried) return;
       st.tried = true;
-      api("/companion-catalogue.json", { silent: true })
-        .then((answer) => (answer.ok ? answer.json() : Promise.reject(new Error(String(answer.status)))))
-        .then((doc) => nmb.cat.apply(doc))
-        .catch(() => {});
+      //: **Read and parsed in idle slices** (perfbuddy-1108, P11): the one `answer.json()` of the 99 KB table was
+      //: a single 75ms task at 4x CPU on the first idle. The fetch waits for an idle moment (3 s at most), the
+      //: text is cut on its lines (one entry each) and parsed 40 entries a slice. Where the answer has no `text`
+      //: or the cut does not fit, the whole file is parsed in one go as before.
+      const go = () =>
+        api("/companion-catalogue.json", { silent: true })
+          .then((answer) => (!answer.ok ? Promise.reject(new Error(String(answer.status))) : typeof answer.text === "function" ? answer.text().then((text) => new Promise((done, fail) => nmb.cat.slice(text, done, fail))) : answer.json()))
+          .then((doc) => nmb.cat.apply(doc))
+          .catch(() => {});
+      if (typeof requestIdleCallback === "function") requestIdleCallback(go, { timeout: 3000 });
+      else go();
+    },
+    //: The table's text as a document, 40 entries a slice (`done(doc)`), or `fail` when it is not one.
+    slice(text, done, fail) {
+      try {
+        const lines = text.split("\n");
+        const head = lines.indexOf('  "entries": [');
+        const tail = lines.lastIndexOf("  ]");
+        if (head < 0 || tail < head) return done(JSON.parse(text));
+        const doc = JSON.parse(lines.slice(0, head).join("\n") + '\n  "entries": []\n}');
+        const entries = [];
+        let at = head + 1;
+        const step = () => {
+          try {
+            const to = Math.min(tail, at + 40);
+            const part = lines.slice(at, to).join("\n").replace(/,\s*$/, "");
+            if (part.trim()) entries.push(...JSON.parse("[" + part + "]"));
+            at = to;
+            if (at < tail) return void setTimeout(step, 0);
+            doc.entries = entries;
+            done(doc);
+          } catch (error) {
+            fail(error);
+          }
+        };
+        step();
+      } catch (error) {
+        fail(error);
+      }
     },
     apply(doc) {
       if (!doc || !Array.isArray(doc.entries)) return;
