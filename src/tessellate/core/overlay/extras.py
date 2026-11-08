@@ -262,15 +262,21 @@ class Pointer:
         if into[0] * out[0] + into[1] * out[1] >= 0:  # straight on through is a pass, not a jab
             return None
         peak = max((self._leg(a, c) for a, c in zip(pts[: i + 1], pts[1 : i + 1]) if pts[i][0] - c[0] <= POKE_WINDOW), default=0.0)
-        return self._jab(peak >= POKE_SPEED * k, pts[i : j + 1], box)
+        return self._jab(peak >= POKE_SPEED * k, pts[i : j + 1], box, pts[i - 1])
 
-    def _jab(self, fast: bool, inside: list[tuple[float, float, float]], box: tuple[float, float, float, float]) -> str | None:
-        """A jab that was fast enough: a boop when its tip landed on the nose, else a poke."""
+    def _jab(
+        self, fast: bool, inside: list[tuple[float, float, float]], box: tuple[float, float, float, float], came_from: tuple[float, float, float]
+    ) -> str | None:
+        """A jab that was fast enough: a boop when its tip landed on the nose, else a poke. The tip is the point inside
+        farthest from where the jab came in (its turning point), not any point it passed on the way."""
         if not fast:
             return None
-        return "boop" if any(self._on_nose(p, box) for p in inside) else "poke"
+        tip = max(inside, key=lambda p: math.hypot(p[1] - came_from[1], p[2] - came_from[2]))
+        return "boop" if self._on_nose(tip, box) else "poke"
+
     @staticmethod
     def _on_nose(p: tuple[float, float, float], box: tuple[float, float, float, float]) -> bool:
+        """Whether the point `p` is on the nose: the middle of the face, between `NOSE_TOP` and the head's lower edge."""
         lx, t, r, b = box
         h = b - t
         return abs(p[1] - (lx + r) / 2) <= NOSE_HALF * (r - lx) and t + NOSE_TOP * h <= p[2] <= t + HEAD_ZONE * h
