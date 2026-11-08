@@ -228,6 +228,8 @@ FRAME_OF = {"pressed": "stand", "leap": "hop", "notice": "look", "startle": "hop
 #: Throw: the pointer's last THROW_WINDOW seconds decide the velocity. Logical
 #: px per second (scaled by dpi): slower than THROW_MIN is a plain drop.
 THROW_WINDOW = 0.1
+#: Most carried-pointer samples kept for the shake and the throw: 0.6 s of a 1000 Hz mouse plus a margin.
+TRAIL_CAP = 800
 THROW_MIN = 350.0
 THROW_MAX = 3200.0
 #: A window dragged out from under the figure (INBOX 1683 x): faster than `FLING_SPEED` (logical px/s) throws it, a
@@ -3825,13 +3827,23 @@ class Engine:
                 self._turn_over(True)
         if self.carrying:
             self.trail.append((self.now, px, py))
-            del self.trail[:-48]  # 0.6 s of a shake at 60 Hz is 36 samples
+            self._trim_trail()
             if not self.shaken and not self.reduced and extras.shake_flips(self.trail, self.now, self._scale()) >= extras.SHAKE_FLIPS:
                 self.shaken = True
                 self._turn_over(True)
             self.x = px - self.grab[0] - self._flip_dx(self._held_frame(), self.facing < 0)
             self.y = py - self.grab[1] - self._dy("held")
             self._keep_on_screen()
+
+    def _trim_trail(self) -> None:
+        """Keep the carried pointer's last `SHAKE_WINDOW` s, whatever the pointer's rate (every raw move arrives), capped
+        by count (a 1000 Hz mouse sends 600 samples in that time) so a stalled clock cannot grow it."""
+        keep = self.now - extras.SHAKE_WINDOW
+        drop = 0
+        while drop < len(self.trail) - 1 and self.trail[drop][0] < keep:
+            drop += 1
+        del self.trail[:drop]
+        del self.trail[:-TRAIL_CAP]
 
     def _held_frame(self) -> str:
         """The picture a carried figure shows: the held pose, or the tumble turned half a circle when upside down."""

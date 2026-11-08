@@ -8,6 +8,8 @@ from __future__ import annotations
 import math
 import random
 
+import pytest
+
 from tessellate.core.overlay import engine as eng
 from tessellate.core.overlay import extras, faces
 from tessellate.core.overlay.engine import Engine, Monitor
@@ -208,3 +210,54 @@ def test_the_carry_clock_starts_at_the_carry_not_the_press_and_resets_at_the_dro
     assert e.carry_stage == "kick"
     run_after_drop(e, t + 4.5, px, py, 1.0)
     assert e.carry_stage == "" and e.carry_since is None
+
+
+def stroked(e: Engine, t: float, px: int, py: int, hz: int, stroke: int, strokes: int, secs: float) -> tuple[float, int, int]:
+    """`strokes` straight strokes of `stroke` px back and forth along x, `secs` each, with a move at `hz` Hz."""
+    n, sign = max(1, round(hz * secs)), 1
+    for _ in range(strokes):
+        start = px
+        for i in range(1, n + 1):  # whole pixels from the stroke's start, so a 1000 Hz mouse does not round a step to nothing
+            t += 1.0 / hz
+            px = start + round(sign * stroke * i / n)
+            e.update(t, event=("move", px, py))
+        sign = -sign
+    return t, px, py
+
+
+@pytest.mark.parametrize("hz", [60, 125, 250, 500, 1000])
+def test_a_shake_is_read_at_any_pointer_rate(hz: int) -> None:
+    """Every raw move reaches the engine, so a 1000 Hz mouse sends 600 samples in the 0.6 s window."""
+    e = make()
+    t, px, py = pull_out(e, 1.0, *grab_at(e, 1.0))
+    stroked(e, t, px, py, hz, 40, 4, 0.1)
+    assert e.shaken, hz
+
+
+@pytest.mark.parametrize("hz", [60, 1000])
+def test_slow_flips_are_not_a_shake_at_any_pointer_rate(hz: int) -> None:
+    e = make()
+    t, px, py = pull_out(e, 1.0, *grab_at(e, 1.0))
+    stroked(e, t, px, py, hz, 40, 4, 0.4)
+    assert not e.shaken, hz
+
+
+@pytest.mark.parametrize("amp", [5, 10, 15])
+@pytest.mark.parametrize("wobble_hz", [2, 3, 4])
+def test_a_drag_with_a_wobble_is_not_a_shake(amp: int, wobble_hz: int) -> None:
+    """The hand drifts up and down while it carries: the figure travels away, it is not shaken (the reviewer's 600 px/s drag)."""
+    e = make()
+    t, px, py = pull_out(e, 1.0, *grab_at(e, 1.0))
+    x0, y0, t0 = px, py, t
+    while t < t0 + 1.5:
+        t += 1 / 60
+        e.update(t, event=("move", int(x0 - 600 * (t - t0)), int(y0 + amp * math.sin(2 * math.pi * wobble_hz * (t - t0)))))
+        assert not e.shaken
+    assert not e.upside
+
+
+def test_small_corrections_while_placing_are_not_a_shake() -> None:
+    e = make()
+    t, px, py = pull_out(e, 1.0, *grab_at(e, 1.0))
+    stroked(e, t, px, py, 60, 20, 4, 0.09)  # three 20 px corrections inside 0.36 s
+    assert not e.shaken

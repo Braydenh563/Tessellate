@@ -55,9 +55,10 @@ STROKE_WASTE = 1.3
 #: States a reaction may break into, and the few more a touch may.
 SCREEN_FREE = ("stand", "act", "notice", "wave", "land")
 TOUCH_FREE = (*SCREEN_FREE, "sit", "sleep", "startle")
-#: A carried shake: this many direction flips inside `SHAKE_WINDOW` s, each after a stroke of `SHAKE_SWING` px (catalogue
+#: A carried shake: this many direction flips inside `SHAKE_WINDOW` s, each after a stroke of `SHAKE_SWING` px along the
+#: motion's main axis (a drag with a wobble travels away; a shake goes back and forth about a point; catalogue
 #: `int.shake_dizzy`, INBOX 1696 kk). The dizzy sway after the drop lasts `DIZZY_FOR` s.
-SHAKE_FLIPS, SHAKE_WINDOW, SHAKE_SWING, DIZZY_FOR = 3, 0.6, 18.0, (2.5, 4.0)
+SHAKE_FLIPS, SHAKE_WINDOW, SHAKE_SWING, DIZZY_FOR = 3, 0.6, 30.0, (2.5, 4.0)
 FACE_STATES = ("stand", "act", "notice", "startle", "wave", "land", "sit")
 
 
@@ -329,12 +330,22 @@ class Pointer:
 
 
 def shake_flips(trail: list[tuple[float, float, float]], now: float, k: float) -> int:
-    """Direction flips of a carried figure's pointer over the last `SHAKE_WINDOW` s, the larger of x and y: how
-    hard it was shaken. `trail` is `(time, x, y)`; strokes under `SHAKE_SWING` px (scaled by `k`) are a hand's tremor."""
+    """Direction flips of a carried figure's pointer over the last `SHAKE_WINDOW` s along the main axis of that motion:
+    how hard it was shaken. `trail` is `(time, x, y)`, at any pointer rate. The flips are read along the principal axis
+    of the window's points, so a drag with a sideways wobble (it moves away, its main axis never turns back) is not a
+    shake, and strokes under `SHAKE_SWING` px (scaled by `k`) are a hand's tremor."""
     pts = [p for p in trail if now - p[0] <= SHAKE_WINDOW]
     if len(pts) < 4:
         return 0
-    return max(Pointer.reversals(pts, 1, SHAKE_SWING * k), Pointer.reversals(pts, 2, SHAKE_SWING * k))
+    n = len(pts)
+    mx, my = sum(p[1] for p in pts) / n, sum(p[2] for p in pts) / n
+    sxx = sum((p[1] - mx) ** 2 for p in pts)
+    syy = sum((p[2] - my) ** 2 for p in pts)
+    sxy = sum((p[1] - mx) * (p[2] - my) for p in pts)
+    angle = 0.5 * math.atan2(2 * sxy, sxx - syy)
+    ux, uy = math.cos(angle), math.sin(angle)
+    along = [(p[0], (p[1] - mx) * ux + (p[2] - my) * uy, 0.0) for p in pts]
+    return Pointer.reversals(along, 1, SHAKE_SWING * k)
 
 
 def ease(t: float, length: float) -> int:
