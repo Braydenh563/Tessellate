@@ -405,6 +405,10 @@ SPELL_ROOM = 0.3
 #: A home the person chose from the menu ("Go somewhere else") is kept this long: a spell settles on its side of the
 #: screen, not back across it (the menu's own test caught a doodle carrying it home again 46 s later).
 HOME_KEEP = 600.0
+#: Trips that end on the floor in `_arrive_plain` with nothing to climb or hold: one met by a caret may finish in a warp
+#: straight to its goal, and one cut short by a runner restart may be taken up again (`take`) when it was the menu's.
+PLAIN_THENS = ("settle", "home", "rest", "spell", "follow", "clock", "greet", "longwalk", "nap", "evade")
+RESUMED_THENS = ("settle", "home")
 #: With presence on (the default) it stands this long between two things, not `SETTLE_FOR` (200 to 520 s of stillness,
 #: which was 50 of every 60 minutes): it is there and doing something, and the stillness is the rest.
 SPELL_SETTLE = (6.0, 22.0)
@@ -634,6 +638,8 @@ class Engine:
         self.carrying = False
         self.hop_from = 0.0
         self.settled_now = False
+        #: Trips that arrived home or at the home the menu chose (`_arrive`): the runner saves the place on a change.
+        self.home_arrivals = 0
         self.click_now: str | None = None
         self.trail: list[tuple[float, int, int]] = []
         self.pre_press = "stand"
@@ -1880,6 +1886,34 @@ class Engine:
         self.homed_at = now
         return True
 
+    def carry(self) -> dict[str, Any]:
+        """What a new engine takes up from this one when the runner restarts (frames drawn, a look or motion answer): the
+        home, how long ago the menu chose it, and the goal of the menu's trip or a trip home still under way."""
+        goal, then = (self.goal, self.then) if self.goal is not None else self.pending or (None, "")
+        if self.state == "warp" and self.warp is not None:
+            goal, then = self.warp["dst"], self.then
+        if self.edge_plan is not None:
+            goal, then = self.edge_plan
+        live = goal is not None and then in RESUMED_THENS
+        return {"home_x": self.home_x, "homed_for": self.now - self.homed_at, "goal": goal[0] if live else None, "then": then if live else ""}
+
+    def take(self, carried: dict[str, Any] | None, now: float) -> None:
+        """A restart's `carry`, on the new engine where the old one stood (INBOX 1696 i): the home is kept, so the middle
+        third's relocation does not take it to the nearer edge (the one a trip set off from), and the menu's trip goes on."""
+        if not carried:
+            return
+        m = self.current_monitor()
+        lo, hi = m.area[0], m.area[2] - self.size[0]
+        home = carried.get("home_x")
+        if isinstance(home, (int, float)):
+            self.home_x = min(max(float(home), lo), hi)
+        self.homed_at = now - float(carried.get("homed_for", math.inf))
+        self.relocate_at = None
+        self._maybe_relocate(now)
+        goal = carried.get("goal")
+        if isinstance(goal, (int, float)) and not self.reduced and self.roam and self.state == "stand" and abs(goal - self.x) >= 12 * self._scale():
+            self._go((min(max(float(goal), lo), hi), self.ground_y(m)), str(carried.get("then") or "home"), now)
+
     def _sit_on_window(self, now: float) -> bool:
         """Climb to a window's top edge the last scan found. False when there is none to sit on."""
         if not (self.roam_windows and self.roam) or self.perch is not None or not self._candidates():
@@ -2547,11 +2581,11 @@ class Engine:
         return gx, gy
 
     def _keep_off_caret(self, now: float) -> None:
-        """Over the foreground window's text box (padded): step aside to the nearest edge on the taskbar
-        line, in a puff (a fade when reduced), inside a second."""
+        """Over the foreground window's text box (padded): step aside on the taskbar line (`_step_aside`), in a blink,
+        a portal or a puff (a fade when reduced), inside a second."""
         if now < self.evade_ready or self.caret is None or self.nap_until:
             return
-        k, m = self._scale(), self.current_monitor()
+        k = self._scale()
         frame = self._frame(now)
         x, y, _clip = self._display(frame)
         left, top, right, bottom = self._box(frame, self.facing < 0)
@@ -2560,11 +2594,31 @@ class Engine:
         if not tv.overlaps((x + left, y + top, x + right, y + bottom), keep):
             return
         self.evade_ready = now + 1.0
+        self._step_aside(keep, now)
+
+    def _trip_ahead(self) -> tuple[tuple[float, float] | None, str]:
+        """The goal of the trip under way and what it is for (a walk or drift, or the crouch before a run)."""
+        if self.goal is not None:
+            return self.goal, self.then
+        return self.pending if self.pending else (None, "")
+
+    def _step_aside(self, keep: tv.Rect, now: float) -> None:
+        """Out of the caret's padded box `keep`, in a seen move. INBOX 1696 i: halfway along a trip the nearest edge is
+        the one it set off from, so a caret by the taskbar line (a terminal's last line) sent it back where it came
+        from. On a trip it goes to the goal itself when that is clear, finishing the trip, else to the edge on the
+        goal's side; standing, to the nearest edge."""
+        k, m = self._scale(), self.current_monitor()
         ground = self.ground_y(m) if self.perch is None else m.area[3] - self.size[1]
-        for side in sorted((-1, 1), key=lambda sd: abs(tv.edge_x(sd, m.area, self.size[0]) - self.x)):
+        goal, then = self._trip_ahead()
+        if goal is not None and self.perch is None and then in PLAIN_THENS and not tv.overlaps(self._box_at(goal[0], ground), keep):
+            self.target = self.pending = None
+            self._start_warp("fade" if self.reduced else tv.caret_move(self.rng, self.modes), (goal[0], ground), then, now)
+            return
+        toward = goal[0] if goal is not None else self.x
+        for side in sorted((-1, 1), key=lambda sd: abs(tv.edge_x(sd, m.area, self.size[0]) - toward)):
             tx = tv.edge_x(side, m.area, self.size[0], 4 * k)
             if not tv.overlaps(self._box_at(tx, ground), keep):
-                self.perch = self.target = None
+                self.perch = self.target = self.pending = None
                 self._start_warp("fade" if self.reduced else tv.caret_move(self.rng, self.modes), (tx, ground), "evade", now)
                 return
 
@@ -2824,6 +2878,8 @@ class Engine:
             self._arrive_tuck(then[5:], now)
         else:
             self._arrive_plain(then, now)
+        if then in RESUMED_THENS and self.goal is None and self.perch is None and self.state != "warp":
+            self.home_arrivals += 1  # where it lives now: the runner saves it, as a drop is saved
 
     def _arrive_climb(self, then: str, now: float) -> None:
         """The steps of getting onto a window top: up its side, over its edge, a leap, the stand."""

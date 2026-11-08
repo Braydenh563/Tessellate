@@ -135,6 +135,11 @@ class OverlayRunner:
         #: The size handle: the figure's size as a multiplier on the monitor's dpi (Appearance > Companion size, 0.7 to 1.6),
         #: where it is eased to, the presses on the handle, how long it shows, and how many times the window was resized.
         self.on_size = on_size
+        #: A trip arrived where it lives now (`Engine.home_arrivals`): passed on so the place is saved, as a drop is.
+        self.on_place: Callable[[int, int], Any] | None = None
+        self._arrivals_seen = 0
+        #: The last runner's `Engine.carry`, set by the coordinator before `start` on a restart: taken up in `_ready`.
+        self.carried: dict[str, Any] | None = None
         self.scale = sizing.clamp(scale)
         self._goal: float | None = None
         self._sizing: dict[str, Any] | None = None
@@ -624,6 +629,7 @@ class OverlayRunner:
             spr.size(self._fdpi()), self.monitors, home=self.home, reduced=reduced, roam=not self.stay, roam_windows=self.roam_windows, gait=spr.gait, hang_top=spr.top_share("hang"), idle_frames=spr.idle_count(), walk_frames=spr.walk_count(), wave_frames=spr.wave_count(), now=self.clock(),
         )
         self.engine.set_metrics(spr.metrics(self._fdpi()))
+        self.engine.take(self.carried, self.clock())
         out = self.engine.update(self.clock())
         self._apply(out)
         logger.info(
@@ -688,6 +694,10 @@ class OverlayRunner:
         if out.settled:
             home = engine.home()  # where it stands, not where its window is drawn (feet are planted)
             self._hand_off("overlay-settle", lambda: self.on_settle and self.on_settle(*home))
+        if engine.home_arrivals != self._arrivals_seen:
+            self._arrivals_seen = engine.home_arrivals
+            place = engine.home()
+            self._hand_off("overlay-place", lambda: self.on_place and self.on_place(*place))
         if out.card is not None:
             token = out.card
             self._hand_off("overlay-card", lambda: self.on_card and self.on_card(token))
