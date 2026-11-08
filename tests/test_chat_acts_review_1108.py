@@ -6,11 +6,12 @@ that failed before its fix. Every provider runs against a fake transport
 from __future__ import annotations
 
 import json
+import re
 from datetime import datetime
 
 import pytest
 
-from tessellate.ai import commands
+from tessellate.ai import commands, composer_cancel, starter_acts
 from tessellate.core.database import Entry
 
 NOW = datetime(2026, 11, 8, 10, 0)
@@ -260,3 +261,142 @@ def test_restore_matches_whole_words(client):
     assert card is None and "nothing in the bin" in _text(events)
     card, _ = _card(client, "restore the cardiology note")
     assert card
+
+
+# --- 5, 9: add to today's note -----------------------------------------------------------------
+
+
+def _today(client, body="- call the bank"):
+    return _note(client, f"{HEADING}\n\n{body}")
+
+
+def test_undo_of_add_to_today_refuses_when_the_note_changed_since(client):
+    note = _today(client)
+    card, _ = _card(client, "add buy milk to today's note")
+    done = _run(client, card["steps"])
+    typed = client.get(f"/entries/{note}").json()["content"] + "\n- typed later by hand"
+    client.put(f"/entries/{note}", json={"content": typed})
+    undone = _run(client, done["undo"])
+    assert not undone["ok"] and "changed" in undone["summary"].lower()
+    assert client.get(f"/entries/{note}").json()["content"] == typed, "the text typed after the act is kept"
+
+
+def test_undo_of_add_to_today_still_works_when_nothing_changed(client):
+    note = _today(client)
+    card, _ = _card(client, "add buy milk to today's note")
+    done = _run(client, card["steps"])
+    assert _run(client, done["undo"])["ok"]
+    assert client.get(f"/entries/{note}").json()["content"] == f"{HEADING}\n\n- call the bank"
+
+
+def test_two_cards_for_a_note_not_made_yet_make_one_note(client, session):
+    first, _ = _card(client, "add buy milk to today's note")
+    second, _ = _card(client, "add pay rent to today's note")
+    assert first["steps"][0]["name"] == second["steps"][0]["name"] == "create_note"
+    assert _run(client, first["steps"])["ok"] and _run(client, second["steps"])["ok"]
+    session.expire_all()
+    daily = [e.content for e in session.query(Entry).all() if (e.content or "").startswith(HEADING)]
+    assert len(daily) == 1 and "Buy milk" in daily[0] and "Pay rent" in daily[0], daily
+
+
+def test_the_words_keep_their_case_where_a_fold_changes_the_length():
+    kind, slots = starter_acts.read("add İİ x to today's note")
+    assert kind == "append_today" and slots["words"] == "İİ x"
+    kind, slots = starter_acts.read("add buy milk to today’s note")
+    assert slots["words"] == "buy milk"
+
+
+@pytest.mark.parametrize("said", ["add that to today's note", "add it to today's note"])
+def test_a_pointer_is_asked_about_not_written(client, said):
+    card, events = _card(client, said)
+    assert card is None and "What should go in today's note?" in _text(events)
+
+
+def test_a_pointer_read_by_the_starter_is_asked_about_too(session):
+    line, card = starter_acts._append_today(session, slots={"words": "it"}, now=NOW)
+    assert card is None and "What should go in today's note?" in line
+
+
+# --- 10: cancel ----------------------------------------------------------------------------------
+
+LABEL = "Move the note “Boiler service” to the bin"
+WAITING = [{"question": "delete the boiler note", "answer": "Confirm to do it.", "pending_act": LABEL}]
+
+
+@pytest.mark.parametrize("said", ["no, cancel that", "wait cancel", "no cancel it", "no. cancel", "wait, cancel that", "Cancel!"])
+def test_cancel_in_other_words_closes_the_open_card(said):
+    events = composer_cancel.reply(said, WAITING)
+    assert events and events[1] == {"type": "act", "cancel": True, "label": LABEL}
+
+
+@pytest.mark.parametrize("said", ["cancel the boiler note", "no, cancel my gym membership note", "wait for me"])
+def test_a_sentence_with_cancel_in_it_is_not_the_drop(said):
+    assert composer_cancel.reply(said, WAITING) is None
+
+
+@pytest.mark.parametrize("said", ["no, cancel that", "wait cancel", "no cancel it", "cancel that"])
+def test_cancel_reaches_the_open_card_through_the_chat_route(client, said):
+    _note(client, "# Boiler service\n\nDue.")
+    sent = _events(client, "delete the boiler note")
+    card = next(e for e in sent if e.get("type") == "act")
+    history = [{"question": "delete the boiler note", "answer": _text(sent), "pending_act": card["label"]}]
+    events = _events(client, said, history=history)
+    assert {"type": "act", "cancel": True, "label": card["label"]} in events
+    assert "Nothing was changed" in _text(events)
+
+
+def _js(name):
+    from pathlib import Path
+
+    text = (Path(__file__).resolve().parents[1] / "frontend" / "js" / name).read_text(encoding="utf-8")
+    return text, lambda fn: re.search(rf"^function {fn}\(.*?^}}", text, re.S | re.M).group(0)
+
+
+def _node(script):
+    import subprocess
+
+    done = subprocess.run(["node", "-e", script], capture_output=True, text=True, check=True, timeout=30)
+    return json.loads(done.stdout)
+
+
+def test_the_page_closes_only_the_card_the_reply_names():
+    """renderActCard's cancel branch on a page with two open cards (data-pending-act)."""
+    ask, _ = _js("ask-compose.js")
+    branch = re.search(r"if \(event\.cancel\) \{\n(.*?)\n  \}", ask, re.S).group(1)
+    out = _node(
+        "const close = (event) => {" + branch + "};"
+        + r"""
+const mk = (label) => ({ dataset: { pendingAct: label }, replaced: false, replaceWith() { this.replaced = true; } });
+const cards = [mk("Move A to the bin"), mk("Move B to the bin")];
+var document = { querySelectorAll: () => cards };
+var toolChip = (t) => t;
+close({ label: "Move A to the bin" });
+const one = cards.map((c) => c.replaced);
+close({ label: "Move C to the bin" });
+const none = cards.map((c) => c.replaced);
+close({});
+console.log(JSON.stringify({ one, none, last: cards.map((c) => c.replaced) }));
+"""
+    )
+    assert out["one"] == [True, False], "the named card closes, the other stays open"
+    assert out["none"] == [True, False], "a label no card has closes nothing"
+    assert out["last"] == [True, True], "no label (an older server) closes the last open card"
+
+
+def test_the_page_sends_the_last_open_cards_label_and_the_mark_is_set():
+    ask, _ = _js("ask-compose.js")
+    kit, pick = _js("answer-kit.js")
+    assert "card.dataset.pendingAct = event.label" in ask and "delete card.dataset.pendingAct" in ask
+    assert "chatHistoryWithOpenCard" not in ask, "the comment names the function that exists"
+    out = _node(
+        pick("chatHistoryToSend")
+        + r"""
+const cards = [{ dataset: { pendingAct: "Move A to the bin" } }, { dataset: { pendingAct: "Move B to the bin" } }];
+var $ = () => ({ querySelectorAll: () => cards });
+var chatConv = { turns: [{ question: "a" }, { question: "b" }] };
+var chatSummary = null;
+var MAX_CLIENT_HISTORY = 10;
+console.log(JSON.stringify(chatHistoryToSend()));
+"""
+    )
+    assert out[-1]["pending_act"] == "Move B to the bin" and "pending_act" not in out[0]

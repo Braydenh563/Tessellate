@@ -2,7 +2,7 @@
 
 Generated 2026-11-08 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7902, frontend ids 2652, CSS sections 522, backend routes 649, backend modules 9166, test files 2217, tests 18640, plan headings 1004, app scripts 28, boot scripts 37, script files 263.
+Counts: frontend functions 7902, frontend ids 2652, CSS sections 522, backend routes 649, backend modules 9168, test files 2217, tests 18651, plan headings 1004, app scripts 28, boot scripts 37, script files 263.
 
 ## Frontend functions (7902)
 
@@ -2038,39 +2038,39 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `announceAskFoot` | frontend/js/ask-compose.js:1453 |
+| `announceAskFoot` | frontend/js/ask-compose.js:1455 |
 | `askAiOffCause` | frontend/js/ask-compose.js:38 |
 | `askAnswerFrom` | frontend/js/ask-compose.js:46 |
-| `askAnswerMenu` | frontend/js/ask-compose.js:657 |
-| `askAsOf` | frontend/js/ask-compose.js:1466 |
-| `askFromNotesFold` | frontend/js/ask-compose.js:881 |
-| `askKeepAsDocument` | frontend/js/ask-compose.js:689 |
-| `askKeepAsMap` | frontend/js/ask-compose.js:711 |
-| `askKeptTitle` | frontend/js/ask-compose.js:684 |
-| `askPreAnswerCard` | frontend/js/ask-compose.js:871 |
-| `askQuestion` | frontend/js/ask-compose.js:925 |
-| `askStatusBusy` | frontend/js/ask-compose.js:1391 |
-| `askStatusText` | frontend/js/ask-compose.js:1478 |
-| `citationVerdictRow` | frontend/js/ask-compose.js:628 |
-| `digestMore` | frontend/js/ask-compose.js:474 |
-| `digestOffer` | frontend/js/ask-compose.js:512 |
-| `digestShape` | frontend/js/ask-compose.js:434 |
-| `drawWhyTrail` | frontend/js/ask-compose.js:792 |
-| `fetchComposedPeek` | frontend/js/ask-compose.js:900 |
+| `askAnswerMenu` | frontend/js/ask-compose.js:659 |
+| `askAsOf` | frontend/js/ask-compose.js:1468 |
+| `askFromNotesFold` | frontend/js/ask-compose.js:883 |
+| `askKeepAsDocument` | frontend/js/ask-compose.js:691 |
+| `askKeepAsMap` | frontend/js/ask-compose.js:713 |
+| `askKeptTitle` | frontend/js/ask-compose.js:686 |
+| `askPreAnswerCard` | frontend/js/ask-compose.js:873 |
+| `askQuestion` | frontend/js/ask-compose.js:927 |
+| `askStatusBusy` | frontend/js/ask-compose.js:1393 |
+| `askStatusText` | frontend/js/ask-compose.js:1480 |
+| `citationVerdictRow` | frontend/js/ask-compose.js:630 |
+| `digestMore` | frontend/js/ask-compose.js:476 |
+| `digestOffer` | frontend/js/ask-compose.js:514 |
+| `digestShape` | frontend/js/ask-compose.js:436 |
+| `drawWhyTrail` | frontend/js/ask-compose.js:794 |
+| `fetchComposedPeek` | frontend/js/ask-compose.js:902 |
 | `linkCitedTitles` | frontend/js/ask-compose.js:109 |
 | `markSaidSentences` | frontend/js/ask-compose.js:171 |
-| `readWebPage` | frontend/js/ask-compose.js:368 |
+| `readWebPage` | frontend/js/ask-compose.js:370 |
 | `renderActCard` | frontend/js/ask-compose.js:201 |
-| `renderAskBoth` | frontend/js/ask-compose.js:860 |
-| `renderAskFollowups` | frontend/js/ask-compose.js:810 |
-| `renderAskHint` | frontend/js/ask-compose.js:1428 |
-| `renderAskInsights` | frontend/js/ask-compose.js:738 |
-| `renderAskTrail` | frontend/js/ask-compose.js:1497 |
+| `renderAskBoth` | frontend/js/ask-compose.js:862 |
+| `renderAskFollowups` | frontend/js/ask-compose.js:812 |
+| `renderAskHint` | frontend/js/ask-compose.js:1430 |
+| `renderAskInsights` | frontend/js/ask-compose.js:740 |
+| `renderAskTrail` | frontend/js/ask-compose.js:1499 |
 | `renderAskUseAi` | frontend/js/ask-compose.js:51 |
-| `renderAskWhy` | frontend/js/ask-compose.js:762 |
-| `renderChatMeta` | frontend/js/ask-compose.js:1296 |
-| `renderWebSources` | frontend/js/ask-compose.js:292 |
-| `setAsking` | frontend/js/ask-compose.js:1487 |
+| `renderAskWhy` | frontend/js/ask-compose.js:764 |
+| `renderChatMeta` | frontend/js/ask-compose.js:1298 |
+| `renderWebSources` | frontend/js/ask-compose.js:294 |
+| `setAsking` | frontend/js/ask-compose.js:1489 |
 | `wireAskUseAi` | frontend/js/ask-compose.js:69 |
 
 ### frontend/js/ask-history.js (10)
@@ -13139,7 +13139,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:164 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (9166)
+## Backend modules (9168)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -13986,7 +13986,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `reply` | src/tessellate/ai/composer_cancel.py:33 |
+| `reply` | src/tessellate/ai/composer_cancel.py:34 |
 | `says_cancel` | src/tessellate/ai/composer_cancel.py:27 |
 
 ### src/tessellate/ai/composer_chance.py (4)
@@ -17804,37 +17804,39 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `split_run_on` | src/tessellate/ai/spelling.py:794 |
 | `warm_in_background` | src/tessellate/ai/spelling.py:870 |
 
-### src/tessellate/ai/starter_acts.py (27)
+### src/tessellate/ai/starter_acts.py (29)
 
 | Name | File:line |
 |---|---|
-| `_append_today` | src/tessellate/ai/starter_acts.py:352 |
-| `_best_pairs` | src/tessellate/ai/starter_acts.py:310 |
-| `_changed` | src/tessellate/ai/starter_acts.py:120 |
-| `_conversation` | src/tessellate/ai/starter_acts.py:150 |
-| `_digest_lines` | src/tessellate/ai/starter_acts.py:111 |
-| `_due` | src/tessellate/ai/starter_acts.py:134 |
-| `_link_related` | src/tessellate/ai/starter_acts.py:332 |
-| `_linked` | src/tessellate/ai/starter_acts.py:306 |
-| `_list_answer` | src/tessellate/ai/starter_acts.py:116 |
-| `_listed` | src/tessellate/ai/starter_acts.py:235 |
-| `_loose_ends` | src/tessellate/ai/starter_acts.py:127 |
-| `_open_board` | src/tessellate/ai/starter_acts.py:207 |
-| `_open_document_or_board` | src/tessellate/ai/starter_acts.py:173 |
-| `_open_links` | src/tessellate/ai/starter_acts.py:217 |
-| `_open_note` | src/tessellate/ai/starter_acts.py:184 |
-| `_original_words` | src/tessellate/ai/starter_acts.py:88 |
-| `_outline_answer` | src/tessellate/ai/starter_acts.py:162 |
-| `_save_answer` | src/tessellate/ai/starter_acts.py:283 |
-| `_since_a_day` | src/tessellate/ai/starter_acts.py:83 |
-| `_tag_open` | src/tessellate/ai/starter_acts.py:269 |
-| `_tag_untagged` | src/tessellate/ai/starter_acts.py:248 |
-| `_tags_of` | src/tessellate/ai/starter_acts.py:240 |
-| `_today_note` | src/tessellate/ai/starter_acts.py:343 |
-| `_vectors` | src/tessellate/ai/starter_acts.py:296 |
-| `events` | src/tessellate/ai/starter_acts.py:95 |
+| `_append_today` | src/tessellate/ai/starter_acts.py:384 |
+| `_best_pairs` | src/tessellate/ai/starter_acts.py:307 |
+| `_changed` | src/tessellate/ai/starter_acts.py:117 |
+| `_conversation` | src/tessellate/ai/starter_acts.py:147 |
+| `_daily_note` | src/tessellate/ai/starter_acts.py:350 |
+| `_digest_lines` | src/tessellate/ai/starter_acts.py:108 |
+| `_due` | src/tessellate/ai/starter_acts.py:131 |
+| `_link_related` | src/tessellate/ai/starter_acts.py:329 |
+| `_linked` | src/tessellate/ai/starter_acts.py:303 |
+| `_list_answer` | src/tessellate/ai/starter_acts.py:113 |
+| `_listed` | src/tessellate/ai/starter_acts.py:232 |
+| `_loose_ends` | src/tessellate/ai/starter_acts.py:124 |
+| `_open_board` | src/tessellate/ai/starter_acts.py:204 |
+| `_open_document_or_board` | src/tessellate/ai/starter_acts.py:170 |
+| `_open_links` | src/tessellate/ai/starter_acts.py:214 |
+| `_open_note` | src/tessellate/ai/starter_acts.py:181 |
+| `_outline_answer` | src/tessellate/ai/starter_acts.py:159 |
+| `_save_answer` | src/tessellate/ai/starter_acts.py:280 |
+| `_since_a_day` | src/tessellate/ai/starter_acts.py:87 |
+| `_tag_open` | src/tessellate/ai/starter_acts.py:266 |
+| `_tag_untagged` | src/tessellate/ai/starter_acts.py:245 |
+| `_tags_of` | src/tessellate/ai/starter_acts.py:237 |
+| `_today_note` | src/tessellate/ai/starter_acts.py:340 |
+| `_vectors` | src/tessellate/ai/starter_acts.py:293 |
+| `events` | src/tessellate/ai/starter_acts.py:92 |
+| `lock_undo` | src/tessellate/ai/starter_acts.py:372 |
 | `read` | src/tessellate/ai/starter_acts.py:61 |
-| `step` | src/tessellate/ai/starter_acts.py:399 |
+| `settle_step` | src/tessellate/ai/starter_acts.py:358 |
+| `step` | src/tessellate/ai/starter_acts.py:431 |
 
 ### src/tessellate/ai/stats_ask.py (15)
 
@@ -18893,13 +18895,13 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 |---|---|
 | `_notes` | src/tessellate/api/chat_extra.py:25 |
 | `_reminders` | src/tessellate/api/chat_extra.py:34 |
-| `_turn_label` | src/tessellate/api/chat_extra.py:157 |
+| `_turn_label` | src/tessellate/api/chat_extra.py:159 |
 | `events` | src/tessellate/api/chat_extra.py:39 |
-| `language_events` | src/tessellate/api/chat_extra.py:101 |
-| `mentioning` | src/tessellate/api/chat_extra.py:140 |
-| `saved_joke` | src/tessellate/api/chat_extra.py:122 |
-| `slot_reply` | src/tessellate/api/chat_extra.py:166 |
-| `welcome_line` | src/tessellate/api/chat_extra.py:72 |
+| `language_events` | src/tessellate/api/chat_extra.py:103 |
+| `mentioning` | src/tessellate/api/chat_extra.py:142 |
+| `saved_joke` | src/tessellate/api/chat_extra.py:124 |
+| `slot_reply` | src/tessellate/api/chat_extra.py:168 |
+| `welcome_line` | src/tessellate/api/chat_extra.py:74 |
 
 ### src/tessellate/api/chat_pool.py (34)
 
@@ -24694,7 +24696,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (18640)
+## Tests (18651)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -24929,7 +24931,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_chat_act_card_once.py | 1 |
 | tests/test_chat_acts_1108.py | 7 |
 | tests/test_chat_acts_objects_1108.py | 15 |
-| tests/test_chat_acts_review_1108.py | 22 |
+| tests/test_chat_acts_review_1108.py | 33 |
 | tests/test_chat_acts_today_1108.py | 6 |
 | tests/test_chat_api.py | 19 |
 | tests/test_chat_app_help.py | 5 |

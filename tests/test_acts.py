@@ -32,10 +32,11 @@ def _seed(session):
 
 
 def _state(session) -> tuple:
-    """Everything an act may change, as plain values."""
+    """Everything an act may change, as plain values. The category by its id and by its
+    name: a rename keeps the id, so the id alone cannot see rename_category change anything."""
     session.expire_all()
     notes = tuple(
-        (e.id, e.content, manager.category_name_for(session, e), e.tags, e.pinned, e.deleted_at is None)
+        (e.id, e.content, e.category_id, manager.category_name_for(session, e), e.tags, e.pinned, e.deleted_at is None)
         for e in session.scalars(select(Entry).order_by(Entry.id))
         if e.deleted_at is None
     )
@@ -106,7 +107,7 @@ def test_the_capability_line_is_the_registry_said():
     line = acts.capability_line()
     assert line == commands.CAPABILITY_LINE
     for act in acts.ACTS.values():
-        if act.writes and act.intent not in ("untag", "unpin", "unlink", "append", "rename_tag", "rename_category"):
+        if act.writes and act.intent not in ("untag", "unpin", "unlink", "append"):
             assert act.verb in line or act.label in line, act.label
 
 

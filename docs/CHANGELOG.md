@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Chat acts review (X17, X5, X8, X10): a tag or category rename is refused when a binned or locked private note holds the new name (the confirmed step is checked too), "rename note 12 to Travel" keeps its id, names holding "to" and a second request after "and" are read apart, restore treats a private note as missing and skips boards, Undo of add to today is refused once the note changed, two add-to-today cards make one note, and "no, cancel that" closes only the card it names.
 - List styles in rendered notes, Chat and the HTML export (INBOX 1696 cc): `*` circles, `+` squares, a two-space dash, `1)` numbers, `a.` letters and `i.` roman numerals are read by the renderer as the lists they are (letters only as a run, never inside a paragraph), a change of marker starts a new list, and the export keeps the type; before, `1)`, `a.` and `i.` were plain paragraphs and every marker was one list.
 - Chat acts (X17): "cancel", "never mind" or "forget it" closes an act card that is still waiting for Confirm and says nothing was changed; with no card waiting the words are read as before.
 - Chat acts (X5, X8): "rename the tag gym to fitness", "rename the category Work to Job" and "rename the note X to Y" give a card that waits for Confirm (an unknown name says which are close), and "restore the passport note" brings a note back from the bin after Confirm; Undo reverses each.

@@ -1904,7 +1904,7 @@ def run(session: Session, steps: list[dict], skipped: list[dict] | None = None, 
     in the line rather than a stop: a person who confirmed tagging five notes
     gets the four that could be tagged and is told about the fifth.
     """
-    from tessellate.ai import tools
+    from tessellate.ai import starter_acts, tools  # lazy: starter_acts imports this module
 
     done: list[tuple[str, dict, dict]] = []
     failed: list[dict] = list(skipped or [])
@@ -1916,13 +1916,14 @@ def run(session: Session, steps: list[dict], skipped: list[dict] | None = None, 
         if name not in RUNNABLE:
             failed.append({"id": None, "reason": "failed"})
             continue
+        name, args = starter_acts.settle_step(session, name, args)
         result = _run_one(session, name, args, tools)
         if "error" in result:
             reason = _failure_reason(str(result["error"]))
             failed.append({"id": args.get("note_id"), "reason": reason})
             continue
         done.append((name, args, result))
-        step_undo = _step_undo(name, args, result)
+        step_undo = starter_acts.lock_undo(session, name, args, _step_undo(name, args, result))
         if isinstance(step_undo, dict):
             undo.extend(step_undo["steps"] if step_undo.get("tool") == "batch" else [step_undo])
         opened = result.get("open") or opened

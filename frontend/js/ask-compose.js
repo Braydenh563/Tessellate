@@ -200,9 +200,11 @@ function markSaidSentences(targets, sentences) {
 //: steps to `/chat/command/run`, which runs only the tools an act may use.
 function renderActCard(holder, event) {
   //: "cancel" said in the chat (CHAT_PLAN X17): the server's reply closes the
-  //: card still open, nothing else is drawn.
+  //: card it names (the last open one with that label, the one the page sent as
+  //: `pending_act` in `chatHistoryToSend`), nothing else is drawn.
   if (event.cancel) {
-    document.querySelectorAll(".tool-confirm[data-pending-act]").forEach((open) => open.replaceWith(toolChip("ph:x Cancelled: nothing was changed.")));
+    const open = [...document.querySelectorAll(".tool-confirm[data-pending-act]")].filter((card) => !event.label || card.dataset.pendingAct === event.label).at(-1);
+    if (open) open.replaceWith(toolChip("ph:x Cancelled: nothing was changed."));
     return;
   }
   const card = document.createElement("div");
@@ -272,7 +274,7 @@ function renderActCard(holder, event) {
       smallButton("Cancel", "Don't do this", () => card.replaceWith(toolChip("ph:x Cancelled: nothing was changed.")))
     );
     line(`ph:warning ${event.label}`, notice, row);
-    //: Open until Confirm settles it (`done` clears this) or Cancel replaces the card; the page tells the server (`chatHistoryWithOpenCard`).
+    //: Open until Confirm settles it (`done` clears this) or Cancel replaces the card; the page tells the server (`chatHistoryToSend`).
     card.dataset.pendingAct = event.label || "";
   }
   if (card.childElementCount) holder.appendChild(card);
