@@ -2,7 +2,7 @@
 
 Generated 2026-11-08 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7884, frontend ids 2644, CSS sections 522, backend routes 649, backend modules 9048, test files 2187, tests 18398, plan headings 1005, app scripts 28, boot scripts 37, script files 263.
+Counts: frontend functions 7884, frontend ids 2644, CSS sections 522, backend routes 649, backend modules 9048, test files 2187, tests 18399, plan headings 1005, app scripts 28, boot scripts 37, script files 263.
 
 ## Frontend functions (7884)
 
@@ -474,48 +474,48 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `assistantAvatar` | frontend/js/chat-agent.js:348 |
-| `cardTextPreview` | frontend/js/chat-agent.js:673 |
-| `changeDiff` | frontend/js/chat-agent.js:480 |
-| `changeRow` | frontend/js/chat-agent.js:392 |
-| `chatHeadIsAtlas` | frontend/js/chat-agent.js:322 |
-| `chatHeadKey` | frontend/js/chat-agent.js:327 |
+| `assistantAvatar` | frontend/js/chat-agent.js:352 |
+| `cardTextPreview` | frontend/js/chat-agent.js:677 |
+| `changeDiff` | frontend/js/chat-agent.js:484 |
+| `changeRow` | frontend/js/chat-agent.js:396 |
+| `chatHeadIsAtlas` | frontend/js/chat-agent.js:326 |
+| `chatHeadKey` | frontend/js/chat-agent.js:331 |
 | `chatPositions` | frontend/js/chat-agent.js:99 |
-| `clearDraftTarget` | frontend/js/chat-agent.js:961 |
-| `draftTranslateKind` | frontend/js/chat-agent.js:857 |
-| `dropChatBubble` | frontend/js/chat-agent.js:271 |
+| `clearDraftTarget` | frontend/js/chat-agent.js:965 |
+| `draftTranslateKind` | frontend/js/chat-agent.js:861 |
+| `dropChatBubble` | frontend/js/chat-agent.js:275 |
 | `followBottom` | frontend/js/chat-agent.js:39 |
 | `followReleased` | frontend/js/chat-agent.js:28 |
-| `isImageCardUrl` | frontend/js/chat-agent.js:665 |
+| `isImageCardUrl` | frontend/js/chat-agent.js:669 |
 | `keepAtBottom` | frontend/js/chat-agent.js:123 |
 | `nestedTakesWheelUp` | frontend/js/chat-agent.js:33 |
 | `noteChatPosition` | frontend/js/chat-agent.js:104 |
-| `notebookCard` | frontend/js/chat-agent.js:215 |
-| `paintAssistantAvatar` | frontend/js/chat-agent.js:368 |
-| `paintAssistantHeads` | frontend/js/chat-agent.js:382 |
-| `paintUserMarks` | frontend/js/chat-agent.js:253 |
-| `paneWordCount` | frontend/js/chat-agent.js:977 |
-| `pushDraftUndo` | frontend/js/chat-agent.js:1001 |
-| `putDraftBack` | frontend/js/chat-agent.js:1026 |
-| `rememberDraftVersion` | frontend/js/chat-agent.js:928 |
-| `renderDraftSources` | frontend/js/chat-agent.js:867 |
-| `renderDraftTarget` | frontend/js/chat-agent.js:948 |
-| `renderDraftVersions` | frontend/js/chat-agent.js:899 |
-| `repaintAssistantAvatars` | frontend/js/chat-agent.js:375 |
-| `restoreDraftLocally` | frontend/js/chat-agent.js:804 |
-| `saveDraftLocally` | frontend/js/chat-agent.js:782 |
-| `setDraftStatus` | frontend/js/chat-agent.js:969 |
-| `showWaiting` | frontend/js/chat-agent.js:685 |
-| `sourceHost` | frontend/js/chat-agent.js:750 |
+| `notebookCard` | frontend/js/chat-agent.js:219 |
+| `paintAssistantAvatar` | frontend/js/chat-agent.js:372 |
+| `paintAssistantHeads` | frontend/js/chat-agent.js:386 |
+| `paintUserMarks` | frontend/js/chat-agent.js:257 |
+| `paneWordCount` | frontend/js/chat-agent.js:981 |
+| `pushDraftUndo` | frontend/js/chat-agent.js:1005 |
+| `putDraftBack` | frontend/js/chat-agent.js:1030 |
+| `rememberDraftVersion` | frontend/js/chat-agent.js:932 |
+| `renderDraftSources` | frontend/js/chat-agent.js:871 |
+| `renderDraftTarget` | frontend/js/chat-agent.js:952 |
+| `renderDraftVersions` | frontend/js/chat-agent.js:903 |
+| `repaintAssistantAvatars` | frontend/js/chat-agent.js:379 |
+| `restoreDraftLocally` | frontend/js/chat-agent.js:808 |
+| `saveDraftLocally` | frontend/js/chat-agent.js:786 |
+| `setDraftStatus` | frontend/js/chat-agent.js:973 |
+| `showWaiting` | frontend/js/chat-agent.js:689 |
+| `sourceHost` | frontend/js/chat-agent.js:754 |
 | `syncChatJumpLatest` | frontend/js/chat-agent.js:145 |
-| `thinkingFold` | frontend/js/chat-agent.js:277 |
-| `thinkingFoldIn` | frontend/js/chat-agent.js:297 |
-| `thinkingPaint` | frontend/js/chat-agent.js:291 |
-| `translateNoteInDesk` | frontend/js/chat-agent.js:841 |
-| `undoDraft` | frontend/js/chat-agent.js:1050 |
-| `updateDraftCount` | frontend/js/chat-agent.js:983 |
-| `updateDraftUndoButton` | frontend/js/chat-agent.js:1037 |
-| `userMarkSeed` | frontend/js/chat-agent.js:242 |
+| `thinkingFold` | frontend/js/chat-agent.js:281 |
+| `thinkingFoldIn` | frontend/js/chat-agent.js:301 |
+| `thinkingPaint` | frontend/js/chat-agent.js:295 |
+| `translateNoteInDesk` | frontend/js/chat-agent.js:845 |
+| `undoDraft` | frontend/js/chat-agent.js:1054 |
+| `updateDraftCount` | frontend/js/chat-agent.js:987 |
+| `updateDraftUndoButton` | frontend/js/chat-agent.js:1041 |
+| `userMarkSeed` | frontend/js/chat-agent.js:246 |
 
 ### frontend/js/chat-attach.js (54)
 
@@ -24500,7 +24500,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (18398)
+## Tests (18399)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -25575,7 +25575,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_jobstore.py | 17 |
 | tests/test_joins_870.py | 5 |
 | tests/test_js_link_strip_redos.py | 2 |
-| tests/test_jump_gap_1590.py | 2 |
+| tests/test_jump_gap_1590.py | 3 |
 | tests/test_k3_no_model_1026.py | 19 |
 | tests/test_keep_answer_b12.py | 3 |
 | tests/test_kept_edit_restore_1102.py | 3 |
