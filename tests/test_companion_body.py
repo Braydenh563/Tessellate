@@ -170,7 +170,9 @@ def test_atlas_props_have_a_keyline_and_say_what_they_are() -> None:
     assert ".nmp-nightcap:has(> .atl-prop-moon)" in rule and "scale: 1.6;" in rule
     # Hovered, the tooltip names what it has on; with nothing, none.
     name = _fn(AV, "nameMarkBuddyNameProps")
-    assert "face.title = " in name and 'face.removeAttribute("title");' in name
+    # Intent moved (in-app dive 1107, ba661be3): with no prop to name, the title is the how-to
+    # (the aria-label: click, double-click, drag, right-click), not removed, for learnability.
+    assert "face.title = " in name and 'else face.title = face.getAttribute("aria-label");' in name
     words = AV[AV.index("const NMB_PROP_WORDS") :][:900]
     for cls in ("nmb-music", "nmb-reading", "nmb-act-bell", "nmb-act-lantern", "nmb-act-carry", "nmb-offline"):
         assert f'["{cls}", ' in words, cls
