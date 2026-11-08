@@ -2,7 +2,7 @@
 
 Generated 2026-11-08 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7884, frontend ids 2652, CSS sections 522, backend routes 649, backend modules 9096, test files 2204, tests 18507, plan headings 1003, app scripts 28, boot scripts 37, script files 263.
+Counts: frontend functions 7884, frontend ids 2652, CSS sections 522, backend routes 649, backend modules 9106, test files 2205, tests 18522, plan headings 1003, app scripts 28, boot scripts 37, script files 263.
 
 ## Frontend functions (7884)
 
@@ -13121,7 +13121,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:164 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (9096)
+## Backend modules (9106)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -14972,7 +14972,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `answer` | src/tessellate/ai/composer_quick.py:15 |
+| `answer` | src/tessellate/ai/composer_quick.py:16 |
 
 ### src/tessellate/ai/composer_quote.py (21)
 
@@ -15340,6 +15340,21 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 |---|---|
 | `_build` | src/tessellate/ai/composer_tables.py:749 |
 | `voice_of` | src/tessellate/ai/composer_tables.py:35 |
+
+### src/tessellate/ai/composer_text.py (10)
+
+| Name | File:line |
+|---|---|
+| `_apply` | src/tessellate/ai/composer_text.py:86 |
+| `_body` | src/tessellate/ai/composer_text.py:125 |
+| `_dedupe` | src/tessellate/ai/composer_text.py:78 |
+| `_head` | src/tessellate/ai/composer_text.py:114 |
+| `_items` | src/tessellate/ai/composer_text.py:71 |
+| `_read` | src/tessellate/ai/composer_text.py:136 |
+| `_slug` | src/tessellate/ai/composer_text.py:66 |
+| `_title` | src/tessellate/ai/composer_text.py:56 |
+| `_unquote` | src/tessellate/ai/composer_text.py:105 |
+| `answer` | src/tessellate/ai/composer_text.py:149 |
 
 ### src/tessellate/ai/composer_this.py (5)
 
@@ -24581,7 +24596,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (18507)
+## Tests (18522)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -25061,6 +25076,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_composer_sweep_1030.py | 8 |
 | tests/test_composer_tables.py | 32 |
 | tests/test_composer_tasks_1028.py | 38 |
+| tests/test_composer_text_1108.py | 15 |
 | tests/test_composer_timing_1461.py | 15 |
 | tests/test_composer_titles_1515.py | 9 |
 | tests/test_composer_today_1030.py | 4 |

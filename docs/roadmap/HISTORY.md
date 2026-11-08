@@ -52947,3 +52947,11 @@ Built: Time and date (the tools survey row). Row text: | Time and date | Current
 - **What it does:** `ai/composer_clock.py` also answers "what week is 3 March" ("Wednesday 3 March 2027 is in week 9 of 2027."), "is 2028 a leap year" ("2028 is a leap year: it has 366 days, and February has 29."), "how many days are left in the year" and "how many weeks left in the year" ("There are 53 days left in 2026, after today."). Each says how it was read; no note is read.
 - **Check:** `tests/test_composer_clock_1108.py` (fixed clock, exact sentences, 20k linear timing).
 - **Not built:** Unix epoch time.
+
+## Moved from the plans, 2026-11-08 (CHAT_PLAN T6)
+
+Built: T6. Row text: T6 | Text transforms | None | Upper, lower, title case, sort lines, remove duplicate lines, number lines, slugify, count characters, reverse, join/split on commas | Act on the note or the pasted text; output is a draft the person confirms before it replaces anything | S | 7
+
+- **What it does:** `ai/composer_text.py` (through `composer_quick`) transforms text the person pastes: "uppercase: hello there" gives "In capitals:" and a code block with HELLO THERE; also lower case, title case ("The Lord of the Rings"), slugify, reverse, sort (lines or comma items), remove duplicate lines (first kept), number the lines. The reply ends "A draft only: nothing was saved or changed." Sort, reverse, dedupe and number answer only after a colon, quote or new line, so "sort my notes by date" is left alone. Pasted text only (20,000 characters at most); no note is read, quoted or changed.
+- **Check:** `tests/test_composer_text_1108.py` (exact sentences, fixed clock, 20k linear timing).
+- **Not built:** Acting on a named note ("uppercase the passport note"): a note edit needs the confirm-first draft path, so it stays open; join/split on commas and count characters (word counts exist).
