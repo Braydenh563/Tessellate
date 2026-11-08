@@ -354,7 +354,11 @@ class Extras:
     def calm(act: str | None) -> bool:
         """A prop or plain act whose pose barely moves (a breath, a page turn): it is drawn at the rest pace
         (`REST_DRAW_MS`), not at the walk's, so a minute of reading costs what a minute of standing does."""
-        return (act in props.PROP_ACTS or act in props.PLAIN_ACTS or act in props.SPELL_ACTS) and bh.AMPLITUDE.get(act, 1.0) < CALM_AMPLITUDE
+        if bh.AMPLITUDE.get(act, 1.0) >= CALM_AMPLITUDE:
+            return False
+        # A small stand act with no turn (dust_off: 1 s, a 0.06 shake) is calm too: at the walk's pace it drew 14 to 16 a second.
+        small = act in bh.ACTIVITIES and bh.ACTIVITIES[act].frame == "stand" and not bh.ACTIVITIES[act].turns
+        return act in props.PROP_ACTS or act in props.PLAIN_ACTS or act in props.SPELL_ACTS or small
 
     def _marks(self, now: float) -> list[float]:
         """The moments after `now` a reaction's face next steps. The micro-expressions' and the acts' own steps are

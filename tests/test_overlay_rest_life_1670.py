@@ -18,8 +18,8 @@ from tests.test_overlay_ride_1670 import make
 LOOKS = ("masculine", "feminine")
 GAITS = ("float", "walk")
 SEEDS = (1, 2, 3)
-# Intent unchanged (atlascat 1108 A3/A5): the catalogue weights reshuffle which act the Mind draws first. Seed 2 now draws a dust_off
-# (1 to 1.5 s, 14 draws a second) or a read_book (its seat is 8 px lower) in the first minute, which a still stand excludes; 5 stands still.
+# The still-stand test reads these: seed 2 on the walk now draws read_book from the stroll path (its sit frame sits 8 px lower, by design,
+# as sit_down's does at the base on other seeds), which is a moved window, not a redraw fault. The redraw cap has its own test over seeds 1 to 5.
 STAND_SEEDS = (1, 3, 5)
 
 
@@ -93,3 +93,11 @@ def test_the_breath_is_a_few_pixels_not_a_bounce() -> None:
     assert sit_depth <= 0.015 and sleep_depth <= 0.02
     assert eng.REST_LIFE["sleep"][0] > eng.REST_LIFE["sit"][0]  # slower asleep
     assert eng.REST_DRAW_MS >= 1000 / 12
+
+
+@pytest.mark.parametrize("look", LOOKS)
+@pytest.mark.parametrize("gait", GAITS)
+def test_no_seed_redraws_over_the_cap_while_standing(look: str, gait: str) -> None:
+    # atlascat 1108 review: the catalogue weights draw other acts first; a dust_off (1 s) and a scan_horizon turn drew 14 and 16 a second
+    for seed in (1, 2, 3, 4, 5):
+        assert rest_life(gait, look, "stand", seed)["max_draws_a_second"] <= 12, (gait, look, seed)

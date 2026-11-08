@@ -4051,6 +4051,8 @@ class Engine:
     def _moving_wake(self, s: str) -> int:
         if s == "hang" and not self.turn_to:  # the picture swings from the grip; the window does not move
             return HANG_TICK_MS
+        if s in ("stand", "act") and self.turn_to:  # a turn in place (scan_horizon's) stays under the rest cap of 12 draws a second
+            return REST_DRAW_MS
         return TICK_WALK_MS
 
     def _follow_moving(self) -> bool:
