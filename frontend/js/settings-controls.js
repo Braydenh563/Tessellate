@@ -2160,6 +2160,24 @@ function renderStatusBarSettings() {
   // call and silently orphan `#status-bar-clock-toggle` for the rest of
   // this function.
   const clockLabel = document.getElementById("status-bar-clock-toggle")?.closest("label");
+  //: The clock's own opt-in toggle, not one of STATUS_SLOTS (it is off by default, so it is wired apart).
+  const wireClock = () => {
+    const clockToggle = $("status-bar-clock-toggle");
+    if (!clockToggle) return;
+    clockToggle.checked = Boolean(prefsCache?.status_bar_clock);
+    clockToggle.onchange = () => {
+      if (prefsCache) prefsCache.status_bar_clock = clockToggle.checked;
+      applyStatusClock();
+      setPreference("status_bar_clock", clockToggle.checked);
+    };
+  };
+  //: Drawn once; a later open only sets the ticks (perf audit 1108 P12: 11 listeners and their rows per open).
+  const drawn = box.querySelectorAll(".status-bar-item");
+  if (drawn.length === STATUS_SLOTS.length) {
+    STATUS_SLOTS.forEach((slot, at) => { drawn[at].querySelector("input").checked = !hidden.has(slot.key); });
+    wireClock();
+    return;
+  }
   box.replaceChildren();
   for (const slot of STATUS_SLOTS) {
     const label = document.createElement("label");
@@ -2186,18 +2204,7 @@ function renderStatusBarSettings() {
   // declaration. Appended last, so it reads as the odd one out it actually
   // is (off by default) without visually separating from its siblings.
   if (clockLabel) box.appendChild(clockLabel);
-  // The clock's own opt-in toggle, not one of STATUS_SLOTS above (it is
-  // off by default, so it is rendered and wired separately rather than
-  // joining a loop that assumes every entry starts visible).
-  const clockToggle = $("status-bar-clock-toggle");
-  if (clockToggle) {
-    clockToggle.checked = Boolean(prefsCache?.status_bar_clock);
-    clockToggle.onchange = () => {
-      if (prefsCache) prefsCache.status_bar_clock = clockToggle.checked;
-      applyStatusClock();
-      setPreference("status_bar_clock", clockToggle.checked);
-    };
-  }
+  wireClock();
 }
 
 //: The MCP client snippet (Brief 40), lazy because only the Tools pane draws it (reached

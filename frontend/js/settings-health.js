@@ -226,7 +226,12 @@ async function renderHealthBlock() {
 function renderSamplingRows() {
   const host = $("sampling-rows");
   if (!host || !samplingState) return;
-  host.replaceChildren();
+  //: The same knobs are painted again, not drawn again (perf audit 1108 P12: 24 listeners and a row of nodes per
+  //: open of Settings); each row's `paint` reads `samplingState` live.
+  const names = samplingState.knobs.map((knob) => knob.name).join();
+  const reuse = host.dataset.knobs === names && host.children.length === samplingState.knobs.length;
+  if (!reuse) host.replaceChildren();
+  host.dataset.knobs = names;
 
   $("sampling-model").textContent = samplingState.model
     ? `Showing what ${samplingState.model} recommends for itself.`
@@ -240,7 +245,14 @@ function renderSamplingRows() {
       + "the server's defaults. Only temperature and top-p are sent to an "
       + "OpenAI-compatible server.";
 
-  for (const knob of samplingState.knobs) {
+  for (const [at, knob] of samplingState.knobs.entries()) {
+    if (reuse) {
+      const kept = host.children[at];
+      kept._reset.title = `Use what ${samplingState.model || "the model"} recommends`;
+      kept._reset.setAttribute("aria-label", kept._reset.title);
+      kept._paint();
+      continue;
+    }
     const row = document.createElement("div");
     row.className = "sampling-row";
 
@@ -318,6 +330,8 @@ function renderSamplingRows() {
       reset.disabled = !overridden;
     };
     paint();
+    row._paint = paint;
+    row._reset = reset;
     //: Double-click means "back to the model's", the reset button's meaning.
     slider.addEventListener("rangereset", (event) => {
       event.preventDefault();

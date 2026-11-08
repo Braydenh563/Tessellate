@@ -736,6 +736,9 @@ function enhanceSelect(select) {
   // guessing at a listbox that supports multiple selection.
   if (select.multiple || select.size > 1) return;
   if (select.closest("[data-no-select-enhance]")) return;
+  //: A select in a Settings pane not yet shown waits for the pane (`showSettingsSection`): 48 of them were three
+  //: listeners and an opener each on the first open (perf audit 1108 P4). The native select keeps the value meanwhile.
+  if (select.closest("#settings-modal .settings-section.hidden")) return;
   select.setAttribute(SELECT_ENHANCED, "1");
   const rich = select.classList.contains("feature-model-select");
 
