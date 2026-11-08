@@ -24,9 +24,13 @@ MAX_OPTIONS = 20
 MAX_OPTION = 60
 
 _PICK = re.compile(
-    r"^(?:please |can you |could you |help me )*(?:pick|choose|select|decide)(?: one| something)?(?: of| from| between| among)? (?P<list>\S.*)$",
+    r"^(?:please |can you |could you |help me )*(?:pick|choose|select|decide)(?: (?:one|something))?(?: (?P<mark>of|from|between|among))? (?P<list>\S.*)$",
     re.I,
 )
+#: With no "one of / between / from / among" the list must be written as a list (a comma or "or"), made of short
+#: options that do not open like a sentence ("pick up milk", "choose a title and a color", "select all").
+_NOT_A_LIST_START = re.compile(r"^(?:up|out|off|on|over|down|a|an|the|my|your|our|some|all|this|that|these|those|which|what|how|when|where|why|who|it|them)\b", re.I)
+_MAX_BARE_WORDS = 3
 _SPLIT = re.compile(r", or |, and |, | or | and |/")
 _NOT_OPTIONS = re.compile(r"\b(?:notes?|number|numbers|entries|entry|reminders?|tasks?|todo|todos)\b", re.I)
 
@@ -45,6 +49,12 @@ def _spoken(options: list[str]) -> str:
     return options[0] if len(options) == 1 else ", ".join(options[:-1]) + " and " + options[-1]
 
 
+def _bare_list(text: str, options: list[str]) -> bool:
+    if "," not in text and " or " not in text.lower() or _NOT_A_LIST_START.match(text.strip()):
+        return False
+    return all(len(o.split()) <= _MAX_BARE_WORDS for o in options)
+
+
 def answer(ctx: Ctx) -> Reply | None:
     text = " ".join((ctx.question or "").split())
     if not text or len(text) > 400:
@@ -53,6 +63,8 @@ def answer(ctx: Ctx) -> Reply | None:
     if not found or _NOT_OPTIONS.search(found["list"]):
         return None
     options = options_in(found["list"])
+    if not found["mark"] and not _bare_list(found["list"], options):
+        return None
     if not 2 <= len(options) <= MAX_OPTIONS or any(len(o) > MAX_OPTION for o in options):
         return None
     chosen = options[utilities._salted(ctx.seed, text, 0, len(options) - 1)]

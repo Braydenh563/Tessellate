@@ -55,7 +55,7 @@ def _part(word: str, raw: str) -> Reply:
     by = _DIVISORS[word]
     value = _num(raw)
     name = word if word.endswith("half") else f"a {word.removeprefix('a ')}"
-    return computed(f"{name.removeprefix('a ').capitalize() if word.endswith('half') else name.capitalize()} of {_say(value)} is {_say(value / by)}.", f"{_say(value)} divided by {by}")
+    return computed(f"{name.removeprefix('a ').capitalize() if word.endswith('half') else name.capitalize()} of {_say(value)} is {_say(round(value / by, 2))}.", f"{_say(value)} divided by {by}")
 
 
 def _multiple(word: str, raw: str) -> Reply:

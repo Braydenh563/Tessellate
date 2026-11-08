@@ -59,7 +59,7 @@ _COUNTDOWN = re.compile(
     rf"{_LEAD}(?:how (?:many|much) (?P<u>days|weeks|months|sleeps)(?: (?:are there|is there|do i have|have i got|are left|is left|left|to go|remain|remaining))?|how long|(?P<u2>days|weeks|months|sleeps)(?: left| to go)?)"
     r"\s+(?:until|till|'til|before|to|to go until|left until|left till)\s+(?P<d>.+?)\W*$", re.I)
 _OFFSET_Q = re.compile(rf"{_LEAD}(?:what(?:'s| is| was)|when is|when was) (?P<rest>(?:\d+|a|an|one|two|three|four|five|six|seven|eight|nine|ten|twelve|a couple of|a few) (?:days?|weeks?|fortnights?|months?|years?) .+?)\W*$", re.I)
-_WORDS = re.compile(rf"{_LEAD}(?:how many (?:words|characters|letters|sentences)(?: are| is| long)?(?: there)?|what(?:'s| is) the (?:word|character) count|word count|char(?:acter)? count|how (?:long|big) is(?= (?:this|that|my|the) (?:note|doc(?:ument)?|text|essay|draft|page)\b| [\x22\u201c'])|count (?:the )?words)\s*(?:in|of|for|is|on)?\s*(?P<t>.*)$", re.I)
+_WORDS = re.compile(rf"{_LEAD}(?:how many (?:words|characters|letters|sentences)(?: are| is| long)?(?: there)?|what(?:'s| is) the (?:word|character) count|(?:the )?word count|(?:the )?reading time|char(?:acter)? count|how (?:long|big) is(?= (?:this|that|my|the) (?:note|doc(?:ument)?|text|essay|draft|page)\b| [\x22\u201c'])|count (?:the )?words)\s*(?:in|of|for|is|on)?\s*(?P<t>.*)$", re.I)
 _QUOTED = re.compile(r"[\"“](.+)[\"”]|:\s*(.{12,})$", re.S)
 _DEFINE = re.compile(
     rf"{_LEAD}(?:define\s+(?P<c>.+)|what does (?P<a>.+?) mean|(?:what(?:'s| is| are) (?:the )?(?:meaning|definition) of|meaning of|definition of)\s+(?P<d>.+)|"

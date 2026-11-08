@@ -2,7 +2,7 @@
 
 Generated 2026-11-08 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7884, frontend ids 2652, CSS sections 522, backend routes 649, backend modules 9116, test files 2209, tests 18544, plan headings 1004, app scripts 28, boot scripts 37, script files 263.
+Counts: frontend functions 7884, frontend ids 2652, CSS sections 522, backend routes 649, backend modules 9120, test files 2210, tests 18556, plan headings 1004, app scripts 28, boot scripts 37, script files 263.
 
 ## Frontend functions (7884)
 
@@ -13121,7 +13121,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:164 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (9116)
+## Backend modules (9120)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -13962,30 +13962,34 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `answer` | src/tessellate/ai/composer_calc.py:328 |
 | `glossary` | src/tessellate/ai/composer_calc.py:299 |
 
-### src/tessellate/ai/composer_chance.py (3)
+### src/tessellate/ai/composer_chance.py (4)
 
 | Name | File:line |
 |---|---|
-| `_spoken` | src/tessellate/ai/composer_chance.py:44 |
-| `answer` | src/tessellate/ai/composer_chance.py:48 |
-| `options_in` | src/tessellate/ai/composer_chance.py:34 |
+| `_bare_list` | src/tessellate/ai/composer_chance.py:52 |
+| `_spoken` | src/tessellate/ai/composer_chance.py:48 |
+| `answer` | src/tessellate/ai/composer_chance.py:58 |
+| `options_in` | src/tessellate/ai/composer_chance.py:38 |
 
-### src/tessellate/ai/composer_clock.py (12)
+### src/tessellate/ai/composer_clock.py (15)
 
 | Name | File:line |
 |---|---|
-| `_leap` | src/tessellate/ai/composer_clock.py:97 |
-| `_left` | src/tessellate/ai/composer_clock.py:105 |
-| `_neighbour` | src/tessellate/ai/composer_clock.py:79 |
-| `_quarter` | src/tessellate/ai/composer_clock.py:66 |
-| `_week` | src/tessellate/ai/composer_clock.py:61 |
-| `_week_of` | src/tessellate/ai/composer_clock.py:87 |
-| `_year_day` | src/tessellate/ai/composer_clock.py:71 |
-| `answer` | src/tessellate/ai/composer_clock.py:113 |
-| `clean` | src/tessellate/ai/composer_clock.py:50 |
-| `computed` | src/tessellate/ai/composer_clock.py:46 |
-| `is_leap` | src/tessellate/ai/composer_clock.py:57 |
-| `long_day` | src/tessellate/ai/composer_clock.py:42 |
+| `_leap` | src/tessellate/ai/composer_clock.py:129 |
+| `_left` | src/tessellate/ai/composer_clock.py:137 |
+| `_neighbour` | src/tessellate/ai/composer_clock.py:83 |
+| `_on` | src/tessellate/ai/composer_clock.py:104 |
+| `_quarter` | src/tessellate/ai/composer_clock.py:70 |
+| `_this_year` | src/tessellate/ai/composer_clock.py:91 |
+| `_week` | src/tessellate/ai/composer_clock.py:65 |
+| `_week_of` | src/tessellate/ai/composer_clock.py:120 |
+| `_year_day` | src/tessellate/ai/composer_clock.py:75 |
+| `_year_day_of` | src/tessellate/ai/composer_clock.py:112 |
+| `answer` | src/tessellate/ai/composer_clock.py:145 |
+| `clean` | src/tessellate/ai/composer_clock.py:54 |
+| `computed` | src/tessellate/ai/composer_clock.py:50 |
+| `is_leap` | src/tessellate/ai/composer_clock.py:61 |
+| `long_day` | src/tessellate/ai/composer_clock.py:46 |
 
 ### src/tessellate/ai/composer_compose.py (29)
 
@@ -15358,16 +15362,16 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `_apply` | src/tessellate/ai/composer_text.py:86 |
-| `_body` | src/tessellate/ai/composer_text.py:125 |
-| `_dedupe` | src/tessellate/ai/composer_text.py:78 |
-| `_head` | src/tessellate/ai/composer_text.py:114 |
-| `_items` | src/tessellate/ai/composer_text.py:71 |
-| `_read` | src/tessellate/ai/composer_text.py:136 |
-| `_slug` | src/tessellate/ai/composer_text.py:66 |
-| `_title` | src/tessellate/ai/composer_text.py:56 |
-| `_unquote` | src/tessellate/ai/composer_text.py:105 |
-| `answer` | src/tessellate/ai/composer_text.py:149 |
+| `_apply` | src/tessellate/ai/composer_text.py:89 |
+| `_body` | src/tessellate/ai/composer_text.py:128 |
+| `_dedupe` | src/tessellate/ai/composer_text.py:81 |
+| `_head` | src/tessellate/ai/composer_text.py:117 |
+| `_items` | src/tessellate/ai/composer_text.py:74 |
+| `_read` | src/tessellate/ai/composer_text.py:141 |
+| `_slug` | src/tessellate/ai/composer_text.py:69 |
+| `_title` | src/tessellate/ai/composer_text.py:59 |
+| `_unquote` | src/tessellate/ai/composer_text.py:108 |
+| `answer` | src/tessellate/ai/composer_text.py:154 |
 
 ### src/tessellate/ai/composer_this.py (5)
 
@@ -24611,7 +24615,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (18544)
+## Tests (18556)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -25081,6 +25085,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_composer_short_facts.py | 2 |
 | tests/test_composer_slots_1029.py | 13 |
 | tests/test_composer_slots_1029b.py | 28 |
+| tests/test_composer_smalld_1108.py | 12 |
 | tests/test_composer_social.py | 15 |
 | tests/test_composer_social_1420.py | 14 |
 | tests/test_composer_streak_1029.py | 13 |

@@ -40,6 +40,9 @@ _HEAD = re.compile(
 )
 _FILLER = re.compile(r"^(?:(?:this|that|the|these|those) (?:text|lines|words|list|items|sentence|string) )", re.I)
 _FILLER_ONLY = re.compile(r"^(?:(?:this|that|the|these|those|my) )*(?:text|lines|words|list|items|sentence|string|this|that|the|these|those)$", re.I)
+#: Words that name the notebook's own things: "uppercase my notes about X" is a question about notes, not text to
+#: transform, unless the words are set apart by a colon or quotes.
+_NOTEBOOK = re.compile(r"\b(?:notes?|reminders?|tasks?|todos?|entry|entries|plans?|lists?|journal|diary)\b", re.I)
 _SMALL = frozenset("a an the and but or for nor on at to by of in up as".split())
 _LEADS = {
     "upper": ("In capitals:", "the text in capitals"),
@@ -130,7 +133,9 @@ def _body(op: str, rest: str, cut: int, raw: str) -> str | None:
     if op in _NEEDS_DELIMITER:
         return None
     lead = _FILLER.match(rest)
-    return _unquote(rest[lead.end():] if lead else rest)
+    body = _unquote(rest[lead.end():] if lead else rest)
+    quoted = body != rest.strip()
+    return None if not quoted and _NOTEBOOK.search(body) else body
 
 
 def _read(raw: str) -> tuple[str, str] | None:

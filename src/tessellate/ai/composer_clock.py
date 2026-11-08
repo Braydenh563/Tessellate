@@ -30,6 +30,10 @@ _NEXT_OR_LAST = re.compile(
     r"^(?:(?:what|when) (?:is|was) )?(?:the )?(?P<d>tomorrow|yesterday)(?:'s|s)? date$|^what (?:is|was) the date (?P<e>tomorrow|yesterday)$"
 )
 _WEEK_OF = re.compile(r"^(?:(?:what|which) week(?: number)?(?: of the year)? (?:is|was)|week number (?:of|for)) (?P<d>\S.*)$")
+_YEAR_DAY_OF = re.compile(r"^(?:(?:what|which) day of the year (?:is|was)|what is (?:the )?day number of) (?P<d>\S.*)$")
+#: A bare day and month ("3 march", "march 3rd"): in a week or day-of-year question that is this year, not the next time it comes round.
+_BARE_DATE = re.compile(r"^(?:the )?(?:(?P<d>\d{1,2})(?:st|nd|rd|th)?(?: of)? (?P<m>[a-z]{3,9})|(?P<m2>[a-z]{3,9}) (?P<d2>\d{1,2})(?:st|nd|rd|th)?)$")
+_MONTHS = ("january", "february", "march", "april", "may", "june", "july", "august", "september", "october", "november", "december")
 _LEAP = re.compile(r"^(?:is|was|will) (?P<y>\d{4}|it|this year|next year|last year)(?: be)? a leap year$")
 _LEFT = re.compile(
     r"^(?:how many )?(?P<u>days|weeks)(?: are)? (?:left|remaining|remain|to go) (?:in|of) (?:the|this) year$"
@@ -84,11 +88,39 @@ def _neighbour(which: str, today: date) -> Reply:
     return computed(f"Yesterday was {long_day(day)}.", f"yesterday as {long_day(day)}")
 
 
-def _week_of(phrase: str, today: date) -> Reply | None:
-    got = recognise.resolve(phrase, datetime.combine(today, time(10)))
-    if got is None:
+def _this_year(phrase: str, today: date) -> date | None:
+    """The date of a bare day and month in `today`'s year, else None."""
+    found = _BARE_DATE.match(phrase)
+    if not found:
         return None
-    day = got.date()
+    name = found["m"] or found["m2"]
+    month = next((i for i, m in enumerate(_MONTHS, 1) if len(name) >= 3 and m.startswith(name)), 0)
+    try:
+        return date(today.year, month, int(found["d"] or found["d2"])) if month else None
+    except ValueError:
+        return None
+
+
+def _on(phrase: str, today: date) -> date | None:
+    day = _this_year(phrase, today)
+    if day is not None:
+        return day
+    got = recognise.resolve(phrase, datetime.combine(today, time(10)))
+    return got.date() if got else None
+
+
+def _year_day_of(phrase: str, today: date) -> Reply | None:
+    day = _on(phrase, today)
+    if day is None:
+        return None
+    n = day.timetuple().tm_yday
+    return computed(f"{long_day(day)} {'was' if day < today else 'is'} day {n} of {day.year}.", f"day {n} of {366 if is_leap(day.year) else 365} for {long_day(day)}")
+
+
+def _week_of(phrase: str, today: date) -> Reply | None:
+    day = _on(phrase, today)
+    if day is None:
+        return None
     iso = day.isocalendar()
     return computed(f"{long_day(day)} {'was' if day < today else 'is'} in week {iso.week} of {iso.year}.",
                     f"the ISO week number of {long_day(day)} (weeks start on Monday)")
@@ -127,6 +159,9 @@ def answer(ctx: Ctx) -> Reply | None:
     found = _LEFT.match(text)
     if found:
         return _left(found["u"] or found["v"], today)
+    found = _YEAR_DAY_OF.match(text)
+    if found:
+        return _year_day_of(found["d"], today)
     found = _WEEK_OF.match(text)
     if found:
         return _week_of(found["d"], today)

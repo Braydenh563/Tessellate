@@ -75,7 +75,7 @@ def test_a_20k_text_is_linear(text):
 
 
 WEEK_LEAP_LEFT = [
-    ("what week is 3 march", "Wednesday 3 March 2027 is in week 9 of 2027.\n\n_Read as the ISO week number of Wednesday 3 March 2027 (weeks start on Monday)._"),
+    ("what week is 3 march", "Tuesday 3 March 2026 was in week 10 of 2026.\n\n_Read as the ISO week number of Tuesday 3 March 2026 (weeks start on Monday)._"),
     ("what week number is christmas", "Friday 25 December 2026 is in week 52 of 2026.\n\n_Read as the ISO week number of Friday 25 December 2026 (weeks start on Monday)._"),
     ("week number of 1 january 2027", "Friday 1 January 2027 is in week 53 of 2026.\n\n_Read as the ISO week number of Friday 1 January 2027 (weeks start on Monday)._"),
     ("is 2028 a leap year", "2028 is a leap year: it has 366 days, and February has 29.\n\n_Read as the leap year rule: every fourth year, except centuries not divisible by 400._"),
