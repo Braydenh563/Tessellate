@@ -60,7 +60,8 @@ TAG_NOTES = 20
 
 def read(text: str) -> tuple[str, dict] | None:
     """The starter `text` is, as `(kind, slots)`, or None."""
-    low = re.sub(r"\s+", " ", str(text or "")).strip().lower().rstrip(".?!")
+    flat = re.sub(r"\s+", " ", str(text or "")).strip().replace("’", "'").rstrip(".?!")
+    low = flat.lower()
     if not low or len(low) > 300:
         return None
     for kind, pattern in _READS:
@@ -70,7 +71,10 @@ def read(text: str) -> tuple[str, dict] | None:
             if kind == "changed" and not _since_a_day(slots.pop("when")):
                 continue
             if "words" in slots:
-                slots["words"] = _original_words(str(text), found.span("words"), len(low))
+                #: The same pattern on the typed text, not the folded one: a fold can change
+                #: a text's length ("İ"), so a span from `low` does not carry over.
+                typed = re.compile(pattern.pattern, re.IGNORECASE).search(flat)
+                slots["words"] = (typed or found).group("words").strip()
             return kind, slots
     return None
 
@@ -83,13 +87,6 @@ _A_WEDNESDAY = datetime(2000, 1, 5, 12)
 def _since_a_day(when: str | None) -> bool:
     """No time words, or ones meaning today or since yesterday."""
     return when is None or recognise.days_since(when, _A_WEDNESDAY) in (0, 1)
-
-
-def _original_words(text: str, span: tuple[int, int], folded_length: int) -> str:
-    """The person's own words, case kept, for where the folded match found
-    them (the fold keeps every character's place, so the span carries over)."""
-    flat = re.sub(r"\s+", " ", text).strip()[:folded_length]
-    return flat[span[0]:span[1]].strip()
 
 
 def events(session: Session, kind: str, slots: dict, now: datetime, note_ids: list[int] | None,
@@ -341,7 +338,16 @@ def _link_related(session: Session, **_: object) -> tuple[str, dict | None]:
 
 
 def _today_note(session: Session, now: datetime) -> Entry | None:
-    heading = f"# {now.date().isoformat()}"
+    return _daily_note(session, f"# {now.date().isoformat()}")
+
+
+#: What "add to today's note" says when it must start the note.
+_NEW_DAILY = re.compile(r"(# \d{4}-\d{2}-\d{2})\n\n(.+)", re.DOTALL)
+#: Words that point at a thing, not at what to write.
+_POINTERS = frozenset({"it", "that", "this", "them", "these", "those", "something", "stuff"})
+
+
+def _daily_note(session: Session, heading: str) -> Entry | None:
     rows = session.scalars(
         select(Entry).where(Entry.is_deleted == False, func.substr(Entry.content, 1, len(heading)) == heading)  # noqa: E712
         .order_by(Entry.id)
@@ -349,10 +355,36 @@ def _today_note(session: Session, now: datetime) -> Entry | None:
     return next((e for e in rows if (e.content or "").split("\n", 1)[0].strip() == heading), None)
 
 
+def settle_step(session: Session, name: str, args: dict) -> tuple[str, dict]:
+    """A card that would start today's note, run when the note is there by now
+    (another card confirmed first made it), adds to that note instead: two
+    cards confirmed in turn made two notes headed the same day."""
+    found = _NEW_DAILY.fullmatch(str(args.get("content") or "")) if name == "create_note" else None
+    existing = _daily_note(session, found.group(1)) if found else None
+    if existing is None:
+        return name, args
+    from tessellate.api.edit_conflicts import content_hash  # lazy: `ai` sits below `api`
+
+    text = commands.appended(existing.content or "", found.group(2))
+    return "edit_note", {"note_id": existing.id, "content": text, "base_hash": content_hash(existing.content)}
+
+
+def lock_undo(session: Session, name: str, args: dict, undo: object) -> object:
+    """The undo of a write locked to the text it read (`base_hash`), locked in
+    turn to the text that write left: text typed after the act is not lost to
+    an Undo that puts the whole old text back; it is refused as stale."""
+    if name != "edit_note" or not args.get("base_hash") or not isinstance(undo, dict) or undo.get("tool") != "edit_note":
+        return undo
+    from tessellate.api.edit_conflicts import content_hash  # lazy: `ai` sits below `api`
+
+    entry = session.get(Entry, int(args["note_id"]))
+    return undo if entry is None else {**undo, "arguments": {**undo.get("arguments", {}), "base_hash": content_hash(entry.content)}}
+
+
 def _append_today(session: Session, *, slots: dict, now: datetime, **_: object) -> tuple[str, dict | None]:
     words = commands._cap(str(slots.get("words") or "").strip(" '\"“”"))
-    if not words:
-        return "What should go in today's note? Say it after the colon.", None
+    if not words or words.lower() in _POINTERS:
+        return "What should go in today's note? Say it after the colon, like: add buy milk to today's note.", None
     entry = _today_note(session, now)
     said = commands._clip(words, 80)
     if entry is not None and entry.is_private:

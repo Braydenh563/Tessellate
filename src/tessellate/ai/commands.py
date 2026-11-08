@@ -1539,6 +1539,16 @@ def _plan_untag(session: Session, parsed: dict, note_ids: list[int] | None) -> d
 
 def plan(session: Session, parsed: dict, note_ids: list[int] | None = None) -> dict:
     """What the command would do: {"line", "card"?, "tool"?}. Writes nothing."""
+    if parsed["intent"] == "rename" and parsed.get("alts"):
+        parsed = object_acts.pick_note_split(parsed, lambda about: bool(_notes_about(session, about, False)))
+    planned = _plan_intent(session, parsed, note_ids)
+    if parsed.get("leftover") and planned.get("card"):
+        #: A second request on the end of a rename is said back, not done or dropped.
+        planned = {**planned, "line": f"{planned['line']} Then say “{parsed['leftover']}” and I will plan that next."}
+    return planned
+
+
+def _plan_intent(session: Session, parsed: dict, note_ids: list[int] | None) -> dict:
     intent = parsed["intent"]
     if parsed.get("task") and parsed.get("asked"):
         into_note = _task_into_note(session, parsed, note_ids)
@@ -1882,6 +1892,8 @@ def _run_one(session: Session, name: str, args: dict, tools) -> dict:  # noqa: A
         return _bin_reminder(session, args)
     if name in task_acts.OWN_STEPS:
         return task_acts.run_step(session, name, args)
+    if name in ("rename_tag", "rename_category", "restore_note") and (refusal := object_acts.guard(session, name, args)):
+        return {"error": refusal}
     return tools.execute_tool(session, name, args)
 
 
@@ -1892,7 +1904,7 @@ def run(session: Session, steps: list[dict], skipped: list[dict] | None = None, 
     in the line rather than a stop: a person who confirmed tagging five notes
     gets the four that could be tagged and is told about the fifth.
     """
-    from tessellate.ai import tools
+    from tessellate.ai import starter_acts, tools  # lazy: starter_acts imports this module
 
     done: list[tuple[str, dict, dict]] = []
     failed: list[dict] = list(skipped or [])
@@ -1904,13 +1916,14 @@ def run(session: Session, steps: list[dict], skipped: list[dict] | None = None, 
         if name not in RUNNABLE:
             failed.append({"id": None, "reason": "failed"})
             continue
+        name, args = starter_acts.settle_step(session, name, args)
         result = _run_one(session, name, args, tools)
         if "error" in result:
             reason = _failure_reason(str(result["error"]))
             failed.append({"id": args.get("note_id"), "reason": reason})
             continue
         done.append((name, args, result))
-        step_undo = _step_undo(name, args, result)
+        step_undo = starter_acts.lock_undo(session, name, args, _step_undo(name, args, result))
         if isinstance(step_undo, dict):
             undo.extend(step_undo["steps"] if step_undo.get("tool") == "batch" else [step_undo])
         opened = result.get("open") or opened

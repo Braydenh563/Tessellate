@@ -35,7 +35,8 @@ WAITING = [{"question": "delete the boiler note", "answer": "Move the note “Bo
 @pytest.mark.parametrize("said", ["cancel", "Cancel.", "never mind", "nevermind", "Never mind!", "forget it", "ok forget that", "cancel that please", "scrap it"])
 def test_cancel_words_drop_the_waiting_card(said):
     events = composer_cancel.reply(said, WAITING)
-    assert events and events[1] == {"type": "act", "cancel": True}
+    #: The reply now names the card it drops (review 1108), so the page closes that one, not every open card.
+    assert events and events[1] == {"type": "act", "cancel": True, "label": "Move the note “Boiler” to the bin"}
     assert events[0]["delta"] == "Cancelled: move the note “Boiler” to the bin. Nothing was changed."
 
 
