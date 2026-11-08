@@ -218,7 +218,7 @@
   function over(g) {
     const { S, tile } = g;
     const at = document.elementFromPoint(g.x, g.y);
-    if (!S.hit || !S.fig.querySelector(".md-mermaid-img") || !at || !S.fig.contains(at) || at.closest(".dock, .dgm-zoom")) return clear(S), null;
+    if (!S.hit || !S.fig.querySelector(".md-mermaid-img") || !at || !(S.fig.parentElement || S.fig).contains(at)) return clear(S), null;
     const f = frameOf(S);
     const [vx, vy] = [f.ux(g.x), f.uy(g.y)];
     const name = (key) => diagramModel.kinds.act.name(S, key);
