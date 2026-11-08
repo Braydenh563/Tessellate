@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Composer: a notebook holding only private notes is no longer told 'You have no notes yet', and a day-window miss line is kept on an empty notebook (review of round 3, R3-30).
 - Composer: 'how old is Sara' with no age or birthday says so instead of 'general knowledge' (the denial cites her note); 'did I go to Tokyo' says it found nothing and that the Tokyo trip note only has the flight line (review of round 3, R3-3, R3-21).
 - Composer: 'when does uni start' no longer answers with the Marathon note because it says 'Start is at 9am'; the event verb (start, begin, end, finish) is not a word to find when the subject is named (review of round 3, R3-1).
 - Composer: 'the number to call', 'the number of children' and 'the number of mice' are no longer read as a phone-number ask for the word after them; only 'number for X' beside a person or business is (review of round 3, R3-2).

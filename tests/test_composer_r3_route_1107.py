@@ -119,3 +119,11 @@ def test_r3_3_how_old_a_person_is_says_so_in_the_route_not_general_knowledge(go,
 def test_r3_21_a_trip_note_is_offered_as_all_it_has_not_as_proof(go, chat):
     said = go("did I go to Tokyo", chat)
     assert "does not say it outright" not in said and "only has" in said and "3 April" in said, said
+
+
+def test_r3_30_a_notebook_of_private_notes_is_not_told_it_has_no_notes(client, session):
+    entry = manager.create_entry(session, "My bank PIN is 4471", "Personal")
+    entry.is_private = True
+    session.commit()
+    text = _ask(client, "what is my phone number", use_tools=False)["text"]
+    assert "You have no notes yet" not in text, text

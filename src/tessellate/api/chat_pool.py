@@ -303,10 +303,12 @@ def _with_records(session: Session, question: str, entries: list, locale: str | 
 
 def _or_empty_notebook(session: Session, line: str) -> str:
     """"I couldn't find any saved notes matching that question" reads as if notes exist: with none at all the
-    answer says so, and how to begin (round 3, R3-30)."""
-    from tessellate.ai.tools._common import _visible
-
-    if session.query(func.count(Entry.id)).filter(*_visible()).scalar():
+    answer says so, and how to begin (round 3, R3-30). A private note is a note: it is counted here (and
+    only counted), and a line that says more than the plain miss (a day with nothing in it, with where the
+    notes run) is kept."""
+    if line != librarian.NO_RESULTS_MESSAGE:
+        return line
+    if session.query(func.count(Entry.id)).filter(Entry.is_deleted == False, Entry.is_board == False).scalar():  # noqa: E712
         return line
     return "You have no notes yet. Write one, or type note: and what you want to keep."
 
