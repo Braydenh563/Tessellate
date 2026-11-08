@@ -3621,6 +3621,8 @@ class Engine:
             return bh.activity_frame(bh.ACTIVITIES[self.act or "breathe"], (now - self.act_started) / max(0.01, self.act_len))
         if s == "crouch":
             return "land"
+        if s == "warp" and self.warp is not None and self.warp["kind"] == "edge" and self.gait == "float":
+            return self._stream_frame(now)
         if s == "warp" and self.warp is not None and self.warp["kind"] == "edge":
             return f"walk{int((now - self.warp['t0']) / (0.75 / self.walk_frames)) % self.walk_frames}"
         if s in FRAME_OF:
@@ -3645,11 +3647,21 @@ class Engine:
             return f"card{int(now / CARD_SWAP) % 2}"
         if self.card is not None:
             return f"card{int((now - self.walk_started) / CARD_WALK_SWAP) % 2}"
+        if self.gait == "float":
+            return self._stream_frame(now)
         return f"walk{int(self.travel / (STRIDE * WALK_FRAMES / self.walk_frames * self._scale())) % self.walk_frames}"
+
+    def _stream_frame(self, now: float) -> str:
+        """A floater on the move: its idle cycle (tail and streams flowing, eyes open), never the walk cycle, whose
+        shipped Atlas frames shut the eyes on every other step and bob the body (INBOX 1692: "it still looks like it
+        hobbles along and its eyes blick ferociously ... it floats like a wind spirit")."""
+        if self.idle_frames <= 0:
+            return "stand"
+        return f"idle{int(now * IDLE_FPS + 1e-6) % self.idle_frames}"
 
     def _edge_frame(self, now: float) -> str:
         if self.state == "rise":
-            frame = "hop" if self.gait == "walk" else f"walk{int((now - self.phase_started) / (0.75 / self.walk_frames)) % self.walk_frames}"
+            frame = "hop" if self.gait == "walk" else self._stream_frame(now)
             if self.then == "peek_top":
                 return "hang"
             if self.then == "hang" and self._rise_drawn(now) + self._box(frame)[1] < self.current_monitor().area[1]:

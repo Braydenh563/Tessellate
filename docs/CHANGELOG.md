@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Desk Atlas no longer limps on trips: a floating look moves on its idle cycle (streams flowing, eyes open) instead of the walk frames that shut its eyes every other step (INBOX 1692).
 - Sheet lists keep each row's height: the diagram's Add a block sheet no longer draws a name over the hint above (INBOX 1661).
 - Desk companion: an ordinary hover is a smile, never a poke or a flinch (a poke is a jab back out, a flinch a swipe that passes); the resize ring hangs by the head, not off the tail swirl (INBOX 1692).
 - Served scripts and stylesheets lose their leading indentation (asset_strip.py, STRIP_VERSION 4): newlines kept so stack-trace line numbers hold; template literal text, continued strings, regexes, kept comments, CSS strings and `url(` are untouched. The scripts' gzipped total went from 260,814 to 251,949 bytes (-8,865) and TOTAL_CAP from 260,860 to 251,980 (tests/test_asset_strip.py, tests/test_static_compression.py).
