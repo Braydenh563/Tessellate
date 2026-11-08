@@ -2,9 +2,9 @@
 
 Generated 2026-11-08 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7909, frontend ids 2652, CSS sections 522, backend routes 649, backend modules 9180, test files 2227, tests 18716, plan headings 1004, app scripts 28, boot scripts 37, script files 263.
+Counts: frontend functions 7910, frontend ids 2652, CSS sections 522, backend routes 649, backend modules 9180, test files 2227, tests 18717, plan headings 1004, app scripts 28, boot scripts 37, script files 263.
 
-## Frontend functions (7909)
+## Frontend functions (7910)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -3224,25 +3224,25 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `cleanTitle` | frontend/js/diagram-embed.js:149 |
+| `cleanTitle` | frontend/js/diagram-embed.js:150 |
 | `copyPicture` | frontend/js/diagram-embed.js:48 |
-| `documentName` | frontend/js/diagram-embed.js:156 |
-| `draftForget` | frontend/js/diagram-embed.js:189 |
-| `draftKeep` | frontend/js/diagram-embed.js:179 |
-| `draftsRead` | frontend/js/diagram-embed.js:168 |
-| `draftsWrite` | frontend/js/diagram-embed.js:178 |
+| `documentName` | frontend/js/diagram-embed.js:157 |
+| `draftForget` | frontend/js/diagram-embed.js:190 |
+| `draftKeep` | frontend/js/diagram-embed.js:180 |
+| `draftsRead` | frontend/js/diagram-embed.js:169 |
+| `draftsWrite` | frontend/js/diagram-embed.js:179 |
 | `el` | frontend/js/diagram-embed.js:10 |
-| `freshTitle` | frontend/js/diagram-embed.js:150 |
-| `hashOf` | frontend/js/diagram-embed.js:197 |
-| `link` | frontend/js/diagram-embed.js:116 |
-| `open` | frontend/js/diagram-embed.js:210 |
+| `freshTitle` | frontend/js/diagram-embed.js:151 |
+| `hashOf` | frontend/js/diagram-embed.js:198 |
+| `link` | frontend/js/diagram-embed.js:117 |
+| `open` | frontend/js/diagram-embed.js:211 |
 | `out` | frontend/js/diagram-embed.js:63 |
 | `outDoc` | frontend/js/diagram-embed.js:79 |
 | `pngOf` | frontend/js/diagram-embed.js:28 |
 | `save` | frontend/js/diagram-embed.js:93 |
 | `svgOf` | frontend/js/diagram-embed.js:19 |
 | `swapRange` | frontend/js/diagram-embed.js:87 |
-| `withLook` | frontend/js/diagram-embed.js:127 |
+| `withLook` | frontend/js/diagram-embed.js:128 |
 
 ### frontend/js/diagram-joins.js (9)
 
@@ -3948,7 +3948,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `docMathTokens` | frontend/js/documents-math.js:97 |
 | `docMathTree` | frontend/js/documents-math.js:418 |
 
-### frontend/js/documents-mermaid.js (23)
+### frontend/js/documents-mermaid.js (24)
 
 | Name | File:line |
 |---|---|
@@ -3968,7 +3968,8 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `dgmSubgraph` | frontend/js/documents-mermaid.js:184 |
 | `dgmTint` | frontend/js/documents-mermaid.js:227 |
 | `dgmUnquote` | frontend/js/documents-mermaid.js:76 |
-| `diagramDoor` | frontend/js/documents-mermaid.js:537 |
+| `diagramDoor` | frontend/js/documents-mermaid.js:546 |
+| `diagramMadeKnown` | frontend/js/documents-mermaid.js:539 |
 | `docMermaidBlocks` | frontend/js/documents-mermaid.js:371 |
 | `docMermaidField` | frontend/js/documents-mermaid.js:380 |
 | `docMermaidWhenDrawn` | frontend/js/documents-mermaid.js:361 |
@@ -24725,7 +24726,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (18716)
+## Tests (18717)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -25343,7 +25344,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_diagram_builder.py | 20 |
 | tests/test_diagram_d3.py | 2 |
 | tests/test_diagram_deep_1588.py | 5 |
-| tests/test_diagram_dgmfix2_1108.py | 1 |
+| tests/test_diagram_dgmfix2_1108.py | 2 |
 | tests/test_diagram_dgmleft_1108.py | 3 |
 | tests/test_diagram_document.py | 7 |
 | tests/test_diagram_door_panel.py | 2 |

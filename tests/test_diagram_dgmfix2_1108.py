@@ -20,3 +20,16 @@ def test_the_builder_keeps_ctrl_z_for_itself_wherever_focus_is_inside_it():
     assert "event.stopPropagation()" in BAR.split("function historyKey(")[1].split("\n  }\n")[0]
     assert "diagramModel.bar.historyKey(S, event)" in BUILDER
     assert "diagramModel.bar.historyKey(S, event)" in KINDS
+
+
+MERMAID = (JS / "documents-mermaid.js").read_text(encoding="utf-8")
+EMBED = (JS / "diagram-embed.js").read_text(encoding="utf-8")
+
+
+def test_a_diagram_made_from_insert_is_given_to_the_document_lists_before_its_embed_is_written():
+    """Read view resolves `![[Title]]` through `docs`; without the row it said "Nothing called ... yet" until a reload."""
+    door = MERMAID.split("draft: \"new-embed\"")[1]
+    assert door.index("diagramMadeKnown(made)") < door.index("editorBlock(box")
+    body = MERMAID.split("function diagramMadeKnown(")[1].split("\n  }\n")[0]
+    assert "docs = other(docs)" in body and "renderDocList()" in body
+    assert "diagramModel.madeKnown?.(made)" in EMBED

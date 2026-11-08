@@ -106,6 +106,7 @@
     const made = await apiJson("/documents", { method: "POST", body: JSON.stringify({ title, content: `${text}\n`, file_type: "mmd" }) }).catch(() => (toast("Not saved. Try again.", "info"), null));
     if (!made) return;
     offerCreateUndo(made);
+    diagramModel.madeKnown?.(made);
     const said = `Saved “${made.title || title}” to the Library.`;
     if (offer) toastAction(said, offer.label, () => offer.run(made), { ms: 12000 });
     else toast(said);
