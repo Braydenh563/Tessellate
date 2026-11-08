@@ -45,7 +45,7 @@ def test_every_changed_bar_rule_offsets_by_the_one_token():
     bad = []
     for path in sorted(CSS.glob("*.css")):
         text = path.read_text(encoding="utf-8")
-        for m in re.finditer(r"([^{}]*\.setting-modified::before)\s*\{([^}]*)\}", text):
+        for m in re.finditer(r"(?:(?<=[{}])|\A)([^{}]*\.setting-modified::before)\s*\{([^}]*)\}", text):
             body = m.group(2)
             if "inset-inline-start" in body or re.search(r"(^|[^-])left\s*:", body):
                 if "var(--setting-bar-inset)" not in body or re.search(r"(^|[^-])left\s*:", body):

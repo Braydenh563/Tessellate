@@ -263,6 +263,29 @@ def asks_time(question: str) -> bool:
     return bool(_ASKS_TIME.search(question))
 
 
+#: "What is tomorrow's date", "what is the date yesterday": which neighbouring day is asked about.
+_NEIGHBOUR_DAY = lazy_compile(
+    r"^(?:(?:what|when) (?:is|was) )?(?:the )?(?P<d>tomorrow|yesterday)(?:'s|s)? date$|^what (?:is|was) the date (?P<e>tomorrow|yesterday)$"
+)
+
+
+def neighbour_day(question: str) -> str | None:
+    """"tomorrow" or "yesterday" when the whole question asks for that day's date."""
+    found = _NEIGHBOUR_DAY.match(question)
+    return (found["d"] or found["e"]) if found else None
+
+
+#: Whole-year words and how far each is from this year.
+YEAR_SHIFT = {"it": 0, "this year": 0, "next year": 1, "last year": -1}
+_LEAP_QUESTION = lazy_compile(r"^(?:is|was|will) (?P<y>\d{4}|it|this year|next year|last year)(?: be)? a leap year$")
+
+
+def leap_year_asked(question: str) -> str | None:
+    """The year a leap-year question names: four digits, or a key of YEAR_SHIFT."""
+    found = _LEAP_QUESTION.match(question)
+    return found["y"] if found else None
+
+
 _WD_WORD = "|".join(sorted(_WEEKDAYS, key=len, reverse=True))
 _MO_WORD = "|".join(sorted(_MONTHS, key=len, reverse=True))
 _WD_PREFIX = rf"(?:\b({_WD_WORD})\.?,?\s+)?"

@@ -18,6 +18,7 @@ import re
 import unicodedata
 
 from tessellate.ai.composer_study import Ctx, Reply
+from tessellate.core import paths
 
 #: Longest paste read; more is a document, not a snippet.
 MAX_TEXT = 20000
@@ -82,9 +83,10 @@ def _title_case(text: str) -> str:
     return " ".join(out)
 
 
-def _slug(text: str) -> str:
-    folded = unicodedata.normalize("NFKD", text).encode("ascii", "ignore").decode()
-    return re.sub(r"[^a-z0-9]+", "-", folded.lower()).strip("-")
+def _slug_of(text: str) -> str:
+    """The id form of every line, accents folded; paths.slug is the one slugger."""
+    folded = unicodedata.normalize("NFKD", " ".join(text.split())).encode("ascii", "ignore").decode()
+    return paths.slug(folded, 1 << 20, ascii_only=True, fallback="")
 
 
 def _items(text: str) -> tuple[list[str], str]:
@@ -120,7 +122,7 @@ def _number(text: str) -> str:
 
 
 _APPLY = {
-    "upper": str.upper, "lower": str.lower, "title": lambda t: _title_case(" ".join(t.split())), "slug": _slug, "reverse": lambda t: t[::-1],
+    "upper": str.upper, "lower": str.lower, "title": lambda t: _title_case(" ".join(t.split())), "slug": _slug_of, "reverse": lambda t: t[::-1],
     "dedupe": _dedupe, "join": _join, "split": _split, "sort": _sort, "number": _number,
 }
 

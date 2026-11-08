@@ -180,9 +180,9 @@ function docLivePlugin(CM) {
     }
     toDOM() {
       const dot = document.createElement("span");
-      //: The glyph is the list's style (`docLists`): dots, circles, squares or dashes.
+      //: The mark is the list's style (`docLists`): a dot, circle, square or dash, drawn by
+      //: the theme's `::before` (a typed glyph differs from the icon set in size and baseline).
       dot.className = `cm-md-li-mark cm-md-li-bullet cm-md-li-bullet-${this.style}`;
-      dot.textContent = docLists.glyph(this.style);
       return dot;
     }
   }
@@ -1800,7 +1800,6 @@ globalThis.docLists = (() => {
     return out;
   };
   const BULLET = { disc: "-", circle: "*", square: "+", dash: "-" };
-  const GLYPH = { disc: "•", circle: "◦", square: "▪", dash: "–" };
   const LINE = /^([ \t]*)(?:([-*+])( +)(\[[ xX]\] )?|(\d{1,9})([.)]) +|([a-z]{1,6})([.)]) +)/;
   //: One line as a list item, or null. A letter token is only a candidate here (`classify`).
   const parse = (text) => {
@@ -1902,7 +1901,7 @@ globalThis.docLists = (() => {
     return text.slice(0, cut) + text.slice(cut).replace(LOOK, "$1- ");
   };
   const MENUS = {
-    ul: ["Dot point styles", [["disc", "• Dots", "- item"], ["circle", "◦ Circles", "* item"], ["square", "▪ Squares", "+ item"], ["dash", "– Dashes", "-  item (two spaces)"]]],
+    ul: ["Dot point styles", [["disc", "ph:dot-outline Dots", "- item"], ["circle", "ph:circle Circles", "* item"], ["square", "ph:square Squares", "+ item"], ["dash", "ph:minus Dashes", "-  item (two spaces)"]]],
     ol: ["Numbering styles", [["decimal", "1. Numbers", "1. item"], ["paren", "1) Numbers with a bracket", "1) item"], ["alpha", "a. Letters", "a. item"], ["roman", "i. Roman numerals", "i. item"]]],
   };
   //: The selected lines (or the caret's) restyled through the editor's own box, one undo step.
@@ -1949,6 +1948,6 @@ globalThis.docLists = (() => {
     window.addEventListener("paste", pasted, true);
     mount();
   }
-  return { parse, classify, restyle, enter, pasteFix, marker, mount, apply, glyph: (style) => GLYPH[style] || GLYPH.disc, bulletStyle: (text) => { const it = parse(text); return it?.kind === "bullet" ? it.style : "disc"; } };
+  return { parse, classify, restyle, enter, pasteFix, marker, mount, apply, bulletStyle: (text) => { const it = parse(text); return it?.kind === "bullet" ? it.style : "disc"; } };
 })();
 // list-styles:end

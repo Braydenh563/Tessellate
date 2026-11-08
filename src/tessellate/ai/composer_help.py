@@ -33,11 +33,17 @@ _FEATURE_WORDS = 3
 _FEATURE_FILLER = frozenset({"the", "a", "an", "my", "that", "this", "it", "last", "latest", "please"})
 
 
+#: "and last week?" carries on the question before; it is not asking for the Timeline tab.
+_CARRIES_ON = re.compile(r"^\s*(?:and|but|or|also|then)\b", re.I)
+
+
 def _may_name_a_tool(question: str, words: list[str]) -> bool:
     """Short enough, and not a follow-on or a length control ("tell me more",
-    "shorter"), which is about the answer before, never a tool: the Follow-up
-    trail's help line says "tell me more" in its own words."""
-    return bool(words) and len(words) <= _FEATURE_WORDS and not (_MORE.match(question) or length_wish(question))
+    "shorter", "and last week?"), which is about the answer before, never a
+    tool: the Follow-up trail's help line says "tell me more" in its own words."""
+    return bool(words) and len(words) <= _FEATURE_WORDS and not (
+        _MORE.match(question) or length_wish(question) or _CARRIES_ON.match(question)
+    )
 
 
 def _feature_help(question: str, absent: list[str]) -> tuple[str, str] | None:

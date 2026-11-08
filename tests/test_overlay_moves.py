@@ -156,6 +156,7 @@ def test_a_floater_rests_a_hand_above_the_floor_not_a_figure_up() -> None:
 def test_a_floater_drifts_across_the_width_and_a_band_above_its_rest_line_not_the_whole_height() -> None:
     e = make(gait="float", seed=3, home=(1760, FLOOR))  # home at an edge: one in the middle is moved out (INBOX 1670)
     e.big_ready = math.inf
+    e.presence = False  # a presence spell (INBOX 1692) goes to a spot across the screen on purpose; this test is the strolls
     ys, xs, frames, t = [], [], set(), 0.0
     for _ in range(12000):  # 40 minutes at 200 ms (INBOX 1670: it sits for minutes between strolls)
         t += 0.2
