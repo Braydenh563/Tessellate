@@ -2,7 +2,7 @@
 
 Generated 2026-11-08 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7882, frontend ids 2644, CSS sections 522, backend routes 649, backend modules 9046, test files 2176, tests 18351, plan headings 1005, app scripts 28, boot scripts 37, script files 262.
+Counts: frontend functions 7882, frontend ids 2644, CSS sections 522, backend routes 649, backend modules 9046, test files 2177, tests 18353, plan headings 1005, app scripts 28, boot scripts 37, script files 262.
 
 ## Frontend functions (7882)
 
@@ -9315,7 +9315,7 @@ Every `id="..."` in `frontend/index.html`, sorted by id.
 | `ask-chart` | frontend/index.html:2377 |
 | `ask-clear` | frontend/index.html:2232 |
 | `ask-feature-model` | frontend/index.html:2167 |
-| `ask-followups` | frontend/index.html:2400 |
+| `ask-followups` | frontend/index.html:2401 |
 | `ask-history-badge` | frontend/index.html:2173 |
 | `ask-history-clear` | frontend/index.html:2292 |
 | `ask-history-close` | frontend/index.html:2298 |
@@ -9341,7 +9341,7 @@ Every `id="..."` in `frontend/index.html`, sorted by id.
 | `ask-time-travel` | frontend/index.html:2257 |
 | `ask-trail` | frontend/index.html:2371 |
 | `ask-use-ai` | frontend/index.html:2239 |
-| `ask-why` | frontend/index.html:2401 |
+| `ask-why` | frontend/index.html:2400 |
 | `assistant-avatar` | frontend/index.html:12227 |
 | `assistant-avatar-row` | frontend/index.html:12222 |
 | `atlas-host` | frontend/index.html:558 |
@@ -12385,7 +12385,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/08-consistency.css | 10897 |
 | frontend/css/09-editor.css | 1108 |
 | frontend/css/10-responsive.css | 2714 |
-| frontend/css/answer-foot-lazy.css | 113 |
+| frontend/css/answer-foot-lazy.css | 138 |
 | frontend/css/appearance-panel-lazy.css | 323 |
 | frontend/css/appearance-panel-own-lazy.css | 86 |
 | frontend/css/ask-compose-lazy.css | 301 |
@@ -24491,7 +24491,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (18351)
+## Tests (18353)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -24539,6 +24539,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_all_spaces_indexes.py | 2 |
 | tests/test_announce_saved_note_z7.py | 4 |
 | tests/test_answer_foot_b2.py | 12 |
+| tests/test_answer_foot_disclosure_1696.py | 2 |
 | tests/test_answer_never_folded.py | 16 |
 | tests/test_answer_pictures_502.py | 11 |
 | tests/test_answer_support.py | 10 |
