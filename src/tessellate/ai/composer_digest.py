@@ -4085,9 +4085,11 @@ _MONEY_ASK = re.compile(r"\bhow much\b|\b(?:costs?|price[sd]?|pay|paid|charge[sd
 
 #: "how long do I bake it": the lead is the sentence that holds a length of time (audit 1031 C16).
 _HOW_LONG = re.compile(r"^\s*how long\s+(?:do|does|did|will|would|should|can|could|is|are|was|were)\b", re.I)
+#: "2h50" and "1h 30m" are a length of time too: the journey time of a timetable line.
 _DURATION = re.compile(
     r"\b(?:\d+(?:[.,]\d+)?\s*(?:-\s*\d+\s*)?|(?:one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|a few|several)\s+)"
-    r"(?:seconds?|secs?|minutes?|mins?|hours?|hrs?|nights?|days?|weeks?|months?|years?)\b", re.I)
+    r"(?:seconds?|secs?|minutes?|mins?|hours?|hrs?|nights?|days?|weeks?|months?|years?)\b"
+    r"|\b\d{1,2}\s?h(?:\s?\d{1,2}\s?(?:m(?:in)?)?)?\b", re.I)
 
 
 def _single_cue(kind: str, asked: str) -> re.Pattern | None:
