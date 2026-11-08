@@ -161,7 +161,11 @@ function syncChatJumpLatest() {
     const spare = pane.scrollHeight - pane.clientHeight; // read before the strip changes the pane's height
     if (!had) transcript.classList.add("has-jump-gap");
     const gap = parseFloat(getComputedStyle(transcript).paddingBottom) || 0;
-    const needed = hasMessages && spare + (had ? 0 : gap) > SCROLL_STICK_SLACK;
+    //: **`spare > 0` first (INBOX 1696, "spasm up and down really fast").** A pane never reports a scrollHeight
+    //: under its clientHeight, so a thread that fits reads a spare of 0 and `0 + gap` beat the slack on every
+    //: other call: the strip went on, off, on, off at each stream delta, resizing the pane by 45px each time
+    //: (69 reversals in 3.5s at 4x). A strip is only for a thread that really overflows.
+    const needed = hasMessages && spare > 0 && spare + (had ? 0 : gap) > SCROLL_STICK_SLACK;
     if (!needed) transcript.classList.remove("has-jump-gap");
     //: A pane that was following the end keeps following it through the resize.
     if (needed !== had && pane.dataset.stuck !== "0") pane.scrollTop = pane.scrollHeight;

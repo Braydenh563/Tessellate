@@ -6,6 +6,11 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Chat: "show me something old" brings back one older note with its opening line (CHAT_PLAN A24).
+- Chat: "where did I write X" names the note, its heading and category, and when it was last edited (CHAT_PLAN A22).
+- Chat: spelled numbers in a question are read as numbers ("the last two notes"), leaving quotes and names alone (CHAT_PLAN U17).
+- Chat: a what-if question with no model answers from what your notes say about the subject and says they do not say what would happen (CHAT_PLAN U16).
+- Chat: a new or short chat no longer bounces up and down while an answer streams (the jump strip toggled on every update, INBOX 1696 m).
 - Documents: four bullet and four number styles kept in the list marker, style menus on List and Numbered, and pasted look-alike bullets become list items (INBOX 1696 cc).
 - Companion: a pull on the drawing outside its handle grabs it instead of selecting page text (INBOX 1696 bb).
 - Chat: with web search on, a no-model question that fits your notes and the web about equally asks Your notes or the web? with two buttons (INBOX 1696 s).

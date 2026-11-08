@@ -44,7 +44,7 @@ from functools import lru_cache, wraps
 from pathlib import Path
 
 from tessellate.ai import composer, composer_doings, composer_done, composer_frame, composer_threads, composer_lists, composer_money, composer_slots, composer_sum, composer_tables, filed_name, glossary, question_noise, realise, verdicts
-from tessellate.ai import composer_answer, composer_brief, composer_nth, composer_oneword, composer_property
+from tessellate.ai import composer_answer, composer_brief, composer_nth, composer_oneword, composer_property, composer_small
 from tessellate.ai import composer_ask
 from tessellate.ai import composer_read
 from tessellate.ai import composer_select
@@ -4751,6 +4751,9 @@ def answer(
     today = today or composer.user_today()
     if one := composer_oneword.named(question, notes):
         return _one_word_result(one)
+    #: "Where did I write about squats" is a sentence naming the note (A22), not a digest of what it says.
+    if located := composer_small.where_written(question, notes, today=today):
+        return located
     #: "wen is the exam" is "when is the exam": the asking words put right, the notes' own words never changed (R3-17).
     question = question_noise.slips_only(question, known=composer._note_words(notes))  # noqa: SLF001
     asked = composer_ask.what_is(clean(question))

@@ -1200,8 +1200,8 @@ how it was read. Time facts below were measured with `entry/timewords.find` and
 | U13 | Lists | `list` shape, `_list_block`, checklist done counts | A list spread across notes; "the third item"; "how many left" | Merge list items from notes in the window, number them, count done and open as a measured line | S | 2 |
 | U14 | Yes or no | `yesno`, "your notes say", contrary sentence check | Negated and hypothetical facts are not told apart from asserted ones | Fact `mode` (asserted, negated, hypothetical, conditional, question, quoted) decides which sentences may answer | M | 1 |
 | U15 | Why and how | `explain` shape, `because` cue in `_cue` | Why and how are one shape; steps not kept in order | Why: sentences with because, so that, since, due to, reason, plus the sentence before; how: numbered or ordered items and imperatives in note order | S | 2 |
-| U16 | Hypotheticals | None: "what if I move to Lisbon" is shape `translate` (finding 2) | A what-if has no fact to answer from | Kind `hypothetical`: say what the notes hold about the premise's subject (plans, preferences, costs), then "Your notes do not say what would happen." Never a consequence | S | 2 |
-| U17 | Spelled numbers and ordinals | `timewords` and `reminder_parser` read "two", "half an hour"; `_ORDINAL` reads "second" | Not applied to whole questions ("the last 2 weeks", "twenty notes") | `normalise()` turns number words to digits ahead of every rule, in quoted-free text only | S | 2 |
+| U16 | Hypotheticals | Built. Moved to HISTORY.md ("Moved from the plans, 2026-11-08 (CHAT_PLAN U16)"). | | | | |
+| U17 | Spelled numbers and ordinals | Built. Moved to HISTORY.md ("Moved from the plans, 2026-11-08 (CHAT_PLAN U17)"). | | | | |
 | U18 | Out-of-domain | `_nothing` | No class, no eval group (Snips None) | A measured out-of-domain group in the noisy set: weather, scores, trivia; the plain no-answer, the closest note if any, a capability line with one tappable example | S | 2 and 10 |
 
 #### Answering
@@ -1229,9 +1229,9 @@ how it was read. Time facts below were measured with `entry/timewords.find` and
 | A19 | Definitions | `help_chat` topics (121) define app terms | "X is" from the notes; a glossary for app words | Fact kind `definition`: first sentence matching `X is a|an|the|means|refers to`; app terms answered from help topics through the `help` register | S | 1 and 8 |
 | A20 | Summaries | `summarize_notes` tool, `brief()`, `meeting_summary.py`, `week_review`; the Gemini `summary` shape crashes (finding 3) | One entry point from Chat; clusters with a centrality lead | One lead sentence per cluster by `centrality`, by note and by day, at most N sentences, counts stated | M | 2 and 3 |
 | A21 | Last time, how long since, how often | `when.days_since` (phrase to days) | Not asked of the notes | Event facts: latest date for a verb and object, days since, count per window; measured, dates shown | M | 1 and 6 |
-| A22 | Where did I write X | Search results show the note, category, space | Not said in a sentence | "It is in 'Gym plan', in Fitness, last edited 3 days ago." from the row's own fields | S | 2 |
+| A22 | Where did I write X | Built. Moved to HISTORY.md ("Moved from the plans, 2026-11-08 (CHAT_PLAN A22)"). | | | | |
 | A23 | Who or what is X (entity card) | Entities pass (model), `EntityMention` | None without a model | Entity fact aggregate: first and last mention, note count, what is said about them (top 2 sentences), related entities by co-occurrence | M | 1 and 6 |
-| A24 | A random note, an old note | `resurface.for_day`, `ranked` | Not from a question | "show me something old" picks from `resurface.ranked`, seeded by the session salt | S | 2 |
+| A24 | A random note, an old note | Built. Moved to HISTORY.md ("Moved from the plans, 2026-11-08 (CHAT_PLAN A24)"). | | | | |
 | A25 | No answer | `_nothing`, `closest_a`, `_did_you_mean` | Capability line; a suggested question the person could answer with a note (decision 24) | Closest note quoted, one suggestion built from the question's subject, capability line when the question is out of domain | S | 2 |
 
 #### Acting

@@ -14,7 +14,7 @@ import re
 from dataclasses import dataclass, field
 from datetime import date
 
-from tessellate.ai import question_noise, recognise as rec, utilities, when as when_words
+from tessellate.ai import composer_numbers, question_noise, recognise as rec, utilities, when as when_words
 from tessellate.ai.composer_ask import _ASKING_WORDS, _holds, _stem, _words, classify, rephrase, subject_terms, user_today
 from tessellate.ai.composer_body import length_wish
 
@@ -107,7 +107,7 @@ PLAN_CHARS = 2000
 
 
 def _planned_text(question: str | None) -> str:
-    return (question or "")[:PLAN_CHARS]
+    return composer_numbers.normalise((question or "")[:PLAN_CHARS])
 
 
 def _plan_constraints(question: str, terms: list[str]) -> tuple[dict, list[str], str | None]:
