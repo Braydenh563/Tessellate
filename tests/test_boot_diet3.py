@@ -82,7 +82,10 @@ class _Count(HTMLParser):
 #: recipe (11: a details, summary, help wrap and slot each; the pane 2,747 to 2,427 px).
 #: To 7,923 on 2026-11-02: a phone's Documents kebab gains About these controls
 #: (a button and its icon), since the dock's ? is hidden below 600 (a29h leftover).
-BOOT_ELEMENTS_CAP = 7_923
+#: To 7,945 on 2026-11-08: smalla-1108's Appearance rows, all inside the inert
+#: Settings body template (22: Export and Import look with its file input, Mix
+#: palette, accent and density, Line spacing and Line width with their options).
+BOOT_ELEMENTS_CAP = 7_945
 
 
 def test_the_boot_document_does_not_grow():
