@@ -118,15 +118,13 @@
     more.firstChild.setAttribute("aria-hidden", "true");
     more.addEventListener("click", () => {
       const r = more.getBoundingClientRect();
-      //: Each row wears its tile's glyph, in the order the rows were given (the menu has no icon field for a drawn shape).
-      //: The menu may be moved out of its host to escape a clipping ancestor, so the element itself is held.
-      const menu = openMenuAtPoint(specs.map((t) => ({ label: t.name, group: t.group, title: t.hint, run: t.press })), "Add to the diagram", r.right, r.bottom, more);
-      menu?.querySelectorAll(":scope > .menu-item").forEach((row, i) => {
-        if (!specs[i]) return;
+      //: Each row wears its tile's glyph through the item's own `lead` (the menu has no icon field for a drawn shape), so a menu that regroups or reorders its rows cannot put a glyph on another row.
+      const lead = (t) => () => {
         const slot = make("span", "dgm-menu-glyph");
-        slot.append(specs[i].glyph.cloneNode(true));
-        row.prepend(slot);
-      });
+        slot.append(t.glyph.cloneNode(true));
+        return slot;
+      };
+      openMenuAtPoint(specs.map((t) => ({ label: t.name, group: t.group, title: t.hint, run: t.press, lead: lead(t) })), "Add to the diagram", r.right, r.bottom, more);
     });
     bar.append(more);
     stage.append(bar);

@@ -6,6 +6,8 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Diagram builder: the shelf's more menu keeps each block's glyph on its own row even if the menu regroups its rows (the glyph rides on the menu item, not on the row's position).
+- Diagram Guide: a sequence diagram's keyboard way to insert at a gap is named (Insert in the blocks list adds a step under the selected one), since the + at a gap is pointer-only.
 - Extras downloads: a 429 or 503 that says Retry-After is waited out (up to 30 s, else the usual 2 s and 5 s), and Stop during that wait ends the install without another request.
 - Chat: restoring a note from the bin by number or by words now finds notes binned long ago, not only the 500 most recently binned.
 - Composer: a spend on a thing this week (groceries) totals that thing only, not the note's fuel too, and the overview summary never repeats a note's own "today".
