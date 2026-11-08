@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Composer: with no notes at all, a question answers 'You have no notes yet' and how to begin, not 'I couldn't find any saved notes matching that question' (R3-30).
 - Composer: 'She likes...' from a note titled Mum reads 'Mum likes...'; the search still finds 'Dr Patel' and 'uni' as typed while slips like 'abuot' are put right (R3-25, R3-17).
 - Composer: two notes titled for different things (Tokyo trip, Lisbon trip) are no contradiction, and a note's reading time is 'under a minute' or 'a 4-minute read' in a sentence (R3-24, R3-37).
 - Composer: 'Your newest note' for one note, the stats line says 'from today' like chat, and 'the first note I wrote about Sara' no longer searches for the word first (R3-16, R3-4).

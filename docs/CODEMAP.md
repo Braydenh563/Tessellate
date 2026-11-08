@@ -2,7 +2,7 @@
 
 Generated 2026-11-08 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7861, frontend ids 2644, CSS sections 522, backend routes 649, backend modules 9014, test files 2157, tests 18205, plan headings 1004, app scripts 28, boot scripts 37, script files 261.
+Counts: frontend functions 7861, frontend ids 2644, CSS sections 522, backend routes 649, backend modules 9015, test files 2157, tests 18207, plan headings 1004, app scripts 28, boot scripts 37, script files 261.
 
 ## Frontend functions (7861)
 
@@ -13080,7 +13080,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:164 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (9014)
+## Backend modules (9015)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -18663,43 +18663,44 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `slot_reply` | src/tessellate/api/chat_extra.py:163 |
 | `welcome_line` | src/tessellate/api/chat_extra.py:69 |
 
-### src/tessellate/api/chat_pool.py (33)
+### src/tessellate/api/chat_pool.py (34)
 
 | Name | File:line |
 |---|---|
 | `_Found` | src/tessellate/api/chat_pool.py:181 |
 | `_NoteCtx` | src/tessellate/api/chat_pool.py:204 |
-| `_board_rows` | src/tessellate/api/chat_pool.py:537 |
+| `_board_rows` | src/tessellate/api/chat_pool.py:547 |
 | `_by_synonym` | src/tessellate/api/chat_pool.py:133 |
-| `_chat_payload` | src/tessellate/api/chat_pool.py:446 |
-| `_composer_reads` | src/tessellate/api/chat_pool.py:366 |
-| `_document_row` | src/tessellate/api/chat_pool.py:404 |
+| `_chat_payload` | src/tessellate/api/chat_pool.py:456 |
+| `_composer_reads` | src/tessellate/api/chat_pool.py:376 |
+| `_document_row` | src/tessellate/api/chat_pool.py:414 |
 | `_filed_under` | src/tessellate/api/chat_pool.py:144 |
-| `_frame_matches` | src/tessellate/api/chat_pool.py:481 |
+| `_frame_matches` | src/tessellate/api/chat_pool.py:491 |
 | `_glossary` | src/tessellate/api/chat_pool.py:46 |
-| `_holding` | src/tessellate/api/chat_pool.py:552 |
-| `_holds_every` | src/tessellate/api/chat_pool.py:531 |
-| `_holds_read_text` | src/tessellate/api/chat_pool.py:378 |
+| `_holding` | src/tessellate/api/chat_pool.py:562 |
+| `_holds_every` | src/tessellate/api/chat_pool.py:541 |
+| `_holds_read_text` | src/tessellate/api/chat_pool.py:388 |
 | `_in_window` | src/tessellate/api/chat_pool.py:219 |
 | `_keep_window` | src/tessellate/api/chat_pool.py:235 |
-| `_matched_rows` | src/tessellate/api/chat_pool.py:567 |
-| `_named_rows` | src/tessellate/api/chat_pool.py:514 |
-| `_note_content` | src/tessellate/api/chat_pool.py:382 |
+| `_matched_rows` | src/tessellate/api/chat_pool.py:577 |
+| `_named_rows` | src/tessellate/api/chat_pool.py:524 |
+| `_note_content` | src/tessellate/api/chat_pool.py:392 |
+| `_or_empty_notebook` | src/tessellate/api/chat_pool.py:304 |
 | `_picture_notes` | src/tessellate/api/chat_pool.py:164 |
-| `_raw_results` | src/tessellate/api/chat_pool.py:433 |
-| `_records_beside` | src/tessellate/api/chat_pool.py:322 |
-| `_scan_notes` | src/tessellate/api/chat_pool.py:351 |
-| `_slips_put_right` | src/tessellate/api/chat_pool.py:304 |
-| `_stats_out` | src/tessellate/api/chat_pool.py:424 |
+| `_raw_results` | src/tessellate/api/chat_pool.py:443 |
+| `_records_beside` | src/tessellate/api/chat_pool.py:332 |
+| `_scan_notes` | src/tessellate/api/chat_pool.py:361 |
+| `_slips_put_right` | src/tessellate/api/chat_pool.py:314 |
+| `_stats_out` | src/tessellate/api/chat_pool.py:434 |
 | `_titled_entry` | src/tessellate/api/chat_pool.py:272 |
-| `_whole_pool` | src/tessellate/api/chat_pool.py:333 |
+| `_whole_pool` | src/tessellate/api/chat_pool.py:343 |
 | `_widened` | src/tessellate/api/chat_pool.py:57 |
 | `_with_each_side` | src/tessellate/api/chat_pool.py:249 |
-| `_with_holders` | src/tessellate/api/chat_pool.py:310 |
+| `_with_holders` | src/tessellate/api/chat_pool.py:320 |
 | `_with_neighbours` | src/tessellate/api/chat_pool.py:96 |
 | `_with_open` | src/tessellate/api/chat_pool.py:112 |
 | `_with_records` | src/tessellate/api/chat_pool.py:285 |
-| `_with_sources` | src/tessellate/api/chat_pool.py:587 |
+| `_with_sources` | src/tessellate/api/chat_pool.py:597 |
 
 ### src/tessellate/api/chat_recent.py (5)
 
@@ -24428,7 +24429,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (18205)
+## Tests (18207)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -24868,7 +24869,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_composer_r2_review_1107.py | 6 |
 | tests/test_composer_r2_route_1107.py | 6 |
 | tests/test_composer_r3_1107.py | 33 |
-| tests/test_composer_r3_route_1107.py | 5 |
+| tests/test_composer_r3_route_1107.py | 7 |
 | tests/test_composer_ranker_1029.py | 12 |
 | tests/test_composer_redos_1026.py | 4 |
 | tests/test_composer_regex_linear_1029.py | 3 |

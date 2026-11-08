@@ -71,3 +71,16 @@ def test_r3_17_a_misspelt_place_is_searched_as_the_place(go, chat):
 def test_r3_17_a_misspelt_when_is_read_as_when(go, chat):
     said = go("wen is the exam", chat)
     assert "8 December" in said and "You have two notes" not in said, said
+
+
+# --- R3-30: an empty notebook says so -----------------------------------------------------------
+
+@pytest.mark.parametrize("question", ["what do I know about Lisbon", "what is my phone number", "who is Sara"])
+def test_r3_30_an_empty_notebook_says_it_has_no_notes(client, question):
+    text = _ask(client, question, use_tools=False)["text"]
+    assert text.startswith("You have no notes yet."), text
+    assert "couldn't find" not in text, text
+
+
+def test_r3_30_a_notebook_with_notes_keeps_the_plain_miss(go):  # noqa: D103
+    assert "You have no notes yet" not in go("what do I know about Reykjavik")

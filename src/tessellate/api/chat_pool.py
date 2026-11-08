@@ -301,6 +301,16 @@ def _with_records(session: Session, question: str, entries: list, locale: str | 
     return merged
 
 
+def _or_empty_notebook(session: Session, line: str) -> str:
+    """"I couldn't find any saved notes matching that question" reads as if notes exist: with none at all the
+    answer says so, and how to begin (round 3, R3-30)."""
+    from tessellate.ai.tools._common import _visible
+
+    if session.query(func.count(Entry.id)).filter(*_visible()).scalar():
+        return line
+    return "You have no notes yet. Write one, or type note: and what you want to keep."
+
+
 def _slips_put_right(question: str) -> str:
     """The question searched with its slips put right ("wat do i know abuot tokio"), which the search would
     otherwise match on "wat" and "abuot" (round 3, R3-17)."""
