@@ -2,9 +2,9 @@
 
 Generated 2026-11-08 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7870, frontend ids 2644, CSS sections 522, backend routes 649, backend modules 9027, test files 2173, tests 18311, plan headings 1004, app scripts 28, boot scripts 37, script files 261.
+Counts: frontend functions 7881, frontend ids 2644, CSS sections 522, backend routes 649, backend modules 9027, test files 2173, tests 18314, plan headings 1004, app scripts 28, boot scripts 37, script files 262.
 
-## Frontend functions (7870)
+## Frontend functions (7881)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -3414,6 +3414,22 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `make` | frontend/js/diagram-pointer.js:61 |
 | `mark` | frontend/js/diagram-pointer.js:36 |
 | `word` | frontend/js/diagram-pointer.js:12 |
+
+### frontend/js/diagram-seq-canvas.js (11)
+
+| Name | File:line |
+|---|---|
+| `attr` | frontend/js/diagram-seq-canvas.js:10 |
+| `boxes` | frontend/js/diagram-seq-canvas.js:113 |
+| `frames` | frontend/js/diagram-seq-canvas.js:60 |
+| `inner` | frontend/js/diagram-seq-canvas.js:18 |
+| `messages` | frontend/js/diagram-seq-canvas.js:33 |
+| `notes` | frontend/js/diagram-seq-canvas.js:50 |
+| `num` | frontend/js/diagram-seq-canvas.js:9 |
+| `order` | frontend/js/diagram-seq-canvas.js:88 |
+| `participants` | frontend/js/diagram-seq-canvas.js:20 |
+| `parts` | frontend/js/diagram-seq-canvas.js:75 |
+| `wire` | frontend/js/diagram-seq-canvas.js:122 |
 
 ### frontend/js/diagram-split.js (3)
 
@@ -15962,8 +15978,8 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `_act_topic` | src/tessellate/ai/help_topics_more.py:3451 |
-| `_slash_commands_topic` | src/tessellate/ai/help_topics_more.py:3583 |
+| `_act_topic` | src/tessellate/ai/help_topics_more.py:3452 |
+| `_slash_commands_topic` | src/tessellate/ai/help_topics_more.py:3584 |
 
 ### src/tessellate/ai/help_words.py (2)
 
@@ -24450,7 +24466,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (18311)
+## Tests (18314)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -25041,7 +25057,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_diagram_1596.py | 4 |
 | tests/test_diagram_1661a.py | 6 |
 | tests/test_diagram_1661b.py | 9 |
-| tests/test_diagram_1661klm.py | 10 |
+| tests/test_diagram_1661klm.py | 13 |
 | tests/test_diagram_1679m.py | 14 |
 | tests/test_diagram_blind_fixes.py | 6 |
 | tests/test_diagram_builder.py | 20 |

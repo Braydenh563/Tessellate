@@ -116,3 +116,88 @@ def test_a_kinds_list_on_a_phone_is_the_sheet_once_it_has_a_block():
     touch = _js("diagram-touch.js")
     assert "(S.steps || S.k) && S.pane && actions" in touch
     assert 'S.root.classList.toggle("dgm-listless", !A.blank(S.m))' in _js("diagram-kinds.js")
+
+
+# --- S4 (l): a sequence diagram edited on its picture
+
+#: Cut from Mermaid's own drawing of the login template (the tags it writes; styles and text left out).
+LOGIN_SVG = (
+    '<svg viewBox="-50 -10 650 623">'
+    '<line id="actor2" x1="475" y1="76" x2="475" y2="496" class="actor-line 200" data-et="life-line" data-id="Server"/>'
+    '<g id="root-2" data-et="participant" data-type="participant" data-id="Server"><rect x="400" y="0" width="150" height="76" class="actor actor-top"/></g>'
+    '<line id="actor1" x1="275" y1="76" x2="275" y2="496" class="actor-line 200" data-et="life-line" data-id="App"/>'
+    '<g id="root-1" data-et="participant" data-type="participant" data-id="App"><rect x="200" y="0" width="150" height="76" class="actor actor-top"/></g>'
+    '<line id="actor0" x1="75" y1="76" x2="75" y2="496" class="actor-line 200" data-et="life-line" data-id="User"/>'
+    '<g data-et="note" data-id="i7"><rect x="50" y="426" width="250" height="40" class="note"/></g>'
+    '<g data-et="control-structure" data-id="i8"><line x1="40" y1="186" x2="486" y2="186" class="loopLine"/>'
+    '<line x1="486" y1="186" x2="486" y2="476" class="loopLine"/><line x1="40" y1="476" x2="486" y2="476" class="loopLine"/>'
+    '<line x1="40" y1="186" x2="40" y2="476" class="loopLine"/><line x1="40" y1="336" x2="486" y2="336" class="loopLine" /></g>'
+    '<g class="actor-man actor-top" name="User" data-et="participant" data-type="actor" data-id="User"><line x1="75" y1="20" x2="75" y2="33"/><circle cx="75" cy="10" r="10"/></g>'
+    '<line x1="76" y1="126" x2="268" y2="126" class="messageLine0" data-et="message" data-id="i0" data-from="User" data-to="App"/>'
+    '<line x1="276" y1="176" x2="468" y2="176" class="messageLine0" data-et="message" data-id="i1" data-from="App" data-to="Server"/>'
+    '<line x1="474" y1="271" x2="282" y2="271" class="messageLine1" data-et="message" data-id="i3" data-from="Server" data-to="App"/>'
+    '<line x1="274" y1="321" x2="82" y2="321" class="messageLine1" data-et="message" data-id="i4" data-from="App" data-to="User"/>'
+    '<line x1="474" y1="416" x2="282" y2="416" class="messageLine1" data-et="message" data-id="i6" data-from="Server" data-to="App"/>'
+    "</svg>"
+)
+LOGIN = (
+    "sequenceDiagram\n  actor User\n  participant App\n  participant Server\n  User->>App: Enter password\n  App->>Server: Check login\n"
+    "  alt Correct\n    Server-->>App: Token\n    App-->>User: Welcome\n  else Wrong\n    Server-->>App: Refused\n"
+    "    Note over User,App: Try again\n  end\n"
+)
+
+
+def _seq(expr: str, **values):
+    run = (
+        "const vm=require('vm');const ctx={diagramModel:{decode:(t)=>t,statements:(t)=>t.split('\\n').map((l)=>l.trim()).filter(Boolean),"
+        "front:(t)=>({front:[],rest:t})}};vm.createContext(ctx);"
+        f"vm.runInContext(require('fs').readFileSync({json.dumps(str(JS / 'diagram-kinds.js'))},'utf8'),ctx);"
+        f"vm.runInContext(require('fs').readFileSync({json.dumps(str(JS / 'diagram-seq-canvas.js'))},'utf8'),ctx);"
+        "const K=ctx.diagramModel.kinds,C=ctx.diagramModel.seqCanvas,V=" + json.dumps(values) + ";"
+        f"process.stdout.write(JSON.stringify({expr}));"
+    )
+    return json.loads(subprocess.run(["node", "-e", run], capture_output=True, text=True, check=True).stdout)
+
+
+@needs_node
+def test_every_part_mermaid_tags_becomes_a_box_under_its_rows_key():
+    # Measured in the app: 11 of 11 rows of the login template picked by a press at their box's centre, at 1440 and 390.
+    out = _seq(
+        "(()=>{const m=K.sequence.parse(V.src);const hit=C.boxes(V.svg,m,K.ops.key);"
+        "const rows=[];K.ops.walk(K.sequence,m,(n)=>n.type!=='k'&&rows.push(K.ops.key(n)));"
+        "return {rows:rows.length,boxes:hit.boxes.length,missing:rows.filter((k)=>!hit.boxes.some((b)=>b.id===k)),"
+        "kinds:hit.boxes.map((b)=>b.et),first:hit.boxes[0],vb:hit.vb}})()",
+        src=LOGIN, svg=LOGIN_SVG,
+    )
+    assert out["rows"] == 11 and out["boxes"] == 11 and out["missing"] == []
+    assert out["kinds"].count("participant") == 3 and out["kinds"].count("message") == 5
+    assert out["kinds"][-2:] == ["frame", "divider"]  # frames last, so a press finds a step before its box
+    assert out["vb"] == [-50, -10, 650, 623]
+    assert out["first"]["x"] == 475 and out["first"]["w"] == 150 and out["first"]["h"] == 76
+
+
+@needs_node
+def test_mermaids_statement_ids_count_box_ends_dividers_and_activations():
+    src = (
+        "sequenceDiagram\n  A->>+B: one\n  activate A\n  alt yes\n    loop again\n      B->>A: two\n    end\n"
+        "  else no\n    %% a comment is no statement\n    A->>B: three\n  end\n"
+    )
+    out = _seq(
+        "(()=>{const m=K.sequence.parse(V.src);const map=C.order(m,K.ops.key);"
+        "const name=(k)=>{const f=K.ops.find(K.sequence,m,k)?.node;return f?(f.text||f.kw||f.label):k};"
+        "return [...map.entries()].filter(([id])=>id.startsWith('i')).map(([id,k])=>[id,name(k)])})()",
+        src=src,
+    )
+    # i0 one, i1 its +activation, i2 activate A, i3 alt start, i4 loop start, i5 two, i6 loop end, i7 else, i8 three, i9 alt end
+    assert out == [["i0", "one"], ["i5", "two"], ["i6", "again"], ["i8", "three"], ["i9", "yes"], ["i9/0", "no"]]
+
+
+def test_the_picture_takes_a_press_a_rename_and_the_lists_keys():
+    canvas = _js("diagram-seq-canvas.js")
+    for needle in ('fig.addEventListener("dblclick"', "F2: () => rename(key)", "Delete: () => act.remove(S, key)", "ArrowUp: () => act.step(S, key, -1)", 'input.className = "dgm-rename"'):
+        assert needle in canvas, needle
+    assert "(fig.onpaint ||= []).unshift(" in canvas  # before the overlay's own paint
+    builder = _js("diagram-builder.js")
+    assert 'lazyScript("/js/diagram-seq-canvas.js")' in builder and "(!S.k || S.seq)" in builder
+    assert "(S.k && !S.seq)" in _js("diagram-overlay.js")
+    assert "const act = {" in _js("diagram-kinds.js") and "ghostSpec, act }" in _js("diagram-kinds.js")

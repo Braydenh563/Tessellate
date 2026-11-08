@@ -3340,6 +3340,7 @@ MORE_TOPICS.extend([
             "arrows, Enter, Delete, Alt+Up, Alt+Down, Alt+Right and Alt+Left, Ctrl+Z. A line the "
             "blocks do not show stays where it was, and a diagram they cannot read (a second mind "
             "map centre, a sequence box, more than 120 blocks) opens in Source with its picture. "
+            "On a sequence picture a press picks a part, a double press, Enter or F2 renames it there, Delete removes it and Alt+Up or Alt+Down moves it. "
             "Suggest works in each: Templates include a brainstorm, a project plan, a sign in and a "
             "request and reply. A suggestion of the diagram's own kind arrives as ghosts to take; "
             "one of another kind says so and is left out when the diagram has blocks, and replaces "

@@ -49,7 +49,8 @@
   function wire(S) {
     const fig = S?.fig;
     const stage = fig?.parentElement;
-    if (!fig || S.k || !stage?.classList.contains("dgm-stage") || fig.dataset.overlay) return;
+    //: A flowchart's, and a sequence diagram's once diagram-seq-canvas.js has given it boxes (`S.seq`); not the other kinds yet.
+    if (!fig || (S.k && !S.seq) || !stage?.classList.contains("dgm-stage") || fig.dataset.overlay) return;
     //: Once per figure, not once per layer in it: a picture that went away (every block deleted) took the layer out, and the next draw made a second one while the first still painted (6 boxes for 3 blocks).
     fig.dataset.overlay = "1";
     const layer = document.createElement("div");
@@ -64,7 +65,9 @@
     //: The picked ids: the primary block and every block of the pick, as the list marks them.
     const chosen = () => {
       const ids = new Set();
-      for (const row of S.tree.querySelectorAll('.dgm-block[aria-selected="true"]')) if (row.dataset.key.startsWith("n:")) ids.add(row.dataset.key.slice(2));
+      //: A flowchart box is named by its node id ("n:" off the row key); a sequence part by the row key itself.
+      for (const row of S.tree.querySelectorAll('.dgm-block[aria-selected="true"]')) if (S.seq) ids.add(row.dataset.key);
+      else if (row.dataset.key.startsWith("n:")) ids.add(row.dataset.key.slice(2));
       return ids;
     };
     const mark = () => {

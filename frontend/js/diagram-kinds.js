@@ -1121,5 +1121,17 @@
     return text === S.source ? S : sync(host, text, S);
   }
 
-  diagramModel.kinds = { mindmap, timeline, sequence, ops, show, ghostSpec };
+  //: What the picture (diagram-seq-canvas.js) does to a row: the same steps the list's keys take, with the same lines said.
+  const act = {
+    select: (S, key) => kit.select(S, key),
+    name: nameOf,
+    rename(S, key, text) {
+      if (text === nameOf(S, key) || !ops.relabel(S.k, S.m, key, text)) return;
+      kit.commit(S, `Renamed to ${text}.`);
+    },
+    remove: removeBlock,
+    step: stepBlock,
+  };
+
+  diagramModel.kinds = { mindmap, timeline, sequence, ops, show, ghostSpec, act };
 })();

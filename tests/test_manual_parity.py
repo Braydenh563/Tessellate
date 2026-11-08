@@ -429,7 +429,9 @@ def test_the_diagram_kinds_are_in_the_guide_in_the_controls_words() -> None:
                   "actor, participant, message, reply, async, lost, note, loop, alt, opt, parallel, critical and break (A, P, M, R, Y, X, T, L, G, O, U, C and B)",
                   "opens in Source with its picture", "of another kind says so and is left out", "replaces a blank one",
                   # 1661 k: the four kind buttons became one Kind menu in the Title row.
-                  "Kind, in the Title row (first in the toolbar elsewhere), is a menu"):
+                  "Kind, in the Title row (first in the toolbar elsewhere), is a menu",
+                  # 1661 l: a sequence diagram is edited on its picture (diagram-seq-canvas.js).
+                  "On a sequence picture a press picks a part, a double press, Enter or F2 renames it there"):
         assert words in body, words
     assert "diagram-kinds" in TOPIC_META and "diagram-kinds" in dict(HELP_GROUPS)["Documents and code"]
     assert "next topic" in str(next(t["body"] for t in HELP_TOPICS if t["id"] == "diagram-blocks"))
