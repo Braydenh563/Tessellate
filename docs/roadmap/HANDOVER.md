@@ -35,6 +35,15 @@
 
 ## Morning summary
 
+Away run 2026-11-08 (weekly 34% of the 60% line), branch claude/next-queue-1102, PR 216 (not merged; the owner merges), head pushed past 39f185f2.
+
+- Done: desk companion (moods, routines, tail and lower body as layers, 9 tail poses and 8 lower states on both sides), in-app routines, composer rounds 4 and 5 (41 of 91 rows plus counting, compare, title pin, follow-on, a context leak between answers), diagram library and embed fixes, whiteboard and mind map (leave flushes edits, radial with several roots, Present Esc focus), CodeQL 2114.
+- Owner decisions: a happy wag at rest is 6 a second (15 needs the 500 rest ceiling raised); "put it in today's note" as an append to the daily note; open-fit on a phone (1 of 5 topics in view at 390); diagram DD-5, DD-13, R12, R14.
+- Unverified: companion poses on a real desktop and in a real browser; the cold flow warp is 9 to 17 ms at dpi 192 against 8 ms.
+- Next (fresh session): composer-r5 leftovers (composer-r5-1108.md), atlascat D3 to D5, perf P6, P7, P9, the flow warp, audit-1031-ranked rows 19, 21, 22, 23, 36, 37, 42, 55, then BACKLOG smallest first.
+
+## Earlier morning summary (2026-11-04)
+
 Away run 2026-11-04, second half (lean-workflow away; weekly 76%, tier pro), branch claude/next-queue-1102, PR 212 (not merged; the owner merges), head pushed past 35863d4.
 
 - Done: Running copies 1641 (Shut down only asks, with its token), composer requests 1649 (app-verb requests get the how-to; edit answer names the row pencil and F2), graph 1643 frame bound (stuck state not reproduced), overlay gaps (click-away, runner death brings the card back, panel follows a drop, first-open right click), CI and CodeQL fixes, first-run E2E retry.
