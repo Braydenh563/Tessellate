@@ -138,6 +138,17 @@ out({ first, sameDiagramAgain: shown(a2), otherDiagram: shown(b1) });
     assert got == {"first": True, "sameDiagramAgain": False, "otherDiagram": True}
 
 
+def test_the_embedded_picture_click_listens_to_click_only_so_a_press_still_reaches_the_editor():
+    """LOW: no mousedown listener and no preventDefault on the embed box; the Live widget ignores editor events by design."""
+    draw = (JS / "mermaid-draw.js").read_text(encoding="utf-8")
+    box = draw[draw.index('box.classList.add("diagram-embed-box")') :]
+    box = box[: box.index("box.append(open);")]
+    assert 'addEventListener("click"' in box and "mousedown" not in box and "pointerdown" not in box and "preventDefault" not in box
+    cm = (JS / "documents-cm.js").read_text(encoding="utf-8")
+    widget = cm[cm.index("class DocEmbedWidget") :][:1200]
+    assert "ignoreEvent() {\n      return true;" in widget
+
+
 def test_the_guide_says_the_shape_keys_and_k_again_inside_its_budget():
     """LOW: dgmfix2 dropped "1 to 7 the other shapes, Shift+N the last one" and "K colours" from the Guide to fit 1900."""
     from tessellate.ai.help_chat import HELP_TOPICS

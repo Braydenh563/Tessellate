@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Diagram embed (review 1108): a click on an embedded diagram picture is click-only, so it never stops a press reaching the Live editor; the reason is in the comment and a test pins it.
 - Diagram window (review 1108): Ctrl+Z in a text field of the diagram window (the title, a rename) is the browser's text undo again; only the source box and the blocks step the diagram's history, and the comment now says so.
 - Guide (review 1108): the diagram blocks topic says again that 1 to 7 add the other shapes, Shift+N the last one and K colours (1886 of 1900 characters; the empty-state example and three wordier phrases gave the room).
 - Diagram builder (review 1108): the automatic "no" on a decision's second arrow only applies to a new branch next to a first arrow that says yes (any case or punctuation); a re-pointed arrow and a template's or suggestion's edge keep exactly their own words. test_diagram_r6 item 3 renamed to say what it asserts.

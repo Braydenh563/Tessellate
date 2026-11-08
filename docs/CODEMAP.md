@@ -2,7 +2,7 @@
 
 Generated 2026-11-08 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7917, frontend ids 2652, CSS sections 522, backend routes 649, backend modules 9199, test files 2234, tests 18805, plan headings 1004, app scripts 28, boot scripts 37, script files 263.
+Counts: frontend functions 7917, frontend ids 2652, CSS sections 522, backend routes 649, backend modules 9199, test files 2234, tests 18806, plan headings 1004, app scripts 28, boot scripts 37, script files 263.
 
 ## Frontend functions (7917)
 
@@ -6040,13 +6040,13 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `mermaidHex` | frontend/js/mermaid-draw.js:158 |
 | `mermaidHue` | frontend/js/mermaid-draw.js:205 |
 | `mermaidInkOn` | frontend/js/mermaid-draw.js:199 |
-| `mermaidInlineForExport` | frontend/js/mermaid-draw.js:590 |
+| `mermaidInlineForExport` | frontend/js/mermaid-draw.js:593 |
 | `mermaidKnown` | frontend/js/mermaid-draw.js:342 |
 | `mermaidLook` | frontend/js/mermaid-draw.js:312 |
 | `mermaidLuma` | frontend/js/mermaid-draw.js:192 |
 | `mermaidMix` | frontend/js/mermaid-draw.js:163 |
 | `mermaidOnMessage` | frontend/js/mermaid-draw.js:92 |
-| `mermaidRedrawAll` | frontend/js/mermaid-draw.js:602 |
+| `mermaidRedrawAll` | frontend/js/mermaid-draw.js:605 |
 | `mermaidRequest` | frontend/js/mermaid-draw.js:405 |
 | `mermaidResultAccepts` | frontend/js/mermaid-draw.js:23 |
 | `mermaidRgba` | frontend/js/mermaid-draw.js:144 |
@@ -24752,7 +24752,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (18805)
+## Tests (18806)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -25398,7 +25398,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_diagram_r8c.py | 11 |
 | tests/test_diagram_r9b.py | 9 |
 | tests/test_diagram_r9c.py | 9 |
-| tests/test_diagram_review_1108.py | 9 |
+| tests/test_diagram_review_1108.py | 10 |
 | tests/test_diagram_review_1679.py | 4 |
 | tests/test_diagram_split_r3_r4.py | 8 |
 | tests/test_diagram_suggest.py | 22 |

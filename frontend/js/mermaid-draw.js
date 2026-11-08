@@ -570,7 +570,10 @@ mermaidFill.embed = async (box, doc, name) => {
       event.stopPropagation();
       openDocument(doc.id);
     });
-    //: The picture opens the diagram too (blind test 1108: pressing the embed did nothing).
+    //: The picture opens the diagram too (blind test 1108: pressing the embed did nothing). A `click` only: no mousedown, no
+    //: preventDefault, so a pointer press still reaches the editor first. In the Live editor the embed is a widget whose
+    //: `ignoreEvent` is true (documents-cm.js), so CodeMirror never placed a caret from a press on it, and its own click handler
+    //: already opened the target; stopPropagation here only keeps that from opening it a second time (review 1108).
     box.classList.add("diagram-embed-box");
     box.title = "Open the diagram";
     box.addEventListener("click", (event) => {
