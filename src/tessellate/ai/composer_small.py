@@ -59,6 +59,16 @@ def _spoken(words: list[str]) -> str:
     return words[0] if len(words) == 1 else ", ".join(words[:-1]) + " and " + words[-1]
 
 
+def _quotes_for(view: NoteView, stems: set[str]) -> list:
+    """The sentences of `view` that say the subject, best first, in the note's order."""
+    quotes = sorted((s for s in view.sentences if any(_holds(st, set(_words(s.text))) for st in stems)),
+                    key=lambda s: (-sum(1 for st in stems if _holds(st, set(_words(s.text)))), s.order))[:MAX_QUOTES]
+    #: A note filed under the subject (titled "Gym plan") that never says the
+    #: word in a sentence is quoted from its start: what it holds is still on it.
+    quotes = quotes or [s for s in view.sentences if s.kind in ("prose", "item", "task")][:MAX_QUOTES]
+    return sorted(quotes, key=lambda s: s.order)
+
+
 def what_if(question: str, notes: list[dict], *, today: date | None = None) -> dict | None:
     """What the notes hold about a what-if's subject, then the line that says
     they do not say what would happen. A consequence is never stated: the
@@ -76,12 +86,7 @@ def what_if(question: str, notes: list[dict], *, today: date | None = None) -> d
         out.parts.append(("template", f"Your notes hold nothing {subject}, and they do not say what would happen."))
         return _result(out.parts, "what")
     view = held[0]
-    quotes = sorted((s for s in view.sentences if any(_holds(st, set(_words(s.text))) for st in stems)),
-                    key=lambda s: (-sum(1 for st in stems if _holds(st, set(_words(s.text)))), s.order))[:MAX_QUOTES]
-    #: A note filed under the subject (titled "Gym plan") that never says the
-    #: word in a sentence is quoted from its start: what it holds is still on it.
-    quotes = quotes or [s for s in view.sentences if s.kind in ("prose", "item", "task")][:MAX_QUOTES]
-    quotes.sort(key=lambda s: s.order)
+    quotes = _quotes_for(view, stems)
     if not quotes:
         return None
     out.parts.append(("template", f"Your notes say this about {_spoken(words)}: "))
@@ -151,6 +156,30 @@ def _section(content: str, at: int) -> str:
     return heads[-1].group(1).strip() if heads else ""
 
 
+def _where_tail(out: _Answer, view: NoteView, best, today: date) -> None:  # noqa: ANN001
+    """The section, the category and the age, said after the note's name."""
+    content = str(view.note.get("content") or "")
+    if view.titled and (section := _section(content, best.start)):
+        out.parts.append(("template", ", under "))
+        out.parts.append(("term", section, view.id))
+    category = str(view.note.get("category") or "").strip()
+    if category and category.lower() not in ("uncategorised", "uncategorized"):
+        out.parts.append(("template", ", in "))
+        out.parts.append(("filed", category, view.id))
+    edited = _edited_day(view.note)
+    changed, verb = (edited, "last edited") if edited else (view.written, "written")
+    if changed:
+        out.parts.append(("template", f", {verb} "))
+        out.m(ago((today - changed).days))
+
+
+def _best_sentence(view: NoteView, stems: set[str]):  # noqa: ANN202
+    """The sentence of `view` holding most of the subject, or None when none holds any."""
+    scored = [(sum(1 for st in stems if _holds(st, set(_words(s.text)))), s) for s in view.sentences]
+    best = max(scored, key=lambda p: (p[0], -p[1].order), default=(0, None))
+    return best[1] if best[0] else None
+
+
 def where_written(question: str, notes: list[dict], *, today: date | None = None) -> dict | None:
     """"It is in Gym plan, under Leg day, in Fitness, last edited 3 days ago."
     from the note's own fields; None when no note holds every word."""
@@ -165,26 +194,13 @@ def where_written(question: str, notes: list[dict], *, today: date | None = None
         return None
     held.sort(key=lambda v: (not stems <= v.title_words, v.rank))
     view = held[0]
-    scored = [(sum(1 for st in stems if _holds(st, set(_words(s.text)))), s) for s in view.sentences]
-    best = max(scored, key=lambda p: (p[0], -p[1].order), default=(0, None))[1]
-    if best is None or not any(_holds(st, set(_words(best.text))) for st in stems):
+    best = _best_sentence(view, stems)
+    if best is None:
         return None
     out = _Answer({v.id: v for v in views}, today)
     out.parts.append(("template", "It is in "))
     out.name(view)
-    content = str(view.note.get("content") or "")
-    if view.titled and (section := _section(content, best.start)):
-        out.parts.append(("template", ", under "))
-        out.parts.append(("term", section, view.id))
-    category = str(view.note.get("category") or "").strip()
-    if category and category.lower() not in ("uncategorised", "uncategorized"):
-        out.parts.append(("template", ", in "))
-        out.parts.append(("filed", category, view.id))
-    edited = _edited_day(view.note)
-    changed, verb = (edited, "last edited") if edited else (view.written, "written")
-    if changed:
-        out.parts.append(("template", f", {verb} "))
-        out.m(ago((today - changed).days))
+    _where_tail(out, view, best, today)
     others = len(held) - 1
     out.parts.append(("template", f". It is in {realise.count_word(others)} other note{'s' if others != 1 else ''} too." if others else "."))
     out.parts.append(("template", " It reads: "))

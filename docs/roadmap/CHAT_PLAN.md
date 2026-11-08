@@ -1231,7 +1231,7 @@ how it was read. Time facts below were measured with `entry/timewords.find` and
 | A21 | Last time, how long since, how often | `when.days_since` (phrase to days) | Not asked of the notes | Event facts: latest date for a verb and object, days since, count per window; measured, dates shown | M | 1 and 6 |
 | A22 | Where did I write X | Built. Moved to HISTORY.md ("Moved from the plans, 2026-11-08 (CHAT_PLAN A22)"). | | | | |
 | A23 | Who or what is X (entity card) | Entities pass (model), `EntityMention` | None without a model | Entity fact aggregate: first and last mention, note count, what is said about them (top 2 sentences), related entities by co-occurrence | M | 1 and 6 |
-| A24 | A random note, an old note | `resurface.for_day`, `ranked` | Not from a question | "show me something old" picks from `resurface.ranked`, seeded by the session salt | S | 2 |
+| A24 | A random note, an old note | Built. Moved to HISTORY.md ("Moved from the plans, 2026-11-08 (CHAT_PLAN A24)"). | | | | |
 | A25 | No answer | `_nothing`, `closest_a`, `_did_you_mean` | Capability line; a suggested question the person could answer with a note (decision 24) | Closest note quoted, one suggestion built from the question's subject, capability line when the question is out of domain | S | 2 |
 
 #### Acting

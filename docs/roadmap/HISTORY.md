@@ -52903,3 +52903,11 @@ Built: A22. Row text: A22 | Where did I write X | Search results show the note, 
 
 - **What it does:** `composer_small.where_written()` answers "where did I write/put/note/save/mention X" with the note by name, the section heading above the match when it is not the title, its category, and how long ago (last edited, else written): "It is in **Gym plan**, under Leg day, in Fitness, last edited three days ago. It reads: Squats on Monday and deadlifts on Friday." Hooked first in `composer_digest.answer` (which otherwise took the question) and in `composer._early_answer`; None when no note holds every word, so the ordinary answer stands.
 - **Check:** `tests/test_small_b_1108_a22.py` (fixed clock, route with no model).
+
+## Moved from the plans, 2026-11-08 (CHAT_PLAN A24)
+
+Built: A24. Row text: A24 | A random note, an old note | `resurface.for_day`, `ranked` | Not from a question | "show me something old" picks from `resurface.ranked`, seeded by the session salt | S | 2
+
+- **What it does:** `composer_small.something_old()` answers "show me something old / an old note / something forgotten / from a while back" with one note picked by the chat's salt and turn from the faded end of the notes: the route's pool is `resurface.ranked` (six, else the six oldest; `list_pool._faded`), and the composer cuts any longer list to its oldest six. "Here is one from a while back: **Old trip**, written four years ago. It begins: We walked the coast path in 2022."
+- **Check:** `tests/test_small_b_1108_a24.py` (fixed clock, salts a to h give more than one pick, route with no model).
+- **Not built:** "show me a random note" (the row title); only the old ask. Also fixed the complexity ratchet for `what_if`, `where_written` and `list_pool.pool` by splitting them.
