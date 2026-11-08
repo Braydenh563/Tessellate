@@ -10,7 +10,7 @@ from __future__ import annotations
 
 import pytest
 
-from tessellate.ai import context, librarian
+from tessellate.ai import context, librarian, provider_http
 from tessellate.ai.ollama_client import OllamaClient
 from tessellate.ai.openai_client import OpenAICompatClient
 from tessellate.core import hardware
@@ -270,14 +270,12 @@ def test_a_default_decision_is_cached_too(prefs, memory, monkeypatch):
 def test_stopping_the_model_lets_the_window_be_read_again(prefs, memory, monkeypatch):
     """Review of PR 216: the cache was never cleared. Stopping the model makes
     the next turn reload it anyway, so that is the moment to read memory again."""
-    import tessellate.ai.ollama_client as oc
-
     memory(8)
     client = ollama_model(131072)
     _with_weights(client, monkeypatch, 1, ["m:latest"])
     assert client.usable_context("m") == 25600
     memory(16)
     assert client.usable_context("m") == 25600
-    monkeypatch.setattr(oc.requests, "post", lambda *a, **k: type("R", (), {"raise_for_status": lambda self: None})())
+    monkeypatch.setattr(provider_http, "post", lambda *a, **k: type("R", (), {"raise_for_status": lambda self: None})())
     assert client.unload("m")[0]
     assert client.usable_context("m") == 52224
