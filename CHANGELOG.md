@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Diagram builder (dgmlive2 5): the block list no longer jumps when the pointer first moves over it; the purpose line reserves three lines (it wraps to three in the pane and a hovered control's words to two, so the list rose 17px and the first press on a block's ⋯ went down on the list and up on the button, opening nothing; Chromium: tree y 273.8 to 257 before, 273.8 both after; the first click now opens the menu).
 - Documents (dgmlive2 4): a double click on a diagram embed opens the diagram once and no longer lets its second press select or press the page it opened (Chromium at 40 and 120 ms between presses: a 297-character selection across the builder before, 0 after; opens 1, the CodeMirror selection stays [0,0]). A drag that starts on the embed selects nothing and moves nothing (selection 0, document text unchanged).
 - Diagram builder (dgmlive2 3): a row pressed in the embed dialog's More menu that redraws the picture (Hand-drawn or Clean look) no longer drops focus to the page; the new ⋯ takes it (Chromium: BODY before, "More for this diagram" after, inside a modal dialog).
 - Library (dgmlive2 2): an archived diagram or document is listed once, as shelved; `/library` also listed it as its own kind, so Archive on a row toasted and the row stayed in Everything (Chromium: diagram 26 and shelved 26 both returned; now shelved only).

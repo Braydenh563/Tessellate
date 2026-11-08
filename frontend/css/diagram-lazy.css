@@ -625,11 +625,12 @@
   display: none;
 }
 
-/* The pane's purpose line and foot (diagram-steps.js `frame`, 1679 k). The line holds two lines of room so the list does not
+/* The pane's purpose line and foot (diagram-steps.js `frame`, 1679 k). The line holds three lines of room (the purpose wraps to three
+   in a narrow pane; two let the list jump 17px under the pointer on the first hover, dgmlive2 1108) so the list does not
    jump when a control's words replace it; the foot sticks to the pane's bottom edge and, in a short list, sits right under it. */
 .dgm-purpose {
   margin: 0 var(--space-2) var(--space-2);
-  min-block-size: calc(2 * 1.4em);
+  min-block-size: calc(3 * 1.4em);
   font-size: var(--text-xs);
   line-height: 1.4;
 }

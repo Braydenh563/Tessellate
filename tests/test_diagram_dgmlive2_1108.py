@@ -60,3 +60,10 @@ def test_the_second_press_of_a_double_click_on_an_embed_does_not_select_or_press
     assert 'for (const name of ["mousedown", "click"]) document.addEventListener(name, stop, true);' in body
     assert "event.detail > 1" in body
     assert "calm();\n      openDocument(doc.id);\n    });\n    box.append(open);" in body
+
+
+def test_the_purpose_line_keeps_room_for_the_three_lines_it_wraps_to_so_the_first_hover_moves_nothing():
+    """Measured in Chromium: the purpose wrapped to 3 lines (50.4px) and a hovered control's words to 2 (33.6px); the list rose 17px between a first press going down and coming up, and that click missed its button."""
+    css = (ROOT / "frontend" / "css" / "diagram-lazy.css").read_text(encoding="utf-8")
+    rule = css[css.index(".dgm-purpose {") :].split("}")[0]
+    assert "min-block-size: calc(3 * 1.4em);" in rule
