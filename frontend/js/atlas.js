@@ -521,7 +521,8 @@ const ATLAS_LOOKS = {
       { seg: [[27, 11, 34, 0, 47, 0, 54, 11]], w: [12, 2.4], mass: true },
     ],
     brow: "straight",
-    lashes: false,
+    //: One short flick at each eye's outer corner, not her three lashes (INBOX 1607 d).
+    lashes: "flick",
     tail: [[31.4, 56.6, 40.6, 61.8, 55, 59.8, 53.6, 71], [53.6, 71, 50.6, 80, 53, 89, 62, 90.4], [62, 90.4, 69.6, 91.4, 72.4, 84.4, 66.6, 80.4]],
     tailWidth: (t) => 3.4 + 4.4 * Math.sin(Math.PI * Math.min(1, 0.25 + 0.85 * t)) - 2 * t * t,
     tailJoin: [35.8, 58.8, 4.2],
@@ -545,7 +546,12 @@ const ATLAS_LOOKS = {
     //: hair coming from the back"): a short cap swept to his right over the
     //: crown, its hairline cut into two small points; the crest and the
     //: ears rise from it (`atlasHairCap`).
-    cap: "M18.4 20.6C17.8 12.6 23.4 6.8 31 6.8C38.6 6.8 44.2 12.6 43.8 20C42.6 16.2 40.2 13.4 37 12.2C36.4 13.6 35 14.6 33.6 14.8C33.8 13.8 33.6 13 33 12.4C31.6 14 29.6 15 27.6 15.2C28 14.4 28 13.6 27.6 13C25 14.4 22 16.8 18.4 20.6Z",
+    //: **Hair that frames the face** (INBOX 1607 b): the cap stopped at the
+    //: temples with its hairline at 14.2, so 93% of the outline below the
+    //: brows met the background (hers 79%): a bare egg. Now the hairline
+    //: is at 16 and each side runs on down the temple into a short sideburn,
+    //: proud of the cheek to y 26.6 and clear of the eye: 80% bare.
+    cap: "M19.3 26.6C18.3 25.6 17.3 23.4 17.4 20.6C17.2 12.4 23.4 6.8 31 6.8C38.6 6.8 44.8 12.4 44.6 20.6C44.7 23.4 43.7 25.6 42.7 26.6C42.4 23.6 42 20.6 40.8 18.6C39.6 16.4 37.8 15 35.6 14.6C35.2 15.8 34.4 16.8 33.2 17.4C33.4 16.6 33.2 15.8 32.8 15.2C31.6 16 29.8 16.6 27.8 16.8C28.1 16 28 15.4 27.6 14.9C25 15.4 22.6 16.6 21.2 18.6C20 20.6 19.6 23.6 19.3 26.6Z",
     legs: false,
     //: The lower body's pose (`.atl-lower`, the CSS) shears and stretches
     //: about the join itself, the middle of the torso's fade into it (INBOX
@@ -608,20 +614,27 @@ const ATLAS_LOOKS = {
     //: slimmer (3.8 to 1.6), the cloak and its tatters narrower (9.8 at the
     //: hips, 12 at its fullest) and the tail slimmer to match
     //: (scratchpad/ui-sweeps/atlas614-build.js).
-    torso: "M25.6 35.4C22.2 36.4 21.8 40.4 23.4 43.6C25.8 47.6 26.8 55.4 26 61C28 63.4 34 63.4 36 61C35.2 55.4 36.2 47.6 38.6 43.6C40.2 40.4 39.8 36.4 36.4 35.4Z",
+    //: **A head on shoulders in her proportion** (INBOX 1607 b, the owner:
+    //: "the size or shape or smth of the head looks off and a little
+    //: creepy"): on 17 across, his head (the same drawing as hers) sat on
+    //: shoulders 1.45 times hers, 1.09 heads across where she has 1.59.
+    //: The shoulders are 15 across now (0.88 about the middle above y 44),
+    //: the head 0.8 (the CSS), 1.31; the V stays at 1.58 to the waist, and
+    //: each arm moved in whole by 1 with its root (atlasm1108.js).
+    torso: "M26.2 35.4C23.3 36.4 22.9 40.4 24.3 43.6C25.8 47.6 26.8 55.4 26 61C28 63.4 34 63.4 36 61C35.2 55.4 36.2 47.6 37.7 43.6C39.1 40.4 38.7 36.4 35.8 35.4Z",
     //: **Arms that hang** (INBOX 564, 567, 568, the owner: "the arms still
     //: look separate and they stick straight out of the body and dont hang
     //: naturally"): from the shoulder the upper arm drops 13 degrees off
     //: vertical to the elbow, which bends 15 degrees, and the forearm falls
     //: back in beside the hip; 4.4 at the shoulder to 1.8 at the wrist,
     //: with a smaller mitten (0.9).
-    armL: [[24.6, 40.4, 23.6, 43.4, 22.8, 46.6, 22.4, 49.6], [22.4, 49.6, 22, 52.6, 22.2, 55.4, 22.6, 57.8]],
-    arm: [[37.4, 40.4, 38.4, 43.4, 39.2, 46.6, 39.6, 49.6], [39.6, 49.6, 40, 52.6, 39.8, 55.4, 39.4, 57.8]],
+    armL: [[25.6, 40.4, 24.6, 43.4, 23.8, 46.6, 23.4, 49.6], [23.4, 49.6, 23, 52.6, 23.2, 55.4, 23.6, 57.8]],
+    arm: [[36.4, 40.4, 37.4, 43.4, 38.2, 46.6, 38.6, 49.6], [38.6, 49.6, 39, 52.6, 38.8, 55.4, 38.4, 57.8]],
     armWidth: [3.8, 1.6],
     armHands: [-1, 1],
     handScale: 0.9,
     //: Where the right mitten grips a bell or a lantern (`atlasHandProps`).
-    propHand: [39.4, 59.6],
+    propHand: [38.4, 59.6],
   },
   //: **The feminine look** (the owner: "the female designs I gave you are
   //: quite different"): no ear tufts, only a small fin swept back at each
@@ -1602,7 +1615,8 @@ function atlasEye(parent, id, [cx, cy, side], tiny, lashes) {
     atlasMake("path", { class: "atl-liner atl-liner-low", d: shape.lower }, blink);
     if (lashes) {
       const ox = cx - 5.1 * side;
-      atlasMake("path", { class: "atl-lashes", d: `M${ox} ${cy - 0.8}l${-1.6 * side} -0.9M${ox + 0.9 * side} ${cy - 2.6}l${-1.4 * side} -1.2M${ox + 2.3 * side} ${cy - 4}l${-1 * side} -1.4` }, blink);
+      const more = lashes === "flick" ? "" : `M${ox + 0.9 * side} ${cy - 2.6}l${-1.4 * side} -1.2M${ox + 2.3 * side} ${cy - 4}l${-1 * side} -1.4`;
+      atlasMake("path", { class: "atl-lashes", d: `M${ox} ${cy - 0.8}l${-1.6 * side} -0.9${more}` }, blink);
     }
   }
   const w = tiny ? 2.6 : 1.8;
@@ -1614,7 +1628,7 @@ function atlasEye(parent, id, [cx, cy, side], tiny, lashes) {
   //: heavy ink arc with a flick) read as screwed tight.
   const doze = atlasGroup(eye, "atl-e-doze");
   atlasMake("path", { class: "atl-doze-line", "stroke-width": tiny ? 2.2 : 1.15, d: `M${cx - 4.4} ${cy + 0.8}Q${cx} ${cy + 3.4} ${cx + 4.4} ${cy + 0.8}` }, doze);
-  if (lashes && !tiny) {
+  if (lashes === true && !tiny) {
     atlasMake("path", { class: "atl-doze-lash", d: `M${cx - 3.3 * side} ${cy + 2}l${-0.6 * side} 1.1M${cx - 1.5 * side} ${cy + 2.6}l${-0.3 * side} 1.2` }, doze);
   }
   atlasMake("path", {
@@ -2163,7 +2177,7 @@ function atlasHead(parent, id, level, look, hairAt = null) {
   for (const [x, y, side] of ATLAS_GEO.brows) {
     const brow = atlasGroup(sway, `atl-brow atl-brow-${side > 0 ? "l" : "r"}`, [x, y]);
     const d = spec.brow === "straight"
-      ? `M${x - 2.8 * side} ${y + 0.3}Q${x} ${y - 0.6} ${x + 2.8 * side} ${y + 0.1}`
+      ? `M${x - 2.5 * side} ${y + 0.3}Q${x} ${y - 0.6} ${x + 2.8 * side} ${y + 0.1}`
       : `M${x - 2.6 * side} ${y + 0.4}Q${x - 0.3 * side} ${y - 1.6} ${x + 2.6 * side} ${y + 0.2}`;
     atlasMake("path", { class: `atl-stroke atl-brow-line atl-brow-${spec.brow}`, d }, brow);
   }
@@ -2751,11 +2765,17 @@ function atlasBuildDefs(svg, id) {
   stops(tip, [[0, "atl-st-white"], [0.4, "atl-st-white-mid"], [1, "atl-st-white-0"]]);
   //: The shoulder joins (round 9, `atl-shoulders` in `atlasBody`): the
   //: torso's paint over each arm root, full at the joint and gone by the
-  //: ellipse's rim. One placing fits both looks' roots (35.2 and 35.6).
+  //: ellipse's rim. **On each look's own roots** (INBOX 1607 c, the owner:
+  //: "the connection between the sholders and the arms could be
+  //: smoother"): one placing on his roots, full only to y 43.5, left his
+  //: arm's shaded inner edge crossing the torso below it (16 of 28 points a
+  //: line at 1x, atlasm1108.js) and sat 1.8 off hers; now each look's, and
+  //: full to y 46.2, past where an arm's inner edge leaves the torso.
   const shoulderFade = atlasMake("radialGradient", { id: `${id}-shoulderg` }, defs);
   stops(shoulderFade, [[0, "atl-st-white"], [0.55, "atl-st-white"], [1, "atl-st-white-0"]]);
   const shoulders = atlasMake("mask", { id: `${id}-shoulders`, maskUnits: "userSpaceOnUse", x: -30, y: -30, width: 124, height: 150 }, defs);
-  for (const cx of [24.6, 37.4]) atlasMake("ellipse", { cx, cy: 40.8, rx: 4.4, ry: 5, fill: `url(#${id}-shoulderg)` }, shoulders);
+  const roots = ATLAS_LOOKS[id.slice(4)];
+  for (const cx of roots ? [roots.armL[0][0], roots.arm[0][0]] : [25.6, 36.4]) atlasMake("ellipse", { cx, cy: 42.6, rx: 4.8, ry: 6.6, fill: `url(#${id}-shoulderg)` }, shoulders);
   for (const [cx, cy, side] of ATLAS_GEO.eyes) {
     const clip = atlasMake("clipPath", { id: `${id}-e${side > 0 ? "l" : "r"}` }, defs);
     atlasMake("path", { d: atlasAlmond(cx, cy, side).d }, clip);
@@ -3206,7 +3226,7 @@ function atlasLids(parent, look, shut = 1) {
     atlasMake("path", { class: "atl-skin", d: lidShape }, sweep);
     atlasMake("path", { class: "atl-overlay atl-rim-head", d: lidShape }, sweep);
     atlasMake("path", { class: "atl-lid-edge", d: edge }, sweep);
-    if (spec.lashes && shut === 1) {
+    if (spec.lashes === true && shut === 1) {
       //: Two lashes off the edge's outer third, down and out, as the doze
       //: line's lashes are.
       const lashes = atlasMake("g", { class: "atl-lid-lashes" }, eye);

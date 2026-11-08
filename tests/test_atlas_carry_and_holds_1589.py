@@ -1,8 +1,8 @@
 """Her raised arms turn about her shoulders and the carry act has its note (INBOX 1589 leftovers).
 
 - The raised-arm drawings (`.nmb-hold`, shown hanging, carried, in a cheer or a stretch) turned about
-  his shoulders, `24.6px 41px` and `37.4px 41px` (08-consistency.css). Her arms are rooted 1.8 units
-  further in, `armPivots` (`ATLAS_LOOKS.feminine`), and the hold is drawn from that root: turned about
+  his shoulders, `24.6px 41px` and `37.4px 41px` (08-consistency.css; 25.6 and 36.4 since INBOX 1607 b). Her arms
+  are rooted 1.8 units further in, `armPivots` (`ATLAS_LOOKS.feminine`), and the hold is drawn from that root: turned about
   his, its shoulder swung out of the torso as her arms once did (INBOX 612). It takes the same pivot
   as the arm, inline, wherever the look names one.
 - The carry act ("carrying a note it just filed") showed nothing in Atlas's hand, where the classic
@@ -37,8 +37,10 @@ def test_the_hold_arms_take_the_looks_shoulder_pivots_like_the_arms() -> None:
 
 
 def test_the_css_origin_stays_the_masculine_default_for_a_look_without_pivots() -> None:
-    assert "#nm-buddy .atl-figure .nmb-hold-l { transform-origin: 24.6px 41px; }" in CSS
-    assert "#nm-buddy .atl-figure .nmb-hold-r { transform-origin: 37.4px 41px; }" in CSS
+    # Intent moved (INBOX 1607 b): his shoulders narrowed and his arms' roots came in by 1 with them,
+    # so his default origin is 25.6 and 36.4; it is still his, the look without pivots.
+    assert "#nm-buddy .atl-figure .nmb-hold-l { transform-origin: 25.6px 41px; }" in CSS
+    assert "#nm-buddy .atl-figure .nmb-hold-r { transform-origin: 36.4px 41px; }" in CSS
 
 
 def test_atlas_holds_a_note_in_the_hand_slot_for_the_carry_act() -> None:
