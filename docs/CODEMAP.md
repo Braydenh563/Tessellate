@@ -2,7 +2,7 @@
 
 Generated 2026-11-08 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7865, frontend ids 2644, CSS sections 522, backend routes 649, backend modules 9029, test files 2172, tests 18300, plan headings 1004, app scripts 28, boot scripts 37, script files 261.
+Counts: frontend functions 7865, frontend ids 2644, CSS sections 522, backend routes 649, backend modules 9031, test files 2172, tests 18300, plan headings 1004, app scripts 28, boot scripts 37, script files 261.
 
 ## Frontend functions (7865)
 
@@ -13084,7 +13084,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:164 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (9029)
+## Backend modules (9031)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -14887,14 +14887,16 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `note_events` | src/tessellate/ai/composer_plan.py:330 |
 | `window` | src/tessellate/ai/composer_plan.py:199 |
 
-### src/tessellate/ai/composer_property.py (4)
+### src/tessellate/ai/composer_property.py (6)
 
 | Name | File:line |
 |---|---|
-| `asked` | src/tessellate/ai/composer_property.py:59 |
-| `held` | src/tessellate/ai/composer_property.py:68 |
-| `noun` | src/tessellate/ai/composer_property.py:76 |
-| `subject` | src/tessellate/ai/composer_property.py:46 |
+| `_word_at` | src/tessellate/ai/composer_property.py:48 |
+| `_words_before` | src/tessellate/ai/composer_property.py:60 |
+| `asked` | src/tessellate/ai/composer_property.py:84 |
+| `held` | src/tessellate/ai/composer_property.py:93 |
+| `noun` | src/tessellate/ai/composer_property.py:101 |
+| `subject` | src/tessellate/ai/composer_property.py:72 |
 
 ### src/tessellate/ai/composer_quote.py (21)
 

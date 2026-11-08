@@ -38,17 +38,42 @@ _NOT_PHONE = re.compile(
     r"lucky|favourite|favorite|pin)\b|\bnumber\s+of\s+(?:the\s+|my\s+)?\w+s\b", re.I)
 
 
-_POSSESSIVE = re.compile(r"(?<![\w'\u2019])([A-Za-z][\w-]*(?:\s+[A-Za-z][\w-]*)?)['\u2019]s?\s+(?:phone\s+|mobile\s+|cell\s+)?number\b", re.I)
+#: Only the tail is a pattern: the one or two words before it are read backwards (`_words_before`), so
+#: no match can start at every letter of a long run (CodeQL 2097, polynomial ReDoS).
+_POSSESSIVE = re.compile(r"['\u2019]s?\s+(?:phone\s+|mobile\s+|cell\s+)?number\b", re.I)
 _OF_SUBJECT = re.compile(r"\bnumber\s+for\s+([^?.!]{1,60})", re.I)
 _LEAD_WORDS = frozenset(("what", "whats", "what's", "is", "are", "give", "me", "tell", "find", "and", "also", "then"))
+
+
+def _word_at(text: str, end: int) -> int:
+    """Where the word ending at `end` starts (a letter, then letters, digits, "_" or "-"), or -1."""
+    i = end
+    while i > 0 and (text[i - 1].isalnum() or text[i - 1] in "_-"):
+        i -= 1
+    while i < end and not ("a" <= text[i].lower() <= "z"):
+        i += 1
+    if i == end or (i > 0 and (text[i - 1].isalnum() or text[i - 1] in "_'\u2019")):
+        return -1
+    return i
+
+
+def _words_before(text: str, end: int) -> list[str]:
+    """The one or two words that end at `end` (the owner of "Sara's number"), or [] for none."""
+    one = _word_at(text, end)
+    if one < 0:
+        return []
+    gap = one
+    while gap > 0 and text[gap - 1].isspace():
+        gap -= 1
+    two = _word_at(text, gap) if gap < one else -1
+    return text[(two if two >= 0 else one):end].split()
 
 
 def subject(question: str) -> str:
     """Whose number is asked for, as the person wrote it ("Sara", "the dentist"); "" for a pronoun or none."""
     text = " ".join((question or "").split())
-    hit = _POSSESSIVE.search(text)
-    if hit:
-        words = hit.group(1).split()
+    words = next(filter(None, (_words_before(text, hit.start()) for hit in _POSSESSIVE.finditer(text))), [])
+    if words:
         while words and words[0].lower() in _LEAD_WORDS:
             words.pop(0)
         return " ".join(words)
