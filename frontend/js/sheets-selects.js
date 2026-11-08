@@ -1450,6 +1450,8 @@ function kebabMenu(items, ariaLabel, { vertical = false } = {}) {
     if (item.danger) button.classList.add("menu-danger");
     button.setAttribute("role", "menuitem");
     setLabel(button, item.label);
+    //: `lead`, a function returning a node, puts that node first in its own row: a drawn glyph the label's `ph:` marker cannot name. It rides on the item, so a regrouped or reordered list keeps each glyph on its row (the diagram shelf's more menu matched rows by index before).
+    if (typeof item.lead === "function") button.prepend(item.lead());
     if (item.keys) {
       const hint = document.createElement("kbd");
       hint.className = "menu-keys";

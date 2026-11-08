@@ -7644,3 +7644,16 @@ def test_a_picked_sidebar_row_keeps_a_row_of_room():
     library = (js / "library.js").read_text(encoding="utf-8")
     tree = library.split("function contentsTreeKeys(event) {", 1)[1].split("\n}\n", 1)[0]
     assert "nearestScrollParent.reveal(target)" in tree and "scrollIntoView" not in tree
+
+
+#: Files that still decorate a built menu's rows by index into `:scope > .menu-item`. A glyph on a menu row rides on its
+#: item (`lead`, the kebabMenu recipe), so a regrouped menu keeps it on the right row; these may only fall, never grow.
+INDEX_MATCHED_MENU_ROWS = {"diagram-joins.js", "diagram-builder.js", "diagram-kindbar.js", "library.js"}
+
+
+def test_a_menu_rows_glyph_rides_on_its_item_not_on_its_index() -> None:
+    js = ROOT / "frontend" / "js"
+    now = {p.name for p in js.glob("*.js") if 'querySelectorAll(":scope > .menu-item")' in p.read_text(encoding="utf-8")}
+    assert now <= INDEX_MATCHED_MENU_ROWS, f"{sorted(now - INDEX_MATCHED_MENU_ROWS)} match menu rows by index; give the item a `lead` instead"
+    assert 'typeof item.lead === "function"' in (js / "sheets-selects.js").read_text(encoding="utf-8")
+    assert "`lead`" in (ROOT / "docs" / "DESIGN.md").read_text(encoding="utf-8")
