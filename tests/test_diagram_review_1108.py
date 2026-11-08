@@ -79,3 +79,27 @@ def test_ctrl_z_from_a_button_in_the_diagram_window_stops_before_the_apps_undo()
     assert _embed_key("button") == ["prevent", "stop", "undo"]
     assert _embed_key("button", shift=True) == ["prevent", "stop", "redo"]
     assert _embed_key("field") == ["prevent", "stop", "flush", "undo"]
+
+
+@needs_node
+def test_keep_on_the_tall_chart_offer_is_remembered_per_diagram_not_per_shared_preview_host():
+    """MED: every diagram document draws into the one #doc-preview, so a host key turned the offer off for all of them."""
+    got = run(
+        """
+const mk = () => { const e = { cls: new Set(), kids: [], classList: { add(c) { e.cls.add(c); }, remove(c) { e.cls.delete(c); }, contains: (c) => e.cls.has(c) },
+  append(...n) { e.kids.push(...n); }, set className(v) { e.cls = new Set(v.split(" ")); }, set textContent(v) {} }; return e; };
+ctx.document = { createElement: mk };
+ctx.smallButton = (label, tip, run) => { const b = mk(); b.run = run; b.label = label; return b; };
+load("diagram-outline.js");
+const host = mk();
+const pane = (key) => ({ host, io: { key }, turn: () => {}, fig: { parentElement: mk() }, note: {} });
+const shown = (S) => { ctx.diagramModel.outline.offer(S, true); return Boolean(S.sideways) && !S.sideways.cls.has("hidden"); };
+const a1 = pane("doc-a");
+const first = shown(a1);
+a1.sideways.kids.find((k) => k.label === "Keep").run();
+const a2 = pane("doc-a");
+const b1 = pane("doc-b");
+out({ first, sameDiagramAgain: shown(a2), otherDiagram: shown(b1) });
+"""
+    )
+    assert got == {"first": True, "sameDiagramAgain": False, "otherDiagram": True}

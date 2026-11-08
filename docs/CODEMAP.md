@@ -2,9 +2,9 @@
 
 Generated 2026-11-08 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7916, frontend ids 2652, CSS sections 522, backend routes 649, backend modules 9199, test files 2234, tests 18799, plan headings 1004, app scripts 28, boot scripts 37, script files 263.
+Counts: frontend functions 7917, frontend ids 2652, CSS sections 522, backend routes 649, backend modules 9199, test files 2234, tests 18800, plan headings 1004, app scripts 28, boot scripts 37, script files 263.
 
-## Frontend functions (7916)
+## Frontend functions (7917)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -3399,15 +3399,16 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `dgbUnjoin` | frontend/js/diagram-ops.js:187 |
 | `dgbWrap` | frontend/js/diagram-ops.js:314 |
 
-### frontend/js/diagram-outline.js (5)
+### frontend/js/diagram-outline.js (6)
 
 | Name | File:line |
 |---|---|
-| `box` | frontend/js/diagram-outline.js:84 |
+| `box` | frontend/js/diagram-outline.js:87 |
 | `flow` | frontend/js/diagram-outline.js:9 |
-| `offer` | frontend/js/diagram-outline.js:57 |
+| `offer` | frontend/js/diagram-outline.js:60 |
 | `order` | frontend/js/diagram-outline.js:35 |
-| `stuck` | frontend/js/diagram-outline.js:77 |
+| `stuck` | frontend/js/diagram-outline.js:80 |
+| `whose` | frontend/js/diagram-outline.js:59 |
 
 ### frontend/js/diagram-overlay.js (1)
 
@@ -24751,7 +24752,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (18799)
+## Tests (18800)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -25397,7 +25398,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_diagram_r8c.py | 11 |
 | tests/test_diagram_r9b.py | 9 |
 | tests/test_diagram_r9c.py | 9 |
-| tests/test_diagram_review_1108.py | 3 |
+| tests/test_diagram_review_1108.py | 4 |
 | tests/test_diagram_review_1679.py | 4 |
 | tests/test_diagram_split_r3_r4.py | 8 |
 | tests/test_diagram_suggest.py | 22 |

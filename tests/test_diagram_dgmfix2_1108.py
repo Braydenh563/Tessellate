@@ -88,7 +88,8 @@ CSS = (ROOT / "frontend" / "css" / "diagram-lazy.css").read_text(encoding="utf-8
 def test_the_turn_it_sideways_offer_needs_a_shrunk_drawing_lives_in_the_stage_and_is_answered_once_per_diagram():
     """The default three boxes (418 px in a 538 px stage) asked; the line straddled the list and the picture; Keep did not hold after an edit."""
     assert "offer(S, f < 1 && math.sideways(" in VIEW
-    assert "const answered = new WeakSet();" in OUTLINE and "answered.has(S.host)" in OUTLINE and "answered.add(S.host)" in OUTLINE
+    # Review 1108: keyed by the diagram (io.key), the host only where there is none; the node test in test_diagram_review_1108.py runs it.
+    assert "const answered = new Set();" in OUTLINE and "answered.has(whose(S))" in OUTLINE and "answered.add(whose(S))" in OUTLINE
     assert "S.fig.parentElement" in OUTLINE and "S.note.after(line)" not in OUTLINE
     rule = CSS[CSS.index(".dgm-sideways {") : CSS.index("}", CSS.index(".dgm-sideways {"))]
     assert "12rem" in rule

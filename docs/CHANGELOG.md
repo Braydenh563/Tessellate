@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Diagram builder (review 1108): Keep on the tall-chart offer is remembered for that diagram only (keyed by the document, not the shared preview host), so one Keep no longer turns the offer off for every diagram document.
 - Diagram window (review 1108): Ctrl+Z with focus on Picture, List, Source, Done, Cancel or the help button steps the diagram once; it no longer also runs the app's undo (the press stops at the window).
 - Diagram builder (review 1108): Ctrl+Z in a sequence, mind map or timeline opened first no longer throws on every keydown; the shared undo key handler moved from the flowchart-only toolbar module to the kind bar that every kind loads.
 - Diagram builder tests (perf audit 1108 P2, P3): the lazy row menu, the SVG label patch (escaping, no change when the words do not match) and the typing-aware draw (one redraw with the latest label) are now pinned by behaviour tests run in node, not by source substrings.
