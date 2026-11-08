@@ -5,8 +5,10 @@ Win32; real Windows is unverified."""
 
 from __future__ import annotations
 
+import math
 import random
 
+from tessellate.core.overlay import engine as eng
 from tessellate.core.overlay import extras, faces
 from tessellate.core.overlay.engine import Engine, Monitor
 
@@ -119,3 +121,55 @@ def test_the_dizzy_face_is_drawn_and_a_reduced_figure_is_never_dizzy() -> None:
     t, px, py = shake(e, t, px, py, 3)
     assert not dizzy_ticks(run_after_drop(e, t, px, py))
     assert extras.DIZZY_FOR == (2.5, 4.0) and extras.SHAKE_FLIPS == 3
+
+
+# --- B2: carried upside down ----------------------------------------------------------------------------------
+
+
+def hold(e: Engine, t0: float, seconds: float, px: int, py: int, step: float = 0.1) -> list[tuple[float, eng.Output]]:
+    """The pointer rests while the figure is held: every draw (time since the carry began, output)."""
+    t, seen = t0, []
+    while t < t0 + seconds:
+        t += step
+        seen.append((t - t0, e.update(t)))
+    return seen
+
+
+def test_held_by_the_feet_it_is_carried_upside_down() -> None:
+    e = make()
+    t, px, py = pull_out(e, 1.0, *grab_at(e, 1.0, fy=0.92))
+    assert e.upside
+    out = e.update(t + 0.1)
+    assert out.frame == "spin24" and out.angle == math.pi
+
+
+def test_held_by_the_head_or_body_it_stays_upright() -> None:
+    e = make()
+    t, px, py = pull_out(e, 1.0, *grab_at(e, 1.0, fy=0.3))
+    assert not e.upside
+    out = e.update(t + 0.1)
+    assert out.frame == "held" and out.angle is None
+
+
+def test_a_shake_turns_it_over_and_it_stays_over_until_let_go() -> None:
+    e = make()
+    t, px, py = pull_out(e, 1.0, *grab_at(e, 1.0))
+    assert not e.upside
+    t, px, py = shake(e, t, px, py, 3)
+    assert e.upside
+    out = e.update(t + 2.0)
+    assert out.frame == "spin24" and out.angle == math.pi
+    assert run_after_drop(e, t + 2.0, px, py)
+    assert not e.upside and e.update(t + 30.0).angle is None
+
+
+def test_the_flipped_figure_stays_under_the_pointer_and_on_screen() -> None:
+    e = make()
+    t, px, py = pull_out(e, 1.0, *grab_at(e, 1.0, fy=0.92))
+    e.update(t + 0.05, event=("move", 900, 500))
+    e.update(t + 0.1, event=("move", 907, 503))
+    w, h = e.size
+    # the feet are held, and are now at the top of the turned picture: the pointer is 10 px under the window's top
+    assert (e.x, e.y) == (907 - w / 2, 503 - 10)
+    e.update(t + 0.2, event=("move", -500, -500))
+    assert e.x >= -w / 2 and e.y >= 0

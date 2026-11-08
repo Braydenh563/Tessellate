@@ -39,7 +39,7 @@ APP_ONLY = frozenset({
     "act.hands_on_hips", "act.hang_by_feet", "act.hang_one_hand", "act.head_tilt", "act.juggle", "act.kick_legs",
     "act.lean_tilt", "act.lounge", "act.meditate", "act.rest_head", "act.sigh", "act.sloth", "act.sniff",
     "act.toss_stars", "face.confused", "face.laughing", "face.love", "face.sad", "face.shy",
-    "int.held_upside_down", "int.long_carry", "lower.drift", "lower.glide", "lower.lie",
+    "int.long_carry", "lower.drift", "lower.glide", "lower.lie",
     "lower.lounge", "lower.sad", "lower.startle", "lower.think", "move.afield", "pos.back_float", "pos.cross_legged",
     "pos.edge_dangle", "pos.lean", "pos.lounge", "react.graph_laid", "react.long_note", "react.note_binned",
     "react.private_note", "react.remark", "react.reminder_bell", "react.search_found", "react.search_nothing",
@@ -56,7 +56,7 @@ DESK_ONLY = frozenset({
     "react.battery_low", "react.hour_chime", "react.idle_return", "react.window_closed", "react.window_dragged",
     "react.window_maximised", "react.window_opened", "react.window_restored", "trans.upright>hang",
 })
-APP_ONLY_CAP, DESK_ONLY_CAP, NEITHER_CAP = 67, 36, 111
+APP_ONLY_CAP, DESK_ONLY_CAP, NEITHER_CAP = 66, 36, 111
 
 
 @lru_cache(maxsize=1)

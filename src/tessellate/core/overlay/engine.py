@@ -243,6 +243,9 @@ FLING_ESCAPE = 0.4
 FLING_FACE = (2.0, 4.0)
 #: How long a drop waits to stand before the dizzy sway it owes is given up.
 DIZZY_WAIT = 10.0
+#: A press on the lowest part of the body (share of its height from the top) carries it by the feet: upside down.
+FEET_GRAB = 0.78
+UPSIDE_FRAME = "spin24"  # the tumble turned half a circle (24 of 48 steps), the picture a turned peek uses too
 #: A hold that slips (the window moved under the hands, INBOX 1683 k): it may grip again, scrabble for `SCRABBLE_FOR` s
 #: (the hem shakes `SCRABBLE_DRAG` at `SCRABBLE_HZ`) and pull up onto the edge's top, else it drops. The chance is
 #: `GRIP_BASE` bent by how rested it is and by the mood (`GRIP_MOOD`).
@@ -791,6 +794,8 @@ class Engine:
         #: A carry shaken hard enough (`extras.shake_flips`), and the moment a drop owes a dizzy sway (None: none owed).
         self.shaken = False
         self.dizzy_owed: float | None = None
+        #: Carried upside down (grabbed by the feet, or shaken): drawn as the turned tumble picture, half a circle round.
+        self.upside = False
         self.flail_until = 0.0
         #: A hold that slipped: the window it will pull up onto, the scrabble's span, and how the last slip ended.
         self.pulling: Perch | None = None
@@ -1060,6 +1065,8 @@ class Engine:
             self.goal = None
         if state != "peek":
             self.peek_flip, self.peek_show = False, 0.0
+        if state != "held":
+            self.upside = False
         if state != "hang":
             self.pulling, self.scrabble_until = None, 0.0
         if state != "act":
@@ -3777,14 +3784,36 @@ class Engine:
             self.state = "held"
             self.sink, self.peek_edge, self.goal = 0.0, None, None
             self.perch = self.target = None
+            self.upside = False
+            if self._by_the_feet():
+                self._turn_over(True)
         if self.carrying:
-            self.x = px - self.grab[0] - self._flip_dx("held", self.facing < 0)
-            self.y = py - self.grab[1] - self._dy("held")
-            self._keep_on_screen()
             self.trail.append((self.now, px, py))
             del self.trail[:-48]  # 0.6 s of a shake at 60 Hz is 36 samples
             if not self.shaken and not self.reduced and extras.shake_flips(self.trail, self.now, self._scale()) >= extras.SHAKE_FLIPS:
                 self.shaken = True
+                self._turn_over(True)
+            self.x = px - self.grab[0] - self._flip_dx(self._held_frame(), self.facing < 0)
+            self.y = py - self.grab[1] - self._dy("held")
+            self._keep_on_screen()
+
+    def _held_frame(self) -> str:
+        """The picture a carried figure shows: the held pose, or the tumble turned half a circle when upside down."""
+        return UPSIDE_FRAME if self.upside else "held"
+
+    def _by_the_feet(self) -> bool:
+        """Whether the press that began this carry was on the figure's feet (the lowest `1 - FEET_GRAB` of its body)."""
+        _l, top, _r, bottom = self._box("stand", False)
+        return self.grab[1] >= top + FEET_GRAB * (bottom - top)
+
+    def _turn_over(self, on: bool) -> None:
+        """Carry it upside down (or upright again). The turned picture is the held one rotated half a circle about the
+        window's middle, so the point the pointer holds moves to the opposite corner of the window with it."""
+        if on == self.upside or (on and self.reduced):
+            return
+        self.upside = on
+        w, h = self.size
+        self.grab = (w - self.grab[0], h - self.grab[1])
 
     def _ride_limits(self, frame: str) -> tuple[float, float, float, float]:
         """Where the engine's x and y may go (x low, x high, y low, y high) so the drawn box of
@@ -3815,6 +3844,7 @@ class Engine:
             return
         self.carrying = False
         self.placed = True
+        self.upside = False
         if self.shaken:
             self.shaken, self.dizzy_owed = False, now
         self.mind.feel("startled", now)
@@ -3970,6 +4000,8 @@ class Engine:
     # --- the answer ------------------------------------------------------------------------------------
 
     def _fixed_frame(self, s: str) -> str:
+        if s == "held":
+            return self._held_frame()
         if s == "pressed" and self.pre_press == "hang":
             return "hang"  # a press on a hanger keeps the hang pose until it is dragged (INBOX 1690 c)
         return FRAME_OF[s]
@@ -4210,6 +4242,6 @@ class Engine:
         return Output(
             frame, int(round(x)), int(round(y)), self.facing < 0, self._wake(now),
             self.click_now, self.settled_now, clip, self.card_clicked, self._pose(), fx, round(alpha * 16) / 16.0,
-            self.angle + self.wob if frame.startswith("spin") and self.state == "fly" else math.pi if self.peek_flip else None,
+            self.angle + self.wob if frame.startswith("spin") and self.state == "fly" else math.pi if self.peek_flip or (self.upside and self.state == "held") else None,
             self._flow_view(now, frame) if fx is None else None, *self.ex.view(now),
         )

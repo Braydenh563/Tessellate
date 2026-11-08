@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Desk companion (catalogue B2): the figure is carried upside down when the press was on its feet (the lowest fifth of the body) or once the carry is shaken, drawn as the tumble picture turned half a circle (`Output.angle` pi, frame `spin24`) with the held point mirrored so the pointer keeps its place; let go, it is upright again. `int.held_upside_down` is now built on both sides. Fake clock; real Windows unverified.
 - Desk companion (catalogue B1): a carried shake (three direction flips inside 0.6 s, read in x or y) leaves the figure dizzy after the drop, once it stands: 2.5 to 4 s of sway with spiral eyes (`faces.py` `dizzy`, `extras.shake_flips`, `Engine._dizzy`); two flips, or three slower than 0.6 s, do not. `int.shake_dizzy` and `face.dizzy` are now built on both sides. Fake clock; real Windows unverified.
 - Diagram builder (dgmleft 4): the Guide topic "Editing a diagram as blocks" now says a shelf drop joins the nearest box and that Kind asks before it clears blocks, at 1895 of 1900 characters (the sentence "A diagram is a Mermaid document." went to make room), and the dialog help says Kind asks too.
 - Diagram builder (dgmleft 3): on a coarse pointer a selected box's connection handles lean fully out of the edge (their inner edge on the box edge), so a tap on a handle never lands on the box; measured at 390 by 844 with touch: overlap 10 px before, 0 after on all four sides; a mouse keeps 12 px.
