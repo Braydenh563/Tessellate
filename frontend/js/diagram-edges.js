@@ -77,13 +77,18 @@
       const coarse = matchMedia("(pointer: coarse)").matches;
       const full = coarse ? 44 : 24;
       const size = overlay().handleSize(at, full, coarse ? 24 : 14);
+      //: Read before the loop writes (a read after a write lays the page out once per handle).
+      const [wide, tall] = [fig.scrollWidth, fig.scrollHeight];
       for (const handle of handles) {
         handle.style.inlineSize = handle.style.blockSize = `${size}px`;
         const [x, y] = anchor(at, handle.dataset.side);
         //: A shrunk handle leans out of its edge so no more than a sixth of the block's smaller side is under it.
         const lean = size < full ? Math.max(0, size / 2 - Math.min(at.w, at.h) / 6) : 0;
         const [ox, oy] = { top: [0, -1], bottom: [0, 1], left: [-1, 0], right: [1, 0] }[handle.dataset.side];
-        handle.style.transform = `translate(${x - size / 2 + ox * lean}px, ${y - size / 2 + oy * lean}px)`;
+        //: Never past the picture's scroll area: a block near the edge had its handle cut by the pane (blind test 1108: a box 15 px under
+        //: the top, a 44 px handle). The handle moves in over the block instead, which a cut handle could not be pressed through.
+        const room = (extent, at) => Math.max(0, Math.min(at, extent - size));
+        handle.style.transform = `translate(${room(wide, x - size / 2 + ox * lean)}px, ${room(tall, y - size / 2 + oy * lean)}px)`;
       }
     };
     const leave = () => {

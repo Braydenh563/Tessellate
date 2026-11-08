@@ -117,7 +117,9 @@
       const r = more.getBoundingClientRect();
       openMenuAtPoint(specs.map((t) => ({ label: t.name, group: t.group, title: t.hint, run: t.press })), "Add to the diagram", r.right, r.bottom, more);
       //: Each row wears its tile's glyph, in the order the rows were given (the menu has no icon field for a drawn shape).
-      document.querySelectorAll(".pointer-menu-host .action-menu .menu-item").forEach((row, i) => {
+      //: The menu may be moved out of its host to escape a clipping ancestor, so it is found by being the one open (one menu is open at a time).
+      const menu = document.querySelector(".action-menu:not(.hidden)");
+      menu?.querySelectorAll(":scope > .menu-item").forEach((row, i) => {
         if (!specs[i]) return;
         const slot = make("span", "dgm-menu-glyph");
         slot.append(specs[i].glyph.cloneNode(true));
