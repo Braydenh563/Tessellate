@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Desk companion (deskmood 3): let go over a window top it missed by a little (the 'out of reach' case of `_top_in_reach`, a drop, not a throw), it looks confused once it stands on the floor (the `confused` reaction, 20 s cooldown); a drop onto a top or over no window does not.
 - Desk companion (deskmood 2): `idle_return` is now emitted. `ScreenWatch.input_seen` reads the seconds since the last key or mouse input (age only) and says it once when input returns after 10 minutes without; the runner answers it from the typing check (a sitting or sleeping figure reads no screen events), retried for 10 s, and the welcome back replaces the sad face.
 - Desk companion (deskmood 1): left alone for 15 minutes (`engine.LONELY_AFTER`, between the sit at 10 and the sleep at 20) with no pointer within reach and no touch or reaction, it wears the sad face once per idle stretch; never asleep, busy or with Motion off, and the look does not reset the sit and sleep timers. Reuses the `refused` reaction.
 - Desk companion (deskfix 9): the carried pointer is read for a shake at most every 10 ms (a 1000 Hz mouse cost 323 us a pointer event, now 70 us mean); the roam runner's scan-rate test seeds the engine (an unseeded trip that warps wants no scan, 1 run in 20).

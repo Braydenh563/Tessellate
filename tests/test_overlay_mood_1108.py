@@ -7,7 +7,7 @@ import random
 
 from tessellate.core.overlay import engine as eng
 from tessellate.core.overlay import extras, screenwatch
-from tessellate.core.overlay.engine import Engine, Monitor
+from tessellate.core.overlay.engine import Engine, Monitor, Perch
 
 SIZE = (100, 120)
 FULL = (0, 0, 1920, 1080)
@@ -121,3 +121,43 @@ def test_the_return_wakes_a_sitting_figure_and_clears_the_sad_face() -> None:
     assert e.state == "act" and e.act == "welcome_back"
     assert out.face is None or out.face[0] != "sad"
     assert e.ex.over[0] == "smile"
+
+
+# --- 3: confused on a missed landing --------------------------------------------------------------------------
+
+
+def drop_from(e: Engine, t: float) -> float:
+    """Pick the standing figure up by its middle and let go at once, without a throw."""
+    left, top, right, bottom = e._box("stand", False)
+    px, py = int(e.x + (left + right) / 2), int(e.y + top + 0.4 * (bottom - top))
+    e.update(t, event=("down", px, py))
+    e.update(t + 0.05, event=("move", px, py - 30))
+    assert e.state == "held"
+    e.update(t + 0.1, event=("up", px, py - 30))
+    return t + 0.1
+
+
+def test_a_drop_just_out_of_reach_of_a_window_top_is_confused_on_landing() -> None:
+    e = make()
+    e.set_windows([Perch(11, 300, 700, 1500)], 0.1)
+    e.x, e.y = 700.0, 700.0 - SIZE[1] - 150.0  # feet above the top, past `DROP_REACH`, still under 2 heights
+    t = drop_from(e, 1.0)
+    seen = run(e, t, t + 12.0, step=0.033)
+    assert any("out of reach" in n for n in e.notes), e.notes
+    assert faces_of(seen, "confused"), "never confused"
+
+
+def test_a_drop_that_lands_on_the_top_is_not_confused() -> None:
+    e = make()
+    e.set_windows([Perch(11, 300, 700, 1500)], 0.1)
+    e.x, e.y = 700.0, 700.0 - SIZE[1] - 10.0
+    t = drop_from(e, 1.0)
+    seen = run(e, t, t + 12.0, step=0.033)
+    assert not faces_of(seen, "confused")
+
+
+def test_a_drop_over_no_window_is_not_a_miss() -> None:
+    e = make()
+    e.x, e.y = 700.0, 300.0
+    t = drop_from(e, 1.0)
+    assert not faces_of(run(e, t, t + 12.0, step=0.033), "confused")
