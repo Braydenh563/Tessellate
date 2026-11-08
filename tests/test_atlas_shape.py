@@ -520,7 +520,9 @@ def test_the_masculine_look_is_a_star_being_not_an_animatronic():
     assert "armWidth: [3.8, 1.6]," in masculine and "handScale: 0.9," in masculine
     arms = re.search(r"    arm: \[(\[[^\]]+\]), (\[[^\]]+\])\],", masculine)
     assert arms, "the arm bends: two segments"
-    assert '.nm-atlas[data-atlas-look="masculine"] .atl-eye { scale: 0.84; }' in CSS
+    # Intent moved (INBOX 1607 d): the smaller eye was for round 9's stare, which INBOX 1301's lid fix
+    # answered; at 0.84 his eyes read small and wide-set, so they are her size (tests/test_atlas_masc_1607.py).
+    assert '.nm-atlas[data-atlas-look="masculine"] .atl-eye { scale: 0.9; }' in CSS
     assert '.atl-lw-body[data-atlas-look="masculine"] { animation: atl-idle-sway' in CSS
     body = _keyframes("atl-idle-sway").split("{", 1)[1]
     assert set(re.findall(r"([a-z-]+)\s*:", body)) <= {"rotate"}

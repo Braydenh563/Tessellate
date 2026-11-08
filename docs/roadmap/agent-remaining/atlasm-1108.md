@@ -110,3 +110,8 @@ any new JS (the flick) is paid for in the same commit or goes to a lazy file. No
   were moved in step 2 by the CSS origins, which are his, so no `armPivots`). Sweep: his remaining "line points"
   (14/31 at 2x) are pixel-identical with his arms hidden (EXTRA css in a scratch copy of the sweep): the torso's
   own shading under the arm's outline, not a join. next: step 4, eyes and brows, `08-consistency.css` 7388, 7212.
+- done: step 4, expressions (this commit; his eyes 0.84 to 0.9 of hers' scale, eye over head 0.342 to 0.366, gap
+  0.573 to 0.471; straight brow at 0.6 opacity and 1.5 stroke, was 0.22 and 1.3; one outer lash flick, no doze
+  lashes; happy low 0.3, surprised brow-y -4.2, determined low 0.24 knit 2deg, worried knit -15). Mood mean (face
+  change from calm) 1x 28.4 to 28.8, 2x 27.5 to 31.1 (hers 26.1, 31.1); weakest at 1x determined 10.2 (hers 14.1
+  at 2x), surprised 19.2. next: step 5, desk frames, `sprites.py:73` LID_EYES, `faces.py:27-28`.

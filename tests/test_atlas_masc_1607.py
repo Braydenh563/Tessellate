@@ -229,3 +229,67 @@ def test_the_shoulder_join_is_placed_from_each_look_s_own_roots():
                 r = min(math.hypot((ex - cx) / rx, (ey - cy) / ry) for cx in roots)
                 alpha = 1 if r <= full else max(0.0, 1 - (r - full) / (1 - full))
                 assert alpha >= 0.6, (look, side, round(ex, 1), round(ey, 1), round(alpha, 2))
+
+
+def _rule(selector: str) -> str:
+    found = re.search(re.escape(selector) + r" \{([^}]*)\}", CSS)
+    assert found, selector
+    return found.group(1)
+
+
+def _decl(body: str, prop: str) -> float:
+    return float(re.search(rf"(?<![\w-]){prop}:\s*(-?[0-9.]+)", body).group(1))
+
+
+def test_his_eyes_are_her_size_and_set_as_close():
+    # 1607 d: his eyes were 0.84 of the drawing (0.341 of the head's width,
+    # the gap between them 0.57 of an eye), hers 0.9 (0.366, 0.47): small
+    # eyes set wide on a big face, which is what read as off. The same size
+    # now (round 9's smaller eye was for the stare; INBOX 1301's lid fix
+    # answered that, so the size can match hers).
+    scale = _decl(_rule('.nm-atlas[data-atlas-look="masculine"] .atl-eye'), "scale")
+    xs = [x for s in _sample(HEAD) for x, _ in s]
+    width = 10.0 * scale  # the almond, 5.1 out and 4.9 in from the eye's centre
+    assert 0.36 <= width / (max(xs) - min(xs)) <= 0.37, width / (max(xs) - min(xs))
+    gap = (37.6 - 4.9 * scale) - (24.4 + 4.9 * scale)
+    assert gap / width <= 0.5, gap / width
+
+
+def test_his_brows_and_lids_carry_the_mood():
+    # 1607 d: his brows were a 22% hairline (the mood's brow moves showed as
+    # nothing at the companion's size) and his eyes had no line to frame
+    # them where hers have three lashes. Now a brow that is seen (0.6, 1.5
+    # wide), drawn a little shorter at the outer end so it reads as a taper,
+    # a heavier upper lid line, and one short flick at the outer corner.
+    brow = _rule(".nm-atlas .atl-brow-straight")
+    assert _decl(brow, "opacity") >= 0.55 and _decl(brow, "stroke-width") >= 1.5, brow
+    straight = re.search(r'spec\.brow === "straight"\s*\?\s*`M\$\{x - ([0-9.]+) \* side\} [^Q]*Q[^`]*\$\{x \+ ([0-9.]+) \* side\}', ATLAS)
+    outer, inner = (float(v) for v in straight.groups())
+    assert outer < inner, "shorter at the outer end"
+    liner = _rule('.nm-atlas[data-atlas-look="masculine"] .atl-liner:not(.atl-liner-low)')
+    assert _decl(liner, "stroke-width") >= 1.4, liner
+    assert 'lashes: "flick",' in _look("masculine") and "lashes: true," in _look("feminine")
+    eye = ATLAS[ATLAS.index("function atlasEye(") :]
+    eye = eye[: eye.index("\n}\n")]
+    assert 'lashes === "flick"' in eye, "one flick for him, her three lashes for her"
+    assert "if (lashes === true && !tiny)" in eye, "her resting lashes stay hers"
+    lids = ATLAS[ATLAS.index("function atlasLids(") :]
+    assert "if (spec.lashes === true && shut === 1)" in lids[: lids.index("\n}\n")]
+
+
+def test_his_weakest_moods_move_his_face():
+    # 1607 d: at 1x his face changed from calm by 12.9 for determined, 17.3
+    # for happy and 18.3 for surprised (hers 17.4 at the least): too little
+    # to read. With the brows seen, each of his moves a little further, and
+    # determined stays keen, never cross (INBOX 1402: no inner end down past
+    # 4 degrees in a quiet mood).
+    def face(mood: str) -> str:
+        return _rule(f'.nm-atlas[data-atlas-mood="{mood}"]') + _rule(f'.nm-atlas[data-atlas-look="masculine"][data-atlas-mood="{mood}"]')
+
+    def last(mood: str, prop: str) -> float:
+        return float(re.findall(rf"--atl-{prop}:\s*(-?[0-9.]+)", face(mood))[-1])
+
+    assert last("happy", "low") >= 0.3
+    assert last("surprised", "brow-y") <= -4.2
+    assert last("determined", "low") >= 0.24 and last("determined", "knit") <= 4
+    assert last("worried", "knit") <= -14

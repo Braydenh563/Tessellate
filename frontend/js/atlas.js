@@ -521,7 +521,8 @@ const ATLAS_LOOKS = {
       { seg: [[27, 11, 34, 0, 47, 0, 54, 11]], w: [12, 2.4], mass: true },
     ],
     brow: "straight",
-    lashes: false,
+    //: One short flick at each eye's outer corner, not her three lashes (INBOX 1607 d).
+    lashes: "flick",
     tail: [[31.4, 56.6, 40.6, 61.8, 55, 59.8, 53.6, 71], [53.6, 71, 50.6, 80, 53, 89, 62, 90.4], [62, 90.4, 69.6, 91.4, 72.4, 84.4, 66.6, 80.4]],
     tailWidth: (t) => 3.4 + 4.4 * Math.sin(Math.PI * Math.min(1, 0.25 + 0.85 * t)) - 2 * t * t,
     tailJoin: [35.8, 58.8, 4.2],
@@ -1614,7 +1615,8 @@ function atlasEye(parent, id, [cx, cy, side], tiny, lashes) {
     atlasMake("path", { class: "atl-liner atl-liner-low", d: shape.lower }, blink);
     if (lashes) {
       const ox = cx - 5.1 * side;
-      atlasMake("path", { class: "atl-lashes", d: `M${ox} ${cy - 0.8}l${-1.6 * side} -0.9M${ox + 0.9 * side} ${cy - 2.6}l${-1.4 * side} -1.2M${ox + 2.3 * side} ${cy - 4}l${-1 * side} -1.4` }, blink);
+      const more = lashes === "flick" ? "" : `M${ox + 0.9 * side} ${cy - 2.6}l${-1.4 * side} -1.2M${ox + 2.3 * side} ${cy - 4}l${-1 * side} -1.4`;
+      atlasMake("path", { class: "atl-lashes", d: `M${ox} ${cy - 0.8}l${-1.6 * side} -0.9${more}` }, blink);
     }
   }
   const w = tiny ? 2.6 : 1.8;
@@ -1626,7 +1628,7 @@ function atlasEye(parent, id, [cx, cy, side], tiny, lashes) {
   //: heavy ink arc with a flick) read as screwed tight.
   const doze = atlasGroup(eye, "atl-e-doze");
   atlasMake("path", { class: "atl-doze-line", "stroke-width": tiny ? 2.2 : 1.15, d: `M${cx - 4.4} ${cy + 0.8}Q${cx} ${cy + 3.4} ${cx + 4.4} ${cy + 0.8}` }, doze);
-  if (lashes && !tiny) {
+  if (lashes === true && !tiny) {
     atlasMake("path", { class: "atl-doze-lash", d: `M${cx - 3.3 * side} ${cy + 2}l${-0.6 * side} 1.1M${cx - 1.5 * side} ${cy + 2.6}l${-0.3 * side} 1.2` }, doze);
   }
   atlasMake("path", {
@@ -2175,7 +2177,7 @@ function atlasHead(parent, id, level, look, hairAt = null) {
   for (const [x, y, side] of ATLAS_GEO.brows) {
     const brow = atlasGroup(sway, `atl-brow atl-brow-${side > 0 ? "l" : "r"}`, [x, y]);
     const d = spec.brow === "straight"
-      ? `M${x - 2.8 * side} ${y + 0.3}Q${x} ${y - 0.6} ${x + 2.8 * side} ${y + 0.1}`
+      ? `M${x - 2.5 * side} ${y + 0.3}Q${x} ${y - 0.6} ${x + 2.8 * side} ${y + 0.1}`
       : `M${x - 2.6 * side} ${y + 0.4}Q${x - 0.3 * side} ${y - 1.6} ${x + 2.6 * side} ${y + 0.2}`;
     atlasMake("path", { class: `atl-stroke atl-brow-line atl-brow-${spec.brow}`, d }, brow);
   }
@@ -3224,7 +3226,7 @@ function atlasLids(parent, look, shut = 1) {
     atlasMake("path", { class: "atl-skin", d: lidShape }, sweep);
     atlasMake("path", { class: "atl-overlay atl-rim-head", d: lidShape }, sweep);
     atlasMake("path", { class: "atl-lid-edge", d: edge }, sweep);
-    if (spec.lashes && shut === 1) {
+    if (spec.lashes === true && shut === 1) {
       //: Two lashes off the edge's outer third, down and out, as the doze
       //: line's lashes are.
       const lashes = atlasMake("g", { class: "atl-lid-lashes" }, eye);
