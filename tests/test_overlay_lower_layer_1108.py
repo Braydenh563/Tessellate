@@ -11,7 +11,7 @@ from tessellate.core.overlay import behaviour as bh
 from tessellate.core.overlay import engine as eng
 from tests.test_overlay_ride_1670 import make
 
-STATES = ("lie", "think", "sad", "startle", "lounge", "glide")
+STATES = ("lie", "think", "sad", "startle", "lounge", "glide", "billow", "coil", "ripple_calm", "flutter", "pool", "hem_kick", "spiral", "heavy")
 
 
 def put(state: str) -> tuple[eng.Engine, float]:
@@ -38,7 +38,41 @@ def put(state: str) -> tuple[eng.Engine, float]:
     elif state == "glide":
         e._enter("walk", t)
         e.state_until = 1e9
+    else:
+        t = put_c5(e, state, t)
     return e, t
+
+
+def act(e: eng.Engine, name: str, t: float) -> None:
+    e._enter("act", t)
+    e.act, e.act_len, e.act_started, e.state_until = name, 1e9, t, 1e9
+
+
+def put_c5(e: eng.Engine, state: str, t: float) -> float:
+    """atlascat-1108 C5: what makes each of the eight new states the lower body's. Returns the time to read at."""
+    if state == "billow":
+        e._enter("walk", t)
+        e.state_until, e.mode = 1e9, "dash"
+    elif state == "coil":
+        act(e, "groom", t)
+    elif state == "hem_kick":
+        act(e, "little_dance", t)
+    elif state == "spiral":
+        act(e, "flip_twirl", t)
+    elif state == "flutter":
+        e.mind.feel("happy", t)
+    elif state == "heavy":
+        e.mind.feel("sleepy", t)
+        e.mind.event_at = t
+    elif state == "pool":
+        e._enter("sit", t)
+        e.state_until = 1e9
+        e.update(t + 0.04)
+        t += bh.POOL_AFTER + 0.5
+    elif state == "ripple_calm":
+        e.update(t + 0.04)
+        e.state_at -= bh.RIPPLE_AT + 1.0  # a stand that has lasted 25 s, without 25 s of ticks (the engine would act in them)
+    return t
 
 
 def run(e: eng.Engine, t: float, ticks: int, step: float = 0.04) -> list[eng.Output]:
@@ -78,7 +112,7 @@ def test_the_catalogue_states_are_all_in_the_table() -> None:
 
 @pytest.mark.parametrize("state", STATES)
 def test_each_state_changes_the_lower_bodys_sway_and_offset(state: str) -> None:
-    frame = "walk3" if state == "glide" else "sit" if state in ("lounge",) else "sleep" if state == "lie" else "stand"
+    frame = "walk3" if state in ("glide", "billow") else "sit" if state in ("lounge", "pool", "coil") else "sleep" if state == "lie" else "stand"
     plain, held = bh.Flow(), bh.Flow()
     t, a, b = 100.0, [], []
     for _ in range(200):  # 8 s at 25 a second: the easing is long done
