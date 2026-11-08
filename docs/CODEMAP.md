@@ -2,7 +2,7 @@
 
 Generated 2026-11-08 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7884, frontend ids 2644, CSS sections 522, backend routes 649, backend modules 9076, test files 2197, tests 18451, plan headings 1003, app scripts 28, boot scripts 37, script files 263.
+Counts: frontend functions 7884, frontend ids 2644, CSS sections 522, backend routes 649, backend modules 9080, test files 2199, tests 18462, plan headings 1003, app scripts 28, boot scripts 37, script files 263.
 
 ## Frontend functions (7884)
 
@@ -13113,7 +13113,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:164 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (9076)
+## Backend modules (9080)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -14806,9 +14806,9 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `_digits` | src/tessellate/ai/composer_numbers.py:39 |
-| `_plain` | src/tessellate/ai/composer_numbers.py:53 |
-| `normalise` | src/tessellate/ai/composer_numbers.py:57 |
+| `_digits` | src/tessellate/ai/composer_numbers.py:41 |
+| `_plain` | src/tessellate/ai/composer_numbers.py:52 |
+| `normalise` | src/tessellate/ai/composer_numbers.py:56 |
 
 ### src/tessellate/ai/composer_oneword.py (2)
 
@@ -15137,27 +15137,30 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `open_doings` | src/tessellate/ai/composer_slots.py:334 |
 | `read_value` | src/tessellate/ai/composer_slots.py:805 |
 
-### src/tessellate/ai/composer_small.py (17)
+### src/tessellate/ai/composer_small.py (20)
 
 | Name | File:line |
 |---|---|
-| `_best_sentence` | src/tessellate/ai/composer_small.py:176 |
-| `_edited_day` | src/tessellate/ai/composer_small.py:115 |
-| `_holding` | src/tessellate/ai/composer_small.py:54 |
-| `_pick` | src/tessellate/ai/composer_small.py:230 |
-| `_quotes_for` | src/tessellate/ai/composer_small.py:62 |
-| `_section` | src/tessellate/ai/composer_small.py:153 |
-| `_spoken` | src/tessellate/ai/composer_small.py:58 |
-| `_subject_words` | src/tessellate/ai/composer_small.py:44 |
-| `_views` | src/tessellate/ai/composer_small.py:50 |
-| `_where_tail` | src/tessellate/ai/composer_small.py:159 |
-| `ago` | src/tessellate/ai/composer_small.py:128 |
-| `answer` | src/tessellate/ai/composer_small.py:262 |
-| `asks_old` | src/tessellate/ai/composer_small.py:226 |
-| `something_old` | src/tessellate/ai/composer_small.py:236 |
-| `what_if` | src/tessellate/ai/composer_small.py:72 |
-| `where_asked` | src/tessellate/ai/composer_small.py:145 |
-| `where_written` | src/tessellate/ai/composer_small.py:183 |
+| `_best_sentence` | src/tessellate/ai/composer_small.py:212 |
+| `_edited_day` | src/tessellate/ai/composer_small.py:128 |
+| `_holding` | src/tessellate/ai/composer_small.py:65 |
+| `_pick` | src/tessellate/ai/composer_small.py:267 |
+| `_plain` | src/tessellate/ai/composer_small.py:32 |
+| `_quotes_for` | src/tessellate/ai/composer_small.py:73 |
+| `_section` | src/tessellate/ai/composer_small.py:180 |
+| `_spoken` | src/tessellate/ai/composer_small.py:69 |
+| `_subject_words` | src/tessellate/ai/composer_small.py:55 |
+| `_views` | src/tessellate/ai/composer_small.py:61 |
+| `_where_rank` | src/tessellate/ai/composer_small.py:204 |
+| `_where_tail` | src/tessellate/ai/composer_small.py:186 |
+| `ago` | src/tessellate/ai/composer_small.py:141 |
+| `answer` | src/tessellate/ai/composer_small.py:299 |
+| `asks_old` | src/tessellate/ai/composer_small.py:263 |
+| `something_old` | src/tessellate/ai/composer_small.py:273 |
+| `stem_of` | src/tessellate/ai/composer_small.py:165 |
+| `what_if` | src/tessellate/ai/composer_small.py:83 |
+| `where_asked` | src/tessellate/ai/composer_small.py:169 |
+| `where_written` | src/tessellate/ai/composer_small.py:219 |
 
 ### src/tessellate/ai/composer_smalltalk.py (12)
 
@@ -16322,22 +16325,23 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_is_vague_reason` | src/tessellate/ai/links.py:80 |
 | `audit_vague_links` | src/tessellate/ai/links.py:97 |
 
-### src/tessellate/ai/list_pool.py (12)
+### src/tessellate/ai/list_pool.py (13)
 
 | Name | File:line |
 |---|---|
-| `_computed` | src/tessellate/ai/list_pool.py:131 |
+| `_computed` | src/tessellate/ai/list_pool.py:145 |
 | `_counting` | src/tessellate/ai/list_pool.py:86 |
 | `_dated` | src/tessellate/ai/list_pool.py:99 |
 | `_faded` | src/tessellate/ai/list_pool.py:116 |
 | `_filed` | src/tessellate/ai/list_pool.py:30 |
+| `_holding_words` | src/tessellate/ai/list_pool.py:123 |
 | `_in_order` | src/tessellate/ai/list_pool.py:80 |
 | `_leaving_out` | src/tessellate/ai/list_pool.py:67 |
 | `_live` | src/tessellate/ai/list_pool.py:26 |
 | `_mentioning` | src/tessellate/ai/list_pool.py:42 |
 | `_naming` | src/tessellate/ai/list_pool.py:56 |
 | `_of_kind` | src/tessellate/ai/list_pool.py:103 |
-| `pool` | src/tessellate/ai/list_pool.py:123 |
+| `pool` | src/tessellate/ai/list_pool.py:133 |
 
 ### src/tessellate/ai/margin.py (12)
 
@@ -17385,15 +17389,15 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | Name | File:line |
 |---|---|
 | `_clamp` | src/tessellate/ai/resurface.py:62 |
-| `_comparable_vectors` | src/tessellate/ai/resurface.py:344 |
+| `_comparable_vectors` | src/tessellate/ai/resurface.py:348 |
 | `_dismissed` | src/tessellate/ai/resurface.py:204 |
 | `_refresh` | src/tessellate/ai/resurface.py:74 |
-| `_relatedness` | src/tessellate/ai/resurface.py:306 |
+| `_relatedness` | src/tessellate/ai/resurface.py:310 |
 | `_upsert_scores` | src/tessellate/ai/resurface.py:79 |
 | `compute_scores` | src/tessellate/ai/resurface.py:95 |
 | `ensure_fresh` | src/tessellate/ai/resurface.py:174 |
-| `for_context` | src/tessellate/ai/resurface.py:360 |
-| `for_day` | src/tessellate/ai/resurface.py:257 |
+| `for_context` | src/tessellate/ai/resurface.py:364 |
+| `for_day` | src/tessellate/ai/resurface.py:261 |
 | `ranked` | src/tessellate/ai/resurface.py:212 |
 | `score_for` | src/tessellate/ai/resurface.py:66 |
 
@@ -24538,7 +24542,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (18451)
+## Tests (18462)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -26346,8 +26350,10 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_slot_reply_1570.py | 8 |
 | tests/test_small_b_1108_a22.py | 5 |
 | tests/test_small_b_1108_a24.py | 5 |
+| tests/test_small_b_1108_review.py | 8 |
+| tests/test_small_b_1108_speed.py | 2 |
 | tests/test_small_b_1108_u16.py | 6 |
-| tests/test_small_b_1108_u17.py | 3 |
+| tests/test_small_b_1108_u17.py | 4 |
 | tests/test_small_fixes_1019.py | 8 |
 | tests/test_small_fixes_1027.py | 17 |
 | tests/test_smooth_boot.py | 17 |

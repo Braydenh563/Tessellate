@@ -20,8 +20,18 @@ TODAY = date(2026, 11, 8)
         ("list the twenty notes", "list the 20 notes"),
         ("show me the last two notes", "show me the last 2 notes"),
         ("twenty-five notes", "25 notes"),
-        ("thirty two tags", "32 tags"),
-        ("I have one note and three tags", "I have 1 note and 3 tags"),
+        ("thirty two days", "32 days"),
+        ("I have one note and three tags", "I have 1 note and three tags"),
+        ("the last two weeks", "the last 2 weeks"),
+        ("the past three months", "the past 3 months"),
+        ("Five notes about the garden", "5 notes about the garden"),
+        #: Names and sayings stay as typed (review of batch B): only a count of units is a digit.
+        ("the seven habits", "the seven habits"),
+        ("twenty-one pilots", "twenty-one pilots"),
+        ("Ocean's eleven", "Ocean's eleven"),
+        ("the one thing", "the one thing"),
+        ("fifty fifty", "fifty fifty"),
+        ("Five Guys menu", "Five Guys menu"),
         ("which one is it", "which one is it"),
         ("no one knows", "no one knows"),
         ("the Five Guys menu", "the Five Guys menu"),
@@ -41,3 +51,12 @@ def test_the_plan_sees_the_digit_a_spelled_number_stands_for():
 def test_a_spelled_count_is_not_a_subject_to_search_for():
     assert "twenty" not in plan("list the twenty notes", TODAY).terms
     assert "20" in plan("list the twenty notes", TODAY).terms
+
+
+def test_two_weeks_ago_reads_the_same_before_and_after_normalising():
+    from tessellate.entry import timewords
+
+    def read(text):
+        return [(m.at, m.precision) for m in timewords.find(text, TODAY)]
+
+    assert read(composer_numbers.normalise("two weeks ago")) == read("two weeks ago") == [(date(2026, 10, 25), "day")]

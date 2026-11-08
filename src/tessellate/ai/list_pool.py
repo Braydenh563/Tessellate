@@ -117,14 +117,28 @@ def _faded(session: Session) -> list[Entry]:
     """The notes "show me something old" picks from: the most faded ones
     (`resurface.ranked`), else the oldest, when no score has been kept yet."""
     found = resurface.ranked(session, limit=composer_small.OLD_POOL)
-    return found or list(session.scalars(select(Entry).where(*_live()).order_by(Entry.created_at.asc()).limit(composer_small.OLD_POOL)))
+    return found or list(session.scalars(select(Entry).where(*_live(), Entry.is_draft == False, Entry.archived_at.is_(None)).order_by(Entry.created_at.asc()).limit(composer_small.OLD_POOL)))  # noqa: E712
+
+
+def _holding_words(session: Session, words: list[str]) -> list[Entry]:
+    """The newest notes that hold every word of a "where did I write X" (by its
+    stem, so "habits" meets "habit"): the search ranks by likeness and may not
+    bring the note the words are in."""
+    query = select(Entry).where(*_live(), Entry.is_draft == False, Entry.archived_at.is_(None))  # noqa: E712
+    for word in words:
+        query = query.where(func.lower(Entry.content).like(f"%{like_escape(composer_small.stem_of(word))}%", escape=LIKE_ESCAPE))
+    return list(session.scalars(query.order_by(Entry.created_at.desc()).limit(composer_small.WHERE_POOL)))
 
 
 def pool(session: Session, question: str, entries: list) -> list:
     """The notes the answer for `question` reads: the faded ones for "show me
-    something old", else the computed answer's (`_computed`)."""
+    something old", the ones holding the words of a "where did I write", else
+    the computed answer's (`_computed`)."""
     if composer_small.asks_old(question):
         return _faded(session) or entries
+    if words := composer_small.where_asked(question):
+        held = _holding_words(session, words)
+        return held + [e for e in entries if e.id not in {h.id for h in held}] if held else entries
     return _computed(session, question, entries)
 
 

@@ -23,10 +23,17 @@ from tessellate.ai.composer_read import NoteView, read_note
 # --- U16: a what-if has no fact to answer from ----------------------------------------
 
 _WHAT_IF = re.compile(
-    r"^\s*(?:(?:ok|okay|so|hmm|and)[,\s]+)?(?:what (?:if|would happen if|will happen if|happens if|might happen if|could happen if)"
-    r"|suppose(?: that)?|supposing(?: that)?|imagine(?: that)?|let'?s say|how would (?:it|things) (?:be|change) if)\s+(?P<premise>.+?)\s*[?.!]*\s*$",
+    r"^(?:(?:ok|okay|so|hmm|and),? )?(?:what (?:if|would happen if|will happen if|happens if|might happen if|could happen if)"
+    r"|suppose(?: that)?|supposing(?: that)?|imagine(?: that)?|let'?s say|how would (?:it|things) (?:be|change) if) (?P<premise>\S.*)$",
     re.I,
 )
+
+
+def _plain(question: str) -> str:
+    """The question with its whitespace runs as single spaces and its closing
+    stops off, so the patterns below need no `\\s*` tails (a run of tabs would
+    make two adjacent quantifiers share its characters)."""
+    return " ".join((question or "").split()).rstrip("?.! ")
 
 #: The verbs a premise is made of, which are not what the notes would hold
 #: ("move" in "what if I move to Lisbon"): the subject is what is left.
@@ -36,6 +43,10 @@ _PREMISE_VERBS = frozenset(
     "give gave giving make made making do did doing keep kept keeping join joined joining become became".split()
 )
 _PREMISE_FILLER = frozenset({"i", "we", "my", "the", "a", "an", "to", "of", "up", "out", "off", "on", "in", "at", "for", "with", "it", "that", "not", "never"})
+
+#: A premise that is an instruction or a plan ("what if I translate hello", "imagine I buy a car")
+#: with nothing in the notes about it is left to the ordinary answer.
+_COMMANDISH = re.compile(r"^(?:(?:that\s+)?(?:i|we)\s+)?(?:to\s+)?(?:translate|buy|make|write|remind|add|create|draft|send|set|book|tell|summari[sz]e|find|show)\b", re.I)
 
 NO_FACT = "Your notes do not say what would happen."
 MAX_QUOTES = 2
@@ -73,7 +84,7 @@ def what_if(question: str, notes: list[dict], *, today: date | None = None) -> d
     """What the notes hold about a what-if's subject, then the line that says
     they do not say what would happen. A consequence is never stated: the
     answer only quotes, so nothing in it is a claim the notes did not make."""
-    found = _WHAT_IF.match(question or "")
+    found = _WHAT_IF.match(_plain(question))
     if not found:
         return None
     words = _subject_words(found.group("premise"))
@@ -81,6 +92,8 @@ def what_if(question: str, notes: list[dict], *, today: date | None = None) -> d
     views = _views(notes)
     held = sorted((v for v in views if stems and _holding(v, stems)), key=lambda v: (-_holding(v, stems), v.rank))
     out = _Answer({v.id: v for v in views}, today or user_today())
+    if not held and _COMMANDISH.match(found.group("premise")):
+        return None
     if not held:
         subject = f"about {_spoken(words)}" if words else "on that"
         out.parts.append(("template", f"Your notes hold nothing {subject}, and they do not say what would happen."))
@@ -102,11 +115,11 @@ def what_if(question: str, notes: list[dict], *, today: date | None = None) -> d
 # --- A22: where did I write X ---------------------------------------------------------
 
 _WHERE = re.compile(
-    r"^\s*where (?:did|have|had|do) (?:i|we) (?:write|wrote|written|put|note|noted|jot|jotted|save|saved|store|stored|keep|kept|mention|mentioned|say|said|record|recorded|type|typed)"
-    r"(?:\s+down)?\s+(?P<rest>.+?)\s*[?.!]*\s*$",
+    r"^where (?:did|have|had|do) (?:i|we) (?:write|wrote|written|put|note|noted|jot|jotted|save|saved|store|stored|keep|kept|mention|mentioned|say|said|record|recorded|type|typed)"
+    r"(?: down)? (?P<rest>\S.*)$",
     re.I,
 )
-_FILLER = re.compile(r"^(?:(?:about|on|that|the|my|it|of)\s+)+", re.I)
+_FILLER = re.compile(r"^(?:(?:about|on|that|the|my|it|of) )+", re.I)
 _HEADING = re.compile(r"^#{2,6}[ \t]+(.+?)[ \t#]*$", re.M)
 _EDITED = re.compile(r"edited\s+\w+\s+(\d{1,2})\s+([A-Za-z]+)\s+(\d{4})")
 _MONTHS = {m: i for i, m in enumerate("january february march april may june july august september october november december".split(), 1)}
@@ -142,12 +155,26 @@ def ago(days: int) -> str:
     return f"{realise.count_word(years)} years ago"
 
 
+_ASKED_STOP = _PREMISE_FILLER | {"down", "this", "those", "these", "was", "were", "is", "are", "about", "and"}
+
+
+#: Notes the route reads for one "where did I write" question.
+WHERE_POOL = 24
+
+
+def stem_of(word: str) -> str:
+    return _stem(word)
+
+
 def where_asked(question: str) -> list[str]:
     """The subject words of "where did I write about squats", or []."""
-    found = _WHERE.match(question or "")
+    found = _WHERE.match(_plain(question))
     if not found:
         return []
-    return [t for t in subject_terms(_FILLER.sub("", found.group("rest"))) if t.lower() not in _PREMISE_FILLER]
+    #: Not `subject_terms`: it drops words the notes' own insight rules claim
+    #: ("habits"), and a title is whatever the person called it.
+    words = re.findall(r"[\w'-]+", _FILLER.sub("", found.group("rest")))
+    return [w for w in words if w.lower() not in _ASKED_STOP and len(w) > 1]
 
 
 def _section(content: str, at: int) -> str:
@@ -159,7 +186,7 @@ def _section(content: str, at: int) -> str:
 def _where_tail(out: _Answer, view: NoteView, best, today: date) -> None:  # noqa: ANN001
     """The section, the category and the age, said after the note's name."""
     content = str(view.note.get("content") or "")
-    if view.titled and (section := _section(content, best.start)):
+    if view.titled and best and (section := _section(content, best.start)):
         out.parts.append(("template", ", under "))
         out.parts.append(("term", section, view.id))
     category = str(view.note.get("category") or "").strip()
@@ -168,9 +195,18 @@ def _where_tail(out: _Answer, view: NoteView, best, today: date) -> None:  # noq
         out.parts.append(("filed", category, view.id))
     edited = _edited_day(view.note)
     changed, verb = (edited, "last edited") if edited else (view.written, "written")
-    if changed:
+    #: An untitled note is named by its day already ("your note from 1 October").
+    if changed and not (verb == "written" and not view.titled):
         out.parts.append(("template", f", {verb} "))
         out.m(ago((today - changed).days))
+
+
+def _where_rank(view: NoteView, stems: set[str]) -> tuple:
+    """Which note a "where" names first: the one whose title holds the subject,
+    then one with a name over one without, then the one whose sentences are
+    most about it, then the search's own order."""
+    about = sum(1 for s in view.sentences if any(_holds(st, set(_words(s.text))) for st in stems))
+    return (not (view.titled and stems <= view.title_words), not view.titled, -about / max(len(view.sentences), 1), view.rank)
 
 
 def _best_sentence(view: NoteView, stems: set[str]):  # noqa: ANN202
@@ -192,10 +228,10 @@ def where_written(question: str, notes: list[dict], *, today: date | None = None
     held = [v for v in views if all(_holds(st, v.words) for st in stems)]
     if not held:
         return None
-    held.sort(key=lambda v: (not stems <= v.title_words, v.rank))
+    held.sort(key=lambda v: _where_rank(v, stems))
     view = held[0]
     best = _best_sentence(view, stems)
-    if best is None:
+    if best is None and not (view.titled and stems <= view.title_words):
         return None
     out = _Answer({v.id: v for v in views}, today)
     out.parts.append(("template", "It is in "))
@@ -203,18 +239,19 @@ def where_written(question: str, notes: list[dict], *, today: date | None = None
     _where_tail(out, view, best, today)
     others = len(held) - 1
     out.parts.append(("template", f". It is in {realise.count_word(others)} other note{'s' if others != 1 else ''} too." if others else "."))
-    out.parts.append(("template", " It reads: "))
-    out.q(best, words)
+    if best is not None:  # the title alone may hold the words
+        out.parts.append(("template", " It reads: "))
+        out.q(best, words)
     return _result(out.parts, "where", out.rows)
 
 
 # --- A24: show me something old -------------------------------------------------------
 
 _OLD = re.compile(
-    r"^\s*(?:(?:can|could|would) you\s+)?(?:please\s+)?(?:show|give|get|find|pull up|bring up|dig up|surface|remind)(?: me)?\s+"
-    r"(?:(?:something|a note|an? (?:old|forgotten) note|one|anything|a thing)\s+(?:that is\s+|that i wrote\s+|i wrote\s+)?)?"
-    r"(?:(?:really|very|quite)\s+)?(?:old|forgotten|from (?:a while|ages|long) (?:ago|back)|i(?:'ve| have) (?:forgotten|not seen)(?: in a while)?)"
-    r"(?:\s+(?:note|one|thing))?\s*[?.!]*\s*$|^\s*(?:show|give|get)(?: me)?\s+an? (?:old|forgotten) note\s*[?.!]*\s*$",
+    r"^(?:(?:can|could|would) you )?(?:please )?(?:show|give|get|find|pull up|bring up|dig up|surface|remind)(?: me)? "
+    r"(?:(?:something|a note|an? (?:old|forgotten) note|one|anything|a thing) (?:(?:that is|that i wrote|i wrote) )?)?"
+    r"(?:(?:really|very|quite) )?(?:old|forgotten|from (?:a while|ages|long) (?:ago|back)|i(?:'ve| have) (?:forgotten|not seen)(?: in a while)?)"
+    r"(?: (?:note|one|thing))?$|^(?:show|give|get)(?: me)? an? (?:old|forgotten) note$",
     re.I,
 )
 
@@ -224,7 +261,7 @@ OLD_POOL = 6
 
 
 def asks_old(question: str) -> bool:
-    return bool(_OLD.match(question or ""))
+    return bool(_OLD.match(_plain(question)))
 
 
 def _pick(views: list[NoteView], salt: str, turn: int | None) -> NoteView:

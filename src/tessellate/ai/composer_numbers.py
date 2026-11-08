@@ -22,8 +22,10 @@ _SMALL = {w: n for w, n in timewords._NUMBER_WORDS.items() if w not in ("a", "an
 _SMALL.update({"zero": 0, "thirteen": 13, "fourteen": 14, "fifteen": 15, "sixteen": 16, "seventeen": 17, "eighteen": 18, "nineteen": 19})
 _TENS = {"twenty": 20, "thirty": 30, "forty": 40, "fifty": 50, "sixty": 60, "seventy": 70, "eighty": 80, "ninety": 90}
 
-#: What "one" may count: a pronoun ("the one", "which one") is not changed.
-_COUNTED = r"(?:days?|weeks?|months?|years?|hours?|minutes?|notes?|entr(?:y|ies)|items?|tags?|times?|things?)"
+#: What a number word may count. Only a count of these is turned to a digit:
+#: "the seven habits", "twenty-one pilots", "Ocean's eleven", "the one thing" and
+#: "fifty fifty" are names and sayings, and stay as typed.
+_COUNTED = r"(?:days?|weeks?|months?|years?|hours?|minutes?|notes?|entr(?:y|ies)|items?|times?)"
 
 _ALL = sorted({*_SMALL, *_TENS}, key=len, reverse=True)
 _TENS_ALT = "|".join(sorted(_TENS, key=len, reverse=True))
@@ -32,7 +34,7 @@ _NUMBER = re.compile(
     rf"\b(?:(?P<tens>{_TENS_ALT})(?:[\s-]+(?P<unit>{_UNITS_ALT}))?|(?P<small>{'|'.join(w for w in _ALL if w not in _TENS)}))\b(?!\s+(?:hundred|thousand|million)\b)",
     re.I,
 )
-_QUOTED = re.compile(r'"[^"]*"|“[^”]*”|`[^`]*`')
+_QUOTED = re.compile(r'"[^"]*"|“[^“”]*”|`[^`]*`')
 _COUNTED_AFTER = re.compile(rf"\s+{_COUNTED}\b", re.I)
 
 
@@ -40,14 +42,11 @@ def _digits(match: re.Match, text: str) -> str:
     word = match.group(0)
     starts = match.start() == len(text) - len(text.lstrip())
     #: A capital in the middle of a sentence is a name, not a count.
-    if word[0].isupper() and not starts:
+    if (word[0].isupper() and not starts) or not _COUNTED_AFTER.match(text, match.end()):
         return word
     if match.group("tens"):
         return str(_TENS[match.group("tens").lower()] + (_SMALL[match.group("unit").lower()] if match.group("unit") else 0))
-    small = match.group("small").lower()
-    if small == "one" and not _COUNTED_AFTER.match(text, match.end()):
-        return word
-    return str(_SMALL[small])
+    return str(_SMALL[match.group("small").lower()])
 
 
 def _plain(text: str) -> str:
