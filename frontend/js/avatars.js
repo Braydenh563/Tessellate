@@ -5599,9 +5599,32 @@ function nameMarkBuddyTempo() {
     return;
   }
   const now = performance.now();
+  //: **No read before a frame has drawn the last beat's steps** (chatspasm-1108: `states` 151 to 288ms and
+  //: `getAnimations` 290 to 657ms of forced style at 4x CPU under load, a beat later than a step that was
+  //: still waiting to be drawn). Frames slower than the 50ms beat read the figure's style twice for one
+  //: picture; the beat waits a short while for the frame (three times at most), and the clock steps by
+  //: elapsed time, so nothing is lost by it.
+  if (nmbTempo.wrote && !nmbTempo.drawn && (nmbTempo.skips = (nmbTempo.skips || 0) + 1) < 4 && !document.hidden) {
+    nmbTempo.timer = setTimeout(nameMarkBuddyTempo, 20);
+    return;
+  }
+  nmbTempo.skips = 0;
   //: Not while a page or popup is arriving: `getAnimations` flushes all the style it has dirtied (306ms at 4x, INBOX 1534).
   //: Nor behind a modal (INBOX 1587): the beats go on with the list it has.
-  const due = now - nmbTempo.seen > 1000 && now >= (window.uiSettlingUntil || 0) && !nameMarkBuddyBehindCover();
+  let due = now - nmbTempo.seen > 1000 && now >= (window.uiSettlingUntil || 0) && !nameMarkBuddyBehindCover();
+  //: **Nor while an answer streams, nor on a page written since the idle moment** (chatspasm-1108: 54 to
+  //: 364ms of forced style at 4x CPU, 300ms after Send, with the idle gate already open: each delta dirties
+  //: the pane, and the beat after the idle callback read it before a frame drew it). The list it holds
+  //: serves meanwhile; a streaming answer defers the periodic look to 6s, a written page re-arms the idle
+  //: gate eight times at most.
+  if (due && nmbTempo.seen > 0) {
+    const streaming = typeof chatStreaming !== "undefined" && chatStreaming;
+    if (streaming && now - nmbTempo.seen < 6000) due = false;
+    else if (nmbTempo.ready && nmb.pageAt > nmbTempo.readyAt && (nmbTempo.waits = (nmbTempo.waits || 0) + 1) < 8) {
+      nmbTempo.ready = false;
+      due = false;
+    }
+  }
   //: **The periodic look waits for the page to be drawn** (the lag log: `avatars.js TimerHandler:setTimeout
   //: 623ms (forced layout 465ms)`; 15 reads, 596ms, max 514ms at 4x CPU across seven tab clicks, right after
   //: the hold below ended and the arriving page was still dirty). An idle callback runs after the frame that
@@ -5612,12 +5635,14 @@ function nameMarkBuddyTempo() {
       nmbTempo.idle = window.requestIdleCallback?.(() => {
         nmbTempo.idle = 0;
         nmbTempo.ready = true;
+        nmbTempo.readyAt = performance.now();
       }, { timeout: 600 });
       if (nmbTempo.idle === undefined) nmbTempo.ready = true;
     }
   } else if (due) {
     nmbTempo.seen = now;
     nmbTempo.ready = false;
+    nmbTempo.waits = 0;
     //: Atlas's layer roots (atlas.js, `atlasDrawFigure`) animate on the
     //: compositor; stepping them here would put them back on the main
     //: thread, so only what animates inside a drawing is paced.
@@ -5732,6 +5757,12 @@ function nameMarkBuddyTempo() {
     }
   });
   nmbTempo.at = now;
+  //: Drawn once a frame has run and a task after it (the frame's style is resolved by then).
+  if (nmbTempo.anims.length) {
+    nmbTempo.wrote = true;
+    nmbTempo.drawn = false;
+    afterFrames(() => setTimeout(() => (nmbTempo.drawn = true), 0), 1);
+  } else nmbTempo.wrote = false;
   if (!busy && !still) nmbTempo.stride = nmbTempo.step(nmbTempo.anims, states, nmbTempo.gap);
   if (!document.hidden) nmbTempo.timer = setTimeout(nameMarkBuddyTempo, nmbTempo.anims.length ? NMB_TEMPO_MS * nmbTempo.stride : 1000);
 }
