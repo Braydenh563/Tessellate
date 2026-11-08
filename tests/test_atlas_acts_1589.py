@@ -33,7 +33,8 @@ AVATARS = (JS_DIR / "avatars.js").read_text(encoding="utf-8")
 #: (every other act sets `nmb-arms`, avatars.js).
 QUIET = set(re.findall(r'"(\w+)"', re.search(r"const NMB_FACELESS_ACTS = \[([^\]]*)\];", AVATARS).group(1)))
 #: The shoulders (atlas.js `shoulders`, `armPivots`) and the arm's length to the hand.
-PIVOTS = {"masculine": {"l": (24.6, 41.0), "r": (37.4, 41.0)}, "feminine": {"l": (26.4, 40.6), "r": (35.6, 40.6)}}
+#: Intent moved (INBOX 1607 b): his shoulders came in by 1 each side with his arms, so his pivots did too.
+PIVOTS = {"masculine": {"l": (25.6, 41.0), "r": (36.4, 41.0)}, "feminine": {"l": (26.4, 40.6), "r": (35.6, 40.6)}}
 ARM = {"masculine": 20.4, "feminine": 20.8}
 MIDDLE = 31.0
 

@@ -6874,8 +6874,8 @@ svg.atl-defs { position: absolute; width: 0; height: 0; overflow: hidden; }
   transform-box: fill-box;
   transform-origin: center;
 }
-.nm-atlas .nmb-arm-l { transform-box: view-box; transform-origin: 24.6px 41px; }
-.nm-atlas .nmb-arm-r { transform-box: view-box; transform-origin: 37.4px 41px; }
+.nm-atlas .nmb-arm-l { transform-box: view-box; transform-origin: 25.6px 41px; }
+.nm-atlas .nmb-arm-r { transform-box: view-box; transform-origin: 36.4px 41px; }
 /* Thinking: a hand at the chin, as the reference sheet draws it. The
    forearm is drawn in the head's layer (atlas.js), over the face, and the
    resting right arm steps aside for it; not while the companion sits or
@@ -6997,10 +6997,10 @@ svg.atl-defs { position: absolute; width: 0; height: 0; overflow: hidden; }
 .nm-atlas[data-atlas-look="masculine"][data-atlas-mood="sleepy"] { --atl-ar0: 8deg; --atl-al0: -8deg; --atl-chin0: 0; --atl-ar1: 12deg; --atl-al1: -12deg; --atl-chin1: 0; --atl-ar2: 0deg; --atl-al2: -6deg; --atl-chin2: 1; }
 .nm-atlas[data-atlas-look="masculine"][data-atlas-mood="sad"] { --atl-ar0: 8deg; --atl-al0: -8deg; --atl-chin0: 0; --atl-ar1: 10deg; --atl-al1: -10deg; --atl-chin1: 0; --atl-ar2: 6deg; --atl-al2: -6deg; --atl-chin2: 0; }
 .nm-atlas[data-atlas-look="masculine"][data-atlas-mood="proud"] { --atl-ar0: -24deg; --atl-al0: 24deg; --atl-chin0: 0; --atl-ar1: -28deg; --atl-al1: 28deg; --atl-chin1: 0; --atl-ar2: -24deg; --atl-al2: 24deg; --atl-chin2: 0; }
-.nm-atlas[data-atlas-look="masculine"][data-atlas-mood="shy"] { --atl-ar0: 16deg; --atl-al0: -16deg; --atl-chin0: 0; --atl-ar1: 18deg; --atl-al1: -18deg; --atl-chin1: 0; --atl-ar2: 14deg; --atl-al2: -14deg; --atl-chin2: 0; }
+.nm-atlas[data-atlas-look="masculine"][data-atlas-mood="shy"] { --atl-ar0: 16deg; --atl-al0: -16deg; --atl-chin0: 0; --atl-ar1: 16deg; --atl-al1: -16deg; --atl-chin1: 0; --atl-ar2: 14deg; --atl-al2: -14deg; --atl-chin2: 0; }
 .nm-atlas[data-atlas-look="masculine"][data-atlas-mood="determined"] { --atl-ar0: -14deg; --atl-al0: 14deg; --atl-chin0: 0; --atl-ar1: -18deg; --atl-al1: 18deg; --atl-chin1: 0; --atl-ar2: -30deg; --atl-al2: 22deg; --atl-chin2: 0; }
-.nm-atlas[data-atlas-look="masculine"][data-atlas-mood="love"] { --atl-ar0: 18deg; --atl-al0: -18deg; --atl-chin0: 0; --atl-ar1: 16deg; --atl-al1: -16deg; --atl-chin1: 0; --atl-ar2: -120deg; --atl-al2: 0deg; --atl-chin2: 0; }
-.nm-atlas[data-atlas-look="masculine"][data-atlas-mood="worried"] { --atl-ar0: 18deg; --atl-al0: -18deg; --atl-chin0: 0; --atl-ar1: 16deg; --atl-al1: -16deg; --atl-chin1: 0; --atl-ar2: 18deg; --atl-al2: -12deg; --atl-chin2: 0; }
+.nm-atlas[data-atlas-look="masculine"][data-atlas-mood="love"] { --atl-ar0: 16deg; --atl-al0: -16deg; --atl-chin0: 0; --atl-ar1: 16deg; --atl-al1: -16deg; --atl-chin1: 0; --atl-ar2: -120deg; --atl-al2: 0deg; --atl-chin2: 0; }
+.nm-atlas[data-atlas-look="masculine"][data-atlas-mood="worried"] { --atl-ar0: 16deg; --atl-al0: -16deg; --atl-chin0: 0; --atl-ar1: 16deg; --atl-al1: -16deg; --atl-chin1: 0; --atl-ar2: 16deg; --atl-al2: -12deg; --atl-chin2: 0; }
 .nm-atlas[data-atlas-look="feminine"][data-atlas-mood="happy"] { --atl-ar0: -105deg; --atl-al0: 25deg; --atl-chin0: 0; --atl-ar1: -150deg; --atl-al1: 20deg; --atl-chin1: 0; --atl-ar2: -80deg; --atl-al2: 30deg; --atl-chin2: 0; }
 .nm-atlas[data-atlas-look="feminine"][data-atlas-mood="delighted"] { --atl-ar0: -130deg; --atl-al0: 70deg; --atl-chin0: 0; --atl-ar1: -160deg; --atl-al1: 110deg; --atl-chin1: 0; --atl-ar2: -110deg; --atl-al2: 30deg; --atl-chin2: 0; }
 .nm-atlas[data-atlas-look="feminine"][data-atlas-mood="laughing"] { --atl-ar0: -110deg; --atl-al0: 30deg; --atl-chin0: 0; --atl-ar1: 0deg; --atl-al1: 20deg; --atl-chin1: 1; --atl-ar2: -30deg; --atl-al2: -10deg; --atl-chin2: 0; }
@@ -7017,8 +7017,8 @@ svg.atl-defs { position: absolute; width: 0; height: 0; overflow: hidden; }
 .nm-atlas[data-atlas-look="feminine"][data-atlas-mood="worried"] { --atl-ar0: 12deg; --atl-al0: -12deg; --atl-chin0: 0; --atl-ar1: 12deg; --atl-al1: -12deg; --atl-chin1: 0; --atl-ar2: 10deg; --atl-al2: -10deg; --atl-chin2: 0; }
 /* The companion turns limbs about its own generic joints; Atlas's are
    higher and narrower, so they are named here, one step more specific. */
-#nm-buddy .atl-figure .nmb-arm-l { transform-origin: 24.6px 41px; }
-#nm-buddy .atl-figure .nmb-arm-r { transform-origin: 37.4px 41px; }
+#nm-buddy .atl-figure .nmb-arm-l { transform-origin: 25.6px 41px; }
+#nm-buddy .atl-figure .nmb-arm-r { transform-origin: 36.4px 41px; }
 /* The legs are the roots of their own layers (atlas.js `atlasDrawFigure`),
    so a leg rule names `.atl-figure.nmb-leg-*`, the root, and the origin is
    in the layer's own 64x92 px frame; turned on the compositor, a step
@@ -7037,8 +7037,8 @@ svg.atl-defs { position: absolute; width: 0; height: 0; overflow: hidden; }
    bubble. Wake: a stretch, the arms out. Meditate: cross-legged, eyes
    closed, the rings level. Lantern and bell: the arm out. Juggling: arms
    half up under the arc of stars. Starry map: leaning on the panel. */
-#nm-buddy .atl-figure .nmb-hold-l { transform-origin: 24.6px 41px; }
-#nm-buddy .atl-figure .nmb-hold-r { transform-origin: 37.4px 41px; }
+#nm-buddy .atl-figure .nmb-hold-l { transform-origin: 25.6px 41px; }
+#nm-buddy .atl-figure .nmb-hold-r { transform-origin: 36.4px 41px; }
 #nm-buddy[data-pose="sit"] .atl-figure.nmb-leg-l { transform: rotate(54deg) scaleY(0.7); }
 #nm-buddy[data-pose="sit"] .atl-figure.nmb-leg-r { transform: rotate(-54deg) scaleY(0.7); }
 /* The arms at rest, per pose (round 6, the owner: "improve the arms"):
@@ -7299,6 +7299,7 @@ svg.atl-defs { position: absolute; width: 0; height: 0; overflow: hidden; }
 /* Round 9: the hair's cap (atlas.js, `atlasHairCap`), fuller than a lock
    so the crown reads as hair, not skin under a veil, and a faint parting. */
 .nm-atlas .atl-hair-cap .atl-cap-fill { opacity: 0.94; }
+.nm-atlas[data-atlas-look="masculine"] .atl-hair-cap .atl-hair-neb { opacity: 0.8; }
 /* The feminine fringe in strands (atlas.js, `fringe`; INBOX 550, where
    three wedges cut in the cap's edge read as flat and hard): each lock in
    the cap's paint over its own shadow on the brow, the roots' shade, a
@@ -7406,6 +7407,9 @@ svg.atl-defs { position: absolute; width: 0; height: 0; overflow: hidden; }
    neck. The head marks and the icon crop to the head, so they keep it
    whole. */
 .nm-atlas:not(.atl-head, .atl-tiny) { --atl-head-k: 0.76; }
+/* His a little larger on his narrower shoulders (INBOX 1607 b, "the size or shape or smth of the head
+   looks off"): head over shoulders 1.09 to 1.31, hers 1.59 (tests/test_atlas_masc_1607.py). */
+.nm-atlas[data-atlas-look="masculine"]:not(.atl-head, .atl-tiny) { --atl-head-k: 0.8; }
 @property --atl-lean { syntax: "<angle>"; inherits: false; initial-value: 0deg; }
 @property --atl-sx { syntax: "<number>"; inherits: false; initial-value: 1; }
 @property --atl-sy { syntax: "<number>"; inherits: false; initial-value: 1; }

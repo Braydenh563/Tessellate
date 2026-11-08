@@ -545,7 +545,12 @@ const ATLAS_LOOKS = {
     //: hair coming from the back"): a short cap swept to his right over the
     //: crown, its hairline cut into two small points; the crest and the
     //: ears rise from it (`atlasHairCap`).
-    cap: "M18.4 20.6C17.8 12.6 23.4 6.8 31 6.8C38.6 6.8 44.2 12.6 43.8 20C42.6 16.2 40.2 13.4 37 12.2C36.4 13.6 35 14.6 33.6 14.8C33.8 13.8 33.6 13 33 12.4C31.6 14 29.6 15 27.6 15.2C28 14.4 28 13.6 27.6 13C25 14.4 22 16.8 18.4 20.6Z",
+    //: **Hair that frames the face** (INBOX 1607 b): the cap stopped at the
+    //: temples with its hairline at 14.2, so 93% of the outline below the
+    //: brows met the background (hers 79%): a bare egg. Now the hairline
+    //: is at 16 and each side runs on down the temple into a short sideburn,
+    //: proud of the cheek to y 26.6 and clear of the eye: 80% bare.
+    cap: "M19.3 26.6C18.3 25.6 17.3 23.4 17.4 20.6C17.2 12.4 23.4 6.8 31 6.8C38.6 6.8 44.8 12.4 44.6 20.6C44.7 23.4 43.7 25.6 42.7 26.6C42.4 23.6 42 20.6 40.8 18.6C39.6 16.4 37.8 15 35.6 14.6C35.2 15.8 34.4 16.8 33.2 17.4C33.4 16.6 33.2 15.8 32.8 15.2C31.6 16 29.8 16.6 27.8 16.8C28.1 16 28 15.4 27.6 14.9C25 15.4 22.6 16.6 21.2 18.6C20 20.6 19.6 23.6 19.3 26.6Z",
     legs: false,
     //: The lower body's pose (`.atl-lower`, the CSS) shears and stretches
     //: about the join itself, the middle of the torso's fade into it (INBOX
@@ -608,20 +613,27 @@ const ATLAS_LOOKS = {
     //: slimmer (3.8 to 1.6), the cloak and its tatters narrower (9.8 at the
     //: hips, 12 at its fullest) and the tail slimmer to match
     //: (scratchpad/ui-sweeps/atlas614-build.js).
-    torso: "M25.6 35.4C22.2 36.4 21.8 40.4 23.4 43.6C25.8 47.6 26.8 55.4 26 61C28 63.4 34 63.4 36 61C35.2 55.4 36.2 47.6 38.6 43.6C40.2 40.4 39.8 36.4 36.4 35.4Z",
+    //: **A head on shoulders in her proportion** (INBOX 1607 b, the owner:
+    //: "the size or shape or smth of the head looks off and a little
+    //: creepy"): on 17 across, his head (the same drawing as hers) sat on
+    //: shoulders 1.45 times hers, 1.09 heads across where she has 1.59.
+    //: The shoulders are 15 across now (0.88 about the middle above y 44),
+    //: the head 0.8 (the CSS), 1.31; the V stays at 1.58 to the waist, and
+    //: each arm moved in whole by 1 with its root (atlasm1108.js).
+    torso: "M26.2 35.4C23.3 36.4 22.9 40.4 24.3 43.6C25.8 47.6 26.8 55.4 26 61C28 63.4 34 63.4 36 61C35.2 55.4 36.2 47.6 37.7 43.6C39.1 40.4 38.7 36.4 35.8 35.4Z",
     //: **Arms that hang** (INBOX 564, 567, 568, the owner: "the arms still
     //: look separate and they stick straight out of the body and dont hang
     //: naturally"): from the shoulder the upper arm drops 13 degrees off
     //: vertical to the elbow, which bends 15 degrees, and the forearm falls
     //: back in beside the hip; 4.4 at the shoulder to 1.8 at the wrist,
     //: with a smaller mitten (0.9).
-    armL: [[24.6, 40.4, 23.6, 43.4, 22.8, 46.6, 22.4, 49.6], [22.4, 49.6, 22, 52.6, 22.2, 55.4, 22.6, 57.8]],
-    arm: [[37.4, 40.4, 38.4, 43.4, 39.2, 46.6, 39.6, 49.6], [39.6, 49.6, 40, 52.6, 39.8, 55.4, 39.4, 57.8]],
+    armL: [[25.6, 40.4, 24.6, 43.4, 23.8, 46.6, 23.4, 49.6], [23.4, 49.6, 23, 52.6, 23.2, 55.4, 23.6, 57.8]],
+    arm: [[36.4, 40.4, 37.4, 43.4, 38.2, 46.6, 38.6, 49.6], [38.6, 49.6, 39, 52.6, 38.8, 55.4, 38.4, 57.8]],
     armWidth: [3.8, 1.6],
     armHands: [-1, 1],
     handScale: 0.9,
     //: Where the right mitten grips a bell or a lantern (`atlasHandProps`).
-    propHand: [39.4, 59.6],
+    propHand: [38.4, 59.6],
   },
   //: **The feminine look** (the owner: "the female designs I gave you are
   //: quite different"): no ear tufts, only a small fin swept back at each

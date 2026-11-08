@@ -790,7 +790,8 @@ def test_the_props_hang_from_each_look_s_own_hand():
     # 2.1 to 3.9 units off the masculine mitten and about 18 off her held-out
     # hand. Each look names its grip and the props move there.
     # INBOX 568: both hang their arms at rest, and the grips moved with the hands.
-    assert "propHand: [39.4, 59.6]" in _look("masculine")
+    # Intent moved (INBOX 1607 b): his right arm came in by 1 with his shoulders, and the grip with it.
+    assert "propHand: [38.4, 59.6]" in _look("masculine")
     assert "propHand: [38, 59]" in _look("feminine")
     assert "atlasHandProps(arms.r, arms.l, look);" in ATLAS
     assert "const grip = (ATLAS_LOOKS[look] || {}).propHand || hand;" in ATLAS
