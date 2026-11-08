@@ -2,9 +2,9 @@
 
 Generated 2026-11-08 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7908, frontend ids 2652, CSS sections 522, backend routes 649, backend modules 9180, test files 2226, tests 18715, plan headings 1004, app scripts 28, boot scripts 37, script files 263.
+Counts: frontend functions 7909, frontend ids 2652, CSS sections 522, backend routes 649, backend modules 9180, test files 2227, tests 18716, plan headings 1004, app scripts 28, boot scripts 37, script files 263.
 
-## Frontend functions (7908)
+## Frontend functions (7909)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -3134,18 +3134,19 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `diagSections` | frontend/js/diag-report.js:106 |
 | `diagTable` | frontend/js/diag-report.js:96 |
 
-### frontend/js/diagram-bar.js (9)
+### frontend/js/diagram-bar.js (10)
 
 | Name | File:line |
 |---|---|
 | `build` | frontend/js/diagram-bar.js:40 |
-| `chain` | frontend/js/diagram-bar.js:137 |
+| `chain` | frontend/js/diagram-bar.js:147 |
 | `hintOf` | frontend/js/diagram-bar.js:17 |
+| `historyKey` | frontend/js/diagram-bar.js:122 |
 | `key` | frontend/js/diagram-bar.js:112 |
 | `last` | frontend/js/diagram-bar.js:18 |
 | `nameOf` | frontend/js/diagram-bar.js:23 |
 | `optionsOf` | frontend/js/diagram-bar.js:22 |
-| `rootKey` | frontend/js/diagram-bar.js:122 |
+| `rootKey` | frontend/js/diagram-bar.js:132 |
 | `sync` | frontend/js/diagram-bar.js:26 |
 
 ### frontend/js/diagram-builder.js (41)
@@ -3167,7 +3168,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `joinChip` | frontend/js/diagram-builder.js:287 |
 | `joinPick` | frontend/js/diagram-builder.js:507 |
 | `joins` | frontend/js/diagram-builder.js:503 |
-| `kindOf` | frontend/js/diagram-builder.js:645 |
+| `kindOf` | frontend/js/diagram-builder.js:646 |
 | `menuAt` | frontend/js/diagram-builder.js:487 |
 | `more` | frontend/js/diagram-builder.js:524 |
 | `mount` | frontend/js/diagram-builder.js:549 |
@@ -3185,13 +3186,13 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `shapeGlyph` | frontend/js/diagram-builder.js:143 |
 | `shapeItems` | frontend/js/diagram-builder.js:151 |
 | `shapeRow` | frontend/js/diagram-builder.js:164 |
-| `show` | frontend/js/diagram-builder.js:655 |
+| `show` | frontend/js/diagram-builder.js:656 |
 | `stepBlock` | frontend/js/diagram-builder.js:412 |
 | `stops` | frontend/js/diagram-builder.js:121 |
 | `styleDo` | frontend/js/diagram-builder.js:509 |
 | `suggest` | frontend/js/diagram-builder.js:497 |
 | `suggestMenu` | frontend/js/diagram-builder.js:515 |
-| `sync` | frontend/js/diagram-builder.js:620 |
+| `sync` | frontend/js/diagram-builder.js:621 |
 | `titleOf` | frontend/js/diagram-builder.js:39 |
 
 ### frontend/js/diagram-canvas.js (7)
@@ -3282,7 +3283,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `dropAt` | frontend/js/diagram-kinds.js:912 |
 | `fieldsOf` | frontend/js/diagram-kinds.js:680 |
 | `find` | frontend/js/diagram-kinds.js:622 |
-| `ghostSpec` | frontend/js/diagram-kinds.js:1097 |
+| `ghostSpec` | frontend/js/diagram-kinds.js:1098 |
 | `glyph` | frontend/js/diagram-kinds.js:627 |
 | `icon` | frontend/js/diagram-kinds.js:617 |
 | `itemsFor` | frontend/js/diagram-kinds.js:760 |
@@ -3330,9 +3331,9 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `removeBlock` | frontend/js/diagram-kinds.js:844 |
 | `render` | frontend/js/diagram-kinds.js:660 |
 | `seedBlock` | frontend/js/diagram-kinds.js:899 |
-| `show` | frontend/js/diagram-kinds.js:1120 |
+| `show` | frontend/js/diagram-kinds.js:1121 |
 | `stepBlock` | frontend/js/diagram-kinds.js:832 |
-| `sync` | frontend/js/diagram-kinds.js:1073 |
+| `sync` | frontend/js/diagram-kinds.js:1074 |
 | `whoLabel` | frontend/js/diagram-kinds.js:624 |
 | `withinNode` | frontend/js/diagram-kinds.js:935 |
 | `words` | frontend/js/diagram-kinds.js:643 |
@@ -24724,7 +24725,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (18715)
+## Tests (18716)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -25342,6 +25343,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_diagram_builder.py | 20 |
 | tests/test_diagram_d3.py | 2 |
 | tests/test_diagram_deep_1588.py | 5 |
+| tests/test_diagram_dgmfix2_1108.py | 1 |
 | tests/test_diagram_dgmleft_1108.py | 3 |
 | tests/test_diagram_document.py | 7 |
 | tests/test_diagram_door_panel.py | 2 |

@@ -117,6 +117,16 @@
     return optionsOf(shape);
   }
 
+  //: Ctrl+Z and Ctrl+Y anywhere inside the builder (a tile, the picture, the toolbar) are the builder's: the app's undo listens on the
+  //: document and would run a second step, even bin the document ("Undone: Created"). A text field keeps the browser's own.
+  function historyKey(S, event) {
+    const t = event.target;
+    if (event.altKey || !(event.ctrlKey || event.metaKey) || !/^[zy]$/i.test(event.key) || t.isContentEditable || t.closest?.("input, textarea, select")) return;
+    event.preventDefault();
+    event.stopPropagation();
+    return event.shiftKey || /y/i.test(event.key) ? S.io.redo() : S.io.undo();
+  }
+
   //: The same keys from the picture, the toolbar or the outline's edge (the block handler only hears a focused block):
   //: 1 to 7, N, Shift+N, G add after the selected block, K colours, ? opens the sheet. Typing in a field is left alone.
   function rootKey(S, event, h) {
@@ -159,5 +169,5 @@
     return true;
   }
 
-  diagramModel.bar = { build, sync, key, last, rootKey, chain };
+  diagramModel.bar = { build, sync, key, last, rootKey, historyKey, chain };
 })();
