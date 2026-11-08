@@ -342,7 +342,8 @@
   background: transparent;
 }
 
-.dgm-shelf .dgm-tile:hover {
+.dgm-shelf .dgm-tile:hover,
+.dgm-shelf .dgm-tile:is(:focus-visible, :has(:focus-visible)) {
   background: var(--hover-veil);
 }
 
