@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Diagram builder (dgmfix2 6): a block's connection handles stay inside the part of the picture the stage shows (a wide chart scrolls inside the stage, which clips); measured at 390 on a four-box left-to-right chart with a selected Ready? block: the right handle ended at 354.2 on a stage ending 344.2 (10 px cut) and ends at 344.2 now.
 - Diagram builder (dgmfix2 5): on a coarse pointer or under 600 px, where the shelf is hidden (display none, measured at 390), tile titles say "Tap to add it.", the hint line "Tap a shape to add it." and the ? popover "Tap Add to put a block in"; the desktop words are unchanged.
 - Diagram builder (dgmfix2 4): the Guide topic "Editing a diagram as blocks" opens with how to add a block (N, a shelf tile or Add, /diagram in a document) and has the keywords add a block and add a box, at 1899 of 1900 characters; the in-builder ? popover is 6 short lines (it was one 200-word paragraph).
 - Diagram builder (dgmfix2 3): a block dropped on empty picture joins from the box nearest the drop by rendered centres at any distance, as the help says (it stopped at 120 px and fell back to the selected box); measured: a drop 136 px right of Ship it joined Start before (`A --> D`) and joins Ship it now, and 326 px right does too. The old pin's 120 became Infinity: its intent (nearest box, else the selected one) holds.

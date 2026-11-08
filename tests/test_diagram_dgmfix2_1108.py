@@ -68,3 +68,12 @@ def test_a_phone_is_told_to_tap_add_where_the_shelf_is_hidden():
     assert "Tap to add it." in LIBRARY and 'matchMedia("(max-width: 599.98px), (pointer: coarse)")' in LIBRARY
     assert "Tap a shape to add it." in LIBRARY
     assert "Tap Add to put a block in" in EMBED_JS
+
+
+EDGES = (JS / "diagram-edges.js").read_text(encoding="utf-8")
+
+
+def test_a_handle_stays_inside_the_part_of_the_picture_the_stage_shows():
+    """A wide chart scrolls inside the stage, which clips: at 390 the selected block's right handle ended at 354 on a stage ending 344."""
+    assert "seen.right - ox0" in EDGES and "fig.clientLeft - fig.scrollLeft" in EDGES
+    assert "room(x0, x1, x - size / 2 + ox * out)" in EDGES
