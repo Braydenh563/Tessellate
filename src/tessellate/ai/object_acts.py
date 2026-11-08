@@ -134,16 +134,67 @@ def _exact(wanted: str, names: list[str]) -> str | None:
     return next((n for n in names if n == wanted), None) or next((n for n in names if n.casefold() == wanted.casefold()), None)
 
 
-def _private_hold(session: Session, tag: str) -> bool:
-    """Whether a private note carries the tag while the vault is locked."""
+def _every_tag(session: Session) -> list[str]:
+    """Every tag on any note at all, binned and private too: `tags_repo.counts`
+    leaves out a locked private note's tags and a binned note is not in use,
+    but `tags_repo.rename` changes both, so a merge hides behind either."""
+    from tessellate.core.database import Entry
+    from tessellate.entry import manager
+
+    names: dict[str, None] = {}
+    for raw in session.scalars(select(Entry.tags)):
+        for tag in manager.tags_from_json(raw):
+            names[tag] = None
+    return list(names)
+
+
+def _private_hold(session: Session, *tags: str) -> bool:
+    """Whether a private note, binned or not, carries any of the tags while
+    the vault is locked."""
     from tessellate.core import vault
     from tessellate.core.database import Entry
     from tessellate.entry import manager
 
     if vault.key() is not None:
         return False
-    rows = session.scalars(select(Entry).where(Entry.is_private == True, Entry.is_deleted == False))  # noqa: E712
-    return any(tag in manager.entry_tags(row) for row in rows)
+    wanted = set(tags)
+    rows = session.scalars(select(Entry).where(Entry.is_private == True))  # noqa: E712
+    return any(wanted.intersection(manager.entry_tags(row)) for row in rows)
+
+
+def _tag_refusal(session: Session, old: str, new: str) -> str | None:
+    """Why a tag rename is left to the Tag manager, or None. The plan and the
+    confirmed step both ask it, so a hand-made step gets no way round it."""
+    if new.casefold() != old.casefold() and _exact(new, _every_tag(session)) is not None:
+        #: Renaming onto a tag that exists merges the two, and Undo could not split them.
+        return f"There is already a tag called “{new}”. Renaming onto it would merge the two, which Undo cannot split, so I leave that to the Tag manager."
+    if _private_hold(session, old, new):
+        return f"The tag “{old}” is also on private notes, and the vault is locked, so I will not rename it from here. Unlock the vault first, or use the Tag manager."
+    return None
+
+
+def _category_refusal(session: Session, old: str, new: str) -> str | None:
+    from tessellate.entry import manager
+
+    names = [row["name"] for row in manager.all_categories(session)]
+    if new.casefold() != old.casefold() and _exact(new, names) is not None:
+        return f"There is already a category called “{new}”. Renaming onto it would merge the two, which Undo cannot split, so I leave that to Manage categories."
+    return None
+
+
+def guard(session: Session, name: str, args: dict) -> str | None:
+    """The refusal for a confirmed rename step, or None: the planner's checks
+    again at run time, since `POST /chat/command/run` takes its steps from the
+    page and a card is not the only way there."""
+    from tessellate.entry import manager, tagnames
+
+    old, new = str(args.get("old") or ""), str(args.get("new") or "")
+    if name == "rename_tag":
+        cleaned = tagnames.normalise_tags([new], split=False)
+        return _tag_refusal(session, old, cleaned[0] if cleaned else new)
+    if name == "rename_category":
+        return _category_refusal(session, old, manager.category_label(new))
+    return None
 
 
 def _plan_rename_tag(session: Session, parsed: dict, c) -> dict:  # noqa: ANN001
@@ -160,11 +211,8 @@ def _plan_rename_tag(session: Session, parsed: dict, c) -> dict:  # noqa: ANN001
     new = cleaned[0]
     if new == old:
         return {"line": f"That tag is already called “{old}”."}
-    if _exact(new, list(counts)) is not None and new.casefold() != old.casefold():
-        #: Renaming onto a tag that exists merges the two, and Undo could not split them.
-        return {"line": f"There is already a tag called “{new}”. Renaming onto it would merge the two, which Undo cannot split, so I leave that to the Tag manager."}
-    if _private_hold(session, old):
-        return {"line": f"The tag “{old}” is also on private notes, and the vault is locked, so I will not rename it from here. Unlock the vault first, or use the Tag manager."}
+    if refusal := _tag_refusal(session, old, new):
+        return {"line": refusal}
     notes = counts[old]
     label = f"Rename the tag “{old}” to “{new}” on {notes} note{'' if notes == 1 else 's'}"
     card = c.card(label, [{"name": "rename_tag", "arguments": {"old": old, "new": new}}])
@@ -184,8 +232,8 @@ def _plan_rename_category(session: Session, parsed: dict, c) -> dict:  # noqa: A
     new = manager.category_label(parsed["new"])
     if new == old:
         return {"line": f"That category is already called “{old}”."}
-    if _exact(new, names) is not None and new.casefold() != old.casefold():
-        return {"line": f"There is already a category called “{new}”. Renaming onto it would merge the two, which Undo cannot split, so I leave that to Manage categories."}
+    if refusal := _category_refusal(session, old, new):
+        return {"line": refusal}
     notes = next(row["count"] for row in rows if row["name"] == old)
     label = f"Rename the category “{old}” to “{new}” ({notes} note{'' if notes == 1 else 's'} in it)"
     card = c.card(label, [{"name": "rename_category", "arguments": {"old": old, "new": new}}])

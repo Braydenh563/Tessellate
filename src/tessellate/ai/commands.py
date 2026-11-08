@@ -1882,6 +1882,8 @@ def _run_one(session: Session, name: str, args: dict, tools) -> dict:  # noqa: A
         return _bin_reminder(session, args)
     if name in task_acts.OWN_STEPS:
         return task_acts.run_step(session, name, args)
+    if name in ("rename_tag", "rename_category") and (refusal := object_acts.guard(session, name, args)):
+        return {"error": refusal}
     return tools.execute_tool(session, name, args)
 
 

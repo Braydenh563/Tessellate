@@ -2,7 +2,7 @@
 
 Generated 2026-11-08 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7902, frontend ids 2652, CSS sections 522, backend routes 649, backend modules 9154, test files 2216, tests 18618, plan headings 1004, app scripts 28, boot scripts 37, script files 263.
+Counts: frontend functions 7902, frontend ids 2652, CSS sections 522, backend routes 649, backend modules 9158, test files 2217, tests 18625, plan headings 1004, app scripts 28, boot scripts 37, script files 263.
 
 ## Frontend functions (7902)
 
@@ -13139,7 +13139,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:164 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (9154)
+## Backend modules (9158)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -13746,7 +13746,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `read_typed` | src/tessellate/ai/commands.py:1062 |
 | `reminder_when` | src/tessellate/ai/commands.py:1327 |
 | `retitled` | src/tessellate/ai/commands.py:1675 |
-| `run` | src/tessellate/ai/commands.py:1888 |
+| `run` | src/tessellate/ai/commands.py:1890 |
 | `summarise_done` | src/tessellate/ai/commands.py:1289 |
 
 ### src/tessellate/ai/composer.py (41)
@@ -16805,23 +16805,27 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `answer` | src/tessellate/ai/notebook_tasks.py:82 |
 | `open_items` | src/tessellate/ai/notebook_tasks.py:31 |
 
-### src/tessellate/ai/object_acts.py (15)
+### src/tessellate/ai/object_acts.py (19)
 
 | Name | File:line |
 |---|---|
 | `Helpers` | src/tessellate/ai/object_acts.py:27 |
-| `_binned` | src/tessellate/ai/object_acts.py:195 |
+| `_binned` | src/tessellate/ai/object_acts.py:243 |
+| `_category_refusal` | src/tessellate/ai/object_acts.py:176 |
 | `_close` | src/tessellate/ai/object_acts.py:114 |
+| `_every_tag` | src/tessellate/ai/object_acts.py:137 |
 | `_exact` | src/tessellate/ai/object_acts.py:133 |
 | `_name` | src/tessellate/ai/object_acts.py:44 |
 | `_note_target` | src/tessellate/ai/object_acts.py:55 |
-| `_plan_rename_category` | src/tessellate/ai/object_acts.py:174 |
-| `_plan_rename_tag` | src/tessellate/ai/object_acts.py:149 |
-| `_plan_restore` | src/tessellate/ai/object_acts.py:211 |
-| `_private_hold` | src/tessellate/ai/object_acts.py:137 |
+| `_plan_rename_category` | src/tessellate/ai/object_acts.py:222 |
+| `_plan_rename_tag` | src/tessellate/ai/object_acts.py:200 |
+| `_plan_restore` | src/tessellate/ai/object_acts.py:259 |
+| `_private_hold` | src/tessellate/ai/object_acts.py:151 |
 | `_strip_article` | src/tessellate/ai/object_acts.py:48 |
+| `_tag_refusal` | src/tessellate/ai/object_acts.py:165 |
 | `_unknown` | src/tessellate/ai/object_acts.py:123 |
-| `plan` | src/tessellate/ai/object_acts.py:231 |
+| `guard` | src/tessellate/ai/object_acts.py:185 |
+| `plan` | src/tessellate/ai/object_acts.py:279 |
 | `read_rename` | src/tessellate/ai/object_acts.py:60 |
 | `read_restore` | src/tessellate/ai/object_acts.py:92 |
 
@@ -24682,7 +24686,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (18618)
+## Tests (18625)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -24917,6 +24921,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_chat_act_card_once.py | 1 |
 | tests/test_chat_acts_1108.py | 7 |
 | tests/test_chat_acts_objects_1108.py | 15 |
+| tests/test_chat_acts_review_1108.py | 7 |
 | tests/test_chat_acts_today_1108.py | 6 |
 | tests/test_chat_api.py | 19 |
 | tests/test_chat_app_help.py | 5 |
