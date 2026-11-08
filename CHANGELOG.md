@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Companion catalogue: 307 acts in nine kinds shared by the desk and in-app companions, with a parity ratchet and a seven-batch build order.
 - Lag log rows for animation frames name the callback that ran (a slow frame callback is kept for the row) instead of the sampler wrapper (INBOX 1696 jj).
 - Companion tempo and mood hand-over no longer force style or stall pointer events (INBOX 1696 jj): the look waits for a drawn frame and pauses while a reply streams; the hand-over waits out a moving pointer.
 - Settings: Line spacing (Tight, Normal, Roomy) and Line width (Narrow, Standard, Wide) for notes and documents, Live editor included, carried in exported looks (BACKLOG).
