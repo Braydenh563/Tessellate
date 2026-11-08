@@ -304,6 +304,44 @@
   display: none;
 }
 
+/* The shelf (1661 l): six blocks of the kind on the picture's top left. Each is the library's own tile, icon only, so a
+   press adds it and a drag drops it on the picture; the caret opens the whole grouped Add menu. */
+.dgm-shelf {
+  position: absolute;
+  inset-block-start: var(--space-3);
+  inset-inline-start: var(--space-3);
+  z-index: 2;
+  flex-wrap: nowrap;
+  gap: var(--space-1);
+  margin: 0;
+  padding: var(--space-1);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--modal-bg);
+}
+
+.dgm-shelf .dgm-tile {
+  justify-content: center;
+  inline-size: var(--control-h);
+  padding: 0;
+  border-color: transparent;
+  background: transparent;
+}
+
+.dgm-shelf .dgm-tile:hover {
+  background: var(--hover-veil);
+}
+
+.dgm-shelf .dgm-tile-name {
+  display: none;
+}
+
+@media (pointer: coarse), (max-width: 599.98px) {
+  .dgm-shelf {
+    display: none;
+  }
+}
+
 /* While a zoom is in motion (diagram-view.js) the picture is only a transform: the boxes, handles and the picked arrow
    sit at the old size, so they hide until the real width lands (140 ms after the last input), then draw once. */
 .dgm-stage.dgm-gesturing .dgm-picture > .dgm-overlay {

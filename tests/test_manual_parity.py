@@ -658,4 +658,6 @@ def test_the_sequence_picture_drags_are_in_the_guide_and_the_dialog_help() -> No
     for words in ("a head dragged sideways reorders", "a drag from one lifeline to another adds a message", "the + at a gap opens the Add menu"):
         assert words in body, words
     embed = (FRONTEND / "js" / "diagram-embed.js").read_text(encoding="utf-8")
-    assert "double press a part to name it, drag a head to reorder and drag from one lifeline to another to add a message" in embed
+    assert "double press a part to name it, drag a head to reorder and drag from one lifeline to another to add a message. The shelf in the picture's corner adds a block by a press or a drag" in embed
+    blocks = str(next(t["body"] for t in HELP_TOPICS if t["id"] == "diagram-blocks"))
+    assert "Press or drag a block from the shelf onto the picture" in blocks

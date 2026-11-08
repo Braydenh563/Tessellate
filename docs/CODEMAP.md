@@ -2,9 +2,9 @@
 
 Generated 2026-11-08 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7900, frontend ids 2652, CSS sections 522, backend routes 649, backend modules 9081, test files 2205, tests 18503, plan headings 1004, app scripts 28, boot scripts 37, script files 263.
+Counts: frontend functions 7902, frontend ids 2652, CSS sections 522, backend routes 649, backend modules 9081, test files 2205, tests 18505, plan headings 1004, app scripts 28, boot scripts 37, script files 263.
 
-## Frontend functions (7900)
+## Frontend functions (7902)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -3273,13 +3273,13 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 |---|---|
 | `addTile` | frontend/js/diagram-kinds.js:811 |
 | `buildBlock` | frontend/js/diagram-kinds.js:687 |
-| `buildPalette` | frontend/js/diagram-kinds.js:983 |
+| `buildPalette` | frontend/js/diagram-kinds.js:984 |
 | `buildRow` | frontend/js/diagram-kinds.js:697 |
-| `dropApply` | frontend/js/diagram-kinds.js:940 |
-| `dropAt` | frontend/js/diagram-kinds.js:911 |
+| `dropApply` | frontend/js/diagram-kinds.js:941 |
+| `dropAt` | frontend/js/diagram-kinds.js:912 |
 | `fieldsOf` | frontend/js/diagram-kinds.js:680 |
 | `find` | frontend/js/diagram-kinds.js:622 |
-| `ghostSpec` | frontend/js/diagram-kinds.js:1096 |
+| `ghostSpec` | frontend/js/diagram-kinds.js:1097 |
 | `glyph` | frontend/js/diagram-kinds.js:627 |
 | `icon` | frontend/js/diagram-kinds.js:617 |
 | `itemsFor` | frontend/js/diagram-kinds.js:760 |
@@ -3317,21 +3317,21 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `kxUid` | frontend/js/diagram-kinds.js:30 |
 | `kxWalk` | frontend/js/diagram-kinds.js:263 |
 | `kxWithin` | frontend/js/diagram-kinds.js:283 |
-| `menuAt` | frontend/js/diagram-kinds.js:891 |
-| `mount` | frontend/js/diagram-kinds.js:1011 |
+| `menuAt` | frontend/js/diagram-kinds.js:892 |
+| `mount` | frontend/js/diagram-kinds.js:1012 |
 | `nameOf` | frontend/js/diagram-kinds.js:623 |
-| `nestBlock` | frontend/js/diagram-kinds.js:837 |
-| `onKey` | frontend/js/diagram-kinds.js:856 |
+| `nestBlock` | frontend/js/diagram-kinds.js:838 |
+| `onKey` | frontend/js/diagram-kinds.js:857 |
 | `pickWho` | frontend/js/diagram-kinds.js:746 |
 | `relabel` | frontend/js/diagram-kinds.js:797 |
-| `removeBlock` | frontend/js/diagram-kinds.js:843 |
+| `removeBlock` | frontend/js/diagram-kinds.js:844 |
 | `render` | frontend/js/diagram-kinds.js:660 |
-| `seedBlock` | frontend/js/diagram-kinds.js:898 |
-| `show` | frontend/js/diagram-kinds.js:1119 |
-| `stepBlock` | frontend/js/diagram-kinds.js:831 |
-| `sync` | frontend/js/diagram-kinds.js:1072 |
+| `seedBlock` | frontend/js/diagram-kinds.js:899 |
+| `show` | frontend/js/diagram-kinds.js:1120 |
+| `stepBlock` | frontend/js/diagram-kinds.js:832 |
+| `sync` | frontend/js/diagram-kinds.js:1073 |
 | `whoLabel` | frontend/js/diagram-kinds.js:624 |
-| `withinNode` | frontend/js/diagram-kinds.js:934 |
+| `withinNode` | frontend/js/diagram-kinds.js:935 |
 | `words` | frontend/js/diagram-kinds.js:643 |
 
 ### frontend/js/diagram-letgo.js (1)
@@ -3340,13 +3340,15 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 |---|---|
 | `wire` | frontend/js/diagram-letgo.js:13 |
 
-### frontend/js/diagram-library.js (3)
+### frontend/js/diagram-library.js (5)
 
 | Name | File:line |
 |---|---|
-| `build` | frontend/js/diagram-library.js:46 |
+| `build` | frontend/js/diagram-library.js:60 |
 | `flow` | frontend/js/diagram-library.js:29 |
 | `make` | frontend/js/diagram-library.js:21 |
+| `shelf` | frontend/js/diagram-library.js:95 |
+| `tileOf` | frontend/js/diagram-library.js:47 |
 
 ### frontend/js/diagram-multi.js (3)
 
@@ -12431,7 +12433,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/dash-night-lazy.css | 29 |
 | frontend/css/dash-orphans-lazy.css | 57 |
 | frontend/css/desk-companion-lazy.css | 226 |
-| frontend/css/diagram-lazy.css | 2081 |
+| frontend/css/diagram-lazy.css | 2119 |
 | frontend/css/file-drop-lazy.css | 51 |
 | frontend/css/first-run-lazy.css | 140 |
 | frontend/css/forced-colors-lazy.css | 28 |
@@ -16053,8 +16055,8 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `_act_topic` | src/tessellate/ai/help_topics_more.py:3454 |
-| `_slash_commands_topic` | src/tessellate/ai/help_topics_more.py:3586 |
+| `_act_topic` | src/tessellate/ai/help_topics_more.py:3453 |
+| `_slash_commands_topic` | src/tessellate/ai/help_topics_more.py:3585 |
 
 ### src/tessellate/ai/help_words.py (2)
 
@@ -24567,7 +24569,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (18503)
+## Tests (18505)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -25166,7 +25168,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_diagram_1596.py | 4 |
 | tests/test_diagram_1661a.py | 6 |
 | tests/test_diagram_1661b.py | 9 |
-| tests/test_diagram_1661klm.py | 16 |
+| tests/test_diagram_1661klm.py | 18 |
 | tests/test_diagram_1679m.py | 14 |
 | tests/test_diagram_blind_fixes.py | 6 |
 | tests/test_diagram_builder.py | 20 |

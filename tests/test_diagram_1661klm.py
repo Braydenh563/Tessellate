@@ -243,3 +243,31 @@ def test_the_picture_takes_the_drags_the_plus_and_the_shelf_drop():
         assert needle in canvas, needle
     assert "dgm-seqmark" in CSS and ".dgm-gap-plus" in CSS and "min-block-size: 24px" in CSS
     assert "shift(S, key, before)" in _js("diagram-kinds.js")
+
+
+# --- S5: the shelf
+
+
+@needs_node
+def test_a_message_dropped_at_apps_x_between_messages_one_and_two_goes_app_to_server_at_index_one():
+    out = _seq(
+        "(()=>{const m=K.sequence.parse(V.src);const hit=C.boxes(V.svg,m,K.ops.key);"
+        "const app=hit.boxes.find((b)=>b.et==='participant'&&b.who==='App');"
+        "const x=app.x+app.w/2;const p=C.pair(hit,x);const g=C.gap(hit,150);const f=K.ops.find(K.sequence,m,g.key);"
+        "const node=K.ops.add(K.sequence,m,'m',{parent:f.parent,before:f.node,fields:{from:p.from,to:p.to,text:'Message'}});"
+        "return {at:m.steps.indexOf(node),pair:[p.from,p.to]}})()",
+        src=LOGIN, svg=LOGIN_SVG,
+    )
+    assert out["at"] == 1 and out["pair"] == ["App", "Server"]
+
+
+def test_the_shelf_is_a_dock_of_six_grip_tiles_and_a_caret_hidden_on_phones_and_coarse_pointers():
+    lib = _js("diagram-library.js")
+    for needle in ("function tileOf(t)", "dataset.objGrip", "dock dgm-shelf", "dgm-shelf-more", 'aria-haspopup", "menu"', "openMenuAtPoint("):
+        assert needle in lib, needle
+    for kind in ('"Box", "Rounded", "Decision", "Pill", "Note", "Group"', '"participant", "message", "reply", "note", "loop", "alt"'):
+        assert kind in lib
+    assert "diagramModel.library.shelf(S, { ...helpers, glyph: shapeGlyph, groupGlyph })" in _js("diagram-builder.js")
+    block = CSS[CSS.index(".dgm-shelf {") :][:700]
+    assert "position: absolute" in block and "var(--space-3)" in block
+    assert "@media (pointer: coarse), (max-width: 599.98px) {\n  .dgm-shelf {\n    display: none;" in CSS

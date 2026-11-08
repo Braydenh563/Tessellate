@@ -76,6 +76,7 @@ Branch `agent/diagklm-1108` from `claude/next-queue-1102` (7cba04a8). The spec i
 - done: S4 part 1 (press picks 11 of 11 at 1440 and 390, both themes; rename field centre 0 px off; Alt+Down, Delete; a source with activations, a nested loop and a self message 10 of 10).
 - done: S4 part 1 227c4384.
 - done: S4 part 2 (drag a head to reorder, lifeline to lifeline for a message, the + in a gap; head reorder User, Server, App; lifeline drag inserts at index 1 with the field in view; + 24 px, 5.9:1 light and 7.0:1 dark).
+- done: S5 shelf and S6 help (`dock dgm-shelf` six tiles plus caret, both kinds; zoom bar and first part overlap 0 px at 1440 light and dark; Message dropped at App's x between messages 1 and 2 inserts at index 1; flowchart Box drag 3 to 4 blocks, press 4 to 5; hidden at 390).
 - was next: S4 part 2, `diagram-seq-canvas.js` `wire`: drag a head to reorder, drag lifeline to lifeline to add a message, the "+" in a gap; then S5 shelf (`diagram-library.js` `build`).
 
 ## Left (stopped at the context line, after S4 part 1)
@@ -92,4 +93,4 @@ Branch `agent/diagklm-1108` from `claude/next-queue-1102` (7cba04a8). The spec i
 - done: merged claude/next-queue-1102 (24860fbd; CHANGELOG union, CODEMAP regenerated); the complexity failures went with it. The other three lints (global names 9708 > 9706, avatars.js raf 7 to 8, routes_chat.py 2476 > 2474) fail the same on the base branch at 74e55094: not this branch.
 - done: a press on the word Kind in the Title row (a `<label>`) focused the title field; it opens the Kind menu now (diagram-kindbar.js `mount`).
 - measured: Kind menu 4 of 4 rows with a sample, the chosen one `aria-current`; sequence rename on the picture, message rename, Delete and Ctrl+Z at 1440 and 390; folds left and right, `[` by key, kept after a reload (`diagram.fold` = left); no page errors.
-- open: no drag-and-drop block shelf on the picture yet (l part 2 and S5 above); the owner's ask is not met until it lands.
+- open: S6 blind tests and the default fold; the shelf is mouse only (touch uses the Add sheet); mind map and timeline have no shelf.

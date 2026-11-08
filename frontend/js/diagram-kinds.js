@@ -824,7 +824,8 @@
     S.tile = tile;
     S.sel = ops.key(node);
     kit.commit(S, `Added ${tile.name.toLowerCase()}${made ? ` and ${made} ${made === 1 ? "participant" : "participants"}` : ""}.`);
-    if (edit) relabel(S, S.sel);
+    //: A sequence diagram names the new part on its picture (diagram-seq-canvas.js); the others in their list.
+    if (edit) S.seq ? (S.seqOpen = S.sel) : relabel(S, S.sel);
     return S.sel;
   }
 
@@ -986,12 +987,12 @@
     bar.setAttribute("role", "toolbar");
     bar.setAttribute("aria-label", "Diagram blocks");
     //: The Add library (diagram-library.js): the tiles by meaning, each with its hint.
-    const tiles = diagramModel.library.build(
-      S.k.tiles.map((t) => ({
-        group: t.group, name: t.name, hint: `Adds ${t.about}.`, glyph: icon(t.icon), keys: t.key.toUpperCase(),
-        label: `Add ${t.name.toLowerCase()}. Adds ${t.about}.`, data: { tile: t.id }, press: () => addTile(S, t),
-      }))
-    );
+    //: The same specs are the picture's shelf (diagram-library.js `shelf`, asked for by the builder once the picture has its stage).
+    S.specs = S.k.tiles.map((t) => ({
+      group: t.group, name: t.name, hint: `Adds ${t.about}.`, glyph: icon(t.icon), keys: t.key.toUpperCase(),
+      label: `Add ${t.name.toLowerCase()}. Adds ${t.about}.`, data: { tile: t.id }, press: () => addTile(S, t),
+    }));
+    const tiles = diagramModel.library.build(S.specs);
     const actions = kit.el("div", "dock-actions");
     S.suggestBtn = smallButton("ph:sparkle Suggest", "Start from a template, your notes or a description", () => kit.suggestMenu(S, S.suggestBtn));
     S.suggestBtn.classList.add("dgm-suggest");
