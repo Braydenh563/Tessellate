@@ -37,6 +37,11 @@ ACTS = {
     "tea": ("act.sip_tea", ["nmp-cup"], 3.8),
     "snack": ("act.snack", ["nmp-snack"], 6.4),
     "fish": ("act.fish", ["nmp-rod"], 8.4),
+    "journal": ("act.write_journal", ["nmp-diary", "nmp-pen"], 12),
+    "stars": ("act.watch_stars", ["nmp-sky"], 36),
+    "blanket": ("act.blanket_nap", ["nmp-blanket"], 30),
+    "plant": ("act.water_plant", ["nmp-plant", "nmp-can"], 10),
+    "puzzle": ("act.puzzle", ["nmp-puzzle", "nmp-piece"], 7),
 }
 
 

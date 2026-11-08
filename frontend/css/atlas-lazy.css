@@ -547,3 +547,179 @@
 @keyframes atl-ds-fish-body { 0%, 100% { --atl-lean: 2deg; } 3.66% { --atl-lean: -5deg; } 5.28% { --atl-lean: 6deg; } 94.87% { --atl-lean: -3deg; } }
 @keyframes atl-ds-fish-eye { 0%, 100% { translate: 1.4px 1px; } 2.84%, 4.06% { translate: 0.4px -1.4px; } 5.69% { translate: 1.8px 1px; } 93% { translate: 1.8px 1.8px; } 94.87% { translate: 1px -0.4px; } }
 @keyframes atl-ds-fish-tail { 0%, 83.89%, 100% { rotate: 0deg; } 93.47% { rotate: 24deg; } 95.33% { rotate: -8deg; } 97.67% { rotate: 4deg; } }
+
+/* **The desk's quiet doings, as Atlas does them** (atlascat Batch D2: a journal,
+   the stars, a nap under a blanket, watering a plant, a puzzle). The same recipe
+   as the block above: each act shows its prop, sets a pose of its own at rest and
+   moves the arm, the eyes, the tail and the body over beats under the motion gate.
+   The diary, the sky, the blanket, the pot and the tray are drawn in front of the
+   body (atlas.js `atlasHandProps.front`), the pencil, the can and the piece in a hand. */
+#nm-buddy.nmb-act-journal .atl-figure :is(.nmp-diary, .nmp-pen),
+#nm-buddy.nmb-act-stars .atl-figure .nmp-sky,
+#nm-buddy.nmb-act-blanket .atl-figure .nmp-blanket,
+#nm-buddy.nmb-act-plant .atl-figure :is(.nmp-plant, .nmp-can),
+#nm-buddy.nmb-act-puzzle .atl-figure :is(.nmp-puzzle, .nmp-piece) { opacity: 1; }
+#nm-buddy:is(.nmb-act-journal, .nmb-act-stars, .nmb-act-blanket, .nmb-act-plant, .nmb-act-puzzle) .nm-atlas .atl-iris { translate: none; }
+/* A journal: head bowed to the page, the pencil hand on it, the other holding the page down. */
+#nm-buddy.nmb-act-journal .atl-figure .nmb-arm-r { transform: rotate(14deg); }
+#nm-buddy.nmb-act-journal .atl-figure .nmb-arm-l { transform: rotate(-16deg); }
+#nm-buddy.nmb-act-journal .nm-atlas { --atl-lean: 5deg; --atl-tail: 8deg; --atl-head-y: 1.2px; --atl-tilt: -2deg; }
+#nm-buddy.nmb-act-journal .nm-atlas .atl-pupil { --atl-px: 0.2px; --atl-py: 1.7px; }
+#nm-buddy.nmb-act-journal .atl-ds-turn { rotate: -14deg; }
+/* The stars: leaning back, head tipped up, one hand relaxed, the eyes on the sky. */
+#nm-buddy.nmb-act-stars .atl-figure .nmb-arm-r { transform: rotate(-16deg); }
+#nm-buddy.nmb-act-stars .atl-figure .nmb-arm-l { transform: rotate(14deg); }
+#nm-buddy.nmb-act-stars .nm-atlas { --atl-lean: -6deg; --atl-tail: 18deg; --atl-head-y: -1px; --atl-tilt: 4deg; }
+#nm-buddy.nmb-act-stars .nm-atlas .atl-pupil { --atl-px: 0.4px; --atl-py: -1.9px; }
+/* A nap under a blanket: both hands on its edge at the chest, eyes closed, a little tipped. */
+#nm-buddy.nmb-act-blanket .atl-figure .nmb-arm-r { transform: rotate(26deg); }
+#nm-buddy.nmb-act-blanket .atl-figure .nmb-arm-l { transform: rotate(-26deg); }
+#nm-buddy.nmb-act-blanket .nm-atlas { --atl-lean: 2deg; --atl-sy: 0.97; --atl-tail: 24deg; --atl-head-y: 1.6px; --atl-tilt: 6deg; --atl-open: 0; --atl-doze: 1; }
+#nm-buddy.nmb-act-blanket .nm-atlas .atl-pupil { --atl-px: 0px; --atl-py: 1.8px; }
+/* Watering: the can raised in the left hand over the pot, leaning to it, eyes on the leaves. */
+#nm-buddy.nmb-act-plant .atl-figure .nmb-arm-l { transform: rotate(30deg); }
+#nm-buddy.nmb-act-plant .atl-figure .nmb-arm-r { transform: rotate(-14deg); }
+#nm-buddy.nmb-act-plant .nm-atlas { --atl-lean: 3deg; --atl-tail: 4deg; --atl-head-y: 0.8px; --atl-tilt: -3deg; }
+#nm-buddy.nmb-act-plant .nm-atlas .atl-pupil { --atl-px: -1.8px; --atl-py: 1.6px; }
+#nm-buddy.nmb-act-plant .nmp-can .atl-ds-turn { rotate: -56deg; }
+/* A puzzle: bent over the tray, the piece held to the slot, a hand at rest. */
+#nm-buddy.nmb-act-puzzle .atl-figure .nmb-arm-r { transform: rotate(22deg); }
+#nm-buddy.nmb-act-puzzle .atl-figure .nmb-arm-l { transform: rotate(-18deg); }
+#nm-buddy.nmb-act-puzzle .nm-atlas { --atl-lean: 5deg; --atl-tail: 16deg; --atl-head-y: 1px; --atl-tilt: 4deg; }
+#nm-buddy.nmb-act-puzzle .nm-atlas .atl-pupil { --atl-px: 1.2px; --atl-py: 1.7px; }
+#nm-buddy.nmb-act-puzzle .nmp-piece .atl-ds-turn { rotate: -22deg; }
+/* Their paint, in the rig's colours as the block above. */
+.nm-atlas .atl-ds-pen { fill: none; stroke: var(--atl-gold-line); stroke-width: 1.2; stroke-linecap: round; }
+.nm-atlas .atl-ds-pen-tip { fill: var(--atl-line); }
+.nm-atlas .atl-ds-diary { fill: var(--atl-navy); stroke: var(--atl-glow-c); stroke-width: 0.5; stroke-linejoin: round; }
+.nm-atlas .atl-ds-page { fill: var(--atl-hi); stroke: var(--atl-line); stroke-width: 0.3; }
+.nm-atlas .atl-ds-ink { fill: none; stroke: var(--atl-line); stroke-width: 0.45; stroke-linecap: round; opacity: 0.55; }
+.nm-atlas .atl-ds-scrawl { fill: none; stroke: var(--atl-line); stroke-width: 0.7; stroke-linecap: round; stroke-dasharray: 1; stroke-dashoffset: 0; }
+.nm-atlas .atl-ds-ribbon { fill: none; stroke: var(--atl-gold); stroke-width: 1.2; stroke-linecap: round; }
+.nm-atlas .atl-ds-twinkle { fill: var(--atl-gold); stroke: var(--atl-gold-line); stroke-width: 0.3; }
+.nm-atlas .atl-ds-trail { fill: none; stroke: var(--atl-gold); stroke-width: 0.9; stroke-linecap: round; opacity: 0.85; }
+.nm-atlas .atl-ds-shoot { opacity: 0; }
+.nm-atlas .atl-ds-blanket { fill: color-mix(in oklab, var(--atl-lilac) 78%, var(--atl-navy)); stroke: var(--atl-glow-c); stroke-width: 0.5; stroke-linejoin: round; }
+.nm-atlas .atl-ds-fold { fill: none; stroke: var(--atl-hi); stroke-width: 1.3; stroke-linecap: round; opacity: 0.8; }
+.nm-atlas .atl-ds-stitch { fill: none; stroke: var(--atl-navy); stroke-width: 0.6; stroke-linecap: round; opacity: 0.6; }
+.nm-atlas .atl-ds-pot { fill: color-mix(in oklab, var(--atl-gold) 45%, var(--atl-navy)); stroke: var(--atl-gold-line); stroke-width: 0.5; stroke-linejoin: round; }
+.nm-atlas .atl-ds-pot-rim { fill: var(--atl-gold); stroke: var(--atl-gold-line); stroke-width: 0.5; stroke-linejoin: round; }
+.nm-atlas .atl-ds-stem { fill: none; stroke: color-mix(in oklab, color-mix(in oklab, var(--atl-glow-c) 50%, var(--atl-gold)) 65%, var(--atl-navy)); stroke-width: 0.9; stroke-linecap: round; }
+.nm-atlas .atl-ds-leaf { fill: color-mix(in oklab, color-mix(in oklab, var(--atl-glow-c) 50%, var(--atl-gold)) 72%, var(--atl-navy)); stroke: var(--atl-line); stroke-width: 0.4; stroke-linejoin: round; }
+#nm-buddy.nmb-act-plant .atl-ds-leaves { transform-box: fill-box; transform-origin: 50% 100%; }
+.nm-atlas .atl-ds-drops { opacity: 0; }
+.nm-atlas .atl-ds-drop { fill: var(--atl-glow-c); stroke: var(--atl-hi); stroke-width: 0.25; }
+.nm-atlas .atl-ds-can { fill: color-mix(in oklab, var(--atl-lilac) 55%, var(--atl-navy)); stroke: var(--atl-glow-c); stroke-width: 0.5; stroke-linejoin: round; }
+.nm-atlas .atl-ds-can-spout { fill: none; stroke: color-mix(in oklab, var(--atl-lilac) 55%, var(--atl-navy)); stroke-width: 1.3; stroke-linecap: round; }
+.nm-atlas .atl-ds-tray { fill: var(--atl-navy); stroke: var(--atl-glow-c); stroke-width: 0.5; }
+.nm-atlas .atl-ds-piece-a { fill: color-mix(in oklab, var(--atl-lilac) 70%, var(--atl-navy)); stroke: var(--atl-line); stroke-width: 0.35; }
+.nm-atlas .atl-ds-piece-b { fill: color-mix(in oklab, var(--atl-glow-c) 70%, var(--atl-navy)); stroke: var(--atl-line); stroke-width: 0.35; }
+.nm-atlas .atl-ds-piece-c { fill: var(--atl-hi); stroke: var(--atl-line); stroke-width: 0.35; }
+.nm-atlas .atl-ds-slot { fill: none; stroke: var(--atl-glow-c); stroke-width: 0.5; stroke-dasharray: 1.4 1; }
+.nm-atlas .atl-ds-piece-fit, .nm-atlas .atl-ds-piece-held { fill: var(--atl-gold); stroke: var(--atl-gold-line); stroke-width: 0.4; stroke-linejoin: round; }
+.nm-atlas .atl-ds-piece-fit { opacity: 0; }
+:root:not([data-avatar-motion="off"]):is(:not([data-motion="reduced"]), [data-buddy-motion="full"]) {
+  /* A journal: a stroke every two seconds for most of 12 s, the pencil lifts, a look up to think, a smile, the page turns. */
+  & #nm-buddy.nmb-act-journal .atl-figure .nmb-arm-r { animation: atl-ds-journal-arm 12s ease-in-out infinite; }
+  & #nm-buddy.nmb-act-journal .atl-figure .nmb-arm-l { animation: atl-ds-journal-arm-l 12s ease-in-out infinite; }
+  & #nm-buddy.nmb-act-journal .atl-ds-turn { animation: atl-ds-journal-turn 12s ease-in-out infinite; }
+  & #nm-buddy.nmb-act-journal .atl-ds-scrawl { animation: atl-ds-journal-scrawl 12s linear infinite; }
+  & #nm-buddy.nmb-act-journal .nm-atlas { animation: atl-ds-journal-body 12s ease-in-out infinite; }
+  & #nm-buddy.nmb-act-journal .nm-atlas .atl-pupil { animation: atl-ds-journal-eye 12s ease-in-out infinite; }
+  & #nm-buddy.nmb-act-journal .nm-atlas .atl-tail { animation: atl-ds-journal-tail 6s ease-in-out infinite; }
+  & #nm-buddy.nmb-act-journal .nm-atlas .atl-m-grin { animation: atl-ds-grin-late 12s linear infinite; }
+  & #nm-buddy.nmb-act-journal .nm-atlas .atl-m-smile { animation: atl-ds-smile-late 12s linear infinite; }
+  /* The stars: 36 s. Gazing up, a hand pointing out a star, a shooting star across the sky, a smile after it. */
+  & #nm-buddy.nmb-act-stars .atl-figure .nmb-arm-r { animation: atl-ds-stars-arm 36s ease-in-out infinite; }
+  & #nm-buddy.nmb-act-stars .atl-figure .nmb-arm-l { animation: atl-ds-stars-arm-l 36s ease-in-out infinite; }
+  & #nm-buddy.nmb-act-stars .nm-atlas { animation: atl-ds-stars-body 36s ease-in-out infinite; }
+  & #nm-buddy.nmb-act-stars .nm-atlas .atl-pupil { animation: atl-ds-stars-eye 36s ease-in-out infinite; }
+  & #nm-buddy.nmb-act-stars .nm-atlas .atl-tail { animation: atl-ds-stars-tail 9s ease-in-out infinite; }
+  & #nm-buddy.nmb-act-stars .atl-ds-shoot { animation: atl-ds-stars-shoot 36s linear infinite; }
+  & #nm-buddy.nmb-act-stars .atl-ds-twinkle-0 { animation: atl-ds-twinkle 3.2s ease-in-out infinite; }
+  & #nm-buddy.nmb-act-stars .atl-ds-twinkle-1 { animation: atl-ds-twinkle 4.1s ease-in-out -1.3s infinite; }
+  & #nm-buddy.nmb-act-stars .atl-ds-twinkle-2 { animation: atl-ds-twinkle 5s ease-in-out -2.6s infinite; }
+  & #nm-buddy.nmb-act-stars .nm-atlas .atl-m-grin { animation: atl-ds-grin-late 36s linear infinite; }
+  & #nm-buddy.nmb-act-stars .nm-atlas .atl-m-smile { animation: atl-ds-smile-late 36s linear infinite; }
+  /* A nap: a slow breath every 6 s, the blanket rising with it; every 30 s a tug up to the chin and one sleepy peek. */
+  & #nm-buddy.nmb-act-blanket .atl-figure .nmb-arm-r { animation: atl-ds-blanket-arm 30s ease-in-out infinite; }
+  & #nm-buddy.nmb-act-blanket .atl-figure .nmb-arm-l { animation: atl-ds-blanket-arm-l 30s ease-in-out infinite; }
+  & #nm-buddy.nmb-act-blanket .nm-atlas { animation: atl-ds-blanket-body 6s ease-in-out infinite; }
+  & #nm-buddy.nmb-act-blanket .atl-figure .nmp-blanket { animation: atl-ds-blanket-breath 6s ease-in-out infinite; }
+  & #nm-buddy.nmb-act-blanket .nm-atlas .atl-pupil { animation: atl-ds-blanket-eye 30s ease-in-out infinite; }
+  & #nm-buddy.nmb-act-blanket .nm-atlas .atl-eye-open { animation: atl-ds-blanket-open 30s linear infinite; }
+  & #nm-buddy.nmb-act-blanket .nm-atlas .atl-e-doze { animation: atl-ds-blanket-doze 30s linear infinite; }
+  & #nm-buddy.nmb-act-blanket .nm-atlas .atl-tail { animation: atl-ds-blanket-tail 6s ease-in-out infinite; }
+  & #nm-buddy.nmb-act-blanket .nm-atlas .atl-m-grin { animation: atl-ds-grin-chew 30s linear infinite; }
+  & #nm-buddy.nmb-act-blanket .nm-atlas .atl-m-smile { animation: atl-ds-smile-chew 30s linear infinite; }
+  & #nm-buddy.nmb-act-blanket .atl-ds-twinkle { animation: atl-ds-twinkle 4.1s ease-in-out infinite; }
+  /* Watering (10 s): the can lifted, tipped to pour, the drops falling, the leaves perking up, the can lowered. */
+  & #nm-buddy.nmb-act-plant .atl-figure .nmb-arm-l { animation: atl-ds-plant-arm 10s ease-in-out infinite; }
+  & #nm-buddy.nmb-act-plant .atl-figure .nmb-arm-r { animation: atl-ds-plant-arm-r 10s ease-in-out infinite; }
+  & #nm-buddy.nmb-act-plant .nmp-can .atl-ds-turn { animation: atl-ds-plant-turn 10s ease-in-out infinite; }
+  & #nm-buddy.nmb-act-plant .atl-ds-drops { animation: atl-ds-plant-drops 10s linear infinite; }
+  & #nm-buddy.nmb-act-plant .atl-ds-drop { animation: atl-ds-drop-fall 0.8s ease-in infinite; }
+  & #nm-buddy.nmb-act-plant .atl-ds-drop:nth-child(2) { animation-delay: -0.27s; }
+  & #nm-buddy.nmb-act-plant .atl-ds-drop:nth-child(3) { animation-delay: -0.53s; }
+  & #nm-buddy.nmb-act-plant .atl-ds-leaves { animation: atl-ds-plant-leaves 10s ease-in-out infinite; }
+  & #nm-buddy.nmb-act-plant .nm-atlas { animation: atl-ds-plant-body 10s ease-in-out infinite; }
+  & #nm-buddy.nmb-act-plant .nm-atlas .atl-pupil { animation: atl-ds-plant-eye 10s ease-in-out infinite; }
+  & #nm-buddy.nmb-act-plant .nm-atlas .atl-tail { animation: atl-ds-plant-tail 10s ease-in-out infinite; }
+  & #nm-buddy.nmb-act-plant .nm-atlas .atl-m-grin { animation: atl-ds-grin-late 10s linear infinite; }
+  & #nm-buddy.nmb-act-plant .nm-atlas .atl-m-smile { animation: atl-ds-smile-late 10s linear infinite; }
+  /* A puzzle (7 s): the piece lifted, tried at the slot twice, turned, fitted, the next picked up. */
+  & #nm-buddy.nmb-act-puzzle .atl-figure .nmb-arm-r { animation: atl-ds-puzzle-arm 7s ease-in-out infinite; }
+  & #nm-buddy.nmb-act-puzzle .atl-figure .nmb-arm-l { animation: atl-ds-puzzle-arm-l 7s ease-in-out infinite; }
+  & #nm-buddy.nmb-act-puzzle .nmp-piece .atl-ds-turn { animation: atl-ds-puzzle-turn 7s ease-in-out infinite; }
+  & #nm-buddy.nmb-act-puzzle .atl-figure .nmp-piece { animation: atl-ds-puzzle-held 7s linear infinite; }
+  & #nm-buddy.nmb-act-puzzle .atl-ds-piece-fit { animation: atl-ds-puzzle-fit 7s linear infinite; }
+  & #nm-buddy.nmb-act-puzzle .nm-atlas { animation: atl-ds-puzzle-body 7s ease-in-out infinite; }
+  & #nm-buddy.nmb-act-puzzle .nm-atlas .atl-pupil { animation: atl-ds-puzzle-eye 7s ease-in-out infinite; }
+  & #nm-buddy.nmb-act-puzzle .nm-atlas .atl-tail { animation: atl-ds-puzzle-tail 7s ease-in-out infinite; }
+  & #nm-buddy.nmb-act-puzzle .nm-atlas .atl-m-grin { animation: atl-ds-grin-late 7s linear infinite; }
+  & #nm-buddy.nmb-act-puzzle .nm-atlas .atl-m-smile { animation: atl-ds-smile-late 7s linear infinite; }
+}
+/* A journal. */
+@keyframes atl-ds-journal-arm { 0% { transform: rotate(14deg); } 6% { transform: rotate(20deg); } 12% { transform: rotate(12deg); } 18% { transform: rotate(21deg); } 24% { transform: rotate(13deg); } 30% { transform: rotate(20deg); } 36% { transform: rotate(12deg); } 42% { transform: rotate(21deg); } 48% { transform: rotate(14deg); } 54% { transform: rotate(20deg); } 60% { transform: rotate(14deg); } 66% { transform: rotate(0deg); } 74% { transform: rotate(2deg); } 80% { transform: rotate(14deg); } 100% { transform: rotate(14deg); } }
+@keyframes atl-ds-journal-arm-l { 0% { transform: rotate(-16deg); } 62% { transform: rotate(-16deg); } 68% { transform: rotate(-24deg); } 76% { transform: rotate(-24deg); } 84% { transform: rotate(-16deg); } 100% { transform: rotate(-16deg); } }
+@keyframes atl-ds-journal-turn { 0% { rotate: -14deg; } 6% { rotate: -20deg; } 12% { rotate: -12deg; } 18% { rotate: -21deg; } 24% { rotate: -13deg; } 30% { rotate: -20deg; } 36% { rotate: -12deg; } 42% { rotate: -21deg; } 48% { rotate: -14deg; } 54% { rotate: -20deg; } 60% { rotate: -14deg; } 66% { rotate: 0deg; } 74% { rotate: -2deg; } 80% { rotate: -14deg; } 100% { rotate: -14deg; } }
+@keyframes atl-ds-journal-scrawl { 0% { stroke-dashoffset: 1; opacity: 1; } 58% { stroke-dashoffset: 0; } 90% { opacity: 1; } 99% { stroke-dashoffset: 0; opacity: 0; } 100% { stroke-dashoffset: 1; opacity: 1; } }
+@keyframes atl-ds-journal-body { 0%, 100% { --atl-lean: 5deg; --atl-sy: 1; } 30% { --atl-lean: 7deg; } 68% { --atl-lean: 1deg; --atl-sy: 1.01; } }
+@keyframes atl-ds-journal-eye { 0%, 12%, 24%, 36%, 48%, 60% { translate: 0.2px 1.7px; } 6%, 18%, 30%, 42%, 54% { translate: 0.9px 1.6px; } 66%, 74% { translate: -0.2px -1.1px; } 82%, 100% { translate: 0.2px 1.7px; } }
+@keyframes atl-ds-journal-tail { 0%, 100% { rotate: 4deg; } 50% { rotate: -8deg; } }
+/* The stars. */
+@keyframes atl-ds-stars-arm { 0% { transform: rotate(-16deg); } 18% { transform: rotate(-16deg); } 24% { transform: rotate(-132deg); } 30% { transform: rotate(-128deg); } 36% { transform: rotate(-16deg); } 100% { transform: rotate(-16deg); } }
+@keyframes atl-ds-stars-arm-l { 0% { transform: rotate(14deg); } 20% { transform: rotate(14deg); } 26% { transform: rotate(24deg); } 34% { transform: rotate(24deg); } 40% { transform: rotate(14deg); } 100% { transform: rotate(14deg); } }
+@keyframes atl-ds-stars-body { 0%, 100% { --atl-lean: -5deg; } 24%, 30% { --atl-lean: -10deg; } 62% { --atl-lean: -8deg; } 80% { --atl-lean: -4deg; } }
+@keyframes atl-ds-stars-eye { 0%, 100% { translate: 0.4px -1.9px; } 10% { translate: -0.6px -1.6px; } 24%, 30% { translate: 1.8px -2.2px; } 36% { translate: 0px -1.8px; } 56% { translate: -0.8px -1.5px; } 61% { translate: 2.2px -0.9px; } 68% { translate: 1.4px -1.2px; } 78% { translate: 0px -1.8px; } }
+@keyframes atl-ds-stars-tail { 0%, 100% { rotate: 10deg; } 25% { rotate: 20deg; } 50% { rotate: 8deg; } 75% { rotate: 18deg; } }
+@keyframes atl-ds-stars-shoot { 0%, 57% { opacity: 0; translate: 6px -3px; } 58% { opacity: 1; translate: 6px -3px; } 64% { opacity: 0; translate: -40px 17px; } 100% { opacity: 0; translate: -40px 17px; } }
+@keyframes atl-ds-twinkle { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
+/* A nap under a blanket. */
+@keyframes atl-ds-blanket-arm { 0% { transform: rotate(26deg); } 36% { transform: rotate(26deg); } 42% { transform: rotate(46deg); } 52% { transform: rotate(44deg); } 60% { transform: rotate(26deg); } 100% { transform: rotate(26deg); } }
+@keyframes atl-ds-blanket-arm-l { 0% { transform: rotate(-26deg); } 36% { transform: rotate(-26deg); } 42% { transform: rotate(-46deg); } 52% { transform: rotate(-44deg); } 60% { transform: rotate(-26deg); } 100% { transform: rotate(-26deg); } }
+@keyframes atl-ds-blanket-body { 0%, 100% { --atl-sy: 0.97; --atl-lean: 2deg; } 50% { --atl-sy: 1; --atl-lean: 3deg; } }
+@keyframes atl-ds-blanket-breath { 0%, 100% { translate: 0 0; } 50% { translate: 0 -0.9px; } }
+@keyframes atl-ds-blanket-eye { 0%, 46%, 60%, 100% { translate: 0px 1.8px; } 50% { translate: -1.2px 1.3px; } 56% { translate: -0.8px 1.4px; } }
+@keyframes atl-ds-blanket-open { 0%, 48% { opacity: 0; } 50%, 56% { opacity: 1; } 58%, 100% { opacity: 0; } }
+@keyframes atl-ds-blanket-doze { 0%, 48% { opacity: 1; } 50%, 56% { opacity: 0; } 58%, 100% { opacity: 1; } }
+@keyframes atl-ds-blanket-tail { 0%, 100% { rotate: -6deg; } 50% { rotate: 6deg; } }
+/* Watering a plant. */
+@keyframes atl-ds-plant-arm { 0% { transform: rotate(8deg); } 12% { transform: rotate(30deg); } 18% { transform: rotate(34deg); } 44% { transform: rotate(36deg); } 50% { transform: rotate(24deg); } 60% { transform: rotate(10deg); } 100% { transform: rotate(8deg); } }
+@keyframes atl-ds-plant-arm-r { 0% { transform: rotate(-14deg); } 50% { transform: rotate(-22deg); } 100% { transform: rotate(-14deg); } }
+@keyframes atl-ds-plant-turn { 0% { rotate: -8deg; } 12% { rotate: -30deg; } 18% { rotate: -60deg; } 44% { rotate: -72deg; } 50% { rotate: -30deg; } 60% { rotate: -10deg; } 100% { rotate: -8deg; } }
+@keyframes atl-ds-plant-drops { 0%, 18% { opacity: 0; } 22%, 44% { opacity: 1; } 48%, 100% { opacity: 0; } }
+@keyframes atl-ds-drop-fall { 0% { translate: 0 0; opacity: 0; } 20% { opacity: 1; } 100% { translate: 0 9px; opacity: 0; } }
+@keyframes atl-ds-plant-leaves { 0%, 100% { scale: 1; rotate: 0deg; } 52% { scale: 1.1; rotate: -3deg; } 80% { scale: 1.03; rotate: 2deg; } }
+@keyframes atl-ds-plant-body { 0%, 100% { --atl-lean: 2deg; } 30%, 44% { --atl-lean: 6deg; } 56% { --atl-lean: 0deg; } }
+@keyframes atl-ds-plant-eye { 0%, 100% { translate: -0.6px 1.2px; } 12% { translate: -1.6px 1px; } 18%, 44% { translate: -1.9px 1.7px; } 52% { translate: -1.6px 1.8px; } 60% { translate: -1px 1.2px; } }
+@keyframes atl-ds-plant-tail { 0%, 100% { rotate: 0deg; } 20% { rotate: 8deg; } 45% { rotate: 14deg; } 70% { rotate: -4deg; } }
+/* A puzzle. */
+@keyframes atl-ds-puzzle-arm { 0% { transform: rotate(8deg); } 14% { transform: rotate(16deg); } 30% { transform: rotate(32deg); } 40% { transform: rotate(30deg); } 50% { transform: rotate(34deg); } 62% { transform: rotate(26deg); } 72% { transform: rotate(14deg); } 100% { transform: rotate(8deg); } }
+@keyframes atl-ds-puzzle-arm-l { 0% { transform: rotate(-16deg); } 26% { transform: rotate(-16deg); } 32% { transform: rotate(-26deg); } 62% { transform: rotate(-26deg); } 72% { transform: rotate(-16deg); } 100% { transform: rotate(-16deg); } }
+@keyframes atl-ds-puzzle-turn { 0% { rotate: -8deg; } 14% { rotate: -16deg; } 30% { rotate: -32deg; } 40% { rotate: 5deg; } 50% { rotate: -59deg; } 62% { rotate: -26deg; } 72% { rotate: -14deg; } 100% { rotate: -8deg; } }
+@keyframes atl-ds-puzzle-held { 0%, 62% { opacity: 1; } 64%, 94% { opacity: 0; } 98%, 100% { opacity: 1; } }
+@keyframes atl-ds-puzzle-fit { 0%, 62% { opacity: 0; } 66%, 92% { opacity: 1; } 98%, 100% { opacity: 0; } }
+@keyframes atl-ds-puzzle-body { 0%, 100% { --atl-lean: 4deg; } 40%, 50% { --atl-lean: 7deg; } 80% { --atl-lean: 3deg; } }
+@keyframes atl-ds-puzzle-eye { 0%, 100% { translate: 0.2px 1.6px; } 14% { translate: 0.9px 1.4px; } 30% { translate: 1.3px 1.7px; } 40% { translate: 1.5px 1.9px; } 50% { translate: 1.2px 1.6px; } 62% { translate: 1.5px 1.8px; } 72% { translate: 0.4px 1.6px; } 80% { translate: -0.6px 0.4px; } }
+@keyframes atl-ds-puzzle-tail { 0%, 100% { rotate: 16deg; } 40% { rotate: 26deg; } 70% { rotate: 20deg; } }

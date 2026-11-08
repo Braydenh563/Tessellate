@@ -67,15 +67,16 @@ MORE_TOPICS: list[dict] = [
         "keywords": (
             "what the companion does", "companion push-ups", "companion lifts weights",
             "companion drinks tea", "companion snack", "companion fishing",
-            "companion activities", "companion hobbies",
+            "companion activities", "companion hobbies", "companion journal", "companion stargazing",
+            "companion blanket nap", "companion waters a plant", "companion puzzle",
         ),
         "body": (
             "On its own, Atlas does the same small things as the desktop companion: "
-            "push-ups and dumbbells on the spot, tea, a biscuit and a fishing rod "
-            "with its eyes on the prop. Each has its own pose, and the loud ones "
-            "(push-ups, dumbbells) wait for a lull. They are one group, \"Atlas "
-            "works out, has tea or a snack and goes fishing\", under Settings, "
-            "Appearance, Corner companion, What it does on its own; Quieter keeps "
+            "push-ups, dumbbells, tea, a biscuit, fishing, a journal, the stars, a nap under a "
+            "blanket, watering a plant and a puzzle, each with its eyes on the prop. "
+            "The loud ones (push-ups, dumbbells) wait for a lull. They are one group, \"Atlas does the "
+            "desk companion's routines\", under Settings, Appearance, Corner companion, "
+            "What it does on its own; Quieter keeps "
             "it to blinks and looks."
         ),
         "badge": {"label": "Corner companion", "section": "appearance", "target": "avatar-buddy-row"},
