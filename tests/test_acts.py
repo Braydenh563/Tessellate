@@ -35,7 +35,7 @@ def _state(session) -> tuple:
     """Everything an act may change, as plain values."""
     session.expire_all()
     notes = tuple(
-        (e.id, e.content, e.category_id, e.tags, e.pinned, e.deleted_at is None)
+        (e.id, e.content, manager.category_name_for(session, e), e.tags, e.pinned, e.deleted_at is None)
         for e in session.scalars(select(Entry).order_by(Entry.id))
         if e.deleted_at is None
     )
@@ -55,12 +55,19 @@ def test_every_act_has_parse_preview_run_and_a_help_line():
 
 WRITES = [a for a in acts.ACTS.values() if a.writes]
 #: An unpin, an unlink or an untag needs its pin, link or tag first.
-_BEFORE = {"unpin": "pin the dentist note", "unlink": "link the gym note to the running note", "untag": "tag the boiler note with urgent"}
+_BEFORE = {
+    "unpin": "pin the dentist note", "unlink": "link the gym note to the running note", "untag": "tag the boiler note with urgent",
+    #: A tag, a category and a binned note must exist before they are renamed or restored.
+    "rename_tag": "tag the gym note with gym", "rename_category": "move the gym note to Work", "restore": "delete the passport note",
+}
 
 
 @pytest.mark.parametrize("act", WRITES, ids=[a.intent for a in WRITES])
 def test_every_write_act_has_an_inverse_that_restores_the_notebook(client, session, act):
     _seed(session)
+    if act.intent == "restore":
+        manager.create_entry(session, "# Passport\n\nRenew in May.")
+        session.commit()
     if act.intent in _BEFORE:
         setup = acts.preview(session, acts.parse(_BEFORE[act.intent], NOW))
         acts.run(session, setup["card"]["steps"])
@@ -99,7 +106,7 @@ def test_the_capability_line_is_the_registry_said():
     line = acts.capability_line()
     assert line == commands.CAPABILITY_LINE
     for act in acts.ACTS.values():
-        if act.writes and act.intent not in ("untag", "unpin", "unlink", "append"):
+        if act.writes and act.intent not in ("untag", "unpin", "unlink", "append", "rename_tag", "rename_category"):
             assert act.verb in line or act.label in line, act.label
 
 

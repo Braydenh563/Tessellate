@@ -7,6 +7,7 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 - Chat acts (X17): "cancel", "never mind" or "forget it" closes an act card that is still waiting for Confirm and says nothing was changed; with no card waiting the words are read as before.
+- Chat acts (X5, X8): "rename the tag gym to fitness", "rename the category Work to Job" and "rename the note X to Y" give a card that waits for Confirm (an unknown name says which are close), and "restore the passport note" brings a note back from the bin after Confirm; Undo reverses each.
 - Chat with no model, pasted text (T6): join lines with commas, split on commas into lines, and count characters with and without spaces; a note named in the question is still left alone.
 - Chat with no model, Unix time (Time and date): "unix time now", "what is 1700000000 as a date" and "unix time of 1 January 2024".
 - Chat with no model, calculator words (T1): round, floor, ceil, log, ln, pow and "2(3+4)"; a power too large to write out, a log of zero or a negative number, and a base of 1 each say why.
