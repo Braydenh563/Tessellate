@@ -2,9 +2,9 @@
 
 Generated 2026-11-08 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7865, frontend ids 2644, CSS sections 522, backend routes 649, backend modules 9046, test files 2174, tests 18328, plan headings 1004, app scripts 28, boot scripts 37, script files 261.
+Counts: frontend functions 7866, frontend ids 2644, CSS sections 522, backend routes 649, backend modules 9046, test files 2175, tests 18331, plan headings 1004, app scripts 28, boot scripts 37, script files 262.
 
-## Frontend functions (7865)
+## Frontend functions (7866)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -3328,6 +3328,12 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `whoLabel` | frontend/js/diagram-kinds.js:624 |
 | `withinNode` | frontend/js/diagram-kinds.js:930 |
 | `words` | frontend/js/diagram-kinds.js:643 |
+
+### frontend/js/diagram-letgo.js (1)
+
+| Name | File:line |
+|---|---|
+| `wire` | frontend/js/diagram-letgo.js:13 |
 
 ### frontend/js/diagram-library.js (3)
 
@@ -24469,7 +24475,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (18328)
+## Tests (18331)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -25071,6 +25077,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_diagram_edge_pick.py | 12 |
 | tests/test_diagram_embed.py | 11 |
 | tests/test_diagram_kinds.py | 31 |
+| tests/test_diagram_let_go_1696.py | 3 |
 | tests/test_diagram_library_1594.py | 8 |
 | tests/test_diagram_model.py | 14 |
 | tests/test_diagram_multi_r5.py | 18 |

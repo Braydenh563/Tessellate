@@ -686,6 +686,7 @@
     if (S && !S.k && (await ensureModule("diagramEdgePick"))) diagramModel.edgepick.wire(S, helpers);
     //: The divider between the blocks and the picture (diagram-split.js, 1615 e).
     if (S && (await ensureModule("diagramSplit"))) diagramModel.split.wire(S);
+    if (S && (await ensureModule("diagramLetGo"))) diagramModel.letgo.wire(S, helpers);
     if (told && S) say(S, told);
     told = "";
     return S;
