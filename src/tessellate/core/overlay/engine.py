@@ -3718,20 +3718,8 @@ class Engine:
         if self.reduced or not (self.roam and self.roam_windows):
             return False
         w, h = self.size
-        feet, centre, m = self.y + h, self.x + w / 2, self.current_monitor()
-        above, below = DROP_REACH[0] * h, DROP_REACH[1] * h
-        best: tuple[float, Perch] | None = None
-        for p in self.windows:
-            if p.kind != "top" or p.top < m.area[1] or not p.left <= centre < p.right:
-                continue
-            gap = p.top - feet  # positive: the feet are above the edge
-            if -below <= gap <= above and (best is None or abs(gap) < abs(best[0])):
-                best = (gap, p)
-            elif abs(gap) < 2 * h:
-                self.notes.append(f"let go {abs(gap):.0f} px {'above' if gap > 0 else 'below'} a window top: out of reach (within {above:.0f} above or {below:.0f} below)")
+        best = self._top_in_reach()
         if best is None:
-            if not any(p.kind == "top" and p.left <= centre < p.right for p in self.windows):
-                self.notes.append(f"let go with no window top under the figure ({len(self.windows)} standable in the scan)")
             return False
         p = best[1]
         x = min(max(self.x, p.left), p.right - w)
@@ -3740,6 +3728,24 @@ class Engine:
         self.legs.append(("drop", self.x, x, now))
         self._rise((x, p.top - h), "perch", now, drawn_from=self.y + self._dy("held"))
         return True
+
+    def _top_in_reach(self) -> tuple[float, Perch] | None:
+        """The window top nearest the feet within `DROP_REACH` under the figure's middle, with the gap (positive: the
+        feet above it); a note for each top near but out of reach, or for none under the figure at all."""
+        w, h = self.size
+        feet, centre, m = self.y + h, self.x + w / 2, self.current_monitor()
+        above, below = DROP_REACH[0] * h, DROP_REACH[1] * h
+        under = [(p.top - feet, p) for p in self.windows if p.kind == "top" and p.top >= m.area[1] and p.left <= centre < p.right]
+        reach = [(gap, p) for gap, p in under if -below <= gap <= above]
+        self._note_out_of_reach([gap for gap, _p in under if not -below <= gap <= above], above, below)
+        if not reach and not any(p.kind == "top" and p.left <= centre < p.right for p in self.windows):
+            self.notes.append(f"let go with no window top under the figure ({len(self.windows)} standable in the scan)")
+        return min(reach, key=lambda gp: abs(gp[0])) if reach else None
+
+    def _note_out_of_reach(self, gaps: list[float], above: float, below: float) -> None:
+        for gap in gaps:
+            if abs(gap) < 2 * self.size[1]:
+                self.notes.append(f"let go {abs(gap):.0f} px {'above' if gap > 0 else 'below'} a window top: out of reach (within {above:.0f} above or {below:.0f} below)")
 
     def _swirl(self, now: float, px: int, py: int) -> float:
         """How much the pointer's path curled over the throw window, -1 to 1 (clockwise on screen positive):
