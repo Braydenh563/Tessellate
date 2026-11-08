@@ -2,9 +2,9 @@
 
 Generated 2026-11-08 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7865, frontend ids 2644, CSS sections 522, backend routes 649, backend modules 9046, test files 2173, tests 18324, plan headings 1004, app scripts 28, boot scripts 37, script files 261.
+Counts: frontend functions 7864, frontend ids 2644, CSS sections 522, backend routes 649, backend modules 9046, test files 2173, tests 18324, plan headings 1004, app scripts 28, boot scripts 37, script files 261.
 
-## Frontend functions (7865)
+## Frontend functions (7864)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -7663,7 +7663,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `utilityTimeText` | frontend/js/utility-tools.js:24 |
 | `utilityTimerDone` | frontend/js/utility-tools.js:169 |
 
-### frontend/js/value-field.js (12)
+### frontend/js/value-field.js (11)
 
 | Name | File:line |
 |---|---|
@@ -7674,7 +7674,6 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `paint` | frontend/js/value-field.js:51 |
 | `presets` | frontend/js/value-field.js:106 |
 | `rangeField` | frontend/js/value-field.js:154 |
-| `rangeFieldsIn` | frontend/js/value-field.js:206 |
 | `readoutOf` | frontend/js/value-field.js:148 |
 | `size` | frontend/js/value-field.js:46 |
 | `valueField` | frontend/js/value-field.js:20 |
