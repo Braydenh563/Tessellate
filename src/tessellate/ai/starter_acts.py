@@ -30,6 +30,8 @@ from tessellate.core.database import Document, Entry, EntryLink, Reminder
 #: with the closing punctuation off before it is matched.
 _READS = (
     ("append_today", re.compile(r"^(?:add|append) to (?:today'?s|the daily|my daily) (?:note|journal)[:,]?\s+(?P<words>.+)$")),
+    #: "add buy milk to today's note": the words come first (CHAT_PLAN X10).
+    ("append_today", re.compile(r"^(?:please )?(?:add|put|append) (?P<words>.+?) (?:to|in|into|onto) (?:today'?s|the daily|my daily|the day'?s) (?:note|journal)$")),
     #: The time words are the recogniser's (`_since_a_day`), never a list here.
     ("changed", re.compile(r"^what (?:has )?changed(?: in (?:my|the) notebook)?(?: (?P<when>.+))?$")),
     ("loose_ends", re.compile(r"\bloose ends?\b|^what should i (?:pick up|do) next$")),
@@ -68,7 +70,7 @@ def read(text: str) -> tuple[str, dict] | None:
             if kind == "changed" and not _since_a_day(slots.pop("when")):
                 continue
             if "words" in slots:
-                slots["words"] = _original_tail(str(text).strip().rstrip("."), len(slots["words"]))
+                slots["words"] = _original_words(str(text), found.span("words"), len(low))
             return kind, slots
     return None
 
@@ -83,9 +85,11 @@ def _since_a_day(when: str | None) -> bool:
     return when is None or recognise.days_since(when, _A_WEDNESDAY) in (0, 1)
 
 
-def _original_tail(text: str, length: int) -> str:
-    """The person's own words, case kept, for what the folded match found."""
-    return text[-length:].strip() if length else ""
+def _original_words(text: str, span: tuple[int, int], folded_length: int) -> str:
+    """The person's own words, case kept, for where the folded match found
+    them (the fold keeps every character's place, so the span carries over)."""
+    flat = re.sub(r"\s+", " ", text).strip()[:folded_length]
+    return flat[span[0]:span[1]].strip()
 
 
 def events(session: Session, kind: str, slots: dict, now: datetime, note_ids: list[int] | None,
@@ -351,12 +355,18 @@ def _append_today(session: Session, *, slots: dict, now: datetime, **_: object) 
         return "What should go in today's note? Say it after the colon.", None
     entry = _today_note(session, now)
     said = commands._clip(words, 80)
+    if entry is not None and entry.is_private:
+        return "Today's note is private, so I will not write to it from here. Open the note to add to it.", None
     if entry is None:
         steps = [{"name": "create_note", "arguments": {"content": f"# {now.date().isoformat()}\n\n{words}"}}]
         label = f"Start today's note with “{said}”"
         items = []
     else:
-        steps = [{"name": "edit_note", "arguments": {"note_id": entry.id, "content": (entry.content or "").rstrip() + "\n\n" + words}}]
+        from tessellate.api.edit_conflicts import content_hash  # lazy: `ai` sits below `api`
+
+        #: A bullet in the note's own shape, locked to the text read here.
+        text = commands.appended(entry.content or "", words)
+        steps = [{"name": "edit_note", "arguments": {"note_id": entry.id, "content": text, "base_hash": content_hash(entry.content)}}]
         label = f"Add “{said}” to the end of today's note"
         items = [commands._item(entry)]
     return commands._confirm(label), commands._card(label, steps, items=items)

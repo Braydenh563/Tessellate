@@ -1246,19 +1246,19 @@ and always show the exact change before running.
 | X2 | Tag and untag | `tag_note` (add, remove, many ids) | No chat verb | "tag my gym notes #fitness": resolve notes by plan, card lists them (cap 50), undo = the inverse call | M | 7 |
 | X3 | Link and unlink | `link_notes` (reason, link type), `unlink_notes` | No chat verb; no reasons | "link A and B": the reason is the composer's pair reason (decision 39), shown on the card | M | 7 |
 | X4 | File into a category | Built. Moved to HISTORY.md ("Moved from the plans, 2026-11-08 (CHAT_PLAN small rows D)"). | | | | |
-| X5 | Rename (note title, tag, category) | `edit_note`, `rename_tag`, `rename_category` | No chat verb | Object resolved by kind word ("rename the tag gym to fitness") | S | 7 |
+| X5 | Rename (note title, tag, category) | Built. Moved to HISTORY.md ("Moved from the plans, 2026-11-08 (CHAT_PLAN acts)"). |
 | X6 | Pin | Built. Moved to HISTORY.md ("Moved from the plans, 2026-11-08 (CHAT_PLAN small rows D)"). | | | | |
 | X7 | Archive | No tool (only delete and restore) | An archive verb with nothing behind it | Do not offer until a tool exists; the capability line lists only verbs that run | none | n/a |
-| X8 | Delete and restore | `delete_note`, `restore_note` (bin) | No chat verb | Always confirmed, always the bin, undo = restore | S | 7 |
+| X8 | Delete and restore | Built. Moved to HISTORY.md ("Moved from the plans, 2026-11-08 (CHAT_PLAN acts)"). |
 | X9 | Create (note, reminder, document, board, map) | `create_note`, `create_document`, `create_mindmap`, `generate_diagram`, board tools | `new_note` only on the wip branch | "make a note: ..." with the person's words verbatim; documents and maps from a named source note or a list | M | 7 |
-| X10 | Add to a note | Daily-note route; `edit_note` replaces content (no append argument) | The act reads the note and writes the whole text | "add X to today's note": daily route, append a bullet, optimistic-lock check (`edit_conflicts.py`) | S | 7 |
+| X10 | Add to a note | Built. Moved to HISTORY.md ("Moved from the plans, 2026-11-08 (CHAT_PLAN acts)"). |
 | X11 | Summarise as an act | `summarize_notes` | Results not saved | "summarise my gym notes into a note": A20 text, created as a note with its sources linked | S | 7 |
 | X12 | Find and open | Built. Moved to HISTORY.md ("Moved from the plans, 2026-11-08 (CHAT_PLAN small rows D)"). | | | | |
 | X13 | Templates | Four built-in templates; daily-note body in the frontend | No variables; no user quick-adds | `{date}`, `{weekday}`, `{week}`, `{title}`, `{n}` filled by rule; a saved phrasing with slots appears as a chip ("Log a workout: {what}") | M | 7 |
 | X14 | Bulk acts with preview | Confirm card for agent writes | Counts, caps, partial failure wording | Card: "Tag 14 notes #fitness" with the first five listed and a "show all"; cap 50; result line "Done: 13. Not done: 1, it is private."; one undo for the batch | M | 7 |
 | X15 | Scheduled acts | Reminders recur; Night shift jobs | No "every Monday, list what is open" | An act with a recurrence is a reminder whose note carries the phrasing; at most one proactive line a day per scheduled act (decision 28) | M | 7 and new |
 | X16 | Undo | Per-feature undo toasts; `restore_note`; tidy runs undoable | No generic "undo that" in Chat | The act's own inverse steps stored in the confirm card's result; "undo" and "undo that" read as a conversation control (C13) | M | 7 |
-| X17 | Cancel | None | Pending act cannot be dropped | "cancel", "never mind" clear `Dialogue.pending_act` | S | 7 |
+| X17 | Cancel | Built. Moved to HISTORY.md ("Moved from the plans, 2026-11-08 (CHAT_PLAN acts)"). | | | | |
 | X18 | Capability line | Built. Moved to HISTORY.md ("Moved from the plans, 2026-11-08 (CHAT_PLAN small rows D)"). | | | | |
 
 #### Conversing

@@ -6,6 +6,9 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Chat acts (X17): "cancel", "never mind" or "forget it" closes an act card that is still waiting for Confirm and says nothing was changed; with no card waiting the words are read as before.
+- Chat acts (X5, X8): "rename the tag gym to fitness", "rename the category Work to Job" and "rename the note X to Y" give a card that waits for Confirm (an unknown name says which are close), and "restore the passport note" brings a note back from the bin after Confirm; Undo reverses each.
+- Chat acts (X10): "add buy milk to today's note" gives a card that waits for Confirm and adds a bullet to the daily note; if the note changed meanwhile, nothing is written and the line says so.
 - Diagram builder: a shelf on the picture's corner (flowchart: Box, Rounded, Decision, Start and end, Note, Group; sequence: Participant, Message, Reply, Note, Loop, Alt) adds a block by a press or a drag, with a caret for the whole Add menu; hidden on phones (INBOX 1661 l).
 - A sequence diagram is edited on its picture by drag (INBOX 1661 l): a head dragged sideways reorders the participants (a 2 px accent line in the head gap), a drag from one lifeline to another adds a message at the gap under the pointer and opens its name, and a 24 px + in the left margin of a gap opens the Add menu for it. Measured at 1440, both themes: App dragged past Server gives User, Server, App; User to Server between messages 1 and 2 inserts at index 1 with the field open and in view; the + is 24 px at 5.9:1 or more.
 - Chat with no model, pasted text (T6): join lines with commas, split on commas into lines, and count characters with and without spaces; a note named in the question is still left alone.

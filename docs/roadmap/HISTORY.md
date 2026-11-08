@@ -52985,3 +52985,20 @@ Built (verified by asking the plan row's own phrasing, `tests/test_composer_smal
 - **Time and date leftover:** `ai/composer_epoch.py` answers "unix time now" (the turn's clock), "what is 1700000000 as a date" (seconds, or milliseconds from 12 digits, in UTC) and "unix time of 1 January 2024" (midnight UTC).
 - **Review fixes on batch C:** case transforms leave "uppercase my notes about X" alone; "pick" needs a list written as a list; "what week is 3 March" is this year; fractions show two decimals.
 - **Not built:** X5 (renaming a tag or category by chat), X8 restore, X10, X11, X13 to X17, T7 to T9 and the rest of the X rows stay open in CHAT_PLAN; acting on a named note ("uppercase the passport note") needs the confirm-first draft path.
+
+## Moved from the plans, 2026-11-08 (CHAT_PLAN acts)
+
+Built (`tests/test_chat_acts_1108.py`). Row text:
+
+- X17 | Cancel | None | Pending act cannot be dropped | "cancel", "never mind" clear `Dialogue.pending_act` | S | 7
+
+- **X17 cancel:** the page marks an act card that still waits (`data-pending-act`, `renderActCard`) and sends its label as the last turn's `pending_act`; `Dialogue.pending_act` reads it and `composer_cancel.reply` (called from `chat_extra.events`) answers "cancel", "never mind", "forget it" with one line and an `act` event with `cancel` set, which closes the open card. With no card waiting the words fall through as before ("cancel the dentist task" is still the task act). Answered where the engine answers (no model, or From your notes); with a model up the model reads the words.
+
+- | X5 | Rename (note title, tag, category) | `edit_note`, `rename_tag`, `rename_category` | No chat verb | Object resolved by kind word ("rename the tag gym to fitness") | S | 7 |
+- | X8 | Delete and restore | `delete_note`, `restore_note` (bin) | No chat verb | Always confirmed, always the bin, undo = restore | S | 7 |
+
+- **X5 rename:** `ai/object_acts.py` reads "rename the tag gym to fitness", "rename the category Work to Job" and "rename the note X to Y" by the kind word; the card is `rename_tag` or `rename_category` (now runnable, undone by renaming back). An unknown name says which are close; a rename onto an existing name is left to the Tag manager (a merge cannot be undone); a tag a private note holds is refused while the vault is locked. Questions ("how do I rename a tag") are not acts.
+- **X8 restore:** "restore the passport note" (or "from the bin") finds the note in the bin by its words, asks which when several match, and gives a confirm card whose undo bins it again; a private note is never restored from Chat. Delete was already always a confirmed card to the bin with restore as its undo; a test now pins it.
+
+- | X10 | Add to a note | Daily-note route; `edit_note` replaces content (no append argument) | The act reads the note and writes the whole text | "add X to today's note": daily route, append a bullet, optimistic-lock check (`edit_conflicts.py`) | S | 7 |
+- **X10 add to today's note:** "add buy milk to today's note" (also "put ... in my daily note", and the older "add to today's note: ...") is the `append_today` starter in `ai/starter_acts.py`: a card that waits for Confirm, a bullet in the note's own shape (`commands.appended`), or a new daily note when there is none. The `edit_note` step carries `base_hash` (`edit_conflicts.content_hash` of the text read); `tool_write._refuse_stale` refuses the write when the note changed since, and the run line says "it changed since the card was made" (skip reason `stale`). A private daily note is not written to. Answered where the engine answers (no model, or From your notes).

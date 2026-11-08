@@ -74,6 +74,10 @@ class ChatTurn(BaseModel):
     #: "delete the other one" (`reading.follow`, decision 57). Optional, and
     #: dropped from the dump when absent, so a turn without it is unchanged.
     objects: list[Annotated[str, Field(max_length=200)]] | None = Field(default=None, max_length=8)
+    #: The label of an act's card this turn left waiting for Confirm, sent by
+    #: the page only while the card is still open, so "cancel" can drop it
+    #: (`composer_cancel`, CHAT_PLAN X17).
+    pending_act: str | None = Field(default=None, max_length=300)
 
     @model_validator(mode="after")
     def _objects_from_links(self):  # noqa: ANN202

@@ -35,22 +35,22 @@ from datetime import datetime, timedelta
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from tessellate.ai import note_recency, reminder_parser, task_acts, when
+from tessellate.ai import note_recency, object_acts, reminder_parser, task_acts, when
 from tessellate.ai import act_registry
 from tessellate.ai.composer_frame import note_title
 from tessellate.ai.act_registry import CONFIRM_INTENTS
 from tessellate.ai.filed_name import filed_listing
 
 #: The verbs of the grammar (decision 38), as said in `Command.verb`.
-VERBS = ("remind", "complete", "cancel", "snooze", "tag", "untag", "file", "rename", "pin", "unpin", "link", "unlink", "delete", "create", "add", "summarise", "find", "open")
+VERBS = ("remind", "complete", "cancel", "snooze", "tag", "untag", "file", "rename", "restore", "pin", "unpin", "link", "unlink", "delete", "create", "add", "summarise", "find", "open")
 #: The intents `read` gives, each with its verb.
 _VERB_OF = {
-    "reminder": "remind", "tag": "tag", "untag": "untag", "move": "file", "rename": "rename", "pin": "pin",
+    "reminder": "remind", "tag": "tag", "untag": "untag", "move": "file", "rename": "rename", "rename_tag": "rename", "rename_category": "rename", "restore": "restore", "pin": "pin",
     "unpin": "unpin", "link": "link", "unlink": "unlink", "delete": "delete", "new_note": "create",
     "meeting": "create", "append": "add", "complete": "complete", "cancel": "cancel", "snooze": "snooze", "summarise": "summarise", "find": "find", "open": "open", "navigate": "open",
 }
 #: The intents that write: each is shown as a card.
-WRITE_INTENTS = frozenset({"reminder", "tag", "untag", "move", "rename", "pin", "unpin", "link", "unlink", "delete", "new_note", "meeting", "append", "complete", "cancel", "snooze"})
+WRITE_INTENTS = frozenset({"reminder", "tag", "untag", "move", "rename", "rename_tag", "rename_category", "restore", "pin", "unpin", "link", "unlink", "delete", "new_note", "meeting", "append", "complete", "cancel", "snooze"})
 #: Read only: answered at once, nothing to confirm.
 READ_INTENTS = frozenset({"find", "open", "navigate", "summarise"})
 #: The writes that wait for Confirm: anything that removes, renames, moves or
@@ -71,7 +71,7 @@ def __getattr__(name: str) -> str:
 #: Steps a command card may run. The registry tools are the agent's; the two
 #: others are this module's own, for what no registry tool does.
 RUNNABLE = frozenset(
-    {"set_reminder", "tag_note", "edit_note", "create_note", "delete_note", "restore_note",
+    {"set_reminder", "tag_note", "edit_note", "create_note", "delete_note", "restore_note", "rename_tag", "rename_category",
      "pin_note", "link_notes", "unlink_notes", "start_meeting", "bin_reminder", "complete_reminder", "restore_reminder", "snooze_reminder"}
 )
 
@@ -1032,7 +1032,7 @@ def _summarise(text: str) -> dict | None:
 
 
 #: Arguments of an act that are the person's own words (never respelt).
-OWN_WORDS = ("content", "title", "tags", "text", "said")
+OWN_WORDS = ("content", "title", "tags", "text", "said", "old", "new")
 
 
 def _about_as_typed(found: dict, text: str, now: datetime, locale: str | None) -> dict:
@@ -1120,7 +1120,7 @@ def read(text: str, now: datetime, locale: str | None = None) -> dict | None:
 
 def _read_folded(command: str, question: bool, polite: bool, urgent: bool, now: datetime, locale: str | None) -> dict | None:
     for reader in (_meeting, lambda t: _reminder(t, now, locale), lambda t: task_acts.read_add(t, lambda r: _reminder(r, now, locale)),
-                   task_acts.read_complete, task_acts.read_cancel, lambda t: task_acts.read_snooze(t, lambda w: _time_of(w, now, locale)), _new_note, _untag, _tag, _move, _delete, _pin, _link, _rename,
+                   task_acts.read_complete, task_acts.read_cancel, lambda t: task_acts.read_snooze(t, lambda w: _time_of(w, now, locale)), _new_note, _untag, _tag, _move, _delete, _pin, _link, object_acts.read_rename, lambda t: object_acts.read_restore(t, _one_target), _rename,
                    _append, _summarise, _navigate, _find):
         found = reader(command)
         if found is None:
@@ -1164,6 +1164,8 @@ def parse(text: str, now: datetime) -> Command | None:
         obj = found.get("title") or "meeting"
     elif intent == "navigate":
         obj = found["surface"]
+    elif intent in ("rename_tag", "rename_category"):
+        obj = found["old"]
     elif found.get("note_id") is not None:
         obj = f"note {found['note_id']}"
     else:
@@ -1259,7 +1261,7 @@ def _which(parsed: dict, session: Session, note_ids: list[int] | None) -> tuple[
 
 #: What the card says under its label: the person decides, nothing has run.
 CONFIRM_NOTICE = "Nothing changes until you confirm, and Undo takes it back."
-_SKIP_REASONS = {"private": "it is private", "binned": "it is in the bin", "failed": "it could not be changed"}
+_SKIP_REASONS = {"private": "it is private", "binned": "it is in the bin", "failed": "it could not be changed", "stale": "it changed since the card was made"}
 
 
 def _card(label: str, steps: list[dict], skipped: list[dict] | None = None, items: list[str] | None = None) -> dict:
@@ -1552,6 +1554,8 @@ def plan(session: Session, parsed: dict, note_ids: list[int] | None = None) -> d
         return _plan_meeting(parsed)
     if intent in ("tag", "move"):
         return _plan_tag_or_move(session, parsed, note_ids, intent)
+    if intent in ("rename_tag", "rename_category", "restore"):
+        return object_acts.plan(session, parsed, object_acts.Helpers(_card, _confirm, _item, note_title, summarise_done))
     if _deletes_all(parsed):
         return _plan_delete_all(session, parsed["about"])
     if intent in ("delete", "pin", "unpin", "rename", "append", "link", "unlink"):
@@ -1863,6 +1867,13 @@ def _step_undo(name: str, args: dict, result: dict):  # noqa: ANN202
     return step_undo
 
 
+def _failure_reason(error: str) -> str:
+    """The skip reason a tool's refusal stands for."""
+    if "is private" in error:
+        return "private"
+    return "stale" if "changed since" in error else "failed"
+
+
 def _run_one(session: Session, name: str, args: dict, tools) -> dict:  # noqa: ANN001
     """One step's result: the composer's own steps first, then the tool table."""
     if name == "start_meeting":
@@ -1895,7 +1906,7 @@ def run(session: Session, steps: list[dict], skipped: list[dict] | None = None, 
             continue
         result = _run_one(session, name, args, tools)
         if "error" in result:
-            reason = "private" if "is private" in str(result["error"]) else "failed"
+            reason = _failure_reason(str(result["error"]))
             failed.append({"id": args.get("note_id"), "reason": reason})
             continue
         done.append((name, args, result))
