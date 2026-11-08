@@ -672,6 +672,12 @@
         //: the line's hanging `-1.6em` and drew its own glyph 24px left of its
         //: box (bullet 44px from the words, half outside the page at 720).
         ".cm-md-li-bullet": { display: "inline-block", width: "1.6em", textIndent: "0" },
+        //: The four dot-point styles are drawn, not typed (no glyph outside Phosphor): a disc, a ring,
+        //: a square and a short bar, in the marker's muted ink and centred on the line.
+        ".cm-md-li-bullet::before": { content: '""', display: "inline-block", boxSizing: "border-box", width: "0.4em", height: "0.4em", background: "currentColor", verticalAlign: "middle" },
+        ".cm-md-li-bullet-disc::before": { borderRadius: "50%" },
+        ".cm-md-li-bullet-circle::before": { borderRadius: "50%", background: "transparent", border: "1.5px solid currentColor" },
+        ".cm-md-li-bullet-dash::before": { width: "0.6em", height: "2px" },
         ".cm-md-li-num": { display: "inline-block", minWidth: "1.6em", textIndent: "0" },
         //: **A quotation's bar has to be seen to do its job** (17c). It was
         //: `--border`, a 10% ink that composites to 1.2:1 on the page, so a
