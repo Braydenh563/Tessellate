@@ -203,6 +203,7 @@ TOPIC_LEADS: dict[str, str] = {
     "companion-travel": "Where the companion goes and how it keeps out of your way.",
     "companion-remarks": "The short lines the companion says from your notes, and how to stop them.",
     "companion-habits": "Small moods and reactions that make the companion feel alive, and how to stop them.",
+    "companion-activities": "The small routines Atlas does on its own, from tea to push-ups, and how to quieten them.",
     "companion-throw": "Fling the companion across the window and see where it lands.",
     "atlas-look": "Choose how Atlas is drawn, as a starlight character or a glowing globe.",
     "faces": "Every person, persona and chat gets its own drawn face, made from its name.",
