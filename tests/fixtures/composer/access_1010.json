@@ -77,6 +77,9 @@
     "map_from_note": "turn the garden note into a mind map"
   },
   "acts": {
+    "restore": "restore the passport note from the bin",
+    "rename_tag": "rename the tag gym to fitness",
+    "rename_category": "rename the category Work to Job",
     "reminder": "remind me to call mum on Friday at 9",
     "tag": "tag the knife note with kitchen",
     "untag": "remove the tag urgent from the boiler note",
