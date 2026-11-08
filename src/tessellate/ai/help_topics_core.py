@@ -2271,7 +2271,7 @@ HELP_TOPICS.extend(
                 "architecture diagram",
             ),
             "body": (
-                "Saving to the library. To save your own: select things and press "
+                "To save your own: select things and press "
                 "Ctrl+Shift+S, or right-click, Save to the library, for a selection, a drawn shape, a style, a sticky "
                 "or text preset, a palette of the selection's colours, or on a mind map a branch; Board, "
                 "Save this board as a template keeps the whole board. New board then offers your templates "
@@ -2420,7 +2420,7 @@ HELP_TOPICS.extend(
                 "show the length",
             ),
             "body": (
-                "Connector bends and importing. Every connector takes bends: drag the small ring in the middle "
+                "Every connector takes bends: drag the small ring in the middle "
                 "of a run (or double-click the line) to add one, drag a bend to move it, double-click it to "
                 "take it out. A straight line runs through its bends, a curved one curves smoothly through "
                 "them, and an elbow turns at right angles and goes round the shapes it joins; changing the "
@@ -2467,7 +2467,7 @@ HELP_TOPICS.extend(
                 "open a shape's link",
             ),
             "body": (
-                "Diagram tools on a board. Shift+2 (or View, Zoom to the selection) frames what is selected, "
+                "Shift+2 (or View, Zoom to the selection) frames what is selected, "
                 "up to twice its size. Tidy as a tree, in Arrange, Tidy and connect, the selection's More and the right-click "
                 "Arrange, lays the selected shapes out along the connectors between them, top to bottom or "
                 "left to right: a shape no connector points into is a root, siblings keep their order, and "
@@ -2528,7 +2528,7 @@ HELP_TOPICS.extend(
                 "paste a list onto a map",
             ),
             "body": (
-                "Paste on a board or map. Text from another app goes in at once: a web address as a link box, "
+                "Text from another app goes in at once: a web address as a link box, "
                 "one line as a text box, a few lines as a sticky each, and rows copied from a spreadsheet as a "
                 "table. A Paste options chip then appears under what was made; press Ctrl, then a letter, or "
                 "open it: Stickies (S), One text box (T), Bullet list in a shape (B), Mind map branch (M, "
@@ -2681,7 +2681,7 @@ HELP_TOPICS.extend(
                 "highlight a branch",
             ),
             "body": (
-                "Mind map features. The layout picker: tree, radial, logic chart, "
+                "The layout picker: tree, radial, logic chart, "
                 "timeline, fishbone, tree table or free; Tidy lays every unpinned topic out again. "
                 "The View menu sets Colour by (branch, category, age, or whether "
                 "a note is behind it) and opens every folded branch; View, "
@@ -2731,7 +2731,7 @@ HELP_TOPICS.extend(
                 "export a branch",
             ),
             "body": (
-                "Mind map import and export. Start from a "
+                "Start from a "
                 "template, import an OPML, FreeMind, XMind, Markdown or text outline "
                 "(it opens as a tree), paste an indented "
                 "list onto a topic to add it as that topic's branch, let the "
@@ -2880,7 +2880,7 @@ HELP_TOPICS.extend(
                 "text only",
             ),
             "body": (
-                "Paste in the document editor. After a paste that changed form (a "
+                "After a paste that changed form (a "
                 "web page or Word copy turned to Markdown, several lines, a "
                 "spreadsheet's rows, a web address) a Paste options chip appears at "
                 "the caret. Press Ctrl, then a letter or the arrows and Enter: Keep "
@@ -2913,7 +2913,7 @@ HELP_TOPICS.extend(
                 "who wrote a comment",
             ),
             "body": (
-                "Comments in a document. Select words and choose Style, Comment: "
+                "Select words and choose Style, Comment: "
                 "they are highlighted and a remark follows them, kept in the text "
                 "as ==words== %%the remark%%, so it opens anywhere else the same. "
                 "The sidebar's Outline lists every remark with the words it is "
@@ -2979,7 +2979,7 @@ HELP_TOPICS.extend(
                 "line spacing",
             ),
             "body": (
-                "Document editor features. Press the counts in the status bar "
+                "Press the counts in the status bar "
                 "for Document statistics (words, sentences, reading and speaking "
                 "time, reading ease, the words you lean on). The command palette "
                 "(F1) changes the selection's case, sorts its lines or drops "
@@ -3069,7 +3069,7 @@ HELP_TOPICS.extend(
                 "connection",
             ),
             "body": (
-                "Graph keys and controls. Click the map, then the arrow keys move between notes, N steps "
+                "Click the map, then the arrow keys move between notes, N steps "
                 "to the next connected note, Enter or Space opens one, + and - zoom, 0 fits the whole "
                 "map, Shift and the arrows pan, Esc leaves. Drag a note to move it (it settles near the "
                 "drop); double-click it to pin it, again to free. Hold Alt and drop one note onto another to link "
@@ -3132,7 +3132,7 @@ HELP_TOPICS.extend(
                 "colour by type",
             ),
             "body": (
-                "More graph controls, under Options. Show adds Tags (a node per tag), "
+                "Show adds Tags (a node per tag), "
                 "Attachments (a node per file or picture) and Unwritten links: each "
                 "[[name]] no note answers to is a faint node, and clicking it writes "
                 "that note, named in its heading, linked from every note that named "
@@ -3316,7 +3316,7 @@ HELP_TOPICS.extend(
                 "queued message",
             ),
             "body": (
-                "Chat keys and controls. Enter sends, Shift+Enter starts a new "
+                "Enter sends, Shift+Enter starts a new "
                 "line; Escape or Ctrl+. stops the answer, Ctrl+Shift+O starts a new chat, "
                 "and one sent mid-answer queues above the box (Edit, Remove). "
                 "Ctrl+Shift+G turns agent mode on or off, Ctrl+Shift+P clips a note "
@@ -3393,7 +3393,7 @@ HELP_TOPICS.extend(
                 "before:",
             ),
             "body": (
-                "Notes keys and controls. In Capture a thought, Ctrl+Enter saves, "
+                "In Capture a thought, Ctrl+Enter saves, "
                 "/ (or Ctrl+/) opens the blocks and commands menu, Ctrl+J asks "
                 "Atlas to write at the cursor, and selecting text shows an actions "
                 "menu (Ctrl+Shift+E from the keyboard). From anywhere, Ctrl+Shift+N "
@@ -3423,7 +3423,7 @@ HELP_TOPICS.extend(
             "id": "library-controls",
             "keywords": ("sub-tab", "subtab", "sort the library", "select all", "boards and maps"),
             "body": (
-                "Library controls. The sub-tabs are plain words with a line under the one you are on (Notes and the document sidebar draw theirs the same way): All (everything you have made), "
+                "The sub-tabs are plain words with a line under the one you are on (Notes and the document sidebar draw theirs the same way): All (everything you have made), "
                 "Documents, Boards & maps, Images, Files, AI skills, Bookmarks and "
                 "Contents. Search, then sort newest first, oldest first, A to Z or "
                 "biggest first, and set how many show per page. Tick a card's box "
@@ -3451,7 +3451,7 @@ HELP_TOPICS.extend(
                 "add an event",
             ),
             "body": (
-                "Timeline controls. Feed shows the newest first, grouped by date; Table shows every "
+                "Feed shows the newest first, grouped by date; Table shows every "
                 "column, sortable; Calendar shows a month, a week (hour rows) or a day: reminders and "
                 "meetings at their time, a day's page at the top of its day and a chip with its title for"
                 " each note (a dot each where a day is too short). Press a day to open it as a Day view; "
@@ -3491,7 +3491,7 @@ HELP_TOPICS.extend(
                 "google calendar",
             ),
             "body": (
-                'Reminders controls. Magic add takes a sentence ("Call mum '
+                'Magic add takes a sentence ("Call mum '
                 'tomorrow evening, high priority"), then Enter or the sparkle button '
                 "(Add from this sentence) works out the time and the "
                 'priority. Times like "tomorrow at 5pm", "next Friday", '
@@ -3535,7 +3535,7 @@ HELP_TOPICS.extend(
                 "continue where i left off",
             ),
             "body": (
-                "Dashboard controls. Under the greeting is the search box (Ctrl+P), "
+                "Under the greeting is the search box (Ctrl+P), "
                 "then Customise and a ... menu. The ... menu is for doing: "
                 "Continue (the note you opened or edited last), your two most "
                 "recent skills and All skills, Tools & features (a searchable "
@@ -3590,7 +3590,7 @@ HELP_TOPICS.extend(
             #: app.js) are written out letter by label, and checked against the
             #: tables, so a letter added there has to be added here.
             "body": (
-                "Hidden features and power keys. Ctrl+K is the command palette "
+                "Ctrl+K is the command palette "
                 "(jump anywhere, run an action), Ctrl+P is Find anything (notes, "
                 "files and actions), and ? lists every shortcut, which Settings, "
                 "Keyboard shortcuts rebinds. Press t (or m) then a letter to jump: d (Dashboard), n "

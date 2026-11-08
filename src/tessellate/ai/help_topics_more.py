@@ -1915,7 +1915,7 @@ MORE_TOPICS.extend(
                 "what a card shows", "create a linked note", "link mode",
             ),
             "body": (
-                "What a note's card draws. A table or a code block is drawn the "
+                "A table or a code block is drawn the "
                 "way a document draws it, with its Copy button; a search does not "
                 "mark words inside one. A picture from the web is not loaded, "
                 "because this notebook works offline: the card says so and links "
@@ -2347,7 +2347,7 @@ MORE_TOPICS.extend(
                 "forget panel position",
             ),
             "body": (
-                "Moving and resizing panels. On a computer with a mouse, any panel "
+                "On a computer with a mouse, any panel "
                 "with a title row (the agent, Find anything, Statistics, Settings "
                 "and the rest) can sit where you want it: drag its head to move it "
                 "and drag any edge or corner to resize it from that side. "
@@ -2390,7 +2390,7 @@ MORE_TOPICS.extend(
                 "covering the button", "message covering", "larger text", "bigger text",
             ),
             "body": (
-                "Accessibility. The app works at 200% and 400% browser zoom: on a "
+                "The app works at 200% and 400% browser zoom: on a "
                 "short window Chat flows as a page, and sub-tab strips scroll with "
                 "the page so a focused control stays in view. Settings, Keyboard "
                 "shortcuts has Single-key shortcuts: turn it off so speech input "
@@ -2415,7 +2415,7 @@ MORE_TOPICS.extend(
                 "flashcards", "quiz me on my map", "test myself", "memorise",
             ),
             "body": (
-                "Study the map. On a mind map, the board menu's Study the map "
+                "On a mind map, the board menu's Study the map "
                 "goes full screen and asks one branch at a time: what is under "
                 "it is hidden until you press Show (or Enter), then Knew it or "
                 "Not yet marks it and moves on. Branches with topics under "
@@ -2434,7 +2434,7 @@ MORE_TOPICS.extend(
                 "attach to a comment",
             ),
             "body": (
-                "Comments on a board or a map. Right-click a card, sticky, shape or "
+                "Right-click a card, sticky, shape or "
                 "topic and choose Comment… for a thread on it; the count on its "
                 "corner opens it again. Each comment has Reply (answered one step in "
                 "under it), Edit (in place: Enter keeps it, Esc puts it back, and the "
@@ -2457,7 +2457,7 @@ MORE_TOPICS.extend(
                 "text size for some words", "different font for some words", "colour some words", "highlight colour on a board",
             ),
             "body": (
-                "Sticky notes and text boxes on a board. A sticky (N, or the note "
+                "A sticky (N, or the note "
                 "on the tool dock) is paper: its colour, a lift, and a folded "
                 "corner. A text box (T) is words on the board, with no fill and a "
                 "faint dashed edge. Select a sticky and its bar starts with a Paper "
@@ -2488,7 +2488,7 @@ MORE_TOPICS.extend(
                 "symbol", "symbols", "insert a symbol", "special characters", "greek letters", "arrows",
             ),
             "body": (
-                "Emoji and icons. One picker holds every Phosphor icon the app ships "
+                "One picker holds every Phosphor icon the app ships "
                 "and about 470 emoji: Emoji or Icons in the tab strip under its title, "
                 "type to search, Recent first, arrows and Enter to choose, Escape to close. "
                 "The last Emoji group is Japanese emoticons (kaomoji such as a shrug or a table flip), "
@@ -2526,7 +2526,7 @@ MORE_TOPICS.extend(
                 "solid fill", "topic style", "topic icon", "emoji on a topic", "icon picker",
             ),
             "body": (
-                "How a map's topics look. A map draws as a hierarchy: the centre "
+                "A map draws as a hierarchy: the centre "
                 "large, bold and filled, each main branch bold on a tinted card "
                 "with a thick line, deeper topics plain. Enter on the centre adds "
                 "a main branch. A topic's own size, shape or fill always beats "
@@ -3306,7 +3306,7 @@ MORE_TOPICS.extend([
             "diagram too small", "turn it sideways", "diagram direction", "diagram fit", "blocks list phone",
         ),
         "body": (
-            "Reading a diagram. The list says Your blocks, in the order the chart flows; its foot has Add block and Connect. A block sits under the one that points at it, "
+            "The list says Your blocks, in the order the chart flows; its foot has Add block and Connect. A block sits under the one that points at it, "
             "indented where it branches (a straight run of steps stays flush), and a block made by Connect to... lands under its siblings, so an org chart reads like the chart. "
             "The printed source keeps its own order; Alt+Up and Alt+Down move a block among its siblings, and say so when the list would not change; drag a grip to move it. "
             "A block's arrows share one line under it; press one for its menu: the line (arrow, line, dotted, thick, Both ways), Colour… and Reverse direction. "

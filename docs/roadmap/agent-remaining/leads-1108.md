@@ -1,0 +1,8 @@
+# leads-1108: a one-line lead on every Help topic (INBOX 1612 b)
+
+- Built: `src/tessellate/ai/help_leads.py` (216 leads, never prompt text), `help_listing` returns `lead`; drawn first in Settings, Help (`helpTopicRow`, settings-find.js) and the manual (`manualTopicEl`, manual.js), both searchable; lint in tests/test_manual_parity.py.
+- Bodies: 27 bare-label first sentences that restated the title ("Accessibility.", "Graph keys and controls.") taken out; path labels ("Settings, Appearance.") kept, the model reads them as the place.
+- Measured (sweeps untracked, /tmp/claude-0/leads/sw/leads.js and manual.js; 1440 and 390, light and dark, same numbers): Settings, Help 216 of 216 topics carry a lead, order summary > lead > body > Where; summary to lead 6px, lead to body 6px (`--space-2`, 6.4px), lead and body on one left edge (510px at 1440, 78px at 390), 14.72px, weight 500 against 400, ink rgb(28,28,26) light and rgb(236,235,232) dark; the lead is 1 line at 1440, 3 at 390. Search "retyping" (a lead-only word) 1 of 216 topics, 1 mark in the lead; "sketched" 6 of 216 with board-hand-drawn among them. Manual: 216 of 216 leads, h4 > lead > Where > body, 4px apart, 12px, 500; "retyping" keeps only documents-turn-into.
+- Base reds seen, not mine (4da87779 fails them alone): test_module_line_caps (routes_chat.py 2476 > 2474), test_global_scope_ratchet (9708 > 9706), test_frontend_wake_sources (avatars.js raf 7 to 8), test_complexity (composer_ask.subject_terms, composer_slots._age_of).
+- done: "Help: a one-line lead on every topic" commit; next: nothing in this brief.
+- Not done: the Guide's system answer (`help_chat.system_answer`) does not show the lead; 1612 c (pictures) untouched.
