@@ -3,9 +3,18 @@ status: running
 pr: 216
 max-continues: 60
 max-idle-minutes: 60
-finish-up: 85%
+finish-up: 45%
 started: 2026-11-07 14:40Z
-tier: max (weekly 4%), three agents at once, Sonnet or Haiku; never Fable; owner asleep from 2026-11-07 14:40Z
+tier: max (weekly 32% at 2026-11-08 16:00Z), four agents at once, Sonnet or Haiku, one Opus for design or risky review; never Fable; owner away from 2026-11-08 16:00Z until late afternoon 2026-11-09
+
+## 2026-11-08 away queue (HANDOVER Now 2026-11-08g)
+- [ ] Merge desklayers-1108 (C1, C4), appacts-1108 (D1, D2), dgmlive-1108 (diagram real-browser checks), deskmood-1108 (sad when left alone, welcome back, confused on a missed landing): targeted tests, reviewer on UI, push
+- [ ] Folder CONTEXT.md in frontend/js, src/tessellate/ai, src/tessellate/core/overlay (owner yes 16:00Z)
+- [ ] atlascat C2, C3, C5 (atlas-life.js tail acts and lower states) after desklayers
+- [ ] perf P6, P7, P9 (audit-1108-perf.md); coil breath on the compositor (restlayout-1108.md)
+- [ ] "put it in today's note" read by the move reader; r3fix single-list intro-line route
+- [ ] Layered deep dive next round per surface (desk, in-app, Atlas, diagram, composer)
+- [ ] Session end at 45% weekly or queue done: full suite, Morning summary, retro
 
 ## 2026-11-07 overnight queue (HANDOVER Now 2026-11-07c)
 - [x] Merge land1683 (e7ad8fe9) (agent/land1683-1107): overlay tests serially, CHANGELOG, CODEMAP, push
