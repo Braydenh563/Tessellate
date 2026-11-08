@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Docs: a CONTEXT.md in three source folders says which files hold what and which tests guard them.
 - Diagram builder (dgmlive 3): Keep on "This chart is tall for this pane" is remembered by diagram only; the pane is reused across documents and its own flag hid the offer on the next tall document (Chromium: second tall chart showed 0 offers after Keep on the first, now 1; the first stays answered).
 - Diagram builder (dgmlive 2): ending a block rename by pressing another field (the dialog title) no longer pulls focus back to the block, so the title takes the typing and its own Ctrl+Z undoes only that typing (Chromium: the title stayed empty and Ctrl+Z removed the new block; now "Hello title" is typed and 3 blocks stay).
 - Desk companion (deskfix 9): the carried pointer is read for a shake at most every 10 ms (a 1000 Hz mouse cost 323 us a pointer event, now 70 us mean); the roam runner's scan-rate test seeds the engine (an unseeded trip that warps wants no scan, 1 run in 20).
