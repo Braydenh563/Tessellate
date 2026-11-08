@@ -72,3 +72,40 @@ def test_a_20k_text_is_linear(text):
     start = time.perf_counter()
     composer_clock.answer(ctx(text))
     assert time.perf_counter() - start < 0.5
+
+
+WEEK_LEAP_LEFT = [
+    ("what week is 3 march", "Wednesday 3 March 2027 is in week 9 of 2027.\n\n_Read as the ISO week number of Wednesday 3 March 2027 (weeks start on Monday)._"),
+    ("what week number is christmas", "Friday 25 December 2026 is in week 52 of 2026.\n\n_Read as the ISO week number of Friday 25 December 2026 (weeks start on Monday)._"),
+    ("week number of 1 january 2027", "Friday 1 January 2027 is in week 53 of 2026.\n\n_Read as the ISO week number of Friday 1 January 2027 (weeks start on Monday)._"),
+    ("is 2028 a leap year", "2028 is a leap year: it has 366 days, and February has 29.\n\n_Read as the leap year rule: every fourth year, except centuries not divisible by 400._"),
+    ("Is it a leap year?", "2026 is not a leap year: it has 365 days, and February has 28.\n\n_Read as the leap year rule: every fourth year, except centuries not divisible by 400._"),
+    ("was 1900 a leap year", "1900 was not a leap year: it has 365 days, and February has 28.\n\n_Read as the leap year rule: every fourth year, except centuries not divisible by 400._"),
+    ("was 2000 a leap year", "2000 was a leap year: it has 366 days, and February has 29.\n\n_Read as the leap year rule: every fourth year, except centuries not divisible by 400._"),
+    ("is next year a leap year", "2027 is not a leap year: it has 365 days, and February has 28.\n\n_Read as the leap year rule: every fourth year, except centuries not divisible by 400._"),
+    ("how many days are left in the year", "There are 53 days left in 2026, after today.\n\n_Read as the days from tomorrow to Thursday 31 December 2026._"),
+    ("how many weeks left in the year", "There are 7.6 weeks (53 days) left in 2026, after today.\n\n_Read as the days from tomorrow to Thursday 31 December 2026._"),
+    ("days remaining in this year", "There are 53 days left in 2026, after today.\n\n_Read as the days from tomorrow to Thursday 31 December 2026._"),
+]
+
+
+@pytest.mark.parametrize(("q", "text"), WEEK_LEAP_LEFT)
+def test_week_of_a_date_leap_years_and_days_left(q, text):
+    assert said(q) == text
+
+
+def test_one_day_left_is_singular():
+    assert said("how many days are left in the year", now=dt.datetime(2026, 12, 30)).startswith("There is 1 day left in 2026")
+
+
+@pytest.mark.parametrize("q", ["what week is it", "what week is the exam", "is the leap year note done", "how many days are left in the project", "what week is xyz"])
+def test_week_of_edge_cases_are_left_alone_or_current(q):
+    got = said(q)
+    assert got == "" or got.startswith("It is week 45")
+
+
+@pytest.mark.parametrize("text", ["what week is" + " " * 20000 + "x", "is " + "a " * 9000 + "leap year", "how many days " * 2000, "week number of " + "3 " * 9000])
+def test_a_20k_text_is_linear_for_the_date_readers(text):
+    start = time.perf_counter()
+    composer_clock.answer(ctx(text))
+    assert time.perf_counter() - start < 0.5

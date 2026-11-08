@@ -52939,3 +52939,11 @@ Built: T13. Row text: T13 | Time and date now | Gemini `utility` shape, invisibl
 - **What it does:** `ai/composer_clock.py` (through `composer_quick`) answers from the turn's date: "what week is it" gives "It is week 45 of 2026." (ISO, weeks start Monday), "what quarter is it" "It is quarter 4 of 2026, October to December.", "what day of the year is it" "Today is day 312 of 2026, and 53 days remain.", "what's tomorrow's date" "Tomorrow is Monday 9 November 2026." Each says how it was read; no note is read.
 - **Check:** `tests/test_composer_clock_1108.py` (fixed clock, exact sentences, ISO year edge, 20k linear timing).
 - **Not built:** Week of a named date, leap year and days left in the year are the Time and date row.
+
+## Moved from the plans, 2026-11-08 (CHAT_PLAN Time and date)
+
+Built: Time and date (the tools survey row). Row text: | Time and date | Current time, calendar week of a date, Unix epoch, days in a month, week of year | Time and date plugin with formats | "what week is 3 March", "days until Friday", "what day is 3 weeks from now" | Partial: `when.py`; the Gemini `utility` time answer is invisible | S |
+
+- **What it does:** `ai/composer_clock.py` also answers "what week is 3 March" ("Wednesday 3 March 2027 is in week 9 of 2027."), "is 2028 a leap year" ("2028 is a leap year: it has 366 days, and February has 29."), "how many days are left in the year" and "how many weeks left in the year" ("There are 53 days left in 2026, after today."). Each says how it was read; no note is read.
+- **Check:** `tests/test_composer_clock_1108.py` (fixed clock, exact sentences, 20k linear timing).
+- **Not built:** Unix epoch time.
