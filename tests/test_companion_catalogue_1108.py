@@ -28,8 +28,11 @@ MIN_ACTS, MAX_HOLD = 12, 90.0
 MIN_TAILS, MIN_LOWERS, MIN_FACES = 4, 4, 6
 HOURS, SEEDS = (9, 14, 20, 23), (1, 2, 3)
 #: What is built today: the fewest distinct acts in any seeded hour (measured 42 in-app, 32 desk on 2026-11-08), set
-#: a tenth under, since a row built or added shifts the seeded draws by an act or two. May only rise.
-BUILT_FLOOR = {"app": 38, "desk": 29}
+#: a tenth under, since a row built or added shifts the seeded draws by an act or two. May only rise, with one
+#: stated exception (atlascat D2, 2026-11-08): the app's journal, stars, blanket and plant are minutes long
+#: (20 to 480 s each, as on the desk), so building them gives each its share of the hour and fewer distinct acts
+#: fit: the app's fewest fell from 42 to 34, and the floor was lowered to 31 once, for that, not for a loss.
+BUILT_FLOOR = {"app": 31, "desk": 29}
 
 #: One-sided entries (built on one side only). Build the other side, then delete the id here and lower the cap: these only
 #: shrink. The design backlog (built on neither side) is capped too; its build order is
@@ -49,14 +52,14 @@ APP_ONLY = frozenset({
     "trans.upright>curl", "trans.upright>lie", "trans.upright>sit",
 })
 DESK_ONLY = frozenset({
-    "act.blanket_nap", "act.daydream", "act.dust_off", "act.fish", "act.invent_game", "act.lift_weights",
-    "act.little_dance", "act.look_down", "act.nod", "act.pace", "act.pose_proud", "act.push_ups", "act.puzzle",
-    "act.sip_tea", "act.snack", "act.tinker", "act.tiptoe", "act.watch_stars", "act.water_plant", "act.write_journal",
+    "act.daydream", "act.dust_off", "act.invent_game",
+    "act.little_dance", "act.look_down", "act.nod", "act.pace", "act.pose_proud",
+    "act.tinker", "act.tiptoe",
     "face.miffed", "face.smirk", "int.ceiling_bonk", "int.pat", "int.swipe_twirl", "lower.fall", "move.cloud_ride",
     "react.battery_low", "react.hour_chime", "react.idle_return", "react.window_closed", "react.window_dragged",
     "react.window_maximised", "react.window_opened", "react.window_restored", "trans.upright>hang",
 })
-APP_ONLY_CAP, DESK_ONLY_CAP, NEITHER_CAP = 60, 36, 109
+APP_ONLY_CAP, DESK_ONLY_CAP, NEITHER_CAP = 60, 26, 109
 
 
 @lru_cache(maxsize=1)

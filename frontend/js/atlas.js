@@ -2095,6 +2095,116 @@ function atlasHandProps(armR, armL, look) {
   for (const [x, y, r] of [[9.6, 62.8, 1.9], [16.4, 76, 1.9]]) atlasMake("circle", { class: "atl-node-dot", cx: x, cy: y, r }, cable);
 }
 
+//: **The desk's acts, in Atlas's own parts** (INBOX 1696 v, the owner: "I want
+//: the desktop companion to be just as good as the in-app one and vice
+//: versa"). The desk draws push-ups on a mat, a dumbbell, a cup of tea, a
+//: snack and a fishing rod (`core/overlay/props.py`, `presence.py`,
+//: `behaviour.py`); these are the same things as small vector parts in the
+//: rig's paint, so both read as the same act in either theme: navy bodies,
+//: the glow colour for rims, the gold for the bright bits, never a literal
+//: colour. A hand's prop is drawn about the hand (the origin), inside an
+//: `atl-ds-turn` group the act's CSS turns back as the arm turns, so a cup
+//: stays upright while the arm lifts it. Shown by `nmb-act-<name>` in
+//: atlas-lazy.css, hidden otherwise like every prop (`.nm-figure .nmp`).
+atlasHandProps.deskHand = function (arm, at, name) {
+  const slot = atlasMake("g", { transform: `translate(${+at[0].toFixed(2)} ${+at[1].toFixed(2)})` }, arm);
+  const prop = atlasGroup(slot, `nmp nmp-${name}`);
+  return atlasMake("g", { class: "atl-ds-turn" }, prop);
+};
+atlasHandProps.desk = function (armR, armL, look) {
+  const right = (ATLAS_LOOKS[look] || {}).propHand || [48.2, 60];
+  const left = [63 - right[0], right[1]];
+  //: A dumbbell in each hand: a bar, a plate at each end, the plates bright.
+  for (const [arm, at, side] of [[armR, right, "r"], [armL, left, "l"]]) {
+    const bell = atlasHandProps.deskHand(arm, at, `dumbbell nmp-dumbbell-${side}`);
+    atlasMake("rect", { class: "atl-ds-metal", x: -4.8, y: -0.7, width: 9.6, height: 1.4, rx: 0.5 }, bell);
+    for (const x of [-6.8, 4.6]) atlasMake("rect", { class: "atl-ds-plate", x, y: -3, width: 2.2, height: 6, rx: 0.8 }, bell);
+  }
+  //: A cup on its saucer with the steam over it (the desk's `sip_tea` cup).
+  const cup = atlasHandProps.deskHand(armR, right, "cup");
+  atlasMake("ellipse", { class: "atl-ds-metal", cx: 0, cy: 2.9, rx: 4, ry: 0.9 }, cup);
+  atlasMake("path", { class: "atl-ds-handle", d: "M2.6 -1.2Q5.2 -1.2 4.4 1.2Q3.9 2.2 2.2 1.8" }, cup);
+  atlasMake("path", { class: "atl-ds-cup", d: "M-2.8 -2.4H2.8L2.2 1.8Q0 3.2 -2.2 1.8Z" }, cup);
+  atlasMake("path", { class: "atl-ds-tea", d: "M-2.5 -1.4H2.5" }, cup);
+  const steam = atlasGroup(cup, "atl-ds-steam");
+  atlasMake("path", { class: "atl-thread", d: "M-1 -3.6Q-2.2 -5 -1 -6.4Q0.2 -7.8 -1 -9.2" }, steam);
+  atlasMake("path", { class: "atl-thread atl-ds-steam-b", d: "M1.4 -3.6Q0.2 -5 1.4 -6.4Q2.6 -7.8 1.4 -9" }, steam);
+  //: A round biscuit with a bite out of it and a crumb or two.
+  const snack = atlasHandProps.deskHand(armR, right, "snack");
+  const biscuit = atlasGroup(snack, "atl-ds-biscuit");
+  atlasMake("path", { class: "atl-ds-snack", d: "M1.2 -2.5A2.8 2.8 0 1 0 2.7 0.8A1.3 1.3 0 0 1 2.2 -0.9A1.3 1.3 0 0 1 1.2 -2.5Z" }, biscuit);
+  for (const [x, y] of [[-1, -0.6], [0.4, 1.2], [-0.2, -1.6]]) atlasMake("circle", { class: "atl-ds-chip", cx: x, cy: y, r: 0.4 }, biscuit);
+  const crumbs = atlasGroup(snack, "atl-ds-crumbs");
+  for (const [x, y] of [[3.4, 1.8], [2.2, 3.4], [4.4, 3.6]]) atlasMake("circle", { class: "atl-ds-chip", cx: x, cy: y, r: 0.35 }, crumbs);
+  //: A fishing rod, its line hanging to a bobber, ripples under it.
+  const rod = atlasHandProps.deskHand(armR, right, "rod");
+  atlasMake("path", { class: "atl-ds-rod", d: "M-1.6 1.6L9.4 -17" }, rod);
+  atlasMake("path", { class: "atl-ds-line", d: "M9.4 -17Q10.6 -6 9.8 5.2" }, rod);
+  atlasMake("ellipse", { class: "atl-ds-ripple", cx: 9.8, cy: 8.2, rx: 3.6, ry: 0.9 }, rod);
+  atlasMake("ellipse", { class: "atl-ds-ripple atl-ds-ripple-b", cx: 9.8, cy: 8.2, rx: 3.6, ry: 0.9 }, rod);
+  atlasMake("circle", { class: "atl-ds-bobber", cx: 9.8, cy: 6.4, r: 1.6 }, rod);
+  atlasMake("path", { class: "atl-ds-bobber-top", d: "M8.2 6.4A1.6 1.6 0 0 1 11.4 6.4Z" }, rod);
+  //: The journal's pencil: a slim barrel with a bright tip.
+  const pen = atlasHandProps.deskHand(armR, right, "pen");
+  atlasMake("path", { class: "atl-ds-pen", d: "M0.6 1.2L9 -12" }, pen);
+  atlasMake("circle", { class: "atl-ds-pen-tip", cx: 0.4, cy: 1.5, r: 0.7 }, pen);
+  //: The watering can, in the left hand: a body, a long spout to the left, a handle.
+  const can = atlasHandProps.deskHand(armL, left, "can");
+  atlasMake("path", { class: "atl-ds-handle", d: "M1.8 -2.6Q6.4 -4 5.2 0.6Q4.8 2 2.6 1.8" }, can);
+  atlasMake("path", { class: "atl-ds-can", d: "M-2.6 -2.6H2.6L3 2.6H-3Z" }, can);
+  atlasMake("path", { class: "atl-ds-can-spout", d: "M-2.6 1.4L-8.2 -2.4" }, can);
+  //: The puzzle piece that is carried: a square with a knob.
+  const piece = atlasHandProps.deskHand(armR, right, "piece");
+  atlasMake("path", { class: "atl-ds-piece atl-ds-piece-held", d: "M-2.2 -2.2H-0.6Q-0.6 -3.8 0.6 -3.8Q1.8 -3.8 1.8 -2.2H2.2V2.2H-2.2Z" }, piece);
+};
+//: **The rest of the desk's doings, drawn in front of the body** (a diary at
+//: the belly with a stroke that writes itself, a sky of stars and a
+//: shooting one, a blanket over the lap, a pot with a plant that grows when it
+//: is watered, a puzzle tray with a slot for the piece); the CSS shows the one
+//: its act names, like the map. A property, not a global.
+atlasHandProps.front = function (layer) {
+  const diary = atlasGroup(layer, "nmp nmp-diary");
+  atlasMake("path", { class: "atl-ds-diary", d: "M26 50.6L47 50.6L48 63.4L25 63.4Z" }, diary);
+  atlasMake("path", { class: "atl-ds-page", d: "M27.4 52H45.8L46.6 62H26.6Z" }, diary);
+  atlasMake("path", { class: "atl-ds-ink", d: "M29 54.6H44M29 57.4H42" }, diary);
+  atlasMake("path", { class: "atl-ds-scrawl", pathLength: 1, d: "M29 60.2Q33 58.8 36 60.4T42 60.2" }, diary);
+  atlasMake("path", { class: "atl-ds-ribbon", d: "M43.4 62.4V66.6" }, diary);
+  const sky = atlasGroup(layer, "nmp nmp-sky");
+  [[7, 12, 2.7, 0], [55, 9, 3.2, 1], [54, 27, 2.2, 2], [8, 32, 2, 1]].forEach(([x, y, r, k]) => atlasSpark(sky, x, y, r, `atl-ds-twinkle atl-ds-twinkle-${k}`));
+  const shoot = atlasGroup(sky, "atl-ds-shoot");
+  atlasMake("path", { class: "atl-ds-trail", d: "M64 -2L52 6" }, shoot);
+  atlasSpark(shoot, 52, 6, 1.8, "atl-ds-twinkle");
+  const blanket = atlasGroup(layer, "nmp nmp-blanket");
+  atlasMake("path", { class: "atl-ds-blanket", d: "M3 64Q14 56 31 58.5Q48 56 59 64Q62 76 58 86H4Q0 76 3 64Z" }, blanket);
+  atlasMake("path", { class: "atl-ds-fold", d: "M3 64Q14 56 31 58.5Q48 56 59 64" }, blanket);
+  atlasMake("path", { class: "atl-ds-stitch", d: "M9 72H14M19 75H24M29 72H34M39 75H44M49 72H54M12 81H17M26 81H31M40 81H45" }, blanket);
+  atlasSpark(blanket, 48, 78, 2, "atl-ds-twinkle atl-ds-twinkle-1");
+  const plant = atlasGroup(layer, "nmp nmp-plant");
+  atlasMake("path", { class: "atl-ds-pot", d: "M3 78H15L14 87H4Z" }, plant);
+  atlasMake("path", { class: "atl-ds-pot-rim", d: "M2 76.6H16V78.6H2Z" }, plant);
+  const leaves = atlasGroup(plant, "atl-ds-leaves");
+  atlasMake("path", { class: "atl-ds-stem", d: "M9 77V69" }, leaves);
+  atlasMake("path", { class: "atl-ds-leaf", d: "M9 71Q3 70 3.4 65Q8.6 65.4 9 71Z" }, leaves);
+  atlasMake("path", { class: "atl-ds-leaf", d: "M9 69Q15 68.6 15 63.4Q9.6 63.6 9 69Z" }, leaves);
+  atlasMake("path", { class: "atl-ds-leaf", d: "M9 73.6Q14.4 73.6 15 70Q10.2 69.8 9 73.6Z" }, leaves);
+  const drops = atlasGroup(plant, "atl-ds-drops");
+  [[4.6, 56], [6.6, 59], [8.4, 56.6]].forEach(([x, y]) => atlasMake("ellipse", { class: "atl-ds-drop", cx: x, cy: y, rx: 0.6, ry: 1 }, drops));
+  const puzzle = atlasGroup(layer, "nmp nmp-puzzle");
+  atlasMake("rect", { class: "atl-ds-tray", x: 26, y: 50, width: 22, height: 14, rx: 1.8 }, puzzle);
+  atlasMake("path", { class: "atl-ds-piece atl-ds-piece-a", d: "M28 52H36V57H28Z" }, puzzle);
+  atlasMake("path", { class: "atl-ds-piece atl-ds-piece-b", d: "M28 58H36V62H28Z" }, puzzle);
+  atlasMake("path", { class: "atl-ds-piece atl-ds-piece-c", d: "M38 58H46V62H38Z" }, puzzle);
+  atlasMake("path", { class: "atl-ds-slot", d: "M38 52H46V57H38Z" }, puzzle);
+  atlasMake("path", { class: "atl-ds-piece atl-ds-piece-fit", d: "M38 52H46V57H38Z" }, puzzle);
+};
+//: The push-ups' mat, behind the body and under its feet.
+atlasHandProps.mat = function (layer) {
+  const mat = atlasGroup(layer, "nmp nmp-pushmat");
+  atlasMake("rect", { class: "atl-ds-mat", x: 0, y: 83, width: 62, height: 5, rx: 2.5 }, mat);
+  atlasMake("path", { class: "atl-ds-mat-line", d: "M6 85.5H56" }, mat);
+  return mat;
+};
+
 //: The head: mane, ears, wisps and skin in the edge layer; the mane's
 //: fills (behind the head); the head's fill and rim shade; the ears and
 //: wisps over it; the specular, blush, eyes, brows, mouths, then the
@@ -2309,6 +2419,7 @@ function atlasBody(parent, id, props, look, route = null) {
     if (!edge && props) {
       atlasCoilProp(back.fill);
       atlasCoilProp.seats(back.fill);
+      atlasHandProps.mat(back.fill);
     }
     //: The mermaid lower body (the feminine look): one ribbon from the
     //: hips sweeping down to the left and curling, in the tail's paint,
@@ -2543,8 +2654,10 @@ function atlasBody(parent, id, props, look, route = null) {
   }
   if (props) {
     atlasHandProps(arms.r, arms.l, look);
+    atlasHandProps.desk(arms.r, arms.l, look);
     atlasBookProp(frontAt.fill);
     atlasMapProp(frontAt.fill);
+    atlasHandProps.front(frontAt.fill);
     //: Startled, a translucent bubble round the whole figure (the
     //: reference's `startle` cell); the CSS shows it.
     const bubble = atlasGroup(frontAt.fill, "nmp nmp-bubble");
