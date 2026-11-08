@@ -282,6 +282,10 @@
   margin-inline: calc(-1 * var(--space-3) - 1px);
 }
 #appearance-panel :is(.settings-group, .settings-fold)
+  .row.help-head > label:is(.check-row, .setting-check):first-child:has(> input[type="checkbox"]) {
+  margin-inline-start: calc(-1 * var(--space-3) - 1px);
+}
+#appearance-panel :is(.settings-group, .settings-fold)
   :is(.check-row + .check-row, .setting-check + .setting-check,
     li:has(> .setting-check) + li > .setting-check, li:has(> .check-row) + li > .check-row,
     #tool-list > li > .setting-check):is(label):has(> input[type="checkbox"]):not(.row > *, .tool-picker > *) {

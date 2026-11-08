@@ -3176,7 +3176,7 @@ $("theme-surprise")?.addEventListener("click", () => {
   const pick = names[Math.floor(Math.random() * names.length)];
   applyThemePreset(pick, true);
   renderAppearance();
-  toast(`${THEME_PRESETS[pick].label} theme. Press Surprise me again for another.`, "info");
+  toast(`${THEME_PRESETS[pick].label} theme. Press Random theme again for another.`, "info");
 });
 
 //: Logs, from a job history row and the empty log (moved out of boot code, the
@@ -3863,6 +3863,13 @@ $("density-seg").addEventListener("change", (e) => {
   applyAppearance();
   renderAppearance();
 });
+for (const key of ["read-leading", "read-measure"]) {
+  $(key).addEventListener("change", (e) => {
+    prefs.set(key, e.target.value);
+    applyAppearance();
+    renderAppearance();
+  });
+}
 $("perf-mode").addEventListener("change", (e) => {
   prefs.set("perf", e.target.value);
   applyAppearance();
@@ -4132,6 +4139,9 @@ $("custom-theme-save").addEventListener("click", () => {
 $("custom-theme-name").addEventListener("keydown", (e) => {
   if (e.key === "Enter") $("custom-theme-save").click();
 });
+$("look-surprise").addEventListener("click", () => settingsLook.lookFile.surpriseNow());
+$("look-export").addEventListener("click", () => settingsLook.lookFile.exportNow());
+$("look-import").addEventListener("click", () => pickJsonFile("look-import-file", (data) => settingsLook.lookFile.importNow(data)));
 
 $("log-source").addEventListener("change", renderActiveLogView);
 $("log-level").addEventListener("change", renderActiveLogView);

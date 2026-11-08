@@ -843,13 +843,13 @@ MORE_TOPICS: list[dict] = [
         ),
         "body": (
             "Settings, Appearance. Themes: each theme is a tile of four overlapping dots (the page, its card, the accent and the ink) over its name; press the eye in a theme's corner to see it on the whole app, then Apply or Cancel, "
-            "press Surprise me for a random one, save and switch your own. Theme & "
-            "colour: Palette, Mode (light, dark or system), Accent colour or a "
+            "press Random theme for a whole theme at random, save and switch your own, or Export look and Import look to move one between devices as a JSON file (an import skips what it cannot read and says which, with Undo). Theme & "
+            "colour: Palette (Mix palette, accent and density picks those three at random, with Undo), Mode (light, dark or system), Accent colour or a "
             "custom one (a colour a button's words cannot be read on is "
             "offered at the nearest shade that can), Page background, and "
             "Build a scheme from one colour. "
             "Typography & layout: Text size, Font (System, Serif, Mono, Arial, "
-            "or Readable, the Atkinson Hyperlegible face), Density, Corner rounding, "
+            "or Readable, the Atkinson Hyperlegible face), Density, Line spacing and Line width (Tight, Normal or Roomy, and Narrow, Standard or Wide, for notes and documents you read), Corner rounding, "
             "Zoom, Border style and Shadow intensity (Text size, Density and Zoom "
             "are marked On this device: a phone and a computer each keep their "
             "own, while colours and fonts follow you). Effects & accessibility: "

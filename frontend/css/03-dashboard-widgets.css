@@ -2096,6 +2096,13 @@ header#top-bar select,
   font-size: var(--text-lg);
   line-height: 1.55;
 }
+/* Settings, Line spacing: 0.9 and 1.15 of the 1.55. */
+:root[data-read-leading="tight"] #entry-list .entry-content {
+  line-height: 1.4;
+}
+:root[data-read-leading="roomy"] #entry-list .entry-content {
+  line-height: 1.78;
+}
 
 /* Density (the owner, 1093x614: "at least 4 note cards must be above the
    fold" with realistic notes, scratchpad/ui-sweeps/notesdensity.js): 0.4rem

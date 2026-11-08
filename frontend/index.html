@@ -11534,8 +11534,9 @@ Link to another note with [[its first few words]]."></textarea>
                   change by hand sits on top of it and wins, so you can pick
                   a theme and still choose your own accent colour. Press the eye
                   in a theme's corner to see it on the whole app, then Apply or
-                  Cancel; leaving Appearance or Settings cancels it. Surprise me
-                  picks one at random. Pop out, at the top of this page, opens
+                  Cancel; leaving Appearance or Settings cancels it. Random theme
+                  picks a whole theme at random; Mix palette, accent and density,
+                  under Theme &amp; colour, changes just those three and has Undo. Pop out, at the top of this page, opens
                   all of Appearance in a panel beside the app, so you see each
                   change without closing Settings.
                 </p>
@@ -11544,7 +11545,7 @@ Link to another note with [[its first few words]]."></textarea>
               <div class="row theme-surprise-row">
                 <button id="theme-surprise" class="ghost small"
                   title="Try a theme you are not using, picked at random">
-                  Surprise me</button>
+                  Random theme</button>
               </div>
               <p class="muted" id="theme-override-note"></p>
 
@@ -11557,7 +11558,9 @@ Link to another note with [[its first few words]]."></textarea>
                   <span>Your themes</span>
                   <small class="muted">
                     Save everything you've set: colours, font, spacing, corners,
-                    background: as one look you can come back to.
+                    background: as one look you can come back to. Export look
+                    saves it as a file; Import look applies one, skipping
+                    anything it cannot read.
                   </small>
                 </div>
                 <!-- One wrapper, not two siblings: `.setting-row-stack` is a
@@ -11580,6 +11583,13 @@ Link to another note with [[its first few words]]."></textarea>
                       title="e.g. Late night"
                       aria-label="Name for the saved theme">
                     <button id="custom-theme-save" class="ghost small">Save current look</button>
+                  </div>
+                  <div class="row look-share-row">
+                    <button id="look-export" class="ghost small"
+                      title="Download this look as a JSON file">Export look</button>
+                    <button id="look-import" class="ghost small"
+                      title="Apply a look from a JSON file; Undo puts yours back">Import look</button>
+                    <input id="look-import-file" aria-label="Import a look from a JSON file" title="Import a look from a JSON file" type="file" accept=".json" class="hidden">
                   </div>
                 </div>
               </div>
@@ -11609,6 +11619,11 @@ Link to another note with [[its first few words]]."></textarea>
               </div>
               <div class="theme-grid" id="palette-grid" role="group"
                 aria-label="Curated palettes"></div>
+              <div class="row theme-surprise-row">
+                <button id="look-surprise" class="ghost small"
+                  title="Pick a palette, accent and density at random; Undo puts yours back">
+                  Mix palette, accent and density</button>
+              </div>
 
               <div class="setting-row">
                 <div class="setting-label">
@@ -11737,6 +11752,30 @@ Link to another note with [[its first few words]]."></textarea>
                   <option value="comfortable">Comfortable</option>
                   <option value="compact">Compact</option>
                   <option value="spacious">Spacious</option>
+                </select>
+              </div>
+
+              <div class="setting-row" id="read-leading-row">
+                <div class="setting-label">
+                  <span>Line spacing</span>
+                  <small class="muted">The space between lines of a note or a document you read.</small>
+                </div>
+                <select id="read-leading" class="small-select setting-control" aria-label="Line spacing">
+                  <option value="tight">Tight</option>
+                  <option value="normal">Normal</option>
+                  <option value="roomy">Roomy</option>
+                </select>
+              </div>
+
+              <div class="setting-row" id="read-measure-row">
+                <div class="setting-label">
+                  <span>Line width</span>
+                  <small class="muted">How wide a line of reading text runs. Notes also stop at their column, so Wide shows on a wide window.</small>
+                </div>
+                <select id="read-measure" class="small-select setting-control" aria-label="Line width">
+                  <option value="narrow">Narrow</option>
+                  <option value="standard">Standard</option>
+                  <option value="wide">Wide</option>
                 </select>
               </div>
 
