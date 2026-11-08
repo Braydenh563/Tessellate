@@ -23450,18 +23450,18 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 |---|---|
 | `Counts` | src/tessellate/entry/link_wording.py:165 |
 | `PairNote` | src/tessellate/entry/link_wording.py:106 |
-| `_and` | src/tessellate/entry/link_wording.py:244 |
+| `_and` | src/tessellate/entry/link_wording.py:246 |
 | `_at_start` | src/tessellate/entry/link_wording.py:133 |
-| `_close_in_time` | src/tessellate/entry/link_wording.py:285 |
-| `_mentions` | src/tessellate/entry/link_wording.py:218 |
+| `_close_in_time` | src/tessellate/entry/link_wording.py:287 |
+| `_mentions` | src/tessellate/entry/link_wording.py:220 |
 | `_names` | src/tessellate/entry/link_wording.py:142 |
-| `_shared_names` | src/tessellate/entry/link_wording.py:248 |
-| `_shared_tags` | src/tessellate/entry/link_wording.py:234 |
-| `_shared_words` | src/tessellate/entry/link_wording.py:272 |
+| `_shared_names` | src/tessellate/entry/link_wording.py:250 |
+| `_shared_tags` | src/tessellate/entry/link_wording.py:236 |
+| `_shared_words` | src/tessellate/entry/link_wording.py:274 |
 | `is_generic` | src/tessellate/entry/link_wording.py:198 |
-| `specific_reason` | src/tessellate/entry/link_wording.py:300 |
+| `specific_reason` | src/tessellate/entry/link_wording.py:302 |
 | `strength_word` | src/tessellate/entry/link_wording.py:191 |
-| `title` | src/tessellate/entry/link_wording.py:209 |
+| `title` | src/tessellate/entry/link_wording.py:211 |
 | `tokens` | src/tessellate/entry/link_wording.py:118 |
 
 ### src/tessellate/entry/manager.py (129)

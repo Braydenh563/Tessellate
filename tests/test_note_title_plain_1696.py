@@ -35,6 +35,11 @@ CASES = [
     ("- **Bold** item", "Bold item"),
     ("1. Numbered", "Numbered"),
     ("my_file_name", "my_file_name"),
+    #: A single asterisk is italic only in a pair: the arithmetic and the
+    #: rating in a name stay as written (base kept them; review of 1696 d).
+    ("*Italic* title", "Italic title"),
+    ("2 * 3 = 6", "2 * 3 = 6"),
+    ("Rated 5* stay", "Rated 5* stay"),
 ]
 
 

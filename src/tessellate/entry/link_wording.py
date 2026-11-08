@@ -203,13 +203,15 @@ def is_generic(reason: str | None) -> bool:
 #: A list or checkbox mark leading the line, then every emphasis and code mark
 #: wherever it is: a closing `**` kept read "Guide**" in a link (INBOX 1696 d).
 _LEAD = re.compile(r"^(?:[#>]+\s*|[-*+]\s+|\d{1,3}[.)]\s+)*(?:\[[ xX]\]\s+)?")
-_MARKS = re.compile(r"\*\*|~~|`+|(?:(?<=^)|(?<=\W))__|__(?=\W|$)|\*")
+_MARKS = re.compile(r"\*\*|~~|`+|(?:(?<=^)|(?<=\W))__|__(?=\W|$)")
+#: A single asterisk is italic only in a pair, so "2 * 3" and "5* stay" keep theirs.
+_ITALIC = re.compile(r"(?<![\w*])\*(?=\S)([^*\n]*?\S)\*(?![\w*])")
 
 
 def title(text: str, limit: int = 30) -> str:
     """A note's name: its first line with the markdown marks off, clipped."""
     for line in (text or "").splitlines():
-        shown = _MARKS.sub("", _LEAD.sub("", _WIKI.sub(lambda m: m.group(1), line).strip())).strip()
+        shown = _ITALIC.sub(r"\1", _MARKS.sub("", _LEAD.sub("", _WIKI.sub(lambda m: m.group(1), line).strip()))).strip()
         if shown:
             return shown if len(shown) <= limit else shown[: limit - 1].rstrip() + "…"
     return ""
