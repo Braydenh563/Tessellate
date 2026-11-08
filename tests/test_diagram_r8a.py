@@ -61,15 +61,17 @@ def test_the_hover_lookup_agrees_with_the_boxes_and_an_undecoded_image_places_no
     assert _run("m.place(null, {left: 0, top: 0, width: 300, height: 200}, {left: 0, top: 0})") == []
 
 
-def test_the_overlay_is_one_lazy_file_a_sibling_of_the_figure_that_never_takes_a_press():
+def test_the_overlay_is_one_lazy_file_inside_the_figure_that_never_takes_a_press():
+    # Intent moved (INBOX 1661 g): the layer was the stage's sibling and followed a scroll by redrawing, which lagged and missed a
+    # scroll reset after a redraw; it is now a zero-size origin in the figure's scrolled content (tests/test_diagram_1108.py).
     assert 'diagramOverlay: ["/js/diagram-overlay.js"]' in MERMAID_JS
     assert 'ensureModule("diagramOverlay")' in BUILDER and "diagramModel.overlay.wire(S)" in BUILDER
     assert OVERLAY.count("diagramModel.overlay =") == 1 and OVERLAY.lstrip().startswith("// diagram-overlay.js")
-    assert "stage.append(layer)" in OVERLAY and "fig.append" not in OVERLAY
+    assert "fig.append(layer)" in OVERLAY and "stage.append" not in OVERLAY
     assert "(fig.onpaint ||= []).push(draw)" in OVERLAY
     assert "aria-selected" in OVERLAY and "Observer" not in OVERLAY and "requestAnimationFrame" not in OVERLAY  # read from the list; no new wake source
     assert "(fig.onzoom ||= []).push(draw)" in OVERLAY and "fig.onzoom" in (JS / "diagram-view.js").read_text(encoding="utf-8")
-    start = CSS.index(".dgm-overlay {")
+    start = CSS.index("\n.dgm-overlay {")
     assert "pointer-events: none" in CSS[start : CSS.index("}", start)]
     box = CSS[CSS.index(".dgm-box.on {") :].split("}")[0]
     assert "var(--accent)" in box and "var(--accent-soft)" in box

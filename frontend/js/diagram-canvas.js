@@ -46,7 +46,6 @@
     const stage = S.fig.parentElement;
     const at = document.elementFromPoint(g.x, g.y);
     if (!at || !stage?.contains(at) || at.closest(".dock")) return null;
-    const layer = stage.querySelector(".dgm-overlay");
     const img = imageOf(S);
     const id = img && S.hit ? math.nodeAt(S.hit, img.getBoundingClientRect(), g.x, g.y) : "";
     //: Over a group's box and no node: into that group (R8c). Not into a dragged group, or into one inside it.
@@ -59,7 +58,7 @@
     if (!id || !h.ops.node(S.m, id)) {
       //: Empty space: a palette tile adds there, a group lifts to the top level, a box is not moved by a drop that names nowhere (1679 slice 12).
       if (key?.[0] === "n" && !g.tile) return null;
-      return { canvas: true, op: "into", group: null, before: null, card: layer, word: g.tile ? "Add here" : "To the top level" };
+      return { canvas: true, op: "into", group: null, before: null, card: S.fig, word: g.tile ? "Add here" : "To the top level" };
     }
     const target = h.ops.key("n", id);
     const set = key && S.picked?.size > 1 && S.picked.has(key) ? [...S.picked] : key ? [key] : [];
@@ -73,10 +72,11 @@
   function wire(S, h) {
     const fig = S?.fig;
     const stage = fig?.parentElement;
-    const layer = stage?.querySelector(".dgm-overlay");
+    const layer = fig?.querySelector(":scope > .dgm-overlay");
     if (!layer || S.k || fig.dataset.canvas) return;
     fig.dataset.canvas = "1";
     let sweep = null;
+    let sweptAt = -1e3;
 
     const end = () => {
       sweep?.rect.remove();
@@ -90,7 +90,7 @@
     //: In the capture phase and ahead of the zoom's pan (diagram-view.js): the press on empty space is not a pan.
     fig.addEventListener("pointerdown", (event) => {
       const img = imageOf(S);
-      if (event.button || !event.shiftKey || !img || !S.hit || event.target.closest(".dock")) return;
+      if (event.button || !event.shiftKey || !img || !S.hit || event.target.closest(".dock, .dgm-overlay > *")) return;
       if (math.nodeAt(S.hit, img.getBoundingClientRect(), event.clientX, event.clientY)) return;
       event.stopImmediatePropagation();
       event.preventDefault();
@@ -111,6 +111,7 @@
     });
     fig.addEventListener("pointerup", (event) => {
       if (!sweep || event.pointerId !== sweep.id) return;
+      sweptAt = event.timeStamp;
       const keys = touched(event).map((id) => h.ops.key("n", id));
       end();
       if (keys.length) S.pick?.(keys, keys[0]);
@@ -118,6 +119,31 @@
     fig.addEventListener("pointercancel", end);
     window.addEventListener("keydown", (event) => {
       if (sweep && event.key === "Escape") end();
+    });
+
+    //: Nothing picked (INBOX 1661 h): a press on empty canvas or empty list, and Escape, let go of the pick, so the list, the
+    //: boxes and the handles read as no selection. An armed handle goes back first. True when something changed.
+    S.clear = () => {
+      if (S.cancelArm?.()) return true;
+      if (!S.sel && !S.picked?.size) return false;
+      S.pick ? S.pick([], null) : (S.sel = null);
+      h.stops(S, S.tree.querySelector(".dgm-block"));
+      S.mark?.();
+      S.handles?.();
+      return true;
+    };
+    fig.addEventListener("click", (event) => {
+      const img = imageOf(S);
+      //: A marquee ends in a click on the figure; a pan's click is swallowed by the zoom (diagram-view.js).
+      if (!img || !S.hit || event.shiftKey || event.ctrlKey || event.metaKey || event.altKey || event.timeStamp - sweptAt < 400 || event.target.closest(".dock, .dgm-overlay > *, .dgm-zoom")) return;
+      const at = img.getBoundingClientRect();
+      if (math.nodeAt(S.hit, at, event.clientX, event.clientY) || diagramModel.edges?.math.edgeAt(S.hit, at, event.clientX, event.clientY)) return;
+      S.clear();
+    });
+    S.pane.addEventListener("click", (event) => event.target.closest(".dgm-block, button, a, input, label") || S.clear());
+    S.root.addEventListener("keydown", (event) => {
+      if (event.key !== "Escape" || event.defaultPrevented || event.target.closest?.("input, textarea, [contenteditable]") || document.querySelector(".action-menu:not(.hidden), .help-popover:not(.hidden)")) return;
+      if (S.clear()) event.preventDefault(), event.stopPropagation();
     });
   }
 

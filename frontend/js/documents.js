@@ -194,10 +194,10 @@ function syncDocFileType({ prose = true } = {}) {
     //: want on a `.csv` or a `.php` the bundle has no mode for.
     button.disabled = !docViewState.allows(type, button.dataset.docView);
     button.title = button.disabled
-      ? type.ext === "mmd" ? "A diagram has Canvas, Blocks, Split and Source." : `A .${type.ext} file has no rendered form, this is for markdown.`
+      ? type.ext === "mmd" ? "A diagram has Picture, List, Split and Source." : `A .${type.ext} file has no rendered form, this is for markdown.`
       : button.dataset.docTitle || button.title;
   }
-  //: A diagram's seg is Canvas, Blocks and Source (R7): the Edit and Read well gives way to it.
+  //: A diagram's seg is Picture, List and Source (R7; Canvas and Blocks until INBOX 1661 i): the Edit and Read well gives way to it.
   if ($("doc-diagram-seg")) ($("doc-diagram-seg").hidden = type.ext !== "mmd", $("doc-view-seg").hidden = type.ext === "mmd");
   //: A diagram opens in Blocks the first time its type is synced after another type.
   const toDiagram = type.ext === "mmd" && docViewState.type !== "mmd";
@@ -274,13 +274,13 @@ function syncDocFileType({ prose = true } = {}) {
   if (prose) renderDocProse();
 }
 
-//: A diagram's Canvas, Blocks and Source (R7) are made the first time a diagram opens, not shipped in
+//: A diagram's Picture, List and Source (R7) are made the first time a diagram opens, not shipped in
 //: the page (the boot element cap), on syncDocFileType, its one caller, not the shared scope; the stashed title and the click are what the page-load loop gives the others.
 syncDocFileType.diagramSeg = function (seg) {
   if (!seg || seg.firstElementChild) return;
   for (const [mode, icon, label, title] of [
-    ["canvas", "graph", "Canvas", "The picture, with the blocks beside it"],
-    ["blocks", "squares-four", "Blocks", "The diagram as blocks with its picture, without the source"],
+    ["canvas", "graph", "Picture", "Picture first: the drawing is wide, with a narrow list of its blocks beside it"],
+    ["blocks", "list-bullets", "List", "List first: the blocks list is wide, with the drawing beside it"],
     ["source", "code", "Source", "The diagram as text, with its picture"],
   ]) {
     const button = document.createElement("button");

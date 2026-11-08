@@ -455,7 +455,8 @@ function mermaidShow(figure, result, source) {
   if (figure.mermaidUrl) URL.revokeObjectURL(figure.mermaidUrl);
   figure.mermaidUrl = url;
   figure.mermaidKey = result.key;
-  figure.replaceChildren(img);
+  //: The builder's overlay (diagram-overlay.js) lives in the figure and outlasts a new picture.
+  figure.replaceChildren(img, ...figure.querySelectorAll(":scope > .dgm-overlay"));
   figure.classList.remove("md-mermaid-pending");
   figure.removeAttribute("aria-busy");
 }

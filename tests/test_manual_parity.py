@@ -361,8 +361,9 @@ def test_the_diagram_blocks_keys_menu_and_views_are_in_the_guide() -> None:
     from tessellate.ai.help_chat import HELP_TOPICS
     from tessellate.ai.help_topics_more import HELP_GROUPS, TOPIC_META
 
+    # Intent moved (INBOX 1661 i): the views Canvas and Blocks are now named Picture and List, so the words checked are theirs.
     body = str(next(t["body"] for t in HELP_TOPICS if t["id"] == "diagram-blocks"))
-    for words in ("Blocks", "Source and Split", "Ctrl+Z", "press its arrow", "joins them", "inside",
+    for words in ("List gives", "Source and Split", "Ctrl+Z", "press its arrow", "joins them", "inside",
                   "Enter renames", "N adds", "G adds a group", "J joins", "Delete removes", "Alt+Up and Alt+Down",
                   "Alt+Right nests", "Alt+Left lifts", "long press", "shape swatch"):
         assert words in body, words
@@ -372,7 +373,7 @@ def test_the_diagram_blocks_keys_menu_and_views_are_in_the_guide() -> None:
     for key in ("Insert", "Delete", "Backspace", "ContextMenu"):
         assert key in builder, key
     docs = (FRONTEND / "js" / "documents.js").read_text(encoding="utf-8")
-    assert "Canvas" in docs and "A diagram has Canvas, Blocks, Split and Source." in docs
+    assert "Picture" in docs and "A diagram has Picture, List, Split and Source." in docs
 
 
 def test_the_diagram_add_library_and_connect_to_are_in_the_guide_in_the_controls_words() -> None:
@@ -460,7 +461,7 @@ def test_the_diagram_dialog_the_reply_action_and_the_exports_are_in_the_guide_in
     for words in ("Save to Library", "replace the fence with a link", "link a board's diagram", "Attach a Library diagram to Chat"):
         assert words in body, words
     assert 'smallButton("ph:books", "Save to Library"' in mermaid and "Save to Library" in embed
-    for label in ('"Done"', '"Cancel"', '"Source"', '"Blocks"'):
+    for label in ('"Done"', '"Cancel"', '"Source"', '"List"'):
         assert label in embed, label
 
 
