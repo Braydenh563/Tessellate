@@ -72,4 +72,5 @@ Branch `agent/diagklm-1108` from `claude/next-queue-1102` (7cba04a8). The spec i
 - done: spec (this file).
 - done: S1 262c70da (chrome 261 to 204 at 1440, 329 to 260 at 390; picture 405 to 462 tall; rows 54 px).
 - done: S2 (scroll into view; 200% zoom: 0 to 10 of 10 at 1440 Ctrl+D, 10 of 10 at 390 N, none scrolls at 50%).
-- next: S3, `frontend/js/diagram-split.js` `wire`.
+- done: S3 (fold: rail 32 px, picture 905 to 1136 wide at 1440 with the list folded, list 1136 with the picture folded, kept on reopen; 390 sequence picture 96 to 435). Not built: folding the Source view's text (its folds hide there).
+- next: S4, new `frontend/js/diagram-seq-canvas.js`, `diagram-overlay.js:52`.

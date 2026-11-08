@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Diagram builder: the list and the picture each fold to a 32 px rail with a labelled toggle, [ and ] as keys, kept between sessions; it replaces the toolbar's Blocks list button. On a phone a sequence diagram's list is a sheet, so its picture is 435 px tall instead of 96 (INBOX 1661 m).
 - Diagram builder: a box you add is scrolled into view on a zoomed picture (at 200%, 10 of 10 adds in sight, 0 before).
 - Diagram builder: the kind is one Kind menu in the Title row, each kind with a small picture and a line on what it makes, instead of a row of four buttons of its own (the picture is 57 px taller at 1440, INBOX 1661 k).
 - Diagram builder: quicker building: a double press on empty picture adds a box, Ctrl+D duplicates, Ctrl+A picks all, Delete removes, Shift+Enter adds a joined box, Alt+Enter a sister, Ctrl+F finds, and a connector can be reversed.

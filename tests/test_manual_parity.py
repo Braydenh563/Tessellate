@@ -554,3 +554,13 @@ def test_the_diagram_tab_chain_the_starter_and_the_keys_chip_are_in_the_guide() 
     for words in ("In Source, Tab indents and Shift+Tab takes it back", "Escape leaves the text", "a red line number", "Title names the document Done makes (blank dates it)"):
         assert words in reading, words
     assert "In the picture an arrow key picks the box that way, reading aloud its name and arrows, and Shift with an arrow moves the picture" in reading
+
+
+def test_the_diagram_panel_folds_are_in_the_guide_in_the_controls_words() -> None:
+    """1661 m: `[` and `]` fold the list and the picture to a rail (diagram-split.js), and a kind's list is the phone's sheet."""
+    from tessellate.ai.help_chat import HELP_TOPICS
+
+    body = str(next(t["body"] for t in HELP_TOPICS if t["id"] == "diagram-reading"))
+    assert "[ and ] fold the list and the picture to a rail" in body and "Blocks list opens the list as a sheet" in body
+    split = (FRONTEND / "js" / "diagram-split.js").read_text(encoding="utf-8")
+    assert 'right: ["picture", "]"' in split and 'left: ["list", "["' in split

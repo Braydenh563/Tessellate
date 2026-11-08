@@ -22,13 +22,6 @@
   const optionsOf = (shape) => (shape === "group" ? { group: true } : shape === "note" ? { shape: "round", text: "Note" } : { shape });
   const nameOf = (shape, h) => (shape === "group" ? "Group" : shape === "note" ? "Note" : h.label[shape]);
 
-  const OUTLINE = "diagram.outline";
-  function paintOutline(S, button) {
-    const on = prefs.get(OUTLINE) !== "0";
-    S.root.classList.toggle("dgm-no-outline", !on);
-    button.setAttribute("aria-pressed", String(on));
-  }
-
   //: Refreshes what depends on the model: the Direction button's arrow and word.
   function sync(S) {
     const [dir, arrow, name] = S.bar.dirs.find(([d]) => d === S.m?.dir) || S.bar.dirs[0];
@@ -105,16 +98,8 @@
       b.classList.add("dgm-hist");
       return b;
     });
-    //: The outline (the blocks list) can be hidden, leaving the picture and the toolbar; the choice is kept.
-    const outline = h.smallButton("ph:sidebar-simple", "Show or hide the list of blocks", () => {
-      prefs.set(OUTLINE, prefs.get(OUTLINE) === "0" ? "1" : "0");
-      paintOutline(S, outline);
-    });
-    outline.setAttribute("aria-label", "Blocks list");
-    outline.classList.add("dgm-outline-toggle");
-    paintOutline(S, outline);
     const actions = el("div", "dock-actions");
-    actions.append(suggest, ...hist, outline, h.more(S));
+    actions.append(suggest, ...hist, h.more(S));
     bar.append(split, S.dirs, actions);
     diagramModel.kindbar?.mount(S, h, bar);
     sync(S);

@@ -2,9 +2,9 @@
 
 Generated 2026-11-08 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7869, frontend ids 2644, CSS sections 522, backend routes 649, backend modules 9027, test files 2173, tests 18307, plan headings 1004, app scripts 28, boot scripts 37, script files 261.
+Counts: frontend functions 7870, frontend ids 2644, CSS sections 522, backend routes 649, backend modules 9027, test files 2173, tests 18311, plan headings 1004, app scripts 28, boot scripts 37, script files 261.
 
-## Frontend functions (7869)
+## Frontend functions (7870)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -3135,20 +3135,19 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `diagSections` | frontend/js/diag-report.js:106 |
 | `diagTable` | frontend/js/diag-report.js:96 |
 
-### frontend/js/diagram-bar.js (10)
+### frontend/js/diagram-bar.js (9)
 
 | Name | File:line |
 |---|---|
-| `build` | frontend/js/diagram-bar.js:47 |
-| `chain` | frontend/js/diagram-bar.js:152 |
+| `build` | frontend/js/diagram-bar.js:40 |
+| `chain` | frontend/js/diagram-bar.js:137 |
 | `hintOf` | frontend/js/diagram-bar.js:17 |
-| `key` | frontend/js/diagram-bar.js:127 |
+| `key` | frontend/js/diagram-bar.js:112 |
 | `last` | frontend/js/diagram-bar.js:18 |
 | `nameOf` | frontend/js/diagram-bar.js:23 |
 | `optionsOf` | frontend/js/diagram-bar.js:22 |
-| `paintOutline` | frontend/js/diagram-bar.js:26 |
-| `rootKey` | frontend/js/diagram-bar.js:137 |
-| `sync` | frontend/js/diagram-bar.js:33 |
+| `rootKey` | frontend/js/diagram-bar.js:122 |
+| `sync` | frontend/js/diagram-bar.js:26 |
 
 ### frontend/js/diagram-builder.js (41)
 
@@ -3278,7 +3277,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `dropAt` | frontend/js/diagram-kinds.js:908 |
 | `fieldsOf` | frontend/js/diagram-kinds.js:680 |
 | `find` | frontend/js/diagram-kinds.js:622 |
-| `ghostSpec` | frontend/js/diagram-kinds.js:1088 |
+| `ghostSpec` | frontend/js/diagram-kinds.js:1090 |
 | `glyph` | frontend/js/diagram-kinds.js:627 |
 | `icon` | frontend/js/diagram-kinds.js:617 |
 | `itemsFor` | frontend/js/diagram-kinds.js:760 |
@@ -3326,7 +3325,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `removeBlock` | frontend/js/diagram-kinds.js:840 |
 | `render` | frontend/js/diagram-kinds.js:660 |
 | `seedBlock` | frontend/js/diagram-kinds.js:895 |
-| `show` | frontend/js/diagram-kinds.js:1111 |
+| `show` | frontend/js/diagram-kinds.js:1113 |
 | `stepBlock` | frontend/js/diagram-kinds.js:828 |
 | `sync` | frontend/js/diagram-kinds.js:1066 |
 | `whoLabel` | frontend/js/diagram-kinds.js:624 |
@@ -3416,11 +3415,13 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `mark` | frontend/js/diagram-pointer.js:36 |
 | `word` | frontend/js/diagram-pointer.js:12 |
 
-### frontend/js/diagram-split.js (1)
+### frontend/js/diagram-split.js (3)
 
 | Name | File:line |
 |---|---|
-| `wire` | frontend/js/diagram-split.js:23 |
+| `toggle` | frontend/js/diagram-split.js:131 |
+| `wire` | frontend/js/diagram-split.js:25 |
+| `wireFold` | frontend/js/diagram-split.js:151 |
 
 ### frontend/js/diagram-steps.js (3)
 
@@ -12382,7 +12383,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/dash-night-lazy.css | 29 |
 | frontend/css/dash-orphans-lazy.css | 57 |
 | frontend/css/desk-companion-lazy.css | 226 |
-| frontend/css/diagram-lazy.css | 1928 |
+| frontend/css/diagram-lazy.css | 2006 |
 | frontend/css/file-drop-lazy.css | 51 |
 | frontend/css/first-run-lazy.css | 140 |
 | frontend/css/forced-colors-lazy.css | 28 |
@@ -24449,7 +24450,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (18307)
+## Tests (18311)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -25040,7 +25041,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_diagram_1596.py | 4 |
 | tests/test_diagram_1661a.py | 6 |
 | tests/test_diagram_1661b.py | 9 |
-| tests/test_diagram_1661klm.py | 7 |
+| tests/test_diagram_1661klm.py | 10 |
 | tests/test_diagram_1679m.py | 14 |
 | tests/test_diagram_blind_fixes.py | 6 |
 | tests/test_diagram_builder.py | 20 |
@@ -25634,7 +25635,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_make_plan.py | 21 |
 | tests/test_manage_lists_504.py | 5 |
 | tests/test_manual_entry_points.py | 3 |
-| tests/test_manual_parity.py | 24 |
+| tests/test_manual_parity.py | 25 |
 | tests/test_map_actions_clear_of_label.py | 1 |
 | tests/test_map_add_speed.py | 6 |
 | tests/test_map_branch_colour_order.py | 3 |

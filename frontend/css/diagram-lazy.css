@@ -1761,26 +1761,104 @@
   font-weight: 400;
 }
 
-/* The blocks list hidden (the toolbar's list button): the picture takes the room, keys still work from it. On a phone the
-   list is stacked under the picture and its button leaves the toolbar, so the seven 44 px controls fit one row (390: 338 in 306). */
-.dgm-no-outline .dgm-pane,
-.dgm-no-outline .dgm-split-handle {
+/* A side folded to its rail (diagram-split.js, 1661 m): the list or the picture leaves, a 32 px rail holds its word and the
+   toggle that brings it back, and the divider goes with it. One column below 600, so no rail there. */
+.dgm-panehead {
+  position: sticky;
+  inset-block-start: calc(-1 * var(--space-2));
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  margin: calc(-1 * var(--space-2)) calc(-1 * var(--space-2)) 0;
+  padding: var(--space-1) var(--space-1) var(--space-1) var(--space-3);
+  background: var(--surface-1);
+  font-size: var(--text-xs);
+}
+
+.dgm-stage > .dgm-fold {
+  position: absolute;
+  inset-block-start: var(--space-2);
+  inset-inline-end: var(--space-2);
+  z-index: 2;
+  background: var(--modal-bg);
+  border: 1px solid var(--border);
+}
+
+.dgm-flip {
+  transform: scaleX(-1);
+}
+
+.dgm-rail {
   display: none;
 }
 
-@media (max-width: 599.98px) {
-  .dgm-dock .dgm-outline-toggle {
+@media (min-width: 600px) {
+  .dgm-body.dgm-fold-left > :is(.dgm-pane, .dgm-split-handle),
+  .dgm-body.dgm-fold-right > :is(.dgm-stage, .dgm-split-handle) {
     display: none;
   }
 
-  .dgm-no-outline .dgm-pane {
-    display: block;
+  .dgm-body.dgm-fold-left > .dgm-rail[data-side="left"],
+  .dgm-body.dgm-fold-right > .dgm-rail[data-side="right"] {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    gap: var(--space-2);
+    inline-size: 2rem;
+    min-inline-size: 0;
+    block-size: 100%;
+    padding: var(--space-2) 0;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+  }
+
+  .dgm-body.dgm-fold-left,
+  .dgm-body.dgm-split.dgm-fold-left {
+    grid-template-columns: 2rem minmax(0, 1fr);
+    column-gap: var(--space-2);
+  }
+
+  .dgm-body.dgm-fold-right,
+  .dgm-body.dgm-split.dgm-fold-right {
+    grid-template-columns: minmax(0, 1fr) 2rem;
+    column-gap: var(--space-2);
+  }
+
+  .dgm-rail-word {
+    writing-mode: vertical-rl;
+    font-size: var(--text-xs);
   }
 }
 
-.dgm-no-outline .dgm-body,
-.dgm-no-outline .dgm-body.dgm-split {
-  grid-template-columns: minmax(0, 1fr);
+/* The Source view shows the text and the picture, never the list, and a source the blocks cannot draw has no list: the
+   folds and rails wait for the other views, and the picture always shows. */
+.dgm-dialog[data-view="source"] .dgm-body.dgm-split > .dgm-rail,
+.dgm-dialog[data-view="source"] .dgm-body > .dgm-stage > .dgm-fold,
+.dgm.dgm-plain .dgm-body.dgm-split > .dgm-rail,
+.dgm.dgm-plain .dgm-body > .dgm-stage > .dgm-fold {
+  display: none;
+}
+
+.dgm-dialog[data-view="source"] .dgm-body.dgm-fold-right > .dgm-stage,
+.dgm.dgm-plain .dgm-body.dgm-fold-right > .dgm-stage {
+  display: flex;
+}
+
+@media (max-width: 599.98px) {
+  .dgm-panehead,
+  .dgm-stage > .dgm-fold {
+    display: none;
+  }
+}
+
+@media (pointer: coarse) {
+  .dgm-fold {
+    min-inline-size: 2.75rem;
+    min-block-size: 2.75rem;
+  }
 }
 
 /* Targets are 44 px on a touch screen and on a phone-width window (the swatch, Connect and the connector rows measured 24, 40 and 40). */

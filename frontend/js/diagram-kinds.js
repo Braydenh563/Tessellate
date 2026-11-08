@@ -1076,6 +1076,8 @@
     S.note.classList.toggle("hidden", Boolean(parsed));
     S.note.textContent = parsed ? "" : big ? `This diagram has more than ${ops.MAX} blocks, so it opens in Source with its picture.` : `Blocks cannot read this ${A.noun}, so it opens in Source with its picture.`;
     S.m = parsed || A.empty();
+    //: With a block the phone's list is a sheet (diagram-touch.js) and the picture takes the page, as a flowchart's with an arrow.
+    S.root.classList.toggle("dgm-listless", !A.blank(S.m));
     if (!parsed) S.ghosts.replaceChildren(), S.ghosts.classList.add("hidden");
     S.pane.classList.toggle("hidden", !parsed);
     render(S);

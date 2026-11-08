@@ -83,3 +83,36 @@ def test_a_new_picked_box_is_scrolled_into_view_but_not_on_the_first_picture():
     assert "born.push(b.id)" in overlay and 'sync(found, boxes, "node", "", born)' in draw
     assert "const fresh = seen && born.find((id) => ids.has(id));" in draw
     assert 'scrollIntoView({ block: "nearest", inline: "nearest" })' in draw
+
+
+# --- S3 (m): both side panels fold to a rail
+
+
+@needs_node
+def test_one_kept_fold_means_one_side_always_shows():
+    run = (
+        "const vm=require('vm');const ctx={diagramModel:{}};vm.createContext(ctx);"
+        f"vm.runInContext(require('fs').readFileSync({json.dumps(str(JS / 'diagram-split.js'))},'utf8'),ctx);"
+        "const n=ctx.diagramModel.split.fold.next;process.stdout.write(JSON.stringify([n('', 'left'), n('left', 'left'), n('right', 'left'), n('left', 'right')]));"
+    )
+    out = json.loads(subprocess.run(["node", "-e", run], capture_output=True, text=True, check=True).stdout)
+    # folding the list while the picture is folded opens the picture: never both
+    assert out == ["left", "", "left", "right"]
+
+
+def test_the_folds_have_keys_a_rail_and_the_old_list_button_is_gone():
+    split = _js("diagram-split.js")
+    assert 'event.code === "BracketLeft"' in split and 'event.code === "BracketRight"' in split
+    assert 't.closest?.("input, textarea, select")' in split and "matchMedia(PHONE).matches) return" in split
+    assert 'prefs.get("diagram.outline") === "0"' in split  # the old choice is read once
+    assert "The ${noun} is folded. ${key} opens it." in split
+    assert "OUTLINE" not in _js("diagram-bar.js") and "dgm-no-outline" not in CSS
+    # Measured at 1440: the rail 32 px, the picture 905 to 1136 px wide, the list 1136 with the picture folded; kept on reopen.
+    assert "@media (min-width: 600px)" in CSS[CSS.index(".dgm-rail {") :][:120]
+
+
+def test_a_kinds_list_on_a_phone_is_the_sheet_once_it_has_a_block():
+    # Measured at 390: a sequence picture was 96 px tall under its stacked list; 435 with the list in the sheet.
+    touch = _js("diagram-touch.js")
+    assert "(S.steps || S.k) && S.pane && actions" in touch
+    assert 'S.root.classList.toggle("dgm-listless", !A.blank(S.m))' in _js("diagram-kinds.js")
