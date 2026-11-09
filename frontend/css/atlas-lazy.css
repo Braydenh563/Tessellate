@@ -748,6 +748,24 @@
 #nm-buddy.nmb-act-tiptoe .atl-figure .nmb-arm-l { transform: rotate(36deg); }
 #nm-buddy.nmb-act-tiptoe .nm-atlas { --atl-lean: 0deg; --atl-sy: 1.04; --atl-tail: -14deg; }
 #nm-buddy.nmb-act-tiptoe .nm-atlas .atl-pupil { --atl-px: 1.4px; --atl-py: -0.2px; }
+/* **Four more small things it does** (INBOX 1710, 1711, the owner: "more possible behaviours and activities"; the catalogue's `act.sneeze`, `act.hiccup`, `act.self_hug`, `act.foot_tap`, each also the desk's): no prop, the recipe above. A sneeze is a wind-up and a burst, a hiccup three small hops of the shoulders, a hug the arms round itself with a slow sway, a foot tap the hem and the tail keeping impatient time. */
+#nm-buddy:is(.nmb-act-sneeze, .nmb-act-hiccup, .nmb-act-hug, .nmb-act-tap) .nm-atlas .atl-iris { translate: none; }
+#nm-buddy.nmb-act-sneeze .atl-figure .nmb-arm-r { transform: rotate(-70deg); }
+#nm-buddy.nmb-act-sneeze .atl-figure .nmb-arm-l { transform: rotate(8deg); }
+#nm-buddy.nmb-act-sneeze .nm-atlas { --atl-lean: -2deg; --atl-sy: 1.02; --atl-tail: 8deg; }
+#nm-buddy.nmb-act-sneeze .nm-atlas .atl-pupil { --atl-px: 0px; --atl-py: -0.4px; }
+#nm-buddy.nmb-act-hiccup .atl-figure .nmb-arm-r { transform: rotate(10deg); }
+#nm-buddy.nmb-act-hiccup .atl-figure .nmb-arm-l { transform: rotate(-10deg); }
+#nm-buddy.nmb-act-hiccup .nm-atlas { --atl-lean: 0deg; --atl-tail: 4deg; }
+#nm-buddy.nmb-act-hiccup .nm-atlas .atl-pupil { --atl-px: 0.3px; --atl-py: 0.3px; }
+#nm-buddy.nmb-act-hug .atl-figure .nmb-arm-r { transform: rotate(62deg); }
+#nm-buddy.nmb-act-hug .atl-figure .nmb-arm-l { transform: rotate(-62deg); }
+#nm-buddy.nmb-act-hug .nm-atlas { --atl-lean: 2deg; --atl-sy: 0.99; --atl-tail: 14deg; }
+#nm-buddy.nmb-act-hug .nm-atlas .atl-pupil { --atl-px: 0px; --atl-py: 0.8px; }
+#nm-buddy.nmb-act-tap .atl-figure .nmb-arm-r { transform: rotate(34deg); }
+#nm-buddy.nmb-act-tap .atl-figure .nmb-arm-l { transform: rotate(-34deg); }
+#nm-buddy.nmb-act-tap .nm-atlas { --atl-lean: -2deg; --atl-tail: -10deg; }
+#nm-buddy.nmb-act-tap .nm-atlas .atl-pupil { --atl-px: 1.2px; --atl-py: 0.2px; }
 /* Their paint, in the rig's colours. */
 :root:not([data-avatar-motion="off"]):is(:not([data-motion="reduced"]), [data-buddy-motion="full"]) {
   /* A nod (1.2 s): the head dips twice with the body, a hand settling each time, a smile over the second. */
@@ -797,6 +815,18 @@
   & #nm-buddy.nmb-act-tiptoe .nm-atlas .atl-tail { animation: atl-ds-tiptoe-tail 2.6s ease-in-out infinite; }
   & #nm-buddy.nmb-act-tiptoe .nm-atlas .atl-m-grin { animation: atl-ds-grin-late 2.6s linear infinite; }
   & #nm-buddy.nmb-act-tiptoe .nm-atlas .atl-m-smile { animation: atl-ds-smile-late 2.6s linear infinite; }
+  /* Four more (INBOX 1710): each loops over its own length under the same motion rule. */
+  & #nm-buddy.nmb-act-sneeze .nm-atlas { animation: atl-ds-sneeze-body 1.3s ease-in-out infinite; }
+  & #nm-buddy.nmb-act-sneeze .nm-atlas .atl-head { animation: atl-ds-sneeze-head 1.3s ease-in-out infinite; }
+  & #nm-buddy.nmb-act-sneeze .atl-figure .nmb-arm-r { animation: atl-ds-sneeze-arm 1.3s ease-in-out infinite; }
+  & #nm-buddy.nmb-act-hiccup .nm-atlas { animation: atl-ds-hiccup-body 3s ease-in-out infinite; }
+  & #nm-buddy.nmb-act-hiccup .nm-atlas .atl-head { animation: atl-ds-hiccup-head 3s ease-in-out infinite; }
+  & #nm-buddy.nmb-act-hug .nm-atlas { animation: atl-ds-hug-body 4.5s ease-in-out infinite; }
+  & #nm-buddy.nmb-act-hug .nm-atlas .atl-head { animation: atl-ds-hug-head 4.5s ease-in-out infinite; }
+  & #nm-buddy.nmb-act-hug .nm-atlas .atl-tail { animation: atl-ds-hug-tail 4.5s ease-in-out infinite; }
+  & #nm-buddy.nmb-act-tap .nm-atlas { animation: atl-ds-tap-body 1s ease-in-out infinite; }
+  & #nm-buddy.nmb-act-tap .nm-atlas .atl-tail { animation: atl-ds-tap-tail 1s ease-in-out infinite; }
+  & #nm-buddy.nmb-act-tap .nm-atlas .atl-pupil { animation: atl-ds-tap-eye 3s ease-in-out infinite; }
 }
 /* A nod */
 @keyframes atl-ds-agree-arm { 0%, 100% { transform: rotate(8deg); } 22% { transform: rotate(-4deg); } 50% { transform: rotate(6deg); } 72% { transform: rotate(-2deg); } }
@@ -967,3 +997,15 @@
 @keyframes atl-ds-dust-eye { 0%, 100% { translate: 0.2px 0.2px; } 15%, 55% { translate: -1.2px 1.2px; } 70% { translate: 1.2px 1.2px; } 85% { translate: 0.2px 0.2px; } }
 @keyframes atl-ds-dust-tail { 0%, 100% { rotate: 0deg; } 30% { rotate: 8deg; } 45% { rotate: -6deg; } 70% { rotate: 8deg; } }
 @keyframes atl-ds-dust-motes { 0%, 20% { opacity: 0; translate: 0 0; } 34% { opacity: 0.9; translate: 0 0; } 100% { opacity: 0; translate: 0 5px; } }
+/* A sneeze, a hiccup, a hug, a foot tap */
+@keyframes atl-ds-sneeze-body { 0%, 100% { --atl-lean: -2deg; --atl-sy: 1.02; } 45% { --atl-lean: -6deg; --atl-sy: 1.06; } 60% { --atl-lean: 8deg; --atl-sy: 0.94; } 80% { --atl-lean: 1deg; --atl-sy: 1; } }
+@keyframes atl-ds-sneeze-head { 0%, 100% { translate: 0px 0px; rotate: 0deg; } 45% { translate: 0px -0.8px; rotate: -6deg; } 60% { translate: 0px 1.6px; rotate: 9deg; } }
+@keyframes atl-ds-sneeze-arm { 0%, 100% { transform: rotate(-70deg); } 60% { transform: rotate(-84deg); } }
+@keyframes atl-ds-hiccup-body { 0%, 12%, 30%, 42%, 60%, 72%, 100% { --atl-sy: 1; } 18%, 48%, 78% { --atl-sy: 1.045; } }
+@keyframes atl-ds-hiccup-head { 0%, 12%, 30%, 42%, 60%, 72%, 100% { translate: 0px 0px; } 18%, 48%, 78% { translate: 0px -1.2px; } }
+@keyframes atl-ds-hug-body { 0%, 100% { --atl-lean: -2deg; } 50% { --atl-lean: 4deg; } }
+@keyframes atl-ds-hug-head { 0%, 100% { rotate: -3deg; } 50% { rotate: 4deg; } }
+@keyframes atl-ds-hug-tail { 0%, 100% { rotate: 0deg; } 50% { rotate: 8deg; } }
+@keyframes atl-ds-tap-body { 0%, 40%, 100% { --atl-sy: 1; } 20% { --atl-sy: 0.975; } }
+@keyframes atl-ds-tap-tail { 0%, 40%, 100% { rotate: 0deg; } 20% { rotate: 12deg; } }
+@keyframes atl-ds-tap-eye { 0%, 100% { translate: 0.4px 0.2px; } 45%, 55% { translate: -1px 0.2px; } 80% { translate: 0.8px -0.4px; } }

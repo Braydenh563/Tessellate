@@ -3233,6 +3233,11 @@ Object.assign(NAME_MARK_BUDDY_ACTS, {
   proud: { ms: 2500, w: 1, cool: 90000, poses: ["stand"], atlas: true, desk: true },
   lookdown: { ms: 2500, w: 2, cool: 60000, poses: ["stand", "sit"], atlas: true, desk: true },
   tiptoe: { ms: 2600, w: 2, cool: 60000, poses: ["stand"], atlas: true, desk: true },
+  //: INBOX 1710, 1711: a sneeze, a hiccup, a hug round itself and a foot tap, each the desk's too (`atl-ds-*`, atlas-lazy.css).
+  sneeze: { ms: 1300, w: 0.8, cool: 240000, poses: ["stand"], atlas: true, desk: true },
+  hiccup: { ms: 3000, w: 0.6, cool: 300000, poses: ["stand"], atlas: true, desk: true },
+  hug: { ms: 4500, w: 1, cool: 150000, poses: ["stand", "sit"], atlas: true, desk: true },
+  tap: { ms: 3000, w: 1.5, cool: 120000, poses: ["stand"], atlas: true, desk: true },
   //: Batch D4: the desk's small projects: a daydream (a thought bubble), pacing, making up a game (sparks), tinkering
   //: (a gear and a spanner) and dusting off (motes). The daydream is quiet and long; the game is loud.
   daydream: { ms: 35000, w: 1.5, cool: 300000, poses: ["stand", "sit"], atlas: true, desk: true },
@@ -10160,6 +10165,10 @@ const NMB_PROP_WORDS = [
   ["nmb-act-proud", "posing proud"],
   ["nmb-act-lookdown", "peering down"],
   ["nmb-act-tiptoe", "tiptoeing"],
+  ["nmb-act-sneeze", "sneezing"],
+  ["nmb-act-hiccup", "hiccuping"],
+  ["nmb-act-hug", "hugging itself"],
+  ["nmb-act-tap", "tapping a foot"],
   ["nmb-act-daydream", "daydreaming"],
   ["nmb-act-pace", "pacing"],
   ["nmb-act-game", "making up a game"],

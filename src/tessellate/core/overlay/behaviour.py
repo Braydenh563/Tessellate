@@ -215,6 +215,27 @@ ACTIVITIES.update({
     "tinker": Activity("look", (3.0, 5.0), _k((0, 1, 1, 0), (0.2, 0.98, 0.99, -0.04), (0.5, 0.98, 0.99, 0.04), (0.8, 0.98, 0.99, -0.03), (1, 1, 1, 0)), (("novelty", -0.35), ("curiosity", -0.1)), likes="curious"),
     "dust_off": Activity("stand", (1.0, 1.5), _k((0, 1, 1, 0), (0.15, 1, 1, 0.06), (0.3, 1, 1, -0.06), (0.5, 1, 1, 0.04), (1, 1, 1, 0)), (("comfort", -0.2),)),
 })
+#: INBOX 1710 (the owner: "they need to be just as good as each other"): eleven of the in-app companion's own acts, each a
+#: pose of its own over a frame the desk already has; their lengths and weights come from the shared catalogue (`_from_catalogue`). Not the long sitting ones (meditate,
+#: lounge, rest head: 40 to 80 s on the sit frame would hold off the engine's own sit at ten minutes idle).
+ACTIVITIES.update({
+    "sigh": Activity("stand", (1.7, 2.8), _k((0, 1, 1, 0), (0.3, 1.01, 1.05, 0), (0.55, 1.01, 1.05, 0), (0.85, 1, 0.95, 0.01), (1, 1, 1, 0)), (("rest", -0.05),)),
+    "head_tilt": Activity("look", (1.0, 2.0), _k((0, 1, 1, 0), (0.3, 1, 1, 0.09), (0.75, 1, 1, 0.09), (1, 1, 1, 0)), (("curiosity", -0.1),), likes="curious"),
+    "juggle": Activity("wave", (5.4, 8.0), _k((0, 1, 1, 0), (0.1, 1, 1.03, 0.02), (0.25, 1, 0.97, -0.02), (0.4, 1, 1.03, 0.02), (0.55, 1, 0.97, -0.02), (0.7, 1, 1.03, 0.02), (0.85, 1, 0.98, -0.01), (1, 1, 1, 0)), (("play", -0.4),), likes="happy"),
+    "toss_stars": Activity("wave", (4.4, 6.0), _k((0, 1, 1, 0), (0.15, 1, 1.05, 0.04), (0.3, 1, 0.96, -0.03), (0.5, 1, 1.05, 0.04), (0.7, 1, 0.96, -0.03), (0.9, 1, 1.02, 0), (1, 1, 1, 0)), (("play", -0.3),), likes="happy"),
+    "ear_twitch": Activity("stand", (0.4, 0.8), _k((0, 1, 1, 0), (0.3, 1, 1.01, 0.03), (0.6, 1, 1, -0.02), (1, 1, 1, 0)), ()),
+    "facepalm": Activity("stand", (2.6, 3.0), _k((0, 1, 1, 0), (0.25, 1, 0.96, 0.05), (0.75, 1, 0.96, 0.05), (1, 1, 1, 0)), (), likes="bored"),
+    "hands_on_hips": Activity("stand", (10.0, 16.0), _k((0, 1, 1, 0), (0.08, 1.02, 1.02, 0), (0.3, 1.02, 1.03, 0.02), (0.6, 1.02, 1.03, -0.02), (0.92, 1.02, 1.02, 0), (1, 1, 1, 0)), (("curiosity", -0.05),)),
+    "clasp_hands": Activity("stand", (10.0, 16.0), _k((0, 1, 1, 0), (0.08, 0.99, 1.01, 0), (0.35, 0.99, 1.02, 0.015), (0.65, 0.99, 1.02, -0.015), (0.92, 0.99, 1.01, 0), (1, 1, 1, 0)), (("comfort", -0.05),)),
+    "lean_tilt": Activity("stand", (4.0, 6.0), _k((0, 1, 1, 0), (0.2, 1, 1, -0.07), (0.45, 1, 1, -0.07), (0.65, 1, 1, 0.07), (0.85, 1, 1, 0.07), (1, 1, 1, 0)), ()),
+    "sniff": Activity("look", (2.0, 2.8), _k((0, 1, 1, 0), (0.15, 0.99, 1.03, 0.03), (0.3, 1, 1, 0), (0.45, 0.99, 1.03, 0.03), (0.6, 1, 1, 0), (0.8, 1, 1.02, 0.02), (1, 1, 1, 0)), (("curiosity", -0.15),)),
+    "cast_sparkle": Activity("wave", (1.4, 2.4), _k((0, 1, 1, 0), (0.3, 1, 1.04, 0.03), (0.55, 1, 1.04, -0.03), (0.8, 1, 1.01, 0), (1, 1, 1, 0)), (("play", -0.15),), likes="happy"),
+    #: INBOX 1710, 1711: four small things with no prop, also the app's (the catalogue's `act.sneeze`, `hiccup`, `self_hug`, `foot_tap`).
+    "sneeze": Activity("stand", (1.0, 1.6), _k((0, 1, 1, 0), (0.4, 0.99, 1.06, -0.05), (0.55, 1.02, 0.93, 0.07), (0.8, 1, 1, 0.01), (1, 1, 1, 0)), ()),
+    "hiccup": Activity("stand", (2.0, 4.0), _k((0, 1, 1, 0), (0.12, 1, 1.04, 0), (0.22, 1, 1, 0), (0.45, 1, 1.04, 0), (0.55, 1, 1, 0), (0.75, 1, 1.04, 0), (0.85, 1, 1, 0), (1, 1, 1, 0)), ()),
+    "self_hug": Activity("stand", (3.0, 6.0), _k((0, 1, 1, 0), (0.12, 0.98, 0.99, 0.02), (0.4, 0.98, 0.99, -0.04), (0.7, 0.98, 0.99, 0.04), (0.9, 0.98, 0.99, 0), (1, 1, 1, 0)), (("comfort", -0.35),), likes="sleepy"),
+    "foot_tap": Activity("stand", (2.0, 4.0), _k((0, 1, 1, 0), (0.1, 1, 0.98, 0.02), (0.2, 1, 1, 0), (0.35, 1, 0.98, 0.02), (0.45, 1, 1, 0), (0.6, 1, 0.98, 0.02), (0.7, 1, 1, 0), (0.85, 1, 0.98, 0.02), (1, 1, 1, 0)), (("novelty", -0.1),), likes="bored"),
+})
 for _n, _extra in {"wave_idle": (("social", -0.3),), "little_dance": (("social", -0.1), ("novelty", -0.1)), "glance_pointer": (("social", -0.1),),
                    "look_around": (("novelty", -0.1),), "stretch": (("comfort", -0.2),), "sit_down": (("comfort", -0.25),)}.items():
     ACTIVITIES[_n] = ACTIVITIES[_n]._replace(feeds=ACTIVITIES[_n].feeds + _extra)

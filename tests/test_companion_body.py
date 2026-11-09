@@ -173,7 +173,7 @@ def test_atlas_props_have_a_keyline_and_say_what_they_are() -> None:
     # Intent moved (in-app dive 1107, ba661be3): with no prop to name, the title is the how-to
     # (the aria-label: click, double-click, drag, right-click), not removed, for learnability.
     assert "face.title = " in name and 'else face.title = face.getAttribute("aria-label");' in name
-    words = AV[AV.index("const NMB_PROP_WORDS") :][:1400]  # a slice of the table, widened as the desk acts (atlascat D1 to D4) added their tooltip rows
+    words = AV[AV.index("const NMB_PROP_WORDS") :][:1800]  # a slice of the table, widened as the desk acts (atlascat D1 to D4, INBOX 1710) added their tooltip rows
     for cls in ("nmb-music", "nmb-reading", "nmb-act-bell", "nmb-act-lantern", "nmb-act-carry", "nmb-offline"):
         assert f'["{cls}", ' in words, cls
     assert "nameMarkBuddyNameProps(buddy, face);" in AV
