@@ -49,7 +49,7 @@ from tessellate.ai import composer_ahead, composer_ask, composer_clean, composer
 from tessellate.ai import composer_chip_subject
 from tessellate.ai import composer_read
 from tessellate.ai import composer_select
-from tessellate.ai import composer_tally
+from tessellate.ai import composer_credit, composer_tally
 from tessellate.ai.composer_lists import clean
 from tessellate.ai import recognise as recogniser
 from tessellate.ai import when as when_words
@@ -3805,7 +3805,8 @@ def _best(facts: list[Fact], question: str, cue: re.Pattern | None = None) -> Fa
     latest = bool(_LATEST_ASK.search(question) or _LAST_ONE.search(question))
     did_ask = bool(_WHEN_DID.match(clean(question)))
     subject_words = list(composer.subject_terms(clean(question)))
-    names_a_thing = bool(_NAMES_A_THING.match(clean(question)))
+    #: "what's the latest on X" asks for news, not for the note titled X (R9-9: how is it now).
+    names_a_thing = bool(_NAMES_A_THING.match(clean(question))) and not latest
     going = _AM_DOING.search(clean(question))
     going_on = re.compile(rf"\b{re.escape(going.group(1))}\b", re.I) if going else None
     now_ask = bool(_WHEN_NOW.match(clean(question))) and _TODAY.get() is not None
@@ -4656,7 +4657,7 @@ def _exact_lookup(out: _Out, asked: str, question: str, views: list, today: date
     """The figures the notes hold, worked exactly: a slot, an amount, a sum,
     a day or a count, said (True)."""
     #: A superlative over a table, a count of a list, a distance on a day (R9-10).
-    if composer_tally.answer(out, asked, views):
+    if composer_tally.answer(out, asked, views) or composer_credit.answer(out, asked, views):
         return True
     #: The question's slot (a tick, an open task, a dated line) is what
     #: answers it, or the answer says no note holds it (audit 1029 rank 19).

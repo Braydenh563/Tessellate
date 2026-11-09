@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Composer (R9-9 rest): "and the others" goes on with the question before, "how is it now" is the latest on the subject (and "what's the latest on X" no longer reads as "what is X", so the newest note titled X leads), "who wrote it" says the notes do not say who wrote Wolf Hall (`composer_credit.py`) instead of a tool offer; driven as dialogue chains in Ask and Chat.
 - Composer (R9-10 rest): "what was my fastest run" is the quicker pace ("1 November: 10 km in 58 minutes (5:48 a km)"), "compare my two runs" sets the two side by side, "which holiday is better in April" names the line that says it, all in `composer_tally` with distances and times read by `recognise.measures`; a month after "best/better in" is the subject, not a written-in window.
 - Fix (review of the OCR page lock): the 30 s shared miss is keyed by every input of the answer (`auto`, the reader, the stored text), is shared only for a real reader run, is dropped when a reading is stored for that page, and expired ones are pruned. A vision-model page's "not read yet" no longer stops the Tesseract ask that follows.
 - Fix (row 21 review): `startNewNote` has its `.catch(() => {})` and the `?.` on the box back (a zoom merge dropped them), so a failed editor bundle fetch is not an unhandled rejection; the overlay focus check stays.

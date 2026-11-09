@@ -112,7 +112,7 @@ def _next_questions(question: str, shape: str, terms: list[str], views: list[Not
 
 _MORE = re.compile(
     r"^\s*(?:tell me more|more|go on|continue|keep going|say more|what else|anything else|and|more please|"
-    r"more about (?:that|it|this|those))[\s?.]*$",
+    r"more about (?:that|it|this|those)|(?:and |what about |what are )?the (?:others|rest|other ones))[\s?.]*$",
     re.I,
 )
 
@@ -604,9 +604,26 @@ def _follow_which(text: str, previous: str, last: dict, turns: list[dict]) -> An
     return FollowOn(f"which is {found.group(1).lower()}, {sides[0]} or {sides[1]}", previous, "", "compare", stands=previous)
 
 
+#: "how is it now", "how's it going today": the latest on the subject the turn before named (R9-9).
+_HOW_NOW = re.compile(r"^(?:and )?(?:how is|how's|how are|how was|what's|what is) (?:it|that|this|he|she|they)(?: going)? (?:now|today|these days|at the moment|currently)$")
+
+
+def _follow_now(text: str, previous: str, last: dict, turns: list[dict]) -> Any:
+    got = " ".join(text.lower().split()).rstrip("?.! ")
+    if len(got) > 60 or not _HOW_NOW.match(got):
+        return _NOT_THIS
+    source = _carried_source(previous, turns)
+    subject = _asked_span(source, subject_terms(source))
+    if not subject:
+        return _NOT_THIS
+    start = source.lower().find(subject.lower())
+    article = re.search(r"\b(?:the|my|our)\s+$", source[:start], re.I)
+    return FollowOn(f"What's the latest on {article.group(0).strip() + ' ' if article else ''}{subject}?", previous, "", "pronoun")
+
+
 _FOLLOW_READERS = (
     _follow_more, _follow_ordinal, _follow_correction, _follow_length, _follow_window, _follow_meant,
-    _follow_bare, _follow_part, _follow_swap, _follow_which, _follow_pronoun,
+    _follow_bare, _follow_part, _follow_swap, _follow_which, _follow_now, _follow_pronoun,
 )
 
 
