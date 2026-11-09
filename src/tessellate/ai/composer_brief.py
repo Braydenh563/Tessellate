@@ -75,13 +75,19 @@ def brief(text: str, limit: int = BRIEF_WORDS, squeeze: bool = False) -> str:
 
 #: The most sentences of one note the model's brief adds for holding a word of the question.
 MATCHED_PER_NOTE = 3
+#: Only a short match ("Too dense again.") takes the sentence after it; a full sentence says its own news, and the
+#: brief keeps its saving on the showcase notes (tests/test_composer_brief.py).
+SHORT_MATCH = 4
 
 
-def matching(sentences: list, stems: set[str], holds) -> list:  # noqa: ANN001
+def matching(sentences: list, stems: set[str], holds, chosen: list = ()) -> list:  # noqa: ANN001
     """The sentences of a note that hold a word of the question, in the note's order, at most
     `MATCHED_PER_NOTE`: a note marked "(matched: meditation)" never loses the sentence with the word,
     whatever the composer's own pick was (R9-13)."""
-    found = [s for s in sentences if any(holds(st, set(s.words)) for st in stems)][:MATCHED_PER_NOTE]
-    #: "Too dense again." is followed by what to do about it: the sentence after a match goes with it.
-    after = [sentences[sentences.index(s) + 1] for s in found if sentences.index(s) + 1 < len(sentences)]
+    hits = [s for s in sentences if any(holds(st, set(s.words)) for st in stems)][:MATCHED_PER_NOTE]
+    #: A word the composer's own pick already holds needs no second sentence: the brief keeps its saving.
+    open_stems = {st for st in stems if not any(holds(st, set(c.words)) for c in chosen)}
+    found = [s for s in hits if any(holds(st, set(s.words)) for st in open_stems)]
+    #: "Too dense again." is followed by what to do about it: a short match takes the sentence after it.
+    after = [sentences[sentences.index(s) + 1] for s in hits if len(s.words) <= SHORT_MATCH and sentences.index(s) + 1 < len(sentences)]
     return sorted({id(s): s for s in [*found, *after]}.values(), key=lambda s: s.order)

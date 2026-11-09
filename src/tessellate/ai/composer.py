@@ -816,6 +816,14 @@ def _raw(content: str, s: Sentence) -> str:
     return " ".join(content[s.start : s.end].split())
 
 
+def _add_matching(by_note: dict, view: NoteView, terms: list[str]) -> None:
+    """Every sentence of `view` that holds a word of the question the pick lacks (R9-13)."""
+    kept = by_note.setdefault(view.id, [])
+    kept.extend(s for s in composer_brief.matching(view.sentences, {_stem(t) for t in terms}, _holds, kept) if s not in kept)
+    if not kept:
+        del by_note[view.id]
+
+
 def brief(
     question: str,
     notes: list[dict],
@@ -887,10 +895,7 @@ def brief(
         for s in view.sentences:
             if (view.id, s.start) in spans and s not in by_note.get(view.id, []):
                 by_note.setdefault(view.id, []).append(s)
-        #: And every sentence that holds a word of the question (R9-13).
-        for s in composer_brief.matching(view.sentences, {_stem(t) for t in terms}, _holds):
-            if s not in by_note.get(view.id, []):
-                by_note.setdefault(view.id, []).append(s)
+        _add_matching(by_note, view, terms)
     out: list[dict] = []
     shortened = before = after = 0
     for i, note in enumerate(notes):

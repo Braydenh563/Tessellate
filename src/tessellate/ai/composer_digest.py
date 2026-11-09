@@ -3165,12 +3165,16 @@ def _sorted(own: list[Fact], heads: list[Fact]) -> _Sorted:
             out.labelled += 1
         else:
             out.plain.append(f)
+    _subject_sentence_first(out, own)
+    return out
+
+
+def _subject_sentence_first(out: _Sorted, own: list[Fact]) -> None:
+    """A note that holds the subject in one sentence is told by that sentence, not by its first ("Skipped meditation", R9-2)."""
     stems = _SUBJECT_STEMS.get()
-    #: A note that holds the subject in one sentence is told by that sentence, not by its first ("Skipped meditation", R9-2).
     held = [f for f in out.plain if any(composer._holds(st, set(f.sentence.words)) for st in stems)]
     if held and not any(composer._holds(st, own[0].view.title_words | own[0].view.filed_words) for st in stems if own):
         out.plain = held + [f for f in out.plain if f not in held]
-    return out
 
 
 def _on_subject(view: composer.NoteView, text: str) -> bool:
@@ -3752,6 +3756,26 @@ def _sentence_day(fact: Fact) -> date:
     return max(days) if days else (fact.view.written or date.min)
 
 
+def _fact_words(f: Fact) -> set:
+    """"He works on the data team" in the note titled "Tom" is Tom's line (audit 1031 C1); a sentence's own words beat the note's."""
+    words = set(f.sentence.words)
+    return words | f.view.title_words if f.sentence.words and f.sentence.words[0] in _PRONOUN_OPENERS else words
+
+
+def _says_the_ask(f: Fact, words: set, asks: set, stems: set) -> bool:
+    """The sentence that holds the ask's own verb, in a note that holds the rest of the subject (R9-2)."""
+    if not asks or not any(composer._holds(st, words) for st in asks):
+        return False
+    return all(composer._holds(st, f.view.words | f.view.title_words | f.view.filed_words) for st in stems - asks)
+
+
+def _names_it(text: str, names_a_thing: bool, subject_words: list) -> bool:
+    """"is called Doug", "Builder is Marek": the sentence says what the subject is (R9-3)."""
+    if not (names_a_thing and subject_words):
+        return False
+    return bool(re.search(rf"\b(?:is|are|was) (?:called |named |known as )?(?:the )?{re.escape(' '.join(subject_words))}\b", text, re.I))
+
+
 def _best(facts: list[Fact], question: str, cue: re.Pattern | None = None) -> Fact | None:
     #: Without the asking words: "what day did I run 8 km" is not about a "day".
     stems = set(_subject(question))
@@ -3780,11 +3804,7 @@ def _best(facts: list[Fact], question: str, cue: re.Pattern | None = None) -> Fa
     titled_views = {id(f.view) for f in facts if names_a_thing and _defines(f.view, subject_words) == 2}
 
     def rank(f: Fact) -> tuple:
-        words = set(f.sentence.words)
-        #: "He works on the data team" in the note titled "Tom" is Tom's line
-        #: (audit 1031 C1); a sentence's own words beat the note's.
-        if f.sentence.words and f.sentence.words[0] in _PRONOUN_OPENERS:
-            words |= f.view.title_words
+        words = _fact_words(f)
         own = sum(weight[st] for st in stems if composer._holds(st, words))
         hits = sum(weight[st] for st in stems if composer._holds(st, words | f.view.filed_words | f.view.title_words))
         #: The amount asked about ("8 km") beats a sentence that only shares the verb.
@@ -3794,7 +3814,7 @@ def _best(facts: list[Fact], question: str, cue: re.Pattern | None = None) -> Fa
         newest = (f.view.written or date.min) if latest else date.min
         newest_own = _sentence_day(f) if latest else date.min
         #: The sentence that holds the ask's own verb, in a note that holds the rest of the subject (R9-2).
-        says_it = bool(asks and any(composer._holds(st, words) for st in asks) and all(composer._holds(st, f.view.words | f.view.title_words | f.view.filed_words) for st in stems - asks))
+        says_it = _says_the_ask(f, words, asks, stems)
         #: "when did I bake banana bread": the sentence that says the whole
         #: doing leads, whatever else the note holds (audit 1031 C16).
         acts = bool(did_ask and stems and all(composer._holds(st, set(f.sentence.words)) for st in stems))
@@ -3810,7 +3830,7 @@ def _best(facts: list[Fact], question: str, cue: re.Pattern | None = None) -> Fa
         #: What a titled note is leads with the line it opens on; 
         opens = titled and _opening(f)
         #: "what is Doug", "who is Marek": the sentence that says what it is ("is called Doug", "Builder is Marek", R9-3).
-        names_it = bool(names_a_thing and subject_words and re.search(rf"\b(?:is|are|was) (?:called |named |known as )?(?:the )?{re.escape(' '.join(subject_words))}\b", f.sentence.text, re.I))
+        names_it = _names_it(f.sentence.text, names_a_thing, subject_words)
         return (not asked_back, not _in_a_place(f.sentence.text, stems), doing_now, acts, _cued(cue, f.sentence.text), _ahead_if(now_ask, f), not (latest and f.sentence.kind in {"item", "task"}), id(f.view) not in old, _label_asked(f.label, question), titled, opens, names_it, says_it, hits, newest, newest_own, own, asks_feeling and _feeling(f.sentence.text), same_figure, -f.view.rank, -f.sentence.order)
 
     return max(facts, key=rank) if facts else None
@@ -4882,6 +4902,11 @@ def _defining_first(asked: str, members: list) -> list:
     best = max(rank.values())
     if not best:
         return members
+    return _lead_then_rest(members, rank, best, terms)
+
+
+def _lead_then_rest(members: list, rank: dict, best: int, terms: list[str]) -> list:
+    """The defining note first, then the rest by rank, the ones that only name the subject as a place last."""
     #: Of notes titled alike ("Kitchen renovation", "Kitchen quotes"), the fuller one leads (R9-3).
     lead = max((v for v in members if rank[id(v)] == best), key=lambda v: len(v.sentences))
     rest = [v for v in members if v is not lead]

@@ -98,7 +98,7 @@ _AHEAD_SAID = re.compile(r"\b(?:will|going to|coming|upcoming|due|next|ahead|dea
 _FILLER_STEMS = frozenset(study.stem(w) for w in (
     "what whats is are do have got any anything due deadlines deadline coming up upcoming on my plate the this next week today tomorrow "
     "tonight weekend month happening scheduled ahead for me tell show list give need know check calendar horizon hand submit plan "
-    "organise organize schedule agenda busy look like day rest days few couple month by in a an of to am we doing soon important urgent new planned".split()))
+    "organise organize schedule agenda busy look like day rest days few couple month by in a an of to am we doing soon important urgent planned".split()))
 
 
 @dataclass

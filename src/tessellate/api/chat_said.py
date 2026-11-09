@@ -20,7 +20,7 @@ from sqlalchemy import func, or_, select, text as sql_text
 from sqlalchemy.orm import Session
 
 from tessellate.ai import capability, composer, composer_aware, composer_digest, composer_lists, composer_open, composer_plan, composer_social, fact_check, filed_name, intent, phrasing, realise
-from tessellate.ai import composer_dialogue
+from tessellate.ai import acts, composer_dialogue, task_acts
 from tessellate.ai import composer_frame, composer_read
 from tessellate.ai import composer_smalltalk
 from tessellate.ai.ollama_client import OllamaError
@@ -886,3 +886,12 @@ def _composed_lines(req: _StreamRequest, events: list[dict]) -> list[str]:
             "connected_ids": [], "match_info": {}, "when_phrase": None, "as_of": None, "as_of_revisions": {},
             "answered_by": None, "ollama_running": req.ollama.is_running(), "composed": True}
     return [json.dumps(e) + "\n" for e in ({"type": "status", "stage": "searching"}, meta, *events, {"type": "done"})]
+
+
+def acts_on_listed_task(question: str, history: list[dict], now: datetime) -> bool:
+    """Whether `question` acts on a task the last answer's list showed ("tick the first one", R9-9)."""
+    if not history:
+        return False
+    shown = history[-1].get("answer") or ""
+    listed = {t for t in (task_acts.item_in(n, shown) for n in range(1, 13)) if t}
+    return (acts.parse(question, now, history) or {}).get("about") in listed
