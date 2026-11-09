@@ -76,7 +76,7 @@ bcrypt>=5.0.0,<6.0
 cryptography>=50.0.2,<51.0
 
 # File attachments (Wave B) — multipart form parsing
-python-multipart>=0.0.32,<1.0
+python-multipart>=0.0.33,<1.0
 
 # OPML import (mind maps, routes_whiteboard._parse_opml). The stdlib parser
 # expands internal entities — the billion-laughs shape — and CodeQL flags
