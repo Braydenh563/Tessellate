@@ -7,6 +7,320 @@ Split out of `ROADMAP.md`. Kept, not deleted, for one reason: **three sessions
 have independently rebuilt something that already existed.** This is the file
 that answers "has this been done?" before anyone starts.
 
+## Moved from the plans, 2026-11-09 (book5-1109: UI_MODERNISATION_PLAN)
+
+Built work items found still standing whole in the plan (checked 2026-11-09 against the code and the ROADMAP record that Phases 0 to 11 are built): Phase 8's surface-by-surface work list (tests/test_dock_grammar.py, docks.js sweep) and Phase 11 items 2 and 5 to 9 (2026-09-20 records). Decisions inside them are repeated in the plan's pointers.
+
+From UI_MODERNISATION_PLAN.md (lines 446 to 491 before the move), verbatim:
+
+### The work, surface by surface
+
+Each is one commit, before/after inventory in the message, driven in
+Chromium at 1440 / 1024 / 820 / 390.
+
+1. **The lint first.** `tests/test_dock_grammar.py`: statically, for every
+   element marked `data-dock`, at most one `.primary`/filled button, no
+   `input[type=checkbox]` outside a popover, no text-only segmented control,
+   and the utilities in order. `scratchpad/ui-sweeps/docks.js` becomes the
+   runtime sweep: controls per row, heights per row, zone order.
+2. **Graph** (worst first): title + count; search; `Layout ▾` and
+   `Colour ▾` as one `View ▾` popover holding both segments and the
+   options; saved views as one select with save/delete inside it; `Refresh`,
+   `Export` into `⋯`; one primary (`New note`); `Concept maps` becomes a
+   link in the identity zone. 28 → ≤ 9 visible.
+3. **Library** (All and every sub-tab, one recipe): title; search; `Filter
+   ▾` (semantic, include bin, kind); one sort select; one view segment;
+   `＋ Create`; refresh; help. The chip row stays *below* as the visible
+   filter. The duplicate segmented sort goes. Sub-tabs (Documents, Boards,
+   Images, Files, Links, Contents, Skills) take the identical zones with
+   their own words.
+4. **Notes**: the toolbar from Phase 5 already has search-first and a
+   filters sheet at ≤ 600; apply the sheet at every width as `Filter ▾`, one
+   sort select, the view segment, `Select` into `⋯`.
+5. **Whiteboard**: identity (back · board select · rename) left; search;
+   the five menus stay (they are verbs used sometimes) but at one height
+   and one gap; minimap, Library, fullscreen as utilities right; the map
+   controls (chip, layout, Tidy) as the context chip and a `Layout ▾`.
+6. **Documents**: DOCUMENTS_PLAN.md Phase 1 owns the editor's own chrome;
+   the *Documents list* dock follows item 3.
+7. **Timeline, Reminders, Chat, Dashboard**: Timeline onto the grammar
+   (View segment with icons, `Options ▾`, search, Today as the primary);
+   Reminders' three rows of ghost buttons become one row (the magic field)
+   plus one `Presets ▾` popover, with the due chips as the visible filter;
+   Chat's toolbar at the dock height with `New chat` as the one filled
+   control; the Dashboard hero's clock and greeting as identity, its two
+   quick actions as primary + ghost.
+8. **Settings sections** already have one form recipe (Phase 5.1); their
+   heads take the grammar's identity zone only.
+
+Acceptance: `docks.js` reports **one height per dock**, zone order correct
+on every tab and sub-tab, ≤ 7 visible controls per row, exactly one filled
+control per dock; `test_dock_grammar.py` green; `errors.js` 0 findings at
+all four widths; a keyboard-only pass (Tab into each dock, arrows across
+it, Enter opens a popover, Escape closes it and returns focus) scripted in
+`scratchpad/ui-sweeps/keys.js`.
+
+From UI_MODERNISATION_PLAN.md (lines 598 to 663 before the move), verbatim:
+
+   - **The rail is gone below 600: built** (2026-09-20, with item 3's
+     sidebar half). Measured first (`scratchpad/ui-sweeps/phonesidebar.js`):
+     at 390 the Notes list started at x=82 (13px gutter, the 52px sidebar
+     rail, 16px card padding) for one 44px toggle at the top of the strip
+     and nothing else down it, so rows ran 262px in 390. Now every sidebar
+     (`SIDEBAR_IDS`) parks fully off screen below 600, the page beside it
+     pads 0, and it opens from a `.dock-nav` button at the leading edge of
+     its own dock's head (`mountPhoneSidebarOpeners`), pressing the
+     sidebar's own toggle so the sheet logic stays in one place. After, on
+     Notes, Chat and Documents at 390: closed sidebar right edge 0, page
+     padding 0, opener 44x44 first in the dock, the sheet opens at x=0 with
+     its closer showing and Escape closes it; at 768 the tablet keeps its
+     52px rail and the opener is hidden.
+   - **Filters in a sheet: already the fold** (measured 2026-09-20). Below
+     1100 `foldDockArrange` moves every dock's arrange zone (sort, view,
+     page size) into its own `...` menu, so at 390 the notes dock shows
+     search, Filter, Select, refresh, help and the menu, and nothing else.
+     What was wrong was the rows: the opener took a row of its own (the
+     identity zone's phone basis is 100%), and the search input could not
+     shrink (`min-width: min-content` below 1100) so Filter wrapped under
+     it. Fixed in the 600 band: the opener shares the title's row, the
+     input gives, a dock with an opener and no find zone (Chat) wraps its
+     actions under the title. Dock heights at 390, before and after: notes
+     250 to 166 (three rows), chat 166 to 114 (two), timeline 198 to 146,
+     graph 143, library 146 and reminders 94 unchanged.
+   - **The floating +: built** (2026-09-20). The Notes dock never had a
+     primary (Capture is a sub-tab), so it has one now: "New note", filled,
+     at the right before the utilities, which the grammar asked for and the
+     desktop dock measures at seven controls with one filled (`docks.js`).
+     Below 600 `FAB_IDS` floats it as the + above the tab bar, where it
+     opens Capture with the caret in the box and hides while Capture is
+     showing. **Decision:** the Capture sub-tab is the sheet. On a phone
+     the sub-tab is already a full-height page holding nothing but the
+     box; a sheet over it would be a second capture surface, so the + opens
+     the sub-tab. Found on the way and fixed at the source: the first
+     showing of Capture wraps the box for its gutter and then upgrades it
+     to the live editor, and both moves dropped the focus a person had just
+     asked for (measured: focus in at 7598ms, gone at 7737, nothing active
+     at 1200ms after the press); each now carries it over. Measured after
+     (`phonecapture.js`): the + is 44px at bottom right above the tab bar,
+     one press lands the caret in the live editor, the + is gone while
+     Capture shows, and at 1024 the button is back in the dock, filled.
+   - **Swipe actions: built** (2026-09-20). Right favourites, left bins,
+     each the row's own control (`.favourite-btn`; `binNoteWithUndo`, the
+     function the row menu's "Move to bin" calls, undo toast and all), never
+     a second copy. Measured with real touch events through CDP
+     (`scratchpad/ui-sweeps/phoneswipe.js`): a 40px swipe reveals 40px of
+     underlay, does not arm and settles to 0; 110px right arms and the note
+     is a favourite; a 6x80 vertical drag never moves the row; 110px left
+     arms and the note is in the bin with the undo toast up. No page
+     errors; `phone.js` 0 findings.
+   - **The note page: built** (2026-09-20), and item 2 is complete. A tap on
+     a row (not on a control, not the lift-off of a swipe) opens the note as
+     the sheet recipe's `page` variant: the whole screen, a back chevron,
+     the list's own card unclamped inside, and that card's own actions
+     moved into a `.thumb-bar` at the foot, so nothing is rendered twice
+     and the page's actions are the row's. Bin or Archive from the page
+     reloads the list and the page closes when its note is gone. Measured
+     (`scratchpad/ui-sweeps/phonenotepage.js`): the page is 0 to 844 with
+     a 0px radius, a note clamped to 198px in the list is 1440px on the
+     page in a scrolling list, the bar holds 4 buttons at 44px with its
+     bottom at 844, the close is labelled Back with the chevron, Escape and
+     the chevron both return focus to the row, a tap on the row's star
+     opens nothing, and a tap at 1024 opens nothing. Found by `phone.js`
+     on the way: "Show more" under a clamped note was 80x22 at 390; it
+     takes the row's floor now.
+
+From UI_MODERNISATION_PLAN.md (lines 666 to 715 before the move), verbatim:
+
+5. **Library and Files: built** (2026-09-20). Two-up cards, the reader
+   full-screen with a bottom bar; upload from the share sheet.
+   - **Two-up cards: decided the other way, not remade.** The 600 band in
+     07-whiteboard-misc.css makes the card grids one full-width column
+     with the measurement that decided it (at 390 the masonry gave two
+     164px columns, a card too narrow for its own title, and a reading
+     order that went down, up, down). Measured 2026-09-20: 24 Library
+     cards in one column at 390. Stands.
+   - **The share sheet: built** (2026-09-20). The installed app is a Web
+     Share Target (`manifest.webmanifest`, the GET form: no service worker,
+     and the query survives the lock screen). A page, a link or a
+     selection shared to Tessellate opens it at `/` with `share_title`,
+     `share_text` and `share_url`; once the entries have loaded
+     (`takeSharedIntake`, a boot step) the three become one capture (the
+     title as a heading, the text, the link on its own line), Capture
+     opens with the caret in the box, and the query is cleared so a
+     reload shares nothing twice. `tests/test_share_target.py` holds the
+     two halves to the same three names; measured by
+     `scratchpad/ui-sweeps/phoneshare.js` at 390. Not built: a file (an
+     image from the camera roll) needs the POST form and a service
+     worker.
+   - **The reader full screen with a bottom bar: built** (2026-09-20), and
+     item 5 is complete. Measured at 390x844 first
+     (`scratchpad/ui-sweeps/libreader.js`, this item's gate): the reader (the
+     OCR workspace) was a 342x776 card inset 24px from each edge with a 14px
+     rounded top, its way out an X; the Regions checkbox label was 36px tall,
+     a zoom segment button 35px wide, the two rail tabs 13x25 and the find
+     box 343x20. **And a bug older than the phone band**: the three panes are
+     a grid of two columns below 1100 with three children in it, so the
+     reading pane fell into an implicit second row. At 390 the 1fr column
+     collapsed and the transcription was **0px wide**; at 1024 the hidden
+     rail's own column still took **593px** of empty space while the page was
+     squeezed into the 320px column beside it and the reading dropped to a row
+     underneath. Hiding `.ocr-rail` was never enough: the column goes too, and
+     the selector needed `.ocr-panes > .ocr-rail-column` because the column's
+     own `display: flex` is declared below that band in the same stylesheet.
+     After, at 1024: page 593x656 and reading 320x656, side by side; at 1440
+     the three columns are 144 / 747 / 416, unchanged.
+     On a phone the reader is the sheet recipe's `page` variant, the same two
+     classes `openSheet` puts on the note page, stamped by `ocrPhonePage` in
+     app.js because `tests/test_ui_recipes.py` holds that only the recipe's own
+     file may write a variant class (it caught the first attempt, from
+     library.js). The reading's five actions move into a `.thumb-bar` and move
+     back above 600, the way the note page moves a row's actions: same buttons,
+     same ids, same handlers. Measured after at 390: the card is 0,0 to
+     390x844 with a 0px radius, one column of panes, the rail column 0, no
+     control under 44px, the bar holding 5 buttons with its bottom at 844, the
+     way out labelled Back with the chevron, Escape closes it, and crossing to
+     1024 with it open puts the five actions back in the reading's own foot
+     and the X back in the head.
+
+From UI_MODERNISATION_PLAN.md (lines 716 to 728 before the move), verbatim:
+
+6. **Documents: built** (2026-09-20), most of it already there and
+   measured before anything was added. Measured at 390 with a fresh
+   document (`scratchpad/ui-sweeps/phonedocs.js`): a phone now opens a
+   document in the Rendered view when nothing is stored (Live Preview
+   above 600, a stored choice wins at every width); Edit is the page
+   itself with the live editor, the formatting strip hidden and the
+   selection bar (`#doc-phone-bar`, seven 44px buttons) at the foot above
+   the keyboard edge; the outline is the Outline tab of the sidebar sheet,
+   opened from the head's opener (item 2's), with all seven headings.
+   **Decision:** Edit is the page, not a sheet over it; on a phone the
+   document is already the whole screen and a sheet over a page that is
+   itself the editor would be two editors. At 1024 the default is Live
+   Preview as before.
+
+From UI_MODERNISATION_PLAN.md (lines 729 to 798 before the move), verbatim:
+
+7. **Whiteboard and maps: built** (2026-09-20), and one third of it was
+   already there. Measured at 390x844 on a fresh board first
+   (`scratchpad/ui-sweeps/wbphone.js`, this item's gate). Before: a pinch
+   with the default Select tool scaled the board by exactly **1.000**,
+   because `wbZoomFilter` gave touch to the camera only while the Pan tool
+   was held, so a phone could not move or zoom a board without first going
+   to find that tool; the tool rail was a 364x56 band under a 364x604
+   canvas holding **835px of tools scrolled through a 358px window**, so 16
+   of its 31 buttons were on screen and the Shapes section showed one of
+   its seven; and the board's own top bar was 88px of two rows with all
+   **eleven** of its controls at 36px against this band's 44px floor. The
+   mind map's + handles were **already 44x44** and already shown on a
+   selected node, so that third of the item is a measurement rather than a
+   change.
+
+   After: two fingers are always the camera and one finger still belongs to
+   the tool (the same split Figma, Excalidraw and Procreate use, and no tool
+   here is drawn with two), measured at 1.000 to 3.500 for the same pinch
+   with Select in hand. The rail below 600 is one button saying which tool
+   is in hand, and it opens the sheet recipe holding `#wb-tool-group`
+   itself, moved in and put back on close, so a tool added to the rail is in
+   the sheet with no second edit: 390x527, 12 visible tools, none under
+   44px, and picking one closes the sheet and selects it. The top bar takes
+   the band's floor, 88px to 104px, which is one step of height for eleven
+   targets that can be hit. Whiteboard.js's three hand-rolled 500ms holds
+   are `wireLongPress` now, so they inherit the swallowed lift that item 4
+   added and whiteboard.js joins the long-press lint's file list; the fourth
+   right-click, bound through d3 on a selection that is rebound every
+   render, keeps its own hold, and the lint's docstring says why.
+   **The bar at 820, and the band between: measured and fixed** (2026-09-20,
+   `scratchpad/ui-sweeps/wbtopbar820.js`, on an open board). Two things this
+   item left behind. First, from 600 to 819 the band's own rule reads "below
+   820 the pointer is a finger" (`--target-min` is 2.75rem on `:root` there),
+   and all thirteen of the bar's controls were still **36px tall** at 768,
+   because the rule this item wrote lived in the 600 band and the bar declares
+   its own control height, which nothing in it read; the icon-only ones had
+   taken the width and not the height, which is how it stayed invisible. It is
+   in the 819.98 band now: at 768 the bar is 104px and two rows with every
+   control at 44. Second, below 56rem the five menu toggles drop their words
+   and rendered **25.8px wide**, the narrowest controls in the app and under
+   the *global* 28px floor, so at 820 five of thirteen failed a floor that has
+   nothing to do with touch. They take the floor from 600 up now (at 820, 28;
+   at 768, 44).
+
+   **At 820 itself the band's 44px floor is deliberately not introduced**, and
+   that is band 2's existing decision rather than a new one: 10-responsive.css
+   records why `--target-min` was redeclared on `#tab-bar` alone there and not
+   on `:root` ("raising every dock control in the band to 44px is a real change
+   with its own measurements to take"). Measured at 820x1180 after: the bar is
+   784x46, one row, thirteen controls all 36px tall, nothing under 28, no
+   sideways scroll; at 1440 it is unchanged at 1392x46. Found and not fixed,
+   placed in WHITEBOARD_PLAN with its numbers: below 600 the bar runs 75px past
+   its own right edge at 320 and 5px at 390, and the only fix that does not
+   redesign it costs a row (152px at 390, 200px at 320), which is the
+   phone-shaped board bar this item already assigned to that plan.
+
+   **Decision: the board's top bar is not reduced to a kebab** the way the
+   app header was (item 1). It is a menu bar, which the dock grammar already
+   names as this surface's exception (Insert, Edit, Arrange, View, Board),
+   and three of its eleven controls are those menus. Raising it to the touch
+   floor is what this item needs; a phone-shaped board bar is
+   WHITEBOARD_PLAN's, not this item's, and is named there.
+
+   The whiteboard sweep at 390 had to learn the sheet: its ink-swatch check
+   scrolled the rail sideways to find the swatch, and the swatch is in the
+   sheet at that width now. It opens the sheet and closes it, and reads the
+   swatch as red rather than as exactly `rgb(255, 0, 0)`, because inside the
+   sheet the pixel is painted through the card's own glass (measured: 249,
+   1, 3). 24/24 at 390 and 24/24 at 1440 after it; `wbcontextphone.js` 5/5,
+   so the context bar work that landed this week is untouched.
+
+From UI_MODERNISATION_PLAN.md (lines 799 to 813 before the move), verbatim:
+
+8. **Settings, dashboard, timeline, reminders: built or decided**
+   (2026-09-20). Measured at 390 first: the dashboard's 24 widgets are
+   already one column. Settings already has its phone shape, decided and
+   measured before this (07-whiteboard-misc.css: the section strip hidden,
+   a jump select beside the search in one row, every section in one
+   scroll; "2337px of scroll inside 308px at 390" is the number that
+   chose it), so the page list with a back button is not remade. Built
+   here: a phone opens the timeline as the table when no view is stored
+   (`timelineViewMode`; a choice wins at every width; the table is 330px
+   in 390 with no sideways scroll, and its column sorts take the 44px
+   floor), and a reminder row swiped right is done, through its own Done
+   checkbox, with nothing to the left (`initRowSwipe`, now one function
+   for any list of rows, the underlay's words read from the row's own
+   `data-swipe-right` and `data-swipe-left`). Measured by
+   `scratchpad/ui-sweeps/phonereminders.js`.
+
+From UI_MODERNISATION_PLAN.md (lines 814 to 842 before the move), verbatim:
+
+9. **Touch: built** (2026-09-20). The 44px half is built (2026-09-13, the
+   block is in HISTORY.md, "Moved from the plans, 2026-09-13"):
+   `scratchpad/ui-sweeps/phone.js` walks every tab whole rather than dock by
+   dock and reports 0 findings at 390x844 and 430x932. Long-press replacing
+   right-click is items 4 and 7's `wireLongPress`, app-wide and lint-held.
+
+   **No hover-only affordance: swept properly and two found**
+   (`scratchpad/ui-sweeps/hoveronly.js`, this half's gate). It reads the app's
+   own stylesheets for every rule whose selector carries `:hover` and whose
+   body sets `opacity`, `visibility` or `display` (45 of the 243 `:hover`
+   rules), strikes the `:hover` out to get the element at rest, walks eleven
+   stops across every tab with `hover: none`, `any-hover: none` and
+   `pointer: coarse` emulated through CDP, and then **taps** each candidate
+   for real, because a reveal on hover is only a fault when nothing a finger
+   can do produces it. Three candidates; the AI dot's popup is fine (hidden
+   at rest, revealed by a tap, `toggleAiStatusPopup`).
+
+   The other two were the same bug, and it is worth writing down because it
+   is invisible in review: **a `hover: none` override written at a lower
+   specificity than the rule it overrides does nothing at all.** Both the
+   Library card's ⋯ and the document row's ⋯ already had
+   `@media (hover: none) { .library-card-menu { opacity: 1 } }`, written as
+   the short name, against a base rule of `.menu-wrap.library-card-menu
+   { opacity: 0 }` (compound, and deliberately so, for a positioning bug its
+   own comment records). Measured: a 44x44 button at opacity 0 on every
+   Library card and every document row at 390, still 0 after a real tap. Both
+   overrides now match their base rule's specificity. After: 0 hover-only
+   affordances at 320, 390 and 430, the AI popup the one candidate and it
+   taps open.
+
 ## Moved from the plans, 2026-11-09 (UI_MODERNISATION_PLAN, 1698-lag, lag-1109)
 
 - 1698-lag, `avatars.js release 3222ms (forced layout 2965ms)`: the drop read the bars' and the perch panel's rects after its own writes and the figure's hover read its rect on every move; both now read first (`nmb.place.read` kept for the stack, `judgeRub` once a frame), 850e0f0. Per drag at 4x CPU, median of 6: about 300 ms to 70 ms of forced layout. A 60-cycle soak (tab switches, Settings open and close, drags) kept elements at 12.8k: no leak to find.
