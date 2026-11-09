@@ -9397,6 +9397,8 @@ Link to another note with [[its first few words]]."></textarea>
        computed from box height. See core/ocr.py's `extract_regions`. -->
   <div id="ocr-workspace" class="modal-overlay ocr-workspace hidden" role="dialog" data-panel-layout="2"
     aria-modal="true" aria-label="OCR workspace: read text from images and documents">
+    <!-- Built when the workspace first opens (`surfaceBuild("ocr")`, settings-body.js; audit 1031 row 21). -->
+    <template data-surface="ocr">
     <div class="card modal-card ocr-card">
       <!-- **Two rows: the dialog head, then one row of tools** (INBOX 717).
            The head says what you are reading and where you are in it; the
@@ -9747,6 +9749,7 @@ Link to another note with [[its first few words]]."></textarea>
         </div>
       </div>
     </div>
+    </template>
   </div>
 
   <!-- **Managing the dictionary**, asked for by name: "adding to dictionary (a

@@ -6303,6 +6303,7 @@ function ocrOpenSibling(row) {
 //: opening a fifteen-page scan at page 1 from page 9 is navigation the reader
 //: then has to redo by hand.
 function openOcrWorkspace(image, images, page = 0) {
+  surfaceBuild("ocr");
   const overlay = $("ocr-workspace");
   if (!overlay) return;
   //: Clamped at 0 here rather than trusted: a caller with a stale page number
@@ -7884,7 +7885,8 @@ function ocrAllText() {
   return ocrWorkspaceRegions.map((region) => region.text).join("\n\n").trim();
 }
 
-onDomReady(() => {
+//: The workspace's card is built on its first open (row 21); its wiring waits for it.
+onSurface("ocr", () => {
   $("ocr-close")?.addEventListener("click", () => closeOcrWorkspace());
   $("ocr-workspace")?.addEventListener("click", (event) => {
     //: Click the backdrop to close, the card to keep working, the same rule

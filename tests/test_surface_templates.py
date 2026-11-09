@@ -34,7 +34,7 @@ SURFACES = {
         "whiteboard*.js",
         ("wbShowCanvasView", "initWhiteboard"),
         ("whiteboard-container", "wb-tools-panel", "wb-format", "wb-outline-tree", "wb-back-to-boards"),
-    ),
+    ),    "ocr": ("ocr-workspace", "library.js", ("openOcrWorkspace",), ("ocr-close", "ocr-stage", "ocr-rail", "ocr-page-pane")),
 }
 
 
