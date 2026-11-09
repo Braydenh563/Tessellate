@@ -58,6 +58,7 @@ class Pose(NamedTuple):
 
 
 NEUTRAL = Pose()
+_N_SX, _N_SY, _N_LEAN, _N_DRAG = NEUTRAL
 
 
 class SecondOrder:
@@ -88,14 +89,26 @@ class SecondOrder:
 Q_SCALE, Q_LEAN, Q_DRAG = 0.02, 0.02, 1.0
 
 
+def quantise(sx: float, sy: float, lean: float, drag: float, q_sy: float = Q_SCALE) -> Pose | None:
+    """`quantised` for the four numbers (a look-ahead runs it hundreds of thousands of times: no Pose in between)."""
+    sx = round(round(sx / Q_SCALE) * Q_SCALE, 2)
+    sy = round(round(sy / q_sy) * q_sy, 3)
+    lean = round(round(lean / Q_LEAN) * Q_LEAN, 2)
+    drag = float(round(drag / Q_DRAG) * Q_DRAG)
+    if sx == _N_SX and sy == _N_SY and lean == _N_LEAN and drag == _N_DRAG:
+        return None
+    return Pose(sx, sy, lean, drag)
+
+
+def cell(sx: float, sy: float, lean: float, drag: float, q_sy: float = Q_SCALE) -> tuple[int, int, int, int]:
+    """The grid cell of a pose: the whole steps `quantise` multiplies back. Two poses are the same picture exactly when
+    their cells are equal (the steps are far wider than the rounding after them), so a look-ahead compares cells."""
+    return round(sx / Q_SCALE), round(sy / q_sy), round(lean / Q_LEAN), round(drag / Q_DRAG)
+
+
 def quantised(p: Pose, q_sy: float = Q_SCALE) -> Pose | None:
     """The pose snapped to the cache grid (`q_sy` is the height's step), or None when it is the plain frame."""
-    q = Pose(
-        round(p.sx / Q_SCALE) * Q_SCALE, round(p.sy / q_sy) * q_sy,
-        round(p.lean / Q_LEAN) * Q_LEAN, round(p.drag / Q_DRAG) * Q_DRAG,
-    )
-    q = Pose(round(q.sx, 2), round(q.sy, 3), round(q.lean, 2), float(q.drag))
-    return None if q == NEUTRAL else q
+    return quantise(p.sx, p.sy, p.lean, p.drag, q_sy)
 
 
 def smooth(u: float) -> float:
@@ -139,17 +152,28 @@ def scaled(p: Pose, amp: float) -> Pose:
 Keys = tuple[tuple[float, float, float, float], ...]  # (u, sx, sy, lean)
 
 
+def sample3(keys: Keys, u: float, ease: Any = smooth) -> tuple[float, float, float]:
+    """`sample` as the bare (sx, sy, lean): the act look-ahead reads it thirty times a wake."""
+    if not keys:
+        return 1.0, 1.0, 0.0
+    first = keys[0]
+    if u <= first[0]:
+        return first[1], first[2], first[3]
+    a = first
+    for b in keys[1:]:
+        if u <= b[0]:
+            k = ease((u - a[0]) / max(1e-6, b[0] - a[0]))
+            return a[1] + (b[1] - a[1]) * k, a[2] + (b[2] - a[2]) * k, a[3] + (b[3] - a[3]) * k
+        a = b
+    last = keys[-1]
+    return last[1], last[2], last[3]
+
+
 def sample(keys: Keys, u: float, ease: Any = smooth) -> Pose:
     """The pose at `u` (0 to 1 through the activity), eased between keyframes."""
     if not keys:
         return NEUTRAL
-    if u <= keys[0][0]:
-        return Pose(keys[0][1], keys[0][2], keys[0][3])
-    for a, b in zip(keys, keys[1:]):
-        if u <= b[0]:
-            k = ease((u - a[0]) / max(1e-6, b[0] - a[0]))
-            return Pose(a[1] + (b[1] - a[1]) * k, a[2] + (b[2] - a[2]) * k, a[3] + (b[3] - a[3]) * k)
-    return Pose(keys[-1][1], keys[-1][2], keys[-1][3])
+    return Pose(*sample3(keys, u, ease))
 
 
 class Activity(NamedTuple):
@@ -590,13 +614,16 @@ class Trail:
         self.last_v = body_vx
         n = max(1, int(math.ceil(dt / 0.02)))
         h = dt / n
+        stiff, damp, kick, top = self.STIFF, self.DAMP, accel * self.KICK, self.MAX
+        pos, vel = self.pos, self.vel
+        kicks = [kick * (1 + i) for i in range(self.LINKS)]  # the same product every pass: once per link
         for _ in range(n):
             prev = 0.0
             for i in range(self.LINKS):
-                force = self.STIFF * (prev - self.pos[i]) - self.DAMP * self.vel[i] - accel * self.KICK * (1 + i)
-                self.vel[i] += force * h
-                self.pos[i] = max(-self.MAX, min(self.MAX, self.pos[i] + self.vel[i] * h))
-                prev = self.pos[i]
+                v = vel[i] + (stiff * (prev - pos[i]) - damp * vel[i] - kicks[i]) * h
+                vel[i] = v
+                p = pos[i] + v * h
+                prev = pos[i] = top if p > top else -top if p < -top else p
 
     def reset(self) -> None:
         self.pos, self.vel, self.last_v = [0.0] * self.LINKS, [0.0] * self.LINKS, 0.0
@@ -879,10 +906,12 @@ class Flow:
             gain = 0.7 + 0.6 * _frac(i * 0.43 + 0.1)  # each strand is thrown by its own share
             for axis, v, a in ((0, vx, ax), (1, vy, ay)):
                 rest = -v * FLOW_STREAM * gain
+                kick = a * FLOW_KICK * gain  # the same every pass
                 p, q = self.pos[i][axis], self.vel[i][axis]
                 for _ in range(n):
-                    q += (k * (rest - p) - c * q - a * FLOW_KICK * gain) * h
-                    p = max(-FLOW_MAX, min(FLOW_MAX, p + q * h))
+                    q += (k * (rest - p) - c * q - kick) * h
+                    p += q * h
+                    p = FLOW_MAX if p > FLOW_MAX else -FLOW_MAX if p < -FLOW_MAX else p
                 self.pos[i][axis], self.vel[i][axis] = p, q
 
     def arrangement(self, i: int, t: float) -> tuple[float, float]:

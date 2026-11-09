@@ -12,6 +12,7 @@ the two agree."""
 
 from __future__ import annotations
 
+import functools
 import random
 import statistics
 from collections import Counter
@@ -54,12 +55,25 @@ def runs(seq: list[str]) -> int:
     return best
 
 
+@functools.lru_cache(maxsize=None)
+def _plain_hour(gait: str, seed: int, secs: float, pointer: bool, look: str, awake: bool) -> dict:
+    """The same seeded hour is read by several test files (travel, modes, hang end): one run per worker. Callers only
+    read the result."""
+    return _simulate(gait, seed, secs, None, pointer, look, awake)
+
+
 def simulate(
     gait: str, seed: int, secs: float = 3600.0, setup=None, pointer: bool = True, look: str = "masculine",
     awake: bool = True,
 ) -> dict:
     """One hour. `awake`: the person is about (the long-idle sit and sleep are off), which is the hard case
     for stillness; with it off a quarter hour of no touch ends in a sit and then a sleep."""
+    if setup is None:
+        return _plain_hour(gait, seed, secs, pointer, look, awake)
+    return _simulate(gait, seed, secs, setup, pointer, look, awake)
+
+
+def _simulate(gait, seed, secs, setup, pointer, look, awake) -> dict:
     saved = eng.IDLE_SIT, eng.IDLE_SLEEP
     if awake:
         eng.IDLE_SIT = eng.IDLE_SLEEP = float("inf")

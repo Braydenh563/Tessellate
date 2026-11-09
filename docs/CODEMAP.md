@@ -2,7 +2,7 @@
 
 Generated 2026-11-09 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7931, frontend ids 2652, CSS sections 522, backend routes 649, backend modules 9271, test files 2283, tests 19125, plan headings 1008, app scripts 28, boot scripts 37, script files 265.
+Counts: frontend functions 7931, frontend ids 2652, CSS sections 522, backend routes 649, backend modules 9274, test files 2283, tests 19125, plan headings 1008, app scripts 28, boot scripts 37, script files 265.
 
 ## Frontend functions (7931)
 
@@ -13178,7 +13178,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:164 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (9271)
+## Backend modules (9274)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -22806,42 +22806,45 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `reset_for_tests` | src/tessellate/core/origin.py:71 |
 | `run_deferred` | src/tessellate/core/origin.py:58 |
 
-### src/tessellate/core/overlay/behaviour.py (32)
+### src/tessellate/core/overlay/behaviour.py (35)
 
 | Name | File:line |
 |---|---|
-| `Activity` | src/tessellate/core/overlay/behaviour.py:155 |
-| `Chain` | src/tessellate/core/overlay/behaviour.py:370 |
-| `Flow` | src/tessellate/core/overlay/behaviour.py:816 |
-| `Mind` | src/tessellate/core/overlay/behaviour.py:409 |
+| `Activity` | src/tessellate/core/overlay/behaviour.py:179 |
+| `Chain` | src/tessellate/core/overlay/behaviour.py:394 |
+| `Flow` | src/tessellate/core/overlay/behaviour.py:843 |
+| `Mind` | src/tessellate/core/overlay/behaviour.py:433 |
 | `Pose` | src/tessellate/core/overlay/behaviour.py:53 |
-| `SecondOrder` | src/tessellate/core/overlay/behaviour.py:63 |
-| `TailLayer` | src/tessellate/core/overlay/behaviour.py:747 |
-| `Trail` | src/tessellate/core/overlay/behaviour.py:561 |
-| `Variation` | src/tessellate/core/overlay/behaviour.py:121 |
-| `_amplitude` | src/tessellate/core/overlay/behaviour.py:605 |
-| `_arr_pick` | src/tessellate/core/overlay/behaviour.py:809 |
-| `_frac` | src/tessellate/core/overlay/behaviour.py:803 |
-| `_from_catalogue` | src/tessellate/core/overlay/behaviour.py:258 |
-| `_k` | src/tessellate/core/overlay/behaviour.py:172 |
-| `activity_frame` | src/tessellate/core/overlay/behaviour.py:548 |
-| `catalogue_factor` | src/tessellate/core/overlay/behaviour.py:291 |
-| `curve` | src/tessellate/core/overlay/behaviour.py:392 |
-| `idle_tier` | src/tessellate/core/overlay/behaviour.py:356 |
-| `mood_of` | src/tessellate/core/overlay/behaviour.py:323 |
-| `phase_of` | src/tessellate/core/overlay/behaviour.py:283 |
-| `quantised` | src/tessellate/core/overlay/behaviour.py:91 |
-| `sample` | src/tessellate/core/overlay/behaviour.py:142 |
-| `scaled` | src/tessellate/core/overlay/behaviour.py:134 |
-| `shift_every` | src/tessellate/core/overlay/behaviour.py:306 |
-| `sine_ease` | src/tessellate/core/overlay/behaviour.py:111 |
-| `smooth` | src/tessellate/core/overlay/behaviour.py:101 |
-| `smoother` | src/tessellate/core/overlay/behaviour.py:106 |
-| `tail_bend` | src/tessellate/core/overlay/behaviour.py:726 |
-| `tail_points` | src/tessellate/core/overlay/behaviour.py:734 |
-| `tier_factor` | src/tessellate/core/overlay/behaviour.py:361 |
-| `utility` | src/tessellate/core/overlay/behaviour.py:398 |
-| `vary` | src/tessellate/core/overlay/behaviour.py:129 |
+| `SecondOrder` | src/tessellate/core/overlay/behaviour.py:64 |
+| `TailLayer` | src/tessellate/core/overlay/behaviour.py:774 |
+| `Trail` | src/tessellate/core/overlay/behaviour.py:585 |
+| `Variation` | src/tessellate/core/overlay/behaviour.py:134 |
+| `_amplitude` | src/tessellate/core/overlay/behaviour.py:632 |
+| `_arr_pick` | src/tessellate/core/overlay/behaviour.py:836 |
+| `_frac` | src/tessellate/core/overlay/behaviour.py:830 |
+| `_from_catalogue` | src/tessellate/core/overlay/behaviour.py:282 |
+| `_k` | src/tessellate/core/overlay/behaviour.py:196 |
+| `activity_frame` | src/tessellate/core/overlay/behaviour.py:572 |
+| `catalogue_factor` | src/tessellate/core/overlay/behaviour.py:315 |
+| `cell` | src/tessellate/core/overlay/behaviour.py:103 |
+| `curve` | src/tessellate/core/overlay/behaviour.py:416 |
+| `idle_tier` | src/tessellate/core/overlay/behaviour.py:380 |
+| `mood_of` | src/tessellate/core/overlay/behaviour.py:347 |
+| `phase_of` | src/tessellate/core/overlay/behaviour.py:307 |
+| `quantise` | src/tessellate/core/overlay/behaviour.py:92 |
+| `quantised` | src/tessellate/core/overlay/behaviour.py:109 |
+| `sample` | src/tessellate/core/overlay/behaviour.py:172 |
+| `sample3` | src/tessellate/core/overlay/behaviour.py:155 |
+| `scaled` | src/tessellate/core/overlay/behaviour.py:147 |
+| `shift_every` | src/tessellate/core/overlay/behaviour.py:330 |
+| `sine_ease` | src/tessellate/core/overlay/behaviour.py:124 |
+| `smooth` | src/tessellate/core/overlay/behaviour.py:114 |
+| `smoother` | src/tessellate/core/overlay/behaviour.py:119 |
+| `tail_bend` | src/tessellate/core/overlay/behaviour.py:753 |
+| `tail_points` | src/tessellate/core/overlay/behaviour.py:761 |
+| `tier_factor` | src/tessellate/core/overlay/behaviour.py:385 |
+| `utility` | src/tessellate/core/overlay/behaviour.py:422 |
+| `vary` | src/tessellate/core/overlay/behaviour.py:142 |
 
 ### src/tessellate/core/overlay/capture.py (14)
 

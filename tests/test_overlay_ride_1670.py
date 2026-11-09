@@ -21,6 +21,22 @@ WIN = Perch(11, 500, 300, 1100)
 RESTING = tuple(n for n in FRAME_NAMES if n not in ("hang", "tumble", "fall", "hop", "held"))
 
 
+_METRICS: dict[tuple[str, str], dict] = {}
+
+
+def shared_metrics(s: SpriteSet, look: str) -> dict:
+    """The shipped frames' drawn boxes at 96 dpi, built once per process: `SpriteSet.metrics` renders every frame in both
+    mirrors (0.7 s) and the frames never change, yet each of a few hundred `make()` calls rebuilt them. The set keeps the
+    shared result as its own, so a later `s.metrics(96)` in a test reads the same boxes without another build."""
+    key = (look, str(s.directory))
+    boxes = _METRICS.get(key)
+    if boxes is None:
+        boxes = _METRICS[key] = s.metrics(96)
+    else:
+        s._metrics, s._metrics_base = {96: boxes}, (s.size(96), boxes)
+    return boxes
+
+
 def make(look: str = "masculine", gait: str = "float", seed: int = 2, plain: bool = False) -> tuple[Engine, SpriteSet]:
     s = SpriteSet(look)
     size = s.size(96)
@@ -28,7 +44,7 @@ def make(look: str = "masculine", gait: str = "float", seed: int = 2, plain: boo
         size, ONE, rng=random.Random(seed), gait=gait, hang_top=s.top_share("hang"), idle_frames=IDLE_COUNT,
         home=(900, AREA[3] - size[1]),
     )
-    e.set_metrics(s.metrics(96))
+    e.set_metrics(shared_metrics(s, look))
     e.climb_ready = math.inf
     e.big_ready = math.inf
     e.plain_legs = plain  # True: every leg is the plain walk or drift (the older tests); False: the full repertoire
