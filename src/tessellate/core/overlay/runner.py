@@ -399,8 +399,8 @@ class OverlayRunner:
         e = self.engine
         if e is None or not self.roam_windows or e.reduced or not e.roam:
             return False
-        if e.tuck is not None:
-            return True  # hidden behind a window: it moving or closing is read within a quarter of a second
+        if e.tuck is not None or e.hang_on is not None:
+            return True  # hidden behind a window or hanging from one: it moving or closing is read within a quarter of a second (INBOX 1699)
         if e.quiet:
             return False
         if e.perch is not None or e.target is not None or e.state in ("pressed", "held"):
@@ -467,12 +467,12 @@ class OverlayRunner:
             if engine.windows or engine.perch is not None:
                 engine.set_windows([], now)
             return
-        if engine.tuck is not None:  # hidden behind a window: the next look is a quarter second away, not up to a second
+        if engine.tuck is not None or engine.hang_on is not None:  # hidden behind or hanging from a window: the next look is a quarter second away, not up to a second
             self._next_scan = min(self._next_scan, now + SCAN_RIDING)
         if not force and (now < self._next_scan or not self._wants_scan(now)):
             return
         # On a window it rides it: a dragged window is followed four times a second, not once.
-        self._next_scan = now + (SCAN_RIDING if engine.perch is not None or engine.tuck is not None else SCAN_EVERY)
+        self._next_scan = now + (SCAN_RIDING if engine.is_riding() else SCAN_EVERY)
         tally: Counter = Counter()
         wins = self._list_windows(tally, near, seen)
         if wins:  # an empty list is a failed read, not every window closing

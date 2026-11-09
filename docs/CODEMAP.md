@@ -2,7 +2,7 @@
 
 Generated 2026-11-09 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7926, frontend ids 2652, CSS sections 522, backend routes 649, backend modules 9244, test files 2268, tests 19027, plan headings 1005, app scripts 28, boot scripts 37, script files 264.
+Counts: frontend functions 7926, frontend ids 2652, CSS sections 522, backend routes 649, backend modules 9244, test files 2270, tests 19030, plan headings 1005, app scripts 28, boot scripts 37, script files 264.
 
 ## Frontend functions (7926)
 
@@ -22994,25 +22994,25 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 |---|---|
 | `Frame` | src/tessellate/core/overlay/sprites.py:104 |
 | `SpriteSet` | src/tessellate/core/overlay/sprites.py:184 |
-| `_draw_fx` | src/tessellate/core/overlay/sprites.py:855 |
+| `_draw_fx` | src/tessellate/core/overlay/sprites.py:861 |
 | `_drawn_box` | src/tessellate/core/overlay/sprites.py:173 |
-| `_feather_mask` | src/tessellate/core/overlay/sprites.py:786 |
-| `_glint` | src/tessellate/core/overlay/sprites.py:745 |
-| `_glint_tables` | src/tessellate/core/overlay/sprites.py:734 |
+| `_feather_mask` | src/tessellate/core/overlay/sprites.py:792 |
+| `_glint` | src/tessellate/core/overlay/sprites.py:751 |
+| `_glint_tables` | src/tessellate/core/overlay/sprites.py:740 |
 | `_smooth` | src/tessellate/core/overlay/sprites.py:703 |
-| `_star` | src/tessellate/core/overlay/sprites.py:849 |
-| `_tail_shift` | src/tessellate/core/overlay/sprites.py:803 |
+| `_star` | src/tessellate/core/overlay/sprites.py:855 |
+| `_tail_shift` | src/tessellate/core/overlay/sprites.py:809 |
 | `captured_root` | src/tessellate/core/overlay/sprites.py:138 |
 | `clear_faint_alpha` | src/tessellate/core/overlay/sprites.py:162 |
 | `clipped` | src/tessellate/core/overlay/sprites.py:119 |
-| `effect` | src/tessellate/core/overlay/sprites.py:894 |
+| `effect` | src/tessellate/core/overlay/sprites.py:900 |
 | `flow_offsets` | src/tessellate/core/overlay/sprites.py:708 |
 | `frames_dir` | src/tessellate/core/overlay/sprites.py:146 |
-| `fx_margin` | src/tessellate/core/overlay/sprites.py:842 |
+| `fx_margin` | src/tessellate/core/overlay/sprites.py:848 |
 | `look_for` | src/tessellate/core/overlay/sprites.py:153 |
-| `mix` | src/tessellate/core/overlay/sprites.py:823 |
+| `mix` | src/tessellate/core/overlay/sprites.py:829 |
 | `premultiplied_bgra` | src/tessellate/core/overlay/sprites.py:179 |
-| `tail_source` | src/tessellate/core/overlay/sprites.py:781 |
+| `tail_source` | src/tessellate/core/overlay/sprites.py:787 |
 
 ### src/tessellate/core/overlay/travel.py (16)
 
@@ -24811,7 +24811,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (19027)
+## Tests (19030)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -26302,6 +26302,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_overlay_alive_1670.py | 12 |
 | tests/test_overlay_bob_1670.py | 3 |
 | tests/test_overlay_catalogue_1108.py | 9 |
+| tests/test_overlay_clip_1699.py | 1 |
 | tests/test_overlay_come_1683.py | 5 |
 | tests/test_overlay_deskframes_1696.py | 3 |
 | tests/test_overlay_dest_1683.py | 10 |
@@ -26313,6 +26314,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_overlay_float_drift_1692.py | 2 |
 | tests/test_overlay_hang.py | 12 |
 | tests/test_overlay_hang_end_1683.py | 5 |
+| tests/test_overlay_hang_gone_1699.py | 2 |
 | tests/test_overlay_hang_rise_1696.py | 2 |
 | tests/test_overlay_hang_spots_1683.py | 4 |
 | tests/test_overlay_hang_throw_1670.py | 3 |
