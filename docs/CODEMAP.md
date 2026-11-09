@@ -1,6 +1,6 @@
 # Code map
 
-Generated 2026-11-08 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
+Generated 2026-11-09 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
 Counts: frontend functions 7917, frontend ids 2652, CSS sections 522, backend routes 649, backend modules 9217, test files 2257, tests 18961, plan headings 1005, app scripts 28, boot scripts 37, script files 263.
 
@@ -16194,8 +16194,8 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `_act_topic` | src/tessellate/ai/help_topics_more.py:3488 |
-| `_slash_commands_topic` | src/tessellate/ai/help_topics_more.py:3620 |
+| `_act_topic` | src/tessellate/ai/help_topics_more.py:3486 |
+| `_slash_commands_topic` | src/tessellate/ai/help_topics_more.py:3618 |
 
 ### src/tessellate/ai/help_words.py (2)
 
