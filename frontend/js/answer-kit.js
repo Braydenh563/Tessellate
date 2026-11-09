@@ -2249,7 +2249,12 @@ function sourceLines(content) {
 //: `grounded`: a composed answer's own note ids. The search hands the composer
 //: every hit, but the answer quotes one or two; "Sources: 4 notes" under "your
 //: only note" contradicted it (dog3-1026 row 10), so only those count.
-function chatSourcesFrom({ meta, toolEvents, touched, grounded, sentences }) {
+//: `composed`: the same set, derived here from `sentences`, so the live turn
+//: and a reopened one (saved `by.composed`) count the same notes (INBOX 1706).
+function chatSourcesFrom({ meta, toolEvents, touched, grounded, sentences, composed }) {
+  if (composed && !grounded) {
+    grounded = new Set((sentences || []).filter((row) => row.kind !== "document").map((row) => row.note_id).filter(Boolean));
+  }
   const seen = new Set();
   const sources = [];
   const add = (source) => {
@@ -2916,7 +2921,7 @@ function agentRunTool(run, node) {
       if (!button) {
         button = document.createElement("button");
         button.type = "button";
-        button.className = "chip chip-interactive answer-foot-chip";
+        button.className = "ghost quiet answer-foot-chip";
         button.dataset.foot = spec.key;
         button.addEventListener("click", () => answerFootToggle(scope, spec.key));
       }

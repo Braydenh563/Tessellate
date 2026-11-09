@@ -57,6 +57,7 @@ from tessellate.ai import (
 from tessellate.ai.answer_trim import trim_assistant_padding
 from tessellate.ai.grounding import (
     ground_answer_sentences,
+    composed_support,
     support as grounding_support,
 )
 from tessellate.ai.ollama_client import OllamaError
@@ -789,14 +790,8 @@ def _web_answer(req: _StreamRequest, question: str) -> tuple[dict, list[dict]] |
 
 
 def _composed_support(result: dict) -> dict:
-    """The support of an answer no model wrote (`by_model: False`): every
-    sentence of it is quoted or the app's own joining words, so the notice
-    says something only when most of what it quotes is how the app read a
-    picture (INBOX 787: "Only 0 of 2 sentences here are quoted" under an
-    answer that had nothing else to say)."""
-    rows = result.get("grounding") or []
-    pictures = sum(1 for row in rows if row.get("said") == "picture")
-    return {**result["support"], "by_model": False, "low": pictures * 2 > len(rows) > 0}
+    """The support of an answer no model wrote (`grounding.composed_support`)."""
+    return composed_support(result["support"], result.get("grounding") or [])
 
 
 def _web_events(result: dict, sources: list[dict]) -> Iterator[dict]:

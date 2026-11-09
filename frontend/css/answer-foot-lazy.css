@@ -33,9 +33,21 @@
   flex: none;
 }
 
+/* **The answer's own controls are quiet text buttons** (`button.ghost.quiet`,
+   DESIGN.md), not the filled pills Ask next's suggestions are (INBOX 1706, the
+   owner: "no visual difference to the next options"). Measured at 1920 dark
+   before: both were rgba(120,168,255,.16) with no edge. The pressed one takes
+   the ghost tint and the ink, so it reads as open without a second fill. */
+.answer-foot-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-1) var(--space-2);
+  font-size: var(--text-sm);
+}
 .answer-foot-chip[aria-expanded="true"] {
-  background: var(--accent-surface);
-  color: var(--on-accent);
+  background: var(--ghost-btn-bg);
+  color: var(--ink);
 }
 
 /* The chip is the part's summary now, so the part's own is not drawn twice. */
@@ -119,14 +131,19 @@
    down while its part is open. Ask next's chips ask a question and carry none. */
 .answer-foot-chip::after {
   content: "\e136"; /* ph-caret-down, as `.fold-summary::after` */
+  /* In the flow at the label's end: the `.chip-interactive::after` hit-target
+     overhang this replaced was absolute, so the caret sat on the icon at the
+     button's top edge (INBOX 1706). */
+  position: static;
+  inset: auto;
   display: inline-block;
   flex: none;
   margin-inline-start: var(--space-1);
   font-family: Phosphor, sans-serif;
   font-style: normal;
   font-weight: normal;
+  font-size: var(--text-base);
   line-height: 1;
-  opacity: 0.7;
   transform: rotate(-90deg);
   transition: transform var(--ui-base) var(--ease-out);
 }
