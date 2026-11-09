@@ -32,6 +32,14 @@ _PROPERTIES: dict[str, tuple[re.Pattern, re.Pattern, str]] = {
         re.compile(r"\b(?:address|street|road|avenue|lane|close|drive|postcode|[A-Z]{1,2}\d[A-Z\d]? ?\d[A-Z]{2})\b", re.I), "address"),
     "email": (re.compile(r"\be-?mail\b(?!\s+(?:me|them|him|her|the)\b)", re.I), re.compile(r"@|\be-?mail\b", re.I), "email address"),
 }
+#: The things that carry a number a note may or may not give ("what is the table number": a dinner
+#: booking with no table in it is no answer, R3-2 residue). Each is a property of its own word.
+NUMBERED = ("table", "room", "seat", "booking", "reservation", "confirmation", "reference", "flight", "order", "account", "policy",
+            "ticket", "locker", "gate", "platform", "house", "flat", "apartment", "membership", "licence", "license", "plate", "case", "invoice", "tracking")
+for _word in NUMBERED:
+    _PROPERTIES[_word] = (
+        re.compile(rf"\b{_word}\s+(?:number|no\.?|num|#)(?!\w)", re.I),
+        re.compile(rf"\b{_word}s?\s*(?:number|no\.?|num|ref(?:erence)?|code|id)?\s*[:#-]?\s*(?=[A-Za-z-]*\d)[\w-]+", re.I), f"{_word} number")
 #: A "number" that is not a phone number: a count, a reference, a place in a list.
 _NOT_PHONE = re.compile(
     r"\b(?:how many|what number|which number|serial|order|house|flat|room|page|reference|booking|account|policy|ticket|"
@@ -102,3 +110,12 @@ def held(key: str, text: str) -> bool:
 
 def noun(key: str) -> str:
     return _PROPERTIES[key][2]
+
+
+def none_given(question: str, notes: list[dict]) -> str:
+    """"None of your notes give a table number." for a numbered thing asked by its noun when no
+    note in `notes` says one; "" when the question is no such ask or some note does."""
+    key = asked(question)
+    if key not in NUMBERED or any(held(key, str(n.get("content") or "")) for n in notes or []):
+        return ""
+    return f"None of your notes give a {noun(key)}."

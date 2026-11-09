@@ -382,6 +382,9 @@ _GENERAL = re.compile(r"^(?:what|who|where|when|why|how|which)(?:'s| is| are| wa
 #: are looked in and the thing named), not a question about the world.
 _TOPIC_NUDGE = re.compile(r"^(?:(?:and|so|hmm+|um+|well|ok(?:ay)?) )*(?:what|how) about\b")
 _PERSONAL = re.compile(r"\b(?:i|i'm|im|i've|me|my|mine|myself|we|our|us)\b")
+#: "the table number", "my booking number": a number only the person's own notes could hold, so a
+#: miss is theirs to hear ("None of your notes give ..."), not "general knowledge".
+_OWN_NUMBER = re.compile(r"\b(?:table|room|seat|booking|reservation|confirmation|reference|flight|ticket|locker|order|account|policy|membership|invoice|tracking)\s+(?:number|no\.?)(?!\w)")
 #: "Who is Sam": a bare name is someone the notes may name, not the world's
 #: (the engine probe's P1 says "I found nothing about “Sam”").
 _WHO_NAME = re.compile(r"^who(?:'s| is| was) (?!the |a |an )\w+(?: \w+)?[?.]*$")
@@ -393,7 +396,7 @@ def general(question: str) -> bool:
     q = _clean(question)
     if _WHO_NAME.match(q) or _TOPIC_NUDGE.match(q):
         return False
-    return bool(_GENERAL.match(q)) and not _PERSONAL.search(q) and not re.search(r"\b(?:you|your|note|notes)\b", q)
+    return bool(_GENERAL.match(q)) and not _PERSONAL.search(q) and not _OWN_NUMBER.search(q) and not re.search(r"\b(?:you|your|note|notes)\b", q)
 
 
 _OWN_NOTES = re.compile(

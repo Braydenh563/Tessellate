@@ -4669,12 +4669,22 @@ def _as_who(kind: str, asked: str, names: set[str], views: list) -> tuple[str, s
     return kind, asked
 
 
+def _no_number(out: _Out, question: str, views: list) -> bool:
+    """"what is the table number" when no note gives one: said so, not answered with a
+    note that only mentions the dinner or the booking (R3-2 residue)."""
+    key = composer_property.asked(question)
+    if key not in composer_property.NUMBERED or any(composer_property.held(key, x.text) for v in views for x in v.sentences):
+        return False
+    out.lines.append(f"None of your notes give a {composer_property.noun(key)}.")
+    return True
+
+
 def _early(out: _Out, kind: str, asked: str, question: str, views: list, today: date):  # noqa: ANN202
     """The answers that are one notebook-wide lookup (what an abbreviation
     stands for, who someone is, a comparison, what a category holds): the
     result, None when the ask fits but nothing answers it, or `_ORDINARY`."""
     names = _NAMES.get()
-    if _looked_up(out, asked, question, views, today) or _asked_which(out, asked, views):
+    if _no_number(out, question, views) or _looked_up(out, asked, question, views, today) or _asked_which(out, asked, views):
         return _result(out, "fact", asked)
     kind, asked = _which_names(kind, asked)
     kind, asked = _as_who(kind, asked, names, views)

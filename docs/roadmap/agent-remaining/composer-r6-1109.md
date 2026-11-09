@@ -8,3 +8,5 @@
 - next: E10 per-subject split, composer-r5-1108.md:30.
 - done: E10 per-subject split (composer_tables._EACH_LEAD/_BARE_NAMES read as compare sides). Not split: a bare lower-case pair ("tom and sara"), which stays one pooled search.
 - next: table number (composer-r5-1108.md:34).
+- done: numbered things (composer_property.NUMBERED, composer._no_numbered, digest._no_number, personal._OWN_NUMBER).
+- next: R3-20, R3-22, R3-33, D22 probe, then D19, R3-36, D25.
