@@ -147,6 +147,8 @@ class OverlayRunner:
         self._drops = 0
         #: The last runner's `Engine.carry`, set by the coordinator before `start` on a restart: taken up in `_ready`.
         self.carried: dict[str, Any] | None = None
+        self.enter = False  # set by the coordinator for the first show of a session
+        self.entrance = ""  # the first show's arrival, for the log and the tests
         self.scale = sizing.clamp(scale)
         self._goal: float | None = None
         self._sizing: dict[str, Any] | None = None
@@ -683,6 +685,8 @@ class OverlayRunner:
         )
         self.engine.set_metrics(spr.metrics(self._fdpi()))
         self.engine.take(self.carried, self.clock())
+        if self.enter:
+            self.entrance = self.engine.enter_scene(self.clock())  # a first show arrives (INBOX 1718 a); a restart carries its place
         out = self.engine.update(self.clock())
         self._apply(out)
         logger.info(

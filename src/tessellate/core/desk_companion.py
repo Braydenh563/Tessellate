@@ -926,6 +926,7 @@ class DeskApi:
 
 class DeskCompanion:
     """The second window and when it is shown (see the module's docstring)."""
+    _entered = False  # the first show has arrived (INBOX 1718 a)
 
     def __init__(
         self,
@@ -1353,7 +1354,10 @@ class DeskCompanion:
                 runner.on_place = self._overlay_place
             if hasattr(runner, "carried"):  # a restart: the new figure takes up the home and the menu's trip
                 runner.carried = carried
+            if hasattr(runner, "enter"):  # the first show arrives (INBOX 1718 a); a restart does not replay it
+                runner.enter = not self._entered
             started = bool(runner.start())
+            self._entered = self._entered or started
             if not started:
                 self.overlay_why = "the see-through window did not start in time"
         except Exception as exc:  # noqa: BLE001 - any failure means the card window instead
@@ -1399,6 +1403,9 @@ class DeskCompanion:
             "still": still, "reason": str(reason or ""), "roam": bool(_pref(ROAM_PREF, True)), "stay": bool(_pref(STAY_PREF, False)),
             "lively": _lively_pref(), "size": self.size_pref, "asleep": getattr(engine, "state", "") == "sleep", "figure": runner is not None and hasattr(runner, "command"),
         }
+        doing = getattr(engine, "doing", None)
+        if callable(doing) and (said := doing()):
+            out["doing"] = said  # the menu's first line while a prop or spell is in hand (INBOX 1718 b)
         if note:
             out["note"] = note
         return out

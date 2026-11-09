@@ -235,6 +235,7 @@
     if (kind === "context") {
       const notes = [];
       if (!overlay && motion?.note) notes.push(note(motion.note));
+      if (overlay && motion?.doing) notes.push(note(`Right now: ${motion.doing}.`));
       if (motion?.still) notes.push(note(`Standing still: ${STILL_WHY[motion.reason] || "movement is off"}.`));
       const look = [];
       if (overlay) look.push(item("Companion", "user-switch", openCompanion));
