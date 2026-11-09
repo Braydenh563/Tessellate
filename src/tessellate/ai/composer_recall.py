@@ -47,6 +47,25 @@ _BROAD = re.compile(
 )
 
 
+_WINDOW_NOUN = re.compile(r"\b(weekend|week|month|year|fortnight)\b", re.I)
+
+
+def window_as_topic(p: Plan, views: list[NoteView]) -> bool:
+    """Whether the window's noun is a note's title word ("plans for the weekend"
+    with a note called "Weekend plans", R3-20). The title is then the subject:
+    the window is dropped and the noun searched as a word, so no note written
+    in the window is not "nothing". Ahead, not behind ("last week" with a
+    "Weekly review" is a recall), and the word itself, not its stem."""
+    noun = _WINDOW_NOUN.search(p.window_phrase or "")
+    if not (noun and p.window and p.terms and p.kind != "recall") or re.match(r"(?:the )?last\b", p.window_phrase, re.I):
+        return False
+    word = re.compile(rf"\b{noun.group(1)}\b", re.I)
+    if not any(v.titled and word.search(v.title or "") for v in views) or any(_in_window(v, p.window) for v in views):
+        return False
+    p.window, p.terms = None, list(dict.fromkeys([*p.terms, noun.group(1).lower()]))
+    return True
+
+
 def _recall_lead(out: _Answer, p: Plan, inside: list[NoteView], said: str, wrote: bool) -> None:
     """The count line. Notes that say the day were not all written on it: they
     are "dated", never "you wrote" (R3-8)."""

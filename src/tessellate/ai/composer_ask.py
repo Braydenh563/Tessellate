@@ -17,7 +17,7 @@ import unicodedata
 from tessellate.core.lazyre import lazy_compile
 from datetime import date, datetime
 
-from tessellate.ai import composer_sides, composer_tables, question_noise, recognise as rec, variants
+from tessellate.ai import common_words, composer_sides, composer_tables, question_noise, recognise as rec, variants
 from tessellate.search import query as query_understanding
 
 
@@ -691,6 +691,23 @@ def compare_sides(question: str) -> tuple[str, ...] | None:
         sides = [side for side in sides if subject_terms(side)]
         if len(sides) >= composer_sides.MIN_SIDES:
             return tuple(sides[: composer_sides.MAX_SIDES])
+    return _lower_pair(text)
+
+
+#: The words of the notes a digest answer reads, for `_lower_pair` only: `_KNOWN` also steers the speller.
+NOTE_WORDS: contextvars.ContextVar[frozenset] = contextvars.ContextVar("composer_note_words", default=frozenset())
+
+
+def _lower_pair(text: str) -> tuple[str, ...] | None:
+    """"tom and sara": two lower-case words the notes hold, neither an everyday
+    one ("salt and pepper" with no notes about them stays one thing)."""
+    pair = composer_tables.LOWER_PAIR.match(text.strip())
+    known = _KNOWN.get() | NOTE_WORDS.get()
+    if not pair or not known:
+        return None
+    sides = (pair.group("a"), pair.group("b"))
+    if all(w.lower() in known and w.lower() not in common_words.WORDS and subject_terms(w) for w in sides):
+        return sides
     return None
 
 

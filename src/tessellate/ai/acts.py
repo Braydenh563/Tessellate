@@ -24,7 +24,7 @@ from datetime import datetime
 
 from sqlalchemy.orm import Session
 
-from tessellate.ai import act_registry, commands, recognise, validate
+from tessellate.ai import act_registry, commands, recognise, task_acts, validate
 from tessellate.ai.act_registry import (
     ACTS,
     CONFIRM_INTENTS,
@@ -48,10 +48,12 @@ __all__ = [
 # --- the four stages ------------------------------------------------------------------
 
 
-def parse(text: str, now: datetime) -> dict | None:
-    """The act `text` says, as `commands.read` gives it, or None."""
+def parse(text: str, now: datetime, history: list[dict] | None = None) -> dict | None:
+    """The act `text` says, as `commands.read` gives it, or None. With the chat's
+    `history`, "tick the first one" names the task the last answer listed first."""
     parsed = commands.read_typed(text, now)
-    return parsed if parsed and parsed.get("intent") in ACTS else None
+    parsed = parsed if parsed and parsed.get("intent") in ACTS else None
+    return task_acts.counted_from(parsed, history) if parsed else None
 
 
 def missing(parsed: dict) -> list[str]:

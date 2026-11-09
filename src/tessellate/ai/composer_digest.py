@@ -45,7 +45,7 @@ from pathlib import Path
 
 from tessellate.ai import composer, composer_doings, composer_done, composer_frame, composer_threads, composer_lists, composer_money, composer_slots, composer_sum, composer_tables, filed_name, glossary, question_noise, realise, verdicts
 from tessellate.ai import composer_answer, composer_brief, composer_nth, composer_oneword, composer_property, composer_small
-from tessellate.ai import composer_ask, factgraph
+from tessellate.ai import composer_ask, composer_clean, factgraph
 from tessellate.ai import composer_read
 from tessellate.ai import composer_select
 from tessellate.ai.composer_lists import clean
@@ -1717,7 +1717,9 @@ def _topic_typed(typed: "re.Match[str] | None") -> str:
         return ""
     #: "for next month" is a time, not a topic (1324).
     #: "my" goes; "the" stays, said as typed: "three notes about the Lisbon trip", not "about Lisbon trip".
-    return re.sub(r"^my\s+", "", recogniser.without_windows(typed.group(1))).strip(" ,")
+    said = re.sub(r"^my\s+", "", recogniser.without_windows(typed.group(1))).strip(" ,")
+    #: Fillers and asides off its end, and the person's "my" said back as "your" ("eating your homework", INBOX 1705).
+    return re.sub(r"\bmy\b", "your", composer_ask._TRAILERS.sub("", said)).strip(" ,")  # noqa: SLF001
 
 
 def _topic_sides(q: str) -> str:
@@ -3433,6 +3435,15 @@ def _overview_opening(out: _Out, question: str, members, facts, today: date, kin
     return moved, _gists(members, facts)
 
 
+def _below_the_floor(group, by_id: dict, question: str) -> bool:  # noqa: ANN001
+    """A loosely related group none of whose notes holds a word of the question is
+    padding, not part of the answer: the Also column has it (INBOX 1705)."""
+    stems = {composer._stem(w) for w in composer.subject_terms(clean(question))}  # noqa: SLF001
+    if group.band != "loose" or group.in_topic or not stems:
+        return False
+    return not any(composer._holds(st, by_id[i].words | by_id[i].title_words | by_id[i].filed_words) for st in stems for i in group.ids)  # noqa: SLF001
+
+
 def _framed(out: _Out, question: str, members, facts, today: date, groups: list) -> None:  # noqa: ANN001
     """An overview said by theme, closest first (INBOX 1310, the owner: "it
     just lists every entry, it has no frame of reference"): each group opens
@@ -3452,6 +3463,8 @@ def _framed(out: _Out, question: str, members, facts, today: date, groups: list)
         out.lines[0] = f"{out.lines[0]} {lead}"
     for n, group in enumerate(groups):
         line = composer_frame.group_line(group, notes, topic, _heading_said, n)
+        if _below_the_floor(group, by_id, question):
+            continue
         shelf = out.lines if budget > 0 else out.more
         shelf.append(line)
         at, from_lines, from_more = len(shelf) - 1, len(out.lines), len(out.more)
@@ -4941,13 +4954,23 @@ def _routed_away(question: str, notes: list[dict], today: date) -> tuple:
 
 
 @_isolated
-def answer(
+def answer(question: str, notes: list[dict], **kwargs) -> dict | None:  # noqa: ANN003
+    """The decision-70 answer to `question` from the route's `notes`, or None
+    when the question is not one this shape answers (a sum, a time, a
+    command, nothing found): the caller then asks `composer.compose`. Read with
+    the notes' words set, as `compose` does: "tom and sara" is two subjects
+    only when the notes hold both words."""
+    owned = composer_ask.NOTE_WORDS.set(composer._note_words(notes))  # noqa: SLF001
+    try:
+        return _answer(question, notes, **kwargs)
+    finally:
+        composer_ask.NOTE_WORDS.reset(owned)
+
+
+def _answer(
     question: str, notes: list[dict], *, today: date | None = None, voice: str = "natural", turn: int = 0,
     insight: str = "one", learned=None, known=None,  # noqa: ANN001
 ) -> dict | None:
-    """The decision-70 answer to `question` from the route's `notes`, or None
-    when the question is not one this shape answers (a sum, a time, a
-    command, nothing found): the caller then asks `composer.compose`."""
     today = today or composer.user_today()
     reply, question, asked = _routed_away(question, notes, today)
     if reply is not _ORDINARY:
@@ -5536,9 +5559,16 @@ def _polish_out(out: _Out, kind: str) -> None:
     pool = [t for v in _VIEWS.get() for t in (str(v.note.get("content") or ""), *map(str, (v.note.get("link_reasons") or {}).values()))]
     for lines in (out.lines, out.more, out.closing, out.next):
         lines[:] = [_plain_marks(composer_threads.own_words(polish(line, keep), pool)) for line in lines]
+    _clean_out(out)
     if out.offer and out.offer.get("label"):
         out.offer = {**out.offer, "label": polish(str(out.offer["label"]), keep)}
     _rows_as_polished(out)
+
+
+def _clean_out(out: _Out) -> None:
+    """What an answer never says (`composer_clean`, INBOX 1705): a line with an unfit quote goes."""
+    for lines in (out.lines, out.more, out.closing):
+        lines[:] = [kept for kept in map(composer_clean.line, lines) if kept]
 
 
 def _rows_as_polished(out: _Out) -> None:
@@ -5701,7 +5731,7 @@ def _result(out: _Out, kind: str, question: str) -> dict:
     _polish_out(out, kind)
     #: One paragraph a line: a single newline inside a paragraph is a space
     #: to every markdown reader, so the labelled lines ran together.
-    paragraphs = list(out.lines) + out.more + out.closing[: 2 + len(out.insights)]
+    paragraphs = composer_clean.paragraphs(list(out.lines) + out.more + out.closing[: 2 + len(out.insights)])
     if out.offer:
         paragraphs.append(out.offer["label"])
     #: A full-width stop or closing bracket already ends the quoted sentence,

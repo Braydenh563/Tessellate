@@ -97,7 +97,10 @@ def read_add(text: str, reminder) -> dict | None:  # noqa: ANN001
     if not words:
         return None
     found = reminder(f"remind me to {words} {tail}".strip())
-    return {**found, "task": True, "asked": text} if found else None
+    if not found:
+        return None
+    #: "to my todo" names a list, so a task without a time is a line on it (R3-33).
+    return {**found, "task": True, "asked": text, **({"on_list": words} if _ON_LIST.search(text) and not tail else {})}
 
 
 def _complete_rest(text: str) -> str | None:
@@ -504,7 +507,8 @@ def _each_steps(items: list[dict], reminder_step, rewrite) -> list[dict]:  # noq
 def _plan_each(session: Session, parsed: dict, card, title, head: str, tail: str, reminder_step, rewrite) -> dict:  # noqa: ANN001
     items, left, said = pick_each(session, parsed, title)
     if not items:
-        return {"line": said}
+        #: "the first one" is still an ordinal when no list was shown to count from.
+        return {"line": NO_LIST if ordinal_of(parsed.get("about")) else said}
     label = _each_label(head, tail, items)
     return {"line": f"{label}.", "card": card(label, _each_steps(items, reminder_step, rewrite), left), "run": True}
 
@@ -609,3 +613,83 @@ def undo_step(name: str, args: dict) -> dict | None:
     return None
 
 
+
+
+#: A note a "todo" is added to: its title, as a person names the list.
+_TODO_TITLE = re.compile(r"^(?:my |the )?(?:to-?do|to do|tasks?|check-?list)(?: list)?s?$", re.IGNORECASE)
+
+
+def todo_note(session: Session):  # noqa: ANN201
+    """The newest note called todo, to-do, tasks or checklist, or None."""
+    from tessellate.core.database import Entry
+
+    rows = session.scalars(
+        select(Entry).where(Entry.is_deleted.is_(False), Entry.deleted_at.is_(None), Entry.is_private.is_(False)).order_by(Entry.id.desc()).limit(500)
+    ).all()
+    return next((e for e in rows if _TODO_TITLE.match(_ARTICLE.sub("", (e.content or "").strip().split("\n", 1)[0].lstrip("# ").strip()).strip())), None)
+
+
+def plan_task_line(session: Session, parsed: dict, card, title, confirm) -> dict:  # noqa: ANN001
+    """"add buy stamps to my todo": a checklist line on the note called todo,
+    run at once with Undo; no such note is offered, never a reminder time asked
+    (R3-33). `card` is `commands._card`, `confirm` its Confirm line."""
+    from tessellate.ai import act_steps
+
+    item = _unquote(str(parsed["on_list"]))
+    item = item[:1].upper() + item[1:]
+    note = todo_note(session)
+    if note is None:
+        label = f"Make a note “Todo” with “{item}” on it"
+        return {"line": f"You have no todo note yet. {confirm(label)} Or say when, and I will set a reminder instead.",
+                "card": card(label, [{"name": "create_note", "arguments": {"content": f"# Todo\n\n- [ ] {item}"}}])}
+    name = title(note)
+    if any(_stems(m.group("item")) == _stems(item) for m in _BOX.finditer(note.content or "")):
+        return {"line": f"“{item}” is already open on your {name} note."}
+    body = (note.content or "").rstrip()
+    last = next((x for x in reversed(body.split("\n")) if x.strip()), "")
+    content = act_steps.appended(body, item) if re.match(r"\s*[-*+]\s+\[[ xX]\]", last) else f"{body}\n\n- [ ] {item}"
+    label = f"Add “{item}” to your {name} note"
+    return {"line": f"{label}.", "card": card(label, [{"name": "edit_note", "arguments": {"note_id": note.id, "content": content}}], items=[name]), "run": True}
+
+
+_ORDINAL_WORDS = {"first": 1, "second": 2, "third": 3, "fourth": 4, "fifth": 5, "sixth": 6, "seventh": 7, "eighth": 8, "ninth": 9, "tenth": 10, "last": -1}
+_ORDINAL_NAME = re.compile(
+    rf"^(?:the |number |no\.? |#)*(?P<nth>{'|'.join(_ORDINAL_WORDS)}|\d{{1,2}}(?:st|nd|rd|th)?)(?: (?:one|item|task|thing|line))?$", re.IGNORECASE
+)
+_LIST_LINE = re.compile(r"^\s*(?:[-*+]|\d+[.)])\s+(?:\[[ xX]\]\s+)?(?P<item>\S.*?)\s*$", re.MULTILINE)
+
+
+NO_LIST = "I do not have a list in front of me to count from. Name the task, like: tick buy stamps."
+
+
+def ordinal_of(about: str) -> int | None:
+    """1-based position ("the first one", "number 2"), -1 for the last, or None
+    when the name is a task's own words."""
+    found = _ORDINAL_NAME.match(" ".join(str(about or "").split()))
+    if not found:
+        return None
+    word = found.group("nth").lower()
+    return _ORDINAL_WORDS.get(word) or int(re.sub(r"\D", "", word))
+
+
+def counted_from(parsed: dict, history: list[dict] | None) -> dict:
+    """`parsed` with an ordinal task ("the first one") named by the task at that
+    place in the list the last answer showed; left as it is when there is none."""
+    place = ordinal_of(parsed.get("about")) if parsed.get("intent") in ("complete", "uncomplete", "cancel") else None
+    shown = item_in(place, str((history or [{}])[-1].get("answer") or "")) if place else None
+    return {**parsed, "about": shown} if shown else parsed
+
+
+def item_in(position: int, answer: str) -> str | None:
+    """The task at `position` in the list the last answer showed, or None when
+    that answer showed no list that long (R3-33: "tick the first one")."""
+    items = []
+    for line in _LIST_LINE.finditer(answer or ""):
+        text = re.sub(r"\[([^\]]+)\]\([^)]*\)", r"\1", line.group("item"))
+        text = re.sub(r"[*_`]+|\s*\[[^\]]*\]\s*$", "", text)
+        text = re.split(r"\s+\(|:\s", text, maxsplit=1)[0].strip(" .;")
+        if text:
+            items.append(text)
+    if not items or abs(position) > len(items) or position == 0:
+        return None
+    return items[position - 1] if position > 0 else items[-1]

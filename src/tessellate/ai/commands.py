@@ -491,15 +491,16 @@ _BIN_WORDS = {"bin", "the bin", "trash", "the trash", "recycle bin", "the recycl
 
 
 #: The daily note said as a place: the starter acts' append, never a category named so.
-_DAILY_NOTE = re.compile(r"^(?:(?:today'?s|the|my|the day'?s) daily|today'?s|the day'?s) (?:note|journal)$")
+_DAILY_NOTE = re.compile(r"^(?:(?:today'?s|the|my|the day'?s) daily|today'?s|the day'?s) (?:note|journal)$|^my (?:journal|diary)$")
 
 
 def _move_category(category: str) -> str:
     """The category a move names, cleaned, or "" when it names none (the bin,
     the daily note, a sentence)."""
+    said = category.strip().lower()
     category = _drop_article(category.strip())
     low_cat = category.lower()
-    if _DAILY_NOTE.match(low_cat):
+    if _DAILY_NOTE.match(low_cat) or _DAILY_NOTE.match(said):
         return ""  # "put it in today's note" appends to the daily note (starter acts), it is no category
     for tail in (" category", " folder"):
         if low_cat.endswith(tail):
@@ -997,6 +998,13 @@ def _append_parts(verb: str, body: str) -> tuple[str, str] | None:
     return (split[0], split[1]) if split else None
 
 
+def _starter_place(found: dict | None, target: str) -> bool:
+    """The daily note, and "my journal" (a note called that, else today's): the
+    composer's own (starter acts), not an append to a note found by name."""
+    about = str((found or {}).get("about", "")).lower()
+    return bool(re.fullmatch(r"(?:my )?(?:journal|diary)", target.strip().lower()) or about.startswith(("today", "yesterday", "tomorrow", "daily")))
+
+
 def _append(text: str) -> dict | None:
     low = text.lower()
     verb, _, body = text.partition(" ")
@@ -1011,8 +1019,8 @@ def _append(text: str) -> dict | None:
     #: list-like name is a title, though it says no "note".
     named = target.lower().startswith(("my ", "our ")) or target.lower().split(" ")[-1] in _LISTISH
     found = _one_target(target.strip(), bare=named)
-    if found and str(found.get("about", "")).lower().startswith(("today", "yesterday", "tomorrow", "daily")):
-        return None  # the daily note is the composer's (starter acts)
+    if _starter_place(found, target):
+        return None
     if needs_list and not (found and (named or target.lower().rstrip().endswith(("note", "entry")))):
         return None
     words = words.strip(" '\"“”")
@@ -1399,6 +1407,9 @@ def _reminder_note(session: Session, said: str, note_ids: list[int] | None):  # 
 def _task_into_note(session: Session, parsed: dict, note_ids: list[int] | None) -> dict | None:
     """The plan that appends a task to a note called that ("add milk to my
     to-do list"), or None when no note is."""
+    if parsed.get("on_list") and not parsed.get("time_given"):
+        #: "add buy stamps to my todo": a line on the note called that, or one offered (R3-33).
+        return task_acts.plan_task_line(session, parsed, _card, lambda note: note_title(note.content, size=48), _confirm)
     #: "add milk to my to-do list" when a note is called that: the note
     #: gets the line, as before tasks were acts (E10).
     #: `_fold` reads "to-do" as "to do"; a title keeps its hyphen.
