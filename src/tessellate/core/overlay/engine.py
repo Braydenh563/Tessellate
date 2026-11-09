@@ -1416,6 +1416,15 @@ class Engine:
         swell = (1.0 - math.cos(2 * math.pi * at / breath)) / 2.0
         return bh.quantise(c.sx, c.sy * (1.0 + depth * swell), c.lean, c.drag + self._rest_tail(at, life, scale), Q_BREATH)
 
+    def _life_cell(self, at: float, scale: float) -> tuple[int, int, int, int]:
+        """`_life_pose`'s grid cell (equal cells are equal poses): what a look-ahead compares."""
+        life = REST_LIFE.get(self.state)
+        c = self.cur
+        if life is None or self.reduced:
+            return bh.cell(c.sx, c.sy, c.lean, c.drag)
+        swell = (1.0 - math.cos(2 * math.pi * at / life[0])) / 2.0
+        return bh.cell(c.sx, c.sy * (1.0 + life[1] * swell), c.lean, c.drag + self._rest_tail(at, life, scale), Q_BREATH)
+
     def _rest_tail(self, at: float, life: tuple[float, float, float, float], scale: float | None = None) -> float:
         """The tail's lag, px: a slow sway whose period drifts, a faster one over it, and the body's own breath a
         beat late, so a sit never repeats and the tail follows the body rather than keeping time with it."""
@@ -1430,12 +1439,12 @@ class Engine:
     def _next_life_change(self, now: float) -> float:
         """The next time a sit's or a sleep's breath or sway crosses a step of the grid, looking ahead
         at most `POLL_QUIET_MS` and never sooner than a redraw's pace (12 a second)."""
-        base = self._life_pose(now)
-        t, pace = now, REST_DRAW_MS / 1000.0
         scale = self._scale()  # the figure does not move while it looks ahead
+        base = self._life_cell(now, scale)
+        t, pace = now, REST_DRAW_MS / 1000.0
         while t < now + POLL_QUIET_MS / 1000.0:
             t += pace
-            if self._life_pose(t, scale) != base:
+            if self._life_cell(t, scale) != base:
                 return t
         return now + POLL_QUIET_MS / 1000.0
 
@@ -4491,17 +4500,17 @@ class Engine:
 
     def _next_pose_change(self, now: float, horizon: float = 1.0) -> float:
         """The next time the body pose crosses a step of the cache grid, looking ahead."""
+        if self.state == "act" and not self.reduced and self.turn_to == 0:
+            return self._next_act_pose_change(now, horizon)
         base = bh.quantised(self.cur)
         t = now
-        if self.state == "act" and not self.reduced and self.turn_to == 0:
-            return self._next_act_pose_change(now, horizon, base)
         while t < now + horizon:
             t += POSE_LOOK_STEP  # a display frame: the 50 ms look-ahead stepped an act's pose at 20 a second (INBOX 1683)
             if bh.quantised(self._target_pose(t)) != base:
                 return t
         return now + horizon
 
-    def _next_act_pose_change(self, now: float, horizon: float, base: bh.Pose | None) -> float:
+    def _next_act_pose_change(self, now: float, horizon: float) -> float:
         """`_next_pose_change` for an act with no turn: `_target_pose`'s act branch with everything that does not change
         over the look-ahead read once (the same arithmetic in the same order, so the same poses)."""
         keys = bh.ACTIVITIES[self.act or "breathe"].keys
@@ -4510,6 +4519,7 @@ class Engine:
         side = 1 if self.facing > 0 else -1
         drag = self.tail.tip
         shift_at, flip = self.shift_at, 1 if self.mind.shifts % 2 else -1
+        base = bh.cell(*self.cur)
         t = now
         while t < now + horizon:
             t += POSE_LOOK_STEP
@@ -4519,7 +4529,7 @@ class Engine:
             if 0.0 <= u < 1.0:
                 lean += SHIFT_LEAN * math.sin(math.pi * u) * flip
                 sy -= 0.02 * math.sin(math.pi * u)
-            if bh.quantise(sx, sy, lean, drag) != base:
+            if bh.cell(sx, sy, lean, drag) != base:
                 return t
         return now + horizon
 

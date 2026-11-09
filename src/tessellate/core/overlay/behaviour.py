@@ -100,6 +100,12 @@ def quantise(sx: float, sy: float, lean: float, drag: float, q_sy: float = Q_SCA
     return Pose(sx, sy, lean, drag)
 
 
+def cell(sx: float, sy: float, lean: float, drag: float, q_sy: float = Q_SCALE) -> tuple[int, int, int, int]:
+    """The grid cell of a pose: the whole steps `quantise` multiplies back. Two poses are the same picture exactly when
+    their cells are equal (the steps are far wider than the rounding after them), so a look-ahead compares cells."""
+    return round(sx / Q_SCALE), round(sy / q_sy), round(lean / Q_LEAN), round(drag / Q_DRAG)
+
+
 def quantised(p: Pose, q_sy: float = Q_SCALE) -> Pose | None:
     """The pose snapped to the cache grid (`q_sy` is the height's step), or None when it is the plain frame."""
     return quantise(p.sx, p.sy, p.lean, p.drag, q_sy)
