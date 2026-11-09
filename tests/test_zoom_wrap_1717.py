@@ -150,3 +150,16 @@ def test_the_document_dock_gives_its_name_up_before_its_tools():
         r"\s*#tab-documents \.doc-dock > \.doc-dock-identity\s*\{\s*flex-basis: 8rem;",
         lazy,
     )
+
+
+def test_code_document_tools_fold_into_the_kebab_by_the_docks_own_width():
+    """200 % (720 wide): the dock is 544px and a code document's tools were 476px of 44px targets.
+    Under 600px of dock the extras hide and their kebab rows (`.doc-phone-only`) show; the targets stay 44px."""
+    lazy = (ROOT / "frontend" / "css" / "library-lazy.css").read_text(encoding="utf-8")
+    lazy = re.sub(r"/\*.*?\*/", "", lazy, flags=re.S)
+    hide = re.search(r"@container docdock \(max-width: 599\.98px\)\s*\{\s*(#tab-documents \.doc-actions > :is\([^)]*\)),\s*#tab-documents \.doc-view-menu\s*\{\s*display: none", lazy)
+    assert hide, "the narrow dock must hide the extras it moved into the kebab"
+    for ident in ("#doc-ai", "#doc-code-snippets-open", "#doc-code-assist-open", "#doc-code-format", "#doc-focus-toggle", ".graph-help-toggle"):
+        assert ident in hide.group(1)
+    assert re.search(r"@container docdock \(min-width: 600px\)\s*\{\s*#tab-documents \.doc-phone-only\s*\{\s*display: none", lazy)
+    assert not re.search(r"@media \(min-width: 600px\)\s*\{\s*#tab-documents \.doc-phone-only", lazy)
