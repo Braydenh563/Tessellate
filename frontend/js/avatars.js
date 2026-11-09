@@ -5392,22 +5392,27 @@ nmb.place = {
   glueEl(spot) {
     return spot.kind === "pinned" ? null : spot.anchor || (spot.edge && !["bar", "hang"].includes(spot.edge.kind) ? spot.edge.el : null);
   },
+  //: Taken once in a stack: a caller that read first (a release, before its writes) keeps its boxes, and
+  //: the placement it calls adds only what is missing (INBOX 1698-lag: the ledges' rects read after the
+  //: release's writes were 76 to 161ms of forced layout at 4x, every drop).
   read(spot) {
-    this.boxes = new Map();
-    this.sizes = new Map();
-    queueMicrotask(() => {
-      this.boxes = this.sizes = null;
-    });
+    if (!this.boxes) {
+      this.boxes = new Map();
+      this.sizes = new Map();
+      queueMicrotask(() => {
+        this.boxes = this.sizes = null;
+      });
+    }
     //: The two ledges the band is cut by (`nameMarkBuddyLedges`).
     for (const id of ["top-bar", "phone-tab-dock", "status-bar"]) {
       const bar = document.getElementById(id);
-      if (bar) this.boxes.set(bar, bar.getBoundingClientRect());
+      if (bar && !this.boxes.has(bar)) this.boxes.set(bar, bar.getBoundingClientRect());
     }
     const el = this.glueEl(spot);
-    if (!el?.isConnected) return;
+    if (!el?.isConnected || this.boxes.has(el)) return;
     this.boxes.set(el, el.getBoundingClientRect());
     const scroller = nameMarkBuddyScroller(el);
-    if (scroller) {
+    if (scroller && !this.boxes.has(scroller)) {
       this.boxes.set(scroller, scroller.getBoundingClientRect());
       this.sizes.set(scroller, { cl: scroller.clientLeft, cw: scroller.clientWidth, st: scroller.scrollTop });
     }
@@ -7478,17 +7483,33 @@ function nameMarkBuddyPerchGone(buddy, tab) {
 //: layout the frame was about to do anyway (the lag log: 94 to 160ms, 62 to
 //: 136 of it forced); one timer on, the layout is clean, if nothing wrote
 //: to the page since (`nmb.afterClean`).
-function queueNameMarkBuddyCheck() {
+//:
+//: **A page still being written is not read** (INBOX 1667, the owner's 44-note log: `avatars.js
+//: TimerHandler:setTimeout 4551ms (forced layout 4445ms)` after a dashboard list opened the notes tab).
+//: `afterClean` gives up after six dirty tries and ran the sweep anyway: the notes tab keeps writing
+//: (the rail, image sizes, observers) for longer than that, so the sweep's first box read laid the whole
+//: page out. Dirty after the tries, it now waits for an idle frame (`later`) and asks again, three times
+//: at most; only a page that never goes quiet is read dirty, as before. `coverDirty` is kept, so the
+//: sweep owed is not lost by waiting.
+function queueNameMarkBuddyCheck(later = 3) {
   if (nmb.checkFrame || !document.getElementById("nm-buddy")) return;
   nmb.checkFrame = 1;
-  nmb.afterClean(() => {
+  const look = () => {
     nmb.checkFrame = 0;
     if (nmb.coverDirty) {
       nmb.coverDirty = false;
       nameMarkBuddyCoverCheck();
     }
     if (!nameMarkBuddyBehindCover()) nameMarkBuddyCheck();
-  });
+  };
+  const wait = () => {
+    nmb.checkFrame = 0;
+    if (later < 1) return look();
+    const again = () => queueNameMarkBuddyCheck(later - 1);
+    if (typeof requestIdleCallback === "function") requestIdleCallback(again, { timeout: 800 });
+    else setTimeout(again, 400);
+  };
+  nmb.afterClean(look, 6, wait);
 }
 
 //: **On its own time** (INBOX 426 m, the owner: "atlas needs to move and
@@ -10666,6 +10687,8 @@ function nameMarkBuddyBuild() {
       const plan = thrown && companionThrowPlan(Math.round(box.left), Math.round(box.top), v[0], v[1], world);
       //: Let go too slowly to fly, it comes down the same way: near, or straight down.
       const landed = !thrown && nameMarkBuddyMeasureOnce(() => nameMarkBuddyLandNear(box.left, box.top, nameMarkBuddyDrop(Math.round(box.left), Math.round(box.top))));
+      //: The ledges and the perch's panel are read here, before the writes below (`nmb.place.read`).
+      if (landed) nmb.place.read(landed);
       buddy.style.translate = "";
       if (flipped) nameMarkBuddyFlip(buddy, false);
       buddy.classList.remove("nm-buddy-dragging");
@@ -10861,12 +10884,14 @@ function nameMarkBuddyBuild() {
   face.addEventListener("pointerdown", unpet);
   //: **Rubbed**: the pointer back and forth over it, not pressing
   //: (`nameMarkBuddyRubbed`); in the large view too.
+  //: The strokes are judged once a frame, not on every move (INBOX 1698-lag, the owner's log: a
+  //: `getBoundingClientRect` of the figure at each hover move, 63 to 283ms at 4x on the first after a
+  //: landing, the page's layout paid inside an input event; measured with the lagrel probe).
   let rub = [];
-  face.addEventListener("pointermove", (event) => {
-    if (drag || event.buttons || event.pointerType === "touch") return;
-    const t = performance.now();
-    rub.push([event.clientX, event.clientY, t]);
-    while (rub.length > 2 && t - rub[0][2] > 1600) rub.shift();
+  let rubJudge = 0;
+  const judgeRub = () => {
+    rubJudge = 0;
+    if (!rub.length || drag) return;
     const box = face.getBoundingClientRect();
     if (nmb.touch.swiped(rub, box)) {
       rub = [];
@@ -10881,6 +10906,13 @@ function nameMarkBuddyBuild() {
       rub = [];
       nameMarkBuddyRubbed(buddy);
     }
+  };
+  face.addEventListener("pointermove", (event) => {
+    if (drag || event.buttons || event.pointerType === "touch") return;
+    const t = performance.now();
+    rub.push([event.clientX, event.clientY, t]);
+    while (rub.length > 2 && t - rub[0][2] > 1600) rub.shift();
+    if (!rubJudge) rubJudge = afterFrames(judgeRub, 1) || 1;
   });
   face.addEventListener("pointerleave", () => {
     rub = [];

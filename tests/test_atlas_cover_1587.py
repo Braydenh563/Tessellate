@@ -120,8 +120,10 @@ def test_a_look_waits_for_a_frame_that_left_the_page_clean() -> None:
     assert "requestAnimationFrame(" not in clean, "the file's one frame helper (the wake-source ratchet)"
     observer = AV[AV.index("const views = new MutationObserver(") :][:400]
     assert "nmb.pageAt = performance.now();" in observer
-    for name in ("queueNameMarkBuddyCheck", "nameMarkBuddyBeat"):
-        assert "nmb.afterClean(() => {" in _fn(AV, name), name
+    # INBOX 1667 (lag-1109): the check's sweep is `look`, still handed to `afterClean`; its dirty branch
+    # waits for an idle frame (`wait`) instead of reading the dirty page, so the call is `afterClean(look, 6, wait)`.
+    assert "nmb.afterClean(look, 6, wait);" in _fn(AV, "queueNameMarkBuddyCheck")
+    assert "nmb.afterClean(() => {" in _fn(AV, "nameMarkBuddyBeat")
     assert "const afterPaint = () => nmb.afterClean(look);" in AV, "the dodge after a press"
 
 
