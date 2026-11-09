@@ -1574,12 +1574,30 @@ body.scroll-top-visible #tab-notes .layout > .tab-main {
   visibility: hidden;
 }
 
+/* One coherent head (INBOX 1713, the owner resizing the popup): the glyph and the title share row one, the category chip
+   sits under the title at its indent, and the tools (restore, close) take row one's height on the right. It was a wrapping
+   flex row, so a long title (flex-basis its full width) wrapped onto its own line and left the glyph alone above it. */
 .graph-popup-ident {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: var(--space-2);
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  column-gap: var(--space-2);
+  row-gap: var(--space-1);
   min-width: 0;
+}
+
+.graph-popup-ident > i:first-child {
+  grid-area: 1 / 1;
+}
+
+.graph-popup-ident > .graph-popup-confidence {
+  grid-area: 1 / 3;
+}
+
+.graph-popup-ident > .chip {
+  grid-area: 2 / 2 / auto / -1;
+  justify-self: start;
+  max-inline-size: 100%;
 }
 
 /* **One line, ellipsised, and the close button never moves.** Reported on
@@ -1595,9 +1613,10 @@ body.scroll-top-visible #tab-notes .layout > .tab-main {
    `.graph-popup-ident`'s own `flex-wrap: wrap` is for: it is the title, not
    the row, that must stay on one line. */
 .graph-popup-ident>strong {
+  grid-area: 1 / 2;
   font-size: var(--text-body);
-  line-height: 1.3;
-  flex: 1 1 auto;
+  /* Row one is as tall as the tools beside it, so the title, the glyph and the buttons share one centre line. */
+  line-height: var(--dialog-head-btn-size);
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1633,6 +1652,7 @@ body.scroll-top-visible #tab-notes .layout > .tab-main {
   min-width: 0;
 }
 
+.graph-popup-head > button.dialog-head-btn,
 .graph-popup-head>#graph-popup-close {
   flex: none;
   align-self: flex-start;
@@ -1732,14 +1752,10 @@ body.scroll-top-visible #tab-notes .layout > .tab-main {
   font-size: var(--text-md);
 }
 
-/* The close button belongs to the same panel and is the same size as the
-   toolbar under it: a 28px close over a row of 36px icons is the four-pixel
-   mismatch DESIGN.md's control-height section is about, and here it is a
-   whole step. */
+/* The close button is the head's own square (--dialog-head-btn-size, like every dialog head) and shares it with the restore
+   button beside it, so the tools and the title are one row (INBOX 1713; it was 36 px tall beside a 32 px restore). */
 #graph-popup-close {
   flex: 0 0 auto;
-  min-height: 2.25rem;
-  height: 2.25rem;
 }
 
 /* Gravity, Spread and Unpin all used to be an inline-flex row inside the
