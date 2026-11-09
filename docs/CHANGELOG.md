@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Chat: tick, untick or cancel several tasks in one sentence ("tick email landlord and call plumber"): one card, each found task changed, two lines on one note in one edit; a name not found is told ("Not done: ...") instead of failing the lot.
 - Chat: untick works with no model (untick or uncheck X, mark X not done or open, reopen X) for a ticked reminder or checklist line, with Undo; "undo that" right after a tick unticks it. Undo of an untick ticks it again.
 - Chat: "put it in today's note" (also add or append, this or that, the daily note or journal) puts the note itself, its text with a link back, in today's note, made when missing; Undo takes it out. It was read as a move with no target.
 - Diagram builder: the shelf's more menu keeps each block's glyph on its own row even if the menu regroups its rows (the glyph rides on the menu item, not on the row's position).

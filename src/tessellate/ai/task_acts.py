@@ -437,39 +437,101 @@ def _match(items: list[dict], about: str, kind: str | None = None, what: str = "
 # --- planning -----------------------------------------------------------------------------------
 
 
-def plan_complete(session: Session, parsed: dict, card, title) -> dict:  # noqa: ANN001
-    """The card that completes the task named, run at once with Undo, or the
-    question that asks which. `card` is `commands._card` and `title` the one reader's (`composer_frame.note_title`), passed in
-    because this module sits below commands."""
+_ON_NOTE_TAIL = re.compile(r" on the .+$")
+_NAME_SPLIT = re.compile(r"\s*(?:,|;|&|\band\b|\bthen\b|\bplus\b|\balso\b)\s*", re.IGNORECASE)
+
+
+def _names_in(about: str) -> list[str]:
+    """The task names a sentence lists ("email landlord and call plumber"), each on
+    the note the whole list names ("... on the packing list")."""
+    whole = " ".join(about.split())
+    split = _ON_NOTE.match(whole)
+    item, note = (split.group("item"), split.group("note")) if split else (whole, "")
+    return [f"{p}{f' on the {note}' if note else ''}" for p in (q.strip() for q in _NAME_SPLIT.split(item)) if p]
+
+
+def pick_each(session: Session, parsed: dict, title) -> tuple[list[dict], list[dict], str]:  # noqa: ANN001
+    """(the tasks named, the names left out as card `skipped` rows, what to say
+    when none was found). A name that is one
+    task's whole name ("salt and pepper") is that one task; otherwise a list
+    ("email landlord and call plumber") is each of them (D10)."""
     item, say = pick(session, parsed, title)
-    if item is None:
-        return {"line": say}
-    label = f"Mark “{item['text']}” done" + ("" if item["kind"] == "reminder" else f" ({item['where']})")
-    if item["kind"] == "reminder":
-        steps = [{"name": "complete_reminder", "arguments": {"reminder_id": item["id"], "done": True}}]
-    else:
-        ticked = item["content"].replace(item["line"], item["line"].replace("[ ]", "[x]", 1), 1)
-        steps = [{"name": "edit_note", "arguments": {"note_id": item["id"], "content": ticked}}]
-    return {"line": f"{label}.", "card": card(label, steps), "run": True}
+    if item is not None:
+        return [item], [], ""
+    names = _names_in(str(parsed.get("about") or ""))
+    if len(names) < 2:
+        return [], [], say
+    found: list[dict] = []
+    unsaid: list[str] = []
+    left: list[dict] = []
+    for name in names:
+        one, why = pick(session, {**parsed, "about": name}, title)
+        if one is None:
+            unsaid.append(why)
+            left.append({"reason": "unfound" if why.startswith("I found no") else "unclear", "name": _ON_NOTE_TAIL.sub("", name)})
+        elif not any(one["kind"] == f["kind"] and one["id"] == f["id"] and one.get("line") == f.get("line") for f in found):
+            found.append(one)
+    return found, left, " ".join(unsaid)
+
+
+def _the_names(items: list[dict]) -> str:
+    named = [f"“{i['text']}”" for i in items]
+    return named[0] if len(named) == 1 else ", ".join(named[:-1]) + " and " + named[-1]
+
+
+def _each_label(head: str, tail: str, items: list[dict]) -> str:
+    where = "" if len(items) > 1 or items[0]["kind"] == "reminder" else f" ({items[0]['where']})"
+    return f"{head} {_the_names(items)}{f' {tail}' if tail else ''}{where}"
+
+
+def _each_steps(items: list[dict], reminder_step, rewrite) -> list[dict]:  # noqa: ANN001
+    """One step per reminder, and one edit per note that holds checklist lines: two
+    lines on one note are changed in one edit, or the second would undo the first."""
+    steps: list[dict] = []
+    edits: dict[int, dict] = {}
+    for item in items:
+        if item["kind"] == "reminder":
+            steps.append(reminder_step(item))
+            continue
+        step = edits.get(item["id"])
+        if step is None:
+            step = edits[item["id"]] = {"name": "edit_note", "arguments": {"note_id": item["id"], "content": item["content"]}}
+            steps.append(step)
+        step["arguments"]["content"] = rewrite(step["arguments"]["content"], item["line"])
+    return steps
+
+
+def _plan_each(session: Session, parsed: dict, card, title, head: str, tail: str, reminder_step, rewrite) -> dict:  # noqa: ANN001
+    items, left, said = pick_each(session, parsed, title)
+    if not items:
+        return {"line": said}
+    label = _each_label(head, tail, items)
+    return {"line": f"{label}.", "card": card(label, _each_steps(items, reminder_step, rewrite), left), "run": True}
+
+
+def plan_complete(session: Session, parsed: dict, card, title) -> dict:  # noqa: ANN001
+    """The card that completes the task or tasks named, run at once with Undo, or
+    the question that asks which. `card` is `commands._card` and `title` the one
+    reader's (`composer_frame.note_title`), passed in because this module sits
+    below commands."""
+    return _plan_each(session, parsed, card, title, "Mark", "done",
+                      lambda i: {"name": "complete_reminder", "arguments": {"reminder_id": i["id"], "done": True}},
+                      lambda content, line: content.replace(line, line.replace("[ ]", "[x]", 1), 1))
 
 
 def plan_uncomplete(session: Session, parsed: dict, card, title) -> dict:  # noqa: ANN001
-    """The card that reopens the ticked task named (a done reminder, or a `[x]`
-    line made `[ ]` again), run at once with Undo, or the question that asks which."""
-    item, say = pick(session, parsed, title)
-    if item is None:
-        return {"line": say}
-    label = f"Mark “{item['text']}” not done" + ("" if item["kind"] == "reminder" else f" ({item['where']})")
-    if item["kind"] == "reminder":
-        steps = [{"name": "complete_reminder", "arguments": {"reminder_id": item["id"], "done": False}}]
-    else:
-        open_line = re.sub(r"\[[xX]\]", "[ ]", item["line"], count=1)
-        steps = [{"name": "edit_note", "arguments": {"note_id": item["id"], "content": item["content"].replace(item["line"], open_line, 1)}}]
-    return {"line": f"{label}.", "card": card(label, steps), "run": True}
+    """The card that reopens the ticked task or tasks named (a done reminder, or a
+    `[x]` line made `[ ]` again), run at once with Undo, or the question that asks which."""
+    return _plan_each(session, parsed, card, title, "Mark", "not done",
+                      lambda i: {"name": "complete_reminder", "arguments": {"reminder_id": i["id"], "done": False}},
+                      lambda content, line: content.replace(line, re.sub(r"\[[xX]\]", "[ ]", line, count=1), 1))
 
 
-def _label(verb: str, item: dict) -> str:
-    return f"{verb} “{item['text']}”" + ("" if item["kind"] == "reminder" else f" ({item['where']})")
+def plan_cancel(session: Session, parsed: dict, card, title) -> dict:  # noqa: ANN001
+    """The card that bins the reminders named or removes the checklist lines
+    named, run at once with Undo (a binned reminder is restored, an edited note
+    put back), or the question that asks which."""
+    return _plan_each(session, parsed, card, title, "Cancel", "", lambda i: {"name": "bin_reminder", "arguments": {"reminder_id": i["id"]}}, _without_line)
 
 
 def _without_line(content: str, line: str) -> str:
@@ -477,21 +539,6 @@ def _without_line(content: str, line: str) -> str:
     if line + "\n" in content:
         return content.replace(line + "\n", "", 1)
     return content.replace("\n" + line, "", 1) if "\n" + line in content else content.replace(line, "", 1)
-
-
-def plan_cancel(session: Session, parsed: dict, card, title) -> dict:  # noqa: ANN001
-    """The card that bins the reminder named or removes the checklist line
-    named, run at once with Undo (a binned reminder is restored, an edited
-    note put back), or the question that asks which."""
-    item, say = pick(session, parsed, title)
-    if item is None:
-        return {"line": say}
-    label = _label("Cancel", item)
-    if item["kind"] == "reminder":
-        steps = [{"name": "bin_reminder", "arguments": {"reminder_id": item["id"]}}]
-    else:
-        steps = [{"name": "edit_note", "arguments": {"note_id": item["id"], "content": _without_line(item["content"], item["line"])}}]
-    return {"line": f"{label}.", "card": card(label, steps), "run": True}
 
 
 def plan_snooze(session: Session, parsed: dict, card, title, said_when, now=None) -> dict:  # noqa: ANN001
