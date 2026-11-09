@@ -4679,7 +4679,11 @@ class Engine:
             due.append(self.last_active + IDLE_SIT)
         if s in ("stand", "sit") and self.lonely_stretch != self.last_active and self.last_active + LONELY_AFTER > now:
             due.append(self.last_active + LONELY_AFTER)
-        if self._idling():  # the next idle frame: a redraw only when the index changes
+        # The next idle frame: a redraw only when the index changes, and not while a blink or a look is under way. A look and a
+        # blink's shut step draw their own picture whatever the index (those edges were wakes that drew nothing new); in a
+        # blink's lid steps the breath's step is drawn with the lid's next one (a third of the blink late at most; the idle
+        # clock is untouched, so the cycle keeps its tempo and nothing else moves).
+        if self._idling() and not self.flash:
             due.append(self._idle_next(now))
         return due
 
