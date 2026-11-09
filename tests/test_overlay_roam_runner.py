@@ -14,6 +14,7 @@ pytest.importorskip("PIL")
 
 from tessellate.core.overlay import engine as eng  # noqa: E402
 from tessellate.core.overlay import perches  # noqa: E402
+from tessellate.core.overlay import screenwatch  # noqa: E402
 from tessellate.core.overlay import win32 as k  # noqa: E402
 from tessellate.core.overlay import runner  # noqa: E402
 from tests._overlay_fake import FakeWin32  # noqa: E402
@@ -117,8 +118,14 @@ def test_nothing_is_read_when_a_climb_cannot_happen(why: str) -> None:
         r.set_roam(False)
     before = len(fake.calls)
     tick(r, clock, 0.5, minute)
-    assert scans(fake) == 0
     calls = [fn for _d, fn, _a in fake.calls[before:]]
+    if why == "not_due":
+        # INBOX 1700: an awake figure reads the list for the screen's news (a window opening, closing, dragged) at the
+        # events' own pace, no more, and the climb scan (edges handed over) still waits for a climb.
+        assert scans(fake) <= 1 + int(minute * 0.5 // screenwatch.EVERY) and r.engine.windows == []
+        r.stop()
+        return
+    assert scans(fake) == 0
     assert not any(fn in ("EnumWindows", "IsWindowVisible") for fn in calls)
     #: 1670 13:22Z added one read while typing: the foreground window's frame, for the text band an app
     #: with no caret leaves bare. It is not a climb read, and it is kept per window, so a typing minute

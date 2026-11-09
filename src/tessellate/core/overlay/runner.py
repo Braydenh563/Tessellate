@@ -66,6 +66,9 @@ BUSY_EVERY = 2.0
 TYPING_AGE = 2.5
 #: A welcome back not yet answered (the figure busy or mid-reaction) is tried again for this long (s).
 RETURN_FOR = 10.0
+#: A screen event nobody could answer yet (the figure walking, hanging, typed over, mid-reaction) is held this long (s) and played at the
+#: next free moment, then dropped with a log line (INBOX 1700: it was thrown away the tick it came).
+SCREEN_WAIT = 10.0
 #: How long a foreground window's text band is trusted before it is read again.
 ZONE_EVERY = 30.0
 #: The window scan is at most this often (seconds); it starts this long before a
@@ -209,6 +212,11 @@ class OverlayRunner:
             battery=(lambda: self.k.battery(self.w)) if hasattr(self.k, "battery") else None,
             run=lambda fn: jobs.thread("overlay-downloads", fn),
         )
+        #: kind -> when it is given up: the screen events waiting for a free moment; the last window rects read, by key; when
+        #: the window list was last read for events (the climb scan or `_window_events`).
+        self._events: dict[str, float] = {}
+        self._rects: dict[int, tuple[int, int, int, int]] = {}
+        self._events_read = -1e9
         self._decor: dict[tuple, sprites.Frame] = {}
         self._warmed = 0  # the size the quarter turn was last built for (INBOX 1696 a)
         try:  # a backend that can count why windows were left out (win32); a fake may not
@@ -475,8 +483,7 @@ class OverlayRunner:
         self._next_scan = now + (SCAN_RIDING if engine.is_riding() else SCAN_EVERY)
         tally: Counter = Counter()
         wins = self._list_windows(tally, near, seen)
-        if wins:  # an empty list is a failed read, not every window closing
-            self._answer(self._watch.windows_seen(win.key for win in wins) + self._watch.states_seen(wins), now)
+        self._answer(self._window_events(wins, now), now)
         scale = max(m.dpi for m in self.monitors) / 96.0 if self.monitors else 1.0
         room = int(engine.size[0] + PERCH_ROOM * scale)
         drops: Counter = Counter()
@@ -487,18 +494,30 @@ class OverlayRunner:
         self._log_notes()
 
     def _screen_events(self, now: float) -> None:
-        """What happened on the screen since the last tick, handed to the engine to answer (INBOX 1683, M6): the
-        app changing, the hour, the battery, a finished download (window opens and closes come from the climb scan's
-        own list; the window list is never read just for them). Read only while the figure is up, awake and the person
-        is not typing (the same conditions the scan keeps), so a hidden or sleeping figure reads nothing."""
+        """What happened on the screen since the last tick, handed to the engine to answer (INBOX 1683, M6; 1700): the app
+        changing, a window opening, closing or dragged (the list is read every `EVERY` s here, whether or not a climb is near),
+        the hour, the battery, a finished download. Read only while the figure is up and awake (a hidden, sitting or
+        sleeping one reads nothing); typing holds the answer back, a text caret alone does not."""
         engine = self.engine
-        if engine is None or engine.reduced or not engine.roam or engine.quiet or engine.busy:
+        if engine is None or engine.reduced or not engine.roam:  # (a text caret in the foreground window is not typing: INBOX 1700)
             return
         if engine.state in ("sit", "sleep", "pressed", "held", "warp"):
             return
         local = time.localtime()
         hour = local.tm_hour if self.clock_hour is None else self.clock_hour
-        self._answer(self._watch.poll(now, hour, local.tm_min, screen=self.roam_windows), now)
+        kinds = self._watch.poll(now, hour, local.tm_min, screen=self.roam_windows)
+        if self.roam_windows and not engine.quiet and now - self._events_read >= screenwatch.EVERY:
+            kinds += self._window_events(self._list_windows(Counter()), now)  # a window opening, closing or dragged is news with no climb near
+        self._answer(kinds, now)
+
+    def _window_events(self, wins: list, now: float) -> list[str]:
+        """What a window list says happened (an empty list is a failed read, not every window closing); its rects are kept
+        for the figure to look toward."""
+        self._events_read = now
+        if not wins:
+            return []
+        self._rects = {w.key: tuple(w.rect) for w in wins}  # type: ignore[misc]
+        return self._watch.windows_seen(w.key for w in wins) + self._watch.states_seen(wins)
 
     def _resume_engine(self, engine: Any, now: float) -> None:
         """Back after a stall (a resume, a full-screen app gone, shown again): the engine re-times its acts
@@ -507,9 +526,32 @@ class OverlayRunner:
         engine.resume(now)
 
     def _answer(self, kinds: list[str], now: float) -> None:
+        """Hold each event for `SCREEN_WAIT` s and play what the figure is free for (INBOX 1700): one line at INFO when an
+        event is seen, one when it is answered (and which way it looked), one when it was given up."""
+        engine = self.engine
         for kind in kinds:
-            if self.engine is not None and self.engine.react(kind, now):
-                logger.info("overlay: it answered %s", kind)
+            if kind not in self._events:
+                logger.info("overlay: screen event %s", kind)
+            self._events[kind] = now + SCREEN_WAIT
+        for kind, until in list(self._events.items()):
+            if engine is not None and not engine.quiet and engine.react(kind, now):
+                del self._events[kind]
+                logger.info("overlay: it answered %s%s", kind, self._look_toward(kind, now))
+            elif now >= until:
+                del self._events[kind]
+                logger.info("overlay: screen event %s went unanswered (state %s, typing %s)", kind, engine.state if engine else "none", bool(engine and engine.quiet))
+
+    def _look_toward(self, kind: str, now: float) -> str:
+        """Turn to the window the event was about (the one now in front, the one that opened, moved or changed size): ", looking
+        left or right", or "" when it is unknown or the event is not about a window."""
+        engine = self.engine
+        key = self._watch.fg if kind == "app_switched" else self._watch.subject.get(kind)
+        rect = self._rects.get(key) if key is not None else None
+        if engine is None or rect is None:
+            return ""
+        side = 1 if (rect[0] + rect[2]) / 2 >= engine.x + engine.size[0] / 2 else -1
+        engine._face(side, now)
+        return ", looking right" if side > 0 else ", looking left"
 
     def _log_notes(self) -> None:
         """What the engine decided about a trip to a window or an edge (chosen, skipped and why), one INFO line each."""
