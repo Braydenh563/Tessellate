@@ -20,7 +20,10 @@ JS = ROOT / "frontend" / "js"
 
 def _function(text: str, name: str) -> str:
     start = text.index(f"function {name}(")
-    return text[start : text.index("\n}\n", start)]
+    # A wrapped file (row 37a) indents its functions, so the closing brace
+    # sits at the function's own indent.
+    indent = text[text.rindex("\n", 0, start) + 1 : start].replace("async ", "")
+    return text[start : text.index(f"\n{indent}}}\n", start)]
 
 
 def test_the_page_has_no_d3_script():

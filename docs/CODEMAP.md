@@ -2092,7 +2092,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `assistantEmblemInto` | frontend/js/assistant-avatar.js:18 |
+| `assistantEmblemInto` | frontend/js/assistant-avatar.js:19 |
 
 ### frontend/js/atlas-life.js (18)
 
@@ -2981,7 +2981,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `confirmedPatternItems` | frontend/js/confirmed-patterns.js:11 |
+| `confirmedPatternItems` | frontend/js/confirmed-patterns.js:12 |
 
 ### frontend/js/connections.js (7)
 
@@ -4843,14 +4843,14 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `extractRefLabel` | frontend/js/extract-preview.js:7 |
-| `renderExtractPreview` | frontend/js/extract-preview.js:13 |
+| `extractRefLabel` | frontend/js/extract-preview.js:8 |
+| `renderExtractPreview` | frontend/js/extract-preview.js:14 |
 
 ### frontend/js/feature-model-sheet.js (1)
 
 | Name | File:line |
 |---|---|
-| `openFeatureModelSheet` | frontend/js/feature-model-sheet.js:9 |
+| `openFeatureModelSheet` | frontend/js/feature-model-sheet.js:10 |
 
 ### frontend/js/field-clear.js (6)
 
@@ -5827,7 +5827,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `surfaceFailed` | frontend/js/load-failed.js:8 |
+| `surfaceFailed` | frontend/js/load-failed.js:9 |
 
 ### frontend/js/manual.js (7)
 
@@ -6519,7 +6519,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `openPhoneMoreSheet` | frontend/js/phone-more.js:14 |
+| `openPhoneMoreSheet` | frontend/js/phone-more.js:15 |
 
 ### frontend/js/pick-row.js (3)
 
@@ -6790,13 +6790,13 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `screenContext` | frontend/js/screen-context.js:6 |
+| `screenContext` | frontend/js/screen-context.js:7 |
 
 ### frontend/js/scroll-row.js (1)
 
 | Name | File:line |
 |---|---|
-| `scrollRowArrows` | frontend/js/scroll-row.js:8 |
+| `scrollRowArrows` | frontend/js/scroll-row.js:9 |
 
 ### frontend/js/search-suggest.js (19)
 
@@ -7588,8 +7588,8 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `renderTimelineRowMedia` | frontend/js/timeline-detail.js:116 |
-| `timelineRowDetail` | frontend/js/timeline-detail.js:6 |
+| `renderTimelineRowMedia` | frontend/js/timeline-detail.js:117 |
+| `timelineRowDetail` | frontend/js/timeline-detail.js:7 |
 
 ### frontend/js/timeline-ticks.js (6)
 
