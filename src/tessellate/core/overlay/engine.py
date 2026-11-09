@@ -107,6 +107,9 @@ Q_BREATH = 0.005
 #: A drifting floater breathes in the figure (share of height, period s) now that the window does not bob.
 DRIFT_BREATH = 0.012
 DRIFT_BREATH_S = 4.4
+#: A calm stand leans this much (about 1.7 degrees at most) on two slow clocks (seconds), so no two 4 s cycles draw the same pictures.
+STAND_LEAN = 0.03
+STAND_LEAN_S = (53.0, 31.0)
 #: The wisps and the nebula streams (INBOX 1683 c) are redrawn at least this often, so none is still for a second:
 #: 10 a second (the picture itself changes only as a strand crosses a step of `behaviour.FLOW_Q`); a slow drift
 #: under reduced motion, once a second. A body's speed over this (px per second at 96 dpi) is a jump, not a move.
@@ -131,6 +134,12 @@ LAND_FOR = 0.35
 HOP_FOR = 0.4
 NOTICE_FOR = 1.5
 STARTLE_FOR = 0.5
+#: After a startle a stand lets its breath out 1 to 3 s later (`EXHALE_AFTER`): shoulders down `EXHALE_DIP` of the height for `EXHALE_FOR` s.
+EXHALE_AFTER = (1.0, 3.0)
+EXHALE_FOR = 1.6
+EXHALE_DIP = 0.03
+#: Share of the height the tail's vertical swing (px, `Trail.lift`) adds: 12 px at most, so under 4%.
+LIFT_SY = 0.003
 NOTICE_COOLDOWN = 8.0
 #: Not touched for this long: sits, then sleeps. Ten and twenty minutes (the owner's
 #: open call, taken): it keeps doing small acts while the person is away from the
@@ -666,12 +675,12 @@ class Engine:
         self.roam = roam
         self.reduced = reduced
         self.rng = rng or random.Random()
-        #: Blinks and glances draw from their own stream (seeded from the engine's, not drawn from it), so the
+        #: Blinks and glances draw from their own stream (seeded from the key's second word, which differs by seed; the first is 2147483648 for every seed; read, not drawn from), so the
         #: far more frequent ambient moments leave every other choice the same for a seed.
-        self.life_rng = random.Random(self.rng.getstate()[1][0])
-        self.idle_rng = random.Random(self.rng.getstate()[1][0] + 2)
+        self.life_rng = random.Random(self.rng.getstate()[1][1])
+        self.idle_rng = random.Random(self.rng.getstate()[1][1] + 2)
         self._edges: list[float] = [0.0]  # cycle ends, in seconds from `idle_start`; reset when a stand begins
-        self.var_rng = random.Random(self.rng.getstate()[1][0] + 1)
+        self.var_rng = random.Random(self.rng.getstate()[1][1] + 1)
         self.act_var = bh.Variation()
         self.gait = "float" if gait == "float" else "walk"
         #: The share of the hang frame's height that is clear above the hands.
@@ -770,6 +779,8 @@ class Engine:
         #: Mind, home, and the body's follow-through (INBOX 1670, row B).
         self.mind = bh.Mind(now)
         self.tail = bh.Trail()
+        self.drift_phase = 0.0  # breaths so far of a drifting floater (`_follow_through`)
+        self.settle_at = -1e9  # when the exhale after the last startle begins (`_do_startle`)
         #: The wisps and the nebula streams (INBOX 1683 c): always swaying, thrown by the body's moves.
         self.flow = bh.Flow()
         #: The tail's own layer (C1): a floater's tail is drawn every display frame, not baked in the idle cycle.
@@ -1356,9 +1367,12 @@ class Engine:
         vx = (self.x - self.last_x) / dt
         self.travel += abs(self.x - self.last_x)
         self.last_x = self.x
-        self.tail.step(dt, vx if self.state not in ("held", "pressed") else 0.0)
         vy = (self.y - self.last_y) / dt
         self.last_y = self.y
+        held = self.state in ("held", "pressed")
+        if self.state == "drift":  # the floater's breath is a phase that runs at the vitals' rate, so a change of rate is no jump
+            self.drift_phase += min(dt, 0.5) / (DRIFT_BREATH_S * vitals.breath(self.mind.mood(now, self.hour), vitals.exertion(now - self.exerted_at)))  # a drift is a float, not a run
+        self.tail.step(dt, 0.0 if held else vx, 0.0 if held else vy)
         px = FLOW_SPEED_MAX * self._scale()  # a vanish or a hop of the window is no speed
         scale = self._scale()
         self.flow.step(dt, max(-px, min(px, vx)) / scale, max(-px, min(px, vy)) / scale)
@@ -1426,7 +1440,7 @@ class Engine:
         if s_ in ("act", "sit", "sleep") and 0.0 <= u < 1.0:  # A4: a long act or rest shifts its weight over and settles
             lean += SHIFT_LEAN * math.sin(math.pi * u) * (1 if self.mind.shifts % 2 else -1)
             sy -= 0.02 * math.sin(math.pi * u)
-        return bh.Pose(sx, sy, lean, drag)
+        return bh.Pose(sx, sy + LIFT_SY * self.tail.lift, lean, drag)  # a landing's stop stretches the hem down, then back
 
     def _ground_pose(self, now: float, s_: str) -> tuple[float, float, float]:
         """The squash and lean of a crouch, a landing, a step or a mood's stand."""
@@ -1442,16 +1456,22 @@ class Engine:
             speed = min(1.0, abs(self.vx_px) / (WALK_SPEED * self._scale() * 1.2))
             lean = LEAN_MAX * speed * (1 if self.vx_px > 0 else -1) * (1.6 if self.mode == "dash" else 1.0)
             if self.gait == "float":  # the window never bobs: a floater's breath is in the figure
-                sy = 1.0 + DRIFT_BREATH * (1.0 - math.cos(2 * math.pi * now / DRIFT_BREATH_S)) / 2.0
+                sy = 1.0 + DRIFT_BREATH * (1.0 - math.cos(2 * math.pi * self.drift_phase)) / 2.0
             if self.gait == "walk":  # a ground companion bounces with its steps
                 sy = 1.0 + 0.012 * math.sin(self.travel / self._scale() * 2 * math.pi / (STRIDE * 2))
         elif s_ == "stand":
             mood = self.mind.mood(now, self.hour)
             sy = {"sleepy": 0.975, "proud": 1.035, "bored": 0.985, "startled": 1.05}.get(mood, 1.0)
+            if self._idling():  # the 24 baked frames repeat every 4 s: a slow lean on the pose grid, two clocks that never meet
+                lean = STAND_LEAN * (0.6 * math.sin(2 * math.pi * now / STAND_LEAN_S[0]) + 0.4 * math.sin(2 * math.pi * now / STAND_LEAN_S[1] + 1.3))
             u = (now - self.squash_at) / SQUASH_FOR
             if 0.0 <= u < 1.0:  # the settle after a throw: a small squash and back
                 sy -= SQUASH * math.sin(math.pi * u)
                 sx = 1.0 + 0.5 * SQUASH * math.sin(math.pi * u)
+            u = (now - self.settle_at) / EXHALE_FOR
+            if 0.0 <= u < 1.0:  # the exhale after a startle: the shoulders drop and come back (INBOX 1719 b)
+                sy -= EXHALE_DIP * math.sin(math.pi * u)
+                sx += 0.5 * EXHALE_DIP * math.sin(math.pi * u)
         return sx, sy, lean
 
     def _pose(self) -> tuple[float, float, float, float] | None:
@@ -3334,6 +3354,7 @@ class Engine:
     def _do_startle(self, now: float, dt: float) -> None:
         if now >= self.state_until:
             self._enter("stand", now)
+            self.settle_at = now + EXHALE_AFTER[0] + (EXHALE_AFTER[1] - EXHALE_AFTER[0]) * self.var_rng.random()  # the exhale
 
     def _do_land(self, now: float, dt: float) -> None:
         if now >= self.state_until:

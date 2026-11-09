@@ -66,7 +66,9 @@ def test_reduced_motion_keeps_a_still_figure(state: str) -> None:
 
 
 def test_a_blink_and_a_glance_come_while_standing() -> None:
-    e, _s = make("masculine", "float", 2)
+    # Seed 2 became 3 (life2-1109, the seed fix): seed 2 now sits for most of the 300 s (4 stands of the blink stream
+    # in 12 blinks, no glance); the intent, that a standing figure glances and blinks, does not belong to one seed.
+    e, _s = make("masculine", "float", 3)
     e.big_ready = e.trip_ready = e.climb_ready = float("inf")
     seen: set[str] = set()
     t, out = 0.0, e.update(0.0)

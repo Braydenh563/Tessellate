@@ -141,28 +141,37 @@ function atlasTailBend(s, p, ph, ph2, drift, ph3 = 0, follow = 0) {
 //: round a turn, and settles. Its last link (px) becomes a bend (radians) added to the curl,
 //: which the tail's own acts ride on. Same constants as the desktop companion's `Trail`
 //: (`core/overlay/behaviour.py`). At rest it is exactly 0 and costs a few multiplies a draw.
-function atlasTailFollow(tail, dt, x) {
-  const f = (tail.follow ||= { pos: [0, 0, 0], vel: [0, 0, 0], x, v: 0 });
+function atlasTailFollow(tail, dt, x, y = 0) {
+  const f = (tail.follow ||= { pos: [0, 0, 0], vel: [0, 0, 0], x, v: 0, lift: [0, 0, 0], lvel: [0, 0, 0], y, vy: 0 });
   if (!Number.isFinite(x) || dt <= 0) return 0;
   const v = (x - f.x) / dt;
-  const accel = (v - f.v) / dt;
+  const vy = Number.isFinite(y) ? (y - f.y) / dt : 0;
+  const A = atlasTailFollow.springs;
+  const n = Math.max(1, Math.ceil(dt / 0.02));
+  atlasTailFollow.chain(f.pos, f.vel, (v - f.v) / dt, A.kick, A.max, dt / n, n);
+  //: The vertical chain (INBOX 1719 b): a landing or a hop throws the tip down, then up; softer than the sideways one.
+  atlasTailFollow.chain(f.lift, f.lvel, (vy - f.vy) / dt, A.liftKick, A.liftMax, dt / n, n);
   f.x = x;
   f.v = v;
-  const n = Math.max(1, Math.ceil(dt / 0.02));
-  const h = dt / n;
+  f.y = Number.isFinite(y) ? y : f.y;
+  f.vy = vy;
+  return (f.pos[A.links - 1] / A.max) * A.bend + (f.lift[A.links - 1] / A.liftMax) * A.liftBend;
+}
+//: One spring chain advanced `n` steps of `h` seconds, thrown by `accel`; the same springs as the desktop's `Trail`.
+atlasTailFollow.chain = (pos, vel, accel, kick, max, h, n) => {
   const A = atlasTailFollow.springs;
+  const push = Math.max(-4000, Math.min(4000, accel)) * kick * 0.01;
   for (let k = 0; k < n; k += 1) {
     let prev = 0;
     for (let i = 0; i < A.links; i += 1) {
-      f.vel[i] += (A.stiff * (prev - f.pos[i]) - A.damp * f.vel[i] - Math.max(-4000, Math.min(4000, accel)) * A.kick * 0.01 * (1 + i)) * h;
-      f.pos[i] = Math.max(-A.max, Math.min(A.max, f.pos[i] + f.vel[i] * h));
-      prev = f.pos[i];
+      vel[i] += (A.stiff * (prev - pos[i]) - A.damp * vel[i] - push * (1 + i)) * h;
+      pos[i] = Math.max(-max, Math.min(max, pos[i] + vel[i] * h));
+      prev = pos[i];
     }
   }
-  return (f.pos[A.links - 1] / A.max) * A.bend;
-}
+};
 //: On the function, not the shared scope (test_global_scope_ratchet): only it reads them.
-atlasTailFollow.springs = { links: 3, stiff: 90, damp: 9, kick: 0.8, max: 26, bend: 0.55 };
+atlasTailFollow.springs = { links: 3, stiff: 90, damp: 9, kick: 0.8, max: 26, bend: 0.55, liftKick: 40, liftMax: 12, liftBend: 0.2 };
 //: **The streams follow the body** (INBOX 1683 c): the tail's three-link chain (`atlasTailFollow`) also
 //: carries the lower body and the wisps a little way, each on its own link and gain, so they lag a start,
 //: swing past a stop and settle a beat apart (the nebula's halves have the lean's spring). It is the
@@ -173,12 +182,15 @@ atlasTailFollow.strands = (box, tail) => {
   const low = box.atlasRig?.lower;
   const pos = tail.follow?.pos;
   if (!low || !pos) return;
+  const lift = tail.follow.lift;
   const put = (els, link, gain) => {
     els.forEach((el, i) => {
       const v = Math.round(pos[link] * gain * (1 + 0.15 * i) * 20) / 20;
-      if (el.atlasPushed === v) return;
+      const w = Math.round(lift[link] * gain * (1 + 0.15 * i) * 20) / 20;
+      if (el.atlasPushed === v && el.atlasLifted === w) return;
       el.atlasPushed = v;
-      el.style.translate = v ? `${v}px 0` : "";
+      el.atlasLifted = w;
+      el.style.translate = v || w ? `${v}px ${w}px` : "";
     });
   };
   put(low.boxes, 0, 0.04);
@@ -555,7 +567,7 @@ function atlasTailFrame(tail, now) {
     tail.ph3 += (2 * Math.PI * dt) / 1.73;
   }
   const secs = (now - tail.t0) / 1000;
-  const follow = live ? atlasTailFollow(tail, dt, typeof nmb !== "undefined" ? nmb.x : NaN) : 0;
+  const follow = live ? atlasTailFollow(tail, dt, typeof nmb !== "undefined" ? nmb.x : NaN, typeof nmb !== "undefined" ? nmb.y : 0) : 0;
   if (live) atlasTailFollow.strands(box, tail);
   const p = Object.fromEntries(Object.entries(tail.p).map(([k, j]) => [k, live ? j.x : k === "curl" || k === "amp" || k === "tip" ? 0 : j.x]));
   const drift = live ? 0.13 * Math.sin((2 * Math.PI * secs) / 11.3) + 0.08 * Math.sin((2 * Math.PI * secs) / 17.9 + 1.3) : 0;

@@ -610,29 +610,44 @@ class Trail:
     DAMP = 9.0
     KICK = 0.8
     MAX = 26.0
+    #: The vertical chain (a landing or a hop throws the tail down, then up): softer, so a hop is no whip.
+    LIFT_KICK = 0.04
+    LIFT_MAX = 12.0
 
     def __init__(self) -> None:
         self.pos = [0.0] * self.LINKS
         self.vel = [0.0] * self.LINKS
         self.last_v = 0.0
+        self.lift_pos = [0.0] * self.LINKS
+        self.lift_vel = [0.0] * self.LINKS
+        self.last_vy = 0.0
 
     @property
     def tip(self) -> float:
         return self.pos[-1]
 
-    def settled(self) -> bool:
-        return abs(self.pos[-1]) < 0.6 and abs(self.vel[-1]) < 4.0
+    @property
+    def lift(self) -> float:
+        """The tip's vertical offset in px (y grows down): positive hangs below the root, as after a landing's stop."""
+        return self.lift_pos[-1]
 
-    def step(self, dt: float, body_vx: float) -> None:
-        """Advance by `dt` seconds with the body moving at `body_vx` px/s (before this step)."""
+    def settled(self) -> bool:
+        return abs(self.pos[-1]) < 0.6 and abs(self.vel[-1]) < 4.0 and abs(self.lift_pos[-1]) < 0.6 and abs(self.lift_vel[-1]) < 4.0
+
+    def step(self, dt: float, body_vx: float, body_vy: float = 0.0) -> None:
+        """Advance by `dt` seconds with the body moving at (`body_vx`, `body_vy`) px/s (before this step)."""
         if dt <= 0:
             return
         accel = (body_vx - self.last_v) / dt
-        self.last_v = body_vx
+        lift_accel = (body_vy - self.last_vy) / dt
+        self.last_v, self.last_vy = body_vx, body_vy
         n = max(1, int(math.ceil(dt / 0.02)))
         h = dt / n
-        stiff, damp, kick, top = self.STIFF, self.DAMP, accel * self.KICK, self.MAX
-        pos, vel = self.pos, self.vel
+        for pos, vel, a, top in ((self.pos, self.vel, accel * self.KICK, self.MAX), (self.lift_pos, self.lift_vel, lift_accel * self.LIFT_KICK, self.LIFT_MAX)):
+            self._chain(pos, vel, a, top, h, n)
+
+    def _chain(self, pos: list[float], vel: list[float], kick: float, top: float, h: float, n: int) -> None:
+        stiff, damp = self.STIFF, self.DAMP
         kicks = [kick * (1 + i) for i in range(self.LINKS)]  # the same product every pass: once per link
         for _ in range(n):
             prev = 0.0
@@ -644,6 +659,7 @@ class Trail:
 
     def reset(self) -> None:
         self.pos, self.vel, self.last_v = [0.0] * self.LINKS, [0.0] * self.LINKS, 0.0
+        self.lift_pos, self.lift_vel, self.last_vy = [0.0] * self.LINKS, [0.0] * self.LINKS, 0.0
 
 
 def _amplitude(keys: Keys) -> float:
