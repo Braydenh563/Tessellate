@@ -2195,6 +2195,9 @@ def a_topic_phrase(question: str, phrase: str, *, holiday: bool = True) -> bool:
         return False
     if re.search(_ABOUT_PHRASE.format(re.escape(bare)), question or "", re.I):
         return True
+    #: "the Q4 report": a quarter with a noun after it names the thing, it does not date the note (R9-3).
+    if re.fullmatch(r"q[1-4]", bare.lower()) and re.search(rf"\b{re.escape(bare)} [a-z]", (question or "")[:500], re.I):
+        return True
     return holiday and bare.lower().replace("'", "") in _TOPIC_HOLIDAYS and not _WHEN_ASK.search(question or "")
 
 

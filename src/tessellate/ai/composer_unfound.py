@@ -12,7 +12,7 @@ from __future__ import annotations
 import functools
 import re
 
-from tessellate.ai import composer_tables, recognise as rec
+from tessellate.ai import composer_frame, composer_tables, recognise as rec
 from tessellate.ai.composer_answer import _Answer
 from tessellate.ai.composer_ask import _alternatives, _holds, _stem, _stem_plain
 from tessellate.ai.composer_read import NoteView
@@ -190,6 +190,13 @@ def _missing(out: _Answer, terms: list[str], views: list[NoteView]) -> None:
     measured."""
     missing = _unfound_terms(out, terms, views)
     if not missing or len(missing) == len(terms):
+        return
+    #: The one note the answer quoted is only its title ("Thai green curry"): that is what it has, not that
+    #: its words are missing (R9-15).
+    quoted = [v for v in views if any(s.key in out.cited for s in v.sentences)]
+    only = composer_frame.own_title(str(quoted[0].note.get("content") or "").strip()) if len(quoted) == 1 else ""
+    if only:
+        out.t("para", "bare_a", "open_quote").asked(only).t("close_quote", "bare_b")
         return
     out.t("para", "missing")
     for i, word in enumerate(missing[:3]):

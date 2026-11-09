@@ -49,7 +49,7 @@ from tessellate.ai import composer_ahead, composer_ask, composer_clean, composer
 from tessellate.ai import composer_chip_subject
 from tessellate.ai import composer_read
 from tessellate.ai import composer_select
-from tessellate.ai import composer_credit, composer_tally
+from tessellate.ai import composer_credit, composer_label, composer_likeness, composer_refer, composer_tally
 from tessellate.ai.composer_lists import clean
 from tessellate.ai import recognise as recogniser
 from tessellate.ai import when as when_words
@@ -1678,6 +1678,8 @@ def _members(question: str, views: list[composer.NoteView]) -> list[composer.Not
     #: "buy a capo" in it. A note must hold a word that names something (when
     #: the question has one); the doing words then count with the rest.
     scored = _scored_members(stems, views)
+    aside = composer_likeness.set_aside([v for _, v in scored], question)
+    scored = [(h, v) for h, v in scored if v.id not in aside] or scored
     if not scored or _unanswerable(stems, views):
         return []
     best = max(h for h, _ in scored)
@@ -2559,16 +2561,17 @@ def _section_line(label: str, view, bodies: list[str], today: date | None, same:
     first = view.sentences[0].text.strip().lower() if view.sentences else ""
     if composer_threads.label_is_sentence(label):
         #: Its own words, said as the note's (INBOX 1512).
-        line = f"{'it also says' if same else _your_note(view) + ' says'} {composer_threads.voiced(head)}: {items}"
+        line = f"{_your_note(view) + (' also says' if same else ' says')} {composer_threads.voiced(head)}: {items}"
     elif not view.titled and first.startswith(label.strip().lower()):
         line = _noted_section(head, items, view, today)
     elif re.search(r"\s\d+$", label.strip()):
         # A label that ends in a number ("Wedding table 4") is the note's own words:
         # "has a wedding table 4:" invented an article and rewrote its commas (R3-12).
         said = f"“{label.strip()}: {items}”"
-        line = f"you wrote {said}" if not view.titled else f"{'it also says' if same else _your_note(view) + ' says'} {said}"
+        line = f"you wrote {said}" if not view.titled else f"{_your_note(view) + (' also says' if same else ' says')} {said}"
     elif same:
-        line = f"it also has {composer_threads.with_article(head)}: {items}"
+        #: Not "It also has": a line can open an answer paragraph, and "it" is then no one (R9-6).
+        line = f"{_your_note(view)} also has {composer_threads.with_article(head)}: {items}"
     else:
         line = f"{_your_note(view)} has {composer_threads.with_article(head)}: {items}"
     return line[0].upper() + line[1:]
@@ -3750,6 +3753,16 @@ _ASK_VERB_SAYS = {
 }
 
 
+#: "why is my bread dense": the word that says what is wrong is the point of the question (R9-2).
+_ASK_PREDICATE = re.compile(r"^why (?:is|are|was|were) (?:my|the|our) [a-z]{3,20} (?P<word>[a-z]{4,20})$", re.I)
+
+
+def _predicate_stems(question: str) -> set[str]:
+    """The stem of the word a "why is my X <word>" question asks the reason of; empty for any other question."""
+    found = _ASK_PREDICATE.match(" ".join(clean(question).split())[:120].rstrip("?.! ")) if question else None
+    return {composer._stem(found["word"].lower())} if found else set()  # noqa: SLF001
+
+
 def _ask_stems(question: str) -> set[str]:
     """The stems that say the question's own verb: empty when it has none."""
     found = _ASK_VERB.search(clean(question)) or _ASK_NOUN.search(clean(question))
@@ -3772,8 +3785,11 @@ def _fact_words(f: Fact) -> set:
     return words | f.view.title_words if f.sentence.words and f.sentence.words[0] in _PRONOUN_OPENERS else words
 
 
-def _says_the_ask(f: Fact, words: set, asks: set, stems: set) -> bool:
-    """The sentence that holds the ask's own verb, in a note that holds the rest of the subject (R9-2)."""
+def _says_the_ask(f: Fact, words: set, asks: set, stems: set, predicate: frozenset | set = frozenset()) -> bool:  # noqa: B008
+    """The sentence that holds the ask's own verb, in a note that holds the rest of the subject (R9-2), or the
+    word a "why is my bread dense" asks the reason of (R9-2)."""
+    if any(composer._holds(st, words) for st in predicate):  # noqa: SLF001
+        return True
     if not asks or not any(composer._holds(st, words) for st in asks):
         return False
     return all(composer._holds(st, f.view.words | f.view.title_words | f.view.filed_words) for st in stems - asks)
@@ -3790,6 +3806,7 @@ def _best(facts: list[Fact], question: str, cue: re.Pattern | None = None) -> Fa
     #: Without the asking words: "what day did I run 8 km" is not about a "day".
     stems = set(_subject(question))
     asks = _ask_stems(question) if not _LATEST_ASK.search(question) else set()
+    predicate = _predicate_stems(question)
     if isinstance(cue, _MoneyCue):
         #: "what does the hotel cost" is about the hotel; "cost" is the ask.
         stems -= {composer._stem(w) for w in ("cost", "price", "pay", "paid", "charge", "much")}  # noqa: SLF001
@@ -3825,7 +3842,7 @@ def _best(facts: list[Fact], question: str, cue: re.Pattern | None = None) -> Fa
         newest = (f.view.written or date.min) if latest else date.min
         newest_own = _sentence_day(f) if latest else date.min
         #: The sentence that holds the ask's own verb, in a note that holds the rest of the subject (R9-2).
-        says_it = _says_the_ask(f, words, asks, stems)
+        says_it = _says_the_ask(f, words, asks, stems, predicate)
         #: "when did I bake banana bread": the sentence that says the whole
         #: doing leads, whatever else the note holds (audit 1031 C16).
         acts = bool(did_ask and stems and all(composer._holds(st, set(f.sentence.words)) for st in stems))
@@ -4362,7 +4379,7 @@ def _who_many(out: _Out, name: str, found: list, today: date) -> None:
     out.lines.append(PHRASES["who_many"].format(name=_name_said(name), count=_count(len({v.id for v, _ in found})), span=_span([v for v, _ in found], today)))
     said: set[str] = set()
     for v, s2 in found[:LINES["overview"]]:
-        body = _titled_body(v, name, s2) or _tidy(_second_person(s2.text.strip()), v.written)
+        body = _titled_body(v, name, s2) or _tidy(_second_person(composer_refer.resolved(v, s2)), v.written)
         if not _TIMED.get() and body.lower() in said:
             continue
         said.add(body.lower())
@@ -4395,7 +4412,7 @@ def _who_fact(view, s) -> str:  # noqa: ANN001
     """The sentence that names the person, as the person would say it. A line
     that opens on a pronoun ("Mine is called Doug.") has lost the thing it
     was about, so it is quoted under the note it came from (audit 1031 C31)."""
-    text = s.text.strip()
+    text = composer_refer.resolved(view, s)
     if _PRONOUN_LEAD.match(text):
         said = _your_note(view)
         return f"{said[:1].upper() + said[1:]} says “{text.rstrip('.')}”"
@@ -4409,6 +4426,19 @@ def _name_said(name: str, *, first: bool = True) -> str:
     return said[:1].upper() + said[1:] if first else said
 
 
+def _role_line(view, name: str, fact: str) -> str:  # noqa: ANN001
+    """"Plumber is Dave, 07700 900789" in the note titled Plumber, asked "who is Dave": "Dave is your plumber:
+    07700 900789 (Plumber)." (R9-17); "" when the note does not say it that way."""
+    title = str(view.title or "").strip()
+    if not (view.titled and 0 < len(title.split()) <= 3):
+        return ""
+    found = re.match(rf"{re.escape(title)} is {re.escape(name)}\b[,:]? ?(?P<rest>.{{0,200}})$", fact[:400], re.I)
+    if not found:
+        return ""
+    rest = found["rest"].strip().rstrip(".")
+    return f"{_name_said(name)} is your {title.lower()}{': ' + rest if rest else ''} ({title})."
+
+
 def _who(out: _Out, name: str, views, names: set[str], today: date) -> bool:
     found = _who_found(name, views)
     if not found:
@@ -4419,8 +4449,10 @@ def _who(out: _Out, name: str, views, names: set[str], today: date) -> bool:
     view, s = found[0]
     fact = _titled_body(view, name, s) or _who_fact(view, s)
     if len({v.id for v, _ in found}) == 1:
-        out.lines.append(PHRASES["who_once"].format(name=_name_said(name), day=_day(view.written, today), fact=fact))
-        out.closing.append(PHRASES["only_names"].format(name=_name_said(name, first=not name.lower().startswith("my "))))
+        role = _role_line(view, name, fact)
+        out.lines.append(role or PHRASES["who_once"].format(name=_name_said(name), day=_day(view.written, today), fact=fact))
+        if not role:
+            out.closing.append(PHRASES["only_names"].format(name=_name_said(name, first=not name.lower().startswith("my "))))
     else:
         _who_many(out, name, found, today)
         return True
@@ -4657,7 +4689,7 @@ def _exact_lookup(out: _Out, asked: str, question: str, views: list, today: date
     """The figures the notes hold, worked exactly: a slot, an amount, a sum,
     a day or a count, said (True)."""
     #: A superlative over a table, a count of a list, a distance on a day (R9-10).
-    if composer_tally.answer(out, asked, views) or composer_credit.answer(out, asked, views):
+    if composer_tally.answer(out, asked, views) or composer_credit.answer(out, asked, views) or composer_label.answer(out, asked, views):
         return True
     #: The question's slot (a tick, an open task, a dated line) is what
     #: answers it, or the answer says no note holds it (audit 1029 rank 19).

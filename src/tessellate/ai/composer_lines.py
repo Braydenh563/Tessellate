@@ -33,7 +33,7 @@ def c(text: str, v: str = "", e: str = "", k: str = "") -> Cand:
 
 OPENERS: tuple[Cand, ...] = (
     c("Sure.", "wt"), c("Of course.", "wf"), c("Happy to.", "w"), c("Right, here you go.", "w"), c("Here is what I have.", "w"),
-    c("Okay.", "wt"), c("Gladly.", "wf"), c("Here you are.", "w"), c("Right away.", "wf"),
+    c("Okay.", "wt"), c("Gladly.", "wf"), c("Here you are.", "w"),
     c("Okay, steady. Let us take this one step at a time.", "w", "S"), c("Take a breath, this is manageable.", "w", "S"),
     c("No rush. We will go through it together.", "w", "S"), c("Okay, steady.", "t", "S"), c("One thing at a time.", "t", "S"),
     c("Sorry about that.", "wt", "U"), c("That sounds frustrating, so let me help.", "w", "U"), c("Fair enough, let me put it right.", "w", "U"),
