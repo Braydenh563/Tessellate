@@ -3300,7 +3300,7 @@ const NMB_ACTIVITIES = [
   ["come", "Come over to you after a few minutes apart", ["come"]],
   ["afield", "Go out for a while now and then", ["afield"]],
   ["rub", "Lean into a rub or a pat, giggle at a tickle, sneeze at a boop (the pointer on it)", ["rub", "tickle", "boop", "pat"]],
-  ["flip", "Turn upside down when shaken while carried", ["flip"]],
+  ["flip", "Turn upside down when shaken while carried, twirl at a fast swipe", ["flip", "twirl"]],
   ["remark", "Say something from your notes now and then", ["remark"]],
   ["habits", "Little habits and reactions (a search that finds nothing, a fast pointer, a long carry)", ["habits"]],
 ];
@@ -6996,8 +6996,10 @@ nmb.touch = (() => {
   //: Patted (`int.pat`, the desk's `pat`): slow dabs down and up on the head, not the long side to side of a
   //: rub: `PAT.turns` turns on the y axis of `travel` (a share of the figure's height) or more inside `windowMs`,
   //: all on the head's top `headShare`, no wider than the figure and slow (a mean speed under `slow` px/ms, so a
-  //: flick is not one). Pure, for the tests; once in five seconds.
+  //: flick is not one). Swiped (`int.swipe_twirl`): a fast pass straight across it, `across` of its width in one
+  //: direction inside `windowMs` at `fast` px/ms or more, flat. Both pure, for the tests; once in five seconds.
   const PAT = { turns: 2, travel: 0.07, windowMs: 1400, minSamples: 4, slow: 0.5, headShare: 0.42, coolMs: 5000 };
+  const SWIPE = { across: 0.6, windowMs: 250, fast: 1.2, flat: 0.5, minSamples: 2, coolMs: 5000 };
   function patted(samples, rect) {
     const last = samples[samples.length - 1];
     if (!last || !rect) return false;
@@ -7012,7 +7014,19 @@ nmb.touch = (() => {
     if (path / Math.max(1, last[2] - recent[0][2]) > PAT.slow) return false;
     return nameMarkBuddyStrokes(head, 1, Math.max(5, PAT.travel * rect.height), PAT.windowMs) >= PAT.turns;
   }
-  //: The shared start: not still, not hidden, not carried, not asleep, not switched off, once per cool-down.
+  function swiped(samples, rect) {
+    const last = samples[samples.length - 1];
+    if (!last || !rect) return false;
+    const quick = samples.filter((sample) => last[2] - sample[2] <= SWIPE.windowMs);
+    if (quick.length < SWIPE.minSamples) return false;
+    const dt = quick[quick.length - 1][2] - quick[0][2];
+    const run = quick[quick.length - 1][0] - quick[0][0];
+    const ys = quick.map((sample) => sample[1]);
+    if (dt <= 0 || Math.abs(run) < SWIPE.across * rect.width || Math.abs(run) / dt < SWIPE.fast) return false;
+    if (quick.some((sample, i) => i && (sample[0] - quick[i - 1][0]) * run < 0)) return false;
+    return Math.max(...ys) - Math.min(...ys) <= SWIPE.flat * rect.height;
+  }
+  //: The shared start of both: not still, not hidden, not carried, not asleep, not switched off, once per cool-down.
   function ready(buddy, act, key, coolMs) {
     if (!buddy || nameMarkBuddyStill() || document.hidden || nameMarkBuddyMenuOpen() || buddy.classList.contains("nm-buddy-dragging") || nameMarkBuddyActOff(act)) return false;
     const now = Date.now();
@@ -7032,7 +7046,19 @@ nmb.touch = (() => {
     if (isAtlasSeed(buddy.dataset.seed || "")) setAtlasMood("happy", 3000, { quiet: true, backEaseMs: 1000 });
     else nameMarkBuddyExpress("happy", 3000);
   }
-  return { tickled, tickle, onNose, boop, patted, pat };
+  function twirl(buddy) {
+    if (!ready(buddy, "twirl", "twirlAt", SWIPE.coolMs)) return;
+    nmb.pettedAt = Date.now();
+    const face = buddy.querySelector(":scope > .nm-buddy-face");
+    if (face && typeof face.animate === "function") {
+      face.animate([
+        { transform: "rotate(0deg) translateY(0)" }, { transform: "rotate(180deg) translateY(-8px)", offset: 0.45 }, { transform: "rotate(360deg) translateY(0)" },
+      ].map((frame) => ({ ...frame, transformOrigin: "50% 60%" })), { duration: 1300, easing: "ease-in-out" });
+    }
+    if (isAtlasSeed(buddy.dataset.seed || "")) setAtlasMood("delighted", 1800, { quiet: true, backEaseMs: 800 });
+    else nameMarkBuddyExpress("happy", 1800);
+  }
+  return { tickled, tickle, onNose, boop, patted, pat, swiped, twirl };
 })();
 //: **Flipped** (INBOX 743, the owner: "flipping it upside down??"): shaken
 //: up and down while carried, it turns over and hangs upside down from your
@@ -10832,7 +10858,10 @@ function nameMarkBuddyBuild() {
     rub.push([event.clientX, event.clientY, t]);
     while (rub.length > 2 && t - rub[0][2] > 1600) rub.shift();
     const box = face.getBoundingClientRect();
-    if (nmb.touch.patted(rub, box)) {
+    if (nmb.touch.swiped(rub, box)) {
+      rub = [];
+      nmb.touch.twirl(buddy);
+    } else if (nmb.touch.patted(rub, box)) {
       rub = [];
       nmb.touch.pat(buddy);
     } else if (nmb.touch.tickled(rub, box)) {

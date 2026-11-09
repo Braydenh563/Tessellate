@@ -77,3 +77,46 @@ def test_the_pat_is_wired_and_has_a_switch() -> None:
 def test_the_catalogue_counts_the_pat_as_built_on_both_sides() -> None:
     e = entries()["int.pat"]
     assert e["app"]["s"] == "built" and e["desk"]["s"] == "built"
+
+
+def swipe(span: int, ms: int, n: int = 5, y: int = 260, back: bool = False) -> list[list[int]]:
+    """`n` samples across `span` px in `ms` ms at height `y`, left to right; `back` turns the middle one round."""
+    pts = [[100 + span * i // (n - 1), y, ms * i // (n - 1)] for i in range(n)]
+    if back:
+        pts[n // 2][0] = 90
+    return pts
+
+
+def swiped(samples: list[list[int]]) -> bool:
+    return run(f"nmb.touch.swiped({json.dumps(samples)}, {json.dumps(RECT)})")
+
+
+@needs_node
+def test_a_fast_pass_straight_across_is_a_swipe() -> None:
+    assert swiped(swipe(100, 60)), "100 px in 60 ms: 1.7 px a ms"
+    assert swiped([[200 - x, y, t] for x, y, t in swipe(100, 60)]), "right to left too"
+
+
+@needs_node
+def test_a_slow_pass_a_short_one_a_turn_and_a_climb_are_not() -> None:
+    assert not swiped(swipe(100, 400)), "250 ms window: a slow pass is a stroke"
+    assert not swiped(swipe(100, 200)), "0.5 px a ms is under the fast limit"
+    assert not swiped(swipe(40, 20)), "fast but only 40 percent of its width"
+    assert not swiped(swipe(100, 60, back=True)), "it turned round inside the pass"
+    assert not swiped([[100 + 25 * i, 200 + 30 * i, 15 * i] for i in range(5)]), "a climb, not a pass across"
+    assert not run(f"nmb.touch.swiped([], {json.dumps(RECT)})")
+
+
+def test_the_swipe_is_wired_and_has_a_switch() -> None:
+    assert AV.index("nmb.touch.swiped(rub, box)") < AV.index("nmb.touch.patted(rub, box)"), "a swipe is checked before a pat"
+    assert "nmb.touch.twirl(buddy);" in AV
+    row = re.search(r'\["flip", "[^"]*", \[([^\]]*)\]\]', AV)
+    assert row and '"twirl"' in row.group(1)
+    scope = touch_scope()
+    twirl = scope[scope.index("  function twirl(") : scope.index("  return {", scope.index("  function twirl("))]
+    assert 'ready(buddy, "twirl"' in twirl and "rotate(360deg" in twirl
+
+
+def test_the_catalogue_counts_the_twirl_as_built_on_both_sides() -> None:
+    e = entries()["int.swipe_twirl"]
+    assert e["app"]["s"] == "built" and e["desk"]["s"] == "built"
