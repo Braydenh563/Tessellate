@@ -3,9 +3,18 @@ status: running
 pr: 216
 max-continues: 60
 max-idle-minutes: 60
-finish-up: 60%
+finish-up: 70%
 started: 2026-11-07 14:40Z
 tier: max (weekly 32% at 2026-11-08 16:00Z), four agents at once, Sonnet or Haiku, one Opus for design or risky review; never Fable; owner away from 2026-11-08 16:00Z until about 2026-11-09 06:00Z to 07:00Z (late afternoon owner time, UTC+10)
+
+## 2026-11-09 away queue (owner asleep from ~14:50Z; stop at 70% weekly; context 200k does not stop the run, owner override)
+- [ ] Push the 9 local commits when CI on 7d814c1 finishes; fix its failures
+- [ ] Merge zoom2-1109 (1717), desklane-1109 (1696 a,b,h,i,k,aa,kk; 1710 a,b; 1711 b; 1718), small3-1109 (constellation pause, 1693 a)
+- [ ] Composer deep-audit round (1719 c), then build its findings in Sonnet batches
+- [ ] Throw off the top of the screen, both companions (1719 a)
+- [ ] Life and biological design pass (1719 b) with 1696 j, v-w, dd; then Sonnet batches
+- [ ] Remaining: 1711 a,d; 1683 a (desk lower-body frames); audit rows 21, 36; further 37a batches; zoom and desk leftovers
+- [ ] BACKLOG boundary: HANDOVER Now and Morning summary, push, retro
 
 ## 2026-11-08 away queue (HANDOVER Now 2026-11-08g)
 - [ ] Merge desklayers-1108 (C1, C4), appacts-1108 (D1, D2), dgmlive-1108 (diagram real-browser checks), deskmood-1108 (sad when left alone, welcome back, confused on a missed landing): targeted tests, reviewer on UI, push
