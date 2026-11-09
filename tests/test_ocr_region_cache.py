@@ -233,3 +233,29 @@ def test_a_failed_read_is_shared_not_repeated_by_the_asks_queued_behind_it(clien
     for t in threads:
         t.join()
     assert len(calls) == 1, len(calls)
+
+
+def test_a_shared_miss_never_stops_a_different_ask_from_reading(client, monkeypatch) -> None:
+    """Review of the 30 s miss share: its key left out `auto`, so "not read yet" from a vision-model page
+    (`auto=false`, no reader run) was served to the Tesseract ask that followed, and the reader never ran."""
+    from tessellate.api import routes_files
+    from tessellate.core import ocr
+
+    routes_files._REGION_MISSES.clear()
+    calls = []
+    monkeypatch.setattr(ocr, "extract_regions", lambda *a, **k: calls.append(1))
+    aid = _attach(client, "scan.png", PNG)
+    client.get(f"/files/{aid}/ocr-regions?auto=false")
+    client.get(f"/files/{aid}/ocr-regions?auto=true")
+    assert calls == [1], calls
+
+
+def test_a_page_read_drops_the_shared_miss_for_that_page() -> None:
+    """A miss shared for 30 s must not outlive a reading stored for the same page: storing it drops the miss."""
+    from tessellate.api import routes_files
+
+    routes_files._REGION_MISSES.clear()
+    routes_files._REGION_MISSES[("k", 1, 0, "p", True, "", 0)] = (0.0, None)
+    routes_files._REGION_MISSES[("k", 1, 3, "p", True, "", 0)] = (0.0, None)
+    routes_files._forget_region_misses(("k", 1), 0)
+    assert list(routes_files._REGION_MISSES) == [("k", 1, 3, "p", True, "", 0)]

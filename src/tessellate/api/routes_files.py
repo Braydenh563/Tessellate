@@ -2421,6 +2421,7 @@ def _remember_regions(key: tuple[str, int] | None, page: int, out: OcrRegionsOut
     rather than of the regions, and `_pdf_regions_for` sets both on the way
     out. Storing them would be a page count going stale in a cache.
     """
+    _forget_region_misses(key, page)
     if not key or out.source not in {"tesseract", "edited-tesseract", "edited-vision"}:
         return
     kind, source_id = key
@@ -2547,19 +2548,38 @@ def _regions_for(
         #: A read that found no regions (an error, a timeout, no Tesseract) is not stored, so the asks queued behind it
         #: would each read again, one after another: they share its answer for a short while instead (keyed by the
         #: file too, so a reused row id in another notebook never sees it).
-        missed = _REGION_MISSES.get((*key, page, str(path)))
+        #: Keyed by every input of the answer (the reader, `auto`, the stored text), so a different ask is never
+        #: served another's miss; only a reader run is shared (`auto` off runs none: nothing to save).
+        miss_key = (*key, page, str(path), bool(auto), str(choice or ""), hash(stored_text or ""))
+        missed = _REGION_MISSES.get(miss_key) if auto else None
         if missed is not None and time.monotonic() - missed[0] < REGION_MISS_FOR:
             return missed[1]
         out = _regions_read(path, stored_text, stored_label, key, page, auto, choice)
-        if _stored_regions(key, page) is None:
-            _REGION_MISSES[(*key, page, str(path))] = (time.monotonic(), out)
+        if auto and _stored_regions(key, page) is None:
+            _prune_region_misses()
+            _REGION_MISSES[miss_key] = (time.monotonic(), out)
         else:
-            _REGION_MISSES.pop((*key, page, str(path)), None)
+            _REGION_MISSES.pop(miss_key, None)
         return out
 
 
 REGION_MISS_FOR = 30.0
 _REGION_MISSES: dict[tuple, tuple[float, OcrRegionsOut]] = {}
+
+
+def _prune_region_misses() -> None:
+    """Drop the expired shares, so the dict holds only the last 30 s of misses, never one per page ever asked."""
+    now = time.monotonic()
+    for k in [k for k, (at, _) in _REGION_MISSES.items() if now - at >= REGION_MISS_FOR]:
+        _REGION_MISSES.pop(k, None)
+
+
+def _forget_region_misses(key: tuple[str, int] | None, page: int) -> None:
+    """A reading stored for this page ends any miss shared for it (the next ask reads the store, not "not read yet")."""
+    if not key:
+        return
+    for k in [k for k in _REGION_MISSES if k[:3] == (*key, page)]:
+        _REGION_MISSES.pop(k, None)
 
 
 _REGION_LOCKS: dict[tuple[str, int, int], threading.Lock] = {}
@@ -2959,6 +2979,7 @@ def _remember_page_read(key: tuple[str, int] | None, result: OcrPageReadOut, rea
     """
     if not key or not (result.text or "").strip():
         return
+    _forget_region_misses(key, int(result.page))
     kind, source_id = key
     try:
         with deps.get_db().session() as session:
