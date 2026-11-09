@@ -2,7 +2,7 @@
 
 Generated 2026-11-09 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7951, frontend ids 2652, CSS sections 523, backend routes 649, backend modules 9351, test files 2315, tests 19278, plan headings 1008, app scripts 28, boot scripts 37, script files 266.
+Counts: frontend functions 7951, frontend ids 2652, CSS sections 523, backend routes 649, backend modules 9351, test files 2316, tests 19281, plan headings 1008, app scripts 28, boot scripts 37, script files 266.
 
 ## Frontend functions (7951)
 
@@ -24989,7 +24989,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (19278)
+## Tests (19281)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -25402,6 +25402,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_composer_dates_1029.py | 12 |
 | tests/test_composer_dates_1441.py | 8 |
 | tests/test_composer_dates_1483.py | 12 |
+| tests/test_composer_days_1109.py | 3 |
 | tests/test_composer_days_1668.py | 8 |
 | tests/test_composer_dog2_1025.py | 16 |
 | tests/test_composer_doings_z23.py | 5 |
