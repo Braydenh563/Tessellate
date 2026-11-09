@@ -1209,6 +1209,7 @@ class Engine:
             self.hang_on = None
         if state != "fly":
             self.wrapping = None
+            self.away_until = None  # only a flight can be out of view above the top
         if state not in ("peek", "emerge") and self.wrapping is None:
             self.sink, self.peek_edge, self.tuck = 0.0, None, None
         if state not in ("walk", "drift", "crouch"):
@@ -2872,7 +2873,9 @@ class Engine:
         from the top and land. Returns the entrance chosen ('' when it stays put: reduced motion, or not standing)."""
         if self.reduced or self.state != "stand" or not self.roam:
             return ""
-        pick = self.rng.choices(["portal", "puff", "edge", "drop"], [4.0, 2.0, 3.0, 2.0 if self.gait != "float" else 0.0])[0]
+        # A drop needs an open top: with a screen above, it would come in on that one and land there.
+        drop = 2.0 if self.gait != "float" and self._open_side(self.current_monitor(), "top") else 0.0
+        pick = self.rng.choices(["portal", "puff", "edge", "drop"], [4.0, 2.0, 3.0, drop])[0]
         if pick == "drop":
             self.y = self.current_monitor().area[1] - self.size[1]
             self._start_fall(0.0)
@@ -4014,6 +4017,9 @@ class Engine:
         kind, px, py = event
         if kind == "down":
             self.press = (px, py)
+            if self.state == "fly":  # caught on its way back in through the top (`_return_top`): held inside the screen
+                self.away_until = None
+                self.y = max(self.y, self.current_monitor().area[1])
             frame = self._frame(now)
             drawn_x, drawn_y, _clip = self._display(frame)
             #: Held by where it is drawn: the pointer keeps its place on the figure.

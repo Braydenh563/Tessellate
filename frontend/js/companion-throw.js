@@ -333,7 +333,7 @@ function companionThrowPick(list, rand, last) {
   return w[prev === w[i][0] ? (i + 1) % w.length : i][0];
 }
 function companionThrowAim(y, vx, vy, rand) {
-  if (companionThrowLeaves(vx, vy)) return "sky";
+  if (companionThrowLand.leave.leaves(vx, vy)) return "sky";
   const memo = companionThrowMemo.aim;
   const up = vy < -1.2 && -vy >= Math.abs(vx);
   if (!up && Math.abs(vx) < 1.2) return "near";
@@ -350,30 +350,10 @@ function companionThrowAim(y, vx, vy, rand) {
 
 //: **Past the line it always leaves through the top** (INBOX 1719 a, the owner: "if I throw the companion up hard is it
 //: possible for it to keep flying up and eventually fall down based on how hard the throw was"; the desk's
-//: `CEIL_LEAVE`): a throw faster than `LEAVE[0]` px per ms and steep goes off the top, no hang, no bounce, and stays out
-//: of view from `LEAVE[1][0]` ms at the line to `LEAVE[1][1]` at the hardest throw (`companionThrowAway`).
+//: `CEIL_LEAVE`): a throw faster than `leave.at[0]` px per ms and steep goes off the top, no hang, no bounce, and stays out
+//: of view from `at[1][0]` ms at the line to `at[1][1]` at the hardest throw (`leave.away`).
 //: `[3]` stretches the aim for the air's drag; `[4]` is the body's height (`NMB_H`): hidden once its corner is that far above the top.
-const COMPANION_THROW_LEAVE = [2.0, [1000, 8000], 2.3, 1.35, 92];
-function companionThrowLeaves(vx, vy) {
-  return -vy >= COMPANION_THROW_LEAVE[0] && -vy >= 1.5 * Math.abs(vx);
-}
-function companionThrowAway(vy) {
-  const [line, [lo, hi], top] = COMPANION_THROW_LEAVE;
-  return lo + (hi - lo) * Math.min(1, Math.max(0, (-vy - line) / (top - line)));
-}
-//: The gravity on the way up that keeps it above the top for `ms` (up on `g`, back down on the full `g0`): bisected.
-function companionThrowAwayLift(y, vy, g0, ms) {
-  const time = (g) => Math.sqrt(Math.max(0, vy * vy - 2 * g * y)) * (1 / g + 1 / g0);
-  let lo = 0.00005;
-  let hi = g0;
-  for (let i = 0; i < 40; i += 1) {
-    const mid = (lo + hi) / 2;
-    if (time(mid) > ms) lo = mid;
-    else hi = mid;
-  }
-  return hi;
-}
-
+//: Kept on `companionThrowLand.leave` (below) so the shared scope's name count does not grow.
 //: Gravity on the way up for a throw that leaves the top: light enough that
 //: from `y` its arc clears the top by `COMPANION_THROW_CLEAR` (the thinner
 //: air leaves about four fifths of the drag-free climb), never heavier than
@@ -404,10 +384,10 @@ function companionThrowPlan(x, y, vx, vy, world, shaken = false) {
   //: Far, round the side or up off the top: through thinner air, and longer.
   if (aim === "far" || aim === "wrap" || aim === "sky") feel.air *= 0.45;
   if (aim === "far") feel.ground *= 0.5;
-  const leaves = !still && aim === "sky" && companionThrowLeaves(vx, vy);
-  const away = leaves ? companionThrowAway(vy) : 0;
+  const leaves = !still && aim === "sky" && companionThrowLand.leave.leaves(vx, vy);
+  const away = leaves ? companionThrowLand.leave.away(vy) : 0;
   if (!still) feel.ms = aim === "sky" ? 3600 + away : 2000;
-  if (aim === "sky") feel.lift = leaves ? companionThrowAwayLift(y - world.top + COMPANION_THROW_LEAVE[4], -vy, feel.g, away * COMPANION_THROW_LEAVE[3]) : companionThrowLift(y, vy, feel.g);
+  if (aim === "sky") feel.lift = leaves ? companionThrowLand.leave.lift(y - world.top + companionThrowLand.leave.at[4], -vy, feel.g, away * companionThrowLand.leave.at[3]) : companionThrowLift(y, vy, feel.g);
   let s = { x, y, vx, vy, rot: 0, t: 0, on: null, rest: false, tried: {}, ...(still ? {} : { aim, arrive, sky: aim === "sky" }) };
   const path = [s];
   //: A cap past any flight's own (1.2 s, a splat's slide): it always ends.
@@ -494,6 +474,28 @@ const companionThrowLand = {
     n.rot += ((down ? n.lie : 0) - n.rot) * Math.min(1, dt / (down ? 60 : 150));
     n.lying = down && Math.abs(n.rot - n.lie) < 6;
     n.sink = Math.abs(Math.sin((n.rot * Math.PI) / 180)) * L.sink;
+  },
+};
+companionThrowLand.leave = {
+  at: [2.0, [1000, 8000], 2.3, 1.35, 92],
+  leaves(vx, vy) {
+    return -vy >= this.at[0] && -vy >= 1.5 * Math.abs(vx);
+  },
+  away(vy) {
+    const [line, [lo, hi], top] = this.at;
+    return lo + (hi - lo) * Math.min(1, Math.max(0, (-vy - line) / (top - line)));
+  },
+  //: The gravity on the way up that keeps it above the top for `ms` (up on `g`, back down on the full `g0`): bisected.
+  lift(y, vy, g0, ms) {
+    const time = (g) => Math.sqrt(Math.max(0, vy * vy - 2 * g * y)) * (1 / g + 1 / g0);
+    let lo = 0.00005;
+    let hi = g0;
+    for (let i = 0; i < 40; i += 1) {
+      const mid = (lo + hi) / 2;
+      if (time(mid) > ms) lo = mid;
+      else hi = mid;
+    }
+    return hi;
   },
 };
 

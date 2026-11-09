@@ -292,7 +292,7 @@ def test_a_hand_catch_holds_even_mid_tumble_or_slide() -> None:
 
 @needs_node
 def test_a_throw_past_the_line_leaves_the_top_for_longer_the_harder_and_lands_inside() -> None:
-    # INBOX 1719 (a): past `COMPANION_THROW_LEAVE[0]` it always leaves (never a hang or bounce); the time with the whole
+    # INBOX 1719 (a): past `companionThrowLand.leave.at[0]` it always leaves (never a hang or bounce); the time with the whole
     # body above the top grows with the speed and is capped; it comes back in and rests inside, per seed the same.
     got = _many(
         "(() => { const out = {}; for (const v of [2.0, 2.075, 2.15, 2.225, 2.3]) { companionThrowMemo.aim = {}; companionThrowSeed.seed = 7;"

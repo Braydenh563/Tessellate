@@ -16,6 +16,7 @@ import subprocess
 import sys
 import tempfile
 import threading
+import time
 import uuid
 import logging
 from datetime import datetime, timezone
@@ -2543,7 +2544,22 @@ def _regions_for(
         cached = _stored_regions(key, page)
         if cached is not None:
             return cached
-        return _regions_read(path, stored_text, stored_label, key, page, auto, choice)
+        #: A read that found no regions (an error, a timeout, no Tesseract) is not stored, so the asks queued behind it
+        #: would each read again, one after another: they share its answer for a short while instead (keyed by the
+        #: file too, so a reused row id in another notebook never sees it).
+        missed = _REGION_MISSES.get((*key, page, str(path)))
+        if missed is not None and time.monotonic() - missed[0] < REGION_MISS_FOR:
+            return missed[1]
+        out = _regions_read(path, stored_text, stored_label, key, page, auto, choice)
+        if _stored_regions(key, page) is None:
+            _REGION_MISSES[(*key, page, str(path))] = (time.monotonic(), out)
+        else:
+            _REGION_MISSES.pop((*key, page, str(path)), None)
+        return out
+
+
+REGION_MISS_FOR = 30.0
+_REGION_MISSES: dict[tuple, tuple[float, OcrRegionsOut]] = {}
 
 
 _REGION_LOCKS: dict[tuple[str, int, int], threading.Lock] = {}

@@ -116,7 +116,9 @@ def test_a_throw_bounces_off_the_wall_with_damping_and_a_short_startle(monkeypat
 
 def test_a_throw_that_hits_the_ceiling_hangs_then_lets_go_and_falls() -> None:
     e = make()
-    out, t = throw(e, to=(900, 100), start=(850, 600))
+    # Intent moved (INBOX 1719 a): a throw past `CEIL_LEAVE` leaves the top, so this one is slower (about 2,300 px/s,
+    # over the ceiling's catch line, under the leave line) and still hangs.
+    out, t = throw(e, to=(900, 100), start=(850, 600), gap=0.054)
     seen, frames = False, []
     # A hang lasts 30 to 200 s since INBOX 1670 (13:28Z); the old 40 s bound only held while the draw happened to be short.
     while t < 260 and not (seen and e.state in ("land", "stand")):

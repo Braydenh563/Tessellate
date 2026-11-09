@@ -171,7 +171,11 @@ def ride(look: str, gait: str, seed: int, ticks: int = 2000) -> dict[str, float]
             else:
                 ev = ("move", px, py)
         o = e.update(t, (px, py), ev)
-        if o.clip:
+        # Intent moved (INBOX 1719 a): a throw past the leave line goes off the top on purpose (out through it, then
+        # alpha 0 while away, then falling back in through it), so those frames are skipped like a clipped one; every other
+        # throw still counts. The way back in is the flight `_return_top` launched (`AWAY_FALL`).
+        back = e.state == "fly" and e.launch[1] == eng.AWAY_FALL * e._scale()
+        if o.clip or o.alpha == 0 or e.away_until is not None or back or (e.state == "fly" and e._leaves()):
             continue
         left, top, right, bottom = boxes[(o.frame, o.flip)]
         worst["left"] = max(worst["left"], AREA[0] - (o.x + left))

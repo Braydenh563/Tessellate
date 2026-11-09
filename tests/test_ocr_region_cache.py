@@ -206,3 +206,30 @@ def test_a_page_whose_regions_are_stored_is_not_counted_as_read(client, monkeypa
     stored = client.get(f"/files/{attachment_id}/page-reads").json()
     assert stored["read"] == 0
     assert all(not (page["text"] or "").strip() for page in stored["pages"])
+
+
+def test_a_failed_read_is_shared_not_repeated_by_the_asks_queued_behind_it(client, monkeypatch) -> None:
+    """Review of INBOX 1716's page lock: a read that finds nothing is not stored, so four overlapping asks ran the
+    reader four times one after another (2 s for a 0.5 s failing reader). They now share the first answer."""
+    import threading
+    import time
+
+    from tessellate.api import routes_files
+    from tessellate.core import ocr
+
+    routes_files._REGION_MISSES.clear()
+    calls = []
+
+    def slow_fail(path, *a, **k):
+        calls.append(1)
+        time.sleep(0.3)
+        return None
+
+    monkeypatch.setattr(ocr, "extract_regions", slow_fail)
+    aid = _attach(client, "scan.png", PNG)
+    threads = [threading.Thread(target=lambda: client.get(f"/files/{aid}/ocr-regions")) for _ in range(4)]
+    for t in threads:
+        t.start()
+    for t in threads:
+        t.join()
+    assert len(calls) == 1, len(calls)

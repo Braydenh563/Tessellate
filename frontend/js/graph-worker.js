@@ -265,6 +265,7 @@ function flatTree() {
     for (let i = 0; i < count; i++) {
       const x = xs[i];
       const y = ys[i];
+      if (x !== x || y !== y) continue; // a NaN is left out, as d3's addAll does (`cover` skips it too)
       const leaf = t.newLeaf(i);
       if (!t.root) {
         t.root = -(leaf + 1);
