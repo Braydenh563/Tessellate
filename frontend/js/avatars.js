@@ -9978,9 +9978,7 @@ function nameMarkBuddyHeadAt() {
   }
   return [nmb.x + NMB_W / 2, nmb.y + NMB_HEAD / 2 + (nmb.pose === "hang" ? NMB_DROP : 0), Math.max(0.7, nmb.scale || 1)];
 }
-//: **A wave after a pause** (INBOX 1711 b, the desk's `WAVE_IDLE`, `WAVE_NEAR` and `WAVE_GAP`): the pointer rests
-//: within 420px of a standing, idle companion for 8s, it waves once for that rest, 150s apart.
-//: A property of `nmb`, not a function of its own: the shared scope's name count only goes down.
+//: A wave when the pointer rests near (INBOX 1711 b, the desk's WAVE_*); on `nmb` to keep the name count down.
 nmb.waveRest = (x, y) => {
   const NMB_WAVE_IDLE = 8000, NMB_WAVE_NEAR = 420, NMB_WAVE_GAP = 150000;
   clearTimeout(nmb.waveRestTimer);
