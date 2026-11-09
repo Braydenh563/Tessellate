@@ -113,3 +113,15 @@ def test_a_document_that_embeds_a_diagram_previews_a_readable_label_not_the_embe
     assert _clip("Intro line\n\n![[Trip map]]\n\nafter") == "Intro line · Diagram: Trip map · after"
     assert _clip("![[Diagram 2026-11-09 19:11]]") == "Diagram 2026-11-09 19:11"
     assert _preview("Intro line\n\n![[Trip map]]\n\nafter") == "Intro line · Diagram: Trip map · after"
+
+
+def test_a_diagram_opened_from_a_document_offers_the_way_back_to_that_document():
+    docs = (JS / "documents.js").read_text(encoding="utf-8")
+    assert "const from = openDocument.back && currentDoc && currentDoc.id !== id ?" in docs and "openDocument.back = false;" in docs
+    # The crumb names the parent, and a press goes there; every other open says Documents again.
+    assert "crumb.dataset.from = from ? from.id : \"\";" in docs
+    assert "openDocument(Number(crumb.dataset.from))" in docs
+    # The three ways an embedded diagram (or a link to a document) opens another document ask for it.
+    assert (JS / "mermaid-draw.js").read_text(encoding="utf-8").count("openDocument.back = true;") == 2
+    assert "openDocument.back = true;\n      openDocument(target.doc.id);" in (JS / "documents-embeds.js").read_text(encoding="utf-8")
+    assert ".doc-back-label {\n  max-width:" in (ROOT / "frontend" / "css" / "library-lazy.css").read_text(encoding="utf-8")

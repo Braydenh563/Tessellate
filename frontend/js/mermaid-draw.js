@@ -570,6 +570,7 @@ mermaidFill.embed = async (box, doc, name) => {
     open.textContent = `${doc.title || "Diagram"}: open the diagram`;
     open.addEventListener("click", (event) => {
       event.stopPropagation();
+      openDocument.back = true;
       openDocument(doc.id);
     });
     //: A double click is two presses: the first opens the diagram, and the second lands on the page that replaced this one
@@ -593,6 +594,7 @@ mermaidFill.embed = async (box, doc, name) => {
     box.addEventListener("click", (event) => {
       if (event.target.closest("button, a")) return;
       event.stopPropagation();
+      openDocument.back = true;
       calm();
       openDocument(doc.id);
     });
