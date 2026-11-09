@@ -1853,8 +1853,9 @@ body.scroll-top-visible #tab-notes .layout > .tab-main {
 /* The tags field sat flush under the content box (the owner at release:
    "no gap between the note content and tags textbox"). On the field, not
    `#graph-popup-content + ...`: the text box is wrapped in a
-   `.note-surface`, so that sibling rule matched nothing. */
-#graph-popup-tags {
+   `.note-surface`, so that sibling rule matched nothing. The new-note box has the same pair (the owner 2026-11-09). */
+#graph-popup-tags,
+#graph-new-tags {
   margin-top: var(--space-3);
 }
 
