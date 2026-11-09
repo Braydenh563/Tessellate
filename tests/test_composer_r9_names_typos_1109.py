@@ -38,3 +38,11 @@ def test_only_names_are_the_vocabulary():
     assert "hannah" in names and "club" not in names
     assert composer_names.respell("what about pairs", names) == "what about pairs"
     assert composer_names.respell("what about hanna", names) == "what about hannah"
+
+
+def test_a_word_that_only_starts_a_sentence_is_not_a_name():
+    """"Pick up the parcel" is capitalised for its place, so "lock" is not read as "pick" (the engine dialogue eval)."""
+    notes = [{"content": "Pick up the parcel and post the letter for Hannah."}]
+    names = composer_names.names_of(notes)
+    assert "pick" not in names and "hannah" in names
+    assert composer_names.respell("what about the bike lock", names) == "what about the bike lock"

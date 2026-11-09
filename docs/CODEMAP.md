@@ -2,7 +2,7 @@
 
 Generated 2026-11-09 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7951, frontend ids 2652, CSS sections 523, backend routes 649, backend modules 9368, test files 2323, tests 19326, plan headings 1008, app scripts 28, boot scripts 37, script files 266.
+Counts: frontend functions 7951, frontend ids 2652, CSS sections 523, backend routes 649, backend modules 9369, test files 2320, tests 19314, plan headings 1008, app scripts 28, boot scripts 37, script files 266.
 
 ## Frontend functions (7951)
 
@@ -13204,7 +13204,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:164 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (9368)
+## Backend modules (9369)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -15017,12 +15017,13 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `spent_only` | src/tessellate/ai/composer_money.py:475 |
 | `sums_a_measure` | src/tessellate/ai/composer_money.py:1201 |
 
-### src/tessellate/ai/composer_names.py (2)
+### src/tessellate/ai/composer_names.py (3)
 
 | Name | File:line |
 |---|---|
-| `names_of` | src/tessellate/ai/composer_names.py:19 |
-| `respell` | src/tessellate/ai/composer_names.py:25 |
+| `_opens_a_sentence` | src/tessellate/ai/composer_names.py:23 |
+| `names_of` | src/tessellate/ai/composer_names.py:30 |
+| `respell` | src/tessellate/ai/composer_names.py:41 |
 
 ### src/tessellate/ai/composer_notes.py (19)
 
@@ -25016,7 +25017,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (19326)
+## Tests (19314)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -25521,13 +25522,12 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_composer_r9_follow_1109.py | 5 |
 | tests/test_composer_r9_lead_1109.py | 6 |
 | tests/test_composer_r9_names_1109.py | 4 |
-| tests/test_composer_r9_names_typos_1109.py | 4 |
+| tests/test_composer_r9_names_typos_1109.py | 5 |
 | tests/test_composer_r9_runs_1109.py | 6 |
 | tests/test_composer_r9_tally_1109.py | 7 |
 | tests/test_composer_r9_tick_1109.py | 1 |
 | tests/test_composer_r9_typos_1109.py | 3 |
 | tests/test_composer_r9_values_1109.py | 5 |
-| tests/test_composer_r9_words_1109.py | 11 |
 | tests/test_composer_ranker_1029.py | 12 |
 | tests/test_composer_redos_1026.py | 4 |
 | tests/test_composer_redos_1109.py | 5 |
@@ -27343,8 +27343,6 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_zoom_frame_1508.py | 3 |
 | tests/test_zoom_wheel_delta.py | 3 |
 | tests/test_zoom_wrap_1717.py | 18 |
-| tests/test_zz_probe3_tmp.py | 1 |
-| tests/test_zz_probe_tmp.py | 1 |
 
 ## Plan headings (1008)
 
