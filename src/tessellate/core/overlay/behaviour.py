@@ -146,17 +146,28 @@ def scaled(p: Pose, amp: float) -> Pose:
 Keys = tuple[tuple[float, float, float, float], ...]  # (u, sx, sy, lean)
 
 
+def sample3(keys: Keys, u: float, ease: Any = smooth) -> tuple[float, float, float]:
+    """`sample` as the bare (sx, sy, lean): the act look-ahead reads it thirty times a wake."""
+    if not keys:
+        return 1.0, 1.0, 0.0
+    first = keys[0]
+    if u <= first[0]:
+        return first[1], first[2], first[3]
+    a = first
+    for b in keys[1:]:
+        if u <= b[0]:
+            k = ease((u - a[0]) / max(1e-6, b[0] - a[0]))
+            return a[1] + (b[1] - a[1]) * k, a[2] + (b[2] - a[2]) * k, a[3] + (b[3] - a[3]) * k
+        a = b
+    last = keys[-1]
+    return last[1], last[2], last[3]
+
+
 def sample(keys: Keys, u: float, ease: Any = smooth) -> Pose:
     """The pose at `u` (0 to 1 through the activity), eased between keyframes."""
     if not keys:
         return NEUTRAL
-    if u <= keys[0][0]:
-        return Pose(keys[0][1], keys[0][2], keys[0][3])
-    for a, b in zip(keys, keys[1:]):
-        if u <= b[0]:
-            k = ease((u - a[0]) / max(1e-6, b[0] - a[0]))
-            return Pose(a[1] + (b[1] - a[1]) * k, a[2] + (b[2] - a[2]) * k, a[3] + (b[3] - a[3]) * k)
-    return Pose(keys[-1][1], keys[-1][2], keys[-1][3])
+    return Pose(*sample3(keys, u, ease))
 
 
 class Activity(NamedTuple):

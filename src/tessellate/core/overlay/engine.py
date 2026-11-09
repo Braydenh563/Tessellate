@@ -4493,9 +4493,33 @@ class Engine:
         """The next time the body pose crosses a step of the cache grid, looking ahead."""
         base = bh.quantised(self.cur)
         t = now
+        if self.state == "act" and not self.reduced and self.turn_to == 0:
+            return self._next_act_pose_change(now, horizon, base)
         while t < now + horizon:
             t += POSE_LOOK_STEP  # a display frame: the 50 ms look-ahead stepped an act's pose at 20 a second (INBOX 1683)
             if bh.quantised(self._target_pose(t)) != base:
+                return t
+        return now + horizon
+
+    def _next_act_pose_change(self, now: float, horizon: float, base: bh.Pose | None) -> float:
+        """`_next_pose_change` for an act with no turn: `_target_pose`'s act branch with everything that does not change
+        over the look-ahead read once (the same arithmetic in the same order, so the same poses)."""
+        keys = bh.ACTIVITIES[self.act or "breathe"].keys
+        started, length = self.act_started, max(0.01, self.act_len)
+        ease, amp = self.act_var.ease, self.act_var.amp
+        side = 1 if self.facing > 0 else -1
+        drag = self.tail.tip
+        shift_at, flip = self.shift_at, 1 if self.mind.shifts % 2 else -1
+        t = now
+        while t < now + horizon:
+            t += POSE_LOOK_STEP
+            sx, sy, lean = bh.sample3(keys, (t - started) / length, ease)
+            sx, sy, lean = 1.0 + (sx - 1.0) * amp, 1.0 + (sy - 1.0) * amp, lean * amp * side
+            u = (t - shift_at) / SHIFT_FOR
+            if 0.0 <= u < 1.0:
+                lean += SHIFT_LEAN * math.sin(math.pi * u) * flip
+                sy -= 0.02 * math.sin(math.pi * u)
+            if bh.quantise(sx, sy, lean, drag) != base:
                 return t
         return now + horizon
 
