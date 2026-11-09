@@ -614,9 +614,10 @@ def _asked_span(question: str, terms: list[str]) -> str:
     end = lower.rfind(terms[-1])
     if start < 0 or end < start:
         return ""
-    span = question[start : end + len(terms[-1])]
-    #: "book am I reading" is the question's own words between two terms, not a subject (R3-36, D19).
-    return "" if _OWN_VERB.search(span) else span
+    #: The span may hold the question's own verb ("book am I reading"); the chips refuse
+    #: such a topic in `composer_digest._topic_chips` (R3-36, D19), while a follow-on
+    #: ("what about the garden?") swaps the whole span, so it must stay here.
+    return question[start : end + len(terms[-1])]
 
 
 def _insights_for(question: str, terms: list[str], views: list[NoteView], today: date) -> list:
