@@ -50,11 +50,9 @@ APP_ONLY = frozenset({
     "trans.sit>curl", "trans.sit>edge_dangle", "trans.sit>lounge", "trans.sit>upright", "trans.upright>back_float",
     "trans.upright>curl", "trans.upright>lie", "trans.upright>sit",
 })
-DESK_ONLY = frozenset({
-    "react.battery_low", "react.hour_chime", "react.idle_return", "react.window_closed", "react.window_dragged",
-    "react.window_maximised", "react.window_opened", "react.window_restored"
-})
-APP_ONLY_CAP, DESK_ONLY_CAP, NEITHER_CAP = 49, 8, 92
+#: What is left has no browser meaning (INBOX 1710): a page is never told its window opened, closed or was dragged.
+DESK_ONLY = frozenset({"react.window_closed", "react.window_dragged", "react.window_opened"})
+APP_ONLY_CAP, DESK_ONLY_CAP, NEITHER_CAP = 49, 3, 92
 
 
 @lru_cache(maxsize=1)

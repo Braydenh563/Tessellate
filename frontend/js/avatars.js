@@ -9159,6 +9159,16 @@ const NMB_REACTIONS = {
   whoosh: { cool: 30000, habit: true },
   carried: { cool: 20000, habit: true, over: ["look"] },
   binned: { cool: 30000, habit: true },
+  //: **What the desk companion notices on the desk, the browser's version** (INBOX 1710, the owner: "they need to be just as
+  //: good as each other"; the same five rows as the desk's `REACTIONS`, with the same cooldowns): the hour struck while
+  //: the page is open (a nod), the page back after ten minutes away (a wave), the battery low and not charging (a shiver of
+  //: worry; `navigator.getBattery`, where the browser has it), the window made much larger or smaller, or fullscreen
+  //: entered and left (`nameMarkBuddySenses`). The desk's window opened, closed and dragged have no page to happen to.
+  hour_chime: { cool: 50 * 60 * 1000, ms: 1200, world: true, play: ["nod", "happy", 1500] },
+  idle_return: { cool: 60 * 1000, ms: 1800, world: true, play: ["wave", "happy", 2000] },
+  battery_low: { cool: 10 * 60 * 1000, ms: 1400, world: true, play: ["wiggle", "serious", 2200] },
+  window_maximised: { cool: 10000, ms: 1200, world: true, play: ["glance", "surprised", 1200] },
+  window_restored: { cool: 10000, ms: 1200, world: true, play: ["nod", "happy", 1200] },
 };
 const NMB_REACT_GAP = 6000;
 function nameMarkBuddyReact(kind, target = null) {
@@ -9166,6 +9176,7 @@ function nameMarkBuddyReact(kind, target = null) {
   const spec = NMB_REACTIONS[kind];
   if (!buddy || !spec || nameMarkBuddyStill() || document.hidden || nameMarkBuddyMenuOpen()) return false;
   if (buddy.classList.contains("nm-buddy-dragging") || buddy.classList.contains("nmb-sleep")) return false;
+  if (spec.world && (document.documentElement.dataset.motion === "reduced" || nameMarkBuddyActOff("habits"))) return false;
   const now = Date.now();
   nmb.reactCool = nmb.reactCool || {};
   if ((nmb.reactCool[kind] || 0) > now || now - (nmb.reactAt || 0) < NMB_REACT_GAP) return false;
@@ -9224,6 +9235,11 @@ function nameMarkBuddyReact(kind, target = null) {
     nameMarkBuddyAct("hide", spec.ms);
   } else if (kind === "remark") {
     nameMarkBuddyRemark();
+  } else if (spec.world) {
+    //: [act, face, face ms]
+    const [act, face, ms] = spec.play;
+    nameMarkBuddyExpress(face, ms);
+    nameMarkBuddyAct(act);
   } else if (spec.habit) {
     nmb.mind.saw(kind, buddy, now);
   }
@@ -9276,6 +9292,53 @@ document.addEventListener("change", (event) => {
     setTimeout(() => nameMarkBuddyReact("graph", document.querySelector("#tab-graph svg, #tab-graph canvas")), 400);
   }
 });
+
+//: The world beyond the page (`NMB_REACTIONS.hour_chime` and its four): one set of listeners, none while the companion is off
+//: (`nameMarkBuddyReact` refuses then). The hour is a timer to the next one; the battery is read once and on its events.
+function nameMarkBuddySenses() {
+  if (nmb.sensesOn) return;
+  nmb.sensesOn = true;
+  const hour = () => {
+    const now = new Date();
+    const wait = 3600000 - (now.getMinutes() * 60 + now.getSeconds()) * 1000 - now.getMilliseconds() + 500;
+    setTimeout(() => {
+      nameMarkBuddyReact("hour_chime");
+      hour();
+    }, wait);
+  };
+  hour();
+  //: Away is a hidden page or a window that lost focus; coming back after ten minutes is a welcome.
+  let away = 0;
+  const left = () => (away ||= Date.now());
+  const back = () => {
+    if (away && Date.now() - away >= 600000) nameMarkBuddyReact("idle_return");
+    away = 0;
+  };
+  document.addEventListener("visibilitychange", () => (document.hidden ? left() : back()));
+  window.addEventListener("blur", left);
+  window.addEventListener("focus", back);
+  let area = window.innerWidth * window.innerHeight;
+  let timer = 0;
+  window.addEventListener("resize", () => {
+    clearTimeout(timer);
+    timer = setTimeout(() => {
+      const now = window.innerWidth * window.innerHeight;
+      if (now > area * 1.3) nameMarkBuddyReact("window_maximised");
+      else if (now < area / 1.3) nameMarkBuddyReact("window_restored");
+      area = now;
+    }, 300);
+  });
+  document.addEventListener("fullscreenchange", () => nameMarkBuddyReact(document.fullscreenElement ? "window_maximised" : "window_restored"));
+  if (typeof navigator.getBattery === "function") {
+    navigator.getBattery().then((bat) => {
+      const check = () => bat.level <= 0.2 && !bat.charging && nameMarkBuddyReact("battery_low");
+      bat.addEventListener("levelchange", check);
+      bat.addEventListener("chargingchange", check);
+      setTimeout(check, 20000);
+    }).catch(() => {});
+  }
+}
+nameMarkBuddySenses();
 
 //: The app's own events, for the companion to react to: `think` while a
 //: chat turn runs, `cheer` when a note is saved or an answer lands,
