@@ -481,6 +481,11 @@ def stand_x(p: "Perch", x: float, width: float) -> float:
     half = min(width * PERCH_FEET / 2, (p.right - p.left) / 2)
     return min(max(x + width / 2, p.left + half), p.right - half) - width / 2
 PERCH_MOVED = 3.0
+#: A ground leg crossed as a chain of hops (INBOX 1683 u, the owner: travel that is seen, a varied mix): one arc every
+#: `HOP_SPAN` figure widths of ground, `HOP_RISE` of the figure's height at the top, eased to nothing over the last
+#: span so the leg lands on its goal and the start rises with the pace.
+HOP_SPAN = 1.1
+HOP_RISE = 0.16
 LEAP_BASE = 0.45
 LEAP_SPEED = 1800.0
 #: Hopping down off a window: the push (logical px per second).
@@ -793,6 +798,8 @@ class Engine:
         self.pose_dyn = [bh.SecondOrder(*POSE_DYN[0], 1.0), bh.SecondOrder(*POSE_DYN[1], 1.0), bh.SecondOrder(*POSE_DYN[2], 0.0)]
         self.last_x = 0.0
         self.travel = 0.0
+        #: A hop-chain leg: whether this walk is one, where its ground count began, and how high the figure is drawn now.
+        self.hopping, self.hop_origin, self.hop_lift, self.hop_next = False, 0.0, 0.0, False
         self.trips = 0
         #: The rare long walk across the screen (owner: only on a good mood, never twice within an hour).
         self.last_long_walk = -1e9
@@ -1174,6 +1181,8 @@ class Engine:
             self.sink, self.peek_edge, self.tuck = 0.0, None, None
         if state not in ("walk", "drift", "crouch"):
             self.goal = None
+        if state != "walk":
+            self.hopping, self.hop_lift = False, 0.0
         if state != "peek":
             self.peek_flip, self.peek_show = False, 0.0
         if state != "held":
@@ -2668,6 +2677,7 @@ class Engine:
         if self.gait == "walk" and dist < 1.0:
             self._arrive(now)
             return
+        mode = ""
         if not plain and dist > 12 * self._scale():
             mode = self._leg_mode(goal, then)
             if mode == "edge":  # walks off one edge, comes in from the other (a warp only for the slip itself)
@@ -2681,12 +2691,17 @@ class Engine:
         far = dist / self._scale()
         self.mode = self._leg_pace(far, plain)
         self.pending = (goal, then)
-        if self.mode == "dash" and not self.reduced and self.gait == "walk":
-            self._enter("crouch", now)  # a crouch before a long run
+        if self._winds_up(mode):
+            self._enter("crouch", now)  # a crouch before a long run or a chain of hops
             self.pending = (goal, then)
             self._face(1 if goal[0] >= self.x else -1, now)  # the turn rides the crouch, so the walk does not set off with a stale facing and stand turning
             return
         self._begin_go(now)
+
+    def _winds_up(self, mode: str) -> bool:
+        """Whether the leg starts with a crouch: a run, or a chain of hops (`hop_next`, taken by `_begin_go`)."""
+        self.hop_next = mode == "jump" and not self.reduced
+        return (self.mode == "dash" or self.hop_next) and not self.reduced and self.gait == "walk"
 
     def _leg_pace(self, far: float, plain: bool) -> str:
         """step, walk or dash for a leg `far` logical px long; a chosen leg takes its pace from its mode (INBOX 1683 u)."""
@@ -2703,6 +2718,7 @@ class Engine:
         self.then = then
         if self.gait == "walk":
             self._enter("walk", now)
+            self.hopping, self.hop_origin, self.hop_next = self.hop_next, self.travel, False
             self.goal = goal
             self._face(1 if goal[0] >= self.x else -1, now)
         else:
@@ -3726,6 +3742,7 @@ class Engine:
             self._face(-self.facing, now)
         else:
             self.x = nx
+            self._hop_arc(left)
             floor = self.floor_y(bounds)
             if floor > self.y + 0.5:
                 self._start_fall(0.0)
@@ -3734,6 +3751,16 @@ class Engine:
                 self._enter("hop", now)
         if self.state == "walk" and now >= self.state_until:
             self._enter("stand", now)
+
+    def _hop_arc(self, left: float | None) -> None:
+        """The lift of a hop-chain step: a half sine per span of ground, eased in with the pace and out over the last
+        span. Only the drawing is lifted (`_display`); the body stays on its floor, so nothing here can fall."""
+        if not self.hopping:
+            return
+        span = HOP_SPAN * self.size[0]
+        u = ((self.travel - self.hop_origin) / span) % 1.0
+        fade = 1.0 if left is None else bh.smooth(left / span)
+        self.hop_lift = math.sin(math.pi * u) * HOP_RISE * self.size[1] * min(1.0, self.pace_last) * fade
 
     def _reach(self, nx: float) -> Monitor | None:
         """The monitor the figure may stand on at `nx`, or None past the last one:
@@ -4219,6 +4246,8 @@ class Engine:
             return f"card{int((now - self.walk_started) / CARD_WALK_SWAP) % 2}"
         if self.gait == "float":
             return self._stream_frame(now)
+        if self.hopping and self.hop_lift > 0.35 * HOP_RISE * self.size[1]:
+            return "hop"  # tucked while it is in the air, the stride on the ground
         return f"walk{int(self.travel / (STRIDE * WALK_FRAMES / self.walk_frames * self._scale())) % self.walk_frames}"
 
     def _stream_frame(self, now: float) -> str:
@@ -4547,7 +4576,8 @@ class Engine:
             return self.x, yb, (0, max(0, top - yb + (side - h) // 2), side, side)
         x, y = self.x, self.y
         # a bonk shows the startle frame in mid-air: no foot offset of its own
-        y += self._dy("held" if self.state == "fly" else frame)
+        y += self._dy("held" if self.state == "fly" else frame)  # each frame is registered to the floor, so a hop's drawn feet are `hop_lift` above it
+        y -= self.hop_lift if self.hopping else 0.0
         x += self._flip_dx(frame, self.facing < 0)
         if self.peek_edge == "top" or (self.state == "rise" and self.then == "peek_top"):
             # hands over the top edge: what is above the play area's top (behind the bar, or off the screen) is clear
