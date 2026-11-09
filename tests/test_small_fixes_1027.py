@@ -59,7 +59,8 @@ def test_a_lasting_toast_steps_aside_for_the_buttons_of_the_section_in_use():
     body = js[js.index("function toastYield(target = document.activeElement) {"):]
     body = body[: body.index("\n}\n")]
     assert 'const area = target.closest("form, section, [role=dialog]");' in body
-    assert 'area?.querySelectorAll("button:not(.panel-grip)")' in body  # INBOX 1548: not the resize grip
+    # INBOX 1548: not the resize grip; bt-compcomp-1109 item 24: nor Settings' own buttons (the toast faded behind them)
+    assert 'area?.querySelectorAll("button:not(.panel-grip, #settings-modal *)")' in body
     assert '(area?.role == "dialog" || !el.toastTimer) && work.some(' in body
     #: E2E import, 2026-11-02: the sheet's card re-centred after focus landed, so the
     #: check measured the old place of Import; openSheet runs it again once focus has settled.
