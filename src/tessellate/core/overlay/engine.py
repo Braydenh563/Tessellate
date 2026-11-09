@@ -2311,7 +2311,9 @@ class Engine:
         scrabble (`_do_hang` pulls up when it ends), else the drop."""
         self.hang_on = None
         top = next((q for q in self.windows if q.key == p.key), None)
-        if top is not None and top.kind == "top" and top.top - self.size[1] >= self.current_monitor().area[1] and self.rng.random() < self._grip_chance(now):
+        #: Only where the edge still is: a window that moved away leaves nothing under the hands (INBOX 1699, CI 2679d8f).
+        stays = top is not None and abs(top.top - p.top) <= PERCH_MOVED
+        if stays and top.kind == "top" and top.top - self.size[1] >= self.current_monitor().area[1] and self.rng.random() < self._grip_chance(now):
             self.last_slip, self.pulling = "pull", top
             self.scrabble_t0, self.scrabble_until = now, now + SCRABBLE_FOR
             self.state_until = self.scrabble_until
