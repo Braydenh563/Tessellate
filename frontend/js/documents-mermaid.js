@@ -47,10 +47,10 @@
   //: kind of diagram is null.
   const DGM_MAX_NODES = 120;
   const DGM_SHAPES = [
-    ["([", "])", "stadium"], ["((", "))", "circle"], ["{{", "}}", "hexagon"],
+    ["([", "])", "stadium"], ["((", "))", "circle"], ["{{", "}}", "hexagon"], ["[(", ")]", "cylinder"], ["[/", "/]", "parallelogram"],
     ["[", "]", "rect"], ["(", ")", "round"], ["{", "}", "diamond"],
   ];
-  const DGM_UNREAD_SHAPE = /^(?:\[\[|\[\(|\[[/\\|]|\(\(\(|>|@\{|:::|\{\{\{)/;
+  const DGM_UNREAD_SHAPE = /^(?:\[\[|\[[\\|]|\(\(\(|>|@\{|:::|\{\{\{)/;
   const DGM_KEPT = /^(?:%%|(?:style|classDef|class|linkStyle|click|direction|default)\s|acc(?:Title|Descr)\b)/;
   const DGM_OTHER = /^(?:sequenceDiagram|classDiagram|stateDiagram|erDiagram|journey|gantt|pie|mindmap|timeline|gitGraph|C4\w+|quadrantChart|requirementDiagram|sankey|xychart|block|packet|kanban|architecture|zenuml)\b/i;
   //: Longest first, so `-.->` is not read as `-.-` and a stray `>`.

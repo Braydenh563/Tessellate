@@ -14,8 +14,9 @@
   // ---------------------------------------------------------------------------
   // The pane
   // ---------------------------------------------------------------------------
-  const SHAPE_LABEL = { rect: "Box", round: "Rounded", stadium: "Pill", circle: "Circle", diamond: "Decision", hexagon: "Hexagon" };
-  const SHAPE_TEXT = { rect: "Step", round: "Step", stadium: "Start", circle: "Event", diamond: "Question?", hexagon: "Prepare" };
+  //: Filled from `diagramOps.LABEL` and `.TEXT` when the pane opens (the tables live in diagram-ops.js).
+  const SHAPE_LABEL = {};
+  const SHAPE_TEXT = {};
   //: A narrow window or a touch screen: the phone's palette sheet and pinch.
   const COMPACT = "(max-width: 599.98px), (pointer: coarse)";
   //: Whole icon names, so tests/test_icon_names.py can check each is in the font.
@@ -461,7 +462,7 @@
     if (mod) return;
     if (diagramModel.bar.chain(event, S, key, block, addBlock)) return;
     const low = event.key.length === 1 ? event.key.toLowerCase() : event.key;
-    //: 1 to 7 add a shape, Shift+N the last one used (diagram-bar.js, 1661 D2).
+    //: 1 to 9 add a shape, Shift+N the last one used (diagram-bar.js, 1661 D2).
     const picked = diagramModel.bar.key(event);
     if (picked && event.key !== "N") {
       event.preventDefault();
@@ -658,6 +659,8 @@
     const early = Promise.all([ensureModule("diagramKindbar"), ...(kind === "flowchart" ? [ensureModule("diagramBar"), ensureModule("diagramSteps"), ensureModule("diagramOutline")] : [])]);
     await Promise.all(["/css/objmove-lazy.css", "/js/obj-ref.js", "/js/obj-drag.js", "/js/diagram-picture.js", "/js/diagram-library.js", "/js/diagram-pointer.js", "/js/diagram-ops.js"].map((file) => lazyScript(file)));
     diagramOps = helpers.ops = diagramModel.ops;
+    Object.assign(SHAPE_LABEL, diagramOps.LABEL);
+    Object.assign(SHAPE_TEXT, diagramOps.TEXT);
     if (typeof OBJ_MODES === "object" && !OBJ_MODES.diagram) OBJ_MODES.diagram = diagramModel.pointer.make(helpers);
     kit.dropMark ||= diagramModel.pointer.dropMark;
     if (kind === "flowchart" && !(await early).every(Boolean)) return host.replaceChildren(el("p", "muted", "The block editor did not load. Source still works."));

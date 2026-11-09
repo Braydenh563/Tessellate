@@ -27,8 +27,8 @@ def test_the_add_library_is_grouped_by_meaning_and_every_tile_has_a_hint():
     flow = library.split("const FLOW = [", 1)[1].split("\n  ];", 1)[0]
     for group in ("Steps", "Decisions", "Start and end", "Notes and groups"):
         assert f'["{group}", [' in flow, group
-    shapes = re.findall(r'\["(rect|round|hexagon|diamond|stadium|circle|note|group)", "([^"]+)"\]', flow)
-    assert sorted(s for s, _ in shapes) == sorted(["rect", "round", "hexagon", "diamond", "stadium", "circle", "note", "group"])
+    shapes = re.findall(r'\["(rect|round|hexagon|cylinder|parallelogram|diamond|stadium|circle|note|group)", "([^"]+)"\]', flow)
+    assert sorted(s for s, _ in shapes) == sorted(["rect", "round", "hexagon", "cylinder", "parallelogram", "diamond", "stadium", "circle", "note", "group"])
     assert all(hint.endswith(".") and len(hint) < 60 for _, hint in shapes), shapes
     # One builder for every kind: the other kinds' tiles carry a group and a hint too.
     kinds = _read("diagram-kinds.js")

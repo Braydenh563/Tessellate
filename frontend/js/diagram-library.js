@@ -15,7 +15,7 @@
 
   //: The flowchart's tiles by meaning: [group, [[shape, hint], ...]]. A note is a rounded block that says "Note".
   const FLOW = [
-    ["Steps", [["rect", "A step or an action."], ["round", "A softer step, for a state or a result."], ["hexagon", "A set-up or preparation step."]]],
+    ["Steps", [["rect", "A step or an action."], ["round", "A softer step, for a state or a result."], ["hexagon", "A set-up or preparation step."], ["cylinder", "Stored data, like a database."], ["parallelogram", "Something coming in or going out."]]],
     ["Decisions", [["diamond", "A question that leads to a yes or a no."]]],
     ["Start and end", [["stadium", "Where a flow starts or stops."], ["circle", "Something that happens, like a message arriving."]]],
     ["Notes and groups", [["note", "A remark; connect it to what it is about."], ["group", "A frame round blocks that belong together."]]],

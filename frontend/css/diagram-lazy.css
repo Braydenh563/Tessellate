@@ -164,6 +164,15 @@
   clip-path: polygon(20% 0, 80% 0, 100% 50%, 80% 100%, 20% 100%, 0 50%);
 }
 
+/* A database is a box with round ends top and bottom; an input or output leans, like a flowchart's slanted box. */
+.dgm-shape[data-shape="cylinder"] {
+  border-radius: 50% / 28%;
+}
+
+.dgm-shape[data-shape="parallelogram"] {
+  transform: skewX(-18deg);
+}
+
 .dgm-group-icon {
   flex: none;
   color: var(--accent-text);

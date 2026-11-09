@@ -7,6 +7,7 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 - Diagram builder: the shelf's more menu keeps each block's glyph on its own row even if the menu regroups its rows (the glyph rides on the menu item, not on the row's position).
+- Diagram builder: a database (cylinder, `[("text")]`) and an input or output (parallelogram, `[/"text"/]`) are shapes in the Add and shape menus (keys 8 and 9) and are read and printed back instead of kept as a line; the name, key and label tables live once in diagram-ops.js. Both-ways arrows (`<-->`) were already built in 1679 slice 10 and the first-branch label ask in INBOX 1679 (R12). Measured at 1440: the menu lists 8 shapes with glyphs 15x11 and 19x11, the Database glyph has `border-radius: 50% / 28%`, the Input glyph a -18 degree skew; choosing Database on a decision prints `C[("Ready?")]`.
 - Diagram Guide: a sequence diagram's keyboard way to insert at a gap is named (Insert in the blocks list adds a step under the selected one), since the + at a gap is pointer-only.
 - Extras downloads: a 429 or 503 that says Retry-After is waited out (up to 30 s, else the usual 2 s and 5 s), and Stop during that wait ends the install without another request.
 - Chat: restoring a note from the bin by number or by words now finds notes binned long ago, not only the 500 most recently binned.

@@ -8,7 +8,6 @@
 // Keys: Shift+click a range, Ctrl or Cmd+click one more, Ctrl+A all, Shift+Up or Down to extend, Escape to drop the pick.
 // The bar is the Library's selection bar (DESIGN.md, "A list you manage").
 (() => {
-  const SHAPES = { rect: "Box", round: "Rounded", stadium: "Pill", circle: "Circle", diamond: "Decision", hexagon: "Hexagon" };
   const skip = ".menu-wrap, .dgm-join, .dgm-connect, .dgm-swatch, [contenteditable]";
 
   function wire(S, h) {
@@ -33,7 +32,7 @@
     };
     const shapeBtn = tool("ph:diamond Shape", "Give every selected box one shape", () => {
       const r = shapeBtn.getBoundingClientRect();
-      openMenuAtPoint(ops.SHAPES.map((shape) => ({ label: SHAPES[shape], run: () => shapeAll(shape) })), "Shape of the selected blocks", r.left, r.bottom, shapeBtn);
+      openMenuAtPoint(ops.SHAPES.map((shape) => ({ label: ops.LABEL[shape], run: () => shapeAll(shape) })), "Shape of the selected blocks", r.left, r.bottom, shapeBtn);
     });
     shapeBtn.setAttribute("aria-haspopup", "menu");
     //: Colour (K) is the lazy style sheet over the picked boxes; Connect joins the first picked to the second (1679 slice 10).
@@ -116,7 +115,7 @@
         const node = k[0] === "n" && ops.node(S.m, k.slice(2));
         if (node) (node.shape = shape), n++;
       }
-      if (n) h.commit(S, `${n} blocks are now ${SHAPES[shape].toLowerCase()}.`);
+      if (n) h.commit(S, `${n} blocks are now ${ops.LABEL[shape].toLowerCase()}.`);
       else say("Only boxes take a shape.");
     }
     async function connectTwo() {

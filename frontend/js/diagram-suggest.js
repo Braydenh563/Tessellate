@@ -70,7 +70,7 @@
   // DIAGRAM-GHOST-END
 
   const count = (n, one, many) => `${n} ${n === 1 ? one : many}`;
-  const SHAPE_NAME = { rect: "box", round: "rounded box", stadium: "pill", circle: "circle", diamond: "decision", hexagon: "hexagon" };
+  const SHAPE_NAME = { rect: "box", round: "rounded box", stadium: "pill", circle: "circle", diamond: "decision", hexagon: "hexagon", cylinder: "database", parallelogram: "input or output" };
   const NOUN = { flowchart: "flowchart", mindmap: "mind map", timeline: "timeline", sequence: "sequence diagram" };
 
   //: Whether the diagram has nothing in it a suggestion could clash with.
