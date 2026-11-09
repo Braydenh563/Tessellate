@@ -3363,7 +3363,7 @@ MORE_TOPICS.extend([
         "body": (
             "The list says Your blocks, in the order the chart flows; its foot has Add block and Connect. A block sits under the one that points at it, "
             "indented where it branches (a straight run of steps stays flush), and a block made by Connect to... lands under its siblings, so an org chart reads like the chart. "
-            "The printed source keeps its own order; Alt+Up and Alt+Down move a block among its siblings, and say so when the list would not change; drag a grip to move it. "
+            "Add block joins the new box to the picked (or last) one. Alt+Up and Alt+Down swap a block with its neighbour in the chain (a branch says to drag its grip). "
             "A block's arrows share one line under it; press one for its menu: the line (arrow, line, dotted, thick, Both ways), Colour… and Reverse direction. "
             "With two or more blocks picked, the bar also has Colour (K) and Connect, which draws an arrow from the first picked to the second. "
             "Fit stops at readable text (11 px) and the picture scrolls past it. In the picture an arrow key picks the box that way, reading aloud its name and arrows, and Shift with an arrow moves the picture. A tall chart in a wide pane offers Turn it sideways once; Direction is a menu of Down, Right, Up and Left, and Shift turns it back one step. "

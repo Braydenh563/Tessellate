@@ -67,3 +67,19 @@ def test_the_row_menu_and_the_drop_go_through_the_outline_so_the_list_really_cha
     builder = _js("diagram-builder.js")
     assert "diagramModel.outline.move(S, helpers, key, dir)" in builder
     assert "diagramModel.outline.drop(m, g.key, target)" in _js("diagram-pointer.js")
+
+
+@needs_node
+def test_a_new_block_joins_the_picked_block_or_else_the_last_one():
+    got = _run(
+        FILES,
+        "(() => { const m = chain(['A','B','C']); return [o.tail(m, 'n:B'), o.tail(m, null), o.tail(m, 'g:G'), o.tail({nodes: [], edges: []}, null)]; })()",
+    )
+    assert got == ["B", "C", None, None]
+
+
+def test_add_block_connects_what_it_adds_unless_a_drop_a_group_or_a_caller_said_otherwise():
+    builder = _js("diagram-builder.js")
+    assert "from = !group && !into && before === undefined ? diagramModel.outline.tail(m, sel) : null" in builder
+    # The default is "not said"; a caller that passes no `from` gets the join, one that passes null does not.
+    assert "from = undefined" in builder.split("function addBlock(", 1)[1].split(") {", 1)[0]

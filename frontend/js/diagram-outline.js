@@ -115,6 +115,9 @@
     return key[0] === "n" && over[0] === "n" && m.edges.some((e) => e.from === from && e.to === to) && swap(m, key, op === "before" ? -1 : 1);
   }
 
+  //: The block a new one is joined to (dgbt-1109 6): the picked block, or with nothing picked the last one; a picked group is nothing to join.
+  const tail = (m, sel) => (sel ? (sel[0] === "n" ? sel.slice(2) : null) : m.nodes.at(-1)?.id ?? null);
+
   //: A box (a Mermaid subgraph) around one block, from its menu (1679 m); around several is the selection bar's "Box them". `h` is the builder's helpers.
   function box(S, h, key) {
     const id = diagramModel.ops.wrap(S.m, [key]);
@@ -123,5 +126,5 @@
     h.commit(S, `Boxed ${h.name(S, key)}. Rename the box to say what it holds.`);
   }
 
-  diagramModel.outline = { order, offer, stuck, swap, move, drop, box };
+  diagramModel.outline = { order, offer, stuck, swap, move, drop, tail, box };
 })();

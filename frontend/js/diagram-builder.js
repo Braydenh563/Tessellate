@@ -340,13 +340,15 @@
   //: A shape, or a group, added after the block `after`, inside the group `into`,
   //: or (neither) after the selection. `edit` opens its label for typing.
   //: `from` is a block id to connect to the new one, in the same change (Connect to…, A new block).
-  function addBlock(S, { shape = S.shape, group = false, after = S.sel, into = null, before = undefined, edit = true, text = SHAPE_TEXT[shape], from = null, label = "" } = {}) {
+  function addBlock(S, { shape = S.shape, group = false, after = S.sel, into = null, before = undefined, edit = true, text = SHAPE_TEXT[shape], from = undefined, label = "" } = {}) {
     const m = S.m;
     const sel = after && !into ? after : null;
     const parent = into ? diagramOps.split(into)[1] : sel ? diagramOps.parentOf(m, sel) : null;
     const next = sel ? diagramOps.sisters(m, sel) : null;
     const sisters = next ? next.keys.filter((k) => k[0] === (group ? "g" : "n")) : [];
     const ahead = before !== undefined ? before : sel && sisters.includes(sel) ? sisters[sisters.indexOf(sel) + 1] || null : null;
+    //: Joined after the picked (or last) block, as "in the order the chart flows" says; a drop, a group or an explicit `from` is left as it is.
+    if (from === undefined) from = !group && !into && before === undefined ? diagramModel.outline.tail(m, sel) : null;
     const id = group ? diagramOps.addGroup(m, { parent, before: ahead }) : diagramOps.addNode(m, { shape, text, group: parent, before: ahead });
     if (!id) return say(S, group ? "That group cannot be added." : `A diagram holds at most ${diagramOps.MAX} blocks.`);
     if (!group) S.shape = shape;
