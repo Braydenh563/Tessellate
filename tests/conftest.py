@@ -12,6 +12,7 @@ from contextvars import Context, ContextVar
 import shutil
 import sys
 from pathlib import Path
+from datetime import date
 
 import pytest
 from fastapi.testclient import TestClient
@@ -146,6 +147,22 @@ def _own_run_folder(tmp_path, monkeypatch):
     (core/run_records.py); it goes to the test's folder, never the
     developer's own per-user one."""
     monkeypatch.setenv("TESSELLATE_RUN_DIR", str(tmp_path / "_run"))
+
+
+#: The suite's fixed day (a Saturday, the same day `_frozen_clock.FIXED_NOW` uses).
+SUITE_DAY = date(2026, 8, 1)
+
+
+@pytest.fixture(autouse=True)
+def _fixed_day(monkeypatch):
+    """No test reads the real calendar through `clock.today()` (CLAUDE.md
+    section 8: tests use a fixed clock). The chat reply seed carries the day,
+    so composer wording flipped between runs (1693 a, 8 failures on 2026-11-07).
+    A test that sets its own day with `monkeypatch.setattr(clock, "today", ...)`
+    runs after this fixture and wins."""
+    from tessellate.core import clock
+
+    monkeypatch.setattr(clock, "today", lambda: SUITE_DAY)
 
 
 @pytest.fixture(autouse=True)
