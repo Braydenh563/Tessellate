@@ -27,7 +27,8 @@ def test_menus_are_decorated_through_the_element_not_its_host():
     assert "return menu;" in _text("markdown.js").split("function openMenuAtPoint")[1].split("function linkMenuItems")[0]
     assert ".pointer-menu-host .action-menu" not in _text("diagram-kindbar.js")
     assert "const menu = openMenuAtPoint(" in _text("diagram-kindbar.js")
-    assert "const menu = openMenuAtPoint(" in _text("diagram-library.js")
+    # review 5820115183: the shelf hands each glyph over with its own row (`lead`), so nothing is looked up after opening
+    assert ".pointer-menu-host" not in _text("diagram-library.js") and "lead: lead(t)" in _text("diagram-library.js")
 
 
 def test_coarse_handles_lean_fully_out_of_the_box():

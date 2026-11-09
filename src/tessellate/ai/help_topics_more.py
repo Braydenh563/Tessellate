@@ -3361,15 +3361,14 @@ MORE_TOPICS.extend([
         ),
         "body": (
             "Kind, in the Title row (first in the toolbar elsewhere), is a menu of Flowchart, Sequence, Mind map and Timeline, "
-            "each with a small picture; one starts a new, empty diagram of that kind (Ctrl+Z brings the old one back). A block's ... menu has Box this block, a group round it; "
+            "each with a small picture; one starts a new, empty diagram of that kind. A block's ... menu has Box this block, a group round it; "
             "the bar over picked blocks has Box them. "
             "Blocks draw flowcharts, mind maps, timelines and sequence diagrams: the first word of "
             "the source says which, and the bar offers that kind's blocks. A mind map has a branch "
             "and a leaf (B and N) under its centre. A timeline has a section, a period and an event "
             "(S, P and E), the events inside their period. A sequence diagram has an actor, "
             "participant, message, reply, async, lost, note, loop, alt, opt, parallel, critical and break (A, P, M, R, Y, X, T, "
-            "L, G, O, U, C and B); the first message adds the two participants it needs, a reply runs back "
-            "between the same two, and an alt starts with its else and a parallel box with its and. The pane works as a flowchart's "
+            "L, G, O, U, C and B); the first message adds the two participants it needs, and an alt starts with its else and a parallel box with its and. The pane works as a flowchart's "
             "does: drag a block to move or nest it, double-click a name, the ... menu, "
             "arrows, Enter, Delete, Alt+arrows, Ctrl+Z. A line the "
             "blocks do not show stays where it was, and a diagram they cannot read (a second mind "
@@ -3377,8 +3376,7 @@ MORE_TOPICS.extend([
             "On a sequence picture a press picks a part, a double press, Enter or F2 renames it there, Delete removes it, Alt+Up or Alt+Down moves it, "
             "a head dragged sideways reorders, a drag from one lifeline to another adds a message there, and the + at a gap opens the Add menu; "
             "from the keyboard, Insert in the blocks list adds a step under the selected one. "
-            "Suggest works in each: Templates include a brainstorm, a plan, a sign in and a "
-            "request and reply. A suggestion of the diagram's own kind arrives as ghosts to take; "
+            "Suggest works in each, and Templates has one of each kind. A suggestion of the diagram's own kind arrives as ghosts to take; "
             "one of another kind says so and is left out when the diagram has blocks, and replaces "
             "a blank one. Hand-drawn look, in the ... menu, sketches any of them; Clean look takes it back."
         ),
