@@ -134,8 +134,8 @@ def _run(body: str) -> dict:
     parts = [
         "const log = []; const live = new Set();",
         "function tpl(name, ids) { const host = { name }; return { dataset: { surface: name }, parentNode: host,"
-        " content: { getElementById: (id) => (ids.includes(id) ? { id } : null) },"
-        " replaceWith() { ids.forEach((i) => live.add(i)); log.push('stamp ' + name); } }; }",
+        + " content: { getElementById: (id) => (ids.includes(id) ? { id } : null) },"
+        + " replaceWith() { ids.forEach((i) => live.add(i)); log.push('stamp ' + name); } }; }",
         "const tpls = [tpl('settings', ['sync-now']), tpl('board', ['whiteboard-container'])];",
         "const document = { querySelectorAll: () => tpls, getElementById: (id) => (live.has(id) ? { id, live: 1 } : null) };",
         "const window = { initHelpToggles: (h) => log.push('help ' + h.name) };",
