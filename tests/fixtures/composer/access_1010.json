@@ -88,6 +88,7 @@
     "meeting": "start a meeting",
     "pin": "pin the dentist note",
     "complete": "tick off read chapter 5",
+    "uncomplete": "untick read chapter 5",
     "unpin": "unpin the dentist note",
     "link": "link the gym note to the running note",
     "unlink": "unlink the gym note from the running note",
