@@ -7,6 +7,805 @@ Split out of `ROADMAP.md`. Kept, not deleted, for one reason: **three sessions
 have independently rebuilt something that already existed.** This is the file
 that answers "has this been done?" before anyone starts.
 
+## Moved from the plans, 2026-11-09 (book5-1109: WORLD_CLASS_PLAN)
+
+INBOX 410, placed 2026-10-03, built in full 2026-09-24 (templates confirm, the Guide's controls reference, the map part, Check with AI in place, the dockable suggestions panel, the dictionary sheet); its own last line says nothing of 410 is open.
+
+From WORLD_CLASS_PLAN.md (lines 2558 to 2600 before the move), verbatim:
+
+410. **The owner, 2026-09-24, verbatim, with screenshots of the writing
+    dictionary, New from a template, the map's radial menus and two linked
+    map nodes.** "also improve how the \"check with ai\" feature works in the
+    documents editor, allow the suggestions panel to be docked on the right
+    instead if the user wishes and redesign the dictionary panel as it is
+    ugly and needs a proper professional modern redesign." "also when
+    selecting a template, I want to be able to confirm my template
+    selection, not have it instantly be made when I press it" "is there a
+    way to make these mind map item radial options fit better in the
+    radials?? also what if the user asks the guide for all the hidden
+    features, keybinds, controls, utility and more for features like the
+    whiteboard, mindmap and documents editor etc. can it answer those??"
+    "also fix the ci and codeql errors" "when I relink or newly link two
+    mindmap nodes, they clump together??" "drag selection on the whiteboard
+    and mindmap is laggy as well". Read from the screenshots: the radial's
+    labelled pills overhang the ring (a 2-item edge ring and the 6-item node
+    ring both); a relinked node lands on top of its new parent instead of
+    being laid out as its child. CI: four routing rows fixed 2026-09-24 (three
+    moved to topics added that day, "Can Atlas write for me?" gets a new
+    write-with-atlas topic). Placed: documents (check with AI, dockable
+    suggestions, dictionary), templates (confirm), the Guide's per-surface
+    controls reference, map (radial fit, relink layout, marquee lag), in
+    agent briefs as slots free.
+    **Templates (confirm) built 2026-09-24** (bf54953): a click chooses,
+    Use this template, Enter or a double click makes it; sweep
+    `templatepick.js`. 
+    **The Guide's part built 2026-09-24** (guide-controls agent): a controls
+    reference per surface and a hidden features entry, routed by what the
+    question asks c05c684; 55 bank questions (177, top-1 99.4%, top-3 100%)
+    1385b0e; a freshness test against every bound key a164dc2; the caps
+    (a 422 after a long answer and on the fifth question, the reply cut
+    mid-list) 5cb7f8f. Map part built (radial fit 13c41d7, relink b449623, marquee 18b8c15).
+    **The documents' part built 2026-09-24** (the documents agent): Check
+    with AI runs in place, streamed into the suggestions panel with Apply,
+    Dismiss and Stop, a no-model notice with Settings, Models, and Discuss in
+    chat with no long prompt (so no skill nudge, the INBOX 413 half)
+    (cd5dec1, `aicheck.js`); the panel docks at the bottom or on the right,
+    resizable, remembered, always bottom at 720px and below (a8c822a,
+    `prosedock.js`); the dictionary as a settings sheet (bbeda8e,
+    `dictsheet.js`); the Capture box's templates confirm too (26e8d9b,
+    `notetemplatepick.js`). Nothing of 410 is open now; it stays for the
+    orchestrator to resolve with 413.
+
+## Moved from the plans, 2026-11-09 (book5-1109: WORLD_CLASS_PLAN)
+
+Rows of "What is left, 2026-09-24" that are struck through and sized done with nothing left over (rows 1, 2, 4, 7, 8, 9, 11, 12, 14, 15, 20, 24, 30, 31 and 33), each already naming its HISTORY record and tests. Rows that are built but carry a 'left:' remainder stay in the table.
+
+From WORLD_CLASS_PLAN.md (lines 790 to 791 before the move), verbatim:
+
+| 1 | ~~F3, §16~~ | ~~`semantic_search` reads and parses every vector per request~~ built 2026-09-24: scores against the engine's matrix; 5,000 notes 19 to 74 ms before, 1.0 to 1.2 ms after (`tests/test_semantic_search_matrix.py`) | done | HISTORY |
+| 2 | ~~§12, Brief 15~~ | ~~S1, S2, S3, the rest of S5, S6, `/debug/health` paths~~ built 2026-09-24; ~~`tests/test_lan.py`, the switch and its Settings toggle~~ built 2026-09-26; ~~LAN mode over IPv6~~ built 2026-10-04 (`netbind.listening_socket`, one dual-stack socket; the `[::1]` launcher test skips where the machine has no IPv6) | done | HISTORY |
+
+From WORLD_CLASS_PLAN.md (lines 793 to 793 before the move), verbatim:
+
+| 4 | ~~D2, 261~~ | ~~the connections rail always visible on desktop, which is also where `GET /resurface/near` would show~~ built 2026-09-27 (`#notes-rail` at 1280 and wider, the sheet below, by decision); re-measured 2026-10-04 with `notesrail.js` on the showcase notebook, 30/30 light and 30/30 dark at 1440, 1280, 1024 and 390 | done | HISTORY; D2 |
+
+From WORLD_CLASS_PLAN.md (lines 796 to 798 before the move), verbatim:
+
+| 7 | ~~I3, H2~~ | ~~the questions view, `GET /questions`, the Ask scope, the answered-by link~~ built 2026-10-04 (`ai/questions.py`, `routes_questions.py`, Notes, Questions; `tests/test_questions_spec.py`, 500 questions listed under 100 ms) | done | HISTORY |
+| 8 | ~~Placed 2026-09-13~~ | ~~`/files/gallery`'s five callers onto `apiPagedList`, then its default to 200~~ built 2026-09-24 (`tests/test_gallery_paging.py`) | done | HISTORY |
+| 9 | ~~§16~~ | ~~cache `similar_pairs` for link suggestions and tensions~~ built 2026-09-24: keyed by the matrix's version; 5,000 notes 322 to 104 ms a repeat request (`tests/test_similar_pairs_cache.py`) | done | HISTORY |
+
+From WORLD_CLASS_PLAN.md (lines 800 to 801 before the move), verbatim:
+
+| 11 | ~~§17~~ | ~~review queue, filing style, explain this note, most opened this month (S each); tidy proposals, charts from questions (M each); `.ics` export built 2026-09-26~~ built 2026-10-05 (`routes_vision.py`, `ask-chart.js`; `tests/test_vision_rows_row11.py`) | done | HISTORY |
+| 12 | ~~D6~~ | ~~the calendar strip, the yesterday/tomorrow pair and the month popover~~ built 2026-10-04 (`timeline.js`, `note-cards.js`; HISTORY, "the consistency contract's missing lints") | done | HISTORY |
+
+From WORLD_CLASS_PLAN.md (lines 803 to 804 before the move), verbatim:
+
+| 14 | ~~A8~~ | ~~the '?' help on every tab's dock (Chat and Graph have it)~~ built 2026-10-04: Dashboard and Reminders were the two docks without one (`tests/test_dock_help_507.py` fails on a dock with none) | done | HISTORY |
+| 15 | ~~§1.3~~ | ~~Remind me on documents and boards (the reminder must point at other kinds first), Show in graph for a document, the Library note card's Remind me and Link to~~ built 2026-10-05 (`Reminder.document_id`, `target_kind`; `tests/test_reminder_targets_row15.py`) | done | HISTORY |
+
+From WORLD_CLASS_PLAN.md (lines 809 to 809 before the move), verbatim:
+
+| 20 | ~~I7~~ | ~~the "Learned from you" line with a filing accuracy number~~ built 2026-10-05 (`learning.filing_accuracy`, `GET /learned/summary`, `tests/test_learned_accuracy.py`); 24 notes, 5 moved: 67% to 92% | done | HISTORY |
+
+From WORLD_CLASS_PLAN.md (lines 813 to 813 before the move), verbatim:
+
+| 24 | ~~D9~~ | ~~the web clipper~~ built 2026-10-05: `POST /links/clip-page` from the browser, the Clip to Tessellate bookmark and `clip.html` (`tests/test_webclip_page.py`) | done | HISTORY |
+
+From WORLD_CLASS_PLAN.md (lines 819 to 820 before the move), verbatim:
+
+| 30 | ~~§5~~ | ~~notes' unlinked mentions, word count and reading time; `{{clipboard}}` and a cursor mark; move to a space and export from a selection; the bin for documents and reminders~~ built: unlinked mentions with KG1 (2026-10-04); the rest 2026-10-05 (`tests/test_selection_actions_row30.py`, `tests/test_bin_documents_reminders_row30.py`) | done | HISTORY |
+| 31 | ~~Placed 2026-09-09~~ | ~~1 capture into the selected space and a bulk move; 99 (b) scroll restore, (c) the AI dot's latency tooltip, (d) Paste as note; 92's row redesign; 97 RapidOCR; 79 and 22 to 23 not re-checked; 261's vault re-key (`POST /auth/rotate-vault-key`) has no UI~~ built or found built 2026-10-05 (`tests/test_placed_0909_row31.py`, `scratchpad/ui-sweeps/nbf1005-recheck.js`); 97 decided not to build (a new Python dependency) | done | HISTORY |
+
+From WORLD_CLASS_PLAN.md (lines 822 to 822 before the move), verbatim:
+
+| 33 | ~~§21~~ | ~~rows 1 and 2 on the notice recipe, row 12's "check the address" in the status line, row 13's update size in the About page~~ built 2026-10-05 (`tests/test_failure_ways_out_row33.py`) | done | HISTORY |
+
+## Moved from the plans, 2026-11-09 (book5-1109: GRAPH_PLAN)
+
+INBOX 41, 78 and 59, placed from 2026-09-09, found built and still standing whole (41's clean-up is Phase 4, built 2026-09-09 and 2026-09-13; 78 is Phase 6b, built 2026-09-13 with its measurements; 59 is Phase 6, the node panel, built 2026-09-09).
+
+From GRAPH_PLAN.md (lines 174 to 200 before the move), verbatim:
+
+41. **(the panel: fixed, 5724587 and dbff8f0; the clean-up is Phase 4)**
+    **Graph display options belong on the dock, and the options panel
+    needs a redesign**; the graph needs a utility, UI and interaction
+    clean-up. Owner: GRAPH Phase 2 remainder (gear button, INBOX 21) and
+    Phase 4; the panel on the popover shell with the dock-menu sections.
+78. **Graph minimap UX and utility**: Phase 6b, **built 2026-09-13**. The
+    draggable viewport rectangle, click-to-jump, wheel zoom about the pointer
+    and cluster-coloured dots landed earlier; this pass added the last two,
+    the size toggle and the fade when the whole graph already fits. Size is a
+    Small/Large select beside Position in the dock's Minimap section (the map
+    itself is `aria-hidden` decoration that happens to be draggable, so a
+    focusable control inside it would be one no screen reader could reach),
+    and Large is the same picture at 1.5x, scaled on the element so the
+    projection and the drag keep working off the rendered width they already
+    measure. The fade is on the viewport rectangle's own area against the box,
+    not on the zoom scale: "everything fits" is a fact about this graph's
+    extent at this window size. Measured
+    (`scratchpad/ui-sweeps/minimap6b.js`, 1440x950, 297 notes): fit-to-screen
+    at k 0.56 gives a 168x112 rectangle, redundant true, opacity 0.12; at k
+    1.6 the rectangle is 78.5x45.3, redundant false, opacity 0.45; Large
+    renders 252x168 with the projection intact.
+59. **Graph node popup panel redesign** (screenshot, 00:50; the owner:
+    "include redesigning the graph node popup panels in the graph redesign
+    plan"): title, five meta chips at one weight, a file card, a tall
+    content editor, tags, Save, then a 3x3 grid of nine equal action
+    buttons (Favourite, Grow, Focus, Similar, Link, Trace, Remind, Open,
+    Bin). Placed as GRAPH_PLAN Phase 6. Owner: Opus, now.
+
+## Moved from the plans, 2026-11-09 (book5-1109: MINDMAP_PLAN)
+
+Section 5, the original feature set in build order (Phases 1 to 5, items 1 to 21), found still standing whole although sections 9 to 11 record Phases 1, 2, 4 and 5 and the previews as built and HISTORY records Phase 3 (reference-node picker, import UI, mapChip and mapPreview, maps in chat and the graph). Checked 2026-11-09: read_mindmap, create_mindmap, add_map_node and link_map_nodes, OPML and FreeMind code, perspectives, focus, metrics and templates all exist in src/ and frontend/js/whiteboard-map.js.
+
+From MINDMAP_PLAN.md (lines 158 to 238 before the move), verbatim:
+
+### Phase 1: the map object (foundation)
+1. **`type` and `layout` on the board entry.** `type: "board" | "map"`;
+   `layout: "free" | "tree-right" | "tree-down" | "radial"`. Stored on the
+   board's own `Entry` (a JSON settings column or a dedicated table,
+   `WhiteboardObject`'s `kind` discriminator is the precedent for not adding a
+   table per idea).
+2. **A parent edge for nodes.** Mindmaps are trees; the whiteboard's links are
+   a general graph. Add `parent_id` to whatever carries a map node, and keep the
+   existing free links for cross-branch connections (which every serious
+   mindmapper supports and calls a "relationship" or "cross-link").
+3. **Node kinds**, on the existing discriminator: `topic` (text), `note` (a real
+   `Entry`, this is `WhiteboardNode` today), `document`, `file`, `image`,
+   `link`. A node that *is* a note keeps its identity: editing it edits the note.
+4. **Containment is real.** "any and all text boxes and things that are in the
+   map stay bundled within the map", enforce it: deleting a map deletes its
+   `topic` nodes (they exist only there) and *unlinks* its `note`/`document`/
+   `file` nodes (those live in the library and must survive). Write the test
+   first; this is the rule most likely to be got wrong.
+
+### Phase 2: editing that feels like a mindmap
+5. **Keyboard-first**: Tab = child, Enter = sibling, Shift+Tab = outdent,
+   arrows = navigate, F2/double-click = rename, Delete = subtree with confirm.
+   Copy Obsidian Canvas Mindmap's set; it is the de-facto standard.
+6. **Auto-layout** via Reingold–Tilford with variable node sizes (d3-flextree's
+   algorithm, implemented locally: **no CDN, the app is offline-first**;
+   `frontend/js/graph.js` already hand-rolls layout, so this is a sibling of
+   existing code, not a new dependency).
+7. **Collapse/expand a branch**, with a count badge on the collapsed node.
+8. **Styling that carries meaning, not decoration**: per-node colour, shape and
+   icon; per-edge colour and thickness; inherit-from-parent by default.
+9. **Cross-links** (non-tree edges) rendered distinctly, dashed, per the
+   systems-map convention: and optionally **signed/directional** for causal
+   loop diagrams (Kumu's model).
+
+### Phase 3: the map as a citizen of the app
+10. **Library**: maps live in **Boards & maps** with a Maps filter chip (the
+    user's stated preference), with the existing board preview upgraded to
+    render map structure.
+11. **Attachable and referenceable**: a map can be attached to a note, a
+    document and a chat message, exactly as a file can today
+    (`routes_chat.py`'s `file_ids` is the pattern to copy), and referenced
+    inline with the existing `@` picker.
+12. **Rendered previews and chips** everywhere the user listed: note bodies,
+    the chat transcript, dashboard widgets, the timeline and the graph. One
+    `mapChip()` and one `mapPreview()`, used by all of them, the app's
+    recurring failure is the same object drawn five ways.
+13. **Graph integration**: a map is a node in the graph; its note-nodes are
+    edges from the map to those notes. This is the "decide once" call from
+    §3.3: a map's *membership* is a link, a node's *position* is not.
+
+### Phase 4: AI and export
+14. **The AI can read a map.** A `read_mindmap` tool returning an indented
+    outline (title, then the tree, with each node's kind and any note id), which
+    is the form a small model handles best. Plus `create_mindmap`,
+    `add_map_node`, `link_map_nodes`, gated behind the tool toggles, and
+    written to the *contract* shape the skills reform (Phase A of
+    [AGENT_SKILLS_REFORM.md](AGENT_SKILLS_REFORM.md)) defines, so they are
+    usable by a 4B model.
+15. **AI generation**: "make a map of these notes", the agent proposes a tree,
+    the user accepts or edits it. Every mainstream tool now has this; the
+    differentiator here is that the nodes are *the user's real notes*, not
+    invented text.
+16. **Export**: PNG and SVG from the existing canvas render, and PDF via the
+    same path the app already uses for "Print or save as PDF" in the documents
+    kebab. Also **Markdown outline**, **OPML** and **FreeMind `.mm`**, the
+    interchange formats every mindmapper (Coggle included) reads: cheap, and
+    it makes the feature not a lock-in.
+17. **Import**: OPML, FreeMind `.mm` and indented Markdown, so an existing map
+    can come in.
+
+### Phase 5: utility
+18. **Focus mode** (Kumu): start at one node, reveal the network step by step.
+19. **Filter/perspective**: colour or hide by tag, category, age, or "has a
+    note behind it", reusing the notebook's own metadata, which is the thing
+    a general mindmapper cannot do.
+20. **Map metrics** where they are honest: node count, depth, orphan branches,
+    and, for cross-linked maps, the centrality measures the graph tab already
+    computes.
+21. **Templates**: a few starting shapes (brainstorm, decision tree, project
+    breakdown, cause-and-effect), because an empty canvas is the main reason
+    mindmap features go unused.
+
+## Moved from the plans, 2026-11-09 (book5-1109: WHITEBOARD_PLAN)
+
+Built blocks found still standing whole in the plan (checked 2026-11-09): the undo coverage audit tables (INBOX 537), the board bar at 820 and INBOX 12, and INBOX 278 (fixed 2026-09-20).
+
+From WHITEBOARD_PLAN.md (lines 485 to 530 before the move), verbatim:
+
+## Undo coverage, audited 2026-10-05 (INBOX 537)
+
+Every mutating action on a board or a map, and whether Undo puts all of it
+back (server side effects included). "Recorded" means `WB_RECORDED`
+(decision 18). Measured with `scratchpad/ui-sweeps/boardundo.js` (43/43),
+`mapinsertundo.js` (8/8), `wbmapundo.js`, `maprelink.js`.
+
+| Action | Undo before | Now |
+| --- | --- | --- |
+| Delete a topic (Delete key, tool, menu, X) | one row back, loose; its branch lost | the branch, under its parent |
+| Undo of a create whose topic gained a branch since | branch deleted for good | branch kept, Redo brings both |
+| Delete a card, box or shape | item back, its links lost | item and links, ends re-pointed |
+| Delete a selection | one step per item; parallel deletes popped the wrong entry | one step, in order |
+| Clear board | one step per item; 404 on cascaded links stopped it | one step |
+| Image object deleted | file unlinked, Undo drew a broken picture | file kept (media cleanup reclaims) |
+| Fold, Expand all, Tidy, layout, numbering, theme, reset every topic's style | none | recorded |
+| Add child, sibling, root, reference, duplicate, copy branch, template | the create only (unfold and tidy left) | recorded |
+| Detach, remove keeping branch, turn a line around, cross-link reverse, to branch, cut | none | recorded |
+| Insert between, outdent, move among siblings | own entries | recorded |
+| Group, ungroup, paste style, bucket fill, fit to text, arrange cards | none | recorded |
+| Card text edit (the note's words) | none | `note` step |
+| Branch card on a board (makes a note) | none | recorded, the note to the bin and back |
+| Drop a branch on a topic | own entry | own entry; a folded target opens (the "disappeared" report) |
+| Rename a topic left open across an Undo | wrote onto another topic | the live row by id; an open edit is committed first |
+| Delete a board (board menu, gallery, bulk) | "cannot be undone" (it was the bin) | bin, toast Undo and app Undo |
+| Rename or duplicate a board (gallery) | none | app Undo |
+| Move, resize, rotate, nudge, align, z-order, lock, frame title, properties panel, link handles | own entries | unchanged |
+
+A board's undo now survives a reload (the amendment to decision 2: IndexedDB,
+`undo-store.js`). Open: an agent's or another tab's change to the open board
+is not on its stack (the History sheet has it).
+
+### The app's stack (outside boards and documents)
+
+| Action | Undo |
+| --- | --- |
+| Note bin, archive, edit, attach, link, unlink, tags, categories (move, rename, merge, delete, split, colour), reminders delete, skills batch | already had one |
+| Category delete from the keyboard | added |
+| Merge duplicate notes | added (words, tags, the binned notes back) |
+| Generate or remove a note's title | added |
+| A link's kind or properties | added |
+| Clear completed reminders; delete an overdue or done reminder | added (`POST /reminders` `restore`; the past-date rule refused them) |
+| Empty the bin, purge a note | none by design: confirmed, permanent |
+| Detach a bookmark from a note being edited, delete a note type, relation type (its links typed again), conversation, or a space that was empty or whose contents moved | added (undo-1005: each DELETE answers with what it removed; `restore` on the create, `POST /spaces/restore`, `POST /conversations/restore`) |
+| Delete a space with everything in it | none by design: confirmed, its files leave the disk |
+| Entity merge | added (INBOX 553(a): `merge_with_undo`, `POST /merges/{undo_id}/undo`, Undo in the merge's toast) |
+
+From WHITEBOARD_PLAN.md (lines 643 to 676 before the move), verbatim:
+
+### ~~Found while measuring the board bar at 820 (2026-09-20, not the owner)~~
+
+~~**The board's top bar runs past its own right edge below 600, by 75px at 320
+and 5px at 390**, and carries thirteen controls at 1440 against the dock
+grammar's ceiling of seven.~~ **Both done, 2026-09-21**, measured before and
+after at five widths with `scratchpad/ui-sweeps/wbtopbar.js` (now in
+`scripts/gate.sh`'s sweep list), which also gates the menus' keyboard and ARIA.
+The Built block is in [HISTORY.md](HISTORY.md), "Moved from the plans,
+2026-09-21".
+
+12. **Whiteboard: export-selection popover opens a full-height list in the
+    wrong place; arrow drawn shows both caps as Arrow in properties;
+    missing align-centre and distribute-gaps; the arrange panel's buttons
+    are unreadable (icons overlapping text).** Owner: WHITEBOARD_PLAN.md.
+    **The caps part only is fixed** (my scope was "12 only the caps part"):
+    `wbDetectArrowStyle`'s own regex scan included the shaft's leading `M`
+    (matched separately, one line above, specifically to exclude it) in
+    its search for head markers, so a shaft with zero start caps still
+    measured a false zero-distance hit on its own start point and reported
+    "both". Slicing the shaft's own match off the string before scanning
+    fixed it; verified live (`startcap: "none"`, was `"arrow"`).
+    **The rest is closed, 2026-09-20, by Phases 2 and 3 rather than by
+    repairs**, and measured rather than assumed
+    (`scratchpad/ui-sweeps/wbinbox12.js`, 6/6 at 1440x900 and at 390x844).
+    The popover the report is about is not built any more: the export is a
+    dialog (decision 4), `.wb-export-menu` builds nothing, and the dialog
+    opens inside the window at both widths (480x393 at 480,254 in 1440x900;
+    342x417 at 24,214 in 390x844). Align centres and even gaps are both on
+    the context bar, which carries all twelve arrange controls for a
+    selection of two plus the two z-order ones. And the panel whose buttons
+    drew their icons through their labels is gone with the properties drawer:
+    every arrange control is icon-only with its name in the tooltip, measured
+    at 0px2 of icon-over-text across 24 buttons on the bar and in the top
+    bar's Arrange menu together.
+
+From WHITEBOARD_PLAN.md (lines 692 to 731 before the move), verbatim:
+
+278. **Mid-work drop, 2026-09-20, verbatim (the owner), two screenshots.**
+    "the rotate line and circle dont sit at the top center of a group
+    selection in the whiteboard and instead sit off to the top left or
+    right, or below the top border". Seen: a group of two boxes and a bar
+    inside a circle, the rotate stem and knob at about a third of the box's
+    width from the left and the knob inside the box's top edge; a group of a
+    note card, an image card and a line, the stem rising from the top edge
+    at x of one member's own centre rather than the group box's, and a
+    second stem from a member card below. Owner: WHITEBOARD_PLAN (the group
+    selection box, `wbBulkGroupBox` and the group's rotate handle in
+    whiteboard.js). Recommendation: the group's rotate stem is drawn from
+    the group box's own top-centre in board units after the box is fitted
+    to every member's rotated bounds, and a member's own handles are hidden
+    while it is part of a group selection; measured with a probe placing the
+    knob at (box.x + box.w / 2, box.y - stem) at 0.5x, 1x and 2x, in
+    `scratchpad/ui-sweeps/wbgroupguides.js`. **Fixed, 2026-09-20**, and the
+    cause was one line narrower than the recipe guessed: the group's grip was
+    already drawn from the group box's own top centre in board units (measured
+    (340, 672) against a wanted (340, 672) at every zoom), but it never set a
+    `transform-origin`. `.wb-sketch-rotate-handle` and
+    `.wb-rotate-handle-stem` carry `scale(var(--wb-inv-zoom))` so a grip stays
+    one size to the hand, and that rule keeps `transform-box` at its
+    `view-box` default *because the drawing code sets the origin in board
+    coordinates*, which `wbDrawSketchHandles` does for a single shape and the
+    group path did not. The scale therefore resolved about the SVG view box's
+    origin and multiplied the grip's own coordinates by `1 / k`: on screen the
+    knob sat 170px right of the box's centre and below its top edge at 0.5x,
+    340px left of it at 2x, and exactly right at 1x, which is the report's
+    "top left or right, or below the top border" and why it looks intermittent.
+    The anchor is set in `layoutGroupChrome`, so it follows a resize drag
+    (measured mid-drag: box top 638, knob 612, the box's own top centre).
+    The recipe's second half was also real and is done: a three-item group drew
+    **four** rotate knobs, two stems and sixteen member resize handles, and now
+    draws one knob, one stem and none; a member keeps its outline, so the
+    earlier report this has to keep answering ("the shapes and lines arent
+    selected visually and individually") still is. A card or a line selected on
+    its own keeps all eight handles and its grip, measured.
+    `scratchpad/ui-sweeps/wbgroupguides.js` carries the checks (0.5x, 1x, 2x,
+    plus mid-resize), and `tests/test_ui_recipes.py` holds the ratchet: every
+    grip scaled by `--wb-inv-zoom` sets its own anchor.
+
+## Moved from the plans, 2026-11-09 (book5-1109: DOCUMENTS_PLAN)
+
+Built blocks found still standing whole in the plan (checked 2026-11-09 against the code, tests and the dated HISTORY records): Phase 4 items 1, 2 and 5, the segmented-bars note (107d), section 16 items 1 and 4, and INBOX 409.
+
+From DOCUMENTS_PLAN.md (lines 137 to 149 before the move), verbatim:
+
+1. **Backlinks with context**: built, 2026-09-12. `GET
+   /documents/{id}/backlinks` answers for notes and documents at once, the
+   panel shows the sentence around each link with "link back", and unlinked
+   mentions sit below with "link", which rewrites the mention in the source
+   that wrote it. Decisions in section 11.
+2. **Block references** (`^block-id`): built, 2026-09-12. A paragraph carries
+   `^an-id` at the end of its last line; `[[Doc#^id]]` links to it and
+   `![[Doc#^id]]` embeds it, from a note, a map node or a chat. The model is
+   `DOC-BLOCKREF-BEGIN`..`END` in `documents.js` (run in node by
+   `tests/test_doc_blockrefs.py`), the "/" menu's "Link to this block" writes
+   the id and copies the reference, the marker hides in Live and is stripped
+   from Read, and `scratchpad/ui-sweeps/docblockref.js` measures the lot
+   (25/25). Decisions in section 11.
+
+From DOCUMENTS_PLAN.md (lines 157 to 170 before the move), verbatim:
+
+5. **Daily notes** and **templates gallery**: built, 2026-09-20. The gallery
+   was already there with six templates, each carrying a description
+   (`scratchpad/ui-sweeps/doctemplates.js`); daily notes were the row that
+   needed the decision first, and it is section 14. What was built from it is
+   one template and one recognition: New from a template now offers Daily
+   (seven rows), the document it makes is titled with the ISO day, and the
+   Timeline's day bucket accepts a note *or* a document with that title, so
+   the "Start today's note" offer beside a day already written as a document
+   is gone. Measured before and after in `scratchpad/ui-sweeps/docdaily.js`,
+   11 of 11: before, 6 templates with no daily and the bucket offering to
+   start a second page beside a document titled `2026-09-20`; after, 7
+   templates, the created document titled `2026-09-20` with `# 2026-09-20` as
+   its first line, 0 "start today's note" offers, 1 "Today's document" offer,
+   and the calendar glyph on the row.
+
+From DOCUMENTS_PLAN.md (lines 376 to 400 before the move), verbatim:
+
+"Note in the redesign documents and where it is supposed to that I want to get
+rid of and redesign these mini menu bars as they are in a couple popups around
+the place and they desperately need a modern redesign or alternative", with a
+photo of `#doc-ai-verb`, the Edit / Write / Remove bar in this tab's AI
+assistant panel.
+
+**Done, 2026-09-12, and the decision is in `docs/DESIGN.md`** ("A choice
+control's selected segment is `--accent-surface` behind `--on-accent`"), which
+is where it belongs: it is a rule about a recipe, not about this tab. The
+short version, so it is not re-litigated here: the two radio-backed bars
+(`#doc-ai-verb`, `#graph-layout`) were the app's own segmented control drawn
+with a different set of numbers, and the selected option was a 14% accent tint
+behind body-coloured text with a drop shadow under it, which is not a selected
+state anyone can see across a popup. They read as the other twenty-eight `.seg`
+groups now. Measured before and after with
+`scratchpad/ui-sweeps/segbars.js`; the numbers are in DESIGN.md and in the
+commit.
+
+**The label size this found is closed too** (`9586542`, a later pass the same
+day). `.seg button` set no `font-size` at all, so it inherited whatever tab it
+was on: measured at three sizes across the app, 16px on the tab strips, 13.6px
+on two choice controls and 12.8px on three more. Every choice control is on
+`--text-md` now, the tab strips deliberately are not. Re-measured here: all
+nine segments across `#doc-ai-verb`, `#doc-view-seg` and `#graph-layout` read
+13.6px.
+
+From DOCUMENTS_PLAN.md (lines 802 to 821 before the move), verbatim:
+
+**1. The toolbar's own state: built.** This is the one that was only ever
+waiting for the tree. Before the engine, deciding whether the caret sat inside
+`**bold**` meant counting asterisks from the top of the document on every
+keystroke; the tree exists now for the decorations, so `renderDocToolbarState`
+resolves one node and walks its ancestors, which costs the depth of the
+markdown at the caret and not the length of the document. It runs on the same
+beat as the caret readout, which is the beat that already exists.
+
+Measured at eleven stops in a document with one of everything: `h1` in a
+heading, nothing in plain prose, `bold`, `italic`, `code`, `h2`, `ul`, `task`,
+`ol`, `quote` and `link`, each with no other button lit. 17 of the strip's 41
+`data-md` buttons carry `aria-pressed`, and the other 24 are the ones that
+always insert something new and have no state to be in: a button that is not a
+toggle must not tell a screen reader it is one. The caret resolves with side
+`-1`, so a caret just past the final `d` of a bold word still reads as bold,
+which is what makes "keep typing in bold" and "the button says bold" the same
+answer. A task item lights `task` and not `ul`, although a task list is a
+bullet list in the grammar, because the more specific one is the one pressing
+the button would turn off.
+
+From DOCUMENTS_PLAN.md (lines 853 to 871 before the move), verbatim:
+
+**4. The table cell's ten-row menu: built, as a change to the shared recipe.**
+Rows, columns, alignment and the whole table read as one list of ten, and
+finding "Align centre" in it meant knowing the order. The bullet that recorded
+this said correctly that `kebabMenu` had no separator and that this was
+therefore a change to the recipe and to DESIGN.md rather than a phase item, so
+that is what it is: an item may carry `group`, a name, and `kebabMenu` draws a
+hairline wherever the name changes. Callers declare meaning, never pixels, and
+an item with no `group` behaves exactly as before, so every other menu in the
+app is untouched.
+
+The name is not drawn. A heading over every three rows would make this menu
+seventeen rows tall, and what makes a list scannable is the break rather than
+the word. Measured after: 10 items, 3 hairlines at 1px tall and 172px wide,
+`role="separator"` on each so the grouping reaches the accessibility tree,
+10 `menuitem` roles and 3 separators, and `wireMenuKeyboard` walks
+`[role="menuitem"]`, so a hairline is never a stop on the way down. The recipe
+index carries it and `tests/test_ui_recipes.py` holds the ratchet: a command
+table past five rows declares its groups, and the separator element and its
+stylesheet rule both still exist.
+
+From DOCUMENTS_PLAN.md (lines 1309 to 1331 before the move), verbatim:
+
+409. **The owner, 2026-09-24, verbatim, with screenshots of Settings,
+    Templates, the persona list, a .json document with the formatting bar
+    over it, and the Write tab's AI assistant bar.** "templates cant be
+    edited, I want the generation of persona icons to be improved and I also
+    want to auto generate other icons in other places like potentially the
+    user chat bubbles?? idk. also the degree of indenting is shallow, I think
+    it should be more prominent. also this edit/write/remove bar is ugly and
+    doesnt suit a modern app, it needs to be restructured/redesigned or
+    transformed somehow to be better." Read from the screenshots: built-in
+    templates have no edit (only added ones do); the persona marks are a
+    blob on a flat disc, too alike at 20px; the prose formatting bubble (B,
+    I, S, highlight, code, link, H, quote) draws over a code document, where
+    none of it applies; the indent guides step 2 spaces; the AI assistant
+    control is a filled segmented pill. Placed: orchestrator, in this order.
+    **Built 2026-09-24**: templates editable, built-ins included (3a769ed,
+    sweep `templates.js`); persona marks a generated face, closest pair of
+    23 at 40px 5.6% before, 29.8% after (259b743, `namemarks.js`); the
+    user's own mark on their chat bubbles and the persona picker's
+    (0e88b6e, ede4f2a, `chatmarks.js`, bubble box unchanged). The code
+    selection bar and the indent step are 7ab7eec. The AI assistant bar
+    is closed: the owner's later line (INBOX 431 (f), 2026-09-27) says they
+    like that dialog's design and the edit/write/remove pill, so nothing
+    is open here.
+
+## Moved from the plans, 2026-11-09 (book5-1109: UI_MODERNISATION_PLAN)
+
+Built work items found still standing whole in the plan (checked 2026-11-09 against the code and the ROADMAP record that Phases 0 to 11 are built): Phase 8's surface-by-surface work list (tests/test_dock_grammar.py, docks.js sweep) and Phase 11 items 2 and 5 to 9 (2026-09-20 records). Decisions inside them are repeated in the plan's pointers.
+
+From UI_MODERNISATION_PLAN.md (lines 446 to 491 before the move), verbatim:
+
+### The work, surface by surface
+
+Each is one commit, before/after inventory in the message, driven in
+Chromium at 1440 / 1024 / 820 / 390.
+
+1. **The lint first.** `tests/test_dock_grammar.py`: statically, for every
+   element marked `data-dock`, at most one `.primary`/filled button, no
+   `input[type=checkbox]` outside a popover, no text-only segmented control,
+   and the utilities in order. `scratchpad/ui-sweeps/docks.js` becomes the
+   runtime sweep: controls per row, heights per row, zone order.
+2. **Graph** (worst first): title + count; search; `Layout ▾` and
+   `Colour ▾` as one `View ▾` popover holding both segments and the
+   options; saved views as one select with save/delete inside it; `Refresh`,
+   `Export` into `⋯`; one primary (`New note`); `Concept maps` becomes a
+   link in the identity zone. 28 → ≤ 9 visible.
+3. **Library** (All and every sub-tab, one recipe): title; search; `Filter
+   ▾` (semantic, include bin, kind); one sort select; one view segment;
+   `＋ Create`; refresh; help. The chip row stays *below* as the visible
+   filter. The duplicate segmented sort goes. Sub-tabs (Documents, Boards,
+   Images, Files, Links, Contents, Skills) take the identical zones with
+   their own words.
+4. **Notes**: the toolbar from Phase 5 already has search-first and a
+   filters sheet at ≤ 600; apply the sheet at every width as `Filter ▾`, one
+   sort select, the view segment, `Select` into `⋯`.
+5. **Whiteboard**: identity (back · board select · rename) left; search;
+   the five menus stay (they are verbs used sometimes) but at one height
+   and one gap; minimap, Library, fullscreen as utilities right; the map
+   controls (chip, layout, Tidy) as the context chip and a `Layout ▾`.
+6. **Documents**: DOCUMENTS_PLAN.md Phase 1 owns the editor's own chrome;
+   the *Documents list* dock follows item 3.
+7. **Timeline, Reminders, Chat, Dashboard**: Timeline onto the grammar
+   (View segment with icons, `Options ▾`, search, Today as the primary);
+   Reminders' three rows of ghost buttons become one row (the magic field)
+   plus one `Presets ▾` popover, with the due chips as the visible filter;
+   Chat's toolbar at the dock height with `New chat` as the one filled
+   control; the Dashboard hero's clock and greeting as identity, its two
+   quick actions as primary + ghost.
+8. **Settings sections** already have one form recipe (Phase 5.1); their
+   heads take the grammar's identity zone only.
+
+Acceptance: `docks.js` reports **one height per dock**, zone order correct
+on every tab and sub-tab, ≤ 7 visible controls per row, exactly one filled
+control per dock; `test_dock_grammar.py` green; `errors.js` 0 findings at
+all four widths; a keyboard-only pass (Tab into each dock, arrows across
+it, Enter opens a popover, Escape closes it and returns focus) scripted in
+`scratchpad/ui-sweeps/keys.js`.
+
+From UI_MODERNISATION_PLAN.md (lines 598 to 663 before the move), verbatim:
+
+   - **The rail is gone below 600: built** (2026-09-20, with item 3's
+     sidebar half). Measured first (`scratchpad/ui-sweeps/phonesidebar.js`):
+     at 390 the Notes list started at x=82 (13px gutter, the 52px sidebar
+     rail, 16px card padding) for one 44px toggle at the top of the strip
+     and nothing else down it, so rows ran 262px in 390. Now every sidebar
+     (`SIDEBAR_IDS`) parks fully off screen below 600, the page beside it
+     pads 0, and it opens from a `.dock-nav` button at the leading edge of
+     its own dock's head (`mountPhoneSidebarOpeners`), pressing the
+     sidebar's own toggle so the sheet logic stays in one place. After, on
+     Notes, Chat and Documents at 390: closed sidebar right edge 0, page
+     padding 0, opener 44x44 first in the dock, the sheet opens at x=0 with
+     its closer showing and Escape closes it; at 768 the tablet keeps its
+     52px rail and the opener is hidden.
+   - **Filters in a sheet: already the fold** (measured 2026-09-20). Below
+     1100 `foldDockArrange` moves every dock's arrange zone (sort, view,
+     page size) into its own `...` menu, so at 390 the notes dock shows
+     search, Filter, Select, refresh, help and the menu, and nothing else.
+     What was wrong was the rows: the opener took a row of its own (the
+     identity zone's phone basis is 100%), and the search input could not
+     shrink (`min-width: min-content` below 1100) so Filter wrapped under
+     it. Fixed in the 600 band: the opener shares the title's row, the
+     input gives, a dock with an opener and no find zone (Chat) wraps its
+     actions under the title. Dock heights at 390, before and after: notes
+     250 to 166 (three rows), chat 166 to 114 (two), timeline 198 to 146,
+     graph 143, library 146 and reminders 94 unchanged.
+   - **The floating +: built** (2026-09-20). The Notes dock never had a
+     primary (Capture is a sub-tab), so it has one now: "New note", filled,
+     at the right before the utilities, which the grammar asked for and the
+     desktop dock measures at seven controls with one filled (`docks.js`).
+     Below 600 `FAB_IDS` floats it as the + above the tab bar, where it
+     opens Capture with the caret in the box and hides while Capture is
+     showing. **Decision:** the Capture sub-tab is the sheet. On a phone
+     the sub-tab is already a full-height page holding nothing but the
+     box; a sheet over it would be a second capture surface, so the + opens
+     the sub-tab. Found on the way and fixed at the source: the first
+     showing of Capture wraps the box for its gutter and then upgrades it
+     to the live editor, and both moves dropped the focus a person had just
+     asked for (measured: focus in at 7598ms, gone at 7737, nothing active
+     at 1200ms after the press); each now carries it over. Measured after
+     (`phonecapture.js`): the + is 44px at bottom right above the tab bar,
+     one press lands the caret in the live editor, the + is gone while
+     Capture shows, and at 1024 the button is back in the dock, filled.
+   - **Swipe actions: built** (2026-09-20). Right favourites, left bins,
+     each the row's own control (`.favourite-btn`; `binNoteWithUndo`, the
+     function the row menu's "Move to bin" calls, undo toast and all), never
+     a second copy. Measured with real touch events through CDP
+     (`scratchpad/ui-sweeps/phoneswipe.js`): a 40px swipe reveals 40px of
+     underlay, does not arm and settles to 0; 110px right arms and the note
+     is a favourite; a 6x80 vertical drag never moves the row; 110px left
+     arms and the note is in the bin with the undo toast up. No page
+     errors; `phone.js` 0 findings.
+   - **The note page: built** (2026-09-20), and item 2 is complete. A tap on
+     a row (not on a control, not the lift-off of a swipe) opens the note as
+     the sheet recipe's `page` variant: the whole screen, a back chevron,
+     the list's own card unclamped inside, and that card's own actions
+     moved into a `.thumb-bar` at the foot, so nothing is rendered twice
+     and the page's actions are the row's. Bin or Archive from the page
+     reloads the list and the page closes when its note is gone. Measured
+     (`scratchpad/ui-sweeps/phonenotepage.js`): the page is 0 to 844 with
+     a 0px radius, a note clamped to 198px in the list is 1440px on the
+     page in a scrolling list, the bar holds 4 buttons at 44px with its
+     bottom at 844, the close is labelled Back with the chevron, Escape and
+     the chevron both return focus to the row, a tap on the row's star
+     opens nothing, and a tap at 1024 opens nothing. Found by `phone.js`
+     on the way: "Show more" under a clamped note was 80x22 at 390; it
+     takes the row's floor now.
+
+From UI_MODERNISATION_PLAN.md (lines 666 to 715 before the move), verbatim:
+
+5. **Library and Files: built** (2026-09-20). Two-up cards, the reader
+   full-screen with a bottom bar; upload from the share sheet.
+   - **Two-up cards: decided the other way, not remade.** The 600 band in
+     07-whiteboard-misc.css makes the card grids one full-width column
+     with the measurement that decided it (at 390 the masonry gave two
+     164px columns, a card too narrow for its own title, and a reading
+     order that went down, up, down). Measured 2026-09-20: 24 Library
+     cards in one column at 390. Stands.
+   - **The share sheet: built** (2026-09-20). The installed app is a Web
+     Share Target (`manifest.webmanifest`, the GET form: no service worker,
+     and the query survives the lock screen). A page, a link or a
+     selection shared to Tessellate opens it at `/` with `share_title`,
+     `share_text` and `share_url`; once the entries have loaded
+     (`takeSharedIntake`, a boot step) the three become one capture (the
+     title as a heading, the text, the link on its own line), Capture
+     opens with the caret in the box, and the query is cleared so a
+     reload shares nothing twice. `tests/test_share_target.py` holds the
+     two halves to the same three names; measured by
+     `scratchpad/ui-sweeps/phoneshare.js` at 390. Not built: a file (an
+     image from the camera roll) needs the POST form and a service
+     worker.
+   - **The reader full screen with a bottom bar: built** (2026-09-20), and
+     item 5 is complete. Measured at 390x844 first
+     (`scratchpad/ui-sweeps/libreader.js`, this item's gate): the reader (the
+     OCR workspace) was a 342x776 card inset 24px from each edge with a 14px
+     rounded top, its way out an X; the Regions checkbox label was 36px tall,
+     a zoom segment button 35px wide, the two rail tabs 13x25 and the find
+     box 343x20. **And a bug older than the phone band**: the three panes are
+     a grid of two columns below 1100 with three children in it, so the
+     reading pane fell into an implicit second row. At 390 the 1fr column
+     collapsed and the transcription was **0px wide**; at 1024 the hidden
+     rail's own column still took **593px** of empty space while the page was
+     squeezed into the 320px column beside it and the reading dropped to a row
+     underneath. Hiding `.ocr-rail` was never enough: the column goes too, and
+     the selector needed `.ocr-panes > .ocr-rail-column` because the column's
+     own `display: flex` is declared below that band in the same stylesheet.
+     After, at 1024: page 593x656 and reading 320x656, side by side; at 1440
+     the three columns are 144 / 747 / 416, unchanged.
+     On a phone the reader is the sheet recipe's `page` variant, the same two
+     classes `openSheet` puts on the note page, stamped by `ocrPhonePage` in
+     app.js because `tests/test_ui_recipes.py` holds that only the recipe's own
+     file may write a variant class (it caught the first attempt, from
+     library.js). The reading's five actions move into a `.thumb-bar` and move
+     back above 600, the way the note page moves a row's actions: same buttons,
+     same ids, same handlers. Measured after at 390: the card is 0,0 to
+     390x844 with a 0px radius, one column of panes, the rail column 0, no
+     control under 44px, the bar holding 5 buttons with its bottom at 844, the
+     way out labelled Back with the chevron, Escape closes it, and crossing to
+     1024 with it open puts the five actions back in the reading's own foot
+     and the X back in the head.
+
+From UI_MODERNISATION_PLAN.md (lines 716 to 728 before the move), verbatim:
+
+6. **Documents: built** (2026-09-20), most of it already there and
+   measured before anything was added. Measured at 390 with a fresh
+   document (`scratchpad/ui-sweeps/phonedocs.js`): a phone now opens a
+   document in the Rendered view when nothing is stored (Live Preview
+   above 600, a stored choice wins at every width); Edit is the page
+   itself with the live editor, the formatting strip hidden and the
+   selection bar (`#doc-phone-bar`, seven 44px buttons) at the foot above
+   the keyboard edge; the outline is the Outline tab of the sidebar sheet,
+   opened from the head's opener (item 2's), with all seven headings.
+   **Decision:** Edit is the page, not a sheet over it; on a phone the
+   document is already the whole screen and a sheet over a page that is
+   itself the editor would be two editors. At 1024 the default is Live
+   Preview as before.
+
+From UI_MODERNISATION_PLAN.md (lines 729 to 798 before the move), verbatim:
+
+7. **Whiteboard and maps: built** (2026-09-20), and one third of it was
+   already there. Measured at 390x844 on a fresh board first
+   (`scratchpad/ui-sweeps/wbphone.js`, this item's gate). Before: a pinch
+   with the default Select tool scaled the board by exactly **1.000**,
+   because `wbZoomFilter` gave touch to the camera only while the Pan tool
+   was held, so a phone could not move or zoom a board without first going
+   to find that tool; the tool rail was a 364x56 band under a 364x604
+   canvas holding **835px of tools scrolled through a 358px window**, so 16
+   of its 31 buttons were on screen and the Shapes section showed one of
+   its seven; and the board's own top bar was 88px of two rows with all
+   **eleven** of its controls at 36px against this band's 44px floor. The
+   mind map's + handles were **already 44x44** and already shown on a
+   selected node, so that third of the item is a measurement rather than a
+   change.
+
+   After: two fingers are always the camera and one finger still belongs to
+   the tool (the same split Figma, Excalidraw and Procreate use, and no tool
+   here is drawn with two), measured at 1.000 to 3.500 for the same pinch
+   with Select in hand. The rail below 600 is one button saying which tool
+   is in hand, and it opens the sheet recipe holding `#wb-tool-group`
+   itself, moved in and put back on close, so a tool added to the rail is in
+   the sheet with no second edit: 390x527, 12 visible tools, none under
+   44px, and picking one closes the sheet and selects it. The top bar takes
+   the band's floor, 88px to 104px, which is one step of height for eleven
+   targets that can be hit. Whiteboard.js's three hand-rolled 500ms holds
+   are `wireLongPress` now, so they inherit the swallowed lift that item 4
+   added and whiteboard.js joins the long-press lint's file list; the fourth
+   right-click, bound through d3 on a selection that is rebound every
+   render, keeps its own hold, and the lint's docstring says why.
+   **The bar at 820, and the band between: measured and fixed** (2026-09-20,
+   `scratchpad/ui-sweeps/wbtopbar820.js`, on an open board). Two things this
+   item left behind. First, from 600 to 819 the band's own rule reads "below
+   820 the pointer is a finger" (`--target-min` is 2.75rem on `:root` there),
+   and all thirteen of the bar's controls were still **36px tall** at 768,
+   because the rule this item wrote lived in the 600 band and the bar declares
+   its own control height, which nothing in it read; the icon-only ones had
+   taken the width and not the height, which is how it stayed invisible. It is
+   in the 819.98 band now: at 768 the bar is 104px and two rows with every
+   control at 44. Second, below 56rem the five menu toggles drop their words
+   and rendered **25.8px wide**, the narrowest controls in the app and under
+   the *global* 28px floor, so at 820 five of thirteen failed a floor that has
+   nothing to do with touch. They take the floor from 600 up now (at 820, 28;
+   at 768, 44).
+
+   **At 820 itself the band's 44px floor is deliberately not introduced**, and
+   that is band 2's existing decision rather than a new one: 10-responsive.css
+   records why `--target-min` was redeclared on `#tab-bar` alone there and not
+   on `:root` ("raising every dock control in the band to 44px is a real change
+   with its own measurements to take"). Measured at 820x1180 after: the bar is
+   784x46, one row, thirteen controls all 36px tall, nothing under 28, no
+   sideways scroll; at 1440 it is unchanged at 1392x46. Found and not fixed,
+   placed in WHITEBOARD_PLAN with its numbers: below 600 the bar runs 75px past
+   its own right edge at 320 and 5px at 390, and the only fix that does not
+   redesign it costs a row (152px at 390, 200px at 320), which is the
+   phone-shaped board bar this item already assigned to that plan.
+
+   **Decision: the board's top bar is not reduced to a kebab** the way the
+   app header was (item 1). It is a menu bar, which the dock grammar already
+   names as this surface's exception (Insert, Edit, Arrange, View, Board),
+   and three of its eleven controls are those menus. Raising it to the touch
+   floor is what this item needs; a phone-shaped board bar is
+   WHITEBOARD_PLAN's, not this item's, and is named there.
+
+   The whiteboard sweep at 390 had to learn the sheet: its ink-swatch check
+   scrolled the rail sideways to find the swatch, and the swatch is in the
+   sheet at that width now. It opens the sheet and closes it, and reads the
+   swatch as red rather than as exactly `rgb(255, 0, 0)`, because inside the
+   sheet the pixel is painted through the card's own glass (measured: 249,
+   1, 3). 24/24 at 390 and 24/24 at 1440 after it; `wbcontextphone.js` 5/5,
+   so the context bar work that landed this week is untouched.
+
+From UI_MODERNISATION_PLAN.md (lines 799 to 813 before the move), verbatim:
+
+8. **Settings, dashboard, timeline, reminders: built or decided**
+   (2026-09-20). Measured at 390 first: the dashboard's 24 widgets are
+   already one column. Settings already has its phone shape, decided and
+   measured before this (07-whiteboard-misc.css: the section strip hidden,
+   a jump select beside the search in one row, every section in one
+   scroll; "2337px of scroll inside 308px at 390" is the number that
+   chose it), so the page list with a back button is not remade. Built
+   here: a phone opens the timeline as the table when no view is stored
+   (`timelineViewMode`; a choice wins at every width; the table is 330px
+   in 390 with no sideways scroll, and its column sorts take the 44px
+   floor), and a reminder row swiped right is done, through its own Done
+   checkbox, with nothing to the left (`initRowSwipe`, now one function
+   for any list of rows, the underlay's words read from the row's own
+   `data-swipe-right` and `data-swipe-left`). Measured by
+   `scratchpad/ui-sweeps/phonereminders.js`.
+
+From UI_MODERNISATION_PLAN.md (lines 814 to 842 before the move), verbatim:
+
+9. **Touch: built** (2026-09-20). The 44px half is built (2026-09-13, the
+   block is in HISTORY.md, "Moved from the plans, 2026-09-13"):
+   `scratchpad/ui-sweeps/phone.js` walks every tab whole rather than dock by
+   dock and reports 0 findings at 390x844 and 430x932. Long-press replacing
+   right-click is items 4 and 7's `wireLongPress`, app-wide and lint-held.
+
+   **No hover-only affordance: swept properly and two found**
+   (`scratchpad/ui-sweeps/hoveronly.js`, this half's gate). It reads the app's
+   own stylesheets for every rule whose selector carries `:hover` and whose
+   body sets `opacity`, `visibility` or `display` (45 of the 243 `:hover`
+   rules), strikes the `:hover` out to get the element at rest, walks eleven
+   stops across every tab with `hover: none`, `any-hover: none` and
+   `pointer: coarse` emulated through CDP, and then **taps** each candidate
+   for real, because a reveal on hover is only a fault when nothing a finger
+   can do produces it. Three candidates; the AI dot's popup is fine (hidden
+   at rest, revealed by a tap, `toggleAiStatusPopup`).
+
+   The other two were the same bug, and it is worth writing down because it
+   is invisible in review: **a `hover: none` override written at a lower
+   specificity than the rule it overrides does nothing at all.** Both the
+   Library card's ⋯ and the document row's ⋯ already had
+   `@media (hover: none) { .library-card-menu { opacity: 1 } }`, written as
+   the short name, against a base rule of `.menu-wrap.library-card-menu
+   { opacity: 0 }` (compound, and deliberately so, for a positioning bug its
+   own comment records). Measured: a 44x44 button at opacity 0 on every
+   Library card and every document row at 390, still 0 after a real tap. Both
+   overrides now match their base rule's specificity. After: 0 hover-only
+   affordances at 320, 390 and 430, the AI popup the one candidate and it
+   taps open.
+
 ## Moved from the plans, 2026-11-09 (UI_MODERNISATION_PLAN, 1698-lag, lag-1109)
 
 - 1698-lag, `avatars.js release 3222ms (forced layout 2965ms)`: the drop read the bars' and the perch panel's rects after its own writes and the figure's hover read its rect on every move; both now read first (`nmb.place.read` kept for the stack, `judgeRub` once a frame), 850e0f0. Per drag at 4x CPU, median of 6: about 300 ms to 70 ms of forced layout. A 60-cycle soak (tab switches, Settings open and close, drags) kept elements at 12.8k: no leak to find.
