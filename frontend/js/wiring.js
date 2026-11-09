@@ -1274,8 +1274,10 @@ $("notes-new-note").addEventListener("click", () => startNewNote());
 function startNewNote() {
   if ($("tab-notes").classList.contains("hidden")) switchTab("notes");
   showNotesSection("capture");
-  $("entry-content").focus();
-  mountNoteSurfaceNow($("entry-content")).then(s => !activeOverlay() && s?.focus());
+  const box = $("entry-content");
+  box?.focus();
+  //: A failed bundle fetch must not reject unhandled; the textarea has the focus.
+  mountNoteSurfaceNow(box).then((surface) => !activeOverlay() && surface?.focus()).catch(() => {});
 }
 $("select-btn").addEventListener("click", () =>
   selectMode ? exitSelectMode() : enterSelectMode()

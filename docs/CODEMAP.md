@@ -1162,7 +1162,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `addAtlasLine` | frontend/js/wiring.js:208 |
 | `askAtlasAbout` | frontend/js/wiring.js:197 |
 | `chatRecallStep` | frontend/js/wiring.js:789 |
-| `clearDueNudges` | frontend/js/wiring.js:1680 |
+| `clearDueNudges` | frontend/js/wiring.js:1682 |
 | `closeGlobalFind` | frontend/js/wiring.js:633 |
 | `dashboardGreetingPersona` | frontend/js/wiring.js:894 |
 | `escapeForFind` | frontend/js/wiring.js:411 |
@@ -1174,23 +1174,23 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `initGraphOptionFolds` | frontend/js/wiring.js:985 |
 | `initHelpToggles` | frontend/js/wiring.js:217 |
 | `noteSourceOn` | frontend/js/wiring.js:860 |
-| `nudgeDueShown` | frontend/js/wiring.js:1684 |
+| `nudgeDueShown` | frontend/js/wiring.js:1686 |
 | `openGlobalFind` | frontend/js/wiring.js:571 |
-| `openReminderCompose` | frontend/js/wiring.js:1580 |
+| `openReminderCompose` | frontend/js/wiring.js:1582 |
 | `paintDashboardPersonaMark` | frontend/js/wiring.js:900 |
 | `reflectOnlineState` | frontend/js/wiring.js:16 |
 | `renameCurrentConversation` | frontend/js/wiring.js:720 |
-| `renderPlanToggle` | frontend/js/wiring.js:1389 |
-| `renderWebSearchToggle` | frontend/js/wiring.js:1341 |
+| `renderPlanToggle` | frontend/js/wiring.js:1391 |
+| `renderWebSearchToggle` | frontend/js/wiring.js:1343 |
 | `setFullscreenSurface` | frontend/js/wiring.js:1218 |
 | `setGraphOptionsOpen` | frontend/js/wiring.js:1006 |
 | `setNoteSource` | frontend/js/wiring.js:875 |
 | `settingsSectionContaining` | frontend/js/wiring.js:457 |
 | `startNewNote` | frontend/js/wiring.js:1274 |
 | `syncNoteSourceButtons` | frontend/js/wiring.js:868 |
-| `timelineSelectableRows` | frontend/js/wiring.js:1316 |
-| `toggleSelectAllRows` | frontend/js/wiring.js:1302 |
-| `toggleWebSearch` | frontend/js/wiring.js:1422 |
+| `timelineSelectableRows` | frontend/js/wiring.js:1318 |
+| `toggleSelectAllRows` | frontend/js/wiring.js:1304 |
+| `toggleWebSearch` | frontend/js/wiring.js:1424 |
 | `watchFullscreenSurface` | frontend/js/wiring.js:1224 |
 
 ### frontend/js/settings-wiring.js (45)
