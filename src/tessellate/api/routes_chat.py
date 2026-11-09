@@ -1634,7 +1634,7 @@ def _act_planned_events(req: _StreamRequest, parsed: dict) -> Iterator[dict]:
             #: Friday at 9: call the dentist."
             what = f"{card['label'][:1].lower()}{card['label'][1:]}"
             done["summary"] = composer_compose.frame("act_card", mood, what=what)
-        elif done["ok"] and parsed["intent"] == "complete":
+        elif done["ok"] and parsed["intent"] in ("complete", "uncomplete"):
             #: Already ticked, so said as done, not "I will mark it done" (audit 1030 Z60).
             done["summary"] = acts.ticked_line(card, lambda what: composer_compose.frame("act_done", mood, what=what))
         yield {"type": "answer", "delta": done["summary"]}

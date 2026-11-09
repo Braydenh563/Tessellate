@@ -32,6 +32,7 @@ _READS = (
     ("append_today", re.compile(r"^(?:add|append) to (?:today'?s|the daily|my daily) (?:note|journal)[:,]?\s+(?P<words>.+)$")),
     #: "add buy milk to today's note": the words come first (CHAT_PLAN X10).
     ("append_today", re.compile(r"^(?:please )?(?:add|put|append) (?P<words>.+?) (?:to|in|into|onto) (?:(?:today'?s|the|my) daily|today'?s|the day'?s) (?:note|journal)$")),
+    ("append_today", re.compile(r"^(?:add|append) to my (?P<own>journal|diary)[:,]?\s+(?P<words>.+)$")),
     #: "put it in my journal": the journal as a place. A note called that takes the line; none, today's note does.
     ("append_today", re.compile(r"^(?:please )?(?:add|put|append) (?P<words>.+?) (?:to|in|into|onto) my (?P<own>journal|diary)$")),
     #: The time words are the recogniser's (`_since_a_day`), never a list here.
