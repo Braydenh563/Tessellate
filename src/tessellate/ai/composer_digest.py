@@ -1595,6 +1595,15 @@ def _subject(question: str) -> list[str]:
     return [st for st in stems if st not in _BEGINNING()] if _WHEN_DID.match(clean(question)) else stems
 
 
+def _holding_members(members: list[composer.NoteView], subject: list[str], kind: str) -> list[composer.NoteView]:
+    """In an overview, the notes that hold the subject's own words, when any do: a note found only by likeness
+    ("cat" met the fish diet, "boiler" the radiator note) is not counted or quoted as being about it (R9-11)."""
+    if kind not in ("overview", "likes") or not subject or len(members) < 2:
+        return members
+    held = [v for v in members if all(st in _pool(v) for st in subject)]
+    return held or members
+
+
 def _pool(v: composer.NoteView) -> set[str]:
     """Every word a note holds: its text, its title and where it is filed."""
     return v.words | v.title_words | v.filed_words
@@ -5133,6 +5142,7 @@ def _answer(
     if early is not _ORDINARY:
         return early
     members, tie = _chosen(asked, kind, views, wants_context)
+    members = _holding_members(members, _subject(asked), kind)
     if _named_list(kind, asked, members):
         return None
     if checklist := _named_checklist(kind, asked, members):
