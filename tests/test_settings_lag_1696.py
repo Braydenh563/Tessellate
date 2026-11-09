@@ -83,7 +83,7 @@ def test_the_value_field_scan_reads_the_readouts_and_labels_once_not_per_slider(
 
 def _function(path: Path, name: str) -> str:
     source = path.read_text(encoding="utf-8")
-    match = re.search(rf"^(?:async )?function {name}\(.*?^\}}", source, re.S | re.M)
+    match = re.search(rf"^( *)(?:async )?function {name}\(.*?^\1\}}", source, re.S | re.M)
     assert match, f"{name} is gone from {path.name}"
     return match.group(0)
 

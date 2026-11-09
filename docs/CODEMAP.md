@@ -2844,18 +2844,18 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `openCategoryChipMenu` | frontend/js/chip-menus.js:55 |
-| `openChipMenu` | frontend/js/chip-menus.js:28 |
-| `openTagChipMenu` | frontend/js/chip-menus.js:70 |
+| `openCategoryChipMenu` | frontend/js/chip-menus.js:56 |
+| `openChipMenu` | frontend/js/chip-menus.js:29 |
+| `openTagChipMenu` | frontend/js/chip-menus.js:71 |
 
 ### frontend/js/chord-guide.js (4)
 
 | Name | File:line |
 |---|---|
-| `chordGuideEl` | frontend/js/chord-guide.js:26 |
-| `chordGuideGroup` | frontend/js/chord-guide.js:46 |
-| `chordGuideKey` | frontend/js/chord-guide.js:79 |
-| `showTabJumpHint` | frontend/js/chord-guide.js:86 |
+| `chordGuideEl` | frontend/js/chord-guide.js:27 |
+| `chordGuideGroup` | frontend/js/chord-guide.js:47 |
+| `chordGuideKey` | frontend/js/chord-guide.js:80 |
+| `showTabJumpHint` | frontend/js/chord-guide.js:87 |
 
 ### frontend/js/citation-peek.js (7)
 
@@ -6510,10 +6510,10 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `personaNamesNow` | frontend/js/personas-pane.js:4 |
-| `renderDashboardPersonaSelect` | frontend/js/personas-pane.js:237 |
-| `renderPersonas` | frontend/js/personas-pane.js:20 |
-| `savePersonaList` | frontend/js/personas-pane.js:9 |
+| `personaNamesNow` | frontend/js/personas-pane.js:5 |
+| `renderDashboardPersonaSelect` | frontend/js/personas-pane.js:238 |
+| `renderPersonas` | frontend/js/personas-pane.js:21 |
+| `savePersonaList` | frontend/js/personas-pane.js:10 |
 
 ### frontend/js/phone-more.js (1)
 
@@ -6860,11 +6860,11 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `semanticAnswer` | frontend/js/semantic-notice.js:45 |
-| `semanticOffer` | frontend/js/semantic-notice.js:69 |
-| `semanticOnboardingOffer` | frontend/js/semantic-notice.js:111 |
-| `semanticQuestionText` | frontend/js/semantic-notice.js:21 |
-| `semanticSetAutoInstall` | frontend/js/semantic-notice.js:36 |
+| `semanticAnswer` | frontend/js/semantic-notice.js:46 |
+| `semanticOffer` | frontend/js/semantic-notice.js:70 |
+| `semanticOnboardingOffer` | frontend/js/semantic-notice.js:112 |
+| `semanticQuestionText` | frontend/js/semantic-notice.js:22 |
+| `semanticSetAutoInstall` | frontend/js/semantic-notice.js:37 |
 
 ### frontend/js/settings-controls.js (108)
 
@@ -7081,8 +7081,8 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `renderHealthBlock` | frontend/js/settings-health.js:3 |
-| `renderSamplingRows` | frontend/js/settings-health.js:226 |
+| `renderHealthBlock` | frontend/js/settings-health.js:4 |
+| `renderSamplingRows` | frontend/js/settings-health.js:227 |
 
 ### frontend/js/settings-models.js (34)
 
@@ -7719,12 +7719,12 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `applySimpleMode` | frontend/js/usage-ledger.js:55 |
-| `renderCaptureCommand` | frontend/js/usage-ledger.js:74 |
-| `renderChatContextPop` | frontend/js/usage-ledger.js:108 |
-| `renderSimpleMode` | frontend/js/usage-ledger.js:67 |
-| `renderUsage` | frontend/js/usage-ledger.js:33 |
-| `usageLabels` | frontend/js/usage-ledger.js:18 |
+| `applySimpleMode` | frontend/js/usage-ledger.js:56 |
+| `renderCaptureCommand` | frontend/js/usage-ledger.js:75 |
+| `renderChatContextPop` | frontend/js/usage-ledger.js:109 |
+| `renderSimpleMode` | frontend/js/usage-ledger.js:68 |
+| `renderUsage` | frontend/js/usage-ledger.js:34 |
+| `usageLabels` | frontend/js/usage-ledger.js:19 |
 
 ### frontend/js/utility-tools.js (18)
 
