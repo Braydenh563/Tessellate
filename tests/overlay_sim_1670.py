@@ -36,6 +36,13 @@ def home_at_edge(e: eng.Engine) -> None:
     e.last_x = e.x
 
 
+def skip_flow(e: eng.Engine) -> None:
+    """Leave the wisps' and streams' picture undrawn: a rate sim reads states, acts and positions, never the flow
+    view (it was 40 percent of an hour's cost, and the metrics came out identical to the last digit with it off).
+    The follow-through itself still steps, so the engine's settled and wake decisions are unchanged."""
+    e._flow_view = lambda *_a, **_k: None
+
+
 def runs(seq: list[str]) -> int:
     """The longest run of one value in a row."""
     best = cur = 0
@@ -64,6 +71,7 @@ def simulate(
 
 def _run(gait, seed, secs, setup, pointer, look) -> dict:
     e, _s = make(look, gait, seed)
+    skip_flow(e)
     home_at_edge(e)
     e.big_ready, e.trip_ready = 300.0, 120.0
     e.climb_ready = 0.0

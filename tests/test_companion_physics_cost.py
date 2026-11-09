@@ -79,7 +79,7 @@ def test_the_carry_writes_the_turn_only_when_it_changes() -> None:
 
 
 def test_the_flight_frame_is_time_based_capped_and_writes_no_layout_properties() -> None:
-    src = AV[AV.index("function nameMarkBuddyThrow(") :][:4200]
+    src = _fn("nameMarkBuddyThrow")  # the whole function: a fixed window broke when the bonk and fall lines grew it (1109)
     frame = src[src.index("const frame = (now) =>") : src.index("const next = () =>")]
     assert "Math.min(32, Math.max(0, now - then))" in frame
     # The flight's own step, wrapped by the throw's fates (INBOX 1301 D6), at a fixed 16ms:

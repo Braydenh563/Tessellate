@@ -17,6 +17,7 @@ the quantised pose, so a stretch, a breath or a turn needs no new picture.
 
 from __future__ import annotations
 
+import functools
 import math
 import random
 from typing import Any, NamedTuple
@@ -778,6 +779,15 @@ def _frac(x: float) -> float:
     return x - math.floor(x)
 
 
+
+@functools.lru_cache(maxsize=65536)
+def _arr_pick(seed: int, i: int, k: int) -> tuple[float, float]:
+    """One strand's arrangement for hold number `k`: a pure function of its arguments, so seeding a generator
+    for it on every frame (354,000 seeds in a simulated hour) is a cost the cache removes."""
+    rng = random.Random(seed * 1000003 + i * 7919 + k)
+    return rng.uniform(-1.0, 1.0), rng.uniform(-1.0, 1.0)
+
+
 class Flow:
     """The wisps and the nebula streams move all the time. Each of `FLOW_BANDS` strands carries three octaves of
     sine at its own periods and phases (so nothing lines up or repeats within a minute) with a slow wander of
@@ -858,11 +868,7 @@ class Flow:
         e = min(1.0, max(0.0, (u - (1.0 - span)) / span))
         e = e * e * (3.0 - 2.0 * e)
 
-        def pick(k: int) -> tuple[float, float]:
-            rng = random.Random(self.seed * 1000003 + i * 7919 + int(k))
-            return rng.uniform(-1.0, 1.0), rng.uniform(-1.0, 1.0)
-
-        a, b = pick(n), pick(n + 1)
+        a, b = _arr_pick(self.seed, i, int(n)), _arr_pick(self.seed, i, int(n) + 1)
         return a[0] + (b[0] - a[0]) * e, a[1] + (b[1] - a[1]) * e
 
     def pose(self, frame: str, now: float, lower: str = "", side: float = 1.0) -> None:
