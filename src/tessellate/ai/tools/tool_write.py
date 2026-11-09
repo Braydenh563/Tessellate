@@ -421,20 +421,20 @@ def _set_reminder(session: Session, args: dict) -> dict:
     held = held_reminder(session, text, due_at)
     if held:
         return held
-    repeat = str(args.get("recurring") or "none")
-    reminder = Reminder(text=text, due_at=due_at, entry_id=entry_id, priority=priority, recurring=repeat if repeat in ("daily", "weekly", "monthly") else "none")
+    repeat = next(iter({str(args.get("recurring")).lower()} & {"daily", "weekly", "monthly"}), "none")
+    reminder = Reminder(text=text, due_at=due_at, entry_id=entry_id, priority=priority, recurring=repeat)
     session.add(reminder)
     session.flush()
     manager.log_action(session, "created", "reminder", reminder.id, text[:80])
     session.commit()
     return {
-        "id": reminder.id,
-        "text": text,
+        "id": reminder.id, "text": text,
         "due_at": due_at.isoformat(),
         #: Said back in words, so the answer repeats the app's reading of the
         #: time rather than the model's own arithmetic.
         "due": due_at.strftime("%A %d %B %Y, %H:%M"),
-        "label": f"⏰ Set a reminder for {due_at.strftime('%a %d %b %Y %H:%M')}",
+        "label": f"⏰ Set a reminder for {due_at.strftime('%a %d %b %Y %H:%M')}" + (f", repeating {repeat}" if repeat != "none" else ""),
+        "recurring": repeat,
     }
 
 

@@ -790,7 +790,8 @@ def _reminder_set(result: dict, args: dict) -> Said:
     when = _when(result.get("due_at")) or str(result.get("due") or "")
     if result.get("existing"):
         return f"You already have that reminder, to {_lower_first(str(result.get('text') or args.get('text') or 'do that'))} on {when}.", "", _chips(("Open Reminders", REMINDERS))
-    return f"I'll remind you to {_lower_first(str(result.get('text') or args.get('text') or 'do that'))} on {when}.", "", _chips(("Open Reminders", REMINDERS))
+    again = {"daily": "every day", "weekly": "every week", "monthly": "every month"}.get(str(result.get("recurring") or ""))
+    return f"I'll remind you to {_lower_first(str(result.get('text') or args.get('text') or 'do that'))} on {when}{f', then {again}' if again else ''}.", "", _chips(("Open Reminders", REMINDERS))
 
 
 def _lower_first(text: str) -> str:

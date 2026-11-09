@@ -617,3 +617,19 @@ def test_undo_of_a_change_to_several_notes_runs_through_execute(ai_client):
     # A batch only carries registry tools, never another batch.
     nested = ai_client.post("/chat/tools/execute", json={"name": "batch", "steps": [{"tool": "batch", "steps": []}]})
     assert nested.status_code == 404
+
+
+def test_set_reminder_offers_and_keeps_a_repeat(ai_client, session):
+    """Review 5834144051 item 3: planners pass `recurring`; the model can too."""
+    from tessellate.ai import tool_say
+    from tessellate.ai.tools.tool_table import TOOLS
+
+    prop = TOOLS["set_reminder"].parameters["properties"]["recurring"]
+    assert prop["enum"] == ["none", "daily", "weekly", "monthly"]
+    args = {"text": "water the plants", "due_at": "2030-01-02T09:00", "recurring": "weekly"}
+    made = tools.execute_tool(session, "set_reminder", args)
+    assert session.get(Reminder, made["id"]).recurring == "weekly"
+    assert "weekly" in made["label"]
+    assert "every week" in tool_say.say("set_reminder", made, args)["text"]
+    plain = tools.execute_tool(session, "set_reminder", {"text": "other", "due_at": "2030-01-03T09:00"})
+    assert session.get(Reminder, plain["id"]).recurring == "none" and "repeating" not in plain["label"]

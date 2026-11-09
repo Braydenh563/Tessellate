@@ -73,3 +73,28 @@ def test_ordinal_of(about, nth):
 def test_item_in_reads_bullets_marks_and_links():
     assert task_acts.item_in(2, LISTED) == "Book the dentist follow-up"
     assert task_acts.item_in(4, LISTED) is None and task_acts.item_in(1, "no list here") is None
+
+
+LONG = "You have 15 open:\n" + "\n".join(f"- Task number {n} here" for n in range(1, 16))
+
+
+@pytest.mark.parametrize("said", ["tick the last one", "tick 14", "tick the 15th one"])
+def test_a_list_past_twelve_items_is_still_acted_on(said):
+    from datetime import datetime
+
+    from tessellate.api.chat_said import acts_on_listed_task
+
+    assert acts_on_listed_task(said, [{"answer": LONG}], datetime(2026, 11, 9, 9, 0)) is True
+
+
+def test_the_shown_list_is_parsed_once_per_turn(monkeypatch):
+    from datetime import datetime
+
+    from tessellate.api.chat_said import acts_on_listed_task
+
+    calls = []
+    real = task_acts.items_in
+    monkeypatch.setattr(task_acts, "items_in", lambda text: calls.append(1) or real(text))
+    acts_on_listed_task("tick the last one", [{"answer": LONG}], datetime(2026, 11, 9, 9, 0))
+    # One parse here, one inside acts.parse resolving the ordinal; was 12 here plus that one.
+    assert len(calls) == 2
