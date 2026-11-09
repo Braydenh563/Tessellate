@@ -57,6 +57,11 @@ ACTS = {
     "hiccup": ("act.hiccup", [], 3),
     "hug": ("act.self_hug", [], 4.5),
     "tap": ("act.foot_tap", [], 3),
+    #: INBOX 1710, 1711 (comp2-1109): a firefly chased, a star pile counted, a nap on a note card, a wave at the pointer.
+    "firefly": ("act.star_catch", [], 4.5),
+    "starpile": ("act.count_stars", [], 6),
+    "cardnap": ("act.card_nap", [], 9),
+    "wavepointer": ("act.wave_pointer", [], 2.4),
 }
 
 

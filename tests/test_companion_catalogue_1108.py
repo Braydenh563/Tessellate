@@ -38,7 +38,6 @@ BUILT_FLOOR = {"app": 31, "desk": 29}
 #: shrink. The design backlog (built on neither side) is capped too; its build order is
 #: `docs/roadmap/agent-remaining/atlascat-1108.md`.
 APP_ONLY = frozenset({
-    "act.lounge", "act.meditate", "act.rest_head",
     "act.chair", "act.dangle", "act.hang_by_feet", "act.hang_one_hand", "act.kick_legs", "act.sloth", "lower.drift",
     "move.afield", "pos.back_float", "pos.cross_legged", "pos.edge_dangle", "pos.lean", "pos.lounge",
     "react.graph_laid", "react.long_note", "react.note_binned", "react.private_note", "react.remark",
@@ -49,7 +48,7 @@ APP_ONLY = frozenset({
 })
 #: What is left has no browser meaning (INBOX 1710): a page is never told its window opened, closed or was dragged.
 DESK_ONLY = frozenset({"react.window_closed", "react.window_dragged", "react.window_opened"})
-APP_ONLY_CAP, DESK_ONLY_CAP, NEITHER_CAP = 38, 3, 88
+APP_ONLY_CAP, DESK_ONLY_CAP, NEITHER_CAP = 35, 3, 86
 
 
 @lru_cache(maxsize=1)

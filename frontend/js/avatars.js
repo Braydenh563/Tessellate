@@ -3238,6 +3238,11 @@ Object.assign(NAME_MARK_BUDDY_ACTS, {
   hiccup: { ms: 3000, w: 0.6, cool: 300000, poses: ["stand"], atlas: true, desk: true },
   hug: { ms: 4500, w: 1, cool: 150000, poses: ["stand", "sit"], atlas: true, desk: true },
   tap: { ms: 3000, w: 1.5, cool: 120000, poses: ["stand"], atlas: true, desk: true },
+  //: INBOX 1710, 1711: chasing a firefly, a little star pile counted, a nap curled on a note card and a wave at the pointer, each the desk's too.
+  firefly: { ms: 4500, w: 1.2, cool: 240000, poses: ["stand"], atlas: true, desk: true },
+  starpile: { ms: 6000, w: 1, cool: 240000, poses: ["stand", "sit"], atlas: true, desk: true },
+  cardnap: { ms: 9000, w: 0.8, cool: 300000, poses: ["sit"], atlas: true, desk: true },
+  wavepointer: { ms: 2400, w: 1.2, cool: 150000, poses: ["stand"], atlas: true, desk: true },
   //: Batch D4: the desk's small projects: a daydream (a thought bubble), pacing, making up a game (sparks), tinkering
   //: (a gear and a spanner) and dusting off (motes). The daydream is quiet and long; the game is loud.
   daydream: { ms: 35000, w: 1.5, cool: 300000, poses: ["stand", "sit"], atlas: true, desk: true },
@@ -3271,7 +3276,7 @@ Object.assign(NAME_MARK_BUDDY_ACTS, {
 //: stances, Fewer (the default) makes the unprompted gestures a third as
 //: likely, Normal as they were. What you start (a poke, a cheer at a
 //: streak, a reaction) is never reduced: those have no weight here.
-const NMB_QUIET_ACTS = ["blink", "look", "glance", "turn", "yawn", "nap", "dangle", "shift", "tilt", "lounge", "rest", "drift", "journal", "stars", "blanket", "daydream", ...Object.keys(NMB_STANCES)];
+const NMB_QUIET_ACTS = ["blink", "look", "glance", "turn", "yawn", "nap", "dangle", "shift", "tilt", "lounge", "rest", "drift", "journal", "stars", "blanket", "cardnap", "daydream", ...Object.keys(NMB_STANCES)];
 //: **Each of its doings can be turned off** (the owner, 2026-09-27: "Every
 //: companion feature must be togglable in Settings"). Appearance >
 //: Companion > What it does (`mountBuddyActivities`): one switch a row, kept
@@ -10190,6 +10195,10 @@ const NMB_PROP_WORDS = [
   ["nmb-act-hiccup", "hiccuping"],
   ["nmb-act-hug", "hugging itself"],
   ["nmb-act-tap", "tapping a foot"],
+  ["nmb-act-firefly", "chasing a firefly"],
+  ["nmb-act-starpile", "counting a pile of stars"],
+  ["nmb-act-cardnap", "napping on a note card"],
+  ["nmb-act-wavepointer", "waving at the pointer"],
   ["nmb-act-daydream", "daydreaming"],
   ["nmb-act-pace", "pacing"],
   ["nmb-act-game", "making up a game"],

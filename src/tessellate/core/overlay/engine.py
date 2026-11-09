@@ -1625,6 +1625,8 @@ class Engine:
                 self._face(-self.facing, now)
         if self.mind.shift_due(now, self.var_rng):
             self.shift_at = now  # A4: the same lean and settle as a sit's, the window does not move
+        if self.act in bh.YIELD_TO_SIT and now - self.last_active >= IDLE_SIT:
+            self.state_until = now  # a long seated act gives way to the ten-minute sit
         if now >= self.state_until:
             self._enter("stand", now)
             self.ex.after_act(now)
