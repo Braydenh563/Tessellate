@@ -112,8 +112,9 @@ class _Count(HTMLParser):
 #: intent above. It counts the live page now (row 21, row21-1109): 5,521 on head
 #: with the Settings body already a template; the board canvas into
 #: `<template data-surface="board">` (1,741 elements, built when a board opens)
-#: took it to 3,782; the OCR workspace's card (`data-surface="ocr"`, 130) to 3,652.
-BOOT_ELEMENTS_CAP = 3_652
+#: took it to 3,782; the OCR workspace's card (`data-surface="ocr"`, 130) to 3,652;
+#: the keyboard shortcuts sheet's card (`data-surface="shortcuts"`, 83) to 3,569.
+BOOT_ELEMENTS_CAP = 3_569
 
 
 def test_the_boot_document_does_not_grow():

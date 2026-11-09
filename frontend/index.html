@@ -15454,6 +15454,8 @@ Link to another note with [[its first few words]]."></textarea>
 
   <div id="shortcuts-overlay" class="modal-overlay hidden" role="dialog"
     aria-modal="true" aria-label="Keyboard shortcuts">
+    <!-- Built when the sheet first opens (`surfaceBuild("shortcuts")`, settings-body.js; audit 1031 row 21). -->
+    <template data-surface="shortcuts">
     <div class="card modal-card" id="shortcuts-card">
       <div class="dialog-head">
         <h2 class="dialog-head-title"><i class="ph ph-keyboard pop-glyph" aria-hidden="true"></i> Keyboard shortcuts</h2>
@@ -15523,6 +15525,7 @@ Link to another note with [[its first few words]]."></textarea>
       </p>
       <p class="muted">Tip: most actions also live in the command palette.</p>
     </div>
+    </template>
   </div>
 
   <!-- **The board's help and shortcut sheet** (INBOX 566, the owner: "the

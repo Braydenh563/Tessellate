@@ -77,7 +77,6 @@ $("history-close").addEventListener("click", () =>
   $("history-overlay").classList.add("hidden")
 );
 
-$("shortcuts-reset").addEventListener("click", resetShortcuts);
 
 
 //: **Ctrl+S on the Preferences section**, which the section's own copy has
@@ -1494,7 +1493,11 @@ function closeShortcuts() {
   overlay.returnFocus = null;
 }
 
-$("shortcuts-close").addEventListener("click", closeShortcuts);
+//: The sheet is built when it first opens (row 21).
+onSurface("shortcuts", () => {
+  $("shortcuts-close").addEventListener("click", closeShortcuts);
+  $("shortcuts-reset").addEventListener("click", resetShortcuts);
+});
 wireBackdropClose($("shortcuts-overlay"), () => closeShortcuts());
 
 document.addEventListener("keydown", (e) => {
