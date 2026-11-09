@@ -4941,13 +4941,23 @@ def _routed_away(question: str, notes: list[dict], today: date) -> tuple:
 
 
 @_isolated
-def answer(
+def answer(question: str, notes: list[dict], **kwargs) -> dict | None:  # noqa: ANN003
+    """The decision-70 answer to `question` from the route's `notes`, or None
+    when the question is not one this shape answers (a sum, a time, a
+    command, nothing found): the caller then asks `composer.compose`. Read with
+    the notes' words set, as `compose` does: "tom and sara" is two subjects
+    only when the notes hold both words."""
+    owned = composer_ask.NOTE_WORDS.set(composer._note_words(notes))  # noqa: SLF001
+    try:
+        return _answer(question, notes, **kwargs)
+    finally:
+        composer_ask.NOTE_WORDS.reset(owned)
+
+
+def _answer(
     question: str, notes: list[dict], *, today: date | None = None, voice: str = "natural", turn: int = 0,
     insight: str = "one", learned=None, known=None,  # noqa: ANN001
 ) -> dict | None:
-    """The decision-70 answer to `question` from the route's `notes`, or None
-    when the question is not one this shape answers (a sum, a time, a
-    command, nothing found): the caller then asks `composer.compose`."""
     today = today or composer.user_today()
     reply, question, asked = _routed_away(question, notes, today)
     if reply is not _ORDINARY:

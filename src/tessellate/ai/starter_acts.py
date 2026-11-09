@@ -32,6 +32,8 @@ _READS = (
     ("append_today", re.compile(r"^(?:add|append) to (?:today'?s|the daily|my daily) (?:note|journal)[:,]?\s+(?P<words>.+)$")),
     #: "add buy milk to today's note": the words come first (CHAT_PLAN X10).
     ("append_today", re.compile(r"^(?:please )?(?:add|put|append) (?P<words>.+?) (?:to|in|into|onto) (?:(?:today'?s|the|my) daily|today'?s|the day'?s) (?:note|journal)$")),
+    #: "put it in my journal": the journal as a place. A note called that takes the line; none, today's note does.
+    ("append_today", re.compile(r"^(?:please )?(?:add|put|append) (?P<words>.+?) (?:to|in|into|onto) my (?P<own>journal|diary)$")),
     #: The time words are the recogniser's (`_since_a_day`), never a list here.
     ("changed", re.compile(r"^what (?:has )?changed(?: in (?:my|the) notebook)?(?: (?P<when>.+))?$")),
     ("loose_ends", re.compile(r"\bloose ends?\b|^what should i (?:pick up|do) next$")),
@@ -382,8 +384,29 @@ def _carry_refusal(carried: list[Entry], words: str) -> str:
     return "" if any(not e.is_private for e in carried) else "That note is private, so I will not copy it into today's note."
 
 
+def _own_journal(session: Session, slots: dict, words: str) -> tuple[str, dict | None] | None:
+    """The line for "put X in my journal" when a note is called that, else None
+    (today's note takes it): a journal the person keeps is theirs, not the daily note."""
+    own = str(slots["own"])
+    rows = session.scalars(select(Entry).where(Entry.is_deleted.is_(False), Entry.deleted_at.is_(None), Entry.is_private.is_(False)).order_by(Entry.id.desc()).limit(500))
+    entry = next((e for e in rows if (e.content or "").strip().split("\n", 1)[0].lstrip("# ").strip().lower() == own), None)
+    if entry is None:
+        return None
+    name = note_title(entry.content, size=48)
+    if not words or words.lower() in _POINTERS:
+        return f"Say what to add to your {name} note, like: add buy milk to my {own}.", None
+    from tessellate.api.edit_conflicts import content_hash  # lazy: `ai` sits below `api`
+
+    label = f"Add “{commands._clip(words, 80)}” to the end of “{name}”"
+    steps = [{"name": "edit_note", "arguments": {"note_id": entry.id, "content": act_steps.appended(entry.content or "", words), "base_hash": content_hash(entry.content)}}]
+    return commands._confirm(label), commands._card(label, steps, items=[name])
+
+
 def _append_today(session: Session, *, slots: dict, now: datetime, note_ids: list[int] = (), history: list[dict] = (), **_: object) -> tuple[str, dict | None]:
     words = commands._cap(str(slots.get("words") or "").strip(" '\"“”"))
+    own = _own_journal(session, slots, words) if slots.get("own") else None
+    if own is not None:
+        return own
     carried = _referred_notes(session, words, note_ids, history)
     if _NOTE_POINTER.match(words) or carried:
         refusal = _carry_refusal(carried, words)

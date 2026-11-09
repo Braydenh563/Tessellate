@@ -941,6 +941,9 @@ _EACH_NAME = r"(?!(?:what|how|why|when|where|who|which|if|that|i|my|me)\b)[\w'�
 _NAME = r"[A-Z][\w'’-]+(?: [A-Z][\w'’-]+)?"
 _BARE_NAMES = rf"^(?P<a>{_NAME}(?:, {_NAME})*),? and (?P<b>{_NAME})[?.!]*$"
 
+#: "tom and sara" as typed in lower case: two names only when neither is an everyday word ("salt and pepper" stays one thing); `composer_ask.compare_sides` is the gate.
+LOWER_PAIR = re.compile(r"^(?P<a>[a-z][\w'’-]{1,20}) and (?P<b>[a-z][\w'’-]{1,20})[?.!]*$")
+
 #: Tried last (after the comparison verbs, or "Compare Lisbon and Porto" would be a bare pair).
 BARE_COMPARE_SIDES: tuple[re.Pattern[str], ...] = (re.compile(_BARE_NAMES),)
 
