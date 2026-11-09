@@ -799,7 +799,7 @@ class Engine:
         self.last_x = 0.0
         self.travel = 0.0
         #: A hop-chain leg: whether this walk is one, where its ground count began, and how high the figure is drawn now.
-        self.hopping, self.hop_origin, self.hop_lift = False, 0.0, 0.0
+        self.hopping, self.hop_origin, self.hop_lift, self.hop_next = False, 0.0, 0.0, False
         self.trips = 0
         #: The rare long walk across the screen (owner: only on a good mood, never twice within an hour).
         self.last_long_walk = -1e9
@@ -2689,16 +2689,15 @@ class Engine:
                 return
             self.modes.append(mode)
         far = dist / self._scale()
+        self.hop_next = mode == "jump" and not self.reduced
         self.mode = self._leg_pace(far, plain)
         self.pending = (goal, then)
-        if self.mode == "dash" and not self.reduced and self.gait == "walk":
-            self._enter("crouch", now)  # a crouch before a long run
+        if (self.mode == "dash" or self.hop_next) and not self.reduced and self.gait == "walk":
+            self._enter("crouch", now)  # a crouch before a long run or a chain of hops
             self.pending = (goal, then)
             self._face(1 if goal[0] >= self.x else -1, now)  # the turn rides the crouch, so the walk does not set off with a stale facing and stand turning
             return
         self._begin_go(now)
-        if mode == "jump" and self.state == "walk" and self.gait == "walk" and not self.reduced:
-            self.hopping, self.hop_origin = True, self.travel
 
     def _leg_pace(self, far: float, plain: bool) -> str:
         """step, walk or dash for a leg `far` logical px long; a chosen leg takes its pace from its mode (INBOX 1683 u)."""
@@ -2715,6 +2714,7 @@ class Engine:
         self.then = then
         if self.gait == "walk":
             self._enter("walk", now)
+            self.hopping, self.hop_origin, self.hop_next = self.hop_next, self.travel, False
             self.goal = goal
             self._face(1 if goal[0] >= self.x else -1, now)
         else:
@@ -4571,7 +4571,7 @@ class Engine:
             return self.x, yb, (0, max(0, top - yb + (side - h) // 2), side, side)
         x, y = self.x, self.y
         # a bonk shows the startle frame in mid-air: no foot offset of its own
-        y += self._dy("held" if self.state == "fly" else "walk0" if self.hopping else frame)  # a hop keeps the stride's line, only lifted
+        y += self._dy("held" if self.state == "fly" else frame)  # each frame is registered to the floor, so a hop's drawn feet are `hop_lift` above it
         y -= self.hop_lift if self.hopping else 0.0
         x += self._flip_dx(frame, self.facing < 0)
         if self.peek_edge == "top" or (self.state == "rise" and self.then == "peek_top"):

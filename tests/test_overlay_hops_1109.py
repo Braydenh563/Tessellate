@@ -48,7 +48,7 @@ def test_the_drawn_feet_never_step_more_than_a_frame_of_arc() -> None:
     while t < 40.0 and e.state in ("walk", "crouch"):
         t += 1 / 60
         o = e.update(t, None)
-        feet.append(o.y)  # the window's line; the frames carry their own foot offsets, which `_dy` already registers
+        feet.append(o.y + e._box(o.frame, False)[3])  # the drawn lowest row: frames carry their own foot offsets
     steps = [abs(b - a) for a, b in zip(feet, feet[1:])]
     assert max(steps) <= 0.04 * e.size[1], (max(steps), e.size[1])
 

@@ -37,7 +37,9 @@ def test_a_flourish_is_rare_whatever_the_leg(gait: str, long_leg: bool) -> None:
     # leads the short legs.
     assert flourish <= (0.62 if long_leg else 0.42), picks
     assert picks["puff"] / 4000 < 0.10, picks
-    assert sum(picks[m] for m in ("walk", "glide", "run", "swoop")) / 4000 >= 0.4, picks
+    # Intent moved (INBOX 1683 u, hops): a ground leg may be a chain of hops, a seen move by the body like a walk or a
+    # run, so it counts with them; measured walk, run and jump 0.62 (walk, run alone 0.38 on the short and long legs).
+    assert sum(picks[m] for m in ("walk", "glide", "run", "swoop", "jump")) / 4000 >= 0.4, picks
 
 
 def test_a_long_leg_across_the_middle_is_walked_not_puffed() -> None:

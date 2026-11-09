@@ -60,7 +60,8 @@ def test_go_somewhere_else_is_seen_arrives_and_stays_at_ten_frames_a_second(gait
         out = e.update(t)
         if e.state == "walk" and gait == "walk" and e.goal is not None and abs(e.goal[0] - e.x) > 20:
             faced.add(e.facing * (1 if e.goal[0] > e.x else -1))  # toward where it is going, even to an edge it slips off
-            blank += not out.frame.startswith("walk")
+            # Intent moved (INBOX 1683 u, hops): a hop-chain leg draws the tucked hop picture while it is in the air.
+            blank += not (out.frame.startswith("walk") or (e.hopping and out.frame == "hop"))
         if t - t0 > 60.0:
             assert abs(e.x - new) < 60 * e._scale() and abs(e.x - old) > 100, (t - t0, e.x, new, old)
     assert blank == 0
