@@ -26,7 +26,7 @@ ADD = (JS_DIR / "timeline-cal-add.js").read_text(encoding="utf-8")
 
 
 def _fn(name: str, text: str = ADD) -> str:
-    match = re.search(rf"^function {name}\(.*?^\}}", text, re.S | re.M)
+    match = re.search(rf"^( *)function {name}\(.*?^\1\}}", text, re.S | re.M)
     assert match, f"{name} is gone"
     return match.group(0)
 

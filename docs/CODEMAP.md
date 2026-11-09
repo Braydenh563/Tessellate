@@ -1813,18 +1813,18 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `activityDuration` | frontend/js/activity-panel.js:94 |
-| `activityEnding` | frontend/js/activity-panel.js:100 |
-| `activityModelLine` | frontend/js/activity-panel.js:28 |
-| `activityRow` | frontend/js/activity-panel.js:38 |
-| `activityRunningShown` | frontend/js/activity-panel.js:15 |
-| `openActivityReport` | frontend/js/activity-panel.js:127 |
-| `paintActivity` | frontend/js/activity-panel.js:108 |
-| `renderActivity` | frontend/js/activity-panel.js:19 |
-| `setActivityTab` | frontend/js/activity-panel.js:180 |
-| `stopActivityJob` | frontend/js/activity-panel.js:131 |
-| `stopActivityModel` | frontend/js/activity-panel.js:141 |
-| `stopAllActivity` | frontend/js/activity-panel.js:152 |
+| `activityDuration` | frontend/js/activity-panel.js:95 |
+| `activityEnding` | frontend/js/activity-panel.js:101 |
+| `activityModelLine` | frontend/js/activity-panel.js:29 |
+| `activityRow` | frontend/js/activity-panel.js:39 |
+| `activityRunningShown` | frontend/js/activity-panel.js:16 |
+| `openActivityReport` | frontend/js/activity-panel.js:128 |
+| `paintActivity` | frontend/js/activity-panel.js:109 |
+| `renderActivity` | frontend/js/activity-panel.js:20 |
+| `setActivityTab` | frontend/js/activity-panel.js:181 |
+| `stopActivityJob` | frontend/js/activity-panel.js:132 |
+| `stopActivityModel` | frontend/js/activity-panel.js:142 |
+| `stopAllActivity` | frontend/js/activity-panel.js:153 |
 
 ### frontend/js/answer-kit.js (87)
 
@@ -2259,10 +2259,10 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `notePickerRows` | frontend/js/attach-to.js:226 |
-| `renderAttachToBoard` | frontend/js/attach-to.js:26 |
-| `renderAttachToDocument` | frontend/js/attach-to.js:120 |
-| `renderNotePickerList` | frontend/js/attach-to.js:282 |
+| `notePickerRows` | frontend/js/attach-to.js:227 |
+| `renderAttachToBoard` | frontend/js/attach-to.js:27 |
+| `renderAttachToDocument` | frontend/js/attach-to.js:121 |
+| `renderNotePickerList` | frontend/js/attach-to.js:283 |
 
 ### frontend/js/attachment-actions.js (6)
 
@@ -2762,11 +2762,11 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `chatPrivateEmpty` | frontend/js/chat-private.js:17 |
-| `chatPrivateLeave` | frontend/js/chat-private.js:57 |
-| `chatPrivateRepaint` | frontend/js/chat-private.js:30 |
-| `chatPrivateStart` | frontend/js/chat-private.js:38 |
-| `chatPrivateToggle` | frontend/js/chat-private.js:48 |
+| `chatPrivateEmpty` | frontend/js/chat-private.js:18 |
+| `chatPrivateLeave` | frontend/js/chat-private.js:58 |
+| `chatPrivateRepaint` | frontend/js/chat-private.js:31 |
+| `chatPrivateStart` | frontend/js/chat-private.js:39 |
+| `chatPrivateToggle` | frontend/js/chat-private.js:49 |
 
 ### frontend/js/chat-tasks.js (11)
 
@@ -2844,18 +2844,18 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `openCategoryChipMenu` | frontend/js/chip-menus.js:55 |
-| `openChipMenu` | frontend/js/chip-menus.js:28 |
-| `openTagChipMenu` | frontend/js/chip-menus.js:70 |
+| `openCategoryChipMenu` | frontend/js/chip-menus.js:56 |
+| `openChipMenu` | frontend/js/chip-menus.js:29 |
+| `openTagChipMenu` | frontend/js/chip-menus.js:71 |
 
 ### frontend/js/chord-guide.js (4)
 
 | Name | File:line |
 |---|---|
-| `chordGuideEl` | frontend/js/chord-guide.js:26 |
-| `chordGuideGroup` | frontend/js/chord-guide.js:46 |
-| `chordGuideKey` | frontend/js/chord-guide.js:79 |
-| `showTabJumpHint` | frontend/js/chord-guide.js:86 |
+| `chordGuideEl` | frontend/js/chord-guide.js:27 |
+| `chordGuideGroup` | frontend/js/chord-guide.js:47 |
+| `chordGuideKey` | frontend/js/chord-guide.js:80 |
+| `showTabJumpHint` | frontend/js/chord-guide.js:87 |
 
 ### frontend/js/citation-peek.js (7)
 
@@ -3024,19 +3024,19 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `dashBoardThumb` | frontend/js/dash-boards.js:136 |
-| `dashMapFeature` | frontend/js/dash-boards.js:30 |
-| `dashMapFeatureHeight` | frontend/js/dash-boards.js:20 |
-| `dashRenderBoards` | frontend/js/dash-boards.js:61 |
+| `dashBoardThumb` | frontend/js/dash-boards.js:137 |
+| `dashMapFeature` | frontend/js/dash-boards.js:31 |
+| `dashMapFeatureHeight` | frontend/js/dash-boards.js:21 |
+| `dashRenderBoards` | frontend/js/dash-boards.js:62 |
 
 ### frontend/js/dash-day.js (4)
 
 | Name | File:line |
 |---|---|
-| `dashPatternBit` | frontend/js/dash-day.js:104 |
-| `dashTodayLine` | frontend/js/dash-day.js:135 |
-| `digestSaidLine` | frontend/js/dash-day.js:73 |
-| `renderDayDigest` | frontend/js/dash-day.js:8 |
+| `dashPatternBit` | frontend/js/dash-day.js:105 |
+| `dashTodayLine` | frontend/js/dash-day.js:136 |
+| `digestSaidLine` | frontend/js/dash-day.js:74 |
+| `renderDayDigest` | frontend/js/dash-day.js:9 |
 
 ### frontend/js/dash-night.js (6)
 
@@ -4830,16 +4830,16 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `entityDateRow` | frontend/js/entity-page.js:139 |
-| `entityIcon` | frontend/js/entity-page.js:14 |
-| `entityMentionRow` | frontend/js/entity-page.js:123 |
-| `entityMenuItems` | frontend/js/entity-page.js:163 |
-| `entitySave` | frontend/js/entity-page.js:151 |
-| `entitySection` | frontend/js/entity-page.js:106 |
-| `entityWhen` | frontend/js/entity-page.js:21 |
-| `openEntitiesSheet` | frontend/js/entity-page.js:201 |
-| `openEntityPage` | frontend/js/entity-page.js:61 |
-| `toastEntityMerge` | frontend/js/entity-page.js:33 |
+| `entityDateRow` | frontend/js/entity-page.js:140 |
+| `entityIcon` | frontend/js/entity-page.js:15 |
+| `entityMentionRow` | frontend/js/entity-page.js:124 |
+| `entityMenuItems` | frontend/js/entity-page.js:164 |
+| `entitySave` | frontend/js/entity-page.js:152 |
+| `entitySection` | frontend/js/entity-page.js:107 |
+| `entityWhen` | frontend/js/entity-page.js:22 |
+| `openEntitiesSheet` | frontend/js/entity-page.js:202 |
+| `openEntityPage` | frontend/js/entity-page.js:62 |
+| `toastEntityMerge` | frontend/js/entity-page.js:34 |
 
 ### frontend/js/entry-card.js (4)
 
@@ -4876,12 +4876,12 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `fieldClearBoxes` | frontend/js/field-clear.js:65 |
-| `fieldClearRun` | frontend/js/field-clear.js:84 |
-| `fieldClearSync` | frontend/js/field-clear.js:69 |
-| `fieldClearSyncAll` | frontend/js/field-clear.js:165 |
-| `fieldClearWatchValue` | frontend/js/field-clear.js:136 |
-| `fieldClearWrite` | frontend/js/field-clear.js:78 |
+| `fieldClearBoxes` | frontend/js/field-clear.js:66 |
+| `fieldClearRun` | frontend/js/field-clear.js:85 |
+| `fieldClearSync` | frontend/js/field-clear.js:70 |
+| `fieldClearSyncAll` | frontend/js/field-clear.js:166 |
+| `fieldClearWatchValue` | frontend/js/field-clear.js:137 |
+| `fieldClearWrite` | frontend/js/field-clear.js:79 |
 
 ### frontend/js/file-drop.js (10)
 
@@ -5471,11 +5471,11 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `applyImprove` | frontend/js/improve-panel.js:84 |
-| `closeImprove` | frontend/js/improve-panel.js:38 |
-| `improveReady` | frontend/js/improve-panel.js:27 |
-| `openImprove` | frontend/js/improve-panel.js:3 |
-| `runImprove` | frontend/js/improve-panel.js:44 |
+| `applyImprove` | frontend/js/improve-panel.js:85 |
+| `closeImprove` | frontend/js/improve-panel.js:39 |
+| `improveReady` | frontend/js/improve-panel.js:28 |
+| `openImprove` | frontend/js/improve-panel.js:4 |
+| `runImprove` | frontend/js/improve-panel.js:45 |
 
 ### frontend/js/lag-watch.js (23)
 
@@ -5533,11 +5533,11 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `libraryPickAbout` | frontend/js/library-pick.js:28 |
-| `libraryPickLabel` | frontend/js/library-pick.js:6 |
-| `pickLibraryItemDialog` | frontend/js/library-pick.js:47 |
-| `pickMediaDialog` | frontend/js/library-pick.js:196 |
-| `pickerRememberedSource` | frontend/js/library-pick.js:18 |
+| `libraryPickAbout` | frontend/js/library-pick.js:29 |
+| `libraryPickLabel` | frontend/js/library-pick.js:7 |
+| `pickLibraryItemDialog` | frontend/js/library-pick.js:48 |
+| `pickMediaDialog` | frontend/js/library-pick.js:197 |
+| `pickerRememberedSource` | frontend/js/library-pick.js:19 |
 
 ### frontend/js/library.js (271)
 
@@ -5819,9 +5819,9 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `attachFileTo` | frontend/js/lightbox-actions.js:29 |
-| `attachFromLibrary` | frontend/js/lightbox-actions.js:68 |
-| `reevaluateEntry` | frontend/js/lightbox-actions.js:5 |
+| `attachFileTo` | frontend/js/lightbox-actions.js:30 |
+| `attachFromLibrary` | frontend/js/lightbox-actions.js:69 |
+| `reevaluateEntry` | frontend/js/lightbox-actions.js:6 |
 
 ### frontend/js/lightbox-view.js (5)
 
@@ -5856,13 +5856,13 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `manualBuild` | frontend/js/manual.js:80 |
-| `manualByName` | frontend/js/manual.js:35 |
-| `manualFilter` | frontend/js/manual.js:126 |
-| `manualMatches` | frontend/js/manual.js:28 |
-| `manualTopicEl` | frontend/js/manual.js:44 |
-| `manualWords` | frontend/js/manual.js:16 |
-| `openManual` | frontend/js/manual.js:152 |
+| `manualBuild` | frontend/js/manual.js:81 |
+| `manualByName` | frontend/js/manual.js:36 |
+| `manualFilter` | frontend/js/manual.js:127 |
+| `manualMatches` | frontend/js/manual.js:29 |
+| `manualTopicEl` | frontend/js/manual.js:45 |
+| `manualWords` | frontend/js/manual.js:17 |
+| `openManual` | frontend/js/manual.js:153 |
 
 ### frontend/js/map-preview.js (10)
 
@@ -6533,10 +6533,10 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `personaNamesNow` | frontend/js/personas-pane.js:4 |
-| `renderDashboardPersonaSelect` | frontend/js/personas-pane.js:237 |
-| `renderPersonas` | frontend/js/personas-pane.js:20 |
-| `savePersonaList` | frontend/js/personas-pane.js:9 |
+| `personaNamesNow` | frontend/js/personas-pane.js:5 |
+| `renderDashboardPersonaSelect` | frontend/js/personas-pane.js:238 |
+| `renderPersonas` | frontend/js/personas-pane.js:21 |
+| `savePersonaList` | frontend/js/personas-pane.js:10 |
 
 ### frontend/js/phone-more.js (1)
 
@@ -6675,9 +6675,9 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `buildSelect` | frontend/js/reminder-edit.js:8 |
-| `reminderEditForm` | frontend/js/reminder-edit.js:21 |
-| `snoozeReminderTo` | frontend/js/reminder-edit.js:127 |
+| `buildSelect` | frontend/js/reminder-edit.js:9 |
+| `reminderEditForm` | frontend/js/reminder-edit.js:22 |
+| `snoozeReminderTo` | frontend/js/reminder-edit.js:128 |
 
 ### frontend/js/reminder-notify.js (4)
 
@@ -6883,11 +6883,11 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `semanticAnswer` | frontend/js/semantic-notice.js:45 |
-| `semanticOffer` | frontend/js/semantic-notice.js:69 |
-| `semanticOnboardingOffer` | frontend/js/semantic-notice.js:111 |
-| `semanticQuestionText` | frontend/js/semantic-notice.js:21 |
-| `semanticSetAutoInstall` | frontend/js/semantic-notice.js:36 |
+| `semanticAnswer` | frontend/js/semantic-notice.js:46 |
+| `semanticOffer` | frontend/js/semantic-notice.js:70 |
+| `semanticOnboardingOffer` | frontend/js/semantic-notice.js:112 |
+| `semanticQuestionText` | frontend/js/semantic-notice.js:22 |
+| `semanticSetAutoInstall` | frontend/js/semantic-notice.js:37 |
 
 ### frontend/js/settings-controls.js (108)
 
@@ -7104,8 +7104,8 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `renderHealthBlock` | frontend/js/settings-health.js:3 |
-| `renderSamplingRows` | frontend/js/settings-health.js:226 |
+| `renderHealthBlock` | frontend/js/settings-health.js:4 |
+| `renderSamplingRows` | frontend/js/settings-health.js:227 |
 
 ### frontend/js/settings-models.js (34)
 
@@ -7545,15 +7545,15 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `timelineCalAddBuild` | frontend/js/timeline-cal-add.js:55 |
-| `timelineCalAddEvent` | frontend/js/timeline-cal-add.js:193 |
-| `timelineCalAddFields` | frontend/js/timeline-cal-add.js:27 |
-| `timelineCalAddKind` | frontend/js/timeline-cal-add.js:133 |
-| `timelineCalAddOpen` | frontend/js/timeline-cal-add.js:32 |
-| `timelineCalAddReminder` | frontend/js/timeline-cal-add.js:183 |
-| `timelineCalAddRow` | frontend/js/timeline-cal-add.js:43 |
-| `timelineCalAddSave` | frontend/js/timeline-cal-add.js:153 |
-| `timelineCalAddStart` | frontend/js/timeline-cal-add.js:15 |
+| `timelineCalAddBuild` | frontend/js/timeline-cal-add.js:56 |
+| `timelineCalAddEvent` | frontend/js/timeline-cal-add.js:194 |
+| `timelineCalAddFields` | frontend/js/timeline-cal-add.js:28 |
+| `timelineCalAddKind` | frontend/js/timeline-cal-add.js:134 |
+| `timelineCalAddOpen` | frontend/js/timeline-cal-add.js:33 |
+| `timelineCalAddReminder` | frontend/js/timeline-cal-add.js:184 |
+| `timelineCalAddRow` | frontend/js/timeline-cal-add.js:44 |
+| `timelineCalAddSave` | frontend/js/timeline-cal-add.js:154 |
+| `timelineCalAddStart` | frontend/js/timeline-cal-add.js:16 |
 
 ### frontend/js/timeline-calendar.js (47)
 
@@ -7691,12 +7691,12 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `translateAsk` | frontend/js/translate.js:51 |
-| `translateCanReplace` | frontend/js/translate.js:80 |
-| `translateCaught` | frontend/js/translate.js:87 |
-| `translateReplace` | frontend/js/translate.js:64 |
-| `translateStopWorker` | frontend/js/translate.js:43 |
-| `translateWorker` | frontend/js/translate.js:22 |
+| `translateAsk` | frontend/js/translate.js:52 |
+| `translateCanReplace` | frontend/js/translate.js:81 |
+| `translateCaught` | frontend/js/translate.js:88 |
+| `translateReplace` | frontend/js/translate.js:65 |
+| `translateStopWorker` | frontend/js/translate.js:44 |
+| `translateWorker` | frontend/js/translate.js:23 |
 
 ### frontend/js/undo-kit.js (13)
 
@@ -7742,12 +7742,12 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `applySimpleMode` | frontend/js/usage-ledger.js:55 |
-| `renderCaptureCommand` | frontend/js/usage-ledger.js:74 |
-| `renderChatContextPop` | frontend/js/usage-ledger.js:108 |
-| `renderSimpleMode` | frontend/js/usage-ledger.js:67 |
-| `renderUsage` | frontend/js/usage-ledger.js:33 |
-| `usageLabels` | frontend/js/usage-ledger.js:18 |
+| `applySimpleMode` | frontend/js/usage-ledger.js:56 |
+| `renderCaptureCommand` | frontend/js/usage-ledger.js:75 |
+| `renderChatContextPop` | frontend/js/usage-ledger.js:109 |
+| `renderSimpleMode` | frontend/js/usage-ledger.js:68 |
+| `renderUsage` | frontend/js/usage-ledger.js:34 |
+| `usageLabels` | frontend/js/usage-ledger.js:19 |
 
 ### frontend/js/utility-tools.js (18)
 

@@ -33,6 +33,7 @@ import os
 import re
 from functools import lru_cache
 from pathlib import Path
+from tests import _js_scope
 from tests._app_js import with_pieces
 
 JS = Path(__file__).resolve().parents[1] / "frontend" / "js"
@@ -273,14 +274,18 @@ def _call_end(m: str, start: int) -> int:
     return i
 
 
-def _parents(funcs) -> list[int]:
-    """Index of each function's enclosing function (-1 at the top)."""
+def _parents(funcs, wrapped: bool = False) -> list[int]:
+    """Index of each function's enclosing function (-1 at the top). A script
+    wrapped whole in one closure (ranked row 37a) has that closure as the root:
+    its functions are the file's top level, as they were before the wrap."""
     parent, stack = [], []
     for idx, f in enumerate(funcs):
         while stack and funcs[stack[-1]][1] < f[0]:
             stack.pop()
         parent.append(stack[-1] if stack else -1)
         stack.append(idx)
+    if wrapped and funcs:
+        parent = [-1 if p <= 0 else p for p in parent]
     return parent
 
 
@@ -292,7 +297,7 @@ def analyse():
         src = path.read_text(encoding="utf-8")
         m = mask(src)
         funcs = functions(m)
-        files[path.name] = (src, m, funcs, _parents(funcs), [f[0] for f in funcs])
+        files[path.name] = (src, m, funcs, _parents(funcs, _js_scope.is_wrapped(src)), [f[0] for f in funcs])
     direct = {}
     by_name: dict[str, set[str]] = collections.defaultdict(set)
     for fn, (src, m, funcs, _, _) in files.items():
@@ -401,7 +406,10 @@ def analyse():
         for hit in ident.finditer(m):
             if hit.group(1) in wanted:
                 before = m[max(0, hit.start() - 9):hit.start()]
-                if not before.endswith(("function ", "function*", "const ", "let ", "var ")):
+                #: A wrapped script's export foot lists names; it is not a use.
+                foot = m.rfind("\n", 0, hit.start()) + 1
+                listed = m.startswith("  Object.assign(window,", foot)
+                if not before.endswith(("function ", "function*", "const ", "let ", "var ")) and not listed:
                     found[hit.group(1)].append(hit.start())
         where[fn] = found
     callers_ok: dict[tuple[str, int], bool] = {}

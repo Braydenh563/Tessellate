@@ -66,7 +66,7 @@ def test_a_different_past_time_is_still_refused_with_the_reason(client):
 
 def _form() -> str:
     source = (JS_DIR / "reminder-edit.js").read_text(encoding="utf-8")
-    match = re.search(r"^function reminderEditForm\(reminder\) \{.*?^\}", source, re.S | re.M)
+    match = re.search(r"^  function reminderEditForm\(reminder\) \{.*?^  \}", source, re.S | re.M)
     assert match, "reminderEditForm is gone"
     return match.group(0)
 

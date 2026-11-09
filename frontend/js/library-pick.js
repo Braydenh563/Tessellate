@@ -3,284 +3,289 @@
 //: One row's label per source, in one table (`notePickerShape`'s reason).
 //: Long enough that the row's own width clips it (an ellipsis in CSS):
 //: clipped at 70 characters, a title stopped short with half the row empty.
-function libraryPickLabel(kind, row) {
-  if (kind === "note") return noteLabel(row, 200);
-  if (kind === "board") return row.title || (row.type === "board" ? "Untitled board" : "Untitled map");
-  if (kind === "document") return row.title || "Untitled document";
-  if (kind === "file") return row.original_name || row.filename || "File";
-  return row.title || row.url || "Link";
-}
-
-//: The source the person last chose, so the map's picker opens where they
-//: were (INBOX 572). A per-viewer convenience: storage that is blocked or
-//: empty just opens on the first source.
-const PICK_SOURCE_KEY = "libraryPickSource";
-function pickerRememberedSource(available) {
-  try {
-    const kind = prefs.get(PICK_SOURCE_KEY, null);
-    return available.find((source) => source.kind === kind) || null;
-  } catch {
-    return null;
+(() => {
+  function libraryPickLabel(kind, row) {
+    if (kind === "note") return noteLabel(row, 200);
+    if (kind === "board") return row.title || (row.type === "board" ? "Untitled board" : "Untitled map");
+    if (kind === "document") return row.title || "Untitled document";
+    if (kind === "file") return row.original_name || row.filename || "File";
+    return row.title || row.url || "Link";
   }
-}
 
-//: And its second line: what tells two rows with one name apart.
-function libraryPickAbout(kind, row) {
-  const when = relativeTime(row.updated_at || row.created_at);
-  if (kind === "note") return pickerNoteAbout(row);
-  if (kind === "document") return notePickerFacts(when && `Edited ${when}`, row.words ? nounCount(row.words, "word") : "");
-  if (kind === "file") return notePickerFacts(row.size_bytes ? formatFileSize(row.size_bytes) : "", notePickerUsedIn(row) || when);
-  if (kind === "board") return notePickerFacts(row.type === "board" ? "Whiteboard" : "Mind map", when);
-  let host = "";
-  try {
-    host = new URL(row.url).hostname.replace(/^www\./, "");
-  } catch {
-    host = row.url || "";
-  }
-  return notePickerFacts(host, row.group || "");
-}
-
-//: Fetched once per dialog and per source, not per keystroke. The shown
-//: source first; the others after it, one at a time, so each tab carries its
-//: count (what matches the words typed, or everything) and opens at once. A
-//: slow fetch that lands after the tab changed paints nothing.
-function pickLibraryItemDialog(message, { sources = null, noUploads = false } = {}) {
-  const available = LIBRARY_PICK_SOURCES.filter((source) =>
-    sources ? sources.includes(source.kind) : !source.optIn
-  );
-  return new Promise((resolve) => {
-    let active = (available.length > 1 && pickerRememberedSource(available)) || available[0];
-    const shell = pickerDialog({ title: message, placeholder: active.placeholder, searchLabel: message });
-    const box = pickerListbox(shell, active.label);
-    const seg = document.createElement("div");
-    //: A tab strip, never a pill, in a popup (INBOX 715, DESIGN.md "A popup
-    //: that chooses a kind"); each tab carries its count.
-    seg.className = "tabs-line popup-kinds picker-kinds";
-    seg.setAttribute("role", "tablist");
-    seg.setAttribute("aria-label", "What to point at");
-
-    //: Notes are never cached: `allEntries` is kept current by every save.
-    //: Drafts, deleted, private notes and boards are left out (a board is
-    //: usually the very thing this picker was opened from).
-    const cache = {};
-    let token = 0;
-    const notes = () =>
-      (typeof allEntries !== "undefined" ? allEntries : []).filter(
-        (entry) => !entry.is_draft && !entry.is_deleted && !entry.is_board && !entry.is_private
-      );
-    const rowsFor = async (kind) => {
-      if (kind === "note") return notes();
-      if (cache[kind]) return cache[kind];
-      const source = available.find((s) => s.kind === kind);
-      //: The gallery is paged (tests/test_gallery_paging.py); the rest answer once.
-      //: Files are both tables (`fileRows`); a map's reference names a note's attachment only, so it asks `noUploads`.
-      const read = source.kind === "file"
-        ? pickLibraryItemDialog.fileRows({ silent: true }, !noUploads)
-        : apiJson(source.path, { silent: true });
-      //: A failed read is not remembered as an empty source: the next visit to the tab asks again.
-      const rows = await read.catch(() => null);
-      if (!rows) return [];
-      const list = Array.isArray(rows) ? rows : rows.documents || [];
-      cache[kind] = source.keep ? list.filter(source.keep) : list;
-      return cache[kind];
-    };
-    const matching = (kind, rows, term) =>
-      rows
-        .map((row) => ({ row, label: libraryPickLabel(kind, row) }))
-        .filter(({ label }) => !term || label.toLowerCase().includes(term.toLowerCase()));
-
-    //: Each tab's count, for the sources already read; blank until then, so a
-    //: number is never a guess.
-    const counts = () => {
-      const term = shell.search.value.trim();
-      for (const tab of seg.children) {
-        const kind = tab.dataset.pickKind;
-        const rows = kind === "note" ? notes() : cache[kind];
-        tab.querySelector(".seg-count").textContent = rows ? String(matching(kind, rows, term).length) : "";
-      }
-    };
-
-    const paint = async () => {
-      const mine = (token += 1);
-      const source = active;
-      const term = shell.search.value.trim();
-      if (source.kind !== "note" && !cache[source.kind]) box.loading(`Loading your ${source.label.toLowerCase()}…`);
-      const rows = await rowsFor(source.kind);
-      counts();
-      if (mine !== token || active !== source) return;
-      const items = matching(source.kind, rows, term)
-        .slice(0, 40)
-        //: The row itself travels with the choice, so a caller that needs a
-        //: fact the row carries (whether a board is a map) has it without a
-        //: second fetch. Its label is the short one a toast can carry.
-        .map(({ row, label }) => ({
-          icon: typeof source.icon === "function" ? source.icon(row) : source.icon,
-          label,
-          about: libraryPickAbout(source.kind, row),
-          value: { kind: row.store === "media" ? "upload" : source.kind, id: row.mediaId ?? row.id, label: clipText(label, 70), row },
-        }));
-      const empty = typeof source.icon === "function" ? source.empty : source.icon;
-      box.fill(items, term, pickerEmpty(source.label.toLowerCase(), term, empty, source.hint));
-    };
-
-    //: The tabs: one Tab stop, the arrows (and Home and End) walk them, the
-    //: Attach picker's keys; a tab the person chose is remembered.
-    const choose = (source, focus) => {
-      active = source;
-      for (const tab of seg.children) {
-        const on = tab.dataset.pickKind === source.kind;
-        tab.classList.toggle("active", on);
-        tab.setAttribute("aria-selected", String(on));
-        tab.tabIndex = on ? 0 : -1;
-        if (on && focus) tab.focus();
-      }
-      shell.search.placeholder = source.placeholder;
-      shell.list.setAttribute("aria-label", source.label);
-      paint();
-    };
-    const pick = (source, focus) => {
-      choose(source, focus);
-      try {
-        prefs.set(PICK_SOURCE_KEY, source.kind);
-      } catch {
-        // A blocked store only means the next open starts on the first tab.
-      }
-    };
-    for (const source of available) {
-      const tab = document.createElement("button");
-      tab.type = "button";
-      tab.setAttribute("role", "tab");
-      tab.setAttribute("aria-controls", shell.list.id);
-      tab.dataset.pickKind = source.kind;
-      const name = document.createElement("span");
-      name.textContent = source.label;
-      const count = document.createElement("span");
-      count.className = "seg-count";
-      tab.append(name, count);
-      tab.addEventListener("click", () => {
-        pick(source);
-        shell.search.focus();
-      });
-      seg.appendChild(tab);
+  //: The source the person last chose, so the map's picker opens where they
+  //: were (INBOX 572). A per-viewer convenience: storage that is blocked or
+  //: empty just opens on the first source.
+  const PICK_SOURCE_KEY = "libraryPickSource";
+  function pickerRememberedSource(available) {
+    try {
+      const kind = prefs.get(PICK_SOURCE_KEY, null);
+      return available.find((source) => source.kind === kind) || null;
+    } catch {
+      return null;
     }
-    seg.addEventListener("keydown", (event) => {
-      const at = available.indexOf(active);
-      const last = available.length - 1;
-      const to = { ArrowRight: at + 1, ArrowLeft: at - 1, Home: 0, End: last }[event.key];
-      if (to === undefined) return;
-      event.preventDefault();
-      pick(available[(to + available.length) % available.length], true);
-    });
-    shell.search.addEventListener("input", paint);
-    choose(active);
-    shell.open(resolve, { seg: available.length > 1 ? seg : null });
-    //: The other sources' counts, read after the dialog is up and one at a
-    //: time, so the first paint never waits on them.
-    if (available.length > 1) {
-      (async () => {
-        for (const source of available) {
-          if (source.kind === "note" || cache[source.kind]) continue;
-          await rowsFor(source.kind);
-          if (!shell.card.isConnected) return;
-          counts();
+  }
+
+  //: And its second line: what tells two rows with one name apart.
+  function libraryPickAbout(kind, row) {
+    const when = relativeTime(row.updated_at || row.created_at);
+    if (kind === "note") return pickerNoteAbout(row);
+    if (kind === "document") return notePickerFacts(when && `Edited ${when}`, row.words ? nounCount(row.words, "word") : "");
+    if (kind === "file") return notePickerFacts(row.size_bytes ? formatFileSize(row.size_bytes) : "", notePickerUsedIn(row) || when);
+    if (kind === "board") return notePickerFacts(row.type === "board" ? "Whiteboard" : "Mind map", when);
+    let host = "";
+    try {
+      host = new URL(row.url).hostname.replace(/^www\./, "");
+    } catch {
+      host = row.url || "";
+    }
+    return notePickerFacts(host, row.group || "");
+  }
+
+  //: Fetched once per dialog and per source, not per keystroke. The shown
+  //: source first; the others after it, one at a time, so each tab carries its
+  //: count (what matches the words typed, or everything) and opens at once. A
+  //: slow fetch that lands after the tab changed paints nothing.
+  function pickLibraryItemDialog(message, { sources = null, noUploads = false } = {}) {
+    const available = LIBRARY_PICK_SOURCES.filter((source) =>
+      sources ? sources.includes(source.kind) : !source.optIn
+    );
+    return new Promise((resolve) => {
+      let active = (available.length > 1 && pickerRememberedSource(available)) || available[0];
+      const shell = pickerDialog({ title: message, placeholder: active.placeholder, searchLabel: message });
+      const box = pickerListbox(shell, active.label);
+      const seg = document.createElement("div");
+      //: A tab strip, never a pill, in a popup (INBOX 715, DESIGN.md "A popup
+      //: that chooses a kind"); each tab carries its count.
+      seg.className = "tabs-line popup-kinds picker-kinds";
+      seg.setAttribute("role", "tablist");
+      seg.setAttribute("aria-label", "What to point at");
+
+      //: Notes are never cached: `allEntries` is kept current by every save.
+      //: Drafts, deleted, private notes and boards are left out (a board is
+      //: usually the very thing this picker was opened from).
+      const cache = {};
+      let token = 0;
+      const notes = () =>
+        (typeof allEntries !== "undefined" ? allEntries : []).filter(
+          (entry) => !entry.is_draft && !entry.is_deleted && !entry.is_board && !entry.is_private
+        );
+      const rowsFor = async (kind) => {
+        if (kind === "note") return notes();
+        if (cache[kind]) return cache[kind];
+        const source = available.find((s) => s.kind === kind);
+        //: The gallery is paged (tests/test_gallery_paging.py); the rest answer once.
+        //: Files are both tables (`fileRows`); a map's reference names a note's attachment only, so it asks `noUploads`.
+        const read = source.kind === "file"
+          ? pickLibraryItemDialog.fileRows({ silent: true }, !noUploads)
+          : apiJson(source.path, { silent: true });
+        //: A failed read is not remembered as an empty source: the next visit to the tab asks again.
+        const rows = await read.catch(() => null);
+        if (!rows) return [];
+        const list = Array.isArray(rows) ? rows : rows.documents || [];
+        cache[kind] = source.keep ? list.filter(source.keep) : list;
+        return cache[kind];
+      };
+      const matching = (kind, rows, term) =>
+        rows
+          .map((row) => ({ row, label: libraryPickLabel(kind, row) }))
+          .filter(({ label }) => !term || label.toLowerCase().includes(term.toLowerCase()));
+
+      //: Each tab's count, for the sources already read; blank until then, so a
+      //: number is never a guess.
+      const counts = () => {
+        const term = shell.search.value.trim();
+        for (const tab of seg.children) {
+          const kind = tab.dataset.pickKind;
+          const rows = kind === "note" ? notes() : cache[kind];
+          tab.querySelector(".seg-count").textContent = rows ? String(matching(kind, rows, term).length) : "";
         }
-      })();
-    }
-  });
-}
+      };
 
-//: Pick something already uploaded rather than uploading it again ("attach
-//: images that are already in the image library... to new notes in the
-//: capture subtab"). `/media` has no mime field, so each tile is tried as an
-//: `<img>` and drops itself on error, the gallery's own approach.
-function pickMediaDialog() {
-  return new Promise((resolve) => {
-    const grid = document.createElement("div");
-    grid.className = "media-pick-grid";
-    const shell = pickerDialog({
-      title: "Choose from your library",
-      about: "An image already in your library, attached without uploading it again.",
-      placeholder: "Search by file name…",
-      searchLabel: "Search your uploaded images",
-      list: grid,
-    });
-    let uploads = [];
-    //: The grid's states on the empty state recipe, as the lists' are
-    //: (`pickerListState`): an icon and a title over the sentence when
-    //: there is nothing to show, the sentence alone while loading.
-    const say = (text, { icon = "", title = "" } = {}) => {
-      const state = document.createElement("div");
-      state.className = "empty-state entry-pick-empty";
-      if (icon) {
-        const glyph = document.createElement("i");
-        glyph.className = `${richPickerIconClass(icon)} empty-icon`;
-        glyph.setAttribute("aria-hidden", "true");
-        state.appendChild(glyph);
-      }
-      if (title) {
-        const heading = document.createElement("p");
-        heading.className = "empty-title";
-        heading.textContent = title;
-        state.appendChild(heading);
-      }
-      const line = document.createElement("p");
-      line.textContent = text;
-      state.appendChild(line);
-      grid.replaceChildren(state);
-    };
-    const paint = () => {
-      const term = shell.search.value.trim().toLowerCase();
-      const matches = uploads.filter((u) => !term || u.original_name.toLowerCase().includes(term)).slice(0, 60);
-      if (!matches.length) {
-        return uploads.length
-          ? say("Try fewer or different words.", { icon: "ph:magnifying-glass", title: "No pictures match that" })
-          : say("Attach a new file to start your library.", { icon: "ph:image", title: "No pictures yet" });
-      }
-      grid.replaceChildren();
-      for (const upload of matches) {
-        const tile = document.createElement("button");
-        tile.type = "button";
-        tile.className = "media-pick-tile";
-        tile.title = upload.original_name;
-        const img = document.createElement("img");
-        img.src = mediaSrc(upload.url);
-        img.alt = "";
-        img.loading = "lazy";
-        img.addEventListener("error", () => tile.remove());
-        const name = document.createElement("span");
-        name.textContent = upload.original_name;
-        tile.append(img, name);
-        tile.addEventListener("click", () => shell.close(upload));
-        grid.appendChild(tile);
-      }
-    };
-    shell.search.addEventListener("input", paint);
-    say("Loading your library…");
-    shell.open(resolve);
-    apiJson("/media", { silent: true })
-      .then((list) => {
-        uploads = list || [];
+      const paint = async () => {
+        const mine = (token += 1);
+        const source = active;
+        const term = shell.search.value.trim();
+        if (source.kind !== "note" && !cache[source.kind]) box.loading(`Loading your ${source.label.toLowerCase()}…`);
+        const rows = await rowsFor(source.kind);
+        counts();
+        if (mine !== token || active !== source) return;
+        const items = matching(source.kind, rows, term)
+          .slice(0, 40)
+          //: The row itself travels with the choice, so a caller that needs a
+          //: fact the row carries (whether a board is a map) has it without a
+          //: second fetch. Its label is the short one a toast can carry.
+          .map(({ row, label }) => ({
+            icon: typeof source.icon === "function" ? source.icon(row) : source.icon,
+            label,
+            about: libraryPickAbout(source.kind, row),
+            value: { kind: row.store === "media" ? "upload" : source.kind, id: row.mediaId ?? row.id, label: clipText(label, 70), row },
+          }));
+        const empty = typeof source.icon === "function" ? source.empty : source.icon;
+        box.fill(items, term, pickerEmpty(source.label.toLowerCase(), term, empty, source.hint));
+      };
+
+      //: The tabs: one Tab stop, the arrows (and Home and End) walk them, the
+      //: Attach picker's keys; a tab the person chose is remembered.
+      const choose = (source, focus) => {
+        active = source;
+        for (const tab of seg.children) {
+          const on = tab.dataset.pickKind === source.kind;
+          tab.classList.toggle("active", on);
+          tab.setAttribute("aria-selected", String(on));
+          tab.tabIndex = on ? 0 : -1;
+          if (on && focus) tab.focus();
+        }
+        shell.search.placeholder = source.placeholder;
+        shell.list.setAttribute("aria-label", source.label);
         paint();
-      })
-      .catch(() => say("Couldn't load your library."));
-  });
-}
+      };
+      const pick = (source, focus) => {
+        choose(source, focus);
+        try {
+          prefs.set(PICK_SOURCE_KEY, source.kind);
+        } catch {
+          // A blocked store only means the next open starts on the first tab.
+        }
+      };
+      for (const source of available) {
+        const tab = document.createElement("button");
+        tab.type = "button";
+        tab.setAttribute("role", "tab");
+        tab.setAttribute("aria-controls", shell.list.id);
+        tab.dataset.pickKind = source.kind;
+        const name = document.createElement("span");
+        name.textContent = source.label;
+        const count = document.createElement("span");
+        count.className = "seg-count";
+        tab.append(name, count);
+        tab.addEventListener("click", () => {
+          pick(source);
+          shell.search.focus();
+        });
+        seg.appendChild(tab);
+      }
+      seg.addEventListener("keydown", (event) => {
+        const at = available.indexOf(active);
+        const last = available.length - 1;
+        const to = { ArrowRight: at + 1, ArrowLeft: at - 1, Home: 0, End: last }[event.key];
+        if (to === undefined) return;
+        event.preventDefault();
+        pick(available[(to + available.length) % available.length], true);
+      });
+      shell.search.addEventListener("input", paint);
+      choose(active);
+      shell.open(resolve, { seg: available.length > 1 ? seg : null });
+      //: The other sources' counts, read after the dialog is up and one at a
+      //: time, so the first paint never waits on them.
+      if (available.length > 1) {
+        (async () => {
+          for (const source of available) {
+            if (source.kind === "note" || cache[source.kind]) continue;
+            await rowsFor(source.kind);
+            if (!shell.card.isConnected) return;
+            counts();
+          }
+        })();
+      }
+    });
+  }
 
-//: **Every file the Library holds, for every picker** (INBOX 1687): a note's attachments
-//: (`store: "file"`) and the Library's uploads (`store: "media"`), pictures left out. The two
-//: tables number rows apart, so an upload's row id is `m<id>`: never equal to a note attachment's, in every staged list and tick. An upload only a locked
-//: private note holds is left out, as `GET /media` blanks its readings. Null when both reads fail.
-pickLibraryItemDialog.fileRows = async (opts, withUploads = true) => {
-  const [notes, uploads] = await Promise.all([
-    apiPagedList("/files/gallery", 200, opts).catch(() => null),
-    withUploads ? apiPagedList("/media", 200, opts).catch(() => null) : [],
-  ]);
-  if (notes == null && uploads == null) return null;
-  const image = /\.(png|jpe?g|gif|webp|bmp|svg|avif|heic|heif)$/i;
-  return [
-    ...(notes || []).filter((row) => !(row.mime || "").startsWith("image/")).map((row) => ({ ...row, store: "file" })),
-    ...(uploads || [])
-      .filter((row) => !image.test(row.original_name || row.url || "") && !(row.usage_incomplete && !(row.used_by || []).length))
-      .map((row) => ({ ...row, mediaId: row.id, id: `m${row.id}`, store: "media", page: `/media/pdf-page/${encodeURIComponent((row.url || "").split("/").pop())}/0` })),
-  ];
-};
+  //: Pick something already uploaded rather than uploading it again ("attach
+  //: images that are already in the image library... to new notes in the
+  //: capture subtab"). `/media` has no mime field, so each tile is tried as an
+  //: `<img>` and drops itself on error, the gallery's own approach.
+  function pickMediaDialog() {
+    return new Promise((resolve) => {
+      const grid = document.createElement("div");
+      grid.className = "media-pick-grid";
+      const shell = pickerDialog({
+        title: "Choose from your library",
+        about: "An image already in your library, attached without uploading it again.",
+        placeholder: "Search by file name…",
+        searchLabel: "Search your uploaded images",
+        list: grid,
+      });
+      let uploads = [];
+      //: The grid's states on the empty state recipe, as the lists' are
+      //: (`pickerListState`): an icon and a title over the sentence when
+      //: there is nothing to show, the sentence alone while loading.
+      const say = (text, { icon = "", title = "" } = {}) => {
+        const state = document.createElement("div");
+        state.className = "empty-state entry-pick-empty";
+        if (icon) {
+          const glyph = document.createElement("i");
+          glyph.className = `${richPickerIconClass(icon)} empty-icon`;
+          glyph.setAttribute("aria-hidden", "true");
+          state.appendChild(glyph);
+        }
+        if (title) {
+          const heading = document.createElement("p");
+          heading.className = "empty-title";
+          heading.textContent = title;
+          state.appendChild(heading);
+        }
+        const line = document.createElement("p");
+        line.textContent = text;
+        state.appendChild(line);
+        grid.replaceChildren(state);
+      };
+      const paint = () => {
+        const term = shell.search.value.trim().toLowerCase();
+        const matches = uploads.filter((u) => !term || u.original_name.toLowerCase().includes(term)).slice(0, 60);
+        if (!matches.length) {
+          return uploads.length
+            ? say("Try fewer or different words.", { icon: "ph:magnifying-glass", title: "No pictures match that" })
+            : say("Attach a new file to start your library.", { icon: "ph:image", title: "No pictures yet" });
+        }
+        grid.replaceChildren();
+        for (const upload of matches) {
+          const tile = document.createElement("button");
+          tile.type = "button";
+          tile.className = "media-pick-tile";
+          tile.title = upload.original_name;
+          const img = document.createElement("img");
+          img.src = mediaSrc(upload.url);
+          img.alt = "";
+          img.loading = "lazy";
+          img.addEventListener("error", () => tile.remove());
+          const name = document.createElement("span");
+          name.textContent = upload.original_name;
+          tile.append(img, name);
+          tile.addEventListener("click", () => shell.close(upload));
+          grid.appendChild(tile);
+        }
+      };
+      shell.search.addEventListener("input", paint);
+      say("Loading your library…");
+      shell.open(resolve);
+      apiJson("/media", { silent: true })
+        .then((list) => {
+          uploads = list || [];
+          paint();
+        })
+        .catch(() => say("Couldn't load your library."));
+    });
+  }
+
+  //: **Every file the Library holds, for every picker** (INBOX 1687): a note's attachments
+  //: (`store: "file"`) and the Library's uploads (`store: "media"`), pictures left out. The two
+  //: tables number rows apart, so an upload's row id is `m<id>`: never equal to a note attachment's, in every staged list and tick. An upload only a locked
+  //: private note holds is left out, as `GET /media` blanks its readings. Null when both reads fail.
+  pickLibraryItemDialog.fileRows = async (opts, withUploads = true) => {
+    const [notes, uploads] = await Promise.all([
+      apiPagedList("/files/gallery", 200, opts).catch(() => null),
+      withUploads ? apiPagedList("/media", 200, opts).catch(() => null) : [],
+    ]);
+    if (notes == null && uploads == null) return null;
+    const image = /\.(png|jpe?g|gif|webp|bmp|svg|avif|heic|heif)$/i;
+    return [
+      ...(notes || []).filter((row) => !(row.mime || "").startsWith("image/")).map((row) => ({ ...row, store: "file" })),
+      ...(uploads || [])
+        .filter((row) => !image.test(row.original_name || row.url || "") && !(row.usage_incomplete && !(row.used_by || []).length))
+        .map((row) => ({ ...row, mediaId: row.id, id: `m${row.id}`, store: "media", page: `/media/pdf-page/${encodeURIComponent((row.url || "").split("/").pop())}/0` })),
+    ];
+  };
+
+  //: The file's whole surface: what other files and the stand-ins call (ranked row 37a).
+  Object.assign(window, { pickLibraryItemDialog, pickMediaDialog });
+})();
