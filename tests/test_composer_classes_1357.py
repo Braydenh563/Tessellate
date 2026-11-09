@@ -124,7 +124,8 @@ NOT_FOUND = r"could you put it another way|different word|don't mention|do not m
 #: Class A, the capability question in any wording (1300 "Wat cna u do??",
 #: K20 "whaty can u do??"): the capability reply, never a note search.
 #: The capability answer opens "...works for Atlas" since e343d49; the class is unchanged.
-CAPABILITY = r"Atlas's assistant|works for Atlas|I answer from your notes|I'm Atlas"
+#: Any line that names Atlas: the capability frames vary by day (the reply seed carries it), and the suite's pinned day (INBOX 1693 a) picked "Atlas here: ask me..." which the old four phrases missed.
+CAPABILITY = r"\bAtlas\b|I answer from your notes"
 A_CAPABILITY = [
     "whaty can u do??",
     "wat can u do",

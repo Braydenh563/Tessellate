@@ -2,7 +2,7 @@
 
 Generated 2026-11-09 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7949, frontend ids 2652, CSS sections 523, backend routes 649, backend modules 9277, test files 2289, tests 19152, plan headings 1008, app scripts 28, boot scripts 37, script files 266.
+Counts: frontend functions 7949, frontend ids 2652, CSS sections 523, backend routes 649, backend modules 9277, test files 2291, tests 19157, plan headings 1008, app scripts 28, boot scripts 37, script files 266.
 
 ## Frontend functions (7949)
 
@@ -3010,7 +3010,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `artLineFade` | frontend/js/dash-art.js:246 |
 | `artRetarget` | frontend/js/dash-art.js:256 |
 | `artSeed` | frontend/js/dash-art.js:107 |
-| `artStill` | frontend/js/dash-art.js:759 |
+| `artStill` | frontend/js/dash-art.js:763 |
 | `buildArtParticles` | frontend/js/dash-art.js:166 |
 | `categoryHue` | frontend/js/dash-art.js:82 |
 | `ensureP5` | frontend/js/dash-art.js:20 |
@@ -24883,7 +24883,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (19152)
+## Tests (19157)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -25443,6 +25443,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_connections_block.py | 9 |
 | tests/test_consistency_contract.py | 8 |
 | tests/test_constellation_glide_686.py | 10 |
+| tests/test_constellation_modal_rest_1620.py | 2 |
 | tests/test_content_protocol.py | 19 |
 | tests/test_contents_outline_496.py | 5 |
 | tests/test_context_budget.py | 22 |
@@ -25802,6 +25803,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_first_run_472.py | 14 |
 | tests/test_first_steps_ask_count.py | 1 |
 | tests/test_fixa2_1025.py | 5 |
+| tests/test_fixed_day_1693.py | 3 |
 | tests/test_flaw_class_lints.py | 2 |
 | tests/test_flow_1683.py | 16 |
 | tests/test_flow_pose_1683b.py | 7 |
