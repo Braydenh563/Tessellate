@@ -209,7 +209,8 @@ def test_every_server_fed_collection_is_forgotten_or_exempt() -> None:
 
 def test_every_exempt_name_still_exists() -> None:
     everything = "\n".join(p.read_text(encoding="utf-8") for p in JS_DIR.glob("*.js"))
-    gone = [n for n in EXEMPT if not re.search(rf"^(?:let|var|const) {n}\b", everything, re.M)]
+    # Indent-aware: a file wrapped in one closure (audit row 37a) declares its module state two spaces in.
+    gone = [n for n in EXEMPT if not re.search(rf"^\s*(?:let|var|const) {n}\b", everything, re.M)]
     assert not gone, f"EXEMPT names that no longer exist: {gone}"
 
 
