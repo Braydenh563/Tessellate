@@ -1514,15 +1514,25 @@ document.addEventListener("keydown", (e) => {
   //: the first stop the wrap's `focus()` landed nowhere and Tab from the last
   //: button stayed on it (audit 1031 Z15, the welcome's hidden emblem). A
   //: fixed-position control had the opposite fault: it was always dropped.
-  const focusables = [
-    ...overlay.querySelectorAll(
-      'button, [href], input, select, textarea, [contenteditable=""], ' +
-        '[contenteditable="true"], [tabindex]:not([tabindex="-1"])'
-    ),
-  ].filter((el) => !el.disabled && el.getClientRects().length > 0);
-  if (!focusables.length) return;
-  const first = focusables[0];
-  const last = focusables[focusables.length - 1];
+  //: Only the two ends are needed, so the shown test runs from each end until it finds one, not on every control:
+  //: it was 602 reads per Tab with Settings open, the first laying the page out inside the key (INBOX 1716,
+  //: `settings-wiring.js #document.onkeydown 183ms (forced layout 179ms)`).
+  const stops = overlay.querySelectorAll(
+    'button, [href], input, select, textarea, [contenteditable=""], ' +
+      '[contenteditable="true"], [tabindex]:not([tabindex="-1"])'
+  );
+  //: `checkVisibility` needs style, not layout; `getClientRects` is the fallback for an older engine.
+  const shown = (el) => !el.disabled && (el.checkVisibility ? el.checkVisibility() : el.getClientRects().length > 0);
+  let first = null;
+  for (let i = 0; i < stops.length && !first; i += 1) if (shown(stops[i])) first = stops[i];
+  if (!first) return;
+  let last = first;
+  for (let i = stops.length - 1; i >= 0; i -= 1) {
+    if (shown(stops[i])) {
+      last = stops[i];
+      break;
+    }
+  }
   const outside = !overlay.contains(document.activeElement);
   if (e.shiftKey && (document.activeElement === first || outside)) {
     e.preventDefault();
