@@ -107,7 +107,7 @@
     reconcile(S.tree, rows);
     diagramModel.steps.sync(S, layout.length);
     S.next.classList.toggle("hidden", !layout.length);
-    const next = S.m.edges.length ? "Drag a grip to move or nest a block (the picture lays itself out). Double-click a name to rename it." : `Double-click a name, or press Enter, to rename it. ${S.m.nodes.length < 2 ? "Add a second block, then press Connect to… on one." : "Press Connect to… on a block, or drag its grip onto another block, to draw an arrow."}`;
+    const next = diagramModel.steps.next(S);
     if (S.next.textContent !== next) S.next.textContent = next;
     //: An empty pane is the one stop, so N and G work before there is a block to focus.
     S.pane.tabIndex = layout.length ? -1 : 0;

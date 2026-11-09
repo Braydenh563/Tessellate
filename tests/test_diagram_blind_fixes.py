@@ -18,7 +18,8 @@ def test_modified_click_on_the_picture_adds_to_the_pick():
 
 
 def test_drag_hint_says_the_picture_lays_itself_out():
-    assert "the picture lays itself out" in BUILDER
+    # The line moved to diagram-steps.js `next` (dgbt-1109 3: a touch variant, and room under the builder's gzip cap); same words.
+    assert "the picture lays itself out" in (JS / "diagram-steps.js").read_text(encoding="utf-8")
 
 
 def test_chosen_row_does_not_spend_its_width_on_connect_words():
@@ -41,7 +42,10 @@ def test_the_walkthrough_names_the_first_block_and_stays_with_ticks_until_the_fi
     assert 'S.empty.classList.toggle("hidden", Boolean(layout.length))' not in BUILDER
     assert "S.arm = (from) => arm(from," in (JS / "diagram-edges.js").read_text(encoding="utf-8")
     assert ".dgm-empty.dgm-started .dgm-example" in CSS
-    assert "Double-click a name, or press Enter, to rename it." in BUILDER
+    # Intent kept (the list says how to rename before there is an arrow); the words moved to diagram-steps.js `next` with a touch
+    # variant (dgbt-1109 3), which also took 80 bytes out of the builder's gzip cap.
+    assert "diagramModel.steps.next(S)" in BUILDER
+    assert '["Double-click", ", or press Enter,"]' in steps and "a name${how} to rename it." in steps
 
 
 def test_a_decisions_arrow_is_asked_in_one_dialog_with_yes_and_no_and_on_the_picture_with_the_offer_filled():

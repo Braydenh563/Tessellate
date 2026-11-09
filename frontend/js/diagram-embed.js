@@ -539,7 +539,9 @@
     if (titleField) {
       titleField.type = "text";
       titleField.maxLength = 80;
-      titleField.placeholder = "Name it, or leave blank to date it";
+      //: Short on a phone, where the full line was cut at "leave blar" (dgbt-1109 3); the tooltip keeps it whole.
+      titleField.placeholder = matchMedia("(max-width: 599.98px)").matches ? "Name it (optional)" : "Name it, or leave blank to date it";
+      titleField.title = "Name it, or leave blank to date it";
       titleField.setAttribute("aria-label", "Diagram title");
       //: The characters a link reads as syntax never enter the name, so what is shown is what the document is called.
       titleField.addEventListener("input", () => {

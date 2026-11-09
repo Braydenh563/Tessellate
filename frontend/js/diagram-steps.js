@@ -39,7 +39,16 @@
   }
 
   const PURPOSE = "Your blocks, in the order the chart flows. Tab on the last adds a box. F6 leaves the blocks.";
-  const LABEL_WORDS = "Double-click the name, or press Enter, to rename it.";
+  //: A touch screen has no double-click and often no Enter (dgbt-1109 3: the sheet said "Double-click" on a phone).
+  const touch = () => matchMedia("(pointer: coarse)").matches;
+  const LABEL_WORDS = () => (touch() ? "Double-tap the name to rename it." : "Double-click the name, or press Enter, to rename it.");
+
+  //: The line under the list: what to do next with the blocks there are.
+  function next(S) {
+    const [two, how] = touch() ? ["Double-tap", ""] : ["Double-click", ", or press Enter,"];
+    if (S.m.edges.length) return `Drag a grip to move or nest a block (the picture lays itself out). ${two} a name to rename it.`;
+    return `${two} a name${how} to rename it. ${S.m.nodes.length < 2 ? "Add a second block, then press Connect to… on one." : "Press Connect to… on a block, or drag its grip onto another block, to draw an arrow."}`;
+  }
 
   //: The pane's frame (1679 k): the purpose line above the list, and a foot under it with the two things a first use wants where the
   //: eye ends, Add block and Connect. Under the pointer or in focus, the line says what that control does (its own title, so a
@@ -62,7 +71,7 @@
     S.tree.after(foot);
     const say = (target) => {
       const control = target?.closest?.(".dgm-label, [title]");
-      const words = control?.classList.contains("dgm-label") ? LABEL_WORDS : control?.title;
+      const words = control?.classList.contains("dgm-label") ? LABEL_WORDS() : control?.title;
       line.textContent = words || PURPOSE;
       line.classList.toggle("dgm-purpose-live", Boolean(words));
     };
@@ -98,5 +107,5 @@
     });
   }
 
-  diagramModel.steps = { build, sync, frame };
+  diagramModel.steps = { build, sync, frame, next };
 })();

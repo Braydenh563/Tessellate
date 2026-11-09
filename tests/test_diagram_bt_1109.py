@@ -167,3 +167,18 @@ def test_the_sideways_offer_is_a_row_under_the_picture_not_a_layer_over_it():
     block = CSS[CSS.index(".dgm-sideways {") :][:900].split("}", 1)[0]
     assert "position: absolute" not in block and "flex: none;" in block
     assert ".dgm-stage {\n  position: relative;\n  display: flex;\n  flex-direction: column;" in CSS
+
+
+def test_the_phone_shelf_keeps_its_caret_on_screen_and_the_words_say_tap_not_click():
+    # 390 px: fold, six tiles and the caret ran to 468; fold, three tiles and the caret end at 312.
+    block = CSS[CSS.index(".dgm-shelf .dgm-tile:nth-child(n + 5) {") :][:120]
+    assert "display: none;" in block
+    steps = _js("diagram-steps.js")
+    assert 'touch() ? "Double-tap the name to rename it."' in steps and '["Double-tap", ""]' in steps
+    assert 'titleField.placeholder = matchMedia("(max-width: 599.98px)").matches ? "Name it (optional)"' in _js("diagram-embed.js")
+
+
+def test_a_touch_screen_fits_the_drawing_short_of_the_edge_so_a_handle_does_not_lean_back_over_a_block():
+    view = _js("diagram-view.js")
+    assert 'const gap = matchMedia("(pointer: coarse)").matches ? 32 : 0;' in view
+    assert "box.width - 2 * fig.clientLeft - gap, box.height - 2 * fig.clientTop - gap" in view

@@ -2,9 +2,9 @@
 
 Generated 2026-11-09 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7957, frontend ids 2652, CSS sections 523, backend routes 649, backend modules 9333, test files 2311, tests 19277, plan headings 1008, app scripts 28, boot scripts 37, script files 266.
+Counts: frontend functions 7960, frontend ids 2652, CSS sections 523, backend routes 649, backend modules 9333, test files 2311, tests 19279, plan headings 1008, app scripts 28, boot scripts 37, script files 266.
 
-## Frontend functions (7957)
+## Frontend functions (7960)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -3503,13 +3503,16 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `wire` | frontend/js/diagram-split.js:27 |
 | `wireFold` | frontend/js/diagram-split.js:167 |
 
-### frontend/js/diagram-steps.js (3)
+### frontend/js/diagram-steps.js (6)
 
 | Name | File:line |
 |---|---|
+| `LABEL_WORDS` | frontend/js/diagram-steps.js:44 |
 | `build` | frontend/js/diagram-steps.js:11 |
-| `frame` | frontend/js/diagram-steps.js:48 |
-| `sync` | frontend/js/diagram-steps.js:76 |
+| `frame` | frontend/js/diagram-steps.js:57 |
+| `next` | frontend/js/diagram-steps.js:47 |
+| `sync` | frontend/js/diagram-steps.js:85 |
+| `touch` | frontend/js/diagram-steps.js:43 |
 
 ### frontend/js/diagram-style.js (5)
 
@@ -12504,7 +12507,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/dash-night-lazy.css | 29 |
 | frontend/css/dash-orphans-lazy.css | 57 |
 | frontend/css/desk-companion-lazy.css | 226 |
-| frontend/css/diagram-lazy.css | 2354 |
+| frontend/css/diagram-lazy.css | 2360 |
 | frontend/css/file-drop-lazy.css | 51 |
 | frontend/css/first-run-lazy.css | 140 |
 | frontend/css/forced-colors-lazy.css | 28 |
@@ -24962,7 +24965,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (19277)
+## Tests (19279)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -25624,7 +25627,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_diagram_behaviour_1108.py | 7 |
 | tests/test_diagram_blind_1108.py | 10 |
 | tests/test_diagram_blind_fixes.py | 6 |
-| tests/test_diagram_bt_1109.py | 15 |
+| tests/test_diagram_bt_1109.py | 17 |
 | tests/test_diagram_builder.py | 20 |
 | tests/test_diagram_complete.py | 7 |
 | tests/test_diagram_d3.py | 2 |

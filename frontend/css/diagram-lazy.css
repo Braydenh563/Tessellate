@@ -2215,6 +2215,12 @@
     flex: none;
   }
 
+  /* Its caret ("Every block you can add") sat at 395 to 439 in a 390 window, past the edge: fold, three tiles and the caret are 5 x 44 px,
+     and the caret lists the rest (dgbt-1109 3). */
+  .dgm-shelf .dgm-tile:nth-child(n + 5) {
+    display: none;
+  }
+
   .dgm-stage.dgm-shelved > .dgm-picture {
     margin-block-start: calc(2.75rem + 2 * var(--space-1) + var(--space-3) + var(--space-2));
   }
