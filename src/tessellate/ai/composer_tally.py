@@ -20,9 +20,33 @@ _HOW_FAR = re.compile(r"^how far did i (?:run|walk|cycle|ride|swim|jog)(?: on (?
 _DISTANCE = re.compile(r"(\d[\d.,]*)\s*(km|kilometres|kilometers|miles|mi)\b", re.I)
 
 
+_SUM_ROW = re.compile(r"\b(?:total|sum|subtotal|grand total)\b", re.IGNORECASE)
+_VERBS = {
+    "run": ("run", "ran", "running", "jog"), "jog": ("jog", "run", "ran"), "walk": ("walk",), "cycle": ("cycl", "ride", "rode", "bike"),
+    "ride": ("ride", "rode", "cycl", "bike"), "swim": ("swim", "swam"),
+}
+
+
+def _blocks(view) -> list[list]:  # noqa: ANN001
+    """The list or table lines of a note that carry exactly one amount, in the runs they sit in (a blank line or
+    a line of prose ends a run), without a total row: a superlative is taken inside one table or list."""
+    content = str(view.note.get("content") or "")
+    blocks: list[list] = []
+    last = None
+    for s in sorted((s for s in view.sentences if s.kind == "item"), key=lambda s: s.start):
+        if last is None or content[last.end:s.start].count("\n") > 1:
+            blocks.append([])
+        blocks[-1].append(s)
+        last = s
+    return [[s for s in b if len(_MONEY.findall(s.text)) == 1 and not _SUM_ROW.search(_MONEY.sub("", s.text))] for b in blocks]
+
+
 def _rows(view) -> list:  # noqa: ANN001
-    """The list or table lines of a note that carry exactly one amount each."""
-    return [s for s in view.sentences if s.kind == "item" and len(_MONEY.findall(s.text)) == 1]
+    """The rows of the first run in the note with two amounts or more in one currency."""
+    for block in _blocks(view):
+        if len(block) >= 2 and len({_MONEY.search(s.text).group(1) for s in block}) == 1:
+            return block
+    return []
 
 
 def _label(text: str) -> str:
@@ -82,21 +106,39 @@ def _count_wanted(out, q: str, views: list) -> bool:  # noqa: ANN001
     return False
 
 
+def _beside(sentence: str, wanted: re.Match):  # noqa: ANN202
+    """The distance in `sentence` nearest the asked day: "Ran 5 km on 7 November and 10 km on 8 November" is
+    10 km for the 8th. The one before the day wins a tie."""
+    near = [(abs(wanted.start() - d.end()) if d.end() <= wanted.start() else d.start() - wanted.end() + 0.5, d) for d in _DISTANCE.finditer(sentence)]
+    return min(near, key=lambda pair: pair[0])[1] if near else None
+
+
+def _says_verb(sentence: str, title: str, verb: str) -> bool:
+    return any(stem in f"{sentence} {title}".lower() for stem in _VERBS.get(verb, (verb,)))
+
+
 def _how_far(out, q: str, views: list) -> bool:  # noqa: ANN001
     found = _HOW_FAR.match(q)
     if not found or not found["day"]:
         return False
-    day = re.sub(r"(?<=\d)(?:st|nd|rd|th)", "", found["day"])
-    parts = day.split()
+    parts = re.sub(r"(?<=\d)(?:st|nd|rd|th)", "", found["day"]).split()
     wanted = re.compile(rf"\b{re.escape(parts[0])}\s+{re.escape(parts[1])}\b", re.I)
+    verb = q.split()[4]
+    dated = False
     for view in views:
         for s in view.sentences:
-            if (d := _DISTANCE.search(s.text)) and wanted.search(s.text):
+            hit = wanted.search(s.text)
+            dated = dated or bool(hit and _DISTANCE.search(s.text))
+            d = _beside(s.text, hit) if hit and _says_verb(s.text, str(view.title or ""), verb) else None
+            if d:
                 line = f"{d.group(1)} {d.group(2)} on {found['day']} ({composer_lists._title(view)})."  # noqa: SLF001
                 out.lines.append(line)
                 composer_lists._cite(out, view, s, line)  # noqa: SLF001
                 return True
-    return False
+    if dated:
+        #: A distance is on that day, but not for this verb: said, not borrowed from the other one.
+        out.lines.append(f"Your notes do not say how far you {verb} on {found['day']}.")
+    return dated
 
 
 def answer(out, asked: str, views: list) -> bool:  # noqa: ANN001

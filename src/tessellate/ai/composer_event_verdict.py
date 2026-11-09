@@ -47,7 +47,7 @@ def verdict(question: str, text: str, today: date) -> str:
     first, last = _window(said, today)
     if first <= day <= last:
         return f"Yes, {text[:1].lower()}{text[1:]}"
-    return f"Not {said}: {text}"
+    return f"No, not {said}. {text}"
 
 
 def apply(question: str, reply: dict | None, today: date) -> dict | None:

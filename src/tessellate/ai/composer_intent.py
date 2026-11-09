@@ -213,7 +213,7 @@ def _plan_window(question: str, terms: list[str], phrase: str, today: date) -> t
         return None, terms + [w for w in said if w not in terms]
     span = when_words.span(phrase, today, "past") if phrase else None
     #: "is the plumber coming this week": the week is when it happens, not when the note was written (R9-7).
-    if span and (span[0] > today or _PRESENT_ASK.match(question or "")) and _subject_left(question, terms, phrase):
+    if span and (span[0] > today or (_PRESENT_ASK.match(question or "") and span[1] >= today)) and _subject_left(question, terms, phrase):
         return None, terms
     return span, _without_window_words(question, terms, phrase) if span else terms
 

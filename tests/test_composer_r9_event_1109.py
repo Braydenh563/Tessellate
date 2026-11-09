@@ -23,7 +23,7 @@ def test_the_plumber_this_week_is_a_yes(say):
 
 
 def test_the_plumber_next_week_is_a_not(say):
-    assert say("is the plumber coming next week").startswith("Not next week: Plumber is coming Wednesday 11 November")
+    assert say("is the plumber coming next week").startswith("No, not next week. Plumber is coming Wednesday 11 November")
 
 
 def test_the_plumber_with_no_window_has_no_verdict(say):

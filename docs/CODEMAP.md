@@ -2,7 +2,7 @@
 
 Generated 2026-11-09 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7951, frontend ids 2652, CSS sections 523, backend routes 649, backend modules 9348, test files 2314, tests 19271, plan headings 1008, app scripts 28, boot scripts 37, script files 266.
+Counts: frontend functions 7951, frontend ids 2652, CSS sections 523, backend routes 649, backend modules 9351, test files 2315, tests 19278, plan headings 1008, app scripts 28, boot scripts 37, script files 266.
 
 ## Frontend functions (7951)
 
@@ -13204,7 +13204,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:164 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (9348)
+## Backend modules (9351)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -15591,17 +15591,20 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_build` | src/tessellate/ai/composer_tables.py:749 |
 | `voice_of` | src/tessellate/ai/composer_tables.py:35 |
 
-### src/tessellate/ai/composer_tally.py (7)
+### src/tessellate/ai/composer_tally.py (10)
 
 | Name | File:line |
 |---|---|
-| `_count_rows` | src/tessellate/ai/composer_tally.py:52 |
-| `_count_wanted` | src/tessellate/ai/composer_tally.py:68 |
-| `_how_far` | src/tessellate/ai/composer_tally.py:85 |
-| `_label` | src/tessellate/ai/composer_tally.py:28 |
-| `_rows` | src/tessellate/ai/composer_tally.py:23 |
-| `_superlative` | src/tessellate/ai/composer_tally.py:32 |
-| `answer` | src/tessellate/ai/composer_tally.py:102 |
+| `_beside` | src/tessellate/ai/composer_tally.py:109 |
+| `_blocks` | src/tessellate/ai/composer_tally.py:30 |
+| `_count_rows` | src/tessellate/ai/composer_tally.py:76 |
+| `_count_wanted` | src/tessellate/ai/composer_tally.py:92 |
+| `_how_far` | src/tessellate/ai/composer_tally.py:120 |
+| `_label` | src/tessellate/ai/composer_tally.py:52 |
+| `_rows` | src/tessellate/ai/composer_tally.py:44 |
+| `_says_verb` | src/tessellate/ai/composer_tally.py:116 |
+| `_superlative` | src/tessellate/ai/composer_tally.py:56 |
+| `answer` | src/tessellate/ai/composer_tally.py:144 |
 
 ### src/tessellate/ai/composer_text.py (15)
 
@@ -24986,7 +24989,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (19271)
+## Tests (19278)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -25490,6 +25493,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_composer_r9_lead_1109.py | 6 |
 | tests/test_composer_r9_names_1109.py | 4 |
 | tests/test_composer_r9_names_typos_1109.py | 4 |
+| tests/test_composer_r9_tally_1109.py | 7 |
 | tests/test_composer_r9_tick_1109.py | 1 |
 | tests/test_composer_r9_typos_1109.py | 3 |
 | tests/test_composer_r9_values_1109.py | 5 |
