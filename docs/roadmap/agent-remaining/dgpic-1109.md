@@ -16,3 +16,6 @@
 
 - A new part added with the list folded is named on a mind map or timeline picture (`S.seqOpen`), not measured.
 - Not verified: 390 px, real touch (the engine's hold should carry a drawn part, unmeasured), real inference.
+
+- done: f467cc3 (picture map, pick, rename, drag, shelf drop on a part, Guide).
+- next: the Left lines above; nothing in progress.
