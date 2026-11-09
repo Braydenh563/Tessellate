@@ -34,6 +34,8 @@ with its owner named in the entry.
 
 ## Open items
 
+1714. **Owner, 2026-11-09 (screenshot of the Suggestions panel: the title with help, minimise and close on the right; a "Links (12)" select alone on its own row under it, about a third of the width; "Notes that look related. Link the ones you agree with." under that):** "it feels awkward that that dropdown is the only element on its row".
+
 1713. **Owner, 2026-11-09 (screenshot of a graph node popup head: the note icon alone on the first row, the title "Why did the student eat his homework? Beca..." with a restore arrow beside it on the second, the close X on the right between the two rows, the "Social Connections" category chip on the third):** "the alignemnt and spacial positioning and structure of the elements in the header of this graph popup is off and poorly designed, I was messing around with resizing the height and corner size of the node popup".
 
 1712. **Owner, 2026-11-09 (screenshot under a chat answer: six numbered rows, "1 Why did the student eat his homework? Because the...", "2 something lol something -> found it during school a...", "3 Leafeon Pokemon image test WallpaperEngineOverri..." with a picture, "4 Girl with bell ..." with a picture, "5 Gary The Moss Monster :D ..." with a sketch, "6 What my notes currently leave out, however, is the c..."; the rows with a picture run about 300 px further right than the others; then Next: "What else do my notes say about university?", "Open ...")):** "why do some of these extend so far to the right??". Not yet traced: `.chat-sources-grid` (02-chat-graph.css:4381) gives equal columns, so the rows drawn may be another list (answer-kit.js); measure the live DOM first.
