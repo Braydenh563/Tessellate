@@ -387,6 +387,9 @@
    did not show at 64 px, so sad and worried wore the calm face. Softer than
    his, a fine arch. The rest arch lifts at the nose (1402), so it reads open. */
 .nm-atlas .atl-brow-arch { stroke-width: 1.2; opacity: 0.5; }
+/* Her upper lid line, bolder (INBOX 1696 r): at 0.9 it vanished at 64 px, so her moods read flat on a
+   light page (mean mood change 17.7 to 18.3-19.3 at 1x light). His is 1.5; the lower line stays a hint. */
+.nm-atlas[data-atlas-look="feminine"] .atl-liner:not(.atl-liner-low) { stroke-width: 1.3; opacity: 1; }
 /* **The desk's acts, as Atlas does them** (INBOX 1696 v, the owner: "I want the
    desktop companion to be just as good as the in-app one and vice versa";
    avatars.js `NMB_DESK_ACTS`, atlas.js `atlasDeskProps`). Each act is a pose of

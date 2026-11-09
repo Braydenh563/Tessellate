@@ -74,3 +74,16 @@ def test_her_brows_show_at_64px_and_stay_soft() -> None:
     assert width <= 1.3, width
     # The small busts keep their bold brows: that rule must outrank this one.
     assert ".nm-atlas:is(.atl-head, .atl-tiny) .atl-brow-line { opacity: 0.85;" in LAZY
+
+
+def test_her_upper_lid_line_is_bolder_at_64px_but_lighter_than_his() -> None:
+    """Her light-theme mood change at 64 px stayed flat (mean 17.7 of 255 on
+    the calm face): the upper lid line (0.9 at opacity 0.85) vanished in a
+    thumbnail. At 1.3 and full opacity it reads 18.3 to 19.3 at 1x light (two runs); 2x and dark
+    held within 0.2 (atlasm1108's mood measure). His is 1.5."""
+    block = _block(LAZY, '.nm-atlas[data-atlas-look="feminine"] .atl-liner:not(.atl-liner-low)')
+    width = float(re.search(r"stroke-width:\s*([\d.]+)", block).group(1))
+    assert 1.2 <= width < 1.5, width
+    assert "opacity: 1" in block
+    # The lower lid line is a hint and stays one.
+    assert ".atl-liner-low { stroke: var(--atl-dp); stroke-width: 0.6" in BOOT
