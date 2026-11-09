@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Fix (desk overlay capture): a frame the page sends is refused when its header claims more than 2 million pixels (the real ones are 560 x 600), before it is decoded; tests/test_overlay_capture_pixels.py.
 - Fix (OCR regions): a PDF page that found nothing now shares its 30 s miss (the key held the temp render path), a shared miss is handed out as a deep copy, and the per-page read locks are dropped after use instead of growing for ever; tests/test_ocr_region_cache.py.
 - Fix: deleting a file or upload drops its stored page readings (OCR boxes, words, page text) so the next file on the freed id no longer shows or indexes the old file's text; Undo puts them back; tests/test_page_read_lifecycle.py.
 - Security (SEC-A2): a picture only a locked private note uses is refused (409 Unlock first.) by every /media/{id}/ route that reads or writes its text (ocr-regions, caption, ocr, page reads, region-read, vision-ocr, clean-loops) and by media_meta; tests in tests/test_vault_attachments.py.

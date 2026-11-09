@@ -178,6 +178,10 @@ def draw_card(base: Any, lift: tuple[int, int]) -> Any:
     return out
 
 
+#: The page draws each frame 560 x 600 (`desk-frames.js`: a 280 x 300 box at scale 2); this is 6 times that area.
+MAX_FRAME_PIXELS = 2_000_000
+
+
 def decode(png_base64: Any) -> Any:
     """One frame the page sent, as an RGBA image; ValueError when it is not a picture."""
     from PIL import Image
@@ -185,6 +189,9 @@ def decode(png_base64: Any) -> Any:
     try:
         raw = base64.b64decode(str(png_base64), validate=True)
         with Image.open(io.BytesIO(raw)) as im:
+            # The header is read, the pixels are not: a page that claims a huge picture is refused before it is decoded.
+            if im.width * im.height > MAX_FRAME_PIXELS:
+                raise ValueError("too large")
             return im.convert("RGBA")
     except Exception as exc:  # noqa: BLE001 - whatever the page sent, it is one answer: not a picture
         raise ValueError("not a picture") from exc
