@@ -320,6 +320,11 @@ def _bare_reminder(head: str) -> dict | None:
     return {"intent": "reminder", "text": "", "said": "", "due_at": None, "time_given": False, "no_subject": ""}
 
 
+def _repeat_of(parsed: dict | None) -> dict:
+    """The stored repeat a reminder sentence said ("every day at 8"), as the key it travels under."""
+    return {"recurring": parsed["recurring"]} if parsed and parsed.get("recurring") else {}
+
+
 def _reminder(text: str, now: datetime, locale: str | None = None) -> dict | None:
     text, head = _reminder_head(text)
     if head is None:
@@ -355,6 +360,7 @@ def _reminder(text: str, now: datetime, locale: str | None = None) -> dict | Non
     return {
         "intent": "reminder", "text": words[:500], "said": said_words[:500], "due_at": due, "time_given": said and _ahead(due, now),
         "clock_unsaid": bool(parsed and parsed.get("clock_unsaid")),
+        **_repeat_of(parsed),
     }
 
 
@@ -1017,7 +1023,9 @@ def _append(text: str) -> dict | None:
     words, target = parts
     #: "add milk to my shopping list": a thing that is theirs (my, our) or a
     #: list-like name is a title, though it says no "note".
-    named = target.lower().startswith(("my ", "our ")) or target.lower().split(" ")[-1] in _LISTISH
+    #: "add to the Q4 report: words" names its note by the colon (R9-12).
+    colon = bool(re.match(r"(?:to|onto|on to) [^:]+: ", body, re.I))
+    named = colon or target.lower().startswith(("my ", "our ")) or target.lower().split(" ")[-1] in _LISTISH
     found = _one_target(target.strip(), bare=named)
     if _starter_place(found, target):
         return None
@@ -1451,6 +1459,10 @@ def _plan_task(session: Session, parsed: dict) -> dict:
     return task_acts.plan_complete(session, parsed, _card, title)
 
 
+#: How a stored repeat is said after the first time (R9-12).
+_REPEAT_WORDS = {"daily": "every day", "weekly": "every week", "monthly": "every month"}
+
+
 def _plan_reminder(session: Session, parsed: dict, note_ids: list[int] | None) -> dict:
     """The card for a reminder, or a task with a day."""
     #: "Remind you on Friday at 9: call the dentist" (INBOX 734): the
@@ -1470,8 +1482,9 @@ def _plan_reminder(session: Session, parsed: dict, note_ids: list[int] | None) -
         "" if parsed.get("time_given") else " (no time was said)"
     )
     said = parsed.get("said") or parsed["text"]
-    label = f"{'Add a task due' if parsed.get('task') else 'Remind you'} {when_said}: {said}"
-    arguments = {"text": parsed["text"], "due_at": due.isoformat()}
+    again = _REPEAT_WORDS.get(parsed.get("recurring") or "")
+    label = f"{'Add a task due' if parsed.get('task') else 'Remind you'} {when_said}{f', then {again}' if again else ''}: {said}"
+    arguments = {"text": parsed["text"], "due_at": due.isoformat(), **({"recurring": parsed["recurring"]} if again else {})}
     note = _reminder_note(session, said, note_ids)
     if note is not None:
         arguments["note_id"] = note.id
@@ -1555,6 +1568,9 @@ def _plan_tag_or_move(session: Session, parsed: dict, note_ids: list[int] | None
 def _plan_new_note(session: Session, parsed: dict) -> dict:
     if parsed.get("no_subject"):
         return {"line": "What should the note say? Send it as “make a note: …” and I'll save it."}
+    into = task_acts.plan_into_list(session, parsed, _card) if parsed.get("checklist") else None
+    if into is not None:
+        return into
     steps = [{"name": "create_note", "arguments": {"content": parsed["content"]}}]
     #: A named note ("called X with Y") has a title line and a body: said as
     #: `“X”: Y`, never with the line break in the sentence.
@@ -1589,10 +1605,21 @@ def _plan_untag(session: Session, parsed: dict, note_ids: list[int] | None) -> d
     return {"line": _confirm(label), "card": _card(label, steps, skipped, [_item(e) for e in ok])}
 
 
+def _already_there(session: Session, parsed: dict, note_ids: list[int] | None) -> str:
+    """"Oat milk is already on your Shopping list." when the line to add is an open item of that note (R9-12), else ""."""
+    entry = _resolve_one(session, parsed.get("about"), note_ids, bool(parsed.get("these")), parsed.get("note_id"))[0]
+    if entry is None or not act_steps.already_open(entry.content or "", parsed["content"]):
+        return ""
+    return f"{parsed['content'].rstrip('.')} is already on your {note_title(entry.content, size=48)}."
+
+
 def plan(session: Session, parsed: dict, note_ids: list[int] | None = None) -> dict:
     """What the command would do: {"line", "card"?, "tool"?}. Writes nothing."""
     if parsed["intent"] == "rename" and parsed.get("alts"):
         parsed = object_acts.pick_note_split(parsed, lambda about: bool(_notes_about(session, about, False)))
+    said = _already_there(session, parsed, note_ids) if parsed["intent"] == "append" else ""
+    if said:
+        return {"line": said}
     planned = _plan_intent(session, parsed, note_ids)
     if parsed.get("leftover") and planned.get("card"):
         #: A second request on the end of a rename is said back, not done or dropped.

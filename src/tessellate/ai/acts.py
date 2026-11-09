@@ -77,6 +77,9 @@ def run(session: Session, steps: list[dict], skipped: list[dict] | None = None, 
 def ticked_line(card: dict, frame) -> str:  # noqa: ANN001
     """What a tick that already ran says ("ticked off “a” and “b”"), then the names
     left out ("Not done: ..."). `frame` words the done part."""
+    if " not done" in card["label"]:
+        #: An untick is said as itself (R9-12), not as the edit it is under the card.
+        return re.sub(r"^Mark (“.*?”) not done( \(in )?", lambda m: f"Unticked {m.group(1)}" + (" (" if m.group(2) else ""), card["label"]) + "." + (f" {commands.not_done(card.get('skipped') or [])}" if card.get("skipped") else "")
     what = re.sub(r"^Mark (“.*”) done", r"ticked off \1", card["label"])
     return f"{frame(what)} {commands.not_done(card.get('skipped') or [])}".strip()
 

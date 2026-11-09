@@ -195,13 +195,14 @@ def holds_any(stems: list[str], text: str) -> bool:
 _PRESENT_ASK = re.compile(r"^\W*(?:is|are|will)\s+(?:the|my|our|a)\b", re.I)
 
 
-_EVENT_TAIL = re.compile(r"\s+(?:this|next)\s+(?:week|month|weekend)\s*[?.!]*$|\s+(?:today|tomorrow|tonight)\s*[?.!]*$", re.I)
 
 
 def without_event_window(question: str) -> str:
     """"is the plumber coming this week" asked of the notes as "is the plumber coming": the window dates the
     event, so searching for it finds the notes that happen to say "week" (R9-7)."""
-    return _EVENT_TAIL.sub("", question) if _PRESENT_ASK.match(question or "") else question
+    if not _PRESENT_ASK.match(question or ""):
+        return question
+    return rec.without_event_window_tail(question)
 
 
 def _plan_window(question: str, terms: list[str], phrase: str, today: date) -> tuple[tuple | None, list[str]]:
@@ -213,7 +214,7 @@ def _plan_window(question: str, terms: list[str], phrase: str, today: date) -> t
         return None, terms + [w for w in said if w not in terms]
     span = when_words.span(phrase, today, "past") if phrase else None
     #: "is the plumber coming this week": the week is when it happens, not when the note was written (R9-7).
-    if span and (span[0] > today or _PRESENT_ASK.match(question or "")) and _subject_left(question, terms, phrase):
+    if span and (span[0] > today or (_PRESENT_ASK.match(question or "") and span[1] >= today)) and _subject_left(question, terms, phrase):
         return None, terms
     return span, _without_window_words(question, terms, phrase) if span else terms
 

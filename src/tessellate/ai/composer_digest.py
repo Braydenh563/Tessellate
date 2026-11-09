@@ -45,7 +45,7 @@ from pathlib import Path
 
 from tessellate.ai import composer, composer_doings, composer_done, composer_frame, composer_threads, composer_lists, composer_money, composer_slots, composer_sum, composer_tables, filed_name, glossary, question_noise, realise, verdicts
 from tessellate.ai import composer_answer, composer_brief, composer_nth, composer_oneword, composer_property, composer_small
-from tessellate.ai import composer_ask, composer_clean, factgraph
+from tessellate.ai import composer_ahead, composer_ask, composer_clean, composer_event_verdict, factgraph
 from tessellate.ai import composer_chip_subject
 from tessellate.ai import composer_read
 from tessellate.ai import composer_select
@@ -808,6 +808,15 @@ def _fact_names_title(view, fact: str) -> bool:  # noqa: ANN001
     return bool(re.search(rf"\b{re.escape(title)}\b(?!['\u2019]s)", fact, flags))
 
 
+def _when_tail(view, fact: str, today: date) -> str:  # noqa: ANN001
+    """", written on 11 August, ..." after a fact, or, for a fact whose own day is still ahead, how far off it
+    is (", in 23 days"): the write date is noise beside it (R9-17)."""
+    ahead = composer_ahead.distance(fact, today)
+    if ahead and _TIMED.get() and _WHEN_ASK.get():
+        return f", {ahead}"
+    return f", written {_said_day(view.written, today)}" if _TIMED.get() and not _says_day(fact, view.written, today) else ""
+
+
 def _from_source(view, fact: str, today: date) -> str:  # noqa: ANN001
     """"Fact, from your note of 3 March." for a note; a document, board or
     map is said as itself by its title (INBOX 1357, class F: "Hamlet delays
@@ -825,7 +834,7 @@ def _from_source(view, fact: str, today: date) -> str:  # noqa: ANN001
         #: one of your notes" read as a tail on the person's own words).
         return f"{fact}."
     #: Not again when the fact already says the day it was written.
-    when = f", written {_said_day(view.written, today)}" if _TIMED.get() and not _says_day(fact, view.written, today) else ""
+    when = _when_tail(view, fact, today)
     #: A fact that already names the note is not "from" it again (audit 1031 C36).
     if not getattr(view, "titled", False) or _fact_names_title(view, fact):
         return f"{fact}{when}."
@@ -4020,6 +4029,18 @@ def _streak_start(out: _Out, lead: Fact, rest: list[Fact], question: str, today:
     return [f for f in rest if f.view.id == lead.view.id]
 
 
+_WHEN_ASK: ContextVar[bool] = ContextVar("composer_when_ask", default=False)
+
+
+def _say_fact_ahead(out: _Out, lead: Fact, today: date, question: str) -> None:
+    """`_say_fact` for a "when" ask, where a day still ahead is said by its distance (R9-17), not by the write date."""
+    token = _WHEN_ASK.set(True)
+    try:
+        _say_fact(out, lead, today, question)
+    finally:
+        _WHEN_ASK.reset(token)
+
+
 def _single_when(out: _Out, lead: Fact, rest: list[Fact], question: str, today: date) -> list[Fact]:
     """A "when" ask: the day of one thing that happened, or a habit said as
     its days. Returns the facts still to say."""
@@ -4041,7 +4062,7 @@ def _single_when(out: _Out, lead: Fact, rest: list[Fact], question: str, today: 
     #: date (composer-1031, item 4).
     habit = days and len(re.findall(r"day", days.group(0), re.I)) + bool(re.search(r"days\b", days.group(0), re.I)) > 1
     if not habit:
-        _say_fact(out, lead, today, question)
+        _say_fact_ahead(out, lead, today, question)
         return [f for f in rest if f.view.id == lead.view.id]
     said = days.group(0).strip(" ,")
     out.lines.append(_from_source(lead.view, said[0].upper() + said[1:], today))
@@ -5095,7 +5116,7 @@ def answer(question: str, notes: list[dict], **kwargs) -> dict | None:  # noqa: 
     owned = composer_ask.NOTE_WORDS.set(composer._note_words(notes))  # noqa: SLF001
     texts = composer_ask.NOTE_TEXTS.set(tuple(f"{n.get('title') or ''} {n.get('content') or ''}".lower() for n in notes or ()))
     try:
-        return _answer(question, notes, **kwargs)
+        return composer_event_verdict.apply(question, _answer(question, notes, **kwargs), kwargs.get("today") or composer.user_today())
     finally:
         composer_ask.NOTE_TEXTS.reset(texts)
         composer_ask.NOTE_WORDS.reset(owned)

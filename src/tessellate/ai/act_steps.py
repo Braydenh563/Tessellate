@@ -35,6 +35,12 @@ def appended(content: str, text: str) -> str:
     return f"{body}\n\n{text}"
 
 
+def already_open(content: str, text: str) -> bool:
+    """Whether `text` is already an unticked checklist line of `content` (R9-12: "oat milk" on the list)."""
+    want = _ITEM_LEAD.sub("", text.strip(), count=1).strip().lower().rstrip(".")
+    return bool(want) and any(m.group(1).strip().lower().rstrip(".") == want for m in re.finditer(r"^\s*[-*+]\s+\[ \]\s+(.+)$", content or "", re.M))
+
+
 def daily_note(session: Session, heading: str) -> Entry | None:
     rows = session.scalars(
         select(Entry).where(Entry.is_deleted == False, func.substr(Entry.content, 1, len(heading)) == heading)  # noqa: E712

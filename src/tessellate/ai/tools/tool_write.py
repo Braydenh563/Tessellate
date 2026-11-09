@@ -421,7 +421,8 @@ def _set_reminder(session: Session, args: dict) -> dict:
     held = held_reminder(session, text, due_at)
     if held:
         return held
-    reminder = Reminder(text=text, due_at=due_at, entry_id=entry_id, priority=priority)
+    repeat = str(args.get("recurring") or "none")
+    reminder = Reminder(text=text, due_at=due_at, entry_id=entry_id, priority=priority, recurring=repeat if repeat in ("daily", "weekly", "monthly") else "none")
     session.add(reminder)
     session.flush()
     manager.log_action(session, "created", "reminder", reminder.id, text[:80])

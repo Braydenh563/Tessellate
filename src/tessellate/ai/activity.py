@@ -204,9 +204,19 @@ def _entry_kind(entry) -> str:  # noqa: ANN001
     return {"board": "board", "map": "map"}.get(entry.board_kind or "", "note")
 
 
+def _note_name(content: str) -> str:
+    """A note's name as every surface says it (R9-15): its title, or its first words in quotes."""
+    from tessellate.ai import composer_frame
+
+    name = composer_frame.name_of({"content": content or ""})
+    return name
+
+
 def _link(kind: str, ident: int, title: str) -> str:
     path = {"note": "notes", "document": "docs", "board": "library/board", "map": "library/board"}.get(kind)
-    return f"[**{title}**](#/{path}/{ident})" if path else f"**{title}**"
+    #: A title-less note's quoted words are not bold, as in the day lists (R9-15).
+    mark = "" if title.startswith("“") else "**"
+    return f"[{mark}{title}{mark}](#/{path}/{ident})" if path else f"**{title}**"
 
 
 _Event = tuple[datetime, str, str, str]
@@ -235,7 +245,8 @@ def _entry_events(session: Session, lo: datetime, hi: datetime, inside) -> list[
         )
     ).all()
     for entry in entries:
-        kind, title = _entry_kind(entry), _title_of(entry.content)
+        kind = _entry_kind(entry)
+        title = _note_name(entry.content) if kind == "note" else _title_of(entry.content)
         said = f"**{title}** (now in the bin)" if entry.is_deleted else _link(kind, entry.id, title)
         _made_edited(out, kind, said, inside(entry.created_at), inside(entry.edited_at))
         binned = inside(entry.deleted_at)
@@ -436,6 +447,22 @@ def _first_sentence(text: str) -> str:
     return realise.cut_title(re.split(r"(?<=[.!?])\s", " ".join(text.split()), maxsplit=1)[0], 140)
 
 
+_CHECK_ITEM = re.compile(r"^\s*[-*+]\s+\[(?P<box>[ xX])\]\s+(?P<item>.+?)\s*$")
+
+
+def _checklist_gist(body: str) -> str:
+    """A checklist said in words, not as its markdown (R9-16): "oat milk, garlic and lemons still open",
+    or "all four done"; "" when the body is not made of checklist lines."""
+    lines = [ln for ln in body.splitlines() if ln.strip()]
+    found = [_CHECK_ITEM.match(ln) for ln in lines]
+    if not lines or not all(found):
+        return ""
+    open_ = [m.group("item") for m in found if m.group("box") == " "]
+    if not open_:
+        return f"all {_n(len(found))} done"
+    return f"{realise.join_items(open_)} still open"
+
+
 def _glosses(session: Session, rows: list[_Event]) -> dict[str, str]:
     """The line a made note is said as on a "what did I do on 25 October":
     what the note says, not that it was made (audit 1030 Z28). A titled note
@@ -450,7 +477,7 @@ def _glosses(session: Session, rows: list[_Event]) -> dict[str, str]:
     for key, ident in found.items():
         content = str(contents.get(ident) or "")
         name, start = composer_read._title(content)  # noqa: SLF001
-        body = _first_sentence(re.sub(r"^[#*>\-\s]+", "", content[start:].strip())) if start else ""
+        body = (_checklist_gist(content[start:]) or _first_sentence(re.sub(r"^[#*>\-\s]+", "", content[start:].strip()))) if start else ""
         if start:
             said[key] = f"{key}: {body}" if body else key
         elif name:

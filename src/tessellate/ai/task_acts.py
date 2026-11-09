@@ -119,7 +119,20 @@ def _checklist_items(said: str) -> list[str]:
     return list(dict.fromkeys(p[:1].upper() + p[1:] for p in parts if p))
 
 
-_CHECKLIST_TITLES = {"checklist": "Checklist", "todolist": "Todo list"}
+_CHECKLIST_TITLES = {"checklist": "Checklist", "todolist": "Todo list", "shoppinglist": "Shopping list", "grocerylist": "Grocery list", "packinglist": "Packing list"}
+_FOR_PLACE = re.compile(r"^(?:the |my |our |a |an )?(?P<place>[^:]{1,40}?)\s*:\s*(?P<items>.+)$", re.IGNORECASE)
+
+
+def _checklist_title_items(found: re.Match) -> tuple[str, str]:
+    """(the title, the items said) of a checklist sentence: "a checklist for the kitchen: a, b" is
+    "Kitchen checklist" with a and b (R9-12), else the name said or the kind's own."""
+    kind = found.group("kind").lower().replace("-", "").replace(" ", "")
+    title = (found.group("name") or _CHECKLIST_TITLES.get(kind) or kind.capitalize()).strip()
+    said = found.group("items")
+    place = _FOR_PLACE.match(said) if found.group("join").lower() == "for" and not found.group("name") else None
+    if place:
+        said, title = place.group("items"), f"{place.group('place').strip()} {_CHECKLIST_TITLES.get(kind, kind).lower()}"
+    return title[:1].upper() + title[1:], said
 
 
 def read_checklist_note(text: str) -> dict | None:
@@ -127,13 +140,45 @@ def read_checklist_note(text: str) -> dict | None:
     (composer-r8): "make a checklist note of milk, eggs and bread". "for" counts
     only for two or more items, so "a checklist for my trip" is not a list of one."""
     found = _CHECKLIST_NOTE.match(" ".join(str(text or "").split()).rstrip(".!"))
-    items = _checklist_items(found.group("items")) if found else []
+    if not found:
+        return None
+    title, said = _checklist_title_items(found)
+    items = _checklist_items(said)
     if not items or len(items) > 30 or any(len(i.split()) > 6 for i in items) or (found.group("join").lower() == "for" and len(items) < 2):
         return None
-    kind = found.group("kind").lower().replace("-", "").replace(" ", "")
-    title = (found.group("name") or _CHECKLIST_TITLES.get(kind) or kind.capitalize()).strip()
-    title = title[:1].upper() + title[1:]
-    return {"intent": "new_note", "content": f"# {title}\n\n" + "\n".join(f"- [ ] {i}" for i in items)}
+    return {"intent": "new_note", "content": f"# {title}\n\n" + "\n".join(f"- [ ] {i}" for i in items), "checklist": True}
+
+
+def note_called(session: Session, name: str):  # noqa: ANN201
+    """The newest note whose title line is `name` (any case), or None."""
+    from tessellate.core.database import Entry
+
+    rows = session.scalars(
+        select(Entry).where(Entry.is_deleted.is_(False), Entry.deleted_at.is_(None), Entry.is_private.is_(False)).order_by(Entry.id.desc()).limit(500)
+    ).all()
+    return next((e for e in rows if (e.content or "").strip().split("\n", 1)[0].lstrip("# ").strip().lower() == name.strip().lower()), None)
+
+
+def plan_into_list(session: Session, parsed: dict, card) -> dict | None:  # noqa: ANN001
+    """A checklist asked for under the name of a note that exists ("make a shopping
+    list with flour, yeast and salt") is those items added to that note, run at
+    once with Undo, not a second note beside it. None when no note has the title."""
+    from tessellate.ai import act_steps
+
+    head, _, body = str(parsed["content"]).partition("\n")
+    note = note_called(session, head.lstrip("# "))
+    if note is None:
+        return None
+    wanted = [m.group("item") for m in _BOX.finditer(body)]
+    new = [i for i in wanted if not act_steps.already_open(note.content or "", i)]
+    name = head.lstrip("# ").strip()
+    if not new:
+        return {"line": f"Everything you named is already on your {name} note."}
+    content = note.content or ""
+    for item in new:
+        content = act_steps.appended(content, item)
+    label = f"Add {', '.join(f'“{i}”' for i in new)} to your {name} note"
+    return {"line": f"{label}.", "card": card(label, [{"name": "edit_note", "arguments": {"note_id": note.id, "content": content}}], items=[name]), "run": True}
 
 
 def _complete_rest(text: str) -> str | None:
@@ -167,11 +212,32 @@ def _complete_rest(text: str) -> str | None:
 _DONE_LEADS = ("finish ", "i finished ", "i've finished ", "i have finished ", "done with ", "i'm done with ", "im done with ")
 
 
+#: "I've booked the car service" (R9-12): a deed that names an open task is that task ticked.
+#: Only verbs a task starts with, so "I've seen the film" is no act.
+_DEED = re.compile(r"^i(?:'ve|’ve| have)\s+(?P<verb>[a-z]+)\s+(?P<rest>.+)$", re.IGNORECASE)
+_DEED_VERBS = {
+    "booked": "book", "called": "call", "paid": "pay", "emailed": "email", "sent": "send", "bought": "buy", "renewed": "renew",
+    "cleaned": "clean", "fixed": "fix", "ordered": "order", "posted": "post", "returned": "return", "submitted": "submit",
+    "phoned": "phone", "texted": "text", "tidied": "tidy", "washed": "wash", "cancelled": "cancel", "replied": "reply",
+}
+
+
+def _deed_rest(text: str) -> str | None:
+    """"book the car service" for "I've booked the car service", or None."""
+    found = _DEED.match(text.strip().rstrip(".!"))
+    verb = _DEED_VERBS.get(found.group("verb").lower()) if found else None
+    return f"{verb} {found.group('rest')}" if verb else None
+
+
 def read_complete(text: str) -> dict | None:
     """The task a sentence completes, as {"intent": "complete", "about",
     "kind"?}, or None. kind is "reminder" or "checklist" when the sentence
     says which, else both are looked in."""
     rest = _complete_rest(text)
+    deed = _deed_rest(text) if rest is None else None
+    if deed:
+        about, said = _split_kind(deed)
+        return _task_found("complete", about, said)
     loose = rest is None
     if loose:
         lead = next((w for w in _DONE_LEADS if text.lower().startswith(w)), None)

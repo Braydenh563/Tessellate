@@ -95,7 +95,8 @@ def clean(question: str) -> str:
     text = " ".join((question or "").split())
     text = text.lstrip("\\/'\"` ").rstrip("\\/'\"` ")
     text = _NO_APOSTROPHE.sub(r"\1's", text)
-    text = _COURTESY_TAIL.sub(r"\1", text)
+    #: Only the last words can be a courtesy; a long run of commas never meets the unanchored `[,\s]+` (CodeQL).
+    text = text[:-40] + _COURTESY_TAIL.sub(r"\1", text[-40:])
     if (repair := _REPAIR.search(text.rstrip("?.! "))) is not None:
         kept = text[:repair.start()]
         text = kept if re.search(r"\bnow\b", kept, re.I) else kept + " now"
