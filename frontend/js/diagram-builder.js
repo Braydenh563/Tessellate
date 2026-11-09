@@ -687,9 +687,9 @@
     if (S && ((await ensureModule("vf")) && (await ensureModule("diagramView")))) diagramModel.view.wire(S);
     //: The shelf of blocks on the picture, once it has its stage (diagram-library.js).
     if (S && S.fig.parentElement?.classList.contains("dgm-stage")) diagramModel.library.shelf(S, { ...helpers, glyph: shapeGlyph, groupGlyph });
-    //: A sequence diagram is edited on its picture too (1661 l): its parts become the overlay's boxes first.
-    if (S?.k?.name === "sequence" && (await lazyScript("/js/diagram-seq-canvas.js"))) diagramModel.seqCanvas?.wire(S);
-    if (S && (!S.k || S.seq) && (await ensureModule("diagramOverlay"))) diagramModel.overlay.wire(S);
+    //: The other kinds are edited on their picture too (1661 l): their parts become the overlay's boxes first.
+    if (S?.k && (await lazyScript("/js/diagram-seq-canvas.js"))) await diagramModel.seqCanvas?.wire(S);
+    if (S && (!S.k || S.hitAt) && (await ensureModule("diagramOverlay"))) diagramModel.overlay.wire(S);
     if (S && !S.k && (await ensureModule("diagramMulti"))) diagramModel.multi.wire(S, helpers);
     if (S && !S.k && (await ensureModule("diagramCanvas"))) diagramModel.canvas.wire(S, helpers);
     if (S && !S.k && (await ensureModule("diagramEdges"))) diagramModel.edges.wire(S, helpers);

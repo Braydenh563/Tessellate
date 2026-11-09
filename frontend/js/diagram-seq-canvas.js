@@ -239,17 +239,18 @@
     return { canvas: true, op: "into", ...spotOf(S, gp.key), add: { fields }, card: gapLine(S, f, gp), word: gp.key ? `Before ${name(gp.key)}` : "At the end" };
   }
 
-  // --- the picture, in the page ------------------------------------------------------
-  function wire(S) {
-    const fig = S?.fig;
-    if (!fig || S.k?.name !== "sequence" || fig.dataset.seq) return;
-    fig.dataset.seq = "1";
-    S.seq = true;
-    const ops = diagramModel.kinds.ops;
+  // --- what every kind's picture shares ----------------------------------------------------------
+  //: A sequence's picture here, a mind map's and a timeline's in diagram-tree-canvas.js. `read(svg)` gives the overlay's
+  //: `S.hit` on each paint, first of the paint hooks so the overlay that follows draws from it (and once now, for a
+  //: picture drawn before the file loaded); `painted` runs after each. On the picture a press picks a part, a double press,
+  //: Enter or F2 renames it in place, Delete removes it and Alt+Up or Alt+Down moves it.
+  function edit(S, read, painted = () => {}) {
+    const fig = S.fig;
     const act = diagramModel.kinds.act;
     const img = () => fig.querySelector(".md-mermaid-img");
     const at = (event) => (img() && S.hit ? diagramModel.overlay.math.at(S.hit, img().getBoundingClientRect(), event.clientX, event.clientY) : "");
     S.hitAt = at;
+    let dragged = -1e3;
     let editing = null;
 
     //: One field over the part, as the flowchart's (diagram-edges.js); Enter keeps, Escape leaves it as it was.
@@ -292,9 +293,60 @@
     }
     S.seqRename = rename;
 
+    const paint = () => {
+      S.hit = img()?.mermaidSvg ? read(img().mermaidSvg) : null;
+      painted();
+      later();
+    };
+    //: A part just added (a drag, a "+", the list folded) opens its name once its box can be placed: not before the image has
+    //: its width (a dark picture decodes after the hooks ran), so the image's load and the zoom's paint ask again until it opens.
+    const later = () => {
+      const open = S.seqOpen;
+      if (open && S.hit?.boxes.some((b) => b.id === open)) setTimeout(() => S.seqOpen === open && rename(open) && (S.seqOpen = null), 0);
+    };
+    (fig.onpaint ||= []).unshift(paint);
+    (fig.onzoom ||= []).push(later);
+    fig.addEventListener("load", later, true);
+    paint();
+
+    fig.addEventListener("click", (event) => {
+      if (event.target.closest?.("input, button, .dgm-zoom") || event.timeStamp - dragged < 400) return;
+      const key = at(event);
+      if (key) act.select(S, key), S.mark?.();
+    });
+    fig.addEventListener("dblclick", (event) => {
+      const key = at(event);
+      if (key) event.preventDefault(), act.select(S, key), rename(key);
+    });
+    fig.addEventListener("keydown", (event) => {
+      if (event.target !== fig || !S.sel || event.ctrlKey || event.metaKey) return;
+      const key = S.sel;
+      const run = event.altKey
+        ? { ArrowUp: () => act.step(S, key, -1), ArrowDown: () => act.step(S, key, 1) }[event.key]
+        : { Enter: () => rename(key), F2: () => rename(key), Delete: () => act.remove(S, key), Backspace: () => act.remove(S, key) }[event.key];
+      if (!run) return;
+      event.preventDefault();
+      event.stopPropagation();
+      run();
+    });
+    return { dragged: (t) => (dragged = t) };
+  }
+
+  // --- the picture, in the page ------------------------------------------------------
+  function wire(S) {
+    const fig = S?.fig;
+    if (!fig || !S.k || fig.dataset.seq) return;
+    //: A mind map and a timeline read their picture another way (no ids on their parts); the editing above is shared.
+    if (S.k.name !== "sequence") return lazyScript("/js/diagram-tree-canvas.js").then((ok) => ok && diagramModel.treeCanvas?.wire(S));
+    fig.dataset.seq = "1";
+    S.seq = true;
+    const ops = diagramModel.kinds.ops;
+    const act = diagramModel.kinds.act;
+    const img = () => fig.querySelector(".md-mermaid-img");
+    const at = (event) => S.hitAt?.(event) || "";
+
     // --- drags and the "+" ---------------------------------------------------------------------
     let drag = null;
-    let dragged = -1e3;
     let plusAt = null;
     let btn = null;
     const hidePlus = () => btn?.classList.add("hidden");
@@ -336,7 +388,7 @@
       drag = null;
       fig.releasePointerCapture?.(event.pointerId);
       if (!d.live) return;
-      dragged = event.timeStamp;
+      shared.dragged(event.timeStamp);
       const res = event.type === "pointerup" ? aim(d, event) : null;
       clear(S);
       if (res) land(d, res);
@@ -401,47 +453,11 @@
       if (!event.relatedTarget?.closest?.(".dgm-gap-plus")) hidePlus();
     });
     (fig.onzoom ||= []).push(hidePlus);
-
-
-    //: First of the paint hooks, so the overlay that follows draws from this picture's boxes; run once now, for a picture drawn before this file loaded.
-    const paint = () => {
-      S.hit = img()?.mermaidSvg ? boxes(img().mermaidSvg, S.m, ops.key) : null;
-      hidePlus();
-      later();
-    };
-    //: A part just added by a drag or a "+" opens its name once its box can be placed: not before the image has its width (a
-    //: dark picture decodes after the hooks ran), so the image's load and the zoom's paint ask again until it opens.
-    const later = () => {
-      const open = S.seqOpen;
-      if (open && S.hit?.boxes.some((b) => b.id === open)) setTimeout(() => S.seqOpen === open && rename(open) && (S.seqOpen = null), 0);
-    };
-    (fig.onpaint ||= []).unshift(paint);
-    (fig.onzoom ||= []).push(later);
-    fig.addEventListener("load", later, true);
-    paint();
-
-    fig.addEventListener("click", (event) => {
-      if (event.target.closest?.("input, button, .dgm-zoom") || event.timeStamp - dragged < 400) return;
-      const key = at(event);
-      if (key) act.select(S, key), S.mark?.();
-    });
-    fig.addEventListener("dblclick", (event) => {
-      const key = at(event);
-      if (key) event.preventDefault(), act.select(S, key), rename(key);
-    });
     fig.addEventListener("keydown", (event) => {
-      if (drag && event.key === "Escape") return (drag = null), clear(S);
-      if (event.target !== fig || !S.sel || event.ctrlKey || event.metaKey) return;
-      const key = S.sel;
-      const run = event.altKey
-        ? { ArrowUp: () => act.step(S, key, -1), ArrowDown: () => act.step(S, key, 1) }[event.key]
-        : { Enter: () => rename(key), F2: () => rename(key), Delete: () => act.remove(S, key), Backspace: () => act.remove(S, key) }[event.key];
-      if (!run) return;
-      event.preventDefault();
-      event.stopPropagation();
-      run();
+      if (drag && event.key === "Escape") (drag = null), clear(S);
     });
+    const shared = edit(S, (svg) => boxes(svg, S.m, ops.key), () => hidePlus());
   }
 
-  diagramModel.seqCanvas = { wire, parts, order, boxes, gap, headGap, pair, near, over, clear };
+  diagramModel.seqCanvas = { wire, edit, parts, order, boxes, gap, headGap, pair, near, over, clear };
 })();
