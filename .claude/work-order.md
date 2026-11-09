@@ -7,7 +7,7 @@ finish-up: 70%
 started: 2026-11-07 14:40Z
 tier: max (weekly 32% at 2026-11-08 16:00Z), four agents at once, Sonnet or Haiku, one Opus for design or risky review; never Fable; owner away from 2026-11-08 16:00Z until about 2026-11-09 06:00Z to 07:00Z (late afternoon owner time, UTC+10)
 
-## 2026-11-09 away queue (owner asleep from ~14:50Z; stop at 70% weekly; context 200k does not stop the run, owner override)
+## 2026-11-09 away queue (tier: four agents, at most two Opus, Haiku scouts extra) (owner asleep from ~14:50Z; stop at 70% weekly; context 200k does not stop the run, owner override)
 - [ ] Push the 9 local commits when CI on 7d814c1 finishes; fix its failures
 - [ ] Merge zoom2-1109 (1717), desklane-1109 (1696 a,b,h,i,k,aa,kk; 1710 a,b; 1711 b; 1718), small3-1109 (constellation pause, 1693 a)
 - [ ] Composer deep-audit round (1719 c), then build its findings in Sonnet batches
