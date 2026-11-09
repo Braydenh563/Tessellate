@@ -53018,3 +53018,5 @@ Built (`tests/test_chat_acts_1108.py`). Row text:
 
 1701. **Owner, 2026-11-09, verbatim (diagram builder screenshots):** "if I click the dropdown arrow for the diagram builder shapes at the top, if I click it again I want the menu to close"; "there is no hover state for the connect to buttons in the list and also there is no vertical margin or padding around the elements in each row"; "some items or icons are cut off on the right" (the Keys sheet). **Fixed** (this commit's parent): the caret says `aria-expanded` and a second press closes (open, closed, open measured); Connect to… hover `rgba(120,168,255,0.16)` from none; rows 4 px padding, 5 px above and below the button; the Keys list was a multicol box with a max-height, scrollWidth 1,536 in 502 px, now 502; "Add an input or output box", "Add a rounded box".
 
+1703. **Owner, 2026-11-09, verbatim (screenshot, Quick sketch size field):** "the quick sketch pen size selected border goes outside of its borders". **Fixed:** the slider's own 3 px ring at offset 2 px spilled past the field; now the field carries a 2 px ring at offset -1 px, the slider none (`:focus-visible` measured on a keyboard press).
+

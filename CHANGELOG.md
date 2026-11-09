@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Quick sketch: the size field's focus ring stays inside its edge (the slider's ring spilled 3 px past it). Diagram builder: the shape caret closes on a second press, Connect to… has a hover, list rows have vertical room, the Keys sheet no longer spills columns off its right edge.
 - A panel docked to the left or right half, widened by its inner edge, stays docked and keeps the page beside it, the page following the edge as it moves (it went back to full width the moment the edge was dragged).
 - Whiteboard Format panel, Data tab: a focused Name or Value box's ring is no longer cut at the panel's left edge or run into its neighbour (ring 2 px out instead of 4, rows 6.4 px apart, the list 4 px in).
 - Companion (perchsmall, INBOX 1697 and the owner's Windows log): a drop or a climb now takes a window top as narrow as the feet (40% of the figure plus 8 px) with the figure's middle kept over it, where a top under the figure plus 20 px was refused (a 300 px window at 192 dpi); and a layered, click-through or never-activated tool window (Dell's display manager) no longer counts as covering the window tops under it.
