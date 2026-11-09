@@ -43,7 +43,7 @@ _CONFIRM_LABELS = {
     "edit_note": lambda a: f"Change note #{a.get('note_id', '?')}",
     "create_note": lambda a: "Make a new note",
     "save_skill": lambda a: f"Save the skill “{a.get('name', '?')}”",
-    "set_reminder": lambda a: "Set a reminder",
+    "set_reminder": lambda a: "Set a repeating reminder" if str(a.get("recurring") or "none").lower() in ("daily", "weekly", "monthly") else "Set a reminder",
     "read_url": lambda a: f"Open {a.get('url', 'a web page')}",
     "web_search": lambda a: f"Search the web for “{a.get('query', '?')}”",
 }

@@ -1248,19 +1248,10 @@ TOOLS: dict[str, ToolSpec] = {
                         "type": "string",
                         "description": "The user's words, e.g. 'tomorrow 9am', 'in 20 minutes'",
                     },
-                    "due_at": {
-                        "type": "string",
-                        "description": "An exact ISO date-time, only if you have one",
-                    },
-                    "note_id": {
-                        "type": "integer",
-                        "description": "The note this reminder came out of, if it came from one",
-                    },
-                    "priority": {
-                        "type": "string",
-                        "enum": ["low", "normal", "high"],
-                        "description": "Priority (optional, defaults to normal)",
-                    },
+                    "due_at": {"type": "string", "description": "An exact ISO date-time, only if you have one"},
+                    "note_id": {"type": "integer", "description": "The note this reminder came out of, if any"},
+                    "priority": {"type": "string", "enum": ["low", "normal", "high"], "description": "Defaults to normal"},
+                    "recurring": {"type": "string", "enum": ["none", "daily", "weekly", "monthly"]},
                 },
                 "required": ["text"],
             },
