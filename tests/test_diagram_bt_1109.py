@@ -125,3 +125,34 @@ def test_a_diagram_opened_from_a_document_offers_the_way_back_to_that_document()
     assert (JS / "mermaid-draw.js").read_text(encoding="utf-8").count("openDocument.back = true;") == 2
     assert "openDocument.back = true;\n      openDocument(target.doc.id);" in (JS / "documents-embeds.js").read_text(encoding="utf-8")
     assert ".doc-back-label {\n  max-width:" in (ROOT / "frontend" / "css" / "library-lazy.css").read_text(encoding="utf-8")
+
+
+def test_every_kind_starts_with_the_same_word_the_toolbar_button_wears():
+    kinds = _js("diagram-kinds.js")
+    for kind in ("mindmap", "timeline", "sequence"):
+        line = kinds.split(f"    {kind}: [", 1)[1].split("\n", 1)[0]
+        assert '"Press Add, then ' in line, kind
+    assert "Press Add above to start the diagram." in _js("diagram-builder.js")
+    assert "Press a shape above" not in _js("diagram-builder.js")
+    # The timeline names both first rows of its Add sheet (Section is the first row, Period the usual start).
+    assert "Press Add, then Section or Period to begin" in kinds
+
+
+def test_a_blank_mind_map_gets_its_central_idea_named_first_and_branch_twice_makes_sisters():
+    kinds = _js("diagram-kinds.js")
+    start = kinds.split("if (A.start && !m.root) {", 1)[1].split("\n    }\n", 1)[0]
+    assert "kit.commit(S, \"Added the central idea. Name it, then add branches.\");" in start and "return name(), S.sel;" in start
+    # Branch pressed again with the block it made still the pick lands beside it; a pick by hand, or a key on a block, nests.
+    assert "picked === S.fresh ? find(S, picked)?.parent : null" in kinds and "asked === undefined" in kinds
+    assert "S.fresh = tile.into && !spot ? S.sel : null;" in kinds
+    assert "const pick = (S, key, focus) => ((S.fresh = null), kit.select(S, key, focus));" in kinds
+    assert "S.fresh = null;" in _js("diagram-multi.js")
+    # The line says where it landed, and the tile's own hint says what Branch does.
+    assert '` ${tile.into ? "under" : "next to"} ${A.text(place.parent)}`' in kinds
+    assert "or beside the last branch you added" in kinds
+
+
+def test_a_shelf_tile_names_itself_in_its_tooltip_as_well_as_its_label():
+    lib = _js("diagram-library.js")
+    assert "`${t.name}. ${t.hint} Press to add it, or drag it into the blocks or onto the picture.`" in lib
+    assert "`${t.name}. ${t.hint} Tap to add it.`" in lib

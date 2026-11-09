@@ -3382,11 +3382,11 @@ MORE_TOPICS.extend([
         ),
         "body": (
             "Kind, in the Title row (first in the toolbar elsewhere), is a menu of Flowchart, Sequence, Mind map and Timeline, "
-            "each with a small picture; one starts an empty diagram of that kind. Box this block (a block's ... menu) or Box them (over picked blocks) "
+            "each with a small picture; one starts an empty diagram of that kind. Box this block (its ... menu) or Box them (picked blocks) "
             "adds a group round. "
             "Blocks draw flowcharts, mind maps, timelines and sequence diagrams: the source's "
             "first word says which, and the bar offers that kind's blocks. A mind map has a branch "
-            "and a leaf (B and N) under its centre. A timeline has a section, a period and an event "
+            "and a leaf (B and N) under its centre; a second Branch in a row sits beside it. A timeline has a section, a period and an event "
             "(S, P and E), events inside their period. A sequence diagram has an actor, "
             "participant, message, reply, async, lost, note, loop, alt, opt, parallel, critical and break (A, P, M, R, Y, X, T, "
             "L, G, O, U, C and B); a first message adds the two participants it needs, an alt its else and a parallel box its and. The pane works as a flowchart's: "
@@ -3400,7 +3400,7 @@ MORE_TOPICS.extend([
             "from the keyboard, Insert in the blocks list adds a step under the selected one. "
             "Suggest and Templates serve each kind. A suggestion of its own kind arrives as ghosts to take; "
             "one of another kind says so and is left out when the diagram has blocks, and replaces "
-            "a blank one. Hand-drawn look, in the ... menu, sketches any; Clean look takes it back. Compact and Roomy spacing too."
+            "a blank one. Hand-drawn look, in the ... menu, sketches any; Clean look takes it back."
         ),
         "badge": {"label": "Documents", "tab": "documents"},
     },

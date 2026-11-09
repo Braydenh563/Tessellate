@@ -52,7 +52,7 @@
     tile.type = "button";
     tile.dataset.objGrip = "";
     Object.assign(tile.dataset, t.data, { hint: t.hint });
-    tile.title = compact() ? `${t.hint} Tap to add it.` : `${t.hint} Press to add it, or drag it into the blocks or onto the picture.`;
+    tile.title = compact() ? `${t.name}. ${t.hint} Tap to add it.` : `${t.name}. ${t.hint} Press to add it, or drag it into the blocks or onto the picture.`;
     tile.setAttribute("aria-label", t.label);
     if (t.keys) tile.setAttribute("aria-keyshortcuts", t.keys);
     //: A clone: a spec is drawn twice (the Add library and the shelf) and a node sits in one place only. The second tile took the first's glyph, so the phone's Add sheet printed the name where the glyph should be (blind test 1108).
