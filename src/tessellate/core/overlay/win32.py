@@ -705,7 +705,10 @@ def _classify(w: Any, hwnd: Any, own_pid: int, ex: int, rect: Any, monitors_: li
     # own and one without a title are neither (INBOX 1683 w: with a maximised window up, only the taskbar was left).
     hang = reasons[2][1] and not (reasons[0][1] or reasons[1][1] or reasons[4][1])
     # A layered or tool window that fills a monitor (an animated wallpaper, a screen overlay) hides no window's top.
-    solid = not (full and ex & (WS_EX_TOOLWINDOW | WS_EX_LAYERED) and not app)
+    # INBOX 1697: so does a tool window that is layered, click-through or never activated at any size (Dell's display
+    # manager keeps one over most of the screen), which hid every window top under it as "covered by a tool window".
+    ghost = bool(ex & WS_EX_TOOLWINDOW) and bool(ex & (WS_EX_LAYERED | WS_EX_TRANSPARENT | WS_EX_NOACTIVATE))
+    solid = not ((full and ex & (WS_EX_TOOLWINDOW | WS_EX_LAYERED) or ghost) and not app)
     return WinInfo(int(hwnd), rect, why is None, hang, solid), why
 
 

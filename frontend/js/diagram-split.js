@@ -7,6 +7,8 @@
 // one kept choice (`diagram.fold`), and one of the two always showing. Not below 600, where there is one column.
 (() => {
   const KEY = "diagramListWidth";
+  //: Picture and List each keep their own dragged width (1702): one shared width made the two views the same, and the seg said nothing.
+  const keyOf = (body) => (body.closest("[data-dgm-layout]")?.dataset.dgmLayout === "blocks" ? `${KEY}.blocks` : KEY);
   const MIN = 224; // 14rem: the least the blocks list has always had
   const KEEP = 240; // what the picture keeps
   const STEP = 12;
@@ -43,7 +45,7 @@
       body.classList.toggle("dgm-tight", px < TIGHT);
       if (remember) {
         try {
-          prefs.set(KEY, String(px));
+          prefs.set(keyOf(body), String(px));
         } catch {
           /* private mode: it just will not be remembered */
         }
@@ -51,13 +53,19 @@
       return px;
     };
     trackSeparatorValue(handle, S.pane, MIN, Math.max(MIN, Math.round(room() - KEEP)) || 640);
-    let saved = 0;
-    try {
-      saved = Number(prefs.get(KEY, null)) || 0;
-    } catch {
-      /* storage blocked */
-    }
-    if (saved) apply(saved, false);
+    //: A view's own width, or (none dragged) the width its layout gives in CSS.
+    const load = () => {
+      let saved = 0;
+      try {
+        saved = Number(prefs.get(keyOf(body), null)) || 0;
+      } catch {
+        /* storage blocked */
+      }
+      if (saved) apply(saved, false);
+      else body.style.removeProperty("--dgm-list");
+      return saved;
+    };
+    load();
     //: A list too narrow for the words on its rows says so with a class (CSS cannot ask a grid column its width).
     const tight = () => {
       if (!body.isConnected) return window.removeEventListener("resize", tight); // the pane was remounted
@@ -66,6 +74,14 @@
     };
     window.addEventListener("resize", tight);
     tight();
+    //: The dialog's Picture / List / Source (diagram-embed.js `view`) tells its host; the pane is read again for that view.
+    const host = body.closest("[data-dgm-layout]");
+    const relayout = () => {
+      if (!body.isConnected) return host?.removeEventListener("dgmlayout", relayout);
+      load();
+      tight();
+    };
+    host?.addEventListener("dgmlayout", relayout);
 
     handle.addEventListener("pointerdown", (event) => {
       event.preventDefault();
@@ -90,7 +106,7 @@
         body.style.removeProperty("--dgm-list");
         tight(); // the words on the rows come back with the default width
         try {
-          prefs.set(KEY, "");
+          prefs.set(keyOf(body), "");
         } catch {
           /* storage blocked */
         }
@@ -157,6 +173,14 @@
     S.pane.prepend(head);
     const right = toggle("right", false);
     stage.append(right);
+    //: The picture's own scrollbar takes layout width, and this button sits on it (1702): its offset adds the bar's measured width after every draw and zoom.
+    const clear = () => {
+      const bar = Math.max(0, S.fig.offsetWidth - S.fig.clientWidth - 2 * S.fig.clientLeft);
+      right.style.insetInlineEnd = `calc(var(--space-2) + ${bar}px)`;
+    };
+    (S.fig.onzoom ||= []).push(clear);
+    (S.fig.onpaint ||= []).push(clear);
+    clear();
     const rails = { left: toggle("left", true), right: toggle("right", true) };
     body.prepend(rails.left);
     body.append(rails.right);

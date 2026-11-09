@@ -106,17 +106,17 @@ REACTIONS: dict[str, Reaction] = {
     # a shake while carried: it is left dizzy on the ground (`Extras.dizzy`)
     "dizzy": Reaction("dizzy_sway", "dizzy", 3.2, "startled", 8.0, True, 2),
     # the screen
-    "window_opened": Reaction("glance_window", "curious", 2.0, "", 20.0),
-    "window_closed": Reaction("relief", "content", 1.8, "", 30.0),
-    "app_switched": Reaction("glance_screen", "curious", 1.4, "", 45.0),
+    "window_opened": Reaction("glance_window", "curious", 2.0, "", 8.0),
+    "window_closed": Reaction("relief", "content", 1.8, "", 10.0),
+    "app_switched": Reaction("glance_screen", "curious", 1.4, "", 10.0),
     "idle_return": Reaction("welcome_back", "smile", 2.2, "happy", 60.0),
     "hour_chime": Reaction("chime_nod", "smile", 2.0, "", 3000.0),
     "battery_low": Reaction("shiver", "worried", 3.0, "startled", 600.0),
     "download_done": Reaction("cheer", "joy", 2.0, "happy", 15.0),
     "toast": Reaction("perk_up", "surprised", 1.6, "", 20.0),
-    "window_dragged": Reaction("watch_drag", "curious", 2.0, "", 25.0),
-    "window_maximised": Reaction("perk_up", "surprised", 1.6, "", 20.0),
-    "window_restored": Reaction("relief", "content", 1.8, "", 20.0),
+    "window_dragged": Reaction("watch_drag", "curious", 2.0, "", 10.0),
+    "window_maximised": Reaction("perk_up", "surprised", 1.6, "", 10.0),
+    "window_restored": Reaction("relief", "content", 1.8, "", 10.0),
 }
 #: A poke by mood, as the app's: a happy one giggles, a tired or cross one is miffed, the rest are curious.
 POKE_BY_MOOD = {"happy": "poke_giggle", "proud": "poke_giggle", "sleepy": "poke_miffed", "startled": "poke_miffed", "bored": "poke_curious", "curious": "poke_curious"}
@@ -533,7 +533,7 @@ class Extras:
     def _allowed(self, r: Reaction | None, kind: str, now: float) -> bool:
         """Whether a reaction may start now: the state, the cooldown, nobody typing, no card, no running reaction."""
         e = self.e
-        if r is None or e.reduced or (e.busy and not r.busy_ok) or e.card is not None or now < self.cool.get(kind, -1e9):
+        if r is None or e.reduced or ((e.busy if r.touch else e.quiet) and not r.busy_ok) or e.card is not None or now < self.cool.get(kind, -1e9):
             return False
         free = TOUCH_FREE if r.touch else SCREEN_FREE
         if r.prio >= 2:

@@ -455,6 +455,25 @@ CLIMB_SOON = 3.0
 EAGER_EVERY = 45.0
 PERCH_FOR = (45.0, 120.0)  # long enough to be seen and to count as a settled spell (was 20 to 50)
 PERCH_MIN_RISE = 48.0
+#: The share of the figure's width its feet need of a window top (INBOX 1697): a narrower top is no place to stand,
+#: a wider one is, however much of the figure's box hangs past its side. `PERCH_MARGIN` logical px is the slack.
+PERCH_FEET = 0.4
+PERCH_MARGIN = 8.0
+
+
+def perch_room(width: float, scale: float) -> int:
+    """The narrowest stretch of a window top a figure `width` px wide may stand on (the runner's scan and the
+    engine's climb share it, so a drop and a climb agree on what is a perch)."""
+    return int(width * PERCH_FEET + PERCH_MARGIN * scale)
+
+
+def stand_x(p: "Perch", x: float, width: float) -> float:
+    """`x` moved so the figure stands on `p`: all of its box over the top when that is wide enough, else its middle
+    kept over the top by the feet's half span (a small window is stood on with the body hanging past its sides)."""
+    if p.right - p.left >= width:
+        return min(max(x, p.left), p.right - width)
+    half = min(width * PERCH_FEET / 2, (p.right - p.left) / 2)
+    return min(max(x + width / 2, p.left + half), p.right - half) - width / 2
 PERCH_MOVED = 3.0
 LEAP_BASE = 0.45
 LEAP_SPEED = 1800.0
@@ -2069,6 +2088,10 @@ class Engine:
 
     # --- window tops (roam) ------------------------------------------------------------
 
+    def is_riding(self) -> bool:
+        """On a window's top, hidden behind one or hanging from one: its movement is read four times a second."""
+        return self.perch is not None or self.tuck is not None or self.hang_on is not None
+
     def set_windows(self, windows: list[Perch], now: float, hangs: list[Perch] | tuple = (), covers: list[Cover] | tuple = ()) -> None:
         """The top edges the runner last read, and the edges only a hang takes hold of. A figure on one follows
         it: it falls (or floats down) when that window is gone or no longer under it, and keeps up when it moves."""
@@ -2221,8 +2244,7 @@ class Engine:
         if others:
             p = self.rng.choice(others)
             self.target = p
-            lo, hi = max(p.left, m.area[0]), min(p.right, m.area[2]) - w
-            self._start_warp(mode, (min(max(self.x, lo), hi), p.top - h), "perch", now)
+            self._start_warp(mode, (stand_x(p, self.x, w), p.top - h), "perch", now)
             return
         gap = 24 * self._scale()
         far_left = (cur.left + cur.right) / 2 > (m.area[0] + m.area[2]) / 2
@@ -2312,7 +2334,7 @@ class Engine:
         if best is None:
             return False
         cur = best[1]
-        x = min(max(self.x, cur.left), cur.right - w)
+        x = stand_x(cur, self.x, w)
         self.vx = self.vy = self.omega = self.kick = self.angle = self.wob = 0.0
         self.wall, self.wob_kind, self.grounded = 0, None, False
         self.target = cur
@@ -2329,7 +2351,7 @@ class Engine:
             self.last_slip = "drop"
             self._let_go()
             return
-        x = min(max(self.x, cur.left), cur.right - w)
+        x = stand_x(cur, self.x, w)
         self.target = cur
         self.legs.append(("climb", self.x, x, now))
         self._rise((x, cur.top - h), "perch", now)
@@ -2362,7 +2384,7 @@ class Engine:
         found = []
         for p in self.windows:
             lo, hi = max(p.left, left), min(p.right, right)
-            if hi - lo < w + 20 * scale:
+            if hi - lo < perch_room(w, scale):
                 why = "too narrow"
             elif self._box_at(0.0, p.top - h)[1] < top:
                 why = "too close to the top"
@@ -2428,7 +2450,7 @@ class Engine:
     def _stand_on(self, p: Perch, now: float) -> None:
         self.perch, self.target, self.perch_at = p, None, now
         self.perch_until = now + self.rng.uniform(*PERCH_FOR)
-        self.x = min(max(self.x, p.left), p.right - self.size[0])
+        self.x = stand_x(p, self.x, self.size[0])
         self.y = p.top - self.size[1]
         self._enter("land", now)
 
@@ -3321,7 +3343,7 @@ class Engine:
                 break
         self.legs.append(("hang_" + pick, self.x, self.x, now))
         if pick == "pull" and held is not None:
-            x = min(max(self.x, held.left), held.right - w)
+            x = stand_x(held, self.x, w)
             self.target = held
             self.legs.append(("climb", self.x, x, now))
             self._rise((x, held.top - h), "perch", now)
@@ -3344,7 +3366,7 @@ class Engine:
                 continue
             if self.hang_on is not None and p.key == self.hang_on.key:
                 continue
-            x = min(max(self.x, p.left), p.right - w)
+            x = stand_x(p, self.x, w)
             if abs(x - self.x) <= best_dx:
                 best, best_dx = p, abs(x - self.x)
         return best
@@ -3358,7 +3380,7 @@ class Engine:
             self.releasing = False
             self._let_go()
             return
-        x = min(max(self.x, p.left), p.right - self.size[0])
+        x = stand_x(p, self.x, self.size[0])
         self.target, self.hang_on = p, None
         self.legs.append(("drop", self.x, x, now))
         self._rise((x, p.top - self.size[1]), "perch", now)
@@ -3991,7 +4013,7 @@ class Engine:
         if best is None:
             return False
         p = best[1]
-        x = min(max(self.x, p.left), p.right - w)
+        x = stand_x(p, self.x, w)
         self.notes.append(f"let go over a window top ({best[0]:.0f} px from the feet): standing on it")
         self.target, self.hang_on, self.placed = p, None, True
         self.legs.append(("drop", self.x, x, now))

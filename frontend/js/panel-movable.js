@@ -812,8 +812,13 @@ function panelGripDown(e, rimmed) {
   const dy = edge.includes("s") ? 1 : edge.includes("n") ? -1 : 0;
   e.preventDefault();
   const st = panelSt(panel);
-  st.dock = "";
-  st.pre = null;
+  //: A half docked left or right, widened by its inner edge, stays docked and keeps pushing the app aside
+  //: (the owner, 2026-11-09: the page went back to full width as soon as the middle edge was dragged).
+  const keep = (st.dock === "left" && edge === "e") || (st.dock === "right" && edge === "w");
+  if (!keep) {
+    st.dock = "";
+    st.pre = null;
+  }
   const rect = panel.getBoundingClientRect();
   const vw = window.innerWidth;
   const vh = window.innerHeight;
@@ -849,6 +854,7 @@ function panelGripDown(e, rimmed) {
     st.x = ox - (k.x || 0) * sw - (dx < 0 ? sw : 0);
     st.y = oy - (k.y || 0) * sh - (dy < 0 ? sh : 0);
     panel.style.translate = `${st.x}px ${st.y}px`;
+    if (keep) panelPushSync();  // the pointer's own events pace it: no frame loop of its own
   };
   const done = () => {
     grip.removeEventListener("pointermove", move);
@@ -856,6 +862,7 @@ function panelGripDown(e, rimmed) {
     grip.removeEventListener("pointercancel", done);
     panel.classList.remove("panel-moving");
     panelSave(panel);
+    if (keep) panelPushSync();
   };
   grip.addEventListener("pointermove", move);
   grip.addEventListener("pointerup", done);

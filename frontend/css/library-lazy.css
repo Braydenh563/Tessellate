@@ -6396,7 +6396,7 @@ button.ghost.doc-template-choice.wb-template-choice {
   flex-direction: column;
   gap: var(--space-1);
   margin: var(--space-2) 0;
-  padding: 0;
+  padding: 0 var(--space-1);
 }
 
 .wb-fmt-prop {
@@ -6404,12 +6404,19 @@ button.ghost.doc-template-choice.wb-template-choice {
   display: grid;
   grid-template-columns: minmax(0, 2fr) minmax(0, 3fr) auto;
   align-items: center;
-  gap: var(--space-1);
+  gap: var(--space-2);
 }
 
 .wb-fmt-prop input {
   min-width: 0;
   width: 100%;
+}
+
+/* The ring sits on the box's own edge (the owner, 2026-11-09: the global 2px offset put it 4px out, so
+   the Name box's ring was cut by the panel's left edge and touched the Value box's ring across the gap). */
+.wb-fmt-prop input:focus-visible,
+.wb-fmt-prop input:focus {
+  outline-offset: 0;
 }
 
 /* The Format panel's four tabs share its width (canvasdepth2: Data made a

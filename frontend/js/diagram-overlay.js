@@ -70,12 +70,25 @@
       else if (row.dataset.key.startsWith("n:")) ids.add(row.dataset.key.slice(2));
       return ids;
     };
+    //: A pick shows in both halves (1702): the box the list picked is brought into the picture and the row the picture picked
+    //: into the list, once per change of pick (`nearest`: nothing moves when it is already in view). A hover never moves either.
+    let revealed = "";
+    const reveal = () => {
+      const key = S.sel || "";
+      if (key === revealed) return;
+      revealed = key;
+      if (!key) return;
+      const id = S.seq ? key : key.slice(2);
+      (boxes.get(id) || groups.get(id))?.scrollIntoView({ block: "nearest", inline: "nearest" });
+      S.tree.querySelector('.dgm-block[aria-selected="true"]')?.scrollIntoView({ block: "nearest" });
+    };
     const mark = () => {
       const ids = chosen();
       for (const [id, box] of boxes) {
         box.classList.toggle("on", ids.has(id));
         box.classList.toggle("hover", id === hover);
       }
+      reveal();
     };
     S.mark = () => mark();
     //: One element per box of a list, kept by id; a group's lies under the nodes' (styled lower).

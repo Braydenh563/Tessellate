@@ -21,7 +21,8 @@
         h.stops(S, S.tree.querySelector(".dgm-block"));
         return true;
       };
-      S.fig.addEventListener("click", (event) => event.target.closest(".dock, .dgm-zoom, button, a") || S.clear());
+      //: A press on a part the picture names (`S.hitAt`, a sequence's) is that part's pick, not a press on empty space: this listener ran after the picture's own and lifted the pick it had just made (1702: a click on the picture selected nothing in the list).
+      S.fig.addEventListener("click", (event) => event.target.closest(".dock, .dgm-zoom, button, a") || S.hitAt?.(event) || S.clear());
       S.pane.addEventListener("click", (event) => event.target.closest(".dgm-block, button, a, input, label") || S.clear());
       S.root.addEventListener("keydown", (event) => {
         if (event.key !== "Escape" || event.defaultPrevented || event.target.closest?.("input, textarea, [contenteditable]") || document.querySelector(".action-menu:not(.hidden), .help-popover:not(.hidden)")) return;
