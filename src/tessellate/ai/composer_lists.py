@@ -768,9 +768,33 @@ def _holding_tail(t: list[str]) -> tuple[list[str], str] | None:
     if t[0] in ("which", "what", "list", "show", "find", "give", "how") and ("notes" in t or "entries" in t):
         tail = [w for w in t[min(t.index(x) for x in ("notes", "entries") if x in t) + 1:] if w not in _HOLD_JOIN]
         return tail, "count" if t[:2] == ["how", "many"] else "which"
+    bare = _bare_kind(t)
+    if bare is not None:
+        return bare, "which"
     if _HOLD_OPEN & set(t) and "notes" not in t:
         return [w for w in t if w not in _HOLD_JOIN and w not in ("what", "show", "list", "give", "find", "which", "still", "across", "me", "tick")], "items"
     return None
+
+
+#: "list my checklists", "what checklists do I have": the kind named with no "notes" (D22, which
+#: found two unrelated notes). Dates are left out: "what dates do I have" asks for the days.
+_BARE_LEADS = frozenset(("list", "show", "find", "give", "what", "which", "where", "do"))
+_BARE_FILLER = frozenset(("me", "do", "i", "have", "got", "any", "are", "is", "there", "of", "my", "the", "all", "your", "a", "some", "in", "notes", "entries"))
+
+
+def _bare_kind(t: list[str]) -> list[str] | None:
+    """The kind words of a question that names a kind of note and nothing else, or None."""
+    rest = [w for w in t[1:] if w not in _BARE_FILLER and w not in _HOLD_JOIN]
+    #: "what is a checklist" asks what the word means, not for the notes of that kind.
+    asks_meaning = t[0] == "what" and t[1] in ("is", "s", "a", "an", "does")
+    if t[0] not in _BARE_LEADS or "notes" in t or "entries" in t or not rest or asks_meaning:
+        return None
+    return rest if _names_only_a_kind(rest) else None
+
+
+def _names_only_a_kind(rest: list[str]) -> bool:
+    kinds = [_HOLD_KIND[w] for w in rest if w in _HOLD_KIND]
+    return bool(kinds) and "dates" not in kinds and all(w in _HOLD_KIND or w in _HOLD_BESIDE for w in rest)
 
 
 def _holding_items(tail: list[str], open_only: bool) -> tuple[str, bool, str] | None:

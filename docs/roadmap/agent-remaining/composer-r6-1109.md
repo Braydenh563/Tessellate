@@ -10,3 +10,4 @@
 - next: table number (composer-r5-1108.md:34).
 - done: numbered things (composer_property.NUMBERED, composer._no_numbered, digest._no_number, personal._OWN_NUMBER).
 - next: R3-20, R3-22, R3-33, D22 probe, then D19, R3-36, D25.
+- done: D22 bare kind (composer_lists._bare_kind).
