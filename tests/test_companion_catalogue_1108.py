@@ -51,14 +51,11 @@ APP_ONLY = frozenset({
     "trans.upright>curl", "trans.upright>lie", "trans.upright>sit",
 })
 DESK_ONLY = frozenset({
-    "act.daydream", "act.dust_off", "act.invent_game",
-    "act.little_dance", "act.look_down", "act.nod", "act.pace", "act.pose_proud",
-    "act.tinker", "act.tiptoe",
-    "face.miffed", "face.smirk", "int.ceiling_bonk", "int.pat", "int.swipe_twirl", "lower.fall", "move.cloud_ride",
+    "int.pat", "int.swipe_twirl", "move.cloud_ride",
     "react.battery_low", "react.hour_chime", "react.idle_return", "react.window_closed", "react.window_dragged",
     "react.window_maximised", "react.window_opened", "react.window_restored", "trans.upright>hang",
 })
-APP_ONLY_CAP, DESK_ONLY_CAP, NEITHER_CAP = 49, 26, 92
+APP_ONLY_CAP, DESK_ONLY_CAP, NEITHER_CAP = 49, 12, 92
 
 
 @lru_cache(maxsize=1)

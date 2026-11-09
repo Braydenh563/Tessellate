@@ -3170,7 +3170,7 @@ const NAME_MARK_BUDDY_ACTS = {
 //: The sudden or large acts the calm budget holds back
 //: (`nameMarkBuddyCalmAllows`), and the acts with no face of their own
 //: (`nameMarkBuddyAct` eases a face back only after the others).
-const NMB_LOUD_ACTS = ["glide", "climb", "hop", "wave", "cheer", "startle", "wiggle", "kick", "swing", "stretch", "facepalm", "shrug", "scratch", "peekdown", "onehand", "feet", "carry", "lantern", "pushups", "weights"];
+const NMB_LOUD_ACTS = ["glide", "climb", "hop", "wave", "cheer", "startle", "wiggle", "kick", "swing", "stretch", "facepalm", "shrug", "scratch", "peekdown", "onehand", "feet", "carry", "lantern", "pushups", "weights", "dance", "game"];
 const NMB_LOUD_GAP_MS = 75000;
 const NMB_FACELESS_ACTS = ["blink", "look", "glance", "turn", "land", "shift", "emerge", "shake", "groom", "sniff", "sigh"];
 
@@ -3226,6 +3226,20 @@ Object.assign(NAME_MARK_BUDDY_ACTS, {
   blanket: { ms: 270000, w: 1.2, cool: 600000, poses: ["stand", "sit"], atlas: true, desk: true },
   plant: { ms: 140000, w: 1, cool: 480000, poses: ["stand"], atlas: true, desk: true },
   puzzle: { ms: 7000, w: 1.5, cool: 150000, poses: ["stand", "sit"], atlas: true, desk: true },
+  //: Batch D3: the desk's short gestures, 1 to 4 s each, no prop (`atl-ds-*` in atlas-lazy.css): a nod along (`agree`: the
+  //: idle one; `nod` stays the app's thanks for finished work), a little dance, posing proud, a look down, tiptoeing.
+  agree: { ms: 1200, w: 2, cool: 60000, poses: ["stand", "sit"], atlas: true, desk: true },
+  dance: { ms: 3600, w: 1, cool: 120000, poses: ["stand"], atlas: true, desk: true },
+  proud: { ms: 2500, w: 1, cool: 90000, poses: ["stand"], atlas: true, desk: true },
+  lookdown: { ms: 2500, w: 2, cool: 60000, poses: ["stand", "sit"], atlas: true, desk: true },
+  tiptoe: { ms: 2600, w: 2, cool: 60000, poses: ["stand"], atlas: true, desk: true },
+  //: Batch D4: the desk's small projects: a daydream (a thought bubble), pacing, making up a game (sparks), tinkering
+  //: (a gear and a spanner) and dusting off (motes). The daydream is quiet and long; the game is loud.
+  daydream: { ms: 35000, w: 1.5, cool: 300000, poses: ["stand", "sit"], atlas: true, desk: true },
+  pace: { ms: 4000, w: 1.5, cool: 90000, poses: ["stand"], atlas: true, desk: true },
+  game: { ms: 3000, w: 1.5, cool: 120000, poses: ["stand"], atlas: true, desk: true },
+  tinker: { ms: 4000, w: 1.5, cool: 120000, poses: ["stand", "sit"], atlas: true, desk: true },
+  dust: { ms: 1250, w: 1, cool: 90000, poses: ["stand"], atlas: true, desk: true },
 });
 //: **More ways to be somewhere** (INBOX 1681, the owner: "positions like how
 //: atlas and regular companions look sitting or crouching down, lying down,
@@ -3252,7 +3266,7 @@ Object.assign(NAME_MARK_BUDDY_ACTS, {
 //: stances, Fewer (the default) makes the unprompted gestures a third as
 //: likely, Normal as they were. What you start (a poke, a cheer at a
 //: streak, a reaction) is never reduced: those have no weight here.
-const NMB_QUIET_ACTS = ["blink", "look", "glance", "turn", "yawn", "nap", "dangle", "shift", "tilt", "lounge", "rest", "drift", "journal", "stars", "blanket", ...Object.keys(NMB_STANCES)];
+const NMB_QUIET_ACTS = ["blink", "look", "glance", "turn", "yawn", "nap", "dangle", "shift", "tilt", "lounge", "rest", "drift", "journal", "stars", "blanket", "daydream", ...Object.keys(NMB_STANCES)];
 //: **Each of its doings can be turned off** (the owner, 2026-09-27: "Every
 //: companion feature must be togglable in Settings"). Appearance >
 //: Companion > What it does (`mountBuddyActivities`): one switch a row, kept
@@ -3271,7 +3285,7 @@ const NMB_ACTIVITIES = [
   ["poses", "Settle into other poses (crouch, lounge, rest, drift)", ["crouch", "lounge", "rest", "drift"]],
   ["glide", "Glide through the air and climb while hanging", ["glide", "climb"]],
   ["atlas", "Atlas juggles stars, reads its map and meditates", [...Object.keys(NMB_ATLAS_ACTS), "toss"]],
-  ["desk", "Atlas does the desk companion's routines: workouts, tea, fishing, a journal, stars, a nap, a plant, a puzzle", Object.keys(NAME_MARK_BUDDY_ACTS).filter((act) => NAME_MARK_BUDDY_ACTS[act].desk)],
+  ["desk", "Atlas does the desk companion's routines: workouts, tea, fishing, a journal, a nap, a plant, a puzzle, small gestures and projects", Object.keys(NAME_MARK_BUDDY_ACTS).filter((act) => NAME_MARK_BUDDY_ACTS[act].desk)],
   ["think", "Stop to think, or sigh", ["ponder", "sigh"]],
   ["lie", "Lie down for a nap", ["lie"]],
   ["read", "Read a book", ["read"]],
@@ -8259,7 +8273,8 @@ function nameMarkBuddyAct(act, ms) {
   nmb.recentActs = [act, ...(nmb.recentActs || []).filter((a) => a !== act)].slice(0, NMB_RECENT_ACTS);
   if (NMB_LOUD_ACTS.includes(act)) nameMarkBuddyLoud();
   if (!NMB_RESTING_ACTS.has(act)) nameMarkBuddyVary(buddy, act, ms || spec?.ms || 1200);
-  const face = { lie: "sleepy", facepalm: "unimpressed" }[act];
+  //: A shrug is a smirk on Atlas, as on the desk.
+  const face = { lie: "sleepy", facepalm: "unimpressed", ...(isAtlasSeed(buddy.dataset.seed || "") ? { shrug: "sly" } : {}) }[act];
   if (face) nameMarkBuddyExpress(face, spec?.ms || 2000);
   if (spec?.cool) nmb.cool[act] = Date.now() + spec.cool;
   nmb.cat.arm(act, ms || spec?.ms || 1200);
@@ -8933,7 +8948,9 @@ function nameMarkBuddyExpress(expr, ms = 0, { drift = false } = {}) {
   if (!buddy || nameMarkBuddyStill()) return;
   const seed = buddy.dataset.seed || "";
   if (isAtlasSeed(seed)) {
-    if (drift && typeof setAtlasMood === "function" && typeof atlasMoodNow !== "undefined" && atlasMoodNow === "calm") setAtlasMood(expr, ms, { quiet: true });
+    //: The faces Atlas has no name for take the nearest it has: a pout, a grumble or a shake is miffed, a nervous one worried.
+    const face = { unimpressed: "miffed", angry: "miffed", nervous: "worried", sly: "smirk" }[expr] || expr;
+    if ((drift || face !== expr) && typeof setAtlasMood === "function" && typeof atlasMoodNow !== "undefined" && atlasMoodNow === "calm") setAtlasMood(face, ms, { quiet: true });
     return;
   }
   if (characterRendererFor(seed)) return;
@@ -10000,6 +10017,16 @@ const NMB_PROP_WORDS = [
   ["nmb-act-blanket", "dozing under a blanket"],
   ["nmb-act-plant", "watering a plant"],
   ["nmb-act-puzzle", "working on a puzzle"],
+  ["nmb-act-agree", "nodding along"],
+  ["nmb-act-dance", "dancing a little"],
+  ["nmb-act-proud", "posing proud"],
+  ["nmb-act-lookdown", "peering down"],
+  ["nmb-act-tiptoe", "tiptoeing"],
+  ["nmb-act-daydream", "daydreaming"],
+  ["nmb-act-pace", "pacing"],
+  ["nmb-act-game", "making up a game"],
+  ["nmb-act-tinker", "tinkering with a gear"],
+  ["nmb-act-dust", "brushing itself off"],
   ["nmb-offline", "holding a broken link: you are offline"],
 ];
 function nameMarkBuddyNameProps(buddy, face) {

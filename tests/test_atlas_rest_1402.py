@@ -35,7 +35,7 @@ needs_node = pytest.mark.skipif(not shutil.which("node"), reason="needs node")
 #: having happened: the drift (`ATLAS_DRIFT_POOL`), the micro-expressions
 #: (`ATLAS_MICRO_MOOD`), a poke, and a chat turn (thinking, then determined).
 #: Sad, worried, confused and surprised are for an error, a miss or a fall.
-EVENT_ONLY = {"sad", "worried", "confused", "surprised"}
+EVENT_ONLY = {"sad", "worried", "confused", "surprised", "miffed", "smirk"}  # miffed (a shake, a pout) and smirk (a shrug) are the desk's faces, atlascat D4
 
 
 def _mouths() -> dict[str, float]:
@@ -78,7 +78,7 @@ def _mouth_of(body: str) -> str:
 
 def _quiet_moods() -> set[str]:
     moods = set(re.findall(r'^\s*(\w+): \{ words:', re.search(r"const ATLAS_MOODS = \{(.*?)\n\};", ATLAS, re.S).group(1), re.M))
-    assert len(moods) == 15
+    assert len(moods) == 17  # 15, and the desk's miffed and smirk (atlascat D4)
     return moods - EVENT_ONLY
 
 

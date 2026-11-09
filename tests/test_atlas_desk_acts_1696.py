@@ -42,6 +42,16 @@ ACTS = {
     "blanket": ("act.blanket_nap", ["nmp-blanket"], 30),
     "plant": ("act.water_plant", ["nmp-plant", "nmp-can"], 10),
     "puzzle": ("act.puzzle", ["nmp-puzzle", "nmp-piece"], 7),
+    "agree": ("act.nod", [], 1.2),
+    "dance": ("act.little_dance", [], 1.8),
+    "proud": ("act.pose_proud", [], 2.5),
+    "lookdown": ("act.look_down", [], 2.5),
+    "tiptoe": ("act.tiptoe", [], 2.6),
+    "daydream": ("act.daydream", ["nmp-daydream"], 12),
+    "pace": ("act.pace", [], 4),
+    "game": ("act.invent_game", ["nmp-game"], 3),
+    "tinker": ("act.tinker", ["nmp-gear", "nmp-spanner"], 4),
+    "dust": ("act.dust_off", ["nmp-dust"], 1.25),
 }
 
 
@@ -63,7 +73,7 @@ def test_every_desk_act_has_a_row_and_only_atlas_plays_it():
     assert set(rows) == set(ACTS), sorted(set(rows) ^ set(ACTS))
     for key, row in rows.items():
         assert row["atlas"] == "true" and row["desk"] == "true", key
-        assert float(row["w"]) > 0 and int(row["cool"]) >= 60000 and int(row["ms"]) >= 5000, key
+        assert float(row["w"]) > 0 and int(row["cool"]) >= 60000 and int(row["ms"]) >= 1000, key  # 1 s: D3's gestures are 1 to 4 s long, no prop, where D1 and D2's doings are 5 s and up
         assert re.search(r'poses: \["[a-z]+"', AVATARS[AVATARS.index(f"  {key}: {{ ms:") :][:200]), key
 
 
@@ -185,3 +195,21 @@ def test_the_pick_is_the_weighted_choice_and_never_repeats_back_to_back():
     decide = AVATARS[AVATARS.index("function nameMarkBuddyDecide") :][:6000]
     assert "NAME_MARK_BUDDY_ACTS" in decide and "nmb.cat" in decide
     assert re.search(r"recent|lastActs|nmb\.last", decide)
+
+
+def test_miffed_and_smirk_are_atlas_faces_with_a_cue_a_look_and_a_trigger():
+    """D4: the desk's two attitude faces. Each is a mood (words, cue, face rules, arms per look) and something reaches it."""
+    css = (ROOT / "frontend" / "css" / "08-consistency.css").read_text(encoding="utf-8")
+    for mood in ("miffed", "smirk"):
+        assert re.search(rf'^  {mood}: \{{ words: "[^"]+", cue: "rest" \}},$', ATLAS, re.M), mood
+        assert f"  {mood}: (g) =>" in ATLAS and f'[data-atlas-mood="{mood}"] .atl-cue-{mood}' in LAZY, mood
+        assert re.search(rf'\.nm-atlas\[data-atlas-mood="{mood}"\] \{{[^}}]*--atl-', css), mood
+        for look in ("masculine", "feminine"):
+            assert f'[data-atlas-look="{look}"][data-atlas-mood="{mood}"]' in css, (look, mood)
+    miffed = re.search(r'\.nm-atlas\[data-atlas-mood="miffed"\] \{([^}]*)\}', css).group(1)
+    assert float(re.search(r"--atl-knit:\s*(-?[\d.]+)", miffed).group(1)) > 0 and "--atl-m-frown: 1" in miffed
+    smirk = re.search(r'\.nm-atlas\[data-atlas-mood="smirk"\] \{([^}]*)\}', css).group(1)
+    assert "--atl-m-smug: 1" in smirk and "--atl-bl-y: -" in smirk
+    # What reaches them: a pout, a grumble, a shake and a facepalm (miffed), a shrug (smirk).
+    assert re.search(r'\{ unimpressed: "miffed", angry: "miffed", nervous: "worried", sly: "smirk" \}', AVATARS)
+    assert 'shrug: "sly"' in AVATARS and "isAtlasSeed(buddy.dataset.seed" in AVATARS

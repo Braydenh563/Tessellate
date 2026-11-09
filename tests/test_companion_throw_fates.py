@@ -238,3 +238,29 @@ def test_a_throw_that_lands_on_a_surface_stays_on_it():
     assert "if (s.on && spot.y < s.y - 40)" in spot and "NMB_LAND_NEAR" in spot and "innerWidth" not in spot
     assert "far = 320" in _fn(AV, "nameMarkBuddyStepAside")
     assert "Math.max(320, reach)" in _fn(AV, "nameMarkBuddyDrop")
+
+
+@needs_node
+def test_a_hard_throw_into_the_top_bar_that_is_not_caught_bonks_once():
+    """`int.ceiling_bonk` (atlascat D5): thrown up at the bar and not caught (the `bounce` aim, or a failed roll) at
+    0.9 px/ms or more, the step that met it carries `bonk`; slower, or caught (`hang`), it does not."""
+    body = (
+        "(() => { const run = (y, vy, aim) => { let bonks = 0, hung = 0; for (let i = 1; i <= 60; i += 1) {"
+        " const rand = companionThrowRng(i); const k = nameMarkBuddyThrowFeel([rand(), rand(), rand()], Math.abs(vy));"
+        " let s = { x: 600, y, vx: 0, vy, rot: 0, t: 0, on: null, rest: false, tried: {}, aim }; let seen = 0, steps = 0;"
+        " while (!s.rest && steps < 3000) { s = companionThrowStep(s, 16, W, k, nameMarkBuddyFlightStep, rand); steps += 1; if (s.bonk) seen = 1; }"
+        " bonks += seen; hung += s.fate && s.fate.kind === 'hang' ? 1 : 0; } return [bonks, hung]; };"
+        " return { hardBounce: run(300, -1.6, 'bounce'), hardHang: run(300, -1.6, 'hang'), slowBounce: run(120, -0.5, 'bounce') }; })()"
+    )
+    out = _run(body)
+    assert out["hardBounce"][0] == 60 and out["hardBounce"][1] == 0, out
+    assert out["hardHang"][0] == 0 and out["hardHang"][1] == 60, out
+    assert out["slowBounce"][0] == 0, out
+
+
+def test_the_bonk_is_shown_once_by_a_class_and_a_squash_and_cleared_with_the_flight():
+    assert "if (s.bonk && !flight.bonked) nmb.throwBonk(buddy, char, flight);" in THROW
+    bonk = THROW[THROW.index("nmb.throwBonk = function") :][:700]
+    assert 'classList.add("nmb-bonk")' in bonk and "classList.remove(\"nmb-bonk\")" in bonk and "char.animate" in bonk
+    assert '"nmb-bonk", "nmb-falling")' in THROW[THROW.index("stop() {") :][:700]
+    assert re.search(r"#nm-buddy\.nmb-bonk \.nm-buddy-char \{ animation: nmb-bonk 600ms", CSS) and "@keyframes nmb-bonk" in CSS

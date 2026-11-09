@@ -7008,6 +7008,8 @@ svg.atl-defs { position: absolute; width: 0; height: 0; overflow: hidden; }
 .nm-atlas[data-atlas-look="masculine"][data-atlas-mood="determined"] { --atl-ar0: -14deg; --atl-al0: 14deg; --atl-chin0: 0; --atl-ar1: -18deg; --atl-al1: 18deg; --atl-chin1: 0; --atl-ar2: -30deg; --atl-al2: 22deg; --atl-chin2: 0; --atl-low: 0.24; --atl-knit: 2deg; }
 .nm-atlas[data-atlas-look="masculine"][data-atlas-mood="love"] { --atl-ar0: 16deg; --atl-al0: -16deg; --atl-chin0: 0; --atl-ar1: 16deg; --atl-al1: -16deg; --atl-chin1: 0; --atl-ar2: -120deg; --atl-al2: 0deg; --atl-chin2: 0; }
 .nm-atlas[data-atlas-look="masculine"][data-atlas-mood="worried"] { --atl-ar0: 16deg; --atl-al0: -16deg; --atl-chin0: 0; --atl-ar1: 16deg; --atl-al1: -16deg; --atl-chin1: 0; --atl-ar2: 16deg; --atl-al2: -12deg; --atl-chin2: 0; --atl-knit: -15deg; }
+.nm-atlas[data-atlas-look="masculine"][data-atlas-mood="miffed"] { --atl-ar0: 6deg; --atl-al0: -6deg; --atl-chin0: 0; --atl-ar1: 10deg; --atl-al1: -10deg; --atl-chin1: 0; --atl-ar2: -26deg; --atl-al2: 26deg; --atl-chin2: 0; }
+.nm-atlas[data-atlas-look="masculine"][data-atlas-mood="smirk"] { --atl-ar0: -12deg; --atl-al0: 12deg; --atl-chin0: 0; --atl-ar1: -20deg; --atl-al1: 20deg; --atl-chin1: 0; --atl-ar2: -10deg; --atl-al2: 14deg; --atl-chin2: 1; }
 .nm-atlas[data-atlas-look="feminine"][data-atlas-mood="happy"] { --atl-ar0: -105deg; --atl-al0: 25deg; --atl-chin0: 0; --atl-ar1: -150deg; --atl-al1: 20deg; --atl-chin1: 0; --atl-ar2: -80deg; --atl-al2: 30deg; --atl-chin2: 0; }
 .nm-atlas[data-atlas-look="feminine"][data-atlas-mood="delighted"] { --atl-ar0: -130deg; --atl-al0: 70deg; --atl-chin0: 0; --atl-ar1: -160deg; --atl-al1: 110deg; --atl-chin1: 0; --atl-ar2: -110deg; --atl-al2: 30deg; --atl-chin2: 0; }
 .nm-atlas[data-atlas-look="feminine"][data-atlas-mood="laughing"] { --atl-ar0: -110deg; --atl-al0: 30deg; --atl-chin0: 0; --atl-ar1: 0deg; --atl-al1: 20deg; --atl-chin1: 1; --atl-ar2: -30deg; --atl-al2: -10deg; --atl-chin2: 0; }
@@ -7022,6 +7024,8 @@ svg.atl-defs { position: absolute; width: 0; height: 0; overflow: hidden; }
 .nm-atlas[data-atlas-look="feminine"][data-atlas-mood="determined"] { --atl-ar0: -50deg; --atl-al0: 10deg; --atl-chin0: 0; --atl-ar1: -70deg; --atl-al1: 15deg; --atl-chin1: 0; --atl-ar2: -35deg; --atl-al2: -12deg; --atl-chin2: 0; }
 .nm-atlas[data-atlas-look="feminine"][data-atlas-mood="love"] { --atl-ar0: 12deg; --atl-al0: -12deg; --atl-chin0: 0; --atl-ar1: 10deg; --atl-al1: -12deg; --atl-chin1: 0; --atl-ar2: -150deg; --atl-al2: 20deg; --atl-chin2: 0; }
 .nm-atlas[data-atlas-look="feminine"][data-atlas-mood="worried"] { --atl-ar0: 12deg; --atl-al0: -12deg; --atl-chin0: 0; --atl-ar1: 12deg; --atl-al1: -12deg; --atl-chin1: 0; --atl-ar2: 10deg; --atl-al2: -10deg; --atl-chin2: 0; }
+.nm-atlas[data-atlas-look="feminine"][data-atlas-mood="miffed"] { --atl-ar0: 8deg; --atl-al0: -8deg; --atl-chin0: 0; --atl-ar1: 12deg; --atl-al1: -12deg; --atl-chin1: 0; --atl-ar2: -20deg; --atl-al2: 20deg; --atl-chin2: 0; }
+.nm-atlas[data-atlas-look="feminine"][data-atlas-mood="smirk"] { --atl-ar0: -14deg; --atl-al0: -6deg; --atl-chin0: 0; --atl-ar1: -22deg; --atl-al1: -10deg; --atl-chin1: 0; --atl-ar2: -10deg; --atl-al2: -4deg; --atl-chin2: 1; }
 /* The companion turns limbs about its own generic joints; Atlas's are
    higher and narrower, so they are named here, one step more specific. */
 #nm-buddy .atl-figure .nmb-arm-l { transform-origin: 25.6px 41px; }
@@ -7862,6 +7866,24 @@ html[data-motion="reduced"]:not([data-buddy-motion="full"]) .nm-atlas .atl-cast-
   --atl-brow-y: -1.5px; --atl-knit: -6deg; --atl-lid: 0; --atl-hearteye: 1;
   --atl-m-smile: 0; --atl-m-cat: 1; --atl-cheek: 0.95;
   --atl-tilt: -6deg; --atl-glow: 1.3; --atl-fx-hearts: 1;
+}
+/* Miffed (the desk's `miffed`): brows knit and a little low, the lids half down, a flat mouth,
+   the eyes off to one side, the tail low; brief and mild, for a shake, a pout or a grumble. */
+.nm-atlas[data-atlas-mood="miffed"] {
+  --atl-tail: 18deg; --atl-star: 0.8;
+  --atl-crest: 4deg;
+  --atl-brow-y: 0.4px; --atl-knit: 9deg; --atl-lid: 0.18; --atl-px: 1.4px; --atl-py: 0.3px; --atl-ps: 0.9;
+  --atl-m-smile: 0; --atl-m-frown: 1; --atl-cheek: 0.1;
+  --atl-tilt: 3deg; --atl-sx: 1.02; --atl-sy: 0.98;
+}
+/* Smirk (the desk's `smirk`): the smug mouth, one brow up and the other level, the lids a little low,
+   a sideways glance and the head cocked. */
+.nm-atlas[data-atlas-mood="smirk"] {
+  --atl-tail: -8deg; --atl-star: 1.1;
+  --atl-crest: -3deg;
+  --atl-bl-y: -2.2px; --atl-br-y: 0.2px; --atl-bl-r: -8deg; --atl-lid: 0.14; --atl-px: 1.2px; --atl-ps: 0.96;
+  --atl-m-smile: 0; --atl-m-smug: 1; --atl-cheek: 0.4;
+  --atl-tilt: -5deg; --atl-glow: 1.1;
 }
 .nm-atlas[data-atlas-mood="worried"] {
   --atl-tail: 12deg; --atl-star: 0.7;
