@@ -2,7 +2,7 @@
 
 Generated 2026-11-09 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7951, frontend ids 2652, CSS sections 523, backend routes 649, backend modules 9332, test files 2310, tests 19261, plan headings 1008, app scripts 28, boot scripts 37, script files 266.
+Counts: frontend functions 7951, frontend ids 2652, CSS sections 523, backend routes 649, backend modules 9332, test files 2310, tests 19262, plan headings 1008, app scripts 28, boot scripts 37, script files 266.
 
 ## Frontend functions (7951)
 
@@ -27,9 +27,9 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `onSurface` | frontend/js/settings-body.js:52 |
+| `onSurface` | frontend/js/settings-body.js:54 |
 | `surfaceBuild` | frontend/js/settings-body.js:28 |
-| `surfaceFind` | frontend/js/settings-body.js:44 |
+| `surfaceFind` | frontend/js/settings-body.js:46 |
 
 ### frontend/js/app.js (45)
 
@@ -787,26 +787,26 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `aboveDockFab` | frontend/js/navigation.js:2467 |
-| `activeNotesSection` | frontend/js/navigation.js:2297 |
+| `aboveDockFab` | frontend/js/navigation.js:2465 |
+| `activeNotesSection` | frontend/js/navigation.js:2295 |
 | `arrowNavTarget` | frontend/js/navigation.js:208 |
-| `backgroundWriteFailed` | frontend/js/navigation.js:1811 |
-| `chatMidStream` | frontend/js/navigation.js:1743 |
+| `backgroundWriteFailed` | frontend/js/navigation.js:1809 |
+| `chatMidStream` | frontend/js/navigation.js:1741 |
 | `closeNavHistoryMenu` | frontend/js/navigation.js:903 |
-| `confirmLeavingUnsavedWork` | frontend/js/navigation.js:1773 |
-| `coversAFormPrimary` | frontend/js/navigation.js:2600 |
+| `confirmLeavingUnsavedWork` | frontend/js/navigation.js:1771 |
+| `coversAFormPrimary` | frontend/js/navigation.js:2598 |
 | `entryLabel` | frontend/js/navigation.js:1001 |
-| `formPrimaryButtons` | frontend/js/navigation.js:2561 |
+| `formPrimaryButtons` | frontend/js/navigation.js:2559 |
 | `goToTabHistory` | frontend/js/navigation.js:1092 |
-| `hasUnsavedWork` | frontend/js/navigation.js:1722 |
-| `hideClosedDockMenuLists` | frontend/js/navigation.js:1500 |
-| `initNotesSubtabs` | frontend/js/navigation.js:2357 |
-| `initScrollTopButton` | frontend/js/navigation.js:2620 |
-| `insideClosedDetails` | frontend/js/navigation.js:1555 |
+| `hasUnsavedWork` | frontend/js/navigation.js:1720 |
+| `hideClosedDockMenuLists` | frontend/js/navigation.js:1499 |
+| `initNotesSubtabs` | frontend/js/navigation.js:2355 |
+| `initScrollTopButton` | frontend/js/navigation.js:2618 |
+| `insideClosedDetails` | frontend/js/navigation.js:1553 |
 | `loadSurface` | frontend/js/navigation.js:1297 |
-| `measureSpacingPx` | frontend/js/navigation.js:2591 |
-| `menuOfOpener` | frontend/js/navigation.js:1577 |
-| `menuRowsOf` | frontend/js/navigation.js:1562 |
+| `measureSpacingPx` | frontend/js/navigation.js:2589 |
+| `menuOfOpener` | frontend/js/navigation.js:1575 |
+| `menuRowsOf` | frontend/js/navigation.js:1560 |
 | `mermaidSoon` | frontend/js/navigation.js:373 |
 | `openHistoryEntry` | frontend/js/navigation.js:1152 |
 | `openNavHistoryMenu` | frontend/js/navigation.js:923 |
@@ -814,35 +814,35 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `openSelectionScope` | frontend/js/navigation.js:321 |
 | `paintTabHistory` | frontend/js/navigation.js:950 |
 | `placeDockMenuInWindow` | frontend/js/navigation.js:1368 |
-| `positionScrollTopForNested` | frontend/js/navigation.js:2476 |
+| `positionScrollTopForNested` | frontend/js/navigation.js:2474 |
 | `recordTabVisit` | frontend/js/navigation.js:1038 |
-| `recordingLive` | frontend/js/navigation.js:1750 |
+| `recordingLive` | frontend/js/navigation.js:1748 |
 | `renderMarkdown` | frontend/js/navigation.js:382 |
-| `resetNavigationForNewSession` | frontend/js/navigation.js:2259 |
-| `resetNavigationToDefaults` | frontend/js/navigation.js:2278 |
+| `resetNavigationForNewSession` | frontend/js/navigation.js:2257 |
+| `resetNavigationToDefaults` | frontend/js/navigation.js:2276 |
 | `restoreSettingsScroll` | frontend/js/navigation.js:1139 |
 | `revealTab` | frontend/js/navigation.js:814 |
 | `rowMenuAtEvent` | frontend/js/navigation.js:130 |
-| `scrollTopTargetEl` | frontend/js/navigation.js:2443 |
-| `scrollingPage` | frontend/js/navigation.js:2396 |
-| `showNotesSection` | frontend/js/navigation.js:2302 |
-| `spacingPx` | frontend/js/navigation.js:2584 |
+| `scrollTopTargetEl` | frontend/js/navigation.js:2441 |
+| `scrollingPage` | frontend/js/navigation.js:2394 |
+| `showNotesSection` | frontend/js/navigation.js:2300 |
+| `spacingPx` | frontend/js/navigation.js:2582 |
 | `stepTabHistory` | frontend/js/navigation.js:1082 |
-| `stripMarkdownPreview` | frontend/js/navigation.js:2186 |
+| `stripMarkdownPreview` | frontend/js/navigation.js:2184 |
 | `surfaceRecovered` | frontend/js/navigation.js:1275 |
-| `switchTab` | frontend/js/navigation.js:1860 |
-| `syncScrollLock` | frontend/js/navigation.js:2762 |
+| `switchTab` | frontend/js/navigation.js:1858 |
+| `syncScrollLock` | frontend/js/navigation.js:2760 |
 | `tabLabel` | frontend/js/navigation.js:989 |
-| `tabPlaceholder` | frontend/js/navigation.js:2122 |
-| `tabSkeletonBar` | frontend/js/navigation.js:2103 |
-| `tabSkeletonDock` | frontend/js/navigation.js:2113 |
-| `tabSkeletonPiece` | frontend/js/navigation.js:2092 |
-| `usageCount` | frontend/js/navigation.js:1821 |
-| `usageFeatureName` | frontend/js/navigation.js:1817 |
-| `usageFlush` | frontend/js/navigation.js:1825 |
+| `tabPlaceholder` | frontend/js/navigation.js:2120 |
+| `tabSkeletonBar` | frontend/js/navigation.js:2101 |
+| `tabSkeletonDock` | frontend/js/navigation.js:2111 |
+| `tabSkeletonPiece` | frontend/js/navigation.js:2090 |
+| `usageCount` | frontend/js/navigation.js:1819 |
+| `usageFeatureName` | frontend/js/navigation.js:1815 |
+| `usageFlush` | frontend/js/navigation.js:1823 |
 | `watchDockMenuPlacement` | frontend/js/navigation.js:1430 |
 | `wireLongPress` | frontend/js/navigation.js:24 |
-| `zoomWheelDelta` | frontend/js/navigation.js:2780 |
+| `zoomWheelDelta` | frontend/js/navigation.js:2778 |
 
 ### frontend/js/router.js (12)
 
@@ -1162,7 +1162,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `addAtlasLine` | frontend/js/wiring.js:208 |
 | `askAtlasAbout` | frontend/js/wiring.js:197 |
 | `chatRecallStep` | frontend/js/wiring.js:789 |
-| `clearDueNudges` | frontend/js/wiring.js:1680 |
+| `clearDueNudges` | frontend/js/wiring.js:1682 |
 | `closeGlobalFind` | frontend/js/wiring.js:633 |
 | `dashboardGreetingPersona` | frontend/js/wiring.js:894 |
 | `escapeForFind` | frontend/js/wiring.js:411 |
@@ -1174,23 +1174,23 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `initGraphOptionFolds` | frontend/js/wiring.js:985 |
 | `initHelpToggles` | frontend/js/wiring.js:217 |
 | `noteSourceOn` | frontend/js/wiring.js:860 |
-| `nudgeDueShown` | frontend/js/wiring.js:1684 |
+| `nudgeDueShown` | frontend/js/wiring.js:1686 |
 | `openGlobalFind` | frontend/js/wiring.js:571 |
-| `openReminderCompose` | frontend/js/wiring.js:1580 |
+| `openReminderCompose` | frontend/js/wiring.js:1582 |
 | `paintDashboardPersonaMark` | frontend/js/wiring.js:900 |
 | `reflectOnlineState` | frontend/js/wiring.js:16 |
 | `renameCurrentConversation` | frontend/js/wiring.js:720 |
-| `renderPlanToggle` | frontend/js/wiring.js:1389 |
-| `renderWebSearchToggle` | frontend/js/wiring.js:1341 |
+| `renderPlanToggle` | frontend/js/wiring.js:1391 |
+| `renderWebSearchToggle` | frontend/js/wiring.js:1343 |
 | `setFullscreenSurface` | frontend/js/wiring.js:1218 |
 | `setGraphOptionsOpen` | frontend/js/wiring.js:1006 |
 | `setNoteSource` | frontend/js/wiring.js:875 |
 | `settingsSectionContaining` | frontend/js/wiring.js:457 |
 | `startNewNote` | frontend/js/wiring.js:1274 |
 | `syncNoteSourceButtons` | frontend/js/wiring.js:868 |
-| `timelineSelectableRows` | frontend/js/wiring.js:1316 |
-| `toggleSelectAllRows` | frontend/js/wiring.js:1302 |
-| `toggleWebSearch` | frontend/js/wiring.js:1422 |
+| `timelineSelectableRows` | frontend/js/wiring.js:1318 |
+| `toggleSelectAllRows` | frontend/js/wiring.js:1304 |
+| `toggleWebSearch` | frontend/js/wiring.js:1424 |
 | `watchFullscreenSurface` | frontend/js/wiring.js:1224 |
 
 ### frontend/js/settings-wiring.js (45)
@@ -1198,50 +1198,50 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | Name | File:line |
 |---|---|
 | `activeOverlay` | frontend/js/settings-wiring.js:946 |
-| `captureCountText` | frontend/js/settings-wiring.js:1720 |
-| `captureShortcutKey` | frontend/js/settings-wiring.js:1454 |
-| `clearStagedImages` | frontend/js/settings-wiring.js:2117 |
-| `closeOverlaysForChord` | frontend/js/settings-wiring.js:1249 |
-| `closeShortcuts` | frontend/js/settings-wiring.js:1484 |
-| `comboFromEvent` | frontend/js/settings-wiring.js:1285 |
-| `commitCaptureImages` | frontend/js/settings-wiring.js:2102 |
-| `fileDropBox` | frontend/js/settings-wiring.js:1965 |
+| `captureCountText` | frontend/js/settings-wiring.js:1716 |
+| `captureShortcutKey` | frontend/js/settings-wiring.js:1450 |
+| `clearStagedImages` | frontend/js/settings-wiring.js:2113 |
+| `closeOverlaysForChord` | frontend/js/settings-wiring.js:1245 |
+| `closeShortcuts` | frontend/js/settings-wiring.js:1480 |
+| `comboFromEvent` | frontend/js/settings-wiring.js:1281 |
+| `commitCaptureImages` | frontend/js/settings-wiring.js:2098 |
+| `fileDropBox` | frontend/js/settings-wiring.js:1961 |
 | `flashSaved` | frontend/js/settings-wiring.js:495 |
-| `handleFileUpload` | frontend/js/settings-wiring.js:2149 |
-| `hideChordGuide` | frontend/js/settings-wiring.js:1267 |
+| `handleFileUpload` | frontend/js/settings-wiring.js:2145 |
+| `hideChordGuide` | frontend/js/settings-wiring.js:1263 |
 | `inEditable` | frontend/js/settings-wiring.js:944 |
-| `loadForgottenOrder` | frontend/js/settings-wiring.js:1579 |
+| `loadForgottenOrder` | frontend/js/settings-wiring.js:1575 |
 | `loadShortcuts` | frontend/js/settings-wiring.js:1115 |
 | `localizeStaticChords` | frontend/js/settings-wiring.js:1158 |
 | `lockFail` | frontend/js/settings-wiring.js:268 |
 | `lockFailed` | frontend/js/settings-wiring.js:280 |
 | `lockRequest` | frontend/js/settings-wiring.js:374 |
 | `mapEditorShown` | frontend/js/settings-wiring.js:941 |
-| `matchesShortcut` | frontend/js/settings-wiring.js:1303 |
+| `matchesShortcut` | frontend/js/settings-wiring.js:1299 |
 | `maybeShowOnboarding` | frontend/js/settings-wiring.js:967 |
 | `notebookLocked` | frontend/js/settings-wiring.js:480 |
 | `persistSavedSearches` | frontend/js/settings-wiring.js:53 |
-| `renderCaptureFiles` | frontend/js/settings-wiring.js:1685 |
-| `renderEntryAttachmentChips` | frontend/js/settings-wiring.js:1652 |
-| `renderInstallRow` | frontend/js/settings-wiring.js:1887 |
+| `renderCaptureFiles` | frontend/js/settings-wiring.js:1681 |
+| `renderEntryAttachmentChips` | frontend/js/settings-wiring.js:1648 |
+| `renderInstallRow` | frontend/js/settings-wiring.js:1883 |
 | `renderSavedSearches` | frontend/js/settings-wiring.js:17 |
-| `resetShortcuts` | frontend/js/settings-wiring.js:1421 |
+| `resetShortcuts` | frontend/js/settings-wiring.js:1417 |
 | `restampShortcutHints` | frontend/js/settings-wiring.js:1168 |
-| `rewriteStagedUrls` | frontend/js/settings-wiring.js:2090 |
-| `runShortcut` | frontend/js/settings-wiring.js:1312 |
+| `rewriteStagedUrls` | frontend/js/settings-wiring.js:2086 |
+| `runShortcut` | frontend/js/settings-wiring.js:1308 |
 | `saveCurrentSearch` | frontend/js/settings-wiring.js:61 |
-| `saveShortcutOverrides` | frontend/js/settings-wiring.js:1273 |
+| `saveShortcutOverrides` | frontend/js/settings-wiring.js:1269 |
 | `saveWhatIsInFront` | frontend/js/settings-wiring.js:558 |
 | `savedSearches` | frontend/js/settings-wiring.js:13 |
-| `setShortcutStatus` | frontend/js/settings-wiring.js:1438 |
-| `setShortcutStatusError` | frontend/js/settings-wiring.js:1445 |
-| `singleKeysOn` | frontend/js/settings-wiring.js:2288 |
-| `stagedImageUrl` | frontend/js/settings-wiring.js:2067 |
+| `setShortcutStatus` | frontend/js/settings-wiring.js:1434 |
+| `setShortcutStatusError` | frontend/js/settings-wiring.js:1441 |
+| `singleKeysOn` | frontend/js/settings-wiring.js:2284 |
+| `stagedImageUrl` | frontend/js/settings-wiring.js:2063 |
 | `stampShortcutTitles` | frontend/js/settings-wiring.js:1144 |
 | `submitLockForm` | frontend/js/settings-wiring.js:304 |
-| `textCounts` | frontend/js/settings-wiring.js:1710 |
-| `uploadStagedFiles` | frontend/js/settings-wiring.js:2126 |
-| `wordCount` | frontend/js/settings-wiring.js:1705 |
+| `textCounts` | frontend/js/settings-wiring.js:1706 |
+| `uploadStagedFiles` | frontend/js/settings-wiring.js:2122 |
+| `wordCount` | frontend/js/settings-wiring.js:1701 |
 
 ### frontend/js/spaces-find.js (25)
 
@@ -7836,7 +7836,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | Name | File:line |
 |---|---|
 | `renderWbShortcutSheet` | frontend/js/whiteboard-commands.js:437 |
-| `wbBoardToClient` | frontend/js/whiteboard-commands.js:1209 |
+| `wbBoardToClient` | frontend/js/whiteboard-commands.js:1211 |
 | `wbClickId` | frontend/js/whiteboard-commands.js:108 |
 | `wbCloseHelpSheet` | frontend/js/whiteboard-commands.js:803 |
 | `wbCommandApplies` | frontend/js/whiteboard-commands.js:304 |
@@ -7845,59 +7845,59 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `wbCommandSelectionCount` | frontend/js/whiteboard-commands.js:32 |
 | `wbCommandTextTarget` | frontend/js/whiteboard-commands.js:43 |
 | `wbCommandsLive` | frontend/js/whiteboard-commands.js:361 |
-| `wbFacingAnchors` | frontend/js/whiteboard-commands.js:863 |
+| `wbFacingAnchors` | frontend/js/whiteboard-commands.js:865 |
 | `wbHelpRows` | frontend/js/whiteboard-commands.js:721 |
 | `wbHelpSections` | frontend/js/whiteboard-commands.js:733 |
 | `wbInitMoreMenu` | frontend/js/whiteboard-commands.js:607 |
-| `wbJoinPlan` | frontend/js/whiteboard-commands.js:870 |
-| `wbJoinSelection` | frontend/js/whiteboard-commands.js:882 |
-| `wbJoinableEntries` | frontend/js/whiteboard-commands.js:847 |
-| `wbJoinedPairs` | frontend/js/whiteboard-commands.js:853 |
-| `wbMapPasteMake` | frontend/js/whiteboard-commands.js:1446 |
-| `wbMapPasteReading` | frontend/js/whiteboard-commands.js:1188 |
-| `wbMapPasteSpecial` | frontend/js/whiteboard-commands.js:1464 |
-| `wbMapPasteWithChip` | frontend/js/whiteboard-commands.js:1452 |
-| `wbMeasureSelection` | frontend/js/whiteboard-commands.js:922 |
+| `wbJoinPlan` | frontend/js/whiteboard-commands.js:872 |
+| `wbJoinSelection` | frontend/js/whiteboard-commands.js:884 |
+| `wbJoinableEntries` | frontend/js/whiteboard-commands.js:849 |
+| `wbJoinedPairs` | frontend/js/whiteboard-commands.js:855 |
+| `wbMapPasteMake` | frontend/js/whiteboard-commands.js:1448 |
+| `wbMapPasteReading` | frontend/js/whiteboard-commands.js:1190 |
+| `wbMapPasteSpecial` | frontend/js/whiteboard-commands.js:1466 |
+| `wbMapPasteWithChip` | frontend/js/whiteboard-commands.js:1454 |
+| `wbMeasureSelection` | frontend/js/whiteboard-commands.js:924 |
 | `wbOpenHelpSheet` | frontend/js/whiteboard-commands.js:788 |
 | `wbPaletteActRow` | frontend/js/whiteboard-commands.js:395 |
 | `wbPaletteCommands` | frontend/js/whiteboard-commands.js:375 |
-| `wbPasteAnchor` | frontend/js/whiteboard-commands.js:1354 |
-| `wbPasteBranchItems` | frontend/js/whiteboard-commands.js:1127 |
-| `wbPasteBuild` | frontend/js/whiteboard-commands.js:1152 |
-| `wbPasteBulletShape` | frontend/js/whiteboard-commands.js:1083 |
-| `wbPasteChipChoose` | frontend/js/whiteboard-commands.js:1241 |
-| `wbPasteChipClose` | frontend/js/whiteboard-commands.js:1214 |
-| `wbPasteChipKey` | frontend/js/whiteboard-commands.js:1270 |
-| `wbPasteChipMenu` | frontend/js/whiteboard-commands.js:1255 |
-| `wbPasteChipOffer` | frontend/js/whiteboard-commands.js:1293 |
-| `wbPasteChipPlace` | frontend/js/whiteboard-commands.js:1225 |
-| `wbPasteImageSize` | frontend/js/whiteboard-commands.js:1179 |
-| `wbPasteIntoShape` | frontend/js/whiteboard-commands.js:1410 |
-| `wbPasteLinkLabel` | frontend/js/whiteboard-commands.js:1042 |
-| `wbPasteLook` | frontend/js/whiteboard-commands.js:1203 |
-| `wbPasteMake` | frontend/js/whiteboard-commands.js:1326 |
-| `wbPasteMenuOpen` | frontend/js/whiteboard-commands.js:1263 |
-| `wbPasteObject` | frontend/js/whiteboard-commands.js:1034 |
-| `wbPastePlan` | frontend/js/whiteboard-commands.js:1000 |
-| `wbPasteReadClipboard` | frontend/js/whiteboard-commands.js:1377 |
-| `wbPasteSketch` | frontend/js/whiteboard-commands.js:1038 |
-| `wbPasteSpecialApply` | frontend/js/whiteboard-commands.js:1387 |
-| `wbPasteSpecialMenu` | frontend/js/whiteboard-commands.js:1428 |
-| `wbPasteStickyItems` | frontend/js/whiteboard-commands.js:1058 |
-| `wbPasteTableItem` | frontend/js/whiteboard-commands.js:1073 |
-| `wbPasteText` | frontend/js/whiteboard-commands.js:1362 |
-| `wbPasteTextBoxItem` | frontend/js/whiteboard-commands.js:1051 |
-| `wbPasteTree` | frontend/js/whiteboard-commands.js:1096 |
-| `wbPasteTreeRows` | frontend/js/whiteboard-commands.js:1111 |
-| `wbPasteVariantList` | frontend/js/whiteboard-commands.js:1320 |
-| `wbPasteVariants` | frontend/js/whiteboard-commands.js:1013 |
-| `wbPastedLines` | frontend/js/whiteboard-commands.js:993 |
+| `wbPasteAnchor` | frontend/js/whiteboard-commands.js:1356 |
+| `wbPasteBranchItems` | frontend/js/whiteboard-commands.js:1129 |
+| `wbPasteBuild` | frontend/js/whiteboard-commands.js:1154 |
+| `wbPasteBulletShape` | frontend/js/whiteboard-commands.js:1085 |
+| `wbPasteChipChoose` | frontend/js/whiteboard-commands.js:1243 |
+| `wbPasteChipClose` | frontend/js/whiteboard-commands.js:1216 |
+| `wbPasteChipKey` | frontend/js/whiteboard-commands.js:1272 |
+| `wbPasteChipMenu` | frontend/js/whiteboard-commands.js:1257 |
+| `wbPasteChipOffer` | frontend/js/whiteboard-commands.js:1295 |
+| `wbPasteChipPlace` | frontend/js/whiteboard-commands.js:1227 |
+| `wbPasteImageSize` | frontend/js/whiteboard-commands.js:1181 |
+| `wbPasteIntoShape` | frontend/js/whiteboard-commands.js:1412 |
+| `wbPasteLinkLabel` | frontend/js/whiteboard-commands.js:1044 |
+| `wbPasteLook` | frontend/js/whiteboard-commands.js:1205 |
+| `wbPasteMake` | frontend/js/whiteboard-commands.js:1328 |
+| `wbPasteMenuOpen` | frontend/js/whiteboard-commands.js:1265 |
+| `wbPasteObject` | frontend/js/whiteboard-commands.js:1036 |
+| `wbPastePlan` | frontend/js/whiteboard-commands.js:1002 |
+| `wbPasteReadClipboard` | frontend/js/whiteboard-commands.js:1379 |
+| `wbPasteSketch` | frontend/js/whiteboard-commands.js:1040 |
+| `wbPasteSpecialApply` | frontend/js/whiteboard-commands.js:1389 |
+| `wbPasteSpecialMenu` | frontend/js/whiteboard-commands.js:1430 |
+| `wbPasteStickyItems` | frontend/js/whiteboard-commands.js:1060 |
+| `wbPasteTableItem` | frontend/js/whiteboard-commands.js:1075 |
+| `wbPasteText` | frontend/js/whiteboard-commands.js:1364 |
+| `wbPasteTextBoxItem` | frontend/js/whiteboard-commands.js:1053 |
+| `wbPasteTree` | frontend/js/whiteboard-commands.js:1098 |
+| `wbPasteTreeRows` | frontend/js/whiteboard-commands.js:1113 |
+| `wbPasteVariantList` | frontend/js/whiteboard-commands.js:1322 |
+| `wbPasteVariants` | frontend/js/whiteboard-commands.js:1015 |
+| `wbPastedLines` | frontend/js/whiteboard-commands.js:995 |
 | `wbPhoneCarries` | frontend/js/whiteboard-commands.js:528 |
 | `wbPhoneReachable` | frontend/js/whiteboard-commands.js:512 |
 | `wbRenderHelpSheet` | frontend/js/whiteboard-commands.js:739 |
 | `wbRunBoardAct` | frontend/js/whiteboard-commands.js:417 |
 | `wbRunCommand` | frontend/js/whiteboard-commands.js:314 |
-| `wbSelectMade` | frontend/js/whiteboard-commands.js:1343 |
+| `wbSelectMade` | frontend/js/whiteboard-commands.js:1345 |
 | `wbSetSelectValue` | frontend/js/whiteboard-commands.js:501 |
 | `wbSyncCommandRows` | frontend/js/whiteboard-commands.js:471 |
 | `wbSyncMoreMapRows` | frontend/js/whiteboard-commands.js:573 |
@@ -24955,7 +24955,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (19261)
+## Tests (19262)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -26932,7 +26932,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_suggestions_inbox_kg9.py | 20 |
 | tests/test_suggestions_reads_ids.py | 1 |
 | tests/test_support_email.py | 5 |
-| tests/test_surface_templates.py | 6 |
+| tests/test_surface_templates.py | 7 |
 | tests/test_svg_paint_attributes.py | 2 |
 | tests/test_sweep_1004_deep_json.py | 3 |
 | tests/test_sweep_1004_inbox_bounds.py | 3 |

@@ -127,10 +127,11 @@ def test_every_boot_sweep_over_the_body_is_rerun_at_the_build():
     # What the page ran over every control at boot, for the controls that now
     # arrive late (the four a before/after snapshot of every section found).
     assert "window.initHelpToggles?.(host);" in BODY_JS
-    assert 'onSurface("settings", hideClosedDockMenuLists);' in _src("navigation.js")
+    # The dock-menu, chord and title sweeps moved into `surfaceBuild` itself, over the stamped host, so every
+    # surface gets them (row 21 review); `test_surface_templates` holds that shape.
+    for sweep in ("hideClosedDockMenuLists", "localizeStaticChords", "stampShortcutTitles"):
+        assert f"window.{sweep}?.(host);" in BODY_JS
     assert 'onSurface("settings", syncNotifBlocked);' in _src("status.js")
-    wiring = _src("settings-wiring.js")
-    assert re.search(r"onSurface\(\"settings\", \(\) => \{\s*localizeStaticChords\(\);\s*stampShortcutTitles\(\);", wiring)
 
 
 def test_the_reveal_targets_and_the_guide_reach_ids_that_exist():
