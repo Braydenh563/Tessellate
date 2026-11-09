@@ -7,6 +7,40 @@ Split out of `ROADMAP.md`. Kept, not deleted, for one reason: **three sessions
 have independently rebuilt something that already existed.** This is the file
 that answers "has this been done?" before anyone starts.
 
+## Moved from the plans, 2026-11-09 (book5-1109: GRAPH_PLAN)
+
+INBOX 41, 78 and 59, placed from 2026-09-09, found built and still standing whole (41's clean-up is Phase 4, built 2026-09-09 and 2026-09-13; 78 is Phase 6b, built 2026-09-13 with its measurements; 59 is Phase 6, the node panel, built 2026-09-09).
+
+From GRAPH_PLAN.md (lines 174 to 200 before the move), verbatim:
+
+41. **(the panel: fixed, 5724587 and dbff8f0; the clean-up is Phase 4)**
+    **Graph display options belong on the dock, and the options panel
+    needs a redesign**; the graph needs a utility, UI and interaction
+    clean-up. Owner: GRAPH Phase 2 remainder (gear button, INBOX 21) and
+    Phase 4; the panel on the popover shell with the dock-menu sections.
+78. **Graph minimap UX and utility**: Phase 6b, **built 2026-09-13**. The
+    draggable viewport rectangle, click-to-jump, wheel zoom about the pointer
+    and cluster-coloured dots landed earlier; this pass added the last two,
+    the size toggle and the fade when the whole graph already fits. Size is a
+    Small/Large select beside Position in the dock's Minimap section (the map
+    itself is `aria-hidden` decoration that happens to be draggable, so a
+    focusable control inside it would be one no screen reader could reach),
+    and Large is the same picture at 1.5x, scaled on the element so the
+    projection and the drag keep working off the rendered width they already
+    measure. The fade is on the viewport rectangle's own area against the box,
+    not on the zoom scale: "everything fits" is a fact about this graph's
+    extent at this window size. Measured
+    (`scratchpad/ui-sweeps/minimap6b.js`, 1440x950, 297 notes): fit-to-screen
+    at k 0.56 gives a 168x112 rectangle, redundant true, opacity 0.12; at k
+    1.6 the rectangle is 78.5x45.3, redundant false, opacity 0.45; Large
+    renders 252x168 with the projection intact.
+59. **Graph node popup panel redesign** (screenshot, 00:50; the owner:
+    "include redesigning the graph node popup panels in the graph redesign
+    plan"): title, five meta chips at one weight, a file card, a tall
+    content editor, tags, Save, then a 3x3 grid of nine equal action
+    buttons (Favourite, Grow, Focus, Similar, Link, Trace, Remind, Open,
+    Bin). Placed as GRAPH_PLAN Phase 6. Owner: Opus, now.
+
 ## Moved from the plans, 2026-11-09 (book5-1109: MINDMAP_PLAN)
 
 Section 5, the original feature set in build order (Phases 1 to 5, items 1 to 21), found still standing whole although sections 9 to 11 record Phases 1, 2, 4 and 5 and the previews as built and HISTORY records Phase 3 (reference-node picker, import UI, mapChip and mapPreview, maps in chat and the graph). Checked 2026-11-09: read_mindmap, create_mindmap, add_map_node and link_map_nodes, OPML and FreeMind code, perspectives, focus, metrics and templates all exist in src/ and frontend/js/whiteboard-map.js.
