@@ -190,6 +190,9 @@ NAP_FOR = (150.0, 300.0)
 RUN_MIN = 150.0
 FOLLOW_FOR = (10.0, 18.0)
 GREET_AFTER = 420.0
+#: A pointer resting this many s within WAVE_NEAR of a standing figure draws one wave, once per rest, WAVE_GAP s apart
+#: (INBOX 1711 b: a wave "after a pause", not only a weighted pick).
+WAVE_IDLE, WAVE_NEAR, WAVE_GAP = 8.0, 420.0, 150.0
 #: Under a busy pointer it waits instead of passing (px ahead / height of the path / seconds).
 YIELD_NEAR = 130.0
 YIELD_MAX = 4.0
@@ -805,6 +808,8 @@ class Engine:
         self.last_long_walk = -1e9
         self.long_walks = 0
         self.greet_pending = False
+        self.wave_rest = None  # pointer_busy_at of the rest already waved at
+        self.wave_ready = 0.0
         #: The text caret of the foreground window (physical px) and when it was read, or None. While
         #: there is one, or the person is typing, the figure is busy: no trip, and it keeps clear of it.
         self.caret: Rect | None = None
@@ -1163,6 +1168,21 @@ class Engine:
         if self.ex.fire("refused", now):
             self.lonely_stretch = self.last_active = kept
 
+    def _wave_at_pointer(self, now: float) -> None:
+        """The pointer rests near a figure that is standing about: it waves, once for that rest."""
+        if self.pointer is None or self.state != "stand" or self.busy or self.reduced or self.nap_until:
+            return
+        if now - self.pointer_busy_at < WAVE_IDLE or self.wave_rest == self.pointer_busy_at or now < self.wave_ready:
+            return
+        cx, cy = self.x + self.size[0] / 2, self.y + self.size[1] / 2
+        if math.hypot(self.pointer[0] - cx, self.pointer[1] - cy) > WAVE_NEAR * self._scale():
+            return
+        self.wave_rest, self.wave_ready = self.pointer_busy_at, now + WAVE_GAP
+        if self.pointer[0] != cx:
+            self.facing = -1 if self.pointer[0] < cx else 1
+        self.last_active = now
+        self._start_act("wave_pointer", now)
+
     def _wear_face(self, state: str, now: float) -> None:
         if self.flung is not None:  # thrown off a window: the face comes with the first moment it can wear one
             if state in extras.FACE_STATES:
@@ -1293,6 +1313,7 @@ class Engine:
         self._dizzy(now)
         self._missed(now)
         self._lonely(now, pointer)
+        self._wave_at_pointer(now)
         self._carry_tick(now)
         if self.settled_now and self.placed:  # where the person left it is home
             self.home_x, self.placed = self.x, False
@@ -2592,9 +2613,10 @@ class Engine:
         self._rise((self.x, self._grip(held) - self._lift()), "hang", now)
 
     def _hang_ok(self) -> bool:
-        """A hang trip needs the windows option (the floor is all there is without it) and an edge to take."""
+        """A hang trip needs an edge to take: the work area's top is always one (INBOX 1696 k), the windows' edges
+        only with the windows option."""
         m = self.current_monitor()
-        return self.roam_windows and self.roam and not self.reduced and (bool(self._hang_spots(m)) or self._open_side(m, "top"))
+        return self.roam and not self.reduced and (bool(self._hang_spots(m)) or self._open_side(m, "top"))
 
     def _hang_spots(self, m: Monitor) -> list[tuple[Perch, float, float]]:
         """The edges a hang may take hold of on this monitor, each with the range of x (the hands' centre) that
@@ -2825,6 +2847,23 @@ class Engine:
                 self.perch = self.target = self.pending = None
                 self._start_warp("fade" if self.reduced else tv.caret_move(self.rng, self.modes), (tx, ground), "evade", now)
                 return
+
+    def enter_scene(self, now: float) -> str:
+        """The first show (app start, the first minimise): it arrives, never a plain pop (INBOX 1718 a). A portal or a
+        puff plays only its way in; an edge slips in from the screen edge nearest its home; a walker may instead drop in
+        from the top and land. Returns the entrance chosen ('' when it stays put: reduced motion, or not standing)."""
+        if self.reduced or self.state != "stand" or not self.roam:
+            return ""
+        pick = self.rng.choices(["portal", "puff", "edge", "drop"], [4.0, 2.0, 3.0, 2.0 if self.gait != "float" else 0.0])[0]
+        if pick == "drop":
+            self.y = self.current_monitor().area[1] - self.size[1]
+            self._start_fall(0.0)
+            return pick
+        self._start_warp(pick, (self.x, self.y), "stand", now)
+        wp = self.warp["w"]
+        self.warp["t0"] = now - (wp.out + wp.gap)  # the way out was skipped: the ring opens, the cloud thins, the edge lets it in
+        self.legs.clear()
+        return pick
 
     def _start_warp(self, mode: str, dest: tuple[float, float], then: str, now: float) -> None:
         """Vanish here and appear at `dest`, then do `then`. A portal opens a ring of nebula beside it,

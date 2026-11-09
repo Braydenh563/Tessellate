@@ -2,7 +2,7 @@
 
 Generated 2026-11-09 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7949, frontend ids 2652, CSS sections 523, backend routes 649, backend modules 9277, test files 2289, tests 19151, plan headings 1008, app scripts 28, boot scripts 37, script files 266.
+Counts: frontend functions 7949, frontend ids 2652, CSS sections 523, backend routes 649, backend modules 9277, test files 2292, tests 19162, plan headings 1008, app scripts 28, boot scripts 37, script files 266.
 
 ## Frontend functions (7949)
 
@@ -2309,7 +2309,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `characterFor` | frontend/js/avatars.js:1232 |
 | `characterRendererFor` | frontend/js/avatars.js:1215 |
 | `drawCharacter` | frontend/js/avatars.js:1705 |
-| `dropAnimations` | frontend/js/avatars.js:10461 |
+| `dropAnimations` | frontend/js/avatars.js:10479 |
 | `isAtlasSeed` | frontend/js/avatars.js:1226 |
 | `nameCharacterFigure` | frontend/js/avatars.js:3864 |
 | `nameCharacterHeld` | frontend/js/avatars.js:2591 |
@@ -2330,11 +2330,11 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `nameMarkBuddyBand` | frontend/js/avatars.js:5362 |
 | `nameMarkBuddyBeat` | frontend/js/avatars.js:7557 |
 | `nameMarkBuddyBehindCover` | frontend/js/avatars.js:7326 |
-| `nameMarkBuddyBellErrand` | frontend/js/avatars.js:10122 |
+| `nameMarkBuddyBellErrand` | frontend/js/avatars.js:10140 |
 | `nameMarkBuddyBlend` | frontend/js/avatars.js:9710 |
 | `nameMarkBuddyBody` | frontend/js/avatars.js:3825 |
 | `nameMarkBuddyBoredom` | frontend/js/avatars.js:9826 |
-| `nameMarkBuddyBuild` | frontend/js/avatars.js:10512 |
+| `nameMarkBuddyBuild` | frontend/js/avatars.js:10530 |
 | `nameMarkBuddyBurst` | frontend/js/avatars.js:7169 |
 | `nameMarkBuddyCalmAllows` | frontend/js/avatars.js:9670 |
 | `nameMarkBuddyCanvasAt` | frontend/js/avatars.js:6145 |
@@ -2342,12 +2342,12 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `nameMarkBuddyCanvasZoom` | frontend/js/avatars.js:6168 |
 | `nameMarkBuddyCaret` | frontend/js/avatars.js:4029 |
 | `nameMarkBuddyCatchUp` | frontend/js/avatars.js:5640 |
-| `nameMarkBuddyChatErrand` | frontend/js/avatars.js:10132 |
+| `nameMarkBuddyChatErrand` | frontend/js/avatars.js:10150 |
 | `nameMarkBuddyCheck` | frontend/js/avatars.js:7405 |
 | `nameMarkBuddyChoose` | frontend/js/avatars.js:4784 |
 | `nameMarkBuddyClickReaction` | frontend/js/avatars.js:9656 |
 | `nameMarkBuddyColours` | frontend/js/avatars.js:3810 |
-| `nameMarkBuddyContext` | frontend/js/avatars.js:10249 |
+| `nameMarkBuddyContext` | frontend/js/avatars.js:10267 |
 | `nameMarkBuddyControlBoxes` | frontend/js/avatars.js:3977 |
 | `nameMarkBuddyControlsIn` | frontend/js/avatars.js:3984 |
 | `nameMarkBuddyCoverCheck` | frontend/js/avatars.js:7309 |
@@ -2369,7 +2369,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `nameMarkBuddyEdges` | frontend/js/avatars.js:4535 |
 | `nameMarkBuddyEmote` | frontend/js/avatars.js:3334 |
 | `nameMarkBuddyEnter` | frontend/js/avatars.js:7986 |
-| `nameMarkBuddyErrand` | frontend/js/avatars.js:10104 |
+| `nameMarkBuddyErrand` | frontend/js/avatars.js:10122 |
 | `nameMarkBuddyExpress` | frontend/js/avatars.js:9060 |
 | `nameMarkBuddyFeel` | frontend/js/avatars.js:9627 |
 | `nameMarkBuddyFlies` | frontend/js/avatars.js:6360 |
@@ -2384,11 +2384,11 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `nameMarkBuddyGlue` | frontend/js/avatars.js:5441 |
 | `nameMarkBuddyGlueBand` | frontend/js/avatars.js:5490 |
 | `nameMarkBuddyGo` | frontend/js/avatars.js:6511 |
-| `nameMarkBuddyGone` | frontend/js/avatars.js:10469 |
+| `nameMarkBuddyGone` | frontend/js/avatars.js:10487 |
 | `nameMarkBuddyHalt` | frontend/js/avatars.js:8669 |
 | `nameMarkBuddyHasAtlas` | frontend/js/avatars.js:8618 |
 | `nameMarkBuddyHeadAt` | frontend/js/avatars.js:9971 |
-| `nameMarkBuddyHint` | frontend/js/avatars.js:11188 |
+| `nameMarkBuddyHint` | frontend/js/avatars.js:11206 |
 | `nameMarkBuddyHits` | frontend/js/avatars.js:4337 |
 | `nameMarkBuddyHold` | frontend/js/avatars.js:9145 |
 | `nameMarkBuddyHover` | frontend/js/avatars.js:6860 |
@@ -2401,8 +2401,8 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `nameMarkBuddyKeepSpots` | frontend/js/avatars.js:4924 |
 | `nameMarkBuddyKeepUp` | frontend/js/avatars.js:5663 |
 | `nameMarkBuddyLandNear` | frontend/js/avatars.js:6834 |
-| `nameMarkBuddyLean` | frontend/js/avatars.js:10059 |
-| `nameMarkBuddyLeanSide` | frontend/js/avatars.js:10054 |
+| `nameMarkBuddyLean` | frontend/js/avatars.js:10077 |
+| `nameMarkBuddyLeanSide` | frontend/js/avatars.js:10072 |
 | `nameMarkBuddyLedges` | frontend/js/avatars.js:3923 |
 | `nameMarkBuddyLegsNow` | frontend/js/avatars.js:6177 |
 | `nameMarkBuddyLieDown` | frontend/js/avatars.js:8639 |
@@ -2417,14 +2417,14 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `nameMarkBuddyMotion` | frontend/js/avatars.js:3750 |
 | `nameMarkBuddyMotionApply` | frontend/js/avatars.js:3784 |
 | `nameMarkBuddyMoveTo` | frontend/js/avatars.js:6182 |
-| `nameMarkBuddyNameProps` | frontend/js/avatars.js:10217 |
+| `nameMarkBuddyNameProps` | frontend/js/avatars.js:10235 |
 | `nameMarkBuddyNear` | frontend/js/avatars.js:3964 |
 | `nameMarkBuddyNextSpot` | frontend/js/avatars.js:7740 |
 | `nameMarkBuddyNoTravel` | frontend/js/avatars.js:3796 |
 | `nameMarkBuddyNoteOpen` | frontend/js/avatars.js:9313 |
 | `nameMarkBuddyNoteOpened` | frontend/js/avatars.js:9306 |
-| `nameMarkBuddyNotice` | frontend/js/avatars.js:9981 |
-| `nameMarkBuddyNudge` | frontend/js/avatars.js:11075 |
+| `nameMarkBuddyNotice` | frontend/js/avatars.js:9998 |
+| `nameMarkBuddyNudge` | frontend/js/avatars.js:11093 |
 | `nameMarkBuddyObstacles` | frontend/js/avatars.js:3933 |
 | `nameMarkBuddyOnBoard` | frontend/js/avatars.js:6161 |
 | `nameMarkBuddyOrigin` | frontend/js/avatars.js:4293 |
@@ -2437,7 +2437,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `nameMarkBuddyPerches` | frontend/js/avatars.js:4724 |
 | `nameMarkBuddyPet` | frontend/js/avatars.js:6882 |
 | `nameMarkBuddyPickVariant` | frontend/js/avatars.js:8440 |
-| `nameMarkBuddyPointer` | frontend/js/avatars.js:10301 |
+| `nameMarkBuddyPointer` | frontend/js/avatars.js:10319 |
 | `nameMarkBuddyPoof` | frontend/js/avatars.js:7117 |
 | `nameMarkBuddyPopupEls` | frontend/js/avatars.js:4136 |
 | `nameMarkBuddyPopups` | frontend/js/avatars.js:4122 |
@@ -2459,8 +2459,8 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `nameMarkBuddyRideBox` | frontend/js/avatars.js:5263 |
 | `nameMarkBuddyRideClip` | frontend/js/avatars.js:5250 |
 | `nameMarkBuddyRideFrames` | frontend/js/avatars.js:5237 |
-| `nameMarkBuddyRoom` | frontend/js/avatars.js:10329 |
-| `nameMarkBuddyRoomSoon` | frontend/js/avatars.js:10319 |
+| `nameMarkBuddyRoom` | frontend/js/avatars.js:10347 |
+| `nameMarkBuddyRoomSoon` | frontend/js/avatars.js:10337 |
 | `nameMarkBuddyRoute` | frontend/js/avatars.js:6412 |
 | `nameMarkBuddyRubbed` | frontend/js/avatars.js:6927 |
 | `nameMarkBuddyScaleSaved` | frontend/js/avatars.js:4234 |
@@ -2482,9 +2482,9 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `nameMarkBuddyShapeAt1` | frontend/js/avatars.js:4307 |
 | `nameMarkBuddyShown` | frontend/js/avatars.js:3901 |
 | `nameMarkBuddyShowy` | frontend/js/avatars.js:8190 |
-| `nameMarkBuddyShy` | frontend/js/avatars.js:10358 |
+| `nameMarkBuddyShy` | frontend/js/avatars.js:10376 |
 | `nameMarkBuddySizeSelect` | frontend/js/avatars.js:4272 |
-| `nameMarkBuddySound` | frontend/js/avatars.js:10227 |
+| `nameMarkBuddySound` | frontend/js/avatars.js:10245 |
 | `nameMarkBuddySpotFor` | frontend/js/avatars.js:4956 |
 | `nameMarkBuddySpots` | frontend/js/avatars.js:4915 |
 | `nameMarkBuddySquash` | frontend/js/avatars.js:6753 |
@@ -2562,7 +2562,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `queueNameMarkBuddyCheck` | frontend/js/avatars.js:7512 |
 | `registerCharacter` | frontend/js/avatars.js:1209 |
 | `setOwnNameMarkStyle` | frontend/js/avatars.js:294 |
-| `syncNameMarkBuddy` | frontend/js/avatars.js:11086 |
+| `syncNameMarkBuddy` | frontend/js/avatars.js:11104 |
 | `watchNameMark` | frontend/js/avatars.js:1096 |
 
 ### frontend/js/batch-space.js (7)
@@ -21807,11 +21807,11 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `DeskApi` | src/tessellate/core/desk_companion.py:854 |
 | `DeskCompanion` | src/tessellate/core/desk_companion.py:927 |
 | `_SnoozeTimer` | src/tessellate/core/desk_companion.py:821 |
-| `_await_loaded` | src/tessellate/core/desk_companion.py:2059 |
+| `_await_loaded` | src/tessellate/core/desk_companion.py:2063 |
 | `_config` | src/tessellate/core/desk_companion.py:220 |
-| `_default_overlay_factory` | src/tessellate/core/desk_companion.py:1951 |
+| `_default_overlay_factory` | src/tessellate/core/desk_companion.py:1955 |
 | `_figure_unsettled` | src/tessellate/core/desk_companion.py:281 |
-| `_follow` | src/tessellate/core/desk_companion.py:2001 |
+| `_follow` | src/tessellate/core/desk_companion.py:2005 |
 | `_linux_areas` | src/tessellate/core/desk_companion.py:350 |
 | `_lively_pref` | src/tessellate/core/desk_companion.py:848 |
 | `_log_placed` | src/tessellate/core/desk_companion.py:755 |
@@ -21823,8 +21823,8 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_screen_area` | src/tessellate/core/desk_companion.py:454 |
 | `_set_pref` | src/tessellate/core/desk_companion.py:245 |
 | `_system_dpi` | src/tessellate/core/desk_companion.py:340 |
-| `attach` | src/tessellate/core/desk_companion.py:1966 |
-| `carry_due` | src/tessellate/core/desk_companion.py:2038 |
+| `attach` | src/tessellate/core/desk_companion.py:1970 |
+| `carry_due` | src/tessellate/core/desk_companion.py:2042 |
 | `clamp_corner` | src/tessellate/core/desk_companion.py:470 |
 | `clean_size` | src/tessellate/core/desk_companion.py:773 |
 | `companion_ex_style` | src/tessellate/core/desk_companion.py:544 |
@@ -21835,7 +21835,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `monitor_areas` | src/tessellate/core/desk_companion.py:394 |
 | `monitor_for` | src/tessellate/core/desk_companion.py:492 |
 | `mouse_down` | src/tessellate/core/desk_companion.py:606 |
-| `overlay_support` | src/tessellate/core/desk_companion.py:1934 |
+| `overlay_support` | src/tessellate/core/desk_companion.py:1938 |
 | `panel_corner` | src/tessellate/core/desk_companion.py:479 |
 | `panel_placement` | src/tessellate/core/desk_companion.py:504 |
 | `physical_rect` | src/tessellate/core/desk_companion.py:582 |
@@ -21844,9 +21844,9 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `place_physical` | src/tessellate/core/desk_companion.py:712 |
 | `press_outside` | src/tessellate/core/desk_companion.py:610 |
 | `raise_on_desktop` | src/tessellate/core/desk_companion.py:626 |
-| `shutdown` | src/tessellate/core/desk_companion.py:2075 |
+| `shutdown` | src/tessellate/core/desk_companion.py:2079 |
 | `to_logical` | src/tessellate/core/desk_companion.py:321 |
-| `tray_menu_item` | src/tessellate/core/desk_companion.py:2083 |
+| `tray_menu_item` | src/tessellate/core/desk_companion.py:2087 |
 | `window_handle` | src/tessellate/core/desk_companion.py:566 |
 | `work_area` | src/tessellate/core/desk_companion.py:372 |
 
@@ -22905,17 +22905,17 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `Bar` | src/tessellate/core/overlay/engine.py:547 |
-| `Cover` | src/tessellate/core/overlay/engine.py:528 |
-| `Engine` | src/tessellate/core/overlay/engine.py:628 |
-| `Monitor` | src/tessellate/core/overlay/engine.py:557 |
-| `Output` | src/tessellate/core/overlay/engine.py:575 |
-| `Perch` | src/tessellate/core/overlay/engine.py:516 |
-| `TuckSpot` | src/tessellate/core/overlay/engine.py:537 |
-| `_adjoins` | src/tessellate/core/overlay/engine.py:612 |
-| `_same_screens` | src/tessellate/core/overlay/engine.py:623 |
-| `perch_room` | src/tessellate/core/overlay/engine.py:470 |
-| `stand_x` | src/tessellate/core/overlay/engine.py:476 |
+| `Bar` | src/tessellate/core/overlay/engine.py:550 |
+| `Cover` | src/tessellate/core/overlay/engine.py:531 |
+| `Engine` | src/tessellate/core/overlay/engine.py:631 |
+| `Monitor` | src/tessellate/core/overlay/engine.py:560 |
+| `Output` | src/tessellate/core/overlay/engine.py:578 |
+| `Perch` | src/tessellate/core/overlay/engine.py:519 |
+| `TuckSpot` | src/tessellate/core/overlay/engine.py:540 |
+| `_adjoins` | src/tessellate/core/overlay/engine.py:615 |
+| `_same_screens` | src/tessellate/core/overlay/engine.py:626 |
+| `perch_room` | src/tessellate/core/overlay/engine.py:473 |
+| `stand_x` | src/tessellate/core/overlay/engine.py:479 |
 
 ### src/tessellate/core/overlay/extras.py (11)
 
@@ -24883,7 +24883,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (19151)
+## Tests (19162)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -26396,6 +26396,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_overlay_dest_1683.py | 10 |
 | tests/test_overlay_edges_1107.py | 20 |
 | tests/test_overlay_engine.py | 30 |
+| tests/test_overlay_enter_1718.py | 5 |
 | tests/test_overlay_faces.py | 9 |
 | tests/test_overlay_fling_1107.py | 17 |
 | tests/test_overlay_float.py | 6 |
@@ -26406,6 +26407,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_overlay_hang_rise_1696.py | 2 |
 | tests/test_overlay_hang_spots_1683.py | 4 |
 | tests/test_overlay_hang_throw_1670.py | 3 |
+| tests/test_overlay_hang_top_1696.py | 2 |
 | tests/test_overlay_hops_1109.py | 3 |
 | tests/test_overlay_host.py | 26 |
 | tests/test_overlay_idle.py | 9 |
@@ -26455,6 +26457,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_overlay_wallpull_1108.py | 5 |
 | tests/test_overlay_wander_1696.py | 4 |
 | tests/test_overlay_wave_1696.py | 6 |
+| tests/test_overlay_wave_pointer_1711.py | 4 |
 | tests/test_overlay_wrap_ceiling_1108.py | 1 |
 | tests/test_overlay_x11.py | 38 |
 | tests/test_overview_counts_1524.py | 3 |
