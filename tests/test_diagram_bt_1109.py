@@ -98,3 +98,18 @@ def test_undo_and_redo_name_themselves_and_their_shortcut_on_every_kind():
     assert '["ph:arrow-counter-clockwise", "Undo", "Undo, Ctrl+Z",' in kinds and '["ph:arrow-clockwise", "Redo", "Redo, Ctrl+Y",' in kinds
     assert "smallButton(name, tip, run)" in kinds
     assert '["ph:arrow-counter-clockwise", "Undo", "Undo, Ctrl+Z",' in _js("diagram-bar.js")
+
+
+def test_a_document_that_embeds_a_diagram_previews_a_readable_label_not_the_embed_syntax():
+    """Blind test: the Library read "!Diagram 2026-11-09 19:11" (the `!` of `![[...]]` left behind), and the Documents list the raw brackets."""
+    from tessellate.api.routes_documents import _preview
+    from tessellate.api.routes_library import _clip
+    from tessellate.entry.manager import readable_embeds
+
+    assert readable_embeds("a ![[Trip map]] b") == "a Diagram: Trip map b"
+    # A title that already says Diagram is not said twice; an image embed and a plain link are left to their own readers.
+    assert readable_embeds("![[Diagram 2026-11-09 19:11]]") == "Diagram 2026-11-09 19:11"
+    assert readable_embeds("![[pic.png]] [[Trip map]]") == "![[pic.png]] [[Trip map]]"
+    assert _clip("Intro line\n\n![[Trip map]]\n\nafter") == "Intro line · Diagram: Trip map · after"
+    assert _clip("![[Diagram 2026-11-09 19:11]]") == "Diagram 2026-11-09 19:11"
+    assert _preview("Intro line\n\n![[Trip map]]\n\nafter") == "Intro line · Diagram: Trip map · after"

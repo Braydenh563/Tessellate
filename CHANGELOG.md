@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Fix (dgbt-1109 12, blind test): a document that embeds a diagram previews `Diagram: Trip map` (the title alone when it already starts with Diagram) in the Library and the Documents list, not `!Diagram 2026-11-09 19:11` or the raw `![[...]]` (`readable_embeds`, entry/manager.py); image and block embeds are left alone.
 - Fix (dgbt-1109 14, blind test): the mind map, timeline and sequence toolbars' Undo and Redo icons carry the shortcut in their tooltip ("Undo, Ctrl+Z", "Redo, Ctrl+Y") as the flowchart's did; every kind's pair already had its accessible name (browser: aria-label and title read on all four kinds).
 - Fix (dgbt-1109 8, blind test): switching the kind of a flowchart that is still the untouched three-box starter no longer asks "The 3 boxes will be cleared" (`untouched` in diagram-kindbar.js); content the person made still asks. Browser: starter switches to mind map with no dialog, the same starter with one word changed asks.
 - Fix (dgbt-1109 6, blind test): Add block, Add box, the checklist's Add and a menu's Add block after join the new block to the picked block (or the last one) as the list's help says (`outline.tail`); a drop, a group and an explicit `from` are as before. Tab on the last block already added a joined box (reproduced: after naming in the list and after a click); the help says Add block joins too. diagram-builder.js 11,990 gzip.
