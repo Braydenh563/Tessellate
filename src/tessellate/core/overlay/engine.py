@@ -809,7 +809,7 @@ class Engine:
         self.long_walks = 0
         self.greet_pending = False
         self.wave_rest = None  # pointer_busy_at of the rest already waved at
-        self.wave_ready = 0.0
+        self.wave_ready, self.wave_free_at = 0.0, 0.0
         #: The text caret of the foreground window (physical px) and when it was read, or None. While
         #: there is one, or the person is typing, the figure is busy: no trip, and it keeps clear of it.
         self.caret: Rect | None = None
@@ -1170,9 +1170,11 @@ class Engine:
 
     def _wave_at_pointer(self, now: float) -> None:
         """The pointer rests near a figure that is standing about: it waves, once for that rest."""
+        if self.card is not None:
+            self.wave_free_at = now  # a card it brought is the person's business: the rest counts from when it is put down
         if self.pointer is None or self.state != "stand" or self.busy or self.reduced or self.nap_until:
             return
-        if now - self.pointer_busy_at < WAVE_IDLE or self.wave_rest == self.pointer_busy_at or now < self.wave_ready:
+        if now - max(self.pointer_busy_at, self.wave_free_at) < WAVE_IDLE or self.wave_rest == self.pointer_busy_at or now < self.wave_ready:
             return
         cx, cy = self.x + self.size[0] / 2, self.y + self.size[1] / 2
         if math.hypot(self.pointer[0] - cx, self.pointer[1] - cy) > WAVE_NEAR * self._scale():

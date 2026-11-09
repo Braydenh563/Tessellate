@@ -31,7 +31,11 @@ def hour(gait: str, seed: int, look: str = "masculine") -> dict:
     if key not in _CACHE:
         # Intent moved (INBOX 1692, 00:50Z): with presence on it does a spell instead of standing for minutes; the
         # stillness this file measures is the plain companion's, so spells are off here (see test_overlay_presence_1692).
-        _CACHE[key] = simulate(gait, seed, look=look, setup=lambda e: setattr(e, "presence", False))
+        # Likewise (INBOX 1711 b): the wave at a resting pointer is a reaction to the person, not a start at rest, so it
+        # is off here too (its own test: test_overlay_wave_pointer_1711.py); the stillness bars are unchanged.
+        def setup(e: eng.Engine) -> None:
+            e.presence, e.wave_ready = False, math.inf
+        _CACHE[key] = simulate(gait, seed, look=look, setup=setup)
     return _CACHE[key]
 
 
