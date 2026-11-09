@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Suggestions (INBOX 1714): the kind select (Links (12)) sits in the head beside the title instead of alone on a row under it; the card is 48 px shorter at 1440 and the phone head stays one row.
 - Graph popup head (INBOX 1713): the glyph and the title share one line, the category chip sits under the title at its indent, and restore and close are one 32 px size on that line, at the default, small (280x296) and large (800x676) sizes; the head went from 72 px to 57 px.
 - Diagram builder (INBOX 1708): the List's selection bar is a head line (the count, Select all, Clear) over one row of six icon-only buttons with tooltips (Duplicate, Shape, Colour, Connect, Box them, then Delete in the danger tone); the repeated Undo and Done are gone. The List head has a Select all while nothing is picked. Measured at 1440 and 1920 (224 px list): the bar went from 124 px in three ragged rows to 75 px in two.
 - Graph (INBOX 1715): the New note box keeps a gap between the note text and the tags field, as the note popup does.
