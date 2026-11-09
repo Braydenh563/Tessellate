@@ -2359,6 +2359,9 @@ _LIFTED = {"squat": "squatted", "bench": "benched", "deadlift": "deadlifted", "r
 #: "Back in July, ..." is a day said first (INBOX 1483), not how a back felt.
 _BODY_PART = re.compile(r"^(?!back in\b)(knees?|back|shoulders?|legs?|arms?|ankles?|hips?|wrists?|neck|feet|foot|hamstrings?|calves|elbows?)\b", re.I)
 _PLANNED_FOR = re.compile(r"^\s*(\S+(?:\s+\S+)*?)\s+(planned|booked|set|moved|pencilled in)\s+(for|to)\s+(.+)$", re.I)
+#: A day's shorthand is a line or two; `_PLANNED_FOR` retries `(.+)$` at every "planned for" and each try runs to
+#: the line end, so it is only offered a body this short (review 1109: 50,000 characters took 0.4 s).
+PLANNED_MAX = 1000
 _WEEKDAY_WORD = re.compile(r"\b(Mon|Tues|Wednes|Thurs|Fri|Satur|Sun)day\b")
 
 
@@ -2367,7 +2370,7 @@ def _day_clause(body: str) -> str | None:
     one of the shapes read here: a plan ("Lisbon trip planned for May"), a
     lift log ("squats 80 kg for 5, bench 60 kg for 5"), how a body part felt,
     and "going Monday and Friday"."""
-    planned = _PLANNED_FOR.match(body)
+    planned = _PLANNED_FOR.match(body) if len(body) <= PLANNED_MAX else None
     if planned:
         thing = _fragment(planned.group(1), _NAMES.get())
         return f"you {planned.group(2).lower()} the {thing} {planned.group(3).lower()} {planned.group(4)}"
