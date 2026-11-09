@@ -49,8 +49,8 @@
   function wire(S) {
     const fig = S?.fig;
     const stage = fig?.parentElement;
-    //: A flowchart's, and a sequence diagram's once diagram-seq-canvas.js has given it boxes (`S.seq`); not the other kinds yet.
-    if (!fig || (S.k && !S.seq) || !stage?.classList.contains("dgm-stage") || fig.dataset.overlay) return;
+    //: A flowchart's, and another kind's once its picture file (diagram-seq-canvas.js, diagram-tree-canvas.js) names its parts (`S.hitAt`).
+    if (!fig || (S.k && !S.hitAt) || !stage?.classList.contains("dgm-stage") || fig.dataset.overlay) return;
     //: Once per figure, not once per layer in it: a picture that went away (every block deleted) took the layer out, and the next draw made a second one while the first still painted (6 boxes for 3 blocks).
     fig.dataset.overlay = "1";
     const layer = document.createElement("div");
@@ -65,8 +65,8 @@
     //: The picked ids: the primary block and every block of the pick, as the list marks them.
     const chosen = () => {
       const ids = new Set();
-      //: A flowchart box is named by its node id ("n:" off the row key); a sequence part by the row key itself.
-      for (const row of S.tree.querySelectorAll('.dgm-block[aria-selected="true"]')) if (S.seq) ids.add(row.dataset.key);
+      //: A flowchart box is named by its node id ("n:" off the row key); another kind's part by the row key itself.
+      for (const row of S.tree.querySelectorAll('.dgm-block[aria-selected="true"]')) if (S.hitAt) ids.add(row.dataset.key);
       else if (row.dataset.key.startsWith("n:")) ids.add(row.dataset.key.slice(2));
       return ids;
     };
@@ -78,7 +78,7 @@
       if (key === revealed) return;
       revealed = key;
       if (!key) return;
-      const id = S.seq ? key : key.slice(2);
+      const id = S.hitAt ? key : key.slice(2);
       (boxes.get(id) || groups.get(id))?.scrollIntoView({ block: "nearest", inline: "nearest" });
       S.tree.querySelector('.dgm-block[aria-selected="true"]')?.scrollIntoView({ block: "nearest" });
     };

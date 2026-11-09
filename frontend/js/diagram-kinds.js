@@ -845,8 +845,9 @@
     S.tile = tile;
     S.sel = ops.key(node);
     kit.commit(S, `Added ${tile.name.toLowerCase()}${made ? ` and ${made} ${made === 1 ? "participant" : "participants"}` : ""}.`);
-    //: A sequence diagram names the new part on its picture (diagram-seq-canvas.js); the others in their list.
-    if (edit) S.seq ? (S.seqOpen = S.sel) : relabel(S, S.sel);
+    //: A sequence diagram names the new part on its picture (diagram-seq-canvas.js), as a mind map and a timeline do with their
+    //: list folded (a field in a hidden row held the redraw, 1661 m); else in the list.
+    if (edit) S.seq || (S.hitAt && S.pane.offsetParent === null) ? (S.seqOpen = S.sel) : relabel(S, S.sel);
     return S.sel;
   }
 
@@ -921,6 +922,9 @@
     const target = event.target;
     const tile = target.closest?.(".dgm-tile[data-tile]");
     const block = target.closest?.(".dgm-card")?.closest(".dgm-block");
+    //: A press on a mind map's or a timeline's drawn part carries its row, as the row's grip does (diagram-tree-canvas.js).
+    const drawn = !tile && !block && diagramModel.treeCanvas?.node(event, panes);
+    if (drawn) return { card: drawn.box, ref: { kind: "block", id: drawn.key, title: nameOf(drawn.S, drawn.key) }, grip: event.pointerType !== "touch", S: drawn.S, key: drawn.key, tile: null };
     const root = (tile || block)?.closest(".dgm");
     const S = root && panes.get(root);
     if (!S || target.closest(".menu-wrap, [contenteditable]") || (block && (block.classList.contains("dgm-kept") || find(S, block.dataset.key)?.level.fixed))) return null;
@@ -929,8 +933,8 @@
     return { card: tile || block.querySelector(":scope > .dgm-card"), ref: { kind: "block", id: key || def.id, title: tile ? def.name : nameOf(S, key) }, grip: Boolean(target.closest("[data-obj-grip]")), S, key, tile: def };
   }
 
-  //: A shelf tile dropped on a mind map or timeline picture (INBOX 1661 l): those drawings name no parts, so it is added where a press
-  //: on the tile adds it, after the selection; the whole picture takes the drop mark.
+  //: A shelf tile dropped on a mind map or timeline picture (INBOX 1661 l) off its parts is added where a press on the tile adds
+  //: it, after the selection; the whole picture takes the drop mark. Over a part, diagram-tree-canvas.js `over` names the place.
   function pictureDrop(S, at) {
     const stage = S.fig?.parentElement;
     return stage?.contains(at) && !at.closest(".dgm-shelf") ? { canvas: true, op: "into", card: S.fig, add: {}, word: S.sel ? "After the selection" : "Add it here" } : null;
@@ -941,7 +945,7 @@
     const { S, key } = g;
     const A = S.k;
     const at = document.elementFromPoint(g.x, g.y);
-    if (!at || !S.pane.contains(at)) return g.tile ? (S.seq ? diagramModel.seqCanvas.over(g) : pictureDrop(S, at)) : null;
+    if (!at || !S.pane.contains(at)) return S.seq ? (g.tile ? diagramModel.seqCanvas.over(g) : null) : diagramModel.treeCanvas?.over(g) || (g.tile ? pictureDrop(S, at) : null);
     if (S.seq) diagramModel.seqCanvas.clear(S);
     const dragged = key ? find(S, key) : null;
     const type = dragged ? dragged.node.type : g.tile.type;

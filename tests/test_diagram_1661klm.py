@@ -200,8 +200,9 @@ def test_the_picture_takes_a_press_a_rename_and_the_lists_keys():
         assert needle in canvas, needle
     assert "(fig.onpaint ||= []).unshift(" in canvas  # before the overlay's own paint
     builder = _js("diagram-builder.js")
-    assert 'lazyScript("/js/diagram-seq-canvas.js")' in builder and "(!S.k || S.seq)" in builder
-    assert "(S.k && !S.seq)" in _js("diagram-overlay.js")
+    # dgpic-1109: the overlay takes any kind whose picture names its parts (`S.hitAt`), a mind map and a timeline too.
+    assert 'lazyScript("/js/diagram-seq-canvas.js")' in builder and "(!S.k || S.hitAt)" in builder
+    assert "(S.k && !S.hitAt)" in _js("diagram-overlay.js")
     assert "const act = {" in _js("diagram-kinds.js") and "ghostSpec, act }" in _js("diagram-kinds.js")
 
 

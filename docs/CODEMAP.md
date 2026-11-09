@@ -2,9 +2,9 @@
 
 Generated 2026-11-09 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7931, frontend ids 2652, CSS sections 522, backend routes 649, backend modules 9277, test files 2285, tests 19134, plan headings 1008, app scripts 28, boot scripts 37, script files 265.
+Counts: frontend functions 7946, frontend ids 2652, CSS sections 522, backend routes 649, backend modules 9277, test files 2286, tests 19142, plan headings 1008, app scripts 28, boot scripts 37, script files 266.
 
-## Frontend functions (7931)
+## Frontend functions (7946)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -3294,13 +3294,13 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 |---|---|
 | `addTile` | frontend/js/diagram-kinds.js:832 |
 | `buildBlock` | frontend/js/diagram-kinds.js:704 |
-| `buildPalette` | frontend/js/diagram-kinds.js:1012 |
+| `buildPalette` | frontend/js/diagram-kinds.js:1016 |
 | `buildRow` | frontend/js/diagram-kinds.js:714 |
-| `dropApply` | frontend/js/diagram-kinds.js:969 |
-| `dropAt` | frontend/js/diagram-kinds.js:940 |
+| `dropApply` | frontend/js/diagram-kinds.js:973 |
+| `dropAt` | frontend/js/diagram-kinds.js:944 |
 | `fieldsOf` | frontend/js/diagram-kinds.js:697 |
 | `find` | frontend/js/diagram-kinds.js:625 |
-| `ghostSpec` | frontend/js/diagram-kinds.js:1126 |
+| `ghostSpec` | frontend/js/diagram-kinds.js:1130 |
 | `glyph` | frontend/js/diagram-kinds.js:630 |
 | `icon` | frontend/js/diagram-kinds.js:620 |
 | `itemsFor` | frontend/js/diagram-kinds.js:781 |
@@ -3339,22 +3339,22 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `kxUid` | frontend/js/diagram-kinds.js:30 |
 | `kxWalk` | frontend/js/diagram-kinds.js:263 |
 | `kxWithin` | frontend/js/diagram-kinds.js:283 |
-| `menuAt` | frontend/js/diagram-kinds.js:913 |
-| `mount` | frontend/js/diagram-kinds.js:1040 |
+| `menuAt` | frontend/js/diagram-kinds.js:914 |
+| `mount` | frontend/js/diagram-kinds.js:1044 |
 | `nameOf` | frontend/js/diagram-kinds.js:626 |
-| `nestBlock` | frontend/js/diagram-kinds.js:859 |
-| `onKey` | frontend/js/diagram-kinds.js:878 |
+| `nestBlock` | frontend/js/diagram-kinds.js:860 |
+| `onKey` | frontend/js/diagram-kinds.js:879 |
 | `pickWho` | frontend/js/diagram-kinds.js:767 |
-| `pictureDrop` | frontend/js/diagram-kinds.js:934 |
+| `pictureDrop` | frontend/js/diagram-kinds.js:938 |
 | `relabel` | frontend/js/diagram-kinds.js:818 |
-| `removeBlock` | frontend/js/diagram-kinds.js:865 |
+| `removeBlock` | frontend/js/diagram-kinds.js:866 |
 | `render` | frontend/js/diagram-kinds.js:671 |
-| `seedBlock` | frontend/js/diagram-kinds.js:920 |
-| `show` | frontend/js/diagram-kinds.js:1149 |
-| `stepBlock` | frontend/js/diagram-kinds.js:853 |
-| `sync` | frontend/js/diagram-kinds.js:1102 |
+| `seedBlock` | frontend/js/diagram-kinds.js:921 |
+| `show` | frontend/js/diagram-kinds.js:1153 |
+| `stepBlock` | frontend/js/diagram-kinds.js:854 |
+| `sync` | frontend/js/diagram-kinds.js:1106 |
 | `whoLabel` | frontend/js/diagram-kinds.js:627 |
-| `withinNode` | frontend/js/diagram-kinds.js:963 |
+| `withinNode` | frontend/js/diagram-kinds.js:967 |
 | `words` | frontend/js/diagram-kinds.js:646 |
 
 ### frontend/js/diagram-letgo.js (1)
@@ -3454,13 +3454,14 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `mark` | frontend/js/diagram-pointer.js:43 |
 | `word` | frontend/js/diagram-pointer.js:12 |
 
-### frontend/js/diagram-seq-canvas.js (27)
+### frontend/js/diagram-seq-canvas.js (28)
 
 | Name | File:line |
 |---|---|
 | `attr` | frontend/js/diagram-seq-canvas.js:10 |
 | `boxes` | frontend/js/diagram-seq-canvas.js:113 |
 | `clear` | frontend/js/diagram-seq-canvas.js:186 |
+| `edit` | frontend/js/diagram-seq-canvas.js:247 |
 | `frameOf` | frontend/js/diagram-seq-canvas.js:167 |
 | `frames` | frontend/js/diagram-seq-canvas.js:60 |
 | `gap` | frontend/js/diagram-seq-canvas.js:135 |
@@ -3484,7 +3485,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `rubber` | frontend/js/diagram-seq-canvas.js:204 |
 | `span` | frontend/js/diagram-seq-canvas.js:124 |
 | `spotOf` | frontend/js/diagram-seq-canvas.js:211 |
-| `wire` | frontend/js/diagram-seq-canvas.js:243 |
+| `wire` | frontend/js/diagram-seq-canvas.js:336 |
 
 ### frontend/js/diagram-split.js (4)
 
@@ -3542,6 +3543,25 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `addSheet` | frontend/js/diagram-touch.js:11 |
 | `listSheet` | frontend/js/diagram-touch.js:49 |
 | `wire` | frontend/js/diagram-touch.js:62 |
+
+### frontend/js/diagram-tree-canvas.js (14)
+
+| Name | File:line |
+|---|---|
+| `boxEl` | frontend/js/diagram-tree-canvas.js:98 |
+| `boxes` | frontend/js/diagram-tree-canvas.js:61 |
+| `imgOf` | frontend/js/diagram-tree-canvas.js:97 |
+| `node` | frontend/js/diagram-tree-canvas.js:106 |
+| `num` | frontend/js/diagram-tree-canvas.js:9 |
+| `order` | frontend/js/diagram-tree-canvas.js:47 |
+| `over` | frontend/js/diagram-tree-canvas.js:118 |
+| `parts` | frontend/js/diagram-tree-canvas.js:18 |
+| `pointAt` | frontend/js/diagram-tree-canvas.js:99 |
+| `said` | frontend/js/diagram-tree-canvas.js:15 |
+| `shift` | frontend/js/diagram-tree-canvas.js:10 |
+| `spot` | frontend/js/diagram-tree-canvas.js:77 |
+| `wire` | frontend/js/diagram-tree-canvas.js:129 |
+| `words` | frontend/js/diagram-tree-canvas.js:13 |
 
 ### frontend/js/diagram-view.js (2)
 
@@ -16245,8 +16265,8 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `_act_topic` | src/tessellate/ai/help_topics_more.py:3502 |
-| `_slash_commands_topic` | src/tessellate/ai/help_topics_more.py:3635 |
+| `_act_topic` | src/tessellate/ai/help_topics_more.py:3503 |
+| `_slash_commands_topic` | src/tessellate/ai/help_topics_more.py:3636 |
 
 ### src/tessellate/ai/help_words.py (2)
 
@@ -24859,7 +24879,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (19134)
+## Tests (19142)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -25519,6 +25539,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_diagram_dgmlive2_1108.py | 7 |
 | tests/test_diagram_dgmlive_1108.py | 2 |
 | tests/test_diagram_dgmseq_1109.py | 9 |
+| tests/test_diagram_dgpic_1109.py | 8 |
 | tests/test_diagram_document.py | 7 |
 | tests/test_diagram_door_panel.py | 2 |
 | tests/test_diagram_doors_1588.py | 5 |
