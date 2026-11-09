@@ -2088,6 +2088,10 @@ class Engine:
 
     # --- window tops (roam) ------------------------------------------------------------
 
+    def is_riding(self) -> bool:
+        """On a window's top, hidden behind one or hanging from one: its movement is read four times a second."""
+        return self.perch is not None or self.tuck is not None or self.hang_on is not None
+
     def set_windows(self, windows: list[Perch], now: float, hangs: list[Perch] | tuple = (), covers: list[Cover] | tuple = ()) -> None:
         """The top edges the runner last read, and the edges only a hang takes hold of. A figure on one follows
         it: it falls (or floats down) when that window is gone or no longer under it, and keeps up when it moves."""

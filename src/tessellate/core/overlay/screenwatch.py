@@ -78,6 +78,8 @@ class ScreenWatch:
         self.files: int | None = None
         self.files_at = 0.0
         self.away = False
+        #: The window (its key) the last event of each kind was about, so the figure can look toward it (INBOX 1700).
+        self.subject: dict[str, int] = {}
 
     def input_seen(self, now: float, age: float | None) -> list[str]:
         """The seconds since the last key or mouse input anywhere (None: unreadable). Said once when input comes back
@@ -98,6 +100,7 @@ class ScreenWatch:
         if self.windows is not None:
             if seen - self.windows:
                 out.append("window_opened")
+                self.subject["window_opened"] = max(seen - self.windows)
             if self.windows - seen:
                 out.append("window_closed")
         self.windows = seen
@@ -118,12 +121,13 @@ class ScreenWatch:
                 same_size = (orr - ol, ob - ot) == (rect[2] - rect[0], rect[3] - rect[1])
                 moved = same_size and (abs(rect[0] - ol) + abs(rect[1] - ot)) >= DRAG_MIN
                 steps = was_steps + 1 if moved else 0
-                if steps == 2:
-                    out.append("window_dragged")
+                said = ["window_dragged"] if steps == 2 else []
                 if zoomed and not was_zoomed:
-                    out.append("window_maximised")
+                    said.append("window_maximised")
                 elif was_zoomed and not zoomed:
-                    out.append("window_restored")
+                    said.append("window_restored")
+                out += said
+                self.subject.update({kind: w.key for kind in said})
             now[w.key] = (rect, zoomed, steps)  # type: ignore[assignment]
         self.frames = now
         return out

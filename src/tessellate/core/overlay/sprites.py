@@ -428,7 +428,7 @@ class SpriteSet:
         bands = len(flow) // FLOW_FIELDS
         edges = [0.0] + [float(round(left + (right - left) * j / bands)) for j in range(1, bands)] + [float(w)]  # whole px: the cut and the map agree
         rows = [round(i * h / POSE_STRIPS) for i in range(POSE_STRIPS)] + [h]
-        field = flow_offsets(flow, edges, rows, (left, top, right, feet), scale)
+        field = flow_offsets(flow, edges, rows, (left, top, right, feet), scale, (max(0.0, left - 1.0), max(0.0, w - right - 1.0), max(0.0, h - feet - 1.0)))
         occupied = self._occupancy(image)
         mesh = []
         cx0, cy0, cx1, cy1 = w, h, 0, 0  # the dest box the kept quads cover
@@ -705,10 +705,12 @@ def _smooth(x: float) -> float:
     return x * x * (3 - 2 * x)
 
 
-def flow_offsets(flow: tuple[int, ...], edges: list[float], rows: list[int], box: tuple[int, int, int, int], scale: float) -> list[list[tuple[float, float]]]:
+def flow_offsets(flow: tuple[int, ...], edges: list[float], rows: list[int], box: tuple[int, int, int, int], scale: float, room: tuple[float, float, float] | None = None) -> list[list[tuple[float, float]]]:
     """Where each mesh corner (row boundary, column edge) moves, px of the picture: the strands' own values (a
     quadratic from nothing at the waist through the middle's lead to the tip's), a corner between two strands
-    taking their mean, so the picture bends and never tears. The head and the torso's middle: nothing."""
+    taking their mean, so the picture bends and never tears. The head and the torso's middle: nothing. `room` is the
+    canvas left (left, right, below) the drawn box: no corner moves out by more than it (INBOX 1699, the hanging frame's
+    tail coil ends 2 px above the canvas bottom, and a fall of the strands cut it with a straight edge)."""
     left, top, right, feet = box
     bands = len(flow) // FLOW_FIELDS
     half = max(1.0, (right - left) / 2)
@@ -725,7 +727,11 @@ def flow_offsets(flow: tuple[int, ...], edges: list[float], rows: list[int], box
             lead, curve = 4 * middle - tip, 2 * tip - 4 * middle  # v(u) = lead u + curve u^2: 0, middle, tip at 0, 1/2, 1
             free = _smooth((abs(x - mid) / half - FLOW_CORE[0]) / (FLOW_CORE[1] - FLOW_CORE[0]))
             ribbon = FLOW_RIBBON * free * (1 - u) * (lead / 2 + curve / 4)
-            line.append((lead * u + curve * u * u + ribbon if below else ribbon, rise * u + 0.3 * rise * free * (1 - u)))
+            dy = rise * u + 0.3 * rise * free * (1 - u)
+            dx = lead * u + curve * u * u + ribbon if below else ribbon
+            if room is not None:
+                dx, dy = max(-room[0], min(room[1], dx)), min(dy, room[2])
+            line.append((dx, dy))
         out.append(line)
     return out
 
