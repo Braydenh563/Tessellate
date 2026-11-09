@@ -2848,6 +2848,12 @@ class Engine:
                 self._start_warp("fade" if self.reduced else tv.caret_move(self.rng, self.modes), (tx, ground), "evade", now)
                 return
 
+    def doing(self) -> str:
+        """What a prop or presence act is, in words, for the menu ('' when it is only standing about): INBOX 1718 b."""
+        if self.state != "act" or not self.act or (self.act not in extras.props.DOING and extras.props.spec_of(self.act) is None):
+            return ""
+        return extras.props.DOING.get(self.act, self.act.replace("_", " "))
+
     def enter_scene(self, now: float) -> str:
         """The first show (app start, the first minimise): it arrives, never a plain pop (INBOX 1718 a). A portal or a
         puff plays only its way in; an edge slips in from the screen edge nearest its home; a walker may instead drop in

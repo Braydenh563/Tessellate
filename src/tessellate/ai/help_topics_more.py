@@ -1494,8 +1494,8 @@ MORE_TOPICS: list[dict] = [
             "in Appearance (still when Fades only or Windows animation effects are off). Turn it on, on the computer"
             " Tessellate runs on: Settings, Appearance, Show the companion on the desktop, or the tray icon's menu. It works while the desktop app runs. Click it for Quick note, "
             "Quick search, New reminder, Open today, Open Tessellate, Wave, Come here, Go somewhere else, Take a nap, Sit on a window"
-            " or Hide for 10 minutes. Come here follows your pointer; a nap lasts minutes or until clicked. Right-click it for Companion (Atlas masculine or feminine, your own or a saved one, summoned once),"
-            " Stay here or Roam, Activity (Calm, Usual or Lively; calm takes fewer trips), Settings or Turn off; settings keep it open. Drag it; it keeps the spot. Menu: Small, Medium, Large; or pull its corner handle (bottom right while it hangs), double-click to reset. Locked, it "
+            " or Hide for 10 minutes. Come here follows your pointer; a nap lasts minutes. Right-click it for Companion (Atlas masculine or feminine, your own or a saved one, summoned once),"
+            " Stay here or Roam, Activity (Calm, Usual or Lively; calm takes fewer trips), Settings or Turn off; settings keep it open; its first menu line says what it does. Drag it. Menu: Small, Medium, Large; or pull its corner handle (bottom right while it hangs), double-click to reset. Locked, it "
             "shows only Open Tessellate. On Wayland it stays in the app."
         ),
         "badge": {"label": "Desktop companion", "section": "appearance", "target": "desktop-companion-row"},

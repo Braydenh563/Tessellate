@@ -1403,6 +1403,9 @@ class DeskCompanion:
             "still": still, "reason": str(reason or ""), "roam": bool(_pref(ROAM_PREF, True)), "stay": bool(_pref(STAY_PREF, False)),
             "lively": _lively_pref(), "size": self.size_pref, "asleep": getattr(engine, "state", "") == "sleep", "figure": runner is not None and hasattr(runner, "command"),
         }
+        doing = getattr(engine, "doing", None)
+        if callable(doing) and (said := doing()):
+            out["doing"] = said  # the menu's first line while a prop or spell is in hand (INBOX 1718 b)
         if note:
             out["note"] = note
         return out
