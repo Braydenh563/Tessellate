@@ -2712,3 +2712,46 @@ header#top-bar[data-scrolled="1"],
     min-height: var(--target-min);
   }
 }
+/* --- INBOX 1717: browser zoom (the window at 125 to 200 %) ------------------
+   Zoom renders as a narrower CSS viewport, so the same markup meets the 720 to
+   1100 band at a desktop's size. `scratchpad/ui-sweeps/zoom1717.js` measures
+   every surface at 125/150/175/200 and lists each row whose children sit on
+   more than one line, each element wider than its box and each label that
+   wraps; the rules below are the ones that list asked for, each pinned by
+   `tests/test_zoom_wrap_1717.py`. */
+/* 1. **The Dashboard's doorway may shrink.** The find zone's `min-content`
+      floor (the band above, for a `.seg` well that cannot wrap) counted the
+      doorway's whole nowrap prompt, 650px, so at 720 wide the actions zone
+      fell to a second row under a full-width search. The prompt already
+      ellipsises (`.dash-find-text`), so the zone is told it can be narrower
+      than the prompt, the way the phone band already tells it. */
+.dock[data-dock-name="dashboard"] > .dock-find {
+  min-width: 0;
+  flex-basis: 12rem;
+}
+/* 2. **A search's floor is the search's, not its input's intrinsic width.**
+      An `<input>` asks for ~170px of `min-content` however narrow the field
+      is allowed to be, which the band above multiplied into the find zone's
+      floor; with `width: 0` the field's own `min-width: 8rem` decides, and a
+      dock holding a search beside its actions fits one row 100px sooner. */
+@media (max-width: 1099.98px) {
+  .dock .dock-find > .dock-search > .search-field-input {
+    width: 0;
+    min-width: 0;
+  }
+  /* The basis is what decides when a zone wraps (08-consistency.css): a zone
+     that is only a search asks for the search's own floor, so the Documents
+     dock's 328px of actions fit beside it at 720 instead of one pixel short. */
+  .dock .dock-find:has(> .dock-search:only-child) {
+    flex-basis: 8rem;
+  }
+}
+/* 3. **A tile's label ellipsises instead of leaving its tile.** Quick access
+      measured 153px in a 162px head at 200 %: the label would not shrink. */
+#tab-dashboard .launch-head .launch-label {
+  flex-shrink: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
