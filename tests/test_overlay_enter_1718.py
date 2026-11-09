@@ -68,3 +68,13 @@ def test_the_coordinator_hands_the_first_runner_the_flag_and_the_restart_not() -
 
     src = (Path(__file__).resolve().parents[1] / "src" / "tessellate" / "core" / "desk_companion.py").read_text(encoding="utf-8")
     assert "runner.enter = not self._entered" in src and "self._entered = self._entered or started" in src
+
+
+def test_a_warp_entrance_ends_its_state_with_the_way_in() -> None:
+    """Review: the way out was skipped by back-dating the warp's start, but the state still ran its whole length, so
+    the figure stayed in `warp` about half a second after it was fully seen."""
+    for seed in range(1, 30):
+        e = make(seed)
+        if e.enter_scene(2.0) in ("portal", "puff", "edge"):
+            wp = e.warp["w"]
+            assert abs(e.state_until - (e.warp["t0"] + wp.total)) < 1e-6, (seed, e.state_until, e.warp["t0"], wp.total)

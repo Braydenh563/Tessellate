@@ -2916,6 +2916,7 @@ class Engine:
         self._start_warp(pick, (self.x, self.y), "stand", now)
         wp = self.warp["w"]
         self.warp["t0"] = now - (wp.out + wp.gap)  # the way out was skipped: the ring opens, the cloud thins, the edge lets it in
+        self.state_until -= wp.out + wp.gap  # and the state ends with the way in, not half a second after it is fully seen
         self.legs.clear()
         return pick
 
