@@ -18,6 +18,7 @@ Pillow is in the `desktop` extra, not the base install: imported here on use.
 
 from __future__ import annotations
 
+import functools
 import logging
 import math
 import re
@@ -194,6 +195,8 @@ class SpriteSet:
         self._cache: dict[tuple[str, int, bool], Frame] = {}
         self._posed: dict[tuple[str, int, bool, tuple[float, ...]], Frame] = {}
         self._tail_kept: dict[tuple[str, int, bool], tuple[Any, Any]] = {}
+        self._pose_kept: dict[tuple[str, int, bool], Any] = {}
+        self._occ: dict[int, tuple[Any, Any]] = {}
         self._spun_at: dict[tuple[int, int, bool], Frame] = {}
         self._canvas: dict[tuple[int, bool], tuple[Any, int, int]] = {}
         #: The quarter turn per dpi: {dpi: {step: (cropped premultiplied BGRA as an RGBA image, left, top)}}, built
@@ -370,13 +373,21 @@ class SpriteSet:
         return hit
 
     def _pose_image(self, name: str, dpi: int, flip: bool) -> Any:
-        from PIL import Image, ImageOps
+        """The straight RGBA picture at this size (mirrored when `flip`), kept: a cold pose reuses it, and `_occupancy` keys on it."""
+        key = (name, int(dpi), bool(flip))
+        image = self._pose_kept.get(key)
+        if image is None:
+            from PIL import Image, ImageOps
 
-        image = self._load(SPIN_BASE if name in SPIN_FRAMES else name)
-        if flip:
-            image = ImageOps.mirror(image)
-        width, height = self.size(dpi)
-        return image.resize((width, height), Image.Resampling.LANCZOS) if (width, height) != image.size else image
+            image = self._load(SPIN_BASE if name in SPIN_FRAMES else name)
+            if flip:
+                image = ImageOps.mirror(image)
+            width, height = self.size(dpi)
+            image = image.resize((width, height), Image.Resampling.LANCZOS) if (width, height) != image.size else image
+            self._pose_kept[key] = image
+            while len(self._pose_kept) > 8:
+                del self._pose_kept[next(iter(self._pose_kept))]
+        return image
 
     def _warp(self, base: Frame, image: Any, sx: float, sy: float, lean: float, drag: float, flow: tuple[int, ...] | None = None) -> Frame:
         from PIL import Image
@@ -418,7 +429,9 @@ class SpriteSet:
         edges = [0.0] + [float(round(left + (right - left) * j / bands)) for j in range(1, bands)] + [float(w)]  # whole px: the cut and the map agree
         rows = [round(i * h / POSE_STRIPS) for i in range(POSE_STRIPS)] + [h]
         field = flow_offsets(flow, edges, rows, (left, top, right, feet), scale)
+        occupied = self._occupancy(image)
         mesh = []
+        cx0, cy0, cx1, cy1 = w, h, 0, 0  # the dest box the kept quads cover
         for i in range(POSE_STRIPS):
             y0, y1 = rows[i], rows[i + 1]
             ym = (y0 + y1) / 2
@@ -429,11 +442,52 @@ class SpriteSet:
                     xd = edges[b + side]
                     fdx, fdy = field[yi][b + side]
                     src += [mid + (xd - mid - shift) / sx - fdx, feet + (yd - feet) / sy - fdy]
-                mesh.append(((int(edges[b]), y0, int(edges[b + 1]), y1), tuple(src)))
-        warped = image.transform((w, h), Image.Transform.MESH, mesh, Image.Resampling.BILINEAR)
-        warped = _glint(warped, flow, (left, top, right, feet))
+                if not occupied(min(src[0::2]), min(src[1::2]), max(src[0::2]), max(src[1::2])):
+                    continue  # the quad samples only clear pixels: it draws nothing, so it is not transformed
+                x0, x1 = int(edges[b]), int(edges[b + 1])
+                mesh.append(((x0, y0, x1, y1), tuple(src)))
+                cx0, cy0, cx1, cy1 = min(cx0, x0), min(cy0, y0), max(cx1, x1), max(cy1, y1)
+        if not mesh:
+            return Frame(w, h, bytes(w * h * 4), box=(0, 0, w, h))
+        # Only the kept quads' box is warped, lit and cleared (all pixelwise); the rest of the picture is clear.
+        mesh = [((a - cx0, b - cy0, c - cx0, d - cy0), q) for (a, b, c, d), q in mesh]
+        warped = image.transform((cx1 - cx0, cy1 - cy0), Image.Transform.MESH, mesh, Image.Resampling.BILINEAR)
+        warped = _glint(warped, flow, (left - cx0, top - cy0, right - cx0, feet - cy0))
         clear = clear_faint_alpha(warped)
-        return Frame(w, h, premultiplied_bgra(clear), box=_drawn_box(clear))
+        canvas = Image.new("RGBA", (w, h), (0, 0, 0, 0))
+        canvas.paste(clear, (cx0, cy0))
+        bbox = clear.getchannel("A").point(lambda a: 255 if a >= ALPHA_FLOOR else 0).getbbox()
+        box = (bbox[0] + cx0, bbox[1] + cy0, bbox[2] + cx0, bbox[3] + cy0) if bbox else (0, 0, w, h)
+        return Frame(w, h, premultiplied_bgra(canvas), box=box)
+
+    def _occupancy(self, image: Any) -> Any:
+        """A test `(x0, y0, x1, y1) -> bool` for "may any pixel of the picture at or above `ALPHA_FLOOR` lie within these source
+        px": 4 px cells and their running sums, kept per picture (conservative: a cell is lit when any of its pixels is, the
+        box is grown by 2 px for the bilinear taps), so a flow warp skips the quads that would sample clear pixels only."""
+        key = id(image)
+        hit = self._occ.get(key)
+        if hit is None or hit[0] is not image:
+            cell = 4
+            mask = image.getchannel("A").point(lambda a: 255 if a >= ALPHA_FLOOR else 0).reduce(cell)
+            cw, ch = mask.size
+            data = mask.tobytes()
+            sums = [[0] * (cw + 1) for _ in range(ch + 1)]
+            for y in range(ch):
+                run, above, row = 0, sums[y], sums[y + 1]
+                for x in range(cw):
+                    run += 1 if data[y * cw + x] else 0
+                    row[x + 1] = above[x + 1] + run
+
+            def occupied(x0: float, y0: float, x1: float, y1: float) -> bool:
+                a, b = max(0, int((x0 - 2) // cell)), max(0, int((y0 - 2) // cell))
+                c, d = min(cw, int((x1 + 2) // cell) + 1), min(ch, int((y1 + 2) // cell) + 1)
+                return c > a and d > b and sums[d][c] - sums[b][c] - sums[d][a] + sums[b][a] > 0
+
+            hit = (image, occupied)
+            self._occ[key] = hit
+            while len(self._occ) > 8:
+                del self._occ[next(iter(self._occ))]
+        return hit[1]
 
     def _tail_src(self, name: str, dpi: int, flip: bool) -> tuple[Any, Any]:
         """The tail source picture (straight RGBA, at this size) and the region's feather mask, kept: both are the same
@@ -676,6 +730,18 @@ def flow_offsets(flow: tuple[int, ...], edges: list[float], rows: list[int], box
     return out
 
 
+@functools.lru_cache(maxsize=8)
+def _glint_tables(bands: int) -> tuple[list[float], list[tuple[float, float, float]]]:
+    """What `_glint` takes from the strand count alone: each strand's share (the outer streams above the waist too) and each
+    row's lower-body ramp and wave phase."""
+    levels = [0.6 * _smooth((abs((b + 0.5) / bands * 2 - 1) - FLOW_CORE[0] * 1.2) / 0.3) for b in range(bands)]
+    waves = []
+    for r in range(12):
+        k = 2 * math.pi * 1.3 * r / 11
+        waves.append((_smooth((r / 11 - FLOW_WAIST) / 0.12 + 0.5), math.cos(k), math.sin(k)))
+    return levels, waves
+
+
 def _glint(image: Any, flow: tuple[int, ...], box: tuple[int, int, int, int]) -> Any:
     """The nebula's sparkle: each strand's brightest parts take a wave of light toward white that runs down it
     (`flow`'s sine and cosine, tenths), so the particles glimmer along each stream instead of holding one
@@ -686,16 +752,14 @@ def _glint(image: Any, flow: tuple[int, ...], box: tuple[int, int, int, int]) ->
     bands = len(flow) // FLOW_FIELDS
     if right <= left or feet <= top:
         return image
-    rows = 12
-    grid = Image.new("L", (bands, rows))
-    px = grid.load()
-    for b in range(bands):
-        s, c = flow[b * FLOW_FIELDS + 3] / 10.0, flow[b * FLOW_FIELDS + 4] / 10.0
-        free = _smooth((abs((b + 0.5) / bands * 2 - 1) - FLOW_CORE[0] * 1.2) / 0.3)  # the outer streams, above the waist too
-        for r in range(rows):
-            k = 2 * math.pi * 1.3 * r / (rows - 1)
-            own = _smooth((r / (rows - 1) - FLOW_WAIST) / 0.12 + 0.5)  # the lower body's
-            px[b, r] = round(255 * FLOW_GLINT * max(own, 0.6 * free) * (0.5 + 0.5 * (s * math.cos(k) - c * math.sin(k))))
+    levels, waves = _glint_tables(bands)
+    cells = bytearray()
+    for r in range(12):
+        own, k_cos, k_sin = waves[r]
+        for b in range(bands):
+            s, c = flow[b * FLOW_FIELDS + 3] / 10.0, flow[b * FLOW_FIELDS + 4] / 10.0
+            cells.append(max(0, min(255, round(255 * FLOW_GLINT * max(own, levels[b]) * (0.5 + 0.5 * (s * k_cos - c * k_sin))))))
+    grid = Image.frombytes("L", (bands, 12), bytes(cells))
     mask = Image.new("L", image.size, 0)
     mask.paste(grid.resize((right - left, feet - top), Image.Resampling.BICUBIC), (left, top))
     gate = ImageChops.multiply(mask, image.convert("L"))
