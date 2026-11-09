@@ -178,8 +178,463 @@ function heatTo(target) {
   simulation.alpha(ramp.to);
 }
 
-//: One step of the live layout: the ramp's alpha when heat is coming up,
-//: the eased friction when it is going down, then d3's own tick.
+//: **d3-force's quadtree forces on typed arrays** (audit 1031 row 19: the
+//: worker's own settle at 2,000 notes; `forceManyBody` was 45% of it and
+//: `forceCollide` 25%). Each is the same force as d3-force's, step for step:
+//: d3-quadtree's cover, add and split are replayed on flat arrays, the cells
+//: are visited in its order and every sum is made in its order, so the pushes
+//: match to the last bit and a layout comes out exactly where it did
+//: (tests/test_graph_flat_forces.py). What goes is the object a leaf and a cell
+//: each allocated a tick (a third of the time was the collector). The notes
+//: they push are d3's own objects (`vx`, `vy`).
+//: A cell is `kids[4 * c + k]`: 0 (empty), a cell number + 1, or -(leaf + 1);
+//: a leaf is a chain of notes at one spot, the newest first.
+function flatTree() {
+  const t = {
+    kids: new Int32Array(4 * 64),
+    cells: 0,
+    leafNote: new Int32Array(64),
+    leafNext: new Int32Array(64),
+    leaves: 0,
+    root: 0,
+    box: [0, 0, 0, 0],
+  };
+  const grow = (array, size) => {
+    const next = new array.constructor(size);
+    next.set(array);
+    return next;
+  };
+  t.newCell = () => {
+    if (t.cells * 4 + 4 > t.kids.length) t.kids = grow(t.kids, t.kids.length * 2);
+    t.kids.fill(0, 4 * t.cells, 4 * t.cells + 4);
+    return t.cells++;
+  };
+  t.newLeaf = (note) => {
+    if (t.leaves >= t.leafNote.length) {
+      t.leafNote = grow(t.leafNote, t.leaves * 2);
+      t.leafNext = grow(t.leafNext, t.leaves * 2);
+    }
+    t.leafNote[t.leaves] = note;
+    t.leafNext[t.leaves] = -1;
+    return t.leaves++;
+  };
+  // d3-quadtree `addAll` on an empty tree: the unit square under the least corner, doubled until the greatest is in.
+  t.cover = (xs, ys, count) => {
+    let x0 = Infinity;
+    let y0 = Infinity;
+    let x1 = -Infinity;
+    let y1 = -Infinity;
+    for (let i = 0; i < count; i++) {
+      if (xs[i] < x0) x0 = xs[i];
+      if (xs[i] > x1) x1 = xs[i];
+      if (ys[i] < y0) y0 = ys[i];
+      if (ys[i] > y1) y1 = ys[i];
+    }
+    if (x0 > x1) return false;
+    let bx0 = Math.floor(x0);
+    let by0 = Math.floor(y0);
+    let bx1 = bx0 + 1;
+    let by1 = by0 + 1;
+    let z = 1;
+    while (bx0 > x1 || x1 >= bx1 || by0 > y1 || y1 >= by1) {
+      const k = ((y1 < by0) << 1) | (x1 < bx0);
+      z *= 2;
+      if (k === 0) {
+        bx1 = bx0 + z;
+        by1 = by0 + z;
+      } else if (k === 1) {
+        bx0 = bx1 - z;
+        by1 = by0 + z;
+      } else if (k === 2) {
+        bx1 = bx0 + z;
+        by0 = by1 - z;
+      } else {
+        bx0 = bx1 - z;
+        by0 = by1 - z;
+      }
+    }
+    t.box = [bx0, by0, bx1, by1];
+    return true;
+  };
+  t.build = (xs, ys, count) => {
+    t.cells = 0;
+    t.leaves = 0;
+    t.root = 0;
+    if (!t.cover(xs, ys, count)) return;
+    const [bx0, by0, bx1, by1] = t.box;
+    for (let i = 0; i < count; i++) {
+      const x = xs[i];
+      const y = ys[i];
+      const leaf = t.newLeaf(i);
+      if (!t.root) {
+        t.root = -(leaf + 1);
+        continue;
+      }
+      let at = 0;
+      let slot = 0;
+      let node = t.root;
+      let lx0 = bx0;
+      let ly0 = by0;
+      let lx1 = bx1;
+      let ly1 = by1;
+      let placed = false;
+      while (node > 0) {
+        const xm = (lx0 + lx1) / 2;
+        const ym = (ly0 + ly1) / 2;
+        const right = x >= xm ? 1 : 0;
+        const bottom = y >= ym ? 1 : 0;
+        if (right) lx0 = xm;
+        else lx1 = xm;
+        if (bottom) ly0 = ym;
+        else ly1 = ym;
+        at = node;
+        slot = (bottom << 1) | right;
+        node = t.kids[4 * (at - 1) + slot];
+        if (!node) {
+          t.kids[4 * (at - 1) + slot] = -(leaf + 1);
+          placed = true;
+          break;
+        }
+      }
+      if (placed) continue;
+      // `node` is a leaf already standing here.
+      const other = -node - 1;
+      const ox = xs[t.leafNote[other]];
+      const oy = ys[t.leafNote[other]];
+      if (x === ox && y === oy) {
+        t.leafNext[leaf] = other;
+        if (at) t.kids[4 * (at - 1) + slot] = -(leaf + 1);
+        else t.root = -(leaf + 1);
+        continue;
+      }
+      let parent = at;
+      let parentSlot = slot;
+      let a;
+      let b;
+      do {
+        const made = t.newCell() + 1;
+        if (parent) t.kids[4 * (parent - 1) + parentSlot] = made;
+        else t.root = made;
+        parent = made;
+        const xm = (lx0 + lx1) / 2;
+        const ym = (ly0 + ly1) / 2;
+        if (x >= xm) lx0 = xm;
+        else lx1 = xm;
+        if (y >= ym) ly0 = ym;
+        else ly1 = ym;
+        a = ((y >= ym ? 1 : 0) << 1) | (x >= xm ? 1 : 0);
+        b = ((oy >= ym ? 1 : 0) << 1) | (ox >= xm ? 1 : 0);
+        parentSlot = a;
+      } while (a === b);
+      t.kids[4 * (parent - 1) + b] = node;
+      t.kids[4 * (parent - 1) + a] = -(leaf + 1);
+    }
+  };
+  return t;
+}
+
+//: d3.forceManyBody: one strength for every note (as the worker sets it).
+function quadCharge() {
+  let strength = -30;
+  let distanceMax2 = Infinity;
+  let theta2 = 0.81;
+  let list = [];
+  let random = Math.random;
+  const t = flatTree();
+  let xs = new Float64Array(0);
+  let ys = new Float64Array(0);
+  let cellValue = new Float64Array(64);
+  let cellX = new Float64Array(64);
+  let cellY = new Float64Array(64);
+  let leafValue = new Float64Array(64);
+  const stack = new Int32Array(4096);
+  const stackBox = new Float64Array(4096 * 4);
+  const jiggle = () => (random() - 0.5) * 1e-6;
+  function accumulate() {
+    const { kids, leafNote, leafNext } = t;
+    if (leafValue.length < t.leaves) leafValue = new Float64Array(t.leafNote.length);
+    if (cellValue.length < t.cells) {
+      cellValue = new Float64Array(t.kids.length / 4);
+      cellX = new Float64Array(cellValue.length);
+      cellY = new Float64Array(cellValue.length);
+    }
+    for (let l = 0; l < t.leaves; l++) {
+      let sum = 0;
+      for (let at = l; at >= 0; at = leafNext[at]) sum += strength;
+      leafValue[l] = sum;
+    }
+    // A cell is made after its parent, so the last made is summed first.
+    for (let c = t.cells - 1; c >= 0; c--) {
+      let sum = 0;
+      let weight = 0;
+      let sx = 0;
+      let sy = 0;
+      for (let k = 0; k < 4; k++) {
+        const q = kids[4 * c + k];
+        if (!q) continue;
+        let value;
+        let qx;
+        let qy;
+        if (q > 0) {
+          value = cellValue[q - 1];
+          qx = cellX[q - 1];
+          qy = cellY[q - 1];
+        } else {
+          value = leafValue[-q - 1];
+          qx = xs[leafNote[-q - 1]];
+          qy = ys[leafNote[-q - 1]];
+        }
+        const w = Math.abs(value);
+        if (w) {
+          sum += value;
+          weight += w;
+          sx += w * qx;
+          sy += w * qy;
+        }
+      }
+      cellX[c] = sx / weight;
+      cellY[c] = sy / weight;
+      cellValue[c] = sum;
+    }
+  }
+  function force(alpha) {
+    const count = list.length;
+    if (xs.length !== count) {
+      xs = new Float64Array(count);
+      ys = new Float64Array(count);
+    }
+    for (let i = 0; i < count; i++) {
+      xs[i] = list[i].x;
+      ys[i] = list[i].y;
+    }
+    t.build(xs, ys, count);
+    if (!t.root) return;
+    accumulate();
+    const { kids, leafNote, leafNext } = t;
+    const [bx0, by0, bx1, by1] = t.box;
+    for (let i = 0; i < count; i++) {
+      const node = list[i];
+      const nx = xs[i];
+      const ny = ys[i];
+      stack[0] = t.root;
+      stackBox[0] = bx0;
+      stackBox[1] = by0;
+      stackBox[2] = bx1;
+      stackBox[3] = by1;
+      let top = 1;
+      while (top > 0) {
+        top -= 1;
+        const q = stack[top];
+        const x0 = stackBox[top * 4];
+        const y0 = stackBox[top * 4 + 1];
+        const x1 = stackBox[top * 4 + 2];
+        const y1 = stackBox[top * 4 + 3];
+        const isCell = q > 0;
+        let value;
+        let qx;
+        let qy;
+        if (isCell) {
+          value = cellValue[q - 1];
+          qx = cellX[q - 1];
+          qy = cellY[q - 1];
+        } else {
+          value = leafValue[-q - 1];
+          qx = xs[leafNote[-q - 1]];
+          qy = ys[leafNote[-q - 1]];
+        }
+        if (!value) continue;
+        let x = qx - nx;
+        let y = qy - ny;
+        const w = x1 - x0;
+        let l = x * x + y * y;
+        if ((w * w) / theta2 < l) {
+          if (l < distanceMax2) {
+            if (x === 0) {
+              x = jiggle();
+              l += x * x;
+            }
+            if (y === 0) {
+              y = jiggle();
+              l += y * y;
+            }
+            if (l < 1) l = Math.sqrt(l);
+            node.vx += (x * value * alpha) / l;
+            node.vy += (y * value * alpha) / l;
+          }
+          continue;
+        }
+        if (isCell) {
+          const xm = (x0 + x1) / 2;
+          const ym = (y0 + y1) / 2;
+          for (let k = 3; k >= 0; k--) {
+            const child = kids[4 * (q - 1) + k];
+            if (!child) continue;
+            stack[top] = child;
+            stackBox[top * 4] = k & 1 ? xm : x0;
+            stackBox[top * 4 + 1] = k & 2 ? ym : y0;
+            stackBox[top * 4 + 2] = k & 1 ? x1 : xm;
+            stackBox[top * 4 + 3] = k & 2 ? y1 : ym;
+            top += 1;
+          }
+          continue;
+        }
+        if (l >= distanceMax2) continue;
+        let leaf = -q - 1;
+        if (leafNote[leaf] !== i || leafNext[leaf] >= 0) {
+          if (x === 0) {
+            x = jiggle();
+            l += x * x;
+          }
+          if (y === 0) {
+            y = jiggle();
+            l += y * y;
+          }
+          if (l < 1) l = Math.sqrt(l);
+        }
+        for (; leaf >= 0; leaf = leafNext[leaf]) {
+          if (leafNote[leaf] === i) continue;
+          const push = (strength * alpha) / l;
+          node.vx += x * push;
+          node.vy += y * push;
+        }
+      }
+    }
+  }
+  force.initialize = (nodeList, rng) => {
+    list = nodeList;
+    random = rng;
+  };
+  force.strength = (value) => {
+    if (value === undefined) return strength;
+    strength = +value;
+    return force;
+  };
+  force.distanceMax = (value) => {
+    distanceMax2 = value * value;
+    return force;
+  };
+  force.theta = (value) => {
+    theta2 = value * value;
+    return force;
+  };
+  return force;
+}
+
+//: d3.forceCollide (one iteration, strength 1): the radii are read once, when
+//: the force is given its notes, as d3 does. A cell's `r` is its widest note.
+function quadCollide(radius) {
+  let list = [];
+  let random = Math.random;
+  let radii = new Float64Array(0);
+  let xs = new Float64Array(0);
+  let ys = new Float64Array(0);
+  let cellR = new Float64Array(64);
+  const t = flatTree();
+  const stack = new Int32Array(4096);
+  const stackBox = new Float64Array(4096 * 4);
+  const jiggle = () => (random() - 0.5) * 1e-6;
+  function force() {
+    const count = list.length;
+    // The tree is made at where each note is heading: d3 passes `x + vx`.
+    for (let i = 0; i < count; i++) {
+      xs[i] = list[i].x + list[i].vx;
+      ys[i] = list[i].y + list[i].vy;
+    }
+    t.build(xs, ys, count);
+    if (!t.root) return;
+    const { kids, leafNote } = t;
+    if (cellR.length < t.cells) cellR = new Float64Array(t.kids.length / 4);
+    for (let c = t.cells - 1; c >= 0; c--) {
+      let r = 0;
+      for (let k = 0; k < 4; k++) {
+        const q = kids[4 * c + k];
+        if (!q) continue;
+        const qr = q > 0 ? cellR[q - 1] : radii[leafNote[-q - 1]];
+        if (qr > r) r = qr;
+      }
+      cellR[c] = r;
+    }
+    const [bx0, by0, bx1, by1] = t.box;
+    for (let i = 0; i < count; i++) {
+      const node = list[i];
+      const ri = radii[i];
+      const ri2 = ri * ri;
+      // Read now, not at the build: the pushes of the notes before this one have moved it.
+      const xi = node.x + node.vx;
+      const yi = node.y + node.vy;
+      stack[0] = t.root;
+      stackBox[0] = bx0;
+      stackBox[1] = by0;
+      stackBox[2] = bx1;
+      stackBox[3] = by1;
+      let top = 1;
+      while (top > 0) {
+        top -= 1;
+        const q = stack[top];
+        const x0 = stackBox[top * 4];
+        const y0 = stackBox[top * 4 + 1];
+        const x1 = stackBox[top * 4 + 2];
+        const y1 = stackBox[top * 4 + 3];
+        if (q < 0) {
+          // Only the head of a chain at one spot takes part, as in d3.
+          const j = leafNote[-q - 1];
+          if (j <= i) continue;
+          const other = list[j];
+          let rj = radii[j];
+          const r = ri + rj;
+          let x = xi - other.x - other.vx;
+          let y = yi - other.y - other.vy;
+          let l = x * x + y * y;
+          if (l < r * r) {
+            if (x === 0) {
+              x = jiggle();
+              l += x * x;
+            }
+            if (y === 0) {
+              y = jiggle();
+              l += y * y;
+            }
+            l = ((r - (l = Math.sqrt(l))) / l) * 1;
+            rj *= rj;
+            rj /= ri2 + rj;
+            x *= l;
+            node.vx += x * rj;
+            y *= l;
+            node.vy += y * rj;
+            rj = 1 - rj;
+            other.vx -= x * rj;
+            other.vy -= y * rj;
+          }
+          continue;
+        }
+        const r = ri + cellR[q - 1];
+        if (x0 > xi + r || x1 < xi - r || y0 > yi + r || y1 < yi - r) continue;
+        const xm = (x0 + x1) / 2;
+        const ym = (y0 + y1) / 2;
+        for (let k = 3; k >= 0; k--) {
+          const child = kids[4 * (q - 1) + k];
+          if (!child) continue;
+          stack[top] = child;
+          stackBox[top * 4] = k & 1 ? xm : x0;
+          stackBox[top * 4 + 1] = k & 2 ? ym : y0;
+          stackBox[top * 4 + 2] = k & 1 ? x1 : xm;
+          stackBox[top * 4 + 3] = k & 2 ? y1 : ym;
+          top += 1;
+        }
+      }
+    }
+  }
+  force.initialize = (nodeList, rng) => {
+    list = nodeList;
+    random = rng;
+    radii = new Float64Array(list.length);
+    xs = new Float64Array(list.length);
+    ys = new Float64Array(list.length);
+    for (let i = 0; i < list.length; i++) radii[i] = radius(list[i], i, list);
+  };
+  return force;
+}
+
 function tickOnce() {
   if (ramp.n) {
     ramp.i += 1;
@@ -3623,8 +4078,7 @@ self.onmessage = (event) => {
         )
         .force(
           "charge",
-          d3
-            .forceManyBody()
+          quadCharge()
             .strength(tuned.charge)
             // **`distanceMax` is the single biggest cost lever on a big
             // notebook, and it is a modelling choice as well as a speed one.**
@@ -3677,7 +4131,7 @@ self.onmessage = (event) => {
           "collide",
           // At least a radius of air each side (INBOX 693, "minimum node gap of
           // about 2 node radii"): a big hub was only its pad from its neighbour.
-          d3.forceCollide().radius(collideRadius)
+          quadCollide(collideRadius)
         )
         // d3 starts its own timer on construction; every tick here is driven
         // by `loop` instead, so that one is turned off immediately.
