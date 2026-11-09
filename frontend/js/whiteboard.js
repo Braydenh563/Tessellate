@@ -203,7 +203,7 @@ let wbZoom = d3
   .on("end.shield", wbEndPanShield);
 //: Whether the view is where the last "Fit to screen" put it (INBOX 792):
 //: the destination, and until when the fit's own animation is running.
-const wbFit = { on: false, target: null, until: 0 };
+const wbFit = { on: false, target: null, until: 0, padding: 64 };
 let wbState = { nodes: [], sketches: [], objects: [] };
 let wbHintForcedOpen = false; // the "?" help button's override: see renderWhiteboard
 let wbInitialized = false;
@@ -2912,7 +2912,7 @@ function wbSameView(a, b) {
 function wbRefitIfFitted() {
   const container = document.getElementById("whiteboard-container");
   if (!wbFit.on || !container || !container.offsetParent || !container.clientWidth) return;
-  wbZoomToFit();
+  wbZoomToFit({ padding: wbFit.padding });
 }
 
 /**
@@ -2948,6 +2948,7 @@ function wbZoomToFit({ animate = true, padding = 64, bounds = wbContentBounds(),
   //: Only Fit everything keeps fitting while the board settles; a zoom to
   //: the selection is a place, and the next layout must not pull it back out.
   wbFit.on = refit;
+  wbFit.padding = padding;
   wbFit.target = target;
   wbFit.until = Date.now() + (animate ? 600 : 100);
   if (!animate) {
@@ -3084,16 +3085,21 @@ const WB_MAP_OPEN_MIN_SCALE = 0.45;
 
 //: **On a phone the floor is the text, not the tree** (blind test 1031, 390px:
 //: a 7-topic template framed at 0.24, so a 17px topic read at 4px, a pill was
-//: 44x11 and the 24px add handle covered it). A topic's own text is 17px, so
-//: 0.72 reads at 12px, and a map that does not fit at that opens centred on
-//: its root at that same scale, the rest a pan away. The canvas width is the
-//: test rather than the pointer: a narrow desktop window has the same problem.
+//: 44x11 and the 24px add handle covered it). The owner, 2026-11-09: fit the
+//: whole map down to a minimum readable zoom, and when it is still too big,
+//: centre the root at that zoom. A topic's own text is 17px, so 0.65 reads at
+//: 11px (the floor; 0.72 read at 12px but left a 5-topic map 1 of 5 in view),
+//: and the fit's margin is 16px rather than 64 (the canvas is 372px wide). The
+//: canvas width is the test rather than the pointer: a narrow desktop window
+//: has the same problem.
 const WB_MAP_PHONE_MAX_WIDTH = 600;
-const WB_MAP_PHONE_SCALE = 0.72;
+const WB_MAP_PHONE_SCALE = 0.65;
 
 function wbMapFrameScales(container) {
   const phone = container.clientWidth <= WB_MAP_PHONE_MAX_WIDTH;
-  return phone ? { min: WB_MAP_PHONE_SCALE, open: WB_MAP_PHONE_SCALE } : { min: WB_MAP_OPEN_MIN_SCALE, open: 1 };
+  return phone
+    ? { min: WB_MAP_PHONE_SCALE, open: WB_MAP_PHONE_SCALE, pad: 16, centre: true }
+    : { min: WB_MAP_OPEN_MIN_SCALE, open: 1, pad: 64, centre: false };
 }
 
 //: **Frame a map when it opens**, rather than leaving the canvas wherever the
@@ -3115,8 +3121,8 @@ function wbFrameMapOnOpen() {
   if (!wbIsMap()) return;
   const container = document.getElementById("whiteboard-container");
   if (!container) return;
-  wbZoomToFit({ animate: false });
   const scales = wbMapFrameScales(container);
+  wbZoomToFit({ animate: false, padding: scales.pad });
   if (d3.zoomTransform(container).k >= scales.min) return;
   const root = wbMapIndex().roots[0];
   const bounds = wbContentBounds();
@@ -3126,7 +3132,7 @@ function wbFrameMapOnOpen() {
   //: wide window, so the same map opened at 0.4 there and at 1:1 on a narrow
   //: one).
   wbFit.on = false;
-  const target = wbMapOpenTarget(bounds, wbItemBBox("object", root), wbFreeArea(container), scales.open);
+  const target = wbMapOpenTarget(bounds, wbItemBBox("object", root), wbFreeArea(container), scales.open, 48, scales.centre);
   d3.select(container).call(wbZoom.transform, d3.zoomIdentity.translate(target.x, target.y).scale(target.k));
 }
 
@@ -3139,11 +3145,11 @@ function wbFrameMapOnOpen() {
 //: edge, so the empty space is on the far side; if that would push the root
 //: out of view (a root in the middle of a radial map), centre on the root
 //: instead.
-function wbMapOpenTarget(bounds, rootBox, free, k, pad = 48) {
+function wbMapOpenTarget(bounds, rootBox, free, k, pad = 48, centre = false) {
   const axis = (lo, rLo, rHi, a0, a1) => {
     const span = (a1 - a0) / k;
     let start = lo - pad / k;
-    if (rLo < start || rHi > start + span) start = (rLo + rHi) / 2 - span / 2;
+    if (centre || rLo < start || rHi > start + span) start = (rLo + rHi) / 2 - span / 2;
     return a0 - start * k;
   };
   return {
