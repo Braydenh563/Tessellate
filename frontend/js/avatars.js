@@ -8873,6 +8873,8 @@ function nameMarkBuddyDecide(now = Date.now(), hour = new Date().getHours()) {
     //: At night a nap still wants a quiet half minute, and none just after it was woken (it nodded off again at once).
     if (act === "nap") w = idle > 90 * 1000 ? 3 : night && idle > 30 * 1000 && now >= (nmb.awakeUntil || 0) ? 1 : 0;
     if (act === "glance" && !nmb.pointer) w = 0;
+    //: The wave is the pointer-idle trigger's alone (`nmb.waveRest`); the card nap needs a card under it (INBOX 1711).
+    if (act === "wavepointer" || (act === "cardnap" && !nmb.cardEdge())) w = 0;
     w *= (byMood[act] || 1) * (byKind[act] || 1);
     //: Its own slow mood: energy, curiosity and sociability (0 to 1).
     const { energy, curiosity, sociability } = nmb.mood;
@@ -9992,6 +9994,12 @@ nmb.waveRest = (x, y) => {
     nmb.waveAt = now;
     nameMarkBuddyAct("wavepointer", 2400);
   }, NMB_WAVE_IDLE);
+};
+//: The visible card it sits on the top edge of, or null: a nap curls on a real edge, never on nothing.
+nmb.cardEdge = () => {
+  const el = nmb.perch === "card" && nmb.pose === "sit" && !nmb.visit ? nmb.spot?.edge?.el : null;
+  const r = el?.isConnected && el.getBoundingClientRect();
+  return r && r.top > 0 && r.top < innerHeight - 40 && r.width > 0 ? r : null;
 };
 function nameMarkBuddyNotice(x, y, now, salient = "") {
   const buddy = document.getElementById("nm-buddy");
