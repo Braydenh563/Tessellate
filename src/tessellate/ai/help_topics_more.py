@@ -3339,7 +3339,7 @@ MORE_TOPICS.extend([
             "its percentage is typeable and 100% is the drawing's own size; Shift+arrow keys pan. "
             "Shift+click picks a range, Ctrl+click adds one; Escape lets go of the pick; a bar offers Delete, "
             "Duplicate, Box them, Select all, Clear; any picked grip moves all. "
-            "Press or drag a block from the shelf onto the picture to join the nearest box (Add on a phone); long press a block for its menu. "
+            "Press or drag a block from the shelf onto the picture to join the nearest box (touch: hold); long press a block for its menu. "
             "Keys "
             "on a block: arrows walk, Enter renames, N adds a Box, 1 to 9 the other shapes, Shift+N the last one, G adds a group, C or J joins, "
             "K colours, ? lists keys, Delete removes, Alt+Up and Alt+Down reorder, Alt+Right nests, Alt+Left lifts. "

@@ -126,6 +126,19 @@
     return { canvas: true, op: s.op, parent: s.parent, before: s.before, card, word: `${{ before: "Before", after: "After", into: "Into" }[s.op]} ${name}` };
   }
 
+  //: A shelf tile dropped off every part lands where a press on it adds (`ops.spot`: after the selection, else at the end), so the
+  //: marker rings the box that place is beside and says so, rather than lighting the whole picture (INBOX 1661 l). Null with no box to ring.
+  function landing(S, tile) {
+    const ops = diagramModel.kinds.ops;
+    if (!S?.hit || S.seq || !imgOf(S) || !tile?.type) return null;
+    const at = ops.spot(S.k, S.m, tile.type, S.sel, Boolean(tile.into));
+    if (!at) return null;
+    const [op, ref] = at.before ? ["Before", at.before] : S.sel && ops.find(S.k, S.m, S.sel) ? ["After", ops.find(S.k, S.m, S.sel).node] : ["Into", at.parent];
+    const key = ref && ops.key(ref);
+    const card = key && boxEl(S, key);
+    return card ? { canvas: true, op: op === "Into" ? "into" : "after", card, add: {}, word: `${op} ${diagramModel.kinds.act.name(S, key)}` } : null;
+  }
+
   function wire(S) {
     const fig = S?.fig;
     if (!fig || !/^(mindmap|timeline)$/.test(S.k?.name) || fig.dataset.tree) return;
@@ -133,5 +146,5 @@
     diagramModel.seqCanvas.edit(S, (svg) => boxes(svg, S.k, S.m, diagramModel.kinds.ops.key));
   }
 
-  diagramModel.treeCanvas = { wire, parts, order, boxes, spot, node, over };
+  diagramModel.treeCanvas = { wire, parts, order, boxes, spot, node, over, landing };
 })();

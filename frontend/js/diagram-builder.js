@@ -69,7 +69,7 @@
       S.fig.classList.toggle("dgm-picture-empty", empty);
       //: The phone layout keys on the window body; a class, not `.dgm-body:has()` (test_css_body_has).
       S.fig.closest(".dgm-body")?.classList.toggle("dgm-body-empty", empty);
-      if (empty) return (S.drawing = false), S.fig.replaceChildren(el("p", "muted dgm-hint", "The picture appears here as you add blocks."));
+      if (empty) return (S.drawing = false), S.fig.replaceChildren(el("p", "muted dgm-hint", "Press a shape above to start the diagram."));
       //: The hint goes now, or it and the pending line show together (1679 m).
       S.fig.querySelector(":scope > .dgm-hint")?.remove();
       Promise.all([ensureModule("mermaid"), diagramModel.picture.idle(S)]).then(([ok]) => {

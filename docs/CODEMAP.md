@@ -2,9 +2,9 @@
 
 Generated 2026-11-09 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7949, frontend ids 2652, CSS sections 523, backend routes 649, backend modules 9302, test files 2305, tests 19223, plan headings 1008, app scripts 28, boot scripts 37, script files 266.
+Counts: frontend functions 7951, frontend ids 2652, CSS sections 523, backend routes 649, backend modules 9302, test files 2306, tests 19232, plan headings 1008, app scripts 28, boot scripts 37, script files 266.
 
-## Frontend functions (7949)
+## Frontend functions (7951)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -3139,14 +3139,14 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `build` | frontend/js/diagram-bar.js:40 |
-| `chain` | frontend/js/diagram-bar.js:147 |
+| `build` | frontend/js/diagram-bar.js:41 |
+| `chain` | frontend/js/diagram-bar.js:148 |
 | `hintOf` | frontend/js/diagram-bar.js:17 |
-| `key` | frontend/js/diagram-bar.js:122 |
+| `key` | frontend/js/diagram-bar.js:123 |
 | `last` | frontend/js/diagram-bar.js:18 |
 | `nameOf` | frontend/js/diagram-bar.js:23 |
 | `optionsOf` | frontend/js/diagram-bar.js:22 |
-| `rootKey` | frontend/js/diagram-bar.js:132 |
+| `rootKey` | frontend/js/diagram-bar.js:133 |
 | `sync` | frontend/js/diagram-bar.js:26 |
 
 ### frontend/js/diagram-builder.js (42)
@@ -3292,70 +3292,70 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `addTile` | frontend/js/diagram-kinds.js:832 |
-| `buildBlock` | frontend/js/diagram-kinds.js:704 |
-| `buildPalette` | frontend/js/diagram-kinds.js:1016 |
-| `buildRow` | frontend/js/diagram-kinds.js:714 |
-| `dropApply` | frontend/js/diagram-kinds.js:973 |
-| `dropAt` | frontend/js/diagram-kinds.js:944 |
-| `fieldsOf` | frontend/js/diagram-kinds.js:697 |
-| `find` | frontend/js/diagram-kinds.js:625 |
-| `ghostSpec` | frontend/js/diagram-kinds.js:1130 |
-| `glyph` | frontend/js/diagram-kinds.js:630 |
-| `icon` | frontend/js/diagram-kinds.js:620 |
-| `itemsFor` | frontend/js/diagram-kinds.js:781 |
-| `keptWords` | frontend/js/diagram-kinds.js:659 |
-| `keysOf` | frontend/js/diagram-kinds.js:667 |
-| `kxAdd` | frontend/js/diagram-kinds.js:318 |
-| `kxAddWho` | frontend/js/diagram-kinds.js:498 |
-| `kxCount` | frontend/js/diagram-kinds.js:269 |
+| `addTile` | frontend/js/diagram-kinds.js:838 |
+| `buildBlock` | frontend/js/diagram-kinds.js:710 |
+| `buildPalette` | frontend/js/diagram-kinds.js:1022 |
+| `buildRow` | frontend/js/diagram-kinds.js:720 |
+| `dropApply` | frontend/js/diagram-kinds.js:979 |
+| `dropAt` | frontend/js/diagram-kinds.js:950 |
+| `fieldsOf` | frontend/js/diagram-kinds.js:703 |
+| `find` | frontend/js/diagram-kinds.js:630 |
+| `ghostSpec` | frontend/js/diagram-kinds.js:1136 |
+| `glyph` | frontend/js/diagram-kinds.js:635 |
+| `icon` | frontend/js/diagram-kinds.js:625 |
+| `itemsFor` | frontend/js/diagram-kinds.js:787 |
+| `keptWords` | frontend/js/diagram-kinds.js:664 |
+| `keysOf` | frontend/js/diagram-kinds.js:672 |
+| `kxAdd` | frontend/js/diagram-kinds.js:323 |
+| `kxAddWho` | frontend/js/diagram-kinds.js:503 |
+| `kxCount` | frontend/js/diagram-kinds.js:274 |
 | `kxEsc` | frontend/js/diagram-kinds.js:29 |
-| `kxFind` | frontend/js/diagram-kinds.js:274 |
-| `kxFreshId` | frontend/js/diagram-kinds.js:493 |
+| `kxFind` | frontend/js/diagram-kinds.js:279 |
+| `kxFreshId` | frontend/js/diagram-kinds.js:498 |
 | `kxKey` | frontend/js/diagram-kinds.js:31 |
-| `kxLast` | frontend/js/diagram-kinds.js:443 |
-| `kxLevel` | frontend/js/diagram-kinds.js:282 |
-| `kxLift` | frontend/js/diagram-kinds.js:392 |
+| `kxLast` | frontend/js/diagram-kinds.js:448 |
+| `kxLevel` | frontend/js/diagram-kinds.js:287 |
+| `kxLift` | frontend/js/diagram-kinds.js:397 |
 | `kxLines` | frontend/js/diagram-kinds.js:35 |
-| `kxMake` | frontend/js/diagram-kinds.js:442 |
-| `kxMerge` | frontend/js/diagram-kinds.js:416 |
-| `kxMmParse` | frontend/js/diagram-kinds.js:67 |
-| `kxMmPlain` | frontend/js/diagram-kinds.js:96 |
-| `kxMmPrint` | frontend/js/diagram-kinds.js:98 |
+| `kxMake` | frontend/js/diagram-kinds.js:447 |
+| `kxMerge` | frontend/js/diagram-kinds.js:421 |
+| `kxMmParse` | frontend/js/diagram-kinds.js:70 |
+| `kxMmPlain` | frontend/js/diagram-kinds.js:99 |
+| `kxMmPrint` | frontend/js/diagram-kinds.js:101 |
 | `kxMmRead` | frontend/js/diagram-kinds.js:52 |
-| `kxMove` | frontend/js/diagram-kinds.js:304 |
-| `kxNest` | frontend/js/diagram-kinds.js:382 |
+| `kxMove` | frontend/js/diagram-kinds.js:309 |
+| `kxNest` | frontend/js/diagram-kinds.js:387 |
 | `kxPad` | frontend/js/diagram-kinds.js:32 |
-| `kxRelabel` | frontend/js/diagram-kinds.js:403 |
-| `kxRemove` | frontend/js/diagram-kinds.js:350 |
-| `kxRows` | frontend/js/diagram-kinds.js:291 |
-| `kxSeqParse` | frontend/js/diagram-kinds.js:198 |
-| `kxSeqPrint` | frontend/js/diagram-kinds.js:237 |
-| `kxSpot` | frontend/js/diagram-kinds.js:330 |
-| `kxStep` | frontend/js/diagram-kinds.js:370 |
-| `kxSteps` | frontend/js/diagram-kinds.js:502 |
-| `kxTlParse` | frontend/js/diagram-kinds.js:130 |
-| `kxTlPrint` | frontend/js/diagram-kinds.js:172 |
+| `kxRelabel` | frontend/js/diagram-kinds.js:408 |
+| `kxRemove` | frontend/js/diagram-kinds.js:355 |
+| `kxRows` | frontend/js/diagram-kinds.js:296 |
+| `kxSeqParse` | frontend/js/diagram-kinds.js:203 |
+| `kxSeqPrint` | frontend/js/diagram-kinds.js:242 |
+| `kxSpot` | frontend/js/diagram-kinds.js:335 |
+| `kxStep` | frontend/js/diagram-kinds.js:375 |
+| `kxSteps` | frontend/js/diagram-kinds.js:507 |
+| `kxTlParse` | frontend/js/diagram-kinds.js:135 |
+| `kxTlPrint` | frontend/js/diagram-kinds.js:177 |
 | `kxUid` | frontend/js/diagram-kinds.js:30 |
-| `kxWalk` | frontend/js/diagram-kinds.js:263 |
-| `kxWithin` | frontend/js/diagram-kinds.js:283 |
-| `menuAt` | frontend/js/diagram-kinds.js:914 |
-| `mount` | frontend/js/diagram-kinds.js:1044 |
-| `nameOf` | frontend/js/diagram-kinds.js:626 |
-| `nestBlock` | frontend/js/diagram-kinds.js:860 |
-| `onKey` | frontend/js/diagram-kinds.js:879 |
-| `pickWho` | frontend/js/diagram-kinds.js:767 |
-| `pictureDrop` | frontend/js/diagram-kinds.js:938 |
-| `relabel` | frontend/js/diagram-kinds.js:818 |
-| `removeBlock` | frontend/js/diagram-kinds.js:866 |
-| `render` | frontend/js/diagram-kinds.js:671 |
-| `seedBlock` | frontend/js/diagram-kinds.js:921 |
-| `show` | frontend/js/diagram-kinds.js:1153 |
-| `stepBlock` | frontend/js/diagram-kinds.js:854 |
-| `sync` | frontend/js/diagram-kinds.js:1106 |
-| `whoLabel` | frontend/js/diagram-kinds.js:627 |
-| `withinNode` | frontend/js/diagram-kinds.js:967 |
-| `words` | frontend/js/diagram-kinds.js:646 |
+| `kxWalk` | frontend/js/diagram-kinds.js:268 |
+| `kxWithin` | frontend/js/diagram-kinds.js:288 |
+| `menuAt` | frontend/js/diagram-kinds.js:920 |
+| `mount` | frontend/js/diagram-kinds.js:1050 |
+| `nameOf` | frontend/js/diagram-kinds.js:631 |
+| `nestBlock` | frontend/js/diagram-kinds.js:866 |
+| `onKey` | frontend/js/diagram-kinds.js:885 |
+| `pickWho` | frontend/js/diagram-kinds.js:773 |
+| `pictureDrop` | frontend/js/diagram-kinds.js:944 |
+| `relabel` | frontend/js/diagram-kinds.js:824 |
+| `removeBlock` | frontend/js/diagram-kinds.js:872 |
+| `render` | frontend/js/diagram-kinds.js:676 |
+| `seedBlock` | frontend/js/diagram-kinds.js:927 |
+| `show` | frontend/js/diagram-kinds.js:1159 |
+| `stepBlock` | frontend/js/diagram-kinds.js:860 |
+| `sync` | frontend/js/diagram-kinds.js:1112 |
+| `whoLabel` | frontend/js/diagram-kinds.js:632 |
+| `withinNode` | frontend/js/diagram-kinds.js:973 |
+| `words` | frontend/js/diagram-kinds.js:651 |
 
 ### frontend/js/diagram-letgo.js (1)
 
@@ -3363,15 +3363,16 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 |---|---|
 | `wire` | frontend/js/diagram-letgo.js:13 |
 
-### frontend/js/diagram-library.js (8)
+### frontend/js/diagram-library.js (9)
 
 | Name | File:line |
 |---|---|
 | `build` | frontend/js/diagram-library.js:64 |
 | `compact` | frontend/js/diagram-library.js:13 |
 | `flow` | frontend/js/diagram-library.js:32 |
+| `hist` | frontend/js/diagram-library.js:198 |
 | `idleLine` | frontend/js/diagram-library.js:14 |
-| `lazyKebab` | frontend/js/diagram-library.js:176 |
+| `lazyKebab` | frontend/js/diagram-library.js:178 |
 | `make` | frontend/js/diagram-library.js:24 |
 | `shelf` | frontend/js/diagram-library.js:106 |
 | `tileOf` | frontend/js/diagram-library.js:50 |
@@ -3441,8 +3442,8 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `boxes` | frontend/js/diagram-picture.js:10 |
 | `extras` | frontend/js/diagram-picture.js:51 |
 | `failure` | frontend/js/diagram-picture.js:90 |
-| `idle` | frontend/js/diagram-picture.js:162 |
-| `patch` | frontend/js/diagram-picture.js:142 |
+| `idle` | frontend/js/diagram-picture.js:164 |
+| `patch` | frontend/js/diagram-picture.js:144 |
 | `pick` | frontend/js/diagram-picture.js:77 |
 
 ### frontend/js/diagram-pointer.js (4)
@@ -3544,13 +3545,14 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `listSheet` | frontend/js/diagram-touch.js:49 |
 | `wire` | frontend/js/diagram-touch.js:62 |
 
-### frontend/js/diagram-tree-canvas.js (14)
+### frontend/js/diagram-tree-canvas.js (15)
 
 | Name | File:line |
 |---|---|
 | `boxEl` | frontend/js/diagram-tree-canvas.js:98 |
 | `boxes` | frontend/js/diagram-tree-canvas.js:61 |
 | `imgOf` | frontend/js/diagram-tree-canvas.js:97 |
+| `landing` | frontend/js/diagram-tree-canvas.js:131 |
 | `node` | frontend/js/diagram-tree-canvas.js:106 |
 | `num` | frontend/js/diagram-tree-canvas.js:9 |
 | `order` | frontend/js/diagram-tree-canvas.js:47 |
@@ -3560,7 +3562,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `said` | frontend/js/diagram-tree-canvas.js:15 |
 | `shift` | frontend/js/diagram-tree-canvas.js:10 |
 | `spot` | frontend/js/diagram-tree-canvas.js:77 |
-| `wire` | frontend/js/diagram-tree-canvas.js:129 |
+| `wire` | frontend/js/diagram-tree-canvas.js:142 |
 | `words` | frontend/js/diagram-tree-canvas.js:13 |
 
 ### frontend/js/diagram-view.js (2)
@@ -6076,29 +6078,29 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 |---|---|
 | `mermaidAltFor` | frontend/js/mermaid-draw.js:53 |
 | `mermaidCacheKey` | frontend/js/mermaid-draw.js:335 |
-| `mermaidDrawBlock` | frontend/js/mermaid-draw.js:501 |
-| `mermaidDrawIn` | frontend/js/mermaid-draw.js:521 |
+| `mermaidDrawBlock` | frontend/js/mermaid-draw.js:503 |
+| `mermaidDrawIn` | frontend/js/mermaid-draw.js:523 |
 | `mermaidEnsureFrame` | frontend/js/mermaid-draw.js:107 |
 | `mermaidFaded` | frontend/js/mermaid-draw.js:189 |
 | `mermaidFailure` | frontend/js/mermaid-draw.js:349 |
-| `mermaidFill` | frontend/js/mermaid-draw.js:467 |
+| `mermaidFill` | frontend/js/mermaid-draw.js:469 |
 | `mermaidFillShare` | frontend/js/mermaid-draw.js:168 |
 | `mermaidFills` | frontend/js/mermaid-draw.js:179 |
 | `mermaidHex` | frontend/js/mermaid-draw.js:158 |
 | `mermaidHue` | frontend/js/mermaid-draw.js:205 |
 | `mermaidInkOn` | frontend/js/mermaid-draw.js:199 |
-| `mermaidInlineForExport` | frontend/js/mermaid-draw.js:606 |
+| `mermaidInlineForExport` | frontend/js/mermaid-draw.js:608 |
 | `mermaidKnown` | frontend/js/mermaid-draw.js:342 |
 | `mermaidLook` | frontend/js/mermaid-draw.js:312 |
 | `mermaidLuma` | frontend/js/mermaid-draw.js:192 |
 | `mermaidMix` | frontend/js/mermaid-draw.js:163 |
 | `mermaidOnMessage` | frontend/js/mermaid-draw.js:92 |
-| `mermaidRedrawAll` | frontend/js/mermaid-draw.js:618 |
+| `mermaidRedrawAll` | frontend/js/mermaid-draw.js:620 |
 | `mermaidRequest` | frontend/js/mermaid-draw.js:405 |
 | `mermaidResultAccepts` | frontend/js/mermaid-draw.js:23 |
 | `mermaidRgba` | frontend/js/mermaid-draw.js:144 |
-| `mermaidSettled` | frontend/js/mermaid-draw.js:494 |
-| `mermaidShow` | frontend/js/mermaid-draw.js:446 |
+| `mermaidSettled` | frontend/js/mermaid-draw.js:496 |
+| `mermaidShow` | frontend/js/mermaid-draw.js:448 |
 | `mermaidTheme` | frontend/js/mermaid-draw.js:222 |
 | `mermaidThemeNow` | frontend/js/mermaid-draw.js:323 |
 | `mermaidTokenColour` | frontend/js/mermaid-draw.js:215 |
@@ -12496,7 +12498,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/dash-night-lazy.css | 29 |
 | frontend/css/dash-orphans-lazy.css | 57 |
 | frontend/css/desk-companion-lazy.css | 226 |
-| frontend/css/diagram-lazy.css | 2297 |
+| frontend/css/diagram-lazy.css | 2338 |
 | frontend/css/file-drop-lazy.css | 51 |
 | frontend/css/first-run-lazy.css | 140 |
 | frontend/css/forced-colors-lazy.css | 28 |
@@ -24918,7 +24920,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (19223)
+## Tests (19232)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -25588,12 +25590,13 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_diagram_dgmlive_1108.py | 2 |
 | tests/test_diagram_dgmseq_1109.py | 9 |
 | tests/test_diagram_dgpic_1109.py | 8 |
+| tests/test_diagram_dgpolish_1109.py | 8 |
 | tests/test_diagram_document.py | 7 |
 | tests/test_diagram_door_panel.py | 2 |
 | tests/test_diagram_doors_1588.py | 5 |
 | tests/test_diagram_edge_pick.py | 12 |
 | tests/test_diagram_embed.py | 11 |
-| tests/test_diagram_kinds.py | 32 |
+| tests/test_diagram_kinds.py | 33 |
 | tests/test_diagram_let_go_1696.py | 3 |
 | tests/test_diagram_library_1594.py | 8 |
 | tests/test_diagram_model.py | 15 |

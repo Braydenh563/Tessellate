@@ -507,3 +507,18 @@ def test_insert_on_a_selected_sequence_message_adds_one_in_the_gap_below_it():
     lines = [ln.strip() for ln in got["src"].splitlines()]
     hi = next(i for i, ln in enumerate(lines) if ln.endswith(": hi"))
     assert lines[hi + 1].endswith(": between") and lines[hi + 2].endswith(": hello")
+
+
+def test_a_mind_map_keeps_the_authors_quoting_when_it_round_trips():
+    """dgpolish-1109: saving rewrote `root((Plan))` as `root(("Plan"))`. A shape the author wrote bare stays bare while its
+    words stay plain; a quoted one stays quoted; words that a bracket or a quote would break are quoted, as a new node's are."""
+    got = _run(
+        CHECK
+        + "const A = diagramKinds.mindmap;"
+        "const src = 'mindmap\\n  root((Plan))\\n    A[Bare]\\n    B[\"Quoted\"]\\n    Plain\\n';"
+        "const m = A.parse(src); const first = A.print(m);"
+        "const bare = m.root.children[0]; bare.text = 'now (odd)'; const odd = A.print(m);"
+        "console.log(JSON.stringify({ first, odd }));"
+    )
+    assert got["first"] == "mindmap\n  root((Plan))\n    A[Bare]\n    B[\"Quoted\"]\n    Plain\n"
+    assert 'A["now (odd)"]' in got["odd"] and "root((Plan))" in got["odd"]

@@ -122,6 +122,8 @@
       });
       note.prepend(go);
     }
+    //: On the documents page there is no field here to put the caret in, so the way to the text is a button (dgpolish-1109: the note said what was wrong and left no step); the page's own Source view takes the fix.
+    if (!field && typeof setDocView === "function") note.prepend(smallButton("ph:code Edit in Source", "Open the text of this diagram to fix the line", () => setDocView("source", { persist: false })));
     //: A bad edit is one press from undone, whichever pane made it (DD-4).
     //: Not offered where there is no earlier step (a bad file opened as it is). The note leaves when the old picture draws, with the focus
     //: in it, so focus goes to the picture first (measured: the body, and the first Tab was "Skip to content").

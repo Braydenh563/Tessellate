@@ -166,7 +166,9 @@
       }
     });
     bar.append(more);
-    stage.append(bar);
+    //: First in the stage, so Tab meets it before the picture as the eye does (it sat after the zoom bar, tab stop 18 of 26), and one stop with Left and Right between the tiles (the toolbar's own roving).
+    stage.prepend(bar);
+    wireToolbarRoving(bar);
     paint();
   }
 
@@ -191,5 +193,17 @@
     return stub;
   }
 
-  diagramModel.library = { build, flow, shelf, lazyKebab };
+  //: Undo and Redo are dimmed while there is nothing to go back or forward to (dgpolish-1109: both always looked live). An `io` that
+  //: does not say (`canUndo` unset) keeps them live.
+  function hist(S) {
+    const [undo, redo] = S.root?.querySelectorAll(".dgm-hist") || [];
+    if (!undo) return;
+    const held = document.activeElement;
+    undo.disabled = S.io?.canUndo === false;
+    redo.disabled = S.io?.canRedo === false;
+    //: A button that dims under the finger takes the focus with it, so the other one (or the picture) keeps it.
+    if ((held === undo && undo.disabled) || (held === redo && redo.disabled)) (held === undo && !redo.disabled ? redo : S.fig)?.focus?.({ preventScroll: true });
+  }
+
+  diagramModel.library = { build, flow, shelf, lazyKebab, hist };
 })();

@@ -428,6 +428,8 @@ function mermaidRequest(source, look = null) {
   }).then((result) => {
     if (result.svg) {
       result.svg = marks.reduce((text, [, stand, mark]) => text.split(stand).join(mark), result.svg);
+      //: A timeline's axis and event lines take the label colour of its slices by Mermaid's own sheet (`.lineWrapper line`: #111111 on the dark ground, white on the light), so the axis was lost in both themes; the theme's line colour stands in, for its arrowhead (a bare path, black) too.
+      result.svg = result.svg.replace(/(\.lineWrapper line\{stroke:)#[0-9a-f]{6}(;\})/g, `$1${theme.variables.lineColor}$2`).split('V 4 L6,2 Z"/>').join(`V 4 L6,2 Z" fill="${theme.variables.lineColor}"/>`);
       result.key = theme.key;
       mermaidState.cache.set(key, result);
       if (mermaidState.cache.size > MERMAID_CACHE_MAX) mermaidState.cache.delete(mermaidState.cache.keys().next().value);
