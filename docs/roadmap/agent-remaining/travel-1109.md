@@ -1,6 +1,6 @@
 # travel-1109 (INBOX 1683, hop chains) remaining
 
-Built: hop-chain legs for ground figures (`engine._hop_arc`, `travel._mode_table` "jump"), the X11 test wait (1683 s); the (x) and (y) items were already built (see INBOX 1683 status line).
+Built: hop-chain legs for ground figures (`engine._hop_arc`, `travel._mode_table` "jump"), the X11 test race (1683 s: display number read to its newline); the (x) and (y) items were already built (see INBOX 1683 status line).
 
 Unverified:
 - Real Windows: nothing ran there. The hop picture is the existing "hop" frame; how it reads at 1440 and 4K is unseen.
