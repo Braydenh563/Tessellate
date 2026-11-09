@@ -1290,6 +1290,10 @@ function docAfterFirstPaint(seq, paint) {
 }
 
 async function openDocument(id) {
+  //: Opened from a link in a document (an embedded diagram, a [[link]]): the dock's crumb names that document instead of the Library (dgbt-1109 13).
+  //: A caller says so with `openDocument.back = true` on the line before its call; read and cleared here, before anything awaits.
+  const from = openDocument.back && currentDoc && currentDoc.id !== id ? { id: currentDoc.id, title: currentDoc.title || "Untitled" } : null;
+  openDocument.back = false;
   //: **Only the newest call opens** (tests/test_new_document_opens_new.py):
   //: the tab's loader opening the last document and New document opening
   //: the one it just made race, and the fetch that landed last won, leaving
@@ -1332,6 +1336,13 @@ async function openDocument(id) {
   // comment gives for doing it there instead of at ITS call sites.
   recordTabVisit("documents", `doc:${doc.id}`, doc.title || "Untitled document");
   currentDoc = doc;
+  const crumb = $("doc-back");
+  if (crumb) {
+    crumb.dataset.from = from ? from.id : "";
+    crumb.querySelector(".doc-back-label").textContent = from ? from.title : "Documents";
+    crumb.title = from ? `Back to ${from.title}` : "Back to your documents in the Library";
+    crumb.setAttribute("aria-label", crumb.title);
+  }
   $("doc-title").disabled = false;
   docBoxEl().disabled = false;
   $("doc-title").value = doc.title;
@@ -8063,6 +8074,8 @@ $("doc-title").addEventListener("keydown", (event) => {
 //: The dock's breadcrumb (INBOX 424 p): back to the Library's Documents list,
 //: the place a document is opened from.
 $("doc-back")?.addEventListener("click", () => {
+  const crumb = $("doc-back");
+  if (crumb.dataset.from) return openDocument(Number(crumb.dataset.from));
   switchTab("library");
   document.getElementById("library-subtab-docs")?.click();
 });

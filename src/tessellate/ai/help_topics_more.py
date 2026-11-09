@@ -132,7 +132,9 @@ MORE_TOPICS: list[dict] = [
             "resized or goes fullscreen and a look back when it leaves, a nod when a long "
             "run of typing stops, and a small wince when a note goes to the bin. The desktop "
             "companion does the same on your desk. Atlas breathes quicker after a walk or a "
-            "carry and blinks slower when sleepy. Atlas "
+            "carry and blinks slower when sleepy, lets out a breath a moment after a start, "
+            "its eyes take tiny steps while it looks at something, and its tail and trailing wisps "
+            "swing down and back up after a landing. Atlas "
             "also has rare habits of its own: a look around, a hum, a settling breath "
             "and a second look at the pointer, each at most once in three minutes. Its "
             "moods follow the part of the day, brighter in the morning and quieter in "
@@ -3363,7 +3365,7 @@ MORE_TOPICS.extend([
         "body": (
             "The list says Your blocks, in the order the chart flows; its foot has Add block and Connect. A block sits under the one that points at it, "
             "indented where it branches (a straight run of steps stays flush), and a block made by Connect to... lands under its siblings, so an org chart reads like the chart. "
-            "The printed source keeps its own order; Alt+Up and Alt+Down move a block among its siblings, and say so when the list would not change; drag a grip to move it. "
+            "Add block joins the new box to the picked (or last) one. Alt+Up and Alt+Down swap a block with its neighbour in the chain (a branch says to drag its grip). "
             "A block's arrows share one line under it; press one for its menu: the line (arrow, line, dotted, thick, Both ways), Colour… and Reverse direction. "
             "With two or more blocks picked, the bar also has Colour (K) and Connect, which draws an arrow from the first picked to the second. "
             "Fit stops at readable text (11 px) and the picture scrolls past it. In the picture an arrow key picks the box that way, reading aloud its name and arrows, and Shift with an arrow moves the picture. A tall chart in a wide pane offers Turn it sideways once; Direction is a menu of Down, Right, Up and Left, and Shift turns it back one step. "
@@ -3382,11 +3384,11 @@ MORE_TOPICS.extend([
         ),
         "body": (
             "Kind, in the Title row (first in the toolbar elsewhere), is a menu of Flowchart, Sequence, Mind map and Timeline, "
-            "each with a small picture; one starts an empty diagram of that kind. Box this block (a block's ... menu) or Box them (over picked blocks) "
+            "each with a small picture; one starts an empty diagram of that kind. Box this block (its ... menu) or Box them (picked blocks) "
             "adds a group round. "
             "Blocks draw flowcharts, mind maps, timelines and sequence diagrams: the source's "
             "first word says which, and the bar offers that kind's blocks. A mind map has a branch "
-            "and a leaf (B and N) under its centre. A timeline has a section, a period and an event "
+            "and a leaf (B and N) under its centre; a second Branch in a row sits beside it. A timeline has a section, a period and an event "
             "(S, P and E), events inside their period. A sequence diagram has an actor, "
             "participant, message, reply, async, lost, note, loop, alt, opt, parallel, critical and break (A, P, M, R, Y, X, T, "
             "L, G, O, U, C and B); a first message adds the two participants it needs, an alt its else and a parallel box its and. The pane works as a flowchart's: "
@@ -3400,7 +3402,7 @@ MORE_TOPICS.extend([
             "from the keyboard, Insert in the blocks list adds a step under the selected one. "
             "Suggest and Templates serve each kind. A suggestion of its own kind arrives as ghosts to take; "
             "one of another kind says so and is left out when the diagram has blocks, and replaces "
-            "a blank one. Hand-drawn look, in the ... menu, sketches any; Clean look takes it back. Compact and Roomy spacing too."
+            "a blank one. Hand-drawn look, in the ... menu, sketches any; Clean look takes it back."
         ),
         "badge": {"label": "Documents", "tab": "documents"},
     },
@@ -3419,8 +3421,8 @@ MORE_TOPICS.extend([
             "ask before they drop changes. On a board, double-click a diagram object. In Chat or Ask, "
             "a diagram in a reply has Open as a diagram under it, which makes it a diagram document. "
             "Type ![[name]] in a note or a document to draw that diagram document there, with a "
-            "line that opens it. The ... menu in the editor's bar has Save as SVG, Save as PNG "
-            "(twice its size), Copy as picture, Copy as Mermaid and Copy as SVG. A diagram's Library card "
+            "line that opens it, and Back there returns to it. The ... menu in the editor's bar has Save as SVG, Save as PNG, "
+            "Copy as picture, Copy as Mermaid and Copy as SVG. A diagram's Library card "
             "has the same pictures in its menu; its page has Download as .png and Copy as picture "
             "in the ... menu, and Download .mmd saves the text. Source, beside Cancel, shows "
             "the text with the picture; a diagram the blocks cannot draw, or one over 120 blocks, opens there. "

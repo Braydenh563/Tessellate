@@ -15,7 +15,7 @@ Branch agent/compalive-1109. Done: 1e96de2 (INBOX 1709, resolved), adf9960 (1710
 
 ## INBOX 1711 (partly)
 - Built: sneeze, hiccup, hug, foot tap (both sides).
-- Built (comp2-1109, both sides): a firefly chase (`firefly`, `act.star_catch`), a star pile (`starpile`, `act.count_stars`), a nap on a note card (`cardnap`, `act.card_nap`) and a wave at the pointer (`wavepointer`, `act.wave_pointer`). Left: the card nap curls on nothing (no note-card geometry: the owner's "napping curled on a note card edge" needs the card's box), and the wave at the pointer is a weighted pick, not a pointer-idle trigger ("after a pause") on either side. Not verified: the look in motion (numbers only: animation names on arm, eye, tail and grin while the class is set); the desk's new acts were not rendered.
+- Built (comp2-1109, both sides): a firefly chase (`firefly`, `act.star_catch`), a star pile (`starpile`, `act.count_stars`), a nap on a note card (`cardnap`, `act.card_nap`) and a wave at the pointer (`wavepointer`, `act.wave_pointer`). Built (nap1711-1109, app side): the wave is the idle trigger alone (8 s, measured 8029 ms) and the card nap needs a visible card perch (`nmb.cardEdge`; seat 128 against card top 128.19). Left: the desk's card nap (needs a note-card box), and the app does not walk to a card to nap, it naps only when it already sits on one. Not verified: the look in motion (numbers only: animation names on arm, eye, tail and grin while the class is set); the desk's new acts were not rendered.
 - The other backlog acts with no prop: `tail_stretch`, `self_hug` is done, `kneel_look`, `stargaze_awake`, `cloud_pillow`, `tail_chase`, `knit_starlight`, `paper_plane`, `blow_bubbles`, `conduct`, `lean_on_edge`, `balance_walk`, `sketch_view`.
 
 ## Found, not fixed

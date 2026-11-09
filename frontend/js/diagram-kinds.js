@@ -463,7 +463,7 @@
     text: (n) => n.text,
     setText: (n, text) => (delete n.raw, (n.text = text)),
     tiles: [
-      { id: "branch", group: "Ideas", name: "Branch", icon: "tree-structure", key: "b", into: true, type: "b", fields: { text: "Branch" }, about: "a branch under the selected block" },
+      { id: "branch", group: "Ideas", name: "Branch", icon: "tree-structure", key: "b", into: true, type: "b", fields: { text: "Branch" }, about: "a branch under the selected block, or beside the last branch you added" },
       { id: "leaf", group: "Ideas", name: "Leaf", icon: "leaf", key: "n", type: "b", fields: { text: "Idea" }, about: "a leaf next to the selected block" },
     ],
     primary: "leaf",
@@ -628,6 +628,8 @@
     return i;
   };
   const find = (S, key) => ops.find(S.k, S.m, key);
+  //: A pick made by hand: Branch then nests under it (`S.fresh` is the block Branch just made).
+  const pick = (S, key, focus) => ((S.fresh = null), kit.select(S, key, focus));
   const nameOf = (S, key) => S.k.text(find(S, key)?.node || {}) || "block";
   const whoLabel = (S, id) => S.m.participants?.find((p) => p.id === id)?.label || id;
 
@@ -835,11 +837,26 @@
   //: A tile's block, after the selection, inside it, or at a drop's `spot`. The sequence adds the
   //: participants a first message needs, a blank mind map its central idea.
   //: `fields` overrides the tile's (the picture names a message's two ends); `wrap` is a step the new box takes in (a Loop dropped on a message).
-  function addTile(S, tile, { sel = S.sel, spot = null, edit = true, fields: given = null, wrap = null } = {}) {
+  function addTile(S, tile, { sel: asked, spot = null, edit = true, fields: given = null, wrap = null } = {}) {
     const A = S.k;
     const m = S.m;
+    //: A sequence diagram names the new part on its picture (diagram-seq-canvas.js), as a mind map and a timeline do with their
+    //: list folded (a field in a hidden row held the redraw, 1661 m); else in the list.
+    const name = () => (edit ? (S.seq || (S.hitAt && S.pane.offsetParent === null) ? (S.seqOpen = S.sel) : relabel(S, S.sel)) : null);
     if (ops.count(A, m) >= ops.MAX - 4) return kit.say(S, `A diagram holds at most ${ops.MAX} blocks.`);
-    if (A.start && !m.root) A.start(m);
+    //: A blank mind map gets its central idea and nothing else: it is named first, then Branch grows it (dgbt-1109 4).
+    if (A.start && !m.root) {
+      S.sel = ops.key(A.start(m));
+      S.fresh = null;
+      kit.commit(S, "Added the central idea. Name it, then add branches.");
+      return name(), S.sel;
+    }
+    //: Branch twice in a row makes sisters: the block it just made is still the pick, and a child of that child was the surprise
+    //: (Food under Hotels). A block picked by hand (`S.fresh` cleared) takes its own children (dgbt-1109 5).
+    //: Only for a press of the Add tile or shelf: a key on a block (`sel` given) means that block.
+    const picked = asked === undefined ? S.sel : asked;
+    const fresh = tile.into && asked === undefined && !spot && !wrap && picked && picked === S.fresh ? find(S, picked)?.parent : null;
+    const sel = fresh ? ops.key(fresh) : picked;
     const at = sel && find(S, sel)?.node;
     const under = wrap && find(S, wrap);
     const place = spot || (under && { parent: under.parent, before: under.node }) || ops.spot(A, m, tile.type, sel, Boolean(tile.into));
@@ -850,10 +867,10 @@
     if (under && node.steps) (under.list.splice(under.list.indexOf(under.node), 1), node.steps.splice(0, 1, under.node));
     S.tile = tile;
     S.sel = ops.key(node);
-    kit.commit(S, `Added ${tile.name.toLowerCase()}${made ? ` and ${made} ${made === 1 ? "participant" : "participants"}` : ""}.`);
-    //: A sequence diagram names the new part on its picture (diagram-seq-canvas.js), as a mind map and a timeline do with their
-    //: list folded (a field in a hidden row held the redraw, 1661 m); else in the list.
-    if (edit) S.seq || (S.hitAt && S.pane.offsetParent === null) ? (S.seqOpen = S.sel) : relabel(S, S.sel);
+    S.fresh = tile.into && !spot ? S.sel : null;
+    const where = A.name === "mindmap" && place.parent ? ` ${tile.into ? "under" : "next to"} ${A.text(place.parent)}` : "";
+    kit.commit(S, `Added ${tile.name.toLowerCase()}${where}${made ? ` and ${made} ${made === 1 ? "participant" : "participants"}` : ""}.`);
+    name();
     return S.sel;
   }
 
@@ -888,7 +905,7 @@
     const key = block.dataset.key;
     const all = [...S.tree.querySelectorAll(".dgm-block")];
     const at = all.indexOf(block);
-    const go = (target) => target && kit.select(S, target.dataset.key, true);
+    const go = (target) => target && pick(S, target.dataset.key, true);
     const mod = event.ctrlKey || event.metaKey;
     if (mod && !event.altKey && /^[zy]$/i.test(event.key)) {
       event.preventDefault();
@@ -1014,9 +1031,9 @@
 
   // --- building the pane ----------------------------------------------------------
   const EMPTY = {
-    mindmap: ["Start a mind map", "Press Branch to add the central idea, then Branch and Leaf to grow it. Drag blocks to move or nest them."],
-    timeline: ["Start a timeline", "Press Period to add the first date, then Event for what happened. A Section groups periods."],
-    sequence: ["Start a sequence diagram", "Press Message to add two participants and the first message. A Loop or an Alt wraps steps."],
+    mindmap: ["Start a mind map", "Press Add, then Branch for the central idea. Name it, then Branch and Leaf grow it. Drag blocks to move or nest them."],
+    timeline: ["Start a timeline", "Press Add, then Section or Period to begin, then Event for what happened. A Section groups periods."],
+    sequence: ["Start a sequence diagram", "Press Add, then Message to add two participants and the first message. A Loop or an Alt wraps steps."],
   };
 
   function buildPalette(S) {
@@ -1036,8 +1053,8 @@
     S.suggestBtn.classList.add("dgm-suggest");
     S.suggestBtn.setAttribute("aria-haspopup", "menu");
     actions.append(S.suggestBtn);
-    for (const [name, label, run] of [["ph:arrow-counter-clockwise", "Undo", () => S.io.undo()], ["ph:arrow-clockwise", "Redo", () => S.io.redo()]]) {
-      const b = smallButton(name, label, run);
+    for (const [name, label, tip, run] of [["ph:arrow-counter-clockwise", "Undo", "Undo, Ctrl+Z", () => S.io.undo()], ["ph:arrow-clockwise", "Redo", "Redo, Ctrl+Y", () => S.io.redo()]]) {
+      const b = smallButton(name, tip, run);
       b.classList.add("icon-only", "dgm-hist");
       b.setAttribute("aria-label", label);
       actions.append(b);
@@ -1080,7 +1097,7 @@
     S.tree.addEventListener("keydown", (event) => onKey(S, event));
     S.tree.addEventListener("click", (event) => {
       const block = event.target.closest(".dgm-block");
-      if (block && !event.target.closest(".menu-wrap")) kit.select(S, block.dataset.key);
+      if (block && !event.target.closest(".menu-wrap")) pick(S, block.dataset.key);
     });
     S.tree.addEventListener("dblclick", (event) => {
       const block = event.target.closest(".dgm-label")?.closest(".dgm-block");
@@ -1169,7 +1186,7 @@
 
   //: What the picture (diagram-seq-canvas.js) does to a row: the same steps the list's keys take, with the same lines said.
   const act = {
-    select: (S, key) => kit.select(S, key),
+    select: (S, key) => pick(S, key),
     name: nameOf,
     rename(S, key, text) {
       if (text === nameOf(S, key) || !ops.relabel(S.k, S.m, key, text)) return;

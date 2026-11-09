@@ -115,6 +115,9 @@
     menu.append(note);
   }
 
+  //: The three-box starter a new diagram opens on (documents-mermaid.js), as it was given or as printed: nothing in it was written by the person (dgbt-1109 8).
+  const untouched = (S) => !S.plain && !S.k && [diagramModel.starter, diagramModel.print(diagramModel.parse(diagramModel.starter))].includes(S.source.trim());
+
   //: What a change would clear, in words: "The 3 boxes", "The 5 blocks", "The diagram" (a source the blocks cannot read).
   function lost(S, here) {
     if (S.plain) return "The diagram";
@@ -128,7 +131,7 @@
   //: asked first, in the app's confirm; a blank one switches at once.
   async function choose(S, h, here, to) {
     if (to === here) return;
-    const blank = blankOf(S);
+    const blank = blankOf(S) || untouched(S);
     if (!blank) {
       const ok = await confirmDialog(`Switch to ${NOUN[to]}?\n\n${lost(S, here)} will be cleared. Undo, Ctrl+Z, brings the ${NOUN[here]} back.`, { confirmLabel: "Switch", cancelLabel: `Keep ${NOUN[here]}`, danger: false });
       if (!ok) return;

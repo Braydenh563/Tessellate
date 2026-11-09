@@ -83,6 +83,41 @@
     return diagramModel.ops.step(trial, key, dir) && ids(order(trial, diagramModel.ops.layout(trial))) === ids(order(m, diagramModel.ops.layout(m)));
   }
 
+  //: Alt+Up or Down, and a drop before or after a neighbour, on blocks the arrows order (dgbt-1109 1): two blocks in a chain swap by
+  //: rewiring, so the drawn order really changes (the source order alone leaves the list as it is). A branch refuses: `false`.
+  function swap(m, key, dir) {
+    if (key[0] !== "n") return false;
+    const id = key.slice(2);
+    const into = (x) => m.edges.filter((e) => e.to === x && e.from !== x);
+    const out = (x) => m.edges.filter((e) => e.from === x && e.to !== x);
+    const link = dir < 0 ? into(id) : out(id);
+    if (link.length !== 1) return false;
+    const [mid] = link;
+    const [up, down] = dir < 0 ? [mid.from, id] : [id, mid.to];
+    if (out(up).length !== 1 || into(down).length !== 1) return false;
+    into(up).forEach((e) => (e.to = down));
+    out(down).forEach((e) => (e.from = up));
+    [mid.from, mid.to] = [down, up];
+    return true;
+  }
+
+  //: Alt+Up or Down and the row menu: a block the arrows order swaps by rewiring them, the rest move in the source; a branch says to drag.
+  function move(S, h, key, dir) {
+    const fixed = stuck(S.m, key, dir);
+    const name = h.name(S, key);
+    if (fixed ? !swap(S.m, key, dir) : !diagramModel.ops.step(S.m, key, dir)) return h.say(S, `${name} ${fixed ? "is part of a branch. Drag its grip" : `is already ${dir < 0 ? "first" : "last"}`}.`);
+    h.commit(S, `Moved ${name} ${dir < 0 ? "up" : "down"}.`);
+  }
+
+  //: A grip dropped before or after the block the arrows put right next to it: the same swap, since moving it in the source alone changes nothing drawn.
+  function drop(m, key, { op, key: over }) {
+    const [from, to] = op === "before" ? [over.slice(2), key.slice(2)] : [key.slice(2), over.slice(2)];
+    return key[0] === "n" && over[0] === "n" && m.edges.some((e) => e.from === from && e.to === to) && swap(m, key, op === "before" ? -1 : 1);
+  }
+
+  //: The block a new one is joined to (dgbt-1109 6): the picked block, or with nothing picked the last one; a picked group is nothing to join.
+  const tail = (m, sel) => (sel ? (sel[0] === "n" ? sel.slice(2) : null) : m.nodes.at(-1)?.id ?? null);
+
   //: A box (a Mermaid subgraph) around one block, from its menu (1679 m); around several is the selection bar's "Box them". `h` is the builder's helpers.
   function box(S, h, key) {
     const id = diagramModel.ops.wrap(S.m, [key]);
@@ -91,5 +126,5 @@
     h.commit(S, `Boxed ${h.name(S, key)}. Rename the box to say what it holds.`);
   }
 
-  diagramModel.outline = { order, offer, stuck, box };
+  diagramModel.outline = { order, offer, stuck, swap, move, drop, tail, box };
 })();

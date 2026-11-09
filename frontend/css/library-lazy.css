@@ -7017,6 +7017,13 @@ input[type="color"].wb-mixed {
     padding-inline: var(--space-2);
   }
 }
+/* Back to the document a diagram was opened from names that document (dgbt-1109 13); a long title is cut, the full one is the tooltip. */
+.doc-back-label {
+  max-width: 14ch;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 /* **Browser zoom (INBOX 1717): the name gives way before the tools do.** At 125 to
    200 % the dock is 544 to 806px and a code document's tools need 410 to 600, so the
    title and Back (246px, the input's own 128px floor) sat on a line above them.
