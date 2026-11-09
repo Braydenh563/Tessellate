@@ -83,3 +83,10 @@ def test_add_block_connects_what_it_adds_unless_a_drop_a_group_or_a_caller_said_
     assert "from = !group && !into && before === undefined ? diagramModel.outline.tail(m, sel) : null" in builder
     # The default is "not said"; a caller that passes no `from` gets the join, one that passes null does not.
     assert "from = undefined" in builder.split("function addBlock(", 1)[1].split(") {", 1)[0]
+
+
+def test_switching_kind_on_the_untouched_starter_does_not_ask():
+    bar = _js("diagram-kindbar.js")
+    assert "const untouched = (S) =>" in bar and "diagramModel.starter" in bar.split("const untouched", 1)[1].split("\n", 1)[0]
+    # The confirm is only for content the person made; the starter is three boxes nobody wrote.
+    assert "const blank = blankOf(S) || untouched(S);" in bar

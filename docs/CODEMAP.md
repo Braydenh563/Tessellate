@@ -2,9 +2,9 @@
 
 Generated 2026-11-09 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7955, frontend ids 2652, CSS sections 523, backend routes 649, backend modules 9332, test files 2311, tests 19268, plan headings 1008, app scripts 28, boot scripts 37, script files 266.
+Counts: frontend functions 7956, frontend ids 2652, CSS sections 523, backend routes 649, backend modules 9332, test files 2311, tests 19269, plan headings 1008, app scripts 28, boot scripts 37, script files 266.
 
-## Frontend functions (7955)
+## Frontend functions (7956)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -3274,19 +3274,20 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `titleOf` | frontend/js/diagram-joins.js:29 |
 | `words` | frontend/js/diagram-joins.js:110 |
 
-### frontend/js/diagram-kindbar.js (9)
+### frontend/js/diagram-kindbar.js (10)
 
 | Name | File:line |
 |---|---|
 | `blankOf` | frontend/js/diagram-kindbar.js:48 |
-| `choose` | frontend/js/diagram-kindbar.js:129 |
+| `choose` | frontend/js/diagram-kindbar.js:132 |
 | `decorate` | frontend/js/diagram-kindbar.js:94 |
 | `fresh` | frontend/js/diagram-kindbar.js:19 |
-| `historyKey` | frontend/js/diagram-kindbar.js:145 |
-| `lost` | frontend/js/diagram-kindbar.js:119 |
+| `historyKey` | frontend/js/diagram-kindbar.js:148 |
+| `lost` | frontend/js/diagram-kindbar.js:122 |
 | `mount` | frontend/js/diagram-kindbar.js:51 |
 | `open` | frontend/js/diagram-kindbar.js:79 |
 | `sample` | frontend/js/diagram-kindbar.js:36 |
+| `untouched` | frontend/js/diagram-kindbar.js:119 |
 
 ### frontend/js/diagram-kinds.js (64)
 
@@ -24959,7 +24960,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (19268)
+## Tests (19269)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -25621,7 +25622,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_diagram_behaviour_1108.py | 7 |
 | tests/test_diagram_blind_1108.py | 10 |
 | tests/test_diagram_blind_fixes.py | 6 |
-| tests/test_diagram_bt_1109.py | 6 |
+| tests/test_diagram_bt_1109.py | 7 |
 | tests/test_diagram_builder.py | 20 |
 | tests/test_diagram_complete.py | 7 |
 | tests/test_diagram_d3.py | 2 |
