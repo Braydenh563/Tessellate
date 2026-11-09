@@ -2899,3 +2899,21 @@ header#top-bar[data-scrolled="1"],
 .theme-presets {
   grid-template-columns: repeat(auto-fill, minmax(7.5rem, 1fr));
 }
+/* 13. **A dock's title gives way on a phone.** The base rule is `flex: 0 0 auto;
+       min-width: max-content` (08-consistency.css) and the phone band above
+       only lifted the min-width, so the heading kept its natural width and
+       spilled out of a zone that had already shrunk: "Your reminders" 117px in
+       86px at 390 (Reminders, Browse, Links, Contents) and at 480 (Docs,
+       Boards, Skills, Links), 31px past the box. It now shrinks with the
+       ellipsis the band already sets; the heading text stays the accessible
+       name, and a phone has no hover for a tooltip to show on. */
+@media (max-width: 599.98px) {
+  .dock .dock-identity > :is(h1, h2, h3) {
+    flex: 0 1 auto;
+  }
+}
+/* 14. **The Timeline's month stays one line.** "November 2026" broke onto
+       three lines in the month button when the row ran short. */
+.timeline-daystrip-label.ghost.small {
+  white-space: nowrap;
+}

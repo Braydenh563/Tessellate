@@ -2,7 +2,7 @@
 
 Generated 2026-11-09 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7960, frontend ids 2652, CSS sections 523, backend routes 649, backend modules 9377, test files 2327, tests 19359, plan headings 1008, app scripts 28, boot scripts 37, script files 266.
+Counts: frontend functions 7960, frontend ids 2652, CSS sections 523, backend routes 649, backend modules 9377, test files 2327, tests 19361, plan headings 1008, app scripts 28, boot scripts 37, script files 266.
 
 ## Frontend functions (7960)
 
@@ -12491,7 +12491,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/07-whiteboard-misc.css | 11861 |
 | frontend/css/08-consistency.css | 10929 |
 | frontend/css/09-editor.css | 1128 |
-| frontend/css/10-responsive.css | 2901 |
+| frontend/css/10-responsive.css | 2919 |
 | frontend/css/answer-foot-lazy.css | 155 |
 | frontend/css/appearance-panel-lazy.css | 330 |
 | frontend/css/appearance-panel-own-lazy.css | 86 |
@@ -25049,7 +25049,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (19359)
+## Tests (19361)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -27381,7 +27381,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_xmind_import.py | 3 |
 | tests/test_zoom_frame_1508.py | 3 |
 | tests/test_zoom_wheel_delta.py | 3 |
-| tests/test_zoom_wrap_1717.py | 19 |
+| tests/test_zoom_wrap_1717.py | 21 |
 
 ## Plan headings (1008)
 
@@ -27968,7 +27968,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Earlier morning summary (2026-10-30) | docs/roadmap/HANDOVER.md:59 |
 | Earlier morning summary (2026-11-04) | docs/roadmap/HANDOVER.md:49 |
 | Earlier morning summary (away run 2026-10-18b) | docs/roadmap/HANDOVER.md:78 |
-| Earlier sessions | docs/roadmap/HANDOVER.md:558 |
+| Earlier sessions | docs/roadmap/HANDOVER.md:560 |
 | Expert audit, 2026-10-10 | docs/roadmap/BACKLOG.md:4270 |
 | F. Agent harness: what "ultimate" needs that is not there | docs/roadmap/AUDIT.md:113 |
 | F. Performance and perceived speed | docs/roadmap/MODERNISATION_AUDIT.md:685 |
