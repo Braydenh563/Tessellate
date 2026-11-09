@@ -69,9 +69,14 @@ MAX_DT = 0.1
 AMBIENT_EVERY = (2.0, 7.0)
 AMBIENT_SKEW = 1.4
 DOUBLE_SHARE = 0.14
-DOUBLE_GAP = 0.16
+DOUBLE_GAP = 0.12  # (BLINK_FOR 0.28: the double still starts within 0.45 s of the first)
 LOOK_SHARE = 0.12
-BLINK_FOR = 0.18
+BLINK_FOR = 0.28
+#: A blink is eased (INBOX 1704: "some of the blink animations look off": the shipped shut-eye picture popped in for 0.18 s): the
+#: lid comes down to step 2 of `faces.SHUT` (a half lid), the shut picture holds, and the lid goes up through step 2 again (each
+#: phase is a wake, and the standing wake budget in `tests/test_overlay_engine.py` allows three). Shares of
+#: `BLINK_FOR` at which each phase begins, and the step it draws (0: the shut picture).
+BLINK_PHASES = ((0.0, 2), (0.3, 0), (0.7, 2))
 LOOK_FOR = 1.2
 #: Each idle cycle runs up to this share faster than 4 s, and `IDLE_SLOWEST` slower (research A7). The slow side is
 #: short because a picture held past the 170 ms stream tick would be redrawn unchanged before it moved on.
@@ -4176,8 +4181,8 @@ class Engine:
             return self._edge_frame(now)
         if s == "stand":
             return self._stand_frame(now)
-        if s == "sit" and self.flash:  # eyelids over the sat figure's eyes (`SpriteSet` derives the frame)
-            return "sitblink"
+        if s == "sit" and self.flash:
+            return self._sit_frame(now)
         return s  # sit, sleep, wave, fall, land
 
     def _edge_warp_frame(self, now: float) -> str:
@@ -4220,8 +4225,38 @@ class Engine:
             return "spin24" if self.peek_flip else "hang"
         return "stand" if self.sink < self.sink_max * 0.5 or now - self.peek_started < 0.8 else "look"
 
+    def _blink_step(self, now: float) -> tuple[int | None, float]:
+        """The phase of the blink under way: `(step, next_change)`, step 1 or 2 for a light or a half lid drawn over the open
+        picture, 0 for the shut one, None when no blink shows (or a motion cannot draw a lid: reduced, or no face layer)."""
+        if not self.flash or self.flash[0] != "blink":
+            return None, math.inf
+        u = (now - (self.flash[1] - BLINK_FOR)) / BLINK_FOR
+        k = max(i for i, (at, _s) in enumerate(BLINK_PHASES) if u >= at - 1e-9) if u > 0 else 0
+        nxt = BLINK_PHASES[k + 1][0] if k + 1 < len(BLINK_PHASES) else 1.0
+        return BLINK_PHASES[k][1], self.flash[1] - BLINK_FOR + nxt * BLINK_FOR
+
+    def _blink_face(self, now: float, frame: str, face: tuple[str, int] | None) -> tuple[str, int] | None:
+        """`face` with the blink's lids over it: the light and half lids are drawn over the open picture, over an expression too
+        (`kind|step`, `faces.draw`); the shut step of a plain blink is the shipped picture, so no face."""
+        lid = self._blink_step(now)[0] if frame in ("sit", "stand") or frame.startswith("idle") else None
+        if lid is None or not (lid or face):
+            return face
+        return (f"{face[0]}|{lid or 3}", face[1]) if face else ("blink", lid)
+
+    def _sit_frame(self, now: float) -> str:
+        """A sit: its own picture, or its lids over the sat figure's eyes (`SpriteSet` derives the shut frame)."""
+        step = self._blink_step(now)[0]
+        return "sit" if not self.flash or step or (step == 0 and self.ex.view(now)[1]) else "sitblink"
+
+    def _flash_due(self, now: float) -> float:
+        """When the picture next changes for a blink or a look under way."""
+        return min(self._blink_step(now)[1], self.flash[1]) if self.flash else math.inf
+
     def _stand_frame(self, now: float) -> str:
         if self.flash:
+            step = self._blink_step(now)[0]
+            if step or (step == 0 and self.flash[0] == "blink" and self.ex.view(now)[1]):  # a lid over the open picture (`_output`)
+                return f"idle{self._idle_index(now)}" if self._idling() else "stand"  # (shut too, under an expression: it keeps its mouth)
             return self.flash[0]
         return f"idle{self._idle_index(now)}" if self._idling() else "stand"
 
@@ -4411,7 +4446,7 @@ class Engine:
         if s in REST_LIFE:  # alive in place: the next step of the breath or the tail (or a sit's blink), else the pointer look
             nxt = self._next_life_change(now)
             if s == "sit":
-                nxt = min(nxt, self.flash[1] if self.flash else self.next_ambient)
+                nxt = min(nxt, self._flash_due(now) if self.flash else self.next_ambient)
             return max(REST_DRAW_MS if not self.flash else MIN_WAKE_MS, min(POLL_QUIET_MS, int(math.ceil((nxt - now) * 1000))))
         return self._wake_at_rest(now, s)
 
@@ -4441,7 +4476,7 @@ class Engine:
         s = self.state
         due = [self.state_until] if s != "stand" or (self.roam and not self.reduced) else []
         if s == "stand":
-            due += [self.flash[1]] if self.flash else [self.next_ambient]
+            due += [self._flash_due(now)] if self.flash else [self.next_ambient]
             due.append(self.last_active + IDLE_SIT)
         if s in ("stand", "sit") and self.lonely_stretch != self.last_active and self.last_active + LONELY_AFTER > now:
             due.append(self.last_active + LONELY_AFTER)
@@ -4501,6 +4536,6 @@ class Engine:
             frame, int(round(x)), int(round(y)), self.facing < 0, self._wake(now),
             self.click_now, self.settled_now, clip, self.card_clicked, self._pose(), fx, round(alpha * 16) / 16.0,
             self.angle + self.wob if frame.startswith("spin") and self.state == "fly" else math.pi if self.peek_flip or (self.upside and self.state == "held") else None,
-            self._flow_view(now, frame, self._lower_state(now, face)) if fx is None else None, prop, face,
+            self._flow_view(now, frame, self._lower_state(now, face)) if fx is None else None, prop, self._blink_face(now, frame, face),
             self._tail_view(now, frame) if fx is None and self.tail_layer_on else None,
         )

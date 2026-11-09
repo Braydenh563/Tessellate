@@ -135,6 +135,43 @@ def clipped(frame: Frame, clip: tuple[int, int, int, int] | None) -> Frame:
     return frame._replace(bgra=bytes(out))
 
 
+def capped_pose(base: Frame, pose: tuple[float, float, float, float]) -> tuple[float, float, float, float]:
+    """`pose` with its stretch (`sy` above 1, about the feet) held where the drawn top stays two rows inside the canvas (the bilinear edge is one)
+    (INBOX 1704, found by 1699: `fall` has no room above it at `sy` 1.1, and the stretch cut it with a straight edge)."""
+    sx, sy, lean, drag = pose
+    left, top, right, feet = base.box
+    if sy <= 1.0 or not right or feet - top < 1:
+        return pose
+    return sx, max(1.0, min(sy, (feet - 2.0) / (feet - top))), lean, drag
+
+
+#: A picture whose last drawn row is solid this wide was cut there (INBOX 1704: `render_desk_frames.clip_idle_tails` pinned
+#: the feminine stand and idle tails to one lowest row, so the tail ends in a flat edge 36 to 45 px wide); its last
+#: `TAPER_ROWS` rows fade out instead, so the cut does not read as a straight edge. The drawn box does not move.
+CUT_WIDTH, TAPER_ROWS = 12, 8
+
+
+def tapered(image: Any) -> Any:
+    """`image` with a flat cut at its lowest drawn row faded over `TAPER_ROWS` rows (alpha only); the image itself otherwise."""
+    from PIL import Image
+
+    alpha = image.getchannel("A")
+    box = alpha.point(lambda a: 255 if a >= ALPHA_FLOOR else 0).getbbox()
+    if not box or box[3] < TAPER_ROWS + 2:
+        return image
+    last = box[3] - 1
+    row = alpha.crop((0, last, image.width, last + 1)).point(lambda a: 255 if a >= 200 else 0)
+    if sum(row.tobytes()) // 255 < CUT_WIDTH:
+        return image
+    ramp = Image.new("L", (1, image.height), 255)
+    ramp.putdata([255 if y < last - TAPER_ROWS + 1 else round(255 * (last + 1 - y) / (TAPER_ROWS + 1)) if y <= last else 255 for y in range(image.height)])
+    from PIL import ImageChops
+
+    image = image.copy()
+    image.putalpha(ImageChops.multiply(alpha, ramp.resize(image.size, Image.Resampling.NEAREST)))
+    return image
+
+
 def captured_root() -> Path:
     """`desk_frames` in the data folder, where `capture` writes a captured companion's set; here, not in
     `capture`, which reads this module's frame names, so the two do not import each other."""
@@ -238,7 +275,7 @@ class SpriteSet:
                 self._source[name] = self._lidded()
                 return self._source[name]
             with Image.open(self.directory / f"{name}.png") as im:
-                loaded = im.convert("RGBA")
+                loaded = tapered(im.convert("RGBA"))
             # as shipped: the standing family already carries one shared nebula stream (render_desk_frames.py
             # `shared_stream`); a loader-side veil swap cut it away under the body and added a step (INBOX 1670)
             self._source[name] = loaded
@@ -359,8 +396,10 @@ class SpriteSet:
         middle, a lean (the head moves by `lean` of the height, the feet stay) and a lag of the
         lower part (the tail and wisp trail by `drag` px, growing toward the bottom), by a mesh of
         horizontal strips. Cached by the pose, `POSED_KEEP` of them; the plain frame when the pose is."""
-        sx, sy, lean, drag = pose
         flow = flow if flow and name not in SPIN_FRAMES and any(flow) else None
+        if name not in SPIN_FRAMES:
+            pose = capped_pose(self.frame(name, dpi, flip), pose)
+        sx, sy, lean, drag = pose
         if (sx, sy, lean, drag) == (1.0, 1.0, 0.0, 0.0) and flow is None:
             return self.frame(name, dpi, flip)
         key = (name, int(dpi), bool(flip), (sx, sy, lean, drag), flow)
@@ -532,9 +571,11 @@ class SpriteSet:
         reach = (TAIL_SPAN - TAIL_BOX[0]) * w  # root to the tip's rest, px
         steps = len(view) // 2
 
+        room = max(0.0, h - 2.0 - (self.frame(source, dpi, flip).box[3] or y1))  # canvas below the tail source's lowest row: it moves down no further
+
         def shift(x: float) -> tuple[float, float]:
             dx, dy = _tail_shift(view, abs(x - root) / reach)
-            return sgn * dx * scale, dy * scale
+            return sgn * dx * scale, min(room, dy * scale)
 
         edges = sorted({x0, x1, *(min(x1, max(x0, round(root + sgn * reach * i / steps))) for i in range(1, steps + 1))})
         mesh = []
@@ -778,7 +819,7 @@ def _glint(image: Any, flow: tuple[int, ...], box: tuple[int, int, int, int]) ->
 #: `TAIL_STEPS` control points moved by the view, so the tail moves smoothly and not at the idle cycle's 6 a second. The
 #: region's edges feather over `TAIL_FEATHER` px of the shipped frame, so no seam shows against the body. The root end
 #: (`TAIL_SPAN`: where the tail's tip rests, share of the width) never moves.
-TAIL_BOX = (0.52, 0.53, 1.0, 0.88)
+TAIL_BOX = (0.52, 0.53, 1.0, 1.0)
 TAIL_SPAN = 0.82
 TAIL_FEATHER = 10
 TAIL_SOURCE = {"stand": "stand", "idle": "stand", "blink": "stand", "look": "stand", "sit": "sit", "sitblink": "sit"}
@@ -790,19 +831,21 @@ def tail_source(name: str) -> str | None:
 
 
 def _feather_mask(width: int, height: int, feather: int, flip: bool) -> Any:
-    """The tail region's mask: 0 at the root's edge, the top and the bottom, rising to 255 over `feather` px."""
+    """The tail region's mask: 0 at the root's edge and the top, rising to 255 over `feather` px. Not at the bottom: the region
+    runs to the canvas's last row, so no straight edge crosses the tail or the ribbon below it (INBOX 1704: a diagonal cut
+    where the tail layer met the unmoved body under it)."""
     from PIL import Image, ImageChops
 
-    def ramp(n: int, both: bool, reverse: bool) -> list[int]:
+    def ramp(n: int, reverse: bool) -> list[int]:
         out = []
         for i in range(n):
             j = n - 1 - i if reverse else i
-            out.append(round(255 * (min(1.0, (j + 1) / feather, (n - j) / feather) if both else min(1.0, (j + 1) / feather))))
+            out.append(round(255 * min(1.0, (j + 1) / feather)))
         return out
 
     cols, rows = Image.new("L", (width, 1)), Image.new("L", (1, height))
-    cols.putdata(ramp(width, False, flip))
-    rows.putdata(ramp(height, True, False))
+    cols.putdata(ramp(width, flip))
+    rows.putdata(ramp(height, False))
     return ImageChops.multiply(cols.resize((width, height), Image.Resampling.NEAREST), rows.resize((width, height), Image.Resampling.NEAREST))
 
 
