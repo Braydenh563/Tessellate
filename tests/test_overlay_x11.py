@@ -445,14 +445,16 @@ def _xvfb(attempt: int = 0) -> Any:
     return proc, f":{num}"
 
 
-def _connect(display: str, seconds: float = 15.0) -> Any:
-    # 15 s, not 3: Xvfb compiles its keymap at start, which takes over 3 s on a loaded box.
+def _connect(display: str, seconds: float = 60.0, proc: Any = None) -> Any:
+    # Wait on the server, not on a guess (INBOX 1683 s: the test failed once in a few runs under -n 4, three attempts of
+    # 15 s each "cannot open the X display" while the server was alive but starved of CPU, compiling its keymap): the
+    # wait ends when the server process has exited (retry with a new one) or after a minute, whichever comes first.
     end = time.monotonic() + seconds
     while True:
         try:
             return xlib.XConn.open(display)
         except OSError:
-            if time.monotonic() > end:
+            if time.monotonic() > end or (proc is not None and proc.poll() is not None):
                 raise
             time.sleep(0.1)
 
@@ -475,7 +477,7 @@ def _server_at() -> Any:
             continue
         started = True
         try:
-            return proc, _connect(display), display
+            return proc, _connect(display, proc=proc), display
         except OSError as exc:
             last = exc
             proc.kill()
