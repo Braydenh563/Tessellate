@@ -163,3 +163,16 @@ def test_code_document_tools_fold_into_the_kebab_by_the_docks_own_width():
         assert ident in hide.group(1)
     assert re.search(r"@container docdock \(min-width: 600px\)\s*\{\s*#tab-documents \.doc-phone-only\s*\{\s*display: none", lazy)
     assert not re.search(r"@media \(min-width: 600px\)\s*\{\s*#tab-documents \.doc-phone-only", lazy)
+
+
+def test_dock_title_shrinks_with_its_ellipsis_on_a_phone():
+    """Rule 13: the 08 base is `flex: 0 0 auto`, so the title spilled 31px out of a shrunk identity zone at 390 and 480."""
+    match = re.search(r"@media \(max-width: 599\.98px\)\s*\{\s*\.dock \.dock-identity > :is\(h1, h2, h3\)\s*\{([^}]*)\}", CLEAN)
+    assert match and "flex: 0 1 auto" in match.group(1)
+    phone = CSS[: CSS.index("INBOX 1717")]
+    band = re.search(r"\.dock \.dock-identity > :is\(h1, h2, h3, \.dock-chip\)\s*\{([^}]*)\}", phone).group(1)
+    assert "text-overflow: ellipsis" in band and "min-width: 0" in band
+
+
+def test_timeline_month_label_stays_on_one_line():
+    assert "white-space: nowrap" in body(".timeline-daystrip-label.ghost.small")
