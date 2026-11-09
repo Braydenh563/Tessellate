@@ -2,7 +2,7 @@
 
 Generated 2026-11-09 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7951, frontend ids 2652, CSS sections 523, backend routes 649, backend modules 9342, test files 2312, tests 19263, plan headings 1008, app scripts 28, boot scripts 37, script files 266.
+Counts: frontend functions 7951, frontend ids 2652, CSS sections 523, backend routes 649, backend modules 9348, test files 2314, tests 19271, plan headings 1008, app scripts 28, boot scripts 37, script files 266.
 
 ## Frontend functions (7951)
 
@@ -13204,7 +13204,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:164 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (9342)
+## Backend modules (9348)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -13838,46 +13838,46 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `_acknowledged` | src/tessellate/ai/composer.py:405 |
-| `_add_matching` | src/tessellate/ai/composer.py:819 |
-| `_answer_dict` | src/tessellate/ai/composer.py:664 |
-| `_answer_turn` | src/tessellate/ai/composer.py:431 |
-| `_answer_views` | src/tessellate/ai/composer.py:777 |
-| `_best_dated_title` | src/tessellate/ai/composer.py:553 |
-| `_brief_text` | src/tessellate/ai/composer.py:922 |
-| `_by_the_day` | src/tessellate/ai/composer.py:621 |
-| `_checklist_or_until` | src/tessellate/ai/composer.py:453 |
+| `_acknowledged` | src/tessellate/ai/composer.py:406 |
+| `_add_matching` | src/tessellate/ai/composer.py:820 |
+| `_answer_dict` | src/tessellate/ai/composer.py:665 |
+| `_answer_turn` | src/tessellate/ai/composer.py:432 |
+| `_answer_views` | src/tessellate/ai/composer.py:778 |
+| `_best_dated_title` | src/tessellate/ai/composer.py:554 |
+| `_brief_text` | src/tessellate/ai/composer.py:923 |
+| `_by_the_day` | src/tessellate/ai/composer.py:622 |
+| `_checklist_or_until` | src/tessellate/ai/composer.py:454 |
 | `_clarify` | src/tessellate/ai/composer.py:175 |
-| `_compose` | src/tessellate/ai/composer.py:737 |
-| `_correction_order` | src/tessellate/ai/composer.py:507 |
-| `_day_terms` | src/tessellate/ai/composer.py:586 |
-| `_early_answer` | src/tessellate/ai/composer.py:467 |
-| `_fill_by_shape` | src/tessellate/ai/composer.py:703 |
-| `_fill_selected` | src/tessellate/ai/composer.py:632 |
+| `_compose` | src/tessellate/ai/composer.py:738 |
+| `_correction_order` | src/tessellate/ai/composer.py:508 |
+| `_day_terms` | src/tessellate/ai/composer.py:587 |
+| `_early_answer` | src/tessellate/ai/composer.py:468 |
+| `_fill_by_shape` | src/tessellate/ai/composer.py:704 |
+| `_fill_selected` | src/tessellate/ai/composer.py:633 |
 | `_fit_terms` | src/tessellate/ai/composer.py:242 |
-| `_fresh_answer` | src/tessellate/ai/composer.py:692 |
-| `_from_dialogue` | src/tessellate/ai/composer.py:444 |
-| `_help_result` | src/tessellate/ai/composer.py:365 |
-| `_is_broad` | src/tessellate/ai/composer.py:616 |
-| `_meaning_maker` | src/tessellate/ai/composer.py:527 |
+| `_fresh_answer` | src/tessellate/ai/composer.py:693 |
+| `_from_dialogue` | src/tessellate/ai/composer.py:445 |
+| `_help_result` | src/tessellate/ai/composer.py:366 |
+| `_is_broad` | src/tessellate/ai/composer.py:617 |
+| `_meaning_maker` | src/tessellate/ai/composer.py:528 |
 | `_meant` | src/tessellate/ai/composer.py:235 |
 | `_multi` | src/tessellate/ai/composer.py:135 |
-| `_names_app` | src/tessellate/ai/composer.py:359 |
-| `_note_views` | src/tessellate/ai/composer.py:503 |
-| `_note_words` | src/tessellate/ai/composer.py:397 |
-| `_planned` | src/tessellate/ai/composer.py:728 |
-| `_raw` | src/tessellate/ai/composer.py:813 |
-| `_read_in_dialogue` | src/tessellate/ai/composer.py:379 |
+| `_names_app` | src/tessellate/ai/composer.py:360 |
+| `_note_views` | src/tessellate/ai/composer.py:504 |
+| `_note_words` | src/tessellate/ai/composer.py:398 |
+| `_planned` | src/tessellate/ai/composer.py:729 |
+| `_raw` | src/tessellate/ai/composer.py:814 |
+| `_read_in_dialogue` | src/tessellate/ai/composer.py:380 |
 | `_readings` | src/tessellate/ai/composer.py:214 |
-| `_refusal` | src/tessellate/ai/composer.py:720 |
-| `_steer_to_correction` | src/tessellate/ai/composer.py:518 |
-| `_unfinished_act` | src/tessellate/ai/composer.py:484 |
-| `_window_gate` | src/tessellate/ai/composer.py:535 |
-| `_write_body` | src/tessellate/ai/composer.py:595 |
-| `_written_when` | src/tessellate/ai/composer.py:566 |
-| `brief` | src/tessellate/ai/composer.py:827 |
+| `_refusal` | src/tessellate/ai/composer.py:721 |
+| `_steer_to_correction` | src/tessellate/ai/composer.py:519 |
+| `_unfinished_act` | src/tessellate/ai/composer.py:485 |
+| `_window_gate` | src/tessellate/ai/composer.py:536 |
+| `_write_body` | src/tessellate/ai/composer.py:596 |
+| `_written_when` | src/tessellate/ai/composer.py:567 |
+| `brief` | src/tessellate/ai/composer.py:828 |
 | `compose` | src/tessellate/ai/composer.py:276 |
-| `open_note_answer` | src/tessellate/ai/composer.py:948 |
+| `open_note_answer` | src/tessellate/ai/composer.py:949 |
 | `split_parts` | src/tessellate/ai/composer.py:118 |
 
 ### src/tessellate/ai/composer_ack.py (3)
@@ -13892,7 +13892,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `_date_in` | src/tessellate/ai/composer_ahead.py:15 |
+| `date_in` | src/tessellate/ai/composer_ahead.py:15 |
 | `distance` | src/tessellate/ai/composer_ahead.py:25 |
 
 ### src/tessellate/ai/composer_answer.py (5)
@@ -14634,6 +14634,15 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_when` | src/tessellate/ai/composer_epoch.py:35 |
 | `answer` | src/tessellate/ai/composer_epoch.py:60 |
 
+### src/tessellate/ai/composer_event_verdict.py (4)
+
+| Name | File:line |
+|---|---|
+| `_month_end` | src/tessellate/ai/composer_event_verdict.py:18 |
+| `_window` | src/tessellate/ai/composer_event_verdict.py:22 |
+| `apply` | src/tessellate/ai/composer_event_verdict.py:53 |
+| `verdict` | src/tessellate/ai/composer_event_verdict.py:40 |
+
 ### src/tessellate/ai/composer_extra.py (4)
 
 | Name | File:line |
@@ -14998,6 +15007,13 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `records_amounts` | src/tessellate/ai/composer_money.py:1231 |
 | `spent_only` | src/tessellate/ai/composer_money.py:475 |
 | `sums_a_measure` | src/tessellate/ai/composer_money.py:1201 |
+
+### src/tessellate/ai/composer_names.py (2)
+
+| Name | File:line |
+|---|---|
+| `names_of` | src/tessellate/ai/composer_names.py:19 |
+| `respell` | src/tessellate/ai/composer_names.py:25 |
 
 ### src/tessellate/ai/composer_notes.py (19)
 
@@ -24970,7 +24986,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (19263)
+## Tests (19271)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -25469,9 +25485,11 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_composer_r9_agenda_1109.py | 5 |
 | tests/test_composer_r9_counts_1109.py | 5 |
 | tests/test_composer_r9_did_1109.py | 5 |
+| tests/test_composer_r9_event_1109.py | 4 |
 | tests/test_composer_r9_figures_1109.py | 4 |
 | tests/test_composer_r9_lead_1109.py | 6 |
 | tests/test_composer_r9_names_1109.py | 4 |
+| tests/test_composer_r9_names_typos_1109.py | 4 |
 | tests/test_composer_r9_tick_1109.py | 1 |
 | tests/test_composer_r9_typos_1109.py | 3 |
 | tests/test_composer_r9_values_1109.py | 5 |

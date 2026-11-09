@@ -45,7 +45,7 @@ from pathlib import Path
 
 from tessellate.ai import composer, composer_doings, composer_done, composer_frame, composer_threads, composer_lists, composer_money, composer_slots, composer_sum, composer_tables, filed_name, glossary, question_noise, realise, verdicts
 from tessellate.ai import composer_answer, composer_brief, composer_nth, composer_oneword, composer_property, composer_small
-from tessellate.ai import composer_ahead, composer_ask, composer_clean, factgraph
+from tessellate.ai import composer_ahead, composer_ask, composer_clean, composer_event_verdict, factgraph
 from tessellate.ai import composer_chip_subject
 from tessellate.ai import composer_read
 from tessellate.ai import composer_select
@@ -5104,7 +5104,7 @@ def answer(question: str, notes: list[dict], **kwargs) -> dict | None:  # noqa: 
     owned = composer_ask.NOTE_WORDS.set(composer._note_words(notes))  # noqa: SLF001
     texts = composer_ask.NOTE_TEXTS.set(tuple(f"{n.get('title') or ''} {n.get('content') or ''}".lower() for n in notes or ()))
     try:
-        return _answer(question, notes, **kwargs)
+        return composer_event_verdict.apply(question, _answer(question, notes, **kwargs), kwargs.get("today") or composer.user_today())
     finally:
         composer_ask.NOTE_TEXTS.reset(texts)
         composer_ask.NOTE_WORDS.reset(owned)

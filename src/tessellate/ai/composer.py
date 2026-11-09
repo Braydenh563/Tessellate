@@ -84,7 +84,7 @@ from __future__ import annotations
 import re
 from datetime import date, datetime
 
-from tessellate.ai import act_registry, composer_ack, composer_brief, composer_links, composer_numbers, composer_small, composer_open, composer_tables, composer_versus, grounding, phrasing, question_noise, spelling, utilities
+from tessellate.ai import act_registry, composer_ack, composer_brief, composer_links, composer_names, composer_numbers, composer_small, composer_open, composer_tables, composer_versus, grounding, phrasing, question_noise, spelling, utilities
 from tessellate.ai import recognise as rec
 from tessellate.ai.composer_phrases import PHRASES
 from tessellate.ai.composer_ask import _ASKS_FIRST, _KNOWN, _SHAPE_RULES, _guessing_recent, _holds, _stem, _still_recent, _words, asks_written_when, classify, compare_sides, rephrase, subject_terms, user_now, user_today, when_terms
@@ -320,7 +320,8 @@ def compose(
         voice = composer_tables.DEFAULT_VOICE
     #: In a conversation (decision 34, 35): the turn and the chat's salt
     #: choose the wording, and a terse turn is read against the ones before.
-    asked, question = question, composer_numbers.normalise(question)
+    names = composer_names.names_of(notes)
+    asked, question = question, composer_names.respell(composer_numbers.normalise(question), names)
     if dialogue is not None:
         question, salt, turn, said, prefer, previous = _read_in_dialogue(
             question, dialogue, salt=salt, turn=turn, said=said, prefer=prefer, previous=previous, resolved=resolved
@@ -337,7 +338,7 @@ def compose(
                               voice=voice, now=now, salt=salt, turn=turn, dialogue=dialogue, prefer=prefer)
         result = offered(result, asked)
         result = _acknowledged(result, asked, voice=composer_tables.voice_of(voice), seed=f"{asked.strip().lower()}:{salt}:{turn}",
-                               history=dialogue.history if dialogue is not None else [{"answer": previous}], previous=previous, known=words)
+                               history=dialogue.history if dialogue is not None else [{"answer": previous}], previous=previous, known=words, names=names)
     finally:
         _SESSION.reset(token)
         _REGISTER.reset(registered)
@@ -403,7 +404,7 @@ def _note_words(notes: list[dict]) -> frozenset:
 
 
 def _acknowledged(result: dict, asked: str, *, voice: str, seed: str, history: list[dict], previous: str = "",
-                  known: frozenset = frozenset()) -> dict:
+                  known: frozenset = frozenset(), names: frozenset = frozenset()) -> dict:
     """The answer, opened by how the question was read when it had a
     misspelling put right (Brief 90: "hwo do I" read as "how do I"). The
     wording varies (`composer_ack`): not the answer before's, not the last
@@ -413,7 +414,7 @@ def _acknowledged(result: dict, asked: str, *, voice: str, seed: str, history: l
         return result
     fixed: list[tuple[str, str]] = []
     tidy = question_noise.tidy(" ".join(asked.split()))
-    repaired = question_noise.repair(tidy, fixed=fixed, known=known)
+    repaired = composer_names.respell(question_noise.repair(tidy, fixed=fixed, known=known), names, fixed)
     #: A worked answer says the reading the utility used, which may be a
     #: router's reading rather than the speller's: "what tmie is it in jaan"
     #: was answered for Tokyo under "I took that to mean 'what the is it in

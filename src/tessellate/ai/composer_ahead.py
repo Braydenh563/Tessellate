@@ -12,7 +12,7 @@ _DAY_FIRST = re.compile(rf"\b(?P<d>\d{{1,2}})(?:st|nd|rd|th)?(?: of)? (?P<m>{_NA
 _MONTH_FIRST = re.compile(rf"\b(?P<m>{_NAMES}) (?P<d>\d{{1,2}})(?:st|nd|rd|th)?\b(?:,? (?P<y>\d{{4}}))?", re.IGNORECASE)
 
 
-def _date_in(fact: str, today: date) -> date | None:
+def date_in(fact: str, today: date) -> date | None:
     found = _DAY_FIRST.search(fact) or _MONTH_FIRST.search(fact)
     if not found:
         return None
@@ -24,7 +24,7 @@ def _date_in(fact: str, today: date) -> date | None:
 
 def distance(fact: str, today: date) -> str:
     """"in 23 days" for a fact whose day is still ahead, else ""."""
-    day = _date_in(fact, today)
+    day = date_in(fact, today)
     if day is None or day < today:
         return ""
     days = (day - today).days
