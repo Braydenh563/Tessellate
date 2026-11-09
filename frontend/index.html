@@ -6733,6 +6733,9 @@ Link to another note with [[its first few words]]."></textarea>
       </section>
     </div>
     <div id="wb-canvas-view" class="hidden">
+    <!-- Built when a board first opens, or the first lookup of one of its ids (`surfaceBuild`,
+         settings-body.js; audit 1031 row 21): 1,740 elements no boot and no boards list draws. -->
+    <template data-surface="board">
       <!-- **The gestures, on screen, while you still need them.** Reported:
            "concept maps are unlearnable". The map *creates* well, it opens
            with a root selected and a toast naming Tab and Enter, but a toast
@@ -8670,6 +8673,7 @@ Link to another note with [[its first few words]]."></textarea>
         </section>
       </div>
     </aside>
+    </template>
   </div>
   </div>
 
@@ -10050,7 +10054,7 @@ Link to another note with [[its first few words]]."></textarea>
         <div class="modal-content" tabindex="-1">
           <!-- Built on the first open, or the first lookup of one of its ids (`settingsBodyBuild`,
                settings-body.js; INBOX 1501): 2,700 nodes that cost every boot and none of its views. -->
-          <template id="settings-body-template">
+          <template id="settings-body-template" data-surface="settings">
 
           <!-- Models -->
           <section class="settings-section" id="settings-models">

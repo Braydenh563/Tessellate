@@ -1505,7 +1505,7 @@ function hideClosedDockMenuLists() {
   }
 }
 hideClosedDockMenuLists();
-onSettingsBody(hideClosedDockMenuLists);
+onSurface("settings", hideClosedDockMenuLists);
 //: Escape closes an open dock menu and puts focus back on its button, 
 //: `<details>` does not do this on its own, whatever a comment elsewhere in
 //: this codebase once claimed; measured with a keyboard-only probe. Capture

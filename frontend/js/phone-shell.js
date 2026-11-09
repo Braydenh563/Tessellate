@@ -210,7 +210,7 @@ const EMBLEM_SLOTS = [
 ];
 
 //: The About page's emblem is in Settings' body: drawn when the body is built (INBOX 1501).
-onSettingsBody(() => {
+onSurface("settings", () => {
   const holder = document.getElementById("about-emblem");
   if (holder) renderEmblemWhenShown(holder, 96, true);
 });

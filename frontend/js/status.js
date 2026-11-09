@@ -388,7 +388,7 @@ function syncNotifBlocked() {
   for (const line of document.querySelectorAll(".notif-blocked")) line.classList.toggle("hidden", !blocked);
 }
 
-onSettingsBody(syncNotifBlocked);
+onSurface("settings", syncNotifBlocked);
 
 function askNotificationPermission() {
   if ("Notification" in window && Notification.permission === "default") {
@@ -2142,7 +2142,7 @@ document.addEventListener(
 );
 
 //: The body's own controls are gated when it is built (settings-body.js), not before.
-onSettingsBody(() => syncModelGatedControls());
+onSurface("settings", () => syncModelGatedControls());
 function syncModelGatedControls(status = modelStatus) {
   const off = status ? status.ollama_running === false : false;
   for (const control of document.querySelectorAll("[data-needs-model]")) {

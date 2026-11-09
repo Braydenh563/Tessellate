@@ -53,16 +53,38 @@ def test_the_dashboards_quick_access_draw_waits_for_its_file_through_a_stand_in(
     assert 'featureRows: ["renderQuickLinks"]' in entries
 
 
+_VOID = {"area", "base", "br", "col", "embed", "hr", "img", "input", "link", "meta", "source", "track", "wbr", "param"}
+
+
 class _Count(HTMLParser):
+    """Elements the page parses into its live tree: what a `<template>` holds
+    is an inert fragment until it is stamped (row 21), so it is not counted."""
+
     def __init__(self) -> None:
         super().__init__()
         self.elements = 0
+        self.open: list[str] = []
+        self.inert = 0
 
     def handle_starttag(self, tag, attrs):
-        self.elements += 1
+        if not self.inert:
+            self.elements += 1
+        if tag == "template":
+            self.inert += 1
+        if tag not in _VOID:
+            self.open.append(tag)
 
     def handle_startendtag(self, tag, attrs):
-        self.elements += 1
+        if not self.inert:
+            self.elements += 1
+
+    def handle_endtag(self, tag):
+        while self.open:
+            last = self.open.pop()
+            if last == "template":
+                self.inert -= 1
+            if last == tag:
+                break
 
 
 #: The elements `index.html` itself carries: 7,879 on 2026-11-01. Live, after a
@@ -85,14 +107,20 @@ class _Count(HTMLParser):
 #: To 7,945 on 2026-11-08: smalla-1108's Appearance rows, all inside the inert
 #: Settings body template (22: Export and Import look with its file input, Mix
 #: palette, accent and density, Line spacing and Line width with their options).
-BOOT_ELEMENTS_CAP = 7_945
+#: 7,948 on 2026-11-09 (INBOX 1717's three toolbar-word spans), and it counted
+#: what sits in a `<template>` too, so no template could lower it, against the
+#: intent above. It counts the live page now (row 21, row21-1109): 5,521 on head
+#: with the Settings body already a template; the board canvas into
+#: `<template data-surface="board">` (1,741 elements, built when a board opens)
+#: took it to 3,782.
+BOOT_ELEMENTS_CAP = 3_782
 
 
 def test_the_boot_document_does_not_grow():
     counter = _Count()
     counter.feed((FRONTEND / "index.html").read_text(encoding="utf-8"))
     assert counter.elements <= BOOT_ELEMENTS_CAP, (
-        f"index.html carries {counter.elements} elements, cap {BOOT_ELEMENTS_CAP}: "
+        f"index.html parses {counter.elements} elements into the page, cap {BOOT_ELEMENTS_CAP}: "
         "a new surface is built on first visit, not shipped in the page"
     )
 

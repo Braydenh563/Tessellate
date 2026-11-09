@@ -10632,7 +10632,7 @@ function wbEnsureHandles(el) {
   build();
 }
 
-onDomReady(() => {
+onSurface("board", () => {
   const board = document.getElementById("whiteboard-container");
   const reach = (e) => {
     const el = e.target?.closest?.(".wb-object, .node-card");
@@ -14950,6 +14950,7 @@ function wbStampMenuRoles(menu) {
 }
 
 async function initWhiteboard() {
+  surfaceBuild("board");
   if (wbInitialized) return;
   wbInitialized = true;
   
@@ -24938,7 +24939,6 @@ onDomReady(() => {
     }
     wbImportOutlineFile({ target: { files: [file], value: "" } });
   });
-  $("wb-back-to-boards")?.addEventListener("click", wbShowBoardsLanding);
   $("library-boards-search")?.addEventListener("input", redrawLibraryBoardsGallery);
   // The Reload button beside "+ New board", now named after what it reloads.
   // It was `library-media-refresh`, a copy-paste leftover from the Media
@@ -24954,6 +24954,7 @@ onDomReady(() => {
   // New board, Import outline and Help does not say reload what.
   $("library-boards-refresh")?.addEventListener("click", renderLibraryBoardsGallery);
 });
+onSurface("board", () => $("wb-back-to-boards")?.addEventListener("click", wbShowBoardsLanding));
 
 // The Whiteboards tab has two views sharing one subtab: a boards gallery
 // (the landing view) and the actual canvas, asked for directly, replacing
@@ -24962,6 +24963,7 @@ onDomReady(() => {
 // is lazy and idempotent (`wbInitialized` guards it), so switching between
 // the two views repeatedly costs nothing after the first time.
 function wbShowCanvasView() {
+  surfaceBuild("board");
   $("wb-boards-landing")?.classList.add("hidden");
   const view = $("wb-canvas-view");
   //: Whiteboards and mind maps both draw here. Fade in once the board has
@@ -25496,14 +25498,16 @@ function renderWbGestureHints() {
 }
 window.renderWbGestureHints = renderWbGestureHints;
 
-document.getElementById("wb-gestures-dismiss")?.addEventListener("click", () => {
-  try {
-    prefs.set(WB_GESTURES_DISMISSED, "1");
-  } catch {
-    /* nothing to persist to, hiding it for this session is still correct */
-  }
-  wbGesturesDismissed = true;
-  document.getElementById("wb-gestures")?.classList.add("hidden");
+onSurface("board", () => {
+  document.getElementById("wb-gestures-dismiss")?.addEventListener("click", () => {
+    try {
+      prefs.set(WB_GESTURES_DISMISSED, "1");
+    } catch {
+      /* nothing to persist to, hiding it for this session is still correct */
+    }
+    wbGesturesDismissed = true;
+    document.getElementById("wb-gestures")?.classList.add("hidden");
+  });
 });
 
 /** Full screen for the board, asked for directly ("the whiteboard

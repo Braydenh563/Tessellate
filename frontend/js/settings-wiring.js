@@ -1176,7 +1176,7 @@ function restampShortcutHints() {
 }
 localizeStaticChords();
 restampShortcutHints();
-onSettingsBody(() => {
+onSurface("settings", () => {
   localizeStaticChords();
   stampShortcutTitles();
 });
@@ -1906,7 +1906,7 @@ window.addEventListener("appinstalled", () => {
   renderInstallRow();
 });
 //: The Install row paints when the body is built (the button is wired in settings-controls.js).
-onSettingsBody(renderInstallRow);
+onSurface("settings", renderInstallRow);
 
 // The generative brand emblem's initial draw (Wave O) moved to settings.js's
 // own tail (§88.3 item 4): renderBrandLogo() itself stays here (used far
