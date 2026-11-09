@@ -3378,7 +3378,7 @@ MORE_TOPICS.extend([
             "from the keyboard, Insert in the blocks list adds a step under the selected one. "
             "Suggest works in each, and Templates has one of each kind. A suggestion of the diagram's own kind arrives as ghosts to take; "
             "one of another kind says so and is left out when the diagram has blocks, and replaces "
-            "a blank one. Hand-drawn look, in the ... menu, sketches any of them; Clean look takes it back."
+            "a blank one. Hand-drawn look, in the ... menu, sketches any of them; Clean look takes it back. Compact and Roomy spacing too."
         ),
         "badge": {"label": "Documents", "tab": "documents"},
     },

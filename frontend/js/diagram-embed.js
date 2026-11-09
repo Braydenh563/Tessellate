@@ -159,6 +159,38 @@
   };
   //: end withLook
 
+  //: The spacing (DD-13, 1109): Mermaid's default layout here is ELK, which has no spacing setting (`flowchart.nodeSpacing` and
+  //: `rankSpacing` are read by dagre only: measured, a 4-box chart drew 552 x 219 whatever they said). So Compact and Roomy are three
+  //: front matter lines each: `layout: dagre` and the two spacings; Normal takes them out and the default engine draws again.
+  //: The gap is one number for both directions; 50 is dagre's own default, which is why neither level is 50.
+  const SPACINGS = { compact: 20, roomy: 100 };
+  const spacingOf = (source) => {
+    const gap = /^\s+nodeSpacing:\s*(\d+)\s*$/m.exec(diagramModel.front(String(source)).front.join("\n"));
+    return Object.keys(SPACINGS).find((level) => SPACINGS[level] === Number(gap?.[1])) || "normal";
+  };
+  const withSpacing = (source, level) => {
+    const { front, rest } = diagramModel.front(String(source).replace(/\r/g, ""));
+    let kept = front[0] === "---" ? front.slice(1, front.lastIndexOf("---")) : [];
+    //: A `config:` with its value on the same line (a flow mapping) cannot take nested lines: left alone, the caller says so.
+    if (kept.some((line) => /^config:\s*\S/.test(line))) return null;
+    kept = kept.filter((line) => !/^ {4}(nodeSpacing|rankSpacing):/.test(line) && !/^ {2}layout:\s*dagre\s*$/.test(line));
+    //: A `flowchart:` left with no keys under it, and a `config:` left with nothing, go too.
+    const bare = (key, depth) => (line, i) => !(new RegExp(`^ {${depth}}${key}:\\s*$`).test(line) && !new RegExp(`^ {${depth + 1},}\\S`).test(kept[i + 1] || ""));
+    kept = kept.filter(bare("flowchart", 2));
+    kept = kept.filter(bare("config", 0));
+    if (level !== "normal") {
+      if (!kept.some((line) => /^config:\s*$/.test(line))) kept.push("config:");
+      kept = kept.filter((line) => !/^ {2}layout:/.test(line));
+      const at = kept.findIndex((line) => /^config:\s*$/.test(line));
+      kept.splice(at + 1, 0, "  layout: dagre");
+      let flow = kept.findIndex((line) => /^ {2}flowchart:\s*$/.test(line));
+      if (flow < 0) kept.splice(at + 2, 0, "  flowchart:"), (flow = at + 2);
+      kept.splice(flow + 1, 0, `    nodeSpacing: ${SPACINGS[level]}`, `    rankSpacing: ${SPACINGS[level]}`);
+    }
+    return (kept.length ? `---\n${kept.join("\n")}\n---\n` : "") + rest;
+  };
+  //: end withSpacing
+
   //: The document's name from the Title field: nothing a `![[ ]]` link or a `Title#^id` block reference reads as syntax, and never a name
   //: another document has (links resolve to the first document of that title, so a repeat would show the earlier diagram). Blank is dated.
   const cleanTitle = (text) => String(text || "").replace(/[\[\]|#]+/g, " ").replace(/\s+/g, " ").trim();
@@ -295,6 +327,7 @@
           makeMenuItem("ph:eraser Clear", "Start again from an empty diagram of this kind. Undo brings this one back", () => (io.set(`${STARTS[diagramModel.builder.kindOf(history[at])] || STARTS.flowchart}\n`), apply())),
           //: One look row, the one that is not on: the menu never says "Hand-drawn" while it is already drawn so, and it is rebuilt with every pane.
           lookRow(),
+          ...spacingRows(),
           makeMenuItem("ph:books Save to Library", "Keep it in the Library to show it with ![[name]]", () => save(history[at], offer?.link ? { label: "Link this diagram", run: (row) => link(offer.link, row, history[at]) } : offer)),
         ];
       },
@@ -307,6 +340,18 @@
       io.set(next);
       apply();
     };
+    //: The spacing rows are the two levels that are not on, like the look row: Normal is the way back from either.
+    const setSpacing = (level) => {
+      const next = withSpacing(history[at], level);
+      if (next === null) return toast("The front matter has a config line the menu cannot edit. Change it in Source.", "info");
+      io.set(next);
+      apply();
+    };
+    function spacingRows() {
+      const now = spacingOf(history[at]);
+      const rows = { compact: ["ph:arrows-in-line-horizontal Compact spacing", "Draw the blocks closer together. Kept in the diagram's own text; Undo takes it back"], roomy: ["ph:arrows-out-line-horizontal Roomy spacing", "Draw the blocks further apart. Kept in the diagram's own text; Undo takes it back"], normal: ["ph:arrows-horizontal Normal spacing", "Draw the blocks at the usual distance again"] };
+      return Object.keys(rows).filter((level) => level !== now).map((level) => makeMenuItem(rows[level][0], rows[level][1], () => setSpacing(level)));
+    }
     function lookRow() {
       const hand = diagramModel.front(history[at]).front.some((line) => /\blook:\s*handDrawn/.test(line));
       return hand
