@@ -34,8 +34,6 @@ with its owner named in the entry.
 
 ## Open items
 
-1702. **Owner, 2026-11-09, verbatim (sequence diagram pasted, screenshots):** "I put this in my diagram builder but the list was kinda hard to understand"; "the little tool menu and dropdown in the top left corner of the picture panel covers the content sometimes and I cant collapse it, also I couldnt click the dropdown button again to close the menu either. the collapse button in the picture panel also clashes with the scroll bar"; "if I select on a diagram object in the picture or in the list, it should select that object in the other"; "I still dont know what the difference between picture and source do" (Picture and List). Placed with agent dgmseq-1109.
-
 1699. **Owner, 2026-11-09, verbatim (screenshot, desk companion Atlas over a forest wallpaper):** "the bottom of desktop companion atlas's tail gets clipped, also it is just hanging in mid air". Placed with agent deskfloat-1109.
 1700. **Owner, 2026-11-09, verbatim:** "the desktop companion still doesnt seem to react to anything im doing on my screen". Placed with agent deskfloat-1109.
 
