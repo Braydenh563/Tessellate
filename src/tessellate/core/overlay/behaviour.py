@@ -216,8 +216,8 @@ ACTIVITIES.update({
     "dust_off": Activity("stand", (1.0, 1.5), _k((0, 1, 1, 0), (0.15, 1, 1, 0.06), (0.3, 1, 1, -0.06), (0.5, 1, 1, 0.04), (1, 1, 1, 0)), (("comfort", -0.2),)),
 })
 #: INBOX 1710 (the owner: "they need to be just as good as each other"): eleven of the in-app companion's own acts, each a
-#: pose of its own over a frame the desk already has; their lengths and weights come from the shared catalogue (`_from_catalogue`). Not the long sitting ones (meditate,
-#: lounge, rest head: 40 to 80 s on the sit frame would hold off the engine's own sit at ten minutes idle).
+#: pose of its own over a frame the desk already has; their lengths and weights come from the shared catalogue (`_from_catalogue`). The long sitting ones
+#: (meditate, lounge, rest head: up to 80 s on the sit frame) are `YIELD_TO_SIT`: at ten minutes idle the engine ends them so its own sit is not held off.
 ACTIVITIES.update({
     "sigh": Activity("stand", (1.7, 2.8), _k((0, 1, 1, 0), (0.3, 1.01, 1.05, 0), (0.55, 1.01, 1.05, 0), (0.85, 1, 0.95, 0.01), (1, 1, 1, 0)), (("rest", -0.05),)),
     "head_tilt": Activity("look", (1.0, 2.0), _k((0, 1, 1, 0), (0.3, 1, 1, 0.09), (0.75, 1, 1, 0.09), (1, 1, 1, 0)), (("curiosity", -0.1),), likes="curious"),
@@ -235,10 +235,20 @@ ACTIVITIES.update({
     "hiccup": Activity("stand", (2.0, 4.0), _k((0, 1, 1, 0), (0.12, 1, 1.04, 0), (0.22, 1, 1, 0), (0.45, 1, 1.04, 0), (0.55, 1, 1, 0), (0.75, 1, 1.04, 0), (0.85, 1, 1, 0), (1, 1, 1, 0)), ()),
     "self_hug": Activity("stand", (3.0, 6.0), _k((0, 1, 1, 0), (0.12, 0.98, 0.99, 0.02), (0.4, 0.98, 0.99, -0.04), (0.7, 0.98, 0.99, 0.04), (0.9, 0.98, 0.99, 0), (1, 1, 1, 0)), (("comfort", -0.35),), likes="sleepy"),
     "foot_tap": Activity("stand", (2.0, 4.0), _k((0, 1, 1, 0), (0.1, 1, 0.98, 0.02), (0.2, 1, 1, 0), (0.35, 1, 0.98, 0.02), (0.45, 1, 1, 0), (0.6, 1, 0.98, 0.02), (0.7, 1, 1, 0), (0.85, 1, 0.98, 0.02), (1, 1, 1, 0)), (("novelty", -0.1),), likes="bored"),
+    #: INBOX 1710, 1711: the long sitting acts (the catalogue's `act.meditate`, `lounge`, `rest_head`) and four more small ones.
+    "meditate": Activity("sit", (12.0, 80.0), _k((0, 1, 1, 0), (0.06, 1, 1.03, 0), (0.2, 1, 0.98, 0), (0.35, 1, 1.03, 0), (0.5, 1, 0.98, 0), (0.65, 1, 1.03, 0), (0.8, 1, 0.98, 0), (0.94, 1, 1.02, 0), (1, 1, 1, 0)), (("rest", -0.3), ("comfort", -0.2)), likes="sleepy"),
+    "lounge": Activity("sit", (14.0, 60.0), _k((0, 1, 1, 0), (0.1, 1.02, 0.96, 0.03), (0.5, 1.02, 0.95, -0.03), (0.9, 1.02, 0.96, 0.02), (1, 1, 1, 0)), (("rest", -0.35), ("comfort", -0.3)), likes="sleepy"),
+    "rest_head": Activity("sit", (11.0, 40.0), _k((0, 1, 1, 0), (0.1, 1, 0.98, -0.04), (0.45, 1, 0.98, -0.04), (0.55, 1, 0.98, 0.04), (0.9, 1, 0.98, 0.04), (1, 1, 1, 0)), (("rest", -0.3),)),
+    "star_catch": Activity("wave", (3.0, 6.0), _k((0, 1, 1, 0), (0.15, 1, 1.04, 0.03), (0.3, 1, 0.97, -0.03), (0.45, 1, 1.05, 0.04), (0.6, 1, 0.97, -0.02), (0.8, 1, 1.03, 0.02), (1, 1, 1, 0)), (("play", -0.25), ("curiosity", -0.1)), likes="curious"),
+    "count_stars": Activity("look", (4.0, 8.0), _k((0, 1, 1, 0), (0.12, 1, 1.02, 0.02), (0.3, 1, 1, -0.02), (0.45, 1, 1.02, 0.02), (0.6, 1, 1, -0.02), (0.8, 1, 1.02, 0.01), (1, 1, 1, 0)), (("curiosity", -0.15),), likes="curious"),
+    "card_nap": Activity("sleep", (6.0, 14.0), _k((0, 1, 1, 0), (0.1, 1, 0.97, 0.02), (0.5, 1, 1, 0.02), (1, 1, 0.97, 0.02)), (("rest", -0.4),), likes="sleepy"),
+    "wave_pointer": Activity("wave", (1.5, 2.4), _k((0, 1, 1, 0), (0.2, 1, 1.02, 0.03), (0.8, 1, 1.02, 0.03), (1, 1, 1, 0)), (("social", -0.3),), likes="happy"),
 })
 for _n, _extra in {"wave_idle": (("social", -0.3),), "little_dance": (("social", -0.1), ("novelty", -0.1)), "glance_pointer": (("social", -0.1),),
                    "look_around": (("novelty", -0.1),), "stretch": (("comfort", -0.2),), "sit_down": (("comfort", -0.25),)}.items():
     ACTIVITIES[_n] = ACTIVITIES[_n]._replace(feeds=ACTIVITIES[_n].feeds + _extra)
+#: The long sitting acts: the engine ends them at `IDLE_SIT` so the sit comes on time (they run up to 80 s on the sit frame).
+YIELD_TO_SIT = frozenset({"meditate", "lounge", "rest_head"})
 #: The ones that only make sense in place: all of them (a trip is a different table).
 IDLE_NAMES = tuple(ACTIVITIES)
 #: Base chance of each, before need, mood and repeat shape it. Quiet things are common.
@@ -386,6 +396,13 @@ CHAINS = (
     Chain(("sneeze", "groom"), ()),
     Chain(("foot_tap", "look_around", "ponder"), ("bored", "curious")),
     Chain(("self_hug", "yawn", "sit_down"), ()),
+    # INBOX 1710, 1711: a firefly leads to counting the stars, a wave to a look round, a rest to a stretch, a lounge to a nap on a card, a pace to a sigh, a sparkle to a toss of stars.
+    Chain(("star_catch", "count_stars"), ("curious", "happy")),
+    Chain(("wave_pointer", "look_around"), ()),
+    Chain(("rest_head", "stretch", "yawn"), ()),
+    Chain(("lounge", "card_nap"), ("sleepy",)),
+    Chain(("pace", "sigh"), ()),
+    Chain(("cast_sparkle", "toss_stars"), ("happy",)),
 )
 
 
