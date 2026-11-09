@@ -62,6 +62,8 @@
   // --- the picture ----------------------------------------------------------------
   function drawPicture(S) {
     clearTimeout(S.drawTimer);
+    //: Until this draw lands the picture is out of date: a field opened over it now (diagram-edges.js `ask`) would be torn down by the new image.
+    S.drawing = true;
     S.drawTimer = setTimeout(() => {
       const source = S.source;
       const stamp = ++S.drawn;
@@ -72,16 +74,18 @@
       S.fig.classList.toggle("dgm-picture-empty", empty);
       //: The phone layout keys on the window body; a class, not `.dgm-body:has()` (test_css_body_has).
       S.fig.closest(".dgm-body")?.classList.toggle("dgm-body-empty", empty);
-      if (empty) return S.fig.replaceChildren(el("p", "muted dgm-hint", "The picture appears here as you add blocks."));
+      if (empty) return (S.drawing = false), S.fig.replaceChildren(el("p", "muted dgm-hint", "The picture appears here as you add blocks."));
       //: The hint goes now, or it and the pending line show together (1679 m).
       S.fig.querySelector(":scope > .dgm-hint")?.remove();
       Promise.all([ensureModule("mermaid"), diagramModel.picture.idle(S)]).then(([ok]) => {
+        if (!ok) S.drawing = false;
         if (!ok || stamp !== S.drawn) return;
         const began = performance.now();
         mermaidFill(S.fig, source, (result) => {
           //: A big diagram waits half its draw time for the next change.
           S.drawWait = Math.min(600, Math.max(120, (performance.now() - began) / 2));
           if (stamp !== S.drawn) return;
+          S.drawing = false;
           S.hit = result.svg ? diagramModel.picture.boxes(result.svg) : null;
           for (const paint of S.fig.onpaint || []) paint();
           diagramModel.picture.failure(S, result, source, smallButton);
@@ -355,8 +359,14 @@
     S.sel = key;
     if (from) diagramOps.join(m, from, id, { label });
     commit(S, `Added ${group ? "a group" : `a ${SHAPE_LABEL[shape].toLowerCase()}`}${sel ? ` after ${nameOf(S, sel)}` : ""}${from ? ` and connected ${titleOf(S, from)} to it` : ""}.`);
-    if (edit) relabel(S, key);
+    if (edit) (!group && S.pane.offsetParent === null ? nameOnPicture(S, id) : relabel(S, key));
     return key;
+  }
+
+  //: With the list folded (INBOX 1661 m) the list's name field is out of sight and it holds the picture's redraw, so a new box is
+  //: named over the picture instead, once the picture has drawn it (diagram-edges.js `askNode`).
+  function nameOnPicture(S, id) {
+    S.askNode?.(id);
   }
 
   function relabel(S, key) {

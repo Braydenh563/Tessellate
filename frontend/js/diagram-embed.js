@@ -522,7 +522,7 @@
     //: Short lines, one thought each (the 200-word paragraph read as a wall): the sequence sentence and the shelf sentence stay together.
     const helpLines = [
       "Draw with blocks and the picture follows. Picture gives the drawing the room, List gives the blocks list the room, and Source is the text. A line beside them says which view you are in.",
-      "Pick a block in the picture or in the list and it is picked in the other too. The shelf's left arrow folds the shelf to one button.",
+      "Pick a block in the picture or in the list and it is picked in the other too. The shelf's left arrow folds the shelf to one button. On a mind map or timeline a shelf tile pressed or dropped on the picture adds after the picked block.",
       "Press N to add a box, Tab on the last box to add one joined to it, Enter to name it.",
       "[ and ] fold the list and the picture, F6 leaves the blocks, Ctrl+Enter keeps the diagram and ? lists every key.",
       //: No shelf on a phone or touch screen (it is hidden there): the line says Add, not a drag.

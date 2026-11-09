@@ -179,8 +179,10 @@
     const ask = () => {
       while (want.length && want[0].until < Date.now()) want.shift();
       const next = want[0];
-      if (!next || editing) return;
-      if (next.node ? renameNode(next.node) : renameEdge(next.edge)) want.shift();
+      if (!next || editing || S.drawing) return;
+      //: A rename re-reads the source, so the edge asked for is a new object by now: found again by its two ends (blind task b: naming the new box lost the arrow's question).
+      const live = next.edge && (S.m.edges.includes(next.edge) ? next.edge : S.m.edges.find((e) => e.from === next.edge.from && e.to === next.edge.to));
+      if (next.node ? renameNode(next.node) : live && renameEdge(live)) want.shift();
     };
     const settle = () => (ask(), showHandle());
     (fig.onpaint ||= []).push(settle);
@@ -287,6 +289,8 @@
     S.renameEdge = renameEdge;
     //: And the picture's own keys (diagram-view.js): Enter or F2 on a picked box names it where it stands.
     S.renameNode = renameNode;
+    //: And a block added with the list folded (diagram-builder.js `nameOnPicture`): named here once the picture has drawn it.
+    S.askNode = (id) => want.push({ node: id, until: Date.now() + 4000 });
     const disarm = () => {
       armed = "";
       for (const handle of handles) handle.removeAttribute("aria-pressed");

@@ -929,12 +929,19 @@
     return { card: tile || block.querySelector(":scope > .dgm-card"), ref: { kind: "block", id: key || def.id, title: tile ? def.name : nameOf(S, key) }, grip: Boolean(target.closest("[data-obj-grip]")), S, key, tile: def };
   }
 
+  //: A shelf tile dropped on a mind map or timeline picture (INBOX 1661 l): those drawings name no parts, so it is added where a press
+  //: on the tile adds it, after the selection; the whole picture takes the drop mark.
+  function pictureDrop(S, at) {
+    const stage = S.fig?.parentElement;
+    return stage?.contains(at) && !at.closest(".dgm-shelf") ? { canvas: true, op: "into", card: S.fig, add: {}, word: S.sel ? "After the selection" : "Add it here" } : null;
+  }
+
   //: Where a drop would land: before or after a block (its top or bottom edge), or into it.
   function dropAt(g) {
     const { S, key } = g;
     const A = S.k;
     const at = document.elementFromPoint(g.x, g.y);
-    if (!at || !S.pane.contains(at)) return S.seq && g.tile ? diagramModel.seqCanvas.over(g) : null;
+    if (!at || !S.pane.contains(at)) return g.tile ? (S.seq ? diagramModel.seqCanvas.over(g) : pictureDrop(S, at)) : null;
     if (S.seq) diagramModel.seqCanvas.clear(S);
     const dragged = key ? find(S, key) : null;
     const type = dragged ? dragged.node.type : g.tile.type;
@@ -961,7 +968,7 @@
 
   function dropApply(g, target) {
     const { S } = g;
-    const spot = { parent: target.parent, before: target.before };
+    const spot = target.canvas && !("parent" in target) ? null : { parent: target.parent, before: target.before };
     if (g.tile) return addTile(S, g.tile, { spot, edit: false, ...target.add });
     const to = target.parent ? ops.key(target.parent) : null;
     if (!ops.move(S.k, S.m, g.key, to, target.before ? ops.key(target.before) : null)) return;

@@ -93,8 +93,13 @@
   }
 
   //: The shelf (INBOX 1661 l): six tiles of the kind on the picture's top left, and a caret for the rest as the grouped Add menu.
-  //: A flowchart's are picked by name, a sequence diagram's by tile id; the other kinds have none yet.
-  const SIX = { flowchart: ["Box", "Rounded", "Decision", "Pill", "Note", "Group"], sequence: ["participant", "message", "reply", "note", "loop", "alt"] };
+  //: A flowchart's are picked by name, the other kinds' by tile id (a mind map has two, a timeline three).
+  const SIX = {
+    flowchart: ["Box", "Rounded", "Decision", "Pill", "Note", "Group"],
+    sequence: ["participant", "message", "reply", "note", "loop", "alt"],
+    mindmap: ["branch", "leaf"],
+    timeline: ["section", "period", "event"],
+  };
 
   const SHELF = "diagram.shelf";
 
@@ -108,15 +113,16 @@
     bar.setAttribute("role", "group");
     bar.setAttribute("aria-label", "Add to the picture");
     //: The shelf folds to one button (the owner 2026-11-09: it covered the drawing and could not be put away), the choice kept
-    //: in prefs; open, the picture starts below it (`dgm-shelved`), so it never lies over the drawing.
+    //: in prefs; open or folded, the picture starts below it (`dgm-shelved`, always on), so neither lies over the drawing (a folded
+    //: button covered a box at 1440, dgmseq-1109).
     const fold = make("button", "ghost small icon-only dgm-shelf-toggle");
     fold.type = "button";
     fold.append(make("i", "ph"));
     fold.firstChild.setAttribute("aria-hidden", "true");
+    stage.classList.add("dgm-shelved");
     const paint = () => {
       const off = prefs.get(SHELF, "") === "off";
       bar.classList.toggle("dgm-shelf-off", off);
-      stage.classList.toggle("dgm-shelved", !off);
       fold.setAttribute("aria-expanded", String(!off));
       fold.firstChild.className = `ph ph-${off ? "plus" : "caret-left"}`;
       const say = off ? "Open the add shelf" : "Fold the add shelf";
