@@ -15,6 +15,7 @@ tier: max (weekly 32% at 2026-11-08 16:00Z), four agents at once, Sonnet or Haik
 - [ ] Life and biological design pass (1719 b) with 1696 j, v-w, dd; then Sonnet batches
 - [ ] Remaining: 1711 a,d; 1683 a (desk lower-body frames); audit rows 21, 36; further 37a batches; zoom and desk leftovers
 - [ ] Then, owner 2026-11-09 ~15:00Z ("the rest includes ..."): every open audit and deep-dive finding (audit-1031-ranked.md, FABLE_BRIEF, deep-dive files), every open INBOX item outside the BACKLOG, every open plan item in docs/roadmap/*_PLAN.md, and continuous refinement: optimisation, bug and security fixing, poke holes (reviewer, security-reviewer, blind-tester rounds), UI and UX redesign and fixes, backend and frontend
+- [ ] Priority polish (owner 2026-11-09 ~15:15Z): diagram builder finished and polished (open dgml/dgpic leftovers: shelf touch, gap drop marker, 390 px, default fold call), composer improved round after round, companions in-app and desk; blind-tester and ux-auditor on each
 - [ ] Docs and README kept current per merge (owner 2026-11-09 ~15:10Z): CHANGELOG, README numbers and names (test_readme_freshness), ARCHITECTURE, DESIGN, Guide topics; a docs pass before the boundary
 - [ ] BACKLOG boundary: HANDOVER Now and Morning summary, push, retro
 
