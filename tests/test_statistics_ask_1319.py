@@ -104,7 +104,12 @@ def test_the_route_answers_in_one_call(client):
 def test_the_page_has_the_box_with_three_starters_and_posts_to_the_route():
     from pathlib import Path
 
-    stats = (Path(__file__).resolve().parent.parent / "frontend" / "js" / "statistics.js").read_text(encoding="utf-8")
+    from tests import _js_scope
+
+    #: statistics.js is one closure now (ranked row 37a); these tests slice or run its private functions, so they read it as it was before it was wrapped (`_js_scope.unwrapped`): same code, same assertions.
+    stats = _js_scope.unwrapped(
+        (Path(__file__).resolve().parent.parent / "frontend" / "js" / "statistics.js").read_text(encoding="utf-8")
+    )
     start = stats.index("function statsAskBox(")
     box = stats[start : stats.index("\n}\n", start)]
     assert "/statistics/ask" in box and 'input.id = "stats-ask-input"' in box and "Ask about your statistics" in box

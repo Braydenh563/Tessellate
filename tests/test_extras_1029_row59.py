@@ -23,6 +23,8 @@ import subprocess
 from pathlib import Path
 
 import pytest
+
+from tests import _js_scope
 from tests._app_js import with_pieces
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -31,7 +33,8 @@ CHAT_AGENT = with_pieces("chat-agent.js")
 STATUS = (JS / "status.js").read_text(encoding="utf-8")
 DASHBOARD = (JS / "dashboard.js").read_text(encoding="utf-8")
 REMINDERS = (JS / "shell-reminders.js").read_text(encoding="utf-8")
-MARGIN = (JS / "margin-reader.js").read_text(encoding="utf-8")
+#: margin-reader.js is one closure now (ranked row 37a); these tests slice or run its private functions, so they read it as it was before it was wrapped (`_js_scope.unwrapped`): same code, same assertions.
+MARGIN = _js_scope.unwrapped((JS / "margin-reader.js").read_text(encoding="utf-8"))
 
 needs_node = pytest.mark.skipif(not shutil.which("node"), reason="needs node")
 

@@ -23,7 +23,9 @@ CSS = (ROOT / "frontend" / "css" / "08-consistency.css").read_text(encoding="utf
 #: meaning.js first: the Settings bundle loads the two together (Brief 94).
 HARNESS = """
 const vm = require("vm"), fs = require("fs"), path = require("path");
-const ctx = vm.createContext({ document: { addEventListener() {} }, window: {}, apiJson: () => new Promise(() => {}) });
+const ctx = vm.createContext({ document: { addEventListener() {} }, apiJson: () => new Promise(() => {}) });
+//: meaning.js is one closure and puts its exports on `window` (ranked row 37a); the context is the window, so they are the globals settings-find.js calls.
+ctx.window = ctx;
 vm.runInContext(fs.readFileSync(path.join(path.dirname(process.argv[1]), "meaning.js"), "utf8"), ctx);
 vm.runInContext(fs.readFileSync(process.argv[1], "utf8"), ctx);
 const call = (src) => JSON.stringify(vm.runInContext(src, ctx));

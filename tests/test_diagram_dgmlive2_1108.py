@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from tests import _js_scope
+
 ROOT = Path(__file__).resolve().parents[1]
 JS = ROOT / "frontend" / "js"
 LIBRARY = (JS / "library.js").read_text(encoding="utf-8")
@@ -54,7 +56,7 @@ def test_a_row_pressed_in_the_embed_dialogs_more_menu_leaves_focus_on_its_new_op
 
 def test_the_second_press_of_a_double_click_on_an_embed_does_not_select_or_press_the_page_it_opened():
     """Measured in Chromium: a double click on the embed opened the diagram once, and the second press landed on the new page and left a 297-character selection."""
-    draw = (JS / "mermaid-draw.js").read_text(encoding="utf-8")
+    draw = _js_scope.unwrapped((JS / "mermaid-draw.js").read_text(encoding="utf-8"))
     body = draw.split("mermaidFill.embed = async")[1].split("\n};\n")[0]
     assert "const calm = () =>" in body
     assert 'for (const name of ["mousedown", "click"]) document.addEventListener(name, stop, true);' in body

@@ -13,11 +13,14 @@ from __future__ import annotations
 import re
 from pathlib import Path
 
+from tests import _js_scope
+
 from tests._app_js import app_js_text
 
 ROOT = Path(__file__).resolve().parents[1]
 INDEX = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
-RECOVERY_JS = (ROOT / "frontend" / "js" / "account-recovery.js").read_text(encoding="utf-8")
+#: account-recovery.js is one closure now (ranked row 37a); these tests slice or run its private functions, so they read it as it was before it was wrapped (`_js_scope.unwrapped`): same code, same assertions.
+RECOVERY_JS = _js_scope.unwrapped((ROOT / "frontend" / "js" / "account-recovery.js").read_text(encoding="utf-8"))
 
 
 def _function(source: str, name: str) -> str:
@@ -109,7 +112,7 @@ def test_settings_names_the_button_for_what_it_does():
     # scripts' total cap (2026-10-06); the pane awaits it through the stand-in.
     account = _function(app_js_text(), "renderAccount")
     assert "await recoveryAccountRow(info)" in account
-    lazy = (ROOT / "frontend" / "js" / "account-recovery.js").read_text(encoding="utf-8")
+    lazy = _js_scope.unwrapped((ROOT / "frontend" / "js" / "account-recovery.js").read_text(encoding="utf-8"))
     assert '"Replace it" : "Make a recovery key"' in _function(lazy, "recoveryAccountRow")
     controls = (ROOT / "frontend" / "js" / "settings-controls.js").read_text(encoding="utf-8")
     assert '$("account-recovery-make").addEventListener("click", () => makeRecoveryKey())' in controls

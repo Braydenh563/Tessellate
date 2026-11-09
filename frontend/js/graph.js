@@ -2330,10 +2330,7 @@ function graphSearchGo(dir) {
   found.at = at;
   found.current = node.id;
   //: The suggestions list sits over the map's left side; a jump is the end of typing.
-  if (typeof searchSuggest !== "undefined" && searchSuggest?.input === box) {
-    searchSuggest.quiet = true;
-    fillSearchSuggest();
-  }
+  if (typeof searchSuggestHold === "function" && searchSuggestHold(box)) fillSearchSuggest();
   announce(`Match ${at + 1} of ${found.list.length}: ${node.preview}`);
   graphPanToNode(node);
   gcRequestDraw(gcTab, true);

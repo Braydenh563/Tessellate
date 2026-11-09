@@ -87,16 +87,23 @@ def test_the_page_runs_the_same_rule():
     if not node:  # pragma: no cover - node is in the sandbox and in CI
         pytest.skip("node is not available")
     queries = [row["q"] for row in TABLE] + ["how do I", "what the ai remembers about me", "bring in my old notes"]
+    #: meaning.js is one closure now (ranked row 37a): its table is private, so the page
+    #: is given the server's table the way it asks for it (`apiJson`), and `window` is the
+    #: context, so the exports are the globals the callers use. Same rule, same queries.
     script = f"""
 const vm = require("vm");
-const ctx = {{ apiJson: () => new Promise(() => {{}}), console }};
+const table = {json.dumps(meaning.table())};
+const ctx = {{ apiJson: () => Promise.resolve(table), document: {{ dispatchEvent() {{}} }}, Event, console }};
+ctx.window = ctx;
 vm.createContext(ctx);
 vm.runInContext(require("fs").readFileSync({json.dumps(str(JS / "meaning.js"))}, "utf8"), ctx);
-const table = {json.dumps(meaning.table())};
-vm.runInContext(`meaningTable.groups = ${{JSON.stringify(table.groups)}}; meaningTable.filler = new Set(${{JSON.stringify(table.filler)}});`, ctx);
-const out = {{}};
-for (const q of {json.dumps(queries)}) out[q] = vm.runInContext(`meaningAlts(${{JSON.stringify(q)}})`, ctx);
-process.stdout.write(JSON.stringify(out));
+(async () => {{
+  vm.runInContext("meaningAsk()", ctx);
+  await new Promise((r) => setTimeout(r, 20));
+  const out = {{}};
+  for (const q of {json.dumps(queries)}) out[q] = vm.runInContext(`meaningAlts(${{JSON.stringify(q)}})`, ctx);
+  process.stdout.write(JSON.stringify(out));
+}})();
 """
     done = subprocess.run([node, "-e", script], capture_output=True, text=True, timeout=60, check=False)
     assert done.returncode == 0, done.stderr

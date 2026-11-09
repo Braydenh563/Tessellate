@@ -24,6 +24,8 @@ from tests._help_text import help_chat_text
 import re
 from html.parser import HTMLParser
 from pathlib import Path
+
+from tests import _js_scope
 from tests._app_js import app_js_family, app_js_text, frontend_text, with_pieces, documents_text
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -6908,7 +6910,8 @@ def test_a_diagram_is_edited_as_blocks():
     body = re.sub(r"//.*", "", code)
     assert body.count('"role", "tree"') == 1
     assert not re.search(r"innerHTML|insertAdjacentHTML|outerHTML|DOMParser", body)
-    drag = (ROOT / "frontend" / "js" / "obj-drag.js").read_text(encoding="utf-8")
+    #: obj-drag.js is one closure now (ranked row 37a); these tests slice or run its private functions, so they read it as it was before it was wrapped (`_js_scope.unwrapped`): same code, same assertions.
+    drag = _js_scope.unwrapped((ROOT / "frontend" / "js" / "obj-drag.js").read_text(encoding="utf-8"))
     seed = drag[drag.index("function objDragSeed(event) {") :]
     seed = seed[: seed.index("\n}\n")]
     assert "OBJ_MODES[name].seed?.(event)" in seed

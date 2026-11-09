@@ -11,6 +11,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from tests import _js_scope
+
 ROOT = Path(__file__).resolve().parents[1]
 JS = ROOT / "frontend" / "js"
 VENDOR = ROOT / "frontend" / "vendor"
@@ -45,7 +47,8 @@ def test_export_and_import_go_through_the_browser_path() -> None:
     library = (JS / "library.js").read_text(encoding="utf-8")
     imp = _function(library, "importLibraryDocuments")
     assert "docWordImport(file)" in imp and "\\.docx$" in imp
-    word = (JS / "documents-word.js").read_text(encoding="utf-8")
+    #: documents-word.js is one closure now (ranked row 37a); these tests slice or run its private functions, so they read it as it was before it was wrapped (`_js_scope.unwrapped`): same code, same assertions.
+    word = _js_scope.unwrapped((JS / "documents-word.js").read_text(encoding="utf-8"))
     assert "convertToHtml" in word and "docHtmlToMarkdown" in word
     assert "Packer.toBlob" in word and "renderMarkdown(" in word
 
@@ -54,7 +57,7 @@ def test_pictures_suggestions_lists_and_code_are_written_as_word_means_them() ->
     """docs42b: a picture was its alt text, a suggestion was braces, a nested
     item was level 0 (the renderer draws nested lists flat) and a code block
     came back from Mammoth as plain paragraphs."""
-    word = (JS / "documents-word.js").read_text(encoding="utf-8")
+    word = _js_scope.unwrapped((JS / "documents-word.js").read_text(encoding="utf-8"))
     runs = _function(word, "docWordRuns")
     assert "new D.ImageRun(" in runs
     text = _function(word, "docWordText")

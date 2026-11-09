@@ -13,6 +13,8 @@ from pathlib import Path
 
 import pytest
 
+from tests import _js_scope
+
 from tessellate.ai import fence, librarian
 from tessellate.core.database import Entry
 from tessellate.entry import manager
@@ -117,7 +119,8 @@ def test_the_bookmark_is_a_dragged_link_on_its_recipe():
     assert "dashed" in rule and "var(--accent-text)" in rule
     html = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
     assert 'id="web-clip-bookmarklet"' in html and "javascript:" not in html.split('id="web-clip-bookmarklet"', 1)[1][:200]
-    js = (ROOT / "frontend" / "js" / "web-clip.js").read_text(encoding="utf-8")
+    #: web-clip.js is one closure now (ranked row 37a); these tests slice or run its private functions, so they read it as it was before it was wrapped (`_js_scope.unwrapped`): same code, same assertions.
+    js = _js_scope.unwrapped((ROOT / "frontend" / "js" / "web-clip.js").read_text(encoding="utf-8"))
     assert "location.origin" in js and "preventDefault" in js
 
 
@@ -139,7 +142,7 @@ def test_a_follow_up_about_the_page_carries_the_page():
 
     if not shutil.which("node"):
         pytest.skip("needs node")
-    clip = frontend_text("web-clip.js")
+    clip = _js_scope.unwrapped(frontend_text("web-clip.js"))
     rule = re.search(r"^const WEB_FOLLOW_UP = (/.*/i);$", clip, re.M).group(1)
     asks = {
         "tell me more about that page": True,

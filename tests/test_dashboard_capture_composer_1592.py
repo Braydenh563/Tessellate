@@ -15,13 +15,16 @@ from __future__ import annotations
 import re
 from pathlib import Path
 
+from tests import _js_scope
+
 ROOT = Path(__file__).resolve().parents[1]
 JS = ROOT / "frontend" / "js"
 CSS = ROOT / "frontend" / "css"
 
 
 def _js(name: str) -> str:
-    return (JS / name).read_text(encoding="utf-8")
+    #: a lazy script like capture-card.js is one closure now (ranked row 37a); the tests slice or run its private functions, so they read it as it was before it was wrapped (`_js_scope.unwrapped`): same code, same assertions.
+    return _js_scope.unwrapped((JS / name).read_text(encoding="utf-8"))
 
 
 def _css(name: str) -> str:

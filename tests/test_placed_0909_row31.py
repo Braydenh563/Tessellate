@@ -10,6 +10,7 @@ from __future__ import annotations
 import re
 from pathlib import Path
 
+from tests import _js_scope
 from tests._app_js import app_js_text
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -27,7 +28,7 @@ def test_paste_as_note_is_a_chord_left_to_the_browser_in_a_text_box():
     wiring = (JS / "settings-wiring.js").read_text(encoding="utf-8")
     assert 'pasteNote: { keys: "Ctrl+Shift+V"' in wiring
     assert 'id === "pasteNote") && inTextField) continue;' in wiring
-    paste = _body((JS / "quick-note.js").read_text(encoding="utf-8"), "pasteClipboardAsNote")
+    paste = _body(_js_scope.unwrapped((JS / "quick-note.js").read_text(encoding="utf-8")), "pasteClipboardAsNote")
     assert "navigator.clipboard.readText()" in paste and "createNoteSafely(" in paste
     assert "pushUndo(" in paste
     panes = (JS / "settings-panes.js").read_text(encoding="utf-8") + (JS / "app-features.js").read_text(encoding="utf-8")

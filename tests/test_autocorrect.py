@@ -20,10 +20,13 @@ from pathlib import Path
 
 import pytest
 
+from tests import _js_scope
+
 ROOT = Path(__file__).resolve().parents[1]
 JS = ROOT / "frontend/js"
 INDEX = (ROOT / "frontend/index.html").read_text(encoding="utf-8")
-SOURCE = (JS / "autocorrect.js").read_text(encoding="utf-8")
+#: autocorrect.js is one closure now (ranked row 37a); the tests call its private names, so they read it as it was before it was wrapped (`_js_scope.unwrapped`): same code, same assertions.
+SOURCE = _js_scope.unwrapped((JS / "autocorrect.js").read_text(encoding="utf-8"))
 
 #: The boxes it serves: prose a person types. Capture, the edit form's two
 #: fields (set in note-edit-panels.js), the graph's note boxes, Write with
@@ -105,7 +108,7 @@ const ctx = {{
   window: {{ addEventListener() {{}} }},
 }};
 vm.createContext(ctx);
-vm.runInContext(require("fs").readFileSync({json.dumps(str(JS / "autocorrect.js"))}, "utf8"), ctx);
+vm.runInContext({json.dumps(_js_scope.unwrapped((JS / "autocorrect.js").read_text(encoding="utf-8")))}, ctx);
 const out = [];
 for (const call of {json.dumps(calls)}) out.push(vm.runInContext(call, ctx) ?? null);
 process.stdout.write(JSON.stringify(out));
