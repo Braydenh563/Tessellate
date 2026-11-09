@@ -6218,18 +6218,18 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `fillQueryRollups` | frontend/js/note-properties.js:441 |
-| `noteTypeColourHex` | frontend/js/note-properties.js:272 |
-| `noteTypeDeleteUndo` | frontend/js/note-properties.js:330 |
-| `noteTypeFieldsParse` | frontend/js/note-properties.js:343 |
-| `noteTypePickColour` | frontend/js/note-properties.js:281 |
-| `openNotePropertiesSheet` | frontend/js/note-properties.js:38 |
-| `openNoteTypesSheet` | frontend/js/note-properties.js:169 |
-| `openQueryTable` | frontend/js/note-properties.js:354 |
-| `propInput` | frontend/js/note-properties.js:14 |
-| `propRead` | frontend/js/note-properties.js:30 |
-| `queryTableRollupFoot` | frontend/js/note-properties.js:417 |
-| `showQueryOnGraph` | frontend/js/note-properties.js:488 |
+| `fillQueryRollups` | frontend/js/note-properties.js:442 |
+| `noteTypeColourHex` | frontend/js/note-properties.js:273 |
+| `noteTypeDeleteUndo` | frontend/js/note-properties.js:331 |
+| `noteTypeFieldsParse` | frontend/js/note-properties.js:344 |
+| `noteTypePickColour` | frontend/js/note-properties.js:282 |
+| `openNotePropertiesSheet` | frontend/js/note-properties.js:39 |
+| `openNoteTypesSheet` | frontend/js/note-properties.js:170 |
+| `openQueryTable` | frontend/js/note-properties.js:355 |
+| `propInput` | frontend/js/note-properties.js:15 |
+| `propRead` | frontend/js/note-properties.js:31 |
+| `queryTableRollupFoot` | frontend/js/note-properties.js:418 |
+| `showQueryOnGraph` | frontend/js/note-properties.js:489 |
 
 ### frontend/js/note-templates.js (9)
 
@@ -6423,15 +6423,15 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `ocrEngineFollow` | frontend/js/ocr-engine.js:309 |
-| `ocrEngineLanguageName` | frontend/js/ocr-engine.js:77 |
-| `ocrEngineLanguagePicker` | frontend/js/ocr-engine.js:235 |
-| `ocrEngineMount` | frontend/js/ocr-engine.js:41 |
-| `ocrEnginePaint` | frontend/js/ocr-engine.js:84 |
-| `ocrEnginePaintAll` | frontend/js/ocr-engine.js:66 |
-| `ocrEnginePaintFailure` | frontend/js/ocr-engine.js:212 |
-| `ocrEngineStartInstall` | frontend/js/ocr-engine.js:286 |
-| `ocrEngineStatusLine` | frontend/js/ocr-engine.js:223 |
+| `ocrEngineFollow` | frontend/js/ocr-engine.js:310 |
+| `ocrEngineLanguageName` | frontend/js/ocr-engine.js:78 |
+| `ocrEngineLanguagePicker` | frontend/js/ocr-engine.js:236 |
+| `ocrEngineMount` | frontend/js/ocr-engine.js:42 |
+| `ocrEnginePaint` | frontend/js/ocr-engine.js:85 |
+| `ocrEnginePaintAll` | frontend/js/ocr-engine.js:67 |
+| `ocrEnginePaintFailure` | frontend/js/ocr-engine.js:213 |
+| `ocrEngineStartInstall` | frontend/js/ocr-engine.js:287 |
+| `ocrEngineStatusLine` | frontend/js/ocr-engine.js:224 |
 
 ### frontend/js/offline-split.js (2)
 
