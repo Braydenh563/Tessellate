@@ -1399,6 +1399,9 @@ def _reminder_note(session: Session, said: str, note_ids: list[int] | None):  # 
 def _task_into_note(session: Session, parsed: dict, note_ids: list[int] | None) -> dict | None:
     """The plan that appends a task to a note called that ("add milk to my
     to-do list"), or None when no note is."""
+    if parsed.get("on_list") and not parsed.get("time_given"):
+        #: "add buy stamps to my todo": a line on the note called that, or one offered (R3-33).
+        return task_acts.plan_task_line(session, parsed, _card, lambda note: note_title(note.content, size=48), _confirm)
     #: "add milk to my to-do list" when a note is called that: the note
     #: gets the line, as before tasks were acts (E10).
     #: `_fold` reads "to-do" as "to do"; a title keeps its hyphen.

@@ -94,9 +94,9 @@ class Act:
 
 #: In the order the capability line says them.
 _ACTS = (
-    Act("reminder", "remind", "set a reminder", "Say what and when; it is set at once with Undo.",
+    Act("reminder", "remind", "set a reminder", "Say what and when; it is set at once with Undo. Say add buy stamps to my todo, with no time, to put a checklist line on your Todo note instead.",
         "remind me to call mum on Friday at 9", ("text", "due_at"), "bin_reminder"),
-    Act("complete", "complete", "tick off a task", "Names a reminder or a checklist line; it is ticked at once with Undo, and asked about if more than one fits.",
+    Act("complete", "complete", "tick off a task", "Names a reminder or a checklist line; it is ticked at once with Undo, and asked about if more than one fits. After a list, tick the first one counts from that list.",
         "tick off buy milk", (), "complete_reminder", stem="Tick off "),
     Act("uncomplete", "complete", "untick a task", "Names a ticked reminder or checklist line; it is reopened at once with Undo.",
         "untick buy milk", (), "complete_reminder", stem="Untick "),

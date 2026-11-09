@@ -1605,7 +1605,7 @@ def _act_events(req: _StreamRequest, prepared: dict) -> Iterator[dict]:
     client too: it names the act it read and says where it is done."""
     from tessellate.ai import act_registry
 
-    parsed = acts.parse(req.question, user_now(deps.get_config()))
+    parsed = acts.parse(req.question, user_now(deps.get_config()), req.history)
     app_verb = act_registry.app_verb(req.question) if parsed is None else None
     if app_verb:
         yield {"type": "answer", "delta": act_registry.app_verb_line(app_verb)}
@@ -1616,7 +1616,7 @@ def _act_events(req: _StreamRequest, prepared: dict) -> Iterator[dict]:
     if parsed is None:
         yield {"type": "answer", "delta": acts.capability_line()}
         return
-    if parsed["intent"] == "reminder" and not parsed.get("time_given"):
+    if parsed["intent"] == "reminder" and not parsed.get("time_given") and not parsed.get("on_list"):
         #: Asked once, never guessed as tomorrow at 9 (decision 50); the
         #: reply's time fills it (`reading._follow_slot`).
         from tessellate.ai import commands

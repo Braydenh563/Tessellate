@@ -286,10 +286,18 @@ def test_through_the_route_a_task_is_added_with_undo(client, session, clock):
 
 
 def test_through_the_route_a_task_with_no_time_is_asked_once(client, session, clock):
-    events = _stream(client, "add chapter 5 reading to my to-do list")
-    assert _said(events).rstrip().endswith("?") and "chapter 5 reading" in _said(events).lower()
+    #: A task that names no list stays a reminder; "to my to-do list" is a line on a note (composer-r7 R3-33).
+    events = _stream(client, "add a task to read chapter 5")
+    assert _said(events).rstrip().endswith("?") and "chapter 5" in _said(events).lower()
     assert session.query(Reminder).count() == 0
     assert not any(e["type"] == "act" for e in events)
+
+
+def test_through_the_route_a_task_for_my_todo_list_with_no_note_offers_one(client, session, clock):
+    events = _stream(client, "add chapter 5 reading to my to-do list")
+    card = next(e for e in events if e["type"] == "act")
+    assert not card.get("done") and card["steps"][0]["name"] == "create_note", card
+    assert session.query(Reminder).count() == 0
 
 
 def test_through_the_route_a_task_is_completed_and_an_ambiguous_one_asks(client, session, clock):
