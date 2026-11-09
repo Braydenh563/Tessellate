@@ -7,7 +7,6 @@ from __future__ import annotations
 import random
 from collections import Counter
 
-from tessellate.core.overlay import engine as eng
 from tessellate.core.overlay import travel as tv
 from tests.test_overlay_ride_1670 import make
 

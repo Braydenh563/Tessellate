@@ -2689,15 +2689,19 @@ class Engine:
                 return
             self.modes.append(mode)
         far = dist / self._scale()
-        self.hop_next = mode == "jump" and not self.reduced
         self.mode = self._leg_pace(far, plain)
         self.pending = (goal, then)
-        if (self.mode == "dash" or self.hop_next) and not self.reduced and self.gait == "walk":
+        if self._winds_up(mode):
             self._enter("crouch", now)  # a crouch before a long run or a chain of hops
             self.pending = (goal, then)
             self._face(1 if goal[0] >= self.x else -1, now)  # the turn rides the crouch, so the walk does not set off with a stale facing and stand turning
             return
         self._begin_go(now)
+
+    def _winds_up(self, mode: str) -> bool:
+        """Whether the leg starts with a crouch: a run, or a chain of hops (`hop_next`, taken by `_begin_go`)."""
+        self.hop_next = mode == "jump" and not self.reduced
+        return (self.mode == "dash" or self.hop_next) and not self.reduced and self.gait == "walk"
 
     def _leg_pace(self, far: float, plain: bool) -> str:
         """step, walk or dash for a leg `far` logical px long; a chosen leg takes its pace from its mode (INBOX 1683 u)."""
@@ -3738,8 +3742,7 @@ class Engine:
             self._face(-self.facing, now)
         else:
             self.x = nx
-            if self.hopping:
-                self._hop_arc(left)
+            self._hop_arc(left)
             floor = self.floor_y(bounds)
             if floor > self.y + 0.5:
                 self._start_fall(0.0)
@@ -3752,6 +3755,8 @@ class Engine:
     def _hop_arc(self, left: float | None) -> None:
         """The lift of a hop-chain step: a half sine per span of ground, eased in with the pace and out over the last
         span. Only the drawing is lifted (`_display`); the body stays on its floor, so nothing here can fall."""
+        if not self.hopping:
+            return
         span = HOP_SPAN * self.size[0]
         u = ((self.travel - self.hop_origin) / span) % 1.0
         fade = 1.0 if left is None else bh.smooth(left / span)
