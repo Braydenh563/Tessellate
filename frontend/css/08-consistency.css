@@ -5601,6 +5601,9 @@ body .chip.item-label,
 }
 /* Hanging, its head is under its hands and the bar: beside its face. */
 .nm-viewer-figure > #nm-buddy[data-pose="hang"] > .nm-say { top: 48px; }
+/* Floating, it is 82px down the figure, so the line at 1.2 edges above it went under the card's head
+   (sticky, opaque): 1 edge keeps it 10px clear of it (INBOX 1698: "the little text bubbles get cut off"). */
+.nm-viewer-figure > #nm-buddy[data-pose="float"] > .nm-say { top: calc(var(--nmb-edge) * -1); }
 /* Limbs turn where they join the body: each carries its hip or shoulder
    as its `transform-origin` (avatars.js, `data-pivot`). */
 #nm-buddy :is(.nmb-arm, .nmb-leg) {
