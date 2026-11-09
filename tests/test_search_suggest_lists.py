@@ -10,10 +10,12 @@ from pathlib import Path
 
 import pytest
 
+from tests import _js_scope
 from tests._app_js import JS_DIR
 from tests._app_js import with_pieces
 
-SOURCE = (JS_DIR / "search-suggest.js").read_text(encoding="utf-8")
+#: search-suggest.js is one closure now (ranked row 37a); these tests slice or eval its private functions, so they read it as it was before it was wrapped (`_js_scope.unwrapped`): same code, same assertions.
+SOURCE = _js_scope.unwrapped((JS_DIR / "search-suggest.js").read_text(encoding="utf-8"))
 
 
 def _fn(name: str) -> str:
@@ -50,6 +52,7 @@ ROOT = Path(__file__).resolve().parents[1]
 JS = ROOT / "frontend" / "js"
 PREFS = JS / "prefs.js"
 SUGGEST = JS / "search-suggest.js"
+SUGGEST_TEXT = _js_scope.unwrapped(SUGGEST.read_text(encoding="utf-8"))
 DATA = JS / "settings-data.js"
 INDEX = ROOT / "frontend" / "index.html"
 
@@ -81,7 +84,7 @@ eval(fs.readFileSync({str(PREFS)!r}, "utf8") + "; globalThis.prefs = prefs; glob
 //: prefs.js records its schema migrations at load (`prefs-versions`): the
 //: store these tests count starts empty after that.
 store.clear();
-eval(fs.readFileSync({str(SUGGEST)!r}, "utf8") + "; globalThis.searchRecent = searchRecent; globalThis.SEARCH_RECENT_PREFIX = SEARCH_RECENT_PREFIX; globalThis.searchSuggestItems = searchSuggestItems;");
+eval({json.dumps(SUGGEST_TEXT)} + "; globalThis.searchRecent = searchRecent; globalThis.SEARCH_RECENT_PREFIX = SEARCH_RECENT_PREFIX; globalThis.searchSuggestItems = searchSuggestItems;");
 //: The "every box at once" helpers live in settings-data.js (lazy): lifted by name.
 const data = fs.readFileSync({str(DATA)!r}, "utf8");
 for (const name of ["searchRecentAll", "searchRecentClearAll", "searchRecentRestore"]) {{
@@ -185,7 +188,7 @@ def test_every_search_box_names_its_scope_and_the_web_panel_shares_the_store() -
     chat = (JS / "web-results.js").read_text(encoding="utf-8")
     assert "prefs.remove(WEB_SEARCH_HISTORY_KEY)" not in chat
     assert "web-recent-remove" in chat and "clearWebSearchHistory" in chat, "the web recents carry a remove per row and a Clear"
-    assert 'const SEARCH_RECENT_PREFIX = "searchRecent:"' in SUGGEST.read_text(encoding="utf-8")
+    assert 'const SEARCH_RECENT_PREFIX = "searchRecent:"' in SUGGEST_TEXT
 
 
 def test_the_suggestions_are_a_lazy_bundle_called_from_a_boot_listener() -> None:
@@ -197,7 +200,7 @@ def test_the_suggestions_are_a_lazy_bundle_called_from_a_boot_listener() -> None
 
 
 def test_the_list_follows_the_recipes_and_never_nests_a_control_in_an_option() -> None:
-    source = SUGGEST.read_text(encoding="utf-8")
+    source = SUGGEST_TEXT
     assert "richPickerRow(" in source and "richPickerGroup(" in source
     assert 'setAttribute("role", "option")' not in source, "rows come from richPickerRow, never by hand"
     # The row's x is a pointer-only span: a <button> in an option is axe's nested-interactive.
@@ -212,7 +215,7 @@ def test_the_list_follows_the_recipes_and_never_nests_a_control_in_an_option() -
 def test_the_suggestion_list_is_as_wide_as_its_box_and_never_narrower_than_its_default() -> None:
     """INBOX 849: width = max(the box's width, the list's default 288px), left
     on the box, inside the viewport with the 16px gutter."""
-    source = (JS / "search-suggest.js").read_text(encoding="utf-8")
+    source = SUGGEST_TEXT
     place = source[source.index("function placeSearchSuggest") : source.index("function placeSearchSuggestSoon")]
     assert "Math.max(field.width, 288)" in place
     assert "window.innerWidth - 32" in place, "16px gutter either side"

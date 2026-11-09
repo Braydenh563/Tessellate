@@ -20,6 +20,8 @@ from pathlib import Path
 
 import pytest
 
+from tests import _js_scope
+
 from tests._app_js import lazy_modules_source
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -241,7 +243,8 @@ def test_the_pane_is_one_tree_of_cards_with_the_dock_recipe_and_kebab_menus():
 
 
 def test_the_pointer_mode_is_ahead_of_carry_and_the_drag_asks_it_first():
-    drag = (JS / "obj-drag.js").read_text(encoding="utf-8")
+    #: obj-drag.js is one closure now (ranked row 37a); these tests slice or run its private functions, so they read it as it was before it was wrapped (`_js_scope.unwrapped`): same code, same assertions.
+    drag = _js_scope.unwrapped((JS / "obj-drag.js").read_text(encoding="utf-8"))
     seed = drag[drag.index("function objDragSeed(event) {") :]
     seed = seed[: seed.index("\n}\n")]
     # A mode with its own cards answers before the generic grab, which carry (taking every card) would win.
