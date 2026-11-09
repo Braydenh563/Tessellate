@@ -7,6 +7,141 @@ Split out of `ROADMAP.md`. Kept, not deleted, for one reason: **three sessions
 have independently rebuilt something that already existed.** This is the file
 that answers "has this been done?" before anyone starts.
 
+## Moved from the plans, 2026-11-09 (book5-1109: DOCUMENTS_PLAN)
+
+Built blocks found still standing whole in the plan (checked 2026-11-09 against the code, tests and the dated HISTORY records): Phase 4 items 1, 2 and 5, the segmented-bars note (107d), section 16 items 1 and 4, and INBOX 409.
+
+From DOCUMENTS_PLAN.md (lines 137 to 149 before the move), verbatim:
+
+1. **Backlinks with context**: built, 2026-09-12. `GET
+   /documents/{id}/backlinks` answers for notes and documents at once, the
+   panel shows the sentence around each link with "link back", and unlinked
+   mentions sit below with "link", which rewrites the mention in the source
+   that wrote it. Decisions in section 11.
+2. **Block references** (`^block-id`): built, 2026-09-12. A paragraph carries
+   `^an-id` at the end of its last line; `[[Doc#^id]]` links to it and
+   `![[Doc#^id]]` embeds it, from a note, a map node or a chat. The model is
+   `DOC-BLOCKREF-BEGIN`..`END` in `documents.js` (run in node by
+   `tests/test_doc_blockrefs.py`), the "/" menu's "Link to this block" writes
+   the id and copies the reference, the marker hides in Live and is stripped
+   from Read, and `scratchpad/ui-sweeps/docblockref.js` measures the lot
+   (25/25). Decisions in section 11.
+
+From DOCUMENTS_PLAN.md (lines 157 to 170 before the move), verbatim:
+
+5. **Daily notes** and **templates gallery**: built, 2026-09-20. The gallery
+   was already there with six templates, each carrying a description
+   (`scratchpad/ui-sweeps/doctemplates.js`); daily notes were the row that
+   needed the decision first, and it is section 14. What was built from it is
+   one template and one recognition: New from a template now offers Daily
+   (seven rows), the document it makes is titled with the ISO day, and the
+   Timeline's day bucket accepts a note *or* a document with that title, so
+   the "Start today's note" offer beside a day already written as a document
+   is gone. Measured before and after in `scratchpad/ui-sweeps/docdaily.js`,
+   11 of 11: before, 6 templates with no daily and the bucket offering to
+   start a second page beside a document titled `2026-09-20`; after, 7
+   templates, the created document titled `2026-09-20` with `# 2026-09-20` as
+   its first line, 0 "start today's note" offers, 1 "Today's document" offer,
+   and the calendar glyph on the row.
+
+From DOCUMENTS_PLAN.md (lines 376 to 400 before the move), verbatim:
+
+"Note in the redesign documents and where it is supposed to that I want to get
+rid of and redesign these mini menu bars as they are in a couple popups around
+the place and they desperately need a modern redesign or alternative", with a
+photo of `#doc-ai-verb`, the Edit / Write / Remove bar in this tab's AI
+assistant panel.
+
+**Done, 2026-09-12, and the decision is in `docs/DESIGN.md`** ("A choice
+control's selected segment is `--accent-surface` behind `--on-accent`"), which
+is where it belongs: it is a rule about a recipe, not about this tab. The
+short version, so it is not re-litigated here: the two radio-backed bars
+(`#doc-ai-verb`, `#graph-layout`) were the app's own segmented control drawn
+with a different set of numbers, and the selected option was a 14% accent tint
+behind body-coloured text with a drop shadow under it, which is not a selected
+state anyone can see across a popup. They read as the other twenty-eight `.seg`
+groups now. Measured before and after with
+`scratchpad/ui-sweeps/segbars.js`; the numbers are in DESIGN.md and in the
+commit.
+
+**The label size this found is closed too** (`9586542`, a later pass the same
+day). `.seg button` set no `font-size` at all, so it inherited whatever tab it
+was on: measured at three sizes across the app, 16px on the tab strips, 13.6px
+on two choice controls and 12.8px on three more. Every choice control is on
+`--text-md` now, the tab strips deliberately are not. Re-measured here: all
+nine segments across `#doc-ai-verb`, `#doc-view-seg` and `#graph-layout` read
+13.6px.
+
+From DOCUMENTS_PLAN.md (lines 802 to 821 before the move), verbatim:
+
+**1. The toolbar's own state: built.** This is the one that was only ever
+waiting for the tree. Before the engine, deciding whether the caret sat inside
+`**bold**` meant counting asterisks from the top of the document on every
+keystroke; the tree exists now for the decorations, so `renderDocToolbarState`
+resolves one node and walks its ancestors, which costs the depth of the
+markdown at the caret and not the length of the document. It runs on the same
+beat as the caret readout, which is the beat that already exists.
+
+Measured at eleven stops in a document with one of everything: `h1` in a
+heading, nothing in plain prose, `bold`, `italic`, `code`, `h2`, `ul`, `task`,
+`ol`, `quote` and `link`, each with no other button lit. 17 of the strip's 41
+`data-md` buttons carry `aria-pressed`, and the other 24 are the ones that
+always insert something new and have no state to be in: a button that is not a
+toggle must not tell a screen reader it is one. The caret resolves with side
+`-1`, so a caret just past the final `d` of a bold word still reads as bold,
+which is what makes "keep typing in bold" and "the button says bold" the same
+answer. A task item lights `task` and not `ul`, although a task list is a
+bullet list in the grammar, because the more specific one is the one pressing
+the button would turn off.
+
+From DOCUMENTS_PLAN.md (lines 853 to 871 before the move), verbatim:
+
+**4. The table cell's ten-row menu: built, as a change to the shared recipe.**
+Rows, columns, alignment and the whole table read as one list of ten, and
+finding "Align centre" in it meant knowing the order. The bullet that recorded
+this said correctly that `kebabMenu` had no separator and that this was
+therefore a change to the recipe and to DESIGN.md rather than a phase item, so
+that is what it is: an item may carry `group`, a name, and `kebabMenu` draws a
+hairline wherever the name changes. Callers declare meaning, never pixels, and
+an item with no `group` behaves exactly as before, so every other menu in the
+app is untouched.
+
+The name is not drawn. A heading over every three rows would make this menu
+seventeen rows tall, and what makes a list scannable is the break rather than
+the word. Measured after: 10 items, 3 hairlines at 1px tall and 172px wide,
+`role="separator"` on each so the grouping reaches the accessibility tree,
+10 `menuitem` roles and 3 separators, and `wireMenuKeyboard` walks
+`[role="menuitem"]`, so a hairline is never a stop on the way down. The recipe
+index carries it and `tests/test_ui_recipes.py` holds the ratchet: a command
+table past five rows declares its groups, and the separator element and its
+stylesheet rule both still exist.
+
+From DOCUMENTS_PLAN.md (lines 1309 to 1331 before the move), verbatim:
+
+409. **The owner, 2026-09-24, verbatim, with screenshots of Settings,
+    Templates, the persona list, a .json document with the formatting bar
+    over it, and the Write tab's AI assistant bar.** "templates cant be
+    edited, I want the generation of persona icons to be improved and I also
+    want to auto generate other icons in other places like potentially the
+    user chat bubbles?? idk. also the degree of indenting is shallow, I think
+    it should be more prominent. also this edit/write/remove bar is ugly and
+    doesnt suit a modern app, it needs to be restructured/redesigned or
+    transformed somehow to be better." Read from the screenshots: built-in
+    templates have no edit (only added ones do); the persona marks are a
+    blob on a flat disc, too alike at 20px; the prose formatting bubble (B,
+    I, S, highlight, code, link, H, quote) draws over a code document, where
+    none of it applies; the indent guides step 2 spaces; the AI assistant
+    control is a filled segmented pill. Placed: orchestrator, in this order.
+    **Built 2026-09-24**: templates editable, built-ins included (3a769ed,
+    sweep `templates.js`); persona marks a generated face, closest pair of
+    23 at 40px 5.6% before, 29.8% after (259b743, `namemarks.js`); the
+    user's own mark on their chat bubbles and the persona picker's
+    (0e88b6e, ede4f2a, `chatmarks.js`, bubble box unchanged). The code
+    selection bar and the indent step are 7ab7eec. The AI assistant bar
+    is closed: the owner's later line (INBOX 431 (f), 2026-09-27) says they
+    like that dialog's design and the edit/write/remove pill, so nothing
+    is open here.
+
 ## Moved from the plans, 2026-11-09 (book5-1109: UI_MODERNISATION_PLAN)
 
 Built work items found still standing whole in the plan (checked 2026-11-09 against the code and the ROADMAP record that Phases 0 to 11 are built): Phase 8's surface-by-surface work list (tests/test_dock_grammar.py, docks.js sweep) and Phase 11 items 2 and 5 to 9 (2026-09-20 records). Decisions inside them are repeated in the plan's pointers.
