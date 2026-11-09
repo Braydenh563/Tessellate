@@ -169,7 +169,11 @@
     if (!stage) return;
     const head = document.createElement("div");
     head.className = "dgm-panehead";
-    head.append(Object.assign(document.createElement("span"), { className: "muted", textContent: "List" }), toggle("left", false));
+    //: Select all while nothing is picked (1708); diagram-multi.js hides it once there is a pick and the bar's own takes over.
+    const leftToggle = toggle("left", false);
+    const all = smallButton("Select all", "Pick every block (Ctrl+A on the picture)", () => S.pickAll?.());
+    all.classList.add("dgm-head-all");
+    head.append(Object.assign(document.createElement("span"), { className: "muted", textContent: "List" }), ...(S.pickAll ? [all] : []), leftToggle);
     S.pane.prepend(head);
     const right = toggle("right", false);
     stage.append(right);
@@ -195,9 +199,9 @@
       paint(v);
       const [noun, key] = SIDES[side];
       if (S.live) S.live.textContent = v ? `The ${noun} is folded. ${key} opens it.` : `The ${noun} is open.`;
-      (v ? rails[side] : side === "left" ? head.querySelector("button") : right).focus();
+      (v ? rails[side] : side === "left" ? leftToggle : right).focus();
     };
-    for (const b of [head.querySelector("button"), right, rails.left, rails.right]) b.addEventListener("click", () => press(b.dataset.side));
+    for (const b of [leftToggle, right, rails.left, rails.right]) b.addEventListener("click", () => press(b.dataset.side));
     S.root.addEventListener("keydown", (event) => {
       const side = event.code === "BracketLeft" ? "left" : event.code === "BracketRight" ? "right" : "";
       const t = event.target;

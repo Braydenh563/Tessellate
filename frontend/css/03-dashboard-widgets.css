@@ -31,19 +31,23 @@
   gap: var(--space-1);
 }
 
-/* The kind of suggestion is one list (INBOX 670), its rows carrying the
-   counts: as wide as its longest row on a wide sheet, the sheet's width on a
-   phone. It was a well of four at every width. */
-.inbox-card > .select-shell {
+/* The kind of suggestion is one list (INBOX 670), its rows carrying the counts, in the head beside the title and its '?'
+   (INBOX 1714: it was alone on a row of its own under the title). On a phone it takes the room the title leaves. */
+.inbox-card .dialog-head > .select-shell {
   flex: 0 0 auto;
-  align-self: flex-start;
   min-width: 14rem;
-  margin-bottom: var(--space-3);
+  margin-inline: var(--space-2) auto;
+}
+
+.inbox-card .dialog-head > .sheet-title {
+  flex: 0 1 auto;
 }
 
 @media (max-width: 599.98px) {
-  .inbox-card > .select-shell {
-    align-self: stretch;
+  .inbox-card .dialog-head > .select-shell {
+    flex: 1 1 0;
+    min-width: 0;
+    margin-inline-end: var(--space-1);
   }
 }
 

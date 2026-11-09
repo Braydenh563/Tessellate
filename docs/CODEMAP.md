@@ -2,9 +2,9 @@
 
 Generated 2026-11-09 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7930, frontend ids 2652, CSS sections 522, backend routes 649, backend modules 9271, test files 2282, tests 19119, plan headings 1008, app scripts 28, boot scripts 37, script files 265.
+Counts: frontend functions 7931, frontend ids 2652, CSS sections 522, backend routes 649, backend modules 9271, test files 2283, tests 19124, plan headings 1008, app scripts 28, boot scripts 37, script files 265.
 
-## Frontend functions (7930)
+## Frontend functions (7931)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -2102,8 +2102,8 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `atlasFrameBudget` | frontend/js/atlas-life.js:464 |
 | `atlasPropLoops` | frontend/js/atlas-life.js:722 |
 | `atlasPropsFrame` | frontend/js/atlas-life.js:750 |
-| `atlasRigLower` | frontend/js/atlas-life.js:1051 |
-| `atlasRigLowerAttach` | frontend/js/atlas-life.js:1027 |
+| `atlasRigLower` | frontend/js/atlas-life.js:1292 |
+| `atlasRigLowerAttach` | frontend/js/atlas-life.js:1267 |
 | `atlasRingLoops` | frontend/js/atlas-life.js:20 |
 | `atlasTailAttach` | frontend/js/atlas-life.js:353 |
 | `atlasTailBend` | frontend/js/atlas-life.js:133 |
@@ -2301,7 +2301,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `autocorrectSurface` | frontend/js/autocorrect.js:328 |
 | `autocorrectUndo` | frontend/js/autocorrect.js:161 |
 
-### frontend/js/avatars.js (258)
+### frontend/js/avatars.js (259)
 
 | Name | File:line |
 |---|---|
@@ -2309,228 +2309,229 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `characterFor` | frontend/js/avatars.js:1232 |
 | `characterRendererFor` | frontend/js/avatars.js:1215 |
 | `drawCharacter` | frontend/js/avatars.js:1705 |
-| `dropAnimations` | frontend/js/avatars.js:10372 |
+| `dropAnimations` | frontend/js/avatars.js:10444 |
 | `isAtlasSeed` | frontend/js/avatars.js:1226 |
-| `nameCharacterFigure` | frontend/js/avatars.js:3854 |
+| `nameCharacterFigure` | frontend/js/avatars.js:3859 |
 | `nameCharacterHeld` | frontend/js/avatars.js:2591 |
 | `nameMark` | frontend/js/avatars.js:1434 |
-| `nameMarkBuddyAct` | frontend/js/avatars.js:8267 |
-| `nameMarkBuddyActOff` | frontend/js/avatars.js:3314 |
-| `nameMarkBuddyActions` | frontend/js/avatars.js:3338 |
-| `nameMarkBuddyActivitiesOff` | frontend/js/avatars.js:3307 |
-| `nameMarkBuddyAdoptScroller` | frontend/js/avatars.js:6072 |
-| `nameMarkBuddyAfterWarm` | frontend/js/avatars.js:4045 |
-| `nameMarkBuddyAim` | frontend/js/avatars.js:8516 |
-| `nameMarkBuddyAloft` | frontend/js/avatars.js:6302 |
-| `nameMarkBuddyAnimProps` | frontend/js/avatars.js:5728 |
-| `nameMarkBuddyAppear` | frontend/js/avatars.js:7759 |
-| `nameMarkBuddyAsleep` | frontend/js/avatars.js:9602 |
-| `nameMarkBuddyAttention` | frontend/js/avatars.js:4008 |
-| `nameMarkBuddyAwake` | frontend/js/avatars.js:9511 |
-| `nameMarkBuddyBand` | frontend/js/avatars.js:5352 |
-| `nameMarkBuddyBeat` | frontend/js/avatars.js:7539 |
-| `nameMarkBuddyBehindCover` | frontend/js/avatars.js:7316 |
-| `nameMarkBuddyBellErrand` | frontend/js/avatars.js:10041 |
-| `nameMarkBuddyBlend` | frontend/js/avatars.js:9629 |
-| `nameMarkBuddyBody` | frontend/js/avatars.js:3815 |
-| `nameMarkBuddyBoredom` | frontend/js/avatars.js:9745 |
-| `nameMarkBuddyBuild` | frontend/js/avatars.js:10423 |
-| `nameMarkBuddyBurst` | frontend/js/avatars.js:7159 |
-| `nameMarkBuddyCalmAllows` | frontend/js/avatars.js:9589 |
-| `nameMarkBuddyCanvasAt` | frontend/js/avatars.js:6135 |
-| `nameMarkBuddyCanvasScale` | frontend/js/avatars.js:6154 |
-| `nameMarkBuddyCanvasZoom` | frontend/js/avatars.js:6158 |
-| `nameMarkBuddyCaret` | frontend/js/avatars.js:4019 |
-| `nameMarkBuddyCatchUp` | frontend/js/avatars.js:5630 |
-| `nameMarkBuddyChatErrand` | frontend/js/avatars.js:10051 |
-| `nameMarkBuddyCheck` | frontend/js/avatars.js:7395 |
-| `nameMarkBuddyChoose` | frontend/js/avatars.js:4774 |
-| `nameMarkBuddyClickReaction` | frontend/js/avatars.js:9575 |
-| `nameMarkBuddyColours` | frontend/js/avatars.js:3800 |
-| `nameMarkBuddyContext` | frontend/js/avatars.js:10160 |
-| `nameMarkBuddyControlBoxes` | frontend/js/avatars.js:3967 |
-| `nameMarkBuddyControlsIn` | frontend/js/avatars.js:3974 |
-| `nameMarkBuddyCoverCheck` | frontend/js/avatars.js:7299 |
-| `nameMarkBuddyCoverPoint` | frontend/js/avatars.js:4385 |
-| `nameMarkBuddyCoverWatch` | frontend/js/avatars.js:7319 |
-| `nameMarkBuddyCovers` | frontend/js/avatars.js:4345 |
-| `nameMarkBuddyCrossfade` | frontend/js/avatars.js:6367 |
-| `nameMarkBuddyCue` | frontend/js/avatars.js:9304 |
-| `nameMarkBuddyCurlUp` | frontend/js/avatars.js:8631 |
-| `nameMarkBuddyCurtained` | frontend/js/avatars.js:7746 |
+| `nameMarkBuddyAct` | frontend/js/avatars.js:8272 |
+| `nameMarkBuddyActOff` | frontend/js/avatars.js:3319 |
+| `nameMarkBuddyActions` | frontend/js/avatars.js:3343 |
+| `nameMarkBuddyActivitiesOff` | frontend/js/avatars.js:3312 |
+| `nameMarkBuddyAdoptScroller` | frontend/js/avatars.js:6077 |
+| `nameMarkBuddyAfterWarm` | frontend/js/avatars.js:4050 |
+| `nameMarkBuddyAim` | frontend/js/avatars.js:8521 |
+| `nameMarkBuddyAloft` | frontend/js/avatars.js:6307 |
+| `nameMarkBuddyAnimProps` | frontend/js/avatars.js:5733 |
+| `nameMarkBuddyAppear` | frontend/js/avatars.js:7764 |
+| `nameMarkBuddyAsleep` | frontend/js/avatars.js:9670 |
+| `nameMarkBuddyAttention` | frontend/js/avatars.js:4013 |
+| `nameMarkBuddyAwake` | frontend/js/avatars.js:9579 |
+| `nameMarkBuddyBand` | frontend/js/avatars.js:5357 |
+| `nameMarkBuddyBeat` | frontend/js/avatars.js:7544 |
+| `nameMarkBuddyBehindCover` | frontend/js/avatars.js:7321 |
+| `nameMarkBuddyBellErrand` | frontend/js/avatars.js:10109 |
+| `nameMarkBuddyBlend` | frontend/js/avatars.js:9697 |
+| `nameMarkBuddyBody` | frontend/js/avatars.js:3820 |
+| `nameMarkBuddyBoredom` | frontend/js/avatars.js:9813 |
+| `nameMarkBuddyBuild` | frontend/js/avatars.js:10495 |
+| `nameMarkBuddyBurst` | frontend/js/avatars.js:7164 |
+| `nameMarkBuddyCalmAllows` | frontend/js/avatars.js:9657 |
+| `nameMarkBuddyCanvasAt` | frontend/js/avatars.js:6140 |
+| `nameMarkBuddyCanvasScale` | frontend/js/avatars.js:6159 |
+| `nameMarkBuddyCanvasZoom` | frontend/js/avatars.js:6163 |
+| `nameMarkBuddyCaret` | frontend/js/avatars.js:4024 |
+| `nameMarkBuddyCatchUp` | frontend/js/avatars.js:5635 |
+| `nameMarkBuddyChatErrand` | frontend/js/avatars.js:10119 |
+| `nameMarkBuddyCheck` | frontend/js/avatars.js:7400 |
+| `nameMarkBuddyChoose` | frontend/js/avatars.js:4779 |
+| `nameMarkBuddyClickReaction` | frontend/js/avatars.js:9643 |
+| `nameMarkBuddyColours` | frontend/js/avatars.js:3805 |
+| `nameMarkBuddyContext` | frontend/js/avatars.js:10232 |
+| `nameMarkBuddyControlBoxes` | frontend/js/avatars.js:3972 |
+| `nameMarkBuddyControlsIn` | frontend/js/avatars.js:3979 |
+| `nameMarkBuddyCoverCheck` | frontend/js/avatars.js:7304 |
+| `nameMarkBuddyCoverPoint` | frontend/js/avatars.js:4390 |
+| `nameMarkBuddyCoverWatch` | frontend/js/avatars.js:7324 |
+| `nameMarkBuddyCovers` | frontend/js/avatars.js:4350 |
+| `nameMarkBuddyCrossfade` | frontend/js/avatars.js:6372 |
+| `nameMarkBuddyCue` | frontend/js/avatars.js:9372 |
+| `nameMarkBuddyCurlUp` | frontend/js/avatars.js:8636 |
+| `nameMarkBuddyCurtained` | frontend/js/avatars.js:7751 |
 | `nameMarkBuddyCustom` | frontend/js/avatars.js:352 |
-| `nameMarkBuddyDecide` | frontend/js/avatars.js:8821 |
-| `nameMarkBuddyDodge` | frontend/js/avatars.js:4141 |
-| `nameMarkBuddyDodgeTyping` | frontend/js/avatars.js:4193 |
-| `nameMarkBuddyDrift` | frontend/js/avatars.js:9132 |
-| `nameMarkBuddyDrop` | frontend/js/avatars.js:5055 |
-| `nameMarkBuddyDue` | frontend/js/avatars.js:5832 |
-| `nameMarkBuddyEase` | frontend/js/avatars.js:9716 |
-| `nameMarkBuddyEdges` | frontend/js/avatars.js:4525 |
-| `nameMarkBuddyEmote` | frontend/js/avatars.js:3324 |
-| `nameMarkBuddyEnter` | frontend/js/avatars.js:7968 |
-| `nameMarkBuddyErrand` | frontend/js/avatars.js:10023 |
-| `nameMarkBuddyExpress` | frontend/js/avatars.js:9042 |
-| `nameMarkBuddyFeel` | frontend/js/avatars.js:9546 |
-| `nameMarkBuddyFlies` | frontend/js/avatars.js:6350 |
-| `nameMarkBuddyFlip` | frontend/js/avatars.js:7083 |
-| `nameMarkBuddyFloaters` | frontend/js/avatars.js:3987 |
-| `nameMarkBuddyFollow` | frontend/js/avatars.js:5492 |
-| `nameMarkBuddyFollowFrame` | frontend/js/avatars.js:5669 |
-| `nameMarkBuddyFrames` | frontend/js/avatars.js:8603 |
-| `nameMarkBuddyGait` | frontend/js/avatars.js:6340 |
-| `nameMarkBuddyGetUp` | frontend/js/avatars.js:8635 |
-| `nameMarkBuddyGlanceAtPage` | frontend/js/avatars.js:8811 |
-| `nameMarkBuddyGlue` | frontend/js/avatars.js:5431 |
-| `nameMarkBuddyGlueBand` | frontend/js/avatars.js:5480 |
-| `nameMarkBuddyGo` | frontend/js/avatars.js:6501 |
-| `nameMarkBuddyGone` | frontend/js/avatars.js:10380 |
-| `nameMarkBuddyHalt` | frontend/js/avatars.js:8651 |
-| `nameMarkBuddyHasAtlas` | frontend/js/avatars.js:8600 |
-| `nameMarkBuddyHeadAt` | frontend/js/avatars.js:9890 |
-| `nameMarkBuddyHint` | frontend/js/avatars.js:11099 |
-| `nameMarkBuddyHits` | frontend/js/avatars.js:4327 |
-| `nameMarkBuddyHold` | frontend/js/avatars.js:9127 |
-| `nameMarkBuddyHover` | frontend/js/avatars.js:6850 |
-| `nameMarkBuddyHoverReaction` | frontend/js/avatars.js:9737 |
-| `nameMarkBuddyIndexReset` | frontend/js/avatars.js:4442 |
-| `nameMarkBuddyIndexResized` | frontend/js/avatars.js:4450 |
-| `nameMarkBuddyInsideCard` | frontend/js/avatars.js:4638 |
-| `nameMarkBuddyJoy` | frontend/js/avatars.js:9092 |
-| `nameMarkBuddyKeepFrame` | frontend/js/avatars.js:8642 |
-| `nameMarkBuddyKeepSpots` | frontend/js/avatars.js:4914 |
-| `nameMarkBuddyKeepUp` | frontend/js/avatars.js:5653 |
-| `nameMarkBuddyLandNear` | frontend/js/avatars.js:6824 |
-| `nameMarkBuddyLean` | frontend/js/avatars.js:9978 |
-| `nameMarkBuddyLeanSide` | frontend/js/avatars.js:9973 |
-| `nameMarkBuddyLedges` | frontend/js/avatars.js:3913 |
-| `nameMarkBuddyLegsNow` | frontend/js/avatars.js:6167 |
-| `nameMarkBuddyLieDown` | frontend/js/avatars.js:8621 |
-| `nameMarkBuddyLieRoom` | frontend/js/avatars.js:8402 |
-| `nameMarkBuddyLimbs` | frontend/js/avatars.js:6443 |
-| `nameMarkBuddyLockSync` | frontend/js/avatars.js:7291 |
-| `nameMarkBuddyLoud` | frontend/js/avatars.js:9594 |
+| `nameMarkBuddyDecide` | frontend/js/avatars.js:8826 |
+| `nameMarkBuddyDodge` | frontend/js/avatars.js:4146 |
+| `nameMarkBuddyDodgeTyping` | frontend/js/avatars.js:4198 |
+| `nameMarkBuddyDrift` | frontend/js/avatars.js:9137 |
+| `nameMarkBuddyDrop` | frontend/js/avatars.js:5060 |
+| `nameMarkBuddyDue` | frontend/js/avatars.js:5837 |
+| `nameMarkBuddyEase` | frontend/js/avatars.js:9784 |
+| `nameMarkBuddyEdges` | frontend/js/avatars.js:4530 |
+| `nameMarkBuddyEmote` | frontend/js/avatars.js:3329 |
+| `nameMarkBuddyEnter` | frontend/js/avatars.js:7973 |
+| `nameMarkBuddyErrand` | frontend/js/avatars.js:10091 |
+| `nameMarkBuddyExpress` | frontend/js/avatars.js:9047 |
+| `nameMarkBuddyFeel` | frontend/js/avatars.js:9614 |
+| `nameMarkBuddyFlies` | frontend/js/avatars.js:6355 |
+| `nameMarkBuddyFlip` | frontend/js/avatars.js:7088 |
+| `nameMarkBuddyFloaters` | frontend/js/avatars.js:3992 |
+| `nameMarkBuddyFollow` | frontend/js/avatars.js:5497 |
+| `nameMarkBuddyFollowFrame` | frontend/js/avatars.js:5674 |
+| `nameMarkBuddyFrames` | frontend/js/avatars.js:8608 |
+| `nameMarkBuddyGait` | frontend/js/avatars.js:6345 |
+| `nameMarkBuddyGetUp` | frontend/js/avatars.js:8640 |
+| `nameMarkBuddyGlanceAtPage` | frontend/js/avatars.js:8816 |
+| `nameMarkBuddyGlue` | frontend/js/avatars.js:5436 |
+| `nameMarkBuddyGlueBand` | frontend/js/avatars.js:5485 |
+| `nameMarkBuddyGo` | frontend/js/avatars.js:6506 |
+| `nameMarkBuddyGone` | frontend/js/avatars.js:10452 |
+| `nameMarkBuddyHalt` | frontend/js/avatars.js:8656 |
+| `nameMarkBuddyHasAtlas` | frontend/js/avatars.js:8605 |
+| `nameMarkBuddyHeadAt` | frontend/js/avatars.js:9958 |
+| `nameMarkBuddyHint` | frontend/js/avatars.js:11171 |
+| `nameMarkBuddyHits` | frontend/js/avatars.js:4332 |
+| `nameMarkBuddyHold` | frontend/js/avatars.js:9132 |
+| `nameMarkBuddyHover` | frontend/js/avatars.js:6855 |
+| `nameMarkBuddyHoverReaction` | frontend/js/avatars.js:9805 |
+| `nameMarkBuddyIndexReset` | frontend/js/avatars.js:4447 |
+| `nameMarkBuddyIndexResized` | frontend/js/avatars.js:4455 |
+| `nameMarkBuddyInsideCard` | frontend/js/avatars.js:4643 |
+| `nameMarkBuddyJoy` | frontend/js/avatars.js:9097 |
+| `nameMarkBuddyKeepFrame` | frontend/js/avatars.js:8647 |
+| `nameMarkBuddyKeepSpots` | frontend/js/avatars.js:4919 |
+| `nameMarkBuddyKeepUp` | frontend/js/avatars.js:5658 |
+| `nameMarkBuddyLandNear` | frontend/js/avatars.js:6829 |
+| `nameMarkBuddyLean` | frontend/js/avatars.js:10046 |
+| `nameMarkBuddyLeanSide` | frontend/js/avatars.js:10041 |
+| `nameMarkBuddyLedges` | frontend/js/avatars.js:3918 |
+| `nameMarkBuddyLegsNow` | frontend/js/avatars.js:6172 |
+| `nameMarkBuddyLieDown` | frontend/js/avatars.js:8626 |
+| `nameMarkBuddyLieRoom` | frontend/js/avatars.js:8407 |
+| `nameMarkBuddyLimbs` | frontend/js/avatars.js:6448 |
+| `nameMarkBuddyLockSync` | frontend/js/avatars.js:7296 |
+| `nameMarkBuddyLoud` | frontend/js/avatars.js:9662 |
 | `nameMarkBuddyMade` | frontend/js/avatars.js:2989 |
-| `nameMarkBuddyMeasureOnce` | frontend/js/avatars.js:4059 |
-| `nameMarkBuddyMenuOpen` | frontend/js/avatars.js:7535 |
-| `nameMarkBuddyMind` | frontend/js/avatars.js:7814 |
-| `nameMarkBuddyMotion` | frontend/js/avatars.js:3740 |
-| `nameMarkBuddyMotionApply` | frontend/js/avatars.js:3774 |
-| `nameMarkBuddyMoveTo` | frontend/js/avatars.js:6172 |
-| `nameMarkBuddyNameProps` | frontend/js/avatars.js:10128 |
-| `nameMarkBuddyNear` | frontend/js/avatars.js:3954 |
-| `nameMarkBuddyNextSpot` | frontend/js/avatars.js:7722 |
-| `nameMarkBuddyNoTravel` | frontend/js/avatars.js:3786 |
-| `nameMarkBuddyNoteOpen` | frontend/js/avatars.js:9279 |
-| `nameMarkBuddyNoteOpened` | frontend/js/avatars.js:9272 |
-| `nameMarkBuddyNotice` | frontend/js/avatars.js:9900 |
-| `nameMarkBuddyNudge` | frontend/js/avatars.js:10986 |
-| `nameMarkBuddyObstacles` | frontend/js/avatars.js:3923 |
-| `nameMarkBuddyOnBoard` | frontend/js/avatars.js:6151 |
-| `nameMarkBuddyOrigin` | frontend/js/avatars.js:4283 |
-| `nameMarkBuddyOverCanvas` | frontend/js/avatars.js:4627 |
-| `nameMarkBuddyOverhang` | frontend/js/avatars.js:5307 |
-| `nameMarkBuddyPainted` | frontend/js/avatars.js:4519 |
-| `nameMarkBuddyPanelMoving` | frontend/js/avatars.js:5746 |
-| `nameMarkBuddyPerchGone` | frontend/js/avatars.js:7472 |
-| `nameMarkBuddyPerchShown` | frontend/js/avatars.js:3905 |
-| `nameMarkBuddyPerches` | frontend/js/avatars.js:4714 |
-| `nameMarkBuddyPet` | frontend/js/avatars.js:6872 |
-| `nameMarkBuddyPickVariant` | frontend/js/avatars.js:8422 |
-| `nameMarkBuddyPointer` | frontend/js/avatars.js:10212 |
-| `nameMarkBuddyPoof` | frontend/js/avatars.js:7107 |
-| `nameMarkBuddyPopupEls` | frontend/js/avatars.js:4126 |
-| `nameMarkBuddyPopups` | frontend/js/avatars.js:4112 |
-| `nameMarkBuddyPout` | frontend/js/avatars.js:9727 |
-| `nameMarkBuddyPrewarm` | frontend/js/avatars.js:9114 |
-| `nameMarkBuddyPropGaps` | frontend/js/avatars.js:5821 |
-| `nameMarkBuddyPut` | frontend/js/avatars.js:5135 |
-| `nameMarkBuddyQueuePlace` | frontend/js/avatars.js:7524 |
-| `nameMarkBuddyQuietEnter` | frontend/js/avatars.js:8183 |
-| `nameMarkBuddyQuietWay` | frontend/js/avatars.js:8179 |
-| `nameMarkBuddyReact` | frontend/js/avatars.js:9185 |
-| `nameMarkBuddyRefit` | frontend/js/avatars.js:8222 |
-| `nameMarkBuddyRefitClear` | frontend/js/avatars.js:8257 |
-| `nameMarkBuddyRelease` | frontend/js/avatars.js:8676 |
-| `nameMarkBuddyReleaseVelocity` | frontend/js/avatars.js:6782 |
-| `nameMarkBuddyResetSize` | frontend/js/avatars.js:4253 |
-| `nameMarkBuddyRestore` | frontend/js/avatars.js:4961 |
-| `nameMarkBuddyRide` | frontend/js/avatars.js:5170 |
-| `nameMarkBuddyRideBox` | frontend/js/avatars.js:5253 |
-| `nameMarkBuddyRideClip` | frontend/js/avatars.js:5240 |
-| `nameMarkBuddyRideFrames` | frontend/js/avatars.js:5227 |
-| `nameMarkBuddyRoom` | frontend/js/avatars.js:10240 |
-| `nameMarkBuddyRoomSoon` | frontend/js/avatars.js:10230 |
-| `nameMarkBuddyRoute` | frontend/js/avatars.js:6402 |
-| `nameMarkBuddyRubbed` | frontend/js/avatars.js:6917 |
-| `nameMarkBuddyScaleSaved` | frontend/js/avatars.js:4224 |
-| `nameMarkBuddyScaled` | frontend/js/avatars.js:4287 |
-| `nameMarkBuddyScene` | frontend/js/avatars.js:8473 |
-| `nameMarkBuddySchedule` | frontend/js/avatars.js:8694 |
-| `nameMarkBuddyScrollAgo` | frontend/js/avatars.js:9598 |
-| `nameMarkBuddyScroller` | frontend/js/avatars.js:5339 |
-| `nameMarkBuddyScrollsWith` | frontend/js/avatars.js:5468 |
+| `nameMarkBuddyMeasureOnce` | frontend/js/avatars.js:4064 |
+| `nameMarkBuddyMenuOpen` | frontend/js/avatars.js:7540 |
+| `nameMarkBuddyMind` | frontend/js/avatars.js:7819 |
+| `nameMarkBuddyMotion` | frontend/js/avatars.js:3745 |
+| `nameMarkBuddyMotionApply` | frontend/js/avatars.js:3779 |
+| `nameMarkBuddyMoveTo` | frontend/js/avatars.js:6177 |
+| `nameMarkBuddyNameProps` | frontend/js/avatars.js:10200 |
+| `nameMarkBuddyNear` | frontend/js/avatars.js:3959 |
+| `nameMarkBuddyNextSpot` | frontend/js/avatars.js:7727 |
+| `nameMarkBuddyNoTravel` | frontend/js/avatars.js:3791 |
+| `nameMarkBuddyNoteOpen` | frontend/js/avatars.js:9300 |
+| `nameMarkBuddyNoteOpened` | frontend/js/avatars.js:9293 |
+| `nameMarkBuddyNotice` | frontend/js/avatars.js:9968 |
+| `nameMarkBuddyNudge` | frontend/js/avatars.js:11058 |
+| `nameMarkBuddyObstacles` | frontend/js/avatars.js:3928 |
+| `nameMarkBuddyOnBoard` | frontend/js/avatars.js:6156 |
+| `nameMarkBuddyOrigin` | frontend/js/avatars.js:4288 |
+| `nameMarkBuddyOverCanvas` | frontend/js/avatars.js:4632 |
+| `nameMarkBuddyOverhang` | frontend/js/avatars.js:5312 |
+| `nameMarkBuddyPainted` | frontend/js/avatars.js:4524 |
+| `nameMarkBuddyPanelMoving` | frontend/js/avatars.js:5751 |
+| `nameMarkBuddyPerchGone` | frontend/js/avatars.js:7477 |
+| `nameMarkBuddyPerchShown` | frontend/js/avatars.js:3910 |
+| `nameMarkBuddyPerches` | frontend/js/avatars.js:4719 |
+| `nameMarkBuddyPet` | frontend/js/avatars.js:6877 |
+| `nameMarkBuddyPickVariant` | frontend/js/avatars.js:8427 |
+| `nameMarkBuddyPointer` | frontend/js/avatars.js:10284 |
+| `nameMarkBuddyPoof` | frontend/js/avatars.js:7112 |
+| `nameMarkBuddyPopupEls` | frontend/js/avatars.js:4131 |
+| `nameMarkBuddyPopups` | frontend/js/avatars.js:4117 |
+| `nameMarkBuddyPout` | frontend/js/avatars.js:9795 |
+| `nameMarkBuddyPrewarm` | frontend/js/avatars.js:9119 |
+| `nameMarkBuddyPropGaps` | frontend/js/avatars.js:5826 |
+| `nameMarkBuddyPut` | frontend/js/avatars.js:5140 |
+| `nameMarkBuddyQueuePlace` | frontend/js/avatars.js:7529 |
+| `nameMarkBuddyQuietEnter` | frontend/js/avatars.js:8188 |
+| `nameMarkBuddyQuietWay` | frontend/js/avatars.js:8184 |
+| `nameMarkBuddyReact` | frontend/js/avatars.js:9200 |
+| `nameMarkBuddyRefit` | frontend/js/avatars.js:8227 |
+| `nameMarkBuddyRefitClear` | frontend/js/avatars.js:8262 |
+| `nameMarkBuddyRelease` | frontend/js/avatars.js:8681 |
+| `nameMarkBuddyReleaseVelocity` | frontend/js/avatars.js:6787 |
+| `nameMarkBuddyResetSize` | frontend/js/avatars.js:4258 |
+| `nameMarkBuddyRestore` | frontend/js/avatars.js:4966 |
+| `nameMarkBuddyRide` | frontend/js/avatars.js:5175 |
+| `nameMarkBuddyRideBox` | frontend/js/avatars.js:5258 |
+| `nameMarkBuddyRideClip` | frontend/js/avatars.js:5245 |
+| `nameMarkBuddyRideFrames` | frontend/js/avatars.js:5232 |
+| `nameMarkBuddyRoom` | frontend/js/avatars.js:10312 |
+| `nameMarkBuddyRoomSoon` | frontend/js/avatars.js:10302 |
+| `nameMarkBuddyRoute` | frontend/js/avatars.js:6407 |
+| `nameMarkBuddyRubbed` | frontend/js/avatars.js:6922 |
+| `nameMarkBuddyScaleSaved` | frontend/js/avatars.js:4229 |
+| `nameMarkBuddyScaled` | frontend/js/avatars.js:4292 |
+| `nameMarkBuddyScene` | frontend/js/avatars.js:8478 |
+| `nameMarkBuddySchedule` | frontend/js/avatars.js:8699 |
+| `nameMarkBuddyScrollAgo` | frontend/js/avatars.js:9666 |
+| `nameMarkBuddyScroller` | frontend/js/avatars.js:5344 |
+| `nameMarkBuddyScrollsWith` | frontend/js/avatars.js:5473 |
 | `nameMarkBuddySeed` | frontend/js/avatars.js:2942 |
-| `nameMarkBuddySeen` | frontend/js/avatars.js:5327 |
-| `nameMarkBuddySelector` | frontend/js/avatars.js:4924 |
-| `nameMarkBuddySetSize` | frontend/js/avatars.js:4233 |
-| `nameMarkBuddySettle` | frontend/js/avatars.js:7899 |
-| `nameMarkBuddySettleIn` | frontend/js/avatars.js:8796 |
-| `nameMarkBuddySettleKind` | frontend/js/avatars.js:8790 |
-| `nameMarkBuddyShape` | frontend/js/avatars.js:4294 |
-| `nameMarkBuddyShapeAt1` | frontend/js/avatars.js:4297 |
-| `nameMarkBuddyShown` | frontend/js/avatars.js:3891 |
-| `nameMarkBuddyShowy` | frontend/js/avatars.js:8172 |
-| `nameMarkBuddyShy` | frontend/js/avatars.js:10269 |
-| `nameMarkBuddySizeSelect` | frontend/js/avatars.js:4262 |
-| `nameMarkBuddySound` | frontend/js/avatars.js:10138 |
-| `nameMarkBuddySpotFor` | frontend/js/avatars.js:4946 |
-| `nameMarkBuddySpots` | frontend/js/avatars.js:4905 |
-| `nameMarkBuddySquash` | frontend/js/avatars.js:6743 |
-| `nameMarkBuddyStances` | frontend/js/avatars.js:4696 |
-| `nameMarkBuddyState` | frontend/js/avatars.js:8748 |
-| `nameMarkBuddyStateOf` | frontend/js/avatars.js:8741 |
-| `nameMarkBuddyStepAside` | frontend/js/avatars.js:5009 |
-| `nameMarkBuddyStill` | frontend/js/avatars.js:3783 |
-| `nameMarkBuddyStillGood` | frontend/js/avatars.js:7382 |
-| `nameMarkBuddyStir` | frontend/js/avatars.js:9860 |
-| `nameMarkBuddyStreak` | frontend/js/avatars.js:9257 |
-| `nameMarkBuddyStride` | frontend/js/avatars.js:6729 |
-| `nameMarkBuddyStrokes` | frontend/js/avatars.js:6890 |
-| `nameMarkBuddySupportSoon` | frontend/js/avatars.js:7251 |
-| `nameMarkBuddySupported` | frontend/js/avatars.js:7201 |
-| `nameMarkBuddySurfaceWalk` | frontend/js/avatars.js:4463 |
-| `nameMarkBuddySway` | frontend/js/avatars.js:5150 |
-| `nameMarkBuddyTab` | frontend/js/avatars.js:3883 |
-| `nameMarkBuddyTabChanged` | frontend/js/avatars.js:7650 |
-| `nameMarkBuddyTabSide` | frontend/js/avatars.js:7712 |
-| `nameMarkBuddyTakeSurfaces` | frontend/js/avatars.js:4078 |
-| `nameMarkBuddyTempo` | frontend/js/avatars.js:5851 |
-| `nameMarkBuddyTextBoxes` | frontend/js/avatars.js:4406 |
-| `nameMarkBuddyTick` | frontend/js/avatars.js:8913 |
-| `nameMarkBuddyTilt` | frontend/js/avatars.js:8579 |
-| `nameMarkBuddyToggles` | frontend/js/avatars.js:3318 |
-| `nameMarkBuddyTraits` | frontend/js/avatars.js:8725 |
-| `nameMarkBuddyTravel` | frontend/js/avatars.js:6491 |
-| `nameMarkBuddyTypingFar` | frontend/js/avatars.js:4187 |
-| `nameMarkBuddyTypingKey` | frontend/js/avatars.js:4183 |
-| `nameMarkBuddyVary` | frontend/js/avatars.js:8443 |
-| `nameMarkBuddyViewChanged` | frontend/js/avatars.js:7610 |
-| `nameMarkBuddyWake` | frontend/js/avatars.js:9820 |
-| `nameMarkBuddyWalkEnter` | frontend/js/avatars.js:7798 |
-| `nameMarkBuddyWalkIn` | frontend/js/avatars.js:8200 |
-| `nameMarkBuddyWander` | frontend/js/avatars.js:9758 |
-| `nameMarkBuddyWarmUp` | frontend/js/avatars.js:4038 |
-| `nameMarkBuddyWarmthAt` | frontend/js/avatars.js:9542 |
-| `nameMarkBuddyWatch` | frontend/js/avatars.js:6016 |
-| `nameMarkBuddyWay` | frontend/js/avatars.js:6480 |
-| `nameMarkBuddyWordsUnder` | frontend/js/avatars.js:4661 |
-| `nameMarkBuddyWork` | frontend/js/avatars.js:9397 |
-| `nameMarkBuddyWorkFor` | frontend/js/avatars.js:9393 |
-| `nameMarkBuddyWorld` | frontend/js/avatars.js:6801 |
-| `nameMarkBuddyYoursObstacles` | frontend/js/avatars.js:5045 |
+| `nameMarkBuddySeen` | frontend/js/avatars.js:5332 |
+| `nameMarkBuddySelector` | frontend/js/avatars.js:4929 |
+| `nameMarkBuddySenses` | frontend/js/avatars.js:9324 |
+| `nameMarkBuddySetSize` | frontend/js/avatars.js:4238 |
+| `nameMarkBuddySettle` | frontend/js/avatars.js:7904 |
+| `nameMarkBuddySettleIn` | frontend/js/avatars.js:8801 |
+| `nameMarkBuddySettleKind` | frontend/js/avatars.js:8795 |
+| `nameMarkBuddyShape` | frontend/js/avatars.js:4299 |
+| `nameMarkBuddyShapeAt1` | frontend/js/avatars.js:4302 |
+| `nameMarkBuddyShown` | frontend/js/avatars.js:3896 |
+| `nameMarkBuddyShowy` | frontend/js/avatars.js:8177 |
+| `nameMarkBuddyShy` | frontend/js/avatars.js:10341 |
+| `nameMarkBuddySizeSelect` | frontend/js/avatars.js:4267 |
+| `nameMarkBuddySound` | frontend/js/avatars.js:10210 |
+| `nameMarkBuddySpotFor` | frontend/js/avatars.js:4951 |
+| `nameMarkBuddySpots` | frontend/js/avatars.js:4910 |
+| `nameMarkBuddySquash` | frontend/js/avatars.js:6748 |
+| `nameMarkBuddyStances` | frontend/js/avatars.js:4701 |
+| `nameMarkBuddyState` | frontend/js/avatars.js:8753 |
+| `nameMarkBuddyStateOf` | frontend/js/avatars.js:8746 |
+| `nameMarkBuddyStepAside` | frontend/js/avatars.js:5014 |
+| `nameMarkBuddyStill` | frontend/js/avatars.js:3788 |
+| `nameMarkBuddyStillGood` | frontend/js/avatars.js:7387 |
+| `nameMarkBuddyStir` | frontend/js/avatars.js:9928 |
+| `nameMarkBuddyStreak` | frontend/js/avatars.js:9278 |
+| `nameMarkBuddyStride` | frontend/js/avatars.js:6734 |
+| `nameMarkBuddyStrokes` | frontend/js/avatars.js:6895 |
+| `nameMarkBuddySupportSoon` | frontend/js/avatars.js:7256 |
+| `nameMarkBuddySupported` | frontend/js/avatars.js:7206 |
+| `nameMarkBuddySurfaceWalk` | frontend/js/avatars.js:4468 |
+| `nameMarkBuddySway` | frontend/js/avatars.js:5155 |
+| `nameMarkBuddyTab` | frontend/js/avatars.js:3888 |
+| `nameMarkBuddyTabChanged` | frontend/js/avatars.js:7655 |
+| `nameMarkBuddyTabSide` | frontend/js/avatars.js:7717 |
+| `nameMarkBuddyTakeSurfaces` | frontend/js/avatars.js:4083 |
+| `nameMarkBuddyTempo` | frontend/js/avatars.js:5856 |
+| `nameMarkBuddyTextBoxes` | frontend/js/avatars.js:4411 |
+| `nameMarkBuddyTick` | frontend/js/avatars.js:8918 |
+| `nameMarkBuddyTilt` | frontend/js/avatars.js:8584 |
+| `nameMarkBuddyToggles` | frontend/js/avatars.js:3323 |
+| `nameMarkBuddyTraits` | frontend/js/avatars.js:8730 |
+| `nameMarkBuddyTravel` | frontend/js/avatars.js:6496 |
+| `nameMarkBuddyTypingFar` | frontend/js/avatars.js:4192 |
+| `nameMarkBuddyTypingKey` | frontend/js/avatars.js:4188 |
+| `nameMarkBuddyVary` | frontend/js/avatars.js:8448 |
+| `nameMarkBuddyViewChanged` | frontend/js/avatars.js:7615 |
+| `nameMarkBuddyWake` | frontend/js/avatars.js:9888 |
+| `nameMarkBuddyWalkEnter` | frontend/js/avatars.js:7803 |
+| `nameMarkBuddyWalkIn` | frontend/js/avatars.js:8205 |
+| `nameMarkBuddyWander` | frontend/js/avatars.js:9826 |
+| `nameMarkBuddyWarmUp` | frontend/js/avatars.js:4043 |
+| `nameMarkBuddyWarmthAt` | frontend/js/avatars.js:9610 |
+| `nameMarkBuddyWatch` | frontend/js/avatars.js:6021 |
+| `nameMarkBuddyWay` | frontend/js/avatars.js:6485 |
+| `nameMarkBuddyWordsUnder` | frontend/js/avatars.js:4666 |
+| `nameMarkBuddyWork` | frontend/js/avatars.js:9465 |
+| `nameMarkBuddyWorkFor` | frontend/js/avatars.js:9461 |
+| `nameMarkBuddyWorld` | frontend/js/avatars.js:6806 |
+| `nameMarkBuddyYoursObstacles` | frontend/js/avatars.js:5050 |
 | `nameMarkCompose` | frontend/js/avatars.js:1286 |
-| `nameMarkFigure` | frontend/js/avatars.js:3870 |
+| `nameMarkFigure` | frontend/js/avatars.js:3875 |
 | `nameMarkIdleAct` | frontend/js/avatars.js:2828 |
 | `nameMarkIdleQuiet` | frontend/js/avatars.js:2807 |
 | `nameMarkIdleTick` | frontend/js/avatars.js:2813 |
@@ -2544,7 +2545,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `nameMarkRasterise` | frontend/js/avatars.js:1305 |
 | `nameMarkReact` | frontend/js/avatars.js:2760 |
 | `nameMarkSay` | frontend/js/avatars.js:2769 |
-| `nameMarkShade` | frontend/js/avatars.js:3790 |
+| `nameMarkShade` | frontend/js/avatars.js:3795 |
 | `nameMarkSlot` | frontend/js/avatars.js:287 |
 | `nameMarkStyleClean` | frontend/js/avatars.js:305 |
 | `nameMarkSushi` | frontend/js/avatars.js:2582 |
@@ -2554,14 +2555,14 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `nmLineFor` | frontend/js/avatars.js:1694 |
 | `nmLuma` | frontend/js/avatars.js:1698 |
 | `nmMix` | frontend/js/avatars.js:1685 |
-| `nmbTick` | frontend/js/avatars.js:7365 |
-| `nmbTickArm` | frontend/js/avatars.js:7346 |
+| `nmbTick` | frontend/js/avatars.js:7370 |
+| `nmbTickArm` | frontend/js/avatars.js:7351 |
 | `ownNameMarkStyle` | frontend/js/avatars.js:327 |
-| `placeNameMarkBuddy` | frontend/js/avatars.js:7180 |
-| `queueNameMarkBuddyCheck` | frontend/js/avatars.js:7494 |
+| `placeNameMarkBuddy` | frontend/js/avatars.js:7185 |
+| `queueNameMarkBuddyCheck` | frontend/js/avatars.js:7499 |
 | `registerCharacter` | frontend/js/avatars.js:1209 |
 | `setOwnNameMarkStyle` | frontend/js/avatars.js:294 |
-| `syncNameMarkBuddy` | frontend/js/avatars.js:10997 |
+| `syncNameMarkBuddy` | frontend/js/avatars.js:11069 |
 | `watchNameMark` | frontend/js/avatars.js:1096 |
 
 ### frontend/js/batch-space.js (7)
@@ -3379,9 +3380,9 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `typing` | frontend/js/diagram-multi.js:183 |
+| `typing` | frontend/js/diagram-multi.js:193 |
 | `wire` | frontend/js/diagram-multi.js:13 |
-| `wire` | frontend/js/diagram-multi.js:185 |
+| `wire` | frontend/js/diagram-multi.js:195 |
 
 ### frontend/js/diagram-ops.js (28)
 
@@ -7399,28 +7400,28 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `inboxCorrection` | frontend/js/suggestions-inbox.js:195 |
-| `inboxCount` | frontend/js/suggestions-inbox.js:154 |
-| `inboxDone` | frontend/js/suggestions-inbox.js:186 |
-| `inboxEmpty` | frontend/js/suggestions-inbox.js:178 |
-| `inboxHead` | frontend/js/suggestions-inbox.js:108 |
-| `inboxLinkRow` | frontend/js/suggestions-inbox.js:632 |
-| `inboxLinksPane` | frontend/js/suggestions-inbox.js:509 |
-| `inboxLoad` | frontend/js/suggestions-inbox.js:96 |
-| `inboxMergeRow` | frontend/js/suggestions-inbox.js:240 |
-| `inboxRows` | frontend/js/suggestions-inbox.js:168 |
-| `inboxScore` | frontend/js/suggestions-inbox.js:232 |
-| `inboxScoreBar` | frontend/js/suggestions-inbox.js:215 |
-| `inboxShow` | frontend/js/suggestions-inbox.js:142 |
-| `inboxTensionsPane` | frontend/js/suggestions-inbox.js:347 |
-| `inboxTypeRow` | frontend/js/suggestions-inbox.js:279 |
-| `inboxWhy` | frontend/js/suggestions-inbox.js:205 |
-| `jobLineEl` | frontend/js/suggestions-inbox.js:749 |
+| `inboxCorrection` | frontend/js/suggestions-inbox.js:199 |
+| `inboxCount` | frontend/js/suggestions-inbox.js:158 |
+| `inboxDone` | frontend/js/suggestions-inbox.js:190 |
+| `inboxEmpty` | frontend/js/suggestions-inbox.js:182 |
+| `inboxHead` | frontend/js/suggestions-inbox.js:112 |
+| `inboxLinkRow` | frontend/js/suggestions-inbox.js:636 |
+| `inboxLinksPane` | frontend/js/suggestions-inbox.js:513 |
+| `inboxLoad` | frontend/js/suggestions-inbox.js:100 |
+| `inboxMergeRow` | frontend/js/suggestions-inbox.js:244 |
+| `inboxRows` | frontend/js/suggestions-inbox.js:172 |
+| `inboxScore` | frontend/js/suggestions-inbox.js:236 |
+| `inboxScoreBar` | frontend/js/suggestions-inbox.js:219 |
+| `inboxShow` | frontend/js/suggestions-inbox.js:146 |
+| `inboxTensionsPane` | frontend/js/suggestions-inbox.js:351 |
+| `inboxTypeRow` | frontend/js/suggestions-inbox.js:283 |
+| `inboxWhy` | frontend/js/suggestions-inbox.js:209 |
+| `jobLineEl` | frontend/js/suggestions-inbox.js:753 |
 | `openSuggestionsInbox` | frontend/js/suggestions-inbox.js:35 |
-| `tensionCard` | frontend/js/suggestions-inbox.js:399 |
-| `tensionGapText` | frontend/js/suggestions-inbox.js:470 |
-| `tensionResolve` | frontend/js/suggestions-inbox.js:458 |
-| `tensionSide` | frontend/js/suggestions-inbox.js:478 |
+| `tensionCard` | frontend/js/suggestions-inbox.js:403 |
+| `tensionGapText` | frontend/js/suggestions-inbox.js:474 |
+| `tensionResolve` | frontend/js/suggestions-inbox.js:462 |
+| `tensionSide` | frontend/js/suggestions-inbox.js:482 |
 
 ### frontend/js/table-block.js (1)
 
@@ -11918,7 +11919,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 
 | Section | File:line |
 |---|---|
-| "Tools it can use": the row, measured against a normal one | frontend/css/03-dashboard-widgets.css:4384 |
+| "Tools it can use": the row, measured against a normal one | frontend/css/03-dashboard-widgets.css:4388 |
 | "how are these connected?" | frontend/css/02-chat-graph.css:3696 |
 | 08-consistency.css - one recipe per repeated shape | frontend/css/08-consistency.css:1 |
 | 1. One menu row | frontend/css/08-consistency.css:24 |
@@ -11931,7 +11932,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | 6. One toggle-row recipe: the switch says on, not the row | frontend/css/08-consistency.css:871 |
 | 7. Meta looks like meta | frontend/css/08-consistency.css:1068 |
 | 8. A panel head is identity, one fact, then the actions, and it does not | frontend/css/08-consistency.css:2409 |
-| A CALMER TOP, NOTHING TAKEN AWAY (Full view) | frontend/css/03-dashboard-widgets.css:4557 |
+| A CALMER TOP, NOTHING TAKEN AWAY (Full view) | frontend/css/03-dashboard-widgets.css:4561 |
 | A card's date is in the same corner on every card (INBOX 719) | frontend/css/08-consistency.css:10603 |
 | A chip's x: a round target inset evenly (INBOX 403) | frontend/css/08-consistency.css:4631 |
 | A dialog's head: title, its '?', icon-only actions, Close last | frontend/css/08-consistency.css:9049 |
@@ -11966,7 +11967,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | Find anything | frontend/css/07-whiteboard-misc.css:10837 |
 | Find anything, de-vibecoded | frontend/css/search-lazy.css:121 |
 | Find anything: group heads read as heads | frontend/css/search-lazy.css:133 |
-| GLASS THAT DOES NOT COST WHAT IT USED TO | frontend/css/03-dashboard-widgets.css:528 |
+| GLASS THAT DOES NOT COST WHAT IT USED TO | frontend/css/03-dashboard-widgets.css:532 |
 | GRIPS AT A CONSTANT SIZE ON SCREEN | frontend/css/07-whiteboard-misc.css:10770 |
 | Graph options: one section-head style | frontend/css/08-consistency.css:4440 |
 | Help & guide: the topics box and the "Ask the guide" box are two | frontend/css/08-consistency.css:1815 |
@@ -11975,14 +11976,14 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | Inline AI (editor.js) | frontend/css/07-whiteboard-misc.css:6502 |
 | Lagoon: indigo and teal together | frontend/css/05-sidebars-themes.css:3283 |
 | Library -> Contents: an outline (INBOX 496) | frontend/css/01-forms-settings.css:2445 |
-| Library → Documents | frontend/css/03-dashboard-widgets.css:4037 |
-| Library → Whiteboards | frontend/css/03-dashboard-widgets.css:4062 |
-| Live preview | frontend/css/04-chat-dock-appearance.css:4558 |
+| Library → Documents | frontend/css/03-dashboard-widgets.css:4041 |
+| Library → Whiteboards | frontend/css/03-dashboard-widgets.css:4066 |
+| Live preview | frontend/css/04-chat-dock-appearance.css:4574 |
 | MICRO-ANIMATIONS | frontend/css/07-whiteboard-misc.css:675 |
 | Midnight: deep navy and gold (Brief 95, INBOX 858: "truly good themes"). | frontend/css/05-sidebars-themes.css:3440 |
 | Ocean: cool teal and deep blue. Crisp rather than cosy. | frontend/css/05-sidebars-themes.css:3248 |
 | On paper (DOCUMENTS_PLAN Phase 5 item 4, the print stylesheet) | frontend/css/09-editor.css:956 |
-| On this day | frontend/css/03-dashboard-widgets.css:4334 |
+| On this day | frontend/css/03-dashboard-widgets.css:4338 |
 | One sidebar row recipe for every rail (INBOX 702) | frontend/css/08-consistency.css:10556 |
 | One ⋯ opener, styled once (INBOX 722) | frontend/css/08-consistency.css:10632 |
 | PLAN.md D1: the documents dock's formatting strip hides entirely | frontend/css/07-whiteboard-misc.css:8063 |
@@ -12006,10 +12007,10 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | Phase 5: quick access + toasts | frontend/css/01-forms-settings.css:2798 |
 | Phase 5: the three things a map says about itself | frontend/css/07-whiteboard-misc.css:4509 |
 | Phones (roadmap §8: the layout had breakpoints but had never been driven at | frontend/css/05-sidebars-themes.css:3880 |
-| Placed at the end of this file on purpose. A panel keeps its original class | frontend/css/03-dashboard-widgets.css:4072 |
+| Placed at the end of this file on purpose. A panel keeps its original class | frontend/css/03-dashboard-widgets.css:4076 |
 | Plum: deep violet and magenta. The most saturated. | frontend/css/05-sidebars-themes.css:3370 |
 | Progress that keeps moving (INBOX 95) | frontend/css/08-consistency.css:2230 |
-| Quick access, and arranging it (INBOX 461) | frontend/css/03-dashboard-widgets.css:1717 |
+| Quick access, and arranging it (INBOX 461) | frontend/css/03-dashboard-widgets.css:1721 |
 | Quiet utilitarian: the default look (UI_MODERNISATION_PLAN decisions, | frontend/css/05-sidebars-themes.css:3513 |
 | RESPONSIVE BY DEVICE (UI_MODERNISATION_PLAN.md: Phase 9) | frontend/css/07-whiteboard-misc.css:9642 |
 | RESPONSIVE, CONTINUED, AND THE LIQUID GLASS ADOPTIONS | frontend/css/10-responsive.css:1 |
@@ -12032,10 +12033,10 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | Settings, About, Maintenance (settings-controls.js, renderMaintenance). | frontend/css/01-forms-settings.css:6174 |
 | Settings: a section's intro sits under its heading, not above it | frontend/css/08-consistency.css:4566 |
 | TENSIONS: THE DISAGREEMENT REVIEW | frontend/css/inbox-lazy.css:244 |
-| THE CHAT ON A PHONE, MEASURED | frontend/css/04-chat-dock-appearance.css:5565 |
+| THE CHAT ON A PHONE, MEASURED | frontend/css/04-chat-dock-appearance.css:5581 |
 | THE OCR WORKSPACE | frontend/css/07-whiteboard-misc.css:5460 |
 | THE QUIET SIDE OF THE BUTTON RAMP: A RUN OF ROW ACTIONS | frontend/css/08-consistency.css:2332 |
-| THE WRITE WITH AI ROW, ON A NARROW COLUMN | frontend/css/04-chat-dock-appearance.css:5612 |
+| THE WRITE WITH AI ROW, ON A NARROW COLUMN | frontend/css/04-chat-dock-appearance.css:5628 |
 | THE WRITING PHASE: nodes, and an edge drawing itself | frontend/css/01-forms-settings.css:4938 |
 | Technical mono: a cool graphite ground, monospace for the numbers and | frontend/css/05-sidebars-themes.css:3601 |
 | Templates (INBOX 715) | frontend/css/library-lazy.css:3555 |
@@ -12089,14 +12090,14 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | Wave L: skip link, action menus, contrast + type polish | frontend/css/02-chat-graph.css:2381 |
 | Wave M: graph filters, thumbnails, lightbox, batch bar | frontend/css/02-chat-graph.css:2826 |
 | Wave N: improve-writing, link suggestions, tasks | frontend/css/03-dashboard-widgets.css:1 |
-| Wave O: AI Tools toggles | frontend/css/03-dashboard-widgets.css:697 |
-| Wave O: brand logo + a more present background | frontend/css/03-dashboard-widgets.css:270 |
-| Wave O: expanded appearance (theme/size/density/glass) | frontend/css/03-dashboard-widgets.css:334 |
+| Wave O: AI Tools toggles | frontend/css/03-dashboard-widgets.css:701 |
+| Wave O: brand logo + a more present background | frontend/css/03-dashboard-widgets.css:274 |
+| Wave O: expanded appearance (theme/size/density/glass) | frontend/css/03-dashboard-widgets.css:338 |
 | Whiteboard chrome, restructured: one top bar, a centred tool dock, a | frontend/css/07-whiteboard-misc.css:6796 |
-| Writing pace | frontend/css/03-dashboard-widgets.css:4343 |
+| Writing pace | frontend/css/03-dashboard-widgets.css:4347 |
 | [[wiki links]] | frontend/css/05-sidebars-themes.css:772 |
 | `.seg-multi`'s word, and the width that decides it | frontend/css/10-responsive.css:562 |
-| `.seg-multi`: one well, independent toggles | frontend/css/03-dashboard-widgets.css:415 |
+| `.seg-multi`: one well, independent toggles | frontend/css/03-dashboard-widgets.css:419 |
 | `.selectbar`: the bar stays with you while the selection does | frontend/css/00-tokens-shell.css:1953 |
 | a Files row's facts line, one register (INBOX 421 f) | frontend/css/08-consistency.css:3986 |
 | a board or a map as an object in a note (INBOX 309) | frontend/css/05-sidebars-themes.css:1661 |
@@ -12130,20 +12131,20 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | a sticker (MINDMAP_PLAN decision 44, INBOX 642) | frontend/css/library-lazy.css:3497 |
 | a stored file that is no longer stored | frontend/css/02-chat-graph.css:4089 |
 | a traced path (§9) | frontend/css/graph-lazy.css:283 |
-| a turn that is still working says so, for as long as it is | frontend/css/03-dashboard-widgets.css:4154 |
+| a turn that is still working says so, for as long as it is | frontend/css/03-dashboard-widgets.css:4158 |
 | a zone that cannot shrink says so, instead of spilling | frontend/css/10-responsive.css:1072 |
 | account & security | frontend/css/01-forms-settings.css:3417 |
-| activity heatmap + tag cloud widgets | frontend/css/03-dashboard-widgets.css:1871 |
+| activity heatmap + tag cloud widgets | frontend/css/03-dashboard-widgets.css:1875 |
 | activity log | frontend/css/01-forms-settings.css:2773 |
 | activity, as a timeline rather than as cards | frontend/css/library-lazy.css:3222 |
 | an embedded document, drawn as a card (INBOX 421 b) | frontend/css/05-sidebars-themes.css:6055 |
 | and inside a small phone | frontend/css/05-sidebars-themes.css:5829 |
-| appearance settings: grouped, scannable rows | frontend/css/04-chat-dock-appearance.css:1935 |
+| appearance settings: grouped, scannable rows | frontend/css/04-chat-dock-appearance.css:1951 |
 | assistant message layout | frontend/css/05-sidebars-themes.css:4323 |
-| attaching notes to a chat message | frontend/css/04-chat-dock-appearance.css:2787 |
+| attaching notes to a chat message | frontend/css/04-chat-dock-appearance.css:2803 |
 | audit 1028 board and map rows (U14 to U28) | frontend/css/library-lazy.css:8314 |
 | back / forward through pages | frontend/css/00-tokens-shell.css:4138 |
-| back-to-top button | frontend/css/04-chat-dock-appearance.css:2606 |
+| back-to-top button | frontend/css/04-chat-dock-appearance.css:2622 |
 | band 2 (820 to 1200): the tabs keep their names, set small | frontend/css/10-responsive.css:61 |
 | band 2: 820-1100, iPad landscape and small laptops | frontend/css/07-whiteboard-misc.css:9816 |
 | band 3 (600 to 820): the tab strip fits on its own row | frontend/css/10-responsive.css:20 |
@@ -12155,11 +12156,11 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | band 4: the settings sheet's head may wrap, but not be squashed | frontend/css/10-responsive.css:931 |
 | boot splash | frontend/css/00-tokens-shell.css:4160 |
 | callouts ("specialised boxes and frames") | frontend/css/05-sidebars-themes.css:1249 |
-| category rename / delete | frontend/css/04-chat-dock-appearance.css:2675 |
+| category rename / delete | frontend/css/04-chat-dock-appearance.css:2691 |
 | chat dock density pass (§37C) | frontend/css/04-chat-dock-appearance.css:1282 |
 | chat page layout | frontend/css/04-chat-dock-appearance.css:480 |
 | chat panel: answer and raw records side by side | frontend/css/01-forms-settings.css:1046 |
-| chat polish | frontend/css/03-dashboard-widgets.css:3258 |
+| chat polish | frontend/css/03-dashboard-widgets.css:3262 |
 | chat tab (Wave C) | frontend/css/02-chat-graph.css:1 |
 | chat, de-vibecoded | frontend/css/08-consistency.css:3087 |
 | chat: an organised sidebar, readable code, correctable answers | frontend/css/05-sidebars-themes.css:2491 |
@@ -12169,10 +12170,10 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | curated themes | frontend/css/01-forms-settings.css:3453 |
 | dark glass reads flatter, and here is which half of it does | frontend/css/10-responsive.css:337 |
 | dashboard + reminders (Wave D) | frontend/css/01-forms-settings.css:3643 |
-| dashboard quick links | frontend/css/03-dashboard-widgets.css:1509 |
+| dashboard quick links | frontend/css/03-dashboard-widgets.css:1513 |
 | dashboard widgets, de-vibecoded | frontend/css/08-consistency.css:4227 |
 | document formatting toolbar | frontend/css/05-sidebars-themes.css:1987 |
-| documents tab | frontend/css/04-chat-dock-appearance.css:3661 |
+| documents tab | frontend/css/04-chat-dock-appearance.css:3677 |
 | documents: outline, live stats, and where the file actually is | frontend/css/05-sidebars-themes.css:2829 |
 | documents: the comments panel (DOCUMENTS_PLAN Phase 5 item 1) | frontend/css/library-lazy.css:8419 |
 | drag to delete (INBOX 660) | frontend/css/library-lazy.css:3520 |
@@ -12187,19 +12188,19 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | filter help (the list inside `#search-help-hint`, a `.help-body`) | frontend/css/05-sidebars-themes.css:652 |
 | finding a setting (§36B) | frontend/css/06-timeline-dialogs.css:1389 |
 | finding your way about inside Settings (INBOX 444) | frontend/css/01-forms-settings.css:5697 |
-| first-run onboarding tour | frontend/css/04-chat-dock-appearance.css:2298 |
+| first-run onboarding tour | frontend/css/04-chat-dock-appearance.css:2314 |
 | forms | frontend/css/01-forms-settings.css:224 |
 | glass reaches the floating chrome that sat outside it | frontend/css/08-consistency.css:2672 |
 | glass restraint (UI_MODERNISATION_PLAN.md, Phase 3) | frontend/css/07-whiteboard-misc.css:7936 |
 | graph minimap | frontend/css/02-chat-graph.css:3548 |
-| graph polish | frontend/css/03-dashboard-widgets.css:3496 |
+| graph polish | frontend/css/03-dashboard-widgets.css:3500 |
 | graph: depth, halos and legible labels | frontend/css/04-chat-dock-appearance.css:1516 |
 | graph: physics sliders + node popup | frontend/css/04-chat-dock-appearance.css:1540 |
 | heading hierarchy (§35L) | frontend/css/01-forms-settings.css:1 |
 | held space pans, from any tool | frontend/css/07-whiteboard-misc.css:4977 |
 | help | frontend/css/sketch-pad.css:613 |
-| help guide accordion | frontend/css/04-chat-dock-appearance.css:2357 |
-| help mini AI chat (item 40's second half) | frontend/css/04-chat-dock-appearance.css:2379 |
+| help guide accordion | frontend/css/04-chat-dock-appearance.css:2373 |
+| help mini AI chat (item 40's second half) | frontend/css/04-chat-dock-appearance.css:2395 |
 | hovering a node | frontend/css/02-chat-graph.css:1254 |
 | icon-only buttons are square, everywhere | frontend/css/07-whiteboard-misc.css:3490 |
 | left-aligned button lists stay left-aligned | frontend/css/07-whiteboard-misc.css:3751 |
@@ -12207,7 +12208,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | live clock (reminders tab) | frontend/css/01-forms-settings.css:3644 |
 | lock screen (Phase 4) | frontend/css/01-forms-settings.css:2033 |
 | map nodes and their edges (MINDMAP_PLAN.md §5, Phase 2) | frontend/css/07-whiteboard-misc.css:8198 |
-| markdown tables | frontend/css/04-chat-dock-appearance.css:1873 |
+| markdown tables | frontend/css/04-chat-dock-appearance.css:1889 |
 | meeting notes (§17) | frontend/css/02-chat-graph.css:1603 |
 | model cards: the Models screen's suggested downloads (INBOX 444) | frontend/css/01-forms-settings.css:5845 |
 | motion: a dialog element arrives and leaves like the popup recipe | frontend/css/ui-reveal-lazy.css:66 |
@@ -12235,7 +12236,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | narrow windows | frontend/css/sketch-pad.css:668 |
 | note card density (§36B) | frontend/css/06-timeline-dialogs.css:1585 |
 | note history | frontend/css/05-sidebars-themes.css:1783 |
-| notes page polish | frontend/css/03-dashboard-widgets.css:2059 |
+| notes page polish | frontend/css/03-dashboard-widgets.css:2063 |
 | nothing interactive is bare text | frontend/css/07-whiteboard-misc.css:4031 |
 | notifications | frontend/css/08-consistency.css:3765 |
 | numbered citations inside an answer | frontend/css/02-chat-graph.css:3758 |
@@ -12252,16 +12253,16 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | radio groups as choices, not as a list of dots (§35L) | frontend/css/06-timeline-dialogs.css:1256 |
 | reading a scan against its own pages | frontend/css/lightbox-lazy.css:82 |
 | rebindable shortcuts | frontend/css/05-sidebars-themes.css:706 |
-| reminders page polish | frontend/css/03-dashboard-widgets.css:2746 |
+| reminders page polish | frontend/css/03-dashboard-widgets.css:2750 |
 | reminders, de-vibecoded | frontend/css/08-consistency.css:3155 |
 | reminders: "when" is one decision, so it is one group | frontend/css/07-whiteboard-misc.css:3711 |
 | resizable sidebars | frontend/css/05-sidebars-themes.css:1814 |
-| results: the list-row recipe | frontend/css/03-dashboard-widgets.css:1241 |
+| results: the list-row recipe | frontend/css/03-dashboard-widgets.css:1245 |
 | rich markdown blocks (tables, quotes, rules, task lists) | frontend/css/01-forms-settings.css:1215 |
 | rows instead of cards | frontend/css/00-tokens-shell.css:2340 |
 | rules recovered from inline style attributes (audit of §40) | frontend/css/07-whiteboard-misc.css:1103 |
 | saved filters | frontend/css/05-sidebars-themes.css:665 |
-| screen-reader-only announcements | frontend/css/04-chat-dock-appearance.css:2659 |
+| screen-reader-only announcements | frontend/css/04-chat-dock-appearance.css:2675 |
 | scrollbars | frontend/css/07-whiteboard-misc.css:3645 |
 | search match highlighting | frontend/css/05-sidebars-themes.css:352 |
 | settings / model manager | frontend/css/01-forms-settings.css:1989 |
@@ -12273,7 +12274,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | sidebar heading rows | frontend/css/05-sidebars-themes.css:75 |
 | space dialogs | frontend/css/07-whiteboard-misc.css:2621 |
 | space switcher (top bar) | frontend/css/07-whiteboard-misc.css:2436 |
-| spacious density (third option alongside comfortable/compact) | frontend/css/04-chat-dock-appearance.css:1933 |
+| spacious density (third option alongside comfortable/compact) | frontend/css/04-chat-dock-appearance.css:1949 |
 | status and foot | frontend/css/sketch-pad.css:519 |
 | tab navigation (Wave A; pill style inside the top bar in Wave L) | frontend/css/00-tokens-shell.css:3558 |
 | text inputs (§36B) | frontend/css/01-forms-settings.css:225 |
@@ -12303,11 +12304,11 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | the accessible card: the title opens it (INBOX 433) | frontend/css/08-consistency.css:2990 |
 | the agent activity panel: nothing scrolls sideways, nothing folds onto | frontend/css/07-whiteboard-misc.css:10587 |
 | the agent's run, as a timeline | frontend/css/02-chat-graph.css:604 |
-| the app emblem, reused across the UI | frontend/css/03-dashboard-widgets.css:2985 |
-| the app's one help popover | frontend/css/03-dashboard-widgets.css:4081 |
+| the app emblem, reused across the UI | frontend/css/03-dashboard-widgets.css:2989 |
+| the app's one help popover | frontend/css/03-dashboard-widgets.css:4085 |
 | the app's own dropdown | frontend/css/07-whiteboard-misc.css:3804 |
 | the arrange zone, once it is inside the overflow menu | frontend/css/07-whiteboard-misc.css:9834 |
-| the assistant's head and its three verbs (the owner, 2026-09-24: | frontend/css/04-chat-dock-appearance.css:4814 |
+| the assistant's head and its three verbs (the owner, 2026-09-24: | frontend/css/04-chat-dock-appearance.css:4830 |
 | the assistant's three verbs (INBOX 192) | frontend/css/09-editor.css:733 |
 | the attachment card (INBOX 440 (2), DESIGN.md "A file attached to a | frontend/css/05-sidebars-themes.css:424 |
 | the bar's three zones | frontend/css/00-tokens-shell.css:3304 |
@@ -12324,10 +12325,10 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | the chat sidebar on a phone | frontend/css/02-chat-graph.css:4802 |
 | the chat toolbar, grouped (§36B) | frontend/css/06-timeline-dialogs.css:1473 |
 | the citation peek (INBOX 80) | frontend/css/02-chat-graph.css:3820 |
-| the code editor: gutter + monospace | frontend/css/04-chat-dock-appearance.css:4417 |
+| the code editor: gutter + monospace | frontend/css/04-chat-dock-appearance.css:4433 |
 | the code panel, one compact header and a padded body (the owner, | frontend/css/library-lazy.css:5039 |
 | the composer dock (asked for directly) | frontend/css/04-chat-dock-appearance.css:886 |
-| the composer, as one surface | frontend/css/04-chat-dock-appearance.css:5192 |
+| the composer, as one surface | frontend/css/04-chat-dock-appearance.css:5208 |
 | the connections rail (WORLD_CLASS_PLAN D2; `renderNotesRail`) | frontend/css/04-chat-dock-appearance.css:290 |
 | the context bar (WHITEBOARD_PLAN.md Phase 2, decision 2) | frontend/css/07-whiteboard-misc.css:7120 |
 | the context bar's folded groups (`wbFoldContextBar`) | frontend/css/library-lazy.css:7137 |
@@ -12335,10 +12336,10 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | the dashboard's greeting banner, on a phone | frontend/css/07-whiteboard-misc.css:10479 |
 | the dashboard's quick actions stop wrapping | frontend/css/07-whiteboard-misc.css:10457 |
 | the dashboard's three densities | frontend/css/07-whiteboard-misc.css:11147 |
-| the desk's own rows (WORLD_CLASS_PLAN D16) | frontend/css/04-chat-dock-appearance.css:3506 |
+| the desk's own rows (WORLD_CLASS_PLAN D16) | frontend/css/04-chat-dock-appearance.css:3522 |
 | the dialog | frontend/css/sketch-pad.css:9 |
 | the dock (UI_MODERNISATION_PLAN.md Phase 8) | frontend/css/07-whiteboard-misc.css:9280 |
-| the dock above the editor | frontend/css/04-chat-dock-appearance.css:4097 |
+| the dock above the editor | frontend/css/04-chat-dock-appearance.css:4113 |
 | the dock row below 1100 | frontend/css/07-whiteboard-misc.css:9885 |
 | the document editor's instruments | frontend/css/05-sidebars-themes.css:4557 |
 | the document history, side by side (DOCUMENTS 24 row 4, Brief 76) | frontend/css/library-lazy.css:4864 |
@@ -12347,8 +12348,8 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | the documents sidebar's vertical budget (§41) | frontend/css/07-whiteboard-misc.css:2184 |
 | the documents sidebar, redrawn as one tree (the owner, 2026-10-10: | frontend/css/library-lazy.css:4911 |
 | the export dialog (WHITEBOARD_PLAN.md Phase 3, decision 4) | frontend/css/06-timeline-dialogs.css:2595 |
-| the faded notes card (WORLD_CLASS_PLAN 15, I4) | frontend/css/03-dashboard-widgets.css:4493 |
-| the field: the glyph inside, Stop only while something is loading | frontend/css/03-dashboard-widgets.css:1070 |
+| the faded notes card (WORLD_CLASS_PLAN 15, I4) | frontend/css/03-dashboard-widgets.css:4497 |
+| the field: the glyph inside, Stop only while something is loading | frontend/css/03-dashboard-widgets.css:1074 |
 | the file picker, in the app's own clothes | frontend/css/08-consistency.css:8891 |
 | the file type picker (INBOX 1482) | frontend/css/library-lazy.css:7922 |
 | the first steps (first-run.js; the head row, the fold and the bar are | frontend/css/05-sidebars-themes.css:3811 |
@@ -12360,8 +12361,8 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | the graph's floating controls clear its New note (INBOX 430) | frontend/css/10-responsive.css:2250 |
 | the graph's legend: one container, not a pill in a box | frontend/css/08-consistency.css:3125 |
 | the graph's options panel | frontend/css/08-consistency.css:3341 |
-| the guided tour (DESIGN.md, "A guided tour step") | frontend/css/04-chat-dock-appearance.css:5670 |
-| the head: identity, one fact as a dot, an all-icon group | frontend/css/03-dashboard-widgets.css:1010 |
+| the guided tour (DESIGN.md, "A guided tour step") | frontend/css/04-chat-dock-appearance.css:5686 |
+| the head: identity, one fact as a dot, an all-icon group | frontend/css/03-dashboard-widgets.css:1014 |
 | the help popover is a popover, not a page (INBOX 206) | frontend/css/08-consistency.css:2552 |
 | the in-app confirm dialog (§35F) | frontend/css/06-timeline-dialogs.css:1124 |
 | the lightbox on a phone (INBOX 430) | frontend/css/10-responsive.css:2235 |
@@ -12388,7 +12389,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | the picker itself | frontend/css/05-sidebars-themes.css:3694 |
 | the primary action floats, where a dock has one | frontend/css/07-whiteboard-misc.css:10351 |
 | the quick-nav chord's guide | frontend/css/chord-guide-lazy.css:5 |
-| the reader: one scroller, the page set as prose | frontend/css/03-dashboard-widgets.css:1392 |
+| the reader: one scroller, the page set as prose | frontend/css/03-dashboard-widgets.css:1396 |
 | the reply head on Ask's answer, the draft and the guide (INBOX 471) | frontend/css/08-consistency.css:9520 |
 | the rich picker (rich-picker.js; DESIGN.md's recipe index) | frontend/css/05-sidebars-themes.css:884 |
 | the run list (AGENT_SKILLS_REFORM.md, Phase C) | frontend/css/07-whiteboard-misc.css:1487 |
@@ -12403,7 +12404,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | the status bar from 820 to 959: one item fewer | frontend/css/10-responsive.css:1199 |
 | the status bar on a small phone | frontend/css/00-tokens-shell.css:3531 |
 | the status bar's Other devices icon and panel (INBOX 896) | frontend/css/lan-lazy.css:77 |
-| the status line and the recent searches | frontend/css/03-dashboard-widgets.css:1139 |
+| the status line and the recent searches | frontend/css/03-dashboard-widgets.css:1143 |
 | the step group (Perplexity's "Finished N steps") | frontend/css/02-chat-graph.css:4193 |
 | the strip's three doors (MINDMAP_PLAN.md §13b) | frontend/css/07-whiteboard-misc.css:8733 |
 | the strips that appear only when they apply | frontend/css/00-tokens-shell.css:1937 |
@@ -12414,23 +12415,23 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | the timeline, de-vibecoded | frontend/css/08-consistency.css:3138 |
 | the tool rail (WHITEBOARD_PLAN.md Phase 1, decision 1) | frontend/css/07-whiteboard-misc.css:10657 |
 | the tools panel, sorted into what each group of icons does | frontend/css/06-timeline-dialogs.css:2750 |
-| the touch floor, for the two surfaces the dock rule cannot reach | frontend/css/03-dashboard-widgets.css:4457 |
+| the touch floor, for the two surfaces the dock rule cannot reach | frontend/css/03-dashboard-widgets.css:4461 |
 | the trace strip | frontend/css/04-chat-dock-appearance.css:1 |
-| the two radio-backed segmented bars | frontend/css/03-dashboard-widgets.css:3576 |
+| the two radio-backed segmented bars | frontend/css/03-dashboard-widgets.css:3580 |
 | the two whiteboard controls that never joined the strip | frontend/css/07-whiteboard-misc.css:3408 |
-| the web-search engine picker | frontend/css/04-chat-dock-appearance.css:2508 |
+| the web-search engine picker | frontend/css/04-chat-dock-appearance.css:2524 |
 | the whiteboard top bar and the documents editor join the families | frontend/css/07-whiteboard-misc.css:7970 |
 | the whiteboard's panels are one surface each | frontend/css/07-whiteboard-misc.css:3608 |
 | the whiteboard's tools become a bottom strip | frontend/css/07-whiteboard-misc.css:10417 |
-| the writing room | frontend/css/04-chat-dock-appearance.css:3359 |
-| tools & features browser | frontend/css/03-dashboard-widgets.css:1799 |
+| the writing room | frontend/css/04-chat-dock-appearance.css:3375 |
+| tools & features browser | frontend/css/03-dashboard-widgets.css:1803 |
 | tools and page | frontend/css/sketch-pad.css:412 |
 | top bar polish | frontend/css/05-sidebars-themes.css:4278 |
 | transcluded notes (![[note]]) | frontend/css/05-sidebars-themes.css:1634 |
 | two-up cards in tablet portrait | frontend/css/07-whiteboard-misc.css:10056 |
 | type to filter a long list (row 1643, `listFilter` in sheets-selects.js) | frontend/css/08-consistency.css:10726 |
-| user-tunable corner rounding | frontend/css/04-chat-dock-appearance.css:1902 |
-| web panel (search + reader) | frontend/css/03-dashboard-widgets.css:975 |
+| user-tunable corner rounding | frontend/css/04-chat-dock-appearance.css:1918 |
+| web panel (search + reader) | frontend/css/03-dashboard-widgets.css:979 |
 | what a wide screen is for | frontend/css/00-tokens-shell.css:3658 |
 | what it learned (WORLD_CLASS_PLAN I9) | frontend/css/01-forms-settings.css:5544 |
 | what the AI remembers (ROADMAP §39B) | frontend/css/07-whiteboard-misc.css:2022 |
@@ -12448,8 +12449,8 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/00-tokens-shell.css | 4346 |
 | frontend/css/01-forms-settings.css | 6251 |
 | frontend/css/02-chat-graph.css | 5235 |
-| frontend/css/03-dashboard-widgets.css | 4876 |
-| frontend/css/04-chat-dock-appearance.css | 6494 |
+| frontend/css/03-dashboard-widgets.css | 4880 |
+| frontend/css/04-chat-dock-appearance.css | 6510 |
 | frontend/css/05-sidebars-themes.css | 6192 |
 | frontend/css/06-timeline-dialogs.css | 3700 |
 | frontend/css/07-whiteboard-misc.css | 11861 |
@@ -12460,7 +12461,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/appearance-panel-lazy.css | 330 |
 | frontend/css/appearance-panel-own-lazy.css | 86 |
 | frontend/css/ask-compose-lazy.css | 301 |
-| frontend/css/atlas-lazy.css | 969 |
+| frontend/css/atlas-lazy.css | 1011 |
 | frontend/css/captions-lazy.css | 95 |
 | frontend/css/capture-card-lazy.css | 204 |
 | frontend/css/chat-private-lazy.css | 18 |
@@ -12471,7 +12472,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/dash-night-lazy.css | 29 |
 | frontend/css/dash-orphans-lazy.css | 57 |
 | frontend/css/desk-companion-lazy.css | 226 |
-| frontend/css/diagram-lazy.css | 2261 |
+| frontend/css/diagram-lazy.css | 2297 |
 | frontend/css/file-drop-lazy.css | 51 |
 | frontend/css/first-run-lazy.css | 140 |
 | frontend/css/forced-colors-lazy.css | 28 |
@@ -16244,8 +16245,8 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `_act_topic` | src/tessellate/ai/help_topics_more.py:3497 |
-| `_slash_commands_topic` | src/tessellate/ai/help_topics_more.py:3630 |
+| `_act_topic` | src/tessellate/ai/help_topics_more.py:3501 |
+| `_slash_commands_topic` | src/tessellate/ai/help_topics_more.py:3634 |
 
 ### src/tessellate/ai/help_words.py (2)
 
@@ -22810,36 +22811,36 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | Name | File:line |
 |---|---|
 | `Activity` | src/tessellate/core/overlay/behaviour.py:155 |
-| `Chain` | src/tessellate/core/overlay/behaviour.py:349 |
-| `Flow` | src/tessellate/core/overlay/behaviour.py:791 |
-| `Mind` | src/tessellate/core/overlay/behaviour.py:384 |
+| `Chain` | src/tessellate/core/overlay/behaviour.py:370 |
+| `Flow` | src/tessellate/core/overlay/behaviour.py:812 |
+| `Mind` | src/tessellate/core/overlay/behaviour.py:405 |
 | `Pose` | src/tessellate/core/overlay/behaviour.py:53 |
 | `SecondOrder` | src/tessellate/core/overlay/behaviour.py:63 |
-| `TailLayer` | src/tessellate/core/overlay/behaviour.py:722 |
-| `Trail` | src/tessellate/core/overlay/behaviour.py:536 |
+| `TailLayer` | src/tessellate/core/overlay/behaviour.py:743 |
+| `Trail` | src/tessellate/core/overlay/behaviour.py:557 |
 | `Variation` | src/tessellate/core/overlay/behaviour.py:121 |
-| `_amplitude` | src/tessellate/core/overlay/behaviour.py:580 |
-| `_arr_pick` | src/tessellate/core/overlay/behaviour.py:784 |
-| `_frac` | src/tessellate/core/overlay/behaviour.py:778 |
-| `_from_catalogue` | src/tessellate/core/overlay/behaviour.py:237 |
+| `_amplitude` | src/tessellate/core/overlay/behaviour.py:601 |
+| `_arr_pick` | src/tessellate/core/overlay/behaviour.py:805 |
+| `_frac` | src/tessellate/core/overlay/behaviour.py:799 |
+| `_from_catalogue` | src/tessellate/core/overlay/behaviour.py:258 |
 | `_k` | src/tessellate/core/overlay/behaviour.py:172 |
-| `activity_frame` | src/tessellate/core/overlay/behaviour.py:523 |
-| `catalogue_factor` | src/tessellate/core/overlay/behaviour.py:270 |
-| `curve` | src/tessellate/core/overlay/behaviour.py:367 |
-| `idle_tier` | src/tessellate/core/overlay/behaviour.py:335 |
-| `mood_of` | src/tessellate/core/overlay/behaviour.py:302 |
-| `phase_of` | src/tessellate/core/overlay/behaviour.py:262 |
+| `activity_frame` | src/tessellate/core/overlay/behaviour.py:544 |
+| `catalogue_factor` | src/tessellate/core/overlay/behaviour.py:291 |
+| `curve` | src/tessellate/core/overlay/behaviour.py:388 |
+| `idle_tier` | src/tessellate/core/overlay/behaviour.py:356 |
+| `mood_of` | src/tessellate/core/overlay/behaviour.py:323 |
+| `phase_of` | src/tessellate/core/overlay/behaviour.py:283 |
 | `quantised` | src/tessellate/core/overlay/behaviour.py:91 |
 | `sample` | src/tessellate/core/overlay/behaviour.py:142 |
 | `scaled` | src/tessellate/core/overlay/behaviour.py:134 |
-| `shift_every` | src/tessellate/core/overlay/behaviour.py:285 |
+| `shift_every` | src/tessellate/core/overlay/behaviour.py:306 |
 | `sine_ease` | src/tessellate/core/overlay/behaviour.py:111 |
 | `smooth` | src/tessellate/core/overlay/behaviour.py:101 |
 | `smoother` | src/tessellate/core/overlay/behaviour.py:106 |
-| `tail_bend` | src/tessellate/core/overlay/behaviour.py:701 |
-| `tail_points` | src/tessellate/core/overlay/behaviour.py:709 |
-| `tier_factor` | src/tessellate/core/overlay/behaviour.py:340 |
-| `utility` | src/tessellate/core/overlay/behaviour.py:373 |
+| `tail_bend` | src/tessellate/core/overlay/behaviour.py:722 |
+| `tail_points` | src/tessellate/core/overlay/behaviour.py:730 |
+| `tier_factor` | src/tessellate/core/overlay/behaviour.py:361 |
+| `utility` | src/tessellate/core/overlay/behaviour.py:394 |
 | `vary` | src/tessellate/core/overlay/behaviour.py:129 |
 
 ### src/tessellate/core/overlay/capture.py (14)
@@ -24852,7 +24853,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (19119)
+## Tests (19124)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -24953,6 +24954,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_atlas_lite_mood_1565.py | 1 |
 | tests/test_atlas_masc_1607.py | 7 |
 | tests/test_atlas_micro.py | 10 |
+| tests/test_atlas_morph_1709.py | 4 |
 | tests/test_atlas_rest_1402.py | 10 |
 | tests/test_atlas_rest_motion.py | 3 |
 | tests/test_atlas_shape.py | 51 |
@@ -25519,7 +25521,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_diagram_let_go_1696.py | 3 |
 | tests/test_diagram_library_1594.py | 8 |
 | tests/test_diagram_model.py | 15 |
-| tests/test_diagram_multi_r5.py | 18 |
+| tests/test_diagram_multi_r5.py | 19 |
 | tests/test_diagram_object_kind.py | 2 |
 | tests/test_diagram_outline_1679.py | 8 |
 | tests/test_diagram_page_1679.py | 7 |
@@ -27847,7 +27849,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Phases 0 to 2: built 2026-09-09 | docs/roadmap/DOCUMENTS_PLAN.md:119 |
 | Phases 0 to 6: built | docs/roadmap/UI_MODERNISATION_PLAN.md:216 |
 | Phases, each with the gate it is finished against | docs/roadmap/MINDMAP_PLAN.md:1296 |
-| Placed (last 20, newest first) | docs/roadmap/INBOX.md:176 |
+| Placed (last 20, newest first) | docs/roadmap/INBOX.md:168 |
 | Placed from Brief 40, 2026-10-10 (does the MCP server work) | docs/roadmap/AGENT_SKILLS_REFORM.md:345 |
 | Placed from Brief 40, 2026-10-10 (research and placement) | docs/roadmap/BACKLOG.md:4176 |
 | Placed from Brief 40, 2026-10-10 (the phone over HTTPS) | docs/roadmap/WORLD_CLASS_PLAN.md:3128 |
