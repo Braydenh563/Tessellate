@@ -25,11 +25,17 @@ Good: "what's due next week", "what is due on 16 November", "whats due tommorow"
 ## Companion (Atlas, 64x92 px)
 Off by default; found only via Settings > Appearance > Expand all > Corner companion.
 19 (sev 2) Mostly static. Sampled every 3 s for 40 s on each of dashboard, notes, chat, graph: position never changed; one yawn, one look, one nap that held 12+ s. No reaction to typing in #chat-input or to Send (class unchanged, no bubble). It reacts only when poked or thrown.
+   **Partly fixed COMMIT:** Send gets a nod (`sent`); typing already has a watch (within 420 px) and a 30 s burst nod, kept (an 8 s run is pinned silent by tests/test_atlas_daylife_1719.py).
 20 (sev 2) Covers chrome at rest (1440x900): spot (1044..1108, 791..883) overlaps status-bar Agent 32x15 and Guide 31x15; on Chat it overlaps the model select "Default (off)" 36x30 and chat-main 64x56. Clicks are not blocked (elementFromPoint). Start spot differs per load: (1364,39), (1044,791), (1060,791), (1164,39).
+   **Fixed COMMIT:** tuck box clear of controls, 0 overlaps on six tabs (was 28x15 x2, Chat 64x29).
 21 (sev 2) Drag to (1500,-50) and release -> rect y = -1418 after 1.5 s (invisible); it came back only after a tab switch (y 248, falling).
+   **Not a bug, by design:** a throw faster than 2 px/ms upward leaves through the top for 1 to 8 s (INBOX 1719 a); measured y -2374 at 1.5 s, 271 at 3 s, resting at 791 by 8 s with no tab switch.
 22 (sev 3) Right-click menu has 11 entries: Say hello, Enlarge, Stay here on every page, Tuck behind the bar, Call back and reset its place, Companion, Atlas look, Size, Quieter, Settings, Hide.
+   **Already grouped:** 4 hairlines between 5 groups (kebabMenu `group`).
 23 (sev 3) Not keyboard reachable: #nm-buddy tabIndex -1, no role or aria-label.
+   **Fixed COMMIT (pinned):** the face is a `<button>` with a name, a Tab stop with the ring (opacity 1), Enter and Space poke, Shift+F10 opens the menu; the audit read the wrapper.
 24 (sev 3) Ghost toast at about 30% opacity "Search by meaning needs a one-time download of about 130 MB from huggingface.co and pypi.org. ... [Download] [No thanks]" sat at x 945..1425, y 730..855 behind the Settings dialog in screenshots a minute apart.
+   **Fixed COMMIT:** the toast yielded to Settings' own buttons (custom-theme-save 1056..1188 x 716..748); now opacity 1, clickable.
 25 (sev 3) Phone 390x800: after a resize the buddy (326,616) mid-poof covered Send; at rest on dashboard, chat, notes there were 0 overlaps.
 Worked: poke -> wave, double-click -> enlarged viewer (Esc closes), drag and drop (lands where released), throw -> falling, splat, then walks and shrugs within 2.5 s.
 Not tried: sound, desktop-tray companion, custom character, real model answers, reduced motion, touch throw.

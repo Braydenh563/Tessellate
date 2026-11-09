@@ -130,7 +130,7 @@ MORE_TOPICS: list[dict] = [
             "at your first key of the morning, a wave when you come back after ten "
             "minutes away, a shiver when the battery is low, a glance when the window is "
             "resized or goes fullscreen and a look back when it leaves, a nod when a long "
-            "run of typing stops, and a small wince when a note goes to the bin. The desktop "
+            "run of typing stops, a small nod when you send a chat message, and a small wince when a note goes to the bin. The desktop "
             "companion does the same on your desk. Atlas breathes quicker after a walk or a "
             "carry and blinks slower when sleepy, lets out a breath a moment after a start, "
             "its eyes take tiny steps while it looks at something, and its tail and trailing wisps "

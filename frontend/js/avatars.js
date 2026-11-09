@@ -3537,6 +3537,10 @@ const nmb = {
     const wide = whim < 0.5 ? ["hang", "bar"] : ["bar", "hang"];
     return [...wide, ...base.filter((kind) => !wide.includes(kind))];
   },
+  //: **A tuck behind the bar keeps its whole box off the controls too** (blind test bt-compcomp-1109 20: the 64x92
+  //: box sat over the status bar's Agent and Guide buttons, and on Chat over its model chip, though the eyes did not).
+  //: Measured by the box, not the visible strip; a bar with no clear stretch still takes the strip's own check.
+  rectHits: (x, y, obstacles) => obstacles.some((box) => box.right > x && box.left < x + NMB_W && box.bottom > y && box.top < y + NMB_H),
   //: The window's own hang or bar perch at `NMB_FIT_SCALE`, for a resting cat on a page whose controls fill the
   //: edges at full size; null when none is clear there either.
   windowFit: (tab, obstacles) => {
@@ -4799,6 +4803,7 @@ function nameMarkBuddyChoose(tab, obstacles, near = null, per = 12, visit = fals
   for (const perch of nameMarkBuddyPerches(tab, near && per < 12 ? near[0] : null, visit)) {
     if (scored > 0 && (nmb.budget.left <= 0 || performance.now() > nmb.budget.until)) break;
     if (perch.x < 0 || perch.y < 0 || perch.y + NMB_H > innerHeight + 2) continue;
+    if (perch.legs === "peek" && nmb.rectHits(perch.x, perch.y, obstacles)) continue;
     const here = perch.kind === nmb.perch && perch.pose === nmb.pose && Math.abs(perch.x - nmb.x) < 24 && Math.abs(perch.y - nmb.y) < 24;
     //: Near (a panel scrolled away, a new tab): every 12px of the way costs
     //: a point, so a perch a screen away has to be much better to be chosen.
@@ -4882,7 +4887,9 @@ function nameMarkBuddyChoose(tab, obstacles, near = null, per = 12, visit = fals
   }
   if (settling) {
     nmbCoverCache = new Map();
-    const tuck = (near ? [...fallbacks].sort((a, b) => Math.abs(a.x - near[0]) - Math.abs(b.x - near[0])) : fallbacks).find((spot) => spot.legs === "peek" && !nameMarkBuddyHits(spot.x, spot.y, spot.pose, obstacles, spot.legs) && nameMarkBuddyWordsUnder(spot.x, spot.y, spot.pose, spot.legs) <= NMB_WORDS_PX);
+    const pool = near ? [...fallbacks].sort((a, b) => Math.abs(a.x - near[0]) - Math.abs(b.x - near[0])) : fallbacks;
+    const fits = (spot) => spot.legs === "peek" && !nameMarkBuddyHits(spot.x, spot.y, spot.pose, obstacles, spot.legs) && nameMarkBuddyWordsUnder(spot.x, spot.y, spot.pose, spot.legs) <= NMB_WORDS_PX;
+    const tuck = pool.find((spot) => !nmb.rectHits(spot.x, spot.y, obstacles) && fits(spot)) || pool.find(fits);
     nmbCoverCache = null;
     return tuck || nmb.windowFit(tab, obstacles) || best;
   }
@@ -4892,7 +4899,7 @@ function nameMarkBuddyChoose(tab, obstacles, near = null, per = 12, visit = fals
   //: New note on the phone (INBOX 521, perchall.js).
   const over = bottom ? obstacles.filter((box) => box.top < bottom.top - 2) : obstacles;
   const clear = (spot) => !nameMarkBuddyHits(spot.x, spot.y, spot.pose, obstacles, spot.legs);
-  for (const spot of fallbacks) {
+  for (const spot of [...fallbacks.filter((f) => !nmb.rectHits(f.x, f.y, obstacles)), ...fallbacks]) {
     if (!clear(spot)) continue;
     if (nameMarkBuddyWordsUnder(spot.x, spot.y, spot.pose, spot.legs) <= NMB_WORDS_PX) return spot;
   }
@@ -9213,6 +9220,7 @@ const NMB_REACTIONS = {
   battery_low: { cool: 10 * 60 * 1000, ms: 1400, world: true, play: ["wiggle", "serious", 2200] },
   window_maximised: { cool: 10000, ms: 1200, world: true, play: ["glance", "surprised", 1200] },
   window_restored: { cool: 10000, ms: 1200, world: true, play: ["nod", "happy", 1200] },
+  sent: { cool: 4000, ms: 1200, world: true, play: ["nod", "curious", 1200] },
 };
 const NMB_REACT_GAP = 6000;
 function nameMarkBuddyReact(kind, target = null) {
@@ -9588,6 +9596,10 @@ for (const type of ["pointerdown", "keydown"]) {
   document.addEventListener(type, (event) => {
     nameMarkBuddyAwake();
     if (type === "pointerdown" && !event.target?.closest?.("#nm-buddy")) nameMarkBuddyNotice(event.clientX, event.clientY, Date.now(), "click");
+    //: Chat's Send: a press on it, or Enter in its box with something typed (bt-compcomp-1109 19: no answer to a send
+    //: unless the model ran). Here, not in companion-menu.js: that file loads at its first use.
+    const sent = type === "keydown" ? event.key === "Enter" && !event.shiftKey && event.target?.id === "chat-input" && event.target.value.trim() : event.target?.closest?.("#chat-send");
+    if (sent) nameMarkBuddyReact("sent");
   }, { passive: true, capture: true });
 }
 
