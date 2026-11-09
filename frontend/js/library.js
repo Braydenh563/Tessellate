@@ -7196,7 +7196,11 @@ function ocrRevealRegionsForPage(page) {
   }
   if (!first) return;
   ocrRegionScrollLock = true;
-  first.scrollIntoView({ block: "nearest", behavior: "auto" });
+  //: In the next frame, not here: the list was rebuilt a moment ago, so a
+  //: scroll now lays the whole dialog out inside this script (33 to 44 ms at
+  //: 4x on 300 notes with 60 sections); the frame lays it out once anyway.
+  ocrUi.revealPending = first;
+  ocrScheduleFitDock();
   setTimeout(() => {
     ocrRegionScrollLock = false;
   }, 300);
@@ -7596,6 +7600,11 @@ function ocrFitDock() {
     if (fits(ocrUi.dockFit.step)) lo = hi = ocrUi.dockFit.step;
     else lo = ocrUi.dockFit.step + 1;
   }
+  //: A wide row almost always fits unfolded: that is one measure (a style
+  //: recalculation of the whole dialog, 10 to 20 ms at 4x on 300 notes)
+  //: where halving from the middle took three. A narrow one starts in the
+  //: middle as before.
+  if (lo === 0 && hi === steps && dock.getBoundingClientRect().width >= 720 && fits(0)) hi = 0;
   while (lo < hi) {
     const mid = Math.floor((lo + hi) / 2);
     if (fits(mid)) hi = mid;
@@ -7612,7 +7621,13 @@ function ocrFitDock() {
 //: answer, the dock's own resize): one per frame.
 function ocrScheduleFitDock() {
   cancelAnimationFrame(ocrUi.dockFrame);
-  ocrUi.dockFrame = requestAnimationFrame(() => ocrFitDock());
+  ocrUi.dockFrame = requestAnimationFrame(() => {
+    ocrFitDock();
+    //: The row to bring into view, left by `ocrRevealRegionsForPage`.
+    const row = ocrUi.revealPending;
+    ocrUi.revealPending = null;
+    if (row?.isConnected) row.scrollIntoView({ block: "nearest", behavior: "auto" });
+  });
 }
 
 //: Watched, because the card follows the window and a phone turns sideways.

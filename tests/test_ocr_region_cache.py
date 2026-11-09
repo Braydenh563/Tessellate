@@ -79,6 +79,37 @@ def test_an_image_is_read_once_however_often_its_regions_are_asked_for(client, m
     assert len(calls) == 1, f"the reader ran {len(calls)} times for four looks"
 
 
+def test_asks_that_overlap_share_one_reading(client, monkeypatch):
+    """INBOX 1716, "request 5753ms ... /files/4/ocr-regions": the viewer asks
+    again before the first answer is stored, and each ask ran the reader."""
+    import threading
+    import time
+
+    calls: list[Path] = []
+    _counting_reader(monkeypatch, calls)
+    inner = ocr.extract_regions
+
+    def slow(path: Path):
+        time.sleep(0.3)
+        return inner(path)
+
+    monkeypatch.setattr(ocr, "extract_regions", slow)
+    attachment_id = _attach(client, "scan.png", PNG)
+    bodies: list[dict] = []
+
+    def ask():
+        bodies.append(client.get(f"/files/{attachment_id}/ocr-regions").json())
+
+    threads = [threading.Thread(target=ask) for _ in range(4)]
+    for thread in threads:
+        thread.start()
+    for thread in threads:
+        thread.join()
+
+    assert len(calls) == 1, f"the reader ran {len(calls)} times for four overlapping asks"
+    assert [b["source"] for b in bodies] == ["tesseract"] * 4
+
+
 def test_a_stored_reading_survives_a_new_request_intact(client, monkeypatch):
     """The second answer is the first answer, not a thinner one."""
     calls: list[Path] = []

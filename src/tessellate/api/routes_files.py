@@ -15,6 +15,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import threading
 import uuid
 import logging
 from datetime import datetime, timezone
@@ -2531,6 +2532,38 @@ def _regions_for(
     cached = _stored_regions(key, page)
     if cached is not None:
         return cached
+    if not key:
+        return _regions_read(path, stored_text, stored_label, key, page, auto, choice)
+    #: **One reader per page at a time** (INBOX 1716: "request 5753ms on
+    #: library: /files/4/ocr-regions"). The viewer asks again when a page
+    #: changes under it, a retry or a second window asks the same page, and
+    #: each ask ran Tesseract for seconds before the first had stored its
+    #: answer. The later ones wait here and are served from the store.
+    with _region_lock(key, page):
+        cached = _stored_regions(key, page)
+        if cached is not None:
+            return cached
+        return _regions_read(path, stored_text, stored_label, key, page, auto, choice)
+
+
+_REGION_LOCKS: dict[tuple[str, int, int], threading.Lock] = {}
+_REGION_LOCKS_GUARD = threading.Lock()
+
+
+def _region_lock(key: tuple[str, int], page: int) -> threading.Lock:
+    with _REGION_LOCKS_GUARD:
+        return _REGION_LOCKS.setdefault((key[0], key[1], int(page)), threading.Lock())
+
+
+def _regions_read(
+    path: Path,
+    stored_text: str,
+    stored_label: str,
+    key: tuple[str, int] | None,
+    page: int,
+    auto: bool,
+    choice: str,
+) -> OcrRegionsOut:
     #: **Nothing stored and nobody asked: read nothing.** The owner, 2026-09-21:
     #: "I want to be able to disable tesseract in the ocr workspace, or if I am
     #: not selected on tesseract and am instead selected on the ocr model, then
