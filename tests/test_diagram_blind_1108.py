@@ -81,7 +81,10 @@ def test_a_handle_never_leaves_the_pictures_scroll_area():
 
 
 def test_the_sideways_offer_is_out_of_the_flow_so_it_moves_no_pane():
+    # Intent kept (the offer moves no pane: the blocks and the stage keep their size), the means moved (dgbt-1109 2): it was a layer
+    # over the picture and covered the last block, so it is now a row inside the stage, which stays the grid cell's size and gives
+    # the picture the rest.
     start = CSS.index(".dgm-sideways {")
     rule = CSS[start : CSS.index("}", start)]
-    assert "position: absolute" in rule and "z-index: 2" in rule
+    assert "position: absolute" not in rule and "flex: none;" in rule
     assert ".dgm {\n  position: relative;" in CSS

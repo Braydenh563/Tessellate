@@ -192,11 +192,13 @@
 }
 
 .dgm-sideways {
-  position: absolute;
-  inset: auto auto var(--space-3) var(--space-3);
-  /* In the picture's stage, left of its zoom bar (about 12rem, bottom right). */
+  /* A row under the picture in its stage, not over it: it lay on the last block (blind test, dgbt-1109 2: 5106 px of a
+     five-box chart under it at 1440 by 900), so the picture is the stage less this row and fits to what is left. */
+  flex: none;
+  align-self: flex-start;
+  margin: var(--space-2) var(--space-3);
+  /* Left of the zoom bar (about 12rem, bottom right). */
   max-inline-size: calc(100% - 2 * var(--space-3) - 12rem);
-  z-index: 2;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -292,6 +294,7 @@
 .dgm-stage {
   position: relative;
   display: flex;
+  flex-direction: column;
   min-width: 0;
   min-height: 0;
 }

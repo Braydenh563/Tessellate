@@ -161,3 +161,9 @@ def test_a_shelf_tile_names_itself_in_its_tooltip_as_well_as_its_label():
 def test_a_flowchart_rows_name_wraps_to_two_lines_before_it_is_cut():
     block = CSS[CSS.index(".dgm-card:has(> .dgm-connect) > .dgm-label:not(.dgm-editing) {") :][:300]
     assert "-webkit-line-clamp: 2;" in block and "white-space: normal;" in block and "overflow-wrap: anywhere;" in block
+
+
+def test_the_sideways_offer_is_a_row_under_the_picture_not_a_layer_over_it():
+    block = CSS[CSS.index(".dgm-sideways {") :][:900].split("}", 1)[0]
+    assert "position: absolute" not in block and "flex: none;" in block
+    assert ".dgm-stage {\n  position: relative;\n  display: flex;\n  flex-direction: column;" in CSS
