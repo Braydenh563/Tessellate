@@ -69,11 +69,14 @@ MORE_TOPICS: list[dict] = [
             "companion drinks tea", "companion snack", "companion fishing",
             "companion activities", "companion hobbies", "companion journal", "companion stargazing",
             "companion blanket nap", "companion waters a plant", "companion puzzle",
+            "companion nods", "companion little dance", "companion poses proud", "companion tiptoes",
+            "companion looks down",
         ),
         "body": (
             "On its own, Atlas does the same small things as the desktop companion: "
             "push-ups, dumbbells, tea, a biscuit, fishing, a journal, the stars, a nap under a "
-            "blanket, watering a plant and a puzzle, each with its eyes on the prop. "
+            "blanket, watering a plant and a puzzle, each with its eyes on the prop, and short "
+            "gestures: a nod, a little dance, posing proud, a look down and tiptoeing. "
             "The loud ones (push-ups, dumbbells) wait for a lull. They are one group, \"Atlas does the "
             "desk companion's routines\", under Settings, Appearance, Corner companion, "
             "What it does on its own; Quieter keeps "

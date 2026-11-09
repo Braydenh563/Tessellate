@@ -42,6 +42,11 @@ ACTS = {
     "blanket": ("act.blanket_nap", ["nmp-blanket"], 30),
     "plant": ("act.water_plant", ["nmp-plant", "nmp-can"], 10),
     "puzzle": ("act.puzzle", ["nmp-puzzle", "nmp-piece"], 7),
+    "agree": ("act.nod", [], 1.2),
+    "dance": ("act.little_dance", [], 1.8),
+    "proud": ("act.pose_proud", [], 2.5),
+    "lookdown": ("act.look_down", [], 2.5),
+    "tiptoe": ("act.tiptoe", [], 2.6),
 }
 
 
@@ -63,7 +68,7 @@ def test_every_desk_act_has_a_row_and_only_atlas_plays_it():
     assert set(rows) == set(ACTS), sorted(set(rows) ^ set(ACTS))
     for key, row in rows.items():
         assert row["atlas"] == "true" and row["desk"] == "true", key
-        assert float(row["w"]) > 0 and int(row["cool"]) >= 60000 and int(row["ms"]) >= 5000, key
+        assert float(row["w"]) > 0 and int(row["cool"]) >= 60000 and int(row["ms"]) >= 1000, key  # 1 s: D3's gestures are 1 to 4 s long, no prop, where D1 and D2's doings are 5 s and up
         assert re.search(r'poses: \["[a-z]+"', AVATARS[AVATARS.index(f"  {key}: {{ ms:") :][:200]), key
 
 

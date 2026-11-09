@@ -723,3 +723,115 @@
 @keyframes atl-ds-puzzle-body { 0%, 100% { --atl-lean: 4deg; } 40%, 50% { --atl-lean: 7deg; } 80% { --atl-lean: 3deg; } }
 @keyframes atl-ds-puzzle-eye { 0%, 100% { translate: 0.2px 1.6px; } 14% { translate: 0.9px 1.4px; } 30% { translate: 1.3px 1.7px; } 40% { translate: 1.5px 1.9px; } 50% { translate: 1.2px 1.6px; } 62% { translate: 1.5px 1.8px; } 72% { translate: 0.4px 1.6px; } 80% { translate: -0.6px 0.4px; } }
 @keyframes atl-ds-puzzle-tail { 0%, 100% { rotate: 16deg; } 40% { rotate: 26deg; } 70% { rotate: 20deg; } }
+
+/* **The desk's short gestures, as Atlas does them** (atlascat Batch D3: a nod, a little dance, posing proud, looking down, tiptoeing). The same recipe as the doings above, with no prop: each is a pose of its own at rest (arms, lean, eyes, tail) and moves the arm, the head, the eyes, the tail and the body over its beats under the motion gate. The whole cycle is the catalogue's length for the act, so each runs once or twice. */
+#nm-buddy:is(.nmb-act-agree, .nmb-act-dance, .nmb-act-proud, .nmb-act-lookdown, .nmb-act-tiptoe) .nm-atlas .atl-iris { translate: none; }
+#nm-buddy.nmb-act-agree .atl-figure .nmb-arm-r { transform: rotate(8deg); }
+#nm-buddy.nmb-act-agree .atl-figure .nmb-arm-l { transform: rotate(-8deg); }
+#nm-buddy.nmb-act-agree .nm-atlas { --atl-lean: 1deg; --atl-tail: 6deg; }
+#nm-buddy.nmb-act-agree .nm-atlas .atl-pupil { --atl-px: 0.4px; --atl-py: 0.3px; }
+#nm-buddy.nmb-act-dance .atl-figure .nmb-arm-r { transform: rotate(-62deg); }
+#nm-buddy.nmb-act-dance .atl-figure .nmb-arm-l { transform: rotate(12deg); }
+#nm-buddy.nmb-act-dance .nm-atlas { --atl-lean: -5deg; --atl-tail: 18deg; }
+#nm-buddy.nmb-act-dance .nm-atlas .atl-pupil { --atl-px: 1px; --atl-py: -0.4px; }
+#nm-buddy.nmb-act-proud .atl-figure .nmb-arm-r { transform: rotate(-30deg); }
+#nm-buddy.nmb-act-proud .atl-figure .nmb-arm-l { transform: rotate(30deg); }
+#nm-buddy.nmb-act-proud .nm-atlas { --atl-lean: -4deg; --atl-sy: 1.04; --atl-tail: 10deg; }
+#nm-buddy.nmb-act-proud .nm-atlas .atl-pupil { --atl-px: 0.6px; --atl-py: -0.5px; }
+#nm-buddy.nmb-act-lookdown .atl-figure .nmb-arm-r { transform: rotate(26deg); }
+#nm-buddy.nmb-act-lookdown .atl-figure .nmb-arm-l { transform: rotate(-20deg); }
+#nm-buddy.nmb-act-lookdown .nm-atlas { --atl-lean: 8deg; --atl-tail: 20deg; --atl-head-y: 1.4px; }
+#nm-buddy.nmb-act-lookdown .nm-atlas .atl-pupil { --atl-px: 0.3px; --atl-py: 2px; }
+#nm-buddy.nmb-act-tiptoe .atl-figure .nmb-arm-r { transform: rotate(-36deg); }
+#nm-buddy.nmb-act-tiptoe .atl-figure .nmb-arm-l { transform: rotate(36deg); }
+#nm-buddy.nmb-act-tiptoe .nm-atlas { --atl-lean: 0deg; --atl-sy: 1.04; --atl-tail: -14deg; }
+#nm-buddy.nmb-act-tiptoe .nm-atlas .atl-pupil { --atl-px: 1.4px; --atl-py: -0.2px; }
+/* Their paint, in the rig's colours. */
+:root:not([data-avatar-motion="off"]):is(:not([data-motion="reduced"]), [data-buddy-motion="full"]) {
+  /* A nod (1.2 s): the head dips twice with the body, a hand settling each time, a smile over the second. */
+  & #nm-buddy.nmb-act-agree .atl-figure .nmb-arm-r { animation: atl-ds-agree-arm 1.2s ease-in-out infinite; }
+  & #nm-buddy.nmb-act-agree .atl-figure .nmb-arm-l { animation: atl-ds-agree-arm-l 1.2s ease-in-out infinite; }
+  & #nm-buddy.nmb-act-agree .nm-atlas .atl-head { animation: atl-ds-agree-head 1.2s ease-in-out infinite; }
+  & #nm-buddy.nmb-act-agree .nm-atlas { animation: atl-ds-agree-body 1.2s ease-in-out infinite; }
+  & #nm-buddy.nmb-act-agree .nm-atlas .atl-pupil { animation: atl-ds-agree-eye 1.2s ease-in-out infinite; }
+  & #nm-buddy.nmb-act-agree .nm-atlas .atl-tail { animation: atl-ds-agree-tail 1.2s ease-in-out infinite; }
+  & #nm-buddy.nmb-act-agree .nm-atlas .atl-m-grin { animation: atl-ds-grin-on 1.2s linear infinite; }
+  & #nm-buddy.nmb-act-agree .nm-atlas .atl-m-smile { animation: atl-ds-smile-on 1.2s linear infinite; }
+  /* A little dance (3.6 s, two rounds of 1.8 s): a sway side to side, a hop on each beat, the arms swapping high and low, the tail wagging with it, a grin throughout. */
+  & #nm-buddy.nmb-act-dance .atl-figure .nmb-arm-r { animation: atl-ds-dance-arm 1.8s ease-in-out infinite; }
+  & #nm-buddy.nmb-act-dance .atl-figure .nmb-arm-l { animation: atl-ds-dance-arm-l 1.8s ease-in-out infinite; }
+  & #nm-buddy.nmb-act-dance .nm-atlas .atl-head { animation: atl-ds-dance-head 1.8s ease-in-out infinite; }
+  & #nm-buddy.nmb-act-dance .nm-atlas { animation: atl-ds-dance-body 1.8s ease-in-out infinite; }
+  & #nm-buddy.nmb-act-dance .nm-buddy-char { animation: atl-ds-dance-char 1.8s ease-in-out infinite; }
+  & #nm-buddy.nmb-act-dance .nm-atlas .atl-pupil { animation: atl-ds-dance-eye 1.8s ease-in-out infinite; }
+  & #nm-buddy.nmb-act-dance .nm-atlas .atl-tail { animation: atl-ds-dance-tail 1.8s ease-in-out infinite; }
+  & #nm-buddy.nmb-act-dance .nm-atlas .atl-m-grin { animation: atl-ds-grin-on 1.8s linear infinite; }
+  & #nm-buddy.nmb-act-dance .nm-atlas .atl-m-smile { animation: atl-ds-smile-on 1.8s linear infinite; }
+  /* Posing proud (2.5 s): the chest out, both arms out from the sides, the chin up and the eyes a little above you, the tail high, a smile. */
+  & #nm-buddy.nmb-act-proud .atl-figure .nmb-arm-r { animation: atl-ds-proud-arm 2.5s ease-in-out infinite; }
+  & #nm-buddy.nmb-act-proud .atl-figure .nmb-arm-l { animation: atl-ds-proud-arm-l 2.5s ease-in-out infinite; }
+  & #nm-buddy.nmb-act-proud .nm-atlas .atl-head { animation: atl-ds-proud-head 2.5s ease-in-out infinite; }
+  & #nm-buddy.nmb-act-proud .nm-atlas { animation: atl-ds-proud-body 2.5s ease-in-out infinite; }
+  & #nm-buddy.nmb-act-proud .nm-atlas .atl-pupil { animation: atl-ds-proud-eye 2.5s ease-in-out infinite; }
+  & #nm-buddy.nmb-act-proud .nm-atlas .atl-tail { animation: atl-ds-proud-tail 2.5s ease-in-out infinite; }
+  & #nm-buddy.nmb-act-proud .nm-atlas .atl-m-grin { animation: atl-ds-grin-on 2.5s linear infinite; }
+  & #nm-buddy.nmb-act-proud .nm-atlas .atl-m-smile { animation: atl-ds-smile-on 2.5s linear infinite; }
+  /* Looking down (2.5 s): it bends forward over the edge with a hand braced, the head down and the eyes sweeping the drop, then comes back up. */
+  & #nm-buddy.nmb-act-lookdown .atl-figure .nmb-arm-r { animation: atl-ds-lookdown-arm 2.5s ease-in-out infinite; }
+  & #nm-buddy.nmb-act-lookdown .atl-figure .nmb-arm-l { animation: atl-ds-lookdown-arm-l 2.5s ease-in-out infinite; }
+  & #nm-buddy.nmb-act-lookdown .nm-atlas .atl-head { animation: atl-ds-lookdown-head 2.5s ease-in-out infinite; }
+  & #nm-buddy.nmb-act-lookdown .nm-atlas { animation: atl-ds-lookdown-body 2.5s ease-in-out infinite; }
+  & #nm-buddy.nmb-act-lookdown .nm-atlas .atl-pupil { animation: atl-ds-lookdown-eye 2.5s ease-in-out infinite; }
+  & #nm-buddy.nmb-act-lookdown .nm-atlas .atl-tail { animation: atl-ds-lookdown-tail 2.5s ease-in-out infinite; }
+  & #nm-buddy.nmb-act-lookdown .nm-atlas .atl-m-grin { animation: atl-ds-grin-late 2.5s linear infinite; }
+  & #nm-buddy.nmb-act-lookdown .nm-atlas .atl-m-smile { animation: atl-ds-smile-late 2.5s linear infinite; }
+  /* Tiptoeing (2.6 s): up on its toes, stretched, the arms out for balance and wobbling, a lean each way, the eyes ahead and a sweep, the tail up. */
+  & #nm-buddy.nmb-act-tiptoe .atl-figure .nmb-arm-r { animation: atl-ds-tiptoe-arm 2.6s ease-in-out infinite; }
+  & #nm-buddy.nmb-act-tiptoe .atl-figure .nmb-arm-l { animation: atl-ds-tiptoe-arm-l 2.6s ease-in-out infinite; }
+  & #nm-buddy.nmb-act-tiptoe .nm-buddy-char { animation: atl-ds-tiptoe-char 2.6s ease-in-out infinite; }
+  & #nm-buddy.nmb-act-tiptoe .nm-atlas { animation: atl-ds-tiptoe-body 2.6s ease-in-out infinite; }
+  & #nm-buddy.nmb-act-tiptoe .nm-atlas .atl-head { animation: atl-ds-tiptoe-head 2.6s ease-in-out infinite; }
+  & #nm-buddy.nmb-act-tiptoe .nm-atlas .atl-pupil { animation: atl-ds-tiptoe-eye 2.6s ease-in-out infinite; }
+  & #nm-buddy.nmb-act-tiptoe .nm-atlas .atl-tail { animation: atl-ds-tiptoe-tail 2.6s ease-in-out infinite; }
+  & #nm-buddy.nmb-act-tiptoe .nm-atlas .atl-m-grin { animation: atl-ds-grin-late 2.6s linear infinite; }
+  & #nm-buddy.nmb-act-tiptoe .nm-atlas .atl-m-smile { animation: atl-ds-smile-late 2.6s linear infinite; }
+}
+/* A nod */
+@keyframes atl-ds-agree-arm { 0%, 100% { transform: rotate(8deg); } 22% { transform: rotate(-4deg); } 50% { transform: rotate(6deg); } 72% { transform: rotate(-2deg); } }
+@keyframes atl-ds-agree-arm-l { 0%, 100% { transform: rotate(-8deg); } 22% { transform: rotate(2deg); } 72% { transform: rotate(0deg); } }
+@keyframes atl-ds-agree-head { 0%, 100% { translate: 0px 0px; rotate: 0deg; } 22%, 38% { translate: 0px 1.8px; rotate: 7deg; } 55% { translate: 0px 0.2px; rotate: 1deg; } 72%, 84% { translate: 0px 1.5px; rotate: 6deg; } }
+@keyframes atl-ds-agree-body { 0%, 100% { --atl-lean: 1deg; } 22%, 38% { --atl-lean: 2.5deg; } 72% { --atl-lean: 2deg; } }
+@keyframes atl-ds-agree-eye { 0%, 100% { translate: 0.4px 0.2px; } 22%, 38% { translate: 0.4px 1.4px; } 55% { translate: 0.4px 0.4px; } 72%, 84% { translate: 0.4px 1.3px; } }
+@keyframes atl-ds-agree-tail { 0%, 100% { rotate: 0deg; } 25% { rotate: 6deg; } 50% { rotate: -4deg; } 75% { rotate: 6deg; } }
+/* A little dance */
+@keyframes atl-ds-dance-arm { 0%, 100% { transform: rotate(-62deg); } 50% { transform: rotate(12deg); } }
+@keyframes atl-ds-dance-arm-l { 0%, 100% { transform: rotate(12deg); } 50% { transform: rotate(62deg); } }
+@keyframes atl-ds-dance-head { 0%, 100% { rotate: -5deg; } 50% { rotate: 5deg; } }
+@keyframes atl-ds-dance-body { 0%, 100% { --atl-lean: -5deg; --atl-sy: 1; } 25%, 75% { --atl-lean: 0deg; --atl-sy: 0.96; } 50% { --atl-lean: 5deg; --atl-sy: 1; } }
+@keyframes atl-ds-dance-char { 0%, 50%, 100% { translate: 0px 0px; } 25%, 75% { translate: 0px -1.6px; } }
+@keyframes atl-ds-dance-eye { 0%, 100% { translate: 1px -0.4px; } 50% { translate: -1px -0.4px; } }
+@keyframes atl-ds-dance-tail { 0%, 100% { rotate: 18deg; } 25% { rotate: -16deg; } 50% { rotate: 18deg; } 75% { rotate: -16deg; } }
+/* Posing proud */
+@keyframes atl-ds-proud-arm { 0%, 100% { transform: rotate(10deg); } 18%, 80% { transform: rotate(-30deg); } 50% { transform: rotate(-26deg); } }
+@keyframes atl-ds-proud-arm-l { 0%, 100% { transform: rotate(-10deg); } 18%, 80% { transform: rotate(30deg); } 50% { transform: rotate(26deg); } }
+@keyframes atl-ds-proud-head { 0%, 100% { translate: 0px 0px; rotate: 0deg; } 18%, 80% { translate: 0px -0.8px; rotate: -4deg; } }
+@keyframes atl-ds-proud-body { 0%, 100% { --atl-lean: 0deg; --atl-sy: 1; } 18%, 80% { --atl-lean: -4deg; --atl-sy: 1.04; } }
+@keyframes atl-ds-proud-eye { 0%, 100% { translate: 0.2px 0.2px; } 18%, 80% { translate: 0.6px -0.5px; } }
+@keyframes atl-ds-proud-tail { 0%, 100% { rotate: 0deg; } 30% { rotate: 10deg; } 60% { rotate: 14deg; } }
+/* Looking down */
+@keyframes atl-ds-lookdown-arm { 0%, 100% { transform: rotate(12deg); } 20%, 75% { transform: rotate(26deg); } }
+@keyframes atl-ds-lookdown-arm-l { 0%, 100% { transform: rotate(-12deg); } 20%, 75% { transform: rotate(-20deg); } }
+@keyframes atl-ds-lookdown-head { 0%, 100% { translate: 0px 0px; rotate: 0deg; } 20%, 75% { translate: 0px 1.6px; rotate: 6deg; } }
+@keyframes atl-ds-lookdown-body { 0%, 100% { --atl-lean: 0deg; } 20%, 75% { --atl-lean: 8deg; } }
+@keyframes atl-ds-lookdown-eye { 0%, 100% { translate: 0.3px 0.2px; } 20% { translate: 0.3px 2px; } 45% { translate: 1.2px 2px; } 60% { translate: -0.6px 2.2px; } 75% { translate: 0.3px 2px; } }
+@keyframes atl-ds-lookdown-tail { 0%, 100% { rotate: 0deg; } 20%, 75% { rotate: 20deg; } }
+/* Tiptoeing */
+@keyframes atl-ds-tiptoe-arm { 0%, 100% { transform: rotate(-8deg); } 15%, 85% { transform: rotate(-36deg); } 40% { transform: rotate(-42deg); } 60% { transform: rotate(-30deg); } }
+@keyframes atl-ds-tiptoe-arm-l { 0%, 100% { transform: rotate(8deg); } 15%, 85% { transform: rotate(36deg); } 40% { transform: rotate(30deg); } 60% { transform: rotate(42deg); } }
+@keyframes atl-ds-tiptoe-char { 0%, 100% { translate: 0px 0px; } 15%, 85% { translate: 0px -2.2px; } }
+@keyframes atl-ds-tiptoe-body { 0%, 100% { --atl-lean: 0deg; --atl-sy: 1; } 15%, 85% { --atl-lean: 0deg; --atl-sy: 1.04; } 40% { --atl-lean: 3deg; --atl-sy: 1.04; } 60% { --atl-lean: -3deg; --atl-sy: 1.04; } }
+@keyframes atl-ds-tiptoe-head { 0%, 100% { rotate: 0deg; } 15%, 85% { rotate: -5deg; } }
+@keyframes atl-ds-tiptoe-eye { 0%, 100% { translate: 0.4px 0px; } 15% { translate: 1.4px -0.2px; } 50% { translate: -1px -0.2px; } 85% { translate: 1.4px -0.2px; } }
+@keyframes atl-ds-tiptoe-tail { 0%, 100% { rotate: 0deg; } 15% { rotate: -14deg; } 30% { rotate: -22deg; } 50% { rotate: -8deg; } 70% { rotate: -22deg; } 85% { rotate: -14deg; } }
+@keyframes atl-ds-grin-on { 0%, 12% { opacity: 0; } 24%, 86% { opacity: 1; } 100% { opacity: 0; } }
+@keyframes atl-ds-smile-on { 0%, 12% { opacity: 1; } 24%, 86% { opacity: 0; } 100% { opacity: 1; } }

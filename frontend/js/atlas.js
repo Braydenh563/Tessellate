@@ -2156,6 +2156,10 @@ atlasHandProps.desk = function (armR, armL, look) {
   //: The puzzle piece that is carried: a square with a knob.
   const piece = atlasHandProps.deskHand(armR, right, "piece");
   atlasMake("path", { class: "atl-ds-piece atl-ds-piece-held", d: "M-2.2 -2.2H-0.6Q-0.6 -3.8 0.6 -3.8Q1.8 -3.8 1.8 -2.2H2.2V2.2H-2.2Z" }, piece);
+  //: The tinkerer's spanner, in the right hand: a shaft and an open round jaw.
+  const spanner = atlasHandProps.deskHand(armR, right, "spanner");
+  atlasMake("path", { class: "atl-ds-spanner", d: "M-0.4 1.4L5.6 -7.6" }, spanner);
+  atlasMake("circle", { class: "atl-ds-spanner-jaw", cx: 6.4, cy: -8.8, r: 1.9 }, spanner);
 };
 //: **The rest of the desk's doings, drawn in front of the body** (a diary at
 //: the belly with a stroke that writes itself, a sky of stars and a
@@ -2196,6 +2200,24 @@ atlasHandProps.front = function (layer) {
   atlasMake("path", { class: "atl-ds-piece atl-ds-piece-c", d: "M38 58H46V62H38Z" }, puzzle);
   atlasMake("path", { class: "atl-ds-slot", d: "M38 52H46V57H38Z" }, puzzle);
   atlasMake("path", { class: "atl-ds-piece atl-ds-piece-fit", d: "M38 52H46V57H38Z" }, puzzle);
+  //: A thought bubble at the head's shoulder (daydreaming): two small circles rising to a cloud with a star in it.
+  const dream = atlasGroup(layer, "nmp nmp-daydream");
+  atlasMake("circle", { class: "atl-ds-bubble", cx: 46.4, cy: 15.6, r: 0.9 }, dream);
+  atlasMake("circle", { class: "atl-ds-bubble", cx: 49, cy: 12.6, r: 1.3 }, dream);
+  atlasMake("path", { class: "atl-ds-bubble", d: "M48.6 7.4Q48.4 4.6 51.2 4.8Q52.4 2.4 55.4 3.6Q58.4 3.4 58.6 6.2Q60.4 8 58.2 9.6Q56 11 53.6 10Q50.6 11.2 49 9.6Q47.8 8.6 48.6 7.4Z" }, dream);
+  atlasSpark(dream, 53.6, 7, 1.7, "atl-ds-twinkle");
+  //: The sparks that pop over a game it has just made up.
+  const game = atlasGroup(layer, "nmp nmp-game");
+  [[10, 10, 2.4, 0], [53, 6, 2.8, 1], [8, 30, 2, 2], [56, 26, 2.2, 0]].forEach(([x, y, r, k]) => atlasSpark(game, x, y, r, `atl-ds-twinkle atl-ds-pop atl-ds-pop-${k}`));
+  //: A gear at the belly for tinkering: a disc, eight teeth, a hole; it turns about its own centre.
+  const gear = atlasGroup(layer, "nmp nmp-gear");
+  const wheel = atlasGroup(gear, "atl-ds-gear", [37, 57]);
+  for (let k = 0; k < 8; k += 1) atlasMake("rect", { class: "atl-ds-gear-tooth", x: 35.9, y: 51.6, width: 2.2, height: 2.6, rx: 0.4, transform: `rotate(${k * 45} 37 57)` }, wheel);
+  atlasMake("circle", { class: "atl-ds-gear-disc", cx: 37, cy: 57, r: 4.1 }, wheel);
+  atlasMake("circle", { class: "atl-ds-gear-hole", cx: 37, cy: 57, r: 1.4 }, wheel);
+  //: Dust brushed off a shoulder: four motes that drift down and fade.
+  const dust = atlasGroup(layer, "nmp nmp-dust");
+  [[15, 40, 0.9], [12.6, 44, 0.7], [48.6, 40, 0.9], [51, 44, 0.7]].forEach(([x, y, r], k) => atlasMake("circle", { class: `atl-ds-mote atl-ds-mote-${k}`, cx: x, cy: y, r }, dust));
 };
 //: The push-ups' mat, behind the body and under its feet.
 atlasHandProps.mat = function (layer) {
