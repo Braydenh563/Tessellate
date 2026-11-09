@@ -25,6 +25,7 @@ import re
 from sqlalchemy import or_, select
 from sqlalchemy.orm import Session
 
+from tessellate.core import reading_bin
 from tessellate.core.database import BoardLibraryItem, Conversation, Document, Entry, MediaUpload, WhiteboardObject
 from tessellate.entry import manager
 
@@ -264,6 +265,7 @@ def delete_orphaned_media(session: Session, media_dir) -> tuple[list[dict], bool
         if candidate.is_relative_to(media_dir):
             candidate.unlink(missing_ok=True)
         session.delete(upload)
+    reading_bin.forget_page_reads(session, "upload", [u["id"] for u in deleted])
     session.commit()
     return deleted, False
 

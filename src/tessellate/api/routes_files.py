@@ -985,7 +985,11 @@ def delete_file(
     token = undo_bin.stash(
         config.data_dir,
         "attachment",
-        {"row": undo_bin.row_dict(attachment), "notes": changed},
+        {
+            "row": undo_bin.row_dict(attachment),
+            "notes": changed,
+            "reads": reading_bin.page_reads_of(session, "attachment", [attachment.id]),
+        },
         {"bytes": _within(config.uploads_dir, attachment.stored_name)},
     )
     manager.delete_attachment(session, attachment, config.uploads_dir)
@@ -1010,6 +1014,7 @@ def restore_file(body: RestoreBody, session: Session = Depends(get_session)) -> 
     if "bytes" in kept and kept["bytes"].is_file():
         shutil.move(str(kept["bytes"]), str(_within(config.uploads_dir, row["stored_name"])))
     session.add(undo_bin.row_from(Attachment, row))
+    reading_bin.put_page_reads_back(session, "attachment", row["id"], payload.get("reads"))
     _put_notes_back(session, payload.get("notes") or {})
     session.commit()
     undo_bin.finish(config.data_dir, body.token)
@@ -1896,9 +1901,14 @@ def delete_media(
     token = undo_bin.stash(
         config.data_dir,
         "media",
-        {"row": undo_bin.row_dict(upload), "notes": changed},
+        {
+            "row": undo_bin.row_dict(upload),
+            "notes": changed,
+            "reads": reading_bin.page_reads_of(session, "upload", [upload.id]),
+        },
         {"bytes": candidate} if candidate.is_relative_to(media_dir) else {},
     )
+    reading_bin.forget_page_reads(session, "upload", [upload.id])
     session.delete(upload)
     session.commit()
     return {"status": "ok", "cleaned_notes": cleaned, "undo_token": token}
@@ -1920,6 +1930,8 @@ def restore_media(body: RestoreBody, session: Session = Depends(get_session)) ->
         shutil.move(str(kept["bytes"]), str(media_dir / row["filename"]))
     upload = undo_bin.row_from(MediaUpload, row, keep_id=session.get(MediaUpload, row["id"]) is None)
     session.add(upload)
+    session.flush()
+    reading_bin.put_page_reads_back(session, "upload", upload.id, payload.get("reads"))
     _put_notes_back(session, payload.get("notes") or {})
     session.commit()
     session.refresh(upload)

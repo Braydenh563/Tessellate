@@ -12,9 +12,39 @@ from __future__ import annotations
 
 from datetime import timedelta
 
+from sqlalchemy import delete
 from sqlalchemy.orm import Session
 
 from tessellate.core.database import Attachment, BinnedReading, MediaUpload, PageRead, utcnow
+
+def page_reads_of(session: Session, kind: str, source_ids: list[int]) -> list[dict]:
+    """Every stored page reading of these files as plain dicts, for an undo
+    payload: a delete drops them (ids are reused), Undo puts them back."""
+    from tessellate.core import undo_bin
+
+    if not source_ids:
+        return []
+    rows = session.query(PageRead).filter(PageRead.kind == kind, PageRead.source_id.in_(source_ids)).all()
+    return [undo_bin.row_dict(r) for r in rows]
+
+
+def forget_page_reads(session: Session, kind: str, source_ids: list[int]) -> None:
+    """Drop the page readings of files that are going: SQLite hands a freed
+    highest id to the next file, which would otherwise show the old file's
+    words and boxes. Does not commit."""
+    if source_ids:
+        session.execute(delete(PageRead).where(PageRead.kind == kind, PageRead.source_id.in_(source_ids)))
+
+
+def put_page_reads_back(session: Session, kind: str, source_id: int, rows: list[dict]) -> None:
+    """Undo of `forget_page_reads`, under the id the file came back with."""
+    from tessellate.core import undo_bin
+
+    for data in rows or []:
+        row = undo_bin.row_from(PageRead, data, keep_id=False)
+        row.kind, row.source_id = kind, int(source_id)
+        session.add(row)
+
 
 FIELDS = ("ocr_text", "vision_ocr_text")
 
