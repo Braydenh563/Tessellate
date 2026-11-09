@@ -34,6 +34,8 @@ with its owner named in the entry.
 
 ## Open items
 
+1710. **Owner, 2026-11-09:** "also does the in-app companion have the same life and complex mechanics and actions and things it can do as the desktop companion?? they need to be just as good as each other". Measured (tests/test_companion_catalogue_1108.py): 8 entries are desk-only (battery low, hour chime, idle return, five window events) and 49 are app-only (juggle, meditate, lounge, hangs, sloth, the note and search reactions and their transitions); acts an hour, app 39.1 against desk 35.7 (test_companion_weights).
+
 1709. **Owner, 2026-11-09:** "also the in-app companion atlas's nebular flow as well as its lower body arent animated and have no organic life or feel to them, they are just the same static frame".
 
 1708. **Owner, 2026-11-09 (screenshot of the List panel's selection bar: "3 selected", Delete, Duplicate, Shape, Colour, Connect, Box them, Undo, Done in three wrapped rows):** "also that select menu is absolutely horrendously designed and needs major improvement, also there is no select all button or deselect all button for the list panel".
