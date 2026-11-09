@@ -272,6 +272,7 @@ UPSIDE_FRAME = "spin24"  # the tumble turned half a circle (24 of 48 steps), the
 GRIP_BASE = 0.55
 GRIP_MOOD = {"sleepy": 0.5, "bored": 0.8, "startled": 0.9, "curious": 1.1, "happy": 1.2, "proud": 1.2}
 SCRABBLE_FOR = 0.9
+SLIP_REACH = 0.5  # of the figure's height: how far a slipped edge may move and still be gripped again
 SCRABBLE_DRAG = 6.0
 SCRABBLE_HZ = 6.0
 #: Sliding down a screen side and scrabbling (INBOX 1683 x, y): after `WALL_SCRABBLE` s (the slide takes about a second
@@ -2311,8 +2312,9 @@ class Engine:
         scrabble (`_do_hang` pulls up when it ends), else the drop."""
         self.hang_on = None
         top = next((q for q in self.windows if q.key == p.key), None)
-        #: Only where the edge still is: a window that moved away leaves nothing under the hands (INBOX 1699, CI 2679d8f).
-        stays = top is not None and abs(top.top - p.top) <= PERCH_MOVED
+        #: Only where the edge is still in reach: a nudge (half the figure's height) is scrabbled back onto, a window that
+        #: moved further leaves nothing under the hands (INBOX 1699, CI 2679d8f; the 1107 scrabble is a 50 px slip).
+        stays = top is not None and abs(top.top - p.top) <= SLIP_REACH * self.size[1] * self._scale()
         if stays and top.kind == "top" and top.top - self.size[1] >= self.current_monitor().area[1] and self.rng.random() < self._grip_chance(now):
             self.last_slip, self.pulling = "pull", top
             self.scrabble_t0, self.scrabble_until = now, now + SCRABBLE_FOR

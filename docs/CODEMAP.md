@@ -12459,7 +12459,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/appearance-panel-lazy.css | 330 |
 | frontend/css/appearance-panel-own-lazy.css | 86 |
 | frontend/css/ask-compose-lazy.css | 301 |
-| frontend/css/atlas-lazy.css | 1011 |
+| frontend/css/atlas-lazy.css | 1043 |
 | frontend/css/captions-lazy.css | 95 |
 | frontend/css/capture-card-lazy.css | 204 |
 | frontend/css/chat-private-lazy.css | 18 |
@@ -22810,21 +22810,21 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 |---|---|
 | `Activity` | src/tessellate/core/overlay/behaviour.py:155 |
 | `Chain` | src/tessellate/core/overlay/behaviour.py:370 |
-| `Flow` | src/tessellate/core/overlay/behaviour.py:812 |
-| `Mind` | src/tessellate/core/overlay/behaviour.py:405 |
+| `Flow` | src/tessellate/core/overlay/behaviour.py:816 |
+| `Mind` | src/tessellate/core/overlay/behaviour.py:409 |
 | `Pose` | src/tessellate/core/overlay/behaviour.py:53 |
 | `SecondOrder` | src/tessellate/core/overlay/behaviour.py:63 |
-| `TailLayer` | src/tessellate/core/overlay/behaviour.py:743 |
-| `Trail` | src/tessellate/core/overlay/behaviour.py:557 |
+| `TailLayer` | src/tessellate/core/overlay/behaviour.py:747 |
+| `Trail` | src/tessellate/core/overlay/behaviour.py:561 |
 | `Variation` | src/tessellate/core/overlay/behaviour.py:121 |
-| `_amplitude` | src/tessellate/core/overlay/behaviour.py:601 |
-| `_arr_pick` | src/tessellate/core/overlay/behaviour.py:805 |
-| `_frac` | src/tessellate/core/overlay/behaviour.py:799 |
+| `_amplitude` | src/tessellate/core/overlay/behaviour.py:605 |
+| `_arr_pick` | src/tessellate/core/overlay/behaviour.py:809 |
+| `_frac` | src/tessellate/core/overlay/behaviour.py:803 |
 | `_from_catalogue` | src/tessellate/core/overlay/behaviour.py:258 |
 | `_k` | src/tessellate/core/overlay/behaviour.py:172 |
-| `activity_frame` | src/tessellate/core/overlay/behaviour.py:544 |
+| `activity_frame` | src/tessellate/core/overlay/behaviour.py:548 |
 | `catalogue_factor` | src/tessellate/core/overlay/behaviour.py:291 |
-| `curve` | src/tessellate/core/overlay/behaviour.py:388 |
+| `curve` | src/tessellate/core/overlay/behaviour.py:392 |
 | `idle_tier` | src/tessellate/core/overlay/behaviour.py:356 |
 | `mood_of` | src/tessellate/core/overlay/behaviour.py:323 |
 | `phase_of` | src/tessellate/core/overlay/behaviour.py:283 |
@@ -22835,10 +22835,10 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `sine_ease` | src/tessellate/core/overlay/behaviour.py:111 |
 | `smooth` | src/tessellate/core/overlay/behaviour.py:101 |
 | `smoother` | src/tessellate/core/overlay/behaviour.py:106 |
-| `tail_bend` | src/tessellate/core/overlay/behaviour.py:722 |
-| `tail_points` | src/tessellate/core/overlay/behaviour.py:730 |
+| `tail_bend` | src/tessellate/core/overlay/behaviour.py:726 |
+| `tail_points` | src/tessellate/core/overlay/behaviour.py:734 |
 | `tier_factor` | src/tessellate/core/overlay/behaviour.py:361 |
-| `utility` | src/tessellate/core/overlay/behaviour.py:394 |
+| `utility` | src/tessellate/core/overlay/behaviour.py:398 |
 | `vary` | src/tessellate/core/overlay/behaviour.py:129 |
 
 ### src/tessellate/core/overlay/capture.py (14)
@@ -22874,17 +22874,17 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `Bar` | src/tessellate/core/overlay/engine.py:541 |
-| `Cover` | src/tessellate/core/overlay/engine.py:522 |
-| `Engine` | src/tessellate/core/overlay/engine.py:622 |
-| `Monitor` | src/tessellate/core/overlay/engine.py:551 |
-| `Output` | src/tessellate/core/overlay/engine.py:569 |
-| `Perch` | src/tessellate/core/overlay/engine.py:510 |
-| `TuckSpot` | src/tessellate/core/overlay/engine.py:531 |
-| `_adjoins` | src/tessellate/core/overlay/engine.py:606 |
-| `_same_screens` | src/tessellate/core/overlay/engine.py:617 |
-| `perch_room` | src/tessellate/core/overlay/engine.py:469 |
-| `stand_x` | src/tessellate/core/overlay/engine.py:475 |
+| `Bar` | src/tessellate/core/overlay/engine.py:542 |
+| `Cover` | src/tessellate/core/overlay/engine.py:523 |
+| `Engine` | src/tessellate/core/overlay/engine.py:623 |
+| `Monitor` | src/tessellate/core/overlay/engine.py:552 |
+| `Output` | src/tessellate/core/overlay/engine.py:570 |
+| `Perch` | src/tessellate/core/overlay/engine.py:511 |
+| `TuckSpot` | src/tessellate/core/overlay/engine.py:532 |
+| `_adjoins` | src/tessellate/core/overlay/engine.py:607 |
+| `_same_screens` | src/tessellate/core/overlay/engine.py:618 |
+| `perch_room` | src/tessellate/core/overlay/engine.py:470 |
+| `stand_x` | src/tessellate/core/overlay/engine.py:476 |
 
 ### src/tessellate/core/overlay/extras.py (11)
 
