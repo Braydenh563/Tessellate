@@ -77,10 +77,8 @@ def test_the_idle_wakes_stay_at_or_below_the_old_rate(gait: str, seed: int) -> N
     # states in tests/overlay_pace_sim.py, so it is left out here; a seed that hangs (walk 3 after the 1684 acts) measured
     # 496 with it and 413 without. The rest the figure spends in place keeps the old bar.
     # Moved again (INBOX 1692): a cloud ride or bubble drift is drawn every frame while it travels; walk 2 measured 485.
-    # Moved again (life2-1109, the seed fix): walk 1 now draws a long run of journal and book acts and measured 516; the bar is
-    # 530 (the redraw cap is 720), the intent, that rest in place is not busier than the old rate, unchanged.
     h = hour(gait, seed)
-    assert h["wakes_per_min"] - h["hang_wakes_per_min"] <= 530, h["hang_wakes_per_min"]  # measured about 380 to 516
+    assert h["wakes_per_min"] - h["hang_wakes_per_min"] <= 500, h["hang_wakes_per_min"]  # measured about 380 to 440
 
 
 def test_fidgets_are_at_most_two_an_hour() -> None:

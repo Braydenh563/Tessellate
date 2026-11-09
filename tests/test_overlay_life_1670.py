@@ -401,10 +401,7 @@ def hour(gait: str, seed: int, secs: float = 3600.0):
 
 @pytest.mark.parametrize("gait", ["float", "walk"])
 def test_it_stays_home_and_makes_only_a_few_trips_an_hour(gait: str) -> None:
-    # Seeds 1 to 3 became 2 to 4 (life2-1109, the seed fix): walk seed 1 now spends 31 percent of the hour reading and
-    # journalling 81 px from home (the metric's 2 x AWAY line is 80), a placement the old shared stream never drew; zero
-    # trips, 0.65 percent moving. The intent (it stays home) is measured on three seeds as before.
-    for seed in (2, 3, 4):
+    for seed in (1, 2, 3):
         trips, moving, away = hour(gait, seed)
         assert trips <= 4, (gait, seed, trips)  # "a few an hour at most"
         assert moving <= 0.06, (gait, seed, moving)
