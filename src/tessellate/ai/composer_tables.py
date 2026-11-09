@@ -1160,9 +1160,9 @@ SOCIAL_PROFESSIONAL: dict[str, tuple[str, ...]] = {
         "The message was not recognised as words. What should be located?",
     ),
     "about_app": (
-        "I am Atlas's assistant. I answer from your notes: dates, decisions and the status of a project. I also set reminders and "
+        "I am Atlas. I answer from your notes: dates, decisions and the status of a project. I also set reminders and "
         "tag, move or pin notes on request. Connecting a model adds writing and summaries.",
-        "Atlas's assistant answers from what you have recorded: a date, a decision, a list or the status of a project, and acts on "
+        "Atlas answers from what you have recorded: a date, a decision, a list or the status of a project, and acts on "
         "request (reminders, tags, pins). Connecting a model adds writing and tools.",
     ),
 }
@@ -1622,3 +1622,13 @@ SHAPE_WORDS: dict[str, str] = {
     **dict.fromkeys(("money", "cost", "costs", "price", "paid", "pay", "spend", "spent", "amount", "cash"), "money"),
     **dict.fromkeys(("rate", "rated", "rating", "score", "scored", "stars", "mark"), "score"),
 }
+
+
+#: "alright, uhh, I think i wrote a note about eating my homework to smth, it was a joke" (INBOX 1705):
+#: the lead-in and the trailing asides are not the subject, which is "eating my homework".
+EXTRA_WRAPPERS = EXTRA_WRAPPERS + (
+    r"^i (?:think|reckon|guess|believe|swear) (?:i|we) (?:wrote|made|saved|noted|put|jotted|have|had)(?: down)? (?:a |an |the |some )?(?:notes? |one |something )?(?:about|on|regarding)\s+",
+)
+EXTRA_TRAILERS = EXTRA_TRAILERS + (
+    "it was a joke", "it was funny", "it was a funny one", "something like that", "or something", "to something",
+)

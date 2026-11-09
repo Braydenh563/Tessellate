@@ -97,11 +97,11 @@ SOCIAL_NATURAL: dict[str, tuple[str, ...]] = {
         "Reading your notes so you don't have to is my job, as Atlas's assistant. Want to try me?",
     ),
     "about_app": (
-        "Plenty. I'm Atlas's assistant: I answer questions from your notes, set reminders, and tag, pin or move notes for you. With a model connected I can also write.",
-        "Ask me, Atlas's assistant, what's on today, what you decided about something, or where a setting lives, and I'll answer from what you wrote.",
-        "I'm Atlas's assistant. Think of me as a search that answers: dates, lists, decisions and how things are going, all from your notes.",
-        "Short version: Atlas's assistant finds things in your notes and does small jobs like reminders and tags. Want to try one?",
-        "Mostly, Atlas's assistant reads your notes for you. Try “what did I do last week” or “remind me to call the dentist on Friday”.",
+        "Plenty. I'm Atlas: I answer questions from your notes, set reminders, and tag, pin or move notes for you. With a model connected I can also write.",
+        "Atlas here: ask me what's on today, what you decided about something, or where a setting lives, and I'll answer from what you wrote.",
+        "I'm Atlas. Think of me as a search that answers: dates, lists, decisions and how things are going, all from your notes.",
+        "Short version: Atlas finds things in your notes and does small jobs like reminders and tags. Want to try one?",
+        "Mostly, Atlas reads your notes for you. Try “what did I do last week” or “remind me to call the dentist on Friday”.",
     ),
     "joke": (
         "Here's one: why did the notebook never panic? It had everything written down.",
@@ -217,11 +217,11 @@ SOCIAL_PROFESSIONAL: dict[str, tuple[str, ...]] = {
         "I did not understand that. Please ask about a note, a date or a reminder.",
     ),
     "about_app": (
-        "Atlas's assistant answers questions from your notes.",
-        "Atlas's assistant locates notes, answers from them and carries out small tasks such as reminders and tags.",
-        "Ask Atlas's assistant what is on today, what was decided about a matter, or where a setting is located.",
-        "I am Atlas's assistant. I answer from your notes and, on request, set reminders and tag, pin or move notes.",
-        "In brief: Atlas's assistant searches your notes and answers from them. Shall I demonstrate?",
+        "Atlas answers questions from your notes.",
+        "Atlas locates notes, answers from them and carries out small tasks such as reminders and tags.",
+        "Ask Atlas what is on today, what was decided about a matter, or where a setting is located.",
+        "I am Atlas. I answer from your notes and, on request, set reminders and tag, pin or move notes.",
+        "In brief: Atlas searches your notes and answers from them. Shall I demonstrate?",
         "The assistant reads your notes on your behalf. With a model connected, Atlas can also write and use tools.",
     ),
     "compliment": (

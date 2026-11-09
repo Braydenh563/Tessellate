@@ -152,11 +152,11 @@ SOCIAL["who"] = (
 
 
 SOCIAL["about_app"] = (
-    "I'm Atlas's assistant. I answer from your notes: when something is, who said what, what the latest is on a project. "
+    "I'm Atlas. I answer from your notes: when something is, who said what, what the latest is on a project. "
     "I also set reminders, tag, pin and move notes, and work out sums and conversions. Connecting a model adds writing in its own words.",
-    "Atlas's assistant here. Ask about anything you wrote down: a date, a decision, a list, how a project is going or what you did "
+    "Atlas here. Ask about anything you wrote down: a date, a decision, a list, how a project is going or what you did "
     "last week. Say \"remind me to...\" and I set it. Connecting a model adds writing and tools.",
-    "I'm Atlas's assistant, and I read your notes for you: ask when something happened or who said what, or tell me to pin, tag or delete a note.",
+    "I'm Atlas, and I read your notes for you: ask when something happened or who said what, or tell me to pin, tag or delete a note.",
 )
 
 

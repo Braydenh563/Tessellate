@@ -78,7 +78,8 @@ def test_the_capability_rundown_is_composed_and_sized_to_the_request():
     medium = {capability.overview("what can you do", seed=str(i)) for i in range(12)}
     assert len(medium) > 4, "the same words every time"
     for text in medium:
-        assert "assistant" in text.lower() and "Atlas" in text
+        #: INBOX 1705: the rundown speaks as Atlas, not as Atlas's assistant.
+        assert "Atlas" in text and "assistant" not in text.lower()
         assert "connect a model" in text.lower() or "add one" in text.lower(), text
         assert text.count("**") == 6, text
     short = capability.overview("what can you do, briefly?", seed="a")
@@ -97,7 +98,8 @@ def test_who_are_you_says_it_is_the_assistant_not_atlas(ai_client, session):
     for table in (composer_smalltalk.SOCIAL, composer_smalltalk.SOCIAL_PROFESSIONAL):
         for line in table["who"]:
             assert "assistant" in line.lower(), line
-        for line in table["who"] + table["about_app"]:
+        #: INBOX 1705: "what can you do" is Atlas speaking, so only "who are you" keeps the assistant's voice.
+        for line in table["who"]:
             assert not line.startswith(("I'm Atlas.", "I am Atlas.", "Atlas,", "Atlas ", "Atlas.")), line
     text = _ask(ai_client, "who are you", notes_only=True, use_tools=False)["text"]
     assert "assistant" in text.lower(), text
@@ -280,5 +282,5 @@ def test_a_misspelt_what_can_you_do_gets_the_capability_reply(ai_client, session
     answered with note citations. It gets the same reply the clean question gets."""
     clean = _ask(ai_client, "What can you do??", notes_only=True, use_tools=False)["text"]
     typed = _ask(ai_client, "Wat cna u do??", notes_only=True, use_tools=False)["text"]
-    assert "assistant" in typed.lower() and typed.count("**") == clean.count("**"), typed
+    assert "Atlas" in typed and typed.count("**") == clean.count("**"), typed
     assert "no note" not in typed.lower() and "[1]" not in typed, typed

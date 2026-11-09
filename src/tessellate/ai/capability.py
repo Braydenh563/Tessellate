@@ -114,15 +114,15 @@ _LONG = re.compile(
 
 _OPENING = {
     "natural": (
-        "I'm Atlas's assistant. I work without a model: I answer from your notes, do sums, times and dates, and act on the app for you.",
-        "I'm Atlas's assistant, the one that comes with Tessellate. On my own I read your notes, work things out and do small jobs.",
-        "Atlas's assistant here. Without a model I can still answer from your notes, do the maths and dates, and run the app for you.",
-        "I'm Atlas's assistant, the part that answers when no model is connected: your notes, quick sums and dates, and jobs in the app.",
+        "I'm Atlas. I work without a model: I answer from your notes, do sums, times and dates, and act on the app for you.",
+        "I'm Atlas, the one that comes with Tessellate. On my own I read your notes, work things out and do small jobs.",
+        "Atlas here. Without a model I can still answer from your notes, do the maths and dates, and run the app for you.",
+        "I'm Atlas. With no model connected I still cover your notes, quick sums and dates, and jobs in the app.",
     ),
     "professional": (
-        "I am Atlas's assistant. Without a model I answer from your notes, calculate times and dates, and carry out tasks in the app.",
-        "I am Atlas's assistant. On my own I search your notes, perform calculations and act on the app on request.",
-        "This is Atlas's assistant. It answers from your notes, works out sums and dates, and performs small tasks in the app.",
+        "I am Atlas. Without a model I answer from your notes, calculate times and dates, and carry out tasks in the app.",
+        "I am Atlas. On my own I search your notes, perform calculations and act on the app on request.",
+        "This is Atlas. It answers from your notes, works out sums and dates, and performs small tasks in the app.",
     ),
 }
 _GROUPS = (
@@ -162,9 +162,9 @@ _SHORT_LINE = (
 )
 _MODEL = {
     False: (
-        "To talk to Atlas itself, connect a model in Settings, Models. It adds writing and translating.",
-        "Atlas is the model you connect: add one in Settings, Models and it can write, translate and use tools.",
-        "Connect a model in Settings, Models to talk to Atlas, which adds writing and translating.",
+        "Connect a model in Settings, Models and I can also write and translate.",
+        "Connect a model in Settings, Models and I can write, translate and use tools too.",
+        "Connect a model in Settings, Models and I add writing and translating.",
     ),
     True: (
         "Atlas, the model you connected, can also write and translate.",
@@ -236,7 +236,8 @@ def _clean(question: str) -> str:
     from tessellate.ai import question_noise
 
     question = question_noise.repair(question_noise.tidy(question or ""))
-    text = " ".join((question or "").split())
+    #: A greeting before it ("hey! what can you do??") is read past, still the same ask.
+    text = re.sub(r"^(?:(?:hey|hi|hello|hiya|yo|alright|ok|okay|so|um+|uh+|right)\b[\s,.!:]*)+", "", " ".join((question or "").split()), flags=re.I)
     #: str.strip, not a regex: an end-anchored character run is polynomial
     #: on a long run of the same mark (CodeQL).
     text = text.lstrip("\\/'\"` ").rstrip("\\/'\"`?.! ")
