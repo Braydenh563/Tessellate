@@ -53155,7 +53155,7 @@ Bullets already marked closed in OPEN.md, moved verbatim, grouped by their OPEN.
 
 ### Left by the uipolish agent (INBOX 776 to 786, merged 2026-10-11)
 
-- **Fixed (tests/test_boot_budget.py: cap lowered by uiset, 2026-10-11).** BOOT_CSS_CAP can be lowered now that strip_css drops comment-leftover lines (about 7 KB freed).
+- **Fixed e9bf48384.** BOOT_CSS_CAP can be lowered now that strip_css drops comment-leftover lines (about 7 KB freed).
 
 ### Left by the docs76 agent (Brief 76, merged 2026-10-10)
 
@@ -53176,6 +53176,7 @@ Bullets already marked closed in OPEN.md, moved verbatim, grouped by their OPEN.
 ### Left by the wb77 and ide1 agents (Briefs 77 and 69, merged 2026-10-10)
 
 - **Fixed 2a63f2a (board1518-1101).** Row 2's New is still a menu (`details#wb-boards-new-menu`): a split button (DESIGN.md's recipe) would make it one press; tour.js and reveal-targets.js name the menu's id.
+- **Fixed (passes at 07e9ce1ab).** `tests/test_icon_conventions.py::test_the_vertical_kebab_is_only_at_the_end_of_a_vertical_list_row_or_in_a_narrow_column` fails on this branch's head before this work: search.js has a vertical kebab the ratchet does not list.
 
 ### Left by the design agent (Brief 56, merged 2026-10-10)
 
@@ -53242,3 +53243,29 @@ Bullets already marked closed in OPEN.md, moved verbatim, grouped by their OPEN.
 - [docs-1017.md] B09 (fc388f3): reproduced (click on the underline put "teh " back at once). Now autocorrectMenu (autocorrect.js) opens openMenuAtPoint at the word: Keep, Put back, Edit the word (selects it); Put back still adds the word to the session's refused list; the five-second timer stops while the menu is up; a menu that flipped over the word is moved above it. autocorrectmenu.js (chat box), tests/test_autocorrect.py, help topic reworded. Not verified: the CodeMirror note boxes (same wrapper, select added to both), a touch device.
 - [mindmap-1018.md] done: the dark and 820 reads of section 13, recorded in MINDMAP_PLAN "Not verified". mapedgelag passes; maptheme and mapnarrow fail identically in light and dark (stale sweeps); one real finding below.
 - [uxfix5-1018.md] INBOX 805 backup rows (832c780): the list already had the Latest chip, date in words, size and a grey facts line. Origin and verified are now badges ("Made by you", "Automatic daily backup", "Before an update", "Before a restore"; "Verified" is-ok, "Not verified" is-warn). Measured with 10 backups: row 75 px high at 1440, 185 to 210 at 390, no horizontal overflow (scratchpad/ui-sweeps/backuprows.js).
+- **Fixed f03bc2cf6 and ba7bdc867.** [sugg1329-1019.md] left: INBOX 1329 is not in this branch's INBOX.md; the orchestrator marks it Fixed with both hashes and runs scratchpad/inbox_resolve.py.
+- **Done.** [composer-1017-progress.md] B80 done (commit: Tag suggestions: new tags with no model): tagging.new_topics/filled offer, with room left after the notebook's own tags, a pack subject the note names in 2 or more different phrases that the notebook has not used (never a sensitive one); reasons ride grounds. Before: "Did squats and deadlifts at the gym this morning" in an empty notebook offered none, now #fitness. Not verified: a real model, the owner's notebook, the precision of new tags on real notes (targeted tests only).
+- **Done.** [order-1018.md] done 3: spelling _prefix_kept, NOT_AFTER_A, _y_then_ending, question_noise._at_asking_place; fixtures shortyer, a ghose cursor, what are ghose notes. All three items landed; nothing left but the found-not-fixed below.
+- **Stale:** the brief left nothing to do; the findings are their own bullets. [perf-1017.md] next: nothing in the brief; see found-not-fixed below
+- **Fixed (tests/test_no_bare_fetch.py passes at 07e9ce1ab).** [aboutkit-1011.md] left: pre-existing, not mine: tests/test_no_bare_fetch.py fails on documents-prose.js (one bare fetch)
+- **Fixed (tests/test_complexity.py passes at 07e9ce1ab).** [composer-1011.md] found, not fixed: tests/test_complexity.py fails on this branch: 41 functions over 15 not in the seed (composer_digest 17 of them, spelling 5, find_it 3, records 3), from merges before this agent; needs splitting or a seeded decision
+- **Fixed (both tests pass at 07e9ce1ab).** [composer-1011.md] found, not fixed (not this agent's files): test_flaw_class_lints thread count names core/lanserve.py; test_no_bare_fetch names documents-prose.js
+- **Fixed (the test passes at 07e9ce1ab).** [perf-1017.md] found-not-fixed (4): tests/test_graph_feel_100.py::test_a_dropped_note_settles_near_where_it_was_put_and_is_never_pinned fails on the base too (dropped note mid-settle 296 px from the drop, limit 60); not touched
+
+### Carried from the agent files archived 2026-10-10
+
+- **Fixed 91fe79f7a.** Owner (2026-10-07): the app repairs a broken or missing search-model cache itself. On `EmbeddingCacheBroken`, start the reinstall as a visible background task ("Fixing search by meaning..."), keep keyword search working, and ask the person only after two failed fixes or with no network. No exception class names in what the person reads. (from autoinstall-1006.md)
+- **Fixed 58a687b39 and 91fe79f7a.** Owner (2026-10-07): each embedding row shows its real state (Downloaded with its size on disk, Not downloaded, or Files missing with Reinstall). The "Runs in the app" badge is built; "Files missing" is not (`embed-choices.js`). (from autoinstall-1006.md)
+- **Stale:** the breath is now a Web Animations loop (`atlasBreathFrame`, atlas-life.js), not a stepped write; `ATLAS_BREATH_STEP_MS` is gone. The breath's cost in the large view is not settled: a CSS loop cost the view about half its frames, so the swell is written ten times a second. The A/B (base 415, 320, 192, 162 frames; breath 346, 348, 106, 202) is inside the noise. Re-measure on a quiet machine with `breath687-ab.sh viewer-m 5`; 6 Hz (`ATLAS_BREATH_STEP_MS` 166) is the fallback. (from motion686-1006.md)
+
+### Left by the chatui agent (the owner's 2026-10-10 chat and first-run list, merged 2026-10-10)
+
+- **Fixed c47b9924f.** INBOX 743, "atlas goes out of the border": not reproduced (figure within 4 px of its svg, no oval frame drawn at this head); recheck the welcome card on Windows.
+
+### Left by the measure60 agent (Brief 60, WORLD_CLASS 26.0 and 26a, merged 2026-10-10)
+
+- **Stale:** the registry was built in `core/jobs.py` and `core/jobruns.py` (`tests/test_background_registry.py` holds it); `core/background.py` is no longer the plan. Decision 58's `core/background.py` registry (name, started, stop) is not built; the lint only counts sites. Brief 63 neighbour. `tests/test_background_registry.py`. [measure60-1010]
+
+### Left by the engine agent (Brief 39, CHAT_PLAN Phase 6, merged 2026-10-10)
+
+- **Fixed (passes at 07e9ce1ab).** Found, not mine: tests/test_ask_answer_object.py::test_ask_is_never_disabled_when_the_model_is_off fails on the base too (the chat skills trigger's `dataset.needsModel`).
