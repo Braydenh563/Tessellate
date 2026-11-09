@@ -16,5 +16,5 @@ Nothing left of the brief. Not verified: the owner's Windows webview, the GPU co
 
 ## Found, not fixed
 
-- Reset appearance (`resetAppearance`, settings.js) leaves `avatar-buddy-motion` and `avatar-buddy-entrances` as they were.
-- tests/test_complexity.py fails as merged from the working branch (composer_digest, composer_lists, composer_study, agent.run_agent over 15; the lazy import cycle at two groups); none of these files is touched here.
+- **Open (checked 2026-11-09).** Reset appearance (`resetAppearance`, settings.js) leaves `avatar-buddy-motion` and `avatar-buddy-entrances` as they were.
+- **Open (checked 2026-11-09).** tests/test_complexity.py fails as merged from the working branch (composer_digest, composer_lists, composer_study, agent.run_agent over 15; the lazy import cycle at two groups); none of these files is touched here.
