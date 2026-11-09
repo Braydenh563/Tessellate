@@ -64,10 +64,20 @@
     main.addEventListener("click", () => add(last()));
     const caret = h.smallButton("ph:caret-down", "Choose a shape to add (1 to 9, or ? for every key)", () => {
       //: A pointer menu lines its right edge up with the point, so the point is the caret's right edge (it opened at the window's left edge from the split's left).
+      //: A second press closes it (the owner 2026-11-09), as a chip's menu does (chip-menus.js `openChipMenu`): while open the caret says `aria-expanded`, so the outside-press closer leaves it to this click.
+      if (caret.getAttribute("aria-expanded") === "true") {
+        closeActionMenus();
+        return;
+      }
       const r = caret.getBoundingClientRect();
       const rows = ORDER.map((shape) => ({ label: nameOf(shape, h), keys: hintOf(shape), title: hints.get(nameOf(shape, h)) || "", run: () => add(shape) }));
-      openMenuAtPoint(rows, "Add to the diagram", r.right, r.bottom, caret);
+      const menu = openMenuAtPoint(rows, "Add to the diagram", r.right, r.bottom, caret);
+      if (menu) {
+        menu._escapedOpener = caret;
+        caret.setAttribute("aria-expanded", "true");
+      }
     });
+    caret.setAttribute("aria-expanded", "false");
     caret.classList.add("dgm-addcaret");
     caret.setAttribute("aria-haspopup", "menu");
     paint();

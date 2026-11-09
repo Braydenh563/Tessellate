@@ -432,7 +432,8 @@
   align-items: center;
   gap: var(--space-2);
   min-height: var(--row-h);
-  padding: 0 var(--space-2);
+  /* Room above and below the row's controls (the owner 2026-11-09: "no vertical margin or padding around the elements in each row"). */
+  padding: var(--space-1) var(--space-2);
   border: 1px solid transparent;
   border-radius: var(--radius-sm);
   font-size: var(--text-sm);
@@ -605,6 +606,13 @@
   background: transparent;
   box-shadow: none;
   color: var(--accent-text);
+}
+
+/* Its own hover over the row's (the owner 2026-11-09: "there is no hover state for the connect to buttons"): the row's veil
+   alone did not say which control the press would land on. */
+.dgm-card > button.dgm-connect:hover,
+.dgm-card > button.dgm-connect:focus-visible {
+  background: var(--accent-soft);
 }
 
 /* The words show on every row of a list wide enough for them; a tight list (diagram-split.js, under 19rem) and a
@@ -1898,8 +1906,11 @@
 /* The shortcuts sheet (diagram-style.js) borrows the whiteboard help rows; this sets the one column width they read. */
 .dgm-keys {
   --wb-help-keys-w: 9rem;
-  columns: 1;
+  /* Not a multicol box at all: one column with a max-height still made overflow columns to its right (scrollWidth 1,536 in a
+     502 px list, the owner 2026-11-09: "some items or icons are cut off on the right"). It scrolls down instead. */
+  columns: auto;
   max-height: 60dvh;
+  overflow-y: auto;
 }
 
 /* A menu row with a shortcut (kebabMenu `keys`): the name on the left, the key on the right. */

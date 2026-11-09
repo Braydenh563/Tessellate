@@ -17,8 +17,13 @@
 
   //: The keys the shape table holds, each with the word the Add menu uses.
   function shapeRows(h) {
-    const label = { ...h.label, group: "Group", note: "Note" };
-    return Object.entries(diagramModel.keys).map(([key, shape]) => [key.toUpperCase(), `Add ${shape === "group" ? "a group" : `a ${label[shape].toLowerCase()}`}`]);
+    //: Each read as a thing you add (the owner's screenshot 2026-11-09 read "Add a input or output" and "Add a rounded").
+    const label = { ...h.label, group: "Group", note: "Note", round: "Rounded box", parallelogram: "Input or output box" };
+    const article = (word) => (/^[aeiou]/i.test(word) ? "an" : "a");
+    return Object.entries(diagramModel.keys).map(([key, shape]) => {
+      const word = label[shape].toLowerCase();
+      return [key.toUpperCase(), `Add ${article(word)} ${word}`];
+    });
   }
 
   //: The blocks a colour applies to: the picked set, else the selection; nodes only (a group has no fill).
