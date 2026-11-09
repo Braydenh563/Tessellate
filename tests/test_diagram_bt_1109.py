@@ -90,3 +90,11 @@ def test_switching_kind_on_the_untouched_starter_does_not_ask():
     assert "const untouched = (S) =>" in bar and "diagramModel.starter" in bar.split("const untouched", 1)[1].split("\n", 1)[0]
     # The confirm is only for content the person made; the starter is three boxes nobody wrote.
     assert "const blank = blankOf(S) || untouched(S);" in bar
+
+
+def test_undo_and_redo_name_themselves_and_their_shortcut_on_every_kind():
+    kinds = _js("diagram-kinds.js")
+    # The flowchart's bar already read "Undo, Ctrl+Z"; the three other kinds' icons said only "Undo".
+    assert '["ph:arrow-counter-clockwise", "Undo", "Undo, Ctrl+Z",' in kinds and '["ph:arrow-clockwise", "Redo", "Redo, Ctrl+Y",' in kinds
+    assert "smallButton(name, tip, run)" in kinds
+    assert '["ph:arrow-counter-clockwise", "Undo", "Undo, Ctrl+Z",' in _js("diagram-bar.js")

@@ -1036,8 +1036,8 @@
     S.suggestBtn.classList.add("dgm-suggest");
     S.suggestBtn.setAttribute("aria-haspopup", "menu");
     actions.append(S.suggestBtn);
-    for (const [name, label, run] of [["ph:arrow-counter-clockwise", "Undo", () => S.io.undo()], ["ph:arrow-clockwise", "Redo", () => S.io.redo()]]) {
-      const b = smallButton(name, label, run);
+    for (const [name, label, tip, run] of [["ph:arrow-counter-clockwise", "Undo", "Undo, Ctrl+Z", () => S.io.undo()], ["ph:arrow-clockwise", "Redo", "Redo, Ctrl+Y", () => S.io.redo()]]) {
+      const b = smallButton(name, tip, run);
       b.classList.add("icon-only", "dgm-hist");
       b.setAttribute("aria-label", label);
       actions.append(b);
