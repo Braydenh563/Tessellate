@@ -121,6 +121,14 @@ PLAIN_ACTS: dict[str, tuple[bh.Activity, int, str]] = {
     "daydream": (_act("sit", (10.0, 20.0), ((0, 1, 1, 0), (0.2, 1, 0.98, 0.02), (1, 1, 0.98, 0.02)), (("rest", -0.2),), "sleepy"), 2, "sleepy"),
     "puzzle": (_act("look", (5.0, 9.0), ((0, 1, 1, 0), (0.2, 0.98, 0.99, -0.04), (0.55, 0.98, 0.99, 0.04), (1, 1, 1, 0)), (("curiosity", -0.2),), "curious"), 2, "focus"),
 }
+#: What the menu says it is doing during a prop, spell or plain act (INBOX 1718 b: a figure holding a gridded panel
+#: gave no hint it was reading a map). Acts not listed read as their own name, spaces for underscores.
+DOING = {
+    "read_book": "reading a book", "lounge_beanbag": "lounging on a beanbag", "go_fishing": "fishing", "push_ups": "doing push-ups",
+    "read_map": "reading a map", "hold_lantern": "holding a lantern", "lift_weights": "lifting weights", "sip_tea": "sipping tea",
+    "write_journal": "writing in a journal", "watch_stars": "watching the stars", "blanket_nap": "napping under a blanket",
+    "water_plant": "watering a plant", "stargaze": "stargazing", "daydream": "daydreaming", "puzzle": "working on a puzzle",
+}
 #: Act name -> the face it wears for its length (the props' and the plain ones'), added to `faces.ACT_FACES`.
 _REGISTERED: set[str] = set()
 

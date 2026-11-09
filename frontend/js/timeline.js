@@ -752,6 +752,15 @@ function timelineKindsText(rows) {
   };
   return ` (${TIMELINE_KINDS.filter((k) => counts.has(k.key)).map((k) => word(k.key, counts.get(k.key))).join(", ")})`;
 }
+//: The count line is its own tooltip: under 1100 the chip ellipsises ("11 items
+//: (6 notes, 2 maps, 3 documents) · 1 day" is 275px, which a 720px dock cannot
+//: spare), and a cut word should still be readable (INBOX 1717). Written when the
+//: pointer arrives, so the four places that write the line need not know.
+{
+  const chip = $("timeline-count");
+  chip?.addEventListener("pointerenter", () => { chip.title = chip.textContent; });
+}
+
 function timelineCountLine(shown, loaded, tail, rows = []) {
   const more = timelineNextCursor ? "+" : "";
   const count = shown === loaded ? `${shown}${more}` : `${shown} of ${loaded}${more}`;

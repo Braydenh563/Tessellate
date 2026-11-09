@@ -3,9 +3,21 @@ status: running
 pr: 216
 max-continues: 60
 max-idle-minutes: 60
-finish-up: 60%
+finish-up: 70%
 started: 2026-11-07 14:40Z
 tier: max (weekly 32% at 2026-11-08 16:00Z), four agents at once, Sonnet or Haiku, one Opus for design or risky review; never Fable; owner away from 2026-11-08 16:00Z until about 2026-11-09 06:00Z to 07:00Z (late afternoon owner time, UTC+10)
+
+## 2026-11-09 away queue (tier: four agents, at most two Opus, Haiku scouts extra) (owner asleep from ~14:50Z; stop at 70% weekly; context 200k does not stop the run, owner override)
+- [ ] Push the 9 local commits when CI on 7d814c1 finishes; fix its failures
+- [ ] Merge zoom2-1109 (1717), desklane-1109 (1696 a,b,h,i,k,aa,kk; 1710 a,b; 1711 b; 1718), small3-1109 (constellation pause, 1693 a)
+- [ ] Composer deep-audit round (1719 c), then build its findings in Sonnet batches
+- [ ] Throw off the top of the screen, both companions (1719 a)
+- [ ] Life and biological design pass (1719 b) with 1696 j, v-w, dd; then Sonnet batches
+- [ ] Remaining: 1711 a,d; 1683 a (desk lower-body frames); audit rows 21, 36; further 37a batches; zoom and desk leftovers
+- [ ] Then, owner 2026-11-09 ~15:00Z ("the rest includes ..."): every open audit and deep-dive finding (audit-1031-ranked.md, FABLE_BRIEF, deep-dive files), every open INBOX item outside the BACKLOG, every open plan item in docs/roadmap/*_PLAN.md, and continuous refinement: optimisation, bug and security fixing, poke holes (reviewer, security-reviewer, blind-tester rounds), UI and UX redesign and fixes, backend and frontend
+- [ ] Priority polish (owner 2026-11-09 ~15:15Z): diagram builder finished and polished (open dgml/dgpic leftovers: shelf touch, gap drop marker, 390 px, default fold call), composer improved round after round, companions in-app and desk; blind-tester and ux-auditor on each
+- [ ] Docs and README kept current per merge (owner 2026-11-09 ~15:10Z): CHANGELOG, README numbers and names (test_readme_freshness), ARCHITECTURE, DESIGN, Guide topics; a docs pass before the boundary
+- [ ] BACKLOG boundary: HANDOVER Now and Morning summary, push, retro
 
 ## 2026-11-08 away queue (HANDOVER Now 2026-11-08g)
 - [ ] Merge desklayers-1108 (C1, C4), appacts-1108 (D1, D2), dgmlive-1108 (diagram real-browser checks), deskmood-1108 (sad when left alone, welcome back, confused on a missed landing): targeted tests, reviewer on UI, push

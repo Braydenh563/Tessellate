@@ -9978,6 +9978,21 @@ function nameMarkBuddyHeadAt() {
   }
   return [nmb.x + NMB_W / 2, nmb.y + NMB_HEAD / 2 + (nmb.pose === "hang" ? NMB_DROP : 0), Math.max(0.7, nmb.scale || 1)];
 }
+//: A wave when the pointer rests near (INBOX 1711 b, the desk's WAVE_*); on `nmb` to keep the name count down.
+nmb.waveRest = (x, y) => {
+  const NMB_WAVE_IDLE = 8000, NMB_WAVE_NEAR = 420, NMB_WAVE_GAP = 150000;
+  clearTimeout(nmb.waveRestTimer);
+  nmb.waveRestTimer = setTimeout(() => {
+    const buddy = document.getElementById("nm-buddy");
+    const now = Date.now();
+    if (!buddy || nmb.act || nmb.pose !== "stand" || nameMarkBuddyStill() || document.hidden || nameMarkBuddyActOff("wavepointer")) return;
+    if (buddy.classList.contains("nmb-sleep") || buddy.classList.contains("nm-buddy-dragging") || now - (nmb.waveAt || 0) < NMB_WAVE_GAP) return;
+    const [cx, cy, size] = nameMarkBuddyHeadAt();
+    if (Math.hypot(x - cx, y - cy) > NMB_WAVE_NEAR * Math.max(0.7, size)) return;
+    nmb.waveAt = now;
+    nameMarkBuddyAct("wavepointer", 2400);
+  }, NMB_WAVE_IDLE);
+};
 function nameMarkBuddyNotice(x, y, now, salient = "") {
   const buddy = document.getElementById("nm-buddy");
   if (!buddy || nameMarkBuddyStill() || document.hidden || buddy.classList.contains("nm-buddy-dragging")) return;
@@ -10004,6 +10019,7 @@ function nameMarkBuddyNotice(x, y, now, salient = "") {
     return;
   }
   nmb.nearSince = 0;
+  nmb.waveRest(x, y);
   const loud = (speed > 1800 && dist < 400) || (salient && dist < 300);
   //: Fast and close, past it: a double take a moment later (INBOX 1581).
   //: Close is the nearest point of the path since the last sample, since a

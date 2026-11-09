@@ -4856,7 +4856,7 @@ Link to another note with [[its first few words]]."></textarea>
                    file of the type chosen. -->
               <div class="split-button doc-new-split">
                 <button id="doc-new" class="small split-button-main" type="button" title="Start a new document"
-                  aria-label="Start a new document"><i class="ph ph-plus ph-lead" aria-hidden="true"></i>New</button>
+                  aria-label="Start a new document"><i class="ph ph-plus ph-lead" aria-hidden="true"></i><span class="toolbar-word">New</span></button>
                 <span id="doc-new-type-slot" class="split-button-slot"></span>
               </div>
               <!-- New from a template, asked for as part of "the documents
@@ -5146,14 +5146,14 @@ Link to another note with [[its first few words]]."></textarea>
                  code type, where the markdown strip above is hidden
                  (syncDocFileType swaps the two). -->
             <button id="doc-code-format" class="ghost small hidden" type="button"
-              title="Format the selected lines, or the whole file when nothing is selected (Shift+Alt+F)"><i class="ph ph-brackets-curly ph-lead" aria-hidden="true"></i> Format</button>
+              title="Format the selected lines, or the whole file when nothing is selected (Shift+Alt+F)" aria-label="Format"><i class="ph ph-brackets-curly ph-lead" aria-hidden="true"></i><span class="toolbar-word"> Format</span></button>
             <!-- Run (INBOX 404, Brief 69): a code document in the sandbox
                  through the one run protocol (run-core.js), its output in a
                  panel under the editor. Shown for the types that run or
                  preview (DOC_RUN_KINDS, syncDocFileType). The bar's one
                  filled action (INBOX 803): a code file is for running. -->
             <button id="doc-code-run" class="small hidden" type="button"
-              title="Run this file in a sandbox and show its output (Ctrl+Shift+Enter)"><i class="ph ph-play ph-lead" aria-hidden="true"></i> Run</button>
+              title="Run this file in a sandbox and show its output (Ctrl+Shift+Enter)" aria-label="Run"><i class="ph ph-play ph-lead" aria-hidden="true"></i><span class="toolbar-word"> Run</span></button>
             <!-- A .py document before Python is installed: Run is disabled
                  and this one line says what it needs and goes there
                  (DOCUMENTS_PLAN 25 row 2, docRunSyncAvailability). -->
