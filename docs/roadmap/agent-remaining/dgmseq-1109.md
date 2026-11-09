@@ -12,7 +12,7 @@ Agent dgmseq, branch agent/dgmseq-1109 off claude/next-queue-1102. Sweeps are un
 
 ## Left
 
-- Folded shelf is still a 38 px button over the picture's top left corner (1 box covered at 1440); the owner chose collapse, so it was kept.
-- Guide topic `diagram-blocks` is at its budget (1900), so the new sentences are in the dialog's help only (diagram-embed.js `helpLines`).
-- tests/test_plan_hygiene.py::test_inbox_is_a_tray_not_a_backlog failed before this work (22 INBOX items against a cap of 20).
-- Not verified: phone widths, real touch, real Windows scrollbar width (17 px; headless gave 12).
+- Folded shelf is still a 38 px button over the picture's top left corner (1 box covered at 1440); the owner chose collapse, so it was kept. **Open (checked 2026-11-09)** not re-driven in this pass (needs a real desktop, a trace on a large notebook, or an owner call).
+- Guide topic `diagram-blocks` is at its budget (1900), so the new sentences are in the dialog's help only (diagram-embed.js `helpLines`). **Open (checked 2026-11-09)** not re-driven in this pass (needs a real desktop, a trace on a large notebook, or an owner call).
+- tests/test_plan_hygiene.py::test_inbox_is_a_tray_not_a_backlog failed before this work (22 INBOX items against a cap of 20). **Stale:** tests/test_plan_hygiene.py passes on head (checked 2026-11-09).
+- Not verified: phone widths, real touch, real Windows scrollbar width (17 px; headless gave 12). **Open (checked 2026-11-09)** not re-driven in this pass (needs a real desktop, a trace on a large notebook, or an owner call).

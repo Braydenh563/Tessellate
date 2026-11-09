@@ -14,8 +14,8 @@
 
 ## Left
 
-- A new part added with the list folded is named on a mind map or timeline picture (`S.seqOpen`), not measured.
-- Not verified: 390 px, real touch (the engine's hold should carry a drawn part, unmeasured), real inference.
+- A new part added with the list folded is named on a mind map or timeline picture (`S.seqOpen`), not measured. **Open (checked 2026-11-09)** not re-driven in this pass (needs a real desktop, a trace on a large notebook, or an owner call).
+- Not verified: 390 px, real touch (the engine's hold should carry a drawn part, unmeasured), real inference. **Open (checked 2026-11-09)** not re-driven in this pass (needs a real desktop, a trace on a large notebook, or an owner call).
 
 - done: f467cc3 (picture map, pick, rename, drag, shelf drop on a part, Guide).
-- next: the Left lines above; nothing in progress.
+- next: the Left lines above; nothing in progress. **Open (checked 2026-11-09)** not re-driven in this pass (needs a real desktop, a trace on a large notebook, or an owner call).
