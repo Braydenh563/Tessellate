@@ -82,7 +82,7 @@
       const name = (i) => m.nodes.find((n) => n.id === i)?.text ?? i;
       const into = m.edges.filter((x) => x.to === id).map((x) => name(x.from));
       const out = m.edges.filter((x) => x.from === id).map((x) => name(x.to));
-      const kind = { rect: "box", round: "rounded box", stadium: "pill", circle: "circle", diamond: "decision", hexagon: "hexagon" }[node.shape] || "box";
+      const kind = { rect: "box", round: "rounded box", stadium: "pill", circle: "circle", diamond: "decision", hexagon: "hexagon", cylinder: "database", parallelogram: "input or output" }[node.shape] || "box";
       return `${node.text}, ${kind}.${into.length ? ` In from ${into.join(", ")}.` : ""}${out.length ? ` Out to ${out.join(", ")}.` : ""}${into.length || out.length ? "" : " No arrows."}`;
     },
     //: px per ms over the last 100 ms of `[{t, x, y}]`; a pause leaves nothing.

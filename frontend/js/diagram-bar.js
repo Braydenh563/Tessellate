@@ -6,9 +6,9 @@
 // `diagramModel.keys` is the one table of shape keys: the Add menu's hints and the pane's key handler both read it.
 (() => {
   const LAST = "diagram.lastShape";
-  //: key -> what it adds. N (a Box) and G (a group) were there before; 1 to 7 are the Add menu's order.
-  const KEYS = { 1: "rect", 2: "round", 3: "stadium", 4: "circle", 5: "diamond", 6: "hexagon", 7: "note", n: "rect", g: "group" };
-  const ORDER = ["rect", "round", "stadium", "circle", "diamond", "hexagon", "note", "group"];
+  //: key -> what it adds. N (a Box) and G (a group) were there before; 1 to 9 are the Add menu's order.
+  const KEYS = { 1: "rect", 2: "round", 3: "stadium", 4: "circle", 5: "diamond", 6: "hexagon", 7: "note", 8: "cylinder", 9: "parallelogram", n: "rect", g: "group" };
+  const ORDER = ["rect", "round", "stadium", "circle", "diamond", "hexagon", "note", "cylinder", "parallelogram", "group"];
   //: A short word for the Direction button; the full names stay on its tooltip and the live line.
   const WORD = { TD: "Down", LR: "Right", BT: "Up", RL: "Left" };
   diagramModel.keys = KEYS;
@@ -62,7 +62,7 @@
       h.add(S, optionsOf(shape));
     };
     main.addEventListener("click", () => add(last()));
-    const caret = h.smallButton("ph:caret-down", "Choose a shape to add (1 to 7, or ? for every key)", () => {
+    const caret = h.smallButton("ph:caret-down", "Choose a shape to add (1 to 9, or ? for every key)", () => {
       //: A pointer menu lines its right edge up with the point, so the point is the caret's right edge (it opened at the window's left edge from the split's left).
       const r = caret.getBoundingClientRect();
       const rows = ORDER.map((shape) => ({ label: nameOf(shape, h), keys: hintOf(shape), title: hints.get(nameOf(shape, h)) || "", run: () => add(shape) }));
@@ -108,17 +108,17 @@
     return bar;
   }
 
-  //: The keys that add a shape (1 to 7) and Shift+N (the last one used). Returns true when it took the key.
+  //: The keys that add a shape (1 to 9) and Shift+N (the last one used). Returns true when it took the key.
   function key(event) {
     if (event.altKey || event.ctrlKey || event.metaKey) return null;
-    const shape = event.shiftKey ? (event.key === "N" ? last() : null) : /^[1-7]$/.test(event.key) ? KEYS[event.key] : null;
+    const shape = event.shiftKey ? (event.key === "N" ? last() : null) : /^[1-9]$/.test(event.key) ? KEYS[event.key] : null;
     if (!shape) return null;
     prefs.set(LAST, shape);
     return optionsOf(shape);
   }
 
   //: The same keys from the picture, the toolbar or the outline's edge (the block handler only hears a focused block):
-  //: 1 to 7, N, Shift+N, G add after the selected block, K colours, ? opens the sheet. Typing in a field is left alone.
+  //: 1 to 9, N, Shift+N, G add after the selected block, K colours, ? opens the sheet. Typing in a field is left alone.
   function rootKey(S, event, h) {
     const t = event.target;
     if (event.defaultPrevented || event.altKey || event.ctrlKey || event.metaKey || t.isContentEditable || t.closest?.(".dgm-tree, .menu-wrap, input, textarea, select")) return;

@@ -41,7 +41,7 @@ def test_direction_is_a_menu_of_the_four_and_shift_still_cycles_back():
 def test_one_key_table_feeds_the_menu_hints_and_the_handler():
     table = re.search(r"const KEYS = \{([^}]*)\}", BAR).group(1)
     keys = dict(re.findall(r'(\w+): "(\w+)"', table))
-    assert [keys[str(n)] for n in range(1, 8)] == ["rect", "round", "stadium", "circle", "diamond", "hexagon", "note"]
+    assert [keys[str(n)] for n in range(1, 10)] == ["rect", "round", "stadium", "circle", "diamond", "hexagon", "note", "cylinder", "parallelogram"]
     assert keys["n"] == "rect" and keys["g"] == "group"
     # The menu hint is read from the table (hintOf), and the handler reads the same table.
     assert "Object.keys(KEYS).find" in BAR and "KEYS[event.key]" in BAR

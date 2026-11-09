@@ -299,7 +299,7 @@ def test_a_diagram_over_the_block_limit_stays_in_source_with_one_line_saying_so(
 
 # --- INBOX 1613 / DOCUMENTS_PLAN 22.4 R1: the shape menu and the row's swatch ---------------------
 
-SHAPE_BRACKETS = [("rect", "[", "]"), ("round", "(", ")"), ("stadium", "([", "])"), ("circle", "((", "))"), ("diamond", "{", "}"), ("hexagon", "{{", "}}")]
+SHAPE_BRACKETS = [("rect", "[", "]"), ("round", "(", ")"), ("stadium", "([", "])"), ("circle", "((", "))"), ("diamond", "{", "}"), ("hexagon", "{{", "}}"), ("cylinder", "[(", ")]"), ("parallelogram", "[/", "/]")]
 
 
 @pytest.mark.parametrize(("shape", "open_", "close"), SHAPE_BRACKETS)
@@ -311,7 +311,8 @@ def test_each_shape_prints_its_mermaid_brackets_and_has_a_glyph_in_the_swatch_an
     css = (ROOT / "frontend" / "css" / "diagram-lazy.css").read_text(encoding="utf-8")
     # The glyph is drawn from data-shape; the swatch and the menu row both come from shapeGlyph.
     assert shape == "rect" or f'.dgm-shape[data-shape="{shape}"]' in css
-    assert shape in re.search(r"SHAPE_LABEL = \{([^}]*)\}", code).group(1)
+    # The label table moved to diagram-ops.js (DGB_LABEL) to keep the builder under its size cap; the pane copies it on open.
+    assert shape in re.search(r"DGB_LABEL = \{([^}]*)\}", OPS.read_text(encoding="utf-8")).group(1)
     assert code.count("shapeGlyph(") >= 3, "the definition, the swatch button and the menu row each use it"
 
 

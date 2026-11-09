@@ -47,10 +47,10 @@
   //: kind of diagram is null.
   const DGM_MAX_NODES = 120;
   const DGM_SHAPES = [
-    ["([", "])", "stadium"], ["((", "))", "circle"], ["{{", "}}", "hexagon"],
+    ["([", "])", "stadium"], ["((", "))", "circle"], ["{{", "}}", "hexagon"], ["[(", ")]", "cylinder"], ["[/", "/]", "parallelogram"],
     ["[", "]", "rect"], ["(", ")", "round"], ["{", "}", "diamond"],
   ];
-  const DGM_UNREAD_SHAPE = /^(?:\[\[|\[\(|\[[/\\|]|\(\(\(|>|@\{|:::|\{\{\{)/;
+  const DGM_UNREAD_SHAPE = /^(?:\[\[|\[[\\|]|\(\(\(|>|@\{|:::|\{\{\{)/;
   const DGM_KEPT = /^(?:%%|(?:style|classDef|class|linkStyle|click|direction|default)\s|acc(?:Title|Descr)\b)/;
   const DGM_OTHER = /^(?:sequenceDiagram|classDiagram|stateDiagram|erDiagram|journey|gantt|pie|mindmap|timeline|gitGraph|C4\w+|quadrantChart|requirementDiagram|sankey|xychart|block|packet|kanban|architecture|zenuml)\b/i;
   //: Longest first, so `-.->` is not read as `-.-` and a stray `>`.
@@ -600,5 +600,5 @@
   //: The block pane (1546 P2) is a bundle of its own, fetched when a diagram is first shown (the kinds, 1546 P4, when a mind map, timeline or sequence diagram is):
   //: every caller is in this bundle or opens a document first, so no stand-in is needed, and
   //: neither app.js nor lazy-entries.js (both at their caps) carries the row.
-  Object.assign(LAZY_MODULES, { diagramBuilder: ["/css/diagram-lazy.css", "/js/diagram-builder.js"], diagramEmbed: ["/js/diagram-embed.js"], diagramTouch: ["/js/diagram-touch.js"], diagramView: ["/js/diagram-view.js"], diagramOverlay: ["/js/diagram-overlay.js"], diagramCanvas: ["/js/diagram-canvas.js"], diagramEdges: ["/js/diagram-edges.js"], diagramEdgePick: ["/js/diagram-edge-pick.js"], diagramSplit: ["/js/diagram-split.js"], diagramLetGo: ["/js/diagram-letgo.js"], diagramMulti: ["/js/diagram-multi.js"], diagramBar: ["/js/diagram-bar.js"], diagramKindbar: ["/js/diagram-kindbar.js"], diagramSteps: ["/js/diagram-steps.js"], diagramOutline: ["/js/diagram-outline.js"], diagramSuggest: ["/js/diagram-suggest.js"], diagramKinds: ["/js/diagram-kinds.js"], diagramJoins: ["/js/diagram-joins.js"], diagramStyle: ["/js/diagram-style.js"] });
+  Object.assign(LAZY_MODULES, { diagramBuilder: ["/css/diagram-lazy.css", "/js/diagram-builder.js"], diagramEmbed: ["/js/diagram-embed.js"], diagramTouch: ["/js/diagram-touch.js"], diagramView: ["/js/diagram-view.js"], diagramOverlay: ["/js/diagram-overlay.js"], diagramCanvas: ["/js/diagram-canvas.js"], diagramEdges: ["/js/diagram-edges.js"], diagramEdgePick: ["/js/diagram-edge-pick.js"], diagramSplit: ["/js/diagram-split.js"], diagramLetGo: ["/js/diagram-letgo.js"], diagramComplete: ["/js/diagram-complete.js"], diagramMulti: ["/js/diagram-multi.js"], diagramBar: ["/js/diagram-bar.js"], diagramKindbar: ["/js/diagram-kindbar.js"], diagramSteps: ["/js/diagram-steps.js"], diagramOutline: ["/js/diagram-outline.js"], diagramSuggest: ["/js/diagram-suggest.js"], diagramKinds: ["/js/diagram-kinds.js"], diagramJoins: ["/js/diagram-joins.js"], diagramStyle: ["/js/diagram-style.js"] });
 })();

@@ -7,9 +7,6 @@
 // Under the list, "Start from an example" loads the current starter (R6.8: the walkthrough wins for a new diagram, and the
 // starter is one press away); it and the template button go once there is a block.
 (() => {
-  //: The name a new block is given by shape (the builder's SHAPE_TEXT), so "Name it" is done when one block has another.
-  const DEFAULT_NAMES = { rect: "Step", round: "Step", stadium: "Start", circle: "Event", diamond: "Question?", hexagon: "Prepare" };
-
   //: `use` is the builder's own verbs: `add(S, options)` returns the new key, `rename(S, key)`, `connect(S, key)`.
   function build(S, use) {
     const list = use.el("ol", "dgm-steps");
@@ -90,7 +87,7 @@
     S.empty.classList.toggle("dgm-started", Boolean(blocks));
     //: A phone with an arrow keeps the picture and gets the list as a sheet (diagram-touch.js); before that the steps stay in the page.
     S.root.classList.toggle("dgm-listless", m.edges.length > 0);
-    const done = [m.nodes.length > 0, m.nodes.some((n) => n.text !== DEFAULT_NAMES[n.shape]), m.edges.length > 0];
+    const done = [m.nodes.length > 0, m.nodes.some((n) => n.text !== diagramModel.ops.TEXT[n.shape] /* the name a new block is given: "Name it" is done once one has another */), m.edges.length > 0];
     S.steps?.querySelectorAll(".dgm-step").forEach((item, i) => {
       if (item.classList.contains("dgm-done") === done[i]) return;
       item.classList.toggle("dgm-done", done[i]);

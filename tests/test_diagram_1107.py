@@ -97,7 +97,7 @@ def test_the_dialog_has_a_keys_chip_a_question_mark_anywhere_and_a_help_popover_
 def test_a_dock_tooltip_names_its_key():
     bar = _js("diagram-bar.js")
     touch = _js("diagram-touch.js")
-    assert "Choose a shape to add (1 to 7, or ? for every key)" in bar
+    assert "Choose a shape to add (1 to 9, or ? for every key)" in bar
     assert "Choose a shape to add as a block (N, or ? for every key)" in touch
     assert 'main.title = `Add a ${name.toLowerCase()} (${hintOf(shape)})`' in bar and '"Undo, Ctrl+Z"' in bar and '"Redo, Ctrl+Y"' in bar
 
