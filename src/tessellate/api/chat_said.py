@@ -893,5 +893,5 @@ def acts_on_listed_task(question: str, history: list[dict], now: datetime) -> bo
     if not history:
         return False
     shown = history[-1].get("answer") or ""
-    listed = {t for t in (task_acts.item_in(n, shown) for n in range(1, 13)) if t}
+    listed = set(task_acts.items_in(shown))
     return (acts.parse(question, now, history) or {}).get("about") in listed

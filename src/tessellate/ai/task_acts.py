@@ -779,9 +779,8 @@ def counted_from(parsed: dict, history: list[dict] | None) -> dict:
     return {**parsed, "about": shown} if shown else parsed
 
 
-def item_in(position: int, answer: str) -> str | None:
-    """The task at `position` in the list the last answer showed, or None when
-    that answer showed no list that long (R3-33: "tick the first one")."""
+def items_in(answer: str) -> list[str]:
+    """Every list item the answer showed, in order, parsed once."""
     items = []
     for line in _LIST_LINE.finditer(answer or ""):
         text = re.sub(r"\[([^\]]+)\]\([^)]*\)", r"\1", line.group("item"))
@@ -789,6 +788,13 @@ def item_in(position: int, answer: str) -> str | None:
         text = re.split(r"\s+\(|:\s", text, maxsplit=1)[0].strip(" .;")
         if text:
             items.append(text)
+    return items
+
+
+def item_in(position: int, answer: str) -> str | None:
+    """The task at `position` in the list the last answer showed, or None when
+    that answer showed no list that long (R3-33: "tick the first one")."""
+    items = items_in(answer)
     if not items or abs(position) > len(items) or position == 0:
         return None
     return items[position - 1] if position > 0 else items[-1]
