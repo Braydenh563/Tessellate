@@ -1274,18 +1274,8 @@ $("notes-new-note").addEventListener("click", () => startNewNote());
 function startNewNote() {
   if ($("tab-notes").classList.contains("hidden")) switchTab("notes");
   showNotesSection("capture");
-  // The box is a live editor (documents.js `mountNoteSurface`) that mounts
-  // over the textarea the first time Capture shows, and the mount takes the
-  // focus a plain `focus()` had just set: measured in Chromium, the textarea
-  // was the active element 50ms after the press and nothing was at 750.
-  // Focusing the surface the mount resolves to lands on the editor whether
-  // this is its first showing or its fiftieth.
-  const box = $("entry-content");
-  box?.focus();
-  //: `mountNoteSurfaceNow` (app.js) fetches the editor's bundle when it is
-  //: not in yet; the bare `mountNoteSurface` is undefined until then, which
-  //: left the focus on the body on a fresh boot (INBOX 432, measured).
-  mountNoteSurfaceNow(box).then((surface) => surface?.focus()).catch(() => {});
+  $("entry-content").focus();
+  mountNoteSurfaceNow($("entry-content")).then(s => !activeOverlay() && s?.focus());
 }
 $("select-btn").addEventListener("click", () =>
   selectMode ? exitSelectMode() : enterSelectMode()

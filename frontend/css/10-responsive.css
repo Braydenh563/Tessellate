@@ -601,6 +601,18 @@ header#top-bar[data-scrolled="1"],
    Not `display: none`: the segment's accessible name is its text, and a
    hidden name is a button a screen reader announces as "button". */
 @media (max-width: 1199.98px) {
+  /* Browser zoom, rule 9 below: the Recent head's title is the tab above it; kept for a screen reader. */
+  #doc-sidebar-list > .sidebar-head > h2 {
+    position: absolute;
+    width: 0;
+    height: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+  #doc-sidebar-list > .sidebar-head {
+    justify-content: flex-end;
+  }
   /* Square, so four icons read as four cells of one well rather than four
      pills with air between them. */
   .seg-multi > button {
@@ -2854,4 +2866,36 @@ header#top-bar[data-scrolled="1"],
   min-width: 0;
   justify-content: center;
   padding-inline: var(--space-1);
+}
+/* 8. **Settings' "On this page" head stays on one line.** The label (72px) and
+      "Show all 8 sections" (116px) need 194px and the rail's head had 180 after
+      its link indent, so the toggle dropped under the label at 125 to 175 %.
+      The head's indent closes up a step and its gap and right edge give way. */
+.settings-nav-groups-head {
+  gap: var(--space-1);
+  padding-inline: var(--space-5) 0;
+}
+/* 9. **The Recent head's title is the tab above it.** "Recent" over a row of
+      four buttons is 261px in a 166 to 226px column, up to 1200 wide, and the
+      sidebar tab already says "Documents": the heading stays for a screen reader
+      (rules in the 1199.98 band at the top of this file, `#doc-sidebar-list`). */
+/* 10. **A sidebar's empty line fits the column.** "No saved chats yet" is 140px
+       and the 150 to 175 % rail leaves 134 inside 1rem of padding each side. */
+#chat-sidebar .empty-state,
+#doc-sidebar .empty-state {
+  padding-inline: var(--space-3);
+}
+/* 11. **Edges that bleed on purpose are clipped, not scrolled.** The Learned
+       switches (9px hover bleed) and the Library's filter row (4px focus bleed)
+       counted as horizontal overflow of their box; `overflow: clip` with a
+       margin keeps the bleed drawn and the box's scroll width its own. */
+#learned-switches,
+#learned-switches .learned-switch-stack,
+.library-controls {
+  overflow: clip;
+  overflow-clip-margin: 14px;
+}
+/* 12. **A theme card's name has room for "Quiet utilitarian".** */
+.theme-presets {
+  grid-template-columns: repeat(auto-fill, minmax(7.5rem, 1fr));
 }
