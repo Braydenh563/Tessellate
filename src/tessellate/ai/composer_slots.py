@@ -27,6 +27,8 @@ from tessellate.ai.composer_done import (  # noqa: F401  (moved; re-exported)
 )
 
 _DID = re.compile(r"^(?:did|have|has)\s+(?:i|we)\s+(?:already\s+|yet\s+|ever\s+)?(.+)$", re.I)
+#: "Do I need to renew my passport": a yes when a note says to (R9-7).
+_NEED_TO = re.compile(r"^(?:do|should)\s+i\s+(?:still\s+)?(?:need|have)\s+to\s+(.+)$", re.I)
 _LEFT = re.compile(r"^what(?:'s|\s+is|\s+else\s+is|\s+is\s+still)?\s+(?:still\s+)?(?:left|remaining|outstanding|open)\s*(.*)$", re.I)
 #: "What's still on my grocery list", "what haven't I bought from it yet":
 #: the open items, not the whole list (2026-10-30 probe).
@@ -128,7 +130,7 @@ def _say_recorded(out, views: list, done: list, today: date) -> None:  # noqa: A
     for v, task in done:
         if task.done or not (got := recorded_later(views, v, task)):
             continue
-        out.lines.append(f"{_note_of(got[0], today).capitalize()} records “{_DOING_END.split(_task_name(task), 1)[0]}” as done, though its box is not ticked.")
+        out.lines.append(f"{_cap(_note_of(got[0], today))} records “{_DOING_END.split(_task_name(task), 1)[0]}” as done, though its box is not ticked.")
         composer_lists._cite(out, got[0], got[1], out.lines[-1])  # noqa: SLF001
 
 
@@ -309,6 +311,19 @@ def _verdict(out, view, task, verb_said: str) -> None:  # noqa: ANN001
     composer_lists._cite(out, view, task, line)  # noqa: SLF001
 
 
+def _titled_sentence(views: list, verb: frozenset[str], obj):  # noqa: ANN001, ANN202
+    """"Tickets £75 each, bought two" in the Concert note answers "did I buy the concert tickets" (R9-7)."""
+    return next(((v, s) for v in sorted(views, key=lambda v: v.rank) for s in v.sentences
+                 if verb and not _holds(s, obj) and s.kind != "task" and _says_verb(s, verb) and _titled_holds(v, s, obj)), None)
+
+
+def _titled_holds(view, s, obj) -> bool:  # noqa: ANN001
+    """The sentence and its note's title together hold every word of the thing, the sentence at least one."""
+    have = set(composer._words(s.text))  # noqa: SLF001
+    both = have | set(view.title_words)
+    return any(composer._holds(st, have) for st in obj) and all(composer._holds(st, both) for st in obj)  # noqa: SLF001
+
+
 def _first_did(views: list, verb: frozenset[str], obj):  # noqa: ANN001
     """The (view, sentence) that says the doing: a task that holds the object
     and the verb at once, else prose that does, else a task that holds the
@@ -325,7 +340,7 @@ def _first_did(views: list, verb: frozenset[str], obj):  # noqa: ANN001
                     return view, s
             elif _says_verb(s, verb):
                 said = said or (view, s)
-    return said or task
+    return next(filter(None, (said, task, _titled_sentence(views, verb, obj))), None)
 
 
 _OPEN_BOX = re.compile(r"^\s*[-*]\s*\[ \]\s*(.+)$", re.M)
@@ -354,10 +369,32 @@ def _note_of(view, today: date) -> str:  # noqa: ANN001
     return f"your note of {composer_lists._day(day, today)}" if day else "one note"  # noqa: SLF001
 
 
-def _say_line(out, view, s, lead: str) -> None:  # noqa: ANN001
+def _title_of(view, s) -> str:  # noqa: ANN001
+    """The note's title when its sentence does not say it, so the answer names the note (R9-7)."""
+    held = set(composer._words(s.text))  # noqa: SLF001
+    return view.title if getattr(view, "titled", False) and view.title and not set(view.title_words) & held else ""
+
+
+def _say_line(out, view, s, lead: str, via: str = "") -> None:  # noqa: ANN001
     text = re.sub(r"^\s*[-*]\s*(?:\[[ xX]\]\s*)?", "", s.text).strip()
-    out.lines.append(f"{lead}: {text}")
+    out.lines.append(f"{lead}: {text}" + (f" ({via})" if via else ""))
     composer_lists._cite(out, view, s, s.text)  # noqa: SLF001
+
+
+def _named(view, today: date) -> str:  # noqa: ANN001
+    """A titled note is named by its title, an untitled one by its day (R9-7)."""
+    return f"your “{view.title}” note" if getattr(view, "titled", False) and view.title else _note_of(view, today)
+
+
+def _cap(text: str) -> str:
+    """First letter up, the rest as written (a note's title keeps its capitals)."""
+    return text[:1].upper() + text[1:]
+
+
+def _imperative_of(text: str, verb_word: str) -> bool:
+    """"Call mum about christmas plans" opens with the verb asked ("did I call mum"): a to-do, not a record (R9-7)."""
+    first = (re.findall(r"[A-Za-z']+", re.sub(r"^\s*[-*]\s*(?:\[[ xX]\]\s*)?", "", text)) or [""])[0].lower()
+    return bool(first) and first == verb_word.lower() and not first.endswith("ed")
 
 
 def _say_did(out, view, s, verb_word: str, today: date) -> None:  # noqa: ANN001
@@ -365,10 +402,10 @@ def _say_did(out, view, s, verb_word: str, today: date) -> None:  # noqa: ANN001
         _verdict(out, view, s, verb_word)
     elif _UNDONE.search(s.text):
         _say_line(out, view, s, f"No, {_note_of(view, today)} says")
-    elif planned(s.text):
-        _say_line(out, view, s, f"Not yet, as far as your notes go. {_note_of(view, today).capitalize()} only plans it")
+    elif planned(s.text) or _imperative_of(s.text, verb_word):
+        _say_line(out, view, s, f"Not yet, as far as your notes go. {_cap(_note_of(view, today))} only plans it")
     else:
-        _say_line(out, view, s, f"Yes, {_note_of(view, today)} says so")
+        _say_line(out, view, s, f"Yes, {_note_of(view, today)} says so", via=_title_of(view, s))
 
 
 def _not_said(out, views: list, obj, words: list[str], today: date, verb: frozenset[str] = frozenset()) -> None:  # noqa: ANN001
@@ -377,7 +414,7 @@ def _not_said(out, views: list, obj, words: list[str], today: date, verb: frozen
     thing = _yours(_asked_thing(words))
     seen = _first_did(views, frozenset(), obj)
     if seen:
-        _say_line(out, seen[0], seen[1], f"I found nothing in your notes that says so. {_note_of(seen[0], today).capitalize()} mentions {thing}")
+        _say_line(out, seen[0], seen[1], f"I found nothing in your notes that says so. {_cap(_named(seen[0], today))} mentions {thing}")
     elif empty := next((v for v in views if not v.sentences and _titled_for(v, obj)), None):
         line = f"Your {composer_lists._title(empty)} note has a title but nothing written under it, so it does not say."  # noqa: SLF001
         out.lines.append(line)
@@ -506,6 +543,31 @@ def _did(out, rest: str, views: list, today: date) -> bool:  # noqa: ANN001
         _not_said(out, views, obj, words, today, verb)
         return True
     _say_did(out, *best, words[0], today)
+    return True
+
+
+def _need_to(out, rest: str, views: list, today: date) -> bool:  # noqa: ANN001
+    """An open box that holds the doing is a yes, a ticked one a no; a note named for it ("Renew passport") is a yes."""
+    obj = _stems(rest)
+    if len(obj) < 2:
+        return False
+    found = _first_did(views, frozenset(), obj)
+    if found is not None and found[1].kind == "task":
+        view, task = found
+        text = re.sub(r"^\s*[-*]?\s*\[[ xX]\]\s*", "", task.text).strip()
+        line = (f"No, “{text}” is ticked off in {composer_lists._title(view)}." if task.done  # noqa: SLF001
+                else f"Yes, “{text}” is still open in {composer_lists._title(view)}.")
+        out.lines.append(line)
+        composer_lists._cite(out, view, task, line)  # noqa: SLF001
+        return True
+    titled = next((v for v in sorted(views, key=lambda v: v.rank) if not v.sentences and v.title and _titled_for(v, obj)), None)
+    if titled is None:
+        return False
+    day = f" ({composer_lists._day(titled.written, today)})" if titled.written else ""  # noqa: SLF001
+    line = f"Yes: your note “{titled.title}”{day} says to."
+    out.lines.append(line)
+    out.rows.append({"sentence": line, "note_id": titled.note.get("source_id", titled.id), "source": titled.title,
+                     "start": 0, "end": 0, "score": 1.0, "digest": True})
     return True
 
 
@@ -1060,7 +1122,7 @@ def answer(out, asked: str, views: list, today: date) -> bool:  # noqa: ANN001
     shaped = _by_words(out, tokens, views, today, q)
     if shaped is not None:
         return shaped
-    for pattern, say in ((_SINCE, _since), (_DID, _did), (_NEED, _left), (_LEFT, _left), (_STILL_ON, _left), (_IS_STILL, _is_still), (_IS_DONE, _is_done)):
+    for pattern, say in ((_SINCE, _since), (_DID, _did), (_NEED_TO, _need_to), (_NEED, _left), (_LEFT, _left), (_STILL_ON, _left), (_IS_STILL, _is_still), (_IS_DONE, _is_done)):
         if m := pattern.match(q):
             return say(out, next((g for g in m.groups() if g), ""), views, today)
     return False

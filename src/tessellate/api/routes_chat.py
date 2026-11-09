@@ -287,7 +287,7 @@ def _search_notes(session: Session, question: str, found: _Found, attached: list
     #: Searched with the person's own abbreviations spelt out ("what's due in
     #: CC" also finds the notes that say Cloud Computing, B7).
     found.meaning_loading, found.meaning_off = _meaning_loading(), _meaning_off()
-    question = _slips_put_right(question)
+    question = composer_intent.without_event_window(_slips_put_right(question))
     hit = search_manager.retrieve_detailed(
         session, glossary.expand(question, _glossary(session)), deps.get_embeddings(), limit=5,
         locale=locale,
