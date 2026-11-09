@@ -47,12 +47,14 @@ def test_standing_cycles_through_every_idle_frame_at_about_six_a_second() -> Non
 def test_a_wake_lands_on_a_new_frame_not_the_same_one_again() -> None:
     e = make()
     out, t = e.update(0.0), 0.0
+    #: What is drawn is the frame and the face over it: a blink is a face phase on the held frame since INBOX 1704
+    #: (it kept the expression's mouth), so a wake into a blink changes the face, not the frame.
     for _ in range(40):
-        before = out.frame
+        before = (out.frame, out.face)
         t += out.wake_ms / 1000.0
         e.flash = None
         out = e.update(t)
-        assert out.frame != before
+        assert (out.frame, out.face) != before
 
 
 # "quiet" (typing) left this list 2026-11-04: the owner's "it is also not animated"
@@ -84,7 +86,9 @@ def test_sitting_sleeping_and_walking_keep_their_own_frames() -> None:
 def test_a_blink_still_overrides_the_cycle() -> None:
     e = make()
     e.flash = ("blink", 10.0)
-    assert e.update(1.0).frame == "blink"
+    out = e.update(1.0)
+    #: The blink picture, or since INBOX 1704 the blink face over the held frame.
+    assert out.frame == "blink" or (out.face or ("",))[0] == "blink", (out.frame, out.face)
 
 
 def test_untouched_it_sits_at_ten_minutes_and_sleeps_at_twenty() -> None:
