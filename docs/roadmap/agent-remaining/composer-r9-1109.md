@@ -79,3 +79,7 @@ Fixed: 602b355c5 (batch 1 regressions: five tests, six functions over the comple
 ## Status (agent c11)
 
 Fixed: R9-12 (acts), R9-7 (verdict), R9-14 (names), R9-16, parts of R9-15 and R9-17, the three reviewer findings, the CodeQL regex alerts, and a four-day wording test. Open: see `c11-1109.md`.
+
+## Status (agent c12)
+
+Fixed: R9-10 rest (fastest run, compare my two runs, which holiday is better in April: `composer_tally`, dates and units read by `recognise`), R9-9 rest (and the others, how is it now, who wrote it: `composer_dialogue`, `composer_credit`), R9-6 rest (`composer_refer`, "Your Book club note also has"), R9-11 apples (`composer_likeness`), R9-2/3 leftovers (plot 14 `composer_label`, dense bread, the Q4 report is a name), R9-15 (a title-only note is said to be that), R9-17 (no "Right away." opener, who-once role line, busiest day in words), and a c11 regression (a sentence-opening ordinary word was read as a name: "bike lock" became "bike pick"; two engine dialogue evals and a note-language test failed). Open: see `c12-1109.md`.
