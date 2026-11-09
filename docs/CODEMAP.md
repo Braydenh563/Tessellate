@@ -2092,7 +2092,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `assistantEmblemInto` | frontend/js/assistant-avatar.js:18 |
+| `assistantEmblemInto` | frontend/js/assistant-avatar.js:19 |
 
 ### frontend/js/atlas-life.js (18)
 
@@ -2981,7 +2981,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `confirmedPatternItems` | frontend/js/confirmed-patterns.js:11 |
+| `confirmedPatternItems` | frontend/js/confirmed-patterns.js:12 |
 
 ### frontend/js/connections.js (7)
 
@@ -3059,9 +3059,9 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `dateFieldKey` | frontend/js/date-field.js:10 |
-| `dateFieldShift` | frontend/js/date-field.js:11 |
-| `dateFieldWire` | frontend/js/date-field.js:13 |
+| `dateFieldKey` | frontend/js/date-field.js:11 |
+| `dateFieldShift` | frontend/js/date-field.js:12 |
+| `dateFieldWire` | frontend/js/date-field.js:14 |
 
 ### frontend/js/desk-companion.js (34)
 
@@ -4843,14 +4843,14 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `extractRefLabel` | frontend/js/extract-preview.js:7 |
-| `renderExtractPreview` | frontend/js/extract-preview.js:13 |
+| `extractRefLabel` | frontend/js/extract-preview.js:8 |
+| `renderExtractPreview` | frontend/js/extract-preview.js:14 |
 
 ### frontend/js/feature-model-sheet.js (1)
 
 | Name | File:line |
 |---|---|
-| `openFeatureModelSheet` | frontend/js/feature-model-sheet.js:9 |
+| `openFeatureModelSheet` | frontend/js/feature-model-sheet.js:10 |
 
 ### frontend/js/field-clear.js (6)
 
@@ -5814,20 +5814,20 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `linkPropsParse` | frontend/js/link-types.js:19 |
-| `linkPropsText` | frontend/js/link-types.js:15 |
-| `linkTypesList` | frontend/js/link-types.js:10 |
-| `newRelationType` | frontend/js/link-types.js:55 |
-| `openLinkTypeSheet` | frontend/js/link-types.js:82 |
-| `openRelationTypesSheet` | frontend/js/link-types.js:144 |
-| `relationTypeDeleteUndo` | frontend/js/link-types.js:39 |
-| `relationTypesRepaint` | frontend/js/link-types.js:37 |
+| `linkPropsParse` | frontend/js/link-types.js:20 |
+| `linkPropsText` | frontend/js/link-types.js:16 |
+| `linkTypesList` | frontend/js/link-types.js:11 |
+| `newRelationType` | frontend/js/link-types.js:56 |
+| `openLinkTypeSheet` | frontend/js/link-types.js:83 |
+| `openRelationTypesSheet` | frontend/js/link-types.js:145 |
+| `relationTypeDeleteUndo` | frontend/js/link-types.js:40 |
+| `relationTypesRepaint` | frontend/js/link-types.js:38 |
 
 ### frontend/js/load-failed.js (1)
 
 | Name | File:line |
 |---|---|
-| `surfaceFailed` | frontend/js/load-failed.js:8 |
+| `surfaceFailed` | frontend/js/load-failed.js:9 |
 
 ### frontend/js/manual.js (7)
 
@@ -6412,8 +6412,8 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `aiOfflineSplit` | frontend/js/offline-split.js:19 |
-| `hideAiOfflineNotices` | frontend/js/offline-split.js:8 |
+| `aiOfflineSplit` | frontend/js/offline-split.js:20 |
+| `hideAiOfflineNotices` | frontend/js/offline-split.js:9 |
 
 ### frontend/js/onboarding.js (16)
 
@@ -6519,15 +6519,15 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `openPhoneMoreSheet` | frontend/js/phone-more.js:14 |
+| `openPhoneMoreSheet` | frontend/js/phone-more.js:15 |
 
 ### frontend/js/pick-row.js (3)
 
 | Name | File:line |
 |---|---|
-| `notePickerRow` | frontend/js/pick-row.js:7 |
-| `notePickerThumb` | frontend/js/pick-row.js:64 |
-| `updateNotePickerCount` | frontend/js/pick-row.js:79 |
+| `notePickerRow` | frontend/js/pick-row.js:8 |
+| `notePickerThumb` | frontend/js/pick-row.js:65 |
+| `updateNotePickerCount` | frontend/js/pick-row.js:80 |
 
 ### frontend/js/popup-glyph.js (2)
 
@@ -6790,13 +6790,13 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `screenContext` | frontend/js/screen-context.js:6 |
+| `screenContext` | frontend/js/screen-context.js:7 |
 
 ### frontend/js/scroll-row.js (1)
 
 | Name | File:line |
 |---|---|
-| `scrollRowArrows` | frontend/js/scroll-row.js:8 |
+| `scrollRowArrows` | frontend/js/scroll-row.js:9 |
 
 ### frontend/js/search-suggest.js (19)
 
@@ -7588,8 +7588,8 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `renderTimelineRowMedia` | frontend/js/timeline-detail.js:116 |
-| `timelineRowDetail` | frontend/js/timeline-detail.js:6 |
+| `renderTimelineRowMedia` | frontend/js/timeline-detail.js:117 |
+| `timelineRowDetail` | frontend/js/timeline-detail.js:7 |
 
 ### frontend/js/timeline-ticks.js (6)
 
@@ -7769,8 +7769,8 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `ensureVaultOpen` | frontend/js/vault-unlock.js:32 |
-| `unlockPrivateNotes` | frontend/js/vault-unlock.js:11 |
+| `ensureVaultOpen` | frontend/js/vault-unlock.js:33 |
+| `unlockPrivateNotes` | frontend/js/vault-unlock.js:12 |
 
 ### frontend/js/web-clip.js (11)
 

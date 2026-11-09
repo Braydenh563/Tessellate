@@ -62,8 +62,9 @@ TOP_LEVEL_LETS_CAP = 699
 #: web panel's search and result rows (web-results.js, 400 lines) wrapped whole, eight exports, with the SearXNG start helper
 #: and failure row added inside it; measured 9,708. 1546 P1 (D4): the board's `wbMermaidParse` and `wbMermaidText` go and
 #: documents-mermaid.js exports `diagramModel`; measured 9,706. 2026-11-08 (after merges took it to 9,711): task-steps.js
-#: (three exports) and obj-order.js (eight) wrapped whole; measured 9,701.
-GLOBAL_NAMES_CAP = 9701
+#: (three exports) and obj-order.js (eight) wrapped whole; measured 9,701.  iife-1109: screen-context, load-failed, feature-model-sheet, phone-more,
+#: extract-preview, timeline-detail, scroll-row, assistant-avatar and confirmed-patterns wrapped whole, one export each; measured 9,688. Then date-field, link-types, vault-unlock, offline-split and pick-row wrapped whole; measured 9,678.
+GLOBAL_NAMES_CAP = 9678
 
 
 def _code() -> dict[str, str]:
