@@ -1139,9 +1139,23 @@ def read(text: str, now: datetime, locale: str | None = None) -> dict | None:
     return found
 
 
+#: "call Anna": a bare imperative to a person, a task not a search. A name as typed (capitalised) or a kin word.
+_BARE_CALL = re.compile(
+    r"^(?P<verb>call|ring|phone|text|email|message|ping|whatsapp)\s+(?P<who>(?:[A-Z][\w'’-]+(?: [A-Z][\w'’-]+)?)|(?i:mum|mom|dad|nan|nana|gran|granny|grandma|grandpa|auntie|aunty|uncle))$"
+)
+
+
+def _bare_call(text: str, now: datetime, locale: str | None) -> dict | None:
+    """"call Anna" is "remind me to call Anna": the same reminder, asking when (composer-r8)."""
+    found = _BARE_CALL.match(text)
+    if not found or found.group("who").lower() in {"me", "it", "us", "back"}:
+        return None
+    return _reminder(f"remind me to {text}", now, locale)
+
+
 def _read_folded(command: str, question: bool, polite: bool, urgent: bool, now: datetime, locale: str | None) -> dict | None:
-    for reader in (_meeting, lambda t: _reminder(t, now, locale), lambda t: task_acts.read_add(t, lambda r: _reminder(r, now, locale)),
-                   task_acts.read_uncomplete, task_acts.read_complete, task_acts.read_cancel, lambda t: task_acts.read_snooze(t, lambda w: _time_of(w, now, locale)), _new_note, _untag, _tag, _move, _delete, _pin, _link, object_acts.read_rename, lambda t: object_acts.read_restore(t, _one_target), _rename,
+    for reader in (task_acts.read_checklist_note, _meeting, lambda t: _reminder(t, now, locale), lambda t: task_acts.read_add(t, lambda r: _reminder(r, now, locale)),
+                   task_acts.read_uncomplete, task_acts.read_complete, task_acts.read_cancel, lambda t: task_acts.read_snooze(t, lambda w: _time_of(w, now, locale)), lambda t: _bare_call(t, now, locale), _new_note, _untag, _tag, _move, _delete, _pin, _link, object_acts.read_rename, lambda t: object_acts.read_restore(t, _one_target), _rename,
                    _append, _summarise, _navigate, _find):
         found = reader(command)
         if found is None:
@@ -1545,6 +1559,7 @@ def _plan_new_note(session: Session, parsed: dict) -> dict:
     #: A named note ("called X with Y") has a title line and a body: said as
     #: `“X”: Y`, never with the line break in the sentence.
     title, _, body = parsed["content"].partition("\n")
+    title = title.lstrip("# ")
     label = f"Make a new note “{_clip(title, 50)}”: {_clip(body.strip(), 50)}" if body.strip() else f"Make a new note: “{_clip(title, 80)}”"
     card = _card(label, steps)
     if _has_note_saying(session, parsed["content"]):
