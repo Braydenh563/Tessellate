@@ -2,7 +2,7 @@
 
 Generated 2026-11-09 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7926, frontend ids 2652, CSS sections 522, backend routes 649, backend modules 9244, test files 2270, tests 19030, plan headings 1006, app scripts 28, boot scripts 37, script files 264.
+Counts: frontend functions 7926, frontend ids 2652, CSS sections 522, backend routes 649, backend modules 9245, test files 2270, tests 19030, plan headings 1006, app scripts 28, boot scripts 37, script files 264.
 
 ## Frontend functions (7926)
 
@@ -13168,7 +13168,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:164 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (9244)
+## Backend modules (9245)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -15193,17 +15193,18 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `select` | src/tessellate/ai/composer_select.py:274 |
 | `superseded` | src/tessellate/ai/composer_select.py:139 |
 
-### src/tessellate/ai/composer_sides.py (7)
+### src/tessellate/ai/composer_sides.py (8)
 
 | Name | File:line |
 |---|---|
-| `_commas` | src/tessellate/ai/composer_sides.py:88 |
-| `_cut` | src/tessellate/ai/composer_sides.py:54 |
-| `_phrases` | src/tessellate/ai/composer_sides.py:32 |
-| `_plain` | src/tessellate/ai/composer_sides.py:50 |
-| `_split_words` | src/tessellate/ai/composer_sides.py:77 |
-| `listed` | src/tessellate/ai/composer_sides.py:98 |
-| `strip_format` | src/tessellate/ai/composer_sides.py:67 |
+| `_commas` | src/tessellate/ai/composer_sides.py:96 |
+| `_cut` | src/tessellate/ai/composer_sides.py:61 |
+| `_phrase_sets` | src/tessellate/ai/composer_sides.py:47 |
+| `_phrases` | src/tessellate/ai/composer_sides.py:34 |
+| `_plain` | src/tessellate/ai/composer_sides.py:57 |
+| `_split_words` | src/tessellate/ai/composer_sides.py:85 |
+| `listed` | src/tessellate/ai/composer_sides.py:106 |
+| `strip_format` | src/tessellate/ai/composer_sides.py:74 |
 
 ### src/tessellate/ai/composer_slots.py (73)
 
@@ -27794,7 +27795,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Phases 0 to 2: built 2026-09-09 | docs/roadmap/DOCUMENTS_PLAN.md:119 |
 | Phases 0 to 6: built | docs/roadmap/UI_MODERNISATION_PLAN.md:216 |
 | Phases, each with the gate it is finished against | docs/roadmap/MINDMAP_PLAN.md:1296 |
-| Placed (last 20, newest first) | docs/roadmap/INBOX.md:182 |
+| Placed (last 20, newest first) | docs/roadmap/INBOX.md:184 |
 | Placed from Brief 40, 2026-10-10 (does the MCP server work) | docs/roadmap/AGENT_SKILLS_REFORM.md:345 |
 | Placed from Brief 40, 2026-10-10 (research and placement) | docs/roadmap/BACKLOG.md:4176 |
 | Placed from Brief 40, 2026-10-10 (the phone over HTTPS) | docs/roadmap/WORLD_CLASS_PLAN.md:3128 |
