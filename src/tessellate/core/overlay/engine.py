@@ -1514,7 +1514,7 @@ class Engine:
 
     def _ambient_gap(self) -> float:
         lo, hi = AMBIENT_EVERY
-        return (lo + (hi - lo) * self.life_rng.random() ** AMBIENT_SKEW) * self._blink_scale()[0]
+        return lo + (hi - lo) * self.life_rng.random() ** AMBIENT_SKEW * self._blink_scale()[0]  # the 2 s floor holds (INBOX 1670)
 
     def _blink_scale(self) -> tuple[float, float]:
         """INBOX 1719 b: the mood and the tiredness of the moment set how often it blinks and how slowly (`vitals.blink`):
@@ -1544,7 +1544,7 @@ class Engine:
             # G2: a big gaze shift starts with a blink (Eyes Alive), then the look.
             self._blink(now)
             self.look_after_blink = look
-            double = not look and self.life_rng.random() < DOUBLE_SHARE
+            double = not look and self.life_rng.random() < DOUBLE_SHARE and self.blink_for <= BLINK_FOR * 1.1  # a heavy lid is not doubled
             self.next_ambient = now + (self.blink_for + DOUBLE_GAP if double else self._ambient_gap())
 
     def _after_stand(self, now: float) -> None:

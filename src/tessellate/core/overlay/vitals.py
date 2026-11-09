@@ -14,15 +14,15 @@ from typing import Any
 
 from . import catalogue
 
-#: blink: per mood `[gap scale, length scale]`, and `tired`, the scale reached at a full rest need (from `tired_from` up).
+#: blink: per mood `[gap scale, length scale]` (the gap's spread over its 2 s floor is scaled), and `tired`, the scale reached at a full rest need (from `tired_from` up).
 #: breath: per mood a period scale; `exert` the most the rate rises after exertion; `half_s` its half-life.
 DEFAULTS: dict[str, Any] = {
     "blink": {
         "mood": {
             "happy": [1.0, 1.0], "content": [1.0, 1.05], "proud": [1.1, 1.0], "bored": [0.85, 1.25],
-            "curious": [1.35, 0.95], "focus": [1.5, 0.95], "startled": [1.45, 0.8], "sleepy": [0.7, 1.7],
+            "curious": [1.6, 0.95], "focus": [1.8, 0.95], "startled": [1.7, 0.8], "sleepy": [0.5, 1.7],
         },
-        "tired": [0.8, 1.35],
+        "tired": [0.7, 1.35],
         "tired_from": 0.5,
     },
     "breath": {

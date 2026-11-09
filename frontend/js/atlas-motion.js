@@ -56,10 +56,10 @@ function atlasBlinkTick() {
       if (Math.random() < 0.15) setTimeout(() => atlasBlinkMay(box) && atlasBlink(box), 420);
     }
   }
-  //: The gap is the mood's and the tiredness's (`atlasBlink.vitals`): sleepy, more often; curious or startled, a held gaze.
+  //: The gap's spread is the mood's and the tiredness's (`atlasBlink.vitals`): sleepy, more often; curious or startled, a held gaze.
   const box = boxes[0];
   const gap = box ? atlasBlink.vitals(box.closest(".nmb-drowsy, .nmb-groggy") ? "sleepy" : box.dataset.atlasMood).gap : 1;
-  if (boxes.length) atlasState.blinkTimer = setTimeout(atlasBlinkTick, (3400 + Math.random() * 4200) * gap);
+  if (boxes.length) atlasState.blinkTimer = setTimeout(atlasBlinkTick, 3400 + Math.random() * 4200 * gap);
 }
 //: **The body's rhythms, one table for both companions** (INBOX 1719 b): `vitals` in companion-catalogue.json, which
 //: the desk reads too (`src/tessellate/core/overlay/vitals.py`). For a mood (the figure's, mapped to the catalogue's),

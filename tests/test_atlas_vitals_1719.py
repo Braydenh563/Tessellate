@@ -84,4 +84,4 @@ def test_the_beat_sets_the_rate_and_the_blink_clock_reads_the_gap():
     life = (JS / "atlas-life.js").read_text(encoding="utf-8")
     motion = (JS / "atlas-motion.js").read_text(encoding="utf-8")
     assert re.search(r"atlasBreathFrame\(box, live\);\n\s*atlasBreathFrame\.rate\(box\.atlasBreath,", life)
-    assert "* gap);" in motion and "atlasBlink.vitals(" in motion
+    assert "4200 * gap);" in motion and "atlasBlink.vitals(" in motion

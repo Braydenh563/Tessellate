@@ -2886,19 +2886,19 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `companionPathAt` | frontend/js/companion-menu.js:1122 |
-| `companionPathEase` | frontend/js/companion-menu.js:1114 |
-| `companionPathKind` | frontend/js/companion-menu.js:1138 |
-| `companionPathPeak` | frontend/js/companion-menu.js:1145 |
-| `companionPathPlan` | frontend/js/companion-menu.js:1155 |
+| `companionPathAt` | frontend/js/companion-menu.js:1123 |
+| `companionPathEase` | frontend/js/companion-menu.js:1115 |
+| `companionPathKind` | frontend/js/companion-menu.js:1139 |
+| `companionPathPeak` | frontend/js/companion-menu.js:1146 |
+| `companionPathPlan` | frontend/js/companion-menu.js:1156 |
 | `mountBuddyPresets` | frontend/js/companion-menu.js:624 |
 | `nameMarkBuddyApplyPreset` | frontend/js/companion-menu.js:604 |
-| `nameMarkBuddyHome` | frontend/js/companion-menu.js:1066 |
+| `nameMarkBuddyHome` | frontend/js/companion-menu.js:1067 |
 | `nameMarkBuddyKeepPresets` | frontend/js/companion-menu.js:573 |
 | `nameMarkBuddyMenu` | frontend/js/companion-menu.js:216 |
 | `nameMarkBuddyPresets` | frontend/js/companion-menu.js:565 |
 | `nameMarkBuddySavePreset` | frontend/js/companion-menu.js:581 |
-| `nameMarkBuddyVisit` | frontend/js/companion-menu.js:996 |
+| `nameMarkBuddyVisit` | frontend/js/companion-menu.js:997 |
 | `nameMarkViewerActs` | frontend/js/companion-menu.js:177 |
 | `nameMarkViewerBlinks` | frontend/js/companion-menu.js:543 |
 | `nameMarkViewerFace` | frontend/js/companion-menu.js:524 |
