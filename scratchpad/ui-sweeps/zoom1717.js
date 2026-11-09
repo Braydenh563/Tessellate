@@ -48,6 +48,8 @@ function detect() {
   const bar = /(bar|head|toolbar|dock|tabs|foot|actions|controls|seg|strip|chips|menu)/i;
   for (const el of document.querySelectorAll('body *')) {
     if (el.closest('svg') || ['SCRIPT', 'STYLE', 'OPTION'].includes(el.tagName)) continue;
+    // The companion's face carries a screen-reader name in a clipped box that reads as a wrapped label; its speech bubble (.nm-say) is still measured.
+    if (el.closest('#nm-buddy') && !el.closest('.nm-say') && !el.classList.contains('nm-say')) continue;
     const cs = getComputedStyle(el);
     if (cs.display === 'none') continue;
     const cw = el.clientWidth, sw = el.scrollWidth;
@@ -127,7 +129,7 @@ for (const [n, re] of [['whiteboard', /Zoom board/], ['mindmap', /Zoom map/]]) {
   S(n, async (p) => { await p.evaluate(() => switchTab('library')); await p.waitForTimeout(400); await p.evaluate(() => document.querySelector('#tab-library [data-target="library-view-whiteboard"]')?.click()); await p.waitForTimeout(1200); await p.evaluate((src) => { const c = [...document.querySelectorAll('#library-boards-grid .library-card')]; (c.find((x) => new RegExp(src).test(x.textContent)) || c[0])?.click(); }, re.source); await p.waitForTimeout(2500); });
 }
 S('graph', seq(tab('graph'), settle(2500)));
-S('graph-popup', async (p) => { await p.evaluate(() => switchTab('graph')); await p.waitForTimeout(2500); await p.evaluate(() => { const nodes = window.graphNodes || window.graphState?.nodes; const n = nodes?.[0]; if (n && typeof openGraphPopup === 'function') openGraphPopup({clientX: innerWidth / 2, clientY: innerHeight / 2, preventDefault() {}, stopPropagation() {}}, n); }); await p.waitForTimeout(900); });
+S('graph-popup', async (p) => { await p.evaluate(() => switchTab('graph')); await p.waitForTimeout(2500); await p.evaluate(async () => { const n = (typeof graphNodesRef !== 'undefined' && graphNodesRef || [])[0]; if (n) await openGraphPopup({stopPropagation() {}, preventDefault() {}, clientX: innerWidth / 2, clientY: innerHeight / 2}, n); }); await p.waitForTimeout(1200); });
 S('timeline-feed', seq(tab('timeline'), settle(900)));
 S('timeline-table', seq(tab('timeline'), settle(500), click('#timeline-view-table'), settle(900)));
 S('calendar', seq(tab('timeline'), settle(500), click('#timeline-view-calendar'), settle(1000)));
@@ -139,7 +141,7 @@ const SECTIONS = ['models', 'searchindex', 'personas', 'skills', 'tools', 'memor
 for (const s of SECTIONS) S('settings-' + s, async (p) => { await p.evaluate((s) => openSettingsModal(s), s); await p.waitForTimeout(1100); });
 S('palette', async (p) => { await p.evaluate(() => openPalette()); await p.waitForTimeout(700); });
 S('quick-add', async (p) => { await p.evaluate(() => openQuickNote()); await p.waitForTimeout(800); });
-S('companion', async (p) => { await p.evaluate(() => { try { document.querySelector('#desk-companion, .desk-companion, [data-companion]')?.click(); } catch (e) {} }); await p.waitForTimeout(800); });
+S('companion', async (p) => { await p.evaluate(() => { if (!document.getElementById('nm-buddy')) nameMarkBuddyToggle(); }); await p.waitForTimeout(2500); await p.evaluate(() => { const b = document.getElementById('nm-buddy'); if (b) nameMarkSay(b, 'You have two reminders due today and a note from this day last year to look at.', 30000); }); await p.waitForTimeout(600); });
 
 (async () => {
   const rows = [];

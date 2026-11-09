@@ -2,7 +2,7 @@
 
 Generated 2026-11-09 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7949, frontend ids 2652, CSS sections 523, backend routes 649, backend modules 9277, test files 2293, tests 19167, plan headings 1008, app scripts 28, boot scripts 37, script files 266.
+Counts: frontend functions 7949, frontend ids 2652, CSS sections 523, backend routes 649, backend modules 9277, test files 2293, tests 19174, plan headings 1008, app scripts 28, boot scripts 37, script files 266.
 
 ## Frontend functions (7949)
 
@@ -1533,85 +1533,85 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `appendTimelineRows` | frontend/js/timeline.js:808 |
-| `applyTimelineRowTabOrder` | frontend/js/timeline.js:1492 |
-| `closeTimelineRow` | frontend/js/timeline.js:1708 |
-| `dailyNotePair` | frontend/js/timeline.js:1164 |
+| `appendTimelineRows` | frontend/js/timeline.js:817 |
+| `applyTimelineRowTabOrder` | frontend/js/timeline.js:1501 |
+| `closeTimelineRow` | frontend/js/timeline.js:1717 |
+| `dailyNotePair` | frontend/js/timeline.js:1173 |
 | `dailyNoteTitle` | frontend/js/timeline.js:186 |
-| `drawTimelineScrubber` | frontend/js/timeline.js:1912 |
-| `drawTimelineWindow` | frontend/js/timeline.js:1942 |
-| `fillTimelineBandOptions` | frontend/js/timeline.js:871 |
-| `focusTimelineRow` | frontend/js/timeline.js:1658 |
-| `newTimelineWindow` | frontend/js/timeline.js:771 |
-| `openDayPage` | frontend/js/timeline.js:1132 |
-| `openTimelineRowDetail` | frontend/js/timeline.js:1721 |
-| `openTimelineTableDetail` | frontend/js/timeline.js:2276 |
-| `openTodaysPage` | frontend/js/timeline.js:1120 |
-| `paintTimeline` | frontend/js/timeline.js:934 |
-| `paintTimelineFeed` | frontend/js/timeline.js:977 |
-| `paintTimelineTable` | frontend/js/timeline.js:2096 |
+| `drawTimelineScrubber` | frontend/js/timeline.js:1921 |
+| `drawTimelineWindow` | frontend/js/timeline.js:1951 |
+| `fillTimelineBandOptions` | frontend/js/timeline.js:880 |
+| `focusTimelineRow` | frontend/js/timeline.js:1667 |
+| `newTimelineWindow` | frontend/js/timeline.js:780 |
+| `openDayPage` | frontend/js/timeline.js:1141 |
+| `openTimelineRowDetail` | frontend/js/timeline.js:1730 |
+| `openTimelineTableDetail` | frontend/js/timeline.js:2285 |
+| `openTodaysPage` | frontend/js/timeline.js:1129 |
+| `paintTimeline` | frontend/js/timeline.js:943 |
+| `paintTimelineFeed` | frontend/js/timeline.js:986 |
+| `paintTimelineTable` | frontend/js/timeline.js:2105 |
 | `renderTimeline` | frontend/js/timeline.js:563 |
-| `renderTimelineDayStrip` | frontend/js/timeline.js:1249 |
+| `renderTimelineDayStrip` | frontend/js/timeline.js:1258 |
 | `renderTimelineKinds` | frontend/js/timeline.js:344 |
-| `renderTimelineMonthPop` | frontend/js/timeline.js:1373 |
+| `renderTimelineMonthPop` | frontend/js/timeline.js:1382 |
 | `renderTimelineRecall` | frontend/js/timeline.js:629 |
-| `setTimelineRowSelected` | frontend/js/timeline.js:2264 |
-| `shortDate` | frontend/js/timeline.js:1835 |
-| `startDayNote` | frontend/js/timeline.js:1195 |
-| `startTodaysNote` | frontend/js/timeline.js:1191 |
-| `syncTimelineDetailSpans` | frontend/js/timeline.js:2150 |
-| `syncTimelineFilterChip` | frontend/js/timeline.js:901 |
+| `setTimelineRowSelected` | frontend/js/timeline.js:2273 |
+| `shortDate` | frontend/js/timeline.js:1844 |
+| `startDayNote` | frontend/js/timeline.js:1204 |
+| `startTodaysNote` | frontend/js/timeline.js:1200 |
+| `syncTimelineDetailSpans` | frontend/js/timeline.js:2159 |
+| `syncTimelineFilterChip` | frontend/js/timeline.js:910 |
 | `syncTimelineKindsLabel` | frontend/js/timeline.js:400 |
-| `syncTimelineSelectUi` | frontend/js/timeline.js:2293 |
-| `syncTimelineViewSeg` | frontend/js/timeline.js:2344 |
+| `syncTimelineSelectUi` | frontend/js/timeline.js:2302 |
+| `syncTimelineViewSeg` | frontend/js/timeline.js:2353 |
 | `syncTimelineYears` | frontend/js/timeline.js:680 |
-| `timelineAheadBuckets` | frontend/js/timeline.js:1027 |
+| `timelineAheadBuckets` | frontend/js/timeline.js:1036 |
 | `timelineAutoScale` | frontend/js/timeline.js:454 |
 | `timelineBucketKey` | frontend/js/timeline.js:219 |
 | `timelineBucketLabel` | frontend/js/timeline.js:236 |
-| `timelineBucketSection` | frontend/js/timeline.js:1037 |
-| `timelineCalendarCall` | frontend/js/timeline.js:2328 |
-| `timelineCountLine` | frontend/js/timeline.js:755 |
+| `timelineBucketSection` | frontend/js/timeline.js:1046 |
+| `timelineCalendarCall` | frontend/js/timeline.js:2337 |
+| `timelineCountLine` | frontend/js/timeline.js:764 |
 | `timelineDailyNote` | frontend/js/timeline.js:203 |
-| `timelineDayKeys` | frontend/js/timeline.js:1317 |
-| `timelineDayLabel` | frontend/js/timeline.js:1244 |
-| `timelineDayPages` | frontend/js/timeline.js:1228 |
-| `timelineDayShift` | frontend/js/timeline.js:1185 |
-| `timelineDensitySpan` | frontend/js/timeline.js:1885 |
-| `timelineDensitySpanOf` | frontend/js/timeline.js:1893 |
-| `timelineFocusFirstIn` | frontend/js/timeline.js:799 |
-| `timelineForgetRows` | frontend/js/timeline.js:1937 |
+| `timelineDayKeys` | frontend/js/timeline.js:1326 |
+| `timelineDayLabel` | frontend/js/timeline.js:1253 |
+| `timelineDayPages` | frontend/js/timeline.js:1237 |
+| `timelineDayShift` | frontend/js/timeline.js:1194 |
+| `timelineDensitySpan` | frontend/js/timeline.js:1894 |
+| `timelineDensitySpanOf` | frontend/js/timeline.js:1902 |
+| `timelineFocusFirstIn` | frontend/js/timeline.js:808 |
+| `timelineForgetRows` | frontend/js/timeline.js:1946 |
 | `timelineIsDailyNote` | frontend/js/timeline.js:310 |
-| `timelineJumpToDay` | frontend/js/timeline.js:1360 |
+| `timelineJumpToDay` | frontend/js/timeline.js:1369 |
 | `timelineKindChoice` | frontend/js/timeline.js:294 |
-| `timelineKindName` | frontend/js/timeline.js:2157 |
+| `timelineKindName` | frontend/js/timeline.js:2166 |
 | `timelineKindsText` | frontend/js/timeline.js:745 |
 | `timelineLoadMore` | frontend/js/timeline.js:705 |
-| `timelineMonthKeys` | frontend/js/timeline.js:1427 |
-| `timelineMonthShift` | frontend/js/timeline.js:1354 |
-| `timelineMonthStart` | frontend/js/timeline.js:1350 |
+| `timelineMonthKeys` | frontend/js/timeline.js:1436 |
+| `timelineMonthShift` | frontend/js/timeline.js:1363 |
+| `timelineMonthStart` | frontend/js/timeline.js:1359 |
 | `timelineQuery` | frontend/js/timeline.js:533 |
 | `timelineResolvedScale` | frontend/js/timeline.js:481 |
 | `timelineRow` | frontend/js/timeline.js:117 |
-| `timelineRowByKey` | frontend/js/timeline.js:793 |
-| `timelineRowElement` | frontend/js/timeline.js:1520 |
-| `timelineRowEls` | frontend/js/timeline.js:788 |
-| `timelineRowGroups` | frontend/js/timeline.js:857 |
+| `timelineRowByKey` | frontend/js/timeline.js:802 |
+| `timelineRowElement` | frontend/js/timeline.js:1529 |
+| `timelineRowEls` | frontend/js/timeline.js:797 |
+| `timelineRowGroups` | frontend/js/timeline.js:866 |
 | `timelineRowMoment` | frontend/js/timeline.js:102 |
 | `timelineScaleChoice` | frontend/js/timeline.js:438 |
-| `timelineScrollToToday` | frontend/js/timeline.js:2458 |
-| `timelineScrubTo` | frontend/js/timeline.js:1990 |
-| `timelineSortValue` | frontend/js/timeline.js:2067 |
-| `timelineSortedRows` | frontend/js/timeline.js:2078 |
-| `timelineStepScale` | frontend/js/timeline.js:1804 |
-| `timelineTableColumnCount` | frontend/js/timeline.js:2130 |
-| `timelineTableRow` | frontend/js/timeline.js:2161 |
+| `timelineScrollToToday` | frontend/js/timeline.js:2467 |
+| `timelineScrubTo` | frontend/js/timeline.js:1999 |
+| `timelineSortValue` | frontend/js/timeline.js:2076 |
+| `timelineSortedRows` | frontend/js/timeline.js:2087 |
+| `timelineStepScale` | frontend/js/timeline.js:1813 |
+| `timelineTableColumnCount` | frontend/js/timeline.js:2139 |
+| `timelineTableRow` | frontend/js/timeline.js:2170 |
 | `timelineUnitText` | frontend/js/timeline.js:739 |
-| `timelineViewMode` | frontend/js/timeline.js:2040 |
-| `timelineVisibleRows` | frontend/js/timeline.js:914 |
-| `timelineWatchRow` | frontend/js/timeline.js:1927 |
+| `timelineViewMode` | frontend/js/timeline.js:2049 |
+| `timelineVisibleRows` | frontend/js/timeline.js:923 |
+| `timelineWatchRow` | frontend/js/timeline.js:1936 |
 | `toggleTimelineKind` | frontend/js/timeline.js:419 |
-| `toggleTimelineRow` | frontend/js/timeline.js:1682 |
+| `toggleTimelineRow` | frontend/js/timeline.js:1691 |
 
 ### frontend/js/palette.js (35)
 
@@ -2309,7 +2309,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `characterFor` | frontend/js/avatars.js:1232 |
 | `characterRendererFor` | frontend/js/avatars.js:1215 |
 | `drawCharacter` | frontend/js/avatars.js:1705 |
-| `dropAnimations` | frontend/js/avatars.js:10479 |
+| `dropAnimations` | frontend/js/avatars.js:10477 |
 | `isAtlasSeed` | frontend/js/avatars.js:1226 |
 | `nameCharacterFigure` | frontend/js/avatars.js:3864 |
 | `nameCharacterHeld` | frontend/js/avatars.js:2591 |
@@ -2330,11 +2330,11 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `nameMarkBuddyBand` | frontend/js/avatars.js:5362 |
 | `nameMarkBuddyBeat` | frontend/js/avatars.js:7557 |
 | `nameMarkBuddyBehindCover` | frontend/js/avatars.js:7326 |
-| `nameMarkBuddyBellErrand` | frontend/js/avatars.js:10140 |
+| `nameMarkBuddyBellErrand` | frontend/js/avatars.js:10138 |
 | `nameMarkBuddyBlend` | frontend/js/avatars.js:9710 |
 | `nameMarkBuddyBody` | frontend/js/avatars.js:3825 |
 | `nameMarkBuddyBoredom` | frontend/js/avatars.js:9826 |
-| `nameMarkBuddyBuild` | frontend/js/avatars.js:10530 |
+| `nameMarkBuddyBuild` | frontend/js/avatars.js:10528 |
 | `nameMarkBuddyBurst` | frontend/js/avatars.js:7169 |
 | `nameMarkBuddyCalmAllows` | frontend/js/avatars.js:9670 |
 | `nameMarkBuddyCanvasAt` | frontend/js/avatars.js:6145 |
@@ -2342,12 +2342,12 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `nameMarkBuddyCanvasZoom` | frontend/js/avatars.js:6168 |
 | `nameMarkBuddyCaret` | frontend/js/avatars.js:4029 |
 | `nameMarkBuddyCatchUp` | frontend/js/avatars.js:5640 |
-| `nameMarkBuddyChatErrand` | frontend/js/avatars.js:10150 |
+| `nameMarkBuddyChatErrand` | frontend/js/avatars.js:10148 |
 | `nameMarkBuddyCheck` | frontend/js/avatars.js:7405 |
 | `nameMarkBuddyChoose` | frontend/js/avatars.js:4784 |
 | `nameMarkBuddyClickReaction` | frontend/js/avatars.js:9656 |
 | `nameMarkBuddyColours` | frontend/js/avatars.js:3810 |
-| `nameMarkBuddyContext` | frontend/js/avatars.js:10267 |
+| `nameMarkBuddyContext` | frontend/js/avatars.js:10265 |
 | `nameMarkBuddyControlBoxes` | frontend/js/avatars.js:3977 |
 | `nameMarkBuddyControlsIn` | frontend/js/avatars.js:3984 |
 | `nameMarkBuddyCoverCheck` | frontend/js/avatars.js:7309 |
@@ -2369,7 +2369,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `nameMarkBuddyEdges` | frontend/js/avatars.js:4535 |
 | `nameMarkBuddyEmote` | frontend/js/avatars.js:3334 |
 | `nameMarkBuddyEnter` | frontend/js/avatars.js:7986 |
-| `nameMarkBuddyErrand` | frontend/js/avatars.js:10122 |
+| `nameMarkBuddyErrand` | frontend/js/avatars.js:10120 |
 | `nameMarkBuddyExpress` | frontend/js/avatars.js:9060 |
 | `nameMarkBuddyFeel` | frontend/js/avatars.js:9627 |
 | `nameMarkBuddyFlies` | frontend/js/avatars.js:6360 |
@@ -2384,11 +2384,11 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `nameMarkBuddyGlue` | frontend/js/avatars.js:5441 |
 | `nameMarkBuddyGlueBand` | frontend/js/avatars.js:5490 |
 | `nameMarkBuddyGo` | frontend/js/avatars.js:6511 |
-| `nameMarkBuddyGone` | frontend/js/avatars.js:10487 |
+| `nameMarkBuddyGone` | frontend/js/avatars.js:10485 |
 | `nameMarkBuddyHalt` | frontend/js/avatars.js:8669 |
 | `nameMarkBuddyHasAtlas` | frontend/js/avatars.js:8618 |
 | `nameMarkBuddyHeadAt` | frontend/js/avatars.js:9971 |
-| `nameMarkBuddyHint` | frontend/js/avatars.js:11206 |
+| `nameMarkBuddyHint` | frontend/js/avatars.js:11204 |
 | `nameMarkBuddyHits` | frontend/js/avatars.js:4337 |
 | `nameMarkBuddyHold` | frontend/js/avatars.js:9145 |
 | `nameMarkBuddyHover` | frontend/js/avatars.js:6860 |
@@ -2401,8 +2401,8 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `nameMarkBuddyKeepSpots` | frontend/js/avatars.js:4924 |
 | `nameMarkBuddyKeepUp` | frontend/js/avatars.js:5663 |
 | `nameMarkBuddyLandNear` | frontend/js/avatars.js:6834 |
-| `nameMarkBuddyLean` | frontend/js/avatars.js:10077 |
-| `nameMarkBuddyLeanSide` | frontend/js/avatars.js:10072 |
+| `nameMarkBuddyLean` | frontend/js/avatars.js:10075 |
+| `nameMarkBuddyLeanSide` | frontend/js/avatars.js:10070 |
 | `nameMarkBuddyLedges` | frontend/js/avatars.js:3923 |
 | `nameMarkBuddyLegsNow` | frontend/js/avatars.js:6177 |
 | `nameMarkBuddyLieDown` | frontend/js/avatars.js:8639 |
@@ -2417,14 +2417,14 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `nameMarkBuddyMotion` | frontend/js/avatars.js:3750 |
 | `nameMarkBuddyMotionApply` | frontend/js/avatars.js:3784 |
 | `nameMarkBuddyMoveTo` | frontend/js/avatars.js:6182 |
-| `nameMarkBuddyNameProps` | frontend/js/avatars.js:10235 |
+| `nameMarkBuddyNameProps` | frontend/js/avatars.js:10233 |
 | `nameMarkBuddyNear` | frontend/js/avatars.js:3964 |
 | `nameMarkBuddyNextSpot` | frontend/js/avatars.js:7740 |
 | `nameMarkBuddyNoTravel` | frontend/js/avatars.js:3796 |
 | `nameMarkBuddyNoteOpen` | frontend/js/avatars.js:9313 |
 | `nameMarkBuddyNoteOpened` | frontend/js/avatars.js:9306 |
-| `nameMarkBuddyNotice` | frontend/js/avatars.js:9998 |
-| `nameMarkBuddyNudge` | frontend/js/avatars.js:11093 |
+| `nameMarkBuddyNotice` | frontend/js/avatars.js:9996 |
+| `nameMarkBuddyNudge` | frontend/js/avatars.js:11091 |
 | `nameMarkBuddyObstacles` | frontend/js/avatars.js:3933 |
 | `nameMarkBuddyOnBoard` | frontend/js/avatars.js:6161 |
 | `nameMarkBuddyOrigin` | frontend/js/avatars.js:4293 |
@@ -2437,7 +2437,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `nameMarkBuddyPerches` | frontend/js/avatars.js:4724 |
 | `nameMarkBuddyPet` | frontend/js/avatars.js:6882 |
 | `nameMarkBuddyPickVariant` | frontend/js/avatars.js:8440 |
-| `nameMarkBuddyPointer` | frontend/js/avatars.js:10319 |
+| `nameMarkBuddyPointer` | frontend/js/avatars.js:10317 |
 | `nameMarkBuddyPoof` | frontend/js/avatars.js:7117 |
 | `nameMarkBuddyPopupEls` | frontend/js/avatars.js:4136 |
 | `nameMarkBuddyPopups` | frontend/js/avatars.js:4122 |
@@ -2459,8 +2459,8 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `nameMarkBuddyRideBox` | frontend/js/avatars.js:5263 |
 | `nameMarkBuddyRideClip` | frontend/js/avatars.js:5250 |
 | `nameMarkBuddyRideFrames` | frontend/js/avatars.js:5237 |
-| `nameMarkBuddyRoom` | frontend/js/avatars.js:10347 |
-| `nameMarkBuddyRoomSoon` | frontend/js/avatars.js:10337 |
+| `nameMarkBuddyRoom` | frontend/js/avatars.js:10345 |
+| `nameMarkBuddyRoomSoon` | frontend/js/avatars.js:10335 |
 | `nameMarkBuddyRoute` | frontend/js/avatars.js:6412 |
 | `nameMarkBuddyRubbed` | frontend/js/avatars.js:6927 |
 | `nameMarkBuddyScaleSaved` | frontend/js/avatars.js:4234 |
@@ -2482,9 +2482,9 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `nameMarkBuddyShapeAt1` | frontend/js/avatars.js:4307 |
 | `nameMarkBuddyShown` | frontend/js/avatars.js:3901 |
 | `nameMarkBuddyShowy` | frontend/js/avatars.js:8190 |
-| `nameMarkBuddyShy` | frontend/js/avatars.js:10376 |
+| `nameMarkBuddyShy` | frontend/js/avatars.js:10374 |
 | `nameMarkBuddySizeSelect` | frontend/js/avatars.js:4272 |
-| `nameMarkBuddySound` | frontend/js/avatars.js:10245 |
+| `nameMarkBuddySound` | frontend/js/avatars.js:10243 |
 | `nameMarkBuddySpotFor` | frontend/js/avatars.js:4956 |
 | `nameMarkBuddySpots` | frontend/js/avatars.js:4915 |
 | `nameMarkBuddySquash` | frontend/js/avatars.js:6753 |
@@ -2562,7 +2562,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `queueNameMarkBuddyCheck` | frontend/js/avatars.js:7512 |
 | `registerCharacter` | frontend/js/avatars.js:1209 |
 | `setOwnNameMarkStyle` | frontend/js/avatars.js:294 |
-| `syncNameMarkBuddy` | frontend/js/avatars.js:11104 |
+| `syncNameMarkBuddy` | frontend/js/avatars.js:11102 |
 | `watchNameMark` | frontend/js/avatars.js:1096 |
 
 ### frontend/js/batch-space.js (7)
@@ -11994,8 +11994,8 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | GRIPS AT A CONSTANT SIZE ON SCREEN | frontend/css/07-whiteboard-misc.css:10770 |
 | Graph options: one section-head style | frontend/css/08-consistency.css:4440 |
 | Help & guide: the topics box and the "Ask the guide" box are two | frontend/css/08-consistency.css:1815 |
-| INBOX 1717: browser zoom (the window at 125 to 200 %) | frontend/css/10-responsive.css:2715 |
-| INBOX 68: the board and map previews | frontend/css/10-responsive.css:393 |
+| INBOX 1717: browser zoom (the window at 125 to 200 %) | frontend/css/10-responsive.css:2744 |
+| INBOX 68: the board and map previews | frontend/css/10-responsive.css:417 |
 | Icons | frontend/css/07-whiteboard-misc.css:2375 |
 | Inline AI (editor.js) | frontend/css/07-whiteboard-misc.css:6502 |
 | Lagoon: indigo and teal together | frontend/css/05-sidebars-themes.css:3283 |
@@ -12012,22 +12012,22 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | One ⋯ opener, styled once (INBOX 722) | frontend/css/08-consistency.css:10632 |
 | PLAN.md D1: the documents dock's formatting strip hides entirely | frontend/css/07-whiteboard-misc.css:8063 |
 | Parchment: paper, ink and a little gold. Made for long writing. | frontend/css/05-sidebars-themes.css:3175 |
-| Phase 10, INBOX 100: the scroll edge effect | frontend/css/10-responsive.css:159 |
-| Phase 10, INBOX 101: concentric corners | frontend/css/10-responsive.css:185 |
-| Phase 11 item 12: a dock's head is one row on a phone | frontend/css/10-responsive.css:1599 |
-| Phase 11 item 12: a note row designed for a thumb | frontend/css/10-responsive.css:1534 |
-| Phase 11 item 12: one bar at the foot of a phone, not two | frontend/css/10-responsive.css:1241 |
-| Phase 11 item 12: the status bar on a tablet is a touch bar | frontend/css/10-responsive.css:1169 |
-| Phase 11 item 1: the phone top bar is three controls, not six | frontend/css/10-responsive.css:1122 |
-| Phase 11 item 2: a row swiped, star right and bin left | frontend/css/10-responsive.css:1456 |
-| Phase 11 item 2: the note page, the sheet recipe's `page` variant | frontend/css/10-responsive.css:1924 |
-| Phase 11 item 3: the chat composer on a phone | frontend/css/10-responsive.css:1961 |
-| Phase 11 item 4: the graph's controls are one sheet on a phone | frontend/css/10-responsive.css:2017 |
-| Phase 11 item 5: the Library reader as the page | frontend/css/10-responsive.css:2145 |
-| Phase 11 item 7: the whiteboard and the mind map on a phone | frontend/css/10-responsive.css:2077 |
-| Phase 11 item 9: 44px targets, the ones the docks sweep cannot see | frontend/css/10-responsive.css:991 |
-| Phase 11 item 9: no hover-only affordance | frontend/css/10-responsive.css:2007 |
-| Phase 11 items 2 and 3: no rail on a phone, an opener in the head | frontend/css/10-responsive.css:1341 |
+| Phase 10, INBOX 100: the scroll edge effect | frontend/css/10-responsive.css:183 |
+| Phase 10, INBOX 101: concentric corners | frontend/css/10-responsive.css:209 |
+| Phase 11 item 12: a dock's head is one row on a phone | frontend/css/10-responsive.css:1623 |
+| Phase 11 item 12: a note row designed for a thumb | frontend/css/10-responsive.css:1558 |
+| Phase 11 item 12: one bar at the foot of a phone, not two | frontend/css/10-responsive.css:1265 |
+| Phase 11 item 12: the status bar on a tablet is a touch bar | frontend/css/10-responsive.css:1193 |
+| Phase 11 item 1: the phone top bar is three controls, not six | frontend/css/10-responsive.css:1146 |
+| Phase 11 item 2: a row swiped, star right and bin left | frontend/css/10-responsive.css:1480 |
+| Phase 11 item 2: the note page, the sheet recipe's `page` variant | frontend/css/10-responsive.css:1948 |
+| Phase 11 item 3: the chat composer on a phone | frontend/css/10-responsive.css:1985 |
+| Phase 11 item 4: the graph's controls are one sheet on a phone | frontend/css/10-responsive.css:2041 |
+| Phase 11 item 5: the Library reader as the page | frontend/css/10-responsive.css:2169 |
+| Phase 11 item 7: the whiteboard and the mind map on a phone | frontend/css/10-responsive.css:2101 |
+| Phase 11 item 9: 44px targets, the ones the docks sweep cannot see | frontend/css/10-responsive.css:1015 |
+| Phase 11 item 9: no hover-only affordance | frontend/css/10-responsive.css:2031 |
+| Phase 11 items 2 and 3: no rail on a phone, an opener in the head | frontend/css/10-responsive.css:1365 |
 | Phase 5: quick access + toasts | frontend/css/01-forms-settings.css:2798 |
 | Phase 5: the three things a map says about itself | frontend/css/07-whiteboard-misc.css:4509 |
 | Phones (roadmap §8: the layout had breakpoints but had never been driven at | frontend/css/05-sidebars-themes.css:3880 |
@@ -12078,7 +12078,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | The glyph tab row | frontend/css/popup-anatomy-lazy.css:19 |
 | The guide panel as one surface (INBOX 270 part 4, the redesign) | frontend/css/08-consistency.css:1966 |
 | The head's glyph | frontend/css/popup-anatomy-lazy.css:11 |
-| The iPhone (phone-1011) | frontend/css/10-responsive.css:2651 |
+| The iPhone (phone-1011) | frontend/css/10-responsive.css:2680 |
 | The last icon-to-label gap family | frontend/css/08-consistency.css:1627 |
 | The last two head rows that were not on the bar recipe | frontend/css/08-consistency.css:1430 |
 | The m guide: one panel of key rows | frontend/css/chord-guide-lazy.css:26 |
@@ -12086,7 +12086,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | The properties panel (DOCUMENTS_PLAN Phase 3 item 4) | frontend/css/09-editor.css:113 |
 | The reference's glass, the parts that keep the words readable | frontend/css/popup-anatomy-lazy.css:159 |
 | The second level: `.tabs-line` (INBOX 522) | frontend/css/05-sidebars-themes.css:4037 |
-| The surface model pickers on a phone | frontend/css/10-responsive.css:2210 |
+| The surface model pickers on a phone | frontend/css/10-responsive.css:2234 |
 | The target floor (audit 1031 class 28): WCAG 2.5.8's 24 px. Each control | frontend/css/08-consistency.css:10903 |
 | The thumb bar (DESIGN.md's recipe index: a bar of actions above the | frontend/css/09-editor.css:794 |
 | The two dialogs reported as off the modal recipe | frontend/css/08-consistency.css:1495 |
@@ -12120,7 +12120,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | Whiteboard chrome, restructured: one top bar, a centred tool dock, a | frontend/css/07-whiteboard-misc.css:6796 |
 | Writing pace | frontend/css/03-dashboard-widgets.css:4347 |
 | [[wiki links]] | frontend/css/05-sidebars-themes.css:772 |
-| `.seg-multi`'s word, and the width that decides it | frontend/css/10-responsive.css:562 |
+| `.seg-multi`'s word, and the width that decides it | frontend/css/10-responsive.css:586 |
 | `.seg-multi`: one well, independent toggles | frontend/css/03-dashboard-widgets.css:419 |
 | `.selectbar`: the bar stays with you while the selection does | frontend/css/00-tokens-shell.css:1962 |
 | a Files row's facts line, one register (INBOX 421 f) | frontend/css/08-consistency.css:3986 |
@@ -12151,12 +12151,12 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | a segmented choice inside a dialog | frontend/css/06-timeline-dialogs.css:1044 |
 | a settings group that says what depends on what | frontend/css/07-whiteboard-misc.css:4464 |
 | a settings row where nothing squashes anything else | frontend/css/07-whiteboard-misc.css:4212 |
-| a sheet (DESIGN.md's recipe index, "A sheet") | frontend/css/10-responsive.css:789 |
+| a sheet (DESIGN.md's recipe index, "A sheet") | frontend/css/10-responsive.css:813 |
 | a sticker (MINDMAP_PLAN decision 44, INBOX 642) | frontend/css/library-lazy.css:3497 |
 | a stored file that is no longer stored | frontend/css/02-chat-graph.css:4089 |
 | a traced path (§9) | frontend/css/graph-lazy.css:283 |
 | a turn that is still working says so, for as long as it is | frontend/css/03-dashboard-widgets.css:4158 |
-| a zone that cannot shrink says so, instead of spilling | frontend/css/10-responsive.css:1072 |
+| a zone that cannot shrink says so, instead of spilling | frontend/css/10-responsive.css:1096 |
 | account & security | frontend/css/01-forms-settings.css:3417 |
 | activity heatmap + tag cloud widgets | frontend/css/03-dashboard-widgets.css:1875 |
 | activity log | frontend/css/01-forms-settings.css:2773 |
@@ -12169,15 +12169,15 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | audit 1028 board and map rows (U14 to U28) | frontend/css/library-lazy.css:8314 |
 | back / forward through pages | frontend/css/00-tokens-shell.css:4147 |
 | back-to-top button | frontend/css/04-chat-dock-appearance.css:2622 |
-| band 2 (820 to 1200): the tabs keep their names, set small | frontend/css/10-responsive.css:61 |
+| band 2 (820 to 1200): the tabs keep their names, set small | frontend/css/10-responsive.css:85 |
 | band 2: 820-1100, iPad landscape and small laptops | frontend/css/07-whiteboard-misc.css:9816 |
 | band 3 (600 to 820): the tab strip fits on its own row | frontend/css/10-responsive.css:20 |
 | band 3: 600-820, iPad portrait, and the sheet that band 4 inherits | frontend/css/07-whiteboard-misc.css:9903 |
-| band 4 (under 600): the editor's own targets (DOCUMENTS_PLAN Phase 6) | frontend/css/10-responsive.css:476 |
-| band 4: an icon-only chip is still a target (Phase 11) | frontend/css/10-responsive.css:526 |
+| band 4 (under 600): the editor's own targets (DOCUMENTS_PLAN Phase 6) | frontend/css/10-responsive.css:500 |
+| band 4: an icon-only chip is still a target (Phase 11) | frontend/css/10-responsive.css:550 |
 | band 4: below 600, the phone | frontend/css/07-whiteboard-misc.css:10095 |
-| band 4: five columns, and the fifth is a sheet | frontend/css/10-responsive.css:612 |
-| band 4: the settings sheet's head may wrap, but not be squashed | frontend/css/10-responsive.css:931 |
+| band 4: five columns, and the fifth is a sheet | frontend/css/10-responsive.css:636 |
+| band 4: the settings sheet's head may wrap, but not be squashed | frontend/css/10-responsive.css:955 |
 | boot splash | frontend/css/00-tokens-shell.css:4169 |
 | callouts ("specialised boxes and frames") | frontend/css/05-sidebars-themes.css:1249 |
 | category rename / delete | frontend/css/04-chat-dock-appearance.css:2691 |
@@ -12192,7 +12192,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | column-flex cards keep their full width | frontend/css/07-whiteboard-misc.css:3777 |
 | compressing a long conversation (§35I) | frontend/css/02-chat-graph.css:814 |
 | curated themes | frontend/css/01-forms-settings.css:3453 |
-| dark glass reads flatter, and here is which half of it does | frontend/css/10-responsive.css:337 |
+| dark glass reads flatter, and here is which half of it does | frontend/css/10-responsive.css:361 |
 | dashboard + reminders (Wave D) | frontend/css/01-forms-settings.css:3643 |
 | dashboard quick links | frontend/css/03-dashboard-widgets.css:1513 |
 | dashboard widgets, de-vibecoded | frontend/css/08-consistency.css:4227 |
@@ -12240,7 +12240,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | motion: a hover card leaves as it came | frontend/css/ui-reveal-lazy.css:57 |
 | motion: a hover eases (2026-10-05) | frontend/css/08-consistency.css:9676 |
 | motion: a list settles in where its skeleton was (2026-10-05) | frontend/css/08-consistency.css:9656 |
-| motion: a menu or popover grows from what opened it (INBOX 103, 2026-10-05) | frontend/css/10-responsive.css:230 |
+| motion: a menu or popover grows from what opened it (INBOX 103, 2026-10-05) | frontend/css/10-responsive.css:254 |
 | motion: a menu that hangs off a button grows from it (INBOX 1565) | frontend/css/ui-reveal-lazy.css:28 |
 | motion: a note's hover card fades in (INBOX 1462) | frontend/css/graph-lazy.css:433 |
 | motion: a page arrives (INBOX 459 (2), 580) | frontend/css/08-consistency.css:9761 |
@@ -12251,7 +12251,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | motion: an Insert menu's chevron turns open, as a select's does | frontend/css/library-lazy.css:7981 |
 | motion: one sliding indicator for every strip (INBOX 459 (2), 2026-10-05) | frontend/css/08-consistency.css:9544 |
 | motion: one vocabulary for what opens and folds (INBOX 1506 B) | frontend/css/08-consistency.css:9912 |
-| motion: the floating panels join the menu's recipe (INBOX 1415) | frontend/css/10-responsive.css:303 |
+| motion: the floating panels join the menu's recipe (INBOX 1415) | frontend/css/10-responsive.css:327 |
 | motion: the opening curtain lifts (INBOX 577) | frontend/css/08-consistency.css:9933 |
 | moved from 07-whiteboard-misc.css (boot CSS cap, 2026-10-17): the OCR workspace's own rules, whose selectors name only ocr-* classes and ids that no boot rule | frontend/css/library-lazy.css:6581 |
 | moved from 07-whiteboard-misc.css (canvasui, the boot CSS budget): board-only rules whose class names no boot file draws and no later boot rule competes with, in their old order | frontend/css/library-lazy.css:5106 |
@@ -12310,10 +12310,10 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | the Ask box explaining itself (§35A) | frontend/css/06-timeline-dialogs.css:1235 |
 | the Ask box reads as one composer | frontend/css/07-whiteboard-misc.css:3119 |
 | the Connections dialog (REDESIGN.md §R7.3) | frontend/css/07-whiteboard-misc.css:5237 |
-| the Dashboard's dock on a phone (INBOX 436) | frontend/css/10-responsive.css:2444 |
+| the Dashboard's dock on a phone (INBOX 436) | frontend/css/10-responsive.css:2468 |
 | the Documents dock is one row on a phone (audit 1102 DX13) | frontend/css/library-lazy.css:8260 |
-| the Documents editor on a phone (INBOX 430) | frontend/css/10-responsive.css:2264 |
-| the Documents editor on a small laptop (INBOX 430's re-scope) | frontend/css/10-responsive.css:2370 |
+| the Documents editor on a phone (INBOX 430) | frontend/css/10-responsive.css:2288 |
+| the Documents editor on a small laptop (INBOX 430's re-scope) | frontend/css/10-responsive.css:2394 |
 | the Graph dock's second row, and the nine pixels that cause it | frontend/css/08-consistency.css:2384 |
 | the HUD: a momentary readout, not a notification | frontend/css/07-whiteboard-misc.css:7722 |
 | the Library (§4, §36F) | frontend/css/00-tokens-shell.css:1869 |
@@ -12340,11 +12340,11 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | the block bar (INBOX 421 b) | frontend/css/09-editor.css:1045 |
 | the board panel, sorted into the questions it answers | frontend/css/07-whiteboard-misc.css:5026 |
 | the board picker's face on a phone (polish5-1031) | frontend/css/library-lazy.css:7881 |
-| the board's bar takes the floor of the whole touch band, not just 600 | frontend/css/10-responsive.css:2125 |
+| the board's bar takes the floor of the whole touch band, not just 600 | frontend/css/10-responsive.css:2149 |
 | the board's context bar, wrapped (`wbUpdateSelectionBar`) | frontend/css/library-lazy.css:7104 |
 | the boot splash: one progress indicator, not two | frontend/css/08-consistency.css:4311 |
 | the bottom docks | frontend/css/07-whiteboard-misc.css:9786 |
-| the chat dock follows its own width (INBOX 694) | frontend/css/10-responsive.css:2543 |
+| the chat dock follows its own width (INBOX 694) | frontend/css/10-responsive.css:2567 |
 | the chat page fills its height (§36A) | frontend/css/06-timeline-dialogs.css:1345 |
 | the chat sidebar on a phone | frontend/css/02-chat-graph.css:4802 |
 | the chat toolbar, grouped (§36B) | frontend/css/06-timeline-dialogs.css:1473 |
@@ -12382,14 +12382,14 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | the formatting strip says what the caret is already in | frontend/css/09-editor.css:1024 |
 | the glass card | frontend/css/00-tokens-shell.css:3840 |
 | the graph node panel becomes a sheet (GRAPH_PLAN Phase 6) | frontend/css/07-whiteboard-misc.css:10115 |
-| the graph's floating controls clear its New note (INBOX 430) | frontend/css/10-responsive.css:2250 |
+| the graph's floating controls clear its New note (INBOX 430) | frontend/css/10-responsive.css:2274 |
 | the graph's legend: one container, not a pill in a box | frontend/css/08-consistency.css:3125 |
 | the graph's options panel | frontend/css/08-consistency.css:3341 |
 | the guided tour (DESIGN.md, "A guided tour step") | frontend/css/04-chat-dock-appearance.css:5686 |
 | the head: identity, one fact as a dot, an all-icon group | frontend/css/03-dashboard-widgets.css:1014 |
 | the help popover is a popover, not a page (INBOX 206) | frontend/css/08-consistency.css:2552 |
 | the in-app confirm dialog (§35F) | frontend/css/06-timeline-dialogs.css:1124 |
-| the lightbox on a phone (INBOX 430) | frontend/css/10-responsive.css:2235 |
+| the lightbox on a phone (INBOX 430) | frontend/css/10-responsive.css:2259 |
 | the live action line | frontend/css/02-chat-graph.css:4120 |
 | the lock screen | frontend/css/08-consistency.css:3801 |
 | the log console (§1) | frontend/css/06-timeline-dialogs.css:711 |
@@ -12399,7 +12399,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | the node radial (MINDMAP_PLAN.md §12.1 item 3) | frontend/css/07-whiteboard-misc.css:8900 |
 | the note card's metadata, ordered (§36B) | frontend/css/06-timeline-dialogs.css:1523 |
 | the notifications centre (§36E) | frontend/css/06-timeline-dialogs.css:1682 |
-| the one control in a dock that was not the dock's height | frontend/css/10-responsive.css:378 |
+| the one control in a dock that was not the dock's height | frontend/css/10-responsive.css:402 |
 | the one generating animation | frontend/css/01-forms-settings.css:4734 |
 | the one map chip (MINDMAP_PLAN.md §5 item 12) | frontend/css/05-sidebars-themes.css:793 |
 | the one popover shell (UI_MODERNISATION_PLAN.md, Phase 2) | frontend/css/07-whiteboard-misc.css:7897 |
@@ -12408,7 +12408,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | the pad | frontend/css/sketch-pad.css:42 |
 | the page scrollers scroll on the compositor | frontend/css/08-consistency.css:4342 |
 | the page shell (§35L) | frontend/css/00-tokens-shell.css:3657 |
-| the palette on a touch screen (INBOX 464) | frontend/css/10-responsive.css:2529 |
+| the palette on a touch screen (INBOX 464) | frontend/css/10-responsive.css:2553 |
 | the phone header fits inside the phone | frontend/css/05-sidebars-themes.css:5798 |
 | the picker itself | frontend/css/05-sidebars-themes.css:3694 |
 | the primary action floats, where a dock has one | frontend/css/07-whiteboard-misc.css:10351 |
@@ -12425,7 +12425,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | the spine | frontend/css/00-tokens-shell.css:2299 |
 | the spine on the other edge (MINDMAP_PLAN.md §13e) | frontend/css/07-whiteboard-misc.css:8450 |
 | the status bar (§36D) | frontend/css/00-tokens-shell.css:3231 |
-| the status bar from 820 to 959: one item fewer | frontend/css/10-responsive.css:1199 |
+| the status bar from 820 to 959: one item fewer | frontend/css/10-responsive.css:1223 |
 | the status bar on a small phone | frontend/css/00-tokens-shell.css:3540 |
 | the status bar's Other devices icon and panel (INBOX 896) | frontend/css/lan-lazy.css:77 |
 | the status line and the recent searches | frontend/css/03-dashboard-widgets.css:1143 |
@@ -12480,7 +12480,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/07-whiteboard-misc.css | 11861 |
 | frontend/css/08-consistency.css | 10929 |
 | frontend/css/09-editor.css | 1128 |
-| frontend/css/10-responsive.css | 2757 |
+| frontend/css/10-responsive.css | 2857 |
 | frontend/css/answer-foot-lazy.css | 155 |
 | frontend/css/appearance-panel-lazy.css | 330 |
 | frontend/css/appearance-panel-own-lazy.css | 86 |
@@ -24883,7 +24883,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (19167)
+## Tests (19174)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -27181,7 +27181,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_xmind_import.py | 3 |
 | tests/test_zoom_frame_1508.py | 3 |
 | tests/test_zoom_wheel_delta.py | 3 |
-| tests/test_zoom_wrap_1717.py | 5 |
+| tests/test_zoom_wrap_1717.py | 12 |
 
 ## Plan headings (1008)
 
