@@ -25,6 +25,10 @@ def _text(name: str) -> str:
 
 def _block(text: str, head: str, tail: str = "\n}\n") -> str:
     start = text.index(head)
+    #: A script wrapped whole (row 37a) indents its functions: the close is as deep as the head.
+    indent = len(text[text.rfind("\n", 0, start) + 1 : start])
+    if tail == "\n}\n" and text[start - indent : start].strip() == "":
+        tail = "\n" + " " * indent + "}\n"
     return text[start : text.index(tail, start) + len(tail)]
 
 

@@ -64,7 +64,7 @@ TOP_LEVEL_LETS_CAP = 699
 #: documents-mermaid.js exports `diagramModel`; measured 9,706. 2026-11-08 (after merges took it to 9,711): task-steps.js
 #: (three exports) and obj-order.js (eight) wrapped whole; measured 9,701.  iife-1109: screen-context, load-failed, feature-model-sheet, phone-more,
 #: extract-preview, timeline-detail, scroll-row, assistant-avatar and confirmed-patterns wrapped whole, one export each; measured 9,688. Then date-field, link-types, vault-unlock, offline-split and pick-row wrapped whole; measured 9,678.
-GLOBAL_NAMES_CAP = 9648
+GLOBAL_NAMES_CAP = 9625
 
 
 def _code() -> dict[str, str]:
@@ -124,6 +124,6 @@ def test_a_wrapped_file_exports_only_what_it_defines_and_others_call():
         for export in sorted(_js_scope.listed(source)):
             if not re.search(rf"^  (?:async\s+)?(?:function\s+|const\s+|class\s+){re.escape(export)}\b", source, re.M):
                 wrong.append(f"{name} exports {export} but does not define it at its top")
-            elif not any(re.search(rf"(?<![\w$.]){re.escape(export)}(?![\w$])", other) for other_name, other in code.items() if other_name != name):
+            elif not any(re.search(rf"(?:(?<![\w$.])|(?<=window\.)){re.escape(export)}(?![\w$])", other) for other_name, other in code.items() if other_name != name):
                 wrong.append(f"{name} exports {export}, which no other file names")
     assert not wrong, "; ".join(wrong)

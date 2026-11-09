@@ -1813,18 +1813,18 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `activityDuration` | frontend/js/activity-panel.js:94 |
-| `activityEnding` | frontend/js/activity-panel.js:100 |
-| `activityModelLine` | frontend/js/activity-panel.js:28 |
-| `activityRow` | frontend/js/activity-panel.js:38 |
-| `activityRunningShown` | frontend/js/activity-panel.js:15 |
-| `openActivityReport` | frontend/js/activity-panel.js:127 |
-| `paintActivity` | frontend/js/activity-panel.js:108 |
-| `renderActivity` | frontend/js/activity-panel.js:19 |
-| `setActivityTab` | frontend/js/activity-panel.js:180 |
-| `stopActivityJob` | frontend/js/activity-panel.js:131 |
-| `stopActivityModel` | frontend/js/activity-panel.js:141 |
-| `stopAllActivity` | frontend/js/activity-panel.js:152 |
+| `activityDuration` | frontend/js/activity-panel.js:95 |
+| `activityEnding` | frontend/js/activity-panel.js:101 |
+| `activityModelLine` | frontend/js/activity-panel.js:29 |
+| `activityRow` | frontend/js/activity-panel.js:39 |
+| `activityRunningShown` | frontend/js/activity-panel.js:16 |
+| `openActivityReport` | frontend/js/activity-panel.js:128 |
+| `paintActivity` | frontend/js/activity-panel.js:109 |
+| `renderActivity` | frontend/js/activity-panel.js:20 |
+| `setActivityTab` | frontend/js/activity-panel.js:181 |
+| `stopActivityJob` | frontend/js/activity-panel.js:132 |
+| `stopActivityModel` | frontend/js/activity-panel.js:142 |
+| `stopAllActivity` | frontend/js/activity-panel.js:153 |
 
 ### frontend/js/answer-kit.js (87)
 
@@ -2259,10 +2259,10 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `notePickerRows` | frontend/js/attach-to.js:226 |
-| `renderAttachToBoard` | frontend/js/attach-to.js:26 |
-| `renderAttachToDocument` | frontend/js/attach-to.js:120 |
-| `renderNotePickerList` | frontend/js/attach-to.js:282 |
+| `notePickerRows` | frontend/js/attach-to.js:227 |
+| `renderAttachToBoard` | frontend/js/attach-to.js:27 |
+| `renderAttachToDocument` | frontend/js/attach-to.js:121 |
+| `renderNotePickerList` | frontend/js/attach-to.js:283 |
 
 ### frontend/js/attachment-actions.js (6)
 
@@ -5796,9 +5796,9 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `attachFileTo` | frontend/js/lightbox-actions.js:29 |
-| `attachFromLibrary` | frontend/js/lightbox-actions.js:68 |
-| `reevaluateEntry` | frontend/js/lightbox-actions.js:5 |
+| `attachFileTo` | frontend/js/lightbox-actions.js:30 |
+| `attachFromLibrary` | frontend/js/lightbox-actions.js:69 |
+| `reevaluateEntry` | frontend/js/lightbox-actions.js:6 |
 
 ### frontend/js/lightbox-view.js (5)
 
@@ -7522,15 +7522,15 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `timelineCalAddBuild` | frontend/js/timeline-cal-add.js:55 |
-| `timelineCalAddEvent` | frontend/js/timeline-cal-add.js:193 |
-| `timelineCalAddFields` | frontend/js/timeline-cal-add.js:27 |
-| `timelineCalAddKind` | frontend/js/timeline-cal-add.js:133 |
-| `timelineCalAddOpen` | frontend/js/timeline-cal-add.js:32 |
-| `timelineCalAddReminder` | frontend/js/timeline-cal-add.js:183 |
-| `timelineCalAddRow` | frontend/js/timeline-cal-add.js:43 |
-| `timelineCalAddSave` | frontend/js/timeline-cal-add.js:153 |
-| `timelineCalAddStart` | frontend/js/timeline-cal-add.js:15 |
+| `timelineCalAddBuild` | frontend/js/timeline-cal-add.js:56 |
+| `timelineCalAddEvent` | frontend/js/timeline-cal-add.js:194 |
+| `timelineCalAddFields` | frontend/js/timeline-cal-add.js:28 |
+| `timelineCalAddKind` | frontend/js/timeline-cal-add.js:134 |
+| `timelineCalAddOpen` | frontend/js/timeline-cal-add.js:33 |
+| `timelineCalAddReminder` | frontend/js/timeline-cal-add.js:184 |
+| `timelineCalAddRow` | frontend/js/timeline-cal-add.js:44 |
+| `timelineCalAddSave` | frontend/js/timeline-cal-add.js:154 |
+| `timelineCalAddStart` | frontend/js/timeline-cal-add.js:16 |
 
 ### frontend/js/timeline-calendar.js (47)
 
