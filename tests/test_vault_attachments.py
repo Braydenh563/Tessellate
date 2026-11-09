@@ -146,3 +146,40 @@ def test_a_private_note_restored_to_a_version_with_a_picture_keeps_it_sealed(cli
     vault.close()
     reply = client.get(url)
     assert reply.status_code == 403
+
+
+_PIC_ROUTES = [
+    ("get", "/media/{id}/ocr-regions?auto=true", {}),
+    ("post", "/media/{id}/caption", {}),
+    ("post", "/media/{id}/ocr", {}),
+    ("post", "/media/{id}/ocr-range-read", {}),
+    ("post", "/media/{id}/ocr-page-read", {}),
+    ("post", "/media/{id}/region-read", {"files": {"crop": ("c.png", PNG, "image/png")}}),
+    ("post", "/media/{id}/page-caption", {}),
+    ("get", "/media/{id}/page-reads", {}),
+    ("delete", "/media/{id}/page-reads/0", {}),
+    ("delete", "/media/{id}/readings/ocr", {}),
+    ("post", "/media/{id}/ocr-clean-loops", {}),
+    ("post", "/media/{id}/vision-ocr", {}),
+]
+
+
+@pytest.mark.parametrize(("verb", "path", "kw"), _PIC_ROUTES)
+def test_a_locked_private_notes_picture_readings_are_refused(client, session, verb, path, kw):
+    from tessellate.core.database import MediaUpload
+
+    url = _sealed_image(client, session)
+    uid = session.query(MediaUpload).filter_by(filename=url.rsplit("/", 1)[-1]).one().id
+    reply = getattr(client, verb)(path.format(id=uid), **kw)
+    assert reply.status_code == 409, reply.text
+    assert "IMGSECRET" not in reply.text
+
+
+def test_media_meta_is_refused_for_a_sealed_picture(client, session):
+    url = _sealed_image(client, session)
+    assert client.get(f"/media/meta/{url.rsplit('/', 1)[-1]}").status_code == 409
+
+
+def test_media_meta_stays_open_for_a_picture_a_readable_note_shares(client, session):
+    shared = _sealed_image(client, session, also_plain=True)
+    assert client.get(f"/media/meta/{shared.rsplit('/', 1)[-1]}").status_code == 200

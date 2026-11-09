@@ -185,6 +185,15 @@ def _existing_attachment(session: Session, attachment_id: int) -> Attachment:
     )
 
 
+def _existing_upload(session: Session, upload_id: int) -> MediaUpload:
+    """SEC-A2: the `/media/{id}/...` routes read a picture's text, so a picture
+    only a locked private note uses answers 409 like that note's files do."""
+    upload = deps.get_or_404(session, MediaUpload, upload_id, "That upload could not be found.")
+    if media_gc.sealed_only(session, upload.filename):
+        raise HTTPException(status_code=409, detail="Unlock first.")
+    return upload
+
+
 @media_router.get("/files/{attachment_id}")
 def download_file(attachment_id: int, session: Session = Depends(get_session)) -> FileResponse:
     attachment = _existing_attachment(session, attachment_id)
@@ -1639,6 +1648,8 @@ def media_meta(filename: str, session: Session = Depends(get_session)) -> MediaU
         # any note still pointing at it alone (see delete_media below), so a
         # miss here is an ordinary state, not a fault.
         raise HTTPException(status_code=404, detail="No upload by that name.")
+    if media_gc.sealed_only(session, upload.filename):
+        raise HTTPException(status_code=409, detail="Unlock first.")
     return MediaUploadOut(
         id=upload.id,
         url=f"/media/{upload.filename}",
@@ -1991,7 +2002,7 @@ def caption_media(
     session (the same shape `ocr.extract_and_store` uses from a background
     thread): `session.refresh` below picks up what it committed.
     """
-    upload = deps.get_or_404(session, MediaUpload, upload_id, "That upload could not be found.")
+    upload = _existing_upload(session, upload_id)
     is_picture = Path(upload.filename).suffix.lower() in captioning.CAPTION_SUFFIXES
     if body.text is not None:
         # A hand-typed caption needs no model at all, set it and return,
@@ -2100,7 +2111,7 @@ def ocr_media(
     local OCR is fast, and the frontend already blocks caption/vision-OCR
     regenerate behind a spinner the same way.
     """
-    upload = deps.get_or_404(session, MediaUpload, upload_id, "That upload could not be found.")
+    upload = _existing_upload(session, upload_id)
     if Path(upload.filename).suffix.lower() not in ocr.OCR_SUFFIXES:
         raise HTTPException(status_code=415, detail="Only images can be read this way.")
     if body.text is not None:
@@ -2693,7 +2704,7 @@ def media_ocr_regions(
     from. Asked for with three screenshots of Baidu's Unlimited-OCR: a page
     beside its regions, each separately readable, instead of one wall of
     text with no way to tell which part of the page a line came from."""
-    upload = deps.get_or_404(session, MediaUpload, upload_id, "That upload could not be found.")
+    upload = _existing_upload(session, upload_id)
     suffix = Path(upload.filename).suffix.lower()
     if suffix not in ocr.OCR_SUFFIXES and suffix != ".pdf":
         raise HTTPException(status_code=415, detail="Only images and PDFs can be read this way.")
@@ -3617,7 +3628,7 @@ def media_ocr_range_read(
 ) -> OcrRangeReadOut:
     """Read a whole PDF, or the pages named by `pages` (e.g. `1-5`, `2,7`)."""
     reader = _checked_reader(reader)
-    upload = deps.get_or_404(session, MediaUpload, upload_id, "That upload could not be found.")
+    upload = _existing_upload(session, upload_id)
     if Path(upload.filename).suffix.lower() != ".pdf":
         raise HTTPException(status_code=415, detail="Only PDFs are read by page range.")
     path = _within(deps.get_config().data_dir / "media", upload.filename)
@@ -3651,7 +3662,7 @@ def media_ocr_page_read(
     session: Session = Depends(get_session),
 ) -> OcrPageReadOut:
     reader = _checked_reader(reader)
-    upload = deps.get_or_404(session, MediaUpload, upload_id, "That upload could not be found.")
+    upload = _existing_upload(session, upload_id)
     if Path(upload.filename).suffix.lower() != ".pdf":
         raise HTTPException(status_code=415, detail="Only PDF pages are read one at a time.")
     path = _within(deps.get_config().data_dir / "media", upload.filename)
@@ -3842,7 +3853,7 @@ def media_region_read(
     session: Session = Depends(get_session),
 ) -> OcrRegionReadOut:
     """`attachment_region_read`'s sibling for a `/media/` upload."""
-    deps.get_or_404(session, MediaUpload, upload_id, "That upload could not be found.")
+    _existing_upload(session, upload_id)
     return _read_region(crop, page, mode, reader)
 
 
@@ -3875,7 +3886,7 @@ def media_page_caption(
 ) -> OcrPageReadOut:
     """`attachment_page_caption`'s sibling for a `/media/` upload: two id
     spaces, two routes, one implementation underneath."""
-    upload = deps.get_or_404(session, MediaUpload, upload_id, "That upload could not be found.")
+    upload = _existing_upload(session, upload_id)
     if Path(upload.filename).suffix.lower() != ".pdf":
         raise HTTPException(status_code=415, detail="Only PDF pages are described one at a time.")
     path = _within(deps.get_config().data_dir / "media", upload.filename)
@@ -3906,7 +3917,7 @@ def media_page_reads(
     session: Session = Depends(get_session),
 ) -> OcrRangeReadOut:
     """Every page of this upload that has already been read."""
-    deps.get_or_404(session, MediaUpload, upload_id, "That upload could not be found.")
+    _existing_upload(session, upload_id)
     return _stored_range(_page_read_key(None, upload_id))
 
 
@@ -3962,7 +3973,7 @@ def delete_media_page_read(
     session: Session = Depends(get_session),
 ) -> OcrRangeReadOut:
     """Forget one page's reading."""
-    deps.get_or_404(session, MediaUpload, upload_id, "That upload could not be found.")
+    _existing_upload(session, upload_id)
     binned_id = _forget_page_read(_page_read_key(None, upload_id), page)
     return _stored_range(_page_read_key(None, upload_id)).model_copy(update={"binned_id": binned_id})
 
@@ -3996,7 +4007,7 @@ def delete_media_reading(
 ) -> ReadingBinnedOut:
     """Delete an image's whole reading (Tesseract's or the vision model's)
     into the bin (WORLD_CLASS_PLAN 28.4 row 2)."""
-    deps.get_or_404(session, MediaUpload, upload_id, "That upload could not be found.")
+    _existing_upload(session, upload_id)
     return _bin_file_reading(session, "upload", upload_id, source)
 
 
@@ -4094,7 +4105,7 @@ def clean_media_reading_loops(
     upload_id: int, session: Session = Depends(get_session)
 ) -> MediaUploadOut:
     """`clean_attachment_reading_loops`'s sibling for a media upload."""
-    upload = deps.get_or_404(session, MediaUpload, upload_id, "That upload could not be found.")
+    upload = _existing_upload(session, upload_id)
     changed = _clean_reading_fields(
         ("vision_ocr_text", upload.vision_ocr_text),
         ("ocr_text", upload.ocr_text),
@@ -4156,7 +4167,7 @@ def vision_ocr_media(
     one model call, no different from the AI-edit or link-reason calls this
     app already blocks on behind a spinner.
     """
-    upload = deps.get_or_404(session, MediaUpload, upload_id, "That upload could not be found.")
+    upload = _existing_upload(session, upload_id)
     if Path(upload.filename).suffix.lower() not in vision_ocr.VISION_OCR_SUFFIXES:
         raise HTTPException(status_code=415, detail="Only images can be read this way.")
     if body.text is not None:
