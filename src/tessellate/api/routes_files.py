@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import base64
 import binascii
+import contextlib
 import json
 import os
 import re
@@ -2358,7 +2359,7 @@ def _pdf_regions_for(
         #: page lives in a directory that is deleted three lines from here, so
         #: the store has to be keyed by the page of the document it came from.
         out = _regions_for(
-            page_path, stored_text if index == 0 else "", stored_label, key, index, auto, choice
+            page_path, stored_text if index == 0 else "", stored_label, key, index, auto, choice, str(path)
         )
     out.pages = count
     out.page = index
@@ -2545,6 +2546,7 @@ def _regions_for(
     page: int = 0,
     auto: bool = True,
     choice: str = "",
+    doc: str = "",
 ) -> OcrRegionsOut:
     """Region extraction with the honest fallback both callers below share.
 
@@ -2573,14 +2575,16 @@ def _regions_for(
         #: file too, so a reused row id in another notebook never sees it).
         #: Keyed by every input of the answer (the reader, `auto`, the stored text), so a different ask is never
         #: served another's miss; only a reader run is shared (`auto` off runs none: nothing to save).
-        miss_key = (*key, page, str(path), bool(auto), str(choice or ""), hash(stored_text or ""))
+        #: `doc` is the source document for a rasterised PDF page, whose `path` is a temp file new on every look.
+        miss_key = (*key, page, doc or str(path), bool(auto), str(choice or ""), hash(stored_text or ""))
         missed = _REGION_MISSES.get(miss_key) if auto else None
         if missed is not None and time.monotonic() - missed[0] < REGION_MISS_FOR:
-            return missed[1]
+            #: A copy: callers set `pages`, `page` and `message` on what they get, concurrently.
+            return missed[1].model_copy(deep=True)
         out = _regions_read(path, stored_text, stored_label, key, page, auto, choice)
         if auto and _stored_regions(key, page) is None:
             _prune_region_misses()
-            _REGION_MISSES[miss_key] = (time.monotonic(), out)
+            _REGION_MISSES[miss_key] = (time.monotonic(), out.model_copy(deep=True))
         else:
             _REGION_MISSES.pop(miss_key, None)
         return out
@@ -2605,13 +2609,26 @@ def _forget_region_misses(key: tuple[str, int] | None, page: int) -> None:
         _REGION_MISSES.pop(k, None)
 
 
-_REGION_LOCKS: dict[tuple[str, int, int], threading.Lock] = {}
+_REGION_LOCKS: dict[tuple[str, int, int], list] = {}
 _REGION_LOCKS_GUARD = threading.Lock()
 
 
-def _region_lock(key: tuple[str, int], page: int) -> threading.Lock:
+@contextlib.contextmanager
+def _region_lock(key: tuple[str, int], page: int):
+    """The page's lock, held for the block; the entry goes when its last user leaves, so the dict
+    holds only pages being read now, never one per page ever asked."""
+    slot = (key[0], key[1], int(page))
     with _REGION_LOCKS_GUARD:
-        return _REGION_LOCKS.setdefault((key[0], key[1], int(page)), threading.Lock())
+        entry = _REGION_LOCKS.setdefault(slot, [threading.Lock(), 0])
+        entry[1] += 1
+    try:
+        with entry[0]:
+            yield
+    finally:
+        with _REGION_LOCKS_GUARD:
+            entry[1] -= 1
+            if entry[1] <= 0:
+                _REGION_LOCKS.pop(slot, None)
 
 
 def _regions_read(

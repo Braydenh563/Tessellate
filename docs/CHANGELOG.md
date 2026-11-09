@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Fix (OCR regions): a PDF page that found nothing now shares its 30 s miss (the key held the temp render path), a shared miss is handed out as a deep copy, and the per-page read locks are dropped after use instead of growing for ever; tests/test_ocr_region_cache.py.
 - Fix: deleting a file or upload drops its stored page readings (OCR boxes, words, page text) so the next file on the freed id no longer shows or indexes the old file's text; Undo puts them back; tests/test_page_read_lifecycle.py.
 - Security (SEC-A2): a picture only a locked private note uses is refused (409 Unlock first.) by every /media/{id}/ route that reads or writes its text (ocr-regions, caption, ocr, page reads, region-read, vision-ocr, clean-loops) and by media_meta; tests in tests/test_vault_attachments.py.
 - Composer (R9-6 rest, R9-11 apples, R9-2/3 leftovers, R9-15, R9-17): a mid-sentence "it" is said as the thing the line before names ("Hannah loved Klara and the Sun"), a note's second line names the note, "apples" no longer finds the Apple watch (`composer_likeness`), "what is plot 14" and "plot number" answer with the label line (`composer_label`), "why is my bread dense" leads with the sentence that says dense, "the Q4 report" is a name and not a window, a title-only note is said to be that, no "Right away." opener, "Dave is your plumber: 07700 900789 (Plumber).", and the busiest day counts in words.
