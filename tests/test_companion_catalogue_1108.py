@@ -48,7 +48,7 @@ APP_ONLY = frozenset({
 })
 #: What is left has no browser meaning (INBOX 1710): a page is never told its window opened, closed or was dragged.
 DESK_ONLY = frozenset({"react.window_closed", "react.window_dragged", "react.window_opened"})
-APP_ONLY_CAP, DESK_ONLY_CAP, NEITHER_CAP = 35, 3, 86
+APP_ONLY_CAP, DESK_ONLY_CAP, NEITHER_CAP = 35, 3, 82
 
 
 @lru_cache(maxsize=1)
@@ -104,6 +104,9 @@ def app_rows() -> frozenset[str]:
     rows = {f"acts:{k}" for k in re.findall(r"^  ([a-z]+): \{ ms: \d+, w: ", text, re.M)}
     for table, name in (("tail", "ATLAS_TAIL_ACTS"), ("mood", "ATLAS_MOODS"), ("lower", "ATLAS_LOWER_STATES"), ("react", "NMB_REACTIONS")):
         rows |= {f"{table}:{k}" for k in re.findall(r"^  ([a-z0-9_]+):", _block(text, name), re.M)}
+    #: Rows a lazy file adds to the reactions (companion-menu.js, INBOX 1719 b): `Object.assign(NMB_REACTIONS, {...});`.
+    for extra in re.findall(r"^Object\.assign\(NMB_REACTIONS, \{(.*?)\n\}\);", text, re.S | re.M):
+        rows |= {f"react:{k}" for k in re.findall(r"^  ([a-z0-9_]+):", extra, re.M)}
     rows |= {f"micro:{k}" for k in re.findall(r"\b([a-z]+):", _block(text, "ATLAS_MICRO_BASE"))}
     pool = re.search(r"NMB_POKE_POOL = \[(.*?)\]", text)
     assert pool
