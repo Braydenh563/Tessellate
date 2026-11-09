@@ -180,7 +180,7 @@ no group entity in `routes_bookmarks.py`, so an empty group has nowhere
 server-side to live, and the localStorage placeholder is a deliberate patch
 over that hole rather than a design you should copy.
 
-Not reproduced here, so not fixed, and named as such: the writing-trace
+**Open (checked 2026-11-09).** Not reproduced; no fix commit found; the file says it was not fixed. Not reproduced here, so not fixed, and named as such: the writing-trace
 animation not moving, browser errors after enabling battery saver, and the
 caption/OCR clamp slicing descenders (no OCR'd content exists in the sandbox
 - the identified cause was removed, not an observed repair). Not verified:
