@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import random
 import time
 from pathlib import Path
 from typing import Any
@@ -43,6 +44,7 @@ def make(fake: FakeWin32 | None = None, **kw: Any):
     settled: list[Any] = []
     clock = Clock()
     kw.setdefault("home", (800, 920))
+    kw.setdefault("rng", random.Random(1700))  # a seeded engine: the same run on every machine and every order
     r = runner_mod.OverlayRunner(
         w=fake, clock=clock, frames=FRAMES, on_click=lambda *a: clicks.append(a), on_settle=lambda x, y: settled.append((x, y)),
         dispatch=lambda name, fn: fn(), **kw,
