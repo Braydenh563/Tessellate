@@ -202,7 +202,7 @@ def _many(body: str):
 
 @needs_node
 def test_a_soft_throw_lands_near_and_a_hard_one_is_aimed_by_its_angle() -> None:
-    got = _many("{ soft: many(12, 600, 400, 0.5, -0.4), up: many(16, 600, 400, 0.2, -2.3), right: many(16, 600, 400, 2.3, -0.4), left: many(16, 700, 400, -2.3, -0.6) }")
+    got = _many("{ soft: many(12, 600, 400, 0.5, -0.4), up: many(16, 600, 400, 0.2, -1.95), right: many(16, 600, 400, 2.3, -0.4), left: many(16, 700, 400, -2.3, -0.6) }")
     for r in got["soft"]:
         assert r["aim"] == "near" and abs(r["x"] - 600) < 420, r
     up = {r["aim"] for r in got["up"]}
@@ -249,7 +249,7 @@ def test_it_comes_down_in_varied_ways_never_the_same_twice_running() -> None:
 @needs_node
 def test_the_varied_flights_still_draw_under_40px_a_frame_except_a_wrap() -> None:
     got = _many(
-        "[...many(10, 600, 400, 0.2, -2.3), ...many(10, 600, 400, 2.3, -0.4), ...many(10, 480, 380, 0.3, -0.5), ...many(10, 690, 60, 0.05, 1.8)].map((r) => r.d60)"
+        "[...many(10, 600, 400, 0.2, -1.95), ...many(10, 600, 400, 2.3, -0.4), ...many(10, 480, 380, 0.3, -0.5), ...many(10, 690, 60, 0.05, 1.8)].map((r) => r.d60)"
     )
     for r in got:
         assert r["worst"] < 40 and r["rest"] and (r["x"], r["y"]) == (r["endX"], r["endY"]), r
@@ -267,7 +267,7 @@ def test_a_hard_steep_throw_leaves_the_top_from_mid_screen_and_falls_back_in() -
     # down". From y 500 the arc used to top out at about y -78, so it never
     # chose to; now the climb is carried (lighter on the way up) to clear the
     # top by its height. A moderate upward throw still hangs or bounces.
-    got = _many("{ mid: many(12, 600, 500, 0.2, -2.3), high: many(12, 600, 300, -0.3, -2.0), low: many(12, 600, 700, 0.1, -2.3), soft: many(12, 600, 500, 0.1, -1.4) }")
+    got = _many("{ mid: many(12, 600, 500, 0.2, -1.95), high: many(12, 600, 300, -0.3, -1.9), low: many(12, 600, 700, 0.1, -1.95), soft: many(12, 600, 500, 0.1, -1.4) }")
     for name in ("mid", "high", "low"):
         sky = [r for r in got[name] if r["aim"] == "sky"]
         assert len(sky) >= 4, (name, [r["aim"] for r in got[name]])
@@ -288,3 +288,20 @@ def test_a_hand_catch_holds_even_mid_tumble_or_slide() -> None:
     assert slips and {r["arrive"] for r in slips} & {"slide", "tumble"}, [(r["kind"], r["arrive"]) for r in got]
     for r in slips:
         assert r["y"] == 420 + 81 and r["x"] in (300, 700), r
+
+
+@needs_node
+def test_a_throw_past_the_line_leaves_the_top_for_longer_the_harder_and_lands_inside() -> None:
+    # INBOX 1719 (a): past `COMPANION_THROW_LEAVE[0]` it always leaves (never a hang or bounce); the time with the whole
+    # body above the top grows with the speed and is capped; it comes back in and rests inside, per seed the same.
+    got = _many(
+        "(() => { const out = {}; for (const v of [2.0, 2.075, 2.15, 2.225, 2.3]) { companionThrowMemo.aim = {}; companionThrowSeed.seed = 7;"
+        " const p = companionThrowPlan(600, 500, 0.1, -v, W); const end = p.path[p.path.length - 1];"
+        " out[v] = { aim: p.aim, away: p.path.filter((s) => s.y < -92).length * 16, rest: end.rest, x: end.x, y: end.y, kind: end.fate && end.fate.kind }; } return out; })()"
+    )
+    rows = [got[k] for k in ("2", "2.075", "2.15", "2.225", "2.3")]
+    assert all(r["aim"] == "sky" and r["rest"] and 0 <= r["x"] <= 1376 and 48 <= r["y"] <= 780 and r["kind"] != "hang" for r in rows), rows
+    aways = [r["away"] for r in rows]
+    assert aways == sorted(aways) and aways[-1] > aways[0] + 1500 and aways[-1] <= 8200, aways
+    again = _many("(() => { companionThrowMemo.aim = {}; companionThrowSeed.seed = 7; return companionThrowPlan(600, 500, 0.1, -2.3, W).path.length; })()")
+    assert again == _many("(() => { companionThrowMemo.aim = {}; companionThrowSeed.seed = 7; return companionThrowPlan(600, 500, 0.1, -2.3, W).path.length; })()")

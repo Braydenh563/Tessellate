@@ -343,6 +343,14 @@ PERCH_THROW = 2.0
 #: other throw bounces off the top like a side wall.
 CEIL_CATCH = 2000.0
 CEIL_UPWARD = 0.8
+#: INBOX 1719 (a): a throw harder than this (upward launch speed, logical px per second, above `CEIL_CATCH`, below
+#: `THROW_MAX`) and mostly upward does not hang from the top: it leaves through it, stays out of view for a time that
+#: grows with the speed (`AWAY_FOR`, seconds, from the line to `THROW_MAX`; capped), then falls back in from the top
+#: within `AWAY_DRIFT` figure widths of where it left, turning over.
+CEIL_LEAVE = 2500.0
+AWAY_FOR = (1.0, 8.0)
+AWAY_DRIFT = 0.6
+AWAY_FALL = 450.0
 FLOAT_SPEED = 170.0
 FLOAT_TURN = 1.8
 FLOAT_DRAG = 3.0
@@ -831,6 +839,8 @@ class Engine:
         self.hang_glance_at = math.inf
         self.idle_start = 0.0
         self.launch = (0.0, 0.0)  # the last throw's velocity: the ceiling holds a hard upward one
+        self.away_until: float | None = None  # out of view above the top until then (`CEIL_LEAVE`)
+        self.away_x = 0.0
         self.plain_legs = False  # tests: every leg is the plain walk or drift, no vanish, no glide
         self.relocate_at: float | None = None
         #: The drawn box of every frame, `(name, mirrored) -> (left, top, right, bottom)` in px
@@ -3535,6 +3545,9 @@ class Engine:
         self.y = max(self.y, uy0)  # a step may carry it past the top: the drawn box stops at the edge
         if self.y > max(top - self._lift(), uy0):
             return False
+        if self._leaves():
+            self._leave_top(m, now)
+            return True
         if not self._ceiling_holds():  # it bounces off the top like a side wall and drifts back down
             self.vy = abs(self.vy) * BOUNCE_DAMP
             self.bonk_until = now + BONK_FOR
@@ -3548,6 +3561,31 @@ class Engine:
             self.y = hang_y
             self._enter("hang", now)
         return True
+
+    def _leaves(self) -> bool:
+        """Whether the throw reaching the top was past `CEIL_LEAVE` and mostly upward: it goes out through the top."""
+        vx, vy = self.launch
+        return -vy >= CEIL_LEAVE * self._scale() and -vy >= CEIL_UPWARD * math.hypot(vx, vy)
+
+    def _leave_top(self, m: Monitor, now: float) -> None:
+        """Out through the top: unseen for longer the harder it was thrown (the line to `THROW_MAX` maps to `AWAY_FOR`)."""
+        k = self._scale()
+        f = min(1.0, max(0.0, (-self.launch[1] / k - CEIL_LEAVE) / (THROW_MAX - CEIL_LEAVE)))
+        self.away_until = now + AWAY_FOR[0] + (AWAY_FOR[1] - AWAY_FOR[0]) * f
+        self.away_x = self.x
+        self.vx = self.vy = self.omega = self.kick = 0.0
+        self.y = m.area[1] - self.size[1] - 40 * k
+
+    def _return_top(self, now: float) -> None:
+        """Back in from above the top near where it left, turning over; the ordinary flight lands it."""
+        k, w = self._scale(), self.size[0]
+        ux0, ux1 = self._ride_limits("fly")[:2]
+        self.away_until = None
+        self.x = min(max(self.away_x + self.rng.uniform(-AWAY_DRIFT, AWAY_DRIFT) * w, ux0), ux1)
+        self.vx, self.vy = self.rng.uniform(-80, 80) * k, AWAY_FALL * k
+        self.launch = (self.vx, self.vy)
+        self.omega = self.rng.choice((-1, 1)) * SPIN_OMEGA[1] * 0.8
+        self.slow_for = self.right_t = 0.0
 
     def _ceiling_holds(self) -> bool:
         """Whether the throw now reaching the top was hard and mostly upward (see `CEIL_CATCH`) and the body is near
@@ -3578,6 +3616,10 @@ class Engine:
         if self.wrapping is not None:
             self._wrap_step(dt)
             return
+        if self.away_until is not None:
+            if now < self.away_until:
+                return
+            self._return_top(now)
         scale = self._scale()
         m = self.ground_mon if self.grounded and self.ground_mon else self.current_monitor()
         floater = self.gait == "float"
@@ -4647,6 +4689,8 @@ class Engine:
         frame = self._frame(now)
         x, y, clip = self._display(frame)
         fx, alpha, _squeeze = self._warp_view(now) if self.state == "warp" else (None, 1.0, 0.0)
+        if self.away_until is not None:
+            alpha = 0.0  # out through the top
         if fx is not None:
             fx = (fx[0], round(max(0.0, min(1.0, fx[1])) * 16) / 16.0, fx[2])  # as alpha is: a step finer than 1/16 is a picture nobody sees
         prop, face = self.ex.view(now)
