@@ -49,6 +49,9 @@ def _seen(term: str, found: set[str]) -> bool:
     factgraph._tables()
     if any(factgraph._PAST.get(word) == stem for word in found):
         return True
+    #: The agent of a verb ("teaches" in "Teacher is Lucía", R9-2).
+    if len(stem) >= 5 and any(word in (stem + "er", stem + "r", stem + "or") for word in found):
+        return True
     return len(stem) >= 4 and any(_one_edit(stem, word) for word in found if word[:1] == stem[:1])
 
 

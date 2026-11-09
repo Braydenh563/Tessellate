@@ -327,6 +327,9 @@ def _short_fact(text: str) -> bool:
     parts = text.rstrip(".").split()
     if len(parts) < 2:
         return False
+    #: "Skipped meditation.": a past verb and what it was done to (R9-2).
+    if len(parts) == 2 and re.fullmatch(r"[A-Za-z]{4,}ed", parts[0]) and re.fullmatch(r"[a-z]{6,}", parts[1]):
+        return True
     return any(ch.isdigit() for ch in text) or ":" in parts[0]
 
 

@@ -972,6 +972,8 @@ def _age_of(out, name: str, named: list, today: date) -> bool:  # noqa: ANN001
     mentioned = named
     named = [v for v in named if _title_holds(v, stems)]  # her own note, not a gift list that names her
     line = f"Your notes do not say how old {name} is."
+    if _born_line(out, named, name, today):
+        return True
     if _said_line(out, named, _YEARS_OLD, "") or _said_line(out, named, _BIRTHDAY, f"{line} "):
         return True
     out.lines.append(line)
@@ -981,6 +983,28 @@ def _age_of(out, name: str, named: list, today: date) -> bool:  # noqa: ANN001
         if first := next((x for x in view.sentences if x.kind in ("prose", "item", "task")), None):
             composer_lists._cite(out, view, first, line)  # noqa: SLF001
     return True
+
+
+_BORN = re.compile(r"\b(?i:born)(?: in| on)? (?:(?P<d>\d{1,2}) )?(?:(?P<m>[A-Z][a-z]{2,8}) )?(?P<y>(?:19|20)\d\d)\b")
+_MONTH_NUMBER = {m: n for n, m in enumerate("January February March April May June July August September October November December".split(), 1)}
+
+
+def _born_line(out, views: list, name: str, today: date) -> bool:  # noqa: ANN001
+    """"Born April 2019" is an age: whole years, today less the birth month (R9-10)."""
+    for view in views:
+        for s in view.sentences:
+            found = _BORN.search(s.text)
+            if not found:
+                continue
+            month = _MONTH_NUMBER.get(found.group("m") or "", 0)
+            year = int(found.group("y"))
+            years = today.year - year - (1 if month and (today.month, today.day) < (month, int(found.group("d") or 1)) else 0)
+            if years < 0:
+                continue
+            out.lines.append(f"{name} is {years} (born {(found.group('m') + ' ') if month else ''}{year}).")
+            composer_lists._cite(out, view, s, out.lines[-1])  # noqa: SLF001
+            return True
+    return False
 
 
 def _said_line(out, views: list, pattern, lead: str) -> bool:  # noqa: ANN001

@@ -203,6 +203,9 @@ def empty_window(when: str, first: date | None, last: date | None, *, voice: str
         voice = {"warm": "natural", "formal": "professional"}.get(composer_compose.voice_for(register), composer_compose.voice_for(register))
     today = today or user_today()
     when = window_said(when)
+    if window and window[0] > today:
+        #: A day that has not come holds no notes written then: what is on it is what is planned (R9-8).
+        return f"Nothing is planned {when if when.startswith(('on ', 'for ', 'in ', 'next ', 'this ')) else 'for ' + when}."
     lead = _pick(seed or when, "empty_window", list(_EMPTY_WINDOW[voice])).format(when=when, When=when[:1].upper() + when[1:])
     if first is None or last is None:
         return lead

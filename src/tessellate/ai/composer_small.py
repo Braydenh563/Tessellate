@@ -209,10 +209,12 @@ def _where_rank(view: NoteView, stems: set[str]) -> tuple:
     return (not (view.titled and stems <= view.title_words), not view.titled, -about / max(len(view.sentences), 1), view.rank)
 
 
-def _best_sentence(view: NoteView, stems: set[str]):  # noqa: ANN202
-    """The sentence of `view` holding most of the subject, or None when none holds any."""
+def _best_sentence(view: NoteView, stems: set[str], head: str = ""):  # noqa: ANN202
+    """The sentence of `view` holding most of the subject, or None when none holds any.
+    Of equals, the one that holds the head noun (`head`, the last word: the "password" of
+    "wifi password", R9-2), then the first."""
     scored = [(sum(1 for st in stems if _holds(st, set(_words(s.text)))), s) for s in view.sentences]
-    best = max(scored, key=lambda p: (p[0], -p[1].order), default=(0, None))
+    best = max(scored, key=lambda p: (p[0], bool(head) and _holds(head, set(_words(p[1].text))), -p[1].order), default=(0, None))
     return best[1] if best[0] else None
 
 
@@ -230,7 +232,7 @@ def where_written(question: str, notes: list[dict], *, today: date | None = None
         return None
     held.sort(key=lambda v: _where_rank(v, stems))
     view = held[0]
-    best = _best_sentence(view, stems)
+    best = _best_sentence(view, stems, _stem(words[-1]))
     if best is None and not (view.titled and stems <= view.title_words):
         return None
     out = _Answer({v.id: v for v in views}, today)
