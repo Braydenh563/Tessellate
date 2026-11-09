@@ -9,6 +9,7 @@ import random
 from tessellate.core.overlay import behaviour as bh
 from tessellate.core.overlay import engine as eng
 from tessellate.core.overlay import props as pr
+from tests.overlay_sim_1670 import skip_flow
 
 pr.register()
 ONE = [eng.Monitor((0, 0, 1920, 1040), 96)]
@@ -134,6 +135,7 @@ def hour_of_life(seed: int, hour: int = 14):
     # goes on in place, so its act runs twice in a row on purpose); this hour measures the mind's own picks, and
     # spells have their variety tests in test_overlay_presence_1692.py.
     e.presence = False
+    skip_flow(e)  # an hour loop that reads acts and counters, never the flow or tail picture
     names: list[str] = []
     real = e._start_act
     e._start_act = lambda name, now: (names.append(name), real(name, now))[1]  # type: ignore[method-assign]
