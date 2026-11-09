@@ -775,8 +775,9 @@ function openIconPicker({ anchor = null, onPick = null, modes = ["emoji", "icon"
   document.addEventListener("pointerdown", outside, true);
 
   window.uiSettlingUntil = performance.now() + 400;
-  //: Read before the panel is drawn and added, while the layout is clean.
-  const rect = anchor?.getBoundingClientRect?.();
+  //: The anchor's box is read after the frame, not in the press: a press that has just written (the composer
+  //: foot's pointerup) made this one read lay the whole page out inside the handler (189ms of the 196ms at
+  //: 4x, INBOX 1716). A hidden anchor reads as empty then too, which is the centred case below.
   draw();
   document.body.appendChild(panel);
   //: Placed and focused after the frame that lays the panel out, hidden until then: its
@@ -785,6 +786,7 @@ function openIconPicker({ anchor = null, onPick = null, modes = ["emoji", "icon"
   panel.style.visibility = "hidden";
   afterFrames(() => setTimeout(() => {
     if (!panel.isConnected) return;
+    const rect = anchor?.isConnected ? anchor.getBoundingClientRect() : null;
     //: An anchor that is not on screen (inside a menu that closed as it was
     //: pressed) has no place to hang from: the middle of the window instead.
     if (rect && (rect.width || rect.height)) placeHelpPopover(panel, anchor);
