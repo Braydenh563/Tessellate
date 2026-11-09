@@ -436,7 +436,17 @@ def _xvfb(attempt: int = 0) -> Any:
     rd, wr = os.pipe()
     proc = subprocess.Popen(["Xvfb", f":{number}", "-displayfd", str(wr), "-screen", "0", "1024x768x24", "-nolisten", "tcp"], pass_fds=(wr,), stderr=subprocess.DEVNULL)
     os.close(wr)
-    num = os.read(rd, 16).decode().strip()
+    # Read to the newline before closing the pipe (INBOX 1683 s, the real race: Xvfb writes the number and the newline
+    # as two writes, and a reader that took the number alone and closed its end made the second write fail, "Cannot
+    # write display number to fd", and the server exit, which only happened when the box was loaded enough to split
+    # them). End of file (the server died) also ends the read.
+    raw = b""
+    while not raw.endswith(b"\n"):
+        chunk = os.read(rd, 16)
+        if not chunk:
+            break
+        raw += chunk
+    num = raw.decode().strip()
     os.close(rd)
     if not num:
         proc.kill()
