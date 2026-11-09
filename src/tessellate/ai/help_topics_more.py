@@ -70,6 +70,7 @@ MORE_TOPICS: list[dict] = [
             "companion activities", "companion hobbies", "companion journal", "companion stargazing",
             "companion blanket nap", "companion waters a plant", "companion puzzle",
             "companion nods", "companion little dance", "companion poses proud", "companion tiptoes",
+            "companion sneezes", "companion hiccups", "companion hugs itself", "companion taps a foot",
             "companion looks down", "companion daydreams", "companion tinkers", "companion miffed face",
             "companion smirk", "pat the companion", "pet the companion", "companion bonk", "swipe the companion", "companion twirl", "companion cloud", "companion grabs an edge",
         ),
@@ -78,7 +79,8 @@ MORE_TOPICS: list[dict] = [
             "push-ups, dumbbells, tea, a biscuit, fishing, a journal, the stars, a nap under a "
             "blanket, watering a plant and a puzzle, each with its eyes on the prop, and short "
             "gestures: a nod, a little dance, posing proud, a look down and tiptoeing, then a daydream, "
-            "pacing, a made-up game, tinkering with a gear and dusting off. A shake or a pout leaves it "
+            "pacing, a made-up game, tinkering with a gear and dusting off, and a sneeze, a hiccup, a hug "
+            "round itself and a foot tap. A shake or a pout leaves it "
             "miffed for a moment, and a shrug a smirk. "
             "The loud ones (push-ups, dumbbells) wait for a lull. They are one group, \"Atlas does the "
             "desk companion's routines\", under Settings, Appearance, Corner companion, "
@@ -122,7 +124,9 @@ MORE_TOPICS: list[dict] = [
             "Now and then the corner companion reacts to what you do: a puzzled tilt "
             "when a search finds nothing and a nod when the next one does, a double "
             "take when the pointer rushes past it, a shake once you put it down after "
-            "carrying it a while, and a small wince when a note goes to the bin. Atlas "
+            "carrying it a while, a nod on the hour, a wave when you come back after ten "
+            "minutes away, a shiver when the battery is low, a glance when the window is "
+            "resized or goes fullscreen, and a small wince when a note goes to the bin. Atlas "
             "also has rare habits of its own: a look around, a hum, a settling breath "
             "and a second look at the pointer, each at most once in three minutes. Its "
             "moods follow the part of the day, brighter in the morning and quieter in "
