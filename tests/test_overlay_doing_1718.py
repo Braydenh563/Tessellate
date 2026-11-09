@@ -11,6 +11,7 @@ from pathlib import Path
 
 from tessellate.core.overlay import props
 from tessellate.core.overlay.engine import Engine, Monitor
+from tests.overlay_sim_1670 import skip_flow
 
 ONE = [Monitor((0, 0, 1920, 1040), 96)]
 ROOT = Path(__file__).resolve().parents[1]
@@ -19,6 +20,7 @@ ROOT = Path(__file__).resolve().parents[1]
 def hour(gait: str, seed: int, starts: list[tuple[str, float, bool]]) -> None:
     e = Engine((100, 120), ONE, rng=random.Random(seed), home=(800, 920), gait=gait, hang_top=0.195)
     e.hour = 13
+    skip_flow(e)  # an hour loop that reads acts and positions, never the flow or tail picture
     t, last = 1.0, None
     while t < 3600:
         t += 0.05

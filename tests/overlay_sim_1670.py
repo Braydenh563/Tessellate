@@ -40,8 +40,11 @@ def home_at_edge(e: eng.Engine) -> None:
 def skip_flow(e: eng.Engine) -> None:
     """Leave the wisps' and streams' picture undrawn: a rate sim reads states, acts and positions, never the flow
     view (it was 40 percent of an hour's cost, and the metrics came out identical to the last digit with it off).
-    The follow-through itself still steps, so the engine's settled and wake decisions are unchanged."""
+    The follow-through itself still steps, so the engine's settled and wake decisions are unchanged. The layered tail's
+    view is left undrawn the same way (about a seventh of an hour's cost; no sim reads `out.tail`, and the metrics of
+    five seeded hours came out equal with it off)."""
     e._flow_view = lambda *_a, **_k: None
+    e._tail_view = lambda *_a, **_k: None
 
 
 def runs(seq: list[str]) -> int:
