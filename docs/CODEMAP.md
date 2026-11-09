@@ -2,7 +2,7 @@
 
 Generated 2026-11-09 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7926, frontend ids 2652, CSS sections 522, backend routes 649, backend modules 9217, test files 2259, tests 18975, plan headings 1005, app scripts 28, boot scripts 37, script files 264.
+Counts: frontend functions 7926, frontend ids 2652, CSS sections 522, backend routes 649, backend modules 9217, test files 2259, tests 18977, plan headings 1005, app scripts 28, boot scripts 37, script files 264.
 
 ## Frontend functions (7926)
 
@@ -2098,24 +2098,24 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `atlasBreathFrame` | frontend/js/atlas-life.js:797 |
-| `atlasFrameBudget` | frontend/js/atlas-life.js:463 |
-| `atlasPropLoops` | frontend/js/atlas-life.js:721 |
-| `atlasPropsFrame` | frontend/js/atlas-life.js:749 |
-| `atlasRigLower` | frontend/js/atlas-life.js:1046 |
-| `atlasRigLowerAttach` | frontend/js/atlas-life.js:1022 |
+| `atlasBreathFrame` | frontend/js/atlas-life.js:798 |
+| `atlasFrameBudget` | frontend/js/atlas-life.js:464 |
+| `atlasPropLoops` | frontend/js/atlas-life.js:722 |
+| `atlasPropsFrame` | frontend/js/atlas-life.js:750 |
+| `atlasRigLower` | frontend/js/atlas-life.js:1051 |
+| `atlasRigLowerAttach` | frontend/js/atlas-life.js:1027 |
 | `atlasRingLoops` | frontend/js/atlas-life.js:20 |
-| `atlasTailAttach` | frontend/js/atlas-life.js:352 |
-| `atlasTailBend` | frontend/js/atlas-life.js:132 |
-| `atlasTailCalm` | frontend/js/atlas-life.js:591 |
-| `atlasTailDraw` | frontend/js/atlas-life.js:648 |
-| `atlasTailFollow` | frontend/js/atlas-life.js:143 |
-| `atlasTailFrame` | frontend/js/atlas-life.js:489 |
-| `atlasTailKit` | frontend/js/atlas-life.js:225 |
-| `atlasTailPick` | frontend/js/atlas-life.js:426 |
-| `atlasTailRest` | frontend/js/atlas-life.js:611 |
-| `atlasTailShape` | frontend/js/atlas-life.js:192 |
-| `atlasTailUnrest` | frontend/js/atlas-life.js:626 |
+| `atlasTailAttach` | frontend/js/atlas-life.js:353 |
+| `atlasTailBend` | frontend/js/atlas-life.js:133 |
+| `atlasTailCalm` | frontend/js/atlas-life.js:592 |
+| `atlasTailDraw` | frontend/js/atlas-life.js:649 |
+| `atlasTailFollow` | frontend/js/atlas-life.js:144 |
+| `atlasTailFrame` | frontend/js/atlas-life.js:490 |
+| `atlasTailKit` | frontend/js/atlas-life.js:226 |
+| `atlasTailPick` | frontend/js/atlas-life.js:427 |
+| `atlasTailRest` | frontend/js/atlas-life.js:612 |
+| `atlasTailShape` | frontend/js/atlas-life.js:193 |
+| `atlasTailUnrest` | frontend/js/atlas-life.js:627 |
 
 ### frontend/js/atlas-micro.js (8)
 
@@ -2139,19 +2139,19 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `atlasBlinkStart` | frontend/js/atlas-motion.js:61 |
 | `atlasBlinkTick` | frontend/js/atlas-motion.js:48 |
 | `atlasLowerState` | frontend/js/atlas-motion.js:97 |
-| `atlasMotionOK` | frontend/js/atlas-motion.js:121 |
-| `atlasProbeWatch` | frontend/js/atlas-motion.js:170 |
-| `atlasRigAttach` | frontend/js/atlas-motion.js:129 |
-| `atlasRigFrame` | frontend/js/atlas-motion.js:419 |
-| `atlasRigGesture` | frontend/js/atlas-motion.js:216 |
-| `atlasRigRead` | frontend/js/atlas-motion.js:181 |
-| `atlasRigSpring` | frontend/js/atlas-motion.js:241 |
-| `atlasRigWake` | frontend/js/atlas-motion.js:261 |
-| `atlasStarsFade` | frontend/js/atlas-motion.js:409 |
-| `atlasTossAt` | frontend/js/atlas-motion.js:301 |
-| `atlasTossBob` | frontend/js/atlas-motion.js:315 |
-| `atlasTossDraw` | frontend/js/atlas-motion.js:378 |
-| `atlasTossState` | frontend/js/atlas-motion.js:323 |
+| `atlasMotionOK` | frontend/js/atlas-motion.js:122 |
+| `atlasProbeWatch` | frontend/js/atlas-motion.js:171 |
+| `atlasRigAttach` | frontend/js/atlas-motion.js:130 |
+| `atlasRigFrame` | frontend/js/atlas-motion.js:420 |
+| `atlasRigGesture` | frontend/js/atlas-motion.js:217 |
+| `atlasRigRead` | frontend/js/atlas-motion.js:182 |
+| `atlasRigSpring` | frontend/js/atlas-motion.js:242 |
+| `atlasRigWake` | frontend/js/atlas-motion.js:262 |
+| `atlasStarsFade` | frontend/js/atlas-motion.js:410 |
+| `atlasTossAt` | frontend/js/atlas-motion.js:302 |
+| `atlasTossBob` | frontend/js/atlas-motion.js:316 |
+| `atlasTossDraw` | frontend/js/atlas-motion.js:379 |
+| `atlasTossState` | frontend/js/atlas-motion.js:324 |
 
 ### frontend/js/atlas.js (97)
 
@@ -2936,33 +2936,33 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `companionThrowAim` | frontend/js/companion-throw.js:333 |
+| `companionThrowAim` | frontend/js/companion-throw.js:335 |
 | `companionThrowArrive` | frontend/js/companion-throw.js:133 |
-| `companionThrowAt` | frontend/js/companion-throw.js:280 |
-| `companionThrowAtTime` | frontend/js/companion-throw.js:406 |
-| `companionThrowClimb` | frontend/js/companion-throw.js:603 |
-| `companionThrowDown` | frontend/js/companion-throw.js:252 |
-| `companionThrowFlat` | frontend/js/companion-throw.js:583 |
-| `companionThrowHold` | frontend/js/companion-throw.js:272 |
+| `companionThrowAt` | frontend/js/companion-throw.js:282 |
+| `companionThrowAtTime` | frontend/js/companion-throw.js:408 |
+| `companionThrowClimb` | frontend/js/companion-throw.js:621 |
+| `companionThrowDown` | frontend/js/companion-throw.js:254 |
+| `companionThrowFlat` | frontend/js/companion-throw.js:590 |
+| `companionThrowHold` | frontend/js/companion-throw.js:274 |
 | `companionThrowLedges` | frontend/js/companion-throw.js:100 |
-| `companionThrowLift` | frontend/js/companion-throw.js:353 |
-| `companionThrowMiffed` | frontend/js/companion-throw.js:780 |
-| `companionThrowPick` | frontend/js/companion-throw.js:325 |
-| `companionThrowPlan` | frontend/js/companion-throw.js:366 |
+| `companionThrowLift` | frontend/js/companion-throw.js:355 |
+| `companionThrowMiffed` | frontend/js/companion-throw.js:798 |
+| `companionThrowPick` | frontend/js/companion-throw.js:327 |
+| `companionThrowPlan` | frontend/js/companion-throw.js:368 |
 | `companionThrowRng` | frontend/js/companion-throw.js:61 |
-| `companionThrowSettle` | frontend/js/companion-throw.js:296 |
-| `companionThrowSettleSoon` | frontend/js/companion-throw.js:621 |
+| `companionThrowSettle` | frontend/js/companion-throw.js:298 |
+| `companionThrowSettleSoon` | frontend/js/companion-throw.js:639 |
 | `companionThrowSide` | frontend/js/companion-throw.js:164 |
 | `companionThrowSlide` | frontend/js/companion-throw.js:205 |
 | `companionThrowStep` | frontend/js/companion-throw.js:78 |
 | `companionThrowUp` | frontend/js/companion-throw.js:225 |
 | `companionThrowWrapOn` | frontend/js/companion-throw.js:187 |
-| `nameMarkBuddyFlightStep` | frontend/js/companion-throw.js:653 |
-| `nameMarkBuddyShaken` | frontend/js/companion-throw.js:760 |
-| `nameMarkBuddyThrow` | frontend/js/companion-throw.js:473 |
-| `nameMarkBuddyThrowFeel` | frontend/js/companion-throw.js:634 |
-| `nameMarkBuddyThrowLand` | frontend/js/companion-throw.js:735 |
-| `nameMarkBuddyThrowSpot` | frontend/js/companion-throw.js:724 |
+| `nameMarkBuddyFlightStep` | frontend/js/companion-throw.js:671 |
+| `nameMarkBuddyShaken` | frontend/js/companion-throw.js:778 |
+| `nameMarkBuddyThrow` | frontend/js/companion-throw.js:475 |
+| `nameMarkBuddyThrowFeel` | frontend/js/companion-throw.js:652 |
+| `nameMarkBuddyThrowLand` | frontend/js/companion-throw.js:753 |
+| `nameMarkBuddyThrowSpot` | frontend/js/companion-throw.js:742 |
 
 ### frontend/js/companion-travel.js (7)
 
@@ -12457,7 +12457,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/chat-private-lazy.css | 18 |
 | frontend/css/chip-bar-lazy.css | 22 |
 | frontend/css/chord-guide-lazy.css | 158 |
-| frontend/css/companion-throw-lazy.css | 43 |
+| frontend/css/companion-throw-lazy.css | 54 |
 | frontend/css/companion-travel-lazy.css | 333 |
 | frontend/css/dash-night-lazy.css | 29 |
 | frontend/css/dash-orphans-lazy.css | 57 |
@@ -24784,7 +24784,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (18975)
+## Tests (18977)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -25133,7 +25133,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_companion_state_1463.py | 5 |
 | tests/test_companion_taskbar_1107.py | 7 |
 | tests/test_companion_throw.py | 9 |
-| tests/test_companion_throw_fates.py | 15 |
+| tests/test_companion_throw_fates.py | 17 |
 | tests/test_companion_throw_scroll.py | 4 |
 | tests/test_companion_throw_smooth.py | 16 |
 | tests/test_companion_tickle_boop_1108.py | 6 |

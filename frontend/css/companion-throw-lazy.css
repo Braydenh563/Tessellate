@@ -17,6 +17,17 @@
 #nm-buddy.nmb-splat[data-splat="l"] .nm-buddy-char { transform-origin: 0 50%; }
 #nm-buddy.nmb-splat[data-splat="r"] .nm-buddy-char { transform-origin: 100% 50%; }
 
+/* Bonked on the top bar (`int.ceiling_bonk`): dazed, a wobble side to side for 600 ms over its fall. */
+#nm-buddy.nmb-bonk .nm-buddy-char { animation: nmb-bonk 600ms ease-out both; }
+@keyframes nmb-bonk {
+  0% { rotate: 0deg; }
+  20% { rotate: -9deg; }
+  40% { rotate: 8deg; }
+  60% { rotate: -5deg; }
+  80% { rotate: 3deg; }
+  100% { rotate: 0deg; }
+}
+
 /* Caught by its hands on a panel's top edge: it swings in, dips (the
    anticipation), then pulls itself up, stretched, before it climbs on. */
 #nm-buddy.nmb-climb .nm-buddy-char { animation: nmb-climb-pull 520ms var(--ease-in-out) both; }

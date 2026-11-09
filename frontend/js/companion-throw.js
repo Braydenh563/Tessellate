@@ -40,7 +40,7 @@ const COMPANION_THROW_ODDS = { hang: 0.55, climb: 0.45, wrap: 0.3, splat: 0.4, g
 //: barely reaches the bar is not caught, a nudge into a side does not splat.
 //: The bar was 0.35 and 0.4 odds: most throws to it bounced off (K12, the
 //: owner: "every time I throw the companion to the roof it just bounces off").
-const COMPANION_THROW_NEEDS = { hang: 0.2, splat: 0.9, wrap: 1.4 };
+const COMPANION_THROW_NEEDS = { hang: 0.2, splat: 0.9, wrap: 1.4, bonk: 0.45 };
 //: How far under an edge its hands still catch it at the top of the arc.
 const COMPANION_THROW_REACH = 26;
 //: How far past a panel's end a falling hand still catches its edge.
@@ -228,7 +228,9 @@ function companionThrowUp(s, n, world, rand) {
     const tried = { ...n.tried, roof: true };
     const odds = s.aim ? +(s.aim === "hang") : COMPANION_THROW_ODDS.hang;
     if (-s.vy >= COMPANION_THROW_NEEDS.hang && (odds === 1 || rand() < odds)) return { ...n, tried, y: world.hang, vx: 0, vy: 0, rot: 0, rest: true, fate: { kind: "hang" } };
-    return { ...n, tried };
+    //: Not caught, and thrown hard enough: the bar bonks it (INBOX 1696 v, `int.ceiling_bonk`; the desk's `BONK_FOR`):
+    //: `bonk` is set for the step that met it, shown once by `nmb.throwBonk`.
+    return -s.vy >= COMPANION_THROW_NEEDS.bonk ? { ...n, tried, bonk: true } : { ...n, tried };
   }
   let m = n;
   //: Going past an edge fast, its hands miss it.
@@ -505,7 +507,7 @@ function nameMarkBuddyThrow(buddy, vx, vy, world, plan = companionThrowPlan(nmb.
       clearTimeout(flight.timer);
       if (nmb.flight !== flight) return;
       nmb.flight = null;
-      buddy.classList.remove("nm-buddy-dragging", "nmb-splat", "nmb-climb", "nmb-slip");
+      buddy.classList.remove("nm-buddy-dragging", "nmb-splat", "nmb-climb", "nmb-slip", "nmb-bonk", "nmb-falling");
       delete buddy.dataset.splat;
       nameMarkBuddySway(buddy, 0);
       if (!char) return;
@@ -543,6 +545,11 @@ function nameMarkBuddyThrow(buddy, vx, vy, world, plan = companionThrowPlan(nmb.
       char.animate([{ scale: "1 1" }, { scale: `${1 + a} ${1 - a}` }, { scale: "1 1" }], { duration: 220, easing: "ease-out" });
     }
     companionThrowFlat(buddy, char, s);
+    if (s.bonk && !flight.bonked) nmb.throwBonk(buddy, char, flight);
+    //: Coming down and not on anything: the lower body streams up (`lower.fall`, atlas-motion.js reads the class).
+    const falling = !s.rest && !s.splat && s.vy > 0.3;
+    if (falling && !buddy.classList.contains("nmb-falling")) buddy.classList.add("nmb-falling");
+    else if (!falling && buddy.classList.contains("nmb-falling")) buddy.classList.remove("nmb-falling");
     if (s.rest) {
       const land = () => {
         flight.stop();
@@ -594,6 +601,17 @@ function companionThrowFlat(buddy, char, s) {
   setTimeout(() => nmb.flight && nameMarkBuddyExpress("surprised", 1400, { drift: true }), 48);
   if (char && typeof char.animate === "function") char.animate([{ scale: "0.6 1.2" }, { scale: "0.84 1.08" }], { duration: 240, easing: "ease-out" });
 }
+
+//: **Bonked** (`int.ceiling_bonk`, 0.3 to 0.8 s): met the top bar hard and was not caught, so it is
+//: squashed against it (a flat squash and a stretch back), surprised, and the lazy CSS (`.nmb-bonk`)
+//: wobbles it dazed for 600 ms; then it falls as it was going to. Once a flight.
+nmb.throwBonk = function (buddy, char, flight) {
+  flight.bonked = true;
+  buddy.classList.add("nmb-bonk");
+  setTimeout(() => buddy.classList.remove("nmb-bonk"), 600);
+  setTimeout(() => nmb.flight && nameMarkBuddyExpress("surprised", 900, { drift: true }), 48);
+  if (char && typeof char.animate === "function") char.animate([{ scale: "1.18 0.7" }, { scale: "0.92 1.08", offset: 0.5 }, { scale: "1 1" }], { duration: 320, easing: "ease-out" });
+};
 
 //: Caught by its hands on a panel's top edge (going up, coming down past
 //: its end, or slipping off it): it hangs there, dips and pulls

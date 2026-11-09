@@ -100,6 +100,7 @@ function atlasLowerState(buddy, box) {
   const mood = box.dataset.atlasMood || "calm";
   if (has("nmb-act-startle") || mood === "surprised") return "startle";
   if (/^(lie|curl)/.test(pose) || has("nmb-sleep") || has("nmb-act-nap") || has("nmb-act-lie")) return "lie";
+  if (has("nmb-falling")) return "fall";
   if (has("nmb-walking") || has("nm-buddy-dragging") || buddy?.dataset.travel) return "walk";
   const posed = atlasLowerState.acts.find((act) => has(`nmb-act-${act}`)) || (pose === "hang" ? "hang" : "");
   if (posed) return posed;
