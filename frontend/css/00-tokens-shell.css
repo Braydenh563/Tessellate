@@ -1362,8 +1362,17 @@ header#top-bar h1 {
     gap: var(--space-4);
   }
   #tab-bar button {
-    padding-inline: var(--space-4);
+    padding-inline: var(--space-3);
     font-size: var(--text-lg);
+  }
+  /* **One row to 823 (175 % zoom, INBOX 1717).** The strip takes a row of its
+     own once measured not to fit (`syncTabOverflowFade`), which at 823 doubled
+     the bar to 100px: the switcher still carried its name (63px as its icon
+     alone, 134 with it) and the tabs their larger padding. Together these buy
+     the 111px it was short; the name stays the button's accessible name and
+     the menu's first row, as it already is below 820. */
+  header#top-bar .space-switcher-name {
+    display: none;
   }
 }
 @media (max-width: 599.98px) {
