@@ -191,6 +191,18 @@ _EMPTY_WINDOW_NEWEST = {
 }
 
 
+def _window_voice(voice: str, register: str) -> str:
+    """"natural" or "professional": the chat's own register wins over the saved voice."""
+    if register:
+        return {"warm": "natural", "formal": "professional"}.get(composer_compose.voice_for(register), composer_compose.voice_for(register))
+    return "professional" if composer_tables.voice_of(voice) == "professional" else "natural"
+
+
+def _nothing_planned(when: str) -> str:
+    """A day that has not come holds no notes written then: what is on it is what is planned (R9-8)."""
+    return f"Nothing is planned {when if when.startswith(('on ', 'for ', 'in ', 'next ', 'this ')) else 'for ' + when}."
+
+
 def empty_window(when: str, first: date | None, last: date | None, *, voice: str = "natural", seed: str = "",
                  today: date | None = None, register: str = "", window: tuple | None = None) -> str:
     """A time window with no note in it, said as that, and where the notes
@@ -198,14 +210,11 @@ def empty_window(when: str, first: date | None, last: date | None, *, voice: str
     `register` is the chat's own voice (a persona's cue included); `window`
     is the days asked, so one that starts after the newest note is answered
     with that note."""
-    voice = "professional" if composer_tables.voice_of(voice) == "professional" else "natural"
-    if register:
-        voice = {"warm": "natural", "formal": "professional"}.get(composer_compose.voice_for(register), composer_compose.voice_for(register))
+    voice = _window_voice(voice, register)
     today = today or user_today()
     when = window_said(when)
     if window and window[0] > today:
-        #: A day that has not come holds no notes written then: what is on it is what is planned (R9-8).
-        return f"Nothing is planned {when if when.startswith(('on ', 'for ', 'in ', 'next ', 'this ')) else 'for ' + when}."
+        return _nothing_planned(when)
     lead = _pick(seed or when, "empty_window", list(_EMPTY_WINDOW[voice])).format(when=when, When=when[:1].upper() + when[1:])
     if first is None or last is None:
         return lead

@@ -74,7 +74,7 @@ def _unquoted_note_pick(views: list[NoteView], asked: set[str], cited: set[int])
     return None
 
 
-def _subject_pick(question: str, shape: str, terms: list[str], views: list[NoteView]) -> list[tuple] | None:
+def _subject_pick(question: str, shape: str, terms: list[str], views: list[NoteView] = ()) -> list[tuple] | None:  # noqa: B006
     #: The question's own subject, when it is a short name ("dentist
     #: check-up", "sourdough"), asked the other way round in time.
     own = _own_terms(terms)

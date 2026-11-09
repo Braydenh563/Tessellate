@@ -513,9 +513,18 @@ def _rates(views: list, subject: list[str]) -> list[tuple[str, Item]]:
     return found
 
 
+def _rates_total(rates: list[tuple[str, Item]]) -> str:
+    """" That is £592 a year in all.", when the standing amounts share a currency and a period (R9-10)."""
+    pers = {re.search(r"\ba (\w+)$", said).group(1) for said, _ in rates if re.search(r"\ba (\w+)$", said)}
+    signs = {item.symbol for _, item in rates}
+    if len(rates) < 2 or len(pers) != 1 or len(signs) != 1 or any(_APPROX.search(said) for said, _ in rates):
+        return ""
+    return f" That is {_money(signs.pop(), sum(item.value for _, item in rates))} a {pers.pop()} in all."
+
+
 def _say_rates(out, rates: list[tuple[str, Item]], lead: str) -> bool:  # noqa: ANN001
     lead = lead.replace("a regular amount", "regular amounts") if len(rates) > 1 else lead
-    line = f"{lead} {_listed([said for said, _ in rates])}."
+    line = f"{lead} {_listed([said for said, _ in rates])}.{_rates_total(rates)}"
     out.lines.append(line)
     _cite_all(out, [item for _, item in rates], line)
     return True
@@ -1221,7 +1230,8 @@ def recorded_notes(list_page) -> list:  # noqa: ANN001
 
 def records_amounts(text: str) -> bool:
     """A note that names spending, a refund or a budget and holds an amount, or holds a measure."""
-    return bool(_read(text) and (_SPENDING.search(text) or _REFUND.search(text) or _TARGET_WORD.search(text))) or any(m[0] != "money" for m in recognise.measures(text))
+    #: A standing amount ("£412 a year") is an amount a note records, whatever its words (R9-10).
+    return bool(_read(text) and (_SPENDING.search(text) or _REFUND.search(text) or _TARGET_WORD.search(text))) or bool(_RATE.search(text)) or any(m[0] != "money" for m in recognise.measures(text))
 
 
 def answer(out, asked: str, views: list, today: date) -> bool:  # noqa: ANN001

@@ -35,32 +35,48 @@ def _said_as_a_thing(word: str, views: list) -> bool:
     return any(pattern.search(str(v.note.get("content") or "")) for v in views)
 
 
-def clean(subject: str, views: list, question: str = "") -> str:
-    """`subject` as a chip names it, or "" when it is no noun phrase the notes use."""
+def _split_owner(subject: str) -> tuple[str, list[str]]:
+    """The owner word ("my", "the") and the words of the thing, from a chip's leftover span."""
     text = subject.strip()
     while _LEAD.match(text):
         text = _LEAD.sub("", text, count=1)
-    text = re.sub(r"['’]s$", "", text).strip()
-    words = _NAME_WORD.findall(text)
+    words = _NAME_WORD.findall(re.sub(r"['’]s$", "", text).strip())
     owner = words[0].lower() if words and words[0].lower() in _OWNERS else ""
-    core = words[1:] if owner else words
+    return owner, (words[1:] if owner else words)
+
+
+def _plausible(core: list[str], question: str) -> bool:
+    """Whether `core` can be a noun phrase: short, no verbs or possessives inside, side by side in the question (R9-1)."""
     if not core or len(core) > 4 or any(w.lower() in _NOT_A_THING or w.lower() in {"with", "latest"} for w in core):
-        return ""
-    if any(w.endswith(("'s", "’s")) for w in core[:-1]) and len(core) > 2:
+        return False
+    if len(core) > 2 and any(w.endswith(("'s", "’s")) for w in core[:-1]):
+        return False
+    #: Words the question did not put side by side ("Hannah Klara Sun") are no name.
+    name = " ".join(core).lower()
+    return not (question and len(core) > 1 and not re.search(rf"\b{re.escape(name)}(?:['’]s)?\b", question.lower().replace("-", " ")))
+
+
+def _owner_as_typed(name: str, question: str) -> str:
+    """"the plumber" as typed, not the bare title."""
+    said = re.search(rf"\b(the|my|our) {re.escape(name.lower())}\b", question.lower()) if question else None
+    return said.group(1) if said else ""
+
+
+def clean(subject: str, views: list, question: str = "") -> str:
+    """`subject` as a chip names it, or "" when it is no noun phrase the notes use."""
+    owner, core = _split_owner(subject)
+    if not _plausible(core, question):
         return ""
     name = " ".join(core)
-    #: Words the question did not put side by side ("Hannah Klara Sun") are no name (R9-1).
-    if question and len(core) > 1 and not re.search(rf"\b{re.escape(name.lower())}(?:['’]s)?\b", question.lower().replace("-", " ")):
-        return ""
-    if not owner and question:
-        #: "the plumber" as typed, not the bare title.
-        said = re.search(rf"\b(the|my|our) {re.escape(name.lower())}\b", question.lower())
-        owner = said.group(1) if said else ""
+    owner = owner or _owner_as_typed(name, question)
     titled = _titles(views).get(name.lower())
     if titled:
         #: A bare name keeps the note's capitals ("Japan"); "the plumber" stays as typed.
         return titled if not owner else f"{owner} {name}"
-    if not _said_as_a_thing(core[-1], views) and not _holds(_stem(core[-1].lower()), set().union(*(v.title_words | v.filed_words for v in views))):
+    if not views:
+        return name  # no notes to check it against, so no owner word either
+    known = set().union(*(v.title_words | v.filed_words for v in views))
+    if not _said_as_a_thing(core[-1], views) and not _holds(_stem(core[-1].lower()), known):
         return ""
     return " ".join(filter(None, [owner, name]))
 

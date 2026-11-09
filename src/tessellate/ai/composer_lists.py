@@ -84,6 +84,10 @@ _NO_APOSTROPHE = re.compile(r"\b(when|where|what|who|how)s\b", re.I)
 _REPAIR = re.compile(r"[,;]? (?:no|nah|sorry|i mean|wait),? (?:wait,? )?(?:the )?(?:new|newer|latest|updated|moved|current|rescheduled) one$", re.I)
 
 
+#: "plumbers number pls": a closing courtesy is not part of the ask (R9-14).
+_COURTESY_TAIL = re.compile(r"[,\s]+(?:pls|plz|please|thanks|thx)\s*([?.!]*)\s*$", re.I)
+
+
 def clean(question: str) -> str:
     """The question without the stray marks a hurried hand leaves (INBOX 808:
     "'what is there about a gaming mouse?\\\\'" searched with the backslash
@@ -91,6 +95,7 @@ def clean(question: str) -> str:
     text = " ".join((question or "").split())
     text = text.lstrip("\\/'\"` ").rstrip("\\/'\"` ")
     text = _NO_APOSTROPHE.sub(r"\1's", text)
+    text = _COURTESY_TAIL.sub(r"\1", text)
     if (repair := _REPAIR.search(text.rstrip("?.! "))) is not None:
         kept = text[:repair.start()]
         text = kept if re.search(r"\bnow\b", kept, re.I) else kept + " now"

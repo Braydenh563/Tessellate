@@ -71,3 +71,7 @@ Severity: high means a wrong or false answer, or a lost act. Med means the wrong
 ## Status (agent c9)
 
 Fixed 79602b72f: R9-1, R9-4, R9-5, R9-13, and the first parts of R9-2, 3, 8, 9 (verb in the lead, defining note, everyday agenda phrasings, which is cheaper, tick the first one). Measured on 292 harness turns: misquotes 18 to 0, bad-chip turns 36 to 5, split figures 3 to 0, titles read as dates 21 to 0. Open: R9-6 (partly), 7, 10, 11, 12, 14 to 17 and the rest of 2, 3, 9; see `c9-1109.md`.
+
+## Status (agent c10)
+
+Fixed: 602b355c5 (batch 1 regressions: five tests, six functions over the complexity ratchet, routes_chat line cap, `_subject_pick` signature), f11c9c486 R9-7, 4aedf4ef2 R9-14 (part), 4a28decb1 R9-10 (part), 925bbbaa5 R9-11 (timer only). Harness over the same 292 turns, c9 head to c10 head: the 13 turns on R9-7, 10, 14 changed as listed in `c10-1109.md`; misquotes 5 to 6 (the sixth is the "Going with “what do i know about hanna”" repair echo, a harness false positive), bad-chip turns 5 to 5, split figures 0 to 0, titles read as dates 0 to 0. Open: see `c10-1109.md`.
