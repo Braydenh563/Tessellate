@@ -1645,6 +1645,7 @@ const LAZY_MODULES = {
     "/js/documents-columns.js",
     "/js/autocorrect.js",
     "/js/documents.js",
+    "/js/documents-callouts.js", //: After documents.js: its top level binds through `docListen`.
     "/js/margin-reader.js",
     "/js/whiteboard-map.js",
     "/js/whiteboard.js",
