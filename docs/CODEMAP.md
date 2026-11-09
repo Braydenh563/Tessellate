@@ -2,9 +2,9 @@
 
 Generated 2026-11-09 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7960, frontend ids 2652, CSS sections 523, backend routes 649, backend modules 9360, test files 2319, tests 19319, plan headings 1008, app scripts 28, boot scripts 37, script files 266.
+Counts: frontend functions 7962, frontend ids 2652, CSS sections 523, backend routes 649, backend modules 9360, test files 2319, tests 19319, plan headings 1008, app scripts 28, boot scripts 37, script files 266.
 
-## Frontend functions (7960)
+## Frontend functions (7962)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -787,62 +787,62 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `aboveDockFab` | frontend/js/navigation.js:2465 |
-| `activeNotesSection` | frontend/js/navigation.js:2295 |
-| `arrowNavTarget` | frontend/js/navigation.js:208 |
-| `backgroundWriteFailed` | frontend/js/navigation.js:1809 |
-| `chatMidStream` | frontend/js/navigation.js:1741 |
-| `closeNavHistoryMenu` | frontend/js/navigation.js:903 |
-| `confirmLeavingUnsavedWork` | frontend/js/navigation.js:1771 |
-| `coversAFormPrimary` | frontend/js/navigation.js:2598 |
-| `entryLabel` | frontend/js/navigation.js:1001 |
-| `formPrimaryButtons` | frontend/js/navigation.js:2559 |
-| `goToTabHistory` | frontend/js/navigation.js:1092 |
-| `hasUnsavedWork` | frontend/js/navigation.js:1720 |
-| `hideClosedDockMenuLists` | frontend/js/navigation.js:1499 |
-| `initNotesSubtabs` | frontend/js/navigation.js:2355 |
-| `initScrollTopButton` | frontend/js/navigation.js:2618 |
-| `insideClosedDetails` | frontend/js/navigation.js:1553 |
-| `loadSurface` | frontend/js/navigation.js:1297 |
-| `measureSpacingPx` | frontend/js/navigation.js:2589 |
-| `menuOfOpener` | frontend/js/navigation.js:1575 |
-| `menuRowsOf` | frontend/js/navigation.js:1560 |
-| `mermaidSoon` | frontend/js/navigation.js:373 |
-| `openHistoryEntry` | frontend/js/navigation.js:1152 |
-| `openNavHistoryMenu` | frontend/js/navigation.js:923 |
-| `openRowMenu` | frontend/js/navigation.js:151 |
-| `openSelectionScope` | frontend/js/navigation.js:321 |
-| `paintTabHistory` | frontend/js/navigation.js:950 |
-| `placeDockMenuInWindow` | frontend/js/navigation.js:1368 |
-| `positionScrollTopForNested` | frontend/js/navigation.js:2474 |
-| `recordTabVisit` | frontend/js/navigation.js:1038 |
-| `recordingLive` | frontend/js/navigation.js:1748 |
-| `renderMarkdown` | frontend/js/navigation.js:382 |
-| `resetNavigationForNewSession` | frontend/js/navigation.js:2257 |
-| `resetNavigationToDefaults` | frontend/js/navigation.js:2276 |
-| `restoreSettingsScroll` | frontend/js/navigation.js:1139 |
-| `revealTab` | frontend/js/navigation.js:814 |
-| `rowMenuAtEvent` | frontend/js/navigation.js:130 |
-| `scrollTopTargetEl` | frontend/js/navigation.js:2441 |
-| `scrollingPage` | frontend/js/navigation.js:2394 |
-| `showNotesSection` | frontend/js/navigation.js:2300 |
-| `spacingPx` | frontend/js/navigation.js:2582 |
-| `stepTabHistory` | frontend/js/navigation.js:1082 |
-| `stripMarkdownPreview` | frontend/js/navigation.js:2184 |
-| `surfaceRecovered` | frontend/js/navigation.js:1275 |
-| `switchTab` | frontend/js/navigation.js:1858 |
-| `syncScrollLock` | frontend/js/navigation.js:2760 |
-| `tabLabel` | frontend/js/navigation.js:989 |
-| `tabPlaceholder` | frontend/js/navigation.js:2120 |
-| `tabSkeletonBar` | frontend/js/navigation.js:2101 |
-| `tabSkeletonDock` | frontend/js/navigation.js:2111 |
-| `tabSkeletonPiece` | frontend/js/navigation.js:2090 |
-| `usageCount` | frontend/js/navigation.js:1819 |
-| `usageFeatureName` | frontend/js/navigation.js:1815 |
-| `usageFlush` | frontend/js/navigation.js:1823 |
-| `watchDockMenuPlacement` | frontend/js/navigation.js:1430 |
+| `aboveDockFab` | frontend/js/navigation.js:2462 |
+| `activeNotesSection` | frontend/js/navigation.js:2292 |
+| `arrowNavTarget` | frontend/js/navigation.js:205 |
+| `backgroundWriteFailed` | frontend/js/navigation.js:1806 |
+| `chatMidStream` | frontend/js/navigation.js:1738 |
+| `closeNavHistoryMenu` | frontend/js/navigation.js:900 |
+| `confirmLeavingUnsavedWork` | frontend/js/navigation.js:1768 |
+| `coversAFormPrimary` | frontend/js/navigation.js:2595 |
+| `entryLabel` | frontend/js/navigation.js:998 |
+| `formPrimaryButtons` | frontend/js/navigation.js:2556 |
+| `goToTabHistory` | frontend/js/navigation.js:1089 |
+| `hasUnsavedWork` | frontend/js/navigation.js:1717 |
+| `hideClosedDockMenuLists` | frontend/js/navigation.js:1496 |
+| `initNotesSubtabs` | frontend/js/navigation.js:2352 |
+| `initScrollTopButton` | frontend/js/navigation.js:2615 |
+| `insideClosedDetails` | frontend/js/navigation.js:1550 |
+| `loadSurface` | frontend/js/navigation.js:1294 |
+| `measureSpacingPx` | frontend/js/navigation.js:2586 |
+| `menuOfOpener` | frontend/js/navigation.js:1572 |
+| `menuRowsOf` | frontend/js/navigation.js:1557 |
+| `mermaidSoon` | frontend/js/navigation.js:370 |
+| `openHistoryEntry` | frontend/js/navigation.js:1149 |
+| `openNavHistoryMenu` | frontend/js/navigation.js:920 |
+| `openRowMenu` | frontend/js/navigation.js:148 |
+| `openSelectionScope` | frontend/js/navigation.js:318 |
+| `paintTabHistory` | frontend/js/navigation.js:947 |
+| `placeDockMenuInWindow` | frontend/js/navigation.js:1365 |
+| `positionScrollTopForNested` | frontend/js/navigation.js:2471 |
+| `recordTabVisit` | frontend/js/navigation.js:1035 |
+| `recordingLive` | frontend/js/navigation.js:1745 |
+| `renderMarkdown` | frontend/js/navigation.js:379 |
+| `resetNavigationForNewSession` | frontend/js/navigation.js:2254 |
+| `resetNavigationToDefaults` | frontend/js/navigation.js:2273 |
+| `restoreSettingsScroll` | frontend/js/navigation.js:1136 |
+| `revealTab` | frontend/js/navigation.js:811 |
+| `rowMenuAtEvent` | frontend/js/navigation.js:127 |
+| `scrollTopTargetEl` | frontend/js/navigation.js:2438 |
+| `scrollingPage` | frontend/js/navigation.js:2391 |
+| `showNotesSection` | frontend/js/navigation.js:2297 |
+| `spacingPx` | frontend/js/navigation.js:2579 |
+| `stepTabHistory` | frontend/js/navigation.js:1079 |
+| `stripMarkdownPreview` | frontend/js/navigation.js:2181 |
+| `surfaceRecovered` | frontend/js/navigation.js:1272 |
+| `switchTab` | frontend/js/navigation.js:1855 |
+| `syncScrollLock` | frontend/js/navigation.js:2757 |
+| `tabLabel` | frontend/js/navigation.js:986 |
+| `tabPlaceholder` | frontend/js/navigation.js:2117 |
+| `tabSkeletonBar` | frontend/js/navigation.js:2098 |
+| `tabSkeletonDock` | frontend/js/navigation.js:2108 |
+| `tabSkeletonPiece` | frontend/js/navigation.js:2087 |
+| `usageCount` | frontend/js/navigation.js:1816 |
+| `usageFeatureName` | frontend/js/navigation.js:1812 |
+| `usageFlush` | frontend/js/navigation.js:1820 |
+| `watchDockMenuPlacement` | frontend/js/navigation.js:1427 |
 | `wireLongPress` | frontend/js/navigation.js:24 |
-| `zoomWheelDelta` | frontend/js/navigation.js:2778 |
+| `zoomWheelDelta` | frontend/js/navigation.js:2775 |
 
 ### frontend/js/router.js (12)
 
@@ -1788,26 +1788,26 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `closeForgotPassword` | frontend/js/account-recovery.js:107 |
-| `forgotChoose` | frontend/js/account-recovery.js:40 |
-| `forgotError` | frontend/js/account-recovery.js:116 |
-| `makeRecoveryKey` | frontend/js/account-recovery.js:392 |
-| `offerRecoveryKey` | frontend/js/account-recovery.js:337 |
-| `openForgotPassword` | frontend/js/account-recovery.js:89 |
-| `openResetLogs` | frontend/js/account-recovery.js:198 |
-| `recoveryAccountRow` | frontend/js/account-recovery.js:429 |
-| `recoveryFields` | frontend/js/account-recovery.js:30 |
-| `requestResetCode` | frontend/js/account-recovery.js:175 |
-| `saveRecoveryKeyFile` | frontend/js/account-recovery.js:261 |
-| `showRecoveryKey` | frontend/js/account-recovery.js:316 |
-| `showRecoveryOffer` | frontend/js/account-recovery.js:342 |
-| `showRestoreOffer` | frontend/js/account-recovery.js:443 |
-| `submitPasswordReset` | frontend/js/account-recovery.js:208 |
-| `submitRecovery` | frontend/js/account-recovery.js:124 |
-| `syncResetSubmit` | frontend/js/account-recovery.js:166 |
-| `whenLockLifted` | frontend/js/account-recovery.js:242 |
-| `wireForgotCard` | frontend/js/account-recovery.js:54 |
-| `wireRecoveryDialog` | frontend/js/account-recovery.js:280 |
+| `closeForgotPassword` | frontend/js/account-recovery.js:108 |
+| `forgotChoose` | frontend/js/account-recovery.js:41 |
+| `forgotError` | frontend/js/account-recovery.js:117 |
+| `makeRecoveryKey` | frontend/js/account-recovery.js:393 |
+| `offerRecoveryKey` | frontend/js/account-recovery.js:338 |
+| `openForgotPassword` | frontend/js/account-recovery.js:90 |
+| `openResetLogs` | frontend/js/account-recovery.js:199 |
+| `recoveryAccountRow` | frontend/js/account-recovery.js:430 |
+| `recoveryFields` | frontend/js/account-recovery.js:31 |
+| `requestResetCode` | frontend/js/account-recovery.js:176 |
+| `saveRecoveryKeyFile` | frontend/js/account-recovery.js:262 |
+| `showRecoveryKey` | frontend/js/account-recovery.js:317 |
+| `showRecoveryOffer` | frontend/js/account-recovery.js:343 |
+| `showRestoreOffer` | frontend/js/account-recovery.js:444 |
+| `submitPasswordReset` | frontend/js/account-recovery.js:209 |
+| `submitRecovery` | frontend/js/account-recovery.js:125 |
+| `syncResetSubmit` | frontend/js/account-recovery.js:167 |
+| `whenLockLifted` | frontend/js/account-recovery.js:243 |
+| `wireForgotCard` | frontend/js/account-recovery.js:55 |
+| `wireRecoveryDialog` | frontend/js/account-recovery.js:281 |
 
 ### frontend/js/activity-panel.js (12)
 
@@ -2285,21 +2285,21 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `autocorrectAt` | frontend/js/autocorrect.js:136 |
-| `autocorrectEdit` | frontend/js/autocorrect.js:274 |
-| `autocorrectField` | frontend/js/autocorrect.js:305 |
-| `autocorrectFieldRect` | frontend/js/autocorrect.js:360 |
-| `autocorrectFind` | frontend/js/autocorrect.js:117 |
-| `autocorrectForget` | frontend/js/autocorrect.js:178 |
-| `autocorrectFresh` | frontend/js/autocorrect.js:394 |
-| `autocorrectLayer` | frontend/js/autocorrect.js:294 |
-| `autocorrectMark` | frontend/js/autocorrect.js:191 |
-| `autocorrectMenu` | frontend/js/autocorrect.js:227 |
-| `autocorrectMoved` | frontend/js/autocorrect.js:387 |
-| `autocorrectPlace` | frontend/js/autocorrect.js:282 |
-| `autocorrectShow` | frontend/js/autocorrect.js:261 |
-| `autocorrectSurface` | frontend/js/autocorrect.js:328 |
-| `autocorrectUndo` | frontend/js/autocorrect.js:161 |
+| `autocorrectAt` | frontend/js/autocorrect.js:137 |
+| `autocorrectEdit` | frontend/js/autocorrect.js:275 |
+| `autocorrectField` | frontend/js/autocorrect.js:306 |
+| `autocorrectFieldRect` | frontend/js/autocorrect.js:361 |
+| `autocorrectFind` | frontend/js/autocorrect.js:118 |
+| `autocorrectForget` | frontend/js/autocorrect.js:179 |
+| `autocorrectFresh` | frontend/js/autocorrect.js:395 |
+| `autocorrectLayer` | frontend/js/autocorrect.js:295 |
+| `autocorrectMark` | frontend/js/autocorrect.js:192 |
+| `autocorrectMenu` | frontend/js/autocorrect.js:228 |
+| `autocorrectMoved` | frontend/js/autocorrect.js:388 |
+| `autocorrectPlace` | frontend/js/autocorrect.js:283 |
+| `autocorrectShow` | frontend/js/autocorrect.js:262 |
+| `autocorrectSurface` | frontend/js/autocorrect.js:329 |
+| `autocorrectUndo` | frontend/js/autocorrect.js:162 |
 
 ### frontend/js/avatars.js (259)
 
@@ -2666,39 +2666,39 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `addCaptureItem` | frontend/js/capture-card.js:173 |
-| `buildCaptureCard` | frontend/js/capture-card.js:89 |
-| `captureCardButton` | frontend/js/capture-card.js:63 |
-| `captureCardContent` | frontend/js/capture-card.js:385 |
-| `captureCardDraft` | frontend/js/capture-card.js:293 |
-| `captureCardEl` | frontend/js/capture-card.js:56 |
-| `captureCardField` | frontend/js/capture-card.js:69 |
-| `captureCardItems` | frontend/js/capture-card.js:249 |
-| `captureCardKeys` | frontend/js/capture-card.js:137 |
-| `captureCardStatus` | frontend/js/capture-card.js:73 |
-| `captureGripDrag` | frontend/js/capture-card.js:214 |
-| `captureItemKeys` | frontend/js/capture-card.js:198 |
-| `captureItemRow` | frontend/js/capture-card.js:159 |
-| `captureItemsBox` | frontend/js/capture-card.js:150 |
-| `captureItemsToLines` | frontend/js/capture-card.js:245 |
-| `captureLinesToItems` | frontend/js/capture-card.js:241 |
-| `captureModeSeg` | frontend/js/capture-card.js:79 |
-| `captureReminderText` | frontend/js/capture-card.js:436 |
-| `captureTagList` | frontend/js/capture-card.js:442 |
-| `closeCaptureCard` | frontend/js/capture-card.js:357 |
-| `fillCaptureItems` | frontend/js/capture-card.js:253 |
-| `finishCaptureSave` | frontend/js/capture-card.js:422 |
-| `focusCaptureCard` | frontend/js/capture-card.js:280 |
-| `keepCaptureDraft` | frontend/js/capture-card.js:305 |
-| `moveCaptureItem` | frontend/js/capture-card.js:190 |
-| `openCaptureCard` | frontend/js/capture-card.js:331 |
-| `removeCaptureItem` | frontend/js/capture-card.js:181 |
-| `resetCaptureCard` | frontend/js/capture-card.js:369 |
-| `restoreCaptureDraft` | frontend/js/capture-card.js:312 |
-| `saveCaptureCard` | frontend/js/capture-card.js:391 |
-| `setCaptureMode` | frontend/js/capture-card.js:261 |
-| `showCaptureCard` | frontend/js/capture-card.js:344 |
-| `wireCaptureCard` | frontend/js/capture-card.js:122 |
+| `addCaptureItem` | frontend/js/capture-card.js:174 |
+| `buildCaptureCard` | frontend/js/capture-card.js:90 |
+| `captureCardButton` | frontend/js/capture-card.js:64 |
+| `captureCardContent` | frontend/js/capture-card.js:386 |
+| `captureCardDraft` | frontend/js/capture-card.js:294 |
+| `captureCardEl` | frontend/js/capture-card.js:57 |
+| `captureCardField` | frontend/js/capture-card.js:70 |
+| `captureCardItems` | frontend/js/capture-card.js:250 |
+| `captureCardKeys` | frontend/js/capture-card.js:138 |
+| `captureCardStatus` | frontend/js/capture-card.js:74 |
+| `captureGripDrag` | frontend/js/capture-card.js:215 |
+| `captureItemKeys` | frontend/js/capture-card.js:199 |
+| `captureItemRow` | frontend/js/capture-card.js:160 |
+| `captureItemsBox` | frontend/js/capture-card.js:151 |
+| `captureItemsToLines` | frontend/js/capture-card.js:246 |
+| `captureLinesToItems` | frontend/js/capture-card.js:242 |
+| `captureModeSeg` | frontend/js/capture-card.js:80 |
+| `captureReminderText` | frontend/js/capture-card.js:437 |
+| `captureTagList` | frontend/js/capture-card.js:443 |
+| `closeCaptureCard` | frontend/js/capture-card.js:358 |
+| `fillCaptureItems` | frontend/js/capture-card.js:254 |
+| `finishCaptureSave` | frontend/js/capture-card.js:423 |
+| `focusCaptureCard` | frontend/js/capture-card.js:281 |
+| `keepCaptureDraft` | frontend/js/capture-card.js:306 |
+| `moveCaptureItem` | frontend/js/capture-card.js:191 |
+| `openCaptureCard` | frontend/js/capture-card.js:332 |
+| `removeCaptureItem` | frontend/js/capture-card.js:182 |
+| `resetCaptureCard` | frontend/js/capture-card.js:370 |
+| `restoreCaptureDraft` | frontend/js/capture-card.js:313 |
+| `saveCaptureCard` | frontend/js/capture-card.js:392 |
+| `setCaptureMode` | frontend/js/capture-card.js:262 |
+| `showCaptureCard` | frontend/js/capture-card.js:345 |
+| `wireCaptureCard` | frontend/js/capture-card.js:123 |
 
 ### frontend/js/capture.js (6)
 
@@ -3975,36 +3975,36 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `docIdeChordEnd` | frontend/js/documents-ide.js:334 |
-| `docIdeChordStart` | frontend/js/documents-ide.js:327 |
-| `docIdeChunks` | frontend/js/documents-ide.js:85 |
-| `docIdeCloseKeys` | frontend/js/documents-ide.js:649 |
-| `docIdeCloseSplit` | frontend/js/documents-ide.js:467 |
-| `docIdeCodeView` | frontend/js/documents-ide.js:100 |
-| `docIdeCompareMenu` | frontend/js/documents-ide.js:123 |
-| `docIdeCompareWith` | frontend/js/documents-ide.js:150 |
-| `docIdeExtensions` | frontend/js/documents-ide.js:25 |
-| `docIdeFoldAll` | frontend/js/documents-ide.js:104 |
-| `docIdeKeydown` | frontend/js/documents-ide.js:302 |
-| `docIdeKeysOverlay` | frontend/js/documents-ide.js:504 |
-| `docIdeOpenKeys` | frontend/js/documents-ide.js:637 |
-| `docIdeOpenPalette` | frontend/js/documents-ide.js:375 |
-| `docIdeReconfigure` | frontend/js/documents-ide.js:77 |
-| `docIdeRenderKeys` | frontend/js/documents-ide.js:580 |
-| `docIdeRevertAtCaret` | frontend/js/documents-ide.js:169 |
-| `docIdeRevertSpec` | frontend/js/documents-ide.js:93 |
-| `docIdeRunApply` | frontend/js/documents-ide.js:223 |
-| `docIdeRunGrip` | frontend/js/documents-ide.js:235 |
-| `docIdeRunHeights` | frontend/js/documents-ide.js:198 |
-| `docIdeRunSaveHeight` | frontend/js/documents-ide.js:209 |
-| `docIdeRunSavedHeight` | frontend/js/documents-ide.js:218 |
-| `docIdeSlot` | frontend/js/documents-ide.js:33 |
-| `docIdeSplitFollow` | frontend/js/documents-ide.js:483 |
-| `docIdeSplitTools` | frontend/js/documents-ide.js:388 |
-| `docIdeStopCompare` | frontend/js/documents-ide.js:161 |
-| `docIdeToggleMinimap` | frontend/js/documents-ide.js:111 |
-| `docIdeToggleSplit` | frontend/js/documents-ide.js:408 |
-| `formatDocHistoryWhen` | frontend/js/documents-ide.js:145 |
+| `docIdeChordEnd` | frontend/js/documents-ide.js:335 |
+| `docIdeChordStart` | frontend/js/documents-ide.js:328 |
+| `docIdeChunks` | frontend/js/documents-ide.js:86 |
+| `docIdeCloseKeys` | frontend/js/documents-ide.js:650 |
+| `docIdeCloseSplit` | frontend/js/documents-ide.js:468 |
+| `docIdeCodeView` | frontend/js/documents-ide.js:101 |
+| `docIdeCompareMenu` | frontend/js/documents-ide.js:124 |
+| `docIdeCompareWith` | frontend/js/documents-ide.js:151 |
+| `docIdeExtensions` | frontend/js/documents-ide.js:26 |
+| `docIdeFoldAll` | frontend/js/documents-ide.js:105 |
+| `docIdeKeydown` | frontend/js/documents-ide.js:303 |
+| `docIdeKeysOverlay` | frontend/js/documents-ide.js:505 |
+| `docIdeOpenKeys` | frontend/js/documents-ide.js:638 |
+| `docIdeOpenPalette` | frontend/js/documents-ide.js:376 |
+| `docIdeReconfigure` | frontend/js/documents-ide.js:78 |
+| `docIdeRenderKeys` | frontend/js/documents-ide.js:581 |
+| `docIdeRevertAtCaret` | frontend/js/documents-ide.js:170 |
+| `docIdeRevertSpec` | frontend/js/documents-ide.js:94 |
+| `docIdeRunApply` | frontend/js/documents-ide.js:224 |
+| `docIdeRunGrip` | frontend/js/documents-ide.js:236 |
+| `docIdeRunHeights` | frontend/js/documents-ide.js:199 |
+| `docIdeRunSaveHeight` | frontend/js/documents-ide.js:210 |
+| `docIdeRunSavedHeight` | frontend/js/documents-ide.js:219 |
+| `docIdeSlot` | frontend/js/documents-ide.js:34 |
+| `docIdeSplitFollow` | frontend/js/documents-ide.js:484 |
+| `docIdeSplitTools` | frontend/js/documents-ide.js:389 |
+| `docIdeStopCompare` | frontend/js/documents-ide.js:162 |
+| `docIdeToggleMinimap` | frontend/js/documents-ide.js:112 |
+| `docIdeToggleSplit` | frontend/js/documents-ide.js:409 |
+| `formatDocHistoryWhen` | frontend/js/documents-ide.js:146 |
 
 ### frontend/js/documents-math.js (17)
 
@@ -4310,19 +4310,19 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `docWordBlob` | frontend/js/documents-word.js:194 |
-| `docWordBlocks` | frontend/js/documents-word.js:414 |
-| `docWordCodeLang` | frontend/js/documents-word.js:51 |
-| `docWordExport` | frontend/js/documents-word.js:323 |
-| `docWordHasRevisions` | frontend/js/documents-word.js:83 |
-| `docWordImport` | frontend/js/documents-word.js:123 |
-| `docWordLib` | frontend/js/documents-word.js:22 |
-| `docWordListShape` | frontend/js/documents-word.js:397 |
-| `docWordMarkSuggestions` | frontend/js/documents-word.js:143 |
-| `docWordPicture` | frontend/js/documents-word.js:159 |
-| `docWordRuns` | frontend/js/documents-word.js:353 |
-| `docWordText` | frontend/js/documents-word.js:337 |
-| `docWordUploadPicture` | frontend/js/documents-word.js:61 |
+| `docWordBlob` | frontend/js/documents-word.js:195 |
+| `docWordBlocks` | frontend/js/documents-word.js:415 |
+| `docWordCodeLang` | frontend/js/documents-word.js:52 |
+| `docWordExport` | frontend/js/documents-word.js:324 |
+| `docWordHasRevisions` | frontend/js/documents-word.js:84 |
+| `docWordImport` | frontend/js/documents-word.js:124 |
+| `docWordLib` | frontend/js/documents-word.js:23 |
+| `docWordListShape` | frontend/js/documents-word.js:398 |
+| `docWordMarkSuggestions` | frontend/js/documents-word.js:144 |
+| `docWordPicture` | frontend/js/documents-word.js:160 |
+| `docWordRuns` | frontend/js/documents-word.js:354 |
+| `docWordText` | frontend/js/documents-word.js:338 |
+| `docWordUploadPicture` | frontend/js/documents-word.js:62 |
 
 ### frontend/js/documents.js (478)
 
@@ -5262,148 +5262,148 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `arcPath` | frontend/js/graph.js:526 |
 | `arcRise` | frontend/js/graph.js:546 |
 | `askLinkDetails` | frontend/js/graph.js:1330 |
-| `clearGraphKeyboardFocus` | frontend/js/graph.js:3607 |
+| `clearGraphKeyboardFocus` | frontend/js/graph.js:3604 |
 | `clearTrace` | frontend/js/graph.js:892 |
-| `closeGraphLinkPeek` | frontend/js/graph.js:2573 |
-| `closeGraphNewNote` | frontend/js/graph.js:3739 |
-| `closeGraphPopup` | frontend/js/graph.js:3588 |
+| `closeGraphLinkPeek` | frontend/js/graph.js:2570 |
+| `closeGraphNewNote` | frontend/js/graph.js:3736 |
+| `closeGraphPopup` | frontend/js/graph.js:3585 |
 | `drawTrace` | frontend/js/graph.js:1257 |
-| `exportGraphPng` | frontend/js/graph.js:3796 |
+| `exportGraphPng` | frontend/js/graph.js:3793 |
 | `fillTracePickers` | frontend/js/graph.js:710 |
 | `fitGraphToView` | frontend/js/graph.js:2088 |
 | `focusGraphNode` | frontend/js/graph.js:1858 |
 | `frameTree` | frontend/js/graph.js:556 |
-| `graphApplySettings` | frontend/js/graph.js:5083 |
-| `graphApplyView` | frontend/js/graph.js:4569 |
-| `graphAutoFitOn` | frontend/js/graph.js:4744 |
+| `graphApplySettings` | frontend/js/graph.js:5080 |
+| `graphApplyView` | frontend/js/graph.js:4566 |
+| `graphAutoFitOn` | frontend/js/graph.js:4741 |
 | `graphCalmScheme` | frontend/js/graph.js:1718 |
-| `graphCaptureSettings` | frontend/js/graph.js:5052 |
-| `graphCaptureView` | frontend/js/graph.js:4515 |
+| `graphCaptureSettings` | frontend/js/graph.js:5049 |
+| `graphCaptureView` | frontend/js/graph.js:4512 |
 | `graphCategoryScale` | frontend/js/graph.js:1728 |
-| `graphCloseOtherMenus` | frontend/js/graph.js:4801 |
+| `graphCloseOtherMenus` | frontend/js/graph.js:4798 |
 | `graphColourMode` | frontend/js/graph.js:1550 |
-| `graphControlsSheetParts` | frontend/js/graph.js:5202 |
+| `graphControlsSheetParts` | frontend/js/graph.js:5199 |
 | `graphEndpoint` | frontend/js/graph.js:1768 |
 | `graphFill` | frontend/js/graph.js:1794 |
 | `graphFitFrame` | frontend/js/graph.js:2065 |
-| `graphGlideMs` | frontend/js/graph.js:4143 |
+| `graphGlideMs` | frontend/js/graph.js:4140 |
 | `graphGroupColour` | frontend/js/graph.js:1581 |
 | `graphGroupNode` | frontend/js/graph.js:250 |
 | `graphGroups` | frontend/js/graph.js:1566 |
 | `graphLayout` | frontend/js/graph.js:171 |
 | `graphLayoutIsComputed` | frontend/js/graph.js:195 |
-| `graphLinkKind` | frontend/js/graph.js:2580 |
+| `graphLinkKind` | frontend/js/graph.js:2577 |
 | `graphLocalQuery` | frontend/js/graph.js:1759 |
-| `graphMinimapCanShow` | frontend/js/graph.js:3932 |
-| `graphMinimapChildren` | frontend/js/graph.js:3961 |
-| `graphMinimapEdgePairs` | frontend/js/graph.js:3873 |
-| `graphMinimapFinite` | frontend/js/graph.js:4154 |
-| `graphMinimapFrame` | frontend/js/graph.js:4168 |
-| `graphMinimapPaint` | frontend/js/graph.js:3987 |
-| `graphMinimapQueuePaint` | frontend/js/graph.js:3939 |
-| `graphMinimapSet` | frontend/js/graph.js:3980 |
-| `graphMinimapShown` | frontend/js/graph.js:3910 |
+| `graphMinimapCanShow` | frontend/js/graph.js:3929 |
+| `graphMinimapChildren` | frontend/js/graph.js:3958 |
+| `graphMinimapEdgePairs` | frontend/js/graph.js:3870 |
+| `graphMinimapFinite` | frontend/js/graph.js:4151 |
+| `graphMinimapFrame` | frontend/js/graph.js:4165 |
+| `graphMinimapPaint` | frontend/js/graph.js:3984 |
+| `graphMinimapQueuePaint` | frontend/js/graph.js:3936 |
+| `graphMinimapSet` | frontend/js/graph.js:3977 |
+| `graphMinimapShown` | frontend/js/graph.js:3907 |
 | `graphNeighbourInDirection` | frontend/js/graph.js:1837 |
 | `graphNodeById` | frontend/js/graph.js:1830 |
-| `graphNodeLabel` | frontend/js/graph.js:2694 |
+| `graphNodeLabel` | frontend/js/graph.js:2691 |
 | `graphNodeMatches` | frontend/js/graph.js:2216 |
 | `graphNodeRadius` | frontend/js/graph.js:139 |
 | `graphNodeScreenPoint` | frontend/js/graph.js:1879 |
 | `graphNodeUnder` | frontend/js/graph.js:1291 |
 | `graphPanToNode` | frontend/js/graph.js:2312 |
-| `graphPanelRoom` | frontend/js/graph.js:2938 |
+| `graphPanelRoom` | frontend/js/graph.js:2935 |
 | `graphPinSave` | frontend/js/graph.js:58 |
 | `graphPinStep` | frontend/js/graph.js:110 |
 | `graphPinnedRows` | frontend/js/graph.js:88 |
-| `graphPopupActionList` | frontend/js/graph.js:3362 |
-| `graphPopupCap` | frontend/js/graph.js:2994 |
-| `graphPopupDragEnd` | frontend/js/graph.js:3123 |
-| `graphPopupDragMove` | frontend/js/graph.js:3110 |
-| `graphPopupDragStart` | frontend/js/graph.js:3100 |
-| `graphPopupFileCard` | frontend/js/graph.js:2874 |
-| `graphPopupFollowSpot` | frontend/js/graph.js:3065 |
-| `graphPopupIsDirty` | frontend/js/graph.js:3628 |
-| `graphPopupMediaRefs` | frontend/js/graph.js:2851 |
-| `graphPopupShows` | frontend/js/graph.js:2427 |
+| `graphPopupActionList` | frontend/js/graph.js:3359 |
+| `graphPopupCap` | frontend/js/graph.js:2991 |
+| `graphPopupDragEnd` | frontend/js/graph.js:3120 |
+| `graphPopupDragMove` | frontend/js/graph.js:3107 |
+| `graphPopupDragStart` | frontend/js/graph.js:3097 |
+| `graphPopupFileCard` | frontend/js/graph.js:2871 |
+| `graphPopupFollowSpot` | frontend/js/graph.js:3062 |
+| `graphPopupIsDirty` | frontend/js/graph.js:3625 |
+| `graphPopupMediaRefs` | frontend/js/graph.js:2848 |
+| `graphPopupShows` | frontend/js/graph.js:2424 |
 | `graphPreviewLower` | frontend/js/graph.js:2208 |
-| `graphRailOffset` | frontend/js/graph.js:4287 |
+| `graphRailOffset` | frontend/js/graph.js:4284 |
 | `graphReadPhrase` | frontend/js/graph.js:2175 |
-| `graphRemoveLink` | frontend/js/graph.js:2528 |
+| `graphRemoveLink` | frontend/js/graph.js:2525 |
 | `graphRenderGroups` | frontend/js/graph.js:1603 |
-| `graphResetToDefaults` | frontend/js/graph.js:5118 |
+| `graphResetToDefaults` | frontend/js/graph.js:5115 |
 | `graphResolveGroups` | frontend/js/graph.js:1588 |
 | `graphRestorePins` | frontend/js/graph.js:104 |
-| `graphRestoreSwitches` | frontend/js/graph.js:4724 |
-| `graphSaveCurrentView` | frontend/js/graph.js:4559 |
-| `graphSavedViews` | frontend/js/graph.js:4506 |
-| `graphSearchClear` | frontend/js/graph.js:2342 |
+| `graphRestoreSwitches` | frontend/js/graph.js:4721 |
+| `graphSaveCurrentView` | frontend/js/graph.js:4556 |
+| `graphSavedViews` | frontend/js/graph.js:4503 |
+| `graphSearchClear` | frontend/js/graph.js:2339 |
 | `graphSearchCountText` | frontend/js/graph.js:2242 |
 | `graphSearchFor` | frontend/js/graph.js:2226 |
 | `graphSearchGo` | frontend/js/graph.js:2321 |
-| `graphSearchKey` | frontend/js/graph.js:2352 |
+| `graphSearchKey` | frontend/js/graph.js:2349 |
 | `graphSearchNodes` | frontend/js/graph.js:2237 |
 | `graphSearchRefresh` | frontend/js/graph.js:2248 |
 | `graphSearchStepIndex` | frontend/js/graph.js:2306 |
 | `graphSearchTyped` | frontend/js/graph.js:2285 |
 | `graphSetGroups` | frontend/js/graph.js:1575 |
 | `graphSetPin` | frontend/js/graph.js:63 |
-| `graphSettingsEqual` | frontend/js/graph.js:5072 |
-| `graphShowNote` | frontend/js/graph.js:3155 |
+| `graphSettingsEqual` | frontend/js/graph.js:5069 |
+| `graphShowNote` | frontend/js/graph.js:3152 |
 | `graphSizeMode` | frontend/js/graph.js:1513 |
 | `graphSizeRadius` | frontend/js/graph.js:1518 |
 | `graphSyncFocusChip` | frontend/js/graph.js:1675 |
-| `graphSyncSimilarityRow` | frontend/js/graph.js:4954 |
-| `graphTopicFor` | frontend/js/graph.js:3211 |
+| `graphSyncSimilarityRow` | frontend/js/graph.js:4951 |
+| `graphTopicFor` | frontend/js/graph.js:3208 |
 | `graphUnpinAllNow` | frontend/js/graph.js:95 |
-| `graphZoomBy` | frontend/js/graph.js:4815 |
-| `graphZoomRoving` | frontend/js/graph.js:4827 |
+| `graphZoomBy` | frontend/js/graph.js:4812 |
+| `graphZoomRoving` | frontend/js/graph.js:4824 |
 | `hierarchyPath` | frontend/js/graph.js:508 |
-| `initGraphDockHeightToken` | frontend/js/graph.js:4255 |
+| `initGraphDockHeightToken` | frontend/js/graph.js:4252 |
 | `initGraphGroups` | frontend/js/graph.js:1637 |
 | `initGraphKeyboard` | frontend/js/graph.js:1897 |
-| `initGraphMinimap` | frontend/js/graph.js:4335 |
-| `initGraphRailToken` | frontend/js/graph.js:4292 |
-| `initGraphToastClearance` | frontend/js/graph.js:4318 |
-| `initGraphViews` | frontend/js/graph.js:4663 |
-| `keepGraphPopupEdit` | frontend/js/graph.js:3636 |
+| `initGraphMinimap` | frontend/js/graph.js:4332 |
+| `initGraphRailToken` | frontend/js/graph.js:4289 |
+| `initGraphToastClearance` | frontend/js/graph.js:4315 |
+| `initGraphViews` | frontend/js/graph.js:4660 |
+| `keepGraphPopupEdit` | frontend/js/graph.js:3633 |
 | `layoutHierarchy` | frontend/js/graph.js:377 |
 | `layoutTreemap` | frontend/js/graph.js:339 |
 | `linkByDrop` | frontend/js/graph.js:1439 |
-| `openGraphControlsSheet` | frontend/js/graph.js:5218 |
-| `openGraphLinkPanel` | frontend/js/graph.js:2709 |
-| `openGraphLinkPeek` | frontend/js/graph.js:2588 |
-| `openGraphNewNote` | frontend/js/graph.js:3697 |
-| `openGraphPopup` | frontend/js/graph.js:2431 |
+| `openGraphControlsSheet` | frontend/js/graph.js:5215 |
+| `openGraphLinkPanel` | frontend/js/graph.js:2706 |
+| `openGraphLinkPeek` | frontend/js/graph.js:2585 |
+| `openGraphNewNote` | frontend/js/graph.js:3694 |
+| `openGraphPopup` | frontend/js/graph.js:2428 |
 | `pickTraceEnd` | frontend/js/graph.js:786 |
-| `placeGraphNewNote` | frontend/js/graph.js:3721 |
-| `placeGraphPopup` | frontend/js/graph.js:2999 |
+| `placeGraphNewNote` | frontend/js/graph.js:3718 |
+| `placeGraphPopup` | frontend/js/graph.js:2996 |
 | `radialRings` | frontend/js/graph.js:301 |
 | `renderGraph` | frontend/js/graph.js:1736 |
-| `renderGraphPopupActions` | frontend/js/graph.js:3532 |
-| `renderGraphPopupHeader` | frontend/js/graph.js:2391 |
-| `renderGraphPopupInfo` | frontend/js/graph.js:3295 |
-| `renderGraphPopupMedia` | frontend/js/graph.js:2878 |
-| `renderGraphPopupProps` | frontend/js/graph.js:3248 |
-| `renderGraphPopupTopic` | frontend/js/graph.js:3186 |
-| `renderGraphViews` | frontend/js/graph.js:4633 |
+| `renderGraphPopupActions` | frontend/js/graph.js:3529 |
+| `renderGraphPopupHeader` | frontend/js/graph.js:2388 |
+| `renderGraphPopupInfo` | frontend/js/graph.js:3292 |
+| `renderGraphPopupMedia` | frontend/js/graph.js:2875 |
+| `renderGraphPopupProps` | frontend/js/graph.js:3245 |
+| `renderGraphPopupTopic` | frontend/js/graph.js:3183 |
+| `renderGraphViews` | frontend/js/graph.js:4630 |
 | `renderTraceReadout` | frontend/js/graph.js:1088 |
 | `renderTraceState` | frontend/js/graph.js:814 |
 | `replyLoops` | frontend/js/graph.js:321 |
 | `runTrace` | frontend/js/graph.js:918 |
-| `saveGraphNewNote` | frontend/js/graph.js:3748 |
-| `saveGraphPopup` | frontend/js/graph.js:3641 |
+| `saveGraphNewNote` | frontend/js/graph.js:3745 |
+| `saveGraphPopup` | frontend/js/graph.js:3638 |
 | `selectTraceRoute` | frontend/js/graph.js:987 |
 | `setGraphPhysicsEnabled` | frontend/js/graph.js:203 |
 | `setTraceEnd` | frontend/js/graph.js:871 |
 | `setTracePanelOpen` | frontend/js/graph.js:717 |
-| `showTopicInGraph` | frontend/js/graph.js:3230 |
+| `showTopicInGraph` | frontend/js/graph.js:3227 |
 | `showTraceMessage` | frontend/js/graph.js:884 |
 | `storyPrompt` | frontend/js/graph.js:1075 |
-| `syncGraphPopupSave` | frontend/js/graph.js:2517 |
-| `toggleGraphFullscreen` | frontend/js/graph.js:4853 |
+| `syncGraphPopupSave` | frontend/js/graph.js:2514 |
+| `toggleGraphFullscreen` | frontend/js/graph.js:4850 |
 | `traceLabel` | frontend/js/graph.js:807 |
 | `tracePath` | frontend/js/graph.js:1243 |
-| `watchGraphPopupSize` | frontend/js/graph.js:2971 |
+| `watchGraphPopupSize` | frontend/js/graph.js:2968 |
 
 ### frontend/js/harper-worker.js (3)
 
@@ -5894,15 +5894,15 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `applyMarginReader` | frontend/js/margin-reader.js:190 |
-| `marginAsk` | frontend/js/margin-reader.js:138 |
-| `marginCard` | frontend/js/margin-reader.js:73 |
-| `marginCardKey` | frontend/js/margin-reader.js:41 |
-| `marginLogError` | frontend/js/margin-reader.js:48 |
-| `marginOffNote` | frontend/js/margin-reader.js:177 |
-| `marginParagraphAtCaret` | frontend/js/margin-reader.js:52 |
-| `marginRender` | frontend/js/margin-reader.js:123 |
-| `marginSchedule` | frontend/js/margin-reader.js:184 |
+| `applyMarginReader` | frontend/js/margin-reader.js:191 |
+| `marginAsk` | frontend/js/margin-reader.js:139 |
+| `marginCard` | frontend/js/margin-reader.js:74 |
+| `marginCardKey` | frontend/js/margin-reader.js:42 |
+| `marginLogError` | frontend/js/margin-reader.js:49 |
+| `marginOffNote` | frontend/js/margin-reader.js:178 |
+| `marginParagraphAtCaret` | frontend/js/margin-reader.js:53 |
+| `marginRender` | frontend/js/margin-reader.js:124 |
+| `marginSchedule` | frontend/js/margin-reader.js:185 |
 
 ### frontend/js/math-editor.js (16)
 
@@ -5954,24 +5954,24 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `MEANING_NEAR` | frontend/js/meaning.js:56 |
-| `meaningAllowance` | frontend/js/meaning.js:94 |
-| `meaningAlts` | frontend/js/meaning.js:132 |
-| `meaningAsk` | frontend/js/meaning.js:25 |
-| `meaningAt` | frontend/js/meaning.js:183 |
-| `meaningCloseness` | frontend/js/meaning.js:203 |
-| `meaningDistance` | frontend/js/meaning.js:75 |
-| `meaningFold` | frontend/js/meaning.js:108 |
-| `meaningGroupOf` | frontend/js/meaning.js:124 |
-| `meaningHolds` | frontend/js/meaning.js:193 |
-| `meaningMissing` | frontend/js/meaning.js:188 |
-| `meaningNamed` | frontend/js/meaning.js:216 |
-| `meaningNear` | frontend/js/meaning.js:230 |
-| `meaningPattern` | frontend/js/meaning.js:168 |
-| `meaningStem` | frontend/js/meaning.js:48 |
-| `meaningText` | frontend/js/meaning.js:177 |
-| `meaningVocab` | frontend/js/meaning.js:100 |
-| `meaningWords` | frontend/js/meaning.js:41 |
+| `MEANING_NEAR` | frontend/js/meaning.js:57 |
+| `meaningAllowance` | frontend/js/meaning.js:95 |
+| `meaningAlts` | frontend/js/meaning.js:133 |
+| `meaningAsk` | frontend/js/meaning.js:26 |
+| `meaningAt` | frontend/js/meaning.js:184 |
+| `meaningCloseness` | frontend/js/meaning.js:204 |
+| `meaningDistance` | frontend/js/meaning.js:76 |
+| `meaningFold` | frontend/js/meaning.js:109 |
+| `meaningGroupOf` | frontend/js/meaning.js:125 |
+| `meaningHolds` | frontend/js/meaning.js:194 |
+| `meaningMissing` | frontend/js/meaning.js:189 |
+| `meaningNamed` | frontend/js/meaning.js:217 |
+| `meaningNear` | frontend/js/meaning.js:231 |
+| `meaningPattern` | frontend/js/meaning.js:169 |
+| `meaningStem` | frontend/js/meaning.js:49 |
+| `meaningText` | frontend/js/meaning.js:178 |
+| `meaningVocab` | frontend/js/meaning.js:101 |
+| `meaningWords` | frontend/js/meaning.js:42 |
 
 ### frontend/js/meetings.js (103)
 
@@ -6085,34 +6085,34 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `mermaidAltFor` | frontend/js/mermaid-draw.js:53 |
-| `mermaidCacheKey` | frontend/js/mermaid-draw.js:335 |
-| `mermaidDrawBlock` | frontend/js/mermaid-draw.js:503 |
-| `mermaidDrawIn` | frontend/js/mermaid-draw.js:523 |
-| `mermaidEnsureFrame` | frontend/js/mermaid-draw.js:107 |
-| `mermaidFaded` | frontend/js/mermaid-draw.js:189 |
-| `mermaidFailure` | frontend/js/mermaid-draw.js:349 |
-| `mermaidFill` | frontend/js/mermaid-draw.js:469 |
-| `mermaidFillShare` | frontend/js/mermaid-draw.js:168 |
-| `mermaidFills` | frontend/js/mermaid-draw.js:179 |
-| `mermaidHex` | frontend/js/mermaid-draw.js:158 |
-| `mermaidHue` | frontend/js/mermaid-draw.js:205 |
-| `mermaidInkOn` | frontend/js/mermaid-draw.js:199 |
-| `mermaidInlineForExport` | frontend/js/mermaid-draw.js:610 |
-| `mermaidKnown` | frontend/js/mermaid-draw.js:342 |
-| `mermaidLook` | frontend/js/mermaid-draw.js:312 |
-| `mermaidLuma` | frontend/js/mermaid-draw.js:192 |
-| `mermaidMix` | frontend/js/mermaid-draw.js:163 |
-| `mermaidOnMessage` | frontend/js/mermaid-draw.js:92 |
-| `mermaidRedrawAll` | frontend/js/mermaid-draw.js:622 |
-| `mermaidRequest` | frontend/js/mermaid-draw.js:405 |
-| `mermaidResultAccepts` | frontend/js/mermaid-draw.js:23 |
-| `mermaidRgba` | frontend/js/mermaid-draw.js:144 |
-| `mermaidSettled` | frontend/js/mermaid-draw.js:496 |
-| `mermaidShow` | frontend/js/mermaid-draw.js:448 |
-| `mermaidTheme` | frontend/js/mermaid-draw.js:222 |
-| `mermaidThemeNow` | frontend/js/mermaid-draw.js:323 |
-| `mermaidTokenColour` | frontend/js/mermaid-draw.js:215 |
+| `mermaidAltFor` | frontend/js/mermaid-draw.js:54 |
+| `mermaidCacheKey` | frontend/js/mermaid-draw.js:336 |
+| `mermaidDrawBlock` | frontend/js/mermaid-draw.js:504 |
+| `mermaidDrawIn` | frontend/js/mermaid-draw.js:524 |
+| `mermaidEnsureFrame` | frontend/js/mermaid-draw.js:108 |
+| `mermaidFaded` | frontend/js/mermaid-draw.js:190 |
+| `mermaidFailure` | frontend/js/mermaid-draw.js:350 |
+| `mermaidFill` | frontend/js/mermaid-draw.js:470 |
+| `mermaidFillShare` | frontend/js/mermaid-draw.js:169 |
+| `mermaidFills` | frontend/js/mermaid-draw.js:180 |
+| `mermaidHex` | frontend/js/mermaid-draw.js:159 |
+| `mermaidHue` | frontend/js/mermaid-draw.js:206 |
+| `mermaidInkOn` | frontend/js/mermaid-draw.js:200 |
+| `mermaidInlineForExport` | frontend/js/mermaid-draw.js:611 |
+| `mermaidKnown` | frontend/js/mermaid-draw.js:343 |
+| `mermaidLook` | frontend/js/mermaid-draw.js:313 |
+| `mermaidLuma` | frontend/js/mermaid-draw.js:193 |
+| `mermaidMix` | frontend/js/mermaid-draw.js:164 |
+| `mermaidOnMessage` | frontend/js/mermaid-draw.js:93 |
+| `mermaidRedrawAll` | frontend/js/mermaid-draw.js:623 |
+| `mermaidRequest` | frontend/js/mermaid-draw.js:406 |
+| `mermaidResultAccepts` | frontend/js/mermaid-draw.js:24 |
+| `mermaidRgba` | frontend/js/mermaid-draw.js:145 |
+| `mermaidSettled` | frontend/js/mermaid-draw.js:497 |
+| `mermaidShow` | frontend/js/mermaid-draw.js:449 |
+| `mermaidTheme` | frontend/js/mermaid-draw.js:223 |
+| `mermaidThemeNow` | frontend/js/mermaid-draw.js:324 |
+| `mermaidTokenColour` | frontend/js/mermaid-draw.js:216 |
 
 ### frontend/js/mermaid-frame.js (6)
 
@@ -6163,17 +6163,17 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `navHistoryCaption` | frontend/js/nav-history.js:25 |
-| `navHistoryClear` | frontend/js/nav-history.js:215 |
-| `navHistoryEdited` | frontend/js/nav-history.js:224 |
-| `navHistoryForget` | frontend/js/nav-history.js:202 |
-| `navHistoryGroups` | frontend/js/nav-history.js:106 |
-| `navHistoryItem` | frontend/js/nav-history.js:122 |
-| `navHistoryNoteTitle` | frontend/js/nav-history.js:35 |
-| `navHistoryPlain` | frontend/js/nav-history.js:47 |
-| `navHistoryRow` | frontend/js/nav-history.js:62 |
-| `navHistoryTabIcon` | frontend/js/nav-history.js:53 |
-| `renderNavHistoryMenu` | frontend/js/nav-history.js:231 |
+| `navHistoryCaption` | frontend/js/nav-history.js:26 |
+| `navHistoryClear` | frontend/js/nav-history.js:216 |
+| `navHistoryEdited` | frontend/js/nav-history.js:225 |
+| `navHistoryForget` | frontend/js/nav-history.js:203 |
+| `navHistoryGroups` | frontend/js/nav-history.js:107 |
+| `navHistoryItem` | frontend/js/nav-history.js:123 |
+| `navHistoryNoteTitle` | frontend/js/nav-history.js:36 |
+| `navHistoryPlain` | frontend/js/nav-history.js:48 |
+| `navHistoryRow` | frontend/js/nav-history.js:63 |
+| `navHistoryTabIcon` | frontend/js/nav-history.js:54 |
+| `renderNavHistoryMenu` | frontend/js/nav-history.js:232 |
 
 ### frontend/js/note-edit-panels.js (11)
 
@@ -6297,55 +6297,56 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `objCarryBegin` | frontend/js/obj-carry.js:123 |
-| `objCarryDrop` | frontend/js/obj-carry.js:155 |
-| `objCarryEnd` | frontend/js/obj-carry.js:143 |
-| `objCarryFileTarget` | frontend/js/obj-carry.js:80 |
-| `objCarryNav` | frontend/js/obj-carry.js:101 |
-| `objCarryRoute` | frontend/js/obj-carry.js:163 |
-| `objCarryTarget` | frontend/js/obj-carry.js:88 |
-| `objCarryUpdate` | frontend/js/obj-carry.js:129 |
-| `objTrayDoor` | frontend/js/obj-carry.js:34 |
+| `objCarryBegin` | frontend/js/obj-carry.js:124 |
+| `objCarryDrop` | frontend/js/obj-carry.js:156 |
+| `objCarryEnd` | frontend/js/obj-carry.js:144 |
+| `objCarryFileTarget` | frontend/js/obj-carry.js:81 |
+| `objCarryNav` | frontend/js/obj-carry.js:102 |
+| `objCarryRoute` | frontend/js/obj-carry.js:164 |
+| `objCarryTarget` | frontend/js/obj-carry.js:89 |
+| `objCarryUpdate` | frontend/js/obj-carry.js:130 |
+| `objTrayDoor` | frontend/js/obj-carry.js:35 |
 
 ### frontend/js/obj-clip.js (9)
 
 | Name | File:line |
 |---|---|
-| `objArranging` | frontend/js/obj-clip.js:146 |
-| `objBoardText` | frontend/js/obj-clip.js:92 |
-| `objClipPut` | frontend/js/obj-clip.js:26 |
-| `objCopyByEvent` | frontend/js/obj-clip.js:35 |
-| `objKebabRows` | frontend/js/obj-clip.js:119 |
-| `objMenuRow` | frontend/js/obj-clip.js:151 |
-| `objPasteAt` | frontend/js/obj-clip.js:82 |
-| `objPasteDestination` | frontend/js/obj-clip.js:62 |
-| `objToastCopied` | frontend/js/obj-clip.js:17 |
+| `objArranging` | frontend/js/obj-clip.js:147 |
+| `objBoardText` | frontend/js/obj-clip.js:93 |
+| `objClipPut` | frontend/js/obj-clip.js:27 |
+| `objCopyByEvent` | frontend/js/obj-clip.js:36 |
+| `objKebabRows` | frontend/js/obj-clip.js:120 |
+| `objMenuRow` | frontend/js/obj-clip.js:152 |
+| `objPasteAt` | frontend/js/obj-clip.js:83 |
+| `objPasteDestination` | frontend/js/obj-clip.js:63 |
+| `objToastCopied` | frontend/js/obj-clip.js:18 |
 
-### frontend/js/obj-drag.js (21)
+### frontend/js/obj-drag.js (22)
 
 | Name | File:line |
 |---|---|
-| `objDragArm` | frontend/js/obj-drag.js:91 |
-| `objDragBegin` | frontend/js/obj-drag.js:172 |
-| `objDragCue` | frontend/js/obj-drag.js:104 |
-| `objDragFinish` | frontend/js/obj-drag.js:258 |
-| `objDragFrame` | frontend/js/obj-drag.js:190 |
-| `objDragKey` | frontend/js/obj-drag.js:243 |
-| `objDragListen` | frontend/js/obj-drag.js:112 |
-| `objDragMove` | frontend/js/obj-drag.js:152 |
-| `objDragNoMenu` | frontend/js/obj-drag.js:131 |
-| `objDragNoNative` | frontend/js/obj-drag.js:137 |
-| `objDragNoScroll` | frontend/js/obj-drag.js:126 |
-| `objDragRoute` | frontend/js/obj-drag.js:198 |
-| `objDragSchedule` | frontend/js/obj-drag.js:186 |
-| `objDragSeed` | frontend/js/obj-drag.js:64 |
-| `objDragSwallowClick` | frontend/js/obj-drag.js:252 |
-| `objDragTick` | frontend/js/obj-drag.js:212 |
-| `objDragUp` | frontend/js/obj-drag.js:239 |
-| `objDragVerdict` | frontend/js/obj-drag.js:144 |
-| `objGhostMake` | frontend/js/obj-drag.js:35 |
-| `objPressInSelection` | frontend/js/obj-drag.js:55 |
-| `objPressOnGrip` | frontend/js/obj-drag.js:49 |
+| `objDragArm` | frontend/js/obj-drag.js:92 |
+| `objDragBegin` | frontend/js/obj-drag.js:173 |
+| `objDragCue` | frontend/js/obj-drag.js:105 |
+| `objDragFinish` | frontend/js/obj-drag.js:267 |
+| `objDragFrame` | frontend/js/obj-drag.js:191 |
+| `objDragKey` | frontend/js/obj-drag.js:244 |
+| `objDragLifted` | frontend/js/obj-drag.js:260 |
+| `objDragListen` | frontend/js/obj-drag.js:113 |
+| `objDragMove` | frontend/js/obj-drag.js:153 |
+| `objDragNoMenu` | frontend/js/obj-drag.js:132 |
+| `objDragNoNative` | frontend/js/obj-drag.js:138 |
+| `objDragNoScroll` | frontend/js/obj-drag.js:127 |
+| `objDragRoute` | frontend/js/obj-drag.js:199 |
+| `objDragSchedule` | frontend/js/obj-drag.js:187 |
+| `objDragSeed` | frontend/js/obj-drag.js:65 |
+| `objDragSwallowClick` | frontend/js/obj-drag.js:253 |
+| `objDragTick` | frontend/js/obj-drag.js:213 |
+| `objDragUp` | frontend/js/obj-drag.js:240 |
+| `objDragVerdict` | frontend/js/obj-drag.js:145 |
+| `objGhostMake` | frontend/js/obj-drag.js:36 |
+| `objPressInSelection` | frontend/js/obj-drag.js:56 |
+| `objPressOnGrip` | frontend/js/obj-drag.js:50 |
 
 ### frontend/js/obj-order.js (10)
 
@@ -6366,67 +6367,67 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `objCardAt` | frontend/js/obj-ref.js:74 |
-| `objCardTitle` | frontend/js/obj-ref.js:66 |
-| `objDefaultTitle` | frontend/js/obj-ref.js:37 |
-| `objDestinationAt` | frontend/js/obj-ref.js:113 |
-| `objInField` | frontend/js/obj-ref.js:19 |
-| `objInsertText` | frontend/js/obj-ref.js:162 |
-| `objKey` | frontend/js/obj-ref.js:51 |
-| `objLinkText` | frontend/js/obj-ref.js:91 |
-| `objNoteTitle` | frontend/js/obj-ref.js:61 |
-| `objParseKey` | frontend/js/obj-ref.js:56 |
-| `objRef` | frontend/js/obj-ref.js:44 |
-| `objRefFromCard` | frontend/js/obj-ref.js:84 |
-| `objRender` | frontend/js/obj-ref.js:179 |
+| `objCardAt` | frontend/js/obj-ref.js:75 |
+| `objCardTitle` | frontend/js/obj-ref.js:67 |
+| `objDefaultTitle` | frontend/js/obj-ref.js:38 |
+| `objDestinationAt` | frontend/js/obj-ref.js:114 |
+| `objInField` | frontend/js/obj-ref.js:20 |
+| `objInsertText` | frontend/js/obj-ref.js:163 |
+| `objKey` | frontend/js/obj-ref.js:52 |
+| `objLinkText` | frontend/js/obj-ref.js:92 |
+| `objNoteTitle` | frontend/js/obj-ref.js:62 |
+| `objParseKey` | frontend/js/obj-ref.js:57 |
+| `objRef` | frontend/js/obj-ref.js:45 |
+| `objRefFromCard` | frontend/js/obj-ref.js:85 |
+| `objRender` | frontend/js/obj-ref.js:180 |
 
 ### frontend/js/obj-reorder.js (21)
 
 | Name | File:line |
 |---|---|
-| `objOrderHintSync` | frontend/js/obj-reorder.js:236 |
-| `objOrderHints` | frontend/js/obj-reorder.js:251 |
-| `objRefocus` | frontend/js/obj-reorder.js:203 |
-| `objReorderBegin` | frontend/js/obj-reorder.js:108 |
-| `objReorderCommit` | frontend/js/obj-reorder.js:84 |
-| `objReorderDrop` | frontend/js/obj-reorder.js:149 |
-| `objReorderGrab` | frontend/js/obj-reorder.js:103 |
-| `objReorderKey` | frontend/js/obj-reorder.js:174 |
-| `objReorderKeysNamed` | frontend/js/obj-reorder.js:264 |
-| `objReorderKick` | frontend/js/obj-reorder.js:224 |
-| `objReorderRelease` | frontend/js/obj-reorder.js:143 |
-| `objReorderRoute` | frontend/js/obj-reorder.js:162 |
-| `objReorderStep` | frontend/js/obj-reorder.js:190 |
-| `objReorderUpdate` | frontend/js/obj-reorder.js:128 |
-| `objScrollerOf` | frontend/js/obj-reorder.js:121 |
-| `objSetSort` | frontend/js/obj-reorder.js:66 |
-| `objShownUnder` | frontend/js/obj-reorder.js:74 |
-| `objSurfaceAt` | frontend/js/obj-reorder.js:57 |
-| `objUnitKey` | frontend/js/obj-reorder.js:45 |
-| `objUnitRef` | frontend/js/obj-reorder.js:41 |
-| `objUnitsOf` | frontend/js/obj-reorder.js:52 |
+| `objOrderHintSync` | frontend/js/obj-reorder.js:237 |
+| `objOrderHints` | frontend/js/obj-reorder.js:252 |
+| `objRefocus` | frontend/js/obj-reorder.js:204 |
+| `objReorderBegin` | frontend/js/obj-reorder.js:109 |
+| `objReorderCommit` | frontend/js/obj-reorder.js:85 |
+| `objReorderDrop` | frontend/js/obj-reorder.js:150 |
+| `objReorderGrab` | frontend/js/obj-reorder.js:104 |
+| `objReorderKey` | frontend/js/obj-reorder.js:175 |
+| `objReorderKeysNamed` | frontend/js/obj-reorder.js:265 |
+| `objReorderKick` | frontend/js/obj-reorder.js:225 |
+| `objReorderRelease` | frontend/js/obj-reorder.js:144 |
+| `objReorderRoute` | frontend/js/obj-reorder.js:163 |
+| `objReorderStep` | frontend/js/obj-reorder.js:191 |
+| `objReorderUpdate` | frontend/js/obj-reorder.js:129 |
+| `objScrollerOf` | frontend/js/obj-reorder.js:122 |
+| `objSetSort` | frontend/js/obj-reorder.js:67 |
+| `objShownUnder` | frontend/js/obj-reorder.js:75 |
+| `objSurfaceAt` | frontend/js/obj-reorder.js:58 |
+| `objUnitKey` | frontend/js/obj-reorder.js:46 |
+| `objUnitRef` | frontend/js/obj-reorder.js:42 |
+| `objUnitsOf` | frontend/js/obj-reorder.js:53 |
 
 ### frontend/js/obj-tray.js (17)
 
 | Name | File:line |
 |---|---|
-| `objTrayAdd` | frontend/js/obj-tray.js:52 |
-| `objTrayChanged` | frontend/js/obj-tray.js:90 |
-| `objTrayClear` | frontend/js/obj-tray.js:80 |
-| `objTrayCountWords` | frontend/js/obj-tray.js:95 |
-| `objTrayDestination` | frontend/js/obj-tray.js:179 |
-| `objTrayDraw` | frontend/js/obj-tray.js:122 |
-| `objTrayKeepFocus` | frontend/js/obj-tray.js:63 |
-| `objTrayList` | frontend/js/obj-tray.js:115 |
-| `objTrayOffer` | frontend/js/obj-tray.js:200 |
-| `objTrayPaint` | frontend/js/obj-tray.js:99 |
-| `objTrayPaste` | frontend/js/obj-tray.js:185 |
-| `objTrayRead` | frontend/js/obj-tray.js:28 |
-| `objTrayRemove` | frontend/js/obj-tray.js:72 |
-| `objTrayRow` | frontend/js/obj-tray.js:152 |
-| `objTraySheet` | frontend/js/obj-tray.js:136 |
-| `objTraySpace` | frontend/js/obj-tray.js:23 |
-| `objTrayWrite` | frontend/js/obj-tray.js:43 |
+| `objTrayAdd` | frontend/js/obj-tray.js:53 |
+| `objTrayChanged` | frontend/js/obj-tray.js:91 |
+| `objTrayClear` | frontend/js/obj-tray.js:81 |
+| `objTrayCountWords` | frontend/js/obj-tray.js:96 |
+| `objTrayDestination` | frontend/js/obj-tray.js:180 |
+| `objTrayDraw` | frontend/js/obj-tray.js:123 |
+| `objTrayKeepFocus` | frontend/js/obj-tray.js:64 |
+| `objTrayList` | frontend/js/obj-tray.js:116 |
+| `objTrayOffer` | frontend/js/obj-tray.js:201 |
+| `objTrayPaint` | frontend/js/obj-tray.js:100 |
+| `objTrayPaste` | frontend/js/obj-tray.js:186 |
+| `objTrayRead` | frontend/js/obj-tray.js:29 |
+| `objTrayRemove` | frontend/js/obj-tray.js:73 |
+| `objTrayRow` | frontend/js/obj-tray.js:153 |
+| `objTraySheet` | frontend/js/obj-tray.js:137 |
+| `objTraySpace` | frontend/js/obj-tray.js:24 |
+| `objTrayWrite` | frontend/js/obj-tray.js:44 |
 
 ### frontend/js/ocr-engine.js (9)
 
@@ -6574,16 +6575,16 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `initQuestionsView` | frontend/js/questions-view.js:209 |
-| `loadQuestions` | frontend/js/questions-view.js:131 |
-| `questionButton` | frontend/js/questions-view.js:20 |
-| `questionRow` | frontend/js/questions-view.js:34 |
-| `questionWhen` | frontend/js/questions-view.js:15 |
-| `questionsEmpty` | frontend/js/questions-view.js:94 |
-| `questionsFocusAfter` | frontend/js/questions-view.js:28 |
-| `questionsForNote` | frontend/js/questions-view.js:201 |
-| `questionsReadSummary` | frontend/js/questions-view.js:125 |
-| `setAskScope` | frontend/js/questions-view.js:246 |
+| `initQuestionsView` | frontend/js/questions-view.js:210 |
+| `loadQuestions` | frontend/js/questions-view.js:132 |
+| `questionButton` | frontend/js/questions-view.js:21 |
+| `questionRow` | frontend/js/questions-view.js:35 |
+| `questionWhen` | frontend/js/questions-view.js:16 |
+| `questionsEmpty` | frontend/js/questions-view.js:95 |
+| `questionsFocusAfter` | frontend/js/questions-view.js:29 |
+| `questionsForNote` | frontend/js/questions-view.js:202 |
+| `questionsReadSummary` | frontend/js/questions-view.js:126 |
+| `setAskScope` | frontend/js/questions-view.js:247 |
 
 ### frontend/js/quick-access.js (9)
 
@@ -6603,35 +6604,35 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `announceSavedNote` | frontend/js/quick-note.js:283 |
-| `chatKeep` | frontend/js/quick-note.js:535 |
-| `clearQuickNote` | frontend/js/quick-note.js:271 |
-| `clipPastedLink` | frontend/js/quick-note.js:399 |
-| `createNoteSafely` | frontend/js/quick-note.js:87 |
-| `flashSavedRow` | frontend/js/quick-note.js:301 |
-| `flushNoteOutbox` | frontend/js/quick-note.js:109 |
-| `focusOpener` | frontend/js/quick-note.js:315 |
-| `keepQuickNoteDraft` | frontend/js/quick-note.js:261 |
-| `newNoteClientKey` | frontend/js/quick-note.js:51 |
-| `noteEditOutboxAdd` | frontend/js/quick-note.js:73 |
-| `noteOutbox` | frontend/js/quick-note.js:30 |
-| `noteOutboxAdd` | frontend/js/quick-note.js:61 |
-| `noteServerGone` | frontend/js/quick-note.js:56 |
-| `openQuickNote` | frontend/js/quick-note.js:231 |
-| `pasteClipboardAsNote` | frontend/js/quick-note.js:464 |
-| `quickNoteBox` | frontend/js/quick-note.js:221 |
-| `quickNoteReminder` | frontend/js/quick-note.js:360 |
-| `quickNoteStatus` | frontend/js/quick-note.js:225 |
-| `quickNoteToCapture` | frontend/js/quick-note.js:377 |
-| `reminderFromChatAnswer` | frontend/js/quick-note.js:579 |
-| `renderNoteOutbox` | frontend/js/quick-note.js:161 |
-| `renderPendingNoteRows` | frontend/js/quick-note.js:180 |
-| `returnNoteToCapture` | frontend/js/quick-note.js:151 |
-| `saveChatAnswerAsNote` | frontend/js/quick-note.js:551 |
-| `saveChatAsDocument` | frontend/js/quick-note.js:509 |
-| `saveQuickNote` | frontend/js/quick-note.js:324 |
-| `scheduleNoteOutboxFlush` | frontend/js/quick-note.js:101 |
-| `writeNoteOutbox` | frontend/js/quick-note.js:42 |
+| `announceSavedNote` | frontend/js/quick-note.js:284 |
+| `chatKeep` | frontend/js/quick-note.js:536 |
+| `clearQuickNote` | frontend/js/quick-note.js:272 |
+| `clipPastedLink` | frontend/js/quick-note.js:400 |
+| `createNoteSafely` | frontend/js/quick-note.js:88 |
+| `flashSavedRow` | frontend/js/quick-note.js:302 |
+| `flushNoteOutbox` | frontend/js/quick-note.js:110 |
+| `focusOpener` | frontend/js/quick-note.js:316 |
+| `keepQuickNoteDraft` | frontend/js/quick-note.js:262 |
+| `newNoteClientKey` | frontend/js/quick-note.js:52 |
+| `noteEditOutboxAdd` | frontend/js/quick-note.js:74 |
+| `noteOutbox` | frontend/js/quick-note.js:31 |
+| `noteOutboxAdd` | frontend/js/quick-note.js:62 |
+| `noteServerGone` | frontend/js/quick-note.js:57 |
+| `openQuickNote` | frontend/js/quick-note.js:232 |
+| `pasteClipboardAsNote` | frontend/js/quick-note.js:465 |
+| `quickNoteBox` | frontend/js/quick-note.js:222 |
+| `quickNoteReminder` | frontend/js/quick-note.js:361 |
+| `quickNoteStatus` | frontend/js/quick-note.js:226 |
+| `quickNoteToCapture` | frontend/js/quick-note.js:378 |
+| `reminderFromChatAnswer` | frontend/js/quick-note.js:580 |
+| `renderNoteOutbox` | frontend/js/quick-note.js:162 |
+| `renderPendingNoteRows` | frontend/js/quick-note.js:181 |
+| `returnNoteToCapture` | frontend/js/quick-note.js:152 |
+| `saveChatAnswerAsNote` | frontend/js/quick-note.js:552 |
+| `saveChatAsDocument` | frontend/js/quick-note.js:510 |
+| `saveQuickNote` | frontend/js/quick-note.js:325 |
+| `scheduleNoteOutboxFlush` | frontend/js/quick-note.js:102 |
+| `writeNoteOutbox` | frontend/js/quick-note.js:43 |
 
 ### frontend/js/quickadd.js (44)
 
@@ -6832,29 +6833,30 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 |---|---|
 | `scrollRowArrows` | frontend/js/scroll-row.js:9 |
 
-### frontend/js/search-suggest.js (19)
+### frontend/js/search-suggest.js (20)
 
 | Name | File:line |
 |---|---|
-| `clearRecentSearches` | frontend/js/search-suggest.js:389 |
-| `clearSearchSuggestRecents` | frontend/js/search-suggest.js:404 |
-| `closeSearchSuggest` | frontend/js/search-suggest.js:206 |
-| `fillSearchSuggest` | frontend/js/search-suggest.js:277 |
-| `openSearchSuggest` | frontend/js/search-suggest.js:421 |
-| `placeSearchGhost` | frontend/js/search-suggest.js:248 |
-| `placeSearchSuggest` | frontend/js/search-suggest.js:223 |
-| `placeSearchSuggestSoon` | frontend/js/search-suggest.js:354 |
-| `removeSearchSuggest` | frontend/js/search-suggest.js:376 |
-| `searchSuggestEnabled` | frontend/js/search-suggest.js:56 |
-| `searchSuggestItems` | frontend/js/search-suggest.js:139 |
-| `searchSuggestListTitles` | frontend/js/search-suggest.js:114 |
-| `searchSuggestRank` | frontend/js/search-suggest.js:84 |
-| `searchSuggestRemember` | frontend/js/search-suggest.js:413 |
-| `searchSuggestScopeOf` | frontend/js/search-suggest.js:60 |
-| `searchSuggestTitleHits` | frontend/js/search-suggest.js:129 |
-| `searchSuggestToken` | frontend/js/search-suggest.js:92 |
-| `searchSuggestWords` | frontend/js/search-suggest.js:66 |
-| `takeSearchSuggest` | frontend/js/search-suggest.js:361 |
+| `clearRecentSearches` | frontend/js/search-suggest.js:397 |
+| `clearSearchSuggestRecents` | frontend/js/search-suggest.js:412 |
+| `closeSearchSuggest` | frontend/js/search-suggest.js:214 |
+| `fillSearchSuggest` | frontend/js/search-suggest.js:285 |
+| `openSearchSuggest` | frontend/js/search-suggest.js:429 |
+| `placeSearchGhost` | frontend/js/search-suggest.js:256 |
+| `placeSearchSuggest` | frontend/js/search-suggest.js:231 |
+| `placeSearchSuggestSoon` | frontend/js/search-suggest.js:362 |
+| `removeSearchSuggest` | frontend/js/search-suggest.js:384 |
+| `searchSuggestEnabled` | frontend/js/search-suggest.js:64 |
+| `searchSuggestHold` | frontend/js/search-suggest.js:58 |
+| `searchSuggestItems` | frontend/js/search-suggest.js:147 |
+| `searchSuggestListTitles` | frontend/js/search-suggest.js:122 |
+| `searchSuggestRank` | frontend/js/search-suggest.js:92 |
+| `searchSuggestRemember` | frontend/js/search-suggest.js:421 |
+| `searchSuggestScopeOf` | frontend/js/search-suggest.js:68 |
+| `searchSuggestTitleHits` | frontend/js/search-suggest.js:137 |
+| `searchSuggestToken` | frontend/js/search-suggest.js:100 |
+| `searchSuggestWords` | frontend/js/search-suggest.js:74 |
+| `takeSearchSuggest` | frontend/js/search-suggest.js:369 |
 
 ### frontend/js/search.js (29)
 
@@ -7181,41 +7183,41 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `allSettingRows` | frontend/js/settings-rows.js:305 |
-| `applyLookSettings` | frontend/js/settings-rows.js:464 |
-| `applySettingsFile` | frontend/js/settings-rows.js:479 |
-| `browserOnlySettings` | frontend/js/settings-rows.js:433 |
-| `exportSettingsFile` | frontend/js/settings-rows.js:449 |
-| `fireSettingEvents` | frontend/js/settings-rows.js:366 |
-| `importSettingsFile` | frontend/js/settings-rows.js:494 |
-| `lookBase` | frontend/js/settings-rows.js:180 |
-| `paintSectionReset` | frontend/js/settings-rows.js:347 |
-| `paintSettingRow` | frontend/js/settings-rows.js:294 |
-| `paintSettingRows` | frontend/js/settings-rows.js:338 |
-| `renderLinkIgnoredRow` | frontend/js/settings-rows.js:318 |
-| `resetSettingRow` | frontend/js/settings-rows.js:373 |
-| `resetSettingSection` | frontend/js/settings-rows.js:395 |
-| `sameSettingValue` | frontend/js/settings-rows.js:174 |
-| `scheduleSettingRowsPaint` | frontend/js/settings-rows.js:403 |
-| `settingDefaultShown` | frontend/js/settings-rows.js:185 |
-| `settingDefaults` | frontend/js/settings-rows.js:133 |
-| `settingIsModified` | frontend/js/settings-rows.js:191 |
-| `settingMarkHost` | frontend/js/settings-rows.js:235 |
-| `settingNameLine` | frontend/js/settings-rows.js:246 |
-| `settingNow` | frontend/js/settings-rows.js:156 |
-| `settingRadio` | frontend/js/settings-rows.js:146 |
-| `settingResetButton` | frontend/js/settings-rows.js:258 |
-| `settingRowEl` | frontend/js/settings-rows.js:208 |
-| `settingRowName` | frontend/js/settings-rows.js:215 |
-| `settingRowShown` | frontend/js/settings-rows.js:225 |
-| `settingRowsIn` | frontend/js/settings-rows.js:309 |
-| `settingRowsWatch` | frontend/js/settings-rows.js:414 |
-| `settingScopeChip` | frontend/js/settings-rows.js:285 |
-| `settingSegButton` | frontend/js/settings-rows.js:150 |
-| `settingShows` | frontend/js/settings-rows.js:166 |
-| `settingsFileSnapshot` | frontend/js/settings-rows.js:444 |
-| `settingsImportWords` | frontend/js/settings-rows.js:486 |
-| `wireSettingsFile` | frontend/js/settings-rows.js:518 |
+| `allSettingRows` | frontend/js/settings-rows.js:306 |
+| `applyLookSettings` | frontend/js/settings-rows.js:465 |
+| `applySettingsFile` | frontend/js/settings-rows.js:480 |
+| `browserOnlySettings` | frontend/js/settings-rows.js:434 |
+| `exportSettingsFile` | frontend/js/settings-rows.js:450 |
+| `fireSettingEvents` | frontend/js/settings-rows.js:367 |
+| `importSettingsFile` | frontend/js/settings-rows.js:495 |
+| `lookBase` | frontend/js/settings-rows.js:181 |
+| `paintSectionReset` | frontend/js/settings-rows.js:348 |
+| `paintSettingRow` | frontend/js/settings-rows.js:295 |
+| `paintSettingRows` | frontend/js/settings-rows.js:339 |
+| `renderLinkIgnoredRow` | frontend/js/settings-rows.js:319 |
+| `resetSettingRow` | frontend/js/settings-rows.js:374 |
+| `resetSettingSection` | frontend/js/settings-rows.js:396 |
+| `sameSettingValue` | frontend/js/settings-rows.js:175 |
+| `scheduleSettingRowsPaint` | frontend/js/settings-rows.js:404 |
+| `settingDefaultShown` | frontend/js/settings-rows.js:186 |
+| `settingDefaults` | frontend/js/settings-rows.js:134 |
+| `settingIsModified` | frontend/js/settings-rows.js:192 |
+| `settingMarkHost` | frontend/js/settings-rows.js:236 |
+| `settingNameLine` | frontend/js/settings-rows.js:247 |
+| `settingNow` | frontend/js/settings-rows.js:157 |
+| `settingRadio` | frontend/js/settings-rows.js:147 |
+| `settingResetButton` | frontend/js/settings-rows.js:259 |
+| `settingRowEl` | frontend/js/settings-rows.js:209 |
+| `settingRowName` | frontend/js/settings-rows.js:216 |
+| `settingRowShown` | frontend/js/settings-rows.js:226 |
+| `settingRowsIn` | frontend/js/settings-rows.js:310 |
+| `settingRowsWatch` | frontend/js/settings-rows.js:415 |
+| `settingScopeChip` | frontend/js/settings-rows.js:286 |
+| `settingSegButton` | frontend/js/settings-rows.js:151 |
+| `settingShows` | frontend/js/settings-rows.js:167 |
+| `settingsFileSnapshot` | frontend/js/settings-rows.js:445 |
+| `settingsImportWords` | frontend/js/settings-rows.js:487 |
+| `wireSettingsFile` | frontend/js/settings-rows.js:519 |
 
 ### frontend/js/shared-intake.js (2)
 
@@ -7393,31 +7395,31 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `openStatistics` | frontend/js/statistics.js:421 |
-| `paintStatistics` | frontend/js/statistics.js:401 |
-| `renderWeekWidget` | frontend/js/statistics.js:491 |
-| `statsAskBox` | frontend/js/statistics.js:317 |
-| `statsChange` | frontend/js/statistics.js:123 |
-| `statsChart` | frontend/js/statistics.js:61 |
-| `statsDay` | frontend/js/statistics.js:116 |
-| `statsGo` | frontend/js/statistics.js:76 |
-| `statsGrowthChart` | frontend/js/statistics.js:210 |
-| `statsLeftOutLine` | frontend/js/statistics.js:239 |
-| `statsNotebookSection` | frontend/js/statistics.js:252 |
-| `statsOpenFeature` | frontend/js/statistics.js:107 |
-| `statsOpenLooseEnds` | frontend/js/statistics.js:92 |
-| `statsOpenMonth` | frontend/js/statistics.js:100 |
-| `statsOpenReminders` | frontend/js/statistics.js:87 |
-| `statsOpenTab` | frontend/js/statistics.js:85 |
-| `statsRangeControl` | frontend/js/statistics.js:216 |
-| `statsRemindersSection` | frontend/js/statistics.js:274 |
-| `statsSection` | frontend/js/statistics.js:37 |
-| `statsSpark` | frontend/js/statistics.js:132 |
-| `statsTile` | frontend/js/statistics.js:17 |
-| `statsTiles` | frontend/js/statistics.js:52 |
-| `statsUnused` | frontend/js/statistics.js:189 |
-| `statsUsageSection` | frontend/js/statistics.js:281 |
-| `statsWeekCard` | frontend/js/statistics.js:150 |
+| `openStatistics` | frontend/js/statistics.js:422 |
+| `paintStatistics` | frontend/js/statistics.js:402 |
+| `renderWeekWidget` | frontend/js/statistics.js:492 |
+| `statsAskBox` | frontend/js/statistics.js:318 |
+| `statsChange` | frontend/js/statistics.js:124 |
+| `statsChart` | frontend/js/statistics.js:62 |
+| `statsDay` | frontend/js/statistics.js:117 |
+| `statsGo` | frontend/js/statistics.js:77 |
+| `statsGrowthChart` | frontend/js/statistics.js:211 |
+| `statsLeftOutLine` | frontend/js/statistics.js:240 |
+| `statsNotebookSection` | frontend/js/statistics.js:253 |
+| `statsOpenFeature` | frontend/js/statistics.js:108 |
+| `statsOpenLooseEnds` | frontend/js/statistics.js:93 |
+| `statsOpenMonth` | frontend/js/statistics.js:101 |
+| `statsOpenReminders` | frontend/js/statistics.js:88 |
+| `statsOpenTab` | frontend/js/statistics.js:86 |
+| `statsRangeControl` | frontend/js/statistics.js:217 |
+| `statsRemindersSection` | frontend/js/statistics.js:275 |
+| `statsSection` | frontend/js/statistics.js:38 |
+| `statsSpark` | frontend/js/statistics.js:133 |
+| `statsTile` | frontend/js/statistics.js:18 |
+| `statsTiles` | frontend/js/statistics.js:53 |
+| `statsUnused` | frontend/js/statistics.js:190 |
+| `statsUsageSection` | frontend/js/statistics.js:282 |
+| `statsWeekCard` | frontend/js/statistics.js:151 |
 
 ### frontend/js/status-panels.js (6)
 
@@ -7810,17 +7812,17 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `analyseWebPage` | frontend/js/web-clip.js:183 |
-| `clearWebAnalysis` | frontend/js/web-clip.js:142 |
-| `markWebTerms` | frontend/js/web-clip.js:154 |
-| `readerBookmark` | frontend/js/web-clip.js:297 |
-| `readerBookmarkMark` | frontend/js/web-clip.js:308 |
-| `renderWebClip` | frontend/js/web-clip.js:31 |
-| `saveWebPageAsNote` | frontend/js/web-clip.js:274 |
-| `showWebReader` | frontend/js/web-clip.js:54 |
-| `webClipBookmarklet` | frontend/js/web-clip.js:15 |
-| `webFollowUp` | frontend/js/web-clip.js:330 |
-| `webFollowUpRefers` | frontend/js/web-clip.js:326 |
+| `analyseWebPage` | frontend/js/web-clip.js:184 |
+| `clearWebAnalysis` | frontend/js/web-clip.js:143 |
+| `markWebTerms` | frontend/js/web-clip.js:155 |
+| `readerBookmark` | frontend/js/web-clip.js:298 |
+| `readerBookmarkMark` | frontend/js/web-clip.js:309 |
+| `renderWebClip` | frontend/js/web-clip.js:32 |
+| `saveWebPageAsNote` | frontend/js/web-clip.js:275 |
+| `showWebReader` | frontend/js/web-clip.js:55 |
+| `webClipBookmarklet` | frontend/js/web-clip.js:16 |
+| `webFollowUp` | frontend/js/web-clip.js:331 |
+| `webFollowUpRefers` | frontend/js/web-clip.js:327 |
 
 ### frontend/js/web-results.js (13)
 

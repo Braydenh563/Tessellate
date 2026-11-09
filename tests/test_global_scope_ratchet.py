@@ -63,8 +63,8 @@ TOP_LEVEL_LETS_CAP = 699
 #: and failure row added inside it; measured 9,708. 1546 P1 (D4): the board's `wbMermaidParse` and `wbMermaidText` go and
 #: documents-mermaid.js exports `diagramModel`; measured 9,706. 2026-11-08 (after merges took it to 9,711): task-steps.js
 #: (three exports) and obj-order.js (eight) wrapped whole; measured 9,701.  iife-1109: screen-context, load-failed, feature-model-sheet, phone-more,
-#: extract-preview, timeline-detail, scroll-row, assistant-avatar and confirmed-patterns wrapped whole, one export each; measured 9,688. Then date-field, link-types, vault-unlock, offline-split and pick-row wrapped whole; measured 9,678. iife2-1109: twenty lazy files wrapped whole (see CHANGELOG); measured 9,598. iife3-1109: tidy, lan-watch, documents-ai and model-menu wrapped whole (six exports in all); measured 9,513. Then ocr-engine and note-properties wrapped whole; measured 9,490.
-GLOBAL_NAMES_CAP = 9490
+#: extract-preview, timeline-detail, scroll-row, assistant-avatar and confirmed-patterns wrapped whole, one export each; measured 9,688. Then date-field, link-types, vault-unlock, offline-split and pick-row wrapped whole; measured 9,678. iife2-1109: twenty lazy files wrapped whole (see CHANGELOG); measured 9,598. iife3-1109: tidy, lan-watch, documents-ai and model-menu wrapped whole (six exports in all); measured 9,513. Then ocr-engine and note-properties wrapped whole; measured 9,490. iife4-1109: twenty-one files that tests reached privately wrapped whole (the tests read them through `_js_scope.unwrapped`, or run the vm with `window` as the context); measured 9,096.
+GLOBAL_NAMES_CAP = 9096
 
 
 def _code() -> dict[str, str]:
