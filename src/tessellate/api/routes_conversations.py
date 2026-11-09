@@ -21,7 +21,7 @@ from tessellate.core import deps
 from tessellate.core.database import LIKE_ESCAPE, Conversation, like_escape, utcnow
 from tessellate.repo import uploads as uploads_repo
 from tessellate.core.deps import get_session
-from tessellate.ai.grounding import support as grounding_support
+from tessellate.ai.grounding import composed_support, support as grounding_support
 from tessellate.entry.manager import log_action
 
 router = APIRouter(prefix="/conversations", tags=["conversations"])
@@ -83,6 +83,10 @@ class TurnBody(BaseModel):
     # above, reported separately: reopening a chat, or just leaving the
     # tab, dropped the sources line because nothing here ever stored it.
     sentence_grounding: list[dict] | None = None
+    #: A composed answer's own support as the live stream sent it (digest, shape,
+    #: figure, offer), so a reopened chat draws the same foot and notice (INBOX
+    #: 1706). Read only when `by.composed`; a model answer's is recounted below.
+    support: dict | None = None
     # Which MediaUpload ids this turn actually attached, asked for
     # directly, and load-bearing beyond just redisplaying them on reopen:
     # media_gc.py's orphan scan can only see `/media/…` references inside
@@ -202,6 +206,16 @@ def _user_message(turn: TurnBody, asked: datetime) -> dict:
     return user
 
 
+def _saved_support(turn: TurnBody) -> dict:
+    """The notice's numbers for a saved turn: recounted for a model answer, the
+    stream's own for a composed one (`by.composed`, built only from notes, so
+    never the model-draft warning; the live stream marked it `by_model: False`
+    and a reopened chat must show what arrived, INBOX 1706)."""
+    if (turn.by or {}).get("composed"):
+        return composed_support(turn.support, turn.sentence_grounding)
+    return grounding_support(turn.answer, turn.sentence_grounding)
+
+
 def _turn_messages(turn: TurnBody) -> list[dict]:
     # Stamped here, not by the page: the turn is saved when the answer ends,
     # so the answer's time is now and the question's is now minus the
@@ -236,7 +250,7 @@ def _turn_messages(turn: TurnBody) -> list[dict]:
         #: the notice it had (CHAT_PLAN Phase 1's last line). Computed here
         #: rather than trusted from the client: the answer and its marks are
         #: both on the turn, and the frontend must not grow a second counter.
-        assistant["support"] = grounding_support(turn.answer, turn.sentence_grounding)
+        assistant["support"] = _saved_support(turn)
     if turn.used_tools is not None:
         assistant["used_tools"] = turn.used_tools
     persona = (turn.persona or "").strip()
@@ -572,6 +586,11 @@ def get_conversation(
 ) -> dict:
     conversation = _existing(session, conversation_id)
     messages = json.loads(conversation.messages)
+    #: Chats saved before the composed rule above kept the model counter's
+    #: notice on a notes-only answer; mended on the way out (INBOX 1706).
+    for message in messages:
+        if (message.get("by") or {}).get("composed") and message.get("sentence_grounding") and (message.get("support") or {}).get("by_model") is not False:
+            message["support"] = composed_support(None, message["sentence_grounding"])
     _hydrate_attachments(session, messages)
     return {**_summary(conversation), "messages": messages}
 

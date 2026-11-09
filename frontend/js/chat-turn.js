@@ -280,6 +280,7 @@ async function chatSendTurn(preset, opts = {}) {
   //: The screen-aware next step (E52): drawn beside the answer, never in its text.
   let chatTip = "";
   let whyLines = null; // the why event (B30), drawn last
+  let groundingSupport = null; // the stream's own support, saved with a composed turn (INBOX 1706)
   let composedNext = []; // a composed answer's own next questions (INBOX 725)
   //: **Numbered while it streams, as the Ask tab is** (INBOX 320, the
   //: askcite row): the backend sends the rows so far each time a sentence
@@ -511,6 +512,7 @@ async function chatSendTurn(preset, opts = {}) {
       onGrounding: (event) => {
         groundingSentences = event.sentences;
         composedNext = Array.isArray(event.next) ? event.next : [];
+        groundingSupport = event.support || null;
         renderAnswerGrounding(
           groundingHolder,
           event.sentences,
@@ -874,7 +876,7 @@ async function chatSendTurn(preset, opts = {}) {
     toolEvents,
     touched: [...touchedItems.values()],
     sentences: groundingSentences,
-    grounded: meta?.composed ? new Set((groundingSentences || []).filter((row) => row.kind !== "document").map((row) => row.note_id).filter(Boolean)) : null,
+    composed: Boolean(meta?.composed),
   });
   //: The page this turn went out to read, for a follow-up about it
   //: (`webFollowUp`, web-clip.js).
@@ -1117,6 +1119,7 @@ async function chatSendTurn(preset, opts = {}) {
       // just above. Only meaningful alongside raw_results (renderAnswerGrounding
       // looks note content up in it), so there's nothing to persist without it.
       sentence_grounding: groundingSentences?.length ? groundingSentences : null,
+      support: meta?.composed ? groundingSupport : null,
       // Which uploads this turn actually used, asked for directly: without
       // this, a sent chat image had no record anywhere that anything still
       // used it, so the Library's "Clean orphaned media" tool (which can

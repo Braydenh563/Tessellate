@@ -2142,6 +2142,7 @@ async function openConversation(id) {
         toolEvents: message.tools || [],
         touched: (message.tools || []).flatMap((t) => t.touched || []),
         sentences: message.sentence_grounding,
+        composed: Boolean(message.by?.composed),
       };
       //: The panel's order, built once and handed to the citation pass below
       //: as the live path does (chat-attach.js, `turnSources`). Reopening
