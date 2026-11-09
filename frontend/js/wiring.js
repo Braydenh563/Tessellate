@@ -1277,7 +1277,7 @@ function startNewNote() {
   const box = $("entry-content");
   box?.focus();
   //: A failed bundle fetch must not reject unhandled; the textarea has the focus.
-  mountNoteSurfaceNow(box).then((surface) => !activeOverlay() && surface?.focus()).catch(() => {});
+  mountNoteSurfaceNow(box).then((s) => !activeOverlay() && s?.focus()).catch(() => {});
 }
 $("select-btn").addEventListener("click", () =>
   selectMode ? exitSelectMode() : enterSelectMode()
