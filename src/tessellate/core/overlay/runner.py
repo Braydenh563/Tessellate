@@ -711,7 +711,6 @@ class OverlayRunner:
             self._last_key, self._blend, self._target = None, None, None
         now = self.clock()
         eased = self._ease(now)
-        self._warm_spins(spr)
         engine.hour = time.localtime().tm_hour if self.clock_hour is None else self.clock_hour
         # a thrown figure's true angle is part of the picture (INBOX 1683): every tick of a spin is a new one
         turn = None if out.angle is None else round(math.degrees(out.angle) / sprites.SPIN_QUANT) % round(360.0 / sprites.SPIN_QUANT)
@@ -727,6 +726,7 @@ class OverlayRunner:
             host.move(out.x - pad.pad_x, out.y - pad.pad_y)
             self._last_pos = (out.x, out.y)
         self._hand_offs(out, engine)
+        self._warm_spins(spr)  # after the picture is shown: a new size draws first, its turns are built behind it
         wake = self._cap_wake(self._scan_wake(out.wake_ms))
         wake = self._handle_wake(wake, handle, now)
         if blending or eased:  # the dissolve is a move: one step a display frame
