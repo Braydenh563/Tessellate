@@ -19,9 +19,9 @@ Branch agent/compalive-1109. Done: 1e96de2 (INBOX 1709, resolved), adf9960 (1710
 - The other backlog acts with no prop: `tail_stretch`, `self_hug` is done, `kneel_look`, `stargaze_awake`, `cloud_pillow`, `tail_chase`, `knit_starlight`, `paper_plane`, `blow_bubbles`, `conduct`, `lean_on_edge`, `balance_walk`, `sketch_view`.
 
 ## Found, not fixed
-- tests/test_frontend_wake_sources.py fails on the base branch (documents-callouts.js raf 0 to 1; documents.js 13 now 12): not mine.
-- tests/test_overlay_idle.py `test_a_wake_lands_on_a_new_frame_not_the_same_one_again` and `test_a_blink_still_overrides_the_cycle` fail on the base branch.
-- `companion-catalogue.json` had no entry for the desk face `blink` (INBOX 1704); named under `face.calm`.
+- tests/test_frontend_wake_sources.py fails on the base branch (documents-callouts.js raf 0 to 1; documents.js 13 now 12): not mine. **Stale:** tests/test_frontend_wake_sources.py passes on head (checked 2026-11-09).
+- tests/test_overlay_idle.py `test_a_wake_lands_on_a_new_frame_not_the_same_one_again` and `test_a_blink_still_overrides_the_cycle` fail on the base branch. **Stale:** tests/test_overlay_idle.py passes on head (checked 2026-11-09).
+- `companion-catalogue.json` had no entry for the desk face `blink` (INBOX 1704); named under `face.calm`. **Fixed desklane-1109 (the desk face blink has its own catalogue row).**
 
 ## desklane-1109 (done 2229e7a, 89394b9; INBOX 1718 resolved)
 - Left (1696 aa): the plant pot held in the tail curl needs a tail-curl frame. (1696 kk): hold still, carry over, catch mid-air, tail pull, drag skid, toss up and pointer chase are built on neither side (catalogue `int.*` missing).

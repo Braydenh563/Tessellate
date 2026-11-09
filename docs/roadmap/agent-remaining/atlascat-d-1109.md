@@ -6,5 +6,5 @@ Done:
 - D5 (part): int.ceiling_bonk (companion-throw.js companionThrowBonk, `.nmb-bonk`) and lower.fall (`fall` lower state while `nmb-falling`). DESK_ONLY cap 14 to 12.
 
 Remaining:
-- D5 not built: int.pat (slow pat on the head), int.swipe_twirl (fast swipe spins once), move.cloud_ride (walk variant), trans.upright>hang (leap and grab in nameMarkBuddyMoveTo after `buddy.dataset.pose = spot.pose`). Still in DESK_ONLY.
-- Not verified on a real desktop: only fake-transport and vm tests on the desk side; the in-app side was driven in Chromium (Playwright) with numbers in each commit message.
+- D5 not built: int.pat (slow pat on the head), int.swipe_twirl (fast swipe spins once), move.cloud_ride (walk variant), trans.upright>hang (leap and grab in nameMarkBuddyMoveTo after `buddy.dataset.pose = spot.pose`). Still in DESK_ONLY. **Fixed atlascat-d5-1109.md: e58d9b0 pat, d647819 swipe twirl, cloud ride, upright to hang leap.**
+- Not verified on a real desktop: only fake-transport and vm tests on the desk side; the in-app side was driven in Chromium (Playwright) with numbers in each commit message. **Open (checked 2026-11-09)** needs a real desktop.

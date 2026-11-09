@@ -1,7 +1,7 @@
 # composer-r8-1109 remaining
 
 - done: checklist note of named items (task_acts.read_checklist_note, commands._plan_new_note label), bare "call Anna" (commands._bare_call), a pair said as a phrase in one note stays one subject (composer_ask.NOTE_TEXTS, _said_together), INBOX 1705 (e) integration test (tests/test_composer_r8_1109.py, with the rule switched off it fails).
-- r5/r6/r7 items: everything open was built in r6/r7 or above, except the owner decision below.
+- r5/r6/r7 items: everything open was built in r6/r7 or above, except the owner decision below. **Stale:** a summary line; what it says is open is listed below it.
 
 ## Owner decisions (not taken)
 
@@ -9,8 +9,8 @@
 
 ## Left
 
-- "call Anna" needs a capitalised name or a kin word: "call anna" (lower case) and "call the dentist" are still answered from the notes, not offered as a reminder.
-- A phrase pair in one note is one subject even when the person meant both ("tom and sara" typed lower case, with a note saying "Tom and Sara went"): the notes win over the guess.
-- "make a checklist for my trip" (one subject, no items) is not read as a checklist note.
-- "put it in my journal" (bare my journal) is left to the note called journal (r6, kept as decided).
-- 1705 (b): the joke note leads by its quote, not by name.
+- "call Anna" needs a capitalised name or a kin word: "call anna" (lower case) and "call the dentist" are still answered from the notes, not offered as a reminder. **Open (checked 2026-11-09)** left as written; no later commit found.
+- A phrase pair in one note is one subject even when the person meant both ("tom and sara" typed lower case, with a note saying "Tom and Sara went"): the notes win over the guess. **Open (checked 2026-11-09)** left as written; no later commit found.
+- "make a checklist for my trip" (one subject, no items) is not read as a checklist note. **Open (checked 2026-11-09)** left as written; no later commit found.
+- "put it in my journal" (bare my journal) is left to the note called journal (r6, kept as decided). **Open (checked 2026-11-09)** left as written; no later commit found.
+- 1705 (b): the joke note leads by its quote, not by name. **Open (checked 2026-11-09)** left as written; no later commit found.
