@@ -7,6 +7,94 @@ Split out of `ROADMAP.md`. Kept, not deleted, for one reason: **three sessions
 have independently rebuilt something that already existed.** This is the file
 that answers "has this been done?" before anyone starts.
 
+## Moved from the plans, 2026-11-09 (book5-1109: MINDMAP_PLAN)
+
+Section 5, the original feature set in build order (Phases 1 to 5, items 1 to 21), found still standing whole although sections 9 to 11 record Phases 1, 2, 4 and 5 and the previews as built and HISTORY records Phase 3 (reference-node picker, import UI, mapChip and mapPreview, maps in chat and the graph). Checked 2026-11-09: read_mindmap, create_mindmap, add_map_node and link_map_nodes, OPML and FreeMind code, perspectives, focus, metrics and templates all exist in src/ and frontend/js/whiteboard-map.js.
+
+From MINDMAP_PLAN.md (lines 158 to 238 before the move), verbatim:
+
+### Phase 1: the map object (foundation)
+1. **`type` and `layout` on the board entry.** `type: "board" | "map"`;
+   `layout: "free" | "tree-right" | "tree-down" | "radial"`. Stored on the
+   board's own `Entry` (a JSON settings column or a dedicated table,
+   `WhiteboardObject`'s `kind` discriminator is the precedent for not adding a
+   table per idea).
+2. **A parent edge for nodes.** Mindmaps are trees; the whiteboard's links are
+   a general graph. Add `parent_id` to whatever carries a map node, and keep the
+   existing free links for cross-branch connections (which every serious
+   mindmapper supports and calls a "relationship" or "cross-link").
+3. **Node kinds**, on the existing discriminator: `topic` (text), `note` (a real
+   `Entry`, this is `WhiteboardNode` today), `document`, `file`, `image`,
+   `link`. A node that *is* a note keeps its identity: editing it edits the note.
+4. **Containment is real.** "any and all text boxes and things that are in the
+   map stay bundled within the map", enforce it: deleting a map deletes its
+   `topic` nodes (they exist only there) and *unlinks* its `note`/`document`/
+   `file` nodes (those live in the library and must survive). Write the test
+   first; this is the rule most likely to be got wrong.
+
+### Phase 2: editing that feels like a mindmap
+5. **Keyboard-first**: Tab = child, Enter = sibling, Shift+Tab = outdent,
+   arrows = navigate, F2/double-click = rename, Delete = subtree with confirm.
+   Copy Obsidian Canvas Mindmap's set; it is the de-facto standard.
+6. **Auto-layout** via Reingold–Tilford with variable node sizes (d3-flextree's
+   algorithm, implemented locally: **no CDN, the app is offline-first**;
+   `frontend/js/graph.js` already hand-rolls layout, so this is a sibling of
+   existing code, not a new dependency).
+7. **Collapse/expand a branch**, with a count badge on the collapsed node.
+8. **Styling that carries meaning, not decoration**: per-node colour, shape and
+   icon; per-edge colour and thickness; inherit-from-parent by default.
+9. **Cross-links** (non-tree edges) rendered distinctly, dashed, per the
+   systems-map convention: and optionally **signed/directional** for causal
+   loop diagrams (Kumu's model).
+
+### Phase 3: the map as a citizen of the app
+10. **Library**: maps live in **Boards & maps** with a Maps filter chip (the
+    user's stated preference), with the existing board preview upgraded to
+    render map structure.
+11. **Attachable and referenceable**: a map can be attached to a note, a
+    document and a chat message, exactly as a file can today
+    (`routes_chat.py`'s `file_ids` is the pattern to copy), and referenced
+    inline with the existing `@` picker.
+12. **Rendered previews and chips** everywhere the user listed: note bodies,
+    the chat transcript, dashboard widgets, the timeline and the graph. One
+    `mapChip()` and one `mapPreview()`, used by all of them, the app's
+    recurring failure is the same object drawn five ways.
+13. **Graph integration**: a map is a node in the graph; its note-nodes are
+    edges from the map to those notes. This is the "decide once" call from
+    §3.3: a map's *membership* is a link, a node's *position* is not.
+
+### Phase 4: AI and export
+14. **The AI can read a map.** A `read_mindmap` tool returning an indented
+    outline (title, then the tree, with each node's kind and any note id), which
+    is the form a small model handles best. Plus `create_mindmap`,
+    `add_map_node`, `link_map_nodes`, gated behind the tool toggles, and
+    written to the *contract* shape the skills reform (Phase A of
+    [AGENT_SKILLS_REFORM.md](AGENT_SKILLS_REFORM.md)) defines, so they are
+    usable by a 4B model.
+15. **AI generation**: "make a map of these notes", the agent proposes a tree,
+    the user accepts or edits it. Every mainstream tool now has this; the
+    differentiator here is that the nodes are *the user's real notes*, not
+    invented text.
+16. **Export**: PNG and SVG from the existing canvas render, and PDF via the
+    same path the app already uses for "Print or save as PDF" in the documents
+    kebab. Also **Markdown outline**, **OPML** and **FreeMind `.mm`**, the
+    interchange formats every mindmapper (Coggle included) reads: cheap, and
+    it makes the feature not a lock-in.
+17. **Import**: OPML, FreeMind `.mm` and indented Markdown, so an existing map
+    can come in.
+
+### Phase 5: utility
+18. **Focus mode** (Kumu): start at one node, reveal the network step by step.
+19. **Filter/perspective**: colour or hide by tag, category, age, or "has a
+    note behind it", reusing the notebook's own metadata, which is the thing
+    a general mindmapper cannot do.
+20. **Map metrics** where they are honest: node count, depth, orphan branches,
+    and, for cross-linked maps, the centrality measures the graph tab already
+    computes.
+21. **Templates**: a few starting shapes (brainstorm, decision tree, project
+    breakdown, cause-and-effect), because an empty canvas is the main reason
+    mindmap features go unused.
+
 ## Moved from the plans, 2026-11-09 (book5-1109: WHITEBOARD_PLAN)
 
 Built blocks found still standing whole in the plan (checked 2026-11-09): the undo coverage audit tables (INBOX 537), the board bar at 820 and INBOX 12, and INBOX 278 (fixed 2026-09-20).
