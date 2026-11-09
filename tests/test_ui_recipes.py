@@ -2406,7 +2406,7 @@ def test_a_folded_settings_group_is_keyed_and_remembered() -> None:
         firsts.setdefault(pane, " open" in attrs)
     assert all(firsts.values()), f"a pane whose first fold starts closed: {firsts}"
     js = with_pieces("settings.js")
-    assert "onSettingsBody(wireSettingsFolds);" in js, "the folds' open state is remembered by wireSettingsFolds"
+    assert 'onSurface("settings", wireSettingsFolds);' in js, "the folds' open state is remembered by wireSettingsFolds"
 
 
 def test_a_folded_group_of_settings_is_the_shared_disclosure_recipe() -> None:

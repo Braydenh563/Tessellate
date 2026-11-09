@@ -77,7 +77,6 @@ $("history-close").addEventListener("click", () =>
   $("history-overlay").classList.add("hidden")
 );
 
-$("shortcuts-reset").addEventListener("click", resetShortcuts);
 
 
 //: **Ctrl+S on the Preferences section**, which the section's own copy has
@@ -1176,7 +1175,7 @@ function restampShortcutHints() {
 }
 localizeStaticChords();
 restampShortcutHints();
-onSettingsBody(() => {
+onSurface("settings", () => {
   localizeStaticChords();
   stampShortcutTitles();
 });
@@ -1494,7 +1493,11 @@ function closeShortcuts() {
   overlay.returnFocus = null;
 }
 
-$("shortcuts-close").addEventListener("click", closeShortcuts);
+//: The sheet is built when it first opens (row 21).
+onSurface("shortcuts", () => {
+  $("shortcuts-close").addEventListener("click", closeShortcuts);
+  $("shortcuts-reset").addEventListener("click", resetShortcuts);
+});
 wireBackdropClose($("shortcuts-overlay"), () => closeShortcuts());
 
 document.addEventListener("keydown", (e) => {
@@ -1906,7 +1909,7 @@ window.addEventListener("appinstalled", () => {
   renderInstallRow();
 });
 //: The Install row paints when the body is built (the button is wired in settings-controls.js).
-onSettingsBody(renderInstallRow);
+onSurface("settings", renderInstallRow);
 
 // The generative brand emblem's initial draw (Wave O) moved to settings.js's
 // own tail (§88.3 item 4): renderBrandLogo() itself stays here (used far

@@ -159,7 +159,7 @@ let noteSort = "newest"; // newest | oldest | az | most-used (Wave J)
 let notesPageSize = localStorage.getItem("notes-page-size") || "all";
 let notesCurrentPage = 1;
 
-const $ = (id) => document.getElementById(id) || settingsBodyFind(id);
+const $ = (id) => document.getElementById(id) || surfaceFind(id);
 const show = (...ids) => ids.forEach((id) => $(id).classList.remove("hidden"));
 const hide = (...ids) => ids.forEach((id) => $(id).classList.add("hidden"));
 

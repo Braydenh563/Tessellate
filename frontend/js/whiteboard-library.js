@@ -1350,7 +1350,7 @@ function wbLibPanelMenu() {
 
 // --- wiring --------------------------------------------------------------------------
 
-onDomReady(() => {
+onSurface("board", () => {
   const side = document.getElementById("wb-sidebar");
   if (!side) return;
   for (const button of side.querySelectorAll("[data-side-tab]")) {
@@ -2179,7 +2179,7 @@ async function wbLayerRestack(li, target, above) {
   wbLayerFocus(li.dataset.key);
 }
 
-onDomReady(() => {
+onSurface("board", () => {
   const tree = document.getElementById("wb-layers-tree");
   if (!tree) return;
   tree.addEventListener("click", (e) => {
@@ -2417,7 +2417,7 @@ function wbPagePresent(id) {
   if (at > 0 && wbPresent) requestAnimationFrame(() => requestAnimationFrame(() => wbPresentShow(at)));
 }
 
-onDomReady(() => {
+onSurface("board", () => {
   const list = document.getElementById("wb-pages-list");
   if (!list) return;
   const rowOf = (e) => e.target.closest("[role='treeitem']");

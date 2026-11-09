@@ -851,7 +851,7 @@ function wbFmtCapFields(kind, parsed, caps) {
   return { startCap: caps.startCap, endCap: caps.endCap, endStyle: undefined, ...wbCapSizeFields(caps) };
 }
 
-onDomReady(() => {
+onSurface("board", () => {
   const panel = wbFormatPanel();
   if (!panel) return;
   wbFormatCommandButtons();

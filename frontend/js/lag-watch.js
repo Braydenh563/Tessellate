@@ -418,7 +418,7 @@ function lagStart() {
   LAG_RAF.on = prefs.get("lagSampler", "on") !== "off";
   lagRafInstall();
   lagErrorsStart();
-  onSettingsBody(lagWireSettings);
+  onSurface("settings", lagWireSettings);
   for (const type of ["pointerdown", "keydown"]) {
     document.addEventListener(type, (e) => { LAG.lastInput = `${type} ${lagTarget(e.target)}`; LAG.lastInputAt = Date.now(); }, { capture: true, passive: true });
   }

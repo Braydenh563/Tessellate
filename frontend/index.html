@@ -6733,6 +6733,9 @@ Link to another note with [[its first few words]]."></textarea>
       </section>
     </div>
     <div id="wb-canvas-view" class="hidden">
+    <!-- Built when a board first opens, or the first lookup of one of its ids (`surfaceBuild`,
+         settings-body.js; audit 1031 row 21): 1,740 elements no boot and no boards list draws. -->
+    <template data-surface="board">
       <!-- **The gestures, on screen, while you still need them.** Reported:
            "concept maps are unlearnable". The map *creates* well, it opens
            with a root selected and a toast naming Tab and Enter, but a toast
@@ -8670,6 +8673,7 @@ Link to another note with [[its first few words]]."></textarea>
         </section>
       </div>
     </aside>
+    </template>
   </div>
   </div>
 
@@ -9393,6 +9397,8 @@ Link to another note with [[its first few words]]."></textarea>
        computed from box height. See core/ocr.py's `extract_regions`. -->
   <div id="ocr-workspace" class="modal-overlay ocr-workspace hidden" role="dialog" data-panel-layout="2"
     aria-modal="true" aria-label="OCR workspace: read text from images and documents">
+    <!-- Built when the workspace first opens (`surfaceBuild("ocr")`, settings-body.js; audit 1031 row 21). -->
+    <template data-surface="ocr">
     <div class="card modal-card ocr-card">
       <!-- **Two rows: the dialog head, then one row of tools** (INBOX 717).
            The head says what you are reading and where you are in it; the
@@ -9743,6 +9749,7 @@ Link to another note with [[its first few words]]."></textarea>
         </div>
       </div>
     </div>
+    </template>
   </div>
 
   <!-- **Managing the dictionary**, asked for by name: "adding to dictionary (a
@@ -10050,7 +10057,7 @@ Link to another note with [[its first few words]]."></textarea>
         <div class="modal-content" tabindex="-1">
           <!-- Built on the first open, or the first lookup of one of its ids (`settingsBodyBuild`,
                settings-body.js; INBOX 1501): 2,700 nodes that cost every boot and none of its views. -->
-          <template id="settings-body-template">
+          <template id="settings-body-template" data-surface="settings">
 
           <!-- Models -->
           <section class="settings-section" id="settings-models">
@@ -15447,6 +15454,8 @@ Link to another note with [[its first few words]]."></textarea>
 
   <div id="shortcuts-overlay" class="modal-overlay hidden" role="dialog"
     aria-modal="true" aria-label="Keyboard shortcuts">
+    <!-- Built when the sheet first opens (`surfaceBuild("shortcuts")`, settings-body.js; audit 1031 row 21). -->
+    <template data-surface="shortcuts">
     <div class="card modal-card" id="shortcuts-card">
       <div class="dialog-head">
         <h2 class="dialog-head-title"><i class="ph ph-keyboard pop-glyph" aria-hidden="true"></i> Keyboard shortcuts</h2>
@@ -15516,6 +15525,7 @@ Link to another note with [[its first few words]]."></textarea>
       </p>
       <p class="muted">Tip: most actions also live in the command palette.</p>
     </div>
+    </template>
   </div>
 
   <!-- **The board's help and shortcut sheet** (INBOX 566, the owner: "the

@@ -26,7 +26,7 @@
 const SETTINGS_CONTROLS_READY = true;
 //: The body these listeners wire is built here if nothing asked for a control
 //: first (settings-body.js; INBOX 1501): every `$` below finds its element.
-settingsBodyBuild();
+surfaceBuild("settings");
 
 // ---- from skills.js ----
 

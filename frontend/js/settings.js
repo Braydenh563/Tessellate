@@ -315,7 +315,7 @@ async function openSettingsModal(section = "models", scrollToId = null) {
   }
   overlayReturnFocus = document.activeElement;
   window.uiSettlingUntil = performance.now() + 400;
-  settingsBodyBuild();
+  surfaceBuild("settings");
   //: **The window's own listeners arrive before the window does** (the gzip
   //: budget, settings-controls.js). Only the first open waits, and only for
   //: that file: once its marker constant exists this stays synchronous, so a
@@ -3943,8 +3943,8 @@ function wireFoldHelps() {
 
 //: The folds are in Settings' lazy body (settings-body.js), not in the page at
 //: boot: run when it is built, or the '?' is never placed and no fold remembers.
-onSettingsBody(wireFoldHelps);
-onSettingsBody(wireSettingsFolds);
+onSurface("settings", wireFoldHelps);
+onSurface("settings", wireSettingsFolds);
 
 // --- Last run of each job (INBOX 438) ------------------------------------------
 //

@@ -773,6 +773,7 @@ function buildShortcutList(list) {
 }
 
 function openShortcuts() {
+  surfaceBuild("shortcuts");
   capturingShortcut = null;
   setShortcutStatus("");
   renderShortcutList();
