@@ -22,7 +22,8 @@ from pathlib import Path
 import pytest
 
 from tessellate.core import filetypes
-from tests._app_js import with_pieces, documents_text
+from tests import _js_scope
+from tests._app_js import documents_text, with_pieces
 
 ROOT = Path(__file__).resolve().parents[1]
 JS = ROOT / "frontend" / "js"
@@ -483,7 +484,8 @@ def test_an_overtime_python_line_is_interrupted_not_its_worker_ended():
 
 # Row 1066: the split's second half had no completions, lint or snippets.
 def test_the_split_carries_completions_lint_and_snippets_but_one_run_panel():
-    ide = (JS / "documents-ide.js").read_text(encoding="utf-8")
+#: documents-ide.js is one closure now (ranked row 37a); these tests slice or run its private functions, so they read it as it was before it was wrapped (`_js_scope.unwrapped`): same code, same assertions.
+    ide = _js_scope.unwrapped((JS / "documents-ide.js").read_text(encoding="utf-8"))
     tools = _fn(ide, "docIdeSplitTools")
     for part in ("CM.lint.linter(docCodeLintSource(CM)", "CM.lint.lintGutter()", "CM.autocomplete.autocompletion(",
                  "docNativeSnippets(CM, type.ext)", "docCodeEditing(CM, type)"):
@@ -495,7 +497,7 @@ def test_the_split_carries_completions_lint_and_snippets_but_one_run_panel():
 
 # Row 1067: Ctrl+K Ctrl+S flashed the palette open before the sheet.
 def test_ctrl_k_waits_for_its_second_chord_before_the_palette():
-    ide = (JS / "documents-ide.js").read_text(encoding="utf-8")
+    ide = _js_scope.unwrapped((JS / "documents-ide.js").read_text(encoding="utf-8"))
     start = ide.index("const DOC_IDE_CHORD_WAIT_MS")
     end = ide.index("}, true);", start) + len("}, true);")
     chord = ide[start:end].replace("window.addEventListener(\"keydown\",", "const onKey =", 1).replace("}, true);", "};", 1)

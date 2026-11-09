@@ -56,14 +56,20 @@ def global_names(source: str) -> set[str]:
 
 
 def unwrapped(source: str) -> str:
-    """A wrapped script's text with its closure lines taken off, so a test that
-    reaches a private name (a vm slice or eval) runs the same code in the
-    context's own scope. Any other script is returned as it is. The code is the
-    file's; only the `(() => {` and `})();` lines are dropped, so what the
-    test checks is unchanged and the closure is covered by the ratchet."""
+    """A wrapped script's text as it was before it was wrapped: the closure
+    lines off and the two-space indent taken back, so a test that slices a
+    function by its head and `\n}\n` tail, or runs it in a vm and calls a
+    private name, checks the same code. Any other script is returned as it is.
+    Only the wrapper changed, so nothing a test asserts is weaker; the closure
+    itself is covered by the ratchet. The foot's `Object.assign(window, ...)`
+    goes too: unwrapped, every name is a global already.
+    A multi-line template literal's continuation lines would lose two spaces
+    too; the files read this way have none."""
     if not is_wrapped(source):
         return source
     lines = source.split("\n")
     first = next(i for i, line in enumerate(lines) if _OPEN.match(line))
     last = max(i for i, line in enumerate(lines) if _CLOSE.match(line))
-    return "\n".join([*lines[:first], *lines[first + 1 : last], *lines[last + 1 :]])
+    body = [line[2:] if line.startswith("  ") else line for line in lines[first + 1 : last]]
+    body = [line for line in body if not re.match(r"Object\.assign\(window, \{ [\w$, ]+ \}\);$", line)]
+    return "\n".join([*lines[:first], *body, *lines[last + 1 :]])
