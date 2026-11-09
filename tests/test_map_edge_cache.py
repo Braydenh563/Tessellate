@@ -30,6 +30,7 @@ const fs = require("fs");
 const ctx = {
   console, Math, Number, Object, Set, Map, JSON, Date, Array, String, RegExp, Promise, Boolean,
   setTimeout: () => 0, clearTimeout() {}, addEventListener() {},
+  onSurface() {},  // settings-body.js: the board's load-time wiring waits for its template (row 21); not under test
   MD_RUN_FONTS: { serif: "s", mono: "m", wide: "w" },
   document: { querySelector: () => null, querySelectorAll: () => [], getElementById: () => null, addEventListener() {} },
   wbState: { objects: [] },
