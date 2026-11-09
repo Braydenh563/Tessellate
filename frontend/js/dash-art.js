@@ -266,6 +266,9 @@
   }
 
   async function renderArtWidget(body) {
+    //: A second draw into the same card (the background art changed) replaced
+    //: nothing: the owner saw two constellations, the first one empty (owner, 2026-11-10).
+    for (const el of body.querySelectorAll(":scope > .art-holder, :scope > .art-caption, :scope > .art-controls, :scope > .art-legend")) el.remove();
     const holder = document.createElement("div");
     holder.className = "art-holder";
     body.appendChild(holder);
