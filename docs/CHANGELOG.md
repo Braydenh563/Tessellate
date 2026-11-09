@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Chat: a follow-on chip no longer asks about the question's own tail ("What else have I saved about book am I reading?", "...times did I run?", "...sara like jazz?"); the note chip stays.
 - Chat: "list my checklists" (also show, what checklists do I have, do I have any checklists) lists the notes that have checklists, with how many items are ticked, instead of two unrelated notes.
 - Chat: "what is the table number" (also room, seat, booking, flight, order, account and similar) is the note line that holds the number, or "None of your notes give a table number", not an unrelated line from a dinner booking or a "general knowledge" reply.
 - Chat: "what do I know about Tom and Sara" (also tell me about, what have I written about, what do my notes say about, anything about, and a bare capitalised pair) answers one block per subject, each searched on its own, instead of one pooled search that dropped a name.

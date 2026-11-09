@@ -5557,6 +5557,20 @@ def _rows_as_polished(out: _Out) -> None:
 _OWN_NEXT = frozenset({"web", "more"})
 
 
+#: The verb a question leaves on its subject ("sara like jazz", "tokyo trip cost"): no name to ask about.
+_TAIL_VERB = re.compile(r"\b(?:likes?|loves?|wants?|needs?|costs?|owes?)\b", re.I)
+
+
+def _topic_chips(kind: str, topic: str) -> list[str]:
+    """The chips about `topic`; none when it carries the question's own verb ("book am I
+    reading") and so is no name to ask about (R3-36, D19)."""
+    from tessellate.ai import composer_body
+
+    if composer_body._OWN_VERB.search(topic) or _TAIL_VERB.search(topic):  # noqa: SLF001
+        return []
+    return [q.format(t=topic) for q in _NEXT_ABOUT.get(kind, _NEXT_ABOUT["fact"])]
+
+
 def _next_asks(kind: str, question: str, rows: list[dict]) -> list[str]:
     """Two or three questions to ask next, built the way a composed answer
     builds them (`composer._next_questions`): a thread through the notes
@@ -5572,7 +5586,7 @@ def _next_asks(kind: str, question: str, rows: list[dict]) -> list[str]:
     topic = _topic(question, members) if members else ""
     if topic and topic != "this" and len(topic) <= 40 and not question_noise.filler_subject(topic) and query_understanding.is_chip_subject(topic):
         topic = _chip_subject(topic, question)
-        said += [q.format(t=topic) for q in _NEXT_ABOUT.get(kind, _NEXT_ABOUT["fact"])]
+        said += _topic_chips(kind, topic)
     return _fresh_chips(said, question)[:3]
 
 
