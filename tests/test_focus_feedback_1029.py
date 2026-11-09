@@ -13,6 +13,8 @@ import textwrap
 
 import pytest
 
+from tests import _js_scope
+
 from tests._app_js import frontend_text
 
 NODE = shutil.which("node")
@@ -116,7 +118,8 @@ def test_one_failure_helper_marks_links_and_returns_focus():
         assert part in helper
     submit = _body(wiring, "async function submitLockForm(")
     assert "errorLine.textContent = error.message" not in submit
-    recovery = frontend_text("account-recovery.js")
+    #: account-recovery.js is one closure now (ranked row 37a); these tests slice or run its private functions, so they read it as it was before it was wrapped (`_js_scope.unwrapped`): same code, same assertions.
+    recovery = _js_scope.unwrapped(frontend_text("account-recovery.js"))
     assert "lockFail(" in _body(recovery, "function forgotError(")
     # Two failures are about a button (print a code, open the logs): nothing to mark, the press stays focused.
     assert recovery.count("forgotError(error.message)") == 2
