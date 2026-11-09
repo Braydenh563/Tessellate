@@ -994,6 +994,246 @@ atlasRigLower.flow = (rig, state, live) => {
     }
   }
 }
+//: **The streams bend, not just drift** (INBOX 1709, the owner: "the in-app companion atlas's nebular flow as well as its lower
+//: body arent animated and have no organic life or feel to them, they are just the same static frame"). The boxes above
+//: move as rigid pieces a pixel or two; the drawings inside them never changed shape. Now the wisps' ribbons, the nebula
+//: band, the dress and the glints are redrawn 10 times a second from their own points, each displaced by a travelling wave
+//: of three octaves (11, 6.7 and 4.8 s, the desk companion's `Flow` periods and weights), so a ribbon sways root to tip with
+//: the tip leading (`ribbon`), the band flows as one stream (`field`) and the hem swings and breathes (`hem`: a taper that
+//: widens and narrows as it sways, still at the waist where the torso joins). A state scales the reach and the speed
+//: (`flowByState`), eased, so walking streams harder and sleep barely moves. Paths are parsed once; a tick is sines and a
+//: string per path, on a 100 ms timer (a path animation would take the figure off the compositor: test_atlas_composite_1101).
+//: Reduced motion, a hidden tab, off screen, dragged and the lite set draw nothing and leave each drawn shape in place.
+atlasRigLower.morph = {
+  tick: 100,
+  periods: [11, 6.7, 4.8],
+  weights: [0.4, 0.6, 1],
+  tip: 3.2,
+  stream: 1,
+  sway: 1.7,
+  breath: 0.03,
+  cmd: /([MCLQZA])|(-?\d*\.?\d+(?:e-?\d+)?)/gi,
+};
+//: A path's points and the letters between them, or null for a path with relative steps. An arc (`A`, a ribbon's round end)
+//: keeps its radii and flags (`pre`) and moves its end point.
+atlasRigLower.morph.parse = (d) => {
+  if (!d || /[^MCLQZA\d.\s,e+-]/.test(d)) return null;
+  const lead = [];
+  const pre = [];
+  const pts = [];
+  let cmd = "";
+  let pending = "";
+  let hold = [];
+  let tail = "";
+  for (const m of d.matchAll(atlasRigLower.morph.cmd)) {
+    if (m[1]) {
+      if (m[1].toUpperCase() === "Z") tail += "Z";
+      else {
+        cmd = m[1].toUpperCase();
+        pending = m[1];
+      }
+      continue;
+    }
+    hold.push(Number(m[2]));
+    if (cmd === "A" ? hold.length === 7 : hold.length === 2) {
+      pre.push(cmd === "A" ? hold.slice(0, 5).join(" ") + " " : "");
+      pts.push(hold[hold.length - 2], hold[hold.length - 1]);
+      lead.push(pending);
+      pending = "";
+      hold = [];
+    }
+  }
+  return !hold.length && pts.length >= 4 ? { lead, pre, pts, tail } : null;
+};
+//: The wave at a place (`prep` kept its delay along the strand as a cosine and sine per octave) for the octaves' angles now
+//: (`angles`, a cosine and sine each): sin(a - s) = sin a cos s - cos a sin s, so a point costs no trigonometry. -1 to 1.
+atlasRigLower.morph.at = (ang, ks, i) => {
+  const w = atlasRigLower.morph.weights;
+  return 0.5 * (w[0] * (ang[1] * ks[i] - ang[0] * ks[i + 1]) + w[1] * (ang[3] * ks[i + 2] - ang[2] * ks[i + 3]) + w[2] * (ang[5] * ks[i + 4] - ang[4] * ks[i + 5]));
+};
+atlasRigLower.morph.angles = (t, phase, out) => {
+  const M = atlasRigLower.morph;
+  for (let h = 0; h < 3; h += 1) {
+    const a = (2 * Math.PI * t) / M.periods[h] + phase * (h + 1);
+    out[h * 2] = Math.cos(a);
+    out[h * 2 + 1] = Math.sin(a);
+  }
+  return out;
+};
+//: The delays a wave has at a point, for `at`: six numbers a point (the octaves' cosine and sine of `s`, `1 + 0.35 h` times it).
+atlasRigLower.morph.delays = (list) => {
+  const ks = new Float32Array(list.length * 6);
+  list.forEach((s, n) => {
+    for (let h = 0; h < 3; h += 1) {
+      ks[n * 6 + h * 2] = Math.cos(s * (1 + h * 0.35));
+      ks[n * 6 + h * 2 + 1] = Math.sin(s * (1 + h * 0.35));
+    }
+  });
+  return ks;
+};
+//: One target: a path and how a point of it moves. `put` writes the moved path.
+atlasRigLower.morph.target = (el, kind, group, phase) => {
+  const p = atlasRigLower.morph.parse(el.getAttribute("d"));
+  if (!p) return null;
+  return { el, kind, group, phase, d0: el.getAttribute("d"), ...p, out: new Array(p.pts.length) };
+};
+//: The ribbons of an astral layer, a glow, core and edge to each, share the core's root and reach.
+atlasRigLower.morph.build = (low) => {
+  const M = atlasRigLower.morph;
+  const targets = [];
+  let phase = 0;
+  const bounds = (list) => {
+    const b = { x0: 1e9, y0: 1e9, x1: -1e9, y1: -1e9 };
+    for (const t of list) for (let i = 0; i < t.pts.length; i += 2) {
+      b.x0 = Math.min(b.x0, t.pts[i]); b.x1 = Math.max(b.x1, t.pts[i]);
+      b.y0 = Math.min(b.y0, t.pts[i + 1]); b.y1 = Math.max(b.y1, t.pts[i + 1]);
+    }
+    return b;
+  };
+  for (const el of low.wisps) {
+    const paths = [...el.querySelectorAll("path.atl-astral-glow, path.atl-astral-core, path.atl-astral-edge")];
+    for (let i = 0; i < paths.length; i += 3) {
+      const trio = paths.slice(i, i + 3).map((e) => M.target(e, "ribbon", null, 0)).filter(Boolean);
+      if (!trio.length) continue;
+      const core = trio[Math.min(1, trio.length - 1)];
+      const g = { rx: core.pts[0], ry: core.pts[1], far: 1 };
+      for (const t of trio) for (let k = 0; k < t.pts.length; k += 2) g.far = Math.max(g.far, Math.hypot(t.pts[k] - g.rx, t.pts[k + 1] - g.ry));
+      phase += 1.9;
+      for (const t of trio) Object.assign(t, { group: g, phase });
+      targets.push(...trio);
+    }
+    for (const e of el.querySelectorAll("path.atl-wisp-glint")) {
+      const t = M.target(e, "field", null, (phase += 0.7));
+      if (t) targets.push(t);
+    }
+  }
+  for (const el of low.neb) {
+    const own = [...el.querySelectorAll("path")].map((e) => M.target(e, "field", null, 0.4)).filter(Boolean);
+    own.forEach((t, i) => (t.phase = 0.4 + i * 0.05));
+    targets.push(...own);
+    for (const e of el.querySelectorAll("ellipse.atl-band-cloud")) {
+      const t = { el, cloud: e, kind: "cloud", cx: Number(e.getAttribute("cx")), cy: Number(e.getAttribute("cy")), phase: (phase += 0.9) };
+      if (Number.isFinite(t.cx) && Number.isFinite(t.cy)) targets.push(t);
+    }
+  }
+  for (const el of low.boxes) {
+    const own = [...el.querySelectorAll("path")].map((e) => M.target(e, "hem", null, 0)).filter(Boolean);
+    const b = bounds(own);
+    for (const t of own) Object.assign(t, { group: { ...b, cx: (b.x0 + b.x1) / 2 } });
+    targets.push(...own);
+  }
+  for (const t of targets) M.prep(t);
+  return targets;
+};
+//: A target's delays, from where each point sits: a ribbon one (down its length), the band two, the dress three.
+atlasRigLower.morph.prep = (t) => {
+  const M = atlasRigLower.morph;
+  const g = t.group;
+  if (t.kind === "cloud") {
+    t.ks = [M.delays([0.2 * t.cy]), M.delays([0.2 * t.cx])];
+    t.w = [];
+    return;
+  }
+  const p = t.pts;
+  const n = p.length / 2;
+  const at = (f) => Array.from({ length: n }, (_, i) => f(p[i * 2], p[i * 2 + 1]));
+  if (t.kind === "ribbon") {
+    const dist = at((x, y) => Math.hypot(x - g.rx, y - g.ry) || 1);
+    t.ks = [M.delays(dist.map((d) => 3.2 * (d / g.far)))];
+    t.perp = Float32Array.from(dist.flatMap((d, i) => [(-(p[i * 2 + 1] - g.ry) / d), (p[i * 2] - g.rx) / d]));
+    t.w = Float32Array.from(dist.map((d) => Math.pow(Math.min(1, d / g.far), 1.4)));
+  } else if (t.kind === "field") t.ks = [M.delays(at((x, y) => 0.16 * y + 0.1 * x)), M.delays(at((x, y) => 0.16 * x - 0.1 * y))];
+  else {
+    t.ks = [M.delays(at((x, y) => 0.12 * y)), M.delays(at((x, y) => 0.05 * y)), M.delays(at((x, y) => 0.1 * x))];
+    t.w = Float32Array.from(at((x, y) => Math.pow(Math.min(1, Math.max(0, (y - g.y0) / Math.max(1, g.y1 - g.y0))), 1.5)));
+  }
+};
+atlasRigLower.morph.draw = (t, clock, gain, ang) => {
+  const M = atlasRigLower.morph;
+  const p = t.pts;
+  const o = t.out;
+  const f = atlasFix;
+  const A = (phase, k) => M.angles(clock, phase, ang[k]);
+  if (t.kind === "cloud") {
+    t.cloud.setAttribute("cx", f(t.cx + M.stream * gain * M.at(A(t.phase, 0), t.ks[0], 0)));
+    t.cloud.setAttribute("cy", f(t.cy + M.stream * gain * M.at(A(t.phase + 1.3, 1), t.ks[1], 0)));
+    return;
+  }
+  const g = t.group;
+  const a0 = A(t.kind === "hem" ? 0.3 : t.phase, 0);
+  const a1 = t.kind === "ribbon" ? a0 : A(t.kind === "hem" ? 2.4 : t.phase + 2.1, 1);
+  const a2 = t.kind === "hem" ? A(1.1, 2) : a0;
+  for (let i = 0, n = 0; i < p.length; i += 2, n += 6) {
+    const x = p[i];
+    const y = p[i + 1];
+    let dx;
+    let dy;
+    if (t.kind === "ribbon") {
+      const amp = M.tip * gain * t.w[i / 2] * M.at(a0, t.ks[0], n);
+      dx = t.perp[i] * amp;
+      dy = t.perp[i + 1] * amp;
+    } else if (t.kind === "field") {
+      dx = M.stream * gain * M.at(a0, t.ks[0], n);
+      dy = 0.7 * M.stream * gain * M.at(a1, t.ks[1], n);
+    } else {
+      const w = t.w[i / 2];
+      dx = w * (M.sway * gain * M.at(a0, t.ks[0], n) + (x - g.cx) * M.breath * gain * M.at(a1, t.ks[1], n));
+      dy = w * 0.3 * gain * M.at(a2, t.ks[2], n);
+    }
+    o[i] = f(x + dx);
+    o[i + 1] = f(y + dy);
+  }
+  let d = "";
+  for (let i = 0, n = 0; i < o.length; i += 2, n += 1) d += `${t.lead[n] || " "}${t.pre[n]}${o[i]} ${o[i + 1]}`;
+  t.el.setAttribute("d", d.trim() + t.tail);
+};
+//: Put every moved path back to the shape it was drawn in (motion off, the lite set).
+atlasRigLower.morph.rest = (low) => {
+  for (const t of low.morph?.targets || []) {
+    if (t.kind === "cloud") {
+      t.cloud.setAttribute("cx", t.cx);
+      t.cloud.setAttribute("cy", t.cy);
+    } else t.el.setAttribute("d", t.d0);
+  }
+  if (low.morph) low.morph.moved = false;
+};
+//: The timer: 100 ms while the figure is live, a second otherwise. It is the rig's, started by `atlasRigLowerAttach`.
+atlasRigLower.morph.run = (rig, buddy) => {
+  const M = atlasRigLower.morph;
+  const low = rig.lower;
+  const m = (low.morph ||= { ang: [[0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0]], targets: null, clock: Math.random() * 40, gain: 1, speed: 1, n: 0, at: 0, moved: false, timer: 0 });
+  const step = () => {
+    clearTimeout(m.timer);
+    const box = rig.box;
+    if (!box.isConnected) return;
+    const root = document.documentElement;
+    const live = atlasMotionOK(box) && !box.classList.contains("atl-off") && !document.hidden && !root.hasAttribute("data-atlas-hidden") && !root.hasAttribute("data-atlas-lite") && !box.closest("#nm-buddy.nm-buddy-dragging");
+    if (!live) {
+      if (m.moved) M.rest(low);
+      m.at = 0;
+      m.timer = setTimeout(step, 1000);
+      return;
+    }
+    const now = performance.now();
+    m.targets ||= M.build(low);
+    const dt = m.at ? Math.min(0.25, (now - m.at) / 1000) : 0;
+    m.at = now;
+    const [reach, rate] = atlasRigLower.flowByState[low.state] || [1, 1];
+    const ease = 1 - Math.exp(-dt / 0.8);
+    m.gain += (reach ** 0.6 - m.gain) * ease;
+    m.speed += (1 / rate - m.speed) * ease;
+    m.clock += dt * m.speed;
+    //: The ribbons every tick (a tip travels furthest); the band, the dress and the glints, which move a pixel, on alternate ticks.
+    m.n += 1;
+    m.targets.forEach((t, i) => {
+      if (t.kind === "ribbon" || (m.n + i) % 2) M.draw(t, m.clock, m.gain, m.ang);
+    });
+    m.moved = true;
+    m.timer = setTimeout(step, M.tick);
+  };
+  clearTimeout(m.timer);
+  m.timer = setTimeout(step, 1500);
+};
 //: **When the lower body spells a state of its own** (atlascat-1108 C5): the base state (`atlasLowerState`) read with how
 //: long it has lasted and what the figure is doing: a fast glide's first 1.5 s billows the hem; cross-legged meditation
 //: is a coil; 40 s of sitting spreads it into a pool; a calm idle ripples for 8 s of every 40 once 24 s in; an excited mood
@@ -1041,6 +1281,7 @@ function atlasRigLowerAttach(box) {
     timer: 0,
   };
   atlasRigWake(box);
+  atlasRigLower.morph.run(box.atlasRig, box.closest("#nm-buddy"));
 }
 //: The lower body's pose for the state: its variant (a new one as the
 //: state begins, and every 5 to 9 seconds at rest, on a timer), and the

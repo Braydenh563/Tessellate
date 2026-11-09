@@ -2,7 +2,7 @@
 
 Generated 2026-11-09 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7928, frontend ids 2652, CSS sections 522, backend routes 649, backend modules 9267, test files 2280, tests 19099, plan headings 1006, app scripts 28, boot scripts 37, script files 265.
+Counts: frontend functions 7928, frontend ids 2652, CSS sections 522, backend routes 649, backend modules 9267, test files 2281, tests 19103, plan headings 1006, app scripts 28, boot scripts 37, script files 265.
 
 ## Frontend functions (7928)
 
@@ -2102,8 +2102,8 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `atlasFrameBudget` | frontend/js/atlas-life.js:464 |
 | `atlasPropLoops` | frontend/js/atlas-life.js:722 |
 | `atlasPropsFrame` | frontend/js/atlas-life.js:750 |
-| `atlasRigLower` | frontend/js/atlas-life.js:1051 |
-| `atlasRigLowerAttach` | frontend/js/atlas-life.js:1027 |
+| `atlasRigLower` | frontend/js/atlas-life.js:1292 |
+| `atlasRigLowerAttach` | frontend/js/atlas-life.js:1267 |
 | `atlasRingLoops` | frontend/js/atlas-life.js:20 |
 | `atlasTailAttach` | frontend/js/atlas-life.js:353 |
 | `atlasTailBend` | frontend/js/atlas-life.js:133 |
@@ -24846,7 +24846,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (19099)
+## Tests (19103)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -24947,6 +24947,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_atlas_lite_mood_1565.py | 1 |
 | tests/test_atlas_masc_1607.py | 7 |
 | tests/test_atlas_micro.py | 10 |
+| tests/test_atlas_morph_1709.py | 4 |
 | tests/test_atlas_rest_1402.py | 10 |
 | tests/test_atlas_rest_motion.py | 3 |
 | tests/test_atlas_shape.py | 51 |
@@ -27839,7 +27840,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Phases 0 to 2: built 2026-09-09 | docs/roadmap/DOCUMENTS_PLAN.md:119 |
 | Phases 0 to 6: built | docs/roadmap/UI_MODERNISATION_PLAN.md:216 |
 | Phases, each with the gate it is finished against | docs/roadmap/MINDMAP_PLAN.md:1296 |
-| Placed (last 20, newest first) | docs/roadmap/INBOX.md:173 |
+| Placed (last 20, newest first) | docs/roadmap/INBOX.md:175 |
 | Placed from Brief 40, 2026-10-10 (does the MCP server work) | docs/roadmap/AGENT_SKILLS_REFORM.md:345 |
 | Placed from Brief 40, 2026-10-10 (research and placement) | docs/roadmap/BACKLOG.md:4176 |
 | Placed from Brief 40, 2026-10-10 (the phone over HTTPS) | docs/roadmap/WORLD_CLASS_PLAN.md:3128 |
