@@ -11,58 +11,63 @@
 //: chat head's ⋯ and the palette's "Private chat". Leaving a private chat that
 //: has messages (New chat, another chat, Delete, closing the page) asks once
 //: and then discards it.
-const PRIVATE_EMPTY_LINE = "Private chat. Nothing here is saved or remembered.";
+(() => {
+  const PRIVATE_EMPTY_LINE = "Private chat. Nothing here is saved or remembered.";
 
-//: The empty pane, in place of the welcome and the starters: one line.
-function chatPrivateEmpty(box) {
-  const empty = document.createElement("div");
-  empty.className = "chat-empty chat-empty-private";
-  const glyph = document.createElement("i");
-  glyph.className = "ph ph-ghost";
-  glyph.setAttribute("aria-hidden", "true");
-  const line = document.createElement("p");
-  line.className = "muted chat-empty-line";
-  line.textContent = PRIVATE_EMPTY_LINE;
-  empty.append(glyph, line);
-  box.appendChild(empty);
-}
+  //: The empty pane, in place of the welcome and the starters: one line.
+  function chatPrivateEmpty(box) {
+    const empty = document.createElement("div");
+    empty.className = "chat-empty chat-empty-private";
+    const glyph = document.createElement("i");
+    glyph.className = "ph ph-ghost";
+    glyph.setAttribute("aria-hidden", "true");
+    const line = document.createElement("p");
+    line.className = "muted chat-empty-line";
+    line.textContent = PRIVATE_EMPTY_LINE;
+    empty.append(glyph, line);
+    box.appendChild(empty);
+  }
 
-function chatPrivateRepaint() {
-  clearChatEmptyState();
-  $("chat-messages").replaceChildren();
-  renderChatEmptyState();
-  syncChatPrivate();
-}
+  function chatPrivateRepaint() {
+    clearChatEmptyState();
+    $("chat-messages").replaceChildren();
+    renderChatEmptyState();
+    syncChatPrivate();
+  }
 
-//: Switch the open, empty chat to private in place, or start a fresh one first.
-function chatPrivateStart() {
-  if (chatConv.private) return;
-  const fresh = chatConv.id === null && !chatConv.turns.length && !chatStreaming;
-  if (!fresh) newChatConversation();
-  chatConv.private = true;
-  chatPrivateRepaint();
-  $("chat-input").focus();
-}
+  //: Switch the open, empty chat to private in place, or start a fresh one first.
+  function chatPrivateStart() {
+    if (chatConv.private) return;
+    const fresh = chatConv.id === null && !chatConv.turns.length && !chatStreaming;
+    if (!fresh) newChatConversation();
+    chatConv.private = true;
+    chatPrivateRepaint();
+    $("chat-input").focus();
+  }
 
-//: The one switch: on starts one, on a private chat it ends it.
-function chatPrivateToggle() {
-  if (!chatConv.private) return chatPrivateStart();
-  if (chatConv.turns.length || chatStreaming?.conv === chatConv) return newChatConversation();
-  chatConv.private = false;
-  chatPrivateRepaint();
-}
+  //: The one switch: on starts one, on a private chat it ends it.
+  function chatPrivateToggle() {
+    if (!chatConv.private) return chatPrivateStart();
+    if (chatConv.turns.length || chatStreaming?.conv === chatConv) return newChatConversation();
+    chatConv.private = false;
+    chatPrivateRepaint();
+  }
 
-//: Asked once, then gone: a stream still running is stopped, the messages are
-//: dropped, and `retry` (the New chat or the chat that was being opened) goes on.
-async function chatPrivateLeave(retry) {
-  const ok = await confirmDialog("Discard this private chat? Its messages are not saved anywhere.", {
-    confirmLabel: "Discard",
-  });
-  if (!ok) return;
-  chatController?.abort();
-  chatConv = { id: null, turns: [] };
-  retry();
-}
+  //: Asked once, then gone: a stream still running is stopped, the messages are
+  //: dropped, and `retry` (the New chat or the chat that was being opened) goes on.
+  async function chatPrivateLeave(retry) {
+    const ok = await confirmDialog("Discard this private chat? Its messages are not saved anywhere.", {
+      confirmLabel: "Discard",
+    });
+    if (!ok) return;
+    chatController?.abort();
+    chatConv = { id: null, turns: [] };
+    retry();
+  }
 
-//: A closed tab is a closed chat: the browser asks before it goes (the one
-//: `beforeunload` guard, navigation.js, reads `chatConv.private`).
+  //: A closed tab is a closed chat: the browser asks before it goes (the one
+  //: `beforeunload` guard, navigation.js, reads `chatConv.private`).
+
+  //: The file's whole surface: what other files and the stand-ins call (ranked row 37a).
+  Object.assign(window, { chatPrivateEmpty, chatPrivateLeave, chatPrivateStart, chatPrivateToggle });
+})();

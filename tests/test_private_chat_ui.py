@@ -19,7 +19,9 @@ PRIVATE_JS = (JS_DIR / "chat-private.js").read_text(encoding="utf-8")
 
 def _function(source: str, name: str) -> str:
     start = source.index(f"function {name}(")
-    return source[start : source.index("\n}\n", start)]
+    line = source[source.rfind("\n", 0, start) + 1 : start]
+    indent = line[: len(line) - len(line.lstrip())]  # a wrapped script (row 37a) indents its functions
+    return source[start : source.index("\n" + indent + "}\n", start)]
 
 
 def test_there_are_three_ways_in():

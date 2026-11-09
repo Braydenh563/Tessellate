@@ -2762,11 +2762,11 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `chatPrivateEmpty` | frontend/js/chat-private.js:17 |
-| `chatPrivateLeave` | frontend/js/chat-private.js:57 |
-| `chatPrivateRepaint` | frontend/js/chat-private.js:30 |
-| `chatPrivateStart` | frontend/js/chat-private.js:38 |
-| `chatPrivateToggle` | frontend/js/chat-private.js:48 |
+| `chatPrivateEmpty` | frontend/js/chat-private.js:18 |
+| `chatPrivateLeave` | frontend/js/chat-private.js:58 |
+| `chatPrivateRepaint` | frontend/js/chat-private.js:31 |
+| `chatPrivateStart` | frontend/js/chat-private.js:39 |
+| `chatPrivateToggle` | frontend/js/chat-private.js:49 |
 
 ### frontend/js/chat-tasks.js (11)
 
@@ -3024,10 +3024,10 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `dashBoardThumb` | frontend/js/dash-boards.js:136 |
-| `dashMapFeature` | frontend/js/dash-boards.js:30 |
-| `dashMapFeatureHeight` | frontend/js/dash-boards.js:20 |
-| `dashRenderBoards` | frontend/js/dash-boards.js:61 |
+| `dashBoardThumb` | frontend/js/dash-boards.js:137 |
+| `dashMapFeature` | frontend/js/dash-boards.js:31 |
+| `dashMapFeatureHeight` | frontend/js/dash-boards.js:21 |
+| `dashRenderBoards` | frontend/js/dash-boards.js:62 |
 
 ### frontend/js/dash-day.js (4)
 
@@ -4810,16 +4810,16 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `entityDateRow` | frontend/js/entity-page.js:139 |
-| `entityIcon` | frontend/js/entity-page.js:14 |
-| `entityMentionRow` | frontend/js/entity-page.js:123 |
-| `entityMenuItems` | frontend/js/entity-page.js:163 |
-| `entitySave` | frontend/js/entity-page.js:151 |
-| `entitySection` | frontend/js/entity-page.js:106 |
-| `entityWhen` | frontend/js/entity-page.js:21 |
-| `openEntitiesSheet` | frontend/js/entity-page.js:201 |
-| `openEntityPage` | frontend/js/entity-page.js:61 |
-| `toastEntityMerge` | frontend/js/entity-page.js:33 |
+| `entityDateRow` | frontend/js/entity-page.js:140 |
+| `entityIcon` | frontend/js/entity-page.js:15 |
+| `entityMentionRow` | frontend/js/entity-page.js:124 |
+| `entityMenuItems` | frontend/js/entity-page.js:164 |
+| `entitySave` | frontend/js/entity-page.js:152 |
+| `entitySection` | frontend/js/entity-page.js:107 |
+| `entityWhen` | frontend/js/entity-page.js:22 |
+| `openEntitiesSheet` | frontend/js/entity-page.js:202 |
+| `openEntityPage` | frontend/js/entity-page.js:62 |
+| `toastEntityMerge` | frontend/js/entity-page.js:34 |
 
 ### frontend/js/entry-card.js (4)
 
@@ -5448,11 +5448,11 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `applyImprove` | frontend/js/improve-panel.js:84 |
-| `closeImprove` | frontend/js/improve-panel.js:38 |
-| `improveReady` | frontend/js/improve-panel.js:27 |
-| `openImprove` | frontend/js/improve-panel.js:3 |
-| `runImprove` | frontend/js/improve-panel.js:44 |
+| `applyImprove` | frontend/js/improve-panel.js:85 |
+| `closeImprove` | frontend/js/improve-panel.js:39 |
+| `improveReady` | frontend/js/improve-panel.js:28 |
+| `openImprove` | frontend/js/improve-panel.js:4 |
+| `runImprove` | frontend/js/improve-panel.js:45 |
 
 ### frontend/js/lag-watch.js (23)
 
@@ -5510,11 +5510,11 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `libraryPickAbout` | frontend/js/library-pick.js:28 |
-| `libraryPickLabel` | frontend/js/library-pick.js:6 |
-| `pickLibraryItemDialog` | frontend/js/library-pick.js:47 |
-| `pickMediaDialog` | frontend/js/library-pick.js:196 |
-| `pickerRememberedSource` | frontend/js/library-pick.js:18 |
+| `libraryPickAbout` | frontend/js/library-pick.js:29 |
+| `libraryPickLabel` | frontend/js/library-pick.js:7 |
+| `pickLibraryItemDialog` | frontend/js/library-pick.js:48 |
+| `pickMediaDialog` | frontend/js/library-pick.js:197 |
+| `pickerRememberedSource` | frontend/js/library-pick.js:19 |
 
 ### frontend/js/library.js (271)
 
@@ -5833,13 +5833,13 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `manualBuild` | frontend/js/manual.js:80 |
-| `manualByName` | frontend/js/manual.js:35 |
-| `manualFilter` | frontend/js/manual.js:126 |
-| `manualMatches` | frontend/js/manual.js:28 |
-| `manualTopicEl` | frontend/js/manual.js:44 |
-| `manualWords` | frontend/js/manual.js:16 |
-| `openManual` | frontend/js/manual.js:152 |
+| `manualBuild` | frontend/js/manual.js:81 |
+| `manualByName` | frontend/js/manual.js:36 |
+| `manualFilter` | frontend/js/manual.js:127 |
+| `manualMatches` | frontend/js/manual.js:29 |
+| `manualTopicEl` | frontend/js/manual.js:45 |
+| `manualWords` | frontend/js/manual.js:17 |
+| `openManual` | frontend/js/manual.js:153 |
 
 ### frontend/js/map-preview.js (10)
 

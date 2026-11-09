@@ -186,8 +186,9 @@ def test_every_utility_has_its_way_in_and_a_guide_topic():
 #: controls): their topics now name them.
 _PROBE = """
 const fs = require("fs"), vm = require("vm");
-const ctx = {}; vm.createContext(ctx);
-vm.runInContext(fs.readFileSync(process.argv[2], "utf8"), ctx);
+const ctx = {}; ctx.window = ctx; vm.createContext(ctx);
+// manual.js is one closure (row 37a): this probe reads two private names by adding them to its export foot.
+vm.runInContext(fs.readFileSync(process.argv[2], "utf8").replace("Object.assign(window, {", "Object.assign(window, { manualMatches, manualWords,"), ctx);
 const topics = JSON.parse(fs.readFileSync(process.argv[3], "utf8")).groups.flatMap((g) => g.topics);
 const out = {};
 for (const q of JSON.parse(fs.readFileSync(process.argv[4], "utf8"))) {
