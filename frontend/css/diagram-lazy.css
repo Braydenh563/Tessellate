@@ -901,7 +901,6 @@
     overscroll-behavior-x: contain;
   }
 
-  /* Named from the split: `:has()` over `> *` re-matches on every change. */
   .dgm-dock > .dgm-addsplit,
   .dgm-dock > .dgm-addsplit ~ *,
   .dgm-dock > :has(~ .dgm-addsplit) {
