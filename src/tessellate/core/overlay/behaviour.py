@@ -22,7 +22,7 @@ import math
 import random
 from typing import Any, NamedTuple
 
-from tessellate.core.overlay import catalogue
+from tessellate.core.overlay import catalogue, wisps
 
 #: Seconds an activity is not repeated after it was done.
 NO_REPEAT = 180.0
@@ -679,6 +679,10 @@ FLOW_MAX = 6.0
 FLOW_CALM_AMP = 0.5
 FLOW_CALM_SLOW = 2.6
 FLOW_Q = 8.0
+#: The hem rises and settles with the breath (INBOX 1683 a, 1696 w): px of the shipped frame at the tip, each strand a beat
+#: after the last (`FLOW_BREATH_LAG` of a cycle across the width), the pose's reach scaling it (a sleeper's is half).
+FLOW_BREATH = 1.5
+FLOW_BREATH_LAG = 0.22
 #: Arrangements by pose (INBOX 1683 B1, B3: "they dont even ahve different variations or change based on body
 #: position"). The shipped frames carry one lower body per pose, so each strand also holds an arrangement of its
 #: own, a new one every `FLOW_ARR_HOLD` seconds (its own length per strand) reached by an eased move over
@@ -959,13 +963,21 @@ class Flow:
         self.k_rise += (rise - self.k_rise) * k
         self.skew += (self.k_speed - 1.0) * dt
 
+    @staticmethod
+    def breath_drop(i: int, breath: float | None, reach: float, calm: bool) -> float:
+        """Strand `i`'s rise with the breath, px (none without a phase): `FLOW_BREATH` scaled by the pose's reach."""
+        if breath is None:
+            return 0.0
+        return FLOW_BREATH * reach * (FLOW_CALM_AMP if calm else 1.0) * wisps.lift(breath, FLOW_BREATH_LAG * i / (FLOW_BANDS - 1))
+
     def settled(self) -> bool:
         return all(abs(p[0]) < 0.3 and abs(p[1]) < 0.3 and abs(v[0]) < 2.0 and abs(v[1]) < 2.0 for p, v in zip(self.pos, self.vel))
 
-    def view(self, t: float, calm: bool = False, frame: str = "", lower: str = "", side: float = 1.0) -> tuple[int, ...]:
+    def view(self, t: float, calm: bool = False, frame: str = "", lower: str = "", side: float = 1.0, breath: float | None = None) -> tuple[int, ...]:
         """Per strand `(tip dx, middle dx, tip dy, sparkle sin, sparkle cos)` in `FLOW_Q` steps (the sparkle in
         tenths), the follow-through folded in: what the warp needs and nothing else. With a `frame` the pose's
-        reach, speed and the strand's arrangement apply (`pose`, `arrangement`); without one, the bare flow."""
+        reach, speed and the strand's arrangement apply (`pose`, `arrangement`); without one, the bare flow. `breath` is
+        the body's breath phase (`wisps.phase`), under which the hem lifts and settles; None, none."""
         if frame:
             self.pose(frame, t, lower, side)
         t = t + self.t0 + (self.skew if frame else 0.0)
@@ -978,6 +990,7 @@ class Flow:
             tip = max(-FLOW_MAX, min(FLOW_MAX, self.sway(i, t, calm) * reach * (FLOW_ARR_SWAY if frame else 1.0) + ax + fx))
             mid = max(-FLOW_MAX, min(FLOW_MAX, self.sway(i, t - 0.9, calm) * reach * (FLOW_ARR_SWAY if frame else 1.0) * (1 - FLOW_MID) + ax * 0.6 + fx * 0.5))
             drop = self.rise(i, t, calm) * reach + ay + fy
+            drop += self.breath_drop(i, breath if frame else None, reach, calm)
             w = math.tau * t / (self.glint_periods[i] * (FLOW_CALM_SLOW if calm else 1.0)) + i * 1.3
             out += [round(tip * FLOW_Q), round(mid * FLOW_Q), round(drop * FLOW_Q), round(math.sin(w) * 10), round(math.cos(w) * 10)]
         return tuple(out)

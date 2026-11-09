@@ -59,7 +59,7 @@ from . import extras
 from . import landing as ld
 from . import presence as pr
 from . import travel as tv
-from . import vitals
+from . import vitals, wisps
 
 #: Seconds.
 MAX_DT = 0.1
@@ -4578,8 +4578,16 @@ class Engine:
         if self._flow_held is not None and self._tail_ticks() and self._tail_fast(now) and 0.0 <= now - self._flow_at < 1.5 * TAIL_LAYER_MS / 1000.0:
             return self._flow_held  # while fast, every other tail tick reuses the body picture: only the tail is redrawn between two warps
         self._flow_at = now
-        self._flow_held = self.flow.view(now, calm=self.reduced, frame=frame or "stand", lower=lower, side=-float(self.facing))
+        self._flow_held = self.flow.view(now, calm=self.reduced, frame=frame or "stand", lower=lower, side=-float(self.facing), breath=self._breath_phase(frame, now))
         return self._flow_held
+
+    def _breath_phase(self, frame: str, now: float) -> float | None:
+        """The body's breath phase for the lower body (`wisps.phase`); an act in place breathes at a sit's pace; none under reduced motion."""
+        if self.reduced:
+            return None
+        life = self._rest_life()
+        period = life[0] if life else REST_LIFE["sit"][0] * self.rest_breath if self.state == "act" else None
+        return wisps.phase(self.state, frame, now, period, self.idle_frames, DRIFT_BREATH_S)
 
     def _tail_ticks(self) -> bool:
         """The layered tail sets the pace of the redraws now (a stand or a sit of a floater, not reduced)."""

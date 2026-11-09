@@ -2,7 +2,7 @@
 
 Generated 2026-11-09 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7951, frontend ids 2652, CSS sections 523, backend routes 649, backend modules 9357, test files 2317, tests 19298, plan headings 1008, app scripts 28, boot scripts 37, script files 266.
+Counts: frontend functions 7951, frontend ids 2652, CSS sections 523, backend routes 649, backend modules 9359, test files 2318, tests 19302, plan headings 1008, app scripts 28, boot scripts 37, script files 266.
 
 ## Frontend functions (7951)
 
@@ -13204,7 +13204,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:164 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (9357)
+## Backend modules (9359)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -22940,16 +22940,16 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 |---|---|
 | `Activity` | src/tessellate/core/overlay/behaviour.py:179 |
 | `Chain` | src/tessellate/core/overlay/behaviour.py:404 |
-| `Flow` | src/tessellate/core/overlay/behaviour.py:860 |
+| `Flow` | src/tessellate/core/overlay/behaviour.py:864 |
 | `Mind` | src/tessellate/core/overlay/behaviour.py:450 |
 | `Pose` | src/tessellate/core/overlay/behaviour.py:53 |
 | `SecondOrder` | src/tessellate/core/overlay/behaviour.py:64 |
-| `TailLayer` | src/tessellate/core/overlay/behaviour.py:791 |
+| `TailLayer` | src/tessellate/core/overlay/behaviour.py:795 |
 | `Trail` | src/tessellate/core/overlay/behaviour.py:602 |
 | `Variation` | src/tessellate/core/overlay/behaviour.py:134 |
 | `_amplitude` | src/tessellate/core/overlay/behaviour.py:649 |
-| `_arr_pick` | src/tessellate/core/overlay/behaviour.py:853 |
-| `_frac` | src/tessellate/core/overlay/behaviour.py:847 |
+| `_arr_pick` | src/tessellate/core/overlay/behaviour.py:857 |
+| `_frac` | src/tessellate/core/overlay/behaviour.py:851 |
 | `_from_catalogue` | src/tessellate/core/overlay/behaviour.py:292 |
 | `_k` | src/tessellate/core/overlay/behaviour.py:196 |
 | `activity_frame` | src/tessellate/core/overlay/behaviour.py:589 |
@@ -22968,8 +22968,8 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `sine_ease` | src/tessellate/core/overlay/behaviour.py:124 |
 | `smooth` | src/tessellate/core/overlay/behaviour.py:114 |
 | `smoother` | src/tessellate/core/overlay/behaviour.py:119 |
-| `tail_bend` | src/tessellate/core/overlay/behaviour.py:770 |
-| `tail_points` | src/tessellate/core/overlay/behaviour.py:778 |
+| `tail_bend` | src/tessellate/core/overlay/behaviour.py:774 |
+| `tail_points` | src/tessellate/core/overlay/behaviour.py:782 |
 | `tier_factor` | src/tessellate/core/overlay/behaviour.py:395 |
 | `utility` | src/tessellate/core/overlay/behaviour.py:439 |
 | `vary` | src/tessellate/core/overlay/behaviour.py:142 |
@@ -23276,6 +23276,13 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `signatures` | src/tessellate/core/overlay/win32.py:192 |
 | `text_zone` | src/tessellate/core/overlay/win32.py:866 |
 | `windows` | src/tessellate/core/overlay/win32.py:728 |
+
+### src/tessellate/core/overlay/wisps.py (2)
+
+| Name | File:line |
+|---|---|
+| `lift` | src/tessellate/core/overlay/wisps.py:27 |
+| `phase` | src/tessellate/core/overlay/wisps.py:12 |
 
 ### src/tessellate/core/overlay/x11.py (29)
 
@@ -24995,7 +25002,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (19298)
+## Tests (19302)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -26594,6 +26601,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_overlay_wander_1696.py | 4 |
 | tests/test_overlay_wave_1696.py | 6 |
 | tests/test_overlay_wave_pointer_1711.py | 4 |
+| tests/test_overlay_wisps_1109.py | 4 |
 | tests/test_overlay_wrap_ceiling_1108.py | 1 |
 | tests/test_overlay_x11.py | 38 |
 | tests/test_overview_counts_1524.py | 3 |
