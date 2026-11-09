@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Checked in the running app (INBOX 1696 bb, s, cc): a touch drag on the in-app companion scrolls nothing (0 px against 211 px on bare ground, the whole 64 x 92 px box is the face under `touch-action: none`); the notes-or-web chips each send their own text when clicked; the renderer and the HTML export draw all eight list markers (disc, circle, square, dash, a., i., 1., 1)).
 - Atlas, the feminine look: her upper lid line is 1.3 wide at full strength (was 0.9 at 0.85), so her moods read a little stronger in a 64 px thumbnail on a light page (mean mood change from calm 17.7 to 18.3 and 19.3; 2x and dark within 0.2) (INBOX 1696 r).
 - Desk companion: a slipped hold grips again only when the edge moved less than half its height (a nudged window is still scrabbled back onto; one moved further is let go, never held in the air). In-app companion: the scroll-end recheck no longer passes the scroll event as its frame count.
 - Companion (INBOX 1711): sneeze, hiccup, a self-hug and a foot tap now move the arms, eyes and tail in the app and smile now and then; on the desk each leads into a short chain (a sneeze into a groom, a foot tap into a look round and a think, a hug into a yawn and a sit), so the hour keeps its chains (10 on the eight test seed-hours, was 9 after the acts landed).
