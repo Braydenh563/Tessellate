@@ -272,3 +272,16 @@ def test_the_tail_is_drawn_on_a_flow_warped_frame_at_both_dpis(spr: sp.SpriteSet
     assert other.bgra != drawn.bgra
     left, top, right, bottom = drawn.box
     assert 0 <= left < right <= w and 0 <= top < bottom <= h
+
+
+@pytest.mark.parametrize("dpi", [96, 192])
+@pytest.mark.parametrize("flip", [False, True])
+def test_the_flow_warp_skips_clear_quads_without_changing_a_pixel(spr: sp.SpriteSet, flip: bool, dpi: int, monkeypatch: pytest.MonkeyPatch) -> None:
+    """The occupancy skip (deskperf-1109) is an optimisation: every quad transformed gives the same bytes and box."""
+    flow = (30, -20, 10, 7, -5, -12, 18, 4, 3, 9) * (bh.FLOW_BANDS // 2) + (3, -2, 1, 0, 2) * (bh.FLOW_BANDS % 2)
+    pose = (1.04, 0.97, 0.03, 4.0)
+    fast = spr.posed("stand", dpi, flip, pose, flow)
+    spr._posed.clear()
+    monkeypatch.setattr(sp.SpriteSet, "_occupancy", lambda self, image: lambda *box: True)
+    full = spr.posed("stand", dpi, flip, pose, flow)
+    assert (fast.bgra, fast.box) == (full.bgra, full.box)
