@@ -57,6 +57,30 @@
   #tab-bar button {
     min-height: var(--target-min);
   }
+  /* The 1717 zoom pass: at 720 (200 % zoom) the labelled strip needed 100px more than
+     the row beside the logo and the buttons had, so it took a row of its own
+     (108px bar). Only the chosen tab keeps its caption here, as the 360 to
+     480 band already does; the others are icons at the 44px target, named by
+     their `aria-label`, and the wordmark (width 0 in a flex row, still a gap)
+     is out of the row. */
+  #tab-bar button:not(.active) .tab-label {
+    display: none;
+  }
+  #tab-bar button.active {
+    flex: 0 1 auto;
+    padding-inline: var(--space-2);
+  }
+  header#top-bar {
+    --header-pad-x: var(--space-4);
+    gap: var(--space-2);
+  }
+  header#top-bar h1 {
+    display: none;
+  }
+  #top-bar .header-controls,
+  #top-bar .header-cluster {
+    gap: var(--space-1);
+  }
 }
 /* --- band 2 (820 to 1200): the tabs keep their names, set small ----------
    **The tabs keep their names on a laptop** (WORLD_CLASS_PLAN 22.1.3 as the
@@ -2586,7 +2610,12 @@ header#top-bar[data-scrolled="1"],
     display: none;
   }
   .chat-dock-controls:has(> .chat-tool-group-mode > .select-shell) > .chat-tool-group-mode {
-    flex: 1 1 100%;
+    /* The 1717 zoom pass: a basis, not the whole row. At 150 to 200 % zoom the strip
+       is 597 to 800px and Skills, Web and Plan (269px) left 316px, room for
+       the segment, the gear and a model picker at its 5rem floor, but the
+       100% basis sent the mode row under them anyway. 16rem is the room it
+       needs to share the line; any less and it still takes the line below. */
+    flex: 1 1 16rem;
     flex-wrap: nowrap;
     order: 2;
   }
@@ -2742,7 +2771,8 @@ header#top-bar[data-scrolled="1"],
   /* The basis is what decides when a zone wraps (08-consistency.css): a zone
      that is only a search asks for the search's own floor, so the Documents
      dock's 328px of actions fit beside it at 720 instead of one pixel short. */
-  .dock .dock-find:has(> .dock-search:only-child) {
+  .dock .dock-find:has(> .dock-search:only-child),
+  .dock .dock-find:has(> .dock-search):not(:has(> :not(.dock-search, .hidden, :empty))) {
     flex-basis: 8rem;
   }
 }
@@ -2754,4 +2784,74 @@ header#top-bar[data-scrolled="1"],
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+/* 4. **A count line may be cut before the row is.** The Timeline's "11 items
+      (6 notes, 2 maps, 3 documents) · 1 day" is 275px, and its identity zone
+      is `flex: 0 0 auto` (08), so at 720 the dock's actions fell to a second
+      row (108px). Under 1100 the zone takes a small basis and grows to its
+      content, so the chip ellipsises (it already can) only when the row has
+      no room, and its text is its title (`setTimelineCount`). */
+@media (max-width: 1099.98px) {
+  .dock > .dock-identity:has(> .dock-chip) {
+    flex: 1 1 8rem;
+    max-width: max-content;
+    min-width: 0;
+  }
+}
+/* 5. **The day strip's well asks for less under 1100.** `flex: 1 1 26rem` is
+      the row break: at 720 the arrows, the month (a fixed 9.5rem) and the year
+      select take 330px, so 416px more sent the seven days under them. Seven
+      44px days need 308px (they stack weekday over number below 34rem). */
+@media (max-width: 1099.98px) {
+  .timeline-days {
+    flex-basis: 19rem;
+  }
+}
+/* 6. **A code document's tools keep one row under 1100.** Format, Run,
+      Assistant, Snippets, Edit/Read, Focus and the menu measured 600px in a
+      544px head at 720, so the menu fell to a row of its own. Format and Run
+      lose their words here (the `.toolbar-word` recipe, as the note strip
+      does at every width): `aria-label` names the button and its title is the
+      hover text. The Recent head's New does the same, and the title row's
+      basis is smaller, so a document whose tools fit beside its name keeps
+      one line. */
+@media (max-width: 1099.98px) {
+  .doc-dock .doc-actions .toolbar-word,
+  #doc-sidebar-list .toolbar-word {
+    display: none;
+  }
+  .doc-dock .doc-actions button:has(> .toolbar-word),
+  #doc-sidebar-list button:has(> .toolbar-word) {
+    width: var(--control-h);
+    padding-inline: 0;
+    justify-content: center;
+  }
+  .doc-dock .doc-actions button > .ph-lead:has(~ .toolbar-word),
+  #doc-sidebar-list button > .ph-lead:has(~ .toolbar-word) {
+    margin-inline-end: 0;
+    translate: none;
+  }
+  .doc-dock > .doc-dock-identity {
+    flex-basis: 12rem;
+  }
+  /* The Recent head: Recent, help, New, templates and diagram in a narrow
+     column need the actions' gaps a step closer to fit one line. */
+  #doc-sidebar-list > .sidebar-head,
+  #doc-sidebar-list > .sidebar-head > .row {
+    column-gap: var(--space-1);
+  }
+}
+/* 7. **The diagram foot's two buttons share the pane.** Add block and Connect
+      are 115 and 105px and the narrow pane at 125 and 150 % is 209px, so
+      Connect dropped under Add block. Their sides close in two steps (194px
+      together) and they split the row, so a pane that holds both keeps them
+      on one line. */
+.dgm-foot {
+  column-gap: var(--space-1);
+}
+.dgm-foot > .small {
+  flex: 1 1 auto;
+  min-width: 0;
+  justify-content: center;
+  padding-inline: var(--space-1);
 }
