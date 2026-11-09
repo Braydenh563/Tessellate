@@ -496,7 +496,9 @@ function wbClearCanvasRectCache() {
 
 function wbCanvasOriginRect() {
   if (wbCanvasRectCache) return wbCanvasRectCache;
-  const rect = document.getElementById("whiteboard-container").getBoundingClientRect();
+  //: Null until the board's template is stamped (row 21): a window resize before
+  //: the first board open must not throw (e2e editor-keys at 700 px).
+  const rect = document.getElementById("whiteboard-container")?.getBoundingClientRect() ?? null;
   wbCanvasRectCache = rect;
   return rect;
 }
@@ -748,7 +750,7 @@ function wbScheduleCull() {
     //: measured once per gesture, and the canvas cannot change size while a
     //: pointer is down on it.
     const rect = wbCanvasOriginRect();
-    wbCullNow(undefined, rect ? { width: rect.width, height: rect.height } : undefined);
+    if (rect) wbCullNow(undefined, { width: rect.width, height: rect.height });
   });
 }
 
