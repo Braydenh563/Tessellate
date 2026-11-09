@@ -45,7 +45,7 @@ from pathlib import Path
 
 from tessellate.ai import composer, composer_doings, composer_done, composer_frame, composer_threads, composer_lists, composer_money, composer_slots, composer_sum, composer_tables, filed_name, glossary, question_noise, realise, verdicts
 from tessellate.ai import composer_answer, composer_brief, composer_nth, composer_oneword, composer_property, composer_small
-from tessellate.ai import composer_ask, composer_clean, factgraph
+from tessellate.ai import composer_ahead, composer_ask, composer_clean, factgraph
 from tessellate.ai import composer_chip_subject
 from tessellate.ai import composer_read
 from tessellate.ai import composer_select
@@ -808,6 +808,15 @@ def _fact_names_title(view, fact: str) -> bool:  # noqa: ANN001
     return bool(re.search(rf"\b{re.escape(title)}\b(?!['\u2019]s)", fact, flags))
 
 
+def _when_tail(view, fact: str, today: date) -> str:  # noqa: ANN001
+    """", written on 11 August, ..." after a fact, or, for a fact whose own day is still ahead, how far off it
+    is (", in 23 days"): the write date is noise beside it (R9-17)."""
+    ahead = composer_ahead.distance(fact, today)
+    if ahead and _TIMED.get():
+        return f", {ahead}"
+    return f", written {_said_day(view.written, today)}" if _TIMED.get() and not _says_day(fact, view.written, today) else ""
+
+
 def _from_source(view, fact: str, today: date) -> str:  # noqa: ANN001
     """"Fact, from your note of 3 March." for a note; a document, board or
     map is said as itself by its title (INBOX 1357, class F: "Hamlet delays
@@ -825,7 +834,7 @@ def _from_source(view, fact: str, today: date) -> str:  # noqa: ANN001
         #: one of your notes" read as a tail on the person's own words).
         return f"{fact}."
     #: Not again when the fact already says the day it was written.
-    when = f", written {_said_day(view.written, today)}" if _TIMED.get() and not _says_day(fact, view.written, today) else ""
+    when = _when_tail(view, fact, today)
     #: A fact that already names the note is not "from" it again (audit 1031 C36).
     if not getattr(view, "titled", False) or _fact_names_title(view, fact):
         return f"{fact}{when}."
