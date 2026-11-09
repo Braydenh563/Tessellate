@@ -23,7 +23,9 @@ def rest_life(gait: str, look: str, state: str, seed: int, secs: float = 120.0, 
         e.update(0.0)
         if state != "stand":
             e._enter(state, 0.0)
-            e.state_until = float("inf")
+        # The spell never ends, so `_decide` picks no act either (1109: once the D3 acts took the catalogue's
+        # weights, seed 2's first stand picked read_book, whose 8 px drop counted as a move of the rest).
+        e.state_until = float("inf")
         e.next_ambient = 5.0  # the first blink does not wait out the whole run
         out = e.update(0.0)
         t, wakes, draws, moves = 0.0, 0, 0, 0
