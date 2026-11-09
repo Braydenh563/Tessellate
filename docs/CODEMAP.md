@@ -2,7 +2,7 @@
 
 Generated 2026-11-09 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7951, frontend ids 2652, CSS sections 523, backend routes 649, backend modules 9366, test files 2319, tests 19309, plan headings 1008, app scripts 28, boot scripts 37, script files 266.
+Counts: frontend functions 7951, frontend ids 2652, CSS sections 523, backend routes 649, backend modules 9368, test files 2323, tests 19326, plan headings 1008, app scripts 28, boot scripts 37, script files 266.
 
 ## Frontend functions (7951)
 
@@ -13204,7 +13204,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:164 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (9366)
+## Backend modules (9368)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -14813,68 +14813,68 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `_Helpers` | src/tessellate/ai/composer_lists.py:110 |
-| `_bare_kind` | src/tessellate/ai/composer_lists.py:791 |
-| `_block` | src/tessellate/ai/composer_lists.py:528 |
-| `_cite` | src/tessellate/ai/composer_lists.py:344 |
-| `_counted` | src/tessellate/ai/composer_lists.py:454 |
-| `_dated` | src/tessellate/ai/composer_lists.py:352 |
-| `_dates` | src/tessellate/ai/composer_lists.py:621 |
-| `_day` | src/tessellate/ai/composer_lists.py:331 |
-| `_due_candidates` | src/tessellate/ai/composer_lists.py:680 |
-| `_due_for` | src/tessellate/ai/composer_lists.py:695 |
-| `_due_window` | src/tessellate/ai/composer_lists.py:652 |
-| `_filed` | src/tessellate/ai/composer_lists.py:569 |
-| `_filed_words` | src/tessellate/ai/composer_lists.py:674 |
-| `_find` | src/tessellate/ai/composer_lists.py:356 |
-| `_holding` | src/tessellate/ai/composer_lists.py:868 |
-| `_holding_detail` | src/tessellate/ai/composer_lists.py:857 |
-| `_holding_items` | src/tessellate/ai/composer_lists.py:806 |
-| `_holding_items_of` | src/tessellate/ai/composer_lists.py:835 |
-| `_holding_kind` | src/tessellate/ai/composer_lists.py:813 |
-| `_holding_sentences` | src/tessellate/ai/composer_lists.py:825 |
-| `_holding_tail` | src/tessellate/ai/composer_lists.py:772 |
-| `_holds_all` | src/tessellate/ai/composer_lists.py:895 |
-| `_line_of_item` | src/tessellate/ai/composer_lists.py:844 |
-| `_listed` | src/tessellate/ai/composer_lists.py:583 |
-| `_mentions` | src/tessellate/ai/composer_lists.py:507 |
-| `_more_on_the_right` | src/tessellate/ai/composer_lists.py:335 |
-| `_named_by_filing` | src/tessellate/ai/composer_lists.py:548 |
-| `_names_only_a_kind` | src/tessellate/ai/composer_lists.py:801 |
-| `_naming` | src/tessellate/ai/composer_lists.py:447 |
-| `_only_a_window` | src/tessellate/ai/composer_lists.py:170 |
-| `_order` | src/tessellate/ai/composer_lists.py:421 |
-| `_ordered` | src/tessellate/ai/composer_lists.py:471 |
-| `_plural` | src/tessellate/ai/composer_lists.py:340 |
-| `_plural_words` | src/tessellate/ai/composer_lists.py:598 |
-| `_q` | src/tessellate/ai/composer_lists.py:106 |
-| `_say_due` | src/tessellate/ai/composer_lists.py:717 |
-| `_sentence_at` | src/tessellate/ai/composer_lists.py:348 |
-| `_the` | src/tessellate/ai/composer_lists.py:380 |
-| `_the_and_verb` | src/tessellate/ai/composer_lists.py:390 |
-| `_title` | src/tessellate/ai/composer_lists.py:556 |
-| `_trim` | src/tessellate/ai/composer_lists.py:536 |
-| `_until` | src/tessellate/ai/composer_lists.py:395 |
-| `_until_day` | src/tessellate/ai/composer_lists.py:613 |
-| `_upcoming` | src/tessellate/ai/composer_lists.py:602 |
-| `_which` | src/tessellate/ai/composer_lists.py:486 |
-| `_without` | src/tessellate/ai/composer_lists.py:900 |
-| `answer` | src/tessellate/ai/composer_lists.py:925 |
-| `bind` | src/tessellate/ai/composer_lists.py:120 |
-| `clean` | src/tessellate/ai/composer_lists.py:91 |
-| `computed_kind` | src/tessellate/ai/composer_lists.py:320 |
-| `counted_filing` | src/tessellate/ai/composer_lists.py:967 |
-| `counted_order` | src/tessellate/ai/composer_lists.py:234 |
-| `counted_things` | src/tessellate/ai/composer_lists.py:954 |
-| `due_ask` | src/tessellate/ai/composer_lists.py:207 |
-| `holding_ask` | src/tessellate/ai/composer_lists.py:752 |
-| `holds_days` | src/tessellate/ai/composer_lists.py:931 |
-| `kind` | src/tessellate/ai/composer_lists.py:298 |
-| `list_order` | src/tessellate/ai/composer_lists.py:226 |
-| `list_target` | src/tessellate/ai/composer_lists.py:125 |
-| `mention_subject` | src/tessellate/ai/composer_lists.py:501 |
-| `window_of` | src/tessellate/ai/composer_lists.py:159 |
-| `without_ask` | src/tessellate/ai/composer_lists.py:275 |
+| `_Helpers` | src/tessellate/ai/composer_lists.py:111 |
+| `_bare_kind` | src/tessellate/ai/composer_lists.py:792 |
+| `_block` | src/tessellate/ai/composer_lists.py:529 |
+| `_cite` | src/tessellate/ai/composer_lists.py:345 |
+| `_counted` | src/tessellate/ai/composer_lists.py:455 |
+| `_dated` | src/tessellate/ai/composer_lists.py:353 |
+| `_dates` | src/tessellate/ai/composer_lists.py:622 |
+| `_day` | src/tessellate/ai/composer_lists.py:332 |
+| `_due_candidates` | src/tessellate/ai/composer_lists.py:681 |
+| `_due_for` | src/tessellate/ai/composer_lists.py:696 |
+| `_due_window` | src/tessellate/ai/composer_lists.py:653 |
+| `_filed` | src/tessellate/ai/composer_lists.py:570 |
+| `_filed_words` | src/tessellate/ai/composer_lists.py:675 |
+| `_find` | src/tessellate/ai/composer_lists.py:357 |
+| `_holding` | src/tessellate/ai/composer_lists.py:869 |
+| `_holding_detail` | src/tessellate/ai/composer_lists.py:858 |
+| `_holding_items` | src/tessellate/ai/composer_lists.py:807 |
+| `_holding_items_of` | src/tessellate/ai/composer_lists.py:836 |
+| `_holding_kind` | src/tessellate/ai/composer_lists.py:814 |
+| `_holding_sentences` | src/tessellate/ai/composer_lists.py:826 |
+| `_holding_tail` | src/tessellate/ai/composer_lists.py:773 |
+| `_holds_all` | src/tessellate/ai/composer_lists.py:896 |
+| `_line_of_item` | src/tessellate/ai/composer_lists.py:845 |
+| `_listed` | src/tessellate/ai/composer_lists.py:584 |
+| `_mentions` | src/tessellate/ai/composer_lists.py:508 |
+| `_more_on_the_right` | src/tessellate/ai/composer_lists.py:336 |
+| `_named_by_filing` | src/tessellate/ai/composer_lists.py:549 |
+| `_names_only_a_kind` | src/tessellate/ai/composer_lists.py:802 |
+| `_naming` | src/tessellate/ai/composer_lists.py:448 |
+| `_only_a_window` | src/tessellate/ai/composer_lists.py:171 |
+| `_order` | src/tessellate/ai/composer_lists.py:422 |
+| `_ordered` | src/tessellate/ai/composer_lists.py:472 |
+| `_plural` | src/tessellate/ai/composer_lists.py:341 |
+| `_plural_words` | src/tessellate/ai/composer_lists.py:599 |
+| `_q` | src/tessellate/ai/composer_lists.py:107 |
+| `_say_due` | src/tessellate/ai/composer_lists.py:718 |
+| `_sentence_at` | src/tessellate/ai/composer_lists.py:349 |
+| `_the` | src/tessellate/ai/composer_lists.py:381 |
+| `_the_and_verb` | src/tessellate/ai/composer_lists.py:391 |
+| `_title` | src/tessellate/ai/composer_lists.py:557 |
+| `_trim` | src/tessellate/ai/composer_lists.py:537 |
+| `_until` | src/tessellate/ai/composer_lists.py:396 |
+| `_until_day` | src/tessellate/ai/composer_lists.py:614 |
+| `_upcoming` | src/tessellate/ai/composer_lists.py:603 |
+| `_which` | src/tessellate/ai/composer_lists.py:487 |
+| `_without` | src/tessellate/ai/composer_lists.py:901 |
+| `answer` | src/tessellate/ai/composer_lists.py:926 |
+| `bind` | src/tessellate/ai/composer_lists.py:121 |
+| `clean` | src/tessellate/ai/composer_lists.py:92 |
+| `computed_kind` | src/tessellate/ai/composer_lists.py:321 |
+| `counted_filing` | src/tessellate/ai/composer_lists.py:968 |
+| `counted_order` | src/tessellate/ai/composer_lists.py:235 |
+| `counted_things` | src/tessellate/ai/composer_lists.py:955 |
+| `due_ask` | src/tessellate/ai/composer_lists.py:208 |
+| `holding_ask` | src/tessellate/ai/composer_lists.py:753 |
+| `holds_days` | src/tessellate/ai/composer_lists.py:932 |
+| `kind` | src/tessellate/ai/composer_lists.py:299 |
+| `list_order` | src/tessellate/ai/composer_lists.py:227 |
+| `list_target` | src/tessellate/ai/composer_lists.py:126 |
+| `mention_subject` | src/tessellate/ai/composer_lists.py:502 |
+| `window_of` | src/tessellate/ai/composer_lists.py:160 |
+| `without_ask` | src/tessellate/ai/composer_lists.py:276 |
 
 ### src/tessellate/ai/composer_mermaid.py (40)
 
@@ -17633,8 +17633,8 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `days_named` | src/tessellate/ai/recognise.py:344 |
 | `days_question` | src/tessellate/ai/recognise.py:2658 |
 | `days_since` | src/tessellate/ai/recognise.py:1042 |
-| `distances` | src/tessellate/ai/recognise.py:3872 |
-| `event_window_asked` | src/tessellate/ai/recognise.py:3865 |
+| `distances` | src/tessellate/ai/recognise.py:3874 |
+| `event_window_asked` | src/tessellate/ai/recognise.py:3867 |
 | `find` | src/tessellate/ai/recognise.py:2250 |
 | `first_of` | src/tessellate/ai/recognise.py:853 |
 | `hemisphere_of` | src/tessellate/ai/recognise.py:1924 |
@@ -17645,7 +17645,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `looks_dated` | src/tessellate/ai/recognise.py:2108 |
 | `measures` | src/tessellate/ai/recognise.py:3830 |
 | `mid_sentence` | src/tessellate/ai/recognise.py:2244 |
-| `months_named` | src/tessellate/ai/recognise.py:3877 |
+| `months_named` | src/tessellate/ai/recognise.py:3879 |
 | `names_a_day` | src/tessellate/ai/recognise.py:2117 |
 | `neighbour_day` | src/tessellate/ai/recognise.py:272 |
 | `next_occurrence` | src/tessellate/ai/recognise.py:834 |
@@ -17675,7 +17675,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `told_as_past` | src/tessellate/ai/recognise.py:2705 |
 | `window` | src/tessellate/ai/recognise.py:2263 |
 | `without_ahead_words` | src/tessellate/ai/recognise.py:1480 |
-| `without_event_window_tail` | src/tessellate/ai/recognise.py:3858 |
+| `without_event_window_tail` | src/tessellate/ai/recognise.py:3860 |
 | `without_windows` | src/tessellate/ai/recognise.py:2103 |
 
 ### src/tessellate/ai/records.py (24)
@@ -22954,16 +22954,16 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 |---|---|
 | `Activity` | src/tessellate/core/overlay/behaviour.py:179 |
 | `Chain` | src/tessellate/core/overlay/behaviour.py:404 |
-| `Flow` | src/tessellate/core/overlay/behaviour.py:860 |
+| `Flow` | src/tessellate/core/overlay/behaviour.py:864 |
 | `Mind` | src/tessellate/core/overlay/behaviour.py:450 |
 | `Pose` | src/tessellate/core/overlay/behaviour.py:53 |
 | `SecondOrder` | src/tessellate/core/overlay/behaviour.py:64 |
-| `TailLayer` | src/tessellate/core/overlay/behaviour.py:791 |
+| `TailLayer` | src/tessellate/core/overlay/behaviour.py:795 |
 | `Trail` | src/tessellate/core/overlay/behaviour.py:602 |
 | `Variation` | src/tessellate/core/overlay/behaviour.py:134 |
 | `_amplitude` | src/tessellate/core/overlay/behaviour.py:649 |
-| `_arr_pick` | src/tessellate/core/overlay/behaviour.py:853 |
-| `_frac` | src/tessellate/core/overlay/behaviour.py:847 |
+| `_arr_pick` | src/tessellate/core/overlay/behaviour.py:857 |
+| `_frac` | src/tessellate/core/overlay/behaviour.py:851 |
 | `_from_catalogue` | src/tessellate/core/overlay/behaviour.py:292 |
 | `_k` | src/tessellate/core/overlay/behaviour.py:196 |
 | `activity_frame` | src/tessellate/core/overlay/behaviour.py:589 |
@@ -22982,8 +22982,8 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `sine_ease` | src/tessellate/core/overlay/behaviour.py:124 |
 | `smooth` | src/tessellate/core/overlay/behaviour.py:114 |
 | `smoother` | src/tessellate/core/overlay/behaviour.py:119 |
-| `tail_bend` | src/tessellate/core/overlay/behaviour.py:770 |
-| `tail_points` | src/tessellate/core/overlay/behaviour.py:778 |
+| `tail_bend` | src/tessellate/core/overlay/behaviour.py:774 |
+| `tail_points` | src/tessellate/core/overlay/behaviour.py:782 |
 | `tier_factor` | src/tessellate/core/overlay/behaviour.py:395 |
 | `utility` | src/tessellate/core/overlay/behaviour.py:439 |
 | `vary` | src/tessellate/core/overlay/behaviour.py:142 |
@@ -23290,6 +23290,13 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `signatures` | src/tessellate/core/overlay/win32.py:192 |
 | `text_zone` | src/tessellate/core/overlay/win32.py:866 |
 | `windows` | src/tessellate/core/overlay/win32.py:728 |
+
+### src/tessellate/core/overlay/wisps.py (2)
+
+| Name | File:line |
+|---|---|
+| `lift` | src/tessellate/core/overlay/wisps.py:27 |
+| `phase` | src/tessellate/core/overlay/wisps.py:12 |
 
 ### src/tessellate/core/overlay/x11.py (29)
 
@@ -25009,7 +25016,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (19309)
+## Tests (19326)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -25520,6 +25527,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_composer_r9_tick_1109.py | 1 |
 | tests/test_composer_r9_typos_1109.py | 3 |
 | tests/test_composer_r9_values_1109.py | 5 |
+| tests/test_composer_r9_words_1109.py | 11 |
 | tests/test_composer_ranker_1029.py | 12 |
 | tests/test_composer_redos_1026.py | 4 |
 | tests/test_composer_redos_1109.py | 5 |
@@ -26610,6 +26618,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_overlay_wander_1696.py | 4 |
 | tests/test_overlay_wave_1696.py | 6 |
 | tests/test_overlay_wave_pointer_1711.py | 4 |
+| tests/test_overlay_wisps_1109.py | 4 |
 | tests/test_overlay_wrap_ceiling_1108.py | 1 |
 | tests/test_overlay_x11.py | 38 |
 | tests/test_overview_counts_1524.py | 3 |
@@ -27334,6 +27343,8 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_zoom_frame_1508.py | 3 |
 | tests/test_zoom_wheel_delta.py | 3 |
 | tests/test_zoom_wrap_1717.py | 18 |
+| tests/test_zz_probe3_tmp.py | 1 |
+| tests/test_zz_probe_tmp.py | 1 |
 
 ## Plan headings (1008)
 

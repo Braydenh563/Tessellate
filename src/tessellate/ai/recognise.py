@@ -3850,14 +3850,16 @@ def measures(text: str) -> list[Measure]:
 # --- round 9 readers (c11): the event window at the end of a question, and a distance --------------------------------
 
 _EVENT_WINDOW_WORDS = r"this week|next week|this weekend|next weekend|this month|next month|today|tomorrow|tonight"
-_EVENT_TAIL = re.compile(r"\s+(?:this|next)\s+(?:week|month|weekend)\s*[?.!]*$|\s+(?:today|tomorrow|tonight)\s*[?.!]*$", re.I)
-_EVENT_ASK = re.compile(rf"^\W*(?:is|are|will)\s+(?:the|my|our|a)\b.*?\s+(?P<window>{_EVENT_WINDOW_WORDS})\s*[?.!]*$", re.I)
+#: Both read text whose whitespace is already one space each (the callers join `split()`), so every gap is a single
+#: literal space: no quantified whitespace for a long run to backtrack through (CodeQL polynomial regex).
+_EVENT_TAIL = re.compile(r" (?:this|next) (?:week|month|weekend) ?[?.!]*$| (?:today|tomorrow|tonight) ?[?.!]*$", re.I)
+_EVENT_ASK = re.compile(rf"^\W*(?:is|are|will) (?:the|my|our|a)\b.*? (?P<window>{_EVENT_WINDOW_WORDS}) ?[?.!]*$", re.I)
 _DISTANCE = re.compile(r"(?<![\d.,])(\d[\d.,]{0,15})\s{0,3}(km|kilometres|kilometers|miles|mi)\b", re.I)
 
 
 def without_event_window_tail(question: str) -> str:
     """`question` without a window ("this week", "tomorrow") at its end. Only the last 60 characters are read, so a
-    long run of whitespace never meets the unanchored `\\s+` (polynomial regex, CodeQL)."""
+    long run never meets the pattern (polynomial regex, CodeQL)."""
     question = " ".join((question or "").split())
     return question[:-60] + _EVENT_TAIL.sub("", question[-60:])
 

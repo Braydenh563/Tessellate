@@ -85,7 +85,8 @@ _REPAIR = re.compile(r"[,;]? (?:no|nah|sorry|i mean|wait),? (?:wait,? )?(?:the )
 
 
 #: "plumbers number pls": a closing courtesy is not part of the ask (R9-14).
-_COURTESY_TAIL = re.compile(r"[,\s]+(?:pls|plz|please|thanks|thx)\s*([?.!]*)\s*$", re.I)
+#: Read after `clean` has made every gap one space, so the gap is a literal (no quantified whitespace: CodeQL).
+_COURTESY_TAIL = re.compile(r"(?:, ?| )(?:pls|plz|please|thanks|thx) ?([?.!]*)$", re.I)
 
 
 def clean(question: str) -> str:
@@ -95,7 +96,7 @@ def clean(question: str) -> str:
     text = " ".join((question or "").split())
     text = text.lstrip("\\/'\"` ").rstrip("\\/'\"` ")
     text = _NO_APOSTROPHE.sub(r"\1's", text)
-    #: Only the last words can be a courtesy; a long run of commas never meets the unanchored `[,\s]+` (CodeQL).
+    #: Only the last words can be a courtesy.
     text = text[:-40] + _COURTESY_TAIL.sub(r"\1", text[-40:])
     if (repair := _REPAIR.search(text.rstrip("?.! "))) is not None:
         kept = text[:repair.start()]
