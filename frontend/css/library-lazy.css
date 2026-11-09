@@ -8291,8 +8291,17 @@ input[type="color"].wb-mixed {
    goes too (44 px). Edit and Read are their icons (the words stay their names for
    a screen reader), since the title had 45 px of the row beside them. Moved here
    from the boot sheet it first went in, which was 45 bytes over its budget. */
-@media (min-width: 600px) {
+@container docdock (min-width: 600px) {
   #tab-documents .doc-phone-only {
+    display: none;
+  }
+}
+/* The same fold for a narrow dock in a wide window (INBOX 1717, 200 % zoom): the
+   dock's own width decides, not the window's. A code document's tools were 476px of
+   44px targets in 544px; the extras are the kebab's rows and the row stays one line. */
+@container docdock (max-width: 599.98px) {
+  #tab-documents .doc-actions > :is(#doc-ai, #doc-code-snippets-open, #doc-code-assist-open, #doc-code-format, #doc-focus-toggle, .graph-help-toggle),
+  #tab-documents .doc-view-menu {
     display: none;
   }
 }
