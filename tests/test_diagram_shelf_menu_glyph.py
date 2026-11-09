@@ -20,8 +20,8 @@ const vm = require("vm"), fs = require("fs");
 class El {
   constructor(tag) { this.tag = tag; this.kids = []; this.dataset = {}; this.className = ""; this.owner = null; this.handlers = []; }
   append(...n) { this.kids.push(...n); } prepend(...n) { this.kids.unshift(...n); }
-  setAttribute() {} addEventListener(t, f) { this.handlers.push([t, f]); }
-  get classList() { return { contains: (c) => this.className.split(" ").includes(c), add: () => {}, remove: () => {} }; }
+  setAttribute() {} getAttribute() { return null; } addEventListener(t, f) { this.handlers.push([t, f]); }
+  get classList() { return { contains: (c) => this.className.split(" ").includes(c), add: () => {}, remove: () => {}, toggle: () => {} }; }
   cloneNode() { const c = new El(this.tag); c.owner = this.owner; return c; }
   get firstChild() { return this.kids[0]; }
   matches() { return false; } getBoundingClientRect() { return { right: 0, bottom: 0 }; }
@@ -31,6 +31,7 @@ let opened = null;
 const ctx = {
   document: doc, diagramModel: {}, console, window: {}, matchMedia: () => ({ matches: false }),
   openMenuAtPoint: (items) => { opened = items; return null; },
+  prefs: { get: (_k, d) => d, set: () => {} }, closeActionMenus: () => {},
 };
 ctx.window = ctx;
 vm.createContext(ctx);

@@ -383,8 +383,15 @@
         b.classList.toggle("active", b.dataset.view === name);
         b.setAttribute("aria-pressed", String(b.dataset.view === name));
       }
+      //: The line says what this view gives the room to, and the split re-reads that view's own list width (diagram-split.js).
+      note.textContent = VIEW_NOTE[name];
+      host.dispatchEvent(new CustomEvent("dgmlayout", { detail: name }));
       if (name === "source") field.focus();
     };
+    //: One visible line beside the views (1702: "I still dont know what the difference between picture and list do").
+    const VIEW_NOTE = { canvas: "Picture: the drawing gets the room", blocks: "List: the blocks get the room", source: "Source: edit the text, the picture follows" };
+    const note = el("span", "muted dgm-viewnote");
+    note.setAttribute("role", "status");
     const seg = el("div", "seg dgm-views");
     seg.setAttribute("role", "group");
     seg.setAttribute("aria-label", "Diagram view");
@@ -493,7 +500,10 @@
     //: On a phone the views are the sheet's top row, not the foot's first (DD-6, 1107): the foot is one row of Keys, Cancel and Done.
     const viewbar = el("div", "dgm-viewbar");
     const phone = matchMedia("(max-width: 599.98px)");
-    const place = () => (phone.matches ? viewbar : foot).prepend(seg);
+    const place = () => {
+      (phone.matches ? viewbar : foot).prepend(seg);
+      seg.after(note);
+    };
     phone.addEventListener("change", place);
     place();
     const head = dialogHead(title, () => finish(false));
@@ -511,7 +521,8 @@
     helpBody.setAttribute("aria-label", "About this editor");
     //: Short lines, one thought each (the 200-word paragraph read as a wall): the sequence sentence and the shelf sentence stay together.
     const helpLines = [
-      "Draw with blocks and the picture follows. Picture gives the drawing the room, List gives the blocks list the room, and Source is the text.",
+      "Draw with blocks and the picture follows. Picture gives the drawing the room, List gives the blocks list the room, and Source is the text. A line beside them says which view you are in.",
+      "Pick a block in the picture or in the list and it is picked in the other too. The shelf's left arrow folds the shelf to one button.",
       "Press N to add a box, Tab on the last box to add one joined to it, Enter to name it.",
       "[ and ] fold the list and the picture, F6 leaves the blocks, Ctrl+Enter keeps the diagram and ? lists every key.",
       //: No shelf on a phone or touch screen (it is hidden there): the line says Add, not a drag.

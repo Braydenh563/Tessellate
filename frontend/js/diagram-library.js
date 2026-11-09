@@ -96,6 +96,8 @@
   //: A flowchart's are picked by name, a sequence diagram's by tile id; the other kinds have none yet.
   const SIX = { flowchart: ["Box", "Rounded", "Decision", "Pill", "Note", "Group"], sequence: ["participant", "message", "reply", "note", "loop", "alt"] };
 
+  const SHELF = "diagram.shelf";
+
   function shelf(S, h) {
     const stage = S?.fig?.parentElement;
     const kind = S?.k ? S.k.name : "flowchart";
@@ -105,6 +107,27 @@
     const bar = make("div", "dock dgm-shelf");
     bar.setAttribute("role", "group");
     bar.setAttribute("aria-label", "Add to the picture");
+    //: The shelf folds to one button (the owner 2026-11-09: it covered the drawing and could not be put away), the choice kept
+    //: in prefs; open, the picture starts below it (`dgm-shelved`), so it never lies over the drawing.
+    const fold = make("button", "ghost small icon-only dgm-shelf-toggle");
+    fold.type = "button";
+    fold.append(make("i", "ph"));
+    fold.firstChild.setAttribute("aria-hidden", "true");
+    const paint = () => {
+      const off = prefs.get(SHELF, "") === "off";
+      bar.classList.toggle("dgm-shelf-off", off);
+      stage.classList.toggle("dgm-shelved", !off);
+      fold.setAttribute("aria-expanded", String(!off));
+      fold.firstChild.className = `ph ph-${off ? "plus" : "caret-left"}`;
+      const say = off ? "Open the add shelf" : "Fold the add shelf";
+      fold.title = say;
+      fold.setAttribute("aria-label", say);
+    };
+    fold.addEventListener("click", () => {
+      prefs.set(SHELF, prefs.get(SHELF, "") === "off" ? "" : "off");
+      paint();
+    });
+    bar.append(fold);
     for (const id of SIX[kind]) {
       const t = specs.find((x) => (x.data.tile || x.name) === id);
       if (t) bar.append(tileOf(t));
@@ -116,7 +139,13 @@
     more.setAttribute("aria-haspopup", "menu");
     more.append(make("i", "ph ph-caret-down"));
     more.firstChild.setAttribute("aria-hidden", "true");
+    more.setAttribute("aria-expanded", "false");
     more.addEventListener("click", () => {
+      //: A second press closes the menu (the owner 2026-11-09), as the Add caret does (diagram-bar.js): while it is open the caret says `aria-expanded`, so the outside-press closer leaves the press to this click.
+      if (more.getAttribute("aria-expanded") === "true") {
+        closeActionMenus();
+        return;
+      }
       const r = more.getBoundingClientRect();
       //: Each row wears its tile's glyph through the item's own `lead` (the menu has no icon field for a drawn shape), so a menu that regroups or reorders its rows cannot put a glyph on another row.
       const lead = (t) => () => {
@@ -124,10 +153,15 @@
         slot.append(t.glyph.cloneNode(true));
         return slot;
       };
-      openMenuAtPoint(specs.map((t) => ({ label: t.name, group: t.group, title: t.hint, run: t.press, lead: lead(t) })), "Add to the diagram", r.right, r.bottom, more);
+      const menu = openMenuAtPoint(specs.map((t) => ({ label: t.name, group: t.group, title: t.hint, run: t.press, lead: lead(t) })), "Add to the diagram", r.right, r.bottom, more);
+      if (menu) {
+        menu._escapedOpener = more;
+        more.setAttribute("aria-expanded", "true");
+      }
     });
     bar.append(more);
     stage.append(bar);
+    paint();
   }
 
   //: A row's ⋯ before it is pressed: an empty `kebabMenu` (1108 P2). The press is caught on the way down, and the
