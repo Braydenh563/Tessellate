@@ -1,12 +1,8 @@
 // diagram-builder.js: the block pane of a diagram (1546 P2, DOCUMENTS_PLAN "1546 design" D5 to D10). Lazy:
-// `LAZY_MODULES.diagramBuilder`, registered at the foot of documents-mermaid.js.
-//
-// A diagram is edited as blocks: the Add library, a tree of cards (a group holds cards), the connectors as rows under
-// the card they leave, and the live picture beside it. Every gesture is one change to the model (`diagramModel`)
-// printed to the whole source and handed to `io.set`, so the source is the only state and the document's history is
-// the undo. The pure part is diagram-ops.js (node-tested), the Add library diagram-library.js and the drag mode
-// diagram-pointer.js; the rest is the DOM, made with createElement and textContent. New behaviour goes in lazy files
-// (this one is held to 12 KB gzipped). One closure, one export: `diagramModel.builder`.
+// `LAZY_MODULES.diagramBuilder` (documents-mermaid.js). Blocks, connector rows and the live picture; each gesture is one
+// model change printed to the source (`io.set`), so the source is the only state and its history the undo. Pure half:
+// diagram-ops.js; Add library: diagram-library.js; drag: diagram-pointer.js. Held to 12 KB gzipped: new behaviour goes
+// in lazy files. One closure, one export: `diagramModel.builder`.
 (() => {
   //: The pure half (diagram-ops.js, fetched with this file): keys name blocks, every change is one call, none draws.
   let diagramOps;
@@ -62,8 +58,7 @@
   // --- the picture ----------------------------------------------------------------
   function drawPicture(S) {
     clearTimeout(S.drawTimer);
-    //: Until this draw lands the picture is out of date: a field opened over it now (diagram-edges.js `ask`) would be torn down by the new image.
-    S.drawing = true;
+    S.drawing = true; //: edges.js `ask` waits for the draw (1661)
     S.drawTimer = setTimeout(() => {
       const source = S.source;
       const stamp = ++S.drawn;
@@ -359,12 +354,11 @@
     S.sel = key;
     if (from) diagramOps.join(m, from, id, { label });
     commit(S, `Added ${group ? "a group" : `a ${SHAPE_LABEL[shape].toLowerCase()}`}${sel ? ` after ${nameOf(S, sel)}` : ""}${from ? ` and connected ${titleOf(S, from)} to it` : ""}.`);
+    //: List folded: named over the picture (1661 m, edges.js `askNode`).
     if (edit) (!group && S.pane.offsetParent === null ? nameOnPicture(S, id) : relabel(S, key));
     return key;
   }
 
-  //: With the list folded (INBOX 1661 m) the list's name field is out of sight and it holds the picture's redraw, so a new box is
-  //: named over the picture instead, once the picture has drawn it (diagram-edges.js `askNode`).
   function nameOnPicture(S, id) {
     S.askNode?.(id);
   }
