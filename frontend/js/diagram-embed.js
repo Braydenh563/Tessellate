@@ -332,6 +332,7 @@
         ];
       },
       get canUndo() { return at > 0; },
+      get canRedo() { return at < history.length - 1; },
     };
     //: A look that cannot be written (a front matter `config` this menu cannot edit) says so and changes nothing.
     const setLook = (hand) => {

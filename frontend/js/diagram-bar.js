@@ -24,6 +24,7 @@
 
   //: Refreshes what depends on the model: the Direction button's arrow and word.
   function sync(S) {
+    diagramModel.library.hist(S);
     const [dir, arrow, name] = S.bar.dirs.find(([d]) => d === S.m?.dir) || S.bar.dirs[0];
     const icon = document.createElement("i");
     icon.className = `ph ${arrow.replace(":", "-")}`;

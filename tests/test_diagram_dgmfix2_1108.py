@@ -53,7 +53,7 @@ def test_the_guide_answers_how_to_add_a_block_with_the_keys_the_shelf_and_the_sl
     from tessellate.ai.help_chat import HELP_TOPICS
 
     body = str(next(t["body"] for t in HELP_TOPICS if t["id"] == "diagram-blocks"))
-    for words in ("Add a block: N, a shelf tile or Add", "/diagram opens the builder in a document", "(Add on a phone)"):
+    for words in ("Add a block: N, a shelf tile or Add", "/diagram opens the builder in a document", "(touch: hold)"):
         assert words in body, words
     assert len(body) < 1900
 
@@ -64,11 +64,12 @@ def test_the_builder_help_is_short_lines_not_one_paragraph():
     assert lines.count('",\n') + lines.count("\",\n") >= 5
 
 
-def test_a_phone_is_told_to_tap_add_where_the_shelf_is_hidden():
-    """The shelf is `display: none` on a coarse pointer or under 600 px (diagram-lazy.css): no tile can be dragged there."""
+def test_a_phone_is_told_to_tap_add_and_to_hold_a_shelf_tile_to_drag_it():
+    """Intent moved (dgpolish-1109): the shelf is on a coarse pointer and under 600 px now (a finger holds a tile, then drags); the Add
+    sheet's own words stay Tap, and the dialog help says how a finger drags."""
     assert "Tap to add it." in LIBRARY and 'matchMedia("(max-width: 599.98px), (pointer: coarse)")' in LIBRARY
     assert "Tap a shape to add it." in LIBRARY
-    assert "Tap Add to put a block in" in EMBED_JS
+    assert "on a touch screen hold a tile a moment, then drag" in EMBED_JS
 
 
 EDGES = (JS / "diagram-edges.js").read_text(encoding="utf-8")

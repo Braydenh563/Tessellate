@@ -357,6 +357,12 @@
   background: var(--hover-veil);
 }
 
+/* A veil alone is no focus mark: the tile takes the accent ring the rest of the toolbar has. */
+.dgm-shelf .dgm-tile:focus-visible {
+  outline-color: var(--accent);
+  outline-offset: -2px;
+}
+
 .dgm-shelf .dgm-tile-name {
   display: none;
 }
@@ -884,6 +890,20 @@
    Undo, Redo and the menu over the tiles (dock 543, 124 and 199 px tall at 1440). */
 .dgm-dock:has(> .dgm-addsplit) {
   flex-wrap: nowrap;
+}
+
+/* A phone's one row is wider than the page (8 controls of 44 px in 296: Redo and the menu lay beyond the screen's edge, out of
+   reach, dgpolish-1109), so it scrolls sideways and a focused control scrolls into view. */
+@media (max-width: 599.98px) {
+  .dgm-dock:has(> .dgm-addsplit) {
+    overflow-x: auto;
+    scrollbar-width: none;
+    overscroll-behavior-x: contain;
+  }
+
+  .dgm-dock:has(> .dgm-addsplit) > * {
+    flex: none;
+  }
 }
 
 /* The kinds' palettes are one Add button and the same sheet a phone gets (diagram-touch.js `wire`): thirteen tiles do not fit a row. */
@@ -1803,6 +1823,14 @@
 @media (max-width: 599.98px) {
   #doc-preview:has(> .dgm-phonelist.dgm-listless) {
     min-block-size: 80dvh;
+  }
+
+  /* ...and the panes grow with it (dgpolish-1109: the preview's 80dvh was taller than the panes, so it spilled over the document's
+     status line, 675 against 473 px at 390 by 844); the page scrolls to the status line instead of the picture lying over it. */
+  #tab-documents :is(.doc-layout, .doc-main, #doc-panes):has(.dgm-phonelist.dgm-listless) {
+    flex: none;
+    block-size: auto;
+    min-block-size: 0;
   }
 }
 

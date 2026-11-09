@@ -57,11 +57,14 @@
     const hit = KX_MM.find(([open]) => tail.startsWith(open));
     if (!hit || tail.length < hit[0].length + hit[1].length || !tail.endsWith(hit[1])) return raw;
     let body = tail.slice(hit[0].length, tail.length - hit[1].length).trim();
+    //: `bare` remembers a shape the author wrote without quotes, so saving does not add them (`root((Plan))` stays).
+    let bare = true;
     if (body.length >= 2 && body[0] === '"' && body.at(-1) === '"') {
       body = body.slice(1, -1);
+      bare = false;
       if (body[0] === "`") return raw;
     }
-    return { ident: line.slice(0, at).trim(), text: diagramModel.decode(body), shape: hit[2] };
+    return { ident: line.slice(0, at).trim(), text: diagramModel.decode(body), shape: hit[2], ...(bare ? { bare } : {}) };
   }
 
   function kxMmParse(source) {
@@ -115,7 +118,9 @@
       const shape = n.shape || "default";
       if (shape === "default" && kxMmPlain(text)) return text;
       const [open, close] = shape === "default" ? ["[", "]"] : KX_MM.find((s) => s[2] === shape);
-      return `${n.ident || fresh()}${open}"${text.replace(/"/g, "'")}"${close}`;
+      //: A bare shape stays bare while its words hold nothing a bracket, a quote or a leading mark would break.
+      const q = n.bare && text && !/["[\](){}]/.test(text) && !/^(?:%%|::)/.test(text) ? "" : '"';
+      return `${n.ident || fresh()}${open}${q}${q ? text.replace(/"/g, "'") : text}${q}${close}`;
     };
     const walk = (n, depth) => {
       out.push(kxPad(depth) + line(n));
@@ -690,6 +695,7 @@
     const stop = kit.blockEl(S, S.sel) || S.tree.querySelector(".dgm-block");
     kit.stops(S, stop);
     if (had && document.activeElement !== stop) stop?.focus();
+    diagramModel.library.hist(S);
   }
 
   //: What a row shows and what its menu offers, as one string. The node is kept beside it: the menu's actions hold that
@@ -935,9 +941,9 @@
 
   //: A shelf tile dropped on a mind map or timeline picture (INBOX 1661 l) off its parts is added where a press on the tile adds
   //: it, after the selection; the whole picture takes the drop mark. Over a part, diagram-tree-canvas.js `over` names the place.
-  function pictureDrop(S, at) {
+  function pictureDrop(S, at, tile) {
     const stage = S.fig?.parentElement;
-    return stage?.contains(at) && !at.closest(".dgm-shelf") ? { canvas: true, op: "into", card: S.fig, add: {}, word: S.sel ? "After the selection" : "Add it here" } : null;
+    return stage?.contains(at) && !at.closest(".dgm-shelf") ? diagramModel.treeCanvas?.landing(S, tile) || { canvas: true, op: "into", card: S.fig, add: {}, word: S.sel ? "After the selection" : "Add it here" } : null;
   }
 
   //: Where a drop would land: before or after a block (its top or bottom edge), or into it.
@@ -945,7 +951,7 @@
     const { S, key } = g;
     const A = S.k;
     const at = document.elementFromPoint(g.x, g.y);
-    if (!at || !S.pane.contains(at)) return S.seq ? (g.tile ? diagramModel.seqCanvas.over(g) : null) : diagramModel.treeCanvas?.over(g) || (g.tile ? pictureDrop(S, at) : null);
+    if (!at || !S.pane.contains(at)) return S.seq ? (g.tile ? diagramModel.seqCanvas.over(g) : null) : diagramModel.treeCanvas?.over(g) || (g.tile ? pictureDrop(S, at, g.tile) : null);
     if (S.seq) diagramModel.seqCanvas.clear(S);
     const dragged = key ? find(S, key) : null;
     const type = dragged ? dragged.node.type : g.tile.type;
@@ -1032,7 +1038,7 @@
     actions.append(S.suggestBtn);
     for (const [name, label, run] of [["ph:arrow-counter-clockwise", "Undo", () => S.io.undo()], ["ph:arrow-clockwise", "Redo", () => S.io.redo()]]) {
       const b = smallButton(name, label, run);
-      b.classList.add("icon-only");
+      b.classList.add("icon-only", "dgm-hist");
       b.setAttribute("aria-label", label);
       actions.append(b);
     }
