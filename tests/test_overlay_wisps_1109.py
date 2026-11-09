@@ -64,7 +64,9 @@ def test_the_hem_rises_and_settles_with_the_breath_at_rest(seed: int, monkeypatc
     off = [r for r in rest_run(seed, 40.0) if r[1] == "sit" and r[3] is not None]
     monkeypatch.undo()
     on = [r for r in rest_run(seed, 40.0) if r[1] == "sit" and r[3] is not None]
-    assert len(on) == len(off) > 60
+    # A sample floor for the correlation, not a frame-rate bar: life2b-1109 skips idle frame edges under a look or
+    # blink (the owner's 500 rest ceiling), so seed 1's sit holds exactly 60 frames; the two bars below are unchanged.
+    assert len(on) == len(off) >= 50
     diff = np.array([rows_centre(a[2]) - rows_centre(b[2]) for a, b in zip(on, off)])
     swell = np.array([r[3] for r in on])
     corr = float(np.corrcoef(diff, swell)[0, 1])
