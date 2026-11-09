@@ -3059,9 +3059,9 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `dateFieldKey` | frontend/js/date-field.js:10 |
-| `dateFieldShift` | frontend/js/date-field.js:11 |
-| `dateFieldWire` | frontend/js/date-field.js:13 |
+| `dateFieldKey` | frontend/js/date-field.js:11 |
+| `dateFieldShift` | frontend/js/date-field.js:12 |
+| `dateFieldWire` | frontend/js/date-field.js:14 |
 
 ### frontend/js/desk-companion.js (34)
 
@@ -5814,14 +5814,14 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `linkPropsParse` | frontend/js/link-types.js:19 |
-| `linkPropsText` | frontend/js/link-types.js:15 |
-| `linkTypesList` | frontend/js/link-types.js:10 |
-| `newRelationType` | frontend/js/link-types.js:55 |
-| `openLinkTypeSheet` | frontend/js/link-types.js:82 |
-| `openRelationTypesSheet` | frontend/js/link-types.js:144 |
-| `relationTypeDeleteUndo` | frontend/js/link-types.js:39 |
-| `relationTypesRepaint` | frontend/js/link-types.js:37 |
+| `linkPropsParse` | frontend/js/link-types.js:20 |
+| `linkPropsText` | frontend/js/link-types.js:16 |
+| `linkTypesList` | frontend/js/link-types.js:11 |
+| `newRelationType` | frontend/js/link-types.js:56 |
+| `openLinkTypeSheet` | frontend/js/link-types.js:83 |
+| `openRelationTypesSheet` | frontend/js/link-types.js:145 |
+| `relationTypeDeleteUndo` | frontend/js/link-types.js:40 |
+| `relationTypesRepaint` | frontend/js/link-types.js:38 |
 
 ### frontend/js/load-failed.js (1)
 
@@ -6412,8 +6412,8 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `aiOfflineSplit` | frontend/js/offline-split.js:19 |
-| `hideAiOfflineNotices` | frontend/js/offline-split.js:8 |
+| `aiOfflineSplit` | frontend/js/offline-split.js:20 |
+| `hideAiOfflineNotices` | frontend/js/offline-split.js:9 |
 
 ### frontend/js/onboarding.js (16)
 
@@ -6525,9 +6525,9 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `notePickerRow` | frontend/js/pick-row.js:7 |
-| `notePickerThumb` | frontend/js/pick-row.js:64 |
-| `updateNotePickerCount` | frontend/js/pick-row.js:79 |
+| `notePickerRow` | frontend/js/pick-row.js:8 |
+| `notePickerThumb` | frontend/js/pick-row.js:65 |
+| `updateNotePickerCount` | frontend/js/pick-row.js:80 |
 
 ### frontend/js/popup-glyph.js (2)
 
@@ -7769,8 +7769,8 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `ensureVaultOpen` | frontend/js/vault-unlock.js:32 |
-| `unlockPrivateNotes` | frontend/js/vault-unlock.js:11 |
+| `ensureVaultOpen` | frontend/js/vault-unlock.js:33 |
+| `unlockPrivateNotes` | frontend/js/vault-unlock.js:12 |
 
 ### frontend/js/web-clip.js (11)
 

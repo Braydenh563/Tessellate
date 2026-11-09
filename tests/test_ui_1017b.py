@@ -41,7 +41,7 @@ def test_b05_connect_a_model_is_a_split_button_with_a_hide_row():
     split = js[js.index("function aiOfflineSplit(") :]
     assert "split-button-main" in split and "split-button-caret" in split
     assert "kebabMenu(" in split and "Hide these popups" in split
-    hide = js[js.index("function hideAiOfflineNotices(") :].split("\n}\n")[0]
+    hide = js[js.index("function hideAiOfflineNotices(") :].split("\n  }\n")[0]
     assert '"hideOfflineNotice"' in hide and "Show them again" in hide
     css = (ROOT / "frontend" / "css" / "offline-split-lazy.css").read_text(encoding="utf-8")
     assert ".ai-offline-split" in css
