@@ -2,7 +2,7 @@
 
 Generated 2026-11-09 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7949, frontend ids 2652, CSS sections 523, backend routes 649, backend modules 9329, test files 2308, tests 19236, plan headings 1008, app scripts 28, boot scripts 37, script files 266.
+Counts: frontend functions 7949, frontend ids 2652, CSS sections 523, backend routes 649, backend modules 9330, test files 2308, tests 19236, plan headings 1008, app scripts 28, boot scripts 37, script files 266.
 
 ## Frontend functions (7949)
 
@@ -13202,7 +13202,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:164 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (9329)
+## Backend modules (9330)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -17671,7 +17671,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `explain_pair` | src/tessellate/ai/relations.py:255 |
 | `recognise` | src/tessellate/ai/relations.py:192 |
 
-### src/tessellate/ai/reminder_parser.py (20)
+### src/tessellate/ai/reminder_parser.py (21)
 
 | Name | File:line |
 |---|---|
@@ -17679,19 +17679,20 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_extract_json` | src/tessellate/ai/reminder_parser.py:115 |
 | `_fallback` | src/tessellate/ai/reminder_parser.py:110 |
 | `_is_reminder_word` | src/tessellate/ai/reminder_parser.py:322 |
-| `_task_before` | src/tessellate/ai/reminder_parser.py:415 |
+| `_names_reminder` | src/tessellate/ai/reminder_parser.py:332 |
+| `_task_before` | src/tessellate/ai/reminder_parser.py:421 |
 | `_tidy` | src/tessellate/ai/reminder_parser.py:36 |
-| `_unslanged` | src/tessellate/ai/reminder_parser.py:410 |
-| `_wished` | src/tessellate/ai/reminder_parser.py:426 |
+| `_unslanged` | src/tessellate/ai/reminder_parser.py:416 |
+| `_wished` | src/tessellate/ai/reminder_parser.py:432 |
 | `_with_clock` | src/tessellate/ai/reminder_parser.py:46 |
 | `_without_trailing_hedges` | src/tessellate/ai/reminder_parser.py:253 |
-| `canonical_ask` | src/tessellate/ai/reminder_parser.py:332 |
+| `canonical_ask` | src/tessellate/ai/reminder_parser.py:338 |
 | `heard` | src/tessellate/ai/reminder_parser.py:222 |
-| `in_passing` | src/tessellate/ai/reminder_parser.py:435 |
+| `in_passing` | src/tessellate/ai/reminder_parser.py:441 |
 | `parse_relative` | src/tessellate/ai/reminder_parser.py:58 |
 | `parse_reminder` | src/tessellate/ai/reminder_parser.py:127 |
 | `read_by_rule` | src/tessellate/ai/reminder_parser.py:92 |
-| `reminder_head` | src/tessellate/ai/reminder_parser.py:357 |
+| `reminder_head` | src/tessellate/ai/reminder_parser.py:363 |
 | `unhedged` | src/tessellate/ai/reminder_parser.py:232 |
 | `without_conditions` | src/tessellate/ai/reminder_parser.py:265 |
 | `worded` | src/tessellate/ai/reminder_parser.py:275 |

@@ -324,9 +324,15 @@ def _is_reminder_word(word: str) -> bool:
     if word in ("remind", "reminds", "reminded", "reminding"):
         return False
     #: A timer or an alarm is asked for as a reminder in the same time (R9-11).
-    return word in ("timer", "alarm") or word.startswith("remind") or bool(
+    return word.startswith("remind") or bool(
         difflib.get_close_matches(word, ("reminder", "reminders"), n=1, cutoff=0.8)
     )
+
+
+def _names_reminder(word: str, after: list[str]) -> bool:
+    """The word names a reminder; a timer or an alarm with a length ("a timer for 40 minutes") is one in that time (R9-11)."""
+    bare = re.sub(r"[^\w]", "", word.lower())
+    return _is_reminder_word(bare) or (bare in ("timer", "alarm") and any(c.isdigit() for c in " ".join(after)))
 
 
 def canonical_ask(text: str) -> str:
@@ -336,7 +342,7 @@ def canonical_ask(text: str) -> str:
     as typed, so the existing readers take the what and the when from it."""
     words = text.split()
     for at, word in enumerate(words[:8]):
-        if not _is_reminder_word(re.sub(r"[^\w]", "", word.lower())):
+        if not _names_reminder(word, words[at + 1:]):
             continue
         lead = [w for w in re.split(r"[^a-z]+", " ".join(words[:at]).lower().replace("'", " ")) if w]
         #: "I set a reminder yesterday" reports; "I want to set one" asks.
