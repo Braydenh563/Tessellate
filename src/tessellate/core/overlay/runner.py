@@ -480,7 +480,7 @@ class OverlayRunner:
         scale = max(m.dpi for m in self.monitors) / 96.0 if self.monitors else 1.0
         room = int(engine.size[0] + PERCH_ROOM * scale)
         drops: Counter = Counter()
-        edges = perches.top_edges(wins, room, drops)
+        edges = perches.top_edges(wins, eng.perch_room(engine.size[0], scale), drops)
         hangs = perches.hang_spots(wins, room)
         engine.set_windows(edges, now, hangs, perches.tuck_spots(wins, room))
         self._log_scan(len(wins), len(edges), len(engine._candidates(drops)), tally, len(edges) + len(hangs), drops)

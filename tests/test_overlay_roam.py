@@ -119,8 +119,8 @@ def test_a_climb_is_only_chosen_when_it_is_calm_and_due() -> None:
 def test_a_window_too_low_or_too_narrow_or_off_screen_is_not_a_place_to_go() -> None:
     e = make(seed=3)
     e.climb_ready = 0.0
-    e.set_windows([Perch(1, 400, FLOOR + 100 - 20, 1200), Perch(2, 400, 700, 450), Perch(3, 400, 60, 1200)], 1.0)
-    assert e._candidates() == []  # near the floor, 50 wide, and the figure would stand above the screen
+    e.set_windows([Perch(1, 400, FLOOR + 100 - 20, 1200), Perch(2, 400, 700, 420), Perch(3, 400, 60, 1200)], 1.0)
+    assert e._candidates() == []  # near the floor, 20 wide (under the feet, INBOX 1697), and the figure would stand above the screen
 
 
 def test_one_climb_every_few_minutes_at_most_and_never_asleep() -> None:
