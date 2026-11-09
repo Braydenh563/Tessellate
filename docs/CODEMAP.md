@@ -3576,21 +3576,21 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `acceptDocAiEdit` | frontend/js/documents-ai.js:335 |
-| `docAiAnswerIsShort` | frontend/js/documents-ai.js:330 |
-| `docAiDiffTarget` | frontend/js/documents-ai.js:69 |
-| `docAiResultEdited` | frontend/js/documents-ai.js:132 |
-| `docAiVerb` | frontend/js/documents-ai.js:23 |
-| `docAiVerbChanged` | frontend/js/documents-ai.js:188 |
-| `openDocAiPanel` | frontend/js/documents-ai.js:199 |
-| `pushDocAiUndo` | frontend/js/documents-ai.js:279 |
-| `recordDocAiEditLog` | frontend/js/documents-ai.js:303 |
-| `renderDocAiDiff` | frontend/js/documents-ai.js:88 |
-| `runDocAiEdit` | frontend/js/documents-ai.js:217 |
-| `setDocAiProposal` | frontend/js/documents-ai.js:75 |
-| `showDocAiResult` | frontend/js/documents-ai.js:34 |
-| `syncDocAiPanel` | frontend/js/documents-ai.js:148 |
-| `toggleDocAiHunk` | frontend/js/documents-ai.js:118 |
+| `acceptDocAiEdit` | frontend/js/documents-ai.js:336 |
+| `docAiAnswerIsShort` | frontend/js/documents-ai.js:331 |
+| `docAiDiffTarget` | frontend/js/documents-ai.js:70 |
+| `docAiResultEdited` | frontend/js/documents-ai.js:133 |
+| `docAiVerb` | frontend/js/documents-ai.js:24 |
+| `docAiVerbChanged` | frontend/js/documents-ai.js:189 |
+| `openDocAiPanel` | frontend/js/documents-ai.js:200 |
+| `pushDocAiUndo` | frontend/js/documents-ai.js:280 |
+| `recordDocAiEditLog` | frontend/js/documents-ai.js:304 |
+| `renderDocAiDiff` | frontend/js/documents-ai.js:89 |
+| `runDocAiEdit` | frontend/js/documents-ai.js:218 |
+| `setDocAiProposal` | frontend/js/documents-ai.js:76 |
+| `showDocAiResult` | frontend/js/documents-ai.js:35 |
+| `syncDocAiPanel` | frontend/js/documents-ai.js:149 |
+| `toggleDocAiHunk` | frontend/js/documents-ai.js:119 |
 
 ### frontend/js/documents-callouts.js (18)
 
@@ -5511,25 +5511,25 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `lanAnswerDevice` | frontend/js/lan-watch.js:73 |
-| `lanDismissSwitchedOff` | frontend/js/lan-watch.js:150 |
-| `lanDrawPanel` | frontend/js/lan-watch.js:322 |
-| `lanFillPanel` | frontend/js/lan-watch.js:282 |
-| `lanLook` | frontend/js/lan-watch.js:168 |
-| `lanLookFromState` | frontend/js/lan-watch.js:198 |
-| `lanLookFromWatch` | frontend/js/lan-watch.js:186 |
-| `lanNoticeDevice` | frontend/js/lan-watch.js:83 |
-| `lanNoticeHeld` | frontend/js/lan-watch.js:112 |
-| `lanNoticeSwitchedOff` | frontend/js/lan-watch.js:132 |
-| `lanOpenPanel` | frontend/js/lan-watch.js:263 |
-| `lanOpenSheet` | frontend/js/lan-watch.js:248 |
-| `lanPaintIcon` | frontend/js/lan-watch.js:209 |
-| `lanPanelHeading` | frontend/js/lan-watch.js:315 |
-| `lanPanelLine` | frontend/js/lan-watch.js:308 |
-| `lanRefreshOpenPanel` | frontend/js/lan-watch.js:274 |
-| `lanWatch` | frontend/js/lan-watch.js:50 |
-| `lanWatchOnce` | frontend/js/lan-watch.js:22 |
-| `lanWirePanel` | frontend/js/lan-watch.js:224 |
+| `lanAnswerDevice` | frontend/js/lan-watch.js:74 |
+| `lanDismissSwitchedOff` | frontend/js/lan-watch.js:151 |
+| `lanDrawPanel` | frontend/js/lan-watch.js:323 |
+| `lanFillPanel` | frontend/js/lan-watch.js:283 |
+| `lanLook` | frontend/js/lan-watch.js:169 |
+| `lanLookFromState` | frontend/js/lan-watch.js:199 |
+| `lanLookFromWatch` | frontend/js/lan-watch.js:187 |
+| `lanNoticeDevice` | frontend/js/lan-watch.js:84 |
+| `lanNoticeHeld` | frontend/js/lan-watch.js:113 |
+| `lanNoticeSwitchedOff` | frontend/js/lan-watch.js:133 |
+| `lanOpenPanel` | frontend/js/lan-watch.js:264 |
+| `lanOpenSheet` | frontend/js/lan-watch.js:249 |
+| `lanPaintIcon` | frontend/js/lan-watch.js:210 |
+| `lanPanelHeading` | frontend/js/lan-watch.js:316 |
+| `lanPanelLine` | frontend/js/lan-watch.js:309 |
+| `lanRefreshOpenPanel` | frontend/js/lan-watch.js:275 |
+| `lanWatch` | frontend/js/lan-watch.js:51 |
+| `lanWatchOnce` | frontend/js/lan-watch.js:23 |
+| `lanWirePanel` | frontend/js/lan-watch.js:225 |
 
 ### frontend/js/library-pick.js (5)
 
@@ -6132,23 +6132,23 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `applyModelQuery` | frontend/js/model-menu.js:143 |
-| `decorateModelMenu` | frontend/js/model-menu.js:265 |
-| `modelCountLabel` | frontend/js/model-menu.js:47 |
-| `modelMenuAct` | frontend/js/model-menu.js:215 |
-| `modelMenuGroup` | frontend/js/model-menu.js:104 |
-| `modelMenuItem` | frontend/js/model-menu.js:52 |
-| `modelMenuKeys` | frontend/js/model-menu.js:231 |
-| `modelMenuLabel` | frontend/js/model-menu.js:96 |
-| `modelMenuList` | frontend/js/model-menu.js:27 |
-| `modelMenuPin` | frontend/js/model-menu.js:73 |
-| `modelMenuRemember` | frontend/js/model-menu.js:309 |
-| `modelMenuRender` | frontend/js/model-menu.js:167 |
-| `modelMenuSave` | frontend/js/model-menu.js:32 |
-| `modelMenuSearch` | frontend/js/model-menu.js:242 |
-| `modelMenuStops` | frontend/js/model-menu.js:198 |
-| `modelMenuWalk` | frontend/js/model-menu.js:203 |
-| `modelSource` | frontend/js/model-menu.js:37 |
+| `applyModelQuery` | frontend/js/model-menu.js:144 |
+| `decorateModelMenu` | frontend/js/model-menu.js:266 |
+| `modelCountLabel` | frontend/js/model-menu.js:48 |
+| `modelMenuAct` | frontend/js/model-menu.js:216 |
+| `modelMenuGroup` | frontend/js/model-menu.js:105 |
+| `modelMenuItem` | frontend/js/model-menu.js:53 |
+| `modelMenuKeys` | frontend/js/model-menu.js:232 |
+| `modelMenuLabel` | frontend/js/model-menu.js:97 |
+| `modelMenuList` | frontend/js/model-menu.js:28 |
+| `modelMenuPin` | frontend/js/model-menu.js:74 |
+| `modelMenuRemember` | frontend/js/model-menu.js:310 |
+| `modelMenuRender` | frontend/js/model-menu.js:168 |
+| `modelMenuSave` | frontend/js/model-menu.js:33 |
+| `modelMenuSearch` | frontend/js/model-menu.js:243 |
+| `modelMenuStops` | frontend/js/model-menu.js:199 |
+| `modelMenuWalk` | frontend/js/model-menu.js:204 |
+| `modelSource` | frontend/js/model-menu.js:38 |
 
 ### frontend/js/nav-history.js (11)
 
@@ -7521,27 +7521,27 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `openTidySheet` | frontend/js/tidy.js:84 |
-| `tidyAfterChange` | frontend/js/tidy.js:613 |
-| `tidyApply` | frontend/js/tidy.js:574 |
-| `tidyApplyWords` | frontend/js/tidy.js:561 |
-| `tidyBadge` | frontend/js/tidy.js:35 |
-| `tidyCounts` | frontend/js/tidy.js:237 |
-| `tidyDismiss` | frontend/js/tidy.js:487 |
-| `tidyFoot` | frontend/js/tidy.js:507 |
-| `tidyHead` | frontend/js/tidy.js:200 |
-| `tidyHistory` | frontend/js/tidy.js:631 |
-| `tidyOverview` | frontend/js/tidy.js:307 |
-| `tidyOverviewDraw` | frontend/js/tidy.js:256 |
-| `tidyOverviewRow` | frontend/js/tidy.js:265 |
-| `tidyPatterns` | frontend/js/tidy.js:165 |
-| `tidyRow` | frontend/js/tidy.js:433 |
-| `tidyRows` | frontend/js/tidy.js:420 |
-| `tidyRunLinkReasons` | frontend/js/tidy.js:622 |
-| `tidyShow` | frontend/js/tidy.js:319 |
-| `tidyTitle` | frontend/js/tidy.js:246 |
-| `tidyTools` | frontend/js/tidy.js:351 |
-| `tidyWatchList` | frontend/js/tidy.js:59 |
+| `openTidySheet` | frontend/js/tidy.js:85 |
+| `tidyAfterChange` | frontend/js/tidy.js:614 |
+| `tidyApply` | frontend/js/tidy.js:575 |
+| `tidyApplyWords` | frontend/js/tidy.js:562 |
+| `tidyBadge` | frontend/js/tidy.js:36 |
+| `tidyCounts` | frontend/js/tidy.js:238 |
+| `tidyDismiss` | frontend/js/tidy.js:488 |
+| `tidyFoot` | frontend/js/tidy.js:508 |
+| `tidyHead` | frontend/js/tidy.js:201 |
+| `tidyHistory` | frontend/js/tidy.js:632 |
+| `tidyOverview` | frontend/js/tidy.js:308 |
+| `tidyOverviewDraw` | frontend/js/tidy.js:257 |
+| `tidyOverviewRow` | frontend/js/tidy.js:266 |
+| `tidyPatterns` | frontend/js/tidy.js:166 |
+| `tidyRow` | frontend/js/tidy.js:434 |
+| `tidyRows` | frontend/js/tidy.js:421 |
+| `tidyRunLinkReasons` | frontend/js/tidy.js:623 |
+| `tidyShow` | frontend/js/tidy.js:320 |
+| `tidyTitle` | frontend/js/tidy.js:247 |
+| `tidyTools` | frontend/js/tidy.js:352 |
+| `tidyWatchList` | frontend/js/tidy.js:60 |
 
 ### frontend/js/timeline-cal-add.js (9)
 
