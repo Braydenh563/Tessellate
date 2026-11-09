@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Fix (dgbt-1109 1, blind test): Move up or down (row menu, Alt+Up or Down) and a grip dropped before or after its chain neighbour now swap the two blocks by rewiring the arrows (`outline.swap`, `move`, `drop`), so the list and picture change; before, the source order moved and the drawn order stayed (E stayed after D, or a drop on the middle drew a backward arrow). A branch says to drag. `stepBlock` moved into the lazy outline file: diagram-builder.js 11,970 to 11,895 gzip.
 - Fix (review of the OCR page lock): the 30 s shared miss is keyed by every input of the answer (`auto`, the reader, the stored text), is shared only for a real reader run, is dropped when a reading is stored for that page, and expired ones are pruned. A vision-model page's "not read yet" no longer stops the Tesseract ask that follows.
 - Fix (row 21 review): `startNewNote` has its `.catch(() => {})` and the `?.` on the box back (a zoom merge dropped them), so a failed editor bundle fetch is not an unhandled rejection; the overlay focus check stays.
 - Fix (row 21 review): `surfaceBuild` re-runs the boot sweeps over the stamped host, not only the help one: closed dock-menu lists (the OCR reader menu was never hidden), the Mac chord on static titles and the table-driven shortcut titles (the board's tooltips). Each takes a root; the Settings-only `onSurface` re-runs are gone.

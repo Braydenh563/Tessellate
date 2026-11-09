@@ -413,12 +413,7 @@
     target.addEventListener("blur", onBlur);
   }
 
-  function stepBlock(S, key, dir) {
-    if (key[0] === "k") return;
-    if (diagramModel.outline?.stuck(S.m, key, dir)) return say(S, `${nameOf(S, key)} follows its arrows. Drag its grip.`);
-    if (!diagramOps.step(S.m, key, dir)) return say(S, `${nameOf(S, key)} is already ${dir < 0 ? "first" : "last"}.`);
-    commit(S, `Moved ${nameOf(S, key)} ${dir < 0 ? "up" : "down"}.`);
-  }
+  const stepBlock = (S, key, dir) => key[0] !== "k" && diagramModel.outline.move(S, helpers, key, dir);
 
   function nestBlock(S, key, into) {
     if (key[0] === "k") return;
