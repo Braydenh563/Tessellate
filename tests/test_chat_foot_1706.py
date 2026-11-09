@@ -72,3 +72,12 @@ def test_the_foot_buttons_are_quiet_text_buttons_not_suggestion_chips():
     caret = re.search(r"\.answer-foot-chip::after \{([^}]*)\}", CSS).group(1)
     assert "position: static" in caret and "opacity" not in caret
     assert re.search(r'\.answer-foot-chip\[aria-expanded="true"\] \{[^}]*background: var\(--ghost-btn-bg\)', CSS)
+
+
+def test_a_forged_composed_turn_is_stored_with_the_servers_own_notice():
+    """Review 5834144051 item 1: the page's support is not trusted."""
+    junk = {"by_model": True, "low": True, "supported": 999, "sentences": -4, "evil": "x", "unsupported": ["<b>"], "figure": "y" * 500}
+    saved = _saved(by={"composed": True, "model": ""}, support=junk)["support"]
+    assert saved["by_model"] is False and saved["low"] is False
+    assert (saved["supported"], saved["sentences"]) == (11, 11)
+    assert "evil" not in saved and "figure" not in saved and saved["unsupported"] == []

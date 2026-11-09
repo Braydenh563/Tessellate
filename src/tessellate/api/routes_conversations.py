@@ -207,13 +207,22 @@ def _user_message(turn: TurnBody, asked: datetime) -> dict:
 
 
 def _saved_support(turn: TurnBody) -> dict:
-    """The notice's numbers for a saved turn: recounted for a model answer, the
-    stream's own for a composed one (`by.composed`, built only from notes, so
-    never the model-draft warning; the live stream marked it `by_model: False`
-    and a reopened chat must show what arrived, INBOX 1706)."""
-    if (turn.by or {}).get("composed"):
-        return composed_support(turn.support, turn.sentence_grounding)
-    return grounding_support(turn.answer, turn.sentence_grounding)
+    """The notice's numbers for a saved turn, always recounted here from the
+    sentence rows, never trusted from the client. A composed answer
+    (`by.composed`, built only from notes, so never the model-draft warning;
+    INBOX 1706) takes `composed_support`'s base-less count; the page's own
+    `support` contributes only the digest display keys, type-checked, and can
+    never clear `by_model`."""
+    if not (turn.by or {}).get("composed"):
+        return grounding_support(turn.answer, turn.sentence_grounding)
+    saved = composed_support(None, turn.sentence_grounding)
+    sent = turn.support if isinstance(turn.support, dict) else {}
+    if sent.get("digest") is True:
+        saved["digest"] = True
+    for key in ("shape", "figure"):
+        if isinstance(sent.get(key), str) and len(sent[key]) <= 24:
+            saved[key] = sent[key]
+    return saved
 
 
 def _turn_messages(turn: TurnBody) -> list[dict]:
