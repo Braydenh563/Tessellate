@@ -47,10 +47,10 @@ VERBS = ("remind", "complete", "cancel", "snooze", "tag", "untag", "file", "rena
 _VERB_OF = {
     "reminder": "remind", "tag": "tag", "untag": "untag", "move": "file", "rename": "rename", "rename_tag": "rename", "rename_category": "rename", "restore": "restore", "pin": "pin",
     "unpin": "unpin", "link": "link", "unlink": "unlink", "delete": "delete", "new_note": "create",
-    "meeting": "create", "append": "add", "complete": "complete", "cancel": "cancel", "snooze": "snooze", "summarise": "summarise", "find": "find", "open": "open", "navigate": "open",
+    "meeting": "create", "append": "add", "complete": "complete", "uncomplete": "complete", "cancel": "cancel", "snooze": "snooze", "summarise": "summarise", "find": "find", "open": "open", "navigate": "open",
 }
 #: The intents that write: each is shown as a card.
-WRITE_INTENTS = frozenset({"reminder", "tag", "untag", "move", "rename", "rename_tag", "rename_category", "restore", "pin", "unpin", "link", "unlink", "delete", "new_note", "meeting", "append", "complete", "cancel", "snooze"})
+WRITE_INTENTS = frozenset({"reminder", "tag", "untag", "move", "rename", "rename_tag", "rename_category", "restore", "pin", "unpin", "link", "unlink", "delete", "new_note", "meeting", "append", "complete", "uncomplete", "cancel", "snooze"})
 #: Read only: answered at once, nothing to confirm.
 READ_INTENTS = frozenset({"find", "open", "navigate", "summarise"})
 #: The writes that wait for Confirm: anything that removes, renames, moves or
@@ -1133,7 +1133,7 @@ def read(text: str, now: datetime, locale: str | None = None) -> dict | None:
 
 def _read_folded(command: str, question: bool, polite: bool, urgent: bool, now: datetime, locale: str | None) -> dict | None:
     for reader in (_meeting, lambda t: _reminder(t, now, locale), lambda t: task_acts.read_add(t, lambda r: _reminder(r, now, locale)),
-                   task_acts.read_complete, task_acts.read_cancel, lambda t: task_acts.read_snooze(t, lambda w: _time_of(w, now, locale)), _new_note, _untag, _tag, _move, _delete, _pin, _link, object_acts.read_rename, lambda t: object_acts.read_restore(t, _one_target), _rename,
+                   task_acts.read_uncomplete, task_acts.read_complete, task_acts.read_cancel, lambda t: task_acts.read_snooze(t, lambda w: _time_of(w, now, locale)), _new_note, _untag, _tag, _move, _delete, _pin, _link, object_acts.read_rename, lambda t: object_acts.read_restore(t, _one_target), _rename,
                    _append, _summarise, _navigate, _find):
         found = reader(command)
         if found is None:
@@ -1410,6 +1410,8 @@ def _plan_task(session: Session, parsed: dict) -> dict:
 
         now = user_now(deps.get_config()).replace(tzinfo=None)
         return task_acts.plan_snooze(session, parsed, _card, title, lambda due: reminder_when(due, now), now)
+    if intent == "uncomplete":
+        return task_acts.plan_uncomplete(session, parsed, _card, title)
     return task_acts.plan_complete(session, parsed, _card, title)
 
 
@@ -1569,7 +1571,7 @@ def _plan_intent(session: Session, parsed: dict, note_ids: list[int] | None) -> 
             return into_note
     if intent == "reminder":
         return _plan_reminder(session, parsed, note_ids)
-    if intent in ("complete", "cancel", "snooze"):
+    if intent in ("complete", "uncomplete", "cancel", "snooze"):
         return _plan_task(session, parsed)
     if intent == "new_note":
         return _plan_new_note(session, parsed)

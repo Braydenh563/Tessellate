@@ -385,6 +385,8 @@ _read = read.__wrapped__
 #: How many turns back a follow-up may lean (decision 58: the last five).
 FOLLOW_TURNS = 5
 
+#: "undo that" right after a tick (composer-r6 E7): the tick taken back, in words.
+_UNDO_THAT = r"^(?:and |ok |okay )?(?:please )?(?:undo|take back|revert|reverse|put back)(?: (?:that|it|this|that tick|the tick|the last tick))?[.?!]*$"
 _AGAIN = r"^(?:and |ok |okay )?(?:same again|again|do (?:that|it) again|one more time|repeat that)[.?]*$"
 #: `follow` folds whitespace and strips the trailing mark first, so single
 #: spaces and an unqualified tail keep these linear (CodeQL).
@@ -491,6 +493,15 @@ def _follow_referent(raw: str, low: str, turns: list[dict]) -> str | None:
     return None
 
 
+def _untick_of(turn: dict, now: datetime) -> tuple[str, str] | None:
+    """The untick that takes back the last turn when it ticked a task, else None
+    (so "undo" after anything else is still the help line about the keys)."""
+    from tessellate.ai import commands
+
+    done = commands.read(str(turn.get("text") or ""), now)
+    return (f"untick {done['about']}", "undo") if done and done["intent"] == "complete" else None
+
+
 def cited_follow(text: str, turns: list[dict] | None, now: datetime) -> str | None:
     """`text` with its "it", "that", "the X" or bare "more" named as the
     leading note the last answer cited, else None. The same on every path,
@@ -544,6 +555,8 @@ def follow(text: str, turns: list[dict] | None, now: datetime) -> tuple[str, str
         return slot, "slot"
     if re.match(_AGAIN, low):
         return str(turns[-1]["text"]), "again"
+    if re.match(_UNDO_THAT, low):
+        return _untick_of(turns[-1], now)
     cited = _follow_referent(raw, low, turns)
     if cited:
         return cited, "pronoun"

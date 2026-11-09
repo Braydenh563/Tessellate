@@ -504,12 +504,12 @@ _UNTICK = re.compile(r"^(?:please |can you |could you )?(?:un-?tick|un-?check|un
 
 
 def _cannot_untick(question: str) -> dict | None:
-    """"Untick bread": a tick is undone in the note, not by a sentence, and
-    the answer says so rather than quoting the list with a word no note
-    mentions (audit 1030 Z37)."""
+    """"Untick it" with no item the act reader could name: the answer says how to
+    name one rather than quoting the list with a word no note mentions (audit
+    1030 Z37). "Untick bread" itself is the act (`task_acts.read_uncomplete`)."""
     if not _UNTICK.match(" ".join((question or "").split())):
         return None
-    line = "I can tick items off, but I cannot untick one yet. Press Undo on the card right after a tick to take it back, or open the note and clear the box."
+    line = "Say which item to untick, like: untick buy milk. Press Undo on the card right after a tick to take it back."
     return {**_result([("template", line)], "none"), "answered": True}
 
 
