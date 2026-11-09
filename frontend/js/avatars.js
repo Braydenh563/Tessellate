@@ -7458,7 +7458,15 @@ function nameMarkBuddyCheck() {
   //: Near its shape first (`nameMarkBuddyNear`): the whole tab's controls
   //: only once one is under it, to find the nearest clear place.
   const yours = (boxes) => (nmb.perch === "yours" ? nameMarkBuddyYoursObstacles(boxes, nmb.spot) : boxes);
+  //: **Clear a moment ago, and nothing has been written since** (the lag log: this look ran twice a
+  //: tab press, 33 then 9ms at 4x on 320 notes, the second reading the same boxes): same place, same
+  //: window, same body children, no write to a tab page and no scroll since it found nothing under it.
+  const same = `${nmb.x}|${nmb.y}|${nmb.pose}|${nmb.legs}|${innerWidth}x${innerHeight}|${document.body.childElementCount}`;
+  const clear = nmb.lastClear;
+  if (clear && clear.same === same && performance.now() - clear.at < 600 && nmb.pageAt <= clear.at && nmbFollow.scrollAt <= clear.at) return;
+  nmb.lastClear = { same, at: performance.now() };
   if (!nameMarkBuddyHits(nmb.x, nmb.y, nmb.pose, yours(nameMarkBuddyNear(nmb.x, nmb.y, nmb.pose, nmb.legs, tab)), nmb.legs)) return;
+  nmb.lastClear = null;
   const obstacles = yours(nameMarkBuddyObstacles(tab));
   const here = { ...(nmb.spot || {}), x: nmb.x, y: nmb.y, pose: nmb.pose, legs: nmb.legs };
   const aside = nameMarkBuddyStepAside(here, obstacles);
