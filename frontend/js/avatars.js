@@ -6477,6 +6477,10 @@ function nameMarkBuddyWay(buddy, way) {
   for (const el of buddy.querySelectorAll(".atl-layer-lower")) el.style.setProperty("--nmb-lean", way);
 }
 
+//: **A body hanging by its hands has no stride** (INBOX 1698, the owner: it "flew across the top of my screen but
+//: with the walking legs animation"): a move that sets off from a hang slides along its bar without `nmb-walking`.
+nmb.feetDown = () => nmb.poseWas !== "hang";
+
 //: Which way of going its limbs are in (the CSS's `data-travel`), and for
 //: a move in two parts (a climb: along, then up), the part after `at` ms.
 function nameMarkBuddyTravel(buddy, kind, at = 0, then = "") {
@@ -6673,7 +6677,7 @@ function nameMarkBuddyGo(buddy, dx, dy, spot = {}, poseChanged = false, was = { 
   const beat = plan ? plan.beat : nameMarkBuddyStride();
   const duration = plan ? plan.ms : Math.round(((climb ? Math.min(2200, 380 + along + up) : Math.min(1600, 450 + distance * 2.2)) * pace) / beat);
   buddy.dataset.turn = dx > 0 ? "l" : "r";
-  nameMarkBuddyBlend(buddy, () => buddy.classList.add("nmb-walking"), NMB_BLEND_IN_MS);
+  if (nmb.feetDown()) nameMarkBuddyBlend(buddy, () => buddy.classList.add("nmb-walking"), NMB_BLEND_IN_MS);
   //: The walk's own animations are paced from its first step, not when
   //: the pacer next looks (a second later, longer than most walks).
   nmbTempo.seen = 0;

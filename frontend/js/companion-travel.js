@@ -119,10 +119,11 @@ function companionTravelAt(ms, fn) {
   list.push(setTimeout(() => nmb.afterClean(() => nmb.travelTimers === list && fn()), ms));
 }
 
-//: Its legs walking from `ms` for `len` ms.
-function companionTravelSteps(buddy, ms, len) {
+//: Its legs walking from `ms` for `len` ms. Not a way out that sets off from a hang, nor `arrive`, a way in to one
+//: (INBOX 1698: it came out under the top bar walking, hanging by its hands).
+function companionTravelSteps(buddy, ms, len, arrive = false) {
   companionTravelAt(ms, () => {
-    nameMarkBuddyBlend(buddy, () => buddy.classList.add("nmb-walking"), NMB_BLEND_IN_MS);
+    if (nmb.feetDown() && !(arrive && nmb.pose === "hang")) nameMarkBuddyBlend(buddy, () => buddy.classList.add("nmb-walking"), NMB_BLEND_IN_MS);
     nmbTempo.seen = 0;
     clearTimeout(nmbTempo.timer);
     nmbTempo.timer = setTimeout(nameMarkBuddyTempo, 0);
@@ -173,7 +174,7 @@ const COMPANION_TRAVEL_PLAYERS = {
     companionTravelFx(buddy, "nmb-portal", dx + step, dy, 0, 0, 1260);
     companionTravelFx(buddy, "nmb-portal", -step, 0, T * 0.46, 0, 1260);
     companionTravelSteps(buddy, T * 0.14, T * 0.28);
-    companionTravelSteps(buddy, T * 0.61, T * 0.29);
+    companionTravelSteps(buddy, T * 0.61, T * 0.29, true);
   },
   //: **Out through the edge and in through the edge** (INBOX 1692: "transformed sideways off the screen at the
   //: top and on the screen at the bottom, no real animation"). A hang lets go and drifts down first, still
@@ -219,7 +220,7 @@ const COMPANION_TRAVEL_PLAYERS = {
       companionTravelFx(buddy, "nmb-wisp", inFrom * (1 - i * 0.12), 0, lead + t1 + gap - 120 + i * 90, 4, 520);
     }
     companionTravelSteps(buddy, lead, t1);
-    companionTravelSteps(buddy, lead + t1 + gap, t2);
+    companionTravelSteps(buddy, lead + t1 + gap, t2, true);
     if (hung) companionTravelAt(lead, () => (buddy.dataset.pose = nmb.pose));
     companionTravelAt(lead + t1 + gap, () => (buddy.dataset.turn = inFrom < 0 ? "r" : "l"));
   },
