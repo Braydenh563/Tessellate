@@ -49,6 +49,7 @@ from tessellate.ai import composer_ask, composer_clean, factgraph
 from tessellate.ai import composer_chip_subject
 from tessellate.ai import composer_read
 from tessellate.ai import composer_select
+from tessellate.ai import composer_tally
 from tessellate.ai.composer_lists import clean
 from tessellate.ai import recognise as recogniser
 from tessellate.ai import when as when_words
@@ -4633,6 +4634,9 @@ def _looked_up(out: _Out, asked: str, question: str, views: list, today: date) -
 def _exact_lookup(out: _Out, asked: str, question: str, views: list, today: date) -> bool:
     """The figures the notes hold, worked exactly: a slot, an amount, a sum,
     a day or a count, said (True)."""
+    #: A superlative over a table, a count of a list, a distance on a day (R9-10).
+    if composer_tally.answer(out, asked, views):
+        return True
     #: The question's slot (a tick, an open task, a dated line) is what
     #: answers it, or the answer says no note holds it (audit 1029 rank 19).
     if composer_money.sums_a_measure(question) and composer_money.answer(out, question, views, today):
