@@ -550,6 +550,17 @@
   text-overflow: ellipsis;
 }
 
+/* A flowchart row's name wraps to two lines before it is cut: its arrow, swatch, grip and menu leave a 209 px row 73 px for the words,
+   and "Order placed" read "Order plac..." (blind test, dgbt-1109 10). The name being typed keeps the single line above. */
+.dgm-card:has(> .dgm-connect) > .dgm-label:not(.dgm-editing) {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
 /* The other kinds' cards carry one quiet line after the words (who a message is between, a period's date),
    so their grid has a column for it; it gives way to the label before the label gives way to it. */
 .dgm-card:has(> .dgm-meta) {

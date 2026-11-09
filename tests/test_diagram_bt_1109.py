@@ -156,3 +156,8 @@ def test_a_shelf_tile_names_itself_in_its_tooltip_as_well_as_its_label():
     lib = _js("diagram-library.js")
     assert "`${t.name}. ${t.hint} Press to add it, or drag it into the blocks or onto the picture.`" in lib
     assert "`${t.name}. ${t.hint} Tap to add it.`" in lib
+
+
+def test_a_flowchart_rows_name_wraps_to_two_lines_before_it_is_cut():
+    block = CSS[CSS.index(".dgm-card:has(> .dgm-connect) > .dgm-label:not(.dgm-editing) {") :][:300]
+    assert "-webkit-line-clamp: 2;" in block and "white-space: normal;" in block and "overflow-wrap: anywhere;" in block
