@@ -2157,9 +2157,22 @@
     min-inline-size: 2.75rem;
   }
 
-  /* The shelf is mouse only: a phone or touch screen adds blocks from the Add sheet. */
+  /* The shelf is touch too (a finger holds a tile, then drags it: obj-drag.js's hold). On a phone it scrolls sideways rather than run past the stage. */
   .dgm-shelf {
-    display: none;
+    max-inline-size: calc(100% - 2 * var(--space-3));
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .dgm-shelf .dgm-tile,
+  .dgm-shelf > button {
+    min-inline-size: 2.75rem;
+    min-block-size: 2.75rem;
+    flex: none;
+  }
+
+  .dgm-stage.dgm-shelved > .dgm-picture {
+    margin-block-start: calc(2.75rem + 2 * var(--space-1) + var(--space-3) + var(--space-2));
   }
 
   /* No shelf at the top here, so the offer takes the top of the stage, whole width. */

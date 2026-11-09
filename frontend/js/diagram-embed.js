@@ -525,11 +525,7 @@
       "Pick a block in the picture or in the list and it is picked in the other too. The shelf's left arrow folds the shelf to one button. On a mind map or timeline a shelf tile pressed or dropped on the picture adds after the picked block.",
       "Press N to add a box, Tab on the last box to add one joined to it, Enter to name it.",
       "[ and ] fold the list and the picture, F6 leaves the blocks, Ctrl+Enter keeps the diagram and ? lists every key.",
-      //: No shelf on a phone or touch screen (it is hidden there): the line says Add, not a drag.
-      "On a sequence picture, double press a part to name it, drag a head to reorder and drag from one lifeline to another to add a message. The shelf in the picture's corner adds a block by a press or a drag onto the picture, joined from the box nearest the drop.".replace(
-        matchMedia("(max-width: 599.98px), (pointer: coarse)").matches ? / The shelf .*$/ : /$^/,
-        " Tap Add to put a block in, joined from the selected box."
-      ),
+      "On a sequence picture, double press a part to name it, drag a head to reorder and drag from one lifeline to another to add a message. The shelf in the picture's corner adds a block by a press or a drag onto the picture, joined from the box nearest the drop; on a touch screen hold a tile a moment, then drag.",
       "Kind asks before it clears a diagram that has blocks.",
       "If the page closes with this window open, the next open offers your changes back.",
     ];

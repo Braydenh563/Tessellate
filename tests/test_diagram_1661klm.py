@@ -262,7 +262,7 @@ def test_a_message_dropped_at_apps_x_between_messages_one_and_two_goes_app_to_se
     assert out["at"] == 1 and out["pair"] == ["App", "Server"]
 
 
-def test_the_shelf_is_a_dock_of_six_grip_tiles_and_a_caret_hidden_on_phones_and_coarse_pointers():
+def test_the_shelf_is_a_dock_of_six_grip_tiles_and_a_caret_shown_on_touch_too():
     lib = _js("diagram-library.js")
     for needle in ("function tileOf(t)", "dataset.objGrip", "dock dgm-shelf", "dgm-shelf-more", 'aria-haspopup", "menu"', "openMenuAtPoint("):
         assert needle in lib, needle
@@ -271,7 +271,8 @@ def test_the_shelf_is_a_dock_of_six_grip_tiles_and_a_caret_hidden_on_phones_and_
     assert "diagramModel.library.shelf(S, { ...helpers, glyph: shapeGlyph, groupGlyph })" in _js("diagram-builder.js")
     block = CSS[CSS.index(".dgm-shelf {") :][:700]
     assert "position: absolute" in block and "var(--space-3)" in block
-    # The shelf is hidden in the one touch and phone-width block (a second copy of that block hid the grips' rule from test_diagram_touch).
+    # The shelf stays on a phone and a touch screen (dgpolish-1109: a finger holds a tile, then drags it); it scrolls sideways there.
     assert CSS.count("@media (pointer: coarse), (max-width: 599.98px) {") == 1
     coarse = CSS[CSS.index("@media (pointer: coarse), (max-width: 599.98px) {") :].split("\n}\n", 1)[0]
-    assert ".dgm-shelf {\n    display: none;" in coarse
+    assert ".dgm-shelf {\n    display: none;" not in coarse
+    assert "overflow-x: auto" in coarse[coarse.index(".dgm-shelf {") :][:300]
