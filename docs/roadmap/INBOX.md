@@ -34,7 +34,7 @@ with its owner named in the entry.
 
 ## Open items
 
-1698. **Owner, 2026-11-09 ~05:50Z, verbatim:** "dragging the in-app companion is laggy, and also the in-app companion (I have set it to the one based on my name) just like flew across the top of my screen but with the walking legs animation". Placed with agent appdrag-1109.
+1698. **Owner, 2026-11-09 ~05:50Z, verbatim:** "dragging the in-app companion is laggy, and also the in-app companion (I have set it to the one based on my name) just like flew across the top of my screen but with the walking legs animation". Placed with agent appdrag-1109. **Part fixed 839a1e7 (hang slide with walk legs), fb859ed (large-view line under the card head).** Drag lag and the growing no-script frames NOT reproduced in headless Chromium (empty data, 1440x900): pointermove handlers 0.13 to 0.26 ms mean before and after; 0.7 ms per style recalc, 40k-node DOM and 8k alike; 150 s soak and 3 rounds of every travel mode plus 40 acts end at 4 animations, 8205 nodes (no pile-up). Needs a trace on the owner's data (notes view, whiteboard.js onpointermove).
 
 1697. **Owner, 2026-11-09 ~05:40Z, verbatim:** "I still cant place the companion to sit on a smaller desktop window". Placed with agent perchsmall-1109 (drop onto a small window top: PERCH_MIN_RISE, the drop landing search, window size filters in engine.py and the window reader).
 
