@@ -15,11 +15,22 @@ _MONTH_FIRST = re.compile(rf"\b(?P<m>{_NAMES}) (?P<d>\d{{1,2}})(?:st|nd|rd|th)?\
 def date_in(fact: str, today: date) -> date | None:
     found = _DAY_FIRST.search(fact) or _MONTH_FIRST.search(fact)
     if not found:
-        return None
+        return _abbreviated(fact, today)
     try:
         return date(int(found.group("y") or today.year), _MONTHS.index(found.group("m").lower()) + 1, int(found.group("d")))
     except ValueError:
         return None
+
+
+def _abbreviated(fact: str, today: date) -> date | None:
+    """"Thu 12 Nov 9:30": the day the one reader finds when the month is not spelled out (bt-compcomp-1109 item 3)."""
+    from tessellate.ai import recognise
+
+    for start, end, phrase in recognise.find(fact):
+        found = recognise.span(phrase, today, "future") if phrase[:1].isdigit() else None
+        if found and found[0] == found[1] and found[2] == "day":
+            return found[0]
+    return None
 
 
 def distance(fact: str, today: date) -> str:

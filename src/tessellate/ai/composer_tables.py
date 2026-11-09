@@ -1621,6 +1621,7 @@ for _retired in ("who", "about_app"):
 SHAPE_WORDS: dict[str, str] = {
     **dict.fromkeys(("money", "cost", "costs", "price", "paid", "pay", "spend", "spent", "amount", "cash"), "money"),
     **dict.fromkeys(("rate", "rated", "rating", "score", "scored", "stars", "mark"), "score"),
+    **dict.fromkeys(("schedule", "timetable", "routine", "rota"), "schedule"),
 }
 
 

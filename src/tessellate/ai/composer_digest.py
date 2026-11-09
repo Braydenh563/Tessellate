@@ -49,7 +49,7 @@ from tessellate.ai import composer_ahead, composer_ask, composer_clean, composer
 from tessellate.ai import composer_chip_subject
 from tessellate.ai import composer_read
 from tessellate.ai import composer_select
-from tessellate.ai import composer_credit, composer_label, composer_likeness, composer_refer, composer_tally
+from tessellate.ai import composer_credit, composer_each, composer_label, composer_likeness, composer_refer, composer_tally
 from tessellate.ai.composer_lists import clean
 from tessellate.ai import recognise as recogniser
 from tessellate.ai import when as when_words
@@ -2155,8 +2155,23 @@ def _one_note_lines(groups: dict[str, list[Fact]]) -> list[tuple[str, list[Fact]
                 by_note.setdefault(f.view.id, []).append(f)
             items += [(label, h) for h in by_note.values()]
         else:
-            items.append((label, held))
+            items += [(label, run) for run in _contiguous(held)]
     return items
+
+
+def _contiguous(held: list[Fact]) -> list[list[Fact]]:
+    """`held` cut where the note has a sentence between two of them: a quote
+    is the note's words verbatim and unbroken, never two sentences with a
+    third left out between them (bt-compcomp-1109 item 4)."""
+    runs: list[list[Fact]] = [[held[0]]] if held else []
+    for f in held[1:]:
+        last = runs[-1][-1]
+        gap = str(f.view.note.get("content") or "")[last.sentence.end:f.sentence.start] if f.view.id == last.view.id else ""
+        if f.sentence.start >= last.sentence.end and re.search(r"\w", gap):
+            runs.append([f])
+        else:
+            runs[-1].append(f)
+    return runs
 
 
 def _clause_list(said: str) -> str:
@@ -3396,7 +3411,19 @@ _DAYS_RE = r"(?:mon|tues|wednes|thurs|fri|satur|sun)day"
 _MONTHS_RE = r"(?:jan|febr)uary|march|april|may|june|july|august|(?:sept|nov|dec)ember|october"
 #: "On Friday 23 October, you went": the absolute date a weekday carries (1441: relative or none).
 _DATED_LEAD = re.compile(rf"^on {_DAYS_RE},? \d{{1,2}} (?:{_MONTHS_RE}),?\s+", re.I)
-_DATED_DAY = re.compile(rf"\b({_DAYS_RE}),? \d{{1,2}} (?:{_MONTHS_RE})\b", re.I)
+_DATED_DAY = re.compile(rf"\b({_DAYS_RE}),? (\d{{1,2}}) ({_MONTHS_RE})(?: (\d{{4}}))?\b", re.I)
+
+
+def _undated_past(found: re.Match, today: date) -> str:
+    """The weekday alone for a date gone by; a date still ahead ("Deadline:
+    Monday 16 November 2026") is a fact and keeps its day, month and year
+    (bt-compcomp-1109 item 4: it was cut to "Monday 2026")."""
+    month = [m for m in composer_ask._MONTHS if m.lower().startswith(found.group(3).lower()[:3])]
+    try:
+        day = date(int(found.group(4) or today.year), composer_ask._MONTHS.index(month[0]) + 1, int(found.group(2)))
+    except (ValueError, IndexError):
+        return found.group(1)
+    return found.group(0) if day >= today else found.group(1)
 
 
 def _each_says_its_day(out: _Out, members, today: date) -> None:  # noqa: ANN001
@@ -3437,7 +3464,7 @@ def _drop_absolute_days(out: _Out, members, today: date) -> None:  # noqa: ANN00
         if bare != line and view is not None and view.written:
             bare = _lead_day(view.written, today) + bare[:1].lower() + bare[1:]
         else:
-            bare = _DATED_DAY.sub(r"\1", bare[:1].upper() + bare[1:])
+            bare = _DATED_DAY.sub(lambda m: _undated_past(m, today), bare[:1].upper() + bare[1:])
         if at - 1 < len(out.rows) and out.rows[at - 1].get("sentence"):
             out.rows[at - 1]["sentence"] = bare.rstrip(".")
         out.lines[at] = bare
@@ -3802,6 +3829,17 @@ def _names_it(text: str, names_a_thing: bool, subject_words: list) -> bool:
     return bool(re.search(rf"\b(?:is|are|was) (?:called |named |known as )?(?:the )?{re.escape(' '.join(subject_words))}\b", text, re.I))
 
 
+def _yes_no(question: str) -> bool:
+    from tessellate.ai import composer_intent  # at the call: composer_intent reads the digest
+
+    return bool(composer_intent._PRESENT_ASK.match(question or ""))  # noqa: SLF001
+
+
+def _titled_for_yes_no(f: Fact, stems: set[str], yes_no: bool) -> bool:
+    """A yes/no ask's subject is the note titled for it."""
+    return bool(yes_no and stems and f.view.titled and all(composer._holds(st, f.view.title_words) for st in stems))
+
+
 def _best(facts: list[Fact], question: str, cue: re.Pattern | None = None) -> Fact | None:
     #: Without the asking words: "what day did I run 8 km" is not about a "day".
     stems = set(_subject(question))
@@ -3817,6 +3855,8 @@ def _best(facts: list[Fact], question: str, cue: re.Pattern | None = None) -> Fa
     #: now" is the moved slot, not the first booking (stress run 2026-10-30).
     old = composer_select.superseded(composer.subject_terms(clean(question)), list({id(f.view): f.view for f in facts}.values()))
 
+    #: "is the dentist tomorrow" is about the note titled Dentist, though a to-do line is the one to say "dentist" (bt-compcomp-1109 item 3).
+    yes_no = _yes_no(question)
     figures = composer_answer.figures_of(question)
     asks_feeling = bool(_FEELING_ASK.search(question))
     latest = bool(_LATEST_ASK.search(question) or _LAST_ONE.search(question))
@@ -3859,7 +3899,7 @@ def _best(facts: list[Fact], question: str, cue: re.Pattern | None = None) -> Fa
         opens = titled and _opening(f)
         #: "what is Doug", "who is Marek": the sentence that says what it is ("is called Doug", "Builder is Marek", R9-3).
         names_it = _names_it(f.sentence.text, names_a_thing, subject_words)
-        return (not asked_back, not _in_a_place(f.sentence.text, stems), doing_now, acts, _cued(cue, f.sentence.text), _ahead_if(now_ask, f), not (latest and f.sentence.kind in {"item", "task"}), id(f.view) not in old, _label_asked(f.label, question), titled, opens, names_it, says_it, hits, newest, newest_own, own, asks_feeling and _feeling(f.sentence.text), same_figure, -f.view.rank, -f.sentence.order)
+        return (not asked_back, not _in_a_place(f.sentence.text, stems), doing_now, acts, _cued(cue, f.sentence.text), _ahead_if(now_ask, f), not (latest and f.sentence.kind in {"item", "task"}), id(f.view) not in old, _label_asked(f.label, question), titled, opens, names_it, says_it, hits, newest, newest_own, _titled_for_yes_no(f, stems, yes_no), own, asks_feeling and _feeling(f.sentence.text), same_figure, -f.view.rank, -f.sentence.order)
 
     return max(facts, key=rank) if facts else None
 
@@ -4689,7 +4729,7 @@ def _exact_lookup(out: _Out, asked: str, question: str, views: list, today: date
     """The figures the notes hold, worked exactly: a slot, an amount, a sum,
     a day or a count, said (True)."""
     #: A superlative over a table, a count of a list, a distance on a day (R9-10).
-    if composer_tally.answer(out, asked, views) or composer_credit.answer(out, asked, views) or composer_label.answer(out, asked, views):
+    if composer_tally.answer(out, asked, views) or composer_credit.answer(out, asked, views) or composer_label.answer(out, asked, views) or composer_each.answer(out, asked, views):
         return True
     #: The question's slot (a tick, an open task, a dated line) is what
     #: answers it, or the answer says no note holds it (audit 1029 rank 19).
