@@ -1685,7 +1685,7 @@ class Engine:
             side = -side
         x = tv.edge_x(side, m.area, self.size[0], self.rng.uniform(6.0, tv.EDGE_ZONE * 0.8) * k)
         if self.home_x is not None and tv.nearest_edge(self.home_x, m.area, self.size[0]) == side:
-            reach = 1.8 * AWAY * k  # a spell on the home's own side stays within the home radius (the hour test's 2 x AWAY)
+            reach = 1.95 * AWAY * k  # a spell on the home's own side stays within the home radius (the hour test's 2 x AWAY)
             x = min(max(x, self.home_x - reach), self.home_x + reach)
         return self._clear_of_caret(x, self.ground_y(m), SPELL_ROOM * self.size[1])
 
@@ -4638,11 +4638,6 @@ class Engine:
         if s in ("fall", "hop", "fly", "leap"):  # before the tail: it swings through a fall, and the window moves fastest here
             return TICK_FALL_MS
         if self._follow_moving():  # the tail still swings, or the body is easing to its pose
-            if s == "stand" and not self._tail_fast(now):
-                # A stand easing a mood's shape (a few hundredths of the height) is drawn at the rest cap of 12 a second, and
-                # the last small swing of a hem (under 8 px at the tip) at 20, not 60: walk seed 1 spent 1,400 draws an hour
-                # there, 23 a minute of the 500 ceiling.
-                return REST_DRAW_MS if self.tail.settled() else 3 * TAIL_TICK_MS if abs(self.tail.tip) < 8.0 else TAIL_TICK_MS
             return TAIL_TICK_MS
         if s == "pressed":
             return None
