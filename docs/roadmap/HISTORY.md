@@ -7,6 +7,101 @@ Split out of `ROADMAP.md`. Kept, not deleted, for one reason: **three sessions
 have independently rebuilt something that already existed.** This is the file
 that answers "has this been done?" before anyone starts.
 
+## Moved from the plans, 2026-11-09 (book5-1109: WORLD_CLASS_PLAN)
+
+INBOX 410, placed 2026-10-03, built in full 2026-09-24 (templates confirm, the Guide's controls reference, the map part, Check with AI in place, the dockable suggestions panel, the dictionary sheet); its own last line says nothing of 410 is open.
+
+From WORLD_CLASS_PLAN.md (lines 2558 to 2600 before the move), verbatim:
+
+410. **The owner, 2026-09-24, verbatim, with screenshots of the writing
+    dictionary, New from a template, the map's radial menus and two linked
+    map nodes.** "also improve how the \"check with ai\" feature works in the
+    documents editor, allow the suggestions panel to be docked on the right
+    instead if the user wishes and redesign the dictionary panel as it is
+    ugly and needs a proper professional modern redesign." "also when
+    selecting a template, I want to be able to confirm my template
+    selection, not have it instantly be made when I press it" "is there a
+    way to make these mind map item radial options fit better in the
+    radials?? also what if the user asks the guide for all the hidden
+    features, keybinds, controls, utility and more for features like the
+    whiteboard, mindmap and documents editor etc. can it answer those??"
+    "also fix the ci and codeql errors" "when I relink or newly link two
+    mindmap nodes, they clump together??" "drag selection on the whiteboard
+    and mindmap is laggy as well". Read from the screenshots: the radial's
+    labelled pills overhang the ring (a 2-item edge ring and the 6-item node
+    ring both); a relinked node lands on top of its new parent instead of
+    being laid out as its child. CI: four routing rows fixed 2026-09-24 (three
+    moved to topics added that day, "Can Atlas write for me?" gets a new
+    write-with-atlas topic). Placed: documents (check with AI, dockable
+    suggestions, dictionary), templates (confirm), the Guide's per-surface
+    controls reference, map (radial fit, relink layout, marquee lag), in
+    agent briefs as slots free.
+    **Templates (confirm) built 2026-09-24** (bf54953): a click chooses,
+    Use this template, Enter or a double click makes it; sweep
+    `templatepick.js`. 
+    **The Guide's part built 2026-09-24** (guide-controls agent): a controls
+    reference per surface and a hidden features entry, routed by what the
+    question asks c05c684; 55 bank questions (177, top-1 99.4%, top-3 100%)
+    1385b0e; a freshness test against every bound key a164dc2; the caps
+    (a 422 after a long answer and on the fifth question, the reply cut
+    mid-list) 5cb7f8f. Map part built (radial fit 13c41d7, relink b449623, marquee 18b8c15).
+    **The documents' part built 2026-09-24** (the documents agent): Check
+    with AI runs in place, streamed into the suggestions panel with Apply,
+    Dismiss and Stop, a no-model notice with Settings, Models, and Discuss in
+    chat with no long prompt (so no skill nudge, the INBOX 413 half)
+    (cd5dec1, `aicheck.js`); the panel docks at the bottom or on the right,
+    resizable, remembered, always bottom at 720px and below (a8c822a,
+    `prosedock.js`); the dictionary as a settings sheet (bbeda8e,
+    `dictsheet.js`); the Capture box's templates confirm too (26e8d9b,
+    `notetemplatepick.js`). Nothing of 410 is open now; it stays for the
+    orchestrator to resolve with 413.
+
+## Moved from the plans, 2026-11-09 (book5-1109: WORLD_CLASS_PLAN)
+
+Rows of "What is left, 2026-09-24" that are struck through and sized done with nothing left over (rows 1, 2, 4, 7, 8, 9, 11, 12, 14, 15, 20, 24, 30, 31 and 33), each already naming its HISTORY record and tests. Rows that are built but carry a 'left:' remainder stay in the table.
+
+From WORLD_CLASS_PLAN.md (lines 790 to 791 before the move), verbatim:
+
+| 1 | ~~F3, §16~~ | ~~`semantic_search` reads and parses every vector per request~~ built 2026-09-24: scores against the engine's matrix; 5,000 notes 19 to 74 ms before, 1.0 to 1.2 ms after (`tests/test_semantic_search_matrix.py`) | done | HISTORY |
+| 2 | ~~§12, Brief 15~~ | ~~S1, S2, S3, the rest of S5, S6, `/debug/health` paths~~ built 2026-09-24; ~~`tests/test_lan.py`, the switch and its Settings toggle~~ built 2026-09-26; ~~LAN mode over IPv6~~ built 2026-10-04 (`netbind.listening_socket`, one dual-stack socket; the `[::1]` launcher test skips where the machine has no IPv6) | done | HISTORY |
+
+From WORLD_CLASS_PLAN.md (lines 793 to 793 before the move), verbatim:
+
+| 4 | ~~D2, 261~~ | ~~the connections rail always visible on desktop, which is also where `GET /resurface/near` would show~~ built 2026-09-27 (`#notes-rail` at 1280 and wider, the sheet below, by decision); re-measured 2026-10-04 with `notesrail.js` on the showcase notebook, 30/30 light and 30/30 dark at 1440, 1280, 1024 and 390 | done | HISTORY; D2 |
+
+From WORLD_CLASS_PLAN.md (lines 796 to 798 before the move), verbatim:
+
+| 7 | ~~I3, H2~~ | ~~the questions view, `GET /questions`, the Ask scope, the answered-by link~~ built 2026-10-04 (`ai/questions.py`, `routes_questions.py`, Notes, Questions; `tests/test_questions_spec.py`, 500 questions listed under 100 ms) | done | HISTORY |
+| 8 | ~~Placed 2026-09-13~~ | ~~`/files/gallery`'s five callers onto `apiPagedList`, then its default to 200~~ built 2026-09-24 (`tests/test_gallery_paging.py`) | done | HISTORY |
+| 9 | ~~§16~~ | ~~cache `similar_pairs` for link suggestions and tensions~~ built 2026-09-24: keyed by the matrix's version; 5,000 notes 322 to 104 ms a repeat request (`tests/test_similar_pairs_cache.py`) | done | HISTORY |
+
+From WORLD_CLASS_PLAN.md (lines 800 to 801 before the move), verbatim:
+
+| 11 | ~~§17~~ | ~~review queue, filing style, explain this note, most opened this month (S each); tidy proposals, charts from questions (M each); `.ics` export built 2026-09-26~~ built 2026-10-05 (`routes_vision.py`, `ask-chart.js`; `tests/test_vision_rows_row11.py`) | done | HISTORY |
+| 12 | ~~D6~~ | ~~the calendar strip, the yesterday/tomorrow pair and the month popover~~ built 2026-10-04 (`timeline.js`, `note-cards.js`; HISTORY, "the consistency contract's missing lints") | done | HISTORY |
+
+From WORLD_CLASS_PLAN.md (lines 803 to 804 before the move), verbatim:
+
+| 14 | ~~A8~~ | ~~the '?' help on every tab's dock (Chat and Graph have it)~~ built 2026-10-04: Dashboard and Reminders were the two docks without one (`tests/test_dock_help_507.py` fails on a dock with none) | done | HISTORY |
+| 15 | ~~§1.3~~ | ~~Remind me on documents and boards (the reminder must point at other kinds first), Show in graph for a document, the Library note card's Remind me and Link to~~ built 2026-10-05 (`Reminder.document_id`, `target_kind`; `tests/test_reminder_targets_row15.py`) | done | HISTORY |
+
+From WORLD_CLASS_PLAN.md (lines 809 to 809 before the move), verbatim:
+
+| 20 | ~~I7~~ | ~~the "Learned from you" line with a filing accuracy number~~ built 2026-10-05 (`learning.filing_accuracy`, `GET /learned/summary`, `tests/test_learned_accuracy.py`); 24 notes, 5 moved: 67% to 92% | done | HISTORY |
+
+From WORLD_CLASS_PLAN.md (lines 813 to 813 before the move), verbatim:
+
+| 24 | ~~D9~~ | ~~the web clipper~~ built 2026-10-05: `POST /links/clip-page` from the browser, the Clip to Tessellate bookmark and `clip.html` (`tests/test_webclip_page.py`) | done | HISTORY |
+
+From WORLD_CLASS_PLAN.md (lines 819 to 820 before the move), verbatim:
+
+| 30 | ~~§5~~ | ~~notes' unlinked mentions, word count and reading time; `{{clipboard}}` and a cursor mark; move to a space and export from a selection; the bin for documents and reminders~~ built: unlinked mentions with KG1 (2026-10-04); the rest 2026-10-05 (`tests/test_selection_actions_row30.py`, `tests/test_bin_documents_reminders_row30.py`) | done | HISTORY |
+| 31 | ~~Placed 2026-09-09~~ | ~~1 capture into the selected space and a bulk move; 99 (b) scroll restore, (c) the AI dot's latency tooltip, (d) Paste as note; 92's row redesign; 97 RapidOCR; 79 and 22 to 23 not re-checked; 261's vault re-key (`POST /auth/rotate-vault-key`) has no UI~~ built or found built 2026-10-05 (`tests/test_placed_0909_row31.py`, `scratchpad/ui-sweeps/nbf1005-recheck.js`); 97 decided not to build (a new Python dependency) | done | HISTORY |
+
+From WORLD_CLASS_PLAN.md (lines 822 to 822 before the move), verbatim:
+
+| 33 | ~~§21~~ | ~~rows 1 and 2 on the notice recipe, row 12's "check the address" in the status line, row 13's update size in the About page~~ built 2026-10-05 (`tests/test_failure_ways_out_row33.py`) | done | HISTORY |
+
 ## Moved from the plans, 2026-11-09 (book5-1109: GRAPH_PLAN)
 
 INBOX 41, 78 and 59, placed from 2026-09-09, found built and still standing whole (41's clean-up is Phase 4, built 2026-09-09 and 2026-09-13; 78 is Phase 6b, built 2026-09-13 with its measurements; 59 is Phase 6, the node panel, built 2026-09-09).
