@@ -59,6 +59,7 @@ from . import extras
 from . import landing as ld
 from . import presence as pr
 from . import travel as tv
+from . import vitals
 
 #: Seconds.
 MAX_DT = 0.1
@@ -96,6 +97,9 @@ SETTLE_FOR = (200.0, 520.0)
 #: in-app tail), so the pair never repeats; every picture is on the pose grid and the cache holds the recent ones.
 REST_LIFE = {"sit": (4.8, 0.012, 3.0, 3.7), "sleep": (7.5, 0.016, 2.0, 11.3)}
 TAIL_WANDER = 0.12
+#: States that leave the figure out of breath (INBOX 1719 b): a sit or a sleep begun soon after one breathes quicker,
+#: easing back over `vitals` `half_s` (the period is set as the rest begins, so the picture never jumps).
+EXERTING = ("walk", "hop", "leap", "land", "fly", "fall", "held", "rise", "drift")
 TAIL_WANDER_S = 43.0
 TAIL_LAG = 0.9
 #: Finer than the walk's grid so a 1.5 px breath is a few smooth steps, not a hard on and off.
@@ -694,6 +698,9 @@ class Engine:
         self.next_ambient = now + self._ambient_gap()
         self.flash: tuple[str, float] | None = None  # (frame, until): a blink or a look
         self.blink_at = -1e9  # when the last blink began
+        self.exerted_at = -1e9  # when it last stopped walking, hopping or being carried
+        self.rest_breath = 1.0  # the sit's or the sleep's breath period scale, set as it begins
+        self.blink_for = BLINK_FOR  # how long this blink's lid is down (`vitals.blink`: longer tired or sleepy)
         self.lively = "usual"  # the menu's Activity: a key of LIVELY
         self.look_after_blink = False  # the blink now showing opens a look (a gaze shift is blinked into)
         self.notice_ready = now
@@ -1092,6 +1099,7 @@ class Engine:
     def _enter(self, state: str, now: float) -> None:
         if self.state == "sleep" and state != "sleep":
             self.woke_at = now
+        self._catch_breath(state, now)
         self._wear_face(state, now)
         self.state = state
         self._arm_nap(state, now)
@@ -1116,6 +1124,13 @@ class Engine:
             getattr(self, f"_on_{state}", lambda _now: None)(now)
         if state == "stand" and self.perch is not None:  # a visit to a window ends when its time does
             self.state_until = min(self.state_until, max(now + 1.0, self.perch_until))
+
+    def _catch_breath(self, state: str, now: float) -> None:
+        """Leaving a walk, a hop or a carry starts the breath's ease back; a sit or a sleep takes its breath period from it."""
+        if self.state in EXERTING:
+            self.exerted_at = now
+        if state in REST_LIFE:
+            self.rest_breath = vitals.breath(self.mind.mood(now, self.hour), vitals.exertion(now - self.exerted_at))
 
     def _carry_tick(self, now: float) -> None:
         """A carry that goes on: after `CARRY_STAGES[0]` s it kicks its legs, then crosses its arms, then sighs (INBOX
@@ -1449,9 +1464,14 @@ class Engine:
         q = self._life_pose(self.now)
         return None if q is None else (q.sx, q.sy, q.lean, q.drag)
 
+    def _rest_life(self) -> tuple[float, float, float, float] | None:
+        """`REST_LIFE` for the state with its breath period scaled by the rest's own `rest_breath`."""
+        life = REST_LIFE.get(self.state)
+        return None if life is None else (life[0] * self.rest_breath, *life[1:])
+
     def _life_pose(self, at: float, scale: float | None = None) -> bh.Pose | None:
         """The eased body pose with the breath and tail sway of a sit or a sleep over it, on the grid."""
-        life = REST_LIFE.get(self.state)
+        life = self._rest_life()
         if life is None or self.reduced:
             return bh.quantised(self.cur)
         breath, depth, sway, sway_s = life
@@ -1461,7 +1481,7 @@ class Engine:
 
     def _life_cell(self, at: float, scale: float) -> tuple[int, int, int, int]:
         """`_life_pose`'s grid cell (equal cells are equal poses): what a look-ahead compares."""
-        life = REST_LIFE.get(self.state)
+        life = self._rest_life()
         c = self.cur
         if life is None or self.reduced:
             return bh.cell(c.sx, c.sy, c.lean, c.drag)
@@ -1505,7 +1525,20 @@ class Engine:
 
     def _ambient_gap(self) -> float:
         lo, hi = AMBIENT_EVERY
-        return lo + (hi - lo) * self.life_rng.random() ** AMBIENT_SKEW
+        return lo + (hi - lo) * self.life_rng.random() ** AMBIENT_SKEW * self._blink_scale()[0]  # the 2 s floor holds (INBOX 1670)
+
+    def _blink_scale(self) -> tuple[float, float]:
+        """INBOX 1719 b: the mood and the tiredness of the moment set how often it blinks and how slowly (`vitals.blink`):
+        sleepy or tired, more often and longer; curious or startled, a held gaze."""
+        mind = getattr(self, "mind", None)
+        if mind is None:
+            return 1.0, 1.0
+        return vitals.blink(mind.mood(self.now, self.hour), mind.needs.get("rest", 0.0))
+
+    def _blink(self, now: float) -> None:
+        """A blink begins: its length is the mood's, drawn once so its phases keep their shares."""
+        self.blink_for = BLINK_FOR * self._blink_scale()[1]
+        self.flash, self.blink_at = ("blink", now + self.blink_for), now
 
     def _ambient(self, now: float) -> None:
         """Blink, and now and then look about: while standing (a sit blinks, it does not look), and only
@@ -1520,10 +1553,10 @@ class Engine:
         if self.flash is None and now >= self.next_ambient:
             look = self.state == "stand" and self.life_rng.random() < LOOK_SHARE
             # G2: a big gaze shift starts with a blink (Eyes Alive), then the look.
-            self.flash, self.blink_at = ("blink", now + BLINK_FOR), now
+            self._blink(now)
             self.look_after_blink = look
-            double = not look and self.life_rng.random() < DOUBLE_SHARE
-            self.next_ambient = now + (BLINK_FOR + DOUBLE_GAP if double else self._ambient_gap())
+            double = not look and self.life_rng.random() < DOUBLE_SHARE and self.blink_for <= BLINK_FOR * 1.1  # a heavy lid is not doubled
+            self.next_ambient = now + (self.blink_for + DOUBLE_GAP if double else self._ambient_gap())
 
     def _after_stand(self, now: float) -> None:
         idle = now - self.last_active
@@ -3052,7 +3085,7 @@ class Engine:
         if not self.reduced and self.metrics and self.state not in ("held", "fly", "fall"):
             self.turn_to, self.turn_started = direction, now
             if self.flash is None and now - self.blink_at >= AMBIENT_EVERY[0]:  # G2: the turn is blinked into
-                self.flash, self.blink_at = ("blink", now + BLINK_FOR), now  # (never within the least gap of another)
+                self._blink(now)  # (never within the least gap of another)
                 self.next_ambient = max(self.next_ambient, now + AMBIENT_EVERY[0])
         else:
             self.facing = direction
@@ -4370,10 +4403,11 @@ class Engine:
         picture, 0 for the shut one, None when no blink shows (or a motion cannot draw a lid: reduced, or no face layer)."""
         if not self.flash or self.flash[0] != "blink":
             return None, math.inf
-        u = (now - (self.flash[1] - BLINK_FOR)) / BLINK_FOR
+        span = self.blink_for
+        u = (now - (self.flash[1] - span)) / span
         k = max(i for i, (at, _s) in enumerate(BLINK_PHASES) if u >= at - 1e-9) if u > 0 else 0
         nxt = BLINK_PHASES[k + 1][0] if k + 1 < len(BLINK_PHASES) else 1.0
-        return BLINK_PHASES[k][1], self.flash[1] - BLINK_FOR + nxt * BLINK_FOR
+        return BLINK_PHASES[k][1], self.flash[1] - span + nxt * span
 
     def _blink_face(self, now: float, frame: str, face: tuple[str, int] | None) -> tuple[str, int] | None:
         """`face` with the blink's lids over it: the light and half lids are drawn over the open picture, over an expression too

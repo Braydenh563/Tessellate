@@ -186,6 +186,7 @@ class OverlayRunner:
         self._busy_ptr: tuple[int, int] | None = None
         self._ptr_moved_at = -math.inf
         self._return_until = -math.inf
+        self._return_kind = "idle_return"
         self._stopped = False
         self._resume = False
         self._last_key: tuple | None = None
@@ -507,7 +508,7 @@ class OverlayRunner:
             return
         local = time.localtime()
         hour = local.tm_hour if self.clock_hour is None else self.clock_hour
-        kinds = self._watch.poll(now, hour, local.tm_min, screen=self.roam_windows)
+        kinds = self._watch.poll(now, hour, local.tm_min, screen=self.roam_windows, day=local.tm_yday)
         if self.roam_windows and not engine.quiet and now - self._events_read >= screenwatch.EVERY:
             kinds += self._window_events(self._list_windows(Counter()), now)  # a window opening, closing or dragged is news with no climb near
         self._answer(kinds, now)
@@ -592,11 +593,14 @@ class OverlayRunner:
             return
         engine.quiet = age is not None and age < TYPING_AGE and now - self._ptr_moved_at > age
         # the person back after a long absence (checked here: a sitting or sleeping figure reads no screen events)
-        if self._watch.input_seen(now, age):
-            self._return_until = now + RETURN_FOR
-        if now < self._return_until and engine.react("idle_return", now):
+        for kind in self._watch.input_seen(now, age):  # idle_return, or the morning's first hello
+            self._return_until, self._return_kind = now + RETURN_FOR, kind
+        if now < self._return_until and engine.react(self._return_kind, now):
             self._return_until = 0.0
-            logger.info("overlay: it answered idle_return")
+            logger.info("overlay: it answered %s", self._return_kind)
+        burst = self._watch.typing_seen(now, engine.quiet)  # a long run of typing come to rest: a nod
+        if burst:
+            self._answer(burst, now)
         # at BUSY_EVERY (0.5 Hz); Chromium and Electron give no caret (INBOX 1670 13:22Z)
         read_caret = getattr(self.k, "caret_rect", None)  # the X11 backend reads no caret yet
         caret = read_caret(self.w) if read_caret else None
@@ -641,6 +645,7 @@ class OverlayRunner:
             self.busy = False
             self.host.show()  # type: ignore[union-attr]
             self._resume_engine(self.engine, now)
+            self._answer(["fullscreen_app"], now)  # back from behind a full-screen app: it peeks out (INBOX 1719 b)
             return None
         return int(BUSY_EVERY * 1000) if self.busy else None
 

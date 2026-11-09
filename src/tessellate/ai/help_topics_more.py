@@ -119,15 +119,20 @@ MORE_TOPICS: list[dict] = [
             "companion habits", "companion reactions", "companion reacts to search",
             "companion tilts its head", "companion double take", "companion shakes itself",
             "companion winces", "atlas looks around", "atlas hums", "companion mood time of day",
+            "companion stretch at dusk", "companion morning wave", "atlas breathing",
             "stop the companion reacting",
         ),
         "body": (
             "Now and then the corner companion reacts to what you do: a puzzled tilt "
             "when a search finds nothing and a nod when the next one does, a double "
             "take when the pointer rushes past it, a shake once you put it down after "
-            "carrying it a while, a nod on the hour, a wave when you come back after ten "
+            "carrying it a while, a nod on the hour and a stretch at dusk, a sleepy wave "
+            "at your first key of the morning, a wave when you come back after ten "
             "minutes away, a shiver when the battery is low, a glance when the window is "
-            "resized or goes fullscreen, and a small wince when a note goes to the bin. Atlas "
+            "resized or goes fullscreen and a look back when it leaves, a nod when a long "
+            "run of typing stops, and a small wince when a note goes to the bin. The desktop "
+            "companion does the same on your desk. Atlas breathes quicker after a walk or a "
+            "carry and blinks slower when sleepy. Atlas "
             "also has rare habits of its own: a look around, a hum, a settling breath "
             "and a second look at the pointer, each at most once in three minutes. Its "
             "moods follow the part of the day, brighter in the morning and quieter in "

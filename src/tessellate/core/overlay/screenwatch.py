@@ -30,6 +30,11 @@ AWAY_AFTER = 600.0
 #: ...and input this fresh (s, a few reads of the 0.5 Hz typing check) is the return.
 BACK_WITHIN = 5.0
 PARTIAL = (".crdownload", ".part", ".tmp", ".download", ".partial")
+#: The part of the day (INBOX 1719 b; the catalogue's `phases`): the hour dusk falls (its chime is `night_falls`, a stretch)
+#: and the morning's hours, in which the day's first input (or the first back from an absence) is `morning_hello`.
+DUSK, MORNING = 17, (6, 11)
+#: Typing this long (s, gaps under `BURST_GAP` s) that then rests `BURST_GAP` s is a burst finished (`typing_burst`, a nod).
+BURST_MIN, BURST_GAP = 30.0, 4.0
 
 
 def downloads_count(folder: Path | None = None) -> int | None:
@@ -78,6 +83,10 @@ class ScreenWatch:
         self.files: int | None = None
         self.files_at = 0.0
         self.away = False
+        #: The day (of the year) of the last morning hello, the day the last poll read, and the typing run under way.
+        self.hello_day: int | None = None
+        self.day: int | None = None
+        self.burst: tuple[float, float] | None = None  # (first key, last key) of the run
         #: The window (its key) the last event of each kind was about, so the figure can look toward it (INBOX 1700).
         self.subject: dict[str, int] = {}
 
@@ -86,11 +95,28 @@ class ScreenWatch:
         after `AWAY_AFTER` s without any: the figure's welcome back. Only the age is used, never what was typed."""
         if age is None:
             return []
+        first = self.day is not None and self.hello_day != self.day and self.hour is not None and MORNING[0] <= self.hour < MORNING[1]
         if age >= AWAY_AFTER:
             self.away = True
-        elif self.away and age < BACK_WITHIN:
+        elif (self.away or first) and age < BACK_WITHIN:
             self.away = False
+            if first:  # the first of the morning: a wave and a yawn, which is also the welcome back
+                self.hello_day = self.day
+                return ["morning_hello"]
             return ["idle_return"]
+        return []
+
+    def typing_seen(self, now: float, typing: bool) -> list[str]:
+        """Whether keys are going in now (the runner's 0.5 Hz read): a run of `BURST_MIN` s that has rested `BURST_GAP` s is
+        said once (`typing_burst`). Only that keys went in, never which."""
+        if typing:
+            first = self.burst[0] if self.burst and now - self.burst[1] < BURST_GAP else now
+            self.burst = (first, now)
+            return []
+        if self.burst and now - self.burst[1] >= BURST_GAP:
+            first, last = self.burst
+            self.burst = None
+            return ["typing_burst"] if last - first >= BURST_MIN else []
         return []
 
     def windows_seen(self, keys: Any) -> list[str]:
@@ -137,7 +163,7 @@ class ScreenWatch:
         reads are only remembered."""
         self.fg, self.windows, self.frames, self.files, self._counted = None, None, None, None, _UNSET
 
-    def poll(self, now: float, hour: int, minute: int = 0, screen: bool = True) -> list[str]:
+    def poll(self, now: float, hour: int, minute: int = 0, screen: bool = True, day: int | None = None) -> list[str]:
         """The events of this tick (empty before `EVERY` has passed). `screen` False (the person turned
         "Roam over windows" off) reads neither the foreground window nor the downloads folder."""
         if now < self.next_at:
@@ -148,8 +174,10 @@ class ScreenWatch:
             out += self._foreground()
         else:
             self.fg, self.files, self._counted = None, None, _UNSET
+        if day is not None:
+            self.day = day
         if self.hour is not None and hour != self.hour and minute < 2:
-            out.append("hour_chime")
+            out.append("night_falls" if hour == DUSK else "hour_chime")
         if self.hour is None or minute < 2:
             self.hour = hour
         out += self._battery()

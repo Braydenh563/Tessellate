@@ -56,8 +56,30 @@ function atlasBlinkTick() {
       if (Math.random() < 0.15) setTimeout(() => atlasBlinkMay(box) && atlasBlink(box), 420);
     }
   }
-  if (boxes.length) atlasState.blinkTimer = setTimeout(atlasBlinkTick, 3400 + Math.random() * 4200);
+  //: The gap's spread is the mood's and the tiredness's (`atlasBlink.vitals`): sleepy, more often; curious or startled, a held gaze.
+  const box = boxes[0];
+  const gap = box ? atlasBlink.vitals(box.closest(".nmb-drowsy, .nmb-groggy") ? "sleepy" : box.dataset.atlasMood).gap : 1;
+  if (boxes.length) atlasState.blinkTimer = setTimeout(atlasBlinkTick, 3400 + Math.random() * 4200 * gap);
 }
+//: **The body's rhythms, one table for both companions** (INBOX 1719 b): `vitals` in companion-catalogue.json, which
+//: the desk reads too (`src/tessellate/core/overlay/vitals.py`). For a mood (the figure's, mapped to the catalogue's),
+//: a tiredness 0 to 1 and the ms since it last exerted itself: the blink's gap and length scales and the breath's period
+//: scale (under 1 quicker). The table comes with the catalogue (`nmb.cat`); until then every scale is 1.
+atlasBlink.vitals = (mood, tired = 0, since = Infinity) => {
+  const v = typeof nmb !== "undefined" ? nmb.cat?.state.doc?.vitals : null;
+  const m = atlasBlink.moods[mood] || mood || "content";
+  const b = v?.blink;
+  let [gap, len] = b?.mood?.[m] || [1, 1];
+  const k = b?.tired ? Math.max(0, Math.min(1, (tired - b.tired_from) / (1 - b.tired_from))) : 0;
+  if (k) [gap, len] = [gap * (1 + (b.tired[0] - 1) * k), len * (1 + (b.tired[1] - 1) * k)];
+  const br = v?.breath;
+  const out = br ? br.exert * 0.5 ** (Math.max(0, since) / 1000 / br.half_s) : 0;
+  return { gap, len, breath: br ? (br.mood?.[m] ?? 1) / (1 + out) : 1 };
+};
+atlasBlink.moods = {
+  calm: "content", delighted: "happy", laughing: "happy", love: "happy", smirk: "happy", thinking: "focus", determined: "focus",
+  confused: "curious", surprised: "startled", worried: "startled", miffed: "startled", sad: "bored", shy: "content",
+};
 function atlasBlinkStart() {
   if (!atlasState.blinkTimer) atlasState.blinkTimer = setTimeout(atlasBlinkTick, 1800);
   //: The small behaviours are a file of their own (atlas-micro.js), fetched once.

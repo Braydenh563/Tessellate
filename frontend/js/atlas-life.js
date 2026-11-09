@@ -514,8 +514,9 @@ function atlasTailFrame(tail, now) {
   //: are all this beat does.
   const holds = tail.resting && live && atlasTailCalm(tail, box) && atlasRigLower.spell(box.closest("#nm-buddy"), box) === tail.state && now < tail.until;
   if (tail.resting && !holds) atlasTailUnrest(tail);
-  //: And the chest's breath (`atlasBreathFrame`).
+  //: And the chest's breath (`atlasBreathFrame`), at the rate of the moment.
   atlasBreathFrame(box, live);
+  atlasBreathFrame.rate(box.atlasBreath, box.closest("#nm-buddy"), box.dataset.atlasMood, now);
   for (const anim of box.atlasLoops || []) if (loops !== (anim.playState === "running")) loops ? anim.play() : anim.pause();
   if (holds) {
     tail.raf = setTimeout(() => atlasTailFrame(tail, performance.now()), ATLAS_TAIL_REST_BEAT_MS);
@@ -799,6 +800,7 @@ function atlasBreathFrame(box, live) {
   const look = box.dataset.atlasLook;
   if (!live) {
     if (box.atlasBreath) for (const anim of box.atlasBreath.anims) anim.cancel();
+    box.atlasBreath?.rise?.updatePlaybackRate?.(1);
     box.atlasBreath = null;
     return;
   }
@@ -811,6 +813,7 @@ function atlasBreathFrame(box, live) {
   if (faded && +getComputedStyle(faded).opacity === 0) return;
   box.atlasTorsos ||= [...box.querySelectorAll(".atl-layer-body .nmb-torso")];
   if (box.atlasBreath) for (const anim of box.atlasBreath.anims) anim.cancel();
+  box.atlasBreath?.rise?.updatePlaybackRate?.(1);
   //: The rise's clock is read here only, at a start or a retune (`getAnimations`
   //: and an animation's times bring the page's style up to date: B87a, 81
   //: forced restyles in 1.3 s of a carry when this was read each step).
@@ -825,8 +828,25 @@ function atlasBreathFrame(box, live) {
     else if (going) anim.currentTime = rise.currentTime;
     return anim;
   });
-  box.atlasBreath = { look, anims };
+  box.atlasBreath = { look, anims, rise: going ? rise : null, rate: 1 };
 }
+//: **The breath quickens and eases** (INBOX 1719 b): a walk, a carry or a lively act leaves the figure out of breath and
+//: it eases back over the table's half-life; sleepy it is slower, startled quicker (`atlasBlink.vitals`). The rate is
+//: the animations' playback rate, set only when its 0.05 step changes (`updatePlaybackRate` keeps the phase, so the
+//: chest and the rise stay together); the classes read are the buddy's own, no style.
+atlasBreathFrame.hot = ["nmb-walking", "nm-buddy-dragging", "nmb-act-hop", "nmb-act-cheer", "nmb-act-wiggle", "nmb-act-kick", "nmb-act-swing", "nmb-act-shake", "nmb-act-startle", "nmb-act-land", "nmb-act-carry"];
+atlasBreathFrame.rate = (breath, buddy, mood, now) => {
+  if (!breath) return 1;
+  const cls = buddy?.classList;
+  if (cls && atlasBreathFrame.hot.some((c) => cls.contains(c))) breath.hotAt = now;
+  const sleepy = cls?.contains("nmb-drowsy") || cls?.contains("nmb-sleep") ? "sleepy" : mood;
+  const rate = Math.round(20 / atlasBlink.vitals(sleepy, 0, now - (breath.hotAt ?? -Infinity)).breath) / 20;
+  if (rate !== breath.rate) {
+    breath.rate = rate;
+    for (const anim of [...breath.anims, breath.rise]) anim?.updatePlaybackRate?.(rate);
+  }
+  return rate;
+};
 
 //: **The lower body by what it is doing** (INBOX 575, the owner: "have the
 //: lower body of both atlas avatars change around in position and how it

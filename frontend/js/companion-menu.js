@@ -674,6 +674,71 @@ function mountBuddyPresets() {
   }
 }
 
+//: **The day and the desk, the in-app side** (INBOX 1719 b, 1696 j; the desk's `extras.REACTIONS` rows of the same
+//: names): dusk, the first evening hour, is a stretch; the morning's first key or press of the day a sleepy wave; a
+//: full-screen view left a look back out; a run of typing of 30 s or more that rests 4 s a nod. Played by
+//: `nameMarkBuddyReact` with the world's other rows (Little habits off, reduced motion or a hidden page: none).
+Object.assign(NMB_REACTIONS, {
+  night_falls: { cool: 20 * 60 * 60 * 1000, ms: 2400, world: true, play: ["stretch", "happy", 2400] },
+  morning_hello: { cool: 20 * 60 * 60 * 1000, ms: 2200, world: true, play: ["wave", "sleepy", 2200] },
+  fullscreen_app: { cool: 30000, ms: 1400, world: true, play: ["look", "curious", 1400] },
+  typing_burst: { cool: 5 * 60 * 1000, ms: 1400, world: true, play: ["nod", "happy", 1400] },
+});
+nmb.dayLife = {
+  dusk: 17, morning: [6, 11], burst: 30000, rest: 4000,
+  //: What a key or a press at `now` (a Date) says: the morning hello once a day, and the typing run's bounds.
+  input(now, key) {
+    const s = nmb.dayLife;
+    const t = now.getTime();
+    const day = now.toDateString();
+    const out = [];
+    if (s.hello !== day && now.getHours() >= s.morning[0] && now.getHours() < s.morning[1]) out.push("morning_hello");
+    if (key) s.run = s.run && t - s.run[1] < s.rest ? [s.run[0], t] : [t, t];
+    return out;
+  },
+  //: At `t` ms: the run over and long enough is a burst (said once).
+  rested(t) {
+    const s = nmb.dayLife;
+    if (!s.run || t - s.run[1] < s.rest) return [];
+    const long = s.run[1] - s.run[0] >= s.burst;
+    s.run = null;
+    return long ? ["typing_burst"] : [];
+  },
+  //: Ms to the next dusk from `now` (a Date).
+  toDusk(now) {
+    const at = new Date(now);
+    at.setHours(nmb.dayLife.dusk, 0, 1, 0);
+    if (at <= now) at.setDate(at.getDate() + 1);
+    return at - now;
+  },
+};
+(() => {
+  const s = nmb.dayLife;
+  const dusk = () => setTimeout(() => {
+    nameMarkBuddyReact("night_falls");
+    dusk();
+  }, s.toDusk(new Date()));
+  dusk();
+  const seen = (event) => {
+    const now = new Date();
+    const key = event.type === "keydown";
+    for (const kind of s.input(now, key)) if (nameMarkBuddyReact(kind)) s.hello = now.toDateString();
+    if (key && !s.timer) {
+      const check = () => {
+        const left = s.run ? s.run[1] + s.rest - Date.now() : 0;
+        s.timer = left > 0 ? setTimeout(check, left) : 0;
+        if (left <= 0) for (const kind of s.rested(Date.now())) nameMarkBuddyReact(kind);
+      };
+      s.timer = setTimeout(check, s.rest);
+    }
+  };
+  document.addEventListener("keydown", seen, { capture: true, passive: true });
+  document.addEventListener("pointerdown", seen, { capture: true, passive: true });
+  //: Before the page's own answer to the change (avatars.js: maximised or restored), so a view left reads as a look back.
+  window.addEventListener("fullscreenchange", () => document.fullscreenElement || nameMarkBuddyReact("fullscreen_app"), true);
+})();
+
+
 //: **The companion's mind** (B87c and B88c, the owner, 2026-10-17: "the
 //: companion needs a lot of improvements in behaviour, actions and lifelike
 //: ncp decision making"; "more movement, more transition and actions").

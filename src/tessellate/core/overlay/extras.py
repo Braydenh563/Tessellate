@@ -117,6 +117,12 @@ REACTIONS: dict[str, Reaction] = {
     "window_dragged": Reaction("watch_drag", "curious", 2.0, "", 10.0),
     "window_maximised": Reaction("perk_up", "surprised", 1.6, "", 10.0),
     "window_restored": Reaction("relief", "content", 1.8, "", 10.0),
+    # the day and the desk (INBOX 1719 b, 1696 j): dusk, the morning's first input, back from behind a full-screen app,
+    # a long run of typing come to rest (`screenwatch`)
+    "night_falls": Reaction("dusk_stretch", "content", 3.0, "", 3000.0),
+    "morning_hello": Reaction("morning_wave", "smile", 2.6, "happy", 3000.0),
+    "fullscreen_app": Reaction("peek_back", "curious", 1.8, "", 30.0),
+    "typing_burst": Reaction("nod_done", "smile", 1.6, "happy", 300.0),
 }
 #: A poke by mood, as the app's: a happy one giggles, a tired or cross one is miffed, the rest are curious.
 POKE_BY_MOOD = {"happy": "poke_giggle", "proud": "poke_giggle", "sleepy": "poke_miffed", "startled": "poke_miffed", "bored": "poke_curious", "curious": "poke_curious"}
@@ -147,9 +153,13 @@ REACT_ACTS: dict[str, bh.Activity] = {
     "dizzy_sway": bh.Activity("stand", (2.5, 4.0), _k((0, 1, 1, 0), (0.12, 1, 1.02, 0.08), (0.3, 1, 1.0, -0.08), (0.5, 1, 1.02, 0.07), (0.7, 1, 1.0, -0.07), (0.85, 1, 1.01, 0.04), (1, 1, 1, 0)), (), where="react"),
     "tickle_squirm": bh.Activity("hop", (1.5, 3.0), _k((0, 1, 1, 0), (0.08, 1.03, 0.94, 0.05), (0.16, 0.97, 1.04, -0.05), (0.24, 1.03, 0.94, 0.05), (0.32, 0.97, 1.04, -0.05), (0.4, 1.03, 0.94, 0.05), (0.48, 0.97, 1.04, -0.05), (0.6, 1.02, 0.96, 0.03), (0.75, 0.99, 1.02, -0.02), (1, 1, 1, 0)), (("play", -0.3),), where="react"),
     "boop_sneeze": bh.Activity("stand", (0.8, 1.4), _k((0, 1, 1, 0), (0.25, 1, 1.05, -0.1), (0.45, 1, 1.07, -0.12), (0.55, 1.03, 0.9, 0.08), (0.75, 1, 0.98, 0.02), (1, 1, 1, 0)), (), where="react"),
+    "dusk_stretch": bh.Activity("stand", (2.8, 3.4), _k((0, 1, 1, 0), (0.2, 1.03, 0.94, 0), (0.5, 0.96, 1.1, 0), (0.7, 0.97, 1.08, 0.03), (0.85, 1.01, 0.97, 0), (1, 1, 1, 0)), (("rest", -0.1),), where="react"),
+    "morning_wave": bh.Activity(((0, "wave"), (0.6, "blink"), (0.9, "stand")), (2.4, 3.0), _k((0, 1, 1, 0), (0.2, 1, 1.02, 0.02), (0.55, 1, 1.02, 0.02), (0.75, 0.98, 1.06, 0), (1, 1, 1, 0)), (("play", -0.1),), where="react"),
+    "peek_back": bh.Activity("look", (1.6, 2.0), _k((0, 1, 1, 0), (0.2, 0.95, 1.04, 0.12), (0.6, 0.95, 1.04, 0.12), (0.8, 0.98, 1.02, -0.03), (1, 1, 1, 0)), (("curiosity", -0.1),), where="react"),
+    "nod_done": bh.Activity("stand", (1.4, 1.8), _k((0, 1, 1, 0), (0.2, 1.01, 0.95, 0.02), (0.4, 1, 1, 0), (0.6, 1.01, 0.95, 0.02), (0.8, 1, 1.01, 0), (1, 1, 1, 0)), (), where="react"),
     "perk_up": bh.Activity("look", (1.2, 1.6), _k((0, 1, 1, 0), (0.15, 0.97, 1.06, 0.02), (0.8, 0.98, 1.03, 0.02), (1, 1, 1, 0)), (), where="react"),
 }
-for _kind, _prio in {"flinch": 3, "poke_miffed": 2, "battery_low": 2, "idle_return": 2, "download_done": 2, "toast": 2}.items():
+for _kind, _prio in {"flinch": 3, "poke_miffed": 2, "battery_low": 2, "idle_return": 2, "morning_hello": 2, "download_done": 2, "toast": 2}.items():
     REACTIONS[_kind] = REACTIONS[_kind]._replace(prio=_prio)
 #: The priority of the reaction each reaction-only act belongs to.
 REACT_PRIO: dict[str, int] = {r.act: r.prio for r in REACTIONS.values() if r.act}
