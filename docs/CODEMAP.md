@@ -2,7 +2,7 @@
 
 Generated 2026-11-09 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7954, frontend ids 2652, CSS sections 523, backend routes 649, backend modules 9277, test files 2297, tests 19191, plan headings 1008, app scripts 28, boot scripts 37, script files 266.
+Counts: frontend functions 7954, frontend ids 2652, CSS sections 523, backend routes 649, backend modules 9277, test files 2297, tests 19193, plan headings 1008, app scripts 28, boot scripts 37, script files 266.
 
 ## Frontend functions (7954)
 
@@ -3445,8 +3445,8 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `boxes` | frontend/js/diagram-picture.js:10 |
 | `extras` | frontend/js/diagram-picture.js:51 |
 | `failure` | frontend/js/diagram-picture.js:90 |
-| `idle` | frontend/js/diagram-picture.js:162 |
-| `patch` | frontend/js/diagram-picture.js:142 |
+| `idle` | frontend/js/diagram-picture.js:164 |
+| `patch` | frontend/js/diagram-picture.js:144 |
 | `pick` | frontend/js/diagram-picture.js:77 |
 
 ### frontend/js/diagram-pointer.js (4)
@@ -6081,29 +6081,29 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 |---|---|
 | `mermaidAltFor` | frontend/js/mermaid-draw.js:53 |
 | `mermaidCacheKey` | frontend/js/mermaid-draw.js:335 |
-| `mermaidDrawBlock` | frontend/js/mermaid-draw.js:501 |
-| `mermaidDrawIn` | frontend/js/mermaid-draw.js:521 |
+| `mermaidDrawBlock` | frontend/js/mermaid-draw.js:503 |
+| `mermaidDrawIn` | frontend/js/mermaid-draw.js:523 |
 | `mermaidEnsureFrame` | frontend/js/mermaid-draw.js:107 |
 | `mermaidFaded` | frontend/js/mermaid-draw.js:189 |
 | `mermaidFailure` | frontend/js/mermaid-draw.js:349 |
-| `mermaidFill` | frontend/js/mermaid-draw.js:467 |
+| `mermaidFill` | frontend/js/mermaid-draw.js:469 |
 | `mermaidFillShare` | frontend/js/mermaid-draw.js:168 |
 | `mermaidFills` | frontend/js/mermaid-draw.js:179 |
 | `mermaidHex` | frontend/js/mermaid-draw.js:158 |
 | `mermaidHue` | frontend/js/mermaid-draw.js:205 |
 | `mermaidInkOn` | frontend/js/mermaid-draw.js:199 |
-| `mermaidInlineForExport` | frontend/js/mermaid-draw.js:606 |
+| `mermaidInlineForExport` | frontend/js/mermaid-draw.js:608 |
 | `mermaidKnown` | frontend/js/mermaid-draw.js:342 |
 | `mermaidLook` | frontend/js/mermaid-draw.js:312 |
 | `mermaidLuma` | frontend/js/mermaid-draw.js:192 |
 | `mermaidMix` | frontend/js/mermaid-draw.js:163 |
 | `mermaidOnMessage` | frontend/js/mermaid-draw.js:92 |
-| `mermaidRedrawAll` | frontend/js/mermaid-draw.js:618 |
+| `mermaidRedrawAll` | frontend/js/mermaid-draw.js:620 |
 | `mermaidRequest` | frontend/js/mermaid-draw.js:405 |
 | `mermaidResultAccepts` | frontend/js/mermaid-draw.js:23 |
 | `mermaidRgba` | frontend/js/mermaid-draw.js:144 |
-| `mermaidSettled` | frontend/js/mermaid-draw.js:494 |
-| `mermaidShow` | frontend/js/mermaid-draw.js:446 |
+| `mermaidSettled` | frontend/js/mermaid-draw.js:496 |
+| `mermaidShow` | frontend/js/mermaid-draw.js:448 |
 | `mermaidTheme` | frontend/js/mermaid-draw.js:222 |
 | `mermaidThemeNow` | frontend/js/mermaid-draw.js:323 |
 | `mermaidTokenColour` | frontend/js/mermaid-draw.js:215 |
@@ -24888,7 +24888,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (19191)
+## Tests (19193)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -25550,7 +25550,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_diagram_dgmlive_1108.py | 2 |
 | tests/test_diagram_dgmseq_1109.py | 9 |
 | tests/test_diagram_dgpic_1109.py | 8 |
-| tests/test_diagram_dgpolish_1109.py | 6 |
+| tests/test_diagram_dgpolish_1109.py | 8 |
 | tests/test_diagram_document.py | 7 |
 | tests/test_diagram_door_panel.py | 2 |
 | tests/test_diagram_doors_1588.py | 5 |

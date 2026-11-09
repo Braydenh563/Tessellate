@@ -31,7 +31,7 @@ let opened = null;
 const ctx = {
   document: doc, diagramModel: {}, console, window: {}, matchMedia: () => ({ matches: false }),
   openMenuAtPoint: (items) => { opened = items; return null; },
-  prefs: { get: (_k, d) => d, set: () => {} }, closeActionMenus: () => {},
+  prefs: { get: (_k, d) => d, set: () => {} }, closeActionMenus: () => {}, wireToolbarRoving: () => {},
 };
 ctx.window = ctx;
 vm.createContext(ctx);
@@ -43,7 +43,8 @@ const stage = new El("div"); stage.className = "dgm-stage";
 stage.querySelector = () => null;
 const S = { fig: { parentElement: stage }, k: { name: "sequence" }, specs };
 ctx.diagramModel.library.shelf(S, {});
-const more = stage.kids.at(-1).kids.at(-1);
+//: The shelf is prepended to the stage now (Tab meets it before the picture), so it is the first child.
+const more = stage.kids[0].kids.at(-1);
 more.handlers.find(([t]) => t === "click")[1]();
 //: Hand the rows over reversed, as a kebabMenu that regrouped them would; each row's own glyph must still be its own.
 const rows = [...opened].reverse().map((item) => ({ label: item.label, glyphOf: item.lead?.().kids[0]?.owner ?? null }));

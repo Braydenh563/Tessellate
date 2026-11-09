@@ -58,3 +58,17 @@ def test_the_shelf_is_first_in_the_stage_one_tab_stop_and_its_focus_has_a_ring()
     lib = _js("diagram-library.js")
     assert "stage.prepend(bar);\n    wireToolbarRoving(bar);" in lib
     assert ".dgm-shelf .dgm-tile:focus-visible {\n  outline-color: var(--accent);" in CSS
+
+
+def test_a_diagram_that_will_not_draw_on_the_documents_page_offers_edit_in_source():
+    pic = _js("diagram-picture.js")
+    assert 'if (!field && typeof setDocView === "function") note.prepend(smallButton("ph:code Edit in Source"' in pic
+    assert 'setDocView("source", { persist: false })' in pic
+
+
+def test_a_timelines_axis_takes_the_themes_line_colour_in_both_themes():
+    """Mermaid's sheet draws a timeline's axis and event lines with the slices' label colour (`.lineWrapper line`: #111111 in dark,
+    white in light), so the axis was black on the dark ground and white on the light; its arrowhead is a bare path (black)."""
+    draw = _js("mermaid-draw.js")
+    assert r"replace(/(\.lineWrapper line\{stroke:)#[0-9a-f]{6}(;\})/g, `$1${theme.variables.lineColor}$2`)" in draw
+    assert "split('V 4 L6,2 Z\"/>').join(`V 4 L6,2 Z\" fill=\"${theme.variables.lineColor}\"/>`)" in draw
