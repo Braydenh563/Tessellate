@@ -1640,10 +1640,8 @@ def _act_planned_events(req: _StreamRequest, parsed: dict) -> Iterator[dict]:
             what = f"{card['label'][:1].lower()}{card['label'][1:]}"
             done["summary"] = composer_compose.frame("act_card", mood, what=what)
         elif done["ok"] and parsed["intent"] == "complete":
-            #: Already ticked, so said as done, not "I will mark it done"
-            #: (audit 1030 Z60).
-            what = re.sub(r"^Mark (“.*”) done", r"ticked off \1", card["label"])
-            done["summary"] = composer_compose.frame("act_done", mood, what=what)
+            #: Already ticked, so said as done, not "I will mark it done" (audit 1030 Z60).
+            done["summary"] = acts.ticked_line(card, lambda what: composer_compose.frame("act_done", mood, what=what))
         yield {"type": "answer", "delta": done["summary"]}
         #: Run already, with Undo: the card's "nothing changes until you
         #: confirm" would contradict it.

@@ -4669,12 +4669,22 @@ def _as_who(kind: str, asked: str, names: set[str], views: list) -> tuple[str, s
     return kind, asked
 
 
+def _no_number(out: _Out, question: str, views: list) -> bool:
+    """"what is the table number" when no note gives one: said so, not answered with a
+    note that only mentions the dinner or the booking (R3-2 residue)."""
+    key = composer_property.asked(question)
+    if key not in composer_property.NUMBERED or any(composer_property.held(key, x.text) for v in views for x in v.sentences):
+        return False
+    out.lines.append(f"None of your notes give a {composer_property.noun(key)}.")
+    return True
+
+
 def _early(out: _Out, kind: str, asked: str, question: str, views: list, today: date):  # noqa: ANN202
     """The answers that are one notebook-wide lookup (what an abbreviation
     stands for, who someone is, a comparison, what a category holds): the
     result, None when the ask fits but nothing answers it, or `_ORDINARY`."""
     names = _NAMES.get()
-    if _looked_up(out, asked, question, views, today) or _asked_which(out, asked, views):
+    if _no_number(out, question, views) or _looked_up(out, asked, question, views, today) or _asked_which(out, asked, views):
         return _result(out, "fact", asked)
     kind, asked = _which_names(kind, asked)
     kind, asked = _as_who(kind, asked, names, views)
@@ -5547,6 +5557,20 @@ def _rows_as_polished(out: _Out) -> None:
 _OWN_NEXT = frozenset({"web", "more"})
 
 
+#: The verb a question leaves on its subject ("sara like jazz", "tokyo trip cost"): no name to ask about.
+_TAIL_VERB = re.compile(r"\b(?:likes?|loves?|wants?|needs?|costs?|owes?)\b", re.I)
+
+
+def _topic_chips(kind: str, topic: str) -> list[str]:
+    """The chips about `topic`; none when it carries the question's own verb ("book am I
+    reading") and so is no name to ask about (R3-36, D19)."""
+    from tessellate.ai import composer_body
+
+    if composer_body._OWN_VERB.search(topic) or _TAIL_VERB.search(topic):  # noqa: SLF001
+        return []
+    return [q.format(t=topic) for q in _NEXT_ABOUT.get(kind, _NEXT_ABOUT["fact"])]
+
+
 def _next_asks(kind: str, question: str, rows: list[dict]) -> list[str]:
     """Two or three questions to ask next, built the way a composed answer
     builds them (`composer._next_questions`): a thread through the notes
@@ -5562,7 +5586,7 @@ def _next_asks(kind: str, question: str, rows: list[dict]) -> list[str]:
     topic = _topic(question, members) if members else ""
     if topic and topic != "this" and len(topic) <= 40 and not question_noise.filler_subject(topic) and query_understanding.is_chip_subject(topic):
         topic = _chip_subject(topic, question)
-        said += [q.format(t=topic) for q in _NEXT_ABOUT.get(kind, _NEXT_ABOUT["fact"])]
+        said += _topic_chips(kind, topic)
     return _fresh_chips(said, question)[:3]
 
 

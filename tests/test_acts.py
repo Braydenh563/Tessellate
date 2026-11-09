@@ -73,6 +73,9 @@ def test_every_write_act_has_an_inverse_that_restores_the_notebook(client, sessi
         setup = acts.preview(session, acts.parse(_BEFORE[act.intent], NOW))
         acts.run(session, setup["card"]["steps"])
         session.commit()
+    if act.intent == "uncomplete":
+        session.add(Reminder(text="Buy milk", due_at=datetime(2030, 1, 1, 9), done=True))
+        session.commit()
     if act.intent in ("complete", "cancel", "snooze"):
         #: A task is completed, cancelled or snoozed only once one is open;
         #: seeded directly, as the store refuses a reminder due before the

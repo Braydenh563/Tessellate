@@ -3521,13 +3521,14 @@ MORE_TOPICS.append({
     "title": "Tasks in Chat",
     "keywords": (
         "add a task", "tick off", "complete a task", "cancel a task", "delete a task", "remove a task",
-        "snooze a task", "push back a task", "postpone a task", "undo a task", "tasks in chat",
+        "snooze a task", "push back a task", "postpone a task", "undo a task", "untick", "tasks in chat",
     ),
     "badge": {"label": "Chat", "tab": "chat"},
     "body": (
         "A task is a reminder or an open checklist line (- [ ]) in a note, and Chat handles both from one sentence, with no model. "
         "Add: \"add a task to read chapter 5 tomorrow\" sets a reminder, and asks once for the time if you leave it out. "
         "Complete: \"tick off buy milk\" or \"mark the dentist task as done\" ticks the reminder or the checklist line. "
+        "Untick: \"untick buy milk\" or \"mark buy milk not done\" reopens a ticked one, and \"undo that\" right after a tick does the same. "
         "Cancel: \"cancel the dentist task\" or \"remove buy milk from my tasks\" puts a reminder in the bin and takes a "
         "checklist line out of its note. "
         "Snooze: \"snooze the dentist task until Friday\" or \"push buy milk to tomorrow 5pm\" moves a reminder to the new time; "

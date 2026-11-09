@@ -47,10 +47,11 @@ def test_z36_duplicates_are_answered_not_searched_for(ask, question):
     assert "no mention of" not in said, said
 
 
-@pytest.mark.parametrize("question", ["untick bread", "please uncheck the milk", "can you untick the passport"])
+#: Moved 2026-11-09: a named untick is an act now (test_composer_untick_1109); one that names nothing is told how.
+@pytest.mark.parametrize("question", ["untick", "please uncheck"])
 def test_z37_an_untick_is_said_not_searched_for(ask, question):
     said = ask(question)[0]
-    assert "cannot untick" in said and "Undo on the card" in said and "mention" not in said, said
+    assert "untick buy milk" in said and "Undo on the card" in said and "mention" not in said, said
 
 
 @pytest.mark.parametrize("text", ["mark the charger as packed", "mark the passport packed", "mark bread as bought"])

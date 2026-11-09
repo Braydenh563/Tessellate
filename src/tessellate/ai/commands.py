@@ -47,10 +47,10 @@ VERBS = ("remind", "complete", "cancel", "snooze", "tag", "untag", "file", "rena
 _VERB_OF = {
     "reminder": "remind", "tag": "tag", "untag": "untag", "move": "file", "rename": "rename", "rename_tag": "rename", "rename_category": "rename", "restore": "restore", "pin": "pin",
     "unpin": "unpin", "link": "link", "unlink": "unlink", "delete": "delete", "new_note": "create",
-    "meeting": "create", "append": "add", "complete": "complete", "cancel": "cancel", "snooze": "snooze", "summarise": "summarise", "find": "find", "open": "open", "navigate": "open",
+    "meeting": "create", "append": "add", "complete": "complete", "uncomplete": "complete", "cancel": "cancel", "snooze": "snooze", "summarise": "summarise", "find": "find", "open": "open", "navigate": "open",
 }
 #: The intents that write: each is shown as a card.
-WRITE_INTENTS = frozenset({"reminder", "tag", "untag", "move", "rename", "rename_tag", "rename_category", "restore", "pin", "unpin", "link", "unlink", "delete", "new_note", "meeting", "append", "complete", "cancel", "snooze"})
+WRITE_INTENTS = frozenset({"reminder", "tag", "untag", "move", "rename", "rename_tag", "rename_category", "restore", "pin", "unpin", "link", "unlink", "delete", "new_note", "meeting", "append", "complete", "uncomplete", "cancel", "snooze"})
 #: Read only: answered at once, nothing to confirm.
 READ_INTENTS = frozenset({"find", "open", "navigate", "summarise"})
 #: The writes that wait for Confirm: anything that removes, renames, moves or
@@ -490,6 +490,26 @@ _MOVE_VERBS = {
 _BIN_WORDS = {"bin", "the bin", "trash", "the trash", "recycle bin", "the recycle bin"}
 
 
+#: The daily note said as a place: the starter acts' append, never a category named so.
+_DAILY_NOTE = re.compile(r"^(?:(?:today'?s|the|my|the day'?s) daily|today'?s|the day'?s) (?:note|journal)$")
+
+
+def _move_category(category: str) -> str:
+    """The category a move names, cleaned, or "" when it names none (the bin,
+    the daily note, a sentence)."""
+    category = _drop_article(category.strip())
+    low_cat = category.lower()
+    if _DAILY_NOTE.match(low_cat):
+        return ""  # "put it in today's note" appends to the daily note (starter acts), it is no category
+    for tail in (" category", " folder"):
+        if low_cat.endswith(tail):
+            category = category[: -len(tail)]
+    if category.lower().startswith("category "):
+        category = category[len("category "):]
+    category = category.strip(" '\"")
+    return "" if not category or category.lower() in _BIN_WORDS or len(category) > 120 else category
+
+
 def _move(text: str) -> dict | None:
     low = text.lower()
     verb = next((v for v in _MOVE_VERBS if low.startswith(v)), None)
@@ -502,15 +522,8 @@ def _move(text: str) -> dict | None:
     found = _target(target) or (_bare_target(target) if _MOVE_VERBS[verb] else None)
     if not found or category.lower() in ("top", "the top"):
         return None
-    category = _drop_article(category.strip())
-    low_cat = category.lower()
-    for tail in (" category", " folder"):
-        if low_cat.endswith(tail):
-            category = category[: -len(tail)]
-    if category.lower().startswith("category "):
-        category = category[len("category "):]
-    category = category.strip(" '\"")
-    if not category or category.lower() in _BIN_WORDS or len(category) > 120:
+    category = _move_category(category)
+    if not category:
         return None
     return {"intent": "move", **found, "category": category}
 
@@ -998,7 +1011,7 @@ def _append(text: str) -> dict | None:
     #: list-like name is a title, though it says no "note".
     named = target.lower().startswith(("my ", "our ")) or target.lower().split(" ")[-1] in _LISTISH
     found = _one_target(target.strip(), bare=named)
-    if found and str(found.get("about", "")).lower().startswith(("today", "yesterday", "tomorrow")):
+    if found and str(found.get("about", "")).lower().startswith(("today", "yesterday", "tomorrow", "daily")):
         return None  # the daily note is the composer's (starter acts)
     if needs_list and not (found and (named or target.lower().rstrip().endswith(("note", "entry")))):
         return None
@@ -1120,7 +1133,7 @@ def read(text: str, now: datetime, locale: str | None = None) -> dict | None:
 
 def _read_folded(command: str, question: bool, polite: bool, urgent: bool, now: datetime, locale: str | None) -> dict | None:
     for reader in (_meeting, lambda t: _reminder(t, now, locale), lambda t: task_acts.read_add(t, lambda r: _reminder(r, now, locale)),
-                   task_acts.read_complete, task_acts.read_cancel, lambda t: task_acts.read_snooze(t, lambda w: _time_of(w, now, locale)), _new_note, _untag, _tag, _move, _delete, _pin, _link, object_acts.read_rename, lambda t: object_acts.read_restore(t, _one_target), _rename,
+                   task_acts.read_uncomplete, task_acts.read_complete, task_acts.read_cancel, lambda t: task_acts.read_snooze(t, lambda w: _time_of(w, now, locale)), _new_note, _untag, _tag, _move, _delete, _pin, _link, object_acts.read_rename, lambda t: object_acts.read_restore(t, _one_target), _rename,
                    _append, _summarise, _navigate, _find):
         found = reader(command)
         if found is None:
@@ -1261,7 +1274,10 @@ def _which(parsed: dict, session: Session, note_ids: list[int] | None) -> tuple[
 
 #: What the card says under its label: the person decides, nothing has run.
 CONFIRM_NOTICE = "Nothing changes until you confirm, and Undo takes it back."
-_SKIP_REASONS = {"private": "it is private", "binned": "it is in the bin", "failed": "it could not be changed", "stale": "it changed since the card was made"}
+_SKIP_REASONS = {
+    "private": "it is private", "binned": "it is in the bin", "failed": "it could not be changed", "stale": "it changed since the card was made",
+    "unfound": "no open task or reminder has that name", "unclear": "more than one fits, so say it with more of its name",
+}
 
 
 def _card(label: str, steps: list[dict], skipped: list[dict] | None = None, items: list[str] | None = None) -> dict:
@@ -1278,11 +1294,19 @@ def _card(label: str, steps: list[dict], skipped: list[dict] | None = None, item
     }
 
 
+def _skipped_said(skip: dict) -> str:
+    """One skipped row as `not_done` says it: a note by its number, a task by its name."""
+    why = _SKIP_REASONS.get(skip.get("reason"), "it could not be changed")
+    if skip.get("id"):
+        return f"note {skip['id']} ({why})"
+    return f"“{skip['name']}” ({why})" if skip.get("name") else _SKIP_REASONS.get(skip.get("reason"), "a step failed")
+
+
 def not_done(skipped: list[dict]) -> str:
     """"Not done: note 12 (it is private)." for the notes a change left."""
     if not skipped:
         return ""
-    said = [f"note {s['id']} ({_SKIP_REASONS.get(s.get('reason'), 'it could not be changed')})" if s.get("id") else _SKIP_REASONS.get(s.get("reason"), "a step failed") for s in skipped]
+    said = [_skipped_said(s) for s in skipped]
     return "Not done: " + ", ".join(said) + "."
 
 
@@ -1397,6 +1421,8 @@ def _plan_task(session: Session, parsed: dict) -> dict:
 
         now = user_now(deps.get_config()).replace(tzinfo=None)
         return task_acts.plan_snooze(session, parsed, _card, title, lambda due: reminder_when(due, now), now)
+    if intent == "uncomplete":
+        return task_acts.plan_uncomplete(session, parsed, _card, title)
     return task_acts.plan_complete(session, parsed, _card, title)
 
 
@@ -1556,7 +1582,7 @@ def _plan_intent(session: Session, parsed: dict, note_ids: list[int] | None) -> 
             return into_note
     if intent == "reminder":
         return _plan_reminder(session, parsed, note_ids)
-    if intent in ("complete", "cancel", "snooze"):
+    if intent in ("complete", "uncomplete", "cancel", "snooze"):
         return _plan_task(session, parsed)
     if intent == "new_note":
         return _plan_new_note(session, parsed)

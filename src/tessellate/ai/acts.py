@@ -72,6 +72,13 @@ def run(session: Session, steps: list[dict], skipped: list[dict] | None = None, 
     return commands.run(session, steps, skipped, say)
 
 
+def ticked_line(card: dict, frame) -> str:  # noqa: ANN001
+    """What a tick that already ran says ("ticked off “a” and “b”"), then the names
+    left out ("Not done: ..."). `frame` words the done part."""
+    what = re.sub(r"^Mark (“.*”) done", r"ticked off \1", card["label"])
+    return f"{frame(what)} {commands.not_done(card.get('skipped') or [])}".strip()
+
+
 def inverse(intent: str) -> str:
     """The tool Undo runs after this act, "" for one that changes nothing."""
     act = ACTS.get(intent)

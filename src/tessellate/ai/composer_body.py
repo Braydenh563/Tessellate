@@ -601,6 +601,9 @@ def length_wish(question: str) -> str:
 BROAD_NOTES = 5
 
 
+_OWN_VERB = re.compile(r"\b(?:am|is|are|was|were|do|does|did|have|has|had|i)\b", re.I)
+
+
 def _asked_span(question: str, terms: list[str]) -> str:
     """The question's subject as typed, from its first subject word to its
     last ("half marathon training plan"), or "" when they are not in order."""
@@ -611,7 +614,9 @@ def _asked_span(question: str, terms: list[str]) -> str:
     end = lower.rfind(terms[-1])
     if start < 0 or end < start:
         return ""
-    return question[start : end + len(terms[-1])]
+    span = question[start : end + len(terms[-1])]
+    #: "book am I reading" is the question's own words between two terms, not a subject (R3-36, D19).
+    return "" if _OWN_VERB.search(span) else span
 
 
 def _insights_for(question: str, terms: list[str], views: list[NoteView], today: date) -> list:

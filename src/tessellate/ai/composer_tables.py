@@ -926,9 +926,28 @@ _MORE = (
 #: "which note", "which one", "which of the two": the same ask as "which".
 _WHICH = r"which(?: (?:one|note|entry|of (?:the|these|those|my) (?:two|notes)|of them|(?!(?:is|are|was|were)\b)[a-z]+))?"
 
+#: "what do I know about Tom and Sara" (composer-r6 E10): two things asked about at once are
+#: answered one at a time, like a comparison's sides, not as one pooled search. Short names
+#: only, and no clause on the right ("... and what I should pack" is one question).
+_EACH_LEAD = (
+    r"(?:what (?:do|did|have|can|could) (?:i|we|you|my notes)(?: (?:ever|already|really))? (?:know|say|said|written|wrote|noted|saved|mention|jotted)|"
+    r"tell me|remind me|show me|"
+    r"anything|everything|what(?:'s| is| do you know))\s*(?:all )?(?:about|on|regarding)"
+)
+_EACH_NAME = r"(?!(?:what|how|why|when|where|who|which|if|that|i|my|me)\b)[\w'’ ,-]{1,30}?"
+
+#: The bare form ("what do my notes say about Tom and Sara" is read down to "Tom and Sara"
+#: by `rephrase`): capitalised names only, as typed, so "salt and pepper" stays one thing.
+_NAME = r"[A-Z][\w'’-]+(?: [A-Z][\w'’-]+)?"
+_BARE_NAMES = rf"^(?P<a>{_NAME}(?:, {_NAME})*),? and (?P<b>{_NAME})[?.!]*$"
+
+#: Tried last (after the comparison verbs, or "Compare Lisbon and Porto" would be a bare pair).
+BARE_COMPARE_SIDES: tuple[re.Pattern[str], ...] = (re.compile(_BARE_NAMES),)
+
 #: Two-sided comparison patterns, tried after the originals in
 #: `composer._COMPARE_SIDES`: each needs both sides in the question.
 EXTRA_COMPARE_SIDES: tuple[re.Pattern[str], ...] = (
+    re.compile(rf"^{_EACH_LEAD}\s+(?P<a>{_EACH_NAME})\s+and\s+(?P<b>{_EACH_NAME})[?.!]*$", re.I),
     re.compile(rf"^(?:(?:is|are|was|were|does|do|did)\s+)?(?P<a>.+?)(?<!\s)\s+(?:(?:is|are|was|were)\s+)?(?:{_MORE}) than (?P<b>.+?)[?.!]*$", re.I),
     re.compile(r"^(?:how|what) (?:does|do|did) (?P<a>.+?) (?:compare|stack up|measure up) (?:with|to|against) (?P<b>.+?)[?.!]*$", re.I),
     re.compile(r"^(?P<a>.+?),? compare[sd]? (?:with|to) (?P<b>.+?)[?.!]*$", re.I),
@@ -956,6 +975,9 @@ EXTRA_COMPARE_SIDES: tuple[re.Pattern[str], ...] = (
 #: The comparison triggers added to the "compare" shape rule: all two-sided,
 #: so a question with one subject is never read as a comparison.
 COMPARE_SHAPE_EXTRA = (
+    #: Loose on purpose: `compare_sides` (case-sensitive, names only) is the gate for a bare "Tom and Sara".
+    r"^[\w'’, -]{3,60} and [\w'’ -]{2,30}[?.!]*$|"
+    rf"^{_EACH_LEAD}\s+{_EACH_NAME}\s+and\s+{_EACH_NAME}[?.!]*$|"
     r"^[\w' -]{1,40}? or [\w' -]{1,40}?,?\s+which\b|"
     r"^which(?: one)? (?:comes|came|is|was) first\b.+? or |"
     r"^which(?: one| note)? costs? (?:more|less)\b.+? or |^[\w' ,-]+? or [\w' ,-]+?,? which(?: one| note)? costs? (?:more|less)\W*$|"

@@ -13,7 +13,7 @@ import functools
 import re
 from datetime import datetime
 
-from tessellate.ai import grounding, utilities
+from tessellate.ai import composer_property, grounding, utilities
 from tessellate.ai.composer_ask import _stem, _words
 from tessellate.ai.composer_body import length_wish
 from tessellate.ai.composer_dialogue import _MORE
@@ -463,6 +463,20 @@ def _clauses(sentence: str) -> list[str]:
 
 
 _JA_STOP = re.compile(r"([。！？])\.")
+
+
+_UNTICK = re.compile(r"^(?:please |can you |could you )?(?:un-?tick|un-?check|un-?mark|un-?cross)\b", re.I)
+
+
+def cannot_answer(question: str, notes: list[dict]) -> dict | None:
+    """An ask no note settles, said in one line instead of a search for its words: "untick it"
+    with no item the act reader could name (say which; audit 1030 Z37, "untick bread" itself is
+    the act, `task_acts.read_uncomplete`), and "what is the table number" when no note gives one
+    (never a note that only mentions the dinner or the booking; R3-2 residue)."""
+    text = " ".join((question or "").split())
+    line = ("Say which item to untick, like: untick buy milk. Press Undo on the card right after a tick to take it back."
+            if _UNTICK.match(text) else composer_property.none_given(text, notes))
+    return {**_result([("template", line)], "none"), "answered": True} if line else None
 
 
 def _result(parts: list[tuple], shape: str, rows: list[dict] | None = None, next_parts: list | None = None) -> dict:

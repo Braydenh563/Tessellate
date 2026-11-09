@@ -29,7 +29,9 @@ def say(question: str, *texts: str, ago: int = 0) -> str:
     "number of notes about Sara", "how many cells", "what number is the bus",
 ])
 def test_r3_2_a_bare_number_is_not_a_phone_number_without_a_person(question):
-    assert composer_property.asked(question) == "", question
+    #: Moved 2026-11-09: a table or seat number is a property of its own now (composer-r6), still never a phone.
+    assert composer_property.asked(question) != "phone", question
+    assert composer_property.asked(question) in ("", "table", "seat"), question
 
 
 @pytest.mark.parametrize("question", [

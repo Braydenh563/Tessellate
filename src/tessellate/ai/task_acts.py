@@ -148,6 +148,24 @@ def read_complete(text: str) -> dict | None:
     return _task_found("complete", about, said)
 
 
+_UNTICK = re.compile(r"^(?:please )?(?:un-?tick|un-?check|un-?cross|un-?strike|un-?complete|re-?open)\s+(?P<rest>.+)$", re.IGNORECASE)
+_NOT_DONE = r"(?:not (?:done|finished|complete|completed|ticked|checked|crossed off)|undone|incomplete|unfinished|unticked|unchecked|open|still open|outstanding|to-?do)"
+_MARK_UNDONE = re.compile(rf"^(?:mark|set|flag)\s+(?P<rest>.+?)\s+(?:as |to be |back to |back as )?{_NOT_DONE}$", re.IGNORECASE)
+
+
+def read_uncomplete(text: str) -> dict | None:
+    """The done task a sentence reopens ("untick bread", "mark the passport as
+    not done"), as {"intent": "uncomplete", "about", "kind"?}, or None. Read
+    before `read_complete`, whose "mark X ... done" would take "not done" as
+    the end of the name."""
+    found = _UNTICK.match(text.strip()) or _MARK_UNDONE.match(text.strip())
+    if not found:
+        return None
+    rest = _ON_LIST_TAIL.sub("", _OFF_TAIL.sub("", found.group("rest").strip(), count=1), count=1)
+    about, said = _split_kind(rest)
+    return _task_found("uncomplete", about, said)
+
+
 def _split_kind(rest: str) -> tuple[str, str | None]:
     """(the task's own words, the kind word said with them) for what follows a
     verb: "the buy milk task" is ("buy milk", "task"), "reminder dentist" is
@@ -275,36 +293,44 @@ def _stems(text: str) -> frozenset[str]:
     return frozenset(meaning.stem(w) for w in meaning.words_of(text) if w not in _STOP and w not in _KIND_WORDS)
 
 
-def _candidates(session: Session, kind: str | None, title) -> list[dict]:  # noqa: ANN001
-    from tessellate.core.database import Entry, Reminder
-
+def _candidates(session: Session, kind: str | None, title, done: bool = False) -> list[dict]:  # noqa: ANN001
+    """The open tasks and reminders, or with `done` the ticked ones (what an untick reads)."""
     out: list[dict] = []
     if kind in (None, "reminder"):
-        rows = session.scalars(select(Reminder).where(Reminder.done.is_(False)).order_by(Reminder.due_at).limit(500)).all()
-        linked = {r.entry_id for r in rows if r.entry_id is not None}
-        private = set(session.scalars(select(Entry.id).where(Entry.id.in_(linked), Entry.is_private.is_(True)))) if linked else set()
-        for row in rows:
-            if row.entry_id in private:
-                continue
-            out.append({
-                "kind": "reminder", "id": row.id, "text": row.text, "due": row.due_at,
-                "where": f"reminder due {row.due_at.strftime('%a')} {row.due_at.day} {row.due_at.strftime('%b')}",
-            })
+        out.extend(_reminders(session, done))
     if kind in (None, "checklist"):
-        notes = session.scalars(
-            select(Entry).where(
-                Entry.content.like("%[ ]%"), Entry.is_deleted.is_(False), Entry.deleted_at.is_(None),
-                Entry.is_private.is_(False),
-            ).limit(500)
-        ).all()
-        out.extend(
-            {"kind": "checklist", "id": note.id, "text": line.group("item"), "line": line.group(0), "where": f"in {title(note)}", "content": note.content}
-            for note in notes
-            for line in _BOX.finditer(note.content or "")
-        )
+        out.extend(_checklist_lines(session, title, done))
     for item in out:
         item["stems"] = _stems(item["text"])
     return out
+
+
+def _reminders(session: Session, done: bool) -> list[dict]:
+    from tessellate.core.database import Entry, Reminder
+
+    wanted = select(Reminder).where(Reminder.done.is_(done), Reminder.deleted_at.is_(None)).order_by(Reminder.due_at.desc() if done else Reminder.due_at).limit(500)
+    rows = session.scalars(wanted).all()
+    linked = {r.entry_id for r in rows if r.entry_id is not None}
+    private = set(session.scalars(select(Entry.id).where(Entry.id.in_(linked), Entry.is_private.is_(True)))) if linked else set()
+    return [
+        {"kind": "reminder", "id": row.id, "text": row.text, "due": row.due_at,
+         "where": f"reminder due {row.due_at.strftime('%a')} {row.due_at.day} {row.due_at.strftime('%b')}"}
+        for row in rows if row.entry_id not in private
+    ]
+
+
+def _checklist_lines(session: Session, title, done: bool) -> list[dict]:  # noqa: ANN001
+    from tessellate.core.database import Entry
+
+    marked = (Entry.content.like("%[x]%") | Entry.content.like("%[X]%")) if done else Entry.content.like("%[ ]%")
+    notes = session.scalars(
+        select(Entry).where(marked, Entry.is_deleted.is_(False), Entry.deleted_at.is_(None), Entry.is_private.is_(False)).limit(500)
+    ).all()
+    return [
+        {"kind": "checklist", "id": note.id, "text": line.group("item"), "line": line.group(0), "where": f"in {title(note)}", "content": note.content}
+        for note in notes
+        for line in (_TICKED if done else _BOX).finditer(note.content or "")
+    ]
 
 
 def _name(item: dict) -> str:
@@ -331,13 +357,16 @@ def pick(session: Session, parsed: dict, title) -> tuple[dict | None, str]:  # n
     note, split before the lookup (audit 1029 C43). A name only a ticked line
     carries is said to be ticked, not missing (audit 1031 C41)."""
     about = str(parsed.get("about") or "")
-    items = _candidates(session, parsed.get("kind"), title)
+    reopening = parsed.get("intent") == "uncomplete"
+    items = _candidates(session, parsed.get("kind"), title, done=reopening)
     split = _ON_NOTE.match(" ".join(about.split()))
     item, note = (split.group("item"), split.group("note")) if split else (about, "")
     found, say = _on_note(items, about, item, note) if split else (None, "")
     if not (found or say):
-        found, say = _match(items, about, parsed.get("kind"))
-    if found is None and say.startswith("I found no") and parsed.get("kind") != "reminder":
+        found, say = _match(items, about, parsed.get("kind"), "ticked task or reminder" if reopening else "")
+    if found is None and say.startswith("I found no") and reopening:
+        say = _not_ticked(session, parsed, title) or say
+    elif found is None and say.startswith("I found no") and parsed.get("kind") != "reminder":
         say = _already_ticked(session, item, note, title) or say
     return found, say
 
@@ -379,7 +408,13 @@ def _already_ticked(session: Session, about: str, on_note: str, title) -> str:  
     return ""
 
 
-def _match(items: list[dict], about: str, kind: str | None = None) -> tuple[dict | None, str]:
+def _not_ticked(session: Session, parsed: dict, title) -> str:  # noqa: ANN001
+    """"“Charger” is not ticked off (in Lisbon packing list)." for an untick of an open item."""
+    found, _ = _match(_candidates(session, parsed.get("kind"), title), str(parsed.get("about") or ""))
+    return f"{_name(found)} is not ticked off." if found else ""
+
+
+def _match(items: list[dict], about: str, kind: str | None = None, what: str = "") -> tuple[dict | None, str]:
     wanted = _stems(about)
     if not wanted:
         return None, "Which task do you mean? Say its name, like: tick off buy milk."
@@ -395,31 +430,108 @@ def _match(items: list[dict], about: str, kind: str | None = None) -> tuple[dict
     near = [i for score, i in scored if score >= 0.5]
     if near:
         return None, _ask(near, about, partial=True)
-    where = "reminder" if kind == "reminder" else "open task or reminder"
+    where = what or ("reminder" if kind == "reminder" else "open task or reminder")
     return None, f"I found no {where} named “{about}”."
 
 
 # --- planning -----------------------------------------------------------------------------------
 
 
-def plan_complete(session: Session, parsed: dict, card, title) -> dict:  # noqa: ANN001
-    """The card that completes the task named, run at once with Undo, or the
-    question that asks which. `card` is `commands._card` and `title` the one reader's (`composer_frame.note_title`), passed in
-    because this module sits below commands."""
+_ON_NOTE_TAIL = re.compile(r" on the .+$")
+_NAME_SPLIT = re.compile(r"\s*(?:,|;|&|\band\b|\bthen\b|\bplus\b|\balso\b)\s*", re.IGNORECASE)
+
+
+def _names_in(about: str) -> list[str]:
+    """The task names a sentence lists ("email landlord and call plumber"), each on
+    the note the whole list names ("... on the packing list")."""
+    whole = " ".join(about.split())
+    split = _ON_NOTE.match(whole)
+    item, note = (split.group("item"), split.group("note")) if split else (whole, "")
+    return [f"{p}{f' on the {note}' if note else ''}" for p in (q.strip() for q in _NAME_SPLIT.split(item)) if p]
+
+
+def pick_each(session: Session, parsed: dict, title) -> tuple[list[dict], list[dict], str]:  # noqa: ANN001
+    """(the tasks named, the names left out as card `skipped` rows, what to say
+    when none was found). A name that is one
+    task's whole name ("salt and pepper") is that one task; otherwise a list
+    ("email landlord and call plumber") is each of them (D10)."""
     item, say = pick(session, parsed, title)
-    if item is None:
-        return {"line": say}
-    label = f"Mark “{item['text']}” done" + ("" if item["kind"] == "reminder" else f" ({item['where']})")
-    if item["kind"] == "reminder":
-        steps = [{"name": "complete_reminder", "arguments": {"reminder_id": item["id"], "done": True}}]
-    else:
-        ticked = item["content"].replace(item["line"], item["line"].replace("[ ]", "[x]", 1), 1)
-        steps = [{"name": "edit_note", "arguments": {"note_id": item["id"], "content": ticked}}]
-    return {"line": f"{label}.", "card": card(label, steps), "run": True}
+    if item is not None:
+        return [item], [], ""
+    names = _names_in(str(parsed.get("about") or ""))
+    if len(names) < 2:
+        return [], [], say
+    found: list[dict] = []
+    unsaid: list[str] = []
+    left: list[dict] = []
+    for name in names:
+        one, why = pick(session, {**parsed, "about": name}, title)
+        if one is None:
+            unsaid.append(why)
+            left.append({"reason": "unfound" if why.startswith("I found no") else "unclear", "name": _ON_NOTE_TAIL.sub("", name)})
+        elif not any(one["kind"] == f["kind"] and one["id"] == f["id"] and one.get("line") == f.get("line") for f in found):
+            found.append(one)
+    return found, left, " ".join(unsaid)
 
 
-def _label(verb: str, item: dict) -> str:
-    return f"{verb} “{item['text']}”" + ("" if item["kind"] == "reminder" else f" ({item['where']})")
+def _the_names(items: list[dict]) -> str:
+    named = [f"“{i['text']}”" for i in items]
+    return named[0] if len(named) == 1 else ", ".join(named[:-1]) + " and " + named[-1]
+
+
+def _each_label(head: str, tail: str, items: list[dict]) -> str:
+    where = "" if len(items) > 1 or items[0]["kind"] == "reminder" else f" ({items[0]['where']})"
+    return f"{head} {_the_names(items)}{f' {tail}' if tail else ''}{where}"
+
+
+def _each_steps(items: list[dict], reminder_step, rewrite) -> list[dict]:  # noqa: ANN001
+    """One step per reminder, and one edit per note that holds checklist lines: two
+    lines on one note are changed in one edit, or the second would undo the first."""
+    steps: list[dict] = []
+    edits: dict[int, dict] = {}
+    for item in items:
+        if item["kind"] == "reminder":
+            steps.append(reminder_step(item))
+            continue
+        step = edits.get(item["id"])
+        if step is None:
+            step = edits[item["id"]] = {"name": "edit_note", "arguments": {"note_id": item["id"], "content": item["content"]}}
+            steps.append(step)
+        step["arguments"]["content"] = rewrite(step["arguments"]["content"], item["line"])
+    return steps
+
+
+def _plan_each(session: Session, parsed: dict, card, title, head: str, tail: str, reminder_step, rewrite) -> dict:  # noqa: ANN001
+    items, left, said = pick_each(session, parsed, title)
+    if not items:
+        return {"line": said}
+    label = _each_label(head, tail, items)
+    return {"line": f"{label}.", "card": card(label, _each_steps(items, reminder_step, rewrite), left), "run": True}
+
+
+def plan_complete(session: Session, parsed: dict, card, title) -> dict:  # noqa: ANN001
+    """The card that completes the task or tasks named, run at once with Undo, or
+    the question that asks which. `card` is `commands._card` and `title` the one
+    reader's (`composer_frame.note_title`), passed in because this module sits
+    below commands."""
+    return _plan_each(session, parsed, card, title, "Mark", "done",
+                      lambda i: {"name": "complete_reminder", "arguments": {"reminder_id": i["id"], "done": True}},
+                      lambda content, line: content.replace(line, line.replace("[ ]", "[x]", 1), 1))
+
+
+def plan_uncomplete(session: Session, parsed: dict, card, title) -> dict:  # noqa: ANN001
+    """The card that reopens the ticked task or tasks named (a done reminder, or a
+    `[x]` line made `[ ]` again), run at once with Undo, or the question that asks which."""
+    return _plan_each(session, parsed, card, title, "Mark", "not done",
+                      lambda i: {"name": "complete_reminder", "arguments": {"reminder_id": i["id"], "done": False}},
+                      lambda content, line: content.replace(line, re.sub(r"\[[xX]\]", "[ ]", line, count=1), 1))
+
+
+def plan_cancel(session: Session, parsed: dict, card, title) -> dict:  # noqa: ANN001
+    """The card that bins the reminders named or removes the checklist lines
+    named, run at once with Undo (a binned reminder is restored, an edited note
+    put back), or the question that asks which."""
+    return _plan_each(session, parsed, card, title, "Cancel", "", lambda i: {"name": "bin_reminder", "arguments": {"reminder_id": i["id"]}}, _without_line)
 
 
 def _without_line(content: str, line: str) -> str:
@@ -427,21 +539,6 @@ def _without_line(content: str, line: str) -> str:
     if line + "\n" in content:
         return content.replace(line + "\n", "", 1)
     return content.replace("\n" + line, "", 1) if "\n" + line in content else content.replace(line, "", 1)
-
-
-def plan_cancel(session: Session, parsed: dict, card, title) -> dict:  # noqa: ANN001
-    """The card that bins the reminder named or removes the checklist line
-    named, run at once with Undo (a binned reminder is restored, an edited
-    note put back), or the question that asks which."""
-    item, say = pick(session, parsed, title)
-    if item is None:
-        return {"line": say}
-    label = _label("Cancel", item)
-    if item["kind"] == "reminder":
-        steps = [{"name": "bin_reminder", "arguments": {"reminder_id": item["id"]}}]
-    else:
-        steps = [{"name": "edit_note", "arguments": {"note_id": item["id"], "content": _without_line(item["content"], item["line"])}}]
-    return {"line": f"{label}.", "card": card(label, steps), "run": True}
 
 
 def plan_snooze(session: Session, parsed: dict, card, title, said_when, now=None) -> dict:  # noqa: ANN001
@@ -506,9 +603,9 @@ def run_step(session: Session, name: str, args: dict) -> dict:
 
 
 def undo_step(name: str, args: dict) -> dict | None:
-    """What Undo runs after a completed reminder."""
-    if name == "complete_reminder" and args.get("done", True):
-        return {"tool": "complete_reminder", "arguments": {"reminder_id": args["reminder_id"], "done": False}}
+    """What Undo runs after a completed (or reopened) reminder: the other way."""
+    if name == "complete_reminder":
+        return {"tool": "complete_reminder", "arguments": {"reminder_id": args["reminder_id"], "done": not args.get("done", True)}}
     return None
 
 

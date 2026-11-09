@@ -31,7 +31,7 @@ from tessellate.core.database import Document, Entry, EntryLink, Reminder
 _READS = (
     ("append_today", re.compile(r"^(?:add|append) to (?:today'?s|the daily|my daily) (?:note|journal)[:,]?\s+(?P<words>.+)$")),
     #: "add buy milk to today's note": the words come first (CHAT_PLAN X10).
-    ("append_today", re.compile(r"^(?:please )?(?:add|put|append) (?P<words>.+?) (?:to|in|into|onto) (?:today'?s|the daily|my daily|the day'?s) (?:note|journal)$")),
+    ("append_today", re.compile(r"^(?:please )?(?:add|put|append) (?P<words>.+?) (?:to|in|into|onto) (?:(?:today'?s|the|my) daily|today'?s|the day'?s) (?:note|journal)$")),
     #: The time words are the recogniser's (`_since_a_day`), never a list here.
     ("changed", re.compile(r"^what (?:has )?changed(?: in (?:my|the) notebook)?(?: (?P<when>.+))?$")),
     ("loose_ends", re.compile(r"\bloose ends?\b|^what should i (?:pick up|do) next$")),
@@ -343,29 +343,79 @@ def _today_note(session: Session, now: datetime) -> Entry | None:
 
 #: Words that point at a thing, not at what to write.
 _POINTERS = frozenset({"it", "that", "this", "them", "these", "those", "something", "stuff"})
+#: The pointers that name a NOTE ("put it in today's note"), not "something".
+_NOTE_POINTER = re.compile(r"^(?:it|that|this|them|these|those|(?:that|this|the|these|those) (?:one|ones|note|notes))$", re.I)
+#: "the boiler note": a note named, not words to write.
+_NOTE_NAMED = re.compile(r"^(?:the|my) (?P<about>.{2,60}?) note$", re.I)
 
 
-def _append_today(session: Session, *, slots: dict, now: datetime, **_: object) -> tuple[str, dict | None]:
+def _referred_notes(session: Session, words: str, note_ids: list[int], history: list[dict]) -> list[Entry]:
+    """The notes `words` mean: "it" is the attached ones, else the leading note the
+    last answer cited (the referent `reading.cited_follow` names); "the boiler note"
+    is the note so titled; anything else is words to write, so nothing."""
+    from tessellate.ai import reading
+
+    if _NOTE_POINTER.match(words):
+        attached = commands._attached(session, note_ids)
+        if attached:
+            return attached
+        turns = [{"text": str(t.get("question") or ""), "objects": t.get("objects") or []} for t in history[-reading.FOLLOW_TURNS:]]
+        titles = reading._cited_titles(turns)
+        entry = commands._resolve_one(session, titles[0], None, False)[0] if titles else None
+        return [entry] if entry is not None else []
+    named = _NOTE_NAMED.match(words)
+    entry = commands._resolve_one(session, named["about"], None, False)[0] if named else None
+    return [entry] if entry is not None else []
+
+
+def _carried(entry: Entry) -> str:
+    """A note put into the daily note: a link back as a heading, its text under it."""
+    lines = (entry.content or "").strip().split("\n")
+    body = "\n".join(lines[1:]).strip()
+    return f"### [[{commands._item(entry)}]]" + (f"\n\n{body}" if body else "")
+
+
+def _carry_refusal(carried: list[Entry], words: str) -> str:
+    """Why "put it in today's note" cannot go: no note to mean, or only private ones ("" when it can)."""
+    if not carried:
+        return "Which note should go in today's note? Attach it with the paperclip, or name it, like: add the boiler note to today's note." if _NOTE_POINTER.match(words) else ""
+    return "" if any(not e.is_private for e in carried) else "That note is private, so I will not copy it into today's note."
+
+
+def _append_today(session: Session, *, slots: dict, now: datetime, note_ids: list[int] = (), history: list[dict] = (), **_: object) -> tuple[str, dict | None]:
     words = commands._cap(str(slots.get("words") or "").strip(" '\"“”"))
-    if not words or words.lower() in _POINTERS:
+    carried = _referred_notes(session, words, note_ids, history)
+    if _NOTE_POINTER.match(words) or carried:
+        refusal = _carry_refusal(carried, words)
+        if refusal:
+            return refusal, None
+        carried = [e for e in carried if not e.is_private]
+        words = "\n\n".join(_carried(e) for e in carried)
+    elif not words or words.lower() in _POINTERS:
         return "What should go in today's note? Say it after the colon, like: add buy milk to today's note.", None
+    return _today_card(session, now, words, carried)
+
+
+def _today_card(session: Session, now: datetime, words: str, carried: list[Entry]) -> tuple[str, dict | None]:
     entry = _today_note(session, now)
-    said = commands._clip(words, 80)
+    said = commands._clip(" and ".join(commands._item(e) for e in carried) if carried else words, 80)
     if entry is not None and entry.is_private:
         return "Today's note is private, so I will not write to it from here. Open the note to add to it.", None
     if entry is None:
         steps = [{"name": "create_note", "arguments": {"content": f"# {now.date().isoformat()}\n\n{words}"}}]
-        label = f"Start today's note with “{said}”"
+        label = f"Start today's note with {'the note ' if carried else ''}“{said}”"
         items = []
     else:
         from tessellate.api.edit_conflicts import content_hash  # lazy: `ai` sits below `api`
 
-        #: A bullet in the note's own shape, locked to the text read here.
-        text = act_steps.appended(entry.content or "", words)
+        #: A bullet in the note's own shape (a carried note as its own block), locked to the text read here.
+        text = f"{(entry.content or '').rstrip()}\n\n{words}" if carried else act_steps.appended(entry.content or "", words)
         steps = [{"name": "edit_note", "arguments": {"note_id": entry.id, "content": text, "base_hash": content_hash(entry.content)}}]
-        label = f"Add “{said}” to the end of today's note"
+        label = f"Add {'the note ' if carried else ''}“{said}” to the end of today's note"
         items = [commands._item(entry)]
     return commands._confirm(label), commands._card(label, steps, items=items)
+
+
 
 
 _HANDLERS = {
