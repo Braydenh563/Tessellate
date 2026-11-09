@@ -33,8 +33,9 @@ _FEATURE_WORDS = 3
 _FEATURE_FILLER = frozenset({"the", "a", "an", "my", "that", "this", "it", "last", "latest", "please"})
 
 
-#: "and last week?" carries on the question before; it is not asking for the Timeline tab.
-_CARRIES_ON = re.compile(r"^\s*(?:and|but|or|also|then)\b", re.I)
+#: "and last week?" carries on the question before; it is not asking for the Timeline tab. "who wrote it" is a
+#: question about a note, not the name of a tool (R9-9).
+_CARRIES_ON = re.compile(r"^\s*(?:and|but|or|also|then|who)\b", re.I)
 
 
 def _may_name_a_tool(question: str, words: list[str]) -> bool:

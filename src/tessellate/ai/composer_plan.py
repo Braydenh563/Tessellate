@@ -18,7 +18,7 @@ import re
 from dataclasses import dataclass
 from datetime import date, datetime, timedelta
 
-from tessellate.ai import composer_done, recognise, study
+from tessellate.ai import composer_done, realise, recognise, study
 from tessellate.ai import when as when_words
 from tessellate.ai import composer_compose as compose
 from tessellate.ai import note_rank, reminder_parser
@@ -509,7 +509,7 @@ def _busiest(found: list[Event], days: list[date], load: dict) -> str:
     busiest = max(days, key=lambda d: (load[d], -days.index(d)))
     free = [d for d in days if load[d] == 0 and d.weekday() < 5]
     #: One item is not a busy day (audit 1030 Z57: "Busiest day: Saturday with 1").
-    said = f"Busiest day: {_long(busiest)} with {load[busiest]}." if load[busiest] > 1 else ""
+    said = f"Busiest day: {_long(busiest)}, with {realise.count_word(load[busiest])} items." if load[busiest] > 1 else ""
     return " ".join(s for s in (said, f"Free weekdays: {', '.join(f'{d:%A}' for d in free)}." if free else "") if s)
 
 

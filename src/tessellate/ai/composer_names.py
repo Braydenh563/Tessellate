@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import re
 
-from tessellate.ai import question_noise
+from tessellate.ai import common_words, common_words_more, question_noise
 
 #: A word after one of these (or the last word) can be the subject asked about.
 _BEFORE_SUBJECT = frozenset({"about", "is", "of", "for", "on", "does", "did", "was", "with", "from", "to", "who", "whos"})
@@ -16,10 +16,26 @@ _CAPITAL = re.compile(r"\b[A-Z][a-z]{3,}\b")
 _LOWER = re.compile(r"\b[a-z]{3,}\b")
 
 
+#: Everyday English: a capital on one of these, at the start of a sentence, is only its place.
+_ORDINARY = common_words.WORDS | common_words_more.MORE
+
+
+def _opens_a_sentence(text: str, at: int) -> bool:
+    """Whether the word at `at` starts the text or a sentence, line or list item: its capital is its place."""
+    while at > 0 and text[at - 1] == " ":
+        at -= 1
+    return at == 0 or text[at - 1] in ".!?:\n#*|>-"
+
+
 def names_of(notes: list[dict]) -> frozenset[str]:
-    """The names the notes write with a capital and never without, lower case."""
-    text = " ".join(f"{n.get('title') or ''} {n.get('content') or ''}" for n in notes or ())
-    return frozenset(w.lower() for w in _CAPITAL.findall(text)) - frozenset(_LOWER.findall(text))
+    """The names the notes write with a capital and never without, lower case. A word that is capitalised only
+    for opening a sentence is a name only when it is not an ordinary word ("Pick up the parcel" is not Pick)."""
+    text = "\n".join(f"{n.get('title') or ''}\n{n.get('content') or ''}" for n in notes or ())
+    capital = {
+        m.group(0).lower() for m in _CAPITAL.finditer(text)
+        if not _opens_a_sentence(text, m.start()) or m.group(0).lower() not in _ORDINARY
+    }
+    return frozenset(capital) - frozenset(_LOWER.findall(text))
 
 
 def respell(question: str, names: frozenset[str], fixed: list | None = None) -> str:

@@ -2174,7 +2174,8 @@ _DEICTIC_PHRASE = lazy_compile(
     r"^(?:in |on |from |during |for )?(?:today|yesterday|tomorrow|tonight|now|(?:this|last|next|past|previous|coming)\b.*|(?:\d+|a|an|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|a couple of|a few) (?:days?|weeks?|fortnights?|months?|years?) ago)$",
     re.I,
 )
-_ABOUT_PHRASE = r"\b(?:about|regarding|concerning)\s+(?:the |my |our )?{}\s*[?.!]*$"
+#: "which holiday is better in April" (R9-10): the month is the subject of the ask, not when it was written.
+_ABOUT_PHRASE = r"\b(?:about|regarding|concerning|(?:best|better|nicest|ideal|great) (?:in|for))\s+(?:the |my |our )?{}\s*[?.!]*$"
 PHRASE_FILLER = frozenset("in on at from during for the a an of".split())
 _TOPIC_HOLIDAYS = frozenset(
     "christmas xmas easter halloween thanksgiving diwali eid ramadan hanukkah passover valentines boxing new year new years".split()
@@ -2193,6 +2194,9 @@ def a_topic_phrase(question: str, phrase: str, *, holiday: bool = True) -> bool:
     if not bare or _DEICTIC_PHRASE.match(phrase.strip()):
         return False
     if re.search(_ABOUT_PHRASE.format(re.escape(bare)), question or "", re.I):
+        return True
+    #: "the Q4 report": a quarter with a noun after it names the thing, it does not date the note (R9-3).
+    if re.fullmatch(r"q[1-4]", bare.lower()) and re.search(rf"\b{re.escape(bare)} [a-z]", (question or "")[:500], re.I):
         return True
     return holiday and bare.lower().replace("'", "") in _TOPIC_HOLIDAYS and not _WHEN_ASK.search(question or "")
 
@@ -3873,3 +3877,14 @@ def event_window_asked(question: str) -> str:
 def distances(text: str) -> list[tuple[int, int, str, str]]:
     """Each distance said in `text`: (start, end, figure as written, unit as written)."""
     return [(m.start(), m.end(), m.group(1), m.group(2)) for m in _DISTANCE.finditer(text or "")]
+
+
+def months_named(text: str) -> list[int]:
+    """The months `text` names, in order, as 1 to 12 ("best in April" is [4]). "may" counts only
+    capitalised, so the verb is not a month. Only the first 2,000 characters are read."""
+    found = []
+    for word in re.findall(r"[A-Za-z]+", (text or "")[:2000]):
+        low = word.lower()
+        if low in _MONTHS and (low != "may" or word[:1] == "M"):
+            found.append(_MONTHS[low])
+    return found

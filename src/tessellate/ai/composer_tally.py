@@ -17,6 +17,11 @@ _SUPERLATIVE = re.compile(
 _HOW_MANY_ROWS = re.compile(r"^how many (?P<noun>[a-z]+) (?:did i get|have i got|have i had|do i have|did i receive|have i collected)$")
 _HOW_MANY_WANTED = re.compile(r"^how many (?P<noun>[a-z]+) do i want to (?P<verb>[a-z]+)$")
 _HOW_FAR = re.compile(r"^how far did i (?:run|walk|cycle|ride|swim|jog)(?: on (?P<day>\d{1,2}(?:st|nd|rd|th)? [a-z]+|[a-z]+ \d{1,2}(?:st|nd|rd|th)?))?$")
+_OUTING_NOUN = {"runs": "run", "run": "run", "walks": "walk", "walk": "walk", "rides": "ride", "ride": "ride", "swims": "swim", "swim": "swim", "jogs": "jog", "jog": "jog"}
+_FASTEST = re.compile(r"^(?:what|which) (?:was|is) (?:my|the) (?P<size>fastest|quickest|slowest|longest|shortest) (?P<noun>run|walk|ride|swim|jog)$")
+_COMPARE_OUTINGS = re.compile(r"^compare (?:my|the) (?:two|2) (?P<noun>runs|walks|rides|swims|jogs)$")
+_BEST_IN = re.compile(r"^which (?P<noun>[a-z]+) (?:is|was|would be) (?:the )?(?:best|better|good|nicest|ideal|great) in (?P<month>[a-z]+)$")
+_BEST_CUE = re.compile(r"\b(?:best|better|good|nicest|ideal|great|perfect)\b", re.I)
 
 
 _SUM_ROW = re.compile(r"\b(?:total|sum|subtotal|grand total)\b", re.IGNORECASE)
@@ -139,8 +144,83 @@ def _how_far(out, q: str, views: list) -> bool:  # noqa: ANN001
         out.lines.append(f"Your notes do not say how far you {verb} on {found['day']}.")
     return dated
 
+def _pace(seconds: float, metres: float) -> str:
+    minutes, rest = divmod(round(seconds / (metres / 1000)), 60)
+    return f"{minutes}:{rest:02d} a km"
+
+
+def _outings(views: list, verb: str) -> list[tuple]:
+    """Each sentence that says one distance and one time for `verb`: (label, distance, time, pace, metres, seconds,
+    view, sentence). The label is the words between them ("on 1 November in" is "1 November")."""
+    found = []
+    for view in views:
+        for s in view.sentences:
+            made = recognise.measures(s.text)
+            lengths, times = [m for m in made if m[0] == "length"], [m for m in made if m[0] == "time"]
+            if len(lengths) != 1 or len(times) != 1 or lengths[0].end > times[0].at or not _says_verb(s.text, str(view.title or ""), verb):
+                continue
+            label = s.text[lengths[0].end:times[0].at].strip().removeprefix("on ").removesuffix(" in").strip()
+            found.append((label or str(view.title or ""), s.text[lengths[0].at:lengths[0].end], s.text[times[0].at:times[0].end],
+                          _pace(times[0][1], lengths[0][1]), lengths[0][1], times[0][1], view, s))
+    return found
+
+
+def _fastest(out, q: str, views: list) -> bool:  # noqa: ANN001
+    found = _FASTEST.match(q)
+    runs = _outings(views, found["noun"]) if found else []
+    if len(runs) < 2:
+        return False
+    size = found["size"]
+    pick = {"fastest": lambda r: r[5] / r[4], "quickest": lambda r: r[5] / r[4], "slowest": lambda r: -r[5] / r[4],
+            "longest": lambda r: -r[4], "shortest": lambda r: r[4]}[size]
+    label, dist, took, pace, _m, _s, view, s = min(runs, key=pick)
+    quick = size in ("fastest", "quickest", "slowest")
+    line = f"{label}: {dist} in {took}" + (f" ({pace}), the {'faster' if size != 'slowest' else 'slower'} pace." if quick else ".")
+    out.lines.append(line)
+    composer_lists._cite(out, view, s, line)  # noqa: SLF001
+    return True
+
+
+def _compare_outings(out, q: str, views: list) -> bool:  # noqa: ANN001
+    found = _COMPARE_OUTINGS.match(q)
+    runs = _outings(views, _OUTING_NOUN[found["noun"]]) if found else []
+    if len(runs) != 2:
+        return False
+    for label, dist, took, pace, _m, _s, view, s in runs:
+        line = f"{label}: {dist} in {took} ({pace})."
+        out.lines.append(line)
+        composer_lists._cite(out, view, s, line)  # noqa: SLF001
+    quicker, longer = min(runs, key=lambda r: r[5] / r[4]), max(runs, key=lambda r: r[4])
+    out.lines.append(
+        f"The {quicker[0]} {found['noun'][:-1]} was both faster and longer." if quicker is longer
+        else f"The {quicker[0]} {found['noun'][:-1]} was faster; the {longer[0]} {found['noun'][:-1]} was longer."
+    )
+    return True
+
+
+def _best_in(out, q: str, views: list) -> bool:  # noqa: ANN001
+    """"Which holiday is better in April": the line of a note about holidays that says it is best that month."""
+    found = _BEST_IN.match(q)
+    month = recognise.months_named(found["month"].capitalize()) if found else []
+    if not month:
+        return False
+    noun = re.compile(rf"\b{re.escape(found['noun'])}s?\b", re.I)
+    cued = [(v, s) for v in views if noun.search(str(v.note.get("content") or "")) for s in v.sentences if _BEST_CUE.search(s.text) and recognise.months_named(s.text)]
+    if not cued:
+        return False
+    for view, s in cued:
+        if month[0] in recognise.months_named(s.text):
+            head = s.text.split(":", 1)[0].strip() if ":" in s.text[:30] else ""
+            line = f"{head or composer_lists._title(view)} is best in {found['month'].capitalize()} ({composer_lists._title(view)})."  # noqa: SLF001
+            out.lines.append(line)
+            composer_lists._cite(out, view, s, line)  # noqa: SLF001
+            return True
+    out.lines.append(f"No {found['noun']} in your notes is said to be best in {found['month'].capitalize()}.")
+    composer_lists._cite(out, cued[0][0], cued[0][1], out.lines[-1])  # noqa: SLF001
+    return True
+
 
 def answer(out, asked: str, views: list) -> bool:  # noqa: ANN001
     """Say the superlative, the count or the day's distance; False when `asked` is none of these."""
     q = " ".join(composer_lists._q(asked).lower().split())  # noqa: SLF001
-    return _superlative(out, q, views) or _count_rows(out, q, views) or _count_wanted(out, q, views) or _how_far(out, q, views)
+    return _superlative(out, q, views) or _count_rows(out, q, views) or _count_wanted(out, q, views) or _how_far(out, q, views) or _fastest(out, q, views) or _compare_outings(out, q, views) or _best_in(out, q, views)
