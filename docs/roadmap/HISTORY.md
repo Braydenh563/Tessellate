@@ -7,6 +7,139 @@ Split out of `ROADMAP.md`. Kept, not deleted, for one reason: **three sessions
 have independently rebuilt something that already existed.** This is the file
 that answers "has this been done?" before anyone starts.
 
+## Moved from the plans, 2026-11-09 (book5-1109: WHITEBOARD_PLAN)
+
+Built blocks found still standing whole in the plan (checked 2026-11-09): the undo coverage audit tables (INBOX 537), the board bar at 820 and INBOX 12, and INBOX 278 (fixed 2026-09-20).
+
+From WHITEBOARD_PLAN.md (lines 485 to 530 before the move), verbatim:
+
+## Undo coverage, audited 2026-10-05 (INBOX 537)
+
+Every mutating action on a board or a map, and whether Undo puts all of it
+back (server side effects included). "Recorded" means `WB_RECORDED`
+(decision 18). Measured with `scratchpad/ui-sweeps/boardundo.js` (43/43),
+`mapinsertundo.js` (8/8), `wbmapundo.js`, `maprelink.js`.
+
+| Action | Undo before | Now |
+| --- | --- | --- |
+| Delete a topic (Delete key, tool, menu, X) | one row back, loose; its branch lost | the branch, under its parent |
+| Undo of a create whose topic gained a branch since | branch deleted for good | branch kept, Redo brings both |
+| Delete a card, box or shape | item back, its links lost | item and links, ends re-pointed |
+| Delete a selection | one step per item; parallel deletes popped the wrong entry | one step, in order |
+| Clear board | one step per item; 404 on cascaded links stopped it | one step |
+| Image object deleted | file unlinked, Undo drew a broken picture | file kept (media cleanup reclaims) |
+| Fold, Expand all, Tidy, layout, numbering, theme, reset every topic's style | none | recorded |
+| Add child, sibling, root, reference, duplicate, copy branch, template | the create only (unfold and tidy left) | recorded |
+| Detach, remove keeping branch, turn a line around, cross-link reverse, to branch, cut | none | recorded |
+| Insert between, outdent, move among siblings | own entries | recorded |
+| Group, ungroup, paste style, bucket fill, fit to text, arrange cards | none | recorded |
+| Card text edit (the note's words) | none | `note` step |
+| Branch card on a board (makes a note) | none | recorded, the note to the bin and back |
+| Drop a branch on a topic | own entry | own entry; a folded target opens (the "disappeared" report) |
+| Rename a topic left open across an Undo | wrote onto another topic | the live row by id; an open edit is committed first |
+| Delete a board (board menu, gallery, bulk) | "cannot be undone" (it was the bin) | bin, toast Undo and app Undo |
+| Rename or duplicate a board (gallery) | none | app Undo |
+| Move, resize, rotate, nudge, align, z-order, lock, frame title, properties panel, link handles | own entries | unchanged |
+
+A board's undo now survives a reload (the amendment to decision 2: IndexedDB,
+`undo-store.js`). Open: an agent's or another tab's change to the open board
+is not on its stack (the History sheet has it).
+
+### The app's stack (outside boards and documents)
+
+| Action | Undo |
+| --- | --- |
+| Note bin, archive, edit, attach, link, unlink, tags, categories (move, rename, merge, delete, split, colour), reminders delete, skills batch | already had one |
+| Category delete from the keyboard | added |
+| Merge duplicate notes | added (words, tags, the binned notes back) |
+| Generate or remove a note's title | added |
+| A link's kind or properties | added |
+| Clear completed reminders; delete an overdue or done reminder | added (`POST /reminders` `restore`; the past-date rule refused them) |
+| Empty the bin, purge a note | none by design: confirmed, permanent |
+| Detach a bookmark from a note being edited, delete a note type, relation type (its links typed again), conversation, or a space that was empty or whose contents moved | added (undo-1005: each DELETE answers with what it removed; `restore` on the create, `POST /spaces/restore`, `POST /conversations/restore`) |
+| Delete a space with everything in it | none by design: confirmed, its files leave the disk |
+| Entity merge | added (INBOX 553(a): `merge_with_undo`, `POST /merges/{undo_id}/undo`, Undo in the merge's toast) |
+
+From WHITEBOARD_PLAN.md (lines 643 to 676 before the move), verbatim:
+
+### ~~Found while measuring the board bar at 820 (2026-09-20, not the owner)~~
+
+~~**The board's top bar runs past its own right edge below 600, by 75px at 320
+and 5px at 390**, and carries thirteen controls at 1440 against the dock
+grammar's ceiling of seven.~~ **Both done, 2026-09-21**, measured before and
+after at five widths with `scratchpad/ui-sweeps/wbtopbar.js` (now in
+`scripts/gate.sh`'s sweep list), which also gates the menus' keyboard and ARIA.
+The Built block is in [HISTORY.md](HISTORY.md), "Moved from the plans,
+2026-09-21".
+
+12. **Whiteboard: export-selection popover opens a full-height list in the
+    wrong place; arrow drawn shows both caps as Arrow in properties;
+    missing align-centre and distribute-gaps; the arrange panel's buttons
+    are unreadable (icons overlapping text).** Owner: WHITEBOARD_PLAN.md.
+    **The caps part only is fixed** (my scope was "12 only the caps part"):
+    `wbDetectArrowStyle`'s own regex scan included the shaft's leading `M`
+    (matched separately, one line above, specifically to exclude it) in
+    its search for head markers, so a shaft with zero start caps still
+    measured a false zero-distance hit on its own start point and reported
+    "both". Slicing the shaft's own match off the string before scanning
+    fixed it; verified live (`startcap: "none"`, was `"arrow"`).
+    **The rest is closed, 2026-09-20, by Phases 2 and 3 rather than by
+    repairs**, and measured rather than assumed
+    (`scratchpad/ui-sweeps/wbinbox12.js`, 6/6 at 1440x900 and at 390x844).
+    The popover the report is about is not built any more: the export is a
+    dialog (decision 4), `.wb-export-menu` builds nothing, and the dialog
+    opens inside the window at both widths (480x393 at 480,254 in 1440x900;
+    342x417 at 24,214 in 390x844). Align centres and even gaps are both on
+    the context bar, which carries all twelve arrange controls for a
+    selection of two plus the two z-order ones. And the panel whose buttons
+    drew their icons through their labels is gone with the properties drawer:
+    every arrange control is icon-only with its name in the tooltip, measured
+    at 0px2 of icon-over-text across 24 buttons on the bar and in the top
+    bar's Arrange menu together.
+
+From WHITEBOARD_PLAN.md (lines 692 to 731 before the move), verbatim:
+
+278. **Mid-work drop, 2026-09-20, verbatim (the owner), two screenshots.**
+    "the rotate line and circle dont sit at the top center of a group
+    selection in the whiteboard and instead sit off to the top left or
+    right, or below the top border". Seen: a group of two boxes and a bar
+    inside a circle, the rotate stem and knob at about a third of the box's
+    width from the left and the knob inside the box's top edge; a group of a
+    note card, an image card and a line, the stem rising from the top edge
+    at x of one member's own centre rather than the group box's, and a
+    second stem from a member card below. Owner: WHITEBOARD_PLAN (the group
+    selection box, `wbBulkGroupBox` and the group's rotate handle in
+    whiteboard.js). Recommendation: the group's rotate stem is drawn from
+    the group box's own top-centre in board units after the box is fitted
+    to every member's rotated bounds, and a member's own handles are hidden
+    while it is part of a group selection; measured with a probe placing the
+    knob at (box.x + box.w / 2, box.y - stem) at 0.5x, 1x and 2x, in
+    `scratchpad/ui-sweeps/wbgroupguides.js`. **Fixed, 2026-09-20**, and the
+    cause was one line narrower than the recipe guessed: the group's grip was
+    already drawn from the group box's own top centre in board units (measured
+    (340, 672) against a wanted (340, 672) at every zoom), but it never set a
+    `transform-origin`. `.wb-sketch-rotate-handle` and
+    `.wb-rotate-handle-stem` carry `scale(var(--wb-inv-zoom))` so a grip stays
+    one size to the hand, and that rule keeps `transform-box` at its
+    `view-box` default *because the drawing code sets the origin in board
+    coordinates*, which `wbDrawSketchHandles` does for a single shape and the
+    group path did not. The scale therefore resolved about the SVG view box's
+    origin and multiplied the grip's own coordinates by `1 / k`: on screen the
+    knob sat 170px right of the box's centre and below its top edge at 0.5x,
+    340px left of it at 2x, and exactly right at 1x, which is the report's
+    "top left or right, or below the top border" and why it looks intermittent.
+    The anchor is set in `layoutGroupChrome`, so it follows a resize drag
+    (measured mid-drag: box top 638, knob 612, the box's own top centre).
+    The recipe's second half was also real and is done: a three-item group drew
+    **four** rotate knobs, two stems and sixteen member resize handles, and now
+    draws one knob, one stem and none; a member keeps its outline, so the
+    earlier report this has to keep answering ("the shapes and lines arent
+    selected visually and individually") still is. A card or a line selected on
+    its own keeps all eight handles and its grip, measured.
+    `scratchpad/ui-sweeps/wbgroupguides.js` carries the checks (0.5x, 1x, 2x,
+    plus mid-resize), and `tests/test_ui_recipes.py` holds the ratchet: every
+    grip scaled by `--wb-inv-zoom` sets its own anchor.
+
 ## Moved from the plans, 2026-11-09 (book5-1109: DOCUMENTS_PLAN)
 
 Built blocks found still standing whole in the plan (checked 2026-11-09 against the code, tests and the dated HISTORY records): Phase 4 items 1, 2 and 5, the segmented-bars note (107d), section 16 items 1 and 4, and INBOX 409.
