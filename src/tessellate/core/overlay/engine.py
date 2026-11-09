@@ -1406,7 +1406,7 @@ class Engine:
         q = self._life_pose(self.now)
         return None if q is None else (q.sx, q.sy, q.lean, q.drag)
 
-    def _life_pose(self, at: float) -> bh.Pose | None:
+    def _life_pose(self, at: float, scale: float | None = None) -> bh.Pose | None:
         """The eased body pose with the breath and tail sway of a sit or a sleep over it, on the grid."""
         life = REST_LIFE.get(self.state)
         if life is None or self.reduced:
@@ -1414,9 +1414,9 @@ class Engine:
         breath, depth, sway, sway_s = life
         c = self.cur
         swell = (1.0 - math.cos(2 * math.pi * at / breath)) / 2.0
-        return bh.quantised(bh.Pose(c.sx, c.sy * (1.0 + depth * swell), c.lean, c.drag + self._rest_tail(at, life)), Q_BREATH)
+        return bh.quantise(c.sx, c.sy * (1.0 + depth * swell), c.lean, c.drag + self._rest_tail(at, life, scale), Q_BREATH)
 
-    def _rest_tail(self, at: float, life: tuple[float, float, float, float]) -> float:
+    def _rest_tail(self, at: float, life: tuple[float, float, float, float], scale: float | None = None) -> float:
         """The tail's lag, px: a slow sway whose period drifts, a faster one over it, and the body's own breath a
         beat late, so a sit never repeats and the tail follows the body rather than keeping time with it."""
         breath, _depth, sway, sway_s = life
@@ -1425,16 +1425,17 @@ class Engine:
         slow = math.sin(tau * at / sway_s + drift)
         fast = math.sin(tau * at / (sway_s * 0.62) + 1.7)
         late = (1.0 - math.cos(tau * (at - TAIL_LAG) / breath)) / 2.0 - 0.5
-        return sway * self._scale() * (0.65 * slow + 0.3 * fast + 0.4 * late)
+        return sway * (self._scale() if scale is None else scale) * (0.65 * slow + 0.3 * fast + 0.4 * late)
 
     def _next_life_change(self, now: float) -> float:
         """The next time a sit's or a sleep's breath or sway crosses a step of the grid, looking ahead
         at most `POLL_QUIET_MS` and never sooner than a redraw's pace (12 a second)."""
         base = self._life_pose(now)
         t, pace = now, REST_DRAW_MS / 1000.0
+        scale = self._scale()  # the figure does not move while it looks ahead
         while t < now + POLL_QUIET_MS / 1000.0:
             t += pace
-            if self._life_pose(t) != base:
+            if self._life_pose(t, scale) != base:
                 return t
         return now + POLL_QUIET_MS / 1000.0
 

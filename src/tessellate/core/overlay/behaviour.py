@@ -58,6 +58,7 @@ class Pose(NamedTuple):
 
 
 NEUTRAL = Pose()
+_N_SX, _N_SY, _N_LEAN, _N_DRAG = NEUTRAL
 
 
 class SecondOrder:
@@ -88,14 +89,20 @@ class SecondOrder:
 Q_SCALE, Q_LEAN, Q_DRAG = 0.02, 0.02, 1.0
 
 
+def quantise(sx: float, sy: float, lean: float, drag: float, q_sy: float = Q_SCALE) -> Pose | None:
+    """`quantised` for the four numbers (a look-ahead runs it hundreds of thousands of times: no Pose in between)."""
+    sx = round(round(sx / Q_SCALE) * Q_SCALE, 2)
+    sy = round(round(sy / q_sy) * q_sy, 3)
+    lean = round(round(lean / Q_LEAN) * Q_LEAN, 2)
+    drag = float(round(drag / Q_DRAG) * Q_DRAG)
+    if sx == _N_SX and sy == _N_SY and lean == _N_LEAN and drag == _N_DRAG:
+        return None
+    return Pose(sx, sy, lean, drag)
+
+
 def quantised(p: Pose, q_sy: float = Q_SCALE) -> Pose | None:
     """The pose snapped to the cache grid (`q_sy` is the height's step), or None when it is the plain frame."""
-    q = Pose(
-        round(p.sx / Q_SCALE) * Q_SCALE, round(p.sy / q_sy) * q_sy,
-        round(p.lean / Q_LEAN) * Q_LEAN, round(p.drag / Q_DRAG) * Q_DRAG,
-    )
-    q = Pose(round(q.sx, 2), round(q.sy, 3), round(q.lean, 2), float(q.drag))
-    return None if q == NEUTRAL else q
+    return quantise(p.sx, p.sy, p.lean, p.drag, q_sy)
 
 
 def smooth(u: float) -> float:
@@ -590,13 +597,16 @@ class Trail:
         self.last_v = body_vx
         n = max(1, int(math.ceil(dt / 0.02)))
         h = dt / n
+        stiff, damp, kick, top = self.STIFF, self.DAMP, accel * self.KICK, self.MAX
+        pos, vel = self.pos, self.vel
+        kicks = [kick * (1 + i) for i in range(self.LINKS)]  # the same product every pass: once per link
         for _ in range(n):
             prev = 0.0
             for i in range(self.LINKS):
-                force = self.STIFF * (prev - self.pos[i]) - self.DAMP * self.vel[i] - accel * self.KICK * (1 + i)
-                self.vel[i] += force * h
-                self.pos[i] = max(-self.MAX, min(self.MAX, self.pos[i] + self.vel[i] * h))
-                prev = self.pos[i]
+                v = vel[i] + (stiff * (prev - pos[i]) - damp * vel[i] - kicks[i]) * h
+                vel[i] = v
+                p = pos[i] + v * h
+                prev = pos[i] = top if p > top else -top if p < -top else p
 
     def reset(self) -> None:
         self.pos, self.vel, self.last_v = [0.0] * self.LINKS, [0.0] * self.LINKS, 0.0
@@ -879,10 +889,12 @@ class Flow:
             gain = 0.7 + 0.6 * _frac(i * 0.43 + 0.1)  # each strand is thrown by its own share
             for axis, v, a in ((0, vx, ax), (1, vy, ay)):
                 rest = -v * FLOW_STREAM * gain
+                kick = a * FLOW_KICK * gain  # the same every pass
                 p, q = self.pos[i][axis], self.vel[i][axis]
                 for _ in range(n):
-                    q += (k * (rest - p) - c * q - a * FLOW_KICK * gain) * h
-                    p = max(-FLOW_MAX, min(FLOW_MAX, p + q * h))
+                    q += (k * (rest - p) - c * q - kick) * h
+                    p += q * h
+                    p = FLOW_MAX if p > FLOW_MAX else -FLOW_MAX if p < -FLOW_MAX else p
                 self.pos[i][axis], self.vel[i][axis] = p, q
 
     def arrangement(self, i: int, t: float) -> tuple[float, float]:
