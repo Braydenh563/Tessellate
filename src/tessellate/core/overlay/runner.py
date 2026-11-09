@@ -33,6 +33,7 @@ import inspect
 import logging
 import math
 import os
+import random
 import sys
 import time
 from collections import Counter, deque
@@ -124,7 +125,10 @@ class OverlayRunner:
         clock: Callable[[], float] = time.monotonic,
         frames: Path | None = None,
         dispatch: Callable[[str, Callable[[], None]], Any] | None = None,
+        rng: random.Random | None = None,
     ) -> None:
+        #: The engine's chance; a test passes a seeded one (an unseeded one made react_1700 fail a different test a CI job).
+        self.rng = rng
         #: The platform's half (`win32` or `x11`): its connection, window, monitors and window list.
         self.k = backend or default_backend(w)
         self.look = sprites.look_for(look)
@@ -686,7 +690,7 @@ class OverlayRunner:
         first = self.monitors[0]
         self.dpi = first.dpi
         self.engine = eng.Engine(
-            spr.size(self._fdpi()), self.monitors, home=self.home, reduced=reduced, roam=not self.stay, roam_windows=self.roam_windows, gait=spr.gait, hang_top=spr.top_share("hang"), idle_frames=spr.idle_count(), walk_frames=spr.walk_count(), wave_frames=spr.wave_count(), now=self.clock(),
+            spr.size(self._fdpi()), self.monitors, home=self.home, reduced=reduced, roam=not self.stay, roam_windows=self.roam_windows, gait=spr.gait, hang_top=spr.top_share("hang"), idle_frames=spr.idle_count(), walk_frames=spr.walk_count(), wave_frames=spr.wave_count(), now=self.clock(), rng=self.rng,
         )
         self.engine.set_metrics(spr.metrics(self._fdpi()))
         self.engine.take(self.carried, self.clock())

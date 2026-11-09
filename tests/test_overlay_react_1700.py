@@ -28,6 +28,15 @@ def _up():
     return r, fake, clock
 
 
+def _until_answered(r, clock, e, kind: str, n: int = 10) -> None:
+    """Tick until the engine answers `kind`: the turn is read on the answer, not after a later act of its own (a spell
+    walk 2 s on once turned it away again, which failed this file a CI job while its engine was unseeded)."""
+    for _ in range(n):
+        tick(r, clock, 0.5, 1)
+        if kind in e.ex.last:
+            return
+
+
 def _answered(caplog, kind: str) -> bool:
     return any(f"it answered {kind}" in rec.getMessage() for rec in caplog.records)
 
@@ -39,7 +48,7 @@ def test_the_app_changing_is_answered_and_logged_and_it_looks_toward_that_window
     e.facing = 1
     e.ex.cool.clear()
     fake.fg = 7  # the window on the far left comes forward
-    tick(r, clock, 0.5, 10)
+    _until_answered(r, clock, e, "app_switched")
     assert "app_switched" in e.ex.last and _answered(caplog, "app_switched")
     assert e.facing == -1 or e.turn_to == -1, (e.facing, e.turn_to)
     assert any("screen event app_switched" in rec.getMessage() for rec in caplog.records)
@@ -51,7 +60,7 @@ def test_it_looks_the_other_way_for_a_window_on_the_right() -> None:
     e = r.engine
     e.facing = -1
     fake.fg = 8
-    tick(r, clock, 0.5, 10)
+    _until_answered(r, clock, e, "app_switched")
     assert "app_switched" in e.ex.last and (e.facing == 1 or e.turn_to == 1), (e.facing, e.turn_to)
     r.stop()
 
