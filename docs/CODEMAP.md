@@ -1198,19 +1198,19 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | Name | File:line |
 |---|---|
 | `activeOverlay` | frontend/js/settings-wiring.js:947 |
-| `captureCountText` | frontend/js/settings-wiring.js:1707 |
+| `captureCountText` | frontend/js/settings-wiring.js:1717 |
 | `captureShortcutKey` | frontend/js/settings-wiring.js:1455 |
-| `clearStagedImages` | frontend/js/settings-wiring.js:2104 |
+| `clearStagedImages` | frontend/js/settings-wiring.js:2114 |
 | `closeOverlaysForChord` | frontend/js/settings-wiring.js:1250 |
 | `closeShortcuts` | frontend/js/settings-wiring.js:1485 |
 | `comboFromEvent` | frontend/js/settings-wiring.js:1286 |
-| `commitCaptureImages` | frontend/js/settings-wiring.js:2089 |
-| `fileDropBox` | frontend/js/settings-wiring.js:1952 |
+| `commitCaptureImages` | frontend/js/settings-wiring.js:2099 |
+| `fileDropBox` | frontend/js/settings-wiring.js:1962 |
 | `flashSaved` | frontend/js/settings-wiring.js:496 |
-| `handleFileUpload` | frontend/js/settings-wiring.js:2136 |
+| `handleFileUpload` | frontend/js/settings-wiring.js:2146 |
 | `hideChordGuide` | frontend/js/settings-wiring.js:1268 |
 | `inEditable` | frontend/js/settings-wiring.js:945 |
-| `loadForgottenOrder` | frontend/js/settings-wiring.js:1566 |
+| `loadForgottenOrder` | frontend/js/settings-wiring.js:1576 |
 | `loadShortcuts` | frontend/js/settings-wiring.js:1116 |
 | `localizeStaticChords` | frontend/js/settings-wiring.js:1159 |
 | `lockFail` | frontend/js/settings-wiring.js:269 |
@@ -1221,13 +1221,13 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `maybeShowOnboarding` | frontend/js/settings-wiring.js:968 |
 | `notebookLocked` | frontend/js/settings-wiring.js:481 |
 | `persistSavedSearches` | frontend/js/settings-wiring.js:53 |
-| `renderCaptureFiles` | frontend/js/settings-wiring.js:1672 |
-| `renderEntryAttachmentChips` | frontend/js/settings-wiring.js:1639 |
-| `renderInstallRow` | frontend/js/settings-wiring.js:1874 |
+| `renderCaptureFiles` | frontend/js/settings-wiring.js:1682 |
+| `renderEntryAttachmentChips` | frontend/js/settings-wiring.js:1649 |
+| `renderInstallRow` | frontend/js/settings-wiring.js:1884 |
 | `renderSavedSearches` | frontend/js/settings-wiring.js:17 |
 | `resetShortcuts` | frontend/js/settings-wiring.js:1422 |
 | `restampShortcutHints` | frontend/js/settings-wiring.js:1169 |
-| `rewriteStagedUrls` | frontend/js/settings-wiring.js:2077 |
+| `rewriteStagedUrls` | frontend/js/settings-wiring.js:2087 |
 | `runShortcut` | frontend/js/settings-wiring.js:1313 |
 | `saveCurrentSearch` | frontend/js/settings-wiring.js:61 |
 | `saveShortcutOverrides` | frontend/js/settings-wiring.js:1274 |
@@ -1235,13 +1235,13 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `savedSearches` | frontend/js/settings-wiring.js:13 |
 | `setShortcutStatus` | frontend/js/settings-wiring.js:1439 |
 | `setShortcutStatusError` | frontend/js/settings-wiring.js:1446 |
-| `singleKeysOn` | frontend/js/settings-wiring.js:2275 |
-| `stagedImageUrl` | frontend/js/settings-wiring.js:2054 |
+| `singleKeysOn` | frontend/js/settings-wiring.js:2285 |
+| `stagedImageUrl` | frontend/js/settings-wiring.js:2064 |
 | `stampShortcutTitles` | frontend/js/settings-wiring.js:1145 |
 | `submitLockForm` | frontend/js/settings-wiring.js:305 |
-| `textCounts` | frontend/js/settings-wiring.js:1697 |
-| `uploadStagedFiles` | frontend/js/settings-wiring.js:2113 |
-| `wordCount` | frontend/js/settings-wiring.js:1692 |
+| `textCounts` | frontend/js/settings-wiring.js:1707 |
+| `uploadStagedFiles` | frontend/js/settings-wiring.js:2123 |
+| `wordCount` | frontend/js/settings-wiring.js:1702 |
 
 ### frontend/js/spaces-find.js (25)
 
