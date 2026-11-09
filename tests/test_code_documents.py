@@ -921,3 +921,11 @@ def test_a_documents_slash_templates_are_the_gallerys_writing_and_planning_set()
     assert 'template.group === "code") continue' in rows
     assert "docTemplateFill(template" in rows and 'group: "Templates"' in rows
     assert body.index("...custom") < body.index("for (const template of DOC_TEMPLATES)")
+
+
+def test_the_topic_chip_says_why_and_how_to_change_it():
+    # INBOX 1620 (c): the words that named the topic, the rename path (the graph),
+    # and the only way out of a derived topic (its links).
+    chip = _fn(NOTES_LIST, "noteTopicChip")
+    assert "Named from the words" in chip
+    assert "rename it" in chip and "remove the links" in chip
