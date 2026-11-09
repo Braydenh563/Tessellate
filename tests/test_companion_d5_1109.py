@@ -120,3 +120,11 @@ def test_the_swipe_is_wired_and_has_a_switch() -> None:
 def test_the_catalogue_counts_the_twirl_as_built_on_both_sides() -> None:
     e = entries()["int.swipe_twirl"]
     assert e["app"]["s"] == "built" and e["desk"]["s"] == "built"
+
+
+def test_the_cloud_ride_is_a_far_move_the_app_already_plays() -> None:
+    """`move.cloud_ride`: the in-app cloud forms under it and carries it over a far way (a walk variant: the chooser
+    gives `cloud` where `walk` would be, past three of its widths); `tests/test_companion_travel.py` holds the weights."""
+    e = entries()["move.cloud_ride"]
+    assert e["app"]["s"] == "built" and e["desk"]["s"] == "built"
+    assert "\n  cloud(buddy, dx, dy, ctx) {" in TRAVEL and "cloud: d > s * 3 ? 1.5 : 0" in TRAVEL
