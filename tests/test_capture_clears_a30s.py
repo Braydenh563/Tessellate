@@ -36,7 +36,7 @@ def test_the_title_and_the_body_each_have_their_own_x_and_clear_all_keeps_its_pl
         assert re.search(rf'button: "{ident}",\s*fields: \["{field}"\],\s*inline: "{label}"', CLEAR)
         assert f'id="{field}"' in composer
     build = CLEAR[CLEAR.index("function fieldClearInline(spec)") :]
-    build = build[: build.index("\n  }\n")]
+    build = build[: build.index("\n    }\n")]
     assert '"ghost icon-only small field-clear field-clear-inline hidden"' in build
     assert '"ph ph-x"' in build and "field.before(anchor)" in build, "the anchor sits before its field, at its top edge"
     all_tag = re.search(r'<button[^>]*id="capture-clear"[^>]*>', composer).group(0)

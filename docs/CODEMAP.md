@@ -3033,10 +3033,10 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `dashPatternBit` | frontend/js/dash-day.js:104 |
-| `dashTodayLine` | frontend/js/dash-day.js:135 |
-| `digestSaidLine` | frontend/js/dash-day.js:73 |
-| `renderDayDigest` | frontend/js/dash-day.js:8 |
+| `dashPatternBit` | frontend/js/dash-day.js:105 |
+| `dashTodayLine` | frontend/js/dash-day.js:136 |
+| `digestSaidLine` | frontend/js/dash-day.js:74 |
+| `renderDayDigest` | frontend/js/dash-day.js:9 |
 
 ### frontend/js/dash-night.js (6)
 
@@ -4856,12 +4856,12 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `fieldClearBoxes` | frontend/js/field-clear.js:65 |
-| `fieldClearRun` | frontend/js/field-clear.js:84 |
-| `fieldClearSync` | frontend/js/field-clear.js:69 |
-| `fieldClearSyncAll` | frontend/js/field-clear.js:165 |
-| `fieldClearWatchValue` | frontend/js/field-clear.js:136 |
-| `fieldClearWrite` | frontend/js/field-clear.js:78 |
+| `fieldClearBoxes` | frontend/js/field-clear.js:66 |
+| `fieldClearRun` | frontend/js/field-clear.js:85 |
+| `fieldClearSync` | frontend/js/field-clear.js:70 |
+| `fieldClearSyncAll` | frontend/js/field-clear.js:166 |
+| `fieldClearWatchValue` | frontend/js/field-clear.js:137 |
+| `fieldClearWrite` | frontend/js/field-clear.js:79 |
 
 ### frontend/js/file-drop.js (10)
 
@@ -6652,9 +6652,9 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `buildSelect` | frontend/js/reminder-edit.js:8 |
-| `reminderEditForm` | frontend/js/reminder-edit.js:21 |
-| `snoozeReminderTo` | frontend/js/reminder-edit.js:127 |
+| `buildSelect` | frontend/js/reminder-edit.js:9 |
+| `reminderEditForm` | frontend/js/reminder-edit.js:22 |
+| `snoozeReminderTo` | frontend/js/reminder-edit.js:128 |
 
 ### frontend/js/reminder-notify.js (4)
 
@@ -7668,12 +7668,12 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `translateAsk` | frontend/js/translate.js:51 |
-| `translateCanReplace` | frontend/js/translate.js:80 |
-| `translateCaught` | frontend/js/translate.js:87 |
-| `translateReplace` | frontend/js/translate.js:64 |
-| `translateStopWorker` | frontend/js/translate.js:43 |
-| `translateWorker` | frontend/js/translate.js:22 |
+| `translateAsk` | frontend/js/translate.js:52 |
+| `translateCanReplace` | frontend/js/translate.js:81 |
+| `translateCaught` | frontend/js/translate.js:88 |
+| `translateReplace` | frontend/js/translate.js:65 |
+| `translateStopWorker` | frontend/js/translate.js:44 |
+| `translateWorker` | frontend/js/translate.js:23 |
 
 ### frontend/js/undo-kit.js (13)
 
