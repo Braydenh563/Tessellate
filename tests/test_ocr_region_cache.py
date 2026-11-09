@@ -259,3 +259,46 @@ def test_a_page_read_drops_the_shared_miss_for_that_page() -> None:
     routes_files._REGION_MISSES[("k", 1, 3, "p", True, "", 0)] = (0.0, None)
     routes_files._forget_region_misses(("k", 1), 0)
     assert list(routes_files._REGION_MISSES) == [("k", 1, 3, "p", True, "", 0)]
+
+
+def test_a_pdf_page_that_found_nothing_shares_its_miss(client, monkeypatch) -> None:
+    """The miss key held the rasterised page's temp path, new on every look, so a PDF never hit it."""
+    from tessellate.api import routes_files
+
+    routes_files._REGION_MISSES.clear()
+    calls: list[int] = []
+    monkeypatch.setattr(pdfpages, "available", lambda: True)
+    monkeypatch.setattr(pdfpages, "page_count", lambda path: 2)
+    monkeypatch.setattr(pdfpages, "render_page", lambda path, index: PNG)
+    monkeypatch.setattr(ocr, "extract_regions", lambda *a, **k: calls.append(1))
+    aid = _attach(client, "lecture.pdf", TWO_PAGE_PDF)
+    for _ in range(3):
+        client.get(f"/files/{aid}/ocr-regions?page=0")
+    assert calls == [1], calls
+
+
+def test_a_shared_miss_is_handed_out_as_a_copy(app_state, tmp_path, monkeypatch) -> None:
+    """Callers set `pages`/`page`/`message` on what they get; they must not be editing one shared object."""
+    from tessellate.api import routes_files
+
+    routes_files._REGION_MISSES.clear()
+    monkeypatch.setattr(ocr, "extract_regions", lambda *a, **k: None)
+    scan = tmp_path / "scan.png"
+    scan.write_bytes(PNG)
+    key = ("attachment", 987654)
+    first = routes_files._regions_for(scan, "", "", key, 0, True, "")
+    first.message = "MUTATED"
+    second = routes_files._regions_for(scan, "", "", key, 0, True, "")
+    third = routes_files._regions_for(scan, "", "", key, 0, True, "")
+    assert second.message != "MUTATED"
+    assert second is not third
+
+
+def test_page_locks_are_dropped_after_use() -> None:
+    from tessellate.api import routes_files
+
+    routes_files._REGION_LOCKS.clear()
+    for page in range(50):
+        with routes_files._region_lock(("attachment", 7), page):
+            assert len(routes_files._REGION_LOCKS) == 1
+    assert routes_files._REGION_LOCKS == {}

@@ -109,6 +109,15 @@ _VERB = re.compile(r"^(?:i\s+)?(?:paid|spent|bought|cost|was|were|aud|usd|gbp|eu
 _AFTER = re.compile(r"^\s*(?:for|on|at|to)\s+(?P<what>[\w'-]+(?:\s+[\w'-]+)*?)(?:\s+(?:to|because|as|in|on)\b.*)?\s*$", re.I)
 
 
+#: A clause longer than this has no label to read after its amount: `_AFTER` tries a connector word at every
+#: word and each try runs to the end of the line, so a 50,000-character line cost seconds (review 1109).
+AFTER_MAX = 400
+
+
+def _after_what(rest: str):
+    return _AFTER.match(rest) if len(rest) <= AFTER_MAX else None
+
+
 _LABEL_TAIL = frozenset({"is", "are", "was", "were", "cost", "costs", "about"})
 
 
@@ -125,7 +134,7 @@ def _what(clause: str, at: int, end: int, last: str) -> str:
         words.pop()
     if words:
         return " ".join(words[-3:])
-    after = _AFTER.match(clause[end:])
+    after = _after_what(clause[end:])
     #: "$112 on the 17th" is when, not what: it keeps the clause before's label.
     #: "$84 on groceries this week" is groceries: a window after the thing is dropped, not the label.
     thing = " ".join(recognise.without_windows(after.group("what")).split()) if after else ""
