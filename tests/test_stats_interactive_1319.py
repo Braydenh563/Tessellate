@@ -14,9 +14,12 @@ from pathlib import Path
 
 import pytest
 
+from tests import _js_scope
+
 ROOT = Path(__file__).resolve().parent.parent
 CHART = (ROOT / "frontend" / "js" / "ask-chart.js").read_text(encoding="utf-8")
-STATS = (ROOT / "frontend" / "js" / "statistics.js").read_text(encoding="utf-8")
+#: statistics.js is one closure now (ranked row 37a); these tests slice or run its private functions, so they read it as it was before it was wrapped (`_js_scope.unwrapped`): same code, same assertions.
+STATS = _js_scope.unwrapped((ROOT / "frontend" / "js" / "statistics.js").read_text(encoding="utf-8"))
 CSS = (ROOT / "frontend" / "css" / "utilities-lazy.css").read_text(encoding="utf-8")
 
 

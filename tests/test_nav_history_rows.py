@@ -22,11 +22,14 @@ from pathlib import Path
 
 import pytest
 
+from tests import _js_scope
+
 from tests._app_js import app_js_text, frontend_text
 
 ROOT = Path(__file__).resolve().parents[1]
 JS = ROOT / "frontend" / "js"
-NAV_HISTORY = (JS / "nav-history.js").read_text(encoding="utf-8")
+#: nav-history.js is one closure now (ranked row 37a); these tests slice or run its private functions, so they read it as it was before it was wrapped (`_js_scope.unwrapped`): same code, same assertions.
+NAV_HISTORY = _js_scope.unwrapped((JS / "nav-history.js").read_text(encoding="utf-8"))
 #: Every script the helpers could live in: the boot list ends before the
 #: dashboard, and `noteRowImage` is the dashboard rows' own.
 SOURCE = app_js_text() + "\n" + (JS / "dashboard.js").read_text(encoding="utf-8")
@@ -188,7 +191,7 @@ def test_the_nav_history_clear_action_is_a_quiet_footer_text_button():
     a row of its own (32px tall, a 1px border, a lilac fill). Now one footer row:
     the older-steps count left, a muted text action right, the destructive ink
     only under the pointer or keyboard; no icon, no fill at rest."""
-    js = (JS / "nav-history.js").read_text(encoding="utf-8")
+    js = _js_scope.unwrapped((JS / "nav-history.js").read_text(encoding="utf-8"))
     assert "ph:trash" not in js and 'foot.className = "nav-history-foot";' in js
     assert 'clear.className = "nav-history-clear";' in js
     css = (CSS / "nav-history-lazy.css").read_text(encoding="utf-8")

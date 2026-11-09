@@ -55,7 +55,7 @@ _EDITED = "one\nTWO\nthree\nfour\nnew\nfive\nsix\n"
 @node
 @pytest.mark.parametrize("index", [0, 1, 2])
 def test_reverting_one_hunk_restores_exactly_that_hunk(index: int) -> None:
-#: documents-ide.js is one closure now (ranked row 37a); these tests slice or run its private functions, so they read it as it was before it was wrapped (`_js_scope.unwrapped`): same code, same assertions.
+    #: documents-ide.js is one closure now (ranked row 37a); these tests slice or run its private functions, so they read it as it was before it was wrapped (`_js_scope.unwrapped`): same code, same assertions.
     ide = _js_scope.unwrapped(IDE_JS.read_text(encoding="utf-8"))
     got = _run_node(
         _function(ide, "docIdeChunks")
