@@ -382,6 +382,10 @@ CHAINS = (
     Chain(("sip_tea", "write_journal"), ("curious", "proud")),
     Chain(("scratch", "groom", "dust_off"), ()),
     Chain(("tinker", "invent_game"), ("bored", "curious", "happy")),
+    # INBOX 1711: the small acts lead somewhere too (a sneeze shakes off into a groom, a tap of the foot looks for something to do, a hug winds down).
+    Chain(("sneeze", "groom"), ()),
+    Chain(("foot_tap", "look_around", "ponder"), ("bored", "curious")),
+    Chain(("self_hug", "yawn", "sit_down"), ()),
 )
 
 

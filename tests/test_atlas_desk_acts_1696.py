@@ -52,6 +52,11 @@ ACTS = {
     "game": ("act.invent_game", ["nmp-game"], 3),
     "tinker": ("act.tinker", ["nmp-gear", "nmp-spanner"], 4),
     "dust": ("act.dust_off", ["nmp-dust"], 1.25),
+    #: INBOX 1710, 1711 (compalive-1109): four small things built on both sides, no prop.
+    "sneeze": ("act.sneeze", [], 1.3),
+    "hiccup": ("act.hiccup", [], 3),
+    "hug": ("act.self_hug", [], 4.5),
+    "tap": ("act.foot_tap", [], 3),
 }
 
 
