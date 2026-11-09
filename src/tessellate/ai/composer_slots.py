@@ -377,7 +377,7 @@ def _title_of(view, s) -> str:  # noqa: ANN001
 
 def _say_line(out, view, s, lead: str, via: str = "") -> None:  # noqa: ANN001
     text = re.sub(r"^\s*[-*]\s*(?:\[[ xX]\]\s*)?", "", s.text).strip()
-    out.lines.append(f"{lead}: {text}" + (f" ({via})" if via else ""))
+    out.lines.append(f"{lead}: {text.rstrip('.') + f' ({via}).' if via else text}")
     composer_lists._cite(out, view, s, s.text)  # noqa: SLF001
 
 

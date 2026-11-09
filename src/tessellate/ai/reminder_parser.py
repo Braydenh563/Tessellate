@@ -323,7 +323,8 @@ def _is_reminder_word(word: str) -> bool:
     """"reminder" or "reminders", typos included ("remindr", "remnder")."""
     if word in ("remind", "reminds", "reminded", "reminding"):
         return False
-    return word.startswith("remind") or bool(
+    #: A timer or an alarm is asked for as a reminder in the same time (R9-11).
+    return word in ("timer", "alarm") or word.startswith("remind") or bool(
         difflib.get_close_matches(word, ("reminder", "reminders"), n=1, cutoff=0.8)
     )
 

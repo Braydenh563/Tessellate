@@ -38,3 +38,10 @@ def test_how_far_on_a_named_day_is_that_days_run(say):
 def test_what_i_spend_on_insurance_adds_the_yearly_amounts(say):
     text = say("what do I spend on insurance")
     assert "£592" in text and "£412" in text and "£180" in text
+
+
+def test_a_timer_is_offered_as_a_reminder_not_read_as_a_recipe(client, session, monkeypatch):  # R9-11
+    sd.seed(session)
+    text = sd.asker(client, monkeypatch, chat=True)("set a timer for 40 minutes")[0]
+    assert "Bake at 230C" not in text
+    assert "remind" in text.lower() and "40 minutes" in text
