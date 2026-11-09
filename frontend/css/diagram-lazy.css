@@ -366,8 +366,17 @@
   display: none;
 }
 
+/* Open, the frame is the stage's, not the picture's (the owner 2026-11-09: the open shelf sat above the panel's edge while
+   the folded "+" sat inside it). The picture keeps its scroll below the shelf, so the shelf still never covers the drawing. */
+.dgm-stage.dgm-shelved {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface-1);
+}
+
 .dgm-stage.dgm-shelved > .dgm-picture {
   margin-block-start: calc(var(--control-h) + 2 * var(--space-1) + var(--space-3) + var(--space-2));
+  border-color: transparent;
 }
 
 /* While a zoom is in motion (diagram-view.js) the picture is only a transform: the boxes, handles and the picked arrow

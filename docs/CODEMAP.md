@@ -3277,13 +3277,13 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | Name | File:line |
 |---|---|
 | `blankOf` | frontend/js/diagram-kindbar.js:48 |
-| `choose` | frontend/js/diagram-kindbar.js:121 |
-| `decorate` | frontend/js/diagram-kindbar.js:86 |
+| `choose` | frontend/js/diagram-kindbar.js:129 |
+| `decorate` | frontend/js/diagram-kindbar.js:94 |
 | `fresh` | frontend/js/diagram-kindbar.js:19 |
-| `historyKey` | frontend/js/diagram-kindbar.js:137 |
-| `lost` | frontend/js/diagram-kindbar.js:111 |
+| `historyKey` | frontend/js/diagram-kindbar.js:145 |
+| `lost` | frontend/js/diagram-kindbar.js:119 |
 | `mount` | frontend/js/diagram-kindbar.js:51 |
-| `open` | frontend/js/diagram-kindbar.js:78 |
+| `open` | frontend/js/diagram-kindbar.js:79 |
 | `sample` | frontend/js/diagram-kindbar.js:36 |
 
 ### frontend/js/diagram-kinds.js (63)
@@ -12464,7 +12464,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/dash-night-lazy.css | 29 |
 | frontend/css/dash-orphans-lazy.css | 57 |
 | frontend/css/desk-companion-lazy.css | 226 |
-| frontend/css/diagram-lazy.css | 2252 |
+| frontend/css/diagram-lazy.css | 2261 |
 | frontend/css/file-drop-lazy.css | 51 |
 | frontend/css/first-run-lazy.css | 140 |
 | frontend/css/forced-colors-lazy.css | 28 |
@@ -27829,7 +27829,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Phases 0 to 2: built 2026-09-09 | docs/roadmap/DOCUMENTS_PLAN.md:119 |
 | Phases 0 to 6: built | docs/roadmap/UI_MODERNISATION_PLAN.md:216 |
 | Phases, each with the gate it is finished against | docs/roadmap/MINDMAP_PLAN.md:1296 |
-| Placed (last 20, newest first) | docs/roadmap/INBOX.md:171 |
+| Placed (last 20, newest first) | docs/roadmap/INBOX.md:173 |
 | Placed from Brief 40, 2026-10-10 (does the MCP server work) | docs/roadmap/AGENT_SKILLS_REFORM.md:345 |
 | Placed from Brief 40, 2026-10-10 (research and placement) | docs/roadmap/BACKLOG.md:4176 |
 | Placed from Brief 40, 2026-10-10 (the phone over HTTPS) | docs/roadmap/WORLD_CLASS_PLAN.md:3128 |

@@ -55,6 +55,7 @@
     button.type = "button";
     button.title = "Choose the kind of diagram";
     button.setAttribute("aria-haspopup", "menu");
+    button.setAttribute("aria-expanded", "false");
     button.setAttribute("aria-label", `Kind of diagram: ${label}. Choose a kind`);
     const caret = h.el("i", "ph ph-caret-down");
     caret.setAttribute("aria-hidden", "true");
@@ -76,10 +77,17 @@
   }
 
   function open(S, h, here, button) {
+    //: A second press closes it (the owner 2026-11-09): the outside-press closer skips an expanded opener, so it is closed here.
+    if (button.getAttribute("aria-expanded") === "true") return closeActionMenus();
     const r = button.getBoundingClientRect();
     //: Held, not looked up by its host: the menu can be moved out of it (the shelf's caret menu was).
-    const menu = openMenuAtPoint(KINDS.map(([key, label]) => ({ label, run: () => choose(S, h, here, key) })), "Kinds of diagram", r.left, r.bottom, button);
-    if (menu) decorate(menu, here, blankOf(S));
+    //: Anchored at the button's right edge, as the shelf caret is: the menu's end lines up under the button (it opened 660 px to its left).
+    const menu = openMenuAtPoint(KINDS.map(([key, label]) => ({ label, run: () => choose(S, h, here, key) })), "Kinds of diagram", r.right, r.bottom, button);
+    if (!menu) return;
+    decorate(menu, here, blankOf(S));
+    //: The closer resets this button, not the menu's hidden anchor.
+    menu._escapedOpener = button;
+    button.setAttribute("aria-expanded", "true");
   }
 
   //: Each row is its sample, its word and what it makes; the chosen one is marked; the line under them says what a change costs.
