@@ -901,7 +901,10 @@
     overscroll-behavior-x: contain;
   }
 
-  .dgm-dock:has(> .dgm-addsplit) > * {
+  /* Every child of that dock, named from the split itself: a `:has()` anchor over `> *` re-matches on every change below it. */
+  .dgm-dock > .dgm-addsplit,
+  .dgm-dock > .dgm-addsplit ~ *,
+  .dgm-dock > :has(~ .dgm-addsplit) {
     flex: none;
   }
 }
