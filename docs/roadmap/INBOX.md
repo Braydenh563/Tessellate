@@ -34,7 +34,7 @@ with its owner named in the entry.
 
 ## Open items
 
-1698. **Owner, 2026-11-09 ~05:50Z, verbatim:** "dragging the in-app companion is laggy, and also the in-app companion (I have set it to the one based on my name) just like flew across the top of my screen but with the walking legs animation". Placed with agent appdrag-1109.
+1698. **Owner, 2026-11-09 ~05:50Z, verbatim:** "dragging the in-app companion is laggy, and also the in-app companion (I have set it to the one based on my name) just like flew across the top of my screen but with the walking legs animation". Placed with agent appdrag-1109. Same session, more lag lines (verbatim, for the next session if appdrag does not reach them): "raf 166ms on graph: graph-canvas.js gcRequestDraw 55 calls/s, 3.0ms each (166ms of every second)"; "frame 205ms on library: whiteboard-library.js BUTTON#wb-side-tab-library.onclick 194ms (forced layout 177ms)"; "frame 218ms on documents: library.js openDoc 148ms (forced layout 58ms); documents.js ResizeObserverCallback 9ms; codemirror.min.js requestMeasure 9ms".
 
 1697. **Owner, 2026-11-09 ~05:40Z, verbatim:** "I still cant place the companion to sit on a smaller desktop window". Placed with agent perchsmall-1109 (drop onto a small window top: PERCH_MIN_RISE, the drop landing search, window size filters in engine.py and the window reader).
 
