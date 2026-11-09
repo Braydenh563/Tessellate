@@ -2,7 +2,7 @@
 
 Generated 2026-11-09 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7931, frontend ids 2652, CSS sections 522, backend routes 649, backend modules 9275, test files 2284, tests 19130, plan headings 1008, app scripts 28, boot scripts 37, script files 265.
+Counts: frontend functions 7931, frontend ids 2652, CSS sections 522, backend routes 649, backend modules 9275, test files 2285, tests 19133, plan headings 1008, app scripts 28, boot scripts 37, script files 265.
 
 ## Frontend functions (7931)
 
@@ -22879,15 +22879,15 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `Bar` | src/tessellate/core/overlay/engine.py:542 |
-| `Cover` | src/tessellate/core/overlay/engine.py:523 |
-| `Engine` | src/tessellate/core/overlay/engine.py:623 |
-| `Monitor` | src/tessellate/core/overlay/engine.py:552 |
-| `Output` | src/tessellate/core/overlay/engine.py:570 |
-| `Perch` | src/tessellate/core/overlay/engine.py:511 |
-| `TuckSpot` | src/tessellate/core/overlay/engine.py:532 |
-| `_adjoins` | src/tessellate/core/overlay/engine.py:607 |
-| `_same_screens` | src/tessellate/core/overlay/engine.py:618 |
+| `Bar` | src/tessellate/core/overlay/engine.py:547 |
+| `Cover` | src/tessellate/core/overlay/engine.py:528 |
+| `Engine` | src/tessellate/core/overlay/engine.py:628 |
+| `Monitor` | src/tessellate/core/overlay/engine.py:557 |
+| `Output` | src/tessellate/core/overlay/engine.py:575 |
+| `Perch` | src/tessellate/core/overlay/engine.py:516 |
+| `TuckSpot` | src/tessellate/core/overlay/engine.py:537 |
+| `_adjoins` | src/tessellate/core/overlay/engine.py:612 |
+| `_same_screens` | src/tessellate/core/overlay/engine.py:623 |
 | `perch_room` | src/tessellate/core/overlay/engine.py:470 |
 | `stand_x` | src/tessellate/core/overlay/engine.py:476 |
 
@@ -23077,7 +23077,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `out_of_middle` | src/tessellate/core/overlay/travel.py:110 |
 | `overlaps` | src/tessellate/core/overlay/travel.py:137 |
 | `padded` | src/tessellate/core/overlay/travel.py:141 |
-| `pick_mode` | src/tessellate/core/overlay/travel.py:173 |
+| `pick_mode` | src/tessellate/core/overlay/travel.py:174 |
 | `warp_for` | src/tessellate/core/overlay/travel.py:66 |
 
 ### src/tessellate/core/overlay/win32.py (54)
@@ -24857,7 +24857,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (19130)
+## Tests (19133)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -26377,6 +26377,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_overlay_hang_rise_1696.py | 2 |
 | tests/test_overlay_hang_spots_1683.py | 4 |
 | tests/test_overlay_hang_throw_1670.py | 3 |
+| tests/test_overlay_hops_1109.py | 3 |
 | tests/test_overlay_host.py | 26 |
 | tests/test_overlay_idle.py | 9 |
 | tests/test_overlay_land_1683.py | 4 |
@@ -27854,7 +27855,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Phases 0 to 2: built 2026-09-09 | docs/roadmap/DOCUMENTS_PLAN.md:119 |
 | Phases 0 to 6: built | docs/roadmap/UI_MODERNISATION_PLAN.md:216 |
 | Phases, each with the gate it is finished against | docs/roadmap/MINDMAP_PLAN.md:1296 |
-| Placed (last 20, newest first) | docs/roadmap/INBOX.md:170 |
+| Placed (last 20, newest first) | docs/roadmap/INBOX.md:171 |
 | Placed from Brief 40, 2026-10-10 (does the MCP server work) | docs/roadmap/AGENT_SKILLS_REFORM.md:345 |
 | Placed from Brief 40, 2026-10-10 (research and placement) | docs/roadmap/BACKLOG.md:4176 |
 | Placed from Brief 40, 2026-10-10 (the phone over HTTPS) | docs/roadmap/WORLD_CLASS_PLAN.md:3128 |
