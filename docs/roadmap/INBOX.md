@@ -34,6 +34,8 @@ with its owner named in the entry.
 
 ## Open items
 
+1712. **Owner, 2026-11-09 (screenshot under a chat answer: six numbered rows, "1 Why did the student eat his homework? Because the...", "2 something lol something -> found it during school a...", "3 Leafeon Pokemon image test WallpaperEngineOverri..." with a picture, "4 Girl with bell ..." with a picture, "5 Gary The Moss Monster :D ..." with a sketch, "6 What my notes currently leave out, however, is the c..."; the rows with a picture run about 300 px further right than the others; then Next: "What else do my notes say about university?", "Open ...")):** "why do some of these extend so far to the right??". Not yet traced: `.chat-sources-grid` (02-chat-graph.css:4381) gives equal columns, so the rows drawn may be another list (answer-kit.js); measure the live DOM first.
+
 1711. **Owner, 2026-11-09:** "I do like how the in-app companion is now, but I think it needs more possibole behaviours and activities it can do". Placed with compalive-1109 (after 1709 and 1710).
 
 1710. **Owner, 2026-11-09:** "also does the in-app companion have the same life and complex mechanics and actions and things it can do as the desktop companion?? they need to be just as good as each other". Measured (tests/test_companion_catalogue_1108.py): 8 entries are desk-only (battery low, hour chime, idle return, five window events) and 49 are app-only (juggle, meditate, lounge, hangs, sloth, the note and search reactions and their transitions); acts an hour, app 39.1 against desk 35.7 (test_companion_weights).
