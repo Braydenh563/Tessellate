@@ -24,7 +24,7 @@ def _rule(selector: str) -> str:
 
 
 def test_the_pane_frame_is_made_in_the_lazy_steps_file_and_asked_for_once_by_the_builder():
-    assert "function frame(" in STEPS and "diagramModel.steps = { build, sync, frame }" in STEPS
+    assert "function frame(" in STEPS and "diagramModel.steps = { build, sync, frame, next }" in STEPS
     assert BUILDER.count("diagramModel.steps.frame(") == 1
     # The builder file has a 12,000 byte gzip cap: it asks, it does not build.
     assert "dgm-purpose" not in BUILDER and "dgm-foot" not in BUILDER

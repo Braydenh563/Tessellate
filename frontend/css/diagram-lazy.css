@@ -192,11 +192,13 @@
 }
 
 .dgm-sideways {
-  position: absolute;
-  inset: auto auto var(--space-3) var(--space-3);
-  /* In the picture's stage, left of its zoom bar (about 12rem, bottom right). */
+  /* A row under the picture in its stage, not over it: it lay on the last block (blind test, dgbt-1109 2: 5106 px of a
+     five-box chart under it at 1440 by 900), so the picture is the stage less this row and fits to what is left. */
+  flex: none;
+  align-self: flex-start;
+  margin: var(--space-2) var(--space-3);
+  /* Left of the zoom bar (about 12rem, bottom right). */
   max-inline-size: calc(100% - 2 * var(--space-3) - 12rem);
-  z-index: 2;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -292,6 +294,7 @@
 .dgm-stage {
   position: relative;
   display: flex;
+  flex-direction: column;
   min-width: 0;
   min-height: 0;
 }
@@ -548,6 +551,17 @@
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
+}
+
+/* A flowchart row's name wraps to two lines before it is cut: its arrow, swatch, grip and menu leave a 209 px row 73 px for the words,
+   and "Order placed" read "Order plac..." (blind test, dgbt-1109 10). The name being typed keeps the single line above. */
+.dgm-card:has(> .dgm-connect) > .dgm-label:not(.dgm-editing) {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  white-space: normal;
+  overflow-wrap: anywhere;
 }
 
 /* The other kinds' cards carry one quiet line after the words (who a message is between, a period's date),
@@ -2199,6 +2213,12 @@
     min-inline-size: 2.75rem;
     min-block-size: 2.75rem;
     flex: none;
+  }
+
+  /* Its caret ("Every block you can add") sat at 395 to 439 in a 390 window, past the edge: fold, three tiles and the caret are 5 x 44 px,
+     and the caret lists the rest (dgbt-1109 3). */
+  .dgm-shelf .dgm-tile:nth-child(n + 5) {
+    display: none;
   }
 
   .dgm-stage.dgm-shelved > .dgm-picture {

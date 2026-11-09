@@ -69,7 +69,7 @@
       S.fig.classList.toggle("dgm-picture-empty", empty);
       //: The phone layout keys on the window body; a class, not `.dgm-body:has()` (test_css_body_has).
       S.fig.closest(".dgm-body")?.classList.toggle("dgm-body-empty", empty);
-      if (empty) return (S.drawing = false), S.fig.replaceChildren(el("p", "muted dgm-hint", "Press a shape above to start the diagram."));
+      if (empty) return (S.drawing = false), S.fig.replaceChildren(el("p", "muted dgm-hint", "Press Add above to start the diagram."));
       //: The hint goes now, or it and the pending line show together (1679 m).
       S.fig.querySelector(":scope > .dgm-hint")?.remove();
       Promise.all([ensureModule("mermaid"), diagramModel.picture.idle(S)]).then(([ok]) => {
@@ -107,7 +107,7 @@
     reconcile(S.tree, rows);
     diagramModel.steps.sync(S, layout.length);
     S.next.classList.toggle("hidden", !layout.length);
-    const next = S.m.edges.length ? "Drag a grip to move or nest a block (the picture lays itself out). Double-click a name to rename it." : `Double-click a name, or press Enter, to rename it. ${S.m.nodes.length < 2 ? "Add a second block, then press Connect to… on one." : "Press Connect to… on a block, or drag its grip onto another block, to draw an arrow."}`;
+    const next = diagramModel.steps.next(S);
     if (S.next.textContent !== next) S.next.textContent = next;
     //: An empty pane is the one stop, so N and G work before there is a block to focus.
     S.pane.tabIndex = layout.length ? -1 : 0;
@@ -340,13 +340,15 @@
   //: A shape, or a group, added after the block `after`, inside the group `into`,
   //: or (neither) after the selection. `edit` opens its label for typing.
   //: `from` is a block id to connect to the new one, in the same change (Connect to…, A new block).
-  function addBlock(S, { shape = S.shape, group = false, after = S.sel, into = null, before = undefined, edit = true, text = SHAPE_TEXT[shape], from = null, label = "" } = {}) {
+  function addBlock(S, { shape = S.shape, group = false, after = S.sel, into = null, before = undefined, edit = true, text = SHAPE_TEXT[shape], from = undefined, label = "" } = {}) {
     const m = S.m;
     const sel = after && !into ? after : null;
     const parent = into ? diagramOps.split(into)[1] : sel ? diagramOps.parentOf(m, sel) : null;
     const next = sel ? diagramOps.sisters(m, sel) : null;
     const sisters = next ? next.keys.filter((k) => k[0] === (group ? "g" : "n")) : [];
     const ahead = before !== undefined ? before : sel && sisters.includes(sel) ? sisters[sisters.indexOf(sel) + 1] || null : null;
+    //: Joined after the picked (or last) block, as "in the order the chart flows" says; a drop, a group or an explicit `from` is left as it is.
+    if (from === undefined) from = !group && !into && before === undefined ? diagramModel.outline.tail(m, sel) : null;
     const id = group ? diagramOps.addGroup(m, { parent, before: ahead }) : diagramOps.addNode(m, { shape, text, group: parent, before: ahead });
     if (!id) return say(S, group ? "That group cannot be added." : `A diagram holds at most ${diagramOps.MAX} blocks.`);
     if (!group) S.shape = shape;
@@ -413,12 +415,7 @@
     target.addEventListener("blur", onBlur);
   }
 
-  function stepBlock(S, key, dir) {
-    if (key[0] === "k") return;
-    if (diagramModel.outline?.stuck(S.m, key, dir)) return say(S, `${nameOf(S, key)} follows its arrows. Drag its grip.`);
-    if (!diagramOps.step(S.m, key, dir)) return say(S, `${nameOf(S, key)} is already ${dir < 0 ? "first" : "last"}.`);
-    commit(S, `Moved ${nameOf(S, key)} ${dir < 0 ? "up" : "down"}.`);
-  }
+  const stepBlock = (S, key, dir) => key[0] !== "k" && diagramModel.outline.move(S, helpers, key, dir);
 
   function nestBlock(S, key, into) {
     if (key[0] === "k") return;

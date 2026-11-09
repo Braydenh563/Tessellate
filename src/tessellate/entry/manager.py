@@ -2708,6 +2708,23 @@ def _picture_words(alt: str) -> str:
     return " ".join(caption) or name.strip()
 
 
+#: `![[Title]]`: a diagram written into a document (documents-mermaid.js). Not a block embed (`#^id`) and not a file (`.png`).
+_EMBED = re.compile(r"!\[\[[ \t]*([^\]\n|#]{1,300}?)[ \t]*\]\]")
+
+
+def readable_embeds(text: str) -> str:
+    """A diagram embed as words for a preview: `Diagram: Trip map`, or the title alone when it starts with Diagram
+    (dgbt-1109 12: the Library printed "!Diagram 2026-11-09 19:11"). An image embed is left alone."""
+
+    def label(m: re.Match) -> str:
+        title = m.group(1)
+        if re.search(r"\.\w{2,5}$", title):
+            return m.group(0)
+        return title if title.lower().startswith("diagram") else f"Diagram: {title}"
+
+    return _EMBED.sub(label, text)
+
+
 def strip_inline_markdown(text: str) -> str:
     """A note's text as plain words: bold/italic/strike/code markers gone,
     an image or link reduced to its alt/link text (a picture's width and

@@ -72,6 +72,7 @@
       S.picked.clear();
       if (list.length > 1) list.forEach((k) => S.picked.add(k));
       S.sel = primary;
+      S.fresh = null; //: a pick made by hand, so Branch nests under it (diagram-kinds.js addTile)
       refresh();
       h.stops(S, h.blockEl(S, primary));
       if (list.length > 1) say(`${list.length} blocks selected.`);

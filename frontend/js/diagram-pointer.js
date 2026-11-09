@@ -140,6 +140,7 @@
         if (!edge) return h.say(S, `${h.name(S, g.key)} is already connected to ${h.name(S, target.key)}.`);
         return h.commit(S, `Connected ${h.name(S, g.key)} to ${h.name(S, target.key)}.`);
       }
+      if (target.op !== "into" && diagramModel.outline.drop(m, g.key, target)) return h.commit(S, `Moved ${h.name(S, g.key)}.`);
       if (!h.ops.move(m, g.key, target.group, target.before)) return;
       S.sel = g.key;
       h.commit(S, target.op === "into" && target.group ? `Nested ${h.name(S, g.key)} into ${h.name(S, h.ops.key("g", target.group))}.` : `Moved ${h.name(S, g.key)}.`);

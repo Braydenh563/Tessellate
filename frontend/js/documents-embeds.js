@@ -307,7 +307,10 @@
       else Promise.resolve(openDocument(target.doc.id)).then(reveal);
       return;
     }
-    if (target.kind === "document") openDocument(target.doc.id);
+    if (target.kind === "document") {
+      openDocument.back = true;
+      openDocument(target.doc.id);
+    }
     else if (target.kind === "board") openWhiteboardBoard(target.entry.id);
     else flashEntry(target.entry.id);
   }

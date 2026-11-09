@@ -176,7 +176,10 @@
       state.kind = kind;
       //: The box less its border, not `clientWidth`: that is rounded and loses a scrollbar's width, so Fit would move with the zoom.
       const box = fig.getBoundingClientRect();
-      f = math.fitScale(d.w, d.h, box.width - 2 * fig.clientLeft, box.height - 2 * fig.clientTop);
+      //: A finger's handles lean out of a block, so a touch screen fits the drawing 16 px short of the pane's edge all round: a block at the
+      //: edge had its handle pushed back over it (390: 227 and 236 px of two blocks under one), dgbt-1109 3.
+      const gap = matchMedia("(pointer: coarse)").matches ? 32 : 0;
+      f = math.fitScale(d.w, d.h, box.width - 2 * fig.clientLeft - gap, box.height - 2 * fig.clientTop - gap);
       //: Only when the drawing is shrunk to fit: a chart that fits whole has nothing to turn (the default three boxes asked).
       diagramModel.outline?.offer(S, f < 1 && math.sideways(d, box, S.m?.dir));
       if (state.fit) state.scale = f;
