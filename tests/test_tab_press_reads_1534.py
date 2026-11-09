@@ -107,7 +107,9 @@ def test_the_icon_picker_and_the_equation_pane_lay_out_after_the_frame_that_open
     src = frontend_text("icon-picker.js")
     open_at = src.index("  draw();\n  document.body.appendChild(panel);")
     block = src[open_at - 200:open_at + 900]
-    assert block.index("getBoundingClientRect") < block.index("draw();"), "the anchor is read while the layout is clean"
+    # Intent moved (INBOX 1716, the owner's log: "icon-picker.js BUTTON.onclick 196ms (forced layout 189ms)"): a read
+    # before draw() is only clean when the press wrote nothing; the anchor is now read after the frame, beside the placing.
+    assert block.index("afterFrames(() => setTimeout(() => {") < block.index("getBoundingClientRect") < block.index("placeHelpPopover(panel, anchor)"), "the anchor is read after the frame, never inside the press"
     assert block.index("afterFrames(() => setTimeout(() => {") < block.index("placeHelpPopover(panel, anchor)")
     assert block.index("placeHelpPopover(panel, anchor)") < block.index("search.focus({ preventScroll: true })")
     assert 'panel.style.visibility = "hidden"' in block
