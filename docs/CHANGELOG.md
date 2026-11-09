@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Diagram builder (INBOX 1661 l): the shelf on the picture now serves a mind map (Branch, Leaf) and a timeline (Section, Period, Event) as it does a flowchart and a sequence diagram; a tile dropped on their picture adds after the picked block; the folded shelf button no longer covers the drawing (picture top 180 to 235 px at 1440 folded, as open; button bottom 226, 0 px overlap). Mind map press 3 to 4 blocks, drop 4 to 5; timeline 4 to 5 to 6.
 - Graph (INBOX 1715): the New note box keeps a gap between the note text and the tags field, as the note popup does.
 - Companion (INBOX 1699): a window moved from under a hang no longer leaves the desk figure scrabbling at the empty spot; it grips again only where the edge still is, else lets go.
 - Code (audit 1031 row 22, DC13 remainder): the document editor's callout folds, block bar, heading fold and footnote jump moved out of documents.js into documents-callouts.js, 346 lines by a pure move, loaded right after it in the Library bundle.
