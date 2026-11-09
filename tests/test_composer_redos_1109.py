@@ -37,10 +37,10 @@ def test_verdict_is_linear():
 
 
 def test_distance_reader_is_linear_on_a_digit_run():
-    from tessellate.ai import composer_tally
+    from tessellate.ai import recognise
 
-    assert _fast(composer_tally._DISTANCE.search, "1" * LONG + " nope") < 0.05  # noqa: SLF001
-    assert composer_tally._DISTANCE.search("Ran 10.5 km today").group(1) == "10.5"  # noqa: SLF001
+    assert _fast(recognise.distances, "1" * LONG + " nope") < 0.05  # noqa: SLF001
+    assert recognise.distances("Ran 10.5 km today")[0][2] == "10.5"
 
 
 def test_short_questions_read_as_before():

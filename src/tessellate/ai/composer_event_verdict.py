@@ -4,15 +4,10 @@ the answer's first line, or no window in the question, the answer is left as it 
 
 from __future__ import annotations
 
-import re
 from datetime import date, timedelta
 
-from tessellate.ai import composer_ahead
+from tessellate.ai import composer_ahead, recognise
 
-_ASK = re.compile(
-    r"^\W*(?:is|are|will)\s+(?:the|my|our|a)\b.*?\s+(?P<window>this week|next week|this weekend|next weekend|this month|next month|today|tomorrow|tonight)\s*[?.!]*$",
-    re.IGNORECASE,
-)
 
 
 def _month_end(day: date) -> date:
@@ -39,12 +34,10 @@ def _window(phrase: str, today: date) -> tuple[date, date]:
 
 def verdict(question: str, text: str, today: date) -> str:
     """`text` with "Yes, " or "Not <window>: " before it, or as it was."""
-    #: A question that long is no event ask; the lazy `.*?` would be quadratic on it (CodeQL).
-    found = _ASK.match(" ".join(question.split())) if question and len(question) < 300 else None
-    day = composer_ahead.date_in(text.split("\n", 1)[0], today) if found else None
+    said = recognise.event_window_asked(question)
+    day = composer_ahead.date_in(text.split("\n", 1)[0], today) if said else None
     if day is None:
         return text
-    said = found.group("window").lower()
     first, last = _window(said, today)
     if first <= day <= last:
         return f"Yes, {text[:1].lower()}{text[1:]}"

@@ -3844,3 +3844,30 @@ def measures(text: str) -> list[Measure]:
         if dimension != "temperature" and raw[m.start() - 1:m.start()] not in ("$", "£", "€", "¥"):
             found.append(Measure(dimension, _figure(m.group(1)) * size, name, m.start(), m.end()))
     return sorted(found, key=lambda x: x[3])
+
+
+# --- round 9 readers (c11): the event window at the end of a question, and a distance --------------------------------
+
+_EVENT_WINDOW_WORDS = r"this week|next week|this weekend|next weekend|this month|next month|today|tomorrow|tonight"
+_EVENT_TAIL = re.compile(rf"\s+(?:this|next)\s+(?:week|month|weekend)\s*[?.!]*$|\s+(?:today|tomorrow|tonight)\s*[?.!]*$", re.I)
+_EVENT_ASK = re.compile(rf"^\W*(?:is|are|will)\s+(?:the|my|our|a)\b.*?\s+(?P<window>{_EVENT_WINDOW_WORDS})\s*[?.!]*$", re.I)
+_DISTANCE = re.compile(r"(?<![\d.,])(\d[\d.,]{0,15})\s{0,3}(km|kilometres|kilometers|miles|mi)\b", re.I)
+
+
+def without_event_window_tail(question: str) -> str:
+    """`question` without a window ("this week", "tomorrow") at its end. Only the last 60 characters are read, so a
+    long run of whitespace never meets the unanchored `\\s+` (polynomial regex, CodeQL)."""
+    question = " ".join((question or "").split())
+    return question[:-60] + _EVENT_TAIL.sub("", question[-60:])
+
+
+def event_window_asked(question: str) -> str:
+    """The window ("next week", "today") a yes/no question about a thing ends with, or ""."""
+    text = " ".join((question or "").split())
+    found = _EVENT_ASK.match(text) if text and len(text) < 300 else None
+    return found.group("window").lower() if found else ""
+
+
+def distances(text: str) -> list[tuple[int, int, str, str]]:
+    """Each distance said in `text`: (start, end, figure as written, unit as written)."""
+    return [(m.start(), m.end(), m.group(1), m.group(2)) for m in _DISTANCE.finditer(text or "")]

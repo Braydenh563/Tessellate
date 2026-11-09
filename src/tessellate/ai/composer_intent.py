@@ -195,7 +195,6 @@ def holds_any(stems: list[str], text: str) -> bool:
 _PRESENT_ASK = re.compile(r"^\W*(?:is|are|will)\s+(?:the|my|our|a)\b", re.I)
 
 
-_EVENT_TAIL = re.compile(r"\s+(?:this|next)\s+(?:week|month|weekend)\s*[?.!]*$|\s+(?:today|tomorrow|tonight)\s*[?.!]*$", re.I)
 
 
 def without_event_window(question: str) -> str:
@@ -203,9 +202,7 @@ def without_event_window(question: str) -> str:
     event, so searching for it finds the notes that happen to say "week" (R9-7)."""
     if not _PRESENT_ASK.match(question or ""):
         return question
-    #: Only the last words can be the window, so the unanchored `\s+` never meets a long run (CodeQL, polynomial regex).
-    question = " ".join(question.split())
-    return question[:-60] + _EVENT_TAIL.sub("", question[-60:])
+    return rec.without_event_window_tail(question)
 
 
 def _plan_window(question: str, terms: list[str], phrase: str, today: date) -> tuple[tuple | None, list[str]]:

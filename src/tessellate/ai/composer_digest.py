@@ -812,7 +812,7 @@ def _when_tail(view, fact: str, today: date) -> str:  # noqa: ANN001
     """", written on 11 August, ..." after a fact, or, for a fact whose own day is still ahead, how far off it
     is (", in 23 days"): the write date is noise beside it (R9-17)."""
     ahead = composer_ahead.distance(fact, today)
-    if ahead and _TIMED.get():
+    if ahead and _TIMED.get() and _WHEN_ASK.get():
         return f", {ahead}"
     return f", written {_said_day(view.written, today)}" if _TIMED.get() and not _says_day(fact, view.written, today) else ""
 
@@ -1593,15 +1593,6 @@ _BEGINNING = _stems("start begin first")
 def _subject(question: str) -> list[str]:
     stems = [st for st in (composer._stem(t) for t in composer.subject_terms(clean(question))) if st not in _ASKING()]
     return [st for st in stems if st not in _BEGINNING()] if _WHEN_DID.match(clean(question)) else stems
-
-
-def _holding_members(members: list[composer.NoteView], subject: list[str], kind: str) -> list[composer.NoteView]:
-    """In an overview, the notes that hold the subject's own words, when any do: a note found only by likeness
-    ("cat" met the fish diet, "boiler" the radiator note) is not counted or quoted as being about it (R9-11)."""
-    if kind not in ("overview", "likes") or not subject or len(members) < 2:
-        return members
-    held = [v for v in members if all(st in _pool(v) for st in subject)]
-    return held or members
 
 
 def _pool(v: composer.NoteView) -> set[str]:
@@ -4038,6 +4029,18 @@ def _streak_start(out: _Out, lead: Fact, rest: list[Fact], question: str, today:
     return [f for f in rest if f.view.id == lead.view.id]
 
 
+_WHEN_ASK: ContextVar[bool] = ContextVar("composer_when_ask", default=False)
+
+
+def _say_fact_ahead(out: _Out, lead: Fact, today: date, question: str) -> None:
+    """`_say_fact` for a "when" ask, where a day still ahead is said by its distance (R9-17), not by the write date."""
+    token = _WHEN_ASK.set(True)
+    try:
+        _say_fact(out, lead, today, question)
+    finally:
+        _WHEN_ASK.reset(token)
+
+
 def _single_when(out: _Out, lead: Fact, rest: list[Fact], question: str, today: date) -> list[Fact]:
     """A "when" ask: the day of one thing that happened, or a habit said as
     its days. Returns the facts still to say."""
@@ -4059,7 +4062,7 @@ def _single_when(out: _Out, lead: Fact, rest: list[Fact], question: str, today: 
     #: date (composer-1031, item 4).
     habit = days and len(re.findall(r"day", days.group(0), re.I)) + bool(re.search(r"days\b", days.group(0), re.I)) > 1
     if not habit:
-        _say_fact(out, lead, today, question)
+        _say_fact_ahead(out, lead, today, question)
         return [f for f in rest if f.view.id == lead.view.id]
     said = days.group(0).strip(" ,")
     out.lines.append(_from_source(lead.view, said[0].upper() + said[1:], today))
@@ -5142,7 +5145,6 @@ def _answer(
     if early is not _ORDINARY:
         return early
     members, tie = _chosen(asked, kind, views, wants_context)
-    members = _holding_members(members, _subject(asked), kind)
     if _named_list(kind, asked, members):
         return None
     if checklist := _named_checklist(kind, asked, members):

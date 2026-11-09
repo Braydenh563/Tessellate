@@ -7,7 +7,7 @@ from __future__ import annotations
 
 import re
 
-from tessellate.ai import composer, composer_lists, realise
+from tessellate.ai import composer, composer_lists, realise, recognise
 
 _MONEY = re.compile(r"([$£€¥])\s?(\d[\d,]*(?:\.\d+)?)")
 _SIZE = {"cheapest": min, "lowest": min, "smallest": min, "dearest": max, "highest": max, "biggest": max, "largest": max, "most expensive": max}
@@ -17,7 +17,6 @@ _SUPERLATIVE = re.compile(
 _HOW_MANY_ROWS = re.compile(r"^how many (?P<noun>[a-z]+) (?:did i get|have i got|have i had|do i have|did i receive|have i collected)$")
 _HOW_MANY_WANTED = re.compile(r"^how many (?P<noun>[a-z]+) do i want to (?P<verb>[a-z]+)$")
 _HOW_FAR = re.compile(r"^how far did i (?:run|walk|cycle|ride|swim|jog)(?: on (?P<day>\d{1,2}(?:st|nd|rd|th)? [a-z]+|[a-z]+ \d{1,2}(?:st|nd|rd|th)?))?$")
-_DISTANCE = re.compile(r"(?<![\d.,])(\d[\d.,]{0,15})\s{0,3}(km|kilometres|kilometers|miles|mi)\b", re.I)
 
 
 _SUM_ROW = re.compile(r"\b(?:total|sum|subtotal|grand total)\b", re.IGNORECASE)
@@ -108,8 +107,8 @@ def _count_wanted(out, q: str, views: list) -> bool:  # noqa: ANN001
 
 def _beside(sentence: str, wanted: re.Match):  # noqa: ANN202
     """The distance in `sentence` nearest the asked day: "Ran 5 km on 7 November and 10 km on 8 November" is
-    10 km for the 8th. The one before the day wins a tie."""
-    near = [(abs(wanted.start() - d.end()) if d.end() <= wanted.start() else d.start() - wanted.end() + 0.5, d) for d in _DISTANCE.finditer(sentence)]
+    10 km for the 8th. The one before the day wins a tie. (start, end, figure, unit), or None."""
+    near = [(abs(wanted.start() - d[1]) if d[1] <= wanted.start() else d[0] - wanted.end() + 0.5, d) for d in recognise.distances(sentence)]
     return min(near, key=lambda pair: pair[0])[1] if near else None
 
 
@@ -128,10 +127,10 @@ def _how_far(out, q: str, views: list) -> bool:  # noqa: ANN001
     for view in views:
         for s in view.sentences:
             hit = wanted.search(s.text)
-            dated = dated or bool(hit and _DISTANCE.search(s.text))
+            dated = dated or bool(hit and recognise.distances(s.text))
             d = _beside(s.text, hit) if hit and _says_verb(s.text, str(view.title or ""), verb) else None
             if d:
-                line = f"{d.group(1)} {d.group(2)} on {found['day']} ({composer_lists._title(view)})."  # noqa: SLF001
+                line = f"{d[2]} {d[3]} on {found['day']} ({composer_lists._title(view)})."  # noqa: SLF001
                 out.lines.append(line)
                 composer_lists._cite(out, view, s, line)  # noqa: SLF001
                 return True
