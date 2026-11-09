@@ -13,6 +13,7 @@ from tessellate.core.overlay import behaviour as bh
 from tessellate.core.overlay import engine as eng
 from tessellate.core.overlay.engine import Engine
 from tessellate.core.overlay.sprites import SpriteSet
+from tests.overlay_sim_1670 import skip_flow
 from tests.test_overlay_ride_1670 import AREA, LOOKS, drag, make
 
 
@@ -316,6 +317,7 @@ def test_micro_things_are_weighted_not_all_at_once(monkeypatch) -> None:
         t = 0.0
         e2, _s = make("masculine", "float", seed)
         calm(e2)
+        skip_flow(e2)  # a ten-hour loop that reads acts, never the flow picture
         prev = None
         out = e2.update(0.0)
         while t < 36000:

@@ -7,6 +7,7 @@ import random
 
 from tessellate.core.overlay import engine as eng
 from tessellate.core.overlay.engine import Engine, Monitor
+from tests.overlay_sim_1670 import skip_flow
 
 SIZE = (100, 120)
 ONE = [Monitor((0, 0, 1920, 1040), 96)]
@@ -338,7 +339,9 @@ def test_big_acts_are_minutes_apart_and_all_the_acts_are_in_one_table() -> None:
     assert set(eng.ACTS) == {"idle", "stroll", "trip", "sleep", "hang", "peek", "climb", "spell"}
     for gait in ("walk", "float"):
         # Bar moved (INBOX 1670: a hang is 30 to 200 s and the rest is long): ten hours, not three.
-        acts = run_acts(make(seed=4, gait=gait), 600)
+        e = make(seed=4, gait=gait)
+        skip_flow(e)  # a ten-hour loop that reads states, never the flow picture
+        acts = run_acts(e, 600)
         assert len(acts) >= 3, acts
         gaps = [b[0] - a[0] for a, b in zip(acts, acts[1:])]
         assert min(gaps) >= eng.BIG_EVERY[0] - 1, gaps

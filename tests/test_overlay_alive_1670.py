@@ -24,6 +24,7 @@ from tessellate.core.overlay import engine as eng
 from tessellate.core.overlay import runner as runner_mod
 from tessellate.core.overlay import sprites
 from tests.overlay_restlife_1670 import rest_life
+from tests.overlay_sim_1670 import skip_flow
 from tests.test_overlay_ride_1670 import make
 
 LOOKS = ("masculine", "feminine")
@@ -126,6 +127,7 @@ def test_4_the_head_turn_is_a_slow_dissolve_in_and_out() -> None:
 
 def blink_starts(state: str, seed: int, secs: float) -> list[float]:
     e, _s = make("masculine", "float", seed)
+    skip_flow(e)  # this reads blink starts, never the flow picture
     e.big_ready = e.trip_ready = e.climb_ready = math.inf
     saved = eng.IDLE_SIT, eng.IDLE_SLEEP
     eng.IDLE_SIT = eng.IDLE_SLEEP = math.inf
