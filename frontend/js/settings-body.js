@@ -33,9 +33,11 @@ function surfaceBuild(name) {
   const host = tpl.parentNode;
   tpl.replaceWith(tpl.content);
   // The sweeps the page ran over every element at boot, now over the ones that
-  // just arrived: help popovers (with their Atlas line), and the chord on a
-  // button's tooltip.
+  // just arrived: help popovers, closed dock-menu lists, tooltip chords.
   window.initHelpToggles?.(host);
+  window.hideClosedDockMenuLists?.(host);
+  window.localizeStaticChords?.(host);
+  window.stampShortcutTitles?.(host);
   for (const run of entry.after.splice(0)) run();
   return true;
 }

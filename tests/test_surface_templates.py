@@ -169,7 +169,8 @@ def _run(body: str) -> dict:
         + " replaceWith() { ids.forEach((i) => live.add(i)); log.push('stamp ' + name); } }; }",
         "const tpls = [tpl('settings', ['sync-now']), tpl('board', ['whiteboard-container'])];",
         "const document = { querySelectorAll: () => tpls, getElementById: (id) => (live.has(id) ? { id, live: 1 } : null) };",
-        "const window = { initHelpToggles: (h) => log.push('help ' + h.name) };",
+        "const window = { initHelpToggles: (h) => log.push('help ' + h.name), hideClosedDockMenuLists: (h) => log.push('dock ' + h.name),"
+        + " localizeStaticChords: (h) => log.push('chords ' + h.name), stampShortcutTitles: (h) => log.push('titles ' + h.name) };",
         _src("settings-body.js"),
         body,
     ]
@@ -194,7 +195,22 @@ def test_build_is_once_per_surface_find_builds_only_the_one_asked_and_the_queue_
     assert result["miss"] is None
     assert result["found"]["live"] == 1, "the element, from the page, after the build"
     assert result["again"] is False and result["unknown"] is False
-    assert result["log"] == ["stamp board", "help board", "board wiring", "board now"], result["log"]
+    assert result["log"] == [
+        "stamp board", "help board", "dock board", "chords board", "titles board", "board wiring", "board now",
+    ], result["log"]
+
+
+def test_the_sweeps_the_page_runs_at_boot_take_the_stamped_host():
+    """Row 21 review: a stamped surface got the help sweep only. The closed dock-menu lists (the OCR reader
+    menu), the Mac chord on static titles and the table-driven shortcut titles (the board's tooltips) are
+    swept over the host that just arrived, so each takes a root and defaults to the document."""
+    nav = _src("navigation.js")
+    assert "function hideClosedDockMenuLists(root = document) {" in nav
+    wiring = _src("settings-wiring.js")
+    assert "function stampShortcutTitles(root = document) {" in wiring
+    assert "function localizeStaticChords(root = document) {" in wiring
+    for fn in ("hideClosedDockMenuLists", "localizeStaticChords", "stampShortcutTitles"):
+        assert f"window.{fn}?.(host);" in _src("settings-body.js"), f"surfaceBuild does not sweep {fn} over the host"
 
 
 def test_a_resize_before_the_first_board_open_does_not_read_the_unbuilt_canvas():

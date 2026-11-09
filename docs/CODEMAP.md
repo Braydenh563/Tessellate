@@ -2,7 +2,7 @@
 
 Generated 2026-11-09 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7951, frontend ids 2652, CSS sections 523, backend routes 649, backend modules 9330, test files 2310, tests 19258, plan headings 1008, app scripts 28, boot scripts 37, script files 266.
+Counts: frontend functions 7951, frontend ids 2652, CSS sections 523, backend routes 649, backend modules 9330, test files 2310, tests 19259, plan headings 1008, app scripts 28, boot scripts 37, script files 266.
 
 ## Frontend functions (7951)
 
@@ -27,9 +27,9 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `onSurface` | frontend/js/settings-body.js:52 |
+| `onSurface` | frontend/js/settings-body.js:54 |
 | `surfaceBuild` | frontend/js/settings-body.js:28 |
-| `surfaceFind` | frontend/js/settings-body.js:44 |
+| `surfaceFind` | frontend/js/settings-body.js:46 |
 
 ### frontend/js/app.js (45)
 
@@ -787,26 +787,26 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `aboveDockFab` | frontend/js/navigation.js:2467 |
-| `activeNotesSection` | frontend/js/navigation.js:2297 |
+| `aboveDockFab` | frontend/js/navigation.js:2465 |
+| `activeNotesSection` | frontend/js/navigation.js:2295 |
 | `arrowNavTarget` | frontend/js/navigation.js:208 |
-| `backgroundWriteFailed` | frontend/js/navigation.js:1811 |
-| `chatMidStream` | frontend/js/navigation.js:1743 |
+| `backgroundWriteFailed` | frontend/js/navigation.js:1809 |
+| `chatMidStream` | frontend/js/navigation.js:1741 |
 | `closeNavHistoryMenu` | frontend/js/navigation.js:903 |
-| `confirmLeavingUnsavedWork` | frontend/js/navigation.js:1773 |
-| `coversAFormPrimary` | frontend/js/navigation.js:2600 |
+| `confirmLeavingUnsavedWork` | frontend/js/navigation.js:1771 |
+| `coversAFormPrimary` | frontend/js/navigation.js:2598 |
 | `entryLabel` | frontend/js/navigation.js:1001 |
-| `formPrimaryButtons` | frontend/js/navigation.js:2561 |
+| `formPrimaryButtons` | frontend/js/navigation.js:2559 |
 | `goToTabHistory` | frontend/js/navigation.js:1092 |
-| `hasUnsavedWork` | frontend/js/navigation.js:1722 |
-| `hideClosedDockMenuLists` | frontend/js/navigation.js:1500 |
-| `initNotesSubtabs` | frontend/js/navigation.js:2357 |
-| `initScrollTopButton` | frontend/js/navigation.js:2620 |
-| `insideClosedDetails` | frontend/js/navigation.js:1555 |
+| `hasUnsavedWork` | frontend/js/navigation.js:1720 |
+| `hideClosedDockMenuLists` | frontend/js/navigation.js:1499 |
+| `initNotesSubtabs` | frontend/js/navigation.js:2355 |
+| `initScrollTopButton` | frontend/js/navigation.js:2618 |
+| `insideClosedDetails` | frontend/js/navigation.js:1553 |
 | `loadSurface` | frontend/js/navigation.js:1297 |
-| `measureSpacingPx` | frontend/js/navigation.js:2591 |
-| `menuOfOpener` | frontend/js/navigation.js:1577 |
-| `menuRowsOf` | frontend/js/navigation.js:1562 |
+| `measureSpacingPx` | frontend/js/navigation.js:2589 |
+| `menuOfOpener` | frontend/js/navigation.js:1575 |
+| `menuRowsOf` | frontend/js/navigation.js:1560 |
 | `mermaidSoon` | frontend/js/navigation.js:373 |
 | `openHistoryEntry` | frontend/js/navigation.js:1152 |
 | `openNavHistoryMenu` | frontend/js/navigation.js:923 |
@@ -814,35 +814,35 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `openSelectionScope` | frontend/js/navigation.js:321 |
 | `paintTabHistory` | frontend/js/navigation.js:950 |
 | `placeDockMenuInWindow` | frontend/js/navigation.js:1368 |
-| `positionScrollTopForNested` | frontend/js/navigation.js:2476 |
+| `positionScrollTopForNested` | frontend/js/navigation.js:2474 |
 | `recordTabVisit` | frontend/js/navigation.js:1038 |
-| `recordingLive` | frontend/js/navigation.js:1750 |
+| `recordingLive` | frontend/js/navigation.js:1748 |
 | `renderMarkdown` | frontend/js/navigation.js:382 |
-| `resetNavigationForNewSession` | frontend/js/navigation.js:2259 |
-| `resetNavigationToDefaults` | frontend/js/navigation.js:2278 |
+| `resetNavigationForNewSession` | frontend/js/navigation.js:2257 |
+| `resetNavigationToDefaults` | frontend/js/navigation.js:2276 |
 | `restoreSettingsScroll` | frontend/js/navigation.js:1139 |
 | `revealTab` | frontend/js/navigation.js:814 |
 | `rowMenuAtEvent` | frontend/js/navigation.js:130 |
-| `scrollTopTargetEl` | frontend/js/navigation.js:2443 |
-| `scrollingPage` | frontend/js/navigation.js:2396 |
-| `showNotesSection` | frontend/js/navigation.js:2302 |
-| `spacingPx` | frontend/js/navigation.js:2584 |
+| `scrollTopTargetEl` | frontend/js/navigation.js:2441 |
+| `scrollingPage` | frontend/js/navigation.js:2394 |
+| `showNotesSection` | frontend/js/navigation.js:2300 |
+| `spacingPx` | frontend/js/navigation.js:2582 |
 | `stepTabHistory` | frontend/js/navigation.js:1082 |
-| `stripMarkdownPreview` | frontend/js/navigation.js:2186 |
+| `stripMarkdownPreview` | frontend/js/navigation.js:2184 |
 | `surfaceRecovered` | frontend/js/navigation.js:1275 |
-| `switchTab` | frontend/js/navigation.js:1860 |
-| `syncScrollLock` | frontend/js/navigation.js:2762 |
+| `switchTab` | frontend/js/navigation.js:1858 |
+| `syncScrollLock` | frontend/js/navigation.js:2760 |
 | `tabLabel` | frontend/js/navigation.js:989 |
-| `tabPlaceholder` | frontend/js/navigation.js:2122 |
-| `tabSkeletonBar` | frontend/js/navigation.js:2103 |
-| `tabSkeletonDock` | frontend/js/navigation.js:2113 |
-| `tabSkeletonPiece` | frontend/js/navigation.js:2092 |
-| `usageCount` | frontend/js/navigation.js:1821 |
-| `usageFeatureName` | frontend/js/navigation.js:1817 |
-| `usageFlush` | frontend/js/navigation.js:1825 |
+| `tabPlaceholder` | frontend/js/navigation.js:2120 |
+| `tabSkeletonBar` | frontend/js/navigation.js:2101 |
+| `tabSkeletonDock` | frontend/js/navigation.js:2111 |
+| `tabSkeletonPiece` | frontend/js/navigation.js:2090 |
+| `usageCount` | frontend/js/navigation.js:1819 |
+| `usageFeatureName` | frontend/js/navigation.js:1815 |
+| `usageFlush` | frontend/js/navigation.js:1823 |
 | `watchDockMenuPlacement` | frontend/js/navigation.js:1430 |
 | `wireLongPress` | frontend/js/navigation.js:24 |
-| `zoomWheelDelta` | frontend/js/navigation.js:2780 |
+| `zoomWheelDelta` | frontend/js/navigation.js:2778 |
 
 ### frontend/js/router.js (12)
 
@@ -1198,50 +1198,50 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | Name | File:line |
 |---|---|
 | `activeOverlay` | frontend/js/settings-wiring.js:946 |
-| `captureCountText` | frontend/js/settings-wiring.js:1720 |
-| `captureShortcutKey` | frontend/js/settings-wiring.js:1454 |
-| `clearStagedImages` | frontend/js/settings-wiring.js:2117 |
-| `closeOverlaysForChord` | frontend/js/settings-wiring.js:1249 |
-| `closeShortcuts` | frontend/js/settings-wiring.js:1484 |
-| `comboFromEvent` | frontend/js/settings-wiring.js:1285 |
-| `commitCaptureImages` | frontend/js/settings-wiring.js:2102 |
-| `fileDropBox` | frontend/js/settings-wiring.js:1965 |
+| `captureCountText` | frontend/js/settings-wiring.js:1716 |
+| `captureShortcutKey` | frontend/js/settings-wiring.js:1450 |
+| `clearStagedImages` | frontend/js/settings-wiring.js:2113 |
+| `closeOverlaysForChord` | frontend/js/settings-wiring.js:1245 |
+| `closeShortcuts` | frontend/js/settings-wiring.js:1480 |
+| `comboFromEvent` | frontend/js/settings-wiring.js:1281 |
+| `commitCaptureImages` | frontend/js/settings-wiring.js:2098 |
+| `fileDropBox` | frontend/js/settings-wiring.js:1961 |
 | `flashSaved` | frontend/js/settings-wiring.js:495 |
-| `handleFileUpload` | frontend/js/settings-wiring.js:2149 |
-| `hideChordGuide` | frontend/js/settings-wiring.js:1267 |
+| `handleFileUpload` | frontend/js/settings-wiring.js:2145 |
+| `hideChordGuide` | frontend/js/settings-wiring.js:1263 |
 | `inEditable` | frontend/js/settings-wiring.js:944 |
-| `loadForgottenOrder` | frontend/js/settings-wiring.js:1579 |
+| `loadForgottenOrder` | frontend/js/settings-wiring.js:1575 |
 | `loadShortcuts` | frontend/js/settings-wiring.js:1115 |
 | `localizeStaticChords` | frontend/js/settings-wiring.js:1158 |
 | `lockFail` | frontend/js/settings-wiring.js:268 |
 | `lockFailed` | frontend/js/settings-wiring.js:280 |
 | `lockRequest` | frontend/js/settings-wiring.js:374 |
 | `mapEditorShown` | frontend/js/settings-wiring.js:941 |
-| `matchesShortcut` | frontend/js/settings-wiring.js:1303 |
+| `matchesShortcut` | frontend/js/settings-wiring.js:1299 |
 | `maybeShowOnboarding` | frontend/js/settings-wiring.js:967 |
 | `notebookLocked` | frontend/js/settings-wiring.js:480 |
 | `persistSavedSearches` | frontend/js/settings-wiring.js:53 |
-| `renderCaptureFiles` | frontend/js/settings-wiring.js:1685 |
-| `renderEntryAttachmentChips` | frontend/js/settings-wiring.js:1652 |
-| `renderInstallRow` | frontend/js/settings-wiring.js:1887 |
+| `renderCaptureFiles` | frontend/js/settings-wiring.js:1681 |
+| `renderEntryAttachmentChips` | frontend/js/settings-wiring.js:1648 |
+| `renderInstallRow` | frontend/js/settings-wiring.js:1883 |
 | `renderSavedSearches` | frontend/js/settings-wiring.js:17 |
-| `resetShortcuts` | frontend/js/settings-wiring.js:1421 |
+| `resetShortcuts` | frontend/js/settings-wiring.js:1417 |
 | `restampShortcutHints` | frontend/js/settings-wiring.js:1168 |
-| `rewriteStagedUrls` | frontend/js/settings-wiring.js:2090 |
-| `runShortcut` | frontend/js/settings-wiring.js:1312 |
+| `rewriteStagedUrls` | frontend/js/settings-wiring.js:2086 |
+| `runShortcut` | frontend/js/settings-wiring.js:1308 |
 | `saveCurrentSearch` | frontend/js/settings-wiring.js:61 |
-| `saveShortcutOverrides` | frontend/js/settings-wiring.js:1273 |
+| `saveShortcutOverrides` | frontend/js/settings-wiring.js:1269 |
 | `saveWhatIsInFront` | frontend/js/settings-wiring.js:558 |
 | `savedSearches` | frontend/js/settings-wiring.js:13 |
-| `setShortcutStatus` | frontend/js/settings-wiring.js:1438 |
-| `setShortcutStatusError` | frontend/js/settings-wiring.js:1445 |
-| `singleKeysOn` | frontend/js/settings-wiring.js:2288 |
-| `stagedImageUrl` | frontend/js/settings-wiring.js:2067 |
+| `setShortcutStatus` | frontend/js/settings-wiring.js:1434 |
+| `setShortcutStatusError` | frontend/js/settings-wiring.js:1441 |
+| `singleKeysOn` | frontend/js/settings-wiring.js:2284 |
+| `stagedImageUrl` | frontend/js/settings-wiring.js:2063 |
 | `stampShortcutTitles` | frontend/js/settings-wiring.js:1144 |
 | `submitLockForm` | frontend/js/settings-wiring.js:304 |
-| `textCounts` | frontend/js/settings-wiring.js:1710 |
-| `uploadStagedFiles` | frontend/js/settings-wiring.js:2126 |
-| `wordCount` | frontend/js/settings-wiring.js:1705 |
+| `textCounts` | frontend/js/settings-wiring.js:1706 |
+| `uploadStagedFiles` | frontend/js/settings-wiring.js:2122 |
+| `wordCount` | frontend/js/settings-wiring.js:1701 |
 
 ### frontend/js/spaces-find.js (25)
 
@@ -24953,7 +24953,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (19258)
+## Tests (19259)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -26930,7 +26930,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_suggestions_inbox_kg9.py | 20 |
 | tests/test_suggestions_reads_ids.py | 1 |
 | tests/test_support_email.py | 5 |
-| tests/test_surface_templates.py | 6 |
+| tests/test_surface_templates.py | 7 |
 | tests/test_svg_paint_attributes.py | 2 |
 | tests/test_sweep_1004_deep_json.py | 3 |
 | tests/test_sweep_1004_inbox_bounds.py | 3 |
