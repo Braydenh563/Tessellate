@@ -201,7 +201,11 @@ _EVENT_TAIL = re.compile(r"\s+(?:this|next)\s+(?:week|month|weekend)\s*[?.!]*$|\
 def without_event_window(question: str) -> str:
     """"is the plumber coming this week" asked of the notes as "is the plumber coming": the window dates the
     event, so searching for it finds the notes that happen to say "week" (R9-7)."""
-    return _EVENT_TAIL.sub("", question) if _PRESENT_ASK.match(question or "") else question
+    if not _PRESENT_ASK.match(question or ""):
+        return question
+    #: Only the last words can be the window, so the unanchored `\s+` never meets a long run (CodeQL, polynomial regex).
+    question = " ".join(question.split())
+    return question[:-60] + _EVENT_TAIL.sub("", question[-60:])
 
 
 def _plan_window(question: str, terms: list[str], phrase: str, today: date) -> tuple[tuple | None, list[str]]:

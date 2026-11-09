@@ -17,7 +17,7 @@ _SUPERLATIVE = re.compile(
 _HOW_MANY_ROWS = re.compile(r"^how many (?P<noun>[a-z]+) (?:did i get|have i got|have i had|do i have|did i receive|have i collected)$")
 _HOW_MANY_WANTED = re.compile(r"^how many (?P<noun>[a-z]+) do i want to (?P<verb>[a-z]+)$")
 _HOW_FAR = re.compile(r"^how far did i (?:run|walk|cycle|ride|swim|jog)(?: on (?P<day>\d{1,2}(?:st|nd|rd|th)? [a-z]+|[a-z]+ \d{1,2}(?:st|nd|rd|th)?))?$")
-_DISTANCE = re.compile(r"(\d[\d.,]*)\s*(km|kilometres|kilometers|miles|mi)\b", re.I)
+_DISTANCE = re.compile(r"(?<![\d.,])(\d[\d.,]{0,15})\s{0,3}(km|kilometres|kilometers|miles|mi)\b", re.I)
 
 
 _SUM_ROW = re.compile(r"\b(?:total|sum|subtotal|grand total)\b", re.IGNORECASE)

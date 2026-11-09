@@ -39,7 +39,8 @@ def _window(phrase: str, today: date) -> tuple[date, date]:
 
 def verdict(question: str, text: str, today: date) -> str:
     """`text` with "Yes, " or "Not <window>: " before it, or as it was."""
-    found = _ASK.match(question or "")
+    #: A question that long is no event ask; the lazy `.*?` would be quadratic on it (CodeQL).
+    found = _ASK.match(" ".join(question.split())) if question and len(question) < 300 else None
     day = composer_ahead.date_in(text.split("\n", 1)[0], today) if found else None
     if day is None:
         return text
