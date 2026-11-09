@@ -3849,7 +3849,7 @@ def measures(text: str) -> list[Measure]:
 # --- round 9 readers (c11): the event window at the end of a question, and a distance --------------------------------
 
 _EVENT_WINDOW_WORDS = r"this week|next week|this weekend|next weekend|this month|next month|today|tomorrow|tonight"
-_EVENT_TAIL = re.compile(rf"\s+(?:this|next)\s+(?:week|month|weekend)\s*[?.!]*$|\s+(?:today|tomorrow|tonight)\s*[?.!]*$", re.I)
+_EVENT_TAIL = re.compile(r"\s+(?:this|next)\s+(?:week|month|weekend)\s*[?.!]*$|\s+(?:today|tomorrow|tonight)\s*[?.!]*$", re.I)
 _EVENT_ASK = re.compile(rf"^\W*(?:is|are|will)\s+(?:the|my|our|a)\b.*?\s+(?P<window>{_EVENT_WINDOW_WORDS})\s*[?.!]*$", re.I)
 _DISTANCE = re.compile(r"(?<![\d.,])(\d[\d.,]{0,15})\s{0,3}(km|kilometres|kilometers|miles|mi)\b", re.I)
 
