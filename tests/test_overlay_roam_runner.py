@@ -29,6 +29,11 @@ def started(fake: FakeWin32 | None = None, **kw: Any):
     r.show()
     assert wait_for(lambda: r.host.visible)
     r.paused = True  # the test drives ticks itself
+    # A tick the overlay's own thread began before the pause can still be running and would interleave with the
+    # test's ticks (react_1700 failed one test a CI job, a different one each): a command sent through the
+    # thread's queue is taken only after that tick has returned.
+    r.host.wake(60_000)
+    assert wait_for(lambda: r.host._queue.empty())
     r._resume = False  # the first tick after a show would reset the engine's idle clock
     return r, fake, clock, clicks
 

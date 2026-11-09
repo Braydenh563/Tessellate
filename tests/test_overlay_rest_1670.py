@@ -107,10 +107,11 @@ def test_trips_vary_and_it_rests_out_of_the_middle_third() -> None:
 
 def test_a_portal_or_a_puff_takes_between_four_tenths_and_one_and_a_fifth_seconds() -> None:
     # A puff is a perch trip's 40 percent and an evade's; the hang spots (INBOX 1683 w, g) took a share of the trips,
-    # so the three seeds show none now. More seeds are read until both kinds show (seed 9 is the first puff); the
+    # so the three seeds show none now. More seeds are read until both kinds show (the life pass, 1719 b, moved the
+    # first puff past seed 23; the range grew to 40, the stop at both kinds is unchanged); the
     # duration bar is unchanged.
     kinds: set[str] = set()
-    for seed in (*SEEDS, *range(4, 24)):
+    for seed in (*SEEDS, *range(4, 40)):
         for gait in GAITS:
             for kind, spans in hour(gait, seed)["warps"].items():
                 if kind in ("portal", "puff"):
