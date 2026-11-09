@@ -6549,6 +6549,11 @@ function nameMarkBuddyGo(buddy, dx, dy, spot = {}, poseChanged = false, was = { 
   //: improvement"): `companionPathPlan` (companion-menu.js, lazy) draws a run,
   //: an arc or a drop paced by its length with no frame over 40px; until it
   //: is here a far move walks. Only a start out of sight is a poof.
+  //: Taking hold of an edge from its feet (`trans.upright>hang`, the desk's `_leap_to_hang`): a leap up with the
+  //: arms out and then the grab (`nmb.leapGrab`, companion-travel.js), whatever the way would have been; far, it
+  //: still travels as it chose and takes hold at the end.
+  const grabs = spot.pose === "hang" && poseChanged && nmb.poseWas === "stand" && route !== "fall";
+  if (grabs && route !== "far") route = "leap";
   const far = route === "far";
   let plan = route === "far" && typeof companionPathPlan === "function" ? companionPathPlan(dx, dy, size, flies) : null;
   if (route === "far") route = !plan ? "walk" : flies ? "glide" : plan.kind === "arc" ? "leap" : "walk";
@@ -6650,6 +6655,7 @@ function nameMarkBuddyGo(buddy, dx, dy, spot = {}, poseChanged = false, was = { 
     ], { duration, delay: setOff, fill: "backwards" }) || null;
     nameMarkBuddySquash(char, duration + setOff, underway);
     nameMarkBuddyLimbs(buddy, "leap", duration + setOff, 0, way);
+    if (grabs) nmb.leapGrab?.(buddy, char, duration + setOff);
     return;
   }
   //: A walking pace, not a dash: 160px was 520ms (measured 17px a frame

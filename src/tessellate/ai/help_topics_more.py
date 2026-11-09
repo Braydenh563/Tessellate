@@ -71,7 +71,7 @@ MORE_TOPICS: list[dict] = [
             "companion blanket nap", "companion waters a plant", "companion puzzle",
             "companion nods", "companion little dance", "companion poses proud", "companion tiptoes",
             "companion looks down", "companion daydreams", "companion tinkers", "companion miffed face",
-            "companion smirk", "pat the companion", "pet the companion", "companion bonk", "swipe the companion", "companion twirl", "companion cloud",
+            "companion smirk", "pat the companion", "pet the companion", "companion bonk", "swipe the companion", "companion twirl", "companion cloud", "companion grabs an edge",
         ),
         "body": (
             "On its own, Atlas does the same small things as the desktop companion: "
@@ -86,7 +86,7 @@ MORE_TOPICS: list[dict] = [
             "it to blinks and looks. Pat its head with slow dabs and it enjoys it (Lean into a rub or a pat), "
             "a fast swipe across it makes it twirl once (Turn upside down when shaken, twirl at a fast swipe), "
             "a hard throw into the top bar bonks it before it falls, and a long way across the page is sometimes a ride on a "
-            "cloud or in a bubble."
+            "cloud or in a bubble. To take hold of a panel's edge it leaps up from its feet and grabs."
         ),
         "badge": {"label": "Corner companion", "section": "appearance", "target": "avatar-buddy-row"},
     },

@@ -306,3 +306,20 @@ function companionTravelPlay(buddy, dx, dy, size, flies, was, force = "") {
   return true;
 }
 nmb.travelPlay = companionTravelPlay;
+
+//: **The grab** (`trans.upright>hang`, 0.4 to 1.4 s): it came up from its feet in a leap (`nameMarkBuddyGo`) and
+//: takes hold at the end of it: dropped a little under the bar by its own weight, hauled up taut, then a swing
+//: that settles. `ms` is the leap's length; on the character's own `translate` and `rotate`, which add to the
+//: landing squash's `scale` and the pose's transform. Nothing under Still motion.
+nmb.leapGrab = function (buddy, char, ms) {
+  if (!char || typeof char.animate !== "function" || nameMarkBuddyStill()) return;
+  const dir = buddy.dataset.turn === "l" ? 1 : -1;
+  nmb.grabAnim?.cancel();
+  nmb.grabAnim = char.animate([
+    { translate: "0px 0px", rotate: "0deg" },
+    { translate: "0px 7px", rotate: "0deg", offset: 0.22 },
+    { translate: "0px -3px", rotate: `${dir * 5}deg`, offset: 0.5 },
+    { translate: "0px 1px", rotate: `${-dir * 3}deg`, offset: 0.78 },
+    { translate: "0px 0px", rotate: "0deg" },
+  ], { duration: 620, delay: Math.max(0, ms - 140), easing: "ease-out" });
+};

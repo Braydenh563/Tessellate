@@ -128,3 +128,17 @@ def test_the_cloud_ride_is_a_far_move_the_app_already_plays() -> None:
     e = entries()["move.cloud_ride"]
     assert e["app"]["s"] == "built" and e["desk"]["s"] == "built"
     assert "\n  cloud(buddy, dx, dy, ctx) {" in TRAVEL and "cloud: d > s * 3 ? 1.5 : 0" in TRAVEL
+
+
+def test_upright_to_hang_is_a_leap_and_a_grab() -> None:
+    """`trans.upright>hang`: from a stand to a hang the way is always a leap (unless far, which chooses its own), and the
+    grab plays at the end of it, on `translate` and `rotate` so the landing squash's `scale` is not fought."""
+    go = fn("nameMarkBuddyGo")
+    assert 'const grabs = spot.pose === "hang" && poseChanged && nmb.poseWas === "stand" && route !== "fall";' in go
+    assert 'if (grabs && route !== "far") route = "leap";' in go
+    assert go.index("if (grabs && route") < go.index('if (route === "hop" || route === "leap") {')
+    assert "if (grabs) nmb.leapGrab?.(buddy, char, duration + setOff);" in go
+    grab = TRAVEL[TRAVEL.index("nmb.leapGrab = function") :]
+    assert "nameMarkBuddyStill()" in grab and "translate:" in grab and "rotate:" in grab and "scale" not in grab.split("{", 1)[1]
+    e = entries()["trans.upright>hang"]
+    assert e["app"]["s"] == "built" and e["desk"]["s"] == "built"

@@ -52,9 +52,9 @@ APP_ONLY = frozenset({
 })
 DESK_ONLY = frozenset({
     "react.battery_low", "react.hour_chime", "react.idle_return", "react.window_closed", "react.window_dragged",
-    "react.window_maximised", "react.window_opened", "react.window_restored", "trans.upright>hang",
+    "react.window_maximised", "react.window_opened", "react.window_restored"
 })
-APP_ONLY_CAP, DESK_ONLY_CAP, NEITHER_CAP = 49, 9, 92
+APP_ONLY_CAP, DESK_ONLY_CAP, NEITHER_CAP = 49, 8, 92
 
 
 @lru_cache(maxsize=1)
