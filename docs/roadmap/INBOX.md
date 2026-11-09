@@ -34,10 +34,6 @@ with its owner named in the entry.
 
 ## Open items
 
-1699. **Owner, 2026-11-09, verbatim (screenshot, desk companion Atlas over a forest wallpaper):** "the bottom of desktop companion atlas's tail gets clipped, also it is just hanging in mid air". Placed with agent deskfloat-1109.
-
-1700. **Owner, 2026-11-09, verbatim:** "the desktop companion still doesnt seem to react to anything im doing on my screen". Placed with agent deskfloat-1109.
-
 1698. **Owner, 2026-11-09 ~05:50Z, verbatim:** "dragging the in-app companion is laggy, and also the in-app companion (I have set it to the one based on my name) just like flew across the top of my screen but with the walking legs animation". Placed with agent appdrag-1109. Same session, more lag lines (verbatim, for the next session if appdrag does not reach them): "raf 166ms on graph: graph-canvas.js gcRequestDraw 55 calls/s, 3.0ms each (166ms of every second)"; "frame 205ms on library: whiteboard-library.js BUTTON#wb-side-tab-library.onclick 194ms (forced layout 177ms)"; "frame 218ms on documents: library.js openDoc 148ms (forced layout 58ms); documents.js ResizeObserverCallback 9ms; codemirror.min.js requestMeasure 9ms".
    Also same session (owner, verbatim): "in the expanded companion view, the little text bubbles that appear get cut off" (screenshot: the Brayden viewer card, "Hi there." bubble above the head cut by the top of the figure area under the card head; likely `.nm-viewer-figure > #nm-buddy > .nm-say` at `top: calc(var(--nmb-edge) * -1.2)` (08-consistency.css:5592) above a clipping box; measure before fixing). Fixed this session: docked half panel resize keeps the push (c48ab17); Format panel Data tab focus rings (3196d07).
 
