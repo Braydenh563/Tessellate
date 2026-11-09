@@ -607,7 +607,10 @@
   const ops = diagramKindOps;
   const panes = new WeakMap();
   let kit = null;
-  const TYPE_ICON = { s: "rows", p: "calendar-blank", e: "flag", t: "note-pencil", d: "minus" };
+  const TYPE_ICON = { s: "rows", p: "calendar-blank", e: "flag", t: "note-pencil", d: "arrow-bend-down-right" };
+  //: A block and a divider in a sentence of their own, shown under the row (1702: "loop" and "else" sat at the right edge as bare words).
+  const BLOCK_WORD = { loop: "Loop, repeats", alt: "Alt, one way or another", opt: "Opt, only if", par: "Par, at the same time", critical: "Critical, must succeed", break: "Break, stops here", rect: "Highlight" };
+  const DIV_WORD = { else: "Else, the other way", and: "And, at the same time", option: "Option, another choice" };
   const BLOCK_ICON = { loop: "repeat", alt: "shuffle", opt: "question" };
   const MM_GLYPH = { default: "stadium", square: "rect", round: "round", circle: "circle", hexagon: "hexagon" };
   const MM_NAME = { default: "Plain", square: "Square", round: "Rounded", circle: "Circle", bang: "Bang", cloud: "Cloud", hexagon: "Hexagon" };
@@ -643,13 +646,21 @@
   function words(S, node) {
     const label = (id) => S.m.participants?.find((p) => p.id === id)?.label || id;
     if (S.k.name === "sequence") {
-      if (node.type === "m") return { meta: `${label(node.from)} to ${label(node.to)}`, kind: KX_ARROW_NAMES[node.arrow]?.toLowerCase() || "message" };
+      if (node.type === "m") return { meta: `${label(node.from)} to ${label(node.to)}`, show: `${label(node.from)} \u2192 ${label(node.to)}`, kind: KX_ARROW_NAMES[node.arrow]?.toLowerCase() || "message" };
       if (node.type === "t") return { meta: `${node.pos} ${node.who.map(label).join(", ")}`, kind: "note" };
-      if (node.type === "b" || node.type === "d") return { meta: node.kw, kind: node.type === "b" ? node.kw : `${node.kw} divider` };
+      if (node.type === "b" || node.type === "d") return { meta: (node.type === "b" ? BLOCK_WORD : DIV_WORD)[node.kw] || node.kw, kind: node.type === "b" ? node.kw : `${node.kw} divider` };
       return { meta: "", kind: node.actor ? "actor" : "participant" };
     }
     if (S.k.name === "timeline") return { meta: "", kind: { s: "section", p: "period", e: "event" }[node.type] };
     return { meta: "", kind: node.type === "r" ? "central idea" : node.children.length ? "branch" : "leaf" };
+  }
+
+  //: `activate K` and `deactivate K` are kept lines (the blocks do not edit them), said in plain words: "Worker is active".
+  function keptWords(S, line) {
+    const hit = /^(de)?activate\s+(\S+)$/i.exec(line);
+    if (!hit || S.k.name !== "sequence") return null;
+    const who = S.m.participants.find((p) => p.id === hit[2])?.label || hit[2];
+    return `${who} ${hit[1] ? "is done" : "is active"}`;
   }
 
   // --- the tree -------------------------------------------------------------------
@@ -664,6 +675,12 @@
     const fresh = new Map();
     S.cache ||= new Map();
     const built = rows.map((r) => buildBlock(S, r, 1, fresh));
+    //: A sequence list opens with its participants, then its messages: a heading before each (1702: one undifferentiated list).
+    if (S.k.name === "sequence") {
+      const heads = [["a", "Participants"], ["mtbd", "Messages"]].map(([types, text]) => [rows.findIndex((r) => types.includes(r.type)), text]);
+      for (const [index, text] of heads.reverse()) if (index >= 0) built.splice(index, 0, ((S.heads ||= {})[text] ||= kit.el("p", "dgm-sechead muted", text)));
+      for (const text of ["Participants", "Messages"]) if (S.heads?.[text]) S.heads[text].setAttribute("aria-hidden", "true");
+    }
     S.cache = fresh;
     S.tree.querySelectorAll(".dgm-target, .dgm-connecting, .dgm-lifted").forEach((b) => b.classList.remove("dgm-target", "dgm-connecting", "dgm-lifted"));
     kit.reconcile(S.tree, built);
@@ -704,14 +721,18 @@
       block.setAttribute("aria-label", `Kept line: ${row.line}`);
       block.title = "Blocks cannot edit this line. It stays in the source where it is.";
       const card = kit.el("div", "dgm-card");
-      card.append(icon("lock-simple", "dgm-kept-icon"), kit.el("code", "dgm-label", row.line));
+      const said = keptWords(S, row.line);
+      if (said) {
+        block.setAttribute("aria-label", `${said}, from the line ${row.line}`);
+        card.append(icon(/^de/i.test(row.line) ? "stop-circle" : "play-circle", "dgm-kept-icon"), kit.el("span", "dgm-label", said));
+      } else card.append(icon("lock-simple", "dgm-kept-icon"), kit.el("code", "dgm-label", row.line));
       block.append(card);
       return block;
     }
     const node = row.node;
     const key = ops.key(row);
     const text = S.k.text(node);
-    const { meta, kind } = words(S, node);
+    const { meta, kind, show } = words(S, node);
     block.dataset.key = key;
     block.setAttribute("aria-label", `${text || "(empty)"}, ${kind}${meta ? `, ${meta}` : ""}`);
     //: A mind map's leaf holds nothing yet and is a plain card; every other holder is a boxed one with its hole.
@@ -721,12 +742,14 @@
       block.setAttribute("aria-expanded", "true");
     }
     const card = kit.el("div", "dgm-card");
+    //: A sequence row is two lines: the sentence, and who it is between (or what the block is) muted under it.
+    if (meta && S.k.name === "sequence") card.classList.add("dgm-card-two");
     const grip = kit.el("span", "dgm-grip");
     grip.dataset.objGrip = "";
     grip.title = "Drag to move";
     grip.append(icon("dots-six-vertical"));
     card.append(grip, glyph(S, node), kit.el("span", "dgm-label", text));
-    if (meta) card.append(kit.el("span", "dgm-meta muted", meta));
+    if (meta) card.append(kit.el("span", "dgm-meta muted", show || meta));
     card.append(diagramModel.library.lazyKebab(() => itemsFor(S, key), `Menu for ${text}`));
     block.append(card);
     if (boxed || row.kids?.length) {

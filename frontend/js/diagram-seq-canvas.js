@@ -249,6 +249,7 @@
     const act = diagramModel.kinds.act;
     const img = () => fig.querySelector(".md-mermaid-img");
     const at = (event) => (img() && S.hit ? diagramModel.overlay.math.at(S.hit, img().getBoundingClientRect(), event.clientX, event.clientY) : "");
+    S.hitAt = at;
     let editing = null;
 
     //: One field over the part, as the flowchart's (diagram-edges.js); Enter keeps, Escape leaves it as it was.

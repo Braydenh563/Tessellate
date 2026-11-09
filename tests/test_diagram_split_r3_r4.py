@@ -48,7 +48,7 @@ def test_the_divider_is_the_sidebar_handle_wired_by_a_lazy_file():
     assert 'diagramSplit: ["/js/diagram-split.js"]' in MERMAID_JS
     assert 'ensureModule("diagramSplit")' in BUILDER and "diagramModel.split.wire(S)" in BUILDER
     assert 'handle.className = "sidebar-resize dgm-split-handle"' in SPLIT
-    for needle in ('"separator"', '"tabindex", "0"', "trackSeparatorValue(", "prefs.set(KEY", "const STEP = 12", "const BIG = 40", "const KEEP = 240"):
+    for needle in ('"separator"', '"tabindex", "0"', "trackSeparatorValue(", "prefs.set(keyOf(body)", "const STEP = 12", "const BIG = 40", "const KEEP = 240"):
         assert needle in SPLIT, needle
     assert "diagramModel.split = " in SPLIT
 

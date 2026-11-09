@@ -361,6 +361,15 @@
   display: none;
 }
 
+/* Folded (the owner 2026-11-09): one button in the corner. Open, the picture starts below the shelf, so it never covers the drawing. */
+.dgm-shelf.dgm-shelf-off > :not(.dgm-shelf-toggle) {
+  display: none;
+}
+
+.dgm-stage.dgm-shelved > .dgm-picture {
+  margin-block-start: calc(var(--control-h) + 2 * var(--space-1) + var(--space-3) + var(--space-2));
+}
+
 /* While a zoom is in motion (diagram-view.js) the picture is only a transform: the boxes, handles and the picked arrow
    sit at the old size, so they hide until the real width lands (140 ms after the last input), then draw once. */
 .dgm-stage.dgm-gesturing .dgm-picture > .dgm-overlay {
@@ -496,6 +505,47 @@
   white-space: nowrap;
   text-overflow: ellipsis;
   font-size: var(--text-xs);
+}
+
+/* A sequence row (1702) is two lines under one glyph: the sentence, and who it is between (or what the block is) muted
+   beneath it, so the words sit together at the left at every width instead of a column apart. */
+.dgm-card.dgm-card-two {
+  grid-template-columns: auto auto minmax(0, 1fr) auto;
+  grid-template-areas:
+    "grip glyph label menu"
+    "grip glyph meta menu";
+  row-gap: 0;
+}
+
+.dgm-card-two > .dgm-grip {
+  grid-area: grip;
+}
+
+.dgm-card-two > :is(i, .dgm-shape) {
+  grid-area: glyph;
+}
+
+.dgm-card-two > .dgm-label {
+  grid-area: label;
+}
+
+.dgm-card-two > .dgm-meta {
+  grid-area: meta;
+  max-inline-size: none;
+}
+
+.dgm-card-two > .menu-wrap {
+  grid-area: menu;
+}
+
+/* The two headings of a sequence list. */
+.dgm-sechead {
+  margin: var(--space-2) 0 var(--space-1);
+  padding-inline: var(--space-2);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
 }
 
 .dgm-label.dgm-editing {
@@ -1350,6 +1400,10 @@
   margin-inline-end: auto;
 }
 
+.dgm-views:has(+ .dgm-viewnote) {
+  margin-inline-end: 0;
+}
+
 /* The title row: a label and a field under the head (DD-12). */
 .dgm-dialog .dgm-titlebar {
   margin: 0;
@@ -1668,11 +1722,24 @@
 /* The two layouts of the one view (R7, 1621 D6). Blocks is the list at its old width with the picture beside it. Canvas
    gives the picture the room: a narrower list, and on a phone a taller picture (on the page, not in the dialog, whose body has no room for it). */
 [data-dgm-layout="canvas"] .dgm-body.dgm-split {
-  --dgm-list: 16rem;
+  --dgm-list: 14rem;
 }
 
 [data-dgm-layout="blocks"] .dgm-body.dgm-split {
-  --dgm-list: 22rem;
+  --dgm-list: 50%;
+}
+
+/* The one line under the dialog that says what Picture, List and Source each give the room to (1702). */
+.dgm-viewnote {
+  align-self: center;
+  margin-inline-end: auto;
+  font-size: var(--text-xs);
+}
+
+@media (max-width: 599.98px) {
+  .dgm-viewnote {
+    display: none;
+  }
 }
 
 @container (max-width: 599.98px) {
@@ -1947,6 +2014,7 @@
 .dgm-stage > .dgm-fold {
   position: absolute;
   inset-block-start: var(--space-2);
+  /* The picture's scrollbar takes layout width: diagram-split.js `wireFold` adds its measured width to this offset. */
   inset-inline-end: var(--space-2);
   z-index: 2;
   background: var(--modal-bg);
