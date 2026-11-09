@@ -3299,7 +3299,7 @@ const NMB_ACTIVITIES = [
   ["wander", "Wander off now and then, and come back", ["wander"]],
   ["come", "Come over to you after a few minutes apart", ["come"]],
   ["afield", "Go out for a while now and then", ["afield"]],
-  ["rub", "Lean into a rub, giggle at a tickle, sneeze at a boop (the pointer on it)", ["rub", "tickle", "boop"]],
+  ["rub", "Lean into a rub or a pat, giggle at a tickle, sneeze at a boop (the pointer on it)", ["rub", "tickle", "boop", "pat"]],
   ["flip", "Turn upside down when shaken while carried", ["flip"]],
   ["remark", "Say something from your notes now and then", ["remark"]],
   ["habits", "Little habits and reactions (a search that finds nothing, a fast pointer, a long carry)", ["habits"]],
@@ -6993,7 +6993,46 @@ nmb.touch = (() => {
     if (Math.random() < 0.5) nameMarkSay(buddy, "Achoo.");
     return true;
   }
-  return { tickled, tickle, onNose, boop };
+  //: Patted (`int.pat`, the desk's `pat`): slow dabs down and up on the head, not the long side to side of a
+  //: rub: `PAT.turns` turns on the y axis of `travel` (a share of the figure's height) or more inside `windowMs`,
+  //: all on the head's top `headShare`, no wider than the figure and slow (a mean speed under `slow` px/ms, so a
+  //: flick is not one). Pure, for the tests; once in five seconds.
+  const PAT = { turns: 2, travel: 0.07, windowMs: 1400, minSamples: 4, slow: 0.5, headShare: 0.42, coolMs: 5000 };
+  function patted(samples, rect) {
+    const last = samples[samples.length - 1];
+    if (!last || !rect) return false;
+    const recent = samples.filter((sample) => last[2] - sample[2] <= PAT.windowMs);
+    const head = recent.filter((sample) => sample[1] <= rect.top + PAT.headShare * rect.height);
+    if (head.length < PAT.minSamples) return false;
+    const xs = head.map((sample) => sample[0]);
+    if (Math.max(...xs) - Math.min(...xs) > rect.width) return false;
+    //: The speed is the whole path over its whole time, so a dab that leaves the head and comes back is as fast as it was.
+    let path = 0;
+    for (let i = 1; i < recent.length; i += 1) path += Math.hypot(recent[i][0] - recent[i - 1][0], recent[i][1] - recent[i - 1][1]);
+    if (path / Math.max(1, last[2] - recent[0][2]) > PAT.slow) return false;
+    return nameMarkBuddyStrokes(head, 1, Math.max(5, PAT.travel * rect.height), PAT.windowMs) >= PAT.turns;
+  }
+  //: The shared start: not still, not hidden, not carried, not asleep, not switched off, once per cool-down.
+  function ready(buddy, act, key, coolMs) {
+    if (!buddy || nameMarkBuddyStill() || document.hidden || nameMarkBuddyMenuOpen() || buddy.classList.contains("nm-buddy-dragging") || nameMarkBuddyActOff(act)) return false;
+    const now = Date.now();
+    if (now - (nmb[key] || 0) < coolMs || nameMarkBuddyAsleep(buddy)) return false;
+    nmb[key] = now;
+    return true;
+  }
+  function pat(buddy) {
+    if (!ready(buddy, "pat", "patAt", PAT.coolMs)) return;
+    nmb.pettedAt = Date.now();
+    nameMarkBuddyFeel(0.15);
+    const face = buddy.querySelector(":scope > .nm-buddy-face");
+    if (face && typeof face.animate === "function") {
+      const dab = [0, 3, 0, 3, 0, 2, 0].map((px, i, all) => ({ transform: `translateY(${px}px) scale(1, ${1 - px * 0.012})`, offset: i / (all.length - 1), transformOrigin: "50% 100%" }));
+      face.animate(dab, { duration: 1800, easing: "ease-in-out" });
+    }
+    if (isAtlasSeed(buddy.dataset.seed || "")) setAtlasMood("happy", 3000, { quiet: true, backEaseMs: 1000 });
+    else nameMarkBuddyExpress("happy", 3000);
+  }
+  return { tickled, tickle, onNose, boop, patted, pat };
 })();
 //: **Flipped** (INBOX 743, the owner: "flipping it upside down??"): shaken
 //: up and down while carried, it turns over and hangs upside down from your
@@ -10792,7 +10831,11 @@ function nameMarkBuddyBuild() {
     const t = performance.now();
     rub.push([event.clientX, event.clientY, t]);
     while (rub.length > 2 && t - rub[0][2] > 1600) rub.shift();
-    if (nmb.touch.tickled(rub, face.getBoundingClientRect())) {
+    const box = face.getBoundingClientRect();
+    if (nmb.touch.patted(rub, box)) {
+      rub = [];
+      nmb.touch.pat(buddy);
+    } else if (nmb.touch.tickled(rub, box)) {
       rub = [];
       nmb.touch.tickle(buddy);
     } else if (rub.length >= 6 && nameMarkBuddyStrokes(rub, 0, 5, 1600) >= 4) {

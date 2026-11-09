@@ -78,7 +78,7 @@ def test_a_click_on_the_nose_is_a_boop_and_elsewhere_is_not() -> None:
 
 
 def test_the_handlers_are_wired_and_have_a_switch() -> None:
-    assert "nmb.touch.tickled(rub, face.getBoundingClientRect())" in AV and "nmb.touch.tickle(buddy)" in AV
+    assert "nmb.touch.tickled(rub, box)" in AV and "nmb.touch.tickle(buddy)" in AV
     assert "nmb.touch.onNose(face.getBoundingClientRect(), event.clientX, event.clientY)" in AV
     assert "if (nose && !wasAsleep) nmb.touch.boop(buddy);" in AV
     row = re.search(r'\["rub", "[^"]*", \[([^\]]*)\]\]', AV)
