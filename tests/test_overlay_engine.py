@@ -68,7 +68,11 @@ def test_sixty_seconds_of_standing_is_at_most_forty_wakes_for_any_seed() -> None
     for seed in range(60):
         e, _ = make(roam=False, rng=random.Random(seed))
         # Bar moved (INBOX 1683 c): the stream tick plus the blinks (every 3 to 7 s, INBOX 1670, 15:40Z), not 40 a minute.
-        assert wakes(e, 60)[0] <= 60_000 // eng.FLOW_TICK_MS + 40, seed
+        # Intent kept, count moved (life2-1109, the seed fix): every seed used to draw the same reaction stream, so none
+        # waved inside the minute; seed 25 now does (a wave is 46 wakes of its own, not a standing one), so the waves
+        # are not counted: what is bounded is the standing.
+        n, outs = wakes(e, 60)
+        assert n - sum(o.frame.startswith("wave") for o in outs) <= 60_000 // eng.FLOW_TICK_MS + 40, seed
 
 
 def test_blink_and_look_appear_while_standing() -> None:

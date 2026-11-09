@@ -8328,6 +8328,8 @@ function nameMarkBuddyAct(act, ms) {
   const quiet = !act || NMB_FACELESS_ACTS.includes(act);
   if (quiet && (was === "wave" || was === "cheer")) window.atlasMicroCast?.();
   else if (!quiet) window.atlasMicroCast?.stop();
+  //: A startle ends in a breath let out 1 to 3 s later (INBOX 1719 b; the desktop's `EXHALE_AFTER`).
+  if (quiet && was === "startle") setTimeout(() => window.atlasMicroDo?.exhale?.(buddy.querySelector(".atl-figure-box")), 1000 + Math.random() * 2000);
   if (!act) {
     nameMarkBuddySchedule();
     return;
@@ -8570,6 +8572,7 @@ function nameMarkBuddyAim(point, near = false) {
   nameMarkBuddyAim.set(buddy, "--nmb-ex", lx.toFixed(2));
   nameMarkBuddyAim.set(buddy, "--nmb-ey", ly.toFixed(2));
   buddy.classList.add("nmb-attend");
+  if (typeof atlasBlink === "function") atlasBlink.saccade?.();
   clearTimeout(nmb.headTimer);
   if (near && Date.now() >= nmb.groggyUntil) {
     nameMarkBuddyAim.set(buddy, "--nmb-hx", (lx * 0.8).toFixed(2));

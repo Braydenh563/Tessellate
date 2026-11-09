@@ -80,6 +80,32 @@ atlasBlink.moods = {
   calm: "content", delighted: "happy", laughing: "happy", love: "happy", smirk: "happy", thinking: "focus", determined: "focus",
   confused: "curious", surprised: "startled", worried: "startled", miffed: "startled", sad: "bored", shy: "content",
 };
+//: **Eyes are never quite still in a held gaze** (INBOX 1719 b): while the companion attends to a point, every 0.6 to 1.8 s
+//: the irises take one small step off the held look (`ATLAS_SACCADE` of a look unit across, less up and down; the CSS
+//: eases it) and the next aim writes the look back. Armed by `nameMarkBuddyAim`, it re-arms itself only while the look
+//: is held (`nmb-attend`), so at rest no timer runs. A function property: the shared scope has a cap on names.
+atlasBlink.saccade = () => {
+  const s = atlasBlink.saccade;
+  if (s.timer) return;
+  s.timer = setTimeout(() => {
+    s.timer = 0;
+    if (s.step()) s();
+  }, 600 + Math.random() * 1200);
+};
+//: One step; true while the look is still held. `r` is the two random draws (a fixed pair in a test).
+atlasBlink.saccade.step = (r = [Math.random(), Math.random()]) => {
+  const buddy = document.getElementById("nm-buddy");
+  if (!buddy?.classList.contains("nmb-attend")) return false;
+  const box = buddy.querySelector(".atl-figure-box");
+  if (document.hidden || !box || !atlasMotionOK(box) || buddy.classList.contains("nm-buddy-dragging")) return true;
+  const ex = (nmb.ex || 0) + (r[0] - 0.5) * 0.5;
+  const ey = (nmb.ey || 0) + (r[1] - 0.5) * 0.36;
+  for (const iris of buddy.querySelectorAll(".nm-atlas .atl-iris")) {
+    iris.style.setProperty("--nmb-ex", ex.toFixed(2));
+    iris.style.setProperty("--nmb-ey", ey.toFixed(2));
+  }
+  return true;
+};
 function atlasBlinkStart() {
   if (!atlasState.blinkTimer) atlasState.blinkTimer = setTimeout(atlasBlinkTick, 1800);
   //: The small behaviours are a file of their own (atlas-micro.js), fetched once.

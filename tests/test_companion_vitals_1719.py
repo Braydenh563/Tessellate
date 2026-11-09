@@ -36,7 +36,9 @@ def _still(seed: int):
     return e
 
 
-def blinks(mood: str, seed: int, secs: float = 600.0) -> tuple[float, float]:
+# Window 600 s became 1800 s (life2-1109, the seed fix): with a stream per seed a ten-minute sample was noisy enough to
+# put sleepy at 1.2 x calm on seeds 1 and 3; over half an hour every seed 1 to 6 reads 1.26 to 1.35, so the bars stand.
+def blinks(mood: str, seed: int, secs: float = 1800.0) -> tuple[float, float]:
     """Blinks a minute and the mean blink length, standing `secs` with the mood held."""
     saved = eng.IDLE_SIT, eng.IDLE_SLEEP
     eng.IDLE_SIT = eng.IDLE_SLEEP = float("inf")
