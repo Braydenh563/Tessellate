@@ -6,3 +6,5 @@
 - next: D10 multi-tick, composer-r5-1108.md:29.
 - done: D10 multi-tick (task_acts.pick_each; also untick and cancel lists).
 - next: E10 per-subject split, composer-r5-1108.md:30.
+- done: E10 per-subject split (composer_tables._EACH_LEAD/_BARE_NAMES read as compare sides). Not split: a bare lower-case pair ("tom and sara"), which stays one pooled search.
+- next: table number (composer-r5-1108.md:34).

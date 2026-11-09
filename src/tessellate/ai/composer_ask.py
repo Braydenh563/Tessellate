@@ -251,12 +251,12 @@ def classify(question: str, embed=None) -> str:  # noqa: ANN001
     text = rephrase(question)
     if _IF.match(text):
         return "yesno"
+    if _COMPARE_EXTRA.search(text) and compare_sides(text):
+        return "compare"
     #: "is there anything about the boiler", "how many notes mention
     #: sourdough": everything on a subject, however they open.
     if _ANYTHING_ON.match(text) or re.match(r"^how many (?:of my )?notes\b", text, re.I):
         return "what"
-    if _COMPARE_EXTRA.search(text) and compare_sides(text):
-        return "compare"
     for name, pattern in _SHAPE_RULES:
         if pattern.search(text):
             return name
@@ -597,7 +597,7 @@ _COMPARE_SIDES = (
 
 #: The patterns that name a comparison by more than a bare "vs" are tried first:
 #: "pros and cons of A vs B" is not a "vs" with "pros and cons of A" on its left.
-_COMPARE_SIDES = (*composer_tables.EXTRA_COMPARE_SIDES, *_COMPARE_SIDES)
+_COMPARE_SIDES = (*composer_tables.EXTRA_COMPARE_SIDES, *_COMPARE_SIDES, *composer_tables.BARE_COMPARE_SIDES)
 
 
 #: The extra comparison words ("cheaper than", "compared with", "pros and cons
