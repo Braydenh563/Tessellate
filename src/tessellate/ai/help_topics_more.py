@@ -3346,8 +3346,8 @@ MORE_TOPICS.extend([
             "A block's arrows share one line under it; press one for its menu: the line (arrow, line, dotted, thick, Both ways), Colour… and Reverse direction. "
             "With two or more blocks picked, the bar also has Colour (K) and Connect, which draws an arrow from the first picked to the second. "
             "Fit stops at readable text (11 px) and the picture scrolls past it. In the picture an arrow key picks the box that way, reading aloud its name and arrows, and Shift with an arrow moves the picture. A tall chart in a wide pane offers Turn it sideways once; Direction is a menu of Down, Right, Up and Left, and Shift turns it back one step. "
-            "[ and ] fold the list and the picture to a rail; the rail opens it. On a phone, once there is an arrow (another kind: a block), Blocks list opens the list as a sheet. "
-            "In Source, Tab indents and Shift+Tab takes it back, Escape leaves the text, Ctrl+Z steps the blocks' history too, and a red line number is the line a drawing error names; its note has Undo the last edit. "
+            "[ and ] fold the list and the picture to a rail. On a phone, once there is an arrow (another kind: a block), Blocks list opens the list as a sheet. "
+            "In Source, Tab indents and Shift+Tab takes it back, Escape leaves the text, Ctrl+Z steps the blocks' history, and a red line number is the line an error names; its note has Undo the last edit. Ctrl+Space lists words; Enter takes one. "
             "In the bar Left and Right walk the buttons; the ... menu has the look, Save as PNG and Save to Library. On the picture Enter names the picked box, Shift+Enter adds a joined box and Alt+Enter a sister, Ctrl+D copies, Ctrl+A picks all, Delete removes, Ctrl+F or / finds by name, and a double press on empty space adds a box. "
             "The New diagram window's Title names the document Done makes (blank dates it) and the files you export."
         ),

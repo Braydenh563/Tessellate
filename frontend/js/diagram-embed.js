@@ -224,6 +224,8 @@
   //: asking when there are changes.
   async function open({ source = "", kind = "flowchart", title = "Edit diagram", shapes = null, offer = null, onDone = null, existing = null, named = false, draft = "" } = {}) {
     if (!(await ensureModule("diagramBuilder"))) return toast("The block editor did not load. Try again.", "info");
+    //: Without it the Source pane is a plain field (the list is an extra, so a failed load is not an error).
+    const hasComplete = await ensureModule("diagramComplete");
     const first = String(source || "").trim() ? String(source) : STARTS[kind] || STARTS.flowchart;
     const draftId = draft ? `${draft}:${hashOf(first)}` : "";
     const history = [first];
@@ -364,6 +366,8 @@
         show();
       }, 250);
     });
+    //: The completion list under the caret (DD-5, diagram-complete.js). Wired before Tab's indent so a list that is open takes Tab first.
+    const complete = hasComplete ? diagramModel.complete.wire(field, srcwrap, (text) => diagramModel.parse(text)) : null;
     //: Tab is two spaces, on every selected line when the selection spans lines; Shift+Tab takes them back. Escape is the way out (below).
     field.addEventListener("keydown", (event) => {
       if (!(event.key === "Tab" && !event.ctrlKey && !event.metaKey && !event.altKey)) return;
@@ -383,6 +387,8 @@
       if (event.key !== "Escape" || activeOverlay() !== overlay) return;
       //: Tab indents in the text, so Escape leaves it for the views; the next Escape closes the window (DD-5).
       if (event.target === field) {
+        //: An open completion list takes this Escape (it closes it) before the field gives way to the views.
+        if (complete?.open()) return;
         event.preventDefault();
         event.stopPropagation();
         return seg.querySelector('[data-view="source"]').focus();
