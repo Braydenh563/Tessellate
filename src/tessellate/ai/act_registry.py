@@ -214,7 +214,7 @@ def guide_topic() -> dict:
                      "with no model running", "undo an act", "things chat does"),
         "badge": {"label": "Chat", "tab": "chat"},
         "body": "Chat does these from one sentence, with no model. " + " ".join(lines)
-        + f" These wait for Confirm: {waits}. The rest run at once. Undo on the card, or Ctrl+Z, takes any of them back. Say add buy milk to today's note to put a bullet in the daily note. Say cancel or never mind to drop a card that is waiting.",
+        + f" These wait for Confirm: {waits}. The rest run at once. Undo on the card, or Ctrl+Z, takes any of them back. Say add buy milk to today's note to put a bullet in the daily note, or put it in today's note to add a note itself. Say cancel or never mind to drop a card that is waiting.",
     }
 
 

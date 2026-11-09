@@ -490,6 +490,26 @@ _MOVE_VERBS = {
 _BIN_WORDS = {"bin", "the bin", "trash", "the trash", "recycle bin", "the recycle bin"}
 
 
+#: The daily note said as a place: the starter acts' append, never a category named so.
+_DAILY_NOTE = re.compile(r"^(?:(?:today'?s|the|my|the day'?s) daily|today'?s|the day'?s) (?:note|journal)$")
+
+
+def _move_category(category: str) -> str:
+    """The category a move names, cleaned, or "" when it names none (the bin,
+    the daily note, a sentence)."""
+    category = _drop_article(category.strip())
+    low_cat = category.lower()
+    if _DAILY_NOTE.match(low_cat):
+        return ""  # "put it in today's note" appends to the daily note (starter acts), it is no category
+    for tail in (" category", " folder"):
+        if low_cat.endswith(tail):
+            category = category[: -len(tail)]
+    if category.lower().startswith("category "):
+        category = category[len("category "):]
+    category = category.strip(" '\"")
+    return "" if not category or category.lower() in _BIN_WORDS or len(category) > 120 else category
+
+
 def _move(text: str) -> dict | None:
     low = text.lower()
     verb = next((v for v in _MOVE_VERBS if low.startswith(v)), None)
@@ -502,15 +522,8 @@ def _move(text: str) -> dict | None:
     found = _target(target) or (_bare_target(target) if _MOVE_VERBS[verb] else None)
     if not found or category.lower() in ("top", "the top"):
         return None
-    category = _drop_article(category.strip())
-    low_cat = category.lower()
-    for tail in (" category", " folder"):
-        if low_cat.endswith(tail):
-            category = category[: -len(tail)]
-    if category.lower().startswith("category "):
-        category = category[len("category "):]
-    category = category.strip(" '\"")
-    if not category or category.lower() in _BIN_WORDS or len(category) > 120:
+    category = _move_category(category)
+    if not category:
         return None
     return {"intent": "move", **found, "category": category}
 
@@ -998,7 +1011,7 @@ def _append(text: str) -> dict | None:
     #: list-like name is a title, though it says no "note".
     named = target.lower().startswith(("my ", "our ")) or target.lower().split(" ")[-1] in _LISTISH
     found = _one_target(target.strip(), bare=named)
-    if found and str(found.get("about", "")).lower().startswith(("today", "yesterday", "tomorrow")):
+    if found and str(found.get("about", "")).lower().startswith(("today", "yesterday", "tomorrow", "daily")):
         return None  # the daily note is the composer's (starter acts)
     if needs_list and not (found and (named or target.lower().rstrip().endswith(("note", "entry")))):
         return None

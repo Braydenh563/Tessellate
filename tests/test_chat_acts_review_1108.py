@@ -309,12 +309,13 @@ def test_the_words_keep_their_case_where_a_fold_changes_the_length():
 @pytest.mark.parametrize("said", ["add that to today's note", "add it to today's note"])
 def test_a_pointer_is_asked_about_not_written(client, said):
     card, events = _card(client, said)
-    assert card is None and "What should go in today's note?" in _text(events)
+    #: Moved 2026-11-09: a pointer is the note it means (owner decision), so with none to mean it asks which.
+    assert card is None and "Which note should go in today's note?" in _text(events)
 
 
 def test_a_pointer_read_by_the_starter_is_asked_about_too(session):
     line, card = starter_acts._append_today(session, slots={"words": "it"}, now=NOW)
-    assert card is None and "What should go in today's note?" in line
+    assert card is None and "Which note should go in today's note?" in line
 
 
 # --- 10: cancel ----------------------------------------------------------------------------------
