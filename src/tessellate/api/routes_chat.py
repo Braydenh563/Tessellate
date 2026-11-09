@@ -37,7 +37,7 @@ from sqlalchemy.orm import Session
 
 from tessellate.ai import capability, fact_check, composer, composer_social, composer_unplaced, note_language, composer_aware, composer_compose, composer_digest, composer_suggest, composer_tone, composer_web, composer_lists, find_it, glossary, list_pool, note_rank, note_recency, personal, verdicts, vocative
 from tessellate.ai import ask_chips, composer_dialogue, composer_empty, composer_intent, composer_smalltalk
-from tessellate.ai import recognise
+from tessellate.ai import recognise, task_acts
 from tessellate.ai import (
     acts,
     context,
@@ -1860,10 +1860,18 @@ def _cited_question(req: _StreamRequest) -> str | None:
     return reading.cited_follow(req.question, turns, user_now(deps.get_config()))
 
 
+def _listed_tasks(history: list[dict]) -> set[str]:
+    """The tasks the last answer's list showed, by name."""
+    shown = (history[-1].get("answer") if history else "") or ""
+    return {t for t in (task_acts.item_in(n, shown) for n in range(1, 13)) if t}
+
+
 def _follow_up(req: _StreamRequest):
     """The follow-up the turn before gives this one: a spoken act stands in
     for the question itself; a composed turn's "tell me more" is
     `composer.follow_on`'s; None otherwise."""
+    if req.history and (acts.parse(req.question, user_now(deps.get_config()), req.history) or {}).get("about") in _listed_tasks(req.history):
+        return None  # "tick the first one" is the act on the task the list showed (R9-9), not a follow-on to rewrite
     composed = bool(req.history) and ((req.body.notes_only and req.body.answer_from == "notes") or not req.ollama.is_running())
     more = composer.follow_on(req.question, req.history) if composed else None
     if more is not None and more.kind == "more":

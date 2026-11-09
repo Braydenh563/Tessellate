@@ -71,3 +71,17 @@ def brief(text: str, limit: int = BRIEF_WORDS, squeeze: bool = False) -> str:
         #: Told under a line that closes it with its own stop.
         said = said.rstrip(". ")
     return unjoined(said)
+
+
+#: The most sentences of one note the model's brief adds for holding a word of the question.
+MATCHED_PER_NOTE = 3
+
+
+def matching(sentences: list, stems: set[str], holds) -> list:  # noqa: ANN001
+    """The sentences of a note that hold a word of the question, in the note's order, at most
+    `MATCHED_PER_NOTE`: a note marked "(matched: meditation)" never loses the sentence with the word,
+    whatever the composer's own pick was (R9-13)."""
+    found = [s for s in sentences if any(holds(st, set(s.words)) for st in stems)][:MATCHED_PER_NOTE]
+    #: "Too dense again." is followed by what to do about it: the sentence after a match goes with it.
+    after = [sentences[sentences.index(s) + 1] for s in found if sentences.index(s) + 1 < len(sentences)]
+    return sorted({id(s): s for s in [*found, *after]}.values(), key=lambda s: s.order)

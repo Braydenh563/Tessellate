@@ -84,7 +84,7 @@ from __future__ import annotations
 import re
 from datetime import date, datetime
 
-from tessellate.ai import act_registry, composer_ack, composer_links, composer_numbers, composer_small, composer_open, composer_tables, composer_versus, grounding, phrasing, question_noise, spelling, utilities
+from tessellate.ai import act_registry, composer_ack, composer_brief, composer_links, composer_numbers, composer_small, composer_open, composer_tables, composer_versus, grounding, phrasing, question_noise, spelling, utilities
 from tessellate.ai import recognise as rec
 from tessellate.ai.composer_phrases import PHRASES
 from tessellate.ai.composer_ask import _ASKS_FIRST, _KNOWN, _SHAPE_RULES, _guessing_recent, _holds, _stem, _still_recent, _words, asks_written_when, classify, compare_sides, rephrase, subject_terms, user_now, user_today, when_terms
@@ -886,6 +886,10 @@ def brief(
     for view in candidates:
         for s in view.sentences:
             if (view.id, s.start) in spans and s not in by_note.get(view.id, []):
+                by_note.setdefault(view.id, []).append(s)
+        #: And every sentence that holds a word of the question (R9-13).
+        for s in composer_brief.matching(view.sentences, {_stem(t) for t in terms}, _holds):
+            if s not in by_note.get(view.id, []):
                 by_note.setdefault(view.id, []).append(s)
     out: list[dict] = []
     shortened = before = after = 0

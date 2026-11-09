@@ -53,6 +53,9 @@ def _plain(text: str) -> str:
     return _NUMBER.sub(lambda m: _digits(m, text), text)
 
 
+_TOMORROW = re.compile(r"\b(?:tmrw|tmr|tmw|tmrow|2mrw|2morrow|2moro)\b", re.I)
+
+
 def normalise(question: str) -> str:
     """`question` with its number words as digits,
     outside anything quoted; the same text when it has none. Ordinals stay
@@ -61,6 +64,8 @@ def normalise(question: str) -> str:
     text = question or ""
     if not text or not re.search(r"[A-Za-z]", text):
         return text
+    #: "whats on tmrw" is the day, not a word to search for (R9-8, R9-14).
+    text = _TOMORROW.sub("tomorrow", text)
     out: list[str] = []
     last = 0
     for quoted in _QUOTED.finditer(text):

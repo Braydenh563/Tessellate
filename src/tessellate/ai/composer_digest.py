@@ -46,6 +46,7 @@ from pathlib import Path
 from tessellate.ai import composer, composer_doings, composer_done, composer_frame, composer_threads, composer_lists, composer_money, composer_slots, composer_sum, composer_tables, filed_name, glossary, question_noise, realise, verdicts
 from tessellate.ai import composer_answer, composer_brief, composer_nth, composer_oneword, composer_property, composer_small
 from tessellate.ai import composer_ask, composer_clean, factgraph
+from tessellate.ai import composer_chip_subject
 from tessellate.ai import composer_read
 from tessellate.ai import composer_select
 from tessellate.ai.composer_lists import clean
@@ -1175,6 +1176,8 @@ def _pin(text: str, written: date) -> str:
     #: "Trimmed my first bowl today", written 2 September, is "on 2
     #: September"; under that day's own label the day is dropped (`_lines`).
     for found in reversed(_spans(text, written)):
+        if _in_a_title(text, found):
+            continue
         if found.kind in ("date", "datetime") and (found.text.lower() in _DEICTIC or (found.text.lower() == "tomorrow" and written != today)):
             day = found.value.date() if isinstance(found.value, datetime) else found.value
             if day == today and written == today:
@@ -1186,6 +1189,13 @@ def _pin(text: str, written: date) -> str:
                 on = gone[-1]
             text = f"{text[:found.start].rstrip()} {on}{text[found.end:]}"
     return _said_gone(_pin_weekdays(text, written, today, gone), gone)
+
+
+def _in_a_title(text: str, found) -> bool:  # noqa: ANN001
+    """A capitalised "Tomorrow" in the middle of a list is a title ("Tomorrow and
+    Tomorrow and Tomorrow"), not the day (R9-5)."""
+    before = text[: found.start].rstrip()
+    return found.text[:1].isupper() and bool(before) and before[-1] not in ".!?:;-([*\n"
 
 
 #: A weekday said alone ("moved to Friday", "on Monday", "next Tuesday"):
@@ -1450,7 +1460,7 @@ def _only_the_subject(body: str, own: bool, subject: set[str] | None) -> bool:
 def _labelled_list(split: _Split) -> bool:
     """"Q1: run a 10k, read 12 books" is a list under its label, and its last
     item is one of the list, not a to-do split off it (audit 1030 C)."""
-    parts = [p for p in re.split(r",\s*", split.body) if p.strip()]
+    parts = [p for p in re.split(r",(?!\d)\s*", split.body) if p.strip()]
     return bool(split.label) and len(parts) >= 2 and all(len(p.split()) <= 5 for p in parts)
 
 
@@ -2355,7 +2365,7 @@ def _day_clause(body: str) -> str | None:
     if going:
         days = _WEEKDAY_WORD.sub(lambda m: m.group(0) + "s", going.group(1).removeprefix("on "))
         return f"you were going on {days}"
-    lifts = [_LIFT.match(p.strip()) for p in re.split(r",\s*(?:and\s+)?|\s+and\s+", body) if p.strip()]
+    lifts = [_LIFT.match(p.strip()) for p in re.split(r",(?!\d)\s*(?:and\s+)?|\s+and\s+", body) if p.strip()]
     if lifts and all(lifts):
         said = []
         for n, m in enumerate(lifts):
@@ -2435,8 +2445,11 @@ def _clause_of_frame(body: str, frame: str, i: int, first: bool) -> str:
     #: "Wedding table 4: Anna, Tom and Sara" is a label and its value: said as written, its commas kept (R3-12).
     if frame in ("planned", "noted") and _LABELLED.match(body):
         return _wrote(body, i)
+    if frame in ("planned", "noted") and re.search(r",\s*(?:he|she|it|they|we|i)\b", body, re.I):
+        #: "nothing, he's my boss" is one remark, not a list to join with "and" (R9-4).
+        return ("has " if first else "it has ") + body
     if frame in ("planned", "noted"):
-        items = [("the " + p if _PLACE_NOUN.match(p) else p) for p in re.split(r",\s*(?:and\s+)?", body) if p]
+        items = [("the " + p if _PLACE_NOUN.match(p) else p) for p in re.split(r",(?!\d)\s*(?:and\s+)?", body) if p]
         return ("has " if first else "it has ") + realise.join_items(items)
     return _wrote(body, i)
 
@@ -2507,7 +2520,10 @@ def _label_names(label: str, view) -> bool:  # noqa: ANN001
 def _section_items(bodies: list[str]) -> str:
     if any(_FINITE.search(b) for b in bodies) or len(bodies) == 1 and len(bodies[0].split()) > 8:
         return _join(bodies, True)
-    pieces = [p for b in bodies for p in re.split(r",\s*(?:and\s+)?", b) if p]
+    if any(re.search(r",\s*(?:he|she|it|they|we|i)\b", b, re.I) for b in bodies):
+        #: "nothing, he's my boss" is one remark, not a list to join with "and" (R9-4).
+        return "; ".join(b.strip().rstrip(".") for b in bodies)
+    pieces = [p for b in bodies for p in re.split(r",(?!\d)\s*(?:and\s+)?", b) if p]
     # "Anna, Tom and Sara" is already a list: split on its commas and joined again it read "Anna and Tom and Sara" (R3-12).
     if any(re.search(r"\band\b", p) for p in pieces):
         return "; ".join(b.strip().rstrip(".") for b in bodies)
@@ -3149,6 +3165,11 @@ def _sorted(own: list[Fact], heads: list[Fact]) -> _Sorted:
             out.labelled += 1
         else:
             out.plain.append(f)
+    stems = _SUBJECT_STEMS.get()
+    #: A note that holds the subject in one sentence is told by that sentence, not by its first ("Skipped meditation", R9-2).
+    held = [f for f in out.plain if any(composer._holds(st, set(f.sentence.words)) for st in stems)]
+    if held and not any(composer._holds(st, own[0].view.title_words | own[0].view.filed_words) for st in stems if own):
+        out.plain = held + [f for f in out.plain if f not in held]
     return out
 
 
@@ -3252,7 +3273,7 @@ def _split_days(content: str) -> tuple[dict[str, list[str]], bool]:
         day = _DAY_LINE.match(line)
         if day and _TRAINING.match(day.group(1)):
             held = items.setdefault(day.group(1).strip(), [])
-            held += [p.strip() for p in re.split(r",\s*(?:and\s+)?|\s+and\s+", day.group(2)) if p.strip() and p.strip() not in held]
+            held += [p.strip() for p in re.split(r",(?!\d)\s*(?:and\s+)?|\s+and\s+", day.group(2)) if p.strip() and p.strip() not in held]
         rest = rest or bool(_REST.match(line))
     return items, rest
 
@@ -3699,9 +3720,42 @@ def _opening(fact: Fact) -> bool:
     return bool(fact.view.sentences) and fact.sentence is fact.view.sentences[0]
 
 
+#: The verb a question asks with ("how do I feed the starter", "who teaches Spanish", "what did Hannah
+#: think of it"): the sentence that holds it answers, before one that only names the subject (R9-2).
+_ASK_VERB = re.compile(
+    r"\b(?:how (?:do|can|should|would|did) (?:i|we|you|they)|what (?:did|do|does|should) (?:i |we |you |they |he |she |\w+ )?|who(?:m)?|how to) *([a-z]{3,})\b", re.I)
+#: "how much flour for the starter": the thing asked for is the attribute.
+_ASK_NOUN = re.compile(r"\bhow (?:much|many) ([a-z]{3,}) (?:for|of|do|does|did|is|are)\b", re.I)
+#: "my last run", "the last one": the newest by the sentence's own day, as "latest" asks.
+_LAST_ONE = re.compile(r"\b(?:my|the) last (?!week|month|year|night|weekend|time|few)\w+", re.I)
+_NOT_AN_ASK_VERB = frozenset("is are was were have has had get got put find know need want mention mentions say said write wrote the my and for did does".split())
+#: What a note says in place of the ask's verb.
+_ASK_VERB_SAYS = {
+    "think": "think thought loved liked hated enjoyed disliked", "teach": "teach teacher taught", "love": "love loved liked",
+    "like": "like liked loved", "eat": "eat eats ate", "live": "live lives lived", "feed": "feed fed",
+}
+
+
+def _ask_stems(question: str) -> set[str]:
+    """The stems that say the question's own verb: empty when it has none."""
+    found = _ASK_VERB.search(clean(question)) or _ASK_NOUN.search(clean(question))
+    verb = (found.group(1) if found else "").lower()
+    if not verb or verb in _NOT_AN_ASK_VERB:
+        return set()
+    stem = composer._stem(verb)  # noqa: SLF001
+    return {stem, *(composer._stem(w) for w in _ASK_VERB_SAYS.get(stem, "").split())}  # noqa: SLF001
+
+
+def _sentence_day(fact: Fact) -> date:
+    """The latest day the sentence names itself ("ran 12 km on 8 November"), else the day it was written."""
+    days = [f.value.date() if isinstance(f.value, datetime) else f.value for f in _spans(fact.sentence.text, fact.view.written) if f.kind in ("date", "datetime")]
+    return max(days) if days else (fact.view.written or date.min)
+
+
 def _best(facts: list[Fact], question: str, cue: re.Pattern | None = None) -> Fact | None:
     #: Without the asking words: "what day did I run 8 km" is not about a "day".
     stems = set(_subject(question))
+    asks = _ask_stems(question) if not _LATEST_ASK.search(question) else set()
     if isinstance(cue, _MoneyCue):
         #: "what does the hotel cost" is about the hotel; "cost" is the ask.
         stems -= {composer._stem(w) for w in ("cost", "price", "pay", "paid", "charge", "much")}  # noqa: SLF001
@@ -3714,7 +3768,7 @@ def _best(facts: list[Fact], question: str, cue: re.Pattern | None = None) -> Fa
 
     figures = composer_answer.figures_of(question)
     asks_feeling = bool(_FEELING_ASK.search(question))
-    latest = bool(_LATEST_ASK.search(question))
+    latest = bool(_LATEST_ASK.search(question) or _LAST_ONE.search(question))
     did_ask = bool(_WHEN_DID.match(clean(question)))
     subject_words = list(composer.subject_terms(clean(question)))
     names_a_thing = bool(_NAMES_A_THING.match(clean(question)))
@@ -3738,6 +3792,9 @@ def _best(facts: list[Fact], question: str, cue: re.Pattern | None = None) -> Fa
         #: Between sources that say it equally well, the one the search ranked first.
         #: Of the notes that fit the subject equally, the newest one for a "latest" ask.
         newest = (f.view.written or date.min) if latest else date.min
+        newest_own = _sentence_day(f) if latest else date.min
+        #: The sentence that holds the ask's own verb, in a note that holds the rest of the subject (R9-2).
+        says_it = bool(asks and any(composer._holds(st, words) for st in asks) and all(composer._holds(st, f.view.words | f.view.title_words | f.view.filed_words) for st in stems - asks))
         #: "when did I bake banana bread": the sentence that says the whole
         #: doing leads, whatever else the note holds (audit 1031 C16).
         acts = bool(did_ask and stems and all(composer._holds(st, set(f.sentence.words)) for st in stems))
@@ -3752,7 +3809,9 @@ def _best(facts: list[Fact], question: str, cue: re.Pattern | None = None) -> Fa
         doing_now = _says_now(going_on, f)
         #: What a titled note is leads with the line it opens on; 
         opens = titled and _opening(f)
-        return (not asked_back, doing_now, acts, _cued(cue, f.sentence.text), _ahead_if(now_ask, f), not (latest and f.sentence.kind in {"item", "task"}), id(f.view) not in old, _label_asked(f.label, question), titled, opens, hits, newest, own, asks_feeling and _feeling(f.sentence.text), same_figure, -f.view.rank, -f.sentence.order)
+        #: "what is Doug", "who is Marek": the sentence that says what it is ("is called Doug", "Builder is Marek", R9-3).
+        names_it = bool(names_a_thing and subject_words and re.search(rf"\b(?:is|are|was) (?:called |named |known as )?(?:the )?{re.escape(' '.join(subject_words))}\b", f.sentence.text, re.I))
+        return (not asked_back, not _in_a_place(f.sentence.text, stems), doing_now, acts, _cued(cue, f.sentence.text), _ahead_if(now_ask, f), not (latest and f.sentence.kind in {"item", "task"}), id(f.view) not in old, _label_asked(f.label, question), titled, opens, names_it, says_it, hits, newest, newest_own, own, asks_feeling and _feeling(f.sentence.text), same_figure, -f.view.rank, -f.sentence.order)
 
     return max(facts, key=rank) if facts else None
 
@@ -3788,9 +3847,22 @@ def _from_name(lead: Fact, body: str, today: date) -> str:
     return f"From {name}{day}: {body}."
 
 
+_PRONOUN_SAID = re.compile(r"(?:he|she|it)\s+(?=(?:is|was|will|has|had|[a-z]{3,}s)\b)(?!also\b|then\b|still\b)", re.I)
+
+
+def _with_its_name(lead: Fact) -> str:
+    """"He is coming Wednesday" in the note titled "Plumber" is "Plumber is coming Wednesday": a line
+    that opens on a pronoun has lost its referent when it leads the answer (R9-6)."""
+    body, title = lead.body, str(lead.view.title or "").strip()
+    found = _PRONOUN_SAID.match(body)
+    if found and lead.view.titled and 0 < len(title.split()) <= 3 and not title.endswith("…"):
+        return f"{title} {body[found.end():]}"
+    return body
+
+
 def _say_fact(out: _Out, lead: Fact, today: date, question: str) -> None:
-    body = lead.body
-    items = [i.strip() for i in re.split(r",\s*", body) if i.strip()]
+    body = _with_its_name(lead)
+    items = [i.strip() for i in re.split(r",(?!\d)\s*", body) if i.strip()]
     if lead.label and len(items) >= 3 and all(len(i.split()) <= 4 for i in items):
         _say_list(out, lead, items, today, question)
     elif _from_name(lead, body, today):
@@ -4558,6 +4630,9 @@ def _exact_lookup(out: _Out, asked: str, question: str, views: list, today: date
     return bool(computed and composer_lists.answer(out, computed, asked, views, today))
 
 
+_DENIAL = re.compile(r"(?:I found (?:no|nothing)|None of (?:your|these) notes|Your notes do not|There's nothing in your notes|No note )", re.I)
+
+
 @_isolated
 def exact(question: str, notes: list[dict], *, today: date | None = None) -> dict | None:
     """The engine's exact answer to a question over `notes`, as an answer
@@ -4573,6 +4648,9 @@ def exact(question: str, notes: list[dict], *, today: date | None = None) -> dic
     views, _ = _scope(question, asked, notes, today, "natural", 0, None)
     out = _Out()
     if not views or not _exact_lookup(out, asked, question, views, today):
+        return None
+    #: A "found nothing" is not a fact a model must keep: it is handed the notes instead (R9-13).
+    if out.lines and _DENIAL.match(out.lines[0]):
         return None
     out.closing, out.offer, out.next, out.insights = [], None, [], []
     return _result(out, "fact", asked)
@@ -4804,8 +4882,33 @@ def _defining_first(asked: str, members: list) -> list:
     best = max(rank.values())
     if not best:
         return members
-    lead = next(v for v in members if rank[id(v)] == best)
-    return [lead] + [v for v in members if v is not lead]
+    #: Of notes titled alike ("Kitchen renovation", "Kitchen quotes"), the fuller one leads (R9-3).
+    lead = max((v for v in members if rank[id(v)] == best), key=lambda v: len(v.sentences))
+    rest = [v for v in members if v is not lead]
+    #: A note that says the subject only as a place ("in the kitchen drawer") is a mention, told last (R9-3).
+    place = {id(v) for v in rest if not rank[id(v)] and _only_a_place(v, terms)}
+    return [lead] + sorted((v for v in rest if id(v) not in place), key=lambda v: -rank[id(v)]) + [v for v in rest if id(v) in place]
+
+
+_PLACE_BEFORE = re.compile(r"\b(?:in|under|on|near|from|to|inside|behind|at|by) (?:the |my |our )?(?:\w+ )?$", re.I)
+
+
+def _in_a_place(text: str, stems: set[str]) -> bool:
+    """Whether every place `text` says a subject word is a place something is in ("the card in the kitchen drawer")."""
+    seen = False
+    for m in re.finditer(r"[A-Za-z']+", text):
+        if composer._stem(m.group(0).lower()) in stems:  # noqa: SLF001
+            seen = True
+            if not _PLACE_BEFORE.search(text[: m.start()]) or not re.match(r"\s+(?:drawer|sink|cupboard|shelf|table|door|window|floor|wall|corner)\b", text[m.end():], re.I):
+                return False
+    return seen
+
+
+def _only_a_place(view, terms: list[str]) -> bool:  # noqa: ANN001
+    """Whether `view` says the subject only as a place (R9-3)."""
+    stems = {composer._stem(t) for t in terms}  # noqa: SLF001
+    held = [s.text for s in view.sentences if any(composer._stem(w.lower()) in stems for w in re.findall(r"[A-Za-z']+", s.text))]  # noqa: SLF001
+    return bool(held) and all(_in_a_place(t, stems) for t in held)
 
 
 def _corrected_first(asked: str, members: list) -> list:
@@ -5337,7 +5440,7 @@ def _fact_offer(out: _Out, question: str = "") -> dict | None:
     listed = re.search(r"^\w+, from [^:]+: (.+)\.$", out.lines[0]) if out.lines else None
     if not listed:
         return None
-    first = re.split(r",\s*| and ", listed.group(1))[0].strip()
+    first = re.split(r",(?!\d)\s*| and ", listed.group(1))[0].strip()
     if not first[:1].islower() or first.split()[0].lower() in _NAMES.get():
         #: "Remind you to try Sara?": a name is not a thing to try (C3).
         return None
@@ -5617,8 +5720,8 @@ def _next_asks(kind: str, question: str, rows: list[dict]) -> list[str]:
     members = [v for v in views if v.id in cited]
     topic = _topic(question, members) if members else ""
     if topic and topic != "this" and len(topic) <= 40 and not question_noise.filler_subject(topic) and query_understanding.is_chip_subject(topic):
-        topic = _chip_subject(topic, question)
-        said += _topic_chips(kind, topic)
+        topic = composer_chip_subject.clean(_chip_subject(topic, question), views, question)
+        said += _topic_chips(kind, topic) if topic else []
     return _fresh_chips(said, question)[:3]
 
 
@@ -5631,9 +5734,11 @@ def _fresh_chips(said: list[str], question: str) -> list[str]:
     frames: set[str] = set()
     out = []
     names = _NAMES.get()
+    views = list(_VIEWS.get())
     for q in said:
+        q = composer_chip_subject.fix_chip(q, views, question)
         q = re.sub(r"\b[a-z]+\b", lambda m: m.group(0).capitalize() if m.group(0) in names else m.group(0), q)
-        if _ask_key(q) not in seen and _chip_frame(q) not in frames:
+        if q and _ask_key(q) not in seen and _chip_frame(q) not in frames:
             seen.add(_ask_key(q))
             frames.add(_chip_frame(q))
             out.append(q)

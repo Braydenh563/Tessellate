@@ -489,12 +489,14 @@ def _versus_answer(out: _Answer, versus) -> None:  # noqa: ANN001
             out.t("para" if i == 0 else "line").item(s, []).cite(view, again=True)
 
 
-def _versus_lead(out: _Answer, question: str, own: list[list[NoteView]]) -> bool:
+def _versus_lead(out: _Answer, question: str, own: list[list[NoteView]], sides: tuple[str, ...] = ()) -> bool:
     """"which is cheaper, A or B": both figures (or days) first."""
     versus = composer_versus.two(question, own, out.today)
     if versus:
         composer_versus.write(out, versus)
-    return versus is not None
+        return True
+    #: One note that has a line for each side ("Japan: £2,400 ... Portugal: £1,100"), R9-10.
+    return composer_versus.named_two(out, question, sides, list(out.views.values()))
 
 
 def _said_once(only: list[list], stems: list[set[str]]) -> list[list]:
@@ -528,7 +530,7 @@ def _compare(out: _Answer, sides: tuple[str, ...], views: list[NoteView], meanin
     only, both = _compare_shares(stems, own, picks)
     if not any(only):
         return False
-    if not _length_lead(out, question, own) and not _versus_lead(out, question, own):
+    if not _length_lead(out, question, own) and not _versus_lead(out, question, own, sides):
         _compare_lead(out, sides, [len({s.note_id for s in side}) for side in only])
     #: The lead names only what follows (probe P15): no "Here is what
     #: each says." before the headings that say it.

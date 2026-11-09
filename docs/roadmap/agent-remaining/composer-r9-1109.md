@@ -67,3 +67,7 @@ Severity: high means a wrong or false answer, or a lost act. Med means the wrong
 - Real model output: only the fake transport ran. Model-on findings come from the prompt.
 - UI rendering of chips and citations (D25), Stop, regenerate.
 - Retrieval by meaning: embeddings were off in the model-off runs. Some misses (R9-3 "marek said...", the cat) may change with search by meaning on.
+
+## Status (agent c9)
+
+Fixed 79602b72f: R9-1, R9-4, R9-5, R9-13, and the first parts of R9-2, 3, 8, 9 (verb in the lead, defining note, everyday agenda phrasings, which is cheaper, tick the first one). Measured on 292 harness turns: misquotes 18 to 0, bad-chip turns 36 to 5, split figures 3 to 0, titles read as dates 21 to 0. Open: R9-6 (partly), 7, 10, 11, 12, 14 to 17 and the rest of 2, 3, 9; see `c9-1109.md`.

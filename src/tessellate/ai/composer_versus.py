@@ -276,6 +276,43 @@ def two(question: str, sides: list[list], today: date) -> Versus | None:
     return _versus(key, rows)
 
 
+def named_two(out, question: str, names: tuple[str, ...], views: list) -> bool:  # noqa: ANN001
+    """"Which is cheaper, Japan or Portugal" when one note holds a line for each ("Japan: £2,400 ...
+    Portugal: £1,100 ..."): the figure in the line that names the side, said under the side's own
+    name, never the figure a note named for the side leads with (R9-10). False when a side has none."""
+    rel = relation(_asked_word(question), False)
+    if rel is None or rel[0] != "money" or len(names) != 2:
+        return False
+    rows: list[tuple[float, str, str, str, object]] = []
+    for name in names:
+        word = re.compile(rf"\b{re.escape(name.split()[-1])}\b", re.I)
+        found = None
+        for view in views:
+            note, facts = _facts(view)
+            content = str(note.get("content") or "")
+            for fact in facts:
+                if fact.kind == "money" and fact.attrs.get("currency") in _SHOWN_AS and word.search(_sentence(content, fact.start)):
+                    found = (float(fact.attrs["value"]), fact.text, fact.attrs["currency"], name, view)
+                    break
+            if found:
+                break
+        if not found:
+            return False
+        rows.append(found)
+    if rows[0][2] != rows[1][2] or rows[0][0] == rows[1][0]:
+        return False
+    rows.sort(key=lambda r: r[0], reverse=not rel[1])
+    (_a, shown_a, _c, name_a, view_a), (_b, shown_b, _d, name_b, view_b) = rows
+    verb = SAID[rel[2]].strip(" :")
+    out.parts.append(("template", f"{name_a[:1].upper() + name_a[1:]} {verb}: "))
+    out.m(shown_a)
+    out.parts.append(("template", " against "))
+    out.m(shown_b)
+    out.parts.append(("template", f" for {name_b}"))
+    out.cite(view_a, again=True)
+    return True
+
+
 def _read_which(question: str):  # noqa: ANN202
     """`(subject words, relation)` of a "which ... is sooner" question, or
     None when it is not one or names nothing to rank."""
