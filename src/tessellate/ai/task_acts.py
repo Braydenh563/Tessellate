@@ -103,6 +103,39 @@ def read_add(text: str, reminder) -> dict | None:  # noqa: ANN001
     return {**found, "task": True, "asked": text, **({"on_list": words} if _ON_LIST.search(text) and not tail else {})}
 
 
+#: "make a checklist note of milk, eggs and bread": the kind of list, then what it holds.
+_CHECKLIST_NOTE = re.compile(
+    r"^(?:make|create|start|write|build|set up|add)(?: me)? (?:a |an |the )?(?:new )?"
+    r"(?P<kind>check-?list|to-?do list|todo list|shopping list|grocery list|packing list)(?: note)?"
+    r"(?:\s+(?:called|named|titled)\s+(?P<name>.+?))?\s*(?P<join>of|for|with|containing|including|:)\s*(?P<items>.+)$",
+    re.IGNORECASE,
+)
+
+
+def _checklist_items(said: str) -> list[str]:
+    """The items of "milk, eggs and bread", capitalised and without repeats."""
+    parts = [re.sub(r"^(?:and|&)\s+", "", part.strip(), flags=re.IGNORECASE) for part in re.split(r",|;|\band\b|&", said)]
+    parts = [_unquote(p) for p in parts if p.strip()]
+    return list(dict.fromkeys(p[:1].upper() + p[1:] for p in parts if p))
+
+
+_CHECKLIST_TITLES = {"checklist": "Checklist", "todolist": "Todo list"}
+
+
+def read_checklist_note(text: str) -> dict | None:
+    """A new note that is a checklist of the items named, as the `new_note` act
+    (composer-r8): "make a checklist note of milk, eggs and bread". "for" counts
+    only for two or more items, so "a checklist for my trip" is not a list of one."""
+    found = _CHECKLIST_NOTE.match(" ".join(str(text or "").split()).rstrip(".!"))
+    items = _checklist_items(found.group("items")) if found else []
+    if not items or len(items) > 30 or any(len(i.split()) > 6 for i in items) or (found.group("join").lower() == "for" and len(items) < 2):
+        return None
+    kind = found.group("kind").lower().replace("-", "").replace(" ", "")
+    title = (found.group("name") or _CHECKLIST_TITLES.get(kind) or kind.capitalize()).strip()
+    title = title[:1].upper() + title[1:]
+    return {"intent": "new_note", "content": f"# {title}\n\n" + "\n".join(f"- [ ] {i}" for i in items)}
+
+
 def _complete_rest(text: str) -> str | None:
     """What follows the completing verb ("mark X done", "tick off X", "tick X
     off", "complete X"), or None when the sentence is none of those."""

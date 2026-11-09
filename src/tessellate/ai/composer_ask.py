@@ -698,15 +698,26 @@ def compare_sides(question: str) -> tuple[str, ...] | None:
 NOTE_WORDS: contextvars.ContextVar[frozenset] = contextvars.ContextVar("composer_note_words", default=frozenset())
 
 
+#: The notes' own text, lower case, for `_lower_pair` only: a pair one note says as a phrase is one subject.
+NOTE_TEXTS: contextvars.ContextVar[tuple] = contextvars.ContextVar("composer_note_texts", default=())
+
+
+def _said_together(a: str, b: str) -> bool:
+    """Whether some note says "a and b" (or "a & b", "a, b") as one phrase: "salt and pepper" in a recipe."""
+    phrase = re.compile(rf"\b{re.escape(a)}\s*(?:and|&|,)\s*{re.escape(b)}\b")
+    return any(phrase.search(text) for text in NOTE_TEXTS.get())
+
+
 def _lower_pair(text: str) -> tuple[str, ...] | None:
     """"tom and sara": two lower-case words the notes hold, neither an everyday
-    one ("salt and pepper" with no notes about them stays one thing)."""
+    one. "salt and pepper" with no notes about them stays one thing, and so does
+    a pair a note says together as a phrase."""
     pair = composer_tables.LOWER_PAIR.match(text.strip())
     known = _KNOWN.get() | NOTE_WORDS.get()
     if not pair or not known:
         return None
     sides = (pair.group("a"), pair.group("b"))
-    if all(w.lower() in known and w.lower() not in common_words.WORDS and subject_terms(w) for w in sides):
+    if all(w.lower() in known and w.lower() not in common_words.WORDS and subject_terms(w) for w in sides) and not _said_together(*(w.lower() for w in sides)):
         return sides
     return None
 

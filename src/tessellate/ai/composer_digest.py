@@ -4961,9 +4961,11 @@ def answer(question: str, notes: list[dict], **kwargs) -> dict | None:  # noqa: 
     the notes' words set, as `compose` does: "tom and sara" is two subjects
     only when the notes hold both words."""
     owned = composer_ask.NOTE_WORDS.set(composer._note_words(notes))  # noqa: SLF001
+    texts = composer_ask.NOTE_TEXTS.set(tuple(f"{n.get('title') or ''} {n.get('content') or ''}".lower() for n in notes or ()))
     try:
         return _answer(question, notes, **kwargs)
     finally:
+        composer_ask.NOTE_TEXTS.reset(texts)
         composer_ask.NOTE_WORDS.reset(owned)
 
 

@@ -88,7 +88,6 @@ def test_the_brow_moves_with_the_look(spr: sp.SpriteSet) -> None:
 @pytest.mark.parametrize(("kind", "inner_higher"), [("sad", True), ("worried", True), ("miffed", False), ("focus", False)])
 def test_brow_ends_tilt_with_the_feeling(spr: sp.SpriteSet, kind: str, inner_higher: bool) -> None:
     pts = _brow(spr, kind, -1)  # the figure's left eye
-    _m, (cx, _cy, k) = _marks(spr, kind)
     mid = np.median(pts[:, 1])  # the left eye's inner end is toward the middle of the face: the greater column
     inner = pts[pts[:, 1] > mid][:, 0].mean()
     outer = pts[pts[:, 1] <= mid][:, 0].mean()
