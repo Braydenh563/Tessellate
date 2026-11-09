@@ -116,16 +116,47 @@ def _load_time_blocks(text: str):
             i += 1
 
 
+def _template_only_classes(name: str) -> set[str]:
+    """Classes the surface's template uses that the live page (everything outside every template) never does."""
+    _, body = _template(name)
+    live = re.sub(r"<template data-surface.*?</template>", "", INDEX, flags=re.S)
+    def classes(markup):
+        return {c for v in re.findall(r'\bclass="([^"]*)"', markup) for c in v.split()}
+    return classes(body) - classes(live)
+
+
+def _top_level_functions(text: str) -> dict[str, str]:
+    return {m.group(1): m.group(2) for m in re.finditer(r"^(?:async )?function (\w+)\([^)]*\) \{\n(.*?)^\}", text, re.S | re.M)}
+
+
+def _selector_hits(block: str, ids: set[str], classes: set[str]) -> list[str]:
+    """Ids named in quotes, and classes or ids inside the selector strings of `querySelector(All)`."""
+    hits = {i for i in re.findall(r"""["'#]([\w-]+)["')\s]""", block) if i in ids}
+    for selector in re.findall(r"""querySelector(?:All)?\(\s*(["'`])(.*?)\1""", block):
+        hits |= {c for c in re.findall(r"\.([\w-]+)", selector[1]) if c in classes}
+        hits |= {i for i in re.findall(r"#([\w-]+)", selector[1]) if i in ids}
+    return sorted(hits)
+
+
 @pytest.mark.parametrize("name", SURFACES)
 def test_load_time_wiring_of_the_surface_waits_for_it(name):
+    """A load-time block (and the top-level functions it calls) may not name an id, or select a class,
+    that exists only in the surface's template: the selector finds nothing and the wiring is silently
+    dropped (row 21 review: the board's More menu and colour wells)."""
     _, globs, _, _ = SURFACES[name]
     _, body = _template(name)
     ids = _ids(body)
+    classes = _template_only_classes(name)
     found = []
     for path in _files(globs):
-        for number, head, block in _load_time_blocks(path.read_text(encoding="utf-8")):
-            named = sorted(i for i in re.findall(r"""["'#]([\w-]+)["')\s]""", block) if i in ids)
-            if named and not head.startswith(f'onSurface("{name}"'):
+        text = path.read_text(encoding="utf-8")
+        functions = _top_level_functions(text)
+        for number, head, block in _load_time_blocks(text):
+            if head.startswith(f'onSurface("{name}"'):
+                continue
+            reached = block + "".join(functions.get(f, "") for f in set(re.findall(r"\b(\w+)\(", block)))
+            named = _selector_hits(reached, ids, classes)
+            if named:
                 found.append(f"{path.name}:{number} {named[:3]}")
     assert not found, f"wiring at load reaches the {name} template before it is built: " + "; ".join(found)
 
