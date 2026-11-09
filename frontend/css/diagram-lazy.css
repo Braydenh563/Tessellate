@@ -465,9 +465,51 @@
 
 /* Several blocks picked (R5): the Library's selection bar inside the list's own scroller, pinned at its top. */
 .dgm-selectbar {
+  flex-direction: column;
+  align-items: stretch;
+  flex-wrap: nowrap;
   margin-block: 0 var(--space-2);
-  padding: var(--space-2) var(--space-3);
-  gap: var(--space-2);
+  padding: var(--space-2);
+  gap: var(--space-1);
+}
+
+/* One head line (the count, Select all, Clear) over one row of icon buttons, Delete last (1708). */
+.dgm-selecthead,
+.dgm-selecttools {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.dgm-selecthead {
+  justify-content: space-between;
+  font-size: var(--text-sm);
+}
+
+.dgm-selectbar .dgm-selecthead button,
+.dgm-panehead .dgm-head-all {
+  block-size: 1.75rem;
+  min-block-size: 0;
+  padding-inline: var(--space-2);
+  font-size: var(--text-xs);
+}
+
+.dgm-selectbar .dgm-selecttools button {
+  inline-size: 1.75rem;
+  block-size: 1.75rem;
+  padding: 0;
+}
+
+.dgm-selectbar .dgm-selecttools button.danger {
+  margin-inline-start: auto;
+}
+
+.dgm-head-all {
+  margin-inline-start: auto;
+}
+
+.dgm-head-all.hidden {
+  display: none;
 }
 
 .dgm-selectbar.hidden {
@@ -677,11 +719,6 @@
 /* The words show on every row of a list wide enough for them; a tight list (diagram-split.js, under 19rem) and a
    phone keep the arrow, and the chosen row, the pointed-at row and the focused one still show them. */
 .dgm-tight .dgm-connect .ph-text {
-  display: none;
-}
-
-/* The bar's words go the same way where the list is tight or the window narrow: icons, each named by its aria-label. */
-.dgm-tight .dgm-selectbar .ph-text {
   display: none;
 }
 
@@ -1227,7 +1264,6 @@
     order: 1;
   }
 
-  .dgm-selectbar .ph-text,
   .dgm-connect .ph-text {
     display: none;
   }

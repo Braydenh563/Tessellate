@@ -24,31 +24,36 @@
     bar.setAttribute("aria-label", "Actions for the selected blocks");
     const count = h.el("span", "library-selected-count");
     const end = h.el("span", "library-contextbar-end");
-    //: The words fold away where the bar is tight (diagram-lazy.css), so each button is named for a reader.
-    const tool = (label, title, run) => {
-      const button = smallButton(label, title, run);
-      button.setAttribute("aria-label", label.replace(/^ph:\S+ /, ""));
+    //: Icon-only ghost buttons (1708), each named by its aria-label and its tooltip; the words are in the title.
+    const tool = (icon, name, title, run) => {
+      const button = smallButton(`ph:${icon}`, title, run);
+      button.setAttribute("aria-label", name);
       return button;
     };
-    const shapeBtn = tool("ph:diamond Shape", "Give every selected box one shape", () => {
+    const shapeBtn = tool("diamond", "Shape", "Give every selected box one shape", () => {
       const r = shapeBtn.getBoundingClientRect();
       openMenuAtPoint(ops.SHAPES.map((shape) => ({ label: ops.LABEL[shape], run: () => shapeAll(shape) })), "Shape of the selected blocks", r.left, r.bottom, shapeBtn);
     });
     shapeBtn.setAttribute("aria-haspopup", "menu");
     //: Colour (K) is the lazy style sheet over the picked boxes; Connect joins the first picked to the second (1679 slice 10).
-    const colourBtn = tool("ph:palette Colour", "Colour the selected boxes (K)", async () => (await ensureModule("diagramStyle")) ? diagramModel.style.colour(S, h) : say("That did not load."));
-    const connectBtn = tool("ph:arrow-bend-down-right Connect", "Draw an arrow from the first selected block to the second", () => connectTwo());
-    end.append(tool("ph:arrow-counter-clockwise Undo", "Undo", () => S.io.undo()), tool("Done", "Stop selecting", () => show([], S.sel)));
-    bar.append(
-      count,
-      tool("ph:trash Delete", "Delete the selected blocks", () => removeAll()),
-      tool("ph:copy Duplicate", "Copy the selected blocks, keeping the connectors between them", () => copyAll()),
+    const colourBtn = tool("palette", "Colour", "Colour the selected boxes (K)", async () => (await ensureModule("diagramStyle")) ? diagramModel.style.colour(S, h) : say("That did not load."));
+    const connectBtn = tool("arrow-bend-down-right", "Connect", "Draw an arrow from the first selected block to the second", () => connectTwo());
+    //: The head line: the count, then Select all and Clear as text buttons (Undo and Done are the toolbar's and Clear's).
+    const selectAll = smallButton("Select all", "Pick every block (Ctrl+A on the picture)", () => pickAll());
+    const clearBtn = smallButton("Clear", "Drop the pick", () => show([], S.sel));
+    end.append(selectAll, clearBtn);
+    const head = h.el("div", "dgm-selecthead");
+    head.append(count, end);
+    const tools = h.el("div", "dgm-selecttools");
+    tools.append(
+      tool("copy", "Duplicate", "Copy the selected blocks, keeping the connectors between them", () => copyAll()),
       shapeBtn,
       colourBtn,
       connectBtn,
-      tool("ph:stack Box them", "Draw a labelled box around the selected blocks (a group)", () => wrapAll()),
-      end
+      tool("stack", "Box them", "Draw a labelled box around the selected blocks (a group)", () => wrapAll()),
+      Object.assign(tool("trash", "Delete", "Delete the selected blocks", () => removeAll()), { className: "ghost small icon-only danger" })
     );
+    bar.append(head, tools);
     S.pane.prepend(bar);
 
     // --- the pick -----------------------------------------------------------------
@@ -56,7 +61,12 @@
       if (S.picked.size < 2) S.picked.clear();
       bar.classList.toggle("hidden", !S.picked.size);
       count.textContent = `${S.picked.size} selected`;
+      selectAll.disabled = S.picked.size >= keys().length;
+      //: The List head's own Select all (diagram-split.js) shows only while nothing is picked; the bar has its own.
+      S.pane.querySelector(".dgm-head-all")?.classList.toggle("hidden", S.picked.size > 0);
     }
+    const pickAll = () => keys().length && show(keys(), S.sel || keys()[0]);
+    S.pickAll = pickAll;
     //: Makes `list` the pick (fewer than two is no pick) with `primary` as `S.sel`.
     function show(list, primary) {
       S.picked.clear();
@@ -258,7 +268,7 @@
       let run = null;
       if (mod && !event.shiftKey && !event.altKey && low === "d") run = copyAll;
       else if (mod && !event.shiftKey && !event.altKey && low === "f") run = open;
-      else if (mod && !event.altKey && low === "a" && event.target === S.fig && keys().length) run = () => show(keys(), S.sel || keys()[0]);
+      else if (mod && !event.altKey && low === "a" && event.target === S.fig && keys().length) run = S.pickAll;
       else if (!mod && !event.altKey && event.key === "/") run = open;
       else if (!mod && event.key === "Enter" && event.shiftKey && !event.altKey && (inTree || event.target === S.fig)) run = child;
       else if (!mod && event.key === "Enter" && event.altKey && !event.shiftKey && (inTree || event.target === S.fig)) run = sister;

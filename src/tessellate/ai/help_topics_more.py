@@ -3332,7 +3332,7 @@ MORE_TOPICS.extend([
             "The corner bar zooms (Zoom in, Zoom out, Fit), as do Ctrl+wheel and a pinch; "
             "its percentage is typeable and 100% is the drawing's own size; Shift+arrow keys pan. "
             "Shift+click picks a range, Ctrl+click adds one; Escape lets go of the pick; a bar offers Delete, "
-            "Duplicate, Box them, Done; any picked grip moves all. "
+            "Duplicate, Box them, Select all, Clear; any picked grip moves all. "
             "Press or drag a block from the shelf onto the picture to join the nearest box (Add on a phone); long press a block for its menu. "
             "Keys "
             "on a block: arrows walk, Enter renames, N adds a Box, 1 to 9 the other shapes, Shift+N the last one, G adds a group, C or J joins, "

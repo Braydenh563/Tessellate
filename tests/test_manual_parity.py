@@ -508,7 +508,7 @@ def test_the_diagram_multiselect_is_in_the_guide_in_the_controls_words() -> None
     for words in ("Shift+click picks a range", "Ctrl+click adds one", "Duplicate", "Box them", "any picked grip moves all"):
         assert words in body, words
     multi = (FRONTEND / "js" / "diagram-multi.js").read_text(encoding="utf-8")
-    for label in ('"ph:trash Delete"', '"ph:copy Duplicate"', '"ph:diamond Shape"', '"ph:stack Box them"', '"Done"'):
+    for label in ('tool("trash", "Delete"', 'tool("copy", "Duplicate"', 'tool("diamond", "Shape"', 'tool("stack", "Box them"', '"Select all"', '"Clear"'):
         assert label in multi, label
 
 

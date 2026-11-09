@@ -103,7 +103,7 @@ def test_a_new_kind_starts_from_its_header_and_keeps_the_front_matter():
 def test_a_block_can_be_boxed_from_its_menu_and_the_bar_says_box_them():
     assert "Box this block" in BUILDER and "diagramModel.outline.box(S, helpers, key)" in BUILDER
     assert "function box(S, h, key)" in (JS / "diagram-outline.js").read_text(encoding="utf-8")
-    assert "ph:stack Box them" in (JS / "diagram-multi.js").read_text(encoding="utf-8")
+    assert ('tool("stack", "Box them"') in (JS / "diagram-multi.js").read_text(encoding="utf-8")
 
 
 def test_a_sequence_diagram_adds_parallel_critical_and_break_boxes():
