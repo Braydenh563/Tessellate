@@ -601,8 +601,6 @@ def length_wish(question: str) -> str:
 BROAD_NOTES = 5
 
 
-_OWN_VERB = re.compile(r"\b(?:am|is|are|was|were|do|does|did|have|has|had|i)\b", re.I)
-
 
 def _asked_span(question: str, terms: list[str]) -> str:
     """The question's subject as typed, from its first subject word to its

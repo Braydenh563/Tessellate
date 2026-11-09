@@ -5558,15 +5558,15 @@ _OWN_NEXT = frozenset({"web", "more"})
 
 
 #: The verb a question leaves on its subject ("sara like jazz", "tokyo trip cost"): no name to ask about.
+#: The question's own verb in a topic: no chip is built from it (D19, R3-36).
+_OWN_VERB = re.compile(r"\b(?:am|is|are|was|were|do|does|did|have|has|had|i)\b", re.I)
 _TAIL_VERB = re.compile(r"\b(?:likes?|loves?|wants?|needs?|costs?|owes?)\b", re.I)
 
 
 def _topic_chips(kind: str, topic: str) -> list[str]:
     """The chips about `topic`; none when it carries the question's own verb ("book am I
     reading") and so is no name to ask about (R3-36, D19)."""
-    from tessellate.ai import composer_body
-
-    if composer_body._OWN_VERB.search(topic) or _TAIL_VERB.search(topic):  # noqa: SLF001
+    if _OWN_VERB.search(topic) or _TAIL_VERB.search(topic):
         return []
     return [q.format(t=topic) for q in _NEXT_ABOUT.get(kind, _NEXT_ABOUT["fact"])]
 
