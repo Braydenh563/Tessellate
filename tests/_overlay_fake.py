@@ -233,8 +233,11 @@ class FakeWin32:
     def _IsZoomed(self, hwnd: Any) -> int:
         return int(self._win(hwnd).get("zoomed", False))
 
-    def _GetWindowLongW(self, hwnd: Any, _index: int) -> int:
-        return int(self._win(hwnd).get("ex", 0))
+    def _GetWindowLongW(self, hwnd: Any, index: int) -> int:
+        win = self._win(hwnd)
+        if index == -16:  # GWL_STYLE: WS_VISIBLE unless the window is listed hidden, or a test gives `style`
+            return int(win.get("style", 0x10000000 if win.get("visible", True) else 0))
+        return int(win.get("ex", 0))
 
     def _GetWindowTextLengthW(self, hwnd: Any) -> int:
         return len(self._win(hwnd).get("title", "x"))

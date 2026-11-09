@@ -734,9 +734,16 @@ def place_physical(window: Any, box: tuple[int, int, int, int]) -> bool:
         return False
 
 
+#: The newest place asked of each window handle. A read-back that finds the window elsewhere re-sets it only while
+#: its own ask is still this one: two asks in flight (the menu's first size, then its measured one) each re-set the
+#: window to their own place when they saw the other's, four flips in 0.6 s (INBOX 1716).
+_WANTED: dict[int, tuple[int, int, int, int]] = {}
+
+
 def _read_back(handle: int, want: tuple[int, int, int, int], dpi: int, again: bool = False) -> None:
     """Read the window's place back half a second on, on a listed thread (the
     move is posted, so it lands a moment later)."""
+    _WANTED[handle] = want
 
     def later() -> None:
         time.sleep(0.5)
@@ -756,7 +763,7 @@ def _log_placed(handle: int, want: tuple[int, int, int, int], dpi: int, again: b
         ctypes.windll.user32.GetWindowRect(handle, ctypes.byref(box))
         got = (box.left, box.top, box.right - box.left, box.bottom - box.top)
         logger.info("desk companion: placed at %s, asked %s, dpi %s, held: %s", got, want, dpi, got == want)
-        if again and got != want:
+        if again and got != want and _WANTED.get(handle, want) == want:
             ctypes.windll.user32.SetWindowPos(handle, 0, *want, (SWP_PLACE & ~0x0040) | 0x0004)
             _read_back(handle, want, dpi)
     except Exception:  # noqa: BLE001 - a log line, never worth a failure

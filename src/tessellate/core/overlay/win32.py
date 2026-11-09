@@ -84,6 +84,9 @@ IDC_ARROW = 32512
 #: The diagonal resize cursors: top left to bottom right, and bottom left to top right.
 IDC_SIZENWSE, IDC_SIZENESW = 32642, 32643
 GWL_EXSTYLE = -20
+GWL_STYLE = -16
+WS_VISIBLE = 0x10000000
+WS_CHILD = 0x40000000
 WS_EX_TRANSPARENT = 0x00000020
 #: MonitorFromPoint: the nearest monitor when the point is on none.
 MONITOR_DEFAULTTONEAREST = 2
@@ -650,13 +653,23 @@ def _alt_tab_listed(w: Any, hwnd: Any) -> bool:
     return True
 
 
+def _shown(w: Any, hwnd: Any) -> bool:
+    """Visible by IsWindowVisible, or by the window's own WS_VISIBLE style read directly (a top-level window is shown
+    exactly when that bit is set, so the second read keeps one odd answer from the first from hiding a real window)."""
+    if w.user32.IsWindowVisible(hwnd):
+        return True
+    style = int(w.user32.GetWindowLongW(hwnd, GWL_STYLE)) & 0xFFFFFFFF
+    return bool(style & WS_VISIBLE) and not style & WS_CHILD
+
+
 def _unlisted(w: Any, hwnd: Any, ignore: Any) -> str | None:
     """Why a window is not listed: not visible, minimised, cloaked (another desktop, a suspended store app) or
     our own overlay; None when it is listed."""
     if hwnd == ignore:
         return "own overlay"
-    if not w.user32.IsWindowVisible(hwnd):
-        return "invisible"
+    if not _shown(w, hwnd):
+        # A hidden window the user is typing in cannot be hidden: say so in the log rather than hide the doubt (INBOX 1716).
+        return "invisible, yet foreground" if int(w.user32.GetForegroundWindow() or 0) == int(hwnd) else "invisible"
     if w.user32.IsIconic(hwnd):
         return "minimised"
     if _cloaked(w, hwnd):
