@@ -573,8 +573,13 @@ def _compare_side(out: _Answer, label: str, side: list, side_terms) -> None:  # 
     if not side:
         out.t("line").t("side_none")
         return
+    previous = None
     for s in side:
-        out.t("line").item(s, side_terms).cite(out.views[s.note_id], again=True)
+        out.t("line").item(s, side_terms)
+        if s.note_id != previous:
+            #: The note is named where its lines begin, not after each of them (bt-compcomp-1109 item 6).
+            out.cite(out.views[s.note_id], again=True)
+        previous = s.note_id
 
 
 #: "briefly", "in short", "quick": the lead note alone. "in detail",
@@ -993,9 +998,23 @@ def _days_named(view: NoteView, today: date, tense: str) -> list[tuple[date, int
         day = composer_versus.fact_day(fact, today, tense) if ahead else fact.when[0]
         if ahead and told_as_past(str(note.get("content") or ""), fact.start):
             continue
+        if _a_schedule_day(str(note.get("content") or ""), fact):
+            continue
         if day >= today if ahead else day <= today:
             dated.append((day, fact.start))
     return dated
+
+
+def _a_schedule_day(content: str, fact) -> bool:  # noqa: ANN001
+    """A weekday of a recurring schedule, said alone, is a habit and not a day that falls due (item 8)."""
+    if fact.text.strip().lower() not in _WEEKDAY_WORDS:
+        return False
+    start = max(content.rfind(m, 0, fact.start) for m in (". ", "! ", "? ", "\n")) + 1
+    stops = [i for i in (content.find(m, fact.start) for m in (". ", "! ", "? ", "\n")) if i >= 0]
+    return rec.recurring_schedule(content[start: min(stops) if stops else len(content)])
+
+
+_WEEKDAY_WORDS = frozenset("monday tuesday wednesday thursday friday saturday sunday".split())
 
 
 def told_as_past(content: str, at: int) -> bool:

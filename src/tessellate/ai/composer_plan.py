@@ -306,6 +306,12 @@ _DAYS_CACHE: dict[tuple, tuple[tuple[date, str], ...]] = {}
 _CACHE_MAX = 1200
 
 
+def _not_due(sentence: str, title: str) -> bool:
+    """A day gone ("Wednesday bench 60kg." in a gym log, E20) or a habit ("Gym on Monday, Wednesday and Friday",
+    bt-compcomp-1109 item 8): neither is a day that falls due."""
+    return bool(recognise.logged_day(sentence, title) or recognise.recurring_schedule(sentence))
+
+
 def _note_days(note: dict, now: datetime) -> tuple[tuple[date, str], ...]:
     content = str(note.get("content") or "")
     anchor = _anchor(note, now)
@@ -316,8 +322,8 @@ def _note_days(note: dict, now: datetime) -> tuple[tuple[date, str], ...]:
     found: list[tuple[date, str]] = []
     title = study.title_of(content)
     for sentence in _dated_lines(content):
-        if recognise.logged_day(sentence, title):
-            continue  # "Wednesday bench 60kg." in a gym log: a day gone, not one due (E20)
+        if _not_due(sentence, title):
+            continue
         if recognise.told_as_past(sentence) and not re.search(r"\d{4}", sentence):
             #: "Slept badly on Tuesday." happened; its day is never ahead (Z26).
             continue

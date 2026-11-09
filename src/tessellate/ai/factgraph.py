@@ -32,6 +32,8 @@ from tessellate.ai import recognise
 from tessellate.ai import when as when_words
 from tessellate.core import clock
 
+_WEEKDAY_WORDS = frozenset("monday tuesday wednesday thursday friday saturday sunday mon tue tues wed thu thur thurs fri sat sun".split())
+
 KINDS = (
     "event", "quantity", "money", "date", "duration", "entity", "list_item", "check_item",
     "decision", "preference", "plan", "question", "link", "quote", "topic",
@@ -380,7 +382,11 @@ class _SentenceReader:
 
     def dates(self) -> None:
         # dates first: their spans are not quantities
-        for s, e, phrase in when_words.find(self.sentence):
+        found = when_words.find(self.sentence)
+        for i, (s, e, phrase) in enumerate(found):
+            after = found[i + 1] if i + 1 < len(found) else None
+            if after and after[0] - e in (1, 2) and phrase.lower().removeprefix("on ") in _WEEKDAY_WORDS and after[2][:1].isdigit() and self.sentence[e:after[0]] in (" ", ", "):
+                continue  # "Monday 16 November": the date names the day, the weekday beside it is no second one (bt-compcomp item 1)
             resolved = _date_value(phrase, self.anchor or self.written, self.tense)
             self.add("date", s, e, {"phrase": phrase, "resolved": resolved[0].isoformat() if resolved else None,
                                     "through": resolved[1].isoformat() if resolved else None,

@@ -2705,6 +2705,17 @@ def set_for_later(sentence: str) -> bool:
     return bool(_ARRANGED.search(sentence or "")) and dated_sentence(sentence)
 
 
+_SCHEDULE_DAY = re.compile(r"\b(?:mon|tues|wednes|thurs|fri|satur|sun)day", re.I)
+_SCHEDULE_EVERY = re.compile(r"\bevery (?:other )?(?:week|day|month|(?:mon|tues|wednes|thurs|fri|satur|sun)day)|\b(?:mon|tues|wednes|thurs|fri|satur|sun)days\b", re.I)
+
+
+def recurring_schedule(sentence: str) -> bool:
+    """Whether a sentence is a habit, not a day that falls due: "Gym on Monday, Wednesday and Friday at 7am",
+    "every Tuesday", "Mondays" (bt-compcomp-1109 item 8). Only a bounded slice is read."""
+    text = (sentence or "")[:2000]
+    return len(_SCHEDULE_DAY.findall(text)) > 1 or bool(_SCHEDULE_EVERY.search(text))
+
+
 def told_as_past(sentence: str) -> bool:
     """Whether a sentence tells of something that happened ("Slept badly on
     Tuesday.", "Went to the gym on Monday"), not a thing set for its day
@@ -3809,7 +3820,9 @@ _SCORE = lazy_compile(r"\b\d+(?:\.\d+)?\s?(?:/\s?(?:5|10|20|100)\b|out of \d+|st
 
 
 def says_shape(shape: str, text: str) -> bool:
-    """Whether `text` holds a "money" amount or a "score" ("8/10", "4 stars")."""
+    """Whether `text` holds a "money" amount, a "score" ("8/10", "4 stars") or a "schedule" (a recurring habit)."""
+    if shape == "schedule":
+        return recurring_schedule(text)  # "Gym on Monday, Wednesday and Friday at 7am" is a schedule (bt-compcomp-1109 item 11)
     pattern = {"money": _MONEY, "score": _SCORE}.get(shape)
     return bool(pattern and pattern.search(text or ""))
 
