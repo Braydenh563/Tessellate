@@ -2382,6 +2382,9 @@ _ITS_NOUNS = frozenset(
 )
 
 
+_AUX_BEFORE_KNOW = frozenset({"do", "did", "does", "can", "could", "would", "should", "to"})
+
+
 def _real_word_slips(tokens: list[str], fixed: list | None) -> list[str]:
     out = list(tokens)
     for i in range(1, len(out)):
@@ -2393,6 +2396,9 @@ def _real_word_slips(tokens: list[str], fixed: list | None) -> list[str]:
             out[i] = _AFTER_INTENSIFIER[low] + tail
         elif low in _ITS_NOUNS and prev in ("it's", "it’s") and out[i - 1].rstrip("?!.,:;") == out[i - 1]:
             out[i - 1] = "its"
+        elif low == "no" and prev in ("i", "we", "you") and i >= 2 and out[i - 2].lower() in _AUX_BEFORE_KNOW and i + 1 < len(out):
+            #: "what do i no about hanna": "no" after "do I" is "know" (R9-14).
+            out[i] = "know" + tail
         else:
             continue
         if fixed is not None:
