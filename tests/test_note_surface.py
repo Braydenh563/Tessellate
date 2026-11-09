@@ -187,3 +187,15 @@ def test_a_note_box_gone_before_the_editor_loads_is_not_mounted():
     loaded = body.index("await loadCodeMirror()")
     guard = body.index("if (!host.parentNode) return textareaSurface(host);")
     assert loaded < guard < body.index("host.parentNode.insertBefore(wrap, host)")
+
+
+def test_a_late_mount_does_not_take_the_focus_from_an_open_sheet():
+    """Dashboard Write link, then "?" (measured, Playwright): the shortcuts
+    sheet focused its Close button and the editor's mount took the focus about
+    150 ms later. Both places that hand the focus to the editor after a late mount
+    do so only while no modal dialog is open (`activeOverlay`)."""
+    docs = (ROOT / "frontend" / "js" / "documents.js").read_text(encoding="utf-8")
+    assert "!activeOverlay() && s?.focus()" in docs
+    wiring = (ROOT / "frontend" / "js" / "wiring.js").read_text(encoding="utf-8")
+    start = wiring.index("function startNewNote()")
+    assert "!activeOverlay() && s?.focus()" in wiring[start : wiring.index("\n}\n", start)]

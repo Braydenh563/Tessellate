@@ -9081,13 +9081,9 @@ async function mountNoteSurface(host, options = {}) {
 //: exists so the keystroke that opened the box is not lost.
 document.addEventListener("focusin", (event) => {
   const host = event.target;
-  if (!(host instanceof HTMLTextAreaElement)) return;
-  const options = NOTE_SURFACES[host.id];
+  const options = host instanceof HTMLTextAreaElement && NOTE_SURFACES[host.id];
   if (!options || noteSurfaceViews.has(host)) return;
-  mountNoteSurface(host, options).then((surface) => {
-    if (!surface || surface.kind !== "codemirror") return;
-    surface.focus();
-  });
+  mountNoteSurface(host, options).then(s => !activeOverlay() && s?.focus());
 });
 // NOTE-SURFACE-END
 
