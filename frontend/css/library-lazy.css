@@ -7017,12 +7017,30 @@ input[type="color"].wb-mixed {
     padding-inline: var(--space-2);
   }
 }
+/* **Browser zoom (INBOX 1717): the name gives way before the tools do.** At 125 to
+   200 % the dock is 544 to 806px and a code document's tools need 410 to 600, so the
+   title and Back (246px, the input's own 128px floor) sat on a line above them.
+   Back is its arrow from 820 down (its title and aria-label name it), the title may
+   shrink to 5rem, and the save state leaves the row from 600. */
+@container docdock (max-width: 819.98px) {
+  .doc-back-label {
+    display: none;
+  }
+  #tab-documents .doc-dock > .doc-dock-identity {
+    flex-basis: 12rem;
+    min-width: 0;
+  }
+  .doc-dock-identity > .doc-title-input {
+    flex: 1 1 5rem;
+    min-width: 5rem;
+  }
+}
 @container docdock (max-width: 599.98px) {
   .doc-dock-status {
     display: none;
   }
-  .doc-back-label {
-    display: none;
+  #tab-documents .doc-dock > .doc-dock-identity {
+    flex-basis: 8rem;
   }
 }
 

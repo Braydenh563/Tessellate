@@ -811,9 +811,11 @@ function wbCloseHelpSheet() {
   focusBackTo(back, fallback);
 }
 
+//: The More menu goes into the board's top bar, which lives in the board template (row 21).
+onSurface("board", wbInitMoreMenu);
+
 //: Wired once, when this file arrives with the Library bundle.
 onDomReady(() => {
-  wbInitMoreMenu();
   const overlay = document.getElementById("wb-help-overlay");
   if (!overlay) return;
   document.getElementById("wb-help-close")?.addEventListener("click", wbCloseHelpSheet);

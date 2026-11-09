@@ -107,3 +107,46 @@ def test_the_sweep_covers_the_four_zooms_in_both_themes():
     sweep = (ROOT / "scratchpad" / "ui-sweeps" / "zoom1717.js").read_text(encoding="utf-8")
     assert "'125,150,175,200'" in sweep and "deviceScaleFactor: f" in sweep
     assert "process.env.THEME" in sweep
+
+
+def test_settings_nav_head_gives_the_toggle_the_room_to_stay_on_the_label_line():
+    rule = body(".settings-nav-groups-head")
+    assert "gap: var(--space-1)" in rule and "padding-inline: var(--space-5) 0" in rule
+
+
+def test_recent_head_title_is_clipped_not_removed_under_1200():
+    match = re.search(
+        r"Browser zoom, rule 9 below[^*]*\*/\s*#doc-sidebar-list > \.sidebar-head > h2\s*\{([^}]*)\}",
+        CSS,
+    )
+    assert match, "the Recent head's title rule is gone"
+    rule = match.group(1)
+    assert "width: 0" in rule and "clip-path: inset(50%)" in rule and "display: none" not in rule
+
+
+def test_a_sidebar_empty_line_has_a_step_less_padding():
+    rule = body("#chat-sidebar .empty-state,\n#doc-sidebar .empty-state")
+    assert "padding-inline: var(--space-3)" in rule
+
+
+def test_deliberate_bleeds_are_clipped_with_a_margin_not_scrolled():
+    rule = body("#learned-switches,\n#learned-switches .learned-switch-stack,\n.library-controls")
+    assert "overflow: clip" in rule and re.search(r"overflow-clip-margin: (\d+)px", rule)
+
+
+def test_theme_cards_are_wide_enough_for_the_longest_look_name():
+    assert "minmax(7.5rem, 1fr)" in body(".theme-presets")
+
+
+def test_the_document_dock_gives_its_name_up_before_its_tools():
+    lazy = (ROOT / "frontend" / "css" / "library-lazy.css").read_text(encoding="utf-8")
+    lazy = re.sub(r"/\*.*?\*/", "", lazy, flags=re.S)
+    wide = re.search(r"@container docdock \(max-width: 819\.98px\)\s*\{\s*\.doc-back-label\s*\{\s*display: none;", lazy)
+    assert wide, "Back keeps its word at 820 and under"
+    assert re.search(r"#tab-documents \.doc-dock > \.doc-dock-identity\s*\{\s*flex-basis: 12rem;\s*min-width: 0;", lazy)
+    assert re.search(r"\.doc-dock-identity > \.doc-title-input\s*\{[^}]*min-width: 5rem", lazy)
+    assert re.search(
+        r"@container docdock \(max-width: 599\.98px\)\s*\{\s*\.doc-dock-status\s*\{\s*display: none;\s*\}"
+        r"\s*#tab-documents \.doc-dock > \.doc-dock-identity\s*\{\s*flex-basis: 8rem;",
+        lazy,
+    )

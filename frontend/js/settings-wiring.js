@@ -1141,8 +1141,8 @@ SHORTCUT_SOURCE.table = () => shortcuts;
 //: neither, and for a chord written next to a `data-shortcut`.
 const SHORTCUT_TITLE_CHORD = /\s*\([^()]*(?:Ctrl|Alt|Shift|⌘|⌥|⇧)[^()]*\)\s*$/;
 
-function stampShortcutTitles() {
-  for (const button of document.querySelectorAll("[data-shortcut]")) {
+function stampShortcutTitles(root = document) {
+  for (const button of root.querySelectorAll("[data-shortcut]")) {
     const combo = shortcuts[button.dataset.shortcut]?.keys;
     if (!combo) continue;
     const base = (button.title || "").replace(SHORTCUT_TITLE_CHORD, "") || button.getAttribute("aria-label") || button.textContent.trim();
@@ -1155,10 +1155,10 @@ function stampShortcutTitles() {
 //: one from the table, are written "Ctrl+B" in the markup; on a Mac they read
 //: with the Command symbol. The static ones only: a title a script sets later
 //: is written through `shortcutTitle` or `chordLabel` where it is set.
-function localizeStaticChords() {
+function localizeStaticChords(root = document) {
   if (!SHORTCUT_MAC) return;
   const chord = /\b(?:(?:Ctrl|Alt|Shift)\+)+[^\s)(,;]+/g;
-  for (const el of document.querySelectorAll('[title*="Ctrl+"], [title*="Alt+"], [title*="Shift+"]')) {
+  for (const el of root.querySelectorAll('[title*="Ctrl+"], [title*="Alt+"], [title*="Shift+"]')) {
     el.title = el.title.replace(chord, (match) => chordLabel(match));
   }
 }
@@ -1175,10 +1175,6 @@ function restampShortcutHints() {
 }
 localizeStaticChords();
 restampShortcutHints();
-onSurface("settings", () => {
-  localizeStaticChords();
-  stampShortcutTitles();
-});
 // Sets the status-bar Undo/Redo buttons' icons and "nothing to undo yet"
 // tooltips on load: both stacks are empty at this point, so this only
 // establishes the disabled state the HTML already carries, not a real render.

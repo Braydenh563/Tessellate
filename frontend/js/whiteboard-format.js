@@ -2569,7 +2569,8 @@ window.addEventListener("keydown", (e) => {
 
 //: Every board colour field opens the popover; a colour set any way at all
 //: (the popover, the browser's dialog, the eyedropper) joins the recent row.
-onDomReady(() => {
+//: The fields are in the board template, so they are wired when it is stamped.
+onSurface("board", () => {
   for (const input of document.querySelectorAll('input[type="color"].wb-color-picker')) {
     if (input.dataset.wbColourWell) continue;
     input.dataset.wbColourWell = "1";
@@ -2579,6 +2580,8 @@ onDomReady(() => {
       wbOpenColourMenu(input);
     });
   }
+});
+onDomReady(() => {
   document.addEventListener("change", (e) => {
     if (e.target instanceof HTMLInputElement && e.target.matches('input[type="color"].wb-color-picker')) wbRememberColour(e.target.value);
   }, true);
