@@ -54,6 +54,35 @@
     }, 200);
   };
 
+  //: **The lock** (INBOX 1695 a): this one note private. It starts as Settings' "New notes start
+  //: private" says, and a save sends `private` only when it differs, so null still follows Settings.
+  //: Built with the extras (`mountCaptureExtras`), into the foot before Close.
+  captureCard.lockSync = (on = Boolean(prefsCache?.new_notes_private)) => {
+    const button = captureCardField("private");
+    if (!button) return;
+    button.setAttribute("aria-pressed", String(on));
+    button.querySelector("i").className = `ph ${on ? "ph-lock" : "ph-lock-open"} ph-lead`;
+    button.title = on
+      ? "This note will be private: sealed, and kept out of search and the AI. Press to keep it readable."
+      : "Press to make this one note private: sealed, and kept out of search and the AI.";
+  };
+
+  captureCard.lockAsk = () => {
+    const button = captureCardField("private");
+    if (!button) return {};
+    const on = button.getAttribute("aria-pressed") === "true";
+    return on === Boolean(prefsCache?.new_notes_private) ? {} : { private: on };
+  };
+
+  captureCard.mountLock = () => {
+    if (captureCardField("private")) return;
+    const button = captureCardEl("button", "ghost small", { type: "button", "data-cc": "private", "aria-pressed": "false" });
+    button.append(captureCardEl("i", "ph ph-lock-open ph-lead", { "aria-hidden": "true" }), " Private");
+    button.addEventListener("click", () => captureCard.lockSync(button.getAttribute("aria-pressed") !== "true"));
+    captureCardField("close").before(button);
+    captureCard.lockSync();
+  };
+
   function captureCardEl(tag, className, attrs = {}) {
     const node = document.createElement(tag);
     if (className) node.className = className;
@@ -377,6 +406,7 @@
     captureCardField("tags").value = "";
     captureCard.colour = null;
     captureCard.due = null;
+    captureCard.lockSync();
     prefs.remove(CAPTURE_DRAFT_KEY);
     captureCardStatus("");
   }
@@ -406,6 +436,7 @@
       const pictures = captureCard.pictures.length ? await uploadCapturePictures() : "";
       const body = { content: [text, pictures].filter(Boolean).join("\n\n"), tags: captureTagList(draft.tags) };
       if (draft.colour) body.colour = draft.colour;
+      Object.assign(body, captureCard.lockAsk());
       const result = await createNoteSafely(body);
       await finishCaptureSave(result, draft);
     } catch (error) {

@@ -23,6 +23,7 @@ async function mountCaptureExtras(pick = false) {
     card.dataset.extras = "1";
     card.addEventListener("input", scheduleCaptureSuggestions);
     captureCardField("bell").append(captureBell());
+    captureCard.mountLock();
     mountCapturePictures(card);
   }
   if (pick) captureCardField("file").click();
