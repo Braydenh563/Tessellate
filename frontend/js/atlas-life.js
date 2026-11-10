@@ -530,7 +530,12 @@ function atlasTailFrame(tail, now) {
   atlasBreathFrame(box, live);
   atlasBreathFrame.rate(box.atlasBreath, box.closest("#nm-buddy"), box.dataset.atlasMood, now);
   //: The held loops stay held at rest (`atlasTailCalm.rest.sync` plays them again on input).
-  if (!atlasTailCalm.resting(box, tail.state)) for (const anim of box.atlasLoops || []) if (loops !== (anim.playState === "running")) loops ? anim.play() : anim.pause();
+  //: Read when `loops` flips or once a second, not every beat (B55: 120 style reads a second through an agent turn).
+  if (!atlasTailCalm.resting(box, tail.state) && (box.atlasLoopsOn !== loops || now - (box.atlasLoopsAt || 0) > 1000)) {
+    box.atlasLoopsOn = loops;
+    box.atlasLoopsAt = now;
+    for (const anim of box.atlasLoops || []) if (loops !== (anim.playState === "running")) loops ? anim.play() : anim.pause();
+  }
   if (holds) {
     tail.raf = setTimeout(() => atlasTailFrame(tail, performance.now()), ATLAS_TAIL_REST_BEAT_MS);
     return;
