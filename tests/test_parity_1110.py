@@ -295,7 +295,8 @@ def test_make_a_category_is_a_card_then_done_then_undone(client, seeded, sentenc
     assert "Hobbies" in card["label"] and "Hobbies" not in _names(seeded), out["text"]
     run = client.post("/chat/command/run", json={"steps": card["steps"], "consent_id": card["consent_id"]})
     assert run.status_code == 200 and "Hobbies" in _names(seeded), run.text
-    assert client.post("/chat/command/run", json={"steps": run.json()["undo"]}).status_code == 200
+    undone = client.post("/chat/command/run", json={"steps": run.json()["undo"]})
+    assert undone.status_code == 200
     assert "Hobbies" not in _names(seeded)
 
 
