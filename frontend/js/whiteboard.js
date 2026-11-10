@@ -19118,8 +19118,9 @@ async function initWhiteboard() {
     //: to it (the wb ledger, 10-25: the Line tool stayed a loose path). Its
     //: ends are the tool's own, so a line binds with none.
     const bound = window.currentTool === "arrow" || window.currentTool === "line" ? wbBoundArrowData(sx, sy, x, y, 10 / zoomK(), blob) : null;
-    //: The board's default shape style starts every drawn shape and line (not pen strokes or the highlighter).
-    const drawn = isFreehand ? blob : wbFmtState.board?.withDefaults("shape", blob, { fillable: isFillable }) ?? blob;
+    //: The board's default style starts every drawn shape, line, pen stroke and highlighter stroke, each under its own kind.
+    const group = isFreehand ? (isHighlighter ? "highlighter" : "pen") : "shape";
+    const drawn = wbFmtState.board?.withDefaults(group, blob, { fillable: isFillable }) ?? blob;
     const sketchData = {
       data: JSON.stringify(bound || drawn),
       x: 0,
@@ -24867,9 +24868,9 @@ async function dragEndNode(event, d) {
             //: keeps the map's own look.
             ...(crossLink ? {} : wbToolCaps()),
        };
-       //: A board's default connector style (Set as default style) starts every new board link.
+       //: A board's default connector style (Set as default style) starts every new link, a map's cross-link too.
        const sketchData = {
-         data: JSON.stringify(crossLink ? linkBase : wbFmtState.board?.withDefaults("link", linkBase) ?? linkBase),
+         data: JSON.stringify(wbFmtState.board?.withDefaults("link", linkBase) ?? linkBase),
          x: 0, y: 0, z: wbStackNewZ("sketch"),
          board_id: window.currentBoardId
        };

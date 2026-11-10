@@ -2741,7 +2741,7 @@ wbFmtState.board = (() => {
   }
 
   //: The board's default style (draw.io's Set as default style): the selected item's look, kept on the
-  //: board under its kind (`shape`, `link`, `text`) so the tools start new items with it.
+  //: board under its kind (`shape`, `link`, `text`, `pen`, `highlighter`) so the tools start new items with it.
   const FILL_KEYS = ["fill", "fillOpacity", "gradient", "fillStyle"];
 
   function groupOf() {
@@ -2749,7 +2749,8 @@ wbFmtState.board = (() => {
     if (sketch) {
       const data = wbSketchParsedData(sketch);
       if (!data) return null;
-      return { group: String(data.type || "").startsWith("link-") ? "link" : "shape", style: wbPickStyle(data, WB_SKETCH_STYLE_KEYS) };
+      const group = String(data.type || "").startsWith("link-") ? "link" : { draw: "pen", highlighter: "highlighter" }[data.shape] || "shape";
+      return { group, style: wbPickStyle(data, WB_SKETCH_STYLE_KEYS) };
     }
     const object = wbSelectedTextObjectOrNull();
     return object ? { group: "text", style: wbPickStyle(object.data, WB_OBJECT_STYLE_KEYS) } : null;
@@ -2757,10 +2758,10 @@ wbFmtState.board = (() => {
 
   async function setDefault() {
     const picked = groupOf();
-    if (!picked || !Object.keys(picked.style).length) return toast("Select a shape, connector or text box to take its style.");
+    if (!picked || !Object.keys(picked.style).length) return toast("Select a shape, connector, text box or stroke to take its style.");
     const kept = wbBoardBackground().defaults || {};
     if (await wbSetBackground({ defaults: { ...kept, [picked.group]: picked.style } })) {
-      toast(`Default ${{ shape: "shape", link: "connector", text: "text box" }[picked.group]} style set. New ones on this board start with it.`);
+      toast(`Default ${{ shape: "shape", link: "connector", text: "text box", pen: "pen stroke", highlighter: "highlighter stroke" }[picked.group]} style set. New ones on this board start with it.`);
     }
   }
 

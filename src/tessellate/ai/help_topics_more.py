@@ -3558,7 +3558,7 @@ MORE_TOPICS.extend([
             "would, from a shape (its fill, or its border with Alt or Take a shape's border), "
             "a line, a text box or any colour button, and Escape stops it. A fill "
             "that is off shows dimmed; picking a colour turns it on. Ctrl+Alt+D "
-            "(Set as default style) keeps the selected shape's, connector's or text box's look "
+            "(Set as default style) keeps the selected shape's, connector's, text box's or pen stroke's look "
             "as the board's default for new ones; Clear the default style undoes it."
         ),
         "badge": {"label": "Library", "tab": "library"},
