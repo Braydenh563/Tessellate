@@ -298,3 +298,18 @@ def test_a_drag_and_a_throw_keep_one_flow_so_no_warp_is_built_a_frame(look):
     assert in_motion, "the drag or the throw drew no motion frame"
     assert len({o.flow for o in in_motion}) <= 2, "a flowed picture per frame is a warp per frame"
     assert not [o for o in airborne if o.frame.startswith("spin") and o.flow is not None]
+
+
+def test_a_settled_flow_costs_nothing_and_stays_where_it_is() -> None:
+    """cispeed D1: springs with nothing pushing them fall to denormals and stall there, never to 0.0; below 1e-200
+    the step snaps them to zero and returns, and a push wakes them as before. Fixed inputs, no clock."""
+    flow = bh.Flow(5)
+    flow.step(0.3, 200.0, 0.0)
+    for _ in range(30000):
+        flow.step(0.3, 0.0, 0.0)
+    assert not any(map(any, flow.pos)) and not any(map(any, flow.vel))
+    before = flow.view(10.0)
+    flow.step(0.3, 0.0, 0.0)
+    assert flow.view(10.0) == before
+    flow.step(0.3, 120.0, 0.0)
+    assert any(map(any, flow.pos)) and any(map(any, flow.vel))
