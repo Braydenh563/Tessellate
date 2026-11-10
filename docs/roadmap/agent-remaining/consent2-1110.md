@@ -12,6 +12,6 @@ Done (this branch, see `git log`): items 1 to 8 of the review brief.
 8. `"run": True` keys removed; `commands.plan` words a plan whose line is only its card label as the confirm line.
 
 Left (found, not fixed):
-- Cards from `starter_acts` and the model's `act_registry.propose` carry no `_say`, so their Confirm run uses the plain "Done: ..." words (`api/chat_agent.py`, `ai/starter_acts.py`).
+- ~~Cards from `starter_acts` and the model's `act_registry.propose` carry no `_say`~~ Built (compleft-1110.md, `acts.plain_say`).
 - Not driven in a browser: the open-card JS (`consentId`, `waitingCard`, the send-time clearing) is node-checked and read, not watched. A 30 minute old card still runs from its Confirm button (client steps, plain words) but not from a typed yes.
 - A tool undo whose tool is not in `commands.RUNNABLE` draws no Undo row after a typed yes (the Confirm button path draws none either).
