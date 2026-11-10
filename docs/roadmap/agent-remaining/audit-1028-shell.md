@@ -96,7 +96,7 @@ Clean-eye audit, read-only. "verified" is run (driven in Playwright on a scratch
 | S90 | low | perf | **Open (checked 2026-11-09).** Palette builds all 103 commands on each open | settings-panes.js:1275 | run | Cache (measured 4ms, so low value) | S | [verified 2026-11-10: stale, measured 4 ms on open (row says low value)]
 | S91 | low | a11y | **Open (checked 2026-11-09).** Page language and title do not update on view change | index.html | code | Update document.title per view | S | [verified 2026-11-10: true, document.title not set per view in frontend/js]
 | S92 | low | a11y | **Open (checked 2026-11-09).** Live region for list loading and counts missing | notes-list.js | code | aria-live status | S | [verified 2026-11-10: fixed, CHANGELOG 869 count said to a screen reader]
-| S93 | low | arch | **Open (checked 2026-11-09).** Test coverage for the flashEntry not-in-DOM path absent | capture-ask.js:889-932 | code | Add a test with a 100-note fixture | S | [verified 2026-11-10: true, tests/test_shell_fixes.py asserts strings only, no not-in-DOM fixture]
+| S93 | low | arch | **Open (checked 2026-11-09).** Test coverage for the flashEntry not-in-DOM path absent | capture-ask.js:889-932 | code | Add a test with a 100-note fixture | S | [verified 2026-11-10: true, tests/test_shell_fixes.py asserts strings only, no not-in-DOM fixture] [s13-1110: built, tests/test_flash_entry_missing_s93.py runs flashEntry in node over 100 notes]
 | S94 | low | ux | **Open (checked 2026-11-09).** Offline indicator exists (verified), but no explanation of what still works | status.js | run | Link to help text | S | [verified 2026-11-10: fixed, frontend/js/ai-tools.js:171 says what still works]
 
 ## Dropped as false positives (not rows)

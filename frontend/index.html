@@ -1200,7 +1200,9 @@
         keeps what you wrote for next time. If the server is not answering, the
         note is kept on this device and goes in by itself when it is back.
         Open in Capture moves the words to the full composer, for a title, a
-        category, files or a template.</p>
+        category, files or a template. Private seals this one note, out of search
+        and the AI; it starts on when Settings, Account &amp; security says new
+        notes start private.</p>
     </div>
     <p class="muted">Saved where you are, filed in the background.</p>
     <textarea id="quick-note-text" data-autocorrect rows="5" aria-label="Quick note"
@@ -1208,6 +1210,7 @@
     <p id="quick-note-status" class="status" role="status"></p>
     <div class="row right space-dialog-actions">
       <button type="button" id="quick-note-clear" class="ghost icon-only small field-clear hidden" title="Clear" aria-label="Clear"><i class="ph ph-eraser" aria-hidden="true"></i></button>
+      <button type="button" class="ghost small" id="quick-note-private" aria-pressed="false"><i class="ph ph-lock-open ph-lead" aria-hidden="true"></i> Private</button>
       <button type="button" class="ghost small" id="quick-note-more">Open in Capture</button>
       <button type="button" class="accent small" id="quick-note-save">Save note</button>
     </div>

@@ -219,6 +219,28 @@
 
   // --- Quick note --------------------------------------------------------------
 
+  //: **The lock on a new note** (INBOX 1695 a): one Private toggle on the quick note and the capture
+  //: card (capture-card.js keeps its own copy of these three, so no name joins the shared scope). It starts as Settings' "New notes start private" says; pressing it makes this one note
+  //: private (or readable). A save sends `private` only when the toggle differs from the setting,
+  //: so null still follows Settings.
+  function notePrivateSync(button, on = Boolean(prefsCache?.new_notes_private)) {
+    button.setAttribute("aria-pressed", String(on));
+    button.querySelector("i").className = `ph ${on ? "ph-lock" : "ph-lock-open"} ph-lead`;
+    button.title = on
+      ? "This note will be private: sealed, and kept out of search and the AI. Press to keep it readable."
+      : "Press to make this one note private: sealed, and kept out of search and the AI.";
+  }
+
+  function notePrivateAsk(button) {
+    if (!button) return {};
+    const on = button.getAttribute("aria-pressed") === "true";
+    return on === Boolean(prefsCache?.new_notes_private) ? {} : { private: on };
+  }
+
+  function notePrivateFlip(button) {
+    notePrivateSync(button, button.getAttribute("aria-pressed") !== "true");
+  }
+
   function quickNoteBox() {
     return $("quick-note-text");
   }
@@ -249,6 +271,7 @@
             ? "Your unsaved words are back."
             : "",
       );
+      notePrivateSync($("quick-note-private"));
       dialog.showModal();
     }
     //: The chips under the box (quickadd.js): a #tag is saved as a tag; a day
@@ -335,7 +358,7 @@
     quickNoteStatus("Saving…");
     try {
       const slots = await quickAddSlots(quickNoteBox());
-      const result = await createNoteSafely({ content, tags: slots?.tags || [] });
+      const result = await createNoteSafely({ content, tags: slots?.tags || [], ...notePrivateAsk($("quick-note-private")) });
       clearQuickNote();
       $("quick-note").close();
       if (result.queued) {
@@ -437,6 +460,7 @@
     });
     $("quick-note-save").addEventListener("click", saveQuickNote);
     $("quick-note-more").addEventListener("click", quickNoteToCapture);
+    $("quick-note-private").addEventListener("click", (event) => notePrivateFlip(event.currentTarget));
     $("quick-note-close").addEventListener("click", () => $("quick-note").close());
     $("note-outbox-retry")?.addEventListener("click", () => flushNoteOutbox());
     //: Back on the network the browser knows about (a laptop's wifi), as well
