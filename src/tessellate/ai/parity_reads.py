@@ -135,7 +135,7 @@ def _contradictions(session: Session) -> str:
 
 
 _DOCUMENT_LINE = (
-    "Writing a document needs a model, and none is running. Turn one on in [Settings, Models](#/settings/models), "
+    "Writing a document needs a model, and none is running. Turn one on in Settings, [Models](#/settings/models), "
     "or start a blank one yourself in [Documents](#/docs)."
 )
 _EXPORT_LINE = (
