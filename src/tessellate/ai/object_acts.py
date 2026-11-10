@@ -147,10 +147,35 @@ def pick_note_split(parsed: dict, finds) -> dict:  # noqa: ANN001
     return parsed
 
 
+_MAKE = re.compile(
+    r"^(?:(?:please|pls|can you|could you|would you|and|then)\s+)*(?:create|make|add|start|set up|new)\s+(?:me )?(?:a |an |my |the )?(?:new |another )?(?:category|folder)\b\s*(?::|called|named|for|-)?\s*(?P<name>.*)$",
+    re.IGNORECASE,
+)
+
+
+def read_make(text: str) -> dict | None:
+    """"create a category called Hobbies", "make a new category Hobbies", "new
+    category: Hobbies": a category made by name, the agent's `create_category`.
+    A question ("how do I make a category") has no name after the kind word
+    that is not a question, so it is left to the Guide."""
+    found = _MAKE.match(" ".join(text.split()))
+    if found is None:
+        return None
+    name = _name(found.group("name").rstrip(" .!"))
+    if not name or len(name) > _MAX_NAME or name.endswith("?") or name.lower().split(" ", 1)[0] in ("to", "with", "in", "if", "so", "that", "which"):
+        return None
+    return {"intent": "create_category", "name": name}
+
+
 #: Verbs that bring a binned note back; the note is named like any other.
 _RESTORE_HEADS = ("restore ", "undelete ", "un-delete ", "bring back ", "get back ", "recover ")
 #: These two heads are ordinary English, so they restore only with the bin said.
 _BIN_ONLY_HEADS = ("get back ", "recover ")
+#: "restore the last deleted note", "bring back the note I just deleted", "undelete the last one": the newest in the bin.
+_LATEST = re.compile(
+    r"(?:the |my )?(?:(?:last|latest|most recent|newest|previous)(?: (?:deleted|binned))?(?: one| note| thing)?|(?:note|one|thing) i (?:just |last |recently )?(?:deleted|binned|threw away)|deleted note|one i just deleted)",
+    re.IGNORECASE,
+)
 _ALL_NOTES = re.compile(r"(?:all|every|everything)(?: of)?(?: (?:my|the))?(?: notes?)?", re.IGNORECASE)
 _BIN_TAIL = re.compile(r"\s+(?:from|out of|in) (?:the |my )?(?:bin|trash|rubbish(?: bin)?|recycle bin|deleted(?: notes)?)$", re.IGNORECASE)
 _OTHER_THING = re.compile(r"(?:the |a |my )?(?:tags?|labels?|reminders?|categor(?:y|ies)|boards?|maps?|documents?|settings?|defaults?)\b", re.IGNORECASE)
@@ -174,6 +199,8 @@ def read_restore(text: str, one_target) -> dict | None:  # noqa: ANN001
         return None
     if not rest or _OTHER_THING.match(rest):
         return None
+    if _LATEST.fullmatch(rest):
+        return {"intent": "restore", "latest": True, "about": rest}
     if _ALL_NOTES.fullmatch(rest) and (binned or "note" in rest.lower()):
         return {"intent": "restore", "all": True, "about": rest}
     found = one_target(rest, bare=binned is not None)
@@ -374,11 +401,20 @@ def _binned(session: Session, parsed: dict) -> list:
     return found
 
 
+def _binned_latest(session: Session) -> list:
+    """The note most recently binned ("restore the last deleted note"); a private note and a board are not here (`_binned`)."""
+    from tessellate.core.database import Entry
+
+    return list(session.scalars(
+        select(Entry).where(Entry.is_deleted == True, Entry.is_private.is_not(True), Entry.is_board.is_not(True))  # noqa: E712
+        .order_by(Entry.deleted_at.desc(), Entry.id.desc()).limit(1)))
+
+
 def _plan_restore(session: Session, parsed: dict, c) -> dict:  # noqa: ANN001
     about = str(parsed.get("about") or "")
-    found = _binned(session, parsed)
+    found = _binned_latest(session) if parsed.get("latest") else _binned(session, parsed)
     if not found:
-        return {"line": "The bin has no notes I can restore." if parsed.get("all") else f"I found nothing in the bin about “{about}”."}
+        return {"line": "The bin has no notes I can restore." if parsed.get("all") or parsed.get("latest") else f"I found nothing in the bin about “{about}”."}
     if parsed.get("all"):
         many = f"{len(found)} notes" if len(found) > 1 else "1 note"
         newest = c.note_title(found[0].content, size=48)
@@ -396,10 +432,21 @@ def _plan_restore(session: Session, parsed: dict, c) -> dict:  # noqa: ANN001
     return {"line": c.confirm(label), "card": card}
 
 
+def _plan_create_category(session: Session, parsed: dict, c) -> dict:  # noqa: ANN001
+    from tessellate.core.database import Category
+    from sqlalchemy import func
+
+    name = parsed["name"]
+    if session.scalar(select(Category.id).where(func.lower(Category.name) == name.lower())) is not None:
+        return {"line": f"There is already a category called “{name}”."}
+    label = f"Create the category “{name}”"
+    return {"line": c.confirm(label), "card": c.card(label, [{"name": "create_category", "arguments": {"name": name}}])}
+
+
 def plan(session: Session, parsed: dict, c) -> dict:  # noqa: ANN001
-    """The line and card for a rename of a tag or category, or a restore."""
+    """The line and card for a rename of a tag or category, a new category, or a restore."""
     from tessellate.ai import address
 
-    plans = {"rename_tag": _plan_rename_tag, "rename_category": _plan_rename_category, "restore": _plan_restore,
+    plans = {"create_category": _plan_create_category, "rename_tag": _plan_rename_tag, "rename_category": _plan_rename_category, "restore": _plan_restore,
              "set_name": lambda _session, found, helpers: address.plan(found, helpers.card, helpers.confirm)}
     return plans[parsed["intent"]](session, parsed, c)

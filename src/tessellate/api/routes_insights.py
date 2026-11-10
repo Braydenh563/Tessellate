@@ -229,6 +229,14 @@ def _greeting_within(config, ollama, block: str, fallback: dict) -> dict:  # noq
     return result
 
 
+def _true_fact(fallback: dict) -> str:
+    """The composed line carries the notebook's own numbers (the streak, what is
+    due); the model is handed it, so the two greetings agree (parity, decision 75)."""
+    if fallback.get("source") != "composed":
+        return ""
+    return f" If it fits, let the greeting carry this true fact from their notebook: {fallback['greeting']}."
+
+
 def _ai_greeting(config, ollama, block: str, fallback: dict) -> dict:  # noqa: ANN001
     # The name is read from preferences here rather than trusted from the
     # client, so there is exactly one source of truth for it.
@@ -249,6 +257,7 @@ def _ai_greeting(config, ollama, block: str, fallback: dict) -> dict:  # noqa: A
         if use_name
         else GREETING_PROMPT.format(block=block, flavour=flavour)
     )
+    system += _true_fact(fallback)
     if persona:
         system = f"{persona.strip()} {system}"
     ask = f"It is {block}. Greet {name}." if use_name else f"It is {block}. Greet me."

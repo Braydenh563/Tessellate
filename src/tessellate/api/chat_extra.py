@@ -14,6 +14,7 @@ from sqlalchemy.orm import Session
 from tessellate.ai import activity, composer_cancel, composer_digest, composer_extra, composer_suggest, composer_talk, realise
 from tessellate.ai.composer_study import Ctx
 from tessellate.ai.tools._common import _visible
+from tessellate.core import deps
 from tessellate.core.database import Category, Entry
 from tessellate.repo import categories as categories_repo
 from tessellate.repo import reminders as reminder_repo
@@ -118,6 +119,8 @@ def events(session: Session, question: str, history: list[dict], *, now: datetim
     #: "Summarise my week" is the week's recap (`ai/activity`), not a note's summary.
     if activity.as_recap(question) != question:
         return None
+    if (read := read_events(session, asked or question, model=deps.get_ollama().is_running())) is not None:
+        return read
     ctx = Ctx(question=question, notes=_notes(session), now=now, history=history, seed=seed, open_ids=open_ids,
               follow_kind=follow_kind, said=said, asked=asked or question, ask=ask, reminders=_reminders(session), voice=voice)
     try:
@@ -147,12 +150,53 @@ def reminder_events(session: Session, question: str, *, now: datetime) -> list[d
     try:
         ctx = Ctx(question=text, notes=[], now=now, reminders=_reminders(session))
         reply = composer_reminders.answer(ctx) or composer_plan._when_reply(ctx, text)  # noqa: SLF001
+        if reply is None:
+            #: "what's on today": the agenda the composer lays out, the notes' dates and the reminders together.
+            reply = composer_plan.answer(Ctx(question=text, notes=_notes(session), now=now, reminders=ctx.reminders))
     except Exception:  # noqa: BLE001  # the model answers as before
         log.exception("chat: the reminder reader failed")
         return None
     if not reply:
         return notebook_events(session, text, now=now)
     return [{"type": "answer", "delta": reply.text}]
+
+
+def hello_events(session: Session, question: str, *, now: datetime) -> list[dict] | None:
+    """The facts of a hello (the streak, the last note, the reminders due), so
+    a model that answers "good morning" writes from the same numbers the
+    composed welcome says (parity, decision 75). None for any other turn."""
+    from tessellate.ai import composer_smalltalk
+
+    if composer_smalltalk.social_kind(question) not in ("greeting", "morning"):
+        return None
+    try:
+        line = welcome_line(session, now, question=question)
+    except Exception:  # noqa: BLE001  # the model greets as before
+        log.exception("chat: the welcome facts failed")
+        return None
+    return [{"type": "answer", "delta": line}] if line else None
+
+
+def facts_events(session: Session, question: str, *, now: datetime, chat: bool = True) -> list[dict] | None:
+    """What the app knows that a model is handed as facts: the reminders'
+    answer, the agenda, a hello's numbers (Chat only: the Ask box answers a hello with its hint), or one of the reads the agent has a
+    tool for (`ai/parity_reads`)."""
+    return reminder_events(session, question, now=now) or (hello_events(session, question, now=now) if chat else None) or read_events(session, question, model=True)
+
+
+def read_events(session: Session, question: str, *, model: bool = False) -> list[dict] | None:
+    """The bin, earlier chats or the export hand-off, said once for the
+    composer and, with a model up, handed over as facts (`ai/parity_reads`)."""
+    from tessellate.ai import parity_reads
+
+    try:
+        found = parity_reads.answer(session, question, model=model)
+    except Exception:  # noqa: BLE001  # the older readers answer
+        log.exception("chat: a parity read failed")
+        return None
+    if found is None:
+        return None
+    return [{"type": "answer", "delta": found}]
 
 
 def name_events(session: Session, question: str) -> list[dict] | None:

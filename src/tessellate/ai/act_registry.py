@@ -69,7 +69,7 @@ def propose(session, text: str, now, note_ids: list[int] | None = None) -> dict 
 #: typed yes confirms the card that waits (`ai/consent.py`), a typed no drops it.
 CONFIRM_INTENTS = frozenset({
     "reminder", "complete", "uncomplete", "cancel", "snooze", "new_note", "meeting", "pin", "unpin",
-    "delete", "rename", "rename_tag", "rename_category", "restore", "move", "tag", "untag", "link", "unlink", "append", "set_name",
+    "delete", "rename", "rename_tag", "rename_category", "create_category", "restore", "move", "tag", "untag", "link", "unlink", "append", "set_name",
 })
 
 
@@ -137,6 +137,8 @@ _ACTS = (
         "rename the tag gym to fitness", ("old", "new"), "rename_tag", stem="Rename the tag "),
     Act("rename_category", "rename", "rename a category", "Names the category and its new name; waits for Confirm, Undo renames it back. A name that already exists is left to Manage categories.",
         "rename the category Work to Job", ("old", "new"), "rename_category", stem="Rename the category "),
+    Act("create_category", "create", "make a category", "Names the category; it is made after you confirm, and Undo takes it away again. A name that already exists is left as it is.",
+        "make a category called Hobbies", ("name",), "delete_category", stem="Create a category called "),
     Act("restore", "restore", "restore a note from the bin", "Names a note in the bin; waits for Confirm, Undo puts it back in the bin.",
         "restore the passport note", (), "delete_note", stem="Restore the note about "),
     Act("set_name", "call", "set your name", "Say what to call you; it is saved after you confirm, and Undo puts the old name back.",
@@ -157,8 +159,8 @@ ACTS: dict[str, Act] = {a.intent: a for a in _ACTS}
 def capability_line() -> str:
     """Agent mode with no model, for a sentence that is not an act: every
     write act the registry has, in order, and one example."""
-    said = [a.label for a in _ACTS if a.writes and a.intent not in ("untag", "unpin", "unlink", "append", "rename", "rename_tag", "rename_category", "restore", "delete", "link", "pin", "set_name")]
-    single = "pin, link, rename or delete a note, rename a tag or category, restore a note from the bin (each after you confirm)"
+    said = [a.label for a in _ACTS if a.writes and a.intent not in ("untag", "unpin", "unlink", "append", "rename", "rename_tag", "rename_category", "create_category", "restore", "delete", "link", "pin", "set_name")]
+    single = "pin, link, rename or delete a note, rename a tag or category, make a category, restore a note from the bin (each after you confirm)"
     reads = "find or open a note"
     return (
         "With no model running I can do these myself: "
@@ -234,7 +236,7 @@ def guide_topic() -> dict:
 ACT_TOOLS: dict[str, str] = {
     "reminder": "set_reminder", "complete": "complete_reminder", "uncomplete": "complete_reminder", "cancel": "bin_reminder", "snooze": "snooze_reminder", "tag": "tag_note", "untag": "tag_note", "move": "edit_note",
     "new_note": "create_note", "meeting": "create_note", "pin": "pin_note", "unpin": "pin_note",
-    "link": "link_notes", "unlink": "unlink_notes", "rename": "edit_note", "rename_tag": "rename_tag", "rename_category": "rename_category", "restore": "restore_note", "append": "edit_note",
+    "link": "link_notes", "unlink": "unlink_notes", "rename": "edit_note", "rename_tag": "rename_tag", "rename_category": "rename_category", "create_category": "create_category", "restore": "restore_note", "append": "edit_note",
     "delete": "delete_note", "set_name": "set_display_name", "find": "search_notes", "open": "get_note", "summarise": "summarize_notes",
 }
 
@@ -282,7 +284,9 @@ TOOL_CUES: tuple[tuple[str, str], ...] = (
     ("path_between", r"\bhow (?:is|are) .+ (?:related|connected) to\b|\bpath between\b"),
     ("related_notes", r"\bwhat(?:'s| is) (?:connected|linked) to\b|\b(?:connected|linked) to the .+ note\b"),
     ("find_similar_notes", r"\bsimilar to\b|\blike the .+ note\b"),
-    ("notebook_structure", r"\b(?:shape|structure|clusters?) of (?:my|the) notebook\b|^how (?:are|r) (?:all )?my notes (?:connected|linked)\b"),
+    ("notebook_structure", r"\b(?:shape|structure|clusters?) of (?:my|the) notebook\b|^how (?:are|r) (?:all )?my notes (?:connected|linked)\b"
+     #: The shape asked in its other words: the notes on their own, the clusters (parity, decision 75).
+     r"|\bconnected to nothing\b|\b(?:not|isn't|aren't) (?:linked|connected) to anything\b|\b(?:orphan(?:ed)?|unlinked|disconnected|isolated) notes\b|^what are (?:the|my) (?:note )?clusters\b|\bwhich notes (?:have|has) no links\b"),
     ("notebook_overview", r"\boverview of (?:my|the) notebook\b|\bnotebook overview\b|^how (?:big|large) is (?:my|the) notebook\b"),
     #: "count notes about the dentist" counts a subject's notes, which the composer answers (R3-6, D4).
     ("count_notes", r"\bcount (?:my |the )?notes\b(?! (?:about|on|mentioning|mention|containing|that|with)\b)|\bnotes per (?:category|tag)\b"),
@@ -353,7 +357,7 @@ ACT_HELP_TOPICS: dict[str, tuple[str, ...]] = {
     "reminder": ("reminders", "reminders-controls"), "complete": ("tasks",), "uncomplete": ("tasks",), "cancel": ("tasks",), "snooze": ("tasks",), "meeting": ("meetings", "voice"), "link": ("links",),
     "unlink": ("links",), "tag": ("tags-categories", "tag-manager", "suggested-tags"),
     "untag": ("tags-categories", "tag-manager"), "move": ("tags-categories",), "delete": ("undo-bin",), "restore": ("undo-bin",),
-    "rename_tag": ("tags-categories", "tag-manager"), "rename_category": ("tags-categories",),
+    "rename_tag": ("tags-categories", "tag-manager"), "rename_category": ("tags-categories",), "create_category": ("tags-categories",),
     #: Not pin: Favourites says what a pinned note is, not how to pin one, so
     #: the act's line leads "how do I pin a note" and Favourites follows.
     "find": ("ask-chat",), "summarise": ("ask-chat",),

@@ -31,7 +31,7 @@ def _seed(session):
     session.commit()
 
 
-def _state(session) -> tuple:
+def _state(session, categories: bool = False) -> tuple:
     """Everything an act may change, as plain values. The category by its id and by its
     name: a rename keeps the id, so the id alone cannot see rename_category change anything."""
     session.expire_all()
@@ -45,7 +45,12 @@ def _state(session) -> tuple:
     #: The name is a preference, not a row: set_name changes it (G7).
     from tessellate.core import deps
 
-    return notes, links, reminders, deps.get_config().get_preference("display_name", "")
+    #: A category made with no note in it is a row of its own: create_category changes it (parity, 1110).
+    #: Read only for that act, since a move leaves the category it made behind when it is undone.
+    from tessellate.core.database import Category
+
+    made = tuple(sorted(c.name for c in session.scalars(select(Category)))) if categories else ()
+    return notes, links, reminders, deps.get_config().get_preference("display_name", ""), made
 
 
 def test_every_act_has_parse_preview_run_and_a_help_line():
@@ -85,7 +90,7 @@ def test_every_write_act_has_an_inverse_that_restores_the_notebook(client, sessi
         #: real clock.
         session.add(Reminder(text="Buy milk" if act.intent == "complete" else "Call the dentist", due_at=datetime(2030, 1, 1, 9)))
         session.commit()
-    before = _state(session)
+    before = _state(session, act.intent == "create_category")
     # The store refuses a reminder due in the past by the real clock, so a
     # fixed NOW turns "on Friday" into a past date once that week is over
     # (a snooze too: its plan refuses a time already passed on the real clock).
@@ -96,12 +101,12 @@ def test_every_write_act_has_an_inverse_that_restores_the_notebook(client, sessi
     done = acts.run(session, card["steps"], card.get("skipped"))
     session.commit()
     assert done["ok"], (act.intent, done)
-    assert _state(session) != before, f"{act.intent} changed nothing"
+    assert _state(session, act.intent == "create_category") != before, f"{act.intent} changed nothing"
     assert done["undo"] and done["undo"][0]["name"] == act.inverse, (act.intent, done["undo"])
     undone = acts.run(session, done["undo"])
     session.commit()
     assert undone["ok"], (act.intent, undone)
-    assert _state(session) == before, act.intent
+    assert _state(session, act.intent == "create_category") == before, act.intent
 
 
 def test_read_acts_have_no_inverse_and_write_acts_all_do():
