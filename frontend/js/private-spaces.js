@@ -62,7 +62,7 @@
       if (Date.now() - state.touched < 60e3) return;
       state.touched = Date.now();
       const was = state.status?.open;
-      const now = await apiJson("/private-spaces/touch", { method: "POST", silent: true }).catch(() => null);
+      const now = await apiJson("/private-spaces/touch", { method: "POST", silent: true }).catch((error) => (backgroundWriteFailed(error), null));
       if (!now) return;
       state.status = { ...(state.status || {}), open: now.open };
       if (was && !now.open) {
@@ -187,7 +187,7 @@
 
   //: Always on close: the window going away locks them, whatever the idle clock says.
   window.addEventListener("pagehide", () => {
-    api("/private-spaces/lock", { method: "POST", keepalive: true, silent: true, readOnly: true }).catch(() => {});
+    api("/private-spaces/lock", { method: "POST", keepalive: true, silent: true, readOnly: true }).catch(backgroundWriteFailed);
   });
 
   const ACTIONS = { edit, enter, unlock, askKeep, mount, applySwitch };
