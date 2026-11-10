@@ -556,8 +556,11 @@ def subject_terms(question: str) -> list[str]:
     #: pasta" keeps its "add", which understanding may have moved to the front.
     if _without_command(question) != question:
         source = _without_command(source)
-    for word in query_understanding.search_terms(source):
-        if word in _ASKING_WORDS or word in seen:
+    terms = query_understanding.search_terms(source)
+    for at, word in enumerate(terms):
+        #: "first order" names a thing; "whose birthday is first" is only the asking (R3-4, G11).
+        names_next = word == "first" and at + 1 < len(terms) and terms[at + 1] not in _ASKING_WORDS
+        if (word in _ASKING_WORDS and not names_next) or word in seen:
             continue
         seen.append(word)
     seen = _without_asked_shape(question, seen)

@@ -57,7 +57,7 @@ class _FakeModels:
         return "m"
 
 
-def _drive(monkeypatch, rounds, results, thinking=None):
+def _drive(monkeypatch, rounds, results, thinking=None, approved=False):
     """Run one turn. Returns (the messages the model last saw, calls executed)."""
     fake = _FakeOllama(rounds, thinking)
     executed: list[tuple[str, dict]] = []
@@ -68,7 +68,7 @@ def _drive(monkeypatch, rounds, results, thinking=None):
 
     monkeypatch.setattr(agent.tools, "ollama_tools", lambda allowed=None: [])
     monkeypatch.setattr(agent.tools, "execute_tool", execute)
-    events = list(agent.run_agent(_Session(), "q", [], _FakeModels(), fake))
+    events = list(agent.run_agent(_Session(), "q", [], _FakeModels(), fake, approved=approved))
     return fake.sent, executed, events
 
 
@@ -119,6 +119,10 @@ def test_a_read_is_run_again_after_something_is_written(monkeypatch, app_state):
             {"id": 1, "label": "Tagged"},
             {"notes": [], "label": "Listed again"},
         ],
+        # Every write now parks for a Confirm card (owner, 2026-11-10); the
+        # write only runs in a turn the person already approved, which is
+        # the case this freshness rule is about.
+        approved=True,
     )
     assert [name for name, _args in executed] == ["list_notes", "tag_note", "list_notes"]
 

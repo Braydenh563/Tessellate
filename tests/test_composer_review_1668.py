@@ -15,6 +15,7 @@ from tessellate.ai import reminder_parser, repair_turn
 from tessellate.api import routes_chat
 from tessellate.core import clock, config
 from tessellate.entry import manager
+from tests._consent import confirmed
 from tests.test_composer_route_688 import _ask
 
 NOW = datetime(2026, 11, 4, 10, 5)
@@ -112,7 +113,7 @@ def test_the_same_asks_with_a_model_running(ai_client, fake_ollama, notebook, sa
     "said", ["put a reminder in for me tomorrow at 5pm to call mum", "schedule a reminder to pay rent on Friday at 9am"],
 )
 def test_an_ask_with_what_and_when_still_sets_it(client, notebook, said):
-    assert _ask(client, said)["text"].startswith("Done. I will remind you"), said
+    assert confirmed(client, _ask(client, said))["text"].startswith("Done. I will remind you"), said
 
 
 @pytest.mark.parametrize("said", ["I need to be reminded of the dentist", "I set a reminder yesterday", "what reminders do I have", "I was reminded of Sam"])

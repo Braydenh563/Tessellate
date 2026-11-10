@@ -13,6 +13,7 @@ import pytest
 from tessellate.ai import follow_items, recognise
 from tessellate.api import chat_said, chat_turn, routes_chat
 from tessellate.entry import manager
+from tests._consent import confirmed
 
 NOW = datetime(2026, 11, 10, 9, 0)
 SET = [{"question": "remind me to renew passport on 30 November at 9am", "answer": "Got it, I will remind you on 30 November at 9: renew passport."}]
@@ -84,7 +85,7 @@ def test_a_move_to_a_category_is_not_a_day(ask):
 def test_move_it_to_the_16th_moves_the_reminder(client, session):
     manager.create_entry(session, "# Passport\n\nRenew passport by 30 November.")
     session.commit()
-    first = _events(client, "remind me to renew passport on 30 November at 9am")
+    first = confirmed(client, _events(client, "remind me to renew passport on 30 November at 9am"))
     events = _events(client, "move it to the 16th", history=[{"question": "remind me to renew passport on 30 November at 9am", "answer": _said(first)}])
     blob = json.dumps(events)
     assert "snooze_reminder" in blob and "2026-11-16T09:00:00" in blob, blob[:600]

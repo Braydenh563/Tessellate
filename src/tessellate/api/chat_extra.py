@@ -52,7 +52,7 @@ _PATTERNS = re.compile(
     r"|\b(?:recurring|repeated|repeating) (?:themes?|topics?|subjects?)\b|\bwhat do i keep (?:writing|mentioning)\b",
     re.IGNORECASE,
 )
-_CONTRADICTIONS = re.compile(r"\b(?:contradict\w*|conflicting notes?|changed my mind|change of mind|disagree\w*)\b", re.IGNORECASE)
+_CONTRADICTIONS = re.compile(r"\b(?:contradict\w*|conflicting notes?|changed my mind|change of mind|disagree\w*)\b|\b(?:conflicts?|disagreements?) (?:in|between|among|across) (?:my |the |these )?notes\b", re.IGNORECASE)
 _FORGETTING = re.compile(r"\bwhat (?:am i|have i been|did i) forget\w*\b|\bwhat have i forgotten\b|\banything (?:i(?:'m| am)|i have) forgett\w+\b", re.IGNORECASE)
 
 
@@ -124,19 +124,27 @@ def events(session: Session, question: str, history: list[dict], *, now: datetim
     failure is logged and leaves the question to the older readers."""
     if (early := _early_events(session, asked or question, history, now)) is not None:
         return early
-    #: "Summarise this" and "summarise Travel" read the open note or a whole
-    #: category, which the digest does better than a title match here.
-    if composer_digest.about_this(question) or composer_digest.named_category(
-        question, categories_repo.names(session)
-    ):
-        return None
-    #: "Summarise my week" is the week's recap (`ai/activity`), not a note's summary.
-    if activity.as_recap(question) != question:
+    if _summary_goes_elsewhere(session, question):
         return None
     if (read := read_events(session, asked or question, model=deps.get_ollama().is_running())) is not None:
         return read
     ctx = Ctx(question=question, notes=_notes(session), now=now, history=history, seed=seed, open_ids=open_ids,
               follow_kind=follow_kind, said=said, asked=asked or question, ask=ask, reminders=_reminders(session), voice=voice)
+    return _extra_events(ctx)
+
+
+def _summary_goes_elsewhere(session: Session, question: str) -> bool:
+    """"Summarise this" and "summarise Travel" read the open note or a whole
+    category, which the digest does better than a title match; "summarise my
+    week" is the week's recap (`ai/activity`), not a note's summary."""
+    return bool(
+        composer_digest.about_this(question)
+        or composer_digest.named_category(question, categories_repo.names(session))
+        or activity.as_recap(question) != question
+    )
+
+
+def _extra_events(ctx: Ctx) -> list[dict] | None:
     try:
         reply = composer_extra.answer(ctx)
     except Exception:  # noqa: BLE001  # the older readers answer

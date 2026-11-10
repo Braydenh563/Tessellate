@@ -73,10 +73,21 @@ def answer(name: str) -> str:
     return "I don't know yet. Tell me, or add it in Settings, Profile."
 
 
+def _match_set(plain: str):  # noqa: ANN202
+    """`_SET` on the text, or on the text with a slip in the verb read as "call" ("cal me Sam")."""
+    found = _SET.match(plain)
+    if found or not re.search(r"\bme\b", plain, re.I):
+        return found
+    from tessellate.ai import question_noise
+
+    fixed = question_noise.guided(plain, lambda t: bool(_SET.match(t)), frozenset({"call"}), real_to=None)
+    return _SET.match(fixed) if fixed else None
+
+
 def read_set(text: str) -> dict | None:
     """{"intent": "set_name", "name"} for "call me Sam" / "my name is Sam"; a
     time, a pronoun or a verb after "call me" ("call me later") is not a name."""
-    found = _SET.match(" ".join(str(text or "").split()))
+    found = _match_set(" ".join(str(text or "").split()))
     if not found:
         return None
     words = found.group("name").strip(" ,").split()

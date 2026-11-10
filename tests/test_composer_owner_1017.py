@@ -3,6 +3,7 @@ through `/chat/stream` with no model, as the owner met it."""
 
 from __future__ import annotations
 
+from datetime import date
 import json
 
 from tessellate.ai import composer
@@ -210,8 +211,11 @@ def test_a_time_with_no_note_in_it_is_said_as_that_with_where_the_notes_are(clie
         text = _ask(client, "What did I write last month?", **body)["text"]
         assert "couldn't find" not in text and "last month" in text.lower(), (body, text)
         assert "All your notes are from" in text or "Every entry is dated" in text, text
+    #: An empty notebook has the one line everywhere (second audit G14, `composer_empty.EMPTY_NOTEBOOK`);
+    #: the wording varies where the notes are, so the window is given a first and a last day.
+    assert composer_empty.empty_window("last month", None, None) == composer_empty.EMPTY_NOTEBOOK
     for voice in ("natural", "professional"):
-        lines = {composer_empty.empty_window("last month", None, None, voice=voice, seed=str(i)) for i in range(60)}
+        lines = {composer_empty.empty_window("last month", date(2026, 10, 1), date(2026, 10, 9), voice=voice, seed=str(i), today=date(2026, 11, 10)) for i in range(60)}
         assert len(lines) >= 8, (voice, lines)
         assert all("!" not in line and chr(0x2014) not in line and line[0].isupper() for line in lines), lines
 

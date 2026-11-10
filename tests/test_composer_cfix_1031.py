@@ -359,7 +359,8 @@ def test_when_did_i_leads_with_the_sentence_that_says_the_doing(notebook, questi
 @pytest.mark.parametrize("question", ["how long do I bake banana bread", "how long should I bake banana bread", "how long does banana bread bake"])
 def test_how_long_leads_with_the_length(notebook, question):
     said, _ = notebook(question)
-    assert said.lstrip().startswith("Bake at 175C for 55 minutes"), said
+    #: The voice pass (F7) names the source first ("Your notes say 55 minutes, in ..."); the length still leads.
+    assert "55 minutes" in said.lstrip().split(",")[0] and "Bake at 175C for 55 minutes" in said, said
 
 
 @pytest.mark.parametrize("word, stem", [("baked", "bake"), ("liked", "like"), ("named", "name"), ("hoped", "hope"), ("hated", "hate")])
