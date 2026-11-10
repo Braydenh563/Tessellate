@@ -17,7 +17,7 @@ from sqlalchemy import func, select
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
-from tessellate.ai import backend_hint, greeting_compose, librarian
+from tessellate.ai import address, backend_hint, greeting_compose, librarian
 from tessellate.ai.answer_trim import trim_assistant_padding
 from tessellate.ai.ollama_client import OllamaError
 from tessellate.api import paging
@@ -185,7 +185,9 @@ def greeting(block: str = "morning", session: Session = Depends(get_session)) ->
     fallback = {
         "greeting": phrase,
         "punctuation": mark,
-        "append_name": True,  # composed phrases are name-free
+        #: Composed phrases are name-free; the server decides which take the
+        #: name (`ai/address.py`: the first of the day, about one in three, never a question).
+        "append_name": address.dashboard_append(address.name_of(config), mark, user_now(config).date(), block),
         "source": source,
     }
 
@@ -501,11 +503,12 @@ def today_line(seed: int = 0, session: Session = Depends(get_session)) -> dict:
         try:
             now = user_now(deps.get_config()).replace(tzinfo=None)
             voice = str(deps.get_config().get_preference("composer_voice", "natural") or "natural")
-            text = chat_extra.welcome_line(session, now, voice=voice, seed=f"{seed}:{now.date()}") if not notes else ""
+            text = chat_extra.welcome_line(session, now, voice=voice, seed=f"{seed}:{now.date()}", bare=True) if not notes else ""
         except Exception:  # noqa: BLE001  # the page falls back to its counts
             text = ""
         return {"text": text, "kind": "welcome" if text else "none", "sources": []}
-    return {"text": line["text"].replace("**", ""), "kind": line["kind"], "sources": line["sources"]}
+    #: A title is quoted, not run into the sentence ("the latest “Shopping”").
+    return {"text": re.sub(r"\*\*(.+?)\*\*", r"“\1”", line["text"]).replace("**", ""), "kind": line["kind"], "sources": line["sources"]}
 
 
 class InsightVerdict(BaseModel):

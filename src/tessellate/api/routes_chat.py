@@ -35,7 +35,7 @@ from fastapi.responses import StreamingResponse
 from starlette.concurrency import run_in_threadpool
 from sqlalchemy.orm import Session
 
-from tessellate.ai import capability, fact_check, composer, composer_social, composer_unplaced, note_language, composer_aware, composer_compose, composer_digest, composer_suggest, composer_tone, composer_web, composer_lists, find_it, glossary, list_pool, note_rank, note_recency, personal, verdicts, vocative
+from tessellate.ai import address, capability, fact_check, composer, composer_social, composer_unplaced, note_language, composer_aware, composer_compose, composer_digest, composer_suggest, composer_tone, composer_web, composer_lists, find_it, glossary, list_pool, note_rank, note_recency, personal, verdicts, vocative
 from tessellate.ai import ask_chips, composer_dialogue, composer_empty, composer_intent, composer_smalltalk, composer_talk
 from tessellate.ai import consent, recognise
 from tessellate.ai import (
@@ -893,6 +893,8 @@ def _hello_reply(req: _StreamRequest, seed: str, recent: list[str]) -> str:
     invite = "" if "“" in welcome or "](#/notes/" in welcome else _newest_word(req.session)
     asks = composer_smalltalk.invitation(req.question, invite, _composer_voice(), seed) if invite else composer_smalltalk.greeting_ask(req.question, _composer_voice(), seed)
     how = composer_smalltalk.hello_how(req.question, _composer_voice(), [welcome, *recent], seed)
+    #: The name on the first hello of a chat only (`ai/address.py`).
+    welcome = address.greet(welcome, address.name_of(deps.get_config()), req.history)
     return "\n\n".join(p for p in (" ".join(p for p in (welcome, how or asks) if p), sees) if p)
 
 
@@ -1961,6 +1963,9 @@ def _choose_events(req: _StreamRequest, prepared: dict, t: _Turn) -> tuple:
 
     Small talk never goes near the agent: "hey" is not a request to do
     anything, and handing it a toolbox invites it to invent an errand."""
+    if (named := chat_extra.name_events(req.session, req.question or "")) is not None:
+        #: A fact about the person, the same with a model up or not (G7).
+        return iter(named), None
     if t.facts:
         return _fact_events(req, prepared, t), None
     events = _first_events(req, prepared, t.ollama_running, t.tools_only)

@@ -347,15 +347,29 @@ def greeted_as(question: str, hour: int) -> str:
     return "evening" if part == "night" else part
 
 
-def welcome(mood: Mood, *, hour: int = 9, due: int | None = None, last: str = "", streak: int = 0, notes: int = 1, question: str = "", last_href: str = "") -> str:
+def _empty_welcome(mood: Mood, hour: int, question: str, bare: bool) -> str:
+    """The welcome to a notebook with nothing in it. `bare` is the dashboard's:
+    it has a greeting above, so no second one, no "Welcome." (G6)."""
+    new = frame("welcome_new", mood)
+    if bare:
+        new = re.sub(r"^Welcome[.,;] ?", "", new)
+        return new[:1].upper() + new[1:]
+    hello = frame("hello", mood, tod=greeted_as(question, hour))
+    #: Never "welcome back" to a notebook with nothing in it.
+    hello = re.sub(r",? and welcome back", "", hello)
+    if "elcome back" in hello:
+        hello = f"Good {greeted_as(question, hour)}."
+    return new if _stable(mood.seed, "tod") < 0.5 else f"{hello} {new}"
+
+
+def welcome(mood: Mood, *, hour: int = 9, due: int | None = None, last: str = "", streak: int = 0, notes: int = 1, question: str = "", last_href: str = "", bare: bool = False) -> str:
     """A greeting built from what the app knows: the time of day, what is due
     today (`due`, None when unknown), the title of the last note (`last`, a
     link to `last_href` when given) and the streak in days. No note yet is
     the empty welcome. Each known fact is one clause; which come, in what
     order and joined how is the mood's."""
     if notes <= 0:
-        new = frame("welcome_new", mood)
-        return new if _stable(mood.seed, "tod") < 0.5 else f"{frame('hello', mood, tod=greeted_as(question, hour))} {new}"
+        return _empty_welcome(mood, hour, question, bare)
     parts = [frame("hello", mood, tod=greeted_as(question, hour))]
     clauses: list[tuple[str, str]] = []
     if due:

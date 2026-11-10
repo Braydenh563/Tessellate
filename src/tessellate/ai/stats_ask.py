@@ -221,43 +221,67 @@ _ORPHANS = re.compile(r"\borphans?\b|\bunlinked\b|\bno links?\b|not linked")
 _STREAK = re.compile(r"\bstreak\b")
 _AVERAGE = re.compile(r"\b(?:average|avg|mean|typical)\b.*\b(?:words?|length|long)\b|\bwords? per note\b")
 _BUSIEST = re.compile(r"\bbusiest\b|\bmost active\b|\bwhich day\b")
-_YESTERDAY = re.compile(r"^(?:did|have) i (?:write|wrote|written|make|made|add|added|take|took)\b.*\byesterday\b")
+_DID_I = re.compile(r"^(?:did|have) i (?:write|wrote|written|make|made|add|added|take|took)\b")
 _UNUSED = re.compile(r"\b(?:haven.?t|have not|never|not) (?:i )?(?:used|tried|opened)\b|\bunused\b|\bwhat (?:do|did) i(?: not| never)? (?:use|used)\b.*\bnever\b")
 _NOUN = re.compile(r"\b(?:tags?|categor(?:y|ies)|folders?|spaces?)\b")
 
 
-def _page_figure(text: str, session: Session, now: datetime, usage_summary: dict) -> StatAnswer | None:
-    """What the Statistics page shows and the box used to answer with its
-    capability line (G9): links, orphans, streak, average, busiest day,
-    yesterday, features not used."""
-    if _LINKS.search(text) and not _ORPHANS.search(text):
-        n = ns._notebook_block(session, now)["links"]
-        return StatAnswer("links", f"You have {ns._plural(n, 'link')} between your notes.", [{"label": "links", "count": n}])
-    if _ORPHANS.search(text):
-        return ns._orphans(session)
-    if _STREAK.search(text):
-        from tessellate.ai import activity_new
+def _links(session: Session, now: datetime, _usage: dict) -> StatAnswer:
+    n = ns._notebook_block(session, now)["links"]
+    return StatAnswer("links", f"You have {ns._plural(n, 'link')} between your notes.", [{"label": "links", "count": n}])
 
-        return activity_new.streak(session, now, False)
-    if _AVERAGE.search(text):
-        block = ns._notebook_block(session, now)
-        if not block["notes"]:
-            return StatAnswer("average", "You have no notes yet.")
-        each = round(block["words"] / block["notes"])
-        return StatAnswer("average", f"Your notes average {ns._plural(each, 'word')} each, across {ns._plural(block['notes'], 'note')}.", [{"label": "words per note", "count": each}])
-    if _BUSIEST.search(text):
-        return ns._busiest(session)
-    if _YESTERDAY.search(text):
-        start = _midnight(now.date() - timedelta(days=1), now.tzinfo)
-        n = _span(session, start, start + timedelta(days=1))["notes"]
-        return StatAnswer("yesterday", f"Yes, {ns._plural(n, 'note')} yesterday." if n else "No notes yesterday.", [{"label": "yesterday", "count": n}])
-    if _UNUSED.search(text):
-        names = [_feature(n) for n in (usage_summary.get("unused") or [])]
-        days = usage_summary.get("unused_days") or 90
-        if not names:
-            return StatAnswer("unused", f"You have used every feature in the last {days} days.")
-        return StatAnswer("unused", f"Not used in {days} days: {', '.join(names[:8])}.", [{"label": n, "count": 0} for n in names[:8]])
+
+def _streak_run(session: Session, now: datetime, _usage: dict) -> StatAnswer:
+    from tessellate.ai import activity_new
+
+    return activity_new.streak(session, now, False)
+
+
+def _average(session: Session, now: datetime, _usage: dict) -> StatAnswer:
+    block = ns._notebook_block(session, now)
+    if not block["notes"]:
+        return StatAnswer("average", "You have no notes yet.")
+    each = round(block["words"] / block["notes"])
+    return StatAnswer("average", f"Your notes average {ns._plural(each, 'word')} each, across {ns._plural(block['notes'], 'note')}.", [{"label": "words per note", "count": each}])
+
+
+def _did_i(session: Session, now: datetime, text: str) -> StatAnswer | None:
+    """"did I write yesterday": the day is the recogniser's (a day, not a month or week)."""
+    for start, end, _ in recognise.find(text):
+        found = recognise.span(text[start:end], now.date(), "past")
+        if found and found[2] == "day":
+            said = text[start:end].strip()
+            begin = _midnight(found[0], now.tzinfo)
+            n = _span(session, begin, begin + timedelta(days=1))["notes"]
+            return StatAnswer("did-i", f"Yes, {ns._plural(n, 'note')} {said}." if n else f"No notes {said}.", [{"label": said, "count": n}])
     return None
+
+
+def _unused(_session: Session, _now: datetime, usage_summary: dict) -> StatAnswer:
+    names = [_feature(n) for n in (usage_summary.get("unused") or [])]
+    days = usage_summary.get("unused_days") or 90
+    if not names:
+        return StatAnswer("unused", f"You have used every feature in the last {days} days.")
+    return StatAnswer("unused", f"Not used in {days} days: {', '.join(names[:8])}.", [{"label": n, "count": 0} for n in names[:8]])
+
+
+#: First match wins: what the Statistics page shows and the box used to answer
+#: with its capability line (G9).
+_FIGURES = (
+    (_ORPHANS, lambda session, _now, _usage: ns._orphans(session)),
+    (_LINKS, _links),
+    (_STREAK, _streak_run),
+    (_AVERAGE, _average),
+    (_BUSIEST, lambda session, _now, _usage: ns._busiest(session)),
+    (_UNUSED, _unused),
+)
+
+
+def _page_figure(text: str, session: Session, now: datetime, usage_summary: dict) -> StatAnswer | None:
+    if _DID_I.match(text) and (said := _did_i(session, now, text)) is not None:
+        return said
+    reader = next((read for pattern, read in _FIGURES if pattern.search(text)), None)
+    return reader(session, now, usage_summary) if reader else None
 
 
 def ask(question: str, session: Session, now: datetime, usage_summary: dict, first_day: int = 0) -> StatAnswer:

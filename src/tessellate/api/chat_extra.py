@@ -74,6 +74,23 @@ def events(session: Session, question: str, history: list[dict], *, now: datetim
     return out
 
 
+def name_events(session: Session, question: str) -> list[dict] | None:
+    """"what's my name", "who am I": answered from the profile, with a model up
+    or not (G7; the name is local data, so the profile switch does not gate it)."""
+    from tessellate.ai import address, personal
+    from tessellate.core import deps
+
+    kind = address.asks(question)
+    if kind is None:
+        return None
+    line = address.answer(address.name_of(deps.get_config()))
+    if kind == "who":
+        own = personal.answer(question, lambda: personal.notes_of(session))
+        if own and own.get("grounding"):
+            line = f"{line}\n\n{own['text']}"
+    return [{"type": "answer", "delta": line}]
+
+
 def talk_events(session: Session, typed: str, history: list[dict], seed: str, question: str) -> list[dict] | None:
     """The turn when it is about the talk itself (`ai/composer_chat`: a feeling,
     "shorter", "which is higher") or about Atlas ("do you have feelings"), read
@@ -81,6 +98,8 @@ def talk_events(session: Session, typed: str, history: list[dict], seed: str, qu
     missed name offers the notes on its subject only when some are found."""
     from tessellate.ai import composer_chat, personal
 
+    if (named := name_events(session, question)) is not None:
+        return named
     said = composer_chat.reply(typed, history, seed)
     if said is None:
         itself = personal.about_me(question)
@@ -92,7 +111,7 @@ def talk_events(session: Session, typed: str, history: list[dict], seed: str, qu
     return out
 
 
-def welcome_line(session: Session, now: datetime, *, question: str = "", voice: str = "natural", seed: str = "", said: list[str] | None = None, link: bool = False) -> str:
+def welcome_line(session: Session, now: datetime, *, question: str = "", voice: str = "natural", seed: str = "", said: list[str] | None = None, link: bool = False, bare: bool = False) -> str:
     """The composed welcome (CHAT_PLAN 1353): the time of day, the reminders
     due today, the title of the last note and the writing streak, built by the
     composition layer in the person's voice. A failure to count anything
@@ -118,7 +137,7 @@ def welcome_line(session: Session, now: datetime, *, question: str = "", voice: 
     #: In Chat the last note is a link the client opens (INBOX 1485: "didnt
     #: reference the note and no link or source was shown?").
     href = f"#/notes/{notes[0]['id']}" if link and notes else ""
-    return composer_compose.welcome(mood, hour=now.hour, due=due, last=realise.cut_title(last, 60), streak=facts.streak, notes=total, question=question, last_href=href)
+    return composer_compose.welcome(mood, hour=now.hour, due=due, last=realise.cut_title(last, 60), streak=facts.streak, notes=total, question=question, last_href=href, bare=bare)
 
 
 def language_events(session: Session, language: str, *, web_on: bool) -> list[dict]:

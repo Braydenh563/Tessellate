@@ -293,7 +293,8 @@ function withDisplayName(phrase, punctuation = ".", appendName = true) {
 }
 
 function dashboardGreetingText(now = new Date()) {
-  return withDisplayName(fallbackGreetingPhrase(now), ".");
+  //: Name-free until the server says this greeting takes it (`ai/address.py`).
+  return withDisplayName(fallbackGreetingPhrase(now), ".", false);
 }
 
 // A cached AI greeting, refreshed once per time-block per day so it changes

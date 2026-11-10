@@ -35,7 +35,7 @@ from datetime import datetime, timedelta
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from tessellate.ai import find_topic, note_recency, object_acts, reminder_parser, task_acts, when
+from tessellate.ai import address, find_topic, note_recency, object_acts, reminder_parser, task_acts, when
 from tessellate.ai import act_registry, act_steps
 from tessellate.ai.composer_frame import note_title
 from tessellate.ai.act_registry import CONFIRM_INTENTS
@@ -47,10 +47,10 @@ VERBS = ("remind", "complete", "cancel", "snooze", "tag", "untag", "file", "rena
 _VERB_OF = {
     "reminder": "remind", "tag": "tag", "untag": "untag", "move": "file", "rename": "rename", "rename_tag": "rename", "rename_category": "rename", "restore": "restore", "pin": "pin",
     "unpin": "unpin", "link": "link", "unlink": "unlink", "delete": "delete", "new_note": "create",
-    "meeting": "create", "append": "add", "complete": "complete", "uncomplete": "complete", "cancel": "cancel", "snooze": "snooze", "summarise": "summarise", "find": "find", "open": "open", "navigate": "open",
+    "meeting": "create", "append": "add", "complete": "complete", "uncomplete": "complete", "cancel": "cancel", "snooze": "snooze", "set_name": "rename", "summarise": "summarise", "find": "find", "open": "open", "navigate": "open",
 }
 #: The intents that write: each is shown as a card.
-WRITE_INTENTS = frozenset({"reminder", "tag", "untag", "move", "rename", "rename_tag", "rename_category", "restore", "pin", "unpin", "link", "unlink", "delete", "new_note", "meeting", "append", "complete", "uncomplete", "cancel", "snooze"})
+WRITE_INTENTS = frozenset({"reminder", "tag", "untag", "move", "rename", "rename_tag", "rename_category", "restore", "pin", "unpin", "link", "unlink", "delete", "new_note", "meeting", "append", "complete", "uncomplete", "cancel", "snooze", "set_name"})
 #: Read only: answered at once, nothing to confirm.
 READ_INTENTS = frozenset({"find", "open", "navigate", "summarise"})
 #: The writes that wait for Confirm: anything that removes, renames, moves or
@@ -72,7 +72,7 @@ def __getattr__(name: str) -> str:
 #: others are this module's own, for what no registry tool does.
 RUNNABLE = frozenset(
     {"set_reminder", "tag_note", "edit_note", "create_note", "delete_note", "restore_note", "rename_tag", "rename_category",
-     "pin_note", "link_notes", "unlink_notes", "start_meeting", "bin_reminder", "complete_reminder", "restore_reminder", "snooze_reminder"}
+     "pin_note", "link_notes", "unlink_notes", "start_meeting", "bin_reminder", "complete_reminder", "restore_reminder", "snooze_reminder", "set_display_name"}
 )
 
 _MAX_TEXT = 300
@@ -1227,7 +1227,7 @@ def _bare_call(text: str, now: datetime, locale: str | None) -> dict | None:
 
 
 def _read_folded(command: str, question: bool, polite: bool, urgent: bool, now: datetime, locale: str | None) -> dict | None:
-    for reader in (task_acts.read_checklist_note, _meeting, lambda t: _reminder(t, now, locale), lambda t: task_acts.read_add(t, lambda r: _reminder(r, now, locale)),
+    for reader in (address.read_set, task_acts.read_checklist_note, _meeting, lambda t: _reminder(t, now, locale), lambda t: task_acts.read_add(t, lambda r: _reminder(r, now, locale)),
                    task_acts.read_uncomplete, task_acts.read_complete, task_acts.read_cancel, lambda t: task_acts.read_snooze(t, lambda w: _time_of(w, now, locale)), lambda t: _bare_call(t, now, locale), _new_note, _untag, _tag, _move, _delete, _pin, _link, object_acts.read_rename, lambda t: object_acts.read_restore(t, _one_target), _rename,
                    _append, _summarise, _navigate, _find):
         found = reader(command)
@@ -1274,6 +1274,8 @@ def parse(text: str, now: datetime) -> Command | None:
         obj = found["surface"]
     elif intent in ("rename_tag", "rename_category"):
         obj = found["old"]
+    elif intent == "set_name":
+        obj = found["name"]
     elif found.get("note_id") is not None:
         obj = f"note {found['note_id']}"
     else:
@@ -1714,7 +1716,7 @@ def _plan_intent(session: Session, parsed: dict, note_ids: list[int] | None) -> 
         return _plan_meeting(parsed)
     if intent in ("tag", "move"):
         return _plan_tag_or_move(session, parsed, note_ids, intent)
-    if intent in ("rename_tag", "rename_category", "restore"):
+    if intent in ("rename_tag", "rename_category", "restore", "set_name"):
         return object_acts.plan(session, parsed, object_acts.Helpers(_card, _confirm, _item, note_title, summarise_done))
     if _deletes_all(parsed):
         return _plan_delete_all(session, parsed["about"])
@@ -2038,6 +2040,10 @@ def _run_one(session: Session, name: str, args: dict, tools) -> dict:  # noqa: A
         return _bin_reminder(session, args)
     if name in task_acts.OWN_STEPS:
         return task_acts.run_step(session, name, args)
+    if name == "set_display_name":
+        from tessellate.core import deps
+
+        return address.run_step(deps.get_config(), args)
     if name in ("rename_tag", "rename_category", "restore_note") and (refusal := object_acts.guard(session, name, args)):
         return {"error": refusal}
     return tools.execute_tool(session, name, args)

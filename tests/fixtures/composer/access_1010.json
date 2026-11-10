@@ -78,6 +78,7 @@
   },
   "acts": {
     "restore": "restore the passport note from the bin",
+    "set_name": "call me Sam",
     "rename_tag": "rename the tag gym to fitness",
     "rename_category": "rename the category Work to Job",
     "reminder": "remind me to call mum on Friday at 9",
