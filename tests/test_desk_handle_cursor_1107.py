@@ -21,6 +21,19 @@ def _loaded(fake) -> list[int]:
     return [int(args[1]) for d, fn, args in fake.calls if fn == "LoadCursorW" and args[1] is not None]
 
 
+def _loaded_soon(fake, idc: int, within: float = 2.0, until=None) -> list[int]:
+    """The host loads the cursor on its own thread when the runner's command reaches it, so on a loaded
+    machine the load can trail the tick (CI on PR 216, 3.12: only the class arrow loaded yet). Polled on
+    the real clock, which paces only this wait; the engine's clock stays the fixed one."""
+    import time
+
+    end = time.monotonic() + within
+    done = until or (lambda: idc in _loaded(fake))
+    while not done() and time.monotonic() < end:
+        time.sleep(0.01)
+    return _loaded(fake)
+
+
 def test_over_the_handle_the_cursor_is_the_diagonal_and_off_it_the_arrow() -> None:
     r, fake, clock, _ = started()
     stand(r, clock)
@@ -30,10 +43,11 @@ def test_over_the_handle_the_cursor_is_the_diagonal_and_off_it_the_arrow() -> No
     r._on_event("move", hx, hy)
     tick(r, clock, 0.05)
     assert r._cursor_now == k.IDC_SIZENESW  # standing: top right, up and out
-    assert k.IDC_SIZENESW in _loaded(fake)
+    assert k.IDC_SIZENESW in _loaded_soon(fake, k.IDC_SIZENESW)
     assert r.host._on_setcursor(r.host.hwnd, 0) == 1  # Windows asks: the host answers with the diagonal
     r._on_event("move", rect[0] - 200, rect[1] + 200)
     tick(r, clock, 0.05)
+    _loaded_soon(fake, k.IDC_ARROW, until=lambda: r.host._cursor == 0)
     assert r._cursor_now == 0 and r.host._on_setcursor(r.host.hwnd, 0) is None  # off it: the class arrow
     r.stop()
 
