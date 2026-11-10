@@ -177,7 +177,8 @@ def test_and_the_other_is_the_other_note_not_a_chart(client, session):
     said = _talk(client, ["what do I know about harbor", "the first one", "and the other"])
     assert "per tag" not in said[2]["text"] and "chart" not in said[2]["text"].lower()
     assert said[2]["cited"] and ids["Harbor launch plan"] not in said[2]["cited"][:1], said[2]
-    assert "Harbor" in said[2]["text"] or "harbor" in said[2]["text"]
+    # F11 names a note once per chat, so "the other" is checked by what it cites: another Harbor note.
+    assert said[2]["cited"][0] in {ids["Harbor pricing notes"], ids["Harbor beta feedback"]}, said[2]
 
 
 # --- bound before searched: the asks that were searched cold -----------------------

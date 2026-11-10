@@ -14,7 +14,6 @@ import logging
 import re
 import time
 from collections.abc import Iterator
-from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from tessellate.ai import composer_digest, composer_lists, composer_slots, composer_talk, context, fence, intent, librarian, question_noise, recognise, verdicts, why
@@ -30,9 +29,9 @@ from tessellate.api.chat_said import MODEL_STOPPED_NOTE, _app_answers, _asks_cap
 from tessellate.core import deps, private_turn
 from tessellate.core.config import user_now
 from datetime import datetime
-from tessellate.core.database import Entry, like_escape, LIKE_ESCAPE
 from tessellate.core.logbuffer import safe_value
 from tessellate.entry import manager
+from tessellate.repo import visible_notes
 from tessellate.search import chunks as search_chunks
 
 
@@ -301,11 +300,7 @@ def _cited_scope(req: _StreamRequest, follow) -> list[int]:  # noqa: ANN001
     if not objects or req.body.note_ids or (follow is not None and follow.kind != "pronoun") or not composer_dialogue.refers_back(req.question):
         return []
     label = str(objects[0]).strip().lower()
-    rows = req.session.execute(
-        select(Entry.id, Entry.content).where(
-            Entry.is_deleted == False, Entry.is_private == False, Entry.content.ilike(f"%{like_escape(label)}%", escape=LIKE_ESCAPE)  # noqa: E712
-        ).limit(25)
-    ).all()
+    rows = visible_notes.holding(req.session, label, limit=25)
     return [row.id for row in rows if _turn_label(row.content).lower() == label][:1]
 
 
@@ -315,9 +310,7 @@ def _framed_scope(req: _StreamRequest, follow) -> list[int]:  # noqa: ANN001
     Not bound, and searched instead, when the turn's own words are held by another note and not by
     this one ("what is the standard deviation" after the Harbor answer), or the thing it names is
     another note's title ("did I finish it" when the answer before cited the wrong note)."""
-    rows = req.session.execute(
-        select(Entry.id, Entry.content).where(Entry.id.in_(list(follow.note_ids)), Entry.is_deleted == False, Entry.is_private == False)  # noqa: E712
-    ).all()
+    rows = visible_notes.by_ids(req.session, follow.note_ids)
     ids = [row.id for row in rows]
     bound = " ".join(row.content or "" for row in rows).lower()
     asked = composer_dialogue.subject_terms(req.question) if follow.kind == "bound" else []
@@ -332,11 +325,7 @@ def _framed_scope(req: _StreamRequest, follow) -> list[int]:  # noqa: ANN001
 
 def _visible_elsewhere(session, term: str, ids: list[int], *, titled: bool = False) -> bool:  # noqa: ANN001
     """Whether a visible note outside `ids` holds `term`, or with `titled`, is titled `term` ("Mia")."""
-    rows = session.execute(
-        select(Entry.content).where(
-            Entry.is_deleted == False, Entry.is_private == False, Entry.id.notin_(ids), Entry.content.ilike(f"%{like_escape(term)}%", escape=LIKE_ESCAPE)  # noqa: E712
-        ).limit(25 if titled else 1)
-    ).all()
+    rows = visible_notes.holding(session, term, limit=25 if titled else 1, besides=ids)
     return any(_turn_label(row.content).lower() == term.lower() for row in rows) if titled else bool(rows)
 
 
