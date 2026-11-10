@@ -2714,7 +2714,7 @@ HELP_TOPICS.extend(
                 "] and - [x]. View, Number the branches numbers every topic by "
                 "its place (1, 1.1, 1.2), and the Markdown and OPML exports keep "
                 "the numbers. A topic's menu adds a note behind it: its mark on "
-                "the topic opens it. "
+                "the topic opens it; on a topic that is one of your notes, Edit the note's text… changes the note itself. "
                 "Comment… starts a thread, counted on its corner; its Branch group draws a boundary "
                 "round the branch or summarises topics side by side. Templates, import and export are in Mind map import and export."
             ),

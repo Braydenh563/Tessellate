@@ -27,3 +27,29 @@ def test_a_topic_inserted_between_keeps_every_branch_its_colour():
 def test_a_cycle_still_ends():
     colours = _map_branch_colors({1: None, 2: 3, 3: 2, 4: 1}, {})
     assert colours[4] == MAP_BRANCH_PALETTE[0]
+
+
+def test_rainbow_colours_every_level_by_sibling_and_never_repeats_its_parent():
+    # Rainbow every level (F3, MINDMAP_PLAN gap 10): a theme option, so the thumbnail agrees with the canvas.
+    parents = {1: None, 2: 1, 3: 1, 4: 2, 5: 2, 6: 2, 7: 4}
+    plain = _map_branch_colors(parents, {})
+    assert plain[4] == plain[2] == plain[5]
+    rainbow = _map_branch_colors(parents, {}, None, rainbow=True)
+    assert [rainbow[i] for i in (2, 3)] == MAP_BRANCH_PALETTE[:2]
+    assert len({rainbow[4], rainbow[5], rainbow[6]}) == 3
+    for child, parent in ((4, 2), (5, 2), (6, 2), (7, 4)):
+        assert rainbow[child] != rainbow[parent], child
+
+
+def test_a_node_with_its_own_colour_still_wins_under_rainbow():
+    rainbow = _map_branch_colors({1: None, 2: 1, 3: 2}, {3: "#123456"}, None, rainbow=True)
+    assert rainbow[3] == "#123456"
+
+
+def test_rainbow_is_a_map_level_boolean_theme_field():
+    from tessellate.api.wb_board import _clean_theme
+    from tessellate.api.wb_model import MAP_LEVEL_THEME_FIELDS
+
+    assert _clean_theme({"rainbow": True}) == {"rainbow": True}
+    assert _clean_theme({"rainbow": False}) == {}
+    assert "rainbow" in MAP_LEVEL_THEME_FIELDS

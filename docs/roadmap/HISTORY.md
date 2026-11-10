@@ -54193,3 +54193,12 @@ Bullets already marked closed in OPEN.md, moved verbatim, grouped by their OPEN.
 - Edit style: the Data tab's Style as text (Ctrl+E), checked JSON, path/type/label/ends/props kept out of it; bad JSON refused with a line, apply changed colour, width and round, removed fill, kept the label, one Undo restored.
 - Quick note: the dialog's interior sits in `<template data-surface="quickNote">`; opening by Alt+N built it (textarea absent at boot), Private flipped true and saved a private note (201), Clear and Close worked.
 
+
+
+## Moved from the plans, 2026-11-10 (s9c-1110 part 3: MINDMAP_PLAN F3)
+
+- Replace all rewrites a topic's note as well as its words (`wbBoardReplaceAll`, one Undo step; the old test that said a note is found, not rewritten moved with the owner's F3 line).
+- Rainbow every level (gap 10): theme field `rainbow` (map-level, never merged onto a topic); each topic below the main branches takes the next palette colour among its siblings that is not its parent's, on the canvas (`wbMapColors`) and in the Library thumbnail (`_map_branch_colors`, with the preview cache and fingerprint keyed on it); `tests/test_map_rainbow.py` runs both and compares them. Driven at 1440 and 390 on 8842: A1, A2 and A3 three distinct colours, the fourth level unlike its parent, reopen keeps it.
+- Legend (gap 11): theme field `legend`; View, How this map looks, Show a legend draws the main branches' colours (named by their topics, ten at most) and only the markers the map uses, in the existing `#wb-map-legend` box, scrolling inside 40% of the board (`tests/test_map_legend.py`). Driven at 1440 and 390: 3 swatches and 3 marker rows, 133 x 179 px, inside the window; off hides it.
+- A note node edits in place (item 5, second half): the topic menu's Edit the note's text… opens the notebook note's whole text in the topic-note shell, saves with a PUT on close and pushes one step on the board's history (`wbPushCall`), so Ctrl+Z gives the old text back; driven at 1440 and 390 (May to June and back; `tests/test_map_note_edit.py`).
+- Found already built, so struck from the F3 list: branch palette and font (13e, HISTORY 2026-10-04), render pass 13a and 13b (HISTORY 2026-09-21), outline view (item 8).

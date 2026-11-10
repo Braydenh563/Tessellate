@@ -189,7 +189,7 @@ function wbMapThemeDefault(field, node = wbSelectedMapNode()) {
 
 //: The two theme keys that are not a look a topic can take: the preset's name
 //: and the per-level overrides. Never merged onto a topic's data.
-const WB_MAP_THEME_META = new Set(["hierarchy", "levels", "spacing"]);
+const WB_MAP_THEME_META = new Set(["hierarchy", "levels", "spacing", "rainbow", "legend"]);
 
 //: The seven fields a level can set (the server's `MAP_LEVEL_FIELDS`). `fill`
 //: here is `solid`, `tint` or `none`: a level's fill, read by the paint pass
@@ -594,7 +594,8 @@ function wbRenderMapLegend(passed = null) {
   const box = document.getElementById("wb-map-legend");
   if (!box) return;
   const perspective = wbMapPerspective();
-  if (!wbIsMap() || perspective === "branch") {
+  const own = perspective === "branch" && wbMapTheme().legend;
+  if (!wbIsMap() || (perspective === "branch" && !own)) {
     box.hidden = true;
     box.replaceChildren();
     return;
@@ -603,8 +604,38 @@ function wbRenderMapLegend(passed = null) {
   const facets = wbMapFacets();
   const palette = wbMapPalette();
   const quiet = wbMapQuietColour();
+  //: **The map's own legend** (MINDMAP_PLAN gap 11): the colour of each main
+  //: branch, named by its topic, and each marker the map actually uses (a
+  //: priority, a flag, a progress pie, each icon) with the words it carries
+  //: elsewhere. Only what is on the map is listed, so a legend never explains a
+  //: mark nobody can see. Branch rows are capped at ten.
+  const ownRows = () => {
+    const colors = wbMapColors(index);
+    const out = [];
+    const branches = index.nodes.filter((n) => n.parent_id != null && index.byId.get(n.parent_id)?.parent_id == null);
+    for (const node of branches.slice(0, 10)) {
+      const colour = colors.get(node.id);
+      if (colour) out.push({ label: wbMapLabel(node) || "Untitled", colour });
+    }
+    if (branches.length > 10) out.push({ label: `${branches.length - 10} more branches`, colour: quiet });
+    const used = { priority: false, progress: false, flag: false, icons: new Set() };
+    for (const node of index.nodes) {
+      const parts = wbMapMarkerParts(node.data);
+      used.priority ||= parts.priority != null;
+      used.progress ||= parts.progress != null;
+      used.flag ||= parts.flag;
+      parts.icons.forEach((icon) => used.icons.add(icon));
+    }
+    if (used.priority) out.push({ marker: { priority: 1 }, label: "Priority, 1 is first" });
+    if (used.progress) out.push({ marker: { progress: 50 }, label: "How far along" });
+    if (used.flag) out.push({ marker: { flag: true }, label: "Flagged" });
+    for (const icon of used.icons) out.push({ marker: { markers: [icon] }, label: WB_MAP_MARKER_ICON_NAMES.get(icon) || icon });
+    return out;
+  };
   const rows = [];
-  if (perspective === "notes") {
+  if (own) {
+    rows.push(...ownRows());
+  } else if (perspective === "notes") {
     rows.push({ label: "Stands for a note", colour: palette[0] });
     rows.push({ label: "A topic of its own", colour: quiet });
   } else if (perspective === "age") {
@@ -626,7 +657,8 @@ function wbRenderMapLegend(passed = null) {
 
   const title = document.createElement("span");
   title.className = "wb-map-legend-title";
-  title.textContent = `Colour: ${WB_MAP_PERSPECTIVES.find((p) => p.key === perspective)?.label || perspective}`;
+  title.textContent = own ? "Legend" : `Colour: ${WB_MAP_PERSPECTIVES.find((p) => p.key === perspective)?.label || perspective}`;
+  box.dataset.own = own ? "1" : "";
   const list = document.createElement("div");
   list.className = "wb-map-legend-rows";
   for (const row of rows) {
@@ -637,10 +669,17 @@ function wbRenderMapLegend(passed = null) {
     swatch.setAttribute("aria-hidden", "true");
     // Through the CSSOM, not an inline `style` attribute in markup: the CSP
     // drops those (CLAUDE.md, "a policy silently refusing the work").
-    swatch.style.background = row.colour;
+    if (!row.marker) swatch.style.background = row.colour;
     const text = document.createElement("span");
     text.textContent = row.label;
-    line.append(swatch, text);
+    let lead = swatch;
+    if (row.marker) {
+      lead = document.createElement("span");
+      lead.className = "wb-map-markers wb-map-legend-mark";
+      lead.setAttribute("aria-hidden", "true");
+      wbMapPaintMarkers(lead, row.marker);
+    }
+    line.append(lead, text);
     list.appendChild(line);
   }
   box.replaceChildren(title, list);
@@ -854,6 +893,8 @@ const WB_MAP_THEME_GROUPS = [
       { key: "spacing", label: "Spacing", kind: "select", options: [
         ["", "Normal"], ["compact", "Compact"], ["roomy", "Roomy"],
       ] },
+      { key: "rainbow", label: "Colour every level", kind: "check" },
+      { key: "legend", label: "Show a legend", kind: "check" },
     ],
   },
   {
@@ -1582,6 +1623,14 @@ function wbMapSubtree(index, id) {
 //: once per node to learn what a single walk already knew.
 function wbMapColors(index) {
   const palette = wbMapPalette();
+  const rainbow = !!wbMapTheme().rainbow;
+  //: **Rainbow every level**: the `slot`th colour of the palette that is not the
+  //: parent's (`_rainbow_pick` in wb_preview.py is the thumbnail's copy).
+  const rainbowPick = (slot, inherited) => {
+    const choices = palette.filter((c) => c !== inherited);
+    const from = choices.length ? choices : palette;
+    return from[slot % from.length];
+  };
   const colors = new Map();
   const seen = new Set();
   let branch = 0;
@@ -1600,24 +1649,25 @@ function wbMapColors(index) {
     oldest.set(node.id, min);
     return min;
   };
-  const walk = (node, inherited) => {
+  const walk = (node, inherited, slot = 0, depth = 0) => {
     if (seen.has(node.id)) return;
     seen.add(node.id);
-    const own = node.data?.color || inherited || null;
+    const picked = !node.data?.color && rainbow && depth > 1 && palette.length ? rainbowPick(slot, inherited) : null;
+    const own = node.data?.color || picked || inherited || null;
     colors.set(node.id, own);
     //: Creation order, not sibling order: a branch keeps its colour when it
     //: is moved up or down (INBOX 445), and the Library's thumbnail, which
     //: hands out `MAP_BRANCH_PALETTE` by id on the server, keeps agreeing.
     const kids = [...(index.childrenOf.get(node.id) || [])].sort((a, b) => ageOf(a) - ageOf(b) || a.id - b.id);
-    for (const child of kids) {
+    kids.forEach((child, at) => {
       // `inherited == null` is true for exactly one generation, the roots'
       // own children, which *are* the first-level topics. Starting the colours
       // at the root instead would give every branch on the map the same
       // colour, which is the one thing branch colour exists not to do.
       const next = child.data?.color
         || (inherited == null && palette.length ? palette[branch++ % palette.length] : own);
-      walk(child, next);
-    }
+      walk(child, next, at, depth + 1);
+    });
   };
   for (const root of [...index.roots].sort((a, b) => a.id - b.id)) walk(root, null);
   return colors;
@@ -2392,7 +2442,10 @@ let wbMapNoteState = null;
 
 function wbMapOpenNote(id, anchor) {
   const node = (wbState.objects || []).find((o) => o.id === id);
-  if (!node || WB_MAP_REFERENCE_KINDS.has(node.kind)) return;
+  //: A note node (MINDMAP_PLAN 12.2 item 5, second half) opens the same shell on the
+  //: notebook's own text; every other reference kind has no note of its own.
+  const entryId = node?.kind === "note" && Number.isInteger(node.data?.ref_id) ? node.data.ref_id : null;
+  if (!node || (WB_MAP_REFERENCE_KINDS.has(node.kind) && entryId == null)) return;
   //: The mark is a toggle: pressed again while its note is open, it closes
   //: (and saves) it, as the help popover's own '?' does.
   if (wbMapNoteState?.id === id) {
@@ -2409,17 +2462,18 @@ function wbMapOpenNote(id, anchor) {
   panel.id = "wb-map-note-peek";
   panel.setAttribute("role", "dialog");
   const label = wbMapLabel(node) || "this topic";
-  panel.setAttribute("aria-label", `The note behind ${label}`);
+  const said = entryId == null ? `The note behind ${label}` : `The text of ${label}`;
+  panel.setAttribute("aria-label", said);
   const box = document.createElement("textarea");
   box.className = "wb-map-note-text";
   box.rows = 6;
-  box.maxLength = 10000;
+  box.maxLength = entryId == null ? 10000 : 200000;
   box.value = typeof node.data?.note === "string" ? node.data.note : "";
   box.placeholder = "Write what this topic needs saying";
-  box.setAttribute("aria-label", `The note behind ${label}`);
+  box.setAttribute("aria-label", said);
   const hint = document.createElement("p");
   hint.className = "muted wb-map-note-hint";
-  hint.textContent = "Saved when you close it. Esc closes.";
+  hint.textContent = entryId == null ? "Saved when you close it. Esc closes." : "Saved to the note when you close it. Esc closes.";
   panel.append(box, hint);
   //: Every key typed here is the note's: Tab, Enter and Delete are map
   //: gestures on the canvas, and Escape would also deselect the topic.
@@ -2436,11 +2490,53 @@ function wbMapOpenNote(id, anchor) {
   };
   document.addEventListener("pointerdown", outside, true);
   document.body.appendChild(panel);
-  wbMapNoteState = { id, panel, anchor: target, outside, before: box.value };
+  wbMapNoteState = { id, panel, anchor: target, outside, before: box.value, entryId, loaded: entryId == null };
   if (target.classList.contains("wb-map-note")) target.setAttribute("aria-expanded", "true");
   placeHelpPopover(panel, target);
   box.focus({ preventScroll: true });
+  if (entryId != null) wbMapOpenNote.load(wbMapNoteState, box);
 }
+
+//: A note node's text, read from the notebook (never the clipped list row) and put
+//: in the box; until it arrives the box is read-only so nothing typed is lost.
+wbMapOpenNote.load = async (state, box) => {
+  box.readOnly = true;
+  box.placeholder = "Loading the note…";
+  try {
+    const entry = await apiJson(`/entries/${state.entryId}`);
+    if (wbMapNoteState !== state) return;
+    box.value = String(entry.content || "");
+    state.before = box.value;
+    state.loaded = true;
+    box.readOnly = false;
+    box.placeholder = "";
+  } catch (err) {
+    state.panel.remove();
+    document.removeEventListener("pointerdown", state.outside, true);
+    wbMapNoteState = null;
+    toast(err.message || "That note could not be opened here.", true);
+  }
+};
+
+//: Save a note node's text to the notebook: one Undo step on the notebook's
+//: history, the cards refreshed, and the map's labels re-read so the node
+//: carries the note's new first line.
+wbMapOpenNote.save = async (entryId, before, after) => {
+  //: On the board's own history, where Ctrl+Z is read while a board is open.
+  const write = (content) => async () => {
+    await apiJson(`/entries/${entryId}`, { method: "PUT", body: JSON.stringify({ content }) });
+    await refreshEntries([entryId]);
+    await wbRefreshMapState();
+    renderWhiteboardNow();
+  };
+  try {
+    await write(after)();
+    wbPushCall("Edited a note from the map", write(before), write(after));
+    wbAnnounce("Note saved.");
+  } catch (err) {
+    toast(err.message || "That note could not be saved.", true);
+  }
+};
 
 function wbMapCloseNote({ restoreFocus = false } = {}) {
   const state = wbMapNoteState;
@@ -2452,7 +2548,10 @@ function wbMapCloseNote({ restoreFocus = false } = {}) {
   if (state.anchor.classList.contains("wb-map-note")) state.anchor.setAttribute("aria-expanded", "false");
   const node = (wbState.objects || []).find((o) => o.id === state.id);
   const next = value.trim();
-  if (node && next !== state.before.trim()) {
+  if (state.entryId != null) {
+    //: A note's own text keeps its spacing; an emptied one is left (a note is not deleted from here).
+    if (node && state.loaded && value !== state.before && value.trim()) wbMapOpenNote.save(state.entryId, state.before, value);
+  } else if (node && next !== state.before.trim()) {
     wbMapSetNodeStyle(node, { note: next || null }).then(() => {
       renderWhiteboardNow();
       wbAnnounce(next ? "Note saved." : "Note removed.");
