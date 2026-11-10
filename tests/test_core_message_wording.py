@@ -309,6 +309,7 @@ REVIEWED_COMPUTED: dict[tuple[str, str], str] = {
     ("routes_hello.py", "NOT_UNLOCKED"): "a constant in routes_hello.py, checked below",
     ("routes_hello.py", "NO_LOCALHOST"): "a constant in routes_hello.py, checked below",
     ("routes_hello.py", "REFUSAL"): "api/this_computer.py REFUSAL, one fixed sentence",
+    ("routes_origin_handoff.py", "REFUSAL"): "api/this_computer.py REFUSAL, one fixed sentence",
     ("routes_board_library.py", "detail"): "_fail's callers pass literals and f-strings of counts and names, which collect() checks",
     ("routes_import.py", "str(exc)"): "TooBig from entry/app_import.py, one fixed sentence",
     ("routes_webclip.py", "NOT_A_PAGE"): "a constant in routes_webclip.py, checked below",

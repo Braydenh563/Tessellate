@@ -67,6 +67,8 @@ EXTRA_ASSETS = (
     "/vendor/mermaid/mermaid.min.js",
     # The desk companion asks the app window for it by name (overlay/capture.py), not the page.
     "/js/desk-frames.js",
+    # The grammar worker imports it as a module (INBOX 1731), not the page.
+    "/js/spell-second.js",
 )
 
 

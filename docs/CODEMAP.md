@@ -13140,7 +13140,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/spaces/{space_id}/move-notes` | POST | `move_notes_to_space` | src/tessellate/api/routes_spaces.py:549 |
 | `/spaces/{space_id}/private` | PUT | `set_space_private` | src/tessellate/api/routes_private_spaces.py:138 |
 | `/spec` | GET | `model_spec` | src/tessellate/api/routes_models.py:750 |
-| `/spelling/own-words` | GET | `get_own_words` | src/tessellate/api/routes_spelling.py:65 |
+| `/spelling/own-words` | GET | `get_own_words` | src/tessellate/api/routes_spelling.py:27 |
 | `/start` | POST | `start` | src/tessellate/api/routes_captions.py:96 |
 | `/statistics` | GET | `statistics` | src/tessellate/api/routes_statistics.py:25 |
 | `/statistics/ask` | POST | `ask_statistics` | src/tessellate/api/routes_statistics.py:39 |
@@ -21483,12 +21483,11 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `space_counts` | src/tessellate/api/routes_spaces.py:85 |
 | `update_space` | src/tessellate/api/routes_spaces.py:108 |
 
-### src/tessellate/api/routes_spelling.py (2)
+### src/tessellate/api/routes_spelling.py (1)
 
 | Name | File:line |
 |---|---|
-| `get_own_words` | src/tessellate/api/routes_spelling.py:66 |
-| `own_words` | src/tessellate/api/routes_spelling.py:39 |
+| `get_own_words` | src/tessellate/api/routes_spelling.py:28 |
 
 ### src/tessellate/api/routes_statistics.py (3)
 
@@ -25102,6 +25101,12 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `counts` | src/tessellate/repo/spaces.py:28 |
 | `find` | src/tessellate/repo/spaces.py:24 |
 | `ids` | src/tessellate/repo/spaces.py:16 |
+
+### src/tessellate/repo/spelling.py (1)
+
+| Name | File:line |
+|---|---|
+| `own_words` | src/tessellate/repo/spelling.py:26 |
 
 ### src/tessellate/repo/tags.py (17)
 

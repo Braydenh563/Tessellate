@@ -456,6 +456,7 @@ def uncovered() -> dict[str, list[int]]:
 
 
 EXEMPT: dict[str, str] = {
+    "origin-bridge.js:(anonymous path)": "send: the one-time carry of saved settings from 127.0.0.1 to localhost (routes_origin_handoff); it writes nothing the person made and runs once before the app opens",
     "settings-health.js:renderRunningCopies": "send: asks another running copy to quit (Shut down); a quit cannot be undone, and the row names the copy and port",
     "capture-card-more.js:askCaptureSuggestions": "read: asks for tag suggestions for the capture card's words (/entries/suggest-tags); writes nothing",
     "capture-card-more.js:uploadCapturePictures": "send: part of saving the capture card; stores the pictures the new note links; the note's own Undo (announceSavedNote) takes the note back",

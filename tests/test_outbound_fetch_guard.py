@@ -58,6 +58,9 @@ REACHES_THE_NETWORK = {
     # `core.security.public_addresses`, every redirect hop re-checked, and the
     # connection pinned to the address that passed.
     "search/websearch.py": "untrusted",
+    # Configured: the launcher asks its own server's /health over `localhost`
+    # once a launch, to fall back to 127.0.0.1 when that name does not work.
+    "__main__.py": "configured",
     # Untrusted: a page the person asked to clip (WORLD_CLASS_PLAN D9), only
     # while the web opt-in is on. The same guard on every hop, the same
     # pinning, and a cap on the whole fetch's size and time.

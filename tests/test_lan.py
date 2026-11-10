@@ -2271,12 +2271,14 @@ def test_a_phone_cannot_allow_the_network_it_is_on(trust_lan_app):
 def test_local_name_opens_a_localhost_name(monkeypatch):
     from tessellate import __main__ as entry
 
+    # Pages open at localhost now (owner, 2026-11-10, "Localhost everywhere");
+    # the name still wins and a bad one is still refused.
     monkeypatch.delenv("TESSELLATE_LOCAL_NAME", raising=False)
-    assert entry.page_host() == "127.0.0.1"
+    assert entry.window_host() == "localhost"
     monkeypatch.setenv("TESSELLATE_LOCAL_NAME", "Tessellate")
-    assert entry.page_host() == "tessellate.localhost"
+    assert entry.window_host() == "tessellate.localhost"
     monkeypatch.setenv("TESSELLATE_LOCAL_NAME", "evil.example/x")
-    assert entry.page_host() == "127.0.0.1"
+    assert entry.window_host() == "localhost"
 
 
 # --- idle cost (INBOX 1351): the watch waits on the change, not on a timer -----
