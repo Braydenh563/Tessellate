@@ -3176,7 +3176,20 @@ function wbRememberBoardView() {
   if (id == null || !container || !container.clientWidth || typeof wbZoom === "undefined") return;
   const t = d3.zoomTransform(container);
   wbBoardViews.set(id, { x: t.x, y: t.y, k: t.k });
+  //: Past a reload too (per device, like the board's background image): the view of a board left open is its last.
+  prefs.set(`wb-view-${id}`, JSON.stringify({ x: t.x, y: t.y, k: t.k }));
 }
+window.addEventListener("pagehide", wbRememberBoardView);
+
+//: The view a board was left on in an earlier visit; anything that is not three finite numbers is no view.
+wbRememberBoardView.stored = (id) => {
+  try {
+    const view = JSON.parse(prefs.get(`wb-view-${id}`, "null"));
+    return view && Number.isFinite(view.x) && Number.isFinite(view.y) && Number.isFinite(view.k) && view.k > 0 ? view : null;
+  } catch {
+    return null;
+  }
+};
 
 /** Does this view show the content well enough to keep (INBOX 1428)?
  *  Any overlap used to count, so a board opened on a view showing only its
@@ -3207,7 +3220,7 @@ function wbViewHoldsBox(view, box, free) {
 function wbRestoreOrFrameBoard(boardId) {
   const container = document.getElementById("whiteboard-container");
   if (!container) return;
-  const saved = boardId == null ? null : wbBoardViews.get(boardId);
+  const saved = boardId == null ? null : wbBoardViews.get(boardId) || wbRememberBoardView.stored(boardId);
   const bounds = wbContentBounds();
   const free = wbFreeArea(container);
   //: **A map's remembered view must show its centre topic clear of the
@@ -3732,7 +3745,9 @@ function wbSearchTextFor(kind, item, byId) {
     //: box was ever found (measured, canvasdepth: "SHIP" in a text box, 0).
     try {
       const data = typeof item.data === "string" ? JSON.parse(item.data || "{}") : item.data || {};
-      return `${data.content || ""}${wbCellsText(data.cells)}${wbPropsText(data.props)}`.toLowerCase();
+      //: A map topic's note (`data.note`, the text behind the topic) is searched too (MINDMAP gap 13, OPEN F3); Replace all leaves it alone.
+      const note = typeof data.note === "string" ? `\n${data.note}` : "";
+      return `${data.content || ""}${wbCellsText(data.cells)}${wbPropsText(data.props)}${note}`.toLowerCase();
     } catch {
       return "";
     }
