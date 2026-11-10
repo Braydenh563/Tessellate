@@ -54070,3 +54070,7 @@ Bullets already marked closed in OPEN.md, moved verbatim, grouped by their OPEN.
 ### Left by the engine agent (Brief 39, CHAT_PLAN Phase 6, merged 2026-10-10)
 
 - **Fixed (passes at 07e9ce1ab).** Found, not mine: tests/test_ask_answer_object.py::test_ask_is_never_disabled_when_the_model_is_off fails on the base too (the chat skills trigger's `dataset.needsModel`).
+## INBOX resolved, 2026-11-10
+
+1720. **Decision wanted, diagram builder default fold (agent dgpolish-1109, from dgml-1109):** both blind tasks (a sequence of 3 participants, 4 messages, a note and an alt; a flowchart with a decision and two labelled branches) pass with the blocks list folded, which by the spec's rule says the list should open folded by default (diagram-split.js `diagram.fold`, now "" both open). Not flipped: it changes what every first-time person sees. Recommendation: fold the list by default on a diagram opened from New diagram only, and leave an existing diagram as the person left it; a one-line change plus the rail's label already says what it holds.
+
