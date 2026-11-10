@@ -21,3 +21,18 @@ Left, one line each:
 - B34 ("tell me a joke" against a note titled Jokes): owner decision, skipped.
 - Pre-existing red on the base, not touched: `tests/test_ai_name.py`, `tests/test_lazy_bundle_calls.py`, `tests/test_error_toasts.py::test_expected_situations_are_plain_toasts`, `tests/test_no_import_cycles.py` (`core.extras` and `core.languagetool`), `tests/test_static_compression.py` (gzip ratchet).
 - Not verified: the browser (the Run the skill card and the Was/Now card items were not driven in Playwright; `node --check` only); real model inference (every model-on row used the fake transport).
+
+## compleft2 (second pass)
+
+Done:
+
+- "turn my todo note into reminders": the lookup tries the title as typed (`parity_acts._source_note`).
+- A typed yes or no reaches the Run the skill and Run the plan cards: `consent.attach` parks the hand-over (`ask_label`, `consent_id`), `chat_agent.consent_events` replays it with `consented` and settles the card, `planProposalCard` and `chat-turn.js` carry the id (`tests/test_consent_cards_1110.py`; the skill event test in `test_parity_acts_1110.py` now ignores the two added keys).
+- g13 G1: "when did I last see the dentist" (`composer_digest._behind_if`), "has the launch date changed" (`supersede.changed`, `routes_chat._changed_line`), "how far did I run" already excludes the goal line (`tests/test_ask_facts2_1110.py`).
+- g1014 G11 label lookup: "which is cheaper, free or plus", "how much more did I spend eating out in october" (`composer_amounts._which`, `_more`).
+
+Left:
+
+- Not started: g1014 G12 Patterns template (five test files pin it), G14 a, e, f, i and the JS composed rows, s10 F4 "X versus Y" (composition layer, `composer.compare_sides` before the digest), "whose birthday is next".
+- The tiers case needs lines of "Label number"; a prose line ("Plus tier at $5 a month") is not read by the label lookup.
+- Not verified: the browser (a typed yes starting a skill from the page was not driven in Playwright; `node --check` only), real model inference.

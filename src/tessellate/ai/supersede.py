@@ -201,6 +201,36 @@ def older_dates(question: str, text: str, notes: list[dict], today: date) -> lis
     return [Replaced(note, newest[1], f"{day.day} {_MONTHS[day.month - 1]}", written)]
 
 
+#: "has the launch date changed", "did the meeting move": the subject is what comes between the verb and the change.
+_CHANGED_ASK = re.compile(
+    r"^\W*(?:has|have|did|is|was|will)\s+(?:the\s+|my\s+|our\s+)?(?P<subject>.+?)\s+(?:been\s+)?"
+    r"(?:changed|change|moved|move|slipped|slip|shifted|shift|pushed(?:\s+back)?|delayed|rescheduled|postponed)(?:\s+again)?\W*$",
+    re.I,
+)
+_DATE_WORDS = frozenset({"date", "time", "day"})
+
+
+def _said_day(day: date, today: date) -> str:
+    return f"{day.day} {_MONTHS[day.month - 1]}" + ("" if day.year == today.year else f" {day.year}")
+
+
+def changed(question: str, notes: list[dict], today: date) -> str:
+    """The answer to "has the launch date changed": yes, with the day it was and the day it is, when two
+    notes written on different days give different days for the subject; no, when every note that gives
+    one gives the same; "" when the notes cannot tell (one note, or no day). The newest note leads."""
+    found = _CHANGED_ASK.match(question or "")
+    asked = frozenset(w for w in query_understanding.search_terms(found["subject"]) if w not in _VALIDITY | _DATE_WORDS) if found else frozenset()
+    held = _dated_sentences(notes, asked, today) if asked else []
+    if len({id(h[1]) for h in held}) < 2:
+        return ""
+    newest = max(held, key=lambda h: h[2])
+    older = [h for h in held if h[2] < newest[2] and h[0] != newest[0]]
+    if not older:
+        return f"No, your notes give the same day: {_said_day(newest[0], today)}." if len({h[0] for h in held}) == 1 else ""
+    before = max(older, key=lambda h: h[2])
+    return f"Yes, from {_said_day(before[0], today)} to {_said_day(newest[0], today)}. Your note of {_said_day(newest[2], today)} has the new day; your note of {_said_day(before[2], today)} had the old one."
+
+
 _NATURAL = (
     "An older note, from {when}, said {value}.",
     "Before that, on {when}, you had written {value}.",

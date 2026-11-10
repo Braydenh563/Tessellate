@@ -195,7 +195,12 @@ def _source_note(session: Session, parsed: dict, note_ids: list[int] | None, hel
     if low in _LISTISH and note_ids:
         return helpers["resolve_one"](session, None, note_ids, True, None)
     about = re.sub(r"\s+note$", "", src, flags=re.I)
-    return helpers["resolve_one"](session, about, note_ids, False, None)
+    found = helpers["resolve_one"](session, about, note_ids, False, None)
+    #: The speller reads "todo" as "to do" before this sees it; a note titled Todo (or To-do) is looked up as typed.
+    for spelling in ("todo", "to-do"):
+        if found[0] is None and re.search(r"\bto do\b", about, re.I):
+            found = helpers["resolve_one"](session, re.sub(r"\bto do\b", spelling, about, flags=re.I), note_ids, False, None)
+    return found
 
 
 def _to_reminders(session: Session, parsed: dict, note_ids: list[int] | None, helpers: dict, now: datetime) -> dict:

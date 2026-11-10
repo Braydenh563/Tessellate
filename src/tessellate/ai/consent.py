@@ -53,10 +53,29 @@ def says(question: str) -> str | None:
     return "yes" if _YES.match(low) or (plain and _YES.match(plain)) else None
 
 
+def _handoff_label(payload: dict) -> str:
+    """What the page's "Run the skill" or "Run the plan" card is called (the label a typed reply names)."""
+    if payload["type"] == "run_skill":
+        return f"Run the skill “{payload.get('skill') or ''}”"
+    return str(payload.get("goal") or "Run the plan")
+
+
+def _attach_handoff(payload: dict) -> dict:
+    label = _handoff_label(payload)
+    return {**payload, "ask_label": label, "consent_id": consent_store.park({"label": label, "handoff": dict(payload)})}
+
+
 def attach(payload: dict) -> dict:
-    """`payload` as the page gets it: a card that waits (an act's, or a parked
-    tool call) is kept on the server and carries `consent_id`; `_say` (how the
-    run is worded) stays on the server. Anything else passes unchanged."""
+    """`payload` as the page gets it: a card that waits (an act's, a parked
+    tool call, or the page's own skill and plan card) is kept on the server and
+    carries `consent_id`; `_say` (how the run is worded) stays on the server.
+    Anything else passes unchanged."""
+    if payload.get("type") in ("run_skill", "run_plan") and not payload.get("consented"):
+        return _attach_handoff(payload)
+    return _attach_card(payload)
+
+
+def _attach_card(payload: dict) -> dict:
     if "_say" not in payload and payload.get("type") not in ("act", "confirm"):
         return payload
     out = dict(payload)

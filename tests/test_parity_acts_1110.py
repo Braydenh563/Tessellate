@@ -196,7 +196,9 @@ def test_run_a_skill_by_sentence_hands_the_page_the_models_own_event(client, not
 
     out = stream(client, "run the daily review skill")
     event = out["run_skill"][0]
-    assert event == tool_handoff.validate_run_skill({"name": "Daily review"}), event
+    #: The same event; the card now also waits for a typed yes (consent id and label ride along).
+    own = {k: v for k, v in event.items() if k not in ("consent_id", "ask_label")}
+    assert own == tool_handoff.validate_run_skill({"name": "Daily review"}), event
     assert "Run the skill" in out["text"] and not out.get("act"), out["text"]
 
 
@@ -235,3 +237,12 @@ def test_every_composer_act_here_maps_to_the_tool_the_model_has():
 
     for intent, tool in (("delete_category", "delete_category"), ("merge_categories", "merge_categories"), ("delete_tag", "delete_tag"), ("edit_text", "edit_note"), ("to_reminders", "set_reminder")):
         assert act_registry.ACT_TOOLS[intent] == tool and act_registry.ACTS[intent].confirm and tool in tools.TOOLS
+
+
+@pytest.mark.parametrize("sentence", ["turn my todo note into reminders for friday at 9am", "make reminders from my todo note for friday at 9am"])
+def test_a_note_titled_todo_is_found_by_that_word(client, session, sentence):
+    manager.create_entry(session, "# Todo\n\n- [ ] book the venue\n- [ ] email the caterer\n", category_name="Work")
+    session.commit()
+    card = card_of(stream(client, sentence))
+    assert "Todo" in json.dumps(card)
+    assert "2 reminders" in json.dumps(card) or "reminder" in json.dumps(card)

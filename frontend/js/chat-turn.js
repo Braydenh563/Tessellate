@@ -1017,9 +1017,12 @@ async function chatSendTurn(preset, opts = {}) {
     //: A plan the model drew waits for Run the plan (row 3: approved once,
     //: with each step's writes listed); a skill the person saved starts.
     const plan = handoff;
-    if (plan.type === "run_plan") showWaiting(recordsHolder, planProposalCard, plan, () => startPlannedRun(plan.goal, plan.steps));
-    //: A skill by sentence or by the model asks the same way (decision 75): the press is the consent.
-    else showWaiting(recordsHolder, planProposalCard, { goal: `Run the skill “${plan.skill}”?`, steps: plan.changes_notes ? ["It can change your notes. Each change can be undone."] : [], runLabel: "Run the skill", running: `Starting “${plan.skill}”` }, () => startSkill({ name: plan.skill }, plan.inputs || {}));
+    //: A skill by sentence or by the model asks the same way (decision 75): a press or a typed yes is the consent.
+    //: A typed yes already agreed (`consented`, `ai/consent.py`), so it starts with no card.
+    const start = plan.type === "run_plan" ? () => startPlannedRun(plan.goal, plan.steps) : () => startSkill({ name: plan.skill }, plan.inputs || {});
+    const ask = plan.type === "run_plan" ? plan : { goal: `Run the skill “${plan.skill}”?`, steps: plan.changes_notes ? ["It can change your notes. Each change can be undone."] : [], runLabel: "Run the skill", running: `Starting “${plan.skill}”`, consent_id: plan.consent_id, ask_label: plan.ask_label };
+    if (plan.consented) start();
+    else showWaiting(recordsHolder, planProposalCard, ask, start);
   }
   if (!answerRaw) {
     // The model returned nothing. This used to return early and leave the
