@@ -73,6 +73,16 @@ class NotebookFacts:
     recent_category: str = ""
 
 
+#: A phrase that says something about the notebook is only said when it is
+#: true: "A fresh page" over a line that counts two notes today, or "Welcome
+#: back" to a notebook with nothing in it, contradicted itself (G6).
+_NEEDS = {
+    "A fresh page": lambda f: f.today == 0,
+    "Welcome back": lambda f: f.total > 0 and (f.days_since_last or 0) >= 1,
+    "Hello again": lambda f: f.total > 0 and (f.days_since_last or 0) >= 1,
+}
+
+
 def slot_for(hour: int) -> str:
     for end, name in SLOTS:
         if hour < end:
@@ -111,7 +121,7 @@ def compose(now: datetime, facts: NotebookFacts) -> tuple[str, str]:
     """A greeting phrase (no name, no final mark) and its mark."""
     slot = slot_for(now.hour)
     rng = random.Random(f"{now.date().isoformat()}|{now.hour}")
-    plain = [(p, ".") for p in PHRASES[slot]]
+    plain = [(p, ".") for p in PHRASES[slot] if _NEEDS.get(p, lambda _f: True)(facts)]
     weekday = now.weekday()
     if slot in _WEEKDAY_SLOTS.get(weekday, set()):
         plain += [(p, ".") for p in WEEKDAY_PHRASES[weekday]]
@@ -165,8 +175,11 @@ def gather(session, now: datetime) -> NotebookFacts:  # noqa: ANN001  # a Sessio
     from sqlalchemy import func, select
 
     from tessellate.core.database import Entry
+    from tessellate.repo import voice
 
-    live = (Entry.is_deleted == False, Entry.is_draft == False, Entry.is_board == False)  # noqa: E712
+    #: The filter the dashboard's line uses, and no archived note: a private
+    #: note must not make "Therapy on your mind lately?" (G6).
+    live = (*voice.SHOWN, Entry.archived_at.is_(None))
     total = session.scalar(select(func.count(Entry.id)).where(*live)) or 0
     if not total:
         return NotebookFacts()

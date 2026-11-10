@@ -69,7 +69,7 @@ def propose(session, text: str, now, note_ids: list[int] | None = None) -> dict 
 #: typed yes confirms the card that waits (`ai/consent.py`), a typed no drops it.
 CONFIRM_INTENTS = frozenset({
     "reminder", "complete", "uncomplete", "cancel", "snooze", "new_note", "meeting", "pin", "unpin",
-    "delete", "rename", "rename_tag", "rename_category", "restore", "move", "tag", "untag", "link", "unlink", "append",
+    "delete", "rename", "rename_tag", "rename_category", "restore", "move", "tag", "untag", "link", "unlink", "append", "set_name",
 })
 
 
@@ -139,6 +139,8 @@ _ACTS = (
         "rename the category Work to Job", ("old", "new"), "rename_category", stem="Rename the category "),
     Act("restore", "restore", "restore a note from the bin", "Names a note in the bin; waits for Confirm, Undo puts it back in the bin.",
         "restore the passport note", (), "delete_note", stem="Restore the note about "),
+    Act("set_name", "call", "set your name", "Say what to call you; it is saved after you confirm, and Undo puts the old name back.",
+        "call me Sam", ("name",), "set_display_name"),
     Act("find", "find", "find a note", "Lists the notes that match.", "find my note about the passport", (), writes=False),
     Act("open", "open", "open a note", "Opens the one note named.", "open the note about the boiler", (), writes=False),
     Act("navigate", "open", "open a part of the app", "Goes to Settings, the graph, the timeline and the rest.",
@@ -155,7 +157,7 @@ ACTS: dict[str, Act] = {a.intent: a for a in _ACTS}
 def capability_line() -> str:
     """Agent mode with no model, for a sentence that is not an act: every
     write act the registry has, in order, and one example."""
-    said = [a.label for a in _ACTS if a.writes and a.intent not in ("untag", "unpin", "unlink", "append", "rename", "rename_tag", "rename_category", "restore", "delete", "link", "pin")]
+    said = [a.label for a in _ACTS if a.writes and a.intent not in ("untag", "unpin", "unlink", "append", "rename", "rename_tag", "rename_category", "restore", "delete", "link", "pin", "set_name")]
     single = "pin, link, rename or delete a note, rename a tag or category, restore a note from the bin (each after you confirm)"
     reads = "find or open a note"
     return (
@@ -233,7 +235,7 @@ ACT_TOOLS: dict[str, str] = {
     "reminder": "set_reminder", "complete": "complete_reminder", "uncomplete": "complete_reminder", "cancel": "bin_reminder", "snooze": "snooze_reminder", "tag": "tag_note", "untag": "tag_note", "move": "edit_note",
     "new_note": "create_note", "meeting": "create_note", "pin": "pin_note", "unpin": "pin_note",
     "link": "link_notes", "unlink": "unlink_notes", "rename": "edit_note", "rename_tag": "rename_tag", "rename_category": "rename_category", "restore": "restore_note", "append": "edit_note",
-    "delete": "delete_note", "find": "search_notes", "open": "get_note", "summarise": "summarize_notes",
+    "delete": "delete_note", "set_name": "set_display_name", "find": "search_notes", "open": "get_note", "summarise": "summarize_notes",
 }
 
 #: A utility's kind (`utilities.kind_of`) to the tool a model would call for it.

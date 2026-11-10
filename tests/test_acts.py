@@ -42,7 +42,10 @@ def _state(session) -> tuple:
     )
     links = tuple(sorted((link.source_entry_id, link.target_entry_id) for link in session.scalars(select(EntryLink))))
     reminders = tuple((r.id, r.done, r.due_at) for r in session.scalars(select(Reminder)) if r.deleted_at is None)
-    return notes, links, reminders
+    #: The name is a preference, not a row: set_name changes it (G7).
+    from tessellate.core import deps
+
+    return notes, links, reminders, deps.get_config().get_preference("display_name", "")
 
 
 def test_every_act_has_parse_preview_run_and_a_help_line():

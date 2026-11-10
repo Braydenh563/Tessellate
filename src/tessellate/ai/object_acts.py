@@ -398,4 +398,8 @@ def _plan_restore(session: Session, parsed: dict, c) -> dict:  # noqa: ANN001
 
 def plan(session: Session, parsed: dict, c) -> dict:  # noqa: ANN001
     """The line and card for a rename of a tag or category, or a restore."""
-    return {"rename_tag": _plan_rename_tag, "rename_category": _plan_rename_category, "restore": _plan_restore}[parsed["intent"]](session, parsed, c)
+    from tessellate.ai import address
+
+    plans = {"rename_tag": _plan_rename_tag, "rename_category": _plan_rename_category, "restore": _plan_restore,
+             "set_name": lambda _session, found, helpers: address.plan(found, helpers.card, helpers.confirm)}
+    return plans[parsed["intent"]](session, parsed, c)

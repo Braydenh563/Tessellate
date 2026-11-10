@@ -77,6 +77,8 @@ VOICE: dict[str, str] = {
     "v_due_today": " is due today.",
     "v_due_was": " was due ",
     "v_due_tomorrow": " is due tomorrow.",
+    "v_due_on": " is due ",
+    "v_overdue_mid": " things are overdue: ",
     "v_due_from": " It comes from ",
     "v_due_says": ", which says: ",
     # A note brought back.
@@ -84,6 +86,8 @@ VOICE: dict[str, str] = {
     "v_back_a_mid": ", your note ",
     "v_back_b": "A while back, on ",
     "v_back_b_mid": ", you wrote in ",
+    "v_back_u": "From ",
+    "v_back_u_mid": ", you wrote ",
     "v_back_c": "Remember ",
     "v_back_c_mid": "? You wrote it on ",
     "v_back_c_end": ": ",
@@ -109,6 +113,7 @@ VOICE: dict[str, str] = {
     # A day with nothing in it yet.
     "v_empty_a": "Nothing written yet today. Your last note, ",
     "v_empty_a_mid": ", from ",
+    "v_empty_u": "Nothing written yet today. Your last note, from ",
     "v_empty_b": "A blank page so far today. The last thing you wrote, in ",
     "v_empty_b_mid": " on ",
     "v_says": ", says: ",
@@ -315,27 +320,61 @@ def _salt(today: date, *bits: object) -> str:
 # --- the remarks ----------------------------------------------------------------
 
 
-def _due(reminders: list[dict], views: dict[int, NoteView], today: date) -> list[dict]:
-    out: list[dict] = []
-    for r in reminders or []:
-        if r.get("done") or not str(r.get("text") or "").strip():
-            continue
-        due = _day(r.get("due_at"))
-        if due is None or due > today + timedelta(days=1):
-            continue
-        v = _Voice(views, today)
+#: How far ahead a reminder is worth a line.
+_DUE_AHEAD = 3
+
+
+def _due_line(r: dict, due: date, views: dict[int, NoteView], today: date) -> dict:
+    v = _Voice(views, today)
+    v.t("open_quote").reminder(str(r["text"]).strip(), r.get("id")).t("close_quote")
+    if due == today:
+        v.t("v_due_today")
+    elif due == today + timedelta(days=1):
+        v.t("v_due_tomorrow")
+    elif due > today:
+        v.t("v_due_on").m(f"{due:%A}").t("stop")
+    else:
+        v.t("v_due_was").m(v.day(due)).t("stop")
+    view = views.get(r.get("entry_id"))
+    s = lead(view) if view else None
+    if view and s and view.titled:
+        v.t("v_due_from").name(view).t("v_due_says").quoted(s)
+    return v.done("due", reminder_id=r.get("id"), note_id=view.id if view else None)
+
+
+def _overdue_line(late: list[dict], views: dict[int, NoteView], today: date) -> dict:
+    """Every overdue reminder in one line, said once: a person would not read
+    out three bubbles for one fact (G8)."""
+    v = _Voice(views, today)
+    v.m(_count_word(len(late)).capitalize()).t("v_overdue_mid")
+    for i, r in enumerate(late[:3]):
+        if i:
+            v.t("and" if i == len(late[:3]) - 1 and len(late) <= 3 else "comma")
         v.t("open_quote").reminder(str(r["text"]).strip(), r.get("id")).t("close_quote")
-        if due == today:
-            v.t("v_due_today")
-        elif due > today:
-            v.t("v_due_tomorrow")
-        else:
-            v.t("v_due_was").m(v.day(due)).t("stop")
-        view = views.get(r.get("entry_id"))
-        s = lead(view) if view else None
-        if view and s:
-            v.t("v_due_from").name(view).t("v_due_says").quoted(s)
-        out.append(v.done("due", reminder_id=r.get("id"), note_id=view.id if view else None))
+    if len(late) > 3:
+        v.t("v_and_more").m(_count_word(len(late) - 3)).t("v_more")
+    v.t("stop")
+    return v.done("due", reminder_id=late[0].get("id"), note_id=None)
+
+
+def _due_held(reminders: list[dict], today: date) -> list[tuple[date, dict]]:
+    """Open reminders due by the horizon, soonest first."""
+    held: list[tuple[date, dict]] = []
+    for r in reminders or []:
+        due = _day(r.get("due_at"))
+        if r.get("done") or not str(r.get("text") or "").strip() or due is None or due > today + timedelta(days=_DUE_AHEAD):
+            continue
+        held.append((due, r))
+    return sorted(held, key=lambda pair: (pair[0], str(pair[1].get("text"))))
+
+
+def _due(reminders: list[dict], views: dict[int, NoteView], today: date) -> list[dict]:
+    """Overdue first (one line when there are several), then today, tomorrow
+    and the next few days, soonest first."""
+    held = _due_held(reminders, today)
+    late = [(due, r) for due, r in held if due < today]
+    out = [_overdue_line([r for _, r in late], views, today)] if len(late) > 1 else [_due_line(r, due, views, today) for due, r in late]
+    out += [_due_line(r, due, views, today) for due, r in held if due >= today]
     return out[:PER_KIND]
 
 
@@ -345,7 +384,10 @@ def _back(view: NoteView, today: date) -> dict | None:
         return None
     v = _Voice({view.id: view}, today)
     style = composer_quote._pick(_salt(today, view.id), "back", ["a", "b", "c"])
-    if style == "a":
+    if not view.titled:
+        #: The quote is the note's name: said once, as written.
+        v.t("v_back_u").m(v.day(view.written)).t("v_back_u_mid").quoted(s)
+    elif style == "a":
         v.t("v_back_a").m(v.day(view.written)).t("v_back_a_mid").name(view).t("colon").quoted(s)
     elif style == "b":
         v.t("v_back_b").m(v.day(view.written)).t("v_back_b_mid").name(view).t("colon").quoted(s)
@@ -364,17 +406,38 @@ def _on_this_day(views: list[NoteView], today: date) -> list[dict]:
         if not s:
             continue
         v = _Voice({view.id: view}, today)
+        said = (lambda: v.name(view).t("colon")) if view.titled else (lambda: v)
         if when.year != today.year:
-            v.t("v_otd_year").m(str(when.year)).t("v_otd_year_mid").name(view).t("colon").quoted(s)
+            v.t("v_otd_year").m(str(when.year))
+            if view.titled:
+                v.t("v_otd_year_mid").name(view).t("colon")
+            else:
+                v.t("colon")
+            v.quoted(s)
         else:
             months = today.month - when.month
+            #: A month-versary of an ordinary note is not an anniversary: one,
+            #: three and six months only; years always.
+            if months not in (1, 3, 6):
+                continue
             if months == 1:
                 v.t("v_otd_month")
             else:
                 v.m(_count_word(months).capitalize()).t("v_otd_months_end")
-            v.name(view).t("colon").quoted(s)
+            said()
+            v.quoted(s)
         out.append(v.done("on_this_day", note_id=view.id))
     return out[:PER_KIND]
+
+
+def _as_written(s: Sentence, view: NoteView) -> Sentence:
+    """The sentence with its first letter as the note has it ("milk", which the
+    checklist reader capitalised)."""
+    content = str(view.note.get("content") or "")
+    lowered = s.text[:1].lower() + s.text[1:]
+    if s.text and lowered != s.text and s.text not in content and lowered in content:
+        return Sentence(s.note_id, s.rank, s.start, s.end, lowered, s.words, s.kind, s.done, s.order)
+    return s
 
 
 def _open_items(views: list[NoteView], today: date) -> list[dict]:
@@ -387,7 +450,7 @@ def _open_items(views: list[NoteView], today: date) -> list[dict]:
         if not open_:
             continue
         v = _Voice({view.id: view}, today)
-        first = _clip(open_[0])
+        first = _as_written(_clip(open_[0]), view)
         if len(open_) > 1:
             v.name(view).t("v_open_count").m(_count_word(len(open_))).t("v_open_count_mid")
             v.m(_count_word(len(tasks))).t("v_open_count_end").quoted(first)
@@ -408,7 +471,7 @@ def _surface(word_stem: str, views: list[NoteView]) -> str | None:
     for view in views:
         for raw in re.findall(r"[^\W\d_][\w'-]*", str(view.note.get("content") or "")):
             if composer._stem(raw) == word_stem:
-                forms[raw.lower()] += 1
+                forms[raw] += 1
     return forms.most_common(1)[0][0] if forms else None
 
 
@@ -442,7 +505,7 @@ def _patterns(views: list[NoteView], today: date) -> list[dict]:
             break
         group = [view for view in week if stem in view.words]
         word = _surface(stem, group)
-        if not word or word in _PLAIN or any(r.get("word") == word for r in out):
+        if not word or word.lower() in _PLAIN or any(r.get("word") == word for r in out):
             continue
         # Every named note must contain the word as written.
         group = [g for g in group if re.search(rf"\b{re.escape(word)}\b", str(g.note.get("content") or ""), re.I)]
@@ -482,7 +545,9 @@ def _empty_day(views: list[NoteView], today: date) -> dict | None:
     if not s:
         return None
     v = _Voice({last.id: last}, today)
-    if composer_quote._pick(_salt(today, last.id), "empty", ["a", "b"]) == "a":
+    if not last.titled:
+        v.t("v_empty_u").m(v.day(last.written)).t("v_says").quoted(s)
+    elif composer_quote._pick(_salt(today, last.id), "empty", ["a", "b"]) == "a":
         v.t("v_empty_a").name(last).t("v_empty_a_mid").m(v.day(last.written)).t("v_says").quoted(s)
     else:
         v.t("v_empty_b").name(last).t("v_empty_b_mid").m(v.day(last.written)).t("v_says").quoted(s)
@@ -556,11 +621,25 @@ def today_line(
     return v.done("today")
 
 
+def _true_openers(n_today: int, recent: bool, gap: int) -> list[int]:
+    """The variants of today's opening that are true of the count and the gap."""
+    if n_today > 1:
+        return [0, 1, 2, 4, *([3] if n_today >= 4 else []), *([5] if n_today <= 3 else [])]
+    if recent:
+        return list(range(6))
+    return [0, 2, 3, 5, *([1] if gap <= 3 else []), *([4] if gap >= 7 else [])]
+
+
 def _today_opening(v: _Voice, dated: list, today: date, k: int, counts: dict[date, int]) -> None:
     todays = [w for w in dated if w.written == today]
     yesterdays = [w for w in dated if (today - w.written).days == 1]
     n_today = max(len(todays), counts.get(today, 0))
     n_yesterday = max(len(yesterdays), counts.get(today - timedelta(days=1), 0))
+    #: The opener is picked by the number and the gap, not only by the seed:
+    #: "A busy page" is not two notes and "The page is fresh" is not two
+    #: years (G6). Indexes into the six variants; the seed picks among those that are true.
+    allowed = _true_openers(n_today, bool(todays or yesterdays), (today - dated[0].written).days)
+    k = allowed[k % len(allowed)]
     if n_today > 1:
         v.t(("v_today_wrote", "v_today_wrote_b", "v_today_wrote_c", "v_today_wrote_d", "v_today_wrote_e", "v_today_wrote_f")[k])
         v.m(_count_word(n_today))
