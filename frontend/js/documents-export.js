@@ -196,6 +196,86 @@ function docExportHtmlDocument(title, bodyHtml, savedOn, extraCss = "") {
 }
 // DOC-EXPORT-HTML-END
 
+// DOC-SLIDES-BEGIN
+//: **A document as a slide deck** (DOCUMENTS_PLAN gap row 15), through the
+//: HTML export's own shell and the same cleaned copy of the rendered page.
+//: A level-1 or level-2 heading starts a slide and so does a horizontal rule
+//: (which is not drawn); everything up to the next one is that slide. Pure, so
+//: it runs in node (`tests/test_doc_slides.py`): `blocks` is
+//: `[{tag, html}]`, the page's top-level elements in order.
+docExportHtmlDocument.slides = (blocks) => {
+  const slides = [];
+  let open = [];
+  const close = () => {
+    if (open.length) slides.push(open.join("\n"));
+    open = [];
+  };
+  for (const { tag, html } of blocks) {
+    if (tag === "HR") close();
+    else {
+      if (tag === "H1" || tag === "H2") close();
+      open.push(html);
+    }
+  }
+  close();
+  return slides;
+};
+
+//: One slide on screen at a time, a sheet each when printed. The file has no
+//: settings, so the colours are the export's own (`DOC_EXPORT_CSS`).
+docExportHtmlDocument.deckCss = `
+body { padding: 0; overflow: hidden; }
+main { max-width: none; margin: 0; }
+.slide { display: none; box-sizing: border-box; min-height: 100vh; padding: 6vh 8vw; font-size: clamp(1.1rem, 2.4vw, 2rem); overflow: auto; }
+.slide.on { display: block; }
+.slide h1, .slide h2 { margin-top: 0; }
+.deck-count { position: fixed; right: 1rem; bottom: 0.6rem; color: var(--muted); font: 0.85rem system-ui, sans-serif; }
+@media print {
+  body { overflow: visible; }
+  .slide { display: block; min-height: 0; page-break-after: always; break-after: page; }
+  .deck-count { display: none; }
+}
+`;
+
+//: Arrow keys, Page Up and Down, space, Home and End, or a click on the right
+//: or left half; the slide number is in the address so a refresh keeps place.
+docExportHtmlDocument.deckScript = `(function () {
+  var slides = [].slice.call(document.querySelectorAll(".slide")), at = 0, count = document.querySelector(".deck-count");
+  function show(n) {
+    at = Math.max(0, Math.min(slides.length - 1, n));
+    slides.forEach(function (s, k) { s.classList.toggle("on", k === at); });
+    count.textContent = (at + 1) + " / " + slides.length;
+    history.replaceState(null, "", "#" + (at + 1));
+  }
+  document.addEventListener("keydown", function (e) {
+    var k = e.key;
+    if (k === "ArrowRight" || k === "PageDown" || k === " ") show(at + 1);
+    else if (k === "ArrowLeft" || k === "PageUp") show(at - 1);
+    else if (k === "Home") show(0);
+    else if (k === "End") show(slides.length - 1);
+    else return;
+    e.preventDefault();
+  });
+  document.addEventListener("click", function (e) {
+    if (!e.target.closest("a")) show(e.clientX > window.innerWidth / 2 ? at + 1 : at - 1);
+  });
+  show((parseInt(location.hash.slice(1), 10) || 1) - 1);
+})();`;
+
+//: The whole file: the cleaned copy of the page cut into slides.
+docExportHtmlDocument.deck = (title, clone, iconCss) => {
+  //: The page's own title line is the first slide's heading, unless the
+  //: document opens with a heading of its own (then it would be said twice).
+  const kids = [...clone.children];
+  const own = (el, k) => el.classList.contains("doc-preview-title") && kids[k + 1]?.tagName === "H1";
+  const blocks = kids.filter((el, k) => !own(el, k)).map((el) => ({ tag: el.tagName, html: el.outerHTML }));
+  const cut = docExportHtmlDocument.slides(blocks);
+  const sheets = cut.map((html, k) => `<section class="slide" aria-label="Slide ${k + 1} of ${cut.length}">${html}</section>`);
+  const body = `${sheets.join("\n")}\n<div class="deck-count" aria-live="polite"></div>\n<script>${docExportHtmlDocument.deckScript}</script>`;
+  return docExportHtmlDocument(title, body, "", iconCss + docExportHtmlDocument.deckCss);
+};
+// DOC-SLIDES-END
+
 //: **A `:ph-name:` icon travels as its glyph** (INBOX 1545), with the font that
 //: draws it written into the file once, as a `data:` URI, and only when the
 //: page has an icon. Run on the clone before `docExportClean`, which drops the
@@ -268,8 +348,8 @@ async function docExportInlineImages(root) {
   return { inlined, dropped, bytes: spent };
 }
 
-async function docExportHtmlRun() {
-  if (!currentDoc) return;
+async function docExportHtmlRun(slides = false) {
+  if (!currentDoc || (slides && !docFileType().previewable)) return;
   const status = $("doc-status");
   //: No rendered form means the preview is empty: the page came out as the
   //: title line alone. The source goes in as preformatted text instead.
@@ -301,8 +381,10 @@ async function docExportHtmlRun() {
       docExportClean(clone);
       const images = await docExportInlineImages(clone);
       const savedOn = `${currentDoc.title || "Untitled"} · exported ${new Date().toLocaleDateString()}`;
-      const html = docExportHtmlDocument(currentDoc.title, clone.innerHTML, savedOn, iconCss);
-      await saveFile(docExportName(currentDoc.title, "html"), new Blob([html], { type: "text/html" }));
+      const html = slides
+        ? docExportHtmlDocument.deck(currentDoc.title, clone, iconCss)
+        : docExportHtmlDocument(currentDoc.title, clone.innerHTML, savedOn, iconCss);
+      await saveFile(docExportName(slides ? `${currentDoc.title || "Untitled"} slides` : currentDoc.title, "html"), new Blob([html], { type: "text/html" }));
       if (images.dropped) {
         toast(`Saved. ${images.dropped} image(s) could not be embedded and are named in the text.`);
       }

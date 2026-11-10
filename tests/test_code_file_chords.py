@@ -81,7 +81,7 @@ def test_a_code_files_exports_are_its_source_not_an_empty_page():
     for it too."""
     source = DOCS_JS.read_text(encoding="utf-8")
     export = (DOCS_JS.parent / "documents-export.js").read_text(encoding="utf-8")
-    html = export[export.index("async function docExportHtmlRun()") :].split("\n}\n")[0]
+    html = export[export.index("async function docExportHtmlRun(") :].split("\n}\n")[0]
     head = html.split("withDocPreviewShown")[0]
     assert "!docFileType().previewable" in head
     assert "<pre><code>" in head

@@ -221,6 +221,7 @@ function syncDocFileType({ prose = true } = {}) {
   //: (`docCodeExportRefused`) and the heading map, which reads `#` lines. Print
   //: stays: a code file prints its own listing (`docCodePrintFill`).
   for (const id of ["doc-export-zip", "doc-export-docx", "doc-map-headings"]) $(id)?.classList.toggle("hidden", docIsCodeFile());
+  $("doc-export-slides")?.classList.toggle("hidden", docIsCodeFile());
   $("doc-code-run")?.classList.toggle("hidden", !docRunnable(type));
   docRunSyncAvailability(type);
   //: Wrapping and whitespace are about a file that does not wrap by itself:
@@ -521,7 +522,7 @@ window.addEventListener(
 //: ninth row, behind the layout switches. The rows keep their markup order;
 //: the group is moved, so ids and handlers are untouched.
 const docDownloadGroup = foldDocMenuGroup("ph:download-simple Download or print", [
-  "doc-export-md", "doc-export-svg", "doc-export-picture", "doc-copy-picture", "doc-export-html", "doc-export-zip", "doc-export-docx", "doc-export-pdf",
+  "doc-export-md", "doc-export-svg", "doc-export-picture", "doc-copy-picture", "doc-export-html", "doc-export-slides", "doc-export-zip", "doc-export-docx", "doc-export-pdf",
 ]);
 docDownloadGroup?.parentElement?.prepend(docDownloadGroup);
 syncDocFileType.groups = [foldDocMenuGroup("ph:layout Editor and layout", [
@@ -3153,6 +3154,8 @@ const DOC_COMMANDS = [
     run: () => docRunControl("doc-export-md", "The markdown export") },
   { id: "export-html", icon: "ph:file-html", label: "Download as one .html file", keys: "none",
     run: () => docRunControl("doc-export-html", "The HTML export") },
+  { id: "export-slides", icon: "ph:presentation-chart", label: "Download as a slide deck (.html)", keys: "none",
+    run: () => docRunControl("doc-export-slides", "The slide deck export") },
   { id: "export-docx", icon: "ph:file-doc", label: "Download as Word (.docx)", keys: "none",
     run: () => docRunControl("doc-export-docx", "The Word export") },
   { id: "export-pdf", icon: "ph:file-pdf", label: "Print or save as PDF", keys: "none",
@@ -7670,6 +7673,13 @@ async function exportDocumentHtml() {
   return docExportHtmlRun();
 }
 
+//: The deck is the same export cut at its headings, so it is a property of the
+//: stand-in rather than a name of its own in the shared scope.
+exportDocumentHtml.slides = async () => {
+  if (!(await lazyScript("/js/documents-export.js"))) return toast("The export could not be loaded.", true, { action: ["Try again", exportDocumentHtml.slides] });
+  return docExportHtmlRun(true);
+};
+
 async function exportDocumentPdf() {
   if (!(await lazyScript("/js/documents-export.js"))) return toast("The export could not be loaded.", true, { action: ["Try again", exportDocumentPdf] });
   return docExportPdfRun();
@@ -9950,6 +9960,7 @@ $("doc-copy-link").addEventListener("click", () => {
 });
 $("doc-export-md").addEventListener("click", exportDocumentMarkdown);
 $("doc-export-html").addEventListener("click", exportDocumentHtml);
+$("doc-export-slides").addEventListener("click", exportDocumentHtml.slides);
 //: A diagram's picture from the open page (R10): the editor's own text, so an unsaved change is in it.
 for (const [id, how] of [["doc-export-svg", "svg"], ["doc-export-picture", "png"], ["doc-copy-picture", "picture"]]) {
   $(id).addEventListener("click", async () => {
