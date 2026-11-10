@@ -5495,14 +5495,14 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 |---|---|
 | `lagApi` | frontend/js/lag-watch.js:100 |
 | `lagApiWho` | frontend/js/lag-watch.js:111 |
-| `lagErrorsStart` | frontend/js/lag-watch.js:355 |
+| `lagErrorsStart` | frontend/js/lag-watch.js:357 |
 | `lagFile` | frontend/js/lag-watch.js:67 |
 | `lagFlush` | frontend/js/lag-watch.js:175 |
 | `lagFrame` | frontend/js/lag-watch.js:182 |
 | `lagFrameWhy` | frontend/js/lag-watch.js:192 |
 | `lagInput` | frontend/js/lag-watch.js:216 |
 | `lagNote` | frontend/js/lag-watch.js:117 |
-| `lagNoteError` | frontend/js/lag-watch.js:342 |
+| `lagNoteError` | frontend/js/lag-watch.js:344 |
 | `lagObserve` | frontend/js/lag-watch.js:233 |
 | `lagRafClose` | frontend/js/lag-watch.js:294 |
 | `lagRafInstall` | frontend/js/lag-watch.js:313 |
@@ -5510,12 +5510,12 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `lagRafTop` | frontend/js/lag-watch.js:287 |
 | `lagRequest` | frontend/js/lag-watch.js:225 |
 | `lagScriptCause` | frontend/js/lag-watch.js:73 |
-| `lagSnapshot` | frontend/js/lag-watch.js:376 |
+| `lagSnapshot` | frontend/js/lag-watch.js:378 |
 | `lagStackOwner` | frontend/js/lag-watch.js:240 |
-| `lagStart` | frontend/js/lag-watch.js:411 |
+| `lagStart` | frontend/js/lag-watch.js:413 |
 | `lagTarget` | frontend/js/lag-watch.js:59 |
 | `lagView` | frontend/js/lag-watch.js:52 |
-| `lagWireSettings` | frontend/js/lag-watch.js:398 |
+| `lagWireSettings` | frontend/js/lag-watch.js:400 |
 
 ### frontend/js/lan-watch.js (19)
 
