@@ -339,8 +339,20 @@ def current_stopped() -> bool:
     return bool(job is not None and job.stopped)
 
 
+#: The last line an NDJSON answer stream sends when it was stopped (t20#9):
+#: without one the page read a Stop as a finished answer. Passed as
+#: `tracked_stream(stopped_line=...)` by the streams whose readers know it.
+STOPPED_DONE = json.dumps({"type": "done", "stopped": True}) + "\n"
+
+
 def tracked_stream(
-    kind: str, label: str, lines: Iterator, *, title: str = "", stop_event: threading.Event | None = None
+    kind: str,
+    label: str,
+    lines: Iterator,
+    *,
+    title: str = "",
+    stop_event: threading.Event | None = None,
+    stopped_line: str | None = None,
 ) -> Iterator:
     """A streamed response that shows in Activity and ends on Stop.
 
@@ -363,10 +375,8 @@ def tracked_stream(
                     job.run.say(said)
                 yield line
                 if job.stopped:
-                    #: A stopped stream still ends with a `done` line (t20#9):
-                    #: without one the page read a Stop as a finished answer.
-                    if not str(line).startswith('{"type": "done"'):
-                        yield json.dumps({"type": "done", "stopped": True}) + "\n"
+                    if stopped_line and not str(line).startswith('{"type": "done"'):
+                        yield stopped_line
                     break
         finally:
             close = getattr(lines, "close", None)

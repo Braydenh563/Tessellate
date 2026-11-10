@@ -31,14 +31,24 @@ def _lines(stop_after: int, event: activity.StopEvent, last_done: bool = False):
 
 def test_a_stopped_stream_ends_with_a_stopped_done_line():
     event = activity.StopEvent()
-    out = list(activity.tracked_stream("generation", "t", _lines(1, event), stop_event=event))
+    out = list(activity.tracked_stream("generation", "t", _lines(1, event), stop_event=event, stopped_line=activity.STOPPED_DONE))
     assert [json.loads(line)["type"] for line in out] == ["answer", "answer", "done"]
     assert json.loads(out[-1]) == {"type": "done", "stopped": True}
 
 
+def test_every_answer_stream_asks_for_the_stopped_line():
+    """Chat, the Guide, the documents check and the drafting desk read NDJSON
+    with a closing `done`; each passes the line (other streams keep none)."""
+    from pathlib import Path
+
+    api = Path(activity.__file__).parents[1] / "api"
+    for name in ("routes_chat.py", "routes_help.py", "routes_documents.py", "routes_drafts.py"):
+        assert "stopped_line=activity.STOPPED_DONE" in (api / name).read_text(encoding="utf-8"), name
+
+
 def test_a_stream_that_ended_on_its_own_done_gets_no_second_one():
     event = activity.StopEvent()
-    out = list(activity.tracked_stream("generation", "t", _lines(9, event, last_done=True), stop_event=event))
+    out = list(activity.tracked_stream("generation", "t", _lines(9, event, last_done=True), stop_event=event, stopped_line=activity.STOPPED_DONE))
     assert [json.loads(line)["type"] for line in out].count("done") == 1
     assert "stopped" not in json.loads(out[-1])
 

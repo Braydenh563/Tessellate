@@ -2295,7 +2295,8 @@ def _interactive_lines(req):  # noqa: ANN001, ANN202
     label = "Running a skill" if req.skill else "Answering in Chat"
     with model_gate.interactive():
         yield from activity.tracked_stream(
-            "generation", label, _lines_for(req), title=_run_title(req), stop_event=req.stop
+            "generation", label, _lines_for(req), title=_run_title(req), stop_event=req.stop,
+            stopped_line=activity.STOPPED_DONE,
         )
 
 

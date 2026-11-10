@@ -162,7 +162,7 @@ def compose_draft_stream(
             yield json.dumps(event) + "\n"
 
     return StreamingResponse(
-        activity.tracked_stream("generation", "Drafting", lines()),
+        activity.tracked_stream("generation", "Drafting", lines(), stopped_line=activity.STOPPED_DONE),
         media_type="application/x-ndjson",
         headers={"X-Accel-Buffering": "no", "Cache-Control": "no-cache"},
     )

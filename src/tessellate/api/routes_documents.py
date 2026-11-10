@@ -1180,7 +1180,7 @@ def ai_check(
             yield json.dumps(event) + "\n"
 
     return StreamingResponse(
-        activity.tracked_stream("generation", "Reviewing a document", lines()),
+        activity.tracked_stream("generation", "Reviewing a document", lines(), stopped_line=activity.STOPPED_DONE),
         media_type="application/x-ndjson",
         headers={"X-Accel-Buffering": "no", "Cache-Control": "no-cache"},
     )
