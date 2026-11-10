@@ -10,3 +10,4 @@ Left
 - The desktop window opens `http://127.0.0.1:PORT` (`__main__.py` HOST, `page_host`), and browsers refuse an IP address as an RP id, so Hello is hidden there: the window would have to open `localhost` (or `TESSELLATE_LOCAL_NAME`.localhost) for Hello to show. Changing that moves every window's saved settings (origin-keyed localStorage), so it is a decision for the owner, not taken here.
 - "Settings, Privacy" in the decision was read as the Privacy and security group: the switch sits in Account & security under the PIN, where the PIN is. Moving it to the Privacy page ("Where your data went") is one line in hello-unlock.js `mountSettings`.
 - A platform credential made by an abandoned enrolment stays on the authenticator (no `signalUnknownCredential` call yet).
+- done: f964a5f7f, 7d4b051fa, INBOX 1727 resolved to HISTORY; next: nothing in this brief (the Left list above).
