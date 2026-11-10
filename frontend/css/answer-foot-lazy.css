@@ -8,17 +8,19 @@
    part until its chip is pressed, and moves the stats line to the row's end.
    The row is the control group's gap; an open part sits one group gap under
    it. */
-/* **One row, never two** (the review of B2 measured it wrapping: Ask 54px
-   for 4 chips at 1440, the popup agent 120px at 390). The chips keep their
-   words and never shrink; the stats line gives way first, cut with its words
-   in its title; past that the row scrolls inside itself, as a popup's tab row
-   does (popup-anatomy-lazy.css), and never widens the answer. A scroller
+/* **One row while it fits; the time is never cut** (the review of B2 measured
+   it wrapping at 1440 with four chips; the owner then saw "Mon 4:52 p" clipped
+   at a Windows 1440 window, INBOX 1733: the stats line was cut to nothing at
+   900 to 1100). The chips keep their words and never shrink; when the stats
+   line no longer fits beside them it drops to a second line at the end, whole,
+   and never widens the answer. The row stays a scroller so a focused chip's
+   ring shows whole: a scroller
    clips what is drawn outside it, so the row is padded by the focus ring's
    width (2px out, 2px off) and given that back in its margins: the chips sit
    where they did and a focused chip's ring shows whole (0px of it showed). */
 .answer-foot-bar {
   display: flex;
-  flex-wrap: nowrap;
+  flex-wrap: wrap;
   align-items: center;
   gap: var(--space-2) var(--space-3);
   padding: var(--space-1);
@@ -82,10 +84,8 @@
 /* The stats line is the row's last item, at its end, without the model the
    head's byline already names (nothing said twice). */
 .answer-foot-bar > .msg-meta {
-  flex: 0 1 auto;
-  min-width: 0;
+  flex: 0 0 auto;
   margin: 0 0 0 auto;
-  overflow: hidden;
   flex-wrap: nowrap;
 }
 .answer-foot-bar > .msg-meta > * {
