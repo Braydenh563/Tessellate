@@ -648,10 +648,18 @@ def _standouts(ordered: list[NoteView]) -> list[NoteView]:
 
 
 def _review_standouts(v: _Voice, picks: list[NoteView]) -> None:
+    from tessellate.ai.composer_threads import note_from
+
     if picks:
         v.t("para", "v_review_stand")
     for w in picks:
-        v.t("line", "bullet").name(w).dated(w).t("colon").quoted(lead(w))
+        v.t("line", "bullet")
+        #: A title-less note's first line is the sentence quoted after the colon: named by its day, once.
+        if w.titled:
+            v.name(w)
+        else:
+            v.word(note_from(w.note))
+        v.dated(w).t("colon").quoted(lead(w))
 
 
 def _review_open(v: _Voice, ordered: list[NoteView]) -> None:

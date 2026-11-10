@@ -229,6 +229,17 @@ def _best_sentence(view: NoteView, stems: set[str], head: str = ""):  # noqa: AN
     return best[1] if best[0] else None
 
 
+def _where_name(out: _Answer, view: NoteView, best) -> None:  # noqa: ANN001
+    """The note a "where" names. A title-less note is named by its first line, which the line after quotes:
+    named by its day, once."""
+    if view.titled or best is None:
+        out.name(view)
+        return
+    from tessellate.ai.composer_threads import note_from
+
+    out.parts.append(("template", note_from(view.note)))
+
+
 def where_written(question: str, notes: list[dict], *, today: date | None = None) -> dict | None:
     """"It is in Gym plan, under Leg day, in Fitness, last edited 3 days ago."
     from the note's own fields; None when no note holds every word."""
@@ -248,7 +259,7 @@ def where_written(question: str, notes: list[dict], *, today: date | None = None
         return None
     out = _Answer({v.id: v for v in views}, today)
     out.parts.append(("template", "It is in "))
-    out.name(view)
+    _where_name(out, view, best)
     _where_tail(out, view, best, today)
     others = len(held) - 1
     out.parts.append(("template", f". It is in {realise.count_word(others)} other note{'s' if others != 1 else ''} too." if others else "."))

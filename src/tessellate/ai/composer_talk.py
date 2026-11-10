@@ -18,6 +18,7 @@ Every number comes from the notebook's own counts (`slash_more`,
 
 from __future__ import annotations
 
+import calendar
 import re
 from collections import Counter
 from dataclasses import dataclass, field
@@ -32,7 +33,6 @@ from tessellate.ai import realise, recognise, slash, slash_more
 CHARTS = ("time", "tag", "category", "weekday")
 _CHART_WORDS = {"time": "per week", "tag": "per tag", "category": "per category", "weekday": "per weekday"}
 SHOWN_TAGS = 40
-_WEEKDAYS = ("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday")
 
 _OTHER = r"other|another|more|different|else|additional|further|new"
 _CHART_NOUN = r"diagrams?|charts?|graphs?|plots?|visuali[sz]ations?"
@@ -119,7 +119,7 @@ def _bar(title: str, by: str, rows: list[dict]) -> dict | None:
 def _weekdays(session: Session) -> list[dict]:
     entry, visible = slash_more._notes()  # noqa: SLF001
     days = Counter(made.weekday() for made in session.scalars(select(entry.created_at).where(*visible)) if made)
-    return [{"name": _WEEKDAYS[i], "notes": days.get(i, 0)} for i in range(7)] if days else []
+    return [{"name": calendar.day_name[i], "notes": days.get(i, 0)} for i in range(7)] if days else []
 
 
 def drawing(session: Session, kind: str, today: date) -> dict | None:

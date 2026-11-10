@@ -1052,10 +1052,18 @@ def _note_called(title: str) -> str:
 def _your_note(view) -> str:  # noqa: ANN001
     """The one name for a note in a frame: a titled note by its title, a
     title-less one by its first line cut at about six words (`composer_frame.name_of`),
-    never by a section's label or "untitled" (C8, INBOX 1420; owner 2026-11-10)."""
+    never by a section's label or "untitled" (C8, INBOX 1420; owner 2026-11-10). A note that opens with a
+    label ("Trip planning: flights to Lisbon") is named by it in a summary, "your trip planning note": the
+    summary says what the note is about, which a quoted first line does not (W8 moved this; restored)."""
     if getattr(view, "titled", False) and view.title:
         return _note_called(view.title)
-    return composer_frame.short_name(getattr(view, "note", None) or {"content": getattr(view, "title", "")})
+    note = getattr(view, "note", None) or {"content": getattr(view, "title", "")}
+    label = composer_frame.note_label(note)
+    if label:
+        #: "your note the order of the day" is two names; a title-less note is named once, as "your order of the day note" (R3-12).
+        bare = re.sub(r"^(?:the|an?)\s+", "", composer_frame.lower_name(label), flags=re.I)
+        return _note_called(bare or composer_frame.lower_name(label))
+    return composer_frame.short_name(note)
 
 
 def _title_only(view) -> bool:  # noqa: ANN001
