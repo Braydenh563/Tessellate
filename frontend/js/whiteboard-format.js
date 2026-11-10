@@ -77,11 +77,11 @@ function wbFmtKind(entry) {
 
 //: The fields each kind takes, by the `data-fmt` names in index.html.
 const WB_FMT_FIELDS = {
-  shape: ["stroke", "strokealpha", "width", "dash", "fill", "alpha", "shadow", "shadowset", "rough", "text", "fit", "geometry", "flip", "style-lib", "props", "pattern", "round", "flow", "fillstyle", "fillalpha", "gradient", "tip"],
-  line: ["stroke", "strokealpha", "width", "dash", "alpha", "shadow", "shadowset", "rough", "geometry", "flip", "style-lib", "props", "pattern", "round", "flow", "tip"],
+  shape: ["stroke", "strokealpha", "width", "dash", "fill", "alpha", "shadow", "shadowset", "rough", "text", "fit", "geometry", "flip", "style-lib", "props", "pattern", "round", "linestyle", "flow", "fillstyle", "fillalpha", "gradient", "tip"],
+  line: ["stroke", "strokealpha", "width", "dash", "alpha", "shadow", "shadowset", "rough", "geometry", "flip", "style-lib", "props", "pattern", "round", "linestyle", "flow", "tip"],
   //: A straight line or arrow: a line that takes ends.
-  arrow: ["stroke", "strokealpha", "width", "dash", "caps", "alpha", "shadow", "shadowset", "rough", "geometry", "flip", "style-lib", "props", "pattern", "round", "flow", "tip"],
-  link: ["stroke", "width", "dash", "alpha", "rough", "route", "jumps", "caps", "label-t", "linklook", "props", "pattern", "round", "flow", "jumpsize", "gapstart", "gapend", "tip"],
+  arrow: ["stroke", "strokealpha", "width", "dash", "caps", "alpha", "shadow", "shadowset", "rough", "geometry", "flip", "style-lib", "props", "pattern", "round", "linestyle", "flow", "tip"],
+  link: ["stroke", "width", "dash", "alpha", "rough", "route", "jumps", "caps", "label-t", "linklook", "props", "pattern", "round", "linestyle", "flow", "jumpsize", "gapstart", "gapend", "tip"],
   text: ["stroke", "fill", "fillalpha", "alpha", "shadow", "shadowset", "radii", "pad", "fold", "text", "geometry", "angle", "style-lib", "props"],
   image: ["alpha", "shadow", "shadowset", "radii", "crop", "geometry", "angle", "props"],
   frame: ["geometry", "props"],
@@ -145,6 +145,7 @@ function wbFmtValue(entry, field) {
     case "dash": return s?.dash || "solid";
     case "pattern": return s?.dashPattern || "";
     case "round": return Number(s?.round) || 0;
+    case "linestyle": return s?.curve ? "curved" : s?.round ? "rounded" : "sharp";
     case "crop": return o?.crop || "";
     case "flow": return Boolean(s?.flow);
     case "fillstyle": return WB_FILL_STYLES.includes(s?.fillStyle) ? s.fillStyle : "solid";
@@ -592,7 +593,10 @@ function wbFormatSync() {
   //: The folded corner is a sticky note's, not a plain text box's.
   if (!entries.some((e) => e.kind === "object" && wbIsSticky(e.item))) fields.delete("fold");
   //: The Corners row is for a path of straight sides; an ellipse has none.
-  if (fields.has("round") && !entries.some(wbFmtCanRound)) fields.delete("round");
+  if (fields.has("round") && !entries.some(wbFmtCanRound)) {
+    fields.delete("round");
+    fields.delete("linestyle");
+  }
   const empty = document.getElementById("wb-format-empty");
   const map = kinds.has("topic");
   if (empty) {
@@ -640,7 +644,7 @@ function wbFormatSync() {
     ["wb-fmt-fill", "fill", "fill"], ["wb-fmt-route", "route", "route"], ["wb-fmt-jumps", "jumps", "jumps"], ["wb-fmt-startcap", "startcap", "caps"],
     ["wb-fmt-fillstyle", "fillstyle", "fillstyle"], ["wb-fmt-gradient-dir", "gradient-dir", "gradient"], ["wb-fmt-gradient", "gradient", "gradient"],
     ["wb-fmt-jumpsize", "jumpsize", "jumpsize"], ["wb-fmt-gapstart", "gapstart", "gapstart"], ["wb-fmt-gapend", "gapend", "gapend"], ["wb-fmt-tip", "tip", "tip"],
-    ["wb-fmt-pattern", "pattern", "pattern"], ["wb-fmt-round", "round", "round"], ["wb-fmt-crop", "crop", "crop"], ["wb-fmt-endcap", "endcap", "caps"], ["wb-fmt-startsize", "startsize", "caps"], ["wb-fmt-endsize", "endsize", "caps"], ["wb-fmt-label-t", "label-t", "label-t"], ["wb-fmt-lsize", "lsize", "linklook"], ["wb-fmt-lcolor", "lcolor", "linklook"], ["wb-fmt-size", "size", "text"],
+    ["wb-fmt-pattern", "pattern", "pattern"], ["wb-fmt-round", "round", "round"], ["wb-fmt-linestyle", "linestyle", "linestyle"], ["wb-fmt-crop", "crop", "crop"], ["wb-fmt-endcap", "endcap", "caps"], ["wb-fmt-startsize", "startsize", "caps"], ["wb-fmt-endsize", "endsize", "caps"], ["wb-fmt-label-t", "label-t", "label-t"], ["wb-fmt-lsize", "lsize", "linklook"], ["wb-fmt-lcolor", "lcolor", "linklook"], ["wb-fmt-size", "size", "text"],
     ["wb-fmt-shx", "shx", "shadowset"], ["wb-fmt-shy", "shy", "shadowset"], ["wb-fmt-shb", "shb", "shadowset"], ["wb-fmt-pad", "pad", "pad"],
     ["wb-fmt-r0", "r0", "radii"], ["wb-fmt-r1", "r1", "radii"], ["wb-fmt-r2", "r2", "radii"], ["wb-fmt-r3", "r3", "radii"],
     ["wb-fmt-ink", "ink", "text"], ["wb-fmt-alpha", "alpha", "alpha"], ["wb-fmt-lh", "lh", "text"], ["wb-fmt-ls", "ls", "text"], ["wb-fmt-dir", "dir", "text"], ["wb-fmt-inkalpha", "inkalpha", "text"],
@@ -930,6 +934,11 @@ onSurface("board", () => {
   on("wb-fmt-crop", "change", (e) => {
     const crop = e.target.value;
     wbFmtApply("crop", () => ({ crop: crop || undefined }), crop ? `Picture cropped to ${e.target.selectedOptions[0].textContent.toLowerCase()}.` : "Picture crop taken off.");
+  });
+  on("wb-fmt-linestyle", "change", (e) => {
+    const style = e.target.value;
+    //: Rounded keeps the radius an item already has, else 12.
+    wbFmtApply("linestyle", (entry) => ({ round: style === "rounded" ? Number(wbFmtValue(entry, "round")) || 12 : undefined, curve: style === "curved" ? true : undefined }), `Line style: ${style}.`);
   });
   on("wb-fmt-round", "change", (e) => {
     const radius = Math.max(0, Math.min(80, Math.round(Number(e.target.value) || 0)));

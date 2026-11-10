@@ -8421,6 +8421,7 @@ Link to another note with [[its first few words]]."></textarea>
               <p><b>Width</b>: how thick the line is, in pixels.</p>
               <p><b>Pattern</b>: solid, dashed or dotted.</p>
               <p><b>Dashes</b>: your own dash and gap lengths, such as 8 4.</p>
+              <p><b>Line style</b>: sharp corners, rounded corners, or one smooth curve through the points.</p>
               <p><b>Corners</b>: rounds the corners by this many pixels; 0 keeps them sharp.</p>
               <p><b>Flow</b>: dashes that move along the line, to show a direction.</p>
             </div>
@@ -8438,6 +8439,11 @@ Link to another note with [[its first few words]]."></textarea>
               </select>
             </label>
             <label class="wb-fmt-row" data-fmt="pattern"><span class="wb-fmt-label">Dashes</span><input type="text" id="wb-fmt-pattern" inputmode="decimal" maxlength="40" placeholder="8 4" autocomplete="off" aria-label="Custom dash pattern" title="Your own dashes, in line widths: a dash, a gap, and so on, like 8 4. Empty uses the pattern above."></label>
+            <label class="wb-fmt-row" data-fmt="linestyle"><span class="wb-fmt-label">Line style</span><select id="wb-fmt-linestyle" aria-label="Line style" title="Sharp corners, rounded corners, or one smooth curve through the points">
+                <option value="sharp">Sharp</option>
+                <option value="rounded">Rounded</option>
+                <option value="curved">Curved</option>
+              </select></label>
             <label class="wb-fmt-row" data-fmt="round" data-unit="px"><span class="wb-fmt-label">Corners</span><input type="number" id="wb-fmt-round" min="0" max="80" step="1" aria-label="Corner rounding" title="Round the corners by this much; 0 keeps them sharp"></label>
             <div class="wb-fmt-row" data-fmt="flow"><span class="wb-fmt-label">Flow</span><span class="wb-fmt-buttons"><label class="wb-snap-label" title="Dashes that move along the line, for a flow or a direction. Exports draw them still."><input type="checkbox" id="wb-fmt-flow" aria-label="Flow animation"></label></span></div>
           </div>
