@@ -15,7 +15,7 @@ from sqlalchemy.orm import Session
 
 from tessellate.ai import composer_frame
 from tessellate.ai.tools._common import _visible
-from tessellate.core.database import Entry
+from tessellate.core.database import LIKE_ESCAPE, Entry, like_escape
 from tessellate.repo import relations
 
 _LEAD = r"^\s*(?:(?:and|so|ok|okay|then|now)[, ]+)*"
@@ -24,6 +24,11 @@ _LINKS = re.compile(
     _LEAD + r"(?:what|which notes?|which)(?: else)?(?:'s| is| are)? (?:linked|links?|connected|connects?|related|relates|joined|points?) (?:back )?(?:to|with)\s+" + _THIS + r"\s*[?.!]*$"
     r"|" + _LEAD + r"what(?:'s| is| are)? (?:linked|related|connected)\s*[?.!]*$"
     r"|" + _LEAD + r"what links here\s*[?.!]*$",
+    re.I,
+)
+#: "what links to the dentist note", "which notes link to Mum" (F13 j, B31): the note is named, not "it".
+_NAMED = re.compile(
+    _LEAD + r"(?:what|which notes?|which)(?: else)?(?:'s| is| are)? (?:linked|links?|connected|connects?|related|relates|joined|points?|backlinks?) (?:back )?(?:to|with)\s+(?P<name>.+?)\s*[?.!]*$",
     re.I,
 )
 _WHY = re.compile(_LEAD + r"why (?:is|are) (?:they|these|those|it|the two|the notes) (?:linked|connected|related|joined)(?: together)?\s*[?.!]*$", re.I)
@@ -79,12 +84,28 @@ def _listed(session: Session, note_id: int, why: bool) -> str:
     return "\n".join([head, "", *(_line(n, r) for n, r in found[:8])])
 
 
+def _titled(session: Session, name: str) -> list[int]:
+    """The visible note the words name: a title that is exactly them, else the one title that holds them (none when two do)."""
+    wanted = re.sub(r"\s+notes?$", "", re.sub(r"^(?:the|my|our)\s+", "", name.strip(), flags=re.I), flags=re.I).strip().casefold()
+    if not wanted or re.fullmatch(_THIS, wanted):
+        return []
+    rows = session.query(Entry.id, Entry.content).filter(Entry.content.ilike(f"%{like_escape(wanted)}%", escape=LIKE_ESCAPE), *_visible()).limit(60).all()
+    titles = {i: composer_frame.note_title(content or "").casefold() for i, content in rows}
+    exact = [i for i, title in titles.items() if title == wanted]
+    holding = [i for i, title in titles.items() if wanted in title]
+    return exact[:1] or (holding if len(holding) == 1 else [])
+
+
 def answer(session: Session, typed: str, history: list[dict] | None, open_ids: list[int]) -> str | None:
-    """The links of the note "it" is, or why the notes just shown are linked."""
+    """The links of the note "it" (or a note by name) is, or why the notes just shown are linked."""
     text = " ".join(str(typed or "").split())
     why = bool(_WHY.match(text))
-    if not (why or _LINKS.match(text)):
+    named = _NAMED.match(text)
+    if not (why or _LINKS.match(text) or named):
         return None
+    if named and not _LINKS.match(text):
+        ids = _titled(session, named.group("name"))
+        return _listed(session, ids[0], False) if ids else None
     ids = _subject(session, history or [], list(open_ids or []))
     if not ids:
         return None
