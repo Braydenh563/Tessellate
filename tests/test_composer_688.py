@@ -175,14 +175,14 @@ def test_what_leads_with_the_note_named_by_the_question_and_shows_its_checklist(
 def test_when_leads_with_the_dated_sentence():
     first = _first_line(ask("When is the dentist check-up?"))
     #: INBOX 741: the sentence first, the note named once after it.
-    assert first == "Check-up booked for the 21st. [**Dentist**]" or first.endswith(": Check-up booked for the 21st. [**Dentist**]")
+    assert first == "Check-up booked for the 21st. From your **Dentist** note." or first.endswith(": Check-up booked for the 21st. From your **Dentist** note.")
 
 
 def test_when_without_a_date_in_the_sentence_says_the_day_it_was_written():
     notes = [_note(1, "# Flights\n\nBooked, seats 14A and 14B on the evening plane.", 4)]
     result = ask("When did I book the flights?", notes)
     assert _first_line(result) == (
-        "On 2 October you wrote: Booked, seats 14A and 14B on the evening plane. [**Flights**]"
+        "On 2 October you wrote: Booked, seats 14A and 14B on the evening plane. From your **Flights** note."
     )
 
 
@@ -256,7 +256,7 @@ def test_explain_keeps_the_notes_sentences_in_their_own_order():
     first = _first_line(ask("Why did the list feel slow?"))
     assert first.endswith(
         "It was not the database. Every row re-measured its own height on scroll. "
-        "Caching the height per row took a long list from 40ms a frame to 6. [**Why the list felt slow**]"
+        "Caching the height per row took a long list from 40ms a frame to 6. From your **Why the list felt slow** note."
     )
 
 
@@ -268,7 +268,7 @@ def test_status_leads_with_the_newest_and_walks_back_through_the_earlier():
     assert "the sync rewrite now keeps both versions and asks." in first.lower()
     #: Any of the "before that" variants: the order is the point, not the wording.
     assert any(f"\n\n{w}17 August, the conflict rule" in text for w in composer_phrases.phrase_options("before_that"))
-    assert "[**Sync rewrite, first notes**]" in text
+    assert "From your note **Sync rewrite, first notes**." in text
 
 
 def test_yes_no_never_answers_yes_or_no():
@@ -288,7 +288,7 @@ def test_two_notes_that_may_disagree_are_said_as_a_but():
     text = result["text"]
     assert "**Standup**" in _first_line(result)
     assert any(f"\n\n{w}, the launch date is the 21st" in text for w in composer_phrases.phrase_options("but_newer"))
-    assert "[**Standup again**]" in text
+    assert "(**Standup again**)" in text
     assert any(wording in text for wording in composer_phrases.phrase_options("disagree_check"))
     #: Each side said once.
     assert text.lower().count("the launch date is the 21st") == 1 and text.lower().count("the launch date is the 14th") == 1
@@ -472,10 +472,10 @@ def test_an_answer_no_model_wrote_says_so_in_its_support_notice() -> None:
 
 
 def test_a_grounding_row_carries_the_title_the_answer_cites() -> None:
-    """2026-10-10 triage, decision 5: the page makes "[**Dentist**]" open the
-    note, matching the name exactly from the row rather than from its label."""
+    """2026-10-10 triage, decision 5: the page made "[**Dentist**]" open the
+    note (D25 moved the name to "From your **Dentist** note."), matching the name exactly from the row rather than from its label."""
     result = ask("When is the dentist check-up?")
-    assert "[**Dentist**]" in result["text"]
+    assert "From your **Dentist** note." in result["text"]
     assert {row["title"] for row in result["grounding"]} >= {"Dentist"}
     untitled = ask("What about the hotel?", [_note(1, "the hotel is booked for May, near the river.", 2)])
     assert all(row["title"] == "" for row in untitled["grounding"])

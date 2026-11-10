@@ -35,6 +35,7 @@ _FEATURE_FILLER = frozenset({"the", "a", "an", "my", "that", "this", "it", "last
 
 #: "and last week?" carries on the question before; it is not asking for the Timeline tab. "who wrote it" is a
 #: question about a note, not the name of a tool (R9-9).
+_ABOUT_AN_ANSWER = re.compile(r"^\s*(?:is|are|was|what|what's|whats|who|when|where|why|how|do|does|did|can|the)\b|\b(?:it|its|one|they|them)\b", re.I)
 _CARRIES_ON = re.compile(r"^\s*(?:and|but|or|also|then|who)\b", re.I)
 
 
@@ -114,6 +115,9 @@ def offered(result: dict | None, question: str) -> dict | None:
     offered after it from the same help line (INBOX 1334, the open half).
     The digest and `compose` both answer a chat turn, so both pass through."""
     if not result or result.get("shape") in ("help", None) or result.get("missed") or not result.get("parts"):
+        return result
+    #: A question about an answer ("is it this week", "the second one", "what's in it") names no tool.
+    if _ABOUT_AN_ANSWER.search(question or ""):
         return result
     best = _feature_help(question, [])
     if best is None:

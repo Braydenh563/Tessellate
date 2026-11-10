@@ -179,24 +179,42 @@ class _Answer:
         return composer_frame.name_of(view.note)
 
     def cite(self, view: NoteView, again: bool = False) -> _Answer:
-        """" [**Harbor launch plan**]" or " [“Dentist said to floss more and…”]"
-        after a quote: the citation as a marker, once per note unless `again`."""
+        """The note an answer rests on, once per note unless `again`. No bracketed
+        title follows the quote (decision D25, owner 2026-11-10): the numbered mark
+        and the Sources list name it. What they cannot say is written, lightly: a
+        titled note's name on its first mention in the chat ("From your Gym log
+        note."), nothing on later turns about the same note, a title-less note's
+        day for a when-ask, and a board, map, document, file or page by its kind."""
         if view.id in self.named and not again:
             return self
         self.named.add(view.id)
-        self.t("cite_open")
         if view.kind != "note":
-            self.t(f"kind_{view.kind}")
-        if view.titled:
-            self.t("bold")
-            self.parts.append(("title", view.title, view.id))
-            self.t("bold")
-        else:
-            self.parts.append(("title", self._first_line(view), view.id))
-            #: A when-ask is answered with the day: the title-less note's old "your note, 26 October" carried it, its first words do not.
-            if view.written and self.day_in_cite:
-                self.t("comma").m(self.day(view.written))
-        return self.t("cite_close")
+            self.t("open_paren").t(f"kind_{view.kind}")
+            self.parts.append(("title", view.title if view.titled else self._first_line(view), view.id))
+            return self.t("close_paren")
+        if not view.titled:
+            #: Its first words are the quote itself; only a when-ask's day is new.
+            return self.dated(view) if view.written and self.day_in_cite else self
+        if self._said_before(view.title):
+            return self
+        bold = view.title
+        if again:
+            #: A row of a list from several notes: the title, plainly, in a parenthesis.
+            self.t("open_paren", "bold")
+            self.parts.append(("title", bold, view.id))
+            return self.t("bold", "close_paren")
+        if re.match(r"(?:the|a|an|my|your)\b", bold.strip(), re.I) or re.search(r"\bnotes?$", bold.strip(), re.I):
+            self.t("cite_from_note", "bold")
+            self.parts.append(("title", bold, view.id))
+            return self.t("bold", "stop")
+        self.t("cite_from", "bold")
+        self.parts.append(("title", bold, view.id))
+        return self.t("bold", "cite_note")
+
+    def _said_before(self, title: str) -> bool:
+        """Whether an earlier answer in this chat already named the note."""
+        key = title.strip().lower()
+        return bool(key) and any(key in (said or "").lower() for said in (*self.recent, self.previous))
 
     def _shifted(self, s: Sentence, text: str) -> str | None:
         """The sentence said to the person who wrote it (decision 33): "I

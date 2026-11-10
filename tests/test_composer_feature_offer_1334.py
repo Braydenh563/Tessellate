@@ -10,7 +10,7 @@ import pytest
 from tessellate.entry import manager
 from tests.test_composer_route_688 import _ask
 
-OFFER = "The app has a tool by that name too."
+OFFER = "The app has a tool for that too."
 
 
 @pytest.fixture

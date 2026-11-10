@@ -102,12 +102,30 @@ def label_is_sentence(label: str) -> bool:
     return len(words) >= 3 and bool(_LABEL_VERB.search(label))
 
 
+_NUMBER_WORDS = frozenset("one two three four five six seven eight nine ten eleven twelve several few many some two".split())
+_PREPOSITIONS = frozenset("for of before after to in on with by at from about until".split())
+
+
+def _plural_head(words: list[str]) -> bool:
+    """Whether the noun phrase before its first preposition is a plural or a counted one
+    ("goals for the half", "three gates before then"), which takes no "a"."""
+    if words[0].lower() in _NUMBER_WORDS or words[0][:1].isdigit():
+        return True
+    head: list[str] = []
+    for word in words:
+        if word.lower() in _PREPOSITIONS:
+            break
+        head.append(word)
+    last = (head or words)[-1].lower()
+    return last.endswith("s") and not last.endswith(("ss", "us", "is"))
+
+
 def with_article(head: str) -> str:
     """"warm up" as "a warm up" after "has": a label of two or more plain
-    words that is not a plural; "attendees", "Phase 2" and "key points"
-    stay as they are."""
+    words that is not a plural or a count; "attendees", "goals for the half",
+    "three gates", "Phase 2" and "key points" stay as they are."""
     words = head.split()
-    if len(words) < 2 or not head[:1].islower() or words[-1].endswith("s") or words[0] in _LEADING | {"your", "my"}:
+    if len(words) < 2 or not head[:1].islower() or _plural_head(words) or words[0] in _LEADING | {"your", "my"}:
         return head
     return f"{'an' if head[0] in 'aeiou' else 'a'} {head}"
 

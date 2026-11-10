@@ -42,8 +42,8 @@ def test_i3_a_words_only_search_never_claims_the_only_note(client, trip, questio
     assert got["mode"] == "keyword", got
     said = got["text"].lower()
     assert "only note" not in said and "just the one note" not in said, said
-    #: Worded in turn like the claim it replaces (INBOX 870 variants).
-    assert "those words" in said and "search by meaning" in said, said
+    #: The claim is left out and no stat line stands in its place (fable-composer-1110 F7.3).
+    assert "those words" not in said and "search by meaning" not in said, said
 
 
 def test_i3_every_voice_of_the_only_note_line_is_known():

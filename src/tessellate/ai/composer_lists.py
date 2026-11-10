@@ -563,7 +563,10 @@ def _title(view) -> str:  # noqa: ANN001
         line = next((ln for ln in str(view.note.get("content") or "").splitlines() if ln.strip()), view.title)
         if _LIST_LINE.match(line):
             return _named_by_filing(view)
-        first = re.split(r"(?<=[.!?])\s", line.strip().lstrip("#").strip(), maxsplit=1)[0]
+        #: The one name a title-less note has everywhere: its first words, quoted, cut with an ellipsis (owner 2026-11-10).
+        from tessellate.ai import composer_frame
+
+        return composer_frame.name_of(view.note)
     return _trim(first.strip().rstrip(":.!"), 70)
 
 

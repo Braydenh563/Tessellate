@@ -695,7 +695,8 @@ def _insight_close(out: _Answer, question: str, terms: list[str], views: list[No
         #: how many were after work, and the hedge.
         from tessellate.ai import insights
 
-        out.t("para").m(insights.after_lead(insight))
+        if closing := insights.after_lead(insight):
+            out.t("para").m(closing)
         return
     out.t("para").m(insight.text)
 

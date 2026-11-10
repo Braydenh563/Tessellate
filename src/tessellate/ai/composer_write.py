@@ -460,11 +460,11 @@ def _tidy(thoughts: str) -> str:
 
 
 def note_name(note: dict, size: int = 80) -> str:
-    """What the composer calls a note: its label ("Budget review: ..."), else
-    its title (`composer_frame`), cut at a word past `size`."""
+    """What the composer calls a note: its title, else its first line cut at about six
+    words (`composer_frame.name_of`, the one name; owner 2026-11-10), cut at a word past `size`."""
     from tessellate.ai import composer_frame
 
-    return _cap(composer_frame.note_label(note) or composer_frame.note_title(note.get("content") or "", size=size)) or "Untitled"
+    return _cap(composer_frame.name_of(note)) or "Untitled"
 
 
 def _write_up_name(note: dict) -> str:

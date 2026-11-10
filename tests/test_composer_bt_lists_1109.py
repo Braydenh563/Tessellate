@@ -44,7 +44,7 @@ def test_a_long_question_is_read_in_bounded_time():
 
 def test_a_comparison_names_each_note_where_its_lines_begin(ask):
     text = ask("compare Orchard and Harbour")
-    assert text.count("[**Orchard project**]") == 1 and text.count("[**Harbour project**]") == 1, text
+    assert text.count("(**Orchard project**)") == 1 and text.count("(**Harbour project**)") == 1, text
     assert "4,500" in text and "12,000" in text, text
 
 
