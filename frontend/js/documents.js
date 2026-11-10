@@ -263,6 +263,9 @@ function syncDocFileType({ prose = true } = {}) {
   setLabel($("doc-export-md"), `ph:download-simple Download as .${type.ext}`);
   $("doc-export-md").title = `Download as a .${type.ext} file`;
   for (const id of ["doc-export-svg", "doc-export-picture", "doc-copy-picture"]) $(id)?.classList.toggle("hidden", type.ext !== "mmd");
+  //: A diagram's head menu keeps what is a verb on a diagram (Download first, Connections, History, Delete): the editor and writing
+  //: switches, Read aloud and Extract notes mean nothing for a picture (OPEN W18, Q26: hide the file chrome).
+  for (const el of [...(syncDocFileType.groups || []), $("doc-read-aloud"), $("doc-extract")]) el?.classList.toggle("hidden", type.ext === "mmd");
 
   //: **The prose check depends on the type, so a type change has to re-run
   //: it.** `openDocument` gets this through `renderDocTools`; changing the
@@ -521,13 +524,12 @@ const docDownloadGroup = foldDocMenuGroup("ph:download-simple Download or print"
   "doc-export-md", "doc-export-svg", "doc-export-picture", "doc-copy-picture", "doc-export-html", "doc-export-zip", "doc-export-docx", "doc-export-pdf",
 ]);
 docDownloadGroup?.parentElement?.prepend(docDownloadGroup);
-foldDocMenuGroup("ph:layout Editor and layout", [
+syncDocFileType.groups = [foldDocMenuGroup("ph:layout Editor and layout", [
   "doc-format-toggle", "doc-width-menu", "doc-text-size", "doc-line-spacing", "doc-toolbar-mode", "doc-code-wrap-row", "doc-whitespace-row",
   "doc-minimap-row",
-]);
-foldDocMenuGroup("ph:pencil-simple While you write", [
+]), foldDocMenuGroup("ph:pencil-simple While you write", [
   "doc-paste-special", "doc-dim-others", "doc-typewriter", "doc-serif", "doc-margin-reader", "doc-autocorrect-row", "doc-complete-row",
-]);
+])];
 
 // --- which of the four views is showing ----------------------------------------
 //
@@ -4354,6 +4356,8 @@ function docRenderBody(container, raw) {
   //: and each piece's own `renderMarkdown` would see only its half.
   const footnotes = mdFootnotePrepare(String(raw ?? "").split("\n"));
   const text = footnotes.lines.join("\n");
+  //: Equation labels over the whole document too: `\eqref{k}` above its `\label{k}` names the number below it (OPEN F1).
+  window.docMathRender?.labels.use(window.docMathRender.labels.index(raw));
   const blocks = docColumnsBlocks(text);
   if (!blocks.length) {
     container.replaceChildren();

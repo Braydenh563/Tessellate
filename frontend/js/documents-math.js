@@ -419,8 +419,14 @@
     //: `\tag{1}` is TeX's own equation number, taken off the formula and kept
     //: beside the tree (`label`) for the display box to set at the right edge.
     //: Display only: an inline formula has nowhere to put one.
-    const found = display ? /\\tag\*?\{([^{}]{1,24})\}/.exec(tex) : null;
-    const body = found ? tex.replace(found[0], "") : tex;
+    //: `\label{k}` names a display equation and `\eqref{k}` (or `\ref{k}`) is its number in parentheses, from the map the page
+    //: was indexed with (`docMathIndex`, `docMathUse`); an unknown key reads "(?)". A label is never drawn; with no `\tag` it
+    //: supplies the number.
+    const src = String(tex).replace(/\\(?:eqref|ref)\{([^{}]{1,40})\}/g, (all, key) => `\\text{(${DOC_MATH_LABELS.get(key.trim()) ?? "?"})}`);
+    const named = /\\label\{([^{}]{1,40})\}/.exec(src);
+    const clean = src.replace(/\\label\{[^{}]{0,40}\}/g, "");
+    const found = display ? /\\tag\*?\{([^{}]{1,24})\}/.exec(clean) : null;
+    const body = found ? clean.replace(found[0], "") : clean;
     const tokens = docMathTokens(body);
     const state = { at: 0, problems: [] };
     const kids = docMathNodes(tokens, state);
@@ -431,8 +437,26 @@
       tag: "math",
       attrs: { display: display ? "block" : "inline" },
       kids: [docMathRow(kids.length ? kids : [{ tag: "mtext", text: "" }])],
-      label: found ? found[1].trim() : "",
+      label: found ? found[1].trim() : display && named ? DOC_MATH_LABELS.get(named[1].trim()) || "" : "",
     };
+  }
+
+  //: The numbers a page's labels stand for: each `$$ ... $$` block with a `\label{k}` takes its `\tag{n}` or the next number
+  //: (equations with a tag do not use one up). The caller (a page render) hands the map to `docMathUse` before it draws.
+  let DOC_MATH_LABELS = new Map();
+  function docMathIndex(text) {
+    const labels = new Map();
+    let next = 0;
+    for (const block of String(text ?? "").matchAll(/\$\$([\s\S]+?)\$\$/g)) {
+      const key = /\\label\{([^{}]{1,40})\}/.exec(block[1])?.[1].trim();
+      if (!key || labels.has(key)) continue;
+      const tag = /\\tag\*?\{([^{}]{1,24})\}/.exec(block[1])?.[1].trim();
+      labels.set(key, tag || String((next += 1)));
+    }
+    return labels;
+  }
+  function docMathUse(labels) {
+    DOC_MATH_LABELS = labels instanceof Map ? labels : new Map();
   }
 
   //: **What counts as math and what is a price.** `$` is a currency sign far
@@ -495,4 +519,6 @@
 
   //: The file's whole surface: what documents-cm.js, markdown.js and navigation.js call.
   Object.assign(window, { docMathLooksLikeMath, docMathRender });
+  //: The page's equation numbers ride on the renderer rather than take two more names in the shared scope.
+  docMathRender.labels = { index: docMathIndex, use: docMathUse };
 })();

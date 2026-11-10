@@ -1543,7 +1543,7 @@ Owner: "stuff like that, dont stop there, find what is missing on the whiteboard
 
 ## Placed from INBOX, 2026-10-19 (per-board view, Format on a map; next PR)
 
-1340. **The owner, 2026-10-19, verbatim.** "when I go between the mind map and whiteboard, should the board recenter on the main content?" **Built in memory for the session (not saved with the board), 2026-10-19:** `wbBoardViews`, `wbRestoreOrFrameBoard`; a map too big to fit opens at its content corner (`wbMapOpenTarget`); sweep `scratchpad/ui-sweeps/mapopenframe.js`. Saving the view with the board is still open.
+1340. **The owner, 2026-10-19, verbatim.** "when I go between the mind map and whiteboard, should the board recenter on the main content?" **Built in memory for the session (not saved with the board), 2026-10-19:** `wbBoardViews`, `wbRestoreOrFrameBoard`; a map too big to fit opens at its content corner (`wbMapOpenTarget`); sweep `scratchpad/ui-sweeps/mapopenframe.js`. Saving the view past a reload, per device, built 2026-11-10 (HISTORY, s9-1110); saving it in the board's own record is not planned.
      Measured by code reading: a map refits on every open (`wbFrameMapOnOpen`, whiteboard.js:2516, `wbZoomToFit`); a board is not reframed and keeps whatever the shared camera (`wbZoom`, :170) last was, which may be the map's; no view is saved per board. For the next PR. Recommendation: each board and map remembers its own view (pan and zoom, saved with the board); returning restores it; fit to content only on first open, or when nothing would be on screen.
 
 

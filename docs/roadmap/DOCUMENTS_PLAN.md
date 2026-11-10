@@ -1325,7 +1325,7 @@ Read from the code against Notion and Obsidian. Sizes S, M, L. Nothing here is b
 8. Page cover and icon picker parity with Notion's gallery - S.
 9. Web clipper fields on a note's properties - M.
 10. Canvas block: a board embedded and editable in place - M.
-11. Equation cross-reference (`\eqref`, a number that follows the equation); numbering by `\tag{n}` is built (HISTORY, docs5-1026) - S.
+11. Built 2026-11-10 (`\label`, `\eqref`, `\ref`): see HISTORY.md, "Moved from the plans, 2026-11-10 (s9-1110)".
 12. Table: column sort, filter row, formulas - M.
 13. Built 2026-10-26 (docs5-1026): the Read view takes a progress line; see HISTORY.md.
 14. Template variables exist (documents.js, documents-codekit.js); check they cover time and the cursor place - S.
@@ -1431,7 +1431,7 @@ Each row is one Sonnet-high agent session, ships alone, and is gated with target
 - **R5 (1615 a, b):** built 2026-11-04, moved to HISTORY ("Moved from the plans, 2026-11-04 (DOCUMENTS_PLAN 22, R5)").
 - **R6 (R4's list, R6.1 to R6.13):** built 2026-11-04, moved to HISTORY ("Moved from the plans, 2026-11-04 (DOCUMENTS_PLAN 22, R6)").
 - **R7 (1621 D5, D6):** built 2026-11-04 except the page head, moved to HISTORY ("Moved from the plans, 2026-11-04 (DOCUMENTS_PLAN 22, R7)").
-- **R7 left (the page head):** hide the file chrome that means nothing for a diagram and put Export in the head. Not built: the document head already has its Export menu and the builder's dock has PNG and SVG, and which chrome to hide wants the owner's eye on the page.
+- **R7 (page head):** Built 2026-11-10, moved to HISTORY.md ("Moved from the plans, 2026-11-10 (s9-1110)").
 - **R8a (1621):** built 2026-11-04, moved to HISTORY ("Moved from the plans, 2026-11-04 (DOCUMENTS_PLAN 22, R8a)").
 - **R8b (1621):** built 2026-11-04, moved to HISTORY ("Moved from the plans, 2026-11-04 (DOCUMENTS_PLAN 22, R8b)").
 - **R8c (1621):** built 2026-11-04, moved to HISTORY ("Moved from the plans, 2026-11-04 (DOCUMENTS_PLAN 22, R8c)").
@@ -1443,11 +1443,8 @@ Each row is one Sonnet-high agent session, ships alone, and is gated with target
 - **R11 (blind test, 2026-11-04) left:** `/diagram` and Insert open a starter, not an existing diagram (add a "pick an existing diagram" row); Done creates a document silently; first paint blank about 1 s; 27 Tab stops to the first block; 390 px: tap scrolls the toolbar under the header and targets (tabs 28, grips 14x19, swatches 24, Connect 44x40) are under 44 px; chat chip says "Document" and the list "17 words" for a diagram; export items missing from the document's own menu; Boards empty state links only New mind map.
 - **R12 (blind test of 0931c35, fixed: phone toolbar fits one row, empty steps visible at 390, shape menu under its caret, Connect's new block is a box) left:** Done from a document or board opens the starter and saves a separate `Diagram <stamp>` file (decide: empty builder or pick an existing diagram, the R11 first item); the Embed row inserts a bare `![[` with no picker and renders "Nothing called" until reload; board Mermaid import drops block colour and stacks edge labels; a template on a non-empty builder only lists ghost blocks; the first branch off a decision is silent (the prompt is for the second); 390 picture is 47 to 59% zoom with the connect handle over a diamond; Box in the Add menu adds at once; key hints show on touch; the list row truncation at 1440 was not reproduced (rows 105 px, no overflow).
 
-- **R12 (1661 B, find):** Ctrl+F filters the outline and boxes get `dgm-found`, Enter walking matches (`listFilter`, DESIGN row 714).
-- **R13 (1661 B, layout):** curve (straight, curved, stepped) and spacing in a View popover, written to the kept `%%{init}%%` line (previews row 751).
-- **R14 (1661 B):** double-headed arrows (`<-->`) and the unread shapes (cylinder, parallelogram) in the shape menu and connector kinds.
+- **R12, R13, R14, R16 (1661 B: find, curve and spacing, both-ways arrows and shapes, edge colour, six templates):** Built 2026-11-10, moved to HISTORY.md ("Moved from the plans, 2026-11-10 (s9-1110)"). R15 (a corner minimap, only if a diagram routinely overflows the stage) stays open.
 - **R15 (1661 B, only if a diagram routinely overflows the stage):** a corner minimap, a plain `.dock`.
-- **R16 (1661 B left):** edge colour (`linkStyle N` lines regenerated in canonical edge order, same swatch picker, arrow menu); six more flowchart templates plus a `listFilter` in the picker; colour in the multi-select bar. Block colour and the shortcuts sheet are built (`diagram-style.js`). Declined: align and distribute (Mermaid owns layout).
 
 Order: R1 to R4, then R5, R6, R7; R8a after R2 and R5, then R8b, R8c; R9a any time, then R9b; R9c after R9a and R7; R10 after R7.
 

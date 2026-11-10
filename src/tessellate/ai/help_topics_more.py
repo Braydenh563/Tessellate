@@ -3002,7 +3002,7 @@ HELP_GROUPS: list[tuple[str, tuple[str, ...]]] = [
         "contradictions", "skills", "personas", "answer-style", "memory", "learned", "open-questions",
     )),
     ("Documents and code", (
-        "documents", "documents-controls", "spelling-check", "diagram-builder", "diagram-blocks", "diagram-reading", "diagram-kinds", "diagram-elsewhere", "diagram-ai", "documents-replace", "live-view-marks", "documents-features", "documents-list-styles", "documents-paste", "documents-comments", "documents-turn-into", "callouts", "equation-editor", "document-history", "writing-checks", "code-files", "code-completions", "code-run",
+        "documents", "documents-controls", "spelling-check", "diagram-builder", "diagram-blocks", "diagram-reading", "diagram-kinds", "diagram-elsewhere", "diagram-ai", "diagram-lines", "documents-replace", "live-view-marks", "documents-features", "documents-list-styles", "documents-paste", "documents-comments", "documents-turn-into", "callouts", "equation-editor", "equation-numbers", "document-history", "writing-checks", "code-files", "code-completions", "code-run",
         "debugger", "code-panel", "margin-reader",
     )),
     ("Boards and maps", (
@@ -3760,6 +3760,45 @@ MORE_TOPICS.append({
     "badge": {"label": "Notes", "tab": "notes"},
 })
 TOPIC_META["quick-sketch"] = {"title": "Quick sketch", "path": "Notes, the sketch button; q or Ctrl+Shift+K anywhere"}
+
+
+#: DOCUMENTS_PLAN item 11 (OPEN F1, s9-1110): equation numbers and references.
+MORE_TOPICS.append({
+    "id": "equation-numbers",
+    "keywords": (
+        "equation number", "number an equation", "label an equation", "eqref", "ref equation",
+        "refer to an equation", "cite an equation", "cross reference", "tag equation", "label{",
+    ),
+    "body": (
+        "Type \\label{name} inside a display equation ($$ ... $$) to number it: the first "
+        "labelled equation is (1), the next (2). Add \\tag{A} to choose the number yourself. "
+        "\\eqref{name}, or \\ref{name}, written anywhere in the same document, shows that "
+        "number in parentheses, in Live and Read view, and follows the equation if the "
+        "numbers change. A name that no equation carries reads (?)."
+    ),
+    "badge": {"label": "Documents", "tab": "documents"},
+})
+TOPIC_META["equation-numbers"] = {"title": "Numbering and citing equations", "path": "A document, Live or Read view"}
+
+
+#: OPEN W18 (s9-1110): the diagram's line shape, spacing and page menu.
+MORE_TOPICS.append({
+    "id": "diagram-lines",
+    "keywords": (
+        "curved arrows", "straight arrows", "stepped arrows", "arrow lines", "line shape",
+        "diagram spacing", "compact spacing", "roomy spacing", "diagram page menu",
+    ),
+    "body": (
+        "A flowchart's ... menu sets how arrows are drawn (Straight lines, Curved lines, "
+        "Stepped lines, Usual lines) and how far apart the blocks sit (Compact, Roomy, "
+        "Normal spacing). Both are kept in the diagram's own text as front matter and Undo "
+        "takes them back; the picture is then drawn by the dagre layout. A diagram's page "
+        "menu keeps Download or print, Connections and History, and leaves out the "
+        "writing switches, Read aloud and Extract notes."
+    ),
+    "badge": {"label": "Documents", "tab": "documents"},
+})
+TOPIC_META["diagram-lines"] = {"title": "Arrow lines, spacing and the page menu of a diagram", "path": "A diagram document, the ... menu"}
 
 
 #: DOCUMENTS_PLAN 16: the guided equation editor (math-editor.js).
