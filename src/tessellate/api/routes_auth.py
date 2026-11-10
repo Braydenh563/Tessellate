@@ -39,6 +39,7 @@ from tessellate.core import (
     crypto,
     desktop_dialog,
     diskspace,
+    hellostore,
     lanlive,
     lantrust,
     netbind,
@@ -788,6 +789,7 @@ def end_every_session() -> int:
     # it could open nothing now, so it goes rather than lingering as five
     # strikes' worth of guesses at a record that is already dead.
     pinstore.forget(get_config().data_dir)
+    hellostore.forget(get_config().data_dir)  # bound the same way as the PIN
     return ended
 
 
@@ -825,6 +827,8 @@ def status(
         # Whether this caller may type a PIN: set, and this computer. Any
         # other device is told False whether or not there is one.
         "pin_here": _from_this_computer(request) and pinstore.is_set(config.data_dir),
+        # Windows Hello (core/hellostore.py), by the same rule as the PIN.
+        "hello_here": _from_this_computer(request) and hellostore.is_set(config.data_dir),
         # INBOX 1573: a notebook with no account while a backup holds notes
         # (the database deleted, damaged or its log lost) is offered that
         # backup. This computer only: another device learns nothing of them.
@@ -1026,12 +1030,23 @@ def unlock(
         refused = _hold_new_device(request, device, config)
         if refused is not None:
             return refused
+    return _finish_unlock(request, response, session, config, user, body.password, pin_dek)
+
+
+def _finish_unlock(
+    request: Request, response: Response, session: Session, config: ConfigManager,
+    user: User, password: str | None, quick_dek: bytes | None,
+) -> dict:
+    """After the password, the PIN or Windows Hello was accepted: the key, the
+    audit line and the session. `quick_dek` is what the PIN or Hello
+    unwrapped (bound to this very vault row); otherwise the password opens it."""
+    device = _device_cookie(request)
     # Unwrap the data key so private notes are readable for this session.
-    if pin_dek is not None:
-        vault.set_key(pin_dek)  # bound to this very vault row (`_pin_binding`)
+    if quick_dek is not None:
+        vault.set_key(quick_dek)
         vault_open = True
     else:
-        vault_open = vault.open_with(session, body.password)
+        vault_open = vault.open_with(session, password or "")
     #: **A full disk must not lock you out of your own notebook.** Measured
     #: (INBOX 266, item 6) on a data dir filled to 100%: this route answered
     #: 507 and the app became unopenable, while every read endpoint behind it
@@ -1660,6 +1675,12 @@ def account(
             "set": pinstore.is_set(config.data_dir),
             "here": _from_this_computer(request),
         },
+        # Settings, "Unlock with Windows Hello": the same three facts.
+        "hello": {
+            "available": hellostore.available(config.data_dir),
+            "set": hellostore.is_set(config.data_dir),
+            "here": _from_this_computer(request),
+        },
     }
 
 
@@ -1728,6 +1749,7 @@ def change_password(
     # The PIN record is bound to the old hash, so it could open nothing now;
     # it is cleared rather than re-wrapped, since re-wrapping needs the PIN.
     pin_cleared = pinstore.forget(get_config().data_dir)
+    hello_cleared = hellostore.forget(get_config().data_dir)  # bound the same way
 
     # Every other session is invalidated: a password change is exactly when
     # you want anything already open elsewhere to stop working. The caller
@@ -1746,6 +1768,7 @@ def change_password(
         "other_sessions_ended": signed_out,
         "warning": password_warning(body.new_password),
         "pin_cleared": pin_cleared,
+        "hello_cleared": hello_cleared,
     }
 
 
@@ -1963,6 +1986,7 @@ def rotate_vault_key(
     vault.set_key(new_key)
     # The PIN wraps the old key, which is what a re-key exists to retire.
     pinstore.forget(get_config().data_dir)
+    hellostore.forget(get_config().data_dir)  # bound the same way as the PIN
 
     # Same reasoning as change-password: rotating a key you suspect is
     # compromised should not leave anything already open still trusted on
@@ -2166,6 +2190,7 @@ def recover(
     session.commit()
     vault.set_key(dek)  # only after the commit, as `rotate_vault_key` does
     pinstore.forget(get_config().data_dir)  # bound to the old password hash
+    hellostore.forget(get_config().data_dir)  # bound the same way as the PIN
     _owner_seen.clear()
     token = _end_sessions_and_issue(request, response)
     return {

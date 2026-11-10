@@ -41,6 +41,9 @@ RUNTIME_IDS = {
     #: `mount` on the first open (INBOX 1727; the boot element cap).
     "space-create-private",
     "space-edit-private",
+    #: The lock card's Windows Hello button, built by hello-unlock.js `button`
+    #: on the first lock screen that offers it (INBOX 1727; the boot element cap).
+    "lock-hello",
     #: Confirmed patterns, built by settings-controls.js `confirmedHost` on the
     #: first draw of What it remembers (CHAT_PLAN B9; the boot element cap).
     "memory-confirmed-list",

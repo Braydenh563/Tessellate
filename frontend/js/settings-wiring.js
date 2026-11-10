@@ -325,43 +325,48 @@ async function submitLockForm() {
     return;
   }
   try {
-    const body = await lockRequest(mode, password, errorLine);
-    prefs.set("token", body.token);
-    if (body.warning) toast(body.warning, "info");
-    vaultOpen = mode === "setup" ? true : Boolean(body.vault_open);
-    lockedByHand = false;
-    $("lock-password").value = "";
-    // **Give the focus back, or every single-key shortcut in the app is
-    // dead.** Hiding the overlay does not move focus off the field inside
-    // it, so `document.activeElement` stayed `#lock-password` for the whole
-    // session that followed. Every handler that (correctly) refuses to steal
-    // a keystroke while someone is typing, the whiteboard's V/H/P tool keys,
-    // its `n` and `/`, and the same guard elsewhere, therefore returned
-    // immediately on every press, until the reader happened to click some
-    // other focusable control. Found while testing the tool shortcuts: they
-    // did nothing at all from a freshly unlocked app.
-    $("lock-password").blur();
-    //: The overlay stays up as the opening curtain and fades over the
-    //: drawn page (`curtainShell`, `liftLockScreen`).
-    $("lock-btn").classList.remove("hidden");
-    // Signing in starts a session, and a session starts at the front of every
-    // tab: see `resetNavigationForNewSession`. Here as well as at load
-    // because the lock screen is an *overlay*, not a page: unlocking after an
-    // idle lock never reloads anything, so the load-time reset alone would
-    // leave every sub-tab exactly where it was hours ago. Called before
-    // `startApp()`, which is what reads the stored section back.
-    resetNavigationToDefaults();
-    setBusy($("lock-submit"), true, "Opening…");
-    const opening = startApp();
-    curtainShell(opening);
-    //: The step after setup (INBOX 663): a recovery key, offered once the
-    //: app is drawn, skippable. The password just chosen goes with it so
-    //: the offer does not ask for it again; account-recovery.js drops it
-    //: when the dialog closes.
-    if (mode === "setup") offerRecoveryKey(password);
+    lockOpened(await lockRequest(mode, password, errorLine), mode, password);
   } catch (error) {
     lockFailed(error);
   }
+}
+
+//: The lock card's way in, whatever opened it: the password here, Windows
+//: Hello from hello-unlock.js (`body` is `/auth/unlock`'s answer either way).
+function lockOpened(body, mode, password) {
+  prefs.set("token", body.token);
+  if (body.warning) toast(body.warning, "info");
+  vaultOpen = mode === "setup" ? true : Boolean(body.vault_open);
+  lockedByHand = false;
+  $("lock-password").value = "";
+  // **Give the focus back, or every single-key shortcut in the app is
+  // dead.** Hiding the overlay does not move focus off the field inside
+  // it, so `document.activeElement` stayed `#lock-password` for the whole
+  // session that followed. Every handler that (correctly) refuses to steal
+  // a keystroke while someone is typing, the whiteboard's V/H/P tool keys,
+  // its `n` and `/`, and the same guard elsewhere, therefore returned
+  // immediately on every press, until the reader happened to click some
+  // other focusable control. Found while testing the tool shortcuts: they
+  // did nothing at all from a freshly unlocked app.
+  $("lock-password").blur();
+  //: The overlay stays up as the opening curtain and fades over the
+  //: drawn page (`curtainShell`, `liftLockScreen`).
+  $("lock-btn").classList.remove("hidden");
+  // Signing in starts a session, and a session starts at the front of every
+  // tab: see `resetNavigationForNewSession`. Here as well as at load
+  // because the lock screen is an *overlay*, not a page: unlocking after an
+  // idle lock never reloads anything, so the load-time reset alone would
+  // leave every sub-tab exactly where it was hours ago. Called before
+  // `startApp()`, which is what reads the stored section back.
+  resetNavigationToDefaults();
+  setBusy($("lock-submit"), true, "Opening…");
+  const opening = startApp();
+  curtainShell(opening);
+  //: The step after setup (INBOX 663): a recovery key, offered once the
+  //: app is drawn, skippable. The password just chosen goes with it so
+  //: the offer does not ask for it again; account-recovery.js drops it
+  //: when the dialog closes.
+  if (mode === "setup") offerRecoveryKey(password);
 }
 
 //: **A new device waits for Allow by itself** (lansafe-1011's leftover): the
@@ -370,8 +375,9 @@ async function submitLockForm() {
 //: the same held request back up, so the phone keeps waiting, up to
 //: `LOCK_DEVICE_WAIT_MS`, instead of telling its owner to press Unlock again
 //: after walking to the computer. Editing the field stops it.
-const LOCK_DEVICE_WAIT_MS = 180_000;
 async function lockRequest(mode, password, errorLine) {
+  //: A local, not a shared name: lockOpened took its place in the shared scope's cap.
+  const LOCK_DEVICE_WAIT_MS = 180_000;
   const until = Date.now() + LOCK_DEVICE_WAIT_MS;
   for (;;) {
     try {

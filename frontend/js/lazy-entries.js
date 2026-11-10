@@ -6,7 +6,8 @@ Object.assign(LAZY_MODULES, {
   //: A space switch, in place (space-swap.js).
   spaceSwap: ["/js/space-swap.js"],
   //: Unlocking, editing and leaving a private space (private-spaces.js's header; INBOX 1727).
-  privateSpaces: ["/js/private-spaces.js"],
+  //: hello-unlock.js: Windows Hello on the lock card and in Settings (its header).
+  privateSpaces: ["/js/private-spaces.js", "/js/hello-unlock.js"],
   //: What the companion says about the notebook now and then (companion-remark.js's header).
   companionRemark: ["/js/companion-remark.js"],
   //: The capture bar's card (capture-card.js; notes-list.js opens it on the first focus).

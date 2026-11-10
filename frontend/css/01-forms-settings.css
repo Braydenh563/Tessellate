@@ -2077,10 +2077,21 @@ button:not(.ghost) > .spinner {
 .lock-overlay.lock-prompt {
   z-index: 1045;
 }
-.lock-card #lock-cancel {
+.lock-card #lock-cancel,
+.lock-card #lock-hello {
   width: 100%;
   justify-content: center;
   margin-top: var(--space-2);
+}
+/* Windows Hello (hello-unlock.js, INBOX 1727): shown by the card's mode, not
+   by a watcher, so another prompt over the card never offers it. */
+.lock-card #lock-hello {
+  display: none;
+}
+.lock-overlay[data-mode="unlock"] #lock-hello.for-lock,
+.lock-overlay[data-mode="prompt"] #lock-hello.for-space {
+  display: inline-flex;
+  min-height: var(--target-min);
 }
 /* "Forgot your password?" (INBOX 663) as a quiet link under Unlock (the
    owner: "subtle but accessible ... a small hyperlink below the unlock

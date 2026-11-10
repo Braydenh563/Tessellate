@@ -306,6 +306,9 @@ REVIEWED_COMPUTED: dict[tuple[str, str], str] = {
     ("routes_bench.py", "OFF"): "a constant in routes_bench.py, checked below",
     ("routes_entries.py", "private_space.MOVE_OUT_TO_SHARE"): "a constant in entry/private_space.py, checked in SOURCES",
     ("routes_private_spaces.py", "LOCKED_DETAIL"): "a constant in routes_private_spaces.py, checked below",
+    ("routes_hello.py", "NOT_UNLOCKED"): "a constant in routes_hello.py, checked below",
+    ("routes_hello.py", "NO_LOCALHOST"): "a constant in routes_hello.py, checked below",
+    ("routes_hello.py", "REFUSAL"): "api/this_computer.py REFUSAL, one fixed sentence",
     ("routes_board_library.py", "detail"): "_fail's callers pass literals and f-strings of counts and names, which collect() checks",
     ("routes_import.py", "str(exc)"): "TooBig from entry/app_import.py, one fixed sentence",
     ("routes_webclip.py", "NOT_A_PAGE"): "a constant in routes_webclip.py, checked below",
@@ -398,7 +401,7 @@ def test_no_route_literal_tells_the_person_to_run_a_command():
     assert not bad, f"a route detail carries developer vocabulary: {bad}"
 
 
-@pytest.mark.parametrize("module, name", [("routes_webclip.py", "WEB_OFF"), ("routes_webclip.py", "NOT_A_PAGE"), ("routes_mentions.py", "LINK_UNSAFE_WHY"), ("routes_bench.py", "OFF"), ("routes_bench.py", "BUSY"), ("routes_bench.py", "NO_MODELS"), ("routes_bench.py", "NOT_RUNNING"), ("routes_private_spaces.py", "LOCKED_DETAIL")])
+@pytest.mark.parametrize("module, name", [("routes_webclip.py", "WEB_OFF"), ("routes_webclip.py", "NOT_A_PAGE"), ("routes_mentions.py", "LINK_UNSAFE_WHY"), ("routes_bench.py", "OFF"), ("routes_bench.py", "BUSY"), ("routes_bench.py", "NO_MODELS"), ("routes_bench.py", "NOT_RUNNING"), ("routes_private_spaces.py", "LOCKED_DETAIL"), ("routes_hello.py", "NOT_UNLOCKED"), ("routes_hello.py", "NO_LOCALHOST")])
 def test_a_route_constant_reads_as_a_sentence(module, name):
     tree = ast.parse((API / module).read_text(encoding="utf-8"))
     texts = []

@@ -1,7 +1,8 @@
 """Private spaces: open, close, and turn a space private or ordinary (INBOX 1727).
 
-One door for every private space: the vault password, or the PIN on this
-computer only (never over the network), as the lock screen takes them. The
+One door for every private space: the vault password, or the PIN or Windows
+Hello on this computer only (never over the network), as the lock screen
+takes them. The
 door closes after the idle minutes in Settings, on lock and when the window
 closes (`core/spacelock.py`). Sealing is `entry/private_space.py`.
 """
@@ -12,8 +13,8 @@ from fastapi import APIRouter, Depends, Header, HTTPException, Request
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
-from tessellate.api import routes_auth
-from tessellate.core import deps, pinstore, spacelock, vault
+from tessellate.api import routes_auth, routes_hello
+from tessellate.core import deps, hellostore, pinstore, spacelock, vault
 from tessellate.core.config import ConfigManager
 from tessellate.core.database import Space
 from tessellate.core.deps import get_config, get_session
@@ -40,6 +41,7 @@ def status(
         "open": _is_open(x_auth_token),
         "idle_minutes": spacelock.idle_minutes(),
         "pin": routes_auth._from_this_computer(request) and pinstore.is_set(config.data_dir),
+        "hello": routes_auth._from_this_computer(request) and hellostore.is_set(config.data_dir),
     }
 
 
@@ -73,6 +75,27 @@ def unlock(
             raise HTTPException(status_code=401, detail="That password or PIN is wrong.")
         vault.set_key(dek)
     routes_auth._unlock_succeeded(client)
+    return _open_spaces(session, x_auth_token)
+
+
+@router.post("/private-spaces/unlock-hello")
+def unlock_hello(
+    body: routes_hello.AssertionIn,
+    request: Request,
+    session: Session = Depends(get_session),
+    config: ConfigManager = Depends(get_config),
+    x_auth_token: str | None = Header(default=None),
+) -> dict:
+    """Windows Hello on the private-space card: this computer only, the
+    signature verified before the third wrap is opened (api/routes_hello.py)."""
+    user = routes_auth._get_user(session)
+    if user is None:
+        raise HTTPException(status_code=400, detail="No password is set yet. Set one up first.")
+    vault.set_key(routes_hello.dek_from_assertion(request, session, user, body, config))
+    return _open_spaces(session, x_auth_token)
+
+
+def _open_spaces(session: Session, x_auth_token: str | None) -> dict:
     vault.grant(x_auth_token)
     if vault.key() is None:
         raise HTTPException(status_code=409, detail="The private notes key could not be opened.")

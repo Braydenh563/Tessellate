@@ -316,9 +316,10 @@ def test_the_open_status_says_nothing_about_the_notebook(client):
     status = _local(client).get("/auth/status").json()
     # `pin_here` is about this caller and this computer (core/pinstore.py),
     # like `reset_here`: never note counts or whether a recovery key exists.
+    #: `hello_here` (INBOX 1727, core/hellostore.py) is the same kind of fact.
     #: `restore_offer` (INBOX 1573) is null once a notebook has its account:
     #: it is offered only to a notebook with none, on this computer.
-    assert set(status) == {"setup_required", "auto_session", "reset_here", "pin_here", "restore_offer"}
+    assert set(status) == {"setup_required", "auto_session", "reset_here", "pin_here", "hello_here", "restore_offer"}
     assert status["restore_offer"] is None
 
 

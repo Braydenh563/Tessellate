@@ -6406,6 +6406,7 @@ PANEL_FIXED_JS = {
     "settings-controls.js": "an anchored control overlay",
     "companion-settings.js": "a help body (the habits row's popover)",
     "settings-health.js": "a help body (the data folder check's popover)",
+    "hello-unlock.js": "a help body (Unlock with Windows Hello's popover in Settings)",
     "sheets-selects.js": "the select popup",
     "skills.js": "an anchored panel",
     "status-panels.js": "an anchored readout (the model offer popover)",
