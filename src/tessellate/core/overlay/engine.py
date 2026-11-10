@@ -385,6 +385,12 @@ HANG_FOR = (90.0, 300.0)  # INBOX 1696 b: minutes, as `bh.HANG_BY_MOOD`; the lon
 #: slow one, and glances about now and then (INBOX 1670, 13:28Z: "it basically doesn't move while it is
 #: hanging"). The window itself holds still: only the picture swings.
 HANG_SWING = 9.0
+#: A hanger that is patted or hears a screen event swings: an extra hem swing this big, dying away over `HANG_KICK_FOR` s.
+HANG_KICK = 12.0
+#: A vanish needs somewhere else to go: a leg shorter than this many figure widths is walked (INBOX 1721 c). 0.3 is about 50 px, where a move
+#: reads as one; larger values also shifted the seeded hour of test_overlay_life_1670.
+WARP_MIN = 0.3
+HANG_KICK_FOR = 2.4
 #: A hang ends by its own choice (INBOX 1683 h), never a plain fall on a timer: it pulls itself up onto the
 #: window it holds, swings (a bigger pendulum for `SWING_FOR` s) and drops to a window top within `SWING_REACH`
 #: logical px, or lets go after a startled beat of `REACT_FOR` s.
@@ -853,6 +859,7 @@ class Engine:
         self.spell_len = 0.0
         self.hang_started = now
         self.hang_drag0 = 0.0
+        self.hang_kick_at = -1e9  # when a hanger was last patted or startled: the swing kick (`HANG_KICK`)
         self.hang_phase = 0.0
         self.hang_glance_at = math.inf
         self.idle_start = 0.0
@@ -1406,6 +1413,23 @@ class Engine:
         k = min(1.0, dt * POSE_RATE)
         return bh.Pose(out[0], out[1], out[2], self.cur.drag + (target.drag - self.cur.drag) * k)
 
+    def _hang_drag(self, now: float) -> float:
+        """The hem of a hanger: the pendulum eased in from the hem it started with, a kick when patted or startled on the
+        edge (INBOX 1721 a: a swing that dies away) and the shake of a scrabble."""
+        t = now - self.hang_started
+        amp = bh.smooth(t / 1.5) * (0.65 + 0.35 * math.sin(2 * math.pi * t / 41.0 + self.hang_phase))
+        if self.swing_to is not None:  # winding up to let go toward a window: the swing grows
+            amp *= 1.0 + SWING_BOOST * bh.smooth((now - self.swing_at) / SWING_FOR)
+        drag = HANG_SWING * amp * math.sin(2 * math.pi * t / HANG_PERIOD + self.hang_phase)
+        blend = bh.smooth(t / HANG_DRAG_IN)  # a hem left swinging by the leap or climb is not dropped to the pendulum in one pose ease
+        drag = self.hang_drag0 * (1.0 - blend) + drag * blend
+        since = now - self.hang_kick_at
+        if 0.0 <= since < HANG_KICK_FOR:
+            drag += HANG_KICK * (1.0 - since / HANG_KICK_FOR) ** 2 * math.sin(2 * math.pi * since / (HANG_PERIOD / 3))
+        if now < self.scrabble_until:  # the hands slipped and it is clawing back: the hem shakes
+            drag += SCRABBLE_DRAG * math.sin(2 * math.pi * SCRABBLE_HZ * (now - self.scrabble_t0))
+        return drag
+
     def _target_pose(self, now: float) -> bh.Pose:
         """What the body shape wants now: the act's keyframes, a turn's squeeze, a lean into the
         way it travels, a crouch or a landing's squash, a mood's carriage, and the tail's lag."""
@@ -1416,15 +1440,7 @@ class Engine:
         if self.reduced:
             return bh.NEUTRAL
         if s_ == "hang":  # a slow pendulum from the grip: the lower body swings, the hands do not move
-            t = now - self.hang_started
-            amp = bh.smooth(t / 1.5) * (0.65 + 0.35 * math.sin(2 * math.pi * t / 41.0 + self.hang_phase))
-            if self.swing_to is not None:  # winding up to let go toward a window: the swing grows
-                amp *= 1.0 + SWING_BOOST * bh.smooth((now - self.swing_at) / SWING_FOR)
-            drag = HANG_SWING * amp * math.sin(2 * math.pi * t / HANG_PERIOD + self.hang_phase)
-            blend = bh.smooth(t / HANG_DRAG_IN)  # a hem left swinging by the leap or climb is not dropped to the pendulum in one pose ease
-            drag = self.hang_drag0 * (1.0 - blend) + drag * blend
-            if now < self.scrabble_until:  # the hands slipped and it is clawing back: the hem shakes
-                drag += SCRABBLE_DRAG * math.sin(2 * math.pi * SCRABBLE_HZ * (now - self.scrabble_t0))
+            drag = self._hang_drag(now)
         elif s_ == "warp" and self.warp is not None and self.warp["kind"] == "portal":
             squeeze = self._warp_view(now)[2]
             sx, sy = 1.0 - 0.8 * squeeze, 1.0 - 0.2 * squeeze
@@ -2380,8 +2396,10 @@ class Engine:
                 self.goal = (self.goal[0] + dx, self.goal[1])
 
     def _grip(self, p: Perch) -> float:
-        """The y the hands take hold at on `p`: a title bar's bottom, or a bottom edge itself."""
-        return p.top + (TITLE_BAR * self._scale() if p.kind in ("top", "bar") else 0.0)
+        """The y the hands take hold at on `p`: a floating window's title-bar bottom, or the edge itself (a bottom edge,
+        and a maximised window's top: its tab strip or title bar is the screen's top, INBOX 1721 b, hands about 30 px
+        too low with the title-bar offset)."""
+        return p.top + (TITLE_BAR * self._scale() if p.kind == "top" else 0.0)
 
     def _lift(self) -> float:
         """How far the frame's top is above the hands that hold an edge."""
@@ -2698,7 +2716,8 @@ class Engine:
         for p in self.windows + self.hangs:
             lo, hi = max(left + w / 2, p.left + HANG_HANDS * w), min(right - w / 2, p.right - HANG_HANDS * w)
             edge = self._grip(p)
-            if hi - lo < 0.2 * w or p.top < top or edge - self._lift() < top or edge > self.floor_y(m) - self._lift():
+            # A bar sits on the work area's top, so its frame rises above it like the screen-top hang (`_hang`).
+            if hi - lo < 0.2 * w or p.top < top or (edge - self._lift() < top and p.kind != "bar") or edge > self.floor_y(m) - self._lift():
                 continue
             found.append((p, lo, hi))
         return found
@@ -2771,6 +2790,10 @@ class Engine:
         mode = ""
         if not plain and dist > 12 * self._scale():
             mode = self._leg_mode(goal, then)
+            mode = self._short_of_warp(mode, dist)
+            if mode == "here":
+                self._arrive(now)
+                return
             if mode == "edge":  # walks off one edge, comes in from the other (a warp only for the slip itself)
                 self.modes.append(mode)
                 self._start_edge(goal, then, now)
@@ -2852,6 +2875,16 @@ class Engine:
             run_ok=abs(goal[0] - self.x) >= RUN_MIN * self._scale(), between=then == "spell" or seen,
         )
         return mode
+
+    def _short_of_warp(self, mode: str, dist: float) -> str:
+        """A vanish needs somewhere else to go (INBOX 1721 c: "vanishes and reappears in the same spot"): a leg under
+        `WARP_MIN` figure widths is walked or glided instead, or for a floater between two spells ("here") is not made at
+        all (a glide between spells is never seen, INBOX 1696: it is there already)."""
+        if mode not in tv.WARPS or dist >= WARP_MIN * self.size[0]:
+            return mode
+        if self.gait == "float":
+            return "here" if self.then in ("spell", "settle") else "glide"
+        return "walk"
 
     def _box_at(self, x: float, y: float, frame: str = "stand") -> tv.Rect:
         """The drawn box of `frame` for a window at (x, y), in screen px."""
@@ -4298,8 +4331,9 @@ class Engine:
             self._enter("emerge", now)  # a click brings a peeking figure out
         elif self.pre_press == "hang":
             # INBOX 1690 c: the click opens the menu; the hanger keeps its grip
-            # (letting go here left a floater drifting mid-air beside the menu).
+            # (letting go here left a floater drifting mid-air beside the menu). It still answers the pat (1721 a).
             self.state = "hang"
+            self.ex.fire("pat", now)
         else:
             self.mind.feel("happy", now)
             if now - self.last_click < 4.0 and not self.reduced:  # a second pat: it purrs

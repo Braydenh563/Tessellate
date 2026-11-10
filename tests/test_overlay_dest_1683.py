@@ -107,7 +107,7 @@ def test_it_hangs_from_a_bottom_edge_a_maximised_title_bar_or_a_title_bar(gait: 
         t += 0.016
         e.update(t)
     assert e.state == "hang" and e.hang_on.key == spot.key
-    grip = spot.top + (eng.TITLE_BAR * 1.5 if spot.kind in ("top", "bar") else 0.0)
+    grip = spot.top + (eng.TITLE_BAR * 1.5 if spot.kind == "top" else 0.0)  # 1721 b: a maximised bar is gripped at its top edge
     assert e.y + e._lift() == pytest.approx(grip)  # the hands are on the edge
     centre = e.x + SIZE[0] / 2
     assert spot.left <= centre <= spot.right

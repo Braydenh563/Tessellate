@@ -368,7 +368,10 @@ def test_a_screen_event_waits_for_a_free_moment() -> None:
     e.card = None
     e._enter("held", t)
     assert e.react("window_opened", t) is False
+    # Intent moved (INBOX 1721 a): a hang that holds still answers (face and swing, tests/test_overlay_deskfix_1110.py);
+    # one that is letting go waits for a free moment like the rest.
     e._enter("hang", t)
+    e.releasing = True
     assert e.react("window_opened", t) is False
 
 

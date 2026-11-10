@@ -514,7 +514,7 @@ class Extras:
         if pointer != self.seen:
             self.seen, self.moved_at = pointer, now
         self.pointer_state.feed(now, float(pointer[0]), float(pointer[1]))
-        if e.state not in TOUCH_FREE:
+        if e.state not in TOUCH_FREE and not self.hanging():
             return False
         kind = self.pointer_state.classify(now, box, k, e.mind.mood(now, e.hour))
         if kind is None:
@@ -560,6 +560,8 @@ class Extras:
         e = self.e
         r = REACTIONS.get(kind)
         base = kind.rsplit("_", 1)[0] if kind.endswith(("_shy", "_love")) else kind  # a face of a pat is still a pat
+        if e.state == "hang":
+            return self._fire_hanging(r, base, kind, now, toward)
         if r is None or not self._allowed(r, base, now):
             return False
         self.cool[base] = now + r.cooldown
@@ -573,6 +575,33 @@ class Extras:
         self.over = (r.face, now, length)
         if r.act:
             self._play(r.act, length, now)
+        return True
+
+    def hanging(self) -> bool:
+        """Holding an edge with nothing in hand: not scrabbling, pulling up, winding up a swing or letting go."""
+        e = self.e
+        return e.state == "hang" and e.pulling is None and e.swing_to is None and not e.releasing and not e.reduced
+
+    def _fire_hanging(self, r: Reaction | None, base: str, kind: str, now: float, toward: float | None) -> bool:
+        """A reaction while hanging (INBOX 1721 a: a pat and a typing burst went unanswered). An act would drop the grip,
+        so the hang-safe answer is the reaction's face, a kick of the swing and a look toward the pointer; it stays
+        on the edge. Screen events are answered the same way (not queued: a hang lasts minutes, longer than the runner
+        keeps an event). Only a hang that is changing (scrabble, pull-up, swing, letting go) leaves one to the runner's
+        queue, which gives it up after `SCREEN_WAIT` s."""
+        e = self.e
+        if r is None or not self.hanging() or ((e.busy if r.touch else e.quiet) and not r.busy_ok) or e.card is not None:
+            return False
+        if now < self.cool.get(base, -1e9):
+            return False
+        self.cool[base] = now + r.cooldown
+        self.last = [*self.last[-7:], kind]
+        if r.feel:
+            e.mind.feel(r.feel, now)
+        e.last_active = now
+        if toward is not None and r.touch:
+            e.facing = -1 if toward < e.x + e.size[0] / 2 else 1
+        e.hang_kick_at = now
+        self.over = (r.face, now, r.seconds)
         return True
 
     def _play(self, name: str, seconds: float, now: float) -> None:
