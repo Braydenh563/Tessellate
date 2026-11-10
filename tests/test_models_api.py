@@ -88,8 +88,11 @@ def test_pull_streams_progress_to_status(ai_client, fake_ollama):
     )
     job = body["pulls"]["nomic-embed-text"]
     assert job["total"] == 1_000 and job["done"] == 1_000
-    # The fake now reports it installed, like real Ollama would.
-    assert any(m["name"] == "nomic-embed-text" for m in body["installed_models"])
+    # The fake now reports it installed, like real Ollama would. Waited for, not read from the
+    # "success" poll alone: on a busy runner that poll's list can predate the download, and the
+    # polls after it now ask again (`_installed_after_pulls`; CI on PR 216, 3.11). The intent,
+    # the finished download is listed as installed, is unchanged.
+    _wait_for(ai_client, lambda b: any(m["name"] == "nomic-embed-text" for m in b["installed_models"]))
 
 
 def test_switch_embedding_backend_reindexes_everything(ai_client, fake_embeddings):

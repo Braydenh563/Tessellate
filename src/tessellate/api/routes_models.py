@@ -258,6 +258,8 @@ def _run_list_flight(client, key: tuple[str, str], flight: _ListFlight) -> None:
 #: before the download (CI on PR 212). A name no longer among the pulls is forgotten, so a second download of it
 #: waits again.
 _pull_done_seen: dict[str, float] = {}
+#: How long after a download finishes a poll that still does not list it asks the runner again.
+PULL_LIST_RETRY_SECONDS = 10.0
 
 
 def _installed_after_pulls(client, installed: list[dict], pulls: dict[str, dict]) -> list[dict]:  # noqa: ANN001
@@ -265,19 +267,27 @@ def _installed_after_pulls(client, installed: list[dict], pulls: dict[str, dict]
         for name in [n for n in _pull_done_seen if pulls.get(n, {}).get("status") != "success"]:
             del _pull_done_seen[name]
         now = time.monotonic()
-        fresh = [n for n, job in pulls.items() if job.get("status") == "success" and n not in _pull_done_seen]
-        _pull_done_seen.update(dict.fromkeys(fresh, now))
-    if all(_name_matches(name, installed) for name in fresh):
+        new = [n for n, job in pulls.items() if job.get("status") == "success" and n not in _pull_done_seen]
+        _pull_done_seen.update(dict.fromkeys(new, now))
+        #: A download seen finishing in the last few seconds and still not listed is asked about again by the
+        #: next poll too: on a busy machine the first poll's wait ran out before the list came back, and every
+        #: poll after it served the list from before the download (CI on PR 216, 3.11).
+        fresh = [n for n in pulls if n in _pull_done_seen and now - _pull_done_seen[n] < PULL_LIST_RETRY_SECONDS]
+        since = min((_pull_done_seen[n] for n in fresh), default=now)
+    fresh = [n for n in fresh if not _name_matches(n, installed)]
+    if not fresh:
         return installed
     key = _flight_key(client)
-    deadline = now + INSTALLED_COLD_BUDGET
+    #: The poll that first sees the download finish waits the cold budget; the retries after it only the short
+    #: one, so a model the runner never lists (a renamed tag) cannot slow every poll for the whole window.
+    deadline = now + (INSTALLED_COLD_BUDGET if any(n in new for n in fresh) else INSTALLED_REFRESH_BUDGET)
     while time.monotonic() < deadline:
         with _installed_lock:
             flight = _installed_flights.get(key) or _start_flight(client, key)
         flight.done.wait(max(0.0, deadline - time.monotonic()))
         if not flight.done.is_set():
             break
-        if flight.started >= now:  # asked after the download finished: its answer, or what was known
+        if flight.started >= since:  # asked after the download finished: its answer, or what was known
             return flight.result if flight.error is None and flight.result is not None else installed
     return installed
 
