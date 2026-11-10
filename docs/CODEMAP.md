@@ -400,68 +400,67 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `watchFiling` | frontend/js/capture-ask.js:52 |
 | `withTitle` | frontend/js/capture-ask.js:453 |
 
-### frontend/js/chat.js (58)
+### frontend/js/chat.js (57)
 
 | Name | File:line |
 |---|---|
 | `CLIP_LIMITS` | frontend/js/chat.js:53 |
-| `aiWritingTrace` | frontend/js/chat.js:1356 |
-| `applyCompression` | frontend/js/chat.js:1239 |
-| `askAboutPage` | frontend/js/chat.js:657 |
+| `aiWritingTrace` | frontend/js/chat.js:1326 |
+| `applyCompression` | frontend/js/chat.js:1209 |
+| `askAboutPage` | frontend/js/chat.js:627 |
 | `atlasSuggestion` | frontend/js/chat.js:200 |
-| `batteryModeOn` | frontend/js/chat.js:1281 |
+| `batteryModeOn` | frontend/js/chat.js:1251 |
 | `bodyTextWithCitations` | frontend/js/chat.js:85 |
 | `chatEmptySettle` | frontend/js/chat.js:221 |
-| `chatTranscriptText` | frontend/js/chat.js:1170 |
-| `citeWebPage` | frontend/js/chat.js:714 |
+| `chatTranscriptText` | frontend/js/chat.js:1140 |
+| `citeWebPage` | frontend/js/chat.js:684 |
 | `clearChatEmptyState` | frontend/js/chat.js:350 |
-| `clearWebSearchHistory` | frontend/js/chat.js:647 |
+| `clearWebSearchHistory` | frontend/js/chat.js:617 |
 | `clipFor` | frontend/js/chat.js:59 |
 | `closeWebReader` | frontend/js/chat.js:420 |
 | `compactTokens` | frontend/js/chat.js:99 |
-| `compressChatContext` | frontend/js/chat.js:1199 |
-| `compressSizeText` | frontend/js/chat.js:1220 |
+| `compressChatContext` | frontend/js/chat.js:1169 |
+| `compressSizeText` | frontend/js/chat.js:1190 |
 | `copyToClipboard` | frontend/js/chat.js:150 |
 | `copyViaTextarea` | frontend/js/chat.js:110 |
-| `fillPersonaMark` | frontend/js/chat.js:973 |
+| `fillPersonaMark` | frontend/js/chat.js:943 |
 | `flashCopied` | frontend/js/chat.js:132 |
-| `loadResponseModes` | frontend/js/chat.js:928 |
-| `loadWebSearchHistory` | frontend/js/chat.js:636 |
-| `mountChatActionsMenu` | frontend/js/chat.js:1114 |
-| `openWebReader` | frontend/js/chat.js:674 |
-| `personaOptions` | frontend/js/chat.js:990 |
-| `progressMotionWanted` | frontend/js/chat.js:1308 |
-| `progressPhaseText` | frontend/js/chat.js:1552 |
-| `refreshWebSearxngStrip` | frontend/js/chat.js:589 |
+| `loadResponseModes` | frontend/js/chat.js:898 |
+| `loadWebSearchHistory` | frontend/js/chat.js:606 |
+| `mountChatActionsMenu` | frontend/js/chat.js:1084 |
+| `openWebReader` | frontend/js/chat.js:644 |
+| `personaOptions` | frontend/js/chat.js:960 |
+| `progressMotionWanted` | frontend/js/chat.js:1278 |
+| `progressPhaseText` | frontend/js/chat.js:1522 |
+| `refreshWebSearxngStrip` | frontend/js/chat.js:563 |
 | `regenerateFromBubble` | frontend/js/chat.js:188 |
 | `regenerateLastAnswer` | frontend/js/chat.js:193 |
-| `renderChatContextMeter` | frontend/js/chat.js:1068 |
+| `renderChatContextMeter` | frontend/js/chat.js:1038 |
 | `renderChatEmptyState` | frontend/js/chat.js:231 |
-| `renderChatTurnCount` | frontend/js/chat.js:1094 |
-| `renderChatUsage` | frontend/js/chat.js:1051 |
-| `renderCompressionState` | frontend/js/chat.js:1252 |
-| `renderModelContextBox` | frontend/js/chat.js:787 |
-| `renderModelHealthNote` | frontend/js/chat.js:891 |
-| `renderModelSpec` | frontend/js/chat.js:819 |
-| `renderWebPageAttachment` | frontend/js/chat.js:741 |
-| `renderWebPanelMenu` | frontend/js/chat.js:527 |
-| `scheduleThinkingWordTick` | frontend/js/chat.js:1470 |
-| `setResponseMode` | frontend/js/chat.js:951 |
-| `setWebEngineDot` | frontend/js/chat.js:513 |
-| `showCompressReview` | frontend/js/chat.js:1227 |
-| `startThinkingWordRotation` | frontend/js/chat.js:1498 |
-| `stopThinkingWordRotation` | frontend/js/chat.js:1520 |
+| `renderChatTurnCount` | frontend/js/chat.js:1064 |
+| `renderChatUsage` | frontend/js/chat.js:1021 |
+| `renderCompressionState` | frontend/js/chat.js:1222 |
+| `renderModelContextBox` | frontend/js/chat.js:757 |
+| `renderModelHealthNote` | frontend/js/chat.js:861 |
+| `renderModelSpec` | frontend/js/chat.js:789 |
+| `renderWebPageAttachment` | frontend/js/chat.js:711 |
+| `renderWebPanelMenu` | frontend/js/chat.js:506 |
+| `scheduleThinkingWordTick` | frontend/js/chat.js:1440 |
+| `setResponseMode` | frontend/js/chat.js:921 |
+| `setWebEngineDot` | frontend/js/chat.js:492 |
+| `showCompressReview` | frontend/js/chat.js:1197 |
+| `startThinkingWordRotation` | frontend/js/chat.js:1468 |
+| `stopThinkingWordRotation` | frontend/js/chat.js:1490 |
 | `stopWebRequest` | frontend/js/chat.js:405 |
-| `togglePersonaPrompt` | frontend/js/chat.js:1043 |
+| `togglePersonaPrompt` | frontend/js/chat.js:1013 |
 | `toggleWebPanel` | frontend/js/chat.js:433 |
-| `typingDots` | frontend/js/chat.js:1574 |
-| `webEngineWords` | frontend/js/chat.js:496 |
-| `webPageMarkdown` | frontend/js/chat.js:681 |
+| `typingDots` | frontend/js/chat.js:1544 |
+| `webPageMarkdown` | frontend/js/chat.js:651 |
 | `webReaderIsOpen` | frontend/js/chat.js:416 |
 | `webRequestEnd` | frontend/js/chat.js:395 |
 | `webRequestStart` | frontend/js/chat.js:386 |
-| `wheelScrollsHorizontally` | frontend/js/chat.js:1405 |
-| `wireHorizontalWheelScrolling` | frontend/js/chat.js:1438 |
+| `wheelScrollsHorizontally` | frontend/js/chat.js:1375 |
+| `wireHorizontalWheelScrolling` | frontend/js/chat.js:1408 |
 
 ### frontend/js/chat-agent.js (42)
 
@@ -7979,23 +7978,24 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `webFollowUp` | frontend/js/web-clip.js:331 |
 | `webFollowUpRefers` | frontend/js/web-clip.js:327 |
 
-### frontend/js/web-results.js (13)
+### frontend/js/web-results.js (14)
 
 | Name | File:line |
 |---|---|
-| `bookmarkWebResult` | frontend/js/web-results.js:178 |
-| `buildWebResultRow` | frontend/js/web-results.js:55 |
-| `copyWebLink` | frontend/js/web-results.js:170 |
-| `openWebPageExternally` | frontend/js/web-results.js:166 |
-| `pushWebSearchHistory` | frontend/js/web-results.js:210 |
-| `renderWebSearchHistory` | frontend/js/web-results.js:229 |
-| `runWebSearch` | frontend/js/web-results.js:361 |
-| `searxngDownRow` | frontend/js/web-results.js:296 |
-| `setWebSearxngRunning` | frontend/js/web-results.js:277 |
-| `startSearxng` | frontend/js/web-results.js:269 |
-| `waitForSearxng` | frontend/js/web-results.js:351 |
-| `webQueryTerms` | frontend/js/web-results.js:42 |
-| `webResultMark` | frontend/js/web-results.js:21 |
+| `bookmarkWebResult` | frontend/js/web-results.js:199 |
+| `buildWebResultRow` | frontend/js/web-results.js:76 |
+| `copyWebLink` | frontend/js/web-results.js:191 |
+| `openWebPageExternally` | frontend/js/web-results.js:187 |
+| `pushWebSearchHistory` | frontend/js/web-results.js:231 |
+| `renderWebSearchHistory` | frontend/js/web-results.js:250 |
+| `runWebSearch` | frontend/js/web-results.js:382 |
+| `searxngDownRow` | frontend/js/web-results.js:317 |
+| `setWebSearxngRunning` | frontend/js/web-results.js:298 |
+| `startSearxng` | frontend/js/web-results.js:290 |
+| `waitForSearxng` | frontend/js/web-results.js:372 |
+| `webEngineWords` | frontend/js/web-results.js:13 |
+| `webQueryTerms` | frontend/js/web-results.js:63 |
+| `webResultMark` | frontend/js/web-results.js:42 |
 
 ### frontend/js/whiteboard-commands.js (68)
 

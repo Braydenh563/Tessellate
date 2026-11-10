@@ -6,6 +6,27 @@
 // budget). `loadWebSearchHistory` and `clearWebSearchHistory` stay in chat.js.
 // One closure; what other files call is the `Object.assign` at the foot.
 (() => {
+  //: What the dot says, word for word, in its title and its accessible name.
+  //: "Stopped" means two different things by provider: under Automatic a search
+  //: falls back to DuckDuckGo, and under SearXNG only it does not (websearch.py,
+  //: `search_web`), so the sentence names which.
+  function webEngineWords(state, provider) {
+    const words = {
+      off: "Web access is off",
+      remote: "Searching with DuckDuckGo: your queries leave this machine",
+      running: "SearXNG is running: your searches stay on this machine",
+      starting: "SearXNG is starting",
+      installing: "SearXNG is installing",
+      stopped:
+        provider === "searxng"
+          ? "SearXNG is stopped, so searches will fail until you start it"
+          : "SearXNG is stopped, so searches go to DuckDuckGo",
+      absent: "SearXNG is not installed, so searches go to DuckDuckGo",
+      unknown: "Search engine: checking",
+    };
+    return words[state] || words.unknown;
+  }
+
   const WEB_SEARCH_HISTORY_MAX = 8;
   // Results already fetched for the current query but not yet shown, "Show
   // more" reveals from here rather than re-searching, since the backend
@@ -444,5 +465,5 @@
     }
   }
 
-  Object.assign(window, { openWebPageExternally, copyWebLink, bookmarkWebResult, renderWebSearchHistory, startSearxng, setWebSearxngRunning, searxngDownRow, runWebSearch });
+  Object.assign(window, { webEngineWords, openWebPageExternally, copyWebLink, bookmarkWebResult, renderWebSearchHistory, startSearxng, setWebSearxngRunning, searxngDownRow, runWebSearch });
 })();

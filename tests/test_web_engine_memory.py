@@ -11,19 +11,16 @@ from tests._app_js import app_js_text
 
 def _chat_js() -> str:
     text = app_js_text()
-    start = text.index("let webEngineInfo = (() => {")
+    start = text.index("let webEngineInfo = prefs.json(")
     return text[start : start + 4000]
 
 
 def test_the_engine_starts_from_the_remembered_state():
     body = _chat_js()
-    seed = body[: body.index("})();")]
-    assert 'prefs.json("webEngineLast"' in seed
-    # Only settled states are drawn from memory; installing and starting pass.
-    assert '["running", "stopped", "absent"]' in seed
+    assert body.startswith('let webEngineInfo = prefs.json("webEngine");')
 
 
-def test_a_settled_status_is_remembered_and_a_missing_backend_forgets_it():
+def test_a_settled_status_is_remembered():
     body = _chat_js()
     refresh = body[body.index("async function refreshWebSearxngStrip()") :]
-    assert refresh.index('prefs.setJSON("webEngineLast", {})') < refresh.index('prefs.setJSON("webEngineLast", { state })')
+    assert 'prefs.setJSON("webEngine", webEngineInfo)' in refresh
