@@ -1237,15 +1237,7 @@ INBOX 409 is built, 2026-09-24 (editable built-in templates, generated persona m
 
 ## Placed from INBOX, 2026-10-07 (next PR)
 
-- **Live code blocks in a prose document** (the owner, verbatim: "also I want
-  to be able to make special code blocks where the code editor works and code
-  autofill and suggestions work for the stated language in that codeblock",
-  with a fenced ```html block in Live view). A fenced block with a language
-  becomes an embedded code editor in Live: syntax colour, indenting, bracket
-  matching and the completion the code documents already have for that
-  language (documents-code.js), its language shown and changeable on the
-  block, Escape or the arrow keys out of it back into the prose. Stored as the
-  same fenced Markdown, so Source, export and print are unchanged.
+- Built 2026-11-10 (s9c-1110): live code blocks in a prose document; see HISTORY.md, "Moved from the plans, 2026-11-10 (s9c-1110 part 2)".
 
 ## Placed from the owner's list, 2026-10-10
 
@@ -1317,11 +1309,11 @@ Read from the code against Notion and Obsidian. Sizes S, M, L. Nothing here is b
 
 1. Video and audio embed from a link or a local file in a note (Notion "Embed", Obsidian `![[file.mp4]]`) - M.
 2. Citations: a reference list built from footnote-style keys (Obsidian citations plugin) - M.
-3. A block's own link (heading links exist in documents.js; a paragraph's does not, to verify) - S.
+3. Built (found by grep, checked 2026-11-10): the / menu's "Link to this block" copies `[[Title#^id]]`; see HISTORY.md, "Moved from the plans, 2026-11-10 (s9c-1110 part 2)".
 4. Built 2026-10-26 (docs5-1026): see HISTORY.md, "Moved from the plans, 2026-10-26 (docs5-1026)".
 5. Synced blocks: one block shown in two notes, edited in either - L.
 6. A database view of notes by property (Notion, Obsidian Bases): table, board, calendar - L.
-7. Inline date and reminder mention that creates a reminder (Notion "@date") - S.
+7. Built 2026-11-10 (s9c-1110): the / menu's "Remind me about this"; see HISTORY.md, "Moved from the plans, 2026-11-10 (s9c-1110 part 2)".
 8. Page cover and icon picker parity with Notion's gallery - S.
 9. Web clipper fields on a note's properties - M.
 10. Canvas block: a board embedded and editable in place - M.
@@ -1329,10 +1321,10 @@ Read from the code against Notion and Obsidian. Sizes S, M, L. Nothing here is b
 12. Table: column sort, filter row, formulas - M.
 13. Built 2026-10-26 (docs5-1026): the Read view takes a progress line; see HISTORY.md.
 14. Built 2026-11-10 (`{{time}}`, `{{cursor}}`): see HISTORY.md, "Moved from the plans, 2026-11-10 (s9c-1110)".
-15. Export a note as a slide deck from its headings - M.
-16. **The owner, 2026-10-26, verbatim:** "can you add an easier and guided way to write out mathematical equations and symbols like with word or desmos?" A guided equation editor over the existing TeX renderer (`docMathRender`, documents.js): Insert equation (slash menu, Ctrl+K, a toolbar row, Alt+= as Word), a live-preview box where typing `x^2`, `sqrt`, `/`, `pi`, `>=`, `alpha` becomes structure (Desmos and Word linear format: `a/b` becomes a fraction, the caret moves into slots, Tab to the next slot), a symbol palette in groups (Greek, operators, relations, arrows, sets, calculus, matrices) with a search, structure templates (fraction, root, power, subscript, sum, integral, limit, matrix, cases), inline or display, the TeX written into the note so it stays plain text, editable by clicking the rendered equation. No heavy library: own parser or a small vendored one under its licence, lazy-loaded, measured against the boot cap - M. Owner: docs7 (Opus, design). **Decided by the owner, 2026-10-26:** writing first, then a graph block (y = f(x), sliders, lazy-loaded) as its own step; the editor works in Documents, Notes, whiteboard text and the Chat/Ask box (one shared lazy module, each surface a thin caller). **The writing step is built** (HISTORY, "Moved from the plans, 2026-10-26 (docs7-1026)"). Open: the graph block; opening the editor by a click on a rendered equation (today the caret in it and Alt+= or /equation); a Ctrl+K palette row.
+15. Built 2026-11-10 (s9c-1110): Download as slides; see HISTORY.md, "Moved from the plans, 2026-11-10 (s9c-1110 part 2)".
+16. **The owner, 2026-10-26, verbatim:** "can you add an easier and guided way to write out mathematical equations and symbols like with word or desmos?" A guided equation editor over the existing TeX renderer (`docMathRender`, documents.js): Insert equation (slash menu, Ctrl+K, a toolbar row, Alt+= as Word), a live-preview box where typing `x^2`, `sqrt`, `/`, `pi`, `>=`, `alpha` becomes structure (Desmos and Word linear format: `a/b` becomes a fraction, the caret moves into slots, Tab to the next slot), a symbol palette in groups (Greek, operators, relations, arrows, sets, calculus, matrices) with a search, structure templates (fraction, root, power, subscript, sum, integral, limit, matrix, cases), inline or display, the TeX written into the note so it stays plain text, editable by clicking the rendered equation. No heavy library: own parser or a small vendored one under its licence, lazy-loaded, measured against the boot cap - M. Owner: docs7 (Opus, design). **Decided by the owner, 2026-10-26:** writing first, then a graph block (y = f(x), sliders, lazy-loaded) as its own step; the editor works in Documents, Notes, whiteboard text and the Chat/Ask box (one shared lazy module, each surface a thin caller). **The writing step is built** (HISTORY, "Moved from the plans, 2026-10-26 (docs7-1026)"). `\begin{equation}` numbers itself in Read view (s9c-1110; Live draws only one-line `$$`). Open: the graph block; opening the editor by a click on a rendered equation (today the caret in it and Alt+= or /equation); a Ctrl+K palette row.
 17. **The owner, 2026-10-26, verbatim (screenshot: Notes "Capture a thought", source view showing `<u>underlined</u>` with line numbers):** "also the note capture doesnt have view options, I want it to use the live view by dafault and then the user can change it if they want." The note composer gets the Documents view switch (Live, Source, Read), Live by default, the choice remembered per device (prefs) - S/M. Owner: notecap (Sonnet), check the running app first.
-18. **The owner, 2026-10-26, verbatim:** "can the user name code blocks or set it as a language and then the code editor can work for that language withing the bllock??" A fenced block's language (and an optional title, ```` ```python title="fit.py" ````) chosen from a picker on the block, the block edited with that language's highlighting, indentation, brackets and completion (the code-file engine in documents-code.js, scoped to the block), in Documents and the note composer - M. Owner: after notecap; check first what the fence highlighter already does.
+18. Built 2026-11-10 (s9c-1110): live code blocks, stated language coloured, indented and completed in Live; see HISTORY.md, "Moved from the plans, 2026-11-10 (s9c-1110 part 2)". Open: a title on the fence (```` ```python title="fit.py" ````) is read by the language picker but not drawn, and a picker button on the block (the language is changed by editing the fence or by the info-word list).
 
 ## Placed from INBOX, 2026-10-19
 
