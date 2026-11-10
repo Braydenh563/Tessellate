@@ -2,7 +2,7 @@
 
 Generated 2026-11-10 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8044, frontend ids 2655, CSS sections 523, backend routes 664, backend modules 9676, test files 2371, tests 19761, plan headings 1001, app scripts 28, boot scripts 37, script files 272.
+Counts: frontend functions 8044, frontend ids 2655, CSS sections 523, backend routes 664, backend modules 9684, test files 2372, tests 19775, plan headings 1001, app scripts 28, boot scripts 37, script files 272.
 
 ## Frontend functions (8044)
 
@@ -12819,8 +12819,8 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/desktop/fullscreen` | POST | `desktop_fullscreen_toggle` | src/tessellate/api/routes_tasks.py:860 |
 | `/diagnostics` | GET | `diagnostics` | src/tessellate/api/routes_diag.py:79 |
 | `/diagram-ask` | POST | `diagram_ask_ops` | src/tessellate/api/routes_drafts.py:204 |
-| `/digest` | POST | `weekly_digest` | src/tessellate/api/routes_insights.py:933 |
-| `/digest/stream` | POST | `weekly_digest_stream` | src/tessellate/api/routes_insights.py:860 |
+| `/digest` | POST | `weekly_digest` | src/tessellate/api/routes_insights.py:935 |
+| `/digest/stream` | POST | `weekly_digest_stream` | src/tessellate/api/routes_insights.py:862 |
 | `/dismiss` | POST | `dismiss_insight` | src/tessellate/api/routes_insights.py:535 |
 | `/dismissed` | GET | `dismissed_suggestions` | src/tessellate/api/routes_inbox.py:237 |
 | `/dismissed/clear` | POST | `clear_dismissed_suggestions` | src/tessellate/api/routes_inbox.py:251 |
@@ -13345,7 +13345,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:175 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (9676)
+## Backend modules (9684)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -13448,7 +13448,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `lock_undo` | src/tessellate/ai/act_steps.py:66 |
 | `settle_step` | src/tessellate/ai/act_steps.py:52 |
 
-### src/tessellate/ai/activity.py (43)
+### src/tessellate/ai/activity.py (38)
 
 | Name | File:line |
 |---|---|
@@ -13475,26 +13475,21 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_local` | src/tessellate/ai/activity.py:195 |
 | `_made_edited` | src/tessellate/ai/activity.py:226 |
 | `_n` | src/tessellate/ai/activity.py:359 |
-| `_named` | src/tessellate/ai/activity.py:571 |
 | `_named_on` | src/tessellate/ai/activity.py:502 |
 | `_nearest` | src/tessellate/ai/activity.py:323 |
 | `_note_name` | src/tessellate/ai/activity.py:208 |
 | `_recap_lines` | src/tessellate/ai/activity.py:491 |
 | `_reminder_events` | src/tessellate/ai/activity.py:280 |
-| `_reminder_words` | src/tessellate/ai/activity.py:564 |
 | `_say_day` | src/tessellate/ai/activity.py:350 |
 | `_span` | src/tessellate/ai/activity.py:343 |
 | `_summary` | src/tessellate/ai/activity.py:390 |
 | `_title_of` | src/tessellate/ai/activity.py:185 |
-| `_week_lean` | src/tessellate/ai/activity.py:577 |
-| `_week_reminders` | src/tessellate/ai/activity.py:604 |
 | `_window` | src/tessellate/ai/activity.py:81 |
 | `_window_said` | src/tessellate/ai/activity.py:369 |
 | `answer` | src/tessellate/ai/activity.py:528 |
 | `as_recap` | src/tessellate/ai/activity.py:130 |
-| `boards` | src/tessellate/ai/activity.py:650 |
+| `boards` | src/tessellate/ai/activity.py:559 |
 | `read` | src/tessellate/ai/activity.py:150 |
-| `week` | src/tessellate/ai/activity.py:619 |
 
 ### src/tessellate/ai/activity_new.py (22)
 
@@ -16071,23 +16066,23 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_on_this_day` | src/tessellate/ai/composer_voice.py:357 |
 | `_open_items` | src/tessellate/ai/composer_voice.py:380 |
 | `_patterns` | src/tessellate/ai/composer_voice.py:415 |
-| `_review_filed` | src/tessellate/ai/composer_voice.py:621 |
-| `_review_open` | src/tessellate/ai/composer_voice.py:665 |
+| `_review_filed` | src/tessellate/ai/composer_voice.py:625 |
+| `_review_open` | src/tessellate/ai/composer_voice.py:668 |
 | `_review_span` | src/tessellate/ai/composer_voice.py:611 |
-| `_review_standouts` | src/tessellate/ai/composer_voice.py:650 |
+| `_review_standouts` | src/tessellate/ai/composer_voice.py:654 |
 | `_salt` | src/tessellate/ai/composer_voice.py:311 |
-| `_standouts` | src/tessellate/ai/composer_voice.py:636 |
+| `_standouts` | src/tessellate/ai/composer_voice.py:640 |
 | `_surface` | src/tessellate/ai/composer_voice.py:405 |
 | `_this_week` | src/tessellate/ai/composer_voice.py:401 |
 | `_today_opening` | src/tessellate/ai/composer_voice.py:559 |
 | `_views` | src/tessellate/ai/composer_voice.py:295 |
 | `_week_count` | src/tessellate/ai/composer_voice.py:458 |
-| `asks` | src/tessellate/ai/composer_voice.py:677 |
+| `asks` | src/tessellate/ai/composer_voice.py:681 |
 | `lead` | src/tessellate/ai/composer_voice.py:281 |
-| `one_line` | src/tessellate/ai/composer_voice.py:689 |
+| `one_line` | src/tessellate/ai/composer_voice.py:693 |
 | `remarks` | src/tessellate/ai/composer_voice.py:492 |
-| `suggested_searches` | src/tessellate/ai/composer_voice.py:768 |
-| `title_for` | src/tessellate/ai/composer_voice.py:740 |
+| `suggested_searches` | src/tessellate/ai/composer_voice.py:772 |
+| `title_for` | src/tessellate/ai/composer_voice.py:744 |
 | `today_line` | src/tessellate/ai/composer_voice.py:540 |
 | `week_review` | src/tessellate/ai/composer_voice.py:591 |
 
@@ -18132,6 +18127,24 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `for_day` | src/tessellate/ai/resurface.py:261 |
 | `ranked` | src/tessellate/ai/resurface.py:212 |
 | `score_for` | src/tessellate/ai/resurface.py:66 |
+
+### src/tessellate/ai/review_digest.py (13)
+
+| Name | File:line |
+|---|---|
+| `_counts` | src/tessellate/ai/review_digest.py:111 |
+| `_listed` | src/tessellate/ai/review_digest.py:80 |
+| `_named` | src/tessellate/ai/review_digest.py:85 |
+| `_notes` | src/tessellate/ai/review_digest.py:41 |
+| `_reminder_lines` | src/tessellate/ai/review_digest.py:120 |
+| `_reminder_words` | src/tessellate/ai/review_digest.py:69 |
+| `_reminders` | src/tessellate/ai/review_digest.py:96 |
+| `_unlinked` | src/tessellate/ai/review_digest.py:102 |
+| `answer` | src/tessellate/ai/review_digest.py:176 |
+| `day` | src/tessellate/ai/review_digest.py:151 |
+| `kind` | src/tessellate/ai/review_digest.py:33 |
+| `reminder_note` | src/tessellate/ai/review_digest.py:168 |
+| `week` | src/tessellate/ai/review_digest.py:137 |
 
 ### src/tessellate/ai/sampling.py (5)
 
@@ -20882,7 +20895,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_clean_greeting` | src/tessellate/api/routes_insights.py:137 |
 | `_composed_greeting` | src/tessellate/api/routes_insights.py:164 |
 | `_confirmed_or_404` | src/tessellate/api/routes_insights.py:576 |
-| `_digest_notes` | src/tessellate/api/routes_insights.py:770 |
+| `_digest_notes` | src/tessellate/api/routes_insights.py:772 |
 | `_greeting_within` | src/tessellate/api/routes_insights.py:204 |
 | `_greets_a_stranger` | src/tessellate/api/routes_insights.py:373 |
 | `_long_date` | src/tessellate/api/routes_insights.py:744 |
@@ -20891,11 +20904,11 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_repair_misspelt_name` | src/tessellate/api/routes_insights.py:354 |
 | `_sentence_case` | src/tessellate/api/routes_insights.py:160 |
 | `_written_label` | src/tessellate/api/routes_insights.py:751 |
-| `composed_week` | src/tessellate/api/routes_insights.py:853 |
+| `composed_week` | src/tessellate/api/routes_insights.py:855 |
 | `confirm_insight` | src/tessellate/api/routes_insights.py:522 |
 | `day_digest_lines` | src/tessellate/api/routes_insights.py:426 |
 | `digest_question` | src/tessellate/api/routes_insights.py:764 |
-| `digest_structure_note` | src/tessellate/api/routes_insights.py:809 |
+| `digest_structure_note` | src/tessellate/api/routes_insights.py:811 |
 | `dismiss_confirmed` | src/tessellate/api/routes_insights.py:648 |
 | `dismiss_insight` | src/tessellate/api/routes_insights.py:536 |
 | `done_insight` | src/tessellate/api/routes_insights.py:549 |
@@ -20911,8 +20924,8 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `stats` | src/tessellate/api/routes_insights.py:39 |
 | `tag_cloud` | src/tessellate/api/routes_insights.py:659 |
 | `today_line` | src/tessellate/api/routes_insights.py:474 |
-| `weekly_digest` | src/tessellate/api/routes_insights.py:934 |
-| `weekly_digest_stream` | src/tessellate/api/routes_insights.py:861 |
+| `weekly_digest` | src/tessellate/api/routes_insights.py:936 |
+| `weekly_digest_stream` | src/tessellate/api/routes_insights.py:863 |
 
 ### src/tessellate/api/routes_lag.py (5)
 
@@ -25560,7 +25573,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (19761)
+## Tests (19775)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -27401,6 +27414,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_restore_roundtrip.py | 2 |
 | tests/test_restored_focus_opens_nothing.py | 2 |
 | tests/test_resurface_spec.py | 16 |
+| tests/test_review_digest_1110.py | 14 |
 | tests/test_review_fixes_1029.py | 6 |
 | tests/test_review_fixes_palette_docs.py | 6 |
 | tests/test_review_queue_17.py | 6 |

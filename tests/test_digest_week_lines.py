@@ -8,7 +8,7 @@ date in brackets as if it were part of the words. Fixed clock throughout."""
 from datetime import date, datetime, timezone
 from types import SimpleNamespace
 
-from tessellate.ai import activity
+from tessellate.ai import review_digest
 
 TODAY = date(2026, 10, 27)
 
@@ -18,7 +18,7 @@ def _row(text, day):
 
 
 def _said(*rows):
-    return activity._named(list(rows), TODAY, timezone.utc)
+    return review_digest._named(list(rows), TODAY, timezone.utc)
 
 
 def test_stub_of_a_lifted_date_is_tidied():

@@ -203,9 +203,10 @@ def test_digest_stream_degrades_when_ai_is_down(ai_client, fake_ollama):
 def test_digest_with_no_model_is_composed_from_the_notes(client):
     _save(client, "Bought milk and eggs")
     body = client.post("/insights/digest").json()
-    assert body["digest"].startswith("From your notes, no AI.")
+    #: The review (G4, 1110), not a creation log: "made one note" is gone.
+    assert body["digest"].startswith("You wrote one note today.")
     assert "Bought milk and eggs" in body["digest"]
-    assert "made one note" in body["digest"]
+    assert "made one note" not in body["digest"]
     # Not frozen for the day: a model, once on, writes the next one.
     assert body["cacheable"] is False
 
@@ -215,7 +216,7 @@ def test_digest_stream_with_no_model_is_composed(ai_client, fake_ollama):
     fake_ollama.running = False
     events = _ndjson(ai_client.post("/insights/digest/stream"))
     answer = "".join(e["delta"] for e in events if e["type"] == "answer")
-    assert answer.startswith("From your notes, no AI.") and "Bought milk and eggs" in answer
+    assert answer.startswith("You wrote one note today.") and "Bought milk and eggs" in answer
     assert events[-1]["cacheable"] is False
 
 
@@ -232,8 +233,8 @@ def test_composed_digest_names_what_is_overdue_and_coming(client):
     session.close()
     digest = client.post("/insights/digest").json()["digest"]
     assert "Overdue: Renew the passport" in digest
-    assert "Coming up this week: Book the dentist" in digest
-    coming = next(line for line in digest.splitlines() if line.startswith("Coming up"))
+    assert "Next: Book the dentist" in digest
+    coming = next(line for line in digest.splitlines() if line.startswith("Next:"))
     assert "Far off thing" not in coming  # due in 40 days; it was only set this week
 
 
@@ -241,7 +242,7 @@ def test_composed_digest_names_where_the_week_went(client):
     for text in ("Lecture one on clouds", "Lecture two on clouds", "Gym legs day"):
         _save(client, text, category="Uni" if text.startswith("Lecture") else "Health")
     digest = client.post("/insights/digest").json()["digest"]
-    assert "Most of the week's notes went to Uni (2 of 3)." in digest
+    assert "Most went under **Uni** (two)" in digest
 
 
 # --- dates, and the preamble (reported 2026-09-23) --------------------------
