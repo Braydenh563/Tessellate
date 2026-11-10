@@ -56,7 +56,10 @@ _PAST = re.compile(
     re.IGNORECASE,
 )
 #: What the date reader leaves behind once it takes the date out.
-_DANGLING = re.compile(r"[\s,;:]+(?:before|by|until|till|on|at|from|for|between|in|this|next)$", re.IGNORECASE)
+#: The hanging word alone; the separators before it are checked in code, so a
+#: long blank run is never rescanned from every start (CodeQL 2134).
+_DANGLING = re.compile(r"\b(?:before|by|until|till|on|at|from|for|between|in|this|next)$", re.IGNORECASE)
+_SEPARATORS = " \t\n\r\f\v,;:"
 _NEGATED = re.compile(r"\b(?:didn'?t|did not|don'?t|do not|won'?t|will not|never|no need|not going to|doesn'?t)\b", re.IGNORECASE)
 _FORGET = re.compile(r"\b(?:don'?t|do not) forget\b", re.IGNORECASE)
 _QUESTION_FIRST = re.compile(
@@ -83,10 +86,10 @@ def _tidy(text: str) -> str:
     """The reminder's words without a preposition the date left hanging."""
     out = text.strip()
     while True:
-        cut = _DANGLING.sub("", out)
-        if cut == out:
+        hang = _DANGLING.search(out)
+        if hang is None or hang.start() == 0 or out[hang.start() - 1] not in _SEPARATORS:
             return out
-        out = cut
+        out = out[: hang.start()].rstrip(_SEPARATORS)
 
 
 def _read(sentence: str, now: datetime) -> dict | None:

@@ -137,3 +137,15 @@ def test_the_wider_net_still_leaves_past_and_undated_talk_alone(message):
 def test_the_route_marks_a_guess(client):
     body = client.post("/reminders/suggest", json={"text": "don't forget to buy milk", "tz_offset_minutes": 0}).json()
     assert body["suggestion"]["text"] == "Buy milk" and body["suggestion"]["guess"] is True
+
+
+def test_a_long_blank_run_is_tidied_in_linear_time():
+    """CodeQL 2134: the hanging-word trim is not rescanned from every blank."""
+    import time
+
+    from tessellate.ai.reminder_suggest import _tidy
+
+    started = time.perf_counter()
+    assert _tidy("x" + "\t" * 50000 + "y").endswith("y")
+    assert time.perf_counter() - started < 0.05
+    assert _tidy("pay rent, by") == "pay rent" and _tidy("online") == "online"
