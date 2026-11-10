@@ -73,13 +73,16 @@ function fillEntryMenu(menu, entry) {
       title: `Now in ${entry.category || "Uncategorised"}; choose another`,
       run: () => chooseNoteCategory([entry.id], entry.category),
     },
-    {
-      label: entry.is_private ? "ph:lock-open Make readable" : "ph:lock Make private",
-      title: entry.is_private
-        ? "Decrypt this note so search and Atlas can use it again"
-        : "Encrypt this note at rest, and keep it out of search and Atlas",
-      run: () => toggleEntryPrivacy(entry),
-    },
+    //: Inside a private space the switch is locked on: no per-note opt-out (INBOX 1727).
+    spacesCache.find((space) => space.id === entry.workspace_id)?.is_private
+      ? { label: "ph:lock Private in this space", title: "Move it out of this space to share it", disabled: true, run: () => toast("Move it out of this space to share it.") }
+      : {
+          label: entry.is_private ? "ph:lock-open Make readable" : "ph:lock Make private",
+          title: entry.is_private
+            ? "Decrypt this note so search and Atlas can use it again"
+            : "Encrypt this note at rest, and keep it out of search and Atlas",
+          run: () => toggleEntryPrivacy(entry),
+        },
     {
       // Sits above History because it is the more common question by far:
       // "what else is this about?" is asked of a note every time it is

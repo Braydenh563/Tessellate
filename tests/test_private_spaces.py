@@ -235,7 +235,16 @@ def test_unlocking_takes_the_password_and_the_idle_window_closes_it(signed_in, m
     assert _unlock(client).status_code == 200
     got = client.get("/private-spaces/status")
     assert got.json()["open"] is True
-    later = spacelock._now() + 11 * 60
+    # The app's own polls do not keep them open; the person's input does.
+    soon = spacelock._now() + 9 * 60
+    monkeypatch.setattr(spacelock, "_now", lambda: soon)
+    got = client.post("/private-spaces/touch")
+    assert got.json()["open"] is True
+    later = soon + 9 * 60
+    monkeypatch.setattr(spacelock, "_now", lambda: later)
+    got = client.get("/private-spaces/status")
+    assert got.json()["open"] is True
+    later = soon + 11 * 60
     monkeypatch.setattr(spacelock, "_now", lambda: later)
     got = client.get("/private-spaces/status")
     assert got.json()["open"] is False

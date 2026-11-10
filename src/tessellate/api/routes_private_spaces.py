@@ -26,7 +26,7 @@ LOCKED_DETAIL = "Unlock your private spaces first."
 
 
 def _is_open(token: str | None) -> bool:
-    return vault.key() is not None and spacelock.is_open(token)
+    return vault.key() is not None and spacelock.is_open(token, touch=False)
 
 
 @router.get("/private-spaces/status")
@@ -84,6 +84,13 @@ def unlock(
     if sealed:
         manager.scrub_private_leftovers(session)
     return {"open": True}
+
+
+@router.post("/private-spaces/touch")
+def touch(x_auth_token: str | None = Header(default=None)) -> dict:
+    """The person is at the keyboard (the window sends this on their own
+    input, at most once a minute): the idle window starts again."""
+    return {"open": vault.key() is not None and spacelock.is_open(x_auth_token)}
 
 
 @router.post("/private-spaces/lock")

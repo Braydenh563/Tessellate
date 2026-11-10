@@ -218,7 +218,7 @@ def restore_space(body: SpaceRestore, session: Session = Depends(get_session)):
     _validate_name(body.space.name, restoring=True)
     name = body.space.name
     icon = _validate_icon(body.space.icon)
-    session.add(Space(id=sid, name=name, icon=icon, hidden_from_all=bool(body.space.hidden_from_all)))
+    session.add(Space(id=sid, name=name, icon=icon, hidden_from_all=bool(body.space.hidden_from_all), is_private=bool(body.space.is_private)))
     session.flush()
     if body.move_to:
         tables = {model.__table__.name: model.__table__ for model in workspace_scoped_models()}

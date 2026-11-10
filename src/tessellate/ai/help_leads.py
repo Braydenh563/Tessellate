@@ -71,6 +71,7 @@ TOPIC_LEADS: dict[str, str] = {
     "chat-context": "What happens when a long chat no longer fits in what the model can read.",
     "context-window": "Set how much text the chat model holds at once, or leave it on auto.",
     "chat-private": "Chat without anything being saved, kept or remembered.",
+    "private-spaces": "A space whose notes, documents and boards stay sealed until you unlock it.",
     "chat-attach-cards": "Check which notes and files went with a message, and open them from it.",
     "chat-model-picker": "Pick which model answers in Chat, Ask or Writing, right beside the box.",
     "chat-list": "Get back to an earlier chat by searching what was said in it.",

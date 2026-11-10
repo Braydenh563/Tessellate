@@ -379,6 +379,9 @@ $("account-password-on-open").addEventListener("change", async (e) => {
 $("account-idle-ttl").addEventListener("change", (e) => {
   setPreference("session_idle_ttl_minutes", Number(e.target.value));
 });
+$("account-private-idle").addEventListener("change", (e) => {
+  setPreference("private_space_idle_minutes", Number(e.target.value));
+});
 
 $("account-lock-all").addEventListener("click", async () => {
   //: With "Ask for a password when the app opens" off, this computer gets

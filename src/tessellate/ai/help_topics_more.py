@@ -1255,6 +1255,36 @@ MORE_TOPICS: list[dict] = [
         "badge": {"label": "Chat", "tab": "chat"},
     },
     {
+        #: INBOX 1727: membership is the privacy (private-spaces.js, routes_private_spaces.py).
+        "id": "private-spaces",
+        "keywords": (
+            "private space", "vault space", "lock a space", "locked space", "unlock private spaces",
+            "make a space private", "seal a space", "secret space",
+        ),
+        "body": (
+            "A private space seals everything in it with your vault password, "
+            "as a private note is: its notes, documents and boards. Turn on "
+            "Private in New space, or in Edit space (the pencil beside a space "
+            "in the picker); turning it on asks once with the count of what "
+            "gets sealed. A locked private space shows its name with a lock and "
+            "nothing else: its notes, documents and boards are out of search, "
+            "the graph, the timeline, the dashboard, exports and Atlas, and a "
+            "reminder from it says A private reminder. Opening it asks for your "
+            "vault password, or your PIN on this computer; one password opens "
+            "every private space. They lock again after the idle minutes in "
+            "Settings, Account & security (Lock private spaces when idle, ten "
+            "by default) and always when the window closes. Inside one, a "
+            "note's Make private is locked on: Move it out of this space to "
+            "share it. Moving notes out asks Keep it private (the default) or "
+            "Make it ordinary, and a note that was private before it came in "
+            "stays private. Turning Private off asks the same. Atlas reads a "
+            "private space only in a chat opened inside it, an export leaves "
+            "it out unless it is unlocked and you ask, and backups keep it "
+            "encrypted."
+        ),
+        "badge": {"label": "Account & security", "section": "account"},
+    },
+    {
         "id": "timer",
         "keywords": (
             "timer", "countdown", "stopwatch", "pomodoro", "set a timer", "start a timer",
@@ -2759,6 +2789,7 @@ TOPIC_META: dict[str, dict] = {
     "usage-ledger": {"title": "What you use", "path": "Settings, General, What you use", "target": "usage-box"},
     "statistics": {"title": "Statistics", "path": "Dashboard, Activity heatmap, Statistics"},
     "chat-private": {"title": "Private chat", "path": "Chat, the gear under the message box, Private chat"},
+    "private-spaces": {"title": "Private spaces", "path": "The space picker, the pencil beside a space, Private"},
     "timer": {"title": "Clock: timer, stopwatch and alarm", "path": "Command palette, Start a timer; the status bar's timer"},
     "calculator": {"title": "Calculator and equations", "path": "Command palette, Calculator and equations; Alt+= in a text box; /calc in Chat"},
     "manual": {"title": "The manual", "path": "Settings, Help, Open the manual"},
@@ -2977,7 +3008,7 @@ HELP_GROUPS: list[tuple[str, tuple[str, ...]]] = [
     )),
     ("Graph, Timeline, Reminders and Dashboard", (
         "graph", "graph-controls", "graph-display", "graph-options-help", "entities", "properties", "timeline", "timeline-controls", "reminders",
-        "reminders-controls", "dashboard", "dashboard-controls", "patterns", "notifications", "spaces", "statistics",
+        "reminders-controls", "dashboard", "dashboard-controls", "patterns", "notifications", "spaces", "private-spaces", "statistics",
     )),
     ("Small tools", (
         "timer", "calculator", "count-words", "insert-template",

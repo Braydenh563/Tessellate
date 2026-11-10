@@ -10,11 +10,11 @@
 //: one was, which is what the Undo sends back. Each request names the space
 //: the notes are in now, since a note moved out of the space on screen is
 //: one this window's own space filter no longer sees.
-function batchSpaceRequest(spaceId, ids, from) {
+function batchSpaceRequest(spaceId, ids, from, keepPrivate = true) {
   return api(`/spaces/${encodeURIComponent(spaceId)}/move-notes`, {
     method: "POST",
     headers: { "Content-Type": "application/json", "X-Auth-Token": authToken(), "X-Workspace-ID": from },
-    body: JSON.stringify({ ids }),
+    body: JSON.stringify({ ids, keep_private: keepPrivate }),
   }).then((r) => r.json());
 }
 
@@ -54,8 +54,12 @@ async function batchMoveToSpace() {
 //: when it failed; the answer when it did (`moved` 0: all there already).
 async function moveNotesToSpace(ids, space) {
   let moved;
+  //: Out of a private space it asks once: keep it private (the default) or make it ordinary (INBOX 1727).
+  const fromPrivate = spacesCache.find((s) => s.id === activeSpaceId())?.is_private && !space.is_private;
+  const keep = fromPrivate ? await privateSpaces("askKeep", ids.length === 1 ? "this note" : "these notes") : true;
+  if (keep === null) return null;
   try {
-    moved = await batchSpaceRequest(space.id, ids, activeSpaceId());
+    moved = await batchSpaceRequest(space.id, ids, activeSpaceId(), keep);
   } catch (error) {
     toast(error.message, true);
     return null;

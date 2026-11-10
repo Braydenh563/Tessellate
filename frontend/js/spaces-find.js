@@ -241,7 +241,7 @@ function spaceIconPicker(container, hiddenInput) {
 //: the space (`menuitemradio`) and, as its SIBLINGS, the row's actions
 //: (`menuitem`), so nothing interactive sits inside another. The arrows
 //: walk every item (the delegated menu keys in navigation.js).
-function spaceMenuOption({ id, name, icon, deletable, hiddenFromAll }) {
+function spaceMenuOption({ id, name, icon, deletable, hiddenFromAll, isPrivate }) {
   const row = document.createElement("div");
   row.className = "space-option";
   row.setAttribute("role", "none");
@@ -262,6 +262,14 @@ function spaceMenuOption({ id, name, icon, deletable, hiddenFromAll }) {
   label.textContent = name;
 
   option.append(glyph, label);
+  //: A private space shows its name behind a lock; nothing of what is in it (INBOX 1727).
+  if (isPrivate) {
+    const lock = document.createElement("i");
+    lock.className = "ph ph-lock-simple space-option-lock";
+    lock.setAttribute("aria-hidden", "true");
+    option.appendChild(lock);
+    option.title = `${name}, a private space`;
+  }
   option.addEventListener("click", () => setActiveSpace(id));
   row.appendChild(option);
 
@@ -278,7 +286,7 @@ function spaceMenuOption({ id, name, icon, deletable, hiddenFromAll }) {
         hiddenFromAll ? `${name} is hidden from All spaces, show it there again` : `Hide ${name} from All spaces`,
         () => toggleSpaceHidden(id, !hiddenFromAll),
       ],
-      ["ph-pencil-simple", `Rename ${name}`, () => openSpaceEdit(id, name, icon)],
+      ["ph-pencil-simple", `Edit ${name}`, () => privateSpaces("edit", { id, name, icon, isPrivate })],
       ["ph-trash", `Delete ${name}`, () => rmSpace(id)],
     ]) {
       const action = document.createElement("button");
@@ -357,6 +365,7 @@ function renderSpaceMenu() {
       // deleted: the server refuses it too, but offering a button that always
       // errors is not a UI.
       hiddenFromAll: Boolean(space.hidden_from_all),
+      isPrivate: Boolean(space.is_private),
       deletable: space.id !== "default",
     }));
   }
@@ -415,20 +424,10 @@ function openSpaceCreate() {
   $("space-create-name").value = "";
   $("space-create-icon").value = "ph-folder";
   $("space-create-error").textContent = "";
+  privateSpaces("mount", "space-create");
   spaceIconPicker($("space-create-icon-picker"), $("space-create-icon"));
   $("space-create-dialog").showModal();
   $("space-create-name").focus();
-}
-
-function openSpaceEdit(id, name, icon) {
-  $("space-edit-id").value = id;
-  $("space-edit-name").value = name;
-  $("space-edit-icon").value = icon;
-  $("space-edit-dialog").dataset.was = JSON.stringify({ name, icon });
-  $("space-edit-error").textContent = "";
-  spaceIconPicker($("space-edit-icon-picker"), $("space-edit-icon"));
-  $("space-edit-dialog").showModal();
-  $("space-edit-name").focus();
 }
 
 async function loadSpaces() {
@@ -443,6 +442,8 @@ async function loadSpaces() {
   }
   renderSpaceMenu();
   updateCaptureSpaceLabel();
+  //: A private space open on screen asks for the vault password once it is locked (INBOX 1727).
+  if (spacesCache.find((space) => space.id === activeSpaceId())?.is_private) privateSpaces("enter", activeSpaceId());
   //: The other half of the guard on the note card's space chip: the list is
   //: drawn before this request comes back, and every card that drew while the
   //: cache was empty is now missing the chip it should carry. Re-rendered only
@@ -502,6 +503,7 @@ function initSpaceSwitcher() {
 
   //: The forms are empty shells that give Enter something to submit; the click handlers below do the work.
   for (const id of ["space-create-form", "space-edit-form"]) $(id)?.addEventListener("submit", (event) => event.preventDefault());
+  //: Save on the Edit space dialog is private-spaces.js's, bound when it opens the dialog.
 
   $("space-create-submit")?.addEventListener("click", async () => {
     const name = $("space-create-name").value.trim();
@@ -518,7 +520,7 @@ function initSpaceSwitcher() {
     try {
       const space = await apiJson("/spaces", {
         method: "POST",
-        body: JSON.stringify({ name, icon: $("space-create-icon").value }),
+        body: JSON.stringify({ name, icon: $("space-create-icon").value, is_private: $("space-create-private")?.checked === true }),
       });
       $("space-create-dialog").close();
       //: Undo moves anything put in it meanwhile to the default space, then
@@ -539,32 +541,6 @@ function initSpaceSwitcher() {
       );
       await loadSpaces();
       toastAction(`Made the space “${name}”.`, "Open it", () => setActiveSpace(live.id));
-    } catch (err) {
-      fail(err.message);
-    }
-  });
-
-  $("space-edit-submit")?.addEventListener("click", async () => {
-    const id = $("space-edit-id").value;
-    const name = $("space-edit-name").value.trim();
-    const error = $("space-edit-error");
-    const fail = (message) => lockFail(message, $("space-edit-name"), error);
-    error.textContent = "";
-    $("space-edit-name").removeAttribute("aria-invalid");
-    if (!name) {
-      fail("Give the space a name.");
-      return;
-    }
-    try {
-      const now = { name, icon: $("space-edit-icon").value };
-      await apiJson(`/spaces/${encodeURIComponent(id)}`, {
-        method: "PUT",
-        body: JSON.stringify(now),
-      });
-      pushRequestUndo(`Renamed the space to “${name}”`, `/spaces/${encodeURIComponent(id)}`, "PUT", JSON.parse($("space-edit-dialog").dataset.was || "{}"), now, loadSpaces);
-      $("space-edit-dialog").close();
-      await loadSpaces();
-      toast(`Renamed to “${name}”.`);
     } catch (err) {
       fail(err.message);
     }

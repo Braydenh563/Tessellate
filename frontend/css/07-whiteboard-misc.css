@@ -2589,6 +2589,10 @@ body.scroll-top-visible .skills-split > .tab-main {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+/* A private space's lock (INBOX 1727). */
+.space-option .space-option-lock {
+  color: var(--muted);
+}
 /* Rename/delete for a space, revealed on hover or keyboard focus. Kept in the
    flow with opacity rather than display:none so the row does not change width
    when they appear. */

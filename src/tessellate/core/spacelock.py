@@ -3,8 +3,9 @@
 A private space's contents are sealed under the vault key, as a private note
 is. This is the second door: even a session holding the key sees nothing of a
 private space until it unlocks them with the vault password or the PIN, and
-the door shuts again after `idle_minutes` without a request, on lock, and
-when the window closes. One door for every private space (one vault
+the door shuts again after `idle_minutes` without the person's own input
+(the window reports it, `/private-spaces/touch`; the app's own polls do not
+count), on lock, and when the window closes. One door for every private space (one vault
 password, the owner's answer).
 
 In memory only, like the key: a restart closes every private space.

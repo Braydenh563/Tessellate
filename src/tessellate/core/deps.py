@@ -452,7 +452,9 @@ def _seal_private_spaces(session: Session, request: Request, workspace_id: str |
     private = [row[0] for row in session.query(Space.id).filter(Space.is_private.is_(True)).all()]
     if not private:
         return
-    opened = vault.key() is not None and spacelock.is_open(request.headers.get("X-Auth-Token"))
+    # Idle is the person's, not the app's polls: only their own activity
+    # (`/private-spaces/touch`) keeps the private spaces open.
+    opened = vault.key() is not None and spacelock.is_open(request.headers.get("X-Auth-Token"), touch=False)
     # An export leaves them out unless they are open and the person said so.
     confirmed = request.query_params.get("include_private_spaces") == "1"
     path = request.url.path

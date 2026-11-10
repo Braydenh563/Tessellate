@@ -37,6 +37,10 @@ RUNTIME_IDS = {
     "focus-step-value",
     "focus-today",
     "copy-fallback",
+    #: The New space and Edit space Private switches, built by private-spaces.js
+    #: `mount` on the first open (INBOX 1727; the boot element cap).
+    "space-create-private",
+    "space-edit-private",
     #: Confirmed patterns, built by settings-controls.js `confirmedHost` on the
     #: first draw of What it remembers (CHAT_PLAN B9; the boot element cap).
     "memory-confirmed-list",

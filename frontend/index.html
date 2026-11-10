@@ -999,7 +999,7 @@
 
   <dialog id="space-edit-dialog" class="card space-dialog">
     <div class="dialog-head">
-      <h2 class="dialog-head-title"><i class="ph ph-pencil-simple pop-glyph" aria-hidden="true"></i>Rename space</h2>
+      <h2 class="dialog-head-title"><i class="ph ph-pencil-simple pop-glyph" aria-hidden="true"></i>Edit space</h2>
       <span class="dialog-head-actions">
         <button type="button" class="icon-only ghost small dialog-head-btn" data-close-dialog="space-edit-dialog" title="Close (Esc)" aria-label="Close"><i class="ph ph-x" aria-hidden="true"></i></button>
       </span>
@@ -14408,6 +14408,10 @@ Link to another note with [[its first few words]]."></textarea>
                 <option value="240">4 hours</option>
                 <option value="720">12 hours</option>
               </select>
+
+              <!-- INBOX 1727: the private spaces lock on their own, and always on close. -->
+              <label class="stacked-label" for="account-private-idle">Lock private spaces after this many idle minutes</label>
+              <input type="number" id="account-private-idle" class="account-idle-ttl-select" min="1" max="240" step="1" inputmode="numeric">
 
               <!-- INBOX 1553: kept on this device (`lock-notices`), listed by
                    utility-tools.js on the lock card; wired in settings-rows.js. -->

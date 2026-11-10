@@ -411,7 +411,8 @@ HELP_TOPICS: list[dict] = [
             "a category both spaces have is merged. Switching space swaps what you "
             "see in place, with no reload, so the tray and Undo carry across: an Undo made in another space "
             "(from the list or the toast's own button) takes you back to it first. A second window of the app follows a "
-            "switch made in the first, and an answer still on its way from the old space is dropped."
+            "switch made in the first, and an answer still on its way from the old space is dropped. "
+            "A space can be private: Private in New space or Edit space seals everything in it."
         ),
         "badge": {"label": "Account & security", "section": "account"},
     },
