@@ -975,7 +975,8 @@ def test_my_social_notes_summarises_every_note_filed_under_social_connections(no
 def test_a_summary_does_not_show_emphasis_asterisks_in_the_note_s_words(notebook, question):
 
     said, _ = notebook(question)
-    body = re.sub(r"\[\*\*[^\]]*\*\*\]", "", said)
+    #: The note's name is bold by design: "From your **X** note." and "(**X**)" (D25, fc7-1110), as "[**X**]" was.
+    body = re.sub(r"\[\*\*[^\]]*\*\*\]|From your (?:note )?\*\*[^*]*\*\*(?: note)?\.|\(\*\*[^)]*\*\*\)", "", said)
     body = re.sub(r"^- \*\*[^*]+\*\*:", "-", body, flags=re.M)
     assert "**" not in body, said
 
@@ -1156,7 +1157,8 @@ def test_c40_citations_in_one_answer_share_a_style(notebook, question):
 
 def test_c40_a_titled_citation_beside_a_day_named_one_makes_both_bold(notebook):
     said, _ = notebook("what are the three gates")
-    assert re.search(r" \[\*\*[^\]]*\*\*\]", said) and not re.search(r" \[your note, [^\]]*\]", said), said
+    #: D25 (fc7-1110) took the bracketed name off the quote: the intent left is one style, and no day-named bracket.
+    assert not re.search(r" \[(?:your note, |\*\*)[^\]]*\]", said), said
 
 
 # C41. Acts name things as the app does and say what they did not read.

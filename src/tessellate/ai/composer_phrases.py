@@ -32,11 +32,10 @@ PHRASES: dict[str, str] = {
     "close_quote": "”",
     "open_paren": " (",
     "close_paren": ")",
-    #: A citation is bracketed, not parenthesised (the owner, 2026-10-10:
-    #: "Intext reference should be square brackets or styled differently"):
-    #: "[**Dentist**]" reads as a reference, "(**Dentist**)" as an aside.
-    "cite_open": " [",
-    "cite_close": "]",
+    #: The note an answer rests on, said once in a chat (decision D25: no bracketed title): "From your Gym log note."
+    "cite_from": " From your ",
+    "cite_note": " note.",
+    "cite_from_note": " From your note ",
     #: "2 + 2 is 4." (`_sum`): the sum as asked, then its value.
     "sum_is": " is ",
     "and": " and ",
@@ -106,9 +105,9 @@ PHRASES: dict[str, str] = {
     # and after a colon when it cannot ("Separately: Lisbon to Porto ...").
     "and_join": "And ",
     "on_top": "On top of that",
-    "separately": "Separately",
+    "separately": "Apart from that",
     "elsewhere": "Elsewhere",
-    "another_note": "On another note",
+    "another_note": "In another note",
     "later_on": "Later, on ",
     "then_on": "Then on ",
     "earlier_on": "Earlier, on ",
@@ -247,7 +246,7 @@ PHRASES: dict[str, str] = {
     "picture_text_lead": "a picture with the words ",
     "next_tag_b": "?",
     "next_latest_a": "What is the latest on ",
-    "feature_offer": "\n\nThe app has a tool by that name too. ",
+    "feature_offer": "\n\nThe app has a tool for that too. ",
     "next_when_a": "When did I write about ",
 }
 

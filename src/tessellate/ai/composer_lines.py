@@ -98,7 +98,7 @@ FRAMES: dict[str, tuple[Cand, ...]] = {
         c("{span}, {topic} cropped up in {count}:", "p"), c("The notebook has {count} on {topic} {span}:", "p"),
     ),
     "recent_any": (
-        c("You wrote {count} {span}:", "w"), c("{count} {span}, newest first:", "w"), c("Here are your {count} {span}:", "w"),
+        c("You wrote {count} {span}:", "w"), c("{count} {span}, newest first:", "w"), c("You have {count} {span}:", "w"),
         c("Your notebook grew by {count} {span}:", "w"),
         c("{span}: {count}.", "t"), c("{count} {span}.", "t"), c("Newest first, {count} {span}:", "t"), c("{count}, {span}:", "t"),
         c("You recorded {count} {span}:", "f"), c("{count} {span}, listed newest first:", "f"), c("The notebook holds {count} {span}:", "f"),

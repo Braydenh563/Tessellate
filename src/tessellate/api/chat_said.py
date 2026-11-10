@@ -572,7 +572,7 @@ def _current_notes(req: _StreamRequest, notes: list[dict]) -> tuple[list[dict], 
 def _with_words_only(text: str, prepared: dict, result: dict, session=None) -> str:  # noqa: ANN001
     """"Your only note on it" is a claim about the whole notebook; a search
     that read words only (no search by meaning) cannot make it, so the line
-    says what was measured instead (blind test 2026-10-31, item 3)."""
+    leaves it out (blind test 2026-10-31, item 3)."""
     words_only = prepared.get("search_mode") == "keyword" or prepared.get("meaning_off") or prepared.get("meaning_loading")
     if not words_only or not result.get("grounding"):
         return text
@@ -582,14 +582,9 @@ def _with_words_only(text: str, prepared: dict, result: dict, session=None) -> s
     parts = text.split("\n\n")
     if not any(composer_digest.is_only_claim(part) for part in parts):
         return text
-    #: A looked-up fact (a password, a name) is no topic another note could add to: the claim goes and nothing replaces it.
-    said = [] if result.get("shape") == "digest:fact" else [composer_digest.ONLY_WORDS]
-    swapped = [part for part in parts if not composer_digest.is_only_claim(part)]
-    #: The line is a footer, but an offer ("Start a list of films?") stays the last word:
-    #: an answer ends on its question (the gold shape rule), so the footer goes above it.
-    if swapped and said and swapped[-1].rstrip().endswith("?"):
-        return "\n\n".join([*swapped[:-1], *said, swapped[-1]])
-    return "\n\n".join([*swapped, *said])
+    #: The claim goes and nothing replaces it: "Only one note has those words; search by meaning
+    #: could find others" was a stat line a person would not add (fable-composer-1110 F7.3).
+    return "\n\n".join(part for part in parts if not composer_digest.is_only_claim(part))
 
 
 def _help_events(req: _StreamRequest, prepared: dict, ollama_running: bool) -> list | None:

@@ -33,7 +33,7 @@ def _say(question: str, notes=NOTES, **kw) -> dict:
 
 def test_a_what_if_quotes_the_subject_and_says_the_notes_do_not_say_what_would_happen():
     out = _say("what if I move to Lisbon")
-    assert out["text"] == ("Your notes say this about Lisbon: You want to live near the river in Lisbon. [**Lisbon**] "
+    assert out["text"] == ("Your notes say this about Lisbon: You want to live near the river in Lisbon. From your **Lisbon** note. "
                            "Your notes do not say what would happen.")
     assert [row["note_id"] for row in out["grounding"]] == [1]
 

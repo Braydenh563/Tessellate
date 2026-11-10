@@ -41,7 +41,7 @@ def test_how_is_it_now_asks_for_the_latest_on_the_subject(chain):
 def test_who_wrote_it_says_the_notes_do_not_when_none_does(chain):
     _first, who = chain("what do I know about Wolf Hall", "who wrote it")
     assert who.startswith("Your notes do not say who wrote Wolf Hall"), who
-    assert "tool by that name" not in who
+    assert "tool for that too" not in who
 
 
 def test_who_wrote_a_work_a_note_names_by_author(client, session, monkeypatch):

@@ -282,12 +282,13 @@ def after_lead(insight: Insight) -> str:
     """A recurrence said after a lead that gave its count and dates ("At least
     four of your notes mention golf, from 5 to 30 September"): only what the
     lead did not say (CHAT_PLAN decision 52, one fact once). "Three of them
-    after work; that may be a hobby forming." or "That keeps coming up."."""
+    after work; that may be a hobby forming."; "" when there is nothing new, since "That keeps coming up."
+    only said the count again (fable-composer-1110 F7.3)."""
     hedge = str(insight.slots.get("hedge") or "")
     after = str(insight.slots.get("after") or "").lstrip(", ")
     if after:
         return f"{after[:1].upper()}{after[1:]}; {hedge}."
-    return f"{hedge[:1].upper()}{hedge[1:]}."
+    return "" if hedge == composer_tables.INSIGHT_HEDGES["recurs"] else f"{hedge[:1].upper()}{hedge[1:]}."
 
 
 #: How many of the newest notes the Patterns line reads: the patterns worth a

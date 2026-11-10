@@ -211,6 +211,12 @@ def count_word(n: int) -> str:
     return _NUMBERS[n] if 0 <= n < len(_NUMBERS) else str(n)
 
 
+def counted(n: int, noun: str, plural: str = "") -> str:
+    """"one note", "six reminders", "no reminders": a count in words up to twelve with
+    its noun in the right number (fable-composer-1110 F7.6); "dated item" takes "dated items"."""
+    return f"{count_word(n)} {noun if n == 1 else (plural or noun + 's')}"
+
+
 def weeks_gone(days: int) -> int:
     """Weeks a gap of `days` is, rounded as the note card rounds it
     (`relativeTime`, sheets-selects.js: `Math.round(days / 7)`): the one

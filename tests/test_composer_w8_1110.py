@@ -140,7 +140,9 @@ def test_a_title_less_note_is_named_by_its_first_line_in_a_list(r5):
 
 def test_a_title_less_note_is_cited_by_its_first_words_not_its_day(btask):
     text = btask("compare Priya and Marcus")
-    assert "[“Marcus Lee, chair of the garden…”]" in text and "[your note" not in text, text
+    #: D25 took the bracketed name off the quote; the quote is the note's own first line, so it is
+    #: not named by its day either.
+    assert "Marcus Lee, chair of the garden" in text and "your note" not in text, text
 
 
 def test_the_bare_marcus_note_is_counted_for_who_is_marcus(btask):
@@ -185,7 +187,7 @@ def test_a_month_is_not_a_synonym_of_the_other_months(r5):
 
 def test_before_a_holiday_is_a_window_that_ends_the_day_before(r5):
     text = r5("what is due before Christmas")["text"]
-    assert text.startswith("For Sat 7 Nov to Thu 24 Dec you have 4 dated items") and "christmas" not in text.lower().replace("christmas", "", 0)[40:], text
+    assert text.startswith("For Sat 7 Nov to Thu 24 Dec you have four dated items") and "christmas" not in text.lower().replace("christmas", "", 0)[40:], text
 
 
 def test_the_next_two_weeks_and_overdue_read_right(r5):

@@ -157,7 +157,19 @@ def _frame_stems(question: str) -> frozenset[str]:
     return frozenset(_stem(w) for w in said) | _FRAME_WORDS
 
 
+#: A word that is no thing the notes could hold: a manner, a feeling, a verb form or a small
+#: everyday word ("very", "stressed", "stops", "good", "minus"). Calling it missing is a tail a
+#: person would not say (fable-composer-1110 F7.1); only a noun-like word is.
+_NOT_A_NOUN = re.compile(r"(?:ed|ing|ly|ful|less|ish)$", re.I)
+_SMALL_WORDS = frozenset(
+    "very good bad far well sure fine nice great big small minus plus those these turn turns stop stops start starts "
+    "helpful stressed worried tired happy sad more most less least much many some any again still just really quite".split()
+)
+
+
 def _is_unfound(out: _Answer, term: str, found: set[str], quoted: set[str], quoted_text: str = "") -> bool:
+    if term.lower() in _SMALL_WORDS or _NOT_A_NOUN.search(term) or re.fullmatch(r"[\d.,$%£€]+", term):
+        return False
     if len(term) < _MISSING_MIN or _stem(term) in _INSTRUCTION_STEMS or _MANNER.search(term) or _seen(term, found):
         return False
     if term.lower() in _FOREIGN:

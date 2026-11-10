@@ -18,7 +18,7 @@ import re
 from dataclasses import dataclass
 from datetime import date, datetime, timedelta
 
-from tessellate.ai import composer_done, realise, recognise, study
+from tessellate.ai import composer_done, composer_frame, realise, recognise, study
 from tessellate.ai import when as when_words
 from tessellate.ai import composer_compose as compose
 from tessellate.ai import note_rank, reminder_parser
@@ -110,6 +110,9 @@ class Event:
     title: str = ""
     at: str = ""
     priority: str = ""
+    #: The note's one name for display (`composer_frame.name_of`): the link's words. `title` stays the
+    #: note's first line, which the matching below compares.
+    shown: str = ""
 
     def line(self, overdue: bool = False) -> str:
         tail = ""
@@ -118,8 +121,9 @@ class Event:
             tail = f" (reminder{', ' + when if when else ''}{', high priority' if self.priority == 'high' else ''})"
         elif self.note_id is not None and self.title:
             if self._is_title():
+                #: The row is the note's own first line, so the link wraps all of it; a second, shortened name beside it would say it twice.
                 return f"- [{self.text}](#/notes/{self.note_id})"
-            tail = f" ([{self.title}](#/notes/{self.note_id}))"
+            tail = f" ([{self.shown or self.title}](#/notes/{self.note_id}))"
         return f"- {self.text}{tail}"
 
     def _is_title(self) -> bool:
@@ -377,7 +381,8 @@ def _note_days(note: dict, now: datetime) -> tuple[tuple[date, str], ...]:
 
 def _note_events_of(note: dict, now: datetime, start: date, end: date) -> list[Event]:
     title = study.title_of(str(note.get("content") or ""))
-    return [Event(day, text, "note", note.get("id"), title) for day, text in _note_days(note, now) if start <= day <= end]
+    shown = composer_frame.name_of(note)
+    return [Event(day, text, "note", note.get("id"), title, shown=shown) for day, text in _note_days(note, now) if start <= day <= end]
 
 
 def note_events(ctx: Ctx, start: date, end: date) -> list[Event]:
@@ -487,7 +492,7 @@ def _due(ctx: Ctx, win: tuple[date, date, str]) -> Reply | None:
         # (tests/test_due_in_ask_1018.py). A window it does not know (a
         # weekday, "the next 7 days") has no such path, so it is said here.
         return None if recognise.ahead_window(said) else _nothing_due(ctx, end, span)
-    head = compose.frame("due", ctx.mood, count=f"{len(found)} dated item{'s' if len(found) != 1 else ''}", span=span) if found \
+    head = compose.frame("due", ctx.mood, count=realise.counted(len(found), "dated item"), span=span) if found \
         else compose.frame("due_overdue", ctx.mood, span=span)
     head = compose.sentence_case(head)
     lines = [head, *_grouped(found, today)]
@@ -584,7 +589,7 @@ def _task_groups(tasks: list) -> list[str]:
     for heading, rows in (("Open tasks with no day", [t for t in tasks if not t[2]]), ("Open tasks dated outside this time", [t for t in tasks if t[2]])):
         if rows:
             lines += ["", f"**{heading} ({len(rows)})**"]
-            lines += [f"- {task} ([{study.title_of(str(note.get('content') or ''))}](#/notes/{note['id']}))" for task, note, _d in rows]
+            lines += [f"- {task} ([{composer_frame.name_of(note)}](#/notes/{note['id']}))" for task, note, _d in rows]
     return lines
 
 
@@ -595,7 +600,7 @@ def _units(undated: list) -> list[str]:
     by_note: dict[int, list] = {}
     for task, note, _d in undated:
         by_note.setdefault(note["id"], [note]).append(task)
-    return [rows[1] if len(rows) == 2 else f"{study.title_of(str(rows[0].get('content') or ''))} ({len(rows) - 1})" for rows in by_note.values()]
+    return [rows[1] if len(rows) == 2 else f"{composer_frame.name_of(rows[0])} ({len(rows) - 1})" for rows in by_note.values()]
 
 
 def _spread_line(undated: list, days: list[date], load: dict) -> list[str]:
@@ -655,7 +660,7 @@ def _event_counting_down_to(found: list[Event], wanted: set, today: date) -> Eve
 def _until_source(ev: Event) -> str:
     if ev.kind == "reminder":
         return " From your reminder."
-    return f" From {('[' + ev.title + '](#/notes/' + str(ev.note_id) + ')') if ev.title else 'your note'}."
+    return f" From {('[' + (ev.shown or ev.title) + '](#/notes/' + str(ev.note_id) + ')') if ev.title else 'your note'}."
 
 
 def _until(ctx: Ctx, subject: str) -> Reply | None:
@@ -811,14 +816,19 @@ def _left(ctx: Ctx) -> Reply | None:
     reminders, tasks = _open_reminders(ctx), _open_tasks(ctx)
     if not reminders and not tasks:
         return Reply(compose.say("left_none", ctx.mood))
-    r = f"{len(reminders)} reminder{'s' if len(reminders) != 1 else ''}"
-    t = f"{len(tasks)} unticked checklist item{'s' if len(tasks) != 1 else ''}"
-    lines = [compose.frame("left", ctx.mood, r=r, t=t)]
+    r = realise.counted(len(reminders), "reminder")
+    t = realise.counted(len(tasks), "unticked checklist item")
+    if not reminders or not tasks:
+        #: Never a zero clause ("0 reminders and 6 unticked items"): what is open is said alone.
+        only, n = (t, len(tasks)) if not reminders else (r, len(reminders))
+        lines = [compose.sentence_case(f"{only} {'is' if n == 1 else 'are'} still open.")]
+    else:
+        lines = [compose.frame("left", ctx.mood, r=r, t=t)]
     if reminders:
         lines += ["", "**Reminders**"] + [_reminder_line(x, today) for x in reminders[:MAX_ITEMS]]
     if tasks:
         lines += ["", "**Open checklist items**"]
-        lines += [f"- {task} ([{study.title_of(str(note.get('content') or ''))}](#/notes/{note['id']}))" for task, note in tasks]
+        lines += [f"- {task} ([{composer_frame.name_of(note)}](#/notes/{note['id']}))" for task, note in tasks]
     return Reply("\n".join(lines))
 
 
@@ -842,7 +852,7 @@ def _when_is(ctx: Ctx, subject: str) -> Reply | None:
     found = note_events(ctx, today - timedelta(days=30), far)
     seen = next((e for e in found if wanted <= _stems(e.text + " " + e.title)), None)
     if seen is not None:
-        lines.append(pick(ctx.seed, "whennote", PHRASES["when_note"]).format(title=seen.title, id=seen.note_id, text=seen.text))
+        lines.append(pick(ctx.seed, "whennote", PHRASES["when_note"]).format(title=seen.shown or seen.title, id=seen.note_id, text=seen.text))
     return Reply("\n\n".join(lines))
 
 

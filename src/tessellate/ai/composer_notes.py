@@ -12,7 +12,7 @@ from __future__ import annotations
 import re
 from datetime import date, datetime
 
-from tessellate.ai import question_noise, study
+from tessellate.ai import question_noise, realise, study
 from tessellate.core import cjk
 from tessellate.ai import when as when_words
 from tessellate.ai import composer_compose as compose
@@ -230,7 +230,7 @@ def recent(ctx: Ctx) -> Reply | None:
         # No topic and an empty window: composer.empty_window says where the notes are.
         return _nothing(ctx, wanted, span, shown) if wanted else None
     n = len(hits)
-    count = f"{n} note{_plural(n)}"
+    count = realise.counted(n, "note")
     head = compose.sentence_case(compose.frame("recent", ctx.mood, count=count, span=span, topic=shown) if wanted
                                  else compose.frame("recent_any", ctx.mood, count=count, span=span))
     lines = [head, ""] + [_item(note, wanted) for note in hits[:MAX_LISTED]]

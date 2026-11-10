@@ -1056,19 +1056,14 @@ def _note_called(title: str) -> str:
 
 
 def _your_note(view) -> str:  # noqa: ANN001
-    """The one name for a note in a frame: a titled note by its title, a
-    title-less one by its first line cut at about six words (`composer_frame.name_of`),
-    never by a section's label or "untitled" (C8, INBOX 1420; owner 2026-11-10). A note that opens with a
-    label ("Trip planning: flights to Lisbon") is named by it in a summary, "your trip planning note": the
-    summary says what the note is about, which a quoted first line does not (W8 moved this; restored)."""
+    """The one name for a note in a frame: a titled note by its title, a title-less
+    one by its first line cut at about six words (`composer_frame.name_of`), never
+    by a section's label or "untitled" (C8, INBOX 1420; owner 2026-11-10: one name
+    in lists, compare and prose, so "Trip planning: flights to Lisbon" is named by
+    its first line like any other)."""
     if getattr(view, "titled", False) and view.title:
         return _note_called(view.title)
     note = getattr(view, "note", None) or {"content": getattr(view, "title", "")}
-    label = composer_frame.note_label(note)
-    if label:
-        #: "your note the order of the day" is two names; a title-less note is named once, as "your order of the day note" (R3-12).
-        bare = re.sub(r"^(?:the|an?)\s+", "", composer_frame.lower_name(label), flags=re.I)
-        return _note_called(bare or composer_frame.lower_name(label))
     return composer_frame.short_name(note)
 
 
@@ -2005,8 +2000,8 @@ def _wrote(body: str, i: int) -> str:
     return f"{_QUOTED_AS[i % len(_QUOTED_AS)]} “{body[:1].upper() + body[1:].rstrip('.')}”"
 
 
-#: A note's own words quoted whole, a wording a line in turn (INBOX 1512).
-_QUOTED_AS = ("you wrote", "you noted down", "you put down")
+#: A note's own words quoted whole, with the one plain verb (fable-composer-1110 F7: a rotation of verbs read as a table).
+_QUOTED_AS = ("you wrote",)
 
 
 def _past_verb(word: str) -> bool:
@@ -2556,6 +2551,10 @@ def _prose_opening(label: str, named: str, written: date | None, today: date | N
         #: Named by its title or first clause, never "Your note of 27 July" (1441).
         name = _your_note(view) if view is not None else "your note"
         return "noted", name[:1].upper() + name[1:]
+    if view is not None and not getattr(view, "titled", False):
+        #: A title-less note is named once, by its first line, never by its label (owner 2026-11-10).
+        name = _your_note(view)
+        return "noted", name[:1].upper() + name[1:]
     return "noted", f"Your {named} note"
 
 
@@ -2604,7 +2603,8 @@ def _section_line(label: str, view, bodies: list[str], today: date | None, same:
     first = view.sentences[0].text.strip().lower() if view.sentences else ""
     if composer_threads.label_is_sentence(label):
         #: Its own words, said as the note's (INBOX 1512).
-        line = f"{_your_note(view) + (' also says' if same else ' says')} {composer_threads.voiced(head)}: {items}"
+        #: A title-less note's name is its own first words, so "“harbor standup: Mia says…” says Mia says…" would say them twice.
+        line = (f"{_your_note(view) + (' also says' if same else ' says')} " if view.titled else "") + f"{composer_threads.voiced(head)}: {items}"
     elif not view.titled and first.startswith(label.strip().lower()):
         line = _noted_section(head, items, view, today)
     elif re.search(r"\s\d+$", label.strip()):
@@ -2618,6 +2618,14 @@ def _section_line(label: str, view, bodies: list[str], today: date | None, same:
     else:
         line = f"{_your_note(view)} has {composer_threads.with_article(head)}: {items}"
     return line[0].upper() + line[1:]
+
+
+def _opened(label: str, frame: str, opening: str, first: str) -> str:
+    """The line's start. A title-less note named by its first words does not say them twice
+    ("“harbor standup: Mia says…” says Mia says…"): the label and what follows are the note's own line."""
+    if frame == "noted" and opening.startswith("“") and first.startswith("says "):
+        return f"{label.strip()}: {first.removeprefix('says ')}"
+    return f"{opening} {first}".lstrip()
 
 
 def _prose(label: str, held: list, bodies: list[str], i: int, today: date | None, same: bool = False) -> str:
@@ -2641,7 +2649,7 @@ def _prose(label: str, held: list, bodies: list[str], i: int, today: date | None
         opening = (recent[:1].upper() + recent[1:] + "," if recent else _lead_day(written, today).rstrip()) if written else f"In your {named} note,"
         if written and not _TIMED.get():
             opening = ""
-    line = f"{opening} {clauses[0]}".lstrip()
+    line = _opened(label, frame, opening, clauses[0])
     for clause in clauses[1:]:
         line += (", though " if clause.startswith("you were still") else ", and ") + clause
     return line[0].upper() + line[1:]
@@ -5369,7 +5377,8 @@ def _say_insight(out: _Out, item, row: dict, members, said: str) -> None:  # noq
     elif item.rule == "recurrence" and realise.count_word(len(members)) in said:
         #: The count is the opening's; what is new is the hedge.
         hedge = str(item.slots.get("hedge") or "")
-        out.closing.insert(0, hedge[:1].upper() + hedge[1:] + ".")
+        if hedge != composer_tables.INSIGHT_HEDGES["recurs"]:
+            out.closing.insert(0, hedge[:1].upper() + hedge[1:] + ".")
         row["in_answer"] = True
     else:
         out.closing.insert(0, item.text)
