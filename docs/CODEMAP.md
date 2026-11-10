@@ -2,7 +2,7 @@
 
 Generated 2026-11-10 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8044, frontend ids 2655, CSS sections 523, backend routes 664, backend modules 9809, test files 2381, tests 19908, plan headings 1001, app scripts 28, boot scripts 37, script files 272.
+Counts: frontend functions 8044, frontend ids 2655, CSS sections 523, backend routes 664, backend modules 9811, test files 2381, tests 19912, plan headings 1001, app scripts 28, boot scripts 37, script files 272.
 
 ## Frontend functions (8044)
 
@@ -13345,7 +13345,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:175 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (9809)
+## Backend modules (9811)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -13428,7 +13428,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 |---|---|
 | `Act` | src/tessellate/ai/act_registry.py:77 |
 | `_listing` | src/tessellate/ai/act_registry.py:250 |
-| `act_topic` | src/tessellate/ai/act_registry.py:366 |
+| `act_topic` | src/tessellate/ai/act_registry.py:368 |
 | `app_verb` | src/tessellate/ai/act_registry.py:182 |
 | `app_verb_line` | src/tessellate/ai/act_registry.py:190 |
 | `ask_line` | src/tessellate/ai/act_registry.py:202 |
@@ -17587,15 +17587,17 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_terms` | src/tessellate/ai/page_analysis.py:108 |
 | `analyse` | src/tessellate/ai/page_analysis.py:101 |
 
-### src/tessellate/ai/parity_reads.py (5)
+### src/tessellate/ai/parity_reads.py (7)
 
 | Name | File:line |
 |---|---|
-| `_bin` | src/tessellate/ai/parity_reads.py:42 |
-| `_chat_row` | src/tessellate/ai/parity_reads.py:64 |
-| `_history` | src/tessellate/ai/parity_reads.py:70 |
-| `_topic` | src/tessellate/ai/parity_reads.py:55 |
-| `answer` | src/tessellate/ai/parity_reads.py:91 |
+| `_bin` | src/tessellate/ai/parity_reads.py:48 |
+| `_chat_row` | src/tessellate/ai/parity_reads.py:70 |
+| `_first_note` | src/tessellate/ai/parity_reads.py:91 |
+| `_history` | src/tessellate/ai/parity_reads.py:76 |
+| `_related` | src/tessellate/ai/parity_reads.py:99 |
+| `_topic` | src/tessellate/ai/parity_reads.py:61 |
+| `answer` | src/tessellate/ai/parity_reads.py:117 |
 
 ### src/tessellate/ai/passive_capture.py (6)
 
@@ -25743,7 +25745,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (19908)
+## Tests (19912)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -27416,7 +27418,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_panel_movable_whole_1448.py | 1 |
 | tests/test_panel_rim_1536.py | 3 |
 | tests/test_panel_scrim_lift_1029.py | 3 |
-| tests/test_parity_1110.py | 26 |
+| tests/test_parity_1110.py | 30 |
 | tests/test_passes.py | 7 |
 | tests/test_passive_capture.py | 9 |
 | tests/test_password_floor.py | 6 |

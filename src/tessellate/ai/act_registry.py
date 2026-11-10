@@ -138,7 +138,7 @@ _ACTS = (
     Act("rename_category", "rename", "rename a category", "Names the category and its new name; waits for Confirm, Undo renames it back. A name that already exists is left to Manage categories.",
         "rename the category Work to Job", ("old", "new"), "rename_category", stem="Rename the category "),
     Act("create_category", "create", "make a category", "Names the category; it is made after you confirm, and Undo takes it away again. A name that already exists is left as it is.",
-        "create a category called Hobbies", ("name",), "delete_category", stem="Create a category called "),
+        "make a category called Hobbies", ("name",), "delete_category", stem="Create a category called "),
     Act("restore", "restore", "restore a note from the bin", "Names a note in the bin; waits for Confirm, Undo puts it back in the bin.",
         "restore the passport note", (), "delete_note", stem="Restore the note about "),
     Act("set_name", "call", "set your name", "Say what to call you; it is saved after you confirm, and Undo puts the old name back.",
@@ -284,7 +284,9 @@ TOOL_CUES: tuple[tuple[str, str], ...] = (
     ("path_between", r"\bhow (?:is|are) .+ (?:related|connected) to\b|\bpath between\b"),
     ("related_notes", r"\bwhat(?:'s| is) (?:connected|linked) to\b|\b(?:connected|linked) to the .+ note\b"),
     ("find_similar_notes", r"\bsimilar to\b|\blike the .+ note\b"),
-    ("notebook_structure", r"\b(?:shape|structure|clusters?) of (?:my|the) notebook\b|^how (?:are|r) (?:all )?my notes (?:connected|linked)\b"),
+    ("notebook_structure", r"\b(?:shape|structure|clusters?) of (?:my|the) notebook\b|^how (?:are|r) (?:all )?my notes (?:connected|linked)\b"
+     #: The shape asked in its other words: the notes on their own, the clusters (parity, decision 75).
+     r"|\bconnected to nothing\b|\b(?:not|isn't|aren't) (?:linked|connected) to anything\b|\b(?:orphan(?:ed)?|unlinked|disconnected|isolated) notes\b|^what are (?:the|my) (?:note )?clusters\b|\bwhich notes (?:have|has) no links\b"),
     ("notebook_overview", r"\boverview of (?:my|the) notebook\b|\bnotebook overview\b|^how (?:big|large) is (?:my|the) notebook\b"),
     #: "count notes about the dentist" counts a subject's notes, which the composer answers (R3-6, D4).
     ("count_notes", r"\bcount (?:my |the )?notes\b(?! (?:about|on|mentioning|mention|containing|that|with)\b)|\bnotes per (?:category|tag)\b"),

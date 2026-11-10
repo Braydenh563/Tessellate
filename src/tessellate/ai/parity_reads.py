@@ -9,6 +9,7 @@ so both paths say the same thing.
 
 - the bin ("what's in my bin", `manager.list_deleted_entries`);
 - earlier chats ("what did we talk about last time", the `search_chat_history` tool);
+- how two notes are related ("how are japan trip and kyoto ideas related", `path_between`);
 - where the notebook is exported (no tool: a hand-off to Settings).
 """
 
@@ -32,6 +33,11 @@ _HISTORY = re.compile(
 )
 #: When, not what ("last time"): left out of the topic. A day or a span is `recognise.without_windows`'s.
 _WHEN = re.compile(r"\b(?:last time|the last time|earlier|before|previously|the other day|recently|lately|this morning|last night)\b", re.I)
+_RELATED = re.compile(
+    _LEAD + r"how (?:are|is|do|does) (?:the |my )?(?P<a>.+?) (?:and|with|to) (?:the |my )?(?P<b>.+?) (?:related|connected|linked|relate|connect|link)\W*$"
+    r"|" + _LEAD + r"(?:what|how) (?:links|connects|joins|relates) (?:the |my )?(?P<a2>.+?) (?:and|to|with) (?:the |my )?(?P<b2>.+?)\W*$",
+    re.I,
+)
 _EXPORT = re.compile(
     _LEAD + r"(?:export|back ?up|download|save)\s+(?:all |everything in )?(?:of )?(?:my |the )?(?:whole )?(?:notes|notebook|everything|data|library)(?: as (?:json|csv|markdown|a (?:file|folder|zip)))?\W*$"
     r"|" + _LEAD + r"how (?:do|can) i (?:export|back ?up|download) (?:my |the )?(?:notes|notebook|data|everything)\W*$",
@@ -82,6 +88,26 @@ def _history(session: Session, rest: str) -> str:
     return lead + "\n\n" + "\n".join(_chat_row(chat) for chat in found)
 
 
+def _first_note(session: Session, words: str) -> int | None:
+    """The id of the note a few words name, the way a model finds one: the search tool's first hit."""
+    from tessellate.ai import tools as agent_tools
+
+    hits = agent_tools.execute_tool(session, "search_notes", {"query": words, "limit": 1}).get("notes") or []
+    return hits[0].get("id") if hits and isinstance(hits[0], dict) else None
+
+
+def _related(session: Session, first: str, second: str) -> str | None:
+    """The chain between two notes, said as the tool's answer is (`tool_say`); None when a name finds no note."""
+    from tessellate.ai import tool_say
+    from tessellate.ai import tools as agent_tools
+
+    a, b = _first_note(session, first), _first_note(session, second)
+    if a is None or b is None or a == b:
+        return None
+    args = {"note_id": a, "other_note_id": b}
+    return tool_say.say("path_between", agent_tools.execute_tool(session, "path_between", args), args)["text"]
+
+
 _EXPORT_LINE = (
     "Exporting is done in Settings, Import & export: JSON, CSV, Markdown, or the whole notebook as a folder, "
     "and a full backup you can seal with a password. [Open Import & export](#/settings/data)"
@@ -97,4 +123,6 @@ def answer(session: Session, question: str) -> str | None:
         return _bin(session)
     if found := _HISTORY.match(text):
         return _history(session, found.group("rest") or found.group("rest2") or "")
+    if related := _RELATED.match(text):
+        return _related(session, related.group("a") or related.group("a2"), related.group("b") or related.group("b2"))
     return _EXPORT_LINE if _EXPORT.match(text) else None

@@ -200,6 +200,43 @@ def test_export_is_handed_to_a_model_as_a_fact(ai_client, fake_ollama, seeded):
     assert "Import & export" in prompt_of(fake_ollama)
 
 
+# --- the notebook's shape: notes on their own, how two notes are related ----------------
+
+
+@pytest.fixture
+def joined(seeded):
+    from tessellate.core.database import EntryLink
+    from tessellate.entry import manager as entries
+
+    japan = entries.create_entry(seeded, "# Japan trip\n\nFlights booked for 12 March.")
+    kyoto = entries.create_entry(seeded, "# Kyoto ideas\n\nFushimi Inari at sunrise.")
+    seeded.add(EntryLink(source_entry_id=japan.id, target_entry_id=kyoto.id))
+    seeded.commit()
+    return seeded
+
+
+@pytest.mark.parametrize("question", ["which notes are connected to nothing", "what are the clusters"])
+def test_the_notes_on_their_own_are_listed_with_no_model(client, joined, question):
+    said = stream(client, question)["text"]
+    assert "Not linked to anything yet" in said and "On their own" in said, said
+
+
+def test_the_shape_is_handed_to_a_model_as_facts(ai_client, fake_ollama, joined):
+    stream(ai_client, "which notes are connected to nothing", use_tools=True)
+    assert "Not linked to anything yet" in prompt_of(fake_ollama)
+
+
+@pytest.mark.parametrize("question", ["how are japan trip and kyoto ideas related", "what links the japan trip and kyoto ideas"])
+def test_how_two_notes_are_related_with_no_model(client, joined, question):
+    said = stream(client, question)["text"]
+    assert "linked directly" in said, said
+
+
+def test_how_two_notes_are_related_handed_to_a_model_as_facts(ai_client, fake_ollama, joined):
+    stream(ai_client, "how are japan trip and kyoto ideas related", use_tools=True)
+    assert "linked directly" in prompt_of(fake_ollama)
+
+
 # --- acts the model has a tool for: make a category, restore the last deleted note ----
 
 
