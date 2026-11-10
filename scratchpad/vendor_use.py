@@ -49,6 +49,7 @@ LIBRARY_KEYS = {
     "p5.js": "p5",
     "Phosphor Icons": "phosphor",
     "English word list": "wordlist",
+    "Spelling second opinion": "spelling",
     "Python standard library table": "pystdlib",
     "Atkinson Hyperlegible": "atkinson",
     "Mammoth": "mammoth",
@@ -828,6 +829,27 @@ def wordlist_report() -> Report:
     )
 
 
+#: What the spelling second opinion (`vendor/spelling/`, INBOX 1731) offers:
+#: nspell's check and suggest over the AU and GB Hunspell files, and the SCOWL
+#: frequency buckets that rank its suggestions.
+SPELLING_CAPABILITIES = (
+    ("Australian dictionary", r"en_AU"),
+    ("British dictionary", r"en_GB"),
+    ("check a word", r"\.correct\("),
+    ("suggest spellings", r"\.suggest\("),
+    ("rank by frequency", r"frequencyList\("),
+    ("the person's own words", r"ownWords"),
+    ("add a word to nspell's own dictionary", r"checker\.(add|personal)\("),
+)
+
+
+def spelling_report() -> Report:
+    source = _live_lines(_read(ROOT / "frontend" / "js" / "spell-second.js"))
+    available = [label for label, _ in SPELLING_CAPABILITIES]
+    called = [label for label, pattern in SPELLING_CAPABILITIES if re.search(pattern, source)]
+    return Report("spelling", "Spelling second opinion", available, called, {}, [])
+
+
 #: What the Python standard library table (`python-stdlib/stdlib.json`: each
 #: name's kind, signature and doc line) can drive in a Python document, and
 #: where each use would be read.
@@ -1088,6 +1110,7 @@ def collect() -> dict[str, Report]:
         harper_report(scripts),
         phosphor_report(),
         wordlist_report(),
+        spelling_report(),
         pystdlib_report(),
         atkinson_report(),
         d3_report(scripts),

@@ -43,6 +43,8 @@ CALLED_FLOOR = {
     "harper": 17,
     "phosphor": 260,
     "wordlist": 2,
+    #: INBOX 1731: check, suggest, both dictionaries, frequency ranking, own words.
+    "spelling": 6,
     #: Completions after `module.` and the hover card (documents-code.js).
     "pystdlib": 2,
     #: Every face shipped is declared by an @font-face (row 1595).

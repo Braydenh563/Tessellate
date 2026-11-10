@@ -40,7 +40,9 @@ def test_a_voice_changes_the_words_never_the_facts_or_the_shape(voice):
     said = composer_digest.answer(QUESTION, NOTES, today=TODAY, voice=voice)
     assert [r["sentence"] for r in said["grounding"]] == [r["sentence"] for r in base["grounding"]]
     assert len(said["text"].split("\n\n")) == len(base["text"].split("\n\n"))
-    assert said["offer"]["text"] == base["offer"]["text"]
+    # The offer, or its absence (F12: no reminder unless asked about a date or
+    # task), is the same in every voice.
+    assert (said["offer"] or {}).get("text") == (base["offer"] or {}).get("text")
 
 
 @pytest.mark.parametrize("voice", ["natural", "professional", "playful"])
