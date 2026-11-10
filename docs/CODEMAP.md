@@ -2,7 +2,7 @@
 
 Generated 2026-11-10 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7963, frontend ids 2652, CSS sections 523, backend routes 649, backend modules 9402, test files 2348, tests 19469, plan headings 1000, app scripts 28, boot scripts 37, script files 266.
+Counts: frontend functions 7963, frontend ids 2652, CSS sections 523, backend routes 649, backend modules 9403, test files 2348, tests 19470, plan headings 1000, app scripts 28, boot scripts 37, script files 266.
 
 ## Frontend functions (7963)
 
@@ -13216,7 +13216,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:175 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (9402)
+## Backend modules (9403)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -24848,30 +24848,31 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `distinctive_terms` | src/tessellate/search/long_question.py:74 |
 | `search_text` | src/tessellate/search/long_question.py:108 |
 
-### src/tessellate/search/query.py (20)
+### src/tessellate/search/query.py (21)
 
 | Name | File:line |
 |---|---|
 | `Understood` | src/tessellate/search/query.py:57 |
-| `_constrained` | src/tessellate/search/query.py:586 |
+| `_constrained` | src/tessellate/search/query.py:601 |
+| `_date_operator_span` | src/tessellate/search/query.py:383 |
 | `_empty_filters` | src/tessellate/search/query.py:52 |
-| `_has_content` | src/tessellate/search/query.py:591 |
-| `_parse_date_operator` | src/tessellate/search/query.py:383 |
-| `_parse_operators` | src/tessellate/search/query.py:411 |
-| `_read_window` | src/tessellate/search/query.py:486 |
-| `_split_values` | src/tessellate/search/query.py:401 |
+| `_has_content` | src/tessellate/search/query.py:606 |
+| `_parse_date_operator` | src/tessellate/search/query.py:399 |
+| `_parse_operators` | src/tessellate/search/query.py:422 |
+| `_read_window` | src/tessellate/search/query.py:501 |
+| `_split_values` | src/tessellate/search/query.py:412 |
 | `_strip_scaffolding` | src/tessellate/search/query.py:239 |
 | `_strip_trailing_scaffold` | src/tessellate/search/query.py:225 |
 | `_take_categories` | src/tessellate/search/query.py:341 |
 | `_take_negated` | src/tessellate/search/query.py:367 |
 | `_take_tag_count` | src/tessellate/search/query.py:356 |
 | `_tidy` | src/tessellate/search/query.py:174 |
-| `is_chip_subject` | src/tessellate/search/query.py:662 |
-| `is_topic_word` | src/tessellate/search/query.py:693 |
-| `operator_notices` | src/tessellate/search/query.py:462 |
-| `search_terms` | src/tessellate/search/query.py:703 |
-| `understand` | src/tessellate/search/query.py:515 |
-| `without_contractions` | src/tessellate/search/query.py:646 |
+| `is_chip_subject` | src/tessellate/search/query.py:677 |
+| `is_topic_word` | src/tessellate/search/query.py:708 |
+| `operator_notices` | src/tessellate/search/query.py:477 |
+| `search_terms` | src/tessellate/search/query.py:718 |
+| `understand` | src/tessellate/search/query.py:530 |
+| `without_contractions` | src/tessellate/search/query.py:661 |
 
 ### src/tessellate/search/search_manager.py (52)
 
@@ -25082,7 +25083,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (19469)
+## Tests (19470)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -26935,7 +26936,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_scroll_keys.py | 3 |
 | tests/test_scroll_listener_cost.py | 7 |
 | tests/test_search_box.py | 23 |
-| tests/test_search_engine.py | 55 |
+| tests/test_search_engine.py | 56 |
 | tests/test_search_engine_spec.py | 5 |
 | tests/test_search_explain_meaning.py | 4 |
 | tests/test_search_hit_category.py | 3 |

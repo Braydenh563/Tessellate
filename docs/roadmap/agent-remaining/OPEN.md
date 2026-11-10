@@ -161,12 +161,12 @@ Parked until the owner's data or a check on real hardware:
 - B36 One-liner naming (after Q3) | c12 L16
 
 **W11 Notes core** (B, notes, Sonnet; verify first). Files: `frontend/js/notes-list.js`, `navigation.js`, `search/query.py`, the export route. Checks: `tests/test_notes_*`, `tests/test_search_*`. Done when: jump-to-note opens any note, flag filters answer right, export works for any title.
-- B37 Jump-to-note does nothing past the first 60 rendered rows | 1028-shell S1
-- B38 `is:pinned` and every flag filter answer wrongly; unknown values match nothing silently | 1029-notes N2, N16
-- B39 A short title "mentions" most of the notebook | 1029-notes N1
-- B40 Download .md is a 500 for a non-Latin title | 1031-notes N31
-- B41 The server accepts whitespace-only notes | 1029-notes N6
-- B42 `before:` excludes its day (after Q25) | OPEN 456
+- ~~B37 Jump-to-note does nothing past the first 60 rendered rows | 1028-shell S1~~ **Stale** (w11-1110, Chromium, 174 notes: `flashEntry(oldest)` lands the row at top 326 of 900, the middle one at 436; capture-ask.js resolves the page first)
+- ~~B38 `is:pinned` and every flag filter answer wrongly; unknown values match nothing silently | 1029-notes N2, N16~~ **Stale** (w11-1110, fresh data dir: `/search?q=is:pinned` and `is:favourite` find the one pinned note among newer ones; `is:private` answers "No filter called is:private. Try is:pinned..."; tests/test_search_operators_1029.py)
+- ~~B39 A short title "mentions" most of the notebook | 1029-notes N1~~ **Stale** (w11-1110: a note "t" has 0 incoming connections and 0 reference count with notes saying "t"; entry/mentions.py floor of 3 characters, whole words)
+- ~~B40 Download .md is a 500 for a non-Latin title | 1031-notes N31~~ **Stale** (w11-1110: `/entries/{id}/export.md` is 200 for Japanese, Cyrillic, Arabic, emoji and 300-character titles; `attachment_headers` adds `filename*=UTF-8''`)
+- ~~B41 The server accepts whitespace-only notes | 1029-notes N6~~ **Stale** (w11-1110: `POST /entries` with "   " and a blank line is 422 "That note is blank"; `EntryCreate` validator `not_blank`)
+- ~~B42 `before:` excludes its day (after Q25) | OPEN 456~~ **Built w11-1110** (`before:` was already exclusive for ISO dates; Q25 made `before:tuesday`, `yesterday`, `march` and `"last week"` read through `recognise.span`; `tests/test_search_engine.py::test_a_named_day_is_a_date_for_the_operators`)
 
 **W12 Navigation and overlays** (B, shell, Sonnet). Files: `frontend/js/navigation.js`, `settings.js`, notices. Checks: `tests/test_navigation*`, a Playwright Back and Forward run. Done when: Back closes an open overlay first and the hash matches what shows.
 - ~~B43 Browser Back with an overlay open steps the tab history and leaves it open | t20#2~~ **Stale for the overlays** (w12-1110, Chromium: shortcuts, palette, finder, features, agent palette, notifications, dialog, lightbox, sketch all close on Back with the stack unchanged); the real gap was the manual and Statistics address, fixed
@@ -881,7 +881,7 @@ Plan and ROADMAP rows by file: WORLD_CLASS_PLAN 114, UI_MODERNISATION_PLAN 91, C
 | 453 | ai/composer.py _DATE_CUE (about line 380) and its second date pattern (about 933) still compile date words; replace with recognise.recognise(...)... | docs/roadmap/agent-remaining/OPEN.md:3568 | M | unassigned |
 | 454 | entry/timewords.py keeps its own weekday and number tables (the plan's second allowed reader, for stored precision). Brief 68 decides whether find... | docs/roadmap/agent-remaining/OPEN.md:3569 | S | unassigned |
 | 455 | ai/factgraph.py _QUANTITY still reads counts of things ("3 sets", "5 people"); a "count" kind (number plus plural noun) in recognise would let it... | docs/roadmap/agent-remaining/OPEN.md:3570 | S | unassigned |
-| 456 | search/query.py before:/after: stay ISO only (test_an_unreadable_date_invents_nothing holds it); before:tuesday is one call to recognise.span if the... | docs/roadmap/agent-remaining/OPEN.md:3571 | S | unassigned |
+| 456 | **Built w11-1110 (B42).** search/query.py before:/after: stay ISO only (test_an_unreadable_date_invents_nothing holds it); before:tuesday is one call to recognise.span if the... | docs/roadmap/agent-remaining/OPEN.md:3571 | S | unassigned |
 | 457 | "last week" is the last seven days in search and the previous Monday to Sunday in recognise; both written down, the Reading says the search's window.... | docs/roadmap/agent-remaining/OPEN.md:3572 | S | unassigned |
 | 458 | when.resolve("in march"), "march", "q4" give the next one at 09:00 (a reminder is never in the past); the past one comes from when.window and... | docs/roadmap/agent-remaining/OPEN.md:3573 | S | unassigned |
 | 459 | "on my birthday" reads only with a stored birthday (context["birthday"], birthday= on /read); no setting holds one yet. [f1-1010] | docs/roadmap/agent-remaining/OPEN.md:3574 | S | unassigned |

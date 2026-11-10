@@ -5,6 +5,7 @@ based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the
 project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
+- Change (search, w11-1110, Q25): `before:`, `after:`, `since:` and `until:` read a day name or span (`before:tuesday`, `before:yesterday`, `after:march`, `before:"last week"`) through the same reader as the rest of search; `before:tuesday` leaves Tuesday out, as mail search does. Rows B37 to B41 (jump-to-note past 60 rows, flag filters and unknown values, short-title mentions, non-Latin export name, whitespace-only note) did not reproduce on this head (fixed earlier): `tests/test_search_engine.py`.
 - Fix (voice notes, w6-1110, audit 1031 Z12): a Discard whose finish fails now says so with a toast and keeps the recording in Library; audit rows A32 to A36 (1029 X1 to X3, 1031 Z12, 1028 B8, B40) were already fixed on head and are struck.
 ## [Unreleased]
 - Fix (dock menus, owner 2026-11-10): every on/off row in a dock menu (Timeline "Dates beside the strip", Library "Semantic" and "Include the bin", and the rest) carries `.checkbox-label`, so its box is the app's pill switch, 32x18, not a 28x28 platform checkbox; tests/test_dock_menu_switch_1110.py.

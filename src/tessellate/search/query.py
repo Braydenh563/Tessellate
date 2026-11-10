@@ -380,13 +380,24 @@ def _take_negated(text: str) -> tuple[str, dict[str, list[str]]]:
     return _NEGATED.sub(take, text), without
 
 
-def _parse_date_operator(value: str) -> date | None:
-    """`2026-01-01`, `2026-01` or `2026` as a date. Anything else is None.
+def _date_operator_span(value: str, today: date, locale: str | None) -> tuple[date, date] | None:
+    """The first and last day a `before:` or `after:` value names.
 
-    Deliberately ISO only, and deliberately silent about the rest: a typed
-    `before:tuesday` stays in the text as typed, rather than being rejected
-    with an error message in a search box or read as a date it made up.
+    An ISO date is one day; anything else goes to the same reader the rest of
+    the search box uses (`recognise.span`: `tuesday`, `yesterday`, `march`,
+    `"last week"`), so a spoken bound means what the phrase means anywhere
+    else (owner decision Q25). What neither reads is None, and stays in the
+    text as typed rather than becoming a date it made up.
     """
+    when = _parse_date_operator(value)
+    if when is not None:
+        return when, when
+    got = recognise.span(value, today, locale=locale)
+    return (got[0], got[1]) if got else None
+
+
+def _parse_date_operator(value: str) -> date | None:
+    """`2026-01-01`, `2026-01` or `2026` as a date. Anything else is None."""
     parts = value.strip().split("-")
     try:
         if len(parts) == 1:
@@ -408,7 +419,9 @@ def _split_values(raw: str) -> list[str]:
     return [part.strip() for part in raw.split(",") if part.strip()]
 
 
-def _parse_operators(text: str) -> tuple[str, dict[str, list[str]], list[str], list[str], date | None, date | None]:
+def _parse_operators(
+    text: str, today: date | None = None, locale: str | None = None
+) -> tuple[str, dict[str, list[str]], list[str], list[str], date | None, date | None]:
     """Lift the operators out of a query and hand back what is left.
 
     The remainder goes on to the time and scaffolding passes exactly as an
@@ -426,19 +439,21 @@ def _parse_operators(text: str) -> tuple[str, dict[str, list[str]], list[str], l
         name = match.group(1).lower()
         value = match.group(2) if match.group(2) is not None else (match.group(3) or "")
         if name in _DATE_OPERATORS:
-            when = _parse_date_operator(value)
-            if when is None:
+            named = _date_operator_span(value, today or clock.today(), locale)
+            if named is None:
                 # Not a date this parser reads: leave the text in place so the
                 # free-text path can try, rather than swallowing it silently.
                 return match.group(0)
+            first, last = named
             if name in ("before", "until"):
                 # Exclusive, the way every search box that has these treats
                 # them: "before 2026-01-01" does not mean "including new
-                # year's day". `until:` is the inclusive spelling for anyone
-                # who wants the other reading.
-                until = when - timedelta(days=1) if name == "before" else when
+                # year's day", and `before:tuesday` leaves Tuesday out (Q25,
+                # as mail search does). `until:` is the inclusive spelling
+                # for anyone who wants the other reading.
+                until = first - timedelta(days=1) if name == "before" else last
             else:
-                since = when + timedelta(days=1) if name == "after" else when
+                since = last + timedelta(days=1) if name == "after" else first
             return " "
         key = _OPERATOR_NAMES[name]
         for value_part in _split_values(value):
@@ -530,7 +545,7 @@ def understand(question: str, now: datetime | date | None = None, locale: str | 
     text, without = _take_negated(text)
     text, categories, without_categories = _take_categories(text)
     text, tag_count = _take_tag_count(text)
-    remainder, filters, phrases, excluded, since, until = _parse_operators(text)
+    remainder, filters, phrases, excluded, since, until = _parse_operators(text, today, locale)
     operator_dates = since is not None or until is not None
     kept = remainder
     remainder, since, until, phrase, soft = _read_window(remainder, today, locale, operator_dates, since, until)

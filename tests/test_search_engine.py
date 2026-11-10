@@ -54,12 +54,38 @@ def test_a_typed_date_beats_a_time_phrase():
 
 
 def test_an_unreadable_date_invents_nothing():
-    """`before:tuesday` is not an ISO date. No bound is guessed from it, and
-    the words stay in the query, so the person sees their own text matching
-    nothing rather than the app filtering by a date it made up."""
-    u = understand("before:tuesday", now=date(2026, 6, 3))
+    """`before:zebra` is not a date in any form. No bound is guessed from it,
+    and the words stay in the query, so the person sees their own text
+    matching nothing rather than the app filtering by a date it made up.
+    (`before:tuesday` used to be the example; owner decision Q25 made it a
+    date, see the next test.)"""
+    u = understand("before:zebra", now=date(2026, 6, 3))
     assert u.since is None and u.until is None
-    assert "tuesday" in u.subject
+    assert "zebra" in u.subject
+
+
+NOW = date(2026, 6, 3)  # a Wednesday; the fixed clock these tests read against
+
+
+@pytest.mark.parametrize(
+    ("query", "since", "until"),
+    [
+        # Q25: `before:` leaves out the named day, as mail search does.
+        ("before:tuesday", None, date(2026, 6, 1)),
+        ("before:yesterday", None, date(2026, 6, 1)),
+        ("after:tuesday", date(2026, 6, 3), None),
+        ("until:tuesday", None, date(2026, 6, 2)),
+        ("since:tuesday", date(2026, 6, 2), None),
+        # A span names its whole extent: before March is before the 1st.
+        ("before:march", None, date(2026, 2, 28)),
+        ("after:march", date(2026, 4, 1), None),
+        ('before:"last week"', None, date(2026, 5, 24)),
+    ],
+)
+def test_a_named_day_is_a_date_for_the_operators(query, since, until):
+    u = understand(query, now=NOW)
+    assert (u.since, u.until) == (since, until)
+    assert u.subject == ""
 
 
 def test_an_operator_query_is_not_a_time_only_question():
