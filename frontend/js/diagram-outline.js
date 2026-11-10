@@ -59,7 +59,14 @@
   const whose = (S) => S.io?.key ?? S.host;
   function offer(S, want) {
     const show = want && !answered.has(whose(S)) && Boolean(S.turn);
-    if (!show) return S.sideways?.classList.add("hidden");
+    //: The overview (diagram-minimap.js) shares the stage's bottom-left corner with this row: while the row shows, the
+    //: overview rises by its height (INBOX 1737, it lay over the words). On a phone the row is at the top (absolute), so not.
+    const lift = (on) => {
+      const map = S.sideways?.parentElement?.querySelector(":scope > .dgm-minimap");
+      const below = on && getComputedStyle(S.sideways).position !== "absolute";
+      if (map) map.style.insetBlockEnd = below ? `calc(var(--space-5) + ${S.sideways.offsetHeight + 8}px)` : "";
+    };
+    if (!show) return S.sideways?.classList.add("hidden"), lift(false);
     if (!S.sideways) {
       const line = document.createElement("div");
       line.className = "dgm-sideways muted";
@@ -67,13 +74,14 @@
       words.textContent = "This chart is tall for this pane.";
       const done = () => answered.add(whose(S));
       const turn = smallButton("ph:arrow-right Turn it sideways", "Draw it left to right", () => (done(), S.turn("LR")), false);
-      const keep = smallButton("Keep", "Leave it top to bottom", () => (done(), line.classList.add("hidden")));
+      const keep = smallButton("Keep", "Leave it top to bottom", () => (done(), line.classList.add("hidden"), lift(false)));
       line.append(words, turn, keep);
       //: In the picture's stage, not the whole builder: it straddled the list and the picture (blind test 1108).
       (S.fig.parentElement || S.note.parentElement).append(line);
       S.sideways = line;
     }
     S.sideways.classList.remove("hidden");
+    lift(true);
   }
 
   //: True when Alt+Up or Down would move the source but leave the drawn list as it is (an invisible move).

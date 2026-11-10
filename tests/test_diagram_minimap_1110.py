@@ -79,3 +79,14 @@ def test_the_minimap_sits_in_the_corner_the_other_controls_leave_free() -> None:
     assert "inset-block-end: var(--space-5)" in rule and "inset-inline-start: var(--space-5)" in rule
     assert "var(--modal-bg)" in rule and "var(--shadow-md)" in rule
     assert "px" not in rule.replace("1px solid", "")
+
+
+
+def test_the_overview_lifts_above_the_sideways_offer():
+    """INBOX 1737 (owner screenshot): the overview lay over "This chart is tall for this pane." in the same bottom-left
+    corner. While the offer shows, diagram-outline.js raises the overview by the offer's height; kept, turned or hidden,
+    the inline inset is cleared. On a phone the offer is absolute at the top, so the overview keeps its corner."""
+    outline = (JS / "diagram-outline.js").read_text(encoding="utf-8")
+    assert 'querySelector(":scope > .dgm-minimap")' in outline and "lift(true)" in outline and outline.count("lift(false)") == 2
+    assert 'getComputedStyle(S.sideways).position !== "absolute"' in outline
+    assert "map.style.insetBlockEnd = below ?" in outline
