@@ -105,3 +105,10 @@ def test_z12_a_failed_discard_is_said_and_can_be_tried_again() -> None:
     assert "toastAction(" in body and '"Try again"' in body and "meetingTakeBin(id)" in body
     discard = js[js.index("async function meetingTakeDiscard"):js.index("async function meetingTakeBin")]
     assert "await meetingTakeBin(id)" in discard and "DELETE" not in discard
+
+
+def test_a_discard_whose_finish_fails_says_so_1110() -> None:
+    """W6 A35: the finish before the bin failed silently (`catch { return; }`)."""
+    js = frontend_text("meetings.js")
+    discard = js[js.index("async function meetingTakeDiscard"):js.index("async function meetingTakeBin")]
+    assert "catch {" not in discard and "toast(" in discard

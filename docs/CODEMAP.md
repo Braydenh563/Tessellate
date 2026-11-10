@@ -2,7 +2,7 @@
 
 Generated 2026-11-10 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7963, frontend ids 2652, CSS sections 523, backend routes 649, backend modules 9402, test files 2343, tests 19450, plan headings 999, app scripts 28, boot scripts 37, script files 266.
+Counts: frontend functions 7963, frontend ids 2652, CSS sections 523, backend routes 649, backend modules 9402, test files 2343, tests 19451, plan headings 999, app scripts 28, boot scripts 37, script files 266.
 
 ## Frontend functions (7963)
 
@@ -5978,15 +5978,15 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `addMeetingMarker` | frontend/js/meetings.js:2431 |
-| `addRecordingMark` | frontend/js/meetings.js:1904 |
-| `binRecording` | frontend/js/meetings.js:2151 |
+| `addMeetingMarker` | frontend/js/meetings.js:2432 |
+| `addRecordingMark` | frontend/js/meetings.js:1905 |
+| `binRecording` | frontend/js/meetings.js:2152 |
 | `closeMeetingRecorder` | frontend/js/meetings.js:1002 |
 | `discardMeetingTake` | frontend/js/meetings.js:1016 |
-| `editRecordingMark` | frontend/js/meetings.js:1919 |
+| `editRecordingMark` | frontend/js/meetings.js:1920 |
 | `enhanceGain` | frontend/js/meetings.js:1247 |
 | `enhanceRecording` | frontend/js/meetings.js:1269 |
-| `fillMicDevices` | frontend/js/meetings.js:2597 |
+| `fillMicDevices` | frontend/js/meetings.js:2598 |
 | `meetingAcceptOriginal` | frontend/js/meetings.js:1323 |
 | `meetingActionRow` | frontend/js/meetings.js:265 |
 | `meetingAppendUndoable` | frontend/js/meetings.js:539 |
@@ -6017,70 +6017,70 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `meetingSummarise` | frontend/js/meetings.js:424 |
 | `meetingTakeAppend` | frontend/js/meetings.js:673 |
 | `meetingTakeBegin` | frontend/js/meetings.js:653 |
-| `meetingTakeBin` | frontend/js/meetings.js:1370 |
+| `meetingTakeBin` | frontend/js/meetings.js:1371 |
 | `meetingTakeDiscard` | frontend/js/meetings.js:1354 |
 | `meetingTakeFinish` | frontend/js/meetings.js:718 |
 | `meetingTakeFlush` | frontend/js/meetings.js:681 |
 | `meetingTick` | frontend/js/meetings.js:931 |
 | `meetingTranscribeTake` | frontend/js/meetings.js:1190 |
 | `meetingWhenText` | frontend/js/meetings.js:29 |
-| `micControlsInto` | frontend/js/meetings.js:2537 |
-| `micLevelInto` | frontend/js/meetings.js:2657 |
-| `nameMeetingMic` | frontend/js/meetings.js:2698 |
-| `nameRecordingSpeakers` | frontend/js/meetings.js:2132 |
-| `noteRecoveredRecordings` | frontend/js/meetings.js:1468 |
-| `openLiveCaptionsFrom` | frontend/js/meetings.js:2457 |
+| `micControlsInto` | frontend/js/meetings.js:2538 |
+| `micLevelInto` | frontend/js/meetings.js:2658 |
+| `nameMeetingMic` | frontend/js/meetings.js:2699 |
+| `nameRecordingSpeakers` | frontend/js/meetings.js:2133 |
+| `noteRecoveredRecordings` | frontend/js/meetings.js:1469 |
+| `openLiveCaptionsFrom` | frontend/js/meetings.js:2458 |
 | `openMeetingRecorder` | frontend/js/meetings.js:961 |
 | `openMeetingSheet` | frontend/js/meetings.js:334 |
 | `openNewMeeting` | frontend/js/meetings.js:131 |
-| `openRecordingTrim` | frontend/js/meetings.js:2298 |
-| `openRecordings` | frontend/js/meetings.js:1505 |
+| `openRecordingTrim` | frontend/js/meetings.js:2299 |
+| `openRecordings` | frontend/js/meetings.js:1506 |
 | `openVoiceNote` | frontend/js/meetings.js:986 |
-| `playRecordingFrom` | frontend/js/meetings.js:1868 |
-| `recordingCardsRun` | frontend/js/meetings.js:2259 |
-| `recordingFacts` | frontend/js/meetings.js:1587 |
-| `recordingMarksFill` | frontend/js/meetings.js:1843 |
-| `recordingMenu` | frontend/js/meetings.js:2075 |
-| `recordingPaint` | frontend/js/meetings.js:1800 |
-| `recordingReady` | frontend/js/meetings.js:1694 |
-| `recordingRow` | frontend/js/meetings.js:1610 |
-| `recordingRunLine` | frontend/js/meetings.js:2268 |
-| `recordingShowLine` | frontend/js/meetings.js:1878 |
-| `recordingSpeed` | frontend/js/meetings.js:1716 |
-| `recordingTranscript` | frontend/js/meetings.js:1946 |
-| `recordingTranscriptFill` | frontend/js/meetings.js:1962 |
-| `recordingTranscriptNow` | frontend/js/meetings.js:2062 |
-| `recordingTranscriptState` | frontend/js/meetings.js:1597 |
-| `recordingTranscriptionEnded` | frontend/js/meetings.js:2233 |
-| `recordingTrimField` | frontend/js/meetings.js:2355 |
-| `recordingWav` | frontend/js/meetings.js:2399 |
-| `recordingWave` | frontend/js/meetings.js:1735 |
-| `recordingsEmpty` | frontend/js/meetings.js:1553 |
-| `removeRecordingMark` | frontend/js/meetings.js:1929 |
-| `renameRecording` | frontend/js/meetings.js:2142 |
-| `renameRecordingSpeaker` | frontend/js/meetings.js:2108 |
-| `renderRecordings` | frontend/js/meetings.js:1521 |
+| `playRecordingFrom` | frontend/js/meetings.js:1869 |
+| `recordingCardsRun` | frontend/js/meetings.js:2260 |
+| `recordingFacts` | frontend/js/meetings.js:1588 |
+| `recordingMarksFill` | frontend/js/meetings.js:1844 |
+| `recordingMenu` | frontend/js/meetings.js:2076 |
+| `recordingPaint` | frontend/js/meetings.js:1801 |
+| `recordingReady` | frontend/js/meetings.js:1695 |
+| `recordingRow` | frontend/js/meetings.js:1611 |
+| `recordingRunLine` | frontend/js/meetings.js:2269 |
+| `recordingShowLine` | frontend/js/meetings.js:1879 |
+| `recordingSpeed` | frontend/js/meetings.js:1717 |
+| `recordingTranscript` | frontend/js/meetings.js:1947 |
+| `recordingTranscriptFill` | frontend/js/meetings.js:1963 |
+| `recordingTranscriptNow` | frontend/js/meetings.js:2063 |
+| `recordingTranscriptState` | frontend/js/meetings.js:1598 |
+| `recordingTranscriptionEnded` | frontend/js/meetings.js:2234 |
+| `recordingTrimField` | frontend/js/meetings.js:2356 |
+| `recordingWav` | frontend/js/meetings.js:2400 |
+| `recordingWave` | frontend/js/meetings.js:1736 |
+| `recordingsEmpty` | frontend/js/meetings.js:1554 |
+| `removeRecordingMark` | frontend/js/meetings.js:1930 |
+| `renameRecording` | frontend/js/meetings.js:2143 |
+| `renameRecordingSpeaker` | frontend/js/meetings.js:2109 |
+| `renderRecordings` | frontend/js/meetings.js:1522 |
 | `resetMeetingUI` | frontend/js/meetings.js:939 |
-| `saveMeetingDocument` | frontend/js/meetings.js:1421 |
-| `saveMeetingNote` | frontend/js/meetings.js:1457 |
-| `saveRecordingMarks` | frontend/js/meetings.js:1891 |
-| `saveVoiceNoteText` | frontend/js/meetings.js:1475 |
+| `saveMeetingDocument` | frontend/js/meetings.js:1422 |
+| `saveMeetingNote` | frontend/js/meetings.js:1458 |
+| `saveRecordingMarks` | frontend/js/meetings.js:1892 |
+| `saveVoiceNoteText` | frontend/js/meetings.js:1476 |
 | `setMeetingState` | frontend/js/meetings.js:890 |
 | `showMeetingRecorder` | frontend/js/meetings.js:991 |
 | `startMeetingWave` | frontend/js/meetings.js:751 |
-| `startRecordingTranscription` | frontend/js/meetings.js:2198 |
+| `startRecordingTranscription` | frontend/js/meetings.js:2199 |
 | `stopMeetingTimer` | frontend/js/meetings.js:871 |
 | `stopMeetingTranscription` | frontend/js/meetings.js:1348 |
-| `stopRecordingTranscription` | frontend/js/meetings.js:2205 |
-| `syncCaptionsDoors` | frontend/js/meetings.js:2451 |
-| `syncMicSelects` | frontend/js/meetings.js:2609 |
+| `stopRecordingTranscription` | frontend/js/meetings.js:2206 |
+| `syncCaptionsDoors` | frontend/js/meetings.js:2452 |
+| `syncMicSelects` | frontend/js/meetings.js:2610 |
 | `syncRecordingDock` | frontend/js/meetings.js:916 |
-| `testMicrophone` | frontend/js/meetings.js:2618 |
-| `toggleMeetingPause` | frontend/js/meetings.js:1391 |
+| `testMicrophone` | frontend/js/meetings.js:2619 |
+| `toggleMeetingPause` | frontend/js/meetings.js:1392 |
 | `toggleMeetingRecording` | frontend/js/meetings.js:1033 |
-| `transcribeRecording` | frontend/js/meetings.js:2167 |
-| `trimRecording` | frontend/js/meetings.js:2375 |
-| `watchRecordingTranscription` | frontend/js/meetings.js:2214 |
+| `transcribeRecording` | frontend/js/meetings.js:2168 |
+| `trimRecording` | frontend/js/meetings.js:2376 |
+| `watchRecordingTranscription` | frontend/js/meetings.js:2215 |
 
 ### frontend/js/mermaid-draw.js (28)
 
@@ -25082,7 +25082,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (19450)
+## Tests (19451)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -27426,7 +27426,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_writing_nomodel_1488.py | 19 |
 | tests/test_writing_offline_view_1488.py | 7 |
 | tests/test_writing_room_tray_1696.py | 2 |
-| tests/test_xfix_1031.py | 10 |
+| tests/test_xfix_1031.py | 11 |
 | tests/test_xmind_import.py | 3 |
 | tests/test_zoom_frame_1508.py | 3 |
 | tests/test_zoom_wheel_delta.py | 3 |

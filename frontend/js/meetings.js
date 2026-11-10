@@ -1357,7 +1357,8 @@ async function meetingTakeDiscard() {
   //: An empty take is removed by its finish; nothing is left to bin.
   try {
     await meetingTakeFinish();
-  } catch {
+  } catch (error) {
+    toast(`Couldn't finish the discarded recording (${error.message || "the request failed"}). It is still in Library, Recordings.`, true);
     return;
   }
   await meetingTakeBin(id);
