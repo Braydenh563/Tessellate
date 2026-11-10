@@ -27,7 +27,7 @@ from datetime import date, datetime, time, timedelta
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
-from tessellate.ai import follow_items, realise, recognise, slash, slash_more
+from tessellate.ai import composer_chips, follow_items, realise, recognise, slash, slash_more
 
 #: The charts the app can already draw from the notes, in the order offered.
 CHARTS = ("time", "tag", "category", "weekday")
@@ -361,7 +361,7 @@ def _empty_day_acts(session: Session, prev: Prev, today: date) -> list[str]:
     return acts
 
 
-def acts_for(session: Session, prev: Prev, today: date) -> list[str]:
+def acts_for(session: Session, prev: Prev, today: date, *, generic: bool = True) -> list[str]:
     """What can be done with the subject of an answer: the chips under it."""
     others = [k for k in CHARTS if k not in prev.shown and drawing(session, k, today)]
     if prev.kind == "window" and prev.empty:
@@ -376,7 +376,8 @@ def acts_for(session: Session, prev: Prev, today: date) -> list[str]:
         return ["Which tags do I use most?", *map(_chart_chip, others[:2])]
     if prev.kind in ("window", "notes", "chart"):
         return [*map(_chart_chip, others[:2]), "What did I write this week?"]
-    return ["What did I write this week?", "Notebook statistics", "What can you do?"]
+    #: The generic trio is for a first turn or a stumped one, never while an answer has a subject (F5).
+    return ["What did I write this week?", "Notebook statistics", "What can you do?"] if generic else []
 
 
 class Closing:
@@ -389,9 +390,14 @@ class Closing:
         self.session, self.question, self.today, self.active = session, question, today, active
         self.chipped = not active
         self.shown: set = set()
+        #: A frame was sent: the answer has a subject, so the generic trio is not its chips (F5).
+        self.framed = False
+        self.asked = False
 
     def _note(self, event: dict) -> None:
         kind = event.get("type")
+        self.framed = self.framed or kind == "frame"
+        self.asked = self.asked or kind == "offer" and (event.get("offer") or {}).get("kind") == "ask"
         if kind == "grounding" and event.get("next") or kind == "offer" and (event.get("offer") or {}).get("kind") == "ask":
             self.chipped = True
         if kind == "panel" and event.get("panel") == "timeline":
@@ -412,10 +418,13 @@ class Closing:
     def asks(self, answer: str) -> list[str]:
         prev = previous(self.question, answer, self.today)
         prev.shown |= self.shown
-        return acts_for(self.session, prev, self.today)[:4]
+        return acts_for(self.session, prev, self.today, generic=not self.framed)[:4]
 
     def finish(self, answer: str) -> list[dict]:
-        """The offer to add after the last event, when there is an answer and no chips."""
+        """The offer to add after the last event, when there is an answer and no chips. A reminder
+        asked "when?" offers the times its sentence lists (F5)."""
+        if not self.asked and composer_chips.asks_time(answer):
+            return [{"type": "offer", "offer": {"kind": "ask", "label": "", "asks": composer_chips.TIME_CHIPS}}]
         asks = [] if self.chipped or not answer.strip() else self.asks(answer)
         return [{"type": "offer", "offer": {"kind": "ask", "label": "", "asks": asks}}] if asks else []
 

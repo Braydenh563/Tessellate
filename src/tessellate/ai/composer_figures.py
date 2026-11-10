@@ -42,7 +42,7 @@ _CHAIN = re.compile(
 )
 _CALC_LINE = re.compile(r"^[\d$£€(.][^A-Za-z]*?(?: of [\d,.]+)?[^A-Za-z]* is (?P<v>-?[$£€]?[\d,]*\.?\d+)\.?$")
 _LINE = re.compile(r"^\s*[-*]?\s*(?P<label>[A-Za-z][A-Za-z &']*?)\s*[:\-]?\s*[$£€]?(?P<n>\d[\d,]*(?:\.\d+)?)\s*$")
-_RUN = re.compile(r"(?P<day>\d{1,2} [A-Z][a-z]+):\s*(?P<km>[\d.]+) ?km in (?P<t>\d{1,2}:\d{2})")
+_RUN = re.compile(r"(?P<day>\d{1,2} [A-Z][a-z]+):\s*(?P<dist>[\d.]+ ?[a-z]{1,5}) in (?P<t>\d{1,2}:\d{2})")
 _STAY = re.compile(r"\b(?P<place>[A-Z][a-z]+) for (?P<n>\d+)(?: nights?)?")
 _BIRTH = re.compile(r"birthday is (?P<d>\d{1,2}) (?P<m>[A-Z][a-z]+)")
 _BUDGETISH = re.compile(r"budget|cost|spend|expens|bill", re.I)
@@ -121,13 +121,13 @@ def _all_notes(session: Session) -> list[Entry]:
     return list(session.scalars(select(Entry).where(Entry.is_deleted == False, Entry.is_private == False).order_by(Entry.created_at.desc())).all())  # noqa: E712
 
 
-def _title(entry: Entry) -> str:
+def _name_of(entry: Entry) -> str:
     return composer_frame.note_title(entry.content) or "Untitled"
 
 
 def _amounts(entry: Entry) -> dict[str, tuple[str, float]]:
     """"Rent 650. Groceries 140." in a note titled budget, costs or spending: label -> (label, amount)."""
-    if not _BUDGETISH.search(_title(entry)):
+    if not _BUDGETISH.search(_name_of(entry)):
         return {}
     body = (entry.content or "").split("\n", 1)[-1]
     out: dict[str, tuple[str, float]] = {}
@@ -158,18 +158,18 @@ def _budget_compare(budgets: list[tuple[Entry, dict]], dirn: str | None) -> str:
     first, second = (eo, en) if (to >= tn) == high else (en, eo)
     f_total, s_total = (to, tn) if first is eo else (tn, to)
     word = "higher" if high else "lower"
-    lead = f"{_title(first)} is {word} overall, {_num(f_total)} against {_num(s_total)} for {_title(second)}." if to != tn else f"Both come to {_num(to)}."
+    lead = f"{_name_of(first)} is {word} overall, {_num(f_total)} against {_num(s_total)} for {_name_of(second)}." if to != tn else f"Both come to {_num(to)}."
     moves = []
     for key, (label, then) in ao.items():
         if key in an and an[key][1] != then:
             now = an[key][1]
             moves.append(f"{label.lower()} {'rose' if now > then else 'fell'} from {_num(then)} to {_num(now)}")
-    return f"{lead} From {_title(eo)} to {_title(en)}, {'; '.join(moves)}." if moves else lead
+    return f"{lead} From {_name_of(eo)} to {_name_of(en)}, {'; '.join(moves)}." if moves else lead
 
 
 def _budget_total(entry: Entry, amounts: dict) -> str:
     parts = ", ".join(f"{label.lower()} {_num(v)}" for label, v in amounts.values())
-    return f"{_title(entry)} comes to {_num(_total_of(amounts))}: {parts}."
+    return f"{_name_of(entry)} comes to {_num(_total_of(amounts))}: {parts}."
 
 
 def _budget_answer(question: str, budgets: list[tuple[Entry, dict]]) -> str | None:
@@ -195,7 +195,7 @@ def _spent(session: Session, what: str) -> str | None:
     if not rows:
         return None
     label = next(a[k][0] for _e, a in _budgets(_all_notes(session)) for k in a if k.startswith(stem))
-    parts = ", ".join(f"{_num(v)} in {_title(e)}" for e, v in rows)
+    parts = ", ".join(f"{_num(v)} in {_name_of(e)}" for e, v in rows)
     return f"{label}: {parts}" + (f"; {_num(sum(v for _e, v in rows))} together." if len(rows) > 1 else ".")
 
 
@@ -217,15 +217,15 @@ def _runs_answer(question: str, entries: list[Entry]) -> str | None:
     which, diff = _WHICH.match(question), _DIFF.search(question)
     if not (which or diff):
         return None
-    runs = sorted({(m.group("day"), m.group("km"), m.group("t")) for e in entries for m in _RUN.finditer(e.content or "")}, key=lambda r: _seconds(r[2]))
+    runs = sorted({(m.group("day"), m.group("dist"), m.group("t")) for e in entries for m in _RUN.finditer(e.content or "")}, key=lambda r: _seconds(r[2]))
     runs = [r for r in runs if r[1] == runs[0][1]] if runs else []
     if len(runs) < 2:
         return None
-    (day_a, km, t_a), (day_b, _km, t_b) = runs[0], runs[-1]
+    (day_a, dist, t_a), (day_b, _dist, t_b) = runs[0], runs[-1]
     gap = _seconds(t_b) - _seconds(t_a)
-    if which and re.fullmatch(_LOW + "|slower|slowest", which.group("w")) and which.group("w") in ("slower", "slowest"):
-        return f"{day_b} was slower: {km} km in {t_b}, against {t_a} on {day_a}."
-    return f"{day_a} was faster: {km} km in {t_a}, against {t_b} on {day_b}, {gap} seconds quicker."
+    if which and which.group("w") in ("slower", "slowest"):
+        return f"{day_b} was slower: {dist} in {t_b}, against {t_a} on {day_a}."
+    return f"{day_a} was faster: {dist} in {t_a}, against {t_b} on {day_b}, {gap} seconds quicker."
 
 
 def _stays_answer(question: str, entries: list[Entry]) -> str | None:
@@ -257,7 +257,7 @@ def _events(session: Session, history: list[dict]) -> list[tuple[str, date]]:
             continue
         found = _notes(session, frame["note_ids"][:1])
         if found:
-            seen[datetime.strptime(frame["dates"][0], "%Y-%m-%d").date()] = _title(found[0])
+            seen[datetime.strptime(frame["dates"][0], "%Y-%m-%d").date()] = _name_of(found[0])
     return [(name, d) for d, name in seen.items()]
 
 
@@ -284,7 +284,7 @@ def _birthdays(session: Session, today: date) -> str | None:
             continue
         month, day = _MONTHS.index(m.group("m").lower()) + 1, int(m.group("d"))
         nxt = date(today.year, month, day)
-        found.append((_title(entry), nxt if nxt >= today else date(today.year + 1, month, day)))
+        found.append((_name_of(entry), nxt if nxt >= today else date(today.year + 1, month, day)))
     found.sort(key=lambda f: f[1])
     if len(found) < 2:
         return None
@@ -329,7 +329,8 @@ def _cold(session: Session, question: str, history: list[dict], today: date) -> 
     if spent := _SPENT.search(question):
         return _spent(session, spent.group("what"))
     total = _TOTAL.search(question)
-    named = total.group("what") if total and total.group("what") not in {"the", "that", "them", "it", "this"} else None
+    #: Only a month names a budget here ("total for november"); "total of the budget" is the money reader's.
+    named = total.group("what") if total and total.group("what") in _MONTHS else None
     return _total_for(session, named) if named else None
 
 

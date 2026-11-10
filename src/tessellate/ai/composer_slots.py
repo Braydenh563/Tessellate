@@ -827,6 +827,41 @@ def _ask_quantity(t: list[str]) -> Ask | None:
     return Ask(rest, _UNIT_OF[t[2]], day) if rest else None
 
 
+#: Words that make a bare follow-on a slot of the note before ("how long", "how fast"): never searched for.
+SLOT_CUES = frozenset({"long", "fast", "far", "quick", "quickly"})
+_TRAVEL = frozenset({"going", "travelling", "traveling", "flying", "coming", "meeting", "visiting", "staying", "go", "travel", "fly", "come", "meet"})
+_DOINGS = frozenset({"take", "takes", "bake", "cook", "boil", "rest", "last", "lasts", "simmer", "roast", "fry", "wait", "prove"})
+_FRAME_WORDS = frozenset({"about", "to", "for", "the", "my", "it", "take", "takes", "does", "who", "with", "how"})
+
+
+def _ask_duration(t: list[str]) -> Ask | None:
+    """"how long do I bake it", "how long does it take about banana bread": minutes or hours of
+    something done. "How long since" or "until" is a date sum, read elsewhere."""
+    if t[:2] != ["how", "long"] or {"since", "until", "till", "ago", "been", "away", "left"} & set(t):
+        return None
+    #: A doing ("how long do I bake it") or the bound follow-on ("how long about banana bread"), not "how long is the trip".
+    if not (_AUX & set(t) or _DOINGS & set(t) or t[2:3] == ["about"]):
+        return None
+    subject = _flat(t[2:], _AUX | _SELF | _COPULA | _FILLER | _FRAME_WORDS)
+    return Ask(subject) if subject else None
+
+
+def _ask_companion(t: list[str]) -> Ask | None:
+    """"who am I going with": the name after "with" in the sentence that says where or what."""
+    if t[:1] != ["who"] or "with" not in t or not _TRAVEL & set(t):
+        return None
+    subject = _flat(t, _AUX | _SELF | _COPULA | _FILLER | _FRAME_WORDS | _TRAVEL)
+    return Ask(subject) if subject else None
+
+
+def _ask_pace(t: list[str]) -> Ask | None:
+    """"how fast" after a run: the time over the distance."""
+    if t[:2] != ["how", "fast"]:
+        return None
+    subject = _flat(t[2:], _AUX | _SELF | _COPULA | _FILLER | _FRAME_WORDS)
+    return Ask(subject) if subject else None
+
+
 @functools.cache
 def _temperature_pattern() -> re.Pattern[str]:
     return re.compile(r"(?<![\w.])\d{2,3}(?:[.,]\d)?\s?(?:[°º]\s?[CFcf]?|(?i:degrees?|deg)\b|[CF]\b)|(?i:gas\s+mark\s+\d)")
@@ -848,6 +883,26 @@ def _read_quantity(text: str, unit: str | None) -> str | None:
     return found.group(0).strip() if found else None
 
 
+def _read_duration(text: str, unit: str | None) -> str | None:
+    """The first time span, read with the unit table's own spellings ("50 minutes", "2 hours")."""
+    found = [m for u in ("minutes", "hours") if (m := _quantity_pattern(u).search(text))]
+    return min(found, key=lambda m: m.start()).group(0).strip() if found else None
+
+
+def _read_companion(text: str, unit: str | None) -> str | None:
+    found = re.search(r"\bwith ((?:(?:Dr|Mr|Mrs|Ms) )?[A-Z][\w'’-]+(?: and [A-Z][\w'’-]+)?)", text)
+    return found.group(1) if found else None
+
+
+def _read_pace(text: str, unit: str | None) -> str | None:
+    """"5 km in 27:40" as written, with the pace a unit worked out ("5:32 a km")."""
+    found = re.search(r"(?<![\w.,])(\d+(?:\.\d+)?)\s?([a-z]{1,5}) in (\d{1,2}):(\d{2})\b", text)
+    if not found or not float(found.group(1)):
+        return None
+    pace = (int(found.group(3)) * 60 + int(found.group(4))) / float(found.group(1))
+    return f"{found.group(1)} {found.group(2)} in {found.group(3)}:{found.group(4)}, {int(pace // 60)}:{int(pace % 60):02d} a {found.group(2)}"
+
+
 def _read_date(text: str, unit: str | None) -> str | None:
     """The first time phrase that names a day: a date, not a bare "May"."""
     for _start, _end, phrase in when_words.find(text):
@@ -861,6 +916,9 @@ SLOTS = (
     Slot("temperature", _ask_temperature, _read_temperature, "temperature"),
     Slot("date", _ask_date, _read_date, "date", plain=True),
     Slot("quantity", _ask_quantity, _read_quantity, "number of {unit}"),
+    Slot("duration", _ask_duration, _read_duration, "duration"),
+    Slot("companion", _ask_companion, _read_companion, "name"),
+    Slot("pace", _ask_pace, _read_pace, "pace"),
 )
 
 

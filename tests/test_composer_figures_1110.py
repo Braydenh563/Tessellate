@@ -121,3 +121,21 @@ def test_the_figures_are_read_from_the_frames_notes_only(session):
     session.commit()
     history = [{"question": "q", "answer": "a", "frame": {"note_ids": [hidden.id], "subject": "x", "person": "", "ask": "q", "dates": [], "items": []}}]
     assert composer_figures.answer(session, "total", history, NOW.date()) is None
+
+
+# --- fc1's slot leftovers: the lead is the value, not the note's sentence ----------------------
+
+
+def test_how_long_leads_with_the_minutes(client, session):
+    text = _last(client, session, ["how do I make banana bread", "how long"])
+    assert text.split("\n")[0].count("50 minutes") and "Ingredients" not in text.split("\n")[0], text
+
+
+def test_who_am_i_going_with_says_sam(client, session):
+    text = _last(client, session, ["what do I know about the japan trip", "who am I going with"])
+    assert "Sam" in text.split("\n")[0], text
+
+
+def test_how_fast_is_the_pace_of_the_run_not_a_book(client, session):
+    text = _last(client, session, ["what is the latest on the running log", "how fast"])
+    assert "27:40" in text.split("\n")[0] and "Reading list" not in text and "Fast and Slow" not in text, text

@@ -321,13 +321,24 @@ def _framed_scope(req: _StreamRequest, follow) -> list[int]:  # noqa: ANN001
     ids = [row.id for row in rows]
     bound = " ".join(row.content or "" for row in rows).lower()
     asked = composer_dialogue.subject_terms(req.question) if follow.kind == "bound" else []
-    own = [t for t in asked if t.lower() not in bound]
-    if follow.kind == "bound" and not own:
+    own = _own_words(asked, bound)
+    if follow.kind == "bound" and not own and not _slot_cue(req.question):
         follow.question = req.question  # "how many sets": the note holds the words, so they are asked as typed
     if not ids or any(_visible_elsewhere(req.session, t, ids) for t in own) or any(_visible_elsewhere(req.session, t, ids, titled=True) for t in [*asked, *composer_dialogue.subject_terms(follow.question)]):
         follow.question = req.question if follow.kind == "bound" else follow.question  # let go: the turn's own words, searched
         return []
     return ids
+
+
+def _own_words(asked: list[str], bound: str) -> list[str]:
+    """The question's words the bound notes do not hold; a cue ("fast") is never one."""
+    return [t for t in asked if t.lower() not in bound and t.lower() not in composer_slots.SLOT_CUES]
+
+
+def _slot_cue(question: str) -> bool:
+    """"how fast", "how long": a cue to read on the note before, not words to find in another note;
+    the rewritten question ("how long about banana bread?") is kept, not the bare typed one."""
+    return bool(composer_slots.SLOT_CUES.intersection(question.lower().replace("?", " ").split()))
 
 
 def _visible_elsewhere(session, term: str, ids: list[int], *, titled: bool = False) -> bool:  # noqa: ANN001
