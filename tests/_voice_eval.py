@@ -93,7 +93,11 @@ def trace(remark: dict, notes: list[dict], on: date, *, answer_phrases: bool = F
                 failures.append(f"quote not in note {part[2]}: {text!r}")
         elif kind == "title":
             view = composer.read_note(by_id[part[2]], 0)
-            if not view or view.title != text:
+            #: A title-less note is named by its first line cut at about six words (owner 2026-11-10), in quotes.
+            from tessellate.ai import composer_frame
+
+            said = view.title if view and getattr(view, "titled", True) else composer_frame.name_of(by_id[part[2]])
+            if not view or said != text:
                 failures.append(f"not note {part[2]}'s name: {text!r}")
         elif kind == "filed":
             note = by_id[part[2]]

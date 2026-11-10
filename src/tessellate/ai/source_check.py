@@ -117,10 +117,16 @@ def sources_from_messages(messages: list[dict]) -> Sources:
         for m in messages[1:]
         if m.get("role") in ("user", "tool")
     ]
+    #: The date the prompt's clock gave the model is the app's own fact: "today, 4 November" is backed, where the
+    #: rest of the system prompt is not (W8 B16, "I could not find 4").
+    if messages and messages[0].get("role") == "system":
+        texts += [m.group(0) for m in _PROMPT_CLOCK.finditer(str(messages[0].get("content") or ""))]
     asked = next((str(m.get("content") or "") for m in reversed(messages) if m.get("role") == "user"), "")
     return Sources(texts, asked)
 
 
+#: Only today's date, not the week list: its figures (10, 15 ...) would back an invented "10:15" on some days of the month.
+_PROMPT_CLOCK = re.compile(r"The current date and time is \d{4}-\d\d-\d\d")
 _APP_LINK = re.compile(r"\[[^\]\n]{1,120}\]\(#/[^)\s]*\)")
 
 

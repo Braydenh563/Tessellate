@@ -22,7 +22,7 @@ import re
 from dataclasses import dataclass
 from datetime import date, datetime, time, timedelta, timezone
 
-from sqlalchemy import func, select
+from sqlalchemy import func, or_, select
 from sqlalchemy.orm import Session
 
 from tessellate.ai import notebook_stats, realise
@@ -66,6 +66,7 @@ _KINDS = (
 )
 _KIND_WORD = {"note": "note", "document": "document", "board": "board", "map": "mind map", "reminder": "reminder"}
 _LIMIT = 30
+_MONTH_NAMES = ("january", "february", "march", "april", "may", "june", "july", "august", "september", "october", "november", "december")
 
 
 @dataclass
@@ -437,7 +438,9 @@ def _filtered(rows: list[_Event], asked: Asked) -> list[_Event]:
 
 def _head(asked: Asked, today: date) -> str:
     when = _window_said(asked)
-    return f"{when[:1].upper()}{when[1:]}" + (f" ({_span(asked.start, asked.end, today)})" if asked.start != asked.end else "")
+    #: "In October (1 to 31 October)" says the month twice: a window that names its month needs no span.
+    named = any(m in (asked.phrase or "").lower() for m in _MONTH_NAMES)
+    return f"{when[:1].upper()}{when[1:]}" + (f" ({_span(asked.start, asked.end, today)})" if asked.start != asked.end and not named else "")
 
 
 _NOTE_ID = re.compile(r"\(#/notes/(\d+)\)")
@@ -496,6 +499,32 @@ def _recap_lines(rows: list[_Event], asked: Asked, today: date, glosses: dict[st
     return _day_lines(by_day, today)
 
 
+def _named_on(session: Session, day: date) -> list[str]:
+    """Lines of the notes whose own text names `day` ("Ran 6 km on 25 October."): what happened that day is
+    what the notes say happened, before the log of when notes were made (W8 B15)."""
+    from tessellate.ai import composer_ahead, composer_read
+    from tessellate.core.database import LIKE_ESCAPE, Entry
+
+    month = _MONTH_NAMES[day.month - 1]
+    like = [f"%{day.day} {month}%", f"%{day.day:02d} {month}%", f"%{month} {day.day}%", f"%{day.isoformat()}%"]
+    entries = session.scalars(
+        select(Entry).where(
+            Entry.is_private == False, Entry.map_topic == False, Entry.is_draft == False, Entry.is_deleted == False,  # noqa: E712
+            or_(*(func.lower(Entry.content).like(pattern, escape=LIKE_ESCAPE) for pattern in like)),
+        )
+    ).all()
+    out: list[str] = []
+    for entry in entries[:8]:
+        title = _note_name(entry.content)
+        _, start = composer_read._title(entry.content or "")  # noqa: SLF001
+        for sentence in re.split(r"(?<=[.!?])\s+|\n+", (entry.content or "")[start or 0:]):
+            said = " ".join(sentence.split()).lstrip("#*>-[] ")
+            if said and composer_ahead.date_in(said, date(day.year, 1, 1)) == day:
+                out.append(f"- {said} {_link('note', entry.id, title)}")
+                break
+    return out
+
+
 def answer(question: str, session: Session, now: datetime) -> notebook_stats.StatAnswer | None:
     """The activity recap, or None when `question` is not an own-activity
     question with a window."""
@@ -507,11 +536,16 @@ def answer(question: str, session: Session, now: datetime) -> notebook_stats.Sta
     if asked is None:
         return None
     rows = _filtered(_events(session, asked.start, asked.end, zone), asked)
+    named = _named_on(session, asked.start) if asked.start == asked.end and asked.verb == "all" else []
+    if named and not rows:
+        return notebook_stats.StatAnswer(kind="activity", text="\n".join([f"{_head(asked, today)}, your notes say:", *named]), facts=[])
     if not rows:
         return notebook_stats.StatAnswer(kind="activity", text=_empty(asked, session, today, zone), facts=[])
     #: Only a "what did I do" (every kind of change) is said as what the notes hold.
     glosses = _glosses(session, rows) if asked.verb == "all" else None
     lines = [f"{_head(asked, today)} you {_summary(rows)}:", *_recap_lines(rows, asked, today, glosses)]
+    if named:
+        lines = [f"{_head(asked, today)}, your notes say:", *named, "", *lines]
     if len(rows) > _LIMIT:
         lines.append(f"And {len(rows) - _LIMIT} more.")
     facts = [{"when": r[0].isoformat(), "doing": r[1], "kind": r[2], "what": r[3]} for r in rows[:_LIMIT]]

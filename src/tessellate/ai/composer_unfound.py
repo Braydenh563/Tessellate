@@ -127,7 +127,8 @@ _FRAME_SHAPES = re.compile(
 _FRAME_WORDS = frozenset(
     _stem_plain(w)
     for w in """total sum plus overall whole altogether notebook theme themes him her them myself yourself ourselves
-    more less sooner later further farther right now ingredient ingredients contents details information""".split()
+    more less sooner later further farther right now ingredient ingredients contents details information
+    new brief valid name schedule appointment""".split()
 )
 
 

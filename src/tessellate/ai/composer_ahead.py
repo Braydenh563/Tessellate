@@ -44,3 +44,44 @@ def distance(fact: str, today: date) -> str:
     if days == 1:
         return "tomorrow"
     return f"in {days} days" if days <= 60 else f"in about {round(days / 30)} months"
+
+
+_WEEKDAYS = ("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday")
+_CLOCK = re.compile(r"\b\d{1,2}(?::\d\d)?\s?(?:am|pm)\b|\b\d{1,2}:\d\d\b", re.IGNORECASE)
+
+
+def _first_date(fact: str, today: date):  # noqa: ANN202
+    """(where it starts, its last span) for the first single date in `fact`, or None. A weekday span ("Thu")
+    beside the span after it ("12 Nov 9:30") is one date; the reader's weekday span can take the word before it
+    ("coming Wed"), so the start is the weekday word itself."""
+    from datetime import datetime, time
+
+    from tessellate.ai import recognise
+
+    spans = [x for x in recognise.recognise(fact, now=datetime.combine(today, time(12)), tense="future") if not x.rank and x.kind in ("date", "datetime")]
+    for i, span in enumerate(spans):
+        if any(c.isdigit() for c in span.text):
+            return span.start, span
+        after = spans[i + 1] if i + 1 < len(spans) else None
+        if after is not None and 0 <= after.start - span.end <= 2:
+            return span.start + len(span.text) - len(span.text.split()[-1]), after
+    return None
+
+
+def long_form(fact: str, today: date) -> str:
+    """`fact` with its first date written long: "Thu 12 Nov 9:30" as "Thursday 12 November, 9:30", "on 11 November"
+    as "on Wednesday 11 November" (W8 B20, the owner's Q8: a verdict names the day in full). Left as it is when it
+    names no single day."""
+    from datetime import datetime
+
+    found = _first_date(fact, today)
+    if found is None:
+        return fact
+    start, last = found
+    day = last.value.date() if isinstance(last.value, datetime) else last.value
+    if not isinstance(day, date):
+        return fact
+    clock = _CLOCK.search(last.text)
+    said = f"{_WEEKDAYS[day.weekday()]} {day.day} {_MONTHS[day.month - 1].title()}" + (f" {day.year}" if day.year != today.year else "")
+    joiner = " at " if clock and re.search(r"\bat\s+" + re.escape(clock.group(0)), last.text, re.I) else ", "
+    return f"{fact[:start]}{said}{joiner + clock.group(0) if clock else ''}{fact[last.end:]}"

@@ -138,6 +138,17 @@ def _edited_day(note: dict) -> date | None:
         return None
 
 
+def wrote_ago(out: _Answer, question: str, view: NoteView) -> bool:
+    """"How long ago did I write X": the distance and the day, in the person's own turn (W8 B11). False for any
+    other ask, which names the day alone."""
+    if not re.search(r"\bhow long ago\b", question, re.I):
+        return False
+    when = view.written
+    day = f"{when:%A} {when.day} {when:%B}" + (f" {when.year}" if when.year != out.today.year else "")
+    out.m(f"You wrote the {view.title} note {ago((out.today - when).days)}, on {day}.")
+    return True
+
+
 def ago(days: int) -> str:
     """How long ago, as a person says it: "today", "3 days ago", "two weeks
     ago", "5 months ago", "a year ago"."""

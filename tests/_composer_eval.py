@@ -161,7 +161,8 @@ def trace_failures(result: dict, question: str, notes: list[dict], on: date, ask
                 failures.append(problem)
         elif kind == "title":
             first = re.sub(r"[*_`#]", "", by_id[part[2]]["content"].split("\n", 1)[0]).strip()
-            if not first.startswith(text.rstrip("…")):
+            #: A title-less note is named by its first line cut at about six words and quoted (owner 2026-11-10).
+            if not first.startswith(text.strip("“”").rstrip("…").rstrip()):
                 failures.append(f"not note {part[2]}'s name: {text!r}")
         elif kind == "filed":
             note = by_id[part[2]]
@@ -596,7 +597,9 @@ def run_voice(module=composer) -> list[dict]:  # noqa: ANN001
                 "lead_in_repeats": lead_in_repeats(result),
                 #: The owner's complaint, counted: a note with no heading named
                 #: by its first words.
-                "named_by_first_words": sum(1 for p in result["parts"] if p[0] == "title" and p[2] in untitled_ids),
+                #: Since 2026-11-10 that is the rule: a title-less note is named by its first line, quoted and cut at about
+                #: six words. What the owner complained of, and this counts, is a first-words name that is neither.
+                "named_by_first_words": sum(1 for p in result["parts"] if p[0] == "title" and p[2] in untitled_ids and not (p[1].startswith("“") and p[1].endswith("”") and len(p[1].strip("“”…").split()) <= 7)),
                 "says_colon": len(re.findall(r"\b(?:says|said): ", result["text"])),
             }
         )

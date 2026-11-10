@@ -56,9 +56,8 @@ class _Answer:
         #: The notes already named in this answer: a note is named once, at
         #: its first quote, and its later quotes go uncited (INBOX 741).
         self.named: set[int] = set()
-        #: Where each day-named citation starts, and whether a titled one was cited (`_one_cite_style`).
-        self._plain_cites: list[int] = []
-        self._titled_cite = False
+        #: Whether a title-less note's citation also says the day it was written (a "when" ask; `composer._fresh_answer`).
+        self.day_in_cite = False
         #: The question's subject, stemmed, for the openers that check a
         #: sentence holds all of it; and whether the next quote follows a
         #: joiner that ends in a comma, so its first letter is lowered.
@@ -162,20 +161,26 @@ class _Answer:
 
     def name(self, view: NoteView, cap: bool = False) -> _Answer:
         """The note's name: its heading in bold, or, for a note with no
-        heading, "your note from 3 March" (never its first words)."""
+        heading, its first line cut at about six words with an ellipsis, in
+        quotes (owner 2026-11-10: the same name in lists, compare and prose)."""
         self.last_note = view.id
         self.named.add(view.id)
         if view.titled:
             self.t("bold")
             self.parts.append(("title", view.title, view.id))
             return self.t("bold")
-        if view.written:
-            return self.t("your_note_cap" if cap else "your_note", "note_from").m(self.day(view.written))
-        return self.t("one_of_your_notes_cap" if cap else "one_of_your_notes")
+        self.parts.append(("title", self._first_line(view), view.id))
+        return self
+
+    @staticmethod
+    def _first_line(view: NoteView) -> str:
+        from tessellate.ai import composer_frame
+
+        return composer_frame.name_of(view.note)
 
     def cite(self, view: NoteView, again: bool = False) -> _Answer:
-        """" [**Harbor launch plan**]" or " [your note, 3 March]" after a
-        quote: the citation as a marker, once per note unless `again`."""
+        """" [**Harbor launch plan**]" or " [“Dentist said to floss more and…”]"
+        after a quote: the citation as a marker, once per note unless `again`."""
         if view.id in self.named and not again:
             return self
         self.named.add(view.id)
@@ -186,30 +191,12 @@ class _Answer:
             self.t("bold")
             self.parts.append(("title", view.title, view.id))
             self.t("bold")
-            self._one_cite_style()
-        elif view.written:
-            at = len(self.parts)
-            self.t("your_note", "comma").m(self.day(view.written))
-            self._plain_cites.append(at)
-            self._one_cite_style(bold_now=True)
         else:
-            self.t("one_of_your_notes")
+            self.parts.append(("title", self._first_line(view), view.id))
+            #: A when-ask is answered with the day: the title-less note's old "your note, 26 October" carried it, its first words do not.
+            if view.written and self.day_in_cite:
+                self.t("comma").m(self.day(view.written))
         return self.t("cite_close")
-
-    def _one_cite_style(self, bold_now: bool = False) -> None:
-        """One bracket style in an answer (audit 1031 C40): "[**Tom**]" beside
-        "[your note, 24 July]" reads as two kinds of source, so once a titled
-        note is cited every day-named citation is bold too, earlier ones
-        included."""
-        if not bold_now:
-            self._titled_cite = True
-        if not self._titled_cite or not self._plain_cites:
-            return
-        for at in reversed(self._plain_cites):
-            #: ["your note", ", ", day] from `at`; the open is before it and the close follows.
-            self.parts.insert(at + 3, ("template", PHRASES["bold"]))
-            self.parts.insert(at, ("template", PHRASES["bold"]))
-        self._plain_cites.clear()
 
     def _shifted(self, s: Sentence, text: str) -> str | None:
         """The sentence said to the person who wrote it (decision 33): "I

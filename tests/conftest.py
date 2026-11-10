@@ -166,6 +166,16 @@ def _fixed_day(monkeypatch):
 
 
 @pytest.fixture(autouse=True)
+def _forget_the_reported_locale():
+    """A request's locale is kept in memory for readers that take none (`recognise.note_locale`); a test that
+    posted "en-US" must not make the next test's "3/4" month first."""
+    yield
+    from tessellate.ai import recognise
+
+    recognise._HEMISPHERE["reported"] = None  # noqa: SLF001
+
+
+@pytest.fixture(autouse=True)
 def _no_repo_data_folder():
     """A test that builds the app's config without `app_state` falls back to
     `./data`, which is the repo's own folder when pytest runs from the root

@@ -108,6 +108,11 @@ NOT_NOTES = {
 }
 
 
+def nothing_found_meta(prepared: dict, missed: bool = True) -> list[dict]:
+    """The second meta of an answer that found nothing: no rows, so no sources under it (W8 B13); [] when found."""
+    return [{**NOT_NOTES, "web": False, "search_mode": prepared["search_mode"], "composed": True, "answered_by": None}] if missed else []
+
+
 def _search_service() -> tuple[str, str]:
     """(SearXNG address, provider) as Settings has them, for a failure's wording."""
     from tessellate.search import websearch

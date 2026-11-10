@@ -179,13 +179,14 @@ def _item(note: dict, wanted: list[str]) -> str:
         #: never "Untitled" and never its line said twice (audit 1031 C31).
         return f"- {_day(_made(note))}, [{composer_frame.name_of(note)}](#/notes/{note['id']})"
     line = re.sub(r"^#{1,6}\s+", "", _sentence_with(content, wanted) or "")
-    title = study.title_of(content)
+    title = composer_frame.link_text(note)
     #: The sentence read from a headed note starts with the heading ("Scope
     #: Blockers: none."): the link already says it.
     if title and line.lower().startswith(title.lower() + " "):
         line = line[len(title):].strip()
-    body = f": {line}" if line and line.strip().lower() != title.strip().lower() else ""
-    return f"- {_day(_made(note))}, [{title or 'Untitled'}](#/notes/{note['id']}){body}"
+    said = title.strip("“”").rstrip("…").strip().lower()
+    body = f": {line}" if line and line.strip().rstrip(".").lower() != said and not (title.endswith("…”") and line.lower().startswith(said)) else ""
+    return f"- {_day(_made(note))}, [{title}](#/notes/{note['id']}){body}"
 
 
 def _read_recent(ctx: Ctx) -> tuple[list[str], date, date, str, str] | None:

@@ -815,6 +815,9 @@ def _when_tail(view, fact: str, today: date) -> str:  # noqa: ANN001
     ahead = composer_ahead.distance(fact, today)
     if ahead and _TIMED.get() and _WHEN_ASK.get():
         return f", {ahead}"
+    #: A fact that carries its own date ("Her birthday is on 14 March") is not dated again by the day it was written (W8 B11).
+    if _WHEN_ASK.get() and composer_ahead.date_in(fact, today) is not None:
+        return ""
     return f", written {_said_day(view.written, today)}" if _TIMED.get() and not _says_day(fact, view.written, today) else ""
 
 
@@ -1048,18 +1051,11 @@ def _note_called(title: str) -> str:
 
 def _your_note(view) -> str:  # noqa: ANN001
     """The one name for a note in a frame: a titled note by its title, a
-    title-less one by its clipped first clause (C8, INBOX 1420), never by a
-    section's label or "untitled"."""
+    title-less one by its first line cut at about six words (`composer_frame.name_of`),
+    never by a section's label or "untitled" (C8, INBOX 1420; owner 2026-11-10)."""
     if getattr(view, "titled", False) and view.title:
         return _note_called(view.title)
-    note = getattr(view, "note", None) or {"content": getattr(view, "title", "")}
-    #: "Trip planning: flights to Lisbon" is your trip planning note.
-    label = composer_frame.note_label(note)
-    if label:
-        # "your note the order of the day" is two names; a title-less note is named once, as "your order of the day note" (R3-12).
-        bare = re.sub(r"^(?:the|an?)\s+", "", composer_frame.lower_name(label), flags=re.I)
-        return _note_called(bare or composer_frame.lower_name(label))
-    return composer_frame.short_name(note)
+    return composer_frame.short_name(getattr(view, "note", None) or {"content": getattr(view, "title", "")})
 
 
 def _title_only(view) -> bool:  # noqa: ANN001
@@ -3946,7 +3942,7 @@ def _from_name(lead: Fact, body: str, today: date) -> str:
     spoken = name.lower().strip("“”… .")
     if body.lower().lstrip("“”\" ").startswith(spoken):
         return ""
-    day = f", {_said_day(lead.view.written, today)}" if _TIMED.get() and lead.view.written and not _says_day(body, lead.view.written, today) else ""
+    day = f", {_said_day(lead.view.written, today)}" if _TIMED.get() and lead.view.written and not _says_day(body, lead.view.written, today) and composer_ahead.date_in(body, today) is None else ""
     if lead.label.strip().capitalize() in _DAY_NAMES:
         #: "Sunday: call Mum" is the note's own Sunday, not the day it was written (round 1 D8: "today: call Mum").
         day = f", on {lead.label.strip()}"
