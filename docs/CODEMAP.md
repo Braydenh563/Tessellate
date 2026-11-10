@@ -1250,27 +1250,27 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `applyStatusBarSlots` | frontend/js/spaces-find.js:20 |
 | `applyStatusClock` | frontend/js/spaces-find.js:41 |
 | `authHeaders` | frontend/js/spaces-find.js:205 |
-| `closeSpaceMenu` | frontend/js/spaces-find.js:411 |
+| `closeSpaceMenu` | frontend/js/spaces-find.js:412 |
 | `closeStatusClockDetail` | frontend/js/spaces-find.js:128 |
-| `customTemplates` | frontend/js/spaces-find.js:589 |
+| `customTemplates` | frontend/js/spaces-find.js:590 |
 | `hiddenStatusSlots` | frontend/js/spaces-find.js:14 |
-| `initSpaceSwitcher` | frontend/js/spaces-find.js:476 |
-| `loadSpaces` | frontend/js/spaces-find.js:432 |
-| `openSpaceCreate` | frontend/js/spaces-find.js:422 |
+| `initSpaceSwitcher` | frontend/js/spaces-find.js:477 |
+| `loadSpaces` | frontend/js/spaces-find.js:433 |
+| `openSpaceCreate` | frontend/js/spaces-find.js:423 |
 | `openStatusClockDetail` | frontend/js/spaces-find.js:99 |
 | `paintStatusClock` | frontend/js/spaces-find.js:32 |
 | `paintStatusClockDetail` | frontend/js/spaces-find.js:70 |
-| `renderSpaceMenu` | frontend/js/spaces-find.js:347 |
-| `renderTemplateSettings` | frontend/js/spaces-find.js:678 |
-| `saveTemplateList` | frontend/js/spaces-find.js:623 |
+| `renderSpaceMenu` | frontend/js/spaces-find.js:348 |
+| `renderTemplateSettings` | frontend/js/spaces-find.js:679 |
+| `saveTemplateList` | frontend/js/spaces-find.js:624 |
 | `setActiveSpace` | frontend/js/spaces-find.js:214 |
 | `spaceIconPicker` | frontend/js/spaces-find.js:218 |
 | `spaceMenuOption` | frontend/js/spaces-find.js:244 |
-| `startEditingTemplate` | frontend/js/spaces-find.js:593 |
-| `stopEditingTemplate` | frontend/js/spaces-find.js:612 |
-| `templateRow` | frontend/js/spaces-find.js:637 |
-| `toggleSpaceHidden` | frontend/js/spaces-find.js:314 |
-| `updateCaptureSpaceLabel` | frontend/js/spaces-find.js:463 |
+| `startEditingTemplate` | frontend/js/spaces-find.js:594 |
+| `stopEditingTemplate` | frontend/js/spaces-find.js:613 |
+| `templateRow` | frontend/js/spaces-find.js:638 |
+| `toggleSpaceHidden` | frontend/js/spaces-find.js:315 |
+| `updateCaptureSpaceLabel` | frontend/js/spaces-find.js:464 |
 
 ### frontend/js/agent-activity.js (17)
 

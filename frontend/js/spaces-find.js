@@ -266,6 +266,7 @@ function spaceMenuOption({ id, name, icon, deletable, hiddenFromAll, isPrivate }
   if (isPrivate) {
     const lock = document.createElement("i");
     lock.className = "ph ph-lock-simple space-option-lock";
+    lock.setAttribute("aria-hidden", "true");
     option.appendChild(lock);
     option.title = `${name}, a private space`;
   }
@@ -364,7 +365,7 @@ function renderSpaceMenu() {
       // deleted: the server refuses it too, but offering a button that always
       // errors is not a UI.
       hiddenFromAll: Boolean(space.hidden_from_all),
-      isPrivate: space.is_private,
+      isPrivate: Boolean(space.is_private),
       deletable: space.id !== "default",
     }));
   }
@@ -496,7 +497,7 @@ function initSpaceSwitcher() {
   // refuses outright, so every one of them was dead markup.
   for (const closer of document.querySelectorAll("[data-close-dialog]")) {
     closer.addEventListener("click", () => {
-      document.getElementById(closer.dataset.closeDialog)?.close();
+      $(closer.dataset.closeDialog)?.close();
     });
   }
 
@@ -522,7 +523,7 @@ function initSpaceSwitcher() {
     try {
       const space = await apiJson("/spaces", {
         method: "POST",
-        body: JSON.stringify({ name, icon, is_private: !!$("space-create-private")?.checked }),
+        body: JSON.stringify({ name, icon, is_private: $("space-create-private")?.checked === true }),
       });
       $("space-create-dialog").close();
       //: Undo moves anything put in it meanwhile to the default space, then
