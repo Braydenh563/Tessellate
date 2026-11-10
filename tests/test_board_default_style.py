@@ -38,7 +38,8 @@ def test_defaults_that_are_not_style_are_refused_or_dropped(ai_client):
     board = _board(ai_client)
     url = f"/whiteboard/boards/{board['id']}"
     for bad in ("red", ["shape"], {"shape": "red"}, {"shape": {"x" * 40: 1}}, {"shape": {"color": "x" * 200}}, {"shape": {"a b": 1}}):
-        assert ai_client.put(url, json={"background": {"defaults": bad}}).status_code == 422, bad
+        refused = ai_client.put(url, json={"background": {"defaults": bad}})
+        assert refused.status_code == 422, bad
     # An unknown group is dropped, not stored; an empty one stores nothing.
     out = ai_client.put(url, json={"background": {"defaults": {"other": {"color": "#000000"}, "text": {}}}}).json()["background"]
     assert "defaults" not in out
