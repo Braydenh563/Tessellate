@@ -782,6 +782,9 @@ def _note_near(w: Any, hwnd: Any, rect: Any, why: str, near: tuple[int, int, int
         rect = (r.left, r.top, r.right, r.bottom)
     x, y, reach = near
     if rect[0] <= x < rect[2] and abs(rect[1] - y) <= reach:
+        if why.startswith("invisible"):  # a hidden helper (Explorer and Chrome keep many) has no title; a real window has (INBOX 1716)
+            titled = bool(w.user32.GetWindowTextLengthW(hwnd))
+            why += f" ({'titled' if titled else 'no title'}, style {int(w.user32.GetWindowLongW(hwnd, GWL_STYLE)) & 0xFFFFFFFF:08x})"
         seen.append((_class_name(w, hwnd), tuple(rect), why))
 
 

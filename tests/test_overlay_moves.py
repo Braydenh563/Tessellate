@@ -121,15 +121,17 @@ def test_a_throw_that_hits_the_ceiling_hangs_then_lets_go_and_falls() -> None:
     out, t = throw(e, to=(900, 100), start=(850, 600), gap=0.054)
     seen, frames = False, []
     # A hang lasts 30 to 200 s since INBOX 1670 (13:28Z); the old 40 s bound only held while the draw happened to be short.
-    while t < 260 and not (seen and e.state in ("land", "stand")):
+    # Intent moved (owner 2026-11-10, "it always falls down"): a hang from the screen top is held past its whole rest
+    # (300 s at most) and never lets go on a roll; it ends by a chosen drop or a drag.
+    end = t + eng.HANG_FOR[1] + 20.0
+    while t < end:
         t += 0.016
         out = e.update(t)
         frames.append(out.frame)
         if e.state == "hang":
             seen = True
             assert out.y == 0 and out.frame == "hang"
-    assert seen and "fall" in frames
-    assert e.y == FLOOR
+    assert seen and e.state == "hang" and "fall" not in frames
 
 
 def test_a_hang_click_keeps_the_hang() -> None:
@@ -246,9 +248,10 @@ def test_a_walker_climbs_to_the_top_hangs_still_and_falls_back() -> None:
     assert e.state == "hang" and outs[-1].y == 0 and outs[-1].frame == "hang"
     t, outs = step(e, t, 6.0)
     assert len({o.x for o in outs if e.state == "hang"}) == 1  # INBOX 1663: it holds still
-    # Intent kept, bar moved (INBOX 1670: a hang lasts 30 s or more, 200 s at most, then it lets go).
+    # Intent moved (owner 2026-11-10, "it always falls down"): past its whole rest (300 s at most) a hang from the
+    # screen top with nothing in reach hangs on; it does not let go on a roll.
     t, outs = step(e, t, eng.HANG_FOR[1] + 15.0)
-    assert any(o.frame == "fall" for o in outs) and outs[-1].y == FLOOR
+    assert not any(o.frame == "fall" for o in outs) and e.state == "hang" and outs[-1].y == 0
 
 
 def test_a_floater_floats_up_to_hang_from_the_top_edge() -> None:
@@ -331,6 +334,10 @@ def run_acts(e: Engine, minutes: float):
         # A hang that ends a top peek is that peek's own end (the figure drops back onto its hands), not a second big act.
         if e.state != prev and e.state in ("hang", "peek") and not (prev in ("peek", "emerge") and e.state == "hang"):
             acts.append((t, e.state))
+        # Intent moved (owner 2026-11-10): a top hang never falls on its own, so the person takes it down after its
+        # longest rest (a drag; `_let_go` is where a drag off the edge ends) and the next acts can be counted.
+        if e.state == "hang" and t - acts[-1][0] > eng.HANG_FOR[1] + 30.0:
+            e._let_go()
         prev = e.state
     return acts
 

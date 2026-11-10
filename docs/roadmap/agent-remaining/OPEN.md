@@ -198,8 +198,8 @@ Parked until the owner's data or a check on real hardware:
 - B63 Companion does not show: root cause | oa 1638 b
 - B64 The 1696 lists, the falling stutter (a) | INBOX 1696, atlasf1696-1108c, ui1696c-1108c
 - B65 The 1683 travel mix | INBOX 1683, travel L9, L10
-- B66 Owner 2026-11-10, verbatim: "the desktop companion doesnt hang from the top of my screen for long before it falls down. it always falls down". Recommendation, taken: a hang from the screen top lasts its full rest (no fall roll while hanging), and ends only by a chosen drop or a drag | owner 2026-11-10
-- B66 Desk window scan counts Explorer and Chrome as invisible; perch filter finds almost nothing | INBOX 1716, oa 1667 n
+- ~~B66 Owner 2026-11-10, verbatim: "the desktop companion doesnt hang from the top of my screen for long before it falls down. it always falls down". Recommendation, taken: a hang from the screen top lasts its full rest (no fall roll while hanging), and ends only by a chosen drop or a drag | owner 2026-11-10~~ **Fixed** (w15-1110: a top hang holds its full rest, 60 to 300 s, then hangs on; ends by swing, drag or request)
+- B66 Desk window scan counts Explorer and Chrome as invisible; perch filter finds almost nothing | INBOX 1716, oa 1667 n **In part** (w15-1110: tests from the owner classes and rects pass, the classifier is right; the let-go log now says titled or not and the style for a hidden window; the Windows cause needs one more log, see w15-1110.md)
 - B67 Display-paced timer 16.7 ms plus or minus 3; runs properly on Linux | oa 1670 r, u
 
 **W16 Real-model check** (B, chat with a model, Sonnet; needs `scratchpad/llama-dev.sh serve`). Files: tests first, then fixes where they fall. Checks: `pytest -m evals`. Done when: each row reports a measured number or a fixed failure.
