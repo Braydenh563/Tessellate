@@ -2442,7 +2442,10 @@ let wbMapNoteState = null;
 
 function wbMapOpenNote(id, anchor) {
   const node = (wbState.objects || []).find((o) => o.id === id);
-  if (!node || WB_MAP_REFERENCE_KINDS.has(node.kind)) return;
+  //: A note node (MINDMAP_PLAN 12.2 item 5, second half) opens the same shell on the
+  //: notebook's own text; every other reference kind has no note of its own.
+  const entryId = node?.kind === "note" && Number.isInteger(node.data?.ref_id) ? node.data.ref_id : null;
+  if (!node || (WB_MAP_REFERENCE_KINDS.has(node.kind) && entryId == null)) return;
   //: The mark is a toggle: pressed again while its note is open, it closes
   //: (and saves) it, as the help popover's own '?' does.
   if (wbMapNoteState?.id === id) {
@@ -2459,17 +2462,18 @@ function wbMapOpenNote(id, anchor) {
   panel.id = "wb-map-note-peek";
   panel.setAttribute("role", "dialog");
   const label = wbMapLabel(node) || "this topic";
-  panel.setAttribute("aria-label", `The note behind ${label}`);
+  const said = entryId == null ? `The note behind ${label}` : `The text of ${label}`;
+  panel.setAttribute("aria-label", said);
   const box = document.createElement("textarea");
   box.className = "wb-map-note-text";
   box.rows = 6;
-  box.maxLength = 10000;
+  box.maxLength = entryId == null ? 10000 : 200000;
   box.value = typeof node.data?.note === "string" ? node.data.note : "";
   box.placeholder = "Write what this topic needs saying";
-  box.setAttribute("aria-label", `The note behind ${label}`);
+  box.setAttribute("aria-label", said);
   const hint = document.createElement("p");
   hint.className = "muted wb-map-note-hint";
-  hint.textContent = "Saved when you close it. Esc closes.";
+  hint.textContent = entryId == null ? "Saved when you close it. Esc closes." : "Saved to the note when you close it. Esc closes.";
   panel.append(box, hint);
   //: Every key typed here is the note's: Tab, Enter and Delete are map
   //: gestures on the canvas, and Escape would also deselect the topic.
@@ -2486,11 +2490,53 @@ function wbMapOpenNote(id, anchor) {
   };
   document.addEventListener("pointerdown", outside, true);
   document.body.appendChild(panel);
-  wbMapNoteState = { id, panel, anchor: target, outside, before: box.value };
+  wbMapNoteState = { id, panel, anchor: target, outside, before: box.value, entryId, loaded: entryId == null };
   if (target.classList.contains("wb-map-note")) target.setAttribute("aria-expanded", "true");
   placeHelpPopover(panel, target);
   box.focus({ preventScroll: true });
+  if (entryId != null) wbMapOpenNote.load(wbMapNoteState, box);
 }
+
+//: A note node's text, read from the notebook (never the clipped list row) and put
+//: in the box; until it arrives the box is read-only so nothing typed is lost.
+wbMapOpenNote.load = async (state, box) => {
+  box.readOnly = true;
+  box.placeholder = "Loading the note…";
+  try {
+    const entry = await apiJson(`/entries/${state.entryId}`);
+    if (wbMapNoteState !== state) return;
+    box.value = String(entry.content || "");
+    state.before = box.value;
+    state.loaded = true;
+    box.readOnly = false;
+    box.placeholder = "";
+  } catch (err) {
+    state.panel.remove();
+    document.removeEventListener("pointerdown", state.outside, true);
+    wbMapNoteState = null;
+    toast(err.message || "That note could not be opened here.", true);
+  }
+};
+
+//: Save a note node's text to the notebook: one Undo step on the notebook's
+//: history, the cards refreshed, and the map's labels re-read so the node
+//: carries the note's new first line.
+wbMapOpenNote.save = async (entryId, before, after) => {
+  //: On the board's own history, where Ctrl+Z is read while a board is open.
+  const write = (content) => async () => {
+    await apiJson(`/entries/${entryId}`, { method: "PUT", body: JSON.stringify({ content }) });
+    await refreshEntries([entryId]);
+    await wbRefreshMapState();
+    renderWhiteboardNow();
+  };
+  try {
+    await write(after)();
+    wbPushCall("Edited a note from the map", write(before), write(after));
+    wbAnnounce("Note saved.");
+  } catch (err) {
+    toast(err.message || "That note could not be saved.", true);
+  }
+};
 
 function wbMapCloseNote({ restoreFocus = false } = {}) {
   const state = wbMapNoteState;
@@ -2502,7 +2548,10 @@ function wbMapCloseNote({ restoreFocus = false } = {}) {
   if (state.anchor.classList.contains("wb-map-note")) state.anchor.setAttribute("aria-expanded", "false");
   const node = (wbState.objects || []).find((o) => o.id === state.id);
   const next = value.trim();
-  if (node && next !== state.before.trim()) {
+  if (state.entryId != null) {
+    //: A note's own text keeps its spacing; an emptied one is left (a note is not deleted from here).
+    if (node && state.loaded && value !== state.before && value.trim()) wbMapOpenNote.save(state.entryId, state.before, value);
+  } else if (node && next !== state.before.trim()) {
     wbMapSetNodeStyle(node, { note: next || null }).then(() => {
       renderWhiteboardNow();
       wbAnnounce(next ? "Note saved." : "Note removed.");

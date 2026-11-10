@@ -9509,6 +9509,10 @@ function wbBuildContextMenu(kind) {
       //: A note behind it (MINDMAP_PLAN.md decision 18): written and read in
       //: the popover its marker opens; a topic's only, since a note node
       //: already has the notebook's note behind it.
+      if (mapNode.kind === "note" && Number.isInteger(mapNode.data?.ref_id)) {
+        sub("Edit the note's text…", "Change the notebook's note from here; Ctrl+Z undoes it", () =>
+          wbMapOpenNote(mapNode.id, document.querySelector(`.wb-object[data-id="${mapNode.id}"]`)));
+      }
       if (!WB_MAP_REFERENCE_KINDS.has(mapNode.kind)) {
         const hasNote = Boolean(mapNode.data?.note);
         sub(hasNote ? "Open the note…" : "Add a note…",
