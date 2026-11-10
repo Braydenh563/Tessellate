@@ -523,14 +523,10 @@ async function renderDashSubmessage() {
     const n = stats.total_entries;
     bits.push(["notes", n === 0 ? "No notes yet" : `You have ${nounCount(n, "note")}`]);
   }
-  const due = (reminders || []).filter(
-    (r) => !r.done && new Date(r.due_at) <= new Date()
-  ).length;
-  if (due) bits.push(["reminders", `${nounCount(due, "reminder")} due`]);
-  else {
-    const open = (reminders || []).filter((r) => !r.done).length;
-    if (open) bits.push(["reminders", `${nounCount(open, "reminder")} coming up`]);
-  }
+  //: One count for every surface that says it (ai/due_summary.py, audit 2 G3).
+  const counted = dashGlanceFacts({ reminders }).find((f) => f.id === "due");
+  if (counted.today + counted.overdue) bits.push(["reminders", counted.say]);
+  else if (counted.later) bits.push(["reminders", `${nounCount(counted.later, "reminder")} coming up`]);
   if (stats && stats.per_day) {
     const streak = dashStreak(stats.per_day);
     if (streak > 1) bits.push(["streak", `${streak}-day capture streak`]);
@@ -615,13 +611,26 @@ function dashGlanceFacts({ reminders = [], stats = null, entries = [], now = new
   const byDue = (a, b) => new Date(a.due_at) - new Date(b.due_at);
   const open = (reminders || []).filter((r) => r && !r.done).sort(byDue);
   const today = open.filter((r) => new Date(r.due_at) < endOfDay);
-  const overdue = today.filter((r) => new Date(r.due_at) <= now).length;
+  //: **The one count of due reminders** (ai/due_summary.py is its twin): due today
+  //: when the day is today (a time earlier today is still today), overdue when it
+  //: is before today, later otherwise. The sub line and this tile both read it.
+  const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const counted = { today: 0, overdue: 0, later: 0 };
+  for (const r of open) {
+    const at = new Date(r.due_at);
+    if (at < startOfDay) counted.overdue += 1;
+    else if (at < endOfDay) counted.today += 1;
+    else counted.later += 1;
+  }
+  const word = (n) => ["no", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten"][n] || String(n);
+  const say = [[counted.today, "due today"], [counted.overdue, "overdue"]].filter(([n]) => n).map(([n, what]) => `${word(n)} ${what}`).join(", ");
+  const overdue = counted.overdue;
   const next = open.find((r) => new Date(r.due_at) >= endOfDay);
   let dueHint = "No reminders set";
   if (today.length) {
     const first = today[0];
     const when = new Date(first.due_at);
-    dueHint = when <= now ? `${first.text}, overdue` : `${first.text} at ${time(when)}`;
+    dueHint = when < startOfDay ? `${first.text}, overdue` : `${first.text} at ${time(when)}`;
   } else if (next) {
     dueHint = `Next: ${next.text}, ${new Date(next.due_at).toLocaleDateString([], { weekday: "long" })}`;
   }
@@ -630,7 +639,9 @@ function dashGlanceFacts({ reminders = [], stats = null, entries = [], now = new
     icon: "ph:alarm",
     count: today.length,
     overdue,
-    label: today.length ? `${today.length} due today` : "Nothing due today",
+    label: today.length ? say.charAt(0).toUpperCase() + say.slice(1) : "Nothing due today",
+    ...counted,
+    say: say.charAt(0).toUpperCase() + say.slice(1),
     hint: dueHint,
     go: "reminders",
   };

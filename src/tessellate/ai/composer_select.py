@@ -122,7 +122,7 @@ def _heading_hits(view: NoteView, stems: list[str], term_weight: dict[str, float
 #: dentist appointment from 3 November to 4 November", "These replace the
 #: dates from 6 October".
 CORRECTS = re.compile(
-    r"\b(?:moved|rescheduled|postponed|brought\s+forward|changed|revised|replaces?|replaced|instead\s+of|cancel+ed|no\s+longer|new\s+plan|dropped|is\s+now|are\s+now)\b",
+    r"\b(?:moved|rescheduled|postponed|slips?|slipped|slipping|pushed\s+back|delayed|brought\s+forward|changed|revised|replaces?|replaced|instead\s+of|cancel+ed|no\s+longer|new\s+plan|dropped|is\s+now|are\s+now)\b",
     re.I,
 )
 

@@ -157,6 +157,50 @@ def _alike(old: str, old_form: str, new: str, new_form: str) -> bool:
     return a == b != "text" or old_form == new_form
 
 
+_WHEN_ASK = re.compile(r"^\W*(?:when|what\s+(?:day|date))\b", re.I)
+
+
+def _dated_sentences(notes: list[dict], asked: frozenset, today: date) -> list[tuple[date, dict, date]]:
+    """(the day a sentence names, its note, the day the note was written) for each
+    sentence of `notes` that holds every word asked (its note's title counts)."""
+    from tessellate.ai import composer_ahead
+
+    held = []
+    for note in notes:
+        written = _day(note)
+        title = str(note.get("content") or "").lstrip().split("\n", 1)[0].lstrip("# ")
+        for sentence in _sentences(str(note.get("content") or "")) if written else []:
+            day = composer_ahead.date_in(sentence, today)
+            if day is not None and asked <= set(query_understanding.search_terms(f"{title} {sentence}")):
+                held.append((day, note, written))
+    return held
+
+
+def _asks_when(question: str, text: str, notes: list[dict], today: date) -> tuple[frozenset, date] | None:
+    """(the words asked, the date the answer gave) for a when-question over several notes, else None."""
+    from tessellate.ai import composer_ahead
+
+    asked = frozenset(w for w in query_understanding.search_terms(question or "") if w not in _VALIDITY)
+    said = composer_ahead.date_in(text.split("\n", 1)[0], today)
+    ok = _WHEN_ASK.match(question or "") and asked and said and len(notes) > 1 and not recognise.says_past(question)
+    return (asked, said) if ok else None
+
+
+def older_dates(question: str, text: str, notes: list[dict], today: date) -> list[Replaced]:
+    """The older date of the same event, for a when-question: the answer's
+    date is one a note says, and an earlier note names another date for the
+    same subject ("the launch is 14 December", then "slips to 11 January").
+    The newest dated fact leads (audit 2 G1); the older is said once."""
+    asks = _asks_when(question, text, notes, today)
+    held = _dated_sentences(notes, asks[0], today) if asks else []
+    newest = max((h for h in held if h[0] == asks[1]), key=lambda h: h[2], default=None) if asks else None
+    older = [h for h in held if newest and h[0] != asks[1] and h[2] < newest[2]]
+    if not older:
+        return []
+    day, note, written = max(older, key=lambda h: h[2])
+    return [Replaced(note, newest[1], f"{day.day} {_MONTHS[day.month - 1]}", written)]
+
+
 _NATURAL = (
     "An older note, from {when}, said {value}.",
     "Before that, on {when}, you had written {value}.",

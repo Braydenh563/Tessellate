@@ -160,8 +160,9 @@ def test_four_tiles_always_in_one_order(glance):
 
 def test_due_today_counts_the_overdue_and_the_rest_of_today(glance):
     due = _tile(glance["busy"], "due")
-    assert due["count"] == 2 and due["overdue"] == 1
-    assert due["label"] == "2 due today"
+    #: Audit 2 G3: one rule with the other surfaces (ai/due_summary.py); a time earlier today is still today, so it is not overdue.
+    assert due["count"] == 2 and due["overdue"] == 0
+    assert due["label"] == "Two due today"
     assert due["hint"].startswith("Call the bank")
     assert due["go"] == "reminders"
     calm = _tile(glance["calm"], "due")
