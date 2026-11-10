@@ -121,7 +121,12 @@
 
     fig.addEventListener("click", (event) => {
       if (!S.hit || !rect() || event.target.closest(".dock, .dgm-overlay > *")) return;
-      pick(nodeAt(event.clientX, event.clientY) ? "" : arrowAt(event.clientX, event.clientY));
+      const node = nodeAt(event.clientX, event.clientY);
+      const arrow = node ? "" : arrowAt(event.clientX, event.clientY);
+      pick(arrow);
+      //: Neither a box nor an arrow: a group's border or title picks the group, by the builder's own `select` (as a box does).
+      const gid = !node && !arrow && overlay.clusterEdgeAt(S.hit, rect(), event.clientX, event.clientY);
+      if (gid && h.ops.group(S.m, gid)) h.select(S, h.ops.key("g", gid), true);
     });
 
     //: The menu for what is under a point: a box (the list's rows), an arrow (the connector's rows), or nothing (the browser's).
@@ -129,7 +134,12 @@
       if (!S.hit || !rect() || event.target.closest?.(".dock, .dgm-overlay > *")) return;
       const node = nodeAt(x, y);
       const id = !node && arrowAt(x, y);
-      if (node) {
+      const gid = !node && !id && overlay.clusterEdgeAt(S.hit, rect(), x, y);
+      if (gid && h.ops.group(S.m, gid)) {
+        const key = h.ops.key("g", gid);
+        h.select(S, key);
+        openMenuAtPoint(h.items(S, key), "Group menu", x, y, fig);
+      } else if (node) {
         const key = h.ops.key("n", node);
         h.select(S, key);
         openMenuAtPoint(h.items(S, key), "Block menu", x, y, fig);
@@ -142,7 +152,7 @@
     }
     fig.addEventListener("contextmenu", (event) => {
       //: Decided before the module call can answer: the browser's own menu is cancelled for a box or an arrow only.
-      if (nodeAt(event.clientX, event.clientY) || arrowAt(event.clientX, event.clientY)) event.preventDefault();
+      if (nodeAt(event.clientX, event.clientY) || arrowAt(event.clientX, event.clientY) || (S.hit && rect() && overlay.clusterEdgeAt(S.hit, rect(), event.clientX, event.clientY))) event.preventDefault();
       //: A long press on a phone sends this too, after `wireLongPress` has opened the menu: the finger's is that one.
       if (event.pointerType !== "touch") menu(event, event.clientX, event.clientY);
     });

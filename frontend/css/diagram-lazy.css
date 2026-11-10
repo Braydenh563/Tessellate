@@ -1879,6 +1879,11 @@
   z-index: 0;
 }
 
+.dgm-box.dgm-cluster.on,
+.dgm-box.dgm-cluster.hover {
+  background: none;
+}
+
 .dgm-box.dgm-cluster.dgm-target {
   border-color: var(--accent);
 }

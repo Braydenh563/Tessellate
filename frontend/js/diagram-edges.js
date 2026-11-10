@@ -11,7 +11,6 @@
 (() => {
   const overlay = () => diagramModel.overlay.math;
   const REACH = 16;
-  const STRIP = 32;
   const math = {
     //: The id Mermaid gives an arrow: `L_<from>_<to>_<n>`, n counting the arrows with the same two ends.
     edgeId: (m, edge) => `L_${edge.from}_${edge.to}_${m.edges.filter((e) => e.from === edge.from && e.to === edge.to).indexOf(edge)}`,
@@ -166,13 +165,11 @@
       const node = nodeAt(event.clientX, event.clientY);
       const arrow = !node && math.edgeAt(S.hit, rect(), event.clientX, event.clientY);
       const edge = arrow && S.m.edges.find((e) => math.edgeId(S.m, e) === arrow);
-      const group = !node && !edge && groupAt(event.clientX, event.clientY);
-      const top = group && place(S.hit.clusters).find((b) => b.id === group);
-      const y = event.clientY - layer.getBoundingClientRect().top;
+      const group = !node && !edge && overlay().clusterEdgeAt(S.hit, rect(), event.clientX, event.clientY);
       event.preventDefault();
       if (node) renameNode(node);
       else if (edge) renameEdge(edge);
-      else if (top && y - top.y <= STRIP) renameGroup(group);
+      else if (group) renameGroup(group);
     });
 
     //: The next thing asked for, once the new picture has a size to place it by (an image decodes after the draw); dropped after 4 s.

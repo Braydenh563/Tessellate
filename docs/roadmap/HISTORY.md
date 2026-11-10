@@ -7,6 +7,12 @@ Split out of `ROADMAP.md`. Kept, not deleted, for one reason: **three sessions
 have independently rebuilt something that already existed.** This is the file
 that answers "has this been done?" before anyone starts.
 
+## Moved from the plans, 2026-11-10 (dgroup-1110: group selection)
+
+- Owner, 2026-11-10, diagram builder, verbatim (screenshot of a flowchart with "Customer" and "Warehouse" groups): "I want to be able to select on groups and edit the text by clciking on or double clicking on the edge and/or where the text is". Recommendation, taken: a group (subgraph) is selectable by a click on its border or its title; a double click on the title edits it in place (Enter commits, Esc cancels), the same as a node; the selected group shows the selection ring and takes Delete and the context menu. Files: frontend/js/diagram-*.js, documents-mermaid.js.
+
+Built: `diagramModel.overlay.math.clusterEdgeAt` (diagram-overlay.js) is the one hit test; diagram-builder.js's picture click selects `g:<id>` through `select`, diagram-edges.js's double click renames through `renameGroup`, diagram-edge-pick.js's right click opens the row menu, diagram-canvas.js no longer reads a border press as empty canvas, and a picked group's `.dgm-cluster.on` draws the 2 px accent ring (CSS keeps its body clear). Measured (port 8795, 200 by 183 px group): border click, title click, body click (picks the node there), double click rename, Esc cancel, right-click menu, Delete, Ctrl+Z.
+
 ## Moved from the plans, 2026-11-09 (book5-1109: WORLD_CLASS_PLAN)
 
 INBOX 410, placed 2026-10-03, built in full 2026-09-24 (templates confirm, the Guide's controls reference, the map part, Check with AI in place, the dockable suggestions panel, the dictionary sheet); its own last line says nothing of 410 is open.

@@ -36,6 +36,25 @@
       const over = hit.clusters.filter((b) => Math.abs(x - b.x) <= b.w / 2 && Math.abs(y - b.y) <= b.h / 2);
       return over.sort((a, b) => a.w * a.h - b.w * b.h)[0]?.id || "";
     },
+    //: The innermost group whose border (BAND px either side) or title strip (the top STRIP px) is under a client point, or "":
+    //: the parts of a group that select it and rename it (a group's body is empty space, so a press there is not a pick).
+    clusterEdgeAt: (hit, img, px, py, band = 6, strip = 32) => {
+      if (!hit?.clusters || !img.width || !img.height) return "";
+      const [vx, vy, vw, vh] = hit.vb;
+      const sx = img.width / vw;
+      const sy = img.height / vh;
+      const x = px - img.left;
+      const y = py - img.top;
+      const near = hit.clusters.filter((b) => {
+        const l = (b.x - b.w / 2 - vx) * sx;
+        const t = (b.y - b.h / 2 - vy) * sy;
+        const r = l + b.w * sx;
+        const d = t + b.h * sy;
+        if (x < l - band || x > r + band || y < t - band || y > d + band) return false;
+        return y <= t + strip || x <= l + band || x >= r - band || y >= d - band;
+      });
+      return near.sort((a, b) => a.w * a.h - b.w * b.h)[0]?.id || "";
+    },
     //: The id of the node under a client point, or "".
     at: (hit, img, px, py) => {
       if (!hit || !img.width || !img.height) return "";
@@ -68,6 +87,7 @@
       //: A flowchart box is named by its node id ("n:" off the row key); another kind's part by the row key itself.
       for (const row of S.tree.querySelectorAll('.dgm-block[aria-selected="true"]')) if (S.hitAt) ids.add(row.dataset.key);
       else if (row.dataset.key.startsWith("n:")) ids.add(row.dataset.key.slice(2));
+      else if (row.dataset.key.startsWith("g:")) ids.add(row.dataset.key);
       return ids;
     };
     //: A pick shows in both halves (1702): the box the list picked is brought into the picture and the row the picture picked
@@ -88,6 +108,8 @@
         box.classList.toggle("on", ids.has(id));
         box.classList.toggle("hover", id === hover);
       }
+      //: A picked group shows the same ring, drawn on its border (the CSS keeps its body clear).
+      for (const [id, box] of groups) box.classList.toggle("on", ids.has(`g:${id}`));
       reveal();
     };
     S.mark = () => mark();

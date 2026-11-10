@@ -157,7 +157,7 @@
       //: A marquee ends in a click on the figure; a pan's click is swallowed by the zoom (diagram-view.js).
       if (!img || !S.hit || event.shiftKey || event.ctrlKey || event.metaKey || event.altKey || event.timeStamp - sweptAt < 400 || event.target.closest(".dock, .dgm-overlay > *, .dgm-zoom")) return;
       const at = img.getBoundingClientRect();
-      if (math.nodeAt(S.hit, at, event.clientX, event.clientY) || diagramModel.edges?.math.edgeAt(S.hit, at, event.clientX, event.clientY)) return;
+      if (math.nodeAt(S.hit, at, event.clientX, event.clientY) || overlay().clusterEdgeAt(S.hit, at, event.clientX, event.clientY) || diagramModel.edges?.math.edgeAt(S.hit, at, event.clientX, event.clientY)) return;
       S.clear();
     });
     S.pane.addEventListener("click", (event) => event.target.closest(".dgm-block, button, a, input, label") || S.clear());
