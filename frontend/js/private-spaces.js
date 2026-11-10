@@ -183,7 +183,7 @@
 
   //: Always on close: the window going away locks them, whatever the idle clock says.
   window.addEventListener("pagehide", () => {
-    fetch("/private-spaces/lock", { method: "POST", keepalive: true, headers: authHeaders() }).catch(() => {});
+    api("/private-spaces/lock", { method: "POST", keepalive: true, silent: true, readOnly: true }).catch(() => {});
   });
 
   const ACTIONS = { edit, enter, unlock, askKeep, mount, applySwitch };
