@@ -803,7 +803,7 @@ def run_insights() -> list[dict]:
         if expect and row["rule"] == "recurrence":
             after = f", {_count_word(expect['after'])} of them after work" if expect["after"] >= 3 else ""
             wanted = composer_tables.INSIGHT_TEMPLATES["recurrence"].format(
-                subject=row["subject"], count=expect["count"], since=expect["since"], after=after, hedge=expect["hedge"])
+                **insights.shown("recurrence", {"subject": row["subject"], "count": expect["count"], "since": expect["since"], "after": after, "hedge": expect["hedge"]}))
             tail = after.lstrip(", ")
             short = f"{tail[:1].upper()}{tail[1:]}; {expect['hedge']}." if tail else f"{expect['hedge'][:1].upper()}{expect['hedge'][1:]}."
         elif expect and row["rule"] == "streak":

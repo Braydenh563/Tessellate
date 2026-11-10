@@ -22,16 +22,25 @@ _DIFFER = re.compile(
     r"|^compare\s+(?P<c>.+?)\W*$|^how (?:do|does|did) (?P<d>.+?) (?:compare|differ)\W*$",
     re.I,
 )
+#: "october budget versus november budget", "free vs plus plan": two sides, each a priced note's title words (F4).
+_VERSUS = re.compile(r"^(?:compare\s+)?(?P<a>.+?)\s+(?:vs\.?|versus|compared (?:to|with)|against)\s+(?P<b>.+?)\W*$", re.I)
 _NOISE = re.compile(r"\b(?:for|in|of|on|the|my|our|a|an|and|vs|versus|two|both|to|with|spending|spend|spent|total)\b", re.I)
 
 
-def lines(note: dict) -> list[tuple[str, float]]:
-    """The note's "Label number" lines, in order."""
+def _sentence_run(raw: str) -> list[re.Match]:
+    """"Rent 650. Groceries 140. Gym 45.": a line that is only "Label number" sentences, two or more."""
+    parts = [p.strip() for p in re.split(r"(?<=\d)\.(?:\s+|$)", raw) if p.strip()]
+    found = [_LINE.match(p) for p in parts]
+    return [m for m in found if m] if len(parts) >= 2 and all(found) else []
+
+
+def lines(note: dict, runs: bool = False) -> list[tuple[str, float]]:
+    """The note's "Label number" lines in order; with `runs`, a line of such sentences read as that many
+    (only "A versus B" asks it: "compare" and the figures reader are pinned to one label a line)."""
     out = []
     for raw in str(note.get("content") or "").splitlines()[1:]:
-        found = _LINE.match(raw)
-        if found:
-            out.append((found.group("label").strip(" :-").strip(), float(found.group("n").replace(",", ""))))
+        found = [m] if (m := _LINE.match(raw)) else _sentence_run(raw) if runs else []
+        out.extend((f.group("label").strip(" :-").strip(), float(f.group("n").replace(",", ""))) for f in found)
     return out
 
 
@@ -39,17 +48,17 @@ def _amount(value: float) -> str:
     return f"{value:,.2f}".rstrip("0").rstrip(".") if value != int(value) else f"{int(value):,}".replace(",", "")
 
 
-def _priced(ctx: Ctx) -> list[dict]:
-    return [n for n in ctx.notes if len(lines(n)) >= 2]
+def _priced(ctx: Ctx, runs: bool = False) -> list[dict]:
+    return [n for n in ctx.notes if len(lines(n, runs)) >= 2]
 
 
-def _named(ctx: Ctx, words: list[str]) -> list[dict]:
+def _named(ctx: Ctx, words: list[str], runs: bool = False) -> list[dict]:
     """Priced notes whose title holds every word named, best first."""
     wanted = study.content_stems(" ".join(words))
     if not wanted:
         return []
     out = []
-    for note in _priced(ctx):
+    for note in _priced(ctx, runs):
         have = set(study.content_stems(composer_frame.note_title(note)))
         if set(wanted) <= have:
             out.append(note)
@@ -90,12 +99,39 @@ def _row(label: str, a: dict, b: dict, names: tuple[str, str]) -> tuple[str, boo
     return f"- {label}: {_amount(value)}, only in {side}", True
 
 
+def _side_note(ctx: Ctx, side: str) -> dict | None:
+    words = [w for w in _NOISE.sub(" ", side).split() if w]
+    return next(iter(_named(ctx, words, True)), None) if words else None
+
+
+def _two_labels(ctx: Ctx, found: re.Match) -> Reply | None:
+    """"free versus plus": two labels of one note set side by side, the figures and the gap."""
+    first, second = _labelled(ctx, found.group("a")), _labelled(ctx, found.group("b"))
+    both = next(((x, y) for x in first for y in second if x[0] is y[0] and x[1] != y[1]), None)
+    if not both:
+        return None
+    (note, a_label, a_value), (_n, b_label, b_value) = both
+    gap = b_value - a_value
+    tail = "the same" if gap == 0 else f"{_amount(abs(gap))} {'more' if gap > 0 else 'less'} for {b_label}"
+    return Reply(f"{a_label} is {_amount(a_value)} and {b_label} is {_amount(b_value)}, {tail}, from {composer_study._link(note)}.")  # noqa: SLF001
+
+
+def _versus(ctx: Ctx, found: re.Match) -> Reply | None:
+    """"A versus B" where each side names one priced note: the same line-by-line reading as "compare";
+    where the sides are two labels of one note, the two figures."""
+    first, second = _side_note(ctx, found.group("a")), _side_note(ctx, found.group("b"))
+    if not first or not second or first is second or not {k for k, _ in lines(first, True)} & {k for k, _ in lines(second, True)}:
+        return _two_labels(ctx, found)  # two notes with no label in common have nothing to set side by side
+    return _compare_notes(first, second, True)
+
+
 def _compare(ctx: Ctx, topic: str) -> Reply | None:
     pair = _pair(ctx, topic)
-    if len(pair) < 2:
-        return None
-    first, second = pair
-    a, b = dict(lines(first)), dict(lines(second))
+    return _compare_notes(*pair) if len(pair) >= 2 else None
+
+
+def _compare_notes(first: dict, second: dict, runs: bool = False) -> Reply:
+    a, b = dict(lines(first, runs)), dict(lines(second, runs))
     names = (composer_frame.note_title(first), composer_frame.note_title(second))
     rows = [_row(label, a, b, names) for label in dict.fromkeys([*a, *b])]
     differ, same = [r for r, d in rows if d], [r for r, d in rows if not d]
@@ -177,6 +213,9 @@ def answer(ctx: Ctx) -> Reply | None:
     total = _TOTAL.match(text) or _TOTAL_HOW.match(text)
     if total:
         return _total(ctx, total.group("t"))
+    versus = _VERSUS.match(text)
+    if versus and (said := _versus(ctx, versus)):
+        return said
     differ = _DIFFER.match(text)
     if differ:
         return _compare(ctx, differ.group("t") or differ.group("c") or differ.group("d") or "")

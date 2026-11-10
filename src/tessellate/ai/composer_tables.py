@@ -1580,7 +1580,7 @@ for _kind, _lines in {
 # or the person's own words; `tests/test_insights.py` holds the slots to it.
 
 INSIGHT_TEMPLATES: dict[str, str] = {
-    "recurrence": "You have written about {subject} {count} times since {since}{after}; {hedge}.",
+    "recurrence": "{subject} has come up {count} times since {since}{after}; {hedge}.",
     "streak": "You have written about {subject} {weeks} weeks running.",
     "drift": "Since {since}, no later note picks up this plan: {plan}. It may still be open.",
     "contrast": "On {first} you wrote {before}; on {last}, {after_said}. You may have changed your mind.",

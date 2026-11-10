@@ -32,7 +32,7 @@ _NIGHTS = re.compile(r"\bhow many (?P<unit>nights|days)\b.*\b(?:total|altogether
 _FIRST = re.compile(r"\bwhich (?:one )?(?:comes|is|was|are|come) (?:first|next|sooner|earlier)\b|\bwhat comes first\b")
 _BETWEEN = re.compile(r"\bhow (?:many days|long) (?:are there |is it )?between (?:them|the two|those|these)\b")
 _UNTIL = re.compile(r"\bhow (?:many days|long) (?:until|till|to) (?:then|that|it)\b")
-_BIRTHDAY = re.compile(r"\bwhose birthday is (?:first|next|soonest|coming up|closest)\b")
+_BIRTHDAY = re.compile(r"\bwhose birthday is (?:first|next|soonest|coming up|closest)\b|\bwho has the (?:next|first|soonest|closest) birthday\b|\bwhen is the next birthday\b")
 _SPENT = re.compile(r"\bhow much (?:did i|have i|do i) (?:spend|spent|pay|paid) on (?:the )?(?P<what>[a-z ]{3,24}?)\??$")
 _ABOUT = re.compile(r"^(?:and )?how many (?:notes )?(?:about|mention\w*|on|with) (?:the )?(?P<what>[\w'-]{3,24})\??$")
 _CHAIN = re.compile(
@@ -43,7 +43,9 @@ _CALC_LINE = re.compile(r"^[\d$£€(.][^A-Za-z]*?(?: of [\d,.]+)?[^A-Za-z]* is 
 _LINE = re.compile(r"^\s*[-*]?\s*(?P<label>[A-Za-z][A-Za-z &']*?)\s*[:\-]?\s*[$£€]?(?P<n>\d[\d,]*(?:\.\d+)?)\s*$")
 _RUN = re.compile(r"(?P<day>\d{1,2} [A-Z][a-z]+):\s*(?P<dist>[\d.]+ ?[a-z]{1,5}) in (?P<t>\d{1,2}:\d{2})")
 _STAY = re.compile(r"\b(?P<place>[A-Z][a-z]+) for (?P<n>\d+)(?: nights?)?")
-_BIRTH = re.compile(r"birthday is (?P<d>\d{1,2}) (?P<m>[A-Z][a-z]+)")
+_BIRTH = re.compile(
+    r"(?i:birthday)(?: is|:| on)?(?: on)? (?:(?:the )?(?P<d>\d{1,2})(?:st|nd|rd|th)?(?: of)? (?P<m>[A-Z][a-z]+)|(?P<m2>[A-Z][a-z]+) (?P<d2>\d{1,2})(?:st|nd|rd|th)?\b)"
+)
 _BUDGETISH = re.compile(r"budget|cost|spend|expens|bill", re.I)
 _WORDS = "zero one two three four five six seven eight nine ten eleven twelve".split()
 
@@ -275,19 +277,28 @@ def _dates_answer(question: str, events: list[tuple[str, date]], today: date) ->
     return f"{first[0]} comes first, on {_day(first[1], today)}, {_ahead(first[1], today)}. Then {tail}."
 
 
-def _birthdays(session: Session, today: date) -> str | None:
-    found = []
-    for entry in _all_notes(session):
-        m = _BIRTH.search(entry.content or "")
-        if not m or m.group("m").lower() not in _MONTHS:
-            continue
-        month, day = _MONTHS.index(m.group("m").lower()) + 1, int(m.group("d"))
-        nxt = date(today.year, month, day)
-        found.append((_name_of(entry), nxt if nxt >= today else date(today.year + 1, month, day)))
-    found.sort(key=lambda f: f[1])
-    if len(found) < 2:
+def _birthday_of(entry: Entry, today: date) -> tuple[str, date] | None:
+    """The next time the note's birthday comes round, or None when it names no real day."""
+    m = _BIRTH.search(entry.content or "")
+    month = (m.group("m") or m.group("m2") or "").lower() if m else ""
+    if month not in _MONTHS:
         return None
-    (n1, d1), (n2, d2) = found[0], found[1]
+    month_no, day = _MONTHS.index(month) + 1, int(m.group("d") or m.group("d2"))
+    try:
+        nxt = date(today.year, month_no, day)
+        return _name_of(entry), nxt if nxt >= today else date(today.year + 1, month_no, day)
+    except ValueError:
+        return None
+
+
+def _birthdays(session: Session, today: date) -> str | None:
+    found = sorted(filter(None, (_birthday_of(entry, today) for entry in _all_notes(session))), key=lambda f: f[1])
+    if not found:
+        return None
+    (n1, d1), rest = found[0], found[1:]
+    if not rest:
+        return f"{n1}'s is next, on {_day(d1, today)}, {_ahead(d1, today)}."
+    (n2, d2) = rest[0]
     return f"{n1}'s is first, on {_day(d1, today)}, {_ahead(d1, today)}. {n2}'s follows on {_day(d2, today)}."
 
 

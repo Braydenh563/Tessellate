@@ -433,9 +433,9 @@ def test_the_opening_count_and_the_times_line_agree(notebook, question):
     said, _ = notebook(question)
     words = {"one": 1, "two": 2, "three": 3, "four": 4, "five": 5, "six": 6, "seven": 7, "eight": 8, "nine": 9, "ten": 10}
     opening = re.search(r"\b(?:have|are|is|there are)?\s*(one|two|three|four|five|six|seven|eight|nine|ten) notes? about", said, re.I)
-    times = re.search(r"written about \w+ (\d+) times", said)
+    times = re.search(r"\w+ has come up (\w+) times", said)
     if opening and times:
-        assert words[opening.group(1).lower()] == int(times.group(1)), said
+        assert words[opening.group(1).lower()] == words[times.group(1).lower()], said
 
 
 # INBOX 1495. A Japanese line is never "1 word"; a long line is named by a short form; the head's dot.
