@@ -1087,6 +1087,14 @@ def _with_older(text: str, older: list, result: dict) -> str:
     return "\n\n".join([*kept, line])
 
 
+def _changed_line(req: _StreamRequest, text: str, current: list, result: dict) -> str:
+    """"Has the launch date changed": the answer is whether two notes disagree on the day, ahead of the notes themselves."""
+    from tessellate.ai import supersede
+
+    said = supersede.changed(req.question or "", current, user_now(deps.get_config()).date()) if result.get("grounding") else ""
+    return said or text
+
+
 def _with_lapsed(text: str, current: list, result: dict, req: _StreamRequest) -> str:
     """The answer, and one line when the note it came from says how long it
     holds and that has passed (O11, `supersede.lapsed`)."""
@@ -1413,6 +1421,7 @@ def _composed_events(req: _StreamRequest, prepared: dict, ollama_running: bool) 
             return redirected
     text, asks = _composed_text(req, prepared, result, follow, missed=missed, said_none=said_none)
     text = _with_older(text, _older_dates(req, current, result, older), result)
+    text = _changed_line(req, text, current, result)
     text = _with_words_only(text, prepared, result, req.session)
     text = _with_lapsed(text, current, result, req)
     events: list = [*chat_web.nothing_found_meta(prepared, missed), {"type": "answer", "delta": text}, *(_web_chip(req) if missed else []), *req.tip_events(), *_frame_events(result)]
