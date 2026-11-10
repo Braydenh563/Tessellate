@@ -8861,3 +8861,40 @@ input[type="color"].wb-mixed {
   display: flex;
   gap: var(--space-2);
 }
+
+/* A document's icon and cover (documents-props.js, DOCUMENTS_PLAN gap row 8): a band in the chosen category colour (set from the script as --swatch, the swatch picker's own property) with the icon sitting on its foot, then the buttons that set them; the colour row is the app's swatch picker. */
+.doc-look {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+.doc-cover {
+  position: relative;
+  height: calc(var(--space-8) * 2);
+  border-radius: var(--radius-md);
+  background: linear-gradient(135deg, color-mix(in srgb, var(--swatch) 70%, var(--card)), color-mix(in srgb, var(--swatch) 22%, transparent));
+}
+.doc-cover-none {
+  height: auto;
+  background: none;
+}
+.doc-cover-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-1) var(--space-2);
+  font-size: calc(var(--text-lg) * 2);
+  line-height: 1.1;
+}
+.doc-cover:not(.doc-cover-none) .doc-cover-icon {
+  position: absolute;
+  left: var(--space-3);
+  bottom: calc(var(--space-4) * -1);
+  border-radius: var(--radius-md);
+  background: var(--modal-bg);
+}
+.doc-look-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}

@@ -3295,6 +3295,9 @@ HELP_TOPICS.extend(
                 "roll up",
                 "custom metadata",
                 "find by property",
+                "document cover",
+                "document icon",
+                "page cover",
             ),
             "body": (
                 "A note can carry properties (status: open, owner: Priya), kept "
@@ -3312,7 +3315,8 @@ HELP_TOPICS.extend(
                 "document's properties panel does the same: with type: Meeting "
                 "in its properties, the type's fields it has not written yet "
                 "show as empty rows, and a value you enter is written as one "
-                "line. A lang property such as fr turns the spelling check off for a "
+                "line. Its Add icon and Add cover set an emoji or icon and a colour band, kept as icon: and cover: lines. "
+                "A lang property such as fr turns the spelling check off for a "
                 "document, because only the English list is installed. "
                 "The notes filter asks about them: type:meeting, prop:status=open "
                 '(a value with a space in quotes: prop:status="in progress") '

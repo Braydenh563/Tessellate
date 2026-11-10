@@ -2,9 +2,9 @@
 
 Generated 2026-11-10 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8089, frontend ids 2674, CSS sections 523, backend routes 662, backend modules 9985, test files 2432, tests 20189, plan headings 1000, app scripts 28, boot scripts 37, script files 276.
+Counts: frontend functions 8092, frontend ids 2674, CSS sections 523, backend routes 662, backend modules 9985, test files 2433, tests 20192, plan headings 1000, app scripts 28, boot scripts 37, script files 276.
 
-## Frontend functions (8089)
+## Frontend functions (8092)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -4153,10 +4153,12 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `docPrintMarginBoxes` | frontend/js/documents-print.js:161 |
 | `docPrintSetupRead` | frontend/js/documents-print.js:148 |
 
-### frontend/js/documents-props.js (27)
+### frontend/js/documents-props.js (30)
 
 | Name | File:line |
 |---|---|
+| `docCoverEdits` | frontend/js/documents-props.js:378 |
+| `docCoverLook` | frontend/js/documents-props.js:362 |
 | `docFmNeedsQuote` | frontend/js/documents-props.js:94 |
 | `docFmRaw` | frontend/js/documents-props.js:86 |
 | `docFmSpan` | frontend/js/documents-props.js:64 |
@@ -4171,19 +4173,20 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `docFrontmatterSetListEdits` | frontend/js/documents-props.js:256 |
 | `docFrontmatterStrip` | frontend/js/documents-props.js:332 |
 | `docFrontmatterTypeFields` | frontend/js/documents-props.js:345 |
-| `docInsertProperties` | frontend/js/documents-props.js:705 |
-| `docLoadNoteTypes` | frontend/js/documents-props.js:525 |
-| `docPropsAddRow` | frontend/js/documents-props.js:601 |
-| `docPropsAdder` | frontend/js/documents-props.js:474 |
-| `docPropsChip` | frontend/js/documents-props.js:452 |
-| `docPropsDispatch` | frontend/js/documents-props.js:393 |
-| `docPropsField` | frontend/js/documents-props.js:505 |
-| `docPropsHost` | frontend/js/documents-props.js:414 |
-| `docPropsIconButton` | frontend/js/documents-props.js:435 |
-| `docPropsNow` | frontend/js/documents-props.js:402 |
-| `docPropsShowing` | frontend/js/documents-props.js:406 |
-| `docPropsTypeRows` | frontend/js/documents-props.js:545 |
-| `renderDocProperties` | frontend/js/documents-props.js:652 |
+| `docInsertProperties` | frontend/js/documents-props.js:812 |
+| `docLoadNoteTypes` | frontend/js/documents-props.js:551 |
+| `docPropsAddRow` | frontend/js/documents-props.js:627 |
+| `docPropsAdder` | frontend/js/documents-props.js:500 |
+| `docPropsChip` | frontend/js/documents-props.js:478 |
+| `docPropsDispatch` | frontend/js/documents-props.js:419 |
+| `docPropsField` | frontend/js/documents-props.js:531 |
+| `docPropsHost` | frontend/js/documents-props.js:440 |
+| `docPropsIconButton` | frontend/js/documents-props.js:461 |
+| `docPropsLookRow` | frontend/js/documents-props.js:676 |
+| `docPropsNow` | frontend/js/documents-props.js:428 |
+| `docPropsShowing` | frontend/js/documents-props.js:432 |
+| `docPropsTypeRows` | frontend/js/documents-props.js:571 |
+| `renderDocProperties` | frontend/js/documents-props.js:756 |
 
 ### frontend/js/documents-prose.js (135)
 
@@ -12721,7 +12724,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/inbox-lazy.css | 306 |
 | frontend/css/key-grid-lazy.css | 55 |
 | frontend/css/lan-lazy.css | 131 |
-| frontend/css/library-lazy.css | 8863 |
+| frontend/css/library-lazy.css | 8900 |
 | frontend/css/lightbox-lazy.css | 435 |
 | frontend/css/manual-lazy.css | 168 |
 | frontend/css/math-editor-lazy.css | 169 |
@@ -26047,7 +26050,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (20189)
+## Tests (20192)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -26831,6 +26834,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_doc_comments.py | 4 |
 | tests/test_doc_conflict_banner.py | 8 |
 | tests/test_doc_context_menu.py | 6 |
+| tests/test_doc_cover.py | 3 |
 | tests/test_doc_dictionary_sheet.py | 5 |
 | tests/test_doc_dock.py | 11 |
 | tests/test_doc_edit_kept.py | 7 |

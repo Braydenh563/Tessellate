@@ -353,6 +353,32 @@
     return { type: row.name, fields };
   }
 
+  //: **A document's icon and cover** (DOCUMENTS_PLAN gap row 8, Notion's page
+  //: cover and icon). Two ordinary properties, so the file stays plain text any
+  //: other editor reads: `icon` is an emoji or `ph:name` (a Phosphor icon, from
+  //: the one picker), `cover` is the name of one of the category palette's
+  //: colours (`red` ... `pink`, notes-list.js). Anything else in either key is
+  //: left alone and not drawn, rather than guessed at.
+  function docCoverLook(fm) {
+    const text = (key) => {
+      const entry = docFrontmatterEntry(fm, key);
+      return entry && entry.kind !== "list" ? String(entry.value.text || "").trim() : "";
+    };
+    const icon = text("icon");
+    const cover = text("cover").toLowerCase();
+    const named = /^ph:[a-z0-9-]{1,40}$/.test(icon);
+    return {
+      icon: named ? { kind: "icon", value: icon.slice(3) } : icon && icon.length <= 16 && !/\s/.test(icon) ? { kind: "emoji", value: icon } : null,
+      cover: /^[a-z][a-z-]{1,15}$/.test(cover) ? cover : null,
+    };
+  }
+
+  //: Set one of the two keys, or clear it with `null`, as the smallest edits
+  //: (an empty list when it already reads that way).
+  function docCoverEdits(fm, key, value) {
+    return value == null ? docFrontmatterRemoveEdits(fm, key) : docFrontmatterSetEdits(fm, key, value);
+  }
+
   // DOC-FRONTMATTER-END
 
   // -----------------------------------------------------------------------------
@@ -641,6 +667,84 @@
     host.appendChild(row);
   }
 
+  //: The icon and cover row, at the head of the panel: the cover as a band in
+  //: the chosen colour with the icon on it, and the buttons that set them.
+  //: The colour row is the app's one swatch picker (`swatchPicker`), opened
+  //: and closed by the Cover button; the icon comes from the one icon and
+  //: emoji picker. Every write is one edit through `docPropsDispatch`, so each
+  //: is one Undo step in the document.
+  function docPropsLookRow(host, fm) {
+    const look = docCoverLook(fm);
+    const colour = look.cover && Object.hasOwn(CATEGORY_PALETTE, look.cover) ? CATEGORY_PALETTE[look.cover] : null;
+    const row = document.createElement("div");
+    row.className = "doc-look";
+    const write = (key, value) => {
+      const now = docPropsNow();
+      if (!now) return;
+      docPropsDispatch(docCoverEdits(now, key, value));
+      renderDocProperties(true);
+    };
+    if (colour || look.icon) {
+      const band = document.createElement("div");
+      band.className = colour ? "doc-cover" : "doc-cover doc-cover-none";
+      if (colour) band.style.setProperty("--swatch", colour);
+      if (look.icon) {
+        const mark = document.createElement("span");
+        mark.className = "doc-cover-icon";
+        mark.setAttribute("role", "img");
+        mark.setAttribute("aria-label", "Document icon");
+        if (look.icon.kind === "emoji") mark.textContent = look.icon.value;
+        else {
+          const glyph = document.createElement("i");
+          glyph.className = `ph ph-${look.icon.value}`;
+          mark.append(glyph);
+        }
+        band.append(mark);
+      }
+      row.append(band);
+    }
+    const bar = document.createElement("div");
+    bar.className = "doc-look-bar";
+    const button = (text, run) => {
+      const b = document.createElement("button");
+      b.type = "button";
+      b.className = "ghost small";
+      b.textContent = text;
+      b.addEventListener("click", run);
+      bar.append(b);
+      return b;
+    };
+    const iconButton = button(look.icon ? "Change icon" : "Add icon", () => {
+      pickIconOrEmoji({
+        anchor: iconButton,
+        title: "Document icon",
+        onPick: ({ kind, value }) => write("icon", kind === "icon" ? `ph:${value}` : value),
+      });
+    });
+    if (look.icon) button("Remove icon", () => write("icon", null));
+    const coverButton = button(look.cover ? "Change cover" : "Add cover", async () => {
+      const open = row.querySelector(".doc-look-colours");
+      if (open) {
+        open.remove();
+        return;
+      }
+      await ensureModule("categories");
+      const holder = document.createElement("div");
+      holder.className = "doc-look-colours";
+      holder.append(swatchPicker({
+        label: "Cover colour",
+        value: look.cover,
+        none: "No cover",
+        onChange: () => {},
+        onChoose: (key) => write("cover", key),
+      }));
+      row.append(holder);
+    });
+    coverButton.setAttribute("aria-haspopup", "true");
+    row.prepend(bar);
+    host.append(row);
+  }
+
   //: Draw the panel from the document. Called on every document change, so it
   //: does as little as it can: if the frontmatter's own text has not moved, the
   //: panel already says the right thing and nothing is rebuilt.
@@ -669,7 +773,10 @@
     if (holdsFocus && !force) return;
 
     host.replaceChildren();
+    docPropsLookRow(host, fm);
     for (const entry of fm.entries) {
+      //: The look row owns these two keys: a second, plain text field for each would be two ways to say one thing.
+      if (entry.key === "icon" || entry.key === "cover") continue;
       const row = document.createElement("div");
       row.className = "doc-prop-row";
       const key = document.createElement("span");
