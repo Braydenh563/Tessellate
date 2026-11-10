@@ -1,5 +1,378 @@
 # OPEN: everything still open from the agent files, in one place
 
+## Work order (2026-11-09)
+
+One ranked, deduplicated order of everything open before the BACKLOG, to be followed across the next sessions. Built from the 2026-11-09 bookkeeping: [book1](book1-1109.md) (audits 1028 to 1031; "open" there means no fix record found, so those rows start with a verify step), [book2](book2-1109.md), [book3](book3-1109.md), [book4](book4-1109.md), [book5](book5-1109.md), [book6](book6-1109.md), [bt-compcomp](bt-compcomp-1109.md), [c13](c13-1109.md), [sec](sec-1109.md), [zoom4](zoom4-1109.md), [cispeed](cispeed-1109.md), [lag](lag-1109.md) and HANDOVER's 09d to 09f "Now" lines. The detail of every row stays in its source; a row here is one line with its refs.
+
+How to read it:
+- Tiers: A security and data loss; B daily bugs, broken core flows, lag, the companion in the way; C UX and accessibility on daily surfaces; D performance and CI time; E polish; F plan horizon. Within a tier, cheap and high-reach first.
+- A batch is one surface and one file area for one agent (1 to 3 hours). Batches in the same session never share files. Rung: Haiku verify, Sonnet implement, Opus design or ambiguous.
+- Ref keys: `1028-agent E1` and the like are book1 rows (audit file and id); `1107 D1`, `R3-8`, `E9` are the 1107 composer audits (book4 probe marks); `c13#7`, `bt#14` are c13 and bt-compcomp items; `t20#n` is book3's top-20 list; `INBOX n`; `<PLAN>#<section>` are book5 rows; `oa <id>` is owner-asks-audit-1108 (book2).
+- "Verify first": a Haiku scout re-reads the code or drives the app and marks each row true, fixed (sha) or stale before the Sonnet builds; a fixed row is struck here at merge.
+- Every batch: tests first, `bash scripts/gate.sh --staged`, the targeted tests named, `node --check` on JS, a five-line report, its rows struck here and the source file marked.
+
+### Answer these in one sitting
+
+Each has the recommendation already written (standing order 3); a "yes" takes it. Rows a decision blocks wait for it inside their batch, marked "after Qn".
+
+| # | Question | Recommendation | Blocks |
+| --- | --- | --- | --- |
+| Q1 | D25: citations double up (a numbered mark and the "[**Title**]" link) | One style: numbered marks in the text matching Sources (INBOX 299); the title link only in the Sources row | W22 |
+| Q2 | B10: the composer says it is the assistant (tests edited, "owner may revert") | Keep the Atlas-voiced composer as built in composer-r7 | none |
+| Q3 | R9-15: an imperative one-line note ("Call plumber") named plain or in quotes | Plain, as every other title | W10 |
+| Q4 | "Remind you to ..." versus "Shall I remind you ..." | Prose asks "Shall I remind you to X?"; the offer button keeps the pinned label | W9 |
+| Q5 | "new note called Christmas with mum, dad and Sara": title or body | The whole phrase after "called" is the title; the body starts only after "saying", "that says" or a colon | W9 |
+| Q6 | One confirm rule for list adds (Shopping asks, Todo adds) | Every list adds at once with Undo (the Todo rule) | W9 |
+| Q7 | c13: two pinned tests now follow the contiguous-quote rule | Keep the contiguous-quote rule | none |
+| Q8 | "is the dentist tomorrow?" verdict wording | Keep "No, not tomorrow." and write the date long ("Thursday 12 November, 9:30") | W8 |
+| Q9 | 42: `?preview=300` adoption waits on server-side note search | Build server-side note search first, then switch the list | W25 |
+| Q10 | 55: stop Atlas's rAF loops after 2 s with no input | Stop them only while the companion is not walking; lag-watch sampler on a 1 s timer | W14 |
+| Q11 | P7: the Ollama probe adds 2.1 s to composed answers | Keep decision 75's probe; cache its result 30 s, dropped on a failure | W16 |
+| Q12 | test_companion_weights tolerance (2.0, 2.5, 3.6) | Freeze at 3.6, never raise; ratchet down as desk parity lands | W31 |
+| Q13 | "Enter vs Tab" and "Wide note measure" (named in 09d, no text found) | Keep current behaviour; the W34 scout finds the source line, then a row or a close | none |
+| Q14 | 1720: diagram blocks list folded on first open | Fold on New diagram only; existing diagrams keep their fold | W17 |
+| Q15 | 1712: window width and surface where Chat Sources rows run wide | Owner supplies them | P1 |
+| Q16 | 1598: companion over the top bar | Owner supplies the window size or a short recording | P2 |
+| Q17 | 1719 (c): examples of the remaining composer "response issues" | Owner supplies them; then one deep-audit round | P3 |
+| Q18 | sec: `/media/{id}` bytes route answers 403, the new routes 409 | Unify on 409 "Unlock first." | W3 |
+| Q19 | The "You asked: ..." line above the Ask answer | Keep it removed (INBOX 1301, pinned by test_composer_form_1301) | W22 |
+| Q20 | complexity.yml runs ruff with `--exit-zero` | Drop `--exit-zero` behind a baseline that only ratchets down | W24 |
+| Q21 | U41: the map-created toast is three lines and pinned | One line (order 6); change test_wb_dog1_fixb with that reason | W19 |
+| Q22 | Key storage, MCP auth, tool signing (B40, B33, B24, D46, K26, K11, K13, E43) | OS keyring when present, a 0600 file otherwise; one token per MCP server; tool signing to BACKLOG | W5 |
+| Q23 | E33: Guide answers lead with the path | Yes: the path first, then one sentence | W22 |
+| Q24 | "last week": seven days (search) or Monday to Sunday (recognise) | Monday to Sunday of the previous week everywhere; "past week" and "last 7 days" are the rolling window | W8 |
+| Q25 | `before:tuesday`: which side of the day | Excludes Tuesday, as mail search does | W11 |
+| Q26 | R7: diagram page head | Hide the file chrome; Export in the head | W18 |
+| Q27 | 1233: RapidOCR as an optional extra against "fully local, vendored" | Optional extra, off by default, installed from Settings, Packages; runs offline once installed | F5 |
+| Q28 | 1255: speaker labels on transcripts | Only once diarisation exists; to BACKLOG | none |
+| Q29 | Filing top-1 0.417 without a model against the 0.8 bar | Everyday vocabulary supplement beside the pack, the owner reviews the words (OPEN.md, filing-1010) | F5 |
+| Q30 | 1695: private-by-default notes | A Settings switch, off by default | F6 |
+| Q31 | GRAPH tessellation view | Mock three variants; the owner picks one | F7 |
+| Q32 | Owner's look: TIMELINE 561 day strip, decision 13 spans, UI 11 item 11 screenshot set | Keep parked until the owner looks | F7 |
+| Q33 | CHAT 413 chat stutter | Close unless it returns on the owner's next run | none |
+| Q34 | Owner go: sync (B6), offline studio, audio, desktop pet outside the window, custom domain, blind panel (decision 40), Fable on the diagram (1679) | Hold until the owner says go; Fable only when named for that task | F8 |
+
+Not a question: the CI test timeout is not raised (HANDOVER 09d, "never raise the cap"); the jobs get faster instead (W24).
+
+Parked until the owner's data or a check on real hardware:
+- P1 Chat Sources rows extend to the right | INBOX 1712, uifix L3
+- P2 Companion carried over the top bar by Ask scroll | INBOX 1598, oa 1598
+- P3 Composer "response issues" round | INBOX 1719 (c)
+- P4 Win+arrow snap resets the window; tray icon after X; companion over Wallpaper Engine | INBOX 1671, oa 1620 tray
+- P5 The 15 s /chat/followups log; graph `gcRequestDraw` 55 calls a second | oa 1691 b, lag L12
+- P6 Desk overlay O5 on Windows; every desk motion unverified on real Windows | INBOX 1645, 1683, travel L6
+
+### Tier A: security and data loss
+
+**W0 Diagram builder opens and closes in 10 to 15 s** (B, diagram, in progress: agent `dglag-1109`). Item 0, the owner hit it 2026-11-09; merge and gate it first in Session 1.
+
+**W1 Chat turns that corrupt the chat or keep running** (A, chat, Opus; verify first). Files: `frontend/js/chat*.js`, `chat-turn.js`, `api/routes_chat.py`, `api/routes_ask_history.py`. Checks: `tests/test_chat_*`, a Playwright regenerate and stop run. Done when: regenerate and edit never repeat an act or a write, Stop ends the server stream, every stopped answer ends with a done line.
+- A1 Regenerate from a non-last answer corrupts the saved chat | 1028-agent E1
+- A2 Regenerate and Edit-and-resend re-run composer acts and agent writes (two notes) | 1028-agent E2
+- A3 Browser Stop does not stop generation server-side; a stopped answer has no done line | 1028-agent E3, t20#9
+- A4 A pasted lecture over 20,000 characters returns 422 with the wrong message | 1028-agent E8
+- A5 An Ask stored turn recounts support with the model counter | chatfoot L6
+
+**W2 Outside text reaching write tools; the speller rewriting the person's words** (A, agent and acts, Opus; verify first). Files: `ai/agent.py`, the taint and confirm path, the speller module. Checks: `tests/test_agent_*`, `tests/test_composer_grammar.py`. Done when: every write from a tainted turn confirms, and a word inside an act's payload is never respelled.
+- A6 Library files, imports and pasted mail reach the model untainted, so writes run unconfirmed | 1028-agent E4, E42
+- A7 The speller respells the person's words before acts ("uni", "oat milk" to "At milk") | 1028-agent E9, 1029-composer C40
+- A8 "delete all notes about gym" quietly becomes one note | 1028-agent E66
+
+**W3 Vault, lock and private notes** (A, shell and server, Sonnet; verify first). Files: `frontend/js/lock*.js`, `api/routes_graph.py`, tags and links routes, the search index. Checks: `tests/test_vault_*`, a locked-vault sweep. Done when: nothing of a private note (preview, tags, counts, link chip) leaves while locked, and the lock dialog takes focus.
+- A9 The graph carries decrypted previews of private notes | 1029-harness H15
+- A10 While locked, a private note's tags, word count and presence show in the list, graph and /tags | 1029-notes N21
+- A11 Links to a private note are accepted by API while locked; the [[ picker and link mode disagree | 1031-notes N23, N40
+- A12 Export while locked answers 200 with the placeholder as content | 1029-notes N12
+- A13 With the vault open, a private note is never searchable | 1031-notes N3
+- A14 Lock screen: focus not on the field, no dialog semantics, no throttle hint, focus dropped after errors | 1028-shell S4, S25, 1029-extras X23
+- A15 Sign-in off never driven (persistent profile, second LAN device, restored preferences) | t20#17
+- A16 `/media` 403 and 409 unified (after Q18) | sec L14
+
+**W4 Documents that lose words** (A, documents, Sonnet; verify first). Files: `frontend/js/documents.js` save and lock paths. Checks: `tests/test_doc*`, a slow-PUT Playwright run. Done when: no typing during a save is lost, an offline first save says "Not saved" and keeps a draft, locking clears every word from the page.
+- A17 Autosave has no in-flight guard; a slow PUT plus typing sends a stale hash | 1028-docs D1
+- A18 The save reply marks clean and forgets the local edit even when typing continued | 1028-docs D2
+- A19 A new document by typing has no catch: offline or 500 is silent | 1028-docs D3, D36
+- A20 Failed-save retry and a crash draft | DOCUMENTS#24 row 6
+- A21 Locking leaves the document's words on the page; the AI panel sits over the lock | 1031-docs DC1, DC2
+
+**W5 Server integrity** (A, backend, Sonnet; verify first). Files: `api/routes_entries.py`, `api/security.py`, `routes_auth.py`, board and backup routes, `core/db`. Checks: `tests/test_routes_*`, `tests/test_auth*`, a 24-parallel-POST test. Done when: a burst of creates all land, binned notes refuse writes, tokens and throttle are thread safe.
+- A22 24 parallel note creations: 5 answer 500 after 30 s (pool timeout) | 1031-backend BK1
+- A23 A note in the bin can be edited by PUT | 1031-backend BK2
+- A24 A binned note comes back in default search; opening it says "No such note." | 1029-notes N3
+- A25 Session token store has no lock; the login throttle is check-then-act | 1028-backend K2, K3, K23, 1031-backend BK7
+- A26 Board x and y are unbounded; one far object breaks the board | 1031-board BD1
+- A27 Backups DELETE with a traversal and inconsistent id shapes | 1031-backend BK9
+- A28 `safeHref` lets `java\tscript:` through | 1028-docs D14
+- A29 No pre-Brief-7 database was ever upgraded for real | t20#18
+- A30 Deleting a space still purges in one path | 1029-extras X5, 1031-extras Z20
+- A31 Key storage and MCP auth (after Q22) | a30i-1102 B40, B33, B24, D46, K26, K11, K13, E43
+
+**W6 Recordings and swallowed deletes** (A, voice notes, Sonnet; verify first). Files: `frontend/js/meetings.js`, `media.js`, the board delete handlers. Checks: `tests/test_meeting*`, a Playwright record and reload run. Done when: no audio is dropped on pause, close warns while recording, typing a title never starts the mic.
+- A32 The voice dialog opens on Record: a typed space starts the mic, other keys fire shortcuts | 1029-extras X1
+- A33 Closing or reloading during a recording gives no warning | 1029-extras X2
+- A34 Up to 10 s of audio lost on pause (no requestData) | 1029-extras X3
+- A35 A failed Discard is swallowed and the dialog closes | 1031-extras Z12
+- A36 Board delete failures swallowed; undo pushed before the DELETE | 1028-board B8, B40
+
+### Tier B: daily bugs, core flows, lag, the companion in the way
+
+**W7 Composer: which note leads and what it is called** (B, composer, Sonnet high). Files: `ai/composer_body.py`, `composer_names.py`, `composer_frame.py`, `composer_likeness.py`. Checks: `tests/test_composer*` on the r5 and r9 seeds (`tests/_r5_1108.py`, `tests/_seed_r9_1109.py`), the book4 probe. Done when: each row's probe answers right and its sibling phrasings pass (fix the class, INBOX 1357).
+- B1 The defining note does not lead ("tl;dr Lisbon", "summarise Lisbon", pronoun body) | 1107 D1, R3-20, 1029-composer C19, 1031-composer C1, C4
+- B2 Number and property questions answered without the number (squat 80 kg, passport) | 1107 D7, R3-2, R3-28, E12, 1029-composer C21, 1031-composer C16
+- B3 Title-less notes get many names; "who is Marcus" omits the bare Marcus Lee note | 1107 D11, R3-15, 1029-composer C8, c13#10
+- B4 A pronoun-led line quoted without the person ("He fixes the boiler") | 1107 D12, R3-25
+- B5 A lower-case pair ("anna and josé", "tom and sara") pooled as one subject | E10, composer-r6 L23, composer-r8 L13
+- B6 Likeness: "cat" matches fish, "boiler" the radiator note | R9-11, c12 L6
+- B7 "latest on sourdough" leads the wrong note; "what do I need to read" names by date and says "Three three" | R9-3, R3-22, book4 new
+- B8 "compare Priya and Marcus" says nothing mentions Marcus (`_sides_own`) | c13#2
+- B9 One-note notebook and `as_of` (time travel) answers | R3-31, R3-32
+- B10 A name matches inside another word; a plural subject is required verbatim | 1029-composer C16, 1031-composer C8
+
+**W8 Composer: dates, events and footers** (B, composer, Sonnet high). Files: `ai/composer_ahead.py`, `factgraph.py`, `composer_unfound.py`, `recognise.py`, `api/chat_web.py`. Checks: as W7, fixed clock. Done when: as W7.
+- B11 "written today" and "as your X note has it" bolted on every answer | 1107 D13, R3-34
+- B12 Footers name question words the answer did not need ("new", "valid", "schedule", "coffee") | 1107 D16, R3-29, 1030-composer Z16, bt#11, bt#16
+- B13 "Sources: 10 notes" under an unfound answer | c13#12
+- B14 Recurring schedules not placed on their days; "anything on Wednesday" lists notes | 1107 D17, D24, R3-8
+- B15 Event questions answered from the creation log ("what happened on 25 October") | 1107 D18, E16
+- B16 "Heads up: I could not find 4" (a date read as a figure) | book4 new (D14 grounding)
+- B17 "last week" and "in October" lists: capitals and doubled heads (after Q24) | E18
+- B18 Chat and Ask carry no locale, so "3/4" reads day first | t20#8
+- B19 Holiday or month word read as a date window; past dates read as next; "next two weeks", "overdue" | 1031-composer C3, C9, 1029-composer C24, C25, C26
+- B20 Verdict date written long (after Q8) | c13 owner question
+
+**W9 Composer: follow-ons, chips and acts** (B, composer, Sonnet high). Files: `ai/composer_follow.py`, `composer_dialogue.py`, `commands.py`, the chips builder. Checks: as W7. Done when: as W7.
+- B21 A follow-on loses its subject ("and the other one?", "who wrote it", "and the dentist"; Ask sends no objects) | R9-9, c13#7, E25, 1107 D6, 1031-composer C12, 1029-composer C44
+- B22 Chips built from leftover words ("about the sara?", "about project?") | 1107 D19, R3-36, 1031-composer C47, bt#17, c13#15-18
+- B23 Offers nothing answers ("yes" after an offer) | 1107 D10
+- B24 Four confirm wordings; typed "undo" alone gives the keys | 1107 D23, E7
+- B25 "call anna" in lower case; "make a checklist for my trip" | composer-r8 L12, L14
+- B26 Remind wording, "called X with Y", one list-add rule (after Q4, Q5, Q6) | c12 L13, L14, L15
+- B27 Agent mode with no model answers the whole sentence ("find notes simlar to my dentist one yk") | t20#14
+- B28 "show the note about golf" answers the tag chart | 1031-notes N32
+- B29 No tasks: "add a task to read chapter 5 tomorrow" and the "tick off" forms | 1028-agent E10
+
+**W10 Composer: compare, summary and lists** (B, composer, Sonnet high; not beside W7). Files: `ai/composer_digest.py`, `composer_lists.py`, `composer_each.py`. Checks: as W7. Done when: as W7.
+- B30 Compare and summary shapes ("one mentions X and one mentions Y"; recipe summary is the ingredients only; summary drops "Work starts 16 November") | 1107 D20, E9, bt#14, R9-17
+- B31 Dead ends where the notebook can answer (checklists, favourites, tables, done items) | 1107 D22, E19, E21
+- B32 List rows end "· Uncategorised" in the answer text | E24
+- B33 A proper noun lowercased in a quoted line ("orchard"); first-letter capitals lost | c13#13, 1029-composer C1
+- B34 The joke note leads by its quote, not its name | composer-r7 L7, composer-r8 L16
+- B35 Key-value notes ("Rent 650.") dropped as fragments | 1028-agent E5
+- B36 One-liner naming (after Q3) | c12 L16
+
+**W11 Notes core** (B, notes, Sonnet; verify first). Files: `frontend/js/notes-list.js`, `navigation.js`, `search/query.py`, the export route. Checks: `tests/test_notes_*`, `tests/test_search_*`. Done when: jump-to-note opens any note, flag filters answer right, export works for any title.
+- B37 Jump-to-note does nothing past the first 60 rendered rows | 1028-shell S1
+- B38 `is:pinned` and every flag filter answer wrongly; unknown values match nothing silently | 1029-notes N2, N16
+- B39 A short title "mentions" most of the notebook | 1029-notes N1
+- B40 Download .md is a 500 for a non-Latin title | 1031-notes N31
+- B41 The server accepts whitespace-only notes | 1029-notes N6
+- B42 `before:` excludes its day (after Q25) | OPEN 456
+
+**W12 Navigation and overlays** (B, shell, Sonnet). Files: `frontend/js/navigation.js`, `settings.js`, notices. Checks: `tests/test_navigation*`, a Playwright Back and Forward run. Done when: Back closes an open overlay first and the hash matches what shows.
+- B43 Browser Back with an overlay open steps the tab history and leaves it open | t20#2
+- B44 Escape on Settings rewrites the hash to the tab beneath | t20#3
+- B45 A notice's `go: {settings, focus}` does not scroll the phone Settings sheet | t20#7
+- B46 The navigation and undo audit table, then its fixes | WORLD_CLASS#8 row 32
+
+**W13 Page lag outside the companion** (B, settings, dashboard, library, Sonnet high; trace first). Files: `settings*.js`, `dashboard.js`, `library*.js`, `api/routes_models.py`. Checks: the lag-1109 probes (`lagprobe.js`, `lagset.js`, `lagboot.js`) at 4x, before and after numbers. Done when: each named handler is under 50 ms at 4x or traced to the browser.
+- B47 Settings open: `/health` continuation 204 ms forced layout; backdrop click 880 ms | lag L7, L8, oa 1620 lag
+- B48 Dashboard card pointerout 312 to 1072 ms; boot first-reader rAF 55 to 121 ms | lag L6, L11, oa 1620 lag
+- B49 Windows lag log lines: icon-picker, settings-wiring keydown, OCR request, web-search start, quick panel flip | INBOX 1716
+- B50 Notes tab-switch pointerup 312 ms; dashboard 266 ms timer | oa 1643 b
+- B51 `/models/status` 3220 ms; stop the 30 s model job | oa 1620 lag: models
+- B52 Library tab click, openDoc, panel-movable, objDragMove on a large notebook | lag L10, oa 1667 f, i, m
+
+**W14 The companion at rest and in the way** (B, in-app companion, Sonnet high; after Q10). Files: `frontend/js/avatars.js`, `atlas*.js`, `lag-watch.js`. Checks: `tests/test_atlas_*`, `tests/test_overlay_idle*`, a 10 s at-rest layout count. Done when: the companion at rest makes under 1 layout a second and typing with it on matches typing with it off.
+- B53 At rest it restyles the page 20 to 27 times a second (a seventh of a core); 130 animations on Chat | audit-1108-perf P1, 1031-perf PF2, 1031-ai AI1
+- B54 Typing with Atlas on makes 3.4x the layouts; chat send keydown 712 ms in `nameMarkBuddyTempo` | audit-1108-perf P5, 1031-perf PF1, oa 1643 c
+- B55 An agent turn spends a second reading animations | 1031-harness HR1
+- B56 The 4.5 s avatars.js timer after opening a note; keep-up reads | oa 1667 l, d, oa 1620 lag: Atlas, INBOX 1716
+- B57 The throw must not scroll the page; no layout reads in a throw frame | oa 1667/1634 a, 1667 b, 1634 c, d
+- B58 On a phone, after a resize, it covers Send; its bubble overflows at 480 and 390 | bt#25, zoom4 found-not-fixed
+- B59 The chat area spasms up and down with the companion on | oa 1693 b1, S18
+- B60 Reset appearance does not clear its motion and entrances prefs | fablecomp Reset appearance
+- B61 Stand-to-hang walks keep the walk class on the way out | appdrag L5
+
+**W15 The desk companion** (B, overlay, Sonnet; real Windows unverified). Files: `src/tessellate/core/overlay/*`, desk windows. Checks: `tests/test_overlay_*` (serially), the 1696 lists. Done when: each list row is built or has a reason.
+- B62 Cut off on the ride, sits 20 px above the taskbar, flicker, nebula flicker | oa 1670 a, f, l
+- B63 Companion does not show: root cause | oa 1638 b
+- B64 The 1696 lists, the falling stutter (a) | INBOX 1696, atlasf1696-1108c, ui1696c-1108c
+- B65 The 1683 travel mix | INBOX 1683, travel L9, L10
+- B66 Desk window scan counts Explorer and Chrome as invisible; perch filter finds almost nothing | INBOX 1716, oa 1667 n
+- B67 Display-paced timer 16.7 ms plus or minus 3; runs properly on Linux | oa 1670 r, u
+
+**W16 Real-model check** (B, chat with a model, Sonnet; needs `scratchpad/llama-dev.sh serve`). Files: tests first, then fixes where they fall. Checks: `pytest -m evals`. Done when: each row reports a measured number or a fixed failure.
+- B68 Model-on parity: composer text as context, not the answer (decision 75) | 1107 D28, P1, fable-fix F6
+- B69 Evals gate: 8 of 8 loose ends, 80 % of skills with no invalid call on a 3B | CHAT#5 Phase 4
+- B70 SKILLS Phase D never ran on a model | t20#19
+- B71 Entity extraction and topic sentence on a local model | GRAPH#KG1-KG9
+- B72 BACKGROUND_MODE (think off) for utility jobs, measured | CHAT 1691, oa 1691
+- B73 The probe cache (after Q11) | deskperf L4, audit-1108-perf P7
+- B74 Tool contracts on Ollama, model bench gates | WORLD_CLASS#8 rows 5, 6, 19, 21
+
+### Tier C: UX and accessibility on daily surfaces
+
+**W17 Diagram builder fixes** (C, diagram, Sonnet; after W0 merges). Files: `frontend/js/diagram-*.js`. Checks: `tests/test_diagram_*`, the dgbt Playwright sweeps at 1440, 667 and 390. Done when: each row fixed or measured not reproduced.
+- C1 Keys typed straight after Add reach the sheet (a stray block, a context menu) | dgbt L19
+- C2 Label under the handles; List footer help one scroll down at 667; backward arrow from a mid drop | dgbt L20, L21, L22
+- C3 The folded shelf button covers a box at 1440; a part added while folded is named | dgmseq L15, dgpic L17
+- C4 "Connect to…" is an icon with no words; the door dialog repeats the page | diagram-fable w3, w12
+- C5 Handles at rest at 3:1 on both themes; a connector selects on a click | diagram-fable m1, oa 1661 f
+- C6 A press on empty canvas and Escape clear the selection; arrow-added nodes never overlap | oa 1661 h, g
+- C7 Name Canvas and Blocks for what they are; kind picker as a labelled Kind menu | oa 1661 i, k, S11
+- C8 Default fold (after Q14); both side panels fold to a rail | INBOX 1720, oa 1661 m, S14
+- C9 Shelf is mouse only; the diagram tray "Open" row; Done silently creating a file; Tab stops | dgml L14, DOCUMENTS#22.4 R9a, R11
+
+**W19 Whiteboard daily UX** (C, boards, Sonnet; verify first). Files: `frontend/js/whiteboard*.js` outside the render path (W30). Checks: `tests/test_wb_*`, `contrast.js` on a board. Done when: ink reads on both themes and every insert works by keyboard.
+- C10 Stored black ink does not remap on dark; white ink on a yellow sticky | 1028-ux U1, U2
+- C11 Insert, Sticky note by keyboard adds nothing and drops focus | 1028-ux U3
+- C12 Ring and chevron buttons under 24 px at zoom; Delete 2 px from Undo | 1028-ux U5, U14
+- C13 Lock shown by hover only; the eraser skips strokes on touch; one key, three meanings | 1028-board B20, B21, B12
+- C14 `contrast.js` never visits a board or a map | WHITEBOARD#Placed 2026-10-05
+- C15 Connector label look controls (size, bold, colour, chip, position) | t20#12, INBOX 819
+- C16 The map-created toast to one line (after Q21) | U41
+
+**W20 Shell accessibility and narrow widths** (C, shell and CSS, Sonnet). Files: `frontend/css/10-responsive.css`, `palette.js` (accessibility only), `index.html`. Checks: `tests/test_zoom_wrap_1717.py`, `scratchpad/ui-sweeps/zoom1717.js` at 600, 480 and 390, axe. Done when: 0 overflows at 390 and axe clean on the palette and the space menu.
+- C17 The palette is not a combobox: no `aria-activedescendant`, results not announced | 1028-shell S5
+- C18 The space menu fails axe (aria-required-children, nested-interactive) | 1029-extras X4
+- C19 Ask button clipped at 390; quiet chips 28.6 px on a phone; selection ticks 44 px | 1028-shell S6, chatfoot L5, UI#11 item 12
+- C20 Notes dock wraps from 1280 to 1500 with the rail open; capture row wrap at 1024; tab bar 600 to 819 | t20#10, WORLD_CLASS#13
+- C21 Settings scrolls sideways at 768; Recent head clipped under 1200 | UI#11 item 12, zoom4
+- C22 1920 by 1080 at 125 to 200 % not driven | zoom4
+- C23 "?" after a Dashboard click hands focus to CodeMirror | row21 L47
+
+**W21 Dashboard, timeline and counts** (C, dashboard, Sonnet; verify first). Files: `dashboard.js`, `timeline*.js`, the import toast, the appearance settings. Checks: `tests/test_dashboard_*`, `tests/test_timeline_*`. Done when: every count is the true total.
+- C24 Dashboard insight counts capped by a fixed limit | 1028-shell S8
+- C25 Timeline header count and "days" plural wrong for 1 and for paged data | 1028-shell S7
+- C26 Import toast gives no skipped or duplicate breakdown | 1028-shell S9
+- C27 A theme change wipes the page background | 1028-shell S10
+- C28 Statistics drops private notes silently; "6 more than last week (0)" | 1029-extras X13
+- C29 One click on the timer chip stops a 25-minute timer with no Undo | 1031-extras Z2
+
+**W22 Chat, Ask and the Guide** (C, Ask and help, Sonnet; not beside W1). Files: `capture-ask.js`, `ask-compose.js`, `ai/help_chat.py`, `ai/help_topics_more.py`. Checks: `tests/test_manual_parity.py`, `tests/test_guide_*`. Done when: each row fixed, help moved with it (order 13).
+- C30 Ask redesign at half width | t20#4, OPEN 22-10 doc
+- C31 Start SearXNG from a button | t20#6
+- C32 One-line summary at the top of every Help topic | oa 1607 e, 1612 b
+- C33 The Guide's no-model answer prints no "I took that to mean" | t20#13
+- C34 Ask history shows glued titles | 1107 D26
+- C35 Citation style (after Q1); path-first Guide answers (after Q23) | 1107 D25, E33
+- C36 "buttons disappeared" after opening Why: not reproduced, one more drive | chatfoot L4
+
+**W23 Documents daily UX** (C, documents, Sonnet; verify first; not beside W4 or W28). Files: `documents*.js` outside the save path. Checks: `tests/test_doc*`. Done when: rows fixed or struck.
+- C37 Spell and autocorrect split non-ASCII words ("café") | 1028-docs D8
+- C38 History previews leak raw markup | audit-1102-docs DX27
+- C39 Link offers have no Settings switch; "Untitled document N" naming | t20#15, t20#16
+- C40 Equation panel jump row and Inline/Display pill | DOCUMENTS 1566
+- C41 The remaining 1028-docs and 1031-docs open rows | book1 (40 and 7 rows)
+
+### Tier D: performance and CI time
+
+**W24 CI time** (D, overlay engine and tests, Sonnet high). Files: `core/overlay/behaviour.py`, `engine.py`, `tests/test_overlay_*`, `.github/workflows/`. Checks: seeded output hashes identical before and after (the cispeed method), `--durations=0` on CI. Done when: the 3.11 and 3.12 jobs finish under 45 minutes.
+- D1 `FlowField.step` closed-form rest for a settled flow; `_next_act_pose_change` 30 samples a wake | cispeed L5
+- D2 The longest overlay tests (rest 81 s, life 69 s) | cispeed L4
+- D3 Slow tests outside the overlay (launcher 20 s, resurface 18 s, search spec 15 s, backup 13 s) | cispeed L6
+- D4 Find the unexplained tail: `--durations=0` on one CI run | HANDOVER 09b
+- D5 `test_complexity.py` over 15 and two lazy import cycles; complexity.yml baseline (after Q20) | fablecomp, OPEN lint debt
+
+**W25 Palette and tab open** (D, shell, Sonnet high; not beside W11 or W20). Files: `palette.js`, `notes-list.js`, `settings*.js`. Checks: long tasks at 4x before and after. Done when: the palette is under 150 ms a keystroke at 4x.
+- D6 The palette blocks on open and on every letter (5.6 s at 4x) | 1031-shell SH1, 1031-perf PF3, UI Palette row 2
+- D7 Opening a tab blocks for seconds at 4x; the notes list at 4x; a phone renders every note | 1031-perf PF5, 1031-notes N4, 1031-shell SH7
+- D8 Settings panes block on open; the pane-by-pane build | 1031-shell SH12, audit-1108-perf P4
+- D9 A composed chat answer mounts 500 to 860 nodes | audit-1108-perf P8
+- D10 `?preview=300` (after Q9) | fitaudit 42
+
+**W26 Graph at scale** (D, graph, Opus). Files: `graph*.js`, `graph-worker.js`. Checks: the 500 and 2,000 note fixtures at 1x and 4x. Done when: a 2,000-note settle is under 5 s with no task over 50 ms.
+- D11 2,000 notes: layout 28 s and main-thread long tasks | 1029-graph G3, 1028-shell S2, GRAPH row 19
+- D12 500 notes at 4x: hover p50 83 ms, wheel 133 ms | 1029-graph G5, GRAPH Rank 36
+- D13 Hover and wheel at rest redraw whole layers; the crossing count is output-bound | graph19 L4, L5
+- D14 Redraw only while something moves; crossings and hub spokes at 40 nodes | UI 1643, oa 1643 a, GRAPH 1306
+
+**W27 Boot weight** (D, boot, Sonnet). Files: `index.html`, `meetings.js` (after W6), `prefs.js`, the boot caps. Checks: `tests/test_static_compression.py`, the boot caps. Done when: each surface is lazy, with its number.
+- D15 index.html 1.1 MB with comment blocks and companion code in the boot path | 1028-shell S3
+- D16 Meeting recorder card, graph options panel and boot CSS lazy | row21 L43, L44, L45
+- D17 Boards list lazy until visible (500-board fixture) | oa 1667 c
+- D18 Recordings: trim decodes the whole file (700 MB an hour); notes cannot embed a recording | t20#11
+
+**W28 Documents typing and split** (D, documents, Opus; not beside W4 or W23). Files: `documents.js`, `docLivePlugin`. Checks: typing latency at 4x on the DX1 document. Done when: key-to-paint p50 under 16 ms on the long document.
+- D19 Typing in a long rich document cannot keep up; 5 layouts a key | audit-1102-docs DX1, audit-1108-perf P9
+- D20 `docHistoryPersist` serialises the undo stack every keystroke | 1028-docs D6
+- D21 Split `docLivePlugin` and `documents.js` by responsibility | DOCUMENTS D23, fitaudit 22
+
+**W29 Structure ratchets** (D, cross-cutting, Opus design then Sonnet). Files: one carve per run, outside the files of the same session's other batches. Checks: `tests/test_global_scope_ratchet.py`, `tests/test_complexity.py`. Done when: each ratchet moves down.
+- D22 IIFE wraps (audit 37a, after iife4) and surfaces (21, 36) | fitaudit 19, 21, 36, 37
+- D23 Routes are the data layer (359 ORM queries in routes) | 1031-architecture AR1
+- D24 One global scope of 10,000 names | 1031-architecture AR2
+- D25 Split `run_agent`; data tables out of code | SESSION_BRIEFS 62, 63
+
+**W30 Whiteboard render cost** (D, boards render, Opus). Files: `whiteboard.js` render path, `whiteboard-map.js`. Checks: frame time on a 500-object board. Done when: one edit re-renders only what changed.
+- D26 Every render rebuilds all map nodes; no dirty set | 1028-board B3, B4
+- D27 Split `whiteboard.js` (26,103 lines) and `whiteboard-map.js` by carve | 1028-board B1, B2, WHITEBOARD#Placed 2026-11-04
+- D28 The composer's topical digests take 0.45 to 0.78 s on 500 notes (W10's files, Session 7) | audit-1108-perf P6
+
+### Tier E: polish
+
+**W31 Companion life** (E, overlay and in-app acts, Opus for the masculine design, Sonnet for acts; not beside W15 or W24). Files: `core/overlay/*`, `atlas*.js`, frames. Checks: `tests/test_companion_catalogue_1108.py`, the weights test (after Q12). Done when: each act is drawn on both sides or listed with a reason.
+- E1 Acts to the desk: meditate, lounge, rest_head; in-app firefly, star pile | compalive, INBOX 1711
+- E2 In-app-only acts that need desk frames (dangle, kick_legs, hang_one_hand) | INBOX 1710
+- E3 The life-1109 ranked list (follow-through, startle settle, micro-saccades, stand-loop drift) | INBOX 1719 (b), life-1109
+- E4 Masculine Atlas: head, eyes, shoulder join, expressions | oa 1607 b, c, d, B16
+- E5 Own activities with props; wind-spirit travel; ambient acts by hour | oa 1692 e, n, d
+- E6 Lower body and nebula follow the pose; landing outcomes; edge squash; portal | oa 1692 e/n, B1, B3, T1, N5, N9
+
+**W32 Backend tidy** (E, backend, Haiku verify then Sonnet). Files: small fixes in `api/`. Checks: targeted route tests.
+- E7 Validation copy leaks field names | 1031-backend BK8
+- E8 A disabled tool refused with the wrong reason; duplicated loopback lists; token sweep per request | 1029-harness H11, 1028-backend K28, K33
+- E9 Real Tesseract and PDFium reads never ran | sec L13, OPEN RapidOCR row
+- E10 The other 1028-backend and 1031-backend open rows | book1 (37 and 12 rows)
+
+**W33 Copy and help** (E, copy, Haiku then Sonnet). Files: help topics, copy strings.
+- E11 "Tools and features" omits 60 palette rows | 1031-extras Z3
+- E12 The tool describes itself in the answer ("Read as the days from today") | 1030-composer Z49
+- E13 "¦" written for "&" in a category; a "conversation" topic on a gym note | oa 1620 categories b, topics c
+- E14 Manual pictures as WebP made by the sweeps | oa 1612 c
+
+**W34 Verify sweeps** (E, docs only, Haiku, stackable outside the four). Each scout marks rows true, fixed or stale in its source and hands true rows to the batch of their surface.
+- E15 book1 audits 1028 (agent, backend, board, docs, shell, ux; 303 rows) | book1
+- E16 book1 audits 1029 to 1031 (362 rows) | book1
+- E17 The OPEN.md ledger, 677 bullets, by section | book3
+- E18 INBOX 904 B01 to B86; the INBOX 1670 and 1694 status lines | book6
+- E19 SESSION_BRIEFS, 21 unmarked (43's duplicate body, 89, 91, 102 first) | book6 section 2
+- E20 Plans' mixed multi-part reports, per part (CHAT 2026-10-10, WORLD_CLASS 399, 421 to 430, MINDMAP 431, WHITEBOARD 1352 to 1355, GRAPH 798, 802) | book5
+- E21 The 1692 and 1683 owner-asks partial rows | book2 owner-asks
+
+### Tier F: plan horizon (before the BACKLOG)
+
+Rows are book5's plan sections; each batch takes its plan's open rows smallest first.
+- **W18 Diagram features** (Sonnet): R12 to R16 (find, curves, two-way arrows, minimap, edge colour, six templates), select and add on the picture, templates and align, typed zoom fields, page head (after Q26) | DOCUMENTS#22.4, oa 1661 a, c, e, l, S13, oa 1694 b2, b3
+- **F1 Documents** (Sonnet): live code blocks, the 2026-10-19 gap rows, `\eqref`, the guided equation editor, VC rows, links L6 | DOCUMENTS (book5)
+- **F2 Whiteboard** (Sonnet): nine Format gaps, save each board's view, colour picker, BPMN and icon sets, draw.io rows | WHITEBOARD (book5)
+- **F3 Mind map** (Sonnet): outline view, branch palette and font, a note node that edits, render pass 13b, XMind gaps | MINDMAP (book5)
+- **F4 Chat** (Opus): composition layer (INBOX 1353), Phase 5 (a) to (g), Foundation F5, "X versus Y" | CHAT (book5)
+- **F5 World class** (Sonnet): durable jobs, margin reader, multi-window, torch at launch, F1 prefs, RapidOCR (after Q27), filing vocabulary (after Q29) | WORLD_CLASS (book5)
+- **F6 UI** (Sonnet): share target, Settings panes indexed, token budget and `!important` to 0, dissolve the 08 and 10 stylesheets, statistics and utilities rows, voice dialog V1 to V8, private-by-default (after Q30) | UI_MODERNISATION (book5), SESSION_BRIEFS 58
+- **F7 Graph and timeline** (Sonnet): `?since=` cursor, tessellation view (after Q31), dot density at 5,000, day strip and spans (after Q32) | GRAPH, TIMELINE (book5)
+- **F8 Owner go** (held): sync, offline studio, audio, desktop pet, custom domain, blind panel, Fable diagram dive (after Q34) | WORLD_CLASS rows 35 to 37, OPEN shell
+
+### Session plan
+
+Cap per session: four agents, at most two Opus; Haiku scouts stack on top. A fresh session per PR (order 8). Each session merges, gates and sweeps its batches in one pass (order 5a), then strikes the rows here.
+
+| Session | Batches (parallel) | Haiku stacked |
+| --- | --- | --- |
+| 1 | W0 merge, then W1 (Opus), W2 (Opus), W3, W4 | E15, E16 (W5 to W11 rows first) |
+| 2 | W5, W6, W7, W12 | E17 |
+| 3 | W8, W11, W13, W14 | E18 |
+| 4 | W9, W15, W16 (model up), W17 | E19 |
+| 5 | W10, W19, W20, W21 | E20 |
+| 6 | W22, W23, W24, W26 (Opus) | E21 |
+| 7 | W25, W27, W28 (Opus), W30 (Opus) | none |
+| 8 | W29 (Opus), W31 (Opus), W32, W33 | none |
+| 9 | W18, F1, F2, F3 | none |
+| 10 | F4 (Opus), F5, F6, F7 | none |
+| 11 to 12 | Rows the scouts found true (E15 to E21), in their surface's batch; then the BACKLOG | none |
+
+Estimate: 12 sessions to the BACKLOG boundary, honestly 11 to 14: the verify sweeps will add rows, and composer batches usually take a second round. F8 waits on Q34 and is not counted.
+
 ## From the 22-10 bug doc (owner, not fixed in 0.6.1)
 
 Composer and Guide
