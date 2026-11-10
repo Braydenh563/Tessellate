@@ -22504,6 +22504,11 @@ function renderWhiteboard() {
     typeof d.data === "string" && !d.data.includes("link-") && /"shape":\s*"(?:draw|highlighter)"/.test(d.data)
       ? `${d.data}|${strokeInk}`
       : null;
+  //: **Every topic's box in one walk before the connectors read them** (W30 D26). The render cleared
+  //: the size cache, so each link end asked `wbMapNodeSize` for its own `querySelector` walk of the
+  //: page: with 500 topics and 300 links that was 7.4 s of 12 renders at 4x CPU (about 600 ms each).
+  //: The index takes one `querySelectorAll` and one batch of reads, as a drag's first frame does.
+  if (wbIsMap() && wbState.sketches?.length) wbIndexMapNodeElements();
   sketchUpdate.each(function(d) {
     const strokeKey = strokePaintKey(d);
     const drawn = this.querySelector(".sketch-path");

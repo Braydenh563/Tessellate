@@ -6650,10 +6650,29 @@ function wbMapCrossLinkLook(parsed) {
   if (!source || !target || !WB_MAP_KINDS.has(source.kind) || !WB_MAP_KINDS.has(target.kind)) return null;
   if (!wbMapCrossLinkMemo) {
     const index = wbMapIndex();
-    wbMapCrossLinkMemo = { index, colors: wbMapNodeColors(index), layout: wbMapLayout() };
+    wbMapCrossLinkMemo = { index, colors: wbMapNodeColors(index), layout: wbMapLayout(), looks: new Map() };
     queueMicrotask(() => { wbMapCrossLinkMemo = null; });
   }
   const { index, colors, layout } = wbMapCrossLinkMemo;
+  //: **Found once per link per pass** (W30 D26). One render asked for the same link's look three times
+  //: (the path, the hand-drawn check, the label), 300 links at 4x CPU were about 640 ms of it. Keyed on
+  //: everything the drawing reads from its two ends, so a node moved between two asks in one task is
+  //: never answered with the old line; a branch laid out as a block (`_bl`) is not kept at all.
+  const sz = (item) => (item._block ? null : wbMapNodeSize(item));
+  const sourceBox = sz(source);
+  const targetBox = sz(target);
+  const kept = !source._bl && !target._bl && target._blTop == null && !source._block && !target._block;
+  const stamp = kept
+    ? `${parsed.type}|${source.id}|${target.id}|${source.x},${source.y},${source.parent_id}|${target.x},${target.y},${target.parent_id}|${sourceBox.w}x${sourceBox.h}|${targetBox.w}x${targetBox.h}|${parsed.bend ? `${parsed.bend.x},${parsed.bend.y}` : ""}|${JSON.stringify(parsed.sourceAnchor || 0)}${JSON.stringify(parsed.targetAnchor || 0)}`
+    : "";
+  const held = stamp ? wbMapCrossLinkMemo.looks.get(stamp) : undefined;
+  if (held !== undefined) return held;
+  const found = wbMapCrossLinkLook.built(parsed, source, target, index, colors, layout);
+  if (stamp) wbMapCrossLinkMemo.looks.set(stamp, found);
+  return found;
+}
+
+wbMapCrossLinkLook.built = function (parsed, source, target, index, colors, layout) {
   //: A leaf has no colour of its own (null in the map): it wears its
   //: branch's, so the nearest coloured ancestor is the one its line has.
   //: A root has none at all, so a link from one takes the target's branch,
@@ -6693,7 +6712,7 @@ function wbMapCrossLinkLook(parsed) {
     colour,
     width: 3 * wbMapEdgeWeight(ghost),
   };
-}
+};
 
 //: Where a drawn line starts and ends, read off its own path: the first
 //: `M x y` and the last pair of numbers, which is the end point in every
