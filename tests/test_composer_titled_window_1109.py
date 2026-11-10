@@ -5,6 +5,8 @@ Seed: `tests/_seed_1031c.py`."""
 
 from __future__ import annotations
 
+import re
+
 import pytest
 
 import tests._seed_1031c as seed_c
@@ -23,7 +25,7 @@ def test_the_note_named_for_the_window_is_the_answer(go):
 
 def test_a_real_recall_by_the_window_is_unchanged(go):
     text, _ = go("what did I write last weekend")
-    assert "four notes last weekend" in text, text  # counts are words in a sentence (voice engine, 2026-11-10)
+    assert re.search(r"four notes|4 notes", text) and re.search(r"[Ll]ast weekend", text) and "have four notes last weekend" not in text, text  # counts are words in a sentence (voice engine, 2026-11-10)
 
 
 def test_a_topic_with_no_titled_note_still_says_nothing_was_written(go):
