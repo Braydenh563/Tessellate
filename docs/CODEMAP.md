@@ -14947,36 +14947,36 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `_ahead` | src/tessellate/ai/composer_figures.py:64 |
-| `_all_notes` | src/tessellate/ai/composer_figures.py:120 |
-| `_amounts` | src/tessellate/ai/composer_figures.py:128 |
-| `_birthdays` | src/tessellate/ai/composer_figures.py:279 |
-| `_budget_answer` | src/tessellate/ai/composer_figures.py:175 |
-| `_budget_compare` | src/tessellate/ai/composer_figures.py:153 |
-| `_budget_total` | src/tessellate/ai/composer_figures.py:170 |
-| `_budgets` | src/tessellate/ai/composer_figures.py:187 |
-| `_chained` | src/tessellate/ai/composer_figures.py:78 |
-| `_cold` | src/tessellate/ai/composer_figures.py:323 |
-| `_count` | src/tessellate/ai/composer_figures.py:56 |
-| `_dates_answer` | src/tessellate/ai/composer_figures.py:264 |
-| `_day` | src/tessellate/ai/composer_figures.py:60 |
-| `_events` | src/tessellate/ai/composer_figures.py:252 |
-| `_frames` | src/tessellate/ai/composer_figures.py:109 |
-| `_from_notes` | src/tessellate/ai/composer_figures.py:316 |
-| `_how_many_about` | src/tessellate/ai/composer_figures.py:299 |
-| `_last_result` | src/tessellate/ai/composer_figures.py:72 |
-| `_name_of` | src/tessellate/ai/composer_figures.py:124 |
-| `_notes` | src/tessellate/ai/composer_figures.py:113 |
-| `_num` | src/tessellate/ai/composer_figures.py:52 |
-| `_runs_answer` | src/tessellate/ai/composer_figures.py:216 |
-| `_seconds` | src/tessellate/ai/composer_figures.py:211 |
-| `_spent` | src/tessellate/ai/composer_figures.py:191 |
-| `_stays_answer` | src/tessellate/ai/composer_figures.py:231 |
-| `_tagged` | src/tessellate/ai/composer_figures.py:295 |
-| `_total_for` | src/tessellate/ai/composer_figures.py:202 |
-| `_total_of` | src/tessellate/ai/composer_figures.py:149 |
-| `_word` | src/tessellate/ai/composer_figures.py:142 |
-| `answer` | src/tessellate/ai/composer_figures.py:337 |
+| `_ahead` | src/tessellate/ai/composer_figures.py:63 |
+| `_all_notes` | src/tessellate/ai/composer_figures.py:119 |
+| `_amounts` | src/tessellate/ai/composer_figures.py:127 |
+| `_birthdays` | src/tessellate/ai/composer_figures.py:278 |
+| `_budget_answer` | src/tessellate/ai/composer_figures.py:174 |
+| `_budget_compare` | src/tessellate/ai/composer_figures.py:152 |
+| `_budget_total` | src/tessellate/ai/composer_figures.py:169 |
+| `_budgets` | src/tessellate/ai/composer_figures.py:186 |
+| `_chained` | src/tessellate/ai/composer_figures.py:77 |
+| `_cold` | src/tessellate/ai/composer_figures.py:322 |
+| `_count` | src/tessellate/ai/composer_figures.py:55 |
+| `_dates_answer` | src/tessellate/ai/composer_figures.py:263 |
+| `_day` | src/tessellate/ai/composer_figures.py:59 |
+| `_events` | src/tessellate/ai/composer_figures.py:251 |
+| `_frames` | src/tessellate/ai/composer_figures.py:108 |
+| `_from_notes` | src/tessellate/ai/composer_figures.py:315 |
+| `_how_many_about` | src/tessellate/ai/composer_figures.py:298 |
+| `_last_result` | src/tessellate/ai/composer_figures.py:71 |
+| `_name_of` | src/tessellate/ai/composer_figures.py:123 |
+| `_notes` | src/tessellate/ai/composer_figures.py:112 |
+| `_num` | src/tessellate/ai/composer_figures.py:51 |
+| `_runs_answer` | src/tessellate/ai/composer_figures.py:215 |
+| `_seconds` | src/tessellate/ai/composer_figures.py:210 |
+| `_spent` | src/tessellate/ai/composer_figures.py:190 |
+| `_stays_answer` | src/tessellate/ai/composer_figures.py:230 |
+| `_tagged` | src/tessellate/ai/composer_figures.py:294 |
+| `_total_for` | src/tessellate/ai/composer_figures.py:201 |
+| `_total_of` | src/tessellate/ai/composer_figures.py:148 |
+| `_word` | src/tessellate/ai/composer_figures.py:141 |
+| `answer` | src/tessellate/ai/composer_figures.py:336 |
 
 ### src/tessellate/ai/composer_follow.py (10)
 

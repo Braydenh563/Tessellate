@@ -23,7 +23,6 @@ from tessellate.core.database import Entry
 FRAME_TURNS = 4
 _MONTHS = "january february march april may june july august september october november december".split()
 
-_LEAD = r"^(?:(?:and|so|ok|okay|then|now) )*(?:(?:what|how much)(?:'s| is)? )?"
 _HIGH = r"higher|highest|bigger|biggest|larger|largest|greater|greatest|more|most|costlier|dearer|longer|longest|faster|fastest|quicker|quickest"
 _LOW = r"lower|lowest|smaller|smallest|less|least|fewer|fewest|cheaper|cheapest|shorter|shortest|slower|slowest"
 _WHICH = re.compile(rf"^(?:(?:and|so|ok) )*(?:which|what)(?: one| is| was| are| were| of them| of the two)*(?: the)? (?P<w>{_HIGH}|{_LOW})\b")
