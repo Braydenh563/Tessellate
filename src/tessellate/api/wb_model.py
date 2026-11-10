@@ -127,6 +127,8 @@ MAP_THEME_FIELDS: dict[str, frozenset | type] = {
     #: mindmap appearance options"). The tidy's two gaps scaled; normal is no
     #: value. The map's, like the font: never resolved onto a topic.
     "spacing": frozenset({"compact", "roomy"}),
+    #: **Rainbow every level** (MINDMAP_PLAN gap 10): each topic claims the next palette colour among its siblings at every depth, not only the first. The map's, never resolved onto a topic.
+    "rainbow": bool,
     #: **The hierarchy preset** (MINDMAP_PLAN.md decision 39): how the centre,
     #: the main branches and everything deeper draw. Classic is the default
     #: and is stored as no value; the frontend holds what each one draws
@@ -160,7 +162,7 @@ MAP_LEVELS = ("0", "1", "2")
 #: one topic: never filled in under a topic's style (`_themed_style`), so an
 #: export never writes them onto a node and a re-import never reads them back
 #: as a topic's own choice.
-MAP_LEVEL_THEME_FIELDS = frozenset({"palette", "font", "hierarchy", "levels", "spacing"})
+MAP_LEVEL_THEME_FIELDS = frozenset({"palette", "font", "hierarchy", "levels", "spacing", "rainbow"})
 
 #: **A stored name for the app's own default, per themed select** (decision
 #: 9's narrow case, built). Every select in the topic strip stores the app's

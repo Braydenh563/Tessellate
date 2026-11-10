@@ -176,16 +176,24 @@ def _branch_children(parents: dict[int, int | None]) -> dict[int | None, list[in
     oldest: dict[int, int] = {}
     for node_id in reversed(walk_order):
         oldest[node_id] = min([node_id, *(oldest[c] for c in children.get(node_id, []) if c in oldest)])
-    for root_id in children.get(None, []):
-        if root_id in children:
-            children[root_id].sort(key=lambda c: oldest.get(c, c))
+    #: Every list, not only a root's: rainbow colours a topic by its place among its siblings at any depth.
+    for siblings in children.values():
+        siblings.sort(key=lambda c: oldest.get(c, c))
     return children
+
+
+def _rainbow_pick(palette: list[str], slot: int, inherited: str | None) -> str:
+    """The `slot`th colour of the palette that is not the parent's, so a child
+    never wears its parent's colour (`wbMapRainbowPick` is the canvas copy)."""
+    choices = [c for c in palette if c != inherited] or palette
+    return choices[slot % len(choices)]
 
 
 def _map_branch_colors(
     parents: dict[int, int | None],
     own: dict[int, str | None],
     palette: list[str] | None = None,
+    rainbow: bool = False,
 ) -> dict[int, str]:
     """Every map node's branch colour, by object id: Coggle's rule, which the
     canvas already follows.
@@ -207,12 +215,12 @@ def _map_branch_colors(
     colors: dict[int, str] = {}
     seen: set[int] = set()
     branch = 0
-    # (id, the colour inherited from above, depth from its root)
-    stack: list[tuple[int, str | None, int]] = [
-        (node_id, None, 0) for node_id in reversed(children.get(None, []))
+    # (id, the colour inherited from above, depth from its root, place among siblings)
+    stack: list[tuple[int, str | None, int, int]] = [
+        (node_id, None, 0, 0) for node_id in reversed(children.get(None, []))
     ]
     while stack:
-        node_id, inherited, depth = stack.pop()
+        node_id, inherited, depth, slot = stack.pop()
         if node_id in seen:
             continue
         seen.add(node_id)
@@ -224,13 +232,15 @@ def _map_branch_colors(
             # generation, a root's own children.
             colour = palette[branch % len(palette)]
             branch += 1
+        if colour is None and rainbow and depth > 1:
+            colour = _rainbow_pick(palette, slot, inherited)
         if colour is None:
             colour = inherited
         if colour:
             colors[node_id] = colour
+        kids = children.get(node_id, [])
         stack.extend(
-            (child_id, colour, depth + 1)
-            for child_id in reversed(children.get(node_id, []))
+            (child_id, colour, depth + 1, slot_of) for slot_of, child_id in reversed(list(enumerate(kids)))
         )
     return colors
 
@@ -653,7 +663,7 @@ def _preview_edges(parent_of: dict, owners: list, kept: list[int], items: list[d
 
 
 def _board_preview(
-    db: Session, board_id: int | None, palette: list[str] | None = None
+    db: Session, board_id: int | None, palette: list[str] | None = None, rainbow: bool = False
 ) -> tuple[list[dict], list[dict], float]:
     """Everything placed on one board, as a thumbnail: `(items, edges, aspect)`.
 
@@ -700,7 +710,7 @@ def _board_preview(
     # canvas is colour-coded by branch. The rule is Coggle's and the canvas
     # already implements it; see `_map_branch_colors`.
     if tree_parents:
-        branch_colors = _map_branch_colors(tree_parents, own_colors, palette)
+        branch_colors = _map_branch_colors(tree_parents, own_colors, palette, rainbow)
         rows = [
             (
                 x,
@@ -798,10 +808,10 @@ def _preview_fields(db: Session, board_id: int | None) -> dict:
     #: The map's palette is in the key (decision 8): picking one changes the
     #: board's settings and no row on it, so a key of the rows alone would
     #: serve the old colours until something else on the board moved.
-    palette_name = (
-        _board_theme(db.get(Entry, board_id)).get("palette") if board_id else None
-    ) or "classic"
-    key = (*_preview_fingerprint(db, board_id), palette_name)
+    theme = _board_theme(db.get(Entry, board_id)) if board_id else {}
+    palette_name = theme.get("palette") or "classic"
+    rainbow = bool(theme.get("rainbow"))
+    key = (*_preview_fingerprint(db, board_id), palette_name, rainbow)
     cached = _PREVIEW_CACHE.get(key)
     if cached is not None:
         PREVIEW_CACHE_STATS["hits"] += 1
@@ -812,7 +822,7 @@ def _preview_fields(db: Session, board_id: int | None) -> dict:
     else:
         PREVIEW_CACHE_STATS["misses"] += 1
         items, edges, aspect = _board_preview(
-            db, board_id, MAP_BRANCH_PALETTES.get(palette_name, MAP_BRANCH_PALETTE)
+            db, board_id, MAP_BRANCH_PALETTES.get(palette_name, MAP_BRANCH_PALETTE), rainbow
         )
         _PREVIEW_CACHE[key] = (items, edges, aspect)
         while len(_PREVIEW_CACHE) > PREVIEW_CACHE_LIMIT:
@@ -881,9 +891,10 @@ def _thumb_writable(db: Session, board_id: int) -> None:
 
 def _current_thumb_fp(db: Session, board_id: int) -> str:
     entry = db.get(Entry, board_id) if board_id > 0 else None
-    palette_name = (_board_theme(entry).get("palette") if entry else None) or "classic"
+    theme = _board_theme(entry)
+    palette_name = theme.get("palette") or "classic"
     scope = board_id if board_id != DEFAULT_BOARD_THUMB_ID else None
-    return _thumb_fp(db, (*_preview_fingerprint(db, scope), palette_name))
+    return _thumb_fp(db, (*_preview_fingerprint(db, scope), palette_name, bool(theme.get("rainbow"))))
 
 
 @router.get("/boards/{board_id}/thumbnail/state")

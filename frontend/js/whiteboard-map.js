@@ -189,7 +189,7 @@ function wbMapThemeDefault(field, node = wbSelectedMapNode()) {
 
 //: The two theme keys that are not a look a topic can take: the preset's name
 //: and the per-level overrides. Never merged onto a topic's data.
-const WB_MAP_THEME_META = new Set(["hierarchy", "levels", "spacing"]);
+const WB_MAP_THEME_META = new Set(["hierarchy", "levels", "spacing", "rainbow"]);
 
 //: The seven fields a level can set (the server's `MAP_LEVEL_FIELDS`). `fill`
 //: here is `solid`, `tint` or `none`: a level's fill, read by the paint pass
@@ -854,6 +854,7 @@ const WB_MAP_THEME_GROUPS = [
       { key: "spacing", label: "Spacing", kind: "select", options: [
         ["", "Normal"], ["compact", "Compact"], ["roomy", "Roomy"],
       ] },
+      { key: "rainbow", label: "Colour every level", kind: "check" },
     ],
   },
   {
@@ -1582,6 +1583,14 @@ function wbMapSubtree(index, id) {
 //: once per node to learn what a single walk already knew.
 function wbMapColors(index) {
   const palette = wbMapPalette();
+  const rainbow = !!wbMapTheme().rainbow;
+  //: **Rainbow every level**: the `slot`th colour of the palette that is not the
+  //: parent's (`_rainbow_pick` in wb_preview.py is the thumbnail's copy).
+  const rainbowPick = (slot, inherited) => {
+    const choices = palette.filter((c) => c !== inherited);
+    const from = choices.length ? choices : palette;
+    return from[slot % from.length];
+  };
   const colors = new Map();
   const seen = new Set();
   let branch = 0;
@@ -1600,24 +1609,25 @@ function wbMapColors(index) {
     oldest.set(node.id, min);
     return min;
   };
-  const walk = (node, inherited) => {
+  const walk = (node, inherited, slot = 0, depth = 0) => {
     if (seen.has(node.id)) return;
     seen.add(node.id);
-    const own = node.data?.color || inherited || null;
+    const picked = !node.data?.color && rainbow && depth > 1 && palette.length ? rainbowPick(slot, inherited) : null;
+    const own = node.data?.color || picked || inherited || null;
     colors.set(node.id, own);
     //: Creation order, not sibling order: a branch keeps its colour when it
     //: is moved up or down (INBOX 445), and the Library's thumbnail, which
     //: hands out `MAP_BRANCH_PALETTE` by id on the server, keeps agreeing.
     const kids = [...(index.childrenOf.get(node.id) || [])].sort((a, b) => ageOf(a) - ageOf(b) || a.id - b.id);
-    for (const child of kids) {
+    kids.forEach((child, at) => {
       // `inherited == null` is true for exactly one generation, the roots'
       // own children, which *are* the first-level topics. Starting the colours
       // at the root instead would give every branch on the map the same
       // colour, which is the one thing branch colour exists not to do.
       const next = child.data?.color
         || (inherited == null && palette.length ? palette[branch++ % palette.length] : own);
-      walk(child, next);
-    }
+      walk(child, next, at, depth + 1);
+    });
   };
   for (const root of [...index.roots].sort((a, b) => a.id - b.id)) walk(root, null);
   return colors;
