@@ -53,6 +53,7 @@ BOUNDED = {
     "/extras": "the optional installs this app knows about",
     "/graph/match": "ids only, capped at 5,000 matches",
     "/graph/path": "one path between two notes",
+    "/insights/on-this-day": "the first five matches, read as five",
     "/insights/stats": "per category, and categories are few by design",
     "/insights/tag-cloud": "the top sixty tags",
     "/learned/export": "an export, read whole on purpose, capped at 10,000 facts",

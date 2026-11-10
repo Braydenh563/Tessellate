@@ -8,9 +8,11 @@ digest endpoint lives there too, next to that logic.)
 
 from __future__ import annotations
 
+from datetime import timedelta
 
 from tessellate.api import routes_insights
 from tessellate.core import deps
+from tessellate.core.database import Entry, utcnow
 
 
 def _save(client, content, **extra):
@@ -46,6 +48,38 @@ def test_stats_leave_drafts_out_like_the_notes_list(client):
     assert body["total_entries"] == 1
     assert body["categories"] == [{"name": "Alpha", "count": 1}]
     assert body["per_day"][-1] == 1
+
+
+def test_on_this_day_resurfaces_old_notes(client):
+    _save(client, "fresh note")  # today → excluded (too recent)
+    session = deps.get_db().session()
+    try:
+        old = Entry(content="a year ago today", tags="[]")
+        old.created_at = utcnow() - timedelta(days=365)
+        session.add(old)
+        session.commit()
+    finally:
+        session.close()
+
+    matches = client.get("/insights/on-this-day").json()
+    assert [m["content"] for m in matches] == ["a year ago today"]
+
+
+def test_on_this_day_excludes_private_notes(client):
+    """Every other view filters `is_private` before a note reaches the
+    caller; this one didn't, and read `entry.content` straight off the
+    column, ciphertext, for a private note, instead of through
+    `readable_content`."""
+    session = deps.get_db().session()
+    try:
+        old = Entry(content="a year ago today", tags="[]", is_private=True)
+        old.created_at = utcnow() - timedelta(days=365)
+        session.add(old)
+        session.commit()
+    finally:
+        session.close()
+
+    assert client.get("/insights/on-this-day").json() == []
 
 
 # --- greeting --------------------------------------------------------------------
@@ -314,6 +348,7 @@ def test_the_activity_counts_do_not_read_every_note_body(client):
     reads `entries.content` is the regression."""
     from sqlalchemy import event
 
+    from tessellate.core import deps
 
     for i in range(3):
         client.post("/entries", json={"content": f"a note about gardens {i}"})

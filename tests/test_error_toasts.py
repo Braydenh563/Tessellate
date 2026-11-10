@@ -39,7 +39,6 @@ EXPECTED = {
         '"Write something first, then improve it."',
     ],
     'ai-tools.js': [
-        '"Pick an embedding model first, e.g. nomic-embed-text."',
     ],
     'app.js': [
     ],
@@ -136,6 +135,7 @@ EXPECTED = {
         '"Reading is paused in Settings, What it learned."',
     ],
     'settings-controls.js': [
+        '"Pick an embedding model first, e.g. nomic-embed-text."',
         '"No skills found in that file."',
         '"No personas found in that file."',
         '"Restart isn\'t available in this build, close and reopen Tessellate by hand."',
