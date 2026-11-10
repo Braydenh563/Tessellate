@@ -271,7 +271,7 @@ def test_the_folded_tags_chip_keeps_a_24px_target():
     rule = re.search(r"\.note-meta > \.note-meta-more \{([^}]*)\}", css)
     assert rule, ".note-meta-more rule missing"
     assert "min-width: 24px;" in rule.group(1)  # the height is the chip's own 24
-    assert 'chip("+0", "note-meta-more"' in _read("note-cards.js")
+    assert 'chip("+0", "note-meta-more"' in _read("entry-card.js")  # moved by the boot diet (3d1f8627e)
 
 
 def test_an_icon_only_control_is_named_by_aria_label_not_title_alone():
