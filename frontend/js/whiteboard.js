@@ -3745,7 +3745,7 @@ function wbSearchTextFor(kind, item, byId) {
     //: box was ever found (measured, canvasdepth: "SHIP" in a text box, 0).
     try {
       const data = typeof item.data === "string" ? JSON.parse(item.data || "{}") : item.data || {};
-      //: A map topic's note (`data.note`, the text behind the topic) is searched too (MINDMAP gap 13, OPEN F3); Replace all leaves it alone.
+      //: A map topic's note (`data.note`, the text behind the topic) is searched too (MINDMAP gap 13, OPEN F3);.
       const note = typeof data.note === "string" ? `\n${data.note}` : "";
       return `${data.content || ""}${wbCellsText(data.cells)}${wbPropsText(data.props)}${note}`.toLowerCase();
     } catch {
@@ -3849,9 +3849,10 @@ function wbReplaceInProps(props, find, to, opts = {}) {
 }
 
 //: A Replace all hit written into its item in memory (the caller saves the lot).
-function wbReplaceWrite(kind, item, { text, values, grid }) {
+function wbReplaceWrite(kind, item, { text, values, grid, note }) {
   const props = values.count ? { props: values.props } : {};
-  if (kind === "object") item.data = { ...item.data, content: text.text, ...props, ...(grid.count ? { cells: grid.cells } : {}) };
+  const noted = note?.count ? { note: note.text } : {};
+  if (kind === "object") item.data = { ...item.data, content: text.text, ...props, ...noted, ...(grid.count ? { cells: grid.cells } : {}) };
   else wbSketchSetProps(item, { label: text.text, ...props });
 }
 
@@ -3883,10 +3884,12 @@ async function wbBoardReplaceAll(find, to) {
       const text = typeof field === "string" ? wbReplaceText(field, needle, to, wbBoardSearch) : { text: field, count: 0 };
       const values = wbReplaceInProps(own?.props, needle, to, wbBoardSearch);
       const grid = kind === "object" ? wbReplaceInCells(own?.cells, needle, to, wbBoardSearch) : { cells: undefined, count: 0 };
-      const done = { count: text.count + values.count + grid.count };
+      //: A map topic's note (`data.note`) is searched, so it is rewritten too (undo already holds the whole payload).
+      const note = kind === "object" && typeof own?.note === "string" ? wbReplaceText(own.note, needle, to, wbBoardSearch) : { text: "", count: 0 };
+      const done = { count: text.count + values.count + grid.count + note.count };
       if (!done.count) continue;
       undo.push({ action: "move", kind, id: item.id, before: WB_KIND_INFO[kind].payload(item) });
-      wbReplaceWrite(kind, item, { text, values, grid });
+      wbReplaceWrite(kind, item, { text, values, grid, note });
       rows.push({ kind, item });
       changes += done.count;
     }
