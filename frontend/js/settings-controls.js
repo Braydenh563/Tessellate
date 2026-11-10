@@ -725,7 +725,7 @@ $("account-make-all-private").addEventListener("click", async () => {
     if (result.ids?.length) offerUndo("Make all notes private", `${nounCount(result.sealed, "note")} made private.`, () => setAll(false), () => setAll(true));
   } catch (err) {
     status.classList.add("error");
-    status.textContent = err.message || "Could not make the notes private.";
+    status.textContent = err.message || "Couldn't make the notes private.";
   }
 });
 

@@ -58,7 +58,7 @@ function featureCatalog() {
       { name: "Attach to a message", desc: "Point a message at notes, documents, files, images or a map you already have.", reveal: "chat-attach" },
       { name: "Saved conversations", desc: "Every chat is kept, searchable, and can be picked up later.", reveal: "chat-conversations" },
       { name: "Personas", desc: "Change the voice Atlas writes in: its own, Coach, Analyst, or yours.", reveal: "settings:personas" },
-      { name: "Skills", desc: "One-click requests like “Summarise my week”; can act on your notes.", reveal: "settings:skills" },
+      { name: "Run a skill", desc: "One-click requests like “Summarise my week”; can act on your notes.", reveal: "settings:skills" },
       { name: "Agent mode", desc: "Let Atlas use its tools, search your notes, open a page, create, tag, link and organise.", reveal: "chat-agent-mode" },
       // The popup agent has the same capability as Chat's agent mode and is
       // reachable from every tab, which is exactly why it needs a row: a chord
