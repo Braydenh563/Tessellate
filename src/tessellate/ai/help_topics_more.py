@@ -1281,9 +1281,12 @@ MORE_TOPICS: list[dict] = [
             "share it. Moving notes out asks Keep it private (the default) or "
             "Make it ordinary, and a note that was private before it came in "
             "stays private. Turning Private off asks the same. Atlas reads a "
-            "private space only in a chat opened inside it, an export leaves "
-            "it out unless it is unlocked and you ask, and backups keep it "
-            "encrypted."
+            "private space's notes only in a chat opened inside it while it "
+            "is unlocked, and that chat is sealed with them, as are its "
+            "reminders. A link from an ordinary note to one inside shows as A "
+            "private note while it is locked. A locked private space cannot "
+            "be deleted or brought back with Undo. An export leaves it out "
+            "unless it is unlocked and you ask, and backups keep it encrypted."
         ),
         "badge": {"label": "Account & security", "section": "account"},
     },

@@ -256,7 +256,35 @@ def _hide_binned(execute_state):
 _SEALED_COLUMNS: dict[type, tuple[str, ...]] = {}
 
 
-def _sealed_owner_private(session: Session, obj: object) -> bool:
+#: Rows a space owns outright: sealed while their space is private.
+_SPACE_SEALED: tuple[type, ...] = ()
+
+
+#: `session.info` key: the private space ids, read once when a request opens
+#: its session (`deps._seal_private_spaces`); dropped when a space is written.
+PRIVATE_SPACES = "private_spaces"
+
+
+def _private_space_ids(session: Session) -> set[str]:
+    cached = session.info.get(PRIVATE_SPACES)
+    if cached is not None:
+        return set(cached)
+    with session.no_autoflush:
+        return set(session.scalars(select(Space.id).where(Space.is_private.is_(True))))
+
+
+@event.listens_for(Session, "before_flush")
+def _forget_private_spaces(session, flush_context, instances):
+    """A space written in this flush may have changed which are private."""
+    if any(isinstance(obj, Space) for obj in (*session.new, *session.dirty, *session.deleted)):
+        session.info.pop(PRIVATE_SPACES, None)
+
+
+def _sealed_owner_private(session: Session, obj: object, private_spaces: set[str] | None = None) -> bool:
+    if isinstance(obj, _SPACE_SEALED):
+        # Before `_set_workspace` has stamped a new row: the request's space.
+        space = obj.workspace_id or session.info.get("workspace_id") or "default"
+        return space in (_private_space_ids(session) if private_spaces is None else private_spaces)
     if isinstance(obj, Document):
         return bool(obj.is_private)
     if isinstance(obj, (DocumentRevision, DocumentAiEdit)):
@@ -303,8 +331,10 @@ def unseal_row(obj: object) -> None:
 def _seal_private_writes(session, flush_context, instances):
     """Every write to a row whose owner is private goes in encrypted."""
     with session.no_autoflush:
-        for obj in list(session.new) + list(session.dirty):
-            if type(obj) in _SEALED_COLUMNS and _sealed_owner_private(session, obj):
+        rows = [obj for obj in list(session.new) + list(session.dirty) if type(obj) in _SEALED_COLUMNS]
+        private_spaces = _private_space_ids(session) if any(isinstance(obj, _SPACE_SEALED) for obj in rows) else set()
+        for obj in rows:
+            if _sealed_owner_private(session, obj, private_spaces):
                 seal_row(obj)
 
 
@@ -1242,8 +1272,9 @@ class Conversation(Base, WorkspaceMixin):
     __tablename__ = "conversations"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    title: Mapped[str] = mapped_column(String(120))
-    messages: Mapped[str] = mapped_column(Text, default="[]")
+    #: Sealed in a private space (INBOX 1727): a chat opened inside one reads its notes.
+    title: Mapped[str] = mapped_column(SealedTitle(120, locked="Private chat"))
+    messages: Mapped[str] = mapped_column(SealedText(locked="[]"), default="[]")
     # Pinned chats sort above the rest. The list is flat and grows forever,
     # so the thread you keep coming back to sinks under a week of one-offs.
     # (Added by the auto-migrator on existing databases, defaulting to false.)
@@ -1275,8 +1306,8 @@ class AskTurn(Base, WorkspaceMixin):
     __tablename__ = "ask_turns"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    question: Mapped[str] = mapped_column(Text)
-    answer: Mapped[str] = mapped_column(Text)
+    question: Mapped[str] = mapped_column(SealedText(locked="A private question"))
+    answer: Mapped[str] = mapped_column(SealedText())
     raw_result_ids: Mapped[str] = mapped_column(Text, default="[]")
     search_mode: Mapped[str] = mapped_column(String(40), default="")
     when_phrase: Mapped[str] = mapped_column(String(120), default="")
@@ -1392,7 +1423,8 @@ class Reminder(Base, WorkspaceMixin):
     #: a map is an `Entry`, so `entry_id` already covers those; a document is
     #: its own table. At most one of the two is set (`routes_reminders`).
     document_id: Mapped[int | None] = mapped_column(ForeignKey("documents.id"), default=None, index=True)
-    text: Mapped[str] = mapped_column(String(500))
+    #: Sealed in a private space (INBOX 1727); a notification says "A private reminder".
+    text: Mapped[str] = mapped_column(SealedTitle(500, locked="A private reminder"))
     due_at: Mapped[datetime] = mapped_column(DateTime)
     done: Mapped[bool] = mapped_column(Boolean, default=False)
     # Scalar defaults so the additive auto-migrator backfills existing rows.
@@ -2390,8 +2422,12 @@ _SEALED_COLUMNS.update(
         DocumentAiEdit: ("instruction", "selection_excerpt", "before_content", "after_content"),
         WhiteboardSketch: ("data",),
         WhiteboardObject: ("data",),
+        Conversation: ("title", "messages"),
+        AskTurn: ("question", "answer"),
+        Reminder: ("text",),
     }
 )
+_SPACE_SEALED = (Conversation, AskTurn, Reminder)
 
 _logger = logging.getLogger("tessellate.database")
 

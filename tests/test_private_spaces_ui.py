@@ -75,3 +75,31 @@ def test_the_guide_explains_private_spaces():
     topic = next(t for t in help_topics_more.MORE_TOPICS if t["id"] == "private-spaces")
     for words in ("Keep it private", "Make it ordinary", "Move it out of this space to share it", "A private reminder", "PIN"):
         assert words in topic["body"]
+
+
+def test_a_private_reminder_is_announced_by_its_notice():
+    """Round 2: the browser's notification, toast and centre say "A private
+    reminder" (the server's `notice`), never the words."""
+    status = (JS / "status.js").read_text(encoding="utf-8")
+    assert ".map((r) => ({ ...r, ...r.notice }))" in status
+
+
+def test_the_graph_draws_a_sealed_link_end_as_a_muted_dashed_node():
+    canvas = (JS / "graph-canvas.js").read_text(encoding="utf-8")
+    assert "private: [1, 2]" in canvas
+    assert 'node.type === "private") return `${node.preview}\\nIn a locked private space`' in canvas
+    assert 'node.type === "unresolved" || node.type === "private") return gcTokens.muted' in canvas
+
+
+def test_a_locked_backlink_carries_no_sentence():
+    """The server's row for a sealed source is not a "note" row, the only
+    kind whose sentence the Connections sheet borrows."""
+    connections = (JS / "connections.js").read_text(encoding="utf-8")
+    assert 'if (row.kind === "note" && !context.has(row.id))' in connections
+
+
+def test_the_idle_lock_is_noticed_from_an_open_state():
+    """The touch's answer is read against the state the unlock just set."""
+    assert "state.status = { ...(state.status || {}), open: true };" in LAZY
+    assert 'toastAction("Private spaces locked.", "Unlock", unlock)' in LAZY
+    assert "setInterval" not in LAZY

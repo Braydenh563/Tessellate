@@ -141,7 +141,18 @@ def _backlinks(session: Session, entry: Entry) -> dict:
             if not ok:
                 row["why"] = LINK_UNSAFE_WHY
             mentions.append(row)
+    links += _sealed_sources(session, linked_ids)
     return {"name": names[0], "links": links[:BACKLINK_ROWS_MAX], "mentions": mentions[:BACKLINK_ROWS_MAX]}
+
+
+def _sealed_sources(session: Session, linked_ids: set[int]) -> list[dict]:
+    """A source in a locked private space (INBOX 1727): the link is shown, as
+    "A private note" with no sentence; its text is out of this read. Its own
+    kind, so the window lends no sentence to the Connections row it matches."""
+    return [
+        {"kind": "private", "id": source_id, "title": manager.PRIVATE_SPACE_NOTE, "context": "", "locked": True}
+        for source_id in sorted(manager.sealed_stand_ins(session, linked_ids))
+    ]
 
 
 @router.get("/{entry_id}/backlinks")

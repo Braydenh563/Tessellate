@@ -209,7 +209,12 @@ _TURN_ENTITIES = frozenset({"chat", "skill"})
 
 #: INBOX 1727: what the log says about a private board or document, whose
 #: title is as sealed as its text; the payload (a replayable state) goes.
-_PRIVATE_LABELS = {"board": "a private board", "document": "a private document"}
+_PRIVATE_LABELS = {
+    "board": "a private board",
+    "document": "a private document",
+    "reminder": "a private reminder",
+    "conversation": "a private chat",
+}
 
 
 def _private_words(session: Session, entity_type: str, entity_id: int | None, detail, payload):  # noqa: ANN001, ANN202
@@ -220,14 +225,14 @@ def _private_words(session: Session, entity_type: str, entity_id: int | None, de
 
 
 def _owner_private(session: Session, entity_type: str, entity_id: int) -> bool:
-    from tessellate.core.database import Document, Entry, Space
+    from tessellate.core.database import Conversation, Document, Entry, Reminder, Space
 
-    model = Entry if entity_type == "board" else Document
+    model = {"board": Entry, "reminder": Reminder, "conversation": Conversation}.get(entity_type, Document)
     with session.no_autoflush:
         row = session.get(model, entity_id)
         if row is None:
             return False
-        if row.is_private:
+        if getattr(row, "is_private", False):
             return True
         space = session.get(Space, row.workspace_id or session.info.get("workspace_id") or "default")
         return bool(space is not None and space.is_private)

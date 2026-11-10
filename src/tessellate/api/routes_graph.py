@@ -748,6 +748,8 @@ def _payload_key(session: Session, similarity: bool, include_maps: bool, include
         # A private note's label is its text while this request may read it,
         # a placeholder otherwise; a new key reads differently again.
         hashlib.blake2b(vault_key, digest_size=8).hexdigest() if vault_key else None,
+        # Which private spaces this request may not read (INBOX 1727).
+        tuple(sorted(session.info.get("sealed_workspaces") or ())),
     )
 
 
@@ -989,6 +991,23 @@ def _link_edges(session: Session, node_ids: set[int], taken: set[frozenset[int]]
     return edges
 
 
+def _add_sealed_link_nodes(session: Session, nodes: list[dict], edges: list[dict], node_ids: set[int]) -> None:
+    """INBOX 1727: a link from a note here to one in a locked private space
+    draws "A private note" at its far end, with no title, reason or id to
+    open; the note's own node is out of this read."""
+    far = {}
+    for link in relations_repo.columns(session):
+        ends = (link.source_entry_id, link.target_entry_id)
+        if (ends[0] in node_ids) != (ends[1] in node_ids):
+            near, other = ends if ends[0] in node_ids else ends[::-1]
+            far.setdefault(other, set()).add(near)
+    stand_ins = manager.sealed_stand_ins(session, set(far))
+    for other in sorted(stand_ins):
+        key = f"private:{other}"
+        nodes.append({"id": key, "type": "private", "preview": manager.PRIVATE_SPACE_NOTE, "category": "Private"})
+        edges.extend({"source": near, "target": key, "kind": "link"} for near in sorted(far[other]))
+
+
 def _thread_edges(entries: list, node_ids: set[int], taken: set[frozenset[int]]) -> list[dict]:
     edges: list[dict] = []
     for e in entries:
@@ -1121,6 +1140,7 @@ def _build_graph(
         "attachments": include_attachments,
     }
     _add_optional_layers(session, entries, nodes, edges, node_ids, taken, flags)
+    _add_sealed_link_nodes(session, nodes, edges, node_ids)
     #: A type's own colour, so "Note type" paints a Person the colour the
     #: person gave Person rather than the next one in the scheme.
     type_colours = {row.name: row.colour for row in session.scalars(select(NoteType)) if row.colour}

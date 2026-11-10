@@ -376,7 +376,7 @@ const GC_EDGE_STYLES = {
 };
 //: Nodes that are not notes (GRAPH_PLAN 514 adds tags, files and unwritten
 //: [[names]]): never opened in the popup, ringed in their own dash.
-const GC_KIND_DASH = { entity: [3, 2], document: [1, 3], tag: [4, 2], attachment: [1, 3], unresolved: [2, 2] };
+const GC_KIND_DASH = { entity: [3, 2], document: [1, 3], tag: [4, 2], attachment: [1, 3], unresolved: [2, 2], private: [1, 2] };
 function gcIsNote(node) {
   return !node.isGroup && !GC_KIND_DASH[node.type];
 }
@@ -5372,6 +5372,7 @@ function gcTooltip(node, s = gcTab) {
   if (node.type === "tag") return `${node.preview}\nA tag, joined to the notes that carry it`;
   if (node.type === "attachment") return `${node.preview}\nA file on the note it is joined to`;
   if (node.type === "unresolved") return `${node.preview}\nNo note has this name yet. Click to write it`;
+  if (node.type === "private") return `${node.preview}\nIn a locked private space`;
   if (node.type === "board" || node.type === "whiteboard") {
     return `${node.preview}\nA whiteboard, joined to the notes on it`;
   }
@@ -6197,7 +6198,7 @@ async function renderGraphCanvas(s = gcTab) {
   const ruleColour = gcRuleScale(colourMode, data);
   s.topicColour = clusterColour;
   s.colourOf = (node) => {
-    if (node.type === "unresolved") return gcTokens.muted;
+    if (node.type === "unresolved" || node.type === "private") return gcTokens.muted;
     const groupIndex = graphGroupOf.get(node.id);
     if (groupIndex !== undefined && !node.isGroup) return graphGroupColour(groupIndex);
     if (node.isGroup) return colour(node.category);

@@ -20,8 +20,9 @@ from urllib.parse import quote, urlencode
 
 from tessellate.ai import recognise as rec
 from tessellate.core import deps, ics_import, reminder_token
-from tessellate.core.database import Entry, utcnow
+from tessellate.core.database import PRIVATE_SPACES, Entry, utcnow
 from tessellate.core.deps import get_session
+from tessellate.entry import private_space
 from tessellate.entry.manager import extract_title, log_action, plain_label, readable_content
 from tessellate.entry.properties import strip as strip_properties
 from tessellate.repo import content as content_repo
@@ -143,6 +144,18 @@ def _target(session: Session, reminder) -> tuple[str | None, str | None]:
     return "note", title
 
 
+#: A private space's reminder in a notification (INBOX 1727); the desktop
+#: notifier says the same (`reminder_notifier.PRIVATE_REMINDER`).
+PRIVATE_REMINDER = "A private reminder"
+
+
+def _notice(session: Session, reminder) -> dict | None:  # noqa: ANN001
+    private = session.info.get(PRIVATE_SPACES)
+    if private is None:
+        private = private_space.private_space_ids(session)
+    return {"text": PRIVATE_REMINDER, "target_title": None} if reminder.workspace_id in private else None
+
+
 def _to_out(session: Session, reminder) -> dict:
     entry_preview = None
     #: About a private note: the lock screen's list (INBOX 1553) leaves such a reminder out.
@@ -168,6 +181,10 @@ def _to_out(session: Session, reminder) -> dict:
         "entry_id": reminder.entry_id,
         "entry_preview": entry_preview,
         "private": private,
+        #: Laid over the row where it is announced (a notification, the toast,
+        #: the centre): a private space's reminder without its words or what
+        #: it is about (INBOX 1727); null for any other.
+        "notice": _notice(session, reminder),
         "document_id": reminder.document_id,
         "target_kind": target_kind,
         "target_title": target_title,

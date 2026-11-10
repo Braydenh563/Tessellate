@@ -440,30 +440,42 @@ _UNSEALED_PATHS = ("/auth/", "/spaces", "/private-spaces/")
 _AI_PATHS = ("/chat", "/insights", "/questions", "/help/", "/night", "/editor")
 
 
+def _still_sealed(session: Session, request: Request, workspace_id: str | None, private: list[str]) -> list[str]:
+    """Which private spaces stay out of this request's reads."""
+    from tessellate.core import private_turn, spacelock
+
+    # Idle is the person's, not the app's polls: only their own activity
+    # (`/private-spaces/touch`) keeps the private spaces open.
+    if not spacelock.opened(request.headers.get("X-Auth-Token")):
+        return private
+    path = request.url.path
+    if path.startswith(_AI_PATHS):
+        # The AI reads a private space only from a chat opened inside it,
+        # and that turn keeps nothing (`private_turn.route`).
+        if workspace_id in private:
+            session.info[private_turn.IN_PRIVATE_SPACE] = True
+        return [space for space in private if space != workspace_id]
+    # An export leaves them out unless they are open and the person said so.
+    if path.startswith("/export") and request.query_params.get("include_private_spaces") != "1":
+        return private
+    return []
+
+
 def _seal_private_spaces(session: Session, request: Request, workspace_id: str | None) -> None:
     """INBOX 1727: a private space's rows are out of every read of this
     request until its session opened them (`core/spacelock.py`) with the
     vault key loaded. `database._add_workspace_filter` reads the ids; a write
     that names a locked private space is refused here, before it can land a
     row nothing could seal."""
-    from tessellate.core import spacelock, vault
-    from tessellate.core.database import Space
+    from tessellate.core.database import PRIVATE_SPACES, Space
 
     private = [row[0] for row in session.query(Space.id).filter(Space.is_private.is_(True)).all()]
+    # Read once per request: the sealing hook and the reminders' notice reuse it.
+    session.info[PRIVATE_SPACES] = private
     if not private:
         return
-    # Idle is the person's, not the app's polls: only their own activity
-    # (`/private-spaces/touch`) keeps the private spaces open.
-    opened = vault.key() is not None and spacelock.is_open(request.headers.get("X-Auth-Token"), touch=False)
-    # An export leaves them out unless they are open and the person said so.
-    confirmed = request.query_params.get("include_private_spaces") == "1"
-    path = request.url.path
-    if opened and path.startswith(_AI_PATHS):
-        # The AI reads a private space only from a chat opened inside it.
-        private = [space for space in private if space != workspace_id]
-        if not private:
-            return
-    elif opened and (confirmed or not path.startswith("/export")):
+    private = _still_sealed(session, request, workspace_id, private)
+    if not private:
         return
     session.info["sealed_workspaces"] = private
     if (
@@ -556,22 +568,27 @@ def requests_in_flight() -> int:
 def get_session(request: Request = None) -> Iterator[Session]:
     """FastAPI dependency: one session per request, always closed, counted
     while it is held (`_RequestGate`)."""
+    yield from _counted_session(request)
+
+
+def _counted_session(request: Request | None, *, seal: bool = True) -> Iterator[Session]:
     with _gate.request(request):
-        yield from _open_session(request)
+        yield from _open_session(request, seal=seal)
 
 
 @contextmanager
 def brief_session(request: Request | None = None) -> Iterator[Session]:
     """`get_session` for a check that reads and lets go before the handler
-    runs, so a long poll behind it is not counted as in flight."""
-    held = get_session(request)
+    runs, so a long poll behind it is not counted as in flight. It reads the
+    sign-in only, so it skips the private spaces' read (`_seal_private_spaces`)."""
+    held = _counted_session(request, seal=False)
     try:
         yield next(held)
     finally:
         held.close()
 
 
-def _open_session(request: Request | None) -> Iterator[Session]:
+def _open_session(request: Request | None, *, seal: bool = True) -> Iterator[Session]:
     """One session per request, always closed.
 
     The `X-Workspace-ID` header scopes every query, so it must name a space
@@ -598,7 +615,8 @@ def _open_session(request: Request | None) -> Iterator[Session]:
                     .filter(Space.hidden_from_all.is_(True))
                     .all()
                 ]
-        _seal_private_spaces(session, request, workspace_id)
+        if seal:
+            _seal_private_spaces(session, request, workspace_id)
     try:
         yield session
     finally:

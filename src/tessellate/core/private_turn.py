@@ -26,6 +26,10 @@ from contextvars import ContextVar
 
 _private: ContextVar[bool] = ContextVar("tessellate_private_turn", default=False)
 
+#: `session.info` key, set by `deps` for a chat opened inside an open private
+#: space (INBOX 1727): it reads sealed notes, so it is a private turn.
+IN_PRIVATE_SPACE = "chat_in_private_space"
+
 
 def active() -> bool:
     """True while a private chat's turn is running on this context."""
@@ -81,6 +85,9 @@ def route(handler: Callable) -> Callable:
     @functools.wraps(handler)
     def wrapped(*args, **kwargs):  # noqa: ANN002, ANN003, ANN202
         body = kwargs.get("body")
+        session = kwargs.get("session")
+        if body is not None and session is not None and session.info.get(IN_PRIVATE_SPACE):
+            body.private = True
         with scope(bool(getattr(body, "private", False))):
             return handler(*args, **kwargs)
 

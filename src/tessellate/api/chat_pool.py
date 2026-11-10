@@ -414,7 +414,7 @@ def _holds_read_text(content: str) -> bool:
 
 def _note_content(ctx: _NoteCtx, entry) -> str:  # noqa: ANN001
     session, found = ctx.session, ctx.found
-    content = found.as_of_then[entry.id].text if entry.id in found.as_of_then else entry.content
+    content = found.as_of_then[entry.id].text if entry.id in found.as_of_then else manager.readable_content(entry)
     if entry.id in ctx.attached_ids:
         # Only for notes the user picked by hand. A retrieved note is a
         # candidate; an attached one is the subject of the question, and that is

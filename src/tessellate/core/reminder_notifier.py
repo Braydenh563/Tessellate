@@ -113,7 +113,7 @@ def due_now(
             if at > now:
                 upcoming.append(at)
             elif key not in fired and now - at <= LOOKBACK:
-                text = PRIVATE_REMINDER if reminder.workspace_id in private_spaces else reminder.text
+                text = PRIVATE_REMINDER if getattr(reminder, "workspace_id", None) in private_spaces else reminder.text
                 fresh.append(Due(key, reminder.id, text, early))
     return fresh, min(upcoming, default=None)
 
