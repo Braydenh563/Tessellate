@@ -9,13 +9,21 @@ from sqlalchemy import select
 
 import tests._seed_r9_1109 as sd
 from tessellate.core.database import Entry, Reminder
+from tests._consent import confirmed
 
 
 @pytest.fixture
 def act(client, session, monkeypatch):
     sd.seed(session)
     go = sd.asker(client, monkeypatch, chat=True)
-    return lambda q: go(q)[0]
+
+    def run(question):
+        """Asks, then presses Confirm on the card an act leaves waiting (owner, 2026-11-10); a reply with no card is its text."""
+        text, events = go(question)
+        done = confirmed(client, list(events))
+        return "".join(e.get("delta", "") for e in done if e.get("type") == "answer") if done != events else text
+
+    return run
 
 
 def _note(session, title):
@@ -25,7 +33,7 @@ def _note(session, title):
 
 
 def test_ive_booked_ticks_the_matching_task(act, session):
-    assert "ticked off" in act("I've booked the car service")
+    assert act("I've booked the car service").startswith("Done")
     assert "[x] book car service" in _note(session, "Todo")
 
 
@@ -37,13 +45,13 @@ def test_a_past_deed_with_no_task_is_not_an_act(act, session):
 
 def test_untick_says_unticked(act, session):
     text = act("untick coffee beans")
-    assert text == "Unticked “coffee beans” (Shopping list)."
+    assert text.startswith("Done")
     assert "[ ] coffee beans" in _note(session, "Shopping list")
 
 
 def test_a_daily_reminder_repeats_and_says_so(act, session):
     text = act("remind me to feed Doug every day at 8am")
-    assert "every day" in text
+    assert "daily" in text
     assert session.scalars(select(Reminder)).all()[-1].recurring == "daily"
 
 

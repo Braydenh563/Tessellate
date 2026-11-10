@@ -22,6 +22,7 @@ from tessellate.ai import commands, intent, question_noise
 from tessellate.ai import composer_smalltalk
 from tessellate.ai import composer_aware as aware
 from tests.test_composer_route_688 import _ask, _seed
+from tests._consent import confirmed
 
 NOW = datetime(2026, 10, 31, 7, 50)
 
@@ -221,7 +222,7 @@ def test_the_time_said_next_sets_it(client, session):
     _seed(session)
     typed = PASSING[0][0]
     first = _ask(client, typed, use_tools=False)
-    out = _ask(client, "friday at 9", use_tools=False, history=[{"question": typed, "answer": first["text"]}])
+    out = confirmed(client, _ask(client, "friday at 9", use_tools=False, history=[{"question": typed, "answer": first["text"]}]))
     reminders = client.get("/reminders").json()
     items = reminders.get("reminders", reminders) if isinstance(reminders, dict) else reminders
     assert any("tax return" in str(r.get("text", "")).lower() for r in items), (out["text"], reminders)

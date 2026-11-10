@@ -257,8 +257,9 @@ def _copy_turn(monkeypatch, first, copy):
         return {"id": 3, "title": "Snowdon trip", "content": _SNOWDON}
 
     monkeypatch.setattr(agent.tools, "execute_tool", execute)
-    list(agent.run_agent(_Session(), "q", [{"id": 3, "title": "Snowdon trip", "content": _SNOWDON, "category": "Travel", "tags": []}], _Named("qwen2.5-3b"), _ThenCopies(first, copy)))
-    return [name for name, _ in ran]
+    events = list(agent.run_agent(_Session(), "q", [{"id": 3, "title": "Snowdon trip", "content": _SNOWDON, "category": "Travel", "tags": []}], _Named("qwen2.5-3b"), _ThenCopies(first, copy)))
+    #: What the model got as far as: calls that ran, then those parked for a Confirm card (every write parks, owner 2026-11-10).
+    return [name for name, _ in ran] + [e["name"] for e in events if e.get("type") == "confirm"]
 
 
 def test_a_copy_of_the_note_just_changed_is_not_made(monkeypatch, app_state):
@@ -267,9 +268,8 @@ def test_a_copy_of_the_note_just_changed_is_not_made(monkeypatch, app_state):
         {"name": "edit_note", "arguments": {"note_id": 3, "content": f"{_SNOWDON}\nbring a rain jacket"}},
         {"name": "create_note", "arguments": {"content": f"{_SNOWDON}\nbring a rain jacket"}},
     )
-    #: The edit parks for a Confirm card now (audit 1029 H2), so it has not run,
-    #: and the copy is still not made behind it: that is the guard's point.
-    assert ran == []
+    #: The edit parks for a Confirm card (audit 1029 H2), and the copy is neither made nor parked: the guard's point.
+    assert ran == ["edit_note"]
 
 
 def test_a_note_holding_the_prompt_s_fence_is_not_made(monkeypatch, app_state):
@@ -278,7 +278,7 @@ def test_a_note_holding_the_prompt_s_fence_is_not_made(monkeypatch, app_state):
         {"name": "pin_note", "arguments": {"note_id": 3, "pinned": True}},
         {"name": "create_note", "arguments": {"content": f"<<<data note>>>\n{_SNOWDON}\n<<<end data>>>"}},
     )
-    assert ran == ["pin_note"]
+    assert ran == ["pin_note"], "the pin parks; the note holding the fence is refused, not even offered"
 
 
 def test_a_new_note_after_a_write_is_still_made(monkeypatch, app_state):
@@ -287,7 +287,7 @@ def test_a_new_note_after_a_write_is_still_made(monkeypatch, app_state):
         {"name": "pin_note", "arguments": {"note_id": 3, "pinned": True}},
         {"name": "create_note", "arguments": {"content": "Buy oat milk and eggs for the trip"}},
     )
-    assert ran == ["pin_note", "create_note"]
+    assert ran == ["pin_note", "create_note"], "both park for Confirm; the second is no copy, so it is offered"
 
 
 def test_a_small_model_s_toolbox_holds_preferences_only_when_asked(monkeypatch, app_state):
@@ -309,7 +309,7 @@ def test_a_note_made_with_tags_was_tagged(monkeypatch, app_state):
     monkeypatch.setattr(agent.tools, "execute_tool", lambda *a, **k: {"id": 5, "title": "buy oat milk"})
     events = list(agent.run_agent(_Session(), "Make a note: buy oat milk", [], _Named("m"), _CreateWithTags()))
     text = "".join(e.get("delta", "") for e in events if e.get("type") == "answer")
-    assert "Heads up" not in text, text
+    assert "Heads up" not in text, text  # a parked call counts as made: the card is the call (owner, 2026-11-10)
 
 
 # --- the first round: a forced call acts, a question reads (H4, Qwen2.5-3B) ------

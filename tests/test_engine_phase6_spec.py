@@ -319,7 +319,7 @@ def test_parse_a_reminder_command():
     cmd = commands.parse("remind me to call Sam on Friday", NOW)
     assert (cmd.verb, cmd.object) == ("remind", "call Sam")
     assert cmd.when.date() == date(2026, 10, 9)
-    assert cmd.confirm is False
+    assert cmd.confirm is True  # every act waits (owner, 2026-11-10)
 
 
 def test_delete_requires_confirmation():

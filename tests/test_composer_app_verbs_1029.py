@@ -95,15 +95,15 @@ def test_the_same_note_twice_asks_first(session, said):
     assert not planned.get("run")
 
 
-def test_a_new_note_is_made_at_once(session):
+def test_a_new_note_is_a_card_that_waits(session):
     planned = acts.preview(session, acts.parse("new note: buy bread", NOW))
-    assert planned.get("run") is True
+    assert planned["card"] and "run" not in planned and "already have" not in planned["line"]
 
 
 @pytest.mark.parametrize("said", ["remind me in 2 hours to stretch", "remind me in 2 hours to Stretch", "remind me tomorrow at 9am to stretch"])
 def test_the_same_reminder_twice_asks_first(session, said):
     first = acts.preview(session, acts.parse("remind me in 2 hours to stretch", NOW))
-    assert first.get("run") is True
+    assert first["card"] and "run" not in first
 
     session.add(Reminder(text="Stretch", due_at=NOW))
     session.commit()

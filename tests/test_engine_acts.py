@@ -7,6 +7,7 @@ from __future__ import annotations
 from tessellate.ai import commands, intent
 from tessellate.entry import manager
 from tests.test_composer_route_688 import _ask
+from tests._consent import confirmed
 
 
 def _seed(session):
@@ -47,11 +48,14 @@ def test_a_delete_waits_for_confirm_and_names_the_note(client, session):
     assert manager.get_entry(session, ids["boiler"]).is_deleted is False
 
 
-def test_a_reminder_runs_at_once_with_its_undo(client, session):
+def test_a_reminder_waits_for_confirm_then_has_its_undo(client, session):
+    """Intent moved (owner, 2026-11-10, "any and all actions need the user's consent"): it ran at once."""
     _seed(session)
-    out = _ask(client, "remind me to call the plumber tomorrow at 5pm", use_tools=False)
+    waiting = _ask(client, "remind me to call the plumber tomorrow at 5pm", use_tools=False)
+    assert not waiting["act"][0].get("done") and not client.get("/reminders").json()
+    out = confirmed(client, waiting)
     card = out["act"][0]
-    assert card["done"] is True and "remind you tomorrow at 5pm: call the plumber" in out["text"]  # composed (CHAT_PLAN 1353)
+    assert card["done"] is True and "remind you tomorrow at 5pm: call the plumber" in waiting["text"].lower()
     reminders = client.get("/reminders").json()
     assert reminders
     assert card["undo"] == [{"name": "bin_reminder", "arguments": {"reminder_id": card["undo"][0]["arguments"]["reminder_id"]}}]

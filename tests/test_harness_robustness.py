@@ -323,7 +323,7 @@ def test_a_claimed_note_is_asked_for_and_then_made(monkeypatch, app_state):
     monkeypatch.setattr(agent.tools, "execute_tool", lambda s, n, a, **k: ran.append(n) or {"id": 5, "label": "made"})
     fake = _Claims()
     events = list(agent.run_agent(_Session(), "Make a note: buy oat milk", [], _Models(), fake))
-    assert ran == ["create_note"]
+    assert ran == [] and [e["name"] for e in events if e.get("type") == "confirm"] == ["create_note"]  # parked for consent (owner, 2026-11-10)
     nudge = fake.sent[1][-1]["content"]
     assert "saved a note" in nudge and "create_note" in nudge
     answer = "".join(e.get("delta", "") for e in events if e.get("type") == "answer")
@@ -437,7 +437,7 @@ def test_a_forced_round_that_comes_back_as_prose_is_asked_once_more(monkeypatch,
     monkeypatch.setattr(agent.tools, "execute_tool", lambda s, n, a, **k: ran.append(n) or {"id": 1, "label": "made"})
     events = list(agent.run_agent(_Session(), "Make a note: buy oat milk and eggs", [], _SmallModels(), openai_client))
     sent = [request["json"] for request in capture_post.sent]
-    assert ran == ["create_note"]
+    assert ran == [] and [e["name"] for e in events if e.get("type") == "confirm"] == ["create_note"]  # parked for consent (owner, 2026-11-10)
     assert sent[0].get("tool_choice") == "required"
     assert sent[1].get("tool_choice") == "required", "the retry is forced again"
     assert "tool_choice" not in sent[2], "and only the retry"

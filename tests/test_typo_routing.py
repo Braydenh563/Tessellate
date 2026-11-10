@@ -13,6 +13,7 @@ import pytest
 
 from tessellate.ai import act_registry, commands, intent, question_noise, reading, utilities
 from tessellate.entry import manager
+from tests._consent import confirmed
 
 READER = reading.__name__
 NOW = datetime(2026, 10, 17, 12)
@@ -106,6 +107,7 @@ def test_a_slipped_act_runs_through_chat_with_no_model(client, session):
         for line in response.iter_lines():
             if line.strip():
                 events.append(json.loads(line))
+    events = confirmed(client, events)
     session.expire_all()
     from tessellate.core.database import Entry
 

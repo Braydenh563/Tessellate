@@ -478,6 +478,7 @@ def _confirm_gate(c: _Call) -> _Verdict | None:
         )
     c.state.did_write = True
     c.state.ran_writes.add(c.name)
+    c.state.implied |= {"tag_note"} if c.name == "create_note" and c.arguments.get("tags") else set()  # the card carries the tags
     c.state.parked[c.name] = waiting + 1
     label = tools.confirm_label(c.name, c.arguments, c.session)
     return AWAITING_CONFIRMATION, [{"type": "confirm", "name": c.name, "arguments": c.arguments, "label": label}]
@@ -565,9 +566,9 @@ def _repeated_read(c: _Call) -> _Verdict | None:
 
 #: The guards in the order they must run, which is the order of precedence: an
 #: unusable call is refused before a handover, and a handover before the
-#: approval, spent-tool and repeat checks.
+#: approval, spent-tool and repeat checks (a copy of a note is refused before it asks).
 _BEFORE_HANDOVER = (_not_permitted, _unreadable_arguments)
-_AFTER_HANDOVER = (_confirm_gate, _tool_spent, _repeated_failure, _note_copy, _repeated_write, _repeated_read)
+_AFTER_HANDOVER = (_note_copy, _confirm_gate, _tool_spent, _repeated_failure, _repeated_write, _repeated_read)
 
 
 def _first_verdict(c: _Call, guards: tuple) -> _Verdict | None:

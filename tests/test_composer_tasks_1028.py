@@ -18,6 +18,7 @@ from tessellate.api import routes_chat
 from tessellate.core import config
 from tessellate.core.database import Reminder
 from tessellate.entry import manager
+from tests._consent import confirmed
 
 NOW = dt.datetime(2026, 10, 28, 10, 0, 0)
 TOMORROW_9 = dt.datetime(2026, 10, 29, 9, 0)
@@ -142,7 +143,7 @@ def test_a_clear_match_completes_at_once_and_undo_reopens_it(session):
     target = _reminder(session, "Read chapter 5")
     _reminder(session, "Call the dentist")
     planned = _go(session, "mark read chapter 5 as done")
-    assert planned["run"] and planned["card"]["steps"][0]["name"] == "complete_reminder"
+    assert planned["card"] and "run" not in planned and planned["card"]["steps"][0]["name"] == "complete_reminder"
     done = acts.run(session, planned["card"]["steps"])
     session.expire_all()
     assert done["ok"] and session.get(Reminder, target.id).done is True
@@ -166,7 +167,7 @@ def test_a_checklist_line_in_a_note_is_ticked_and_undo_unticks_it(session):
     session.commit()
     before = note.content
     planned = _go(session, "tick off hobsbawm chapter 2")
-    assert planned["run"] and planned["card"]["steps"][0]["name"] == "edit_note"
+    assert planned["card"] and "run" not in planned and planned["card"]["steps"][0]["name"] == "edit_note"
     done = acts.run(session, planned["card"]["steps"])
     session.expire_all()
     assert done["ok"]
@@ -233,7 +234,7 @@ def test_a_task_on_a_private_note_is_never_touched(session):
 
 def test_adding_a_task_is_a_reminder_card_that_undo_bins(session, clock):
     planned = _go(session, "add a task to read chapter 5 tomorrow")
-    assert planned["run"] and "task" in planned["card"]["label"].lower()
+    assert planned["card"] and "run" not in planned and "task" in planned["card"]["label"].lower()
     done = acts.run(session, planned["card"]["steps"])
     assert done["ok"] and done["undo"][0]["name"] == "bin_reminder"
     assert session.query(Reminder).count() == 1
@@ -279,7 +280,7 @@ def _said(events: list[dict]) -> str:
 
 
 def test_through_the_route_a_task_is_added_with_undo(client, session, clock):
-    events = _stream(client, "add a task to read chapter 5 tomorrow")
+    events = confirmed(client, _stream(client, "add a task to read chapter 5 tomorrow"))
     card = next(e for e in events if e["type"] == "act")
     assert card["done"] and card["undo"], card
     assert [r.text for r in session.query(Reminder)] == ["Read chapter 5"]
@@ -302,7 +303,7 @@ def test_through_the_route_a_task_for_my_todo_list_with_no_note_offers_one(clien
 
 def test_through_the_route_a_task_is_completed_and_an_ambiguous_one_asks(client, session, clock):
     target = _reminder(session, "Buy milk")
-    done = _stream(client, "tick off buy milk")
+    done = confirmed(client, _stream(client, "tick off buy milk"))
     assert next(e for e in done if e["type"] == "act")["done"]
     session.expire_all()
     assert session.get(Reminder, target.id).done is True
@@ -404,7 +405,7 @@ def test_cancelling_a_reminder_bins_it_and_undo_restores_it(session):
     target = _reminder(session, "Call the dentist")
     other = _reminder(session, "Buy milk")
     planned = _go(session, "cancel the dentist task")
-    assert planned["run"] and planned["card"]["steps"][0]["name"] == "bin_reminder"
+    assert planned["card"] and "run" not in planned and planned["card"]["steps"][0]["name"] == "bin_reminder"
     done = acts.run(session, planned["card"]["steps"])
     session.expire_all()
     assert done["ok"] and session.get(Reminder, target.id).deleted_at is not None
@@ -421,7 +422,7 @@ def test_cancelling_a_checklist_line_removes_it_and_undo_puts_it_back(session):
     before = note.content
     planned = _go(session, "delete the hobsbawm checklist item")
     step = planned["card"]["steps"][0]
-    assert planned["run"] and step["name"] == "edit_note"
+    assert planned["card"] and "run" not in planned and step["name"] == "edit_note"
     done = acts.run(session, planned["card"]["steps"])
     session.expire_all()
     after = manager.get_entry(session, note.id).content
@@ -458,7 +459,7 @@ def test_snoozing_a_reminder_moves_its_time_and_undo_puts_it_back(session):
     target = _reminder(session, "Call the dentist")
     was = target.due_at
     planned = _go(session, "snooze the dentist task until friday")
-    assert planned["run"] and planned["card"]["steps"][0]["name"] == "snooze_reminder"
+    assert planned["card"] and "run" not in planned and planned["card"]["steps"][0]["name"] == "snooze_reminder"
     done = acts.run(session, planned["card"]["steps"])
     session.expire_all()
     assert done["ok"] and session.get(Reminder, target.id).due_at.replace(tzinfo=None) == FRIDAY_9
@@ -502,11 +503,11 @@ def test_snoozing_to_a_time_that_has_passed_is_refused(session):
 def test_through_the_route_a_task_is_cancelled_and_snoozed(client, session, clock):
     milk = _reminder(session, "Buy milk")
     dentist = _reminder(session, "Call the dentist")
-    snoozed = _stream(client, "push call the dentist to tomorrow 5pm")
+    snoozed = confirmed(client, _stream(client, "push call the dentist to tomorrow 5pm"))
     assert next(e for e in snoozed if e["type"] == "act")["done"]
     session.expire_all()
     assert session.get(Reminder, dentist.id).due_at.replace(tzinfo=None) == dt.datetime(2026, 10, 29, 17, 0)
-    cancelled = _stream(client, "cancel the buy milk task")
+    cancelled = confirmed(client, _stream(client, "cancel the buy milk task"))
     card = next(e for e in cancelled if e["type"] == "act")
     assert card["done"] and card["undo"]
     session.expire_all()

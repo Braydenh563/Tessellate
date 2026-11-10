@@ -15,7 +15,7 @@ def test_every_tool_has_one_of_the_four_groups(app_state):
     catalog = {row["name"]: row for row in tools.tool_catalog()}
     assert {row["group"] for row in catalog.values()} <= GROUPS
     assert catalog["search_notes"]["group"] == "read"
-    assert catalog["create_note"]["group"] == "write"
+    assert catalog["create_note"]["group"] == "confirm"  # every write asks first (owner, 2026-11-10)
     assert catalog["delete_note"]["group"] == "confirm"
     assert catalog["web_search"]["group"] == "online"
 

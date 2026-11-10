@@ -78,6 +78,12 @@ class ChatTurn(BaseModel):
     #: the page only while the card is still open, so "cancel" can drop it
     #: (`composer_cancel`, CHAT_PLAN X17).
     pending_act: str | None = Field(default=None, max_length=300)
+    #: What Confirm on that card runs, sent with it so a typed yes can run it
+    #: (`ai/consent.py`): an act card's steps and skipped names, or a parked
+    #: tool call (`{name, arguments}`).
+    pending_steps: list[dict] | None = Field(default=None, max_length=12)
+    pending_skipped: list[dict] | None = Field(default=None, max_length=12)
+    pending_tool: dict | None = None
 
     @model_validator(mode="after")
     def _objects_from_links(self):  # noqa: ANN202

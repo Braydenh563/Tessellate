@@ -207,6 +207,12 @@ function renderActCard(holder, event) {
     if (open) open.replaceWith(toolChip("ph:x Cancelled: nothing was changed."));
     return;
   }
+  //: A typed yes ran the card that waited (`ai/consent.py`): it is settled, not pressed twice.
+  if (event.settle) {
+    const waiting = [...document.querySelectorAll(".tool-confirm[data-pending-act]")].filter((open) => !event.label || open.dataset.pendingAct === event.label).at(-1);
+    if (waiting) waiting.remove();
+    if (!event.done) return;
+  }
   const card = document.createElement("div");
   card.className = "tool-confirm";
   const run = (steps, then) =>
@@ -276,6 +282,7 @@ function renderActCard(holder, event) {
     line(`ph:warning ${event.label}`, notice, row);
     //: Open until Confirm settles it (`done` clears this) or Cancel replaces the card; the page tells the server (`chatHistoryToSend`).
     card.dataset.pendingAct = event.label || "";
+    card.pendingRun = { steps: event.steps, skipped: event.skipped || [] }; // what a typed yes runs (`chatHistoryToSend`)
   }
   if (card.childElementCount) holder.appendChild(card);
   chatScrollToEnd();

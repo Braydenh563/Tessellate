@@ -9,6 +9,7 @@ import re
 import pytest
 
 import tests._seed_1031c as seed_c
+from tests._consent import confirmed
 
 @pytest.fixture(autouse=True)
 def _a_fixed_day(monkeypatch):
@@ -1188,9 +1189,10 @@ def test_c41_a_ticked_item_is_said_to_be_ticked_not_missing(chat_notebook, quest
 
 
 @pytest.mark.parametrize("question", ["tick off the charger", "mark charger done", "check off the charger"])
-def test_c41_a_second_tick_says_it_is_already_ticked(chat_notebook, question):
-    first, _ = chat_notebook(question)
-    assert "ticked off" in first, first
+def test_c41_a_second_tick_says_it_is_already_ticked(chat_notebook, client, question):
+    first, events = chat_notebook(question)
+    assert "mark" in first.lower() and "confirm" in first.lower(), first  # waits (owner, 2026-11-10)
+    confirmed(client, list(events))
     said, _ = chat_notebook(question)
     assert "already ticked" in said and "found no" not in said, said
 

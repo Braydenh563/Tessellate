@@ -1342,7 +1342,7 @@ function chatHistoryToSend() {
   //: The last turn carries the label of an act card still waiting for Confirm
   //: (`renderActCard` marks it), so "cancel" can drop it (CHAT_PLAN X17).
   const open = [...$("chat-messages").querySelectorAll(".tool-confirm[data-pending-act]")].at(-1);
-  const turns = open && chatConv.turns.length ? [...chatConv.turns.slice(0, -1), { ...chatConv.turns.at(-1), pending_act: open.dataset.pendingAct }] : chatConv.turns;
+  const turns = open && chatConv.turns.length ? [...chatConv.turns.slice(0, -1), { ...chatConv.turns.at(-1), pending_act: open.dataset.pendingAct, ...(open.pendingRun?.steps ? { pending_steps: open.pendingRun.steps, pending_skipped: open.pendingRun.skipped } : {}), ...(open.pendingTool ? { pending_tool: open.pendingTool } : {}) }] : chatConv.turns;
   if (!chatSummary || chatSummary.covered <= 0) {
     return turns.slice(-MAX_CLIENT_HISTORY);
   }
@@ -2151,6 +2151,9 @@ function renderToolConfirm(holder, event) {
   if (event.type === "act") return ensureModule("askCompose").then(() => renderActCard(holder, event));
   const card = document.createElement("div");
   card.className = "tool-confirm";
+  //: Open until Confirm or Cancel settles it; a typed yes or no reaches it through the next turn (`chatHistoryToSend`).
+  card.dataset.pendingAct = event.label || event.name;
+  card.pendingTool = { name: event.name, arguments: event.arguments };
   const text = document.createElement("p");
   setLabel(text, `ph:warning Atlas wants to: ${event.label || event.name}`);
   

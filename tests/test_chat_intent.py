@@ -150,4 +150,4 @@ def test_answering_agent_routes_a_bare_yes_through_the_agent(ai_client, fake_oll
     ) as response:
         events = [json.loads(line) for line in response.iter_lines() if line]
     assert fake_ollama.tool_rounds  # reached the agent, not the conversational path
-    assert any(e["type"] == "tool" for e in events)
+    assert any(e["type"] == "confirm" for e in events)  # its write parks for consent (owner, 2026-11-10)

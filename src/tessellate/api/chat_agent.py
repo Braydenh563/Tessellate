@@ -13,7 +13,7 @@ import logging
 from collections.abc import Iterator
 from fastapi import HTTPException
 
-from tessellate.ai import agent, budget as run_budget, skill_runner, starter_acts, tools
+from tessellate.ai import acts, agent, budget as run_budget, commands, skill_runner, starter_acts, tools
 from tessellate.api.chat_request import _StreamRequest, _in_full, _small_model_mode
 from tessellate.core import deps
 from tessellate.core.logbuffer import safe_value
@@ -158,3 +158,36 @@ def _refuse_failed(name: str, result: dict) -> None:
         status_code=400,
         detail="That couldn't be done. The note or item may have changed since you asked, so check it and try again.",
     )
+
+
+def consent_events(session, found: dict) -> list[dict]:  # noqa: ANN001
+    """The events for a typed yes or no to the card that waits (`ai/consent.py`).
+
+    No drops the card and writes nothing. Yes runs what Confirm would run, by
+    the same doors (`commands.RUNNABLE` for an act's steps, the registry for a
+    parked tool call), and settles the open card so it is not pressed twice."""
+    label = found["label"]
+    what = label[:1].lower() + label[1:]
+    if found["verdict"] == "no":
+        return [
+            {"type": "answer", "delta": f"Cancelled: {what.rstrip('.')}. Nothing was changed."},
+            {"type": "act", "cancel": True, "label": label},
+        ]
+    steps, tool = found["steps"], found["tool"]
+    if steps and all(str(step.get("name") or "") in commands.RUNNABLE for step in steps):
+        done = acts.run(session, steps, found["skipped"])
+        return [
+            {"type": "answer", "delta": done["summary"]},
+            {"type": "act", "label": label, "steps": steps, "skipped": found["skipped"], "notice": "", "done": True, "settle": True,
+             "summary": done["summary"], "undo": done["undo"], "open": done.get("open")},
+        ]
+    if tool and str(tool.get("name") or "") in tools.TOOLS and tools.tool_enabled(str(tool["name"])):
+        result = tools.execute_tool(session, str(tool["name"]), tool.get("arguments") or {})
+        if "error" not in result:
+            said = str(result.get("label") or label).rstrip(".")
+            return [
+                {"type": "answer", "delta": f"Done: {said[:1].lower() + said[1:]}."},
+                {"type": "act", "settle": True, "label": label},
+            ]
+        logging.getLogger("tessellate.chat").warning("typed-confirmed tool %r failed: %s", safe_value(str(tool["name"]), 40), safe_value(result["error"], 300))
+    return [{"type": "answer", "delta": "That could not be done from here. Press Confirm on the card to do it, or Cancel."}]

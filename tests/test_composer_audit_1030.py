@@ -29,6 +29,7 @@ import datetime as dt  # noqa: E402
 import pytest  # noqa: E402
 
 from tessellate.ai import composer_digest  # noqa: E402
+from tests._consent import confirmed  # noqa: E402
 
 _N = dt.datetime(2026, 10, 29, 10)
 _DID_NOTES = [
@@ -82,12 +83,12 @@ def test_z60_a_tick_that_ran_says_so_and_asks_no_confirm(client, session):
     events = []
     body = {"question": "tick off the sunscreen", "use_tools": True}
     with client.stream("POST", "/chat/stream", json=body) as response:
-        events = [json.loads(line) for line in response.iter_lines() if line.strip()]
+        events = confirmed(client, [json.loads(line) for line in response.iter_lines() if line.strip()])
     acts = [e for e in events if e.get("type") == "act"]
     said = "".join(e["delta"] for e in events if e["type"] == "answer")
     assert acts and acts[-1]["done"] is True, events
     assert not acts[-1]["notice"], acts[-1]
-    assert "ticked off “Sunscreen”" in said.replace("“sunscreen”", "“Sunscreen”"), said
+    assert said.startswith("Done"), said  # worded by the run after Confirm (owner, 2026-11-10)
     assert " will " not in f" {said} ", said
     session.refresh(entry)
     assert "- [x] Sunscreen" in entry.content
