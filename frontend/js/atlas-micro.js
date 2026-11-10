@@ -89,6 +89,9 @@ function atlasMicroMay(box) {
   if (!box.isConnected || !buddy || document.hidden || document.documentElement.hasAttribute("data-atlas-hidden") || !atlasMotionOK(box)) return false;
   if (box.classList.contains("atl-off") || nameMarkBuddyMenuOpen() || /^(lie|curl)/.test(buddy.dataset.pose || "")) return false;
   for (const c of buddy.classList) if (c.startsWith("nmb-act-") || c === "nmb-sleep" || c === "nmb-walking" || c === "nm-buddy-dragging") return false;
+  //: Not at rest (owner decision Q10): a glance or a tilt on an SVG head is ten to thirty layouts, and two seconds from
+  //: the last input the drawn loops stop (`atlasTailCalm.rest`, atlas-life.js); the clock goes on, the next input ends the rest.
+  if (globalThis.atlasTailCalm?.rest.on) return false;
   return true;
 }
 //: Plays `frames` on `el`, in place of whatever else moves that property

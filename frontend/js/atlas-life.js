@@ -524,12 +524,13 @@ function atlasTailFrame(tail, now) {
   //: Resting on the compositor (`atlasTailRest`): nothing to draw while the
   //: state holds and the act has not run out; the breath and the props
   //: are all this beat does.
-  const holds = tail.resting && live && atlasTailCalm(tail, box) && atlasRigLower.spell(box.closest("#nm-buddy"), box) === tail.state && now < tail.until;
+  const holds = tail.resting && live && atlasTailCalm(tail, box) && atlasRigLower.spell(box.closest("#nm-buddy"), box) === tail.state && (now < tail.until || atlasTailCalm.resting(box, tail.state));
   if (tail.resting && !holds) atlasTailUnrest(tail);
   //: And the chest's breath (`atlasBreathFrame`), at the rate of the moment.
   atlasBreathFrame(box, live);
   atlasBreathFrame.rate(box.atlasBreath, box.closest("#nm-buddy"), box.dataset.atlasMood, now);
-  for (const anim of box.atlasLoops || []) if (loops !== (anim.playState === "running")) loops ? anim.play() : anim.pause();
+  //: The held loops stay held at rest (`atlasTailCalm.rest.sync` plays them again on input).
+  if (!atlasTailCalm.resting(box, tail.state)) for (const anim of box.atlasLoops || []) if (loops !== (anim.playState === "running")) loops ? anim.play() : anim.pause();
   if (holds) {
     tail.raf = setTimeout(() => atlasTailFrame(tail, performance.now()), ATLAS_TAIL_REST_BEAT_MS);
     return;
@@ -604,6 +605,44 @@ function atlasTailFrame(tail, now) {
 const ATLAS_TAIL_CALM_MS = 66;
 function atlasTailCalm(tail, box) {
   return atlasTailCalm.states.has(tail.state) && !!box.closest("#nm-buddy") && !box.closest(".nm-viewer-figure");
+}
+//: **Two seconds without input and not walking: the drawn loops stop** (owner decision Q10; the lag log: 21 rig calls a
+//: second, 20 to 27 restyles a second at rest, the dress morph alone 35 path writes a second). The CSS loops (sway,
+//: breath, glow) stay on the compositor; what stops is the script that rewrites SVG paths. `rest.at` is the last
+//: pointer, key, wheel or touch; the first input after a rest calls every waker, so a stopped loop starts within a frame.
+atlasTailCalm.rest = { at: performance.now(), wake: new Set(), after: 2000 };
+//: At rest: a corner companion, in a calm lower-body state, not walking, doing no act, and two seconds from the last input.
+atlasTailCalm.resting = (box, state) => {
+  const buddy = box.closest("#nm-buddy");
+  return !!buddy && atlasTailCalm.states.has(state) && !/\bnmb-(walking|act-|think|music|reading|poofing|dodge|stir|fitting)/.test(buddy.className) && performance.now() - atlasTailCalm.rest.at > atlasTailCalm.rest.after;
+};
+//: Entering a rest pauses the loops that never end (the sway, the breath, the glow: on SVG parts they are drawn on the main
+//: thread, a restyle and layout a frame, 38 a second at rest); leaving it plays the ones this paused. A finite one (a blink
+//: in flight) is left to finish; one that has since been cancelled is idle, not paused, and stays so.
+atlasTailCalm.rest.sync = (box, state) => {
+  const r = atlasTailCalm.rest;
+  const resting = atlasTailCalm.resting(box, state);
+  r.on = resting;
+  if (resting && !r.held) {
+    r.held = box.closest("#nm-buddy").getAnimations({ subtree: true }).filter((a) => a.playState === "running" && a.effect?.getComputedTiming().iterations === Infinity);
+    for (const a of r.held) a.pause();
+  } else if (!resting && r.held) {
+    for (const a of r.held) if (a.playState === "paused") a.play();
+    r.held = null;
+  }
+  return resting;
+};
+//: Typing in a field is not the companion's business (B54: typing with it on made 3.4 times the layouts, the keydown
+//: 712 ms in the pacer): a key in an input, a textarea or an editor does not wake it, any other input does.
+for (const type of typeof document.addEventListener === "function" ? ["pointermove", "pointerdown", "keydown", "wheel", "touchstart"] : []) {
+  document.addEventListener(type, (event) => {
+    if (type === "keydown" && event.key !== "Enter" && event.target?.closest?.("input, textarea, select, [contenteditable]")) return;
+    const r = atlasTailCalm.rest;
+    const was = performance.now() - r.at > r.after;
+    r.at = performance.now();
+    // In the next frame, not in the input: playing the held loops and the pacer's first beat are the input's own cost otherwise (lag log: input 320ms).
+    if (was) setTimeout(() => r.wake.forEach((fn) => fn()), 0);
+  }, { passive: true, capture: true });
 }
 //: On the function, not the shared scope (test_global_scope_ratchet): only it reads them.
 atlasTailCalm.states = new Set(["idle", "sit", "lie", "think", "sad", "hang", "coil", "ripple_calm", "pool", "heavy"]);
@@ -1247,6 +1286,12 @@ atlasRigLower.morph.run = (rig, buddy) => {
       return;
     }
     const now = performance.now();
+    //: At rest the paths keep the shape they have; the first input starts them again (`atlasTailCalm.rest`).
+    if (atlasTailCalm.rest.sync(box, low.state)) {
+      m.at = 0;
+      m.timer = setTimeout(step, 1000);
+      return;
+    }
     m.targets ||= M.build(low);
     const dt = m.at ? Math.min(0.25, (now - m.at) / 1000) : 0;
     m.at = now;
@@ -1265,6 +1310,18 @@ atlasRigLower.morph.run = (rig, buddy) => {
   };
   clearTimeout(m.timer);
   m.timer = setTimeout(step, 1500);
+  atlasTailCalm.rest.wake.delete(m.wake);
+  m.wake = () => {
+    if (!rig.box.isConnected) return;
+    atlasTailCalm.rest.sync(rig.box, low.state);
+    //: The pacer (avatars.js) sleeps a second at a time while it rests; input starts its next beat now.
+    if (typeof nmbTempo === "object" && nmbTempo.timer) {
+      clearTimeout(nmbTempo.timer);
+      nameMarkBuddyTempo();
+    }
+    if (m.at === 0 && m.targets) step();
+  };
+  atlasTailCalm.rest.wake.add(m.wake);
 };
 //: **When the lower body spells a state of its own** (atlascat-1108 C5): the base state (`atlasLowerState`) read with how
 //: long it has lasted and what the figure is doing: a fast glide's first 1.5 s billows the hem; cross-legged meditation

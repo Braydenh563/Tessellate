@@ -5975,6 +5975,15 @@ function nameMarkBuddyTempo() {
   //: in general is ever so slightly laggy"): each step inside a drawing is a
   //: layout and a repaint the arriving view's frames are waiting on.
   const still = now - nmbFollow.scrollAt < 300 || now < (window.uiSettlingUntil || 0);
+  //: **At rest the pacer sleeps** (owner decision Q10; the lag log: `input 320ms`, 21 restyles a second): two seconds
+  //: from the last input, in a calm state and not walking (`atlasTailCalm.rest`, atlas-life.js), the held animations
+  //: stay where they are and the beat looks again in a second; the first input wakes it (`m.wake`).
+  if (!busy && !buddy.classList.contains("nmb-walking") && globalThis.atlasTailCalm?.rest.on && performance.now() - atlasTailCalm.rest.at > atlasTailCalm.rest.after) {
+    nmbTempo.at = now;
+    nmbTempo.held = true;
+    if (!document.hidden) nmbTempo.timer = setTimeout(nameMarkBuddyTempo, 1000);
+    return;
+  }
   //: **And not read either while held** (the lag log: `avatars.js TimerHandler:setTimeout 623ms
   //: (forced layout 465ms)`, 1.2 s at 4x CPU across seven tab clicks). The play states below are
   //: a style read, and a beat inside the arriving page's 400ms paid for the page's whole restyle
@@ -9613,7 +9622,7 @@ function nameMarkBuddyAwake() {
   nmb.lastInput = now;
   const buddy = document.getElementById("nm-buddy");
   if (!buddy) return;
-  buddy.classList.remove("nmb-drowsy");
+  if (buddy.classList.contains("nmb-drowsy")) buddy.classList.remove("nmb-drowsy");
   if (buddy.classList.contains("nmb-sleep")) return;
   if (nmb.exprHold === "sleepy") nameMarkBuddyHold("");
   //: **You are back** (INBOX 426 x: "wave at the user after a long idle"):
@@ -10451,6 +10460,9 @@ document.addEventListener("keydown", (event) => {
   const field = event.target;
   if (!buddy || nameMarkBuddyStill() || !(field instanceof Element)) return;
   if (!field.matches("input, textarea, [contenteditable='true'], [contenteditable=''], .cm-content")) return;
+  //: At rest it does not watch the typing: its look, nod and watch classes would each start a loop the sleeping pacer
+  //: does not hold (B54: typing with it on was 3.4 times the layouts of typing with it off). A pointer move wakes it.
+  if (globalThis.atlasTailCalm?.rest.on && event.key !== "Enter") return;
   const now = Date.now();
   if (now - nmb.watchAt > 400) {
     nmb.watchAt = now;

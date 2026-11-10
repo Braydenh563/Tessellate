@@ -96,6 +96,8 @@ atlasBlink.saccade = () => {
 atlasBlink.saccade.step = (r = [Math.random(), Math.random()]) => {
   const buddy = document.getElementById("nm-buddy");
   if (!buddy?.classList.contains("nmb-attend")) return false;
+  //: And not at rest: the held look is kept, the irises stop stepping until the next input (`atlasTailCalm.rest`).
+  if (globalThis.atlasTailCalm?.rest.on) return false;
   const box = buddy.querySelector(".atl-figure-box");
   if (document.hidden || !box || !atlasMotionOK(box) || buddy.classList.contains("nm-buddy-dragging")) return true;
   const ex = (nmb.ex || 0) + (r[0] - 0.5) * 0.5;
@@ -326,7 +328,9 @@ function atlasRigWake(host) {
     //: A class record whose value is what it was (a `classList.add` of a class already
     //: there) changed nothing the CSS can show, so it does not wake the rig (DX1).
     rig.observer = new MutationObserver((records) => {
-      if (records.some((r) => r.attributeName !== "class" || r.oldValue !== r.target.getAttribute("class"))) atlasRigWake(box);
+      //: A blink's class (`atl-blinking`, on the lids' layers) moves no arm: it does not wake the rig either (a read each time, 6ms at 4x).
+      const plain = (v) => String(v || "").replace(/\batl-blinking\b/g, "").replace(/\s+/g, " ").trim();
+      if (records.some((r) => r.attributeName !== "class" || plain(r.oldValue) !== plain(r.target.getAttribute("class")))) atlasRigWake(box);
     });
     const attributes = { attributes: true, attributeOldValue: true, attributeFilter: ["class", "data-pose", "data-atlas-variant", "data-atlas-mood", "data-travel", "data-side"] };
     for (const el of new Set([rig.host, box, rig.body])) rig.observer.observe(el, attributes);
