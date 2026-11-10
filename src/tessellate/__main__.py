@@ -32,29 +32,66 @@ logger = logging.getLogger("tessellate.launcher")
 HOST = "127.0.0.1"  # local only: this is a private app
 
 
-def page_host() -> str:
-    """The name the window and browser open: `HOST`, or `<name>.localhost`
-    when `TESSELLATE_LOCAL_NAME` gives one. Browsers resolve every
-    `*.localhost` to loopback themselves (RFC 6761), so the friendly name
-    needs no DNS, hosts file or admin rights; the server still binds `HOST`."""
-    from tessellate.core import netbind
-
-    return netbind.local_name() or HOST
-
-
 #: Left in the webview profile once the desktop window has been through
 #: `origin-bridge.html` (the carry-over from 127.0.0.1 to localhost).
 _ORIGIN_MOVED = "origin-moved"
 
 
-def window_host() -> str:
-    """The name the desktop window opens: `localhost`, not the bind address.
-    Windows Hello (WebAuthn) refuses an IP address as an RP id, so the window
-    must be at a name (owner decision, HANDOVER "Hello origin", 2026-11-10);
-    the server still binds `HOST` only. `TESSELLATE_LOCAL_NAME` wins."""
+#: Per-port verdict of `_localhost_works`, so one launch probes once and logs once.
+_LOCALHOST_VERDICT: dict[int, bool] = {}
+
+
+def _localhost_works(port: int) -> bool:
+    """True when `localhost` is loopback only and this server answers there.
+    Some machines map `localhost` elsewhere (a hosts file, a VPN, a proxy); the
+    window then falls back to 127.0.0.1 for that launch. Logs why."""
+    if port in _LOCALHOST_VERDICT:
+        return _LOCALHOST_VERDICT[port]
+    import http.client
+    import ipaddress
+    import socket
+
+    ok, why = True, ""
+    try:
+        addrs = {info[4][0] for info in socket.getaddrinfo("localhost", port, proto=socket.IPPROTO_TCP)}
+        if not addrs or not all(ipaddress.ip_address(a.split("%")[0]).is_loopback for a in addrs):
+            ok, why = False, f"localhost resolves to {sorted(addrs)}, not loopback"
+    except (OSError, ValueError) as error:
+        ok, why = False, f"localhost does not resolve ({error})"
+    if ok:
+        try:
+            conn = http.client.HTTPConnection("localhost", port, timeout=2)
+            try:
+                conn.request("GET", "/health")
+                status = conn.getresponse().status
+            finally:
+                conn.close()
+            if status != 200:
+                ok, why = False, f"localhost /health answered {status}"
+        except (OSError, ValueError, http.client.HTTPException) as error:
+            ok, why = False, f"localhost /health failed ({error})"
+    if not ok:
+        logger.warning("Opening %s instead of localhost: %s", HOST, why)
+    _LOCALHOST_VERDICT[port] = ok
+    return ok
+
+
+def window_host(port: int | None = None) -> str:
+    """The name every page for this computer opens at (window, Open in browser,
+    capture hotkey, tray, printed addresses): `localhost`, not the bind address.
+    Windows Hello (WebAuthn) refuses an IP address as an RP id (owner decision,
+    HANDOVER "Hello origin", 2026-11-10); the server still binds `HOST` only.
+    `TESSELLATE_LOCAL_NAME` wins. With a `port`, `localhost` is checked once
+    (`_localhost_works`) and `HOST` is used for that launch when it fails;
+    127.0.0.1 is only ever this automatic fallback, never a setting."""
     from tessellate.core import netbind
 
-    return netbind.local_name() or "localhost"
+    name = netbind.local_name()
+    if name:
+        return name
+    if port is not None and not _localhost_works(port):
+        return HOST
+    return "localhost"
 
 
 def _window_url(port: int) -> str:
@@ -63,7 +100,10 @@ def _window_url(port: int) -> str:
     of that origin over to `window_host()` and goes on to the app; after that
     it is the app. The marker is written here, so a failed carry-over is not
     retried on every launch (the settings then start from their defaults)."""
-    plain = f"http://{window_host()}:{port}"
+    host = window_host(port)
+    plain = f"http://{host}:{port}"
+    if host == HOST:
+        return plain  # fallback launch: nothing to carry over to
     from tessellate.core.config import resolved_data_dir
     try:
         marker = resolved_data_dir() / "webview" / _ORIGIN_MOVED
@@ -73,7 +113,7 @@ def _window_url(port: int) -> str:
         marker.write_text("1", encoding="utf-8")
     except OSError:
         return plain
-    return f"http://{HOST}:{port}/origin-bridge.html?to={window_host()}"
+    return f"http://{HOST}:{port}/origin-bridge.html?to={host}"
 
 
 def _port_from_env(raw: str | None = None) -> int:
@@ -2226,7 +2266,7 @@ def _attach_desk_companion(webview, window, tray_icon):  # noqa: ANN001
         webview,
         window,
         _open_main,
-        lambda: f"http://{window_host()}:{PORT}/desktop-companion.html",
+        lambda: f"http://{window_host(PORT)}:{PORT}/desktop-companion.html",
         on_change=getattr(tray_icon, "update_menu", None),
     )
 
@@ -2821,7 +2861,7 @@ def _capture() -> int:
     if state != "live":
         print("Tessellate is not running on this notebook. Start it, then capture again.")
         return 1
-    webbrowser.open(f"http://{page_host()}:{running.port}/capture.html", new=1)
+    webbrowser.open(f"http://{window_host(running.port)}:{running.port}/capture.html", new=1)
     return 0
 
 
@@ -2928,7 +2968,7 @@ def main() -> None:
             # One server per data directory in browser mode as well: the
             # launcher scripts already open a browser onto a copy on their
             # own port, and this covers a copy on another port.
-            print(f"Tessellate is already running on this notebook: http://{page_host()}:{running.port}")
+            print(f"Tessellate is already running on this notebook: http://{window_host(running.port)}:{running.port}")
             return
         _run_server_holding_lock()
 

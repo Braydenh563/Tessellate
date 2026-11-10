@@ -201,7 +201,9 @@
     $("account-hello-switch").checked = Boolean(facts.set);
     $("account-hello-state").textContent = !facts.here
       ? "Windows Hello can be turned on only on the computer this notebook runs on."
-      : !ok
+      : /^[\d.]+$|:/.test(location.hostname) && facts.available
+        ? "Windows Hello needs localhost."
+        : !ok
         ? "This browser can't use Windows Hello here. The ? says what it needs."
         : !facts.available
           ? "This computer has no protected store for Windows Hello, so the password is the only way in here."

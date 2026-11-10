@@ -230,6 +230,7 @@ def test_loading_window_swaps_to_the_real_url_once_the_server_answers(monkeypatc
     against a fake server/progress poll, not just asserting it was wired up.
     """
     monkeypatch.setenv("TESSELLATE_DATA_DIR", str(tmp_path))
+    monkeypatch.setitem(launcher._LOCALHOST_VERDICT, launcher.PORT, True)  # no real server to probe
     monkeypatch.setattr(launcher, "_run_server", lambda: None)
     monkeypatch.setattr(launcher, "_wait_for_server_with_progress", lambda window, timeout=45.0: True)
     calls = _fake_webview(monkeypatch, run_start_func=True)

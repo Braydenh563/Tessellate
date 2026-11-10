@@ -11,3 +11,6 @@ Left
 - Drafts or settings written at 127.0.0.1 after the first move (a second copy opened in a browser) do not follow.
 - No user-visible text changed (the bridge says "Opening your notebook." for a moment), so no help or Guide edit (order 13).
 - done: this commit; next: nothing in this brief.
+
+- done: opener switch, fallback probe, Settings Hello line, tests.
+- left: lock-screen line not added (Hello button is hidden on an IP origin, so nothing is offered there); real Windows/WebView2 fallback unverified.
