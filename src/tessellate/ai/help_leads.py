@@ -115,6 +115,7 @@ TOPIC_LEADS: dict[str, str] = {
     "equation-editor": "Write an equation and put it in a note, a document, a board or a chat.",
     "document-history": "Go back to any earlier version of a document, or keep one under a name.",
     "writing-checks": "Catch spelling, grammar and long sentences as you write, all on this computer.",
+    "spelling-check": "Why a word is or is not flagged, and how to keep your own words.",
     "code-files": "Write code in a document with colours, error checks and closing brackets.",
     "code-completions": "Save typing in code with suggestions and short words that expand into blocks.",
     "code-run": "Run a code document safely and see what it prints, away from the network.",

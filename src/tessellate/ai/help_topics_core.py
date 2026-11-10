@@ -2870,6 +2870,33 @@ HELP_TOPICS.extend(
             "badge": {"label": "Library", "tab": "library"},
         },
         {
+            "id": "spelling-check",
+            "keywords": (
+                "why is uni flagged",
+                "wrong spelling suggestion",
+                "bad spelling suggestions",
+                "word keeps getting underlined",
+                "add to dictionary",
+                "my own words",
+                "slang flagged",
+                "spelling dialect",
+                "australian spelling",
+            ),
+            "body": (
+                "Spelling gets a second opinion on this computer. A word is not "
+                "flagged when an Australian or British dictionary knows it, or "
+                "when your own notes use it twice or more (a private note never "
+                "counts). A suggestion that would change more than a third of a "
+                "short word is not offered, and the rest come with the commonest "
+                'word first. "Add to dictionary" sits beside "Ignore this one" in '
+                "a note box and in a document, and keeps the word in your "
+                "notebook. The spelling preference (Settings, General, Writing; "
+                "or the document dictionary dialog) starts as this computer's "
+                "language."
+            ),
+            "badge": {"label": "Documents", "tab": "documents"},
+        },
+        {
             "id": "live-view-marks",
             "keywords": (
                 "markdown marks",

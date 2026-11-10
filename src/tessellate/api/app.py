@@ -70,6 +70,7 @@ from tessellate.api import (
     routes_night,
     routes_questions,
     routes_read,
+    routes_spelling,
     routes_statistics,
     routes_utilities,
     routes_privacy,
@@ -1557,6 +1558,7 @@ ROUTERS: tuple[tuple[APIRouter, str], ...] = (
     (routes_privacy.router, LOCKED),
     (routes_capabilities.router, LOCKED),
     (routes_read.router, LOCKED),
+    (routes_spelling.router, LOCKED),
     (routes_statistics.router, LOCKED),
     (routes_utilities.router, LOCKED),
     #: WORLD_CLASS_PLAN section 17: the review queue, most opened, tidy proposals, charts.

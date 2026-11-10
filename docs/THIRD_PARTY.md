@@ -34,6 +34,17 @@ under `src/tessellate/vendor/` or `frontend/vendor/` is missing from this page.
 | English word list | `wordlist/` | built by `wordlist/build.sh` | the English Speller Database licence (`wordlist/LICENSE`) | https://wordlist.aspell.net | the documents editor's spelling check |
 | Python standard library table | `python-stdlib/` | built by `scripts/gen_python_completions.py` | PSF License Agreement (`python-stdlib/LICENSE`) | https://docs.python.org/3/license.html | a Python document's completions after `module.` and its hover card |
 
+## Spelling second opinion (`frontend/vendor/spelling/`)
+
+Loaded by the grammar worker only, on the first word that needs them
+(INBOX 1731). One licence file for the folder, `spelling/LICENSE`, with the
+dictionaries' own README beside it; `spelling/build.sh` says how each file was
+made. Not in the table above because no page script calls them.
+
+- **nspell** 2.1.5 with **is-buffer** 2.0.5: MIT, https://github.com/wooorm/nspell. `nspell.js`, bundled by hand into one ES module; reads the Hunspell files below.
+- **Hunspell dictionaries**: `en_AU.aff` and `.dic` (LibreOffice's en_AU) and `en_GB.aff` and `.dic` (SCOWL's own en_GB-ise 2020.12.07). Both SCOWL-derived and permissive (`spelling/SCOWL-README.txt`, section COPYRIGHT, SOURCES, and CREDITS). LibreOffice's own en_GB is LGPL and is not used.
+- **Word frequency buckets**: `frequency.txt`, from the English Speller Database at sizes 35, 40 and 50, same licence; ranks suggestions by how common each word is.
+
 ## Optional downloads (Settings, Packages)
 
 Never in the repository: each is fetched on an Install press from the pinned

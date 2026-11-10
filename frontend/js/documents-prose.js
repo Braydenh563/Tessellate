@@ -48,11 +48,11 @@ const DOC_GRAMMAR_NOTE_DEBOUNCE_MS = 600;
 
 let docGrammarWorker = null;
 let docGrammarError = "";
-let docGrammarSeq = 0;
-const docGrammarWaiting = new Map();
+//: The ask in flight: the next message's id, who waits for each answer, and the
+//: text a grammar check is being asked about.
+const docGrammarWire = { seq: 0, waiting: new Map(), asking: null };
 //: The document's last answer: the text it was for and its findings.
 let docGrammarCache = { text: null, findings: [] };
-let docGrammarAsking = null;
 
 //: On unless the reader turned it off, and never once it has failed: a
 //: binary that did not load will not load on the next keystroke either.
@@ -65,8 +65,8 @@ function docGrammarEnabled() {
 function docGrammarFail(reason) {
   docGrammarError = reason || "the grammar checker did not load";
   console.warn("Grammar check off for this session:", docGrammarError);
-  for (const resolve of docGrammarWaiting.values()) resolve(null);
-  docGrammarWaiting.clear();
+  for (const resolve of docGrammarWire.waiting.values()) resolve(null);
+  docGrammarWire.waiting.clear();
   if (docGrammarWorker) docGrammarWorker.terminate();
   docGrammarWorker = null;
 }
@@ -95,9 +95,16 @@ async function docGrammarWhy() {
   return found.join("; ") || "every file it loads answered as JavaScript";
 }
 
-//: One lint of `text`, or null when there is no checker. Never rejects: a
-//: caller that has to catch is a caller that one day will not.
+//: One lint of `text`, or null when there is no checker.
 function docGrammarAsk(text) {
+  return docGrammarSend({ text, dialect: docSpellingVariant() });
+}
+
+//: One message to the worker and its answer, or null when there is no checker
+//: (`reply` false: a message with no answer, the person's own words). The
+//: worker is started here, on first use. Never rejects: a caller that has to
+//: catch is a caller that one day will not.
+function docGrammarSend(message, reply = true) {
   if (!docGrammarEnabled()) return Promise.resolve(null);
   if (!docGrammarWorker) {
     try {
@@ -112,11 +119,11 @@ function docGrammarAsk(text) {
     }
     docGrammarWorker.addEventListener("message", (event) => {
       const data = event.data || {};
-      const resolve = docGrammarWaiting.get(data.id);
+      const resolve = docGrammarWire.waiting.get(data.id);
       if (!data.ok) return docGrammarFail(data.error);
       if (!resolve) return;
-      docGrammarWaiting.delete(data.id);
-      resolve(data.lints || []);
+      docGrammarWire.waiting.delete(data.id);
+      resolve(data.spell || data.lints || []);
     });
     //: A worker whose script fails to load says so here and nowhere else,
     //: and with no message: a module worker refused for its type, its CSP or
@@ -129,11 +136,17 @@ function docGrammarAsk(text) {
       if (event.message) return docGrammarFail(event.message);
       docGrammarWhy().then((why) => docGrammarFail(`the grammar worker did not start (${why})`));
     });
+    //: Its first message is the person's own words (documents-spell.js).
+    setTimeout(docSpell.ownWordsSend, 0);
   }
-  const id = ++docGrammarSeq;
+  if (!reply) {
+    docGrammarWorker.postMessage(message);
+    return Promise.resolve(null);
+  }
+  const id = ++docGrammarWire.seq;
   return new Promise((resolve) => {
-    docGrammarWaiting.set(id, resolve);
-    docGrammarWorker.postMessage({ id, text, dialect: docSpellingVariant() });
+    docGrammarWire.waiting.set(id, resolve);
+    docGrammarWorker.postMessage({ ...message, id });
   });
 }
 
@@ -209,6 +222,9 @@ function docGrammarKeeps(lint, span, structural, text) {
   //: list loads `docWordKnown` says yes, which drops these too; Harper's
   //: Typo lints come back with the next pass.
   if (lint.kind === "Typo" && /^[A-Za-z]+$/.test(span) && docWordKnown(span)) return false;
+  //: A word the person added to the dictionary is theirs (INBOX 1731), in the
+  //: kinds that judge a word and not a sentence.
+  if (["Spelling", "Typo", "Regionalism"].includes(lint.kind) && /^[A-Za-z']+$/.test(span) && docDictionary().has(span.toLowerCase())) return false;
   const message = String(lint.message || "");
   //: A file name's extension is not a new sentence: "start.bat", "run.bat.".
   if (/does not start with a capital letter/i.test(message) && /[A-Za-z0-9]\./.test(text.slice(Math.max(0, lint.start - 2), lint.start))) {
@@ -315,11 +331,11 @@ function docProseRemap(findings, from, to) {
 //: on the first document opened (or typed into) with grammar on.
 function docGrammarRequest(text) {
   if (!text || !text.trim()) return;
-  if (!docGrammarEnabled() || docGrammarAsking !== null || (docGrammarCache.text === text && docGrammarCache.linkText === docCheckLinkText())) return;
-  docGrammarAsking = text;
+  if (!docGrammarEnabled() || docGrammarWire.asking !== null || (docGrammarCache.text === text && docGrammarCache.linkText === docCheckLinkText())) return;
+  docGrammarWire.asking = text;
   const asked = performance.now();
   docGrammarAsk(text).then((lints) => {
-    docGrammarAsking = null;
+    docGrammarWire.asking = null;
     //: **Typed into since the ask: the pause will draw it** (DX1). Repainting
     //: here asked again, so while keys kept coming every answer started a
     //: prose pass of its own (37 passes in 60 keys at 4x CPU).
@@ -599,6 +615,23 @@ function noteGrammarMenu(view, plugin, finding, x, y) {
   }));
   if (!items.length) {
     items.push({ group: "fix", label: `ph:info ${finding.message}`, disabled: true, run: () => {} });
+  }
+  //: **Beside "Ignore this one"** (INBOX 1731): a word Harper does not know
+  //: can be added to the notebook's dictionary, which is the Settings
+  //: preference the document editor already reads, so one add answers both.
+  const word = /^[A-Za-z]+(?:'[A-Za-z]+)*$/.test(finding.text) && (["Spelling", "Typo", "Regionalism"].includes(finding.harperKind) || /negative word/i.test(finding.message));
+  if (word) {
+    const add = docSpell.dictionaryRow(finding.text);
+    items.push({
+      group: "ignore",
+      label: add.label,
+      title: add.title,
+      run: () => {
+        plugin.findings = plugin.findings.filter((other) => other.text.toLowerCase() !== finding.text.toLowerCase());
+        view.dispatch({ effects: noteGrammarEffect.of(null) });
+        add.run();
+      },
+    });
   }
   items.push({
     group: "ignore",
