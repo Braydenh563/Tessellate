@@ -2,9 +2,9 @@
 
 Generated 2026-11-10 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7963, frontend ids 2652, CSS sections 523, backend routes 650, backend modules 9442, test files 2350, tests 19504, plan headings 999, app scripts 28, boot scripts 37, script files 266.
+Counts: frontend functions 7992, frontend ids 2652, CSS sections 523, backend routes 650, backend modules 9442, test files 2351, tests 19511, plan headings 999, app scripts 28, boot scripts 37, script files 267.
 
-## Frontend functions (7963)
+## Frontend functions (7992)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -3134,6 +3134,40 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `diagSave` | frontend/js/diag-report.js:204 |
 | `diagSections` | frontend/js/diag-report.js:106 |
 | `diagTable` | frontend/js/diag-report.js:96 |
+
+### frontend/js/diagram-ai.js (29)
+
+| Name | File:line |
+|---|---|
+| `applyPreview` | frontend/js/diagram-ai.js:343 |
+| `ask` | frontend/js/diagram-ai.js:298 |
+| `build` | frontend/js/diagram-ai.js:253 |
+| `compareThem` | frontend/js/diagram-ai.js:419 |
+| `copyOf` | frontend/js/diagram-ai.js:224 |
+| `counts` | frontend/js/diagram-ai.js:244 |
+| `dgaAdd` | frontend/js/diagram-ai.js:45 |
+| `dgaApply` | frontend/js/diagram-ai.js:93 |
+| `dgaArrow` | frontend/js/diagram-ai.js:31 |
+| `dgaDiff` | frontend/js/diagram-ai.js:102 |
+| `dgaFind` | frontend/js/diagram-ai.js:21 |
+| `dgaFold` | frontend/js/diagram-ai.js:17 |
+| `dgaLint` | frontend/js/diagram-ai.js:179 |
+| `dgaMarked` | frontend/js/diagram-ai.js:123 |
+| `dgaName` | frontend/js/diagram-ai.js:170 |
+| `dgaOne` | frontend/js/diagram-ai.js:64 |
+| `dgaSay` | frontend/js/diagram-ai.js:159 |
+| `dgaText` | frontend/js/diagram-ai.js:18 |
+| `dgaUnused` | frontend/js/diagram-ai.js:35 |
+| `dgaWords` | frontend/js/diagram-ai.js:152 |
+| `discard` | frontend/js/diagram-ai.js:336 |
+| `docOf` | frontend/js/diagram-ai.js:236 |
+| `draw` | frontend/js/diagram-ai.js:238 |
+| `el` | frontend/js/diagram-ai.js:228 |
+| `hues` | frontend/js/diagram-ai.js:225 |
+| `lint` | frontend/js/diagram-ai.js:362 |
+| `show` | frontend/js/diagram-ai.js:317 |
+| `versions` | frontend/js/diagram-ai.js:377 |
+| `wire` | frontend/js/diagram-ai.js:441 |
 
 ### frontend/js/diagram-bar.js (9)
 
@@ -12510,7 +12544,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/dash-night-lazy.css | 29 |
 | frontend/css/dash-orphans-lazy.css | 57 |
 | frontend/css/desk-companion-lazy.css | 226 |
-| frontend/css/diagram-lazy.css | 2365 |
+| frontend/css/diagram-lazy.css | 2490 |
 | frontend/css/file-drop-lazy.css | 51 |
 | frontend/css/first-run-lazy.css | 140 |
 | frontend/css/forced-colors-lazy.css | 28 |
@@ -16463,8 +16497,8 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `_act_topic` | src/tessellate/ai/help_topics_more.py:3510 |
-| `_slash_commands_topic` | src/tessellate/ai/help_topics_more.py:3643 |
+| `_act_topic` | src/tessellate/ai/help_topics_more.py:3532 |
+| `_slash_commands_topic` | src/tessellate/ai/help_topics_more.py:3665 |
 
 ### src/tessellate/ai/help_words.py (2)
 
@@ -25128,7 +25162,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (19504)
+## Tests (19511)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -25809,6 +25843,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_diagram_1661b.py | 9 |
 | tests/test_diagram_1661klm.py | 18 |
 | tests/test_diagram_1679m.py | 14 |
+| tests/test_diagram_ai.py | 5 |
 | tests/test_diagram_ask.py | 14 |
 | tests/test_diagram_behaviour_1108.py | 7 |
 | tests/test_diagram_blind_1108.py | 10 |
@@ -26432,7 +26467,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_make_plan.py | 21 |
 | tests/test_manage_lists_504.py | 5 |
 | tests/test_manual_entry_points.py | 3 |
-| tests/test_manual_parity.py | 30 |
+| tests/test_manual_parity.py | 31 |
 | tests/test_map_actions_clear_of_label.py | 1 |
 | tests/test_map_add_speed.py | 6 |
 | tests/test_map_branch_colour_order.py | 3 |
@@ -27251,7 +27286,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_typo_routing.py | 4 |
 | tests/test_ui_1017b.py | 7 |
 | tests/test_ui_batch_726.py | 13 |
-| tests/test_ui_recipes.py | 278 |
+| tests/test_ui_recipes.py | 279 |
 | tests/test_ui_signatures.py | 2 |
 | tests/test_ui_state.py | 6 |
 | tests/test_ui_targets_1029b.py | 9 |

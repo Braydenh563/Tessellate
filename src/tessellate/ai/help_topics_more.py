@@ -2963,7 +2963,7 @@ HELP_GROUPS: list[tuple[str, tuple[str, ...]]] = [
         "contradictions", "skills", "personas", "answer-style", "memory", "learned", "open-questions",
     )),
     ("Documents and code", (
-        "documents", "documents-controls", "diagram-builder", "diagram-blocks", "diagram-reading", "diagram-kinds", "diagram-elsewhere", "documents-replace", "live-view-marks", "documents-features", "documents-list-styles", "documents-paste", "documents-comments", "documents-turn-into", "callouts", "equation-editor", "document-history", "writing-checks", "code-files", "code-completions", "code-run",
+        "documents", "documents-controls", "diagram-builder", "diagram-blocks", "diagram-reading", "diagram-kinds", "diagram-elsewhere", "diagram-ai", "documents-replace", "live-view-marks", "documents-features", "documents-list-styles", "documents-paste", "documents-comments", "documents-turn-into", "callouts", "equation-editor", "document-history", "writing-checks", "code-files", "code-completions", "code-run",
         "debugger", "code-panel", "margin-reader",
     )),
     ("Boards and maps", (
@@ -3439,6 +3439,27 @@ MORE_TOPICS.extend([
         "badge": {"label": "Documents", "tab": "documents"},
     },
     {
+        "id": "diagram-ai",
+        "keywords": (
+            "ai in the diagram builder", "ask the diagram", "change a diagram with words", "diagram suggestions",
+            "fix my diagram", "diagram versions", "compare diagram versions", "restore a diagram version",
+            "diagram history", "ai diagram edit",
+        ),
+        "body": (
+            "Ask, at the top of a flowchart's blocks list, changes it from a sentence: add Refund after In stock? No, "
+            "rename Warehouse to Fulfilment, connect one block to another, move a block into a group, or remove one. "
+            "With no model a rule reads it; with a model on, the model writes the same kind of change. "
+            "It shows first: what it does, and a picture of both with added in green, removed in red and dotted, "
+            "and changed in amber. Apply makes it (Ctrl+Z undoes it in one step); Discard leaves the diagram as it was. "
+            "Suggestions, under Ask, lists what looks wrong: an arrow out of a decision with no words, a decision with "
+            "one way out, a block with no way out or joined to nothing, two blocks with the same words, a group "
+            "holding one block. Each row's button shows its fix the same way. On a diagram document every Apply is "
+            "a named version (AI: added Refund). Versions..., in the ... menu, lists them: tick two to Compare, or "
+            "one to compare it with now, and Restore puts one back."
+        ),
+        "badge": {"label": "Documents", "tab": "documents"},
+    },
+    {
         "id": "board-edit-data",
         "keywords": (
             "edit data", "custom properties", "properties on a shape", "data on a shape",
@@ -3498,6 +3519,7 @@ TOPIC_META.update({
     "diagram-reading": {"title": "Reading a diagram: list order, fit and direction", "path": "A diagram document, Blocks"},
     "diagram-kinds": {"title": "Mind maps, timelines and sequence diagrams as blocks", "path": "A diagram document, Blocks"},
     "diagram-elsewhere": {"title": "Editing a diagram in a document, on a board or from a reply, and saving its picture", "path": "A diagram in Live view, Edit as blocks"},
+    "diagram-ai": {"title": "Asking the diagram builder for a change, its suggestions and versions", "path": "A flowchart's blocks list, Ask; the ... menu, Versions..."},
     "board-hand-drawn": {"title": "The hand-drawn look", "path": "A board's View menu, Hand-drawn look"},
     "board-current-layer": {"title": "The current layer", "path": "A board's sidebar, Layers"},
     "board-keyboard-create": {"title": "Making and writing without a mouse", "path": "A board, Keys and controls"},

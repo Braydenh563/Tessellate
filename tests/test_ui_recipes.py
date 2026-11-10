@@ -7660,3 +7660,15 @@ def test_a_menu_rows_glyph_rides_on_its_item_not_on_its_index() -> None:
     assert now <= INDEX_MATCHED_MENU_ROWS, f"{sorted(now - INDEX_MATCHED_MENU_ROWS)} match menu rows by index; give the item a `lead` instead"
     assert 'typeof item.lead === "function"' in (js / "sheets-selects.js").read_text(encoding="utf-8")
     assert "`lead`" in (ROOT / "docs" / "DESIGN.md").read_text(encoding="utf-8")
+
+
+def test_a_diagram_change_is_one_marked_picture() -> None:
+    """dgai-1110, DESIGN.md's recipe row: a proposed change and a compare of two versions are one picture drawn by the
+    frame from the marked model, with one filled Apply beside a ghost Discard, and the versions are the document's."""
+    ai = (ROOT / "frontend" / "js" / "diagram-ai.js").read_text(encoding="utf-8")
+    assert ai.count("diagramAiPure.marked(") == 2 and "mermaidFill(fig, source)" in ai
+    assert "CATEGORY_PALETTE.green" in ai and "createElementNS" not in ai and "innerHTML" not in ai
+    assert '"ph:check Apply"' in ai and '"ph:x Discard"' in ai and 'apply.classList.add("accent")' in ai
+    assert "/revisions" in ai and "localStorage" not in ai
+    css = (ROOT / "frontend" / "css" / "diagram-lazy.css").read_text(encoding="utf-8")
+    assert ".dgm-versions-legend > .dgm-mark-del::before" in css and "var(--error)" in css

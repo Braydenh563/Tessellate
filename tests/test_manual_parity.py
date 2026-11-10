@@ -667,3 +667,19 @@ def test_the_sequence_picture_drags_are_in_the_guide_and_the_dialog_help() -> No
     # dgmleft-1108: the drop joins the nearest box and Kind asks first, in the Guide and in the dialog's help, under the 1900 limit.
     assert "onto the picture to join the nearest box" in blocks and "Kind asks before it clears blocks" in blocks and len(blocks) < 1900
     assert "Kind asks before it clears a diagram that has blocks." in embed
+
+
+def test_the_diagram_ask_suggestions_and_versions_are_in_the_guide_in_the_controls_words() -> None:
+    """dgai-1110: what the model can do to a diagram (the ops) a person asks for by hand in the Ask box, and the Guide's
+    `diagram-ai` topic names each control as diagram-ai.js labels it, in the Documents group, under the 1,900 limit."""
+    from tessellate.ai.help_chat import HELP_TOPICS
+    from tessellate.ai.help_topics_more import HELP_GROUPS, TOPIC_META
+
+    body = str(next(t["body"] for t in HELP_TOPICS if t["id"] == "diagram-ai"))
+    ai = (FRONTEND / "js" / "diagram-ai.js").read_text(encoding="utf-8")
+    for words, control in (("Apply", "ph:check Apply"), ("Discard", "ph:x Discard"), ("Suggestions", "Suggestions ("),
+                           ("Versions...", "ph:clock-counter-clockwise Versions…"), ("Compare", "ph:git-diff Compare"),
+                           ("Restore", 'label: "Restore"'), ("add Refund after In stock? No", "add Refund after In stock? No")):
+        assert words in body and control in ai, words
+    assert "no model a rule" in body and "Ctrl+Z" in body and len(body) < 1900
+    assert "diagram-ai" in TOPIC_META and "diagram-ai" in dict(HELP_GROUPS)["Documents and code"]
