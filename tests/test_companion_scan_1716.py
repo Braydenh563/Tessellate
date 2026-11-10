@@ -53,6 +53,36 @@ def test_a_foreground_window_counted_hidden_is_named_so() -> None:
     assert tally["invisible, yet foreground"] == 1
 
 
+def test_a_hidden_window_near_a_release_says_whether_it_is_titled_and_its_style() -> None:
+    """A hidden Explorer or Chrome helper has no title; a hidden real window does: the let-go log tells them apart."""
+    fake = FakeWin32()
+    fake.window_list = {
+        6: {"rect": (400, 244, 2434, 1400), "title": "Docs", "visible": False, "cls": "CabinetWClass"},
+        7: {"rect": (400, 244, 2434, 1400), "title": "", "visible": False, "cls": "CabinetWClass"},
+    }
+    seen: list = []
+    k.windows(fake, os.getpid(), None, [MON], Counter(), near=(1000, 244, 100), seen=seen)
+    whys = sorted(why for _c, _r, why in seen)
+    assert len(whys) == 2 and all(x.startswith("invisible (") and ", style " in x for x in whys), whys
+    assert any("(titled," in x for x in whys) and any("(no title," in x for x in whys)
+
+
+def test_the_owners_1110_classes_and_rects_visible_are_standable_hidden_are_not() -> None:
+    """The owner's let-go trace (2560x1504, 192 dpi): the same classes and rects, shown, are places to stand (rects
+    are left, top, right, bottom; x 245 to 2165 with top 245 is a real 1920-wide window); hidden they are counted
+    invisible, as the helper windows Chrome and Explorer keep are; Progman is a tool window."""
+    shown = {
+        1: {"rect": (245, 245, 2165, 1300), "title": "Chrome", "cls": "Chrome_WidgetWin_0"},
+        2: {"rect": (400, 244, 2434, 1400), "title": "Docs", "cls": "CabinetWClass"},
+    }
+    wins, tally = scan(shown)
+    assert sorted(p.key for p in perches.top_edges(wins, 200)) == [1, 2] and "invisible" not in tally
+    hidden = {k_: {**v, "visible": False} for k_, v in shown.items()}
+    hidden[3] = {"rect": (0, 0, 2560, 1504), "title": "Program Manager", "cls": "Progman", "ex": k.WS_EX_TOOLWINDOW}
+    wins, tally = scan(hidden)
+    assert tally["invisible"] == 2 and perches.top_edges(wins, 200) == []
+
+
 def test_two_placements_in_flight_do_not_flip_the_quick_panel(monkeypatch: pytest.MonkeyPatch) -> None:
     """Placed at the first size, then the measured one; each read-back saw the other's size and set its own again."""
     import ctypes

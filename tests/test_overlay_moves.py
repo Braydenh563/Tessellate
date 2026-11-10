@@ -128,7 +128,9 @@ def test_a_throw_that_hits_the_ceiling_hangs_then_lets_go_and_falls() -> None:
         if e.state == "hang":
             seen = True
             assert out.y == 0 and out.frame == "hang"
-    assert seen and "fall" in frames
+    # Intent moved (owner 2026-11-10, "it always falls down"): after its full rest the top hang ends in a calm drop
+    # to its feet (a lowering, no fall frame), not a fall.
+    assert seen and "fall" not in frames
     assert e.y == FLOOR
 
 
@@ -248,7 +250,8 @@ def test_a_walker_climbs_to_the_top_hangs_still_and_falls_back() -> None:
     assert len({o.x for o in outs if e.state == "hang"}) == 1  # INBOX 1663: it holds still
     # Intent kept, bar moved (INBOX 1670: a hang lasts 30 s or more, 200 s at most, then it lets go).
     t, outs = step(e, t, eng.HANG_FOR[1] + 15.0)
-    assert any(o.frame == "fall" for o in outs) and outs[-1].y == FLOOR
+    # Intent moved (owner 2026-11-10): the end is a calm drop to its feet, not a fall.
+    assert not any(o.frame == "fall" for o in outs) and outs[-1].y == FLOOR
 
 
 def test_a_floater_floats_up_to_hang_from_the_top_edge() -> None:
