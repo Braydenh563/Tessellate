@@ -29,6 +29,8 @@ def test_the_document_palette_names_every_find_chord():
     src = (JS / "documents.js").read_text(encoding="utf-8")
     assert 'id: "goto-line", icon: "ph:arrow-line-down", label: "Go to a line", keys: "Ctrl+G",\n    code: true,' in src
     assert 'id: "find-next", icon: "ph:arrow-down", label: "Find the next match", keys: "F3",\n    prose: true,' in src
+    assert 'id: "goto-line-text", icon: "ph:arrow-line-down", label: "Go to a line in this text", keys: "Ctrl+Alt+G",\n    prose: true,' in src
+    assert '{ key: "Mod-Alt-g", run: (view) => CM.search.gotoLine(view) }' in src
     assert 'id: "replace-here", icon: "ph:swap", label: "Find and replace in this document", keys: "Ctrl+H",' in src
 
 

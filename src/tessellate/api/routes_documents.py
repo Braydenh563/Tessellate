@@ -50,6 +50,7 @@ from tessellate.entry.mentions import (
 from tessellate.entry.manager import (
     entries_for_document,
     join_blocks,
+    readable_embeds,
     strip_inline_markdown,
     get_entry,
     link_document,
@@ -174,7 +175,7 @@ def _preview_line(line: str) -> str:
         line = ", ".join(cell.strip() for cell in line.strip("|").split("|") if cell.strip())
     if _HORIZONTAL_RULE.match(line):
         return ""
-    line = strip_inline_markdown(_HIGHLIGHT.sub(r"\1", line)).lstrip("#>-*+ \t")
+    line = strip_inline_markdown(_HIGHLIGHT.sub(r"\1", readable_embeds(line))).lstrip("#>-*+ \t")
     return _CALLOUT_HEAD.sub("", _LEAD_TASK.sub("", _LEAD_ORDERED.sub("", line)))
 
 

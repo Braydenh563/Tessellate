@@ -153,7 +153,7 @@ def test_each_pose_is_reachable_from_the_decide_path_in_its_poses_only() -> None
         + "const nameMarkBuddyActivitiesOff = () => off, nameMarkBuddyActOff = (a, o = off) => o.has(a), nameMarkBuddyActions = () => 'normal';\n"
         + "const nameMarkBuddyCalmAllows = () => true, nameMarkBuddyScrollAgo = () => 1e9, nameMarkBuddyWarmthAt = () => 0;\n"
         + "const nameMarkBuddyTraits = () => ({ loud: 1 });\n"
-        + "const nmb = { lastInput: 0, reading: {}, cool: {}, recentActs: [], lastAct: '', mood: { energy: 0.5, curiosity: 0.5, sociability: 0.5 }, grumpyUntil: 0, lastCheer: 0, lastPoke: 0, feel: null, pointer: null, visit: false, travelPlay: () => true, legs: '', edgeType: '', onBoard: false, pose: 'stand', mind: null };\n"
+        + "const nmb = { cardEdge: () => null, lastInput: 0, reading: {}, cool: {}, recentActs: [], lastAct: '', mood: { energy: 0.5, curiosity: 0.5, sociability: 0.5 }, grumpyUntil: 0, lastCheer: 0, lastPoke: 0, feel: null, pointer: null, visit: false, travelPlay: () => true, legs: '', edgeType: '', onBoard: false, pose: 'stand', mind: null, cat: { weigh: () => 1 } };\n"
         + "const NMB_BOARD_WANDER = 0.35;\n"
         + _fn("nameMarkBuddyDecide")
         + """

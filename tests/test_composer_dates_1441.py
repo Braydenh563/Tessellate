@@ -190,14 +190,14 @@ def test_a_glossary_answer_names_its_note_and_ends_whole():
 
 
 @pytest.mark.parametrize(("content", "named"), [
-    ("Intro to Cloud Computing starts Monday.", "the note that starts “Intro to Cloud Computing starts Monday”"),
-    ("Annual Leave starts 2 December.", "the note that starts “Annual Leave starts 2 December”"),
-    ("Project Management Office sent the forms.", "the note that starts “Project Management Office sent the forms”"),
+    ("Intro to Cloud Computing starts Monday.", "“Intro to Cloud Computing starts Monday”"),
+    ("Annual Leave starts 2 December.", "“Annual Leave starts 2 December”"),
+    ("Project Management Office sent the forms.", "“Project Management Office sent the forms”"),
     ("Atlas retro meeting", "Atlas retro meeting"),
     ("HCI quiz Friday.", "HCI quiz Friday"),
-    ("Trip planning: flights to Lisbon on 3 May.", "the trip planning note"),
-    ("Gym: squats at 80 kg.", "the gym note"),
-    ("Pros: more time.", "the note that starts “Pros: more time”"),
+    ("Trip planning: flights to Lisbon on 3 May.", "“Trip planning: flights to Lisbon on…”"),
+    ("Gym: squats at 80 kg.", "“Gym: squats at 80 kg”"),
+    ("Pros: more time.", "“Pros: more time”"),
 ])
 def test_a_one_line_sentence_is_quoted_never_worn_as_a_name(content, named):
     """The coordinator, 2026-10-29: "Intro to Cloud Computing starts Monday

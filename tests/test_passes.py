@@ -101,7 +101,8 @@ def test_a_pass_with_no_step_to_stop_at_says_so(client, monkeypatch):
     monkeypatch.setitem(passes.RUNNERS, "backup", lambda: gate.wait(10))
     client.post("/jobs/passes/backup/run")
     _wait(lambda: passes.running("backup"))
-    row = next(t for t in client.get("/tasks").json()["tasks"] if t["kind"] == "job-pass")
+    # The backup's own row: another test's pass can still be listed in this worker (CI 31bac2a took a stoppable one).
+    row = next(t for t in client.get("/tasks").json()["tasks"] if t["kind"] == "job-pass" and passes.kind_for_label(t["name"]) == "backup")
     assert row["cancellable"] is False
     gate.set()
 

@@ -363,6 +363,7 @@ function paletteCommands() {
     { label: "ph:lightning Quick note", about: "A note saved without leaving this page.", chord: "quickNote", act: () => openQuickNote() },
     { label: "ph:clipboard-text Paste as a note", about: "What you copied, saved as a new note.", chord: "pasteNote", act: () => pasteClipboardAsNote() },
     { label: "ph:file-text New document", reveal: "doc-new", chord: "newDocument" },
+    { label: "ph:flow-arrow New diagram", about: "A flowchart, sequence, mind map or timeline built from blocks.", act: () => ensureModule("library").then(() => diagramModel.door({ doc: true })) },
     { label: "ph:code New code file", act: () => ensureModule("library").then(() => LIBRARY_CREATE_BY_KIND.code.run()) },
     { label: "ph:sparkle Write a note from rough thoughts", reveal: "writing-room" },
     { label: "ph:sparkle New chat", reveal: "chat-new", chord: "newChat" },
@@ -542,6 +543,7 @@ function paletteCommands() {
     //: INBOX 430: also in Find anything, which lists these same commands;
     //: the row says which it will do, since this list is built per query.
     { label: nameMarkBuddyShowing() ? "ph:eye-slash Hide companion" : "ph:person-simple Show companion", chord: "toggleCompanion", act: () => nameMarkBuddyToggle() },
+    ...(nameMarkBuddyShowing() ? [{ label: "ph:crosshair Focus companion", keywords: "companion atlas keyboard tab reach arrow keys menu", about: "Put the keyboard on it: arrow keys move it, Enter says hello, Shift+F10 opens its menu.", act: () => setTimeout(() => document.querySelector("#nm-buddy .nm-buddy-face")?.focus(), 150) }] : []),
     { label: "ph:keyboard Keyboard shortcuts", reveal: "shortcuts", chord: "help" },
     //: INBOX 896: the status bar's wifi icon, by name, from anywhere.
     { label: "ph:wifi-high Other devices", keywords: "lan network wifi phone open close trusted networks address", about: "Whether a phone on this network can open the app, with the switch and the trusted networks.", chord: "lanPanel", act: () => openLanPanel() },

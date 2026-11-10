@@ -345,10 +345,21 @@ function helpChatSetBusy(busy) {
 
 function helpChatStop() {
   if (!helpChatBusy) return;
+  composerQueue("guide").held = true;
   helpChatAbort?.abort();
 }
 
-async function submitHelpChatQuestion(question) {
+//: The composer queue (palette.js, CHAT_PLAN B3, the owner: "check the guide as
+//: well"): the box stays open while Atlas answers; a question asked then
+//: waits above the box, with Edit and Remove, until the answer ends.
+composerQueue("guide", {
+  input: () => $("help-chat-input"),
+  busy: () => helpChatBusy,
+  send: (text) => submitHelpChatQuestion(text, { keepBox: true }),
+  before: () => $("help-chat-form"),
+});
+
+async function submitHelpChatQuestion(question, { keepBox = false } = {}) {
   if (helpChatBusy || !question.trim()) return;
   helpChatBusy = true;
   const input = $("help-chat-input");
@@ -373,7 +384,7 @@ async function submitHelpChatQuestion(question) {
   const pendingLine = typeof progressLine === "function" ? progressLine(null, { persona: GUIDE_NAME }) : null;
   pending.appendChild(pendingLine || document.createTextNode("Reaching Atlas…"));
   helpChatAppendRow(pending);
-  if (input) input.value = "";
+  if (input && !keepBox) input.value = "";
   try {
     //: **Streamed, with the thinking shown while it is being done.**
     //: Reported: the reply "will be blurted out really fast like it isnt
@@ -455,6 +466,7 @@ async function submitHelpChatQuestion(question) {
     helpChatSetBusy(false);
     renderHelpChatMenu();
     input?.focus();
+    composerQueue("guide").next();
   }
 }
 
@@ -615,7 +627,15 @@ function helpChatReveal(row, content, signal = null) {
 
 $("help-chat-form")?.addEventListener("submit", (event) => {
   event.preventDefault();
-  submitHelpChatQuestion($("help-chat-input")?.value || "");
+  const input = $("help-chat-input");
+  const text = (input?.value || "").trim();
+  const queue = composerQueue("guide");
+  if (text && queue.take(text)) {
+    input.value = "";
+    return;
+  }
+  queue.held = false;
+  submitHelpChatQuestion(text);
 });
 $("help-chat-send")?.addEventListener("click", (event) => {
   if (!helpChatBusy) return; // a plain send is the form's submit
@@ -774,6 +794,7 @@ function askAtlas(question) {
     input?.focus();
     return;
   }
+  if (composerQueue("guide").take(question)) return;
   if (input) input.value = question;
   submitHelpChatQuestion(question);
 }

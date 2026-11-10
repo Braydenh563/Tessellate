@@ -79,6 +79,37 @@ def test_an_image_is_read_once_however_often_its_regions_are_asked_for(client, m
     assert len(calls) == 1, f"the reader ran {len(calls)} times for four looks"
 
 
+def test_asks_that_overlap_share_one_reading(client, monkeypatch):
+    """INBOX 1716, "request 5753ms ... /files/4/ocr-regions": the viewer asks
+    again before the first answer is stored, and each ask ran the reader."""
+    import threading
+    import time
+
+    calls: list[Path] = []
+    _counting_reader(monkeypatch, calls)
+    inner = ocr.extract_regions
+
+    def slow(path: Path):
+        time.sleep(0.3)
+        return inner(path)
+
+    monkeypatch.setattr(ocr, "extract_regions", slow)
+    attachment_id = _attach(client, "scan.png", PNG)
+    bodies: list[dict] = []
+
+    def ask():
+        bodies.append(client.get(f"/files/{attachment_id}/ocr-regions").json())
+
+    threads = [threading.Thread(target=ask) for _ in range(4)]
+    for thread in threads:
+        thread.start()
+    for thread in threads:
+        thread.join()
+
+    assert len(calls) == 1, f"the reader ran {len(calls)} times for four overlapping asks"
+    assert [b["source"] for b in bodies] == ["tesseract"] * 4
+
+
 def test_a_stored_reading_survives_a_new_request_intact(client, monkeypatch):
     """The second answer is the first answer, not a thinner one."""
     calls: list[Path] = []
@@ -175,3 +206,99 @@ def test_a_page_whose_regions_are_stored_is_not_counted_as_read(client, monkeypa
     stored = client.get(f"/files/{attachment_id}/page-reads").json()
     assert stored["read"] == 0
     assert all(not (page["text"] or "").strip() for page in stored["pages"])
+
+
+def test_a_failed_read_is_shared_not_repeated_by_the_asks_queued_behind_it(client, monkeypatch) -> None:
+    """Review of INBOX 1716's page lock: a read that finds nothing is not stored, so four overlapping asks ran the
+    reader four times one after another (2 s for a 0.5 s failing reader). They now share the first answer."""
+    import threading
+    import time
+
+    from tessellate.api import routes_files
+    from tessellate.core import ocr
+
+    routes_files._REGION_MISSES.clear()
+    calls = []
+
+    def slow_fail(path, *a, **k):
+        calls.append(1)
+        time.sleep(0.3)
+        return None
+
+    monkeypatch.setattr(ocr, "extract_regions", slow_fail)
+    aid = _attach(client, "scan.png", PNG)
+    threads = [threading.Thread(target=lambda: client.get(f"/files/{aid}/ocr-regions")) for _ in range(4)]
+    for t in threads:
+        t.start()
+    for t in threads:
+        t.join()
+    assert len(calls) == 1, len(calls)
+
+
+def test_a_shared_miss_never_stops_a_different_ask_from_reading(client, monkeypatch) -> None:
+    """Review of the 30 s miss share: its key left out `auto`, so "not read yet" from a vision-model page
+    (`auto=false`, no reader run) was served to the Tesseract ask that followed, and the reader never ran."""
+    from tessellate.api import routes_files
+    from tessellate.core import ocr
+
+    routes_files._REGION_MISSES.clear()
+    calls = []
+    monkeypatch.setattr(ocr, "extract_regions", lambda *a, **k: calls.append(1))
+    aid = _attach(client, "scan.png", PNG)
+    client.get(f"/files/{aid}/ocr-regions?auto=false")
+    client.get(f"/files/{aid}/ocr-regions?auto=true")
+    assert calls == [1], calls
+
+
+def test_a_page_read_drops_the_shared_miss_for_that_page() -> None:
+    """A miss shared for 30 s must not outlive a reading stored for the same page: storing it drops the miss."""
+    from tessellate.api import routes_files
+
+    routes_files._REGION_MISSES.clear()
+    routes_files._REGION_MISSES[("k", 1, 0, "p", True, "", 0)] = (0.0, None)
+    routes_files._REGION_MISSES[("k", 1, 3, "p", True, "", 0)] = (0.0, None)
+    routes_files._forget_region_misses(("k", 1), 0)
+    assert list(routes_files._REGION_MISSES) == [("k", 1, 3, "p", True, "", 0)]
+
+
+def test_a_pdf_page_that_found_nothing_shares_its_miss(client, monkeypatch) -> None:
+    """The miss key held the rasterised page's temp path, new on every look, so a PDF never hit it."""
+    from tessellate.api import routes_files
+
+    routes_files._REGION_MISSES.clear()
+    calls: list[int] = []
+    monkeypatch.setattr(pdfpages, "available", lambda: True)
+    monkeypatch.setattr(pdfpages, "page_count", lambda path: 2)
+    monkeypatch.setattr(pdfpages, "render_page", lambda path, index: PNG)
+    monkeypatch.setattr(ocr, "extract_regions", lambda *a, **k: calls.append(1))
+    aid = _attach(client, "lecture.pdf", TWO_PAGE_PDF)
+    for _ in range(3):
+        client.get(f"/files/{aid}/ocr-regions?page=0")
+    assert calls == [1], calls
+
+
+def test_a_shared_miss_is_handed_out_as_a_copy(app_state, tmp_path, monkeypatch) -> None:
+    """Callers set `pages`/`page`/`message` on what they get; they must not be editing one shared object."""
+    from tessellate.api import routes_files
+
+    routes_files._REGION_MISSES.clear()
+    monkeypatch.setattr(ocr, "extract_regions", lambda *a, **k: None)
+    scan = tmp_path / "scan.png"
+    scan.write_bytes(PNG)
+    key = ("attachment", 987654)
+    first = routes_files._regions_for(scan, "", "", key, 0, True, "")
+    first.message = "MUTATED"
+    second = routes_files._regions_for(scan, "", "", key, 0, True, "")
+    third = routes_files._regions_for(scan, "", "", key, 0, True, "")
+    assert second.message != "MUTATED"
+    assert second is not third
+
+
+def test_page_locks_are_dropped_after_use() -> None:
+    from tessellate.api import routes_files
+
+    routes_files._REGION_LOCKS.clear()
+    for page in range(50):
+        with routes_files._region_lock(("attachment", 7), page):
+            assert len(routes_files._REGION_LOCKS) == 1
+    assert routes_files._REGION_LOCKS == {}

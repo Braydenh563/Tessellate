@@ -13,7 +13,7 @@ import re
 from collections import Counter
 from datetime import date
 
-from tessellate.ai import composer_tables
+from tessellate.ai import composer_frame, composer_tables
 from tessellate.ai.composer_answer import _Answer
 from tessellate.ai.composer_ask import _MONTHS, _holds, _overview, _stem, _words, asks_time, compare_sides, rephrase, subject_terms
 from tessellate.ai.composer_body import _overview_line
@@ -47,6 +47,44 @@ _BROAD = re.compile(
 )
 
 
+_WINDOW_NOUN = re.compile(r"\b(weekend|week|month|year|fortnight)\b", re.I)
+
+
+def window_as_topic(p: Plan, views: list[NoteView]) -> bool:
+    """Whether the window's noun is a note's title word ("plans for the weekend"
+    with a note called "Weekend plans", R3-20). The title is then the subject:
+    the window is dropped and the noun searched as a word, so no note written
+    in the window is not "nothing". Ahead, not behind ("last week" with a
+    "Weekly review" is a recall), and the word itself, not its stem."""
+    noun = _WINDOW_NOUN.search(p.window_phrase or "")
+    if not (noun and p.window and p.terms and p.kind != "recall") or re.match(r"(?:the )?last\b", p.window_phrase, re.I):
+        return False
+    word = re.compile(rf"\b{noun.group(1)}\b", re.I)
+    if not any(v.titled and word.search(v.title or "") for v in views) or any(_in_window(v, p.window) for v in views):
+        return False
+    p.window, p.terms = None, list(dict.fromkeys([*p.terms, noun.group(1).lower()]))
+    return True
+
+
+def _recall_lead(out: _Answer, p: Plan, inside: list[NoteView], said: str, wrote: bool) -> None:
+    """The count line. Notes that say the day were not all written on it: they
+    are "dated", never "you wrote" (R3-8)."""
+    dated = not wrote and any(not (p.window[0] <= v.written <= p.window[1]) for v in inside if v.written)
+    if dated:
+        out.m(out.count(len(inside)).capitalize()).t("recall_dated_note" if len(inside) == 1 else "recall_dated_notes").asked(said)
+    else:
+        out.t("recall_a").m(out.count(len(inside))).t("recall_note" if len(inside) == 1 else "recall_notes").asked(said)
+    out.t("recall_b" if len(inside) > 1 else "end_colon")
+
+
+def _recall_name(out: _Answer, view: NoteView) -> None:
+    """A note's name and day: its title, or its own first words (R3-15)."""
+    if view.titled:
+        out.name(view).dated(view)
+    else:
+        out.term(composer_frame.name_of(view.note), view).dated(view)
+
+
 def _recall(out: _Answer, p: Plan, views: list[NoteView], question: str) -> None:
     """Recall by time (decision 31's schema): the notes in the window, newest
     first, grouped by day, under the count; "nothing from then" when none."""
@@ -60,14 +98,10 @@ def _recall(out: _Answer, p: Plan, views: list[NoteView], question: str) -> None
     if not inside:
         out.t("recall_none").asked(said).t("stop")
         return
-    out.t("recall_a").m(out.count(len(inside))).t("recall_note" if len(inside) == 1 else "recall_notes").asked(said)
-    out.t("recall_b" if len(inside) > 1 else "end_colon")
+    _recall_lead(out, p, inside, said, wrote)
     for view in inside[:RECALL_NOTES]:
         out.t("line", "bullet")
-        if view.titled:
-            out.name(view).dated(view)
-        else:
-            out.t("list_from").m(out.day(view.written))
+        _recall_name(out, view)
         #: A picture's note as what it shows and its words; a note's
         #: heading with the sentence after it (INBOX 787).
         units = _overview().best_line(view.sentences, set()) or _label_line(view)

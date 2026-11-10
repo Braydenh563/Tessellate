@@ -6396,7 +6396,7 @@ button.ghost.doc-template-choice.wb-template-choice {
   flex-direction: column;
   gap: var(--space-1);
   margin: var(--space-2) 0;
-  padding: 0;
+  padding: 0 var(--space-1);
 }
 
 .wb-fmt-prop {
@@ -6404,12 +6404,19 @@ button.ghost.doc-template-choice.wb-template-choice {
   display: grid;
   grid-template-columns: minmax(0, 2fr) minmax(0, 3fr) auto;
   align-items: center;
-  gap: var(--space-1);
+  gap: var(--space-2);
 }
 
 .wb-fmt-prop input {
   min-width: 0;
   width: 100%;
+}
+
+/* The ring sits on the box's own edge (the owner, 2026-11-09: the global 2px offset put it 4px out, so
+   the Name box's ring was cut by the panel's left edge and touched the Value box's ring across the gap). */
+.wb-fmt-prop input:focus-visible,
+.wb-fmt-prop input:focus {
+  outline-offset: 0;
 }
 
 /* The Format panel's four tabs share its width (canvasdepth2: Data made a
@@ -7010,12 +7017,37 @@ input[type="color"].wb-mixed {
     padding-inline: var(--space-2);
   }
 }
+/* Back to the document a diagram was opened from names that document (dgbt-1109 13); a long title is cut, the full one is the tooltip. */
+.doc-back-label {
+  max-width: 14ch;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+/* **Browser zoom (INBOX 1717): the name gives way before the tools do.** At 125 to
+   200 % the dock is 544 to 806px and a code document's tools need 410 to 600, so the
+   title and Back (246px, the input's own 128px floor) sat on a line above them.
+   Back is its arrow from 820 down (its title and aria-label name it), the title may
+   shrink to 5rem, and the save state leaves the row from 600. */
+@container docdock (max-width: 819.98px) {
+  .doc-back-label {
+    display: none;
+  }
+  #tab-documents .doc-dock > .doc-dock-identity {
+    flex-basis: 12rem;
+    min-width: 0;
+  }
+  .doc-dock-identity > .doc-title-input {
+    flex: 1 1 5rem;
+    min-width: 5rem;
+  }
+}
 @container docdock (max-width: 599.98px) {
   .doc-dock-status {
     display: none;
   }
-  .doc-back-label {
-    display: none;
+  #tab-documents .doc-dock > .doc-dock-identity {
+    flex-basis: 8rem;
   }
 }
 
@@ -7357,8 +7389,8 @@ input[type="color"].wb-mixed {
    icon neighbours, wide enough for "400%" so the dock does not jitter as the
    number changes. */
 .whiteboard-floating-panel .wb-zoom-level {
-  min-inline-size: 6ch;
-  padding-inline: var(--space-2);
+  display: inline-flex;
+  align-items: center;
   font-size: var(--text-sm);
   font-variant-numeric: tabular-nums;
 }
@@ -8259,8 +8291,17 @@ input[type="color"].wb-mixed {
    goes too (44 px). Edit and Read are their icons (the words stay their names for
    a screen reader), since the title had 45 px of the row beside them. Moved here
    from the boot sheet it first went in, which was 45 bytes over its budget. */
-@media (min-width: 600px) {
+@container docdock (min-width: 600px) {
   #tab-documents .doc-phone-only {
+    display: none;
+  }
+}
+/* The same fold for a narrow dock in a wide window (INBOX 1717, 200 % zoom): the
+   dock's own width decides, not the window's. A code document's tools were 476px of
+   44px targets in 544px; the extras are the kebab's rows and the row stays one line. */
+@container docdock (max-width: 599.98px) {
+  #tab-documents .doc-actions > :is(#doc-ai, #doc-code-snippets-open, #doc-code-assist-open, #doc-code-format, #doc-focus-toggle, .graph-help-toggle),
+  #tab-documents .doc-view-menu {
     display: none;
   }
 }

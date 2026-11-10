@@ -263,6 +263,29 @@ def asks_time(question: str) -> bool:
     return bool(_ASKS_TIME.search(question))
 
 
+#: "What is tomorrow's date", "what is the date yesterday": which neighbouring day is asked about.
+_NEIGHBOUR_DAY = lazy_compile(
+    r"^(?:(?:what|when) (?:is|was) )?(?:the )?(?P<d>tomorrow|yesterday)(?:'s|s)? date$|^what (?:is|was) the date (?P<e>tomorrow|yesterday)$"
+)
+
+
+def neighbour_day(question: str) -> str | None:
+    """"tomorrow" or "yesterday" when the whole question asks for that day's date."""
+    found = _NEIGHBOUR_DAY.match(question)
+    return (found["d"] or found["e"]) if found else None
+
+
+#: Whole-year words and how far each is from this year.
+YEAR_SHIFT = {"it": 0, "this year": 0, "next year": 1, "last year": -1}
+_LEAP_QUESTION = lazy_compile(r"^(?:is|was|will) (?P<y>\d{4}|it|this year|next year|last year)(?: be)? a leap year$")
+
+
+def leap_year_asked(question: str) -> str | None:
+    """The year a leap-year question names: four digits, or a key of YEAR_SHIFT."""
+    found = _LEAP_QUESTION.match(question)
+    return found["y"] if found else None
+
+
 _WD_WORD = "|".join(sorted(_WEEKDAYS, key=len, reverse=True))
 _MO_WORD = "|".join(sorted(_MONTHS, key=len, reverse=True))
 _WD_PREFIX = rf"(?:\b({_WD_WORD})\.?,?\s+)?"
@@ -2151,7 +2174,8 @@ _DEICTIC_PHRASE = lazy_compile(
     r"^(?:in |on |from |during |for )?(?:today|yesterday|tomorrow|tonight|now|(?:this|last|next|past|previous|coming)\b.*|(?:\d+|a|an|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|a couple of|a few) (?:days?|weeks?|fortnights?|months?|years?) ago)$",
     re.I,
 )
-_ABOUT_PHRASE = r"\b(?:about|regarding|concerning)\s+(?:the |my |our )?{}\s*[?.!]*$"
+#: "which holiday is better in April" (R9-10): the month is the subject of the ask, not when it was written.
+_ABOUT_PHRASE = r"\b(?:about|regarding|concerning|(?:best|better|nicest|ideal|great) (?:in|for))\s+(?:the |my |our )?{}\s*[?.!]*$"
 PHRASE_FILLER = frozenset("in on at from during for the a an of".split())
 _TOPIC_HOLIDAYS = frozenset(
     "christmas xmas easter halloween thanksgiving diwali eid ramadan hanukkah passover valentines boxing new year new years".split()
@@ -2170,6 +2194,9 @@ def a_topic_phrase(question: str, phrase: str, *, holiday: bool = True) -> bool:
     if not bare or _DEICTIC_PHRASE.match(phrase.strip()):
         return False
     if re.search(_ABOUT_PHRASE.format(re.escape(bare)), question or "", re.I):
+        return True
+    #: "the Q4 report": a quarter with a noun after it names the thing, it does not date the note (R9-3).
+    if re.fullmatch(r"q[1-4]", bare.lower()) and re.search(rf"\b{re.escape(bare)} [a-z]", (question or "")[:500], re.I):
         return True
     return holiday and bare.lower().replace("'", "") in _TOPIC_HOLIDAYS and not _WHEN_ASK.search(question or "")
 
@@ -2676,6 +2703,17 @@ def set_for_later(sentence: str) -> bool:
     the note, and it is not a thing that happened. A day must be named:
     "I've just booked flights" is the booking itself, done that day."""
     return bool(_ARRANGED.search(sentence or "")) and dated_sentence(sentence)
+
+
+_SCHEDULE_DAY = re.compile(r"\b(?:mon|tues|wednes|thurs|fri|satur|sun)day", re.I)
+_SCHEDULE_EVERY = re.compile(r"\bevery (?:other )?(?:week|day|month|(?:mon|tues|wednes|thurs|fri|satur|sun)day)|\b(?:mon|tues|wednes|thurs|fri|satur|sun)days\b", re.I)
+
+
+def recurring_schedule(sentence: str) -> bool:
+    """Whether a sentence is a habit, not a day that falls due: "Gym on Monday, Wednesday and Friday at 7am",
+    "every Tuesday", "Mondays" (bt-compcomp-1109 item 8). Only a bounded slice is read."""
+    text = (sentence or "")[:2000]
+    return len(_SCHEDULE_DAY.findall(text)) > 1 or bool(_SCHEDULE_EVERY.search(text))
 
 
 def told_as_past(sentence: str) -> bool:
@@ -3782,7 +3820,9 @@ _SCORE = lazy_compile(r"\b\d+(?:\.\d+)?\s?(?:/\s?(?:5|10|20|100)\b|out of \d+|st
 
 
 def says_shape(shape: str, text: str) -> bool:
-    """Whether `text` holds a "money" amount or a "score" ("8/10", "4 stars")."""
+    """Whether `text` holds a "money" amount, a "score" ("8/10", "4 stars") or a "schedule" (a recurring habit)."""
+    if shape == "schedule":
+        return recurring_schedule(text)  # "Gym on Monday, Wednesday and Friday at 7am" is a schedule (bt-compcomp-1109 item 11)
     pattern = {"money": _MONEY, "score": _SCORE}.get(shape)
     return bool(pattern and pattern.search(text or ""))
 
@@ -3821,3 +3861,43 @@ def measures(text: str) -> list[Measure]:
         if dimension != "temperature" and raw[m.start() - 1:m.start()] not in ("$", "£", "€", "¥"):
             found.append(Measure(dimension, _figure(m.group(1)) * size, name, m.start(), m.end()))
     return sorted(found, key=lambda x: x[3])
+
+
+# --- round 9 readers (c11): the event window at the end of a question, and a distance --------------------------------
+
+_EVENT_WINDOW_WORDS = r"this week|next week|this weekend|next weekend|this month|next month|today|tomorrow|tonight"
+#: Both read text whose whitespace is already one space each (the callers join `split()`), so every gap is a single
+#: literal space: no quantified whitespace for a long run to backtrack through (CodeQL polynomial regex).
+_EVENT_TAIL = re.compile(r" (?:this|next) (?:week|month|weekend) ?[?.!]*$| (?:today|tomorrow|tonight) ?[?.!]*$", re.I)
+_EVENT_ASK = re.compile(rf"^\W*(?:is|are|will) (?:the|my|our|a)\b.*? (?P<window>{_EVENT_WINDOW_WORDS}) ?[?.!]*$", re.I)
+_DISTANCE = re.compile(r"(?<![\d.,])(\d[\d.,]{0,15})\s{0,3}(km|kilometres|kilometers|miles|mi)\b", re.I)
+
+
+def without_event_window_tail(question: str) -> str:
+    """`question` without a window ("this week", "tomorrow") at its end. Only the last 60 characters are read, so a
+    long run never meets the pattern (polynomial regex, CodeQL)."""
+    question = " ".join((question or "").split())
+    return question[:-60] + _EVENT_TAIL.sub("", question[-60:])
+
+
+def event_window_asked(question: str) -> str:
+    """The window ("next week", "today") a yes/no question about a thing ends with, or ""."""
+    text = " ".join((question or "").split())
+    found = _EVENT_ASK.match(text) if text and len(text) < 300 else None
+    return found.group("window").lower() if found else ""
+
+
+def distances(text: str) -> list[tuple[int, int, str, str]]:
+    """Each distance said in `text`: (start, end, figure as written, unit as written)."""
+    return [(m.start(), m.end(), m.group(1), m.group(2)) for m in _DISTANCE.finditer(text or "")]
+
+
+def months_named(text: str) -> list[int]:
+    """The months `text` names, in order, as 1 to 12 ("best in April" is [4]). "may" counts only
+    capitalised, so the verb is not a month. Only the first 2,000 characters are read."""
+    found = []
+    for word in re.findall(r"[A-Za-z]+", (text or "")[:2000]):
+        low = word.lower()
+        if low in _MONTHS and (low != "may" or word[:1] == "M"):
+            found.append(_MONTHS[low])
+    return found

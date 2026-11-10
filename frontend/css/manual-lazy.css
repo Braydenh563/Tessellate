@@ -34,6 +34,8 @@
   justify-content: flex-start;
   height: auto;
   min-height: 0;
+  /* A short window scrolls the contents rather than squeezing every row (24px rows were 9px at 1440x330, INBOX 1696 e). */
+  flex-shrink: 0;
   margin: 0;
   padding: var(--space-1) var(--space-3);
   border: 0;
@@ -91,6 +93,11 @@
   font-size: var(--text-sm);
   line-height: 1.5;
   max-width: 70ch;
+}
+/* The topic's one line (INBOX 1612), first under its title. */
+.manual-topic p.manual-lead {
+  font-weight: 500;
+  color: var(--text);
 }
 .manual-where {
   font-size: var(--text-xs);

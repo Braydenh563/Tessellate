@@ -28,7 +28,7 @@ def test_a_wh_clause_is_never_the_subject_a_note_is_named_by(first):
 
 
 def test_a_plain_subject_still_names_the_note():
-    assert composer_frame.short_name({"content": "Cloud computing is the delivery of services."}) == "the note on cloud computing"
+    assert composer_frame.short_name({"content": "Cloud computing is the delivery of services."}) == "“Cloud computing is the delivery of…”"
 
 
 def test_a_notes_answer_does_not_close_on_a_howto():

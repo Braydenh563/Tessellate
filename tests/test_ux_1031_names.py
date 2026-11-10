@@ -47,9 +47,11 @@ def test_the_reminders_tab_is_named_by_its_words_and_badge():
 
 def test_the_file_type_button_and_the_zoom_button_start_with_their_visible_words():
     assert 'opener.setAttribute("aria-label", `${type.label}, file type`);' in _js("documents.js")
-    assert "`${pct}%, zoom level, press for 100%`" in _js("whiteboard.js")
+    # Intent moved (INBOX 1694 b, 06678b49): the board's zoom is a typeable value field, an input whose
+    # visible words are its value ("100%") and whose name says what it is; Ctrl+1 is still 100%.
+    assert 'label: "Zoom percent",' in _js("whiteboard.js")
     html = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
-    assert 'aria-label="100%, zoom level, press for 100%">100%</button>' in html
+    assert '<span id="wb-zoom-level" class="wb-zoom-level" title="Zoom level: type a number, or pick one. Ctrl+1 is 100%"></span>' in html
 
 
 def test_a_colour_field_carries_no_popup_attributes():

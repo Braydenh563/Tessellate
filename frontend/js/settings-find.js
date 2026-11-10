@@ -116,15 +116,19 @@ settingRowsScan.pane = function (pane) {
 //: password. The rule is meaning.js's (`meaningAlts`, in this bundle); the
 //: rows' own words are its vocabulary, so a slip of a label reads as it.
 let settingVocabCache = null;
+//: Each row's words are added once, not on every key (perf audit 1108 P4: `meaningWords` over every row was
+//: 37 to 63 ms a key at 4x); a row that is gone leaves its words, which only widens a typo's reach a little.
 function settingVocab(rows) {
-  if (rows || !settingVocabCache) {
-    settingVocabCache = new Set();
-    for (const row of rows || settingRows()) {
-      for (const w of meaningWords(`${row.text} ${row.sectionLabel} ${row.keys}`)) settingVocabCache.add(w);
-    }
+  if (!rows && settingVocabCache) return settingVocabCache;
+  settingVocabCache ||= new Set();
+  for (const row of rows || settingRows()) {
+    if (settingVocab.seen.has(row)) continue;
+    settingVocab.seen.add(row);
+    for (const w of meaningWords(`${row.text} ${row.sectionLabel} ${row.keys}`)) settingVocabCache.add(w);
   }
   return settingVocabCache;
 }
+settingVocab.seen = new WeakSet();
 
 //: What a query asks for, as one list of words-meaning-the-same per thing
 //: named (`meaningAlts`); filterSettings (settings.js) asks it for the nav.
@@ -330,6 +334,22 @@ function settingResultsKey(event) {
 const settingsIndexScrollers = new WeakSet();
 let settingsIndexWatch = null;
 
+//: Whether `el` is drawn, read from the tree and not from layout (INBOX laglist
+//: 1108, item 1): `getClientRects` made the first read of a section settle the
+//: whole pane's pending style, 70 to 103 ms at 4x CPU on Help. A node is out
+//: when it or an ancestor under the pane is `hidden` or has the `hidden` class
+//: (display: none, the app's one way to hide a block), or sits in a closed
+//: `details` other than its summary.
+settingsIndexHeads.shown = (el, pane) => {
+  for (let n = el; n; n = n.parentElement) {
+    if (n.hidden || n.classList.contains("hidden")) return false;
+    const up = n.parentElement;
+    if (up && up.tagName === "DETAILS" && !up.open && n.tagName !== "SUMMARY") return false;
+    if (n === pane) break;
+  }
+  return true;
+};
+
 //: The heads an index would list: the pane's group heads in order, not the
 //: pane's own title, not the ones in a popover or a hidden group.
 function settingsIndexHeads(pane) {
@@ -337,7 +357,7 @@ function settingsIndexHeads(pane) {
   const title = settingsPaneTitleHead(pane);
   for (const h of pane.querySelectorAll("h3")) {
     if (h.closest(".help-body, .settings-pane-title")) continue;
-    if (!h.getClientRects().length) continue;
+    if (!settingsIndexHeads.shown(h, pane)) continue;
     const label = (h.dataset.indexLabel || h.textContent).replace(/\s+/g, " ").trim();
     if (!label || (title && h === title.querySelector("h3"))) continue;
     heads.push({ el: h, label });
@@ -352,7 +372,7 @@ function settingsIndexHeads(pane) {
 function settingsPaneTitleHead(pane) {
   const title = pane.querySelector(":scope > .settings-pane-title");
   if (title) return title;
-  const first = [...pane.children].find((c) => c.getClientRects().length);
+  const first = [...pane.children].find((c) => settingsIndexHeads.shown(c, pane));
   return first?.matches(".help-head, .dock") ? first : null;
 }
 
@@ -412,15 +432,10 @@ function settingsNavFollow(link) {
     }, { passive: true });
   }
   if (box.matches(":hover") || performance.now() - (box._userScrollAt || 0) < 600) return;
-  const have = box.getBoundingClientRect();
-  const at = link.getBoundingClientRect();
-  const pad = 8;
-  const delta = at.top < have.top + pad ? at.top - have.top - pad : at.bottom > have.bottom - pad ? at.bottom - have.bottom + pad : 0;
-  if (!delta) return;
-  const root = document.documentElement;
-  const still = reducedMotionWanted() || root.dataset.uiMotion === "off";
+  //: A row of room past the marked link, as a picked row has (INBOX 1696 e; it was 8px).
+  const still = reducedMotionWanted() || document.documentElement.dataset.uiMotion === "off";
   box._followAt = performance.now();
-  box.scrollTo({ top: box.scrollTop + delta, behavior: still ? "auto" : "smooth" });
+  nearestScrollParent.reveal(link, box, !still);
 }
 
 //: Mark the head the pane is scrolled to. `aria-current="location"` is the
@@ -714,12 +729,15 @@ function helpMarks(parent, text, rx) {
   parent.append(text.slice(at));
 }
 
-//: Draw (or redraw, with the words marked) a topic's title, text and place.
+//: Draw (or redraw, with the words marked) a topic's title, lead, text and place.
 function helpTopicPaint(details, rx) {
+  details._painted = true;
   const topic = details._topic;
-  const [summary, body, where] = details.children;
+  const [summary, lead, body, where] = details.children;
   summary.replaceChildren();
   helpMarks(summary, topic.title, rx);
+  lead.replaceChildren();
+  helpMarks(lead, topic.lead, rx);
   body.replaceChildren();
   helpFill(body, topic.body, rx);
   const path = where?.firstChild;
@@ -735,10 +753,13 @@ function helpTopicRow(topic) {
   details._topic = topic;
   const summary = document.createElement("summary");
   summary.dataset.keys = topic.find.toLowerCase();
-  summary.dataset.find = topic.body.toLowerCase();
-  details._help = [topic.title, topic.find, topic.body, topic.path].join(" ").toLowerCase();
+  summary.dataset.find = `${topic.lead} ${topic.body}`.toLowerCase();
+  details._help = [topic.title, topic.lead, topic.find, topic.body, topic.path].join(" ").toLowerCase();
   details._named = `${topic.title} ${topic.find}`.toLowerCase();
-  details.append(summary, document.createElement("p"));
+  //: The topic's one line (INBOX 1612), first under its title.
+  const lead = document.createElement("p");
+  lead.className = "help-topic-lead";
+  details.append(summary, lead, document.createElement("p"));
   //: A link to Help from inside Help goes nowhere.
   const link = topic.id === "manual" ? { manual: true, label: "the manual" } : topic.link && topic.link.section !== "help" ? topic.link : null;
   if (topic.path || link) {
@@ -749,7 +770,10 @@ function helpTopicRow(topic) {
     if (link) where.appendChild(helpTopicLink(link));
     details.appendChild(where);
   }
-  helpTopicPaint(details, null);
+  //: Title and lead only: the text, its emphasis and its place are drawn when the topic is opened or matched
+  //: (perf audit 1108 P4: drawing all of them was +2,574 nodes on the first key typed in Settings).
+  summary.textContent = topic.title;
+  lead.textContent = topic.lead;
   return details;
 }
 
@@ -817,7 +841,7 @@ function helpApplySearch(query) {
       any = true;
       shown += 1;
       details.open = searching || (helpOpenBefore?.get(details) ?? details.open);
-      helpTopicPaint(details, rx);
+      if (searching || details._painted) helpTopicPaint(details, rx);
     }
     list.classList.toggle("hidden", !any);
     list.previousElementSibling?.classList.toggle("hidden", !any);
@@ -927,6 +951,11 @@ function renderHelpTopics() {
       }
       box.replaceChildren(...parts);
       box.removeAttribute("aria-busy");
+      //: One capture listener for the hundred folds: `toggle` does not bubble.
+      box.addEventListener("toggle", (event) => {
+        const topic = event.target;
+        if (topic._topic && topic.open && !topic._painted) helpTopicPaint(topic, null);
+      }, true);
       if ($("help-search")?.value) helpApplySearch($("help-search").value);
       if (typeof currentSettingsSection !== "undefined" && currentSettingsSection === "help") settingsIndexBuild("help");
     })

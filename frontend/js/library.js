@@ -491,7 +491,13 @@ async function loadLibrary() {
   renderLibraryOverview();
   renderLibraryFilters();
   renderLibraryView();
+  //: A row action (rename, archive, delete) reloads the grid under the focused ⋯, which dropped focus to the page (dgmlive2 1108): the card last used, or the first, takes it back.
+  const held = grid.contains(document.activeElement);
   renderLibrary({ quiet: true });
+  if (held && !grid.contains(document.activeElement)) {
+    ensureLibraryGridStop(grid);
+    grid.querySelector(".library-card .card-open[tabindex='0']")?.focus({ preventScroll: true });
+  }
 }
 
 /** The one line of the old overview strip that was not already on screen.
@@ -1754,6 +1760,9 @@ function ensureLibraryGridStop(grid) {
     grid.querySelector(".library-card");
   if (card) setLibraryCardStop(card, true);
 }
+document.addEventListener("documents-undone", () => {
+  if ($("library-grid")?.offsetParent) loadLibrary();
+});
 $("library-grid").addEventListener("focusin", (event) => {
   const card = event.target.closest?.(".library-card");
   if (!card || card.querySelector(".card-open")?.tabIndex === 0) return;
@@ -6294,6 +6303,7 @@ function ocrOpenSibling(row) {
 //: opening a fifteen-page scan at page 1 from page 9 is navigation the reader
 //: then has to redo by hand.
 function openOcrWorkspace(image, images, page = 0) {
+  surfaceBuild("ocr");
   const overlay = $("ocr-workspace");
   if (!overlay) return;
   //: Clamped at 0 here rather than trusted: a caller with a stale page number
@@ -7187,7 +7197,11 @@ function ocrRevealRegionsForPage(page) {
   }
   if (!first) return;
   ocrRegionScrollLock = true;
-  first.scrollIntoView({ block: "nearest", behavior: "auto" });
+  //: In the next frame, not here: the list was rebuilt a moment ago, so a
+  //: scroll now lays the whole dialog out inside this script (33 to 44 ms at
+  //: 4x on 300 notes with 60 sections); the frame lays it out once anyway.
+  ocrUi.revealPending = first;
+  ocrScheduleFitDock();
   setTimeout(() => {
     ocrRegionScrollLock = false;
   }, 300);
@@ -7587,6 +7601,11 @@ function ocrFitDock() {
     if (fits(ocrUi.dockFit.step)) lo = hi = ocrUi.dockFit.step;
     else lo = ocrUi.dockFit.step + 1;
   }
+  //: A wide row almost always fits unfolded: that is one measure (a style
+  //: recalculation of the whole dialog, 10 to 20 ms at 4x on 300 notes)
+  //: where halving from the middle took three. A narrow one starts in the
+  //: middle as before.
+  if (lo === 0 && hi === steps && dock.getBoundingClientRect().width >= 720 && fits(0)) hi = 0;
   while (lo < hi) {
     const mid = Math.floor((lo + hi) / 2);
     if (fits(mid)) hi = mid;
@@ -7603,7 +7622,13 @@ function ocrFitDock() {
 //: answer, the dock's own resize): one per frame.
 function ocrScheduleFitDock() {
   cancelAnimationFrame(ocrUi.dockFrame);
-  ocrUi.dockFrame = requestAnimationFrame(() => ocrFitDock());
+  ocrUi.dockFrame = requestAnimationFrame(() => {
+    ocrFitDock();
+    //: The row to bring into view, left by `ocrRevealRegionsForPage`.
+    const row = ocrUi.revealPending;
+    ocrUi.revealPending = null;
+    if (row?.isConnected) row.scrollIntoView({ block: "nearest", behavior: "auto" });
+  });
 }
 
 //: Watched, because the card follows the window and a phone turns sideways.
@@ -7860,7 +7885,8 @@ function ocrAllText() {
   return ocrWorkspaceRegions.map((region) => region.text).join("\n\n").trim();
 }
 
-onDomReady(() => {
+//: The workspace's card is built on its first open (row 21); its wiring waits for it.
+onSurface("ocr", () => {
   $("ocr-close")?.addEventListener("click", () => closeOcrWorkspace());
   $("ocr-workspace")?.addEventListener("click", (event) => {
     //: Click the backdrop to close, the card to keep working, the same rule
@@ -12912,7 +12938,7 @@ function contentsTreeKeys(event) {
     if (!target) return;
     event.preventDefault();
     target.focus();
-    target.scrollIntoView({ block: "nearest" });
+    nearestScrollParent.reveal(target);
   };
   const expanded = current.getAttribute("aria-expanded");
   switch (event.key) {

@@ -39,8 +39,20 @@ def test_a_source_the_blocks_cannot_place_draws_its_error_not_the_empty_hint():
     # Empty is a header and nothing else; a kept line (text that is no diagram, a dangling arrow) is drawn so the
     # picture area carries mermaidFailure.note's reason, and drawing never rewrites the source.
     assert "const empty = !source.trim() || (!S.plain && blank && bare);" in draw
-    assert "sequenceDiagram\\b" in draw and "mermaidFailure.note(result.error, source)" in draw
+    # Intent kept (DD-4, 1107 moved the call): the failure is drawn by diagram-picture.js `failure`, which still builds
+    # mermaidFailure.note's reason, now under the last good picture; the builder only hands it the result.
+    assert "sequenceDiagram\\b" in draw and "diagramModel.picture.failure(S, result, source, smallButton)" in draw
     assert "S.io.set" not in draw
+    picture = (JS_DIR / "diagram-picture.js").read_text(encoding="utf-8")
+    failure = picture.split("function failure(", 1)[1].split("diagramModel.picture =", 1)[0]
+    assert "mermaidFailure.note(error, source)" in failure
+    # The picture is kept and marked stale (the CSS dims it), an error new to the pane is an alert and a repeat a status,
+    # and the "tall for this pane" offer is hidden because there is no current picture to offer it for.
+    assert 'toggle("dgm-picture-stale", !result.svg)' in failure
+    assert 'setAttribute("role", fresh ? "alert" : "status")' in failure
+    assert 'S.sideways?.classList.add("hidden")' in failure
+    assert "replaceChildren(note)" in failure and ".md-mermaid-img" in failure
+    assert ".dgm-picture-stale" in (ROOT / "frontend" / "css" / "diagram-lazy.css").read_text(encoding="utf-8")
 
 
 KINDS = (JS_DIR / "diagram-kinds.js").read_text(encoding="utf-8")
@@ -70,4 +82,4 @@ def test_the_dock_is_one_row_at_320_because_suggest_folds_into_the_more_menu():
     assert "S.suggestBtn && matchMedia(COMPACT).matches" in more
     assert "ph:sparkle Suggest…" in more and ".dgm-more button" in more
     help_text = (ROOT / "src" / "tessellate" / "ai" / "help_topics_more.py").read_text(encoding="utf-8")
-    assert "Suggest (in the ... menu on a phone)" in help_text
+    assert "Suggest (... on a phone)" in help_text

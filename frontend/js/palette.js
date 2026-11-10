@@ -385,6 +385,29 @@ function syncAgentOpenNoteToggle() {
 const cmdPaletteOverlay = $("command-palette-overlay");
 const cmdPaletteInput = $("command-palette-input");
 const cmdPaletteResults = $("command-palette-results");
+//: **One composer queue for Chat, the popup agent and the Guide** (CHAT_PLAN
+//: B3): a send made while that surface's reply runs waits by its box, with
+//: Edit and Remove (reply-kit.js, `composerQueue.paint`), and the next one
+//: goes as the reply ends. Defined here, not in chat.js, because this file is
+//: not one of the boot scripts whose gzip total is capped; chat.js's
+//: `chatQueue` is a spec until this line makes it a queue, and nothing reads
+//: it before then. `composerQueue(name)` returns a surface's queue.
+function composerQueue(name, spec) {
+  const all = (composerQueue.all ||= {});
+  if (!spec) return all[name];
+  const q = (all[name] = Object.assign(spec, { items: [], held: false }));
+  q.show = () => (q.items.length || q.list) && ensureModule("replyKit").then((ok) => ok && composerQueue.paint(q));
+  q.take = (text) => q.busy() && (text && q.items.push(text), q.show(), true);
+  q.next = () => (!q.held && q.items.length && !q.busy() && q.send(q.items.shift()), q.show());
+  return q;
+}
+composerQueue("chat", chatQueue);
+composerQueue("agent", {
+  input: () => cmdPaletteInput,
+  busy: () => cmdPaletteRun !== null,
+  send: (text) => cmdPaletteAsk(text),
+  before: () => $("command-palette-attachments"),
+});
 
 // Opened and closed by `runShortcut("askAgent")`, see DEFAULT_SHORTCUTS.
 // This deliberately has no `document.addEventListener` chord of its own:
@@ -595,9 +618,8 @@ function renderCmdPaletteMenu() {
 }
 
 function cmdPaletteBusy(busy) {
-  //: No `aiIsOff()` here any more: with no model the agent still runs acts
-  //: and readings (`ai/starter_acts.py`), so only a run in hand closes the box.
-  cmdPaletteInput.disabled = busy;
+  //: The box stays open while a run goes (CHAT_PLAN B3): what is sent then
+  //: waits in the composer queue.
   $("command-palette-stop")?.classList.toggle("hidden", !busy);
   $("command-palette-menu")?.classList.toggle("hidden", busy);
   //: **The state line is written by the run, not by this** (INBOX 190: the
@@ -1111,17 +1133,30 @@ async function cmdPaletteAsk(text, { plan = null } = {}) {
   //: to fold and should not show an empty one.
   let stepsFold = null;
   let stepCount = 0;
+  let groupCount = 0;
   //: A plan's checklist, ticks and change list are Chat's own
   //: (`agentTimeline`), made on the run's first plan event.
   let runTimeline = null;
   const planTimeline = () => runTimeline || (runTimeline = agentTimeline(stepsHolder));
   const foldSummary = (done) => {
     if (!stepsFold) return;
-    const word = stepCount === 1 ? "step" : "steps";
+    const word = groupCount === 1 ? "step" : "steps";
     setLabel(
       stepsFold.querySelector("summary"),
-      done ? `ph:check-circle Finished ${stepCount} ${word}` : `ph:spin Working: ${stepCount} ${word}`,
+      done ? `ph:check-circle Finished ${groupCount} ${word}` : `ph:spin Working: ${groupCount} ${word}`,
     );
+  };
+  //: **Each step where it happened** (CHAT_PLAN B5, the owner: "the search
+  //: appeared after the generated text when it happened before that text was
+  //: written out"). One timeline in arrival order, as Chat's `agentTimeline`:
+  //: a step goes before the answer box while that box has no words yet, after
+  //: it once it has, and the words that follow open a new box below it.
+  const placeStep = (node) => {
+    if (answerBox && !answerSeg) return stepsHolder.insertBefore(node, answerBox);
+    stepsHolder.appendChild(node);
+    if (answerBox) answerBox.classList.remove("is-streaming");
+    answerBox = null;
+    answerSeg = "";
   };
   const addStep = (event) => {
     if (!stepsFold) {
@@ -1132,9 +1167,11 @@ async function cmdPaletteAsk(text, { plan = null } = {}) {
       const body = document.createElement("div");
       body.className = "agent-step-group-body";
       stepsFold.append(summary, body);
-      stepsHolder.insertBefore(stepsFold, answerBox);
+      groupCount = 0;
+      placeStep(stepsFold);
     }
     stepCount += 1;
+    groupCount += 1;
     stepsFold.querySelector(".agent-step-group-body").appendChild(
       toolChip(event?.label || "Tool call", event?.ok !== false, event),
     );
@@ -1158,22 +1195,27 @@ async function cmdPaletteAsk(text, { plan = null } = {}) {
   //: state and the caret owns "writing", which is the rule the Ask box has
   //: followed since it was built (`onAnswer` there adds the same class on its
   //: first delta, not before the request).
-  const answerBox = document.createElement("div");
-  answerBox.className = "agent-step step-answer bubble-answer";
+  const answerBoxes = [];
+  const newAnswerBox = () => {
+    const box = document.createElement("div");
+    box.className = "agent-step step-answer bubble-answer";
+    answerBoxes.push(box);
+    return stepsHolder.appendChild(box);
+  };
+  let answerBox = newAnswerBox();
+  //: The words in the current box; `answerRaw` is every box's, for Copy.
+  let answerSeg = "";
   //: Chat's own waiting line, musing included.
   //: Driven by `streamChat` below (`progress`), INBOX 649.
   const askLine = progressLine(null, { persona: askedPersona, words: true });
   answerBox.appendChild(askLine);
-  stepsHolder.appendChild(answerBox);
   cmdPaletteResults.appendChild(agentMsg);
   paintPersonaAvatar(agentAvatar, askedWriter, 20); // now attached, so p5 can measure and draw
   //: The answer's own row, added now and reading `answerRaw` at click time: 
   //: the text does not exist yet, and binding a copy of an empty string is
-  //: how "Copy" ends up copying nothing on a fast answer. It stays the
-  //: bubble's last child: the sources and the facts line go in above it
-  //: (INBOX 458: it hung over the "Found in N notes" heading when those
-  //: were drawn after the bubble).
-  const actionRow = agentMsg.appendChild(
+  //: how "Copy" ends up copying nothing on a fast answer. In the head row's
+  //: flow (B2): anywhere else it lay over text (INBOX 458, B2's review).
+  agentLabel.appendChild(
     chatMessageActions([
       {
         label: "ph:copy",
@@ -1217,7 +1259,6 @@ async function cmdPaletteAsk(text, { plan = null } = {}) {
   let stats = null;
   const panels = []; // the app's panels under the answer (INBOX 1300 C06)
   let trail = null; // the why event (B30)
-  let thinkingRaw = "";
   //: In-text numbers, Chat's own call (`addInlineCitations`) on the `grounding`
   //: rows (BACKLOG, the owner 2026-10-12: popup answers had a Sources list and
   //: no marks). The numbering is `chatSourcesFrom` over this turn's meta and
@@ -1227,12 +1268,15 @@ async function cmdPaletteAsk(text, { plan = null } = {}) {
   let cites = null;
   const cite = (event) => {
     if (event) cites = event.sentences || [];
-    if (cites?.length) addInlineCitations(answerBox, cites, found, chatSourcesFrom({ meta, touched: [...touched.values()], sentences: cites }));
+    if (cites?.length) addInlineCitations(answerBoxes, cites, found, chatSourcesFrom({ meta, touched: [...touched.values()], sentences: cites }));
   };
   //: The box the reasoning is written into while it is being produced, made
   //: on the first delta rather than up front so a turn that never thinks out
   //: loud does not grow an empty one.
   let thinkingBox = null;
+  const thinkingBoxes = [];
+  //: The box the words end in: the current one, or the last that had words.
+  const lastBox = () => answerBox || answerBoxes.at(-1);
   //: Which tool ran last, for the line the run ends on. The label is the
   //: harness's own (`ph:books Listed notes (…)`), so the icon token has to be
   //: stripped before it can be quoted inside another label.
@@ -1304,12 +1348,17 @@ async function cmdPaletteAsk(text, { plan = null } = {}) {
       //: Every assistant bubble reads head, thinking, steps, answer, sources,
       //: facts, actions, and the fold is the app's one (`thinkingFold`).
       onThinking: (delta) => {
-        thinkingRaw += delta;
-        if (!thinkingBox) {
+        //: A new fold when anything came between (B5): reasoning after a
+        //: step or after words is a later thought, drawn where it happened.
+        const last = answerBox && !answerSeg ? answerBox.previousElementSibling : stepsHolder.lastElementChild;
+        if (!thinkingBox || last !== thinkingBox) {
           thinkingBox = thinkingFold();
-          stepsHolder.prepend(thinkingBox);
+          thinkingBox.thinkingRaw = "";
+          thinkingBoxes.push(thinkingBox);
+          placeStep(thinkingBox);
         }
-        thinkingPaint(thinkingBox, thinkingRaw);
+        thinkingBox.thinkingRaw += delta;
+        thinkingPaint(thinkingBox, thinkingBox.thinkingRaw);
         keepAtBottom(cmdPaletteResults);
       },
       //: An agent turn reports once per round. Same accumulation the Chat tab
@@ -1331,9 +1380,16 @@ async function cmdPaletteAsk(text, { plan = null } = {}) {
         //: same move Chat's timeline makes (`foldEarlierThinking`).
         if (thinkingBox) thinkingBox.open = false;
         addStep(event);
-        //: A page the model read, or the results of its search, open in place above the answer (INBOX 1300 C06).
-        if (event.ok && event.tool === "read_url") drawAnswerPanels(stepsHolder, [{ web: event.sources, read: true }], answerBox);
-        if (event.ok && event.tool === "web_search") drawAnswerPanels(stepsHolder, [{ web: event.sources }], answerBox);
+        //: A page the model read, or the results of its search, open in place under its step (INBOX 1300 C06).
+        //: The card is drawn by a lazy module, so its place is held now by a
+        //: marker put where the step arrived; the next card's marker goes
+        //: after it, so a read stays under the search that found it.
+        if (event.ok && (event.tool === "read_url" || event.tool === "web_search")) {
+          const panels = event.tool === "read_url" ? [{ web: event.sources, read: true }] : [{ web: event.sources }];
+          const spot = document.createComment("web card");
+          placeStep(spot);
+          drawAnswerPanels(stepsHolder, panels, spot).then(() => spot.remove());
+        }
         keepAtBottom(cmdPaletteResults);
         // Something visible while a tool runs, so a long silence reads as
         // work rather than as nothing happening.
@@ -1382,27 +1438,35 @@ async function cmdPaletteAsk(text, { plan = null } = {}) {
       onHint: (e) => (why = why || e?.text || ""),
       onGrounding: cite,
       onGroundingLive: cite,
+      //: The trimmed text replaces a one-box answer; a reply broken by steps
+      //: keeps its boxes, as Chat's timeline does.
       onAnswerFinal: (e) => {
-        if (!e?.text) return;
+        if (!e?.text || answerBoxes.length > 1) return;
         answered = true;
-        renderMarkdown(answerBox, (answerRaw = e.text));
+        renderMarkdown(answerBoxes[0], (answerRaw = answerSeg = e.text));
         cite();
       },
       onAnswer: (delta) => {
         answered = true;
-        answerRaw += delta;
+        if (!answerBox) answerBox = newAnswerBox();
+        if (!answerSeg && stepsFold) {
+          foldSummary(true);
+          stepsFold = null; // a step after these words opens its own group
+        }
+        answerRaw += !answerSeg && answerRaw ? `\n\n${delta}` : delta;
+        answerSeg += delta;
         //: Idempotent, and cheap: `classList.add` on a class already there is
         //: a no-op, so this costs nothing per delta and saves a flag.
         answerBox.classList.add("is-streaming");
-        if (thinkingBox) thinkingBox.open = false;
-        renderMarkdown(answerBox, answerRaw);
+        for (const fold of thinkingBoxes) fold.open = false;
+        renderMarkdown(answerBox, answerSeg);
         cite();
         keepAtBottom(cmdPaletteResults);
       },
     });
-    answerBox.classList.remove("is-streaming");
+    for (const box of answerBoxes) box.classList.remove("is-streaming");
     foldSummary(true);
-    if (!answered) answerBox.textContent = why || "The model wrote nothing. Try again, or rephrase.";
+    if (!answered) lastBox().textContent = why || "The model wrote nothing. Try again, or rephrase.";
     else {
       //: Linked once, at the end, rather than on every delta: mid-stream the
       //: text can be "note id 4" on its way to "note id 43", and a link built
@@ -1414,8 +1478,8 @@ async function cmdPaletteAsk(text, { plan = null } = {}) {
         ...[...touched.values()].filter((item) => item.kind === "note"),
       ]);
       cmdPaletteTurns.push({ question: text, answer: answerRaw });
-      if (panels.length) drawAnswerPanels(answerBox, panels);
-      finishReply(answerBox, { composed: meta?.composed, head: agentLabel, model: stats?.model || meta?.answered_by, engine: Boolean(meta) });
+      if (panels.length) drawAnswerPanels(lastBox(), panels);
+      finishReply(answerBoxes, { composed: meta?.composed, head: agentLabel, model: stats?.model || meta?.answered_by, engine: Boolean(meta) });
       //: The first turn is what turns "Save as chat" from a dead row into a
       //: live one, so the menu is rebuilt here rather than only on reset.
       renderCmdPaletteMenu();
@@ -1424,15 +1488,14 @@ async function cmdPaletteAsk(text, { plan = null } = {}) {
     //: prose is free to summarise or to leave a note out, but what retrieval
     //: found should not depend on whether it got a mention. One list for
     //: what was searched and what was opened (`cmdPaletteSources`), inside
-    //: the bubble and above its action row, so the row hangs under the
-    //: bubble rather than over the list.
+    //: the bubble.
     const sources = cmdPaletteSources({ meta, touched: [...touched.values()], sentences: cites });
-    if (sources) agentMsg.insertBefore(sources, actionRow);
+    if (sources) agentMsg.appendChild(sources);
     //: The reasoning stays where it was written, folded now, with the
     //: trailing blank lines trimmed.
-    if (thinkingBox) {
-      thinkingBox.open = false;
-      thinkingPaint(thinkingBox, thinkingRaw.trim());
+    for (const fold of thinkingBoxes) {
+      fold.open = false;
+      thinkingPaint(fold, fold.thinkingRaw.trim());
     }
     const metaRow = cmdPaletteFacts({
       meta,
@@ -1447,23 +1510,24 @@ async function cmdPaletteAsk(text, { plan = null } = {}) {
       //: claims about who answered on one turn.
       persona: askedPersona,
     });
-    if (metaRow) agentMsg.insertBefore(metaRow, actionRow);
-    //: Why this answer (B30), the Ask box's own fold, last above the actions.
-    if (trail) ensureModule("askCompose").then(() => drawWhyTrail(agentMsg, trail, actionRow)).catch(() => {});
+    if (metaRow) agentMsg.appendChild(metaRow);
+    //: Why this answer (B30), the Ask box's own fold, last.
+    if (trail) ensureModule("askCompose").then(() => drawWhyTrail(agentMsg, trail)).catch(() => {});
     keepAtBottom(cmdPaletteResults);
   } catch (err) {
     if (err?.name === "AbortError") {
       stopped = true;
-      answerBox.textContent = answerRaw || "(stopped)";
+      if (!answerRaw) lastBox().textContent = "(stopped)";
+      else if (answerBox && answerSeg) answerBox.textContent = answerSeg;
     } else {
       // The message, not a euphemism for it. A failing model's real reason
       // arrives here (see `describe_http_error` in ai/ollama_client.py) and
       // "Error communicating with agent." threw all of it away.
-      answerBox.textContent = err?.message || "The agent could not be reached.";
+      lastBox().textContent = err?.message || "The agent could not be reached.";
       agentMsg.classList.add("error");
     }
   } finally {
-    answerBox.classList.remove("is-streaming");
+    for (const box of answerBoxes) box.classList.remove("is-streaming");
     foldSummary(true);
     agentMsg.classList.remove("is-generating");
     //: Only this turn's own run: Run the plan can start the next turn before
@@ -1473,6 +1537,7 @@ async function cmdPaletteAsk(text, { plan = null } = {}) {
       cmdPaletteRun = null;
       cmdPaletteBusy(false);
     }
+    composerQueue("agent").next();
     //: The end of the run, said once and left there: what the turn did is
     //: still the answer to "what happened" a minute later, and a line that
     //: blanks itself the moment it could be read is a line nobody reads.
@@ -1571,7 +1636,11 @@ function cmdPaletteSend() {
   if (!text) return;
   cmdPaletteInput.value = "";
   cmdPaletteGrow();
-  cmdPaletteAsk(text);
+  const queue = composerQueue("agent");
+  if (!queue.take(text)) {
+    queue.held = false;
+    cmdPaletteAsk(text);
+  }
   cmdPaletteInput.focus();
 }
 $("command-palette-send").addEventListener("click", cmdPaletteSend);
@@ -1585,7 +1654,10 @@ $("command-palette-attach-input")?.addEventListener("change", (e) => {
 
 //: Built at boot and again after every turn: see `renderCmdPaletteMenu`.
 renderCmdPaletteMenu();
-$("command-palette-stop")?.addEventListener("click", () => cmdPaletteRun?.abort());
+$("command-palette-stop")?.addEventListener("click", () => {
+  composerQueue("agent").held = true;
+  cmdPaletteRun?.abort();
+});
 $("command-palette-intro")?.addEventListener("click", (e) => {
   const example = e.target.closest("[data-example]");
   if (!example) return;

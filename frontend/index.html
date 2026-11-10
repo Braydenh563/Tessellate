@@ -622,7 +622,8 @@
           Tessellate itself, not your notes, and nothing here is saved.
           It answers on your utility model while smart model routing is on,
           on the chat model while it is off, and Settings, Models can give
-          the guide a model of its own.
+          the guide a model of its own. While it answers you can keep typing:
+          Enter queues the question above the box, with Edit and Remove.
         </p>
       </div>
     </div>
@@ -682,7 +683,9 @@
           answers from your notes, and an act (remind me, tag, link, add to
           today's note) comes as a card you confirm and can undo. A plan it
           draws waits for Run the plan, each step's writes listed; Stop ends it
-          between two steps, and Ctrl+Z takes back its last write. The paperclip,
+          between two steps, and Ctrl+Z takes back its last write. While it
+          works the box stays open: Enter queues what you typed under it, with
+          Edit and Remove, and each goes when the run before it ends. The paperclip,
           a drop or a paste adds files as chips (any kind, up to four); nothing is
           saved until you send, and the x on a chip takes one back. On a phone
           it opens as a sheet from More.
@@ -1531,7 +1534,7 @@
               <summary><span class="muted dock-menu-label">Options</span></summary>
               <div class="graph-option-row">
                 <label for="graph-pane-depth">Depth</label>
-                <input id="graph-pane-depth" type="range" min="1" max="5" value="1"
+                <input id="graph-pane-depth" type="range" data-unit="" min="1" max="5" value="1"
                   title="How many links away from the open note to draw (1 to 5)">
               </div>
               <div class="graph-toggle-grid">
@@ -1629,7 +1632,7 @@
             <ul class="search-help-list">
               <li><strong><code>/</code> after a space or at a line's start
                 opens the blocks menu</strong> (also <code>Ctrl</code>+<code>/</code>);
-                pressing <code>/</code> anywhere you are <em>not</em> typing
+                pressing <code>/</code> anywhere you are not typing
                 jumps to the search box.</li>
               <li>A note card draws tables, fenced code, quotes
                 (<code>&gt;</code>), <code>&gt; [!tip]</code> callouts and
@@ -2394,8 +2397,8 @@ Link to another note with [[its first few words]]."></textarea>
                 <div id="ask-answer-related" class="hidden"></div>
                 <div id="ask-answer-sources" class="hidden"></div>
                 <div id="ask-insights" class="hidden"></div>
-                <div id="ask-followups" class="chat-followups ask-followups hidden"></div>
                 <div id="ask-why" class="hidden"></div>
+                <div id="ask-followups" class="chat-followups ask-followups hidden"></div>
               </div>
             </div>
             <div class="chat-half">
@@ -2630,7 +2633,7 @@ Link to another note with [[its first few words]]."></textarea>
               <li><code>is:favourite</code>, your starred notes (<code>is:pinned</code> still works); also <code>is:private</code>, <code>is:linked</code>, <code>is:untagged</code>, <code>is:draft</code>, and <code>is:review</code>, the filings to check (Atlas's estimate is under 50%, or it left it in Uncategorised), each with Accept, Refile and Split</li>
               <li><code>tags:&lt;2</code>, fewer than 2 tags (also <code>&lt;=</code>, <code>&gt;</code>, <code>&gt;=</code>, or a bare number for exactly that many)</li>
               <li><code>has:link</code>, <code>has:file</code>, <code>has:image</code> or <code>has:reminder</code>, notes that carry one; <code>space:work</code>, only that space; <code>kind:note</code>, asked of the search engine</li>
-              <li><code>-picnic</code>, notes that do <em>not</em> mention it</li>
+              <li><code>-picnic</code>, notes that do not mention it</li>
               <li><code>type:meeting</code>, <code>prop:status=open</code>, <code>prop:effort&gt;2</code>, a note's properties; <code>links:[[Kiln plan]]</code>, <code>rel:supports</code>, <code>entity:"Sam Lee"</code>, its links and the people and things it names (a <code>-</code> before any leaves those out). A bar then offers the same notes as a Table or on the graph</li>
             </ul>
             <p class="muted">Drag a card, or press Alt+Up or Alt+Down on it, to put this list in your own order. Ctrl+C copies a card. The Tray in the status bar holds cards while you change page.</p>
@@ -3736,7 +3739,7 @@ Link to another note with [[its first few words]]."></textarea>
         </div>
       </div>
       <div class="help-body hidden" id="timeline-intro" role="dialog" aria-label="How to read this">
-  <p>A note sits where it is <em>about</em> when it says so, "the deadline
+  <p>A note sits where it is about when it says so, "the deadline
         is next Friday" plots on that Friday, marked with a clock, and at when it was
         written otherwise. The feed opens on today with the week ahead above it (scroll up),
         and an empty day ahead has an Add for a reminder or an event.
@@ -4208,7 +4211,7 @@ Link to another note with [[its first few words]]."></textarea>
                  `gcPruneSimilarity` draws. -->
             <div class="graph-option-row hidden" id="graph-similarity-min-row">
               <label for="graph-similarity-min">Match strength</label>
-              <input id="graph-similarity-min" type="range" min="55" max="95" value="55"
+              <input id="graph-similarity-min" type="range" data-unit="%" min="55" max="95" value="55"
                 aria-label="Similarity strength"
                 title="Hide similarity lines weaker than this. At the left, each note keeps its two closest matches">
             </div>
@@ -4232,7 +4235,7 @@ Link to another note with [[its first few words]]."></textarea>
             <span class="muted dock-menu-label" id="graph-focus-label">Focus</span>
             <div class="graph-option-row">
               <label for="graph-focus-depth">Depth</label>
-              <input id="graph-focus-depth" type="range" min="1" max="5" value="2"
+              <input id="graph-focus-depth" type="range" data-unit="" min="1" max="5" value="2"
                 title="How many links away from the note in focus to draw (1 to 5)">
             </div>
             <div class="graph-toggle-grid">
@@ -4277,17 +4280,17 @@ Link to another note with [[its first few words]]."></textarea>
             </div>
             <div class="graph-option-row">
               <label for="graph-gravity">Gravity</label>
-              <input id="graph-gravity" type="range" min="0" max="100" value="50"
+              <input id="graph-gravity" type="range" data-unit="" min="0" max="100" value="50"
                 title="How strongly notes pull together">
             </div>
             <div class="graph-option-row">
               <label for="graph-spread">Spread</label>
-              <input id="graph-spread" type="range" min="0" max="100" value="50"
+              <input id="graph-spread" type="range" data-unit="" min="0" max="100" value="50"
                 title="How far apart linked notes sit">
             </div>
             <div class="graph-option-row">
               <label for="graph-link-force">Link force</label>
-              <input id="graph-link-force" type="range" min="0" max="100" value="50"
+              <input id="graph-link-force" type="range" data-unit="" min="0" max="100" value="50"
                 title="How hard each link pulls its two notes together">
             </div>
             <div class="graph-toggle-grid">
@@ -4453,12 +4456,12 @@ Link to another note with [[its first few words]]."></textarea>
             </div>
             <div class="graph-option-row">
               <label for="graph-label-fade">Text fade</label>
-              <input id="graph-label-fade" type="range" min="0" max="100" value="50"
+              <input id="graph-label-fade" type="range" data-unit="" min="0" max="100" value="50"
                 title="How far out names stay on a big map: to the right, names show from further away">
             </div>
             <div class="graph-option-row">
               <label for="graph-link-width">Link thickness</label>
-              <input id="graph-link-width" type="range" min="0" max="100" value="50"
+              <input id="graph-link-width" type="range" data-unit="" min="0" max="100" value="50"
                 title="How thick the lines are drawn">
             </div>
           </details>
@@ -4853,7 +4856,7 @@ Link to another note with [[its first few words]]."></textarea>
                    file of the type chosen. -->
               <div class="split-button doc-new-split">
                 <button id="doc-new" class="small split-button-main" type="button" title="Start a new document"
-                  aria-label="Start a new document"><i class="ph ph-plus ph-lead" aria-hidden="true"></i>New</button>
+                  aria-label="Start a new document"><i class="ph ph-plus ph-lead" aria-hidden="true"></i><span class="toolbar-word">New</span></button>
                 <span id="doc-new-type-slot" class="split-button-slot"></span>
               </div>
               <!-- New from a template, asked for as part of "the documents
@@ -5143,14 +5146,14 @@ Link to another note with [[its first few words]]."></textarea>
                  code type, where the markdown strip above is hidden
                  (syncDocFileType swaps the two). -->
             <button id="doc-code-format" class="ghost small hidden" type="button"
-              title="Format the selected lines, or the whole file when nothing is selected (Shift+Alt+F)"><i class="ph ph-brackets-curly ph-lead" aria-hidden="true"></i> Format</button>
+              title="Format the selected lines, or the whole file when nothing is selected (Shift+Alt+F)" aria-label="Format"><i class="ph ph-brackets-curly ph-lead" aria-hidden="true"></i><span class="toolbar-word"> Format</span></button>
             <!-- Run (INBOX 404, Brief 69): a code document in the sandbox
                  through the one run protocol (run-core.js), its output in a
                  panel under the editor. Shown for the types that run or
                  preview (DOC_RUN_KINDS, syncDocFileType). The bar's one
                  filled action (INBOX 803): a code file is for running. -->
             <button id="doc-code-run" class="small hidden" type="button"
-              title="Run this file in a sandbox and show its output (Ctrl+Shift+Enter)"><i class="ph ph-play ph-lead" aria-hidden="true"></i> Run</button>
+              title="Run this file in a sandbox and show its output (Ctrl+Shift+Enter)" aria-label="Run"><i class="ph ph-play ph-lead" aria-hidden="true"></i><span class="toolbar-word"> Run</span></button>
             <!-- A .py document before Python is installed: Run is disabled
                  and this one line says what it needs and goes there
                  (DOCUMENTS_PLAN 25 row 2, docRunSyncAvailability). -->
@@ -5191,7 +5194,7 @@ Link to another note with [[its first few words]]."></textarea>
                 Go to line (Ctrl+G), Assistant and Snippets; on a phone the bar at
                 the foot holds Tab, Undo and the brackets instead of the writing buttons. Beside prose, Snippets reads Sections.
                 Focus hides everything but the page (F11).</p>
-              <p>A diagram (.mmd) opens the builder: blocks on one side, the picture on the other. Add puts a block in, Connect to… draws an arrow, and a drag on the picture reorders the blocks because the picture lays itself out. Shift, Ctrl or Cmd and click picks several blocks; Shift and drag on empty space picks the ones it touches. Save as SVG or PNG, Copy as picture and Copy as Mermaid are under More for this diagram. In another document, type /diagram, or write a diagram's title in double square brackets after an exclamation mark to show one you already have.</p>
+              <p>A diagram (.mmd) opens the builder: blocks on one side, the picture on the other. Picture gives the drawing the room, List gives the blocks list the room, and Source is the text. Add puts a block in, Connect to… draws an arrow, and a drag on the picture reorders the blocks because the picture lays itself out. Shift, Ctrl or Cmd and click picks several blocks; Shift and drag on empty space picks the ones it touches; a press on empty space or Escape lets go of them. Save as SVG or PNG, Copy as picture and Copy as Mermaid are under More for this diagram. In another document, type /diagram, or write a diagram's title in double square brackets after an exclamation mark to show one you already have.</p>
               <p>Find and replace (Ctrl+F, the magnifier) opens the editor's search: every match is marked, Enter goes to the next and Shift+Enter to the previous, Replace all is one undo step, and Esc closes it. To change a word across every document, use Replace in every document in the ⋯ menu.</p>
               <p>The type button in the foot (Markdown, Python and so on) opens the list of file types, Documents, Data and Code, with a filter field; Markdown is the rich text editor. The ⋯ menu holds Connections, History, Replace in
                 every document, Copy app link, Paste special, Model for this feature, Extract
@@ -6730,6 +6733,9 @@ Link to another note with [[its first few words]]."></textarea>
       </section>
     </div>
     <div id="wb-canvas-view" class="hidden">
+    <!-- Built when a board first opens, or the first lookup of one of its ids (`surfaceBuild`,
+         settings-body.js; audit 1031 row 21): 1,740 elements no boot and no boards list draws. -->
+    <template data-surface="board">
       <!-- **The gestures, on screen, while you still need them.** Reported:
            "concept maps are unlearnable". The map *creates* well, it opens
            with a root selected and a toast naming Tab and Enter, but a toast
@@ -7623,7 +7629,7 @@ Link to another note with [[its first few words]]."></textarea>
          board above it is drawn as it was then. -->
     <div id="wb-history-bar" class="whiteboard-floating-panel wb-present-bar card glass hidden" role="toolbar" aria-label="Board history">
       <i class="ph ph-clock-counter-clockwise" aria-hidden="true"></i>
-      <input type="range" id="wb-history-slider" min="0" max="1" step="1" value="1" aria-label="Board history, from the oldest moment to now" title="Drag back in time; the arrows step one moment, End comes back to now">
+      <input type="range" id="wb-history-slider" data-unit="" data-value-of min="0" max="1" step="1" value="1" aria-label="Board history, from the oldest moment to now" title="Drag back in time; the arrows step one moment, End comes back to now">
       <span id="wb-history-when" class="wb-present-count" aria-live="polite">Now</span>
       <button type="button" id="wb-history-restore" class="ghost small icon-only" title="Put the whole board back as it was then (one Undo step)" aria-label="Put the whole board back as it was then" disabled><i class="ph ph-arrow-counter-clockwise" aria-hidden="true"></i></button>
       <button type="button" id="wb-history-restore-selection" class="ghost small icon-only" title="Put back only what was selected when History opened" aria-label="Put back only what was selected" disabled><i class="ph ph-selection-background" aria-hidden="true"></i></button>
@@ -7641,7 +7647,7 @@ Link to another note with [[its first few words]]."></textarea>
 
     <div class="whiteboard-floating-panel bottom-right card glass" data-panel-id="zoom">
       <button id="wb-zoom-out" class="ghost small icon-only" title="Zoom out (Ctrl+-)" aria-label="Zoom out"><i class="ph ph-minus" aria-hidden="true"></i></button>
-      <button id="wb-zoom-level" type="button" class="ghost small wb-zoom-level" title="Zoom level; press for 100% (Ctrl+1)" aria-label="100%, zoom level, press for 100%">100%</button>
+      <span id="wb-zoom-level" class="wb-zoom-level" title="Zoom level: type a number, or pick one. Ctrl+1 is 100%"></span>
       <button id="wb-zoom-in" class="ghost small icon-only" title="Zoom in (Ctrl+=)" aria-label="Zoom in"><i class="ph ph-plus" aria-hidden="true"></i></button>
       <button id="wb-zoom-fit" class="ghost small icon-only" title="Fit to screen (Ctrl+0)" aria-label="Fit to screen"><i class="ph ph-frame-corners" aria-hidden="true"></i></button>
     </div>
@@ -7679,7 +7685,7 @@ Link to another note with [[its first few words]]."></textarea>
       <div class="wb-context-group hidden" data-wb-ctx="tool">
         <label class="wb-context-field" title="Pen, shape and eraser size" data-wb-tool-setting="size">
           <span class="wb-context-label">Size</span>
-          <input type="range" id="wb-stroke-width" aria-label="Line thickness" title="Pen / shape / eraser size" min="1" max="24" step="1" value="3">
+          <input type="range" id="wb-stroke-width" data-unit="" aria-label="Line thickness" title="Pen / shape / eraser size" min="1" max="24" step="1" value="3">
         </label>
         <select id="wb-arrow-style" aria-label="Arrowhead style" title="Arrowhead style: the Line, Arrow and Link tools" data-wb-tool-setting="ends">
           <option value="end">End</option>
@@ -7924,7 +7930,7 @@ Link to another note with [[its first few words]]."></textarea>
                 <span>Bulleted list</span>
                 <button type="button" id="wb-prop-bullets" class="ghost small icon-only" title="Turn the lines into a bulleted list" aria-label="Bulleted list"><i class="ph ph-list-bullets" aria-hidden="true"></i></button>
               </div>
-              <label class="wb-menu-row hidden" id="wb-fill-opacity-row" title="Shape fill opacity"><span>Fill opacity</span><input type="range" id="wb-fill-opacity" aria-label="Shape fill opacity" title="Shape fill opacity" min="0" max="100" step="5" value="100"></label>
+              <label class="wb-menu-row hidden" id="wb-fill-opacity-row" title="Shape fill opacity"><span>Fill opacity</span><input type="range" id="wb-fill-opacity" data-unit="%" aria-label="Shape fill opacity" title="Shape fill opacity" min="0" max="100" step="5" value="100"></label>
               <label class="wb-menu-row hidden" id="wb-stroke-none-row" title="No stroke: fill only"><span>Draw without a stroke</span><input type="checkbox" id="wb-stroke-none"></label>
             </div>
             <!-- A text box's own background and edge: set once and rarely
@@ -8508,7 +8514,7 @@ Link to another note with [[its first few words]]."></textarea>
               <span class="wb-fmt-buttons"><select id="wb-fmt-endcap" aria-label="Line end" title="Line end"></select><select id="wb-fmt-endsize" class="wb-cap-size" aria-label="End size" title="Size of the end mark"><option value="s">Small</option><option value="m" selected>Medium</option><option value="l">Large</option></select></span>
             </label>
             <label class="wb-fmt-row" data-fmt="label-t"><span class="wb-fmt-label">Label along</span>
-              <input type="range" id="wb-fmt-label-t" min="5" max="95" step="5" aria-label="Label position along the line" title="Label position along the line">
+              <input type="range" id="wb-fmt-label-t" data-unit="%" min="5" max="95" step="5" aria-label="Label position along the line" title="Label position along the line">
             </label>
           </div>
           <div class="wb-fmt-group" data-fmt-group="style">
@@ -8667,6 +8673,7 @@ Link to another note with [[its first few words]]."></textarea>
         </section>
       </div>
     </aside>
+    </template>
   </div>
   </div>
 
@@ -9390,6 +9397,8 @@ Link to another note with [[its first few words]]."></textarea>
        computed from box height. See core/ocr.py's `extract_regions`. -->
   <div id="ocr-workspace" class="modal-overlay ocr-workspace hidden" role="dialog" data-panel-layout="2"
     aria-modal="true" aria-label="OCR workspace: read text from images and documents">
+    <!-- Built when the workspace first opens (`surfaceBuild("ocr")`, settings-body.js; audit 1031 row 21). -->
+    <template data-surface="ocr">
     <div class="card modal-card ocr-card">
       <!-- **Two rows: the dialog head, then one row of tools** (INBOX 717).
            The head says what you are reading and where you are in it; the
@@ -9740,6 +9749,7 @@ Link to another note with [[its first few words]]."></textarea>
         </div>
       </div>
     </div>
+    </template>
   </div>
 
   <!-- **Managing the dictionary**, asked for by name: "adding to dictionary (a
@@ -10047,7 +10057,7 @@ Link to another note with [[its first few words]]."></textarea>
         <div class="modal-content" tabindex="-1">
           <!-- Built on the first open, or the first lookup of one of its ids (`settingsBodyBuild`,
                settings-body.js; INBOX 1501): 2,700 nodes that cost every boot and none of its views. -->
-          <template id="settings-body-template">
+          <template id="settings-body-template" data-surface="settings">
 
           <!-- Models -->
           <section class="settings-section" id="settings-models">
@@ -10189,7 +10199,10 @@ Link to another note with [[its first few words]]."></textarea>
                 <p>
                   The context window is how much of your conversation and notes
                   the model can hold at once, counted in tokens. Empty means
-                  auto: the app uses what the model file or your server reports.
+                  auto: the app uses the model's own window, held back only by
+                  how much free memory the cache for that window would need.
+                  With llama.cpp the server sets the window when it loads the
+                  model, so the app follows the number it reports.
                 </p>
                 <p>
                   Set a number when you know better than the file does, for
@@ -11164,6 +11177,11 @@ Link to another note with [[its first few words]]."></textarea>
                 suggestion appears in the chat with a yes/no, and again at
                 the top of this list until you answer. Nothing reaches
                 Atlas's instructions until you say yes.
+                Confirmed patterns are the Patterns lines you
+                confirmed, said from then on as your own word. Edit one to put
+                it in your words or change what it is about (its tag still
+                reaches it), Remove it to forget you confirmed it, or mark it
+                Not right so the pattern is never shown again. Each has an Undo.
               </p>
             </div>
             <p class="muted" id="memory-budget"></p>
@@ -11180,6 +11198,8 @@ Link to another note with [[its first few words]]."></textarea>
               Nothing saved yet. Tell Atlas a preference in chat and ask it to
               remember, and it will appear here.
             </p>
+            <!-- Confirmed patterns (CHAT_PLAN B9) are built on first draw
+                 (settings-controls.js `confirmedHost`), not shipped in the page. -->
           </section>
 
           <!-- What the notebook learned (WORLD_CLASS_PLAN I9). The backend has
@@ -11521,8 +11541,9 @@ Link to another note with [[its first few words]]."></textarea>
                   change by hand sits on top of it and wins, so you can pick
                   a theme and still choose your own accent colour. Press the eye
                   in a theme's corner to see it on the whole app, then Apply or
-                  Cancel; leaving Appearance or Settings cancels it. Surprise me
-                  picks one at random. Pop out, at the top of this page, opens
+                  Cancel; leaving Appearance or Settings cancels it. Random theme
+                  picks a whole theme at random; Mix palette, accent and density,
+                  under Theme &amp; colour, changes just those three and has Undo. Pop out, at the top of this page, opens
                   all of Appearance in a panel beside the app, so you see each
                   change without closing Settings.
                 </p>
@@ -11531,7 +11552,7 @@ Link to another note with [[its first few words]]."></textarea>
               <div class="row theme-surprise-row">
                 <button id="theme-surprise" class="ghost small"
                   title="Try a theme you are not using, picked at random">
-                  Surprise me</button>
+                  Random theme</button>
               </div>
               <p class="muted" id="theme-override-note"></p>
 
@@ -11544,7 +11565,9 @@ Link to another note with [[its first few words]]."></textarea>
                   <span>Your themes</span>
                   <small class="muted">
                     Save everything you've set: colours, font, spacing, corners,
-                    background: as one look you can come back to.
+                    background: as one look you can come back to. Export look
+                    saves it as a file; Import look applies one, skipping
+                    anything it cannot read.
                   </small>
                 </div>
                 <!-- One wrapper, not two siblings: `.setting-row-stack` is a
@@ -11567,6 +11590,13 @@ Link to another note with [[its first few words]]."></textarea>
                       title="e.g. Late night"
                       aria-label="Name for the saved theme">
                     <button id="custom-theme-save" class="ghost small">Save current look</button>
+                  </div>
+                  <div class="row look-share-row">
+                    <button id="look-export" class="ghost small"
+                      title="Download this look as a JSON file">Export look</button>
+                    <button id="look-import" class="ghost small"
+                      title="Apply a look from a JSON file; Undo puts yours back">Import look</button>
+                    <input id="look-import-file" aria-label="Import a look from a JSON file" title="Import a look from a JSON file" type="file" accept=".json" class="hidden">
                   </div>
                 </div>
               </div>
@@ -11596,6 +11626,11 @@ Link to another note with [[its first few words]]."></textarea>
               </div>
               <div class="theme-grid" id="palette-grid" role="group"
                 aria-label="Curated palettes"></div>
+              <div class="row theme-surprise-row">
+                <button id="look-surprise" class="ghost small"
+                  title="Pick a palette, accent and density at random; Undo puts yours back">
+                  Mix palette, accent and density</button>
+              </div>
 
               <div class="setting-row">
                 <div class="setting-label">
@@ -11724,6 +11759,30 @@ Link to another note with [[its first few words]]."></textarea>
                   <option value="comfortable">Comfortable</option>
                   <option value="compact">Compact</option>
                   <option value="spacious">Spacious</option>
+                </select>
+              </div>
+
+              <div class="setting-row" id="read-leading-row">
+                <div class="setting-label">
+                  <span>Line spacing</span>
+                  <small class="muted">The space between lines of a note or a document you read.</small>
+                </div>
+                <select id="read-leading" class="small-select setting-control" aria-label="Line spacing">
+                  <option value="tight">Tight</option>
+                  <option value="normal">Normal</option>
+                  <option value="roomy">Roomy</option>
+                </select>
+              </div>
+
+              <div class="setting-row" id="read-measure-row">
+                <div class="setting-label">
+                  <span>Line width</span>
+                  <small class="muted">How wide a line of reading text runs. Notes also stop at their column, so Wide shows on a wide window.</small>
+                </div>
+                <select id="read-measure" class="small-select setting-control" aria-label="Line width">
+                  <option value="narrow">Narrow</option>
+                  <option value="standard">Standard</option>
+                  <option value="wide">Wide</option>
                 </select>
               </div>
 
@@ -12144,13 +12203,13 @@ Link to another note with [[its first few words]]."></textarea>
                   the window is open. On Windows and Linux Atlas floats like a wind spirit across the screen (other
                   companions walk the bottom edge); it sits and sleeps when you are away, can be picked up and
                   thrown (it bounces off the screen edges), hangs from the top now and then, and peeks up from
-                  behind the taskbar. Let go gently near the top or a title bar and it hangs, then pulls itself up, swings down or lets go with a start; it also hangs from a maximised title bar or a window's bottom edge (Roam over windows turns that off). It stays where it is for minutes, alive in place (it breathes, blinks, also sitting, and sways its tail, and the window never bobs). A thrown one tumbles smoothly and rights itself as it settles. Only a hard throw up catches the top; any other throw bounces off it. A longer trip is walking, running (gliding or swooping when it floats), with a jump between window tops, out at one edge and in at the other, through a portal, now and then a puff of smoke, and it steps out of the way of the text you are typing in, or off the bottom of the window you are typing in when the app shows no caret. A spot you drop it in the middle of the screen is moved to an edge after a couple of minutes. Now and then it climbs onto the top of a window and walks along it (never
+                  behind the taskbar or a screen edge (the taskbar on any side), or tucks behind a smaller window. Drag a window from under it and it is thrown off with a flail, then looks worried or miffed; a slipping hold may scrabble and pull up. Let go gently near the top or a title bar and it hangs, then pulls itself up, swings down or lets go with a start; it also hangs from a maximised title bar or a window's bottom edge (Roam over windows turns that off). It stays where it is for minutes, alive in place (it breathes, blinks, also sitting, and sways its tail, and the window never bobs), and spends minutes at a time on one quiet thing for the hour (tea, a book, a journal, fishing, the stars, a nap under a blanket, a plant), moving between them by sparkles, a small cloud, a bubble or a portal. A thrown one tumbles smoothly and rights itself as it settles. Only a hard throw up catches the top; any other throw bounces off it, and the hardest leaves through the top and falls back in, later the harder you threw. A longer trip is walking, running (gliding or swooping when it floats), with a jump between window tops, out at one edge and in at the other, through a portal, now and then a puff of smoke, and it steps out of the way of the text you are typing in, or off the bottom of the window you are typing in when the app shows no caret. A spot you drop it in the middle of the screen is moved to an edge after a couple of minutes. Now and then it climbs onto the top of a window and walks along it (never
                   moving the window; Roam over windows in its right-click menu turns that off), and it brings
                   you a card when a reminder falls due. It follows Companion movement
                   in Appearance, and stands still when that is Fades only or Windows animation effects
                   are off; right-click it to see why and choose Let it walk. Click it for Quick note, Quick search, New reminder, Open today or Open
                   Tessellate, and Wave, Come here, Go somewhere else, Take a nap, Sit on a window or Hide for 10 minutes (Come here: it follows your pointer for a while);
-                  right-click for Companion (Atlas masculine or feminine, your own or a saved one, drawn once), Stay here or Roam, Settings or Turn off. The panel closes when you click
+                  right-click for Companion (Atlas masculine or feminine, your own or a saved one, summoned once), Stay here or Roam, Activity, Settings or Turn off; a setting keeps the menu open with its new tick. The panel closes when you click
                   elsewhere, and follows it if you move it.
                   While Tessellate is locked it shows the companion and Open only.
                   On Linux (X11) it is the same figure in a see-through window; on Wayland, which cannot place a window above others, it stays in the app. It also lounges, answers a pat and glances at new windows, never while you type.
@@ -15395,6 +15454,8 @@ Link to another note with [[its first few words]]."></textarea>
 
   <div id="shortcuts-overlay" class="modal-overlay hidden" role="dialog"
     aria-modal="true" aria-label="Keyboard shortcuts">
+    <!-- Built when the sheet first opens (`surfaceBuild("shortcuts")`, settings-body.js; audit 1031 row 21). -->
+    <template data-surface="shortcuts">
     <div class="card modal-card" id="shortcuts-card">
       <div class="dialog-head">
         <h2 class="dialog-head-title"><i class="ph ph-keyboard pop-glyph" aria-hidden="true"></i> Keyboard shortcuts</h2>
@@ -15464,6 +15525,7 @@ Link to another note with [[its first few words]]."></textarea>
       </p>
       <p class="muted">Tip: most actions also live in the command palette.</p>
     </div>
+    </template>
   </div>
 
   <!-- **The board's help and shortcut sheet** (INBOX 566, the owner: "the

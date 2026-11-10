@@ -76,16 +76,12 @@ const SIDEBAR_VIEWPORT_SHARE = 0.24;
 const SIDEBAR_TABLET_MAX = 192;
 const SIDEBAR_TABLET_BAND = "(min-width: 820px) and (max-width: 1099.98px)";
 
-function layoutIsTablet() {
-  return window.matchMedia(SIDEBAR_TABLET_BAND).matches;
-}
-
 //: What the sidebar may actually occupy right now, the user's own width
 //: where there is room for it, less where there is not, never below the
 //: floor a category name needs to stay readable.
 function sidebarFittedWidth(saved) {
   const cap = Math.max(SIDEBAR_MIN, Math.round(window.innerWidth * SIDEBAR_VIEWPORT_SHARE));
-  const banded = layoutIsTablet() ? Math.min(cap, SIDEBAR_TABLET_MAX) : cap;
+  const banded = window.matchMedia(SIDEBAR_TABLET_BAND).matches ? Math.min(cap, SIDEBAR_TABLET_MAX) : cap;
   return Math.min(saved, banded);
 }
 
@@ -740,6 +736,9 @@ function enhanceSelect(select) {
   // guessing at a listbox that supports multiple selection.
   if (select.multiple || select.size > 1) return;
   if (select.closest("[data-no-select-enhance]")) return;
+  //: A select in a Settings pane not yet shown waits for the pane (`showSettingsSection`): 48 of them were three
+  //: listeners and an opener each on the first open (perf audit 1108 P4). The native select keeps the value meanwhile.
+  if (select.closest("#settings-modal .settings-section.hidden")) return;
   select.setAttribute(SELECT_ENHANCED, "1");
   const rich = select.classList.contains("feature-model-select");
 
@@ -1451,6 +1450,8 @@ function kebabMenu(items, ariaLabel, { vertical = false } = {}) {
     if (item.danger) button.classList.add("menu-danger");
     button.setAttribute("role", "menuitem");
     setLabel(button, item.label);
+    //: `lead`, a function returning a node, puts that node first in its own row: a drawn glyph the label's `ph:` marker cannot name. It rides on the item, so a regrouped or reordered list keeps each glyph on its row (the diagram shelf's more menu matched rows by index before).
+    if (typeof item.lead === "function") button.prepend(item.lead());
     if (item.keys) {
       const hint = document.createElement("kbd");
       hint.className = "menu-keys";
@@ -2095,20 +2096,16 @@ async function openConversation(id) {
       // Older turns (saved before steps existed) only have the flattened
       // thinking/tools/answer, so they're rebuilt in that fixed order, 
       // everything is still shown, just without the interleaving.
-      if (message.steps && message.steps.length) {
+      if (message.steps?.length) {
         handles.timeline.replay(message.steps);
       } else {
-        if (message.thinking) {
-          handles.timeline.thinking(message.thinking);
-        }
+        if (message.thinking) handles.timeline.thinking(message.thinking);
         // Re-draw the tool-activity chips (Wave G) so they don't vanish on
         // reload the way they used to (user-reported).
         for (const t of message.tools || []) {
           handles.timeline.tool(toolChip(t.label, t.ok !== false, t));
         }
-        if (message.content) {
-          handles.timeline.answer(message.content);
-        }
+        if (message.content) handles.timeline.answer(message.content);
       }
       handles.timeline.finalise();
       //: …and the step group, so a replayed turn does not reopen with
@@ -2119,36 +2116,24 @@ async function openConversation(id) {
       // stream, so reopening a chat showed answers with nothing to say which
       // model wrote them or what they cost. Turns saved before this stored no
       // stats and correctly get no line, rather than a row of "?"s.
-      if (message.stats) {
-        //: A reopened conversation gets its meter back from the last turn that
-        //: recorded one: without this the header says nothing about a thread
-        //: that is already 80% through its window, which is precisely the
-        //: thread you want warned about.
-        renderChatContextMeter(message.stats);
+      //: Badge and note card as the live answer drew them (INBOX 1693): `by` is saved with the reply.
+      const by = message.by;
+      if (by) finishReply(null, { ...by, bubble: handles.bubble, why: message.why, records: handles.recordsHolder });
+      //: A reopened conversation gets its meter back from the last turn that recorded one.
+      if (message.stats) renderChatContextMeter(message.stats);
+      if (message.stats || by) {
         handles.bubble.appendChild(
           messageMetaLine({
-            model: message.stats.model,
+            model: (message.stats || by).model,
             elapsedMs: message.elapsed_ms,
             stats: message.stats,
             toolCount: (message.tools || []).length,
-            rounds: message.stats.round || 0,
+            rounds: (message.stats || by).round || 0,
             usedTools: message.used_tools ?? null,
           })
         );
       }
-      //: **The Sources panel is rebuilt, not the thing it replaced.**
-      //:
-      //: Reported: *"a lot of the steps and agent process disappears when I
-      //: leave the chat session and come back to it."* A live turn ends with
-      //: the Sources panel: notes, files and web pages, with previews and
-      //: links: and this path rebuilt the old "N matching notes" disclosure
-      //: instead, which knows nothing about files or the web. So reopening a
-      //: conversation genuinely lost most of what the turn had consulted, and
-      //: what survived was drawn as a different control.
-      //:
-      //: `touched` comes back off the saved tool events, which have carried it
-      //: since the live action line was built, the same rows, from the same
-      //: place, so a reopened panel is the panel and not an approximation.
+      //: The Sources panel is rebuilt, not the old "N matching notes" disclosure; `touched` comes off the saved tool events.
       const savedInput = {
         meta: {
           raw_results: message.raw_results || [],
@@ -2157,6 +2142,7 @@ async function openConversation(id) {
         toolEvents: message.tools || [],
         touched: (message.tools || []).flatMap((t) => t.touched || []),
         sentences: message.sentence_grounding,
+        composed: Boolean(message.by?.composed),
       };
       //: The panel's order, built once and handed to the citation pass below
       //: as the live path does (chat-attach.js, `turnSources`). Reopening
@@ -2168,12 +2154,7 @@ async function openConversation(id) {
       if (savedSources) {
         handles.recordsHolder.appendChild(savedSources);
       } else if (message.raw_results) {
-        renderRecordsDetails(handles.recordsHolder, {
-          raw_results: message.raw_results,
-          search_mode: message.search_mode,
-          match_info: message.match_info || {},
-          connected_ids: message.connected_ids || [],
-        });
+        renderRecordsDetails(handles.recordsHolder, { ...message, match_info: message.match_info || {}, connected_ids: message.connected_ids || [] });
       }
       // Same reload-reconstruction fix as raw_results just above, for the
       // "Grounded in" chips: reported directly as disappearing once the chat
@@ -2217,14 +2198,12 @@ async function openConversation(id) {
       //: These two paths had already drifted (this one had Edit and no fork or
       //: rewrite; the live one the reverse), which is how a fix lands on half
       //: the app's messages.
-      handles.bubble.appendChild(
-        assistantMessageActions({
-          bubble: handles.bubble,
-          text: message.content,
-          question: lastQuestionText,
-          onEdit: () => editChatAnswer(handles, turnIndex, message.content),
-        })
-      );
+      assistantMessageActions({
+        bubble: handles.bubble,
+        text: message.content,
+        question: lastQuestionText,
+        onEdit: () => editChatAnswer(handles, turnIndex, message.content),
+      });
       if (lastQuestionText !== null) {
         chatConv.turns.push({ question: lastQuestionText, answer: message.content });
       }
@@ -2243,11 +2222,10 @@ async function openConversation(id) {
     // written yet, or exists only as a half-finished checkpoint row, which is
     // the reported "empty message bubble". Drop that partial and put the live
     // nodes back instead.
-    const bubbles = $("chat-messages").querySelectorAll(".msg");
-    const lastAssistant = [...bubbles].reverse().find((b) => b.classList.contains("assistant"));
+    const lastAssistant = [...$("chat-messages").querySelectorAll(".msg.assistant")].pop();
     if (lastAssistant && !lastAssistant.textContent.trim()) {
-      lastAssistant.previousElementSibling?.classList.contains("msg")
-        && lastAssistant.previousElementSibling.remove();
+      const asked = lastAssistant.previousElementSibling;
+      if (asked?.matches(".msg")) asked.remove();
       lastAssistant.remove();
     }
     reattachStreamingTurn();
@@ -2337,7 +2315,7 @@ async function loadChatSuggestions() {
 const AI_NAME = "Atlas";
 
 function aiNameNow() {
-  return typeof AI_NAME === "string" ? AI_NAME : "Atlas";
+  return AI_NAME;
 }
 
 //: The built-in librarian is Atlas; a preference saved as "Librarian" from
@@ -2403,7 +2381,7 @@ function builtinThinkingWords() {
 //: normalises everywhere else (`null`, `"Librarian"`, a real name).
 function thinkingWordsFor(personaName) {
   const writer = personaDisplayName(personaName);
-  const overrides = (prefsCache && prefsCache.personas) || [];
+  const overrides = prefsCache?.personas || [];
   const custom = overrides.find((p) => p.name === writer || p.name === personaName);
   if (custom && Array.isArray(custom.thinking_words) && custom.thinking_words.length) {
     return custom.thinking_words;

@@ -7,6 +7,8 @@ fixes, each measured or reasoned in its comment.
 
 from __future__ import annotations
 
+import re
+
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -49,7 +51,8 @@ def test_a_companion_shown_again_starts_fresh() -> None:
     # The click's poke is a closure now (INBOX 443: a double-click is not
     # two pokes), one level deeper.
     #: Brief 34: a rub meanwhile has made up already, so the pout is skipped then too.
-    assert "if (!buddy.isConnected || (nmb.rubbedAt || 0) > now) return;\n          buddy.classList.remove(\"nmb-grumpy\");" in AV
+    #: Matched across whitespace: the click reaction became a `react` closure (buddyrev-1108), indenting it again.
+    assert re.search(r"if \(!buddy\.isConnected \|\| \(nmb\.rubbedAt \|\| 0\) > now\) return;\s*\n\s*buddy\.classList\.remove\(\"nmb-grumpy\"\);", AV)
     assert "nmb.visit = null;" in gone
 
 

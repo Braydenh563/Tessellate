@@ -57,7 +57,7 @@
 
   function wire(S, h) {
     const fig = S?.fig;
-    const layer = fig?.parentElement?.querySelector(".dgm-overlay");
+    const layer = fig?.querySelector(":scope > .dgm-overlay");
     if (!layer || S.k || fig.dataset.pick) return;
     fig.dataset.pick = "1";
     const overlay = diagramModel.overlay.math;
@@ -115,19 +115,18 @@
     };
     (fig.onpaint ||= []).push(draw);
     (fig.onzoom ||= []).push(draw);
-    fig.addEventListener("scroll", draw, { passive: true });
     fig.addEventListener("load", draw, true);
     //: A click anywhere in the pane but on the picture lets go (the list, its bar).
     S.root.addEventListener("click", (event) => picked && !fig.contains(event.target) && !event.target.closest?.(".dgm-end") && pick(""));
 
     fig.addEventListener("click", (event) => {
-      if (!S.hit || !rect() || event.target.closest(".dock, .dgm-handle, .dgm-rename")) return;
+      if (!S.hit || !rect() || event.target.closest(".dock, .dgm-overlay > *")) return;
       pick(nodeAt(event.clientX, event.clientY) ? "" : arrowAt(event.clientX, event.clientY));
     });
 
     //: The menu for what is under a point: a box (the list's rows), an arrow (the connector's rows), or nothing (the browser's).
     async function menu(event, x, y) {
-      if (!S.hit || !rect() || event.target.closest?.(".dock, .dgm-handle, .dgm-rename")) return;
+      if (!S.hit || !rect() || event.target.closest?.(".dock, .dgm-overlay > *")) return;
       const node = nodeAt(x, y);
       const id = !node && arrowAt(x, y);
       if (node) {

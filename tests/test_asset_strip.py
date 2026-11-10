@@ -78,7 +78,7 @@ def test_division_followed_by_a_comment():
 
 def test_a_multi_line_comment_inside_code_keeps_a_line_break_for_asi():
     # `return /*\n*/ x` returns undefined: the comment is a line terminator.
-    assert strip_js("function f(){ return /* a\nb */ x; }\n") == "function f(){ return \n x; }\n"
+    assert strip_js("function f(){ return /* a\nb */ x; }\n") == "function f(){ return \nx; }\n"
 
 
 def test_licence_comments_are_kept():
@@ -88,6 +88,72 @@ def test_licence_comments_are_kept():
 
 def test_tokens_are_never_joined():
     assert strip_js("a/**/b") == "a b"
+
+
+# ------------------------------------------------- leading indentation
+
+
+def test_js_loses_its_leading_indentation_and_keeps_every_line():
+    src = "function f() {\n\tif (a) {\n    b();\n  }\n}\n  \nx = 1;\n"
+    out = strip_js(src)
+    assert out == "function f() {\nif (a) {\nb();\n}\n}\n\nx = 1;\n"
+    assert out.count("\n") == src.count("\n")
+
+
+def test_a_template_literal_keeps_its_indented_lines_byte_for_byte():
+    src = "f(`a\n    b\n\t${x}\n  c`);\n  g();\n"
+    assert strip_js(src) == "f(`a\n    b\n\t${x}\n  c`);\ng();\n"
+    # Code inside a substitution is code again; text after its `}` is text.
+    nested = "t = `a\n  ${ f(\n      x) }\n  tail ${ `n\n   m` }\n  end`;\n"
+    assert strip_js(nested) == "t = `a\n  ${ f(\nx) }\n  tail ${ `n\n   m` }\n  end`;\n"
+
+
+def test_a_string_continued_over_a_line_keeps_its_leading_spaces():
+    src = "s = 'one \\\n    two';\n    t = \"a\\\n  b\";\n"
+    assert strip_js(src) == "s = 'one \\\n    two';\nt = \"a\\\n  b\";\n"
+
+
+def test_regexes_and_kept_comments_are_not_reindented():
+    src = "  a = /  x[ ]\\/ y/g;\n    b = c / d;\n  /*! keep\n     this */\n"
+    assert strip_js(src) == "a = /  x[ ]\\/ y/g;\nb = c / d;\n/*! keep\n     this */\n"
+
+
+def test_a_slash_after_a_closing_bracket_that_might_open_a_regex_keeps_later_indents():
+    """`if (x)\n /`/.test(y)` is a regex statement, but a `/` after `)` reads
+    as division, so its backtick would open a template and the guess would
+    strip real template text. Where a quote could be hiding in such a regex
+    the rest of the file keeps its indentation; a plain division does not."""
+    src = "if (x)\n   /`/.test(y);\n   z = `\n   a`;\n"
+    assert strip_js(src) == "if (x)\n/`/.test(y);\n   z = `\n   a`;\n"
+    block = "if (x) {}\n  /'/.test(y);\n  z = '\\\n  a';\n"
+    assert strip_js(block) == "if (x) {}\n/'/.test(y);\n  z = '\\\n  a';\n"
+    # Division with no quote between the slashes is certain: indents still go.
+    assert strip_js("n = (a) / 2 / (b);\n  m();\n") == "n = (a) / 2 / (b);\nm();\n"
+    mid = 'k = (a - b) / 100 + "." + (c) / 3;\n  m();\n'
+    assert strip_js(mid) == 'k = (a - b) / 100 + "." + (c) / 3;\nm();\n'
+
+
+def test_css_loses_its_leading_indentation_but_not_inside_strings_or_urls():
+    src = (
+        ".a {\n    color: red;\n\tmargin: 0;\n}\n"
+        ".b::after {\n  content: \"x\\\n      y\";\n"
+        "  background: url(data:image/svg+xml;utf8,<svg\n    />);\n}\n"
+    )
+    assert strip_css(src) == (
+        ".a {\ncolor: red;\nmargin: 0;\n}\n"
+        ".b::after {\ncontent: \"x\\\n      y\";\n"
+        "background: url(data:image/svg+xml;utf8,<svg\n    />);\n}\n"
+    )
+
+
+def test_the_real_frontend_files_lose_their_indentation():
+    js = (FRONTEND_DIR / "js" / "app.js").read_text(encoding="utf-8")
+    css = (FRONTEND_DIR / "css" / "08-consistency.css").read_text(encoding="utf-8")
+    assert re.search(r"^[ \t]+\S", js, re.M) and re.search(r"^[ \t]+\S", css, re.M)
+    assert strip_js(js).count("\n") == js.count("\n")
+    for out in (strip_js(js), strip_css(css)):
+        # What is left at a line start is inside a template, a string or a kept comment.
+        assert len(re.findall(r"^[ \t]+\S", out, re.M)) < 400
 
 
 # ----------------------------------------------------------- CSS and HTML

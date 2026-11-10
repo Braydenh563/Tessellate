@@ -483,3 +483,17 @@ function syncDraftGate() {
 
 document.addEventListener("mm-model-gate", syncDraftGate);
 syncDraftGate();
+
+//: A note the draft is written from: the adder and the Tray (INBOX 1696 n).
+//: Here, not at boot: a gesture in the open room reaches it (the stand-in loads it).
+function addDraftSource(entry) {
+  const id = Number(entry.id);
+  if (draftSources.some((s) => Number(s.id) === id)) return true;
+  if (draftSources.length >= DRAFT_MAX_SOURCES) return setDraftStatus(`Six notes is the most one draft can be written from.`, true), false;
+  const label = clipText(entry.title || notePreviewText(entry.content || "") || "Untitled note", 60);
+  draftSources.push({ id, label });
+  renderDraftSources();
+  saveDraftLocally();
+  setDraftStatus(`Writing from “${label}” too.`);
+  return true;
+}

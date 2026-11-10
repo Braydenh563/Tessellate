@@ -392,7 +392,8 @@ HELP_TOPICS: list[dict] = [
             "Tessellate can pick up small facts and preferences as you write and "
             "chat, always asking first, never assumed. Accept or decline each "
             "suggestion right in the chat, and review or forget anything it has "
-            "learned in Settings, What it remembers."
+            "learned in Settings, What it remembers, which also lists the "
+            "patterns you confirmed, to edit, remove or mark not right."
         ),
         "badge": {"label": "What it remembers", "section": "memory"},
     },
@@ -462,7 +463,8 @@ HELP_TOPICS: list[dict] = [
             "switches it on by itself on a machine with 2 cores or 4 GB or fewer, "
             "and On or Off overrides that. The Appearance panel (Pop out at the top, "
             "or Ctrl+K, Appearance) holds the same settings beside the app, with "
-            "a strip of sections and a Peek button."
+            "a strip of sections and a Peek button. The sliders' numbers (Zoom, "
+            "Corner rounding, Glass blur) type in too."
         ),
         "badge": {"label": "Appearance", "section": "appearance"},
     },
@@ -637,8 +639,9 @@ HELP_TOPICS: list[dict] = [
             "“summarise lecture 5” gives a short section-by-section version (say “more” or “shorter”). "
             "“What's due this week”, “what's left to do”, “plan my week”, “when is my exam” and “how long until the exam” read your reminders, the dates "
             "your notes give and your open checklist items. It also works out percentages, marks needed, dates "
-            "(“what day is 3 weeks from friday”, “how many weeks until christmas”, “how many days since 1 october”) and word counts, and defines common study terms your notes "
-            "do not cover. After a due or plan list, “the second one” and “why” explain a line and where it came from; "
+            "(“what day is 3 weeks from friday”, “how many days since 1 october”) and word counts, and defines common study terms your notes "
+            "do not cover. Small answers need no model: “pick one of pizza, sushi, tacos”, “what week is it”, “is 2028 a leap year”, “unix time now”, “5 factorial”, “round 3.14159 to 2 places”, “log 100” and “2(3+4)”. "
+            "“Uppercase: hello”, “sort these lines: ...”, “join lines with commas: ...” and “count characters: ...” work on pasted text as an unsaved draft. After a due or plan list, “the second one” and “why” explain a line and where it came from; "
             "“What did I write about databases this week” lists that time's notes on a topic, dated, and “outline lecture 5” shows a note's headings with a word count each; "
             "after a reply that says a tool is off, “turn it on” links its switch (it never flips it for you). "
             "Every answer about a note is that note's own words."
@@ -658,8 +661,8 @@ HELP_TOPICS: list[dict] = [
         ),
         "body": (
             "Web search is opt-in. Turn it on in Settings, Web "
-            "search, or with the Web button in Chat (it asks first; with web on and the panel "
-            "shut, a click opens the panel; with it open, a click turns web off): only your search words are sent out, "
+            "search, or with the Web button in Chat (it asks first; with web on, a click "
+            "opens the panel, or turns web off if it is open): only your search words are sent out, "
             "never your notes, and never a question about your own notes or records. "
             "It runs in Agent mode: there the assistant looks something up online "
             "when asked, and a Chat question your notes do not answer is answered "
@@ -668,7 +671,7 @@ HELP_TOPICS: list[dict] = [
             "mode answers come from your notes only, and the Web button says so; the "
             "Web panel still searches by hand. The pages are in the "
             "Web results fold under the answer; press a title to read one there, "
-            "as text, or the arrow to open it in your browser. "
+            "as text, or the arrow to open it outside. "
             "Paste a link and ask to read it: with web search on and no model "
             "the page is fetched and told back as its main points, key terms "
             "and sections; with it off you are told so and given the setting. "
@@ -677,7 +680,7 @@ HELP_TOPICS: list[dict] = [
             'Settings", "Open the web panel" and "Use another provider"), and the panel '
             "searches again once it answers; where this app cannot start it, it says why "
             "and links Web search settings. Banter, slang or a single word is never sent to the web: "
-            "you are asked, with a chip for your notes and one for the web. To start it "
+            "you are asked, with a chip for your notes and one for the web (also for a question both fit). To start it "
             "yourself with Docker, run: docker run -d --name searxng -p 8888:8080 "
             "-v searxng:/etc/searxng searxng/searxng, then press Auto-detect there. "
             "With SearXNG chosen and no address saved, the reply says it is not "
@@ -1361,7 +1364,8 @@ HELP_TOPICS.extend(
                 "Notes tab, Writing room: pick what to write (draft a note, "
                 "continue or rewrite the draft, bullets to prose, prose to bullets, "
                 "a diagram, or translate), add notes as sources if you want it grounded in "
-                "them, and press Draft. The draft stays in the box to edit; save it "
+                "them (a note dropped or pasted from the Tray into Your thoughts is added "
+                "as one), and press Draft. The draft stays in the box to edit; save it "
                 "as a note when it reads right. Which model writes is set on the "
                 "same row, or in Settings, Models. With no model Atlas does it by "
                 "rule, marked From your words, and offers only what that does well: tidy and "
@@ -1735,10 +1739,12 @@ HELP_TOPICS.extend(
                 "changelog",
                 "auto update",
                 "version",
+                "port",
+                "address",
             ),
             "body": (
-                "Settings, About says which version you have and checks for a newer "
-                "one. When a check finds one, a bar appears at the top with an "
+                "Settings, About says which version you have, the address and port "
+                "the app runs at, and checks for a newer one. When a check finds one, a bar appears at the top with an "
                 "Update button and a close; the Windows app installs it when you "
                 "press Update, and nothing installs before that. Closing the bar "
                 "hides it for that version, and Show the update bar turns it off. "
@@ -1997,7 +2003,7 @@ HELP_TOPICS.extend(
                 "connector bound to it and follows it when it moves. A drawn shape is selected and Select returns (not the pen). Shapes draw corner to corner (Shift: square, circle, 45 degree line, straight pen; Alt: centred). The Shapes flyout has more (star, cloud, cylinder and others). Moving around: the wheel "
                 "zooms about the pointer, two trackpad fingers pan, Shift+wheel pans sideways, a pinch "
                 "zooms too, a drag on empty canvas boxes (Shift adds), a right or middle drag or Space and drag pans (a plain right-click opens the menu), a drag to an edge pans, Ctrl+= and Ctrl+- zoom the board about the selection's centre (else the view's), "
-                "Ctrl+0 fits all (or Shift+1), Ctrl+1 is 100%, Shift+2 zooms to the selection, Shift+N shows the "
+                "Ctrl+0 fits all (or Shift+1), Ctrl+1 is 100% (numbers and sliders type in), Shift+2 zooms to the selection, Shift+N shows the "
                 "overview, / or Ctrl+F finds, Ctrl+H replaces, Tab walks the "
                 "items. Ctrl+K also finds select all shapes or connectors, select similar, turn 90 degrees, remove from "
                 "the group, copy and paste the size, grow to fit the words, reverse a connector and clear its bends. "
@@ -2117,7 +2123,7 @@ HELP_TOPICS.extend(
                 "added, changed and removed. Nothing can be changed while the past is shown. Put back "
                 "restores the whole board as it was then, and the second button only what was selected "
                 "when History opened; either is one Undo step and is in the history too. Esc, or the "
-                "slider's right end, comes back to now. Changes older than ninety days may be kept only "
+                "slider's right end, comes back to now; the number beside it (3 of 12) types in to jump. Changes older than ninety days may be kept only "
                 "in summary, and such a moment cannot be shown. Board, Snapshots… names the board as it is "
                 "now (Snapshot and the time unless you type a name); each one shows its picture, and "
                 "Restore puts the board back as one Undo step."
@@ -2267,7 +2273,7 @@ HELP_TOPICS.extend(
                 "architecture diagram",
             ),
             "body": (
-                "Saving to the library. To save your own: select things and press "
+                "To save your own: select things and press "
                 "Ctrl+Shift+S, or right-click, Save to the library, for a selection, a drawn shape, a style, a sticky "
                 "or text preset, a palette of the selection's colours, or on a mind map a branch; Board, "
                 "Save this board as a template keeps the whole board. New board then offers your templates "
@@ -2416,7 +2422,7 @@ HELP_TOPICS.extend(
                 "show the length",
             ),
             "body": (
-                "Connector bends and importing. Every connector takes bends: drag the small ring in the middle "
+                "Every connector takes bends: drag the small ring in the middle "
                 "of a run (or double-click the line) to add one, drag a bend to move it, double-click it to "
                 "take it out. A straight line runs through its bends, a curved one curves smoothly through "
                 "them, and an elbow turns at right angles and goes round the shapes it joins; changing the "
@@ -2463,7 +2469,7 @@ HELP_TOPICS.extend(
                 "open a shape's link",
             ),
             "body": (
-                "Diagram tools on a board. Shift+2 (or View, Zoom to the selection) frames what is selected, "
+                "Shift+2 (or View, Zoom to the selection) frames what is selected, "
                 "up to twice its size. Tidy as a tree, in Arrange, Tidy and connect, the selection's More and the right-click "
                 "Arrange, lays the selected shapes out along the connectors between them, top to bottom or "
                 "left to right: a shape no connector points into is a root, siblings keep their order, and "
@@ -2524,7 +2530,7 @@ HELP_TOPICS.extend(
                 "paste a list onto a map",
             ),
             "body": (
-                "Paste on a board or map. Text from another app goes in at once: a web address as a link box, "
+                "Text from another app goes in at once: a web address as a link box, "
                 "one line as a text box, a few lines as a sticky each, and rows copied from a spreadsheet as a "
                 "table. A Paste options chip then appears under what was made; press Ctrl, then a letter, or "
                 "open it: Stickies (S), One text box (T), Bullet list in a shape (B), Mind map branch (M, "
@@ -2677,7 +2683,7 @@ HELP_TOPICS.extend(
                 "highlight a branch",
             ),
             "body": (
-                "Mind map features. The layout picker: tree, radial, logic chart, "
+                "The layout picker: tree, radial, logic chart, "
                 "timeline, fishbone, tree table or free; Tidy lays every unpinned topic out again. "
                 "The View menu sets Colour by (branch, category, age, or whether "
                 "a note is behind it) and opens every folded branch; View, "
@@ -2727,7 +2733,7 @@ HELP_TOPICS.extend(
                 "export a branch",
             ),
             "body": (
-                "Mind map import and export. Start from a "
+                "Start from a "
                 "template, import an OPML, FreeMind, XMind, Markdown or text outline "
                 "(it opens as a tree), paste an indented "
                 "list onto a topic to add it as that topic's branch, let the "
@@ -2788,8 +2794,8 @@ HELP_TOPICS.extend(
                 "Tab and Shift+Tab "
                 "indent and outdent, Ctrl+/ comments the selection (Enter ends the remark), Alt+Up / "
                 "Alt+Down moves the block at the caret, and typing / opens "
-                "the blocks menu. Ctrl+F finds and Ctrl+H (Mac: Cmd+Option+F) replaces (Enter or F3 next, "
-                "Shift+Enter previous, Esc closes), and Ctrl+Shift+F finds in every "
+                "the blocks menu. Ctrl+F finds and Ctrl+H (Mac: Cmd+Option+F) replaces (F3 next, "
+                "Shift+Enter previous), Ctrl+Alt+G goes to a line, and Ctrl+Shift+F finds in every "
                 "document. Views: Edit, where Live renders as you write, Source "
                 "is the markdown and Split puts a preview beside it, or Read. The "
                 "sidebar's Outline lists the headings, and they fold. Focus mode (the corners button on "
@@ -2809,6 +2815,28 @@ HELP_TOPICS.extend(
                 "lists and links; Ctrl+Shift+V pastes plain text. With nothing "
                 "selected, Ctrl+C and Ctrl+X copy and cut the whole line, and "
                 "pasting that line puts it above the one you are on."
+            ),
+            "badge": {"label": "Library", "tab": "library"},
+        },
+        {
+            "id": "documents-list-styles",
+            "keywords": (
+                "list style",
+                "list styles",
+                "bullet style",
+                "dot points",
+                "numbered list style",
+                "roman numerals",
+                "lettered list",
+                "hash tag",
+                "tag completion",
+            ),
+            "body": (
+                "List styles (Library, Documents). The arrow beside the List and Numbered "
+                "buttons picks the style: dots, circles, squares or dashes, and 1., 1), a. or i. "
+                "The marker is kept in the text, so every view and the export read it, and Enter at the end of an a., i. or dash item starts the next one. "
+                "A bullet pasted from elsewhere becomes a list item. In a markdown "
+                "document, typing # and a letter offers the tags you have used."
             ),
             "badge": {"label": "Library", "tab": "library"},
         },
@@ -2876,7 +2904,7 @@ HELP_TOPICS.extend(
                 "text only",
             ),
             "body": (
-                "Paste in the document editor. After a paste that changed form (a "
+                "After a paste that changed form (a "
                 "web page or Word copy turned to Markdown, several lines, a "
                 "spreadsheet's rows, a web address) a Paste options chip appears at "
                 "the caret. Press Ctrl, then a letter or the arrows and Enter: Keep "
@@ -2909,7 +2937,7 @@ HELP_TOPICS.extend(
                 "who wrote a comment",
             ),
             "body": (
-                "Comments in a document. Select words and choose Style, Comment: "
+                "Select words and choose Style, Comment: "
                 "they are highlighted and a remark follows them, kept in the text "
                 "as ==words== %%the remark%%, so it opens anywhere else the same. "
                 "The sidebar's Outline lists every remark with the words it is "
@@ -2975,7 +3003,7 @@ HELP_TOPICS.extend(
                 "line spacing",
             ),
             "body": (
-                "Document editor features. Press the counts in the status bar "
+                "Press the counts in the status bar "
                 "for Document statistics (words, sentences, reading and speaking "
                 "time, reading ease, the words you lean on). The command palette "
                 "(F1) changes the selection's case, sorts its lines or drops "
@@ -3065,7 +3093,7 @@ HELP_TOPICS.extend(
                 "connection",
             ),
             "body": (
-                "Graph keys and controls. Click the map, then the arrow keys move between notes, N steps "
+                "Click the map, then the arrow keys move between notes, N steps "
                 "to the next connected note, Enter or Space opens one, + and - zoom, 0 fits the whole "
                 "map, Shift and the arrows pan, Esc leaves. Drag a note to move it (it settles near the "
                 "drop); double-click it to pin it, again to free. Hold Alt and drop one note onto another to link "
@@ -3128,7 +3156,7 @@ HELP_TOPICS.extend(
                 "colour by type",
             ),
             "body": (
-                "More graph controls, under Options. Show adds Tags (a node per tag), "
+                "Show adds Tags (a node per tag), "
                 "Attachments (a node per file or picture) and Unwritten links: each "
                 "[[name]] no note answers to is a faint node, and clicking it writes "
                 "that note, named in its heading, linked from every note that named "
@@ -3312,7 +3340,7 @@ HELP_TOPICS.extend(
                 "queued message",
             ),
             "body": (
-                "Chat keys and controls. Enter sends, Shift+Enter starts a new "
+                "Enter sends, Shift+Enter starts a new "
                 "line; Escape or Ctrl+. stops the answer, Ctrl+Shift+O starts a new chat, "
                 "and one sent mid-answer queues above the box (Edit, Remove). "
                 "Ctrl+Shift+G turns agent mode on or off, Ctrl+Shift+P clips a note "
@@ -3389,7 +3417,7 @@ HELP_TOPICS.extend(
                 "before:",
             ),
             "body": (
-                "Notes keys and controls. In Capture a thought, Ctrl+Enter saves, "
+                "In Capture a thought, Ctrl+Enter saves, "
                 "/ (or Ctrl+/) opens the blocks and commands menu, Ctrl+J asks "
                 "Atlas to write at the cursor, and selecting text shows an actions "
                 "menu (Ctrl+Shift+E from the keyboard). From anywhere, Ctrl+Shift+N "
@@ -3419,7 +3447,7 @@ HELP_TOPICS.extend(
             "id": "library-controls",
             "keywords": ("sub-tab", "subtab", "sort the library", "select all", "boards and maps"),
             "body": (
-                "Library controls. The sub-tabs are plain words with a line under the one you are on (Notes and the document sidebar draw theirs the same way): All (everything you have made), "
+                "The sub-tabs are plain words with a line under the one you are on (Notes and the document sidebar draw theirs the same way): All (everything you have made), "
                 "Documents, Boards & maps, Images, Files, AI skills, Bookmarks and "
                 "Contents. Search, then sort newest first, oldest first, A to Z or "
                 "biggest first, and set how many show per page. Tick a card's box "
@@ -3447,7 +3475,7 @@ HELP_TOPICS.extend(
                 "add an event",
             ),
             "body": (
-                "Timeline controls. Feed shows the newest first, grouped by date; Table shows every "
+                "Feed shows the newest first, grouped by date; Table shows every "
                 "column, sortable; Calendar shows a month, a week (hour rows) or a day: reminders and "
                 "meetings at their time, a day's page at the top of its day and a chip with its title for"
                 " each note (a dot each where a day is too short). Press a day to open it as a Day view; "
@@ -3487,7 +3515,7 @@ HELP_TOPICS.extend(
                 "google calendar",
             ),
             "body": (
-                'Reminders controls. Magic add takes a sentence ("Call mum '
+                'Magic add takes a sentence ("Call mum '
                 'tomorrow evening, high priority"), then Enter or the sparkle button '
                 "(Add from this sentence) works out the time and the "
                 'priority. Times like "tomorrow at 5pm", "next Friday", '
@@ -3531,7 +3559,7 @@ HELP_TOPICS.extend(
                 "continue where i left off",
             ),
             "body": (
-                "Dashboard controls. Under the greeting is the search box (Ctrl+P), "
+                "Under the greeting is the search box (Ctrl+P), "
                 "then Customise and a ... menu. The ... menu is for doing: "
                 "Continue (the note you opened or edited last), your two most "
                 "recent skills and All skills, Tools & features (a searchable "
@@ -3586,7 +3614,7 @@ HELP_TOPICS.extend(
             #: app.js) are written out letter by label, and checked against the
             #: tables, so a letter added there has to be added here.
             "body": (
-                "Hidden features and power keys. Ctrl+K is the command palette "
+                "Ctrl+K is the command palette "
                 "(jump anywhere, run an action), Ctrl+P is Find anything (notes, "
                 "files and actions), and ? lists every shortcut, which Settings, "
                 "Keyboard shortcuts rebinds. Press t (or m) then a letter to jump: d (Dashboard), n "

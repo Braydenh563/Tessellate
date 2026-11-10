@@ -99,6 +99,13 @@
   transform: translateX(-50%);
   max-width: calc(100% - 2 * var(--space-4));
 }
+/* The typeable page number before the picker (value-field.js, INBOX 1694 b). */
+.wb-present-page {
+  flex: none;
+  display: inline-flex;
+  font-size: var(--text-sm);
+  color: var(--text);
+}
 .wb-present-count {
   /* Fixed, so the arrows beside it never move between pages (INBOX K32). */
   flex: none;
@@ -9369,7 +9376,7 @@ input[type="file"] {
    library toolbar states, repeated here because a dock may hold controls
    that never sat in one. Checkboxes and radios are excluded for the reason
    that rule gives: stretching a tick box makes an oval. */
-.dock input:not([type="checkbox"]):not([type="radio"]):not(.search-field-input),
+.dock input:not([type="checkbox"]):not([type="radio"]):not(.search-field-input, .value-field-input),
 .dock select,
 .dock .seg,
 .dock .segmented-control,

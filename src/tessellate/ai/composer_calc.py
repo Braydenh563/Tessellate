@@ -50,14 +50,16 @@ _NEED = re.compile(
     rf".*?(?:if|when|given|with|and)\s+(?:i(?:'ve| have| got| scored)?|my\b.*?\bis|so far)?\s*(?:got|scored|have|on|of|is)?\s*{_NUM}\s*%?\s*(?:so far|already)?.*?(?:worth|weighted|weighting|counts? for|which is|being|is)\s*{_NUM}\s*%", re.I)
 
 _DAYQ = re.compile(
-    rf"{_LEAD}what(?:'s| is| was| will be| would be)? (?:the )?(?P<kind>day|date|weekday)(?: of the week)?"
-    rf"(?: is| was| will it be| would it be| will| would| is it going to be)?(?: it| that)?\s*(?:in |on )?(?P<rest>.+?)\W*$", re.I)
+    rf"{_LEAD}what(?:'s| is| was| will be| would be)? (?:the )?(?P<kind>day|date|weekday)\b(?: of the week)?"
+    #: A date or day wanted, not a question that merely starts "what date(s) ...": "what dates do I have in
+    #: December" asks for the notes' dates (round 3, R3-5).
+    rf"(?: is| was| will it be| would it be| will| would| is it going to be)?(?: it| that)?\s*(?:in |on )?(?!\s*(?:do|does|did|have|has|are|am|can|could|i|we|you|there)\b)(?P<rest>.+?)\W*$", re.I)
 _BETWEEN = re.compile(rf"{_LEAD}(?:how many |how much )?(?P<unit>days|weeks|months|nights)?\s*(?:are there |is there |have i got |do i have )?(?:between|from)\s+(?P<a>.+?)\s+(?:and|to|until|till)\s+(?P<b>.+?)\W*$", re.I)
 _COUNTDOWN = re.compile(
     rf"{_LEAD}(?:how (?:many|much) (?P<u>days|weeks|months|sleeps)(?: (?:are there|is there|do i have|have i got|are left|is left|left|to go|remain|remaining))?|how long|(?P<u2>days|weeks|months|sleeps)(?: left| to go)?)"
     r"\s+(?:until|till|'til|before|to|to go until|left until|left till)\s+(?P<d>.+?)\W*$", re.I)
 _OFFSET_Q = re.compile(rf"{_LEAD}(?:what(?:'s| is| was)|when is|when was) (?P<rest>(?:\d+|a|an|one|two|three|four|five|six|seven|eight|nine|ten|twelve|a couple of|a few) (?:days?|weeks?|fortnights?|months?|years?) .+?)\W*$", re.I)
-_WORDS = re.compile(rf"{_LEAD}(?:how many (?:words|characters|letters|sentences)(?: are| is| long)?(?: there)?|what(?:'s| is) the (?:word|character) count|word count|char(?:acter)? count|how (?:long|big) is(?= (?:this|that|my|the) (?:note|doc(?:ument)?|text|essay|draft|page)\b| [\x22\u201c'])|count (?:the )?words)\s*(?:in|of|for|is|on)?\s*(?P<t>.*)$", re.I)
+_WORDS = re.compile(rf"{_LEAD}(?:how many (?:words|characters|letters|sentences)(?: are| is| long)?(?: there)?|what(?:'s| is) the (?:word|character) count|(?:the )?word count|(?:the )?reading time|char(?:acter)? count|how (?:long|big) is(?= (?:this|that|my|the) (?:note|doc(?:ument)?|text|essay|draft|page)\b| [\x22\u201c'])|count (?:the )?words)\s*(?:in|of|for|is|on)?\s*(?P<t>.*)$", re.I)
 _QUOTED = re.compile(r"[\"“](.+)[\"”]|:\s*(.{12,})$", re.S)
 _DEFINE = re.compile(
     rf"{_LEAD}(?:define\s+(?P<c>.+)|what does (?P<a>.+?) mean|(?:what(?:'s| is| are) (?:the )?(?:meaning|definition) of|meaning of|definition of)\s+(?P<d>.+)|"
@@ -163,6 +165,19 @@ def _offset_reply(moved: dict, today: date) -> Reply:
     return _computed(f"{what.capitalize()} {when}{based} {verb} {_long(target)}.", f"{what} {'before' if moved['sign'] < 0 else 'after'} {_long(moved['base'])}")
 
 
+#: "14 March", "March 14th", "14 March 2027": a plain calendar date, whose weekday is asked.
+_PLAIN_DATE = re.compile(r"^(?:\d{1,2}(?:st|nd|rd|th)?\s+[a-z]{3,9}|[a-z]{3,9}\s+\d{1,2}(?:st|nd|rd|th)?)(?P<year>,?\s+\d{4})?$", re.I)
+
+
+def _weekday_of(rest: str, target: date, today: date) -> Reply:
+    """"14 March 2027 is a Sunday.", and when the year was not said, which one was assumed (audit E23):
+    the sentence does not repeat itself as its own reading."""
+    said = f"That {'was' if target < today else 'is'} {_long(target)}."
+    if _PLAIN_DATE.match(rest).group("year"):
+        return Reply(said)
+    return Reply(f"{said}\n\n_Read as the {'last' if target < today else 'next'} {target.day} {target:%B}._")
+
+
 def _day_question(text: str, today: date) -> Reply | None:
     found = _DAYQ.match(text)
     if not found:
@@ -176,6 +191,10 @@ def _day_question(text: str, today: date) -> Reply | None:
     target = _resolve(rest, today)
     if target is None:
         return None
+    if _PLAIN_DATE.match(rest):
+        return _weekday_of(rest, target, today)
+    if rest.lower() in ("tomorrow", "yesterday", "tonight"):
+        return Reply(f"{rest.capitalize()} {'was' if target < today else 'is'} {_long(target)}.")
     return _computed(f"{rest.capitalize()} {'was' if target < today else 'is'} {_long(target)}.", f"{rest} as {_long(target)}")
 
 
@@ -270,10 +289,20 @@ def _note_count(ctx: Ctx, topic: str) -> Reply | None:
     counted = utilities.counts(body)
     sents = len(study.sentences(body))
     words = counted["words"]
-    read = f", {'' if counted['read'].startswith('under') else 'a '}{counted['read']}" if counted["read"] else ""
+    read = f", {_read_said(counted['read'])}" if counted["read"] else ""
     detail = f"{counted['chars']} characters and about {sents} sentence{'s' if sents != 1 else ''}{read}"
     return Reply(compose.frame("count_note", ctx.mood, link=f"[**{study.title_of(body)}**](#/notes/{notes[0]['id']})",
                              words=f"{words} word{'s' if words != 1 else ''}", detail=detail))
+
+
+def _read_said(compact: str) -> str:
+    """The footer's "under a min", "4 min read" and "1.5h read" as a phrase in a sentence: "under a minute",
+    "a 4-minute read", "a 1.5-hour read" (R3-37)."""
+    if compact.startswith("under"):
+        return "under a minute"
+    if compact.endswith("h read"):
+        return f"a {compact[:-len('h read')]}-hour read"
+    return f"a {compact.split(' ')[0]}-minute read"
 
 
 def _word_count(ctx: Ctx, text: str) -> Reply | None:

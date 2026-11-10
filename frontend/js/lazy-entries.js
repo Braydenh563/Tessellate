@@ -293,3 +293,6 @@ warmOnFirst("input", "#command-palette-input", "chatTurn");
 
 //: A note card's ... menu rows are fetched when the pointer first reaches a card, so the first press finds them in.
 warmOnFirst("pointerover", "li[data-id] .menu-wrap", "entryMenu");
+//: A slider fetches the value field on its first hover or focus (a keyboard-only reach too), so its readout becomes typeable (INBOX 1694 c, value-field.js). Range inputs only: a plain number box has no readout to upgrade.
+warmOnFirst("pointerover", "[type=range]", "vf");
+warmOnFirst("focusin", "[type=range]", "vf");

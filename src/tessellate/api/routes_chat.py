@@ -57,6 +57,7 @@ from tessellate.ai import (
 from tessellate.ai.answer_trim import trim_assistant_padding
 from tessellate.ai.grounding import (
     ground_answer_sentences,
+    composed_support,
     support as grounding_support,
 )
 from tessellate.ai.ollama_client import OllamaError
@@ -77,11 +78,11 @@ from tessellate.search import search_manager
 from sqlalchemy import func
 from tessellate.api.chat_attach import _MEDIA_REF, _attached_boards, _attached_documents, _attached_files, _attached_media_files, _attached_notes, _files_on, _grounding_candidates, _note_dates, _time_words
 from tessellate.api.chat_request import ChatRequest, ChatResponse, CommandRunBody, CompressBody, FollowupBody, RememberBody, ToolExecuteBody, _StreamRequest, _Turn, _apply_open, _apply_scope, _chat_model_sees_images, _check_refs, _composed, _event, _image_caption_context, _in_full, _meta_event, _nothing_open, _resolve_chat_images, _resolve_mode, _resolve_persona, _resolve_skill
-from tessellate.api.chat_pool import _Found, _NoteCtx, _chat_payload, _composer_reads, _document_row, _frame_matches, _glossary, _holds_read_text, _in_window, _keep_window, _note_content, _records_beside, _whole_pool, _widened, _with_each_side, _with_neighbours, _with_records, _with_sources
+from tessellate.api.chat_pool import _Found, _NoteCtx, _chat_payload, _composer_reads, _document_row, _frame_matches, _glossary, _holds_read_text, _in_window, _keep_window, _note_content, _or_empty_notebook, _records_beside, _slips_put_right, _whole_pool, _widened, _with_each_side, _with_holders, _with_neighbours, _with_records, _with_sources
 from tessellate.api.chat_recent import AGENT_SURFACE, ASK_SURFACE, STARTER_SUGGESTIONS, _about, _asked_key, _feature_for, _fill, _recent_questions
-from tessellate.api.chat_web import WEB_PAGES, _can_start_searxng, _home_place, _link_events, _offer_events, _search_service, _unmatched_recents, _web_allowed, _web_chip, _web_first, _web_page_row, _web_pref_on
+from tessellate.api.chat_web import WEB_PAGES, _can_start_searxng, _torn_events, _home_place, _link_events, _offer_events, _search_service, _unmatched_recents, _web_allowed, _web_chip, _web_first, _web_page_row, _web_pref_on
 from tessellate.api.chat_agent import _agent_events, _close_quietly, _first_agent_event, _refuse_failed, _refuse_if_off, _starter_read
-from tessellate.api.chat_said import MODEL_STOPPED_NOTE, _says_cannot, _ROWS_KEPT, _app_answers, _asked_before, _asks_capability, _asks_only_a_time, _awareness, _chart_line, _cited_titles, _composed_lines, _current_notes, _diagram_events, _engine_counts, _engine_stands, _filed_or_counted_events, _first_cited_has_list, _held_reply, _help_events, _in_notes, _late_panel, _linked_notes, _listed_below, _model_said, _name_documents, _newest_titles, _newest_word, _open_note_answer, _ping_offer, _related_elsewhere, _related_sentence, _remember_rows, _reminder_window, _reply_seed, _row_source, _rows_key, _run_title, _said_events, _save_ask_turn, _saved_joke_reply, _search_footer, _sees, _slash_chart, _stats_chart, _stats_listed, _suggest_events, _with_words_only, reply_panel
+from tessellate.api.chat_said import MODEL_STOPPED_NOTE, acts_on_listed_task, _says_cannot, _ROWS_KEPT, _app_answers, _asked_before, _asks_capability, _asks_only_a_time, _awareness, _chart_line, _cited_titles, _composed_lines, _current_notes, _diagram_events, _engine_counts, _engine_stands, _filed_or_counted_events, _first_cited_has_list, _held_reply, _help_events, _in_notes, _late_panel, _linked_notes, _listed_below, _model_said, _name_documents, _newest_titles, _newest_word, _open_note_answer, _ping_offer, _related_elsewhere, _related_sentence, _remember_rows, _reminder_window, _reply_seed, _row_source, _rows_key, _run_title, _said_events, _save_ask_turn, _saved_joke_reply, _search_footer, _sees, _slash_chart, _stats_chart, _stats_listed, _suggest_events, _with_words_only, reply_panel
 from tessellate.api.chat_turn import _asks_change, _chat_reply, _checks_grounding, _cited_scope, _composes_offline, _detect_intent, _engine_answers, _facts_turn, _insight_level, _insight_memory, _is_composing, _log_question, _may_digest, _meaning_loading, _model_stream_events, _note_with_hint, _notes_first, _notes_messages, _relay_events, _searched_question, _social_line, _trim_answer, _uncut, _verdicts, _why, _will_answer
 
 
@@ -285,8 +286,8 @@ def _recall_window(session: Session, question: str, found: _Found) -> None:
 def _search_notes(session: Session, question: str, found: _Found, attached: list, as_of, locale: str | None, composed: bool = False) -> None:  # noqa: ANN001
     #: Searched with the person's own abbreviations spelt out ("what's due in
     #: CC" also finds the notes that say Cloud Computing, B7).
-    found.meaning_loading = _meaning_loading()
-    found.meaning_off = _meaning_off()
+    found.meaning_loading, found.meaning_off = _meaning_loading(), _meaning_off()
+    question = composer_intent.without_event_window(_slips_put_right(question))
     hit = search_manager.retrieve_detailed(
         session, glossary.expand(question, _glossary(session)), deps.get_embeddings(), limit=5,
         locale=locale,
@@ -299,7 +300,7 @@ def _search_notes(session: Session, question: str, found: _Found, attached: list
         found.entries = list(hit.entries)
     else:
         entries = _with_neighbours(session, question, _widened(session, question, hit.entries, scope=hit.category), scope=hit.category)
-        entries = _with_records(session, question, _with_each_side(session, question, entries, locale), locale)
+        entries = _with_holders(session, question, _with_records(session, question, _with_each_side(session, question, entries, locale), locale), locale)
         found.entries = list_pool.pool(session, question, entries)
     found.mode = hit.mode
     found.connected_ids = hit.connected_ids
@@ -789,14 +790,8 @@ def _web_answer(req: _StreamRequest, question: str) -> tuple[dict, list[dict]] |
 
 
 def _composed_support(result: dict) -> dict:
-    """The support of an answer no model wrote (`by_model: False`): every
-    sentence of it is quoted or the app's own joining words, so the notice
-    says something only when most of what it quotes is how the app read a
-    picture (INBOX 787: "Only 0 of 2 sentences here are quoted" under an
-    answer that had nothing else to say)."""
-    rows = result.get("grounding") or []
-    pictures = sum(1 for row in rows if row.get("said") == "picture")
-    return {**result["support"], "by_model": False, "low": pictures * 2 > len(rows) > 0}
+    """The support of an answer no model wrote (`grounding.composed_support`)."""
+    return composed_support(result["support"], result.get("grounding") or [])
 
 
 def _web_events(result: dict, sources: list[dict]) -> Iterator[dict]:
@@ -894,14 +889,14 @@ def _welcome(req: _StreamRequest, seed: str, recent: list[str]) -> str:
 def _hello_reply(req: _StreamRequest, seed: str, recent: list[str]) -> str:
     """A hello answered with a welcome built from the day (CHAT_PLAN 1353), or
     "" when the day's numbers cannot be read."""
-    welcome = _welcome(req, seed, recent)
-    if not welcome:
+    if not (welcome := _welcome(req, seed, recent)):
         return ""
     sees = composer_aware.opening(_awareness(req), seed) if req.body.screen else ""
     #: The welcome already names the last note: no second sentence about it.
     invite = "" if "“" in welcome or "](#/notes/" in welcome else _newest_word(req.session)
     asks = composer_smalltalk.invitation(req.question, invite, _composer_voice(), seed) if invite else composer_smalltalk.greeting_ask(req.question, _composer_voice(), seed)
-    return "\n\n".join(p for p in (" ".join(p for p in (welcome, asks) if p), sees) if p)
+    how = composer_smalltalk.hello_how(req.question, _composer_voice(), [welcome, *recent], seed)
+    return "\n\n".join(p for p in (" ".join(p for p in (welcome, how or asks) if p), sees) if p)
 
 
 def _social_reply(req: _StreamRequest, prepared: dict) -> str:
@@ -1200,7 +1195,7 @@ def _no_notes_events(req: _StreamRequest, ollama_running: bool) -> list:
 
 def _no_notes_answer(req: _StreamRequest, ollama_running: bool) -> list:
     """The line for a question no note answers, and what else the notebook holds on it."""
-    events: list = [{"type": "answer", "delta": _no_notes_line(req, ollama_running)}]
+    events: list = [{"type": "answer", "delta": _or_empty_notebook(req.session, _no_notes_line(req, ollama_running))}]
     #: A day with nothing in it graphs where the notes run (INBOX 1333 b).
     if _asks_only_a_time(req.question) and not (ollama_running and not _composed(req, ollama_running)):
         from tessellate.ai import slash_more
@@ -1529,7 +1524,7 @@ def _early_events(req: _StreamRequest, prepared: dict, ollama_running: bool) -> 
     if bare and composer_unplaced.jibe(req.question or ""):
         #: A jibe is banter even when a note holds the word "mum" (audit 1031 C21).
         return _unplaced_events(req)
-    return None
+    return _torn_events(req, prepared) if bare else None
 
 
 def _no_model_events(req: _StreamRequest, prepared: dict, ollama_running: bool) -> list | None:
@@ -1605,7 +1600,7 @@ def _act_events(req: _StreamRequest, prepared: dict) -> Iterator[dict]:
     client too: it names the act it read and says where it is done."""
     from tessellate.ai import act_registry
 
-    parsed = acts.parse(req.question, user_now(deps.get_config()))
+    parsed = acts.parse(req.question, user_now(deps.get_config()), req.history)
     app_verb = act_registry.app_verb(req.question) if parsed is None else None
     if app_verb:
         yield {"type": "answer", "delta": act_registry.app_verb_line(app_verb)}
@@ -1616,7 +1611,7 @@ def _act_events(req: _StreamRequest, prepared: dict) -> Iterator[dict]:
     if parsed is None:
         yield {"type": "answer", "delta": acts.capability_line()}
         return
-    if parsed["intent"] == "reminder" and not parsed.get("time_given"):
+    if parsed["intent"] == "reminder" and not parsed.get("time_given") and not parsed.get("on_list"):
         #: Asked once, never guessed as tomorrow at 9 (decision 50); the
         #: reply's time fills it (`reading._follow_slot`).
         from tessellate.ai import commands
@@ -1639,11 +1634,9 @@ def _act_planned_events(req: _StreamRequest, parsed: dict) -> Iterator[dict]:
             #: Friday at 9: call the dentist."
             what = f"{card['label'][:1].lower()}{card['label'][1:]}"
             done["summary"] = composer_compose.frame("act_card", mood, what=what)
-        elif done["ok"] and parsed["intent"] == "complete":
-            #: Already ticked, so said as done, not "I will mark it done"
-            #: (audit 1030 Z60).
-            what = re.sub(r"^Mark (“.*”) done", r"ticked off \1", card["label"])
-            done["summary"] = composer_compose.frame("act_done", mood, what=what)
+        elif done["ok"] and parsed["intent"] in ("complete", "uncomplete"):
+            #: Already ticked, so said as done, not "I will mark it done" (audit 1030 Z60).
+            done["summary"] = acts.ticked_line(card, lambda what: composer_compose.frame("act_done", mood, what=what))
         yield {"type": "answer", "delta": done["summary"]}
         #: Run already, with Undo: the card's "nothing changes until you
         #: confirm" would contradict it.
@@ -1871,6 +1864,8 @@ def _follow_up(req: _StreamRequest):
     """The follow-up the turn before gives this one: a spoken act stands in
     for the question itself; a composed turn's "tell me more" is
     `composer.follow_on`'s; None otherwise."""
+    if acts_on_listed_task(req.question, req.history, user_now(deps.get_config())):
+        return None  # "tick the first one" is the act on the task the list showed (R9-9), not a follow-on to rewrite
     composed = bool(req.history) and ((req.body.notes_only and req.body.answer_from == "notes") or not req.ollama.is_running())
     more = composer.follow_on(req.question, req.history) if composed else None
     if more is not None and more.kind == "more":

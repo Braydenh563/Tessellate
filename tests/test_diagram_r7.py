@@ -44,14 +44,15 @@ def test_canvas_and_blocks_are_two_layouts_of_the_one_rendered_view():
     assert '[data-dgm-layout="canvas"]' in CSS and '[data-dgm-layout="blocks"]' in CSS
 
 
-def test_the_dialog_seg_is_canvas_blocks_source_too():
-    assert re.search(r'\[\["canvas", "Canvas"\], \["blocks", "Blocks"\], \["source", "Source"\]\]', EMBED)
+def test_the_dialog_seg_is_picture_list_source_too():
+    # Intent moved (INBOX 1661 i): the labels say what the views are; the ids "canvas" and "blocks" are kept.
+    assert re.search(r'\[\["canvas", "Picture"\], \["blocks", "List"\], \["source", "Source"\]\]', EMBED)
 
 
 def test_done_from_the_door_inside_an_editor_makes_a_row_and_inserts_a_link():
     door = MERMAID[MERMAID.index("async function diagramDoor(") :]
     door = door[: door.index("diagramModel.starter =")]
-    tail = door[door.index("return openDiagramBuilder({\n      source: diagramModel.starter") :]
+    tail = door[door.rindex("return openDiagramBuilder({\n      source: diagramModel.starter") :]
     assert 'file_type: "mmd"' in tail and "![[" in tail
     # The slash menu's starter fence is untouched.
     assert "```mermaid" not in tail

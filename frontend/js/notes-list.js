@@ -76,12 +76,17 @@ function focusNoteRow(id) {
 //: change does not pull focus into a hidden tab. Hidden counts as lost: the
 //: browser only moves focus off a node just hidden after this frame.
 function restoreFocusTo(target) {
-  requestAnimationFrame(() => {
+  const give = () => {
     const here = document.activeElement;
     if (here && here !== document.body && here.isConnected && here.checkVisibility?.() !== false) return;
     const el = target instanceof Node ? target : target();
-    if (el?.isConnected && el.checkVisibility?.() !== false) el.focus({ preventScroll: true });
-  });
+    if (!el?.isConnected || el.checkVisibility?.() === false) return;
+    restoreFocusTo.giving = true;
+    el.focus({ preventScroll: true });
+    restoreFocusTo.giving = false;
+  };
+  give(); //: 1682
+  requestAnimationFrame(give);
 }
 
 //: The control of a note's row that holds the keyboard, as classes (without
@@ -118,7 +123,7 @@ async function openNoteEditor(id, { focusTags = false } = {}) {
   //: lands here, but the form is drawn into the list, which is behind that
   //: sheet: Edit did nothing anyone could see (found by the deepflows sweep at
   //: 390 wide). The page closes, and the form is there to type in.
-  if (typeof notePageClose === "function") notePageClose();
+  notePageClose?.();
   //: The caret goes into the form (WCAG 2.4.3); it was left on <body>.
   if (focusTags) focusTagsAfterRender = id;
   else focusBodyAfterRender = id;
@@ -1427,11 +1432,11 @@ function resolveWikiTarget(name) {
   //: "Nothing called A document yet" while the Live view of the same line,
   //: which resolves through documents.js's own `docs`, drew it: two views of
   //: one line disagreeing (found by `scratchpad/ui-sweeps/blockbar.js`).
-  const cached = typeof editorDocumentCache !== "undefined" && editorDocumentCache && editorDocumentCache.length
+  const cached = typeof editorDocumentCache !== "undefined" && editorDocumentCache?.length
     ? editorDocumentCache
     : null;
-  const documents = cached || (typeof docs !== "undefined" && Array.isArray(docs) ? docs : null);
-  const docList = documents || [];
+  const docList = cached || (typeof docs !== "undefined" && Array.isArray(docs) ? docs : []);
+  if (!docList.length) loadEmbedDocuments();
   const doc =
     docList.find((d) => (d.title || "").trim().toLowerCase() === needle) ||
     //: Reported directly: "still cant open note links from the document
@@ -1446,6 +1451,22 @@ function resolveWikiTarget(name) {
     docList.find((d) => (d.title || "").trim().toLowerCase().startsWith(needle));
   if (doc) return { kind: "document", doc };
   return null;
+}
+
+//: **Documents for a note card's embeds, fetched once** (review 1107): on the Notes tab nothing had filled the documents list yet
+//: (`docs` is the Library's, `editorDocumentCache` the `[[` picker's), so a note holding `![[A diagram]]` drew "Nothing called
+//: ... yet" for a diagram that exists, also after a reload. The first miss asks for the list, then the cards are drawn again.
+let embedDocumentsAsked = false;
+function loadEmbedDocuments() {
+  if (embedDocumentsAsked) return;
+  embedDocumentsAsked = true;
+  apiPagedList("/documents", DOCUMENTS_PAGE_SIZE)
+    .then((list) => {
+      if (!list.length) return;
+      editorDocumentCache = list;
+      renderEntries();
+    })
+    .catch(() => {});
 }
 
 // A note card's text: block constructs first, then the inline pass.
@@ -3123,7 +3144,12 @@ async function _loadEntries() {
   let cursor = "";
   while (offset < total) {
     const after = cursor ? `&cursor=${encodeURIComponent(cursor)}` : "";
-    const response = await api(`/entries?limit=${ENTRIES_PAGE_SIZE}${after}&preview=300`);
+    //: **The rest in one request, not page by page** (perf audit 1108 P10: 500 notes were three `/entries` fetches
+    //: of 200, 1.1 to 1.4 s each on a loaded host). The first page stays small for the first paint; the first
+    //: response's total says how much is left, so one more request (up to the server's own page, 1000) fetches
+    //: it. A notebook past 1,200 still pages, in thousands.
+    const want = first ? ENTRIES_PAGE_SIZE : Math.min(1000, Math.max(ENTRIES_PAGE_SIZE, total - offset));
+    const response = await api(`/entries?limit=${want}${after}&preview=300`);
     const page = await response.json();
     if (generation !== _entriesLoadGeneration) return; // superseded mid-load
 
@@ -3276,7 +3302,7 @@ async function followNoteChanges() {
     noteChanges.quiet = body.ids.length ? 0 : noteChanges.quiet + 1;
     if (!ids.length) return;
     await refreshEntries(ids);
-    if (typeof refreshNotePage === "function") refreshNotePage(ids);
+    refreshNotePage(ids);
   } catch {
     /* offline or locked: the next tick asks again */
   } finally {
@@ -3419,7 +3445,7 @@ function noteTopicChip(entry) {
   //: Why it is there: the topic is the cluster of notes this one is linked into,
   //: named by the words most of them share (INBOX 1620).
   const why = (topic.terms || []).length ? ` Named from the words ${topic.terms.join(", ")}, shared by the notes linked to this one.` : "";
-  mark.title = `In the topic ${topic.name}, ${nounCount(topic.size, "note")}.${why} Open it on the graph, where it can be renamed`;
+  mark.title = `In the topic ${topic.name}, ${nounCount(topic.size, "note")}.${why} To rename it, use the graph. A topic follows note links: remove the links to take this note out`;
   return mark;
 }
 

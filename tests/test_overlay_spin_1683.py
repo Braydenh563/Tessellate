@@ -26,27 +26,30 @@ def flight(speed: float, gait: str = "float", look: str = "masculine", angle: fl
     t = _release(e, speed, angle, at)
     drawn: list[float] = []
     names: list[str] = []
+    down: list[bool] = []
     for _ in range(60 * 12):
         t += STEP
         out = e.update(t)
         if e.state != "fly":
             break
-        if e.touch_at is not None:  # the flight only: the landing's own steps are pinned in test_overlay_land_1683
-            continue
         if out.angle is not None:
             drawn.append(math.degrees(out.angle))
             names.append(out.frame)
+            down.append(e.grounded)
     steps = [abs((b - a + 180.0) % 360.0 - 180.0) for a, b in zip(drawn, drawn[1:])]
-    return {"drawn": drawn, "names": names, "steps": steps, "jerk": [abs(b - a) for a, b in zip(steps, steps[1:])], "engine": e}
+    # INBOX 1683 k: the flop onto its back or belly is a landing (tests/test_overlay_landing_1683k.py: no tick over 30
+    # degrees); the smoothness asked of the flight is read on the ticks before it touches down
+    air = [x for x, a, b in zip(steps, down, down[1:]) if not a and not b]
+    return {"drawn": drawn, "names": names, "steps": steps, "air": air, "jerk": [abs(b - a) for a, b in zip(steps, steps[1:])], "engine": e}
 
 
 @pytest.mark.parametrize("gait", ["float", "walk"])
 @pytest.mark.parametrize("speed", [450.0, 900.0, 2500.0])
 def test_a_thrown_figure_is_drawn_at_a_new_angle_every_tick_in_small_steps(gait: str, speed: float) -> None:
     f = flight(speed, gait)
-    assert len(f["steps"]) > 30  # was 60 when the walker's righting slide counted; that is now the landing (test_overlay_land_1683)
+    assert len(f["steps"]) > 60
     # measured (soft toss, throw, hard throw, 60 Hz): max step 2.2, 3.7, 3.9 degrees; before 7.5, 7.5, 15
-    assert max(f["steps"]) <= 4.5
+    assert max(f["air"]) <= 4.5
     # no tick holds the angle: before, 58 to 74 percent of ticks repeated the last picture
     assert sum(1 for s in f["steps"] if s == 0.0) / len(f["steps"]) < 0.02
 

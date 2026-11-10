@@ -371,18 +371,16 @@ function mdMathBox(tag, className, tex, display) {
   //: Not a silent guard: the bundle that draws maths is asked for, and the
   //: box redraws itself in place once it lands (a note card or a chat
   //: answer can be the first thing on screen with a formula in it).
-  if (typeof ensureModule === "function") {
-    ensureModule("library")
-      .then(() => {
-        if (!box.isConnected || typeof docMathRender !== "function") return;
-        try {
-          box.replaceChildren(docMathRender(tex, display));
-        } catch {
-          // The source stays.
-        }
-      })
-      .catch(() => {});
-  }
+  ensureModule("library")
+    .then(() => {
+      if (!box.isConnected || typeof docMathRender !== "function") return;
+      try {
+        box.replaceChildren(docMathRender(tex, display));
+      } catch {
+        // The source stays.
+      }
+    })
+    .catch(() => {});
   return box;
 }
 
@@ -456,6 +454,30 @@ function mdFillTocs(container) {
     }
   }
 }
+
+// MD-LISTS-BEGIN
+//: The list markers the editor writes (docLists), read by the renderer and so by the HTML export (INBOX 1696 cc).
+//: A key is the list a line is in and doubles as its class (`md-ul-circle`, `md-ol-1-paren`, ...), which the
+//: stylesheet and the export's own turn into the marker. A letter is a list only as a run (`a.` or `i.`
+//: starts, the next continues; `cur.count` items so far), so "A. Smith" is text. `cur === false` is a
+//: line inside a paragraph, where only a bullet or a number opens a list.
+globalThis.mdList = {
+  item(line, cur = null) {
+    const m = /^(\s*)(?:([-*+])(\s+)|(\d+)([.)])\s+|([a-z]{1,4})\.\s+)(.*)$/.exec(line);
+    if (!m) return null;
+    const [, indent, mark, gap, num, delim, token, text] = m;
+    if (mark) return { key: "ul-" + ({ "*": "circle", "+": "square" }[mark] || (gap.length > 1 && gap.length < 4 && /\S/.test(text) && !/^\[[ xX]\]\s/.test(text) ? "dash" : "disc")), indent, text };
+    if (num) return { key: "ol-1-" + (delim === "." ? "dot" : "paren"), number: +num, indent, text };
+    if (cur === false) return null;
+    const n = cur ? cur.count : 0;
+    const roman = ["", "x", "xx", "xxx", "xl", "l"][((n + 1) / 10) | 0] + ["", "i", "ii", "iii", "iv", "v", "vi", "vii", "viii", "ix"][(n + 1) % 10];
+    const run = (cur?.key === "ol-a-dot" && token === String.fromCharCode(97 + n) && "a") || (cur?.key === "ol-i-dot" && token === roman && "i");
+    const start = token === "a" || token === "i" ? token : "";
+    if (!run && (!start || (cur && indent.length > cur.indent.length))) return null;
+    return { key: `ol-${run || start}-dot`, fresh: !run, indent, text };
+  },
+};
+// MD-LISTS-END
 
 // MD-FOOTNOTE-BEGIN
 //: Footnotes (audit FEAT-03, DOCUMENTS_PLAN decision 20.1): definitions
@@ -686,26 +708,14 @@ function mdEmbedElement(name, depth) {
   return box;
 }
 
-//: **A whiteboard or a mind map, living in a note as an object** (INBOX 309).
+//: **A whiteboard or a mind map, living in a note as an object** (INBOX 309). One card, drawn by the one
+//: preview renderer (`mapPreview`, MINDMAP_PLAN §5 item 12: "one `mapChip()` and one `mapPreview()`"), and the
+//: whole card is one `<button>`: a picture with a separate "open" link is two tab stops for one action.
 //:
-//: One card, drawn from the one preview renderer this app has
-//: (`mapPreview`), so a board looks the same in a note as it does in the
-//: Library and on the dashboard. MINDMAP_PLAN §5 item 12's rule, which this
-//: is the fourth surface to keep: "One `mapChip()` and one `mapPreview()`,
-//: used by all of them: the app's recurring failure is the same object drawn
-//: five ways."
-//:
-//: The whole card is one `<button>`. A picture with a separate "open" link
-//: beside it is two tab stops for one action, and the picture is the thing
-//: the eye and the finger both go for; making the card itself the control is
-//: what `mapChip` already does for the chip-sized version of this.
-//:
-//: **The card is filled twice when the index is not loaded yet.** `mapPreview`
-//: draws from `/whiteboard/boards` (`loadMapBoardIndex`), which a document or
-//: a chat transcript has usually never asked for, and this function is
-//: synchronous because it runs inside a render pass. So an unloaded index
-//: draws the resting card, asks for the index, and fills in place. It cannot
-//: loop: `loadMapBoardIndex` de-duplicates and caches for eight seconds.
+//: **Filled twice when the index is not loaded yet.** `mapPreview` draws from `/whiteboard/boards`
+//: (`loadMapBoardIndex`), which a document or transcript has usually never asked for, and this function is
+//: synchronous inside a render pass. So an unloaded index draws the resting card, asks for the index, and
+//: fills in place. It cannot loop: `loadMapBoardIndex` de-duplicates and caches for eight seconds.
 //: The board ids a forced index refresh has been asked about: a promise while
 //: that walk is in flight, `true` once it answered without finding the board.
 //: See `fill` below: this is what keeps a dead reference from costing a
@@ -740,10 +750,6 @@ function boardEmbedElement(ref) {
     //: A reference a forced refresh has already failed to find is not asked
     //: about again: without this, every re-render of a note holding a dead
     //: object would walk `/whiteboard/boards` from the top.
-    if (typeof loadMapBoardIndex !== "function") {
-      fill(true);
-      return;
-    }
     let walk = boardEmbedForced.get(ref.id);
     if (walk === true) {
       fill(true);
@@ -1024,6 +1030,8 @@ function openMenuAtPoint(items, ariaLabel, x, y, returnFocus = null) {
     if (menu.contains(document.activeElement)) return;
     menu.querySelector("button")?.focus({ preventScroll: true });
   });
+  //: The menu itself, for a caller that decorates its rows: it may be moved out of its host (`escapeMenuIfClipped`), so a lookup by host can miss it.
+  return menu;
 }
 
 //: What a right-click on a link offers, by what the link is. An address can be

@@ -30,7 +30,7 @@
   function wire(S, h) {
     const fig = S?.fig;
     const stage = fig?.parentElement;
-    const layer = stage?.querySelector(".dgm-overlay");
+    const layer = fig?.querySelector(":scope > .dgm-overlay");
     if (!layer || S.k || fig.dataset.edges) return;
     fig.dataset.edges = "1";
     const img = () => fig.querySelector(".md-mermaid-img");
@@ -41,7 +41,7 @@
 
     //: Four handles, one a side, so a connection can leave any edge and the picked block reads as connectable (INBOX 1679).
     const handles = ["top", "right", "bottom", "left"].map((side) => {
-      const b = smallButton("ph:arrow-bend-down-right", "Connect to another block. Drag it to a block, or press it and click one", () => {});
+      const b = smallButton("ph:arrow-bend-down-right", "Click for a new joined block, or drag it to a block to connect them", () => {});
       b.className = "dgm-handle ghost small hidden";
       b.dataset.side = side;
       //: Four tab stops, so each says which edge it leaves from.
@@ -77,13 +77,25 @@
       const coarse = matchMedia("(pointer: coarse)").matches;
       const full = coarse ? 44 : 24;
       const size = overlay().handleSize(at, full, coarse ? 24 : 14);
+      //: Read before the loop writes (a read after a write lays the page out once per handle).
+      const [wide, tall] = [fig.scrollWidth, fig.scrollHeight];
+      //: The part of that area the stage shows (a wide chart scrolls inside the stage, which clips): a handle past it was cut (390 px: 8 to 10 px).
+      const [seen, shown] = [stage.getBoundingClientRect(), fig.getBoundingClientRect()];
+      const [ox0, oy0] = [shown.left + fig.clientLeft - fig.scrollLeft, shown.top + fig.clientTop - fig.scrollTop];
+      const [x0, y0] = [Math.max(0, seen.left - ox0), Math.max(0, seen.top - oy0)];
+      const [x1, y1] = [Math.min(wide, seen.right - ox0), Math.min(tall, seen.bottom - oy0)];
       for (const handle of handles) {
         handle.style.inlineSize = handle.style.blockSize = `${size}px`;
         const [x, y] = anchor(at, handle.dataset.side);
         //: A shrunk handle leans out of its edge so no more than a sixth of the block's smaller side is under it.
+        //: On a coarse pointer it leans fully out (its inner edge on the box edge), so a finger that taps the handle never lands on the box (up to 12 px of overlap, measured at 390).
         const lean = size < full ? Math.max(0, size / 2 - Math.min(at.w, at.h) / 6) : 0;
+        const out = coarse ? size / 2 : lean;
         const [ox, oy] = { top: [0, -1], bottom: [0, 1], left: [-1, 0], right: [1, 0] }[handle.dataset.side];
-        handle.style.transform = `translate(${x - size / 2 + ox * lean}px, ${y - size / 2 + oy * lean}px)`;
+        //: Never past the picture's scroll area: a block near the edge had its handle cut by the pane (blind test 1108: a box 15 px under
+        //: the top, a 44 px handle). The handle moves in over the block instead, which a cut handle could not be pressed through.
+        const room = (from, to, at) => Math.max(from, Math.min(at, to - size));
+        handle.style.transform = `translate(${room(x0, x1, x - size / 2 + ox * out)}px, ${room(y0, y1, y - size / 2 + oy * out)}px)`;
       }
     };
     const leave = () => {
@@ -150,7 +162,7 @@
     };
 
     fig.addEventListener("dblclick", (event) => {
-      if (!S.hit || !rect() || event.target.closest(".dock, .dgm-handle, .dgm-rename")) return;
+      if (!S.hit || !rect() || event.target.closest(".dock, .dgm-overlay > *")) return;
       const node = nodeAt(event.clientX, event.clientY);
       const arrow = !node && math.edgeAt(S.hit, rect(), event.clientX, event.clientY);
       const edge = arrow && S.m.edges.find((e) => math.edgeId(S.m, e) === arrow);
@@ -167,36 +179,39 @@
     const ask = () => {
       while (want.length && want[0].until < Date.now()) want.shift();
       const next = want[0];
-      if (!next || editing) return;
-      if (next.node ? renameNode(next.node) : renameEdge(next.edge)) want.shift();
+      if (!next || editing || S.drawing) return;
+      //: A rename re-reads the source, so the edge asked for is a new object by now: found again by its two ends (blind task b: naming the new box lost the arrow's question).
+      const live = next.edge && (S.m.edges.includes(next.edge) ? next.edge : S.m.edges.find((e) => e.from === next.edge.from && e.to === next.edge.to));
+      if (next.node ? renameNode(next.node) : live && renameEdge(live)) want.shift();
     };
     const settle = () => (ask(), showHandle());
     (fig.onpaint ||= []).push(settle);
     (fig.onzoom ||= []).push(settle);
     fig.addEventListener("load", settle, true);
-    fig.addEventListener("scroll", showHandle, { passive: true });
     for (const type of ["click", "keyup", "focusin"]) S.root.addEventListener(type, () => queueMicrotask(showHandle));
 
     fig.addEventListener("pointermove", (event) => {
-      if (event.pointerType === "touch" || event.buttons || conn) return;
+      if (event.pointerType === "touch" || event.buttons || conn || event.target.closest?.(".dgm-handle")) return;
       const id = nodeAt(event.clientX, event.clientY);
       if (id) (hover = id), clearTimeout(hideTimer), showHandle();
       else if (hover) leave();
     });
     fig.addEventListener("pointerleave", (event) => !handles.includes(event.relatedTarget) && hover && leave());
 
+    //: A new block joined from `from` (in `group` when given), its words asked for as soon as it has a place in the picture.
+    function grow(from, group) {
+      const key = h.add(S, { shape: "rect", after: null, into: group ? h.ops.key("g", group) : null, before: null, from, edit: false });
+      const edge = key && S.m.edges.find((e) => e.from === from && e.to === key.slice(2));
+      if (key) want.push({ node: key.slice(2), until: Date.now() + 4000 });
+      if (edge && h.ops.needsLabel(S.m, edge)) want.push({ edge, until: Date.now() + 4000 });
+      return key;
+    }
+
     //: Connects `from` to what is at the point: a block or a group, or (nothing there) a new block, in the group under it.
     function connect(from, x, y) {
       const to = nodeAt(x, y) || groupAt(x, y);
       const name = (id) => h.ops.node(S.m, id)?.text || h.ops.group(S.m, id)?.title || id;
-      if (!to) {
-        const group = groupAt(x, y);
-        const key = h.add(S, { shape: "rect", after: null, into: group ? h.ops.key("g", group) : null, before: null, from, edit: false });
-        const edge = key && S.m.edges.find((e) => e.from === from && e.to === key.slice(2));
-        if (key) want.push({ node: key.slice(2), until: Date.now() + 4000 });
-        if (edge && h.ops.needsLabel(S.m, edge)) want.push({ edge, until: Date.now() + 4000 });
-        return key;
-      }
+      if (!to) return grow(from, groupAt(x, y));
       if (to === from) return;
       const edge = h.ops.join(S.m, from, to);
       if (!edge) return h.say(S, `${name(from)} is already connected to ${name(to)}.`);
@@ -249,8 +264,9 @@
         if (!conn || event.pointerId !== conn.id) return;
         const { from, moved } = conn;
         finish();
+        //: A click with no drag grows a joined block and asks for its words; a drag still connects to what it lands on.
         if (moved) connect(from, event.clientX, event.clientY);
-        else arm(from, side);
+        else grow(from, h.ops.node(S.m, from)?.group || null);
       });
       handle.addEventListener("pointercancel", finish);
       //: Enter or Space on the handle (a click with no pointer) arms it too.
@@ -271,11 +287,18 @@
     S.arm = (from) => arm(from, "right");
     //: And the pick (diagram-edge-pick.js) opens a picked arrow's words on Enter.
     S.renameEdge = renameEdge;
+    //: And the picture's own keys (diagram-view.js): Enter or F2 on a picked box names it where it stands.
+    S.renameNode = renameNode;
+    //: And a block added with the list folded (diagram-builder.js `nameOnPicture`): named here once the picture has drawn it.
+    S.askNode = (id) => want.push({ node: id, until: Date.now() + 4000 });
     const disarm = () => {
       armed = "";
       for (const handle of handles) handle.removeAttribute("aria-pressed");
       showHandle();
     };
+    //: Escape on a picked block puts an armed handle back before it lets go of the pick (diagram-canvas.js `clear`).
+    S.cancelArm = () => Boolean(armed) && (disarm(), true);
+    S.handles = showHandle;
     fig.addEventListener("click", (event) => {
       if (!armed || event.target.closest(".dock, .dgm-handle")) return;
       const from = armed;

@@ -14,7 +14,7 @@ import re
 from dataclasses import dataclass, field
 from datetime import date
 
-from tessellate.ai import question_noise, recognise as rec, utilities, when as when_words
+from tessellate.ai import composer_numbers, question_noise, recognise as rec, utilities, when as when_words
 from tessellate.ai.composer_ask import _ASKING_WORDS, _holds, _stem, _words, classify, rephrase, subject_terms, user_today
 from tessellate.ai.composer_body import length_wish
 
@@ -49,6 +49,10 @@ _RECALL = re.compile(
 
 
 #: The verbs of such a question, which are not subjects to search for.
+#: "do I have anything on Wednesday" asks what is on the day, as "what is on Wednesday" does (R3-8).
+_ANYTHING_ON = re.compile(r"^\W*(?:do i have|have i got|have i|got|is there|are there)\s+(?:anything|something)\b", re.I)
+
+
 _RECALL_VERBS = frozenset("add added save saved make made jot jotted capture captured anything write wrote note noted".split())
 
 
@@ -107,7 +111,7 @@ PLAN_CHARS = 2000
 
 
 def _planned_text(question: str | None) -> str:
-    return (question or "")[:PLAN_CHARS]
+    return composer_numbers.normalise((question or "")[:PLAN_CHARS])
 
 
 def _plan_constraints(question: str, terms: list[str]) -> tuple[dict, list[str], str | None]:
@@ -128,10 +132,29 @@ def _plan_constraints(question: str, terms: list[str]) -> tuple[dict, list[str],
     return constraints, terms, source_kind
 
 
+#: "what do I have on Friday", "do I have anything on Friday": the day's items (R3-8).
+_DAY_ASK = re.compile(r"^\W*(?:what do i have|do i have|have i got|have i|got|is there|are there)\s+(?:(?:anything|something)\s+)?(?:on|for)\b", re.I)
+
+
+def asks_the_day(question: str, today: date) -> bool:
+    """Whether the question asks what is on one named day, which the recall
+    answers the same way however it is put."""
+    if not _DAY_ASK.search(question or ""):
+        return False
+    p = plan(question, today)
+    return p.kind == "recall" and bool(p.window) and p.window[0] == p.window[1]
+
+
+def _asks_recall(question: str, shape: str) -> bool:
+    """A day or window with no subject asks what the notes hold from then;
+    "do I have anything on Wednesday" asks it as a yes/no (R3-8)."""
+    return bool(_RECALL.search(question or "")) or shape in ("what", "recent", "list") or (shape == "yesno" and bool(_ANYTHING_ON.search(question or "")))
+
+
 def _plan_kind(question: str, utility: str | None, shape: str, spanned: bool, has_terms: bool) -> str:
     if utility and utility != "until_note":
         return "utility"
-    if spanned and not has_terms and (_RECALL.search(question or "") or shape in ("what", "recent", "list")):
+    if spanned and not has_terms and _asks_recall(question, shape):
         return "recall"
     if _INSIGHT.search(question or ""):
         return "insight"
@@ -168,6 +191,20 @@ def holds_any(stems: list[str], text: str) -> bool:
     return any(_holds(st, words) or any(w.startswith(st) for w in words) for st in stems)
 
 
+#: A present or future yes/no ("is the plumber coming this week"): its window dates the event, not the note.
+_PRESENT_ASK = re.compile(r"^\W*(?:is|are|will)\s+(?:the|my|our|a)\b", re.I)
+
+
+
+
+def without_event_window(question: str) -> str:
+    """"is the plumber coming this week" asked of the notes as "is the plumber coming": the window dates the
+    event, so searching for it finds the notes that happen to say "week" (R9-7)."""
+    if not _PRESENT_ASK.match(question or ""):
+        return question
+    return rec.without_event_window_tail(question)
+
+
 def _plan_window(question: str, terms: list[str], phrase: str, today: date) -> tuple[tuple | None, list[str]]:
     """The window the phrase names (None for none, or for one still ahead
     that sits beside a subject) and the subject terms left once the phrase's
@@ -176,7 +213,8 @@ def _plan_window(question: str, terms: list[str], phrase: str, today: date) -> t
         said = [w for w in re.findall(r"[\w']+", phrase.lower()) if w not in rec.PHRASE_FILLER]
         return None, terms + [w for w in said if w not in terms]
     span = when_words.span(phrase, today, "past") if phrase else None
-    if span and span[0] > today and _subject_left(question, terms, phrase):
+    #: "is the plumber coming this week": the week is when it happens, not when the note was written (R9-7).
+    if span and (span[0] > today or (_PRESENT_ASK.match(question or "") and span[1] >= today)) and _subject_left(question, terms, phrase):
         return None, terms
     return span, _without_window_words(question, terms, phrase) if span else terms
 

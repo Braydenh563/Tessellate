@@ -9,9 +9,13 @@
 
 let chatConv = { id: null, turns: [] }; // the open conversation
 let chatController = null;
-//: Messages sent while an answer streams, oldest first (INBOX 1321).
-const chatQueue = [];
-const chatQueueState = { held: false };
+//: Chat's composer queue (CHAT_PLAN B3), made one by palette.js's `composerQueue`, off the boot bytes.
+const chatQueue = {
+  input: () => $("chat-input"),
+  busy: () => !$("chat-stop").classList.contains("hidden"),
+  send: (text) => sendChatMessage(text, { keepBox: true }),
+  before: () => $("chat-input").parentElement,
+};
 let lastChatQuestion = ""; // powers Regenerate / Edit & resend
 // Set while an `ask` card (renderAgentQuestion) is on screen waiting for a
 // reply. Covers typing a free-text answer into the composer, not just
@@ -792,7 +796,9 @@ function renderModelContextBox(modelName, spec) {
   //: identical in an empty box.
   note.textContent = set > 0
     ? `Running ${modelContextModel} at ${set.toLocaleString()} tokens. Clear the box for auto.`
-    : usable
+    : spec && spec.context_reason
+      ? `Auto: ${spec.context_reason}`
+      : usable
       ? `Auto: ${Number(usable).toLocaleString()} tokens, from the model.`
       : "Auto: the app uses the model's own window.";
 }
@@ -1260,9 +1266,7 @@ function renderCompressionState() {
 //: same one every cross-file reading in this app carries, since a picture
 //: can start before the preferences have landed.
 function batteryModeOn() {
-  return Boolean(
-    typeof prefsCache !== "undefined" && prefsCache && prefsCache.battery_efficient_mode
-  );
+  return Boolean(prefsCache && prefsCache.battery_efficient_mode);
 }
 
 // `label` is the reduced-motion fallback: with animations off the dots can't

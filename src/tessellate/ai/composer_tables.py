@@ -926,9 +926,31 @@ _MORE = (
 #: "which note", "which one", "which of the two": the same ask as "which".
 _WHICH = r"which(?: (?:one|note|entry|of (?:the|these|those|my) (?:two|notes)|of them|(?!(?:is|are|was|were)\b)[a-z]+))?"
 
+#: "what do I know about Tom and Sara" (composer-r6 E10): two things asked about at once are
+#: answered one at a time, like a comparison's sides, not as one pooled search. Short names
+#: only, and no clause on the right ("... and what I should pack" is one question).
+_EACH_LEAD = (
+    r"(?:what (?:do|did|have|can|could) (?:i|we|you|my notes)(?: (?:ever|already|really))? (?:know|say|said|written|wrote|noted|saved|mention|jotted)|"
+    r"tell me|remind me|show me|"
+    r"anything|everything|what(?:'s| is| do you know))\s*(?:all )?(?:about|on|regarding)"
+)
+_EACH_NAME = r"(?!(?:what|how|why|when|where|who|which|if|that|i|my|me)\b)[\w'’ ,-]{1,30}?"
+
+#: The bare form ("what do my notes say about Tom and Sara" is read down to "Tom and Sara"
+#: by `rephrase`): capitalised names only, as typed, so "salt and pepper" stays one thing.
+_NAME = r"[A-Z][\w'’-]+(?: [A-Z][\w'’-]+)?"
+_BARE_NAMES = rf"^(?P<a>{_NAME}(?:, {_NAME})*),? and (?P<b>{_NAME})[?.!]*$"
+
+#: "tom and sara" as typed in lower case: two names only when neither is an everyday word ("salt and pepper" stays one thing); `composer_ask.compare_sides` is the gate.
+LOWER_PAIR = re.compile(r"^(?P<a>[a-z][\w'’-]{1,20}) and (?P<b>[a-z][\w'’-]{1,20})[?.!]*$")
+
+#: Tried last (after the comparison verbs, or "Compare Lisbon and Porto" would be a bare pair).
+BARE_COMPARE_SIDES: tuple[re.Pattern[str], ...] = (re.compile(_BARE_NAMES),)
+
 #: Two-sided comparison patterns, tried after the originals in
 #: `composer._COMPARE_SIDES`: each needs both sides in the question.
 EXTRA_COMPARE_SIDES: tuple[re.Pattern[str], ...] = (
+    re.compile(rf"^{_EACH_LEAD}\s+(?P<a>{_EACH_NAME})\s+and\s+(?P<b>{_EACH_NAME})[?.!]*$", re.I),
     re.compile(rf"^(?:(?:is|are|was|were|does|do|did)\s+)?(?P<a>.+?)(?<!\s)\s+(?:(?:is|are|was|were)\s+)?(?:{_MORE}) than (?P<b>.+?)[?.!]*$", re.I),
     re.compile(r"^(?:how|what) (?:does|do|did) (?P<a>.+?) (?:compare|stack up|measure up) (?:with|to|against) (?P<b>.+?)[?.!]*$", re.I),
     re.compile(r"^(?P<a>.+?),? compare[sd]? (?:with|to) (?P<b>.+?)[?.!]*$", re.I),
@@ -937,6 +959,11 @@ EXTRA_COMPARE_SIDES: tuple[re.Pattern[str], ...] = (
     re.compile(r"^which(?: one)? (?:comes|came|is|was) first[,:]?\s+(?P<a>.+?) or (?P<b>.+?)[?.!]*$", re.I),
     #: The same asked the other way round: "Lisbon or Tokyo, which is cheaper" (audit 1030 Z58).
     re.compile(rf"^(?P<a>[\w' ,-]+?) or (?P<b>[\w' ,-]+?),? {_WHICH} (?:is|are|was|were) (?:the )?(?:{_MORE})[?.!]*$", re.I),
+    #: "which costs more, Lisbon or Tokyo" and the other way round (round 2 E9).
+    re.compile(r"^which(?: one| note)? costs? (?:more|less)[,:]?\s+(?P<a>.+?) or (?P<b>.+?)[?.!]*$", re.I),
+    re.compile(r"^(?P<a>[\w' ,-]+?) or (?P<b>[\w' ,-]+?),? which(?: one| note)? costs? (?:more|less)[?.!]*$", re.I),
+    #: "Lisbon or Atlas which", "Lisbon or Atlas, which one": two names and a bare which (D3).
+    re.compile(r"^(?P<a>[\w' -]{1,40}?) or (?P<b>[\w' -]{1,40}?),?\s+which(?: one| is| of them| note)?(?: \w+){0,3}[?.!]*$", re.I),
     re.compile(r"^(?:(?:what are|what is) )?(?:the )?(?:pros and cons|advantages and disadvantages|upsides and downsides|pros|cons) of (?P<a>.+?) (?:and|or|vs\.?|versus) (?P<b>.+?)[?.!]*$", re.I),
     re.compile(r"^(?:how|what) (?:is|are) (?P<a>.+?) (?:different|difference|differs?) from (?P<b>.+?)[?.!]*$", re.I),
     re.compile(r"^(?P<a>.+?) (?:differs?|is different|is a difference) from (?P<b>.+?)[?.!]*$", re.I),
@@ -951,7 +978,12 @@ EXTRA_COMPARE_SIDES: tuple[re.Pattern[str], ...] = (
 #: The comparison triggers added to the "compare" shape rule: all two-sided,
 #: so a question with one subject is never read as a comparison.
 COMPARE_SHAPE_EXTRA = (
+    #: Loose on purpose: `compare_sides` (case-sensitive, names only) is the gate for a bare "Tom and Sara".
+    r"^[\w'’, -]{3,60} and [\w'’ -]{2,30}[?.!]*$|"
+    rf"^{_EACH_LEAD}\s+{_EACH_NAME}\s+and\s+{_EACH_NAME}[?.!]*$|"
+    r"^[\w' -]{1,40}? or [\w' -]{1,40}?,?\s+which\b|"
     r"^which(?: one)? (?:comes|came|is|was) first\b.+? or |"
+    r"^which(?: one| note)? costs? (?:more|less)\b.+? or |^[\w' ,-]+? or [\w' ,-]+?,? which(?: one| note)? costs? (?:more|less)\W*$|"
     rf"\b(?:{_MORE}) than\b|\bcompare[sd]? (?:with|to)\b|\b(?:pros and cons|advantages and disadvantages) of .+? (?:and|or|vs\.?|versus) |"
     rf"^{_WHICH} (?:is|are|was|were) (?:the )?(?:{_MORE})\b.+? or |^[\w' ,-]+? or [\w' ,-]+?,? {_WHICH} (?:is|are|was|were) (?:the )?(?:{_MORE})\W*$|\b(?:differs?|different|difference) from\b|\bcomparison (?:of|between)\b|"
     r"\b(?:similarities|contrast) between\b|\bstack up against\b|\bmeasure up (?:to|against)\b|"
@@ -1128,9 +1160,9 @@ SOCIAL_PROFESSIONAL: dict[str, tuple[str, ...]] = {
         "The message was not recognised as words. What should be located?",
     ),
     "about_app": (
-        "I am Atlas's assistant. I answer from your notes: dates, decisions and the status of a project. I also set reminders and "
+        "I am Atlas. I answer from your notes: dates, decisions and the status of a project. I also set reminders and "
         "tag, move or pin notes on request. Connecting a model adds writing and summaries.",
-        "Atlas's assistant answers from what you have recorded: a date, a decision, a list or the status of a project, and acts on "
+        "Atlas answers from what you have recorded: a date, a decision, a list or the status of a project, and acts on "
         "request (reminders, tags, pins). Connecting a model adds writing and tools.",
     ),
 }
@@ -1589,4 +1621,15 @@ for _retired in ("who", "about_app"):
 SHAPE_WORDS: dict[str, str] = {
     **dict.fromkeys(("money", "cost", "costs", "price", "paid", "pay", "spend", "spent", "amount", "cash"), "money"),
     **dict.fromkeys(("rate", "rated", "rating", "score", "scored", "stars", "mark"), "score"),
+    **dict.fromkeys(("schedule", "timetable", "routine", "rota"), "schedule"),
 }
+
+
+#: "alright, uhh, I think i wrote a note about eating my homework to smth, it was a joke" (INBOX 1705):
+#: the lead-in and the trailing asides are not the subject, which is "eating my homework".
+EXTRA_WRAPPERS = EXTRA_WRAPPERS + (
+    r"^i (?:think|reckon|guess|believe|swear) (?:i|we) (?:wrote|made|saved|noted|put|jotted|have|had)(?: down)? (?:a |an |the |some )?(?:notes? |one |something )?(?:about|on|regarding)\s+",
+)
+EXTRA_TRAILERS = EXTRA_TRAILERS + (
+    "it was a joke", "it was funny", "it was a funny one", "something like that", "or something", "to something",
+)

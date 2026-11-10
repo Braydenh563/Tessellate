@@ -82,7 +82,9 @@ def test_the_builder_opens_in_a_dialog_with_the_dialog_head_and_hands_back_the_s
     assert "dialogHead(title, () => finish(false))" in EMBED and 'el("div", "card modal-card space-dialog dgm-dialog")' in EMBED
     #: The overlay recipe, not a native <dialog>: a modal <dialog> sits above the sheets and menus it opens.
     assert "showModal" not in EMBED and 'el("dialog"' not in EMBED and "wireBackdropClose(overlay" in EMBED
-    assert "onDone(history[at], history[at] !== first)" in EMBED
+    # Intent unchanged: Done hands over the source and whether it changed; the New diagram window adds its title as a third argument (DD-12, 1107).
+    # Review round: the three values are read into locals before the dialog goes (the name is then fetched), so the call names them.
+    assert "[history[at], history[at] !== first," in EMBED and "onDone(next, changed," in EMBED
     #: Closing with changes asks first; Escape is that same close.
     assert "confirmDialog(" in EMBED and "activeOverlay() !== overlay" in EMBED
     assert "diagramModel.builder.show(host, io, history[at])" in EMBED

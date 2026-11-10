@@ -77,7 +77,6 @@ $("history-close").addEventListener("click", () =>
   $("history-overlay").classList.add("hidden")
 );
 
-$("shortcuts-reset").addEventListener("click", resetShortcuts);
 
 
 //: **Ctrl+S on the Preferences section**, which the section's own copy has
@@ -662,18 +661,21 @@ document.addEventListener("keydown", (e) => {
   //: board's own chords; the same handoff undo already makes
   //: (`boardHistoryActive`), one owner for one shortcut.
   if (chorded && !(typeof wbOwnsChord === "function" && wbOwnsChord(e))) {
+    //: A confirm or a picker in front is a pause, not a step: Ctrl+Z reached past "Switch to mind map?" and undid the last edit behind it (dgmlive2 1108). Read only for undo and redo.
+    const behindModal = () => [...document.querySelectorAll(".modal-overlay, dialog[open]")].some((m) => m.getClientRects().length);
     const inTextField = inEditable(document.activeElement);
     //: **Ctrl+Y is redo too**, the Windows habit: the board's own Redo
     //: button and Edit menu already print "Ctrl+Y" and nothing answered it
     //: (the Guide agent's finding, 2026-09-24). Same rule as Ctrl+Shift+Z:
     //: a text field keeps its own.
-    if (!inTextField && (e.ctrlKey || e.metaKey) && !e.shiftKey && !e.altKey && e.key.toLowerCase() === "y") {
+    if (!inTextField && (e.ctrlKey || e.metaKey) && !e.shiftKey && !e.altKey && e.key.toLowerCase() === "y" && !behindModal()) {
       e.preventDefault();
       runShortcut("redo");
       return;
     }
     for (const [id, def] of Object.entries(shortcuts)) {
       if ((id === "undo" || id === "redo" || id === "pasteNote") && inTextField) continue;
+      if ((id === "undo" || id === "redo") && behindModal()) continue;
       //: INBOX 321: on an open board the same chord duplicates the selection.
       //: And an editor that already answered it keeps it: the documents
       //: editor binds Ctrl+D to "select the next match" (CodeMirror's search
@@ -1139,8 +1141,8 @@ SHORTCUT_SOURCE.table = () => shortcuts;
 //: neither, and for a chord written next to a `data-shortcut`.
 const SHORTCUT_TITLE_CHORD = /\s*\([^()]*(?:Ctrl|Alt|Shift|⌘|⌥|⇧)[^()]*\)\s*$/;
 
-function stampShortcutTitles() {
-  for (const button of document.querySelectorAll("[data-shortcut]")) {
+function stampShortcutTitles(root = document) {
+  for (const button of root.querySelectorAll("[data-shortcut]")) {
     const combo = shortcuts[button.dataset.shortcut]?.keys;
     if (!combo) continue;
     const base = (button.title || "").replace(SHORTCUT_TITLE_CHORD, "") || button.getAttribute("aria-label") || button.textContent.trim();
@@ -1153,10 +1155,10 @@ function stampShortcutTitles() {
 //: one from the table, are written "Ctrl+B" in the markup; on a Mac they read
 //: with the Command symbol. The static ones only: a title a script sets later
 //: is written through `shortcutTitle` or `chordLabel` where it is set.
-function localizeStaticChords() {
+function localizeStaticChords(root = document) {
   if (!SHORTCUT_MAC) return;
   const chord = /\b(?:(?:Ctrl|Alt|Shift)\+)+[^\s)(,;]+/g;
-  for (const el of document.querySelectorAll('[title*="Ctrl+"], [title*="Alt+"], [title*="Shift+"]')) {
+  for (const el of root.querySelectorAll('[title*="Ctrl+"], [title*="Alt+"], [title*="Shift+"]')) {
     el.title = el.title.replace(chord, (match) => chordLabel(match));
   }
 }
@@ -1173,10 +1175,6 @@ function restampShortcutHints() {
 }
 localizeStaticChords();
 restampShortcutHints();
-onSettingsBody(() => {
-  localizeStaticChords();
-  stampShortcutTitles();
-});
 // Sets the status-bar Undo/Redo buttons' icons and "nothing to undo yet"
 // tooltips on load: both stacks are empty at this point, so this only
 // establishes the disabled state the HTML already carries, not a real render.
@@ -1491,7 +1489,11 @@ function closeShortcuts() {
   overlay.returnFocus = null;
 }
 
-$("shortcuts-close").addEventListener("click", closeShortcuts);
+//: The sheet is built when it first opens (row 21).
+onSurface("shortcuts", () => {
+  $("shortcuts-close").addEventListener("click", closeShortcuts);
+  $("shortcuts-reset").addEventListener("click", resetShortcuts);
+});
 wireBackdropClose($("shortcuts-overlay"), () => closeShortcuts());
 
 document.addEventListener("keydown", (e) => {
@@ -1511,15 +1513,25 @@ document.addEventListener("keydown", (e) => {
   //: the first stop the wrap's `focus()` landed nowhere and Tab from the last
   //: button stayed on it (audit 1031 Z15, the welcome's hidden emblem). A
   //: fixed-position control had the opposite fault: it was always dropped.
-  const focusables = [
-    ...overlay.querySelectorAll(
-      'button, [href], input, select, textarea, [contenteditable=""], ' +
-        '[contenteditable="true"], [tabindex]:not([tabindex="-1"])'
-    ),
-  ].filter((el) => !el.disabled && el.getClientRects().length > 0);
-  if (!focusables.length) return;
-  const first = focusables[0];
-  const last = focusables[focusables.length - 1];
+  //: Only the two ends are needed, so the shown test runs from each end until it finds one, not on every control:
+  //: it was 602 reads per Tab with Settings open, the first laying the page out inside the key (INBOX 1716,
+  //: `settings-wiring.js #document.onkeydown 183ms (forced layout 179ms)`).
+  const stops = overlay.querySelectorAll(
+    'button, [href], input, select, textarea, [contenteditable=""], ' +
+      '[contenteditable="true"], [tabindex]:not([tabindex="-1"])'
+  );
+  //: `checkVisibility` needs style, not layout; `getClientRects` is the fallback for an older engine.
+  const shown = (el) => !el.disabled && (el.checkVisibility ? el.checkVisibility() : el.getClientRects().length > 0);
+  let first = null;
+  for (let i = 0; i < stops.length && !first; i += 1) if (shown(stops[i])) first = stops[i];
+  if (!first) return;
+  let last = first;
+  for (let i = stops.length - 1; i >= 0; i -= 1) {
+    if (shown(stops[i])) {
+      last = stops[i];
+      break;
+    }
+  }
   const outside = !overlay.contains(document.activeElement);
   if (e.shiftKey && (document.activeElement === first || outside)) {
     e.preventDefault();
@@ -1893,7 +1905,7 @@ window.addEventListener("appinstalled", () => {
   renderInstallRow();
 });
 //: The Install row paints when the body is built (the button is wired in settings-controls.js).
-onSettingsBody(renderInstallRow);
+onSurface("settings", renderInstallRow);
 
 // The generative brand emblem's initial draw (Wave O) moved to settings.js's
 // own tail (§88.3 item 4): renderBrandLogo() itself stays here (used far

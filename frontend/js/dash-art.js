@@ -266,6 +266,9 @@
   }
 
   async function renderArtWidget(body) {
+    //: A second draw into the same card (the background art changed) replaced
+    //: nothing: the owner saw two constellations, the first one empty (owner, 2026-11-10).
+    for (const el of body.querySelectorAll(":scope > .art-holder, :scope > .art-caption, :scope > .art-controls, :scope > .art-legend")) el.remove();
     const holder = document.createElement("div");
     holder.className = "art-holder";
     body.appendChild(holder);
@@ -617,10 +620,7 @@
         //: ordinary use, p5 was 248 ms of self time, the largest single thing
         //: on screen, and this is the sketch doing it.
         //:
-        //: Halving it is only safe because `scene` is driven by the clock
-        //: below rather than by `frameCount`: a frame counter would have made
-        //: the drift itself run at half speed, which is a behaviour change
-        //: dressed as an optimisation.
+        //: Halving is safe because `scene` runs off the clock below, not `frameCount`.
         p.frameRate(ART_FRAME_RATE);
         if (reduceMotion) {
           scene(0); // one still frame: no animation for reduced-motion users
@@ -655,7 +655,8 @@
           p.noLoop();
           return;
         }
-        if (!reduceMotion && !glide && !fade && performance.now() > attendUntil) {
+        //: Nothing is drawn behind a modal (INBOX 1620 f); attention ends the rest.
+        if (!reduceMotion && !glide && !fade && (performance.now() > attendUntil || document.querySelector(".modal-overlay:not(.hidden)"))) {
           rest();
           return;
         }

@@ -14,7 +14,7 @@ from __future__ import annotations
 import re
 from datetime import date, datetime
 
-from tessellate.ai import realise, study
+from tessellate.ai import composer_frame, realise, study
 
 #: A question about the note itself, not a subject in it: the asking words,
 #: then "this", "it" or "this note" ("when did I make this note", "when was
@@ -59,10 +59,7 @@ def _which(content: str) -> str:
     heading = manager.extract_title(content)
     if heading:
         return f"“{realise.cut_title(heading, 60)}”"
-    start = study.title_of(content, size=60)
-    #: Its first clause when that says enough: "I just missed the bus to uni today".
-    clause = re.split(r",\s", start, maxsplit=1)[0].rstrip("…")
-    return f"the note that starts “{clause if len(clause.split()) >= 4 else start}”"
+    return composer_frame.name_of({"content": content})
 
 
 def _words(content: str) -> int:

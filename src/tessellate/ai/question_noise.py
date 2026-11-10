@@ -30,6 +30,7 @@ and measured by `tests/_composer_eval.py --noise`.
 
 from __future__ import annotations
 
+import difflib
 import math
 import re
 
@@ -539,6 +540,7 @@ SOCIAL_PHRASES: dict[str, str] = {
     "how is it going": "how", "how's it going": "how", "whats up": "how", "what's up": "how",
     "what is up": "how", "how you doing": "how", "how are things": "how", "you good": "how",
     "what are you doing": "how", "what you up to": "how", "what are you up to": "how",
+    "whatcha doing": "how", "whatcha up to": "how", "watcha doing": "how",
     "my bad": "sorry", "my mistake": "sorry", "sorry about that": "sorry",
     "wait what": "confused", "come again": "confused", "say again": "confused", "sorry what": "confused",
     "i dont get it": "confused", "i don't get it": "confused", "i dont understand": "confused",
@@ -2141,6 +2143,13 @@ def _social_phrases(text: str) -> tuple[list[str], str]:
     return kinds, text
 
 
+def asks_how(message: str) -> bool:
+    """Whether a message asks how the app is or what it is doing ("hey! whatcha
+    doing??"), whatever else it says: a greeting leads the kind, this is the rest."""
+    text = " ".join(re.split(r"[^\w']+", strip_symbols(destretch(drop_filler((message or "").strip()))).lower())).strip()
+    return "how" in _social_phrases(text)[0]
+
+
 _SOCIAL_RANK = ("repair", "confused", "thanks", "sorry", "bye", "morning", "greeting", "how", "who", "frustrated", "reaction", "laugh", "compliment", "insult", "emotion", "glad")
 
 
@@ -2306,7 +2315,8 @@ def _split(word: str) -> str | None:
     low = word.lower()
     if len(low) < 5 or low in VOCABULARY or low in REAL_WORDS:
         return None
-    for cut in range(2, len(low) - 1):
+    #: The head is an asking word, so only cuts up to the longest one are tried (each cut copies the word).
+    for cut in range(2, min(len(low) - 1, max(map(len, ASKING)) + 1)):
         head, tail = low[:cut], low[cut:]
         if head in ASKING and tail in VOCABULARY:
             return f"{head} {tail}"
@@ -2326,6 +2336,19 @@ def _small_talk_words() -> frozenset:
     if _SMALL_TALK.get("size") != size:
         _SMALL_TALK.update(size=size, words=frozenset(SLANG.keys() | SOCIAL.keys()))
     return _SMALL_TALK["words"]
+
+
+def slips_only(text: str, known=frozenset()) -> str:  # noqa: ANN001
+    """`repair`, keeping only the slips: a word changed to one that looks like it ("abuot" to "about", "tokio" to
+    "Tokyo") is taken, a word spelled out ("Dr" to "doctor", "uni" to "university") stays as typed, so the search
+    still finds the notes that say it as the person did (round 3, R3-17). The question as typed when the repair
+    added or dropped a word."""
+    typed = " ".join((text or "").split())
+    fixed = repair(tidy(typed), known=known) or typed
+    old, new = typed.split(" "), fixed.split(" ")
+    if len(old) != len(new):
+        return typed
+    return " ".join(b if difflib.SequenceMatcher(None, a.lower().strip("?.,!"), b.lower().strip("?.,!")).ratio() >= 0.6 else a for a, b in zip(old, new, strict=True))
 
 
 def repair(text: str, report: list | None = None, known=frozenset(), fixed: list | None = None) -> str:  # noqa: ANN001
@@ -2359,6 +2382,9 @@ _ITS_NOUNS = frozenset(
 )
 
 
+_AUX_BEFORE_KNOW = frozenset({"do", "did", "does", "can", "could", "would", "should", "to"})
+
+
 def _real_word_slips(tokens: list[str], fixed: list | None) -> list[str]:
     out = list(tokens)
     for i in range(1, len(out)):
@@ -2370,6 +2396,9 @@ def _real_word_slips(tokens: list[str], fixed: list | None) -> list[str]:
             out[i] = _AFTER_INTENSIFIER[low] + tail
         elif low in _ITS_NOUNS and prev in ("it's", "it’s") and out[i - 1].rstrip("?!.,:;") == out[i - 1]:
             out[i - 1] = "its"
+        elif low == "no" and prev in ("i", "we", "you") and i >= 2 and out[i - 2].lower() in _AUX_BEFORE_KNOW and i + 1 < len(out):
+            #: "what do i no about hanna": "no" after "do I" is "know" (R9-14).
+            out[i] = "know" + tail
         else:
             continue
         if fixed is not None:

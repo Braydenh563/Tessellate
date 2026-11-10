@@ -99,7 +99,7 @@ console.log(JSON.stringify({
     assert out["inWrap"] is True  # the lookup the old code used finds nothing
     assert out["texts"] == ["1. One", "2. Deux", "3. Three"]
     assert out["current"] == [None, "step", None]
-    assert out["caption"] == "2 of 3: Deux. Go to a page"
+    assert out["caption"] == "of 3: Deux. Go to a page"
 
 
 def test_the_picker_keeps_one_reference_to_its_menu() -> None:

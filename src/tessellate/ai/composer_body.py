@@ -17,7 +17,7 @@ from datetime import date
 from tessellate.ai import composer_frame, composer_versus, question_noise, recognise as rec, utilities, when as when_words
 from tessellate.ai.composer_answer import _Answer
 from tessellate.ai.composer_ask import _holds, _overview, _stem, _words, subject_terms
-from tessellate.ai.composer_quote import _ENDED, _joined, _list_block, _lowered, _pick, _quotes, _said_before, _sentence_case, _unlike_before, _with_context, decap
+from tessellate.ai.composer_quote import _ENDED, _joined, _list_block, _list_lead, _list_sentence, _lowered, _pick, _quotes, _said_before, _sentence_case, _unlike_before, _with_context, decap
 from tessellate.ai.composer_read import NoteView, Sentence, _NUMBER_CUE, _cue
 from tessellate.ai.composer_select import _Meaning, _was_said, centrality, disagree, select
 from tessellate.ai.composer_unfound import _says_every
@@ -223,6 +223,13 @@ def _other(out: _Answer, unit: list[Sentence], relation: str, used: set[str], te
     """One other note's sentences, after the joiner its relation earns, if
     any; `used` holds the joiners already said: never the same joining
     words twice in one answer."""
+    view = out.views[unit[0].note_id]
+    #: A list is its note's: "Your Reading list note lists A, B and C", never a connector in front of
+    #: its entries lower-cased ("Over in another note, the Dispossessed, Middlemarch") (R3-14).
+    if len(unit) >= 2 and view.titled and all(s.kind == "item" for s in unit):
+        _list_lead(out, view, "opening")
+        _list_sentence(out, unit, terms)
+        return
     if unit[0].kind.startswith("picture") and len(unit) == 1:
         #: A picture's reading names its note itself ("The picture
         #: in **Sketches** shows ..."): no joiner before it.
@@ -255,6 +262,12 @@ def _joiners(relation: str, first: Sentence) -> list[str]:
     return ["", "and_join", "on_top"] if _lowered(first) else [""]
 
 
+#: A sentence that names its own date ("on 3 October", "11 November"), which the day it was written must not stand in front of.
+_OWN_DATE = re.compile(
+    r"\b\d{1,2}(?:st|nd|rd|th)?\s+(?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\b"
+    r"|\b(?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\s+\d{1,2}\b", re.I)
+
+
 def _timeline(out: _Answer, sentences: list[Sentence], terms: list[str]) -> None:
     """A "when" question's other notes, as bullets in the order they were
     written: a timeline is a list, and reads as one."""
@@ -267,10 +280,13 @@ def _timeline(out: _Answer, sentences: list[Sentence], terms: list[str]) -> None
     for note_id in order:
         view = out.views[note_id]
         out.t("line", "bullet")
-        if view.written:
+        mine = sorted((s for s in sentences if s.note_id == note_id), key=lambda s: s.order)
+        # "today: Went to the dentist on 3 October" puts the write day before an event with its own (R3-18).
+        dated = any(_OWN_DATE.search(s.text) for s in mine)
+        if view.written and not dated:
             out.m(out.day(view.written)).t("colon")
-        _quotes(out, sorted((s for s in sentences if s.note_id == note_id), key=lambda s: s.order), terms)
-        if view.titled or not view.written:
+        _quotes(out, mine, terms)
+        if view.titled or not view.written or dated:
             out.cite(view)
 
 
@@ -291,10 +307,23 @@ def _earlier(out: _Answer, sentences: list[Sentence], terms: list[str]) -> None:
         out.cite(view)
 
 
-def _disagreement(chosen: list[Sentence]) -> tuple[Sentence, Sentence] | None:
+_DAYISH = re.compile(r"\d+|(?:mon|tues?|wednes|thurs?|fri|satur|sun)(?:day)?|(?:jan|febr?|mar|apr|may|jun|jul|aug|sept?|oct|nov|dec)[a-z]*", re.I)
+
+
+def _other_subjects(views: dict, a: Sentence, b: Sentence) -> bool:
+    """Whether two notes are titled for different things ("Tokyo trip" and "Lisbon trip"): each title has a
+    word the other lacks. Their figures differ because the notes are about different things (R3-24)."""
+    left, right = (getattr(views.get(s.note_id), "title_words", None) for s in (a, b))
+    if not (left and right):
+        return False
+    #: "Monday" and "Friday" name days of one subject, not two subjects.
+    return bool({w for w in left - right if not _DAYISH.fullmatch(w)} and {w for w in right - left if not _DAYISH.fullmatch(w)})
+
+
+def _disagreement(chosen: list[Sentence], views: dict | None = None) -> tuple[Sentence, Sentence] | None:
     for i, a in enumerate(chosen):
         for b in chosen[i + 1:]:
-            if disagree(a, b):
+            if disagree(a, b) and not _other_subjects(views or {}, a, b):
                 return a, b
     return None
 
@@ -330,7 +359,10 @@ def _own_notes(own_stems: set[str], other_stems: set[str], views: list[NoteView]
     mine = own_stems - other_stems
     titled = [(v, {_stem(w) for w in v.title_words}) for v in views]
     whole = [v for v, words in titled if len(own_stems) > 1 and own_stems <= words]
-    return whole or [v for v, words in titled if mine & words]
+    #: A title that is the side's words and no more is the note, though the
+    #: other side's words take them all ("Gym" against "Gym plan").
+    exact = [v for v, words in titled if words == own_stems]
+    return whole or exact or [v for v, words in titled if mine & words]
 
 
 def _kinds(notes: list[NoteView], side: set[str]) -> set[str]:
@@ -354,7 +386,22 @@ def _opens_at(view: NoteView, side: set[str]) -> int:
 def _opening_wins(own: list[list[NoteView]], stems: list[set[str]]) -> list[list[NoteView]]:
     """A note two sides both name goes to the side its name opens with:
     "Study plan for November: revise biology on Monday" is the study plan,
-    though "biology" is in its name too (audit 1028 E16). A tie keeps both."""
+    though "biology" is in its name too (audit 1028 E16). A tie keeps both.
+    A note titled exactly for one side goes to it alone: "Gym and Gym plan"
+    is the Gym note against the Gym plan note (round 1107 D1)."""
+    return _by_opening(_by_exact_title(own, stems), stems)
+
+
+def _by_exact_title(own: list[list[NoteView]], stems: list[set[str]]) -> list[list[NoteView]]:
+    for view in {id(v): v for mine in own for v in mine}.values():
+        title = {_stem(w) for w in view.title_words}
+        exact = [i for i, side in enumerate(stems) if side == title]
+        if len(exact) == 1:
+            own = [[v for v in mine if v is not view or i == exact[0]] for i, mine in enumerate(own)]
+    return own
+
+
+def _by_opening(own: list[list[NoteView]], stems: list[set[str]]) -> list[list[NoteView]]:
     for view in {id(v): v for mine in own for v in mine}.values():
         at = {i: _opens_at(view, stems[i]) for i, mine in enumerate(own) if any(v is view for v in mine)}
         best = min(at.values(), default=99)
@@ -391,6 +438,20 @@ def _side_picks(sides: tuple[str, ...], views: list[NoteView], meaning_for):  # 
 
 
 def _compare_lead(out: _Answer, sides: tuple[str, ...], counts: list[int]) -> None:
+    #: One side with nothing is said once, not as "no mention Tokyo" beside the other (R3-14).
+    if 0 in counts and any(counts):
+        found = [label for label, n in zip(sides, counts) if n]
+        out.t("only_lead")
+        for i, label in enumerate(found):
+            if i:
+                out.t("and")
+            out.asked(label)
+        out.t("only_appear" if len(found) == 1 else "only_appear_many")
+        for i, label in enumerate(label for label, n in zip(sides, counts) if not n):
+            if i:
+                out.t("and")
+            out.asked(label)
+        return
     out.t(_unlike_before(out, ["of_found", "across_found"])[0])
     for i, (label, n) in enumerate(zip(sides, counts)):
         if i:
@@ -428,12 +489,14 @@ def _versus_answer(out: _Answer, versus) -> None:  # noqa: ANN001
             out.t("para" if i == 0 else "line").item(s, []).cite(view, again=True)
 
 
-def _versus_lead(out: _Answer, question: str, own: list[list[NoteView]]) -> bool:
+def _versus_lead(out: _Answer, question: str, own: list[list[NoteView]], sides: tuple[str, ...] = ()) -> bool:
     """"which is cheaper, A or B": both figures (or days) first."""
     versus = composer_versus.two(question, own, out.today)
     if versus:
         composer_versus.write(out, versus)
-    return versus is not None
+        return True
+    #: One note that has a line for each side ("Japan: £2,400 ... Portugal: £1,100"), R9-10.
+    return composer_versus.named_two(out, question, sides, list(out.views.values()))
 
 
 def _said_once(only: list[list], stems: list[set[str]]) -> list[list]:
@@ -467,13 +530,14 @@ def _compare(out: _Answer, sides: tuple[str, ...], views: list[NoteView], meanin
     only, both = _compare_shares(stems, own, picks)
     if not any(only):
         return False
-    if not _length_lead(out, question, own) and not _versus_lead(out, question, own):
+    if not _length_lead(out, question, own) and not _versus_lead(out, question, own, sides):
         _compare_lead(out, sides, [len({s.note_id for s in side}) for side in only])
     #: The lead names only what follows (probe P15): no "Here is what
     #: each says." before the headings that say it.
     out.t("stop")
     for label, side, side_terms in zip(sides, only, terms):
-        _compare_side(out, label, side, side_terms)
+        if side or not any(only):
+            _compare_side(out, label, side, side_terms)
     if both:
         out.t("para", "bold", "both", "bold")
         for s in both:
@@ -509,8 +573,13 @@ def _compare_side(out: _Answer, label: str, side: list, side_terms) -> None:  # 
     if not side:
         out.t("line").t("side_none")
         return
+    previous = None
     for s in side:
-        out.t("line").item(s, side_terms).cite(out.views[s.note_id], again=True)
+        out.t("line").item(s, side_terms)
+        if s.note_id != previous:
+            #: The note is named where its lines begin, not after each of them (bt-compcomp-1109 item 6).
+            out.cite(out.views[s.note_id], again=True)
+        previous = s.note_id
 
 
 #: "briefly", "in short", "quick": the lead note alone. "in detail",
@@ -539,6 +608,7 @@ def length_wish(question: str) -> str:
 BROAD_NOTES = 5
 
 
+
 def _asked_span(question: str, terms: list[str]) -> str:
     """The question's subject as typed, from its first subject word to its
     last ("half marathon training plan"), or "" when they are not in order."""
@@ -549,6 +619,9 @@ def _asked_span(question: str, terms: list[str]) -> str:
     end = lower.rfind(terms[-1])
     if start < 0 or end < start:
         return ""
+    #: The span may hold the question's own verb ("book am I reading"); the chips refuse
+    #: such a topic in `composer_digest._topic_chips` (R3-36, D19), while a follow-on
+    #: ("what about the garden?") swaps the whole span, so it must stay here.
     return question[start : end + len(terms[-1])]
 
 
@@ -925,9 +998,23 @@ def _days_named(view: NoteView, today: date, tense: str) -> list[tuple[date, int
         day = composer_versus.fact_day(fact, today, tense) if ahead else fact.when[0]
         if ahead and told_as_past(str(note.get("content") or ""), fact.start):
             continue
+        if _a_schedule_day(str(note.get("content") or ""), fact):
+            continue
         if day >= today if ahead else day <= today:
             dated.append((day, fact.start))
     return dated
+
+
+def _a_schedule_day(content: str, fact) -> bool:  # noqa: ANN001
+    """A weekday of a recurring schedule, said alone, is a habit and not a day that falls due (item 8)."""
+    if fact.text.strip().lower() not in _WEEKDAY_WORDS:
+        return False
+    start = max(content.rfind(m, 0, fact.start) for m in (". ", "! ", "? ", "\n")) + 1
+    stops = [i for i in (content.find(m, fact.start) for m in (". ", "! ", "? ", "\n")) if i >= 0]
+    return rec.recurring_schedule(content[start: min(stops) if stops else len(content)])
+
+
+_WEEKDAY_WORDS = frozenset("monday tuesday wednesday thursday friday saturday sunday".split())
 
 
 def told_as_past(content: str, at: int) -> bool:
@@ -938,13 +1025,21 @@ def told_as_past(content: str, at: int) -> bool:
     return rec.told_as_past(content[start: min(stops) if stops else len(content)])
 
 
+def _newest_lead(out: _Answer, count: int, guessing: bool) -> None:
+    """"Your five newest notes" for several, "your newest note" for one, never "your one newest notes" (R3-16)."""
+    if count == 1:
+        out.t("newest_one_guess" if guessing else "newest_one_lead")
+    else:
+        out.t("newest_guess" if guessing else "newest_lead").m(out.count(count)).t("newest_mid")
+
+
 def _newest(out: _Answer, views: list[NoteView], guessing: bool = False) -> None:
     """The newest notes, each by its first sentence, newest first. When the
     question named nothing to look for, the lead says these are a fallback."""
     shown = [v for v in views if v.sentences][:5]
     if not shown:
         return
-    out.t("newest_guess" if guessing else "newest_lead").m(out.count(len(shown))).t("newest_mid")
+    _newest_lead(out, len(shown), guessing)
     _span(out, shown)
     out.t("end_colon")
     for view in shown:
@@ -961,9 +1056,11 @@ def _newest(out: _Answer, views: list[NoteView], guessing: bool = False) -> None
                 out.address(f"](#/notes/{view.id})")
             out.dated(view)
         elif view.written:
-            out.t("list_from").m(out.day(view.written))
+            #: The note's words are its name, the day a muted second field (R3-15).
+            out.term(composer_frame.name_of(view.note), view)
             if linked:
                 out.address(f"](#/notes/{view.id})")
+            out.dated(view)
         else:
             out.name(view, cap=True)
         out.t("colon")

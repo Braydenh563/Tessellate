@@ -620,7 +620,10 @@ let scrollEdgeFrame = 0;
 function onScrollEdge(event) {
   const region = event.target === document ? document.scrollingElement : event.target;
   if (!region || region.nodeType !== 1) return;
-  if (scrollEdgeFrame) return;
+  //: The same guard the edge effect uses: a menu, a dialog or a sheet scrolls *over* the page, and nothing
+  //: under it reacts. Before the timer, not in it (INBOX 1696 f): a Settings section switch scrolls its pane,
+  //: and the timer's scrollTop read paid the pane's pending style (274 ms at 4x CPU) for no change at all.
+  if (scrollEdgeFrame || region.closest(".action-menu, .help-popover, .modal-overlay, #settings-modal, [role='menu']")) return;
   // Coalesced to one measurement per frame: a scroll event fires far more
   // often than the screen repaints, and this one reads layout.
   //: After the frame's layout, a timer past it (see `scheduleUpdate`,
@@ -628,15 +631,7 @@ function onScrollEdge(event) {
   scrollEdgeFrame = requestAnimationFrame(() => setTimeout(() => {
     scrollEdgeFrame = 0;
     markScrollEdge(region);
-    //: The same guard the edge effect uses: a menu, a dialog or a sheet
-    //: scrolls *over* the page, and the bar it is covering has no business
-    //: reacting to it.
-    if (
-      !region.closest ||
-      !region.closest(".action-menu, .help-popover, .modal-overlay, #settings-modal, [role='menu']")
-    ) {
-      markTabBarRecede(region);
-    }
+    markTabBarRecede(region);
   }));
 }
 
@@ -699,7 +694,16 @@ window.addEventListener("resize", syncScrollEdges);
 // publishes, and observing it here keeps the whole effect in one block
 // instead of adding a line to the tab machinery for a gradient.
 if (typeof MutationObserver !== "undefined") {
-  const scrollEdgeObserver = new MutationObserver(() => syncScrollEdges());
+  //: A frame on, after layout, not in the switch's microtask (INBOX 1667: a 38 to 65 ms forced layout).
+  let scrollEdgeSync = 0;
+  const scrollEdgeObserver = new MutationObserver(() => {
+    if (scrollEdgeSync || !window.afterFrames) return;
+    scrollEdgeSync = 1;
+    afterFrames(() => setTimeout(() => {
+      scrollEdgeSync = 0;
+      syncScrollEdges();
+    }), 1);
+  });
   for (const page of document.querySelectorAll(".tab-page")) {
     scrollEdgeObserver.observe(page, { attributes: true, attributeFilter: ["class"] });
   }

@@ -49,6 +49,10 @@
 :root {
   color-scheme: light;
 }
+/* Settings, Line width: the document's measure (Live and Read) at 0.85 and 1.2 of
+   its 50em. No new custom property: the count only falls (test_style_scale). */
+:root[data-read-measure="narrow"] { --doc-measure: calc(42.5em - 2 * var(--doc-gutter)); }
+:root[data-read-measure="wide"] { --doc-measure: calc(60em - 2 * var(--doc-gutter)); }
 :root[data-mode="dark"] {
   color-scheme: dark;
 }
@@ -219,6 +223,9 @@ select optgroup {
   --space-7: calc(1.25rem * var(--density));
   --space-8: calc(1.5rem * var(--density));
   --space-9: calc(2rem * var(--density));
+  /* A changed Settings row's bar, from the row's text edge (INBOX 1696 c):
+     inside the group, never on its edge (two gutters put it on the border). */
+  --setting-bar-inset: var(--space-3);
   /* Height of the top bar. No longer used for sticky offsets, since §36A the
      page is its own scroll container and the header sits outside it, so
      nothing inside a page has to clear it. Kept because the media query below
@@ -1355,8 +1362,17 @@ header#top-bar h1 {
     gap: var(--space-4);
   }
   #tab-bar button {
-    padding-inline: var(--space-4);
+    padding-inline: var(--space-3);
     font-size: var(--text-lg);
+  }
+  /* **One row to 823 (175 % zoom, INBOX 1717).** The strip takes a row of its
+     own once measured not to fit (`syncTabOverflowFade`), which at 823 doubled
+     the bar to 100px: the switcher still carried its name (63px as its icon
+     alone, 134 with it) and the tabs their larger padding. Together these buy
+     the 111px it was short; the name stays the button's accessible name and
+     the menu's first row, as it already is below 820. */
+  header#top-bar .space-switcher-name {
+    display: none;
   }
 }
 @media (max-width: 599.98px) {

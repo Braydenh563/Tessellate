@@ -13,7 +13,7 @@ import functools
 import re
 from datetime import datetime
 
-from tessellate.ai import grounding, utilities
+from tessellate.ai import composer_property, grounding, utilities
 from tessellate.ai.composer_ask import _stem, _words
 from tessellate.ai.composer_body import length_wish
 from tessellate.ai.composer_dialogue import _MORE
@@ -33,11 +33,18 @@ _FEATURE_WORDS = 3
 _FEATURE_FILLER = frozenset({"the", "a", "an", "my", "that", "this", "it", "last", "latest", "please"})
 
 
+#: "and last week?" carries on the question before; it is not asking for the Timeline tab. "who wrote it" is a
+#: question about a note, not the name of a tool (R9-9).
+_CARRIES_ON = re.compile(r"^\s*(?:and|but|or|also|then|who)\b", re.I)
+
+
 def _may_name_a_tool(question: str, words: list[str]) -> bool:
     """Short enough, and not a follow-on or a length control ("tell me more",
-    "shorter"), which is about the answer before, never a tool: the Follow-up
-    trail's help line says "tell me more" in its own words."""
-    return bool(words) and len(words) <= _FEATURE_WORDS and not (_MORE.match(question) or length_wish(question))
+    "shorter", "and last week?"), which is about the answer before, never a
+    tool: the Follow-up trail's help line says "tell me more" in its own words."""
+    return bool(words) and len(words) <= _FEATURE_WORDS and not (
+        _MORE.match(question) or length_wish(question) or _CARRIES_ON.match(question)
+    )
 
 
 def _feature_help(question: str, absent: list[str]) -> tuple[str, str] | None:
@@ -64,6 +71,17 @@ def _feature_help(question: str, absent: list[str]) -> tuple[str, str] | None:
     return best
 
 
+def _undo_lead(words: list[str]) -> str:
+    """Typed "undo" or "redo" after a change asks for the thing itself, so the
+    keys come first, not a note that the word is not in the notes (round 2 E7)."""
+    said = [w for w in words if w not in _FEATURE_FILLER and w not in ("change", "changes", "action")]
+    if said == ["undo"]:
+        return "Press Undo in the status bar, or Ctrl+Z when you are not typing in a box, to take back your last change. "
+    if said == ["redo"]:
+        return "Press Redo in the status bar, or Ctrl+Shift+Z or Ctrl+Y when you are not typing in a box, to bring back what you undid. "
+    return ""
+
+
 def _feature_instead(question: str, absent: list[str]) -> dict | None:
     """Nothing in the notes, and a two- or three-word message that names an
     app feature (INBOX 1334, "timer\\" got "Which note might it be in?"):
@@ -76,8 +94,18 @@ def _feature_instead(question: str, absent: list[str]) -> dict | None:
     said = absent[0] if absent else " ".join(words)
     #: The feature first: "Nothing in your notes mentions timer" was a
     #: not-found answer to a request for the timer (INBOX 1357, class B).
-    lead = f"“{said[:1].upper()}{said[1:]}” is one of the app's own tools, not something in your notes. "
-    return _result([("template", lead), ("help", best[0], best[1])], "help")
+    lead = _undo_lead(words) or f"“{said[:1].upper()}{said[1:]}” is one of the app's own tools, not something in your notes. "
+    return _result([("template", lead), ("help", _short_line(best[0]), best[1])], "help")
+
+
+#: The longest help sentence an offer repeats under a note answer.
+_OFFER_WORDS = 20
+
+
+def _short_line(line: str) -> str:
+    """A help line as one short sentence: the line itself when it is a line, else
+    where to read the steps (D21: "what is my name" answered a Settings paragraph)."""
+    return line if len(line.split()) <= _OFFER_WORDS else "Open its Help topic for the steps."
 
 
 def offered(result: dict | None, question: str) -> dict | None:
@@ -90,7 +118,10 @@ def offered(result: dict | None, question: str) -> dict | None:
     best = _feature_help(question, [])
     if best is None:
         return result
-    more = [("template", PHRASES["feature_offer"]), ("help", best[0], best[1])]
+    #: A topic's whole step sentence is a paragraph under a note answer ("phone" got 600 characters
+    #: on opening the notebook over the network): past a line, the offer points to the topic (R3-7).
+    line = _short_line(best[0])
+    more = [("template", PHRASES["feature_offer"]), ("help", line, best[1])]
     return {**result, "parts": [*result["parts"], *more], "text": result["text"] + "".join(part[1] for part in more)}
 
 
@@ -433,6 +464,20 @@ def _clauses(sentence: str) -> list[str]:
 
 
 _JA_STOP = re.compile(r"([。！？])\.")
+
+
+_UNTICK = re.compile(r"^(?:please |can you |could you )?(?:un-?tick|un-?check|un-?mark|un-?cross)\b", re.I)
+
+
+def cannot_answer(question: str, notes: list[dict]) -> dict | None:
+    """An ask no note settles, said in one line instead of a search for its words: "untick it"
+    with no item the act reader could name (say which; audit 1030 Z37, "untick bread" itself is
+    the act, `task_acts.read_uncomplete`), and "what is the table number" when no note gives one
+    (never a note that only mentions the dinner or the booking; R3-2 residue)."""
+    text = " ".join((question or "").split())
+    line = ("Say which item to untick, like: untick buy milk. Press Undo on the card right after a tick to take it back."
+            if _UNTICK.match(text) else composer_property.none_given(text, notes))
+    return {**_result([("template", line)], "none"), "answered": True} if line else None
 
 
 def _result(parts: list[tuple], shape: str, rows: list[dict] | None = None, next_parts: list | None = None) -> dict:

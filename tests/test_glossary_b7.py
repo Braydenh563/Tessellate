@@ -100,8 +100,9 @@ def test_the_answer_says_what_it_stands_for_and_how_it_knows():
     assert "You use HCI in two notes." in said["text"]
     seen = composer_digest.answer("what does CC stand for?", _notes("Intro to Cloud Computing starts Monday.", "CC lab on Friday."), today=date(2026, 10, 11))
     #: INBOX 1441 moved this line's intent: a note is never named by its day,
-    #: and a one-line sentence is quoted, not worn as a title.
-    assert seen["text"].startswith("CC looks like Cloud Computing: the note that starts “Intro to Cloud Computing starts Monday” names it in full."), seen["text"]
+    #: and a one-line sentence is quoted, not worn as a title. R3-15 made
+    #: `name_of` the one form of that quote, without "the note that starts".
+    assert seen["text"].startswith("CC looks like Cloud Computing: “Intro to Cloud Computing starts Monday” names it in full."), seen["text"]
     assert seen["grounding"][0]["note_id"] == 1
     #: Unknown to the notes: no reading, the composer's answer stands.
     assert composer_digest.answer("what does XYZ stand for?", _notes("Nothing here about it.", "Or here."), today=date(2026, 10, 11)) is None

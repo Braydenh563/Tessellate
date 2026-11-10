@@ -12,7 +12,7 @@ from __future__ import annotations
 import functools
 import re
 
-from tessellate.ai import composer_tables, recognise as rec
+from tessellate.ai import composer_frame, composer_tables, recognise as rec
 from tessellate.ai.composer_answer import _Answer
 from tessellate.ai.composer_ask import _alternatives, _holds, _stem, _stem_plain
 from tessellate.ai.composer_read import NoteView
@@ -49,6 +49,9 @@ def _seen(term: str, found: set[str]) -> bool:
     factgraph._tables()
     if any(factgraph._PAST.get(word) == stem for word in found):
         return True
+    #: The agent of a verb ("teaches" in "Teacher is Lucía", R9-2).
+    if len(stem) >= 5 and any(word in (stem + "er", stem + "r", stem + "or") for word in found):
+        return True
     return len(stem) >= 4 and any(_one_edit(stem, word) for word in found if word[:1] == stem[:1])
 
 
@@ -62,6 +65,15 @@ _INSTRUCTION_STEMS = frozenset(
     gist overview story stuff style preferred prefer relationship give quick rough general overall kind sort type
     recorded outgoing mean meaning refer referring exact
     number figure amount value count tally mark fit archive finish show tell pin flag""".split()
+)
+
+
+#: Function words of the other languages a notebook is written in, which are
+#: never a topic the notes could be missing: "que sé sobre Tokyo" is not
+#: missing "sobre" (round 2 E26). Words that are also English are left out.
+_FOREIGN = frozenset(
+    """sobre que qué sé de del la las el los por para sin como cómo ist wie der das über und mit ein eine les des une dans pour
+    mein meine dein avec qui est sul della dei che nel não uma com dos mes sur""".split()
 )
 
 
@@ -147,6 +159,8 @@ def _frame_stems(question: str) -> frozenset[str]:
 def _is_unfound(out: _Answer, term: str, found: set[str], quoted: set[str], quoted_text: str = "") -> bool:
     if len(term) < _MISSING_MIN or _stem(term) in _INSTRUCTION_STEMS or _MANNER.search(term) or _seen(term, found):
         return False
+    if term.lower() in _FOREIGN:
+        return False
     if _stem(term) in _frame_stems(out.question or ""):
         return False
     if _alternatives(_stem(term)) & quoted or _said_by_shape(term, quoted_text):
@@ -176,6 +190,13 @@ def _missing(out: _Answer, terms: list[str], views: list[NoteView]) -> None:
     measured."""
     missing = _unfound_terms(out, terms, views)
     if not missing or len(missing) == len(terms):
+        return
+    #: The one note the answer quoted is only its title ("Thai green curry"): that is what it has, not that
+    #: its words are missing (R9-15).
+    quoted = [v for v in views if any(s.key in out.cited for s in v.sentences)]
+    only = composer_frame.own_title(str(quoted[0].note.get("content") or "").strip()) if len(quoted) == 1 else ""
+    if only:
+        out.t("para", "bare_a", "open_quote").asked(only).t("close_quote", "bare_b")
         return
     out.t("para", "missing")
     for i, word in enumerate(missing[:3]):

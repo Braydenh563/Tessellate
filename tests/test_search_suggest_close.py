@@ -5,8 +5,11 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from tests import _js_scope
+
 ROOT = Path(__file__).resolve().parent.parent
-JS = (ROOT / "frontend" / "js" / "search-suggest.js").read_text(encoding="utf-8")
+#: search-suggest.js is one closure now (ranked row 37a); these tests slice or eval its private functions, so they read it as it was before it was wrapped (`_js_scope.unwrapped`): same code, same assertions.
+JS = _js_scope.unwrapped((ROOT / "frontend" / "js" / "search-suggest.js").read_text(encoding="utf-8"))
 
 
 def test_scroll_closes_instead_of_repositioning():

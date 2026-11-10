@@ -27,8 +27,8 @@ def test_the_add_library_is_grouped_by_meaning_and_every_tile_has_a_hint():
     flow = library.split("const FLOW = [", 1)[1].split("\n  ];", 1)[0]
     for group in ("Steps", "Decisions", "Start and end", "Notes and groups"):
         assert f'["{group}", [' in flow, group
-    shapes = re.findall(r'\["(rect|round|hexagon|diamond|stadium|circle|note|group)", "([^"]+)"\]', flow)
-    assert sorted(s for s, _ in shapes) == sorted(["rect", "round", "hexagon", "diamond", "stadium", "circle", "note", "group"])
+    shapes = re.findall(r'\["(rect|round|hexagon|cylinder|parallelogram|diamond|stadium|circle|note|group)", "([^"]+)"\]', flow)
+    assert sorted(s for s, _ in shapes) == sorted(["rect", "round", "hexagon", "cylinder", "parallelogram", "diamond", "stadium", "circle", "note", "group"])
     assert all(hint.endswith(".") and len(hint) < 60 for _, hint in shapes), shapes
     # One builder for every kind: the other kinds' tiles carry a group and a hint too.
     kinds = _read("diagram-kinds.js")
@@ -92,7 +92,9 @@ def test_the_empty_list_and_the_space_under_the_blocks_say_what_to_do_next():
     assert "diagramModel.steps.build(S" in builder
     assert '"Add a shape"' in _read("diagram-steps.js")
     render = builder.split("function render(S) {", 1)[1].split("\n  }\n", 1)[0]
-    assert "S.next.textContent" in render and "Press Connect to… on a block, or drag its grip onto another block" in render
+    # The sentence moved to diagram-steps.js `next` (dgbt-1109 3: a touch variant); the render still writes it to the line.
+    assert "S.next.textContent" in render and "diagramModel.steps.next(S)" in render
+    assert "Press Connect to… on a block, or drag its grip onto another block" in _read("diagram-steps.js")
     assert 'S.pane.append(S.tree, S.next, S.empty' in builder
     assert ".dgm-next {" in CSS
 
@@ -102,7 +104,8 @@ def test_the_dock_is_one_row_at_every_width_because_direction_is_one_button_and_
     builder = _read("diagram-builder.js")
     more = builder.split("function more(S) {", 1)[1].split("\n  }\n", 1)[0]
     assert "matchMedia(COMPACT).matches" in more and '"ph:compass Direction"' not in more and "Suggest…" in more
-    assert "flex-wrap: nowrap" in CSS.split(".dgm-dock {", 1)[1].split("}", 1)[0]
+    # Intent moved (DD-2, 1107): one row is the flowchart dock's, so the nowrap is scoped to it; the kinds' docks wrap.
+    assert "flex-wrap: nowrap" in CSS.split(".dgm-dock:has(> .dgm-addsplit) {", 1)[1].split("}", 1)[0]
     assert "gap: var(--space-1);" in CSS.split(".dgm-compact .dock-actions {", 1)[1].split("}", 1)[0]
 
 

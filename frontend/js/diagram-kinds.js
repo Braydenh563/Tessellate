@@ -57,11 +57,14 @@
     const hit = KX_MM.find(([open]) => tail.startsWith(open));
     if (!hit || tail.length < hit[0].length + hit[1].length || !tail.endsWith(hit[1])) return raw;
     let body = tail.slice(hit[0].length, tail.length - hit[1].length).trim();
+    //: `bare` remembers a shape the author wrote without quotes, so saving does not add them (`root((Plan))` stays).
+    let bare = true;
     if (body.length >= 2 && body[0] === '"' && body.at(-1) === '"') {
       body = body.slice(1, -1);
+      bare = false;
       if (body[0] === "`") return raw;
     }
-    return { ident: line.slice(0, at).trim(), text: diagramModel.decode(body), shape: hit[2] };
+    return { ident: line.slice(0, at).trim(), text: diagramModel.decode(body), shape: hit[2], ...(bare ? { bare } : {}) };
   }
 
   function kxMmParse(source) {
@@ -115,7 +118,9 @@
       const shape = n.shape || "default";
       if (shape === "default" && kxMmPlain(text)) return text;
       const [open, close] = shape === "default" ? ["[", "]"] : KX_MM.find((s) => s[2] === shape);
-      return `${n.ident || fresh()}${open}"${text.replace(/"/g, "'")}"${close}`;
+      //: A bare shape stays bare while its words hold nothing a bracket, a quote or a leading mark would break.
+      const q = n.bare && text && !/["[\](){}]/.test(text) && !/^(?:%%|::)/.test(text) ? "" : '"';
+      return `${n.ident || fresh()}${open}${q}${q ? text.replace(/"/g, "'") : text}${q}${close}`;
     };
     const walk = (n, depth) => {
       out.push(kxPad(depth) + line(n));
@@ -458,7 +463,7 @@
     text: (n) => n.text,
     setText: (n, text) => (delete n.raw, (n.text = text)),
     tiles: [
-      { id: "branch", group: "Ideas", name: "Branch", icon: "tree-structure", key: "b", into: true, type: "b", fields: { text: "Branch" }, about: "a branch under the selected block" },
+      { id: "branch", group: "Ideas", name: "Branch", icon: "tree-structure", key: "b", into: true, type: "b", fields: { text: "Branch" }, about: "a branch under the selected block, or beside the last branch you added" },
       { id: "leaf", group: "Ideas", name: "Leaf", icon: "leaf", key: "n", type: "b", fields: { text: "Idea" }, about: "a leaf next to the selected block" },
     ],
     primary: "leaf",
@@ -607,7 +612,10 @@
   const ops = diagramKindOps;
   const panes = new WeakMap();
   let kit = null;
-  const TYPE_ICON = { s: "rows", p: "calendar-blank", e: "flag", t: "note-pencil", d: "minus" };
+  const TYPE_ICON = { s: "rows", p: "calendar-blank", e: "flag", t: "note-pencil", d: "arrow-bend-down-right" };
+  //: A block and a divider in a sentence of their own, shown under the row (1702: "loop" and "else" sat at the right edge as bare words).
+  const BLOCK_WORD = { loop: "Loop, repeats", alt: "Alt, one way or another", opt: "Opt, only if", par: "Par, at the same time", critical: "Critical, must succeed", break: "Break, stops here", rect: "Highlight" };
+  const DIV_WORD = { else: "Else, the other way", and: "And, at the same time", option: "Option, another choice" };
   const BLOCK_ICON = { loop: "repeat", alt: "shuffle", opt: "question" };
   const MM_GLYPH = { default: "stadium", square: "rect", round: "round", circle: "circle", hexagon: "hexagon" };
   const MM_NAME = { default: "Plain", square: "Square", round: "Rounded", circle: "Circle", bang: "Bang", cloud: "Cloud", hexagon: "Hexagon" };
@@ -620,6 +628,8 @@
     return i;
   };
   const find = (S, key) => ops.find(S.k, S.m, key);
+  //: A pick made by hand: Branch then nests under it (`S.fresh` is the block Branch just made).
+  const pick = (S, key, focus) => ((S.fresh = null), kit.select(S, key, focus));
   const nameOf = (S, key) => S.k.text(find(S, key)?.node || {}) || "block";
   const whoLabel = (S, id) => S.m.participants?.find((p) => p.id === id)?.label || id;
 
@@ -643,13 +653,21 @@
   function words(S, node) {
     const label = (id) => S.m.participants?.find((p) => p.id === id)?.label || id;
     if (S.k.name === "sequence") {
-      if (node.type === "m") return { meta: `${label(node.from)} to ${label(node.to)}`, kind: KX_ARROW_NAMES[node.arrow]?.toLowerCase() || "message" };
+      if (node.type === "m") return { meta: `${label(node.from)} to ${label(node.to)}`, show: `${label(node.from)} \u2192 ${label(node.to)}`, kind: KX_ARROW_NAMES[node.arrow]?.toLowerCase() || "message" };
       if (node.type === "t") return { meta: `${node.pos} ${node.who.map(label).join(", ")}`, kind: "note" };
-      if (node.type === "b" || node.type === "d") return { meta: node.kw, kind: node.type === "b" ? node.kw : `${node.kw} divider` };
+      if (node.type === "b" || node.type === "d") return { meta: (node.type === "b" ? BLOCK_WORD : DIV_WORD)[node.kw] || node.kw, kind: node.type === "b" ? node.kw : `${node.kw} divider` };
       return { meta: "", kind: node.actor ? "actor" : "participant" };
     }
     if (S.k.name === "timeline") return { meta: "", kind: { s: "section", p: "period", e: "event" }[node.type] };
     return { meta: "", kind: node.type === "r" ? "central idea" : node.children.length ? "branch" : "leaf" };
+  }
+
+  //: `activate K` and `deactivate K` are kept lines (the blocks do not edit them), said in plain words: "Worker is active".
+  function keptWords(S, line) {
+    const hit = /^(de)?activate\s+(\S+)$/i.exec(line);
+    if (!hit || S.k.name !== "sequence") return null;
+    const who = S.m.participants.find((p) => p.id === hit[2])?.label || hit[2];
+    return `${who} ${hit[1] ? "is done" : "is active"}`;
   }
 
   // --- the tree -------------------------------------------------------------------
@@ -664,6 +682,12 @@
     const fresh = new Map();
     S.cache ||= new Map();
     const built = rows.map((r) => buildBlock(S, r, 1, fresh));
+    //: A sequence list opens with its participants, then its messages: a heading before each (1702: one undifferentiated list).
+    if (S.k.name === "sequence") {
+      const heads = [["a", "Participants"], ["mtbd", "Messages"]].map(([types, text]) => [rows.findIndex((r) => types.includes(r.type)), text]);
+      for (const [index, text] of heads.reverse()) if (index >= 0) built.splice(index, 0, ((S.heads ||= {})[text] ||= kit.el("p", "dgm-sechead muted", text)));
+      for (const text of ["Participants", "Messages"]) if (S.heads?.[text]) S.heads[text].setAttribute("aria-hidden", "true");
+    }
     S.cache = fresh;
     S.tree.querySelectorAll(".dgm-target, .dgm-connecting, .dgm-lifted").forEach((b) => b.classList.remove("dgm-target", "dgm-connecting", "dgm-lifted"));
     kit.reconcile(S.tree, built);
@@ -673,6 +697,7 @@
     const stop = kit.blockEl(S, S.sel) || S.tree.querySelector(".dgm-block");
     kit.stops(S, stop);
     if (had && document.activeElement !== stop) stop?.focus();
+    diagramModel.library.hist(S);
   }
 
   //: What a row shows and what its menu offers, as one string. The node is kept beside it: the menu's actions hold that
@@ -704,14 +729,18 @@
       block.setAttribute("aria-label", `Kept line: ${row.line}`);
       block.title = "Blocks cannot edit this line. It stays in the source where it is.";
       const card = kit.el("div", "dgm-card");
-      card.append(icon("lock-simple", "dgm-kept-icon"), kit.el("code", "dgm-label", row.line));
+      const said = keptWords(S, row.line);
+      if (said) {
+        block.setAttribute("aria-label", `${said}, from the line ${row.line}`);
+        card.append(icon(/^de/i.test(row.line) ? "stop-circle" : "play-circle", "dgm-kept-icon"), kit.el("span", "dgm-label", said));
+      } else card.append(icon("lock-simple", "dgm-kept-icon"), kit.el("code", "dgm-label", row.line));
       block.append(card);
       return block;
     }
     const node = row.node;
     const key = ops.key(row);
     const text = S.k.text(node);
-    const { meta, kind } = words(S, node);
+    const { meta, kind, show } = words(S, node);
     block.dataset.key = key;
     block.setAttribute("aria-label", `${text || "(empty)"}, ${kind}${meta ? `, ${meta}` : ""}`);
     //: A mind map's leaf holds nothing yet and is a plain card; every other holder is a boxed one with its hole.
@@ -721,15 +750,15 @@
       block.setAttribute("aria-expanded", "true");
     }
     const card = kit.el("div", "dgm-card");
+    //: A sequence row is two lines: the sentence, and who it is between (or what the block is) muted under it.
+    if (meta && S.k.name === "sequence") card.classList.add("dgm-card-two");
     const grip = kit.el("span", "dgm-grip");
     grip.dataset.objGrip = "";
     grip.title = "Drag to move";
     grip.append(icon("dots-six-vertical"));
     card.append(grip, glyph(S, node), kit.el("span", "dgm-label", text));
-    if (meta) card.append(kit.el("span", "dgm-meta muted", meta));
-    const menu = kebabMenu(itemsFor(S, key), `Menu for ${text}`);
-    menu.classList.add("dgm-menu");
-    card.append(menu);
+    if (meta) card.append(kit.el("span", "dgm-meta muted", show || meta));
+    card.append(diagramModel.library.lazyKebab(() => itemsFor(S, key), `Menu for ${text}`));
     block.append(card);
     if (boxed || row.kids?.length) {
       const kids = kit.el("div", "dgm-kids");
@@ -807,21 +836,41 @@
 
   //: A tile's block, after the selection, inside it, or at a drop's `spot`. The sequence adds the
   //: participants a first message needs, a blank mind map its central idea.
-  function addTile(S, tile, { sel = S.sel, spot = null, edit = true } = {}) {
+  //: `fields` overrides the tile's (the picture names a message's two ends); `wrap` is a step the new box takes in (a Loop dropped on a message).
+  function addTile(S, tile, { sel: asked, spot = null, edit = true, fields: given = null, wrap = null } = {}) {
     const A = S.k;
     const m = S.m;
+    //: A sequence diagram names the new part on its picture (diagram-seq-canvas.js), as a mind map and a timeline do with their
+    //: list folded (a field in a hidden row held the redraw, 1661 m); else in the list.
+    const name = () => (edit ? (S.seq || (S.hitAt && S.pane.offsetParent === null) ? (S.seqOpen = S.sel) : relabel(S, S.sel)) : null);
     if (ops.count(A, m) >= ops.MAX - 4) return kit.say(S, `A diagram holds at most ${ops.MAX} blocks.`);
-    if (A.start && !m.root) A.start(m);
+    //: A blank mind map gets its central idea and nothing else: it is named first, then Branch grows it (dgbt-1109 4).
+    if (A.start && !m.root) {
+      S.sel = ops.key(A.start(m));
+      S.fresh = null;
+      kit.commit(S, "Added the central idea. Name it, then add branches.");
+      return name(), S.sel;
+    }
+    //: Branch twice in a row makes sisters: the block it just made is still the pick, and a child of that child was the surprise
+    //: (Food under Hotels). A block picked by hand (`S.fresh` cleared) takes its own children (dgbt-1109 5).
+    //: Only for a press of the Add tile or shelf: a key on a block (`sel` given) means that block.
+    const picked = asked === undefined ? S.sel : asked;
+    const fresh = tile.into && asked === undefined && !spot && !wrap && picked && picked === S.fresh ? find(S, picked)?.parent : null;
+    const sel = fresh ? ops.key(fresh) : picked;
     const at = sel && find(S, sel)?.node;
-    const place = spot || ops.spot(A, m, tile.type, sel, Boolean(tile.into));
+    const under = wrap && find(S, wrap);
+    const place = spot || (under && { parent: under.parent, before: under.node }) || ops.spot(A, m, tile.type, sel, Boolean(tile.into));
     if (!place) return kit.say(S, A.hint(tile.type));
     const { fields, made } = A.defaults ? A.defaults(m, tile, at) : { fields: tile.fields, made: 0 };
-    const node = ops.add(A, m, tile.type, { parent: place.parent, before: place.before, fields });
+    const node = ops.add(A, m, tile.type, { parent: place.parent, before: place.before, fields: { ...fields, ...given } });
     if (!node) return kit.say(S, A.hint(tile.type));
+    if (under && node.steps) (under.list.splice(under.list.indexOf(under.node), 1), node.steps.splice(0, 1, under.node));
     S.tile = tile;
     S.sel = ops.key(node);
-    kit.commit(S, `Added ${tile.name.toLowerCase()}${made ? ` and ${made} ${made === 1 ? "participant" : "participants"}` : ""}.`);
-    if (edit) relabel(S, S.sel);
+    S.fresh = tile.into && !spot ? S.sel : null;
+    const where = A.name === "mindmap" && place.parent ? ` ${tile.into ? "under" : "next to"} ${A.text(place.parent)}` : "";
+    kit.commit(S, `Added ${tile.name.toLowerCase()}${where}${made ? ` and ${made} ${made === 1 ? "participant" : "participants"}` : ""}.`);
+    name();
     return S.sel;
   }
 
@@ -856,7 +905,7 @@
     const key = block.dataset.key;
     const all = [...S.tree.querySelectorAll(".dgm-block")];
     const at = all.indexOf(block);
-    const go = (target) => target && kit.select(S, target.dataset.key, true);
+    const go = (target) => target && pick(S, target.dataset.key, true);
     const mod = event.ctrlKey || event.metaKey;
     if (mod && !event.altKey && /^[zy]$/i.test(event.key)) {
       event.preventDefault();
@@ -896,6 +945,9 @@
     const target = event.target;
     const tile = target.closest?.(".dgm-tile[data-tile]");
     const block = target.closest?.(".dgm-card")?.closest(".dgm-block");
+    //: A press on a mind map's or a timeline's drawn part carries its row, as the row's grip does (diagram-tree-canvas.js).
+    const drawn = !tile && !block && diagramModel.treeCanvas?.node(event, panes);
+    if (drawn) return { card: drawn.box, ref: { kind: "block", id: drawn.key, title: nameOf(drawn.S, drawn.key) }, grip: event.pointerType !== "touch", S: drawn.S, key: drawn.key, tile: null };
     const root = (tile || block)?.closest(".dgm");
     const S = root && panes.get(root);
     if (!S || target.closest(".menu-wrap, [contenteditable]") || (block && (block.classList.contains("dgm-kept") || find(S, block.dataset.key)?.level.fixed))) return null;
@@ -904,12 +956,20 @@
     return { card: tile || block.querySelector(":scope > .dgm-card"), ref: { kind: "block", id: key || def.id, title: tile ? def.name : nameOf(S, key) }, grip: Boolean(target.closest("[data-obj-grip]")), S, key, tile: def };
   }
 
+  //: A shelf tile dropped on a mind map or timeline picture (INBOX 1661 l) off its parts is added where a press on the tile adds
+  //: it, after the selection; the whole picture takes the drop mark. Over a part, diagram-tree-canvas.js `over` names the place.
+  function pictureDrop(S, at, tile) {
+    const stage = S.fig?.parentElement;
+    return stage?.contains(at) && !at.closest(".dgm-shelf") ? diagramModel.treeCanvas?.landing(S, tile) || { canvas: true, op: "into", card: S.fig, add: {}, word: S.sel ? "After the selection" : "Add it here" } : null;
+  }
+
   //: Where a drop would land: before or after a block (its top or bottom edge), or into it.
   function dropAt(g) {
     const { S, key } = g;
     const A = S.k;
     const at = document.elementFromPoint(g.x, g.y);
-    if (!at || !S.pane.contains(at)) return null;
+    if (!at || !S.pane.contains(at)) return S.seq ? (g.tile ? diagramModel.seqCanvas.over(g) : null) : diagramModel.treeCanvas?.over(g) || (g.tile ? pictureDrop(S, at, g.tile) : null);
+    if (S.seq) diagramModel.seqCanvas.clear(S);
     const dragged = key ? find(S, key) : null;
     const type = dragged ? dragged.node.type : g.tile.type;
     const block = at.closest(".dgm-block");
@@ -935,8 +995,8 @@
 
   function dropApply(g, target) {
     const { S } = g;
-    const spot = { parent: target.parent, before: target.before };
-    if (g.tile) return addTile(S, g.tile, { spot, edit: false });
+    const spot = target.canvas && !("parent" in target) ? null : { parent: target.parent, before: target.before };
+    if (g.tile) return addTile(S, g.tile, { spot, edit: false, ...target.add });
     const to = target.parent ? ops.key(target.parent) : null;
     if (!ops.move(S.k, S.m, g.key, to, target.before ? ops.key(target.before) : null)) return;
     S.sel = g.key;
@@ -958,20 +1018,22 @@
     },
     drop(g) {
       kit.dropMark(g, null);
+      if (g.S.seq) diagramModel.seqCanvas.clear(g.S);
       g.dragEl?.classList.remove("dgm-lifted");
       if (g.target) dropApply(g, g.target);
     },
     cancel(g) {
       kit.dropMark(g, null);
+      if (g.S.seq) diagramModel.seqCanvas.clear(g.S);
       g.dragEl?.classList.remove("dgm-lifted");
     },
   };
 
   // --- building the pane ----------------------------------------------------------
   const EMPTY = {
-    mindmap: ["Start a mind map", "Press Branch to add the central idea, then Branch and Leaf to grow it. Drag blocks to move or nest them."],
-    timeline: ["Start a timeline", "Press Period to add the first date, then Event for what happened. A Section groups periods."],
-    sequence: ["Start a sequence diagram", "Press Message to add two participants and the first message. A Loop or an Alt wraps steps."],
+    mindmap: ["Start a mind map", "Press Add, then Branch for the central idea. Name it, then Branch and Leaf grow it. Drag blocks to move or nest them."],
+    timeline: ["Start a timeline", "Press Add, then Section or Period to begin, then Event for what happened. A Section groups periods."],
+    sequence: ["Start a sequence diagram", "Press Add, then Message to add two participants and the first message. A Loop or an Alt wraps steps."],
   };
 
   function buildPalette(S) {
@@ -980,20 +1042,20 @@
     bar.setAttribute("role", "toolbar");
     bar.setAttribute("aria-label", "Diagram blocks");
     //: The Add library (diagram-library.js): the tiles by meaning, each with its hint.
-    const tiles = diagramModel.library.build(
-      S.k.tiles.map((t) => ({
-        group: t.group, name: t.name, hint: `Adds ${t.about}.`, glyph: icon(t.icon), keys: t.key.toUpperCase(),
-        label: `Add ${t.name.toLowerCase()}. Adds ${t.about}.`, data: { tile: t.id }, press: () => addTile(S, t),
-      }))
-    );
+    //: The same specs are the picture's shelf (diagram-library.js `shelf`, asked for by the builder once the picture has its stage).
+    S.specs = S.k.tiles.map((t) => ({
+      group: t.group, name: t.name, hint: `Adds ${t.about}.`, glyph: icon(t.icon), keys: t.key.toUpperCase(),
+      label: `Add ${t.name.toLowerCase()}. Adds ${t.about}.`, data: { tile: t.id }, press: () => addTile(S, t),
+    }));
+    const tiles = diagramModel.library.build(S.specs);
     const actions = kit.el("div", "dock-actions");
     S.suggestBtn = smallButton("ph:sparkle Suggest", "Start from a template, your notes or a description", () => kit.suggestMenu(S, S.suggestBtn));
     S.suggestBtn.classList.add("dgm-suggest");
     S.suggestBtn.setAttribute("aria-haspopup", "menu");
     actions.append(S.suggestBtn);
-    for (const [name, label, run] of [["ph:arrow-counter-clockwise", "Undo", () => S.io.undo()], ["ph:arrow-clockwise", "Redo", () => S.io.redo()]]) {
-      const b = smallButton(name, label, run);
-      b.classList.add("icon-only");
+    for (const [name, label, tip, run] of [["ph:arrow-counter-clockwise", "Undo", "Undo, Ctrl+Z", () => S.io.undo()], ["ph:arrow-clockwise", "Redo", "Redo, Ctrl+Y", () => S.io.redo()]]) {
+      const b = smallButton(name, tip, run);
+      b.classList.add("icon-only", "dgm-hist");
       b.setAttribute("aria-label", label);
       actions.append(b);
     }
@@ -1031,10 +1093,11 @@
     diagramModel.kindbar?.mount(S, kit);
     host.append(root);
     panes.set(root, S);
+    root.addEventListener("keydown", (event) => diagramModel.kindbar.historyKey(S, event));
     S.tree.addEventListener("keydown", (event) => onKey(S, event));
     S.tree.addEventListener("click", (event) => {
       const block = event.target.closest(".dgm-block");
-      if (block && !event.target.closest(".menu-wrap")) kit.select(S, block.dataset.key);
+      if (block && !event.target.closest(".menu-wrap")) pick(S, block.dataset.key);
     });
     S.tree.addEventListener("dblclick", (event) => {
       const block = event.target.closest(".dgm-label")?.closest(".dgm-block");
@@ -1076,6 +1139,8 @@
     S.note.classList.toggle("hidden", Boolean(parsed));
     S.note.textContent = parsed ? "" : big ? `This diagram has more than ${ops.MAX} blocks, so it opens in Source with its picture.` : `Blocks cannot read this ${A.noun}, so it opens in Source with its picture.`;
     S.m = parsed || A.empty();
+    //: With a block the phone's list is a sheet (diagram-touch.js) and the picture takes the page, as a flowchart's with an arrow.
+    S.root.classList.toggle("dgm-listless", !A.blank(S.m));
     if (!parsed) S.ghosts.replaceChildren(), S.ghosts.classList.add("hidden");
     S.pane.classList.toggle("hidden", !parsed);
     render(S);
@@ -1119,5 +1184,26 @@
     return text === S.source ? S : sync(host, text, S);
   }
 
-  diagramModel.kinds = { mindmap, timeline, sequence, ops, show, ghostSpec };
+  //: What the picture (diagram-seq-canvas.js) does to a row: the same steps the list's keys take, with the same lines said.
+  const act = {
+    select: (S, key) => pick(S, key),
+    name: nameOf,
+    rename(S, key, text) {
+      if (text === nameOf(S, key) || !ops.relabel(S.k, S.m, key, text)) return;
+      kit.commit(S, `Renamed to ${text}.`);
+    },
+    remove: removeBlock,
+    step: stepBlock,
+    add: addTile,
+    //: A participant to just before `before` (null: last), from a drag of its head on the picture; no change, no commit.
+    shift(S, key, before) {
+      const was = S.k.print(S.m);
+      if (!ops.move(S.k, S.m, key, null, before) || S.k.print(S.m) === was) return false;
+      S.sel = key;
+      kit.commit(S, `Moved ${nameOf(S, key)}.`);
+      return true;
+    },
+  };
+
+  diagramModel.kinds = { mindmap, timeline, sequence, ops, show, ghostSpec, act };
 })();

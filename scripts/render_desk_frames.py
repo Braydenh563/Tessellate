@@ -74,16 +74,15 @@ def with_stream(body: Image.Image, neb: Image.Image, stream: tuple[Image.Image, 
 
 
 def shared_stream(captured: dict[str, Image.Image], nebs: dict[str, Image.Image], names: list[str]) -> tuple[Image.Image, Image.Image]:
-    """The stream of the frame among `names` whose stream mass is the median: the one every
-    frame of the set then shows."""
-    streams = {n: stream_of(captured[n], nebs[n]) for n in names}
-    mass = {n: sum(i * c for i, c in enumerate(streams[n].histogram())) for n in names}
-    pick = sorted(names, key=lambda n: mass[n])[len(names) // 2]
-    return nebs[pick], streams[pick]
+    """The stream of the stand: the one every frame of the set then shows. (It was the median-mass one of the
+    set, a different capture each run, so the figure's right edge and the ring's lowest row moved 8 to 17 px
+    between renders and the tests that bound the cycle's edges passed or failed by the run.)"""
+    pick = "stand" if "stand" in names else names[0]
+    return nebs[pick], stream_of(captured[pick], nebs[pick])
 
 
 #: Frames that stand or drift in place, each showing the same stream.
-STREAM_SHARED = tuple(sprites.IDLE_FRAMES) + tuple(sprites.WALK_FRAMES) + ("stand", "blink", "look")
+STREAM_SHARED = tuple(sprites.IDLE_FRAMES) + tuple(sprites.WALK_FRAMES) + tuple(sprites.WAVE_FRAMES) + ("stand", "blink", "look", "wave", "held")
 
 
 def touches_edge(im: Image.Image) -> bool:
@@ -94,7 +93,10 @@ def touches_edge(im: Image.Image) -> bool:
     return box[0] <= 0 or box[2] >= im.width or box[3] >= im.height
 
 
-def crop_box(images: list[Image.Image]) -> tuple[int, int, int, int]:
+def crop_box(images: list[Image.Image], stand: Image.Image | None = None) -> tuple[int, int, int, int]:
+    """The union of every frame's drawn pixels plus PAD, widened on its narrower side so the stand sits in the
+    middle of the canvas: a mirrored figure then lands where it stood (the engine's `_flip_dx` is 0) and never
+    hangs a few px off a screen edge (INBOX 1696 hh, the 1107 handle flip: the stand was 8 to 17 px off centre)."""
     left = top = 10**9
     right = bottom = 0
     for im in images:
@@ -103,18 +105,27 @@ def crop_box(images: list[Image.Image]) -> tuple[int, int, int, int]:
             left, top = min(left, box[0]), min(top, box[1])
             right, bottom = max(right, box[2]), max(bottom, box[3])
     width, height = images[0].size
-    return max(0, left - PAD), max(0, top - PAD), min(width, right + PAD), min(height, bottom + PAD)
+    left, right = left - PAD, right + PAD
+    sb = stand.getchannel("A").point(lambda a: 255 if a >= sprites.ALPHA_FLOOR else 0).getbbox() if stand is not None else None
+    if sb:
+        mid = (sb[0] + sb[2]) / 2
+        half = max(mid - left, right - mid) + 1  # one px more on the right: the shift is never positive
+        left, right = int(mid - half), int(mid + half + 1)
+    return max(0, left), max(0, top - PAD), min(width, right), min(height, bottom + PAD)
 
 
 def clip_idle_tails(folder: Path) -> None:
-    """Clip an idle picture's tail tip to at most one source pixel below the stand's bottom (INBOX 1670,
-    16:40Z: the feminine idle bottom stepped 258 to 261 and the figure seemed to jitter). The tip is a few
-    near-transparent rows of the swish, so clipping it costs nothing a person can see."""
+    """Clip the stand, its blink and look and every idle picture to the same lowest row: that of the highest of them (the tail tip's
+    last two or three near-transparent rows). The engine registers the cycle to one rest line and its tests
+    bound a step of the drawn feet line; a tip that dipped 1 to 3 rows lower in some phases was a bob of the
+    window's feet at every wrap (INBOX 1670, 16:40Z: the feminine idle bottom stepped 258 to 261 and the figure
+    seemed to jitter), and pinning the tail left masculine's idle 2 rows above its stand. A person cannot see it."""
     def bottom(im: Image.Image) -> int:
-        return im.getchannel("A").point(lambda v: 255 if v >= 24 else 0).getbbox()[3]
+        return im.getchannel("A").point(lambda v: 255 if v >= sprites.ALPHA_FLOOR else 0).getbbox()[3]
 
-    limit = bottom(Image.open(folder / "stand.png").convert("RGBA")) + 1
-    for path in sorted(folder.glob("idle*.png")):
+    paths = [folder / f"{n}.png" for n in ("stand", "blink", "look")] + sorted(folder.glob("idle*.png"))
+    limit = min(bottom(Image.open(p).convert("RGBA")) for p in paths)
+    for path in paths:
         im = Image.open(path).convert("RGBA")
         if bottom(im) <= limit:
             continue
@@ -146,7 +157,7 @@ def main() -> int:
             cut = [n for n, im in captured.items() if touches_edge(im)]
             if cut:
                 raise SystemExit(f"{look}: captures {cut} touch the clip edge; widen BOX in render_desk_frames.js")
-            box = crop_box(list(images.values()))
+            box = crop_box(list(images.values()), images.get("stand"))
             target = out / look
             if target.exists():
                 shutil.rmtree(target)

@@ -65,8 +65,9 @@ def test_a_tab_switch_hides_the_cat_and_arms_nothing() -> None:
     body = AV[AV.index("function nameMarkBuddyTabChanged") :]
     body = body[: body.index("\n}\n")]
     assert "nmb-away" in body
-    #: The one timer is the look that its perch is still there; nothing is armed to follow.
-    assert body.count("setTimeout") == 1 and "nmbFollow.recheck = setTimeout(queueNameMarkBuddyCheck" in body
+    #: The one timer is the look that its perch is still there (a returning page, and a bar or hang
+    #: moving to a new page); nothing is armed to follow.
+    assert body.count("setTimeout") == 2 and body.count("nmbFollow.recheck = setTimeout(queueNameMarkBuddyCheck, 900)") == 2
     assert "nameMarkBuddyAppear(buddy)" in body and body.count("nameMarkBuddyAppear") == 1
     assert "nmb.absent = true" in body and "nmb.lonelyTouch(true)" in body
 

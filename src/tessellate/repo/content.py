@@ -246,3 +246,12 @@ def unshelved(document: Document, *, unarchive: bool) -> Document:
             raise Conflict(ARCHIVED.format(noun="document"))
         document.archived_at = None
     return document
+
+
+def anything_kept(session: Session) -> bool:
+    """Whether the notebook holds a note or a document outside the bin. A
+    private note counts (it is counted, never read), and a board does not:
+    the chat's empty-notebook line reads this (`api/chat_pool.py`)."""
+    note = select(Entry.id).where(Entry.is_deleted == False, Entry.is_board == False).limit(1)  # noqa: E712
+    document = select(Document.id).where(Document.deleted_at.is_(None)).limit(1)
+    return session.scalar(note) is not None or session.scalar(document) is not None

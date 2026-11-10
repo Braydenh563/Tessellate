@@ -30,6 +30,17 @@ const LIGHTBOX_HELP = [
   "The bars fade when the mouse rests on the picture and come back when it moves.",
 ];
 
+//: How far one wheel event zooms. In proportion to the travel, so a wheel's
+//: one notch of 100 is one even step (x1.22); a line or a page of travel
+//: (`deltaMode` 1, 2) counts as 40px. A trackpad pinch (a Ctrl wheel of small
+//: pixel deltas) moves at the diagram view's rate, 0.01 a pixel: at the
+//: notch's 0.002 it was "very slow or minimal" (the owner, INBOX 1694).
+function lightboxZoomFactor(e) {
+  if (e.ctrlKey && e.deltaMode === 0 && Math.abs(e.deltaY) < 50) return Math.exp(-e.deltaY * 0.01);
+  const travel = Math.max(-200, Math.min(200, e.deltaY * (e.deltaMode ? 40 : 1)));
+  return Math.exp(-travel * 0.002);
+}
+
 function openLightbox(items, startIndex = 0, opts = {}) {
   let index = startIndex;
   const overlay = document.createElement("div");
@@ -427,6 +438,19 @@ function openLightbox(items, startIndex = 0, opts = {}) {
   const ZOOM_MIN = 1;
   const zoomLabel = document.createElement("span");
   zoomLabel.className = "lightbox-zoom-label";
+  //: The readout is a typeable number with a dropdown (INBOX 1694 b, value-field.js): 150 and Enter zooms to 150% of the picture's own pixels.
+  const zoomField = valueField(zoomLabel, {
+    value: 100,
+    min: 5,
+    max: 3200,
+    label: "Zoom percent",
+    format: (v) => `${Math.round(v)}%`,
+    presets: [25, 50, 75, 100, 150, 200, 400].concat([{ label: "Fit", run: () => fitView() }]),
+    onCommit: (pct) => {
+      glide();
+      setZoom((pct / 100) * (zoomTarget() === img && img.naturalWidth && img.offsetWidth ? actualZoom() : 1));
+    },
+  });
   const reducedMotion = () => reducedMotionWanted();
   //: A turned picture is fitted again: a wide photo stood on its end is as
   //: tall as it was wide, so it is scaled into the box it had.
@@ -493,7 +517,7 @@ function openLightbox(items, startIndex = 0, opts = {}) {
     //: A picture's readout is against its own pixels, as every viewer's is:
     //: "53%" at Fit for a picture twice the window, "100%" at actual size.
     const pixels = isImg && img.naturalWidth && img.offsetWidth;
-    zoomLabel.textContent = `${Math.round((pixels ? zoom / actualZoom() : zoom) * 100)}%`;
+    zoomField.set(Math.round((pixels ? zoom / actualZoom() : zoom) * 100));
     fitBtn.setAttribute("aria-pressed", String(zoom === 1));
     //: Pressed when the picture is already at actual size, so a press that
     //: changes nothing (a picture smaller than the window, where fit is 1:1)
@@ -884,11 +908,7 @@ function openLightbox(items, startIndex = 0, opts = {}) {
       if (!doc.classList.contains("hidden") && !e.ctrlKey) return;
       if (!doc.classList.contains("hidden") && pdfPages.classList.contains("hidden")) return; // plain text: nothing to zoom
       e.preventDefault();
-      //: In proportion to the travel, so a trackpad's many small deltas and
-      //: a wheel's one notch of 100 both feel continuous (a notch: x1.22).
-      //: A line or a page of travel (`deltaMode` 1, 2) counts as 40px.
-      const travel = Math.max(-200, Math.min(200, e.deltaY * (e.deltaMode ? 40 : 1)));
-      setZoom(zoom * Math.exp(-travel * 0.002), [e.clientX, e.clientY]);
+      setZoom(zoom * lightboxZoomFactor(e), [e.clientX, e.clientY]);
     },
     { passive: false }
   );
@@ -2273,7 +2293,8 @@ function openLightbox(items, startIndex = 0, opts = {}) {
     //: A menu, a popover or a confirm over the viewer has the keys first.
     const above = document.querySelector(".action-menu:not(.hidden), .help-popover:not(.hidden), .confirm-overlay:not(.hidden)");
     if (e.key === "Escape") {
-      if (!above) close();
+      //: Escape in the zoom field puts its number back (value-field.js); it does not close the viewer.
+      if (!above && !e.target.closest?.(".value-field")) close();
       return;
     }
     if (above || typing(e.target) || e.ctrlKey || e.metaKey || e.altKey) return;

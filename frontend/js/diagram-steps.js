@@ -7,9 +7,6 @@
 // Under the list, "Start from an example" loads the current starter (R6.8: the walkthrough wins for a new diagram, and the
 // starter is one press away); it and the template button go once there is a block.
 (() => {
-  //: The name a new block is given by shape (the builder's SHAPE_TEXT), so "Name it" is done when one block has another.
-  const DEFAULT_NAMES = { rect: "Step", round: "Step", stadium: "Start", circle: "Event", diamond: "Question?", hexagon: "Prepare" };
-
   //: `use` is the builder's own verbs: `add(S, options)` returns the new key, `rename(S, key)`, `connect(S, key)`.
   function build(S, use) {
     const list = use.el("ol", "dgm-steps");
@@ -41,8 +38,17 @@
     return both;
   }
 
-  const PURPOSE = "Your blocks, in the order the chart flows. Pick one to find it in the picture.";
-  const LABEL_WORDS = "Double-click the name, or press Enter, to rename it.";
+  const PURPOSE = "Your blocks, in the order the chart flows. Tab on the last adds a box. F6 leaves the blocks.";
+  //: A touch screen has no double-click and often no Enter (dgbt-1109 3: the sheet said "Double-click" on a phone).
+  const touch = () => matchMedia("(pointer: coarse)").matches;
+  const LABEL_WORDS = () => (touch() ? "Double-tap the name to rename it." : "Double-click the name, or press Enter, to rename it.");
+
+  //: The line under the list: what to do next with the blocks there are.
+  function next(S) {
+    const [two, how] = touch() ? ["Double-tap", ""] : ["Double-click", ", or press Enter,"];
+    if (S.m.edges.length) return `Drag a grip to move or nest a block (the picture lays itself out). ${two} a name to rename it.`;
+    return `${two} a name${how} to rename it. ${S.m.nodes.length < 2 ? "Add a second block, then press Connect to… on one." : "Press Connect to… on a block, or drag its grip onto another block, to draw an arrow."}`;
+  }
 
   //: The pane's frame (1679 k): the purpose line above the list, and a foot under it with the two things a first use wants where the
   //: eye ends, Add block and Connect. Under the pointer or in focus, the line says what that control does (its own title, so a
@@ -57,12 +63,15 @@
     S.foot = foot;
     const add = smallButton("ph:plus Add block", "Add a block after the picked one", () => use.add(S, { edit: true }));
     const connect = smallButton("ph:arrow-bend-down-right Connect", "Draw an arrow from the picked block to another", () => use.connect(S, S.sel || S.tree.querySelector(".dgm-block")?.dataset.key));
+    //: Mouse and touch twins of N, C and the toolbar's Add: not Tab stops, so the picture is near (DD-8).
+    add.tabIndex = connect.tabIndex = -1;
     foot.append(add, connect);
+    S.footConnect = connect;
     S.tree.before(line);
     S.tree.after(foot);
     const say = (target) => {
       const control = target?.closest?.(".dgm-label, [title]");
-      const words = control?.classList.contains("dgm-label") ? LABEL_WORDS : control?.title;
+      const words = control?.classList.contains("dgm-label") ? LABEL_WORDS() : control?.title;
       line.textContent = words || PURPOSE;
       line.classList.toggle("dgm-purpose-live", Boolean(words));
     };
@@ -75,12 +84,19 @@
   //: Called by every render: the list shows until the first arrow, each done step ticked; the example and the template button go with the first block.
   function sync(S, blocks) {
     const m = S.m;
-    S.empty.classList.toggle("hidden", m.edges.length > 0);
+    //: The checklist is a lesson for the first two boxes (DD-10, 1107): with two it has taught the box and the name, and the foot's Connect
+    //: is the one next action, so the list and its empty frame go rather than stay as a ticked record to the first arrow.
+    const lesson = m.edges.length === 0 && m.nodes.length < 2;
+    S.empty.classList.toggle("hidden", !lesson);
     S.foot?.classList.toggle("hidden", !blocks);
+    //: The checklist already offers the first arrow and the first box, so the foot does not say the same twice (1679 blind pass): Add block
+    //: stays where the eye ends, Connect joins it once the checklist has gone, and a box that is added drops the checklist's first row.
+    S.footConnect?.classList.toggle("hidden", lesson && Boolean(S.steps));
+    S.steps?.firstElementChild?.classList.toggle("hidden", m.nodes.length > 0);
     S.empty.classList.toggle("dgm-started", Boolean(blocks));
     //: A phone with an arrow keeps the picture and gets the list as a sheet (diagram-touch.js); before that the steps stay in the page.
     S.root.classList.toggle("dgm-listless", m.edges.length > 0);
-    const done = [m.nodes.length > 0, m.nodes.some((n) => n.text !== DEFAULT_NAMES[n.shape]), m.edges.length > 0];
+    const done = [m.nodes.length > 0, m.nodes.some((n) => n.text !== diagramModel.ops.TEXT[n.shape] /* the name a new block is given: "Name it" is done once one has another */), m.edges.length > 0];
     S.steps?.querySelectorAll(".dgm-step").forEach((item, i) => {
       if (item.classList.contains("dgm-done") === done[i]) return;
       item.classList.toggle("dgm-done", done[i]);
@@ -91,5 +107,5 @@
     });
   }
 
-  diagramModel.steps = { build, sync, frame };
+  diagramModel.steps = { build, sync, frame, next };
 })();

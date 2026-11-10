@@ -1,12 +1,8 @@
 // diagram-builder.js: the block pane of a diagram (1546 P2, DOCUMENTS_PLAN "1546 design" D5 to D10). Lazy:
-// `LAZY_MODULES.diagramBuilder`, registered at the foot of documents-mermaid.js.
-//
-// A diagram is edited as blocks: the Add library, a tree of cards (a group holds cards), the connectors as rows under
-// the card they leave, and the live picture beside it. Every gesture is one change to the model (`diagramModel`)
-// printed to the whole source and handed to `io.set`, so the source is the only state and the document's history is
-// the undo. The pure part is diagram-ops.js (node-tested), the Add library diagram-library.js and the drag mode
-// diagram-pointer.js; the rest is the DOM, made with createElement and textContent. New behaviour goes in lazy files
-// (this one is held to 12 KB gzipped). One closure, one export: `diagramModel.builder`.
+// `LAZY_MODULES.diagramBuilder` (documents-mermaid.js). Blocks, connector rows and the live picture; each gesture is one
+// model change printed to the source (`io.set`), so the source is the only state and its history the undo. Pure half:
+// diagram-ops.js; Add library: diagram-library.js; drag: diagram-pointer.js. Held to 12 KB gzipped: new behaviour goes
+// in lazy files. One closure, one export: `diagramModel.builder`.
 (() => {
   //: The pure half (diagram-ops.js, fetched with this file): keys name blocks, every change is one call, none draws.
   let diagramOps;
@@ -14,9 +10,10 @@
   // ---------------------------------------------------------------------------
   // The pane
   // ---------------------------------------------------------------------------
-  const SHAPE_LABEL = { rect: "Box", round: "Rounded", stadium: "Pill", circle: "Circle", diamond: "Decision", hexagon: "Hexagon" };
-  const SHAPE_TEXT = { rect: "Step", round: "Step", stadium: "Start", circle: "Event", diamond: "Question?", hexagon: "Prepare" };
-  //: A narrow window or a touch screen: the phone's palette sheet, direction in the ... menu and the picture's pinch.
+  //: Filled from `diagramOps.LABEL` and `.TEXT` when the pane opens (the tables live in diagram-ops.js).
+  const SHAPE_LABEL = {};
+  const SHAPE_TEXT = {};
+  //: A narrow window or a touch screen: the phone's palette sheet and pinch.
   const COMPACT = "(max-width: 599.98px), (pointer: coarse)";
   //: Whole icon names, so tests/test_icon_names.py can check each is in the font.
   const DIRS = [["TD", "ph:arrow-down", "Top to bottom"], ["LR", "ph:arrow-right", "Left to right"], ["BT", "ph:arrow-up", "Bottom to top"], ["RL", "ph:arrow-left", "Right to left"]];
@@ -61,29 +58,32 @@
   // --- the picture ----------------------------------------------------------------
   function drawPicture(S) {
     clearTimeout(S.drawTimer);
+    S.drawing = true; //: edges.js `ask` waits for the draw (1661)
     S.drawTimer = setTimeout(() => {
       const source = S.source;
       const stamp = ++S.drawn;
-      //: Empty is a source with no block and nothing but its header; a kept line is still drawn, so the picture says why (INBOX 1596 b).
+      //: Empty: no block and only a header; a kept line is still drawn, so the picture says why.
       const blank = S.k ? S.k.blank(S.m) : S.m && !S.m.nodes.length;
       const bare = diagramModel.front(source.replace(/\r/g, "")).rest.split("\n").every((l) => !l.trim() || /^\s*(%%|flowchart\b|graph\b|mindmap\b|timeline\b|sequenceDiagram\b)/i.test(l));
       const empty = !source.trim() || (!S.plain && blank && bare);
       S.fig.classList.toggle("dgm-picture-empty", empty);
-      if (empty) return S.fig.replaceChildren(el("p", "muted dgm-hint", "The picture appears here as you add blocks."));
+      //: The phone layout keys on the window body; a class, not `.dgm-body:has()` (test_css_body_has).
+      S.fig.closest(".dgm-body")?.classList.toggle("dgm-body-empty", empty);
+      if (empty) return (S.drawing = false), S.fig.replaceChildren(el("p", "muted dgm-hint", "Press Add above to start the diagram."));
       //: The hint goes now, or it and the pending line show together (1679 m).
       S.fig.querySelector(":scope > .dgm-hint")?.remove();
-      ensureModule("mermaid").then((ok) => {
+      Promise.all([ensureModule("mermaid"), diagramModel.picture.idle(S)]).then(([ok]) => {
+        if (!ok) S.drawing = false;
         if (!ok || stamp !== S.drawn) return;
         const began = performance.now();
         mermaidFill(S.fig, source, (result) => {
-          //: A big diagram takes long to draw, so the next change waits half that long: edits in a row draw once.
+          //: A big diagram waits half its draw time for the next change.
           S.drawWait = Math.min(600, Math.max(120, (performance.now() - began) / 2));
           if (stamp !== S.drawn) return;
+          S.drawing = false;
           S.hit = result.svg ? diagramModel.picture.boxes(result.svg) : null;
           for (const paint of S.fig.onpaint || []) paint();
-          if (result.svg) return;
-          S.fig.classList.remove("md-mermaid-pending");
-          S.fig.replaceChildren(mermaidFailure.note(result.error, source));
+          diagramModel.picture.failure(S, result, source, smallButton);
         });
       });
     }, S.drawWait || 120);
@@ -98,7 +98,7 @@
     const live = blockKeys(layout);
     if (S.sel && !live.includes(S.sel)) S.sel = null;
     S.rendered?.(live);
-    //: A block unchanged keeps its element, and `reconcile` keeps it in place: a change lays out only the rows it touched.
+    //: An unchanged block keeps its element and place.
     const fresh = new Map();
     S.cache ||= new Map();
     const rows = layout.map((item) => buildBlock(S, item, 1, edgesFrom, fresh));
@@ -107,7 +107,7 @@
     reconcile(S.tree, rows);
     diagramModel.steps.sync(S, layout.length);
     S.next.classList.toggle("hidden", !layout.length);
-    const next = S.m.edges.length ? "Drag a grip to move or nest a block (the picture lays itself out). Double-click a name to rename it." : `Double-click a name, or press Enter, to rename it. ${S.m.nodes.length < 2 ? "Add a second block, then press Connect to… on one." : "Press Connect to… on a block, or drag its grip onto another block, to draw an arrow."}`;
+    const next = diagramModel.steps.next(S);
     if (S.next.textContent !== next) S.next.textContent = next;
     //: An empty pane is the one stop, so N and G work before there is a block to focus.
     S.pane.tabIndex = layout.length ? -1 : 0;
@@ -117,11 +117,13 @@
     diagramModel.bar.sync(S);
   }
 
-  //: The one tab stop and the selected row: an attribute is written only where it differs, so a long list is not restyled.
+  //: The one tab stop and the selected row; an attribute is written only where it differs.
   function stops(S, stop) {
     for (const b of S.tree.querySelectorAll(".dgm-block")) {
       const index = b === stop ? "0" : "-1";
       if (b.getAttribute("tabindex") !== index) b.tabIndex = Number(index);
+      //: Only the picked row's buttons are Tab stops (DD-8).
+      for (const c of b.querySelectorAll(":scope > .dgm-card button, :scope > .dgm-joins button")) if (c.getAttribute("tabindex") !== index) c.setAttribute("tabindex", index);
       const on = String(b.dataset.key === S.sel || S.picked?.has(b.dataset.key) === true);
       if (b.getAttribute("aria-selected") !== on) b.setAttribute("aria-selected", on);
     }
@@ -158,7 +160,7 @@
     }));
   }
 
-  //: One row of the shape menu: the shape drawn where an icon goes, the chosen one ending in the menu's check.
+  //: One row of the shape menu: the shape drawn where an icon goes.
   function shapeRow({ shape, on, run }) {
     const row = el("button", "menu-item dgm-shape-row");
     row.type = "button";
@@ -191,7 +193,7 @@
       const r = button.getBoundingClientRect();
       const items = shapeItems(S, key);
       openMenuAtPoint(items.map((item) => ({ label: SHAPE_LABEL[item.shape], run: item.run })), `Shape of ${text}`, r.left, r.bottom, button);
-      //: Opened as plain rows, each swapped for the drawn one: the keyboard walk and the close stay the menu's own.
+      //: Plain rows, each swapped for the drawn one.
       const menu = document.querySelector(".action-menu:not(.hidden):not(.submenu)");
       menu?.querySelectorAll(":scope > .menu-item").forEach((row, i) => row.replaceWith(shapeRow(items[i])));
       menu?.querySelector(".menu-item")?.focus({ preventScroll: true });
@@ -199,9 +201,9 @@
     return button;
   }
 
-  //: A row is rebuilt only when its `sig` (everything below that it reads) changed since the last render.
+  //: A row is rebuilt only when its `sig` changed.
   function buildBlock(S, item, base, edgesFrom, fresh) {
-    //: The flow depth (diagram-outline.js) reads as level, so a target sits one level under the block that points at it.
+    //: The flow depth (diagram-outline.js) is the level.
     const level = base + (item.depth || 0);
     const id = item.type === "k" ? `k:${item.index}` : diagramOps.key(item.type, item.id);
     const kids = (item.kids || []).map((k) => buildBlock(S, k, level + 1, edgesFrom, fresh));
@@ -256,9 +258,7 @@
     connect.classList.add("dgm-connect");
     connect.setAttribute("aria-label", `Connect to…, from ${text}`);
     card.append(connect);
-    const menu = kebabMenu(blockItems(S, key), `Menu for ${text}`);
-    menu.classList.add("dgm-menu");
-    card.append(menu);
+    card.append(diagramModel.library.lazyKebab(() => blockItems(S, key), `Menu for ${text}`));
     block.append(card);
     if (joins.length) {
       const row = el("div", "dgm-joins");
@@ -281,7 +281,7 @@
     return icon;
   }
 
-  //: A connector reads as what it is, "Start to Next" and its label, in a row that hangs off the block it leaves.
+  //: A connector: "Start to Next" and its label, in a row under the block it leaves.
   function joinChip(S, edge, index) {
     const chip = el("button", "dgm-join");
     chip.type = "button";
@@ -293,7 +293,7 @@
     if (edge.label) chip.append(el("span", "dgm-join-label muted", edge.label));
     chip.title = "Change this connector: its line, its label, or remove it";
     chip.setAttribute("aria-label", `Connector from ${from} to ${to}${edge.label ? `, labelled ${edge.label}` : ""}. Opens its menu.`);
-    //: The row is kept across changes, so the connector is read from the model when pressed, not when drawn.
+    //: Read from the model when pressed: the row outlives changes.
     chip.addEventListener("click", () => joins(S, "menu", { edge: S.m.edges[index] || edge, chip }));
     return chip;
   }
@@ -340,13 +340,15 @@
   //: A shape, or a group, added after the block `after`, inside the group `into`,
   //: or (neither) after the selection. `edit` opens its label for typing.
   //: `from` is a block id to connect to the new one, in the same change (Connect to…, A new block).
-  function addBlock(S, { shape = S.shape, group = false, after = S.sel, into = null, before = undefined, edit = true, text = SHAPE_TEXT[shape], from = null, label = "" } = {}) {
+  function addBlock(S, { shape = S.shape, group = false, after = S.sel, into = null, before = undefined, edit = true, text = SHAPE_TEXT[shape], from = undefined, label = "" } = {}) {
     const m = S.m;
     const sel = after && !into ? after : null;
     const parent = into ? diagramOps.split(into)[1] : sel ? diagramOps.parentOf(m, sel) : null;
     const next = sel ? diagramOps.sisters(m, sel) : null;
     const sisters = next ? next.keys.filter((k) => k[0] === (group ? "g" : "n")) : [];
     const ahead = before !== undefined ? before : sel && sisters.includes(sel) ? sisters[sisters.indexOf(sel) + 1] || null : null;
+    //: Joined after the picked (or last) block, as "in the order the chart flows" says; a drop, a group or an explicit `from` is left as it is.
+    if (from === undefined) from = !group && !into && before === undefined ? diagramModel.outline.tail(m, sel) : null;
     const id = group ? diagramOps.addGroup(m, { parent, before: ahead }) : diagramOps.addNode(m, { shape, text, group: parent, before: ahead });
     if (!id) return say(S, group ? "That group cannot be added." : `A diagram holds at most ${diagramOps.MAX} blocks.`);
     if (!group) S.shape = shape;
@@ -354,19 +356,25 @@
     S.sel = key;
     if (from) diagramOps.join(m, from, id, { label });
     commit(S, `Added ${group ? "a group" : `a ${SHAPE_LABEL[shape].toLowerCase()}`}${sel ? ` after ${nameOf(S, sel)}` : ""}${from ? ` and connected ${titleOf(S, from)} to it` : ""}.`);
-    if (edit) relabel(S, key);
+    //: List folded: named over the picture (1661 m, edges.js `askNode`).
+    if (edit) (!group && S.pane.offsetParent === null ? nameOnPicture(S, id) : relabel(S, key));
     return key;
+  }
+
+  function nameOnPicture(S, id) {
+    S.askNode?.(id);
   }
 
   function relabel(S, key) {
     const b = blockEl(S, key);
     if (!b || key[0] === "k") return;
     const label = b.querySelector(":scope > .dgm-card > .dgm-label");
-    beginEdit(S, label, nameOf(S, key), (text) => {
-      //: An empty name is refused; an unchanged row is not redrawn, so it gets the old name back by hand (1679 m).
+    beginEdit(S, label, nameOf(S, key), (text, was) => {
+      //: An empty name is refused; an unchanged row gets the old name back by hand.
       if (!diagramOps.relabel(S.m, key, text)) return (label.textContent = nameOf(S, key)), render(S);
       if (text === nameOf(S, key) && S.source === diagramModel.print(S.m)) return render(S);
       commit(S, `Renamed to ${text}.`);
+      diagramModel.picture.patch(S, key, was, text);
     }, key);
   }
 
@@ -382,7 +390,7 @@
     sel.removeAllRanges();
     sel.addRange(range);
     let over = false;
-    const end = (keep) => {
+    const end = (keep, to) => {
       if (over) return;
       over = true;
       target.removeEventListener("keydown", onKey);
@@ -390,11 +398,11 @@
       const text = target.textContent.trim();
       target.removeAttribute("contenteditable");
       target.classList.remove("dgm-editing");
-      if (keep && text !== was) done(text);
+      if (keep && text !== was) done(text, was);
       else target.textContent = was;
-      //: Not when the render that `done` made has already put focus there: a focus() after a change forces its layout.
+      //: Not when the render put focus there or the press went to another field.
       const block = key && blockEl(S, key);
-      if (block && document.activeElement !== block) block.focus();
+      if (block && !to && document.activeElement !== block) block.focus();
     };
     const onKey = (event) => {
       if (event.key !== "Enter" && event.key !== "Escape") return;
@@ -402,17 +410,12 @@
       event.stopPropagation();
       end(event.key === "Enter");
     };
-    const onBlur = () => end(true);
+    const onBlur = (event) => end(true, event.relatedTarget);
     target.addEventListener("keydown", onKey);
     target.addEventListener("blur", onBlur);
   }
 
-  function stepBlock(S, key, dir) {
-    if (key[0] === "k") return;
-    if (diagramModel.outline?.stuck(S.m, key, dir)) return say(S, `${nameOf(S, key)} follows its arrows. Drag its grip.`);
-    if (!diagramOps.step(S.m, key, dir)) return say(S, `${nameOf(S, key)} is already ${dir < 0 ? "first" : "last"}.`);
-    commit(S, `Moved ${nameOf(S, key)} ${dir < 0 ? "up" : "down"}.`);
-  }
+  const stepBlock = (S, key, dir) => key[0] !== "k" && diagramModel.outline.move(S, helpers, key, dir);
 
   function nestBlock(S, key, into) {
     if (key[0] === "k") return;
@@ -446,7 +449,7 @@
     const mod = event.ctrlKey || event.metaKey;
     if (mod && !event.altKey && /^[zy]$/i.test(event.key)) {
       event.preventDefault();
-      //: Not passed on: the app's own Ctrl+Z would undo a second step (measured: one press took a merge and the template before it).
+      //: Not passed on: the app's Ctrl+Z would undo a second step.
       event.stopPropagation();
       return event.shiftKey || /y/i.test(event.key) ? S.io.redo() : S.io.undo();
     }
@@ -458,9 +461,9 @@
       return act();
     }
     if (mod) return;
-    //: N adds a Box, Shift+N the last shape used (1661 D2; R6.13 had the selected block's shape); a letter reads the same with or without Shift otherwise.
+    if (diagramModel.bar.chain(event, S, key, block, addBlock)) return;
     const low = event.key.length === 1 ? event.key.toLowerCase() : event.key;
-    //: 1 to 7 add a shape, Shift+N the last one used (diagram-bar.js, 1661 D2).
+    //: 1 to 9 add a shape, Shift+N the last one used (diagram-bar.js, 1661 D2).
     const picked = diagramModel.bar.key(event);
     if (picked && event.key !== "N") {
       event.preventDefault();
@@ -497,7 +500,7 @@
     return diagramModel.suggest[how](S, helpers);
   }
 
-  //: The connector row's menu and the picker that connects two blocks (diagram-joins.js, lazy): fetched on first use.
+  //: The connector menu and the connect picker (diagram-joins.js, lazy).
   async function joins(S, how, arg) {
     if (!(await ensureModule("diagramJoins"))) return void say(S, "Connectors did not load.");
     return diagramModel.joins[how](S, arg, helpers);
@@ -522,11 +525,22 @@
   function more(S) {
     const rows = [["ph:file-svg Save as SVG", "svg"], ["ph:file-png Save as PNG", "png"], ["ph:image Copy as picture", "picture"], ["ph:copy Copy as Mermaid", "mermaid"], ["ph:code Copy as SVG", "svgtext"]];
     const fold = [];
-    //: Suggest folds in here on a phone: Add, Undo, Redo and this menu are one row at 320 (INBOX 1596 d).
+    //: Suggest folds in here on a phone.
     if (S.suggestBtn && matchMedia(COMPACT).matches) fold.push({ label: "ph:sparkle Suggest…", group: "edit", run: () => suggestMenu(S, S.root.querySelector(".dgm-more button") || S.suggestBtn) });
-    const menu = kebabMenu([...(S.io.menu || []), ...fold, makeMenuItem("ph:keyboard Keyboard shortcuts", "", () => styleDo(S, "shortcuts")), ...rows.map(([label, how]) => makeMenuItem(label, "", () => ensureModule("diagramEmbed").then((ok) => ok && diagramModel.embed.out(how, S.source, S.io.name))))], "More for this diagram");
+    const mine = S.io.menu || [];
+    const menu = kebabMenu([...mine, ...fold, makeMenuItem("ph:keyboard Keyboard shortcuts", "", () => styleDo(S, "shortcuts")), ...rows.map(([label, how]) => makeMenuItem(label, "", () => ensureModule("diagramEmbed").then((ok) => ok && diagramModel.embed.out(how, S.source, S.io.name))))], "More for this diagram");
     menu.classList.add("dgm-more");
+    menu.dataset.rows = mine.map((row) => row.label).join("|");
     return menu;
+  }
+
+  //: The host's rows can depend on the diagram: when they differ after a redraw the menu is rebuilt, keeping the Tab stop.
+  function refreshMore(S) {
+    const old = S.root.querySelector(".dgm-more");
+    if (!old || old.dataset.rows === (S.io.menu || []).map((row) => row.label).join("|")) return;
+    const next = more(S);
+    next.querySelector("button").tabIndex = old.querySelector("button").tabIndex;
+    old.replaceWith(next);
   }
 
   //: The toolbar is diagram-bar.js (lazy, 1661 D2): one row, built from these.
@@ -546,14 +560,14 @@
     S.empty = el("div", "empty-state dgm-empty");
     const start = smallButton("ph:layout Start from a template", "Pick a starting flowchart", () => suggest(S, "templates"), false);
     start.classList.add("accent");
-    //: The three-step walkthrough (diagram-steps.js, 1615 f); each button reaches the pane through these.
+    //: The walkthrough (diagram-steps.js).
     S.empty.append(diagramModel.steps.build(S, { el, commit, add: addBlock, rename: relabel, connect: joinPick }), start);
     S.ghosts = el("div", "dgm-ghosts hidden");
     S.drop = el("div", "dgm-drop hidden");
     S.pane = el("div", "dgm-pane");
     S.pane.setAttribute("aria-label", "Diagram blocks. Press N for a block or G for a group.");
     S.pane.setAttribute("role", "region");
-    //: The next step, one line under the list (and the space under it): it follows what the diagram has so far.
+    //: The next step, one line under the list.
     S.next = el("p", "muted dgm-next");
     S.pane.append(S.tree, S.next, S.empty, S.ghosts, S.drop);
     diagramModel.steps.frame(S, { add: addBlock, connect: joinPick });
@@ -565,6 +579,7 @@
     host.append(root);
     panes.set(root, S);
     S.tree.addEventListener("keydown", (event) => onKey(S, event));
+    root.addEventListener("keydown", (event) => diagramModel.kindbar.historyKey(S, event));
     root.addEventListener("keydown", (event) => diagramModel.bar.rootKey(S, event, { add: addBlock, style: styleDo }));
     S.tree.addEventListener("click", (event) => {
       const block = event.target.closest(".dgm-block");
@@ -606,7 +621,7 @@
   function sync(host, text, S = panes.get(host.querySelector(".dgm"))) {
     if (!S) return null;
     S.source = text;
-    //: More blocks than the pane holds (`diagramOps.MAX`) is the same answer as another kind: the picture and a line.
+    //: More than `diagramOps.MAX` blocks: the picture and a line.
     const read = diagramModel.parse(text);
     const big = Boolean(read && read.nodes.length > diagramOps.MAX);
     const parsed = big ? null : read;
@@ -639,12 +654,14 @@
   let told = "";
 
   async function show(host, io, text) {
-    //: The picture's renderer and the flowchart's toolbar start fetching with the first batch, not after it (R11: cold start).
+    //: The renderer and the toolbar fetch with the first batch.
     const kind = kindOf(text);
     ensureModule("mermaid");
     const early = Promise.all([ensureModule("diagramKindbar"), ...(kind === "flowchart" ? [ensureModule("diagramBar"), ensureModule("diagramSteps"), ensureModule("diagramOutline")] : [])]);
     await Promise.all(["/css/objmove-lazy.css", "/js/obj-ref.js", "/js/obj-drag.js", "/js/diagram-picture.js", "/js/diagram-library.js", "/js/diagram-pointer.js", "/js/diagram-ops.js"].map((file) => lazyScript(file)));
     diagramOps = helpers.ops = diagramModel.ops;
+    Object.assign(SHAPE_LABEL, diagramOps.LABEL);
+    Object.assign(SHAPE_TEXT, diagramOps.TEXT);
     if (typeof OBJ_MODES === "object" && !OBJ_MODES.diagram) OBJ_MODES.diagram = diagramModel.pointer.make(helpers);
     kit.dropMark ||= diagramModel.pointer.dropMark;
     if (kind === "flowchart" && !(await early).every(Boolean)) return host.replaceChildren(el("p", "muted", "The block editor did not load. Source still works."));
@@ -660,21 +677,27 @@
         if (text !== S.source) sync(host, text, S);
       }
     }
-    //: A narrow window or a touch screen gets the phone's palette sheet and the picture's pinch (diagram-touch.js).
-    if (S && matchMedia(COMPACT).matches && (await ensureModule("diagramTouch"))) diagramModel.touch.wire(S);
+    if (S) refreshMore(S);
+    //: The phone's palette sheet and pinch (diagram-touch.js).
+    if (S && (S.k || matchMedia(COMPACT).matches) && (await ensureModule("diagramTouch"))) diagramModel.touch.wire(S);
     //: Zoom, pan and fit for the picture, in every window (diagram-view.js, 1614).
-    if (S && (await ensureModule("diagramView"))) diagramModel.view.wire(S);
-    if (S && !S.k && (await ensureModule("diagramOverlay"))) diagramModel.overlay.wire(S);
+    if (S && ((await ensureModule("vf")) && (await ensureModule("diagramView")))) diagramModel.view.wire(S);
+    //: The shelf of blocks on the picture, once it has its stage (diagram-library.js).
+    if (S && S.fig.parentElement?.classList.contains("dgm-stage")) diagramModel.library.shelf(S, { ...helpers, glyph: shapeGlyph, groupGlyph });
+    //: The other kinds are edited on their picture too (1661 l): their parts become the overlay's boxes first.
+    if (S?.k && (await lazyScript("/js/diagram-seq-canvas.js"))) await diagramModel.seqCanvas?.wire(S);
+    if (S && (!S.k || S.hitAt) && (await ensureModule("diagramOverlay"))) diagramModel.overlay.wire(S);
     if (S && !S.k && (await ensureModule("diagramMulti"))) diagramModel.multi.wire(S, helpers);
     if (S && !S.k && (await ensureModule("diagramCanvas"))) diagramModel.canvas.wire(S, helpers);
     if (S && !S.k && (await ensureModule("diagramEdges"))) diagramModel.edges.wire(S, helpers);
     if (S && !S.k && (await ensureModule("diagramEdgePick"))) diagramModel.edgepick.wire(S, helpers);
     //: The divider between the blocks and the picture (diagram-split.js, 1615 e).
     if (S && (await ensureModule("diagramSplit"))) diagramModel.split.wire(S);
+    if (S && (await ensureModule("diagramLetGo"))) diagramModel.letgo.wire(S, helpers);
     if (told && S) say(S, told);
     told = "";
     return S;
   }
 
-  diagramModel.builder = { show, kindOf, tell: (text) => (told = text) };
+  diagramModel.builder = { show, kindOf, select, styleDo, tell: (text) => (told = text) };
 })();

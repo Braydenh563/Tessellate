@@ -216,9 +216,10 @@ def pinned(session: Session) -> list[Document]:
     ))
 
 def listing(session: Session, like: str | None, limit: int) -> list[Document]:
-    """Every document, shelved ones too, newest edit first; `like` (an escaped
-    LIKE pattern) narrows to a title or text match: the Library's document rows."""
-    stmt = select(Document)
+    """Every document not on the shelf, newest edit first (a shelved one is
+    listed by `shelved`, once); `like` (an escaped LIKE pattern) narrows to a
+    title or text match: the Library's document rows."""
+    stmt = select(Document).where(Document.archived_at.is_(None))
     if like:
         stmt = stmt.where(or_(Document.title.ilike(like, escape=LIKE_ESCAPE), Document.content.ilike(like, escape=LIKE_ESCAPE)))
     return list(session.scalars(stmt.order_by(Document.updated_at.desc()).limit(limit)))

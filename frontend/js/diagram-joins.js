@@ -23,7 +23,7 @@
   ];
   const isKind = (edge, [style, arrow, , both]) => edge.style === style && edge.arrow === arrow && Boolean(edge.both) === Boolean(both);
   //: A shape's icon and word in the picker (R6.9): every block was one square and "Block".
-  const SHAPES = { rect: ["ph:square", "Box"], round: ["ph:rectangle", "Rounded"], stadium: ["ph:pill", "Pill"], circle: ["ph:circle", "Circle"], diamond: ["ph:diamond", "Decision"], hexagon: ["ph:hexagon", "Hexagon"] };
+  const SHAPES = { rect: ["ph:square", "Box"], round: ["ph:rectangle", "Rounded"], stadium: ["ph:pill", "Pill"], circle: ["ph:circle", "Circle"], diamond: ["ph:diamond", "Decision"], hexagon: ["ph:hexagon", "Hexagon"], cylinder: ["ph:database", "Database"], parallelogram: ["ph:parallelogram", "Input or output"] };
   //: The picker's value for "a new block"; a block id never holds a plus.
   const NEW = "+";
   const titleOf = (h, S, id) => h.ops.node(S.m, id)?.text ?? h.ops.group(S.m, id)?.title ?? id;
@@ -56,6 +56,15 @@
           if (text === null) return;
           edge.label = text.trim();
           h.commit(S, edge.label ? `Labelled the connector ${edge.label}.` : "Cleared the connector label.");
+        },
+        group: "edit",
+      },
+      {
+        label: "ph:swap Reverse direction",
+        run: () => {
+          if (S.m.edges.some((e) => e !== edge && e.from === edge.to && e.to === edge.from && e.label === edge.label)) return h.say(S, "A connector already points that way.");
+          [edge.from, edge.to] = [edge.to, edge.from];
+          h.commit(S, `The connector now runs from ${titleOf(h, S, edge.from)} to ${titleOf(h, S, edge.to)}.`);
         },
         group: "edit",
       },

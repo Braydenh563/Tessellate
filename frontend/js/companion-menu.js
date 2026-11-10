@@ -127,9 +127,13 @@ function openNameMarkViewer(seed, { visit = false } = {}) {
   if (visiting) home = nameMarkBuddyVisit(figure);
   if (visiting && !home) figure.appendChild(characterFor(seed).figure());
   if (home) card.appendChild(nameMarkViewerActs(document.getElementById("nm-buddy")));
-  nameMarkViewerFit(figure);
-  requestAnimationFrame(() => nameMarkViewerFit(figure));
-  close.focus();
+  //: **Fitted in the frame, not in the double-click** (lag log: `ondblclick` 127ms, forced layout 104ms): the fit
+  //: reads every part's box and style of a dialog just appended. The first look is the frame's; the focus
+  //: goes in the same frame (a key pressed before it still reaches the dialog's Escape listener).
+  requestAnimationFrame(() => {
+    nameMarkViewerFit(figure);
+    if (overlay.isConnected) close.focus();
+  });
   //: Its lines, one every 7 to 13 seconds while the view is open; not
   //: asleep, not under a line it has just been poked into saying.
   const talk = () => {
@@ -216,6 +220,8 @@ function nameMarkViewerActs(buddy) {
 function nameMarkBuddyMenu(buddy, at = null) {
   if (typeof openMenuAtPoint !== "function") return;
   const face = buddy.querySelector(".nm-buddy-face");
+  //: Its line is put away: the menu opens over it and left "...ne." showing from under it.
+  buddy.querySelector(":scope > .nm-say")?.remove();
   if (nmb.anim && nmb.anim.playState === "running") {
     const drawn = buddy.getBoundingClientRect();
     nmb.anim.cancel();
@@ -335,6 +341,19 @@ function nameMarkBuddyMenu(buddy, at = null) {
       title: `Make it ${name}`,
       run: () => nameMarkBuddySetSize(value),
     })),
+  });
+  //: **A quiet switch where the noise is** (companion dive 1107: it had no quiet entry, and the
+  //: owner calls it distracting): Off is "only blinks and looks"; the default, Fewer, is the way back.
+  const lively = nameMarkBuddyActions() !== "off";
+  items.push({
+    group: "settings",
+    label: lively ? "ph:speaker-slash Quieter" : "ph:speaker-high Livelier",
+    title: lively ? "Reduce actions: off. It only blinks and looks, and still answers you" : "Reduce actions: fewer. It waves and gestures now and then again",
+    //: Answers in its own voice: the row only relabelled itself, which read as nothing happening.
+    run: async () => {
+      await choose("avatar-buddy-actions", lively ? "off" : "fewer");
+      nameMarkSay(buddy, lively ? "Quieter now." : "Livelier again.");
+    },
   });
   items.push({
     group: "settings",
@@ -659,6 +678,71 @@ function mountBuddyPresets() {
   }
 }
 
+//: **The day and the desk, the in-app side** (INBOX 1719 b, 1696 j; the desk's `extras.REACTIONS` rows of the same
+//: names): dusk, the first evening hour, is a stretch; the morning's first key or press of the day a sleepy wave; a
+//: full-screen view left a look back out; a run of typing of 30 s or more that rests 4 s a nod. Played by
+//: `nameMarkBuddyReact` with the world's other rows (Little habits off, reduced motion or a hidden page: none).
+Object.assign(NMB_REACTIONS, {
+  night_falls: { cool: 20 * 60 * 60 * 1000, ms: 2400, world: true, play: ["stretch", "happy", 2400] },
+  morning_hello: { cool: 20 * 60 * 60 * 1000, ms: 2200, world: true, play: ["wave", "sleepy", 2200] },
+  fullscreen_app: { cool: 30000, ms: 1400, world: true, play: ["look", "curious", 1400] },
+  typing_burst: { cool: 5 * 60 * 1000, ms: 1400, world: true, play: ["nod", "happy", 1400] },
+});
+nmb.dayLife = {
+  dusk: 17, morning: [6, 11], burst: 30000, rest: 4000,
+  //: What a key or a press at `now` (a Date) says: the morning hello once a day, and the typing run's bounds.
+  input(now, key) {
+    const s = nmb.dayLife;
+    const t = now.getTime();
+    const day = now.toDateString();
+    const out = [];
+    if (s.hello !== day && now.getHours() >= s.morning[0] && now.getHours() < s.morning[1]) out.push("morning_hello");
+    if (key) s.run = s.run && t - s.run[1] < s.rest ? [s.run[0], t] : [t, t];
+    return out;
+  },
+  //: At `t` ms: the run over and long enough is a burst (said once).
+  rested(t) {
+    const s = nmb.dayLife;
+    if (!s.run || t - s.run[1] < s.rest) return [];
+    const long = s.run[1] - s.run[0] >= s.burst;
+    s.run = null;
+    return long ? ["typing_burst"] : [];
+  },
+  //: Ms to the next dusk from `now` (a Date).
+  toDusk(now) {
+    const at = new Date(now);
+    at.setHours(nmb.dayLife.dusk, 0, 1, 0);
+    if (at <= now) at.setDate(at.getDate() + 1);
+    return at - now;
+  },
+};
+(() => {
+  const s = nmb.dayLife;
+  const dusk = () => setTimeout(() => {
+    nameMarkBuddyReact("night_falls");
+    dusk();
+  }, s.toDusk(new Date()));
+  dusk();
+  const seen = (event) => {
+    const now = new Date();
+    const key = event.type === "keydown";
+    for (const kind of s.input(now, key)) if (nameMarkBuddyReact(kind)) s.hello = now.toDateString();
+    if (key && !s.timer) {
+      const check = () => {
+        const left = s.run ? s.run[1] + s.rest - Date.now() : 0;
+        s.timer = left > 0 ? setTimeout(check, left) : 0;
+        if (left <= 0) for (const kind of s.rested(Date.now())) nameMarkBuddyReact(kind);
+      };
+      s.timer = setTimeout(check, s.rest);
+    }
+  };
+  document.addEventListener("keydown", seen, { capture: true, passive: true });
+  document.addEventListener("pointerdown", seen, { capture: true, passive: true });
+  //: Before the page's own answer to the change (avatars.js: maximised or restored), so a view left reads as a look back.
+  window.addEventListener("fullscreenchange", () => document.fullscreenElement || nameMarkBuddyReact("fullscreen_app"), true);
+})();
+
+
 //: **The companion's mind** (B87c and B88c, the owner, 2026-10-17: "the
 //: companion needs a lot of improvements in behaviour, actions and lifelike
 //: ncp decision making"; "more movement, more transition and actions").
@@ -969,10 +1053,13 @@ function nameMarkBuddyVisit(host) {
   //: places at once (their transitions finished, Atlas's rig set in one
   //: frame) rather than lowering from the hang's raised arms while you look.
   if (nmb.visit.pose !== nmb.pose) {
-    for (const el of buddy.querySelectorAll(".nmb-arm, .nmb-hold, .nmb-leg")) {
-      getComputedStyle(el).transform;
-      for (const anim of el.getAnimations?.() || []) if (anim instanceof CSSTransition) anim.finish();
-    }
+    //: Reads, then writes (lag log: `ondblclick` 127ms, forced layout 104ms): `finish()` on one limb dirtied
+    //: the style the next limb's read had to flush again. One flush for all, then every finish.
+    const limbs = buddy.querySelectorAll(".nmb-arm, .nmb-hold, .nmb-leg");
+    for (const el of limbs) getComputedStyle(el).transform;
+    const moving = [];
+    for (const el of limbs) for (const anim of el.getAnimations?.() || []) if (anim instanceof CSSTransition) moving.push(anim);
+    for (const anim of moving) anim.finish();
     const box = buddy.querySelector(".atl-figure-box");
     if (box?.atlasRig) {
       box.atlasRig.fresh = true;

@@ -122,8 +122,9 @@ _PEOPLE = [
 @pytest.mark.parametrize(("question", "lead", "absent"), [
     # Z12: the sentence that says the work leads.
     ("what does Priya do", "Priya is the product lead for Atlas", None),
-    ("what is Tom's job", "He works on the data team at Atlas", None),
-    ("where does Tom work", "He works on the data team at Atlas", None),
+    #: The same sentence leads; R9-6 says it with its referent ("Tom works", never a bare "He works").
+    ("what is Tom's job", "Tom works on the data team at Atlas", None),
+    ("where does Tom work", "Tom works on the data team at Atlas", None),
     # A labelled list keeps every item, and a named label keeps to itself.
     ("what are my goals for Q1", "From your Goals note: run a 10k, read 12 books.", "Spanish"),
     ("what are my Q2 goals", "From your Goals note: learn Spanish basics.", "10k"),

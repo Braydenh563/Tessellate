@@ -73,8 +73,11 @@
 
   function draw() {
     const name = seed();
-    if (name === seedShown) return;
-    seedShown = name;
+    //: The key holds the parts you chose as well as the name: the same name with a changed look is a new
+    //: drawing (INBOX 1692 k: the card kept the bare name's figure after the profile's look was saved).
+    const key = `${name}|${JSON.stringify(nameMarkOwnFor(name) || {})}`;
+    if (key === seedShown) return;
+    seedShown = key;
     $("desk-figure").replaceChildren(characterFor(name).figure());
     $("desk-pet").setAttribute("aria-label", `${name}, your companion. Click for the menu, right-click for settings, drag to move it.`);
   }
@@ -222,6 +225,8 @@
   }
   const hideRow = () => item("Hide for 10 minutes", "timer", () => leave(() => ask("snooze")));
 
+  //: The row `keepOpen` redraws the menu for: the focus goes back to it, not to the first row.
+  let refocus = "";
   async function openMenu(kind) {
     await probe();
     const menu = $("desk-menu");
@@ -230,6 +235,7 @@
     if (kind === "context") {
       const notes = [];
       if (!overlay && motion?.note) notes.push(note(motion.note));
+      if (overlay && motion?.doing) notes.push(note(`Right now: ${motion.doing}.`));
       if (motion?.still) notes.push(note(`Standing still: ${STILL_WHY[motion.reason] || "movement is off"}.`));
       const look = [];
       if (overlay) look.push(item("Companion", "user-switch", openCompanion));
@@ -237,13 +243,24 @@
       const motionRows = [];
       if (overlay && !locked && motion?.still && motion.reason !== "avatar") motionRows.push(item("Let it walk", "person-simple-walk", () => leave(() => ask("let_it_walk"))));
       if (overlay && motion && typeof motion.stay === "boolean" && !motion.still) {
-        motionRows.push(motion.stay ? item("Roam", "person-simple-walk", () => leave(() => ask("set_stay", false))) : item("Stay here", "push-pin", () => leave(() => ask("set_stay", true))));
+        motionRows.push(motion.stay ? item("Roam", "person-simple-walk", () => keepOpen(() => ask("set_stay", false), "Stay here")) : item("Stay here", "push-pin", () => keepOpen(() => ask("set_stay", true), "Roam")));
       }
       //: Roam over windows: a switch, not a one-way action.
-      if (overlay && motion && typeof motion.roam === "boolean") motionRows.push(toggle("Roam over windows", motion.roam, () => leave(() => ask("set_roam", !motion.roam))));
+      if (overlay && motion && typeof motion.roam === "boolean") motionRows.push(toggle("Roam over windows", motion.roam, () => keepOpen(() => ask("set_roam", !motion.roam), "Roam over windows")));
+      //: How lively it is: one row that steps Calm, Usual, Lively (saved, and the figure follows).
+      if (overlay && motion && typeof motion.lively === "string") {
+        const levels = ["calm", "usual", "lively"];
+        const names = { calm: "Calm", usual: "Usual", lively: "Lively" };
+        const at = Math.max(0, levels.indexOf(motion.lively));
+        motionRows.push(item(`Activity: ${names[levels[at]]}`, "lightning", () => keepOpen(() => ask("set_lively", levels[(at + 1) % levels.length]), "Activity: ")));
+      }
+      //: The in-app Companion size steps (`NMB_SIZES`); a size pulled with the corner handle marks none.
+      const sizeRows = overlay && !locked && typeof motion?.size === "number"
+        ? [["Small", "small", 0.8], ["Medium", "medium", 1], ["Large", "large", 1.3]].map(([label, name, size]) => toggle(label, Math.abs(motion.size - size) < 0.005, () => keepOpen(() => ask("set_figure_size", name), label)))
+        : [];
       const away = [hideRow()];
       away.push(item("Turn off", "power", () => (overlay ? leave(() => ask("hide_companion")) : ask("hide_companion"))));
-      rows = [...notes, ...groups(look, motionRows, away)];
+      rows = [...notes, ...groups(look, motionRows, sizeRows, away)];
     } else {
       const capture = locked
         ? [note("Tessellate is locked. Open it to unlock.")]
@@ -260,19 +277,23 @@
     }
     menu.replaceChildren(...rows);
     show(kind);
-    rows.find((row) => row.tagName === "BUTTON" && !row.disabled)?.focus();
+    const live = rows.filter((row) => row.tagName === "BUTTON" && !row.disabled);
+    const again = refocus;
+    refocus = "";
+    (live.find((row) => again && row.textContent.startsWith(again)) || live[0])?.focus();
   }
 
   //: The right-click menu's "Companion": every choice the app's Appearance offers
   //: (Atlas masculine or feminine, matching your faces, You, the chat's persona, your
   //: own character, each saved companion), the current one marked. A choice is written
   //: to the app's own prefs by the host and the figure restarts with the new look. The
-  //: figure on the desktop is Atlas, so the others are listed but cannot be picked here.
+  //: overlay draws all of them (the app window renders the frames), so every row can be picked.
   async function openCompanion() {
     const got = await Promise.resolve(ask("companion_choices")).catch(() => null);
     const rows = [item("Back", "caret-left", () => openMenu("context"))];
     if (got?.locked) rows.push(note("Tessellate is locked. Open it to unlock, then choose."));
     else if (!got?.options?.length) rows.push(note("Tessellate did not answer. Open it and try again."));
+    if (got?.note) rows.push(note(got.note));
     let group = "";
     for (const option of got?.options || []) {
       if (option.group !== group) {
@@ -288,6 +309,18 @@
     $("desk-menu").replaceChildren(...rows);
     show("context");
     rows.find((row) => row.tagName === "BUTTON" && !row.disabled)?.focus();
+  }
+
+  //: A choice that changes a setting (Activity, Stay here or Roam, Roam over windows, a size) keeps the menu
+  //: open, drawn again with the new tick and the focus back on that row (INBOX 1696); a request that moves the
+  //: figure or opens something closes it (`leave`).
+  async function keepOpen(action, row) {
+    try {
+      await action();
+    } finally {
+      refocus = row;
+      await openMenu("context");
+    }
   }
 
   //: Run `action` first, then rest: the click that brought the app forward is the

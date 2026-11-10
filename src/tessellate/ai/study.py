@@ -208,7 +208,10 @@ def bullets(text: str) -> list[str]:
 
 
 def open_tasks(content: str) -> list[str]:
-    return [clean(m.group(2)) for ln in (content or "").splitlines() if (m := _CHECK.match(ln)) and m.group(1) == " "]
+    ticked = [clean(m.group(2)) for ln in (content or "").splitlines() if (m := _CHECK.match(ln)) and m.group(1) == " "]
+    if ticked or not realise.todo_titled(title_of(content)):
+        return ticked
+    return bullets(content)
 
 
 # --- cards ---------------------------------------------------------------------

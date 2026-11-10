@@ -43,7 +43,8 @@ const LAG = { queue: [], timer: 0, lastInput: "", lastInputAt: 0, lastAt: {}, ba
 const LAG_RAF_BUDGET_MS = 120;
 const LAG_RAF_SECONDS = 3;
 const LAG_RECENT_MS = 5 * 60 * 1000;
-const LAG_RAF = { on: true, fns: new WeakMap(), src: new Map(), srcN: 0, bucket: new Map(), hot: new Map(), owners: new Map(), second: 0 };
+//: A frame callback this slow is kept (owner, start, ms) so a long-frame row can name it (`LAG_RAF.at`).
+const LAG_RAF = { on: true, slowMs: 4, slow: [], fns: new WeakMap(), src: new Map(), srcN: 0, bucket: new Map(), hot: new Map(), owners: new Map(), second: 0 };
 const LAG_FRAME_MS = 200;
 const LAG_INPUT_MS = 300;
 const LAG_REQUEST_MS = 3000;
@@ -78,8 +79,11 @@ function lagScriptCause(scripts, frame) {
       const layout = s.forcedStyleAndLayoutDuration >= 20 ? ` (forced layout ${Math.round(s.forcedStyleAndLayoutDuration)}ms)` : "";
       //: The sampler's own wrapper runs every animation callback, so LoAF names this file for
       //: them: say what they are and which loop cost most this second.
-      const file = lagFile(s.sourceURL) === "lag-watch.js" ? `animation loops (top: ${lagRafTop()})` : `${lagFile(s.sourceURL)} ${name}`;
-      return `${file} ${Math.round(s.duration)}ms${layout}${lagApiWho(name, frame)}`;
+      //: Better still, the callback that ran inside this script's own window (`LAG_RAF.at`).
+      const wrapped = lagFile(s.sourceURL) === "lag-watch.js";
+      const ran = wrapped ? LAG_RAF.at(s.startTime, s.startTime + s.duration) : null;
+      const file = ran ? ran.owner : wrapped ? `animation loops (top: ${lagRafTop()})` : `${lagFile(s.sourceURL)} ${name}`;
+      return `${file} ${Math.round(ran ? ran.ms : s.duration)}ms${layout}${lagApiWho(name, frame)}`;
     })
     .join("; ");
 }
@@ -266,6 +270,20 @@ function lagRafOwner(fn) {
   return owner;
 }
 
+//: Keeps the last few slow callbacks; the ring is bounded, so a busy loop costs no memory.
+LAG_RAF.note = (owner, t0, ms) => {
+  LAG_RAF.slow.push({ owner, t0, ms });
+  if (LAG_RAF.slow.length > 16) LAG_RAF.slow.shift();
+};
+
+//: The slowest kept callback that started inside [from, to]: what the wrapper's LoAF row stands for
+//: (it showed `FrameRequestCallback @lag-watch.js`, the wrapper's own name, for every loop).
+LAG_RAF.at = (from, to) => {
+  let best = null;
+  for (const r of LAG_RAF.slow) if (r.t0 >= from - 1 && r.t0 <= to + 1 && (!best || r.ms > best.ms)) best = r;
+  return best;
+};
+
 function lagRafTop() {
   let top = "none";
   let most = 0;
@@ -303,6 +321,7 @@ function lagRafInstall() {
         cb(t);
       } finally {
         const ms = performance.now() - t0;
+        if (ms >= LAG_RAF.slowMs) LAG_RAF.note(owner, t0, ms);
         const s = LAG_RAF.bucket.get(owner) || { n: 0, ms: 0 };
         s.n += 1;
         s.ms += ms;
@@ -399,7 +418,7 @@ function lagStart() {
   LAG_RAF.on = prefs.get("lagSampler", "on") !== "off";
   lagRafInstall();
   lagErrorsStart();
-  onSettingsBody(lagWireSettings);
+  onSurface("settings", lagWireSettings);
   for (const type of ["pointerdown", "keydown"]) {
     document.addEventListener(type, (e) => { LAG.lastInput = `${type} ${lagTarget(e.target)}`; LAG.lastInputAt = Date.now(); }, { capture: true, passive: true });
   }

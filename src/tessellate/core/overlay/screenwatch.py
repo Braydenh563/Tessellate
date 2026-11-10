@@ -12,15 +12,29 @@ from itertools import islice
 from pathlib import Path
 from typing import Any, Callable
 
+#: No count has come back since the last poll (a count can come back as None: no folder).
+_UNSET: Any = object()
+
 logger = logging.getLogger(__name__)
 
 EVERY = 2.0
+#: A window that moved this many px between two scans, twice running, is being dragged.
+DRAG_MIN = 24
 #: Battery percent that is low, and the one it must climb back past before it can say so again.
 LOW, RECOVERED = 20, 30
 #: A download folder entry still being written ends in one of these.
 #: The folder is looked at this many entries deep and this often (a huge folder costs a bounded read, rarely).
 SCAN_CAP, DOWNLOADS_EVERY = 3000, 10.0
+#: Input older than this (s, ten minutes: the figure's sit, `engine.IDLE_SIT`) is an absence, and the next input is the person coming back.
+AWAY_AFTER = 600.0
+#: ...and input this fresh (s, a few reads of the 0.5 Hz typing check) is the return.
+BACK_WITHIN = 5.0
 PARTIAL = (".crdownload", ".part", ".tmp", ".download", ".partial")
+#: The part of the day (INBOX 1719 b; the catalogue's `phases`): the hour dusk falls (its chime is `night_falls`, a stretch)
+#: and the morning's hours, in which the day's first input (or the first back from an absence) is `morning_hello`.
+DUSK, MORNING = 17, (6, 11)
+#: Typing this long (s, gaps under `BURST_GAP` s) that then rests `BURST_GAP` s is a burst finished (`typing_burst`, a nod).
+BURST_MIN, BURST_GAP = 30.0, 4.0
 
 
 def downloads_count(folder: Path | None = None) -> int | None:
@@ -51,16 +65,59 @@ class ScreenWatch:
 
     def __init__(
         self, foreground: Callable[[], int | None] | None = None, battery: Callable[[], tuple[int, bool] | None] | None = None,
-        downloads: Callable[[], int | None] = downloads_count,
+        downloads: Callable[[], int | None] = downloads_count, run: Callable[[Callable[[], None]], Any] | None = None,
     ) -> None:
         self.foreground, self.battery, self.downloads = foreground, battery, downloads
+        #: Where the folder is counted: the runner hands it to a worker (a sleeping or synced folder must not stall a
+        #: frame, the 1678 review); none runs it in the poll.
+        self.run = run or (lambda fn: fn())
+        self._counting = False
+        self._counted: Any = _UNSET
         self.next_at = 0.0
         self.fg: int | None = None
         self.windows: set[int] | None = None
+        #: key -> (frame, maximised, steps moved in a row) of the last scan, for a drag and a maximise.
+        self.frames: dict[int, tuple[tuple[int, int, int, int], bool, int]] | None = None
         self.hour: int | None = None
         self.low = False
         self.files: int | None = None
         self.files_at = 0.0
+        self.away = False
+        #: The day (of the year) of the last morning hello, the day the last poll read, and the typing run under way.
+        self.hello_day: int | None = None
+        self.day: int | None = None
+        self.burst: tuple[float, float] | None = None  # (first key, last key) of the run
+        #: The window (its key) the last event of each kind was about, so the figure can look toward it (INBOX 1700).
+        self.subject: dict[str, int] = {}
+
+    def input_seen(self, now: float, age: float | None) -> list[str]:
+        """The seconds since the last key or mouse input anywhere (None: unreadable). Said once when input comes back
+        after `AWAY_AFTER` s without any: the figure's welcome back. Only the age is used, never what was typed."""
+        if age is None:
+            return []
+        first = self.day is not None and self.hello_day != self.day and self.hour is not None and MORNING[0] <= self.hour < MORNING[1]
+        if age >= AWAY_AFTER:
+            self.away = True
+        elif (self.away or first) and age < BACK_WITHIN:
+            self.away = False
+            if first:  # the first of the morning: a wave and a yawn, which is also the welcome back
+                self.hello_day = self.day
+                return ["morning_hello"]
+            return ["idle_return"]
+        return []
+
+    def typing_seen(self, now: float, typing: bool) -> list[str]:
+        """Whether keys are going in now (the runner's 0.5 Hz read): a run of `BURST_MIN` s that has rested `BURST_GAP` s is
+        said once (`typing_burst`). Only that keys went in, never which."""
+        if typing:
+            first = self.burst[0] if self.burst and now - self.burst[1] < BURST_GAP else now
+            self.burst = (first, now)
+            return []
+        if self.burst and now - self.burst[1] >= BURST_GAP:
+            first, last = self.burst
+            self.burst = None
+            return ["typing_burst"] if last - first >= BURST_MIN else []
+        return []
 
     def windows_seen(self, keys: Any) -> list[str]:
         """The window list a scan read: what opened and closed since the last one (the first is only remembered)."""
@@ -69,24 +126,63 @@ class ScreenWatch:
         if self.windows is not None:
             if seen - self.windows:
                 out.append("window_opened")
+                self.subject["window_opened"] = max(seen - self.windows)
             if self.windows - seen:
                 out.append("window_closed")
         self.windows = seen
         return out
 
-    def poll(self, now: float, hour: int, minute: int = 0) -> list[str]:
-        """The events of this tick (empty before `EVERY` has passed)."""
+    def states_seen(self, wins: Any) -> list[str]:
+        """What the windows did since the last scan (B7): one dragged (it moved on two scans running with its size
+        unchanged, said once per drag), one maximised, one put back. Keys, frames and flags only, never a title."""
+        now: dict[int, tuple[tuple[int, int, int, int], bool, int]] = {}
+        out: list[str] = []
+        before = self.frames
+        for w in wins:
+            rect, zoomed = tuple(w.rect), bool(w.hang)
+            steps = 0
+            old = before.get(w.key) if before is not None else None
+            if old is not None:
+                (ol, ot, orr, ob), was_zoomed, was_steps = old
+                same_size = (orr - ol, ob - ot) == (rect[2] - rect[0], rect[3] - rect[1])
+                moved = same_size and (abs(rect[0] - ol) + abs(rect[1] - ot)) >= DRAG_MIN
+                steps = was_steps + 1 if moved else 0
+                said = ["window_dragged"] if steps == 2 else []
+                if zoomed and not was_zoomed:
+                    said.append("window_maximised")
+                elif was_zoomed and not zoomed:
+                    said.append("window_restored")
+                out += said
+                self.subject.update({kind: w.key for kind in said})
+            now[w.key] = (rect, zoomed, steps)  # type: ignore[assignment]
+        self.frames = now
+        return out
+
+    def forget(self) -> None:
+        """After a stall (a suspend, a full-screen app): what changed while away is not news, so the next
+        reads are only remembered."""
+        self.fg, self.windows, self.frames, self.files, self._counted = None, None, None, None, _UNSET
+
+    def poll(self, now: float, hour: int, minute: int = 0, screen: bool = True, day: int | None = None) -> list[str]:
+        """The events of this tick (empty before `EVERY` has passed). `screen` False (the person turned
+        "Roam over windows" off) reads neither the foreground window nor the downloads folder."""
         if now < self.next_at:
             return []
         self.next_at = now + EVERY
         out: list[str] = []
-        out += self._foreground()
+        if screen:
+            out += self._foreground()
+        else:
+            self.fg, self.files, self._counted = None, None, _UNSET
+        if day is not None:
+            self.day = day
         if self.hour is not None and hour != self.hour and minute < 2:
-            out.append("hour_chime")
+            out.append("night_falls" if hour == DUSK else "hour_chime")
         if self.hour is None or minute < 2:
             self.hour = hour
         out += self._battery()
-        out += self._downloads(now)
+        if screen:
+            out += self._downloads(now)
         return out
 
     def _foreground(self) -> list[str]:
@@ -121,10 +217,28 @@ class ScreenWatch:
         return []
 
     def _downloads(self, now: float) -> list[str]:
-        if now < self.files_at:
+        if now >= self.files_at and not self._counting:
+            self.files_at = now + DOWNLOADS_EVERY
+            self._counting = True
+            try:
+                self.run(self._count)
+            except Exception:  # noqa: BLE001 - no worker to count on (thread start refused) is no event
+                #: `_count` never ran, so nothing else would clear the flag and
+                #: the folder would never be counted again.
+                self._counting = False
+                logger.debug("overlay: downloads count not started", exc_info=True)
+        if self._counted is _UNSET:
             return []
-        self.files_at = now + DOWNLOADS_EVERY
-        n = self.downloads()
+        n, self._counted = self._counted, _UNSET
         out = ["download_done"] if n is not None and self.files is not None and n > self.files else []
         self.files = n
         return out
+
+    def _count(self) -> None:
+        try:
+            n = self.downloads()
+        except Exception:  # noqa: BLE001 - an unreadable folder is no event
+            logger.debug("overlay: downloads unreadable", exc_info=True)
+            n = None
+        self._counted = n
+        self._counting = False

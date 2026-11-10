@@ -258,7 +258,9 @@ def test_a_save_failure_is_shown_not_swallowed() -> None:
     missed; before this it was an unhandled rejection (a console error, no
     UI at all) rather than something the person editing the persona could
     see and fix."""
-    body = _function(SHEETS, "renderPersonas")
+    # The closure's indent removed: personas-pane.js is wrapped in one closure (audit row 37a), which added two spaces to every line
+    # and pushed the catch past the 2600-character window; the window measures the handler, not its indent.
+    body = re.sub(r"^  ", "", _function(SHEETS, "renderPersonas"), flags=re.M)
     save_at = body.index('"Save"')
     save_block = body[save_at : save_at + 2600]
     assert "try {" in save_block

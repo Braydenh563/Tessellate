@@ -297,7 +297,7 @@ def _stats(session: Session, arg: str, now: datetime) -> str:
     tags = {t for _, _, raw in rows for t in _tags_of(raw)}
     newest = max(d for _, d, _ in rows)
     run = _streak(days, now.date())
-    said = f"You have {realise.count_noun(len(rows), 'note')} and {words:,} words, {realise.count_noun(len(tags), 'tag')}, written on {realise.count_noun(len(days), 'day')}. Your newest note is from {_day(newest)} {newest.year}"
+    said = f"You have {realise.count_noun(len(rows), 'note')} and {words:,} words, {realise.count_noun(len(tags), 'tag')}, written on {realise.count_noun(len(days), 'day')}. Your newest note is from {'today' if newest.date() == now.date() else f'{_day(newest)} {newest.year}'}"
     return said + (f", and you have written {realise.count_noun(run, 'day', article=True)} running." if run > 1 else ".")
 
 

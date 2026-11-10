@@ -24,6 +24,8 @@ from tests._help_text import help_chat_text
 import re
 from html.parser import HTMLParser
 from pathlib import Path
+
+from tests import _js_scope
 from tests._app_js import app_js_family, app_js_text, frontend_text, with_pieces, documents_text
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -2406,7 +2408,7 @@ def test_a_folded_settings_group_is_keyed_and_remembered() -> None:
         firsts.setdefault(pane, " open" in attrs)
     assert all(firsts.values()), f"a pane whose first fold starts closed: {firsts}"
     js = with_pieces("settings.js")
-    assert "onSettingsBody(wireSettingsFolds);" in js, "the folds' open state is remembered by wireSettingsFolds"
+    assert 'onSurface("settings", wireSettingsFolds);' in js, "the folds' open state is remembered by wireSettingsFolds"
 
 
 def test_a_folded_group_of_settings_is_the_shared_disclosure_recipe() -> None:
@@ -5573,10 +5575,11 @@ def test_a_changed_setting_is_marked_by_the_rows_recipe():
     #: 2026-10-11: an inset bar on the text edge clashed with the label).
     rule = re.search(r"#settings-modal \.setting-modified::before \{([^}]*)\}", css)
     assert rule and "background: var(--accent-text)" in rule.group(1)
-    #: Two gutters from a plain row's text edge; a padded row (switch, check)
+    #: One token from a plain row's text edge; a padded row (switch, check)
     #: is one padding nearer, so every recipe's bar lands on one x (INBOX
-    #: 1610, tests/test_settings_row_bar.py).
-    assert "inset-inline-start: calc(-2 * var(--space-3))" in rule.group(1) and "border:" not in rule.group(1)
+    #: 1610; intent moved by 1696 c: two gutters sat on the group's border;
+    #: tests/test_settings_row_bar.py).
+    assert "inset-inline-start: calc(-1 * var(--setting-bar-inset))" in rule.group(1) and "border:" not in rule.group(1)
 
 
 def test_one_calendar_grid_of_dom_cells() -> None:
@@ -6907,7 +6910,8 @@ def test_a_diagram_is_edited_as_blocks():
     body = re.sub(r"//.*", "", code)
     assert body.count('"role", "tree"') == 1
     assert not re.search(r"innerHTML|insertAdjacentHTML|outerHTML|DOMParser", body)
-    drag = (ROOT / "frontend" / "js" / "obj-drag.js").read_text(encoding="utf-8")
+    #: obj-drag.js is one closure now (ranked row 37a); these tests slice or run its private functions, so they read it as it was before it was wrapped (`_js_scope.unwrapped`): same code, same assertions.
+    drag = _js_scope.unwrapped((ROOT / "frontend" / "js" / "obj-drag.js").read_text(encoding="utf-8"))
     seed = drag[drag.index("function objDragSeed(event) {") :]
     seed = seed[: seed.index("\n}\n")]
     assert "OBJ_MODES[name].seed?.(event)" in seed
@@ -7414,7 +7418,7 @@ def test_the_diagram_zoom_bar_is_a_plain_corner_dock():
     rule = css[css.index(".dgm-zoom {") : css.index("}", css.index(".dgm-zoom {"))]
     assert "position: absolute;" in rule and "box-shadow: var(--shadow-md);" in rule and "--modal-bg" in rule
     # Every control is a button with a title (the icon-only ones become aria-labels).
-    assert view.count("smallButton(") == 4
+    assert view.count("smallButton(") == 3 and "valueField(levelHost" in view  # the fourth is the typeable readout (INBOX 1694 b)
     assert "A zoom control on a picture that scrolls" in (ROOT / "docs" / "DESIGN.md").read_text(encoding="utf-8")
 
 
@@ -7443,6 +7447,13 @@ def test_a_split_inside_a_dialog_or_page_is_the_sidebar_handle_on_a_grid():
         if js.name.startswith("diagram-") and js.name != "diagram-split.js":
             assert 'className = "sidebar-resize' not in js.read_text(encoding="utf-8"), js.name
     assert "A split inside a dialog or page" in (ROOT / "docs" / "DESIGN.md").read_text(encoding="utf-8")
+    # 1661 m: each side folds to a rail, one kept value so one side always shows, and no other diagram file folds a panel.
+    for needle in ('"ghost small icon-only dgm-fold"', "`ghost dgm-rail`", '"aria-keyshortcuts", key', 'const FOLD = "diagram.fold"', '"BracketLeft"'):
+        assert needle in split, needle
+    assert "grid-template-columns: 2rem minmax(0, 1fr);" in css and "writing-mode: vertical-rl;" in css
+    for js in JS:
+        if js.name.startswith("diagram-") and js.name != "diagram-split.js":
+            assert "dgm-rail" not in js.read_text(encoding="utf-8") and "dgm-no-outline" not in js.read_text(encoding="utf-8"), js.name
 
 
 def test_the_edge_handle_and_the_rename_input_are_the_recipe():
@@ -7534,3 +7545,118 @@ def test_what_an_answer_carries_is_one_foot_row() -> None:
     assert kit.count('bar.className = "answer-foot-bar"') == 1
     design = (ROOT / "docs" / "DESIGN.md").read_text(encoding="utf-8")
     assert "**An answer's foot**" in design and "`answerFootGather`" in design
+def test_a_message_sent_mid_reply_waits_in_the_composer_queue():
+    """DESIGN.md, "One composer queue" (CHAT_PLAN B3): every chat surface makes its queue from `composerQueue`, none disables its box mid-reply, one painter."""
+    js = ROOT / "frontend" / "js"
+    texts = {p.name: p.read_text(encoding="utf-8") for p in js.glob("*.js")}
+    for name, made in (("palette.js", 'composerQueue("chat", chatQueue)'), ("palette.js", 'composerQueue("agent", {'), ("help-chat.js", 'composerQueue("guide", {')):
+        assert made in texts[name], name
+    assert [n for n, t in texts.items() if "composerQueue.paint = " in t] == ["reply-kit.js"]
+    assert [n for n, t in texts.items() if 'className = "chat-queue"' in t] == ["reply-kit.js"]
+    for name, box in (("palette.js", "cmdPaletteInput"), ("help-chat.js", '$("help-chat-input")'), ("chat-turn.js", "input")):
+        assert f"{box}.disabled = true" not in texts[name] and f"{box}.disabled = busy" not in texts[name], name
+    assert "One composer queue" in (ROOT / "docs" / "DESIGN.md").read_text(encoding="utf-8")
+
+
+def test_a_zoom_readout_is_a_value_field():
+    """DESIGN.md, "A number you read and may type" (INBOX 1694 b): the viewer, the diagram view and the board's zoom
+    and page number are `valueField`s, so a person can type 150 and Enter or pick from the list. A readout written
+    as a bare `%` text is the drift; the files that still have one are frozen and may only fall."""
+    js = ROOT / "frontend" / "js"
+    for name in ("lightbox-view.js", "diagram-view.js", "whiteboard.js"):
+        assert "valueField(" in (js / name).read_text(encoding="utf-8"), name
+    field = (js / "value-field.js").read_text(encoding="utf-8")
+    # Typeable, announced, restorable, and its list is the app's menu rather than a new one.
+    # Intent moved (PR 216 review): the field still sets a phone keyboard; which one now follows what it accepts
+    # (numeric for whole numbers from zero, decimal for fractions, text where a minus is), see test_value_field_review_216.py.
+    for needle in ('input.inputMode = ', 'setAttribute("aria-label"', '"Escape"', "kebabMenu(", "onCommit"):
+        assert needle in field, needle
+    assert 'role="menu"' not in field and "style." not in field
+    assert "A number you read and may type" in (ROOT / "docs" / "DESIGN.md").read_text(encoding="utf-8")
+    readout = re.compile(r"textContent = `[^`]*%`")
+    frozen = {
+        "documents.js": 1, "graph.js": 1, "library.js": 2, "settings-controls.js": 5, "settings-panes.js": 1,
+        "settings.js": 5, "suggestions-inbox.js": 1, "whiteboard-format.js": 2,
+    }
+    found = {}
+    for path in JS:
+        count = len(readout.findall(path.read_text(encoding="utf-8")))
+        if count:
+            found[path.name] = count
+    over = {k: v for k, v in found.items() if v > frozen.get(k, 0)}
+    assert over == {}, f"a new bare percent readout: build it with valueField ({over})"
+
+
+def test_every_slider_with_a_readout_is_a_value_field():
+    """INBOX 1694 c (the owner: "type in values for the thickness slider ... same with any other sliders"): a range
+    input's readout is replaced by a typeable field the first time the pointer or focus reaches it
+    (`valueField.range`, value-field.js), found from the slider by `output[for]`, `<id>-value` or `<id>-out`. A
+    readout the finder cannot reach, or a slider built in script with a bespoke number, is the drift."""
+    html = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
+    app = app_js_text()
+    field = (ROOT / "frontend" / "js" / "value-field.js").read_text(encoding="utf-8")
+    # The hook: one delegated listener, then the module upgrades every slider already drawn.
+    lazy = (ROOT / "frontend" / "js" / "lazy-entries.js").read_text(encoding="utf-8")
+    # Pointer and keyboard both fetch it (a keyboard-only user never hovers), and only on a range input: a plain
+    # number box has no readout the recipe owns, so it does not pay for the module.
+    assert lazy.count('"[type=range]", "vf"') == 2 and 'warmOnFirst("focusin", "[type=range]", "vf")' in lazy and "input[max]" not in lazy and "vf:" in app
+    # A surface that writes a readout in code is re-read on the next reach, or by an explicit refresh.
+    assert "valueField.refresh" in field and "vfRefresh" in field
+    for name in ("settings.js", "settings-panes.js"):
+        assert "valueField?.refresh()" in (ROOT / "frontend" / "js" / name).read_text(encoding="utf-8"), name
+    for needle in ('dispatchEvent(new Event("input"', 'dispatchEvent(new Event("change"', "slider.min", "slider.max", "slider.step", "ArrowUp"):
+        assert needle in field, needle
+    ids = [a or b for a, b in re.findall(r'<input[^>]*type="range"[^>]*?id="([^"]+)"|<input[^>]*?id="([^"]+)"[^>]*type="range"', html)]
+    assert len(ids) >= 24
+    # Every `.slider-value` readout is named for its slider, so the finder reaches it.
+    for readout in re.findall(r'class="slider-value" id="([^"]+)"', html):
+        base = readout[: -len("-value")]
+        assert base in ids or base + "-slider" in ids, readout
+    # A static slider with neither a readout nor `data-unit` (which asks for a field after it) is a scrubber or has its
+    # own number box; the list is frozen and may only fall.
+    bare = sorted(
+        i for i in ids
+        if f'id="{i}-value"' not in html and f'id="{i}-out"' not in html and f'for="{i}"' not in html
+        and not re.search(rf'id="{re.escape(i)}"[^>]*data-unit=|data-unit=[^>]*id="{re.escape(i)}"|type="range" id="{re.escape(i)}" data-unit', html)
+        and i.replace("-slider", "") + "-value" not in html.replace('id="', " ")
+    )
+    assert bare == [], bare  # graph-time-slider's date label is left alone in code (see the remaining list)
+    # The history scrubber is a field that reads "3 of 12": its length is read live, since the board grows it.
+    assert 'id="wb-history-slider" data-unit="" data-value-of' in html and 'hasAttribute("data-value-of")' in field
+    # Sliders built in script: the files that draw one are frozen.
+    built = sorted(
+        p.name for p in JS if re.search(r'type = "range"|type: "range"', p.read_text(encoding="utf-8"))
+    )
+    assert built == ["meetings.js", "settings-health.js", "sketch-pad.js", "whiteboard-format.js"], built
+
+
+def test_a_picked_sidebar_row_keeps_a_row_of_room():
+    """INBOX 1696 e: a row picked or walked to at a sidebar's edge is brought in by the one helper,
+    `nearestScrollParent.reveal`, with its own height of room (tests/test_row_room_1696.py runs the arithmetic)."""
+    design = (ROOT / "docs" / "DESIGN.md").read_text(encoding="utf-8")
+    assert "**`nearestScrollParent.reveal(row)`**" in design and "tests/test_row_room_1696.py" in design
+    js = ROOT / "frontend" / "js"
+    settings = (js / "settings.js").read_text(encoding="utf-8")
+    helper = settings.split("nearestScrollParent.reveal = function revealRow(", 1)[1].split("\n};\n", 1)[0]
+    #: The room is the row's own height, not a pad in pixels.
+    assert "Math.min(at.height," in helper and "box.scrollTo(" in helper
+    #: A sidebar's own follow and the trees' keys never scroll by hand again beside it.
+    find = (js / "settings-find.js").read_text(encoding="utf-8")
+    follow = find.split("function settingsNavFollow(link) {", 1)[1].split("\n}\n", 1)[0]
+    assert "nearestScrollParent.reveal(" in follow and "scrollTo(" not in follow and "scrollIntoView" not in follow
+    library = (js / "library.js").read_text(encoding="utf-8")
+    tree = library.split("function contentsTreeKeys(event) {", 1)[1].split("\n}\n", 1)[0]
+    assert "nearestScrollParent.reveal(target)" in tree and "scrollIntoView" not in tree
+
+
+#: Files that still decorate a built menu's rows by index into `:scope > .menu-item`. A glyph on a menu row rides on its
+#: item (`lead`, the kebabMenu recipe), so a regrouped menu keeps it on the right row; these may only fall, never grow.
+INDEX_MATCHED_MENU_ROWS = {"diagram-joins.js", "diagram-builder.js", "diagram-kindbar.js", "library.js"}
+
+
+def test_a_menu_rows_glyph_rides_on_its_item_not_on_its_index() -> None:
+    js = ROOT / "frontend" / "js"
+    now = {p.name for p in js.glob("*.js") if 'querySelectorAll(":scope > .menu-item")' in p.read_text(encoding="utf-8")}
+    assert now <= INDEX_MATCHED_MENU_ROWS, f"{sorted(now - INDEX_MATCHED_MENU_ROWS)} match menu rows by index; give the item a `lead` instead"
+    assert 'typeof item.lead === "function"' in (js / "sheets-selects.js").read_text(encoding="utf-8")
+    assert "`lead`" in (ROOT / "docs" / "DESIGN.md").read_text(encoding="utf-8")

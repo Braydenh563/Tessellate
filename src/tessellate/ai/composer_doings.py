@@ -23,7 +23,7 @@ _SELF = r"(?:do|did|have|has|does) i"
 _ASKS = (
     ("often", re.compile(rf"^how often {_SELF} (?P<v>[a-z]+)(?P<r>.*)$")),
     ("count", re.compile(rf"^how many times {_SELF} (?P<v>[a-z]+)(?P<r>.*)$")),
-    ("count", re.compile(rf"^how many (?P<v>[a-z]+?)s {_SELF} (?:do|done|go on|gone on|have|had|log|logged|manage|managed)(?P<r>.*)$")),
+    ("count", re.compile(rf"^how many (?P<v>[a-z]+?)s {_SELF} (?:done|do|go on|gone on|have|had|logged|log|managed|manage)\b(?P<r>.*)$")),
     #: "How far" and "how many km" are `composer_money`'s measure sums.
     ("total", re.compile(rf"^how much {_SELF} (?P<v>[a-z]+)(?P<r>.*)$")),
 )

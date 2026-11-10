@@ -311,15 +311,16 @@ def test_the_agents_field_stays_open_with_no_model():
     """AGENT_SKILLS_REFORM "Deepened 2026-10-10" row 1 replaces decision 11's
     "visible, disabled" for the agent: with no model it runs acts and
     readings (`ai/starter_acts.py`), so neither the field nor a starter is
-    disabled, and `cmdPaletteBusy` closes the field only while a run is in
-    hand."""
+    disabled. `cmdPaletteBusy` closed the field while a run was in hand; since
+    CHAT_PLAN B3 (the owner: "I cant type in the text box while the popup agent
+    is respondning") it never does: a send mid-run waits in the composer queue."""
     start = APP.index("function syncAgentPaletteAvailability(")
     body = APP[start : APP.index("\n}\n", start)]
     assert "disabled" not in body
 
     start = APP.index("function cmdPaletteBusy(")
     busy = APP[start : APP.index("\n}\n", start)]
-    assert "cmdPaletteInput.disabled = busy;" in busy
+    assert "cmdPaletteInput.disabled" not in busy
 
 
 # --- links the AI writes (CHAT_PLAN.md decision 12, INBOX 172) ----------------

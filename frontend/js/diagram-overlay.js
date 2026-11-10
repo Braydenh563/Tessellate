@@ -2,7 +2,9 @@
 // registered at the foot of documents-mermaid.js and asked for by diagram-builder.js's `show` for a flowchart, after the
 // zoom (diagram-view.js) has made the stage. One box per drawn node sits over the picture, placed from `S.hit` (the node
 // boxes `diagramModel.picture.boxes` read off the SVG) through the image's rectangle, so it follows every zoom, pan and
-// redraw. It is a sibling of the figure, not a child: `mermaidFill` and the empty state replace the figure's children.
+// redraw. It is a child of the figure, in the picture's own scrolled coordinates (INBOX 1661 g): a scroll of the pane moves the
+// boxes, rings, handles and the name field with the picture itself, with no redraw to lag or to miss a scroll that resets after a
+// redraw. `mermaidShow` keeps it when it swaps the image; the empty and failure states drop it and `draw` puts it back.
 // The boxes never take a press (the picture still pans and a click still selects through the builder); hover and
 // selection are drawn on them. The selection is read from the blocks list's `aria-selected`, which `S.sel` and `S.picked`
 // already write, so the two stay in step with no hook in the builder.
@@ -47,20 +49,38 @@
   function wire(S) {
     const fig = S?.fig;
     const stage = fig?.parentElement;
-    if (!fig || S.k || !stage?.classList.contains("dgm-stage") || stage.querySelector(".dgm-overlay")) return;
+    //: A flowchart's, and another kind's once its picture file (diagram-seq-canvas.js, diagram-tree-canvas.js) names its parts (`S.hitAt`).
+    if (!fig || (S.k && !S.hitAt) || !stage?.classList.contains("dgm-stage") || fig.dataset.overlay) return;
+    //: Once per figure, not once per layer in it: a picture that went away (every block deleted) took the layer out, and the next draw made a second one while the first still painted (6 boxes for 3 blocks).
+    fig.dataset.overlay = "1";
     const layer = document.createElement("div");
     layer.className = "dgm-overlay";
     layer.setAttribute("aria-hidden", "true");
-    stage.append(layer);
+    fig.append(layer);
     const boxes = new Map();
     const groups = new Map();
     let hover = "";
+    let seen = false;
 
     //: The picked ids: the primary block and every block of the pick, as the list marks them.
     const chosen = () => {
       const ids = new Set();
-      for (const row of S.tree.querySelectorAll('.dgm-block[aria-selected="true"]')) if (row.dataset.key.startsWith("n:")) ids.add(row.dataset.key.slice(2));
+      //: A flowchart box is named by its node id ("n:" off the row key); another kind's part by the row key itself.
+      for (const row of S.tree.querySelectorAll('.dgm-block[aria-selected="true"]')) if (S.hitAt) ids.add(row.dataset.key);
+      else if (row.dataset.key.startsWith("n:")) ids.add(row.dataset.key.slice(2));
       return ids;
+    };
+    //: A pick shows in both halves (1702): the box the list picked is brought into the picture and the row the picture picked
+    //: into the list, once per change of pick (`nearest`: nothing moves when it is already in view). A hover never moves either.
+    let revealed = "";
+    const reveal = () => {
+      const key = S.sel || "";
+      if (key === revealed) return;
+      revealed = key;
+      if (!key) return;
+      const id = S.hitAt ? key : key.slice(2);
+      (boxes.get(id) || groups.get(id))?.scrollIntoView({ block: "nearest", inline: "nearest" });
+      S.tree.querySelector('.dgm-block[aria-selected="true"]')?.scrollIntoView({ block: "nearest" });
     };
     const mark = () => {
       const ids = chosen();
@@ -68,14 +88,18 @@
         box.classList.toggle("on", ids.has(id));
         box.classList.toggle("hover", id === hover);
       }
+      reveal();
     };
+    S.mark = () => mark();
     //: One element per box of a list, kept by id; a group's lies under the nodes' (styled lower).
-    const sync = (found, kept, attr, extra) => {
+    //: `born` collects the ids that got a box on this draw, so a new box can be brought into view.
+    const sync = (found, kept, attr, extra, born = []) => {
       const live = new Set(found.map((b) => b.id));
       for (const [id, box] of kept) if (!live.has(id)) box.remove(), kept.delete(id);
       for (const b of found) {
         let box = kept.get(b.id);
         if (!box) {
+          born.push(b.id);
           box = document.createElement("span");
           box.className = "dgm-box" + extra;
           box.dataset[attr] = b.id;
@@ -89,16 +113,20 @@
     };
     const draw = () => {
       const img = fig.querySelector(".md-mermaid-img");
-      //: Over the figure's padding box, so a box that scrolls out of the pane is clipped with the picture.
-      layer.style.left = `${fig.offsetLeft + fig.clientLeft}px`;
-      layer.style.top = `${fig.offsetTop + fig.clientTop}px`;
-      layer.style.width = `${fig.clientWidth}px`;
-      layer.style.height = `${fig.clientHeight}px`;
+      //: A note or the empty hint replaced the figure's children: the layer comes back with the next picture.
+      if (layer.parentElement !== fig) fig.append(layer);
       const found = img && S.hit ? math.place(S.hit, img.getBoundingClientRect(), layer.getBoundingClientRect()) : [];
       const rect = img && S.hit ? img.getBoundingClientRect() : null;
       sync(rect ? math.place(S.hit, rect, layer.getBoundingClientRect(), S.hit.clusters) : [], groups, "group", " dgm-cluster");
-      sync(found, boxes, "node", "");
+      const born = [];
+      sync(found, boxes, "node", "", born);
       mark();
+      //: A box just added and picked is scrolled into view (an add off the visible part of a zoomed picture was out of
+      //: sight unless its name field took the focus). Not on the first picture, whose boxes are all new.
+      const ids = chosen();
+      const fresh = seen && born.find((id) => ids.has(id));
+      if (found.length) seen = true;
+      if (fresh) boxes.get(fresh).scrollIntoView({ block: "nearest", inline: "nearest" });
     };
 
     //: After every draw (including one that leaves no picture), and from the zoom (diagram-view.js) after a zoom, a fit or a resize of the pane.
@@ -106,7 +134,6 @@
     (fig.onzoom ||= []).push(draw);
     //: An image that decodes after its width was set has its height only now.
     fig.addEventListener("load", draw, true);
-    fig.addEventListener("scroll", draw, { passive: true });
     //: A pick changes on a press, a key or a focus move inside the pane (the list, its bar); any other change comes with a redraw.
     for (const type of ["click", "keyup", "focusin"]) S.root.addEventListener(type, mark);
     //: Hover outlines the box under the pointer; a touch has no hover.

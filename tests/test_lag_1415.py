@@ -9,7 +9,9 @@ from tests._app_js import frontend_text
 
 def _body(js: str, head: str) -> str:
     start = js.index(head)
-    return js[start : js.index("\n}\n", start)]
+    line = js[js.rfind("\n", 0, start) + 1 : start]
+    indent = line[: len(line) - len(line.lstrip())]  # a wrapped script (row 37a) indents its functions
+    return js[start : js.index("\n" + indent + "}\n", start)]
 
 
 def test_a_zoom_keypress_writes_one_property_and_reads_no_layout():

@@ -177,12 +177,15 @@ async function chatSendTurn(preset, opts = {}) {
   //: element inside `#chat-messages`, and a caller that cleared the pane first
   //: would find it gone.
   $("chat-suggest")?.classList.add("hidden");
-  input.value = "";
-  autoGrow(input); // a cleared box must not keep the height of what was in it
-  // The draft is gone, so the suggestions about it are too, including the
-  // ones that were dismissed, which belonged to that draft and not to the
-  // next one.
-  resetChatNudge();
+  //: A queued send (`keepBox`) leaves the box to what is being typed now.
+  if (!opts.keepBox) {
+    input.value = "";
+    autoGrow(input); // a cleared box must not keep the height of what was in it
+    // The draft is gone, so the suggestions about it are too, including the
+    // ones that were dismissed, which belonged to that draft and not to the
+    // next one.
+    resetChatNudge();
+  }
   //: The box stays open while the answer streams, so the next message can
   //: be written and queued (INBOX 1321); Escape still stops the answer.
   hide("chat-send");
@@ -277,6 +280,7 @@ async function chatSendTurn(preset, opts = {}) {
   //: The screen-aware next step (E52): drawn beside the answer, never in its text.
   let chatTip = "";
   let whyLines = null; // the why event (B30), drawn last
+  let groundingSupport = null; // the stream's own support, saved with a composed turn (INBOX 1706)
   let composedNext = []; // a composed answer's own next questions (INBOX 725)
   //: **Numbered while it streams, as the Ask tab is** (INBOX 320, the
   //: askcite row): the backend sends the rows so far each time a sentence
@@ -492,7 +496,7 @@ async function chatSendTurn(preset, opts = {}) {
         meta = m;
         //: No model runs: the answer is composed from the notes (INBOX 725).
         //: A web reply's second meta (`chat_web.NOT_NOTES`) wakes no model.
-        if (!m?.web) status.textContent = m && m.composed ? "Composing from your notes, no AI…" : "Waking the model…";
+        if (!m?.web) status.textContent = m?.composed ? "Composing from your notes, no AI…" : "Waking the model…";
       },
       onRelated: (event) => {
         ensureModule("replyKit").then(() => renderRelatedElsewhere(groundingHolder, event.items)).catch(() => {});
@@ -508,6 +512,7 @@ async function chatSendTurn(preset, opts = {}) {
       onGrounding: (event) => {
         groundingSentences = event.sentences;
         composedNext = Array.isArray(event.next) ? event.next : [];
+        groundingSupport = event.support || null;
         renderAnswerGrounding(
           groundingHolder,
           event.sentences,
@@ -664,7 +669,7 @@ async function chatSendTurn(preset, opts = {}) {
         //: Waiting cards are output (`showWaiting`); an act's is the answer's own.
         showWaiting(event.type === "act" ? timeline.holder : recordsHolder, renderToolConfirm, event);
         if (event.done) bubble.dataset.wrote = "1"; // an act that ran at once wrote
-        status.textContent = "Waiting for your confirmation…";
+        if (!event.cancel) status.textContent = "Waiting for your confirmation…";
       },
       onAsk: (event) => {
         clearPending();
@@ -767,7 +772,7 @@ async function chatSendTurn(preset, opts = {}) {
       //: too long to be a sentence, or none, falls back to a line that still
       //: says what to do next.
       miss = error instanceof TypeError;
-      const said = String(error && error.message ? error.message : "").trim();
+      const said = String(error.message || "").trim();
       timeline.failRunningStep(
         said && said.length <= 160 ? said : "The model stopped before it finished. Try again, or check Settings, Models."
       );
@@ -835,7 +840,7 @@ async function chatSendTurn(preset, opts = {}) {
       // The turn is over: it is saved (or about to be) and a reload of this
       // thread will render it like any other. Re-attaching these nodes after
       // that point would show it twice.
-      if (chatStreaming && chatStreaming.conv === convRef) chatStreaming = null;
+      if (chatStreaming?.conv === convRef) chatStreaming = null;
     }
     // The composer belongs to whatever conversation is on screen. A turn that
     // finishes after the reader has moved on must not re-enable, refocus or
@@ -871,7 +876,7 @@ async function chatSendTurn(preset, opts = {}) {
     toolEvents,
     touched: [...touchedItems.values()],
     sentences: groundingSentences,
-    grounded: meta?.composed ? new Set((groundingSentences || []).filter((row) => row.kind !== "document").map((row) => row.note_id).filter(Boolean)) : null,
+    composed: Boolean(meta?.composed),
   });
   //: The page this turn went out to read, for a follow-up about it
   //: (`webFollowUp`, web-clip.js).
@@ -922,7 +927,7 @@ async function chatSendTurn(preset, opts = {}) {
   const elapsedMs = Math.round(performance.now() - startedAt);
   //: For the status bar's AI dot (Placed 2026-09-09 item 99 (c)).
   if (stats) {
-    lastAnswerFacts = { model: stats.model || (meta && meta.answered_by) || "", ms: elapsedMs, used: Number(stats.prompt_tokens) || 0, window: Number(stats.context_tokens) || 0 };
+    lastAnswerFacts = { model: model || "", ms: elapsedMs, used: Number(stats.prompt_tokens) || 0, window: Number(stats.context_tokens) || 0 };
     renderAiPill();
   }
   // A turn that only ran tools still cost time and tokens, so it gets a meta
@@ -939,11 +944,11 @@ async function chatSendTurn(preset, opts = {}) {
   if (answerRaw || toolEvents.length) {
     bubble.appendChild(
       messageMetaLine({
-        model: (stats && stats.model) || (meta && meta.answered_by),
+        model,
         elapsedMs,
         stats,
         toolCount: toolEvents.length,
-        rounds: (stats && stats.round) || 0,
+        rounds: stats?.round || 0,
         usedTools: effectiveUseTools,
       })
     );
@@ -1037,7 +1042,7 @@ async function chatSendTurn(preset, opts = {}) {
         : failure || "The model wrote nothing. Try again, or ask it another way.";
       timeline.ensureAnswerBox().replaceChildren(note);
       // Retry and delete at minimum, so there's always a way forward.
-      bubble.appendChild(
+      (bubble.querySelector(":scope > .msg-role") || bubble).appendChild(
         chatMessageActions([
           { label: "ph:arrow-clockwise", title: "Try again", onClick: () => regenerateLastAnswer() },
           ...(failure ? [{ label: "ph:gear", title: "Open Settings, Models", onClick: () => openSettingsModal("models") }] : []),
@@ -1049,17 +1054,13 @@ async function chatSendTurn(preset, opts = {}) {
     return;
   }
   // Per-message actions: one shared list with the reopened-conversation path,
-  // see `assistantMessageActions` for why that matters.
-  bubble.appendChild(
-    assistantMessageActions({ bubble, text: answerRaw, question })
-  );
+  // see `assistantMessageActions` for why that matters (it places the row).
+  assistantMessageActions({ bubble, text: answerRaw, question });
 
   // Regenerate replaces the last turn; a normal send appends a new one.
-  if (opts.replaceLast && convRef.turns.length) {
-    convRef.turns[convRef.turns.length - 1] = { question, answer: answerRaw, objects: chatTurnObjects(turnSources) };
-  } else {
-    convRef.turns.push({ question, answer: answerRaw, objects: chatTurnObjects(turnSources) });
-  }
+  const turnRecord = { question, answer: answerRaw, objects: chatTurnObjects(turnSources) };
+  if (opts.replaceLast && convRef.turns.length) convRef.turns[convRef.turns.length - 1] = turnRecord;
+  else convRef.turns.push(turnRecord);
   // Persist the finished turn so the chat survives restarts. A checkpoint
   // still on its way is let land first, so this sees its id and replaces its
   // row rather than racing it to create a second conversation.
@@ -1118,6 +1119,7 @@ async function chatSendTurn(preset, opts = {}) {
       // just above. Only meaningful alongside raw_results (renderAnswerGrounding
       // looks note content up in it), so there's nothing to persist without it.
       sentence_grounding: groundingSentences?.length ? groundingSentences : null,
+      support: meta?.composed ? groundingSupport : null,
       // Which uploads this turn actually used, asked for directly: without
       // this, a sent chat image had no record anywhere that anything still
       // used it, so the Library's "Clean orphaned media" tool (which can
@@ -1136,6 +1138,9 @@ async function chatSendTurn(preset, opts = {}) {
       note_ids: sentAttachments.length ? sentAttachments : null,
       board_ids: sentBoards.length ? sentBoards : null,
       followup_of: followupOf,
+      //: Who wrote it and why, so a reload draws the badge, note card and Why trail (INBOX 1693).
+      by: meta && { composed: meta.composed, model },
+      why: whyLines,
       //: The thumbnails' words, so a reopened chat keeps them (INBOX 502).
       picture_alts: meta?.picture_alts && Object.keys(meta.picture_alts).length ? meta.picture_alts : null,
       picture_sizes: meta?.picture_sizes && Object.keys(meta.picture_sizes).length ? meta.picture_sizes : null,
@@ -1341,7 +1346,7 @@ function agentTimeline(holder, options = {}) {
     setLabel(summary, `${icon} ${plan.skill}`);
     el.appendChild(summary);
     const items = [];
-    if ((plan.steps && plan.steps.length) || plan.kind === "turn") {
+    if (plan.steps?.length || plan.kind === "turn") {
       const list = document.createElement("ol");
       list.className = "plan-steps";
       plan.steps.forEach((step, index) => {
@@ -1353,7 +1358,7 @@ function agentTimeline(holder, options = {}) {
       });
       el.appendChild(list);
     }
-    if (plan.tools && plan.tools.length) {
+    if (plan.tools?.length) {
       const line = document.createElement("div");
       line.className = "plan-tools";
       line.textContent = `Tools for this run: ${plan.tools.join(", ")}`;
@@ -1771,7 +1776,7 @@ function renderAgentQuestion(holder, event) {
   const settle = (answer) => {
     if (settled) return;
     settled = true;
-    if (pendingAgentQuestion && pendingAgentQuestion.card === card) pendingAgentQuestion = null;
+    if (pendingAgentQuestion?.card === card) pendingAgentQuestion = null;
     card.replaceWith(toolChip(`ph:question ${event.question} → ${answer}`));
   };
   const submit = () => {
@@ -2483,9 +2488,13 @@ function addBubble(role, text, attachments = null) {
   return bubble;
 }
 
+//: Builds a reply's actions and puts them in its head row, at its end, in its
+//: flow (CHAT_PLAN B2: "actions in the head"): hung under the bubble or
+//: floated over its corner, a row lay over text (B2's review); a question's
+//: row stays under its bubble.
 function assistantMessageActions({ bubble, text, question, onEdit }) {
   const off = aiIsOff();
-  return chatMessageActions([
+  const row = chatMessageActions([
     {
       label: "ph:copy",
       title: "Copy message",
@@ -2558,6 +2567,7 @@ function assistantMessageActions({ bubble, text, question, onEdit }) {
       onClick: () => deleteChatTurn(bubble),
     },
   ]);
+  return (bubble.querySelector(":scope > .msg-role") || bubble).appendChild(row);
 }
 
 function renderRecordsDetails(holder, meta) {
@@ -2628,7 +2638,7 @@ async function deleteChatTurn(assistantBubble) {
   const userBubble = assistantBubble.previousElementSibling;
   //: Later questions move up one saved turn (E49).
   for (let node = assistantBubble; (node = node.nextElementSibling); ) if (node.dataset.turn) node.dataset.turn -= 1;
-  if (userBubble && userBubble.classList.contains("user")) dropChatBubble(userBubble);
+  if (userBubble?.classList.contains("user")) dropChatBubble(userBubble);
   assistantBubble.remove();
   chatConv.turns.splice(index, 1);
   renderChatTurnCount();

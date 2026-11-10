@@ -379,6 +379,7 @@ class OllamaClient(Provider):
             # window percentage on each message is measured against, and is
             # often *lower* than the declared one, deliberately (KV cache).
             "usable_context": self.usable_context(model),
+            "context_reason": self.context_explanation(model),
             "capabilities": sorted(self.capabilities(model)),
             "supports_tools": self.supports(model, "tools"),
             "supports_thinking": self.supports(model, "thinking"),
@@ -416,6 +417,49 @@ class OllamaClient(Provider):
             length = known_context(model)
         self._context_lengths[model] = length
         return length
+
+    def kv_bytes_per_token(self, model: str) -> int | None:
+        """KV cache bytes per token, from the shape `/api/show` reports.
+
+        2 (keys and values) x layers x KV heads x head size x 2 bytes (f16).
+        An estimate that errs high (sliding-window layers and a quantised
+        cache cost less), which is the safe side for an out-of-memory.
+        """
+        info = self.show(model).get("model_info") or {}
+
+        def field(suffix: str) -> int | None:
+            for key, value in info.items():
+                if key.endswith(suffix) and isinstance(value, (int, float)) and value > 0:
+                    return int(value)
+            return None
+
+        layers = field(".block_count")
+        heads = field(".attention.head_count")
+        kv_heads = field(".attention.head_count_kv") or heads
+        head_size = field(".attention.key_length")
+        if not head_size:
+            width = field(".embedding_length")
+            head_size = width // heads if width and heads else None
+        if not (layers and kv_heads and head_size):
+            return None
+        return 2 * layers * kv_heads * head_size * 2
+
+    def weights_bytes(self, model: str) -> int | None:
+        """The model's size on disk from `/api/tags`, close to what its weights
+        take in memory; None when Ollama cannot say. Asked once per model: the
+        context decision that wants it is cached."""
+        if _is_down(self.base_url):
+            return None
+        try:
+            installed = self.list_models()
+        except (OllamaError, AttributeError):
+            return None
+        names = {model, f"{model}:latest"}
+        for entry in installed:
+            size = entry.get("size")
+            if isinstance(size, (int, float)) and size > 0 and (entry.get("name") in names or entry.get("model") in names):
+                return int(size)
+        return None
 
     def runtime_options(
         self,
@@ -523,6 +567,7 @@ class OllamaClient(Provider):
             response.raise_for_status()
         except requests.RequestException:
             return False, "Ollama did not answer, so the model could not be stopped. Is Ollama running?"
+        self.forget_context_decision(model)
         return True, f"Stopped {model}: it is out of memory until the next question."
 
     def list_models(self) -> list[dict]:

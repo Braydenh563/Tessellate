@@ -607,57 +607,7 @@ shadow 2px by 8px against a 52.8px gap.
 
 ## Placed from INBOX, 2026-09-21 (the Ask sub-tab, four reports in one pass)
 
-**All four built, 2026-09-21.** One pass, because they are one screen and
-four separate fixes would have meant four rounds of the same measurement.
-The probe is `scratchpad/ui-sweeps/asktab.js` (registered in
-`scripts/gate.sh`'s sweep list); it measures rather than captures, and it
-drives a real stream through `scratchpad/fake_answer_server.py`, which now
-takes `FAKE_DELAY_MS` so a stream lasts long enough to poll. The full record
-is in HISTORY.md, "INBOX resolved, 2026-09-21".
-
-~~297. Gaps between an attached file and the badges, and badges that do not
-all show.~~ **Built.** The gap: 0.0px to 6.4px, at 1440, 1024, 820 and 390.
-The badges: not a truncation and not a wrap (every badge the data implies
-was drawn at every width, none clipped, 0px of the lane scrolled out), but a
-condition that never fired: `clickableResult` passed `entryItem` no options,
-so every chip gated on `options.actions` was missing from a read-only row.
-The same note: 2 badges in the Ask column before, 4 after, against 5 in
-Browse, the fifth being the one chip decision 16 keeps off a result row.
-
-~~298. No generating animation while the model is thinking and streaming.~~
-**Built.** Frames with the answer actually streaming: 250 before, 0 of them
-showing anything moving; 63 after, 63 of them showing something. Across the
-whole turn: 120 of 372 before, 243 of 243 after. Two existing components
-(`progressLine`, `.is-generating`) called from a surface that never called
-either, not a new control.
-
-~~299. Number the matching records to match the inline referencing.~~
-**Built.** Records numbered: 0 of 5 before, 5 of 5 after, from
-`citationNumbers`, the map the prose marks, the "Grounded in" chips and the
-Sources panel already share. Marks whose row disagrees with them: 0. Numbers
-drawn over a row's own text: 0 (6.4px of clear gutter on every row).
-
-~~300. The sources button reads as a banner and describes a place.~~
-**Built.** 525px of a 525px column (100%) before, 204px (38.9%) after;
-"Sources: 5 notes, on the right" before, "Show the 5 notes used" after; and
-a press now moves the first cited record from 328px below the top of the
-window to 72px.
-
-### The four reports, verbatim
-
-297. **The owner, 2026-09-21, verbatim:** "in the ask subtab in notes, make
-    sure there are appropriate gaps between uploaded files and attachments
-    and the badges and make sure all the badges show."
-
-298. **The owner, 2026-09-21, verbatim:** "there's no generating animation
-    while the model is thinking and streaming in the ask tab either."
-
-299. **The owner, 2026-09-21, verbatim:** "can the notes in the matching
-    records that appear in the ask tab be numbered accordingly to match the
-    inline referencing??"
-
-300. **The owner, 2026-09-21, verbatim:** "fix the ui of this sources button
-    in the ask tab."
+All four built 2026-09-21; moved to HISTORY.md ("Moved from the plans, 2026-11-05 (CHAT_PLAN, the Ask sub-tab of 2026-09-21)").
 
 ## Placed from INBOX, 2026-10-03 (the chat stutter, INBOX 413)
 
@@ -1193,7 +1143,7 @@ and https://learn.microsoft.com/en-us/windows/powertoys/run
 | Inline calculator | "15% of 85", roots, implied multiplication `2(3+4)`, ceil, floor, round, max, min, abs, log, ln, sqrt, pow, factorial, constants | Parsed expression; `=` direct prefix in PowerToys | An owned evaluator (an `ast` walk, policy 1), percent-of phrases, words ("times", "plus", "squared") | Partial: simple_eval on a digit-only regex, invisible (finding 1) | M |
 | Unit conversion with `to` and `in` | 13 types: acceleration, angle, area, duration, energy, information, length, mass, power, pressure, speed, temperature, volume | A units table | Our own table (about 150 units, plain data), "5 miles in km" | Partial: Gemini-branch pint path, to be removed (policy 1) | M |
 | Currency conversion | Spotlight converts currency | Live rates | Offline: a dated table the person can edit, always stated "rates as of <date>" | No | M |
-| Time and date | Current time, calendar week of a date, Unix epoch, days in a month, week of year | Time and date plugin with formats | "what week is 3 March", "days until Friday", "what day is 3 weeks from now" | Partial: `when.py`; the Gemini `utility` time answer is invisible | S |
+| Time and date | Built. Moved to HISTORY.md ("Moved from the plans, 2026-11-08 (CHAT_PLAN Time and date)"). | | | | |
 | Value generator | GUID, hashes, base64, URL encode | stdlib | Text transforms (below) take the useful half: case, sort lines, count, slugify | No | S |
 | Definitions | Word meanings | System dictionary | Own-notes definitions only (a "X is" sentence); a general dictionary is too heavy (policy 2) | No | M |
 | History plugin `!!` | Recall what you ran before | Result history | Ask history and `search_chat_history` | Yes: `routes_ask_history.py` | none |
@@ -1250,8 +1200,8 @@ how it was read. Time facts below were measured with `entry/timewords.find` and
 | U13 | Lists | `list` shape, `_list_block`, checklist done counts | A list spread across notes; "the third item"; "how many left" | Merge list items from notes in the window, number them, count done and open as a measured line | S | 2 |
 | U14 | Yes or no | `yesno`, "your notes say", contrary sentence check | Negated and hypothetical facts are not told apart from asserted ones | Fact `mode` (asserted, negated, hypothetical, conditional, question, quoted) decides which sentences may answer | M | 1 |
 | U15 | Why and how | `explain` shape, `because` cue in `_cue` | Why and how are one shape; steps not kept in order | Why: sentences with because, so that, since, due to, reason, plus the sentence before; how: numbered or ordered items and imperatives in note order | S | 2 |
-| U16 | Hypotheticals | None: "what if I move to Lisbon" is shape `translate` (finding 2) | A what-if has no fact to answer from | Kind `hypothetical`: say what the notes hold about the premise's subject (plans, preferences, costs), then "Your notes do not say what would happen." Never a consequence | S | 2 |
-| U17 | Spelled numbers and ordinals | `timewords` and `reminder_parser` read "two", "half an hour"; `_ORDINAL` reads "second" | Not applied to whole questions ("the last 2 weeks", "twenty notes") | `normalise()` turns number words to digits ahead of every rule, in quoted-free text only | S | 2 |
+| U16 | Hypotheticals | Built. Moved to HISTORY.md ("Moved from the plans, 2026-11-08 (CHAT_PLAN U16)"). | | | | |
+| U17 | Spelled numbers and ordinals | Built. Moved to HISTORY.md ("Moved from the plans, 2026-11-08 (CHAT_PLAN U17)"). | | | | |
 | U18 | Out-of-domain | `_nothing` | No class, no eval group (Snips None) | A measured out-of-domain group in the noisy set: weather, scores, trivia; the plain no-answer, the closest note if any, a capability line with one tappable example | S | 2 and 10 |
 
 #### Answering
@@ -1279,9 +1229,9 @@ how it was read. Time facts below were measured with `entry/timewords.find` and
 | A19 | Definitions | `help_chat` topics (121) define app terms | "X is" from the notes; a glossary for app words | Fact kind `definition`: first sentence matching `X is a|an|the|means|refers to`; app terms answered from help topics through the `help` register | S | 1 and 8 |
 | A20 | Summaries | `summarize_notes` tool, `brief()`, `meeting_summary.py`, `week_review`; the Gemini `summary` shape crashes (finding 3) | One entry point from Chat; clusters with a centrality lead | One lead sentence per cluster by `centrality`, by note and by day, at most N sentences, counts stated | M | 2 and 3 |
 | A21 | Last time, how long since, how often | `when.days_since` (phrase to days) | Not asked of the notes | Event facts: latest date for a verb and object, days since, count per window; measured, dates shown | M | 1 and 6 |
-| A22 | Where did I write X | Search results show the note, category, space | Not said in a sentence | "It is in 'Gym plan', in Fitness, last edited 3 days ago." from the row's own fields | S | 2 |
+| A22 | Where did I write X | Built. Moved to HISTORY.md ("Moved from the plans, 2026-11-08 (CHAT_PLAN A22)"). | | | | |
 | A23 | Who or what is X (entity card) | Entities pass (model), `EntityMention` | None without a model | Entity fact aggregate: first and last mention, note count, what is said about them (top 2 sentences), related entities by co-occurrence | M | 1 and 6 |
-| A24 | A random note, an old note | `resurface.for_day`, `ranked` | Not from a question | "show me something old" picks from `resurface.ranked`, seeded by the session salt | S | 2 |
+| A24 | A random note, an old note | Built. Moved to HISTORY.md ("Moved from the plans, 2026-11-08 (CHAT_PLAN A24)"). | | | | |
 | A25 | No answer | `_nothing`, `closest_a`, `_did_you_mean` | Capability line; a suggested question the person could answer with a note (decision 24) | Closest note quoted, one suggestion built from the question's subject, capability line when the question is out of domain | S | 2 |
 
 #### Acting
@@ -1295,21 +1245,21 @@ and always show the exact change before running.
 | X1 | Remind | `set_reminder` tool; `when.parse_reminder_text`, `reminder_parser`; recurring none, daily, weekly, monthly | `commands.py` unrun on `wip/composer-acts`; Gemini `utility` branch claims "noted" and writes nothing (finding 1) | Parse text and time, confirm card "Remind you to call mum, Friday 9:00", ask "When?" when missing; recurrence words map to the four values | M | 7 |
 | X2 | Tag and untag | `tag_note` (add, remove, many ids) | No chat verb | "tag my gym notes #fitness": resolve notes by plan, card lists them (cap 50), undo = the inverse call | M | 7 |
 | X3 | Link and unlink | `link_notes` (reason, link type), `unlink_notes` | No chat verb; no reasons | "link A and B": the reason is the composer's pair reason (decision 39), shown on the card | M | 7 |
-| X4 | File into a category | `edit_note` `category` | No chat verb | "file this under Work" with the engine's explanation line ("shares gym, squat and protein with 6 notes there") | S | 7 (decision 39) |
-| X5 | Rename (note title, tag, category) | `edit_note`, `rename_tag`, `rename_category` | No chat verb | Object resolved by kind word ("rename the tag gym to fitness") | S | 7 |
-| X6 | Pin | `pin_note` | No chat verb | "pin this" with dialogue reference | S | 7 |
+| X4 | File into a category | Built. Moved to HISTORY.md ("Moved from the plans, 2026-11-08 (CHAT_PLAN small rows D)"). | | | | |
+| X5 | Rename (note title, tag, category) | Built. Moved to HISTORY.md ("Moved from the plans, 2026-11-08 (CHAT_PLAN acts)"). |
+| X6 | Pin | Built. Moved to HISTORY.md ("Moved from the plans, 2026-11-08 (CHAT_PLAN small rows D)"). | | | | |
 | X7 | Archive | No tool (only delete and restore) | An archive verb with nothing behind it | Do not offer until a tool exists; the capability line lists only verbs that run | none | n/a |
-| X8 | Delete and restore | `delete_note`, `restore_note` (bin) | No chat verb | Always confirmed, always the bin, undo = restore | S | 7 |
+| X8 | Delete and restore | Built. Moved to HISTORY.md ("Moved from the plans, 2026-11-08 (CHAT_PLAN acts)"). |
 | X9 | Create (note, reminder, document, board, map) | `create_note`, `create_document`, `create_mindmap`, `generate_diagram`, board tools | `new_note` only on the wip branch | "make a note: ..." with the person's words verbatim; documents and maps from a named source note or a list | M | 7 |
-| X10 | Add to a note | Daily-note route; `edit_note` replaces content (no append argument) | The act reads the note and writes the whole text | "add X to today's note": daily route, append a bullet, optimistic-lock check (`edit_conflicts.py`) | S | 7 |
+| X10 | Add to a note | Built. Moved to HISTORY.md ("Moved from the plans, 2026-11-08 (CHAT_PLAN acts)"). |
 | X11 | Summarise as an act | `summarize_notes` | Results not saved | "summarise my gym notes into a note": A20 text, created as a note with its sources linked | S | 7 |
-| X12 | Find and open | `search_notes`, `get_note` | No chat verb ("open the passport note") | Title match first, then plan; one result opens, several asks which | S | 7 |
+| X12 | Find and open | Built. Moved to HISTORY.md ("Moved from the plans, 2026-11-08 (CHAT_PLAN small rows D)"). | | | | |
 | X13 | Templates | Four built-in templates; daily-note body in the frontend | No variables; no user quick-adds | `{date}`, `{weekday}`, `{week}`, `{title}`, `{n}` filled by rule; a saved phrasing with slots appears as a chip ("Log a workout: {what}") | M | 7 |
 | X14 | Bulk acts with preview | Confirm card for agent writes | Counts, caps, partial failure wording | Card: "Tag 14 notes #fitness" with the first five listed and a "show all"; cap 50; result line "Done: 13. Not done: 1, it is private."; one undo for the batch | M | 7 |
 | X15 | Scheduled acts | Reminders recur; Night shift jobs | No "every Monday, list what is open" | An act with a recurrence is a reminder whose note carries the phrasing; at most one proactive line a day per scheduled act (decision 28) | M | 7 and new |
 | X16 | Undo | Per-feature undo toasts; `restore_note`; tidy runs undoable | No generic "undo that" in Chat | The act's own inverse steps stored in the confirm card's result; "undo" and "undo that" read as a conversation control (C13) | M | 7 |
-| X17 | Cancel | None | Pending act cannot be dropped | "cancel", "never mind" clear `Dialogue.pending_act` | S | 7 |
-| X18 | Capability line | `CAPABILITY_LINE` only on the wip branch | Must list only verbs that run | Generated from the registered acts, not typed | S | 7 and 8 |
+| X17 | Cancel | Built. Moved to HISTORY.md ("Moved from the plans, 2026-11-08 (CHAT_PLAN acts)"). | | | | |
+| X18 | Capability line | Built. Moved to HISTORY.md ("Moved from the plans, 2026-11-08 (CHAT_PLAN small rows D)"). | | | | |
 
 #### Conversing
 
@@ -1320,7 +1270,7 @@ and always show the exact change before running.
 | C3 | Mood | `SOCIAL["emotion"]` 21 | Replies are generic | Name the feeling word the person used; if their recent notes show a streak or a hard week (measured), say that measured fact, never advice | S | 8 |
 | C4 | Small talk | how, laugh, reaction, confused, ack, compliment, insult (20 lines each) | No memory of what was said; the same kind repeats | Kind plus the last two replies: avoid repeats across the session (decision 34) | S | 4 |
 | C5 | About the app | `intent.ABOUT_APP`, `SOCIAL["about_app"]` 10; the Guide separately (`help_chat`) | Chat and Guide are two engines | One engine with a `help` register (decision 36): the step sentence first, the rest behind "More about the Dashboard" | M | 8 |
-| C6 | Identity | `SOCIAL["who"]` 12; owner: "Composer doesn't know it is atlas" | Not named; bubble label | "I am Atlas. With no model I answer from your notes alone; with one, I use it and check it against them." ; label "Atlas, from your notes" or "Atlas, <model>" | S | 8 |
+| C6 | Identity | Built. Moved to HISTORY.md ("Moved from the plans, 2026-11-08 (CHAT_PLAN small rows D)"). | | | | |
 | C7 | Capability questions | `ABOUT_APP` patterns; `get_app_navigation` tool | Answers are static | Generated from the act registry and utility table (X18, T-rows) with one example each | S | 8 |
 | C8 | Help | `help_chat.HELP_TOPICS` 121, keyword and edit-distance matching, `offline_answer` pastes whole paragraphs | Whole paragraphs; no step-first answer | `help` register composer picks the one sentence (owner's widgets example) | M | 8 |
 | C9 | Encouragement | `composer_voice` remarks (week count, open items) | None in Chat | When a measured streak, a finished checklist or a long gap ends, say it plainly ("All 5 items on the Trip list are ticked."); no praise words the data cannot back | S | 6 and 8 |
@@ -1339,19 +1289,19 @@ branch's pint and simpleeval go with Brief 35 (policy 1).
 
 | Id | Capability | Has it (file) | Gap | Deterministic rule or data | Cost | Step |
 | --- | --- | --- | --- | --- | --- | --- |
-| T1 | Calculator | Gemini `math` shape, invisible, digit-only regex | "15% of 80", "20 percent of 50", "3 times 4", "sqrt 144", "2(3+4)", words for operators | `ast` evaluator over + - * / % ^ and a function whitelist (sqrt, round, floor, ceil, abs, min, max, log, ln, pow, factorial), percent-of, "plus/minus/times/divided by/squared"; no names, no attributes | M | 2 |
+| T1 | Calculator | Built. Moved to HISTORY.md ("Moved from the plans, 2026-11-08 (CHAT_PLAN T1)"). | | | | |
 | T2 | Unit tables | Gemini `convert` shape (pint), invisible | Length, mass, volume, temperature, speed, area, time, data, energy, pressure, angle with `to` and `in` | A plain-data table of about 150 units with factor and offset; temperature by formula; ambiguity ("ton", "pint", "cup") asks | M | 2 |
 | T3 | Currency tables offline | None | Rates change | A small dated table in the app (about 30 currencies, one date), user-editable in Settings, every answer says "rates as of <date>"; no network | M | new (2) |
 | T4 | Date arithmetic | `when.days_since`, `timewords` | "days until Friday", "what day is 3 weeks from now", "weeks between two dates", "what week number is 3 March", "how old is a date" | Date maths over `timewords` mentions and a table of fixed-date holidays by name and country-neutral rule (Easter by algorithm) | M | 2 |
-| T5 | Word count and reading time | Gemini `reading_time` (counts the retrieved notes, not the one asked about; invisible) | "how many words is this note", "reading time of the passport note" | Count on the resolved note's text (code and front matter excluded), 238 words per minute, "about 420 words, two minutes" | S | 2 |
-| T6 | Text transforms | None | Upper, lower, title case, sort lines, remove duplicate lines, number lines, slugify, count characters, reverse, join/split on commas | Act on the note or the pasted text; output is a draft the person confirms before it replaces anything | S | 7 |
+| T5 | Word count and reading time | Built. Moved to HISTORY.md ("Moved from the plans, 2026-11-08 (CHAT_PLAN small rows D)"). | | | | |
+| T6 | Text transforms | Built. Moved to HISTORY.md ("Moved from the plans, 2026-11-08 (CHAT_PLAN T6)"). | | | | |
 | T7 | Checklists | Checklist units in `read_note`; done counts | Make a checklist from a sentence; tick by chat | "make a checklist: milk, eggs, bread" creates a note with `- [ ]` lines; "tick milk" edits one line | S | 7 |
 | T8 | Counters | None | "add 1 to coffee", "how many coffees this week" | A counter is a note titled "Counter: coffee" with a numeric property, incremented by an act; the count over a window is derived from dated lines | M | 7 |
 | T9 | Timers | Reminders with `due_at`, `reminder_parser.relative_delta` ("in 20 minutes") | A timer in a chat | A timer is a reminder due in N minutes, titled "Timer: 10 minutes"; the confirm card says so; no countdown claim | S | 7 |
-| T10 | Random pick | `resurface.ranked` | "pick one of pizza, sushi, tacos", "pick a number between 1 and 10" | Seeded by session salt and turn; the result is a computed value labelled "random" | S | 2 |
-| T11 | Dice and coin | None | "roll 2d6", "flip a coin", "roll a dice" | `random` with the same labelling; the roll is stated with each die | S | 2 |
+| T10 | Random pick | Built. Moved to HISTORY.md ("Moved from the plans, 2026-11-08 (CHAT_PLAN T10)"). | | | | |
+| T11 | Dice and coin | Built. Moved to HISTORY.md ("Moved from the plans, 2026-11-08 (CHAT_PLAN small rows D)"). | | | | |
 | T12 | Templates | See X13 | See X13 | See X13 | M | 7 |
-| T13 | Time and date now | Gemini `utility` shape, invisible | Today's date, the time, week number, "what day is it" | Local clock and the user's timezone setting; computed | S | 2 |
+| T13 | Time and date now | Built. Moved to HISTORY.md ("Moved from the plans, 2026-11-08 (CHAT_PLAN T13)"). | | | | |
 
 #### Proactive (decision 28: rarely, on real signals, never while typing)
 
@@ -1889,10 +1839,15 @@ A1, A2 and the A2 follow-up built; moved to HISTORY.md ("Moved from the plans, 2
 
 B2 and B7 built; moved to HISTORY.md ("Moved from the plans, 2026-11-05 (CHAT_PLAN B2 and B7)").
 
-- **B1, the owner 2026-11-05 02:20Z (screenshots: Ask, the whole answer inside a "145 words" card under Thinking, then the same card collapsed to one line), verbatim:** "also the whole response from my ai model just got placed in a dropdown collapsed box" (pasted: the model's "Thinking Process:" text, numbered steps, no tags). Recommendation (taken): find the class (an untagged "Thinking Process:" preamble, the reasoning split, or the long-answer card folding the answer itself) with a fake-transport stream of exactly that shape; the answer is never inside a fold or a collapsed card, the reasoning is, in Ask, Chat and the popup agent.
-- **B3, verbatim:** "I also cant type in the text box while the popup agent is respondning (check the guide as well) and I cant draft, queue or edit/delete queued messages like in chat for the popup agent." Recommendation (taken): the popup agent and the guide take Chat's composer behaviour: typing stays open while a turn runs, Enter queues, the queue shows with edit and delete, drafts are kept per surface; one shared queue component.
-- **B4, verbatim:** "also when fullscreen or docked to the main window, the bottom footer of te popup agent is really really tall which it shouldnt be" (screenshot: the status row then about 270 px of empty footer). Recommendation (taken): the footer is its content's height in every mode (floating, docked, full screen), measured.
-- **B5, verbatim:** "also in that test request the search appeared after the generated text when it happened before that text was written out." Recommendation (taken): steps and text keep the order they happened in (one timeline ordered by event arrival), in the agent, Chat and the guide; a test with a fake stream of text, tool call, text.
-- **B6, verbatim:** "also I still dont understand why the ai model context windows are so small, cna they be larger?? they need to properly adapt to the model." Recommendation (taken): the context window is read from the model (GGUF metadata or the server's reported n_ctx), set as large as the model and memory allow (a bounded share of free RAM or VRAM), shown in Settings with why; prompt budgets scale from it; fake-transport tests for a 4k, 32k and 128k model. Owner log 02:15Z: "tessellate.agent context budget: 5120 tok window" for gemma-4-E2B (a 128k model).
-- **B8, the owner 2026-11-05 02:23Z, verbatim:** "sometimes when I close a minimised tab for a window, the window flashes for a split second". Recommendation (taken): closing a minimised window from its tab never shows the window (no restore before the close, no transition on a hidden window), for every window kind that minimises to a tab.
-- **B9, the owner 2026-11-05 02:25Z (screenshot: three "Patterns: ... as you told me on ..." lines), verbatim:** "also is there a way to edit or managed confirmed patterns??". Found: no; a Confirm writes a `derived_facts` row of kind "confirmed" (ai/insights.py), and Settings' "What it remembers" (`GET /settings/memory`, routes_settings.py:1638) lists preferences only. Recommendation (taken): confirmed patterns join "What it remembers" as their own group, each with its sentence, the date confirmed and the notes behind it, and Edit (the subject or wording, kept as the person's own word), Remove (soft delete, with Undo) and Not right (the dismiss path); the Patterns line gets the same three in its row menu; Help and the Guide topic say where they are managed.
+- **B1 and B5: built 2026-11-05** (41d42ef, f30176e), moved to HISTORY.md ("Moved from the plans, 2026-11-05 (CHAT_PLAN B1 and B5)"): the answer is never folded, the reasoning is; the popup agent keeps arrival order.
+- B6 (the context window adapts to the model and memory) built; moved to HISTORY.md ("Moved from the plans, 2026-11-07 (CHAT_PLAN B6)").
+- **B3, B4 and B8**: built 2026-11-05, moved to HISTORY.md ("Moved from the plans, 2026-11-05 (CHAT_PLAN B3, B4 and B8)").
+- B9 (confirmed patterns managed) built; moved to HISTORY.md ("Moved from the plans, 2026-11-05 (CHAT_PLAN B9)").
+
+## Placed from INBOX, 2026-11-07 (room for 1694)
+
+1564. **Owner decisions, 2026-11-03 (asked and answered):** U15 arrange menu: "I think it is a good idea to make it subsectioned yeah" (build the submenus). **U15 fixed 8b7d6ad:** five submenus (Order, Align, Distribute size and flip, Tidy and connect, Group and lock); the menu 785px and 24 rows with a scrollbar before, 220px and 5 rows after at 1440x900 (`$S/u15/arrange.js`); all 24 commands by keys; the phone's More sheet still lists them flat (a31r-1103). E33 Guide lead: sentence first, the click path as its own second line (the current order; tests stay). E50: keep Fork and Compress in the phone chat menu. U41: shorten the map-created toast to one line with an action, the longer help behind the help button (tests/test_wb_dog1_fixb.py changes with this dated reason). D30 spellcheck: "japanese, chinese, uk/us english spelling, shouldn the user be able to download language packs like with MS Word?" plus Spanish, French and German, Portuguese. Recommendation: language packs downloaded on demand from Settings (like the model downloads: one download, then offline), a per-document language, UK and US English as two variants of the bundled list; Japanese and Chinese have no word-list spellcheck (no spaces between words), so their pack gives the document language and input hints only, said plainly in the pack's card. Also "tell me about this" joins composer_digest `_THIS` (a30e's found-not-fixed).
+
+## Placed from INBOX, 2026-11-09 (the tray at its cap)
+
+1691. **Found 2026-11-07 (session, from the 2026-11-05a "/chat/followups 15 s deadline" line; the owner's log line itself is not in the repo):** every background call to the utility model runs in the default preset, so a reasoning model reasons before a job whose reasoning nobody reads. Follow-ups now run in Quick (`think: false`, 256 tokens; `tests/test_followups.py`). The same holds for meeting_summary.py:150, reminder_parser.py:143, speakers.py:75, skill_runner.py:660, entities.py:83, drafter.py:531 and 592, captioning.py:144, passive_capture.py:197 and tensions.py:232 (all `src/tessellate/ai/`). Recommendation (taken when a real-model check can run, `scratchpad/llama-dev.sh serve` then `pytest -m evals`): an internal `BACKGROUND_MODE` in presets.py (`think: False`, Normal's 1024 cap, temperature unset) for each of those whose output is short, measured before and after on one reasoning model. Owner: paste the log line for the 15 s failure if it comes back.

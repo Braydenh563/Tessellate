@@ -86,7 +86,7 @@ def test_old_windows_may_lack_only_the_optional_functions() -> None:
         dlls[name] = d
     assert set(k.apply_signatures(dlls)) == {
         "user32.SetThreadDpiAwarenessContext", "shcore.GetDpiForMonitor", "shell32.SHQueryUserNotificationState",
-        "dwmapi.DwmGetWindowAttribute",
+        "dwmapi.DwmGetWindowAttribute", "shell32.SHAppBarMessage",  # intent moved (research T1): the taskbar state is optional too
     }
     del dlls["user32"].CreateWindowExW
     with pytest.raises(AttributeError):
@@ -320,3 +320,20 @@ def test_a_loop_that_ends_on_its_own_tells_the_owner_but_a_stop_does_not() -> No
     host2.stop()
     time.sleep(0.05)
     assert not quiet
+
+
+def test_a_window_that_comes_up_after_the_owner_gave_up_closes_itself() -> None:
+    """INBOX 1692 (k): the frames loaded one second past a 3 s wait; the window then stayed on the desktop with no owner."""
+    release = threading.Event()
+    gone: list[int] = []
+
+    def slow(kind: str, x: int, y: int) -> None:
+        if kind == "ready":
+            release.wait(2.0)
+
+    host = host_mod.OverlayHost(FakeWin32(), on_event=slow, on_exit=lambda: gone.append(1))
+    assert host.start(timeout=0.05) is False
+    host.stop(timeout=0.01)  # what the runner does on a timeout
+    release.set()
+    assert wait_for(lambda: not host._thread.is_alive())  # noqa: SLF001
+    assert not host.alive and gone == []

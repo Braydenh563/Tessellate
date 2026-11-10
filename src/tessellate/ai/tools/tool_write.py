@@ -59,8 +59,21 @@ def _create_note(session: Session, args: dict) -> dict:
     return result
 
 
+def _refuse_stale(entry: Entry, args: dict) -> None:
+    """The edit-conflict lock for a card that appends to a note's text it read
+    earlier (`base_hash`, CHAT_PLAN X10): if the note changed in between, the
+    append would overwrite that change, so it is refused, not merged."""
+    base = args.get("base_hash")
+    if base:
+        from tessellate.api.edit_conflicts import content_hash  # lazy: `ai` sits below `api`
+
+        if content_hash(entry.content) != str(base):
+            raise ToolError("That note changed since this was prepared, so nothing was written. Ask again to add to the latest text.")
+
+
 def _edit_note(session: Session, args: dict) -> dict:
     entry = _require_note(session, args)
+    _refuse_stale(entry, args)
     undo = _undo_edit(session, entry)  # before the write, or it undoes nothing
     content = args.get("content")
     content_changed = content is not None and str(content) != entry.content
@@ -408,19 +421,20 @@ def _set_reminder(session: Session, args: dict) -> dict:
     held = held_reminder(session, text, due_at)
     if held:
         return held
-    reminder = Reminder(text=text, due_at=due_at, entry_id=entry_id, priority=priority)
+    repeat = next(iter({str(args.get("recurring")).lower()} & {"daily", "weekly", "monthly"}), "none")
+    reminder = Reminder(text=text, due_at=due_at, entry_id=entry_id, priority=priority, recurring=repeat)
     session.add(reminder)
     session.flush()
     manager.log_action(session, "created", "reminder", reminder.id, text[:80])
     session.commit()
     return {
-        "id": reminder.id,
-        "text": text,
+        "id": reminder.id, "text": text,
         "due_at": due_at.isoformat(),
         #: Said back in words, so the answer repeats the app's reading of the
         #: time rather than the model's own arithmetic.
         "due": due_at.strftime("%A %d %B %Y, %H:%M"),
-        "label": f"⏰ Set a reminder for {due_at.strftime('%a %d %b %Y %H:%M')}",
+        "label": f"⏰ Set a reminder for {due_at.strftime('%a %d %b %Y %H:%M')}" + (f", repeating {repeat}" if repeat != "none" else ""),
+        "recurring": repeat,
     }
 
 

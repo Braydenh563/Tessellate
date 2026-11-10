@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import random
 import time
 from pathlib import Path
 from typing import Any
@@ -43,6 +44,7 @@ def make(fake: FakeWin32 | None = None, **kw: Any):
     settled: list[Any] = []
     clock = Clock()
     kw.setdefault("home", (800, 920))
+    kw.setdefault("rng", random.Random(1700))  # a seeded engine: the same run on every machine and every order
     r = runner_mod.OverlayRunner(
         w=fake, clock=clock, frames=FRAMES, on_click=lambda *a: clicks.append(a), on_settle=lambda x, y: settled.append((x, y)),
         dispatch=lambda name, fn: fn(), **kw,
@@ -222,6 +224,23 @@ def test_the_apps_answer_beats_the_windows_flag_and_no_answer_falls_back_to_it()
     r.stop()
 
 
+def test_the_startup_line_says_whether_the_effects_are_on(caplog) -> None:
+    """INBOX 1692: the owner saw only puffs; the log never said the OS had animations off (every warp is then a plain fade)."""
+    caplog.set_level("INFO", logger=runner_mod.logger.name)
+    fake = FakeWin32()
+    fake.animations = 0
+    r, *_ = make(fake)
+    assert r.start()
+    line = next(rec.getMessage() for rec in caplog.records if "overlay: ready" in rec.getMessage())
+    assert "effects=off, every move is a fade (animations are off in os)" in line, line
+    r.stop()
+    caplog.clear()
+    r, *_ = make()
+    assert r.start()
+    assert "effects=on" in next(rec.getMessage() for rec in caplog.records if "overlay: ready" in rec.getMessage())
+    r.stop()
+
+
 def _pump(r, fake, clock, seconds: float, until=None) -> float:
     """Fire the timer the overlay asked for, in fake time: each WM_TIMER is posted
     after the clock moved by the asked-for wait. Returns the fake seconds used."""
@@ -375,6 +394,27 @@ def test_typing_keeps_the_engine_quiet_and_an_unknown_input_age_does_not() -> No
     r._next_busy_check = 0.0
     r._busy_gate(clock.t)
     assert r.engine.quiet is False
+    r.stop()
+
+
+def test_input_after_a_long_absence_makes_the_figure_welcome_the_person_back() -> None:
+    r, fake, clock, *_ = make(reduced=False)
+    assert r.start()
+    r.show()
+    assert wait_for(lambda: r.host.visible)
+    answered: list[str] = []
+    r.engine.react = lambda kind, now: answered.append(kind) or True  # type: ignore[method-assign]
+    for last_input, expect in (((10_000, 9_000), 0), ((10_000, 9_000 - 700_000 % 2**32), 0)):
+        fake.last_input = last_input
+        clock.t += 5
+        r._next_busy_check = 0.0
+        r._busy_gate(clock.t)
+        assert len(answered) == expect
+    fake.last_input = (10_000_000, 9_999_000)  # a key a second ago, after ten minutes of none
+    clock.t += 5
+    r._next_busy_check = 0.0
+    r._busy_gate(clock.t)
+    assert answered == ["idle_return"]
     r.stop()
 
 

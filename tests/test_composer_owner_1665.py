@@ -185,9 +185,11 @@ def test_f_no_note_is_said_twice_no_phrase_is_cut_every_sentence_is_cited(answer
     text, grounding, _e = answer
     rows = [r for event in grounding for r in event["sentences"]]
     assert [r["sentence"] for r in rows if r["sentence"] not in text] == [], text
-    per_note: dict[int, int] = {}
+    #: A sentence is cited once; a note's two sentences with a third between are two quotes (bt-compcomp-1109 item 4).
+    per_note: dict[tuple, int] = {}
     for r in rows:
-        per_note[r["note_id"]] = per_note.get(r["note_id"], 0) + 1
+        key = (r["note_id"], r["sentence"])
+        per_note[key] = per_note.get(key, 0) + 1
     assert all(n == 1 for n in per_note.values()), per_note
     for paragraph in text.split("\n\n"):
         if not paragraph.startswith(_FRAME):

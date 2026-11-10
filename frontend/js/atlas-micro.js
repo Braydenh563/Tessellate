@@ -203,6 +203,13 @@ atlasMicroDo.rare = function (kind, box, sign) {
     atlasMicroPlay(box.querySelector(".atl-lw-body"), [sink(0), { ...sink(0.9), offset: 0.45 }, { ...sink(0.9), offset: 0.6 }, sink(0)], 2200 + Math.random() * 600);
   }
 };
+//: The breath let out after a startle: the shoulders sink two pixels over about a second and a half and come
+//: back, deeper than the rare settle and not rationed by it; skipped if the figure has begun something else.
+atlasMicroDo.exhale = function (box) {
+  if (!box || !atlasMicroMay(box)) return;
+  const sink = (y) => ({ translate: `0px ${y}px` });
+  atlasMicroPlay(box.querySelector(".atl-lw-body"), [sink(0), { ...sink(2), offset: 0.4 }, { ...sink(2), offset: 0.55 }, sink(0)], 1500);
+};
 function atlasMicroDo(kind, box) {
   const sign = Math.random() < 0.5 ? -1 : 1;
   if (kind === "glance") return atlasMicroDo.glance(box);

@@ -56,6 +56,7 @@ def run(calls: list) -> list:
         "const ctx = (extra) => ({ now: NOW, locale: 'en-GB', slug: mdHeadingId, ...extra });\n"
         "const fns = {docLorem, docFillTable, docFillSig, docSmartPunct, docPairInput, docPairBackspace,"
         " docFillToken, docFillGhost, docListEnter, docListExitText, docBulletRetype, docFenceCloseIndent};\n"
+        "fns.docTagTyped = docPairInput.tag;\n"
         "fns.toc = (text) => docFillToc(text, mdHeadingId);\n"
         "fns.date = (kind, locale) => docFillDate(kind, NOW, locale);\n"
         "fns.options = (before, after, extra) => docFillOptions(docFillToken(before, after), ctx(extra || {}))"
@@ -450,3 +451,28 @@ def test_ending_a_list_leaves_the_blank_line_after_it() -> None:
     assert under_item == "\n", "dog2 item 6: a heading typed next must not sit flush against the list"
     assert under_blank == "" and first_line == ""
     assert nested == "- ", "stepping out one level keeps the bullet"
+
+
+@node
+def test_a_hash_tag_is_completed_only_where_a_word_opens_with_one() -> None:
+    """L5: `#wi` after a space or at a line start; never a heading, `C#`, a bare `#` or a number sign alone."""
+    got = run(
+        [
+            ["docTagTyped", "fix #wi"],
+            ["docTagTyped", "#wip"],
+            ["docTagTyped", "see #a-b_c"],
+            ["docTagTyped", "fix #"],
+            ["docTagTyped", "C#sharp"],
+            ["docTagTyped", "page.html#top"],
+            ["docTagTyped", "# Title #wip"],
+            ["docTagTyped", "## Plan"],
+            ["docTagTyped", "###"],
+            ["docTagTyped", "fix #wip "],
+        ]
+    )
+    assert got == ["wi", "wip", "a-b_c", None, None, None, None, None, None, None]
+
+
+def test_markdown_wires_the_tag_source_and_plain_text_stays_inert() -> None:
+    code = (ROOT / "frontend" / "js" / "documents-code.js").read_text(encoding="utf-8")
+    assert 'override: type.ext === "md" ? [docPairInput.tagSource(CM)] : [], activateOnTyping: type.ext === "md"' in code

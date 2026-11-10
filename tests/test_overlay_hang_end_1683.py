@@ -5,7 +5,7 @@ from __future__ import annotations
 import pytest
 
 from tessellate.core.overlay.engine import Engine, Perch
-from tests.overlay_sim_1670 import simulate
+from tests.overlay_sim_1670 import simulate, skip_flow
 from tests.test_overlay_moves import make
 
 # --- (h) a hang ends by its own choice ----------------------------------------------------------
@@ -110,6 +110,7 @@ def _first_hang_end(gait: str, seed: int, scene: str) -> str:
         e, t = hang_at_ceiling(seed, [], gait)
         if scene == "window below":
             e.set_windows([win], t)
+    skip_flow(e)  # a loop that reads the hang's ending, never the flow picture
     e.state_until = t
     n = len(e.legs)
     e.update(t + 0.016)

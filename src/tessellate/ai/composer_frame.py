@@ -41,7 +41,6 @@ _STOP = frozenset(
     "know there so far".split()
 )
 _PREFIX = lazy_compile(r"^([^:.!?\n]{2,40}):\s+(\S.*)$", re.S)
-_DOING = lazy_compile(r"^(?:i'?m |i was |been )?(?:(?:thinking|looking|planning|hoping|considering|saving|trying)\s+(?:of|about|at|for|to|on)?\s*)+(?:buying|getting|doing|trying|playing|making)?\s*", re.I)
 _IMPERATIVE = lazy_compile(r"^(?:go|buy|call|book|get|ask|read|pay|send|bring|try|do|check|remember)\b", re.I)
 
 
@@ -233,16 +232,6 @@ def _plain_lower(text: str) -> str:
 _MARK = lazy_compile(r"[*_`]")
 _SPLIT_HYPHEN = lazy_compile(r"(?<=[A-Za-z])- (?=[A-Z][a-z])")
 _ARTICLE = lazy_compile(r"(?:the|a|an)\b", re.I)
-#: "Here are some refined, non-corny pickup ... starters that work ...": the
-#: words that present a list, and where the thing presented ends.
-_PRESENTING = lazy_compile(r"^(?:here(?:'s| is| are)|these are|this is|below are)\s+(?:some|a few|a list of|my|a|an)?\s*", re.I)
-_PRESENTED_END = lazy_compile(r"(?<!\s)\s+(?:that|which|who|to|for|i|you|we)\b|:", re.I)
-#: Where a long first sentence can end on a whole clause: "I had work today
-#: and a friend was sad | so I stayed with her".
-_CLAUSE_BREAK = lazy_compile(r"\s+(?:so|but|because|then|and then|which|and)\s+", re.I)
-#: "My uni days this week are Tuesday and Thursday": a sentence about
-#: something is named by its subject, "the note on your uni days this week".
-_SUBJECT_VERB = lazy_compile(r"^((?:[\w'-]+\s+){0,5}?[\w'-]+)\s+(?:is|are|was|were|means|refers to)\b", re.I)
 #: Searched on right-stripped text with no leading `\s*`: `\s*(face)\s*$`
 #: re-scanned every whitespace run from each start, quadratic on a line of
 #: tabs (CodeQL, polynomial regex). One helper for every reader.
@@ -253,9 +242,6 @@ def strip_end_emoticon(text: str) -> str:
     """`text` without a closing emoticon and the space before it ("done :)")."""
     face = _EMOTICON_END.search(text.rstrip())
     return text[: face.start()].rstrip() if face else text
-#: The longest first clause a name may quote whole.
-_NAME_WORDS = 7
-_QUOTE_WORDS = 12
 
 
 def _plain(text: str) -> str:
@@ -324,48 +310,67 @@ def _titled(title: str) -> str:
     computing" (composer-1031); "The Complete Social Skills Guide" keeps its
     own article; a lower-case one is "your trains note"."""
     return title if _ARTICLE.match(title) or title[:1].isupper() or title[:1].isdigit() else f"your {title} note"
+#: How many words of a title-less note's first clause name it (C8, R3-15).
+_CLIP_WORDS = 6
 
 
-def _whole_clause(clause: str) -> str:
-    """The clause, or the whole part of it before a break, short enough to
-    name a note; "" when no whole part is short enough (never a cut)."""
-    words = clause.split()
-    if len(words) <= _QUOTE_WORDS:
-        return clause
-    for found in reversed(list(_CLAUSE_BREAK.finditer(clause))):
-        head = clause[: found.start()].strip()
-        if 3 <= len(head.split()) <= _QUOTE_WORDS:
-            return head
-    return ""
+#: A stop after one of these is part of the word, not the end of a clause.
+_ABBREVIATIONS = frozenset("dr mr mrs ms st vs etc approx cf prof jr sr no".split())
+#: A list, task or heading mark at the start of a line: not part of its words.
+_LINE_MARK = lazy_compile(r"(?:#{1,6}[ \t]+|[-*+][ \t]+|\d{1,3}[.)][ \t]+)?(?:\[[ xX]\][ \t]+)?")
 
 
-#: How many words of a title-less note's first clause name it (C8).
-_CLIP_WORDS = 7
+def _clause_end(first: str) -> int:
+    """Where the first clause of a line ends: at a semicolon or sentence stop
+    followed by a space, but not after an abbreviation ("Dr. Smith") or a
+    single initial ("J. Smith"). A comma does not end it: "Here are some
+    refined, non-corny lines" is not named "Here are some refined" (1420)."""
+    for found in re.finditer(r"(?<=\w)[;.!?](?=\s|$)", first):
+        word = first[: found.start()].rsplit(None, 1)[-1].lower()
+        if found.group() == "." and (word in _ABBREVIATIONS or len(word) == 1 or "." in word):
+            continue
+        return found.start()
+    return len(first)
 
 
-def _clipped(note: dict) -> str:
-    """A title-less note by its first clause, cut at a word with an ellipsis:
-    "the note that starts “I just missed the bus to uni…”", never by its
-    day alone or "an untitled note" (audit 1029 C8, INBOX 1420)."""
+def clipped_words(note: dict) -> str:
+    """The first clause of a title-less note, six words at most, cut with an
+    ellipsis, unquoted ("Dentist said to floss more and…"); "" for a note
+    with no words. The chip and the link text quote it themselves."""
     first = _first_line(str(note.get("content") or "").strip())
-    clause = re.split(r"(?<=\w)[,;.!?](?:\s|$)", first, maxsplit=1)[0].strip()
-    words = clause.split()
-    if not words:
-        return "a note with no words yet"
+    first = _LINE_MARK.sub("", first, count=1).strip()
+    words = first[: _clause_end(first)].split()
     said = " ".join(words[:_CLIP_WORDS]).rstrip(",;:")
-    return f"the note that starts “{said}{'…' if len(words) > _CLIP_WORDS else ''}”"
+    return said + ("…" if len(words) > _CLIP_WORDS else "") if said else ""
 
 
-def clipped_name(note: dict) -> str:
-    """A title-less note by its first words, for a link's text: "the note that
-    starts “Idea: a podcast about local history”"."""
-    return _clipped(note)
+#: Words of when that were the note's own day. A summary is read on other
+#: days than the notes were written, so it never says them (INBOX 1461).
+_OWN_DAY = lazy_compile(r"\b(?:today|yesterday|tonight|this (?:morning|afternoon|evening)|last night)\b", re.I)
+
+
+def without_own_day(name: str) -> str:
+    """`name` without the note's own "today" ("Pottery: trimmed my first bowl"),
+    unchanged when nothing else would be left."""
+    return " ".join(_OWN_DAY.sub("", name).split()).replace(" ”", "”").replace("“ ", "“") or name
+
+
+def name_of(note: dict) -> str:
+    """**The one name for a note, on every surface** (R3-15): its own title
+    when it has one ("Trains", `_titled`), else its first clause, six words
+    at most, in quotes (“Dentist said to floss more and…”), in a list, a
+    sentence, a link's text and the Open chip. The day is the caller's muted
+    second field, never part of the name."""
+    title = title_line(str(note.get("content") or "").strip())
+    if title:
+        return _titled(title)
+    return f"“{clipped_words(note) or 'An empty note'}”"
 
 
 #: A verb that makes a short line a sentence, after its first word (the
 #: first is the imperative's or the dropped "I"'s, read by own_title's guards).
 _FINITE = lazy_compile(r"\s(?:is|are|was|were|has|had|starts|started|begins|began|ends|ended|opens|closes|"
-                     r"comes|came|goes|went|looks|sent|wants|needs|says|said|gets|got|takes|took|"
+                     r"comes|came|goes|went|looks|sent|wants|needs|says|said|gets|got|takes|took|likes|liked|loves|loved|hates|hated|prefers|"
                      #: A regular past with its place or time after it: "Group
                      #: project meeting moved to Friday" says something (1461).
                      r"[a-z]{3,}ed\s+(?:to|on|at|in|for|from|until|till|back|up|off|out|by)\b)\b", re.I)
@@ -441,18 +446,6 @@ def own_title(content: str) -> str:
         #: sentence, never a name ("the Intro to ... starts Monday names it").
         return ""
     return "" if _said_line(line) else line
-
-
-def _presented(body: str) -> str:
-    """"Here are some refined, non-corny pickup and conversation starters
-    that work ..." as "your non-corny pickup and conversation starters"."""
-    rest = _PRESENTING.sub("", body, count=1)
-    end = _PRESENTED_END.search(rest)
-    thing = (rest[: end.start()] if end else rest).strip(" ,;")
-    thing = thing.rsplit(",", 1)[-1].strip()
-    return f"your {thing}" if 1 <= len(thing.split()) <= _NAME_WORDS else ""
-
-
 #: A diary line with its "I" dropped opens on a verb in the past: "had
 #: design class today", "went to the gym", "finished my assignment".
 _DIARY_VERB = lazy_compile(
@@ -471,42 +464,6 @@ _DIARY_VERB = lazy_compile(
     r"\s+(?:(?:to|at|for|with|on|in|into|up|out|over|back)\s+)?",
     re.I,
 )
-#: Words of when, said by the sentence and never by a name ("today" is the
-#: note's own day; the digest says it as a date, INBOX 1461).
-_WHEN_WORDS = lazy_compile(r"\s*\b(?:today|yesterday|tonight|this (?:morning|afternoon|evening|week)|last (?:night|week))\b", re.I)
-_TRAILING_PARTICLE = lazy_compile(r"\s+(?:back|up|out|off|again|too)$", re.I)
-
-
-#: "Felt really good after the run today": the note is about what the feeling
-#: followed, "your note on the run", never the feeling itself.
-_FEELING = lazy_compile(
-    r"^(?:felt|feel|feeling|was|am|were)\s+(?:\w+\s+){0,3}?(?:after|about|during|before|at|from|with)\s+(?P<what>.+)$", re.I)
-
-
-def _feeling_name(clause: str) -> str:
-    found = _FEELING.match(clause)
-    what = " ".join(_WHEN_WORDS.sub("", found.group("what")).split()) if found else ""
-    what = re.sub(r"\bmy\b", "your", what, flags=re.I)
-    return f"your note on {what}" if 0 < len(what.split()) <= _NAME_WORDS else ""
-
-
-def _diary_name(line: str, lower) -> str:  # noqa: ANN001
-    """A title-less diary line by what it is about: "had design class today
-    for prototyping" is "your note on design class for prototyping", never
-    "the had design class ..." (INBOX 1461); "" when the line is not one."""
-    feeling = _feeling_name(re.split(r"[,;:.!?]", line, maxsplit=1)[0].strip())
-    if feeling:
-        return feeling
-    verb = _DIARY_VERB.match(line)
-    if not verb or re.search(r"[,;:.!?]", line):
-        return ""
-    rest = _TRAILING_PARTICLE.sub("", _WHEN_WORDS.sub("", line[verb.end():])).strip()
-    #: What follows must be a thing, not "to buy milk" or "it" or "that".
-    if not rest or len(rest.split()) > _NAME_WORDS or re.match(
-            r"(?:to|it|that|this|so|very|really|not|no|and|but|i|me|him|her|them|us)\b", rest, re.I):
-        return ""
-    #: Mid-line words keep their own case ("Sam", "Lisbon").
-    return "your note on " + re.sub(r"\bmy\b", "your", rest, flags=re.I)
 
 
 #: A first line that is only pictures ("![](/media/cat.png)"): no words to
@@ -515,32 +472,14 @@ _ONLY_PICTURES = lazy_compile(r"(?:!\[[^\]\n]*\]\([^)\s]*\)\s*)+")
 
 
 def short_name(note: dict, lower=_lower) -> str:  # noqa: ANN001
-    """A note as a list names it: its title, its own label, or what it is
-    about; quoted when it is an instruction ("go to the gym at 9pm") or a
-    sentence of the person's own; never a phrase cut mid-thought (1420)."""
+    """A note as a list names it: its title, or `name_of` for a title-less
+    one (R3-15: one name, not a second way per surface)."""
     content = str(note.get("content") or "").strip()
     if note.get("_by_day"):
         return composer_threads.note_from(note)
     if _ONLY_PICTURES.fullmatch(content.split("\n", 1)[0].strip()):
         return composer_threads.picture_name(note)
-    title = title_line(content)
-    if title:
-        return _titled(title)
-    #: A diary line is named by what it is about, over its details or alone.
-    diary = _diary_name(_first_line(content), lower)
-    if diary:
-        return diary
-    label = note_label(note)
-    if label:
-        return f"the {lower(label)} note"
-    first = _first_line(content)
-    head = _PREFIX.match(first)
-    if head and head.group(1).strip().lower() in SECTION_LABELS:
-        #: "Pros: more time", "Idea: a bike route": a section's label is
-        #: never the note's name ("your pros note", C8).
-        return _clipped(note)
-    body = head.group(2) if head else first
-    return _named_by_subject(body, lower) or _named_by_clause(body, note, lower)
+    return name_of(note)
 
 
 def _first_line(content: str) -> str:
@@ -549,51 +488,6 @@ def _first_line(content: str) -> str:
     #: A heading's own marks are not part of its name: "the # Trains" (1324).
     first = re.sub(r"^#{1,6}\s+", "", first)
     return strip_end_emoticon(first).rstrip(".")
-
-
-def _named_by_subject(body: str, lower) -> str:  # noqa: ANN001
-    """What the note presents, or the subject its first sentence defines; "" with neither."""
-    if _PRESENTING.match(body):
-        presented = _presented(body)
-        if presented:
-            return presented
-    sentence = re.sub(r",\s*however,", "", re.split(r"(?<=[.!?])\s", body, maxsplit=1)[0])
-    about = _SUBJECT_VERB.match(sentence)
-    #: "What your notes leave out is ...": a wh-clause is a question's shape,
-    #: never a subject to name the note by ("the note on what your notes
-    #: currently leave out", INBOX 1420); the sentence is quoted instead.
-    if about and not re.match(r"(?:i|it|this|that|there|here|they|we|he|she|you|what|how|why|which|who|where|when|whether)\b", about.group(1), re.I):
-        #: "this week" was the note's week, not the reader's (INBOX 1461).
-        subject = _WHEN_WORDS.sub("", about.group(1)).strip() or about.group(1)
-        return "the note on " + re.sub(r"\bmy\b", "your", lower(subject), flags=re.I)
-    return ""
-
-
-def _named_by_clause(body: str, note: dict, lower) -> str:  # noqa: ANN001
-    """The note's first clause: quoted when an instruction or the person's own sentence, else as a phrase."""
-    clause = re.split(r"[,;.!?]", body, maxsplit=1)[0].strip()
-    if _IMPERATIVE.match(clause):
-        return "“" + lower(clause) + "”"
-    if re.match(r"i\b", clause, re.I):
-        #: The person's own sentence is quoted whole, never cut into a
-        #: different meaning ("I had work today and a friend").
-        whole = _whole_clause(clause)
-        return "“" + whole + "”" if whole else _clipped(note)
-    clause = _DOING.sub("", clause).strip() or clause
-    if _FINITE.search(clause):
-        #: A sentence is quoted, never worn as a name ("Intro to Cloud
-        #: Computing starts Monday names it in full").
-        return _clipped(note)
-    if len(clause.split()) > _NAME_WORDS:
-        whole = _whole_clause(clause)
-        if not whole or len(whole.split()) > _NAME_WORDS:
-            return _clipped(note)
-        clause = whole
-    if not re.match(r"(?:the|a|an|my|your)\b", clause, re.I):
-        clause = lower(clause)
-    return re.sub(r"^my\b", "your", clause, flags=re.I)
-
-
 #: A group names at most this many of its notes; the rest are counted
 #: ("A, B and four more"), since each is told on its own line below (INBOX
 #: 1461: a line of ten names was a list, not a summary).

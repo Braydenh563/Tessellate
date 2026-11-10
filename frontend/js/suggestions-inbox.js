@@ -83,7 +83,11 @@ async function openSuggestionsInbox(kind = "links") {
       }
       kind.addEventListener("change", () => inboxShow(kind.value));
       state.select = kind;
-      card.append(kind, body);
+      //: In the head beside the title, before its tools (INBOX 1714: alone on a row of its own it read as stray).
+      const head = card.querySelector(".sheet-head");
+      head?.insertBefore(kind, head.querySelector(".dialog-head-actions"));
+      if (!head) card.appendChild(kind);
+      card.appendChild(body);
     },
   });
   inboxShow(kind);

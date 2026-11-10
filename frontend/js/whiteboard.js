@@ -203,7 +203,7 @@ let wbZoom = d3
   .on("end.shield", wbEndPanShield);
 //: Whether the view is where the last "Fit to screen" put it (INBOX 792):
 //: the destination, and until when the fit's own animation is running.
-const wbFit = { on: false, target: null, until: 0 };
+const wbFit = { on: false, target: null, until: 0, padding: 64 };
 let wbState = { nodes: [], sketches: [], objects: [] };
 let wbHintForcedOpen = false; // the "?" help button's override: see renderWhiteboard
 let wbInitialized = false;
@@ -496,7 +496,9 @@ function wbClearCanvasRectCache() {
 
 function wbCanvasOriginRect() {
   if (wbCanvasRectCache) return wbCanvasRectCache;
-  const rect = document.getElementById("whiteboard-container").getBoundingClientRect();
+  //: Null until the board's template is stamped (row 21): a window resize before
+  //: the first board open must not throw (e2e editor-keys at 700 px).
+  const rect = document.getElementById("whiteboard-container")?.getBoundingClientRect() ?? null;
   wbCanvasRectCache = rect;
   return rect;
 }
@@ -670,17 +672,27 @@ function wbZoomFrameWork() {
 //: The zoom dock says the level (INBOX 1352 gap 5: three icons and no
 //: number). Written only when the rounded percent changes, to an element
 //: found once, so a pan costs nothing here.
-const wbZoomLevel = { pct: -1, el: null };
 function wbShowZoomLevel(k) {
   const pct = Math.round(k * 100);
-  if (pct === wbZoomLevel.pct) return;
-  wbZoomLevel.pct = pct;
-  wbZoomLevel.el ||= document.getElementById("wb-zoom-level");
-  if (wbZoomLevel.el) {
-    wbZoomLevel.el.textContent = `${pct}%`;
-    //: The name starts with the visible words (BD4, label-content-name-mismatch).
-    wbZoomLevel.el.setAttribute("aria-label", `${pct}%, zoom level, press for 100%`);
-  }
+  const zl = (wbShowZoomLevel.state ||= { pct: -1, el: null });
+  if (pct === zl.pct) return;
+  zl.pct = pct;
+  zl.el ||= document.getElementById("wb-zoom-level");
+  if (!zl.el) return;
+  //: A typeable number with a dropdown (INBOX 1694 b, value-field.js), built on the first paint: Enter zooms about the centre.
+  zl.field ||= valueField(zl.el, {
+    value: pct,
+    min: 10,
+    max: 400,
+    label: "Zoom percent",
+    format: (v) => `${Math.round(v)}%`,
+    presets: [25, 50, 75, 100, 150, 200, 400, { label: "Fit", run: () => wbZoomToFit() }],
+    onCommit: (v) => {
+      const container = document.getElementById("whiteboard-container");
+      if (container) d3.select(container).transition().duration(160).call(wbZoom.scaleTo, v / 100, wbZoomAnchor({ usePointer: false }));
+    },
+  });
+  zl.field.set(pct);
 }
 
 //: Run a queued zoom frame now rather than on the next one: for a transform
@@ -738,7 +750,7 @@ function wbScheduleCull() {
     //: measured once per gesture, and the canvas cannot change size while a
     //: pointer is down on it.
     const rect = wbCanvasOriginRect();
-    wbCullNow(undefined, rect ? { width: rect.width, height: rect.height } : undefined);
+    if (rect) wbCullNow(undefined, { width: rect.width, height: rect.height });
   });
 }
 
@@ -2902,7 +2914,7 @@ function wbSameView(a, b) {
 function wbRefitIfFitted() {
   const container = document.getElementById("whiteboard-container");
   if (!wbFit.on || !container || !container.offsetParent || !container.clientWidth) return;
-  wbZoomToFit();
+  wbZoomToFit({ padding: wbFit.padding });
 }
 
 /**
@@ -2938,6 +2950,7 @@ function wbZoomToFit({ animate = true, padding = 64, bounds = wbContentBounds(),
   //: Only Fit everything keeps fitting while the board settles; a zoom to
   //: the selection is a place, and the next layout must not pull it back out.
   wbFit.on = refit;
+  wbFit.padding = padding;
   wbFit.target = target;
   wbFit.until = Date.now() + (animate ? 600 : 100);
   if (!animate) {
@@ -3074,16 +3087,21 @@ const WB_MAP_OPEN_MIN_SCALE = 0.45;
 
 //: **On a phone the floor is the text, not the tree** (blind test 1031, 390px:
 //: a 7-topic template framed at 0.24, so a 17px topic read at 4px, a pill was
-//: 44x11 and the 24px add handle covered it). A topic's own text is 17px, so
-//: 0.72 reads at 12px, and a map that does not fit at that opens centred on
-//: its root at that same scale, the rest a pan away. The canvas width is the
-//: test rather than the pointer: a narrow desktop window has the same problem.
+//: 44x11 and the 24px add handle covered it). The owner, 2026-11-09: fit the
+//: whole map down to a minimum readable zoom, and when it is still too big,
+//: centre the root at that zoom. A topic's own text is 17px, so 0.65 reads at
+//: 11px (the floor; 0.72 read at 12px but left a 5-topic map 1 of 5 in view),
+//: and the fit's margin is 16px rather than 64 (the canvas is 372px wide). The
+//: canvas width is the test rather than the pointer: a narrow desktop window
+//: has the same problem.
 const WB_MAP_PHONE_MAX_WIDTH = 600;
-const WB_MAP_PHONE_SCALE = 0.72;
+const WB_MAP_PHONE_SCALE = 0.65;
 
 function wbMapFrameScales(container) {
   const phone = container.clientWidth <= WB_MAP_PHONE_MAX_WIDTH;
-  return phone ? { min: WB_MAP_PHONE_SCALE, open: WB_MAP_PHONE_SCALE } : { min: WB_MAP_OPEN_MIN_SCALE, open: 1 };
+  return phone
+    ? { min: WB_MAP_PHONE_SCALE, open: WB_MAP_PHONE_SCALE, pad: 16, centre: true }
+    : { min: WB_MAP_OPEN_MIN_SCALE, open: 1, pad: 64, centre: false };
 }
 
 //: **Frame a map when it opens**, rather than leaving the canvas wherever the
@@ -3105,8 +3123,8 @@ function wbFrameMapOnOpen() {
   if (!wbIsMap()) return;
   const container = document.getElementById("whiteboard-container");
   if (!container) return;
-  wbZoomToFit({ animate: false });
   const scales = wbMapFrameScales(container);
+  wbZoomToFit({ animate: false, padding: scales.pad });
   if (d3.zoomTransform(container).k >= scales.min) return;
   const root = wbMapIndex().roots[0];
   const bounds = wbContentBounds();
@@ -3116,7 +3134,7 @@ function wbFrameMapOnOpen() {
   //: wide window, so the same map opened at 0.4 there and at 1:1 on a narrow
   //: one).
   wbFit.on = false;
-  const target = wbMapOpenTarget(bounds, wbItemBBox("object", root), wbFreeArea(container), scales.open);
+  const target = wbMapOpenTarget(bounds, wbItemBBox("object", root), wbFreeArea(container), scales.open, 48, scales.centre);
   d3.select(container).call(wbZoom.transform, d3.zoomIdentity.translate(target.x, target.y).scale(target.k));
 }
 
@@ -3129,11 +3147,11 @@ function wbFrameMapOnOpen() {
 //: edge, so the empty space is on the far side; if that would push the root
 //: out of view (a root in the middle of a radial map), centre on the root
 //: instead.
-function wbMapOpenTarget(bounds, rootBox, free, k, pad = 48) {
+function wbMapOpenTarget(bounds, rootBox, free, k, pad = 48, centre = false) {
   const axis = (lo, rLo, rHi, a0, a1) => {
     const span = (a1 - a0) / k;
     let start = lo - pad / k;
-    if (rLo < start || rHi > start + span) start = (rLo + rHi) / 2 - span / 2;
+    if (centre || rLo < start || rHi > start + span) start = (rLo + rHi) / 2 - span / 2;
     return a0 - start * k;
   };
   return {
@@ -10616,7 +10634,7 @@ function wbEnsureHandles(el) {
   build();
 }
 
-onDomReady(() => {
+onSurface("board", () => {
   const board = document.getElementById("whiteboard-container");
   const reach = (e) => {
     const el = e.target?.closest?.(".wb-object, .node-card");
@@ -11605,6 +11623,22 @@ function wbCommitOpenEdit() {
   const active = document.activeElement;
   if (active?.isContentEditable && active.closest("#wb-html-layer")) active.blur();
 }
+
+//: **A box still being typed in is saved when the page goes** (boardfix-1108):
+//: the save runs on blur, and a reload or a closed tab does not blur, so words
+//: typed into an open sticky, text box or topic never left (measured: type,
+//: reload, the server kept the old text and no write was sent). `pagehide`
+//: finishes the edit and `wbSaveObject` sends with `keepalive` while
+//: `wbCommitOpenEdit.leaving` is set (a property, not a new shared name: the global-scope ratchet), so the request outlives the page. Not
+//: `visibilitychange`: switching tabs must not end an edit in progress.
+window.addEventListener("pagehide", () => {
+  wbCommitOpenEdit.leaving = true;
+  try {
+    wbCommitOpenEdit();
+  } finally {
+    setTimeout(() => { wbCommitOpenEdit.leaving = false; }, 0);
+  }
+});
 
 async function wbUndo() {
   await wbDeleting.settled();
@@ -14918,6 +14952,7 @@ function wbStampMenuRoles(menu) {
 }
 
 async function initWhiteboard() {
+  surfaceBuild("board");
   if (wbInitialized) return;
   wbInitialized = true;
   
@@ -15043,8 +15078,8 @@ async function initWhiteboard() {
   // Was `wbZoom.transform(d3.zoomIdentity)`, a reset to 100% at the origin,
   // under a button labelled "Fit to Screen". See `wbZoomToFit`.
   document.getElementById("wb-zoom-fit").addEventListener("click", () => wbZoomToFit());
-  //: The level itself is the 100% button, as in Figma and draw.io.
-  document.getElementById("wb-zoom-level").addEventListener("click", wbZoomTo100);
+  //: The level is a typeable field (value-field.js); drawn now, since the markup holds only its host.
+  wbShowZoomLevel(d3.zoomTransform(document.getElementById("whiteboard-container")).k || 1);
 
   // **An arrow, not the function directly.** `addEventListener` passes the
   // click event as the first argument, which would land in
@@ -23290,6 +23325,7 @@ async function wbSaveObject(d) {
     const saved = await apiJson(`/whiteboard/objects/${d.id}`, {
       method: "PUT",
       body: JSON.stringify(body),
+      keepalive: wbCommitOpenEdit.leaving === true,
     });
     //: **What changed here while the save was out stays** (audit FEAT-02):
     //: with the map's add no longer waiting for its saves, a tidy or a
@@ -24905,7 +24941,6 @@ onDomReady(() => {
     }
     wbImportOutlineFile({ target: { files: [file], value: "" } });
   });
-  $("wb-back-to-boards")?.addEventListener("click", wbShowBoardsLanding);
   $("library-boards-search")?.addEventListener("input", redrawLibraryBoardsGallery);
   // The Reload button beside "+ New board", now named after what it reloads.
   // It was `library-media-refresh`, a copy-paste leftover from the Media
@@ -24921,6 +24956,7 @@ onDomReady(() => {
   // New board, Import outline and Help does not say reload what.
   $("library-boards-refresh")?.addEventListener("click", renderLibraryBoardsGallery);
 });
+onSurface("board", () => $("wb-back-to-boards")?.addEventListener("click", wbShowBoardsLanding));
 
 // The Whiteboards tab has two views sharing one subtab: a boards gallery
 // (the landing view) and the actual canvas, asked for directly, replacing
@@ -24929,6 +24965,7 @@ onDomReady(() => {
 // is lazy and idempotent (`wbInitialized` guards it), so switching between
 // the two views repeatedly costs nothing after the first time.
 function wbShowCanvasView() {
+  surfaceBuild("board");
   $("wb-boards-landing")?.classList.add("hidden");
   const view = $("wb-canvas-view");
   //: Whiteboards and mind maps both draw here. Fade in once the board has
@@ -25463,14 +25500,16 @@ function renderWbGestureHints() {
 }
 window.renderWbGestureHints = renderWbGestureHints;
 
-document.getElementById("wb-gestures-dismiss")?.addEventListener("click", () => {
-  try {
-    prefs.set(WB_GESTURES_DISMISSED, "1");
-  } catch {
-    /* nothing to persist to, hiding it for this session is still correct */
-  }
-  wbGesturesDismissed = true;
-  document.getElementById("wb-gestures")?.classList.add("hidden");
+onSurface("board", () => {
+  document.getElementById("wb-gestures-dismiss")?.addEventListener("click", () => {
+    try {
+      prefs.set(WB_GESTURES_DISMISSED, "1");
+    } catch {
+      /* nothing to persist to, hiding it for this session is still correct */
+    }
+    wbGesturesDismissed = true;
+    document.getElementById("wb-gestures")?.classList.add("hidden");
+  });
 });
 
 /** Full screen for the board, asked for directly ("the whiteboard
@@ -25617,6 +25656,23 @@ function wbPresentShow(index) {
   const at = Math.max(0, Math.min(steps.length - 1, index));
   wbPresent.at = at;
   wbPresentCaption(at, steps);
+  //: **The page number, typeable** (INBOX 1694 b, value-field.js): a small field before the page picker, "2" then
+  //: "of 5: Title". Type a number and Enter to go there; Escape puts it back. Built on a presentation's first step,
+  //: removed with it; the picker beside it is the list of every page with its title.
+  if (!wbPresent.pageField) {
+    const slot = document.getElementById("wb-present-count");
+    const host = document.createElement("span");
+    host.className = "wb-present-page";
+    slot?.before(host);
+    wbPresent.pageField = valueField(host, {
+      value: at + 1,
+      min: 1,
+      max: () => wbPresent?.steps.length || 1,
+      label: "Page number",
+      onCommit: (n) => wbPresentShow(n - 1),
+    });
+  }
+  wbPresent.pageField.set(at + 1);
   const box = steps[at].box();
   const container = document.getElementById("whiteboard-container");
   const rect = container.getBoundingClientRect();
@@ -25652,7 +25708,8 @@ function wbPresentCaption(at, steps) {
   if (next) next.disabled = at === steps.length - 1;
   if (wbStudy.on) wbMapStudySyncBar();
   if (!slot) return;
-  const caption = `${at + 1} of ${steps.length}: ${steps[at].title()}`;
+  //: The page number is the bar's typeable field (`wbPresentPageField`); the opener says the rest.
+  const caption = `of ${steps.length}: ${steps[at].title()}`;
   const items = steps.map((step, i) => ({
     label: `${i + 1}. ${step.title()}`,
     run: () => wbPresentShow(i),
@@ -25874,13 +25931,17 @@ function wbStopPresenting() {
   wbMapEndStudy();
   closeActionMenus();
   document.getElementById("wb-present-count")?.replaceChildren();
+  document.querySelector(".wb-present-page")?.remove();
   document.getElementById("library-view-whiteboard")?.classList.remove("wb-presenting");
   document.getElementById("wb-present-bar")?.classList.add("hidden");
   if (!wasFull) toggleWhiteboardFullscreen(false);
   //: Back to where the board was looked at from before.
   const container = document.getElementById("whiteboard-container");
   if (container && camera) d3.select(container).call(wbZoom.transform, camera);
-  (focus && document.contains(focus) ? focus : container)?.focus?.({ preventScroll: true });
+  //: Only an element on screen: Present starts from a menu item, in a menu that
+  //: has closed by now, and focusing it left focus on `<body>` (boardfix-1108).
+  const back = focus && document.contains(focus) && focus.getClientRects().length ? focus : container;
+  (back ?? container)?.focus?.({ preventScroll: true });
 }
 
 //: While it runs the keys are the presentation's, ahead of the board's own
@@ -25889,6 +25950,8 @@ function wbStopPresenting() {
 window.addEventListener("keydown", (event) => {
   if (!wbPresent) return;
   if (event.ctrlKey || event.metaKey || event.altKey) return;
+  //: A number being typed in the bar's page field keeps its own keys (value-field.js).
+  if (event.target.closest?.(".value-field")) return;
   const step = {
     ArrowRight: 1, ArrowDown: 1, PageDown: 1, " ": 1, Enter: 1,
     ArrowLeft: -1, ArrowUp: -1, PageUp: -1,

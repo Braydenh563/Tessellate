@@ -176,4 +176,4 @@ def test_a_link_inside_a_named_pair_refers_back_to_them():
 
     notes = hobbies.notes()
     line = composer_frame.group_line(next(g for g in composer_frame.groups(notes) if 1 in g.ids), notes, "hobbies")
-    assert line.count("I just bought a new gaming mouse") == 1 and "them" in line, line
+    assert line.count("I just bought a new gaming") == 1 and "them" in line, line

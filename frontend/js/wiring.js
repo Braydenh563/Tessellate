@@ -23,7 +23,7 @@ reflectOnlineState();
 // --- writing room wiring ---
 $("draft-compose").addEventListener("click", composeDraft);
 $("draft-undo").addEventListener("click", undoDraft);
-$("draft-cancel").addEventListener("click", cancelDraft);
+$("draft-cancel").addEventListener("click", () => draftController?.abort());
 $("draft-save").addEventListener("click", () => saveDraftAsNote());
 
 $("draft-title").addEventListener("click", suggestDraftTitle);
@@ -71,13 +71,7 @@ $("draft-add-source").addEventListener("click", async () => {
   }
   const entry = await pickEntryDialog("Which note should Atlas write from?");
   if (!entry) return;
-  if (draftSources.some((s) => s.id === entry.id)) return;
-  draftSources.push({
-    id: entry.id,
-    label: clipText(entry.title || notePreviewText(entry.content) || "Untitled note", 60),
-  });
-  renderDraftSources();
-  saveDraftLocally();
+  addDraftSource(entry);
 });
 $("draft-continue-note").addEventListener("click", async () => {
   const entry = await pickEntryDialog("Which note should Atlas carry on?");
@@ -357,7 +351,7 @@ document.addEventListener("keydown", (event) => {
   $("chat-dock-more-btn").focus();
 });
 $("chat-stop").addEventListener("click", () => {
-  chatQueueState.held = true;
+  chatQueue.held = true;
   chatController?.abort();
 });
 //: **Escape stops the answer being written** (CHAT_PLAN section 6, the
@@ -380,7 +374,7 @@ document.addEventListener("keydown", (event) => {
   if ($("chat-stop").classList.contains("hidden")) return;
   if (document.querySelector(".modal-overlay:not(.hidden), .sheet-overlay:not(.hidden)")) return;
   event.preventDefault();
-  chatQueueState.held = true;
+  chatQueue.held = true;
   chatController.abort();
 });
 $("chat-new").addEventListener("click", newChatConversation);
@@ -1280,18 +1274,10 @@ $("notes-new-note").addEventListener("click", () => startNewNote());
 function startNewNote() {
   if ($("tab-notes").classList.contains("hidden")) switchTab("notes");
   showNotesSection("capture");
-  // The box is a live editor (documents.js `mountNoteSurface`) that mounts
-  // over the textarea the first time Capture shows, and the mount takes the
-  // focus a plain `focus()` had just set: measured in Chromium, the textarea
-  // was the active element 50ms after the press and nothing was at 750.
-  // Focusing the surface the mount resolves to lands on the editor whether
-  // this is its first showing or its fiftieth.
   const box = $("entry-content");
   box?.focus();
-  //: `mountNoteSurfaceNow` (app.js) fetches the editor's bundle when it is
-  //: not in yet; the bare `mountNoteSurface` is undefined until then, which
-  //: left the focus on the body on a fresh boot (INBOX 432, measured).
-  mountNoteSurfaceNow(box).then((surface) => surface?.focus()).catch(() => {});
+  //: A failed bundle fetch must not reject unhandled; the textarea has the focus.
+  mountNoteSurfaceNow(box).then((s) => !activeOverlay() && s?.focus()).catch(() => {});
 }
 $("select-btn").addEventListener("click", () =>
   selectMode ? exitSelectMode() : enterSelectMode()

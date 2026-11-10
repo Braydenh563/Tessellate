@@ -461,7 +461,10 @@ def test_an_answer_no_model_wrote_says_so_in_its_support_notice() -> None:
     from pathlib import Path
 
     routes = Path("src/tessellate/api/routes_chat.py").read_text(encoding="utf-8")
-    assert routes.count('"by_model": False') >= 1
+    #: The mark moved into `grounding.composed_support` (INBOX 1706), which the
+    #: live and the saved turn both call, so the route must call it.
+    grounding = Path("src/tessellate/ai/grounding.py").read_text(encoding="utf-8")
+    assert "composed_support(" in routes and grounding.count('"by_model": False') >= 1
     js = with_pieces("capture-ask.js")
     body = js[js.index("function renderAnswerSupport") :]
     body = body[: body.index("\n}\n")]

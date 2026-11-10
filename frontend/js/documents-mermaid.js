@@ -47,10 +47,10 @@
   //: kind of diagram is null.
   const DGM_MAX_NODES = 120;
   const DGM_SHAPES = [
-    ["([", "])", "stadium"], ["((", "))", "circle"], ["{{", "}}", "hexagon"],
+    ["([", "])", "stadium"], ["((", "))", "circle"], ["{{", "}}", "hexagon"], ["[(", ")]", "cylinder"], ["[/", "/]", "parallelogram"],
     ["[", "]", "rect"], ["(", ")", "round"], ["{", "}", "diamond"],
   ];
-  const DGM_UNREAD_SHAPE = /^(?:\[\[|\[\(|\[[/\\|]|\(\(\(|>|@\{|:::|\{\{\{)/;
+  const DGM_UNREAD_SHAPE = /^(?:\[\[|\[[\\|]|\(\(\(|>|@\{|:::|\{\{\{)/;
   const DGM_KEPT = /^(?:%%|(?:style|classDef|class|linkStyle|click|direction|default)\s|acc(?:Title|Descr)\b)/;
   const DGM_OTHER = /^(?:sequenceDiagram|classDiagram|stateDiagram|erDiagram|journey|gantt|pie|mindmap|timeline|gitGraph|C4\w+|quadrantChart|requirementDiagram|sankey|xychart|block|packet|kanban|architecture|zenuml)\b/i;
   //: Longest first, so `-.->` is not read as `-.-` and a stray `>`.
@@ -432,6 +432,7 @@
           openDiagramBuilder({
             source: this.source,
             title: "Edit diagram",
+            draft: `doc:${currentDoc?.id ?? ""}`,
             offer: { fence: [view, this.source, near] },
             onDone: (next, changed) => {
               if (!changed) return;
@@ -533,6 +534,15 @@
     return new Promise((resolve) => shell.open(resolve));
   }
 
+  //: A diagram made from the builder is a document the lists do not know yet: the Library's `docs` (the sidebar, the Live view's link
+  //: resolver) and the `[[` picker's cache are given the row, so `![[Title]]` draws in Read view at once and not after a reload.
+  function diagramMadeKnown(made) {
+    const other = (list) => [made, ...(Array.isArray(list) ? list : []).filter((d) => d.id !== made.id)];
+    if (typeof docs !== "undefined") docs = other(docs);
+    if (typeof editorDocumentCache !== "undefined" && editorDocumentCache?.length) editorDocumentCache = other(editorDocumentCache);
+    if ($("doc-list")) renderDocList();
+  }
+
   async function diagramDoor({ target = null, doc = false } = {}) {
     const onBoard = !doc && wbCommandsLive() && (!target || Boolean(target.closest?.("#library-view-whiteboard")));
     if (onBoard) return wbEditDiagram();
@@ -544,12 +554,16 @@
     //: the last document and no builder. Cancel makes nothing.
     if (!box) {
       return openDiagramBuilder({
-        //: Empty, so the walkthrough shows (R6.8); its "Start from an example" button loads the starter.
-        source: "flowchart TD",
+        //: A drawn three-box starter, its first box selected (DD-3b, 1107; it was empty so the walkthrough showed, R6.8): the
+        //: first connected diagram is names typed over boxes that exist. Clear in the ... menu empties it.
+        source: diagramModel.starter,
         title: "Diagram builder",
+        named: true,
+        draft: "new",
         existing: { pick: pickExistingDiagram, open: async (row) => (switchTab("documents"), loadDocuments(row.id)) },
-        onDone: async (next) => {
-          const made = await apiJson("/documents", { method: "POST", body: JSON.stringify({ title: "Diagram", content: next, file_type: "mmd" }) }).catch(() => (toast("The diagram was not saved. Try Done again.", "info"), null));
+        //: The window's title names the document and the exports; blank is dated, so two Done presses are two names (DD-12, 1107).
+        onDone: async (next, _changed, name) => {
+          const made = await apiJson("/documents", { method: "POST", body: JSON.stringify({ title: name || `Diagram ${new Date().toISOString().slice(0, 16).replace("T", " ")}`, content: next, file_type: "mmd" }) }).catch(() => (toast("The diagram was not saved. Try Done again.", "info"), null));
           if (!made) return;
           switchTab("documents");
           await loadDocuments(made.id);
@@ -560,13 +574,16 @@
     return openDiagramBuilder({
       source: diagramModel.starter,
       title: "Diagram builder",
+      named: true,
+      draft: "new-embed",
       //: Done makes the `.mmd` row and writes a live reference to it (1621 D5), so the diagram has one home and a page of its own.
-      //: A stamp in the title keeps `![[Title]]` pointing at this row and not at an earlier "Diagram".
-      onDone: async (next) => {
-        const title = `Diagram ${new Date().toISOString().slice(0, 16).replace("T", " ")}`;
+      //: The window hands back a clean, unused title, so `![[Title]]` finds this row.
+      onDone: async (next, _changed, name) => {
+        const title = name || `Diagram ${new Date().toISOString().slice(0, 16).replace("T", " ")}`;
         const made = await apiJson("/documents", { method: "POST", body: JSON.stringify({ title, content: next, file_type: "mmd" }) }).catch(() => (toast("The diagram was not saved. Try Done again.", "info"), null));
         if (!made) return;
         offerCreateUndo(made);
+        diagramMadeKnown(made);
         box.focus?.();
         editorBlock(box, `![[${made.title || title}]]`, "", "");
       },
@@ -576,11 +593,12 @@
   diagramModel.starter = "flowchart TD\n  A[Start] --> B{Ready?}\n  B -->|yes| C[Ship it]";
   //: Exported on `diagramModel`, not as a global name of its own: the callers are in other files and ask for the library bundle first.
   diagramModel.door = diagramDoor;
+  diagramModel.madeKnown = diagramMadeKnown;
 
   //: The file's whole surface: what documents.js and documents-export.js call.
   Object.assign(window, { docRenderMermaidIn, docMermaidWhenDrawn, docMermaidField, diagramModel, openDiagramBuilder });
   //: The block pane (1546 P2) is a bundle of its own, fetched when a diagram is first shown (the kinds, 1546 P4, when a mind map, timeline or sequence diagram is):
   //: every caller is in this bundle or opens a document first, so no stand-in is needed, and
   //: neither app.js nor lazy-entries.js (both at their caps) carries the row.
-  Object.assign(LAZY_MODULES, { diagramBuilder: ["/css/diagram-lazy.css", "/js/diagram-builder.js"], diagramEmbed: ["/js/diagram-embed.js"], diagramTouch: ["/js/diagram-touch.js"], diagramView: ["/js/diagram-view.js"], diagramOverlay: ["/js/diagram-overlay.js"], diagramCanvas: ["/js/diagram-canvas.js"], diagramEdges: ["/js/diagram-edges.js"], diagramEdgePick: ["/js/diagram-edge-pick.js"], diagramSplit: ["/js/diagram-split.js"], diagramMulti: ["/js/diagram-multi.js"], diagramBar: ["/js/diagram-bar.js"], diagramKindbar: ["/js/diagram-kindbar.js"], diagramSteps: ["/js/diagram-steps.js"], diagramOutline: ["/js/diagram-outline.js"], diagramSuggest: ["/js/diagram-suggest.js"], diagramKinds: ["/js/diagram-kinds.js"], diagramJoins: ["/js/diagram-joins.js"], diagramStyle: ["/js/diagram-style.js"] });
+  Object.assign(LAZY_MODULES, { diagramBuilder: ["/css/diagram-lazy.css", "/js/diagram-builder.js"], diagramEmbed: ["/js/diagram-embed.js"], diagramTouch: ["/js/diagram-touch.js"], diagramView: ["/js/diagram-view.js"], diagramOverlay: ["/js/diagram-overlay.js"], diagramCanvas: ["/js/diagram-canvas.js"], diagramEdges: ["/js/diagram-edges.js"], diagramEdgePick: ["/js/diagram-edge-pick.js"], diagramSplit: ["/js/diagram-split.js"], diagramLetGo: ["/js/diagram-letgo.js"], diagramComplete: ["/js/diagram-complete.js"], diagramMulti: ["/js/diagram-multi.js"], diagramBar: ["/js/diagram-bar.js"], diagramKindbar: ["/js/diagram-kindbar.js"], diagramSteps: ["/js/diagram-steps.js"], diagramOutline: ["/js/diagram-outline.js"], diagramSuggest: ["/js/diagram-suggest.js"], diagramKinds: ["/js/diagram-kinds.js"], diagramJoins: ["/js/diagram-joins.js"], diagramStyle: ["/js/diagram-style.js"] });
 })();

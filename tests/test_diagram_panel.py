@@ -24,7 +24,7 @@ def _rule(selector: str) -> str:
 
 
 def test_the_pane_frame_is_made_in_the_lazy_steps_file_and_asked_for_once_by_the_builder():
-    assert "function frame(" in STEPS and "diagramModel.steps = { build, sync, frame }" in STEPS
+    assert "function frame(" in STEPS and "diagramModel.steps = { build, sync, frame, next }" in STEPS
     assert BUILDER.count("diagramModel.steps.frame(") == 1
     # The builder file has a 12,000 byte gzip cap: it asks, it does not build.
     assert "dgm-purpose" not in BUILDER and "dgm-foot" not in BUILDER
@@ -53,3 +53,25 @@ def test_the_new_rules_use_tokens_only_and_no_em_dashes():
 
 def test_the_guide_says_the_pane_in_the_controls_words():
     assert "Add block" in HELP and "Your blocks, in the order the chart flows" in HELP
+
+
+def test_the_foot_and_the_checklist_do_not_say_the_same_thing_twice():
+    # 1679 blind pass: after the first block the checklist and the foot both offered a box and an arrow.
+    # Intent unchanged, the checklist now goes at two boxes (DD-10, 1107), so the foot's Connect shows from then on.
+    assert 'S.footConnect?.classList.toggle("hidden", lesson && Boolean(S.steps))' in STEPS
+    assert 'S.steps?.firstElementChild?.classList.toggle("hidden", m.nodes.length > 0)' in STEPS
+    assert "Add a Box" not in STEPS  # sentence case: "Add a box"
+
+
+def test_handles_shrink_on_a_small_block_an_empty_name_puts_the_label_back_and_the_hint_goes_when_drawing_starts():
+    edges = (JS / "diagram-edges.js").read_text(encoding="utf-8")
+    # Intent moved (INBOX 1679 m, the owner's later report, merged first): a small block's handles shrink through
+    # `handleSize` and lean out of its edge (tests/test_diagram_1679m.py measures the sizes), not through a CSS scale.
+    assert "overlay().handleSize(at, full" in edges and "const lean = size < full" in edges
+    assert "label.textContent = nameOf(S, key)), render(S)" in BUILDER
+    assert 'S.fig.querySelector(":scope > .dgm-hint")?.remove();' in BUILDER
+
+
+def test_a_quote_or_hash_code_is_not_drawn_as_its_entity():
+    draw = (JS / "mermaid-draw.js").read_text(encoding="utf-8")
+    assert '["#quot;", "\\ue001", "&quot;"]' in draw and "text.split(stand).join(mark), result.svg)" in draw

@@ -134,19 +134,7 @@ the same thing.
 
 ### Phase 4: the connected document (1 session)
 
-1. **Backlinks with context**: built, 2026-09-12. `GET
-   /documents/{id}/backlinks` answers for notes and documents at once, the
-   panel shows the sentence around each link with "link back", and unlinked
-   mentions sit below with "link", which rewrites the mention in the source
-   that wrote it. Decisions in section 11.
-2. **Block references** (`^block-id`): built, 2026-09-12. A paragraph carries
-   `^an-id` at the end of its last line; `[[Doc#^id]]` links to it and
-   `![[Doc#^id]]` embeds it, from a note, a map node or a chat. The model is
-   `DOC-BLOCKREF-BEGIN`..`END` in `documents.js` (run in node by
-   `tests/test_doc_blockrefs.py`), the "/" menu's "Link to this block" writes
-   the id and copies the reference, the marker hides in Live and is stripped
-   from Read, and `scratchpad/ui-sweeps/docblockref.js` measures the lot
-   (25/25). Decisions in section 11.
+Phase 4 items 1 (backlinks with context) and 2 (block references) are built, 2026-09-12 (`tests/test_doc_blockrefs.py`); decisions are in section 11. Moved to HISTORY.md, "Moved from the plans, 2026-11-09 (book5-1109: DOCUMENTS_PLAN)".
 3. **Outline drag-to-reorder** (PLAN D6), breadcrumbs, sticky outline: built,
    2026-09-20. The record is in HISTORY.md ("Moved from the plans,
    2026-09-20", DOCUMENTS_PLAN.md Phase 4 item 3).
@@ -154,20 +142,7 @@ the same thing.
    The record, including the `Ctrl+K` decision the plan left open, is in
    HISTORY.md ("Moved from the plans, 2026-09-20", DOCUMENTS_PLAN.md Phase 4
    item 4).
-5. **Daily notes** and **templates gallery**: built, 2026-09-20. The gallery
-   was already there with six templates, each carrying a description
-   (`scratchpad/ui-sweeps/doctemplates.js`); daily notes were the row that
-   needed the decision first, and it is section 14. What was built from it is
-   one template and one recognition: New from a template now offers Daily
-   (seven rows), the document it makes is titled with the ISO day, and the
-   Timeline's day bucket accepts a note *or* a document with that title, so
-   the "Start today's note" offer beside a day already written as a document
-   is gone. Measured before and after in `scratchpad/ui-sweeps/docdaily.js`,
-   11 of 11: before, 6 templates with no daily and the bucket offering to
-   start a second page beside a document titled `2026-09-20`; after, 7
-   templates, the created document titled `2026-09-20` with `# 2026-09-20` as
-   its first line, 0 "start today's note" offers, 1 "Today's document" offer,
-   and the calendar glyph on the row.
+Phase 4 item 5 (daily notes and the templates gallery) is built, 2026-09-20; the decision is section 14. Moved to HISTORY.md, "Moved from the plans, 2026-11-09 (book5-1109: DOCUMENTS_PLAN)".
 
 ### Phase 5: review, history and AI (1 session)
 
@@ -319,21 +294,8 @@ agent that audits what renders first (section 1 of CLAUDE.md) and then builds:
 - Help moves with it (standing order 13). Measure with a Playwright sweep per
   language; no new required dependency (CLAUDE.md, the owner's offline rule).
 
-## Built, Phase 1 (the chrome), 2026-09-09
-
-Moved to HISTORY.md ("Moved from the plans, 2026-09-09", DOCUMENTS_PLAN.md) on 2026-09-09: a plan holds open work only.
-
-## Built, Phase 2 step 1 (the engine, vendored and verified under the CSP), 2026-09-09
-
-Moved to HISTORY.md ("Moved from the plans, 2026-09-09", DOCUMENTS_PLAN.md) on 2026-09-09: a plan holds open work only.
-
-## Built, Phase 2 steps 2 to 4 (the engine under the editor), 2026-09-09
-
-Moved to HISTORY.md ("Moved from the plans, 2026-09-09", DOCUMENTS_PLAN.md) on 2026-09-09: a plan holds open work only. What is left open from this phase is in `archive/agent-remaining/documents-engine.md`.
-
-## Built: Phase 0
-
-Moved to HISTORY.md ("Moved from the plans, 2026-09-09", DOCUMENTS_PLAN.md) on 2026-09-09: a plan holds open work only.
+## Built, Phases 0 to 2 (the chrome, the engine, the editor), 2026-09-09
+Moved to HISTORY.md ("Moved from the plans, 2026-09-09", DOCUMENTS_PLAN.md): a plan holds open work only.
 
 ## Built, Phase 3 (tables, blocks, embeds, properties, columns), 2026-09-12
 
@@ -386,31 +348,7 @@ DX24t. Built 2026-11-03 (a30h-1102, 65c01c4, e3aae86): see HISTORY.md, "Moved fr
 
 INBOX 1482 (the file type picker) is built and moved to HISTORY.md ("Moved from the plans, 2026-10-31 (file type picker 1482)") on 2026-10-31: a plan holds open work only.
 
-"Note in the redesign documents and where it is supposed to that I want to get
-rid of and redesign these mini menu bars as they are in a couple popups around
-the place and they desperately need a modern redesign or alternative", with a
-photo of `#doc-ai-verb`, the Edit / Write / Remove bar in this tab's AI
-assistant panel.
-
-**Done, 2026-09-12, and the decision is in `docs/DESIGN.md`** ("A choice
-control's selected segment is `--accent-surface` behind `--on-accent`"), which
-is where it belongs: it is a rule about a recipe, not about this tab. The
-short version, so it is not re-litigated here: the two radio-backed bars
-(`#doc-ai-verb`, `#graph-layout`) were the app's own segmented control drawn
-with a different set of numbers, and the selected option was a 14% accent tint
-behind body-coloured text with a drop shadow under it, which is not a selected
-state anyone can see across a popup. They read as the other twenty-eight `.seg`
-groups now. Measured before and after with
-`scratchpad/ui-sweeps/segbars.js`; the numbers are in DESIGN.md and in the
-commit.
-
-**The label size this found is closed too** (`9586542`, a later pass the same
-day). `.seg button` set no `font-size` at all, so it inherited whatever tab it
-was on: measured at three sizes across the app, 16px on the tab strips, 13.6px
-on two choice controls and 12.8px on three more. Every choice control is on
-`--text-md` now, the tab strips deliberately are not. Re-measured here: all
-nine segments across `#doc-ai-verb`, `#doc-view-seg` and `#graph-layout` read
-13.6px.
+The segmented mini bars (107d) are done, 2026-09-12; the rule is in `docs/DESIGN.md` ("A choice control's selected segment is `--accent-surface` behind `--on-accent`"). Moved to HISTORY.md, "Moved from the plans, 2026-11-09 (book5-1109: DOCUMENTS_PLAN)".
 
 ## Placed from INBOX, 2026-09-09 (the owner's evening batch)
 
@@ -812,26 +750,7 @@ left a fourth beside them. Each is decided here rather than carried again, and
 each decision rests on a number from `scratchpad/ui-sweeps/doctoolbarstate.js`
 (21 of 21) rather than on how the item was described.
 
-**1. The toolbar's own state: built.** This is the one that was only ever
-waiting for the tree. Before the engine, deciding whether the caret sat inside
-`**bold**` meant counting asterisks from the top of the document on every
-keystroke; the tree exists now for the decorations, so `renderDocToolbarState`
-resolves one node and walks its ancestors, which costs the depth of the
-markdown at the caret and not the length of the document. It runs on the same
-beat as the caret readout, which is the beat that already exists.
-
-Measured at eleven stops in a document with one of everything: `h1` in a
-heading, nothing in plain prose, `bold`, `italic`, `code`, `h2`, `ul`, `task`,
-`ol`, `quote` and `link`, each with no other button lit. 17 of the strip's 41
-`data-md` buttons carry `aria-pressed`, and the other 24 are the ones that
-always insert something new and have no state to be in: a button that is not a
-toggle must not tell a screen reader it is one. The caret resolves with side
-`-1`, so a caret just past the final `d` of a bold word still reads as bold,
-which is what makes "keep typing in bold" and "the button says bold" the same
-answer. A task item lights `task` and not `ul`, although a task list is a
-bullet list in the grammar, because the more specific one is the one pressing
-the button would turn off.
-
+Section 16 item 1 (the toolbar's own state) is built (`renderDocToolbarState`). Moved to HISTORY.md, "Moved from the plans, 2026-11-09 (book5-1109: DOCUMENTS_PLAN)".
 **2. Atomic ranges: decided against, and the decision rests on a
 measurement that contradicts the note that asked for them.** The engine file
 records the symptom as "a hidden marker can still be walked into with the
@@ -863,25 +782,7 @@ it costs a window-level key listener with a reset on blur for a hover hint
 that is already available by resting on the chip. Left unbuilt on purpose; a
 row here rather than a fourth session rediscovering the tooltip.
 
-**4. The table cell's ten-row menu: built, as a change to the shared recipe.**
-Rows, columns, alignment and the whole table read as one list of ten, and
-finding "Align centre" in it meant knowing the order. The bullet that recorded
-this said correctly that `kebabMenu` had no separator and that this was
-therefore a change to the recipe and to DESIGN.md rather than a phase item, so
-that is what it is: an item may carry `group`, a name, and `kebabMenu` draws a
-hairline wherever the name changes. Callers declare meaning, never pixels, and
-an item with no `group` behaves exactly as before, so every other menu in the
-app is untouched.
-
-The name is not drawn. A heading over every three rows would make this menu
-seventeen rows tall, and what makes a list scannable is the break rather than
-the word. Measured after: 10 items, 3 hairlines at 1px tall and 172px wide,
-`role="separator"` on each so the grouping reaches the accessibility tree,
-10 `menuitem` roles and 3 separators, and `wireMenuKeyboard` walks
-`[role="menuitem"]`, so a hairline is never a stop on the way down. The recipe
-index carries it and `tests/test_ui_recipes.py` holds the ratchet: a command
-table past five rows declares its groups, and the separator element and its
-stylesheet rule both still exist.
+Section 16 item 4 (the table cell menu, `kebabMenu` item `group`) is built. Moved to HISTORY.md, "Moved from the plans, 2026-11-09 (book5-1109: DOCUMENTS_PLAN)".
 
 ## 17. The live view for professional use: measured 2026-09-21, phases open
 
@@ -1319,29 +1220,7 @@ Moved to HISTORY.md ("Moved from the plans, 2026-10-03 (the documents pass)", DO
 
 ## Placed from INBOX, 2026-10-03 (INBOX 409: the AI assistant bar is what stays open)
 
-409. **The owner, 2026-09-24, verbatim, with screenshots of Settings,
-    Templates, the persona list, a .json document with the formatting bar
-    over it, and the Write tab's AI assistant bar.** "templates cant be
-    edited, I want the generation of persona icons to be improved and I also
-    want to auto generate other icons in other places like potentially the
-    user chat bubbles?? idk. also the degree of indenting is shallow, I think
-    it should be more prominent. also this edit/write/remove bar is ugly and
-    doesnt suit a modern app, it needs to be restructured/redesigned or
-    transformed somehow to be better." Read from the screenshots: built-in
-    templates have no edit (only added ones do); the persona marks are a
-    blob on a flat disc, too alike at 20px; the prose formatting bubble (B,
-    I, S, highlight, code, link, H, quote) draws over a code document, where
-    none of it applies; the indent guides step 2 spaces; the AI assistant
-    control is a filled segmented pill. Placed: orchestrator, in this order.
-    **Built 2026-09-24**: templates editable, built-ins included (3a769ed,
-    sweep `templates.js`); persona marks a generated face, closest pair of
-    23 at 40px 5.6% before, 29.8% after (259b743, `namemarks.js`); the
-    user's own mark on their chat bubbles and the persona picker's
-    (0e88b6e, ede4f2a, `chatmarks.js`, bubble box unchanged). The code
-    selection bar and the indent step are 7ab7eec. The AI assistant bar
-    is closed: the owner's later line (INBOX 431 (f), 2026-09-27) says they
-    like that dialog's design and the edit/write/remove pill, so nothing
-    is open here.
+INBOX 409 is built, 2026-09-24 (editable built-in templates, generated persona marks, the user's own mark on chat bubbles, the code selection bar and indent step); the AI assistant bar is closed by the owner's INBOX 431 (f). Moved to HISTORY.md, "Moved from the plans, 2026-11-09 (book5-1109: DOCUMENTS_PLAN)".
 
 ## Placed from INBOX, 2026-10-05 (OPEN.md triage)
 
@@ -1597,3 +1476,17 @@ Critique points rejected or changed:
 ## Placed from INBOX, 2026-11-04
 
 1679. **Owner, 2026-11-04 16:50Z, verbatim (names Fable for this task):** "also can you get fable to take a quick look at and do a deep dive on the diagram builder?? it si still not really learnable and is still quite unintuitive and it feels like it lacks key design features and utility and it just feels very demo and not a complete feature or smth that it usable and easy to understand". One Fable agent, read-only deep dive, findings in `docs/roadmap/agent-remaining/diagram-fable-1679.md`, then ranked slices built by Sonnet. Owner, 2026-11-05 00:25Z, verbatim: "also on the mermaid diagram, it is soo much better now, but the left panel still needs a bit of a redesign to be more intuitive to use and understand, also the panning and zoom of the right panel feels really awkward and unresponsive and it needs a bit of usability, an ux polishing". Recommendation (taken): (k) the left panel (the outline and blocks pane) redesigned for first use: one clear purpose line, the tree of boxes and lines read top to bottom with what each row does on hover and focus, add and connect where the eye is, and a blind-tester pass before and after; (l) the picture pane's pan and zoom: wheel and pinch zoom about the pointer, drag to pan with momentum, zoom on every input in one frame (no wait for a re-render; the SVG transforms and redraws after), fit and 100% buttons, keyboard pan and zoom, measured input-to-paint latency (under 16 ms) and zoom steps that feel even. Then, 2026-11-05: "shouldnt these be from the outer box not the text?" (the connect arrows sat on a pill's label; fixed 2026-11-05, the shape is read before the label group) and "like make tools and features more accessible and aparrent, beef it up, are there any missing features?? what if I need to make like a sequence diagram or box certain elements?? it feels very rudimentary and basic". Recommendation (taken): (m) sequence diagrams and groups exist but are hidden behind the kind menu and the Arrange menu: a visible kind switcher (flowchart, sequence, mind map, timeline) at the top of the builder, "Box the picked blocks" on the selection bar and the block menu, every tool labelled where it sits, and a gap audit against Mermaid (class, state, ER, Gantt and pie open in Source only today; styling per block, notes and activations in a sequence, edge labels and link styles, icons) with the gaps built in order of use. **(m) built 2026-11-05:** the visible kind switcher (Flowchart, Sequence, Mind map, Timeline: `diagram-kindbar.js`, a new empty diagram of the kind, Undo brings the old one back), Box this block (block menu) and Box them (selection bar), sequence Parallel, Critical and Break boxes (U, C, B), and nine editor bugs from a fresh-eyes tester (handles scale with the block, `&quot;` drawn as a quote, emptied name, hint and pending line at once, `Add a box`, steps buttons duplicating the foot, + and wheel top, pan with nothing to pan). **Gap audit against Mermaid, still open, in order of use:** (1) flowchart shapes the blocks cannot read (cylinder `[( )]`, subroutine `[[ ]]`, parallelogram `[/ /]`, flag `>]`; such a diagram opens in Source), then `classDef`/`class` styling beyond the fill colour, `click` links and Font Awesome icons; (2) sequence: `autonumber`, `box` around participants, `create`/`destroy`, `rect` highlight colour (all open in Source today); (3) Gantt, pie and state diagrams as block kinds (the three most asked after sequence), then class and ER (Source only); (4) a per-edge label position, curve style and a link `id@` animation; (5) markdown strings and `<br>` line breaks in a name; (6) flowchart sub-direction inside a subgraph.
+
+## 23. List styles, decision 40 (INBOX 1696 cc, built 2026-11-08)
+**Decision 40.** The marker is the style, so the source and the export agree.
+Dots: `-` disc, `*` circle, `+` square, `-` plus two spaces dash. Numbers:
+`1.`, `1)`, `a.` and `i.` (the last two count only as a run of two, `a.` then
+`b.` or `i.` then `ii.`; `h. i. j.` stays letters). One list is one marker at
+one level. The List and Numbered menus restyle the list at the caret as one
+undo step; a pasted Unicode dash (U+2010 to U+2014), `•`, `◦` or `▪` at a line start becomes `- `.
+Block `docLists`, documents-cm.js. Scout of the bundled CodeMirror:
+- Already in prose: fold, multiple cursors, rectangular select, brackets, search, merge view.
+- Rows L1 (Enter continues `a.`, `i.`, dash lists) built, see HISTORY 2026-11-08 (DOCUMENTS_PLAN 23 L1 to L5).
+- Row L2 was already built (`docPairInput`, documents-prose.js; see HISTORY 2026-11-08).
+- Row L3 was already built (the markdown grammar folds list items), see HISTORY.
+- Row L4 built, see HISTORY. Row L5 built, see HISTORY.

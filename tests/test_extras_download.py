@@ -459,3 +459,45 @@ def test_needle_engine_downloads_are_all_inspected_and_pinned_per_platform():
 
 def test_needle_row_says_the_engine_is_checked_at_install():
     assert "checks at install" in extras.EXTRAS_BY_ID["needle"].caveat
+
+
+def test_a_server_error_is_tried_again(client, monkeypatch, server):
+    """GitHub's release downloads answer 504 now and then; one blip used to
+    fail the whole install (the Windows package check, 2026-11-08)."""
+    import urllib.error
+
+    _point_at(monkeypatch, "pyodide", server, {"core.tar.bz2": _tar_bz2(PYODIDE_FILES)})
+    real = extra_downloads._open_url
+    tries = []
+
+    def flaky(url):
+        tries.append(url)
+        if len(tries) < 3:
+            raise urllib.error.HTTPError(url, 504, "Gateway Time-out", {}, None)
+        return real(url)
+
+    monkeypatch.setattr(extra_downloads, "_open_url", flaky)
+    monkeypatch.setattr(extra_downloads.time, "sleep", lambda _s: None)
+    extras.start("pyodide")
+    _wait()
+    assert extras.current().outcome == "completed", extras.current().log[-5:]
+    assert len(tries) == 3
+    assert any("answered 504" in line for line in extras.current().log)
+
+
+def test_a_missing_file_is_not_tried_again(client, monkeypatch, server):
+    import urllib.error
+
+    _point_at(monkeypatch, "pyodide", server, {"core.tar.bz2": _tar_bz2(PYODIDE_FILES)})
+    tries = []
+
+    def gone(url):
+        tries.append(url)
+        raise urllib.error.HTTPError(url, 404, "Not Found", {}, None)
+
+    monkeypatch.setattr(extra_downloads, "_open_url", gone)
+    monkeypatch.setattr(extra_downloads.time, "sleep", lambda _s: None)
+    extras.start("pyodide")
+    _wait()
+    assert extras.current().outcome == "failed"
+    assert len(tries) == 1

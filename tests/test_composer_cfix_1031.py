@@ -689,7 +689,8 @@ def test_a_quoted_line_keeps_the_note_s_own_words_and_gives_the_date_outside(not
     said, _ = notebook(question)
     assert "“Tuesday 5 km easy. Saturday 3 October long run”" not in said, said
     if "Saturday long run" in said:
-        assert "“Tuesday 5 km easy. Saturday long run”, the Saturday being 3 October" in said, said
+        #: A quote is verbatim and contiguous (bt-compcomp-1109 item 4): "Thursday intervals" sits between the two, so each is quoted alone.
+        assert "“Tuesday 5 km easy. Saturday long run”" not in said and "“Saturday long run”, the Saturday being 3 October" in said, said
 
 
 def test_a_pinned_weekday_leaves_the_quotation_and_is_said_after_it():
@@ -1092,7 +1093,7 @@ def test_c46_a_joke_is_the_one_you_saved(notebook, question):
 def test_c31_a_one_line_label_note_in_a_list_is_never_untitled(notebook, question):
     said, _ = notebook(question)
     assert "Untitled" not in said, said
-    assert "[the note that starts “Idea: a podcast about local history”](#/notes/" in said, said
+    assert "[“Idea: a podcast about local history”](#/notes/" in said, said
     assert said.count("a podcast about local history") == 1, said
 
 

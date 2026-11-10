@@ -184,6 +184,9 @@ def suggest_followups(
                     "content": f"QUESTION: {question[:FOLLOWUP_QUESTION_CHARS]}\n\nANSWER:\n{answer[:2000]}",
                 },
             ],
+            #: Quick: no thinking and a 256-token cap. Under the default preset a reasoning model reasoned
+            #: before three short questions nobody reads the reasoning of, past the call's deadline (2026-11-05a).
+            mode="quick",
         )
     except OllamaError:
         return []

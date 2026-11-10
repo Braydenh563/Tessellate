@@ -230,7 +230,7 @@ mountBuddyActivities.help = (host, row) => {
   body.setAttribute("role", "dialog");
   body.setAttribute("aria-label", name);
   body.append(
-    make("p", { textContent: "Small things it does now and then: a puzzled tilt when a search finds nothing and a nod when the next one does, a double take when the pointer rushes past, a shake after you carry it a while, a wince when a note goes to the bin. Atlas also looks around, hums, settles with a breath and takes a second look at the pointer." }),
+    make("p", { textContent: "Small things it does now and then: a puzzled tilt when a search finds nothing and a nod when the next one does, a double take when the pointer rushes past, a shake after you carry it a while, a nod on the hour, a wave when you come back after ten minutes away, a shiver when the battery is low and a glance when the window is resized or goes fullscreen, a wince when a note goes to the bin. Atlas also looks around, hums, settles with a breath and takes a second look at the pointer." }),
     make("p", { textContent: "None of it happens while you type, while Motion is reduced, or over something else it is doing. Its moods also follow the part of the day: brighter in the morning, quieter in the evening." }),
   );
   row.after(body);
@@ -318,6 +318,9 @@ function nameMarkBuddyCallBack() {
 }
 
 function nameMarkBuddyHide(buddy) {
+  //: Hide removes the face, so a keyboard user's focus would fall to the page (Tab began again at "Skip to
+  //: content"); it goes to the toast's way back instead. A mouse press leaves focus where it is.
+  const kept = !!buddy && buddy.contains(document.activeElement);
   let was = null;
   try {
     //: Which companion it was, so the hotkey brings the same one back.
@@ -358,6 +361,7 @@ function nameMarkBuddyHide(buddy) {
     },
     { record: false }
   );
+  if (kept) document.querySelector("#toast-box .toast-action")?.focus();
 }
 
 //: **Show or hide it from anywhere** (INBOX 430, the owner: "a show/hide

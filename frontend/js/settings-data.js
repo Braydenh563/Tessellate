@@ -982,6 +982,11 @@ const settingFresh = { last: null };
 //: line; `quiet` keeps it off the toast (the caller raised its own Undo).
 function noteSettingChange(change, { quiet = false } = {}) {
   change.at = Date.now();
+  //: A look the Appearance buttons changed raised its own toast and Undo (settings.js).
+  if (change.kind === "look" && settingsLook.quiet > change.at) {
+    quiet = true;
+    change.words = settingsLook.quietWords || change.words;
+  }
   change.sig = `${change.kind}:${change.words || ""}:${change.changes.map((c) => c.key).sort().join(",")}`;
   //: A slider or a typed field is one change, however many ticks: the first
   //: value it had stays the way back.

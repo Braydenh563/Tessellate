@@ -65,7 +65,7 @@ def test_the_large_view_opens_on_its_resting_limbs() -> None:
     visit = _fn((ROOT / "frontend" / "js" / "companion-menu.js").read_text(encoding="utf-8"), "nameMarkBuddyVisit")
     cut = visit[visit.index("if (nmb.visit.pose !== nmb.pose) {") :]
     assert visit.index("host.appendChild(buddy);") < visit.index("if (nmb.visit.pose !== nmb.pose) {")
-    assert "anim instanceof CSSTransition) anim.finish();" in cut
+    assert "anim instanceof CSSTransition) moving.push(anim);" in cut and "for (const anim of moving) anim.finish();" in cut
     assert "box.atlasRig.fresh = true;" in cut and "atlasRigWake(box);" in cut
 
 
@@ -170,8 +170,10 @@ def test_atlas_props_have_a_keyline_and_say_what_they_are() -> None:
     assert ".nmp-nightcap:has(> .atl-prop-moon)" in rule and "scale: 1.6;" in rule
     # Hovered, the tooltip names what it has on; with nothing, none.
     name = _fn(AV, "nameMarkBuddyNameProps")
-    assert "face.title = " in name and 'face.removeAttribute("title");' in name
-    words = AV[AV.index("const NMB_PROP_WORDS") :][:900]
+    # Intent moved (in-app dive 1107, ba661be3): with no prop to name, the title is the how-to
+    # (the aria-label: click, double-click, drag, right-click), not removed, for learnability.
+    assert "face.title = " in name and 'else face.title = face.getAttribute("aria-label");' in name
+    words = AV[AV.index("const NMB_PROP_WORDS") :][:1800]  # a slice of the table, widened as the desk acts (atlascat D1 to D4, INBOX 1710) added their tooltip rows
     for cls in ("nmb-music", "nmb-reading", "nmb-act-bell", "nmb-act-lantern", "nmb-act-carry", "nmb-offline"):
         assert f'["{cls}", ' in words, cls
     assert "nameMarkBuddyNameProps(buddy, face);" in AV

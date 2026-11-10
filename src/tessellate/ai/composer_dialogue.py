@@ -15,8 +15,8 @@ import re
 from dataclasses import dataclass, field
 from typing import Any
 
-from tessellate.ai import question_noise, recognise as rec, repair_turn, when as when_words
-from tessellate.ai.composer_ask import _stem, _words, classify, rephrase, subject_terms
+from tessellate.ai import composer_chip_subject, question_noise, recognise as rec, repair_turn, when as when_words
+from tessellate.ai.composer_ask import _stem, _words, classify, compare_sides, rephrase, subject_terms
 from tessellate.ai.composer_body import _BRIEF, _FULL, _NOTE_NOUNS, _asked_span
 from tessellate.ai.composer_phrases import PHRASES
 from tessellate.ai.composer_quote import _pick
@@ -74,11 +74,13 @@ def _unquoted_note_pick(views: list[NoteView], asked: set[str], cited: set[int])
     return None
 
 
-def _subject_pick(question: str, shape: str, terms: list[str]) -> list[tuple] | None:
+def _subject_pick(question: str, shape: str, terms: list[str], views: list[NoteView] = ()) -> list[tuple] | None:  # noqa: B006
     #: The question's own subject, when it is a short name ("dentist
     #: check-up", "sourdough"), asked the other way round in time.
     own = _own_terms(terms)
     subject = _asked_span(question, own)
+    #: A noun phrase the notes use, never the question's leftover words (R9-1).
+    subject = composer_chip_subject.clean(subject, views, question) if subject else subject
     #: Never a stop word, a pronoun or a piece of a contraction (INBOX 1590: "about ve").
     if subject and query_understanding.is_chip_subject(subject) and len(subject.split()) == len(own) <= 3 and shape not in ("status", "recent", "compare"):
         prefix = "next_latest_a" if shape == "when" or _pick(question, "next", ["a", "b"]) == "a" else "next_when_a"
@@ -99,7 +101,7 @@ def _next_questions(question: str, shape: str, terms: list[str], views: list[Not
     found = (
         _shared_tag_pick(views, asked, cited),
         _unquoted_note_pick(views, asked, cited),
-        _subject_pick(question, shape, terms),
+        _subject_pick(question, shape, terms, views),
     )
     picks = [pick for pick in found if pick]
     out = [p for p in picks if len("".join(part[1] for part in p)) <= NEXT_MAX_CHARS]
@@ -110,7 +112,7 @@ def _next_questions(question: str, shape: str, terms: list[str], views: list[Not
 
 _MORE = re.compile(
     r"^\s*(?:tell me more|more|go on|continue|keep going|say more|what else|anything else|and|more please|"
-    r"more about (?:that|it|this|those))[\s?.]*$",
+    r"more about (?:that|it|this|those)|(?:and |what about |what are )?the (?:others|rest|other ones))[\s?.]*$",
     re.I,
 )
 
@@ -228,6 +230,9 @@ class FollowOn:
     #: A correction's words ("no, the gym one": "gym"): the notes they name
     #: are put first, the ones the answer before quoted after (decision 35).
     prefer: str = ""
+    #: The question a later terse turn leans on in place of this one, when this one only asked a
+    #: property of the subject ("what should I pack"): the subject's own question stays the one.
+    stands: str = ""
 
 
 def _named_notes(answer: str) -> list[str]:
@@ -298,7 +303,7 @@ def follow_on(question: str, history: list[dict] | None) -> FollowOn | None:
 #: launch one") lean on the question before, which stays the one the next
 #: terse turn leans on: "why?" after "longer" asks about the subject, not
 #: about "longer".
-_RESTATES = frozenset({"window", "subject", "entity", "pronoun", "did_you_mean", "ordinal"})
+_RESTATES = frozenset({"window", "subject", "entity", "pronoun", "did_you_mean", "ordinal", "part"})
 
 
 def _standing(turns: list[dict]) -> list[dict]:
@@ -310,7 +315,7 @@ def _standing(turns: list[dict]) -> list[dict]:
         follow = _follow_one(text, out) if out else None
         prefer = ""
         if follow:
-            text = follow.question if follow.kind in _RESTATES else follow.previous
+            text = follow.stands or (follow.question if follow.kind in _RESTATES else follow.previous)
             #: A correction's note stays chosen for the turns that lean on it:
             #: "no, the data structures one", then "shorter", is still that note (B8).
             prefer = follow.prefer or (out[-1].get("prefer", "") if follow.kind != "subject" else "")
@@ -469,6 +474,30 @@ def _follow_swap(text: str, previous: str, last: dict, turns: list[dict]) -> Any
 _PERSON_PRONOUN = re.compile(r"\b(?:her|him|she|he|hers|his)\b", re.I)
 
 
+#: "and his address", "what about her birthday": a thing of the person the turn before named, with no asking word.
+_PERSON_THING = re.compile(r"^(?:(?:and|also|but|so)[, ]+)?(?:(?:what|how) about\s+)?(?:his|her|their)\s+[a-z][\w' -]{1,30}$", re.I)
+
+
+#: The thing of a subject a question asks for by its kind alone ("what should I
+#: pack", "when is the next appointment", "how much did it cost" without the
+#: "it"): it has no subject of its own, so the turn before's is the one (audit E5, D6).
+_PROPERTY_WORDS = frozenset(
+    "appointment appointments cost costs price prices deadline address pack bring wear start end flight flights hotel hotels next".split()
+)
+_OWNED = re.compile(r"\b(?:my|our|your)\b", re.I)
+
+
+def _property_only(text: str) -> bool:
+    """Whether `text` asks for a property of an unnamed subject: every word it
+    is about is one of `_PROPERTY_WORDS`, it names nothing of its own (no
+    capital, no number, no "my") and it opens with an asking word."""
+    q = " ".join(text.split()).rstrip("?.! ")
+    if not _ASKS_SLOT.match(q) or _OWNED.search(q) or re.search(r"\b[A-Z][a-z]|\d", q[1:]):
+        return False
+    terms = [t.lower() for t in subject_terms(q) if t.lower() not in _SLOT_PRONOUN.pattern]
+    return bool(terms) and all(t in _PROPERTY_WORDS or t.rstrip("s") in _PROPERTY_WORDS for t in terms)
+
+
 def _pronoun_kind(text: str) -> str:
     """Which pronoun follow-on `text` is: "bare" (a pronoun and no subject),
     "slot" ("how much does it cost"), "person" ("what should I get her"),
@@ -477,6 +506,8 @@ def _pronoun_kind(text: str) -> str:
     if bare:
         return "bare"
     #: "how much does it cost", "when is it due": the slot word is not a subject.
+    if _PERSON_THING.match(text.strip().rstrip("?.! ")):
+        return "person_thing"
     if refers_back(text) and _SLOT_PRONOUN.search(text):
         return "slot"
     if _ASKS_SLOT.match(text.strip()) and _PERSON_PRONOUN.search(text) and not re.search(r"\b[A-Z][a-z]", text.strip()[1:]):
@@ -484,7 +515,7 @@ def _pronoun_kind(text: str) -> str:
     #: "what's the total", "how far in total": no subject of its own at all.
     if _TOTAL_ASK.search(text) and not _PRONOUN.search(text) and not set(subject_terms(text)) - _TOTAL_WORDS:
         return "total"
-    return ""
+    return "property" if _property_only(text) else ""
 
 
 def _pronoun_swap(text: str, named: str, kind: str) -> str:
@@ -500,26 +531,99 @@ def _pronoun_swap(text: str, named: str, kind: str) -> str:
     return pattern.sub(said, text, count=1)
 
 
+def _carried_source(previous: str, turns: list[dict]) -> str:
+    """The question whose subject a pronoun stands for: the turn before, unless
+    that one only names a bare lower-case word ("what should I pack") and an
+    earlier turn named a thing by a capitalised name ("tell me about the Tokyo
+    trip"), which is what "it" still means (round 2 E5)."""
+    def named(question: str) -> bool:
+        span = _asked_span(question, subject_terms(question))
+        return bool(span) and any(w[:1].isupper() for w in span.split())
+
+    if named(previous):
+        return previous
+    for turn in reversed(turns[:-1]):
+        question = str(turn.get("question") or "").strip()
+        if named(question):
+            return question
+    return previous
+
+
 def _follow_pronoun(text: str, previous: str, last: dict, turns: list[dict]) -> Any:
     kind = _pronoun_kind(text)
     if not kind:
         return None
-    subject = _asked_span(previous, subject_terms(previous))
+    source = _carried_source(previous, turns)
+    subject = _asked_span(source, subject_terms(source))
     if not subject:
         return None
-    article = re.search(r"\b(?:the|my|our)\s+$", previous[: previous.lower().find(subject.lower())], re.I)
+    article = re.search(r"\b(?:the|my|our)\s+$", source[: source.lower().find(subject.lower())], re.I)
     #: A bare "that" keeps the old bare subject; the newer slot and person
     #: follow-ons read with the article ("how much does the Lisbon trip cost").
     named = (article.group(0).strip() + " " if article and kind != "bare" else "") + subject
-    if kind == "total":
-        return FollowOn(f"{text.rstrip(' ?.!')} for {named}?", previous, "", "pronoun")
+    if kind in ("total", "property"):
+        return FollowOn(f"{text.rstrip(' ?.!')} for {named}?", previous, "", "pronoun", stands=source if kind == "property" else "")
+    if kind == "person_thing":
+        thing = re.sub(r"^(?:(?:and|also|but|so)[, ]+)?(?:(?:what|how) about\s+)?", "", text.strip().rstrip("?.! "), flags=re.I)
+        return FollowOn("what is " + _pronoun_swap(thing, named, "person"), previous, "", "pronoun")
     return FollowOn(_pronoun_swap(text, named, kind), previous, "", "pronoun")
 
 
+#: "and the flights", "also the hotel?": a part of the thing the turn before named, with no verb.
+_AND_PART = re.compile(r"^(?:and|also)\s+(?:the\s+)?(?P<part>[a-z][a-z'-]*(?: [a-z][a-z'-]*)?)\s*[?.!]?\s*$")
+
+
+def _follow_part(text: str, previous: str, last: dict, turns: list[dict]) -> Any:
+    """"and the flights" after "what is the Lisbon trip" asks for the Lisbon
+    trip's flights, not for every note about flights (audit 1107 R3-27). Only a
+    plain lower-case noun phrase after a capitalised subject: "and the Tokyo
+    trip" names its own subject and is the swap reader's."""
+    got = _AND_PART.match(text.strip())
+    if not got:
+        return _NOT_THIS
+    source = _carried_source(previous, turns)
+    subject = _asked_span(source, subject_terms(source))
+    if not subject or not any(w[:1].isupper() for w in subject.split()):
+        return _NOT_THIS
+    start = source.lower().find(subject.lower())
+    article = re.search(r"\b(?:the|my|our)\s+$", source[:start], re.I)
+    named = (article.group(0).strip() + " " if article else "") + subject
+    return FollowOn(f"What are the {got.group('part')} for {named}?", previous, "", "part")
+
+
 #: Tried in this order: a "more" is not a correction, and a correction is not a swap.
+_WHICH_IS = re.compile(r"^(?:and |so )?which (?:one )?(?:is|was|would be) (?:the )?(cheaper|cheapest|better|bigger|longer|shorter|faster|sooner|older|newer|nearer|closer|more expensive|pricier)\W*$", re.I)
+
+
+def _follow_which(text: str, previous: str, last: dict, turns: list[dict]) -> Any:
+    """"Which is cheaper" after "compare Japan and Portugal": the same two sides, ranked (R9-9)."""
+    found = _WHICH_IS.match(text)
+    sides = compare_sides(previous) if found else None
+    if not sides or len(sides) != 2:
+        return _NOT_THIS
+    return FollowOn(f"which is {found.group(1).lower()}, {sides[0]} or {sides[1]}", previous, "", "compare", stands=previous)
+
+
+#: "how is it now", "how's it going today": the latest on the subject the turn before named (R9-9).
+_HOW_NOW = re.compile(r"^(?:and )?(?:how is|how's|how are|how was|what's|what is) (?:it|that|this|he|she|they)(?: going)? (?:now|today|these days|at the moment|currently)$")
+
+
+def _follow_now(text: str, previous: str, last: dict, turns: list[dict]) -> Any:
+    got = " ".join(text.lower().split()).rstrip("?.! ")
+    if len(got) > 60 or not _HOW_NOW.match(got):
+        return _NOT_THIS
+    source = _carried_source(previous, turns)
+    subject = _asked_span(source, subject_terms(source))
+    if not subject:
+        return _NOT_THIS
+    start = source.lower().find(subject.lower())
+    article = re.search(r"\b(?:the|my|our)\s+$", source[:start], re.I)
+    return FollowOn(f"What's the latest on {article.group(0).strip() + ' ' if article else ''}{subject}?", previous, "", "pronoun")
+
+
 _FOLLOW_READERS = (
     _follow_more, _follow_ordinal, _follow_correction, _follow_length, _follow_window, _follow_meant,
-    _follow_bare, _follow_swap, _follow_pronoun,
+    _follow_bare, _follow_part, _follow_swap, _follow_which, _follow_now, _follow_pronoun,
 )
 
 
@@ -552,6 +656,8 @@ class Dialogue:
     corrections: list[str] = field(default_factory=list)
     used: set[str] = field(default_factory=set)
     salt: str = ""
+    #: The label of the act card the last turn left waiting for Confirm, "" when none.
+    pending_act: str = ""
 
     @property
     def turns(self) -> int:
@@ -564,6 +670,7 @@ class Dialogue:
         the words earlier answers used are found in their text."""
         turns = [{"question": str(t.get("question") or ""), "answer": str(t.get("answer") or "")} for t in history or []]
         dialogue = cls(history=turns, salt=salt or (hashlib.sha1(turns[0]["question"].encode()).hexdigest()[:12] if turns else ""))
+        dialogue.pending_act = str((history or [{}])[-1].get("pending_act") or "").strip()
         for turn in turns:
             dialogue.used |= _templates_in(turn["answer"])
             dialogue.topic_stack += [t for t in subject_terms(turn["question"]) if t not in dialogue.topic_stack]

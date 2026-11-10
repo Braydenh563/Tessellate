@@ -41,10 +41,7 @@ function wireLongPress(target, handler, { selector = null } = {}) {
       const timer = setTimeout(() => {
         cancel();
         //: A card the hold has lifted (obj-drag.js) and moved is a drag; one held still is this menu.
-        if (typeof objDragNow !== "undefined" && objDragNow?.live) {
-          if (objDragNow.moved) return;
-          objDragFinish(true);
-        }
+        if (typeof objDragLifted === "function" && objDragLifted() === "moved") return;
         //: **The lift-off is swallowed.** A hold ends like every other touch,
         //: with a click, and the element under it is the element the hold was
         //: about: measured on the graph at 390, holding a node opened its menu
@@ -332,7 +329,7 @@ function openSelectionScope() {
       remove: () => bar.querySelector('[id$="-bulk-delete"]')?.click(),
     };
   }
-  if (typeof selectMode !== "undefined" && selectMode && $("tab-notes") && !$("tab-notes").classList.contains("hidden")) {
+  if (selectMode && $("tab-notes") && !$("tab-notes").classList.contains("hidden")) {
     return {
       clear: () => exitSelectMode(),
       selectAll: () => {
@@ -390,28 +387,17 @@ function renderMarkdown(container, text, depth = 0) {
   const rawLines = String(text ?? "").replace(/\r\n/g, "\n").split("\n");
   let i = 0;
   let list = null; // the <ul>/<ol> currently being filled, or null
+  let listKey = ""; // its marker style (mdList.item's key) and first indent
+  let listIndent = "";
   const headingIds = new Set(); // so two "Notes" headings get distinct anchors
 
-  //: **Which source line each rendered block came from**, written on the
-  //: block as `data-src-line`. The split document view needs it to line its
-  //: two panes up: a scroll fraction is exact at both ends and wrong
-  //: everywhere a picture, a table or a code fence takes a different amount
-  //: of room in the two halves, which is the owner's report of 2026-09-20
-  //: ("the scrolling is off in the split document view because of the md
-  //: rendering"). See `docScrollAnchors` in documents.js.
-  //:
-  //: Stamped here rather than worked out afterwards, because this loop is the
-  //: only thing that knows which lines produced which element. Any other
-  //: answer is a second parser standing beside this one, and two parsers
-  //: disagree the first time either is changed.
-  //:
-  //: The bookkeeping is deliberately outside the branches: a block is
-  //: appended at eight different points in this loop, several of them after
-  //: `i` has already moved past the lines they consumed, so the line is
-  //: remembered at the top of the iteration and everything the iteration
-  //: appended is stamped at the top of the next one. A list is the exception,
-  //: since `closeList` appends it in a later iteration than the one that
-  //: started it, so it carries its own start line.
+  //: **Which source line each rendered block came from**, written as `data-src-line` so the split document
+  //: view can line its panes up (a scroll fraction is wrong wherever a picture, table or fence takes a
+  //: different room in the two halves; the owner, 2026-09-20; `docScrollAnchors`, documents.js). Stamped
+  //: here because this loop is the only thing that knows which lines made which element; a second parser
+  //: beside it would disagree the first time either changed. A block is appended at eight points, some
+  //: after `i` has moved on, so the line is remembered at the top of the iteration and what it appended is
+  //: stamped at the top of the next. A list carries its own start line (`closeList` appends it later).
   let blockLine = 0;
   let listLine = 0;
   let stamped = 0;
@@ -687,24 +673,25 @@ function renderMarkdown(container, text, depth = 0) {
       continue;
     }
 
-    const bullet = line.match(/^\s*[-*+]\s+(.*)$/);
-    const numbered = line.match(/^\s*\d+\.\s+(.*)$/);
-    if (bullet || numbered) {
-      const wantOrdered = Boolean(numbered);
-      if (!list || (list.tagName === "OL") !== wantOrdered) {
+    //: Whether an item continues the open list. A change of marker is a new list (CommonMark, and the
+    //: editor's rule), except an item indented under the list, which stays in it (nesting is drawn flat).
+    const joins = (e) => list && e && e.key[0] === listKey[0] && !e.fresh && (e.key === listKey || e.indent.length > listIndent.length);
+    const at = (l) => mdList.item(l, list ? { key: listKey, count: list.childElementCount, indent: listIndent } : null);
+    const entry = at(line);
+    if (entry) {
+      if (!joins(entry)) {
         closeList();
-        list = document.createElement(wantOrdered ? "ol" : "ul");
+        list = document.createElement(entry.key[0] === "u" ? "ul" : "ol");
+        list.className = `md-${entry.key}`;
         listLine = i;
-        // Start where the author started. Without this a list written as
-        // "3. 4. 5." renders as 1, 2, 3, and, more importantly, a list that
-        // resumes after a paragraph restarts from 1.
-        if (wantOrdered) {
-          const first = Number.parseInt(line.trim(), 10);
-          if (Number.isFinite(first) && first !== 1) list.start = first;
-        }
+        listKey = entry.key;
+        listIndent = entry.indent;
+        // Start where the author started: "3. 4. 5." is not 1, 2, 3, and a list that resumes after a
+        // paragraph does not restart from 1.
+        if (entry.number > 1) list.start = entry.number;
       }
       const li = document.createElement("li");
-      let itemText = (bullet || numbered)[1];
+      let itemText = entry.text;
       // GFM task list: "- [ ] todo" / "- [x] done" → a real checkbox.
       const task = itemText.match(/^\[([ xX])\]\s+(.*)$/);
       if (task) {
@@ -729,13 +716,7 @@ function renderMarkdown(container, text, depth = 0) {
       // numbering at 1 every single time (user-reported).
       let next = i + 1;
       while (next < lines.length && lines[next].trim() === "") next++;
-      const continues =
-        list &&
-        next < lines.length &&
-        (list.tagName === "OL"
-          ? /^\s*\d+\.\s+/.test(lines[next])
-          : /^\s*[-*+]\s+/.test(lines[next]));
-      if (!continues) closeList();
+      if (!(next < lines.length && joins(at(lines[next])))) closeList();
       i++;
       continue;
     }
@@ -755,8 +736,7 @@ function renderMarkdown(container, text, depth = 0) {
       !MD_TOC_LINE.test(lines[i]) &&
       !MD_PAGE_BREAK.test(lines[i]) &&
       lines[i].trim() !== "$$" &&
-      !lines[i].match(/^\s*[-*+]\s+/) &&
-      !lines[i].match(/^\s*\d+\.\s+/) &&
+      !mdList.item(lines[i], false) &&
       !(lines[i].includes("|") && i + 1 < lines.length && isTableSeparator(lines[i + 1]))
     ) {
       para.push(lines[i]);
@@ -1512,17 +1492,15 @@ document.addEventListener(
   },
   true
 );
-//: Run at boot and again for Settings' body when it is built (its Logs menu is
-//: one of these).
-function hideClosedDockMenuLists() {
-  for (const list of document.querySelectorAll(
+//: At boot, and over each stamped surface (`surfaceBuild` passes the host).
+function hideClosedDockMenuLists(root = document) {
+  for (const list of root.querySelectorAll(
     "details.dock-menu:not([open]) > .dock-menu-list, details.doc-dock-menu:not(.doc-toolbar-menu):not([open]) > .doc-dock-menu-list"
   )) {
     list.hidden = true;
   }
 }
 hideClosedDockMenuLists();
-onSettingsBody(hideClosedDockMenuLists);
 //: Escape closes an open dock menu and puts focus back on its button, 
 //: `<details>` does not do this on its own, whatever a comment elsewhere in
 //: this codebase once claimed; measured with a keyboard-only probe. Capture
@@ -1738,7 +1716,7 @@ const lazyTabsReady = new Set();
 // check below already uses for a lazy tab that was never visited.
 function hasUnsavedWork() {
   if (typeof docDirty !== "undefined" && docDirty) return true;
-  if (typeof noteFormDirty !== "undefined" && noteFormDirty && editingId !== null) return true;
+  if (noteFormDirty && editingId !== null) return true;
   //: Not the capture box: its text survives a tab switch (the box stays in
   //: the page) and a reload (the draft in localStorage), so leaving loses
   //: nothing, and asking "Leave without saving?" on every tab switch while a
@@ -1769,8 +1747,8 @@ function recordingLive() {
 }
 
 window.addEventListener("beforeunload", (event) => {
-  //: A private chat is gone with its tab (chat-private.js, lazy: `typeof`).
-  const privateChat = typeof chatConv !== "undefined" && chatConv.private && chatConv.turns.length;
+  //: A private chat is gone with its tab (chat-private.js).
+  const privateChat = chatConv.private && chatConv.turns.length;
   if (!hasUnsavedWork() && !chatMidStream() && !recordingLive() && !privateChat) return;
   event.preventDefault();
   event.returnValue = "";
@@ -2444,7 +2422,7 @@ function scrollingPage() {
 // kept in sync with a second copy of the same "scrolled away" logic.
 const NO_SCROLL_TOP_TABS = new Set(["graph", "chat"]);
 const NESTED_SCROLL_TABS = {
-  chat: () => chatMessagesEl(),
+  chat: () => $("chat-messages"),
   notes: () => document.querySelector("#tab-notes .layout > .tab-main"),
   // The Whiteboards sub-view pans rather than scrolls (like Graph), so it
   // deliberately returns nothing here, scrollTopTargetEl() then falls
@@ -2456,10 +2434,6 @@ const NESTED_SCROLL_TABS = {
   },
 };
 let scrollTopUpdate = null;
-
-function chatMessagesEl() {
-  return $("chat-messages");
-}
 
 function scrollTopTargetEl() {
   const tab = prefs.get("activeTab", null) || "dashboard";

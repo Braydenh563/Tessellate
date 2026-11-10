@@ -240,6 +240,10 @@ def ranked(session: Session, limit: int = DAILY) -> list[Entry]:
             Entry.is_deleted.is_(False),
             Entry.is_draft.is_(False),
             Entry.archived_at.is_(None),
+            # A private note and a board are never quoted back in a card or a
+            # chat answer; the scores can lag a flag by a day, so it is read here.
+            Entry.is_private.is_(False),
+            Entry.is_board.is_(False),
         )
         .order_by(NoteScore.score.desc(), NoteScore.entry_id.desc())
         .limit(limit + len(dismissed))

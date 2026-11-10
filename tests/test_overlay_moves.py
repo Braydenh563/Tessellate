@@ -7,6 +7,7 @@ import random
 
 from tessellate.core.overlay import engine as eng
 from tessellate.core.overlay.engine import Engine, Monitor
+from tests.overlay_sim_1670 import skip_flow
 
 SIZE = (100, 120)
 ONE = [Monitor((0, 0, 1920, 1040), 96)]
@@ -93,7 +94,9 @@ def test_a_thrown_walker_flies_under_gravity_and_lands_on_the_floor() -> None:
     assert land.frame == "land" and 0 <= land.x <= 1920 - 100
 
 
-def test_a_throw_bounces_off_the_wall_with_damping_and_a_short_startle() -> None:
+def test_a_throw_bounces_off_the_wall_with_damping_and_a_short_startle(monkeypatch) -> None:
+    # INBOX 1683 k: a hard hit may now stick and slide or pass through (`landing.smack`); this reads the bounce
+    monkeypatch.setattr(eng.ld, "smack", lambda *_a: "bounce")
     e = make()
     throw(e, to=(1800, 600), start=(850, 950))
     assert e.state == "fly" and e.vx > 0
@@ -113,7 +116,9 @@ def test_a_throw_bounces_off_the_wall_with_damping_and_a_short_startle() -> None
 
 def test_a_throw_that_hits_the_ceiling_hangs_then_lets_go_and_falls() -> None:
     e = make()
-    out, t = throw(e, to=(900, 100), start=(850, 600))
+    # Intent moved (INBOX 1719 a): a throw past `CEIL_LEAVE` leaves the top, so this one is slower (about 2,300 px/s,
+    # over the ceiling's catch line, under the leave line) and still hangs.
+    out, t = throw(e, to=(900, 100), start=(850, 600), gap=0.054)
     seen, frames = False, []
     # A hang lasts 30 to 200 s since INBOX 1670 (13:28Z); the old 40 s bound only held while the draw happened to be short.
     while t < 260 and not (seen and e.state in ("land", "stand")):
@@ -154,6 +159,7 @@ def test_a_floater_rests_a_hand_above_the_floor_not_a_figure_up() -> None:
 def test_a_floater_drifts_across_the_width_and_a_band_above_its_rest_line_not_the_whole_height() -> None:
     e = make(gait="float", seed=3, home=(1760, FLOOR))  # home at an edge: one in the middle is moved out (INBOX 1670)
     e.big_ready = math.inf
+    e.presence = False  # a presence spell (INBOX 1692) goes to a spot across the screen on purpose; this test is the strolls
     ys, xs, frames, t = [], [], set(), 0.0
     for _ in range(12000):  # 40 minutes at 200 ms (INBOX 1670: it sits for minutes between strolls)
         t += 0.2
@@ -167,7 +173,10 @@ def test_a_floater_drifts_across_the_width_and_a_band_above_its_rest_line_not_th
     # than its own, and walks a few steps, not across the width.
     assert max(ys) - min(ys) <= eng.FLOAT_BAND * e.size[1] + eng.HOVER[1] + 2  # no bob any more (16:40Z)
     assert 20 < max(xs) - min(xs) <= 2 * eng.STROLL + 20
-    assert {"walk0", "walk3"} & frames
+    # Intent moved (INBOX 1692, the owner 2026-11-08: "atlas doesnt walk, it doesnt have legs, it floats like a wind
+    # spirit"): a floater's stroll flows on its idle cycle, never the walk frames; it still moves (the width above).
+    assert not {f for f in frames if f.startswith("walk")}
+    assert {f for f in frames if f.startswith("idle")}
 
 
 def test_a_floater_curves_and_never_walks_on_a_floor() -> None:
@@ -319,7 +328,8 @@ def run_acts(e: Engine, minutes: float):
         t += (out.wake_ms or 1000) / 1000.0
         # The person brushes it now and then, so it is not asleep for good.
         out = e.update(t, event=("move", 0, 0)) if int(t) % 25 == 0 else e.update(t)
-        if e.state != prev and e.state in ("hang", "peek"):
+        # A hang that ends a top peek is that peek's own end (the figure drops back onto its hands), not a second big act.
+        if e.state != prev and e.state in ("hang", "peek") and not (prev in ("peek", "emerge") and e.state == "hang"):
             acts.append((t, e.state))
         prev = e.state
     return acts
@@ -327,10 +337,13 @@ def run_acts(e: Engine, minutes: float):
 
 def test_big_acts_are_minutes_apart_and_all_the_acts_are_in_one_table() -> None:
     # Intent kept, table grown (INBOX 1683 g): `climb` was missing, so no ambient run ever called `_can_climb`.
-    assert set(eng.ACTS) == {"idle", "stroll", "trip", "sleep", "hang", "peek", "climb"}
+    # Grown again (INBOX 1692): `spell`, the minutes-long presence act.
+    assert set(eng.ACTS) == {"idle", "stroll", "trip", "sleep", "hang", "peek", "climb", "spell"}
     for gait in ("walk", "float"):
         # Bar moved (INBOX 1670: a hang is 30 to 200 s and the rest is long): ten hours, not three.
-        acts = run_acts(make(seed=4, gait=gait), 600)
+        e = make(seed=4, gait=gait)
+        skip_flow(e)  # a ten-hour loop that reads states, never the flow picture
+        acts = run_acts(e, 600)
         assert len(acts) >= 3, acts
         gaps = [b[0] - a[0] for a, b in zip(acts, acts[1:])]
         assert min(gaps) >= eng.BIG_EVERY[0] - 1, gaps
@@ -339,13 +352,17 @@ def test_big_acts_are_minutes_apart_and_all_the_acts_are_in_one_table() -> None:
 def test_nothing_but_standing_while_the_person_is_busy() -> None:
     e = make()
     e.quiet = True
-    states, t = set(), 0.0
+    # Intent moved (INBOX 1692): a spell goes on quietly in place while the person types instead of a
+    # freeze, so "act" is allowed; what stays true is that it never travels, climbs or leaves the spot.
+    states, t, spots = set(), 0.0, set()
     out = e.update(t)
     while t < 600:
         t += (out.wake_ms or 1000) / 1000.0
         out = e.update(t, (0, 0))
         states.add(e.state)
-    assert states <= {"stand", "sit", "sleep"}
+        spots.add((out.x, out.y))
+    assert states <= {"stand", "sit", "sleep", "act"}
+    assert len(spots) == 1, spots
 
 
 def test_the_still_state_never_throws_hangs_or_peeks() -> None:
@@ -423,9 +440,14 @@ def test_nothing_is_clipped_unless_the_hidden_part_is_past_the_work_areas_edge()
                     continue
                 clipped_ticks += 1
                 cl, ct, cr, cb = o.clip
-                hidden = [(o.x, o.y, o.x + cl, o.y + h)] if cl > 0 else []
-                hidden += [(o.x + cr, o.y, o.x + w, o.y + h)] if cr < w else []
-                hidden += [(o.x, o.y + cb, o.x + w, o.y + h)] if cb < h else []
+                # Intent moved, not weakened (edges2-1108): the upside-down top peek is drawn on the tumble's square canvas,
+                # whose clip is in that canvas's pixels and whose origin is the box's less the pad; the check is the same.
+                cw, ch = (math.ceil(math.hypot(w, h)),) * 2 if o.frame.startswith("spin") else (w, h)
+                ox, oy = o.x - (cw - w) // 2, o.y - (ch - h) // 2
+                hidden = [(ox, oy, ox + cl, oy + ch)] if cl > 0 else []
+                hidden += [(ox, oy, ox + cw, oy + ct)] if ct > 0 else []  # a top peek or a hang from the top edge
+                hidden += [(ox + cr, oy, ox + cw, oy + ch)] if cr < cw else []
+                hidden += [(ox, oy + cb, ox + cw, oy + ch)] if cb < ch else []
                 assert hidden, (seed, o)
                 for hx0, hy0, hx1, hy1 in hidden:
                     outside = hx1 <= left or hx0 >= right or hy0 >= bottom or hy1 <= top

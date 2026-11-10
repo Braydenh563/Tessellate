@@ -84,20 +84,20 @@ from __future__ import annotations
 import re
 from datetime import date, datetime
 
-from tessellate.ai import act_registry, composer_ack, composer_links, composer_open, composer_tables, composer_versus, grounding, phrasing, question_noise, spelling, utilities
+from tessellate.ai import act_registry, composer_ack, composer_brief, composer_links, composer_names, composer_numbers, composer_small, composer_open, composer_tables, composer_versus, grounding, phrasing, question_noise, spelling, utilities
 from tessellate.ai import recognise as rec
 from tessellate.ai.composer_phrases import PHRASES
 from tessellate.ai.composer_ask import _ASKS_FIRST, _KNOWN, _SHAPE_RULES, _guessing_recent, _holds, _stem, _still_recent, _words, asks_written_when, classify, compare_sides, rephrase, subject_terms, user_now, user_today, when_terms
-from tessellate.ai.composer_read import NoteView, Sentence, _distinct_ids, read_note
+from tessellate.ai.composer_read import NoteView, Sentence, _cue, _distinct_ids, read_note
 from tessellate.ai.composer_select import MAX_PER_NOTE, MAX_POINTS, MEANING_POOL, _ASKS_NOW, _Meaning, _score, select
 from tessellate.ai.composer_answer import _Answer, asks_now, _SESSION
 from tessellate.ai.composer_unfound import _missing
 from tessellate.ai.composer_body import BROAD_NOTES, FULL_POINTS, _body, _compare, _confirmed_lead, _disagreement, _disagreements, _insight_close, _insight_lead, _newest, _still_open, _until_note, _versus_answer, length_wish, _LEARNED
 from tessellate.ai.composer_dialogue import Dialogue, _next_questions, follow_on
 from tessellate.ai.composer_intent import _ACT_VERBS, _lead_act_verb, plan, tag_gap
-from tessellate.ai.composer_help import _feature_instead, _help_answer, _in_window, _result, _utility, help_line, offered
+from tessellate.ai.composer_help import _feature_instead, cannot_answer, _help_answer, _in_window, _result, _utility, help_line, offered
 from tessellate.ai.composer_empty import _absent, _as_phrase, _as_typed, _bare_title, _did_you_mean, _filtered, _nothing, _REGISTER, window_said
-from tessellate.ai.composer_recall import _BROAD, _overview_answer, _recall, _recall_next
+from tessellate.ai.composer_recall import _BROAD, _overview_answer, _recall, _recall_next, window_as_topic
 
 
 # --- a question in two parts, and one that could mean two things -------------
@@ -320,7 +320,8 @@ def compose(
         voice = composer_tables.DEFAULT_VOICE
     #: In a conversation (decision 34, 35): the turn and the chat's salt
     #: choose the wording, and a terse turn is read against the ones before.
-    asked = question
+    names = composer_names.names_of(notes)
+    asked, question = question, composer_names.respell(composer_numbers.normalise(question), names)
     if dialogue is not None:
         question, salt, turn, said, prefer, previous = _read_in_dialogue(
             question, dialogue, salt=salt, turn=turn, said=said, prefer=prefer, previous=previous, resolved=resolved
@@ -337,7 +338,7 @@ def compose(
                               voice=voice, now=now, salt=salt, turn=turn, dialogue=dialogue, prefer=prefer)
         result = offered(result, asked)
         result = _acknowledged(result, asked, voice=composer_tables.voice_of(voice), seed=f"{asked.strip().lower()}:{salt}:{turn}",
-                               history=dialogue.history if dialogue is not None else [{"answer": previous}], previous=previous, known=words)
+                               history=dialogue.history if dialogue is not None else [{"answer": previous}], previous=previous, known=words, names=names)
     finally:
         _SESSION.reset(token)
         _REGISTER.reset(registered)
@@ -403,7 +404,7 @@ def _note_words(notes: list[dict]) -> frozenset:
 
 
 def _acknowledged(result: dict, asked: str, *, voice: str, seed: str, history: list[dict], previous: str = "",
-                  known: frozenset = frozenset()) -> dict:
+                  known: frozenset = frozenset(), names: frozenset = frozenset()) -> dict:
     """The answer, opened by how the question was read when it had a
     misspelling put right (Brief 90: "hwo do I" read as "how do I"). The
     wording varies (`composer_ack`): not the answer before's, not the last
@@ -413,7 +414,7 @@ def _acknowledged(result: dict, asked: str, *, voice: str, seed: str, history: l
         return result
     fixed: list[tuple[str, str]] = []
     tidy = question_noise.tidy(" ".join(asked.split()))
-    repaired = question_noise.repair(tidy, fixed=fixed, known=known)
+    repaired = composer_names.respell(question_noise.repair(tidy, fixed=fixed, known=known), names, fixed)
     #: A worked answer says the reading the utility used, which may be a
     #: router's reading rather than the speller's: "what tmie is it in jaan"
     #: was answered for Tokyo under "I took that to mean 'what the is it in
@@ -472,7 +473,7 @@ def _early_answer(question: str, notes: list[dict], *, said: str, recent: bool, 
     #: listed instead of the 84 (engine probe P3).
     if said:
         return None
-    worked = _utility(question, now or datetime.combine(today, user_now().time()), salt)
+    worked = _utility(question, now or datetime.combine(today, user_now().time()), salt) or composer_small.answer(question, notes, today=today, salt=salt, turn=turn)
     if worked:
         return worked
     parts = split_parts(question) if not recent else []
@@ -497,19 +498,6 @@ def _unfinished_act(question: str, now: datetime, notes: list[dict]) -> dict | N
     if act is None:
         return None
     line = tag_gap(first, question, notes) or f"I could not tell which note to {first}, or what to change. To {act.label[0].lower() + act.label[1:]}, say it like this: {act.example}."
-    return {**_result([("template", line)], "none"), "answered": True}
-
-
-_UNTICK = re.compile(r"^(?:please |can you |could you )?(?:un-?tick|un-?check|un-?mark|un-?cross)\b", re.I)
-
-
-def _cannot_untick(question: str) -> dict | None:
-    """"Untick bread": a tick is undone in the note, not by a sentence, and
-    the answer says so rather than quoting the list with a word no note
-    mentions (audit 1030 Z37)."""
-    if not _UNTICK.match(" ".join((question or "").split())):
-        return None
-    line = "I can tick items off, but I cannot untick one yet. Open the note and clear the box."
     return {**_result([("template", line)], "none"), "answered": True}
 
 
@@ -548,17 +536,18 @@ def _meaning_maker(shape: str, views_list: list, embed):  # noqa: ANN001, ANN202
 def _window_gate(out: "_Answer", p, said: str, question: str, shape: str, views_list: list) -> tuple:  # noqa: ANN001
     """A result when the question's window decides the answer, else the views
     narrowed to the window."""
-    if p.kind == "recall" and p.window and not said:
+    if said or not p.window or window_as_topic(p, views_list):
+        return None, views_list
+    if p.kind == "recall":
         _recall(out, p, views_list, question)
         return _result(out.parts, "recall", out.rows, _recall_next(p.window, views_list)), views_list
-    if p.window and not said and views_list and not any(_in_window(v, p.window) for v in views_list):
+    if views_list and not any(_in_window(v, p.window) for v in views_list):
         #: A window no note found falls in: said, never answered from notes
         #: written at another time.
         out.t("recall_none").asked(window_said(_as_typed(p.window_phrase, question))).t("stop")
         return _result(out.parts, shape), views_list
-    if p.window and not said:
-        views_list = [v for v in views_list if _in_window(v, p.window)]
-        out.views = {v.id: v for v in views_list}
+    views_list = [v for v in views_list if _in_window(v, p.window)]
+    out.views = {v.id: v for v in views_list}
     return None, views_list
 
 
@@ -605,7 +594,7 @@ def _day_terms(p, views_list: list) -> list[str]:  # noqa: ANN001
 
 
 def _write_body(out: "_Answer", p, shape: str, chosen: list, terms: list, question: str, meaning, broad: bool, views_list: list) -> None:  # noqa: ANN001
-    pair = _disagreement(chosen)
+    pair = _disagreement(chosen, out.views)
     if _confirmed_lead(out, question, terms):
         pass
     elif p.kind == "insight" and _insight_lead(out, question, terms, views_list):
@@ -619,7 +608,10 @@ def _write_body(out: "_Answer", p, shape: str, chosen: list, terms: list, questi
     _readings(out, question, terms, views_list)
     if broad and p.kind != "insight":
         _insight_close(out, question, terms, views_list)
-    _missing(out, terms, views_list)
+    #: A "when" the lead answers with a date is answered: a synonym it does not repeat ("appointment" for
+    #: "check-up") is not a hole to point at (round 3, R3-29).
+    if not (shape == "when" and not broad and _cue(shape, lead.text) > 0):
+        _missing(out, terms, views_list)
 
 
 def _is_broad(shape: str, question: str) -> bool:
@@ -770,7 +762,7 @@ def _compose(
     #: recently?": "saved" is a verb there, not a subject; owner, 2026-10-17).
     recent = recent and _still_recent(question)
     early = _early_answer(question, notes, said=said, recent=recent, today=today, embed=embed, voice=voice, salt=salt, turn=turn, now=now)
-    early = early or (None if said else _cannot_untick(question))
+    early = early or (None if said else cannot_answer(question, notes))
     early = early or (None if said else _unfinished_act(question, now or datetime.combine(today, datetime.min.time()), notes))
     if early:
         return early
@@ -823,6 +815,14 @@ def _raw(content: str, s: Sentence) -> str:
     """The sentence as the note has it: the offsets, not the cleaned text, so a
     model reads (and the grounding pass later matches) the person's words."""
     return " ".join(content[s.start : s.end].split())
+
+
+def _add_matching(by_note: dict, view: NoteView, terms: list[str]) -> None:
+    """Every sentence of `view` that holds a word of the question the pick lacks (R9-13)."""
+    kept = by_note.setdefault(view.id, [])
+    kept.extend(s for s in composer_brief.matching(view.sentences, {_stem(t) for t in terms}, _holds, kept) if s not in kept)
+    if not kept:
+        del by_note[view.id]
 
 
 def brief(
@@ -896,6 +896,7 @@ def brief(
         for s in view.sentences:
             if (view.id, s.start) in spans and s not in by_note.get(view.id, []):
                 by_note.setdefault(view.id, []).append(s)
+        _add_matching(by_note, view, terms)
     out: list[dict] = []
     shortened = before = after = 0
     for i, note in enumerate(notes):

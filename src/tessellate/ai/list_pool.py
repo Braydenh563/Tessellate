@@ -13,7 +13,7 @@ import itertools
 from sqlalchemy import func, or_, select
 from sqlalchemy.orm import Session
 
-from tessellate.ai import composer, composer_lists, composer_versus
+from tessellate.ai import composer, composer_lists, composer_small, composer_versus, resurface
 from tessellate.core.database import LIKE_ESCAPE, Category, Entry, like_escape
 
 #: Notes read for one computed answer: the list's count and the mentions are
@@ -64,6 +64,19 @@ def _naming(session: Session, question: str) -> list[Entry]:
     return list(session.scalars(select(Entry).where(*_live(), *clauses).order_by(Entry.created_at.desc()).limit(LIST_LIMIT)))
 
 
+def _leaving_out(session: Session, question: str) -> list[Entry]:
+    """The notes a "notes about Tokyo but not Lisbon" answer reads: those that
+    name every word of the subject kept (as a word or the start of one), or
+    the newest of all when only a word is left out. The words left out are
+    judged by the answer, which needs the notes that hold them too."""
+    kept = (composer_lists.without_ask(question) or ("", ""))[0]
+    words = [composer._stem(w).rstrip("e") for w in kept.split() if len(w) > 2]  # noqa: SLF001
+    if any(not w.isascii() for w in words):
+        return []
+    clauses = [func.lower(Entry.content).like(f"%{like_escape(w)}%", escape=LIKE_ESCAPE) | func.lower(Entry.tags).like(f"%{like_escape(w)}%", escape=LIKE_ESCAPE) for w in words]
+    return list(session.scalars(select(Entry).where(*_live(), *clauses).order_by(Entry.created_at.desc()).limit(LIST_LIMIT)))
+
+
 def _in_order(session: Session, question: str) -> list[Entry]:
     """The notes at the end of the order asked, so "oldest first" holds the oldest."""
     first = Entry.created_at.asc() if composer_lists.list_order(question) == "oldest" else Entry.created_at.desc()
@@ -95,10 +108,41 @@ def _of_kind(session: Session, kind: str) -> list[Entry]:
     newest = select(Entry).where(*_live()).order_by(Entry.created_at.desc())
     if kind == "tasks":
         newest = newest.where(or_(Entry.content.like("%[ ]%"), Entry.content.like("%[x]%")))
+    if kind == "tables":
+        newest = newest.where(Entry.content.like("%|%"))
     return list(session.scalars(newest.limit(LIST_LIMIT)))
 
 
+def _faded(session: Session) -> list[Entry]:
+    """The notes "show me something old" picks from: the most faded ones
+    (`resurface.ranked`), else the oldest, when no score has been kept yet."""
+    found = resurface.ranked(session, limit=composer_small.OLD_POOL)
+    return found or list(session.scalars(select(Entry).where(*_live(), Entry.is_draft == False, Entry.archived_at.is_(None)).order_by(Entry.created_at.asc()).limit(composer_small.OLD_POOL)))  # noqa: E712
+
+
+def _holding_words(session: Session, words: list[str]) -> list[Entry]:
+    """The newest notes that hold every word of a "where did I write X" (by its
+    stem, so "habits" meets "habit"): the search ranks by likeness and may not
+    bring the note the words are in."""
+    query = select(Entry).where(*_live(), Entry.is_draft == False, Entry.archived_at.is_(None))  # noqa: E712
+    for word in words:
+        query = query.where(func.lower(Entry.content).like(f"%{like_escape(composer_small.stem_of(word))}%", escape=LIKE_ESCAPE))
+    return list(session.scalars(query.order_by(Entry.created_at.desc()).limit(composer_small.WHERE_POOL)))
+
+
 def pool(session: Session, question: str, entries: list) -> list:
+    """The notes the answer for `question` reads: the faded ones for "show me
+    something old", the ones holding the words of a "where did I write", else
+    the computed answer's (`_computed`)."""
+    if composer_small.asks_old(question):
+        return _faded(session) or entries
+    if words := composer_small.where_asked(question):
+        held = _holding_words(session, words)
+        return held + [e for e in entries if e.id not in {h.id for h in held}] if held else entries
+    return _computed(session, question, entries)
+
+
+def _computed(session: Session, question: str, entries: list) -> list:
     """The notes the computed answer for `question` reads, or `entries` when
     it is not one or its pool is empty (the search's own notes then answer)."""
     which = composer_lists.computed_kind(question)
@@ -106,6 +150,8 @@ def pool(session: Session, question: str, entries: list) -> list:
         found = _filed(session, *composer_lists.list_target(question))
     elif which == "mentions":
         found = _mentioning(session, question)
+    elif which == "without":
+        found = _leaving_out(session, question)
     elif which == "ordered":
         found = _in_order(session, question)
     elif which == "which":

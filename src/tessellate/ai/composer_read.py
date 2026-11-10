@@ -327,6 +327,9 @@ def _short_fact(text: str) -> bool:
     parts = text.rstrip(".").split()
     if len(parts) < 2:
         return False
+    #: "Skipped meditation.": a past verb and what it was done to (R9-2).
+    if len(parts) == 2 and re.fullmatch(r"[A-Za-z]{4,}ed", parts[0]) and re.fullmatch(r"[a-z]{6,}", parts[1]):
+        return True
     return any(ch.isdigit() for ch in text) or ":" in parts[0]
 
 
@@ -462,8 +465,49 @@ def source_kind(note: dict) -> str:
 
 
 def _not_prose(line: str, stripped: str) -> bool:
-    """A heading, a bold-only line, a picture or a table row: no sentence of the note's."""
-    return _heading_text(line) is not None or bold_line(line) is not None or stripped.startswith(("![", "|"))
+    """A heading, a bold-only line or a picture: no sentence of the note's. A
+    table row is read apart (`_table_row`), not skipped."""
+    return _heading_text(line) is not None or bold_line(line) is not None or stripped.startswith("![")
+
+
+_TABLE_RULE = re.compile(r"^\|?\s*:?-{2,}:?\s*(?:\|\s*:?-{2,}:?\s*)*\|?$")
+
+
+def is_table_rule(stripped: str) -> bool:
+    """The `|---|---|` line under a table's header."""
+    return stripped.startswith(("|", "-", ":")) and bool(_TABLE_RULE.match(stripped))
+
+
+def _skipped(view: NoteView, content: str, lines: list[str], at: int, line_start: int, in_fence: bool) -> bool:
+    """Whether line `at` is no prose of the note's: inside a fence, blank, a
+    heading or picture, or a table row (read here as an item of its own)."""
+    line = lines[at]
+    stripped = line.strip()
+    if in_fence or not stripped:
+        return True
+    if stripped.startswith("|"):
+        ahead = lines[at + 1].strip() if at + 1 < len(lines) else ""
+        _table_row(view, content, line_start, line, header=is_table_rule(ahead))
+        return True
+    return _not_prose(line, stripped)
+
+
+def _table_row(view: NoteView, content: str, line_start: int, line: str, header: bool) -> None:
+    """One row of a table is one item ("Bread £2.50"), the way a list item is:
+    its cells are what the note says, and a price asked for sits in the row
+    (round 2 E1: a table was "only a title"). The header row and the rule
+    under it name the columns and are no claim."""
+    stripped = line.strip()
+    if header or is_table_rule(stripped):
+        return
+    lead = len(line) - len(line.lstrip())
+    inner_start = line_start + lead + 1
+    inner_end = line_start + len(line.rstrip()) - (1 if stripped.endswith("|") else 0)
+    unit = _unit(view, content, inner_start, inner_end, "item", None)
+    if unit:
+        unit.text = " ".join(c for c in (cell.strip() for cell in unit.text.split("|")) if c)
+        unit.words = _words(unit.text)
+        view.sentences.append(unit)
 
 
 def _wrap_item(view: NoteView, content: str, line_start: int, line: str, item_open: tuple[int, int, str, bool | None]) -> bool:
@@ -564,7 +608,8 @@ def read_note(note: dict, rank: int) -> NoteView | None:
     item_open: tuple[int, int, str, bool | None] | None = None
     offset = 0
     _read_title(view, content, front, body_start, title)
-    for line in content.splitlines(keepends=True):
+    lines = content.splitlines(keepends=True)
+    for at, line in enumerate(lines):
         line_start, offset = offset, offset + len(line)
         if line_start < body_start:
             continue
@@ -579,7 +624,7 @@ def read_note(note: dict, rank: int) -> NoteView | None:
         if stripped.startswith("```"):
             in_fence = not in_fence
             continue
-        if in_fence or not stripped or _not_prose(line, stripped):
+        if _skipped(view, content, lines, at, line_start, in_fence):
             item_open = None
             continue
         item_open = _read_line(view, content, line_start, line, item_open)
@@ -600,10 +645,12 @@ def _line_units(view: NoteView, content: str, line_start: int, line: str) -> Non
     item = _ITEM.match(line)
     if item:
         box = item.group(2)
+        #: A plain "- " line under a to-do title is a task not yet done (bt-compcomp-1109 item 9).
+        todo = not box and realise.todo_titled(view.title)
         unit = _unit(
             view, content, line_start + item.end(), line_end,
-            "task" if box else "item",
-            None if not box else box.strip("[] \t").lower() == "x",
+            "task" if box or todo else "item",
+            False if todo else None if not box else box.strip("[] \t").lower() == "x",
         )
         if unit:
             unit.depth = _depth(line)

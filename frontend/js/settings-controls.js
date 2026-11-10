@@ -26,7 +26,7 @@
 const SETTINGS_CONTROLS_READY = true;
 //: The body these listeners wire is built here if nothing asked for a control
 //: first (settings-body.js; INBOX 1501): every `$` below finds its element.
-settingsBodyBuild();
+surfaceBuild("settings");
 
 // ---- from skills.js ----
 
@@ -2160,6 +2160,24 @@ function renderStatusBarSettings() {
   // call and silently orphan `#status-bar-clock-toggle` for the rest of
   // this function.
   const clockLabel = document.getElementById("status-bar-clock-toggle")?.closest("label");
+  //: The clock's own opt-in toggle, not one of STATUS_SLOTS (it is off by default, so it is wired apart).
+  const wireClock = () => {
+    const clockToggle = $("status-bar-clock-toggle");
+    if (!clockToggle) return;
+    clockToggle.checked = Boolean(prefsCache?.status_bar_clock);
+    clockToggle.onchange = () => {
+      if (prefsCache) prefsCache.status_bar_clock = clockToggle.checked;
+      applyStatusClock();
+      setPreference("status_bar_clock", clockToggle.checked);
+    };
+  };
+  //: Drawn once; a later open only sets the ticks (perf audit 1108 P12: 11 listeners and their rows per open).
+  const drawn = box.querySelectorAll(".status-bar-item");
+  if (drawn.length === STATUS_SLOTS.length) {
+    STATUS_SLOTS.forEach((slot, at) => { drawn[at].querySelector("input").checked = !hidden.has(slot.key); });
+    wireClock();
+    return;
+  }
   box.replaceChildren();
   for (const slot of STATUS_SLOTS) {
     const label = document.createElement("label");
@@ -2186,18 +2204,7 @@ function renderStatusBarSettings() {
   // declaration. Appended last, so it reads as the odd one out it actually
   // is (off by default) without visually separating from its siblings.
   if (clockLabel) box.appendChild(clockLabel);
-  // The clock's own opt-in toggle, not one of STATUS_SLOTS above (it is
-  // off by default, so it is rendered and wired separately rather than
-  // joining a loop that assumes every entry starts visible).
-  const clockToggle = $("status-bar-clock-toggle");
-  if (clockToggle) {
-    clockToggle.checked = Boolean(prefsCache?.status_bar_clock);
-    clockToggle.onchange = () => {
-      if (prefsCache) prefsCache.status_bar_clock = clockToggle.checked;
-      applyStatusClock();
-      setPreference("status_bar_clock", clockToggle.checked);
-    };
-  }
+  wireClock();
 }
 
 //: The MCP client snippet (Brief 40), lazy because only the Tools pane draws it (reached
@@ -2648,6 +2655,91 @@ async function renderMemorySettings() {
   const budget = $("memory-budget");
   if (!list) return;
 
+  //: **Confirmed patterns, their own group** (CHAT_PLAN B9, the owner: "also
+  //: is there a way to edit or managed confirmed patterns??"): each Patterns
+  //: line the person confirmed, its sentence, the day and the notes behind it
+  //: (each opens its note), with the Patterns line's own menu (`rowActions`).
+  //: Local, not a global: the shared scope only goes down (row 37a).
+  //: Confirmed patterns (CHAT_PLAN B9), built on first draw rather than shipped
+  //: in the page (the boot document's element cap, tests/test_boot_diet3.py).
+  const confirmedHost = () => {
+    const found = $("memory-confirmed-list");
+    const section = $("settings-memory");
+    if (found || !section) return found;
+    const group = section.appendChild(document.createElement("div"));
+    group.className = "settings-group";
+    const head = group.appendChild(document.createElement("h4"));
+    head.className = "setting-subhead";
+    head.textContent = "Confirmed patterns";
+    const host = group.appendChild(document.createElement("ul"));
+    host.id = "memory-confirmed-list";
+    host.className = "entry-list";
+    const empty = group.appendChild(document.createElement("p"));
+    empty.id = "memory-confirmed-empty";
+    empty.className = "muted empty-line hidden";
+    empty.textContent = "None yet. Confirm a line in Tidy's Patterns and it is listed here.";
+    return host;
+  };
+  //: The list is paged (200 a page); every page is read, so a long list is not cut at the first one without a word.
+  const confirmedPages = async () => {
+    const items = [];
+    let total = Infinity;
+    while (items.length < total) {
+      const page = await apiJson(`/insights/confirmed?limit=200&offset=${items.length}`);
+      if (!page?.items?.length) break;
+      items.push(...page.items);
+      total = Number.isFinite(page.total) ? page.total : items.length;
+    }
+    return { items, total: items.length };
+  };
+  const drawConfirmed = async () => {
+    const host = confirmedHost();
+    if (!host) return;
+    showSkeletons(host, 2, "li");
+    //: `lazyScript` answers false on a failed load; either failure is said,
+    //: never shown as "None yet" (the review).
+    const [data, ready] = await Promise.all([confirmedPages().catch(() => null), lazyScript("/js/confirmed-patterns.js")]);
+    clearSkeletons(host);
+    const empty = $("memory-confirmed-empty");
+    if (empty) {
+      empty.dataset.none ??= empty.textContent.trim();
+      empty.textContent = data && ready ? empty.dataset.none : "Couldn't load your confirmed patterns.";
+      empty.classList.toggle("hidden", Boolean(data && ready && data.items.length));
+    }
+    host.replaceChildren(
+      ...(ready ? data?.items || [] : []).map((item) => {
+        const li = document.createElement("li");
+        li.className = "entry-item learned-row";
+        const text = li.appendChild(document.createElement("p"));
+        text.className = "learned-text";
+        text.textContent = item.sentence;
+        const meta = li.appendChild(document.createElement("p"));
+        meta.className = "muted learned-meta";
+        const on = item.confirmed_on ? new Date(`${item.confirmed_on}T12:00:00`) : null;
+        //: Day then month, as the line itself says it ("as you told me on 5 November").
+        meta.append(on ? `Confirmed ${on.getDate()} ${on.toLocaleDateString(undefined, { month: "long" })}` : "Confirmed by you");
+        if (item.subject) meta.append(`, about ${item.subject}`);
+        const notes = item.notes || [];
+        notes.slice(0, 5).forEach((note, i) => {
+          meta.append(i ? ", " : `. From ${notes.length === 1 ? "a note" : `${notes.length} notes`}: `);
+          //: A word in a sentence that does something is a `.linklike` button, not an `<a href="#">` (DESIGN.md, Plain).
+          const open = meta.appendChild(document.createElement("button"));
+          open.type = "button";
+          open.className = "linklike";
+          open.textContent = noteNamePlain(note.title) || "Untitled note";
+          open.addEventListener("click", () => {
+            closeSettingsModal();
+            flashEntry(note.id);
+          });
+        });
+        if (notes.length > 5) meta.append(`, and ${notes.length - 5} more`);
+        li.append(rowActions(confirmedPatternItems(item, drawConfirmed), "More for this pattern"));
+        return li;
+      })
+    );
+  };
+  drawConfirmed();
+
   //: Placeholders while the first answer is on its way, so a slow disk never
   //: reads as "nothing saved yet" (DESIGN.md's list recipe; only into an
   //: empty list, so a refresh never covers rows already there).
@@ -2775,6 +2867,7 @@ async function renderMemorySettings() {
     })
   );
 }
+
 // ---- Settings, About, Maintenance (core/maintenance.py, core/doctor.py) ----
 //: The owner, 2026-10-11: "Can you add like buttons in settings to run them
 //: in like the about page??", about doctor, reinstall, tools and uninstall.
@@ -3090,7 +3183,7 @@ $("theme-surprise")?.addEventListener("click", () => {
   const pick = names[Math.floor(Math.random() * names.length)];
   applyThemePreset(pick, true);
   renderAppearance();
-  toast(`${THEME_PRESETS[pick].label} theme. Press Surprise me again for another.`, "info");
+  toast(`${THEME_PRESETS[pick].label} theme. Press Random theme again for another.`, "info");
 });
 
 //: Logs, from a job history row and the empty log (moved out of boot code, the
@@ -3777,6 +3870,13 @@ $("density-seg").addEventListener("change", (e) => {
   applyAppearance();
   renderAppearance();
 });
+for (const key of ["read-leading", "read-measure"]) {
+  $(key).addEventListener("change", (e) => {
+    prefs.set(key, e.target.value);
+    applyAppearance();
+    renderAppearance();
+  });
+}
 $("perf-mode").addEventListener("change", (e) => {
   prefs.set("perf", e.target.value);
   applyAppearance();
@@ -4046,6 +4146,9 @@ $("custom-theme-save").addEventListener("click", () => {
 $("custom-theme-name").addEventListener("keydown", (e) => {
   if (e.key === "Enter") $("custom-theme-save").click();
 });
+$("look-surprise").addEventListener("click", () => settingsLook.lookFile.surpriseNow());
+$("look-export").addEventListener("click", () => settingsLook.lookFile.exportNow());
+$("look-import").addEventListener("click", () => pickJsonFile("look-import-file", (data) => settingsLook.lookFile.importNow(data)));
 
 $("log-source").addEventListener("change", renderActiveLogView);
 $("log-level").addEventListener("change", renderActiveLogView);

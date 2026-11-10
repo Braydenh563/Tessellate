@@ -1283,6 +1283,14 @@ progress {
   list-style: none;
   margin-left: -1.1rem;
 }
+/* The marker a list is written with (mdList in markdown.js names it in the list's class; the HTML export
+   carries the same rules in DOC_EXPORT_CSS). Dots and numbers are the browser's own. */
+.md-ul-circle { list-style-type: circle; }
+.md-ul-square { list-style-type: square; }
+.md-ul-dash { list-style-type: "\2013  "; }
+.md-ol-a-dot { list-style-type: lower-alpha; }
+.md-ol-i-dot { list-style-type: lower-roman; }
+.md-ol-1-paren > li::marker { content: counter(list-item) ") "; }
 .md-task input {
   width: auto;
   margin-right: 0.4rem;
@@ -1677,6 +1685,13 @@ input.md-task-inline:disabled,
    and a card is a glance more than a long read. */
 .entry-list:not(.is-rows) .entry-content {
   max-width: 84ch;
+}
+/* Settings, Line width: 0.85 and 1.2 of the 84ch. */
+:root[data-read-measure="narrow"] .entry-list:not(.is-rows) .entry-content {
+  max-width: 71ch;
+}
+:root[data-read-measure="wide"] .entry-list:not(.is-rows) .entry-content {
+  max-width: 101ch;
 }
 /* The AI Skills panel's own log rows (`renderSkillLogs`, library.js): 
    `#skills-logs-list` is a plain `<div class="entry-list">`, not a `<ul>`
@@ -6084,7 +6099,7 @@ select {
   content: "";
   position: absolute;
   inset-block: var(--space-2);
-  inset-inline-start: calc(-2 * var(--space-3));
+  inset-inline-start: calc(-1 * var(--setting-bar-inset));
   width: 2px;
   border-radius: var(--radius-pill);
   background: var(--accent-text);

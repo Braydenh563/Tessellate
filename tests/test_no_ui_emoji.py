@@ -167,6 +167,11 @@ ALLOWED: dict[str, list[tuple[str, str]]] = {
             r'replace(/\{\s*\}/g, "{\u25a1}")',
             "an empty slot inside a TeX string, drawn by the math renderer (the equation field's dotted box), not the UI",
         ),
+        (
+            "const LOOK",
+            "the bullet marks a pasted list arrives with (a Unicode dash, \"•\", \"◦\", \"▪\"), "
+            "matched to become a Markdown item; never drawn",
+        ),
     ],
     "frontend/js/reply-kit.js": [
         ('const slot = "\\u25a1"', "an empty slot in the calculator's typeset sum, drawn by the math renderer, not the UI (INBOX 1579)"),

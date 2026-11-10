@@ -520,7 +520,9 @@ def test_the_masculine_look_is_a_star_being_not_an_animatronic():
     assert "armWidth: [3.8, 1.6]," in masculine and "handScale: 0.9," in masculine
     arms = re.search(r"    arm: \[(\[[^\]]+\]), (\[[^\]]+\])\],", masculine)
     assert arms, "the arm bends: two segments"
-    assert '.nm-atlas[data-atlas-look="masculine"] .atl-eye { scale: 0.84; }' in CSS
+    # Intent moved (INBOX 1607 d): the smaller eye was for round 9's stare, which INBOX 1301's lid fix
+    # answered; at 0.84 his eyes read small and wide-set, so they are her size (tests/test_atlas_masc_1607.py).
+    assert '.nm-atlas[data-atlas-look="masculine"] .atl-eye { scale: 0.9; }' in CSS
     assert '.atl-lw-body[data-atlas-look="masculine"] { animation: atl-idle-sway' in CSS
     body = _keyframes("atl-idle-sway").split("{", 1)[1]
     assert set(re.findall(r"([a-z-]+)\s*:", body)) <= {"rotate"}
@@ -790,7 +792,8 @@ def test_the_props_hang_from_each_look_s_own_hand():
     # 2.1 to 3.9 units off the masculine mitten and about 18 off her held-out
     # hand. Each look names its grip and the props move there.
     # INBOX 568: both hang their arms at rest, and the grips moved with the hands.
-    assert "propHand: [39.4, 59.6]" in _look("masculine")
+    # Intent moved (INBOX 1607 b): his right arm came in by 1 with his shoulders, and the grip with it.
+    assert "propHand: [38.4, 59.6]" in _look("masculine")
     assert "propHand: [38, 59]" in _look("feminine")
     assert "atlasHandProps(arms.r, arms.l, look);" in ATLAS
     assert "const grip = (ATLAS_LOOKS[look] || {}).propHand || hand;" in ATLAS
@@ -1216,7 +1219,9 @@ def test_the_lower_body_takes_a_pose_for_what_it_is_doing():
     assert curve("think")[1] <= 1, "a slow curl does not"
     rig = ATLAS[ATLAS.index("function atlasRigLower(") :]
     assert "const pick = live ? Math.floor(Math.random() * spec.v.length) : 0;" in rig
-    assert "low.at = now + 8000 + Math.random() * 6000;" in rig
+    # INBOX 1683 B1: the hold fell from 8-14 s to 5-9 s because each state now has six or eight arrangements
+    # (the authored rows plus their blends), so a rest shows more of them; the intent (never the same twice) stands.
+    assert "low.at = now + 5000 + Math.random() * 4000;" in rig
     # Each flowing part takes the state: the dress or cloak, her wisps, both
     # tails, the hair and the nebula stream, as compositor transitions;
     # reduced motion sets the pose with none.

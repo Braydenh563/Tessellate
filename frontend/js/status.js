@@ -388,7 +388,7 @@ function syncNotifBlocked() {
   for (const line of document.querySelectorAll(".notif-blocked")) line.classList.toggle("hidden", !blocked);
 }
 
-onSettingsBody(syncNotifBlocked);
+onSurface("settings", syncNotifBlocked);
 
 function askNotificationPermission() {
   if ("Notification" in window && Notification.permission === "default") {
@@ -1011,8 +1011,9 @@ function toastYield(target = document.activeElement) {
   const wide = focused.width > innerWidth / 2 && focused.height > innerHeight / 2;
   //: Skipped content-visibility buttons are not drawn; measuring one lays it out alone (INBOX 1415).
   const area = target.closest("form, section, [role=dialog]");
+  //: Nor Settings' panes (bt-compcomp-1109 24): custom-theme-save held the question at 0.12, inert, while Settings was open.
   //: Not the panel's resize grip (INBOX 1548): it is a button in the dialog's bottom-right corner, where every toast lands, so each one was drawn at 0.12 over Settings as if it were hiding a control.
-  const work = [...(area?.querySelectorAll("button:not(.panel-grip)") || [])].map((el) => el.checkVisibility({ contentVisibilityAuto: true }) && el.getBoundingClientRect());
+  const work = [...(area?.querySelectorAll("button:not(.panel-grip, #settings-modal *)") || [])].map((el) => el.checkVisibility({ contentVisibilityAuto: true }) && el.getBoundingClientRect());
   //: In a dialog a timed toast steps aside too: the pointer resting on it
   //: holds its timer, so the last import's Undo sat on the next preview's
   //: Import for as long as the press was tried (E2E import, 2026-11-01).
@@ -2142,7 +2143,7 @@ document.addEventListener(
 );
 
 //: The body's own controls are gated when it is built (settings-body.js), not before.
-onSettingsBody(() => syncModelGatedControls());
+onSurface("settings", () => syncModelGatedControls());
 function syncModelGatedControls(status = modelStatus) {
   const off = status ? status.ollama_running === false : false;
   for (const control of document.querySelectorAll("[data-needs-model]")) {
@@ -2618,7 +2619,7 @@ function paintStatusItem(id, { icon, value, label, title, tone = "", shortcut = 
     glyph.setAttribute("aria-hidden", "true");
     button.appendChild(glyph);
   }
-  if (value !== undefined && value !== null) {
+  if (value != null) {
     const strong = document.createElement("b");
     strong.textContent = String(value);
     button.appendChild(strong);
@@ -2626,7 +2627,7 @@ function paintStatusItem(id, { icon, value, label, title, tone = "", shortcut = 
   if (label) {
     //: A space between the number and its word, not drawn (a flex row drops
     //: it) but read: "29notes" is what a tool takes the visible text to be.
-    if (value !== undefined && value !== null) button.append(" ");
+    if (value != null) button.append(" ");
     const text = document.createElement("span");
     text.textContent = label;
     button.appendChild(text);
@@ -2640,7 +2641,7 @@ function paintStatusItem(id, { icon, value, label, title, tone = "", shortcut = 
   //: WCAG 2.5.3, the visible words are part of the name ("29 notes: Your
   //: notebook..."), which axe's label-content-name-mismatch found on the
   //: notes and reminders counts.
-  const shown = [value, label].filter((part) => part !== undefined && part !== null && part !== "").join(" ");
+  const shown = [value, label].filter((part) => part != null && part !== "").join(" ");
   if (title) button.setAttribute("aria-label", shown ? `${shown}: ${title}` : title);
   else button.removeAttribute("aria-label");
   button.classList.toggle("status-due", tone === "due");

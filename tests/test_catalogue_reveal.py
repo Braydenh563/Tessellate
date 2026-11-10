@@ -58,6 +58,7 @@ SCRIPTS = (
     "documents-columns.js",
     "documents-print.js",
     "documents-outline.js",
+    "documents-callouts.js",
     "library.js",
     "dashboard.js",
     "settings.js",

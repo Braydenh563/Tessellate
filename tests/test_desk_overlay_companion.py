@@ -131,7 +131,7 @@ def test_the_page_api_has_the_two_new_calls(over) -> None:  # noqa: F811
     assert {"companion_choices", "choose_companion"} <= public
 
 
-def test_the_panel_page_lists_the_choices_marks_the_current_and_disables_what_the_overlay_cannot_draw() -> None:
+def test_the_panel_page_lists_the_choices_marks_the_current_and_guards_rows_the_host_refuses() -> None:
     from pathlib import Path
 
     js = (Path(__file__).resolve().parent.parent / "frontend" / "js" / "desk-companion.js").read_text(encoding="utf-8")
@@ -140,6 +140,6 @@ def test_the_panel_page_lists_the_choices_marks_the_current_and_disables_what_th
     assert 'role", "menuitemradio"' in body and "aria-checked" in body and "row.disabled = !option.enabled" in body
     # Intent moved (INBOX 1684, fa7ed5e): the overlay draws every look, so no row
     # carries the "Shows in the app only" title; a disabled row stays disabled.
-    assert 'item("Back"' in body
+    assert "Shows in the app only" not in body and 'item("Back"' in body
     assert 'item("Companion", "user-switch", openCompanion)' in js and "if (overlay)" in js.split('item("Companion"', 1)[0].splitlines()[-1]
     assert "[role^=menuitem]:not(:disabled)" in js  # the arrows skip the rows that cannot be chosen

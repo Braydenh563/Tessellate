@@ -85,16 +85,18 @@ def test_the_shape_keys_work_from_the_picture_and_the_toolbar_and_the_menu_shows
 
 
 def test_the_blocks_list_can_be_hidden_and_the_choice_is_kept():
-    assert 'dgm-outline-toggle' in BAR and 'aria-pressed' in BAR
+    # Moved by 1661 m: the toolbar's list button became the panel's own fold (diagram-split.js), kept in `diagram.fold`.
+    split = (JS / "diagram-split.js").read_text(encoding="utf-8")
+    assert "dgm-outline-toggle" not in BAR and 'const FOLD = "diagram.fold"' in split
     css = (ROOT / "frontend" / "css" / "diagram-lazy.css").read_text(encoding="utf-8")
-    assert ".dgm-no-outline .dgm-pane" in css
+    assert ".dgm-body.dgm-fold-left > :is(.dgm-pane, .dgm-split-handle)" in css
 
 
 def test_blind_test_fixes_phone_toolbar_empty_steps_caret_menu_and_new_block_shape():
     # Blind test of 0931c35 (measured at 390 and 1440): the toolbar was 338 px in 306, the empty steps sat under the foot,
     # the shape menu opened at the window's left edge, and a block made from Connect to a decision was a decision.
     css = (ROOT / "frontend" / "css" / "diagram-lazy.css").read_text(encoding="utf-8")
-    assert ".dgm-dock .dgm-outline-toggle" in css and ".dgm-picture.dgm-picture-empty" in css
+    assert ".dgm-picture.dgm-picture-empty" in css
     assert "r.right, r.bottom, caret" in BAR
     joins = (JS / "diagram-joins.js").read_text(encoding="utf-8")
     assert 'after: key, from, shape: "rect"' in joins

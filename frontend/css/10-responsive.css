@@ -57,6 +57,30 @@
   #tab-bar button {
     min-height: var(--target-min);
   }
+  /* The 1717 zoom pass: at 720 (200 % zoom) the labelled strip needed 100px more than
+     the row beside the logo and the buttons had, so it took a row of its own
+     (108px bar). Only the chosen tab keeps its caption here, as the 360 to
+     480 band already does; the others are icons at the 44px target, named by
+     their `aria-label`, and the wordmark (width 0 in a flex row, still a gap)
+     is out of the row. */
+  #tab-bar button:not(.active) .tab-label {
+    display: none;
+  }
+  #tab-bar button.active {
+    flex: 0 1 auto;
+    padding-inline: var(--space-2);
+  }
+  header#top-bar {
+    --header-pad-x: var(--space-4);
+    gap: var(--space-2);
+  }
+  header#top-bar h1 {
+    display: none;
+  }
+  #top-bar .header-controls,
+  #top-bar .header-cluster {
+    gap: var(--space-1);
+  }
 }
 /* --- band 2 (820 to 1200): the tabs keep their names, set small ----------
    **The tabs keep their names on a laptop** (WORLD_CLASS_PLAN 22.1.3 as the
@@ -577,6 +601,18 @@ header#top-bar[data-scrolled="1"],
    Not `display: none`: the segment's accessible name is its text, and a
    hidden name is a button a screen reader announces as "button". */
 @media (max-width: 1199.98px) {
+  /* Browser zoom, rule 9 below: the Recent head's title is the tab above it; kept for a screen reader. */
+  #doc-sidebar-list > .sidebar-head > h2 {
+    position: absolute;
+    width: 0;
+    height: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+  #doc-sidebar-list > .sidebar-head {
+    justify-content: flex-end;
+  }
   /* Square, so four icons read as four cells of one well rather than four
      pills with air between them. */
   .seg-multi > button {
@@ -886,6 +922,11 @@ header#top-bar[data-scrolled="1"],
   gap: var(--space-1);
   overflow-y: auto;
   min-height: 0;
+}
+/* The list scrolls, so its rows must not shrink to fit it: a long one (the diagram's Add sheet) drew each name
+   over the hint above (INBOX 1661, 2026-11-08). */
+.sheet-list > * {
+  flex-shrink: 0;
 }
 /* A row is the whole width, which is the target a thumb wants, and the Plain
    tier of the button ramp: no fill at rest, a tint under the pointer and on
@@ -2581,7 +2622,12 @@ header#top-bar[data-scrolled="1"],
     display: none;
   }
   .chat-dock-controls:has(> .chat-tool-group-mode > .select-shell) > .chat-tool-group-mode {
-    flex: 1 1 100%;
+    /* The 1717 zoom pass: a basis, not the whole row. At 150 to 200 % zoom the strip
+       is 597 to 800px and Skills, Web and Plan (269px) left 316px, room for
+       the segment, the gear and a model picker at its 5rem floor, but the
+       100% basis sent the mode row under them anyway. 16rem is the room it
+       needs to share the line; any less and it still takes the line below. */
+    flex: 1 1 16rem;
     flex-wrap: nowrap;
     order: 2;
   }
@@ -2706,4 +2752,168 @@ header#top-bar[data-scrolled="1"],
     min-width: var(--target-min);
     min-height: var(--target-min);
   }
+}
+/* --- INBOX 1717: browser zoom (the window at 125 to 200 %) ------------------
+   Zoom renders as a narrower CSS viewport, so the same markup meets the 720 to
+   1100 band at a desktop's size. `scratchpad/ui-sweeps/zoom1717.js` measures
+   every surface at 125/150/175/200 and lists each row whose children sit on
+   more than one line, each element wider than its box and each label that
+   wraps; the rules below are the ones that list asked for, each pinned by
+   `tests/test_zoom_wrap_1717.py`. */
+/* 1. **The Dashboard's doorway may shrink.** The find zone's `min-content`
+      floor (the band above, for a `.seg` well that cannot wrap) counted the
+      doorway's whole nowrap prompt, 650px, so at 720 wide the actions zone
+      fell to a second row under a full-width search. The prompt already
+      ellipsises (`.dash-find-text`), so the zone is told it can be narrower
+      than the prompt, the way the phone band already tells it. */
+.dock[data-dock-name="dashboard"] > .dock-find {
+  min-width: 0;
+  flex-basis: 12rem;
+}
+/* 2. **A search's floor is the search's, not its input's intrinsic width.**
+      An `<input>` asks for ~170px of `min-content` however narrow the field
+      is allowed to be, which the band above multiplied into the find zone's
+      floor; with `width: 0` the field's own `min-width: 8rem` decides, and a
+      dock holding a search beside its actions fits one row 100px sooner. */
+@media (max-width: 1099.98px) {
+  .dock .dock-find > .dock-search > .search-field-input {
+    width: 0;
+    min-width: 0;
+  }
+  /* The basis is what decides when a zone wraps (08-consistency.css): a zone
+     that is only a search asks for the search's own floor, so the Documents
+     dock's 328px of actions fit beside it at 720 instead of one pixel short. */
+  .dock .dock-find:has(> .dock-search:only-child),
+  .dock .dock-find:has(> .dock-search):not(:has(> :not(.dock-search, .hidden, :empty))) {
+    flex-basis: 8rem;
+  }
+}
+/* 3. **A tile's label ellipsises instead of leaving its tile.** Quick access
+      measured 153px in a 162px head at 200 %: the label would not shrink. */
+#tab-dashboard .launch-head .launch-label {
+  flex-shrink: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+/* 4. **A count line may be cut before the row is.** The Timeline's "11 items
+      (6 notes, 2 maps, 3 documents) · 1 day" is 275px, and its identity zone
+      is `flex: 0 0 auto` (08), so at 720 the dock's actions fell to a second
+      row (108px). Under 1100 the zone takes a small basis and grows to its
+      content, so the chip ellipsises (it already can) only when the row has
+      no room, and its text is its title (`setTimelineCount`). */
+@media (max-width: 1099.98px) {
+  .dock > .dock-identity:has(> .dock-chip) {
+    flex: 1 1 8rem;
+    max-width: max-content;
+    min-width: 0;
+  }
+}
+/* 5. **The day strip's well asks for less under 1100.** `flex: 1 1 26rem` is
+      the row break: at 720 the arrows, the month (a fixed 9.5rem) and the year
+      select take 330px, so 416px more sent the seven days under them. Seven
+      44px days need 308px (they stack weekday over number below 34rem). */
+@media (max-width: 1099.98px) {
+  .timeline-days {
+    flex-basis: 19rem;
+  }
+}
+/* 6. **A code document's tools keep one row under 1100.** Format, Run,
+      Assistant, Snippets, Edit/Read, Focus and the menu measured 600px in a
+      544px head at 720, so the menu fell to a row of its own. Format and Run
+      lose their words here (the `.toolbar-word` recipe, as the note strip
+      does at every width): `aria-label` names the button and its title is the
+      hover text. The Recent head's New does the same, and the title row's
+      basis is smaller, so a document whose tools fit beside its name keeps
+      one line. */
+@media (max-width: 1099.98px) {
+  .doc-dock .doc-actions .toolbar-word,
+  #doc-sidebar-list .toolbar-word {
+    display: none;
+  }
+  .doc-dock .doc-actions button:has(> .toolbar-word),
+  #doc-sidebar-list button:has(> .toolbar-word) {
+    width: var(--control-h);
+    padding-inline: 0;
+    justify-content: center;
+  }
+  .doc-dock .doc-actions button > .ph-lead:has(~ .toolbar-word),
+  #doc-sidebar-list button > .ph-lead:has(~ .toolbar-word) {
+    margin-inline-end: 0;
+    translate: none;
+  }
+  .doc-dock > .doc-dock-identity {
+    flex-basis: 12rem;
+  }
+  /* The Recent head: Recent, help, New, templates and diagram in a narrow
+     column need the actions' gaps a step closer to fit one line. */
+  #doc-sidebar-list > .sidebar-head,
+  #doc-sidebar-list > .sidebar-head > .row {
+    column-gap: var(--space-1);
+  }
+}
+/* 7. **The diagram foot's two buttons share the pane.** Add block and Connect
+      are 115 and 105px and the narrow pane at 125 and 150 % is 209px, so
+      Connect dropped under Add block. Their sides close in two steps (194px
+      together) and they split the row, so a pane that holds both keeps them
+      on one line. */
+.dgm-foot {
+  column-gap: var(--space-1);
+}
+.dgm-foot > .small {
+  flex: 1 1 auto;
+  min-width: 0;
+  justify-content: center;
+  padding-inline: var(--space-1);
+}
+/* 8. **Settings' "On this page" head stays on one line.** The label (72px) and
+      "Show all 8 sections" (116px) need 194px and the rail's head had 180 after
+      its link indent, so the toggle dropped under the label at 125 to 175 %.
+      The head's indent closes up a step and its gap and right edge give way. */
+.settings-nav-groups-head {
+  gap: var(--space-1);
+  padding-inline: var(--space-5) 0;
+}
+/* 9. **The Recent head's title is the tab above it.** "Recent" over a row of
+      four buttons is 261px in a 166 to 226px column, up to 1200 wide, and the
+      sidebar tab already says "Documents": the heading stays for a screen reader
+      (rules in the 1199.98 band at the top of this file, `#doc-sidebar-list`). */
+/* 10. **A sidebar's empty line fits the column.** "No saved chats yet" is 140px
+       and the 150 to 175 % rail leaves 134 inside 1rem of padding each side. */
+#chat-sidebar .empty-state,
+#doc-sidebar .empty-state {
+  padding-inline: var(--space-3);
+}
+/* 11. **Edges that bleed on purpose are clipped, not scrolled.** The Learned
+       switches (9px hover bleed) and the Library's filter row (4px focus bleed)
+       counted as horizontal overflow of their box; `overflow: clip` with a
+       margin keeps the bleed drawn and the box's scroll width its own. */
+#learned-switches,
+#learned-switches .learned-switch-stack,
+.library-controls {
+  overflow: clip;
+  overflow-clip-margin: 14px;
+}
+/* 12. **A theme card's name has room for "Quiet utilitarian".** */
+.theme-presets {
+  grid-template-columns: repeat(auto-fill, minmax(7.5rem, 1fr));
+}
+/* 13. **A dock's title gives way on a phone.** The base rule is `flex: 0 0 auto;
+       min-width: max-content` (08-consistency.css) and the phone band above
+       only lifted the min-width, so the heading kept its natural width and
+       spilled out of a zone that had already shrunk: "Your reminders" 117px in
+       86px at 390 (Reminders, Browse, Links, Contents) and at 480 (Docs,
+       Boards, Skills, Links), 31px past the box. It now shrinks with the
+       ellipsis the band already sets; the heading text stays the accessible
+       name, and a phone has no hover for a tooltip to show on. */
+@media (max-width: 599.98px) {
+  .dock .dock-identity > :is(h1, h2, h3) {
+    flex: 0 1 auto;
+  }
+}
+/* 14. **The Timeline's month stays one line.** "November 2026" broke onto
+       three lines in the month button when the row ran short. */
+.timeline-daystrip-label.ghost.small {
+  white-space: nowrap;
 }

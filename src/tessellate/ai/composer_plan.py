@@ -18,10 +18,11 @@ import re
 from dataclasses import dataclass
 from datetime import date, datetime, timedelta
 
-from tessellate.ai import composer_done, recognise, study
+from tessellate.ai import composer_done, realise, recognise, study
 from tessellate.ai import when as when_words
 from tessellate.ai import composer_compose as compose
 from tessellate.ai import note_rank, reminder_parser
+from tessellate.ai.composer_ask import rephrase
 from tessellate.ai.composer_study import Ctx, Reply, pick
 
 _SENTENCE = re.compile(r"(?<=[.!?])\s+(?=[A-Z0-9*\"“(\[])")
@@ -43,6 +44,10 @@ _OVERDUE = re.compile(
     rf"^{_LEAD}(?:what(?:'s|’s| is| are)?|which|anything|any|show me|show|list|tell me|give me|do i have|have i got|is there anything|is anything)?"
     r"(?: what(?:'s|’s| is| are)?)?(?: (?:the|my|any|all|every))*(?: (?:reminders?|tasks?|items?|things?))?(?: (?:that|which))?(?: (?:is|are))?(?: now)? ?(?:overdue|past due)"
     r"(?: (?:reminders?|tasks?|items?|things?))?(?: for me)?\W*$", re.I)
+#: "what have I got on", "what's on": the agenda with no day named (R9-8).
+_BARE_ON = re.compile(rf"^{_LEAD}what(?:'s|’s| is)? (?:(?:do )?i (?:have|got)|have i got|am i doing) on\W*$|^{_LEAD}what(?:'s|’s) on\W*$", re.I)
+#: What the dated list can be narrowed to: "any birthdays coming up" (R9-8).
+_KINDS = {"birthday": "birthday", "appointment": "appointment", "meeting": "meeting", "event": "event", "booking": "booking", "trip": "trip", "holiday": "holiday"}
 _PLAN = re.compile(
     rf"^{_LEAD}(?:help me |can you |could you |let'?s |lets )?(?:plan|organi[sz]e|schedule|map out|sort out|prioriti[sz]e|structure|arrange|lay out)\s+(?:out\s+)?(?P<t>.*)$|"
     rf"^{_LEAD}what should i (?:do|work on|focus on|tackle|start with)(?P<s>.*)$|"
@@ -61,7 +66,10 @@ _LEFT = re.compile(
     #: "what's still to do" (INBOX 1357, class I: it listed the newest notes).
     r"|what(?:'s| is)?\s+(?:still|left)\s+to\s+do"
     r"|what\s+(?:do|should)\s+i\s+(?:still\s+)?(?:have|need)\s+to\s+(?:do|finish|get done|tick off)"
-    r"|(?:show|list|give)\s+(?:me\s+)?(?:all\s+)?(?:my\s+)?(?:open|unfinished|outstanding|remaining|unticked)\s+(?:tasks|items|to-?dos|checklists?|checklist items))\W*$", re.I)
+    r"|(?:show|list|give)\s+(?:me\s+)?(?:all\s+)?(?:my\s+)?(?:open|unfinished|outstanding|remaining|unticked)\s+(?:tasks|items|to-?dos|checklists?|checklist items)"
+    #: "what tasks do I have", "what needs doing", "my tasks" (R9-8).
+    r"|what\s+(?:tasks?|to-?dos?|chores|jobs)\s+(?:do i have|have i got|are there|are open|are left)(?:\s+(?:open|left|outstanding|to do))?"
+    r"|what\s+needs\s+(?:doing|to be done|done)|(?:show|list)\s+(?:me\s+)?my\s+(?:tasks|to-?dos)|my\s+(?:tasks|to-?dos))\W*$", re.I)
 _WHEN_IS = re.compile(rf"^{_LEAD}when(?:'s|’s| is| are| was)\s+(?:my |the |our |this |that )?(?P<t>.+?)\W*$", re.I)
 #: The other ways to ask when a thing is: "what date is my exam", "when do I
 #: have my exam", "what day is the lab".
@@ -90,7 +98,7 @@ _AHEAD_SAID = re.compile(r"\b(?:will|going to|coming|upcoming|due|next|ahead|dea
 _FILLER_STEMS = frozenset(study.stem(w) for w in (
     "what whats is are do have got any anything due deadlines deadline coming up upcoming on my plate the this next week today tomorrow "
     "tonight weekend month happening scheduled ahead for me tell show list give need know check calendar horizon hand submit plan "
-    "organise organize schedule agenda busy look like day rest days few couple month by in a an of to am we doing soon".split()))
+    "organise organize schedule agenda busy look like day rest days few couple month by in a an of to am we doing soon important urgent planned".split()))
 
 
 @dataclass
@@ -280,6 +288,7 @@ def _sentence_day(sentence: str, anchor: datetime) -> date | None:
     return None
 
 
+_PRONOUN_LEAD = re.compile(r"(?:he|she|it) (?=(?:is|was|will|has)\b)", re.I)
 _WEEKDAY_ONLY = re.compile(r"^(?:on |this |next )?(?:mon|tues|wednes|thurs|fri|satur|sun)day$", re.I)
 
 
@@ -297,6 +306,12 @@ _DAYS_CACHE: dict[tuple, tuple[tuple[date, str], ...]] = {}
 _CACHE_MAX = 1200
 
 
+def _not_due(sentence: str, title: str) -> bool:
+    """A day gone ("Wednesday bench 60kg." in a gym log, E20) or a habit ("Gym on Monday, Wednesday and Friday",
+    bt-compcomp-1109 item 8): neither is a day that falls due."""
+    return bool(recognise.logged_day(sentence, title) or recognise.recurring_schedule(sentence))
+
+
 def _note_days(note: dict, now: datetime) -> tuple[tuple[date, str], ...]:
     content = str(note.get("content") or "")
     anchor = _anchor(note, now)
@@ -307,13 +322,17 @@ def _note_days(note: dict, now: datetime) -> tuple[tuple[date, str], ...]:
     found: list[tuple[date, str]] = []
     title = study.title_of(content)
     for sentence in _dated_lines(content):
-        if recognise.logged_day(sentence, title):
-            continue  # "Wednesday bench 60kg." in a gym log: a day gone, not one due (E20)
+        if _not_due(sentence, title):
+            continue
         if recognise.told_as_past(sentence) and not re.search(r"\d{4}", sentence):
             #: "Slept badly on Tuesday." happened; its day is never ahead (Z26).
             continue
         day = _sentence_day(sentence, anchor)
         text = _plain(sentence.lstrip("# ") if sentence.strip().startswith("#") else sentence)
+        #: "He is coming Wednesday" in the note titled "Plumber" is "Plumber is coming Wednesday" (R9-6).
+        lead = _PRONOUN_LEAD.match(text)
+        if lead and title and len(title.split()) <= 4 and not title.endswith("…"):
+            text = f"{title} {text[lead.end():]}"
         if day is not None and 3 <= len(text) <= 160:
             found.append((day, text))
     if len(_DAYS_CACHE) >= _CACHE_MAX:
@@ -496,7 +515,7 @@ def _busiest(found: list[Event], days: list[date], load: dict) -> str:
     busiest = max(days, key=lambda d: (load[d], -days.index(d)))
     free = [d for d in days if load[d] == 0 and d.weekday() < 5]
     #: One item is not a busy day (audit 1030 Z57: "Busiest day: Saturday with 1").
-    said = f"Busiest day: {_long(busiest)} with {load[busiest]}." if load[busiest] > 1 else ""
+    said = f"Busiest day: {_long(busiest)}, with {realise.count_word(load[busiest])} items." if load[busiest] > 1 else ""
     return " ".join(s for s in (said, f"Free weekdays: {', '.join(f'{d:%A}' for d in free)}." if free else "") if s)
 
 
@@ -627,6 +646,20 @@ def ahead_default(today: date) -> tuple[date, date, str]:
     return today, today + timedelta(days=AHEAD_DAYS - 1), AHEAD_SAID
 
 
+_KIND_STEMS = {study.stem(k) for k in _KINDS}
+
+
+def _kind_due(ctx: Ctx, kinds: set[str], today: date) -> Reply | None:
+    """"Any birthdays coming up": the dated lines about that kind, nearest first, as far as a year on (R9-8)."""
+    found, _overdue = events(ctx, today, today + timedelta(days=366))
+    kept = [e for e in found if kinds & _stems(e.text)]
+    if not kept:
+        return None
+    noun = next(k for k in _KINDS if study.stem(k) in kinds)
+    head = f"{len(kept)} {noun}{'s' if len(kept) != 1 else ''} ahead in your notes:"
+    return Reply("\n".join([head, *_grouped(kept, today)]), asks=_item_chips(kept, today))
+
+
 def _due_reply(ctx: Ctx, text: str, today: date) -> Reply | None:
     win = window(text, today)
     leftover = {s for s in _stems(re.sub(r"[^\w\s']", " ", _SPAN_WORDS.sub(" ", text))) if s not in _FILLER_STEMS}
@@ -636,6 +669,9 @@ def _due_reply(ctx: Ctx, text: str, today: date) -> Reply | None:
     #: The know-ahead shape has nothing after its day: "my notes say" is not a subject.
     if _KNOW_AHEAD.match(text):
         leftover = set()
+    kind = {k for k in leftover if k in _KIND_STEMS}
+    if kind and leftover == kind and not ctx.open_ids:
+        return _kind_due(ctx, kind, today)
     if leftover or (win is None and ctx.open_ids):
         return None  # a subject, or "what is the deadline?" with a note open: the notes' (composer_open)
     return _due(ctx, win or ahead_default(today))
@@ -789,10 +825,17 @@ def answer(ctx: Ctx) -> Reply | None:
     text = " ".join((ctx.question or "").split())
     if not text or len(text) > 200:
         return None
+    #: As typed first; then with the casual wrapper and text-speak off ("whats on tmrw", R9-8, R9-14).
+    return _answer_text(ctx, text) or (_answer_text(ctx, spelled) if (spelled := rephrase(text)) and spelled != text else None)
+
+
+def _answer_text(ctx: Ctx, text: str) -> Reply | None:
     #: "schedule a reminder" starts one; it is not a plan to lay out (INBOX 1668 a).
     if reminder_parser.canonical_ask(text) != text:
         return None
     today = ctx.now.date()
+    if _BARE_ON.match(text):
+        return _due(ctx, ahead_default(today))
     if _LEFT.match(text):
         return _left(ctx)
     if _OVERDUE.match(text):

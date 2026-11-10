@@ -44,7 +44,7 @@ from tessellate.core.database import (
     utcnow,
     like_escape,
 )
-from tessellate.core import events, paths
+from tessellate.core import events, paths, reading_bin
 from tessellate.core.lookahead import Ahead
 from tessellate.entry import link_facts, timewords
 from tessellate.entry.cleantext import clean_name, is_blank, name_key
@@ -1239,7 +1239,9 @@ def _hard_delete(session: Session, entries: list[Entry], uploads_dir: Path | Non
     # statements the flush never sees, so their rows are taken out by hand.
     from tessellate.search import index as search_index
 
-    search_index.forget(session, Attachment, [a.id for a in attachments])
+    attachment_ids = [a.id for a in attachments]
+    search_index.forget(session, Attachment, attachment_ids)
+    reading_bin.forget_page_reads(session, "attachment", attachment_ids)
     search_index.forget(session, Entry, ids)
     session.execute(delete(Attachment).where(Attachment.entry_id.in_(ids)))
     session.execute(delete(EmbeddingRecord).where(EmbeddingRecord.entry_id.in_(ids)))
@@ -1551,6 +1553,7 @@ def delete_attachment(
     except OSError:
         pass  # a stuck file shouldn't block removing the record
     log_action(session, "detached", "entry", attachment.entry_id, attachment.filename)
+    reading_bin.forget_page_reads(session, "attachment", [attachment.id])
     session.delete(attachment)
     session.commit()
 
@@ -2706,6 +2709,23 @@ def _picture_words(alt: str) -> str:
     name, *rest = alt.split("|")
     caption = [p.strip() for p in rest if p.strip() and not _IMAGE_OPTION.fullmatch(p.strip())]
     return " ".join(caption) or name.strip()
+
+
+#: `![[Title]]`: a diagram written into a document (documents-mermaid.js). Not a block embed (`#^id`) and not a file (`.png`).
+_EMBED = re.compile(r"!\[\[[ \t]*([^\]\n|#]{1,300}?)[ \t]*\]\]")
+
+
+def readable_embeds(text: str) -> str:
+    """A diagram embed as words for a preview: `Diagram: Trip map`, or the title alone when it starts with Diagram
+    (dgbt-1109 12: the Library printed "!Diagram 2026-11-09 19:11"). An image embed is left alone."""
+
+    def label(m: re.Match) -> str:
+        title = m.group(1)
+        if re.search(r"\.\w{2,5}$", title):
+            return m.group(0)
+        return title if title.lower().startswith("diagram") else f"Diagram: {title}"
+
+    return _EMBED.sub(label, text)
 
 
 def strip_inline_markdown(text: str) -> str:

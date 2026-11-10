@@ -53,12 +53,12 @@ def test_a_lower_case_title_is_the_persons_note(content, name):
 
 
 @pytest.mark.parametrize(("content", "name"), [
-    ("Booked flights to Lisbon", "your note on flights to Lisbon"),
-    ("Cooked dinner for Sam", "your note on dinner for Sam"),
-    ("Visited grandma in Leeds", "your note on grandma in Leeds"),
-    ("Booked dentist appointment for Tuesday", "your note on dentist appointment for Tuesday"),
-    ("Finished essay draft", "your note on essay draft"),
-    ("Watched Dune with Priya", "your note on Dune with Priya"),
+    ("Booked flights to Lisbon", "“Booked flights to Lisbon”"),
+    ("Cooked dinner for Sam", "“Cooked dinner for Sam”"),
+    ("Visited grandma in Leeds", "“Visited grandma in Leeds”"),
+    ("Booked dentist appointment for Tuesday", "“Booked dentist appointment for Tuesday”"),
+    ("Finished essay draft", "“Finished essay draft”"),
+    ("Watched Dune with Priya", "“Watched Dune with Priya”"),
 ])
 def test_a_line_of_what_you_did_is_named_by_what_it_is_about(content, name):
     assert _name(content) == name

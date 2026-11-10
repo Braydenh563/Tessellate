@@ -11,13 +11,15 @@ from pathlib import Path
 
 import pytest
 
+from tests import _js_scope
+
 JS = Path(__file__).resolve().parents[1] / "frontend" / "js"
 needs_node = pytest.mark.skipif(not shutil.which("node"), reason="needs node")
 
 HARNESS = r"""
 const vm = require("vm");
 const fs = require("fs");
-const files = JSON.parse(process.argv[1]);
+const files = JSON.parse(process.argv[1]);  // [name, source] pairs
 const log = [];
 const handlers = {};
 const ctx = {
@@ -40,14 +42,16 @@ const ctx = {
 };
 ctx.window = ctx;
 vm.createContext(ctx);
-for (const file of files) vm.runInContext(fs.readFileSync(file, "utf8"), ctx, { filename: file });
+for (const [file, source] of files) vm.runInContext(source, ctx, { filename: file });
 ctx.__out = (value) => process.stdout.write(JSON.stringify(value));
 """
 
 
 def run(files: list[str], body: str):
     """Run `body` (JS) after loading `files`; it calls `__out(value)` once."""
-    paths = [str(JS / name) for name in files]
+    #: A wrapped script (ranked row 37a) is run without its closure lines: these tests call its
+    #: private names, and the code they check is the file's own (`_js_scope.unwrapped`).
+    paths = [[name, _js_scope.unwrapped((JS / name).read_text(encoding="utf-8"))] for name in files]
     proc = subprocess.run(
         ["node", "-e", HARNESS + "\nvm.runInContext(process.argv[2], ctx);", json.dumps(paths), body],
         capture_output=True,

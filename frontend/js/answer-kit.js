@@ -104,7 +104,7 @@ function citeKey(kind, id) {
 
 function citationNumbers(sentences, orderedSources = null) {
   const numberFor = new Map();
-  if (orderedSources && orderedSources.length) {
+  if (orderedSources?.length) {
     orderedSources.forEach((source, index) => {
       if (source && (source.kind === "note" || source.kind === "document")) numberFor.set(citeKey(source.kind, source.id), index + 1);
     });
@@ -181,7 +181,7 @@ function citationInsertionPoint(node, offset, targets) {
     anchor = anchor.parentElement;
   }
   const next = anchor.nextSibling;
-  if (next && next.nodeType === Node.TEXT_NODE) {
+  if (next?.nodeType === Node.TEXT_NODE) {
     let run = 0;
     while (run < next.data.length && CITATION_CLOSING.test(next.data[run])) run += 1;
     if (run) {
@@ -1141,22 +1141,22 @@ async function streamChatEvents({
   // answering a pending `ask` event, so it says so rather than making the
   // classifier guess from three letters.
   if (answeringAgent) body.answering_agent = true;
-  if (noteIds && noteIds.length) body.note_ids = noteIds;
+  if (noteIds?.length) body.note_ids = noteIds;
   // Vision-capable models (ROADMAP.md's largest open item): ids from
   // /media/upload, the same endpoint the note/document editors already use
   // for drag-and-drop images: see `_resolve_chat_images` (routes_chat.py)
   // for how an id becomes a data URI the provider actually sends.
-  if (imageMediaIds && imageMediaIds.length) body.image_media_ids = imageMediaIds;
+  if (imageMediaIds?.length) body.image_media_ids = imageMediaIds;
   //: Documents and files must be sent here too: `/chat/stream` is the path the Chat tab uses, and a chip that never reached the model was a shipped bug.
-  if (documentIds && documentIds.length) body.document_ids = documentIds;
-  if (fileIds && fileIds.length) body.file_ids = fileIds;
-  if (mediaFileIds && mediaFileIds.length) body.media_file_ids = mediaFileIds;
+  if (documentIds?.length) body.document_ids = documentIds;
+  if (fileIds?.length) body.file_ids = fileIds;
+  if (mediaFileIds?.length) body.media_file_ids = mediaFileIds;
   //: A mind map attached by hand (MINDMAP_PLAN.md §5 item 11). Its own
   //: field, not folded into `note_ids`, because a board's `content` is the
   //: single line `# My map`, sent as a note the model would get a heading
   //: and be told it was a map. `_attached_boards` (routes_chat.py) turns the
   //: id into the outline instead.
-  if (boardIds && boardIds.length) body.board_ids = boardIds;
+  if (boardIds?.length) body.board_ids = boardIds;
   // Running a skill sends its name, not its prompt: the server owns what a
   // skill is, the steps, the values, the tools it may use, so the two
   // definitions can't drift apart.
@@ -1337,7 +1337,10 @@ async function streamChatEvents({
 // characters carrying the gist of ten turns is strictly better than the whole
 // of one.
 function chatHistoryToSend() {
-  const turns = chatConv.turns;
+  //: The last turn carries the label of an act card still waiting for Confirm
+  //: (`renderActCard` marks it), so "cancel" can drop it (CHAT_PLAN X17).
+  const open = [...$("chat-messages").querySelectorAll(".tool-confirm[data-pending-act]")].at(-1);
+  const turns = open && chatConv.turns.length ? [...chatConv.turns.slice(0, -1), { ...chatConv.turns.at(-1), pending_act: open.dataset.pendingAct }] : chatConv.turns;
   if (!chatSummary || chatSummary.covered <= 0) {
     return turns.slice(-MAX_CLIENT_HISTORY);
   }
@@ -1354,7 +1357,7 @@ function chatHistoryToSend() {
 // The persona name to label assistant bubbles with (falls back to "Assistant").
 function assistantLabel() {
   const select = $("persona-select");
-  return (select && select.value) || "Assistant";
+  return select?.value || "Assistant";
 }
 
 function chatMessageActions(actions) {
@@ -1568,14 +1571,14 @@ function messageMetaLine({ model, elapsedMs, stats, toolCount = 0, rounds = 0, u
   //    three lines of digits on a narrow window.
   const detail = [];
   if (inTok != null || outTok != null) {
-    const approx = stats && stats.usage_source === "estimated" ? "~" : "";
+    const approx = stats?.usage_source === "estimated" ? "~" : "";
     detail.push(`${approx}${inTok ?? "?"} tokens in → ${outTok ?? "?"} out`);
   }
   if (outTok && stats && stats.eval_ms) {
     detail.push(`${(outTok / (stats.eval_ms / 1000)).toFixed(1)} tokens/second`);
   }
   if (rounds > 1) detail.push(`${rounds} rounds`);
-  if (stats && stats.usage_source === "estimated") {
+  if (stats?.usage_source === "estimated") {
     detail.push("~ means the server didn't report counts, so these are estimated");
   }
   if (detail.length) row.title = detail.join("\n");
@@ -2246,7 +2249,12 @@ function sourceLines(content) {
 //: `grounded`: a composed answer's own note ids. The search hands the composer
 //: every hit, but the answer quotes one or two; "Sources: 4 notes" under "your
 //: only note" contradicted it (dog3-1026 row 10), so only those count.
-function chatSourcesFrom({ meta, toolEvents, touched, grounded, sentences }) {
+//: `composed`: the same set, derived here from `sentences`, so the live turn
+//: and a reopened one (saved `by.composed`) count the same notes (INBOX 1706).
+function chatSourcesFrom({ meta, toolEvents, touched, grounded, sentences, composed }) {
+  if (composed && !grounded) {
+    grounded = new Set((sentences || []).filter((row) => row.kind !== "document").map((row) => row.note_id).filter(Boolean));
+  }
   const seen = new Set();
   const sources = [];
   const add = (source) => {
@@ -2847,7 +2855,17 @@ function agentRunTool(run, node) {
     //: Beside "4 of 5 from your notes", the fold's own "From your notes"
     //: read as the same claim twice.
     { key: "notes", find: ".from-notes-fold", label: () => "ph:note Notes-only answer" },
-    { key: "patterns", find: ".insight-line", label: (parts) => `ph:lightbulb ${parts.length} ${parts.length === 1 ? "pattern" : "patterns"} to check` },
+    //: A line answered (Confirm or Not right) loses its pair and is checked:
+    //: the count to check is the lines that still carry one.
+    {
+      key: "patterns",
+      find: ".insight-line",
+      label: (parts) => {
+        const all = `${parts.length} ${parts.length === 1 ? "pattern" : "patterns"}`;
+        const open = parts.filter((line) => line.querySelector(".insight-verdicts")).length;
+        return `ph:lightbulb ${!open ? all : open === parts.length ? `${all} to check` : `${all}, ${open} to check`}`;
+      },
+    },
     { key: "related", find: ".answer-related", label: () => "ph:compass Elsewhere in your notebook" },
     //: By its holders: `renderAskWhy` stays the one file naming the fold (B30).
     { key: "why", find: ".why-trail > details, #ask-why > details" },
@@ -2893,12 +2911,25 @@ function agentRunTool(run, node) {
     while (top.parentElement !== scope) top = top.parentElement;
     if (top !== bar && bar.nextElementSibling !== top) scope.insertBefore(bar, top);
     const open = scope.dataset.footOpen || "";
+    //: **Each chip is made once and kept.** Rebuilt on every change while an
+    //: answer streams, a press whose mousedown landed on one button and
+    //: mouseup on its replacement was no click at all (the review of B2);
+    //: now a chip's words and state change in place, only when they differ.
+    const had = new Map([...bar.querySelectorAll(":scope > .answer-foot-chip")].map((chip) => [chip.dataset.foot, chip]));
     const chips = found.map(({ spec, parts }) => {
-      const button = document.createElement("button");
-      button.type = "button";
-      button.className = "chip chip-interactive answer-foot-chip";
-      button.dataset.foot = spec.key;
-      setLabel(button, answerFootChipLabel(spec, parts));
+      let button = had.get(spec.key);
+      if (!button) {
+        button = document.createElement("button");
+        button.type = "button";
+        button.className = "ghost quiet answer-foot-chip";
+        button.dataset.foot = spec.key;
+        button.addEventListener("click", () => answerFootToggle(scope, spec.key));
+      }
+      const label = answerFootChipLabel(spec, parts);
+      if (button.dataset.label !== label) {
+        button.dataset.label = label;
+        setLabel(button, label);
+      }
       //: The part's own head is hidden while the chip stands for it: its
       //: words (and the search mode the chip leaves out) are the title.
       button.title = (parts[0].querySelector(":scope > summary") || parts[0]).textContent.trim();
@@ -2914,12 +2945,15 @@ function agentRunTool(run, node) {
         if (on && part.tagName === "DETAILS") part.open = true;
       });
       button.setAttribute("aria-controls", parts.map((part) => part.id).join(" "));
-      button.addEventListener("click", () => answerFootToggle(scope, spec.key));
       return button;
     });
     const kept = stats || bar.querySelector(":scope > .msg-meta");
+    //: The stats line may be cut to fit the one row: its words are its title.
+    if (kept) kept.title = [...kept.children].map((item) => item.textContent.trim()).filter(Boolean).join(" · ");
+    const want = [...chips, ...(kept ? [kept] : [])];
+    if (want.length === bar.children.length && want.every((el, index) => bar.children[index] === el)) return;
     const focused = bar.contains(document.activeElement) ? document.activeElement.dataset.foot : null;
-    bar.replaceChildren(...chips, ...(kept ? [kept] : []));
+    bar.replaceChildren(...want);
     if (focused) bar.querySelector(`[data-foot="${focused}"]`)?.focus();
   }
 

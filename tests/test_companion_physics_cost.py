@@ -34,6 +34,8 @@ from pathlib import Path
 
 import pytest
 
+from tests.test_companion_landing_1683k import landing_js
+
 ROOT = Path(__file__).resolve().parents[1]
 #: The companion's code: the throw itself moved to the lazy companion-throw.js (INBOX 1301 D6).
 AV = "\n".join((ROOT / "frontend" / "js" / n).read_text(encoding="utf-8") for n in ("avatars.js", "companion-throw.js"))
@@ -77,7 +79,7 @@ def test_the_carry_writes_the_turn_only_when_it_changes() -> None:
 
 
 def test_the_flight_frame_is_time_based_capped_and_writes_no_layout_properties() -> None:
-    src = AV[AV.index("function nameMarkBuddyThrow(") :][:4200]
+    src = _fn("nameMarkBuddyThrow")  # the whole function: a fixed window broke when the bonk and fall lines grew it (1109)
     frame = src[src.index("const frame = (now) =>") : src.index("const next = () =>")]
     assert "Math.min(32, Math.max(0, now - then))" in frame
     # The flight's own step, wrapped by the throw's fates (INBOX 1301 D6), at a fixed 16ms:
@@ -103,6 +105,7 @@ def test_the_flight_lands_in_the_same_place_at_60_and_144_hz() -> None:
     script = "\n".join(
         [
             consts,
+            landing_js(AV),  # INBOX 1683 k: the step lands by outcome (companion-throw.js)
             src,
             "const W = { left: 0, right: 1376, top: 48, floor: 780, ledges: [] };",
             "const k = { ...NMB_THROW, bounce: 0.4, ground: 0.006, air: 0.0011, spin: 0 };",

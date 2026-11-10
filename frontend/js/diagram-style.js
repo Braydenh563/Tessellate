@@ -9,15 +9,21 @@
 (() => {
   //: Keys that are not in the shape table: [keys, what it does].
   const OTHER = [
-    ["Enter, F2", "Name the selected block"], ["Delete", "Remove the selected block"], ["C", "Connect the selected block to another"],
+    ["Tab", "Add a box after the last one, joined to it"], ["Shift + Tab", "Select the box that points at this one"], ["F6", "Leave the blocks for the picture"], ["[ and ]", "Fold the list or the picture to a rail, or open it"], ["Ctrl + Enter", "Keep the diagram (Done)"],
+    ["Enter, F2", "Name the selected block, in the list or on the picture"], ["Delete", "Remove the selected block"], ["C", "Connect the selected block to another"],
     ["K", "Colour the selected blocks"], ["Alt + arrows", "Move or nest the selected block"], ["Ctrl + Z, Ctrl + Y", "Undo, redo"],
-    ["Shift + F10", "Open the block menu"], ["?", "Show this sheet"],
+    ["Shift + Enter", "Add a box joined to the selected one and name it"], ["Alt + Enter", "Add a box joined to the same parent (a sister)"], ["Ctrl + D", "Duplicate the selected blocks"], ["Ctrl + A", "Select every block (the List's Select all does the same)"], ["Delete on the picture", "Remove the selected blocks"], ["Ctrl + F, /", "Find a block by its words; Enter goes to the next"], ["Double press on empty picture", "Add a box"], ["Shift + F10", "Open the block menu"], ["Left, Right in the bar", "Move along its buttons; Enter on ... opens the look, Save as PNG and Save to Library"], ["Arrows on the picture", "Pick the box in that direction"], ["Shift + arrows on the picture", "Move the picture"], ["Tab, Shift + Tab in Source", "Indent, take the indent back"], ["Esc in Source", "Leave the text for the views"], ["Ctrl + Space in Source", "List Mermaid words"], ["?", "Show this sheet"],
   ];
 
   //: The keys the shape table holds, each with the word the Add menu uses.
   function shapeRows(h) {
-    const label = { ...h.label, group: "Group", note: "Note" };
-    return Object.entries(diagramModel.keys).map(([key, shape]) => [key.toUpperCase(), `Add ${shape === "group" ? "a group" : `a ${label[shape].toLowerCase()}`}`]);
+    //: Each read as a thing you add (the owner's screenshot 2026-11-09 read "Add a input or output" and "Add a rounded").
+    const label = { ...h.label, group: "Group", note: "Note", round: "Rounded box", parallelogram: "Input or output box" };
+    const article = (word) => (/^[aeiou]/i.test(word) ? "an" : "a");
+    return Object.entries(diagramModel.keys).map(([key, shape]) => {
+      const word = label[shape].toLowerCase();
+      return [key.toUpperCase(), `Add ${article(word)} ${word}`];
+    });
   }
 
   //: The blocks a colour applies to: the picked set, else the selection; nodes only (a group has no fill).
@@ -70,7 +76,7 @@
     const rows = [...shapeRows(h), ...OTHER];
     openSheet({
       label: "Keyboard shortcuts",
-      sub: "With the picture or the blocks focused.",
+      sub: "From anywhere in the editor outside a text field.",
       name: "diagram-shortcuts",
       build: (card) => {
         const field = document.createElement("input");

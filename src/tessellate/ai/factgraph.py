@@ -32,6 +32,8 @@ from tessellate.ai import recognise
 from tessellate.ai import when as when_words
 from tessellate.core import clock
 
+_WEEKDAY_WORDS = frozenset("monday tuesday wednesday thursday friday saturday sunday mon tue tues wed thu thur thurs fri sat sun".split())
+
 KINDS = (
     "event", "quantity", "money", "date", "duration", "entity", "list_item", "check_item",
     "decision", "preference", "plan", "question", "link", "quote", "topic",
@@ -203,6 +205,20 @@ def _written(note: dict) -> date | None:
     return None
 
 
+def _anchor(note: dict) -> date | None:
+    """The day a bare "25 October" is read against: the later of the day the
+    note was written and the day it was last edited, since a running log
+    gains its lines over weeks and a line is no older than the edit that
+    added it (round 4, E17: "a year ago" for a date two weeks off)."""
+    written = _written(note)
+    edited = str(note.get("entry_edited_at") or note.get("edited_at") or note.get("updated_at") or "")
+    try:
+        later = date.fromisoformat(edited[:10]) if re.match(r"\d{4}-\d{2}-\d{2}", edited) else None
+    except ValueError:
+        later = None
+    return max(written, later) if written and later else written
+
+
 def _units(content: str) -> list[tuple[int, int, str, bool | None]]:
     """(start, end, kind, done) for every sentence and list line of the body:
     the heading line is the note's name, not a claim; code is skipped; a
@@ -332,6 +348,9 @@ class _SentenceReader:
     """The facts of one sentence. The order of the steps in `read` is the order
     the facts are collected in, which the final stable sort keeps for ties."""
 
+    #: The day dates are read against, when it is not the day written.
+    anchor: date | None = None
+
     def __init__(self, content: str, source: int, written: date | None, tags: list[str], unit: tuple) -> None:
         self.content, self.source, self.written, self.tags = content, source, written, tags
         self.u_start, u_end, self.u_kind, self.done = unit
@@ -363,8 +382,12 @@ class _SentenceReader:
 
     def dates(self) -> None:
         # dates first: their spans are not quantities
-        for s, e, phrase in when_words.find(self.sentence):
-            resolved = _date_value(phrase, self.written, self.tense)
+        found = when_words.find(self.sentence)
+        for i, (s, e, phrase) in enumerate(found):
+            after = found[i + 1] if i + 1 < len(found) else None
+            if after and after[0] - e in (1, 2) and phrase.lower().removeprefix("on ") in _WEEKDAY_WORDS and after[2][:1].isdigit() and self.sentence[e:after[0]] in (" ", ", "):
+                continue  # "Monday 16 November": the date names the day, the weekday beside it is no second one (bt-compcomp item 1)
+            resolved = _date_value(phrase, self.anchor or self.written, self.tense)
             self.add("date", s, e, {"phrase": phrase, "resolved": resolved[0].isoformat() if resolved else None,
                                     "through": resolved[1].isoformat() if resolved else None,
                                     "grain": resolved[2] if resolved else "unknown"}, confidence=0.9 if resolved else 0.5)
@@ -570,8 +593,11 @@ def _note_facts(note: dict) -> list[Fact]:
     joke = bool(_JOKE.search(content))
     units = _units(content)
     facts: list[Fact] = []
+    anchor = _anchor(note)
     for index, unit in enumerate(units):
-        facts += _SentenceReader(content, source, written, tags, unit).read(index, units, joke)
+        reader = _SentenceReader(content, source, written, tags, unit)
+        reader.anchor = anchor
+        facts += reader.read(index, units, joke)
     facts.sort(key=lambda f: (f.start, KINDS.index(f.kind), f.end))
     return facts
 

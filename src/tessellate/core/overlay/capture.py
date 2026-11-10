@@ -35,7 +35,8 @@ PAD = 4
 #: Sets kept: the newest by time, the rest pruned when a new one lands (a figure the person changed back and forth).
 KEEP = 6
 #: What the page captures; the rest (`card0`, `card1`) are drawn here, and the lidded sit is derived on load.
-CAPTURED = tuple(n for n in sprites.FRAME_NAMES if n not in sprites.CARD_FRAMES)
+#: The wave swing frames are optional (a captured figure keeps the one `wave`, INBOX 1696 x), so no page renders them.
+CAPTURED = tuple(n for n in sprites.FRAME_NAMES if n not in sprites.CARD_FRAMES and n not in sprites.WAVE_FRAMES)
 
 #: Where the reminder card sits as a share of the frame (centre x, centre y), its size in 2x pixels and its lift.
 CARD_CENTRE = (0.66, 0.60)
@@ -58,7 +59,11 @@ LOAD_SCRIPT = (
     "(function(){try{if(typeof deskFramesStart==='function')return 'ready';"
     "if(typeof lazyScript==='function'){lazyScript('/js/desk-frames.js');return 'loading'}return 'error'}catch(e){return 'error'}})()"
 )
-START_SCRIPT = "(function(){try{return String(deskFramesStart(null))}catch(e){return 'error'}})()"
+#: Names the frames it wants: the page also holds the wave swing for the offline renderer, and a capture that
+#: asked for every frame got `wave0` back and stopped on it as an unknown frame (review of deskframes-1108).
+START_SCRIPT = (
+    "(function(){try{return String(deskFramesStart(" + json.dumps(list(CAPTURED)) + "))}catch(e){return 'error'}})()"
+)
 NEXT_SCRIPT = "(function(){try{return deskFramesNext()}catch(e){return JSON.stringify({error:String(e)})}})()"
 STOP_SCRIPT = "(function(){try{deskFramesStop()}catch(e){}return 'ok'})()"
 #: How long the page gets to load the module, to answer a poll, and to draw every frame.
@@ -149,7 +154,7 @@ def cache_root() -> Path:
 def complete(key: str, root: Path | None = None) -> bool:
     """True when every frame a set needs is there."""
     folder = (root or cache_root()) / key
-    return is_key(key) and all((folder / f"{name}.png").is_file() for name in sprites.FRAME_NAMES)
+    return is_key(key) and all((folder / f"{name}.png").is_file() for name in CAPTURED + sprites.CARD_FRAMES)
 
 
 def draw_card(base: Any, lift: tuple[int, int]) -> Any:
@@ -173,6 +178,10 @@ def draw_card(base: Any, lift: tuple[int, int]) -> Any:
     return out
 
 
+#: The page draws each frame 560 x 600 (`desk-frames.js`: a 280 x 300 box at scale 2); this is 6 times that area.
+MAX_FRAME_PIXELS = 2_000_000
+
+
 def decode(png_base64: Any) -> Any:
     """One frame the page sent, as an RGBA image; ValueError when it is not a picture."""
     from PIL import Image
@@ -180,6 +189,9 @@ def decode(png_base64: Any) -> Any:
     try:
         raw = base64.b64decode(str(png_base64), validate=True)
         with Image.open(io.BytesIO(raw)) as im:
+            # The header is read, the pixels are not: a page that claims a huge picture is refused before it is decoded.
+            if im.width * im.height > MAX_FRAME_PIXELS:
+                raise ValueError("too large")
             return im.convert("RGBA")
     except Exception as exc:  # noqa: BLE001 - whatever the page sent, it is one answer: not a picture
         raise ValueError("not a picture") from exc

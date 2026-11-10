@@ -20,6 +20,8 @@ from pathlib import Path
 
 import pytest
 
+from tests import _js_scope
+
 from tests._app_js import lazy_modules_source
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -229,7 +231,7 @@ def test_the_pane_is_one_tree_of_cards_with_the_dock_recipe_and_kebab_menus():
     #: The dock is built by diagram-bar.js since 1661 D2; the recipe (the dock class and name) is unchanged.
     bar = (BUILDER.parent / "diagram-bar.js").read_text(encoding="utf-8")
     assert 'dataset.dockName = "diagram"' in bar and 'el("div", "dock dgm-dock")' in bar
-    assert "kebabMenu(blockItems(S, key)" in code and "openMenuAtPoint" in code and "wireLongPress(S.tree" in code
+    assert "lazyKebab(() => blockItems(S, key)" in code and "openMenuAtPoint" in code and "wireLongPress(S.tree" in code
     # Relabel in place is the board's pattern: plaintext-only, Enter commits, Escape reverts.
     assert '"contenteditable", "plaintext-only"' in code and 'event.key !== "Enter" && event.key !== "Escape"' in code
     # The keys of the plan's keyboard row.
@@ -241,7 +243,8 @@ def test_the_pane_is_one_tree_of_cards_with_the_dock_recipe_and_kebab_menus():
 
 
 def test_the_pointer_mode_is_ahead_of_carry_and_the_drag_asks_it_first():
-    drag = (JS / "obj-drag.js").read_text(encoding="utf-8")
+    #: obj-drag.js is one closure now (ranked row 37a); these tests slice or run its private functions, so they read it as it was before it was wrapped (`_js_scope.unwrapped`): same code, same assertions.
+    drag = _js_scope.unwrapped((JS / "obj-drag.js").read_text(encoding="utf-8"))
     seed = drag[drag.index("function objDragSeed(event) {") :]
     seed = seed[: seed.index("\n}\n")]
     # A mode with its own cards answers before the generic grab, which carry (taking every card) would win.
@@ -299,7 +302,7 @@ def test_a_diagram_over_the_block_limit_stays_in_source_with_one_line_saying_so(
 
 # --- INBOX 1613 / DOCUMENTS_PLAN 22.4 R1: the shape menu and the row's swatch ---------------------
 
-SHAPE_BRACKETS = [("rect", "[", "]"), ("round", "(", ")"), ("stadium", "([", "])"), ("circle", "((", "))"), ("diamond", "{", "}"), ("hexagon", "{{", "}}")]
+SHAPE_BRACKETS = [("rect", "[", "]"), ("round", "(", ")"), ("stadium", "([", "])"), ("circle", "((", "))"), ("diamond", "{", "}"), ("hexagon", "{{", "}}"), ("cylinder", "[(", ")]"), ("parallelogram", "[/", "/]")]
 
 
 @pytest.mark.parametrize(("shape", "open_", "close"), SHAPE_BRACKETS)
@@ -311,7 +314,8 @@ def test_each_shape_prints_its_mermaid_brackets_and_has_a_glyph_in_the_swatch_an
     css = (ROOT / "frontend" / "css" / "diagram-lazy.css").read_text(encoding="utf-8")
     # The glyph is drawn from data-shape; the swatch and the menu row both come from shapeGlyph.
     assert shape == "rect" or f'.dgm-shape[data-shape="{shape}"]' in css
-    assert shape in re.search(r"SHAPE_LABEL = \{([^}]*)\}", code).group(1)
+    # The label table moved to diagram-ops.js (DGB_LABEL) to keep the builder under its size cap; the pane copies it on open.
+    assert shape in re.search(r"DGB_LABEL = \{([^}]*)\}", OPS.read_text(encoding="utf-8")).group(1)
     assert code.count("shapeGlyph(") >= 3, "the definition, the swatch button and the menu row each use it"
 
 
@@ -324,3 +328,4 @@ def test_the_row_swatch_is_a_named_button_and_the_shape_menu_rows_draw_their_sha
     # The menu rows are made here because setLabel takes only ph: icons.
     assert "shapeRow(" in code and "ph-check" in code and "ph:square" not in code
     assert ".dgm-swatch" in css and "min-inline-size: 1.5rem" in css and ".dgm-swatch:focus-visible" in css
+

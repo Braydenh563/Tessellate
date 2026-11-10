@@ -80,6 +80,23 @@ def _asks(out: dict) -> list[str]:
 # --- the reading ------------------------------------------------------------------
 
 
+@pytest.mark.parametrize(("said", "asks"), [
+    ("hey! whatcha doing??", True), ("hey how are you", True), ("hi, what are you up to", True), ("hey", False), ("hello there", False),
+])
+def test_a_greeting_that_asks_how_you_are_is_read_as_asking(said, asks):
+    assert question_noise.asks_how(said) is asks
+
+
+def test_a_greeting_that_asks_how_you_are_gets_an_answer_to_it_too(client, notebook, no_web):
+    """INBOX 1693 (c): "hey! whatcha doing??" was answered with the welcome alone."""
+    from tessellate.ai import composer_smalltalk
+
+    plain = _ask(client, "hey!", use_tools=True)["text"]
+    asked = _ask(client, "hey! whatcha doing??", use_tools=True)["text"]
+    assert len(asked) > len(plain)
+    assert any(line in asked for line in composer_smalltalk.social_surfaces("how")), asked
+
+
 @pytest.mark.parametrize("said", ["hi test test", "hey test", "yo test", "hi there", "sup test"])
 def test_a_small_talk_word_is_never_glued_to_its_neighbour(said):
     assert question_noise.repair(said) == said

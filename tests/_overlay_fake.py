@@ -45,6 +45,8 @@ class FakeWin32:
         self.pace_fire = threading.Event()
         #: (work area, dpi) of each monitor, and the answers the shell gives.
         self.monitor_list: list[tuple[tuple[int, int, int, int], int]] = [((0, 0, 1920, 1040), 96)]
+        self.monitor_full: list[tuple[int, int, int, int]] = []  # each monitor's whole rectangle (rcMonitor), if a test sets it
+        self.autohide = False  # the taskbar's auto-hide setting
         self.notification = 5  # QUNS_ACCEPTS_NOTIFICATIONS
         self.animations = 1
         #: (GetTickCount, last input tick); None answers "unknown" like a failed call.
@@ -173,7 +175,41 @@ class FakeWin32:
         left, top, right, bottom = self.monitor_list[int(hmon) - 100][0]
         work = ref._obj.rcWork
         work.left, work.top, work.right, work.bottom = left, top, right, bottom
+        if self.monitor_full:  # the whole monitor, for the taskbar tests; otherwise left zero
+            full = ref._obj.rcMonitor
+            full.left, full.top, full.right, full.bottom = self.monitor_full[int(hmon) - 100]
         return 1
+
+    def _FindWindowW(self, cls: Any, _title: Any) -> int:
+        """The primary taskbar (class Shell_TrayWnd) is window 9001 when a test lists it; 0 when there is none."""
+        return 9001 if cls == "Shell_TrayWnd" and 9001 in self.window_list else 0
+
+    def _FindWindowExW(self, _parent: Any, after: Any, cls: Any, _title: Any) -> int:
+        """The next window of class `cls` (a listed window's `cls`) after `after` (None: from the first)."""
+        order = [h for h, win in self.window_list.items() if win.get("cls") == cls]
+        if after:
+            order = order[order.index(int(after)) + 1:] if int(after) in order else []
+        return order[0] if order else 0
+
+    def _GetClassNameW(self, hwnd: Any, buf: Any, _size: int) -> int:
+        """A window's class: its `cls`, Shell_TrayWnd for 9001, else none."""
+        win = self.window_list.get(int(hwnd)) if isinstance(hwnd, int) else None
+        name = (win.get("cls") or ("Shell_TrayWnd" if int(hwnd) == 9001 else "")) if win else ""
+        buf.value = name
+        return len(name)
+
+    def _SHAppBarMessage(self, message: int, data: Any) -> int:
+        """ABM_GETSTATE (4): ABS_AUTOHIDE is 1, per window when a test gives `autohide` on it. ABM_GETTASKBARPOS (5):
+        the window's `edge` (ABE_LEFT 0 to ABE_BOTTOM 3) and its rectangle, or 0 when a test gives no edge."""
+        win = self.window_list.get(int(data._obj.hWnd or 0)) if data is not None else None
+        if message == 4:
+            return int(win["autohide"] if win and "autohide" in win else self.autohide)
+        if message == 5 and win and "edge" in win:
+            data._obj.uEdge = win["edge"]
+            rc = data._obj.rc
+            rc.left, rc.top, rc.right, rc.bottom = win["rect"]
+            return 1
+        return 0
 
     def _GetDpiForMonitor(self, hmon: Any, _kind: int, x_ref: Any, y_ref: Any) -> int:
         x_ref._obj.value = y_ref._obj.value = self.monitor_list[int(hmon) - 100][1]
@@ -197,14 +233,20 @@ class FakeWin32:
     def _IsZoomed(self, hwnd: Any) -> int:
         return int(self._win(hwnd).get("zoomed", False))
 
-    def _GetWindowLongW(self, hwnd: Any, _index: int) -> int:
-        return int(self._win(hwnd).get("ex", 0))
+    def _GetWindowLongW(self, hwnd: Any, index: int) -> int:
+        win = self._win(hwnd)
+        if index == -16:  # GWL_STYLE: WS_VISIBLE unless the window is listed hidden, or a test gives `style`
+            return int(win.get("style", 0x10000000 if win.get("visible", True) else 0))
+        return int(win.get("ex", 0))
 
     def _GetWindowTextLengthW(self, hwnd: Any) -> int:
         return len(self._win(hwnd).get("title", "x"))
 
+    #: The foreground window (a test sets it to a listed window to put a full-screen program in front).
+    foreground = 900
+
     def _GetForegroundWindow(self) -> int:
-        return 900
+        return self.foreground
 
     #: `(percent, on mains)` the fake reports, or None for a desktop with no battery (flag 128), the default.
     battery: tuple[int, bool] | None = None
@@ -233,6 +275,12 @@ class FakeWin32:
         ref._obj.y += oy
         return 1
 
+    def _GetAncestor(self, hwnd: Any, _flags: int) -> int:
+        return int(self._win(hwnd).get("root", hwnd))  # the root owner; a window with no owner is its own
+
+    def _GetLastActivePopup(self, hwnd: Any) -> int:
+        return int(self._win(hwnd).get("popup", hwnd))
+
     def _GetWindowThreadProcessId(self, hwnd: Any, pid_ref: Any) -> int:
         if pid_ref is None:
             return 77
@@ -245,7 +293,9 @@ class FakeWin32:
             ref._obj.value = int(win.get("cloaked", False))  # real values: 1 app, 2 shell, 4 inherited
         else:
             r = ref._obj
-            r.left, r.top, r.right, r.bottom = win["rect"]
+            # `frame` stands in for what DWM answers when it is not the window's rectangle: an empty one for a window
+            # that draws its own frame (INBOX 1696 b), and `rect` then comes from GetWindowRect (`outer`)
+            r.left, r.top, r.right, r.bottom = win.get("frame", win["rect"])
         return 0
 
     def _MonitorFromPoint(self, pt: Any, _flags: int) -> int:

@@ -10,6 +10,8 @@ asks both. Nothing here imports the composer.
 
 from __future__ import annotations
 
+import functools
+
 #: The most sides one comparison ranks or heads (the answer stays readable).
 MAX_SIDES = 6
 MIN_SIDES = 2
@@ -41,10 +43,15 @@ def _phrases() -> tuple[tuple[str, ...], ...]:
     return tuple(sorted(found, key=len, reverse=True))
 
 
-_PHRASES = _phrases()
-#: What may open a side as well as close it ("in a table, the dentist and the
-#: Lisbon trip"); a "with a list ..." at the front is part of a name.
-_OPENING = tuple(p for p in _PHRASES if p[0] not in ("with", "using"))
+@functools.cache
+def _phrase_sets() -> tuple[tuple[tuple[str, ...], ...], tuple[tuple[str, ...], ...]]:
+    """The closing phrases and the opening ones, built on the first comparison:
+    the 9,000 combinations cost 13 ms of the composer's cold import otherwise
+    (`test_engine_budgets`, 0.21 s on a loaded CI runner against 0.2)."""
+    phrases = _phrases()
+    #: What may open a side as well as close it ("in a table, the dentist and the
+    #: Lisbon trip"); a "with a list ..." at the front is part of a name.
+    return phrases, tuple(p for p in phrases if p[0] not in ("with", "using"))
 
 
 def _plain(word: str) -> str:
@@ -69,7 +76,8 @@ def strip_format(side: str) -> str:
     trip in a table, please" is "the Lisbon trip". Word steps, not a pattern
     anchored at the end (CodeQL py/polynomial-redos)."""
     words = side.split()
-    while _cut(words, _PHRASES, True) or _cut(words, _OPENING, False):
+    closing, opening = _phrase_sets()
+    while _cut(words, closing, True) or _cut(words, opening, False):
         pass
     return " ".join(words).strip(" ,")
 

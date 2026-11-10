@@ -689,6 +689,23 @@ def support(answer: str, grounded: list[dict]) -> dict:
     }
 
 
+def composed_support(base: dict | None, rows: list[dict]) -> dict:
+    """The support of an answer no model wrote (`by_model: False`): every
+    sentence of it is quoted or the app's own joining words, so the notice
+    says something only when most of what it quotes is how the app read a
+    picture (INBOX 787: "Only 0 of 2 sentences here are quoted" under an
+    answer that had nothing else to say). One function for the live stream
+    and a saved turn, so a reopened composer answer never gets the model-draft
+    warning it did not have on arrival (INBOX 1706). `base` None (a saved
+    turn, which keeps the rows but not the composer's own count) counts the
+    quoted sentences themselves, as the composer does."""
+    if base is None:
+        quoted = list(dict.fromkeys(row["sentence"] for row in rows or [] if row.get("sentence")))
+        base = support("\n\n".join(quoted), rows)
+    pictures = sum(1 for row in rows or [] if row.get("said") == "picture")
+    return {**base, "by_model": False, "low": pictures * 2 > len(rows or []) > 0}
+
+
 def _mark(sentence: str, note_id: int, contents: dict[int, str]) -> dict:
     """One grounding row, with the passage located inside its note.
 

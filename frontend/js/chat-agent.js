@@ -102,7 +102,7 @@ function chatPositions() {
 }
 
 function noteChatPosition(element, atEnd) {
-  const id = typeof chatConv !== "undefined" && chatConv && chatConv.id;
+  const id = chatConv?.id;
   if (!id || (typeof chatStreaming !== "undefined" && chatStreaming)) return;
   clearTimeout(chatPositionTimer);
   chatPositionTimer = setTimeout(() => {
@@ -161,7 +161,11 @@ function syncChatJumpLatest() {
     const spare = pane.scrollHeight - pane.clientHeight; // read before the strip changes the pane's height
     if (!had) transcript.classList.add("has-jump-gap");
     const gap = parseFloat(getComputedStyle(transcript).paddingBottom) || 0;
-    const needed = hasMessages && spare + (had ? 0 : gap) > SCROLL_STICK_SLACK;
+    //: **`spare > 0` first (INBOX 1696, "spasm up and down really fast").** A pane never reports a scrollHeight
+    //: under its clientHeight, so a thread that fits reads a spare of 0 and `0 + gap` beat the slack on every
+    //: other call: the strip went on, off, on, off at each stream delta, resizing the pane by 45px each time
+    //: (69 reversals in 3.5s at 4x). A strip is only for a thread that really overflows.
+    const needed = hasMessages && spare > 0 && spare + (had ? 0 : gap) > SCROLL_STICK_SLACK;
     if (!needed) transcript.classList.remove("has-jump-gap");
     //: A pane that was following the end keeps following it through the resize.
     if (needed !== had && pane.dataset.stuck !== "0") pane.scrollTop = pane.scrollHeight;
@@ -778,6 +782,7 @@ const MAX_DRAFT_VERSIONS = 12;
 //: actually binds: this only stops the picker offering a seventh.
 const DRAFT_MAX_SOURCES = 6;
 
+
 function saveDraftLocally() {
   try {
     prefs.set(
@@ -1065,10 +1070,6 @@ function undoDraft() {
 // reloading the page. Each now runs against an AbortController so it can be
 // cancelled, and shows that it's working while it does.
 let draftController = null;
-
-function cancelDraft() {
-  draftController?.abort();
-}
 
 // What was last folded into the draft. Kept so a second pass doesn't resend
 // thoughts the model has already used, which is the problem clearing the box

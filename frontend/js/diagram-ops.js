@@ -11,7 +11,10 @@
   //: it did; none draws. Kept lines hold their place by the unit they stood
   //: before (`dgbEdit` anchors them first and re-anchors after), so a
   //: `direction` line inside a group is still inside it once a group is added above.
-  const DGB_SHAPES = ["rect", "round", "stadium", "circle", "diamond", "hexagon"];
+  const DGB_SHAPES = ["rect", "round", "stadium", "circle", "diamond", "hexagon", "cylinder", "parallelogram"];
+  //: What each shape is called in the menus, and the name a new block of it is given (one table for the pane, the bar and the steps).
+  const DGB_LABEL = { rect: "Box", round: "Rounded", stadium: "Pill", circle: "Circle", diamond: "Decision", hexagon: "Hexagon", cylinder: "Database", parallelogram: "Input or output" };
+  const DGB_TEXT = { rect: "Step", round: "Step", stadium: "Start", circle: "Event", diamond: "Question?", hexagon: "Prepare", cylinder: "Store", parallelogram: "Input" };
   const DGB_MAX = 120;
   //: The kinds a person meets that the blocks do not draw (D3): named in the one line that sends them to Source.
   const DGB_PLAIN = [[/^stateDiagram/i, "state diagrams"], [/^classDiagram/i, "class diagrams"], [/^pie$/i, "pie charts"], [/^gantt$/i, "Gantt charts"], [/^journey$/i, "user journeys"], [/^erDiagram/i, "ER diagrams"], [/^C4/i, "C4 diagrams"]];
@@ -177,6 +180,12 @@
     const ids = dgbIds(m);
     const edge = { from, to, label: "", style: "solid", arrow: true, ...extra };
     if (!ids.has(from) || !ids.has(to)) return null;
+    //: A decision's NEW second arrow, when the first says yes (case and punctuation folded: "Yes!" counts), says no (blind test 1108;
+    //: the first still waits for its word). Only a caller that gave no words at all: a re-pointed branch (diagram-edge-pick.js) and a
+    //: template's or a suggestion's edge (diagram-suggest.js) pass `label`, empty or not, and keep exactly that (review 1108).
+    const out = m.edges.filter((e) => e.from === from);
+    const folded = (text) => String(text || "").toLowerCase().replace(/[^a-z0-9]+/g, "");
+    if (!("label" in extra) && dgbNode(m, from)?.shape === "diamond" && out.length === 1 && folded(out[0].label) === "yes") edge.label = "no";
     if (m.edges.some((e) => e.from === from && e.to === to && e.label === edge.label && e.style === edge.style && e.arrow === edge.arrow)) return null;
     return dgbEdit(m, () => m.edges.push(edge)) ? edge : null;
   }
@@ -326,7 +335,7 @@
   const diagramOps = {
     needsLabel: dgbNeedsLabel, branchWord: dgbBranchWord, layout: dgbLayout, key: dgbKey, split: dgbSplit, node: dgbNode, group: dgbGroup, sisters: dgbSisters, parentOf: dgbParentOf,
     addNode: dgbAddNode, addGroup: dgbAddGroup, move: dgbMove, remove: dgbRemove, join: dgbJoin, unjoin: dgbUnjoin,
-    relabel: dgbRelabel, roots: dgbRoots, moveMany: dgbMoveMany, duplicate: dgbDuplicate, wrap: dgbWrap, step: dgbStep, nest: dgbNest, lift: dgbLift, inside: dgbInside, SHAPES: DGB_SHAPES, MAX: DGB_MAX, PLAIN: DGB_PLAIN,
+    relabel: dgbRelabel, roots: dgbRoots, moveMany: dgbMoveMany, duplicate: dgbDuplicate, wrap: dgbWrap, step: dgbStep, nest: dgbNest, lift: dgbLift, inside: dgbInside, SHAPES: DGB_SHAPES, LABEL: DGB_LABEL, TEXT: DGB_TEXT, MAX: DGB_MAX, PLAIN: DGB_PLAIN,
   };
   // DIAGRAM-OPS-END
 

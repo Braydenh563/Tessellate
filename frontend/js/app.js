@@ -159,7 +159,7 @@ let noteSort = "newest"; // newest | oldest | az | most-used (Wave J)
 let notesPageSize = localStorage.getItem("notes-page-size") || "all";
 let notesCurrentPage = 1;
 
-const $ = (id) => document.getElementById(id) || settingsBodyFind(id);
+const $ = (id) => document.getElementById(id) || surfaceFind(id);
 const show = (...ids) => ids.forEach((id) => $(id).classList.remove("hidden"));
 const hide = (...ids) => ids.forEach((id) => $(id).classList.add("hidden"));
 
@@ -963,7 +963,7 @@ function startApp() {
     // A seeded background (microbes, mycelium) started before the
     // preferences arrived grew from the placeholder name; regrow it from the
     // real one. A no-op for every other style and when nothing changed.
-    if (typeof bgArtRefreshSeed === "function") bgArtRefreshSeed();
+    bgArtRefreshSeed();
     
     // Always check battery efficient mode regardless of ui_state seeding
     const indicator = $("power-saver-indicator");
@@ -1036,7 +1036,7 @@ function startApp() {
   // Re-render whichever tab is on screen. This used to be switchTab() itself, called at module level before initAuth() has a token, so a tab that fetches its own data painted itself from a pile of 401s and then never tried again. On the dashboard that meant an empty grid until you opened Edit layout and cancelled out of it, which re-ran renderDashboard by hand (user-reported). Now the module-level call is revealTab(), DOM only, no fetch: and this is the one place the real data load happens. *After* the entries land, not alongside them. These two ran concurrently, so on a cold load the dashboard rendered against an `allEntries` that was still `[]` and drew its brand-new-notebook card instead of the widgets, reported as "the dashboard widgets are missing until I refresh or change tabs". Every tab wants the notes; none of them wants to guess.
   //: The view the address names, when the page was opened on one (a reload, a bookmark, a pasted link: router.js); it loads its own tab, so the Dashboard is not loaded under it first.
   const tabReady = entriesReady.then(() => step("load this tab", async () => {
-    if (typeof routerRestore === "function" && (await routerRestore())) return;
+    if (await routerRestore()) return;
     return refreshActiveTab();
   }));
 
@@ -1510,7 +1510,7 @@ const LAZY_MODULES = {
   //: d3 (90 KB gzipped) comes with the two surfaces that use it, not at boot (audit FE-07); `ensureModule` fetches a file once whichever bundle names it first.
   graph: ["/vendor/d3.v7.min.js", "/css/graph-lazy.css", "/js/graph.js", "/js/graph-canvas.js"],
   //: The image viewer (2026-09-27, the boot-script gzip budget): see lightbox-view.js's header.
-  lightbox: ["/css/lightbox-lazy.css", "/js/lightbox-view.js"],
+  lightbox: ["/css/lightbox-lazy.css", "/css/value-field.css", "/js/value-field.js", "/js/lightbox-view.js"],
   //: Run, preview and test for a code document (DOCUMENTS_PLAN 23, D1): the protocol and its languages, loaded on the first Run.
   run: ["/js/run-core.js", "/js/run-tests.js", "/js/run-debug.js"],
   editConflict: ["/js/edit-conflict.js"],
@@ -1563,6 +1563,7 @@ const LAZY_MODULES = {
   vault: ["/js/vault-unlock.js"],
   //: The one icon and emoji picker, on first use (MINDMAP_PLAN decision 43): see icon-picker.js.
   iconPicker: ["/css/icon-picker.css", "/js/icon-picker.js"],
+  vf: ["/css/value-field.css", "/js/value-field.js"],
   //: Settings groups, each file's header says which (WORLD_CLASS_PLAN rows 21 to 27).
   modelBench: ["/js/model-bench.js"],
   //: The web panel: web-clip.js, and its search, result rows and recents (web-results.js).
@@ -1624,6 +1625,8 @@ const LAZY_MODULES = {
     "/css/library-lazy.css", //: The styles only this bundle's surfaces draw, out of the boot budget.
     "/js/undo-store.js", //: First: both editors and the list read it.
     "/js/pick-row.js", //: The Attach picker's row, drawn synchronously by the board pickers.
+    "/css/value-field.css",
+    "/js/value-field.js",
     "/js/image-layout.js",
     //: Before the editors: it holds the file-type table they read.
     "/js/library.js",
@@ -1642,6 +1645,7 @@ const LAZY_MODULES = {
     "/js/documents-columns.js",
     "/js/autocorrect.js",
     "/js/documents.js",
+    "/js/documents-callouts.js", //: After documents.js: its top level binds through `docListen`.
     "/js/margin-reader.js",
     "/js/whiteboard-map.js",
     "/js/whiteboard.js",
@@ -1750,6 +1754,7 @@ function mountNoteSurfaceNow(host) {
   });
 }
 
+
 document.addEventListener("focusin", (event) => {
   const host = event.target;
   if (!(host instanceof HTMLTextAreaElement) || !NOTE_SURFACE_IDS.has(host.id)) return;
@@ -1820,7 +1825,7 @@ const LAZY_ENTRY_POINTS = {
   settingsControls: ["refreshSearxngHost", "renderStatusBarSettings", "renderLanAccess", "renderMemorySettings", "renderAccount", "renderAutonomousReview", "renderToolSettings"],
   settingsData: ["renderPrivacyRange", "renderPrivacyReceipt", "renderBackups", "renderBackupRetention", "backupNow", "importDirectory", "importMarkdown", "importDocument"],
   tagSuggest: ["openTagSuggest", "renderReevaluateResult"],
-  writingDesk: ["composeDraft", "suggestDraftTitle", "saveDraftAsNote", "draftSaveMenuInit"],
+  writingDesk: ["addDraftSource", "composeDraft", "suggestDraftTitle", "saveDraftAsNote", "draftSaveMenuInit"],
   //: Each called for its effect when a figure mounts or moves; nothing reads a result.
   atlasMotion: ["atlasBlinkStart", "atlasRigAttach", "atlasRigWake"],
   companionMenu: ["nameMarkBuddyMenu", "openNameMarkViewer", "mountBuddyPresets"],

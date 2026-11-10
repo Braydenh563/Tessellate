@@ -16,7 +16,7 @@ import re
 from collections import Counter
 from pathlib import Path
 
-from tessellate.api.asset_strip import strip_js
+from tessellate.api.asset_strip import strip_js_comments
 from tests import _js_scope
 
 JS = Path(__file__).resolve().parents[1] / "frontend" / "js"
@@ -61,12 +61,14 @@ TOP_LEVEL_LETS_CAP = 699
 #: folds and filter (documents-outline.js, 327 lines) wrapped whole, ten exports; measured 9,714. a28z-1102 (INBOX 1556): the
 #: web panel's search and result rows (web-results.js, 400 lines) wrapped whole, eight exports, with the SearXNG start helper
 #: and failure row added inside it; measured 9,708. 1546 P1 (D4): the board's `wbMermaidParse` and `wbMermaidText` go and
-#: documents-mermaid.js exports `diagramModel`; measured 9,706.
-GLOBAL_NAMES_CAP = 9706
+#: documents-mermaid.js exports `diagramModel`; measured 9,706. 2026-11-08 (after merges took it to 9,711): task-steps.js
+#: (three exports) and obj-order.js (eight) wrapped whole; measured 9,701.  iife-1109: screen-context, load-failed, feature-model-sheet, phone-more,
+#: extract-preview, timeline-detail, scroll-row, assistant-avatar and confirmed-patterns wrapped whole, one export each; measured 9,688. Then date-field, link-types, vault-unlock, offline-split and pick-row wrapped whole; measured 9,678. iife2-1109: twenty lazy files wrapped whole (see CHANGELOG); measured 9,598. iife3-1109: tidy, lan-watch, documents-ai and model-menu wrapped whole (six exports in all); measured 9,513. Then ocr-engine and note-properties wrapped whole; measured 9,490. iife4-1109: twenty-one files that tests reached privately wrapped whole (the tests read them through `_js_scope.unwrapped`, or run the vm with `window` as the context); measured 9,096.
+GLOBAL_NAMES_CAP = 9096
 
 
 def _code() -> dict[str, str]:
-    return {p.name: strip_js(p.read_text(encoding="utf-8")) for p in sorted(JS.glob("*.js"))}
+    return {p.name: strip_js_comments(p.read_text(encoding="utf-8")) for p in sorted(JS.glob("*.js"))}
 
 
 def test_cross_file_guards_only_go_down():
@@ -122,6 +124,6 @@ def test_a_wrapped_file_exports_only_what_it_defines_and_others_call():
         for export in sorted(_js_scope.listed(source)):
             if not re.search(rf"^  (?:async\s+)?(?:function\s+|const\s+|class\s+){re.escape(export)}\b", source, re.M):
                 wrong.append(f"{name} exports {export} but does not define it at its top")
-            elif not any(re.search(rf"(?<![\w$.]){re.escape(export)}(?![\w$])", other) for other_name, other in code.items() if other_name != name):
+            elif not any(re.search(rf"(?:(?<![\w$.])|(?<=window\.)){re.escape(export)}(?![\w$])", other) for other_name, other in code.items() if other_name != name):
                 wrong.append(f"{name} exports {export}, which no other file names")
     assert not wrong, "; ".join(wrong)

@@ -22,7 +22,8 @@ from pathlib import Path
 import pytest
 
 from tessellate.core import filetypes
-from tests._app_js import with_pieces, documents_text
+from tests import _js_scope
+from tests._app_js import documents_text, with_pieces
 
 ROOT = Path(__file__).resolve().parents[1]
 JS = ROOT / "frontend" / "js"
@@ -483,7 +484,9 @@ def test_an_overtime_python_line_is_interrupted_not_its_worker_ended():
 
 # Row 1066: the split's second half had no completions, lint or snippets.
 def test_the_split_carries_completions_lint_and_snippets_but_one_run_panel():
-    ide = (JS / "documents-ide.js").read_text(encoding="utf-8")
+#: documents-ide.js is one closure now (ranked row 37a); these tests slice or run its private functions, so they read it as it was before it was wrapped (`_js_scope.unwrapped`): same code, same assertions.
+    #: documents-word.js is one closure now (ranked row 37a); these tests slice or run its private functions, so they read it as it was before it was wrapped (`_js_scope.unwrapped`): same code, same assertions.
+    ide = _js_scope.unwrapped((JS / "documents-ide.js").read_text(encoding="utf-8"))
     tools = _fn(ide, "docIdeSplitTools")
     for part in ("CM.lint.linter(docCodeLintSource(CM)", "CM.lint.lintGutter()", "CM.autocomplete.autocompletion(",
                  "docNativeSnippets(CM, type.ext)", "docCodeEditing(CM, type)"):
@@ -495,7 +498,7 @@ def test_the_split_carries_completions_lint_and_snippets_but_one_run_panel():
 
 # Row 1067: Ctrl+K Ctrl+S flashed the palette open before the sheet.
 def test_ctrl_k_waits_for_its_second_chord_before_the_palette():
-    ide = (JS / "documents-ide.js").read_text(encoding="utf-8")
+    ide = _js_scope.unwrapped((JS / "documents-ide.js").read_text(encoding="utf-8"))
     start = ide.index("const DOC_IDE_CHORD_WAIT_MS")
     end = ide.index("}, true);", start) + len("}, true);")
     chord = ide[start:end].replace("window.addEventListener(\"keydown\",", "const onKey =", 1).replace("}, true);", "};", 1)
@@ -698,7 +701,7 @@ def test_a_suggestion_marker_is_a_word_boundary_for_the_spelling_check():
 
 # Row 1097: a fenced block's language was not written to Word.
 def test_a_code_blocks_language_goes_to_word_and_comes_back(tmp_path):
-    word = (JS / "documents-word.js").read_text(encoding="utf-8")
+    word = _js_scope.unwrapped((JS / "documents-word.js").read_text(encoding="utf-8"))
     start = word.index('const DOC_WORD_CODE_STYLE = "Code";')
     tables = word[start : word.index("];", word.index("const DOC_WORD_STYLE_MAP")) + 2]
     vendor = ROOT / "frontend/vendor"
@@ -734,7 +737,7 @@ const D = global.docx;
 
 # Row 1096: Mammoth accepted a .docx's tracked changes on the reader's behalf.
 def test_a_word_file_with_tracked_changes_is_seen_before_mammoth_reads_it(tmp_path):
-    word = (JS / "documents-word.js").read_text(encoding="utf-8")
+    word = _js_scope.unwrapped((JS / "documents-word.js").read_text(encoding="utf-8"))
     vendor = ROOT / "frontend/vendor"
     script = f"""
 const vm = require("vm"), fs = require("fs");
@@ -921,3 +924,11 @@ def test_a_documents_slash_templates_are_the_gallerys_writing_and_planning_set()
     assert 'template.group === "code") continue' in rows
     assert "docTemplateFill(template" in rows and 'group: "Templates"' in rows
     assert body.index("...custom") < body.index("for (const template of DOC_TEMPLATES)")
+
+
+def test_the_topic_chip_says_why_and_how_to_change_it():
+    # INBOX 1620 (c): the words that named the topic, the rename path (the graph),
+    # and the only way out of a derived topic (its links).
+    chip = _fn(NOTES_LIST, "noteTopicChip")
+    assert "Named from the words" in chip
+    assert "rename it" in chip and "remove the links" in chip

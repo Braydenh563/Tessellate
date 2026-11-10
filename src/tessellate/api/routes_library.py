@@ -41,7 +41,7 @@ from tessellate.core.database import (
 from tessellate.core import events, reading_bin, recordings
 from tessellate.core.deps import get_session
 from tessellate.entry import highlights as note_highlights
-from tessellate.entry.manager import extract_title, join_blocks, remove_title, shown_tags, strip_inline_markdown
+from tessellate.entry.manager import extract_title, join_blocks, readable_embeds, remove_title, shown_tags, strip_inline_markdown
 from tessellate.entry.properties import strip as strip_properties
 from tessellate.repo import content as content_repo
 from tessellate.repo import documents as documents_repo
@@ -133,7 +133,7 @@ _CAPTION_ECHO = re.compile(r"^([^\n!][^\n]{0,200})\n+!\[\1\]\([^)\n]{0,500}\)[ \
 def _clip(text: str, limit: int = PREVIEW_CHARS) -> str:
     # A note's or document's `---` properties block is data about it, never
     # its opening words (GRAPH_PLAN, "Still open after KG1 to KG9").
-    text = _CAPTION_ECHO.sub(r"\1", strip_properties(text or ""))
+    text = _CAPTION_ECHO.sub(r"\1", readable_embeds(strip_properties(text or "")))
     if len(text) > CLIP_WINDOW:
         end = text.rfind("\n", 0, CLIP_WINDOW)
         text = text[: end if end > limit else CLIP_WINDOW]

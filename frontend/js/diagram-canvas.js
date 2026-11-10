@@ -11,6 +11,17 @@
   const math = {
     nodeAt: (hit, img, x, y) => overlay().at(hit, img, x, y),
     groupAt: (hit, img, x, y) => overlay().clusterAt(hit, img, x, y),
+    //: The node whose centre is nearest a client point and within `within` px of it, or "" (blind test 1108: a tile dropped
+    //: beside a box was added unconnected). `ok` filters the ids the model knows.
+    nearest: (hit, img, x, y, within = 120, ok = () => true) => {
+      let best = "";
+      let far = within;
+      for (const n of overlay().place(hit, img, { left: 0, top: 0 })) {
+        const d = Math.hypot(n.x + n.w / 2 - x, n.y + n.h / 2 - y);
+        if (d <= far && ok(n.id)) (best = n.id), (far = d);
+      }
+      return best;
+    },
     //: The ids of the nodes a client rectangle touches (corners in any order), in drawing order.
     sweep: (hit, img, rect) => {
       const l = Math.min(rect.left, rect.right);
@@ -45,8 +56,8 @@
     const { S, key } = g;
     const stage = S.fig.parentElement;
     const at = document.elementFromPoint(g.x, g.y);
-    if (!at || !stage?.contains(at) || at.closest(".dock")) return null;
-    const layer = stage.querySelector(".dgm-overlay");
+    //: A dock (the zoom bar, the shelf) over the picture is not a dead spot: every point of the stage takes a drop.
+    if (!at || !stage?.contains(at)) return null;
     const img = imageOf(S);
     const id = img && S.hit ? math.nodeAt(S.hit, img.getBoundingClientRect(), g.x, g.y) : "";
     //: Over a group's box and no node: into that group (R8c). Not into a dragged group, or into one inside it.
@@ -59,7 +70,15 @@
     if (!id || !h.ops.node(S.m, id)) {
       //: Empty space: a palette tile adds there, a group lifts to the top level, a box is not moved by a drop that names nowhere (1679 slice 12).
       if (key?.[0] === "n" && !g.tile) return null;
-      return { canvas: true, op: "into", group: null, before: null, card: layer, word: g.tile ? "Add here" : "To the top level" };
+      //: A tile on empty picture joins the box nearest the drop by rendered centres, however far (the help says so; a 120 px reach joined the
+      //: selected box from beside the last one), else the selected box, else stands alone.
+      const ok = (n) => Boolean(h.ops.node(S.m, n));
+      const lone = !g.tile || g.tile.dataset.shape === "group";
+      const near = lone || !img || !S.hit ? "" : math.nearest(S.hit, img.getBoundingClientRect(), g.x, g.y, Infinity, ok);
+      const picked = S.sel?.[0] === "n" ? S.sel.slice(2) : "";
+      const from = near || (picked && !lone && ok(picked) ? picked : "");
+      if (!from) return { canvas: true, op: "into", group: null, before: null, card: S.fig, word: g.tile ? "Add here" : "To the top level" };
+      return { canvas: true, op: "into", group: null, before: null, card: boxOf(S, from) || S.fig, word: `Add, joined from ${h.ops.node(S.m, from).text}`, from };
     }
     const target = h.ops.key("n", id);
     const set = key && S.picked?.size > 1 && S.picked.has(key) ? [...S.picked] : key ? [key] : [];
@@ -73,10 +92,11 @@
   function wire(S, h) {
     const fig = S?.fig;
     const stage = fig?.parentElement;
-    const layer = stage?.querySelector(".dgm-overlay");
+    const layer = fig?.querySelector(":scope > .dgm-overlay");
     if (!layer || S.k || fig.dataset.canvas) return;
     fig.dataset.canvas = "1";
     let sweep = null;
+    let sweptAt = -1e3;
 
     const end = () => {
       sweep?.rect.remove();
@@ -90,7 +110,7 @@
     //: In the capture phase and ahead of the zoom's pan (diagram-view.js): the press on empty space is not a pan.
     fig.addEventListener("pointerdown", (event) => {
       const img = imageOf(S);
-      if (event.button || !event.shiftKey || !img || !S.hit || event.target.closest(".dock")) return;
+      if (event.button || !event.shiftKey || !img || !S.hit || event.target.closest(".dock, .dgm-overlay > *")) return;
       if (math.nodeAt(S.hit, img.getBoundingClientRect(), event.clientX, event.clientY)) return;
       event.stopImmediatePropagation();
       event.preventDefault();
@@ -111,6 +131,7 @@
     });
     fig.addEventListener("pointerup", (event) => {
       if (!sweep || event.pointerId !== sweep.id) return;
+      sweptAt = event.timeStamp;
       const keys = touched(event).map((id) => h.ops.key("n", id));
       end();
       if (keys.length) S.pick?.(keys, keys[0]);
@@ -118,6 +139,31 @@
     fig.addEventListener("pointercancel", end);
     window.addEventListener("keydown", (event) => {
       if (sweep && event.key === "Escape") end();
+    });
+
+    //: Nothing picked (INBOX 1661 h): a press on empty canvas or empty list, and Escape, let go of the pick, so the list, the
+    //: boxes and the handles read as no selection. An armed handle goes back first. True when something changed.
+    S.clear = () => {
+      if (S.cancelArm?.()) return true;
+      if (!S.sel && !S.picked?.size) return false;
+      S.pick ? S.pick([], null) : (S.sel = null);
+      h.stops(S, S.tree.querySelector(".dgm-block"));
+      S.mark?.();
+      S.handles?.();
+      return true;
+    };
+    fig.addEventListener("click", (event) => {
+      const img = imageOf(S);
+      //: A marquee ends in a click on the figure; a pan's click is swallowed by the zoom (diagram-view.js).
+      if (!img || !S.hit || event.shiftKey || event.ctrlKey || event.metaKey || event.altKey || event.timeStamp - sweptAt < 400 || event.target.closest(".dock, .dgm-overlay > *, .dgm-zoom")) return;
+      const at = img.getBoundingClientRect();
+      if (math.nodeAt(S.hit, at, event.clientX, event.clientY) || diagramModel.edges?.math.edgeAt(S.hit, at, event.clientX, event.clientY)) return;
+      S.clear();
+    });
+    S.pane.addEventListener("click", (event) => event.target.closest(".dgm-block, button, a, input, label") || S.clear());
+    S.root.addEventListener("keydown", (event) => {
+      if (event.key !== "Escape" || event.defaultPrevented || event.target.closest?.("input, textarea, [contenteditable]") || document.querySelector(".action-menu:not(.hidden), .help-popover:not(.hidden)")) return;
+      if (S.clear()) event.preventDefault(), event.stopPropagation();
     });
   }
 

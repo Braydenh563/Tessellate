@@ -1243,7 +1243,8 @@ async function wbThumbFlush() {
   }
 }
 
-(function wbThumbWatch() {
+//: It watches the board canvas, built when a board first opens (row 21).
+onSurface("board", function wbThumbWatch() {
   const container = document.getElementById("whiteboard-container");
   if (!container) return;
   new MutationObserver(wbThumbMark).observe(container, { childList: true, subtree: true, attributes: true });
@@ -1257,7 +1258,7 @@ async function wbThumbFlush() {
   document.addEventListener("visibilitychange", () => {
     if (document.visibilityState === "hidden" && wbThumbState.pending !== null) wbThumbFlush();
   });
-})();
+});
 
 // --- A live Mermaid diagram (INBOX 1451) -----------------------------------
 //
@@ -1372,6 +1373,7 @@ function wbEditDiagram(d = null) {
   openDiagramBuilder({
     source: d?.data?.mermaid || diagramModel.starter,
     title: d ? "Edit diagram" : "Diagram builder",
+    draft: d ? `board:${d.id}` : "board-new",
     shapes: d ? (source) => (wbMermaidKind(source) ? wbDiagramToShapes(d, source) : toast("Shapes cover flowchart, state, class and sequence diagrams.")) : null,
     //: Save to Library (R9c).
     offer: d && { link: d },

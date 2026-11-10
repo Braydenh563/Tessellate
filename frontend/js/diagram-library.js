@@ -8,11 +8,14 @@
 // A tile is `{ group, name, hint, glyph, label, data, press, keys? }`. `flow` is the flowchart's own list; the other kinds
 // give theirs to `build` from diagram-kinds.js. One closure, one export: `diagramModel.library`.
 (() => {
-  const IDLE = "Press a shape to add it, or drag it into the blocks.";
+  const IDLE = "Press a shape to add it, or drag it into the blocks or onto the picture.";
+  //: A phone or touch screen has no shelf to drag from (diagram-lazy.css hides it): the words say tap and Add, not drag.
+  const compact = () => matchMedia("(max-width: 599.98px), (pointer: coarse)").matches;
+  const idleLine = () => (compact() ? "Tap a shape to add it." : IDLE);
 
   //: The flowchart's tiles by meaning: [group, [[shape, hint], ...]]. A note is a rounded block that says "Note".
   const FLOW = [
-    ["Steps", [["rect", "A step or an action."], ["round", "A softer step, for a state or a result."], ["hexagon", "A set-up or preparation step."]]],
+    ["Steps", [["rect", "A step or an action."], ["round", "A softer step, for a state or a result."], ["hexagon", "A set-up or preparation step."], ["cylinder", "Stored data, like a database."], ["parallelogram", "Something coming in or going out."]]],
     ["Decisions", [["diamond", "A question that leads to a yes or a no."]]],
     ["Start and end", [["stadium", "Where a flow starts or stops."], ["circle", "Something that happens, like a message arriving."]]],
     ["Notes and groups", [["note", "A remark; connect it to what it is about."], ["group", "A frame round blocks that belong together."]]],
@@ -43,7 +46,22 @@
     );
   }
 
-  function build(tiles, idle = IDLE) {
+  //: One tile: a button that is pressed to add and grabbed (`data-obj-grip`) to drag, so the strip and the shelf share it.
+  function tileOf(t) {
+    const tile = make("button", "dgm-tile");
+    tile.type = "button";
+    tile.dataset.objGrip = "";
+    Object.assign(tile.dataset, t.data, { hint: t.hint });
+    tile.title = compact() ? `${t.name}. ${t.hint} Tap to add it.` : `${t.name}. ${t.hint} Press to add it, or drag it into the blocks or onto the picture.`;
+    tile.setAttribute("aria-label", t.label);
+    if (t.keys) tile.setAttribute("aria-keyshortcuts", t.keys);
+    //: A clone: a spec is drawn twice (the Add library and the shelf) and a node sits in one place only. The second tile took the first's glyph, so the phone's Add sheet printed the name where the glyph should be (blind test 1108).
+    tile.append(t.glyph.cloneNode(true), make("span", "dgm-tile-name", t.name));
+    tile.addEventListener("click", t.press);
+    return tile;
+  }
+
+  function build(tiles, idle = idleLine()) {
     const strip = make("div", "dock-group dgm-palette dgm-library");
     strip.setAttribute("role", "group");
     strip.setAttribute("aria-label", "Add to the diagram");
@@ -58,18 +76,7 @@
       box.setAttribute("role", "group");
       box.setAttribute("aria-label", name);
       const row = make("div", "dgm-lib-tiles");
-      for (const t of list) {
-        const tile = make("button", "dgm-tile");
-        tile.type = "button";
-        tile.dataset.objGrip = "";
-        Object.assign(tile.dataset, t.data, { hint: t.hint });
-        tile.title = `${t.hint} Press to add it, or drag it into the blocks.`;
-        tile.setAttribute("aria-label", t.label);
-        if (t.keys) tile.setAttribute("aria-keyshortcuts", t.keys);
-        tile.append(t.glyph, make("span", "dgm-tile-name", t.name));
-        tile.addEventListener("click", t.press);
-        row.append(tile);
-      }
+      for (const t of list) row.append(tileOf(t));
       box.append(make("span", "dgm-lib-head", name), row);
       strip.append(box);
     }
@@ -85,5 +92,118 @@
     return strip;
   }
 
-  diagramModel.library = { build, flow };
+  //: The shelf (INBOX 1661 l): six tiles of the kind on the picture's top left, and a caret for the rest as the grouped Add menu.
+  //: A flowchart's are picked by name, the other kinds' by tile id (a mind map has two, a timeline three).
+  const SIX = {
+    flowchart: ["Box", "Rounded", "Decision", "Pill", "Note", "Group"],
+    sequence: ["participant", "message", "reply", "note", "loop", "alt"],
+    mindmap: ["branch", "leaf"],
+    timeline: ["section", "period", "event"],
+  };
+
+  const SHELF = "diagram.shelf";
+
+  function shelf(S, h) {
+    const stage = S?.fig?.parentElement;
+    const kind = S?.k ? S.k.name : "flowchart";
+    if (!stage?.classList.contains("dgm-stage") || stage.querySelector(".dgm-shelf") || !SIX[kind]) return;
+    const specs = S.k ? S.specs : flow({ ...h, add: (options) => h.add(S, options) });
+    if (!specs) return;
+    const bar = make("div", "dock dgm-shelf");
+    bar.setAttribute("role", "group");
+    bar.setAttribute("aria-label", "Add to the picture");
+    //: The shelf folds to one button (the owner 2026-11-09: it covered the drawing and could not be put away), the choice kept
+    //: in prefs; open or folded, the picture starts below it (`dgm-shelved`, always on), so neither lies over the drawing (a folded
+    //: button covered a box at 1440, dgmseq-1109).
+    const fold = make("button", "ghost small icon-only dgm-shelf-toggle");
+    fold.type = "button";
+    fold.append(make("i", "ph"));
+    fold.firstChild.setAttribute("aria-hidden", "true");
+    stage.classList.add("dgm-shelved");
+    const paint = () => {
+      const off = prefs.get(SHELF, "") === "off";
+      bar.classList.toggle("dgm-shelf-off", off);
+      fold.setAttribute("aria-expanded", String(!off));
+      fold.firstChild.className = `ph ph-${off ? "plus" : "caret-left"}`;
+      const say = off ? "Open the add shelf" : "Fold the add shelf";
+      fold.title = say;
+      fold.setAttribute("aria-label", say);
+    };
+    fold.addEventListener("click", () => {
+      prefs.set(SHELF, prefs.get(SHELF, "") === "off" ? "" : "off");
+      paint();
+    });
+    bar.append(fold);
+    for (const id of SIX[kind]) {
+      const t = specs.find((x) => (x.data.tile || x.name) === id);
+      if (t) bar.append(tileOf(t));
+    }
+    const more = make("button", "ghost small icon-only dgm-shelf-more");
+    more.type = "button";
+    more.title = "Every block you can add";
+    more.setAttribute("aria-label", "Every block you can add");
+    more.setAttribute("aria-haspopup", "menu");
+    more.append(make("i", "ph ph-caret-down"));
+    more.firstChild.setAttribute("aria-hidden", "true");
+    more.setAttribute("aria-expanded", "false");
+    more.addEventListener("click", () => {
+      //: A second press closes the menu (the owner 2026-11-09), as the Add caret does (diagram-bar.js): while it is open the caret says `aria-expanded`, so the outside-press closer leaves the press to this click.
+      if (more.getAttribute("aria-expanded") === "true") {
+        closeActionMenus();
+        return;
+      }
+      const r = more.getBoundingClientRect();
+      //: Each row wears its tile's glyph through the item's own `lead` (the menu has no icon field for a drawn shape), so a menu that regroups or reorders its rows cannot put a glyph on another row.
+      const lead = (t) => () => {
+        const slot = make("span", "dgm-menu-glyph");
+        slot.append(t.glyph.cloneNode(true));
+        return slot;
+      };
+      const menu = openMenuAtPoint(specs.map((t) => ({ label: t.name, group: t.group, title: t.hint, run: t.press, lead: lead(t) })), "Add to the diagram", r.right, r.bottom, more);
+      if (menu) {
+        menu._escapedOpener = more;
+        more.setAttribute("aria-expanded", "true");
+      }
+    });
+    bar.append(more);
+    //: First in the stage, so Tab meets it before the picture as the eye does (it sat after the zoom bar, tab stop 18 of 26), and one stop with Left and Right between the tiles (the toolbar's own roving).
+    stage.prepend(bar);
+    wireToolbarRoving(bar);
+    paint();
+  }
+
+  //: A row's ⋯ before it is pressed: an empty `kebabMenu` (1108 P2). The press is caught on the way down, and the
+  //: real menu, with its rows and the shape submenu, is built then and swapped in; 41 blocks no longer carry 41
+  //: full menus nobody opened. `items` is called on that press.
+  function lazyKebab(items, label) {
+    const stub = kebabMenu([], label);
+    stub.classList.add("dgm-menu");
+    stub.addEventListener("click", (event) => {
+      event.stopPropagation();
+      const real = kebabMenu(items(), label);
+      real.classList.add("dgm-menu");
+      const [old, again] = [stub, real].map((wrap) => wrap.querySelector(".kebab-opener"));
+      const tab = old.getAttribute("tabindex");
+      if (tab != null) again.setAttribute("tabindex", tab);
+      const focused = document.activeElement === old;
+      stub.replaceWith(real);
+      if (focused) again.focus({ preventScroll: true });
+      again.click();
+    }, true);
+    return stub;
+  }
+
+  //: Undo and Redo are dimmed while there is nothing to go back or forward to (dgpolish-1109: both always looked live). An `io` that
+  //: does not say (`canUndo` unset) keeps them live.
+  function hist(S) {
+    const [undo, redo] = S.root?.querySelectorAll(".dgm-hist") || [];
+    if (!undo) return;
+    const held = document.activeElement;
+    undo.disabled = S.io?.canUndo === false;
+    redo.disabled = S.io?.canRedo === false;
+    //: A button that dims under the finger takes the focus with it, so the other one (or the picture) keeps it.
+    if ((held === undo && undo.disabled) || (held === redo && redo.disabled)) (held === undo && !redo.disabled ? redo : S.fig)?.focus?.({ preventScroll: true });
+  }
+
+  diagramModel.library = { build, flow, shelf, lazyKebab, hist };
 })();

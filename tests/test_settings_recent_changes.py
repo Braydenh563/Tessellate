@@ -64,6 +64,8 @@ globalThis.settingsHistoryUndo = () => {{}};
 globalThis.setTimeout = (fn, ms) => {{ timers.push({{ fn, ms }}); return timers.length; }};
 globalThis.clearTimeout = (id) => {{ if (timers[id - 1]) timers[id - 1].dead = true; }};
 globalThis.LOOK_KEYS = ["density", "radius"];
+//: settings.js owns this object (a mix or an import quiets the per-key notes); a look change reads it.
+globalThis.settingsLook = {{ quiet: 0, quietWords: "", themePreview: "", logFilterFromRun: false }};
 //: The eager half (status.js): `apiJson` wrapped, handing each PUT's before and after to the lazy diff.
 const answers = [];
 globalThis.apiJson = async (path, options) => answers.shift();

@@ -51,7 +51,9 @@ def test_its_focus_is_a_glow_from_the_keyboard_only() -> None:
     glow = CSS[CSS.index("#nm-buddy .nm-buddy-face::before {") :]
     glow = glow[: glow.index("}")]
     assert "border-radius: 50%" in glow and "radial-gradient" in glow and "opacity: 0" in glow
-    assert "#nm-buddy .nm-buddy-face:focus-visible::before { opacity: 1; }" in CSS
+    # Intent moved (in-app dive 1107, b8a51ef7): the keyboard-only glow also draws a 2px accent ring
+    # (4.74:1 light, 6.8:1 dark at the ring; the glow alone was about 1.9:1). Still focus-visible only.
+    assert "#nm-buddy .nm-buddy-face:focus-visible::before { opacity: 1; outline: 2px solid var(--accent); }" in CSS
     # No filter on the moving figure for it.
     assert "drop-shadow" not in glow
 

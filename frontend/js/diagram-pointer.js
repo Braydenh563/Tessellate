@@ -9,7 +9,7 @@
 (() => {
   //: The caption that says what a drop will do (1679 slice 12): one element for the page, fixed under the target, moved with it.
   let tag = null;
-  function word(text, r, host) {
+  function word(text, r, host, frame) {
     if (!text || !r) return tag?.classList.add("hidden");
     if (!tag) {
       tag = document.createElement("span");
@@ -22,15 +22,22 @@
     tag.textContent = text;
     tag.classList.remove("hidden");
     const below = r.bottom + 28 < innerHeight;
-    tag.style.top = `${below ? r.bottom + 4 : Math.max(4, r.top - 28)}px`;
-    tag.style.left = `${Math.max(8, Math.min(r.left, innerWidth - 168))}px`;
+    let top = below ? r.bottom + 4 : Math.max(4, r.top - 28);
+    let left = Math.max(8, Math.min(r.left, innerWidth - 168));
+    //: Over the picture the caption stays inside its frame (blind test 1108: it sat at y=749, under the pane).
+    if (frame) {
+      top = Math.max(frame.top + 4, Math.min(top, frame.bottom - 28));
+      left = Math.max(frame.left + 4, Math.min(left, frame.right - 168));
+    }
+    tag.style.top = `${top}px`;
+    tag.style.left = `${left}px`;
   }
 
   //: The rectangle is read before the marks change, so the caption costs no layout after a write.
   function dropMark(g, target) {
     const r = target?.word && target.card ? target.card.getBoundingClientRect() : null;
     mark(g, target);
-    word(target?.word, r, target?.card);
+    word(target?.word, r, target?.card, target?.canvas ? g.S.fig.getBoundingClientRect() : null);
   }
 
   function mark(g, target) {
@@ -133,6 +140,7 @@
         if (!edge) return h.say(S, `${h.name(S, g.key)} is already connected to ${h.name(S, target.key)}.`);
         return h.commit(S, `Connected ${h.name(S, g.key)} to ${h.name(S, target.key)}.`);
       }
+      if (target.op !== "into" && diagramModel.outline.drop(m, g.key, target)) return h.commit(S, `Moved ${h.name(S, g.key)}.`);
       if (!h.ops.move(m, g.key, target.group, target.before)) return;
       S.sel = g.key;
       h.commit(S, target.op === "into" && target.group ? `Nested ${h.name(S, g.key)} into ${h.name(S, h.ops.key("g", target.group))}.` : `Moved ${h.name(S, g.key)}.`);

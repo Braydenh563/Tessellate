@@ -414,19 +414,35 @@ function wireHelpPopover(trigger, panel) {
     panel.classList.add("help-popover");
     trigger.setAttribute("aria-expanded", "true");
     openHelpPopovers.add(entry);
+    //: The panel's own stop is added at its first open: a '?' never opened (most of Settings' hundred) costs no listener.
+    if (!panel._helpStop) {
+      panel._helpStop = true;
+      panel.addEventListener("click", (event) => event.stopPropagation());
+    }
     placeHelpPopover(panel, trigger);
   };
-  trigger.addEventListener("click", (event) => {
-    // These triggers live inside <label>s often enough that a bare click
-    // would toggle the setting they explain.
-    event.preventDefault();
-    event.stopPropagation();
+  entry.toggle = () => {
     if (openHelpPopovers.has(entry)) entry.close();
     else open();
-  });
-  panel.addEventListener("click", (event) => event.stopPropagation());
+  };
+  wireHelpPopover.triggers.set(trigger, entry);
 }
+wireHelpPopover.triggers = new WeakMap();
 window.wireHelpPopover = wireHelpPopover;
+
+//: **One capture listener for every '?'** (perf audit 1108 P4: Settings' first open added 922 listeners, 202 of them
+//: these). The trigger's press is read here, before anything under it: the same stop as the per-trigger listener had,
+//: since these triggers live inside <label>s often enough that a bare click would toggle the setting they explain.
+document.addEventListener("click", (event) => {
+  for (let el = event.target; el && el !== document; el = el.parentElement) {
+    const entry = wireHelpPopover.triggers.get(el);
+    if (!entry) continue;
+    event.preventDefault();
+    event.stopPropagation();
+    entry.toggle();
+    return;
+  }
+}, true);
 
 //: **The accessible card: the title opens it, not the card** (INBOX 433,
 //: WCAG 4.1.2). A Library card was an `<article role="button">` holding its
@@ -1241,88 +1257,6 @@ function historyActorLabel(actor) {
     return tool === "api" ? `${who} (agent)` : `${who} (agent): ${tool.replace(/_/g, " ")}`;
   }
   return actor;
-}
-
-async function toggleEntryPrivacy(entry) {
-  const makingPrivate = !entry.is_private;
-  if (makingPrivate) {
-    const ok = (await confirmDialog(
-      "Make this note private?\n\n" +
-        "It gets encrypted with a key derived from your password, so it stays " +
-        "unreadable in the database, in backups, and to anyone without that " +
-        "password.\n\n" +
-        "It also stops appearing in search and stops being given to Atlas.\n\n" +
-        "There is no recovery: if you forget your password this note is gone."
-    ));
-    if (!ok) return;
-  }
-  // Both directions need the key, which a session without a password lacks.
-  if (!(await ensureVaultOpen())) return;
-  try {
-    await apiJson(`/entries/${entry.id}/privacy`, {
-      method: "POST",
-      body: JSON.stringify({ private: makingPrivate }),
-    });
-    const setPrivacy = (value) => async () => {
-      await apiJson(`/entries/${entry.id}/privacy`, { method: "POST", body: JSON.stringify({ private: value }) });
-      await refreshEntries([entry.id]);
-    };
-    pushUndo(makingPrivate ? "Made a note private" : "Made a note readable", setPrivacy(!makingPrivate), setPrivacy(makingPrivate));
-    toast(makingPrivate ? "Note encrypted." : "Note is readable again.");
-    await refreshEntries([entry.id]);
-  } catch (error) {
-    toast(error.message, true);
-  }
-}
-
-// Reported: no popup shows when a title is regenerated.
-//
-// There WAS a toast, and it was being swallowed. `toast()` drops anything
-// that is not an error while notifications are muted, which is right for
-// background chatter and wrong here: this is the result of a button the user
-// just pressed, and a direct action that reports nothing reads as a broken
-// button. Muting is about noise you did not ask for.
-//
-// The "Generating…" toast is also worth keeping distinct from the settled one:
-// this call waits on the model, so it can take seconds, and a control that
-// looks inert for seconds gets pressed again.
-async function generateEntryTitle(entry) {
-  const regenerating = Boolean(entry.title);
-  try {
-    toast(regenerating ? "Regenerating the title…" : "Generating a title…", false, {
-      exempt: true,
-    });
-    const was = (await fullEntry(entry.id)).content; // the undo puts back the whole text, not a list row's first 300 characters
-    const updated = await apiJson(`/entries/${entry.id}/generate-title`, { method: "POST" });
-    if (updated?.content) pushEntryPutUndo(entry.id, "Titled a note", { content: was }, { content: updated.content });
-    await refreshEntries([entry.id]);
-    flashEntry(entry.id);
-    const title = updated && updated.title;
-    toast(title ? `Titled “${title}”.` : "Titled.", false, { exempt: true });
-    // And in the notification centre, so the result survives the 5.5 seconds
-    // the toast lives for, the model can finish while you are on another tab.
-    recordNotification({
-      kind: "task",
-      title: regenerating ? "Title regenerated" : "Title generated",
-      detail: title ? `“${title}”` : `Note #${entry.id}`,
-    });
-  } catch (error) {
-    toast(error.message || "Couldn't generate a title.", true);
-  }
-}
-
-async function removeEntryTitle(entry) {
-  try {
-    const was = (await fullEntry(entry.id)).content;
-    const updated = await apiJson(`/entries/${entry.id}/remove-title`, { method: "POST" });
-    if (updated?.content) pushEntryPutUndo(entry.id, "Removed a title", { content: was }, { content: updated.content });
-    await refreshEntries([entry.id]);
-    flashEntry(entry.id);
-    // Said out loud: it was silent.
-    toast("Title removed.", false, { exempt: true });
-  } catch (error) {
-    toast(error.message || "Couldn't remove the title.", true);
-  }
 }
 
 // Arrow-key navigation, as the `role="menu"` contract implies. ↑/↓ move

@@ -6294,7 +6294,11 @@ function wbMapLayoutPositions(index, layout) {
     }
     return node;
   };
-  const virtual = wrap(null, null, 0, -1);
+  //: **Radial with several top-level topics puts them on the first ring**
+  //: (boardfix-1108): they were all depth 0, so radius 0, and sat on one
+  //: another (measured: four roots, 6 overlapping pairs of 10 boxes). The
+  //: virtual root takes the centre instead; one root still stands on it.
+  const virtual = wrap(null, null, 0, radial && index.roots.length > 1 ? 0 : -1);
 
   wbTidyFirstWalk(virtual, breadthOf, gap);
 
@@ -10154,79 +10158,82 @@ function wbOutlineStep(field, by) {
   if (to) wbOutlineFocus(to._node);
 }
 
-document.getElementById("wb-outline-tree")?.addEventListener("input", (event) => {
-  const row = event.target.closest(".wb-outline-row");
-  if (row && row._node.kind === "topic" && wbOutlineEditing(row)) wbOutlineMirror(row._node, event.target.value);
-});
+//: The outline panel is part of the board canvas, built when a board first opens (row 21).
+onSurface("board", () => {
+  document.getElementById("wb-outline-tree")?.addEventListener("input", (event) => {
+    const row = event.target.closest(".wb-outline-row");
+    if (row && row._node.kind === "topic" && wbOutlineEditing(row)) wbOutlineMirror(row._node, event.target.value);
+  });
 
-document.getElementById("wb-outline-tree")?.addEventListener("dblclick", (event) => {
-  const row = event.target.closest(".wb-outline-row");
-  if (row && event.target.matches(".wb-outline-text")) wbOutlineEdit(row);
-});
+  document.getElementById("wb-outline-tree")?.addEventListener("dblclick", (event) => {
+    const row = event.target.closest(".wb-outline-row");
+    if (row && event.target.matches(".wb-outline-text")) wbOutlineEdit(row);
+  });
 
-document.getElementById("wb-outline-tree")?.addEventListener("click", (event) => {
-  const pencil = event.target.closest(".wb-outline-edit");
-  if (pencil) wbOutlineEdit(pencil.closest(".wb-outline-row"), { select: true });
-});
+  document.getElementById("wb-outline-tree")?.addEventListener("click", (event) => {
+    const pencil = event.target.closest(".wb-outline-edit");
+    if (pencil) wbOutlineEdit(pencil.closest(".wb-outline-row"), { select: true });
+  });
 
-document.getElementById("wb-outline-tree")?.addEventListener("focusin", (event) => {
-  const row = event.target.closest(".wb-outline-row");
-  if (!row || row._node.id < 0) return;
-  if (wbSelectedItem?.kind !== "object" || wbSelectedItem.id !== row._node.id) selectWbItem("object", row._node.id);
-  for (const other of row.parentElement.children) other.setAttribute("aria-selected", String(other === row));
-});
+  document.getElementById("wb-outline-tree")?.addEventListener("focusin", (event) => {
+    const row = event.target.closest(".wb-outline-row");
+    if (!row || row._node.id < 0) return;
+    if (wbSelectedItem?.kind !== "object" || wbSelectedItem.id !== row._node.id) selectWbItem("object", row._node.id);
+    for (const other of row.parentElement.children) other.setAttribute("aria-selected", String(other === row));
+  });
 
-document.getElementById("wb-outline-tree")?.addEventListener("focusout", (event) => {
-  const row = event.target.closest(".wb-outline-row");
-  if (!row || !event.target.matches(".wb-outline-text")) return;
-  if (wbOutlineEditing(row)) wbOutlineStopEdit(row);
-  wbOutlineCommit(row._node, event.target);
-});
+  document.getElementById("wb-outline-tree")?.addEventListener("focusout", (event) => {
+    const row = event.target.closest(".wb-outline-row");
+    if (!row || !event.target.matches(".wb-outline-text")) return;
+    if (wbOutlineEditing(row)) wbOutlineStopEdit(row);
+    wbOutlineCommit(row._node, event.target);
+  });
 
-document.getElementById("wb-outline-tree")?.addEventListener("keydown", (event) => {
-  const field = event.target;
-  const row = field.closest?.(".wb-outline-row");
-  if (!row || event.ctrlKey || event.metaKey || event.altKey) return;
-  if (!field.matches(".wb-outline-text")) return;
-  const node = row._node;
-  const editing = wbOutlineEditing(row);
-  const done = () => {
-    event.preventDefault();
-    event.stopPropagation();
-  };
-  if (event.key === "F2" && !editing) {
-    done();
-    wbOutlineEdit(row);
-  } else if (event.key === "Enter" && event.shiftKey) {
-    done();
-    wbOutlineAddAfter(node, field);
-  } else if (event.key === "Enter") {
-    done();
-    if (editing) {
-      wbOutlineStopEdit(row);
-      wbOutlineCommit(node, field);
-    } else wbOutlineEdit(row);
-  } else if (event.key === "Tab") {
-    done();
-    if (event.shiftKey) wbOutlineOutdent(node, field);
-    else wbOutlineIndent(node, field);
-  } else if (event.key === "ArrowUp" || event.key === "ArrowDown") {
-    done();
-    wbOutlineStep(field, event.key === "ArrowUp" ? -1 : 1);
-  } else if (event.key === "Backspace" && editing && field.value === "" && node.kind === "topic") {
-    done();
-    wbOutlineRemoveEmpty(node);
-  } else if (event.key === "Escape") {
-    done();
-    if (editing) {
-      wbOutlineStopEdit(row, { cancel: true });
-      return;
+  document.getElementById("wb-outline-tree")?.addEventListener("keydown", (event) => {
+    const field = event.target;
+    const row = field.closest?.(".wb-outline-row");
+    if (!row || event.ctrlKey || event.metaKey || event.altKey) return;
+    if (!field.matches(".wb-outline-text")) return;
+    const node = row._node;
+    const editing = wbOutlineEditing(row);
+    const done = () => {
+      event.preventDefault();
+      event.stopPropagation();
+    };
+    if (event.key === "F2" && !editing) {
+      done();
+      wbOutlineEdit(row);
+    } else if (event.key === "Enter" && event.shiftKey) {
+      done();
+      wbOutlineAddAfter(node, field);
+    } else if (event.key === "Enter") {
+      done();
+      if (editing) {
+        wbOutlineStopEdit(row);
+        wbOutlineCommit(node, field);
+      } else wbOutlineEdit(row);
+    } else if (event.key === "Tab") {
+      done();
+      if (event.shiftKey) wbOutlineOutdent(node, field);
+      else wbOutlineIndent(node, field);
+    } else if (event.key === "ArrowUp" || event.key === "ArrowDown") {
+      done();
+      wbOutlineStep(field, event.key === "ArrowUp" ? -1 : 1);
+    } else if (event.key === "Backspace" && editing && field.value === "" && node.kind === "topic") {
+      done();
+      wbOutlineRemoveEmpty(node);
+    } else if (event.key === "Escape") {
+      done();
+      if (editing) {
+        wbOutlineStopEdit(row, { cancel: true });
+        return;
+      }
+      document.getElementById("whiteboard-container")?.focus({ preventScroll: true });
     }
-    document.getElementById("whiteboard-container")?.focus({ preventScroll: true });
-  }
-});
+  });
 
-document.getElementById("wb-panel-outline")?.addEventListener("change", (event) => wbOutlineToggle(event.target.checked));
+  document.getElementById("wb-panel-outline")?.addEventListener("change", (event) => wbOutlineToggle(event.target.checked));
+});
 
 // --- Markers (MINDMAP_PLAN §12.2 item 4, the audit's M4) --------------------
 //
@@ -10694,8 +10701,10 @@ function wbMapAfterRender() {
   }
 }
 
-document.getElementById("wb-map-filter-clear")?.addEventListener("click", () => wbMapSetMarkerFilter(null));
-document.getElementById("wb-map-filter-item")?.addEventListener("click", () => wbMapChooseMarkerFilter());
+onSurface("board", () => {
+  document.getElementById("wb-map-filter-clear")?.addEventListener("click", () => wbMapSetMarkerFilter(null));
+  document.getElementById("wb-map-filter-item")?.addEventListener("click", () => wbMapChooseMarkerFilter());
+});
 
 // --- A document's headings as a map (the audit's M5, second half) ---------
 //

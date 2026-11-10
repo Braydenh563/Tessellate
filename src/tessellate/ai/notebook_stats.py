@@ -286,6 +286,10 @@ def _counted(text: str, message: str, session: Session) -> StatAnswer | None:
     of boards and maps, reminders and open items; None for the rest."""
     from tessellate.ai import notebook_tasks, recognise
 
+    #: "how many notes have the word Lisbon" counts the notes that hold it; it
+    #: said the notebook's total, with the subject dropped (round 1 D4).
+    if holding := _held_word(text, message):
+        return _mention_of(holding, session)
     tasks = None if _SUBJECT_AFTER.search(text) else notebook_tasks.answer(text, session, utcnow(), _visible, recognise.ahead_window(text))
     if tasks is not None:
         return StatAnswer(*tasks[:2], tasks[2])
@@ -491,6 +495,40 @@ def _mention_count(text: str, session: Session) -> StatAnswer | None:
     word = found.group(1) if found else ""
     if not word or word in _KIND_WORDS or _SUBJECT_AFTER.search(text) or _window(word) is not None:
         return None
+    return _mention_of(word, session)
+
+
+#: "notes have the word Lisbon", "notes contain Lisbon", "notes with the phrase X".
+_HOLDING = re.compile(
+    r"\bnotes?\b(?: (?:do )?(?:i|we|you))? (?:have|has|contains?|holds?|with|including|containing)(?:(?: (?:the|a))? (?:words?|terms?|phrases?)| (?!(?:the|a|an|any|no|tags?|categor\w+|links?|images?|checklists?|tasks?|titles?)\b)) ?([a-z0-9][\w'-]{1,29})$"
+)
+
+
+#: What a note can hold that the app counts on its own ("how many notes have
+#: reminders" is the reminders, not the word): never a word to find.
+_HELD_KINDS = frozenset(
+    """reminders photos pictures images attachments files documents boards maps comments subtasks checklists tasks todos links backlinks
+    tags categories folders titles dates deadlines events highlights drawings audio recordings voice videos""".split()
+)
+#: A day or a stretch of time after "have": a window, not a word.
+_HELD_TIMES = frozenset("today yesterday tomorrow tonight now week weekend month year morning afternoon evening".split())
+
+
+def _held_word(text: str, message: str) -> str:
+    """The word "how many notes have the word Lisbon?" asks for, as the person
+    typed it; "" when the ask is a day, a window or a kind the app counts."""
+    found = _HOLDING.search(" ".join(text.split()).rstrip(" ?.!"))
+    word = found.group(1) if found else ""
+    low = word.lower()
+    if not word or low in _KIND_WORDS or low in _HELD_TIMES or low.rstrip("s") in _HELD_KINDS or low in _HELD_KINDS or _window(word) is not None:
+        return ""
+    #: The text was lowercased and spell-fixed to match; the word is said back as typed.
+    typed = re.search(rf"(?<!\w){re.escape(word)}(?!\w)", message or "", re.I)
+    return typed.group(0) if typed else word
+
+
+def _mention_of(word: str, session: Session) -> StatAnswer:
+    """How many notes hold `word`, said as that and never as the total."""
     said = re.compile(rf"(?<!\w){re.escape(word)}(?:s|es)?(?!\w)", re.I)
     n = sum(1 for body in session.scalars(_visible(select(Entry.content))) if said.search(body or ""))
     said_n = f"{_plural(n, 'note')} mention{'s' if n == 1 else ''} {word}." if n else f"None of your notes mention {word}."
@@ -736,30 +774,59 @@ def _longest_notes(session: Session) -> StatAnswer:
 
     Useful for the reason nobody expects: the longest notes are usually the
     ones that should have been split, and this is the only view in the app that
-    surfaces them. Ordered by character count in SQL so the whole notebook does
-    not have to come back to rank ten rows.
+    surfaces them. The SQL narrows to the longest by characters, so the whole
+    notebook does not have to come back; the ranking and the number said are
+    words, and each note is named by its title (round 1 D5: a list labelled in
+    words but ordered by characters, named by a glued title and body).
     """
     rows = session.execute(
         _visible(select(Entry.id, Entry.content))
         .where(func.length(Entry.content) >= _LONGEST_MIN_CHARS)
         .order_by(func.length(Entry.content).desc())
-        .limit(TOP_N)
+        .limit(TOP_N * 5)
     ).all()
     if not rows:
         return StatAnswer("longest-notes", "There are no notes long enough to rank yet.")
+    counted = sorted(((composer_frame.note_words(content), note_id, content) for note_id, content in rows), key=lambda r: -r[0])
     facts = [
-        {
-            "label": composer_frame.plain_snippet(content),
-            "count": composer_frame.note_words(content),
-            "id": note_id,
-        }
-        for note_id, content in rows
+        {"label": composer_frame.note_title(content, size=60) or composer_frame.plain_snippet(content), "count": words, "id": note_id}
+        for words, note_id, content in counted[:TOP_N]
     ]
     lead = facts[0]
     return StatAnswer(
         "longest-notes",
-        f"Your longest note is about {lead['count']} words: “{lead['label']}”. "
+        f"Your longest note is “{lead['label']}”, about {lead['count']} words. "
         f"The top {len(facts)} are listed below.",
+        facts,
+    )
+
+
+def _shortest_notes(session: Session) -> StatAnswer:
+    """The notes with the least in them, the mirror of the longest (round 2 E21).
+
+    "What is my shortest note" used to fall through to "Your notes don't mention
+    shortest". Empty notes are left out (nothing to name), and the SQL narrows
+    to the shortest by characters before the words are counted.
+    """
+    rows = session.execute(
+        _visible(select(Entry.id, Entry.content))
+        .where(func.length(func.trim(Entry.content)) > 0)
+        .order_by(func.length(Entry.content).asc())
+        .limit(TOP_N * 5)
+    ).all()
+    if not rows:
+        return StatAnswer("shortest-notes", "There are no notes to rank yet.")
+    counted = sorted(((composer_frame.note_words(content), note_id, content) for note_id, content in rows), key=lambda r: r[0])
+    facts = [
+        {"label": composer_frame.note_title(content, size=60) or composer_frame.plain_snippet(content), "count": words, "id": note_id}
+        for words, note_id, content in counted[:TOP_N]
+    ]
+    lead = facts[0]
+    unit = "word" if lead["count"] == 1 else "words"
+    return StatAnswer(
+        "shortest-notes",
+        f"Your shortest note is “{lead['label']}”, about {lead['count']} {unit}. "
+        f"The {len(facts)} shortest are listed below.",
         facts,
     )
 
@@ -1237,6 +1304,9 @@ def page(session: Session, now: datetime, usage_summary: dict, first_day: int = 
 #: answers). Below the readers they name, so each is named directly. Three tables because a named count and a windowed count sit
 #: between them, in this order.
 _FIRST_RULES = (
+    #: "how many words in my longest note" asks that note's length, not the notebook's size (D4).
+    (lambda t: _asks(t, r"\bhow many words\b", r"\b(?:longest|biggest|largest)\b", r"\bnotes?\b"), _longest_notes),
+    (lambda t: _asks(t, r"\bhow many words\b", r"\b(?:shortest|smallest)\b", r"\bnotes?\b"), _shortest_notes),
     (lambda t: _asks(t, _TAG_WORDS, _MOST), _top_tags),
     (lambda t: _asks(t, _CATEGORY_WORDS, _MOST), _top_categories),
     (lambda t: _asks(t, r"untagged|no tags|without (?:a )?tags?|missing tags?"), _untagged),
@@ -1274,6 +1344,7 @@ _LATER_RULES = (
     (lambda t: _asks(t, r"\b(?:write|wrote|written|writing)\b", r"\bmost\b", r"\babout\b"), _top_subjects),
     (lambda t: _asks(t, r"\bwords?\b|word count|wordcount", r"\bhow many|\btotal|\bwritten|\bcount") and not _names_a_thing(t), _word_count),
     (lambda t: _asks(t, r"longest|biggest|largest", r"\bnotes?\b"), _longest_notes),
+    (lambda t: _asks(t, r"shortest|smallest", r"\bnotes?\b"), _shortest_notes),
     (lambda t: _asks(t, r"stale|forgotten|untouched|abandoned|haven.?t (?:looked|touched|opened|read)"), _stale_notes),
     (lambda t: _asks(t, _TAG_WORDS, r"together|alongside|\bpairs?\b|combination|co-?occur"), _tag_pairs),
 )
