@@ -109,8 +109,70 @@ def _compare(ctx: Ctx, topic: str) -> Reply | None:
     return Reply("\n".join(out))
 
 
+_MONTHS = "january|february|march|april|may|june|july|august|september|october|november|december"
+_WHICH = re.compile(
+    r"^(?:which|what)(?:'s|\s+is|\s+are)?(?:\s+one)?(?:\s+is)?\s+(?P<cmp>cheaper|dearer|pricier|more expensive|less expensive|costs? more|costs? less)\W+"
+    r"(?:the\s+)?(?P<a>[a-z][a-z '&/-]{0,30}?)\s+(?:or|vs\.?|versus)\s+(?:the\s+)?(?P<b>[a-z][a-z '&/-]{0,30}?)\W*$",
+    re.I,
+)
+_MORE = re.compile(
+    rf"^how much (?P<dir>more|less) did (?:i|we) (?:spend|pay) (?:on |for |at )?(?P<label>.+?) in (?P<m1>{_MONTHS})"
+    rf"(?: (?:than|compared (?:to|with)|vs\.?|versus) (?:in )?(?P<m2>{_MONTHS}))?\W*$",
+    re.I,
+)
+_LESS_WORDS = ("cheaper", "less expensive", "cost less", "costs less")
+
+
+def _labelled(ctx: Ctx, words: str, notes: list[dict] | None = None) -> list[tuple[dict, str, float]]:
+    """Each priced note's line whose label is exactly `words` (by stem), as (note, label, figure)."""
+    wanted = set(study.content_stems(words))
+    return [(n, label, value) for n in (notes if notes is not None else _priced(ctx)) for label, value in lines(n) if wanted and set(study.content_stems(label)) == wanted]
+
+
+def _which(ctx: Ctx, found: re.Match) -> Reply | None:
+    """"which is cheaper, free or plus": the two labels' figures, from the one note that holds both."""
+    first, second = _labelled(ctx, found.group("a")), _labelled(ctx, found.group("b"))
+    both = next(((x, y) for x in first for y in second if x[0] is y[0]), None)
+    if not both:
+        return None
+    (note, a_label, a_value), (_n, b_label, b_value) = both
+    cmp = found.group("cmp").lower()
+    if a_value == b_value:
+        return Reply(f"{a_label} and {b_label} are the same, {_amount(a_value)} each, in {composer_study._link(note)}.")  # noqa: SLF001
+    lower = cmp in _LESS_WORDS
+    win, other = ((a_label, a_value), (b_label, b_value)) if (a_value < b_value) == lower else ((b_label, b_value), (a_label, a_value))
+    verb = f"costs {cmp.split()[-1]}" if cmp.startswith("cost") else f"is {cmp}"
+    return Reply(f"{win[0]} {verb}: {_amount(win[1])} against {_amount(other[1])} for {other[0]}, from {composer_study._link(note)}.")  # noqa: SLF001
+
+
+def _titled_month(note: dict, month: str) -> bool:
+    return month.lower() in composer_frame.note_title(note).lower()
+
+
+def _more(ctx: Ctx, found: re.Match) -> Reply | None:
+    """"how much more did I spend eating out in october": one label in two notes, the month asked against the other."""
+    rows = _labelled(ctx, found.group("label"))
+    first = next((r for r in rows if _titled_month(r[0], found.group("m1"))), None)
+    rest = [r for r in rows if r is not first and (not found.group("m2") or _titled_month(r[0], found.group("m2")))]
+    if first is None or not rest:
+        return None
+    other = rest[0]
+    gap = first[2] - other[2]
+    asked_more = found.group("dir").lower() == "more"
+    m1, m2 = found.group("m1").capitalize(), (found.group("m2") or "").capitalize() or composer_frame.note_title(other[0])
+    facts = f"{first[1]} was {_amount(first[2])} in {m1} ({composer_study._link(first[0])}) and {_amount(other[2])} in {m2} ({composer_study._link(other[0])})."  # noqa: SLF001
+    if gap == 0:
+        return Reply(f"The same: {facts}")
+    word = "more" if gap > 0 else "less"
+    lead = f"{_amount(abs(gap))} {word}" if (gap > 0) == asked_more else f"No, {_amount(abs(gap))} {word}"
+    return Reply(f"{lead} in {m1}: {facts}")
+
+
 def answer(ctx: Ctx) -> Reply | None:
     text = " ".join((ctx.question or "").split())
+    which, more = _WHICH.match(text), _MORE.match(text)
+    if which or more:
+        return _which(ctx, which) if which else _more(ctx, more)
     total = _TOTAL.match(text) or _TOTAL_HOW.match(text)
     if total:
         return _total(ctx, total.group("t"))
