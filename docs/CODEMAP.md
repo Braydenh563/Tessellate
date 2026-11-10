@@ -2,7 +2,7 @@
 
 Generated 2026-11-10 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8105, frontend ids 2684, CSS sections 523, backend routes 662, backend modules 9999, test files 2446, tests 20265, plan headings 1001, app scripts 28, boot scripts 37, script files 277.
+Counts: frontend functions 8105, frontend ids 2684, CSS sections 523, backend routes 662, backend modules 9999, test files 2447, tests 20274, plan headings 1001, app scripts 28, boot scripts 37, script files 277.
 
 ## Frontend functions (8105)
 
@@ -2032,19 +2032,19 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `announceAskFoot` | frontend/js/ask-compose.js:1467 |
+| `announceAskFoot` | frontend/js/ask-compose.js:1468 |
 | `askAiOffCause` | frontend/js/ask-compose.js:38 |
 | `askAnswerFrom` | frontend/js/ask-compose.js:46 |
 | `askAnswerMenu` | frontend/js/ask-compose.js:669 |
-| `askAsOf` | frontend/js/ask-compose.js:1480 |
+| `askAsOf` | frontend/js/ask-compose.js:1481 |
 | `askFromNotesFold` | frontend/js/ask-compose.js:893 |
 | `askKeepAsDocument` | frontend/js/ask-compose.js:701 |
 | `askKeepAsMap` | frontend/js/ask-compose.js:723 |
 | `askKeptTitle` | frontend/js/ask-compose.js:696 |
 | `askPreAnswerCard` | frontend/js/ask-compose.js:883 |
 | `askQuestion` | frontend/js/ask-compose.js:937 |
-| `askStatusBusy` | frontend/js/ask-compose.js:1405 |
-| `askStatusText` | frontend/js/ask-compose.js:1492 |
+| `askStatusBusy` | frontend/js/ask-compose.js:1406 |
+| `askStatusText` | frontend/js/ask-compose.js:1493 |
 | `citationVerdictRow` | frontend/js/ask-compose.js:640 |
 | `digestMore` | frontend/js/ask-compose.js:486 |
 | `digestOffer` | frontend/js/ask-compose.js:524 |
@@ -2057,29 +2057,29 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `renderActCard` | frontend/js/ask-compose.js:201 |
 | `renderAskBoth` | frontend/js/ask-compose.js:872 |
 | `renderAskFollowups` | frontend/js/ask-compose.js:822 |
-| `renderAskHint` | frontend/js/ask-compose.js:1442 |
+| `renderAskHint` | frontend/js/ask-compose.js:1443 |
 | `renderAskInsights` | frontend/js/ask-compose.js:750 |
-| `renderAskTrail` | frontend/js/ask-compose.js:1511 |
+| `renderAskTrail` | frontend/js/ask-compose.js:1512 |
 | `renderAskUseAi` | frontend/js/ask-compose.js:51 |
 | `renderAskWhy` | frontend/js/ask-compose.js:774 |
 | `renderChatMeta` | frontend/js/ask-compose.js:1310 |
 | `renderWebSources` | frontend/js/ask-compose.js:304 |
-| `setAsking` | frontend/js/ask-compose.js:1501 |
+| `setAsking` | frontend/js/ask-compose.js:1502 |
 | `wireAskUseAi` | frontend/js/ask-compose.js:69 |
 
 ### frontend/js/ask-history.js (10)
 
 | Name | File:line |
 |---|---|
-| `askAgainMenu` | frontend/js/ask-history.js:270 |
-| `askHistoryRepaint` | frontend/js/ask-history.js:259 |
+| `askAgainMenu` | frontend/js/ask-history.js:271 |
+| `askHistoryRepaint` | frontend/js/ask-history.js:260 |
 | `askHistoryRow` | frontend/js/ask-history.js:14 |
-| `clearAskHistory` | frontend/js/ask-history.js:305 |
-| `deleteAskHistoryTurn` | frontend/js/ask-history.js:246 |
-| `forgetRecentQuestion` | frontend/js/ask-history.js:282 |
+| `clearAskHistory` | frontend/js/ask-history.js:306 |
+| `deleteAskHistoryTurn` | frontend/js/ask-history.js:247 |
+| `forgetRecentQuestion` | frontend/js/ask-history.js:283 |
 | `loadAskHistoryPage` | frontend/js/ask-history.js:82 |
 | `toggleAskHistoryPanel` | frontend/js/ask-history.js:108 |
-| `toggleAskHistoryPin` | frontend/js/ask-history.js:231 |
+| `toggleAskHistoryPin` | frontend/js/ask-history.js:232 |
 | `viewAskHistoryTurn` | frontend/js/ask-history.js:118 |
 
 ### frontend/js/assistant-avatar.js (1)
@@ -6860,11 +6860,11 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `openCalculator` | frontend/js/reply-kit.js:432 |
 | `renderRelatedElsewhere` | frontend/js/reply-kit.js:68 |
 | `renderReplyPanel` | frontend/js/reply-kit.js:23 |
-| `renderToolsUnsupportedNotice` | frontend/js/reply-kit.js:1650 |
-| `replyByHelpPanel` | frontend/js/reply-kit.js:1701 |
-| `replyByHover` | frontend/js/reply-kit.js:1722 |
-| `replyByline` | frontend/js/reply-kit.js:1754 |
-| `replyBylineFacts` | frontend/js/reply-kit.js:1679 |
+| `renderToolsUnsupportedNotice` | frontend/js/reply-kit.js:1732 |
+| `replyByHelpPanel` | frontend/js/reply-kit.js:1783 |
+| `replyByHover` | frontend/js/reply-kit.js:1804 |
+| `replyByline` | frontend/js/reply-kit.js:1836 |
+| `replyBylineFacts` | frontend/js/reply-kit.js:1761 |
 | `replyCalcActions` | frontend/js/reply-kit.js:585 |
 | `replyCalcBuild` | frontend/js/reply-kit.js:460 |
 | `replyCalcConvertPane` | frontend/js/reply-kit.js:1471 |
@@ -6880,19 +6880,19 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `replyDrawAll` | frontend/js/reply-kit.js:34 |
 | `replyFillMeters` | frontend/js/reply-kit.js:193 |
 | `replyFinish` | frontend/js/reply-kit.js:1592 |
-| `replyFoldLong` | frontend/js/reply-kit.js:1837 |
-| `replyGist` | frontend/js/reply-kit.js:1832 |
+| `replyFoldLong` | frontend/js/reply-kit.js:1919 |
+| `replyGist` | frontend/js/reply-kit.js:1914 |
 | `replyMeter` | frontend/js/reply-kit.js:160 |
 | `replyMonthName` | frontend/js/reply-kit.js:201 |
-| `replyNoteCard` | frontend/js/reply-kit.js:1930 |
-| `replyNoteEntry` | frontend/js/reply-kit.js:1879 |
-| `replyNoteId` | frontend/js/reply-kit.js:1874 |
-| `replyNotePreviews` | frontend/js/reply-kit.js:1883 |
+| `replyNoteCard` | frontend/js/reply-kit.js:2012 |
+| `replyNoteEntry` | frontend/js/reply-kit.js:1961 |
+| `replyNoteId` | frontend/js/reply-kit.js:1956 |
+| `replyNotePreviews` | frontend/js/reply-kit.js:1965 |
 | `replyPanelShell` | frontend/js/reply-kit.js:44 |
-| `replyPeekLink` | frontend/js/reply-kit.js:1902 |
-| `replyRecordReasons` | frontend/js/reply-kit.js:1632 |
-| `replyReveal` | frontend/js/reply-kit.js:1800 |
-| `replyRevealWanted` | frontend/js/reply-kit.js:1795 |
+| `replyPeekLink` | frontend/js/reply-kit.js:1984 |
+| `replyRecordCards` | frontend/js/reply-kit.js:1641 |
+| `replyReveal` | frontend/js/reply-kit.js:1882 |
+| `replyRevealWanted` | frontend/js/reply-kit.js:1877 |
 | `replySpark` | frontend/js/reply-kit.js:136 |
 | `replyStatCard` | frontend/js/reply-kit.js:104 |
 | `replyStatCards` | frontend/js/reply-kit.js:206 |
@@ -12771,7 +12771,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/quick-access-lazy.css | 105 |
 | frontend/css/quickadd-lazy.css | 35 |
 | frontend/css/recovery-lazy.css | 111 |
-| frontend/css/reply-kit-lazy.css | 844 |
+| frontend/css/reply-kit-lazy.css | 912 |
 | frontend/css/reveal-lazy.css | 10 |
 | frontend/css/search-lazy.css | 153 |
 | frontend/css/semantic-notice-lazy.css | 10 |
@@ -15123,60 +15123,60 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `Group` | src/tessellate/ai/composer_frame.py:48 |
-| `_base` | src/tessellate/ai/composer_frame.py:683 |
-| `_by_link` | src/tessellate/ai/composer_frame.py:667 |
-| `_by_meaning` | src/tessellate/ai/composer_frame.py:653 |
-| `_by_word` | src/tessellate/ai/composer_frame.py:660 |
-| `_clause_end` | src/tessellate/ai/composer_frame.py:323 |
-| `_components` | src/tessellate/ai/composer_frame.py:86 |
-| `_first_line` | src/tessellate/ai/composer_frame.py:513 |
-| `_flat_quote` | src/tessellate/ai/composer_frame.py:600 |
-| `_group_clause` | src/tessellate/ai/composer_frame.py:570 |
-| `_joined` | src/tessellate/ai/composer_frame.py:115 |
-| `_link_said` | src/tessellate/ai/composer_frame.py:542 |
-| `_links` | src/tessellate/ai/composer_frame.py:80 |
-| `_list_item` | src/tessellate/ai/composer_frame.py:251 |
-| `_lower` | src/tessellate/ai/composer_frame.py:213 |
-| `_marked` | src/tessellate/ai/composer_frame.py:268 |
-| `_names` | src/tessellate/ai/composer_frame.py:525 |
-| `_opens_section` | src/tessellate/ai/composer_frame.py:260 |
-| `_order_title` | src/tessellate/ai/composer_frame.py:365 |
-| `_plain` | src/tessellate/ai/composer_frame.py:247 |
-| `_plain_lower` | src/tessellate/ai/composer_frame.py:221 |
-| `_relation` | src/tessellate/ai/composer_frame.py:693 |
-| `_said_line` | src/tessellate/ai/composer_frame.py:453 |
-| `_sayer` | src/tessellate/ai/composer_frame.py:674 |
-| `_score` | src/tessellate/ai/composer_frame.py:72 |
-| `_shared_line` | src/tessellate/ai/composer_frame.py:554 |
-| `_tag_list` | src/tessellate/ai/composer_frame.py:64 |
-| `_tag_pairs` | src/tessellate/ai/composer_frame.py:103 |
-| `_tags` | src/tessellate/ai/composer_frame.py:68 |
-| `_title_of` | src/tessellate/ai/composer_frame.py:278 |
-| `_titled` | src/tessellate/ai/composer_frame.py:308 |
-| `bind_lower` | src/tessellate/ai/composer_frame.py:205 |
-| `clipped_words` | src/tessellate/ai/composer_frame.py:336 |
-| `echoed` | src/tessellate/ai/composer_frame.py:585 |
-| `group_line` | src/tessellate/ai/composer_frame.py:604 |
-| `groups` | src/tessellate/ai/composer_frame.py:149 |
-| `lead_line` | src/tessellate/ai/composer_frame.py:633 |
-| `link_text` | src/tessellate/ai/composer_frame.py:358 |
-| `lower_name` | src/tessellate/ai/composer_frame.py:438 |
-| `name_of` | src/tessellate/ai/composer_frame.py:378 |
-| `note_label` | src/tessellate/ai/composer_frame.py:425 |
-| `note_title` | src/tessellate/ai/composer_frame.py:415 |
-| `note_words` | src/tessellate/ai/composer_frame.py:190 |
-| `own_title` | src/tessellate/ai/composer_frame.py:459 |
-| `plain_snippet` | src/tessellate/ai/composer_frame.py:171 |
-| `reason_said` | src/tessellate/ai/composer_frame.py:536 |
-| `reasons` | src/tessellate/ai/composer_frame.py:706 |
-| `short_name` | src/tessellate/ai/composer_frame.py:502 |
-| `strip_end_emoticon` | src/tessellate/ai/composer_frame.py:241 |
-| `themes` | src/tessellate/ai/composer_frame.py:130 |
-| `thread_name` | src/tessellate/ai/composer_frame.py:623 |
-| `title_line` | src/tessellate/ai/composer_frame.py:300 |
-| `topic_words` | src/tessellate/ai/composer_frame.py:640 |
-| `without_own_day` | src/tessellate/ai/composer_frame.py:352 |
+| `Group` | src/tessellate/ai/composer_frame.py:50 |
+| `_base` | src/tessellate/ai/composer_frame.py:688 |
+| `_by_link` | src/tessellate/ai/composer_frame.py:672 |
+| `_by_meaning` | src/tessellate/ai/composer_frame.py:655 |
+| `_by_word` | src/tessellate/ai/composer_frame.py:662 |
+| `_clause_end` | src/tessellate/ai/composer_frame.py:325 |
+| `_components` | src/tessellate/ai/composer_frame.py:88 |
+| `_first_line` | src/tessellate/ai/composer_frame.py:515 |
+| `_flat_quote` | src/tessellate/ai/composer_frame.py:602 |
+| `_group_clause` | src/tessellate/ai/composer_frame.py:572 |
+| `_joined` | src/tessellate/ai/composer_frame.py:117 |
+| `_link_said` | src/tessellate/ai/composer_frame.py:544 |
+| `_links` | src/tessellate/ai/composer_frame.py:82 |
+| `_list_item` | src/tessellate/ai/composer_frame.py:253 |
+| `_lower` | src/tessellate/ai/composer_frame.py:215 |
+| `_marked` | src/tessellate/ai/composer_frame.py:270 |
+| `_names` | src/tessellate/ai/composer_frame.py:527 |
+| `_opens_section` | src/tessellate/ai/composer_frame.py:262 |
+| `_order_title` | src/tessellate/ai/composer_frame.py:367 |
+| `_plain` | src/tessellate/ai/composer_frame.py:249 |
+| `_plain_lower` | src/tessellate/ai/composer_frame.py:223 |
+| `_relation` | src/tessellate/ai/composer_frame.py:698 |
+| `_said_line` | src/tessellate/ai/composer_frame.py:455 |
+| `_sayer` | src/tessellate/ai/composer_frame.py:679 |
+| `_score` | src/tessellate/ai/composer_frame.py:74 |
+| `_shared_line` | src/tessellate/ai/composer_frame.py:556 |
+| `_tag_list` | src/tessellate/ai/composer_frame.py:66 |
+| `_tag_pairs` | src/tessellate/ai/composer_frame.py:105 |
+| `_tags` | src/tessellate/ai/composer_frame.py:70 |
+| `_title_of` | src/tessellate/ai/composer_frame.py:280 |
+| `_titled` | src/tessellate/ai/composer_frame.py:310 |
+| `bind_lower` | src/tessellate/ai/composer_frame.py:207 |
+| `clipped_words` | src/tessellate/ai/composer_frame.py:338 |
+| `echoed` | src/tessellate/ai/composer_frame.py:587 |
+| `group_line` | src/tessellate/ai/composer_frame.py:606 |
+| `groups` | src/tessellate/ai/composer_frame.py:151 |
+| `lead_line` | src/tessellate/ai/composer_frame.py:635 |
+| `link_text` | src/tessellate/ai/composer_frame.py:360 |
+| `lower_name` | src/tessellate/ai/composer_frame.py:440 |
+| `name_of` | src/tessellate/ai/composer_frame.py:380 |
+| `note_label` | src/tessellate/ai/composer_frame.py:427 |
+| `note_title` | src/tessellate/ai/composer_frame.py:417 |
+| `note_words` | src/tessellate/ai/composer_frame.py:192 |
+| `own_title` | src/tessellate/ai/composer_frame.py:461 |
+| `plain_snippet` | src/tessellate/ai/composer_frame.py:173 |
+| `reason_said` | src/tessellate/ai/composer_frame.py:538 |
+| `reasons` | src/tessellate/ai/composer_frame.py:711 |
+| `short_name` | src/tessellate/ai/composer_frame.py:504 |
+| `strip_end_emoticon` | src/tessellate/ai/composer_frame.py:243 |
+| `themes` | src/tessellate/ai/composer_frame.py:132 |
+| `thread_name` | src/tessellate/ai/composer_frame.py:625 |
+| `title_line` | src/tessellate/ai/composer_frame.py:302 |
+| `topic_words` | src/tessellate/ai/composer_frame.py:642 |
+| `without_own_day` | src/tessellate/ai/composer_frame.py:354 |
 
 ### src/tessellate/ai/composer_help.py (28)
 
@@ -17072,8 +17072,8 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `_act_topic` | src/tessellate/ai/help_topics_more.py:3588 |
-| `_slash_commands_topic` | src/tessellate/ai/help_topics_more.py:3721 |
+| `_act_topic` | src/tessellate/ai/help_topics_more.py:3592 |
+| `_slash_commands_topic` | src/tessellate/ai/help_topics_more.py:3725 |
 
 ### src/tessellate/ai/help_words.py (2)
 
@@ -26092,7 +26092,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (20265)
+## Tests (20274)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -26172,6 +26172,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_ask_history.py | 17 |
 | tests/test_ask_locale.py | 2 |
 | tests/test_ask_overview_brief.py | 5 |
+| tests/test_ask_record_cards_1735.py | 7 |
 | tests/test_ask_records_voice.py | 4 |
 | tests/test_ask_sees_tags_and_files.py | 5 |
 | tests/test_ask_use_ai_714.py | 7 |
@@ -26642,7 +26643,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_composer_redos_1109.py | 5 |
 | tests/test_composer_regex_linear_1029.py | 3 |
 | tests/test_composer_register_1031.py | 12 |
-| tests/test_composer_relevance_1310.py | 10 |
+| tests/test_composer_relevance_1310.py | 12 |
 | tests/test_composer_reminder_ask_1668.py | 7 |
 | tests/test_composer_repair_1668.py | 8 |
 | tests/test_composer_requests_1649.py | 6 |
@@ -29245,7 +29246,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Phases 0 to 2: built 2026-09-09 | docs/roadmap/DOCUMENTS_PLAN.md:119 |
 | Phases 0 to 6: built | docs/roadmap/UI_MODERNISATION_PLAN.md:216 |
 | Phases, each with the gate it is finished against | docs/roadmap/MINDMAP_PLAN.md:1217 |
-| Placed (last 20, newest first) | docs/roadmap/INBOX.md:170 |
+| Placed (last 20, newest first) | docs/roadmap/INBOX.md:171 |
 | Placed from Brief 40, 2026-10-10 (does the MCP server work) | docs/roadmap/AGENT_SKILLS_REFORM.md:345 |
 | Placed from Brief 40, 2026-10-10 (research and placement) | docs/roadmap/BACKLOG.md:4176 |
 | Placed from Brief 40, 2026-10-10 (the phone over HTTPS) | docs/roadmap/WORLD_CLASS_PLAN.md:3130 |
