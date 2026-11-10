@@ -5040,3 +5040,46 @@ renderLearnedList = async function renderLearnedListMarked() {
   }
   return drawn;
 };
+
+async function applyEmbeddingBackend() {
+  const backend = document.querySelector('input[name="emb-backend"]:checked')?.value;
+  const model = $("embedding-model-select").value || null;
+  if (!backend) return;
+  // Guard the #1 misconfiguration: a chat model chosen as the search engine.
+  if (backend === "ollama") {
+    if (!model) {
+      toast("Pick an embedding model first, e.g. nomic-embed-text.", "info");
+      return;
+    }
+    if (!looksLikeEmbeddingModel(model)) {
+      const proceed = (await confirmDialog(
+        `"${model}" doesn't look like an embedding model. Chat models can't create ` +
+          "embeddings, so semantic search will fail (Ollama returns 501). Download and " +
+          "pick a dedicated embedding model like nomic-embed-text instead.\n\nApply anyway?"
+      ));
+      if (!proceed) return;
+    }
+  }
+  const ok = (await confirmDialog(
+    `Switching the search engine re-indexes all ${allEntries.length} of your ` +
+      "notes so search keeps making sense. Notes and keyword search stay " +
+      "available while it runs. Continue?"
+  ));
+  if (!ok) {
+    // Backing out puts the saved backend back on screen, rather than leaving
+    // a radio selected for a switch that never happened.
+    clearEmbeddingBackendLatch();
+    refreshModelStatus();
+    return;
+  }
+  try {
+    await api("/models/embedding-backend", {
+      method: "POST",
+      body: JSON.stringify({ backend, model: backend === "ollama" ? model : null }),
+    });
+    clearEmbeddingBackendLatch(); // applied: polling may reflect it again
+    refreshModelStatus();
+  } catch (error) {
+    toast(error.message, true);
+  }
+}

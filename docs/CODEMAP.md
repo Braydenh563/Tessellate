@@ -116,24 +116,23 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `warmLibraryAfterInput` | frontend/js/lazy-entries.js:269 |
 | `warmOnFirst` | frontend/js/lazy-entries.js:288 |
 
-### frontend/js/note-cards.js (27)
+### frontend/js/note-cards.js (23)
 
 | Name | File:line |
 |---|---|
 | `answerTags` | frontend/js/note-cards.js:30 |
-| `askAtlasAboutNote` | frontend/js/note-cards.js:625 |
-| `askAtlasAboutThing` | frontend/js/note-cards.js:632 |
-| `binNoteWithUndo` | frontend/js/note-cards.js:390 |
-| `deducedStrength` | frontend/js/note-cards.js:692 |
-| `entryCardControls` | frontend/js/note-cards.js:645 |
-| `entryListFocusStop` | frontend/js/note-cards.js:658 |
-| `entryListSetStop` | frontend/js/note-cards.js:663 |
-| `favouriteButton` | frontend/js/note-cards.js:350 |
-| `fitNoteMetas` | frontend/js/note-cards.js:461 |
+| `askAtlasAboutNote` | frontend/js/note-cards.js:505 |
+| `askAtlasAboutThing` | frontend/js/note-cards.js:512 |
+| `binNoteWithUndo` | frontend/js/note-cards.js:359 |
+| `deducedStrength` | frontend/js/note-cards.js:572 |
+| `entryCardControls` | frontend/js/note-cards.js:525 |
+| `entryListFocusStop` | frontend/js/note-cards.js:538 |
+| `entryListSetStop` | frontend/js/note-cards.js:543 |
+| `fitNoteMetas` | frontend/js/note-cards.js:401 |
 | `formatFileSize` | frontend/js/note-cards.js:304 |
 | `libraryListsBoard` | frontend/js/note-cards.js:228 |
 | `loadMapBoardIndex` | frontend/js/note-cards.js:163 |
-| `makeUnlinkAccessible` | frontend/js/note-cards.js:676 |
+| `makeUnlinkAccessible` | frontend/js/note-cards.js:556 |
 | `mapBoardById` | frontend/js/note-cards.js:191 |
 | `mapBoardRows` | frontend/js/note-cards.js:217 |
 | `mapBoardTitled` | frontend/js/note-cards.js:203 |
@@ -141,35 +140,31 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `mapCountLabel` | frontend/js/note-cards.js:52 |
 | `mapPreview` | frontend/js/note-cards.js:38 |
 | `noteIsMeeting` | frontend/js/note-cards.js:346 |
-| `noteMetaMore` | frontend/js/note-cards.js:554 |
-| `noteReviewActions` | frontend/js/note-cards.js:578 |
-| `notesSpanSpaces` | frontend/js/note-cards.js:412 |
-| `publishDraft` | frontend/js/note-cards.js:540 |
-| `renderAttachmentCards` | frontend/js/note-cards.js:425 |
-| `showNoteInGraph` | frontend/js/note-cards.js:617 |
+| `notesSpanSpaces` | frontend/js/note-cards.js:381 |
+| `publishDraft` | frontend/js/note-cards.js:480 |
+| `showNoteInGraph` | frontend/js/note-cards.js:497 |
 
-### frontend/js/menus.js (31)
+### frontend/js/menus.js (30)
 
 | Name | File:line |
 |---|---|
 | `afterMenuExit` | frontend/js/menus.js:781 |
-| `buildMenuGroupButton` | frontend/js/menus.js:1371 |
-| `buildMenuItemButton` | frontend/js/menus.js:1338 |
+| `buildMenuGroupButton` | frontend/js/menus.js:1348 |
+| `buildMenuItemButton` | frontend/js/menus.js:1315 |
 | `cardOpener` | frontend/js/menus.js:462 |
 | `closeActionMenus` | frontend/js/menus.js:105 |
 | `closeActionMenusOnScroll` | frontend/js/menus.js:59 |
 | `closeHelpPopovers` | frontend/js/menus.js:284 |
 | `docBacklinkContext` | frontend/js/menus.js:1196 |
 | `dragFlag` | frontend/js/menus.js:37 |
-| `entryOverflowMenu` | frontend/js/menus.js:1532 |
+| `entryOverflowMenu` | frontend/js/menus.js:1509 |
 | `escapeAndCapMenu` | frontend/js/menus.js:830 |
 | `escapeMenuIfClipped` | frontend/js/menus.js:729 |
 | `escapeMenuToBody` | frontend/js/menus.js:751 |
 | `fitActionMenuInWindow` | frontend/js/menus.js:509 |
 | `focusMenuItem` | frontend/js/menus.js:642 |
-| `historyActorLabel` | frontend/js/menus.js:1239 |
 | `inlineActionIs` | frontend/js/menus.js:8 |
-| `isEditConflict` | frontend/js/menus.js:1602 |
+| `isEditConflict` | frontend/js/menus.js:1579 |
 | `menuClippingAncestor` | frontend/js/menus.js:656 |
 | `menuExitMs` | frontend/js/menus.js:788 |
 | `menuSidePlan` | frontend/js/menus.js:487 |
@@ -182,7 +177,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `wireEscapedActionMenu` | frontend/js/menus.js:899 |
 | `wireEscapedMenuResize` | frontend/js/menus.js:1179 |
 | `wireHelpPopover` | frontend/js/menus.js:347 |
-| `wireMenuKeyboard` | frontend/js/menus.js:1277 |
+| `wireMenuKeyboard` | frontend/js/menus.js:1254 |
 
 ### frontend/js/lightbox.js (2)
 
@@ -1049,25 +1044,24 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `whenText` | frontend/js/status.js:1121 |
 | `withoutEndStop` | frontend/js/status.js:2531 |
 
-### frontend/js/ai-tools.js (34)
+### frontend/js/ai-tools.js (33)
 
 | Name | File:line |
 |---|---|
-| `applyEmbeddingBackend` | frontend/js/ai-tools.js:691 |
 | `applyFeatureModel` | frontend/js/ai-tools.js:359 |
-| `applyPalette` | frontend/js/ai-tools.js:1104 |
-| `applyRestoredLook` | frontend/js/ai-tools.js:1038 |
-| `clearEmbeddingBackendLatch` | frontend/js/ai-tools.js:738 |
+| `applyPalette` | frontend/js/ai-tools.js:1061 |
+| `applyRestoredLook` | frontend/js/ai-tools.js:995 |
+| `clearEmbeddingBackendLatch` | frontend/js/ai-tools.js:695 |
 | `featureModelChoiceLabel` | frontend/js/ai-tools.js:353 |
 | `featureModelMenuItem` | frontend/js/ai-tools.js:396 |
 | `featureModelRow` | frontend/js/ai-tools.js:335 |
 | `featureModelState` | frontend/js/ai-tools.js:343 |
 | `fillModelSelect` | frontend/js/ai-tools.js:60 |
-| `lookFromOtherWindow` | frontend/js/ai-tools.js:1073 |
+| `lookFromOtherWindow` | frontend/js/ai-tools.js:1030 |
 | `looksLikeEmbeddingModel` | frontend/js/ai-tools.js:687 |
-| `mirroredUiKeys` | frontend/js/ai-tools.js:851 |
+| `mirroredUiKeys` | frontend/js/ai-tools.js:808 |
 | `placeChatModelPanel` | frontend/js/ai-tools.js:215 |
-| `pullLookFromNotebook` | frontend/js/ai-tools.js:1059 |
+| `pullLookFromNotebook` | frontend/js/ai-tools.js:1016 |
 | `renderAutonomousModelPicker` | frontend/js/ai-tools.js:527 |
 | `renderChatActiveModelBadge` | frontend/js/ai-tools.js:140 |
 | `renderChatModelPicker` | frontend/js/ai-tools.js:93 |
@@ -1076,15 +1070,15 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `renderReindex` | frontend/js/ai-tools.js:623 |
 | `renderUtilityModelPicker` | frontend/js/ai-tools.js:260 |
 | `renderVisionModelPicker` | frontend/js/ai-tools.js:283 |
-| `saveUiState` | frontend/js/ai-tools.js:909 |
-| `seedUiStateFromServer` | frontend/js/ai-tools.js:986 |
+| `saveUiState` | frontend/js/ai-tools.js:866 |
+| `seedUiStateFromServer` | frontend/js/ai-tools.js:943 |
 | `syncEmbeddingPickerState` | frontend/js/ai-tools.js:560 |
 | `syncFeatureModelSelects` | frontend/js/ai-tools.js:430 |
 | `taskElapsed` | frontend/js/ai-tools.js:31 |
-| `uiStateFingerprint` | frontend/js/ai-tools.js:898 |
-| `uiStatePayload` | frontend/js/ai-tools.js:885 |
-| `uiStateRememberSynced` | frontend/js/ai-tools.js:1027 |
-| `watchMirroredUiKeys` | frontend/js/ai-tools.js:954 |
+| `uiStateFingerprint` | frontend/js/ai-tools.js:855 |
+| `uiStatePayload` | frontend/js/ai-tools.js:842 |
+| `uiStateRememberSynced` | frontend/js/ai-tools.js:984 |
+| `watchMirroredUiKeys` | frontend/js/ai-tools.js:911 |
 | `wireFeatureModelSelects` | frontend/js/ai-tools.js:490 |
 | `wireReindexButton` | frontend/js/ai-tools.js:602 |
 
@@ -4911,12 +4905,16 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `openEntityPage` | frontend/js/entity-page.js:62 |
 | `toastEntityMerge` | frontend/js/entity-page.js:34 |
 
-### frontend/js/entry-card.js (4)
+### frontend/js/entry-card.js (8)
 
 | Name | File:line |
 |---|---|
 | `entryItem` | frontend/js/entry-card.js:198 |
+| `favouriteButton` | frontend/js/entry-card.js:1279 |
 | `meetingGlance` | frontend/js/entry-card.js:34 |
+| `noteMetaMore` | frontend/js/entry-card.js:1341 |
+| `noteReviewActions` | frontend/js/entry-card.js:1245 |
+| `renderAttachmentCards` | frontend/js/entry-card.js:1315 |
 | `renderInlineAction` | frontend/js/entry-card.js:82 |
 | `tagAddChipKind` | frontend/js/entry-card.js:16 |
 
@@ -6277,10 +6275,11 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `renderNoteBookmarksWhileEditing` | frontend/js/note-edit-panels.js:83 |
 | `renderRelatedWhileEditing` | frontend/js/note-edit-panels.js:26 |
 
-### frontend/js/note-history.js (3)
+### frontend/js/note-history.js (4)
 
 | Name | File:line |
 |---|---|
+| `historyActorLabel` | frontend/js/note-history.js:376 |
 | `openEntryHistory` | frontend/js/note-history.js:8 |
 | `toggleThenAndNow` | frontend/js/note-history.js:268 |
 | `undoSkillRun` | frontend/js/note-history.js:340 |
@@ -7013,7 +7012,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `semanticQuestionText` | frontend/js/semantic-notice.js:22 |
 | `semanticSetAutoInstall` | frontend/js/semantic-notice.js:37 |
 
-### frontend/js/settings-controls.js (108)
+### frontend/js/settings-controls.js (109)
 
 | Name | File:line |
 |---|---|
@@ -7024,6 +7023,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `appendToolRow` | frontend/js/settings-controls.js:3748 |
 | `applyBackendChoice` | frontend/js/settings-controls.js:1343 |
 | `applyChatModel` | frontend/js/settings-controls.js:1525 |
+| `applyEmbeddingBackend` | frontend/js/settings-controls.js:5044 |
 | `applyOcrModel` | frontend/js/settings-controls.js:1541 |
 | `applyToolFilter` | frontend/js/settings-controls.js:3812 |
 | `applyUtilityModel` | frontend/js/settings-controls.js:1560 |

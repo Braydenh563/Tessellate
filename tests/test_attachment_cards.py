@@ -37,7 +37,7 @@ FRONTEND = ROOT / "frontend"
 CSS = sorted((FRONTEND / "css").glob("*.css"))
 APP_JS = (FRONTEND / "js" / "app.js").read_text(encoding="utf-8")
 NOTES_LIST = (FRONTEND / "js" / "notes-list.js").read_text(encoding="utf-8")
-NOTE_CARDS = (FRONTEND / "js" / "note-cards.js").read_text(encoding="utf-8")
+NOTE_CARDS = (FRONTEND / "js" / "entry-card.js").read_text(encoding="utf-8")
 SETTINGS_WIRING = (FRONTEND / "js" / "settings-wiring.js").read_text(encoding="utf-8")
 ACTIONS = FRONTEND / "js" / "attachment-actions.js"
 DESIGN = (ROOT / "docs" / "DESIGN.md").read_text(encoding="utf-8")
