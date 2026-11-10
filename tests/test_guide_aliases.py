@@ -100,7 +100,7 @@ def test_an_unplaced_question_offers_the_nearest_topics():
 
 def test_a_question_sharing_no_word_gets_the_plain_line():
     said = help_chat.offline_answer("qzxv wplk")["content"]
-    assert "Did you mean" not in said and said.startswith("The local model is not running"), said
+    assert "Did you mean" not in said and said.startswith("I don't have help on that"), said
 
 
 def test_the_offline_answer_for_stop_the_ai_leads_with_the_chat_keys():

@@ -381,7 +381,9 @@ HELP_TOPICS: list[dict] = [
             "drag it to jump. The strip under the bar walks your daily pages, and the "
             "chip under it offers On this day, and the year menu beside the month narrows the list to one year. A note that names a "
             'day ("on Friday") sits on that day and says All day; one that '
-            'names a time too ("on Friday at 3pm") shows that time.'
+            'names a time too ("on Friday at 3pm") shows that time. '
+            "A daily note is an ordinary note whose title is its day, such as 2026-09-13; "
+            "the strip under the bar opens or starts one, and its head steps to the day before and after."
         ),
         "badge": {"label": "Timeline", "tab": "timeline"},
     },
@@ -1406,6 +1408,7 @@ HELP_TOPICS.extend(
                 "Unlock counts it down. "
                 "While it is locked, an open dialog or popover is put away, and "
                 "it comes back as it was after you unlock, and the lock screen takes focus. "
+                "To make a note private, open its ... menu and press Make private; Make readable undoes it. "
                 "Private notes are encrypted with that password and are never sent "
                 "to the AI, so a private note's menu has no Tag and file, Improve writing or title acts. Forgot it? "
                 "Press Forgot your password? on the lock screen, on this computer: "
@@ -1586,7 +1589,9 @@ HELP_TOPICS.extend(
             "body": (
                 "If the app feels slow, turn on Performance mode in Settings, "
                 "Appearance: it switches off the glass, the background art and most "
-                "animation. The built-in search engine uses about 300 MB of memory "
+                "animation. If the AI is slow, the model is the cause, not the app: it runs on "
+                "this computer, so a smaller model answers faster (Settings, Models, Test my models times yours). "
+                "The built-in search engine uses about 300 MB of memory "
                 "while the app is open; choosing Ollama's nomic-embed-text for "
                 "embeddings in Settings, Search and index keeps Tessellate itself near 100 MB."
             ),

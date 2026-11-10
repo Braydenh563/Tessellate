@@ -2,7 +2,7 @@
 
 Generated 2026-11-10 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8044, frontend ids 2655, CSS sections 523, backend routes 664, backend modules 9684, test files 2372, tests 19775, plan headings 1001, app scripts 28, boot scripts 37, script files 272.
+Counts: frontend functions 8044, frontend ids 2655, CSS sections 523, backend routes 664, backend modules 9704, test files 2373, tests 19787, plan headings 1001, app scripts 28, boot scripts 37, script files 272.
 
 ## Frontend functions (8044)
 
@@ -13345,7 +13345,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:175 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (9684)
+## Backend modules (9704)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -16638,70 +16638,95 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `did_you_mean` | src/tessellate/ai/guide_aliases.py:154 |
-| `intents` | src/tessellate/ai/guide_aliases.py:123 |
-| `topic_ids` | src/tessellate/ai/guide_aliases.py:129 |
+| `did_you_mean` | src/tessellate/ai/guide_aliases.py:163 |
+| `intents` | src/tessellate/ai/guide_aliases.py:132 |
+| `topic_ids` | src/tessellate/ai/guide_aliases.py:138 |
 
 ### src/tessellate/ai/guide_intent.py (7)
 
 | Name | File:line |
 |---|---|
-| `_acts_said` | src/tessellate/ai/guide_intent.py:186 |
-| `_app_overview` | src/tessellate/ai/guide_intent.py:198 |
-| `_pick` | src/tessellate/ai/guide_intent.py:176 |
-| `read` | src/tessellate/ai/guide_intent.py:149 |
-| `reply` | src/tessellate/ai/guide_intent.py:214 |
-| `surface` | src/tessellate/ai/guide_intent.py:167 |
-| `topics` | src/tessellate/ai/guide_intent.py:257 |
+| `_acts_said` | src/tessellate/ai/guide_intent.py:188 |
+| `_app_overview` | src/tessellate/ai/guide_intent.py:200 |
+| `_pick` | src/tessellate/ai/guide_intent.py:178 |
+| `read` | src/tessellate/ai/guide_intent.py:151 |
+| `reply` | src/tessellate/ai/guide_intent.py:216 |
+| `surface` | src/tessellate/ai/guide_intent.py:169 |
+| `topics` | src/tessellate/ai/guide_intent.py:261 |
+
+### src/tessellate/ai/guide_lead.py (20)
+
+| Name | File:line |
+|---|---|
+| `Led` | src/tessellate/ai/guide_lead.py:49 |
+| `_first_clause` | src/tessellate/ai/guide_lead.py:72 |
+| `_fronted` | src/tessellate/ai/guide_lead.py:138 |
+| `_has_phrase` | src/tessellate/ai/guide_lead.py:118 |
+| `_help_sentences` | src/tessellate/ai/guide_lead.py:285 |
+| `_opening_lead` | src/tessellate/ai/guide_lead.py:142 |
+| `_sentences` | src/tessellate/ai/guide_lead.py:91 |
+| `_stem` | src/tessellate/ai/guide_lead.py:60 |
+| `_stems` | src/tessellate/ai/guide_lead.py:68 |
+| `_subject_lead` | src/tessellate/ai/guide_lead.py:157 |
+| `_subject_sentence` | src/tessellate/ai/guide_lead.py:100 |
+| `_titled` | src/tessellate/ai/guide_lead.py:95 |
+| `follow_topics` | src/tessellate/ai/guide_lead.py:251 |
+| `hands_over` | src/tessellate/ai/guide_lead.py:200 |
+| `help_sentences` | src/tessellate/ai/guide_lead.py:268 |
+| `lead_for` | src/tessellate/ai/guide_lead.py:172 |
+| `related_titles` | src/tessellate/ai/guide_lead.py:307 |
+| `state_line` | src/tessellate/ai/guide_lead.py:298 |
+| `subject_of` | src/tessellate/ai/guide_lead.py:80 |
+| `yes_no` | src/tessellate/ai/guide_lead.py:225 |
 
 ### src/tessellate/ai/help_chat.py (44)
 
 | Name | File:line |
 |---|---|
-| `_about_the_guide` | src/tessellate/ai/help_chat.py:634 |
-| `_act_of` | src/tessellate/ai/help_chat.py:374 |
-| `_aliased_topics` | src/tessellate/ai/help_chat.py:413 |
-| `_aware` | src/tessellate/ai/help_chat.py:1111 |
-| `_beyond` | src/tessellate/ai/help_chat.py:920 |
-| `_edit_distance_at_most_one` | src/tessellate/ai/help_chat.py:307 |
-| `_guide_lead` | src/tessellate/ai/help_chat.py:1008 |
-| `_guide_opening` | src/tessellate/ai/help_chat.py:1024 |
-| `_help_sentences` | src/tessellate/ai/help_chat.py:991 |
-| `_keyword_in` | src/tessellate/ai/help_chat.py:298 |
-| `_keyword_pattern` | src/tessellate/ai/help_chat.py:229 |
-| `_keyword_regex` | src/tessellate/ai/help_chat.py:294 |
-| `_lead_topic_first` | src/tessellate/ai/help_chat.py:1081 |
-| `_matching_topics` | src/tessellate/ai/help_chat.py:453 |
-| `_meaning_topics` | src/tessellate/ai/help_chat.py:533 |
-| `_normalise_keys` | src/tessellate/ai/help_chat.py:253 |
-| `_nothing_matched` | src/tessellate/ai/help_chat.py:844 |
-| `_off_topic` | src/tessellate/ai/help_chat.py:684 |
-| `_outside_the_app` | src/tessellate/ai/help_chat.py:652 |
-| `_place` | src/tessellate/ai/help_chat.py:965 |
-| `_preference` | src/tessellate/ai/help_chat.py:1047 |
-| `_prompt_for` | src/tessellate/ai/help_chat.py:747 |
-| `_read_as` | src/tessellate/ai/help_chat.py:1195 |
-| `_reading_topics` | src/tessellate/ai/help_chat.py:396 |
-| `_repaired` | src/tessellate/ai/help_chat.py:442 |
-| `_second_sentence` | src/tessellate/ai/help_chat.py:995 |
-| `_state_line` | src/tessellate/ai/help_chat.py:1056 |
-| `_stated_lead` | src/tessellate/ai/help_chat.py:1065 |
-| `_tab_topics` | src/tessellate/ai/help_chat.py:733 |
-| `answer` | src/tessellate/ai/help_chat.py:1275 |
-| `answer_stream` | src/tessellate/ai/help_chat.py:1210 |
-| `badges_for` | src/tessellate/ai/help_chat.py:620 |
-| `composed_answer` | src/tessellate/ai/help_chat.py:1092 |
-| `help_block_for` | src/tessellate/ai/help_chat.py:1356 |
-| `help_listing` | src/tessellate/ai/help_chat.py:592 |
-| `help_sentences` | src/tessellate/ai/help_chat.py:974 |
-| `names_app` | src/tessellate/ai/help_chat.py:1340 |
-| `offline_answer` | src/tessellate/ai/help_chat.py:1141 |
-| `social_reply` | src/tessellate/ai/help_chat.py:924 |
-| `source_names` | src/tessellate/ai/help_chat.py:588 |
-| `system_answer` | src/tessellate/ai/help_chat.py:570 |
-| `topic_title` | src/tessellate/ai/help_chat.py:556 |
-| `topics_for` | src/tessellate/ai/help_chat.py:691 |
-| `with_asks` | src/tessellate/ai/help_chat.py:1130 |
+| `_about_the_guide` | src/tessellate/ai/help_chat.py:639 |
+| `_act_of` | src/tessellate/ai/help_chat.py:379 |
+| `_aliased_topics` | src/tessellate/ai/help_chat.py:418 |
+| `_aware` | src/tessellate/ai/help_chat.py:1067 |
+| `_beyond` | src/tessellate/ai/help_chat.py:921 |
+| `_early_reply` | src/tessellate/ai/help_chat.py:1112 |
+| `_edit_distance_at_most_one` | src/tessellate/ai/help_chat.py:312 |
+| `_guide_lead` | src/tessellate/ai/help_chat.py:984 |
+| `_guide_opening` | src/tessellate/ai/help_chat.py:1000 |
+| `_keyword_in` | src/tessellate/ai/help_chat.py:303 |
+| `_keyword_pattern` | src/tessellate/ai/help_chat.py:234 |
+| `_keyword_regex` | src/tessellate/ai/help_chat.py:299 |
+| `_lead_topic_first` | src/tessellate/ai/help_chat.py:1038 |
+| `_matching_topics` | src/tessellate/ai/help_chat.py:458 |
+| `_meaning_topics` | src/tessellate/ai/help_chat.py:538 |
+| `_normalise_keys` | src/tessellate/ai/help_chat.py:258 |
+| `_nothing_matched` | src/tessellate/ai/help_chat.py:846 |
+| `_off_topic` | src/tessellate/ai/help_chat.py:689 |
+| `_outside_the_app` | src/tessellate/ai/help_chat.py:657 |
+| `_place` | src/tessellate/ai/help_chat.py:966 |
+| `_preference` | src/tessellate/ai/help_chat.py:1013 |
+| `_prompt_for` | src/tessellate/ai/help_chat.py:752 |
+| `_read_as` | src/tessellate/ai/help_chat.py:1176 |
+| `_reading_topics` | src/tessellate/ai/help_chat.py:401 |
+| `_repaired` | src/tessellate/ai/help_chat.py:447 |
+| `_second_sentence` | src/tessellate/ai/help_chat.py:971 |
+| `_stated_lead` | src/tessellate/ai/help_chat.py:1022 |
+| `_tab_topics` | src/tessellate/ai/help_chat.py:738 |
+| `_unplaced` | src/tessellate/ai/help_chat.py:1125 |
+| `answer` | src/tessellate/ai/help_chat.py:1260 |
+| `answer_stream` | src/tessellate/ai/help_chat.py:1191 |
+| `badges_for` | src/tessellate/ai/help_chat.py:625 |
+| `composed_answer` | src/tessellate/ai/help_chat.py:1049 |
+| `composed_only` | src/tessellate/ai/help_chat.py:1097 |
+| `help_block_for` | src/tessellate/ai/help_chat.py:1343 |
+| `help_listing` | src/tessellate/ai/help_chat.py:597 |
+| `names_app` | src/tessellate/ai/help_chat.py:1327 |
+| `offline_answer` | src/tessellate/ai/help_chat.py:1134 |
+| `social_reply` | src/tessellate/ai/help_chat.py:925 |
+| `source_names` | src/tessellate/ai/help_chat.py:593 |
+| `system_answer` | src/tessellate/ai/help_chat.py:575 |
+| `topic_title` | src/tessellate/ai/help_chat.py:561 |
+| `topics_for` | src/tessellate/ai/help_chat.py:696 |
+| `with_asks` | src/tessellate/ai/help_chat.py:1086 |
 
 ### src/tessellate/ai/help_topics_more.py (2)
 
@@ -18128,23 +18153,28 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `ranked` | src/tessellate/ai/resurface.py:212 |
 | `score_for` | src/tessellate/ai/resurface.py:66 |
 
-### src/tessellate/ai/review_digest.py (13)
+### src/tessellate/ai/review_digest.py (12)
 
 | Name | File:line |
 |---|---|
-| `_counts` | src/tessellate/ai/review_digest.py:111 |
-| `_listed` | src/tessellate/ai/review_digest.py:80 |
-| `_named` | src/tessellate/ai/review_digest.py:85 |
-| `_notes` | src/tessellate/ai/review_digest.py:41 |
-| `_reminder_lines` | src/tessellate/ai/review_digest.py:120 |
-| `_reminder_words` | src/tessellate/ai/review_digest.py:69 |
-| `_reminders` | src/tessellate/ai/review_digest.py:96 |
-| `_unlinked` | src/tessellate/ai/review_digest.py:102 |
-| `answer` | src/tessellate/ai/review_digest.py:176 |
-| `day` | src/tessellate/ai/review_digest.py:151 |
-| `kind` | src/tessellate/ai/review_digest.py:33 |
-| `reminder_note` | src/tessellate/ai/review_digest.py:168 |
-| `week` | src/tessellate/ai/review_digest.py:137 |
+| `_counts` | src/tessellate/ai/review_digest.py:90 |
+| `_listed` | src/tessellate/ai/review_digest.py:59 |
+| `_named` | src/tessellate/ai/review_digest.py:64 |
+| `_notes` | src/tessellate/ai/review_digest.py:20 |
+| `_reminder_lines` | src/tessellate/ai/review_digest.py:99 |
+| `_reminder_words` | src/tessellate/ai/review_digest.py:48 |
+| `_reminders` | src/tessellate/ai/review_digest.py:75 |
+| `_unlinked` | src/tessellate/ai/review_digest.py:81 |
+| `answer` | src/tessellate/ai/review_digest.py:155 |
+| `day` | src/tessellate/ai/review_digest.py:130 |
+| `reminder_note` | src/tessellate/ai/review_digest.py:147 |
+| `week` | src/tessellate/ai/review_digest.py:116 |
+
+### src/tessellate/ai/review_words.py (1)
+
+| Name | File:line |
+|---|---|
+| `kind` | src/tessellate/ai/review_words.py:26 |
 
 ### src/tessellate/ai/sampling.py (5)
 
@@ -25573,7 +25603,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (19775)
+## Tests (19787)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -26678,6 +26708,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_guide_composed_787.py | 18 |
 | tests/test_guide_gaps.py | 3 |
 | tests/test_guide_intent.py | 9 |
+| tests/test_guide_lead_1110.py | 12 |
 | tests/test_guide_own_order.py | 3 |
 | tests/test_guide_paraphrases_1530.py | 2 |
 | tests/test_guide_path_lead_e33.py | 2 |

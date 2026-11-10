@@ -51,7 +51,8 @@ from collections.abc import Iterator
 
 from tessellate import SUPPORT_EMAIL
 from tessellate.ai import AI_NAME
-from tessellate.ai import act_registry, help_words, presets
+from tessellate.ai import act_registry, guide_lead, help_words, presets
+from tessellate.ai.guide_lead import help_sentences  # the sentence cutter, a leaf with the lead rules (G5)
 from tessellate.ai.help_topics_core import HELP_TOPICS  # the table, moved out whole (AI23)
 from tessellate.ai.help_leads import TOPIC_LEADS
 from tessellate.ai.help_topics_more import HELP_GROUPS, TOPIC_META
@@ -176,6 +177,10 @@ TAB_TOPICS: dict[str, tuple[str, ...]] = {
     "documents": ("documents",),
     "timeline": ("timeline",),
     "reminders": ("reminders",),
+    "whiteboard": ("whiteboard", "whiteboard-controls"),
+    "mindmap": ("mind-maps", "mind-map-controls"),
+    "statistics": ("statistics",),
+    "settings": ("settings-overview",),
 }
 
 #: How much of the surface's own help copy the client may send with a
@@ -835,11 +840,8 @@ def _prompt_for(
 #: text, word for word: no model is running." read badly).
 OFFLINE_LEAD = "From the app's help, with no model running."
 
-OFFLINE_NOTHING_MATCHED = (
-    "The local model is not running, and nothing in the app's own help text "
-    "matches that. Try a word from the feature's own name, a tab name, or "
-    "open Settings, Help, which lists every topic."
-)
+#: The miss line never blames the model (G5): its words are `guide_lead.MISS`.
+OFFLINE_NOTHING_MATCHED = guide_lead.MISS
 
 def _nothing_matched(question: str) -> str:
     """The no-match line, with the three nearest topic names when the
@@ -850,8 +852,7 @@ def _nothing_matched(question: str) -> str:
     near = guide_aliases.did_you_mean(question, HELP_TOPICS, topic_title)
     if not near:
         return OFFLINE_NOTHING_MATCHED
-    names = ", ".join(topic_title(t) for t in near)
-    return f"{OFFLINE_NOTHING_MATCHED}\n\nDid you mean: {names}?"
+    return f"{OFFLINE_NOTHING_MATCHED}\n\nDid you mean: {', '.join(topic_title(t) for t in near)}?"
 
 
 #: **A greeting is answered as one** (INBOX 787: "hey" was answered with the
@@ -967,36 +968,11 @@ def _place(path: str) -> str:
     return f"the {path[4:]}" if path.startswith("The ") else (f"the {path}" if path.endswith(" tab") else path)
 
 
-#: A full stop that ends no sentence: "(e.g. Summarise)", "etc. and", "vs.".
-_ABBREVIATION = re.compile(r"\b(?:e\.g|i\.e|etc|vs|approx|incl|cf)\.$", re.I)
-
-
-def help_sentences(body: str) -> list[str]:
-    """The sentences of a help topic of five words or more. A sentence ends
-    at a stop before a capital, a quote or a bracket, or at the end: "0.5x",
-    ".ics", "a category's ... menu" and "e.g. Summarise" end nothing (the
-    Guide's gold: "Skills are one-click requests shown above the chat box
-    (e." was a lead)."""
-    out, start = [], 0
-    for m in re.finditer(r"[.!?](?=\s+(?:/[a-z]|[\"“(\[*]?[A-Z0-9])|\s*$)", body):
-        chunk = body[start:m.end()]
-        if _ABBREVIATION.search(chunk) or chunk.endswith(".."):
-            continue
-        out.append(chunk.strip())
-        start = m.end()
-    #: Five words at least: "Notes keys and controls." is a topic's title.
-    return [line for line in out if len(line.split()) >= 5]
-
-
-def _help_sentences(body: str) -> list[str]:
-    return help_sentences(body)
-
-
 def _second_sentence(question: str, body: str, said: str) -> str:
     """One more sentence of the topic that shares a word with the question
     and is not the one already said, else ""."""
     wanted = {w for w in _WORD.findall(question.lower()) if w not in _STOP and len(w) > 2}
-    for line in _help_sentences(body):
+    for line in help_sentences(body):
         if line == said or said.startswith(line) or line in said or len(line.split()) > SECOND_SENTENCE_WORDS:
             continue
         have = set(_WORD.findall(line.lower()))
@@ -1014,7 +990,7 @@ def _guide_lead(question: str, topics: list[dict]) -> str:
     if topics[0]["id"] == "privacy" and capability.privacy_line(question):
         return capability.privacy_line(question)
     line = act_registry.help_sentence(question, topics) if act_registry.help_sentence else None
-    lead = line[0] if line else next(iter(_help_sentences(topics[0]["body"])), "")
+    lead = line[0] if line else next(iter(help_sentences(topics[0]["body"])), "")
     #: "Or type the reminder, ...": the topic's joining word is not the
     #: answer's first word.
     joined = re.match(r"(?:Or|And|But|Also|So),? (?=[a-z])", lead)
@@ -1028,20 +1004,10 @@ def _guide_opening(question: str, path: str, steps: tuple, lead: str) -> tuple[l
     where = bool(path) and bool(_WHERE_ASKED.match(question))
     walk = bool(steps) and bool(_HOW_ASKED.match(question)) and len(steps) < len(_COUNTS)
     lines = [f"It's in {_place(path)}."] if where else []
-    if walk:
-        lines.append(f"It takes {_COUNTS[len(steps)]} steps" + (f", from {_place(path)}:" if path else ":"))
-    elif lead:
+    #: The numbered list that follows says the steps; no "It takes N steps" first (G5 g).
+    if lead and not walk:
         lines.append(lead)
     return lines, where, walk
-
-
-#: A topic that is about a switch, and the switch: its preference, its
-#: default and its name. The Guide says which way it is set now ("how do I
-#: turn on web search" when it is on is answered "Web search is on now").
-_SWITCHES: dict[str, tuple[str, bool, str]] = {
-    "websearch": ("web_search_enabled", False, "Web search"),
-    "autonomous": ("autonomous_tasks_enabled", False, "Background AI"),
-}
 
 
 def _preference(key: str, default: bool) -> bool:
@@ -1053,20 +1019,11 @@ def _preference(key: str, default: bool) -> bool:
         return default
 
 
-def _state_line(topic_id: str) -> str:
-    """"Web search is off now.": the switch a topic is about, as it is set."""
-    switch = _SWITCHES.get(topic_id)
-    if switch is None:
-        return ""
-    key, default, name = switch
-    return f"{name} is {'on' if _preference(key, default) else 'off'} now."
-
-
 def _stated_lead(question: str, topics: list[dict]) -> str:
     """The lead, after the switch's state when the topic has one; a lead
     that only gives the default ("off by default") gives way to the next
     sentence that answers, since the state now says it."""
-    state = _state_line(topics[0]["id"])
+    state = guide_lead.state_line(topics[0]["id"], _preference)
     lead = _guide_lead(question, topics)
     if state and re.search(r"\bby default\b", lead):
         lead = _second_sentence(question, topics[0]["body"], lead) or lead
@@ -1089,23 +1046,22 @@ def _lead_topic_first(question: str, topics: list[dict]) -> list[dict]:
     return [lead, *(t for t in topics if t is not lead)] if lead else topics
 
 
-def composed_answer(question: str, topics: list[dict]) -> str:
-    """The Guide's answer composed for `question` from the best topic."""
-    topics = _lead_topic_first(question, topics)
-    first = topics[0]
+def composed_answer(question: str, topics: list[dict], led: guide_lead.Led | None = None) -> str:
+    """The Guide's answer composed for `question` from the best topic; `led`
+    is a lead the G5 rules chose (`guide_lead.lead_for`)."""
+    led = led or guide_lead.Led(_lead_topic_first(question, topics))
+    topics, first = led.topics, led.topics[0]
     meta = TOPIC_META.get(first["id"], {})
     path = str(meta.get("path") or "").rstrip(".")
-    steps = tuple(meta.get("steps") or ())
-    lead = _stated_lead(question, topics)
+    steps = tuple(meta.get("steps") or ()) if led.steps else ()
+    lead = led.lead or _stated_lead(question, topics)
     lines, where, walk = _guide_opening(question, path, steps, lead)
     more = "" if steps else _second_sentence(question, first["body"], lead)
     lines += ["\n".join(f"{n}. {step}" for n, step in enumerate(steps, 1))] if steps else [more] if more else []
     if path and not where and not walk and _FIND_ASKED.search(question):
         lines.append(f"**Where:** {path}")
-    related = [topic_title(topic) for topic in topics[1:]]
-    if related:
-        lines.append("**Related:** " + ", ".join(related))
-    return "\n\n".join(lines)
+    related = guide_lead.related_titles(topics, " ".join(lines), topic_title)
+    return "\n\n".join(lines + (["**Related:** " + ", ".join(related)] if related else []))
 
 
 def _aware(reply: dict, question: str, tab: str | None, actions: list[str] | None) -> dict:
@@ -1138,10 +1094,48 @@ def with_asks(reply: dict) -> dict:
     return {**reply, "asks": lifted, "asks_to": "guide"} if lifted else reply
 
 
+def composed_only(question: str) -> dict | None:
+    """The turns that are the same with or without a model (G5 parity): a
+    greeting or thanks, a yes or no about the app, and a question about the
+    person's own notes, handed to Chat with a chip."""
+    social = social_reply(question)
+    if social:
+        return social
+    said = guide_lead.yes_no(question)
+    if said:
+        by_id = {t["id"]: t for t in HELP_TOPICS}
+        used = [by_id[i] for i in said[1] if i in by_id]
+        return {"content": said[0], "badges": badges_for(used), "sources": source_names(used)}
+    return guide_lead.hands_over(question)
+
+
+def _early_reply(question: str, tab: str | None) -> dict | None:
+    """Read from the words, not the tab (B11, B86): asked for ideas, for help,
+    or what Atlas can change; or beyond the app ("can you book a flight")."""
+    from tessellate.ai import guide_intent
+
+    read = guide_intent.reply(question, tab, {topic["id"]: topic for topic in HELP_TOPICS})
+    if read:
+        return read
+    if _CAN_YOU.match(question) and not _reading_topics(question) and not guide_intent.read(question):
+        return _beyond(question)
+    return None
+
+
+def _unplaced(question: str, context: str | None, *, missed: bool) -> dict:
+    """A question this could not place is still asked *from somewhere*, and
+    that somewhere describes itself (its help text, when there is any)."""
+    on_screen = (context or "").strip()[:MAX_CONTEXT_CHARS]
+    if on_screen and not missed and not _outside_the_app(question):
+        return {"content": on_screen, "badges": [], "sources": []}
+    return {"content": _nothing_matched(question), "badges": [], "sources": []}
+
+
 def offline_answer(
     question: str,
     tab: str | None = None,
     context: str | None = None,
+    history: list[dict] | None = None,
 ) -> dict:
     """The same shape `answer` returns, composed without a model.
 
@@ -1151,44 +1145,31 @@ def offline_answer(
     Reminders tab" into a way to get there, and they are exactly as true with
     the model off.
     """
-    question = (question or "").strip()[:MAX_MESSAGE_CHARS]
-    social = social_reply(question)
-    if social:
-        return social
-    question, said = _read_as(question)
-    #: Read from the words, not the tab (B11, B86): asked for ideas, for help,
-    #: or what Atlas can change. Understood, so "Taking that as" is not said.
     from tessellate.ai import guide_intent
 
-    read = guide_intent.reply(question, tab, {topic["id"]: topic for topic in HELP_TOPICS})
-    if read:
-        return read
-    if guide_intent.read(question):
-        said = ""
-    if _CAN_YOU.match(question) and not _reading_topics(question) and not guide_intent.read(question):
-        return _beyond(question)
+    question = (question or "").strip()[:MAX_MESSAGE_CHARS]
+    if (fixed := composed_only(question)) is not None:
+        return fixed
+    question, said = _read_as(question)
+    if (fixed := composed_only(question) or _early_reply(question, tab)) is not None:
+        return fixed
+    #: Understood by its words, so "Taking that as" is not said.
+    said = "" if guide_intent.read(question) else said
     topics = topics_for(question, tab) if question else []
-    if not topics:
-        #: The app's help text for whatever is on screen, when there is any:
-        #: a question this could not place is still a question asked *from
-        #: somewhere*, and that somewhere describes itself.
-        on_screen = (context or "").strip()[:MAX_CONTEXT_CHARS]
-        if on_screen and not _outside_the_app(question):
-            return {
-                "content": on_screen,
-                "badges": [],
-                "sources": [],
-            }
-        return {"content": _nothing_matched(question), "badges": [], "sources": []}
+    #: "where do they show up" names nothing: it is about the last question's topic (G5 e).
+    topics = topics or guide_lead.follow_topics(question, history, topics_for)
+    led = guide_lead.lead_for(question, tab, topics, {t["id"]: t for t in HELP_TOPICS}, topic_title) if topics else None
+    if not topics or (led and led.miss):
+        return _unplaced(question, context, missed=bool(topics))
     #: **Composed by default, the help text a tap away** (INBOX 787). The
     #: composed answer is the content; `system` is the topic as written
     #: (INBOX 430's layout), which the client offers as "From the help".
-    system = system_answer(topics)
+    topics = led.topics if led else topics
     return with_asks({
-        "content": f"{said}{composed_answer(question, topics)}",
+        "content": f"{said}{composed_answer(question, topics, led)}",
         "badges": badges_for(topics),
         "sources": source_names(topics),
-        "system": system,
+        "system": system_answer(topics),
     })
 
 
@@ -1235,11 +1216,15 @@ def answer_stream(
     if not question:
         yield {"type": "done", "content": "", "badges": [], "sources": []}
         return
+    if (fixed := composed_only(question)) is not None:
+        yield {"type": "delta", "text": fixed["content"]}
+        yield {"type": "done", **fixed, "composed": True}
+        return
     if not ollama.is_running():
         #: Not a canned apology: the app's own help text for what was asked,
         #: with the same chips and sources an answered turn carries. See
         #: `offline_answer`.
-        offline = _aware(offline_answer(question, tab, context), question, tab, actions)
+        offline = _aware(offline_answer(question, tab, context, history), question, tab, actions)
         yield {"type": "delta", "text": offline["content"]}
         #: `composed`: no model wrote it, so it arrives with the app's reveal
         #: (INBOX 1300 C28, `replyReveal` in reply-kit.js).
@@ -1292,8 +1277,10 @@ def answer(
     question = question.strip()[:MAX_MESSAGE_CHARS]
     if not question:
         return {"content": "", "badges": [], "sources": []}
+    if (fixed := composed_only(question)) is not None:
+        return {**fixed, "composed": True}
     if not ollama.is_running():
-        return {**_aware(offline_answer(question, tab, context), question, tab, actions), "composed": True}
+        return {**_aware(offline_answer(question, tab, context, history), question, tab, actions), "composed": True}
 
     messages, topics = _prompt_for(question, history, tab, context)
     #: Still `"quick"`, not `GUIDE_MODE`: this is the one-shot fallback, taken
