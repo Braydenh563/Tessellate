@@ -5088,6 +5088,7 @@ function mapPaletteCommands() {
   row("This map", "ph:chart-bar What this map is made of", () => wbShowMapStats());
   row("This map", "ph:presentation Present branches", () => wbStartPresenting());
   row("This map", "ph:student Study the map", () => wbMapStartStudy());
+  row("This map", "ph:chart-bar-horizontal Gantt chart of the dated topics", () => wbMapOpenGantt());
   row("This map", "ph:funnel Filter by marker…", () => wbMapChooseMarkerFilter());
   if (wbMarkerUi.filter) row("This map", "ph:x-circle Stop filtering by marker", () => wbMapSetMarkerFilter(null));
   row("This map", wbOutlineShowing() ? "ph:list-dashes Hide the outline" : "ph:list-dashes Show the map as an outline", () => wbOutlineToggle());
@@ -8445,7 +8446,7 @@ const WB_MAP_STYLE_KEYS = [
 //: And a boundary and a summary (decisions 19, 20): what the map says.
 const WB_MAP_CONTENT_KEYS = [
   "image", "task", "note", "boundary", "boundary_label", "summary", "summary_span",
-  "priority", "progress", "flag", "markers", "due", "branch_layout", "callout", "labels", "stamps", "stamped",
+  "priority", "progress", "flag", "markers", "due", "start", "branch_layout", "callout", "labels", "stamps", "stamped",
 ];
 
 //: **Reaction stamps and votes** (Miro; MINDMAP_PLAN 14.4): six Phosphor
@@ -10379,23 +10380,25 @@ function wbMapMarkerParts(data) {
     : [];
   //: A due day (decision 37), checked as the server checks it.
   const due = typeof data?.due === "string" && /^\d{4}-\d{2}-\d{2}$/.test(data.due) ? data.due : null;
-  return { priority, progress, flag, icons, due };
+  //: A start day (the Gantt view), the same shape; a bar needs both.
+  const start = typeof data?.start === "string" && /^\d{4}-\d{2}-\d{2}$/.test(data.start) ? data.start : null;
+  return { priority, progress, flag, icons, due, start };
 }
 
 //: "12 Oct", and whether that day has gone (local midnight to midnight).
-function wbMapDueWords(due) {
-  const [y, m, d] = due.split("-").map(Number);
-  const day = new Date(y, m - 1, d);
+//: With a `start` too, "5 Oct to 12 Oct"; a `start` alone (no due day), "from 5 Oct".
+function wbMapDueWords(due, start = null) {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
-  const words = day.toLocaleDateString(undefined, { day: "numeric", month: "short", ...(y !== today.getFullYear() ? { year: "numeric" } : {}) });
-  return { words, past: day < today };
-}
-
-function wbMapProgressWords(progress) {
-  if (progress === 100) return "done";
-  if (progress === 0) return "not started";
-  return `${progress}% done`;
+  const say = (text) => {
+    const [y, m, d] = text.split("-").map(Number);
+    const day = new Date(y, m - 1, d);
+    return { day, words: day.toLocaleDateString(undefined, { day: "numeric", month: "short", ...(y !== today.getFullYear() ? { year: "numeric" } : {}) }) };
+  };
+  const end = say(due || start);
+  const from = due && start ? say(start).words : null;
+  const words = from ? `${from} to ${end.words}` : due ? end.words : `from ${end.words}`;
+  return { words, past: Boolean(due) && end.day < today };
 }
 
 //: What the row says to a screen reader and in its tooltip, in the order it
@@ -10403,12 +10406,13 @@ function wbMapProgressWords(progress) {
 function wbMapMarkerWords(parts) {
   const words = [];
   if (parts.priority) words.push(`priority ${parts.priority}`);
-  if (parts.progress != null) words.push(wbMapProgressWords(parts.progress));
+  if (parts.progress != null) words.push(parts.progress === 100 ? "done" : parts.progress === 0 ? "not started" : `${parts.progress}% done`);
   if (parts.flag) words.push("flagged");
   if (parts.due) {
     const due = wbMapDueWords(parts.due);
     words.push(due.past ? `was due ${due.words}` : `due ${due.words}`);
   }
+  if (parts.start) words.push(`starts ${wbMapDueWords(parts.start).words}`);
   for (const icon of parts.icons) words.push((WB_MAP_MARKER_ICON_NAMES.get(icon) || icon).toLowerCase());
   const text = words.join(", ");
   return text ? text[0].toUpperCase() + text.slice(1) : "";
@@ -10418,7 +10422,7 @@ function wbMapMarkerWords(parts) {
 //: render of an unchanged map writes nothing here.
 function wbMapPaintMarkers(host, data) {
   const parts = wbMapMarkerParts(data);
-  const key = `${parts.priority}|${parts.progress}|${parts.flag}|${parts.icons.join(",")}|${parts.due}`;
+  const key = `${parts.priority}|${parts.progress}|${parts.flag}|${parts.icons.join(",")}|${parts.due}|${parts.start}`;
   if (host.dataset.key === key) return;
   host.dataset.key = key;
   host.replaceChildren();
@@ -10452,58 +10456,64 @@ function wbMapPaintMarkers(host, data) {
     host.appendChild(i);
   };
   if (parts.flag) glyph("flag", " wb-map-mark-flag");
-  if (parts.due) {
-    const due = wbMapDueWords(parts.due);
+  if (parts.due || parts.start) {
+    const when = wbMapDueWords(parts.due, parts.start);
     const chip = document.createElement("span");
-    chip.className = `wb-map-mark wb-map-mark-due${due.past ? " is-past" : ""}`;
-    chip.textContent = due.words;
+    chip.className = `wb-map-mark wb-map-mark-due${when.past ? " is-past" : ""}`;
+    chip.textContent = when.words;
     host.appendChild(chip);
   }
   for (const icon of parts.icons) glyph(icon);
 }
 
-//: The Due row (decision 37): the browser's own date field, Clear, and
-//: Remind me, which makes an ordinary reminder at 9:00 that day.
-function wbMapDueRow(node, parts, set) {
+//: The Due and Start rows (decision 37; the Gantt view): the browser's own
+//: date field and Clear; Due also has Remind me. Each field stops at the
+//: other's day (`min` and `max`), so the pair cannot be set backwards here.
+function wbMapDateRow(node, parts, set, label, key) {
   const wrap = document.createElement("div");
   wrap.className = "wb-map-markers-row";
   const name = document.createElement("span");
   name.className = "wb-map-markers-label";
-  name.textContent = "Due";
+  name.textContent = label;
   const field = document.createElement("input");
   field.type = "date";
-  field.value = parts.due || "";
-  field.setAttribute("aria-label", "Due date");
-  field.addEventListener("change", () => set({ due: field.value || null }));
+  field.value = parts[key] || "";
+  if (key === "start" && parts.due) field.max = parts.due;
+  if (key === "due" && parts.start) field.min = parts.start;
+  field.setAttribute("aria-label", `${label} date`);
+  field.addEventListener("change", () => set({ [key]: field.value || null }));
   wrap.append(name, field);
-  if (parts.due) {
-    const clear = document.createElement("button");
-    clear.type = "button";
-    clear.className = "ghost small";
-    clear.textContent = "Clear";
-    clear.addEventListener("click", () => set({ due: null }));
-    const remind = document.createElement("button");
-    remind.type = "button";
-    remind.className = "ghost small";
-    remind.textContent = "Remind me";
-    remind.title = "A reminder at 9:00 on the due day, in Reminders";
-    remind.addEventListener("click", async () => {
-      const [y, m, d] = parts.due.split("-").map(Number);
-      const at = new Date(y, m - 1, d, 9, 0, 0);
-      if (at < new Date()) {
-        toast("That day has gone: pick a later due date for a reminder.", "info");
-        return;
-      }
-      try {
-        const made = await apiJson("/reminders", { method: "POST", body: JSON.stringify({ text: wbMapLabel(node) || "Map topic", due_at: at.toISOString() }) });
-        reminderMadeUndo(made);
-        toast(`Reminder set for ${wbMapDueWords(parts.due).words}, 9:00.`);
-      } catch (error) {
-        toast(error.message || voiceLine("failed", { what: "set that reminder" }), true);
-      }
-    });
-    wrap.append(clear, remind);
-  }
+  if (!parts[key]) return wrap;
+  const clear = document.createElement("button");
+  clear.type = "button";
+  clear.className = "ghost small";
+  clear.textContent = "Clear";
+  clear.setAttribute("aria-label", `Clear ${label.toLowerCase()} date`);
+  clear.addEventListener("click", () => set({ [key]: null }));
+  wrap.append(clear);
+  if (key !== "due") return wrap;
+  //: Remind me makes an ordinary reminder at 9:00 on the due day.
+  const remind = document.createElement("button");
+  remind.type = "button";
+  remind.className = "ghost small";
+  remind.textContent = "Remind me";
+  remind.title = "A reminder at 9:00 on the due day, in Reminders";
+  remind.addEventListener("click", async () => {
+    const [y, m, d] = parts.due.split("-").map(Number);
+    const at = new Date(y, m - 1, d, 9, 0, 0);
+    if (at < new Date()) {
+      toast("That day has gone: pick a later due date for a reminder.", "info");
+      return;
+    }
+    try {
+      const made = await apiJson("/reminders", { method: "POST", body: JSON.stringify({ text: wbMapLabel(node) || "Map topic", due_at: at.toISOString() }) });
+      reminderMadeUndo(made);
+      toast(`Reminder set for ${wbMapDueWords(parts.due).words}, 9:00.`);
+    } catch (error) {
+      toast(error.message || voiceLine("failed", { what: "set that reminder" }), true);
+    }
+  });
+  wrap.append(remind);
   return wrap;
 }
 
@@ -10665,7 +10675,8 @@ function wbMapOpenMarkers(id, anchor = null) {
       wbMapMarkerSeg("Progress", [[null, "None"], [0, "0%"], [25, "25%"], [50, "50%"], [75, "75%"], [100, "Done"]],
         parts.progress, (value) => set({ progress: value })),
       wbMapMarkerToggle("Flag", Boolean(parts.flag), (value) => set({ flag: value || null })),
-      wbMapDueRow(live, parts, set),
+      wbMapDateRow(live, parts, set, "Start", "start"),
+      wbMapDateRow(live, parts, set, "Due", "due"),
       iconRow,
       hint,
     );
@@ -10822,6 +10833,7 @@ function wbMapAfterRender() {
 onSurface("board", () => {
   document.getElementById("wb-map-filter-clear")?.addEventListener("click", () => wbMapSetMarkerFilter(null));
   document.getElementById("wb-map-filter-item")?.addEventListener("click", () => wbMapChooseMarkerFilter());
+  document.getElementById("wb-map-gantt-item")?.addEventListener("click", () => wbMapOpenGantt());
 });
 
 // --- A document's headings as a map (the audit's M5, second half) ---------

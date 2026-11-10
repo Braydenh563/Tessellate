@@ -2694,6 +2694,9 @@ HELP_TOPICS.extend(
                 "dim the rest",
                 "dim all but",
                 "highlight a branch",
+                "gantt",
+                "gantt chart",
+                "start day on a topic",
             ),
             "body": (
                 "The layout picker: tree, radial, logic chart, "
@@ -2702,7 +2705,9 @@ HELP_TOPICS.extend(
                 "a note is behind it) and opens every folded branch; View, "
                 "Present branches shows it branch by branch. A topic's menu, "
                 "Content, Markers sets a priority (1 to 5), how far along it is, a "
-                "flag, a due day and up to six icons; View, Filter by marker dims every topic "
+                "flag, a start day, a due day and up to six icons; View, Gantt chart draws "
+                "a bar from start to due for each topic with both, and a dragged bar moves its dates (Undo); "
+                "View, Filter by marker dims every topic "
                 "without the one you pick, and View, Dim all but the selected branch "
                 "dims everything outside the selected topic's branch and its path to "
                 "the centre, following the selection. The sidebar's Outline tab (View, "

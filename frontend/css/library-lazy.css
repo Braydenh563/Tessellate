@@ -8753,3 +8753,89 @@ input[type="color"].wb-mixed {
   font-family: var(--mono, ui-monospace, monospace);
   font-size: var(--text-xs);
 }
+
+/* The map's Gantt chart (whiteboard-map-gantt.js, MINDMAP_PLAN gap 3): a sheet wider than the usual reading width, because a bar needs room to be a length. A name column beside one shared day scale, the axis and every row on the same two columns. Each bar's left and width (percent of the scale) and a drag's offset are set from the script, not from custom properties, so the token budget stays where it was. */
+@media (min-width: 600px) {
+  [data-sheet="map-gantt"] .sheet-card:not(.sheet-card-corner) {
+    max-width: min(64rem, 100%);
+  }
+}
+.wb-gantt {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow-y: auto;
+}
+.wb-gantt-axis,
+.wb-gantt-row {
+  display: grid;
+  grid-template-columns: minmax(7rem, 22%) minmax(0, 1fr);
+  align-items: center;
+}
+.wb-gantt-ticks {
+  position: relative;
+  height: var(--space-5);
+  margin-bottom: var(--space-1);
+  border-bottom: 1px solid var(--border);
+  font-size: var(--text-xs);
+  color: var(--muted);
+}
+.wb-gantt-tick {
+  position: absolute;
+  white-space: nowrap;
+}
+.wb-gantt-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.wb-gantt-row {
+  min-height: var(--target-min);
+}
+.wb-gantt-name {
+  box-sizing: border-box;
+  padding-right: var(--space-2);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--text-sm);
+}
+.wb-gantt-track {
+  position: relative;
+  height: var(--target-min);
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+}
+.wb-gantt-today {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  border-left: 1px dashed var(--accent);
+  pointer-events: none;
+}
+.wb-gantt-bar {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  min-width: var(--space-3);
+  padding: 0 var(--space-1);
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: var(--accent);
+  color: var(--on-accent);
+  font-size: var(--text-xs);
+  text-align: left;
+  cursor: grab;
+  touch-action: none;
+  overflow: hidden;
+}
+.wb-gantt-bar.is-dragging {
+  cursor: grabbing;
+  opacity: 0.8;
+}
+.wb-gantt-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
