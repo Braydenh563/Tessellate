@@ -355,15 +355,28 @@ def without_own_day(name: str) -> str:
     return " ".join(_OWN_DAY.sub("", name).split()).replace(" ”", "”").replace("“ ", "“") or name
 
 
+def link_text(note: dict) -> str:
+    """A note's name as the text of a link to it: the heading when it has one, else `name_of`'s quoted first line
+    (a lower-case "hi" is “hi”, never "your hi note" inside brackets)."""
+    explicit = _title_of(str(note.get("content") or "").strip())
+    return explicit or name_of(note)
+
+
 def name_of(note: dict) -> str:
     """**The one name for a note, on every surface** (R3-15): its own title
     when it has one ("Trains", `_titled`), else its first clause, six words
     at most, in quotes (“Dentist said to floss more and…”), in a list, a
     sentence, a link's text and the Open chip. The day is the caller's muted
     second field, never part of the name."""
-    title = title_line(str(note.get("content") or "").strip())
+    content = str(note.get("content") or "").strip()
+    title = _title_of(content)
     if title:
         return _titled(title)
+    #: A one-line note that is only a name: as written when it starts with a capital, else quoted like any
+    #: title-less note ("milk", not "your milk note"; owner 2026-11-10).
+    own = own_title(content)
+    if own and (own[:1].isupper() or own[:1].isdigit() or _ARTICLE.match(own)):
+        return own
     return f"“{clipped_words(note) or 'An empty note'}”"
 
 

@@ -10,6 +10,9 @@ from tessellate.ai import composer_ahead, recognise
 
 
 
+_NAMED = frozenset(composer_ahead._WEEKDAYS) | {m.title() for m in composer_ahead._MONTHS}  # noqa: SLF001
+
+
 def _month_end(day: date) -> date:
     return (day.replace(day=28) + timedelta(days=4)).replace(day=1) - timedelta(days=1)
 
@@ -39,8 +42,10 @@ def verdict(question: str, text: str, today: date) -> str:
     if day is None:
         return text
     first, last = _window(said, today)
+    text = composer_ahead.long_form(text, today)
     if first <= day <= last:
-        return f"Yes, {text[:1].lower()}{text[1:]}"
+        #: A weekday or a month starts the sentence with its capital ("Yes, Tuesday 10 November at 2pm").
+        return f"Yes, {text if text.split(None, 1)[0].strip(',.') in _NAMED else text[:1].lower() + text[1:]}"
     return f"No, not {said}. {text}"
 
 

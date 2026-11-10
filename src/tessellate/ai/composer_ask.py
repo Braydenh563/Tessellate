@@ -737,7 +737,7 @@ _KNOWN: contextvars.ContextVar[frozenset] = contextvars.ContextVar("composer_kno
 #: "When was my gym log written", "what day did I create the pasta recipe",
 #: "what date was the essay started": about the note's own day, not its words.
 _WRITTEN_WHEN = lazy_compile(
-    r"\b(?:when|what (?:day|date))\b.{0,50}?\b(?:written|wrote|made|created|(?:started|began|begun)(?!\s+(?:\w+ing|to\s+\w+)\b)|"
+    r"\b(?:when|what (?:day|date)|how long ago)\b.{0,50}?\b(?:written|wrote|made|created|(?:started|began|begun)(?!\s+(?:\w+ing|to\s+\w+)\b)|"
     r"added|saved|put together|jotted|typed|"
     # The base verb is the note's day only after "did I": "when does uni start" and "when do I make
     # the banana bread" ask about the event, not the day it was written (round 3, R3-1).

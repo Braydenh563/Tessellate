@@ -1058,7 +1058,8 @@ def days_since(phrase: str, now: datetime) -> int | None:
         "today": 0,
         "yesterday": 1,
         "this week": today.weekday(),
-        "last week": 7,
+        #: Monday of the week before (Q24: "last week" is Monday to Sunday everywhere; "past week" rolls).
+        "last week": today.weekday() + 7,
         "the past week": 7,
         "past week": 7,
         "this month": today.day - 1,
@@ -3087,11 +3088,17 @@ def _bare_hour(clock: re.Match, low: str, end: int) -> bool:
     return not rest or not (rest[0].endswith("s") or rest[0] in UNITS or rest[0] in ("people", "of", "more", "x"))
 
 
+def _reads_month_first(locale: str | None) -> bool:
+    """A reader that takes no locale (a plan's window, a day list) follows the one the request reported
+    (`note_locale`): Chat and Ask carry it, so "3/4" is 4 March in en-US wherever it is read (W8 B18)."""
+    return (locale or _CALL_LOCALE.get() or _HEMISPHERE["reported"] or "").lower() in _MONTH_FIRST
+
+
 def _numeric_dates(low: str, today: date, locale: str | None, tense: str | None) -> list[tuple[int, int, list]]:
     """"2/11", "25/12/2026", "3.11.2026": (start, end, [(day, read_as), ...])
     with the locale's reading first and the other second when both are
     dates. "1/2 cup" is a fraction, not a date."""
-    month_first = (locale or "").lower() in _MONTH_FIRST
+    month_first = _reads_month_first(locale)
     out = []
     for found in _rx("numeric").finditer(low):
         a, b, year_s = (found.group(1), found.group(2), found.group(3)) if found.group(1) else (found.group(4), found.group(5), found.group(6))
@@ -3115,6 +3122,40 @@ def _numeric_dates(low: str, today: date, locale: str | None, tense: str | None)
         if readings:
             out.append((found.start(), found.end(), readings))
     return out
+
+
+_DAY_PREP = lazy_compile(r"\b(?:on|for|by|before|after|since|until|till|from|at|around|about|during|between|and|to)\s+$", re.I)
+
+
+_ASKING = lazy_compile(r"\W*(?:what|when|which|who|how|do|does|did|is|are|was|were|have|has|any|anything|show|list|tell)\b", re.I)
+_WAS_ASKED = lazy_compile(r"\b(?:did|was|were|wrote|written|made|happened|had|done|went)\b", re.I)
+
+
+def spell_asked_days(question: str, today: date, locale: str | None, plain: bool = True) -> str:
+    """`spell_numeric_days` for a message that is a question only: a note or a command keeps the person's own
+    characters (`plain` is False for a skill's text)."""
+    if not plain or not _ASKING.match(question):
+        return question
+    return spell_numeric_days(question, today, locale, "past" if _WAS_ASKED.search(question) else "future")
+
+
+def spell_numeric_days(text: str, today: date, locale: str | None, tense: str | None = None) -> str:
+    """"what's due on 3/4" as "what's due on 4 March" (en-US) or "3 April" (elsewhere): a bare day and month
+    is ordered once, by the locale the request carried, before any reader sees it, so Chat and Ask read it the
+    same way everywhere (W8 B18). A fraction ("1/2 cup") and a figure that is no date are left as typed."""
+    if "/" not in text and "." not in text and "-" not in text:
+        return text
+    low = text.lower()
+    out, last = [], 0
+    for start, end, readings in _numeric_dates(low, today, locale, tense):
+        #: Only after a word that puts a day there ("on 3/4", "by 12/11"): "what is 1/2 of 10" is a fraction.
+        if not _DAY_PREP.search(low[:start]):
+            continue
+        day = readings[0][0]
+        said = f"{day.day} {day:%B}" + (f" {day.year}" if day.year != today.year else "")
+        out += [text[last:start], said]
+        last = end
+    return "".join([*out, text[last:]]) if out else text
 
 
 _MONTH_ONLY = lazy_compile(r"(?:in |during )?" + _MONTH_RE + _YEAR_AFTER_MONTH)

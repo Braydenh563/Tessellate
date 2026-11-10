@@ -36,7 +36,7 @@ _DUE = re.compile(
     rf"^{_LEAD}(?:what(?:'s|’s| is| are| do i have| have i got| have i)?|which|any|anything|show me|show|list|tell me|give me|do i have|have i got|i need to know|check)?\W*"
     r"(?:\w+\W+){0,6}?(?:due|deadlines?|coming up|upcoming|on my plate|happening|scheduled|ahead|on the calendar|on the horizon|to hand in|to submit|to do)\b", re.I)
 #: "what's on", "am I busy": only a question when a time window is also named (`window`).
-_BUSY = re.compile(rf"^{_LEAD}(?:what(?:'s|’s| is)|what do i have|what have i got|anything|am i busy|how busy am i|how busy is|what does|what am i (?:doing|up to)|what are we (?:doing|up to))\b", re.I)
+_BUSY = re.compile(rf"^{_LEAD}(?:what(?:'s|’s| is)|what do i have|what have i got|anything|am i busy|how busy am i|how busy is|what does|what am i (?:doing|up to)|what are we (?:doing|up to)|(?:do|have) (?:i|we) (?:have|got) (?:anything|something)|is there (?:anything|something))\b", re.I)
 #: "what is overdue", "anything overdue", "show me overdue reminders": the
 #: overdue reminders alone, never every reminder. Each optional part opens with
 #: its own word, so the match is linear.
@@ -419,10 +419,33 @@ def _range_words(start: date, end: date, said: str, today: date) -> str:
     return f"{_short(start)} to {_short(end)}"
 
 
+_WEEKDAYS = ("mon", "tues", "wednes", "thurs", "fri", "satur", "sun")
+
+
+def _habit_events(ctx: Ctx, day: date) -> list[Event]:
+    """The habits of the notes ("Gym on Monday, Wednesday and Friday at 7am", "every Tuesday") that fall on `day`,
+    for a question about that one day: a habit is no deadline in a week's list, but it is on its days (W8 B14)."""
+    name = re.compile(rf"\b{_WEEKDAYS[day.weekday()]}day|\bevery (?:other )?day\b|\bdaily\b", re.I)
+    out: list[Event] = []
+    for note in ctx.notes[:400]:
+        content = str(note.get("content") or "")
+        if not recognise.dated_sentence(content):
+            continue
+        title = study.title_of(content)
+        for sentence in _dated_lines(content):
+            if recognise.recurring_schedule(sentence) and not recognise.logged_day(sentence, title) and name.search(sentence):
+                text = _plain(sentence)
+                if 3 <= len(text) <= 160:
+                    out.append(Event(day, text, "note", note.get("id"), title))
+    return out
+
+
 def _due(ctx: Ctx, win: tuple[date, date, str]) -> Reply | None:
     start, end, said = win
     today = ctx.now.date()
     found, overdue = events(ctx, start, end)
+    if start == end:
+        found = [*found, *(h for h in _habit_events(ctx, start) if h.text not in {e.text for e in found})]
     span = _range_words(start, end, said, today)
     if not found and not overdue:
         # The reminders path answers an empty window: it names a waiting
@@ -478,7 +501,10 @@ def _nothing_due(ctx: Ctx, end: date, span: str) -> Reply:
     lines = [compose.sentence_case(compose.frame("due_none", ctx.mood, span=span))]
     later, _o = events(ctx, end + timedelta(days=1), end + timedelta(days=3650))
     if later:
-        lines += ["", compose.sentence_case(compose.frame("next_due", ctx.mood, what=later[0].text, when=f"{_long(later[0].day)} {later[0].day.year}"))]
+        said_day = f"{_long(later[0].day)} {later[0].day.year}"
+        line = compose.sentence_case(compose.frame("next_due", ctx.mood, what=later[0].text.rstrip(". "), when=said_day))
+        #: "Deadline: Monday 16 November 2026 for the launch (Monday 16 November 2026)" says the day twice.
+        lines += ["", line.replace(f" ({said_day})", "") if said_day.lower() in later[0].text.lower() else line]
     return Reply("\n".join(lines))
 
 
@@ -660,15 +686,20 @@ def _kind_due(ctx: Ctx, kinds: set[str], today: date) -> Reply | None:
     return Reply("\n".join([head, *_grouped(kept, today)]), asks=_item_chips(kept, today))
 
 
-def _due_reply(ctx: Ctx, text: str, today: date) -> Reply | None:
-    win = window(text, today)
+def _subject_stems(text: str, win) -> set[str]:  # noqa: ANN001
+    """The stems of a due question that are not its window: what is left is its subject."""
     leftover = {s for s in _stems(re.sub(r"[^\w\s']", " ", _SPAN_WORDS.sub(" ", text))) if s not in _FILLER_STEMS}
     if win is not None:
-        for _s, _e, phrase in when_words.find(text.lower()):
+        #: The window's own words, said as the question did ("before Christmas": a holiday is no subject here).
+        for phrase in [*(p for _s, _e, p in when_words.find(text.lower())), win[2]]:
             leftover -= _stems(phrase)
     #: The know-ahead shape has nothing after its day: "my notes say" is not a subject.
-    if _KNOW_AHEAD.match(text):
-        leftover = set()
+    return set() if _KNOW_AHEAD.match(text) else leftover
+
+
+def _due_reply(ctx: Ctx, text: str, today: date) -> Reply | None:
+    win = window(text, today)
+    leftover = _subject_stems(text, win)
     kind = {k for k in leftover if k in _KIND_STEMS}
     if kind and leftover == kind and not ctx.open_ids:
         return _kind_due(ctx, kind, today)

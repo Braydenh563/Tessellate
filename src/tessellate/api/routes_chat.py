@@ -1432,7 +1432,7 @@ def _composed_events(req: _StreamRequest, prepared: dict, ollama_running: bool) 
     text = _with_older(text, older, result)
     text = _with_words_only(text, prepared, result, req.session)
     text = _with_lapsed(text, current, result, req)
-    events: list = [{"type": "answer", "delta": text}, *(_web_chip(req) if missed else []), *req.tip_events()]
+    events: list = [*chat_web.nothing_found_meta(prepared, missed), {"type": "answer", "delta": text}, *(_web_chip(req) if missed else []), *req.tip_events()]
     #: Every question the finished text suggests is a chip (INBOX 1497); one
     #: the grounding event already carries is not said twice.
     suggested = [q for q in ask_chips.lift(f"{text}\n{req.tip}") if q not in (result.get("next") or []) and q not in asks]
@@ -2138,6 +2138,7 @@ def _asked(body: ChatRequest, session: Session, skill: dict | None) -> tuple:
     head, tail = body.question[: composer_intent.PLAN_CHARS], body.question[composer_intent.PLAN_CHARS :]
     #: Filler ("errrmmm. hi") is read past before anything reads it (INBOX 1485).
     question, address = _address(skill["question"] if skill else question_noise.media_kind(question_noise.new_notes_as_newest(question_noise.drop_filler(question_noise.tidy(head)))) or head, session, skill)
+    question = recognise.spell_asked_days(question, user_now(deps.get_config()).date(), body.locale, not skill)  # W8 B18
     return question, address, None if skill else (body.raw_question or (question + tail if tail else None))
 
 

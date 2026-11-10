@@ -75,7 +75,8 @@ def test_today_line_names_an_untitled_note():
     notes = [{"id": 1, "content": "ring the landlord", "category": "Home", "tags": [], "created_at": "2026-10-18"}]
     for seed in range(6):
         line = composer_voice.today_line(notes, today=today, seed=seed)
-        assert line and "your note" in line["text"].lower()
+        #: Owner 2026-11-10: a title-less note is named by its first line, quoted ("your note" no longer names it).
+        assert line and "“ring the landlord”" in line["text"]
 
 
 def test_today_line_with_untitled_notes_never_says_the_latest_your_note():
