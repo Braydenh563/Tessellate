@@ -56,4 +56,4 @@ def test_rainbow_changes_the_third_level_and_off_does_not():
 
 def test_the_map_dialog_offers_it_as_a_check_in_the_whole_map_group():
     assert '{ key: "rainbow", label: "Colour every level", kind: "check" }' in MAP
-    assert '"rainbow"]);' in MAP  # never merged onto a topic (WB_MAP_THEME_META)
+    assert '"rainbow", "legend"]);' in MAP  # never merged onto a topic (WB_MAP_THEME_META)

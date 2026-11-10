@@ -1012,8 +1012,9 @@ topic: a control that wide has nowhere to go.
    it closes (Escape, a press elsewhere, Ctrl+Enter), an emptied note is no
    note, one undo step. Not a new surface and nothing new on the strip, the
    ring or the dock (decision 5, §12.5). Not on a note node: it already has
-   the notebook's note behind it, and showing that note's text here,
-   editable both ways, is item 5's second half, still open. Markdown writes
+   the notebook's note behind it, and that note's text edits in the same
+   shell from the topic menu (item 5's second half, built 2026-11-10, HISTORY.md
+   "s9c-1110 part 3"). Markdown writes
    the note as an indented paragraph under its bullet (a reader draws a
    paragraph inside the item; a line that would read as a bullet or a
    heading is escaped with a backslash), and the import reads any text
@@ -1797,8 +1798,8 @@ Read from the code against XMind, MindManager and Miro mind maps. Sizes S, M, L;
 7. Topic templates for one topic (a pros and cons topic from the topic's menu) - S.
 8. Topic image from a link, fetched and kept - M.
 9. Export a branch only, as PNG, PDF or Markdown - S.
-10. Rainbow branches as a theme option for every branch, not only first level - S.
-11. A legend for markers and colours, drawn on the map - M.
+10. ~~Rainbow branches as a theme option for every branch, not only first level - S.~~ Built 2026-11-10 (HISTORY.md, "s9c-1110 part 3").
+11. ~~A legend for markers and colours, drawn on the map - M.~~ Built 2026-11-10 (HISTORY.md, "s9c-1110 part 3").
 12. A second root on one map, joined by a labelled link (floating topics exist; named roots do not) - M.
 13. Search inside topics' notes from the map's find bar - S.
 14. Fisheye and focus dimming of everything but the selected branch - S.
@@ -1817,7 +1818,7 @@ Exists (no work): fold or unfold one branch (C), show N levels (Alt+1 to 9, Alt+
 
 The three taken first (drag to reorder siblings, copy or export one branch, dim all but the selected branch) are built: HISTORY.md, "Moved from the plans, 2026-10-25 (wb2)".
 
-Left: rainbow every level (item 10), a legend (item 11), audio notes (item 4), Gantt (item 3).
+Left: audio notes (item 4) and Gantt (item 3); rainbow every level and the legend are built (HISTORY.md, "s9c-1110 part 3").
 
 ## Placed from INBOX, 2026-11-04
 
