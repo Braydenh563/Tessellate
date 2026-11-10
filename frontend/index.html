@@ -1212,7 +1212,7 @@
     <p id="quick-note-status" class="status" role="status"></p>
     <div class="row right space-dialog-actions">
       <button type="button" id="quick-note-clear" class="ghost icon-only small field-clear hidden" title="Clear" aria-label="Clear"><i class="ph ph-eraser" aria-hidden="true"></i></button>
-      <button type="button" class="ghost small" id="quick-note-private" aria-pressed="false"><i class="ph ph-lock-open ph-lead" aria-hidden="true"></i> Private</button>
+      <button type="button" class="ghost small lock-toggle" id="quick-note-private" aria-pressed="false"><i class="ph ph-lock-open ph-lead" aria-hidden="true"></i> <span class="lock-toggle-label">Private</span></button>
       <button type="button" class="ghost small" id="quick-note-more">Open in Capture</button>
       <button type="button" class="accent small" id="quick-note-save">Save note</button>
     </div>
@@ -1633,7 +1633,8 @@
                 nests). The tags field below takes them too, comma
                 separated.</li>
               <li>Private, beside Save, seals just this note, out of search
-                and Atlas; it starts on when Settings, Account &amp; security
+                and Atlas. It reads Private on, with a filled lock, while it
+                is set; it starts on when Settings, Account &amp; security
                 says new notes start private, and a reload keeps it.</li>
             </ul>
             <p class="muted">Two things worth knowing, because they are
@@ -1847,7 +1848,7 @@ Link to another note with [[its first few words]]."></textarea>
                  purpose: a draft is "save this fast, decide later", the same
                  reasoning the other three draft-creating paths already use, 
                  none of them file a category either. -->
-            <button type="button" id="entry-private" class="ghost" aria-pressed="false" title="Press to make this one note private: sealed, and kept out of search and Atlas."><i class="ph ph-lock-open ph-lead" aria-hidden="true"></i> Private</button>
+            <button type="button" id="entry-private" class="ghost lock-toggle" aria-pressed="false" title="Press to make this one note private: sealed, and kept out of search and Atlas."><i class="ph ph-lock-open ph-lead" aria-hidden="true"></i> <span class="lock-toggle-label">Private</span></button>
             <button id="save-draft-btn" class="ghost"
               title="Keep it as a draft: nothing is filed, and it waits under Drafts in the sidebar. Save files it by category and tags."
               aria-label="Save as draft">Save as draft</button>
@@ -4084,7 +4085,7 @@ Link to another note with [[its first few words]]."></textarea>
             <li><strong>Hover a note</strong> to see its dates, links and tags;
               click it to edit it here.</li>
             <li><strong>Hold Alt and drop one note onto another</strong> to link them.
-              Double-click empty space to add a note there.</li>
+              Double-click empty space to add a note there; its Private button seals just that note.</li>
             <li><strong>Trace</strong> shows how any two notes connect.</li>
             <li>Solid lines are links you made, dashed lines are trains of
               thought, dotted lines are notes that mean similar things.</li>
@@ -4748,7 +4749,9 @@ Link to another note with [[its first few words]]."></textarea>
           aria-label="Add a note to the map">
           <div class="row space-between dialog-head">
             <strong id="graph-new-title" class="dialog-head-title"><i class="ph ph-plus pop-glyph" aria-hidden="true"></i> New note</strong>
-            <button id="graph-new-close" class="icon-only ghost small dialog-head-btn" type="button" aria-label="Close" title="Close (Esc)"><i class="ph ph-x" aria-hidden="true"></i></button>
+            <div class="dialog-head-actions">
+              <button id="graph-new-close" class="icon-only ghost small dialog-head-btn" type="button" aria-label="Close" title="Close (Esc)"><i class="ph ph-x" aria-hidden="true"></i></button>
+            </div>
           </div>
           <p class="muted" id="graph-new-hint"></p>
           <input id="graph-new-note-title" data-autocorrect type="text" maxlength="200"
@@ -4759,6 +4762,7 @@ Link to another note with [[its first few words]]."></textarea>
             aria-label="Tags">
           <div class="row">
             <button id="graph-new-save" class="small">Add to map</button>
+            <button type="button" id="graph-new-private" class="ghost small lock-toggle" aria-pressed="false" title="Press to make this one note private: sealed, and kept out of search and Atlas."><i class="ph ph-lock-open ph-lead" aria-hidden="true"></i> <span class="lock-toggle-label">Private</span></button>
             <span id="graph-new-status" class="status" role="status"></span>
           </div>
         </div>

@@ -1189,6 +1189,7 @@ $("graph-svg").addEventListener("dblclick", (event) => {
 $("graph-add-node").addEventListener("click", () => openGraphNewNote(null));
 $("graph-new-close").addEventListener("click", closeGraphNewNote);
 $("graph-new-save").addEventListener("click", saveGraphNewNote);
+$("graph-new-private").addEventListener("click", async (e) => (await ensureModule("quickNote")) && createNoteSafely.lock.flip(e.currentTarget));
 $("graph-new-content").addEventListener("keydown", (e) => {
   if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) saveGraphNewNote();
 });

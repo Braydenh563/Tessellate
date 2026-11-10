@@ -226,8 +226,12 @@
   //: setting, so null still follows Settings. `flip` keeps the choice under `key` (a draft).
   createNoteSafely.lock = {
     sync(button, on = Boolean(prefsCache?.new_notes_private)) {
+      button.classList.add("lock-toggle");
       button.setAttribute("aria-pressed", String(on));
       button.querySelector("i").className = `ph ${on ? "ph-lock" : "ph-lock-open"} ph-lead`;
+      let label = button.querySelector(".lock-toggle-label");
+      if (!label) (label = document.createElement("span")).className = "lock-toggle-label", button.append(label);
+      label.textContent = on ? "Private on" : "Private";
       button.title = on
         ? "This note will be private: sealed, and kept out of search and Atlas. Press to keep it readable."
         : "Press to make this one note private: sealed, and kept out of search and Atlas.";

@@ -7674,3 +7674,64 @@ def test_a_diagram_change_is_one_marked_picture() -> None:
     assert "/revisions" in ai and "localStorage" not in ai
     css = (ROOT / "frontend" / "css" / "diagram-lazy.css").read_text(encoding="utf-8")
     assert ".dgm-versions-legend > .dgm-mark-del::before" in css and "var(--error)" in css
+
+
+# --- A lock toggle (INBOX 1736) ------------------------------------------------
+_LT_HTML = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
+_LT_CSS = "\n".join(p.read_text(encoding="utf-8") for p in CSS)
+_LT_DESIGN = (ROOT / "docs" / "DESIGN.md").read_text(encoding="utf-8")
+
+
+def _button(ident: str) -> str:
+    match = re.search(rf'<button[^>]*id="{ident}"[^>]*>.*?</button>', _LT_HTML, re.S)
+    assert match, ident
+    return match.group(0)
+
+
+def test_a_lock_toggle_in_the_markup_is_a_recipe_button():
+    for ident in ("entry-private", "quick-note-private", "graph-new-private"):
+        button = _button(ident)
+        assert "lock-toggle" in button, ident
+        assert 'aria-pressed="false"' in button, ident
+        assert "lock-toggle-label" in button, ident
+
+
+def test_a_lock_toggle_built_in_script_and_the_shared_sync_use_the_recipe():
+    js = app_js_text()
+    # The capture card builds its own button; sync() makes any button one.
+    assert "lock-toggle" in js.split("captureCard.mountLock", 1)[1][:900]
+    sync = js.split("createNoteSafely.lock = {", 1)[1].split("ask(button", 1)[0]
+    assert 'classList.add("lock-toggle")' in sync
+    assert "Private on" in sync
+    assert "ph-lock" in sync
+
+
+def test_a_lock_toggle_pressed_state_is_an_accent_fill_with_a_focus_ring():
+    rule = re.search(r'button\.ghost\.lock-toggle\[aria-pressed="true"\]:is\(:hover, :active, :focus-visible\)\s*\{([^}]*)\}', _LT_CSS)
+    assert rule, "no pressed rule for .lock-toggle"
+    body = rule.group(1)
+    assert "var(--accent-surface)" in body and "var(--on-accent)" in body
+    assert re.search(r"button\.lock-toggle:focus-visible\s*\{[^}]*outline", _LT_CSS)
+
+
+def test_a_lock_toggle_recipe_is_in_the_design_index():
+    assert "A lock toggle" in _LT_DESIGN and "lock-toggle" in _LT_DESIGN
+
+
+def test_a_lock_toggle_graph_new_note_head_groups_its_actions_on_the_right():
+    block = _LT_HTML.split('id="graph-new"', 1)[1].split("graph-new-hint", 1)[0]
+    assert 'class="dialog-head-actions"' in block
+    assert block.index("graph-new-title") < block.index("dialog-head-actions") < block.index("graph-new-close")
+
+
+def test_a_lock_toggle_graph_new_note_sends_the_lock_on_create():
+    js = (ROOT / "frontend" / "js" / "graph.js").read_text(encoding="utf-8")
+    save = js.split("async function saveGraphNewNote", 1)[1].split("// --- export as PNG", 1)[0]
+    assert "createNoteSafely.lock" in save and ".ask(" in save
+    assert "graph-new-private" in js.split("function openGraphNewNote", 1)[1].split("function placeGraphNewNote", 1)[0]
+
+
+def test_a_lock_toggle_keeps_its_space_and_enter_inside_a_graph_popup() -> None:
+    js = (ROOT / "frontend" / "js" / "graph.js").read_text(encoding="utf-8")
+    keys = js.split('box.addEventListener("keydown"', 1)[1][:2600]
+    assert 'closest?.(".graph-popup")) return' in keys
