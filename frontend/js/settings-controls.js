@@ -700,7 +700,10 @@ $("pref-auto-file-sensitive").addEventListener("change", (e) =>
 
 //: INBOX 1695 (Q30): a new note is sealed from its first write; off by default.
 $("pref-new-notes-private").addEventListener("change", (e) =>
-  setPreference("new_notes_private", e.target.checked)
+  setPreference("new_notes_private", e.target.checked).then(() => {
+    //: The Capture page's Private follows the setting until it is pressed (its draft key).
+    if (!prefs.has("captureDraftPrivate")) createNoteSafely.lock?.sync($("entry-private"));
+  })
 );
 
 //: INBOX 1695 (d): seal every ordinary note. The confirm says what private costs.

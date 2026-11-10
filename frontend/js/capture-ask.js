@@ -479,6 +479,7 @@ function resetCaptureForm(contentBox, titleBox) {
   autoGrow(contentBox); // the box shrinks back with its content
   // It's saved for real now: the words, the title and the tags.
   for (const key of ["captureDraft", "captureDraftTitle", "captureDraftTags"]) prefs.remove(key);
+  createNoteSafely.lock?.reset();
   $("entry-count").textContent = "0 words";
   $("entry-tags").value = "";
   $("entry-category").value = "";
@@ -558,12 +559,14 @@ function scheduleCaptureTagSuggestions() {
   }, 1200);
 }
 
-//: Wipes the composer's error line as soon as the person answers it. Bound
+//: Says an empty note cannot be saved, and wipes that line as soon as the person answers it. Bound
 //: once per complaint rather than at startup, so a composer that never
 //: errored carries no listener at all, and `{ once: true }` means the pair
 //: cannot accumulate over a session of near-misses.
-function clearCaptureStatusOnInput() {
+function captureNeedsWords() {
   const status = $("save-status");
+  status.textContent = "Write something first, then save.";
+  status.classList.add("error");
   const clear = () => {
     if (!status.classList.contains("error")) return;
     status.textContent = "";
@@ -579,7 +582,7 @@ function clearCaptureStatusOnInput() {
 async function heldOffline(error, body, contentBox, titleBox) {
   if (!(error instanceof TypeError)) return false;
   const status = $("save-status");
-  if (captureStagedImages.length || captureStagedFiles.length || !(await noteOutboxAdd({ ...body, inline_tags: true }))) {
+  if (captureStagedImages.length || captureStagedFiles.length || !(await noteOutboxAdd(body))) {
     status.textContent = "The server is not answering. Your note is kept here; save again when it is back.";
     status.classList.add("error");
     return true;
@@ -605,9 +608,7 @@ async function saveEntry() {
     //: so one press of Save (or of Ctrl+S, which reaches the same button) on
     //: an empty box left an error sitting under the composer for the rest of
     //: the session, long after it had stopped being true.
-    status.textContent = "Write something first, then save.";
-    status.classList.add("error");
-    clearCaptureStatusOnInput();
+    captureNeedsWords();
     return;
   }
   const tags = $("entry-tags").value.split(",").map((t) => t.trim()).filter(Boolean);
@@ -624,6 +625,7 @@ async function saveEntry() {
   // either way: there is nothing to wait for.
   const deferFiling = !category && (prefsCache?.background_filing ?? true);
 
+  const payload = { content, tags, category, document_ids: [...captureDocuments], defer_filing: deferFiling, inline_tags: true, ...createNoteSafely.lock?.ask() };
   button.disabled = true;
   status.classList.remove("error");
   //: Saving settles at once, so it stays words; the model's wait has the ring.
@@ -646,18 +648,8 @@ async function saveEntry() {
     //: saved with a dead `staged:` url in it would be a broken picture forever,
     //: and dropping the picture silently would be worse.
     const stagedUrls = await commitCaptureImages();
-    const body = rewriteStagedUrls(content, stagedUrls);
-    const saved = await apiJson("/entries", {
-      method: "POST",
-      body: JSON.stringify({
-        content: body,
-        tags,
-        category,
-        document_ids: [...captureDocuments],
-        defer_filing: deferFiling,
-        inline_tags: true,
-      }),
-    });
+    payload.content = rewriteStagedUrls(content, stagedUrls);
+    const saved = await apiJson("/entries", { method: "POST", body: JSON.stringify(payload) });
     clearStagedImages();
     status.textContent = filedByText(saved);
     //: Which note this line is about: three notes saved in a row each poll
@@ -699,8 +691,7 @@ async function saveEntry() {
     // teleporting away after each one would fight that.
     offerJumpToNewNote(saved, status);
   } catch (error) {
-    const body = { content, tags, category, document_ids: [...captureDocuments], defer_filing: deferFiling };
-    if (await heldOffline(error, body, contentBox, titleBox)) return;
+    if (await heldOffline(error, payload, contentBox, titleBox)) return;
     status.textContent = error.message;
     status.classList.add("error");
   } finally {
@@ -730,13 +721,12 @@ async function saveEntryAsDraft() {
     //: so one press of Save (or of Ctrl+S, which reaches the same button) on
     //: an empty box left an error sitting under the composer for the rest of
     //: the session, long after it had stopped being true.
-    status.textContent = "Write something first, then save.";
-    status.classList.add("error");
-    clearCaptureStatusOnInput();
+    captureNeedsWords();
     return;
   }
   const tags = $("entry-tags").value.split(",").map((t) => t.trim()).filter(Boolean);
 
+  const payload = { content, tags, document_ids: [...captureDocuments], is_draft: true, inline_tags: true, defer_filing: true, ...createNoteSafely.lock?.ask() };
   button.disabled = true;
   status.classList.remove("error");
   status.textContent = "Saving as draft…";
@@ -744,17 +734,8 @@ async function saveEntryAsDraft() {
     //: Same commit-then-write order as a full save, a draft is a note with
     //: an id, so its pictures are real from the same moment.
     const stagedUrls = await commitCaptureImages();
-    const saved = await apiJson("/entries", {
-      method: "POST",
-      body: JSON.stringify({
-        content: rewriteStagedUrls(content, stagedUrls),
-        tags,
-        document_ids: [...captureDocuments],
-        is_draft: true,
-        inline_tags: true,
-        defer_filing: true,
-      }),
-    });
+    payload.content = rewriteStagedUrls(content, stagedUrls);
+    const saved = await apiJson("/entries", { method: "POST", body: JSON.stringify(payload) });
     clearStagedImages();
     status.textContent = "Saved as a draft, find it later under Drafts in the sidebar.";
     resetCaptureForm(contentBox, titleBox);
@@ -767,7 +748,7 @@ async function saveEntryAsDraft() {
     pushEntryCreateUndo(saved, "Saved a draft note");
     await refreshEntries([saved.id]);
   } catch (error) {
-    if (await heldOffline(error, { content, tags, document_ids: [...captureDocuments], is_draft: true }, contentBox, titleBox)) return;
+    if (await heldOffline(error, payload, contentBox, titleBox)) return;
     status.textContent = error.message;
     status.classList.add("error");
   } finally {
