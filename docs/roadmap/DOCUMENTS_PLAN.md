@@ -305,6 +305,7 @@ Moved to HISTORY.md ("From DOCUMENTS_PLAN.md Phase 3", two entries) on
 
 ## Placed from INBOX, 2026-11-10 (selection to a note)
 
+- Owner, 2026-11-10, diagram builder, verbatim (screenshot of a flowchart with "Customer" and "Warehouse" groups): "I want to be able to select on groups and edit the text by clciking on or double clicking on the edge and/or where the text is". Recommendation, taken: a group (subgraph) is selectable by a click on its border or its title; a double click on the title edits it in place (Enter commits, Esc cancels), the same as a node; the selected group shows the selection ring and takes Delete and the context menu. Files: frontend/js/diagram-*.js, documents-mermaid.js.
 - INBOX 1728: **Owner, 2026-11-10, documents, verbatim (screenshot):** "I want to be able to highlight sections in a document and turn them into or append them to a new or existing note". Recommendation, taken: two items in the document selection menu and right-click menu, "New note from selection" (the note links back to the document) and "Add to note..." (the note finder, appends the text with a back link); the same in the code editor. Placed: the documents batch of the work order.
 
 ## Placed from INBOX, 2026-11-02 (the owner: the calculator, equations, insert panels and a diagram builder)

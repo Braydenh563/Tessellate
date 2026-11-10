@@ -198,6 +198,7 @@ Parked until the owner's data or a check on real hardware:
 - B63 Companion does not show: root cause | oa 1638 b
 - B64 The 1696 lists, the falling stutter (a) | INBOX 1696, atlasf1696-1108c, ui1696c-1108c
 - B65 The 1683 travel mix | INBOX 1683, travel L9, L10
+- B66 Owner 2026-11-10, verbatim: "the desktop companion doesnt hang from the top of my screen for long before it falls down. it always falls down". Recommendation, taken: a hang from the screen top lasts its full rest (no fall roll while hanging), and ends only by a chosen drop or a drag | owner 2026-11-10
 - B66 Desk window scan counts Explorer and Chrome as invisible; perch filter finds almost nothing | INBOX 1716, oa 1667 n
 - B67 Display-paced timer 16.7 ms plus or minus 3; runs properly on Linux | oa 1670 r, u
 
