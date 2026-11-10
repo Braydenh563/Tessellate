@@ -15,9 +15,9 @@ time is said, and when the chat already acts on the words ("remind me to ...",
 from __future__ import annotations
 
 import re
-from datetime import datetime
+from datetime import datetime, timedelta
 
-from tessellate.ai import reminder_parser
+from tessellate.ai import recognise, reminder_parser
 
 _MAX = 400
 
@@ -32,6 +32,31 @@ _INTENT = re.compile(
     r")\b",
     re.IGNORECASE,
 )
+#: A nudge with no "I": "must book the venue", "need to call", "todo: ..." at the
+#: head of a sentence (G10). "must have been" is a guess about the past, not a task.
+_BARE_HEAD = re.compile(
+    r"^(?:must(?!\s+(?:have|be|not)\b)|need to(?!\s+know\b)|have to|to-?do\s*:|todo\s*:)\s*",
+    re.IGNORECASE,
+)
+#: A command to oneself with a time in it ("call mum on sunday", "take the bins out tonight").
+_IMPERATIVE = re.compile(
+    r"^(?:call|ring|phone|text|email|message|buy|get|book|pay|send|submit|renew|take|bring|pick up|drop off|order|"
+    r"cancel|schedule|return|water|finish|write|clean|fix|check|visit|post|print|pack|prepare|register|sign|"
+    r"reply|file|collect|charge|back up|feed|cook|wash|tidy|organise|organize|plan|apply|update|review)\b",
+    re.IGNORECASE,
+)
+#: A dated fact is a thing to be there for: "exam on 24 november at 9am", "the plumber is coming thursday".
+_EVENT = re.compile(
+    r"\b(?:is|are) (?:coming|arriving|visiting|due|on|at|starting)\b|\b(?:arrives|starts|ends|opens|closes)\b|^(?:the |my |our )?"
+    r"(?:exam|test|interview|appointment|meeting|flight|deadline|party|wedding|concert|lesson|class|dentist|doctor)\b",
+    re.IGNORECASE,
+)
+_PAST = re.compile(
+    r"\b(?:i|we)\s+(?:(?!need\b)\w+ed|went|saw|had|was|got|did|made|took|met|paid|sent|bought)\b|\b(?:was|were|had|did)\b",
+    re.IGNORECASE,
+)
+#: What the date reader leaves behind once it takes the date out.
+_DANGLING = re.compile(r"[\s,;:]+(?:before|by|until|till|on|at|from|for|between|in|this|next)$", re.IGNORECASE)
 _NEGATED = re.compile(r"\b(?:didn'?t|did not|don'?t|do not|won'?t|will not|never|no need|not going to|doesn'?t)\b", re.IGNORECASE)
 _FORGET = re.compile(r"\b(?:don'?t|do not) forget\b", re.IGNORECASE)
 _QUESTION_FIRST = re.compile(
@@ -47,9 +72,50 @@ def _sentences(text: str) -> list[str]:
 def _reads_as_intention(sentence: str) -> bool:
     if sentence.endswith("?") or _QUESTION_FIRST.match(sentence):
         return False
-    if not _INTENT.search(sentence):
+    if _PAST.search(sentence):
+        return False
+    if not (_INTENT.search(sentence) or _BARE_HEAD.match(sentence)):
         return False
     return not _NEGATED.search(_FORGET.sub("", sentence))
+
+
+def _tidy(text: str) -> str:
+    """The reminder's words without a preposition the date left hanging."""
+    out = text.strip()
+    while True:
+        cut = _DANGLING.sub("", out)
+        if cut == out:
+            return out
+        out = cut
+
+
+def _read(sentence: str, now: datetime) -> dict | None:
+    """The reminder a sentence states: an intention (with or without "I"),
+    a command with a time, or a dated fact."""
+    bare = _BARE_HEAD.match(sentence)
+    if bare or _INTENT.search(sentence):
+        task = _BARE_HEAD.sub(" ", sentence, count=1) if bare else _INTENT.sub(" ", sentence, count=1)
+        parsed = reminder_parser.read_by_rule(" ".join(task.split()), now)
+        if parsed is None and _FORGET.search(sentence):
+            #: "Don't forget to buy milk": an explicit nudge with no time is
+            #: offered for tomorrow 9am, marked as a guess for the chip to say.
+            words = reminder_parser.worded(" ".join(task.split()))
+            due = (now + timedelta(days=1)).replace(hour=9, minute=0, second=0, microsecond=0)
+            return {"text": words, "due_at": due, "priority": "normal", "guess": True}
+        return parsed
+    parsed = reminder_parser.read_by_rule(sentence, now)
+    if parsed is None:
+        return None
+    if _IMPERATIVE.match(sentence):
+        return parsed
+    if _EVENT.search(sentence):
+        #: A fact reads as itself: the words before its time, not the parser's remains.
+        phrases = recognise.find(sentence)
+        #: "is coming thursday": the recogniser takes "coming thursday" as the date, but "coming" is the fact's verb.
+        cut = phrases[0][0] + (len("coming") if phrases[0][2].lower().startswith("coming ") else 0) if phrases else len(sentence)
+        parsed["text"] = reminder_parser.worded(sentence[:cut])
+        return parsed
+    return None
 
 
 def suggest(text: str, now: datetime) -> dict | None:
@@ -58,12 +124,17 @@ def suggest(text: str, now: datetime) -> dict | None:
     clock, as everywhere a time is read."""
     said = " ".join((text or "").replace("’", "'").split())[:_MAX]
     for sentence in _sentences(said):
-        if not _reads_as_intention(sentence) or reminder_parser.reminder_head(sentence)[1] is not None:
+        if reminder_parser.reminder_head(sentence)[1] is not None:
+            continue
+        if sentence.endswith("?") or _QUESTION_FIRST.match(sentence) or _PAST.search(sentence):
+            continue
+        if not _reads_as_intention(sentence) and not (_IMPERATIVE.match(sentence) or _EVENT.search(sentence)):
             continue
         #: The task is what follows the intention: "I should email Priya
         #: tomorrow" is "Email Priya", whatever the verb that carried it.
-        task = _INTENT.sub(" ", sentence, count=1)
-        parsed = reminder_parser.read_by_rule(" ".join(task.split()), now)
+        parsed = _read(sentence, now)
+        if parsed is not None:
+            parsed["text"] = _tidy(parsed["text"]) or parsed["text"]
         #: A time already gone ("yesterday", "a week ago") is the recogniser's
         #: to read (tests/test_one_reader.py): a due time not ahead is no offer.
         if parsed is None or parsed["due_at"] <= now.replace(tzinfo=parsed["due_at"].tzinfo):

@@ -203,6 +203,10 @@ def _nothing_planned(when: str) -> str:
     return f"Nothing is planned {when if when.startswith(('on ', 'for ', 'in ', 'next ', 'this ')) else 'for ' + when}."
 
 
+#: The one line an empty notebook gets on every surface (second audit, composed list).
+EMPTY_NOTEBOOK = "Nothing yet. Write a first note and I'll have something to say."
+
+
 def empty_window(when: str, first: date | None, last: date | None, *, voice: str = "natural", seed: str = "",
                  today: date | None = None, register: str = "", window: tuple | None = None) -> str:
     """A time window with no note in it, said as that, and where the notes
@@ -217,7 +221,7 @@ def empty_window(when: str, first: date | None, last: date | None, *, voice: str
         return _nothing_planned(when)
     lead = _pick(seed or when, "empty_window", list(_EMPTY_WINDOW[voice])).format(when=when, When=when[:1].upper() + when[1:])
     if first is None or last is None:
-        return lead
+        return EMPTY_NOTEBOOK if voice in ("natural", "professional") else lead
 
     def day(d: date) -> str:
         return f"{d.day} {d:%B}" if d.year == today.year else f"{d.day} {d:%B %Y}"

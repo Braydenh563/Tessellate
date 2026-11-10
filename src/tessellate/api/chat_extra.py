@@ -36,6 +36,65 @@ def _reminders(session: Session) -> list[dict]:
     return [{"id": r.id, "text": r.text, "due_at": r.due_at, "done": r.done, "entry_id": r.entry_id, "priority": r.priority} for r in rows]
 
 
+_PATTERNS = re.compile(
+    r"^(?:what|which|anything)\b.*\b(?:keeps?|keep) coming up\b|\bany (?:patterns?|trends?)\b|\bwhat (?:patterns?|trends?)\b"
+    r"|\b(?:recurring|repeated|repeating) (?:themes?|topics?|subjects?)\b|\bwhat do i keep (?:writing|mentioning)\b",
+    re.IGNORECASE,
+)
+_CONTRADICTIONS = re.compile(r"\b(?:contradict\w*|conflicting notes?|changed my mind|change of mind|disagree\w*)\b", re.IGNORECASE)
+_FORGETTING = re.compile(r"\bwhat (?:am i|have i been|did i) forget\w*\b|\bwhat have i forgotten\b|\banything (?:i(?:'m| am)|i have) forgett\w+\b", re.IGNORECASE)
+
+
+def notebook_events(session: Session, question: str, *, now: datetime) -> list[dict] | None:
+    """The answer to a question about the notebook's shape that rules can
+    settle: the Patterns line ("what keeps coming up"), the dated changes of
+    mind ("any contradictions"), what is overdue or open ("what am I
+    forgetting"). With no model it is the answer; with one it is handed over
+    as facts, so both paths say the same (second audit G11, parity)."""
+    from tessellate.ai import composer_plan, insights
+
+    text = " ".join((question or "").split())
+    try:
+        if _FORGETTING.search(text):
+            ctx = Ctx(question=text, notes=_notes(session), now=now, reminders=_reminders(session))
+            reply = composer_plan._left(ctx)  # noqa: SLF001
+            said = reply.text if reply else ""
+        elif _CONTRADICTIONS.search(text):
+            found = [i for i in insights.from_session(session, now.date(), limit=12) if i.rule in ("contrast", "drift")]
+            said = ("\n".join(f"- {i.text}" for i in found[:4]) if found else
+                    "I found no change of mind in your dated notes. Notes that say different things about the same subject on different days would show here.")
+        elif _PATTERNS.search(text):
+            found = insights.from_session(session, now.date(), limit=4)
+            said = ("\n".join(f"- {i.text}" for i in found) if found else
+                    "Nothing repeats enough to call a pattern yet. A subject needs to turn up in several notes over a few weeks.")
+        else:
+            return None
+    except Exception:  # noqa: BLE001  # the older readers answer
+        log.exception("chat: the notebook-shape reader failed")
+        return None
+    return [{"type": "answer", "delta": said}] if said else None
+
+
+def starter_leads(session: Session, now: datetime) -> list[str]:
+    """Starter chips that name something in the notebook: what is due this
+    week first, then `composer_voice.suggested_searches` (the latest on the
+    newest titled note, what is still open), in place of category names said
+    as topics (second composer audit G12)."""
+    from datetime import timedelta
+
+    from tessellate.ai import composer_voice
+
+    leads: list[str] = []
+    try:
+        week = now.date() + timedelta(days=7)
+        if any(not r["done"] and r["due_at"] is not None and now.date() <= r["due_at"].date() <= week for r in _reminders(session)):
+            leads.append("What's due this week?")
+        leads += [str(s["query"]) for s in composer_voice.suggested_searches(_notes(session), today=now.date(), limit=2)]
+    except Exception:  # noqa: BLE001  # the category chips stand in
+        log.exception("chat: the starter leads failed")
+    return leads
+
+
 def events(session: Session, question: str, history: list[dict], *, now: datetime, seed: str, open_ids: list[int],
            follow_kind: str = "", said: str = "", asked: str = "", ask: bool = False, voice: str = "natural") -> list[dict] | None:
     """The answer events for a question this module reads, else None. A
@@ -48,6 +107,8 @@ def events(session: Session, question: str, history: list[dict], *, now: datetim
     #: A follow-on that reads the turn before ("any other diagrams", "what are those tags", INBOX 1729 b).
     if (talked := composer_talk.reply(session, asked or question, history, now.date())) is not None:
         return talked
+    if (shaped := notebook_events(session, asked or question, now=now)) is not None:
+        return shaped
     #: "Summarise this" and "summarise Travel" read the open note or a whole
     #: category, which the digest does better than a title match here.
     if composer_digest.about_this(question) or composer_digest.named_category(
@@ -89,7 +150,9 @@ def reminder_events(session: Session, question: str, *, now: datetime) -> list[d
     except Exception:  # noqa: BLE001  # the model answers as before
         log.exception("chat: the reminder reader failed")
         return None
-    return [{"type": "answer", "delta": reply.text}] if reply else None
+    if not reply:
+        return notebook_events(session, text, now=now)
+    return [{"type": "answer", "delta": reply.text}]
 
 
 def name_events(session: Session, question: str) -> list[dict] | None:

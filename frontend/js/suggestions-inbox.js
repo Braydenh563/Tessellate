@@ -341,7 +341,7 @@ function inboxTypeRow(t) {
 // pass is never started by opening the sheet: it is free but not instant.
 
 const TENSION_STATUS_TEXT = {
-  no_model: "No local model is running, so nothing can read your notes. Start Ollama and try again.",
+  no_model: "Pairs of notes were not compared this time. Dated changes show under Patterns; a local model also reads pairs, set up in Settings, Models.",
   no_embeddings: "Semantic search is off, so there is no shortlist of notes to compare. Turn it on in Settings, Models.",
   too_few_notes: "Not enough notes yet, there is nothing to compare.",
   no_candidates: "No pairs were close enough in subject to be worth reading. Contradictions only show up between notes about the same thing.",

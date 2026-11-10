@@ -1283,6 +1283,7 @@ _DATE_PHRASE_SOURCE = (
             _PART_WORD,
             r"(?:the )?end of (?:the )?(?:day|week|month|year)|eod",
             r"(?:in|during|from|by) " + _MONTH_RE + _NOT_A_DAY + r"(?: (?:\d{4}|" + _YEAR_WORD + r"))?",
+            r"(?:in|during) (?:19|20)\d{2}(?![\d:.-])",
             r"christmas(?: day| eve)?|new year'?s? (?:day|eve)|new year",
             r"later today|today|tonight|yesterday|tomorrow",
             _WEEKDAY_RE,
@@ -1557,6 +1558,18 @@ def _span_week_before_last(text: str, a: date, tense: str | None) -> Any:
         first = _shift_months(a.replace(day=1), -2)
         return first, _month_end(first), "month"
     return date(a.year - 2, 1, 1), date(a.year - 2, 12, 31), "year"
+
+
+_BARE_YEAR = lazy_compile(r"(?:in |during |of |for )?((?:19|20)\d{2})")
+
+
+def _span_year(text: str, a: date, tense: str | None) -> Any:
+    """A year by its number ("2025", "in 2025"): the whole of that year."""
+    found = _BARE_YEAR.fullmatch(text)
+    if not found:
+        return _MISS
+    year = int(found.group(1))
+    return date(year, 1, 1), date(year, 12, 31), "year"
 
 
 def _span_lately(text: str, a: date, tense: str | None) -> Any:
@@ -2022,7 +2035,7 @@ def _span_season(text: str, a: date, tense: str | None) -> Any:
 _SPAN_READERS = (
     _span_edge, _span_fixed, _span_day_run, _span_between, _span_week_before_last, _span_calendar_unit, _span_weekend, _span_ahead, _span_recent, _span_lately, _span_to_date,
     _span_other_day, _span_same_day, _span_ago, _span_in,
-    _span_nth, _span_weekday, _span_iso, _span_month_day, _span_day_and_month, _span_ordinal,
+    _span_nth, _span_weekday, _span_year, _span_iso, _span_month_day, _span_day_and_month, _span_ordinal,
     _span_part_of_period, _span_season, _span_part_of_month, _span_end_of, _span_month, _span_holiday,
 )
 
@@ -2085,7 +2098,7 @@ def _window_words() -> re.Pattern[str]:
                                  _QUARTER, _PREVIOUS_UNIT)) + r"|(?:the\s+)?(?:last|this|next|past|previous|coming)\s+(?:few\s+|couple\s+of\s+|\d{1,3}\s+|two\s+|three\s+|four\s+|five\s+|six\s+|seven\s+|eight\s+|nine\s+|ten\s+|eleven\s+|twelve\s+)?"
             r"(?:days?|weeks?|weekend|months?|years?|night|morning|evening|monday|tuesday|wednesday|thursday|friday|saturday|sunday)"
             r"|(?:the\s+)?week\s+before\s+last|(?:\d{1,3}|a|an|one|two|three|four|five|six)\s+(?:days?|weeks?|months?|years?)\s+ago"
-            r"|(?:since|in|during|from)\s+(?:january|february|march|april|may|june|july|august|september|october|november|december)" + _NOT_A_DAY + r"(?: (?:of )?(?:last|this|next) year)?)\b",
+            r"|(?:in|during|of)\s+(?:19|20)\d{2}\b|(?:since|in|during|from)\s+(?:january|february|march|april|may|june|july|august|september|october|november|december)" + _NOT_A_DAY + r"(?: (?:of )?(?:last|this|next) year)?)\b",
             re.I,
         )
     return _WINDOW_WORDS

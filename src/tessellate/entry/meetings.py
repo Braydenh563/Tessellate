@@ -198,14 +198,39 @@ def action_items(content: str) -> list[dict]:
                 "cited": task != raw,
             }
         )
-    return items
+    return items or _inline(lines, start, ACTIONS)
+
+
+#: "Decisions: ship Friday; hire Sam." and "Actions: Mia sends the deck." on one
+#: line, the way people type a meeting with no headings (G14 h: the sheet was
+#: empty for a note Ask read fine).
+_LABELLED = re.compile(r"^[ \t]*(?:[-*+][ \t]+)?([A-Za-z][A-Za-z ]{2,18}?)[ \t]*:[ \t]*(\S.*?)[ \t]*$")
+
+
+def _split_inline(value: str) -> list[str]:
+    parts = re.split(r";|\.(?=\s+[A-Z])|\s+and\s+(?=[A-Z])|,\s*(?:and\s+)?", value)
+    return [p.strip(" .") for p in parts if p.strip(" .")]
+
+
+def _inline(lines: list[str], start: int, section: str) -> list:
+    """The items of a section written as one "Label: a; b" line, as the
+    section's list: strings for Decisions, task dicts for Action items."""
+    out: list = []
+    for index in range(start, len(lines)):
+        found = _LABELLED.match(lines[index])
+        if not found or _section_of(found.group(1)) != section:
+            continue
+        for text in _split_inline(found.group(2)) if section == DECISIONS else [found.group(2).strip(" .")]:
+            out.append({"line": index, "text": text, "done": False, "owner": None, "cited": False} if section == ACTIONS else text)
+    return out
 
 
 def section_items(content: str, section: str) -> list[str]:
     """The non-empty bullet lines of one section, without their markers."""
     span = _sections(content).get(section)
     if not span:
-        return []
+        start, lines = _body_offset(content)
+        return _inline(lines, start, section) if section == DECISIONS else []
     lines = str(content or "").split("\n")
     out = []
     for line in lines[span[0] : span[1]]:
@@ -273,7 +298,16 @@ def meeting_date(content: str) -> str:
 
 def attendees(content: str) -> list[str]:
     found, _ = note_properties.split(content or "")
-    return [v for v in found.get("attendees") or [] if v]
+    listed = [v for v in found.get("attendees") or [] if v]
+    if listed:
+        return listed
+    #: "Attendees: Mia, Priya, Jon." as a line of the body.
+    start, lines = _body_offset(content)
+    for index in range(start, len(lines)):
+        said = _LABELLED.match(lines[index])
+        if said and said.group(1).strip().lower() in ("attendees", "present", "in attendance", "who was there"):
+            return [n.strip() for n in re.split(r",|\band\b|;", said.group(2).strip(" .")) if n.strip()]
+    return []
 
 
 def reminder_text(item: dict) -> str:

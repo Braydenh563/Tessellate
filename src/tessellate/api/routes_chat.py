@@ -133,7 +133,8 @@ def suggestions(session: Session = Depends(get_session)) -> list[str]:
     # offered them. The rest are reserves, reached only when one of the four is
     # dropped for being in "Ask again" already, so the row keeps its length
     # instead of losing a chip to the row below it.
-    candidates = [f"What have I saved about {_about(name)}?" for name in categories[:2]]
+    candidates = chat_extra.starter_leads(session, user_now(deps.get_config()).replace(tzinfo=None))
+    candidates += [f"What have I saved about {_about(name)}?" for name in categories[:2]]
     # "my notes in General", not "my general": a category is a filing place,
     # and read as a noun after "my" it made starters like "Summarise my
     # general." on the seeded notebook.

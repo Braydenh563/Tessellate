@@ -43,10 +43,9 @@ _LATEST = re.compile(
     r"\b(?:newest|latest|last|most recent)\s+(?:\w+\s+)?(?:notes?|entry)\b|\bwhen did i last (?:write|make|add|save|take)\b"
 )
 
-HELP_LINE = (
-    "I can count your notes, words, tags, reminders and what you use, and say when you wrote your first or newest note. "
-    'Try "summarise my month", "what do I use most", "when did I write my first note" or "am I writing more than last month".'
-)
+#: Two examples, not the capability paragraph: "hello" and every unknown got the whole list (second audit, composed list).
+HELP_LINE = 'I did not catch which figure you mean. Try "summarise my month" or "when did I write my first note".'
+
 
 
 def _end_note(session: Session, now: datetime, newest: bool) -> StatAnswer:

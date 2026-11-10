@@ -2765,7 +2765,7 @@ async function renderDigestWidget(outer) {
   //: one line in view read as the whole answer. Now "This week" labels it, the caption is a muted
   //: footnote, and a click scrolls the card to the week.
   const weekParts = (text) => {
-    const source = "From your notes, no AI.";
+    const source = "From your notes.";
     const trimmed = String(text || "").trimStart();
     return trimmed.startsWith(source) ? { words: trimmed.slice(source.length).trimStart(), source } : { words: trimmed, source: "" };
   };

@@ -16,7 +16,7 @@ def _widget() -> str:
 
 def test_the_source_caption_is_a_footnote_not_the_first_line():
     w = _widget()
-    assert 'const source = "From your notes, no AI.";' in w
+    assert 'const source = "From your notes.";' in w
     assert "renderMarkdown(out, words)" in w and 'note.className = "muted"' in w
     # The footnote follows the week, never leads it.
     assert "[head, out, source ? note : null, controls]" in w

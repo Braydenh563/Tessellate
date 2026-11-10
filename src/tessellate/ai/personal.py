@@ -453,6 +453,8 @@ def general_reply(web_on: bool, *, web_pref: bool = False, by_choice: bool = Fal
     if web_pref:
         return ("That's general knowledge rather than something in your notes. Web search is on, but it runs in Agent mode in Chat, "
                 "not in Ask, so this answer comes from your notes only.")
-    why = "you chose to answer from your notes only" if by_choice else "with no model running I only know what your notes say"
-    return (f"That's general knowledge, and {why}, and none of them covers it. "
+    if not by_choice:
+        return ("That's general knowledge rather than something in your notes. "
+                "Turn on web search in [Settings](#/settings/websearch) to look it up.")
+    return ("That's general knowledge, and you chose to answer from your notes only, and none of them covers it. "
             "Turn on web search in [Settings](#/settings/websearch) to look it up.")

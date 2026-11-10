@@ -26,9 +26,9 @@ def test_a_digest_sentence_is_not_a_control_and_its_quotes_still_open():
 
 def test_a_pattern_is_said_as_a_sentence_and_links_its_notes():
     found = insights.Insight(rule="recurrence", text="", note_ids=[1], slots={"subject": "university", "count": 4, "since": "16 July"})
-    assert insights.short(found) == "university came up 4 times since 16 July"
+    assert insights.short(found) == "University came up four times since 16 July"
     weekly = insights.Insight(rule="streak", text="", note_ids=[1], slots={"subject": "golf", "weeks": 3})
-    assert insights.short(weekly) == "golf every week for 3 weeks"
+    assert insights.short(weekly) == "Golf every week for three weeks"
     source = (ROOT / "frontend" / "js" / "dashboard.js").read_text(encoding="utf-8")
     assert 'bits.push(["patterns", "Pattern: ", pattern.text])' in source
     assert 'if (kind === "patterns") dashPatternBit(bit, pattern);' in source

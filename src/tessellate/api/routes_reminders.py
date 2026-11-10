@@ -615,6 +615,7 @@ def suggest_reminder(body: SuggestBody) -> dict:
             "priority": found.get("priority", "normal"),
             "recurring": found.get("recurring", "none"),
             "alert_minutes": found.get("alert_minutes"),
+            "guess": bool(found.get("guess")),
         }
     }
 
@@ -664,9 +665,14 @@ def magic_add_reminder(body: MagicAddBody, session: Session = Depends(get_sessio
             raise HTTPException(
                 status_code=503,
                 detail=(
-                    "The local AI isn't running, and I couldn't read a time from "
-                    "that. Try “tomorrow at 5pm” or “in 20 minutes”, or use the form."
+                    "I couldn't read a time from that. "
+                    "Try “tomorrow at 5pm” or “in 20 minutes”, or use the form."
                 ),
+            )
+        if reminder_parser.says_no_time(body.text):
+            raise HTTPException(
+                status_code=422,
+                detail="I couldn't read a time from that. Try “tomorrow at 5pm” or “in 20 minutes”, or use the form.",
             )
         parsed = reminder_parser.parse_reminder(
             body.text, ollama, deps.get_model_manager(), local_now
