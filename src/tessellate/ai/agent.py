@@ -456,8 +456,8 @@ def _confirm_gate(c: _Call) -> _Verdict | None:
     hands the model `AWAITING_CONFIRMATION` rather than a result, which is
     honest but is not a *stop*: a model that has misread the job re-parks the
     same tool with fresh arguments, and every round is another card in front
-    of the user for something they never asked for. Two is enough for a genuine
-    "delete this, and that" turn; past that the model is guessing, and guessing
+    of the user for something they never asked for. A dozen covers a genuine
+    "make these three notes" turn (every write waits now, owner 2026-11-10); past that the model is guessing, and guessing
     at destructive calls is where this app should be least willing to keep up."""
     if c.spec is None:
         return None

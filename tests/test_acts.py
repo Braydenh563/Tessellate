@@ -181,9 +181,10 @@ def test_a_reminder_is_said_back_with_the_note_it_comes_from(client, session, mo
     assert "remind you on friday at 9: call the dentist" in out["text"].lower() and "!" not in out["text"], out["text"]
     assert "call the dentist" in phrase.lower()
     assert session.scalars(select(Reminder)).all() == [], "nothing is set before Confirm"
-    from tessellate.ai import commands
+    from tests._consent import confirmed
 
-    commands.run(session, card["steps"], card["skipped"])
+    done = confirmed(client, out)  # Confirm words the run as the composer did before the consent order
+    assert done["text"].endswith("remind you on Friday at 9: call the dentist.") and "!" not in done["text"], done["text"]
     session.expire_all()
     reminder = session.scalars(select(Reminder)).one()
     assert reminder.entry_id == dentist.id and reminder.due_at.strftime("%a %H:%M") == "Fri 09:00"

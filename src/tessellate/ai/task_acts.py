@@ -197,7 +197,7 @@ def plan_into_list(session: Session, parsed: dict, card) -> dict | None:  # noqa
     for item in new:
         content = act_steps.appended(content, item)
     label = f"Add {', '.join(f'“{i}”' for i in new)} to your {name} note"
-    return {"line": f"{label}.", "card": card(label, [{"name": "edit_note", "arguments": {"note_id": note.id, "content": content}}], items=[name]), "run": True}
+    return {"line": f"{label}.", "card": card(label, [{"name": "edit_note", "arguments": {"note_id": note.id, "content": content}}], items=[name])}
 
 
 def _complete_rest(text: str) -> str | None:
@@ -628,7 +628,7 @@ def _plan_each(session: Session, parsed: dict, card, title, head: str, tail: str
         #: "the first one" is still an ordinal when no list was shown to count from.
         return {"line": NO_LIST if ordinal_of(parsed.get("about")) else said}
     label = _each_label(head, tail, items)
-    return {"line": f"{label}.", "card": card(label, _each_steps(items, reminder_step, rewrite), left), "run": True}
+    return {"line": f"{label}.", "card": card(label, _each_steps(items, reminder_step, rewrite), left)}
 
 
 def plan_complete(session: Session, parsed: dict, card, title) -> dict:  # noqa: ANN001
@@ -684,7 +684,7 @@ def plan_snooze(session: Session, parsed: dict, card, title, said_when, now=None
     #: "for 2 hours, at 2pm", never "to in 2 hours" (audit 1029 C47).
     label = f"Snooze “{item['text']}” " + (f"for {when[3:]}" if when.startswith("in ") else f"to {when}")
     arguments = {"reminder_id": item["id"], "due_at": due.isoformat(), "was": item["due"].isoformat()}
-    return {"line": f"{label}.", "card": card(label, [{"name": "snooze_reminder", "arguments": arguments}]), "run": True}
+    return {"line": f"{label}.", "card": card(label, [{"name": "snooze_reminder", "arguments": arguments}])}
 
 
 #: The steps this module runs itself (`commands.run` hands them over).
@@ -769,7 +769,7 @@ def plan_task_line(session: Session, parsed: dict, card, title, confirm) -> dict
     last = next((x for x in reversed(body.split("\n")) if x.strip()), "")
     content = act_steps.appended(body, item) if re.match(r"\s*[-*+]\s+\[[ xX]\]", last) else f"{body}\n\n- [ ] {item}"
     label = f"Add “{item}” to your {name} note"
-    return {"line": f"{label}.", "card": card(label, [{"name": "edit_note", "arguments": {"note_id": note.id, "content": content}}], items=[name]), "run": True}
+    return {"line": f"{label}.", "card": card(label, [{"name": "edit_note", "arguments": {"note_id": note.id, "content": content}}], items=[name])}
 
 
 _ORDINAL_WORDS = {"first": 1, "second": 2, "third": 3, "fourth": 4, "fifth": 5, "sixth": 6, "seventh": 7, "eighth": 8, "ninth": 9, "tenth": 10, "last": -1}

@@ -1342,10 +1342,15 @@ async function streamChatEvents({
 // characters carrying the gist of ten turns is strictly better than the whole
 // of one.
 function chatHistoryToSend() {
-  //: The last turn carries the label of an act card still waiting for Confirm
-  //: (`renderActCard` marks it), so "cancel" can drop it (CHAT_PLAN X17).
-  const open = [...$("chat-messages").querySelectorAll(".tool-confirm[data-pending-act]")].at(-1);
-  const turns = open && chatConv.turns.length ? [...chatConv.turns.slice(0, -1), { ...chatConv.turns.at(-1), pending_act: open.dataset.pendingAct, ...(open.pendingRun?.steps ? { pending_steps: open.pendingRun.steps, pending_skipped: open.pendingRun.skipped } : {}), ...(open.pendingTool ? { pending_tool: open.pendingTool } : {}) }] : chatConv.turns;
+  //: The last turn carries the label and id of the card the turn before left waiting for
+  //: Confirm (`renderActCard` marks it), so a typed yes or no reaches it (`ai/consent.py`).
+  //: Only that card counts: every send marks all cards not pending, so a card ignored
+  //: turns ago is never run by a later "ok". The server runs what it parked under the
+  //: id, never steps the page sends.
+  const waiting = [...$("chat-messages").querySelectorAll(".tool-confirm[data-pending-act]")];
+  const open = waiting.at(-1);
+  for (const card of waiting) delete card.dataset.pendingAct;
+  const turns = open && chatConv.turns.length ? [...chatConv.turns.slice(0, -1), { ...chatConv.turns.at(-1), pending_act: open.dataset.askedAct, ...(open.consentId ? { pending_id: open.consentId } : {}) }] : chatConv.turns;
   if (!chatSummary || chatSummary.covered <= 0) {
     return turns.slice(-MAX_CLIENT_HISTORY);
   }
@@ -2155,8 +2160,8 @@ function renderToolConfirm(holder, event) {
   const card = document.createElement("div");
   card.className = "tool-confirm";
   //: Open until Confirm or Cancel settles it; a typed yes or no reaches it through the next turn (`chatHistoryToSend`).
-  card.dataset.pendingAct = event.label || event.name;
-  card.pendingTool = { name: event.name, arguments: event.arguments };
+  card.dataset.pendingAct = card.dataset.askedAct = event.label || event.name;
+  card.consentId = event.consent_id || "";
   const text = document.createElement("p");
   setLabel(text, `ph:warning Atlas wants to: ${event.label || event.name}`);
   
@@ -2194,7 +2199,7 @@ function renderToolConfirm(holder, event) {
         try {
           const result = await apiJson("/chat/tools/execute", {
             method: "POST",
-            body: JSON.stringify({ name: event.name, arguments: event.arguments }),
+            body: JSON.stringify({ name: event.name, arguments: event.arguments, consent_id: event.consent_id || null }),
           });
           card.replaceWith(toolChip(`ph:check-circle ${result.label || event.label || event.name}`));
           toast("Done: check Activity for the audit trail.");

@@ -33,7 +33,7 @@ def _note(session, title):
 
 
 def test_ive_booked_ticks_the_matching_task(act, session):
-    assert act("I've booked the car service").startswith("Done")
+    assert "ticked off" in act("I've booked the car service")
     assert "[x] book car service" in _note(session, "Todo")
 
 
@@ -45,13 +45,13 @@ def test_a_past_deed_with_no_task_is_not_an_act(act, session):
 
 def test_untick_says_unticked(act, session):
     text = act("untick coffee beans")
-    assert text.startswith("Done")
+    assert text == "Unticked “coffee beans” (Shopping list)."
     assert "[ ] coffee beans" in _note(session, "Shopping list")
 
 
 def test_a_daily_reminder_repeats_and_says_so(act, session):
     text = act("remind me to feed Doug every day at 8am")
-    assert "daily" in text
+    assert "every day" in text
     assert session.scalars(select(Reminder)).all()[-1].recurring == "daily"
 
 

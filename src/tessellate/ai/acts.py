@@ -24,7 +24,7 @@ from datetime import datetime
 
 from sqlalchemy.orm import Session
 
-from tessellate.ai import act_registry, commands, recognise, task_acts, validate
+from tessellate.ai import act_registry, commands, consent_store, recognise, task_acts, validate
 from tessellate.ai.act_registry import (
     ACTS,
     CONFIRM_INTENTS,
@@ -72,6 +72,42 @@ def run(session: Session, steps: list[dict], skipped: list[dict] | None = None, 
     """Run a card's steps through the agent's tools; the result carries the
     inverse steps Undo runs. `say` words the "Done" line (the composer's)."""
     return commands.run(session, steps, skipped, say)
+
+
+def ticked_line(card: dict, frame) -> str:  # noqa: ANN001
+    """What a confirmed tick says ("ticked off “a” and “b”"), then the names
+    left out ("Not done: ..."). `frame` words the done part."""
+    if " not done" in card["label"]:
+        #: An untick is said as itself (R9-12), not as the edit it is under the card.
+        return re.sub(r"^Mark (“.*?”) not done( \(in )?", lambda m: f"Unticked {m.group(1)}" + (" (" if m.group(2) else ""), card["label"]) + "." + (f" {commands.not_done(card.get('skipped') or [])}" if card.get("skipped") else "")
+    what = re.sub(r"^Mark (“.*”) done", r"ticked off \1", card["label"])
+    return f"{frame(what)} {commands.not_done(card.get('skipped') or [])}".strip()
+
+
+def run_said(session: Session, label: str, steps: list[dict], skipped: list[dict] | None, say: dict | None) -> dict:
+    """`run` for a confirmed card, in the composer's own words (the ones the card was
+    drawn with): "Done: I saved that to Shopping.", "I will remind you on Friday at 9:
+    call the dentist.", "ticked off “Sunscreen”". `say` is `{mood, intent}`, None for plain."""
+    from tessellate.ai import composer_compose
+
+    if not say:
+        return run(session, steps, skipped)
+    mood = say["mood"]
+    done = run(session, steps, skipped, lambda what: composer_compose.frame("act_done", mood, what=f"{what[:1].lower()}{what[1:]}"))
+    if done["ok"] and say["intent"] == "reminder":
+        done["summary"] = composer_compose.frame("act_card", mood, what=f"{label[:1].lower()}{label[1:]}")
+    elif done["ok"] and say["intent"] in ("complete", "uncomplete"):
+        done["summary"] = ticked_line({"label": label, "skipped": skipped or []}, lambda what: composer_compose.frame("act_done", mood, what=what))
+    return done
+
+
+def run_confirmed(session: Session, steps: list[dict], skipped: list[dict], consent_id: str | None) -> dict:
+    """Confirm on a card: its own id runs what the server parked for it, in its own words;
+    Undo posts no id and runs the steps it sends."""
+    parked = consent_store.take(consent_id)
+    if parked and parked.get("steps"):
+        return run_said(session, parked["label"], parked["steps"], parked["skipped"], parked.get("say"))
+    return run(session, steps, skipped)
 
 
 def inverse(intent: str) -> str:
