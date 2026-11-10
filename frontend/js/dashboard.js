@@ -847,7 +847,9 @@ function sizeDashWidgets() {
   //: as the grid goes `display: none`, every card measured 0px and was given
   //: `span 1`, and the next visit painted them stacked until it re-measured
   //: (layout shift 0.34). The grid's own fire on showing it measures it right.
-  if (!grid || (grid.checkVisibility && !grid.checkVisibility())) return;
+  //: The class is read first: `checkVisibility` needs a clean style tree, so asking it as the tab
+  //: went hidden paid a whole-page style recalc (129 ms at 4x on a switch to Notes, W25 D7).
+  if (!grid || grid.closest(".hidden") || (grid.checkVisibility && !grid.checkVisibility())) return;
   const styles = getComputedStyle(grid);
   const rowUnit = Number.parseFloat(styles.getPropertyValue("grid-auto-rows")) || 1;
   const rowGap = Number.parseFloat(styles.rowGap) || 0;

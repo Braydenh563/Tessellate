@@ -135,6 +135,7 @@ async function openPalette() {
     range: early ? early.range : held?.rangeCount ? held.getRangeAt(0).cloneRange() : null,
   });
   const typed = early ? $("palette-input").value : "";
+  paletteGen.memo.q = "";
   //: The Settings index is read once for this open (`settingRows`, settings-find.js).
   $("palette-overlay").dataset.opened = String(performance.now());
   $("palette-overlay").classList.remove("hidden");
@@ -154,6 +155,7 @@ async function openPalette() {
   apiJson("/usage/summary", { method: "POST", body: JSON.stringify({ known: [] }), silent: true })
     .then((res) => {
       paletteUsage.clear();
+      paletteGen.memo.q = "";
       for (const f of res.features || []) paletteUsage.set(f.name, f.count);
       if (!$("palette-input").value && !$("palette-overlay").classList.contains("hidden")) renderPalette("");
     })
@@ -249,9 +251,15 @@ function paletteMatches(query) {
   //: Typed text reaches the generated rows too (Brief 90): every feature,
   //: every act and every setting, ranked by `paletteRanked`. At rest the
   //: list stays the hand-written one, which is the app's own short list.
-  const pool = palettePool(base, lowered);
-  const commands = paletteRanked(pool, lowered);
-  if (!commands.length) commands.push(...paletteNearestRows(pool, lowered));
+  //: The ranking is kept for the same words for a moment: the notes arriving
+  //: 150 ms after a key redrew the palette and ranked all ~700 rows again (W25 D6).
+  const memo = paletteGen.memo.q === lowered && performance.now() - paletteGen.memo.at < 2000 ? paletteGen.memo : null;
+  const pool = memo ? memo.pool : palettePool(base, lowered);
+  const commands = memo ? [...memo.commands] : paletteRanked(pool, lowered);
+  if (!memo) {
+    if (!commands.length) commands.push(...paletteNearestRows(pool, lowered));
+    Object.assign(paletteGen.memo, { q: lowered, at: performance.now(), pool, commands: [...commands] });
+  }
   commands.push(...paletteNearRows(pool, lowered, commands));
 
   //: **A question typed into the palette is a question** (INBOX 224). The
@@ -367,7 +375,10 @@ function utilityPaletteRows(lowered) {
 
 //: The acts and the Settings index arrive after the palette opens: the acts
 //: are the server's table, the index is in the lazy Settings bundle.
-const paletteGen = { acts: null, actsAsked: false, settings: false, settingsAsked: false, near: null, nearAsked: "" };
+//: `memo`: the last words ranked and what they ranked (`paletteMatches`); opening the palette, the meaning
+//: tables and the usage counts drop it, as anything that can change the order. `words`: a row's words for
+//: the nearest-word scan, split once per distinct text.
+const paletteGen = { acts: null, actsAsked: false, settings: false, settingsAsked: false, near: null, nearAsked: "", memo: { q: "", at: 0, pool: null, commands: [] }, words: new Map() };
 
 //: Other words for a row, by where it lands: the words people type that the
 //: row's own name does not use. A key is a reveal target, `tab:<tab>` or
@@ -418,7 +429,10 @@ function paletteTarget(row) {
 }
 
 //: The meaning tables (meaning.js) arriving after the first keystroke.
-document.addEventListener("meaning-ready", () => paletteRefresh());
+document.addEventListener("meaning-ready", () => {
+  paletteGen.memo.q = "";
+  paletteRefresh();
+});
 
 //: Re-draw an open palette when a generated set arrives after the first draw.
 function paletteRefresh() {
@@ -633,10 +647,13 @@ function paletteNearest(rows, typed) {
   let best = null;
   const said = paletteWords(typed).filter((w) => w.length > 2);
   for (const row of rows) {
-    const words = `${paletteText(row.label)} ${paletteText(row.keywords)} ${PALETTE_ALIASES[paletteTarget(row)] || ""}`
-      .replace(/(^|\s)ph:[\w-]+/g, " ")
-      .split(/[^a-z0-9]+/)
-      .filter((w) => w.length > 2);
+    const text = `${paletteText(row.label)} ${paletteText(row.keywords)} ${PALETTE_ALIASES[paletteTarget(row)] || ""}`;
+    let words = paletteGen.words.get(text);
+    if (!words) {
+      words = text.replace(/(^|\s)ph:[\w-]+/g, " ").split(/[^a-z0-9]+/).filter((w) => w.length > 2);
+      if (paletteGen.words.size > 4000) paletteGen.words.clear();
+      paletteGen.words.set(text, words);
+    }
     for (const one of said) {
       for (const word of words) {
         const d = paletteDistance(one, word);
