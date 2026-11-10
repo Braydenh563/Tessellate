@@ -45,7 +45,7 @@ Each has the recommendation already written (standing order 3); a "yes" takes it
 | Q26 | R7: diagram page head | Hide the file chrome; Export in the head | W18 |
 | Q27 | 1233: RapidOCR as an optional extra against "fully local, vendored" | Optional extra, off by default, installed from Settings, Packages; runs offline once installed | F5 |
 | Q28 | 1255: speaker labels on transcripts | Only once diarisation exists; to BACKLOG | none |
-| Q29 | Filing top-1 0.417 without a model against the 0.8 bar | Everyday vocabulary supplement beside the pack, the owner reviews the words (OPEN.md, filing-1010) | F5 |
+| Q29 | Filing top-1 without a model against the 0.8 bar | Taken 2026-11-11: a held sensitive note counts by its suggested category (0.625 to 0.800); related-topic table (0.825); 60-note frozen fixture gate; no second vocabulary (+0.008) | F5 |
 | Q30 | 1695: private-by-default notes | A Settings switch, off by default | F6 |
 | Q31 | GRAPH tessellation view | Mock three variants; the owner picks one | F7 |
 | Q32 | Owner's look: TIMELINE 561 day strip, decision 13 spans, UI 11 item 11 screenshot set | Keep parked until the owner looks | F7 |
@@ -349,7 +349,7 @@ Rows are book5's plan sections; each batch takes its plan's open rows smallest f
 - **F2 Whiteboard** (Sonnet): nine Format gaps, save each board's view, colour picker, BPMN and icon sets, draw.io rows | WHITEBOARD (book5) | s9-1110: save each board's view built on this device (HISTORY); the rest left (s9c-1110.md)
 - **F3 Mind map** (Sonnet): ~~outline view, branch palette and font, a note node that edits, render pass 13b, rainbow every level, legend, Replace all on notes~~ built (HISTORY "s9c-1110 part 3"); left: audio notes (needs an owner decision on keeping raw audio: /media/upload takes images and PDFs only), Gantt (topics carry a due day, no start) | MINDMAP (book5) | s9-1110: search inside topic notes built (HISTORY); outline view was already built (MINDMAP_PLAN item 8); the rest left (s9c-1110.md)
 - **F4 Chat** (Opus): composition layer (INBOX 1353), Phase 5 (a) to (g), Foundation F5, "X versus Y" | CHAT (book5)
-- **F5 World class** (Sonnet): durable jobs, ~~margin reader~~ (built for notes, s10b-1110), multi-window, torch at launch, F1 prefs, RapidOCR (after Q27), filing vocabulary (after Q29) | WORLD_CLASS (book5)
+- **F5 World class** (Sonnet): durable jobs, ~~margin reader~~ (built for notes, s10b-1110), multi-window, torch at launch, F1 prefs, RapidOCR (after Q27), ~~filing vocabulary (Q29 taken: bar, related topics, frozen fixture; no second vocabulary)~~ | WORLD_CLASS (book5)
 - **F6 UI** (Sonnet): Settings panes indexed, token budget and `!important` to 0, dissolve the 08 and 10 stylesheets, statistics and utilities rows, private-by-default (Q30: setting and create flag built s10-1110; Private view and bulk make-all built s10b-1110; left: the new-note lock toggle), voice dialog V1 to V8 built (voiceup); share target was already built | UI_MODERNISATION (book5), SESSION_BRIEFS 58
 - **F7 Graph and timeline** (Sonnet): `?since=` cursor, tessellation view (after Q31), dot density at 5,000, day strip and spans (after Q32) | GRAPH, TIMELINE (book5)
 - **F8 Owner go** (held): sync, offline studio, audio, desktop pet, custom domain, blind panel, Fable diagram dive (after Q34) | WORLD_CLASS rows 35 to 37, OPEN shell

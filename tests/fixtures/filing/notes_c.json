@@ -1,0 +1,311 @@
+[
+ {
+  "category": "Car",
+  "content": "Tyre pressure light came on again, check them at the garage before the long drive.",
+  "kind": "line"
+ },
+ {
+  "category": "Car",
+  "content": "MOT is due on the 14th, book the slot and ask about the rattle from the exhaust.",
+  "kind": "line"
+ },
+ {
+  "category": "Car",
+  "content": "Glovebox: manual, spare bulbs, ice scraper, tyre inflator, parking permit.",
+  "kind": "list"
+ },
+ {
+  "category": "Car",
+  "content": "The old Fiesta on its last day, 142,000 miles and still starting first time.",
+  "kind": "caption"
+ },
+ {
+  "category": "Car",
+  "content": "My car's check engine light is just a surprise subscription to bad news.",
+  "kind": "joke"
+ },
+ {
+  "category": "Cooking",
+  "content": "Soak the chickpeas overnight, then simmer with cumin, garlic and a squeeze of lemon.",
+  "kind": "line"
+ },
+ {
+  "category": "Cooking",
+  "content": "Pancake day: flour, eggs, milk, lemon, sugar, a good frying pan.",
+  "kind": "list"
+ },
+ {
+  "category": "Cooking",
+  "content": "Preheat the oven to 180C. Cream the butter and sugar, fold in the flour, bake for 25 minutes until golden.",
+  "kind": "pasted"
+ },
+ {
+  "category": "Cooking",
+  "content": "Mum's trick for rice: rinse it three times and never lift the lid.",
+  "kind": "line"
+ },
+ {
+  "category": "Cooking",
+  "content": "I followed the recipe exactly, which is why the smoke alarm and I are on first-name terms.",
+  "kind": "joke"
+ },
+ {
+  "category": "Family",
+  "content": "Call Gran on Sunday, she wants to hear about the new flat.",
+  "kind": "line",
+  "sensitive": true
+ },
+ {
+  "category": "Family",
+  "content": "Dad's seventieth in June, my brother is sorting the restaurant and I am sorting the cake.",
+  "kind": "line",
+  "sensitive": true
+ },
+ {
+  "category": "Family",
+  "content": "Cousins at the beach, all four of them asleep in the back of the van.",
+  "kind": "caption",
+  "sensitive": true
+ },
+ {
+  "category": "Family",
+  "content": "Aunt Carol is coming for the weekend, make up the spare room and hide the good biscuits.",
+  "kind": "line"
+ },
+ {
+  "category": "Family",
+  "content": "Hi love, just to say we got home safe. Give the kids a kiss from us. Love Mum and Dad xx",
+  "kind": "pasted"
+ },
+ {
+  "category": "Films & TV",
+  "content": "Finished the whole series in one weekend, the last episode was worth the wait.",
+  "kind": "line"
+ },
+ {
+  "category": "Films & TV",
+  "content": "Watchlist: the new Villeneuve, that heist film with the twist, the documentary about bees.",
+  "kind": "list"
+ },
+ {
+  "category": "Films & TV",
+  "content": "Popcorn, blanket, rain on the window, and the film is about to start.",
+  "kind": "caption"
+ },
+ {
+  "category": "Films & TV",
+  "content": "The lead actor was brilliant but the ending felt rushed, three stars.",
+  "kind": "line"
+ },
+ {
+  "category": "Films & TV",
+  "content": "Every thriller: someone says 'let's split up' and the audience groans in unison.",
+  "kind": "joke"
+ },
+ {
+  "category": "Gym",
+  "content": "Leg day: squats five by five, then lunges, then a walk of shame to the stairs.",
+  "kind": "line"
+ },
+ {
+  "category": "Gym",
+  "content": "Warm-up: rowing machine ten minutes, hip openers, band pull-aparts.",
+  "kind": "list"
+ },
+ {
+  "category": "Gym",
+  "content": "New personal best on the bench, 70 kilos for three, spotter said I was shaking.",
+  "kind": "line"
+ },
+ {
+  "category": "Gym",
+  "content": "Sunrise run along the river, 8 km before breakfast.",
+  "kind": "caption"
+ },
+ {
+  "category": "Gym",
+  "content": "Week 3: Monday upper body, Tuesday rest, Wednesday deadlifts, Thursday cardio, Friday full body circuits.",
+  "kind": "pasted"
+ },
+ {
+  "category": "Health",
+  "content": "Blood test results back on Friday, ask the doctor about the cholesterol number.",
+  "kind": "line",
+  "sensitive": true
+ },
+ {
+  "category": "Health",
+  "content": "Dentist at 3pm, remember the floss this time.",
+  "kind": "line",
+  "sensitive": true
+ },
+ {
+  "category": "Health",
+  "content": "Prescription: ibuprofen with food, antihistamine at night, review in two weeks.",
+  "kind": "list",
+  "sensitive": true
+ },
+ {
+  "category": "Health",
+  "content": "Back has been sore since Tuesday, booking a physio before it gets worse.",
+  "kind": "line"
+ },
+ {
+  "category": "Health",
+  "content": "Your appointment with the GP is confirmed for Thursday at 10:40. Please bring a list of your current medication.",
+  "kind": "pasted"
+ },
+ {
+  "category": "Home",
+  "content": "The boiler is losing pressure again, ring the engineer before the cold snap.",
+  "kind": "line"
+ },
+ {
+  "category": "Home",
+  "content": "Weekend jobs: mow the lawn, clear the gutters, fix the squeaky door, bleed the radiators.",
+  "kind": "list"
+ },
+ {
+  "category": "Home",
+  "content": "Paint the spare room a warm white, two coats, tape the skirting first.",
+  "kind": "line"
+ },
+ {
+  "category": "Home",
+  "content": "The new sofa finally fits through the door, after one minor argument.",
+  "kind": "caption"
+ },
+ {
+  "category": "Home",
+  "content": "I do not have a messy house, I have a lived-in archaeological site.",
+  "kind": "joke"
+ },
+ {
+  "category": "Money",
+  "content": "Pay the credit card in full on the 3rd so there is no interest.",
+  "kind": "line",
+  "sensitive": true
+ },
+ {
+  "category": "Money",
+  "content": "Bills this month: rent, electricity, broadband, phone, car insurance.",
+  "kind": "list",
+  "sensitive": true
+ },
+ {
+  "category": "Money",
+  "content": "Moved two hundred into savings, the emergency fund is nearly at three months.",
+  "kind": "line",
+  "sensitive": true
+ },
+ {
+  "category": "Money",
+  "content": "Your statement is ready. Minimum payment due 25 March. Balance 412.17. Interest charged this month 6.09.",
+  "kind": "pasted"
+ },
+ {
+  "category": "Money",
+  "content": "My bank balance and my gym attendance are both in a long and silent decline.",
+  "kind": "joke"
+ },
+ {
+  "category": "Reading",
+  "content": "Halfway through the new Atwood, the first hundred pages are slow but the voice is wonderful.",
+  "kind": "line"
+ },
+ {
+  "category": "Reading",
+  "content": "To read: the Ishiguro, that biography of Darwin, something light for the beach.",
+  "kind": "list"
+ },
+ {
+  "category": "Reading",
+  "content": "\"It was a bright cold day in April, and the clocks were striking thirteen.\" Opening line of the novel, still gets me.",
+  "kind": "pasted"
+ },
+ {
+  "category": "Reading",
+  "content": "Library haul: five novels and a book of poems, due back in three weeks.",
+  "kind": "caption"
+ },
+ {
+  "category": "Reading",
+  "content": "Book club on Thursday, I have not finished the last chapter and I am bluffing.",
+  "kind": "line"
+ },
+ {
+  "category": "Travel",
+  "content": "Flights to Lisbon are cheaper on a Tuesday, book before the price jumps.",
+  "kind": "line"
+ },
+ {
+  "category": "Travel",
+  "content": "Packing: passport, adaptor, sun cream, walking shoes, a spare charger.",
+  "kind": "list"
+ },
+ {
+  "category": "Travel",
+  "content": "Sunset over the harbour in Split, the best fish of the whole trip.",
+  "kind": "caption"
+ },
+ {
+  "category": "Travel",
+  "content": "Hotel in Rome has a rooftop terrace, ask for the room facing the dome.",
+  "kind": "line"
+ },
+ {
+  "category": "Travel",
+  "content": "Your booking is confirmed. Check-in from 3pm. Late checkout available on request. Breakfast included.",
+  "kind": "pasted"
+ },
+ {
+  "category": "Uni",
+  "content": "Essay on Keynes due Friday, aim for 2,500 words and cite properly.",
+  "kind": "line"
+ },
+ {
+  "category": "Uni",
+  "content": "Lecture on thermodynamics at nine, bring the problem sheet.",
+  "kind": "line"
+ },
+ {
+  "category": "Uni",
+  "content": "Exam revision: past papers, flashcards for the formulas, ask the tutor about question four.",
+  "kind": "list"
+ },
+ {
+  "category": "Uni",
+  "content": "Reminder: seminar groups for next term are posted on the department board. Attendance is compulsory.",
+  "kind": "pasted"
+ },
+ {
+  "category": "Uni",
+  "content": "My degree is mostly turning caffeine into deadlines and then regret.",
+  "kind": "joke"
+ },
+ {
+  "category": "Work",
+  "content": "Client call moved to Thursday at 11, send the agenda tonight.",
+  "kind": "line"
+ },
+ {
+  "category": "Work",
+  "content": "Monday: finish the quarterly report, reply to HR, one to one with Priya at 3.",
+  "kind": "list"
+ },
+ {
+  "category": "Work",
+  "content": "Manager wants the budget draft by end of day, which is a surprise to me.",
+  "kind": "line"
+ },
+ {
+  "category": "Work",
+  "content": "Team, the office will be closed on the 26th. Please log your hours and submit expenses before then.",
+  "kind": "pasted"
+ },
+ {
+  "category": "Work",
+  "content": "The whole team at the offsite, everyone mid-laugh, nobody looking at the camera.",
+  "kind": "caption"
+ }
+]

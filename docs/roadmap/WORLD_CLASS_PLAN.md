@@ -1524,13 +1524,13 @@ FlashText; superseded by the pack below).
    to 8 hold.
 
 ### Steps
-1 to 4 built 2026-10-10 (filing-1010): HISTORY.md, "Moved from the plans,
-2026-10-10 (filing-1010)", with the numbers. Step 6, built 2026-10-11 (tagsearch-1011):
-`memorymap_everyday.json` adds general words to the pack's topics; no model,
-top-1 0.417 to 0.617 filed (0.792 with sensitive notes suggested), and on 48
-held-out notes 0.458 to 0.667 (0.833). Open: decision 8's 0.8 *filed* (the
-strict xfail stays; 19 of 120 are sensitive and held by decision 6, so 0.84 is
-its ceiling); the owner reviews the vocabulary file; step 5's Built block.
+1 to 4 and 6 built (HISTORY.md; step 6: 0.417 to 0.617). **Decision 8 amended, the owner 2026-11-11 (Q29),
+"make the changes you believe will work and have an impact":** a note held as
+sensitive (decision 6) counts as right in the bar when its suggested category
+is right; holding stays the default for users. Measured 0.625 filed to 0.800
+by suggestion (xfail gone); `memorymap_related.json` (Gardening counts 0.5
+toward Home): 0.650 filed, 10 wrong, 0.825 suggested; 48 held-out 31 right, wrong
+3 to 1. No second vocabulary (266 words: +0.008).
 
 ## Placed from INBOX, 2026-09-09
 

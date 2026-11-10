@@ -558,9 +558,36 @@ def _hits(text: str, purposes: bool) -> dict[str, list[str]]:
     return found
 
 
+@lru_cache(maxsize=1)
+def _related() -> tuple[dict[str, tuple[str, ...]], float]:
+    """Source topic to the topics a person's category is likelier to be named
+    for, and the share of a hit that counts toward them (Q29, owner
+    2026-11-11). Reviewed by hand in `memorymap_related.json`; the pack's
+    groups cannot derive it (its core topics all sit in "Original Coverage")."""
+    data = _read("memorymap_related.json")
+    return {src: tuple(targets) for src, targets in data["related"].items()}, float(data["factor"])
+
+
+def _with_related(weights: dict[str, float]) -> dict[str, float]:
+    """`weights` with each hit topic also counting, at the table's share,
+    toward its related topics (never lowering one the text named itself):
+    a gardening note reads a little as Home, a therapy note as Health."""
+    related, share = _related()
+    out = dict(weights)
+    for topic, weight in weights.items():
+        for target in related.get(topic, ()):
+            out[target] = max(out.get(target, 0.0), weight * share)
+    return out
+
+
 def topic_weights(text: str, hits: dict[str, list[str]] | None = None) -> dict[str, float]:
     """The pack's own score per subject topic, unthresholded: a phrase is
-    worth 2 (0.5 when weak), split among the topics that share it."""
+    worth 2 (0.5 when weak), split among the topics that share it. A hit on a
+    related topic also counts half toward its target (`_with_related`)."""
+    return _with_related(_pack_weights(text, hits))
+
+
+def _pack_weights(text: str, hits: dict[str, list[str]] | None = None) -> dict[str, float]:
     index = _keyword_index()
     weak = _weak_terms()
     purposes = functional_categories()
@@ -576,12 +603,13 @@ def strong_topics(text: str, hits: dict[str, list[str]] | None = None) -> dict[s
     """The subject topics the pack itself would accept for this text (score
     at least 1.5, and one strong phrase or two weak ones), best first."""
     hits = topic_hits(text) if hits is None else hits
-    weights = topic_weights(text, hits)
+    weights = _pack_weights(text, hits)
     weak = _weak_terms()
     accepted = {
         topic: score for topic, score in weights.items()
         if score >= 1.5 and (any(p not in weak for p in hits[topic]) or len(hits[topic]) >= 2)
     }
+    accepted = _with_related(accepted)
     return dict(sorted(accepted.items(), key=lambda pair: (-pair[1], pair[0].casefold())))
 
 
