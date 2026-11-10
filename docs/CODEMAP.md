@@ -2,7 +2,7 @@
 
 Generated 2026-11-10 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7963, frontend ids 2652, CSS sections 523, backend routes 649, backend modules 9403, test files 2344, tests 19453, plan headings 999, app scripts 28, boot scripts 37, script files 266.
+Counts: frontend functions 7963, frontend ids 2652, CSS sections 523, backend routes 649, backend modules 9404, test files 2344, tests 19459, plan headings 999, app scripts 28, boot scripts 37, script files 266.
 
 ## Frontend functions (7963)
 
@@ -13216,7 +13216,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:175 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:267 |
 
-## Backend modules (9403)
+## Backend modules (9404)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -15238,9 +15238,9 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_word_at` | src/tessellate/ai/composer_property.py:60 |
 | `_words_before` | src/tessellate/ai/composer_property.py:72 |
 | `asked` | src/tessellate/ai/composer_property.py:96 |
-| `held` | src/tessellate/ai/composer_property.py:105 |
-| `none_given` | src/tessellate/ai/composer_property.py:117 |
-| `noun` | src/tessellate/ai/composer_property.py:113 |
+| `held` | src/tessellate/ai/composer_property.py:109 |
+| `none_given` | src/tessellate/ai/composer_property.py:121 |
+| `noun` | src/tessellate/ai/composer_property.py:117 |
 | `subject` | src/tessellate/ai/composer_property.py:84 |
 
 ### src/tessellate/ai/composer_quick.py (1)
@@ -16958,17 +16958,18 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `read` | src/tessellate/ai/note_order.py:45 |
 | `say` | src/tessellate/ai/note_order.py:94 |
 
-### src/tessellate/ai/note_rank.py (9)
+### src/tessellate/ai/note_rank.py (10)
 
 | Name | File:line |
 |---|---|
 | `_content` | src/tessellate/ai/note_rank.py:35 |
 | `_defines` | src/tessellate/ai/note_rank.py:64 |
+| `_size` | src/tessellate/ai/note_rank.py:118 |
 | `_stems` | src/tessellate/ai/note_rank.py:58 |
 | `_written` | src/tessellate/ai/note_rank.py:99 |
 | `key` | src/tessellate/ai/note_rank.py:82 |
-| `lead` | src/tessellate/ai/note_rank.py:129 |
-| `lead_by` | src/tessellate/ai/note_rank.py:115 |
+| `lead` | src/tessellate/ai/note_rank.py:140 |
+| `lead_by` | src/tessellate/ai/note_rank.py:123 |
 | `stems_of` | src/tessellate/ai/note_rank.py:53 |
 | `subject` | src/tessellate/ai/note_rank.py:41 |
 
@@ -25083,7 +25084,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (19453)
+## Tests (19459)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -25651,7 +25652,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_composer_voice.py | 10 |
 | tests/test_composer_voice_answers.py | 12 |
 | tests/test_composer_voice_turns.py | 12 |
-| tests/test_composer_w7_1110.py | 3 |
+| tests/test_composer_w7_1110.py | 9 |
 | tests/test_composer_web_2210.py | 12 |
 | tests/test_composer_welcome_1026.py | 9 |
 | tests/test_composer_write_redos.py | 3 |

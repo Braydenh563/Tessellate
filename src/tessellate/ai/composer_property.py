@@ -35,7 +35,7 @@ _PROPERTIES: dict[str, tuple[re.Pattern, re.Pattern | str, str]] = {
 #: The things that carry a number a note may or may not give ("what is the table number": a dinner
 #: booking with no table in it is no answer, R3-2 residue). Each is a property of its own word.
 NUMBERED = ("table", "room", "seat", "booking", "reservation", "confirmation", "reference", "flight", "order", "account", "policy",
-            "ticket", "locker", "gate", "platform", "house", "flat", "apartment", "membership", "licence", "license", "plate", "case", "invoice", "tracking")
+            "ticket", "locker", "gate", "platform", "passport", "visa", "student", "employee", "customer", "parcel", "house", "flat", "apartment", "membership", "licence", "license", "plate", "case", "invoice", "tracking")
 for _word in NUMBERED:
     _PROPERTIES[_word] = (
         re.compile(rf"\b{_word}\s+(?:number|no\.?|num|#)(?!\w)", re.I),
@@ -96,6 +96,10 @@ def subject(question: str) -> str:
 def asked(question: str) -> str:
     """The property `question` asks for, or "" for none."""
     text = " ".join((question or "").split())
+    #: A numbered thing named outright ("passport number") is that thing's number, never a bare-"number" phone ask.
+    for key in NUMBERED:
+        if _PROPERTIES[key][0].search(text):
+            return key
     for key, (word, _held, _noun) in _PROPERTIES.items():
         if word.search(text) and not (key == "phone" and _NOT_PHONE.search(text)):
             return key

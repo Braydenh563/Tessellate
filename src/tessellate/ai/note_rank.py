@@ -112,6 +112,14 @@ def _written(note: Any) -> float:
         return 0.0
 
 
+_RECENCY = re.compile(r"\b(?:latest|last|newest|recent(?:ly)?|new)\b", re.I)
+
+
+def _size(note: Any) -> int:
+    """How many words the note holds, capped so a long dump does not beat a note about the subject."""
+    return min(len(_content(note).split()), 60)
+
+
 def lead_by(items: list, question: str, note_of: Any = lambda x: x) -> list:
     """The items (notes, or composer views that carry one) with the ones most
     plainly about the subject first; the same list when the question names no
@@ -122,7 +130,10 @@ def lead_by(items: list, question: str, note_of: Any = lambda x: x) -> list:
         return list(items)
     stems = _stems(words)
     keyed = [(key(note_of(it), words, stems), i, it) for i, it in enumerate(items)]
-    keyed.sort(key=lambda k: (k[0], -_written(note_of(k[2])) if k[0][0] < 3 else 0.0, k[1]))
+    #: Among notes whose titles hold the subject alike ("Lisbon dinner", "Lisbon trip"), the fuller note is the one
+    #: about it: a one-line reminder does not out-lead it by being newer (W7 B1). A "latest" ask keeps recency first.
+    fuller = not _RECENCY.search(question or "")
+    keyed.sort(key=lambda k: (k[0], -_size(note_of(k[2])) if fuller and k[0][0] == 2 else 0, -_written(note_of(k[2])) if k[0][0] < 3 else 0.0, k[1]))
     return [it for _, _, it in keyed]
 
 
