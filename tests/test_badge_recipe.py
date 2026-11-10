@@ -81,7 +81,7 @@ def test_status_badges_are_never_a_fill_again():
     js = _js()
     assert "extras-installed" not in css and "extras-installed" not in js
     assert ".ocr-engine-chip.is-warn" not in css
-    assert 'badge.className = `chip item-label${running ? " is-ok" : ""}`' in js
+    assert 'badge.className = `chip item-label${view.running ? " is-ok is-live" : ""}`' in js
     index = (JS_DIR.parent / "index.html").read_text(encoding="utf-8")
     assert 'id="searxng-host-state" class="chip item-label"' in index
     # The recipe reaches every surface, not three.
