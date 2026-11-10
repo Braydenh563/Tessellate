@@ -174,10 +174,11 @@ def clarify(message: str, *, web_on: bool, voice: str = "natural", seed: str = "
     return _pick(pool, f"unplaced|{seed}|{message}").format(what=realise.cut_title(" ".join(message.split()), 40))
 
 
-def chips(message: str, *, web_on: bool) -> list[str]:
-    """Two chips: the notes on it, then the web (when it is on) or what the app can do."""
+def chips(message: str, *, web_on: bool, previous: list[str] | None = None) -> list[str]:
+    """The notes on it, then the web (when it is on) or what the app can do;
+    after a turn, that turn's subject's own acts come first (INBOX 1729 c)."""
     what = realise.cut_title(" ".join(message.split()), 40)
-    return [f"Search my notes for {what}", f"Search the web for {what}" if web_on else "What can you do?"]
+    return [*(previous or [])[:2], f"Search my notes for {what}", f"Search the web for {what}" if web_on else "What can you do?"]
 
 
 #: Notes or the web? (INBOX 1696 s). Each side is read as a strength from 0 to 1

@@ -36,7 +36,7 @@ from starlette.concurrency import run_in_threadpool
 from sqlalchemy.orm import Session
 
 from tessellate.ai import capability, fact_check, composer, composer_social, composer_unplaced, note_language, composer_aware, composer_compose, composer_digest, composer_suggest, composer_tone, composer_web, composer_lists, find_it, glossary, list_pool, note_rank, note_recency, personal, verdicts, vocative
-from tessellate.ai import ask_chips, composer_dialogue, composer_empty, composer_intent, composer_smalltalk
+from tessellate.ai import ask_chips, composer_dialogue, composer_empty, composer_intent, composer_smalltalk, composer_talk
 from tessellate.ai import recognise
 from tessellate.ai import (
     acts,
@@ -1175,7 +1175,7 @@ def _unplaced_events(req: _StreamRequest) -> list[dict]:
     web search the person did not ask for."""
     web_on = _web_pref_on()
     said = composer_unplaced.clarify(req.question or "", web_on=web_on, voice=_composer_voice(), seed=_reply_seed(req)[1])
-    asks = composer_unplaced.chips(req.question or "", web_on=web_on)
+    asks = composer_unplaced.chips(req.question or "", web_on=web_on, previous=composer_talk.stumped_asks(req.session, req.history, user_now(deps.get_config()).date()))
     return [{"type": "answer", "delta": said}, {"type": "offer", "offer": {"kind": "ask", "label": "", "asks": asks}}]
 
 

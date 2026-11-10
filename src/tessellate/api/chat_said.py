@@ -22,12 +22,13 @@ from sqlalchemy.orm import Session
 from tessellate.ai import capability, composer, composer_aware, composer_digest, composer_lists, composer_open, composer_plan, composer_social, fact_check, filed_name, intent, phrasing, realise
 from tessellate.ai import acts, composer_dialogue, task_acts
 from tessellate.ai import composer_frame, composer_read
-from tessellate.ai import composer_smalltalk
+from tessellate.ai import composer_smalltalk, composer_talk
 from tessellate.ai.ollama_client import OllamaError
 from tessellate.entry import manager
 from tessellate.api import chat_extra
 from tessellate.api.chat_request import ChatRequest, _StreamRequest, _Turn, _composed, _meta_event
-from tessellate.core import clock, private_turn
+from tessellate.core import clock, deps, private_turn
+from tessellate.core.config import user_now
 from tessellate.core.database import AskTurn, Conversation, Entity, Entry, like_escape, LIKE_ESCAPE
 from tessellate.repo import documents as documents_repo
 from tessellate.repo import relations as relations_repo
@@ -891,6 +892,7 @@ def _composed_lines(req: _StreamRequest, events: list[dict]) -> list[str]:
     meta = {"type": "meta", "raw_results": [], "picture_alts": {}, "picture_sizes": {}, "search_mode": "command",
             "connected_ids": [], "match_info": {}, "when_phrase": None, "as_of": None, "as_of_revisions": {},
             "answered_by": None, "ollama_running": req.ollama.is_running(), "composed": True}
+    events = events if req.skill else composer_talk.Closing(req.session, req.body.question or "", user_now(deps.get_config()).date()).apply(events)
     return [json.dumps(e) + "\n" for e in ({"type": "status", "stage": "searching"}, meta, *events, {"type": "done"})]
 
 
