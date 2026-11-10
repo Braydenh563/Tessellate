@@ -11,6 +11,7 @@ from __future__ import annotations
 import hashlib
 import logging
 import re
+from collections.abc import Callable
 from pathlib import Path
 
 #: A thumbnail is meant to be ~20 KB; 64 KB is the ceiling a client may send.
@@ -18,6 +19,10 @@ MAX_BYTES = 64 * 1024
 _FP = re.compile(r"^[0-9a-f]{16}$")
 _EXT = {"image/webp": "webp", "image/jpeg": "jpg"}
 _MIME = {v: k for k, v in _EXT.items()}
+
+
+#: Where the data folder is read from. core/deps.py sets it: this module does not import deps (a cycle).
+data_dir_source: Callable[[], Path] = lambda: Path(".")  # noqa: E731
 
 
 def thumb_dir(data_dir: Path) -> Path:

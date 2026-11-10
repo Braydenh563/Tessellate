@@ -291,7 +291,7 @@ function lagRafTop() {
   return top;
 }
 
-function lagRafClose(now) {
+function lagRafClose(now = performance.now()) {
   for (const [owner, s] of LAG_RAF.bucket) {
     if (s.ms < LAG_RAF_BUDGET_MS) {
       LAG_RAF.hot.delete(owner);
@@ -337,7 +337,7 @@ function lagRafInstall() {
   //: **The second closes on a 1 s timer** (owner decision Q10), not on the first callback after it: the wrapper then
   //: does its counting and nothing else, and a second with no frame at all is closed too. Idle when the sampler is off.
   const tick = () => {
-    if (LAG_RAF.on) lagRafClose(performance.now());
+    if (LAG_RAF.on) lagRafClose();
     setTimeout(tick, 1000);
   };
   setTimeout(tick, 1000);

@@ -646,7 +646,7 @@ async function renderPrefs() {
   if (prefsCache.session_idle_ttl_minutes) {
     $("account-idle-ttl").value = prefsCache.session_idle_ttl_minutes;
   }
-  $("account-private-idle").value = String(prefsCache.private_space_idle_minutes || 10);
+  $("account-private-idle").value = prefsCache.private_space_idle_minutes;
   $("pref-notif-mute-except-reminders").checked = Boolean(
     prefsCache.notifications_muted_except_reminders
   );

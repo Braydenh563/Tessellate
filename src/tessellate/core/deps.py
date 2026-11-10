@@ -26,9 +26,10 @@ from tessellate.ai.model_manager import ModelManager
 from tessellate.ai.ollama_client import OllamaClient
 from tessellate.ai.openai_client import OpenAICompatClient
 from tessellate.ai.provider import Provider
-from tessellate.core import embedmodels, jobruns
+from tessellate.core import embedmodels, jobruns, spacelock
 from tessellate.core.config import ConfigManager
-from tessellate.core.database import DatabaseManager, Entry
+from tessellate.core import board_thumbs
+from tessellate.core.database import DatabaseManager, Entry, impersonate_workspace  # noqa: F401  # re-exported
 
 _ModelT = TypeVar("_ModelT")
 
@@ -329,6 +330,10 @@ def get_config() -> ConfigManager:
     return _config
 
 
+spacelock.config_source = get_config
+board_thumbs.data_dir_source = lambda: get_config().data_dir
+
+
 def get_db() -> DatabaseManager:
     init_app_state()
     assert _db is not None
@@ -442,7 +447,7 @@ _AI_PATHS = ("/chat", "/insights", "/questions", "/help/", "/night", "/editor")
 
 def _still_sealed(session: Session, request: Request, workspace_id: str | None, private: list[str]) -> list[str]:
     """Which private spaces stay out of this request's reads."""
-    from tessellate.core import private_turn, spacelock
+    from tessellate.core import private_turn
 
     # Idle is the person's, not the app's polls: only their own activity
     # (`/private-spaces/touch`) keeps the private spaces open.
@@ -712,20 +717,6 @@ def clear_index_stale() -> None:
 
 def index_stale_notes() -> int:
     return int(get_config().get_preference("index_stale_notes", 0) or 0)
-
-
-@contextmanager
-def impersonate_workspace(session: Session, workspace_id: str):
-    """Run a block of code as if in a specific workspace."""
-    old = session.info.get("workspace_id")
-    session.info["workspace_id"] = workspace_id
-    try:
-        yield
-    finally:
-        if old is None:
-            del session.info["workspace_id"]
-        else:
-            session.info["workspace_id"] = old
 
 
 #: Handed to the model manager so its durable jobs can find the running app's

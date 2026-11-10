@@ -9,7 +9,10 @@
 // only real idleness, locks on close, and asks the two-way question when
 // something leaves a private space.
 (() => {
-  const state = { status: null, bound: false, touched: 0, watching: false };
+  const state = { status: null, touched: 0, watching: false };
+
+  //: Locking or unlocking changes which notes the whole notebook shows, so the one full re-read is here.
+  const reread = () => loadEntries().catch(() => {});
 
   async function status() {
     state.status = await apiJson("/private-spaces/status", { silent: true }).catch(() => null);
@@ -39,7 +42,7 @@
     state.touched = Date.now();
     watch();
     toast("Private spaces unlocked.");
-    await loadEntries().catch(() => {});
+    await reread();
     return true;
   }
 
@@ -59,11 +62,11 @@
       if (Date.now() - state.touched < 60e3) return;
       state.touched = Date.now();
       const was = state.status?.open;
-      const now = await apiJson("/private-spaces/touch", { method: "POST", silent: true }).catch(() => null);
+      const now = await apiJson("/private-spaces/touch", { method: "POST", silent: true }).catch(backgroundWriteFailed);
       if (!now) return;
       state.status = { ...(state.status || {}), open: now.open };
       if (was && !now.open) {
-        await loadEntries().catch(() => {});
+        await reread();
         toastAction("Private spaces locked.", "Unlock", unlock);
       }
     };
@@ -103,12 +106,11 @@
     return true;
   }
 
-  async function save() {
+  //: The Edit space dialog's Save (bound in spaces-find.js, which hands over its field marker).
+  async function save(fail) {
     const id = $("space-edit-id").value;
     const name = $("space-edit-name").value.trim();
-    const error = $("space-edit-error");
-    const fail = (message) => lockFail(message, $("space-edit-name"), error);
-    error.textContent = "";
+    $("space-edit-error").textContent = "";
     $("space-edit-name").removeAttribute("aria-invalid");
     if (!name) return fail("Give the space a name.");
     const was = JSON.parse($("space-edit-dialog").dataset.was || "{}");
@@ -117,13 +119,12 @@
       const now = { name, icon: $("space-edit-icon").value };
       await apiJson(`/spaces/${encodeURIComponent(id)}`, { method: "PUT", body: JSON.stringify(now) });
       pushRequestUndo(`Renamed the space to “${name}”`, `/spaces/${encodeURIComponent(id)}`, "PUT", { name: was.name, icon: was.icon }, now, loadSpaces);
-      if (wantPrivate !== Boolean(was.isPrivate) && !(await setPrivate({ id, name }, wantPrivate))) {
-        $("space-edit-private").checked = Boolean(was.isPrivate);
-        return;
+      if (wantPrivate !== was.isPrivate) {
+        if (!(await setPrivate({ id, name }, wantPrivate))) return ($("space-edit-private").checked = was.isPrivate);
+        reread();
       }
       $("space-edit-dialog").close();
       await loadSpaces();
-      await loadEntries().catch(() => {});
     } catch (err) {
       fail(err.message);
     }
@@ -183,7 +184,8 @@
     "Your password opens every private space, and on this computer your PIN does too. Moving a note out asks whether it stays private.",
   ];
 
-  function edit({ id, name, icon, isPrivate }) {
+  function edit(id) {
+    const { name, icon, is_private: isPrivate } = spacesCache.find((space) => space.id === id);
     mount("space-edit");
     $("space-edit-id").value = id;
     $("space-edit-name").value = name;
@@ -194,20 +196,16 @@
     $("space-edit-dialog").dataset.was = JSON.stringify({ name, icon, isPrivate: Boolean(isPrivate) });
     $("space-edit-error").textContent = "";
     spaceIconPicker($("space-edit-icon-picker"), $("space-edit-icon"));
-    if (!state.bound) {
-      state.bound = true;
-      $("space-edit-submit").addEventListener("click", save);
-    }
     $("space-edit-dialog").showModal();
     $("space-edit-name").focus();
   }
 
   //: Always on close: the window going away locks them, whatever the idle clock says.
   window.addEventListener("pagehide", () => {
-    fetch("/private-spaces/lock", { method: "POST", keepalive: true, headers: authHeaders() }).catch(() => {});
+    api("/private-spaces/lock", { method: "POST", keepalive: true, silent: true, readOnly: true }).catch(backgroundWriteFailed);
   });
 
-  const ACTIONS = { edit, enter, unlock, askKeep, mount };
+  const ACTIONS = { edit, enter, unlock, askKeep, mount, save };
   function privateSpaces(action, ...args) {
     return ACTIONS[action]?.(...args);
   }

@@ -15,6 +15,8 @@ from __future__ import annotations
 
 import threading
 import time
+from collections.abc import Callable
+from typing import Any
 
 #: The owner's answer: ten minutes idle, changeable in Settings.
 DEFAULT_IDLE_MINUTES = 10
@@ -26,6 +28,11 @@ _lock = threading.Lock()
 _opened: dict[str, float] = {}
 
 
+#: Where the preference is read from. core/deps.py sets it to its own
+#: `get_config`: this module does not import deps, which imports it (a cycle).
+config_source: Callable[[], Any] = lambda: None  # noqa: E731  # no config yet: the default
+
+
 def _now() -> float:
     """Monotonic seconds; a test replaces this to step past the idle window."""
     return time.monotonic()
@@ -34,9 +41,7 @@ def _now() -> float:
 def idle_minutes() -> int:
     """The preference, clamped to 1..240 minutes."""
     try:
-        from tessellate.core import deps
-
-        value = int(deps.get_config().get_preference(PREFERENCE, DEFAULT_IDLE_MINUTES))
+        value = int(config_source().get_preference(PREFERENCE, DEFAULT_IDLE_MINUTES))
     except Exception:  # noqa: BLE001  # no config yet: the default
         value = DEFAULT_IDLE_MINUTES
     return max(1, min(240, value))

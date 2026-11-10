@@ -261,7 +261,7 @@
     //: The pane is narrow beside the picture (224 px at 1440): the example is the title, the placeholder two words.
     Object.assign(A.input, { type: "text", maxLength: 300, autocomplete: "off", placeholder: "Ask for a change", title: "For example: add Refund after In stock? No, or rename Warehouse to Fulfilment" });
     A.input.setAttribute("aria-label", "Ask for a change to the diagram");
-    const send = smallButton("ph:paper-plane-right", "Ask (Enter)", () => {}, false);
+    const send = A.send = smallButton("ph:paper-plane-right", "Ask (Enter)", () => {}, false);
     send.type = "submit";
     send.classList.add("accent", "dgm-ai-send");
     form.append(icon, A.input, send);
@@ -300,14 +300,14 @@
     const words = A.input.value.trim();
     if (!words) return A.h.say(S, "Write what to change first.");
     const model = { nodes: S.m.nodes.map((n) => ({ id: n.id, text: String(n.text).slice(0, 200), shape: n.shape, group: n.group ?? null })), edges: S.m.edges.map((e) => ({ from: e.from, to: e.to, label: String(e.label || "").slice(0, 200) })), subgraphs: S.m.subgraphs.map((g) => ({ id: g.id, title: String(g.title || "").slice(0, 200), parent: g.parent ?? null })) };
-    A.input.setAttribute("aria-busy", "true");
+    setBusy(A.send, true);
     let reply;
     try {
       reply = await apiJson("/drafts/diagram-ask", { method: "POST", body: JSON.stringify({ ask: words, model }) });
     } catch (error) {
       return A.h.say(S, error.message || "That did not reach the app.");
     } finally {
-      A.input.removeAttribute("aria-busy");
+      setBusy(A.send, false);
     }
     const by = reply.by === "model" ? "Written by the model." : "Read by rule, no model needed.";
     show(A, reply.ops || [], [reply.said, by].filter(Boolean).join(" "));
