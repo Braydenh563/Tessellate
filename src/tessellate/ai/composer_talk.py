@@ -1,0 +1,382 @@
+"""The composer holds a conversation (INBOX 1729).
+
+Three things the no-model answer writer did one turn at a time:
+
+- **Next chips on every answer.** An answer that ends with none (an empty day,
+  a slash list, the statistics overview) gets the acts its subject offers
+  (`Closing`).
+- **A follow-on reads the turn before.** "Any other diagrams?" after a chart
+  draws one it has not drawn; "what are those tags?" after the overview lists
+  the tags (`reply`). The turn before is read from its question and answer
+  text (`previous`), the only state a request carries.
+- **The stumped line is the last resort**, and its chips are the previous
+  subject's acts (`acts_for`).
+
+Every number comes from the notebook's own counts (`slash_more`,
+`notebook_stats`); no model writes a word of it.
+"""
+
+from __future__ import annotations
+
+import calendar
+import re
+from collections import Counter
+from dataclasses import dataclass, field
+from datetime import date, datetime, time, timedelta
+
+from sqlalchemy import func, select
+from sqlalchemy.orm import Session
+
+from tessellate.ai import realise, recognise, slash, slash_more
+
+#: The charts the app can already draw from the notes, in the order offered.
+CHARTS = ("time", "tag", "category", "weekday")
+_CHART_WORDS = {"time": "per week", "tag": "per tag", "category": "per category", "weekday": "per weekday"}
+SHOWN_TAGS = 40
+
+_OTHER = r"other|another|more|different|else|additional|further|new"
+_CHART_NOUN = r"diagrams?|charts?|graphs?|plots?|visuali[sz]ations?"
+_OTHER_CHART = re.compile(rf"\b(?:{_OTHER})\b.*\b(?:{_CHART_NOUN})\b|\b(?:{_CHART_NOUN})\b.*\b(?:{_OTHER})\b", re.I)
+_BARE_OTHER = re.compile(rf"^(?:and |ok |okay |so )?(?:(?:show|give|draw) me |any |do you have |got )?(?:an?|the|any)? ?(?:{_OTHER}) ?(?:one|ones)?\W*$", re.I)
+_CHART_ASK = re.compile(r"^(?:(?:show|draw|chart|graph|plot|give|see)\b.*?)\b(?:notes?|writing) (?:per|by|each) (?P<by>week ?day|day of the week|week|month|tag|category)\b", re.I)
+_BY_WORD = {"week": "time", "tag": "tag", "category": "category", "weekday": "weekday"}
+_PART = re.compile(r"\b(?P<part>tags?|categor(?:y|ies)|documents?|docs|month)\b", re.I)
+_REFERS = re.compile(r"\b(?:those|these|that|the|which|what|list|show|name|its|their)\b", re.I)
+
+
+@dataclass
+class Prev:
+    """What the turn before showed: its kind, the charts it drew, the days it
+    was about and whether they held nothing."""
+
+    kind: str = ""
+    shown: set = field(default_factory=set)
+    window: tuple[date, date] | None = None
+    empty: bool = False
+
+
+def _n(n: int, word: str) -> str:
+    """"10 tags": the figure as the overview writes it."""
+    return f"{n} {word}{'' if n == 1 else 's'}"
+
+
+def _clean(text: str) -> str:
+    return " ".join(str(text or "").replace("’", "'").split())
+
+
+def _window(question: str, today: date) -> tuple[date, date] | None:
+    typed = slash.parse(question)
+    if typed:
+        got = slash._window(typed[0] if typed[0] in ("today", "yesterday") else typed[1], today) if typed[0] in ("today", "yesterday", "made") else None  # noqa: SLF001
+        return (got[0], got[1]) if got else None
+    got = recognise.question_day(question, today)
+    return (got[0], got[1]) if got else None
+
+
+#: What an answer's own words say it was: (pattern, kind, charts it drew). A chart
+#: of None is the one its words name.
+_BY_ANSWER = (
+    (re.compile(r"Open Statistics for the full picture"), "overview", set()),
+    (re.compile(r"Here are your notes per (week|tag|category|weekday)\b"), "chart", None),
+    (re.compile(r"Your (?:\w+ )?distinct tags?, most used first|Your most-used tags"), "tags", {"tag"}),
+    (re.compile(r"Your notes sit in |The categories with the most notes"), "categories", {"category"}),
+    (re.compile(r"Your \d+ documents?, newest first|You have no documents"), "documents", set()),
+    (re.compile(r"^.{0,40} was your busiest month, with "), "month", set()),
+)
+
+
+def _kind_of_answer(answer: str) -> Prev | None:
+    for pattern, kind, drew in _BY_ANSWER:
+        found = pattern.search(answer)
+        if found:
+            return Prev(kind, {_BY_WORD[found.group(1)]} if drew is None else set(drew))
+    return None
+
+
+def previous(question: str, answer: str, today: date) -> Prev:
+    """The kind of an answer, read from its words and the question that got it."""
+    said = _kind_of_answer(answer)
+    typed = slash.parse(question)
+    name = typed[0] if typed else ""
+    if said is None and name in ("tags", "categories"):
+        said = Prev(name, {"tag" if name == "tags" else "category"})
+    if said is not None:
+        return said
+    listed = "](#/notes/" in answer
+    window = _window(question, today)
+    if window and (name in ("today", "yesterday", "made") or not listed):
+        return Prev("window", {"time"}, window, not listed)
+    return Prev("notes") if listed else Prev()
+
+
+# --- the charts ---------------------------------------------------------------
+
+
+def _bar(title: str, by: str, rows: list[dict]) -> dict | None:
+    return {"type": "chart", "chart": realise.chart(title, by, rows)} if rows and realise.form_of(rows) == "chart" else None
+
+
+def _weekdays(session: Session) -> list[dict]:
+    entry, visible = slash_more._notes()  # noqa: SLF001
+    days = Counter(made.weekday() for made in session.scalars(select(entry.created_at).where(*visible)) if made)
+    return [{"name": calendar.day_name[i], "notes": days.get(i, 0)} for i in range(7)] if days else []
+
+
+def drawing(session: Session, kind: str, today: date) -> dict | None:
+    """The event that draws chart `kind` over every note, None when the
+    notebook is too small to draw it."""
+    if kind == "time":
+        return slash_more.empty_timeline(session, today)
+    if kind == "tag":
+        return _bar("Notes per tag", "tag", [{"name": t, "notes": n} for t, n in slash_more.tag_counts(session).most_common(15)])
+    if kind == "category":
+        return _bar("Notes per category", "category", [{"name": str(c), "notes": int(n)} for c, n in slash_more.category_counts(session)[0][:15]])
+    return _bar("Notes per weekday", "weekday", _weekdays(session)) if kind == "weekday" else None
+
+
+def _chart_chip(kind: str) -> str:
+    return f"Show notes {_CHART_WORDS[kind]}"
+
+
+def _chart_reply(session: Session, kind: str, today: date, lead: str, others: list[str]) -> list[dict]:
+    drawn = drawing(session, kind, today)
+    tail = f" I can also draw notes {_join([_CHART_WORDS[k] for k in others])}." if others else ""
+    events: list[dict] = [{"type": "answer", "delta": f"{lead}{tail}"}]
+    if drawn:
+        events.append(drawn)
+    asks = [*map(_chart_chip, others[:3]), "Notebook statistics"] if others else ["Notebook statistics", "What did I write this week?"]
+    return [*events, {"type": "offer", "offer": {"kind": "ask", "label": "", "asks": asks[:4]}}]
+
+
+def _join(parts: list[str]) -> str:
+    return parts[0] if len(parts) == 1 else ", ".join(parts[:-1]) + " or " + parts[-1]
+
+
+def _other_chart(session: Session, question: str, prev: Prev, today: date) -> list[dict] | None:
+    """"Any other diagrams you can show me?": the charts the notebook can draw
+    that the turn before did not."""
+    asked = _OTHER_CHART.search(question) and (prev.shown or len(question.split()) <= 9)
+    if not (asked or (prev.shown and _BARE_OTHER.match(question))):
+        return None
+    left = [k for k in CHARTS if k not in prev.shown and drawing(session, k, today)]
+    if not left:
+        return [{"type": "answer", "delta": "That is every chart I can draw from your notes. Statistics holds the rest of the numbers."}]
+    first, rest = left[0], left[1:]
+    return _chart_reply(session, first, today, f"Here are your notes {_CHART_WORDS[first]}.", rest)
+
+
+def _chart_by(session: Session, question: str, prev: Prev, today: date) -> list[dict] | None:
+    """"Show notes per tag", the chip an offered chart is."""
+    got = _CHART_ASK.search(question)
+    if not got:
+        return None
+    word = got.group("by").lower().replace(" ", "")
+    kind = "weekday" if word.startswith("week") and word != "week" or word == "dayoftheweek" else "time" if word in ("week", "month") else word
+    if kind not in CHARTS or not drawing(session, kind, today):
+        return None
+    left = [k for k in CHARTS if k != kind and k not in prev.shown]
+    return _chart_reply(session, kind, today, f"Here are your notes {_CHART_WORDS[kind]}.", left)
+
+
+# --- parts of an answer -------------------------------------------------------
+
+
+def _tag_list(session: Session, today: date) -> list[dict] | None:
+    counts = slash_more.tag_counts(session)
+    if not counts:
+        return [{"type": "answer", "delta": "None of your notes carry a tag yet."}]
+    top = counts.most_common(SHOWN_TAGS)
+    lines = "\n".join(f"- {tag} ({n})" for tag, n in top)
+    more = f"\n\n{realise.count_word(len(counts) - len(top)).capitalize()} more are in Notes." if len(counts) > len(top) else ""
+    events: list[dict] = [{"type": "answer", "delta": f"Your {_n(len(counts), 'distinct tag')}, most used first:\n\n{lines}{more}"}]
+    drawn = drawing(session, "tag", today)
+    return events + ([drawn] if drawn else [])
+
+
+def _category_list(session: Session, today: date) -> list[dict] | None:
+    rows, unfiled = slash_more.category_counts(session)
+    if not rows:
+        return [{"type": "answer", "delta": "None of your notes are filed in a category yet."}]
+    lines = "\n".join(f"- {name} ({n})" for name, n in rows)
+    left = f"\n\n{realise.count_noun(unfiled, 'note').capitalize()} {'is' if unfiled == 1 else 'are'} filed nowhere." if unfiled else ""
+    return [{"type": "answer", "delta": f"Your notes sit in {len(rows)} {'category' if len(rows) == 1 else 'categories'}:\n\n{lines}{left}"}]
+
+
+def _document_list(session: Session, today: date) -> list[dict] | None:
+    from tessellate.core.database import Document
+
+    titles = [str(d.title) for d in session.scalars(select(Document).order_by(Document.updated_at.desc()).limit(SHOWN_TAGS))]
+    if not titles:
+        return [{"type": "answer", "delta": "You have no documents yet."}]
+    return [{"type": "answer", "delta": f"Your {_n(len(titles), 'document')}, newest first:\n\n" + "\n".join(f"- {t}" for t in titles)}]
+
+
+def _busiest_month(session: Session) -> tuple[int, int, int] | None:
+    entry, visible = slash_more._notes()  # noqa: SLF001
+    months = Counter((made.year, made.month) for made in session.scalars(select(entry.created_at).where(*visible)) if made)
+    if len(months) < 2:
+        return None
+    (year, month), n = months.most_common(1)[0]
+    return year, month, n
+
+
+def _month_list(session: Session, today: date) -> list[dict] | None:
+    found = _busiest_month(session)
+    if found is None:
+        return None
+    year, month, n = found
+    entry, visible = slash_more._notes()  # noqa: SLF001
+    start = datetime(year, month, 1)
+    end = datetime(year + (month == 12), month % 12 + 1, 1)
+    rows = list(session.scalars(select(entry).where(*visible, entry.created_at >= start, entry.created_at < end).order_by(entry.created_at.desc(), entry.id.desc())))
+    lead = f"{start:%B %Y} was your busiest month, with {_n(n, 'note')}:"
+    return [{"type": "answer", "delta": f"{lead}\n\n{slash_more._rows(session, rows)}{slash_more._more(len(rows))}"}]  # noqa: SLF001
+
+
+_PARTS = {"tag": _tag_list, "categor": _category_list, "doc": _document_list, "month": _month_list}
+
+
+def _part_of(session: Session, question: str, prev: Prev, today: date) -> list[dict] | None:
+    """"What are those distinct tags": the part of the overview the question names, listed."""
+    got = _PART.search(question)
+    if not got or prev.kind not in _PARTED or not _REFERS.search(question):
+        return None
+    word = got.group("part").lower()
+    key = next(k for k in _PARTS if word.startswith(k))
+    if prev.kind == "tags" and key == "tag" or prev.kind == "categories" and key == "categor" or prev.kind == "month" and key == "month":
+        return None
+    return _PARTS[key](session, today)
+
+
+_PARTED = ("overview", "tags", "categories", "documents", "month")
+_READERS = (_other_chart, _chart_by, _part_of)
+
+
+def from_history(history: list[dict], today: date) -> Prev:
+    """The turn before, with every chart the last few turns drew."""
+    turns = [previous(str(t.get("question") or ""), str(t.get("answer") or ""), today) for t in (history or [])[-6:]]
+    if not turns:
+        return Prev()
+    last = turns[-1]
+    last.shown = set().union(*(t.shown for t in turns))
+    return last
+
+
+def reply(session: Session, question: str, history: list[dict], today: date) -> list[dict] | None:
+    """The events for a question that reads against the turn before it (or names a chart), else None."""
+    said = _clean(question).rstrip("?!. ")
+    if not said:
+        return None
+    prev = from_history(history, today)
+    for read in _READERS:
+        events = read(session, said, prev, today)
+        if events is not None:
+            return events
+    return None
+
+
+# --- what to offer next ---------------------------------------------------------
+
+
+def _day(d: date, today: date) -> str:
+    return f"{d.day} {d:%B}" if d.year == today.year else f"{d.day} {d:%B %Y}"
+
+
+def _nearest_day(session: Session, window: tuple[date, date]) -> date | None:
+    entry, visible = slash_more._notes()  # noqa: SLF001
+    before = session.scalar(select(func.max(entry.created_at)).where(*visible, entry.created_at < datetime.combine(window[0], time.min)))
+    after = session.scalar(select(func.min(entry.created_at)).where(*visible, entry.created_at >= datetime.combine(window[1] + timedelta(days=1), time.min)))
+    near = [d.date() for d in (before, after) if d]
+    return min(near, key=lambda d: abs((d - window[0]).days)) if near else None
+
+
+def _busiest_week(session: Session) -> tuple[date, date] | None:
+    entry, visible = slash_more._notes()  # noqa: SLF001
+    weeks = Counter((made.date() - timedelta(days=made.weekday())) for made in session.scalars(select(entry.created_at).where(*visible)) if made)
+    if not weeks:
+        return None
+    start = weeks.most_common(1)[0][0]
+    return start, start + timedelta(days=6)
+
+
+def _empty_day_acts(session: Session, prev: Prev, today: date) -> list[str]:
+    acts: list[str] = []
+    near = _nearest_day(session, prev.window) if prev.window else None
+    if near:
+        acts.append(f"What did I write on {_day(near, today)}?")
+    acts.append("What did I write this week?")
+    week = _busiest_week(session)
+    if week:
+        acts.append(f"What did I write from {_day(week[0], today)} to {_day(week[1], today)}?")
+    return acts
+
+
+def acts_for(session: Session, prev: Prev, today: date) -> list[str]:
+    """What can be done with the subject of an answer: the chips under it."""
+    others = [k for k in CHARTS if k not in prev.shown and drawing(session, k, today)]
+    if prev.kind == "window" and prev.empty:
+        return _empty_day_acts(session, prev, today)
+    if prev.kind in ("documents", "month"):
+        return ["Notebook statistics", "List my categories", "Which tags do I use most?", *map(_chart_chip, others[:1])]
+    if prev.kind == "overview":
+        return ["Which tags do I use most?", "List my categories", "What documents do I have?", "Which was my busiest month?"]
+    if prev.kind == "tags":
+        return ["List my categories", *map(_chart_chip, others[:2])]
+    if prev.kind == "categories":
+        return ["Which tags do I use most?", *map(_chart_chip, others[:2])]
+    if prev.kind in ("window", "notes", "chart"):
+        return [*map(_chart_chip, others[:2]), "What did I write this week?"]
+    return ["What did I write this week?", "Notebook statistics", "What can you do?"]
+
+
+class Closing:
+    """Watches a composed turn's events and, when it ends with no Next chips,
+    adds the subject's own (INBOX 1729 a). A turn whose only offer is an
+    "open" button carries the chips inside it (`also`), since the page keeps
+    one offer a turn. `active=False` makes every call a no-op."""
+
+    def __init__(self, session: Session, question: str, today: date, active: bool = True) -> None:
+        self.session, self.question, self.today, self.active = session, question, today, active
+        self.chipped = not active
+        self.shown: set = set()
+
+    def _note(self, event: dict) -> None:
+        kind = event.get("type")
+        if kind == "grounding" and event.get("next") or kind == "offer" and (event.get("offer") or {}).get("kind") == "ask":
+            self.chipped = True
+        if kind == "panel" and event.get("panel") == "timeline":
+            self.shown.add("time")
+        if kind == "chart":
+            self.shown.add((event.get("chart") or {}).get("by"))
+
+    def see(self, event: dict, answer: str) -> dict:
+        """The event, with the chips inside it when it is the only offer."""
+        self._note(event)
+        offer = event.get("offer") if event.get("type") == "offer" else None
+        asks = self.asks(answer) if offer and offer.get("kind") != "ask" and not self.chipped else []
+        if not asks:
+            return event
+        self.chipped = True
+        return {**event, "offer": {**offer, "also": [*(offer.get("also") or []), {"kind": "ask", "label": "", "asks": asks}]}}
+
+    def asks(self, answer: str) -> list[str]:
+        prev = previous(self.question, answer, self.today)
+        prev.shown |= self.shown
+        return acts_for(self.session, prev, self.today)[:4]
+
+    def finish(self, answer: str) -> list[dict]:
+        """The offer to add after the last event, when there is an answer and no chips."""
+        asks = [] if self.chipped or not answer.strip() else self.asks(answer)
+        return [{"type": "offer", "offer": {"kind": "ask", "label": "", "asks": asks}}] if asks else []
+
+    def apply(self, events: list[dict]) -> list[dict]:
+        """A whole turn's events with the chips in."""
+        text = "".join(str(e.get("delta") or "") for e in events if e.get("type") == "answer")
+        out = [self.see(e, text) for e in events]
+        return out + self.finish(text)
+
+
+def stumped_asks(session: Session, history: list[dict], today: date) -> list[str]:
+    """The previous subject's acts for the stumped line's chips (INBOX 1729 c); empty with no turn before."""
+    prev = from_history(history, today)
+    return acts_for(session, prev, today) if history else []

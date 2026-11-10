@@ -1,0 +1,68 @@
+{
+  "now": "2026-11-10T09:00:00",
+  "notes": [
+    ["2026-07-16T10:00", "Courses & Study", ["study", "intro"], "# Orientation week\n\nMet the tutors and collected the reading list."],
+    ["2026-07-20T10:00", "Courses & Study", ["study", "stats"], "# Statistics lecture 1\n\nMean, median and spread."],
+    ["2026-07-21T10:00", "Courses & Study", ["study", "stats"], "# Statistics lecture 2\n\nSampling and error bars."],
+    ["2026-07-22T10:00", "Health", ["fit"], "# Gym session\n\nSquats and rows."],
+    ["2026-07-27T10:00", "Health", ["fit", "run"], "# River run\n\nRan 5 km along the river."],
+    ["2026-08-14T10:00", "Life", ["admin"], "# Dentist booking\n\nCheck-up booked for the 21st."],
+    ["2026-09-03T10:00", "Work", ["work", "plan"], "# Harbor plan\n\nShip the app after the pricing page is signed off."],
+    ["2026-10-02T10:00", "Life", ["admin", "money"], "# Budget\n\nRent 650 and groceries 120."],
+    ["2026-11-03T10:00", "Courses & Study", ["study", "books"], "# Reading list\n\nPiranesi and the statistics textbook."]
+  ],
+  "documents": ["Thesis outline", "Lab protocol"],
+  "dialogues": [
+    {"name": "empty day, then other charts", "turns": [
+      {"ask": "/yesterday", "has": ["Nothing went into your notes yesterday"], "chart_or_panel": true, "chips_have": ["What did I write on 3 November?"]},
+      {"ask": "any other diagrams you can show me?", "has": ["Here are your notes per tag"], "chart": "tag", "uses": "Notes per week"},
+      {"ask": "and another one?", "has": ["Here are your notes per category"], "chart": "category", "uses": "Show notes per category"},
+      {"ask": "another", "has": ["Here are your notes per weekday"], "chart": "weekday", "uses": "Show notes per weekday"},
+      {"ask": "any more?", "has": ["every chart I can draw"], "uses": "weekday"}
+    ]},
+    {"name": "statistics, then its tags", "turns": [
+      {"ask": "statistics", "has": ["You have 9 notes in 4 categories"], "chips_have": ["Which tags do I use most?"]},
+      {"ask": "what are those distinct tags??", "has": ["Your 10 distinct tags", "- study (4)"], "uses": "10 distinct tags"},
+      {"ask": "which categories", "has": ["Courses & Study (4)"], "uses": "List my categories"}
+    ]},
+    {"name": "statistics, then the busiest month", "turns": [
+      {"ask": "statistics", "has": ["Your busiest month was July, with 5 notes"]},
+      {"ask": "list that month", "has": ["July 2026 was your busiest month, with 5 notes", "Statistics lecture 1"], "uses": "busiest month"},
+      {"ask": "any other graphs?", "has": ["Here are your notes per"], "uses": "Show notes per"}
+    ]},
+    {"name": "statistics, then the documents", "turns": [
+      {"ask": "statistics", "has": ["2 documents"]},
+      {"ask": "what documents do I have?", "has": ["Thesis outline", "Lab protocol"], "uses": "documents"},
+      {"ask": "list those categories", "has": ["Your notes sit in 4 categories"], "uses": "categories"}
+    ]},
+    {"name": "tags slash, then charts", "turns": [
+      {"ask": "/tags", "chart_or_panel": true},
+      {"ask": "show notes per category", "has": ["Here are your notes per category"], "chart": "category", "uses": "Show notes per category"},
+      {"ask": "any other charts", "has": ["Here are your notes per"], "uses": "Show notes per"}
+    ]},
+    {"name": "empty day chip is answered", "turns": [
+      {"ask": "/yesterday", "has": ["Nothing went into your notes yesterday"], "chips_have": ["What did I write on 3 November?"]},
+      {"ask": "What did I write on 3 November?", "has": ["Reading list"], "uses": "3 November"},
+      {"ask": "show notes per weekday", "has": ["Here are your notes per weekday"], "chart": "weekday"}
+    ]},
+    {"name": "chips of the overview are answered", "turns": [
+      {"ask": "statistics", "has": ["You have 9 notes"]},
+      {"ask": "Which was my busiest month?", "has": ["July 2026 was your busiest month"], "uses": "Which was my busiest month?"},
+      {"ask": "Notebook statistics", "has": ["You have 9 notes"], "uses": "Notebook statistics"}
+    ]},
+    {"name": "weekday chart, then the rest", "turns": [
+      {"ask": "show notes per weekday", "has": ["Here are your notes per weekday"], "chart": "weekday"},
+      {"ask": "another chart please", "has": ["Here are your notes per"], "uses": "Show notes per"},
+      {"ask": "and a different diagram?", "has": ["Here are your notes per"], "uses": "Show notes per"}
+    ]},
+    {"name": "categories slash, then tags", "turns": [
+      {"ask": "/categories", "chart_or_panel": true},
+      {"ask": "which tags do I use most?", "has": ["study"], "uses": "Which tags do I use most?"},
+      {"ask": "other diagrams?", "has": ["Here are your notes per"], "uses": "Show notes per"}
+    ]},
+    {"name": "stumped keeps the subject's acts", "turns": [
+      {"ask": "statistics", "has": ["You have 9 notes"]},
+      {"ask": "blorpity zzq", "has": ["blorpity zzq"], "chips_have": ["Which tags do I use most?"], "uses": "Which tags do I use most?"}
+    ]}
+  ]
+}

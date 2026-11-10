@@ -986,12 +986,21 @@ def _coverage(session: Session) -> StatAnswer:
     )
 
 
+def categories_in_use(session: Session) -> int:
+    """How many categories hold a note (an empty one is not counted)."""
+    return session.scalar(manager.note_filter(select(func.count(func.distinct(Entry.category_id))).select_from(Entry))) or 0
+
+
 def _general_stats(session: Session) -> StatAnswer:
     """"Notebook stats" (INBOX 801, decision 70's gold Q3): the count and
     span in one opening sentence, the most filed category and the busiest
     month under bold labels, the rest in one line, and Statistics offered."""
-    note_total = session.scalar(_visible(select(func.count(Entry.id)))) or 0
-    cat_total = session.scalar(_visible(select(func.count(func.distinct(Entry.category_id))))) or 0
+    #: The notes and the categories they sit in are the Statistics card's own figures
+    #: (`manager.count_notes`, every category): the overview and the card said 41 and
+    #: 40 notes, 11 and 16 categories of one notebook (INBOX 1729); an empty category is now said.
+    note_total = manager.count_notes(session)
+    cat_total = categories_in_use(session)
+    cat_all = session.scalar(select(func.count(Category.id))) or 0
     #: Documents are not entries, so not filtered as entries are (the same
     #: count `_document_count` gives).
     doc_total = session.scalar(select(func.count(Document.id))) or 0
@@ -1002,7 +1011,8 @@ def _general_stats(session: Session) -> StatAnswer:
         _visible(select(Category.name, func.count(Entry.id)).join(Category, Category.id == Entry.category_id).group_by(Category.name))
         .order_by(func.count(Entry.id).desc()).limit(1)
     ).first()
-    in_cats = f" in {_plural(cat_total, 'category')}" if cat_total else ""
+    #: The card counts every category, the empty ones too: said so, not left to disagree.
+    in_cats = (f" in {cat_total} of your {cat_all} categories" if cat_all > cat_total else f" in {_plural(cat_total, 'category')}") if cat_total else ""
     lines = [f"You have {_plural(note_total, 'note')}{in_cats}{_span_words(made)}."]
     labelled = []
     if top:
@@ -1021,7 +1031,7 @@ def _general_stats(session: Session) -> StatAnswer:
         [
             {"label": "notes", "count": note_total},
             {"label": "documents", "count": doc_total},
-            {"label": "categories", "count": cat_total},
+            {"label": "categories", "count": cat_all},
             {"label": "tags", "count": distinct_tags},
         ],
         offer,

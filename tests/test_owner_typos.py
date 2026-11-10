@@ -148,7 +148,9 @@ def test_a_repaired_question_is_answered_with_how_it_was_read():
 def test_a_question_that_needed_no_repair_is_not_acknowledged():
     from tessellate.ai import composer
 
-    assert "“" not in composer.compose("when did i go to the gym", NOTES)["text"].split("\n\n", 1)[0]
+    #: The answer's source cite quotes a title-less note's first line (“I went to the gym on…”, W8, owner
+    #: 2026-11-10), so a quote mark is no sign of an acknowledgement; the question's own words quoted back are.
+    assert "“when did i go to the gym" not in composer.compose("when did i go to the gym", NOTES)["text"].split("\n\n", 1)[0].lower()
 
 
 @pytest.mark.parametrize("voice", ["natural", "professional"])

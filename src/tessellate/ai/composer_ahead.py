@@ -3,6 +3,8 @@
 
 from __future__ import annotations
 
+import calendar
+
 import re
 from datetime import date
 
@@ -46,8 +48,14 @@ def distance(fact: str, today: date) -> str:
     return f"in {days} days" if days <= 60 else f"in about {round(days / 30)} months"
 
 
-_WEEKDAYS = ("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday")
-_CLOCK = re.compile(r"\b\d{1,2}(?::\d\d)?\s?(?:am|pm)\b|\b\d{1,2}:\d\d\b", re.IGNORECASE)
+def _clock_word(text: str) -> str:
+    """The clock the date's own words carry ("9:30", "8am"), as written; "" when it names none. The recogniser read
+    the date; this only carries its words over."""
+    for token in text.split():
+        word = token.rstrip(",.")
+        if any(c.isdigit() for c in word) and (":" in word or word.lower().endswith(("am", "pm"))):
+            return word
+    return ""
 
 
 def _first_date(fact: str, today: date):  # noqa: ANN202
@@ -81,7 +89,7 @@ def long_form(fact: str, today: date) -> str:
     day = last.value.date() if isinstance(last.value, datetime) else last.value
     if not isinstance(day, date):
         return fact
-    clock = _CLOCK.search(last.text)
-    said = f"{_WEEKDAYS[day.weekday()]} {day.day} {_MONTHS[day.month - 1].title()}" + (f" {day.year}" if day.year != today.year else "")
-    joiner = " at " if clock and re.search(r"\bat\s+" + re.escape(clock.group(0)), last.text, re.I) else ", "
-    return f"{fact[:start]}{said}{joiner + clock.group(0) if clock else ''}{fact[last.end:]}"
+    clock = _clock_word(last.text)
+    said = f"{calendar.day_name[day.weekday()]} {day.day} {_MONTHS[day.month - 1].title()}" + (f" {day.year}" if day.year != today.year else "")
+    joiner = " at " if clock and f"at {clock.lower()}" in last.text.lower() else ", "
+    return f"{fact[:start]}{said}{joiner + clock if clock else ''}{fact[last.end:]}"

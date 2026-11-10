@@ -17,7 +17,7 @@ from collections.abc import Iterator
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from tessellate.ai import composer_digest, composer_lists, composer_slots, context, fence, intent, librarian, question_noise, recognise, verdicts, why
+from tessellate.ai import composer_digest, composer_lists, composer_slots, composer_talk, context, fence, intent, librarian, question_noise, recognise, verdicts, why
 from tessellate.ai import composer_dialogue
 from tessellate.ai.answer_trim import trim_assistant_padding
 from tessellate.ai.grounding import SentenceGrounder
@@ -28,6 +28,7 @@ from tessellate.api.chat_extra import _turn_label
 from tessellate.api.chat_request import ChatRequest, _StreamRequest, _Turn, _event, _in_full
 from tessellate.api.chat_said import MODEL_STOPPED_NOTE, _app_answers, _asks_capability, _in_notes
 from tessellate.core import deps, private_turn
+from tessellate.core.config import user_now
 from datetime import datetime
 from tessellate.core.database import Entry, like_escape, LIKE_ESCAPE
 from tessellate.core.logbuffer import safe_value
@@ -538,9 +539,12 @@ def _relay_events(req: _StreamRequest, prepared: dict, t: _Turn, events) -> Iter
     #: The fence markers a small model echoes back are taken out of the answer
     #: before anything reads or saves it (`fence.AnswerScrubber`).
     scrubber = fence.AnswerScrubber()
+    #: A composed turn ends with Next chips (INBOX 1729 a).
+    closing = composer_talk.Closing(req.session, req.body.question or "", user_now(deps.get_config()).date(), t.composing or t.composed or prepared["stats"] is not None)
     try:
         for payload in events:
             kind = payload.get("type")
+            payload = closing.see(payload, t.answer_text)
             _note_kind(t, kind, payload)
             if kind == "answer":
                 #: `attached` and `counts` are the server's own marks (`_said_events`), not the client's.
@@ -560,6 +564,7 @@ def _relay_events(req: _StreamRequest, prepared: dict, t: _Turn, events) -> Iter
         if held:
             t.answer_text += held
             yield _event({"type": "answer", "delta": held})
+        yield from map(_event, closing.finish(t.answer_text))
     except Exception as exc:  # noqa: BLE001  # a failure partway through rather
         # than before the first event (a later skill step, say): say what
         # happened instead of the stream just stopping.

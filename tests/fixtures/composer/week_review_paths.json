@@ -116,7 +116,7 @@
     "verdict": "supported"
    }
   ],
-  "key": "620fe13b9027",
+  "key": "4c596737620b",
   "kind": "week_review",
   "parts": [
    [
@@ -230,16 +230,8 @@
     "- "
    ],
    [
-    "template",
-    "your note"
-   ],
-   [
-    "template",
-    " from "
-   ],
-   [
-    "measure",
-    "today"
+    "word",
+    "your note from 6 October"
    ],
    [
     "template",
@@ -526,7 +518,7 @@
    7,
    3
   ],
-  "text": "You wrote eight notes in the last seven days, from 30 September to today. Most went under **Work** (three), then **Travel** (two).\n\nWhat stands out:\n- your note from today (today): “Garden shed roof leaks in the north corner after the rain.”\n- **Harbor launch plan** (yesterday): “Ship the mobile app to the public on the 14th of next month.”\n- **Shopping** (4 October): “Milk”\n- **Dentist** (3 October): “Check-up booked for the 21st, ask about the night guard.”\n\nStill open:\n- [ ] Store listing copy, in **Harbor launch plan**\n- [ ] Pricing page sign off, in **Harbor launch plan**\n- [ ] Milk, in **Shopping**"
+  "text": "You wrote eight notes in the last seven days, from 30 September to today. Most went under **Work** (three), then **Travel** (two).\n\nWhat stands out:\n- your note from 6 October (today): “Garden shed roof leaks in the north corner after the rain.”\n- **Harbor launch plan** (yesterday): “Ship the mobile app to the public on the 14th of next month.”\n- **Shopping** (4 October): “Milk”\n- **Dentist** (3 October): “Check-up booked for the 21st, ask about the night guard.”\n\nStill open:\n- [ ] Store listing copy, in **Harbor launch plan**\n- [ ] Pricing page sign off, in **Harbor launch plan**\n- [ ] Milk, in **Shopping**"
  },
  "full_week_unlinked": {
   "grounding": [
@@ -645,7 +637,7 @@
     "verdict": "supported"
    }
   ],
-  "key": "f077fddeff01",
+  "key": "2e2d4def7242",
   "kind": "week_review",
   "parts": [
    [
@@ -759,16 +751,8 @@
     "- "
    ],
    [
-    "template",
-    "your note"
-   ],
-   [
-    "template",
-    " from "
-   ],
-   [
-    "measure",
-    "today"
+    "word",
+    "your note from 6 October"
    ],
    [
     "template",
@@ -1056,16 +1040,9 @@
     "Linked to nothing yet: "
    ],
    [
-    "template",
-    "your note"
-   ],
-   [
-    "template",
-    " from "
-   ],
-   [
-    "measure",
-    "today"
+    "title",
+    "“Garden shed roof leaks in the…”",
+    6
    ],
    [
     "template",
@@ -1131,7 +1108,7 @@
    3,
    2
   ],
-  "text": "You wrote eight notes in the last seven days, from 30 September to today. Most went under **Work** (three), then **Travel** (two).\n\nWhat stands out:\n- your note from today (today): “Garden shed roof leaks in the north corner after the rain.”\n- **Harbor launch plan** (yesterday): “Ship the mobile app to the public on the 14th of next month.”\n- **Shopping** (4 October): “Milk”\n- **Dentist** (3 October): “Check-up booked for the 21st, ask about the night guard.”\n\nStill open:\n- [ ] Store listing copy, in **Harbor launch plan**\n- [ ] Pricing page sign off, in **Harbor launch plan**\n- [ ] Milk, in **Shopping**\n\nLinked to nothing yet: your note from today, **Beta feedback**, **Shopping** and **Lisbon**."
+  "text": "You wrote eight notes in the last seven days, from 30 September to today. Most went under **Work** (three), then **Travel** (two).\n\nWhat stands out:\n- your note from 6 October (today): “Garden shed roof leaks in the north corner after the rain.”\n- **Harbor launch plan** (yesterday): “Ship the mobile app to the public on the 14th of next month.”\n- **Shopping** (4 October): “Milk”\n- **Dentist** (3 October): “Check-up booked for the 21st, ask about the night guard.”\n\nStill open:\n- [ ] Store listing copy, in **Harbor launch plan**\n- [ ] Pricing page sign off, in **Harbor launch plan**\n- [ ] Milk, in **Shopping**\n\nLinked to nothing yet: “Garden shed roof leaks in the…”, **Beta feedback**, **Shopping** and **Lisbon**."
  },
  "long_lead_clipped": {
   "grounding": [
@@ -1629,7 +1606,7 @@
     "verdict": "supported"
    }
   ],
-  "key": "3e5c04d3039e",
+  "key": "cd94d49538c7",
   "kind": "week_review",
   "parts": [
    [
@@ -1673,16 +1650,8 @@
     "- "
    ],
    [
-    "template",
-    "your note"
-   ],
-   [
-    "template",
-    " from "
-   ],
-   [
-    "measure",
-    "today"
+    "word",
+    "your note from 6 October"
    ],
    [
     "template",
@@ -1717,7 +1686,7 @@
   "sources": [
    6
   ],
-  "text": "You wrote one note in the last seven days, from today to today.\n\nWhat stands out:\n- your note from today (today): “Garden shed roof leaks in the north corner after the rain.”"
+  "text": "You wrote one note in the last seven days, from today to today.\n\nWhat stands out:\n- your note from 6 October (today): “Garden shed roof leaks in the north corner after the rain.”"
  },
  "only_done_tasks": {
   "grounding": [
@@ -2089,7 +2058,7 @@
     "verdict": "supported"
    }
   ],
-  "key": "4f8ed54ad510",
+  "key": "59abd893acd5",
   "kind": "week_review",
   "parts": [
    [
@@ -2141,16 +2110,8 @@
     "- "
    ],
    [
-    "template",
-    "your note"
-   ],
-   [
-    "template",
-    " from "
-   ],
-   [
-    "measure",
-    "today"
+    "word",
+    "your note from 6 October"
    ],
    [
     "template",
@@ -2190,16 +2151,8 @@
     "- "
    ],
    [
-    "template",
-    "your note"
-   ],
-   [
-    "template",
-    " from "
-   ],
-   [
-    "measure",
-    "yesterday"
+    "word",
+    "your note from 5 October"
    ],
    [
     "template",
@@ -2239,16 +2192,8 @@
     "- "
    ],
    [
-    "template",
-    "your note"
-   ],
-   [
-    "template",
-    " from "
-   ],
-   [
-    "measure",
-    "4 October"
+    "word",
+    "your note from 4 October"
    ],
    [
     "template",
@@ -2285,7 +2230,7 @@
    10,
    11
   ],
-  "text": "You wrote three notes in the last seven days, from 4 October to today.\n\nWhat stands out:\n- your note from today (today): “Garden shed roof leaks in the north corner after the rain.”\n- your note from yesterday (yesterday): “Plain words about the bike chain, it needs oil soon.”\n- your note from 4 October (4 October): “Another plain one about the kettle descaling this weekend.”"
+  "text": "You wrote three notes in the last seven days, from 4 October to today.\n\nWhat stands out:\n- your note from 6 October (today): “Garden shed roof leaks in the north corner after the rain.”\n- your note from 5 October (yesterday): “Plain words about the bike chain, it needs oil soon.”\n- your note from 4 October (4 October): “Another plain one about the kettle descaling this weekend.”"
  },
  "three_one_category": {
   "grounding": [
@@ -3445,7 +3390,7 @@
     "verdict": "supported"
    }
   ],
-  "key": "620fe13b9027",
+  "key": "4c596737620b",
   "kind": "week_review",
   "parts": [
    [
@@ -3559,16 +3504,8 @@
     "- "
    ],
    [
-    "template",
-    "your note"
-   ],
-   [
-    "template",
-    " from "
-   ],
-   [
-    "measure",
-    "today"
+    "word",
+    "your note from 6 October"
    ],
    [
     "template",
@@ -3855,7 +3792,7 @@
    7,
    3
   ],
-  "text": "You wrote eight notes in the last seven days, from 30 September to today. Most went under **Work** (three), then **Travel** (two).\n\nWhat stands out:\n- your note from today (today): “Garden shed roof leaks in the north corner after the rain.”\n- **Harbor launch plan** (yesterday): “Ship the mobile app to the public on the 14th of next month.”\n- **Shopping** (4 October): “Milk”\n- **Dentist** (3 October): “Check-up booked for the 21st, ask about the night guard.”\n\nStill open:\n- [ ] Store listing copy, in **Harbor launch plan**\n- [ ] Pricing page sign off, in **Harbor launch plan**\n- [ ] Milk, in **Shopping**"
+  "text": "You wrote eight notes in the last seven days, from 30 September to today. Most went under **Work** (three), then **Travel** (two).\n\nWhat stands out:\n- your note from 6 October (today): “Garden shed roof leaks in the north corner after the rain.”\n- **Harbor launch plan** (yesterday): “Ship the mobile app to the public on the 14th of next month.”\n- **Shopping** (4 October): “Milk”\n- **Dentist** (3 October): “Check-up booked for the 21st, ask about the night guard.”\n\nStill open:\n- [ ] Store listing copy, in **Harbor launch plan**\n- [ ] Pricing page sign off, in **Harbor launch plan**\n- [ ] Milk, in **Shopping**"
  },
  "unlinked_none_this_week": {
   "grounding": [
@@ -3974,7 +3911,7 @@
     "verdict": "supported"
    }
   ],
-  "key": "620fe13b9027",
+  "key": "4c596737620b",
   "kind": "week_review",
   "parts": [
    [
@@ -4088,16 +4025,8 @@
     "- "
    ],
    [
-    "template",
-    "your note"
-   ],
-   [
-    "template",
-    " from "
-   ],
-   [
-    "measure",
-    "today"
+    "word",
+    "your note from 6 October"
    ],
    [
     "template",
@@ -4384,6 +4313,6 @@
    7,
    3
   ],
-  "text": "You wrote eight notes in the last seven days, from 30 September to today. Most went under **Work** (three), then **Travel** (two).\n\nWhat stands out:\n- your note from today (today): “Garden shed roof leaks in the north corner after the rain.”\n- **Harbor launch plan** (yesterday): “Ship the mobile app to the public on the 14th of next month.”\n- **Shopping** (4 October): “Milk”\n- **Dentist** (3 October): “Check-up booked for the 21st, ask about the night guard.”\n\nStill open:\n- [ ] Store listing copy, in **Harbor launch plan**\n- [ ] Pricing page sign off, in **Harbor launch plan**\n- [ ] Milk, in **Shopping**"
+  "text": "You wrote eight notes in the last seven days, from 30 September to today. Most went under **Work** (three), then **Travel** (two).\n\nWhat stands out:\n- your note from 6 October (today): “Garden shed roof leaks in the north corner after the rain.”\n- **Harbor launch plan** (yesterday): “Ship the mobile app to the public on the 14th of next month.”\n- **Shopping** (4 October): “Milk”\n- **Dentist** (3 October): “Check-up booked for the 21st, ask about the night guard.”\n\nStill open:\n- [ ] Store listing copy, in **Harbor launch plan**\n- [ ] Pricing page sign off, in **Harbor launch plan**\n- [ ] Milk, in **Shopping**"
  }
 }

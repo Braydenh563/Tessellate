@@ -549,9 +549,15 @@ def _carried_source(previous: str, turns: list[dict]) -> str:
     return previous
 
 
+#: "those distinct tags", "that month": the demonstrative names its own thing, the one the
+#: answer before showed. It keeps its noun; the question before is not its subject (INBOX 1729).
+_DEMONSTRATIVE_THING = re.compile(
+    r"\b(?:those|these|that|this)\s+(?:[a-z]+\s+)?(?:tags?|categor(?:y|ies)|documents?|docs|months?|weeks?|notes?|reminders?|tasks?|charts?|graphs?|diagrams?)\b", re.I)
+
+
 def _follow_pronoun(text: str, previous: str, last: dict, turns: list[dict]) -> Any:
     kind = _pronoun_kind(text)
-    if not kind:
+    if not kind or _DEMONSTRATIVE_THING.search(text):
         return None
     source = _carried_source(previous, turns)
     subject = _asked_span(source, subject_terms(source))

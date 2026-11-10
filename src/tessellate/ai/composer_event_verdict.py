@@ -4,13 +4,14 @@ the answer's first line, or no window in the question, the answer is left as it 
 
 from __future__ import annotations
 
+import calendar
 from datetime import date, timedelta
 
 from tessellate.ai import composer_ahead, recognise
 
 
 
-_NAMED = frozenset(composer_ahead._WEEKDAYS) | {m.title() for m in composer_ahead._MONTHS}  # noqa: SLF001
+_NAMED = frozenset(calendar.day_name) | {m.title() for m in composer_ahead._MONTHS}  # noqa: SLF001
 
 
 def _month_end(day: date) -> date:
