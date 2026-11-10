@@ -172,6 +172,8 @@ def _subject_lead(subject: str, topics: list[dict], by_id: dict[str, dict], titl
     if found is not None:
         return Led(_fronted(found[0], topics), found[1])
     named = _has_phrase(subject, topics[:2]) or set(_stems(subject)) <= set(_stems(title_of(topics[0])))
+    #: "the document views": every word is the top topic's own (title or body), so it is about it.
+    named = named or set(_stems(subject)) <= set(_stems(title_of(topics[0]) + " " + str(topics[0].get("body") or "")))
     return None if named else Led(topics, miss=True)
 
 
