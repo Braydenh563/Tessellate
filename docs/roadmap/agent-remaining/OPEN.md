@@ -89,11 +89,11 @@ Parked until the owner's data or a check on real hardware:
 - A16 `/media` 403 and 409 unified (after Q18) | sec L14
 
 **W4 Documents that lose words** (A, documents, Sonnet; verify first). Files: `frontend/js/documents.js` save and lock paths. Checks: `tests/test_doc*`, a slow-PUT Playwright run. Done when: no typing during a save is lost, an offline first save says "Not saved" and keeps a draft, locking clears every word from the page.
-- A17 Autosave has no in-flight guard; a slow PUT plus typing sends a stale hash | 1028-docs D1
-- A18 The save reply marks clean and forgets the local edit even when typing continued | 1028-docs D2
-- A19 A new document by typing has no catch: offline or 500 is silent | 1028-docs D3, D36
-- A20 Failed-save retry and a crash draft | DOCUMENTS#24 row 6
-- A21 Locking leaves the document's words on the page; the AI panel sits over the lock | 1031-docs DC1, DC2
+- ~~A17 Autosave has no in-flight guard; a slow PUT plus typing sends a stale hash~~ (stale: built, tests/test_doc_save_serial.py) | 1028-docs D1
+- ~~A18 The save reply marks clean and forgets the local edit even when typing continued~~ (stale: built, tests/test_doc_save_serial.py) | 1028-docs D2
+- ~~A19 A new document by typing has no catch: offline or 500 is silent~~ (built w4-1110, tests/test_doc_new_draft_1110.py) | 1028-docs D3, D36
+- ~~A20 Failed-save retry and a crash draft~~ (built: retry toast and pagehide draft existed, new-document draft w4-1110) | DOCUMENTS#24 row 6
+- ~~A21 Locking leaves the document's words on the page; the AI panel sits over the lock~~ (stale: built, tests/test_lock_document_panels_1031.py) | 1031-docs DC1, DC2
 
 **W5 Server integrity** (A, backend, Sonnet; verify first). Files: `api/routes_entries.py`, `api/security.py`, `routes_auth.py`, board and backup routes, `core/db`. Checks: `tests/test_routes_*`, `tests/test_auth*`, a 24-parallel-POST test. Done when: a burst of creates all land, binned notes refuse writes, tokens and throttle are thread safe.
 - A22 24 parallel note creations: 5 answer 500 after 30 s (pool timeout) | 1031-backend BK1

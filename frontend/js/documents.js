@@ -1141,6 +1141,7 @@ async function loadDocumentsNow(selectId) {
   const opened = selectId ? selectId : !currentDoc && docs.length && !asked ? docs[0].id : null;
   const opening = opened ? openDocument(opened) : null;
   docLoadSeen.seq = docOpenSeq;
+  offerKeptDocEdit(null);
   if (opening) return opening;
   if (!docs.length) showNoDocument();
 }
@@ -1488,12 +1489,22 @@ function docKeptDrafts() {
   return all;
 }
 
+//: **A document not yet made keeps its words too** (audit 1028 D3): typing into
+//: the blank page makes the row on the first key, and a refused or offline POST
+//: left the words nowhere. Kept under the id "new" with the file type the page
+//: was opened for; the first create that lands forgets it.
 function keepDocEditLocally() {
-  if (!currentDoc || !docDirty) return;
+  if (!currentDoc ? false : !docDirty) return;
   const content = docText();
   if (content.length > 2e6) return;
   try {
     const all = docKeptDrafts();
+    if (!currentDoc) {
+      if (!content.trim() && !$("doc-title").value.trim()) return;
+      all.new = { id: "new", title: $("doc-title").value, content, at: Date.now(), type: docTypeState.pending || null };
+      const recent = Object.values(all).sort((a, b) => b.at - a.at).slice(0, DOC_KEPT_MAX);
+      return prefs.setJSON(DOC_EDIT_KEPT, Object.fromEntries(recent.map((kept) => [kept.id, kept])));
+    }
     //: `base`: the hash of the server text this was typed over, so a later open can tell the copy is the newer (DX31).
     all[currentDoc.id] = { id: currentDoc.id, title: $("doc-title").value, content, at: Date.now(), base: currentDoc.content_hash };
     const newest = Object.values(all).sort((a, b) => b.at - a.at).slice(0, DOC_KEPT_MAX);
@@ -1526,6 +1537,23 @@ window.addEventListener("pagehide", keepDocEditLocally);
 //: applied: the server has moved on since, and which text wins is the
 //: writer's to say.
 function offerKeptDocEdit(doc) {
+  //: No document: the unsaved new one, once per page load (`loadDocuments`). It comes back
+  //: as a new page filled with its words, saved by the ordinary autosave.
+  if (!doc) {
+    const fresh = docKeptDrafts().new;
+    if (!fresh || docSaveQueue.newOffered) return;
+    docSaveQueue.newOffered = true;
+    if (!fresh.content?.trim() && !fresh.title?.trim()) return forgetDocEditLocally("new");
+    toastAction(`Your unsaved new document \u201c${clipText(fresh.title || "Untitled", 40)}\u201d was kept.`, "Put it back", async () => {
+      await startBlankDocument(fresh.type);
+      if (currentDoc) return;
+      if (fresh.title) $("doc-title").value = fresh.title;
+      const box = docSurface();
+      if (box) docReplaceRange(box, 0, docText().length, String(fresh.content || ""));
+      markDocDirty();
+    });
+    return;
+  }
   const kept = docKeptDrafts()[doc.id];
   if (!kept) return;
   if (kept.content === doc.content && (kept.title || "") === (doc.title || "")) {
@@ -2553,10 +2581,21 @@ function markDocDirty() {
   scheduleDocFacts();
   // No document yet? Typing makes one, then this save proceeds normally.
   if (!currentDoc) {
-    ensureDocumentExists().then(() => markDocDirty(), (error) => {
+    //: A create that failed is not asked again on every key: the words are kept
+    //: and one retry runs after a pause (audit 1028 D3).
+    if (docSaveQueue.newRetry) return keepDocEditLocally();
+    ensureDocumentExists().then(() => {
+      forgetDocEditLocally("new");
+      markDocDirty();
+    }, (error) => {
       $("doc-saved").textContent = "Not saved";
       $("doc-status").classList.add("error");
       $("doc-status").textContent = error.message;
+      keepDocEditLocally();
+      docSaveQueue.newRetry = setTimeout(() => {
+        docSaveQueue.newRetry = null;
+        if (!currentDoc && (docText().trim() || $("doc-title").value.trim())) markDocDirty();
+      }, 8000);
     });
     return;
   }
@@ -2581,7 +2620,8 @@ let docConflictPending = null;
 
 //: One save at a time: a second PUT in flight carried the old base_hash (a
 //: false 409). One asked for meanwhile runs once after (audit 1028 D1).
-const docSaveQueue = { inFlight: null, again: null };
+//: `newRetry`: the pause timer after a failed first save (`markDocDirty`); `newOffered`: the kept new document was offered.
+const docSaveQueue = { inFlight: null, again: null, newRetry: null, newOffered: false };
 
 async function saveDocument({ silent = false } = {}) {
   if (docConflictPending && docConflictPending.id !== currentDoc?.id) docConflictPending = null;
