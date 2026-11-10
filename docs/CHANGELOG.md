@@ -5,6 +5,7 @@ based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the
 project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
+- Change (search, w11-1110, Q25): `before:`, `after:`, `since:` and `until:` read a day name or span (`before:tuesday`, `before:yesterday`, `after:march`, `before:"last week"`) through the same reader as the rest of search; `before:tuesday` leaves Tuesday out, as mail search does. Rows B37 to B41 (jump-to-note past 60 rows, flag filters and unknown values, short-title mentions, non-Latin export name, whitespace-only note) did not reproduce on this head (fixed earlier): `tests/test_search_engine.py`.
 - Fix (voice notes, w6-1110, audit 1031 Z12): a Discard whose finish fails now says so with a toast and keeps the recording in Library; audit rows A32 to A36 (1029 X1 to X3, 1031 Z12, 1028 B8, B40) were already fixed on head and are struck.
 ## [Unreleased]
 - Fix (graph, owner 2026-11-10): note names on the map are set at 12 screen pixels rather than a `12 / k` font under the zoom, so zoomed in their letters no longer drift apart ("I' m taking one I nformation"); Linux Chromium does not show the fault, real Windows unverified.
