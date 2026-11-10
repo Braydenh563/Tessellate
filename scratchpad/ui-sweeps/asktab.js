@@ -142,7 +142,7 @@ function waitForFake() {
   const browse = await page.evaluate((id) => {
     const li = document.querySelector(`#entry-list li[data-id="${id}"]`);
     if (!li) return null;
-    return [...li.querySelectorAll('.entry-meta .chip')]
+    return [...li.querySelectorAll('.entry-meta .chip:not([hidden])')]
       .map((c) => c.textContent.replace(/\s+/g, ' ').trim());
   }, seeded.ids[2]);
   // The one chip that is deliberately not carried over: "Tag with Atlas" is a
@@ -152,7 +152,7 @@ function waitForFake() {
   const ACTION_ONLY = ['untagged-ai'];
   const browseUntagged = await page.evaluate((id) => {
     const li = document.querySelector(`#entry-list li[data-id="${id}"]`);
-    return li ? [...li.querySelectorAll('.entry-meta .chip')]
+    return li ? [...li.querySelectorAll('.entry-meta .chip:not([hidden])')]
       .map((c) => ({ text: c.textContent.replace(/\s+/g, ' ').trim(), cls: c.className })) : null;
   }, seeded.ids[2]);
   console.log(`297 browse row (the note with no tags): ${JSON.stringify(browse)}`);
@@ -194,7 +194,8 @@ function waitForFake() {
     if (entry.is_draft) want.push('draft');
     want.push(entry.category);
     for (const tag of entry.tags) want.push(tag);
-    if (entry.ai_confidence > 0 && !entry.user_filed) want.push(`AI ${entry.ai_confidence}%`);
+    // A confident score is quiet text ("72%"); a low one reads "AI 40%: check this".
+    if (entry.ai_confidence > 0 && !entry.user_filed) want.push(`${entry.ai_confidence}%`);
     for (const doc of entry.documents || []) want.push(doc.title);
     if (entry.source_url) want.push(entry.source_title || entry.source_url);
     for (const when of entry.dates || []) want.push(when.phrase);
@@ -204,14 +205,16 @@ function waitForFake() {
     // implied count comes back one short of a row that is in fact correct.
     const spaces = await apiJson('/spaces').catch(() => []);
     const active = typeof activeSpaceId === 'function' ? activeSpaceId() : null;
-    if (entry.workspace_id && spaces.length && (active === 'all' || entry.workspace_id !== Number(active))) {
+    // Only when more than one space exists and the notes in view span them (entry-card.js).
+    if (entry.workspace_id && spaces.length > 1 && typeof notesSpanSpaces === 'function' && notesSpanSpaces() && (active === 'all' || entry.workspace_id !== Number(active))) {
       const space = spaces.find((s) => s.id === entry.workspace_id);
       want.push(space ? space.name : 'a space that no longer exists');
     }
     if (entry.source_path) want.push(entry.source_path.split('/').pop());
 
     const liBox = li.getBoundingClientRect();
-    const chips = [...li.querySelectorAll('.entry-meta > .chip, .entry-meta .chip')].map((c) => {
+    // A chip folded into "+N" is [hidden], not a badge that failed to draw.
+    const chips = [...li.querySelectorAll('.entry-meta > .chip:not([hidden]), .entry-meta .chip:not([hidden])')].map((c) => {
       const r = c.getBoundingClientRect();
       return {
         text: c.textContent.replace(/\s+/g, ' ').trim(),
@@ -221,7 +224,9 @@ function waitForFake() {
         clipped: r.width < 1 || r.height < 1 || r.right > liBox.right + 1 || r.left < liBox.left - 1,
       };
     });
-    const shown = chips.map((c) => c.text).join(' | ');
+    // A tag folded into "+N" is still on the card (its menu lists it).
+    const folded = [...li.querySelectorAll('.entry-meta [data-tag][hidden]')].map((c) => c.dataset.tag);
+    const shown = chips.map((c) => c.text).concat(folded).join(' | ');
     const missing = want.filter((label) => !shown.includes(String(label)));
     // A lane that scrolls is a lane that hides: the same measurement for the
     // meta row itself, since a chip inside an overflowing box has a rect on
@@ -259,7 +264,7 @@ function waitForFake() {
   // The same note, in the Ask column, chip for chip against Browse.
   const askSame = await page.evaluate((id) => {
     const li = document.querySelector(`#raw-results li[data-id="${id}"]`);
-    return li ? [...li.querySelectorAll('.entry-meta .chip')]
+    return li ? [...li.querySelectorAll('.entry-meta .chip:not([hidden])')]
       .map((c) => c.textContent.replace(/\s+/g, ' ').trim()) : null;
   }, seeded.ids[2]);
   console.log(`297 ask row    (the same note):        ${JSON.stringify(askSame)}`);
@@ -267,7 +272,9 @@ function waitForFake() {
     const actionOnly = new Set((browseUntagged || [])
       .filter((c) => ACTION_ONLY.some((name) => c.cls.split(/\s+/).includes(name)))
       .map((c) => c.text));
-    const lost = browse.filter((b) => !askSame.includes(b) && !actionOnly.has(b));
+    // "Add tags" (a control in Browse) is "No tags yet" in Ask, where the row is read-only.
+    const same = (t) => (t === 'Add tags' ? 'No tags yet' : t);
+    const lost = browse.filter((b) => !askSame.map(same).includes(same(b)) && !actionOnly.has(b));
     numbers.badgesInBrowse = browse.length;
     numbers.badgesInAsk = askSame.length;
     numbers.badgesLostInAsk = lost;
@@ -291,7 +298,7 @@ function waitForFake() {
       const meta = li.querySelector('.entry-meta');
       const links = li.querySelector('.entry-links');
       const box = li.getBoundingClientRect();
-      const chips = [...li.querySelectorAll('.entry-meta .chip')];
+      const chips = [...li.querySelectorAll('.entry-meta .chip:not([hidden])')];
       const cut = chips.filter((c) => {
         const r = c.getBoundingClientRect();
         return r.width < 1 || r.right > box.right + 1 || r.left < box.left - 1;
@@ -395,8 +402,9 @@ function waitForFake() {
   numbers.streamFramesWithRing = ringFrames;
   console.log(`298 streaming frames with the generating ring running: ${ringFrames}`);
   console.log(`298 last status line: ${JSON.stringify(busy.length ? busy[busy.length - 1].status : '')}`);
-  if (frames && withSomething === 0) findings.push('298: nothing on screen moves while the answer is being produced');
-  else if (streamFrames.length && streamWith === 0) {
+  // The generating ring on the answer box is the affordance once text streams.
+  if (frames && withSomething === 0 && ringFrames === 0) findings.push('298: nothing on screen moves while the answer is being produced');
+  else if (streamFrames.length && streamWith === 0 && ringFrames < streamFrames.length) {
     findings.push(`298: the affordance stops at the first token (${streamFrames.length} streaming frames with none)`);
   }
   if (!frames) findings.push('298: the ask never reached a busy state, so nothing could be measured');
@@ -421,7 +429,8 @@ function waitForFake() {
         id: li.dataset.id,
         n: mark ? Number(mark.textContent.replace(/\D/g, '')) : null,
         visible: !!r && r.width > 0 && r.height > 0,
-        overlap: r && br ? Math.round((r.right - br.left) * 10) / 10 : null,
+        // Horizontal intersection: the number sits in a gutter on either side.
+        overlap: r && br ? Math.round((Math.min(r.right, br.right) - Math.max(r.left, br.left)) * 10) / 10 : null,
       };
     });
     return { marks, rows };
@@ -521,7 +530,9 @@ function waitForFake() {
     if (sources.share > 70) findings.push(`300: the sources control spans ${sources.share}% of its column (${sources.w}px of ${sources.colW}px)`);
     if (/on the right/i.test(sources.text)) findings.push(`300: the control describes where to look rather than what it does: "${sources.text}"`);
   } else {
-    console.log('300: no .ask-sources-line was drawn for this answer');
+    // The owner removed the button (16ccf9d79: each cited note shows once), so
+    // there is nothing to measure; it is a note, not a finding.
+    console.log('300: no .ask-sources-line (removed by the owner, 16ccf9d79)');
   }
 
   if (errors.length) findings.push(`${errors.length} page error(s): ${errors.slice(0, 2)}`);

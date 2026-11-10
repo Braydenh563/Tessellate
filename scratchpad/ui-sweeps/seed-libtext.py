@@ -68,7 +68,7 @@ for (media_id,) in files:
     for page in range(1, 15):
         con.execute(
             "INSERT INTO page_reads (kind, source_id, page, reader, model, text, caption, "
-            "caption_model, created_at) VALUES ('upload', ?, ?, 'vision', ?, ?, '', '', "
+            "caption_model, regions, created_at) VALUES ('upload', ?, ?, 'vision', ?, ?, '', '', '[]', "
             "datetime('now'))",
             (media_id, page, "qwen3-vl:4b", PAGE.format(n=page)),
         )
