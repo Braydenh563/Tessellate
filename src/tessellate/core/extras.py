@@ -1171,9 +1171,9 @@ def unavailable_reason(extra: Extra) -> str:
     if extra.unavailable:
         return extra.unavailable
     if extra.id == "languagetool":
-        from tessellate.core import languagetool
+        from tessellate.core import languagetool_files
 
-        return languagetool.java_reason()
+        return languagetool_files.java_reason()
     if extra.kind == "download":
         return extra_downloads.platform_reason(extra)
     return ""

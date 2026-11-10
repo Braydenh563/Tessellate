@@ -19,8 +19,6 @@ from __future__ import annotations
 import atexit
 import json
 import logging
-import os
-import shutil
 import socket
 import subprocess  # noqa: S404  # fixed args, no shell; see _start
 import threading
@@ -29,6 +27,7 @@ import urllib.parse
 import urllib.request
 
 from tessellate.core import extras
+from tessellate.core.languagetool_files import java_path
 from tessellate.core.subproc import NO_WINDOW
 
 log = logging.getLogger(__name__)
@@ -44,24 +43,6 @@ _lock = threading.Lock()
 _proc: subprocess.Popen | None = None
 _port = 0
 _timer: threading.Timer | None = None
-
-
-def java_path() -> str | None:
-    """`java` from JAVA_HOME or the path; None when there is no runtime."""
-    home = os.environ.get("JAVA_HOME")
-    if home:
-        for name in ("java.exe", "java"):
-            candidate = os.path.join(home, "bin", name)
-            if os.path.isfile(candidate):
-                return candidate
-    return shutil.which("java")
-
-
-def java_reason() -> str:
-    """Why the extra cannot be installed here, or ""."""
-    if java_path():
-        return ""
-    return "LanguageTool needs Java 17 or newer, and no java was found on this computer. Install Java, then come back."
 
 
 def installed_folder():

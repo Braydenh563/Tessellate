@@ -23436,23 +23436,28 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `reload` | src/tessellate/core/lancert.py:430 |
 | `set_live_context` | src/tessellate/core/lancert.py:425 |
 
-### src/tessellate/core/languagetool.py (13)
+### src/tessellate/core/languagetool.py (11)
 
 | Name | File:line |
 |---|---|
-| `_arm_idle_stop` | src/tessellate/core/languagetool.py:144 |
-| `_free_port` | src/tessellate/core/languagetool.py:75 |
-| `_opener` | src/tessellate/core/languagetool.py:81 |
-| `_ready` | src/tessellate/core/languagetool.py:86 |
-| `_running_port` | src/tessellate/core/languagetool.py:153 |
-| `_shape` | src/tessellate/core/languagetool.py:159 |
-| `_start` | src/tessellate/core/languagetool.py:94 |
-| `available` | src/tessellate/core/languagetool.py:71 |
-| `check` | src/tessellate/core/languagetool.py:181 |
-| `installed_folder` | src/tessellate/core/languagetool.py:67 |
-| `java_path` | src/tessellate/core/languagetool.py:49 |
-| `java_reason` | src/tessellate/core/languagetool.py:60 |
-| `stop` | src/tessellate/core/languagetool.py:125 |
+| `_arm_idle_stop` | src/tessellate/core/languagetool.py:125 |
+| `_free_port` | src/tessellate/core/languagetool.py:56 |
+| `_opener` | src/tessellate/core/languagetool.py:62 |
+| `_ready` | src/tessellate/core/languagetool.py:67 |
+| `_running_port` | src/tessellate/core/languagetool.py:134 |
+| `_shape` | src/tessellate/core/languagetool.py:140 |
+| `_start` | src/tessellate/core/languagetool.py:75 |
+| `available` | src/tessellate/core/languagetool.py:52 |
+| `check` | src/tessellate/core/languagetool.py:162 |
+| `installed_folder` | src/tessellate/core/languagetool.py:48 |
+| `stop` | src/tessellate/core/languagetool.py:106 |
+
+### src/tessellate/core/languagetool_files.py (2)
+
+| Name | File:line |
+|---|---|
+| `java_path` | src/tessellate/core/languagetool_files.py:62 |
+| `java_reason` | src/tessellate/core/languagetool_files.py:73 |
 
 ### src/tessellate/core/lanlive.py (9)
 

@@ -9,6 +9,9 @@ names (`core/extra_downloads.py`). To bump: list the new archive with
 `core/extras.py`.
 """
 
+import os
+import shutil
+
 PREFIX = "LanguageTool-6.6/"
 
 _LIBS = """
@@ -52,3 +55,23 @@ MEMBERS: tuple[tuple[str, str], ...] = (
     (PREFIX + "COPYING.txt", "COPYING.txt"),
     *((PREFIX + "libs/" + name, name) for name in _LIBS),
 )
+
+
+#: Java is found here, not in `languagetool.py`, so `extras.py` can ask for the reason without
+#: importing the module that imports it (CodeQL 2137, 2138: a cyclic import).
+def java_path() -> str | None:
+    """`java` from JAVA_HOME or the path; None when there is no runtime."""
+    home = os.environ.get("JAVA_HOME")
+    if home:
+        for name in ("java.exe", "java"):
+            candidate = os.path.join(home, "bin", name)
+            if os.path.isfile(candidate):
+                return candidate
+    return shutil.which("java")
+
+
+def java_reason() -> str:
+    """Why the extra cannot be installed here, or ""."""
+    if java_path():
+        return ""
+    return "LanguageTool needs Java 17 or newer, and no java was found on this computer. Install Java, then come back."

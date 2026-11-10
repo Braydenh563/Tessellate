@@ -49,14 +49,14 @@ def test_listing_and_status_never_start_java_or_the_network(client, monkeypatch)
 
 
 def test_without_java_the_install_is_refused_with_the_reason(client, monkeypatch):
-    monkeypatch.setattr(languagetool, "java_path", lambda: None)
+    monkeypatch.setattr(languagetool_files, "java_path", lambda: None)
     assert "Java" in _row(client, "languagetool")["unavailable"]
     started = client.post("/extras/languagetool/install").json()["started"]
     assert started is False
 
 
 def test_install_unpacks_flat_jars_then_the_check_is_available(client, monkeypatch, server):  # noqa: F811
-    monkeypatch.setattr(languagetool, "java_path", lambda: "/usr/bin/java")
+    monkeypatch.setattr(languagetool_files, "java_path", lambda: "/usr/bin/java")
     _point_at(monkeypatch, "languagetool", server, {"lt.zip": _archive()})
     started = client.post("/extras/languagetool/install").json()["started"]
     assert started is True
