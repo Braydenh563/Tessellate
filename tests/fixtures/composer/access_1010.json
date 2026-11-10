@@ -2,6 +2,7 @@
   "about": "CHAT_PLAN decision 59, step 1 (access, Brief 84): one typed sentence per tool in ai/tools and per act in the registry, each read with no model by reading.read (tools) and acts.parse (acts). tests/test_atlas_access.py.",
   "now": "2026-10-10T10:00:00",
   "tools": {
+    "create_category": "make a category called Travel",
     "find_contradictions": "where do my notes contradict each other",
     "audit_link_reasons": "audit the vague link reasons in my graph",
     "check_learned": "check what you learned about me against my notes",
@@ -77,6 +78,7 @@
     "map_from_note": "turn the garden note into a mind map"
   },
   "acts": {
+    "create_category": "make a category called Travel",
     "restore": "restore the passport note from the bin",
     "set_name": "call me Sam",
     "rename_tag": "rename the tag gym to fitness",
