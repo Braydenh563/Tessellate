@@ -1,4 +1,7 @@
-// whiteboard-map-gantt.js: a Gantt view of a map's dated topics (MINDMAP_PLAN
+// whiteboard-map-more.js: two things a topic gains beyond its words, in one lazy
+// file (a second file would cost the boot script's gzipped list another path).
+//
+// 1. The Gantt view: a Gantt view of a map's dated topics (MINDMAP_PLAN
 // gap 3, XMind). A topic with both a start day and a due day (the Markers
 // popover's Start and Due, `wbMapMarkerParts`) is drawn as a bar between them
 // on one shared day scale, in start order. A topic with only one of the two
@@ -10,8 +13,11 @@
 // the sheet's own Undo button is the board's Undo. Enter or a press without a
 // drag shows the topic on the map.
 //
+// 2. An audio note on a topic (MINDMAP_PLAN gap 4, decided 2026-11-10): see
+// "The audio note" below.
+//
 // Loaded in the Library bundle after whiteboard-map.js (`LAZY_MODULES`); the
-// map's menu calls `wbMapOpenGantt`.
+// map calls both through `wbMapLazy`.
 
 (() => {
   const WB_GANTT_DAY = 86400000;
@@ -253,5 +259,198 @@
     });
   }
 
-  Object.assign(window, { wbMapOpenGantt });
+
+  //: **The audio note** (MINDMAP_PLAN gap 4, decided 2026-11-10). A recording
+  //: is its own object in the notebook (WORLD_CLASS_PLAN, "Audio in the
+  //: notebook", decision 2), so a topic does not keep audio: `data.recording`
+  //: is the id of a recording picked from the Library's, and the topic shows a
+  //: small microphone mark that plays it in a popover
+  //: (`/media/recordings/<id>`, the file the Recordings list plays). No upload
+  //: and no new media type; recording itself stays in Library, Recordings.
+  //: Setting, replacing and removing the link go through `wbMapSetNodeStyle`,
+  //: so each is one Undo step. A recording later put in the bin leaves the id
+  //: behind; the popover then says so and offers to remove the mark.
+  //: "1:12" or "1:02:05", whole seconds rounded down.
+  function wbAudioLength(ms) {
+    const total = Math.max(0, Math.floor((Number(ms) || 0) / 1000));
+    const h = Math.floor(total / 3600);
+    const m = Math.floor((total % 3600) / 60);
+    const s = String(total % 60).padStart(2, "0");
+    return h ? `${h}:${String(m).padStart(2, "0")}:${s}` : `${m}:${s}`;
+  }
+
+  //: The picker's rows: a recording's name and length, those whose name has
+  //: the words typed, as `pickerListbox`'s `fill` takes them.
+  function wbAudioRows(recordings, term) {
+    const needle = String(term || "").trim().toLowerCase();
+    return recordings
+      .map((r) => ({ icon: "ph:microphone", label: r.title || "Untitled recording", about: r.duration_ms ? wbAudioLength(r.duration_ms) : "", value: r.id }))
+      .filter((row) => !needle || row.label.toLowerCase().includes(needle));
+  }
+
+  const wbAudioLive = (id) => (wbState.objects || []).find((o) => o.id === id);
+
+  //: The topic's microphone mark: made the first time a topic has a
+  //: recording, hidden when it has none. A press plays; the id is read at the
+  //: press, because the datum that drew the topic is replaced by every fetch.
+  function wbAudioPaint(el, data) {
+    const id = Number.isInteger(data?.recording) && data.recording > 0 ? data.recording : null;
+    let mark = el.querySelector(".wb-map-audio");
+    if (!id && !mark) return;
+    if (!mark) {
+      mark = document.createElement("button");
+      mark.type = "button";
+      mark.className = "wb-map-audio";
+      mark.setAttribute("aria-haspopup", "dialog");
+      mark.setAttribute("aria-expanded", "false");
+      const glyph = document.createElement("i");
+      glyph.className = "ph ph-microphone";
+      glyph.setAttribute("aria-hidden", "true");
+      mark.append(glyph);
+      mark.addEventListener("pointerdown", (event) => event.stopPropagation());
+      mark.addEventListener("dblclick", (event) => event.stopPropagation());
+      mark.addEventListener("click", (event) => {
+        event.stopPropagation();
+        wbAudioPlay(Number(el.dataset.id), mark);
+      });
+      const after = el.querySelector(".wb-map-link");
+      if (after) after.after(mark);
+      else el.querySelector(".wb-map-body")?.append(mark);
+    }
+    mark.hidden = !id;
+    if (id) {
+      mark.title = "Audio note: play it";
+      mark.setAttribute("aria-label", "Play the audio note on this topic");
+    }
+  }
+
+  //: Pick a recording from the Library's and attach it to the topic.
+  async function wbAudioPick(node) {
+    let recordings;
+    try {
+      recordings = (await apiJson("/recordings?limit=500")).recordings || [];
+    } catch (error) {
+      toast(error.message || voiceLine("failed", { what: "read your recordings" }), true);
+      return;
+    }
+    if (!recordings.length) {
+      toast("No recordings yet. Record one in Library, Recordings, then attach it here.", "info");
+      return;
+    }
+    const shell = pickerDialog({
+      title: "Audio note",
+      about: `Pick the recording to attach to "${wbMapLabel(node) || "this topic"}". The audio stays in Recordings.`,
+      placeholder: "Search recordings…",
+      searchLabel: "Search recordings",
+    });
+    const box = pickerListbox(shell, "Your recordings");
+    const paint = () => {
+      const term = shell.search.value.trim();
+      box.fill(wbAudioRows(recordings, term), term.toLowerCase(), term ? "No recording has that name." : "No recordings yet.");
+    };
+    shell.search.addEventListener("input", paint);
+    paint();
+    const id = await new Promise((resolve) => shell.open(resolve));
+    const live = wbAudioLive(node.id);
+    if (id == null || !live) return;
+    await wbMapSetNodeStyle(live, { recording: id });
+    toast("Audio note attached. Ctrl+Z takes it off.", "info");
+  }
+
+  async function wbAudioRemove(node) {
+    const live = wbAudioLive(node.id);
+    if (!live?.data?.recording) return;
+    await wbMapSetNodeStyle(live, { recording: null });
+    toast("Audio note removed. Ctrl+Z puts it back.", "info");
+  }
+
+  let wbAudioPop = null;
+
+  function wbAudioClose({ restoreFocus = false } = {}) {
+    const state = wbAudioPop;
+    if (!state) return;
+    wbAudioPop = null;
+    document.removeEventListener("pointerdown", state.outside, true);
+    state.audio.pause();
+    state.panel.remove();
+    state.anchor.setAttribute("aria-expanded", "false");
+    if (restoreFocus && state.anchor.isConnected) state.anchor.focus({ preventScroll: true });
+  }
+
+  //: The player: the browser's own audio controls, loaded only when it is
+  //: opened (`preload = "none"`), under the recording's name and length.
+  async function wbAudioPlay(nodeId, anchor) {
+    const live = wbAudioLive(nodeId);
+    const id = live?.data?.recording;
+    if (!id) return;
+    const reopen = wbAudioPop?.nodeId === nodeId;
+    wbAudioClose();
+    if (reopen) return;
+    const panel = document.createElement("div");
+    panel.className = "help-popover wb-map-audio-pop";
+    panel.setAttribute("role", "dialog");
+    panel.setAttribute("aria-label", `Audio note on ${wbMapLabel(live) || "this topic"}`);
+    const title = document.createElement("p");
+    title.className = "wb-map-audio-title";
+    title.textContent = "Loading the recording…";
+    const audio = document.createElement("audio");
+    audio.controls = true;
+    audio.preload = "none";
+    audio.src = `/media/recordings/${id}`;
+    audio.setAttribute("aria-label", "Audio note");
+    const foot = document.createElement("div");
+    foot.className = "wb-map-audio-foot";
+    const swap = document.createElement("button");
+    swap.type = "button";
+    swap.className = "ghost small";
+    swap.textContent = "Choose another…";
+    swap.addEventListener("click", () => {
+      wbAudioClose();
+      wbAudioPick(live);
+    });
+    const remove = document.createElement("button");
+    remove.type = "button";
+    remove.className = "ghost small";
+    remove.textContent = "Remove";
+    remove.addEventListener("click", () => {
+      wbAudioClose();
+      wbAudioRemove(live);
+    });
+    foot.append(swap, remove);
+    panel.append(title, audio, foot);
+    panel.addEventListener("keydown", (event) => {
+      event.stopPropagation();
+      if (event.key === "Escape") {
+        event.preventDefault();
+        wbAudioClose({ restoreFocus: true });
+      }
+    });
+    const outside = (event) => {
+      if (!panel.contains(event.target) && !anchor.contains(event.target)) wbAudioClose();
+    };
+    document.addEventListener("pointerdown", outside, true);
+    document.body.append(panel);
+    anchor.setAttribute("aria-expanded", "true");
+    wbAudioPop = { nodeId, panel, audio, anchor, outside };
+    placeHelpPopover(panel, anchor);
+    audio.focus({ preventScroll: true });
+    try {
+      const rec = await apiJson(`/recordings/${id}`, { silent: true });
+      title.textContent = `${rec.title || "Untitled recording"}${rec.duration_ms ? `, ${wbAudioLength(rec.duration_ms)}` : ""}`;
+    } catch {
+      title.textContent = "This recording is not in Recordings any more.";
+      audio.hidden = true;
+      swap.textContent = "Choose another…";
+    }
+  }
+
+  //: The file's whole surface, one object, so the shared scope gains one name rather than one per entry point.
+  const wbMapLazy = {
+    openGantt: wbMapOpenGantt,
+    paintAudio: wbAudioPaint,
+    pickAudio: wbAudioPick,
+    removeAudio: wbAudioRemove,
+    playAudio: wbAudioPlay,
+  };
+  Object.assign(window, { wbMapLazy });
 })();

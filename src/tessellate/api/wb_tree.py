@@ -233,6 +233,7 @@ MAP_STYLE_FIELDS = (
     "markers",
     "due",
     "start",
+    "recording",
 )
 
 

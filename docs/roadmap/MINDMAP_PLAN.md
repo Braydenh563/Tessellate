@@ -1792,7 +1792,7 @@ Read from the code against XMind, MindManager and Miro mind maps. Sizes S, M, L;
 1. Sort a topic's branches A to Z or Z to A, numbers as numbers (XMind "Sort") - S, built.
 2. Import a .xmind file (the map already reads OPML, FreeMind and Markdown) - M.
 3. ~~A Gantt view of the topics that have dates (XMind) - L.~~ Built 2026-11-10 (HISTORY.md, "s9c-1110 part 4").
-4. Audio notes on a topic, recorded and kept with the board - M.
+4. ~~Audio notes on a topic, recorded and kept with the board - M.~~ Built 2026-11-10 as a link to an existing recording, not raw audio (HISTORY.md, "s9c-1110 part 4").
 5. A brainstorm timer on the map bar (XMind "Brainstorming") - S.
 6. Copy the shape of a branch (layout and look together) to another branch - S.
 7. Topic templates for one topic (a pros and cons topic from the topic's menu) - S.
@@ -1818,7 +1818,7 @@ Exists (no work): fold or unfold one branch (C), show N levels (Alt+1 to 9, Alt+
 
 The three taken first (drag to reorder siblings, copy or export one branch, dim all but the selected branch) are built: HISTORY.md, "Moved from the plans, 2026-10-25 (wb2)".
 
-Left: audio notes (item 4); Gantt, rainbow every level and the legend are built (HISTORY.md, "s9c-1110 parts 3 and 4").
+Gantt, audio notes (as a recording link), rainbow every level and the legend are built (HISTORY.md, "s9c-1110 parts 3 and 4").
 
 ## Placed from INBOX, 2026-11-04
 

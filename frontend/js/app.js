@@ -1650,7 +1650,7 @@ const LAZY_MODULES = {
     "/js/documents-callouts.js", //: After documents.js: its top level binds through `docListen`.
     "/js/margin-reader.js",
     "/js/whiteboard-map.js",
-    "/js/whiteboard-map-gantt.js", //: After whiteboard-map.js: calls its date words and style writer at run time only.
+    "/js/whiteboard-map-more.js", //: After whiteboard-map.js: the Gantt view and the audio note, calling its date words and style writer at run time only.
     "/js/whiteboard.js",
     "/js/whiteboard-commands.js",
     "/js/whiteboard-library.js",

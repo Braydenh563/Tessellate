@@ -2709,6 +2709,7 @@ function wbPaintMapNodeStyle(node, d) {
   }
 
   wbMapPaintExtras(node, d.data || {});
+  wbMapLazy.paintAudio(node, d.data || {});
   //: A note (decision 18): read off the topic's own data, never the theme's.
   const noteMark = node.querySelector(".wb-map-note");
   if (noteMark) {
@@ -5066,6 +5067,11 @@ function mapPaletteCommands() {
     row("This topic", "ph:caret-down Fold or unfold the branch", () => wbMapToggleCollapse(node.id), "C");
     row("This topic", "ph:crosshair Focus on this branch", () => wbMapSetFocus(node.id));
     row("This topic", "ph:flag Markers on this topic…", () => wbMapOpenMarkers(node.id));
+    row("This topic", "ph:microphone Audio note: pick a recording…", () => wbMapLazy.pickAudio(node));
+    if (node.data?.recording) {
+      row("This topic", "ph:play Play the audio note", () => wbMapLazy.playAudio(node.id, document.querySelector(`.wb-object[data-id="${node.id}"] .wb-map-audio`) || document.getElementById("whiteboard-container")));
+      row("This topic", "ph:microphone-slash Remove the audio note", () => wbMapLazy.removeAudio(node));
+    }
     row("This topic", "ph:eyedropper Copy this topic's style", () => wbCopySelectedStyle(), "Ctrl+Alt+C");
     row("This topic", "ph:paint-bucket Paste style onto this topic", () => wbPasteCopiedStyle(), "Ctrl+Alt+V");
     row("This topic", "ph:stack Use this look for its level", () => wbMapUseLookForLevel(node.id));
@@ -5088,7 +5094,7 @@ function mapPaletteCommands() {
   row("This map", "ph:chart-bar What this map is made of", () => wbShowMapStats());
   row("This map", "ph:presentation Present branches", () => wbStartPresenting());
   row("This map", "ph:student Study the map", () => wbMapStartStudy());
-  row("This map", "ph:chart-bar-horizontal Gantt chart of the dated topics", () => wbMapOpenGantt());
+  row("This map", "ph:chart-bar-horizontal Gantt chart of the dated topics", () => wbMapLazy.openGantt());
   row("This map", "ph:funnel Filter by marker…", () => wbMapChooseMarkerFilter());
   if (wbMarkerUi.filter) row("This map", "ph:x-circle Stop filtering by marker", () => wbMapSetMarkerFilter(null));
   row("This map", wbOutlineShowing() ? "ph:list-dashes Hide the outline" : "ph:list-dashes Show the map as an outline", () => wbOutlineToggle());
@@ -8446,7 +8452,7 @@ const WB_MAP_STYLE_KEYS = [
 //: And a boundary and a summary (decisions 19, 20): what the map says.
 const WB_MAP_CONTENT_KEYS = [
   "image", "task", "note", "boundary", "boundary_label", "summary", "summary_span",
-  "priority", "progress", "flag", "markers", "due", "start", "branch_layout", "callout", "labels", "stamps", "stamped",
+  "priority", "progress", "flag", "markers", "due", "start", "recording", "branch_layout", "callout", "labels", "stamps", "stamped",
 ];
 
 //: **Reaction stamps and votes** (Miro; MINDMAP_PLAN 14.4): six Phosphor
@@ -10833,7 +10839,7 @@ function wbMapAfterRender() {
 onSurface("board", () => {
   document.getElementById("wb-map-filter-clear")?.addEventListener("click", () => wbMapSetMarkerFilter(null));
   document.getElementById("wb-map-filter-item")?.addEventListener("click", () => wbMapChooseMarkerFilter());
-  document.getElementById("wb-map-gantt-item")?.addEventListener("click", () => wbMapOpenGantt());
+  document.getElementById("wb-map-gantt-item")?.addEventListener("click", () => wbMapLazy.openGantt());
 });
 
 // --- A document's headings as a map (the audit's M5, second half) ---------

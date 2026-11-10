@@ -6404,6 +6404,7 @@ PANEL_FIXED_JS = {
     "lightbox-actions.js": "the image viewer's overlays",
     "lightbox-view.js": "the image viewer",
     "settings-controls.js": "an anchored control overlay",
+    "whiteboard-map-more.js": "a topic's audio player, an anchored popover",
     "companion-settings.js": "a help body (the habits row's popover)",
     "settings-health.js": "a help body (the data folder check's popover)",
     "hello-unlock.js": "a help body (Unlock with Windows Hello's popover in Settings)",

@@ -12,7 +12,7 @@ import pytest
 ROOT = Path(__file__).resolve().parents[1]
 JS = ROOT / "frontend" / "js"
 MAP = (JS / "whiteboard-map.js").read_text(encoding="utf-8")
-GANTT = (JS / "whiteboard-map-gantt.js").read_text(encoding="utf-8")
+GANTT = (JS / "whiteboard-map-more.js").read_text(encoding="utf-8")
 
 
 def _function(name: str) -> str:
@@ -74,10 +74,11 @@ def test_shifting_a_bar_moves_both_days_across_month_and_year_ends():
 def test_the_view_is_one_undo_step_a_menu_row_a_lazy_file_and_in_the_guide():
     # A drag or a key moves both days in one patch through the one style writer (one Undo step).
     assert "wbMapSetNodeStyle(live, wbGanttShift(" in GANTT
-    assert "Object.assign(window, { wbMapOpenGantt });" in GANTT
-    assert "wbMapOpenGantt()" in MAP
+    # The file's one export is a shared object (the audio file adds to it), so the shared scope gains one name.
+    assert "Object.assign(window, { wbMapLazy });" in GANTT and "openGantt: wbMapOpenGantt" in GANTT
+    assert MAP.count("wbMapLazy.openGantt()") == 2  # the palette row and the View menu item
     app = (JS / "app.js").read_text(encoding="utf-8")
-    assert '"/js/whiteboard-map-gantt.js"' in app
-    assert app.index("whiteboard-map-gantt.js") > app.index('"/js/whiteboard-map.js"')
+    assert '"/js/whiteboard-map-more.js"' in app
+    assert app.index("whiteboard-map-more.js") > app.index('"/js/whiteboard-map.js"')
     topics = (ROOT / "src" / "tessellate" / "ai" / "help_topics_core.py").read_text(encoding="utf-8")
     assert "Gantt" in topics

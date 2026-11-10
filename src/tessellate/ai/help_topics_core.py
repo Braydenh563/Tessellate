@@ -2697,16 +2697,19 @@ HELP_TOPICS.extend(
                 "gantt",
                 "gantt chart",
                 "start day on a topic",
+                "audio note",
+                "audio on a topic",
+                "recording on a topic",
             ),
             "body": (
                 "The layout picker: tree, radial, logic chart, "
                 "timeline, fishbone, tree table or free; Tidy lays every unpinned topic out again. "
-                "The View menu sets Colour by (branch, category, age, or whether "
-                "a note is behind it) and opens every folded branch; View, "
-                "Present branches shows it branch by branch. A topic's menu, "
+                "View sets Colour by (branch, category, age, note) and opens every "
+                "folded branch; Present branches shows it branch by branch. A topic's menu, "
                 "Content, Markers sets a priority (1 to 5), how far along it is, a "
                 "flag, a start day, a due day and up to six icons; View, Gantt chart draws "
                 "a bar from start to due for each topic with both, and a dragged bar moves its dates (Undo); "
+                "a topic's menu, Audio note attaches a recording from Recordings, its mic mark plays it; "
                 "View, Filter by marker dims every topic "
                 "without the one you pick, and View, Dim all but the selected branch "
                 "dims everything outside the selected topic's branch and its path to "
@@ -2718,8 +2721,8 @@ HELP_TOPICS.extend(
                 "counts the done ones (1/2); Markdown exports write tasks as - [ "
                 "] and - [x]. View, Number the branches numbers every topic by "
                 "its place (1, 1.1, 1.2), and the Markdown and OPML exports keep "
-                "the numbers. A topic's menu adds a note behind it: its mark on "
-                "the topic opens it; on a topic that is one of your notes, Edit the note's text… changes the note itself. "
+                "the numbers. A topic's menu adds a note behind it: its mark "
+                "opens it; on a topic that is one of your notes, Edit the note's text… changes the note itself. "
                 "Comment… starts a thread, counted on its corner; its Branch group draws a boundary "
                 "round the branch or summarises topics side by side. Templates, import and export are in Mind map import and export."
             ),

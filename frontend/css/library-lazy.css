@@ -2401,7 +2401,8 @@ body.printing-doc #doc-preview p,
 /* The mark of a note behind a topic (MINDMAP_PLAN.md decision 18): the link
    marker's recipe in the label's own ink, like the task box, so it reads on a
    core or filled topic's ground too. */
-.wb-map-note {
+.wb-map-note,
+.wb-map-audio {
   flex: 0 0 auto;
   display: inline-flex;
   align-items: center;
@@ -2414,7 +2415,9 @@ body.printing-doc #doc-preview p,
 }
 
 .wb-map-note:hover,
-.wb-map-note:focus-visible {
+.wb-map-note:focus-visible,
+.wb-map-audio:hover,
+.wb-map-audio:focus-visible {
   color: var(--accent-text);
 }
 
@@ -8754,7 +8757,7 @@ input[type="color"].wb-mixed {
   font-size: var(--text-xs);
 }
 
-/* The map's Gantt chart (whiteboard-map-gantt.js, MINDMAP_PLAN gap 3): a sheet wider than the usual reading width, because a bar needs room to be a length. A name column beside one shared day scale, the axis and every row on the same two columns. Each bar's left and width (percent of the scale) and a drag's offset are set from the script, not from custom properties, so the token budget stays where it was. */
+/* The map's Gantt chart (whiteboard-map-more.js, MINDMAP_PLAN gap 3): a sheet wider than the usual reading width, because a bar needs room to be a length. A name column beside one shared day scale, the axis and every row on the same two columns. Each bar's left and width (percent of the scale) and a drag's offset are set from the script, not from custom properties, so the token budget stays where it was. */
 @media (min-width: 600px) {
   [data-sheet="map-gantt"] .sheet-card:not(.sheet-card-corner) {
     max-width: min(64rem, 100%);
@@ -8838,4 +8841,23 @@ input[type="color"].wb-mixed {
   align-items: center;
   justify-content: space-between;
   gap: var(--space-3);
+}
+
+/* A topic's audio note (whiteboard-map-audio.js, MINDMAP_PLAN gap 4): the mark is `.wb-map-note`'s recipe; the player is the help popover's shell around the browser's own audio controls, the recording's name above and Choose another and Remove below. */
+.wb-map-audio-pop {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-width: 16rem;
+}
+.wb-map-audio-pop audio {
+  width: 100%;
+}
+.wb-map-audio-title {
+  margin: 0;
+  font-size: var(--text-sm);
+}
+.wb-map-audio-foot {
+  display: flex;
+  gap: var(--space-2);
 }

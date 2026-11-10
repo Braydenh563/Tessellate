@@ -26,7 +26,9 @@ def test_replace_all_rewrites_a_topic_note():
 
 
 def test_replace_all_note_text_is_replaced_in_node():
-    import json, shutil, subprocess
+    import json
+    import shutil
+    import subprocess
 
     node = shutil.which("node")
     if not node:
