@@ -7,6 +7,11 @@ Split out of `ROADMAP.md`. Kept, not deleted, for one reason: **three sessions
 have independently rebuilt something that already existed.** This is the file
 that answers "has this been done?" before anyone starts.
 
+## Moved from the plans, 2026-11-10 (s13-1110: INBOX 1695 a, audit S93)
+
+- Built: INBOX 1695 (a) a Private toggle (`aria-pressed`, the ghost toggle recipe, lock glyph that closes) beside Open in Capture in the quick note and in the capture card's foot (`captureCard.mountLock`, built with the card's extras). It starts as the setting says; a save adds `private` only when the toggle differs, so null still follows Settings. Measured at 1440 on a fresh data dir: setting off, pressed then saved gave a private note; setting on, default pressed, pressed off gave a readable note; the card's toggle 95 x 32 px on the Save row (Save 32 px). The Capture page's own form (capture-ask.js, a boot script) is not covered: no code was added to boot scripts. Help: Quick note topic (help_topics_more.py) and the dialog's help text.
+- Built: S93 `flashEntry` run in node over a 100-note fixture on the card-not-in-the-page path (toast, announce, address back to the list, filters cleared, paint-through released) and the in-page path.
+
 ## Moved from the plans, 2026-11-10 (s12b-1110: audit S71, S74)
 
 - Built: S71 .md, .markdown and .txt dropped on the Notes tab become notes through the Obsidian reader (`/import/app?source=obsidian`) with one Undo; other files and tabs keep file-drop.js routing; the veil reads "Drop notes or files to add them" there. S74 a Headings row in a note card's ... menu for notes with 3 or more headings (the server sends `heading_count` for clipped rows) opens a sheet of jump links (the Contents recipe); a link opens the card out and scrolls its `.note-heading` span to the top (measured: Section 4 top 1524.5 px before, 365.5 px after, 900 px window; sheet 544 x 274 px).

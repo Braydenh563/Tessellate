@@ -5,6 +5,7 @@ based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the
 project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
+- Notes (s13-1110, INBOX 1695 a, audit S93): a Private toggle on the quick note and the capture card makes that one note private; it starts as Settings, Account & security, "New notes start private" says, and a save sends `private` only when it differs (tests/test_note_lock_toggle_1110.py). `flashEntry`'s not-in-DOM path is run in node over a 100-note fixture (tests/test_flash_entry_missing_s93.py).
 - Notes (s12b-1110, audit S71, S74): .md and .txt files dropped on the Notes tab become notes, with Undo; a note with three or more headings has a Headings row in its ... menu that opens a list of jump links (tests/test_file_drop.py, tests/test_note_headings_s74.py).
 - Import (s12-1110, audit K34): an app import (Notion, Obsidian, Evernote, Apple Notes, a Tessellate folder) is sized and opened from the spooled upload file, not read whole into memory; a zip is read one member at a time (tests/test_import_spool.py).
 - Code (s58-1110, OPEN W29 D24): settings-packages.js, appearance-panel.js and whiteboard-history.js wrapped whole in one closure, one or two exports each; the shared scope's names 9,096 to 9,044 (the cap follows). The tests that slice them read `unwrapped`.

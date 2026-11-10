@@ -2,7 +2,7 @@
 
 Generated 2026-11-10 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8059, frontend ids 2664, CSS sections 523, backend routes 665, backend modules 9937, test files 2404, tests 20064, plan headings 1000, app scripts 28, boot scripts 37, script files 273.
+Counts: frontend functions 8059, frontend ids 2664, CSS sections 523, backend routes 665, backend modules 9937, test files 2405, tests 20067, plan headings 1000, app scripts 28, boot scripts 37, script files 273.
 
 ## Frontend functions (8059)
 
@@ -25932,7 +25932,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (20064)
+## Tests (20067)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -26920,6 +26920,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_first_steps_ask_count.py | 1 |
 | tests/test_fixa2_1025.py | 5 |
 | tests/test_fixed_day_1693.py | 3 |
+| tests/test_flash_entry_missing_s93.py | 3 |
 | tests/test_flaw_class_lints.py | 2 |
 | tests/test_flow_1683.py | 17 |
 | tests/test_flow_pose_1683b.py | 7 |
