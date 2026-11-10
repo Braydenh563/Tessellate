@@ -7,6 +7,8 @@ from __future__ import annotations
 
 from datetime import datetime, timezone
 
+from pathlib import Path
+
 import pytest
 from sqlalchemy import func, select
 
@@ -234,7 +236,7 @@ def test_a_typed_yes_to_a_tool_gives_the_undo_row_and_the_refresh(client, sessio
     assert card["settle"] and card["undo"] and card["undo"][0]["name"] == "delete_note", card
     client.post("/chat/command/run", json={"steps": card["undo"]})
     assert _count(session, "Parked") == 0
-    page = (routes_chat.__file__ and open("frontend/js/ask-compose.js").read())
+    page = Path("frontend/js/ask-compose.js").read_text(encoding="utf-8")
     assert "refreshAfterToolChanges(); // what the typed yes wrote" in page
 
 
@@ -287,7 +289,7 @@ def test_a_yes_does_not_reach_a_card_that_is_not_in_the_last_turn(client, sessio
 
 
 def test_the_page_marks_older_cards_not_pending_and_names_only_the_last_turns():
-    page = open("frontend/js/answer-kit.js").read()
+    page = Path("frontend/js/answer-kit.js").read_text(encoding="utf-8")
     start = page.index("function chatHistoryToSend")
     body = page[start:start + 1600]
     assert "delete card.dataset.pendingAct" in body and "pending_id" in body
