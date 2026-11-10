@@ -54153,3 +54153,9 @@ Bullets already marked closed in OPEN.md, moved verbatim, grouped by their OPEN.
 - W23 C37 (accented words in spell check), C38 (history previews, DX27 7af47c4), C39 (the Settings switch for link offers; "Untitled document N", documents.js `docUntitledName`) and C40 (the equation panel, 6c08378) built earlier.
 - W24 D1 `Flow.step` rest: below 1e-200 with no push the springs snap to zero and the step returns (70k settled wakes 1 s to 0.1 s; hashes of 8 seeded hours over both gaits identical, 6b44f2146e2c40f0 before and after). D5 (Q20): the PERF rules fail the complexity job at a zero baseline.
 - W26 D11 measured: the worker alone settles 2,000 notes with 2,900 links in 3.7 to 5.2 s on this box (node, fake worker scope); the browser long tasks were not driven.
+
+## Moved from the plans, 2026-11-10 (s58left3-1110: OPEN D9, D19, E20 in part)
+
+- D9 built: an older chat reply's Atlas head is an `svg` and `use` of one hidden copy per look, mood and size (atlas.js, `rest-begin`); 167 to 8 nodes a reply; the newest reply keeps the live head. D19: Source p50 24 to 32 ms against Live 32 at 1x, so the Live decoration set is not the cost; spell marks unmeasured.
+- E20 in part: GRAPH 798 and 802, WHITEBOARD 1352, 1354, 1355 and MINDMAP 431 marked per part in their plans (graphfeel.js: 34 notes box 399 by 519, 0 overlaps, 0 hidden samples over five view changes).
+

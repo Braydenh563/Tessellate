@@ -1115,3 +1115,8 @@
 @keyframes atl-ds-wavepointer-body { 0%, 100% { --atl-lean: 0deg; } 15% { --atl-lean: -3deg; } 52% { --atl-lean: -1.5deg; } 76% { --atl-lean: -3deg; } }
 @keyframes atl-ds-wavepointer-eye { 0%, 100% { translate: 0.6px 0px; } 15%, 40% { translate: 1.4px -0.4px; } 60% { translate: 1.2px 0.4px; } 80% { translate: 1.6px -0.2px; } }
 @keyframes atl-ds-wavepointer-tail { 0%, 100% { rotate: 0deg; } 20% { rotate: 10deg; } 35% { rotate: -6deg; } 50% { rotate: 10deg; } 65% { rotate: -6deg; } 80% { rotate: 8deg; } }
+
+/* The one hidden copy per look, mood and size that every older reply's corner
+   head points at (atlas.js, "Older replies wear their face at rest"): present,
+   unseen, like the shared defs. */
+.atl-rest-host { position: absolute; width: 0; height: 0; overflow: hidden; }

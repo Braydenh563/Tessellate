@@ -2,7 +2,7 @@
 
 Generated 2026-11-10 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 8059, frontend ids 2664, CSS sections 523, backend routes 665, backend modules 9937, test files 2405, tests 20068, plan headings 1000, app scripts 28, boot scripts 37, script files 273.
+Counts: frontend functions 8059, frontend ids 2664, CSS sections 523, backend routes 665, backend modules 9937, test files 2406, tests 20073, plan headings 1000, app scripts 28, boot scripts 37, script files 273.
 
 ## Frontend functions (8059)
 
@@ -2173,7 +2173,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `atlasDraw` | frontend/js/atlas.js:3394 |
 | `atlasDrawFigure` | frontend/js/atlas.js:3049 |
 | `atlasDressMarks` | frontend/js/atlas.js:3457 |
-| `atlasDrift` | frontend/js/atlas.js:3975 |
+| `atlasDrift` | frontend/js/atlas.js:3976 |
 | `atlasDrop` | frontend/js/atlas.js:1561 |
 | `atlasEars` | frontend/js/atlas.js:1832 |
 | `atlasExtras` | frontend/js/atlas.js:1673 |
@@ -2209,13 +2209,13 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `atlasMirror` | frontend/js/atlas.js:896 |
 | `atlasMirrorPoints` | frontend/js/atlas.js:392 |
 | `atlasNightcap` | frontend/js/atlas.js:1662 |
-| `atlasOn` | frontend/js/atlas.js:3923 |
+| `atlasOn` | frontend/js/atlas.js:3924 |
 | `atlasOrbits` | frontend/js/atlas.js:3232 |
 | `atlasPaw` | frontend/js/atlas.js:909 |
 | `atlasPivot` | frontend/js/atlas.js:166 |
-| `atlasPlay` | frontend/js/atlas.js:3906 |
+| `atlasPlay` | frontend/js/atlas.js:3907 |
 | `atlasRepaint` | frontend/js/atlas.js:3750 |
-| `atlasRestingMood` | frontend/js/atlas.js:3801 |
+| `atlasRestingMood` | frontend/js/atlas.js:3802 |
 | `atlasRetune` | frontend/js/atlas.js:1391 |
 | `atlasRing` | frontend/js/atlas.js:2365 |
 | `atlasRings` | frontend/js/atlas.js:3301 |
@@ -2231,7 +2231,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `atlasStem` | frontend/js/atlas.js:285 |
 | `atlasStemEdge` | frontend/js/atlas.js:406 |
 | `atlasStemSides` | frontend/js/atlas.js:187 |
-| `atlasStreak` | frontend/js/atlas.js:3998 |
+| `atlasStreak` | frontend/js/atlas.js:3999 |
 | `atlasStyle` | frontend/js/atlas.js:3599 |
 | `atlasTail` | frontend/js/atlas.js:1880 |
 | `atlasTailMasks` | frontend/js/atlas.js:2710 |
@@ -2243,11 +2243,11 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `atlasTuneSegs` | frontend/js/atlas.js:1078 |
 | `atlasTuneStyle` | frontend/js/atlas.js:3010 |
 | `atlasTurnAbout` | frontend/js/atlas.js:993 |
-| `atlasWake` | frontend/js/atlas.js:4031 |
+| `atlasWake` | frontend/js/atlas.js:4032 |
 | `atlasWatchFigure` | frontend/js/atlas.js:3538 |
 | `atlasWhenShown` | frontend/js/atlas.js:3483 |
-| `charactersArrived` | frontend/js/atlas.js:4124 |
-| `setAtlasMood` | frontend/js/atlas.js:3821 |
+| `charactersArrived` | frontend/js/atlas.js:4125 |
+| `setAtlasMood` | frontend/js/atlas.js:3822 |
 
 ### frontend/js/attach-to.js (4)
 
@@ -12642,7 +12642,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/appearance-panel-lazy.css | 330 |
 | frontend/css/appearance-panel-own-lazy.css | 86 |
 | frontend/css/ask-compose-lazy.css | 301 |
-| frontend/css/atlas-lazy.css | 1117 |
+| frontend/css/atlas-lazy.css | 1122 |
 | frontend/css/captions-lazy.css | 95 |
 | frontend/css/capture-card-lazy.css | 204 |
 | frontend/css/chat-private-lazy.css | 18 |
@@ -25932,7 +25932,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:350 |
 | `settings_from` | src/tessellate/search/websearch.py:335 |
 
-## Tests (20068)
+## Tests (20073)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -26039,6 +26039,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_atlas_micro.py | 10 |
 | tests/test_atlas_morph_1709.py | 4 |
 | tests/test_atlas_rest_1402.py | 10 |
+| tests/test_atlas_rest_faces.py | 5 |
 | tests/test_atlas_rest_motion.py | 3 |
 | tests/test_atlas_saccade_1109.py | 2 |
 | tests/test_atlas_shape.py | 51 |
