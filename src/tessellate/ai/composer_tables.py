@@ -947,12 +947,17 @@ LOWER_PAIR = re.compile(r"^(?P<a>[a-z][\w'’-]{1,20}) and (?P<b>[a-z][\w'’-]{
 #: Tried last (after the comparison verbs, or "Compare Lisbon and Porto" would be a bare pair).
 BARE_COMPARE_SIDES: tuple[re.Pattern[str], ...] = (re.compile(_BARE_NAMES),)
 
+#: "one mentions", "two mention", "the other mentions": the composer's own count lead for a comparison.
+_COUNT_MENTIONS = r"(?:one|two|three|four|five|six|\d+|the other)\s+mentions?"
+
 #: Two-sided comparison patterns, tried after the originals in
 #: `composer._COMPARE_SIDES`: each needs both sides in the question.
 EXTRA_COMPARE_SIDES: tuple[re.Pattern[str], ...] = (
     re.compile(rf"^{_EACH_LEAD}\s+(?P<a>{_EACH_NAME})\s+and\s+(?P<b>{_EACH_NAME})[?.!]*$", re.I),
     re.compile(rf"^(?:(?:is|are|was|were|does|do|did)\s+)?(?P<a>.+?)(?<!\s)\s+(?:(?:is|are|was|were)\s+)?(?:{_MORE}) than (?P<b>.+?)[?.!]*$", re.I),
     re.compile(r"^(?:how|what) (?:does|do|did) (?P<a>.+?) (?:compare|stack up|measure up) (?:with|to|against) (?P<b>.+?)[?.!]*$", re.I),
+    #: The composer's own lead, said back: "Among these notes, one mentions Lisbon and one mentions Atlas" (W10 B30).
+    re.compile(rf"^(?:[^,]{{3,40}},\s*)?{_COUNT_MENTIONS}\s+(?P<a>.+?)(?:,|\s+and)\s+(?:and\s+)?{_COUNT_MENTIONS}\s+(?P<b>.+?)[?.!]*$", re.I),
     re.compile(r"^(?P<a>.+?),? compare[sd]? (?:with|to) (?P<b>.+?)[?.!]*$", re.I),
     re.compile(rf"^{_WHICH} (?:is|are|was|were) (?:the )?(?:{_MORE})[,:]?\s+(?P<a>.+?) or (?P<b>.+?)[?.!]*$", re.I),
     #: "which comes first, the dentist or the trip".
@@ -978,6 +983,7 @@ EXTRA_COMPARE_SIDES: tuple[re.Pattern[str], ...] = (
 #: The comparison triggers added to the "compare" shape rule: all two-sided,
 #: so a question with one subject is never read as a comparison.
 COMPARE_SHAPE_EXTRA = (
+    rf"^(?:[^,]{{3,40}},\s*)?{_COUNT_MENTIONS}\s+.+?(?:,|\s+and)\s+(?:and\s+)?{_COUNT_MENTIONS}\s+|"
     #: Loose on purpose: `compare_sides` (case-sensitive, names only) is the gate for a bare "Tom and Sara".
     r"^[\w'’, -]{3,60} and [\w'’ -]{2,30}[?.!]*$|"
     rf"^{_EACH_LEAD}\s+{_EACH_NAME}\s+and\s+{_EACH_NAME}[?.!]*$|"

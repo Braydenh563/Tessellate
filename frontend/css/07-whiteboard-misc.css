@@ -10847,6 +10847,11 @@ header#top-bar {
   font-size: var(--text-md);
   user-select: none;
 }
+/* The chip: a wide halo in the card colour behind the words, round-cornered. */
+.wb-link-label.wb-link-label-chip {
+  stroke-width: 12;
+  stroke-linejoin: round;
+}
 /* --- Find anything -----------------------------------------------------------
    The universal search dialog (app.js, `openFinder`). INBOX 270. It shares the
    agent palette's shape deliberately: the same `.lock-overlay` and `.card.glass`

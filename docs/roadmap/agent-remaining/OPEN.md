@@ -152,13 +152,13 @@ Parked until the owner's data or a check on real hardware:
 - B29 No tasks: "add a task to read chapter 5 tomorrow" and the "tick off" forms | 1028-agent E10 (conv-1110: the add form now answers "Got it, I will add a task due tomorrow at 9am (the default): read chapter 5"; the tick-off forms are not re-checked)
 
 **W10 Composer: compare, summary and lists** (B, composer, Sonnet high; not beside W7). Files: `ai/composer_digest.py`, `composer_lists.py`, `composer_each.py`. Checks: as W7. Done when: as W7.
-- B30 Compare and summary shapes ("one mentions X and one mentions Y"; recipe summary is the ingredients only; summary drops "Work starts 16 November") | 1107 D20, E9, bt#14, R9-17
-- B31 Dead ends where the notebook can answer (checklists, favourites, tables, done items) | 1107 D22, E19, E21
-- B32 List rows end "· Uncategorised" in the answer text | E24
+~~- B30 Compare and summary shapes ("one mentions X and one mentions Y"; recipe summary is the ingredients only; summary drops "Work starts 16 November") | 1107 D20, E9, bt#14, R9-17~~ **Fixed s5-1110 (`study._worth`: a dated sentence outranks a phone number, a recipe keeps its method, a name said again with a label leads nothing; the composer's own "one mentions X and one mentions Y" lead said back is a comparison; "boil down" and "condense" summarise).**
+~~- B31 Dead ends where the notebook can answer (checklists, favourites, tables, done items) | 1107 D22, E19, E21~~ **Fixed s5-1110, in part ("show my done items" is the ticked list; "my favourites" is the pinned list; "which notes are linked" counts [[links]]; checklists, tables and ticked items were built before; a note with no word for it still says so).**
+~~- B32 List rows end "· Uncategorised" in the answer text | E24~~ **Fixed s5-1110 (`tool_say._note_row` drops the default filing).**
 - B33 A proper noun lowercased in a quoted line ("orchard"); first-letter capitals lost | c13#13, 1029-composer C1
 - B34 The joke note leads by its quote, not its name | composer-r7 L7, composer-r8 L16
-- B35 Key-value notes ("Rent 650.") dropped as fragments | 1028-agent E5
-- B36 One-liner naming (after Q3) | c12 L16
+~~- B35 Key-value notes ("Rent 650.") dropped as fragments | 1028-agent E5~~ **Fixed before s5-1110 (`composer_read._short_fact`, CHANGELOG 1501; verified).**
+~~- B36 One-liner naming (after Q3) | c12 L16~~ **Fixed s5-1110 (Q3: `composer_frame._order_title` names a short capitalised order plain).**
 
 **W11 Notes core** (B, notes, Sonnet; verify first). Files: `frontend/js/notes-list.js`, `navigation.js`, `search/query.py`, the export route. Checks: `tests/test_notes_*`, `tests/test_search_*`. Done when: jump-to-note opens any note, flag filters answer right, export works for any title.
 - ~~B37 Jump-to-note does nothing past the first 60 rendered rows | 1028-shell S1~~ **Stale** (w11-1110, Chromium, 174 notes: `flashEntry(oldest)` lands the row at top 326 of 900, the middle one at 436; capture-ask.js resolves the page first)
@@ -225,17 +225,17 @@ Parked until the owner's data or a check on real hardware:
 - C9 Shelf is mouse only; the diagram tray "Open" row; Done silently creating a file; Tab stops | dgml L14, DOCUMENTS#22.4 R9a, R11 **Shelf: not reproduced w17-1110** (Right arrow roves six tiles and More, Enter adds); the tray row and Done not driven (code toasts the save), see w17-1110.md
 
 **W19 Whiteboard daily UX** (C, boards, Sonnet; verify first). Files: `frontend/js/whiteboard*.js` outside the render path (W30). Checks: `tests/test_wb_*`, `contrast.js` on a board. Done when: ink reads on both themes and every insert works by keyboard.
-- C10 Stored black ink does not remap on dark; white ink on a yellow sticky | 1028-ux U1, U2
-- C11 Insert, Sticky note by keyboard adds nothing and drops focus | 1028-ux U3
-- C12 Ring and chevron buttons under 24 px at zoom; Delete 2 px from Undo | 1028-ux U5, U14
-- C13 Lock shown by hover only; the eraser skips strokes on touch; one key, three meanings | 1028-board B20, B21, B12
-- C14 `contrast.js` never visits a board or a map | WHITEBOARD#Placed 2026-10-05
-- C15 Connector label look controls (size, bold, colour, chip, position) | t20#12, INBOX 819
-- C16 The map-created toast to one line (after Q21) | U41
+~~- C10 Stored black ink does not remap on dark; white ink on a yellow sticky | 1028-ux U1, U2~~ **Fixed before s5-1110 (cc6892028: `wbDefaultInk`).**
+~~- C11 Insert, Sticky note by keyboard adds nothing and drops focus | 1028-ux U3~~ **Fixed before s5-1110 (cc6892028).**
+~~- C12 Ring and chevron buttons under 24 px at zoom; Delete 2 px from Undo | 1028-ux U5, U14~~ **Fixed before s5-1110 (cc6892028, CHANGELOG 755).**
+~~- C13 Lock shown by hover only; the eraser skips strokes on touch; one key, three meanings | 1028-board B20, B21, B12~~ **Fixed before s5-1110 (CHANGELOG 1286, 746; pointer-path eraser).**
+~~- C14 `contrast.js` never visits a board or a map | WHITEBOARD#Placed 2026-10-05~~ **Verified s5-1110: contrast.js opens a board and a map, all selected, and every sidebar tab; dark: 0 findings, 21 and 17 text elements.**
+~~- C15 Connector label look controls (size, bold, colour, chip, position) | t20#12, INBOX 819~~ **Fixed s5-1110 (Format, Line: Label size, colour, bold and chip; `label_size`, `label_color`, `label_bold`, `label_chip`).**
+~~- C16 The map-created toast to one line (after Q21) | U41~~ **Fixed before s5-1110 (test_wb_dog1_fixb U41 says one line).**
 
 **W20 Shell accessibility and narrow widths** (C, shell and CSS, Sonnet). Files: `frontend/css/10-responsive.css`, `palette.js` (accessibility only), `index.html`. Checks: `tests/test_zoom_wrap_1717.py`, `scratchpad/ui-sweeps/zoom1717.js` at 600, 480 and 390, axe. Done when: 0 overflows at 390 and axe clean on the palette and the space menu.
-- C17 The palette is not a combobox: no `aria-activedescendant`, results not announced | 1028-shell S5
-- C18 The space menu fails axe (aria-required-children, nested-interactive) | 1029-extras X4
+~~- C17 The palette is not a combobox: no `aria-activedescendant`, results not announced | 1028-shell S5~~ **Fixed before s5-1110 (CHANGELOG 1503).**
+~~- C18 The space menu fails axe (aria-required-children, nested-interactive) | 1029-extras X4~~ **Fixed before s5-1110 (CHANGELOG 1517).**
 - C19 Ask button clipped at 390; quiet chips 28.6 px on a phone; selection ticks 44 px | 1028-shell S6, chatfoot L5, UI#11 item 12
 - C20 Notes dock wraps from 1280 to 1500 with the rail open; capture row wrap at 1024; tab bar 600 to 819 | t20#10, WORLD_CLASS#13
 - C21 Settings scrolls sideways at 768; Recent head clipped under 1200 | UI#11 item 12, zoom4
@@ -243,12 +243,12 @@ Parked until the owner's data or a check on real hardware:
 - C23 "?" after a Dashboard click hands focus to CodeMirror | row21 L47
 
 **W21 Dashboard, timeline and counts** (C, dashboard, Sonnet; verify first). Files: `dashboard.js`, `timeline*.js`, the import toast, the appearance settings. Checks: `tests/test_dashboard_*`, `tests/test_timeline_*`. Done when: every count is the true total.
-- C24 Dashboard insight counts capped by a fixed limit | 1028-shell S8
-- C25 Timeline header count and "days" plural wrong for 1 and for paged data | 1028-shell S7
-- C26 Import toast gives no skipped or duplicate breakdown | 1028-shell S9
-- C27 A theme change wipes the page background | 1028-shell S10
-- C28 Statistics drops private notes silently; "6 more than last week (0)" | 1029-extras X13
-- C29 One click on the timer chip stops a 25-minute timer with no Undo | 1031-extras Z2
+~~- C24 Dashboard insight counts capped by a fixed limit | 1028-shell S8~~ **Fixed before s5-1110 (count in SQL).**
+~~- C25 Timeline header count and "days" plural wrong for 1 and for paged data | 1028-shell S7~~ **Fixed before s5-1110 (CHANGELOG 1562).**
+~~- C26 Import toast gives no skipped or duplicate breakdown | 1028-shell S9~~ **Fixed before s5-1110 (import toast).**
+~~- C27 A theme change wipes the page background | 1028-shell S10~~ **Fixed before s5-1110 (page background pair).**
+~~- C28 Statistics drops private notes silently; "6 more than last week (0)" | 1029-extras X13~~ **Fixed before s5-1110 (statistics `left_out`).**
+~~- C29 One click on the timer chip stops a 25-minute timer with no Undo | 1031-extras Z2~~ **Fixed before s5-1110 (`stopUtilityClock` offers Undo).**
 
 **W22 Chat, Ask and the Guide** (C, Ask and help, Sonnet; not beside W1). Files: `capture-ask.js`, `ask-compose.js`, `ai/help_chat.py`, `ai/help_topics_more.py`. Checks: `tests/test_manual_parity.py`, `tests/test_guide_*`. Done when: each row fixed, help moved with it (order 13).
 - C30 Ask redesign at half width | t20#4, OPEN 22-10 doc

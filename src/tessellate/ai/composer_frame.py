@@ -362,6 +362,19 @@ def link_text(note: dict) -> str:
     return explicit or name_of(note)
 
 
+def _order_title(content: str) -> str:
+    """A one-line note that is an order in a few capitalised words ("Call
+    plumber", "Renew passport") is named as it is written, plain, as every
+    other title (owner answer Q3, W10 B36). Not `own_title`: that one says a
+    note is only a name, which an order is not."""
+    line = _first_line(content.strip())
+    if "\n" in content.strip() or not line or len(line.split()) > 4 or not line[:1].isupper():
+        return ""
+    if re.search(r"[,;:.!?、。！？；：，]", line) or NON_LATIN.search(line) or _FINITE.search(line) or _WHEN_IN_LINE.search(line):
+        return ""
+    return line if _IMPERATIVE.match(line) else ""
+
+
 def name_of(note: dict) -> str:
     """**The one name for a note, on every surface** (R3-15): its own title
     when it has one ("Trains", `_titled`), else its first clause, six words
@@ -377,6 +390,8 @@ def name_of(note: dict) -> str:
     own = own_title(content)
     if own and (own[:1].isupper() or own[:1].isdigit() or _ARTICLE.match(own)):
         return own
+    if (order := _order_title(content)):
+        return order
     return f"“{clipped_words(note) or 'An empty note'}”"
 
 

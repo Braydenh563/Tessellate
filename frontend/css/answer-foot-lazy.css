@@ -45,6 +45,12 @@
   padding: var(--space-1) var(--space-2);
   font-size: var(--text-sm);
 }
+/* A finger's quiet chip is `--target-min` tall (28.6 px at 390 before, audit chatfoot L5). */
+@media (pointer: coarse) {
+  .answer-foot-chip {
+    min-height: var(--target-min);
+  }
+}
 .answer-foot-chip[aria-expanded="true"] {
   background: var(--ghost-btn-bg);
   color: var(--ink);
