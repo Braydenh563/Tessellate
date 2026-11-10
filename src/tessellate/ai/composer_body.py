@@ -437,20 +437,36 @@ def _side_picks(sides: tuple[str, ...], views: list[NoteView], meaning_for):  # 
     return terms, stems, own, picks
 
 
+def _cased(out: _Answer, label: str) -> str:
+    """A lower-case name the notes write with a capital is said as they write it ("tom" is "Tom")."""
+    if not label.islower():
+        return label
+    for view in out.views.values():
+        hit = re.search(rf"\b{re.escape(label)}\b", str(view.note.get("content") or ""), re.I)
+        if hit and hit.group(0)[:1].isupper():
+            return hit.group(0)
+    return label
+
+
+def _only_lead(out: _Answer, sides: tuple[str, ...], counts: list[int]) -> None:
+    """One side with nothing is said once, not as "no mention Tokyo" beside the other (R3-14)."""
+    found = [label for label, n in zip(sides, counts) if n]
+    out.t("only_lead")
+    for i, label in enumerate(found):
+        if i:
+            out.t("and")
+        out.asked(label)
+    out.t("only_appear" if len(found) == 1 else "only_appear_many")
+    for i, label in enumerate(label for label, n in zip(sides, counts) if not n):
+        if i:
+            out.t("and")
+        out.asked(label)
+
+
 def _compare_lead(out: _Answer, sides: tuple[str, ...], counts: list[int]) -> None:
-    #: One side with nothing is said once, not as "no mention Tokyo" beside the other (R3-14).
+    sides = tuple(_cased(out, label) for label in sides)
     if 0 in counts and any(counts):
-        found = [label for label, n in zip(sides, counts) if n]
-        out.t("only_lead")
-        for i, label in enumerate(found):
-            if i:
-                out.t("and")
-            out.asked(label)
-        out.t("only_appear" if len(found) == 1 else "only_appear_many")
-        for i, label in enumerate(label for label, n in zip(sides, counts) if not n):
-            if i:
-                out.t("and")
-            out.asked(label)
+        _only_lead(out, sides, counts)
         return
     out.t(_unlike_before(out, ["of_found", "across_found"])[0])
     for i, (label, n) in enumerate(zip(sides, counts)):

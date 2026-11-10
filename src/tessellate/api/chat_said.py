@@ -24,6 +24,7 @@ from tessellate.ai import acts, composer_dialogue, task_acts
 from tessellate.ai import composer_frame, composer_read
 from tessellate.ai import composer_smalltalk
 from tessellate.ai.ollama_client import OllamaError
+from tessellate.entry import manager
 from tessellate.api import chat_extra
 from tessellate.api.chat_request import ChatRequest, _StreamRequest, _Turn, _composed, _meta_event
 from tessellate.core import clock, private_turn
@@ -565,12 +566,15 @@ def _current_notes(req: _StreamRequest, notes: list[dict]) -> tuple[list[dict], 
     return supersede.current(req.question or "", notes)
 
 
-def _with_words_only(text: str, prepared: dict, result: dict) -> str:
+def _with_words_only(text: str, prepared: dict, result: dict, session=None) -> str:  # noqa: ANN001
     """"Your only note on it" is a claim about the whole notebook; a search
     that read words only (no search by meaning) cannot make it, so the line
     says what was measured instead (blind test 2026-10-31, item 3)."""
     words_only = prepared.get("search_mode") == "keyword" or prepared.get("meaning_off") or prepared.get("meaning_loading")
     if not words_only or not result.get("grounding"):
+        return text
+    #: A notebook of one note has no other to find: the plain claim is true as said (R3-31).
+    if session is not None and manager.count_notes(session) <= 1:
         return text
     parts = text.split("\n\n")
     if not any(composer_digest.is_only_claim(part) for part in parts):

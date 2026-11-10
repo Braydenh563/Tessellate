@@ -117,16 +117,16 @@ Parked until the owner's data or a check on real hardware:
 ### Tier B: daily bugs, core flows, lag, the companion in the way
 
 **W7 Composer: which note leads and what it is called** (B, composer, Sonnet high). Files: `ai/composer_body.py`, `composer_names.py`, `composer_frame.py`, `composer_likeness.py`. Checks: `tests/test_composer*` on the r5 and r9 seeds (`tests/_r5_1108.py`, `tests/_seed_r9_1109.py`), the book4 probe. Done when: each row's probe answers right and its sibling phrasings pass (fix the class, INBOX 1357).
-- B1 The defining note does not lead ("tl;dr Lisbon", "summarise Lisbon", pronoun body) | 1107 D1, R3-20, 1029-composer C19, 1031-composer C1, C4
-- B2 Number and property questions answered without the number (squat 80 kg, passport) | 1107 D7, R3-2, R3-28, E12, 1029-composer C21, 1031-composer C16
-- B3 Title-less notes get many names; "who is Marcus" omits the bare Marcus Lee note | 1107 D11, R3-15, 1029-composer C8, c13#10
-- B4 A pronoun-led line quoted without the person ("He fixes the boiler") | 1107 D12, R3-25
-- B5 A lower-case pair ("anna and josé", "tom and sara") pooled as one subject | E10, composer-r6 L23, composer-r8 L13
-- B6 Likeness: "cat" matches fish, "boiler" the radiator note | R9-11, c12 L6
-- B7 "latest on sourdough" leads the wrong note; "what do I need to read" names by date and says "Three three" | R9-3, R3-22, book4 new
-- B8 "compare Priya and Marcus" says nothing mentions Marcus (`_sides_own`) | c13#2
-- B9 One-note notebook and `as_of` (time travel) answers | R3-31, R3-32
-- B10 A name matches inside another word; a plural subject is required verbatim | 1029-composer C16, 1031-composer C8
+~~- B1 The defining note does not lead ("tl;dr Lisbon", "summarise Lisbon", pronoun body) | 1107 D1, R3-20, 1029-composer C19, 1031-composer C1, C4~~ **Fixed w7-1110** (`note_rank.lead_by`: among alike-titled notes the fuller one leads unless the ask is for the latest; r5 "tl;dr Lisbon" and "summarise Lisbon" lead Lisbon trip; the pronoun-body case "who is Tom" already named the Tom note).
+~~- B2 Number and property questions answered without the number (squat 80 kg, passport) | 1107 D7, R3-2, R3-28, E12, 1029-composer C21, 1031-composer C16~~ **Fixed w7-1110** (squat 80 kg answered in the 1031c and 1030 seeds; "passport number" and visa, student, employee, customer, parcel numbers are numbered things: "None of your notes give a passport number." when no note holds one, and a bare "passport number" is no longer "Not sure what you mean").
+- B3 (part: "who is Marcus" counts the bare note, pinned; the compare citation still reads "[your note, today]" for it, see w7-1110.md) Title-less notes get many names; "who is Marcus" omits the bare Marcus Lee note | 1107 D11, R3-15, 1029-composer C8, c13#10
+~~- B4 A pronoun-led line quoted without the person ("He fixes the boiler") | 1107 D12, R3-25~~ **Stale: fixed earlier**, now pinned (r5 "what do I know about the boiler" says José García fixes the boiler; who fixes, what does José fix likewise).
+~~- B5 A lower-case pair ("anna and josé", "tom and sara") pooled as one subject | E10, composer-r6 L23, composer-r8 L13~~ **Fixed w7-1110** (accented names were cut at the accent in `_note_words`; a guest list "Anna, Tom and Sara" was read as a phrase; the pair is looked up per word in `chat_pool._lower_pair`; names shown as the notes write them).
+~~- B6 Likeness: "cat" matches fish, "boiler" the radiator note | R9-11, c12 L6~~ **Fixed w7-1110** (`_scored_members`: with notes that write the word itself, a note that only shares a synonym group is not a member; with none, the synonym still answers).
+- B7 (part: reading list fixed w7-1110; "latest on sourdough" open, see w7-1110.md) "latest on sourdough" leads the wrong note; "what do I need to read" names by date and says "Three three" | R9-3, R3-22, book4 new
+~~- B8 "compare Priya and Marcus" says nothing mentions Marcus (`_sides_own`) | c13#2~~ **Stale: not reproducible** on the bt seed (compare, vs, differ all give both sides); pinned by `test_a_note_naming_both_sides_does_not_hide_a_side`.
+~~- B9 One-note notebook and `as_of` (time travel) answers | R3-31, R3-32~~ **Fixed w7-1110** (no "search by meaning" footer in a one-note notebook; `as_of` answers "what is in my notebook" as that day's count and span, `notebook_stats.answer_chat(..., as_of)`).
+~~- B10 A name matches inside another word; a plural subject is required verbatim | 1029-composer C16, 1031-composer C8~~ **Stale for names and plurals**: "show me notes about Tom" no longer lists tomato notes and "meetings" finds Meeting notes (1030 seed); left open: "books" still adds "book the tram" as loosely related (verb for noun), see w7-1110.md.
 
 **W8 Composer: dates, events and footers** (B, composer, Sonnet high). Files: `ai/composer_ahead.py`, `factgraph.py`, `composer_unfound.py`, `recognise.py`, `api/chat_web.py`. Checks: as W7, fixed clock. Done when: as W7.
 - B11 "written today" and "as your X note has it" bolted on every answer | 1107 D13, R3-34

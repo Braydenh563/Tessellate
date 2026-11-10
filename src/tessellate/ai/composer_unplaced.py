@@ -18,7 +18,7 @@ from __future__ import annotations
 
 import re
 
-from tessellate.ai import realise, toolwords
+from tessellate.ai import composer_property, realise, toolwords
 
 #: A note, a notebook, "my ...": the person is asking about their own record,
 #: whose home is the notes (the web is a chip, never the first stop).
@@ -136,7 +136,7 @@ def about_the_person(message: str) -> bool:
 def unplaced(message: str) -> bool:
     """A message no reader placed and that asks nothing of the web: banter,
     slang, a bare word, an emoji. With no note to answer it, it is asked about."""
-    return bool((message or "").strip()) and not worthy(message) and not names_notes(message) and not about_the_person(message)
+    return bool((message or "").strip()) and not worthy(message) and not names_notes(message) and not about_the_person(message) and not composer_property.asked(message)
 
 
 def bare_word(message: str) -> str:

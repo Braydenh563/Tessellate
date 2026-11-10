@@ -698,14 +698,21 @@ def compare_sides(question: str) -> tuple[str, ...] | None:
 NOTE_WORDS: contextvars.ContextVar[frozenset] = contextvars.ContextVar("composer_note_words", default=frozenset())
 
 
-#: The notes' own text, lower case, for `_lower_pair` only: a pair one note says as a phrase is one subject.
+#: The notes' own text, as written, for `_lower_pair` only: a pair one note says as a phrase is one subject.
 NOTE_TEXTS: contextvars.ContextVar[tuple] = contextvars.ContextVar("composer_note_texts", default=())
 
 
 def _said_together(a: str, b: str) -> bool:
-    """Whether some note says "a and b" (or "a & b", "a, b") as one phrase: "salt and pepper" in a recipe."""
-    phrase = re.compile(rf"\b{re.escape(a)}\s*(?:and|&|,)\s*{re.escape(b)}\b")
-    return any(phrase.search(text) for text in NOTE_TEXTS.get())
+    """Whether some note says "a and b" (or "a & b", "a, b") as one phrase: "salt and pepper" in a recipe.
+    Capitalised in the middle of a sentence it is two names ("Anna, Tom and Sara" is a guest list)."""
+    phrase = re.compile(rf"\b{re.escape(a)}\s*(?:and|&|,)\s*{re.escape(b)}\b", re.I)
+    for text in NOTE_TEXTS.get():
+        for hit in phrase.finditer(text):
+            before = text[: hit.start()].rstrip(" \t")
+            names = text[hit.start()].isupper() and bool(before) and before[-1] not in ".!?\n:#-*"
+            if not names:
+                return True
+    return False
 
 
 def _lower_pair(text: str) -> tuple[str, ...] | None:

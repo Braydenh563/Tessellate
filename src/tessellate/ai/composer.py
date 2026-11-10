@@ -399,7 +399,7 @@ def _note_words(notes: list[dict]) -> frozenset:
     """The words of the notes the question is asked of, lower case."""
     found: set[str] = set()
     for note in notes or []:
-        found.update(re.findall(r"[a-z]{3,}", f"{note.get('title') or ''} {note.get('content') or ''}".lower()))
+        found.update(re.findall(r"[^\W\d_]{3,}", f"{note.get('title') or ''} {note.get('content') or ''}".lower()))
     return frozenset(found)
 
 
