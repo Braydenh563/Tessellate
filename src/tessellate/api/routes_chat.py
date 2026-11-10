@@ -993,6 +993,8 @@ def _exact_events(req: _StreamRequest, prepared: dict, ollama_running: bool) -> 
     to wait for. It arrives before a local model would have finished loading,
     and it arrives at all when no model is running. None when the stream
     goes on to compose or generate."""
+    if figured := chat_extra.figures_events(req.session, req.body.question or "", req.history or [], user_now(deps.get_config()).date()):
+        return figured  # F6: a sum or a comparison over what the last answer showed, with a model up or not
     said = _app_said(req, prepared, ollama_running) if _app_answers(req, ollama_running) else None
     if said is not None:
         return said

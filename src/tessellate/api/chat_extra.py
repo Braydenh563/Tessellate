@@ -74,6 +74,18 @@ def events(session: Session, question: str, history: list[dict], *, now: datetim
     return out
 
 
+def figures_events(session: Session, typed: str, history: list[dict], today) -> list[dict] | None:  # noqa: ANN001  # a date
+    """A comparison, count or sum over the figures the last answers showed (`ai/composer_figures`, F6)."""
+    from tessellate.ai import composer_figures
+
+    try:
+        said = composer_figures.answer(session, typed, history, today)
+    except Exception:  # noqa: BLE001  # the ordinary readers answer
+        log.exception("chat: the figures reader failed")
+        return None
+    return [{"type": "answer", "delta": said}] if said else None
+
+
 def talk_events(session: Session, typed: str, history: list[dict], seed: str, question: str) -> list[dict] | None:
     """The turn when it is about the talk itself (`ai/composer_chat`: a feeling,
     "shorter", "which is higher") or about Atlas ("do you have feelings"), read
